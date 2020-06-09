@@ -1517,8 +1517,9 @@ def scf_helper(name, post_scf=True, **kwargs):
                        """further calculations in C1 point group.\n""")
         # PE needs information about molecule and basis set
         pol_embed_options = solvent.pol_embed.get_pe_options()
-        core.print_out(""" Using potential file {} for Polarizable Embedding
-                       calculation.\n""".format(pol_embed_options["potfile"]))
+        core.print_out(f""" Using potential file
+                       {pol_embed_options["potfile"]}
+                       for Polarizable Embedding calculation.\n""")
         scf_wfn.pe_state = solvent.pol_embed.CppeInterface(
             molecule=scf_molecule, options=pol_embed_options,
             basisset=scf_wfn.basisset()
