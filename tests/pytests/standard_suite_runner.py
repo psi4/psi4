@@ -24,6 +24,9 @@ def runner_asserter(inp, subject, method, basis, tnm):
     reference = inp["keywords"]["reference"]
     fcae = {"true": "fc", "false": "ae"}[inp["keywords"]["freeze_core"]]
 
+    if qc_module == "psi4-detci" and basis != "cc-pvdz":
+        pytest.skip(f"basis {basis} too big for {qc_module}")
+
     # <<<  Reference Values  >>>
 
     # ? precedence on next two

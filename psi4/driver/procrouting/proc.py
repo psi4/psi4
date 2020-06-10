@@ -3035,6 +3035,15 @@ def run_dfmp2_property(name, **kwargs):
     return dfmp2_wfn
 
 
+def _clean_detci(keep: bool=True):
+    psioh = core.IOManager.shared_object()
+    psio = core.IO.shared_object()
+    cifl = core.get_option("DETCI", "CI_FILE_START")
+    for fl in range(cifl, cifl + 4):
+        if psio.open_check(fl):
+            psio.close(fl, keep)
+
+
 def run_detci_property(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a configuration interaction calculation, namely FCI,
@@ -3116,6 +3125,7 @@ def run_detci_property(name, **kwargs):
                 oe.set_Db_mo(ciwfn.get_opdm(0, root, "B", True))
             oe.compute()
 
+    _clean_detci()
     optstash.restore()
     return ciwfn
 
@@ -3646,6 +3656,7 @@ def run_detci(name, **kwargs):
 
     ciwfn.cleanup_ci()
     ciwfn.cleanup_dpd()
+    _clean_detci()
 
     optstash.restore()
     return ciwfn
@@ -4709,6 +4720,10 @@ def run_cepa(name, **kwargs):
     # throw an exception for open-shells
     if core.get_option('SCF', 'REFERENCE') != 'RHF':
         raise ValidationError("""Error: %s requires 'reference rhf'.""" % name)
+
+    reference = core.get_option('SCF', 'REFERENCE')
+    if core.get_global_option('CC_TYPE') != "CONV":
+        raise ValidationError("""CEPA methods from FNOCC module require 'cc_type conv'.""")
 
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
