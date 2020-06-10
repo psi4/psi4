@@ -36,7 +36,6 @@ import datetime
 import argparse
 from argparse import RawTextHelpFormatter
 from pathlib import Path
-import qcelemental as qcel
 
 # yapf: disable
 parser = argparse.ArgumentParser(description="Psi4: Open-Source Quantum Chemistry", formatter_class=RawTextHelpFormatter)
@@ -243,6 +242,7 @@ if args["scratch"] is not None:
 
 # If this is a json or qcschema call, compute and stop
 if args["qcschema"]:
+    import qcelemental as qcel
 
     # Handle the reading and deserialization manually
     filename = args["input"]
