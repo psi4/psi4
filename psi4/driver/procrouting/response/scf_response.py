@@ -27,7 +27,10 @@
 #
 
 from typing import Union, List
-from dataclasses import dataclass
+try:
+    from dataclasses import dataclass
+except ImportError:
+    from pydantic.dataclasses import dataclass
 
 import numpy as np
 
