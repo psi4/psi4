@@ -1,4 +1,4 @@
-# Excitation energies
+# td-wb97x singlet excitation energies of methylene (tda)
 
 rhf_wB97X_TDA_cc_pvdz = [0.24888846143844873,
                          0.3136260679219220,

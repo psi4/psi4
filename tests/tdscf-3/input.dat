@@ -1,4 +1,4 @@
-# Excitation energies
+#! td-wb97x excitation energies of singlet states of h2o, wfn passing
 
 rhf_wB97X_RPA_cc_pvdz = [0.24721269233329,
                          0.31319977578113,
@@ -35,7 +35,7 @@ set {
 
 
 e, wfn = energy('wb97x/cc-pvdz', return_wfn=True)
-tdscf(ref_wfn = wfn)
+tdscf(wfn)
 
 for n, ref in enumerate(rhf_wB97X_RPA_cc_pvdz):
     ex_en = wfn.variable(f"TD-wB97X ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")

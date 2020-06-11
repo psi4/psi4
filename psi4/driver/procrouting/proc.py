@@ -2714,7 +2714,34 @@ def run_bccd(name, **kwargs):
     optstash.restore()
     return ref_wfn
 
-def run_tdscf_energy(name=None,**kwargs):
+def run_tdscf_excitations(wfn,**kwargs):
+
+    states = core.get_option("SCF","TDSCF_STATES_PER_IRREP")
+
+    # some sanity checks
+    if sum(states) == 0:
+        raise ValidationError("TDSCF: No states requested in TDSCF_STATES_PER_IRREP") 
+
+    if len(states) != wfn.nirrep():
+        raise ValidationError("TDSCF: Requested TDSCF_STATES_PER_IRREP do not match wave function symmetry") 
+
+    ssuper_name = wfn.functional().name()
+
+    # Do we need this return value? 
+    ret = response.scf_response.tdscf_excitations(wfn, states_per_irrep = states,
+                                                  triplet = core.get_option("SCF","TDSCF_TRIPLETS"),
+                                                  tda = core.get_option("SCF","TDSCF_TDA"),
+                                                  e_tol = core.get_option("SCF","TDSCF_E_TOL"),
+                                                  r_tol = core.get_option("SCF","TDSCF_R_TOL"),
+                                                  guess = core.get_option("SCF","TDSCF_GUESS"))
+
+    # Shove variables into global space
+    for k, v in wfn.variables().items():
+        core.set_variable(k, v)
+
+    return wfn
+
+def run_tdscf_energy(name,**kwargs):
 
     # Get a wfn in case we aren't given one
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -2725,31 +2752,7 @@ def run_tdscf_energy(name=None,**kwargs):
         else:
             ref_wfn = run_scf(name.strip('td-'), **kwargs)
 
-    states = core.get_option("SCF","TDSCF_STATES_PER_IRREP")
-
-    # some sanity checks
-    if sum(states) == 0:
-        raise ValidationError("TDSCF: No states requested in TDSCF_STATES_PER_IRREP") 
-
-    if len(states) != ref_wfn.nirrep():
-        raise ValidationError("TDSCF: Requested TDSCF_STATES_PER_IRREP do not match wave function symmetry") 
-
-    ssuper_name = ref_wfn.functional().name()
-
-    # Do we need this return value? 
-    ret = response.scf_response.tdscf_excitations(ref_wfn, states_per_irrep = states,
-                                                  triplet = core.get_option("SCF","TDSCF_TRIPLETS"),
-                                                  tda = core.get_option("SCF","TDSCF_TDA"),
-                                                  e_tol = core.get_option("SCF","TDSCF_E_TOL"),
-                                                  r_tol = core.get_option("SCF","TDSCF_R_TOL"),
-                                                  guess = core.get_option("SCF","TDSCF_GUESS"))
-
-    # Shove variables into global space
-    for k, v in ref_wfn.variables().items():
-        core.set_variable(k, v)
-
-    return ref_wfn
-    
+    return run_tdscf_excitations(ref_wfn, **kwargs)
 
 def run_scf_property(name, **kwargs):
     """Function encoding sequence of PSI module calls for
