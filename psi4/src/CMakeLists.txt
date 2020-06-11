@@ -53,8 +53,12 @@ target_link_libraries(core
 
 if(TARGET BrianQC::static_wrapper)
   target_compile_definitions(core
-    PUBLIC
+    PRIVATE
       USING_BrianQC
+    )
+  target_include_directories(core
+    PRIVATE
+      ${BrianQC_INCLUDE_DIRS}
     )
   target_link_libraries(core
     PRIVATE

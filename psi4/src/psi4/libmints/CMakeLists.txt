@@ -120,4 +120,8 @@ if(TARGET BrianQC::static_wrapper)
     PUBLIC
       USING_BrianQC
     )
+  target_include_directories(mints
+    PUBLIC
+      ${BrianQC_INCLUDE_DIRS}
+    )
 endif()

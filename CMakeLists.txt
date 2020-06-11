@@ -101,7 +101,7 @@ option(ENABLE_psi4fockci "Enables Psi4FockCI plugin (can also be added at runtim
 option(ENABLE_cct3 "Enables cct3 plugin (requires Fortran; can also be added at runtime)" OFF)
 option(ENABLE_gpu_dfcc "Enables GPU_DFCC plugin for gpu-accelerated df-cc (requires CUDA; can also be added at runtime)" OFF)
 option(ENABLE_mdi "Enables MolSSI driver interface" OFF)
-option(ENABLE_BrianQC "Enables the BrianQC GPU module" OFF)
+option(ENABLE_BrianQC "Enables the BrianQC GPU module (requires CUDA; requires separate installation and licensing of the BrianQC module)" OFF)
 # These options are relevant to pasture, expert only
 option(ENABLE_ccsort "Enables ccsort plugin installed from psi4pasture" OFF)
 option(ENABLE_transqt2 "Enables transqt2 plugin installed from psi4pasture" OFF)
