@@ -2,11 +2,7 @@ find_package(BrianQC 1.1 CONFIG QUIET)
 
 if(${BrianQC_FOUND})
     get_property(_loc TARGET BrianQC::static_wrapper PROPERTY LOCATION)
-    if(${BrianQC_DEV})
-        message(STATUS "${Cyan}Found BrianQC${ColourReset}: ${_loc} (found development version ${BrianQC_VERSION})")
-    else()
-        message(STATUS "${Cyan}Found BrianQC${ColourReset}: ${_loc} (found installed version ${BrianQC_VERSION})")
-    endif()
+    message(STATUS "${Cyan}Found BrianQC${ColourReset}: ${_loc} (found version ${BrianQC_VERSION})")
     
     add_library(brianqc_external INTERFACE)  # dummy
 else()
