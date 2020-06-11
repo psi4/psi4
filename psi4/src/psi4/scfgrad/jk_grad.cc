@@ -1555,25 +1555,25 @@ void DFJKGrad::compute_hessian()
                 }
                 // c[A] = (A|mn) D[m][n]
                 C_DGEMV('N', np, nso*(size_t)nso, 1.0, Amnp[0], nso*(size_t)nso, Dtp[0], 1, 0.0, cp, 1);
+            }
+        }
 
-                // First alpha
-                // (A|mj) = (A|mn) C[n][j]
-                C_DGEMM('N','N',np*(size_t)nso,na,nso,1.0,Amnp[0],nso,Cap[0],na,0.0,Aa_mip[0],na);
-                // (A|ij) = (A|mj) C[m][i]
-                #pragma omp parallel for
-                for (int p = 0; p < np; p++) {
-                    C_DGEMM('T','N',na,na,nso,1.0,Aa_mip[p],na,Cap[0],na,0.0,&Aa_ijp[0][p * (size_t) na * na],na);
-                }
-                // Beta
-                if (!same_ab){
-                    // (A|mj) = (A|mn) C[n][j]
-                    C_DGEMM('N','N',np*(size_t)nso,nb,nso,1.0,Amnp[0],nso,Cbp[0],nb,0.0,Ab_mip[0],nb);
-                    // (A|ij) = (A|mj) C[m][i]
-                    #pragma omp parallel for
-                    for (int p = 0; p < np; p++) {
-                        C_DGEMM('T','N',nb,nb,nso,1.0,Ab_mip[p],nb,Cbp[0],nb,0.0,&Ab_ijp[0][p * (size_t) nb * nb],nb);
-                    }
-                }
+        // First alpha
+        // (A|mj) = (A|mn) C[n][j]
+        C_DGEMM('N','N',np*(size_t)nso,na,nso,1.0,Amnp[0],nso,Cap[0],na,0.0,Aa_mip[0],na);
+        // (A|ij) = (A|mj) C[m][i]
+        #pragma omp parallel for
+        for (int p = 0; p < np; p++) {
+            C_DGEMM('T','N',na,na,nso,1.0,Aa_mip[p],na,Cap[0],na,0.0,&Aa_ijp[0][p * (size_t) na * na],na);
+        }
+        // Beta
+        if (!same_ab){
+            // (A|mj) = (A|mn) C[n][j]
+            C_DGEMM('N','N',np*(size_t)nso,nb,nso,1.0,Amnp[0],nso,Cbp[0],nb,0.0,Ab_mip[0],nb);
+            // (A|ij) = (A|mj) C[m][i]
+            #pragma omp parallel for
+            for (int p = 0; p < np; p++) {
+                C_DGEMM('T','N',nb,nb,nso,1.0,Ab_mip[p],nb,Cbp[0],nb,0.0,&Ab_ijp[0][p * (size_t) nb * nb],nb);
             }
         }
     }
