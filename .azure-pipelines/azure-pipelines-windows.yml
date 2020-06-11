@@ -116,7 +116,6 @@ jobs:
                         numpy ^
                         pint ^
                         pybind11 ^
-                        pymdi ^
                         pytest ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^

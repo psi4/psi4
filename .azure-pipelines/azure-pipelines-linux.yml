@@ -96,7 +96,6 @@ jobs:
         qcelemental \
         qcengine \
         pybind11 \
-        pymdi \
         -c conda-forge
       conda install adcc -c adcc -c conda-forge
       conda list
