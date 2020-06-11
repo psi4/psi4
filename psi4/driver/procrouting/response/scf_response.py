@@ -267,20 +267,6 @@ def _print_tdscf_header(**options):
                    f"         {'by Andrew M. James and Daniel G. A. Smith':^57}\n" +
                    "         ---------------------------------------------------------\n")
 
-    core.print_out("\n  ==> Requested Excitations <==\n\n")
-    triplets = options.pop('triplets')
-    state_info = options.pop('states')
-    if triplets == "also":
-        for nstate, state_sym in state_info:
-            core.print_out(f"      {nstate} singlet states with {state_sym} symmetry\n")
-            core.print_out(f"      {nstate} triplet states with {state_sym} symmetry\n")
-    elif triplets == "only":
-        for nstate, state_sym in state_info:
-            core.print_out(f"      {nstate} triplet states with {state_sym} symmetry\n")
-    elif triplets == "none":
-        for nstate, state_sym in state_info:
-            core.print_out(f"      {nstate} singlet states with {state_sym} symmetry\n")
-
     core.print_out("\n  ==> Options <==\n\n")
     for k, v in options.items():
         core.print_out(f"     {k:<10s}:              {v}\n")
@@ -321,6 +307,10 @@ def _solve_loop(wfn,
     .. [Pedersen1995-du] T. B. Pedersen, A. E. Hansen, "Ab Initio Calculation and Display of the Rotary Strength Tensor in the Random Phase Approximation. Method and Model Studies." Chem. Phys. Lett., 246, 1 (1995)
     .. [Lestrange2015-xn] P. J. Lestrange, F. Egidi, X. Li, "The Consequences of Improperly Describing Oscillator Strengths beyond the Electric Dipole Approximation." J. Chem. Phys., 143, 234103 (2015)
     """
+
+    core.print_out("\n  ==> Requested Excitations <==\n\n")
+    for nstate, state_sym in zip(states_per_irrep, wfn.molecule().irrep_labels()):
+        core.print_out(f"      {nstate} {spin_mult} states with {state_sym} symmetry\n")
 
     # collect results and compute some spectroscopic observables
     mints = core.MintsHelper(wfn.basisset())
@@ -376,6 +366,15 @@ def _solve_loop(wfn,
     return results
 
 
+def _states_per_irrep(states, nirrep):
+    """Distributes states into nirrep"""
+    spi = [states // nirrep] * nirrep
+    for i in range(states % nirrep):
+        spi[i] += 1
+
+    return spi
+
+
 def tdscf_excitations(wfn,
                       *,
                       states: Union[int, List[int]],
@@ -408,10 +407,15 @@ def tdscf_excitations(wfn,
          - `none`. Do not seek to converge triplets.
          - `only`. Only seek to converge triplets.
          - `also`. Seek to converge both triplets and singlets. This choice is
-           only valid for restricted reference wavefunction. Moreover, it will
-           **at least double** the cost of the response calculation: singlet
-           and triplet solutions are found separately and `also` will seek to
-           converge the same number of `states` for both spin symmetries.
+           only valid for restricted reference wavefunction.
+           The number of states given will be apportioned roughly 50-50 between
+           singlet and triplet states, preferring the former. For example:
+           given ``state = 5, triplets = "also"``, the solver will seek to
+           converge 3 states of singlet spin symmetry and 2 of triplet spin
+           symmetry. When asking for ``states = [3, 3, 3, 3], triplets =
+           "also"`` states (C2v symmetry), ``[2, 2, 2, 2]`` will be of singlet
+           spin symmetry and ``[1, 1, 1, 1]``` will be of triplet spin
+           symmetry.
     tda :  bool, optional.
        Should the solver use the Tamm-Dancoff approximation (TDA) or the
        random-phase approximation (RPA)?
@@ -469,26 +473,37 @@ def tdscf_excitations(wfn,
     if not (isinstance(states, int) or isinstance(states, list)):
         raise ValidationError("Number of states must be either an integer or a list of integers")
 
-    # determine how many states per irrep to seek
-    states_per_irrep = []
-    if isinstance(states, list):
-        # list of states per irrep given, validate it
-        if len(states) != wfn.nirrep():
-            raise ValidationError(f"States requested ({states}) do not match with number of irreps ({wfn.nirrep()})")
-        else:
-            states_per_irrep = states
-    else:
-        # total number of states given, distribute them among irreps
-        states_per_irrep = [states // wfn.nirrep()] * wfn.nirrep()
-        for i in range(states % wfn.nirrep()):
-            states_per_irrep[i] += 1
-
     # do triplets?
     restricted = wfn.same_a_b_orbs()
     triplets = triplets.lower()
     do_triplets = False if triplets == "none" else True
     if (not restricted) and do_triplets:
         raise ValidationError("Cannot compute triplets with an unrestricted reference")
+
+    # determine how many states per irrep to seek and apportion them between singlets/triplets and irreps.
+    singlets_per_irrep = []
+    triplets_per_irrep = []
+    if isinstance(states, list):
+        # list of states per irrep given, validate it
+        if len(states) != wfn.nirrep():
+            raise ValidationError(f"States requested ({states}) do not match with number of irreps ({wfn.nirrep()})")
+        else:
+            if do_triplets:
+                singlets_per_irrep = [(s // 2) + (s % 2) for s in states]
+                triplets_per_irrep = [(s // 2) for s in states]
+            else:
+                singlets_per_irrep = states
+    else:
+        # total number of states given
+        # First distribute them among singlets and triplets, preferring the
+        # former then distribute them among irreps
+        if do_triplets:
+            spi = (states // 2) + (states % 2)
+            singlets_per_irrep = _states_per_irrep(spi, wfn.nirrep())
+            tpi = states - spi
+            triplets_per_irrep = _states_per_irrep(tpi, wfn.nirrep())
+        else:
+            singlets_per_irrep = _states_per_irrep(states, wfn.nirrep())
 
     # validate calculation
     if restricted and wfn.functional().needs_xc() and do_triplets:
@@ -500,8 +515,6 @@ def tdscf_excitations(wfn,
 
     if guess.lower() != "denominators":
         raise ValidationError(f"Guess type {guess} is not valid")
-
-    r_convergence = min(1.e-4, core.get_option('SCF', 'D_CONVERGENCE') * 1.e2)
 
     # tie maximum number of vectors per root to requested residual tolerance
     # This gives 100 vectors per root with default tolerance
@@ -526,25 +539,19 @@ def tdscf_excitations(wfn,
                                                                  maxiter=maxiter,
                                                                  verbose=verbose)
 
-    _print_tdscf_header(r_convergence=r_convergence,
-                        states=[(count, label) for count, label in zip(states_per_irrep,
-                                                                       wfn.molecule().irrep_labels())],
-                        guess_type=guess,
-                        restricted=restricted,
-                        triplets=triplets,
-                        ptype=ptype)
+    _print_tdscf_header(r_convergence=r_convergence, guess_type=guess, restricted=restricted, ptype=ptype)
 
     # collect solver results into a list
     _results = []
 
     # singlets solve loop
     if triplets == "none" or triplets == "also":
-        singlets = _solve_loop(wfn, ptype, solve_function, states_per_irrep, restricted, "singlet")
+        singlets = _solve_loop(wfn, ptype, solve_function, singlets_per_irrep, restricted, "singlet")
         _results.extend(singlets)
 
     # triplets solve loop
     if triplets == "also" or triplets == "only":
-        triplets = _solve_loop(wfn, ptype, solve_function, states_per_irrep, restricted, "triplet")
+        triplets = _solve_loop(wfn, ptype, solve_function, triplets_per_irrep, restricted, "triplet")
         _results.extend(triplets)
 
     # sort by energy
