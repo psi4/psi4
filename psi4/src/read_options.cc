@@ -571,8 +571,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION Guess Vectors -*/
 
-        /*- What file do we start at for hd/c/s/d CIvects? Should be 50 for normal
-        CI calculations and 54 if we are going to do a second monomer. !expert -*/
+        /*- What file do we start at for hd/c/s/d CIvects? Should be 350 for normal
+        CI calculations and 354 if we are going to do a second monomer. !expert -*/
         options.add_int("CI_FILE_START", 350);
 
         /*- Guess vector type.  Accepted values are ``UNIT`` for a unit vector
