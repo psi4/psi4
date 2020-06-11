@@ -2232,14 +2232,13 @@ def run_scf(name, **kwargs):
 
     optstash_scf = proc_util.scf_set_reference_local(name, is_dft=dft_func)
 
-    # See if we're doing TDSCF after, keep JK if so 
-    if sum(core.get_option("SCF","TDSCF_STATES_PER_IRREP")) > 0:
-        core.set_local_option("SCF","SAVE_JK", True)
+    # See if we're doing TDSCF after, keep JK if so
+    if sum(core.get_option("SCF", "TDSCF_STATES")) > 0:
+        core.set_local_option("SCF", "SAVE_JK", True)
 
     # Alter default algorithm
     if not core.has_global_option_changed('SCF_TYPE'):
         core.set_global_option('SCF_TYPE', 'DF')
-
 
     scf_wfn = scf_helper(name, post_scf=False, **kwargs)
     returnvalue = scf_wfn.energy()
@@ -2722,24 +2721,32 @@ def run_bccd(name, **kwargs):
 
 def run_tdscf_excitations(wfn,**kwargs):
 
-    states = core.get_option("SCF","TDSCF_STATES_PER_IRREP")
+    states = core.get_option("SCF","TDSCF_STATES")
 
     # some sanity checks
     if sum(states) == 0:
-        raise ValidationError("TDSCF: No states requested in TDSCF_STATES_PER_IRREP") 
+        raise ValidationError("TDSCF: No states requested in TDSCF_STATES")
 
     if len(states) != wfn.nirrep():
-        raise ValidationError("TDSCF: Requested TDSCF_STATES_PER_IRREP do not match wave function symmetry") 
+        raise ValidationError("TDSCF: Requested TDSCF_STATES do not match wave function symmetry")
 
     ssuper_name = wfn.functional().name()
 
-    # Do we need this return value? 
-    ret = response.scf_response.tdscf_excitations(wfn, states_per_irrep = states,
-                                                  triplet = core.get_option("SCF","TDSCF_TRIPLETS"),
-                                                  tda = core.get_option("SCF","TDSCF_TDA"),
-                                                  e_tol = core.get_option("SCF","TDSCF_E_TOL"),
-                                                  r_tol = core.get_option("SCF","TDSCF_R_TOL"),
-                                                  guess = core.get_option("SCF","TDSCF_GUESS"))
+    # Tie TDSCF_R_CONVERGENCE to D_CONVERGENCE in SCF reference
+    if core.has_option_changed('SCF', 'TDSCF_R_CONVERGENCE'):
+        r_convergence = core.get_option('SCF', 'TDSCF_R_CONVERGENCE')
+    else:
+        r_convergence = min(1.e-4, core.get_option('SCF', 'D_CONVERGENCE') * 1.e2)
+
+    # Do we need this return value?
+    ret = response.scf_response.tdscf_excitations(wfn,
+                                                  states=states,
+                                                  triplets=core.get_option("SCF", "TDSCF_TRIPLETS"),
+                                                  tda=core.get_option("SCF", "TDSCF_TDA"),
+                                                  r_convergence=r_convergence,
+                                                  maxiter=core.get_option("SCF", "TDSCF_MAXITER"),
+                                                  guess=core.get_option("SCF", "TDSCF_GUESS"),
+                                                  verbose=core.get_option("SCF", "TDSCF_VERBOSITY"))
 
     # Shove variables into global space
     for k, v in wfn.variables().items():
@@ -2747,7 +2754,8 @@ def run_tdscf_excitations(wfn,**kwargs):
 
     return wfn
 
-def run_tdscf_energy(name,**kwargs):
+
+def run_tdscf_energy(name, **kwargs):
 
     # Get a wfn in case we aren't given one
     ref_wfn = kwargs.get('ref_wfn', None)
@@ -2759,6 +2767,7 @@ def run_tdscf_energy(name,**kwargs):
             ref_wfn = run_scf(name.strip('td-'), **kwargs)
 
     return run_tdscf_excitations(ref_wfn, **kwargs)
+
 
 def run_scf_property(name, **kwargs):
     """Function encoding sequence of PSI module calls for

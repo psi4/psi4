@@ -1587,26 +1587,23 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION TDDFT -*/
         /*- Get the number of desired states per irrep -*/
-        options.add("TDSCF_STATES_PER_IRREP", new ArrayType());
+        options.add("TDSCF_STATES", new ArrayType());
         /*- Controls inclusion of triplet states, valid options:
             - none : No triplets computed
-            - also : lowest-energy triplets and singlets included
+            - also : lowest-energy triplets and singlets included, in 50-50 ratio
             - only : Only triplet states computed
              -*/
-        //options.add_str("TDSCF_TRIPLETS", "none");
-        //*- Computes spin-adapted products for triplets -*/
-        options.add_bool("TDSCF_TRIPLETS", false);
-        /*- Run with Tamm-Dancoff approximation, uses RPA when false -*/ 
+        options.add_str("TDSCF_TRIPLETS", "NONE", "NONE ALSO ONLY");
+        /*- Run with Tamm-Dancoff approximation, uses RPA when false -*/
         options.add_bool("TDSCF_TDA", false);
-        /*- Convergence threshold for excitation energies -*/
-        // NOTE: This option may do nothing
-        options.add_double("TDSCF_E_TOL", 1E-6);
         /*- Convergence threshold for the norm of the residual vector -*/
-        options.add_double("TDSCF_R_TOL", 1E-4);
+        options.add_double("TDSCF_R_CONVERGENCE", 1E-4);
         /*- Guess type, only 'denominators' currently supported -*/
-        options.add_str("TDSCF_GUESS", "denominators");
-        /*- Max number of vectors to store before collapsing -*/
-        options.add_int("TDSCF_MAX_SS_VECTORS",50);
+        options.add_str("TDSCF_GUESS", "DENOMINATORS");
+        /*- Maximum number of TDSCF solver iterations -*/
+        options.add_int("TDSCF_MAXITER", 60);
+        /*- Verbosity level in TDSCF -*/
+        options.add_int("TDSCF_VERBOSITY", 1);
 
         /*- combine omega exchange and Hartree--Fock exchange into 
               one matrix for efficiency? 
@@ -1869,7 +1866,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("KIND", "SINGLET", "SINGLET TRIPLET SPIN_FLIP ANY");
         /*- Maximum number of iterations -*/
         options.add_int("MAXITER", 50);
-        /*- Maximum number of subspace vectors. A negative value uses 
+        /*- Maximum number of subspace vectors. A negative value uses
          *  the adcc default (roughly between 20 and 5 * N_GUESSES). This option is only available for the adcc backend. -*/
         options.add_int("MAX_NUM_VECS", -1);
         /*- Specifies the choice of representation of the electric dipole operator.
