@@ -48,6 +48,7 @@ from psi4.driver import p4util
 from psi4.driver import qcdb
 from psi4.driver.procrouting import *
 from psi4.driver.p4util.exceptions import *
+from psi4.driver.mdi_engine import mdi_run
 
 # never import wrappers or aliases into this file
 
@@ -498,6 +499,11 @@ def energy(name, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
+
+    # Bounce to MDI if mdi kwarg
+    use_mdi = kwargs.pop('mdi', False)
+    if use_mdi:
+        return mdi_run(name, **kwargs)
 
     core.print_out("\nScratch directory: %s\n" % core.IOManager.shared_object().get_default_path())
 

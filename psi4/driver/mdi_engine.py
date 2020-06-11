@@ -46,7 +46,7 @@ except ImportError:
 
 
 class MDIEngine():
-    def __init__(self, scf_method, molecule=None):
+    def __init__(self, scf_method, **kwargs):
         """ Initialize an MDIEngine object for communication with MDI
 
         Arguments:
@@ -56,11 +56,12 @@ class MDIEngine():
         # Method used when the SCF command is received
         self.scf_method = scf_method
 
+        # Additional arguments for energy, gradient, or optimization calculations
+        self.kwargs = kwargs
+
         # Molecule all MDI operations are performed on
-        if molecule is None:
-            self.molecule = (psi4.core.get_active_molecule()).clone()
-        else:
-            self.molecule = molecule.clone()
+        input_molecule = kwargs.pop('molecule', psi4.core.get_active_molecule())
+        self.molecule = input_molecule.clone()
         psi4.core.set_active_molecule(self.molecule)
 
         # Most recent SCF energy
@@ -210,7 +211,7 @@ class MDIEngine():
 
         :returns: *forces* Atomic forces
         """
-        force_matrix = psi4.driver.gradient(self.scf_method, molecule=self.molecule)
+        force_matrix = psi4.driver.gradient(self.scf_method, **self.kwargs)
         forces = force_matrix.np.ravel()
         MDI_Send(forces, len(forces), MDI_DOUBLE, self.comm)
         return forces
@@ -330,7 +331,7 @@ class MDIEngine():
     def run_scf(self):
         """ Run an energy calculation
         """
-        self.energy = psi4.energy(self.scf_method, molecule=self.molecule)
+        self.energy = psi4.energy(self.scf_method, **self.kwargs)
 
     # Respond to the <DIMENSIONS command
     def send_dimensions(self):
@@ -433,11 +434,11 @@ def mdi_init(mdi_arguments):
     MDI_Init(mdi_arguments, mpi_world)
 
 
-def mdi(scf_method):
+def mdi_run(scf_method, **kwargs):
     """ Begin functioning as an MDI engine
 
     Arguments:
         scf_method: Method used when calculating energies or gradients
     """
-    engine = MDIEngine(scf_method)
+    engine = MDIEngine(scf_method, **kwargs)
     engine.listen_for_commands()
