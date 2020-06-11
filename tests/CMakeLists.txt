@@ -67,8 +67,8 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   lccd-grad1 lccd-grad2 matrix1 mcscf1 mcscf2 mcscf3
                   mints1 mints2 mints3 mints4 mints5 mints6 mints8 mints-benchmark mints-helper
                   mints9 mints10 molden1 molden2 mom mp2-1  mp2-def2 mp2-grad1 mp2-grad2 mp2-h
-                  mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2 
-                  mp2-property mpn-bh nbody-he-cluster nbody-intermediates nbody-nocp-gradient 
+                  mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2
+                  mp2-property mpn-bh nbody-he-cluster nbody-intermediates nbody-nocp-gradient
                   nbo nbody-cp-gradient nbody-vmfc-gradient nbody-convergence
                   nbody-freq nbody-multi-level numpy-array-interface
                   olccd-freq1 olccd-grad1 olccd-grad2 olccd1 olccd2 olccd3
@@ -92,10 +92,11 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   scf-guess-read2 scf-guess-read3 scf-bs scf1 scf-occ scf2 scf3 scf4 scf5 scf6 scf7 scf-property serial-wfn soscf-large soscf-ref
                   soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare sapt-sf1 dft-custom dft-reference
                   stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 scf-cholesky-basis scf-auto-cholesky
-                  tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 x2c-perturb-h zaptn-nh2                  
+                  tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 x2c-perturb-h zaptn-nh2
                   options1 cubeprop-esp dft-smoke scf-hess1 scf-hess2 scf-hess3 scf-hess4 scf-hess5 scf-freq1 dft-jk scf-coverage
                   dft-custom-dhdf dft-custom-hybrid dft-custom-mgga dft-custom-gga
                   pywrap-bfs pywrap-align pywrap-align-chiral mints12 cc-module
+                  tdscf-1 tdscf-2 tdscf-3 tdscf-4
                   basis-ecp dft-pruning weird-basis-01 weird-basis-02
                   weird-basis-03 weird-basis-04 weird-basis-05
                   weird-basis-06 weird-basis-07 weird-basis-08
