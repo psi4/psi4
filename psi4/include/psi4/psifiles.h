@@ -294,6 +294,12 @@
 
 #define PSIF_SAD                 300  /*- A SAD file (File for SAD related quantities -*/
 
+// following four are not completely managed by PSIO and starting number resettable through CI_FILE_START option
+#define PSIF_CI_HD_FILE          350  /*- DETCI H diagonal -*/
+#define PSIF_CI_C_FILE           351  /*- DETCI CI coeffs -*/
+#define PSIF_CI_S_FILE           352  /*- DETCI sigma coeffs -*/
+#define PSIF_CI_D_FILE           353  /*- DETCI D correction vectors -*/
+
 #define PSIF_DCT_DPD             400 /*- DCT DPD handle -*/
 #define PSIF_DCT_DENSITY         401 /*- DCT density -*/
 

@@ -214,6 +214,10 @@ PSIF_DFOCC_ABIC             =  280  # DFOCC <AB|IC>
 PSIF_DFOCC_MIABC            =  281  # DFOCC M_iabc
 PSIF_DFOCC_TEMP             =  282  # DFOCC temporary storage
 PSIF_SAD                    =  300  # A SAD file (File for SAD related quantities
+PSIF_CI_HD_FILE             =  350  # DETCI H diagonal
+PSIF_CI_C_FILE              =  351  # DETCI CI coeffs
+PSIF_CI_S_FILE              =  352  # DETCI sigma coeffs
+PSIF_CI_D_FILE              =  353  # DETCI D correction vectors
 PSIF_DCT_DPD                =  400  # DCT DPD handle
 PSIF_DCT_DENSITY            =  401  # DCT density
 
