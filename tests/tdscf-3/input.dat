@@ -20,8 +20,6 @@ molecule water{
 O           0.000000    0.000000    0.135446
 H          -0.000000    0.866812   -0.541782
 H          -0.000000   -0.866812   -0.541782
-no_reorient
-no_com
 symmetry c1
 }
 
@@ -30,7 +28,7 @@ set {
     scf_type pk
     e_convergence 8
     d_convergence 8
-    TDSCF_STATES_PER_IRREP [10]
+    TDSCF_STATES [10]
 }
 
 
@@ -40,4 +38,3 @@ tdscf(wfn)
 for n, ref in enumerate(rhf_wB97X_RPA_cc_pvdz):
     ex_en = wfn.variable(f"TD-wB97X ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
     compare_values(ref,ex_en, 4, f"TD-wB97X/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
-

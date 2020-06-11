@@ -16,8 +16,6 @@ molecule ch2 {
 C           0.000000    0.000000    0.159693
 H          -0.000000    0.895527   -0.479080
 H          -0.000000   -0.895527   -0.479080
-#no_reorient
-#no_com
 symmetry c1
 }
 
@@ -26,11 +24,9 @@ set {
     scf_type pk
     e_convergence 8
     d_convergence 8
-    TDSCF_E_TOL 5
-    TDSCF_TRIPLETS true
 }
 
-set scf tdscf_states_per_irrep [9]
+set scf tdscf_states [9]
 
 energy('td-hf/cc-pvdz')
 
