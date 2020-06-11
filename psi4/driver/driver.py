@@ -2068,6 +2068,8 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
         mw = core.MoldenWriter(wfn)
         mw.write(filename, wfn.Ca(), wfn.Cb(), wfn.epsilon_a(), wfn.epsilon_b(), occa, occb, dovirt)
 
+def tdscf(wfn, **kwargs):
+    return proc.run_tdscf_excitations(wfn,**kwargs)
 
 # Aliases
 opt = optimize

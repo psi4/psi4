@@ -1,0 +1,351 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 undefined 
+
+                         Git: Rev {tddft_driver} 2b6259a dirty
+
+
+    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
+    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
+    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
+    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
+    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
+    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
+    (doi: 10.1021/acs.jctc.7b00174)
+
+
+                         Additional Contributions by
+    P. Kraus, H. Kruse, M. H. Lechner, M. C. Schieber, R. A. Shaw,
+    A. Alenaizan, R. Galvelis, Z. L. Glick, S. Lehtola, and J. P. Misiewicz
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Wednesday, 10 June 2020 08:53PM
+
+    Process ID: 11325
+    Host:       jeffschriber
+    PSIDATADIR: /Users/jeffschriber/src/psi4-debug-install/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+UHF_TDA_cc_pvdz = [0.24880026306449304,
+                   0.28968755925744966,
+                   0.32054964027744337,
+                   0.35741288565867185,
+                   0.39502214228627547,
+                   0.41144173957102564,
+                   0.4445528791268893,
+                   0.4535932124573471,
+                   0.48482278670215617]
+
+molecule ch2 {
+0 3
+
+C           0.000000    0.000000    0.159693
+H          -0.000000    0.895527   -0.479080
+H          -0.000000   -0.895527   -0.479080
+symmetry c1
+}
+
+set {
+    reference uhf
+    scf_type pk
+    e_convergence 8
+    d_convergence 8
+    TDSCF_E_TOL 5
+    TDSCF_STATES_PER_IRREP [9]
+    TDSCF_TRIPLETS true
+    TDSCF_TDA true
+}
+
+e, wfn = energy('hf/cc-pvdz', return_wfn=True)
+tdscf(wfn)
+
+for n, ref in enumerate(UHF_TDA_cc_pvdz):
+    ex_en = wfn.variable(f"TD-HF ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
+    compare_values(ref,ex_en, 4, f"TD-UHF/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+
+Scratch directory: /tmp/
+
+*** tstart() called on jeffschriber
+*** at Wed Jun 10 20:53:46 2020
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry C          line   138 file /Users/jeffschriber/src/psi4-debug-install/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /Users/jeffschriber/src/psi4-debug-install/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C            0.000000000000     0.000000000000     0.091864653634    12.000000000000
+         H            0.000000000000     0.895527000000    -0.546908346366     1.007825032230
+         H            0.000000000000    -0.895527000000    -0.546908346366     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     23.93979  B =     10.42855  C =      7.26417 [cm^-1]
+  Rotational constants: A = 717696.71848  B = 312640.10938  C = 217774.20209 [MHz]
+  Nuclear repulsion =    6.068299118269302
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 8
+  Nalpha       = 5
+  Nbeta        = 3
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 90300 doubles for integral storage.
+  We computed 3081 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 2.9429622856E-02.
+  Reciprocal condition number of the overlap matrix is 8.0046579319E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         24      24 
+   -------------------------
+    Total      24      24
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UHF iter SAD:   -38.17324753824924   -3.81732e+01   0.00000e+00 
+   @UHF iter   1:   -38.90234371202389   -7.29096e-01   5.27401e-03 DIIS
+   @UHF iter   2:   -38.91513876275197   -1.27951e-02   1.70345e-03 DIIS
+   @UHF iter   3:   -38.91704711158788   -1.90835e-03   5.19120e-04 DIIS
+   @UHF iter   4:   -38.91728869118322   -2.41580e-04   2.55109e-04 DIIS
+   @UHF iter   5:   -38.91736733351761   -7.86423e-05   8.96531e-05 DIIS
+   @UHF iter   6:   -38.91737802879636   -1.06953e-05   2.28836e-05 DIIS
+   @UHF iter   7:   -38.91737868822737   -6.59431e-07   5.16337e-06 DIIS
+   @UHF iter   8:   -38.91737871259063   -2.43633e-08   9.98195e-07 DIIS
+   @UHF iter   9:   -38.91737871345222   -8.61583e-10   2.36900e-07 DIIS
+   @UHF iter  10:   -38.91737871350315   -5.09388e-11   3.58717e-08 DIIS
+   @UHF iter  11:   -38.91737871350433   -1.17240e-12   7.95232e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   1.210199220E-02
+   @S^2 Expected:                2.000000000E+00
+   @S^2 Observed:                2.012101992E+00
+   @S   Expected:                1.000000000E+00
+   @S   Observed:                1.000000000E+00
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A    -11.279808     2A     -0.948183     3A     -0.574840  
+       4A     -0.492222     5A     -0.413890  
+
+    Alpha Virtual:                                                        
+
+       6A      0.199574     7A      0.255473     8A      0.587217  
+       9A      0.632444    10A      0.650424    11A      0.740599  
+      12A      0.855150    13A      1.006855    14A      1.182747  
+      15A      1.193229    16A      1.244502    17A      1.721416  
+      18A      1.726796    19A      1.928609    20A      1.997867  
+      21A      2.036720    22A      2.315622    23A      2.698261  
+      24A      2.743850  
+
+    Beta Occupied:                                                        
+
+       1A    -11.228970     2A     -0.783471     3A     -0.535233  
+
+    Beta Virtual:                                                         
+
+       4A      0.105281     5A      0.159004     6A      0.221021  
+       7A      0.285269     8A      0.620941     9A      0.737973  
+      10A      0.822031    11A      0.832333    12A      0.906449  
+      13A      1.062089    14A      1.257736    15A      1.303651  
+      16A      1.383572    17A      1.732543    18A      1.810140  
+      19A      1.988311    20A      2.039560    21A      2.087798  
+      22A      2.350790    23A      2.720421    24A      2.769589  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     3 ]
+    SOCC [     2 ]
+
+  @UHF Final Energy:   -38.91737871350433
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              6.0682991182693025
+    One-Electron Energy =                 -63.7147379959455264
+    Two-Electron Energy =                  18.7290601641718979
+    Total Energy =                        -38.9173787135043270
+
+  UHF NO Occupations:
+  HONO-2 :    3  A 1.9967234
+  HONO-1 :    4  A 1.0000000
+  HONO-0 :    5  A 1.0000000
+  LUNO+0 :    6  A 0.0032766
+  LUNO+1 :    7  A 0.0027828
+  LUNO+2 :    8  A 0.0000008
+  LUNO+3 :    9  A 0.0000000
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -1.0254
+
+  Electronic Dipole Moment: [e a0]
+     X:    -0.0000      Y:     0.0000      Z:     0.7742
+
+  Dipole Moment: [e a0]
+     X:    -0.0000      Y:     0.0000      Z:    -0.2512     Total:     0.2512
+
+  Dipole Moment: [D]
+     X:    -0.0000      Y:     0.0000      Z:    -0.6386     Total:     0.6386
+
+
+*** tstop() called on jeffschriber at Wed Jun 10 20:53:47 2020
+Module time:
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+
+         ---------------------------------------------------------
+                         TDSCF excitation energies                
+                 by Andrew M. James and Daniel G. A. Smith        
+         ---------------------------------------------------------
+
+  ==> Requested Excitations <==
+
+      9 states with A symmetry
+
+  ==> Options <==
+
+     e_tol     :              1e-05
+     r_tol     :              0.0001
+     guess     :              DENOMINATORS
+     restricted:              False
+     triplets  :              False
+     tda       :              True
+     ptype     :              tda
+
+
+
+Final Energetic Summary:
+                                    Excitation Energy         Total Energy  
+     #   Sym: GS->ES (Trans)       [au]            [eV]            (au)      
+    ---- -------------------- --------------- --------------- ---------------
+     1         A->A (A)        0.24879         6.76994        -38.66859      
+     2         A->A (A)        0.28968         7.88267        -38.62770      
+     3         A->A (A)        0.32054         8.72234        -38.59684      
+     4         A->A (A)        0.35741         9.72562        -38.55997      
+     5         A->A (A)        0.39501         10.74870       -38.52237      
+     6         A->A (A)        0.41142         11.19542       -38.50595      
+     7         A->A (A)        0.44454         12.09643       -38.47284      
+     8         A->A (A)        0.45358         12.34258       -38.46380      
+     9         A->A (A)        0.48481         13.19234       -38.43257      
+
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 1 EXCITATION ENERGY - A SYMMETRY....PASSED
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 2 EXCITATION ENERGY - A SYMMETRY....PASSED
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 3 EXCITATION ENERGY - A SYMMETRY....PASSED
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 4 EXCITATION ENERGY - A SYMMETRY....PASSED
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 5 EXCITATION ENERGY - A SYMMETRY....PASSED
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 6 EXCITATION ENERGY - A SYMMETRY....PASSED
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 7 EXCITATION ENERGY - A SYMMETRY....PASSED
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 8 EXCITATION ENERGY - A SYMMETRY....PASSED
+    TD-UHF/cc-pvdz ROOT 0 -> ROOT 9 EXCITATION ENERGY - A SYMMETRY....PASSED
+
+    Psi4 stopped on: Wednesday, 10 June 2020 08:53PM
+    Psi4 wall time for execution: 0:00:01.06
+
+*** Psi4 exiting successfully. Buy a developer a beer!

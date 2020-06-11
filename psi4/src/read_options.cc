@@ -1582,6 +1582,30 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("UHF_NOONS", "3");
         /*- Save the UHF NOs -*/
         options.add_bool("SAVE_UHF_NOS", false);
+
+        /*- SUBSECTION TDDFT -*/
+        /*- Get the number of desired states per irrep -*/
+        options.add("TDSCF_STATES_PER_IRREP", new ArrayType());
+        /*- Controls inclusion of triplet states, valid options:
+            - none : No triplets computed
+            - also : lowest-energy triplets and singlets included
+            - only : Only triplet states computed
+             -*/
+        //options.add_str("TDSCF_TRIPLETS", "none");
+        //*- Computes spin-adapted products for triplets -*/
+        options.add_bool("TDSCF_TRIPLETS", false);
+        /*- Run with Tamm-Dancoff approximation, uses RPA when false -*/ 
+        options.add_bool("TDSCF_TDA", false);
+        /*- Convergence threshold for excitation energies -*/
+        // NOTE: This option may do nothing
+        options.add_double("TDSCF_E_TOL", 1E-6);
+        /*- Convergence threshold for the norm of the residual vector -*/
+        options.add_double("TDSCF_R_TOL", 1E-4);
+        /*- Guess type, only 'denominators' currently supported -*/
+        options.add_str("TDSCF_GUESS", "denominators");
+        /*- Max number of vectors to store before collapsing -*/
+        options.add_int("TDSCF_MAX_SS_VECTORS",50);
+
     }
     if (name == "CPHF" || options.read_globals()) {
         /*- The amount of information printed

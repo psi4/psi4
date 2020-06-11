@@ -261,11 +261,6 @@ def _print_tdscf_header(**options):
                    '         {:^57}\n'.format('by Andrew M. James and Daniel G. A. Smith') +
                    '         ---------------------------------------------------------\n')
 
-    core.print_out("{}\n".format("*"*80) +
-                   "{}{:^60}{}\n".format("*"*10, "WARNING", "*"*10) +
-                   "{}{:^60}{}\n".format("*"*10, "TDSCF is experimental results may be inaccurate", "*"*10) +
-                   "{}\n".format("*"*80)) #yapf: disable
-
     core.print_out("\n  ==> Requested Excitations <==\n\n")
     state_info = options.pop('states')
     for nstate, state_sym in state_info:
@@ -310,6 +305,7 @@ def tdscf_excitations(wfn, **kwargs):
     ..note:: The algorithm employed to solve the non-Hermitian eigenvalue problem
              (when ``tda`` is False) will fail when the SCF wavefunction has a triplet instability.
     """
+    ssuper_name = wfn.functional().name()
     # gather arguments
     e_tol = kwargs.pop('e_tol', 1.0e-6)
     r_tol = kwargs.pop('r_tol', 1.0e-8)
@@ -324,30 +320,33 @@ def tdscf_excitations(wfn, **kwargs):
 
     #TODO: guess types, user guess
     guess_type = kwargs.pop("guess", "denominators")
-    if guess_type != "denominators":
+    if guess_type.lower() != "denominators":
         raise ValidationError("Guess type {} is not valid".format(guess_type))
 
     # which problem
     ptype = 'rpa'
     solve_function = solvers.hamiltonian_solver
-    if kwargs.pop('tda', False):
+    tda = bool(kwargs.pop('tda', False))
+    if tda:
         ptype = 'tda'
         solve_function = solvers.davidson_solver
 
+    #TODO: add the none/some/all handling of triplet states
     restricted = wfn.same_a_b_orbs()
     if restricted:
         triplet = kwargs.pop('triplet', False)
     else:
-        triplet = None
+        triplet = False
 
     _print_tdscf_header(
-        etol=e_tol,
-        rtol=r_tol,
+        e_tol=e_tol,
+        r_tol=r_tol,
         states=[(count, label) for count, label in zip(states_per_irrep,
                                                        wfn.molecule().irrep_labels())],
-        guess_type=guess_type,
+        guess=guess_type,
         restricted=restricted,
-        triplet=triplet,
+        triplets=triplet,
+        tda=tda,
         ptype=ptype)
 
     # construct the engine
@@ -405,6 +404,9 @@ def tdscf_excitations(wfn, **kwargs):
         E_tot_au = wfn.energy() + E_ex_au
         core.print_out("    {:^4} {:^20} {:< 15.5f} {:< 15.5f} {:< 15.5f}\n".format(
             i + 1, sym_descr, E_ex_au, E_ex_ev, E_tot_au))
+
+        wfn.set_variable(f"TD-{ssuper_name} ROOT {i+1} TOTAL ENERGY - {irrep_ES} SYMMETRY", E_tot_au)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - {irrep_ES} SYMMETRY", E_ex_au)
 
     core.print_out("\n")
 

@@ -245,6 +245,7 @@ for key in functionals:
     # Gradients
     if not (ssuper.is_c_hybrid() or ssuper.is_c_lrc() or ssuper.needs_vv10()):
         procedures['gradient'][key] = proc.run_scf_gradient
+        procedures['energy']['td-' + key] = proc.run_tdscf_energy
 
     # Hessians
     if not ssuper.is_gga(): # N.B. this eliminates both GGA and m-GGA, as the latter contains GGA terms

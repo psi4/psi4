@@ -33,8 +33,8 @@ import sys
 import warnings
 
 from psi4 import core
+from psi4.driver.procrouting import *
 from .exceptions import ValidationError
-
 
 def oeprop(wfn, *args, **kwargs):
     """Evaluate one-electron properties.
