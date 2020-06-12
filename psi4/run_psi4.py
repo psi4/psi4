@@ -78,6 +78,8 @@ parser.add_argument("--json", action='store_true',
                     help="Runs a JSON input file. !Warning! depcrated option in 1.4, use --qcschema instead.")
 parser.add_argument("-t", "--test", nargs='?', const='smoke', default=None,
                     help="Runs pytest tests. If `pytest-xdist` installed, parallel with `--nthread`.")
+parser.add_argument("--mdi", default=None,
+                    help="Sets MDI configuration options")
 
 # For plugins
 parser.add_argument("--plugin-name", help="""\
@@ -233,6 +235,10 @@ psi4.extras._input_dir_ = os.path.dirname(os.path.abspath(args["input"]))
 if args["qcschema"] is False:
     psi4.print_header()
 start_time = datetime.datetime.now()
+
+# Initialize MDI
+if args["mdi"] is not None:
+    psi4.mdi_engine.mdi_init(args["mdi"])
 
 # Prepare scratch for inputparser
 if args["scratch"] is not None:

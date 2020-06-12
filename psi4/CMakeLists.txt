@@ -134,6 +134,11 @@ get_property(_loc TARGET Libint::int PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint ${Libint_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint_VERSION})")
 
+find_package(mdi 1.1.6 CONFIG REQUIRED)
+get_property(_loc TARGET mdi::mdi PROPERTY LOCATION)
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using mdi${ColourReset}: ${_loc} (version ${mdi_VERSION})")
+
 if(${ENABLE_PCMSolver})
     find_package(PCMSolver 1.2.1 CONFIG REQUIRED)
     get_property(_loc TARGET PCMSolver::pcm PROPERTY LOCATION)
@@ -268,6 +273,7 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/standard_suite_runner.py
               ../tests/pytests/test_detci_opdm.py
               ../tests/pytests/test_gradients.py
+              ../tests/pytests/test_mdi.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 
     # <<<  install psi4 share/ & include/  >>>
