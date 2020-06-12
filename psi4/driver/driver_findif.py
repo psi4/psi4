@@ -1275,6 +1275,10 @@ class FiniteDifferenceComputer(BaseComputer):
             qcvars['CURRENT HESSIAN'] = H0
             qcvars[f"{self.method.upper()} TOTAL HESSIAN"] = H0
 
+#        if isinstance(lowername, str) and lowername in procedures['energy']:
+#            # this correctly filters out cbs fn and "hf/cc-pvtz"
+#            # it probably incorrectly filters out mp5, but reconsider in DDD
+
         findifjob = AtomicResult(
             **{
                 'driver': self.driver,

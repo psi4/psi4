@@ -34,6 +34,7 @@ properties, and vibrational frequency calculations.
 import json
 import os
 import re
+import copy
 import shutil
 import sys
 from typing import Union
