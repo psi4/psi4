@@ -562,6 +562,8 @@ bool py_psi_set_local_option_int(std::string const& module, std::string const& k
         Process::environment.options.set_bool(module, nonconst_key, value ? true : false);
     } else if (data.type() == "string" || data.type() == "istring") {
         Process::environment.options.set_str(module, nonconst_key, std::to_string(value));
+    } else if (data.type() == "array") {
+        Process::environment.options.set_local_array_int(module, nonconst_key, value, nullptr);
     } else {
         Process::environment.options.set_int(module, nonconst_key, value);
     }
@@ -611,6 +613,8 @@ bool py_psi_set_global_option_int(std::string const& key, int value) {
         Process::environment.options.set_global_bool(nonconst_key, value ? true : false);
     } else if (data.type() == "string" || data.type() == "istring") {
         Process::environment.options.set_global_str(nonconst_key, std::to_string(value));
+    } else if (data.type() == "array") {
+        Process::environment.options.set_global_array_int(nonconst_key, value, nullptr);
     } else {
         Process::environment.options.set_global_int(nonconst_key, value);
     }

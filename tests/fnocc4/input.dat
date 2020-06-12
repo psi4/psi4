@@ -18,6 +18,7 @@ set {
   occ_tolerance       1e-4
   scf_type cd
   cc_type cd
+  docc 5
 }
 energy('ccsd(t)')
 edfccsd  = variable("CCSD CORRELATION ENERGY")
