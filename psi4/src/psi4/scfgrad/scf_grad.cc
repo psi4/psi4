@@ -56,7 +56,9 @@
 #include "jk_grad.h"
 
 #ifdef USING_BrianQC
+#include <brian_types.h>
 extern bool brianCPHFFlag;
+extern BrianCookie brianCookie;
 #endif
 
 namespace psi {
@@ -241,16 +243,29 @@ SharedMatrix SCFDeriv::compute_gradient()
 
     jk->print_header();
     jk->compute_gradient();
+    
+    double alpha = functional_->x_alpha();
+    double beta = functional_->x_beta();
+    
+#ifdef USING_BrianQC
+    const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
+    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
+    if (brianCookie != 0 and brianPsi4DFT) {
+        // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
 
     std::map<std::string, SharedMatrix>& jk_gradients = jk->gradients();
     gradients_["Coulomb"] = jk_gradients["Coulomb"];
     if (functional_->is_x_hybrid()) {
         gradients_["Exchange"] = jk_gradients["Exchange"];
-        gradients_["Exchange"]->scale(-functional_->x_alpha());
+        gradients_["Exchange"]->scale(-alpha);
     }
     if (functional_->is_x_lrc()) {
         gradients_["Exchange,LR"] = jk_gradients["Exchange,LR"];
-        gradients_["Exchange,LR"]->scale(-functional_->x_beta());
+        gradients_["Exchange,LR"]->scale(-beta);
     }
     timer_off("Grad: JK");
 
