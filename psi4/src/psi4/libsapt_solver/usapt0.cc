@@ -2049,43 +2049,85 @@ void USAPT0::mp2_terms() {
     // => Auxiliary C matrices <= //
     //    We build them to maximize the reuse of intermediates
 
-    std::shared_ptr<Matrix> Ca_a2 = linalg::doublet(Da_B, S);
-    std::shared_ptr<Matrix> Cb_a2 = linalg::doublet(Db_B, S);
-    std::shared_ptr<Matrix> Ca_b2 = linalg::doublet(Da_A, S);
-    std::shared_ptr<Matrix> Cb_b2 = linalg::doublet(Db_A, S);
+    std::shared_ptr<Matrix> Ca_a2;
+    std::shared_ptr<Matrix> Ca_r1;
+    std::shared_ptr<Matrix> Ca_r3;
 
-    std::shared_ptr<Matrix> Ca_s1 = linalg::doublet(Ca_b2, Cavira_B_);
-    std::shared_ptr<Matrix> Cb_s1 = linalg::doublet(Cb_b2, Cavirb_B_);
-    std::shared_ptr<Matrix> Ca_r1 = linalg::doublet(Ca_a2, Cavira_A_);
-    std::shared_ptr<Matrix> Cb_r1 = linalg::doublet(Cb_a2, Cavirb_A_);
+    if (naa > 0) {
+        Ca_a2 = linalg::doublet(Da_B, S);
+        Ca_r1 = linalg::doublet(Ca_a2, Cavira_A_);
+        Ca_r3 = linalg::triplet(Da_A, S, Ca_r1);
+        Ca_r3->subtract(Ca_r1);
+    }
 
-    std::shared_ptr<Matrix> Ca_s3 = linalg::triplet(Da_B, S, Ca_s1);
-    std::shared_ptr<Matrix> Cb_s3 = linalg::triplet(Db_B, S, Cb_s1);
-    std::shared_ptr<Matrix> Ca_r3 = linalg::triplet(Da_A, S, Ca_r1);
-    std::shared_ptr<Matrix> Cb_r3 = linalg::triplet(Db_A, S, Cb_r1);
+    std::shared_ptr<Matrix> Cb_a2;
+    std::shared_ptr<Matrix> Cb_r1;
+    std::shared_ptr<Matrix> Cb_r3;
 
-    Ca_s3->subtract(Ca_s1);
-    Cb_s3->subtract(Cb_s1);
-    Ca_r3->subtract(Ca_r1);
-    Cb_r3->subtract(Cb_r1);
+    if (nba > 0) {
+        Cb_a2 = linalg::doublet(Db_B, S);
+        Cb_r1 = linalg::doublet(Cb_a2, Cavirb_A_);
+        Cb_r3 = linalg::triplet(Db_A, S, Cb_r1);
+        Cb_r3->subtract(Cb_r1);
+    }
 
-    Ca_s1->subtract(Cavira_B_);
-    Cb_s1->subtract(Cavirb_B_);
-    Ca_r1->subtract(Cavira_A_);
-    Cb_r1->subtract(Cavirb_A_);
+    std::shared_ptr<Matrix> Ca_b2;
+    std::shared_ptr<Matrix> Ca_s1;
+    std::shared_ptr<Matrix> Ca_s3;
 
-    Ca_r1->scale(-1.0);
-    Cb_r1->scale(-1.0);
+    if (nab > 0) {
+        Ca_b2 = linalg::doublet(Da_A, S);
+        Ca_s1 = linalg::doublet(Ca_b2, Cavira_B_);
+        Ca_s3 = linalg::triplet(Da_B, S, Ca_s1);
+        Ca_s3->subtract(Ca_s1);
+    }
 
-    Ca_a2 = linalg::doublet(Ca_a2, Caocca_A_);
-    Cb_a2 = linalg::doublet(Cb_a2, Caoccb_A_);
-    Ca_b2 = linalg::doublet(Ca_b2, Caocca_B_);
-    Cb_b2 = linalg::doublet(Cb_b2, Caoccb_B_);
+    std::shared_ptr<Matrix> Cb_b2;
+    std::shared_ptr<Matrix> Cb_s1;
+    std::shared_ptr<Matrix> Cb_s3;
 
-    std::shared_ptr<Matrix> Ca_a4 = linalg::triplet(Da_A, S, Ca_a2);
-    std::shared_ptr<Matrix> Cb_a4 = linalg::triplet(Db_A, S, Cb_a2);
-    std::shared_ptr<Matrix> Ca_b4 = linalg::triplet(Da_B, S, Ca_b2);
-    std::shared_ptr<Matrix> Cb_b4 = linalg::triplet(Db_B, S, Cb_b2);
+    if (nbb > 0) {
+        Cb_b2 = linalg::doublet(Db_A, S);
+        Cb_s1 = linalg::doublet(Cb_b2, Cavirb_B_);
+        Cb_s3 = linalg::triplet(Db_B, S, Cb_s1);
+        Cb_s3->subtract(Cb_s1);
+    }
+
+    if (alpha_exchange_) {
+        Ca_s1->subtract(Cavira_B_);
+        Ca_r1->subtract(Cavira_A_);
+        Ca_r1->scale(-1.0);
+    }
+
+    if (beta_exchange_) {
+        Cb_s1->subtract(Cavirb_B_);
+        Cb_r1->subtract(Cavirb_A_);
+        Cb_r1->scale(-1.0);
+    }
+
+    std::shared_ptr<Matrix> Ca_a4;
+    if (naa > 0) {
+        Ca_a2 = linalg::doublet(Ca_a2, Caocca_A_);
+        Ca_a4 = linalg::triplet(Da_A, S, Ca_a2);
+    }
+
+    std::shared_ptr<Matrix> Cb_a4;
+    if (nba > 0) {
+        Cb_a2 = linalg::doublet(Cb_a2, Caoccb_A_);
+        Cb_a4 = linalg::triplet(Db_A, S, Cb_a2);
+    }
+
+    std::shared_ptr<Matrix> Ca_b4;
+    if (nab > 0) {
+        Ca_b2 = linalg::doublet(Ca_b2, Caocca_B_);
+        Ca_b4 = linalg::triplet(Da_B, S, Ca_b2);
+    }
+
+    std::shared_ptr<Matrix> Cb_b4;
+    if (nbb > 0) {
+        Cb_b2 = linalg::doublet(Cb_b2, Caoccb_B_);
+        Cb_b4 = linalg::triplet(Db_B, S, Cb_b2);
+    }
 
     // => Auxiliary Fock-derived matrices <= //
     // We build them to maximize intermediate reuse and minimize the number
@@ -2096,19 +2138,33 @@ void USAPT0::mp2_terms() {
     std::shared_ptr<Matrix> Da_AS = linalg::doublet(Da_A, S);
     std::shared_ptr<Matrix> Db_AS = linalg::doublet(Db_A, S);
 
-    std::shared_ptr<Matrix> Ta_as = linalg::doublet(El_pot_B, Da_AS);
-    std::shared_ptr<Matrix> Tb_as = linalg::doublet(El_pot_B, Db_AS);
-    std::shared_ptr<Matrix> Ta_br = linalg::doublet(El_pot_A, Da_BS);
-    std::shared_ptr<Matrix> Tb_br = linalg::doublet(El_pot_A, Db_BS);
+    std::shared_ptr<Matrix> Ta_as;
+    std::shared_ptr<Matrix> Ta_br;
+    std::shared_ptr<Matrix> Sa_Bar;
+    std::shared_ptr<Matrix> Sa_Abs;
 
-    std::shared_ptr<Matrix> Sa_Bar =
-        linalg::triplet(Caocca_A_, S, linalg::doublet(Da_BS, Cavira_A_), true, false, false);
-    std::shared_ptr<Matrix> Sb_Bar =
-        linalg::triplet(Caoccb_A_, S, linalg::doublet(Db_BS, Cavirb_A_), true, false, false);
-    std::shared_ptr<Matrix> Sa_Abs =
-        linalg::triplet(Caocca_B_, S, linalg::doublet(Da_AS, Cavira_B_), true, false, false);
-    std::shared_ptr<Matrix> Sb_Abs =
-        linalg::triplet(Caoccb_B_, S, linalg::doublet(Db_AS, Cavirb_B_), true, false, false);
+    std::shared_ptr<Matrix> Tb_as;
+    std::shared_ptr<Matrix> Tb_br;
+    std::shared_ptr<Matrix> Sb_Bar;
+    std::shared_ptr<Matrix> Sb_Abs;
+
+    // The S terms below appear in the mixed alpha-beta terms in the final expression, but they
+    // contain occupied orbitals of one monomer and the spin density of the other monomer. Thus,
+    // if either monomer lacks alpha (or beta) electrons, the corresponding spin term below
+    // vanishes.
+    if (alpha_exchange_) {
+        Ta_as = linalg::doublet(El_pot_B, Da_AS);
+        Ta_br = linalg::doublet(El_pot_A, Da_BS);
+        Sa_Bar = linalg::triplet(Caocca_A_, S, linalg::doublet(Da_BS, Cavira_A_), true, false, false);
+        Sa_Abs = linalg::triplet(Caocca_B_, S, linalg::doublet(Da_AS, Cavira_B_), true, false, false);
+    }
+
+    if (beta_exchange_) {
+        Tb_as = linalg::doublet(El_pot_B, Db_AS);
+        Tb_br = linalg::doublet(El_pot_A, Db_BS);
+        Sb_Bar = linalg::triplet(Caoccb_A_, S, linalg::doublet(Db_BS, Cavirb_A_), true, false, false);
+        Sb_Abs = linalg::triplet(Caoccb_B_, S, linalg::doublet(Db_AS, Cavirb_B_), true, false, false);
+    }
 
     Da_BS.reset();
     Db_BS.reset();
@@ -2117,15 +2173,15 @@ void USAPT0::mp2_terms() {
 
     //  Build the other auxiliary matrices in the AO basis
 
-    Ta_as->add(linalg::triplet(S, Da_B, El_pot_A));
-    Tb_as->add(linalg::triplet(S, Db_B, El_pot_A));
-    Ta_br->add(linalg::triplet(S, Da_A, El_pot_B));
-    Tb_br->add(linalg::triplet(S, Db_A, El_pot_B));
+    if alpha_exchange_ Ta_as->add(linalg::triplet(S, Da_B, El_pot_A));
+    if beta_exchange_  Tb_as->add(linalg::triplet(S, Db_B, El_pot_A));
+    if alpha_exchange_ Ta_br->add(linalg::triplet(S, Da_A, El_pot_B));
+    if beta_exchange_  Tb_br->add(linalg::triplet(S, Db_A, El_pot_B));
 
-    Ta_as->subtract(ha_B);
-    Tb_as->subtract(hb_B);
-    Ta_br->subtract(ha_A);
-    Tb_br->subtract(hb_A);
+    if alpha_exchange_ Ta_as->subtract(ha_B);
+    if beta_exchange_  Tb_as->subtract(hb_B);
+    if alpha_exchange_ Ta_br->subtract(ha_A);
+    if beta_exchange_  Tb_br->subtract(hb_A);
 
     if (alpha_exchange_) {
         Ta_as->subtract(Ka_O);
@@ -2136,20 +2192,20 @@ void USAPT0::mp2_terms() {
         Tb_br->subtract(Kb_O->transpose());
     }
 
-    std::shared_ptr<Matrix> Sa_as = linalg::triplet(Caocca_A_, S, Cavira_B_, true, false, false);
-    std::shared_ptr<Matrix> Sb_as = linalg::triplet(Caoccb_A_, S, Cavirb_B_, true, false, false);
-    std::shared_ptr<Matrix> Sa_br = linalg::triplet(Caocca_B_, S, Cavira_A_, true, false, false);
-    std::shared_ptr<Matrix> Sb_br = linalg::triplet(Caoccb_B_, S, Cavirb_A_, true, false, false);
+    if alpha_exchange_ std::shared_ptr<Matrix> Sa_as = linalg::triplet(Caocca_A_, S, Cavira_B_, true, false, false);
+    if beta_exchange_  std::shared_ptr<Matrix> Sb_as = linalg::triplet(Caoccb_A_, S, Cavirb_B_, true, false, false);
+    if alpha_exchange_ std::shared_ptr<Matrix> Sa_br = linalg::triplet(Caocca_B_, S, Cavira_A_, true, false, false);
+    if beta_exchange_  std::shared_ptr<Matrix> Sb_br = linalg::triplet(Caoccb_B_, S, Cavirb_A_, true, false, false);
 
-    std::shared_ptr<Matrix> Qa_as = linalg::triplet(Caocca_A_, Ta_as, Cavira_B_, true, false, false);
-    std::shared_ptr<Matrix> Qb_as = linalg::triplet(Caoccb_A_, Tb_as, Cavirb_B_, true, false, false);
-    std::shared_ptr<Matrix> Qa_br = linalg::triplet(Caocca_B_, Ta_br, Cavira_A_, true, false, false);
-    std::shared_ptr<Matrix> Qb_br = linalg::triplet(Caoccb_B_, Tb_br, Cavirb_A_, true, false, false);
+    if alpha_exchange_ std::shared_ptr<Matrix> Qa_as = linalg::triplet(Caocca_A_, Ta_as, Cavira_B_, true, false, false);
+    if beta_exchange_  std::shared_ptr<Matrix> Qb_as = linalg::triplet(Caoccb_A_, Tb_as, Cavirb_B_, true, false, false);
+    if alpha_exchange_ std::shared_ptr<Matrix> Qa_br = linalg::triplet(Caocca_B_, Ta_br, Cavira_A_, true, false, false);
+    if beta_exchange_  std::shared_ptr<Matrix> Qb_br = linalg::triplet(Caoccb_B_, Tb_br, Cavirb_A_, true, false, false);
 
-    std::shared_ptr<Matrix> Qa_ar = linalg::triplet(Caocca_A_, El_pot_B, Cavira_A_, true, false, false);
-    std::shared_ptr<Matrix> Qb_ar = linalg::triplet(Caoccb_A_, El_pot_B, Cavirb_A_, true, false, false);
-    std::shared_ptr<Matrix> Qa_bs = linalg::triplet(Caocca_B_, El_pot_A, Cavira_B_, true, false, false);
-    std::shared_ptr<Matrix> Qb_bs = linalg::triplet(Caoccb_B_, El_pot_A, Cavirb_B_, true, false, false);
+    if naa > 0 std::shared_ptr<Matrix> Qa_ar = linalg::triplet(Caocca_A_, El_pot_B, Cavira_A_, true, false, false);
+    if nba > 0 std::shared_ptr<Matrix> Qb_ar = linalg::triplet(Caoccb_A_, El_pot_B, Cavirb_A_, true, false, false);
+    if nab > 0 std::shared_ptr<Matrix> Qa_bs = linalg::triplet(Caocca_B_, El_pot_A, Cavira_B_, true, false, false);
+    if nbb > 0 std::shared_ptr<Matrix> Qb_bs = linalg::triplet(Caoccb_B_, El_pot_A, Cavirb_B_, true, false, false);
 
     Ta_as.reset();
     Tb_as.reset();
@@ -2176,6 +2232,8 @@ void USAPT0::mp2_terms() {
 
     // => Integrals from DFHelper <= //
 
+    // For simplicity, we push back everything but only perform the
+    // transformation for necessary quantities
     std::vector<std::shared_ptr<Matrix> > Cs;
     Cs.push_back(Caocca_A_);
     Cs.push_back(Cavira_A_);
@@ -2241,27 +2299,27 @@ void USAPT0::mp2_terms() {
     dfh->add_space("b_a4", Cs[22]);
     dfh->add_space("b_b4", Cs[23]);
 
-    dfh->add_transformation("Aa_ar", "a_a", "a_r", "pqQ");
-    dfh->add_transformation("Aa_bs", "a_b", "a_s", "pqQ");
-    dfh->add_transformation("Ba_as", "a_a", "a_s1", "pqQ");
-    dfh->add_transformation("Ba_br", "a_b", "a_r1", "pqQ");
-    dfh->add_transformation("Ca_as", "a_a2", "a_s", "pqQ");
-    dfh->add_transformation("Ca_br", "a_b2", "a_r", "pqQ");
-    dfh->add_transformation("Da_ar", "a_a", "a_r3", "pqQ");
-    dfh->add_transformation("Da_bs", "a_b", "a_s3", "pqQ");
-    dfh->add_transformation("Ea_ar", "a_a4", "a_r", "pqQ");
-    dfh->add_transformation("Ea_bs", "a_b4", "a_s", "pqQ");
+    if naa > 0 dfh->add_transformation("Aa_ar", "a_a", "a_r", "pqQ");
+    if nab > 0 dfh->add_transformation("Aa_bs", "a_b", "a_s", "pqQ");
+    if alpha_exchange_ dfh->add_transformation("Ba_as", "a_a", "a_s1", "pqQ");
+    if alpha_exchange_ dfh->add_transformation("Ba_br", "a_b", "a_r1", "pqQ");
+    if alpha_exchange_ dfh->add_transformation("Ca_as", "a_a2", "a_s", "pqQ");
+    if alpha_exchange_ dfh->add_transformation("Ca_br", "a_b2", "a_r", "pqQ");
+    if naa > 0 dfh->add_transformation("Da_ar", "a_a", "a_r3", "pqQ");
+    if nab > 0 dfh->add_transformation("Da_bs", "a_b", "a_s3", "pqQ");
+    if naa > 0 dfh->add_transformation("Ea_ar", "a_a4", "a_r", "pqQ");
+    if nab > 0 dfh->add_transformation("Ea_bs", "a_b4", "a_s", "pqQ");
 
-    dfh->add_transformation("Ab_ar", "b_a", "b_r", "pqQ");
-    dfh->add_transformation("Ab_bs", "b_b", "b_s", "pqQ");
-    dfh->add_transformation("Bb_as", "b_a", "b_s1", "pqQ");
-    dfh->add_transformation("Bb_br", "b_b", "b_r1", "pqQ");
-    dfh->add_transformation("Cb_as", "b_a2", "b_s", "pqQ");
-    dfh->add_transformation("Cb_br", "b_b2", "b_r", "pqQ");
-    dfh->add_transformation("Db_ar", "b_a", "b_r3", "pqQ");
-    dfh->add_transformation("Db_bs", "b_b", "b_s3", "pqQ");
-    dfh->add_transformation("Eb_ar", "b_a4", "b_r", "pqQ");
-    dfh->add_transformation("Eb_bs", "b_b4", "b_s", "pqQ");
+    if nba > 0 dfh->add_transformation("Ab_ar", "b_a", "b_r", "pqQ");
+    if nbb > 0 dfh->add_transformation("Ab_bs", "b_b", "b_s", "pqQ");
+    if beta_exchange_  dfh->add_transformation("Bb_as", "b_a", "b_s1", "pqQ");
+    if beta_exchange_  dfh->add_transformation("Bb_br", "b_b", "b_r1", "pqQ");
+    if beta_exchange_  dfh->add_transformation("Cb_as", "b_a2", "b_s", "pqQ");
+    if beta_exchange_  dfh->add_transformation("Cb_br", "b_b2", "b_r", "pqQ");
+    if nba > 0 dfh->add_transformation("Db_ar", "b_a", "b_r3", "pqQ");
+    if nbb > 0 dfh->add_transformation("Db_bs", "b_b", "b_s3", "pqQ");
+    if nba > 0 dfh->add_transformation("Eb_ar", "b_a4", "b_r", "pqQ");
+    if nbb > 0 dfh->add_transformation("Eb_bs", "b_b4", "b_s", "pqQ");
 
     dfh->transform();
 
