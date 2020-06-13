@@ -483,3 +483,17 @@ Bibliography
    L.-P. Wang and C. Song,
    *J. Chem. Phys.* **144**, 214108 (2016).
 
+.. [stratmann:1998]
+   R. Eric Stratmann, G. E. Scuseria, and M. J. Frisch
+   *J. Chem. Phys.* **109**, 8218 (1998)
+
+.. [Pedersen1995-du]
+   T. B. Pedersen, A. E. Hansen
+   *Chem. Phys. Lett.* **246**, 1 (1995)
+
+.. [Lestrange2015-xn]
+   P. J. Lestrange, F. Egidi, X. Li
+   *J. Chem. Phys.* **143**, 234103 (2015)
+
+.. [Rizzo]
+    A. Rizzo, S. Coriani, K. Ruud, "Response Function Theory Computational Approaches to Linear and Nonlinear Optical Spectroscopy". In Computational Strategies for Spectroscopy.

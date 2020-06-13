@@ -63,6 +63,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     prog_full_integration.rst prog_style_py.rst prog_help.rst
     prog_code_intro.rst prog_debug_profile.rst manage_release.rst
     plugin_psi4fockci.rst
+    tdscf.rst
     )
 
     # * compute relative path btwn top_srcdir and objdir/doc/sphinxman
@@ -409,4 +410,3 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
         COMMENT "Building abridged html documentation ...")
 
 endif(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
-
