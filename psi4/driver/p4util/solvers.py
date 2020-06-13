@@ -909,8 +909,10 @@ def hamiltonian_solver(engine, guess, *, nroot, r_convergence=1.0E-4, max_ss_siz
     References
     ----------
 
-    .. [stratmann:1998] R. Eric Stratmann, G. E. Scuseria, and M. J. Frisch, "An efficient implementation of time-dependent density-functional
-       theory for the calculation of excitation energies of large molecules." J. Chem. Phys., 109, 8218 (1998)
+    R. Eric Stratmann, G. E. Scuseria, and M. J. Frisch, "An efficient
+    implementation of time-dependent density-functional theory for the
+    calculation of excitation energies of large molecules." J. Chem. Phys.,
+    109, 8218 (1998)
     """
 
     nk = nroot

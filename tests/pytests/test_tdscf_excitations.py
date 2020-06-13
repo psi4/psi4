@@ -197,7 +197,7 @@ def test_tdscf(mol, ref, func, ptype, basis, molecules, reference_data):
                             states=4,
                             maxiter=30,
                             r_convergence=1.0e-6,
-                            triplets="only" if ref == "RHF-3" else "none",
+                            triplets="ONLY" if ref == "RHF-3" else "NONE",
                             tda=True if ptype == "TDA" else False)
 
     ref_v = reference_data[f"{mol}_{ref}_{func}_{ptype}"]

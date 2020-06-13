@@ -2727,10 +2727,15 @@ def run_tdscf_excitations(wfn,**kwargs):
     if sum(states) == 0:
         raise ValidationError("TDSCF: No states requested in TDSCF_STATES")
 
-    if len(states) != wfn.nirrep():
-        raise ValidationError("TDSCF: Requested TDSCF_STATES do not match wave function symmetry")
+    # unwrap 1-membered list of states, regardless of symmetry
+    # we will apportion states per irrep later on
+    if len(states) == 1:
+        states = states[0]
 
-    ssuper_name = wfn.functional().name()
+    response.scf_response.validate_tdscf(wfn=wfn,
+                                         states=states,
+                                         triplets=core.get_option("SCF", "TDSCF_TRIPLETS"),
+                                         guess=core.get_option("SCF", "TDSCF_GUESS"))
 
     # Tie TDSCF_R_CONVERGENCE to D_CONVERGENCE in SCF reference
     if core.has_option_changed('SCF', 'TDSCF_R_CONVERGENCE'):
@@ -2738,15 +2743,16 @@ def run_tdscf_excitations(wfn,**kwargs):
     else:
         r_convergence = min(1.e-4, core.get_option('SCF', 'D_CONVERGENCE') * 1.e2)
 
-    # Do we need this return value?
-    ret = response.scf_response.tdscf_excitations(wfn,
-                                                  states=states,
-                                                  triplets=core.get_option("SCF", "TDSCF_TRIPLETS"),
-                                                  tda=core.get_option("SCF", "TDSCF_TDA"),
-                                                  r_convergence=r_convergence,
-                                                  maxiter=core.get_option("SCF", "TDSCF_MAXITER"),
-                                                  guess=core.get_option("SCF", "TDSCF_GUESS"),
-                                                  verbose=core.get_option("SCF", "TDSCF_VERBOSITY"))
+    # "anonymous" return value, as we stash observables in the passed Wavefunction object internally
+    _ = response.scf_response.tdscf_excitations(wfn,
+                                                states=states,
+                                                triplets=core.get_option("SCF", "TDSCF_TRIPLETS"),
+                                                tda=core.get_option("SCF", "TDSCF_TDA"),
+                                                r_convergence=r_convergence,
+                                                maxiter=core.get_option("SCF", "TDSCF_MAXITER"),
+                                                guess=core.get_option("SCF", "TDSCF_GUESS"),
+                                                verbose=core.get_option("SCF", "TDSCF_VERBOSITY"),
+                                                from_psithon=True)
 
     # Shove variables into global space
     for k, v in wfn.variables().items():
