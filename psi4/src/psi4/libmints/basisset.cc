@@ -250,6 +250,10 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
                 if (largest_shell < current_shell) {
                     largest_shell = current_shell;
                 }
+                // If center is a post-lanthanide in > 6th period, freeze its f electrons too
+                if (current_shell > 5) {
+                    if ((Z + ECP - delta) >= 18 ) delta += 14;
+                }
                 // If this center has an ECP, some electrons are already frozen
                 if (ECP > 0) delta -= ECP;
                 // Keep track of current valence electrons
