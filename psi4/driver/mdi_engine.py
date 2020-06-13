@@ -34,9 +34,14 @@ import psi4
 import numpy as np
 import qcelemental as qcel
 
-from mdi import MDI_Init, MDI_Get_Intra_Code_MPI_Comm, MDI_Accept_Communicator, \
-    MDI_Send, MDI_Recv, MDI_Recv_Command, MDI_INT, MDI_DOUBLE, \
-    MDI_Register_Node, MDI_Register_Command
+_have_mdi = False
+try:
+    from mdi import MDI_Init, MDI_Get_Intra_Code_MPI_Comm, MDI_Accept_Communicator, \
+        MDI_Send, MDI_Recv, MDI_Recv_Command, MDI_INT, MDI_DOUBLE, \
+        MDI_Register_Node, MDI_Register_Command
+    _have_mdi = True
+except ImportError:
+    pass
 
 try:
     from mpi4py import MPI

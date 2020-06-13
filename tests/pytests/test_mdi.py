@@ -1,10 +1,15 @@
 import pytest
-from qcelemental.testing import compare, compare_recursive, compare_values, tnm
+from .utils import *
+from .addons import using_mdi
+
+from qcelemental.testing import compare_values
 
 import psi4
 
 pytestmark = [pytest.mark.quick, pytest.mark.mdi]
 
+@pytest.mark.smoke
+@using_mdi
 def test_mdi_water():
 
     psi4.geometry("""

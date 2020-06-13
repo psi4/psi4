@@ -148,6 +148,7 @@ _addons_ = {
     "snsmp2": which_import("snsmp2", return_bool=True),
     "resp": which_import("resp", return_bool=True),
     "adcc": which_import("adcc", return_bool=True),
+    "mdi": which_import("mdi", return_bool=True),
 }
 
 
@@ -204,4 +205,4 @@ def test(extent='full', extras=None):
 
     retcode = pytest.main(command)
     return retcode
-    
+

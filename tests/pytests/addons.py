@@ -9,6 +9,7 @@ __all__ = [
     'using_dftd3',
     'using_dftd3_321',
     'using_gcp',
+    'using_mdi',
     'using_mp2d',
     'using_memory_profiler',
     'using_networkx',
@@ -69,6 +70,10 @@ using_cppe = pytest.mark.skipif(
 using_networkx = pytest.mark.skipif(
     which_import('networkx', return_bool=True) is False,
     reason='Not detecting module networkx. Install package if necessary and add to envvar PYTHONPATH')
+
+using_mdi = pytest.mark.skipif(
+    which_import('mdi', return_bool=True) is False,
+    reason="Not detecting module mdi. Install package if necessary and add to envvar PYTHONPATH (or rebuild Psi with -DENABLE_mdi)")
 
 using_dftd3 = using('dftd3')
 using_dftd3_321 = using('dftd3')
