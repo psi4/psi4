@@ -169,6 +169,8 @@ void sortone_RHF(const struct RHO_Params& rho_params) {
     }
 
     moinfo.opdm = O;
+    moinfo.opdm_a = nullptr;
+    moinfo.opdm_b = nullptr;
 }
 }
 }  // namespace psi

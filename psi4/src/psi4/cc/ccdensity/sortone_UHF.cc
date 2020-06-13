@@ -250,6 +250,7 @@ void sortone_UHF(const struct RHO_Params& rho_params) {
 
     moinfo.opdm_a = O_a;
     moinfo.opdm_b = O_b;
+    moinfo.opdm = nullptr;
 }
 }
 }  // namespace psi

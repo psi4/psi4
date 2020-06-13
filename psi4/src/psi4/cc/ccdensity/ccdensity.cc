@@ -414,6 +414,8 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
         // Process::environment.globals["CC ROOT n QUADRUPOLE ZZ"]
 
         free_block(moinfo.opdm);
+        free_block(moinfo.opdm_a);
+        free_block(moinfo.opdm_b);
 
         psio_close(PSIF_CC_TMP, 0);
         psio_open(PSIF_CC_TMP, PSIO_OPEN_NEW);
