@@ -2732,11 +2732,6 @@ def run_tdscf_excitations(wfn,**kwargs):
     if len(states) == 1:
         states = states[0]
 
-    response.scf_response.validate_tdscf(wfn=wfn,
-                                         states=states,
-                                         triplets=core.get_option("SCF", "TDSCF_TRIPLETS"),
-                                         guess=core.get_option("SCF", "TDSCF_GUESS"))
-
     # Tie TDSCF_R_CONVERGENCE to D_CONVERGENCE in SCF reference
     if core.has_option_changed('SCF', 'TDSCF_R_CONVERGENCE'):
         r_convergence = core.get_option('SCF', 'TDSCF_R_CONVERGENCE')

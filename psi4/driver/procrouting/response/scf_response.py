@@ -379,7 +379,7 @@ def _states_per_irrep(states, nirrep):
     return spi
 
 
-def validate_tdscf(*, wfn, states, triplets, guess) -> None:
+def _validate_tdscf(*, wfn, states, triplets, guess) -> None:
 
     # validate states
     if not (isinstance(states, int) or isinstance(states, list)):
@@ -422,8 +422,7 @@ def tdscf_excitations(wfn,
                       r_convergence: float = 1.0e-4,
                       maxiter: int = 60,
                       guess: str = "DENOMINATORS",
-                      verbose: int = 1,
-                      from_psithon: bool = False):
+                      verbose: int = 1):
     """Compute excitations from a SCF(HF/KS) wavefunction
 
     Parameters
@@ -481,9 +480,6 @@ def tdscf_excitations(wfn,
     verbose : int, optional.
        How verbose should the solver be?
        Default: 1
-    from_psithon : bool, optional
-       Whether call originated from Psithon.
-       Default: False
 
     Notes
     -----
@@ -511,8 +507,8 @@ def tdscf_excitations(wfn,
     approximations.
     """
 
-    if not from_psithon:
-        validate_tdscf(wfn=wfn, states=states, triplets=triplets, guess=guess)
+    # validate input parameters
+    _validate_tdscf(wfn=wfn, states=states, triplets=triplets, guess=guess)
 
     restricted = wfn.same_a_b_orbs()
 
