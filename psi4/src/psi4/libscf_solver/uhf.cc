@@ -448,7 +448,7 @@ std::vector<SharedMatrix> UHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
 }
 std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool combine, std::string return_basis) {
     if ((x_vec.size() % 2) != 0) {
-        throw PSIEXCEPTION("UHF::onel_Hx expect incoming vector to alternate A/B");
+        throw PSIEXCEPTION("UHF::twoel_Hx expect incoming vector to alternate A/B");
     }
     // This is a bypass for C1 input
     std::vector<bool> c1_input_;
@@ -494,13 +494,13 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     for (size_t i = 0; i < nvecs; i++) {
         if (c1_input_[i]) {
             if ((x_vec[2 * i]->rowspi() != Caocc_ao->colspi()) || (x_vec[2 * i]->colspi() != Cavir_ao->colspi())) {
-                throw PSIEXCEPTION("SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
+                throw PSIEXCEPTION("SCF::twoel_Hx incoming rotation matrices must have shape (occ x vir).");
             }
             Cao = Caocc_ao; 
             Cav = Cavir_ao; 
         } else {
             if ((x_vec[2 * i]->rowspi() != Caocc_so->colspi()) || (x_vec[2 * i]->colspi() != Cavir_so->colspi())) {
-                throw PSIEXCEPTION("SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
+                throw PSIEXCEPTION("SCF::twoel_Hx incoming rotation matrices must have shape (occ x vir).");
             }
             Cao = Caocc_so; 
             Cav = Cavir_so; 
@@ -515,13 +515,13 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     for (size_t i = 0; i < nvecs; i++) {
         if (c1_input_[i]) {
             if ((x_vec[2 * i + 1]->rowspi() != Cbocc_ao->colspi()) || (x_vec[2 * i + 1]->colspi() != Cbvir_ao->colspi())) {
-                throw PSIEXCEPTION("SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
+                throw PSIEXCEPTION("SCF::twoel_Hx incoming rotation matrices must have shape (occ x vir).");
             }
             Cbo = Cbocc_ao; 
             Cbv = Cbvir_ao; 
         } else {
             if ((x_vec[2 * i + 1]->rowspi() != Cbocc_so->colspi()) || (x_vec[2 * i + 1]->colspi() != Cbvir_so->colspi())) {
-                throw PSIEXCEPTION("SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
+                throw PSIEXCEPTION("SCF::twoel_Hx incoming rotation matrices must have shape (occ x vir).");
             }
             Cbo = Cbocc_so; 
             Cbv = Cbvir_so; 
