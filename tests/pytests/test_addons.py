@@ -1055,10 +1055,6 @@ def test_psi4fockci():
         add_opts=options )
     assert psi4.compare_values(-108.600832070267, psi4.core.variable("CI ROOT 0 TOTAL ENERGY"), 7, "2SF-EA Energy")
 
-    psi4.core.clean()
-    psi4.core.clean_options()
-    psi4.core.clean_variables()
-
 @pytest.mark.smoke
 @using_cppe
 def test_cppe():
