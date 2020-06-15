@@ -40,8 +40,7 @@ using_snsmp2 = pytest.mark.skipif(psi4.addons("snsmp2") is False,
                                 reason="Psi4 not detecting plugin snsmp2. Build plugin if necessary and add to envvar PYTHONPATH (or rebuild Psi with -DENABLE_snsmp2)")
 using_resp = pytest.mark.skipif(psi4.addons("resp") is False,
                                 reason="Psi4 not detecting plugin resp. Build plugin if necessary and add to envvar PYTHONPATH (or rebuild Psi with -DENABLE_resp)")
-using_psi4fockci = pytest.mark.skipif(psi4.addons("psi4fockci") is False,
-                                reason="Psi4 not detecting plugin psi4fockci. Build plugin if necessary and add to envvar PYTHONPATH")
+using_psi4fockci = pytest.mark.skipif(psi4.addons("psi4fockci") is False, reason="Psi4 not detecting plugin psi4fockci. Build plugin if necessary and add to envvar PYTHONPATH")
 
 @pytest.mark.smoke
 @using_gdma
