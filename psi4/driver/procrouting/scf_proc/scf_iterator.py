@@ -120,7 +120,6 @@ def initialize_jk(self, memory, jk=None):
     jk.set_memory(memory)
     jk.set_do_K(functional.is_x_hybrid())
     jk.set_do_wK(functional.is_x_lrc())
-    jk.set_wcombine(core.get_option("SCF","WCOMBINE"))
     jk.set_omega(functional.x_omega())
 
     jk.set_omega_alpha(functional.x_alpha())
