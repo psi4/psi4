@@ -623,17 +623,19 @@ void DFHelper::prepare_AO_wK_core() {
     
             copy_upper_lower_wAO_core_symm(M2p, wppq, begin, end);
         } else {
+
             timer_on("DFH: AO Construction");
             compute_sparse_pQq_blocking_p_symm(start, stop, M1p, eri);
             timer_off("DFH: AO Construction");
-            // contract half metric inverse
-            timer_on("DFH: AO-Met. Contraction");
-            contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);
-            timer_off("DFH: AO-Met. Contraction");
-    
+
             // contract full metric inverse computes  [J^{-1.0}](Q|mn)
             timer_on("DFH: AO-Met. Contraction");
             contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
+            timer_off("DFH: AO-Met. Contraction");
+    
+            // contract half metric inverse
+            timer_on("DFH: AO-Met. Contraction");
+            contract_metric_AO_core_symm(M1p, ppq, metp, begin, end);
             timer_off("DFH: AO-Met. Contraction");
     
             // compute (A|w|mn)
