@@ -3,6 +3,7 @@ foreach(dir pasture
             snsmp2
             v2rdm_casscf
             adcc
+            psi4fockci
 )
 
    add_subdirectory(${dir})
