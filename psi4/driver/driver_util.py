@@ -80,8 +80,7 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
         print('      Setting convergence', end=' ')
     # Set method-dependent scf convergence criteria, check against energy routines
     if not core.has_option_changed('SCF', 'E_CONVERGENCE'):
-        if (procedures['energy'][method_name] == proc.run_scf
-                or procedures['energy'][method_name] == proc.run_tdscf_energy):
+        if procedures['energy'][method_name] in [proc.run_scf, proc.run_tdscf_energy]:
             core.set_local_option('SCF', 'E_CONVERGENCE', scf_Ec)
             if verbose >= 2:
                 print(scf_Ec, end=' ')
@@ -94,8 +93,7 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
             print('CUSTOM', core.get_option('SCF', 'E_CONVERGENCE'), end=' ')
 
     if not core.has_option_changed('SCF', 'D_CONVERGENCE'):
-        if (procedures['energy'][method_name] == proc.run_scf
-                or procedures['energy'][method_name] == proc.run_tdscf_energy):
+        if procedures['energy'][method_name] in [proc.run_scf, proc.run_tdscf_energy]:
             core.set_local_option('SCF', 'D_CONVERGENCE', scf_Dc)
             if verbose >= 2:
                 print(scf_Dc, end=' ')
@@ -255,7 +253,7 @@ def negotiate_derivative_type(ptype, method, user_dertype, verbose=1, return_str
     method : str
         Quantum chemistry method targeted by driver. Should be correct case for procedures lookup.
     user_dertype : int or None
-        User input on which derivative level should be employed to achieve `ptype`. 
+        User input on which derivative level should be employed to achieve `ptype`.
     verbose : int, optional
         Control amount of output printing.
     return_strategy : bool, optional
