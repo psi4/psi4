@@ -86,6 +86,7 @@ jobs:
         pycppe \
         pylibefp \
         snsmp2 \
+        fockci \
         mp2d \
         pytest-xdist \
         -c psi4/label/dev
