@@ -3,7 +3,7 @@
 if(${ENABLE_psi4fockci})
     if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_psi4fockci}))
         include(FindPythonModule)
-        find_python_module(psi4fockci ATLEAST 1.0.0 QUIET)
+        find_python_module(psi4fockci ATLEAST 0.1.0 QUIET)
     endif()
 
     if(${psi4fockci_FOUND})
