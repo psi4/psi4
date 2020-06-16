@@ -80,7 +80,8 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
         print('      Setting convergence', end=' ')
     # Set method-dependent scf convergence criteria, check against energy routines
     if not core.has_option_changed('SCF', 'E_CONVERGENCE'):
-        if procedures['energy'][method_name] == proc.run_scf:
+        if (procedures['energy'][method_name] == proc.run_scf
+                or procedures['energy'][method_name] == proc.run_tdscf_energy):
             core.set_local_option('SCF', 'E_CONVERGENCE', scf_Ec)
             if verbose >= 2:
                 print(scf_Ec, end=' ')
@@ -93,7 +94,8 @@ def _set_convergence_criterion(ptype, method_name, scf_Ec, pscf_Ec, scf_Dc, pscf
             print('CUSTOM', core.get_option('SCF', 'E_CONVERGENCE'), end=' ')
 
     if not core.has_option_changed('SCF', 'D_CONVERGENCE'):
-        if procedures['energy'][method_name] == proc.run_scf:
+        if (procedures['energy'][method_name] == proc.run_scf
+                or procedures['energy'][method_name] == proc.run_tdscf_energy):
             core.set_local_option('SCF', 'D_CONVERGENCE', scf_Dc)
             if verbose >= 2:
                 print(scf_Dc, end=' ')

@@ -41,6 +41,9 @@ HF: Hartree--Fock Theory
 
 .. _`sec:tdscfintro`:
 
+Single-reference response theory:
+ [Dreuw2005-wp]_
+
 Hamiltonian solver:
  [stratmann:1998]_
 
@@ -49,7 +52,40 @@ Calculation of spectroscopic observables in RPA and TDA:
  [Lestrange2015-xn]_
 
 Plotting of OPA and ECD:
- [Rizzo]_
+ [Rizzo2011-to]_
+
+Introduction
+~~~~~~~~~~~~
+
+An illustrative example of using the TDSCF functionality is as follows::
+
+    molecule {
+    0 1
+    O        0.000000    0.695000   -0.092486
+    O       -0.000000   -0.695000   -0.092486
+    H       -0.388142    0.895249    0.739888
+    H        0.388142   -0.895249    0.739888
+    }
+
+    set {
+    tdscf_states 10
+    }
+
+    energy('td-scf/cc-pvdz')
+
+
+Known limitations
+~~~~~~~~~~~~~~~~~
+
+Psithon usage
+~~~~~~~~~~~~~
+
+PsiAPI usage
+~~~~~~~~~~~~
+
+Plotting one-photon absorption and electronic circular dichroism spectra
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 
 Introduction
 ~~~~~~~~~~~~

@@ -111,12 +111,14 @@ class ConvergenceError(PsiException):
 
     """
 
-    def __init__(self, eqn_description, iteration):
-        msg = "Could not converge %s in %d iterations." % (eqn_description, iteration)
+    def __init__(self, eqn_description, iteration, additional_info=None):
+        msg = f"Could not converge {eqn_description:s} in {iteration:d} iterations."
+        if additional_info is not None:
+            msg += f"\n\n{additional_info}"
         PsiException.__init__(self, msg)
         self.iteration = iteration
         self.message = msg
-        core.print_out('\nPsiException: %s\n\n' % (msg))
+        core.print_out(f'\nPsiException: {msg:s}\n\n')
 
 
 class OptimizationConvergenceError(ConvergenceError):
@@ -157,12 +159,33 @@ class TDSCFConvergenceError(ConvergenceError):
         Wavefunction at time of exception
     what : str
         What we were trying to solve for (singlets/triplets, irrep) when we failed to converge
+    stats : Dict
+        Dictionary of convergence statistics of last iteration.
+        Keys are:
+
+          count : int, iteration number
+          res_norm : np.ndarray (nroots, ), the norm of residual vector for each roots
+          val : np.ndarray (nroots, ), the eigenvalue corresponding to each root
+          delta_val : np.ndarray (nroots, ), the change in eigenvalue from the last iteration to this ones
+          collapse : bool, if a subspace collapse was performed
+          product_count : int, the running total of product evaluations that was performed
+          done : bool, if all roots were converged
     """
 
-    def __init__(self, iteration, wfn, what):
-        ConvergenceError.__init__(self, f"""TDSCF solver ({what})""", iteration)
+    def __init__(self, iteration, wfn, what, stats):
+        # prepare message, including excitation energies and residual norm
+        conv_info = "==> Convergence statistics from last iteration <==\n\n"
+        conv_info += "Excitation Energy".center(21) + f" {'D[value]':^15}" + "|R|".center(11) + "\n"
+        conv_info += f"{'-':->20} {'-':->15} {'-':->15}\n"
+        for e, diff, r_norm in zip(stats["val"], stats["delta_val"], stats["res_norm"]):
+            conv_info += f"      {e:.6f}         {diff:-11.5e}    {r_norm:12.5e}\n"
+        ConvergenceError.__init__(self,
+                                  eqn_description=f"""TDSCF solver ({what})""",
+                                  iteration=iteration,
+                                  additional_info=conv_info)
         self.wfn = wfn
         self.what = what
+        self.stats = stats
 
 
 class CSXError(PsiException):

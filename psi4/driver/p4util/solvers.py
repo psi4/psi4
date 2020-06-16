@@ -317,13 +317,10 @@ def _diag_print_heading(title_lines, solver_name, max_ss_size, nroot, r_converge
     core.print_out("\n\n")
     core.print_out("\n".join([x.center(77) for x in title_lines]))
     core.print_out("\n")
-    #if verbose > 1:
-    #    # summarize options for verbose
-    #    core.print_out(f"   {solver_name} options\n")
 
     core.print_out("\n  ==> Options <==\n\n")
-    core.print_out(f"    Maxiter                         = {maxiter:<5d}\n")
-    core.print_out(f"    Eigenvector tolerance           = {r_convergence:11.5e}\n")
+    core.print_out(f"    Max number of iterations        = {maxiter:<5d}\n")
+    core.print_out(f"    Eigenvector tolerance           = {r_convergence:.4e}\n")
     core.print_out(f"    Max number of expansion vectors = {max_ss_size:<5d}\n")
     core.print_out("\n")
     # show iteration info headings if not silent

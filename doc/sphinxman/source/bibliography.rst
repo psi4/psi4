@@ -485,15 +485,19 @@ Bibliography
 
 .. [stratmann:1998]
    R. Eric Stratmann, G. E. Scuseria, and M. J. Frisch
-   *J. Chem. Phys.* **109**, 8218 (1998)
+   *J. Chem. Phys.* **109**, 8218 (1998), doi: 10.1063/1.477483.
 
 .. [Pedersen1995-du]
    T. B. Pedersen, A. E. Hansen
-   *Chem. Phys. Lett.* **246**, 1 (1995)
+   *Chem. Phys. Lett.* **246**, 1 (1995), doi: 10.1016/0009-2614(95)01036-9.
 
 .. [Lestrange2015-xn]
    P. J. Lestrange, F. Egidi, X. Li
-   *J. Chem. Phys.* **143**, 234103 (2015)
+   *J. Chem. Phys.* **143**, 234103 (2015), doi: 10.1063/1.4937410.
 
-.. [Rizzo]
-    A. Rizzo, S. Coriani, K. Ruud, "Response Function Theory Computational Approaches to Linear and Nonlinear Optical Spectroscopy". In Computational Strategies for Spectroscopy.
+.. [Rizzo2011-to]
+    A. Rizzo, S. Coriani, K. Ruud, "Response Function Theory Computational Approaches to Linear and Nonlinear Optical Spectroscopy". In Computational Strategies for Spectroscopy, doi: 10.1002/9781118008720.ch2.
+
+.. [Dreuw2005-wp]
+   A. Dreuw, M. Head-Gordon
+   *Chem. Rev.* **105**, 4009 (2005), doi: 10.1021/cr0505627.

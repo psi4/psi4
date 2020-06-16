@@ -261,15 +261,19 @@ def _print_output(complete_dict, output):
             _print_matrix(directions, output[i], var_name)
 
 
-def _print_tdscf_header(**options):
+def _print_tdscf_header(*, r_convergence: float, guess_type: str, restricted: bool, ptype: str):
     core.print_out("\n\n         ---------------------------------------------------------\n"
                    f"         {'TDSCF excitation energies':^57}\n" +
                    f"         {'by Andrew M. James and Daniel G. A. Smith':^57}\n" +
                    "         ---------------------------------------------------------\n")
 
     core.print_out("\n  ==> Options <==\n\n")
-    for k, v in options.items():
-        core.print_out(f"     {k:<10s}:              {v}\n")
+    core.print_out(f"     {'Residual threshold':<20s}: {r_convergence:.4e}\n")
+    core.print_out(f"     {'Initial guess':20s}: {guess_type.lower()}\n")
+    reference = 'RHF' if restricted else 'UHF'
+    core.print_out(f"     {'Reference':20s}: {reference}\n")
+    solver_type = 'Hamiltonian' if ptype == "RPA" else "Davidson"
+    core.print_out(f"     {'Solver type':20s}: {ptype} ({solver_type})\n")
 
     core.print_out("\n")
 
@@ -296,6 +300,7 @@ def _solve_loop(wfn,
                 ptype,
                 solve_function,
                 states_per_irrep: List[int],
+                maxiter: int,
                 restricted: bool = True,
                 spin_mult: str = "singlet") -> List[_TDSCFResults]:
     """
@@ -326,23 +331,23 @@ def _solve_loop(wfn,
     for state_sym, nstates in enumerate(states_per_irrep):
         if nstates == 0:
             continue
+        irrep_ES = wfn.molecule().irrep_labels()[state_sym]
+        core.print_out(f"\n\n  ==> Seeking the lowest {nstates} {spin_mult} states with {irrep_ES} symmetry")
         engine.reset_for_state_symm(state_sym)
         guess_ = engine.generate_guess(nstates * 4)
 
         # ret = {"eigvals": ee, "eigvecs": (rvecs, rvecs), "stats": stats} (TDA)
         # ret = {"eigvals": ee, "eigvecs": (rvecs, lvecs), "stats": stats} (RPA)
-        ret = solve_function(engine, nstates, guess_)
+        ret = solve_function(engine, nstates, guess_, maxiter)
 
         # check whether all roots converged
         if not ret["stats"][-1]["done"]:
-            # prepare and raise error
-            irrep_ES = wfn.molecule().irrep_labels()[state_sym]
-            raise TDSCFConvergenceError(maxiter, wfn, f"singlet excitations in irrep {irrep_ES}")
+            # raise error
+            raise TDSCFConvergenceError(maxiter, wfn, f"singlet excitations in irrep {irrep_ES}", ret["stats"][-1])
 
         # flatten dictionary: helps with sorting by energy
         # also append state symmetry to return value
         for e, (R, L) in zip(ret["eigvals"], ret["eigvecs"]):
-            irrep_ES = wfn.molecule().irrep_labels()[state_sym]
             irrep_trans = wfn.molecule().irrep_labels()[engine.G_gs ^ state_sym]
 
             # length-gauge electric dipole transition moment
@@ -494,9 +499,9 @@ def tdscf_excitations(wfn,
     Tighter convergence thresholds will require a larger iterative subspace.
     The maximum size of the iterative subspace is calculated based on `r_convergence`:
 
-       max_vecs_per_root = -np.log10(r_convergence) * 25
+       max_vecs_per_root = -np.log10(r_convergence) * 50
 
-    for the default converegence threshold this gives 100 trial vectors per root and a maximum subspace size
+    for the default converegence threshold this gives 200 trial vectors per root and a maximum subspace size
     of:
 
        max_ss_size = max_vecs_per_root * n
@@ -538,27 +543,21 @@ def tdscf_excitations(wfn,
             singlets_per_irrep = _states_per_irrep(states, wfn.nirrep())
 
     # tie maximum number of vectors per root to requested residual tolerance
-    # This gives 100 vectors per root with default tolerance
-    max_vecs_per_root = int(-np.log10(r_convergence) * 25)
+    # This gives 200 vectors per root with default tolerance
+    max_vecs_per_root = int(-np.log10(r_convergence) * 50)
 
     # which problem
     ptype = "RPA"
-    solve_function = lambda e, n, g: solvers.hamiltonian_solver(engine=e,
-                                                                nroot=n,
-                                                                guess=g,
-                                                                r_convergence=r_convergence,
-                                                                max_ss_size=max_vecs_per_root * n,
-                                                                maxiter=maxiter,
-                                                                verbose=verbose)
+    solve_function = lambda e, n, g, m: solvers.hamiltonian_solver(
+        engine=e, nroot=n, guess=g, r_convergence=r_convergence, max_ss_size=max_vecs_per_root * n, verbose=verbose)
     if tda:
         ptype = "TDA"
-        solve_function = lambda e, n, g: solvers.davidson_solver(engine=e,
-                                                                 nroot=n,
-                                                                 guess=g,
-                                                                 r_convergence=r_convergence,
-                                                                 max_ss_size=max_vecs_per_root * n,
-                                                                 maxiter=maxiter,
-                                                                 verbose=verbose)
+        solve_function = lambda e, n, g, m: solvers.davidson_solver(engine=e,
+                                                                    nroot=n,
+                                                                    guess=g,
+                                                                    r_convergence=r_convergence,
+                                                                    max_ss_size=max_vecs_per_root * n,
+                                                                    verbose=verbose)
 
     _print_tdscf_header(r_convergence=r_convergence, guess_type=guess, restricted=restricted, ptype=ptype)
 
@@ -567,12 +566,12 @@ def tdscf_excitations(wfn,
 
     # singlets solve loop
     if triplets == "NONE" or triplets == "ALSO":
-        res_1 = _solve_loop(wfn, ptype, solve_function, singlets_per_irrep, restricted, "singlet")
+        res_1 = _solve_loop(wfn, ptype, solve_function, singlets_per_irrep, maxiter, restricted, "singlet")
         _results.extend(res_1)
 
     # triplets solve loop
     if triplets == "ALSO" or triplets == "ONLY":
-        res_3 = _solve_loop(wfn, ptype, solve_function, triplets_per_irrep, restricted, "triplet")
+        res_3 = _solve_loop(wfn, ptype, solve_function, triplets_per_irrep, maxiter, restricted, "triplet")
         _results.extend(res_3)
 
     # sort by energy
