@@ -321,12 +321,18 @@ def _solve_loop(wfn,
     for nstate, state_sym in zip(states_per_irrep, wfn.molecule().irrep_labels()):
         core.print_out(f"      {nstate} {spin_mult} states with {state_sym} symmetry\n")
 
+    # construct the engine
+    if restricted:
+        if spin_mult == "triplet":
+            engine = TDRSCFEngine(wfn, ptype=ptype.lower(), triplet=True)
+        else:
+            engine = TDRSCFEngine(wfn, ptype=ptype.lower(), triplet=False)
+    else:
+        engine = TDUSCFEngine(wfn, ptype=ptype.lower())
+
     # collect results and compute some spectroscopic observables
     mints = core.MintsHelper(wfn.basisset())
     results = []
-    # construct the engine
-    engine = TDRSCFEngine(wfn, ptype=ptype.lower(), triplet=True if spin_mult == "triplet" else
-                          False) if restricted else TDUSCFEngine(wfn, ptype=ptype.lower())
     irrep_GS = wfn.molecule().irrep_labels()[engine.G_gs]
     for state_sym, nstates in enumerate(states_per_irrep):
         if nstates == 0:
@@ -352,7 +358,7 @@ def _solve_loop(wfn,
 
             # length-gauge electric dipole transition moment
             edtm_length = engine.residue(R, mints.so_dipole())
-            # lenght-gauge oscillator strength
+            # length-gauge oscillator strength
             f_length = ((2 * e) / 3) * np.sum(edtm_length**2)
             # velocity-gauge electric dipole transition moment
             edtm_velocity = engine.residue(L, mints.so_nabla())
@@ -387,7 +393,7 @@ def _states_per_irrep(states, nirrep):
 def _validate_tdscf(*, wfn, states, triplets, guess) -> None:
 
     # validate states
-    if not (isinstance(states, int) or isinstance(states, list)):
+    if not isinstance(states, (int, list)):
         raise ValidationError("TDSCF: Number of states must be either an integer or a list of integers")
 
     # list of states per irrep given, validate it
@@ -513,6 +519,8 @@ def tdscf_excitations(wfn,
     """
 
     # validate input parameters
+    triplets = triplets.upper()
+    guess = guess.upper()
     _validate_tdscf(wfn=wfn, states=states, triplets=triplets, guess=guess)
 
     restricted = wfn.same_a_b_orbs()
@@ -530,7 +538,7 @@ def tdscf_excitations(wfn,
             singlets_per_irrep = states
     else:
         # total number of states given
-        # First distribute them among singlets and triplets, preferring the
+        # first distribute them among singlets and triplets, preferring the
         # former then distribute them among irreps
         if triplets == "ONLY":
             triplets_per_irrep = _states_per_irrep(states, wfn.nirrep())
@@ -546,10 +554,7 @@ def tdscf_excitations(wfn,
     # This gives 200 vectors per root with default tolerance
     max_vecs_per_root = int(-np.log10(r_convergence) * 50)
 
-    # which problem
-    ptype = "RPA"
-    solve_function = lambda e, n, g, m: solvers.hamiltonian_solver(
-        engine=e, nroot=n, guess=g, r_convergence=r_convergence, max_ss_size=max_vecs_per_root * n, verbose=verbose)
+    # determine which solver function to use: Davidson for TDA or Hamiltonian for RPA?
     if tda:
         ptype = "TDA"
         solve_function = lambda e, n, g, m: solvers.davidson_solver(engine=e,
@@ -558,6 +563,14 @@ def tdscf_excitations(wfn,
                                                                     r_convergence=r_convergence,
                                                                     max_ss_size=max_vecs_per_root * n,
                                                                     verbose=verbose)
+    else:
+        ptype = "RPA"
+        solve_function = lambda e, n, g, m: solvers.hamiltonian_solver(engine=e,
+                                                                       nroot=n,
+                                                                       guess=g,
+                                                                       r_convergence=r_convergence,
+                                                                       max_ss_size=max_vecs_per_root * n,
+                                                                       verbose=verbose)
 
     _print_tdscf_header(r_convergence=r_convergence, guess_type=guess, restricted=restricted, ptype=ptype)
 
