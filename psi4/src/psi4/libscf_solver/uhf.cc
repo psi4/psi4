@@ -362,38 +362,84 @@ std::vector<SharedMatrix> UHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
         throw PSIEXCEPTION("UHF::onel_Hx expect incoming vector to alternate A/B");
     }
 
+    // This is a bypass for C1 input
+    std::vector<bool> c1_input_;
+
+    bool needs_ao = false;
+    bool needs_so = false;
+    for (size_t i = 0; i < x_vec.size(); i++) {
+        if ((x_vec[i]->nirrep() == 1) && (nirrep_ != 1)) {
+            c1_input_.push_back(true);
+            needs_ao = true;
+        } else {
+            c1_input_.push_back(false);
+            needs_so = true;
+        }
+    }
+
+    SharedMatrix Caocc_ao, Cavir_ao, Fa_ao, Caocc_so, Cavir_so;
+    SharedMatrix Cbocc_ao, Cbvir_ao, Fb_ao, Cbocc_so, Cbvir_so;
+
+    if (needs_ao) {
+        Caocc_ao = Ca_subset("AO", "OCC");
+        Cbocc_ao = Cb_subset("AO", "OCC");
+        Cavir_ao = Ca_subset("AO", "VIR");
+        Cbvir_ao = Cb_subset("AO", "VIR");
+        Fa_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
+        Fb_ao = matrix_subset_helper(Fb_, Cb_, "AO", "Fock");
+    }
+
+    if (needs_so) {
+        Caocc_so = Ca_subset("SO", "OCC");
+        Cavir_so = Ca_subset("SO", "VIR");
+        Cbocc_so = Cb_subset("SO", "OCC");
+        Cbvir_so = Cb_subset("SO", "VIR");
+    }
+
     // Compute Fij x_ia - Fab x_ia
-
-    SharedMatrix Ca_occ = Ca_subset("SO", "OCC");
-    SharedMatrix Ca_vir = Ca_subset("SO", "VIR");
-    SharedMatrix Cb_occ = Cb_subset("SO", "OCC");
-    SharedMatrix Cb_vir = Cb_subset("SO", "VIR");
-
+    SharedMatrix Fa, Fb, Cao, Cbo, Cav, Cbv;
     std::vector<SharedMatrix> ret;
     for (size_t i = 0; i < x_vec.size() / 2; i++) {
-        if ((x_vec[2 * i]->rowspi() != Ca_occ->colspi()) || (x_vec[2 * i]->colspi() != Ca_vir->colspi())) {
-            throw PSIEXCEPTION("SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
-        }
+        if (c1_input_[i]) {
+            if ((x_vec[2 * i]->rowspi() != Caocc_ao->colspi()) || (x_vec[2 * i]->colspi() != Cavir_ao->colspi())) {
+                throw PSIEXCEPTION("SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
+            }
+            Fa = Fa_ao;
+            Fb = Fb_ao;
 
-        if ((x_vec[2 * i + 1]->rowspi() != Cb_occ->colspi()) || (x_vec[2 * i + 1]->colspi() != Cb_vir->colspi())) {
-            throw PSIEXCEPTION("SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
-        }
+            Cao = Caocc_ao;
+            Cbo = Cbocc_ao;
+            Cav = Cavir_ao;
+            Cbv = Cbvir_ao;
 
+        } else {
+
+            if ((x_vec[2 * i + 1]->rowspi() != Cbocc_so->colspi()) || (x_vec[2 * i + 1]->colspi() != Cbvir_so->colspi())) {
+                throw PSIEXCEPTION("SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
+            }
+            Fa = Fa_;
+            Fb = Fb_;
+    
+            Cao = Caocc_so;
+            Cbo = Cbocc_so;
+            Cav = Cavir_so;
+            Cbv = Cbvir_so;
+        }
         // Alpha
-        SharedMatrix tmp1 = linalg::triplet(Ca_occ, Fa_, Ca_occ, true, false, false);
+        SharedMatrix tmp1 = linalg::triplet(Cao, Fa, Cao, true, false, false);
         SharedMatrix result = linalg::doublet(tmp1, x_vec[2 * i], false, false);
 
-        SharedMatrix tmp2 = linalg::triplet(x_vec[2 * i], Ca_vir, Fa_, false, true, false);
-        result->gemm(false, false, -1.0, tmp2, Ca_vir, 1.0);
+        SharedMatrix tmp2 = linalg::triplet(x_vec[2 * i], Cav, Fa, false, true, false);
+        result->gemm(false, false, -1.0, tmp2, Cav, 1.0);
 
         ret.push_back(result);
 
         // Beta
-        tmp1 = linalg::triplet(Cb_occ, Fb_, Cb_occ, true, false, false);
+        tmp1 = linalg::triplet(Cbo, Fb, Cbo, true, false, false);
         result = linalg::doublet(tmp1, x_vec[2 * i + 1], false, false);
 
-        tmp2 = linalg::triplet(x_vec[2 * i + 1], Cb_vir, Fb_, false, true, false);
-        result->gemm(false, false, -1.0, tmp2, Cb_vir, 1.0);
+        tmp2 = linalg::triplet(x_vec[2 * i + 1], Cbv, Fb, false, true, false);
+        result->gemm(false, false, -1.0, tmp2, Cbv, 1.0);
 
         ret.push_back(result);
     }
@@ -402,15 +448,37 @@ std::vector<SharedMatrix> UHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
 }
 std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool combine, std::string return_basis) {
     if ((x_vec.size() % 2) != 0) {
-        throw PSIEXCEPTION("UHF::onel_Hx expect incoming vector to alternate A/B");
+        throw PSIEXCEPTION("UHF::twoel_Hx expect incoming vector to alternate A/B");
+    }
+    // This is a bypass for C1 input
+    std::vector<bool> c1_input_;
+
+    bool needs_ao = false;
+    bool needs_so = false;
+    for (size_t i = 0; i < x_vec.size(); i++) {
+        if ((x_vec[i]->nirrep() == 1) && (nirrep_ != 1)) {
+            c1_input_.push_back(true);
+            needs_ao = true;
+        } else {
+            c1_input_.push_back(false);
+            needs_so = true;
+        }
     }
 
-    // Compute Fij x_ia - Fab x_ia
+    SharedMatrix Caocc_ao, Cavir_ao, Caocc_so, Cavir_so;
+    SharedMatrix Cbocc_ao, Cbvir_ao, Cbocc_so, Cbvir_so;
 
-    SharedMatrix Ca_occ = Ca_subset("SO", "OCC");
-    SharedMatrix Ca_vir = Ca_subset("SO", "VIR");
-    SharedMatrix Cb_occ = Cb_subset("SO", "OCC");
-    SharedMatrix Cb_vir = Cb_subset("SO", "VIR");
+    if (needs_ao) {
+        Caocc_ao = Ca_subset("AO", "OCC");
+        Cavir_ao = Ca_subset("AO", "VIR");
+        Cbocc_ao = Cb_subset("AO", "OCC");
+        Cbvir_ao = Cb_subset("AO", "VIR");
+    } else {
+        Caocc_so = Ca_subset("SO", "OCC");
+        Cavir_so = Ca_subset("SO", "VIR");
+        Cbocc_so = Cb_subset("SO", "OCC");
+        Cbvir_so = Cb_subset("SO", "VIR");
+    }
 
     // Setup jk
     std::vector<SharedMatrix>& Cl = jk_->C_left();
@@ -419,26 +487,48 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     Cr.clear();
 
     int nvecs = x_vec.size() / 2;
+    // Compute Fij x_ia - Fab x_ia
 
     // We actually want to compute all alpha then all beta, its smart enough to figure out the half transform
+    SharedMatrix Cao, Cbo, Cav, Cbv;
     for (size_t i = 0; i < nvecs; i++) {
-        if ((x_vec[2 * i]->rowspi() != Ca_occ->colspi()) || (x_vec[2 * i]->colspi() != Ca_vir->colspi())) {
-            throw PSIEXCEPTION("SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
+        if (c1_input_[i]) {
+            if ((x_vec[2 * i]->rowspi() != Caocc_ao->colspi()) || (x_vec[2 * i]->colspi() != Cavir_ao->colspi())) {
+                throw PSIEXCEPTION("SCF::twoel_Hx incoming rotation matrices must have shape (occ x vir).");
+            }
+            Cao = Caocc_ao; 
+            Cav = Cavir_ao; 
+        } else {
+            if ((x_vec[2 * i]->rowspi() != Caocc_so->colspi()) || (x_vec[2 * i]->colspi() != Cavir_so->colspi())) {
+                throw PSIEXCEPTION("SCF::twoel_Hx incoming rotation matrices must have shape (occ x vir).");
+            }
+            Cao = Caocc_so; 
+            Cav = Cavir_so; 
         }
 
-        Cl.push_back(Ca_occ);
+        Cl.push_back(Cao);
 
-        SharedMatrix R = linalg::doublet(Ca_vir, x_vec[2 * i], false, true);
+        SharedMatrix R = linalg::doublet(Cav, x_vec[2 * i], false, true);
         R->scale(-1.0);
         Cr.push_back(R);
     }
     for (size_t i = 0; i < nvecs; i++) {
-        if ((x_vec[2 * i + 1]->rowspi() != Cb_occ->colspi()) || (x_vec[2 * i + 1]->colspi() != Cb_vir->colspi())) {
-            throw PSIEXCEPTION("SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
+        if (c1_input_[i]) {
+            if ((x_vec[2 * i + 1]->rowspi() != Cbocc_ao->colspi()) || (x_vec[2 * i + 1]->colspi() != Cbvir_ao->colspi())) {
+                throw PSIEXCEPTION("SCF::twoel_Hx incoming rotation matrices must have shape (occ x vir).");
+            }
+            Cbo = Cbocc_ao; 
+            Cbv = Cbvir_ao; 
+        } else {
+            if ((x_vec[2 * i + 1]->rowspi() != Cbocc_so->colspi()) || (x_vec[2 * i + 1]->colspi() != Cbvir_so->colspi())) {
+                throw PSIEXCEPTION("SCF::twoel_Hx incoming rotation matrices must have shape (occ x vir).");
+            }
+            Cbo = Cbocc_so; 
+            Cbv = Cbvir_so; 
         }
-        Cl.push_back(Cb_occ);
+        Cl.push_back(Cbo);
 
-        SharedMatrix R = linalg::doublet(Cb_vir, x_vec[2 * i + 1], false, true);
+        SharedMatrix R = linalg::doublet(Cbv, x_vec[2 * i + 1], false, true);
         R->scale(-1.0);
         Cr.push_back(R);
     }
@@ -531,8 +621,13 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         /* pass */
     } else if (return_basis == "MO") {
         for (size_t i = 0; i < nvecs; i++) {
-            ret[2 * i] = linalg::triplet(Ca_occ, ret[2 * i], Ca_vir, true, false, false);
-            ret[2 * i + 1] = linalg::triplet(Cb_occ, ret[2 * i + 1], Cb_vir, true, false, false);
+            if (c1_input_[i]) {
+                ret[2 * i] = linalg::triplet(Caocc_ao, ret[2 * i], Cavir_ao, true, false, false);
+                ret[2 * i + 1] = linalg::triplet(Cbocc_ao, ret[2 * i + 1], Cbvir_ao, true, false, false);
+            } else {
+                ret[2 * i] = linalg::triplet(Caocc_so, ret[2 * i], Cavir_so, true, false, false);
+                ret[2 * i + 1] = linalg::triplet(Cbocc_so, ret[2 * i + 1], Cbvir_so, true, false, false);
+            }
         }
     } else {
         throw PSIEXCEPTION("SCF::twoel_Hx: return_basis option not understood.");
@@ -562,40 +657,88 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
     cphf_converged_ = false;
     cphf_nfock_builds_ = 0;
 
+    // => Figure out the type of perturbation tensor <= //
+    // This helps get around difficulties with non-totally symmetric perturbations
+    std::vector<bool> c1_input_;
+
+    bool needs_ao = false;
+    bool needs_so = false;
+    for (size_t i = 0; i < x_vec.size(); i++) {
+        if ((x_vec[i]->nirrep() == 1) && (nirrep_ != 1)) {
+            c1_input_.push_back(true);
+            needs_ao = true;
+        } else {
+            c1_input_.push_back(false);
+            needs_so = true;
+        }
+    }
+        
+
     // => Build preconditioner <= //
+    SharedMatrix Precon_ao_a, Precon_ao_b, Precon_so_a, Precon_so_b;
 
-    // Grab occ and vir orbitals
-    Dimension virpi_a = nmopi_ - nalphapi_;
-    Dimension virpi_b = nmopi_ - nbetapi_;
+    if (needs_ao) { 
+        // MO (C1) Fock Matrix (Inactive Fock in Helgaker's language)
+        SharedMatrix Caocc_ao = Ca_subset("AO", "ALL");
+        SharedMatrix Cbocc_ao = Cb_subset("AO", "ALL");
+        SharedMatrix Fa_ao = matrix_subset_helper(Fa_, Ca_, "AO", "Fock");
+        SharedMatrix Fb_ao = matrix_subset_helper(Fb_, Cb_, "AO", "Fock");
+        SharedMatrix IFock_ao_a = linalg::triplet(Caocc_ao, Fa_ao, Caocc_ao, true, false, false);
+        SharedMatrix IFock_ao_b = linalg::triplet(Cbocc_ao, Fb_ao, Cbocc_ao, true, false, false);
+        Precon_ao_a = std::make_shared<Matrix>("Precon", nalpha_, nmo_ - nalpha_);
+        Precon_ao_b = std::make_shared<Matrix>("Precon", nbeta_, nmo_ - nbeta_);
 
-    // MO Fock Matrix (Inactive Fock in Helgaker's language)
-    SharedMatrix IFock_a = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
-    SharedMatrix IFock_b = linalg::triplet(Cb_, Fb_, Cb_, true, false, false);
-
-    auto Precon_a = std::make_shared<Matrix>("Alpha Precon", nirrep_, nalphapi_, virpi_a);
-    auto Precon_b = std::make_shared<Matrix>("Beta Precon", nirrep_, nbetapi_, virpi_b);
-
-    for (size_t h = 0; h < nirrep_; h++) {
-        if (virpi_a[h] && nalphapi_[h]) {
-            double* denom_ap = Precon_a->pointer(h)[0];
-            double** f_ap = IFock_a->pointer(h);
-            for (size_t i = 0, target = 0; i < nalphapi_[h]; i++) {
-                for (size_t a = nalphapi_[h]; a < nmopi_[h]; a++) {
-                    denom_ap[target++] = -f_ap[i][i] + f_ap[a][a];
-                }
+        double* denom_ap = Precon_ao_a->pointer()[0];
+        double** f_ap = IFock_ao_a->pointer();
+        for (size_t i = 0, target = 0; i < nalpha_; i++) {
+            for (size_t a = nalpha_; a < nmo_; a++) {
+                denom_ap[target++] = -f_ap[i][i] + f_ap[a][a];
             }
         }
 
-        if (virpi_b[h] && nbetapi_[h]) {
-            double* denom_bp = Precon_b->pointer(h)[0];
-            double** f_bp = IFock_b->pointer(h);
-            for (size_t i = 0, target = 0; i < nbetapi_[h]; i++) {
-                for (size_t a = nbetapi_[h]; a < nmopi_[h]; a++) {
-                    denom_bp[target++] = -f_bp[i][i] + f_bp[a][a];
+        double* denom_bp = Precon_ao_b->pointer()[0];
+        double** f_bp = IFock_ao_b->pointer();
+        for (size_t i = 0, target = 0; i < nbeta_; i++) {
+            for (size_t a = nbeta_; a < nmo_; a++) {
+                denom_bp[target++] = -f_bp[i][i] + f_bp[a][a];
+            }
+        }
+    }
+
+    if (needs_so) {
+        // Grab occ and vir orbitals
+        Dimension virpi_a = nmopi_ - nalphapi_;
+        Dimension virpi_b = nmopi_ - nbetapi_;
+        
+        // MO Fock Matrix (Inactive Fock in Helgaker's language)
+        SharedMatrix IFock_a = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
+        SharedMatrix IFock_b = linalg::triplet(Cb_, Fb_, Cb_, true, false, false);
+        Precon_so_a = std::make_shared<Matrix>("Alpha Precon", nirrep_, nalphapi_, virpi_a);
+        Precon_so_b = std::make_shared<Matrix>("Beta Precon", nirrep_, nbetapi_, virpi_b);
+
+        for (size_t h = 0; h < nirrep_; h++){
+            if (virpi_a[h] && nalphapi_[h]) {
+                double* denom_ap = Precon_so_a->pointer(h)[0];
+                double** f_ap = IFock_a->pointer(h);
+                for (size_t i = 0, target = 0, max_i = nalphapi_[h], max_a = nmopi_[h]; i < max_i; i++) {
+                    for (size_t a = max_i; a < max_a; a++) {
+                       denom_ap[target++] = -f_ap[i][i] + f_ap[a][a]; 
+                    }
+                }
+            }
+
+            if (virpi_b[h] && nbetapi_[h]) {
+                double* denom_bp = Precon_so_b->pointer(h)[0];
+                double** f_bp = IFock_b->pointer(h);
+                for (size_t i = 0, target = 0, max_i = nbetapi_[h], max_a = nmopi_[h]; i < max_i; i++) {
+                    for (size_t a = max_i; a < max_a; a++) {
+                       denom_bp[target++] = -f_bp[i][i] + f_bp[a][a]; 
+                    }
                 }
             }
         }
     }
+
 
     // => Header <= //
     if (print_lvl) {
@@ -624,8 +767,13 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         ret_vec.push_back(x_vec[2 * i]->clone());
         ret_vec.push_back(x_vec[2 * i + 1]->clone());
 
-        ret_vec[2 * i]->apply_denominator(Precon_a);
-        ret_vec[2 * i + 1]->apply_denominator(Precon_b);
+        if (c1_input_[i]){
+            ret_vec[2 * i]->apply_denominator(Precon_ao_a);
+            ret_vec[2 * i + 1]->apply_denominator(Precon_ao_b);
+        } else {
+            ret_vec[2 * i]->apply_denominator(Precon_so_a);
+            ret_vec[2 * i + 1]->apply_denominator(Precon_so_b);
+        }
 
         r_vec.push_back(x_vec[2 * i]->clone());
         r_vec.push_back(x_vec[2 * i + 1]->clone());
@@ -663,8 +811,13 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         z_vec.push_back(r_vec[2 * i]->clone());
         z_vec.push_back(r_vec[2 * i + 1]->clone());
 
-        z_vec[2 * i]->apply_denominator(Precon_a);
-        z_vec[2 * i + 1]->apply_denominator(Precon_b);
+        if (c1_input_[i]) {
+            z_vec[2 * i]->apply_denominator(Precon_ao_a);
+            z_vec[2 * i + 1]->apply_denominator(Precon_ao_b);
+        } else {
+            z_vec[2 * i]->apply_denominator(Precon_so_a);
+            z_vec[2 * i + 1]->apply_denominator(Precon_so_b);
+        }
         p_vec.push_back(z_vec[2 * i]->clone());
         p_vec.push_back(z_vec[2 * i + 1]->clone());
         nremain++;
@@ -759,10 +912,15 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         for (size_t i = 0; i < nvecs; i++) {
             if (!active[i]) continue;
             z_vec[2 * i]->copy(r_vec[2 * i]);
-            z_vec[2 * i]->apply_denominator(Precon_a);
-
             z_vec[2 * i + 1]->copy(r_vec[2 * i + 1]);
-            z_vec[2 * i + 1]->apply_denominator(Precon_b);
+
+            if (c1_input_[i]) {
+                z_vec[2 * i]->apply_denominator(Precon_ao_a);
+                z_vec[2 * i + 1]->apply_denominator(Precon_ao_b);
+            } else {
+                z_vec[2 * i]->apply_denominator(Precon_so_a);
+                z_vec[2 * i + 1]->apply_denominator(Precon_so_b);
+            }
 
             double tmp_numer = r_vec[2 * i]->vector_dot(z_vec[2 * i]);
             tmp_numer += r_vec[2 * i + 1]->vector_dot(z_vec[2 * i + 1]);

@@ -48,6 +48,7 @@
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libdisp/dispersion.h"
 #include "psi4/libscf_solver/hf.h"
+#include "psi4/libscf_solver/uhf.h"
 #include "psi4/libscf_solver/rhf.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
@@ -287,6 +288,7 @@ SharedMatrix SCFDeriv::compute_gradient()
 
     return gradients_["Total"];
 }
+
 SharedMatrix SCFDeriv::compute_hessian()
 {
     // => Echo <= //
@@ -1035,11 +1037,14 @@ SharedMatrix SCFDeriv::compute_hessian()
     timer_off("Hess: JK");
 
     // => Response Terms (Brace Yourself) <= //
-    if (options_.get_str("REFERENCE") == "RHF" || options_.get_str("REFERENCE") == "RKS") {
+    if (options_.get_str("REFERENCE") == "RHF" || 
+        options_.get_str("REFERENCE") == "RKS" || 
+        options_.get_str("REFERENCE") == "UHF") {
         hessians_["Response"] = hessian_response();
     } else {
         throw PSIEXCEPTION("SCFHessian: Response not implemented for this reference");
     }
+
 
     // => Total Hessian <= //
     SharedMatrix total = SharedMatrix(hessians_["Nuclear"]->clone());
