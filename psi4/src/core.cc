@@ -955,10 +955,6 @@ bool psi4_python_module_initialize() {
         return true;
     }
 
-    // Setup the environment
-    Process::environment.initialize();  // Defaults to obtaining the environment from the global environ variable
-    Process::environment.set_memory(524288000);
-
     // There should only be one of these in Psi4
     Wavefunction::initialize_singletons();
 
@@ -971,7 +967,13 @@ bool psi4_python_module_initialize() {
     timer_init();
 
     // Initialize the I/O library
+    // Must be done before initializing Process::environment as that needs
+    // to access some globals from psio
     psio_init();
+
+    // Setup the environment
+    Process::environment.initialize();  // Defaults to obtaining the environment from the global environ variable
+    Process::environment.set_memory(524288000);
 
     // Setup globals options
     Process::environment.options.set_read_globals(true);
