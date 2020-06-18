@@ -56,6 +56,9 @@ void Process::Environment::initialize() {
 #ifdef _OPENMP
     nthread_ = Process::environment.get_n_threads();
 #endif
+
+    /* See notes in process.h */
+    _psio_manager_keepalive = PSIOManager::shared_object();
 }
 
 void Process::Environment::set_n_threads(int nthread) {
