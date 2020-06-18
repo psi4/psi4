@@ -628,7 +628,6 @@ void JK::set_wcombine(bool wcombine) {
     if (wcombine) {
         throw PSIEXCEPTION("To combine exchange terms, use MemDFJK\n");
     }
-    wcombine_ = wcombine;
 }
 void JK::finalize() { postiterations(); }
 }
