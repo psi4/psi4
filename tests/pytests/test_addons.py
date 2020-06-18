@@ -40,7 +40,7 @@ using_snsmp2 = pytest.mark.skipif(psi4.addons("snsmp2") is False,
                                 reason="Psi4 not detecting plugin snsmp2. Build plugin if necessary and add to envvar PYTHONPATH (or rebuild Psi with -DENABLE_snsmp2)")
 using_resp = pytest.mark.skipif(psi4.addons("resp") is False,
                                 reason="Psi4 not detecting plugin resp. Build plugin if necessary and add to envvar PYTHONPATH (or rebuild Psi with -DENABLE_resp)")
-
+using_psi4fockci = pytest.mark.skipif(psi4.addons("psi4fockci") is False, reason="Psi4 not detecting plugin psi4fockci. Build plugin if necessary and add to envvar PYTHONPATH")
 
 @pytest.mark.smoke
 @using_gdma
@@ -1030,6 +1030,30 @@ def test_resp():
                                    0.803999, -0.661279,  0.453270, -0.600039])
     assert np.allclose(charges2[0][1], reference_charges2, atol=5e-4)
 
+@pytest.mark.smoke
+@using_psi4fockci
+def test_psi4fockci():
+    """psi4fockci/n2"""
+
+    n2 = psi4.geometry("""
+    0 7
+    N 0 0 0
+    N 0 0 2.5
+    symmetry c1
+    """)
+
+    options = {"basis": "cc-pvdz"}
+    wfn = psi4.energy('psi4fockci', new_charge=0, new_multiplicity=1,
+        add_opts=options )
+    assert psi4.compare_values(-108.776024394853295, psi4.core.variable("CI ROOT 0 TOTAL ENERGY"), 7, "3SF Energy")
+
+    wfn = psi4.energy('psi4fockci', new_charge=1, new_multiplicity=2,
+        add_opts=options )
+    assert psi4.compare_values(-108.250639579451, psi4.core.variable("CI ROOT 0 TOTAL ENERGY"), 7, "2SF-IP Energy")
+
+    wfn = psi4.energy('psi4fockci', new_charge=-1, new_multiplicity=2,
+        add_opts=options )
+    assert psi4.compare_values(-108.600832070267, psi4.core.variable("CI ROOT 0 TOTAL ENERGY"), 7, "2SF-EA Energy")
 
 @pytest.mark.smoke
 @using_cppe
