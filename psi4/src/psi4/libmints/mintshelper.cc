@@ -2859,7 +2859,8 @@ std::vector<SharedMatrix> MintsHelper::ao_ang_mom_deriv1_helper(int atom) {
 
             if (aP != atom && aQ != atom) continue;
 
-            double prefactor = (aP == aQ) ? 2.0 : 1.0;
+            //double prefactor = (aP == aQ) ? 2.0 : 1.0;
+            double prefactor = 1.0;
 
             Lint->compute_shell_deriv1(P, Q);
 
@@ -2869,15 +2870,16 @@ std::vector<SharedMatrix> MintsHelper::ao_ang_mom_deriv1_helper(int atom) {
                     int offset = (6 * mu_cart * nP * nQ) + (atom_cart * nP * nQ) + (3 * (atom == aQ) * nP * nQ);
                     for (int p = 0; p < nP; p++) {
                         for (int q = 0; q < nQ; q++) {
-                            //if (aP == aQ) {
-                            //    grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ, buffer[p * nQ + q + offset - (3 * nP * nQ)]);
-                            //    if (atom == 0 && atom_cart == 2) {
-                            //        std::cout << "grad[3 * mu_cart + atom_cart] = " << "grad[3 * " << mu_cart << " + " << atom_cart << "][" << p+oP << ", " << q+oQ << "] += " << "buffer[" << p * nQ + q + offset - (3 * nP * nQ) << "] += " <<  buffer[p * nQ + q + offset - (3 * nP * nQ)] << std::endl;
-                            //    }
-                            //}
+                            if (aP == aQ) {
+                                grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ, buffer[p * nQ + q + offset - (3 * nP * nQ)]);
+                                if (atom == 0 && atom_cart == 2) {
+                                    //std::cout << "grad[3 * mu_cart + atom_cart] = " << "grad[3 * " << mu_cart << " + " << atom_cart << "][" << p+oP << ", " << q+oQ << "] += " << "buffer[" << p * nQ + q + offset - (3 * nP * nQ) << "] += " <<  buffer[p * nQ + q + offset - (3 * nP * nQ)] << std::endl;
+                                }
+                            }
                             grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ, prefactor * buffer[p * nQ + q + offset]);
                             if (atom == 0 && atom_cart == 2) {
-                                std::cout << "grad[3 * mu_cart + atom_cart] = " << "grad[3 * " << mu_cart << " + " << atom_cart << "][" << p+oP << ", " << q+oQ << "] += " << "buffer[" << p * nQ + q + offset << "] += " << buffer[p * nQ + q + offset] << std::endl;
+                                //std::cout << "grad[3 * mu_cart + atom_cart] = " << "grad[3 * " << mu_cart << " + " << atom_cart << "][" << p+oP << ", " << q+oQ << "] += " << "buffer[" << p * nQ + q + offset << "] += " << prefactor * buffer[p * nQ + q + offset] << std::endl;
+                                //std::cout << "buffer[" << p * nQ + q + offset << "]" << std::endl;
                             }
                         }
                     }
