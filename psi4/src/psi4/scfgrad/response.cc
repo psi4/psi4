@@ -67,6 +67,7 @@
 #include <brian_cphf.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
+extern bool brianCPHFLeftSideFlag;
 #endif
 
 using namespace psi;
@@ -1486,9 +1487,15 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                 b_vecs.push_back(B);
             }
 
+#ifdef USING_BrianQC
+    brianCPHFLeftSideFlag = true;
+#endif
             auto u_matrices = rhf_wfn_->cphf_solve(b_vecs, options_.get_double("SOLVER_CONVERGENCE"),
                                                    options_.get_int("SOLVER_MAXITER"), print_);
 
+#ifdef USING_BrianQC
+    brianCPHFLeftSideFlag = false;
+#endif
             // Result in x
             for (int a = 0; a < nA; a++) {
                 std::stringstream ss;
@@ -1893,10 +1900,15 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
                 b_vecs.push_back(Bb);
             }
 
-            // 
+#ifdef USING_BrianQC
+    brianCPHFLeftSideFlag = true;
+#endif
             auto u_matrices = uhf_wfn_->cphf_solve(b_vecs, options_.get_double("SOLVER_CONVERGENCE"),
                                                    options_.get_int("SOLVER_MAXITER"), print_);
-    
+
+#ifdef USING_BrianQC
+    brianCPHFLeftSideFlag = false;
+#endif
             // Result in x
             // Write Uas to disk
             for (int a = 0; a < nA; a++) {

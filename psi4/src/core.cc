@@ -78,6 +78,7 @@ using namespace pybind11::literals;
 BrianCookie brianCookie = 0;
 brianInt brianRestrictionType = 0;
 bool brianCPHFFlag = false;
+bool brianCPHFLeftSideFlag = false;
 
 void checkBrian() {
     brianBool err = brianAPIGetError(&brianCookie);

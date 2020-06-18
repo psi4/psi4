@@ -63,6 +63,7 @@
 extern void checkBrian();
 extern BrianCookie brianCookie;
 extern bool brianCPHFFlag;
+extern bool brianCPHFLeftSideFlag;
 extern brianInt brianRestrictionType;
 #endif
 
@@ -185,31 +186,49 @@ void DirectJK::compute_JK() {
                 }
             }
         } else {
-            // WARNING: the current implementation only works with RHF
             brianInt maxSegmentSize;
             brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
             
-            for (brianInt segmentStartIndex = 0; segmentStartIndex < D_ao_.size(); segmentStartIndex += maxSegmentSize) {
-                brianInt segmentSize = std::min(maxSegmentSize, (brianInt)D_ao_.size() - segmentStartIndex);
+            brianInt densityCount = (brianRestrictionType == BRIAN_RESTRICTION_TYPE_RHF) ? 1 : 2;
+            if (D_ao_.size() % densityCount != 0) {
+                throw PSIEXCEPTION("Invalid number of density matrices for CPHF");
+            }
+            
+            brianInt derivativeCount = D_ao_.size() / densityCount;
+            
+            for (brianInt segmentStartIndex = 0; segmentStartIndex < derivativeCount; segmentStartIndex += maxSegmentSize) {
+                brianInt segmentSize = std::min(maxSegmentSize, derivativeCount - segmentStartIndex);
                 
-                std::vector<std::shared_ptr<Matrix>> Dsymm(segmentSize);
-                std::vector<const double*> pseudoDensityAlphas(segmentSize, nullptr);
-                std::vector<double*> pseudoCoulombTotals(segmentSize, nullptr);
-                std::vector<double*> pseudoExchangeAlphas(segmentSize, nullptr);
-                for (brianInt i = 0; i < segmentSize; i++) {
-                    Dsymm[i] = D_ao_[i + segmentStartIndex]->clone();
-                    Dsymm[i]->add(D_ao_[i + segmentStartIndex]->transpose());
-                    Dsymm[i]->scale(0.5);
-                    pseudoDensityAlphas[i] = Dsymm[i]->get_pointer();
-                    
-                    if (do_J_) {
-                        pseudoCoulombTotals[i] = J_ao_[i + segmentStartIndex]->get_pointer();
+                std::vector<std::vector<std::shared_ptr<Matrix>>> pseudoDensitySymmetrized(densityCount);
+                std::vector<std::vector<const double*>> pseudoDensityPointers(densityCount);
+                std::vector<std::vector<double*>> pseudoExchangePointers(densityCount);
+                for (brianInt densityIndex = 0; densityIndex < densityCount; densityIndex++) {
+                    pseudoDensitySymmetrized[densityIndex].resize(segmentSize);
+                    pseudoDensityPointers[densityIndex].resize(segmentSize, nullptr);
+                    pseudoExchangePointers[densityIndex].resize(segmentSize, nullptr);
+                    for (brianInt i = 0; i < segmentSize; i++) {
+                        // Psi4's code computing the left- and right-hand side CPHF terms use different indexing conventions
+                        brianInt psi4Index = brianCPHFLeftSideFlag ? (densityIndex * derivativeCount + segmentStartIndex + i) : ((segmentStartIndex + i) * densityCount + densityIndex);
+                        
+                        pseudoDensitySymmetrized[densityIndex][i] = D_ao_[psi4Index]->clone();
+                        pseudoDensitySymmetrized[densityIndex][i]->add(D_ao_[psi4Index]->transpose());
+                        pseudoDensitySymmetrized[densityIndex][i]->scale(0.5);
+                        pseudoDensityPointers[densityIndex][i] = pseudoDensitySymmetrized[densityIndex][i]->get_pointer();
+                        
+                        if (do_K_) {
+                            pseudoExchangePointers[densityIndex][i] = K_ao_[psi4Index]->get_pointer();
+                        } else if (do_wK_) {
+                            pseudoExchangePointers[densityIndex][i] = wK_ao_[psi4Index]->get_pointer();
+                        }
                     }
-                    
-                    if (do_K_) {
-                        pseudoExchangeAlphas[i] = K_ao_[i + segmentStartIndex]->get_pointer();
-                    } else if (do_wK_) {
-                        pseudoExchangeAlphas[i] = wK_ao_[i + segmentStartIndex]->get_pointer();
+                }
+                
+                std::vector<double*> pseudoCoulombPointers(segmentSize, nullptr);
+                for (brianInt i = 0; i < segmentSize; i++) {
+                    if (do_J_) {
+                        // we always write the total coulomb into the densityIndex == 0 matrix, and later divide it if necessary
+                        brianInt psi4Index = brianCPHFLeftSideFlag ? (0 * derivativeCount + segmentStartIndex + i) : ((segmentStartIndex + i) * densityCount + 0);
+                        pseudoCoulombPointers[i] = J_ao_[psi4Index]->get_pointer();
                     }
                 }
                 
@@ -217,17 +236,30 @@ void DirectJK::compute_JK() {
                     &computeCoulomb,
                     &computeExchange,
                     &segmentSize,
-                    pseudoDensityAlphas.data(),
-                    nullptr,
-                    pseudoCoulombTotals.data(),
-                    pseudoExchangeAlphas.data(),
-                    nullptr
+                    pseudoDensityPointers[0].data(),
+                    (densityCount > 1) ? pseudoDensityPointers[1].data() : nullptr,
+                    pseudoCoulombPointers.data(),
+                    pseudoExchangePointers[0].data(),
+                    (densityCount > 1) ? pseudoExchangePointers[1].data() : nullptr
                 );
                 checkBrian();
                 
+                // BrianQC computes the sum of all Coulomb contributions into
+                // J_ao_[0], so all other contributions must be zeroed out for
+                // the sum to be correct. For RHF/RKS, Psi4 expects J_ao_[0]
+                // to contain the alpha contribution instead of the total, so
+                // we halve it.
                 if (do_J_) {
                     for (brianInt i = 0; i < segmentSize; i++) {
-                        J_ao_[i + segmentStartIndex]->scale(0.5);
+                        if (brianRestrictionType == BRIAN_RESTRICTION_TYPE_RHF) {
+                            brianInt psi4Index = brianCPHFLeftSideFlag ? (0 * derivativeCount + segmentStartIndex + i) : ((segmentStartIndex + i) * densityCount + 0);
+                            J_ao_[psi4Index]->scale(0.5);
+                        }
+                        
+                        for (brianInt densityIndex = 1; densityIndex < densityCount; densityIndex++) {
+                            brianInt psi4Index = brianCPHFLeftSideFlag ? (densityIndex * derivativeCount + segmentStartIndex + i) : ((segmentStartIndex + i) * densityCount + densityIndex);
+                            J_ao_[psi4Index]->zero();
+                        }
                     }
                 }
             }
