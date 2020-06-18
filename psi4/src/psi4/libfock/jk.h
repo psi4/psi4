@@ -445,7 +445,7 @@ class PSI_API JK {
     * @param wcombine do we combine wK matrices?
     *        defaults to false unless MemDFJK
     */
-    virtual void set_wcombine(bool wcombine); //{ wcombine_ = wcombine; }
+    virtual void set_wcombine(bool wcombine);
     bool get_wcombine() { return wcombine_; }
 
     /**

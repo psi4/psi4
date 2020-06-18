@@ -72,8 +72,6 @@ void MemDFJK::preiterations() {
     // Initialize calls your derived class's preiterations member
     // knobs are set and state variables assigned
 
-    //printf("wcombine_ is %s \n", (wcombine_? "True" : "False" ));
-
     // use previously set state variables to dfh instance
     dfh_->set_nthreads(omp_nthread_);
     dfh_->set_schwarz_cutoff(cutoff_);

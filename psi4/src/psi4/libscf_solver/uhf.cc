@@ -203,6 +203,7 @@ void UHF::form_G() {
     }
     Ga_->add(J_);
     Gb_->add(J_);
+
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
 
@@ -562,7 +563,9 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             Dx.push_back(Dx_b);
         }
         potential_->compute_Vx(Dx, Vx);
-    } Cl.clear();
+    } 
+
+    Cl.clear();
     Cr.clear();
 
     // Build return vector
