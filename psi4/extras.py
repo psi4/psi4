@@ -150,6 +150,7 @@ _addons_ = {
     "psi4fockci": which_import("psi4fockci", return_bool=True),
     "adcc": which_import("adcc", return_bool=True),
     "mdi": which_import("mdi", return_bool=True),
+    "cct3": which_import("psi4_cct3", return_bool=True),
 }
 
 
