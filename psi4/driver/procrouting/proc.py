@@ -3309,7 +3309,7 @@ def run_adcc(name, **kwargs):
 
 
     if core.get_option('ADC', 'REFERENCE') not in ["RHF", "UHF"]:
-        raise ValidationError('ADC requires reference RHF or UHF')
+        raise ValidationError('ADCC requires reference RHF or UHF')
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.pop('ref_wfn', None)
@@ -3410,7 +3410,7 @@ def run_adcc(name, **kwargs):
     try:
         state = adcrunner[name](ref_wfn, **kwargs, output=CoreStream())
     except InvalidReference as ex:
-        raise ValidationError("Cannot run ADC because the passed reference wavefunction is "
+        raise ValidationError("Cannot run ADCC because the passed reference wavefunction is "
                               "not supported in adcc. Check Psi4 SCF parameters. adcc reports: "
                               "{}".format(str(ex)))
     core.print_out("\n")
@@ -3426,6 +3426,7 @@ def run_adcc(name, **kwargs):
     adc_wfn.shallow_copy(ref_wfn)
     adc_wfn.set_reference_wavefunction(ref_wfn)
     adc_wfn.set_name(name)
+    adc_wfn.set_module("adcc")
 
     # MP(3) energy for CVS-ADC(3) calculations is still a missing feature in adcc
     # ... we store this variant here to be able to fall back to MP(2) energies.

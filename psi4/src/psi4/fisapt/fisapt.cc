@@ -66,6 +66,8 @@ FISAPT::FISAPT(SharedWavefunction scf, Options& options) : options_(options), re
 FISAPT::~FISAPT() {}
 
 void FISAPT::common_init() {
+    reference_->set_module("fisapt");
+
     primary_ = reference_->basisset();
     doubles_ = Process::environment.get_memory() / sizeof(double) * options_.get_double("FISAPT_MEM_SAFETY_FACTOR");
 

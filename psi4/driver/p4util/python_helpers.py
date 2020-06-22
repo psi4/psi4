@@ -288,6 +288,7 @@ def _core_wavefunction_to_file(wfn, filename=None):
         },
         'string': {
             'name': wfn.name(),
+            'module': wfn.module(),
             'basisname': wfn.basisset().name()
         },
         'boolean': {

@@ -104,6 +104,8 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
     vAAB_ = nullptr;
     vBAB_ = nullptr;
 
+    module_ = "sapt";
+
     // We inherit from the dimer basis
     ribasis_ = get_basisset("DF_BASIS_SAPT");
     elstbasis_ = get_basisset("DF_BASIS_ELST");

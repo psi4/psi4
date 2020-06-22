@@ -93,6 +93,7 @@ void HF::common_init() {
     attempt_number_ = 1;
     reset_occ_ = false;
     sad_ = false;
+    module_ = "scf";
 
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();

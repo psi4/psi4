@@ -63,6 +63,8 @@ DFEP2Wavefunction::DFEP2Wavefunction(std::shared_ptr<Wavefunction> ref_wfn)
     outfile->Printf("                            by Daniel G. A. Smith\n");
     outfile->Printf("         ---------------------------------------------------------\n\n");
 
+    module_ = "dfep2";
+
     conv_thresh_ = options_.get_double("EP2_CONVERGENCE");
     max_iter_ = options_.get_int("EP2_MAXITER");
     debug_ = options_.get_int("DEBUG");

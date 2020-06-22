@@ -183,6 +183,10 @@ void export_wavefunction(py::module& m) {
         .def("set_name", &Wavefunction::set_name, "Sets the level of theory this wavefunction corresponds to.")
         .def("name", &Wavefunction::name, py::return_value_policy::copy,
              "The level of theory this wavefunction corresponds to.")
+        .def("set_module", &Wavefunction::set_module, "module"_a,
+             "Sets name of the last/highest level of theory module (internal or external) touching the wavefunction.")
+        .def("module", &Wavefunction::module, py::return_value_policy::copy,
+             "Name of the last/highest level of theory module (internal or external) touching the wavefunction.")
         .def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring")
         .def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring")
         .def("molecule", &Wavefunction::molecule, "Returns the Wavefunction's molecule.")

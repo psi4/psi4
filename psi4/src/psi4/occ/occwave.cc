@@ -57,6 +57,8 @@ void OCCWave::common_init() {
     // print title and options
     print_ = options_.get_int("PRINT");
     if (print_ > 0) options_.print();
+
+    module_ = "occ";
     wfn_type_ = options_.get_str("WFN_TYPE");
     orb_opt_ = options_.get_str("ORB_OPT");
     title();

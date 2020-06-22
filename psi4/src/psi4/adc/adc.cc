@@ -42,6 +42,7 @@ namespace adc {
 ADCWfn::ADCWfn(SharedWavefunction ref_wfn, Options& options) : Wavefunction(options) {
     shallow_copy(ref_wfn);
     reference_wavefunction_ = ref_wfn;
+    module_ = "adc";
 
     std::vector<std::string> irreps_ = molecule_->irrep_labels();
     aoccpi_ = new int[nirrep_];

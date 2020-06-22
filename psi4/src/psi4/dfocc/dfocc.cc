@@ -51,6 +51,8 @@ void DFOCC::common_init() {
     print_ = options_.get_int("PRINT");
     if (print_ > 0) options_.print();
 
+    module_ = "dfocc";
+
     cc_maxiter = options_.get_int("CC_MAXITER");
     mo_maxiter = options_.get_int("MO_MAXITER");
     num_vecs = options_.get_int("MO_DIIS_NUM_VECS");

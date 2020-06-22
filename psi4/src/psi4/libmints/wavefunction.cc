@@ -152,6 +152,7 @@ Wavefunction::Wavefunction(std::shared_ptr<Molecule> molecule, std::shared_ptr<B
 
     // set strings
     name_ = strings["name"];
+    module_ = strings["module"];
 
     // set booleans
     PCM_enabled_ = booleans["PCM_enabled"];
@@ -176,6 +177,7 @@ void Wavefunction::shallow_copy(SharedWavefunction other) { shallow_copy(other.g
 
 void Wavefunction::shallow_copy(const Wavefunction *other) {
     name_ = other->name_;
+    module_ = other->module_;
     basisset_ = other->basisset_;
     basissets_ = other->basissets_;
     sobasisset_ = other->sobasisset_;
@@ -255,6 +257,7 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     /// From typical constructor
     /// Some member data is not clone-able so we will copy
     name_ = other->name_;
+    module_ = other->module_;
     molecule_ = std::make_shared<Molecule>(other->molecule_->clone());
     basisset_ = other->basisset_;
     basissets_ = other->basissets_;  // Still cannot copy basissets
@@ -344,6 +347,7 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
     /// From typical constructor
     /// Some member data is not clone-able so we will copy
     wfn->name_ = name_;
+    wfn->module_ = module_;
     wfn->integral_ = std::make_shared<IntegralFactory>(wfn->basisset_, wfn->basisset_, wfn->basisset_, wfn->basisset_);
     wfn->mintshelper_ = std::make_shared<MintsHelper>(wfn->basisset_, wfn->options_);
     wfn->sobasisset_ = std::make_shared<SOBasisSet>(wfn->basisset_, wfn->integral_);

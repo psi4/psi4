@@ -79,7 +79,7 @@ SCFDeriv::~SCFDeriv()
 void SCFDeriv::common_init()
 {
 
-
+    module_ = "scf";
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 }
