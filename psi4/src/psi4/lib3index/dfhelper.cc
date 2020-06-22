@@ -3054,13 +3054,11 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
         M = std::unique_ptr<double[]>(new double[tots]);
         Mp = M.get();
     } else
-        if (!wcombine_) Mp = Ppq_.get();
+        if (!wcombine_) {Mp = Ppq_.get();}
 
     double* M1p;
     if (wcombine_) {
         M1p = m1Ppq_.get();
-    } else {
-        //M1p = nullptr;
     }
 
     // transform in steps (blocks of Q)
@@ -3071,10 +3069,6 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
         size_t begin = Qshell_aggs_[start];
         size_t end = Qshell_aggs_[stop + 1] - 1;
         size_t block_size = end - begin + 1;
-
-        // print step info
-        // outfile->Printf("      Qshell: (%zu, %zu)", start, stop);
-        // outfile->Printf(", PHI: (%zu, %zu), size: %zu\n", begin, end, block_size);
 
         // get AO chunk according to directive
         timer_on("DFH: Grabbing AOs");
