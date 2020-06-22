@@ -47,7 +47,7 @@ def mcscf_solver(ref_wfn):
     # Build CIWavefunction
     core.prepare_options_for_module("DETCI")
     ciwfn = core.CIWavefunction(ref_wfn)
-    ciwfn.set_module("mcscf")
+    ciwfn.set_module("detci")
 
     # Hush a lot of CI output
     ciwfn.set_print(0)

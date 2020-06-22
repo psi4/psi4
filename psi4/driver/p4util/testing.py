@@ -136,6 +136,7 @@ def _mergedapis_compare_wavefunctions(expected, computed, *args, **kwargs):
     compare(expected.nmo(), computed.nmo(), 'compare nmo', **kwargscopy)
     compare(expected.nso(), computed.nso(), 'compare nso', **kwargscopy)
     compare(expected.name(), computed.name(), 'compare name', **kwargscopy)
+    compare(expected.module(), computed.module(), 'compare module', **kwargscopy)
     compare_values(expected.energy(), computed.energy(), 'compare energy', atol=atol, **kwargscopy)
     compare_values(expected.efzc(), computed.efzc(), 'compare frozen core energy', atol=atol, **kwargscopy)
     compare_values(expected.get_dipole_field_strength()[0],

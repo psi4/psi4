@@ -19,13 +19,13 @@ from .utils import *
 
 def runner_asserter(inp, subject, method, basis, tnm):
 
-    qc_module = "-".join(["psi4", inp["keywords"].get("qc_module", "")]).strip("-")
+    qc_module_in = "-".join(["psi4", inp["keywords"].get("qc_module", "")]).strip("-")  # returns "psi4" or "psi4-<module>"
     driver = inp["driver"]
     reference = inp["keywords"]["reference"]
     fcae = {"true": "fc", "false": "ae"}[inp["keywords"]["freeze_core"]]
 
-    if qc_module == "psi4-detci" and basis != "cc-pvdz":
-        pytest.skip(f"basis {basis} too big for {qc_module}")
+    if qc_module_in == "psi4-detci" and basis != "cc-pvdz":
+        pytest.skip(f"basis {basis} too big for {qc_module_in}")
 
     # <<<  Reference Values  >>>
 
@@ -82,14 +82,18 @@ def runner_asserter(inp, subject, method, basis, tnm):
         return
 
     ret, wfn = driver_call[driver](inp["call"], molecule=subject, return_wfn=True, **extra_kwargs)
+    qc_module_out = "psi4-" + ("occ" if wfn.module() == "dfocc" else wfn.module())  # returns "psi4-<module>"
 
     # <<<  Comparison Tests  >>>
+
+    if qc_module_in != "psi4":
+        assert qc_module_out == qc_module_in, f"QC_MODULE used ({qc_module_in}) != requested ({qc_module_out})"
 
     ref_block = std_suite[chash]
 
     # qcvars
     contractual_args = [
-        qc_module,
+        qc_module_in,
         driver,
         reference,
         method,
