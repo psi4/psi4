@@ -1775,7 +1775,7 @@ def run_dfocc(name, **kwargs):
     dfocc_wfn = core.dfocc(ref_wfn)
 
     # Shove variables into global space
-    if name in ['mp2', 'omp2']:
+    if name in ['mp2', 'omp2', 'lccd',]:
         for k, v in dfocc_wfn.variables().items():
             core.set_variable(k, v)
 
