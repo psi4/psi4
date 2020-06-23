@@ -1,5 +1,5 @@
 if(${ENABLE_cct3})
-    find_package(cct3 0.8 CONFIG QUIET)
+    find_package(cct3 0.1 CONFIG QUIET)
 
     if(${cct3_FOUND})
         get_property(_loc TARGET cct3::cct3 PROPERTY LOCATION)
@@ -16,6 +16,7 @@ if(${ENABLE_cct3})
 
         ExternalProject_Add(cct3_external
             DEPENDS psi4-core
+            #URL https://github.com/piecuch-group/cct3/archive/master.tar.gz
             URL https://github.com/loriab/psi4_cct3/archive/cmake.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}

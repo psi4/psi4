@@ -1238,7 +1238,7 @@ EXCLISTS
 @pytest.mark.smoke
 @using_cct3
 def test_cct3():
-    import psi4_cct3
+    import cct3
 
     psi4.geometry("""
         units bohr
@@ -1270,14 +1270,14 @@ def test_cct3():
     psi4.driver.qcdb.libmintsbasisset.basishorde["ANONYMOUS1234"] = basisspec_psi4_yo__anonymous1234
 
     psi4.set_options({
-        "psi4_cct3__froz": 0,
-        "psi4_cct3__act_occ": 1,
-        "psi4_cct3__act_unocc": 1,
-        "psi4_cct3__etol": 16,
-        "psi4_cct3__calc_type": "cct3",
+        "cct3__froz": 0,
+        "cct3__act_occ": 1,
+        "cct3__act_unocc": 1,
+        "cct3__etol": 16,
+        "cct3__calc_type": "cct3",
         "basis": "anonymous1234",
     })
 
-    ene = psi4.energy("psi4_cct3")
+    ene = psi4.energy("cct3")
     assert psi4.compare_values(-4.220587742726, ene, 10, "cc(t;3) energy")
 

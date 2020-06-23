@@ -68,7 +68,7 @@ except ImportError:
     pass
 
 try:
-    import psi4_cct3
+    import cct3
 except ImportError:
     pass
 
