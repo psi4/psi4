@@ -173,6 +173,7 @@ void DFMP2::common_init() {
 
     // copy(reference_wavefunction_);
     name_ = "DF-MP2";
+    module_ = "dfmp2";
 
     variables_["MP2 SINGLES ENERGY"] = 0.0;
     variables_["MP2 DOUBLES ENERGY"] = 0.0;

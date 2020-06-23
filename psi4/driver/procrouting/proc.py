@@ -1253,7 +1253,7 @@ def scf_helper(name, post_scf=True, **kwargs):
     # Grab a few kwargs
     use_c1 = kwargs.get('use_c1', False)
     scf_molecule = kwargs.get('molecule', core.get_active_molecule())
-    read_orbitals = core.get_option('SCF', 'GUESS') is "READ"
+    read_orbitals = core.get_option('SCF', 'GUESS') == "READ"
     do_timer = kwargs.pop("do_timer", True)
     ref_wfn = kwargs.pop('ref_wfn', None)
     if ref_wfn is not None:
@@ -3309,7 +3309,7 @@ def run_adcc(name, **kwargs):
 
 
     if core.get_option('ADC', 'REFERENCE') not in ["RHF", "UHF"]:
-        raise ValidationError('ADC requires reference RHF or UHF')
+        raise ValidationError('adcc requires reference RHF or UHF')
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.pop('ref_wfn', None)
@@ -3410,7 +3410,7 @@ def run_adcc(name, **kwargs):
     try:
         state = adcrunner[name](ref_wfn, **kwargs, output=CoreStream())
     except InvalidReference as ex:
-        raise ValidationError("Cannot run ADC because the passed reference wavefunction is "
+        raise ValidationError("Cannot run adcc because the passed reference wavefunction is "
                               "not supported in adcc. Check Psi4 SCF parameters. adcc reports: "
                               "{}".format(str(ex)))
     core.print_out("\n")
@@ -3426,6 +3426,7 @@ def run_adcc(name, **kwargs):
     adc_wfn.shallow_copy(ref_wfn)
     adc_wfn.set_reference_wavefunction(ref_wfn)
     adc_wfn.set_name(name)
+    adc_wfn.set_module("adcc")
 
     # MP(3) energy for CVS-ADC(3) calculations is still a missing feature in adcc
     # ... we store this variant here to be able to fall back to MP(2) energies.
@@ -4097,6 +4098,7 @@ def run_sapt(name, **kwargs):
     p4util.banner(name.upper())
     core.print_out('\n')
     e_sapt = core.sapt(dimer_wfn, monomerA_wfn, monomerB_wfn)
+    dimer_wfn.set_module("sapt")
 
     from psi4.driver.qcdb.psivardefs import sapt_psivars
     p4util.expand_psivars(sapt_psivars())
@@ -4245,6 +4247,7 @@ def run_sapt_ct(name, **kwargs):
     core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
     e_sapt = core.sapt(dimer_wfn, monomerA_wfn, monomerB_wfn)
     CTd = core.variable('SAPT CT ENERGY')
+    dimer_wfn.set_module("sapt")
 
     core.print_out('\n')
     p4util.banner('Monomer Basis SAPT')

@@ -124,6 +124,7 @@ void CIWavefunction::common_init() {
     if (Parameters_->bendazzoli) form_ov();
 
     name_ = "CIWavefunction";
+    module_ = "detci";
 
     // Init H0 block
     H0block_init(CIblks_->vectlen);

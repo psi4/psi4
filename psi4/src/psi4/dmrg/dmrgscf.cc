@@ -917,6 +917,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     wfn->set_energy(Energy);
     wfn->set_scalar_variable("CURRENT ENERGY", Energy);
     wfn->set_scalar_variable("DMRG-SCF TOTAL ENERGY", Energy);
+    wfn->set_module("chemps2");
 
     if ((( dmrg_molden ) || (( dmrg_caspt2 ) && ( PSEUDOCANONICAL ))) && ( nIterations > 0 )){
 
@@ -1112,6 +1113,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
        wfn->set_energy(Energy + E_CASPT2);
        wfn->set_scalar_variable("CURRENT ENERGY", Energy + E_CASPT2);
        wfn->set_scalar_variable("DMRG-CASPT2 TOTAL ENERGY", Energy + E_CASPT2);
+       wfn->set_module("chemps2");
 
     }
 

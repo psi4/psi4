@@ -73,7 +73,10 @@ CCEnergyWavefunction::CCEnergyWavefunction(std::shared_ptr<Wavefunction> referen
 
 CCEnergyWavefunction::~CCEnergyWavefunction() {}
 
-void CCEnergyWavefunction::init() { shallow_copy(reference_wavefunction_); }
+void CCEnergyWavefunction::init() {
+    shallow_copy(reference_wavefunction_);
+    module_ = "ccenergy";
+}
 
 double CCEnergyWavefunction::compute_energy() {
     int done = 0;

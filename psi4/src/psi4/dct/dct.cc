@@ -91,6 +91,7 @@ DCTSolver::DCTSolver(SharedWavefunction ref_wfn, Options &options) : Wavefunctio
         same_a_b_orbs_ = false;
         name_ = "U" + options.get_str("DCT_FUNCTIONAL");
     }
+    module_ = "dct";
 
     // Sets up the memory, and orbital info
     init();

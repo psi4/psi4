@@ -88,6 +88,9 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Name of the wavefunction
     std::string name_;
 
+    /// Module name for CURRENT ENERGY
+    std::string module_;
+
     /// DF/RI/F12/etc basis sets
     std::map<std::string, std::shared_ptr<BasisSet>> basissets_;
 
@@ -639,6 +642,12 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
 
     /// Returns the wavefunction name
     const std::string& name() const { return name_; }
+
+    /// Set the module name (e.g. "OCC", "CCENERGY", "CCT3")
+    void set_module(const std::string& module) { module_ = module; }
+
+    /// Returns the module name
+    const std::string& module() const { return module_; }
 
     // Set the print flag level
     void set_print(size_t print) { print_ = print; }
