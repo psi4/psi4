@@ -750,7 +750,6 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                         int Qy = 3 * Qcenter + 1;
                         int Qz = 3 * Qcenter + 2;
 
-                        size_t stride = static_cast<size_t>(Pncart) * Qncart;
 
                         if (!pert_incore[Pcenter] && !pert_incore[Qcenter]) continue;
 
@@ -859,7 +858,6 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                             int ny = 3 * Ncenter + 1;
                             int nz = 3 * Ncenter + 2;
 
-                            size_t stride = static_cast<size_t>(Pncart) * Mncart * Nncart;
 
                             if (!pert_incore[Pcenter] && !pert_incore[Mcenter] && !pert_incore[Ncenter]) continue;
 
@@ -3295,20 +3293,20 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                     int oN = basisset_->shell(N).function_index();
 
                     Pmnint->compute_shell(P,0,M,N);
-                    const double* buffer = Pmnint->buffer();
+                    const double* buffer = Pmnint->buffers()[0];
 
                     for (int p = oP; p < oP+nP; p++) {
                         for (int m = oM; m < oM+nM; m++) {
                             for (int n = oN; n < oN+nN; n++) {
-                                Amnp[p][m*nso+n] += (*buffer++);
+                                Amnp[p][m*nso+n] = (*buffer++);
                             }
                         }
                     }
-                    // c[A] = (A|mn) D[m][n]
-                    C_DGEMV('N', np, nso*(size_t)nso, 1.0, Amnp[0], nso*(size_t)nso, Dtp[0], 1, 0.0, cp, 1);
                 }
             }
         }
+        // c[A] = (A|mn) D[m][n]
+        C_DGEMV('N', np, nso*(size_t)nso, 1.0, Amnp[0], nso*(size_t)nso, Dtp[0], 1, 0.0, cp, 1);
         // d[A] = Minv[A][B] c[B]
         //C_DGEMV('n', np, np, 2.0, PQp[0], np, cp, 1, 0.0, dp, 1);
         C_DGEMV('n', np, np, 1.0, PQp[0], np, cp, 1, 0.0, dp, 1);
@@ -3352,40 +3350,42 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                     int Qy = 3 * Qcenter + 1;
                     int Qz = 3 * Qcenter + 2;
 
-                    size_t stride = static_cast<size_t> (Pncart) * Qncart;
-
                     if(!pert_incore[Pcenter] && !pert_incore[Qcenter])
                         continue;
 
                     PQint->compute_shell_deriv1(P,0,Q,0);
-                    const double* buffer = PQint->buffer();
-
-                    auto *ptr = const_cast<double*>(buffer);
+                    const auto& buffers = PQint->buffers();
+                    const double* PxBuf = buffers[0];
+                    const double* PyBuf = buffers[1];
+                    const double* PzBuf = buffers[2];
+                    const double* QxBuf = buffers[3];
+                    const double* QyBuf = buffers[4];
+                    const double* QzBuf = buffers[5];
 
                     if(pert_incore[Pcenter]){
                         // J terms
                         // Px
-                        C_DGEMV('n', nP, nQ, 1.0, ptr+0*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                        C_DGEMV('n', nP, nQ, 1.0, const_cast<double*>(PxBuf), nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
                         C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Px][0], 1);
                         // Py
-                        C_DGEMV('n', nP, nQ, 1.0, ptr+1*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                        C_DGEMV('n', nP, nQ, 1.0, const_cast<double*>(PyBuf), nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
                         C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Py][0], 1);
                         // Pz
-                        C_DGEMV('n', nP, nQ, 1.0, ptr+2*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                        C_DGEMV('n', nP, nQ, 1.0, const_cast<double*>(PzBuf), nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
                         C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Pz][0], 1);
 
                         if (Kscale) {
                             // K terms
                             // Px
-                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+0*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, const_cast<double*>(PxBuf), nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
                             for(int p = 0; p < nP; ++p)
                                 C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Px][0], nso);
                             // Py
-                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+1*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, const_cast<double*>(PyBuf), nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
                             for(int p = 0; p < nP; ++p)
                                 C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Py][0], nso);
                             // Pz
-                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+2*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, const_cast<double*>(PzBuf), nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
                             for(int p = 0; p < nP; ++p)
                                 C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Pz][0], nso);
                         }
@@ -3394,27 +3394,27 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                     if(pert_incore[Qcenter]){
                         // J terms
                         // Qx
-                        C_DGEMV('n', nP, nQ, 1.0, ptr+3*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                        C_DGEMV('n', nP, nQ, 1.0, const_cast<double*>(QxBuf), nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
                         C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Qx][0], 1);
                         // Qy
-                        C_DGEMV('n', nP, nQ, 1.0, ptr+4*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                        C_DGEMV('n', nP, nQ, 1.0, const_cast<double*>(QyBuf), nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
                         C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Qy][0], 1);
                         // Qz
-                        C_DGEMV('n', nP, nQ, 1.0, ptr+5*stride, nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
+                        C_DGEMV('n', nP, nQ, 1.0, const_cast<double*>(QzBuf), nQ, &dp[oQ], 1, 0.0, pTempP[0], 1);
                         C_DGEMV('t', nP, nso*nso, -1.0, Bmnp[oP], nso*nso, pTempP[0], 1, 1.0, pdG[Qz][0], 1);
 
                         if (Kscale) {
                             // K terms
                             // Qx
-                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+3*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, const_cast<double*>(QxBuf), nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
                             for(int p = 0; p < nP; ++p)
                                 C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Qx][0], nso);
                             // Qy
-                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+4*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, const_cast<double*>(QyBuf), nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
                             for(int p = 0; p < nP; ++p)
                                 C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Qy][0], nso);
                             // Qz
-                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, ptr+5*stride, nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
+                            C_DGEMM('n', 'n', nP, nso*nso, nQ, 1.0, const_cast<double*>(QzBuf), nQ, pTmn[oQ], nso*nso, 0.0, pTmpPmn[0], nso*nso);
                             for(int p = 0; p < nP; ++p)
                                 C_DGEMM('N', 'N', nso, nso, nso, Kscale, Bmnp[p+oP], nso, pTmpPmn[p], nso, 1.0, pdG[Qz][0], nso);
                         }
@@ -3449,15 +3449,22 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                         int ny = 3 * Ncenter + 1;
                         int nz = 3 * Ncenter + 2;
 
-                        size_t stride = static_cast<size_t> (Pncart) * Mncart * Nncart;
-
                         if(!pert_incore[Pcenter] &&
                                 !pert_incore[Mcenter] &&
                                 !pert_incore[Ncenter])
                             continue;
 
                         Pmnint->compute_shell_deriv1(P,0,M,N);
-                        const double* buffer = Pmnint->buffer();
+                        const auto& buffers = Pmnint->buffers();
+                        const double* PxBuf = buffers[0];
+                        const double* PyBuf = buffers[1];
+                        const double* PzBuf = buffers[2];
+                        const double* mxBuf = buffers[3];
+                        const double* myBuf = buffers[4];
+                        const double* mzBuf = buffers[5];
+                        const double* nxBuf = buffers[6];
+                        const double* nyBuf = buffers[7];
+                        const double* nzBuf = buffers[8];
 
                         /*
                          * J terms have 2 contributions:
@@ -3475,7 +3482,7 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                                 double val = 0.0;
                                 for(int m = oM; m < nM+oM; ++m){
                                     for(int n = oN; n < nN+oN; ++n){
-                                        val += Dtp[m][n] * buffer[x*stride+delta];
+                                        val += Dtp[m][n] * buffers[x][delta];
                                         ++delta;
                                     }
                                 }
@@ -3483,17 +3490,15 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                             }
                         }
 
-                        auto *ptr = const_cast<double*>(buffer);
-
                         if(pert_incore[Pcenter]){
                             // J Terms
                             size_t delta = 0L;
                             for(int p = oP; p < oP+nP; ++p){
                                 for(int m = oM; m < nM+oM; ++m){
                                     for(int n = oN; n < nN+oN; ++n){
-                                        pdG[Px][m][n] += buffer[0*stride+delta] * dp[p];
-                                        pdG[Py][m][n] += buffer[1*stride+delta] * dp[p];
-                                        pdG[Pz][m][n] += buffer[2*stride+delta] * dp[p];
+                                        pdG[Px][m][n] += PxBuf[delta] * dp[p];
+                                        pdG[Py][m][n] += PyBuf[delta] * dp[p];
+                                        pdG[Pz][m][n] += PzBuf[delta] * dp[p];
                                         ++delta;
                                     }
                                 }
@@ -3504,11 +3509,11 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                             // K Terms
                             if (Kscale) {
                                 for(int p = 0; p < nP; ++p)
-                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+0*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[Px][oN], nso);
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, const_cast<double*>(&PxBuf[p*nM*nN]), nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[Px][oN], nso);
                                 for(int p = 0; p < nP; ++p)
-                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+1*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[Py][oN], nso);
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, const_cast<double*>(&PyBuf[p*nM*nN]), nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[Py][oN], nso);
                                 for(int p = 0; p < nP; ++p)
-                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+2*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[Pz][oN], nso);
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, const_cast<double*>(&PzBuf[p*nM*nN]), nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[Pz][oN], nso);
                             }
                         }
                         if(pert_incore[Mcenter]){
@@ -3517,9 +3522,9 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                             for(int p = oP; p < oP+nP; ++p){
                                 for(int m = oM; m < nM+oM; ++m){
                                     for(int n = oN; n < nN+oN; ++n){
-                                        pdG[mx][m][n] += buffer[3*stride+delta] * dp[p];
-                                        pdG[my][m][n] += buffer[4*stride+delta] * dp[p];
-                                        pdG[mz][m][n] += buffer[5*stride+delta] * dp[p];
+                                        pdG[mx][m][n] += mxBuf[delta] * dp[p];
+                                        pdG[my][m][n] += myBuf[delta] * dp[p];
+                                        pdG[mz][m][n] += mzBuf[delta] * dp[p];
                                         ++delta;
                                     }
                                 }
@@ -3530,11 +3535,11 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                             // K Terms
                             if (Kscale) {
                                 for(int p = 0; p < nP; ++p)
-                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+3*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[mx][oN], nso);
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, const_cast<double*>(&mxBuf[p*nM*nN]), nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[mx][oN], nso);
                                 for(int p = 0; p < nP; ++p)
-                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+4*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[my][oN], nso);
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, const_cast<double*>(&myBuf[p*nM*nN]), nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[my][oN], nso);
                                 for(int p = 0; p < nP; ++p)
-                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+5*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[mz][oN], nso);
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, const_cast<double*>(&mzBuf[p*nM*nN]), nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[mz][oN], nso);
                             }
                         }
                         if(pert_incore[Ncenter]){
@@ -3543,9 +3548,9 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                             for(int p = oP; p < oP+nP; ++p){
                                 for(int m = oM; m < nM+oM; ++m){
                                     for(int n = oN; n < nN+oN; ++n){
-                                        pdG[nx][m][n] += buffer[6*stride+delta] * dp[p];
-                                        pdG[ny][m][n] += buffer[7*stride+delta] * dp[p];
-                                        pdG[nz][m][n] += buffer[8*stride+delta] * dp[p];
+                                        pdG[nx][m][n] += nxBuf[delta] * dp[p];
+                                        pdG[ny][m][n] += nyBuf[delta] * dp[p];
+                                        pdG[nz][m][n] += nzBuf[delta] * dp[p];
                                         ++delta;
                                     }
                                 }
@@ -3556,11 +3561,11 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                             // K Terms
                             if (Kscale) {
                                 for(int p = 0; p < nP; ++p)
-                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+6*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[nx][oN], nso);
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, const_cast<double*>(&nxBuf[p*nM*nN]), nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[nx][oN], nso);
                                 for(int p = 0; p < nP; ++p)
-                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+7*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[ny][oN], nso);
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, const_cast<double*>(&nyBuf[p*nM*nN]), nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[ny][oN], nso);
                                 for(int p = 0; p < nP; ++p)
-                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, ptr+8*stride+p*nM*nN, nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[nz][oN], nso);
+                                    C_DGEMM('T', 'N', nN, nso, nM, -2 * Kscale, const_cast<double*>(&nzBuf[p*nM*nN]), nN, &pTmn[oP+p][oM*nso], nso, 1.0, pdG[nz][oN], nso);
                             }
                         }
 
@@ -3656,8 +3661,6 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
         size_t npairs = shell_pairs.size();
         size_t npairs2 = npairs * npairs;
 
-        const double* buffer = ints->buffer();
-
         for (int A = 0; A < 3 * natom; A+=max_a) {
             int nA = (A + max_a >= 3 * natom ? 3 * natom - A : max_a);
 
@@ -3716,6 +3719,19 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                 }
 
                 ints->compute_shell_deriv1(P,Q,R,S);
+                const auto& buffers = ints->buffers();
+                const double* AxBuf = buffers[0];
+                const double* AyBuf = buffers[1];
+                const double* AzBuf = buffers[2];
+                const double* BxBuf = buffers[3];
+                const double* ByBuf = buffers[4];
+                const double* BzBuf = buffers[5];
+                const double* CxBuf = buffers[6];
+                const double* CyBuf = buffers[7];
+                const double* CzBuf = buffers[8];
+                const double* DxBuf = buffers[9];
+                const double* DyBuf = buffers[10];
+                const double* DzBuf = buffers[11];
 
                 const int Psize = basisset_->shell(P).nfunction();
                 const int Qsize = basisset_->shell(Q).nfunction();
@@ -3736,8 +3752,6 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                 if (P != Q)   prefactor *= 2.0;
                 if (R != S)   prefactor *= 2.0;
                 if (PQ != RS) prefactor *= 2.0;
-
-                size_t stride = static_cast<size_t> (Pncart) * Qncart * Rncart * Sncart;
 
                 double Dpq, Drs, Dpr, Dqs, Dps, Dqr;
                 size_t delta;
@@ -3761,18 +3775,18 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                             for (int s = Soff; s < Soff+Ssize; s++) {
                                 Dpq = Dtp[p][q];
                                 Drs = Dtp[r][s];
-                                Ax = prefactor * buffer[0 * stride + delta];
-                                Ay = prefactor * buffer[1 * stride + delta];
-                                Az = prefactor * buffer[2 * stride + delta];
-                                Cx = prefactor * buffer[3 * stride + delta];
-                                Cy = prefactor * buffer[4 * stride + delta];
-                                Cz = prefactor * buffer[5 * stride + delta];
-                                Dx = prefactor * buffer[6 * stride + delta];
-                                Dy = prefactor * buffer[7 * stride + delta];
-                                Dz = prefactor * buffer[8 * stride + delta];
-                                Bx = -(Ax + Cx + Dx);
-                                By = -(Ay + Cy + Dy);
-                                Bz = -(Az + Cz + Dz);
+                                Ax = prefactor * AxBuf[delta];
+                                Ay = prefactor * AyBuf[delta];
+                                Az = prefactor * AzBuf[delta];
+                                Bx = prefactor * BxBuf[delta];
+                                By = prefactor * ByBuf[delta];
+                                Bz = prefactor * BzBuf[delta];
+                                Cx = prefactor * CxBuf[delta];
+                                Cy = prefactor * CyBuf[delta];
+                                Cz = prefactor * CzBuf[delta];
+                                Dx = prefactor * DxBuf[delta];
+                                Dy = prefactor * DyBuf[delta];
+                                Dz = prefactor * DzBuf[delta];
 
                                 if(pert_incore[Pcenter]){
                                     pdG[Pcenter*3+0][p][q] += Ax * Drs;
@@ -3825,18 +3839,18 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                         for (int q = Qoff; q < Qoff+Qsize; q++) {
                             for (int r = Roff; r < Roff+Rsize; r++) {
                                 for (int s = Soff; s < Soff+Ssize; s++) {
-                                    Ax = prefactor * buffer[0 * stride + delta];
-                                    Ay = prefactor * buffer[1 * stride + delta];
-                                    Az = prefactor * buffer[2 * stride + delta];
-                                    Cx = prefactor * buffer[3 * stride + delta];
-                                    Cy = prefactor * buffer[4 * stride + delta];
-                                    Cz = prefactor * buffer[5 * stride + delta];
-                                    Dx = prefactor * buffer[6 * stride + delta];
-                                    Dy = prefactor * buffer[7 * stride + delta];
-                                    Dz = prefactor * buffer[8 * stride + delta];
-                                    Bx = -(Ax + Cx + Dx);
-                                    By = -(Ay + Cy + Dy);
-                                    Bz = -(Az + Cz + Dz);
+                                    Ax = prefactor * AxBuf[delta];
+                                    Ay = prefactor * AyBuf[delta];
+                                    Az = prefactor * AzBuf[delta];
+                                    Bx = prefactor * BxBuf[delta];
+                                    By = prefactor * ByBuf[delta];
+                                    Bz = prefactor * BzBuf[delta];
+                                    Cx = prefactor * CxBuf[delta];
+                                    Cy = prefactor * CyBuf[delta];
+                                    Cz = prefactor * CzBuf[delta];
+                                    Dx = prefactor * DxBuf[delta];
+                                    Dy = prefactor * DyBuf[delta];
+                                    Dz = prefactor * DzBuf[delta];
 
                                     Dpr = D1p[p][r];
                                     Dqs = D1p[q][s];

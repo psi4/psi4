@@ -1399,24 +1399,23 @@ void DFJKGrad::compute_hessian() {
                 }
             }
         }
-
-        // First alpha
+    }
+    // First alpha
+    // (A|mj) = (A|mn) C[n][j]
+    C_DGEMM('N','N',np*(size_t)nso,na,nso,1.0,Amnp[0],nso,Cap[0],na,0.0,Aa_mip[0],na);
+    // (A|ij) = (A|mj) C[m][i]
+    #pragma omp parallel for
+    for (int p = 0; p < np; p++) {
+        C_DGEMM('T','N',na,na,nso,1.0,Aa_mip[p],na,Cap[0],na,0.0,&Aa_ijp[0][p * (size_t) na * na],na);
+    }
+    // Beta
+    if (!same_ab){
         // (A|mj) = (A|mn) C[n][j]
-        C_DGEMM('N','N',np*(size_t)nso,na,nso,1.0,Amnp[0],nso,Cap[0],na,0.0,Aa_mip[0],na);
+        C_DGEMM('N','N',np*(size_t)nso,nb,nso,1.0,Amnp[0],nso,Cbp[0],nb,0.0,Ab_mip[0],nb);
         // (A|ij) = (A|mj) C[m][i]
         #pragma omp parallel for
         for (int p = 0; p < np; p++) {
-            C_DGEMM('T','N',na,na,nso,1.0,Aa_mip[p],na,Cap[0],na,0.0,&Aa_ijp[0][p * (size_t) na * na],na);
-        }
-        // Beta
-        if (!same_ab){
-            // (A|mj) = (A|mn) C[n][j]
-            C_DGEMM('N','N',np*(size_t)nso,nb,nso,1.0,Amnp[0],nso,Cbp[0],nb,0.0,Ab_mip[0],nb);
-            // (A|ij) = (A|mj) C[m][i]
-            #pragma omp parallel for
-            for (int p = 0; p < np; p++) {
-                C_DGEMM('T','N',nb,nb,nso,1.0,Ab_mip[p],nb,Cbp[0],nb,0.0,&Ab_ijp[0][p * (size_t) nb * nb],nb);
-            }
+            C_DGEMM('T','N',nb,nb,nso,1.0,Ab_mip[p],nb,Cbp[0],nb,0.0,&Ab_ijp[0][p * (size_t) nb * nb],nb);
         }
     }
     // c[A] = (A|mn) D[m][n]
@@ -1536,79 +1535,78 @@ void DFJKGrad::compute_hessian() {
                 // dAij[x][p,i,j] <- C[m][i] T[p][m,j]
                 if(do_K_) {
                     // Alpha
-                    auto *ptr = const_cast<double*>(buffer);
-                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+0*stride, nN, Cap[oN], na, 0.0, Tap[0], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, const_cast<double*>(PxBuf), nN, Cap[oN], na, 0.0, Tap[0], na);
 #pragma omp parallel for
                     for(int p = 0; p < nP; ++p)
                         C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tap[0]+p*(nM*na), na, 1.0, &dAa_ijp[Px][(p+oP)*na*na], na);
-                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+1*stride, nN, Cap[oN], na, 0.0, Tap[0], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, const_cast<double*>(PyBuf), nN, Cap[oN], na, 0.0, Tap[0], na);
 #pragma omp parallel for
                     for(int p = 0; p < nP; ++p)
                         C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tap[0]+p*(nM*na), na, 1.0, &dAa_ijp[Py][(p+oP)*na*na], na);
-                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+2*stride, nN, Cap[oN], na, 0.0, Tap[0], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, const_cast<double*>(PzBuf), nN, Cap[oN], na, 0.0, Tap[0], na);
 #pragma omp parallel for
                     for(int p = 0; p < nP; ++p)
                         C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tap[0]+p*(nM*na), na, 1.0, &dAa_ijp[Pz][(p+oP)*na*na], na);
-                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+3*stride, nN, Cap[oN], na, 0.0, Tap[0], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, const_cast<double*>(mxBuf), nN, Cap[oN], na, 0.0, Tap[0], na);
 #pragma omp parallel for
                     for(int p = 0; p < nP; ++p)
                         C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tap[0]+p*(nM*na), na, 1.0, &dAa_ijp[mx][(p+oP)*na*na], na);
-                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+4*stride, nN, Cap[oN], na, 0.0, Tap[0], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, const_cast<double*>(myBuf), nN, Cap[oN], na, 0.0, Tap[0], na);
 #pragma omp parallel for
                     for(int p = 0; p < nP; ++p)
                         C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tap[0]+p*(nM*na), na, 1.0, &dAa_ijp[my][(p+oP)*na*na], na);
-                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+5*stride, nN, Cap[oN], na, 0.0, Tap[0], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, const_cast<double*>(mzBuf), nN, Cap[oN], na, 0.0, Tap[0], na);
 #pragma omp parallel for
                     for(int p = 0; p < nP; ++p)
                         C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tap[0]+p*(nM*na), na, 1.0, &dAa_ijp[mz][(p+oP)*na*na], na);
-                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+6*stride, nN, Cap[oN], na, 0.0, Tap[0], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, const_cast<double*>(nxBuf), nN, Cap[oN], na, 0.0, Tap[0], na);
 #pragma omp parallel for
                     for(int p = 0; p < nP; ++p)
                         C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tap[0]+p*(nM*na), na, 1.0, &dAa_ijp[nx][(p+oP)*na*na], na);
-                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+7*stride, nN, Cap[oN], na, 0.0, Tap[0], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, const_cast<double*>(nyBuf), nN, Cap[oN], na, 0.0, Tap[0], na);
 #pragma omp parallel for
                     for(int p = 0; p < nP; ++p)
                         C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tap[0]+p*(nM*na), na, 1.0, &dAa_ijp[ny][(p+oP)*na*na], na);
-                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, ptr+8*stride, nN, Cap[oN], na, 0.0, Tap[0], na);
+                    C_DGEMM('n', 'n', nP*nM, na, nN, 1.0, const_cast<double*>(nzBuf), nN, Cap[oN], na, 0.0, Tap[0], na);
 #pragma omp parallel for
                     for(int p = 0; p < nP; ++p)
                         C_DGEMM('t', 'n', na, na, nM, 1.0, Cap[oM], na, Tap[0]+p*(nM*na), na, 1.0, &dAa_ijp[nz][(p+oP)*na*na], na);
 
                     // Beta
                     if (!same_ab){
-                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, ptr+0*stride, nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
+                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, const_cast<double*>(PxBuf), nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
 #pragma omp parallel for
                         for(int p = 0; p < nP; ++p)
                             C_DGEMM('t', 'n', nb, nb, nM, 1.0, Cbp[oM], nb, Tbp[0]+p*(nM*nb), nb, 1.0, &dAb_ijp[Px][(p+oP)*nb*nb], nb);
-                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, ptr+1*stride, nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
+                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, const_cast<double*>(PyBuf), nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
 #pragma omp parallel for
                         for(int p = 0; p < nP; ++p)
                             C_DGEMM('t', 'n', nb, nb, nM, 1.0, Cbp[oM], nb, Tbp[0]+p*(nM*nb), nb, 1.0, &dAb_ijp[Py][(p+oP)*nb*nb], nb);
-                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, ptr+2*stride, nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
+                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, const_cast<double*>(PzBuf), nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
 #pragma omp parallel for
                         for(int p = 0; p < nP; ++p)
                             C_DGEMM('t', 'n', nb, nb, nM, 1.0, Cbp[oM], nb, Tbp[0]+p*(nM*nb), nb, 1.0, &dAb_ijp[Pz][(p+oP)*nb*nb], nb);
-                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, ptr+3*stride, nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
+                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, const_cast<double*>(mxBuf), nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
 #pragma omp parallel for
                         for(int p = 0; p < nP; ++p)
                             C_DGEMM('t', 'n', nb, nb, nM, 1.0, Cbp[oM], nb, Tbp[0]+p*(nM*nb), nb, 1.0, &dAb_ijp[mx][(p+oP)*nb*nb], nb);
-                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, ptr+4*stride, nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
+                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, const_cast<double*>(myBuf), nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
 #pragma omp parallel for
                         for(int p = 0; p < nP; ++p)
                             C_DGEMM('t', 'n', nb, nb, nM, 1.0, Cbp[oM], nb, Tbp[0]+p*(nM*nb), nb, 1.0, &dAb_ijp[my][(p+oP)*nb*nb], nb);
-                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, ptr+5*stride, nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
+                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, const_cast<double*>(mzBuf), nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
 #pragma omp parallel for
                         for(int p = 0; p < nP; ++p)
                             C_DGEMM('t', 'n', nb, nb, nM, 1.0, Cbp[oM], nb, Tbp[0]+p*(nM*nb), nb, 1.0, &dAb_ijp[mz][(p+oP)*nb*nb], nb);
-                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, ptr+6*stride, nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
+                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, const_cast<double*>(nxBuf), nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
 #pragma omp parallel for
                         for(int p = 0; p < nP; ++p)
                             C_DGEMM('t', 'n', nb, nb, nM, 1.0, Cbp[oM], nb, Tbp[0]+p*(nM*nb), nb, 1.0, &dAb_ijp[nx][(p+oP)*nb*nb], nb);
-                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, ptr+7*stride, nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
+                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, const_cast<double*>(nyBuf), nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
 #pragma omp parallel for
                         for(int p = 0; p < nP; ++p)
                             C_DGEMM('t', 'n', nb, nb, nM, 1.0, Cbp[oM], nb, Tbp[0]+p*(nM*nb), nb, 1.0, &dAb_ijp[ny][(p+oP)*nb*nb], nb);
-                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, ptr+8*stride, nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
+                        C_DGEMM('n', 'n', nP*nM, nb, nN, 1.0, const_cast<double*>(nzBuf), nN, Cbp[oN], nb, 0.0, Tbp[0], nb);
 #pragma omp parallel for
                         for(int p = 0; p < nP; ++p)
                             C_DGEMM('t', 'n', nb, nb, nM, 1.0, Cbp[oM], nb, Tbp[0]+p*(nM*nb), nb, 1.0, &dAb_ijp[nz][(p+oP)*nb*nb], nb);
@@ -1667,21 +1665,20 @@ void DFJKGrad::compute_hessian() {
             // K term intermediates
             // deij[x][A,i,j] <- (A|B)^x Bij[B,i,j]
             if(do_K_){
-                auto *ptr = const_cast<double*>(buffer);
-                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+0*stride, nQ, Ba_ijp[oQ], na*na, 1.0, &dea_ijp[Px][oP*na*na], na*na);
-                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+1*stride, nQ, Ba_ijp[oQ], na*na, 1.0, &dea_ijp[Py][oP*na*na], na*na);
-                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+2*stride, nQ, Ba_ijp[oQ], na*na, 1.0, &dea_ijp[Pz][oP*na*na], na*na);
-                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+3*stride, nQ, Ba_ijp[oQ], na*na, 1.0, &dea_ijp[Qx][oP*na*na], na*na);
-                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+4*stride, nQ, Ba_ijp[oQ], na*na, 1.0, &dea_ijp[Qy][oP*na*na], na*na);
-                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, ptr+5*stride, nQ, Ba_ijp[oQ], na*na, 1.0, &dea_ijp[Qz][oP*na*na], na*na);
+                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, const_cast<double*>(Pxbuf), nQ, Ba_ijp[oQ], na*na, 1.0, &dea_ijp[Px][oP*na*na], na*na);
+                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, const_cast<double*>(Pybuf), nQ, Ba_ijp[oQ], na*na, 1.0, &dea_ijp[Py][oP*na*na], na*na);
+                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, const_cast<double*>(Pzbuf), nQ, Ba_ijp[oQ], na*na, 1.0, &dea_ijp[Pz][oP*na*na], na*na);
+                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, const_cast<double*>(Qxbuf), nQ, Ba_ijp[oQ], na*na, 1.0, &dea_ijp[Qx][oP*na*na], na*na);
+                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, const_cast<double*>(Qybuf), nQ, Ba_ijp[oQ], na*na, 1.0, &dea_ijp[Qy][oP*na*na], na*na);
+                C_DGEMM('n', 'n', nP, na*na, nQ, 1.0, const_cast<double*>(Qzbuf), nQ, Ba_ijp[oQ], na*na, 1.0, &dea_ijp[Qz][oP*na*na], na*na);
 
                 if (!same_ab){
-                    C_DGEMM('n', 'n', nP, nb*nb, nQ, 1.0, ptr+0*stride, nQ, Bb_ijp[oQ], nb*nb, 1.0, &deb_ijp[Px][oP*nb*nb], nb*nb);
-                    C_DGEMM('n', 'n', nP, nb*nb, nQ, 1.0, ptr+1*stride, nQ, Bb_ijp[oQ], nb*nb, 1.0, &deb_ijp[Py][oP*nb*nb], nb*nb);
-                    C_DGEMM('n', 'n', nP, nb*nb, nQ, 1.0, ptr+2*stride, nQ, Bb_ijp[oQ], nb*nb, 1.0, &deb_ijp[Pz][oP*nb*nb], nb*nb);
-                    C_DGEMM('n', 'n', nP, nb*nb, nQ, 1.0, ptr+3*stride, nQ, Bb_ijp[oQ], nb*nb, 1.0, &deb_ijp[Qx][oP*nb*nb], nb*nb);
-                    C_DGEMM('n', 'n', nP, nb*nb, nQ, 1.0, ptr+4*stride, nQ, Bb_ijp[oQ], nb*nb, 1.0, &deb_ijp[Qy][oP*nb*nb], nb*nb);
-                    C_DGEMM('n', 'n', nP, nb*nb, nQ, 1.0, ptr+5*stride, nQ, Bb_ijp[oQ], nb*nb, 1.0, &deb_ijp[Qz][oP*nb*nb], nb*nb);
+                    C_DGEMM('n', 'n', nP, nb*nb, nQ, 1.0, const_cast<double*>(Pxbuf), nQ, Bb_ijp[oQ], nb*nb, 1.0, &deb_ijp[Px][oP*nb*nb], nb*nb);
+                    C_DGEMM('n', 'n', nP, nb*nb, nQ, 1.0, const_cast<double*>(Pybuf), nQ, Bb_ijp[oQ], nb*nb, 1.0, &deb_ijp[Py][oP*nb*nb], nb*nb);
+                    C_DGEMM('n', 'n', nP, nb*nb, nQ, 1.0, const_cast<double*>(Pzbuf), nQ, Bb_ijp[oQ], nb*nb, 1.0, &deb_ijp[Pz][oP*nb*nb], nb*nb);
+                    C_DGEMM('n', 'n', nP, nb*nb, nQ, 1.0, const_cast<double*>(Qxbuf), nQ, Bb_ijp[oQ], nb*nb, 1.0, &deb_ijp[Qx][oP*nb*nb], nb*nb);
+                    C_DGEMM('n', 'n', nP, nb*nb, nQ, 1.0, const_cast<double*>(Qybuf), nQ, Bb_ijp[oQ], nb*nb, 1.0, &deb_ijp[Qy][oP*nb*nb], nb*nb);
+                    C_DGEMM('n', 'n', nP, nb*nb, nQ, 1.0, const_cast<double*>(Qzbuf), nQ, Bb_ijp[oQ], nb*nb, 1.0, &deb_ijp[Qz][oP*nb*nb], nb*nb);
                 }
             }
         }
@@ -2103,27 +2100,27 @@ void DFJKGrad::compute_hessian() {
                     for (int p = oP; p < oP+nP; p++) {
                         for (int q = oQ; q < oQ+nQ; q++) {
                             double dAdB = -DPQp[p][q];
-                            PxPx += dAdB * buffer[9  * stride + delta];
-                            PxPy += dAdB * buffer[10 * stride + delta];
-                            PxPz += dAdB * buffer[11 * stride + delta];
-                            PxQx += dAdB * buffer[12 * stride + delta];
-                            PxQy += dAdB * buffer[13 * stride + delta];
-                            PxQz += dAdB * buffer[14 * stride + delta];
-                            PyPy += dAdB * buffer[18 * stride + delta];
-                            PyPz += dAdB * buffer[19 * stride + delta];
-                            PyQx += dAdB * buffer[20 * stride + delta];
-                            PyQy += dAdB * buffer[21 * stride + delta];
-                            PyQz += dAdB * buffer[22 * stride + delta];
-                            PzPz += dAdB * buffer[26 * stride + delta];
-                            PzQx += dAdB * buffer[27 * stride + delta];
-                            PzQy += dAdB * buffer[28 * stride + delta];
-                            PzQz += dAdB * buffer[29 * stride + delta];
-                            QxQx += dAdB * buffer[33 * stride + delta];
-                            QxQy += dAdB * buffer[34 * stride + delta];
-                            QxQz += dAdB * buffer[35 * stride + delta];
-                            QyQy += dAdB * buffer[39 * stride + delta];
-                            QyQz += dAdB * buffer[40 * stride + delta];
-                            QzQz += dAdB * buffer[44 * stride + delta];
+                            PxPx += dAdB * PxPxBuf[delta];
+                            PxPy += dAdB * PxPyBuf[delta];
+                            PxPz += dAdB * PxPzBuf[delta];
+                            PxQx += dAdB * PxQxBuf[delta];
+                            PxQy += dAdB * PxQyBuf[delta];
+                            PxQz += dAdB * PxQzBuf[delta];
+                            PyPy += dAdB * PyPyBuf[delta];
+                            PyPz += dAdB * PyPzBuf[delta];
+                            PyQx += dAdB * PyQxBuf[delta];
+                            PyQy += dAdB * PyQyBuf[delta];
+                            PyQz += dAdB * PyQzBuf[delta];
+                            PzPz += dAdB * PzPzBuf[delta];
+                            PzQx += dAdB * PzQxBuf[delta];
+                            PzQy += dAdB * PzQyBuf[delta];
+                            PzQz += dAdB * PzQzBuf[delta];
+                            QxQx += dAdB * QxQxBuf[delta];
+                            QxQy += dAdB * QxQyBuf[delta];
+                            QxQz += dAdB * QxQzBuf[delta];
+                            QyQy += dAdB * QyQyBuf[delta];
+                            QyQz += dAdB * QyQzBuf[delta];
+                            QzQz += dAdB * QzQzBuf[delta];
                             ++delta;
                         }
 
