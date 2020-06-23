@@ -11,6 +11,7 @@ foreach(dir
   gdma
   libint
   libint2
+  mdi
   pcmsolver
   pylibefp
   qcelemental
