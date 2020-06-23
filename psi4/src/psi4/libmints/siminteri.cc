@@ -461,6 +461,8 @@ void SimintTwoElectronInt::create_blocks(void) {
             }
         }
     }
+    std::sort(blocks12_.begin(),blocks12_.end(),
+         [](const ShellPairBlock &i, const ShellPairBlock &j) {return i[0].first < j[0].first || i[0].first == j[0].first && i[0].second < j[0].second;});
 
     if(braket_same_) RSblock_starts_.resize(blocks12_.size());
 

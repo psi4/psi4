@@ -3137,7 +3137,7 @@ void Libint2TwoElectronInt::common_init() {
 
     size_t npairs = shell_pairs_bra_.size();
     pairs12_.resize(npairs);
-#pragma omp parallel for
+//#pragma omp parallel for
     for (int pair = 0; pair < npairs; ++pair) {
         auto s1 = shell_pairs_bra_[pair].first;
         auto s2 = shell_pairs_bra_[pair].second;
@@ -3146,7 +3146,7 @@ void Libint2TwoElectronInt::common_init() {
     }
     npairs = shell_pairs_ket_.size();
     pairs34_.resize(npairs);
-#pragma omp parallel for
+//#pragma omp parallel for
     for (int pair = 0; pair < npairs; ++pair) {
         auto s3 = shell_pairs_ket_[pair].first;
         auto s4 = shell_pairs_ket_[pair].second;

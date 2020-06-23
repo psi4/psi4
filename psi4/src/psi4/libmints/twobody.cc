@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include <algorithm>
 #include <stdexcept>
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/twobody.h"
@@ -243,25 +244,6 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
     function_pairs_reverse_.resize(nbf_ * (nbf_ + 1L) / 2L);
 
     long int offset = 0L;
-    size_t MUNU = 0L;
-    for (int MU = 0; MU < nshell_; MU++) {
-        for (int NU = 0; NU <= MU; NU++, MUNU++) {
-            if (shell_pair_values_[MU * nshell_ + NU] >= screening_threshold_squared_over_max) {
-                // Make sure the angular momenta are correctly ordered!
-                if (bs->shell(MU).am() >= bs->shell(NU).am()) {
-                    shell_pairs.push_back(std::make_pair(MU, NU));
-                } else {
-                    shell_pairs.push_back(std::make_pair(NU, MU));
-                }
-                shell_pairs_reverse_[MUNU] = offset;
-                offset++;
-            } else {
-                shell_pairs_reverse_[MUNU] = -1L;
-            }
-        }
-    }
-
-    offset = 0L;
     size_t munu = 0L;
     for (int mu = 0; mu < nbf_; mu++) {
         for (int nu = 0; nu <= mu; nu++, munu++) {
@@ -287,6 +269,43 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
             }
         }
     }
+
+    shell_pairs.clear();
+    std::fill_n(shell_pairs_reverse_.begin(), nshell_ * (nshell_ + 1) / 2, -1);
+    int natoms1 = bs->molecule()->natom();
+    int natoms2;
+    if (is_bra) {
+        natoms2 = bra_same_ ? basis2()->molecule()->natom() : 1;
+    } else{
+        natoms2 = ket_same_ ? basis4()->molecule()->natom() : 1;
+    }
+    const auto am1 = bs->max_am();
+    const auto am2 = bs->max_am();
+    int task = 0;
+    for (int atom1 = 0; atom1 < natoms1; ++atom1) {
+        for (int atom2 = 0; atom2 < natoms2; ++atom2) {
+            for (int iam = 0; iam <= am1; iam++) {
+                for (int jam = 0; jam <= am2; jam++) {
+                    for (int ishell = 0; ishell < nshell_; ishell++) {
+                        if (bs->shell(ishell).am() != iam) continue;
+                        if (bs->shell(ishell).ncenter() != atom1) continue;
+                        // In this case there's a list of shell pair info to loop over; use it
+                        for (const auto &jshell : shell_to_shell_[ishell]) {
+                            if (bs->shell(jshell).am() == jam && bs->shell(jshell).ncenter() == atom2) {
+                                if (ishell >= jshell) {
+                                    shell_pairs_reverse_[ishell*(ishell+1)/2 + jshell] = shell_pairs.size();
+                                    shell_pairs.push_back({ishell, jshell});
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    std::sort(shell_pairs.begin(),shell_pairs.end(),
+         [](const std::pair<int, int>&i, const std::pair<int, int>&j) {return i.first < j.first || i.first == j.first && i.second < j.second;});
 
     for (int mu = 0; mu < nbf_; mu++) {
         for (int nu = 0; nu < nbf_; nu++) {
@@ -361,55 +380,20 @@ void TwoBodyAOInt::create_blocks() {
     const auto nshell3 = basis3()->nshell();
     const auto nshell4 = basis4()->nshell();
 
-    //if (screening_type_ == ScreeningType::None) {
-    //    // Push back all pairs
-    //    blocks12_.reserve(nshell1 * nshell2);
-    //    blocks34_.reserve(nshell3 * nshell4);
-    //    for (int s1 = 0; s1 < basis1()->nshell(); s1++) {
-    //        int j_end = basis1() == basis2() ? s1 + 1 : basis2()->nshell();
-    //        for (int s2 = 0; s2 < j_end; s2++) {
-    //            if (basis1()->shell(s1).am() >= basis2()->shell(s2).am() || basis1() != basis2()) {
-    //                blocks12_.push_back({{s1, s2}});
-    //            } else {
-    //                blocks12_.push_back({{s2, s1}});
-    //            }
-    //        }
-    //    }
-
-    //    for (int s3 = 0; s3 < basis3()->nshell(); s3++) {
-    //        int l_end = basis3() == basis4() ? s3 + 1 : basis4()->nshell();
-    //        for (int s4 = 0; s4 < l_end; s4++) {
-    //            if (basis3()->shell(s3).am() >= basis4()->shell(s4).am() || basis3() != basis4()) {
-    //                blocks34_.push_back({{s3, s4}});
-    //            } else {
-    //                blocks34_.push_back({{s4, s3}});
-    //            }
-    //        }
-    //    }
-    //} else {
-        // Push back only the pairs that survived the sieving process.  This is only
-        // possible if all four basis sets are the same in the current implementation.
-        blocks12_.reserve(shell_pairs_bra_.size());
-        for (const auto &pair : shell_pairs_bra_) {
-            const auto &s1 = pair.first;
-            const auto &s2 = pair.second;
-            if (basis1()->shell(s1).am() >= basis2()->shell(s2).am()) {
-                blocks12_.push_back({{s1, s2}});
-            } else {
-                blocks12_.push_back({{s2, s1}});
-            }
-        }
-        blocks34_.reserve(shell_pairs_ket_.size());
-        for (const auto &pair : shell_pairs_ket_) {
-            const auto &s3 = pair.first;
-            const auto &s4 = pair.second;
-            if (basis3()->shell(s3).am() >= basis4()->shell(s4).am()) {
-                blocks34_.push_back({{s3, s4}});
-            } else {
-                blocks34_.push_back({{s4, s3}});
-            }
-        }
-    //}
+    // Push back only the pairs that survived the sieving process.  This is only
+    // possible if all four basis sets are the same in the current implementation.
+    blocks12_.reserve(shell_pairs_bra_.size());
+    for (const auto &pair : shell_pairs_bra_) {
+        const auto &s1 = pair.first;
+        const auto &s2 = pair.second;
+        blocks12_.push_back({{s1, s2}});
+    }
+    blocks34_.reserve(shell_pairs_ket_.size());
+    for (const auto &pair : shell_pairs_ket_) {
+        const auto &s3 = pair.first;
+        const auto &s4 = pair.second;
+        blocks34_.push_back({{s3, s4}});
+    }
 }
 
 bool TwoBodyAOInt::shell_block_significant(int shellpair12, int shellpair34) const {

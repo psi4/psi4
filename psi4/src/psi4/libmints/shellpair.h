@@ -1,6 +1,8 @@
 #ifndef _psi_src_lib_libmints_shellpair_h
 #define _psi_src_lib_libmints_shellpair_h
 
+// This should be included from libint2 itself eventually, but a workaround is to include it here
+#include <system_error>
 #include "psi4/libmints/basisset.h"
 #include "libint2/shell.h"
 #include "libint2/engine.h"
