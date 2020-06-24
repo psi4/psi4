@@ -41,6 +41,7 @@
 #include "psi4/libmints/petitelist.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/mintshelper.h"
+#include "psi4/libqt/qt.h"
 
 using namespace psi;
 ;
@@ -311,6 +312,11 @@ void FCHKWriter::write_matrix(const char *label, const std::vector<int> &mat) {
     if (count % 6) fprintf(chk_, "\n");
 }
 
+void FCHKWriter::set_pHF_density_label(const std::string &label) {
+    postscf_density_label_ = ("Total" + label);
+    spin_postscf_density_label_ = ("Spin" + label);
+}
+
 void FCHKWriter::write(const std::string &filename) {
     chk_ = fopen(filename.c_str(), "w");
     std::shared_ptr<BasisSet> basis = wavefunction_->basisset();
@@ -319,8 +325,17 @@ void FCHKWriter::write(const std::string &filename) {
     std::shared_ptr<Wavefunction> refwf = wavefunction_->reference_wavefunction();
 
     // Orbitals
-    SharedMatrix Ca_ao = wavefunction_->Ca_subset("AO");
-    SharedMatrix Cb_ao = wavefunction_->Cb_subset("AO");
+    Ca_ao = wavefunction_->Ca_subset("AO");
+    Cb_ao = wavefunction_->Cb_subset("AO");
+
+    const std::string &name = wavefunction_->name();
+    const std::string &basisname = basis->name();
+    int nbf = basis->nbf();
+    int nmo = Ca_ao->ncol();
+    int nalpha = wavefunction_->nalpha();
+    int nbeta = wavefunction_->nbeta();
+    int natoms = mol->natom();
+    int nprimitive = basis->nprimitive();
 
     // SCF density matrices
     SharedMatrix Da_ao;
@@ -333,10 +348,8 @@ void FCHKWriter::write(const std::string &filename) {
     bool pHF = (refwf != NULL);
 
     if (pHF) {
-        // Level of theory may be correlated
         Da_ao = refwf->Da_subset("AO");
         Db_ao = refwf->Db_subset("AO");
-
         DPHFa_ao = wavefunction_->Da_subset("AO");
         DPHFb_ao = wavefunction_->Db_subset("AO");
     } else {
@@ -346,7 +359,6 @@ void FCHKWriter::write(const std::string &filename) {
     }
 
     // Total and spin density
-    SharedMatrix Dtot_ao;
     SharedMatrix Dspin_ao;
     SharedMatrix DPHFtot_ao;
     SharedMatrix DPHFspin_ao;
@@ -362,15 +374,6 @@ void FCHKWriter::write(const std::string &filename) {
         DPHFspin_ao = DPHFa_ao->clone();
         DPHFspin_ao->subtract(DPHFb_ao);
     }
-
-    const std::string &name = wavefunction_->name();
-    const std::string &basisname = basis->name();
-    int nbf = basis->nbf();
-    int nmo = Ca_ao->ncol();
-    int nalpha = wavefunction_->nalpha();
-    int nbeta = wavefunction_->nbeta();
-    int natoms = mol->natom();
-    int nprimitive = basis->nprimitive();
 
     std::vector<double> coords;
     std::vector<double> nuc_charges;
@@ -614,16 +617,14 @@ void FCHKWriter::write(const std::string &filename) {
     write_matrix("Alpha Orbital Energies", wavefunction_->epsilon_a_subset("AO"));
     write_matrix("Alpha MO coefficients", reorderedCa);
     write_sym_matrix("Total SCF Density", reorderedDt);
-    // In theory, the correlated density should be printed out with a
-    // legend depending on the method (MP2, MP3, MP4, CI, CC) but this
-    // is probably the most common anyhow
-    if (pHF) write_sym_matrix("Total CC Density", reorderedDPHFt);
+    // labels for the densities are figured out at the python level
+    if (pHF) write_sym_matrix(postscf_density_label_.c_str(), reorderedDPHFt);
     if (!wavefunction_->same_a_b_orbs() || !wavefunction_->same_a_b_dens()) {
         // These are only printed out if the orbitals or density is not spin-restricted
         write_matrix("Beta Orbital Energies", wavefunction_->epsilon_b_subset("AO"));
         write_matrix("Beta MO coefficients", reorderedCb);
         write_sym_matrix("Spin SCF Density", reorderedDs);
-        if (pHF) write_sym_matrix("Spin CC Density", reorderedDPHFs);
+        if (pHF) write_sym_matrix(spin_postscf_density_label_.c_str(), reorderedDPHFs);
     }
 
     SharedMatrix gradient = wavefunction_->gradient();

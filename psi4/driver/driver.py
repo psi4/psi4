@@ -1931,8 +1931,7 @@ def gdma(wfn, datafile=""):
     if not datafile:
         os.remove(commands)
 
-
-def fchk(wfn, filename):
+def fchk(wfn, filename, debug=False):
     """Function to write wavefunction information in *wfn* to *filename* in
     Gaussian FCHK format.
 
@@ -1940,17 +1939,23 @@ def fchk(wfn, filename):
 
     :returns: None
 
+    :type wfn: :py:class:`~psi4.core.Wavefunction`
+    :param wfn: set of molecule, basis, orbitals from which to generate fchk file
+
     :type filename: string
     :param filename: destination file name for FCHK file
 
-    :type wfn: :py:class:`~psi4.core.Wavefunction`
-    :param wfn: set of molecule, basis, orbitals from which to generate fchk file
+    :type debug: boolean
+    :param debug: returns a dictionary to aid with debugging
 
     Notes
     -----
     * A description of the FCHK format is http://wild.life.nctu.edu.tw/~jsyu/compchem/g09/g09ur/f_formchk.htm
     * The allowed headers for methods are general and limited, i.e., "Total SCF|MP2|CI|CC Density",
-      so "CC" is always used for the post-HF case.
+      PSI4 will try to find the right one for the current calculation.
+    * Not all theory modules in PSI4 are compatible with the FCHK writer.
+      A warning will be printed if a theory module is not supported.
+    * Caution! For orbital-optimized correlated methods (e.g. DCT, OMP2) the 'Orbital Energy' field contains ambiguous data.
 
     :examples:
 
@@ -1958,10 +1963,89 @@ def fchk(wfn, filename):
     >>> E, wfn = energy('b3lyp', return_wfn=True)
     >>> fchk(wfn, 'mycalc.fchk')
 
-    """
-    fw = core.FCHKWriter(wfn)
-    fw.write(filename)
+    >>> # [2] FCHK file for correlated densities
+    >>> E, wfn = gradient('ccsd', return_wfn=True)
+    >>> fchk(wfn, 'mycalc.fchk')
 
+    """
+    # * Known limitations and notes *
+    #
+    # OCC: (occ theory module only, not dfocc) is turned off as it densities are not set. 
+    # DFMP2: Contains natural orbitals in wfn.C() and wfn.epsilon() data.
+    # This is fixed to contain respective HF data.
+
+    allowed = ['DFMP2', 'SCF', 'CCENERGY', 'DCT', 'DFOCC']
+    module_ = wfn.module().upper()
+    if (module_ not in allowed):
+        core.print_out(f"FCHKWriter: Theory module {module_} is currently not supported by the FCHK writer.")
+        return None
+
+    # fix orbital coefficients and energies for DFMP2
+    if (module_ in ['DFMP2']):
+        wfn_ = core.Wavefunction.build(wfn.molecule(), core.get_global_option('BASIS'))
+        wfn_.deep_copy(wfn)
+        refwfn = wfn.reference_wavefunction()
+        wfn_.set_reference_wavefunction(refwfn)  # refwfn not deep_copied
+        wfn_.Ca().copy(refwfn.Ca())
+        wfn_.Cb().copy(refwfn.Cb())
+        wfn_.epsilon_a().copy(refwfn.epsilon_a())
+        wfn_.epsilon_b().copy(refwfn.epsilon_b())
+        fw = core.FCHKWriter(wfn_)
+    else:
+        fw = core.FCHKWriter(wfn)
+
+    if (module_ in ['DCT', 'DFOCC']):
+        core.print_out("""FCHKWriter: Caution! For orbital-optimized correlated methods
+            the 'Orbital Energy' field contains ambiguous data.""")
+
+    # At this point we don't know the method name, so we try to search for it.
+    # idea: get the method from the variable matching closely the 'current energy'
+    varlist = core.scalar_variables()
+    current = varlist['CURRENT ENERGY']
+
+    # delete problematic entries
+    delete_list = ['CURRENT ENERGY', 'CURRENT REFERENCE ENERGY']
+    for key in delete_list:
+        if key in varlist:
+            del varlist[key]
+
+    # find closest matching energy
+    for (key, val) in varlist.items():
+        if (np.isclose(val, current, 1e-10)):
+            method = key
+
+    # The labels this functions knows. Extend if needed.
+    labels = {
+        "HF": " SCF Density",
+        "SCF": " SCF Density",
+        "DFT": " SCF Density",
+        "MP2": " MP2 Density",
+        "MP3": " MP3 Density",
+        "MP4": " MP4 Density",
+        "CI": " CI Density",
+        "CC": " CC Density",
+        "DCT": " DCT Density",
+    }
+    # assign label from method name
+    fchk_label = 'UNKNOWN'
+    for key in labels:
+        if key in method:
+            fchk_label = labels[key]
+    if fchk_label == 'UNKNOWN':
+        raise ValidationError('Unknown density in FCHKWriter')
+    fw.set_postscf_density_label(fchk_label)
+
+    fw.write(filename)
+    # needed for the pytest. The SCF density below follows PSI4 ordering not FCHK ordering.
+    if (debug):
+        ret = {
+            "filename": filename,
+            "detected energy": method,
+            "selected label": fchk_label,
+            "Total SCF Density": fw.SCF_Dtot().np,
+        }
+        return ret
+    return None
 
 def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
     """Function to write wavefunction information in *wfn* to *filename* in

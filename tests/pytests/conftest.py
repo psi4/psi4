@@ -22,7 +22,7 @@ def tear_down():
                 'pytest_output.dat',
                 'pytest_output.*grad',
                 '*pcmsolver.inp', 'PEDRA.OUT*', 'timer.dat',
-                'FCIDUMP_SCF', 'FCIDUMP_MP2']
+                'FCIDUMP_SCF', 'FCIDUMP_MP2','*.fchk']
     pytest_scratches = []
     for pat in patterns:
         pytest_scratches.extend(glob.glob(pat))

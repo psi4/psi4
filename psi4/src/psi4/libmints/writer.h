@@ -57,10 +57,17 @@ class PSI_API FCHKWriter {
     void write_matrix(const char *label, const SharedMatrix &mat);
     void write_matrix(const char *label, const std::vector<double> &mat);
     void write_matrix(const char *label, const std::vector<int> &mat);
+    std::string postscf_density_label_;
+    std::string spin_postscf_density_label_;
 
    public:
+    SharedMatrix Dtot_ao;
+    SharedMatrix Ca_ao;
+    SharedMatrix Cb_ao;
     FCHKWriter(std::shared_ptr<Wavefunction> wavefunction);
     void write(const std::string &filename);
+    void set_pHF_density_label(const std::string &label);
+    const SharedMatrix SCF_Dtot() const { return Dtot_ao; }
 };
 
 class PSI_API MoldenWriter {
