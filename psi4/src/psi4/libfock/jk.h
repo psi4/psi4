@@ -453,18 +453,21 @@ class PSI_API JK {
     * @param omega range-separation parameter
     */
     void set_omega(double omega) { omega_ = omega; }
+    double get_omega() { return omega_; }
 
     /**
     * Set the alpha value for w exchange: weight for HF Term                
     * @param omega_alpha HF-Exchange weight
     */
     virtual void set_omega_alpha(double alpha) { omega_alpha_ = alpha; }
+    double get_omega_alpha() {return omega_alpha_; }
 
     /**
     * Set the alpha value for w exchange: weight for dampened Term                
     * @param omega_beta Dampened Exchange weight
     */
     virtual void set_omega_beta(double beta) { omega_beta_ = beta; }
+    double get_omega_beta() { return omega_beta_; }
 
     // => Computers <= //
 

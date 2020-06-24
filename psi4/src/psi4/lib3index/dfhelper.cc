@@ -576,7 +576,7 @@ void DFHelper::prepare_AO_wK_core() {
 
 
     double* wppq = wPpq_.get();
-    double* ppq;
+    double* ppq = nullptr;
 
     if (!wcombine_) ppq = Ppq_.get();
 
@@ -587,9 +587,9 @@ void DFHelper::prepare_AO_wK_core() {
     double* M1p = Qpq.get();
     double* M2p = Qpq2.get();
     std::unique_ptr<double[]> metric1;
-    double* met1p;
+    double* met1p = nullptr;
     std::unique_ptr<double[]> metric;
-    double* metp;
+    double* metp = nullptr;
 
     if (!hold_met_) {
         metric1 = std::unique_ptr<double[]>(new double[naux_ * naux_]);
@@ -3225,8 +3225,6 @@ void DFHelper::compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> 
 }
 void DFHelper::compute_J_combined(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p, std::vector<std::vector<double>>& D_buffers, size_t bcount, size_t block_size) {
 //    double* coul_metp = metric_prep_core(1.0);
-    double ZERO[16] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    double* zerop = &ZERO[0];
     double* coul_metp;
     std::unique_ptr<double[]> metric;
 
@@ -3243,8 +3241,8 @@ void DFHelper::compute_J_combined(std::vector<SharedMatrix> D, std::vector<Share
     for (size_t i = 0; i < J.size(); i++) {
         double* Dp = D[i]->pointer()[0];
         double* Jp = J[i]->pointer()[0];
-        C_DCOPY(naux_ *  nthreads_, zerop, 0, T1p, 1);
-        C_DCOPY(naux_, zerop, 0, T2p, 1);
+        memset(T1p, 0, naux_ *  nthreads_ * sizeof(double));
+        memset(T2p, 0, naux_ * sizeof(double));
 
 #pragma omp parallel for schedule(guided) num_threads(nthreads_)
         for (size_t k = 0; k < nbf_; k++) {
@@ -3269,7 +3267,7 @@ void DFHelper::compute_J_combined(std::vector<SharedMatrix> D, std::vector<Share
         //metric contraction
         C_DGEMV('N', naux_, naux_, 1.0, coul_metp, naux_, T1p, 1, 0.0, T2p, 1);
 
-        C_DCOPY(nbf_ * nbf_, zerop, 0, T1p, 1);
+        memset(T1p, 0, nbf_ * nbf_ * sizeof(double));
         // comute pruned J
 #pragma omp parallel for schedule(guided) num_threads(nthreads_)
         for (size_t k = 0; k < nbf_; k++ ) {
