@@ -175,7 +175,7 @@ def molecule_from_arrays(cls,
 
 
 @classmethod
-def molecule_from_schema(cls, molschema, return_dict=False, verbose=1):
+def molecule_from_schema(cls, molschema, return_dict=False, nonphysical=False, verbose=1):
     """Construct Molecule from non-Psi4 schema.
 
     Light wrapper around :py:func:`~psi4.core.Molecule.from_arrays`.
@@ -186,6 +186,8 @@ def molecule_from_schema(cls, molschema, return_dict=False, verbose=1):
         Dictionary form of Molecule following known schema.
     return_dict : bool, optional
         Additionally return Molecule dictionary intermediate.
+    nonphysical : bool, optional
+        Do allow masses outside an element's natural range to pass validation?
     verbose : int, optional
         Amount of printing.
 
@@ -197,7 +199,7 @@ def molecule_from_schema(cls, molschema, return_dict=False, verbose=1):
         Only provided if `return_dict` is True.
 
     """
-    molrec = qcel.molparse.from_schema(molschema, verbose=verbose)
+    molrec = qcel.molparse.from_schema(molschema, nonphysical=nonphysical, verbose=verbose)
 
     if return_dict:
         return core.Molecule.from_dict(molrec), molrec
