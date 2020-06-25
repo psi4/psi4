@@ -40,7 +40,11 @@ using_snsmp2 = pytest.mark.skipif(psi4.addons("snsmp2") is False,
                                 reason="Psi4 not detecting plugin snsmp2. Build plugin if necessary and add to envvar PYTHONPATH (or rebuild Psi with -DENABLE_snsmp2)")
 using_resp = pytest.mark.skipif(psi4.addons("resp") is False,
                                 reason="Psi4 not detecting plugin resp. Build plugin if necessary and add to envvar PYTHONPATH (or rebuild Psi with -DENABLE_resp)")
-using_psi4fockci = pytest.mark.skipif(psi4.addons("psi4fockci") is False, reason="Psi4 not detecting plugin psi4fockci. Build plugin if necessary and add to envvar PYTHONPATH")
+using_psi4fockci = pytest.mark.skipif(psi4.addons("psi4fockci") is False,
+                                reason="Psi4 not detecting plugin psi4fockci. Build plugin if necessary and add to envvar PYTHONPATH")
+using_cct3 = pytest.mark.skipif(psi4.addons("cct3") is False,
+                                reason="Psi4 not detecting plugin cct3. Build plugin if necessary and add to envvar PYTHONPATH")
+
 
 @pytest.mark.smoke
 @using_gdma
@@ -1229,3 +1233,51 @@ EXCLISTS
     assert psi4.compare_values(ref_pe_energy, wfn.get_variable("PE ENERGY"), 6, "PE Energy contribution")
     assert psi4.compare_values(ref_scf_energy, scf_energy, 6, "Total PE-SCF Energy")
     psi4.core.print_variables()
+
+
+@pytest.mark.smoke
+@using_cct3
+def test_cct3():
+    import cct3
+
+    psi4.geometry("""
+        units bohr
+        h -2.514213562373  -1.000000000000   0.000000000000
+        h -2.514213562373   1.000000000000   0.000000000000
+        h  2.514213562373  -1.000000000000   0.000000000000
+        h  2.514213562373   1.000000000000   0.000000000000
+        h -1.000000000000  -2.414213562373   0.000000000000
+        h -1.000000000000   2.414213562373   0.000000000000
+        h  1.000000000000  -2.414213562373   0.000000000000
+        h  1.000000000000   2.414213562373   0.000000000000
+        symmetry d2h
+    """)
+
+    def basisspec_psi4_yo__anonymous1234(mol, role):
+        bas = """
+            cartesian
+            ****
+            H   0
+            S   3  1.0000
+                  4.50038     0.0704800
+                  0.681277    0.407890
+                  0.151374    0.647670
+            ****
+        """
+        mol.set_basis_all_atoms("mbs_my", role=role)
+        return {"mbs_my": bas}
+
+    psi4.driver.qcdb.libmintsbasisset.basishorde["ANONYMOUS1234"] = basisspec_psi4_yo__anonymous1234
+
+    psi4.set_options({
+        "cct3__froz": 0,
+        "cct3__act_occ": 1,
+        "cct3__act_unocc": 1,
+        "cct3__etol": 16,
+        "cct3__calc_type": "cct3",
+        "basis": "anonymous1234",
+    })
+
+    ene = psi4.energy("cct3")
+    assert psi4.compare_values(-4.220587742726, ene, 10, "cc(t;3) energy")
+

@@ -103,6 +103,8 @@ void DataType::assign(double) { throw DataTypeException("assign(double) failure"
 
 void DataType::assign(std::string) { throw DataTypeException("assign(std:string) failure"); }
 
+std::vector<std::string> DataType::choices() { throw DataTypeException("choices() failure"); }
+
 void DataType::reset() { throw DataTypeException("reset() failure"); }
 
 Data& DataType::operator[](std::string) { throw NOT_IMPLEMENTED_EXCEPTION(); }
@@ -382,6 +384,8 @@ void Data::assign(double d) { ptr_->assign(d); }
 
 void Data::assign(std::string s) { ptr_->assign(s); }
 
+std::vector<std::string> Data::choices() { return ptr_->choices(); }
+
 void Data::reset() { ptr_->reset(); }
 
 DataType* Data::get() const { return ptr_.get(); }
@@ -595,11 +599,29 @@ void Options::set_double(const std::string& module, const std::string& key, doub
 void Options::set_str(const std::string& module, const std::string& key, std::string s) {
     locals_[module][key] = new StringDataType(s);
     locals_[module][key].changed();
+
+    auto gl = get_global(key);
+    to_upper(s);
+    if (gl.choices().size() > 0) {
+        bool wrong_input = true;
+        for (size_t i = 0; i < gl.choices().size(); ++i)
+            if (s == gl.choices()[i]) wrong_input = false;
+        if (wrong_input) throw DataTypeException(s + " is not a valid choice");
+    }
 }
 
 void Options::set_str_i(const std::string& module, const std::string& key, std::string s) {
     locals_[module][key] = new IStringDataType(s);
     locals_[module][key].changed();
+
+    auto gl = get_global(key);
+    to_upper(s);
+    if (gl.choices().size() > 0) {
+        bool wrong_input = true;
+        for (size_t i = 0; i < gl.choices().size(); ++i)
+            if (s == gl.choices()[i]) wrong_input = false;
+        if (wrong_input) throw DataTypeException(s + " is not a valid choice");
+    }
 }
 
 void Options::set_array(const std::string& module, const std::string& key) {

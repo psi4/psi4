@@ -806,6 +806,9 @@ def select_ccsd(name, **kwargs):
         if mtd_type == 'CONV':
             if module == 'FNOCC':
                 func = run_fnocc
+            elif module == 'CCT3' and extras.addons("cct3"):
+                import cct3
+                func = cct3.run_cct3
             elif module in ['', 'CCENERGY']:
                 func = run_ccenergy
         elif mtd_type == 'DF':
@@ -824,7 +827,10 @@ def select_ccsd(name, **kwargs):
                 func = run_ccenergy
     elif reference == 'ROHF':
         if mtd_type == 'CONV':
-            if module in ['', 'CCENERGY']:
+            if module == 'CCT3' and extras.addons("cct3"):
+                import cct3
+                func = cct3.run_cct3
+            elif module in ['', 'CCENERGY']:
                 func = run_ccenergy
 
     if func is None:
