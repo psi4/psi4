@@ -1238,7 +1238,7 @@ class Molecule(LibmintsMolecule):
         molrec = self.to_dict(np_out=True)
 
         # flip zeros
-        molrec['geom'][np.abs(molrec['geom']) < 5**(-(ZERO))] = 0
+        molrec['geom'][np.abs(molrec['geom']) < 5**(-(prec))] = 0
 
         smol = qcel.molparse.to_string(
             molrec,
