@@ -67,11 +67,6 @@ CCTransform::CCTransform(std::shared_ptr<Wavefunction> wfn) : fraction_of_memory
     oei_so_indexing = blas->get_index("[s]");
     first_irrep_in_core = 0;
     last_irrep_in_core = 0;
-    oei_so = nullptr;
-    oei_mo = nullptr;
-    tei_so = nullptr;
-    tei_mo = nullptr;
-    tei_half_transformed = nullptr;
 }
 
 CCTransform::~CCTransform() { free_memory(); }
@@ -92,13 +87,12 @@ void CCTransform::read_tei_so_integrals() {
     CCIndex* indexing = blas->get_index("[s>=s]");
 
     // Allocate the tei_so matrix blocks
-    allocate1(double*, tei_so, moinfo->get_nirreps());
+    tei_so = std::vector<std::vector<double>>(moinfo->get_nirreps());
 
     for (int h = 0; h < moinfo->get_nirreps(); h++) {
         if (indexing->get_pairpi(h) > 0) {
             size_t block_size = INDEX(indexing->get_pairpi(h) - 1, indexing->get_pairpi(h) - 1) + 1;
-            allocate1(double, tei_so[h], block_size);
-            for (size_t i = 0; i < block_size; i++) tei_so[h][i] = 0.0;
+            tei_so[h] = std::vector<double>(block_size, 0);
             outfile->Printf("\n\tCCTransform: allocated the %s block of size %lu", moinfo->get_irr_labs(h).c_str(),
                             block_size);
         }
@@ -183,9 +177,9 @@ void CCTransform::transform_tei_so_integrals() {
             int cols_D = moinfo->get_mopi(h_p);
 
             if (rows_A * cols_A * rows_B * cols_B * rows_D * cols_D > 0) {
-                allocate2(double, A, rows_A, cols_A);
-                allocate2(double, B, rows_B, cols_B);
-                allocate2(double, D, rows_D, cols_D);
+                A = block_matrix(rows_A, cols_A);
+                B = block_matrix(rows_B, cols_B);
+                D = block_matrix(rows_D, cols_D);
                 for (int rs = 0; rs < rsindx->get_pairpi(h_rs); rs++) {
                     zero_arr(&(A[0][0]), rows_A * cols_A);
                     zero_arr(&(B[0][0]), rows_B * cols_B);
@@ -240,15 +234,15 @@ void CCTransform::transform_tei_so_integrals() {
                         }
                     }
                 }
-                release2(A);
-                release2(B);
-                release2(D);
+                free_block(A);
+                free_block(B);
+                free_block(D);
             }
         }
     }
 
     // Second-half transform
-    outfile->Printf("\n\tCCTransform: beginning second-half integral trasform");
+    outfile->Printf("\n\tCCTransform: beginning second-half integral transform");
 
     for (int h_ij = 0; h_ij < nirreps; h_ij++) {
         for (int h_r = 0; h_r < nirreps; h_r++) {
@@ -263,9 +257,9 @@ void CCTransform::transform_tei_so_integrals() {
             int cols_D = moinfo->get_mopi(h_r);
 
             if (rows_A * cols_A * rows_B * cols_B * rows_D * cols_D > 0) {
-                allocate2(double, A, rows_A, cols_A);
-                allocate2(double, B, rows_B, cols_B);
-                allocate2(double, D, rows_D, cols_D);
+                A = block_matrix(rows_A, cols_A);
+                B = block_matrix(rows_B, cols_B);
+                D = block_matrix(rows_D, cols_D);
                 for (int ij = 0; ij < ijindx->get_pairpi(h_ij); ij++) {
                     zero_arr(&(A[0][0]), rows_A * cols_A);
                     zero_arr(&(B[0][0]), rows_B * cols_B);
@@ -319,9 +313,9 @@ void CCTransform::transform_tei_so_integrals() {
                         }
                     }
                 }
-                release2(A);
-                release2(B);
-                release2(D);
+                free_block(A);
+                free_block(B);
+                free_block(D);
             }
         }
     }
@@ -392,27 +386,20 @@ void CCTransform::read_oei_mo_integrals() {
 
     int nmo = moinfo->get_nmo();
 
-    double* H;
-    allocate1(double, H, INDEX(nmo - 1, nmo - 1) + 1);
+    std::vector<double> H(INDEX(nmo - 1, nmo - 1) + 1, 0);
 
-    iwl_rdone(PSIF_OEI, const_cast<char*>(PSIF_MO_FZC), H, nmo * (nmo + 1) / 2, 0, 0, "outfile");
+    iwl_rdone(PSIF_OEI, const_cast<char*>(PSIF_MO_FZC), H.data(), nmo * (nmo + 1) / 2, 0, 0, "outfile");
     //   else
     //     iwl_rdone(PSIF_OEI,PSIF_MO_FZC,H,norbs*(norbs+1)/2,0,1,outfile); //TODO fix it!
 
     for (int i = 0; i < nmo; i++)
         for (int j = 0; j < nmo; j++) oei_mo[i][j] = H[INDEX(i, j)];
-    release1(H);
 }
 
 /**
  * Free all the memory allocated by CCTransform
  */
 void CCTransform::free_memory() {
-    free_oei_so();
-    free_oei_mo();
-    free_tei_so();
-    free_tei_mo();
-    free_tei_half_transformed();
     integral_map.clear();
 }
 
@@ -420,20 +407,9 @@ void CCTransform::free_memory() {
  * Allocate the oei_mo array
  */
 void CCTransform::allocate_oei_mo() {
-    if (oei_mo == nullptr) {
+    if (oei_mo.size() == 0) {
         int nmo = moinfo->get_nmo();
-        allocate2(double, oei_mo, nmo, nmo);
-    }
-}
-
-/**
- * Free the oei_mo array
- */
-void CCTransform::free_oei_mo() {
-    if (oei_mo != nullptr) {
-        int nmo = moinfo->get_nmo();
-        release2(oei_mo);
-        oei_mo = nullptr;
+        oei_mo = std::vector<std::vector<double>>(nmo, std::vector<double>(nmo, 0));
     }
 }
 
@@ -441,19 +417,9 @@ void CCTransform::free_oei_mo() {
  * Allocate the oei_so array
  */
 void CCTransform::allocate_oei_so() {
-    if (oei_so == nullptr) {
+    if (oei_mo.size() == 0) {
         int nso = moinfo->get_nso();
-        allocate2(double, oei_so, nso, nso);
-    }
-}
-
-/**
- * Free the oei_so array
- */
-void CCTransform::free_oei_so() {
-    if (oei_so != nullptr) {
-        release2(oei_so);
-        oei_so = nullptr;
+        oei_so = std::vector<std::vector<double>>(nso, std::vector<double>(nso, 0));
     }
 }
 
@@ -461,79 +427,47 @@ void CCTransform::free_oei_so() {
  * Allocate the tei_mo array and exit(EXIT_FAILURE) if there is not enough space
  */
 void CCTransform::allocate_tei_mo() {
-    if (tei_mo == nullptr) {
+    if (tei_mo.size() == 0) {
         CCIndex* indexing = blas->get_index("[n>=n]");
 
         // Allocate the tei_mo matrix blocks
-        allocate1(double*, tei_mo, moinfo->get_nirreps());
+        tei_mo = std::vector<std::vector<double>>(moinfo->get_nirreps());
 
-        bool failed = false;
-        size_t required_size = 0;
-        size_t matrix_size = 0;
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             if (indexing->get_pairpi(h) > 0) {
                 size_t block_size = INDEX(indexing->get_pairpi(h) - 1, indexing->get_pairpi(h) - 1) + 1;
-                matrix_size += block_size;
-                if (sizeof(double) * block_size < memory_manager->get_FreeMemory()) {
-                    allocate1(double, tei_mo[h], block_size);
-                    for (size_t i = 0; i < block_size; i++) tei_mo[h][i] = 0.0;
-                } else {
-                    failed = true;
-                    required_size += sizeof(double) * block_size;
-                    tei_mo[h] = nullptr;
-                }
+                tei_mo[h] = std::vector<double>(block_size, 0);
                 outfile->Printf("\n\tCCTransform: allocated the %s block of size %lu bytes (free memory = %14lu bytes)",
                                 moinfo->get_irr_labs(h).c_str(), block_size, memory_manager->get_FreeMemory());
             }
-        }
-        if (failed) {
-            outfile->Printf("\n\tCCTransform: not enough memory! %lu bytes extra required", required_size);
-
-            exit(EXIT_FAILURE);
         }
     }
 }
 
 void CCTransform::allocate_tei_so() {
-    if (tei_so == nullptr) {
+    if (tei_so.size() == 0) {
         CCIndex* indexing = blas->get_index("[s>=s]");
 
         // Allocate the tei_so matrix blocks
-        allocate1(double*, tei_so, moinfo->get_nirreps());
+        tei_so = std::vector<std::vector<double>>(moinfo->get_nirreps());
 
-        bool failed = false;
-        size_t required_size = 0;
-        size_t matrix_size = 0;
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             if (indexing->get_pairpi(h) > 0) {
                 int block_size = INDEX(indexing->get_pairpi(h) - 1, indexing->get_pairpi(h) - 1) + 1;
-                matrix_size += block_size;
-                if (sizeof(double) * block_size < memory_manager->get_FreeMemory()) {
-                    allocate1(double, tei_so[h], block_size);
-                    for (int i = 0; i < block_size; i++) tei_so[h][i] = 0.0;
-                } else {
-                    failed = true;
-                    required_size += sizeof(double) * block_size;
-                    tei_so[h] = nullptr;
-                }
+                tei_so[h] = std::vector<double>(block_size, 0);
                 outfile->Printf("\n\tCCTransform: allocated the %s block of size %d bytes (free memory = %14lu bytes)",
                                 moinfo->get_irr_labs(h).c_str(), block_size, memory_manager->get_FreeMemory());
             }
-        }
-        if (failed) {
-            outfile->Printf("\n\tCCTransform: not enough memory!");
-
-            exit(EXIT_FAILURE);
         }
     }
 }
 
 void CCTransform::allocate_tei_half_transformed() {
-    if (tei_half_transformed == nullptr) {
+    if (tei_half_transformed.size() == 0) {
         CCIndex* so_indexing = blas->get_index("[s>=s]");
         CCIndex* mo_indexing = blas->get_index("[n>=n]");
 
-        allocate1(double**, tei_half_transformed, moinfo->get_nirreps());
+        tei_half_transformed = std::vector<std::vector<std::vector<double>>>(moinfo->get_nirreps());
 
         bool failed = false;
         size_t required_size = 0;
@@ -541,71 +475,12 @@ void CCTransform::allocate_tei_half_transformed() {
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
             if (so_indexing->get_pairpi(h) * mo_indexing->get_pairpi(h) > 0) {
-                allocate2(double, tei_half_transformed[h], mo_indexing->get_pairpi(h), so_indexing->get_pairpi(h));
+                tei_half_transformed[h] = std::vector<std::vector<double>>(mo_indexing->get_pairpi(h), std::vector<double>(so_indexing->get_pairpi(h), 0));
                 outfile->Printf("\n\tCCTransform: allocated the %s block of size %lu*%lu",
                                 moinfo->get_irr_labs(h).c_str(), mo_indexing->get_pairpi(h),
                                 so_indexing->get_pairpi(h));
             }
         }
-    }
-}
-
-/**
- * Free the tei_mo array
- */
-void CCTransform::free_tei_mo() {
-    int nirreps = moinfo->get_nirreps();
-    if (tei_mo != nullptr) {
-        size_t matrix_size = 0;
-        CCIndex* indexing = blas->get_index("[n>=n]");
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
-            if (indexing->get_pairpi(h) > 0) {
-                size_t block_size = INDEX(indexing->get_pairpi(h) - 1, indexing->get_pairpi(h) - 1) + 1;
-                matrix_size += block_size;
-                release1(tei_mo[h]);
-                outfile->Printf("\n\tCCTransform: deallocated the %s block of size %lu",
-                                moinfo->get_irr_labs(h).c_str(), block_size);
-            }
-        }
-        release1(tei_mo);
-        tei_mo = nullptr;
-    }
-}
-
-void CCTransform::free_tei_so() {
-    int nirreps = moinfo->get_nirreps();
-    if (tei_so != nullptr) {
-        size_t matrix_size = 0;
-        CCIndex* indexing = blas->get_index("[s>=s]");
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
-            if (indexing->get_pairpi(h) > 0) {
-                size_t block_size = INDEX(indexing->get_pairpi(h) - 1, indexing->get_pairpi(h) - 1) + 1;
-                matrix_size += block_size;
-                release1(tei_so[h]);
-                outfile->Printf("\n\tCCTransform: deallocated the %s block of size %lu",
-                                moinfo->get_irr_labs(h).c_str(), block_size);
-            }
-        }
-        release1(tei_so);
-        tei_so = nullptr;
-    }
-}
-
-void CCTransform::free_tei_half_transformed() {
-    if (tei_half_transformed != nullptr) {
-        CCIndex* rsindx = blas->get_index("[s>=s]");
-        CCIndex* ijindx = blas->get_index("[n>=n]");
-        size_t matrix_size = 0;
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
-            if (rsindx->get_pairpi(h) * ijindx->get_pairpi(h) > 0) {
-                matrix_size += ijindx->get_pairpi(h) * rsindx->get_pairpi(h);
-                release2(tei_half_transformed[h]);
-                outfile->Printf("\n\tCCTransform: deallocated the %s block of size %lu*%lu",
-                                moinfo->get_irr_labs(h).c_str(), ijindx->get_pairpi(h), rsindx->get_pairpi(h));
-            }
-        }
-        release1(tei_half_transformed);
-        tei_half_transformed = nullptr;
     }
 }
 
@@ -629,8 +504,7 @@ void CCTransform::transform_oei_so_integrals() {
     int nso = moinfo->get_nso();
     int nmo = moinfo->get_nmo();
 
-    double** A;
-    allocate2(double, A, nso, nmo);
+    std::vector<std::vector<double>> A(nso, std::vector<double>(nmo, 0));
     double** C = moinfo->get_scf_mos();
 
     // A(q,i) = H(q,p) * C(p,i)
@@ -648,8 +522,6 @@ void CCTransform::transform_oei_so_integrals() {
             for (int q = 0; q < nso; q++) oei_mo[i][j] += C[q][i] * A[q][j];
         }
     // #endif
-
-    release2(A);
 }
 
 }  // namespace psimrcc

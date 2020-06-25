@@ -46,11 +46,11 @@ extern MOInfo* moinfo;
 extern MemoryManager* memory_manager;
 
 MatrixBase::MatrixBase(size_t nrows_, size_t ncols_) : nrows(nrows_), ncols(ncols_), matrix(nullptr) {
-    allocate2(double, matrix, nrows, ncols);
+    matrix = block_matrix(nrows, ncols);
     zero();
 }
 
-MatrixBase::~MatrixBase() { release2(matrix); }
+MatrixBase::~MatrixBase() { free_block(matrix); }
 
 void MatrixBase::zero() {
     size_t nbites = static_cast<size_t>(sizeof(double)) * nrows * ncols;

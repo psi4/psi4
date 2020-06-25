@@ -56,19 +56,11 @@ void CCBLAS::init() {
 
 void CCBLAS::cleanup() {
     free_sortmap();
-    free_buffer();
-    free_work();
     free_matrices();
     free_indices();
 }
 
 void CCBLAS::allocate_work() {
-    // Make sure work is empty
-    if (!work.empty())
-        for (size_t n = 0; n < work.size(); ++n)
-            if (work[n] != nullptr) release1(work[n]);
-
-    for (int n = 0; n < options_.get_int("CC_NUM_THREADS"); n++) work.push_back(nullptr);
     // Compute the temporary work space size
     CCIndex* oo_pair = get_index("[oo]");
     CCIndex* vv_pair = get_index("[vv]");
@@ -84,31 +76,24 @@ void CCBLAS::allocate_work() {
         work_size += dimension[2] * dimension[1];
     }
     // Allocate the temporary work space
-    for (int n = 0; n < options_.get_int("CC_NUM_THREADS"); n++) {
-        allocate1(double, work[n], work_size);
-        zero_arr(work[n], work_size);
-    }
+    work = std::vector<std::vector<double>>(options_.get_int("CC_NUM_THREADS"), std::vector<double>(work_size, 0));
     outfile->Printf("\n  Allocated work array of size %ld (%.2f MiB)", work_size * sizeof(double),
                     type_to_MiB<double>(work_size));
 }
 
 void CCBLAS::allocate_buffer() {
-    // Make sure buffer is empty
-    if (!buffer.empty())
-        for (size_t n = 0; n < buffer.size(); ++n)
-            if (buffer[n] != nullptr) release1(buffer[n]);
+    // If buffer previously defined, clear it so as not to interfere with the memory calculation.
+    // If buffer not previously defined, do so now.
+    buffer = std::vector<std::vector<double>>(options_.get_int("CC_NUM_THREADS"));
 
-    for (int n = 0; n < options_.get_int("CC_NUM_THREADS"); n++) buffer.push_back(nullptr);
     // Compute the temporary buffer space size, 101% of the actual strip size
     buffer_size = static_cast<size_t>(1.01 * CCMatrix::fraction_of_memory_for_buffer *
                                       static_cast<double>(memory_manager->get_FreeMemory()) /
                                       static_cast<double>(sizeof(double)));
-    // The value used here , 0.05 is also used in
 
     // Allocate the temporary buffer space
     for (int n = 0; n < options_.get_int("CC_NUM_THREADS"); n++) {
-        allocate1(double, buffer[n], buffer_size);
-        zero_arr(buffer[n], buffer_size);
+        buffer[n] = std::vector<double>(buffer_size, 0);
     }
     outfile->Printf("\n  Allocated buffer array of size %ld (%.2f MiB)", buffer_size * sizeof(double),
                     type_to_MiB<double>(buffer_size));
@@ -118,24 +103,6 @@ void CCBLAS::free_sortmap() {
     for (SortMap::iterator iter = sortmap.begin(); iter != sortmap.end(); ++iter) {
         for (int irrep = 0; irrep < moinfo->get_nirreps(); irrep++) delete[] iter->second[irrep];
         delete[] iter->second;
-    }
-}
-
-void CCBLAS::free_work() {
-    // Delete the temporary work space
-    for (size_t n = 0; n < work.size(); ++n) {
-        if (work[n] != nullptr) {
-            release1(work[n]);
-        }
-    }
-}
-
-void CCBLAS::free_buffer() {
-    // Delete the temporary buffer space
-    for (size_t n = 0; n < buffer.size(); ++n) {
-        if (buffer[n] != nullptr) {
-            release1(buffer[n]);
-        }
     }
 }
 

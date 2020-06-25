@@ -66,7 +66,6 @@ class CCSort {
 
    private:
     void init();
-    void cleanup();
 
     //  // In-core algorithm
     //  void   build_integrals_in_core();
@@ -100,7 +99,7 @@ class CCSort {
     double fraction_of_memory_for_sorting;
     int nfzc;
     double efzc;
-    int* frozen_core;
+    std::vector<int> frozen_core;
 };
 
 extern CCSort* sorter;

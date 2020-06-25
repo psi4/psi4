@@ -201,9 +201,9 @@ void MRCCSD_T::compute_ooo_triples() {
                 e4T[mu] = e4ST[mu] = e4DT[mu] = 0.0;
                 // Check if ijk belong to the occupied space of mu
                 if (is_aocc[mu][i_abs] && is_aocc[mu][j_abs] && is_aocc[mu][k_abs]) {
-                    double*** F_ov_mu = F_ov[mu];
-                    double*** T1_ov_mu = T1_ov[mu];
-                    double*** T2_oovv_mu = T2_oovv[mu];
+                    auto F_ov_mu = F_ov[mu];
+                    auto T1_ov_mu = T1_ov[mu];
+                    auto T2_oovv_mu = T2_oovv[mu];
 
                     double D_ijk = e_oo[mu][i_abs] + e_oo[mu][j_abs] + e_oo[mu][k_abs];
 
@@ -340,9 +340,9 @@ void MRCCSD_T::compute_OOO_triples() {
                 e4T[mu] = e4ST[mu] = e4DT[mu] = 0.0;
                 // Check if ijk belong to the occupied space of mu
                 if (is_bocc[mu][i_abs] && is_bocc[mu][j_abs] && is_bocc[mu][k_abs]) {
-                    double*** F_OV_mu = F_OV[mu];
-                    double*** T1_OV_mu = T1_OV[mu];
-                    double*** T2_OOVV_mu = T2_OOVV[mu];
+                    auto F_OV_mu = F_OV[mu];
+                    auto T1_OV_mu = T1_OV[mu];
+                    auto T2_OOVV_mu = T2_OOVV[mu];
 
                     double D_IJK = e_OO[mu][i_abs] + e_OO[mu][j_abs] + e_OO[mu][k_abs];
 
@@ -496,12 +496,12 @@ void MRCCSD_T::compute_ooO_triples() {
                 e4T[mu] = e4ST[mu] = e4DT[mu] = 0.0;
                 // Check if ijk belong to the occupied space of mu
                 if (is_aocc[mu][i_abs] && is_aocc[mu][j_abs] && is_bocc[mu][k_abs]) {
-                    double*** F_ov_mu = F_ov[mu];
-                    double*** F_OV_mu = F_OV[mu];
-                    double*** T1_ov_mu = T1_ov[mu];
-                    double*** T1_OV_mu = T1_OV[mu];
-                    double*** T2_oovv_mu = T2_oovv[mu];
-                    double*** T2_oOvV_mu = T2_oOvV[mu];
+                    auto F_ov_mu = F_ov[mu];
+                    auto F_OV_mu = F_OV[mu];
+                    auto T1_ov_mu = T1_ov[mu];
+                    auto T1_OV_mu = T1_OV[mu];
+                    auto T2_oovv_mu = T2_oovv[mu];
+                    auto T2_oOvV_mu = T2_oOvV[mu];
 
                     double D_ijK = e_oo[mu][i_abs] + e_oo[mu][j_abs] + e_OO[mu][k_abs];
 
@@ -667,12 +667,12 @@ void MRCCSD_T::compute_oOO_triples() {
                 e4T[mu] = e4ST[mu] = e4DT[mu] = 0.0;
                 // Check if ijk belong to the occupied space of mu
                 if (is_aocc[mu][i_abs] && is_bocc[mu][j_abs] && is_bocc[mu][k_abs]) {
-                    double*** F_ov_mu = F_ov[mu];
-                    double*** F_OV_mu = F_OV[mu];
-                    double*** T1_ov_mu = T1_ov[mu];
-                    double*** T1_OV_mu = T1_OV[mu];
-                    double*** T2_oOvV_mu = T2_oOvV[mu];
-                    double*** T2_OOVV_mu = T2_OOVV[mu];
+                    auto F_ov_mu = F_ov[mu];
+                    auto F_OV_mu = F_OV[mu];
+                    auto T1_ov_mu = T1_ov[mu];
+                    auto T1_OV_mu = T1_OV[mu];
+                    auto T2_oOvV_mu = T2_oOvV[mu];
+                    auto T2_OOVV_mu = T2_OOVV[mu];
 
                     double D_iJK = e_oo[mu][i_abs] + e_OO[mu][j_abs] + e_OO[mu][k_abs];
 

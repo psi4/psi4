@@ -85,15 +85,15 @@ class CCManyBody {
     Options& options_;
     SharedWavefunction ref_wfn_;
     // Effective Hamiltonian and the correpsonding eigenvectors
-    void print_eigensystem(int ndets, double** Heff, double*& eigenvector);
-    double diagonalize_Heff(int root, int ndets, double** Heff, double*& right_eigenvector, double*& left_eigenvector,
+    void print_eigensystem(int ndets, double** Heff, std::vector<double>& eigenvector);
+    double diagonalize_Heff(int root, int ndets, double** Heff, std::vector<double>& right_eigenvector, std::vector<double>& left_eigenvector,
                             bool initial);
-    void sort_eigensystem(int ndets, double*& real, double*& imaginary, double**& left, double**& right);
-    double c_H_c(int ndets, double** H, double*& c);
+    void sort_eigensystem(int ndets, std::vector<double>& real, std::vector<double>& imaginary, double**& left, double**& right);
+    double c_H_c(int ndets, double** H, std::vector<double>& c);
 
-    double* zeroth_order_eigenvector;
-    double* right_eigenvector;
-    double* left_eigenvector;
+    std::vector<double> zeroth_order_eigenvector;
+    std::vector<double> right_eigenvector;
+    std::vector<double> left_eigenvector;
     double** Heff;
     double** Heff_mrpt2;
 
@@ -115,18 +115,17 @@ class CCManyBody {
     TriplesCouplingType triples_coupling_type;
 
     void generate_triples_denominators();
-    void generate_d3_ijk(double***& d3, bool alpha_i, bool alpha_j, bool alpha_k);
-    void generate_d3_abc(double***& d3, bool alpha_a, bool alpha_b, bool alpha_c);
-    void deallocate_triples_denominators();
+    void generate_d3_ijk(std::vector<std::vector<std::vector<double>>>& d3, bool alpha_i, bool alpha_j, bool alpha_k);
+    void generate_d3_abc(std::vector<std::vector<std::vector<double>>>& d3, bool alpha_a, bool alpha_b, bool alpha_c);
 
-    double*** d3_ooo;
-    double*** d3_ooO;
-    double*** d3_oOO;
-    double*** d3_OOO;
-    double*** d3_vvv;
-    double*** d3_vvV;
-    double*** d3_vVV;
-    double*** d3_VVV;
+    std::vector<std::vector<std::vector<double>>> d3_ooo;
+    std::vector<std::vector<std::vector<double>>> d3_ooO;
+    std::vector<std::vector<std::vector<double>>> d3_oOO;
+    std::vector<std::vector<std::vector<double>>> d3_OOO;
+    std::vector<std::vector<std::vector<double>>> d3_vvv;
+    std::vector<std::vector<std::vector<double>>> d3_vvV;
+    std::vector<std::vector<std::vector<double>>> d3_vVV;
+    std::vector<std::vector<std::vector<double>>> d3_VVV;
 };
 
 }  // namespace psimrcc

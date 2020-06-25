@@ -28,8 +28,8 @@
 
 #include <cmath>
 #include <cstdio>
+#include "psi4/libciomr/libciomr.h"
 #include "psi4/libmoinfo/libmoinfo.h"
-#include "psi4/libpsi4util/memory_manager.h"
 
 #include "algebra_interface.h"
 #include "heff.h"
@@ -41,35 +41,28 @@
 namespace psi {
 
 namespace psimrcc {
-extern MemoryManager* memory_manager;
 
-void sort_eigensystem(int ndets, double*& real, double*& imaginary, double**& left, double**& right);
+void sort_eigensystem(int ndets, std::vector<double>& real, std::vector<double>& imaginary, double**& left, double**& right);
 
 double Hamiltonian::diagonalize(int root) {
     double energy;
-    double* real;
-    double* imaginary;
-    double* work;
-    double** left;
-    double** right;
-    double** H;
 
     int lwork = 6 * ndets * ndets;
-    allocate1(double, work, lwork);
-    allocate1(double, real, ndets);
-    allocate1(double, imaginary, ndets);
+    std::vector<double> work(lwork, 0);
+    std::vector<double> real(lwork, 0);
+    std::vector<double> imaginary(lwork, 0);
 
-    allocate2(double, H, ndets, ndets);
-    allocate2(double, left, ndets, ndets);
-    allocate2(double, right, ndets, ndets);
+    auto H = block_matrix(ndets, ndets);
+    auto left = block_matrix(ndets, ndets);
+    auto right = block_matrix(ndets, ndets);
 
     for (int i = 0; i < ndets; i++)
         for (int j = 0; j < ndets; j++) H[j][i] = matrix[i][j];
 
     int info;
 
-    F_DGEEV("V", "V", &ndets, &(H[0][0]), &ndets, &(real[0]), &(imaginary[0]), &(left[0][0]), &ndets, &(right[0][0]),
-            &ndets, &(work[0]), &lwork, &info);
+    F_DGEEV("V", "V", &ndets, &(H[0][0]), &ndets, real.data(), imaginary.data(), &(left[0][0]), &ndets, &(right[0][0]),
+            &ndets, work.data(), &lwork, &info);
 
     sort_eigensystem(ndets, real, imaginary, left, right);
 
@@ -160,24 +153,19 @@ double Hamiltonian::diagonalize(int root) {
         left_eigenvector[m] = left_eigenvector[m] / lnorm;
     }
 
-    release1(work);
-    release1(real);
-    release1(imaginary);
-    release2(H);
-    release2(left);
-    release2(right);
+    free_block(H);
+    free_block(left);
+    free_block(right);
     return (energy);
 }
 
-void sort_eigensystem(int ndets, double*& real, double*& imaginary, double**& left, double**& right) {
+void sort_eigensystem(int ndets, std::vector<double>& real, std::vector<double>& imaginary, double**& left, double**& right) {
     std::vector<std::pair<double, int> > pairs;
     for (int i = 0; i < ndets; i++) pairs.push_back(std::make_pair(real[i], i));
     sort(pairs.begin(), pairs.end());
 
-    double* tempv;
-    double** tempm;
-    allocate1(double, tempv, ndets);
-    allocate2(double, tempm, ndets, ndets);
+    std::vector<double> tempv(ndets, 0);
+    std::vector<std::vector<double>> tempm(ndets, std::vector<double>(ndets, 0));
 
     for (int i = 0; i < ndets; i++) tempv[i] = real[pairs[i].second];
     for (int i = 0; i < ndets; i++) real[i] = tempv[i];
@@ -194,9 +182,6 @@ void sort_eigensystem(int ndets, double*& real, double*& imaginary, double**& le
         for (int j = 0; j < ndets; j++) tempm[i][j] = right[pairs[i].second][j];
     for (int i = 0; i < ndets; i++)
         for (int j = 0; j < ndets; j++) right[i][j] = tempm[i][j];
-
-    release1(tempv);
-    release2(tempm);
 }
 
 }  // namespace psimrcc

@@ -133,7 +133,7 @@ void MRCCSD_T::startup() {
         //  Unique references
         if (mu == unique_mu) {
             // Setup the denominators
-            double*** F_oo = blas->get_MatTmp("epsilon[o][o]", mu, none)->get_matrix();
+            auto F_oo = blas->get_MatTmp("epsilon[o][o]", mu, none)->get_matrix();
             std::vector<double> e_oo_mu;
             {
                 CCIndexIterator i("[o]");
@@ -145,7 +145,7 @@ void MRCCSD_T::startup() {
             }
             e_oo.push_back(e_oo_mu);
 
-            double*** F_OO = blas->get_MatTmp("epsilon[O][O]", mu, none)->get_matrix();
+            auto F_OO = blas->get_MatTmp("epsilon[O][O]", mu, none)->get_matrix();
             std::vector<double> e_OO_mu;
             {
                 CCIndexIterator i("[o]");
@@ -157,7 +157,7 @@ void MRCCSD_T::startup() {
             }
             e_OO.push_back(e_OO_mu);
 
-            double*** F_vv = blas->get_MatTmp("epsilon[v][v]", mu, none)->get_matrix();
+            auto F_vv = blas->get_MatTmp("epsilon[v][v]", mu, none)->get_matrix();
             std::vector<double> e_vv_mu;
             {
                 CCIndexIterator a("[v]");
@@ -169,7 +169,7 @@ void MRCCSD_T::startup() {
             }
             e_vv.push_back(e_vv_mu);
 
-            double*** F_VV = blas->get_MatTmp("epsilon[V][V]", mu, none)->get_matrix();
+            auto F_VV = blas->get_MatTmp("epsilon[V][V]", mu, none)->get_matrix();
             std::vector<double> e_VV_mu;
             {
                 CCIndexIterator a("[v]");
@@ -215,7 +215,7 @@ void MRCCSD_T::startup() {
             is_bvir.push_back(moinfo->get_is_bvir(mu, AllRefs));
         } else {
             // Setup the denominators
-            double*** F_oo = blas->get_MatTmp("epsilon[O][O]", unique_mu, none)->get_matrix();
+            auto F_oo = blas->get_MatTmp("epsilon[O][O]", unique_mu, none)->get_matrix();
             std::vector<double> e_oo_mu;
             {
                 CCIndexIterator i("[o]");
@@ -227,7 +227,7 @@ void MRCCSD_T::startup() {
             }
             e_oo.push_back(e_oo_mu);
 
-            double*** F_OO = blas->get_MatTmp("epsilon[o][o]", unique_mu, none)->get_matrix();
+            auto F_OO = blas->get_MatTmp("epsilon[o][o]", unique_mu, none)->get_matrix();
             std::vector<double> e_OO_mu;
             {
                 CCIndexIterator i("[o]");
@@ -239,7 +239,7 @@ void MRCCSD_T::startup() {
             }
             e_OO.push_back(e_OO_mu);
 
-            double*** F_vv = blas->get_MatTmp("epsilon[V][V]", unique_mu, none)->get_matrix();
+            auto F_vv = blas->get_MatTmp("epsilon[V][V]", unique_mu, none)->get_matrix();
             std::vector<double> e_vv_mu;
             {
                 CCIndexIterator a("[v]");
@@ -251,7 +251,7 @@ void MRCCSD_T::startup() {
             }
             e_vv.push_back(e_vv_mu);
 
-            double*** F_VV = blas->get_MatTmp("epsilon[v][v]", unique_mu, none)->get_matrix();
+            auto F_VV = blas->get_MatTmp("epsilon[v][v]", unique_mu, none)->get_matrix();
             std::vector<double> e_VV_mu;
             {
                 CCIndexIterator a("[v]");
@@ -333,7 +333,7 @@ void MRCCSD_T::startup() {
     V_oOvV = blas->get_MatTmp("<[oo]|[vv]>", none)->get_matrix();
 
     // Allocate Z, this will hold the results
-    allocate2(BlockMatrix**, Z, nrefs, nirreps);
+    Z = std::vector<std::vector<BlockMatrix*>>(nrefs, std::vector<BlockMatrix*>(nirreps));
     for (int mu = 0; mu < nrefs; ++mu) {
         for (int h = 0; h < nirreps; ++h) {
             Z[mu][h] = new BlockMatrix(nirreps, v->get_tuplespi(), vv->get_tuplespi(), h);
@@ -342,16 +342,16 @@ void MRCCSD_T::startup() {
 
     // Allocate W
     if ((triples_algorithm == UnrestrictedTriples) || (triples_algorithm == RestrictedTriples)) {
-        allocate2(BlockMatrix**, W, nrefs, nirreps);
+        W = std::vector<std::vector<BlockMatrix*>>(nrefs, std::vector<BlockMatrix*>(nirreps));
         for (int mu = 0; mu < nrefs; ++mu) {
             for (int h = 0; h < nirreps; ++h) {
                 W[mu][h] = new BlockMatrix(nirreps, v->get_tuplespi(), vv->get_tuplespi(), h);
             }
         }
     } else if (triples_algorithm == SpinAdaptedTriples) {
-        allocate2(BlockMatrix**, W_ijk, nrefs, nirreps);
-        allocate2(BlockMatrix**, W_ikj, nrefs, nirreps);
-        allocate2(BlockMatrix**, W_jki, nrefs, nirreps);
+        W_ijk = std::vector<std::vector<BlockMatrix*>>(nrefs, std::vector<BlockMatrix*>(nirreps));
+        W_ikj = std::vector<std::vector<BlockMatrix*>>(nrefs, std::vector<BlockMatrix*>(nirreps));
+        W_jki = std::vector<std::vector<BlockMatrix*>>(nrefs, std::vector<BlockMatrix*>(nirreps));
         for (int mu = 0; mu < nrefs; ++mu) {
             for (int h = 0; h < nirreps; ++h) {
                 W_ijk[mu][h] = new BlockMatrix(nirreps, v->get_tuplespi(), vv->get_tuplespi(), h);
@@ -362,7 +362,7 @@ void MRCCSD_T::startup() {
     }
 
     // Allocate T
-    allocate2(BlockMatrix**, T, nrefs, nirreps);
+    T = std::vector<std::vector<BlockMatrix*>>(nrefs, std::vector<BlockMatrix*>(nirreps));
     for (int mu = 0; mu < nrefs; ++mu) {
         for (int h = 0; h < nirreps; ++h) {
             T[mu][h] = new BlockMatrix(nirreps, v->get_tuplespi(), vv->get_tuplespi(), h);
@@ -645,7 +645,6 @@ void MRCCSD_T::cleanup() {
             delete Z[mu][h];
         }
     }
-    release2(Z);
 
     // Deallocate W
     if ((triples_algorithm == UnrestrictedTriples) || (triples_algorithm == RestrictedTriples)) {
@@ -654,7 +653,6 @@ void MRCCSD_T::cleanup() {
                 delete W[mu][h];
             }
         }
-        release2(W);
     } else if (triples_algorithm == SpinAdaptedTriples) {
         for (int mu = 0; mu < nrefs; ++mu) {
             for (int h = 0; h < nirreps; ++h) {
@@ -663,9 +661,6 @@ void MRCCSD_T::cleanup() {
                 delete W_jki[mu][h];
             }
         }
-        release2(W_ijk);
-        release2(W_ikj);
-        release2(W_jki);
     }
 
     // Deallocate T
@@ -674,7 +669,6 @@ void MRCCSD_T::cleanup() {
             delete T[mu][h];
         }
     }
-    release2(T);
 }
 
 }  // namespace psimrcc

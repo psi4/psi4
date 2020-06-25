@@ -96,7 +96,7 @@ void CCSort::form_fock_mrpt2(MatrixMap::iterator& iter) {
     CCMatrix* Matrix = iter->second;
     if (Matrix->is_fock()) {
         std::string label = Matrix->get_label();
-        double*** matrix = Matrix->get_matrix();
+        auto matrix = Matrix->get_matrix();
         auto* pq = new short[2];
         const intvec& oa2p = moinfo->get_occ_to_mo();
 
@@ -201,7 +201,7 @@ void CCSort::form_two_electron_integrals_mrpt2(MatrixMap::iterator& iter) {
     CCMatrix* Matrix = iter->second;
     if (Matrix->is_integral()) {
         auto* pqrs = new short[4];
-        double*** matrix = Matrix->get_matrix();
+        auto matrix = Matrix->get_matrix();
         bool antisymmetric = Matrix->is_antisymmetric();
         if (Matrix->is_chemist()) {
             for (int n = 0; n < moinfo->get_nirreps(); n++)

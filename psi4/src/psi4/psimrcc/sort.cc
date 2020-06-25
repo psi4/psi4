@@ -55,7 +55,7 @@ extern MOInfo* moinfo;
 extern MemoryManager* memory_manager;
 
 CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm)
-    : fraction_of_memory_for_sorting(0.5), nfzc(0), efzc(0.0), frozen_core(nullptr) {
+    : fraction_of_memory_for_sorting(0.5), nfzc(0), efzc(0.0) {
     init();
 
     IntegralTransform* ints;
@@ -109,7 +109,7 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm)
     delete ints;
 }
 
-CCSort::~CCSort() { cleanup(); }
+CCSort::~CCSort() {}
 
 /**
  * Initialize the CCSort class
@@ -119,19 +119,14 @@ void CCSort::init() {
     nfzc = moinfo->get_nfocc();
     intvec focc = moinfo->get_focc();
     intvec mopi = moinfo->get_mopi();
-    allocate1(int, frozen_core, nfzc);
     int count1 = 0;
     int count2 = 0;
+    frozen_core = std::vector<int>(nfzc, 0);
     for (int h = 0; h < moinfo->get_nirreps(); ++h) {
         for (int i = 0; i < focc[h]; ++i) frozen_core[count1++] = count2 + i;
         count2 += mopi[h];
     }
 }
-
-/**
- * Clean the CCSort class
- */
-void CCSort::cleanup() { release1(frozen_core); }
 
 }  // namespace psimrcc
 }  // namespace psi

@@ -27,7 +27,6 @@
  */
 
 #include "psi4/libmoinfo/libmoinfo.h"
-#include "psi4/libpsi4util/libpsi4util.h"
 #include <cstdio>
 
 #include "blas.h"
@@ -112,7 +111,7 @@ void CCBLAS::reduce_spaces(const char* out, const char* in) {
 }
 
 void CCBLAS::process_reduce_spaces(CCMatrix* out_Matrix, CCMatrix* in_Matrix) {
-    double*** out_matrix = out_Matrix->get_matrix();
+    auto out_matrix = out_Matrix->get_matrix();
     const intvec& act_to_occ = moinfo->get_actv_to_occ();
     const intvec& act_to_vir = moinfo->get_actv_to_vir();
 
@@ -121,8 +120,7 @@ void CCBLAS::process_reduce_spaces(CCMatrix* out_Matrix, CCMatrix* in_Matrix) {
 
     int index_label_size = out_index_label.size();
 
-    int** map;
-    allocate2(int, map, index_label_size, moinfo->get_nmo());
+    std::vector<std::vector<int>> map(index_label_size, std::vector<int>(moinfo->get_nmo(), 0));
 
     for (int k = 0; k < index_label_size; k++) {
         if (out_index_label[k] == 'a' && in_index_label[k] == 'o') {
@@ -164,7 +162,6 @@ void CCBLAS::process_reduce_spaces(CCMatrix* out_Matrix, CCMatrix* in_Matrix) {
         }
         delete[] pqrs;
     }
-    release2(map);
 }
 
 void CCBLAS::expand_spaces(const char* out, const char* in) {
@@ -182,7 +179,7 @@ void CCBLAS::expand_spaces(const char* out, const char* in) {
 }
 
 void CCBLAS::process_expand_spaces(CCMatrix* out_Matrix, CCMatrix* in_Matrix) {
-    double*** out_matrix = out_Matrix->get_matrix();
+    auto out_matrix = out_Matrix->get_matrix();
     const intvec& act_to_occ = moinfo->get_actv_to_occ();
     const intvec& act_to_vir = moinfo->get_actv_to_vir();
 
@@ -191,8 +188,7 @@ void CCBLAS::process_expand_spaces(CCMatrix* out_Matrix, CCMatrix* in_Matrix) {
 
     int index_label_size = out_index_label.size();
 
-    int** map;
-    allocate2(int, map, index_label_size, moinfo->get_nmo());
+    std::vector<std::vector<int>> map(index_label_size, std::vector<int>(moinfo->get_nmo(), 0));
 
     for (int k = 0; k < index_label_size; k++) {
         if (out_index_label[k] == 'a' && in_index_label[k] == 'o') {
@@ -236,7 +232,6 @@ void CCBLAS::process_expand_spaces(CCMatrix* out_Matrix, CCMatrix* in_Matrix) {
         }
         delete[] pqrs;
     }
-    release2(map);
 }
 
 }  // namespace psimrcc

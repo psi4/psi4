@@ -60,9 +60,9 @@ void CCMRCC::compute_perturbative_triples() {
 
     h_eff.set_eigenvalue(current_energy);
     h_eff.set_matrix(Heff, moinfo->get_nrefs());
-    h_eff.set_right_eigenvector(right_eigenvector, moinfo->get_nrefs());
-    h_eff.set_left_eigenvector(left_eigenvector, moinfo->get_nrefs());
-    h_eff.set_zeroth_order_eigenvector(zeroth_order_eigenvector, moinfo->get_nrefs());
+    h_eff.set_right_eigenvector(right_eigenvector);
+    h_eff.set_left_eigenvector(left_eigenvector);
+    h_eff.set_zeroth_order_eigenvector(zeroth_order_eigenvector);
 
     MRCCSD_T mrccsd_t(options_, &h_eff);
 

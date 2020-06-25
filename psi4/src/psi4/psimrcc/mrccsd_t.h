@@ -149,35 +149,35 @@ class MRCCSD_T {
     std::vector<std::vector<double> > Mk_factor;
     std::vector<double> Mk_shift;
 
-    std::vector<double***> F_ov;
-    std::vector<double***> F_OV;
+    std::vector<std::vector<double**>> F_ov;
+    std::vector<std::vector<double**>> F_OV;
 
-    std::vector<double***> F2_ov;
-    std::vector<double***> F2_OV;
+    std::vector<std::vector<double**>> F2_ov;
+    std::vector<std::vector<double**>> F2_OV;
 
-    std::vector<double***> T1_ov;
-    std::vector<double***> T1_OV;
+    std::vector<std::vector<double**>> T1_ov;
+    std::vector<std::vector<double**>> T1_OV;
 
-    std::vector<double***> W_ooov;
-    std::vector<double***> W_oOoV;
-    std::vector<double***> W_OoOv;
-    std::vector<double***> W_OOOV;
+    std::vector<std::vector<double**>> W_ooov;
+    std::vector<std::vector<double**>> W_oOoV;
+    std::vector<std::vector<double**>> W_OoOv;
+    std::vector<std::vector<double**>> W_OOOV;
 
-    std::vector<double***> W_vovv;
-    std::vector<double***> W_vOvV;
-    std::vector<double***> W_VoVv;
-    std::vector<double***> W_VOVV;
+    std::vector<std::vector<double**>> W_vovv;
+    std::vector<std::vector<double**>> W_vOvV;
+    std::vector<std::vector<double**>> W_VoVv;
+    std::vector<std::vector<double**>> W_VOVV;
 
-    double*** V_oovv;
-    double*** V_oOvV;
+    std::vector<double**> V_oovv;
+    std::vector<double**> V_oOvV;
     //  double*** V_ooov;
     //  double*** V_oOoV;
     //  double*** V_vovv;
     //  double*** V_vOvV;
 
-    std::vector<double***> T2_oovv;
-    std::vector<double***> T2_oOvV;
-    std::vector<double***> T2_OOVV;
+    std::vector<std::vector<double**>> T2_oovv;
+    std::vector<std::vector<double**>> T2_oOvV;
+    std::vector<std::vector<double**>> T2_OOVV;
 
     CCIndex* o;
     CCIndex* oo;
@@ -189,12 +189,12 @@ class MRCCSD_T {
     CCIndex* ovv;
     CCIndex* ooo;
 
-    BlockMatrix*** Z;
-    BlockMatrix*** W;
-    BlockMatrix*** W_ijk;
-    BlockMatrix*** W_ikj;
-    BlockMatrix*** W_jki;
-    BlockMatrix*** T;
+    std::vector<std::vector<BlockMatrix*>> Z;
+    std::vector<std::vector<BlockMatrix*>> W;
+    std::vector<std::vector<BlockMatrix*>> W_ijk;
+    std::vector<std::vector<BlockMatrix*>> W_ikj;
+    std::vector<std::vector<BlockMatrix*>> W_jki;
+    std::vector<std::vector<BlockMatrix*>> T;
 
     IndexMatrix* T2_ij_a_b;
     IndexMatrix* T2_iJ_a_B;

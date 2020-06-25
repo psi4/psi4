@@ -85,8 +85,8 @@ double CCMRCC::compute_energy() {
 
         h_eff.set_eigenvalue(current_energy);
         h_eff.set_matrix(Heff, moinfo->get_nrefs());
-        h_eff.set_right_eigenvector(right_eigenvector, moinfo->get_nrefs());
-        h_eff.set_left_eigenvector(left_eigenvector, moinfo->get_nrefs());
+        h_eff.set_right_eigenvector(right_eigenvector);
+        h_eff.set_left_eigenvector(left_eigenvector);
 
         if (!converged) {
             blas->diis_save_t_amps(cycle);

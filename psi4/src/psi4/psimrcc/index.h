@@ -52,6 +52,7 @@
 *********************************************************/
 
 #include "psi4/libpsi4util/libpsi4util.h"
+#include <array>
 #include <vector>
 
 namespace psi {
@@ -87,8 +88,8 @@ class CCIndex {
     std::string get_label() { return (label); }
 
     // Get the tuples
-    short** get_tuples() { return (tuples); }
-    short* get_tuple(int i) { return (tuples[i]); }
+    const std::vector<std::array<short, 3>>& get_tuples() { return (tuples); }
+    const std::array<short, 3>& get_tuple(int i) { return (tuples[i]); }
 
     // Get the tuples irrep structure
     size_t get_first(int i) { return (first[i]); }
@@ -121,21 +122,20 @@ class CCIndex {
 
     vecvecint& get_indices_to_pitzer() { return (indices_to_pitzer); }
 
-    size_t* get_one_index_to_tuple_rel_index() { return (one_index_to_tuple_rel_index); };
-    size_t** get_two_index_to_tuple_rel_index() { return (two_index_to_tuple_rel_index); };
-    size_t*** get_three_index_to_tuple_rel_index() { return (three_index_to_tuple_rel_index); };
-    int* get_one_index_to_irrep() { return (one_index_to_irrep); };
-    int** get_two_index_to_irrep() { return (two_index_to_irrep); };
-    int*** get_three_index_to_irrep() { return (three_index_to_irrep); };
+    const std::vector<size_t>& get_one_index_to_tuple_rel_index() { return (one_index_to_tuple_rel_index); };
+    const std::vector<std::vector<size_t>>& get_two_index_to_tuple_rel_index() { return (two_index_to_tuple_rel_index); };
+    const std::vector<std::vector<std::vector<size_t>>>& get_three_index_to_tuple_rel_index() { return (three_index_to_tuple_rel_index); };
+    const std::vector<int>& get_one_index_to_irrep() { return (one_index_to_irrep); };
+    const std::vector<std::vector<int>>& get_two_index_to_irrep() { return (two_index_to_irrep); };
+    const std::vector<std::vector<std::vector<int>>>& get_three_index_to_irrep() { return (three_index_to_irrep); };
 
-    int** get_element_irrep() { return (element_irrep); }
+    std::vector<std::vector<int>> get_element_irrep() { return (element_irrep); }
 
    private:
     ///////////////////////////////////////////////////////////////////////////////
     // Class private functions
     ///////////////////////////////////////////////////////////////////////////////
     void init();
-    void cleanup();
     void make_zero_index();
     void make_one_index();
     void make_two_index();
@@ -154,17 +154,17 @@ class CCIndex {
     bool greater_than_or_equal;                // >= tuples
     bool greater_than;                         // >  tuples
     size_t ntuples;                            // Number of tuples
-    short** tuples;                            // The tuples ordered as matrix : tuples[number][element]
+    std::vector<std::array<short, 3>> tuples;                            // The tuples ordered as matrix : tuples[number][element]
     Size_tVec first;                           // First pair of irrep
     Size_tVec last;                            // Last  pair of irrep
     Size_tVec tuplespi;                        // Number of tuples for irrep
-    size_t* one_index_to_tuple_rel_index;      // 1->tuple mapping array
-    size_t** two_index_to_tuple_rel_index;     // 2->tuple mapping array
-    size_t*** three_index_to_tuple_rel_index;  // 3->tuple mapping array
-    int* one_index_to_irrep;                   // 1->irrep mapping array
-    int** two_index_to_irrep;                  // 2->irrep mapping array
-    int*** three_index_to_irrep;               // 3->irrep mapping array
-    int** element_irrep;                       // Irrep of each element
+    Size_tVec one_index_to_tuple_rel_index;    // 1->tuple mapping array
+    std::vector<std::vector<size_t>> two_index_to_tuple_rel_index;     // 2->tuple mapping array
+    std::vector<std::vector<std::vector<size_t>>> three_index_to_tuple_rel_index;  // 3->tuple mapping array
+    std::vector<int> one_index_to_irrep;       // 1->irrep mapping array
+    std::vector<std::vector<int>> two_index_to_irrep;                  // 2->irrep mapping array
+    std::vector<std::vector<std::vector<int>>> three_index_to_irrep;               // 3->irrep mapping array
+    std::vector<std::vector<int>> element_irrep;                     // Irrep of each element
 };
 
 }  // namespace psimrcc
