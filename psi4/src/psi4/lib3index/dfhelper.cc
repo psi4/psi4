@@ -569,10 +569,10 @@ void DFHelper::prepare_AO_wK_core() {
     std::vector<std::pair<size_t, size_t>> psteps;
     std::pair<size_t, size_t> plargest = pshell_blocks_for_AO_build(memory_, 1, psteps);
 
-    wPpq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
-    m1Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
+    wPpq_ = std::make_unique<double[]>(big_skips_[nbf_]);
+    m1Ppq_ = std::make_unique<double[]>(big_skips_[nbf_]);
 
-    if (!wcombine_) Ppq_ = std::unique_ptr<double[]>(new double[big_skips_[nbf_]]);
+    if (!wcombine_) Ppq_ = std::make_unique<double[]>(big_skips_[nbf_]);
 
 
     double* wppq = wPpq_.get();
@@ -592,11 +592,11 @@ void DFHelper::prepare_AO_wK_core() {
     double* metp = nullptr;
 
     if (!hold_met_) {
-        metric1 = std::unique_ptr<double[]>(new double[naux_ * naux_]);
+        metric1 = std::make_unique<double[]>(naux_ * naux_);
         met1p = metric1.get();
         std::string filename = return_metfile(wmpower_);
         get_tensor_(std::get<0>(files_[filename]), met1p, 0, naux_ - 1, 0, naux_ - 1);
-        metric = std::unique_ptr<double[]>(new double[naux_ * naux_]);
+        metric = std::make_unique<double[]>(naux_ * naux_);
         metp = metric.get();
         filename = return_metfile(mpower_);
         get_tensor_(std::get<0>(files_[filename]), metp, 0, naux_ - 1, 0, naux_ - 1);
@@ -3028,11 +3028,8 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
     Ktmp_size = std::max(Ktmp_size * nbf_, nthreads_ * naux_);  // max necessary
     Ktmp_size = std::max(Ktmp_size, nbf_ * nbf_); 
     Ktmp_size = std::max(Ktmp_size, nthreads_ * naux_);
-    T1 = std::unique_ptr<double[]>(new double[Ktmp_size]);
+    T1 = std::make_unique<double[]>(Ktmp_size);
     double* T1p = T1.get();
-
-
-
 
     // if lr_symmetric, we can be more clever with mem usage. T2 is used for both the
     // second tmp in the K build, as well as the completed, pruned J build.
@@ -3046,12 +3043,12 @@ void DFHelper::compute_JK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
     Ktmp_size = std::max(Ktmp_size, nbf_ * nbf_); 
     Ktmp_size = std::max(Ktmp_size, nthreads_ * naux_);
 
-    T2 = std::unique_ptr<double[]>(new double[Ktmp_size]);
+    T2 = std::make_unique<double[]>(Ktmp_size);
     double* T2p = T2.get();
 
     double* Mp;
     if (!AO_core_) {
-        M = std::unique_ptr<double[]>(new double[tots]);
+        M = std::make_unique<double[]>(tots);
         Mp = M.get();
     } else
         if (!wcombine_) {Mp = Ppq_.get();}
@@ -3230,7 +3227,7 @@ void DFHelper::compute_J_combined(std::vector<SharedMatrix> D, std::vector<Share
 
 
     if (!hold_met_) {
-        metric = std::unique_ptr<double[]>(new double[naux_ * naux_]);
+        metric = std::make_unique<double[]>(naux_ * naux_);
         coul_metp = metric.get();
         std::string filename = return_metfile(1.0);
         get_tensor_(std::get<0>(files_[filename]), coul_metp, 0, naux_ - 1, 0, naux_ - 1);
@@ -3341,9 +3338,9 @@ void DFHelper::compute_wK(std::vector<SharedMatrix> Cleft, std::vector<SharedMat
     // allocate first Ktmp
     size_t Ktmp_size = (!max_nocc ? totsb * 1 : totsb * max_nocc);
     Ktmp_size = std::max(Ktmp_size * nbf_, nthreads_ * naux_);  // max necessary
-    T1 = std::unique_ptr<double[]>(new double[Ktmp_size]);
+    T1 = std::make_unique<double[]>(Ktmp_size);
     double* T1p = T1.get();
-    T2 = std::unique_ptr<double[]>(new double[Ktmp_size]);
+    T2 = std::make_unique<double[]>(Ktmp_size);
     double* T2p = T2.get();
 
     /* The rest of the file would usually be in compute_K */
