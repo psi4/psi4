@@ -704,7 +704,7 @@ class DFOCC : public Wavefunction {
     double Eref;
     double Etotal;
     double Emp2;
-    double Emp2_t1;
+    double Emp2_t1 = 0.0;
     double Emp2BB;
     double Emp2AA;
     double Emp2AB;

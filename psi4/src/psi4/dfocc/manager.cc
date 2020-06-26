@@ -3523,7 +3523,6 @@ void DFOCC::lccd_manager() {
     outfile->Printf("\tDF-LCCD Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-LCCD Total Energy (a.u.)        : %20.14f\n", Elccd);
     outfile->Printf("\t======================================================================= \n");
-printf("\"LCCD SAME-SPIN CORRELATION ENERGY\": %.10f,\n", ElccdAA + ElccdBB);
     outfile->Printf("\n");
 
     energy_ = Elccd;

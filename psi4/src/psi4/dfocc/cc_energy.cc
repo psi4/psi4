@@ -78,6 +78,7 @@ void DFOCC::mp2_energy() {
         Ecorr = u2p_1->vector_dot(JiajbAA);
         JiajbAA.reset();
         u2p_1.reset();
+        Emp2_t1 = 0.0;
         Emp2 = Eref + Ecorr;
     }  // end if (reference_ == "RESTRICTED")
 
