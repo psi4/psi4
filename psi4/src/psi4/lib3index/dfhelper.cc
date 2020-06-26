@@ -620,7 +620,7 @@ void DFHelper::prepare_AO_wK_core() {
             timer_on("DFH: AO-Met. Contraction");
             contract_metric_AO_core_symm(M1p, m1ppq, met1p, begin, end);
             timer_off("DFH: AO-Met. Contraction");
-    
+
             copy_upper_lower_wAO_core_symm(M2p, wppq, begin, end);
         } else {
 
@@ -646,6 +646,7 @@ void DFHelper::prepare_AO_wK_core() {
             timer_on("DFH: wAO Copy");
             copy_upper_lower_wAO_core_symm(M1p, wppq, begin, end);
             timer_off("DFH: wAO Copy");
+
         }
     }
     // no more need for metrics
