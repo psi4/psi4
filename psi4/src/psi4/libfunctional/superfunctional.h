@@ -192,7 +192,6 @@ class SuperFunctional {
     void set_grac_alpha(double grac_alpha);
     void set_grac_beta(double grac_beta);
     void set_density_tolerance(double cut);
-    void copy_density_tolerance(double cut);
     void print_density_threshold(std::string out_fname = "outfile", int print = 1) const;
     void py_print_density_threshold() const { print_density_threshold("outfile", 1); }
     // => Accessors <= //

@@ -113,7 +113,6 @@ void export_functional(py::module &m) {
         .def("set_grac_alpha", &SuperFunctional::set_grac_alpha, "Sets the GRAC alpha parameter.")
         .def("set_grac_beta", &SuperFunctional::set_grac_beta, "Sets the GRAC beta parameter.")
         .def("set_density_tolerance", &SuperFunctional::set_density_tolerance, "Sets the density threshold for LibXC.")
-        .def("copy_density_tolerance", &SuperFunctional::copy_density_tolerance, "Copy the density threshold variable to the SuperFunctional layer.")
         .def("print_density_threshold", &SuperFunctional::py_print_density_threshold, "Queries the LibXCFunctionals for their density threshold values")
         .def("needs_xc", &SuperFunctional::needs_xc, "Does this functional need XC quantities.")
         .def("needs_vv10", &SuperFunctional::needs_vv10, "Does this functional need VV10 dispersion.")

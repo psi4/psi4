@@ -88,13 +88,13 @@ func_call, wfn1 = energy('WB97X-V',return_wfn=True)
 func = wfn1.V_potential().functional()
 cut = func.density_tolerance()
 compare_values(ref_vals["WB97X-V"], func_call, 6, "is_libxc SuperFunctional")  #TEST
-compare_integers(cut_val.as_integer_ratio(), cut.as_integer_ratio(), "is_libxc density_tolernace")
+compare_integers(cut_val.as_integer_ratio(), cut.as_integer_ratio(), "is_libxc density_tolerance")
 
 # empty functional (=HF)
 func_call = energy('SCF', dft_functional=super)
 compare_values(ref_vals["EMPTY"], func_call, 6, "Empty SuperFunctional")  #TEST
 
-# C-only functional and smo
+# C-only functional
 func_call, wfn = energy('SCF', dft_functional=super_c, return_wfn=True)
 compare_values(ref_vals["Conly"], func_call, 6, "C-only SuperFunctional")  #TEST
 
