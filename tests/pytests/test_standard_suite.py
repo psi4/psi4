@@ -1,12 +1,10 @@
 import numpy as np
 import pytest
-#from qcengine.programs.tests.standard_suite_ref import std_molecules, std_refs  # skip is temporary until references in place at qcng
+from qcengine.programs.tests.standard_suite_ref import std_molecules, std_refs
 
 import psi4
 
 from .standard_suite_runner import runner_asserter
-
-pytestmark = [pytest.mark.quick, pytest.mark.skip]  # skip is temporary until references in place at qcng
 
 
 @pytest.fixture
@@ -234,7 +232,7 @@ def test_mp2_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, reque
 
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
-    "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
+    "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz", marks=pytest.mark.quick),],
 )
 @pytest.mark.parametrize(
     "inp",
@@ -418,7 +416,10 @@ def test_mp2_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, req
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
-@pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
+@pytest.mark.parametrize(
+    "dertype",
+    [pytest.param(1, id="grd1", marks=pytest.mark.quick), pytest.param(0, id="grd0", marks=pytest.mark.long),],
+)
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
 )
@@ -601,7 +602,7 @@ def test_lccd_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, requ
 
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
-    "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
+    "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz", marks=pytest.mark.quick),],
 )
 @pytest.mark.parametrize(
     "inp",
@@ -731,7 +732,7 @@ def test_lccsd_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, req
 
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
-    "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
+    "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz", marks=pytest.mark.quick),],
 )
 @pytest.mark.parametrize(
     "inp",
@@ -923,7 +924,7 @@ def test_ccsd_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, requ
 
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
-    "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
+    "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz", marks=pytest.mark.quick),],
 )
 @pytest.mark.parametrize(
     "inp",
@@ -1173,7 +1174,7 @@ def test_ccsd_prt_pr_energy_module(inp, dertype, basis, subjects, clsd_open_pmol
 
 # @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 # @pytest.mark.parametrize(
-#    "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
+#    "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz", marks=pytest.mark.quick),],
 # )
 # @pytest.mark.parametrize(
 #    "inp",
@@ -1256,10 +1257,10 @@ def test_ccsd_prt_pr_energy_module(inp, dertype, basis, subjects, clsd_open_pmol
 
         pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "pk",     },             }, id="olccd  rhf   pk/conv rr occ  ",),
         pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "direct", },             }, id="olccd  rhf drct/conv rr occ  ",),
-#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "df",     },             }, id="olccd  rhf   df/conv rr occ  ",),
-#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "mem_df", },             }, id="olccd  rhf  mem/conv rr occ  ",),
-#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "disk_df",},             }, id="olccd  rhf disk/conv rr occ  ",),
-#        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "cd",     },             }, id="olccd  rhf   cd/conv rr occ  ",),
+        # pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "df",     },             }, id="olccd  rhf   df/conv rr occ  ",),
+        # pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "mem_df", },             }, id="olccd  rhf  mem/conv rr occ  ",),
+        # pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "disk_df",},             }, id="olccd  rhf disk/conv rr occ  ",),
+        # pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "cd",     },             }, id="olccd  rhf   cd/conv rr occ  ",),
         # yapf: enable
     ],
 )
@@ -1351,7 +1352,7 @@ def test_olccd_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, req
 
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
-    "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
+    "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz", marks=pytest.mark.quick),],
 )
 @pytest.mark.parametrize(
     "inp",
