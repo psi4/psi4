@@ -3,8 +3,8 @@
 Eref = {"SAPT ELST ENERGY":  -0.12885645, #TEST
         "SAPT EXCH ENERGY":   0.48043027, #TEST
         "SAPT IND ENERGY":    0.00398419, #TEST
-        "SAPT DISP ENERGY":  -0.24032948, #TEST
-        "CURRENT ENERGY":     0.11529440} #TEST
+        "SAPT DISP ENERGY":  -0.23304893, #TEST
+        "CURRENT ENERGY":     0.12250908} #TEST
 
 
 molecule dimer {
@@ -19,6 +19,9 @@ set {
     basis         aug-cc-pvdz
     scf_type      df
 }
+
+# Disable scaling exch-disp
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
 
 # Prepare the fragments
 sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(dimer, "dimer")

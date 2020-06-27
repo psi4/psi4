@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {dftsapt_hybrid} bc41e77 dirty
+                         Git: Rev {dftsapt_hybrid} f1cb0d9 dirty
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -23,9 +23,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 04 May 2020 10:25PM
+    Psi4 started on: Saturday, 27 June 2020 06:39PM
 
-    Process ID: 14833
+    Process ID: 7820
     Host:       ds8
     PSIDATADIR: /theoryfs2/ds/xie/Gits/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
@@ -36,11 +36,17 @@
 --------------------------------------------------------------------------
 #! SAPT(DFT) aug-cc-pVDZ interaction energy between Ne and Ar atoms.
 
-Eref = {"SAPT ELST ENERGY":  -0.10197194, #TEST
-        "SAPT EXCH ENERGY":   0.36569827, #TEST
-        "SAPT IND ENERGY":    0.00349368, #TEST
-        "SAPT DISP ENERGY":  -0.26776113, #TEST
-        "CURRENT ENERGY":    -0.00054112} #TEST
+Eref_nh = {"SAPT ELST ENERGY":  -0.10190449, #TEST
+           "SAPT EXCH ENERGY":   0.36545706, #TEST
+           "SAPT IND ENERGY":    0.00349281, #TEST
+           "SAPT DISP ENERGY":  -0.24398704, #TEST
+           "CURRENT ENERGY":     0.02305835} #TEST
+
+Eref_h = {"SAPT ELST ENERGY":  -0.10197194, #TEST
+          "SAPT EXCH ENERGY":   0.36569827, #TEST
+          "SAPT IND ENERGY":    0.00349368, #TEST
+          "SAPT DISP ENERGY":  -0.26658500, #TEST
+          "CURRENT ENERGY":     0.00063501} #TEST
 
 
 molecule dimer {
@@ -70,10 +76,24 @@ energyB, wfnB = energy("PBE0", molecule=monomerB, return_wfn=True)
 # Build a blank dimer wavefunction
 wfnD = core.Wavefunction.build(sapt_dimer) 
 
+# No hybrid kernel & exch-disp scaling
+set SAPT_DFT_DO_HYBRID False 
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
+
 # Compute SAPT(DFT) from the provided wavefunctions
 data = procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
 
-for k, v in Eref.items():                                  #TEST
+for k, v in Eref_nh.items():                                  #TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, k) #TEST
+
+# Hybrid kernel & exch-disp scaling
+set SAPT_DFT_DO_HYBRID True
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME disp 
+
+# Compute SAPT(DFT) from the provided wavefunctions
+data = procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
+
+for k, v in Eref_h.items():                                  #TEST
     compare_values(v / 1000.0, psi4.variable(k), 6, k) #TEST
 --------------------------------------------------------------------------
   SAPT does not make use of molecular symmetry, further calculations in C1 point group.
@@ -81,7 +101,7 @@ for k, v in Eref.items():                                  #TEST
 Scratch directory: /tmp/
 
 *** tstart() called on ds8
-*** at Mon May  4 22:25:15 2020
+*** at Sat Jun 27 18:39:16 2020
 
    => Loading Basis Set <=
 
@@ -329,20 +349,20 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:    -0.0000      Z:     0.0026     Total:     0.0026
 
 
-*** tstop() called on ds8 at Mon May  4 22:25:18 2020
+*** tstop() called on ds8 at Sat Jun 27 18:39:18 2020
 Module time:
-	user time   =       2.39 seconds =       0.04 minutes
+	user time   =       2.38 seconds =       0.04 minutes
 	system time =       0.07 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       2.39 seconds =       0.04 minutes
+	user time   =       2.38 seconds =       0.04 minutes
 	system time =       0.07 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	total time  =          2 seconds =       0.03 minutes
 
 Scratch directory: /tmp/
 
 *** tstart() called on ds8
-*** at Mon May  4 22:25:18 2020
+*** at Sat Jun 27 18:39:18 2020
 
    => Loading Basis Set <=
 
@@ -585,14 +605,14 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:     0.0000      Z:     0.0018     Total:     0.0018
 
 
-*** tstop() called on ds8 at Mon May  4 22:25:19 2020
+*** tstop() called on ds8 at Sat Jun 27 18:39:20 2020
 Module time:
-	user time   =       1.49 seconds =       0.02 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.31 seconds =       0.02 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       3.88 seconds =       0.06 minutes
-	system time =       0.11 seconds =       0.00 minutes
+	user time   =       3.70 seconds =       0.06 minutes
+	system time =       0.10 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
    => Loading Basis Set <=
 
@@ -682,23 +702,23 @@ Total time:
 
   ==> E10 Electostatics <== 
 
-    Elst10,r                 -0.10197194 [mEh]
+    Elst10,r                     -0.10197194 [mEh]
 
   ==> E10 Exchange <== 
 
-    Exch10(S^2)               0.36561357 [mEh]
-    Exch10                    0.36569827 [mEh]
+    Exch10(S^2)                   0.36561357 [mEh]
+    Exch10                        0.36569827 [mEh]
 
   ==> E20 Induction <== 
 
    => Uncoupled Induction <= 
 
-    Ind20,u (A<-B)           -0.01336508 [mEh]
-    Ind20,u (A->B)           -0.08758825 [mEh]
-    Ind20,u                  -0.10095333 [mEh]
-    Exch-Ind20,u (A<-B)       0.01265917 [mEh]
-    Exch-Ind20,u (A->B)       0.09120149 [mEh]
-    Exch-Ind20,u              0.10386065 [mEh]
+    Ind20,u (A<-B)               -0.01336508 [mEh]
+    Ind20,u (A->B)               -0.08758825 [mEh]
+    Ind20,u                      -0.10095333 [mEh]
+    Exch-Ind20,u (A<-B)           0.01265917 [mEh]
+    Exch-Ind20,u (A->B)           0.09120149 [mEh]
+    Exch-Ind20,u                  0.10386065 [mEh]
 
    => Coupled Induction <= 
 
@@ -712,18 +732,225 @@ Total time:
    ---------------------------------------------------
     Guess    3.129764e-02     2.137643e-02          0
         1    1.311887e-02     5.176065e-03          0
-        2    3.452590e-04     3.013016e-04          1
+        2    3.452590e-04     3.013016e-04          0
         3    1.818795e-05     2.904799e-05          1
         4    3.743802e-06     5.348949e-06          1
-        5    1.267692e-07*    2.127174e-07*         2
+        5    1.267692e-07*    2.127174e-07*         1
    ---------------------------------------------------
 
-    Ind20,r (A<-B)           -0.01382143 [mEh]
-    Ind20,r (A->B)           -0.09086365 [mEh]
-    Ind20,r                  -0.10468508 [mEh]
-    Exch-Ind20,r (A<-B)       0.01307950 [mEh]
-    Exch-Ind20,r (A->B)       0.09509925 [mEh]
-    Exch-Ind20,r              0.10817876 [mEh]
+    Ind20,r (A<-B)               -0.01382143 [mEh]
+    Ind20,r (A->B)               -0.09086365 [mEh]
+    Ind20,r                      -0.10468508 [mEh]
+    Exch-Ind20,r (A<-B)           0.01307950 [mEh]
+    Exch-Ind20,r (A->B)           0.09509925 [mEh]
+    Exch-Ind20,r                  0.10817876 [mEh]
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1 entry NE         line   296 file /theoryfs2/ds/xie/Gits/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+    atoms 2 entry AR         line   632 file /theoryfs2/ds/xie/Gits/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-ri.gbs 
+
+
+  ==> E20 Dispersion (CHF FDDS) <== 
+
+   Legendre Points:          10
+   Lambda Shift:          0.300
+   Fxc Kernal:             ALDA
+   (P|Fxc|Q) Thresh:  1.000e-06
+  DFHelper Memory: AOs need 0.004 GiB; user supplied 0.391 GiB. Using in-core AOs.
+
+  ==> DFHelper <==
+    NBF:                              50
+    NAux:                            164
+    Schwarz Cutoff:                1E-12
+    Mask sparsity (%):                 0
+    DFH Avail. Memory [GiB]:       0.391
+    OpenMP threads:                    1
+    Algorithm:                DIRECT_iaQ
+    AO Core:                        True
+    MO Core:                       False
+    Hold Metric:                   False
+    Metric Power:                  0.000
+    Fitting Condition:             1E-12
+    Q Shell Max:                       7
+
+
+
+   => Time Integration <= 
+
+       Omega       Weight       Disp20,u         Disp20   time [s]
+   2.269e+01    6.667e-02      2.365e-06      2.350e-06          0
+   4.147e+00    1.495e-01      9.740e-05      9.010e-05          0
+   1.572e+00    2.191e-01      3.985e-04      3.196e-04          0
+   7.589e-01    2.693e-01      5.750e-04      4.056e-04          0
+   4.049e-01    2.955e-01      5.011e-04      3.299e-04          0
+   2.223e-01    2.955e-01      3.466e-04      2.224e-04          0
+   1.186e-01    2.693e-01      2.204e-04      1.402e-04          0
+   5.727e-02    2.191e-01      1.342e-04      8.513e-05          0
+   2.170e-02    1.495e-01      7.472e-05      4.739e-05          0
+   3.966e-03    6.667e-02      2.979e-05      1.889e-05          0
+
+    Disp20,u                     -0.37878630 [mEh]
+    Disp20                       -0.26444183 [mEh]
+
+  ==> E20 Dispersion (MP2) <== 
+
+
+    Disp20 (MP2)                 -0.37881734 [mEh]
+    Exch-Disp20,u                 0.02037338 [mEh]
+
+   SAPT(DFT) Results
+  -----------------------------------------------------------------------------------------------------
+    Electrostatics               -0.10197194 [mEh]     -0.06398836 [kcal/mol]     -0.26772730 [kJ/mol]
+      Elst1,r                    -0.10197194 [mEh]     -0.06398836 [kcal/mol]     -0.26772730 [kJ/mol]
+
+    Exchange                      0.36569827 [mEh]      0.22947913 [kcal/mol]      0.96014069 [kJ/mol]
+      Exch1                       0.36569827 [mEh]      0.22947913 [kcal/mol]      0.96014069 [kJ/mol]
+      Exch1(S^2)                  0.36561357 [mEh]      0.22942598 [kcal/mol]      0.95991830 [kJ/mol]
+
+    Induction                     0.00349368 [mEh]      0.00219232 [kcal/mol]      0.00917265 [kJ/mol]
+      Ind2,r                     -0.10468508 [mEh]     -0.06569088 [kcal/mol]     -0.27485064 [kJ/mol]
+      Exch-Ind2,r                 0.10817876 [mEh]      0.06788320 [kcal/mol]      0.28402329 [kJ/mol]
+      Induction (A<-B)           -0.00074192 [mEh]     -0.00046556 [kcal/mol]     -0.00194791 [kJ/mol]
+      Induction (A->B)            0.00423560 [mEh]      0.00265788 [kcal/mol]      0.01112057 [kJ/mol]
+
+    Dispersion                   -0.24406845 [mEh]     -0.15315527 [kcal/mol]     -0.64080164 [kJ/mol]
+      Disp2,r                    -0.26444183 [mEh]     -0.16593976 [kcal/mol]     -0.69429194 [kJ/mol]
+      Disp2,u                    -0.37881734 [mEh]     -0.23771147 [kcal/mol]     -0.99458478 [kJ/mol]
+      Exch-Disp2,u                0.02037338 [mEh]      0.01278449 [kcal/mol]      0.05349030 [kJ/mol]
+
+    Total SAPT(DFT)               0.02315155 [mEh]      0.01452782 [kcal/mol]      0.06078440 [kJ/mol]
+  -----------------------------------------------------------------------------------------------------
+    SAPT ELST ENERGY..................................................PASSED
+    SAPT EXCH ENERGY..................................................PASSED
+    SAPT IND ENERGY...................................................PASSED
+    SAPT DISP ENERGY..................................................PASSED
+    CURRENT ENERGY....................................................PASSED
+
+         ---------------------------------------------------------
+               SAPT(DFT): Intermolecular Interaction Segment       
+
+                   by Daniel G. A. Smith and Rob Parrish           
+         ---------------------------------------------------------
+
+  ==> Algorithm <==
+
+   SAPT DFT Functional          unknown
+   Delta HF                         N/A
+   JK Algorithm                     N/A
+
+   => Building SAPT JK object <= 
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry NE         line   386 file /theoryfs2/ds/xie/Gits/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2 entry AR         line   854 file /theoryfs2/ds/xie/Gits/psi4/objdir/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+
+
+  Warning: JK type 'DF' found in simple constructor, defaulting to DiskDFJK.
+           Please use the build_JK(primary, auxiliary, options, do_wK, memory)
+           constructor as DiskDFJK has non-optimal performance for many workloads.
+
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory [MiB]:              244
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (AUG-CC-PVDZ AUX)
+    Blend: AUG-CC-PVDZ-JKFIT
+    Number of shells: 68
+    Number of basis function: 214
+    Number of Cartesian functions: 251
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+
+  ==> Preparing SAPT Data Cache <== 
+
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    OpenMP threads:              1
+    Integrals threads:           1
+    Memory [MiB]:              244
+    Algorithm:                Core
+    Integral Cache:           NONE
+    Schwarz Cutoff:          1E-12
+    Fitting Condition:       1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (AUG-CC-PVDZ AUX)
+    Blend: AUG-CC-PVDZ-JKFIT
+    Number of shells: 68
+    Number of basis function: 214
+    Number of Cartesian functions: 251
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+
+  ==> E10 Electostatics <== 
+
+    Elst10,r                     -0.10197194 [mEh]
+
+  ==> E10 Exchange <== 
+
+    Exch10(S^2)                   0.36561357 [mEh]
+    Exch10                        0.36569827 [mEh]
+
+  ==> E20 Induction <== 
+
+   => Uncoupled Induction <= 
+
+    Ind20,u (A<-B)               -0.01336508 [mEh]
+    Ind20,u (A->B)               -0.08758825 [mEh]
+    Ind20,u                      -0.10095333 [mEh]
+    Exch-Ind20,u (A<-B)           0.01265917 [mEh]
+    Exch-Ind20,u (A->B)           0.09120149 [mEh]
+    Exch-Ind20,u                  0.10386065 [mEh]
+
+   => Coupled Induction <= 
+
+   ---------------------------------------------------
+              SAPT Coupled Induction Solver           
+   ---------------------------------------------------
+    Maxiter             =          20
+    Convergence         =   1.000E-06
+   ---------------------------------------------------
+     Iter       (A<-B)           (B->A)      Time [s]
+   ---------------------------------------------------
+    Guess    3.129764e-02     2.137643e-02          0
+        1    1.311887e-02     5.176065e-03          0
+        2    3.452590e-04     3.013016e-04          0
+        3    1.818795e-05     2.904799e-05          1
+        4    3.743802e-06     5.348949e-06          1
+        5    1.267692e-07*    2.127174e-07*         1
+   ---------------------------------------------------
+
+    Ind20,r (A<-B)               -0.01382143 [mEh]
+    Ind20,r (A->B)               -0.09086365 [mEh]
+    Ind20,r                      -0.10468508 [mEh]
+    Exch-Ind20,r (A<-B)           0.01307950 [mEh]
+    Exch-Ind20,r (A->B)           0.09509925 [mEh]
+    Exch-Ind20,r                  0.10817876 [mEh]
 
    => Loading Basis Set <=
 
@@ -775,45 +1002,45 @@ Total time:
    2.170e-02    1.495e-01      7.472e-05      5.658e-05          0
    3.966e-03    6.667e-02      2.979e-05      2.256e-05          0
 
-    Disp20,u                 -0.37878630 [mEh]
-    Disp20                   -0.28173727 [mEh]
+    Disp20,u                     -0.37878630 [mEh]
+    Disp20                       -0.28173727 [mEh]
 
   ==> E20 Dispersion (MP2) <== 
 
 
-    Disp20 (MP2)             -0.37881734 [mEh]
-    Exch-Disp20,u             0.02037338 [mEh]
+    Disp20 (MP2)                 -0.37881734 [mEh]
+    Exch-Disp20,u                 0.02037338 [mEh]
 
    SAPT(DFT) Results
-  -------------------------------------------------------------------------------------------------
-    Electrostatics           -0.10197194 [mEh]     -0.06398836 [kcal/mol]     -0.26772730 [kJ/mol]
-      Elst1,r                -0.10197194 [mEh]     -0.06398836 [kcal/mol]     -0.26772730 [kJ/mol]
+  -----------------------------------------------------------------------------------------------------
+    Electrostatics               -0.10197194 [mEh]     -0.06398836 [kcal/mol]     -0.26772730 [kJ/mol]
+      Elst1,r                    -0.10197194 [mEh]     -0.06398836 [kcal/mol]     -0.26772730 [kJ/mol]
 
-    Exchange                  0.36569827 [mEh]      0.22947913 [kcal/mol]      0.96014069 [kJ/mol]
-      Exch1                   0.36569827 [mEh]      0.22947913 [kcal/mol]      0.96014069 [kJ/mol]
-      Exch1(S^2)              0.36561357 [mEh]      0.22942598 [kcal/mol]      0.95991830 [kJ/mol]
+    Exchange                      0.36569827 [mEh]      0.22947913 [kcal/mol]      0.96014069 [kJ/mol]
+      Exch1                       0.36569827 [mEh]      0.22947913 [kcal/mol]      0.96014069 [kJ/mol]
+      Exch1(S^2)                  0.36561357 [mEh]      0.22942598 [kcal/mol]      0.95991830 [kJ/mol]
 
-    Induction                 0.00349368 [mEh]      0.00219232 [kcal/mol]      0.00917265 [kJ/mol]
-      Ind2,r                 -0.10468508 [mEh]     -0.06569088 [kcal/mol]     -0.27485064 [kJ/mol]
-      Exch-Ind2,r             0.10817876 [mEh]      0.06788320 [kcal/mol]      0.28402329 [kJ/mol]
-      Induction (A<-B)       -0.00074192 [mEh]     -0.00046556 [kcal/mol]     -0.00194791 [kJ/mol]
-      Induction (A->B)        0.00423560 [mEh]      0.00265788 [kcal/mol]      0.01112057 [kJ/mol]
+    Induction                     0.00349368 [mEh]      0.00219232 [kcal/mol]      0.00917265 [kJ/mol]
+      Ind2,r                     -0.10468508 [mEh]     -0.06569088 [kcal/mol]     -0.27485064 [kJ/mol]
+      Exch-Ind2,r                 0.10817876 [mEh]      0.06788320 [kcal/mol]      0.28402329 [kJ/mol]
+      Induction (A<-B)           -0.00074192 [mEh]     -0.00046556 [kcal/mol]     -0.00194791 [kJ/mol]
+      Induction (A->B)            0.00423560 [mEh]      0.00265788 [kcal/mol]      0.01112057 [kJ/mol]
 
-    Dispersion               -0.26776113 [mEh]     -0.16802264 [kcal/mol]     -0.70300674 [kJ/mol]
-      Disp2,r                -0.28173727 [mEh]     -0.17679280 [kcal/mol]     -0.73970109 [kJ/mol]
-      Disp2,u                -0.37881734 [mEh]     -0.23771147 [kcal/mol]     -0.99458478 [kJ/mol]
-      Exch-Disp2,r            0.01397614 [mEh]      0.00877016 [kcal/mol]      0.03669435 [kJ/mol]
-      Exch-Disp2,u            0.02037338 [mEh]      0.01278449 [kcal/mol]      0.05349030 [kJ/mol]
+    Dispersion                   -0.26658500 [mEh]     -0.16728461 [kcal/mol]     -0.69991882 [kJ/mol]
+      Disp2,r                    -0.28173727 [mEh]     -0.17679280 [kcal/mol]     -0.73970109 [kJ/mol]
+      Disp2,u                    -0.37881734 [mEh]     -0.23771147 [kcal/mol]     -0.99458478 [kJ/mol]
+      Exch-Disp2,r (scaled)       0.01515226 [mEh]      0.00950819 [kcal/mol]      0.03978226 [kJ/mol]
+      Exch-Disp2,u                0.02037338 [mEh]      0.01278449 [kcal/mol]      0.05349030 [kJ/mol]
 
-   Total SAPT(DFT)           -0.00054112 [mEh]     -0.00033956 [kcal/mol]     -0.00142071 [kJ/mol]
-  -------------------------------------------------------------------------------------------------
+    Total SAPT(DFT)               0.00063501 [mEh]      0.00039847 [kcal/mol]      0.00166721 [kJ/mol]
+  -----------------------------------------------------------------------------------------------------
     SAPT ELST ENERGY..................................................PASSED
     SAPT EXCH ENERGY..................................................PASSED
     SAPT IND ENERGY...................................................PASSED
     SAPT DISP ENERGY..................................................PASSED
     CURRENT ENERGY....................................................PASSED
 
-    Psi4 stopped on: Monday, 04 May 2020 10:25PM
-    Psi4 wall time for execution: 0:00:07.96
+    Psi4 stopped on: Saturday, 27 June 2020 06:39PM
+    Psi4 wall time for execution: 0:00:10.47
 
 *** Psi4 exiting successfully. Buy a developer a beer!

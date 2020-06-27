@@ -36,9 +36,9 @@ def print_sapt_var(name, value, short=False, start_spacer="    "):
 
     vals = (name, value * 1000, value * constants.hartree2kcalmol, value * constants.hartree2kJmol)
     if short:
-        return start_spacer + "%-20s % 15.8f [mEh]" % vals[:2]
+        return start_spacer + "%-24s % 15.8f [mEh]" % vals[:2]
     else:
-        return start_spacer + "%-20s % 15.8f [mEh] % 15.8f [kcal/mol] % 15.8f [kJ/mol]" % vals
+        return start_spacer + "%-24s % 15.8f [mEh] % 15.8f [kcal/mol] % 15.8f [kJ/mol]" % vals
 
 def print_sapt_hf_summary(data, name, short=False, delta_hf=False):
 
@@ -107,7 +107,7 @@ def print_sapt_hf_summary(data, name, short=False, delta_hf=False):
 def print_sapt_dft_summary(data, name, short=False):
 
     ret = "   %s Results\n" % name
-    ret += "  " + "-" * 97 + "\n"
+    ret += "  " + "-" * 101 + "\n"
 
     # Elst
     ret += print_sapt_var("Electrostatics", data["Elst10,r"]) + "\n"
@@ -143,23 +143,37 @@ def print_sapt_dft_summary(data, name, short=False):
     ret += "\n"
     core.set_variable("SAPT IND ENERGY", ind)
 
+
+    # Exchange-dispersion scaling
+    exch_disp_scheme = core.get_option("SAPT", "SAPT_DFT_EXCH_DISP_SCALE_SCHEME")
+    if exch_disp_scheme == "NONE":
+        data["Exch-Disp20,r"] = data["Exch-Disp20,u"] 
+    if exch_disp_scheme == "FIXED":
+        exch_disp_scale = core.get_option("SAPT", "SAPT_DFT_EXCH_DISP_FIXED_SCALE")
+        data["Exch-Disp20,r"] = exch_disp_scale * data["Exch-Disp20,u"]
+    if exch_disp_scheme == "DISP":
+        exch_disp_scale = data["Disp20"] / data["Disp20,u"]
+        data["Exch-Disp20,r"] = exch_disp_scale * data["Exch-Disp20,u"]
+    
+
     # Dispersion
     # disp = data["Disp20"] + data["Exch-Disp20,u"]
     disp = data["Disp20"] + data["Exch-Disp20,r"]
     ret += print_sapt_var("Dispersion", disp) + "\n"
     ret += print_sapt_var("  Disp2,r", data["Disp20"]) + "\n"
     ret += print_sapt_var("  Disp2,u", data["Disp20,u"]) + "\n"
-    ret += print_sapt_var("  Exch-Disp2,r", data["Exch-Disp20,r"]) + "\n"
+    if exch_disp_scheme != "NONE":
+        ret += print_sapt_var("  Exch-Disp2,r (scaled)", data["Exch-Disp20,r"]) + "\n"
     ret += print_sapt_var("  Exch-Disp2,u", data["Exch-Disp20,u"]) + "\n"
     ret += "\n"
     core.set_variable("SAPT DISP ENERGY", disp)
 
     # Total energy
     total = data["Elst10,r"] + data["Exch10"] + ind + disp
-    ret += print_sapt_var("Total %-15s" % name, total, start_spacer="   ") + "\n"
+    ret += print_sapt_var("Total %-17s" % name, total, start_spacer="    ") + "\n"
     core.set_variable("SAPT(DFT) TOTAL ENERGY", total)
     core.set_variable("SAPT TOTAL ENERGY", total)
     core.set_variable("CURRENT ENERGY", total)
 
-    ret += "  " + "-" * 97 + "\n"
+    ret += "  " + "-" * 101 + "\n"
     return ret

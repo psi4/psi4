@@ -386,16 +386,35 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
     if cleanup_jk:
         sapt_jk.finalize()
 
+    # Hybrid xc kernel check
+    do_hybrid = core.get_option("SAPT", "SAPT_DFT_DO_HYBRID")
+    is_x_hybrid = wfn_B.functional().is_x_hybrid()
+    is_x_lrc = wfn_B.functional().is_x_lrc()
+    hybrid_specified = core.has_option_changed("SAPT", "SAPT_DFT_DO_HYBRID")
+    if is_x_lrc:
+        if do_hybrid:
+            if hybrid_specified:
+                raise ValidationError("SAPT(DFT): Hybrid xc kernel not yet implemented for range-separated funtionals.")
+            else:
+                core.print_out("Warning: Hybrid xc kernel not yet implemented for range-separated funtionals; hybrid kernel capability is turned off.\n") 
+        is_hybrid = False
+    else:
+        if do_hybrid:
+            if not is_x_hybrid and hybrid_specified:
+                raise ValidationError("SAPT(DFT): Pure LDA/GGA functionals not compatible with hybrid xc kernel.") 
+            is_hybrid = is_x_hybrid
+        else:
+            is_hybrid = False
+
     # Dispersion
     core.timer_on("SAPT(DFT):SAPT(DFT):disp")
     primary_basis = wfn_A.basisset()
     core.print_out("\n")
     aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_MP2",
                                     core.get_option("DFMP2", "DF_BASIS_MP2"), "RIFIT", core.get_global_option('BASIS'))
-    is_hybrid = core.get_option("SAPT", "SAPT_DFT_DO_HYBRID")
-    if not wfn_B.functional().is_x_hybrid() or wfn_B.functional().is_x_lrc():
-        is_hybrid = False
     x_alpha = wfn_B.functional().x_alpha()
+    if not is_hybrid:
+        x_alpha = 0.0
     fdds_disp = sapt_mp2_terms.df_fdds_dispersion(primary_basis, aux_basis, cache, is_hybrid, x_alpha)
     data.update(fdds_disp)
 

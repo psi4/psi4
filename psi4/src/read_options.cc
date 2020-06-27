@@ -1020,8 +1020,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("SAPT_DFT_GRAC_SHIFT_B", 0.0);
         /*- Compute the Delta-HF correction? -*/
         options.add_bool("SAPT_DFT_DO_DHF", true);
-        /*- Enables the hybrid xc kernel in dispersion? -*/
+        /*- Enables the hybrid xc kernel in dispersion? !expert -*/
         options.add_bool("SAPT_DFT_DO_HYBRID", true);
+        /*- Scheme of exchange-dispersion? !expert -*/
+        options.add_str("SAPT_DFT_EXCH_DISP_SCALE_SCHEME", "DISP", "NONE FIXED DISP");
+        /*- Exch-disp scaling factor for FIXED scheme !expert -*/
+        options.add_double("SAPT_DFT_EXCH_DISP_FIXED_SCALE", 0.686);
         /*- Underlying funcitonal to use for SAPT(DFT) !expert -*/
         options.add_str("SAPT_DFT_FUNCTIONAL", "PBE0", "");
         /*- Number of points in the Legendre FDDS Dispersion time integration !expert -*/

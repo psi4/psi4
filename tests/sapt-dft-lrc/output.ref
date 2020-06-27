@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {dftsapt_hybrid} bc41e77 dirty
+                         Git: Rev {dftsapt_hybrid} f1cb0d9 dirty
 
 
     R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
@@ -23,10 +23,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 01 June 2020 08:30PM
+    Psi4 started on: Saturday, 27 June 2020 06:33PM
 
-    Process ID: 17692
-    Host:       ds4
+    Process ID: 7764
+    Host:       ds8
     PSIDATADIR: /theoryfs2/ds/xie/Gits/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -39,8 +39,8 @@
 Eref = {"SAPT ELST ENERGY":  -0.12885645, #TEST
         "SAPT EXCH ENERGY":   0.48043027, #TEST
         "SAPT IND ENERGY":    0.00398419, #TEST
-        "SAPT DISP ENERGY":  -0.24032948, #TEST
-        "CURRENT ENERGY":     0.11529440} #TEST
+        "SAPT DISP ENERGY":  -0.23304893, #TEST
+        "CURRENT ENERGY":     0.12250908} #TEST
 
 
 molecule dimer {
@@ -55,6 +55,9 @@ set {
     basis         aug-cc-pvdz
     scf_type      df
 }
+
+# Disable scaling exch-disp
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
 
 # Prepare the fragments
 sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(dimer, "dimer")
@@ -80,8 +83,8 @@ for k, v in Eref.items():                                  #TEST
 
 Scratch directory: /tmp/
 
-*** tstart() called on ds4
-*** at Mon Jun  1 20:30:38 2020
+*** tstart() called on ds8
+*** at Sat Jun 27 18:33:45 2020
 
    => Loading Basis Set <=
 
@@ -239,12 +242,15 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:  -128.90517506755651   -1.28905e+02   0.00000e+00 
-   @DF-RKS iter   1:  -128.90874543943363   -3.57037e-03   6.39972e-04 DIIS
-   @DF-RKS iter   2:  -128.90886395897380   -1.18520e-04   4.69976e-04 DIIS
-   @DF-RKS iter   3:  -128.90900701153916   -1.43053e-04   5.94690e-05 DIIS
-   @DF-RKS iter   4:  -128.90900922861678   -2.21708e-06   9.12460e-07 DIIS
-   @DF-RKS iter   5:  -128.90900922947861   -8.61831e-10   3.24064e-08 DIIS
+   @DF-RKS iter SAD:  -128.90517506755572   -1.28905e+02   0.00000e+00 
+   @DF-RKS iter   1:  -125.82195680294809    3.08322e+00   2.53219e-02 DIIS
+   @DF-RKS iter   2:  -127.93277252134015   -2.11082e+00   3.64599e-02 DIIS
+   @DF-RKS iter   3:  -128.72416197343063   -7.91389e-01   1.59965e-02 DIIS
+   @DF-RKS iter   4:  -128.90172422863168   -1.77562e-01   2.82577e-03 DIIS
+   @DF-RKS iter   5:  -128.90900032438591   -7.27610e-03   8.04786e-05 DIIS
+   @DF-RKS iter   6:  -128.90900906642855   -8.74204e-06   8.88193e-06 DIIS
+   @DF-RKS iter   7:  -128.90900922304519   -1.56617e-07   2.30821e-06 DIIS
+   @DF-RKS iter   8:  -128.90900922921921   -6.17402e-09   5.17057e-07 DIIS
   Energy and wave function converged.
 
 
@@ -255,42 +261,42 @@ Scratch directory: /tmp/
 
     Doubly Occupied:                                                      
 
-       1A    -30.728454     2A     -1.511381     3A     -0.641867  
-       4A     -0.641862     5A     -0.641862  
+       1A    -30.728456     2A     -1.511382     3A     -0.641868  
+       4A     -0.641863     5A     -0.641863  
 
     Virtual:                                                              
 
        6A      0.094641     7A      0.126813     8A      0.126813  
        9A      0.134526    10A      0.279011    11A      0.302724  
-      12A      0.302724    13A      0.371345    14A      0.530177  
-      15A      0.576933    16A      0.576933    17A      0.592068  
-      18A      0.798735    19A      0.798736    20A      0.807688  
-      21A      0.807688    22A      0.872811    23A      1.595759  
-      24A      1.595807    25A      1.597272    26A      1.597272  
-      27A      1.604380    28A      1.717143    29A      1.717143  
-      30A      1.754957    31A      1.906966    32A      2.441720  
-      33A      2.441720    34A      2.450635    35A      2.547299  
-      36A      3.106370    37A      3.106373    38A      3.111459  
-      39A      3.111459    40A      3.162365    41A      5.890516  
-      42A      5.890613    43A      5.891543    44A      5.891543  
-      45A      5.899363    46A      9.185796    47A     27.720855  
-      48A     27.720855    49A     27.733528    50A    176.810938  
+      12A      0.302724    13A      0.371345    14A      0.530175  
+      15A      0.576932    16A      0.576932    17A      0.592068  
+      18A      0.798736    19A      0.798737    20A      0.807688  
+      21A      0.807688    22A      0.872811    23A      1.595758  
+      24A      1.595806    25A      1.597271    26A      1.597271  
+      27A      1.604379    28A      1.717142    29A      1.717142  
+      30A      1.754956    31A      1.906966    32A      2.441720  
+      33A      2.441720    34A      2.450636    35A      2.547298  
+      36A      3.106368    37A      3.106371    38A      3.111457  
+      39A      3.111457    40A      3.162364    41A      5.890514  
+      42A      5.890611    43A      5.891542    44A      5.891542  
+      45A      5.899361    46A      9.185796    47A     27.720855  
+      48A     27.720855    49A     27.733522    50A    176.810938  
 
     Final Occupation by Irrep:
               A 
     DOCC [     5 ]
 
-  @DF-RKS Final Energy:  -128.90900922947861
+  @DF-RKS Final Energy:  -128.90900922921921
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.0000000000000000
-    One-Electron Energy =                -182.1671132152216899
-    Two-Electron Energy =                  64.0796258963987810
-    DFT Exchange-Correlation Energy =     -10.8215219106557097
+    One-Electron Energy =                -182.1672115290566012
+    Two-Electron Energy =                  64.0797381052124564
+    DFT Exchange-Correlation Energy =     -10.8215358053750510
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -128.9090092294786132
+    Total Energy =                       -128.9090092292192082
 
 Computation Completed
 
@@ -303,29 +309,29 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:   -43.3252
 
   Electronic Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:    43.3262
+     X:     0.0000      Y:    -0.0000      Z:    43.3262
 
   Dipole Moment: [e a0]
-     X:     0.0000      Y:     0.0000      Z:     0.0010     Total:     0.0010
+     X:     0.0000      Y:    -0.0000      Z:     0.0010     Total:     0.0010
 
   Dipole Moment: [D]
-     X:     0.0000      Y:     0.0000      Z:     0.0025     Total:     0.0025
+     X:     0.0000      Y:    -0.0000      Z:     0.0025     Total:     0.0025
 
 
-*** tstop() called on ds4 at Mon Jun  1 20:30:40 2020
+*** tstop() called on ds8 at Sat Jun 27 18:33:47 2020
 Module time:
-	user time   =       1.47 seconds =       0.02 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       2.10 seconds =       0.04 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       1.47 seconds =       0.02 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       2.10 seconds =       0.04 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 Scratch directory: /tmp/
 
-*** tstart() called on ds4
-*** at Mon Jun  1 20:30:40 2020
+*** tstart() called on ds8
+*** at Sat Jun 27 18:33:47 2020
 
    => Loading Basis Set <=
 
@@ -483,11 +489,11 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:  -527.52745182477429   -5.27527e+02   0.00000e+00 
-   @DF-RKS iter   1:  -527.53340765027713   -5.95583e-03   9.13565e-04 DIIS
-   @DF-RKS iter   2:  -527.53416078041937   -7.53130e-04   3.65268e-04 DIIS
-   @DF-RKS iter   3:  -527.53429627943399   -1.35499e-04   9.75685e-06 DIIS
-   @DF-RKS iter   4:  -527.53429658100265   -3.01569e-07   7.63902e-07 DIIS
+   @DF-RKS iter SAD:  -527.52745182483136   -5.27527e+02   0.00000e+00 
+   @DF-RKS iter   1:  -527.53340765033602   -5.95583e-03   9.13565e-04 DIIS
+   @DF-RKS iter   2:  -527.53416078047758   -7.53130e-04   3.65268e-04 DIIS
+   @DF-RKS iter   3:  -527.53429627949311   -1.35499e-04   9.75685e-06 DIIS
+   @DF-RKS iter   4:  -527.53429658106165   -3.01569e-07   7.63902e-07 DIIS
   Energy and wave function converged.
 
 
@@ -523,17 +529,17 @@ Scratch directory: /tmp/
               A 
     DOCC [     9 ]
 
-  @DF-RKS Final Energy:  -527.53429658100265
+  @DF-RKS Final Energy:  -527.53429658106165
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              0.0000000000000000
-    One-Electron Energy =                -728.2871409750014209
-    Two-Electron Energy =                 227.8751779705874299
-    DFT Exchange-Correlation Energy =     -27.1223335765886908
+    One-Electron Energy =                -728.2871409750221119
+    Two-Electron Energy =                 227.8751779705505953
+    DFT Exchange-Correlation Energy =     -27.1223335765902007
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -527.5342965810027636
+    Total Energy =                       -527.5342965810617670
 
 Computation Completed
 
@@ -546,24 +552,24 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    39.0146
 
   Electronic Dipole Moment: [e a0]
-     X:    -0.0000      Y:    -0.0000      Z:   -39.0140
+     X:     0.0000      Y:     0.0000      Z:   -39.0140
 
   Dipole Moment: [e a0]
-     X:    -0.0000      Y:    -0.0000      Z:     0.0006     Total:     0.0006
+     X:     0.0000      Y:     0.0000      Z:     0.0006     Total:     0.0006
 
   Dipole Moment: [D]
-     X:    -0.0000      Y:    -0.0000      Z:     0.0015     Total:     0.0015
+     X:     0.0000      Y:     0.0000      Z:     0.0015     Total:     0.0015
 
 
-*** tstop() called on ds4 at Mon Jun  1 20:30:41 2020
+*** tstop() called on ds8 at Sat Jun 27 18:33:49 2020
 Module time:
-	user time   =       1.31 seconds =       0.02 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.58 seconds =       0.03 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       2.78 seconds =       0.05 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       3.69 seconds =       0.06 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ
@@ -695,23 +701,23 @@ Total time:
 
   ==> E10 Electostatics <== 
 
-    Elst10,r                 -0.12888495 [mEh]
+    Elst10,r                     -0.12888588 [mEh]
 
   ==> E10 Exchange <== 
 
-    Exch10(S^2)               0.48038568 [mEh]
-    Exch10                    0.48052286 [mEh]
+    Exch10(S^2)                   0.48038945 [mEh]
+    Exch10                        0.48052663 [mEh]
 
   ==> E20 Induction <== 
 
    => Uncoupled Induction <= 
 
-    Ind20,u (A<-B)           -0.03512579 [mEh]
-    Ind20,u (A->B)           -0.09270963 [mEh]
-    Ind20,u                  -0.12783542 [mEh]
-    Exch-Ind20,u (A<-B)       0.03414643 [mEh]
-    Exch-Ind20,u (A->B)       0.09570763 [mEh]
-    Exch-Ind20,u              0.12985406 [mEh]
+    Ind20,u (A<-B)               -0.03512814 [mEh]
+    Ind20,u (A->B)               -0.09270956 [mEh]
+    Ind20,u                      -0.12783770 [mEh]
+    Exch-Ind20,u (A<-B)           0.03414879 [mEh]
+    Exch-Ind20,u (A->B)           0.09570756 [mEh]
+    Exch-Ind20,u                  0.12985635 [mEh]
 
    => Coupled Induction <= 
 
@@ -723,21 +729,22 @@ Total time:
    ---------------------------------------------------
      Iter       (A<-B)           (B->A)      Time [s]
    ---------------------------------------------------
-    Guess    7.405509e-02     5.519556e-02          0
-        1    1.810176e-02     6.087969e-03          0
-        2    3.160808e-03     1.621470e-03          0
-        3    3.239259e-04     2.735523e-04          1
-        4    3.151258e-05     3.457573e-05          1
-        5    3.377259e-06     3.652152e-06          1
-        6    6.033719e-07*    6.428529e-07*         1
+    Guess    7.405407e-02     5.519555e-02          0
+        1    1.810122e-02     6.087982e-03          0
+        2    3.160733e-03     1.621479e-03          1
+        3    3.239180e-04     2.735528e-04          1
+        4    3.151188e-05     3.457576e-05          1
+        5    3.377137e-06     3.652168e-06          2
+        6    6.033543e-07*    6.428877e-07*         2
    ---------------------------------------------------
 
-    Ind20,r (A<-B)           -0.03978125 [mEh]
-    Ind20,r (A->B)           -0.10337639 [mEh]
-    Ind20,r                  -0.14315764 [mEh]
-    Exch-Ind20,r (A<-B)       0.03881263 [mEh]
-    Exch-Ind20,r (A->B)       0.10833098 [mEh]
-    Exch-Ind20,r              0.14714361 [mEh]
+    Ind20,r (A<-B)               -0.03978386 [mEh]
+    Ind20,r (A->B)               -0.10337632 [mEh]
+    Ind20,r                      -0.14316018 [mEh]
+    Exch-Ind20,r (A<-B)           0.03881526 [mEh]
+    Exch-Ind20,r (A->B)           0.10833090 [mEh]
+    Exch-Ind20,r                  0.14714616 [mEh]
+Warning: Hybrid xc kernel not yet implemented for range-separated funtionals; hybrid kernel capability is turned off.
 
    => Loading Basis Set <=
 
@@ -787,45 +794,44 @@ Total time:
    2.170e-02    1.495e-01      5.805e-05      3.913e-05          0
    3.966e-03    6.667e-02      2.314e-05      1.560e-05          0
 
-    Disp20,u                 -0.35106139 [mEh]
-    Disp20                   -0.25617619 [mEh]
+    Disp20,u                     -0.35106130 [mEh]
+    Disp20                       -0.25617613 [mEh]
 
   ==> E20 Dispersion (MP2) <== 
 
 
-    Disp20 (MP2)             -0.35110427 [mEh]
-    Exch-Disp20,u             0.02310017 [mEh]
+    Disp20 (MP2)                 -0.35110417 [mEh]
+    Exch-Disp20,u                 0.02310034 [mEh]
 
    SAPT(DFT) Results
-  -------------------------------------------------------------------------------------------------
-    Electrostatics           -0.12888495 [mEh]     -0.08087653 [kcal/mol]     -0.33838739 [kJ/mol]
-      Elst1,r                -0.12888495 [mEh]     -0.08087653 [kcal/mol]     -0.33838739 [kJ/mol]
+  -----------------------------------------------------------------------------------------------------
+    Electrostatics               -0.12888588 [mEh]     -0.08087711 [kcal/mol]     -0.33838983 [kJ/mol]
+      Elst1,r                    -0.12888588 [mEh]     -0.08087711 [kcal/mol]     -0.33838983 [kJ/mol]
 
-    Exchange                  0.48052286 [mEh]      0.30153265 [kcal/mol]      1.26161259 [kJ/mol]
-      Exch1                   0.48052286 [mEh]      0.30153265 [kcal/mol]      1.26161259 [kJ/mol]
-      Exch1(S^2)              0.48038568 [mEh]      0.30144657 [kcal/mol]      1.26125243 [kJ/mol]
+    Exchange                      0.48052663 [mEh]      0.30153501 [kcal/mol]      1.26162249 [kJ/mol]
+      Exch1                       0.48052663 [mEh]      0.30153501 [kcal/mol]      1.26162249 [kJ/mol]
+      Exch1(S^2)                  0.48038945 [mEh]      0.30144893 [kcal/mol]      1.26126232 [kJ/mol]
 
-    Induction                 0.00398597 [mEh]      0.00250123 [kcal/mol]      0.01046515 [kJ/mol]
-      Ind2,r                 -0.14315764 [mEh]     -0.08983278 [kcal/mol]     -0.37586034 [kJ/mol]
-      Exch-Ind2,r             0.14714361 [mEh]      0.09233401 [kcal/mol]      0.38632549 [kJ/mol]
-      Induction (A<-B)       -0.00096863 [mEh]     -0.00060782 [kcal/mol]     -0.00254313 [kJ/mol]
-      Induction (A->B)        0.00495459 [mEh]      0.00310905 [kcal/mol]      0.01300828 [kJ/mol]
+    Induction                     0.00398599 [mEh]      0.00250124 [kcal/mol]      0.01046521 [kJ/mol]
+      Ind2,r                     -0.14316018 [mEh]     -0.08983437 [kcal/mol]     -0.37586700 [kJ/mol]
+      Exch-Ind2,r                 0.14714616 [mEh]      0.09233561 [kcal/mol]      0.38633220 [kJ/mol]
+      Induction (A<-B)           -0.00096860 [mEh]     -0.00060780 [kcal/mol]     -0.00254305 [kJ/mol]
+      Induction (A->B)            0.00495458 [mEh]      0.00310905 [kcal/mol]      0.01300826 [kJ/mol]
 
-    Dispersion               -0.24032948 [mEh]     -0.15080902 [kcal/mol]     -0.63098495 [kJ/mol]
-      Disp2,r                -0.25617619 [mEh]     -0.16075299 [kcal/mol]     -0.67259050 [kJ/mol]
-      Disp2,u                -0.35110427 [mEh]     -0.22032125 [kcal/mol]     -0.92182412 [kJ/mol]
-      Exch-Disp2,r            0.01584672 [mEh]      0.00994396 [kcal/mol]      0.04160555 [kJ/mol]
-      Exch-Disp2,u            0.02310017 [mEh]      0.01449558 [kcal/mol]      0.06064949 [kJ/mol]
+    Dispersion                   -0.23307579 [mEh]     -0.14625726 [kcal/mol]     -0.61194040 [kJ/mol]
+      Disp2,r                    -0.25617613 [mEh]     -0.16075295 [kcal/mol]     -0.67259033 [kJ/mol]
+      Disp2,u                    -0.35110417 [mEh]     -0.22032119 [kcal/mol]     -0.92182388 [kJ/mol]
+      Exch-Disp2,u                0.02310034 [mEh]      0.01449568 [kcal/mol]      0.06064994 [kJ/mol]
 
-   Total SAPT(DFT)            0.11529440 [mEh]      0.07234833 [kcal/mol]      0.30270540 [kJ/mol]
-  -------------------------------------------------------------------------------------------------
+    Total SAPT(DFT)               0.12255095 [mEh]      0.07690188 [kcal/mol]      0.32175747 [kJ/mol]
+  -----------------------------------------------------------------------------------------------------
     SAPT ELST ENERGY..................................................PASSED
     SAPT EXCH ENERGY..................................................PASSED
     SAPT IND ENERGY...................................................PASSED
     SAPT DISP ENERGY..................................................PASSED
     CURRENT ENERGY....................................................PASSED
 
-    Psi4 stopped on: Monday, 01 June 2020 08:30PM
-    Psi4 wall time for execution: 0:00:06.74
+    Psi4 stopped on: Saturday, 27 June 2020 06:33PM
+    Psi4 wall time for execution: 0:00:08.76
 
 *** Psi4 exiting successfully. Buy a developer a beer!
