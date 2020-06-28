@@ -1,16 +1,16 @@
 import pytest
-#from qcengine.programs.tests.standard_suite_contracts import (
-#    contractual_ccsd,
-#    contractual_ccsd_prt_pr,
-#    contractual_current,
-#    contractual_lccd,
-#    contractual_lccsd,
-#    contractual_mp2,
-#    contractual_olccd,
-#    query_has_qcvar,
-#    query_qcvar,
-#)  # skip is temporary until references in place at qcng
-#from qcengine.programs.tests.standard_suite_ref import answer_hash, std_suite  # skip is temporary until references in place at qcng
+from qcengine.programs.tests.standard_suite_contracts import (
+    contractual_mp2,
+    contractual_lccd,
+    contractual_lccsd,
+    contractual_ccsd,
+    contractual_ccsd_prt_pr,
+    contractual_olccd,
+    contractual_current,
+    query_has_qcvar,
+    query_qcvar,
+)
+from qcengine.programs.tests.standard_suite_ref import answer_hash, std_suite
 
 import psi4
 
@@ -19,7 +19,7 @@ from .utils import *
 
 def runner_asserter(inp, subject, method, basis, tnm):
 
-    qc_module_in = "-".join(["psi4", inp["keywords"].get("qc_module", "")]).strip("-")  # returns "psi4" or "psi4-<module>"
+    qc_module_in = "-".join(["psi4", inp["keywords"].get("qc_module", "")]).strip("-")  # returns "psi4"|"psi4-<module>"
     driver = inp["driver"]
     reference = inp["keywords"]["reference"]
     fcae = {"true": "fc", "false": "ae"}[inp["keywords"]["freeze_core"]]
@@ -32,7 +32,14 @@ def runner_asserter(inp, subject, method, basis, tnm):
     # ? precedence on next two
     mp2_type = inp.get("corl_type", inp["keywords"].get("mp2_type", "df"))  # hard-code of read_options.cc MP2_TYPE
     cc_type = inp.get("corl_type", inp["keywords"].get("cc_type", "conv"))  # hard-code of read_options.cc CC_TYPE
-    corl_natural_values = {"mp2": mp2_type, "ccsd": cc_type, "ccsd(t)": cc_type, "lccd": cc_type, "lccsd": cc_type, "olccd": cc_type}
+    corl_natural_values = {
+        "mp2": mp2_type,
+        "lccd": cc_type,
+        "lccsd": cc_type,
+        "ccsd": cc_type,
+        "ccsd(t)": cc_type,
+        "olccd": cc_type,
+    }
     corl_type = corl_natural_values[method]
 
     natural_ref = {"conv": "pk", "df": "df", "cd": "cd"}

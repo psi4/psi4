@@ -414,7 +414,7 @@ def assemble_gradient_from_energies(findifrec):
     """
 
     # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
-    mol = core.Molecule.from_schema(findifrec["molecule"], verbose=0)
+    mol = core.Molecule.from_schema(findifrec["molecule"], nonphysical=True, verbose=0)
 
     def init_string(data):
         return ("  Computing gradient from energies.\n"
@@ -594,7 +594,7 @@ def assemble_hessian_from_gradients(findifrec, freq_irrep_only):
     """
 
     # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
-    mol = core.Molecule.from_schema(findifrec["molecule"], verbose=0)
+    mol = core.Molecule.from_schema(findifrec["molecule"], nonphysical=True, verbose=0)
 
     displacements = findifrec["displacements"]
 
@@ -766,7 +766,7 @@ def assemble_hessian_from_energies(findifrec, freq_irrep_only):
     """
 
     # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
-    mol = core.Molecule.from_schema(findifrec["molecule"], verbose=0)
+    mol = core.Molecule.from_schema(findifrec["molecule"], nonphysical=True, verbose=0)
 
     displacements = findifrec["displacements"]
     ref_energy = findifrec["reference"]["energy"]

@@ -100,7 +100,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   weird-basis-03 weird-basis-04 weird-basis-05
                   weird-basis-06 weird-basis-07 weird-basis-08
                   weird-basis-09 weird-basis-10 weird-basis-11
-                  weird-basis-12
+                  weird-basis-12 freq-masses
 )
     # Some tests fail in python 3
     if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")
