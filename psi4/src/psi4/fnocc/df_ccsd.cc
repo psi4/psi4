@@ -525,18 +525,28 @@ double DFCoupledCluster::CheckEnergy() {
         tb = tempv;
     }
     double energy = 0.0;
-    for (long int a = 0; a < v; a++) {
-        for (long int b = 0; b < v; b++) {
-            for (long int i = 0; i < o; i++) {
-                for (long int j = 0; j < o; j++) {
+    std::vector<std::vector<double>> pair_energies(o, std::vector<double>(o, 0));
+    for (long int i = 0; i < o; i++) {
+        for (long int j = 0; j < o; j++) {
+            for (long int a = 0; a < v; a++) {
+                for (long int b = 0; b < v; b++) {
                     long int ijab = a * v * o * o + b * o * o + i * o + j;
                     long int iajb = i * v * v * o + a * v * o + j * v + b;
                     long int jaib = j * v * v * o + a * v * o + i * v + b;
                     energy += (2.0 * integrals[iajb] - integrals[jaib]) * (tb[ijab] + t1[a * o + i] * t1[b * o + j]);
+                    pair_energies[i][j] += (2.0 * integrals[iajb] - integrals[jaib]) * (tb[ijab] + t1[a * o + i] * t1[b * o + j]);
                 }
             }
         }
     }
+
+    for (int i = 0; i < pair_energies.size(); i++) {
+        for (int j = 0; j < pair_energies[i].size(); j++) {
+            outfile->Printf(" %15.10f ", pair_energies[i][j]);
+        }
+        outfile->Printf("\n");
+    }
+
     return energy;
 }
 
