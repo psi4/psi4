@@ -1360,7 +1360,7 @@ std::shared_ptr<Matrix> USAPT0::build_Sijb(std::shared_ptr<Matrix> S) {
 
     return Sij;
 }
-// TOMODIF - spin
+
 std::shared_ptr<Matrix> USAPT0::build_Sij_n(std::shared_ptr<Matrix> Sij) {
     int nocc = Sij->nrow();
 
@@ -1823,8 +1823,7 @@ std::map<std::string, std::shared_ptr<Matrix> > CPKS_USAPT0::product(
     const std::vector<SharedMatrix>& J = jk_->J();
     const std::vector<SharedMatrix>& K = jk_->K();
 
-    int indA = 0;
-    int indB = (do_A ? 2 : 0);
+    int ind_jk = 0;
 
     if (do_A) {
         std::shared_ptr<Matrix> Jva;
@@ -1833,15 +1832,16 @@ std::map<std::string, std::shared_ptr<Matrix> > CPKS_USAPT0::product(
         std::shared_ptr<Matrix> Kvb;
         std::shared_ptr<Matrix> T;
         if (alpha_A) {
-            Jva = J[indA];
-            Kva = K[indA];
-            ++indA;
+            Jva = J[ind_jk];
+            Kva = K[ind_jk];
+            ++ind_jk;
             Jva->scale(2.0);
             T = Jva->clone();
         }
         if (beta_A) {
-            Jvb = J[indA];
-            Kvb = K[indA];
+            Jvb = J[ind_jk];
+            Kvb = K[ind_jk];
+            ++ind_jk;
             Jvb->scale(2.0);
             if (alpha_A) {
                 T->add(Jvb);
@@ -1917,15 +1917,15 @@ std::map<std::string, std::shared_ptr<Matrix> > CPKS_USAPT0::product(
         std::shared_ptr<Matrix> Kvb;
         std::shared_ptr<Matrix> T;
         if (alpha_B) {
-            Jva = J[indB];
-            Kva = K[indB];
-            indB++;
+            Jva = J[ind_jk];
+            Kva = K[ind_jk];
+            ind_jk++;
             Jva->scale(2.0);
             T = Jva->clone();
         }
         if (beta_B) {
-            Jvb = J[indB];
-            Kvb = K[indB];
+            Jvb = J[ind_jk];
+            Kvb = K[ind_jk];
             Jvb->scale(2.0);
             if (alpha_B) {
                 T->add(Jvb);
