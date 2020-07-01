@@ -1729,6 +1729,13 @@ void DFHelper::clear_spaces() {
     transformed_ = false;
 }
 
+void DFHelper::clear_transformations() {
+    // clears transformations
+
+    transf_.clear();
+    transf_core_.clear();
+}
+
 void DFHelper::clear_all() {
     // invokes destructors, eliminating all files.
     file_streams_.clear();

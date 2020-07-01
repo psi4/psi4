@@ -291,6 +291,9 @@ class PSI_API DFHelper {
     /// clear spaces
     void clear_spaces();
 
+    /// clear transformations
+    void clear_transformations(); 
+
     /// clears spaces and transformations
     void clear_all();
 
