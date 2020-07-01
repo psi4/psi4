@@ -472,11 +472,11 @@ Bibliography
    *J. Chem. Theory Comput.* **15**, 2278-2290 (2019).
 
 .. [Krylov:2001:522]
-   A. I. Krylov, 
+   A. I. Krylov,
    *Chem. Phys. Lett.* **350**, 522-530 (2001).
 
 .. [Nooijen:1995:3629]
-   M. Nooijen and R. J. Bartlett, 
+   M. Nooijen and R. J. Bartlett,
    *J. Chem. Phys.* **102**, 3629 (1995).
 
 .. [Wang:2016:214108]
@@ -501,3 +501,6 @@ Bibliography
 .. [Dreuw2005-wp]
    A. Dreuw, M. Head-Gordon
    *Chem. Rev.* **105**, 4009 (2005), doi: 10.1021/cr0505627.
+
+.. [Norman2018-tn]
+   P. Norman, K. Ruud, T. Saue, "Principles and Practices of Molecular Properties: Theory, Modeling, and Simulations". John Wiley & Sons, 2018

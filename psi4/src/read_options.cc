@@ -1585,16 +1585,23 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Save the UHF NOs -*/
         options.add_bool("SAVE_UHF_NOS", false);
 
-        /*- SUBSECTION TDDFT -*/
-        /*- Get the number of desired states per irrep -*/
+        /*- SUBSECTION TDSCF -*/
+        /*- Number of roots (excited states) we should seek to converge. This
+        can be either an integer (total number of states to seek) or a list
+        (number of states per irrep). The latter is only valid if the system has
+        symmetry. Furthermore, the total number of states will be redistributed
+        among irreps when symmetry is used.-*/
         options.add("TDSCF_STATES", new ArrayType());
-        /*- Controls inclusion of triplet states, valid options:
-            - none : No triplets computed
-            - also : lowest-energy triplets and singlets included, in 50-50 ratio
+        /*- Controls inclusion of triplet states, which is only valid for restricted references. Valid options:
+            - none : No triplets computed (default)
+            - also : lowest-energy triplets and singlets included, in 50-50
+              ratio. Note that singlets are privileged, i.e. if seeking to
+              converge 5 states in total, 3 will be singlets and 2 will be
+              triplets.
             - only : Only triplet states computed
              -*/
         options.add_str("TDSCF_TRIPLETS", "NONE", "NONE ALSO ONLY");
-        /*- Run with Tamm-Dancoff approximation, uses RPA when false -*/
+        /*- Run with Tamm-Dancoff approximation (TDA), uses random-phase approximation (RPA) when false -*/
         options.add_bool("TDSCF_TDA", false);
         /*- Convergence threshold for the norm of the residual vector -*/
         options.add_double("TDSCF_R_CONVERGENCE", 1E-4);
@@ -1603,7 +1610,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Maximum number of TDSCF solver iterations -*/
         options.add_int("TDSCF_MAXITER", 60);
         /*- Verbosity level in TDSCF -*/
-        options.add_int("TDSCF_VERBOSITY", 1);
+        options.add_int("TDSCF_PRINT", 1);
 
         /*- combine omega exchange and Hartree--Fock exchange into 
               one matrix for efficiency? 
