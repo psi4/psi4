@@ -554,23 +554,29 @@ def tdscf_excitations(wfn,
     # This gives 200 vectors per root with default tolerance
     max_vecs_per_root = int(-np.log10(r_convergence) * 50)
 
+    def rpa_solver(e, n, g, m):
+        return solvers.hamiltonian_solver(engine=e,
+                                          nroot=n,
+                                          guess=g,
+                                          r_convergence=r_convergence,
+                                          max_ss_size=max_vecs_per_root * n,
+                                          verbose=verbose)
+
+    def tda_solver(e, n, g, m):
+        return solvers.davidson_solver(engine=e,
+                                       nroot=n,
+                                       guess=g,
+                                       r_convergence=r_convergence,
+                                       max_ss_size=max_vecs_per_root * n,
+                                       verbose=verbose)
+
     # determine which solver function to use: Davidson for TDA or Hamiltonian for RPA?
     if tda:
         ptype = "TDA"
-        solve_function = lambda e, n, g, m: solvers.davidson_solver(engine=e,
-                                                                    nroot=n,
-                                                                    guess=g,
-                                                                    r_convergence=r_convergence,
-                                                                    max_ss_size=max_vecs_per_root * n,
-                                                                    verbose=verbose)
+        solve_function = tda_solver
     else:
         ptype = "RPA"
-        solve_function = lambda e, n, g, m: solvers.hamiltonian_solver(engine=e,
-                                                                       nroot=n,
-                                                                       guess=g,
-                                                                       r_convergence=r_convergence,
-                                                                       max_ss_size=max_vecs_per_root * n,
-                                                                       verbose=verbose)
+        solve_function = rpa_solver
 
     _print_tdscf_header(r_convergence=r_convergence, guess_type=guess, restricted=restricted, ptype=ptype)
 
