@@ -574,6 +574,12 @@ and the basis cutoffs, but it is likely that significant speed gains may be
 realized by relaxing the basis cutoff tolerance, with negligible decrease in
 accuracy.
 
+Small density values can introduce numerical instabilities with some functionals that
+can result in trailing SCF convergence issues or even numerical failures (NaNs).
+If the default settings of the LibXC library are insufficient, a custom value can be 
+request by setting |scf__dft_density_tolerance|. For notorious cases a value of 1E-10
+is sensible.
+
 An example of a fully specified grid is as follows::
 
     molecule {
@@ -584,12 +590,13 @@ An example of a fully specified grid is as follows::
     set {
     basis cc-pvdz
     scf_type df
-    dft_spherical_points 590     # Often needed
-    dft_radial_points 99         # Often needed
-    dft_radial_scheme treutler   # Rarely needed
-    dft_nuclear_scheme treutler  # Rarely needed
-    dft_basis_tolerance 1.0E-11  # Can speed things up, but benchmark the error
-    dft_pruning_scheme robust    # generally safe and will speed things up
+    dft_spherical_points 590      # Often needed
+    dft_radial_points 99          # Often needed
+    dft_radial_scheme treutler    # Rarely needed
+    dft_nuclear_scheme treutler   # Rarely needed
+    dft_density_tolerance 1.0E-10 # Rarely needed
+    dft_basis_tolerance 1.0E-11   # Can speed things up, but benchmark the error
+    dft_pruning_scheme robust     # Generally safe and will speed things up
     }
 
     energy('b3lyp')

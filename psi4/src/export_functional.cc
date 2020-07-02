@@ -83,6 +83,7 @@ void export_functional(py::module &m) {
         .def("grac_shift", &SuperFunctional::grac_shift, "Shift of the bulk potenital.")
         .def("grac_alpha", &SuperFunctional::grac_alpha, "GRAC Alpha.")
         .def("grac_beta", &SuperFunctional::grac_beta, "GRAC Beta.")
+        .def("density_tolerance", &SuperFunctional::density_tolerance, "Density threshold for LibXC.")
         .def("is_gga", &SuperFunctional::is_gga, "Is this a GGA?")
         .def("is_meta", &SuperFunctional::is_meta, "Is this a MGGA?")
         .def("is_x_lrc", &SuperFunctional::is_x_lrc, "Contains range-seperated exchange?")
@@ -111,6 +112,8 @@ void export_functional(py::module &m) {
         .def("set_grac_shift", &SuperFunctional::set_grac_shift, "Sets the GRAC bulk shift value.")
         .def("set_grac_alpha", &SuperFunctional::set_grac_alpha, "Sets the GRAC alpha parameter.")
         .def("set_grac_beta", &SuperFunctional::set_grac_beta, "Sets the GRAC beta parameter.")
+        .def("set_density_tolerance", &SuperFunctional::set_density_tolerance, "Sets the density threshold for LibXC.")
+        .def("print_density_threshold", &SuperFunctional::py_print_density_threshold, "Queries the LibXCFunctionals for their density threshold values")
         .def("needs_xc", &SuperFunctional::needs_xc, "Does this functional need XC quantities.")
         .def("needs_vv10", &SuperFunctional::needs_vv10, "Does this functional need VV10 dispersion.")
         .def("needs_grac", &SuperFunctional::needs_grac, "Does this functional need GRAC.")
@@ -127,6 +130,7 @@ void export_functional(py::module &m) {
         .def("omega", &Functional::omega, "docstring")
         .def("lsda_cutoff", &Functional::lsda_cutoff, "docstring")
         .def("meta_cutoff", &Functional::meta_cutoff, "docstring")
+        .def("density_cutoff", &Functional::density_cutoff, "docstring")
         .def("is_gga", &Functional::is_gga, "docstring")
         .def("is_meta", &Functional::is_meta, "docstring")
         .def("is_lrc", &Functional::is_lrc, "docstring")
@@ -139,6 +143,7 @@ void export_functional(py::module &m) {
         .def("set_omega", &Functional::set_omega, "docstring")
         .def("set_lsda_cutoff", &Functional::set_lsda_cutoff, "docstring")
         .def("set_meta_cutoff", &Functional::set_meta_cutoff, "docstring")
+        .def("set_density_cutoff", &Functional::set_density_cutoff, "docstring")
         .def("set_parameter", &Functional::set_parameter, "docstring")
         .def("print_out", &Functional::py_print, "docstring")
         .def("print_detail", &Functional::py_print_detail, "docstring");
@@ -148,6 +153,8 @@ void export_functional(py::module &m) {
         .def("get_mix_data", &LibXCFunctional::get_mix_data, "docstring")
         .def("set_tweak", &LibXCFunctional::set_tweak, "docstring")
         .def("set_omega", &LibXCFunctional::set_omega, "docstring")
+        .def("set_density_cutoff", &LibXCFunctional::set_density_cutoff, "docstring")
+        .def("density_cutoff", &LibXCFunctional::density_cutoff, "docstring")
         .def("query_libxc", &LibXCFunctional::query_libxc, "query libxc regarding functional parameters.");
 
     py::class_<VBase, std::shared_ptr<VBase>>(m, "VBase", "docstring")

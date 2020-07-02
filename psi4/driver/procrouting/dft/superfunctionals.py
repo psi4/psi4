@@ -77,6 +77,11 @@ def build_superfunctional(name, restricted, npoints=None, deriv=1):
     # Lock and unlock the functional
     sup[0].set_lock(False)
 
+    # set LibXC density screening
+    dens_tol = core.get_option("SCF", "DFT_DENSITY_TOLERANCE")
+    if (dens_tol > 0.0):
+        sup[0].set_density_tolerance(dens_tol)
+
     # Set options
     if core.has_option_changed("SCF", "DFT_OMEGA") and sup[0].is_x_lrc():
         omega = core.get_option("SCF", "DFT_OMEGA")
