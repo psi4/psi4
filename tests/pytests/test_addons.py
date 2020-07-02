@@ -25,7 +25,7 @@ using_erd = pytest.mark.skipif(psi4.addons("erd") is False,
 using_gdma = pytest.mark.skipif(psi4.addons("gdma") is False,
                                 reason="Psi4 not compiled with gdma. Rebuild with -DENABLE_gdma")
 using_ipi = pytest.mark.skipif(psi4.addons("ipi") is False,
-                                reason="Psi4 not detecting i-pi. pip install git+https://github.com/i-pi/i-pi.git")
+                                reason="Psi4 not detecting i-pi. pip install git+https://github.com/i-pi/i-pi.git@master-py3")
 using_mrcc = pytest.mark.skipif(psi4.addons("mrcc") is False,
                                 reason="Psi4 not detecting MRCC. Add `dmrcc` to envvar PSIPATH or PATH")
 using_pcmsolver = pytest.mark.skipif(psi4.addons("pcmsolver") is False,
@@ -106,6 +106,7 @@ def test_gdma():
 
 
 @pytest.mark.smoke
+@using_ipi
 def test_ipi_broker1():
     """ipi_broker1"""
     from psi4.driver.broker import ipi_broker
@@ -123,14 +124,10 @@ def test_ipi_broker1():
         'reference': 'rhf',
     })
 
-    options = {
-        "LOT"                   :   "ccsd",
-        "charge"                :   0,
-        "multiplicity"          :   1,
-    }
+    options = {}
 
     #ipi_broker(serverdata="inet:localhost:21340", options=options)
-    b = ipi_broker(serverdata=False, options=options)
+    b = ipi_broker("ccsd", serverdata=False, options=options)
 
     refnuc   =   9.05843673637
     refscf   = -74.9417588868628
@@ -170,6 +167,7 @@ def test_ipi_broker1():
 
 
 @pytest.mark.smoke
+@using_ipi
 def test_ipi_broker2():
     """ipi_broker1"""
     from psi4.driver.broker import ipi_broker
@@ -197,12 +195,7 @@ def test_ipi_broker2():
         'd_convergence':        8
     })
 
-    options = {
-        "LOT"                   :   "bp86-d2",
-        "charge"                :   0,
-        "multiplicity"          :   1,
-    }
-    b = ipi_broker(serverdata=False, options=options)
+    b = ipi_broker("bp86-d2", serverdata=False)
 
     b.calculate_force(engine='libdisp')
 

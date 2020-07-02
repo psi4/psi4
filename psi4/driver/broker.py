@@ -44,7 +44,7 @@ except ImportError:
 
 
 class IPIBroker(Client):
-    def __init__(self, options, serverdata=False, molecule=None):
+    def __init__(self, LOT, options, serverdata=False, molecule=None):
         self.serverdata = serverdata
         if not ipi_available:
             psi4.core.print_out("i-pi is not available for import: ")
@@ -56,7 +56,8 @@ class IPIBroker(Client):
             super(IPIBroker, self).__init__(address=address, port=port, mode=mode)
         else:
             super(IPIBroker, self).__init__(_socket=False)
-        self.options = options
+        self.LOT = LOT
+        self.options = options if options else {}
 
         if molecule is None:
             molecule = psi4.core.get_active_molecule()
@@ -68,11 +69,10 @@ class IPIBroker(Client):
         psi4.core.print_out("Initial atoms %s\n" % names)
         self.atoms_list = names
 
-        psi4.core.print_out("PSI4 options:\n")
+        psi4.core.print_out("Psi4 options:\n")
         for item, value in self.options.items():
             psi4.core.print_out("%s %s\n" % (item, value))
-            if item not in ["LOT", "multiplicity", "charge"]:
-                psi4.core.set_global_option(item, value)
+            psi4.core.set_global_option(item, value)
         psi4.core.IO.set_default_namespace("xwrapper")
 
         self.timing = {}
@@ -104,7 +104,7 @@ class IPIBroker(Client):
 
         self.initial_molecule.set_geometry(psi4.core.Matrix.from_array(pos))
 
-        self.calculate_gradient(self.options["LOT"], **kwargs)
+        self.calculate_gradient(self.LOT, **kwargs)
 
         self.pot = psi4.variable('CURRENT ENERGY')
         self.frc = -np.array(self.grd)
@@ -122,15 +122,15 @@ class IPIBroker(Client):
         self.timing[LOT] = self.timing.get(LOT, []) + [time_needed]
 
 
-def ipi_broker(molecule=None, serverdata=False, options=None):
+def ipi_broker(LOT, molecule=None, serverdata=False, options=None):
     """ Run IPIBroker to connect to i-pi
 
     Arguments:
         molecule: Initial molecule
         serverdata: Configuration where to connect to ipi
-        options: LOT, multiplicity and charge
+        options: any additional Psi4 options
     """
-    b = IPIBroker(molecule=molecule, serverdata=serverdata, options=options)
+    b = IPIBroker(LOT, molecule=molecule, serverdata=serverdata, options=options)
 
     try:
         if b.serverdata:

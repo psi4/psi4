@@ -100,6 +100,7 @@ jobs:
         pymdi \
         -c conda-forge
       conda install adcc -c adcc -c conda-forge
+      pip install git+https://github.com/i-pi/i-pi.git@master-py3
       conda list
     displayName: 'Build Environment'
 
