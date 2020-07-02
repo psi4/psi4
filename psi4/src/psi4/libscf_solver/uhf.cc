@@ -207,7 +207,7 @@ void UHF::form_G() {
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
 
-    if ( alpha != 0.0 && !(functional_->is_x_lrc() && jk_->name() == "MemDFJK" && jk_->get_wcombine()) ){
+    if ( alpha != 0.0 && !(functional_->is_x_lrc() && jk_->get_wcombine()) ){
         Ga_->axpy(-alpha, Ka_);
         Gb_->axpy(-alpha, Kb_);
     } else {
@@ -216,7 +216,7 @@ void UHF::form_G() {
     }
 
     if (functional_->is_x_lrc()) {
-        if (jk_->name() == "MemDFJK" && jk_->get_wcombine()) {
+        if (jk_->get_wcombine()) {
             Ga_->axpy(-1.0, wKa_);
             Gb_->axpy(-1.0, wKb_);
         }
@@ -339,7 +339,7 @@ double UHF::compute_E() {
         exchange_E -= alpha * Db_->vector_dot(Kb_);
     }
     if (functional_->is_x_lrc()) {
-        if (jk_->get_do_wK() && jk_->name() == "MemDFJK" && jk_->get_wcombine()) {
+        if (jk_->get_do_wK() && jk_->get_wcombine()) {
             exchange_E -=  Da_->vector_dot(wKa_);
             exchange_E -=  Db_->vector_dot(wKb_);
         } else {
