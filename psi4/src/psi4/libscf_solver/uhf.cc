@@ -170,6 +170,7 @@ void UHF::form_V() {
     // Vb_ = Va_;
 }
 void UHF::form_G() {
+
     if (functional_->needs_xc()) {
         form_V();
         Ga_->copy(Va_);
@@ -184,10 +185,8 @@ void UHF::form_G() {
     C.clear();
     C.push_back(Ca_subset("SO", "OCC"));
     C.push_back(Cb_subset("SO", "OCC"));
-
     // Run the JK object
     jk_->compute();
-
     // Pull the J and K matrices off
     const std::vector<SharedMatrix>& J = jk_->J();
     const std::vector<SharedMatrix>& K = jk_->K();
@@ -208,7 +207,7 @@ void UHF::form_G() {
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
 
-    if (alpha != 0.0) {
+    if ( alpha != 0.0 && !(functional_->is_x_lrc() && jk_->get_wcombine()) ){
         Ga_->axpy(-alpha, Ka_);
         Gb_->axpy(-alpha, Kb_);
     } else {
@@ -217,8 +216,14 @@ void UHF::form_G() {
     }
 
     if (functional_->is_x_lrc()) {
-        Ga_->axpy(-beta, wKa_);
-        Gb_->axpy(-beta, wKb_);
+        if (jk_->get_wcombine()) {
+            Ga_->axpy(-1.0, wKa_);
+            Gb_->axpy(-1.0, wKb_);
+        }
+        else {
+            Ga_->axpy(-beta, wKa_);
+            Gb_->axpy(-beta, wKb_);
+        }
     } else {
         wKa_->zero();
         wKb_->zero();
@@ -334,8 +339,13 @@ double UHF::compute_E() {
         exchange_E -= alpha * Db_->vector_dot(Kb_);
     }
     if (functional_->is_x_lrc()) {
-        exchange_E -= beta * Da_->vector_dot(wKa_);
-        exchange_E -= beta * Db_->vector_dot(wKb_);
+        if (jk_->get_do_wK() && jk_->get_wcombine()) {
+            exchange_E -=  Da_->vector_dot(wKa_);
+            exchange_E -=  Db_->vector_dot(wKb_);
+        } else {
+            exchange_E -= beta * Da_->vector_dot(wKa_);
+            exchange_E -= beta * Db_->vector_dot(wKb_);
+        }
     }
 
     energies_["Nuclear"] = nuclearrep_;
@@ -553,7 +563,7 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             Dx.push_back(Dx_b);
         }
         potential_->compute_Vx(Dx, Vx);
-    }
+    } 
 
     Cl.clear();
     Cr.clear();
@@ -589,6 +599,9 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             ret.push_back(J[nvecs + i]);
         }
     } else {
+        if (jk_->get_wcombine()) {
+            throw PSIEXCEPTION("UHF::twoel_Hx user asked for wcombine but combine==false in SCF::twoel_Hx. Please set wcombine false in your input.");
+        }
         for (size_t i = 0; i < nvecs; i++) {
             J[i]->add(J[nvecs + i]);
             J[nvecs + i]->copy(J[i]);

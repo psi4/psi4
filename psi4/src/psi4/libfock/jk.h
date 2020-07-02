@@ -254,8 +254,17 @@ class PSI_API JK {
     /// Do wK matrices? Defaults to false
     bool do_wK_;
 
+    /// Combine (pq|rs) and (pq|w|rs) integrals before contracting?
+    bool wcombine_;
+
     /// Omega, defaults to 0.0
     double omega_;
+
+    /// omega alpha, defaults to 1.0
+    double omega_alpha_;
+
+    /// omega beta , defaults to 0.0
+    double omega_beta_;
 
     /// Left-right symmetric? Determined in each call of compute()
     bool lr_symmetric_;
@@ -430,11 +439,35 @@ class PSI_API JK {
     *        defaults to false
     */
     virtual void set_do_wK(bool do_wK) { do_wK_ = do_wK; }
+    bool get_do_wK() {return do_wK_;}
+    /**
+    * Set to combine wK integral tensors
+    * @param wcombine do we combine wK matrices?
+    *        defaults to false unless MemDFJK
+    */
+    virtual void set_wcombine(bool wcombine);
+    bool get_wcombine() { return wcombine_; }
+
     /**
     * Set the omega value for wK
     * @param omega range-separation parameter
     */
     void set_omega(double omega) { omega_ = omega; }
+    double get_omega() { return omega_; }
+
+    /**
+    * Set the alpha value for w exchange: weight for HF Term                
+    * @param omega_alpha HF-Exchange weight
+    */
+    virtual void set_omega_alpha(double alpha) { omega_alpha_ = alpha; }
+    double get_omega_alpha() {return omega_alpha_; }
+
+    /**
+    * Set the alpha value for w exchange: weight for dampened Term                
+    * @param omega_beta Dampened Exchange weight
+    */
+    virtual void set_omega_beta(double beta) { omega_beta_ = beta; }
+    double get_omega_beta() { return omega_beta_; }
 
     // => Computers <= //
 
@@ -990,6 +1023,7 @@ class PSI_API CDJK : public DiskDFJK {
  */
 class PSI_API MemDFJK : public JK {
    protected:
+
     // => DF-Specific stuff <= //
 
     std::string name() override { return "MemDFJK"; }
@@ -1063,6 +1097,10 @@ class PSI_API MemDFJK : public JK {
     * type on output file
     */
     void print_header() const override;
+
+    void set_omega_alpha(double alpha);
+    void set_omega_beta(double beta);
+    void set_wcombine(bool wcombine);
 
     /**
      * Returns the DFHelper object
