@@ -138,7 +138,6 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
 
     total_uc = 0
     total_c = 0
-    nremoved = 0
 
     # Read R
     if is_hybrid:
