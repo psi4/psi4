@@ -58,7 +58,7 @@ if(TARGET BrianQC::static_wrapper)
     )
   target_include_directories(core
     PRIVATE
-      ${BrianQC_INCLUDE_DIRS}
+      $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
     )
   target_link_libraries(core
     PRIVATE

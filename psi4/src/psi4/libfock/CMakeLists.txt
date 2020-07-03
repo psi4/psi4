@@ -40,6 +40,6 @@ if(TARGET BrianQC::static_wrapper)
     )
   target_include_directories(fock
     PUBLIC
-      ${BrianQC_INCLUDE_DIRS}
+      $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
     )
 endif()
