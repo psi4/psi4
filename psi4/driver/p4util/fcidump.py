@@ -107,6 +107,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
                 orbsym += '{:d},'.format(irrep_map[h])
     header += 'ORBSYM={}\n'.format(orbsym)
     header += 'ISYM={:d},\n'.format(irrep_map[wfn_irrep])
+    header += 'PNTGRP={},\n'.format(wfn.molecule().point_group().symbol().upper())
     header += '&END\n'
     with open(fname, 'w') as intdump:
         intdump.write(header)
@@ -244,6 +245,7 @@ def fcidump_from_file(fname):
       - 'nelec' : number of electrons
       - 'ms2' : spin polarization of the system
       - 'isym' : symmetry of state (if present in FCIDUMP)
+      - 'pntgrp' : point group (if present in FCIDUMP)
       - 'orbsym' : list of symmetry labels of each orbital
       - 'uhf' : whether restricted or unrestricted
       - 'enuc' : nuclear repulsion plus frozen core energy
@@ -271,6 +273,8 @@ def fcidump_from_file(fname):
                 value = 'TRUE' in value
             elif key == 'ORBSYM':
                 value = [int(x) for x in value.split(',')]
+            elif key == 'PNTGRP':
+                value = value
             else:
                 value = int(value.replace(',', ''))
 
