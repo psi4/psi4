@@ -276,7 +276,7 @@ def fcidump_from_file(fname):
             elif key == 'ORBSYM':
                 value = [int(x) for x in value.split(',')]
             elif key == 'PNTGRP':
-                value = value
+                pass
             else:
                 value = int(value.replace(',', ''))
 
