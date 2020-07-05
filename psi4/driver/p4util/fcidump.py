@@ -39,7 +39,7 @@ from psi4 import core
 from .exceptions import ValidationError, TestComparisonError
 
 
-def fcidump(wfn, fname='INTDUMP', oe_ints=None):
+def fcidump(wfn, fname='INTDUMP', oe_ints=None, write_pntgrp=False):
     """Save integrals to file in FCIDUMP format as defined in Comp. Phys. Commun. 54 75 (1989)
     Additional one-electron integrals, including orbital energies, can also be saved.
     This latter format can be used with the HANDE QMC code but is not standard.
@@ -53,6 +53,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
     :param fname: name of the integrals file, defaults to INTDUMP
     :param oe_ints: list of additional one-electron integrals to save to file.
     So far only EIGENVALUES is a valid option.
+    :param write_pntgrp: write the point group to file.
 
     :examples:
 
@@ -107,7 +108,8 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
                 orbsym += '{:d},'.format(irrep_map[h])
     header += 'ORBSYM={}\n'.format(orbsym)
     header += 'ISYM={:d},\n'.format(irrep_map[wfn_irrep])
-    header += 'PNTGRP={},\n'.format(wfn.molecule().point_group().symbol().upper())
+    if write_pntgrp:
+        header += 'PNTGRP={},\n'.format(wfn.molecule().point_group().symbol().upper())
     header += '&END\n'
     with open(fname, 'w') as intdump:
         intdump.write(header)
@@ -296,15 +298,19 @@ def fcidump_from_file(fname):
     # Slices
     sl = slice(ints.shape[0] - nbf, ints.shape[0])
 
-    # Extract orbital energies
-    epsilon = np.zeros(nbf)
-    epsilon[idxs[sl, 0]] = ints[sl]
-    intdump['epsilon'] = epsilon
+    # Count how many 1-index intdump we have
+    one_index = np.all(idxs[sl, 1:] == -1, axis=1).sum()
+
+    # Extract orbital energies if present
+    if one_index > 0:
+        epsilon = np.zeros(nbf)
+        epsilon[idxs[sl, 0]] = ints[sl]
+        intdump['epsilon'] = epsilon
 
     # Count how many 2-index intdump we have
-    sl = slice(sl.start - nbf * nbf, sl.stop - nbf)
+    sl = slice(ints.shape[0] - one_index - nbf * nbf, sl.stop - one_index)
     two_index = np.all(idxs[sl, 2:] == -1, axis=1).sum()
-    sl = slice(sl.stop - two_index, sl.stop)
+    sl = slice(ints.shape[0] - two_index - one_index, ints.shape[0] - one_index)
 
     # Extract Hcore
     Hcore = np.zeros((nbf, nbf))
