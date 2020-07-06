@@ -33,7 +33,7 @@ import numpy as np
 
 import psi4
 try:
-    from ipi.interfaces.sockets import Client
+    from ipi.interfaces.clients import Client
     ipi_available = True
 except ImportError:
     ipi_available = False
@@ -52,7 +52,7 @@ class IPIBroker(Client):
             super(IPIBroker, self).__init__()
         elif serverdata:
             mode, address, port = serverdata.split(":")
-            mode = string.lower(mode)
+            mode = mode.lower()
             super(IPIBroker, self).__init__(address=address, port=port, mode=mode)
         else:
             super(IPIBroker, self).__init__(_socket=False)
@@ -80,6 +80,9 @@ class IPIBroker(Client):
         atoms = np.array(self.initial_molecule.geometry())
         psi4.core.print_out("Initial atoms %s\n" % atoms)
         psi4.core.print_out("Force:\n")
+        self._positions = atoms
+        self._callback = self.callback
+        self._nat = np.int32(len(atoms))
 
     def calculate_force(self, pos=None, **kwargs):
         """Fetch force, energy of PSI.
@@ -92,8 +95,8 @@ class IPIBroker(Client):
             molecule = psi4.core.get_active_molecule()
             pos = np.array(molecule.geometry())
 
-        self.frc, self.pot = self.callback(pos, **kwargs)
-        return self.frc, self.pot
+        self._force, self._potential = self.callback(pos, **kwargs)
+        return self._force, self._potential
 
     def callback(self, pos, **kwargs):
         """Initialize psi with new positions and calculate force.
@@ -104,12 +107,13 @@ class IPIBroker(Client):
 
         self.initial_molecule.set_geometry(psi4.core.Matrix.from_array(pos))
 
-        self.calculate_gradient(self.LOT, **kwargs)
+        self.calculate_gradient(self.LOT, pos=pos, **kwargs)
 
-        self.pot = psi4.variable('CURRENT ENERGY')
-        self.frc = -np.array(self.grd)
+        self._potential = psi4.variable('CURRENT ENERGY')
+        self._force = -np.array(self.grd)
+        self._vir = np.array([[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]])
 
-        return self.frc, np.float64(self.pot)
+        return self._force, np.float64(self._potential)
 
     def calculate_gradient(self, LOT, bypass_scf=False, **kwargs):
         """Calculate the gradient with @LOT.
