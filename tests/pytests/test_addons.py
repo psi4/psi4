@@ -106,7 +106,6 @@ def test_gdma():
 
 
 @pytest.mark.smoke
-@using_ipi
 def test_ipi_broker1():
     """ipi_broker1"""
     from psi4.driver.broker import ipi_broker
@@ -167,7 +166,6 @@ def test_ipi_broker1():
 
 
 @pytest.mark.smoke
-@using_ipi
 def test_ipi_broker2():
     """ipi_broker1"""
     from psi4.driver.broker import ipi_broker

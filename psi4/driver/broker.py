@@ -140,5 +140,5 @@ def ipi_broker(LOT, molecule=None, serverdata=False, options=None):
 
     except KeyboardInterrupt:
         psi4.core.print_out("Killing IPIBroker\n")
-        b.__del__()
+        b.__del__()  # lgtm [py/explicit-call-to-delete]
         sys.exit(1)
