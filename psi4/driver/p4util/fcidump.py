@@ -43,6 +43,10 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None, write_pntgrp=False):
     """Save integrals to file in FCIDUMP format as defined in Comp. Phys. Commun. 54 75 (1989)
     Additional one-electron integrals, including orbital energies, can also be saved.
     This latter format can be used with the HANDE QMC code but is not standard.
+    This function converts the irrep labels from Cotton's order (used in psi4)
+    to molpro ordering. Since the latter is ambiguous unless the point group is
+    specificied, this function has an option to write the point group label in the
+    FCIDUMP file. This, however, is not part of the standard.
 
     :returns: None
 
@@ -53,7 +57,9 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None, write_pntgrp=False):
     :param fname: name of the integrals file, defaults to INTDUMP
     :param oe_ints: list of additional one-electron integrals to save to file.
     So far only EIGENVALUES is a valid option.
-    :param write_pntgrp: write the point group to file.
+    :param write_pntgrp: write the point group to file. This information is not
+    part of the Comp Phys Chem standard and might create issues with parsing for codes
+    that do not support it.
 
     :examples:
 
