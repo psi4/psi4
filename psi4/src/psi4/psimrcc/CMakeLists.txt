@@ -65,7 +65,7 @@ list(APPEND sources
   operation_compute.cc
   operation_contraction.cc
   operation_sort.cc
-  psimrcc.cc
+  psimrcc_wfn.cc
   sort.cc
   sort_mrpt2.cc
   sort_out_of_core.cc

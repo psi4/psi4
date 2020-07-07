@@ -173,8 +173,6 @@ class CCBLAS {
     void free_matrices();
 };
 
-extern CCBLAS* blas;
-
 }  // namespace psimrcc
 }  // namespace psi
 

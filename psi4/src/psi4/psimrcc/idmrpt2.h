@@ -36,6 +36,7 @@
  ***************************************************************************/
 
 #include "manybody.h"
+#include "psimrcc_wfn.h"
 #include "updater.h"
 #include "psi4/liboptions/liboptions.h"
 
@@ -49,9 +50,9 @@ class Updater;
 */
 class IDMRPT2 : public CCManyBody {
    public:
-    IDMRPT2(SharedWavefunction ref_wfn, Options& options);
+    IDMRPT2(std::shared_ptr<PSIMRCCWfn> wfn, Options& options);
     ~IDMRPT2() override;
-    double compute_energy();
+    double compute_energy() override;
 
    private:
     std::shared_ptr<Updater> updater_;

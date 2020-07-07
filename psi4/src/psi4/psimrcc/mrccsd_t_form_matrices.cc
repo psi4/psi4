@@ -43,8 +43,6 @@
 #include "mrccsd_t.h"
 #include "special_matrices.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
 extern MOInfo* moinfo;
@@ -61,19 +59,19 @@ void MRCCSD_T::form_T2_ij_a_b(IndexMatrix* T2_ij_a_b, bool spin1, bool spin2, bo
 
         if (unique_ref == ref) {
             if (spin1 && spin2) {
-                Tijab = blas->get_MatTmp("t2[oo][vv]", ref, none)->get_matrix();
+                Tijab = wfn_->blas()->get_MatTmp("t2[oo][vv]", ref, none)->get_matrix();
             } else if (!spin1 && !spin2) {
-                Tijab = blas->get_MatTmp("t2[OO][VV]", ref, none)->get_matrix();
+                Tijab = wfn_->blas()->get_MatTmp("t2[OO][VV]", ref, none)->get_matrix();
             } else if (spin1 && !spin2) {
-                Tijab = blas->get_MatTmp("t2[oO][vV]", ref, none)->get_matrix();
+                Tijab = wfn_->blas()->get_MatTmp("t2[oO][vV]", ref, none)->get_matrix();
             }
         } else {
             if (spin1 && spin2) {
-                Tijab = blas->get_MatTmp("t2[OO][VV]", unique_ref, none)->get_matrix();
+                Tijab = wfn_->blas()->get_MatTmp("t2[OO][VV]", unique_ref, none)->get_matrix();
             } else if (!spin1 && !spin2) {
-                Tijab = blas->get_MatTmp("t2[oo][vv]", unique_ref, none)->get_matrix();
+                Tijab = wfn_->blas()->get_MatTmp("t2[oo][vv]", unique_ref, none)->get_matrix();
             } else if (spin1 && !spin2) {
-                Tijab = blas->get_MatTmp("t2[Oo][Vv]", unique_ref, none)->get_matrix();
+                Tijab = wfn_->blas()->get_MatTmp("t2[Oo][Vv]", unique_ref, none)->get_matrix();
             }
         }
 
@@ -108,19 +106,19 @@ void MRCCSD_T::form_T2_i_ab_j(IndexMatrix* T2_i_ab_j, bool spin1, bool spin2, bo
 
         if (unique_ref == ref) {
             if (spin1 && spin2) {
-                Tijab = blas->get_MatTmp("t2[oo][vv]", ref, none)->get_matrix();
+                Tijab = wfn_->blas()->get_MatTmp("t2[oo][vv]", ref, none)->get_matrix();
             } else if (!spin1 && !spin2) {
-                Tijab = blas->get_MatTmp("t2[OO][VV]", ref, none)->get_matrix();
+                Tijab = wfn_->blas()->get_MatTmp("t2[OO][VV]", ref, none)->get_matrix();
             } else if (spin1 && !spin2) {
-                Tijab = blas->get_MatTmp("t2[oO][vV]", ref, none)->get_matrix();
+                Tijab = wfn_->blas()->get_MatTmp("t2[oO][vV]", ref, none)->get_matrix();
             }
         } else {
             if (spin1 && spin2) {
-                Tijab = blas->get_MatTmp("t2[OO][VV]", unique_ref, none)->get_matrix();
+                Tijab = wfn_->blas()->get_MatTmp("t2[OO][VV]", unique_ref, none)->get_matrix();
             } else if (!spin1 && !spin2) {
-                Tijab = blas->get_MatTmp("t2[oo][vv]", unique_ref, none)->get_matrix();
+                Tijab = wfn_->blas()->get_MatTmp("t2[oo][vv]", unique_ref, none)->get_matrix();
             } else if (spin1 && !spin2) {
-                Tijab = blas->get_MatTmp("t2[Oo][Vv]", unique_ref, none)->get_matrix();
+                Tijab = wfn_->blas()->get_MatTmp("t2[Oo][Vv]", unique_ref, none)->get_matrix();
             }
         }
 
@@ -153,7 +151,7 @@ void MRCCSD_T::form_V_k_bc_e(IndexMatrix* V_k_bc_e, double direct, double exchan
     // <bc||ek> = <ek||bc>
     CCIndexIterator k("[o]");
 
-    auto V = blas->get_MatTmp("<[vo]|[vv]>", none)->get_matrix();
+    auto V = wfn_->blas->get_MatTmp("<[vo]|[vv]>", none)->get_matrix();
     for (k.first(); !k.end(); k.next()) {
         BlockMatrix* block_matrix = new BlockMatrix(nirreps, vv->get_tuplespi(), v->get_tuplespi(), k.sym());
         //    ebc.reset();
@@ -179,7 +177,7 @@ void MRCCSD_T::form_V_k_bc_e(IndexMatrix* V_k_bc_e, double direct, double exchan
 void MRCCSD_T::form_V_jk_c_m(IndexMatrix* V_jk_c_m, double direct, double exchange) {
     CCIndexIterator jk("[oo]");
 
-    auto V = blas->get_MatTmp("<[oo]|[ov]>", none)->get_matrix();
+    auto V = wfn_->blas->get_MatTmp("<[oo]|[ov]>", none)->get_matrix();
 
     for (jk.first(); !jk.end(); jk.next()) {
         BlockMatrix* block_matrix = new BlockMatrix(nirreps, v->get_tuplespi(), o->get_tuplespi(), jk.sym());

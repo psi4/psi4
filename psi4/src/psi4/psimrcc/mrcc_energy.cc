@@ -33,8 +33,6 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
 extern MOInfo* moinfo;

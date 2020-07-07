@@ -56,8 +56,6 @@ PRAGMA_WARNING_POP
 #include "index.h"
 #include "transform.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
 extern MOInfo* moinfo;

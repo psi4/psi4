@@ -39,9 +39,9 @@ namespace psimrcc {
 */
 class MP2_CCSD : public CCManyBody {
    public:
-    MP2_CCSD(SharedWavefunction ref_wfn, Options &options);
+    MP2_CCSD(std::shared_ptr<PSIMRCCWfn> wfn, Options &options);
     ~MP2_CCSD() override;
-    double compute_energy();
+    double compute_energy() override;
 
    private:
     void add_matrices();

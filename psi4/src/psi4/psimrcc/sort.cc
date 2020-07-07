@@ -47,16 +47,16 @@
 #include "sort.h"
 #include "transform.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
 extern MOInfo* moinfo;
 extern MemoryManager* memory_manager;
 
-CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm)
+CCSort::CCSort(SharedWavefunction wfn, SortAlgorithm algorithm)
     : fraction_of_memory_for_sorting(0.5), nfzc(0), efzc(0.0) {
     init();
+
+    trans = std::make_shared<CCTransform>(wfn);
 
     IntegralTransform* ints;
     // Use libtrans to generate MO basis integrals in Pitzer order
@@ -67,7 +67,7 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm)
         // O represents occ+act, V represents act+vir and A is all orbitals.
         std::shared_ptr<MOSpace> aocc;
         std::shared_ptr<MOSpace> avir;
-        int nirrep = ref_wfn->nirrep();
+        int nirrep = wfn->nirrep();
         std::vector<int> aocc_orbs;
         std::vector<int> avir_orbs;
         std::vector<int> actv = moinfo->get_actv();
@@ -83,7 +83,7 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm)
         avir = std::make_shared<MOSpace>('E', avir_orbs, avir_orbs);
         spaces.push_back(aocc);
         spaces.push_back(avir);
-        ints = new IntegralTransform(ref_wfn, spaces, IntegralTransform::TransformationType::Restricted,
+        ints = new IntegralTransform(wfn, spaces, IntegralTransform::TransformationType::Restricted,
                                      IntegralTransform::OutputType::DPDOnly, IntegralTransform::MOOrdering::PitzerOrder,
                                      IntegralTransform::FrozenOrbitals::None);
         ints->set_keep_dpd_so_ints(true);
@@ -93,7 +93,7 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm)
         ints->transform_tei(aocc, aocc, avir, avir);
         build_integrals_mrpt2(ints);
     } else {
-        ints = new IntegralTransform(ref_wfn, spaces, IntegralTransform::TransformationType::Restricted,
+        ints = new IntegralTransform(wfn, spaces, IntegralTransform::TransformationType::Restricted,
                                      IntegralTransform::OutputType::IWLOnly, IntegralTransform::MOOrdering::PitzerOrder,
                                      IntegralTransform::FrozenOrbitals::None);
         ints->transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);

@@ -43,8 +43,6 @@
 #include "mrccsd_t.h"
 #include "special_matrices.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
 extern MOInfo* moinfo;

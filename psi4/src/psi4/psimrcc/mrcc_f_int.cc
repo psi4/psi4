@@ -37,8 +37,6 @@
 #include "blas.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
 
@@ -78,171 +76,171 @@ void CCMRCC::build_F_intermediates() {
 void CCMRCC::build_F_ae_intermediates() {
     // Closed-shell
     // Add the VV Fock matrix with the diagonal terms zeroed
-    blas->append("F_ae[v][v]{c} = fock[v][v]{c}");
-    blas->append_zero_two_diagonal("F_ae[v][v]{c}");
+    wfn_->blas()->append("F_ae[v][v]{c} = fock[v][v]{c}");
+    wfn_->blas()->append_zero_two_diagonal("F_ae[v][v]{c}");
 
-    blas->append("F_ae[v][v]{c} += -1/2 t1[o][v]{c} 1@1 fock[o][v]{c}");
+    wfn_->blas()->append("F_ae[v][v]{c} += -1/2 t1[o][v]{c} 1@1 fock[o][v]{c}");
 
-    blas->append("F_ae[v][v]{c} += #12# ([ov]:[vv]) 1@1 t1[ov]{c}");
-    blas->append("F_ae[v][v]{c} += #12# ([ov]|[vv]) 1@1 t1[ov]{c} ");
+    wfn_->blas()->append("F_ae[v][v]{c} += #12# ([ov]:[vv]) 1@1 t1[ov]{c}");
+    wfn_->blas()->append("F_ae[v][v]{c} += #12# ([ov]|[vv]) 1@1 t1[ov]{c} ");
 
-    blas->append("F_ae[v][v]{c} += -1/2 tau2[v][voo]{c} 2@2 <[v]:[voo]>");
-    blas->append("F_ae[v][v]{c} += - tau2[v][VoO]{c} 2@2 <[v]|[voo]>");
+    wfn_->blas()->append("F_ae[v][v]{c} += -1/2 tau2[v][voo]{c} 2@2 <[v]:[voo]>");
+    wfn_->blas()->append("F_ae[v][v]{c} += - tau2[v][VoO]{c} 2@2 <[v]|[voo]>");
 
     // Open-shell
     // Add the VV Fock matrix with the diagonal terms zeroed
-    blas->append("F_ae[v][v]{o} = fock[v][v]{o}");
-    blas->append_zero_two_diagonal("F_ae[v][v]{o}");
+    wfn_->blas()->append("F_ae[v][v]{o} = fock[v][v]{o}");
+    wfn_->blas()->append_zero_two_diagonal("F_ae[v][v]{o}");
 
-    blas->append("F_ae[v][v]{o} += -1/2 t1[o][v]{o} 1@1 fock[o][v]{o}");
-    blas->append("F_ae[v][v]{o} += #12# ([ov]:[vv]) 1@1 t1[ov]{o}");
-    blas->append("F_ae[v][v]{o} += #12# ([ov]|[vv]) 1@1 t1[OV]{o} ");
+    wfn_->blas()->append("F_ae[v][v]{o} += -1/2 t1[o][v]{o} 1@1 fock[o][v]{o}");
+    wfn_->blas()->append("F_ae[v][v]{o} += #12# ([ov]:[vv]) 1@1 t1[ov]{o}");
+    wfn_->blas()->append("F_ae[v][v]{o} += #12# ([ov]|[vv]) 1@1 t1[OV]{o} ");
 
-    blas->append("F_ae[v][v]{o} += -1/2 tau2[v][voo]{o} 2@2 <[v]:[voo]>");
-    blas->append("F_ae[v][v]{o} += - tau2[v][VoO]{o} 2@2 <[v]|[voo]>");
+    wfn_->blas()->append("F_ae[v][v]{o} += -1/2 tau2[v][voo]{o} 2@2 <[v]:[voo]>");
+    wfn_->blas()->append("F_ae[v][v]{o} += - tau2[v][VoO]{o} 2@2 <[v]|[voo]>");
 }
 
 void CCMRCC::build_F_AE_intermediates() {
     // Open-shell
     // Add the VV Fock matrix with the diagonal terms zeroed
-    blas->append("F_AE[V][V]{o} = fock[V][V]{o}");
+    wfn_->blas()->append("F_AE[V][V]{o} = fock[V][V]{o}");
 
-    blas->append_zero_two_diagonal("F_AE[V][V]{o}");
+    wfn_->blas()->append_zero_two_diagonal("F_AE[V][V]{o}");
 
-    blas->append("F_AE[V][V]{o} += -1/2 t1[O][V]{o} 1@1 fock[O][V]{o}");
+    wfn_->blas()->append("F_AE[V][V]{o} += -1/2 t1[O][V]{o} 1@1 fock[O][V]{o}");
 
-    blas->append("F_AE[V][V]{o} += #12# ([ov]:[vv]) 1@1 t1[OV]{o}");
-    blas->append("F_AE[V][V]{o} += #12# ([ov]|[vv]) 1@1 t1[ov]{o} ");
+    wfn_->blas()->append("F_AE[V][V]{o} += #12# ([ov]:[vv]) 1@1 t1[OV]{o}");
+    wfn_->blas()->append("F_AE[V][V]{o} += #12# ([ov]|[vv]) 1@1 t1[ov]{o} ");
 
-    blas->append("F_AE[V][V]{o} += -1/2 tau2[V][VOO]{o} 2@2 <[v]:[voo]>");
-    blas->append("F_AE[V][V]{o} += - tau2[V][vOo]{o} 2@2 <[v]|[voo]>");
+    wfn_->blas()->append("F_AE[V][V]{o} += -1/2 tau2[V][VOO]{o} 2@2 <[v]:[voo]>");
+    wfn_->blas()->append("F_AE[V][V]{o} += - tau2[V][vOo]{o} 2@2 <[v]|[voo]>");
 }
 
 void CCMRCC::build_F_mi_intermediates() {
     // Closed-shell
     // Add the VV Fock matrix with the diagonal terms zeroed
-    blas->append("F_mi[o][o]{c} = fock[o][o]{c}");
-    blas->append_zero_two_diagonal("F_mi[o][o]{c}");
+    wfn_->blas()->append("F_mi[o][o]{c} = fock[o][o]{c}");
+    wfn_->blas()->append_zero_two_diagonal("F_mi[o][o]{c}");
 
-    blas->append("F_mi[o][o]{c} += 1/2 fock[o][v]{c} 2@2 t1[o][v]{c}");
+    wfn_->blas()->append("F_mi[o][o]{c} += 1/2 fock[o][v]{c} 2@2 t1[o][v]{c}");
 
-    blas->append("F_mi[o][o]{c} += #12# ([oo]:[ov]) 2@1 t1[ov]{c}");
-    blas->append("F_mi[o][o]{c} += #12# ([oo]|[ov]) 2@1 t1[ov]{c} ");
+    wfn_->blas()->append("F_mi[o][o]{c} += #12# ([oo]:[ov]) 2@1 t1[ov]{c}");
+    wfn_->blas()->append("F_mi[o][o]{c} += #12# ([oo]|[ov]) 2@1 t1[ov]{c} ");
 
-    blas->append("F_mi[o][o]{c} += 1/2  <[o]:[ovv]> 2@2 tau2[o][ovv]{c}");
-    blas->append("F_mi[o][o]{c} +=      <[o]|[ovv]> 2@2 tau2[o][OvV]{c} ");
+    wfn_->blas()->append("F_mi[o][o]{c} += 1/2  <[o]:[ovv]> 2@2 tau2[o][ovv]{c}");
+    wfn_->blas()->append("F_mi[o][o]{c} +=      <[o]|[ovv]> 2@2 tau2[o][OvV]{c} ");
 
     // Open-shell
     // Add the VV Fock matrix with the diagonal terms zeroed
-    blas->append("F_mi[o][o]{o} = fock[o][o]{o}");
-    blas->append_zero_two_diagonal("F_mi[o][o]{o}");
+    wfn_->blas()->append("F_mi[o][o]{o} = fock[o][o]{o}");
+    wfn_->blas()->append_zero_two_diagonal("F_mi[o][o]{o}");
 
-    blas->append("F_mi[o][o]{o} += 1/2 fock[o][v]{o} 2@2 t1[o][v]{o}");
+    wfn_->blas()->append("F_mi[o][o]{o} += 1/2 fock[o][v]{o} 2@2 t1[o][v]{o}");
 
-    blas->append("F_mi[o][o]{o} += #12# ([oo]:[ov]) 2@1 t1[ov]{o}");
-    blas->append("F_mi[o][o]{o} += #12# ([oo]|[ov]) 2@1 t1[OV]{o} ");
+    wfn_->blas()->append("F_mi[o][o]{o} += #12# ([oo]:[ov]) 2@1 t1[ov]{o}");
+    wfn_->blas()->append("F_mi[o][o]{o} += #12# ([oo]|[ov]) 2@1 t1[OV]{o} ");
 
-    blas->append("F_mi[o][o]{o} += 1/2  <[o]:[ovv]> 2@2 tau2[o][ovv]{o}");
-    blas->append("F_mi[o][o]{o} +=      <[o]|[ovv]> 2@2 tau2[o][OvV]{o} ");
+    wfn_->blas()->append("F_mi[o][o]{o} += 1/2  <[o]:[ovv]> 2@2 tau2[o][ovv]{o}");
+    wfn_->blas()->append("F_mi[o][o]{o} +=      <[o]|[ovv]> 2@2 tau2[o][OvV]{o} ");
 }
 
 void CCMRCC::build_F_MI_intermediates() {
     // Open-shell
     // Add the VV Fock matrix with the diagonal terms zeroed
-    blas->append("F_MI[O][O]{o} = fock[O][O]{o}");
+    wfn_->blas()->append("F_MI[O][O]{o} = fock[O][O]{o}");
 
-    blas->append_zero_two_diagonal("F_MI[O][O]{o}");
+    wfn_->blas()->append_zero_two_diagonal("F_MI[O][O]{o}");
 
-    blas->append("F_MI[O][O]{o} += 1/2 fock[O][V]{o} 2@2 t1[O][V]{o}");
+    wfn_->blas()->append("F_MI[O][O]{o} += 1/2 fock[O][V]{o} 2@2 t1[O][V]{o}");
 
-    blas->append("F_MI[O][O]{o} += #12# ([oo]:[ov]) 2@1 t1[OV]{o}");
-    blas->append("F_MI[O][O]{o} += #12# ([oo]|[ov]) 2@1 t1[ov]{o} ");
+    wfn_->blas()->append("F_MI[O][O]{o} += #12# ([oo]:[ov]) 2@1 t1[OV]{o}");
+    wfn_->blas()->append("F_MI[O][O]{o} += #12# ([oo]|[ov]) 2@1 t1[ov]{o} ");
 
-    blas->append("F_MI[O][O]{o} += 1/2  <[o]:[ovv]> 2@2 tau2[O][OVV]{o}");
-    blas->append("F_MI[O][O]{o} +=      <[o]|[ovv]> 2@2 tau2[O][oVv]{o} ");
+    wfn_->blas()->append("F_MI[O][O]{o} += 1/2  <[o]:[ovv]> 2@2 tau2[O][OVV]{o}");
+    wfn_->blas()->append("F_MI[O][O]{o} +=      <[o]|[ovv]> 2@2 tau2[O][oVv]{o} ");
 }
 
 void CCMRCC::build_F_me_intermediates() {
     // Closed-Shell
     // Add the VV Fock matrix with the diagonal terms zeroed
-    blas->append("F_me[o][v]{c} = fock[o][v]{c}");
+    wfn_->blas()->append("F_me[o][v]{c} = fock[o][v]{c}");
 
-    blas->append("F_me[o][v]{c} += #12# ([ov]:[ov]) 2@1 t1[ov]{c}");
-    blas->append("F_me[o][v]{c} += #12# ([ov]|[ov]) 2@1 t1[ov]{c} ");
+    wfn_->blas()->append("F_me[o][v]{c} += #12# ([ov]:[ov]) 2@1 t1[ov]{c}");
+    wfn_->blas()->append("F_me[o][v]{c} += #12# ([ov]|[ov]) 2@1 t1[ov]{c} ");
 
-    blas->append("F_me[ov]{c} = #12# F_me[o][v]{c}");
+    wfn_->blas()->append("F_me[ov]{c} = #12# F_me[o][v]{c}");
 
     // Open-Shell
     // Add the VV Fock matrix with the diagonal terms zeroed
-    blas->append("F_me[o][v]{o} = fock[o][v]{o}");
+    wfn_->blas()->append("F_me[o][v]{o} = fock[o][v]{o}");
 
-    blas->append("F_me[o][v]{o} += #12# ([ov]:[ov]) 2@1 t1[ov]{o}");
-    blas->append("F_me[o][v]{o} += #12# ([ov]|[ov]) 2@1 t1[OV]{o} ");
+    wfn_->blas()->append("F_me[o][v]{o} += #12# ([ov]:[ov]) 2@1 t1[ov]{o}");
+    wfn_->blas()->append("F_me[o][v]{o} += #12# ([ov]|[ov]) 2@1 t1[OV]{o} ");
 
-    blas->append("F_me[ov]{o} = #12# F_me[o][v]{o}");
+    wfn_->blas()->append("F_me[ov]{o} = #12# F_me[o][v]{o}");
 }
 
 void CCMRCC::build_F_ME_intermediates() {
     if (triples_type >= ccsd_t) {
-        blas->append("F_ME[O][V]{c} = fock[O][V]{c}");
+        wfn_->blas()->append("F_ME[O][V]{c} = fock[O][V]{c}");
 
-        blas->append("F_ME[O][V]{c} += #12# ([ov]:[ov]) 2@1 t1[OV]{c}");
-        blas->append("F_ME[O][V]{c} += #12# ([ov]|[ov]) 2@1 t1[OV]{c} ");
+        wfn_->blas()->append("F_ME[O][V]{c} += #12# ([ov]:[ov]) 2@1 t1[OV]{c}");
+        wfn_->blas()->append("F_ME[O][V]{c} += #12# ([ov]|[ov]) 2@1 t1[OV]{c} ");
     }
 
     // Open-Shell
     // Add the VV Fock matrix with the diagonal terms zeroed
-    blas->append("F_ME[O][V]{o} = fock[O][V]{o}");
+    wfn_->blas()->append("F_ME[O][V]{o} = fock[O][V]{o}");
 
-    blas->append("F_ME[O][V]{o} += #12# ([ov]:[ov]) 2@1 t1[OV]{o}");
-    blas->append("F_ME[O][V]{o} += #12# ([ov]|[ov]) 2@1 t1[ov]{o} ");
+    wfn_->blas()->append("F_ME[O][V]{o} += #12# ([ov]:[ov]) 2@1 t1[OV]{o}");
+    wfn_->blas()->append("F_ME[O][V]{o} += #12# ([ov]|[ov]) 2@1 t1[ov]{o} ");
 
-    blas->append("F_ME[OV]{o} = #12# F_ME[O][V]{o}");
+    wfn_->blas()->append("F_ME[OV]{o} = #12# F_ME[O][V]{o}");
 }
 
 void CCMRCC::build_F_prime_ae_intermediates() {
     // Closed-Shell + Open-Shell Spin-Adapted Form
     // Add the VV Fock matrix with the diagonal terms zeroed
-    blas->append("F'_ae[v][v]{u}  = F_ae[v][v]{u}");
-    blas->append("F'_ae[v][v]{u} += #12# -1/2 t1[o][v]{u} 1@1 F_me[o][v]{u}");
+    wfn_->blas()->append("F'_ae[v][v]{u}  = F_ae[v][v]{u}");
+    wfn_->blas()->append("F'_ae[v][v]{u} += #12# -1/2 t1[o][v]{u} 1@1 F_me[o][v]{u}");
 }
 
 void CCMRCC::build_F_prime_AE_intermediates() {
     // Open-Shell
     // Add the VV Fock matrix with the diagonal terms zeroed
-    blas->append("F'_AE[V][V]{o}  = F_AE[V][V]{o}");
-    blas->append("F'_AE[V][V]{o} += #12# -1/2 t1[O][V]{o} 1@1 F_ME[O][V]{o}");
+    wfn_->blas()->append("F'_AE[V][V]{o}  = F_AE[V][V]{o}");
+    wfn_->blas()->append("F'_AE[V][V]{o} += #12# -1/2 t1[O][V]{o} 1@1 F_ME[O][V]{o}");
 }
 
 void CCMRCC::build_F_prime_mi_intermediates() {
     // Closed-Shell + Open-Shell Spin-Adapted Form
     // Add the VV Fock matrix with the diagonal terms zeroed
-    blas->append("F'_mi[o][o]{u}  = F_mi[o][o]{u}");
-    blas->append("F'_mi[o][o]{u} += #12# 1/2 F_me[o][v]{u} 2@2 t1[o][v]{u}");
+    wfn_->blas()->append("F'_mi[o][o]{u}  = F_mi[o][o]{u}");
+    wfn_->blas()->append("F'_mi[o][o]{u} += #12# 1/2 F_me[o][v]{u} 2@2 t1[o][v]{u}");
 }
 
 void CCMRCC::build_F_prime_MI_intermediates() {
     // Open-Shell
     // Add the VV Fock matrix with the diagonal terms zeroed
-    blas->append("F'_MI[O][O]{o}  = F_MI[O][O]{o}");
-    blas->append("F'_MI[O][O]{o} += #12# 1/2 F_ME[O][V]{o} 2@2 t1[O][V]{o}");
+    wfn_->blas()->append("F'_MI[O][O]{o}  = F_MI[O][O]{o}");
+    wfn_->blas()->append("F'_MI[O][O]{o} += #12# 1/2 F_ME[O][V]{o} 2@2 t1[O][V]{o}");
 }
 
 void CCMRCC::build_F2_me_intermediates() {
     //  // Closed-Shell
     //  // Add the VV Fock matrix with the diagonal terms zeroed
     //  if(triples_type==ccsdt_1a){
-    //    blas->solve("F2_me[o][v]{c} = fock[o][v]{c}");
+    //    wfn_->blas()->solve("F2_me[o][v]{c} = fock[o][v]{c}");
     //  }else{
-    //    blas->solve("F2_me[o][v]{c} = F_me[o][v]{c}");
+    //    wfn_->blas()->solve("F2_me[o][v]{c} = F_me[o][v]{c}");
     //  }
     //
     //  // Open-Shell
     //  // Add the VV Fock matrix with the diagonal terms zeroed
     //  if(triples_type==ccsdt_1a){
-    //    blas->solve("F2_me[o][v]{o} = fock[o][v]{o}");
+    //    wfn_->blas()->solve("F2_me[o][v]{o} = fock[o][v]{o}");
     //  }else{
-    //    blas->solve("F2_me[o][v]{o} = F_me[o][v]{o}");
+    //    wfn_->blas()->solve("F2_me[o][v]{o} = F_me[o][v]{o}");
     //  }
     //  );
 }
@@ -250,16 +248,16 @@ void CCMRCC::build_F2_me_intermediates() {
 void CCMRCC::build_F2_ME_intermediates() {
     //  // Closed-Shell
     //  if(triples_type==ccsdt_1a){
-    //    blas->solve("F2_ME[O][V]{c} = fock[O][V]{c}");
+    //    wfn_->blas()->solve("F2_ME[O][V]{c} = fock[O][V]{c}");
     //  }else{
-    //    blas->solve("F2_ME[O][V]{c} = F_ME[O][V]{c}");
+    //    wfn_->blas()->solve("F2_ME[O][V]{c} = F_ME[O][V]{c}");
     //  }
     //
     //  // Open-Shell
     //  if(triples_type==ccsdt_1a){
-    //    blas->solve("F2_ME[O][V]{o} = fock[O][V]{o}");
+    //    wfn_->blas()->solve("F2_ME[O][V]{o} = fock[O][V]{o}");
     //  }else{
-    //    blas->solve("F2_ME[O][V]{o} = F_ME[O][V]{o}");
+    //    wfn_->blas()->solve("F2_ME[O][V]{o} = F_ME[O][V]{o}");
     //  }
 }
 

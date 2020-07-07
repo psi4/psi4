@@ -31,8 +31,6 @@
 
 #include "blas.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
 extern MOInfo* moinfo;

@@ -38,8 +38,6 @@
 #include "sort.h"
 #include "transform.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
 extern MOInfo* moinfo;

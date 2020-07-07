@@ -38,7 +38,7 @@ extern MOInfo* moinfo;
 
 CCIndexIterator::CCIndexIterator(std::string str) : tuples(blas->get_index(str)->get_tuples()) {
     nirreps = moinfo->get_nirreps();
-    ccindex = blas->get_index(str);
+    ccindex = wfn_->blas()->get_index(str);
     startup(0, nirreps);
 }
 
@@ -50,7 +50,7 @@ CCIndexIterator::CCIndexIterator(CCIndex* index_) : tuples(index_->get_tuples())
 
 CCIndexIterator::CCIndexIterator(std::string str, int select_irrep) : tuples(blas->get_index(str)->get_tuples()) {
     nirreps = moinfo->get_nirreps();
-    ccindex = blas->get_index(str);
+    ccindex = wfn_->blas()->get_index(str);
     startup(select_irrep, select_irrep + 1);
 }
 

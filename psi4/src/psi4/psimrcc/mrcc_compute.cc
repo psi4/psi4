@@ -50,18 +50,17 @@
 namespace psi {
 
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 /**
  * This is a generic coupled cluster cycle. By specifying the updater object you can get all the flavors of CC,
  * single-reference, Mukherjee MRCC,...
  */
 double CCMRCC::compute_energy() {
-    blas->diis_add("t1[o][v]{u}", "t1_delta[o][v]{u}");
-    blas->diis_add("t1[O][V]{u}", "t1_delta[O][V]{u}");
-    blas->diis_add("t2[oo][vv]{u}", "t2_delta[oo][vv]{u}");
-    blas->diis_add("t2[oO][vV]{u}", "t2_delta[oO][vV]{u}");
-    blas->diis_add("t2[OO][VV]{u}", "t2_delta[OO][VV]{u}");
+    wfn_->blas()->diis_add("t1[o][v]{u}", "t1_delta[o][v]{u}");
+    wfn_->blas()->diis_add("t1[O][V]{u}", "t1_delta[O][V]{u}");
+    wfn_->blas()->diis_add("t2[oo][vv]{u}", "t2_delta[oo][vv]{u}");
+    wfn_->blas()->diis_add("t2[oO][vV]{u}", "t2_delta[oO][vV]{u}");
+    wfn_->blas()->diis_add("t2[OO][VV]{u}", "t2_delta[OO][VV]{u}");
 
     Timer cc_timer;
     bool converged = false;
@@ -77,23 +76,23 @@ double CCMRCC::compute_energy() {
         build_Z_intermediates();
         build_t1_amplitudes();
         build_t2_amplitudes();
-        blas->compute();
+        wfn_->blas()->compute();
         if (triples_type > ccsd_t) build_t1_amplitudes_triples();
         if (triples_type > ccsd_t) build_t2_amplitudes_triples();
 
         converged = build_diagonalize_Heff(cycle, cc_timer.get());
 
         h_eff.set_eigenvalue(current_energy);
-        h_eff.set_matrix(Heff, moinfo->get_nrefs());
+        h_eff.set_matrix(Heff, wfn_->moinfo->get_nrefs());
         h_eff.set_right_eigenvector(right_eigenvector);
         h_eff.set_left_eigenvector(left_eigenvector);
 
         if (!converged) {
-            blas->diis_save_t_amps(cycle);
+            wfn_->blas()->diis_save_t_amps(cycle);
             updater_->update(cycle, &h_eff);
             updater_->zero_internal_delta_amps();
             compute_delta_amps();
-            blas->diis(cycle, delta_energy, DiisCC);
+            wfn_->blas()->diis(cycle, delta_energy, DiisCC);
         }
 
         if (cycle > options_.get_int("MAXITER")) {
@@ -144,7 +143,7 @@ double CCMRCC::compute_energy() {
         converged = build_diagonalize_Heff(-1, cc_timer.get());
     }
 
-    return ref_wfn_->scalar_variable("CURRENT ENERGY");
+    return wfn_->scalar_variable("CURRENT ENERGY");
 }
 
 }  // namespace psimrcc

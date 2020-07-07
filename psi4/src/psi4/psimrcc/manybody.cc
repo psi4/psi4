@@ -58,7 +58,7 @@ extern MOInfo* moinfo;
  * Allocate the effective Hamiltonian matrices and eigenvectors
  * @todo wrap the current operations in an init() function
  */
-CCManyBody::CCManyBody(SharedWavefunction ref_wfn, Options& options) : ref_wfn_(ref_wfn), options_(options) {
+CCManyBody::CCManyBody(std::shared_ptr<PSIMRCCWfn> wfn, Options& options) : wfn_(wfn), options_(options) {
     // Allocate memory for the eigenvector and the effective Hamiltonian
     zeroth_order_eigenvector = std::vector<double>(moinfo->get_nrefs(), 0);
     right_eigenvector = std::vector<double>(moinfo->get_nrefs(), 0);
@@ -82,15 +82,15 @@ CCManyBody::~CCManyBody() {
 }
 
 /**
- * Creates a CCSort object and stores the address in the global pointer sorter
+ * Creates a CCSort object
  */
 void CCManyBody::generate_integrals() {
     // CCSort reads the one and two electron integrals
     // and creates the Fock matrices
-    sorter = new CCSort(ref_wfn_, out_of_core_sort);
-    //   blas->show_storage();
-    blas->compute_storage_strategy();
-    //   blas->show_storage();
+    std::make_shared<CCSort>(wfn_, out_of_core_sort);
+    //   wfn_->blas()->show_storage();
+    wfn_->blas()->compute_storage_strategy();
+    //   wfn_->blas()->show_storage();
 }
 
 void CCManyBody::generate_triples_denominators() {
@@ -121,8 +121,8 @@ void CCManyBody::generate_d3_ijk(std::vector<std::vector<std::vector<double>>>& 
         for (size_t i = 0; i < bocc.size(); i++) is_bocc[bocc[i]] = true;
 
         // Read the Fock matrices
-        auto f_oo_Matrix = blas->get_MatTmp("fock[oo]", reference, none);
-        auto f_OO_Matrix = blas->get_MatTmp("fock[OO]", reference, none);
+        auto f_oo_Matrix = wfn_->blas->get_MatTmp("fock[oo]", reference, none);
+        auto f_OO_Matrix = wfn_->blas->get_MatTmp("fock[OO]", reference, none);
 
         CCMatrix* f_ii_Matrix;
         CCMatrix* f_jj_Matrix;
@@ -143,7 +143,7 @@ void CCManyBody::generate_d3_ijk(std::vector<std::vector<std::vector<double>>>& 
         else
             f_kk_Matrix = f_OO_Matrix.get_CCMatrix();
 
-        auto ooo_indexing = blas->get_index("[ooo]");
+        auto ooo_indexing = wfn_->blas->get_index("[ooo]");
         auto& ooo_tuples = ooo_indexing->get_tuples();
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
@@ -187,8 +187,8 @@ void CCManyBody::generate_d3_abc(std::vector<std::vector<std::vector<double>>>& 
         for (size_t i = 0; i < bvir.size(); i++) is_bvir[bvir[i]] = true;
 
         // Read the Fock matrices
-        auto f_vv_Matrix = blas->get_MatTmp("fock[vv]", reference, none);
-        auto f_VV_Matrix = blas->get_MatTmp("fock[VV]", reference, none);
+        auto f_vv_Matrix = wfn_->blas->get_MatTmp("fock[vv]", reference, none);
+        auto f_VV_Matrix = wfn_->blas->get_MatTmp("fock[VV]", reference, none);
 
         CCMatrix* f_aa_Matrix;
         CCMatrix* f_bb_Matrix;
@@ -209,7 +209,7 @@ void CCManyBody::generate_d3_abc(std::vector<std::vector<std::vector<double>>>& 
         else
             f_cc_Matrix = f_VV_Matrix.get_CCMatrix();
 
-        auto vvv_indexing = blas->get_index("[vvv]");
+        auto vvv_indexing = wfn_->blas->get_index("[vvv]");
         auto& vvv_tuples = vvv_indexing->get_tuples();
 
         for (int h = 0; h < moinfo->get_nirreps(); h++) {
@@ -251,10 +251,10 @@ void CCManyBody::compute_reference_energy() {
         auto bocc = moinfo->get_bocc(n, UniqueRefs);
 
         // Read these matrices
-        auto f_oo_Matrix = blas->get_MatTmp("fock[o][o]", unique_n, none);
-        auto f_OO_Matrix = blas->get_MatTmp("fock[O][O]", unique_n, none);
-        auto V_oooo_Matrix = blas->get_MatTmp("<[oo]:[oo]>", none);
-        auto V_oOoO_Matrix = blas->get_MatTmp("<[oo]|[oo]>", none);
+        auto f_oo_Matrix = wfn_->blas->get_MatTmp("fock[o][o]", unique_n, none);
+        auto f_OO_Matrix = wfn_->blas->get_MatTmp("fock[O][O]", unique_n, none);
+        auto V_oooo_Matrix = wfn_->blas->get_MatTmp("<[oo]:[oo]>", none);
+        auto V_oOoO_Matrix = wfn_->blas->get_MatTmp("<[oo]|[oo]>", none);
 
         for (size_t i = 0; i < aocc.size(); i++) ref_energy += f_oo_Matrix->get_two_address_element(aocc[i], aocc[i]);
         for (size_t i = 0; i < bocc.size(); i++) ref_energy += f_OO_Matrix->get_two_address_element(bocc[i], bocc[i]);
@@ -269,7 +269,7 @@ void CCManyBody::compute_reference_energy() {
             for (size_t j = 0; j < bocc.size(); j++)
                 ref_energy -= V_oOoO_Matrix->get_four_address_element(aocc[i], bocc[j], aocc[i], bocc[j]);
         // Write the energy to the ERef
-        auto ERef_Matrix = blas->get_MatTmp("ERef", unique_n, none);
+        auto ERef_Matrix = wfn_->blas->get_MatTmp("ERef", unique_n, none);
         ERef_Matrix->set_scalar(ref_energy);
     }
 }
@@ -478,7 +478,7 @@ void CCManyBody::sort_eigensystem(int ndets, std::vector<double>& real, std::vec
 //
 //        // Zero alpha-alpha single excitations
 //        if((alpha_internal_excitation.size()==1)&&(beta_internal_excitation.size()==0)){
-//          blas->get_MatTmp("t1[o][v]",unique_i,none)->set_two_address_element(
+//          wfn_->blas()->get_MatTmp("t1[o][v]",unique_i,none)->set_two_address_element(
 //                                            alpha_internal_excitation[0].first,
 //                                            alpha_internal_excitation[0].second,
 //                                            0.0);
@@ -486,32 +486,32 @@ void CCManyBody::sort_eigensystem(int ndets, std::vector<double>& real, std::vec
 //
 //        // Zero beta-beta single excitations
 //        if((alpha_internal_excitation.size()==0)&&(beta_internal_excitation.size()==1))
-//          blas->get_MatTmp("t1[O][V]",unique_i,none)->set_two_address_element(
+//          wfn_->blas()->get_MatTmp("t1[O][V]",unique_i,none)->set_two_address_element(
 //                                            beta_internal_excitation[0].first,
 //                                            beta_internal_excitation[0].second,
 //                                            0.0);
 //
 //        // Zero (alpha,alpha)->(alpha,alpha) double excitations (all permutations)
 //        if((alpha_internal_excitation.size()==2)&&(beta_internal_excitation.size()==0)){
-//          blas->get_MatTmp("t2[oo][vv]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2[oo][vv]",unique_i,none)->set_four_address_element(
 //                                            alpha_internal_excitation[0].first,
 //                                            alpha_internal_excitation[1].first,
 //                                            alpha_internal_excitation[0].second,
 //                                            alpha_internal_excitation[1].second,
 //                                            0.0);
-//          blas->get_MatTmp("t2[oo][vv]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2[oo][vv]",unique_i,none)->set_four_address_element(
 //                                            alpha_internal_excitation[0].first,
 //                                            alpha_internal_excitation[1].first,
 //                                            alpha_internal_excitation[1].second,
 //                                            alpha_internal_excitation[0].second,
 //                                            0.0);
-//          blas->get_MatTmp("t2[oo][vv]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2[oo][vv]",unique_i,none)->set_four_address_element(
 //                                            alpha_internal_excitation[1].first,
 //                                            alpha_internal_excitation[0].first,
 //                                            alpha_internal_excitation[0].second,
 //                                            alpha_internal_excitation[1].second,
 //                                            0.0);
-//          blas->get_MatTmp("t2[oo][vv]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2[oo][vv]",unique_i,none)->set_four_address_element(
 //                                            alpha_internal_excitation[1].first,
 //                                            alpha_internal_excitation[0].first,
 //                                            alpha_internal_excitation[1].second,
@@ -521,7 +521,7 @@ void CCManyBody::sort_eigensystem(int ndets, std::vector<double>& real, std::vec
 //
 //        // Zero (alpha,beta)->(alpha,beta) double excitations
 //        if((alpha_internal_excitation.size()==1)&&(beta_internal_excitation.size()==1)){
-//          blas->get_MatTmp("t2[oO][vV]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2[oO][vV]",unique_i,none)->set_four_address_element(
 //                                            alpha_internal_excitation[0].first,
 //                                            beta_internal_excitation[0].first,
 //                                            alpha_internal_excitation[0].second,
@@ -531,25 +531,25 @@ void CCManyBody::sort_eigensystem(int ndets, std::vector<double>& real, std::vec
 //
 //        // Zero (beta,beta)->(beta,beta) double excitations (all permutations)
 //        if((alpha_internal_excitation.size()==0)&&(beta_internal_excitation.size()==2)){
-//          blas->get_MatTmp("t2[OO][VV]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2[OO][VV]",unique_i,none)->set_four_address_element(
 //                                            beta_internal_excitation[0].first,
 //                                            beta_internal_excitation[1].first,
 //                                            beta_internal_excitation[0].second,
 //                                            beta_internal_excitation[1].second,
 //                                            0.0);
-//          blas->get_MatTmp("t2[OO][VV]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2[OO][VV]",unique_i,none)->set_four_address_element(
 //                                            beta_internal_excitation[0].first,
 //                                            beta_internal_excitation[1].first,
 //                                            beta_internal_excitation[1].second,
 //                                            beta_internal_excitation[0].second,
 //                                            0.0);
-//          blas->get_MatTmp("t2[OO][VV]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2[OO][VV]",unique_i,none)->set_four_address_element(
 //                                            beta_internal_excitation[1].first,
 //                                            beta_internal_excitation[0].first,
 //                                            beta_internal_excitation[0].second,
 //                                            beta_internal_excitation[1].second,
 //                                            0.0);
-//          blas->get_MatTmp("t2[OO][VV]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2[OO][VV]",unique_i,none)->set_four_address_element(
 //                                            beta_internal_excitation[1].first,
 //                                            beta_internal_excitation[0].first,
 //                                            beta_internal_excitation[1].second,
@@ -578,14 +578,14 @@ void CCManyBody::sort_eigensystem(int ndets, std::vector<double>& real, std::vec
 //
 //        // Zero alpha-alpha single excitations
 //        if((alpha_internal_excitation.size()==1)&&(beta_internal_excitation.size()==0))
-//          blas->get_MatTmp("t1[o][v]",unique_i,none)->set_two_address_element(
+//          wfn_->blas()->get_MatTmp("t1[o][v]",unique_i,none)->set_two_address_element(
 //                                            alpha_internal_excitation[0].first,
 //                                            alpha_internal_excitation[0].second,
 //                                            0.0);
 //
 //        // Zero beta-beta single excitations
 //        if((alpha_internal_excitation.size()==0)&&(beta_internal_excitation.size()==1))
-//          blas->get_MatTmp("t1[O][V]",unique_i,none)->set_two_address_element(
+//          wfn_->blas()->get_MatTmp("t1[O][V]",unique_i,none)->set_two_address_element(
 //                                            beta_internal_excitation[0].first,
 //                                            beta_internal_excitation[0].second,
 //                                            0.0);
@@ -610,39 +610,39 @@ void CCManyBody::sort_eigensystem(int ndets, std::vector<double>& real, std::vec
 //
 //        // Zero alpha-alpha single excitations
 //        if((alpha_internal_excitation.size()==1)&&(beta_internal_excitation.size()==0))
-//          blas->get_MatTmp("t1_delta[o][v]",unique_i,none)->set_two_address_element(
+//          wfn_->blas()->get_MatTmp("t1_delta[o][v]",unique_i,none)->set_two_address_element(
 //                                            alpha_internal_excitation[0].first,
 //                                            alpha_internal_excitation[0].second,
 //                                            0.0);
 //
 //        // Zero beta-beta single excitations
 //        if((alpha_internal_excitation.size()==0)&&(beta_internal_excitation.size()==1))
-//          blas->get_MatTmp("t1_delta[O][V]",unique_i,none)->set_two_address_element(
+//          wfn_->blas()->get_MatTmp("t1_delta[O][V]",unique_i,none)->set_two_address_element(
 //                                            beta_internal_excitation[0].first,
 //                                            beta_internal_excitation[0].second,
 //                                            0.0);
 //
 //        // Zero (alpha,alpha)->(alpha,alpha) double excitations (all permutations)
 //        if((alpha_internal_excitation.size()==2)&&(beta_internal_excitation.size()==0)){
-//          blas->get_MatTmp("t2_delta[oo][vv]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2_delta[oo][vv]",unique_i,none)->set_four_address_element(
 //                                            alpha_internal_excitation[0].first,
 //                                            alpha_internal_excitation[1].first,
 //                                            alpha_internal_excitation[0].second,
 //                                            alpha_internal_excitation[1].second,
 //                                            0.0);
-//          blas->get_MatTmp("t2_delta[oo][vv]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2_delta[oo][vv]",unique_i,none)->set_four_address_element(
 //                                            alpha_internal_excitation[0].first,
 //                                            alpha_internal_excitation[1].first,
 //                                            alpha_internal_excitation[1].second,
 //                                            alpha_internal_excitation[0].second,
 //                                            0.0);
-//          blas->get_MatTmp("t2_delta[oo][vv]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2_delta[oo][vv]",unique_i,none)->set_four_address_element(
 //                                            alpha_internal_excitation[1].first,
 //                                            alpha_internal_excitation[0].first,
 //                                            alpha_internal_excitation[0].second,
 //                                            alpha_internal_excitation[1].second,
 //                                            0.0);
-//          blas->get_MatTmp("t2_delta[oo][vv]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2_delta[oo][vv]",unique_i,none)->set_four_address_element(
 //                                            alpha_internal_excitation[1].first,
 //                                            alpha_internal_excitation[0].first,
 //                                            alpha_internal_excitation[1].second,
@@ -652,7 +652,7 @@ void CCManyBody::sort_eigensystem(int ndets, std::vector<double>& real, std::vec
 //
 //        // Zero (alpha,beta)->(alpha,beta) double excitations
 //        if((alpha_internal_excitation.size()==1)&&(beta_internal_excitation.size()==1)){
-//          blas->get_MatTmp("t2_delta[oO][vV]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2_delta[oO][vV]",unique_i,none)->set_four_address_element(
 //                                            alpha_internal_excitation[0].first,
 //                                            beta_internal_excitation[0].first,
 //                                            alpha_internal_excitation[0].second,
@@ -662,25 +662,25 @@ void CCManyBody::sort_eigensystem(int ndets, std::vector<double>& real, std::vec
 //
 //        // Zero (beta,beta)->(beta,beta) double excitations (all permutations)
 //        if((alpha_internal_excitation.size()==0)&&(beta_internal_excitation.size()==2)){
-//          blas->get_MatTmp("t2_delta[OO][VV]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2_delta[OO][VV]",unique_i,none)->set_four_address_element(
 //                                            beta_internal_excitation[0].first,
 //                                            beta_internal_excitation[1].first,
 //                                            beta_internal_excitation[0].second,
 //                                            beta_internal_excitation[1].second,
 //                                            0.0);
-//          blas->get_MatTmp("t2_delta[OO][VV]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2_delta[OO][VV]",unique_i,none)->set_four_address_element(
 //                                            beta_internal_excitation[0].first,
 //                                            beta_internal_excitation[1].first,
 //                                            beta_internal_excitation[1].second,
 //                                            beta_internal_excitation[0].second,
 //                                            0.0);
-//          blas->get_MatTmp("t2_delta[OO][VV]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2_delta[OO][VV]",unique_i,none)->set_four_address_element(
 //                                            beta_internal_excitation[1].first,
 //                                            beta_internal_excitation[0].first,
 //                                            beta_internal_excitation[0].second,
 //                                            beta_internal_excitation[1].second,
 //                                            0.0);
-//          blas->get_MatTmp("t2_delta[OO][VV]",unique_i,none)->set_four_address_element(
+//          wfn_->blas()->get_MatTmp("t2_delta[OO][VV]",unique_i,none)->set_four_address_element(
 //                                            beta_internal_excitation[1].first,
 //                                            beta_internal_excitation[0].first,
 //                                            beta_internal_excitation[1].second,

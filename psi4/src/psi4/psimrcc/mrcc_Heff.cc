@@ -42,8 +42,6 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
 PRAGMA_WARNING_POP
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
 extern MOInfo* moinfo;
@@ -86,8 +84,8 @@ bool CCMRCC::build_diagonalize_Heff(int cycle, double time) {
     print_mrccsd_energy(cycle);
     if (converged) {
         print_eigensystem(moinfo->get_nrefs(), Heff, right_eigenvector);
-        ref_wfn_->set_scalar_variable("CURRENT ENERGY", current_energy);
-        ref_wfn_->set_scalar_variable("MRCC TOTAL ENERGY", current_energy);
+        wfn_->set_scalar_variable("CURRENT ENERGY", current_energy);
+        wfn_->set_scalar_variable("MRCC TOTAL ENERGY", current_energy);
     }
     return (converged);
 }
@@ -95,16 +93,16 @@ bool CCMRCC::build_diagonalize_Heff(int cycle, double time) {
 void CCMRCC::build_Heff_diagonal() {
     // Compute the diagonal elements of the effective Hamiltonian
     // using a simple UCCSD energy expression
-    blas->solve("Eaa{u}   = t1[o][v]{u} . fock[o][v]{u}");
-    blas->solve("Ebb{u}   = t1[O][V]{u} . fock[O][V]{u}");
+    wfn_->blas()->solve("Eaa{u}   = t1[o][v]{u} . fock[o][v]{u}");
+    wfn_->blas()->solve("Ebb{u}   = t1[O][V]{u} . fock[O][V]{u}");
 
-    blas->solve("Eaaaa{u} = 1/4 tau[oo][vv]{u} . <[oo]:[vv]>");
-    blas->solve("Eabab{u} =     tau[oO][vV]{u} . <[oo]|[vv]>");
-    blas->solve("Ebbbb{u} = 1/4 tau[OO][VV]{u} . <[oo]:[vv]>");
+    wfn_->blas()->solve("Eaaaa{u} = 1/4 tau[oo][vv]{u} . <[oo]:[vv]>");
+    wfn_->blas()->solve("Eabab{u} =     tau[oO][vV]{u} . <[oo]|[vv]>");
+    wfn_->blas()->solve("Ebbbb{u} = 1/4 tau[OO][VV]{u} . <[oo]:[vv]>");
 
-    blas->solve("ECCSD{u}  = Eaa{u} + Ebb{u} + Eaaaa{u} + Eabab{u} + Ebbbb{u} + ERef{u}");
+    wfn_->blas()->solve("ECCSD{u}  = Eaa{u} + Ebb{u} + Eaaaa{u} + Eabab{u} + Ebbbb{u} + ERef{u}");
 
-    for (int n = 0; n < moinfo->get_nrefs(); n++) Heff[n][n] = blas->get_scalar("ECCSD", moinfo->get_ref_number(n));
+    for (int n = 0; n < moinfo->get_nrefs(); n++) Heff[n][n] = wfn_->blas()->get_scalar("ECCSD", moinfo->get_ref_number(n));
 }
 
 void CCMRCC::build_Heff_offdiagonal() {
@@ -124,21 +122,21 @@ void CCMRCC::build_Heff_offdiagonal() {
                     // Set alpha-alpha single excitations
                     if ((alpha_internal_excitation.size() == 1) && (beta_internal_excitation.size() == 0))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("t1_eqns[o][v]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("t1_eqns[o][v]", i_unique, none)
                                       ->get_two_address_element(alpha_internal_excitation[0].first,
                                                                 alpha_internal_excitation[0].second);
 
                     // Set beta-beta single excitations
                     if ((alpha_internal_excitation.size() == 0) && (beta_internal_excitation.size() == 1))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("t1_eqns[O][V]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("t1_eqns[O][V]", i_unique, none)
                                       ->get_two_address_element(beta_internal_excitation[0].first,
                                                                 beta_internal_excitation[0].second);
 
                     // Set (alpha,alpha)->(alpha,alpha) double excitations
                     if ((alpha_internal_excitation.size() == 2) && (beta_internal_excitation.size() == 0))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("t2_eqns[oo][vv]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("t2_eqns[oo][vv]", i_unique, none)
                                       ->get_four_address_element(
                                           alpha_internal_excitation[0].first, alpha_internal_excitation[1].first,
                                           alpha_internal_excitation[0].second, alpha_internal_excitation[1].second);
@@ -146,7 +144,7 @@ void CCMRCC::build_Heff_offdiagonal() {
                     // Set (alpha,beta)->(alpha,beta) double excitations
                     if ((alpha_internal_excitation.size() == 1) && (beta_internal_excitation.size() == 1))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("t2_eqns[oO][vV]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("t2_eqns[oO][vV]", i_unique, none)
                                       ->get_four_address_element(
                                           alpha_internal_excitation[0].first, beta_internal_excitation[0].first,
                                           alpha_internal_excitation[0].second, beta_internal_excitation[0].second);
@@ -154,7 +152,7 @@ void CCMRCC::build_Heff_offdiagonal() {
                     // Set (beta,beta)->(beta,beta) double excitations
                     if ((alpha_internal_excitation.size() == 0) && (beta_internal_excitation.size() == 2))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("t2_eqns[OO][VV]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("t2_eqns[OO][VV]", i_unique, none)
                                       ->get_four_address_element(
                                           beta_internal_excitation[0].first, beta_internal_excitation[1].first,
                                           beta_internal_excitation[0].second, beta_internal_excitation[1].second);
@@ -162,21 +160,21 @@ void CCMRCC::build_Heff_offdiagonal() {
                     // Set alpha-alpha single excitations
                     if ((alpha_internal_excitation.size() == 1) && (beta_internal_excitation.size() == 0))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("t1_eqns[O][V]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("t1_eqns[O][V]", i_unique, none)
                                       ->get_two_address_element(alpha_internal_excitation[0].first,
                                                                 alpha_internal_excitation[0].second);
 
                     // Set beta-beta single excitations
                     if ((alpha_internal_excitation.size() == 0) && (beta_internal_excitation.size() == 1))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("t1_eqns[o][v]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("t1_eqns[o][v]", i_unique, none)
                                       ->get_two_address_element(beta_internal_excitation[0].first,
                                                                 beta_internal_excitation[0].second);
 
                     // Set (alpha,alpha)->(alpha,alpha) double excitations
                     if ((alpha_internal_excitation.size() == 2) && (beta_internal_excitation.size() == 0))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("t2_eqns[OO][VV]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("t2_eqns[OO][VV]", i_unique, none)
                                       ->get_four_address_element(
                                           alpha_internal_excitation[0].first, alpha_internal_excitation[1].first,
                                           alpha_internal_excitation[0].second, alpha_internal_excitation[1].second);
@@ -184,7 +182,7 @@ void CCMRCC::build_Heff_offdiagonal() {
                     // Set (alpha,beta)->(alpha,beta) double excitations
                     if ((alpha_internal_excitation.size() == 1) && (beta_internal_excitation.size() == 1))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("t2_eqns[oO][vV]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("t2_eqns[oO][vV]", i_unique, none)
                                       ->get_four_address_element(
                                           beta_internal_excitation[0].first, alpha_internal_excitation[0].first,
                                           beta_internal_excitation[0].second, alpha_internal_excitation[0].second);
@@ -192,7 +190,7 @@ void CCMRCC::build_Heff_offdiagonal() {
                     // Set (beta,beta)->(beta,beta) double excitations
                     if ((alpha_internal_excitation.size() == 0) && (beta_internal_excitation.size() == 2))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("t2_eqns[oo][vv]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("t2_eqns[oo][vv]", i_unique, none)
                                       ->get_four_address_element(
                                           beta_internal_excitation[0].first, beta_internal_excitation[1].first,
                                           beta_internal_excitation[0].second, beta_internal_excitation[1].second);

@@ -50,8 +50,6 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/psifiles.h"
 
-extern FILE *outfile;
-
 namespace psi {
 namespace psimrcc {
 

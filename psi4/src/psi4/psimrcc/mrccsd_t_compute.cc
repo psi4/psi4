@@ -35,7 +35,6 @@
 #include <cstdlib>
 
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libmoinfo/libmoinfo.h"
 
 #include "blas.h"
 #include "index_iterator.h"
@@ -43,11 +42,8 @@
 #include "mrccsd_t.h"
 #include "special_matrices.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 void MRCCSD_T::compute() {
     outfile->Printf("\n\n  Computing (T) correction using the unrestricted loop algorithm.\n");

@@ -39,7 +39,7 @@
 namespace psi {
 namespace psimrcc {
 
-CCMRCC::CCMRCC(SharedWavefunction ref_wfn, Options &options) : CCManyBody(ref_wfn, options), options_(options) {
+CCMRCC::CCMRCC(std::shared_ptr<PSIMRCCWfn> wfn, Options &options) : CCManyBody(wfn, options), options_(options) {
     triples_type = ccsd;
     triples_coupling_type = cubic;
     ap_correction = false;  // Set tu true when computing the a posteriori correction

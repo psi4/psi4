@@ -102,8 +102,6 @@ class CCTransform {
     double fraction_of_memory_for_presorting;
 };
 
-extern CCTransform* trans;
-
 }  // namespace psimrcc
 }  // namespace psi
 

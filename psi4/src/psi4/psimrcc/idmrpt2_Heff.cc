@@ -39,8 +39,6 @@
 #include "idmrpt2.h"
 #include "matrix.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
 extern MOInfo* moinfo;
@@ -71,21 +69,21 @@ void IDMRPT2::build_Heff_mrpt2_offdiagonal() {
                     // Set alpha-alpha single excitations
                     if ((alpha_internal_excitation.size() == 1) && (beta_internal_excitation.size() == 0))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("Hia[a][a]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("Hia[a][a]", i_unique, none)
                                       ->get_two_address_element(occ_to_act[alpha_internal_excitation[0].first],
                                                                 vir_to_act[alpha_internal_excitation[0].second]);
 
                     // Set beta-beta single excitations
                     if ((alpha_internal_excitation.size() == 0) && (beta_internal_excitation.size() == 1))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("HIA[A][A]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("HIA[A][A]", i_unique, none)
                                       ->get_two_address_element(occ_to_act[beta_internal_excitation[0].first],
                                                                 vir_to_act[beta_internal_excitation[0].second]);
 
                     // Set (alpha,alpha)->(alpha,alpha) double excitations
                     if ((alpha_internal_excitation.size() == 2) && (beta_internal_excitation.size() == 0))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("Hijab[aa][aa]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("Hijab[aa][aa]", i_unique, none)
                                       ->get_four_address_element(occ_to_act[alpha_internal_excitation[0].first],
                                                                  occ_to_act[alpha_internal_excitation[1].first],
                                                                  vir_to_act[alpha_internal_excitation[0].second],
@@ -94,7 +92,7 @@ void IDMRPT2::build_Heff_mrpt2_offdiagonal() {
                     // Set (alpha,beta)->(alpha,beta) double excitations
                     if ((alpha_internal_excitation.size() == 1) && (beta_internal_excitation.size() == 1))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("HiJaB[aA][aA]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("HiJaB[aA][aA]", i_unique, none)
                                       ->get_four_address_element(occ_to_act[alpha_internal_excitation[0].first],
                                                                  occ_to_act[beta_internal_excitation[0].first],
                                                                  vir_to_act[alpha_internal_excitation[0].second],
@@ -103,7 +101,7 @@ void IDMRPT2::build_Heff_mrpt2_offdiagonal() {
                     // Set (beta,beta)->(beta,beta) double excitations
                     if ((alpha_internal_excitation.size() == 0) && (beta_internal_excitation.size() == 2))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("HIJAB[AA][AA]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("HIJAB[AA][AA]", i_unique, none)
                                       ->get_four_address_element(occ_to_act[beta_internal_excitation[0].first],
                                                                  occ_to_act[beta_internal_excitation[1].first],
                                                                  vir_to_act[beta_internal_excitation[0].second],
@@ -112,21 +110,21 @@ void IDMRPT2::build_Heff_mrpt2_offdiagonal() {
                     // Set alpha-alpha single excitations
                     if ((alpha_internal_excitation.size() == 1) && (beta_internal_excitation.size() == 0))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("HIA[A][A]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("HIA[A][A]", i_unique, none)
                                       ->get_two_address_element(occ_to_act[alpha_internal_excitation[0].first],
                                                                 vir_to_act[alpha_internal_excitation[0].second]);
 
                     // Set beta-beta single excitations
                     if ((alpha_internal_excitation.size() == 0) && (beta_internal_excitation.size() == 1))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("Hia[a][a]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("Hia[a][a]", i_unique, none)
                                       ->get_two_address_element(occ_to_act[beta_internal_excitation[0].first],
                                                                 vir_to_act[beta_internal_excitation[0].second]);
 
                     // Set (alpha,alpha)->(alpha,alpha) double excitations
                     if ((alpha_internal_excitation.size() == 2) && (beta_internal_excitation.size() == 0))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("HIJAB[AA][AA]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("HIJAB[AA][AA]", i_unique, none)
                                       ->get_four_address_element(occ_to_act[alpha_internal_excitation[0].first],
                                                                  occ_to_act[alpha_internal_excitation[1].first],
                                                                  vir_to_act[alpha_internal_excitation[0].second],
@@ -135,7 +133,7 @@ void IDMRPT2::build_Heff_mrpt2_offdiagonal() {
                     // Set (alpha,beta)->(alpha,beta) double excitations
                     if ((alpha_internal_excitation.size() == 1) && (beta_internal_excitation.size() == 1))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("HiJaB[aA][aA]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("HiJaB[aA][aA]", i_unique, none)
                                       ->get_four_address_element(occ_to_act[beta_internal_excitation[0].first],
                                                                  occ_to_act[alpha_internal_excitation[0].first],
                                                                  vir_to_act[beta_internal_excitation[0].second],
@@ -144,7 +142,7 @@ void IDMRPT2::build_Heff_mrpt2_offdiagonal() {
                     // Set (beta,beta)->(beta,beta) double excitations
                     if ((alpha_internal_excitation.size() == 0) && (beta_internal_excitation.size() == 2))
                         element = sign_internal_excitation *
-                                  blas->get_MatTmp("Hijab[aa][aa]", i_unique, none)
+                                  wfn_->blas()->get_MatTmp("Hijab[aa][aa]", i_unique, none)
                                       ->get_four_address_element(occ_to_act[beta_internal_excitation[0].first],
                                                                  occ_to_act[beta_internal_excitation[1].first],
                                                                  vir_to_act[beta_internal_excitation[0].second],
