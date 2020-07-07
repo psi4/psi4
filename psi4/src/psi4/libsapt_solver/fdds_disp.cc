@@ -582,9 +582,9 @@ std::vector<SharedMatrix> FDDS_Dispersion::form_aux_matrices(std::string monomer
     // => Blocking <= //
 
     size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
-    size_t rem = doubles - 2 * nocc * nvir - 6 * naux * naux;
-    // if (rem < 0)
-    //     throw PSIEXCEPTION("Too little static memory for FDDS_Dispersion::form_aux_matrices()");
+    long long int rem = doubles - 2 * nocc * nvir - 6 * naux * naux;
+    if (rem < 0)
+        throw PSIEXCEPTION("Too little static memory for FDDS_Dispersion::form_aux_matrices()");
 
     size_t maxo = rem / (7 * nvir * naux);
     maxo = (maxo > nocc ? nocc : maxo);
@@ -745,9 +745,9 @@ void FDDS_Dispersion::form_X(std::string monomer) {
 #endif
 
     size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
-    size_t rem = doubles - nthread * nvir * nvir;
-    // if (rem < 0) 
-    //     throw PSIEXCEPTION("Too little static memory for FDDS_Dispersion::form_X()");
+    long long int rem = doubles - nthread * nvir * nvir;
+    if (rem < 0) 
+        throw PSIEXCEPTION("Too little static memory for FDDS_Dispersion::form_X()");
 
     size_t maxo = rem / (6 * nvir * naux);
     maxo = (maxo > nocc ? nocc : maxo);
@@ -867,9 +867,9 @@ void FDDS_Dispersion::form_Y(std::string monomer) {
 #endif
 
     size_t doubles = Process::environment.get_memory() * 0.8 / sizeof(double);
-    size_t rem = doubles - nthread * nocc * nvir;
-    // if (rem < 0) 
-    //     throw PSIEXCEPTION("Too little static memory for FDDS_Dispersion::form_Y()");
+    long long int rem = doubles - nthread * nocc * nvir;
+    if (rem < 0) 
+        throw PSIEXCEPTION("Too little static memory for FDDS_Dispersion::form_Y()");
 
     size_t kov = nvir / nocc + 1; // Ratio of v/o, take ceiling for worst case
     size_t maxo = rem / ((kov * kov + 4 * kov + 1) * nocc * naux);
