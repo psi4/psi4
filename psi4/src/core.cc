@@ -75,7 +75,11 @@ using namespace pybind11::literals;
 #include <brian_module.h>
 #include <brian_macros.h>
 
+bool brianEnableEnvFound = false;
+bool brianEnableEnvValue = false;
+
 BrianCookie brianCookie = 0;
+bool brianEnableDFT = true;
 brianInt brianRestrictionType = 0;
 bool brianCPHFFlag = false;
 bool brianCPHFLeftSideFlag = false;
@@ -85,6 +89,29 @@ void checkBrian() {
     if (err) {
         throw PSIEXCEPTION("BrianQC error detected");
     }
+}
+
+void brianInit() {
+    if (brianCookie != 0) {
+        throw PSIEXCEPTION("Attempting to reinitialize BrianQC without releasing it first");
+    }
+    
+    brianInt brianAPIVersionOfHost = BRIAN_API_VERSION;
+    brianInt hostID = BRIAN_HOST_PSI4;
+    brianCookie = brianAPIInit(&brianAPIVersionOfHost, &hostID);
+    checkBrian();
+    outfile->Printf("BrianQC initialization successful\n");
+}
+
+void brianRelease()
+{
+    if (brianCookie == 0) {
+        throw PSIEXCEPTION("Attempting to release the BrianQC module when it hasn't been initialized\n");
+    }
+    
+    outfile->Printf("Releasing the BrianQC module\n");
+    brianAPIRelease(&brianCookie);
+    brianCookie = 0;
 }
 #endif
 
@@ -635,6 +662,24 @@ bool py_psi_set_global_option_int(std::string const& key, int value) {
     } else {
         Process::environment.options.set_global_int(nonconst_key, value);
     }
+    
+#ifdef USING_BrianQC
+    if (nonconst_key == "BRIANQC_ENABLE") {
+        if (brianEnableEnvFound) {
+            outfile->Printf("BRIANQC_ENABLE option found, but overridden by BRIANQC_ENABLE environment variable\n");
+        } else {
+            outfile->Printf("BRIANQC_ENABLE option found, checking value\n");
+            if (value && (brianCookie == 0)) {
+                outfile->Printf("BRIANQC_ENABLE option set to true, initializing BrianQC\n");
+                brianInit();
+            } else if (!value && (brianCookie != 0)) {
+                outfile->Printf("BRIANQC_ENABLE option set to false, releasing BrianQC\n");
+                brianRelease();
+            }
+        }
+    }
+#endif
+    
     return true;
 }
 
@@ -1005,18 +1050,18 @@ bool psi4_python_module_initialize() {
     
 #ifdef USING_BrianQC
     const char* brianEnableEnv = getenv("BRIANQC_ENABLE");
-    if (brianEnableEnv) {
+    brianEnableEnvFound = (bool)brianEnableEnv;
+    if (brianEnableEnvFound) {
         outfile->Printf("BRIANQC_ENABLE environment variable found, checking value\n");
-        bool brianEnable = (bool)atoi(brianEnableEnv);
-        if (brianEnable) {
+        brianEnableEnvValue = (bool)atoi(brianEnableEnv);
+        if (brianEnableEnvValue) {
             outfile->Printf("BRIANQC_ENABLE is true, attempting to initialize BrianQC\n");
-            brianInt brianAPIVersionOfHost = BRIAN_API_VERSION;
-            brianInt hostID = BRIAN_HOST_PSI4;
-            brianCookie = brianAPIInit(&brianAPIVersionOfHost, &hostID);
-            checkBrian();
-            outfile->Printf("BrianQC initialization successful\n");
+            brianInit();
         }
     }
+    
+    const char* brianEnableDFTEnv = getenv("BRIANQC_ENABLE_DFT");
+    brianEnableDFT = brianEnableDFTEnv ? (bool)atoi(brianEnableDFTEnv) : true;
 #endif
 
     initialized = true;
@@ -1027,8 +1072,7 @@ bool psi4_python_module_initialize() {
 void psi4_python_module_finalize() {
 #ifdef USING_BrianQC
     if (brianCookie != 0) {
-        outfile->Printf("Releasing the BrianQC module\n");
-        brianAPIRelease(&brianCookie);
+        brianRelease();
     }
 #endif
     

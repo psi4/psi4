@@ -62,6 +62,7 @@
 #include <brian_cphf.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
+extern bool brianEnableDFT;
 extern bool brianCPHFFlag;
 extern bool brianCPHFLeftSideFlag;
 extern brianInt brianRestrictionType;
@@ -112,9 +113,7 @@ void DirectJK::compute_JK() {
         brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
         brianBool computeExchange = ((do_K_ || do_wK_) ? BRIAN_TRUE : BRIAN_FALSE);
         
-        const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
-        bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
-        if (do_wK_ and not brianPsi4DFT) {
+        if (do_wK_ and not brianEnableDFT) {
             throw PSIEXCEPTION("Currently, BrianQC cannot compute range-separated exact exchange when Psi4 is handling the DFT terms");
         }
         

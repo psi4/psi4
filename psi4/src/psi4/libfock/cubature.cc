@@ -58,6 +58,7 @@
 #include <brian_common.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
+extern bool brianEnableDFT;
 
 // auxiliary structures passing the grid to BrianQC
 struct BrianRadialPoint {
@@ -2661,10 +2662,7 @@ void StandardGridMgr::Initialize_SG0() {
     // clang-format on
 
 #ifdef USING_BrianQC
-    const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
-    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
-    
-    if (brianPsi4DFT) {
+    if (brianEnableDFT) {
         brianStandardGrids[0].resize(18);
     }
 #endif
@@ -2675,7 +2673,7 @@ void StandardGridMgr::Initialize_SG0() {
             SG0_sizes_[Z] = 0;
         } else {
 #ifdef USING_BrianQC
-            if (brianPsi4DFT) {
+            if (brianEnableDFT) {
                 brianStoreGridDataInto = &(brianStandardGrids[0][Z]);
             }
 #endif
@@ -2684,7 +2682,7 @@ void StandardGridMgr::Initialize_SG0() {
             SG0_grids_[Z] = grid;
             SG0_sizes_[Z] = SG0specs[Z].npts;
 #ifdef USING_BrianQC
-            if (brianPsi4DFT) {
+            if (brianEnableDFT) {
                 brianStoreGridDataInto = nullptr;
             }
 #endif
@@ -2736,17 +2734,14 @@ void StandardGridMgr::Initialize_SG1() {
         {row1spec, 50, 3752, 0}, {row2spec, 50, 3816, 0}, {row3spec, 50, 3760, 0}, {row4spec, 50, 7828, 0}};
 
 #ifdef USING_BrianQC
-    const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
-    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
-    
-    if (brianPsi4DFT) {
+    if (brianEnableDFT) {
         brianStandardGrids[1].resize(19);
     }
 #endif
 
     for (int Z = 1; Z <= 18; Z++) {
 #ifdef USING_BrianQC
-        if (brianPsi4DFT) {
+        if (brianEnableDFT) {
             brianStoreGridDataInto = &(brianStandardGrids[1][Z]);
         }
 #endif
@@ -2759,7 +2754,7 @@ void StandardGridMgr::Initialize_SG1() {
         SG1_grids_[Z] = grid;
         SG1_sizes_[Z] = spec.npts;
 #ifdef USING_BrianQC
-        if (brianPsi4DFT) {
+        if (brianEnableDFT) {
             brianStoreGridDataInto = nullptr;
         }
 #endif
@@ -3742,9 +3737,6 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
 #ifdef USING_BrianQC
     std::vector<std::vector<double>> atomRotations(molecule_->natom());
     std::vector<std::vector<BrianBlock>> atomBlocks(molecule_->natom());
-    
-    const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
-    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
 #endif
 
 // Iterate over atoms
@@ -3754,7 +3746,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         double stratmannCutoff = nuc.GetStratmannCutoff(A);
         
 #ifdef USING_BrianQC
-        if (brianCookie != 0 and brianPsi4DFT) {
+        if (brianCookie != 0 and brianEnableDFT) {
             std::shared_ptr<Matrix> rotationMatrix = orientation_->transpose();
             atomRotations[A] = std::vector<double>(rotationMatrix->get_pointer(0), rotationMatrix->get_pointer(0) + 9);
         }
@@ -3787,7 +3779,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                 const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
                 
 #ifdef USING_BrianQC
-                if (brianCookie != 0 and brianPsi4DFT) {
+                if (brianCookie != 0 and brianEnableDFT) {
                     if (currentBlockIndex == -1 or atomBlocks[A][currentBlockIndex].angularPoints.size() != numAngPts) {
                         atomBlocks[A].push_back(BrianBlock());
                         currentBlockIndex++;
@@ -3817,7 +3809,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         } else {
             assert(opt.namedGrid == 0 || opt.namedGrid == 1);
 #ifdef USING_BrianQC
-            if (brianCookie != 0 and brianPsi4DFT) {
+            if (brianCookie != 0 and brianEnableDFT) {
                 atomBlocks[A] = brianStandardGrids.at(opt.namedGrid).at(Z);
             }
 #endif
@@ -3838,7 +3830,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
     
 #ifdef USING_BrianQC
     // TODO: do the same for the other version of buildGridFromOptions below
-    if (brianCookie != 0 and brianPsi4DFT) {
+    if (brianCookie != 0 and brianEnableDFT) {
         BrianGrid brianGrid;
         brianInt atomBlockOffset = 0;
         brianInt radialOffset = 0;

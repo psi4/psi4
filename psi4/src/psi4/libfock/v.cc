@@ -64,6 +64,7 @@
 #include <brian_scf.h>
 extern void checkBrian();
 extern BrianCookie brianCookie;
+extern bool brianEnableDFT;
 
 struct brianGrid {
     std::vector<brianInt> atomBlockCounts;
@@ -174,9 +175,7 @@ void VBase::initialize() {
     }
     
 #ifdef USING_BrianQC
-    const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
-    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
-    if (brianCookie != 0 and brianPsi4DFT)
+    if (brianCookie != 0 and brianEnableDFT)
     {
         static const std::map<std::string, brianInt> functionalIDMap = {
             {"XC_GGA_X_AIRY", BRIAN_FUNCTIONAL_GGA_AIRY_X},
@@ -1267,9 +1266,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     }
     
 #ifdef USING_BrianQC
-    const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
-    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
-    if (brianCookie != 0 and brianPsi4DFT) {
+    if (brianCookie != 0 and brianEnableDFT) {
         double DFTEnergy;
         
         brianSCFBuildFockDFT(&brianCookie,
@@ -2407,9 +2404,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
     }
     
 #ifdef USING_BrianQC
-    const char* brianPsi4DFTEnv = getenv("BRIANQC_PSI4_DFT");
-    bool brianPsi4DFT = brianPsi4DFTEnv ? (bool)atoi(brianPsi4DFTEnv) : true;
-    if (brianCookie != 0 and brianPsi4DFT) {
+    if (brianCookie != 0 and brianEnableDFT) {
         double DFTEnergy;
         brianSCFBuildFockDFT(&brianCookie,
             D_AO_[0]->get_pointer(0),
