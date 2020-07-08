@@ -26,7 +26,6 @@
 # @END LICENSE
 #
 
-import string
 import sys
 import time
 import numpy as np
@@ -44,7 +43,7 @@ except ImportError:
 
 
 class IPIBroker(Client):
-    def __init__(self, LOT, options, serverdata=False, molecule=None):
+    def __init__(self, LOT, options=None, serverdata=False, molecule=None):
         self.serverdata = serverdata
         if not ipi_available:
             psi4.core.print_out("i-pi is not available for import: ")

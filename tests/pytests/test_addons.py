@@ -108,7 +108,7 @@ def test_gdma():
 @pytest.mark.smoke
 def test_ipi_broker1():
     """ipi_broker1"""
-    from psi4.driver.broker import ipi_broker
+
     water = psi4.geometry("""
       O -1.216  -0.015  -0.261
       H -1.946   0.681  -0.378
@@ -126,7 +126,7 @@ def test_ipi_broker1():
     options = {}
 
     #ipi_broker(serverdata="inet:localhost:21340", options=options)
-    b = ipi_broker("ccsd", serverdata=False, options=options)
+    b = psi4.ipi_broker("ccsd", serverdata=False, options=options)
 
     refnuc   =   9.05843673637
     refscf   = -74.9417588868628
@@ -143,8 +143,8 @@ def test_ipi_broker1():
     assert psi4.compare_values(refscf,   psi4.core.variable("SCF total energy"),        5, "SCF energy")
     assert psi4.compare_values(refccsd,  psi4.core.variable("CCSD correlation energy"), 4, "CCSD contribution")
     assert psi4.compare_values(reftotal, psi4.core.variable("Current energy"),          7, "Total energy")
-    assert psi4.compare_values(reftotal, b.pot,                                         7, "Total energy (Broker)")
-    assert psi4.compare_arrays(frc,      b.frc,                                         4, "Total force (Broker)")
+    assert psi4.compare_values(reftotal, b._potential,                                  7, "Total energy (Broker)")
+    assert psi4.compare_arrays(frc,      b._force,                                      4, "Total force (Broker)")
 
     water_mirror = psi4.geometry("""
       O  1.216   0.015   0.261
@@ -161,14 +161,14 @@ def test_ipi_broker1():
     assert psi4.compare_values(refscf,   psi4.core.variable("SCF total energy"),        5, "SCF energy")
     assert psi4.compare_values(refccsd,  psi4.core.variable("CCSD correlation energy"), 4, "CCSD contribution")
     assert psi4.compare_values(reftotal, psi4.core.variable("Current energy"),          7, "Total energy")
-    assert psi4.compare_values(reftotal, b.pot,                                      7, "Total energy (Broker)")
-    assert psi4.compare_arrays(frc,     -b.frc,                                      4, "Total force (Broker)")
+    assert psi4.compare_values(reftotal, b._potential,                                  7, "Total energy (Broker)")
+    assert psi4.compare_arrays(frc,     -b._force,                                      4, "Total force (Broker)")
 
 
 @pytest.mark.smoke
 def test_ipi_broker2():
-    """ipi_broker1"""
-    from psi4.driver.broker import ipi_broker
+    """ipi_broker2"""
+
     # DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
     hcn = psi4.geometry("""
     0 1
@@ -193,11 +193,11 @@ def test_ipi_broker2():
         'd_convergence':        8
     })
 
-    b = ipi_broker("bp86-d2", serverdata=False)
+    b = psi4.ipi_broker("bp86-d2", serverdata=False)
 
     b.calculate_force(engine='libdisp')
 
-    assert psi4.compare_arrays(ref, -b.frc, 6, "Outsourced dft gradients called by name: libdisp")
+    assert psi4.compare_arrays(ref, -b._force, 6, "Outsourced dft gradients called by name: libdisp")
 
 
 @pytest.mark.smoke
