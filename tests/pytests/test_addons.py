@@ -24,6 +24,8 @@ using_erd = pytest.mark.skipif(psi4.addons("erd") is False,
                                 reason="Psi4 not compiled with erd. Rebuild with -DENABLE_erd")
 using_gdma = pytest.mark.skipif(psi4.addons("gdma") is False,
                                 reason="Psi4 not compiled with gdma. Rebuild with -DENABLE_gdma")
+using_ipi = pytest.mark.skipif(psi4.addons("ipi") is False,
+                                reason="Psi4 not detecting i-pi. pip install git+https://github.com/i-pi/i-pi.git@master-py3")
 using_mrcc = pytest.mark.skipif(psi4.addons("mrcc") is False,
                                 reason="Psi4 not detecting MRCC. Add `dmrcc` to envvar PSIPATH or PATH")
 using_pcmsolver = pytest.mark.skipif(psi4.addons("pcmsolver") is False,
@@ -101,6 +103,101 @@ def test_gdma():
     assert psi4.compare_values(ref_energy, energy, 8, "SCF Energy")
     assert psi4.compare_matrices(dmavals, ref_dma_mat, 6, "DMA Distributed Multipoles")
     assert psi4.compare_matrices(totvals, ref_tot_mat, 6, "DMA Total Multipoles")
+
+
+@pytest.mark.smoke
+def test_ipi_broker1():
+    """ipi_broker1"""
+
+    water = psi4.geometry("""
+      O -1.216  -0.015  -0.261
+      H -1.946   0.681  -0.378
+      H -1.332  -0.754   0.283
+      units angstrom
+      no_reorient
+      no_com
+    """)
+
+    psi4.set_options({
+        'basis': 'sto-3g',
+        'reference': 'rhf',
+    })
+
+    options = {}
+
+    #ipi_broker(serverdata="inet:localhost:21340", options=options)
+    b = psi4.ipi_broker("ccsd", serverdata=False, options=options)
+
+    refnuc   =   9.05843673637
+    refscf   = -74.9417588868628
+    refccsd  = -0.04895074370294
+    reftotal = -74.9907096305658
+
+    frc = [[ 0.08704801,  0.1067644 , -0.11170374],
+           [-0.02216499, -0.03279655,  0.03215871],
+           [-0.06488302, -0.07396785,  0.07954503]]
+
+    b.calculate_force()
+
+    assert psi4.compare_values(refnuc,   water.nuclear_repulsion_energy(),              3, "Nuclear repulsion energy")
+    assert psi4.compare_values(refscf,   psi4.core.variable("SCF total energy"),        5, "SCF energy")
+    assert psi4.compare_values(refccsd,  psi4.core.variable("CCSD correlation energy"), 4, "CCSD contribution")
+    assert psi4.compare_values(reftotal, psi4.core.variable("Current energy"),          7, "Total energy")
+    assert psi4.compare_values(reftotal, b._potential,                                  7, "Total energy (Broker)")
+    assert psi4.compare_arrays(frc,      b._force,                                      4, "Total force (Broker)")
+
+    water_mirror = psi4.geometry("""
+      O  1.216   0.015   0.261
+      H  1.946  -0.681   0.378
+      H  1.332   0.754  -0.283
+      units angstrom
+      no_reorient
+      no_com
+    """)
+
+    b.calculate_force()
+
+    assert psi4.compare_values(refnuc,   water_mirror.nuclear_repulsion_energy(),    3, "Nuclear repulsion energy")
+    assert psi4.compare_values(refscf,   psi4.core.variable("SCF total energy"),        5, "SCF energy")
+    assert psi4.compare_values(refccsd,  psi4.core.variable("CCSD correlation energy"), 4, "CCSD contribution")
+    assert psi4.compare_values(reftotal, psi4.core.variable("Current energy"),          7, "Total energy")
+    assert psi4.compare_values(reftotal, b._potential,                                  7, "Total energy (Broker)")
+    assert psi4.compare_arrays(frc,     -b._force,                                      4, "Total force (Broker)")
+
+
+@pytest.mark.smoke
+def test_ipi_broker2():
+    """ipi_broker2"""
+
+    # DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
+    hcn = psi4.geometry("""
+    0 1
+    N    -0.0034118    3.5353926    0.0000000
+    C     0.0751963    2.3707040    0.0000000
+    H     0.1476295    1.3052847    0.0000000
+    no_reorient
+    symmetry c1
+    """)
+
+    ref = [[  0.000471372941,    -0.006768222864,     0.000000000000],
+           [  0.000447936019,    -0.006988081177,    -0.000000000000],
+           [ -0.000919105947,     0.013753536153,    -0.000000000000]]
+
+    psi4.set_options({
+        'scf_type':             'df',
+        'basis':                'cc-pvdz',
+        'freeze_core':          'true',
+        'dft_radial_points':    99,
+        'dft_spherical_points': 302,
+        'e_convergence':        8,
+        'd_convergence':        8
+    })
+
+    b = psi4.ipi_broker("bp86-d2", serverdata=False)
+
+    b.calculate_force(engine='libdisp')
+
+    assert psi4.compare_arrays(ref, -b._force, 6, "Outsourced dft gradients called by name: libdisp")
 
 
 @pytest.mark.smoke

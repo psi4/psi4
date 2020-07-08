@@ -135,6 +135,7 @@ _addons_ = {
     "libefp": which_import("pylibefp", return_bool=True),
     "erd": _CMake_to_Py_boolean("@ENABLE_erd@"),
     "gdma": _CMake_to_Py_boolean("@ENABLE_gdma@"),
+    "ipi": which_import("ipi", return_bool=True),
     "pcmsolver": _CMake_to_Py_boolean("@ENABLE_PCMSolver@"),
     "cppe": which_import("cppe", return_bool=True),
     "simint": _CMake_to_Py_boolean("@ENABLE_simint@"),

@@ -122,6 +122,7 @@ jobs:
                         python=%PYTHON_VERSION% ^
                         qcelemental ^
                         qcengine
+          pip install git+https://github.com/i-pi/i-pi.git@master-py3
           conda list
         displayName: "Install conda packages"
 
