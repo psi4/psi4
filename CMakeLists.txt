@@ -265,6 +265,7 @@ ExternalProject_Add(psi4-core
               -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
               -DENABLE_CYTHONIZE=${ENABLE_CYTHONIZE}
    CMAKE_CACHE_ARGS -DCMAKE_PREFIX_PATH:PATH=${CMAKE_PREFIX_PATH}
+   USES_TERMINAL_BUILD 1
    BUILD_ALWAYS 1)
 
 add_subdirectory(external/downstream)

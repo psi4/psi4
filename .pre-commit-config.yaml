@@ -9,6 +9,6 @@ repos:
     hooks:
       - id: yapf
   - repo: https://github.com/doublify/pre-commit-clang-format.git
-    sha: master
+    rev: master
     hooks:
       - id: clang-format

@@ -1083,6 +1083,11 @@ void Matrix::transpose_this() {
 }
 
 void Matrix::add(const Matrix *const plus) {
+    if (symmetry_ != plus->symmetry_) {
+        std::ostringstream oss;
+        oss << "Trying to add matrices of different symmetry: " << symmetry_ << " and " << plus->symmetry_ << "!";
+        throw PSIEXCEPTION(oss.str());
+    }
     if (nirrep_ != plus->nirrep_) {
         std::ostringstream oss;
         oss << "Trying to add matrices of different number of irreps: " << nirrep_ << " and " << plus->nirrep_ << "!";
@@ -1110,6 +1115,11 @@ void Matrix::add(const Matrix &plus) { add(&plus); }
 void Matrix::add(const SharedMatrix &plus) { add(plus.get()); }
 
 void Matrix::subtract(const Matrix *const plus) {
+    if (symmetry_ != plus->symmetry_) {
+        std::ostringstream oss;
+        oss << "Trying to subtract matrices of different symmetry: " << symmetry_ << " and " << plus->symmetry_ << "!";
+        throw PSIEXCEPTION(oss.str());
+    }
     if (nirrep_ != plus->nirrep_) {
         std::ostringstream oss;
         oss << "Trying to substract matrices of different number of irreps: " << nirrep_ << " and " << plus->nirrep_
@@ -2026,8 +2036,8 @@ void Matrix::pivoted_cholesky(double tol, std::vector<std::vector<int>> &pivot) 
     for (int h = 0; h < nirrep_; ++h) {
         for (int m = 0; m < rowspi_[h]; ++m) {
             for (int n = 0; n < std::min(m + 1, nchol[h]); ++n) {
-              // Psi4 stores matrices as row major, LAPACK as column major
-              L->set(h, m, n, get(h, n, m));
+                // Psi4 stores matrices as row major, LAPACK as column major
+                L->set(h, m, n, get(h, n, m));
             }
         }
     }

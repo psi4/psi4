@@ -63,6 +63,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     prog_full_integration.rst prog_style_py.rst prog_help.rst
     prog_code_intro.rst prog_debug_profile.rst manage_release.rst
     plugin_psi4fockci.rst
+    tdscf.rst
     )
 
     # * compute relative path btwn top_srcdir and objdir/doc/sphinxman
@@ -99,7 +100,18 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCBD}/source/index.rst ${CCBD}/source/contents.rst)
 
     # Static resource png and pdf files
-    set(STATICRES psi4square.png favicon-psi4.ico AlphaMOs.png gdma-2.2.06.pdf Total.png VA.png prflow.001.jpeg prflow.002.jpeg prflow.003.jpeg)
+    set(STATICRES
+      psi4square.png
+      favicon-psi4.ico
+      AlphaMOs.png
+      gdma-2.2.06.pdf
+      Total.png
+      VA.png
+      prflow.001.jpeg
+      prflow.002.jpeg
+      prflow.003.jpeg
+      moxy.png
+      )
     # * copy image and pdf files all over to objdir (configure_file corrupts file)
     foreach(fl ${STATICRES})
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CCSD}/source/resources/${fl} ${CCBD}/source)
@@ -409,4 +421,3 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
         COMMENT "Building abridged html documentation ...")
 
 endif(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
-

@@ -1,40 +1,47 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 undefined 
+                               Psi4 1.4a2.dev670 
 
-                         Git: Rev {tddft_driver} 2b6259a dirty
-
-
-    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
-    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
-    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
-    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
-    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
-    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    J. Chem. Theory Comput. 13(7) pp 3185--3197 (2017).
-    (doi: 10.1021/acs.jctc.7b00174)
+                         Git: Rev {document-tddft} ba91f9e dirty
 
 
-                         Additional Contributions by
-    P. Kraus, H. Kruse, M. H. Lechner, M. C. Schieber, R. A. Shaw,
-    A. Alenaizan, R. Galvelis, Z. L. Glick, S. Lehtola, and J. P. Misiewicz
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 10 June 2020 08:59PM
+    Psi4 started on: Thursday, 11 June 2020 03:34PM
 
-    Process ID: 11380
-    Host:       jeffschriber
-    PSIDATADIR: /Users/jeffschriber/src/psi4-debug-install/share/psi4
+    Process ID: 19012
+    Host:       minazo
+    PSIDATADIR: /home/roberto/Workspace/robertodr/psi4/build_document-tddft/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
   ==> Input File <==
 
 --------------------------------------------------------------------------
-# Excitation energies
+#! td-wb97x singlet excitation energies of methylene (tda)
 
 rhf_wB97X_TDA_cc_pvdz = [0.24888846143844873,
                          0.3136260679219220,
@@ -54,8 +61,6 @@ molecule water{
 O           0.000000    0.000000    0.135446
 H          -0.000000    0.866812   -0.541782
 H          -0.000000   -0.866812   -0.541782
-#no_reorient
-#no_com
 symmetry c1
 }
 
@@ -66,7 +71,7 @@ set {
     d_convergence 8
 }
 
-set TDSCF_STATES_PER_IRREP [10]
+set TDSCF_STATES [10]
 set TDSCF_TDA true
 
 energy('td-wB97X/cc-pvdz')
@@ -74,23 +79,22 @@ energy('td-wB97X/cc-pvdz')
 for n, ref in enumerate(rhf_wB97X_TDA_cc_pvdz):
     ex_en = psi4.variable(f"TD-wB97X ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
     compare_values(ref,ex_en, 4, f"TD-wB97X/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
-
 --------------------------------------------------------------------------
 
 Scratch directory: /tmp/
 
 Scratch directory: /tmp/
 
-*** tstart() called on jeffschriber
-*** at Wed Jun 10 20:59:35 2020
+*** tstart() called on minazo
+*** at Thu Jun 11 15:34:00 2020
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   198 file /Users/jeffschriber/src/psi4-debug-install/share/psi4/basis/cc-pvdz.gbs 
-    atoms 2-3 entry H          line    22 file /Users/jeffschriber/src/psi4-debug-install/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1   entry O          line   198 file /home/roberto/Workspace/robertodr/psi4/build_document-tddft/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /home/roberto/Workspace/robertodr/psi4/build_document-tddft/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
@@ -242,17 +246,17 @@ Scratch directory: /tmp/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter SAD:   -75.82538727182802   -7.58254e+01   0.00000e+00 
-   @RKS iter   1:   -76.24870831810139   -4.23321e-01   2.28250e-02 DIIS
-   @RKS iter   2:   -76.24436550816515    4.34281e-03   2.48492e-02 DIIS
-   @RKS iter   3:   -76.37349533694241   -1.29130e-01   7.85221e-04 DIIS
-   @RKS iter   4:   -76.37369157088359   -1.96234e-04   2.76872e-04 DIIS
-   @RKS iter   5:   -76.37371552281115   -2.39519e-05   3.94776e-05 DIIS
-   @RKS iter   6:   -76.37371627474727   -7.51936e-07   6.41685e-06 DIIS
-   @RKS iter   7:   -76.37371632339119   -4.86439e-08   1.44046e-06 DIIS
-   @RKS iter   8:   -76.37371632570047   -2.30928e-09   1.37516e-07 DIIS
-   @RKS iter   9:   -76.37371632571876   -1.82894e-11   1.77274e-08 DIIS
-   @RKS iter  10:   -76.37371632571895   -1.84741e-13   1.26998e-09 DIIS
+   @RKS iter SAD:   -75.82538727182803   -7.58254e+01   0.00000e+00 
+   @RKS iter   1:   -76.24870831810121   -4.23321e-01   2.28250e-02 DIIS
+   @RKS iter   2:   -76.24436550816512    4.34281e-03   2.48492e-02 DIIS
+   @RKS iter   3:   -76.37349533694226   -1.29130e-01   7.85221e-04 DIIS
+   @RKS iter   4:   -76.37369157088349   -1.96234e-04   2.76872e-04 DIIS
+   @RKS iter   5:   -76.37371552281103   -2.39519e-05   3.94776e-05 DIIS
+   @RKS iter   6:   -76.37371627474715   -7.51936e-07   6.41685e-06 DIIS
+   @RKS iter   7:   -76.37371632339109   -4.86439e-08   1.44046e-06 DIIS
+   @RKS iter   8:   -76.37371632570031   -2.30922e-09   1.37516e-07 DIIS
+   @RKS iter   9:   -76.37371632571869   -1.83746e-11   1.77274e-08 DIIS
+   @RKS iter  10:   -76.37371632571880   -1.13687e-13   1.26998e-09 DIIS
   Energy and wave function converged.
 
 
@@ -280,17 +284,17 @@ Scratch directory: /tmp/
               A 
     DOCC [     5 ]
 
-  @RKS Final Energy:   -76.37371632571895
+  @RKS Final Energy:   -76.37371632571880
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.0023638541353055
-    One-Electron Energy =                -121.0198712300132513
-    Two-Electron Energy =                  43.1406036034158689
-    DFT Exchange-Correlation Energy =      -6.4968125532568779
+    One-Electron Energy =                -121.0198712300129387
+    Two-Electron Energy =                  43.1406036034156841
+    DFT Exchange-Correlation Energy =      -6.4968125532568575
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.3737163257189451
+    Total Energy =                        -76.3737163257188030
 
 Computation Completed
 
@@ -303,23 +307,23 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -1.1273
 
   Electronic Dipole Moment: [e a0]
-     X:    -0.0000      Y:     0.0000      Z:     0.3322
+     X:    -0.0000      Y:    -0.0000      Z:     0.3322
 
   Dipole Moment: [e a0]
-     X:    -0.0000      Y:     0.0000      Z:    -0.7951     Total:     0.7951
+     X:    -0.0000      Y:    -0.0000      Z:    -0.7951     Total:     0.7951
 
   Dipole Moment: [D]
-     X:    -0.0000      Y:     0.0000      Z:    -2.0208     Total:     2.0208
+     X:    -0.0000      Y:    -0.0000      Z:    -2.0208     Total:     2.0208
 
 
-*** tstop() called on jeffschriber at Wed Jun 10 20:59:37 2020
+*** tstop() called on minazo at Thu Jun 11 15:34:02 2020
 Module time:
-	user time   =       2.29 seconds =       0.04 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       2.01 seconds =       0.03 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       2.29 seconds =       0.04 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       2.01 seconds =       0.03 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 
@@ -330,47 +334,65 @@ Total time:
 
   ==> Requested Excitations <==
 
-      10 states with A symmetry
+      10 singlet states with A symmetry
 
   ==> Options <==
 
-     e_tol     :              1e-06
-     r_tol     :              0.0001
-     guess     :              DENOMINATORS
+     r_convergence:              1e-06
+     guess_type:              DENOMINATORS
      restricted:              True
-     triplets  :              0
-     tda       :              True
      ptype     :              tda
 
 
 
-Final Energetic Summary:
-                                    Excitation Energy         Total Energy  
-     #   Sym: GS->ES (Trans)       [au]            [eV]            (au)      
-    ---- -------------------- --------------- --------------- ---------------
-     1         A->A (A)        0.24888         6.77226        -76.12484      
-     2         A->A (A)        0.31363         8.53423        -76.06009      
-     3         A->A (A)        0.34848         9.48266        -76.02524      
-     4         A->A (A)        0.41300         11.23824       -75.96072      
-     5         A->A (A)        0.45629         12.41639       -75.91742      
-     6         A->A (A)        0.58222         15.84290       -75.79150      
-     7         A->A (A)        0.71925         19.57181       -75.65447      
-     8         A->A (A)        0.75329         20.49815       -75.62042      
-     9         A->A (A)        0.83260         22.65611       -75.54112      
-     10        A->A (A)        0.84182         22.90705       -75.53190      
+                         Generalized Davidson Solver                         
+                               By Ruhee Dcunha                               
 
-    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 1 EXCITATION ENERGY - A SYMMETRY..PASSED
-    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 2 EXCITATION ENERGY - A SYMMETRY..PASSED
-    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 3 EXCITATION ENERGY - A SYMMETRY..PASSED
-    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 4 EXCITATION ENERGY - A SYMMETRY..PASSED
-    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 5 EXCITATION ENERGY - A SYMMETRY..PASSED
-    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 6 EXCITATION ENERGY - A SYMMETRY..PASSED
-    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 7 EXCITATION ENERGY - A SYMMETRY..PASSED
-    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 8 EXCITATION ENERGY - A SYMMETRY..PASSED
-    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 9 EXCITATION ENERGY - A SYMMETRY..PASSED
-    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 10 EXCITATION ENERGY - A SYMMETRY.PASSED
+  ==> Options <==
 
-    Psi4 stopped on: Wednesday, 10 June 2020 08:59PM
-    Psi4 wall time for execution: 0:00:06.17
+    Maxiter                         = 60   
+    Eigenvector tolerance           = 1.00000e-06
+    Max number of expansion vectors = 1500 
+
+  => Iterations <=
+                           Max[D[value]]     Max[|R|]   # vectors
+  DavidsonSolver iter   1:   8.42957e-01  7.03883e-02     40      
+  DavidsonSolver iter   2:   2.70401e-03  2.42998e-03     50      
+  DavidsonSolver iter   3:   1.71329e-06  1.97103e-04     60      
+  DavidsonSolver iter   4:   2.99649e-09  1.04489e-05     70      
+  DavidsonSolver iter   5:   1.13910e-11  7.16840e-07     77      Converged
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********  Length-gauge rotatory strengths are **NOT** gauge-origin invariant  **********
+******************************************************************************************
+
+                                    Excitation Energy         Total Energy        Oscillator Strength             Rotatory Strength       
+     #   Sym: GS->ES (Trans)        au              eV              au          au (length)    au (velocity)    au (length)    au (velocity) 
+    ---- -------------------- --------------- --------------- --------------- --------------- --------------- --------------- ---------------
+     1        A->A (1 A)       0.24888         6.77226        -76.12484        0.0115          0.1095         -0.0000          0.0000        
+     2        A->A (1 A)       0.31363         8.53423        -76.06009        0.0000          0.0000          0.0000          0.0000        
+     3        A->A (1 A)       0.34848         9.48266        -76.02524        0.0959          0.1190         -0.0000         -0.0000        
+     4        A->A (1 A)       0.41300         11.23824       -75.96072        0.0470          0.0137          0.0000          0.0000        
+     5        A->A (1 A)       0.45629         12.41639       -75.91742        0.5107          0.3505          0.0000          0.0000        
+     6        A->A (1 A)       0.58222         15.84290       -75.79150        0.2592          0.1462          0.0000          0.0000        
+     7        A->A (1 A)       0.71925         19.57181       -75.65447        0.0000          0.0000         -0.0000         -0.0000        
+     8        A->A (1 A)       0.75329         20.49815       -75.62042        0.0760          0.0527         -0.0000         -0.0000        
+     9        A->A (1 A)       0.83260         22.65611       -75.54112        0.0890          0.0321         -0.0000          0.0000        
+     10       A->A (1 A)       0.84182         22.90705       -75.53190        0.0004          0.0108          0.0000          0.0000        
+
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 1 EXCITATION ENERGY - A SYMMETRY......................PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 2 EXCITATION ENERGY - A SYMMETRY......................PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 3 EXCITATION ENERGY - A SYMMETRY......................PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 4 EXCITATION ENERGY - A SYMMETRY......................PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 5 EXCITATION ENERGY - A SYMMETRY......................PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 6 EXCITATION ENERGY - A SYMMETRY......................PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 7 EXCITATION ENERGY - A SYMMETRY......................PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 8 EXCITATION ENERGY - A SYMMETRY......................PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 9 EXCITATION ENERGY - A SYMMETRY......................PASSED
+    TD-wB97X/cc-pvdz ROOT 0 -> ROOT 10 EXCITATION ENERGY - A SYMMETRY.....................PASSED
+
+    Psi4 stopped on: Thursday, 11 June 2020 03:34PM
+    Psi4 wall time for execution: 0:00:06.79
 
 *** Psi4 exiting successfully. Buy a developer a beer!

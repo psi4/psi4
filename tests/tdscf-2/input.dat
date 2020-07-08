@@ -24,9 +24,7 @@ set {
     scf_type pk
     e_convergence 8
     d_convergence 8
-    TDSCF_E_TOL 5
-    TDSCF_STATES_PER_IRREP [9]
-    TDSCF_TRIPLETS true
+    TDSCF_STATES [9]
     TDSCF_TDA true
 }
 

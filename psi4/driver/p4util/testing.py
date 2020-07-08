@@ -176,7 +176,7 @@ def _mergedapis_compare_wavefunctions(expected, computed, *args, **kwargs):
 def _psi4_true_raise_handler(passfail, label, message, return_message=False, quiet=False):
     """Handle comparison result by printing to screen, printing to Psi output file, raising TestComparisonError, and (incidently) returning."""
 
-    width = 66
+    width = 86
     if passfail:
         if not quiet:
             core.print_out(f'    {label:.<{width}}PASSED\n')

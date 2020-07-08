@@ -30,8 +30,6 @@ import numpy as np
 
 from psi4 import core
 from psi4.driver.p4util.exceptions import *
-
-
 """
 This module provides ``engine`` objects that can be used by the :func:`~psi4.driver.p4util.solvers.davidson_solver` and
 :func:`~psi4.driver.p4util.solvers.hamiltonian_solver`
@@ -171,23 +169,22 @@ class ProductCache:
 class TDRSCFEngine(SingleMatPerVector):
     """Engine for R(HF/KS) products
 
-    Fulfills the API required by :class:`~psi4.driver.p4uitl.solvers.SolverEngine`
+    Fulfills the API required by :class:`~psi4.driver.p4util.solvers.SolverEngine`
 
 
     Parameters
     ----------
     wfn : :py:class:`psi4.core.Wavefunction`
         The converged SCF wfn
-    ptype : str {'rpa', 'tda'}
+    ptype : {'rpa', 'tda'}
         The product type to be evaluated. When ``ptype == 'rpa'``. The return of `compute_products` will be as
         expected by :func:`~psi4.driver.p4util.solvers.hamiltonian_solver`, when ``ptype == 'tda'`` the return of
         compute_products will be as expected by :func:`~psi4.driver.p4util.solvers.davidson_solver`.
     triplet : bool , optional
         Are products spin-adapted for triplet excitations?
-
     """
 
-    def __init__(self, wfn, ptype, triplet=False):
+    def __init__(self, wfn, *, ptype, triplet=False):
 
         # primary data
         self.wfn = wfn
@@ -195,7 +192,7 @@ class TDRSCFEngine(SingleMatPerVector):
         self.needs_K_like = self.wfn.functional().is_x_hybrid() or self.wfn.functional().is_x_lrc()
 
         if self.ptype not in ["rpa", "tda"]:
-            raise KeyError("Product type {} not understood".format(self.ptype))
+            raise KeyError(f"Product type {self.ptype} not understood")
 
         # product type
         self.singlet = not triplet
@@ -213,6 +210,9 @@ class TDRSCFEngine(SingleMatPerVector):
 
         # ground state symmetry
         self.G_gs = 0
+
+        # ground state spin multiplicity
+        self.mult_gs = wfn.molecule().multiplicity()
 
         # excited state symmetry
         self.G_es = None
@@ -310,6 +310,15 @@ class TDRSCFEngine(SingleMatPerVector):
             v.set(h, oidx, vidx, 1.0)
             guess_vectors.append(v)
         return guess_vectors
+
+    def residue(self, X, so_prop_ints):
+        # return zeros if spin multiplicity of GS and ES differ
+        if not self.singlet and (self.mult_gs == 1):
+            return np.zeros(len(so_prop_ints))
+
+        prop = [core.triplet(self.Co, x, self.Cv, True, False, False) for x in so_prop_ints]
+
+        return np.sqrt(2.0) * np.array([X.vector_dot(u) for u in prop])
 
     ## Helper functions
 
@@ -409,7 +418,7 @@ class TDRSCFEngine(SingleMatPerVector):
 class TDUSCFEngine(PairedMatPerVector):
     """Engine for U(HF/KS) products
 
-    Fulfills the API required by :class:`~psi4.driver.p4uitl.solvers.SolverEngine`
+    Fulfills the API required by :class:`~psi4.driver.p4util.solvers.SolverEngine`
 
     Parameters
     ----------
@@ -422,7 +431,7 @@ class TDUSCFEngine(PairedMatPerVector):
 
     """
 
-    def __init__(self, wfn, ptype):
+    def __init__(self, wfn, *, ptype):
 
         # Primary data
         self.wfn = wfn
@@ -500,8 +509,8 @@ class TDUSCFEngine(PairedMatPerVector):
 
         Fx = self._pair_onel(self.wfn.onel_Hx(vec_flat))
         twoel = self.wfn.twoel_Hx(vec_flat, False, "SO")
-
         Jx, Kx = self._split_twoel(twoel)
+
         if self.ptype == "rpa":
             H1X_new, H2X_new = self._combine_H1_H2(Fx, Jx, Kx)
             for H1x in H1X_new:
@@ -557,6 +566,12 @@ class TDUSCFEngine(PairedMatPerVector):
         self.G_es = symmetry
         self._build_prec()
         self.product_cache.reset()
+
+    def residue(self, X, so_prop_ints):
+        prop_a = [core.triplet(self.Co[0], x, self.Cv[0], True, False, False) for x in so_prop_ints]
+        prop_b = [core.triplet(self.Co[1], x, self.Cv[1], True, False, False) for x in so_prop_ints]
+
+        return np.array([X[0].vector_dot(u[0]) + X[1].vector_dot(u[1]) for u in zip(prop_a, prop_b)])
 
     ## Helper Functions
 
