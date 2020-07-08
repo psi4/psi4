@@ -16,8 +16,7 @@ if(${ENABLE_cct3})
 
         ExternalProject_Add(cct3_external
             DEPENDS psi4-core
-            #URL https://github.com/piecuch-group/cct3/archive/master.tar.gz
-            URL https://github.com/loriab/psi4_cct3/archive/cmake.tar.gz
+            URL https://github.com/piecuch-group/cct3/archive/master.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
