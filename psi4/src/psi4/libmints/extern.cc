@@ -97,28 +97,73 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
     auto V = std::make_shared<Matrix>("External Potential", n, n);
     auto fact = std::make_shared<IntegralFactory>(basis, basis, basis, basis);
 
+    // Thread count
+    int nthreads = 1;
+#ifdef _OPENMP
+    nthreads = Process::environment.get_n_threads();
+#endif
+
     double convfac = 1.0;
     if (basis->molecule()->units() == Molecule::Angstrom) convfac /= pc_bohr2angstroms;
 
     // Monopoles
     auto V_charge = std::make_shared<Matrix>("External Potential (Charges)", n, n);
+    double **V_charge_p = V_charge->pointer();
 
     auto Zxyz = std::make_shared<Matrix>("Charges (Z,x,y,z)", charges_.size(), 4);
     double **Zxyzp = Zxyz->pointer();
-    for (size_t i = 0; i < charges_.size(); i++) {
+    for (size_t i = 0; i < charges_.size(); ++i) {
         Zxyzp[i][0] = std::get<0>(charges_[i]);
         Zxyzp[i][1] = convfac * std::get<1>(charges_[i]);
         Zxyzp[i][2] = convfac * std::get<2>(charges_[i]);
         Zxyzp[i][3] = convfac * std::get<3>(charges_[i]);
     }
 
-    std::shared_ptr<PotentialInt> pot(static_cast<PotentialInt *>(fact->ao_potential()));
-    pot->set_charge_field(Zxyz);
-    pot->compute(V_charge);
+    std::vector<std::shared_ptr<PotentialInt> > pot;
+    for (size_t t = 0; t < nthreads; ++t) {
+        pot.push_back(std::shared_ptr<PotentialInt>(static_cast<PotentialInt *>(fact->ao_potential())));
+        pot[t]->set_charge_field(Zxyz);
+    }
+
+    // Monopole potential is symmetric, so generate unique pairs of shells
+    std::vector<std::pair<size_t, size_t> > ij_pairs;
+    for (size_t i = 0; i < basis->nshell(); ++i) {
+        for (size_t j = 0; j <= i; ++j) {
+            ij_pairs.push_back(std::pair<size_t, size_t>(i, j));
+        }
+    }
+
+    // Calculate monopole potential
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+    for (size_t p = 0; p < ij_pairs.size(); ++p) {
+        size_t i = ij_pairs[p].first;
+        size_t j = ij_pairs[p].second;
+        size_t ni = basis->shell(i).nfunction();
+        size_t nj = basis->shell(j).nfunction();
+        size_t index_i = basis->shell(i).function_index();
+        size_t index_j = basis->shell(j).function_index();
+
+        size_t rank = 0;
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+
+        const double *buffer = pot[rank]->buffer();
+        pot[rank]->compute_shell(i, j);
+
+        size_t index = 0;
+        for (size_t ii = index_i; ii < (index_i + ni); ++ii) {
+            for (size_t jj = index_j; jj < (index_j + nj); ++jj) {
+                V_charge_p[ii][jj] = V_charge_p[jj][ii] = buffer[index++];
+            }
+        }
+    } // p
 
     V->add(V_charge);
     V_charge.reset();
-    pot.reset();
+    for (size_t t = 0; t < nthreads; ++t) {
+        pot[t].reset();
+    }
 
     // Diffuse Bases
     for (size_t ind = 0; ind < bases_.size(); ind++) {
