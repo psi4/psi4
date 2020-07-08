@@ -4109,6 +4109,7 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
     for (auto key : region_names) {
         if (opt.prunescheme == key) {
             opt.prunetype = "REGION";
+            opt.prunefunction = RadialPruneMgr::WhichPruneFunction("FLAT");
         }
     }
     for (auto key : function_names) {
