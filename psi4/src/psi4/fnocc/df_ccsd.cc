@@ -535,21 +535,22 @@ double DFCoupledCluster::CheckEnergy() {
                     long int ijab = a * v * o * o + b * o * o + i * o + j;
                     long int iajb = i * v * v * o + a * v * o + j * v + b;
                     long int jaib = j * v * v * o + a * v * o + i * v + b;
-                    energy += (2.0 * integrals[iajb] - integrals[jaib]) * (tb[ijab] + t1[a * o + i] * t1[b * o + j]);
-                    pairsp[i][j] += (2.0 * integrals[iajb] - integrals[jaib]) * (tb[ijab] + t1[a * o + i] * t1[b * o + j]);
+                    double energy_contribution = (2.0 * integrals[iajb] - integrals[jaib]) * (tb[ijab] + t1[a * o + i] * t1[b * o + j]);
+                    energy += energy_contribution;
+                    pairsp[i][j] += energy_contribution;
                 }
             }
         }
     }
 
-    set_array_variable("CCSD PAIR ENERGIES", pairs)
+    set_array_variable("CCSD PAIR ENERGIES", pairs);
 
-    for (int i = 0; i < pairsp.size(); i++) {
-        for (int j = 0; j < pairsp[i].size(); j++) {
-            outfile->Printf(" %15.10f ", pairsp[i][j]);
-        }
-        outfile->Printf("\n");
-    }
+//    for (int i = 0; i < o; i++) {
+//        for (int j = 0; j < o; j++) {
+//            outfile->Printf(" %15.10f ", pairsp[i][j]);
+//        }
+//        outfile->Printf("\n");
+//    }
 
     return energy;
 }
