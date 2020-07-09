@@ -40,7 +40,6 @@
 namespace psi {
 
 namespace psimrcc {
-extern MemoryManager* memory_manager;
 
 double CCMatrix::fraction_of_memory_for_buffer = 0.05;
 

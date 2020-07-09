@@ -58,7 +58,6 @@ PRAGMA_WARNING_POP
 
 namespace psi {
 namespace psimrcc {
-extern MemoryManager* memory_manager;
 
 /**
  * Reads and IWL buffer and sorts the two-electron integrals
@@ -69,11 +68,10 @@ extern MemoryManager* memory_manager;
  */
 void CCTransform::presort_integrals() {
     outfile->Printf("\n\n  Presorting two-electron integrals from IWL buffer");
-    outfile->Printf("\n    Memory available                       = %14lu bytes",
-                    (size_t)memory_manager->get_FreeMemory());
+    outfile->Printf("\n    Memory available                       = %14lu bytes", wfn_->free_memory_);
 
     size_t presort_memory =
-        static_cast<size_t>(static_cast<double>(memory_manager->get_FreeMemory()) * fraction_of_memory_for_presorting);
+        static_cast<size_t>(static_cast<double>(wfn_->free_memory_) * fraction_of_memory_for_presorting);
     outfile->Printf("\n    Memory available for presorting        = %14lu bytes (%.1f%%)", (size_t)presort_memory,
                     fraction_of_memory_for_presorting * 100.0);
 
@@ -88,7 +86,7 @@ void CCTransform::presort_integrals() {
 
     outfile->Printf("\n    Memory required for in-core presort    = %14lu bytes", (size_t)memory_required);
 
-    if (memory_required < static_cast<size_t>(3) * memory_manager->get_FreeMemory()) {
+    if (memory_required < static_cast<size_t>(3) * wfn_->free_memory_) {
         outfile->Printf("\n    Presorting is not required");
     }
 

@@ -48,7 +48,6 @@
 // PSI libraries
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libpsi4util/memory_manager.h"
 #include "psi4/libqt/qt.h"
 
 #include "blas.h"
@@ -66,7 +65,6 @@ namespace psi {
 
 namespace psimrcc {
 // Global variables - created in compute_energy
-MemoryManager *memory_manager;
 
 SharedWavefunction psimrcc(SharedWavefunction ref_wfn, Options &options) {
     using namespace psi::psimrcc;

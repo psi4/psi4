@@ -33,14 +33,12 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libpsi4util/memory_manager.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "special_matrices.h"
 
 namespace psi {
 namespace psimrcc {
-extern MemoryManager* memory_manager;
 
 MatrixBase::MatrixBase(size_t nrows_, size_t ncols_) : nrows(nrows_), ncols(ncols_), matrix(nullptr) {
     matrix = block_matrix(nrows, ncols);

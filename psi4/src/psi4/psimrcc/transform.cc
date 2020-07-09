@@ -53,7 +53,6 @@
 
 namespace psi {
 namespace psimrcc {
-extern MemoryManager* memory_manager;
 
 CCTransform::CCTransform(std::shared_ptr<PSIMRCCWfn> wfn) : fraction_of_memory_for_presorting(0.75), wfn_(wfn) {
     wfn_->blas()->add_index("[s>=s]");
@@ -435,7 +434,7 @@ void CCTransform::allocate_tei_mo() {
                 size_t block_size = INDEX(indexing->get_pairpi(h) - 1, indexing->get_pairpi(h) - 1) + 1;
                 tei_mo[h] = std::vector<double>(block_size, 0);
                 outfile->Printf("\n\tCCTransform: allocated the %s block of size %lu bytes (free memory = %14lu bytes)",
-                                wfn_->moinfo()->get_irr_labs(h).c_str(), block_size, memory_manager->get_FreeMemory());
+                                wfn_->moinfo()->get_irr_labs(h).c_str(), block_size, wfn_->free_memory_);
             }
         }
     }
@@ -453,7 +452,7 @@ void CCTransform::allocate_tei_so() {
                 int block_size = INDEX(indexing->get_pairpi(h) - 1, indexing->get_pairpi(h) - 1) + 1;
                 tei_so[h] = std::vector<double>(block_size, 0);
                 outfile->Printf("\n\tCCTransform: allocated the %s block of size %d bytes (free memory = %14lu bytes)",
-                                wfn_->moinfo()->get_irr_labs(h).c_str(), block_size, memory_manager->get_FreeMemory());
+                                wfn_->moinfo()->get_irr_labs(h).c_str(), block_size, wfn_->free_memory_);
             }
         }
     }

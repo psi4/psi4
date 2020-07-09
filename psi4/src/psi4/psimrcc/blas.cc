@@ -31,6 +31,7 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libpsi4util/process.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 
@@ -41,7 +42,6 @@
 namespace psi {
 
 namespace psimrcc {
-extern MemoryManager* memory_manager;
 
 CCBLAS::CCBLAS(std::shared_ptr<PSIMRCCWfn> wfn, Options& options) : wfn_(wfn), options_(options), full_in_core(false), work_size(0), buffer_size(0) { init(); }
 
@@ -76,8 +76,7 @@ void CCBLAS::allocate_work() {
     }
     // Allocate the temporary work space
     work = std::vector<std::vector<double>>(options_.get_int("CC_NUM_THREADS"), std::vector<double>(work_size, 0));
-    outfile->Printf("\n  Allocated work array of size %ld (%.2f MiB)", work_size * sizeof(double),
-                    type_to_MiB<double>(work_size));
+    outfile->Printf("\n  Allocated work array of size %.2f MiB", work_size * sizeof(double) / 1048576.0);
 }
 
 void CCBLAS::allocate_buffer() {
@@ -87,15 +86,14 @@ void CCBLAS::allocate_buffer() {
 
     // Compute the temporary buffer space size, 101% of the actual strip size
     buffer_size = static_cast<size_t>(1.01 * CCMatrix::fraction_of_memory_for_buffer *
-                                      static_cast<double>(memory_manager->get_FreeMemory()) /
+                                      static_cast<double>(wfn_->free_memory_) /
                                       static_cast<double>(sizeof(double)));
 
     // Allocate the temporary buffer space
     for (int n = 0; n < options_.get_int("CC_NUM_THREADS"); n++) {
         buffer[n] = std::vector<double>(buffer_size, 0);
     }
-    outfile->Printf("\n  Allocated buffer array of size %ld (%.2f MiB)", buffer_size * sizeof(double),
-                    type_to_MiB<double>(buffer_size));
+    outfile->Printf("\n  Allocated buffer array of size %.2f MiB", buffer_size * sizeof(double) / 1048576.0);
 }
 
 void CCBLAS::free_sortmap() {
@@ -242,17 +240,15 @@ int CCBLAS::compute_storage_strategy() {
     outfile->Printf("\n\n  Computing storage strategy:");
 
     // N.B. Here I am using bytes as the basic unit
-    size_t available_memory = memory_manager->get_FreeMemory();
     double fraction_for_in_core = 0.97;  // Fraction of the total available memory that may be used
-    size_t storage_memory = static_cast<size_t>(static_cast<double>(available_memory) * fraction_for_in_core);
+    size_t storage_memory = static_cast<size_t>(static_cast<double>(wfn_->free_memory_) * fraction_for_in_core);
     size_t fully_in_core_memory = 0;
     size_t integrals_memory = 0;
     size_t fock_memory = 0;
     size_t others_memory = 0;
 
-    outfile->Printf("\n    Input memory                           = %14lu bytes",
-                    (size_t)memory_manager->get_MaximumAllowedMemory());
-    outfile->Printf("\n    Free memory                            = %14lu bytes", (size_t)available_memory);
+    outfile->Printf("\n    Input memory                           = %14lu bytes", Process::environment.get_memory());
+    outfile->Printf("\n    Free memory                            = %14lu bytes", wfn_->free_memory_);
     outfile->Printf("\n    Free memory available for matrices     = %14lu bytes (%3.0f%%)", (size_t)storage_memory,
                     fraction_for_in_core * 100.0);
 

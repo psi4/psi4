@@ -29,7 +29,6 @@
 #include "psi4/psifiles.h"
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libpsi4util/memory_manager.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsio/psio.hpp"
@@ -50,6 +49,8 @@ PSIMRCCWfn::PSIMRCCWfn(SharedWavefunction ref_wfn, Options &options) : Wavefunct
 	shallow_copy(ref_wfn);
     moinfo_ = std::make_shared<MOInfo>(*(ref_wfn.get()), options);
     moinfo_->setup_model_space();
+    memory_ = Process::environment.get_memory();
+    free_memory_ = memory_;
 }
 
 void PSIMRCCWfn::active_space_warning() const {
@@ -84,8 +85,6 @@ double PSIMRCCWfn::compute_energy() {
     // plugins so you don't create a maintainability problem when you're no longer working on the code.
     // Look on this module, ye mighty, and despair.
 
-    auto memory_manager = std::make_shared<MemoryManager>(Process::environment.get_memory());
-
     // Ideally, this would go in the constructor, but shared_from_this won't work until after construction.
     if (blas_ == nullptr) {
         blas_ = std::make_shared<CCBLAS>(std::dynamic_pointer_cast<PSIMRCCWfn>(shared_from_this()), options_);
@@ -115,8 +114,6 @@ double PSIMRCCWfn::compute_energy() {
     outfile->Printf("\n\n  PSIMRCC job completed.");
     outfile->Printf("\n  Wall Time = %20.6f s", global_timer);
     outfile->Printf("\n  GEMM Time = %20.6f s", moinfo_->get_dgemm_timing());
-    
-    memory_manager->MemCheck("outfile");
 
     _default_psio_lib_->close(PSIF_PSIMRCC_INTEGRALS, 1);
 

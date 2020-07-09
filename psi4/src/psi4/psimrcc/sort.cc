@@ -36,7 +36,6 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libpsi4util/memory_manager.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.h"
@@ -49,7 +48,6 @@
 
 namespace psi {
 namespace psimrcc {
-extern MemoryManager* memory_manager;
 
 CCSort::CCSort(std::shared_ptr<PSIMRCCWfn> wfn, SortAlgorithm algorithm)
     : fraction_of_memory_for_sorting(0.5), nfzc(0), efzc(0.0), wfn_(wfn) {

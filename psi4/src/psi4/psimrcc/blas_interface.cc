@@ -40,7 +40,6 @@
 namespace psi {
 
 namespace psimrcc {
-extern MemoryManager* memory_manager;
 
 void CCBLAS::add_index(const char* cstr) {
     // Make sure that the element that we are adding is not present
@@ -226,7 +225,7 @@ void CCBLAS::load_irrep(CCMatrix* Matrix, int h) {
 }
 
 void CCBLAS::make_space(size_t memory_required) {
-    if (memory_required < memory_manager->get_FreeMemory())
+    if (memory_required < wfn_->free_memory_)
         return;
     else {
         outfile->Printf("\nCCBLAS::make_space() not implemented yet!!!");

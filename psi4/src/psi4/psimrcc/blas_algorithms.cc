@@ -36,8 +36,6 @@ namespace psi {
 
 namespace psimrcc {
 
-extern MemoryManager* memory_manager;
-
 void CCBLAS::zero(const char* cstr) {
     std::string str(cstr);
     // To zero diagonals of things like "Fae[v][v]{u}"

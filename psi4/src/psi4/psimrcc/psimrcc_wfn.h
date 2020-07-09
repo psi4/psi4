@@ -51,6 +51,8 @@ class PSIMRCCWfn : public Wavefunction {
      // Methods
      const std::shared_ptr<MOInfo> moinfo() const { return moinfo_; }
      const std::shared_ptr<CCBLAS> blas() const { return blas_; }
+     // Estimate the free memory.
+     size_t free_memory_;
 
     protected:
      // Class members

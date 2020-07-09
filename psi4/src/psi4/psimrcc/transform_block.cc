@@ -56,7 +56,6 @@ PRAGMA_WARNING_POP
 
 namespace psi {
 namespace psimrcc {
-extern MemoryManager *memory_manager;
 
 /**
  * Read at least one block of the two electron MO integrals from an iwl buffer assuming Pitzer ordering and store them
@@ -88,7 +87,7 @@ int CCTransform::allocate_tei_mo_block(int first_irrep) {
     }
 
     size_t available_transform_memory =
-        static_cast<size_t>(static_cast<double>(memory_manager->get_FreeMemory()) * fraction_of_memory_for_presorting);
+        static_cast<size_t>(static_cast<double>(wfn_->free_memory_) * fraction_of_memory_for_presorting);
 
     int last_irrep = first_irrep;
     

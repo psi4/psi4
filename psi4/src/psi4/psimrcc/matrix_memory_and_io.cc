@@ -54,7 +54,6 @@ PRAGMA_WARNING_POP
 namespace psi {
 
 namespace psimrcc {
-extern MemoryManager *memory_manager;
 
 /*********************************************************
   Memory Allocation Routines
@@ -95,7 +94,7 @@ void CCMatrix::allocate_memory() {
 void CCMatrix::allocate_block(int h) {
     if (block_sizepi[h] > 0) {
         if (!is_block_allocated(h)) {
-            if (memorypi2[h] < memory_manager->get_FreeMemory()) {
+            if (memorypi2[h] < wfn_->free_memory_) {
                 matrix[h] = block_matrix(left_pairpi[h], right_pairpi[h]);
             } else {
                 outfile->Printf("\n\nNot enough memory to allocate irrep %d of %s\n", h, label.c_str());
@@ -172,8 +171,8 @@ void CCMatrix::write_block_to_disk(int h) {
             //       disk",label.c_str(),h); outfile->Printf("\n    This is a %d x %d
             //       block",left_pairpi[h],right_pairpi[h]);
             // for two electron integrals store strips of the symmetry block on disk
-            size_t max_strip_size = static_cast<size_t>(fraction_of_memory_for_buffer *
-                                                        static_cast<double>(memory_manager->get_FreeMemory()));
+            auto max_strip_size = static_cast<size_t>(fraction_of_memory_for_buffer *
+                                                        static_cast<double>(wfn_->free_memory_));
 
             int strip = 0;
             size_t last_row = 0;

@@ -37,7 +37,6 @@
 
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libpsi4util/memory_manager.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "index.h"
@@ -45,8 +44,6 @@
 namespace psi {
 
 namespace psimrcc {
-
-extern MemoryManager* memory_manager;
 
 CCIndex::CCIndex(std::shared_ptr<PSIMRCCWfn> wfn, std::string str)
     : label(str),

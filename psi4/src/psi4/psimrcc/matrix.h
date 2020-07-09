@@ -34,7 +34,6 @@
  *  A multireference coupled cluster code
  ***************************************************************************/
 
-#include "psi4/libpsi4util/memory_manager.h"
 #include <vector>
 #include <string>
 

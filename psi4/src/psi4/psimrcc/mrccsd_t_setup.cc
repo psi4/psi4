@@ -42,7 +42,6 @@
 
 namespace psi {
 namespace psimrcc {
-extern MemoryManager* memory_manager;
 
 void MRCCSD_T::startup() {
 
