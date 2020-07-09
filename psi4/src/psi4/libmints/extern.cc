@@ -107,9 +107,6 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
     if (basis->molecule()->units() == Molecule::Angstrom) convfac /= pc_bohr2angstroms;
 
     // Monopoles
-    auto V_charge = std::make_shared<Matrix>("External Potential (Charges)", n, n);
-    double **V_charge_p = V_charge->pointer();
-
     auto Zxyz = std::make_shared<Matrix>("Charges (Z,x,y,z)", charges_.size(), 4);
     double **Zxyzp = Zxyz->pointer();
     for (size_t i = 0; i < charges_.size(); ++i) {
@@ -119,8 +116,11 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
         Zxyzp[i][3] = convfac * std::get<3>(charges_[i]);
     }
 
+    std::vector<SharedMatrix> V_charge;
     std::vector<std::shared_ptr<PotentialInt> > pot;
     for (size_t t = 0; t < nthreads; ++t) {
+        V_charge.push_back(std::make_shared<Matrix>("External Potential (Charges)", n, n));
+        V_charge[t]->zero();
         pot.push_back(std::shared_ptr<PotentialInt>(static_cast<PotentialInt *>(fact->ao_potential())));
         pot[t]->set_charge_field(Zxyz);
     }
@@ -134,7 +134,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
     }
 
     // Calculate monopole potential
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+#pragma omp parallel for schedule(guided) num_threads(nthreads)
     for (size_t p = 0; p < ij_pairs.size(); ++p) {
         size_t i = ij_pairs[p].first;
         size_t j = ij_pairs[p].second;
@@ -149,19 +149,20 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
 #endif
 
         const double *buffer = pot[rank]->buffer();
+        double **Vp = V_charge[rank]->pointer();
         pot[rank]->compute_shell(i, j);
 
         size_t index = 0;
         for (size_t ii = index_i; ii < (index_i + ni); ++ii) {
             for (size_t jj = index_j; jj < (index_j + nj); ++jj) {
-                V_charge_p[ii][jj] = V_charge_p[jj][ii] = buffer[index++];
+                Vp[ii][jj] = Vp[jj][ii] = buffer[index++];
             }
         }
     } // p
 
-    V->add(V_charge);
-    V_charge.reset();
     for (size_t t = 0; t < nthreads; ++t) {
+        V->add(V_charge[t]);
+        V_charge[t].reset();
         pot[t].reset();
     }
 
