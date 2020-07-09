@@ -545,13 +545,6 @@ double DFCoupledCluster::CheckEnergy() {
 
     set_array_variable("CCSD PAIR ENERGIES", pairs);
 
-//    for (int i = 0; i < o; i++) {
-//        for (int j = 0; j < o; j++) {
-//            outfile->Printf(" %15.10f ", pairsp[i][j]);
-//        }
-//        outfile->Printf("\n");
-//    }
-
     return energy;
 }
 
