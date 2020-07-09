@@ -1154,6 +1154,20 @@ void USAPT0::fock_terms() {
     energies_["Exch-Ind20,u (B<-A)"] = ExchInd20u_BA;
     energies_["Exch-Ind20,u"] = ExchInd20u_AB + ExchInd20u_BA;
 
+    // Save the K matrices for later use before they are changed in the jk object.
+    if (alpha_exchange_) {
+        std::shared_ptr<Matrix> tmp(Ka_O->clone());
+        vars_["Ka_O"] = tmp;
+    } else {
+        vars_["Ka_O"] = nullptr;
+    }
+    if (beta_exchange_) {
+        std::shared_ptr<Matrix> tmp(Kb_O->clone());
+        vars_["Kb_O"] = tmp;
+    } else {
+        vars_["Kb_O"] = nullptr;
+    }
+
     if (coupled_ind_) {
         // => Coupled Induction <= //
         // TODO: Write an RO CPHF solver for ROHF reference orbitals
@@ -1213,8 +1227,6 @@ void USAPT0::fock_terms() {
     vars_["El_pot_B"] = El_pot_B;
     vars_["ha_B"] = ha_B;
     vars_["hb_B"] = hb_B;
-    vars_["Ka_O"] = Ka_O;
-    vars_["Kb_O"] = Kb_O;
 }
 std::shared_ptr<Matrix> USAPT0::build_ind_pot(std::map<std::string, std::shared_ptr<Matrix> >& vars) {
     std::shared_ptr<Matrix> Ca = vars["Cocc_A"];
