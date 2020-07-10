@@ -33,11 +33,8 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 void CCMRCC::print_mrccsd_energy(int cycle) {
     delta_energy = current_energy - old_energy;
@@ -65,7 +62,7 @@ void CCMRCC::print_mrccsd_energy(int cycle) {
         char star = ' ';
         if (options_.get_str("CORR_WFN") == "CCSD") star = '*';
         outfile->Printf("\n\n%6c%1c Mk-MRCCSD total energy      = %20.12f\n", ' ', star, current_energy);
-        print_eigensystem(moinfo->get_nrefs(), Heff, right_eigenvector);
+        print_eigensystem(wfn_->moinfo()->get_nrefs(), Heff, right_eigenvector);
     }
 }
 

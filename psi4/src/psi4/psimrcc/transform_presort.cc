@@ -56,12 +56,8 @@ PRAGMA_WARNING_POP
 #include "index.h"
 #include "transform.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
-extern MemoryManager* memory_manager;
 
 /**
  * Reads and IWL buffer and sorts the two-electron integrals
@@ -72,11 +68,10 @@ extern MemoryManager* memory_manager;
  */
 void CCTransform::presort_integrals() {
     outfile->Printf("\n\n  Presorting two-electron integrals from IWL buffer");
-    outfile->Printf("\n    Memory available                       = %14lu bytes",
-                    (size_t)memory_manager->get_FreeMemory());
+    outfile->Printf("\n    Memory available                       = %14lu bytes", wfn_->free_memory_);
 
     size_t presort_memory =
-        static_cast<size_t>(static_cast<double>(memory_manager->get_FreeMemory()) * fraction_of_memory_for_presorting);
+        static_cast<size_t>(static_cast<double>(wfn_->free_memory_) * fraction_of_memory_for_presorting);
     outfile->Printf("\n    Memory available for presorting        = %14lu bytes (%.1f%%)", (size_t)presort_memory,
                     fraction_of_memory_for_presorting * 100.0);
 
@@ -91,7 +86,7 @@ void CCTransform::presort_integrals() {
 
     outfile->Printf("\n    Memory required for in-core presort    = %14lu bytes", (size_t)memory_required);
 
-    if (memory_required < static_cast<size_t>(3) * memory_manager->get_FreeMemory()) {
+    if (memory_required < static_cast<size_t>(3) * wfn_->free_memory_) {
         outfile->Printf("\n    Presorting is not required");
     }
 
@@ -102,7 +97,7 @@ void CCTransform::presort_integrals() {
         // Determine the batch of irreps to process
         size_t available_presort_memory = presort_memory;
 
-        for (int h = first_irrep; h < moinfo->get_nirreps(); ++h) {
+        for (int h = first_irrep; h < wfn_->nirrep(); ++h) {
             size_t required_memory = (INDEX(pairpi[h] - 1, pairpi[h] - 1) + 1) * static_cast<size_t>(sizeof(double));
             if (required_memory < available_presort_memory) {
                 available_presort_memory -= required_memory;
@@ -114,7 +109,7 @@ void CCTransform::presort_integrals() {
         presort_blocks(first_irrep, last_irrep);
 
         // Check if we have done presorting all the irreps
-        if (last_irrep >= moinfo->get_nirreps()) done = true;
+        if (last_irrep >= wfn_->nirrep()) done = true;
         first_irrep = last_irrep;
     }
 }
@@ -122,11 +117,11 @@ void CCTransform::presort_integrals() {
 void CCTransform::presort_blocks(int first_irrep, int last_irrep) {
     outfile->Printf("\n    Reading irreps %d -> %d", first_irrep, last_irrep - 1);
 
-    CCIndex* pair_index = blas->get_index("[n>=n]");
+    CCIndex* pair_index = wfn_->blas()->get_index("[n>=n]");
     std::vector<size_t> pairpi = pair_index->get_pairpi();
 
     // Allocate the temporary space
-    std::vector<std::vector<double>> tei_mo(moinfo->get_nmo());
+    std::vector<std::vector<double>> tei_mo(wfn_->nirrep());
     for (int h = first_irrep; h < last_irrep; ++h) {
         tei_mo[h] = std::vector<double>(INDEX(pairpi[h] - 1, pairpi[h] - 1) + 1, 0);
     }

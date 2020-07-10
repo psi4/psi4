@@ -55,6 +55,8 @@
 #include <array>
 #include <vector>
 
+#include "psimrcc_wfn.h"
+
 namespace psi {
 
 namespace psimrcc {
@@ -74,7 +76,7 @@ class CCIndex {
     ///////////////////////////////////////////////////////////////////////////////
     // Class Constructor and Destructor
     ///////////////////////////////////////////////////////////////////////////////
-    CCIndex(std::string str);
+    CCIndex(std::shared_ptr<PSIMRCCWfn>, std::string str);
     ~CCIndex();
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -131,6 +133,7 @@ class CCIndex {
 
     std::vector<std::vector<int>> get_element_irrep() { return (element_irrep); }
 
+    const std::shared_ptr<PSIMRCCWfn> wfn() const { return wfn_; }
    private:
     ///////////////////////////////////////////////////////////////////////////////
     // Class private functions
@@ -165,6 +168,7 @@ class CCIndex {
     std::vector<std::vector<int>> two_index_to_irrep;                  // 2->irrep mapping array
     std::vector<std::vector<std::vector<int>>> three_index_to_irrep;               // 3->irrep mapping array
     std::vector<std::vector<int>> element_irrep;                     // Irrep of each element
+    std::shared_ptr<PSIMRCCWfn> wfn_;          // The wavefunction where moinfo is kept
 };
 
 }  // namespace psimrcc

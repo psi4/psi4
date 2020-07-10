@@ -31,6 +31,8 @@
 
 #include <vector>
 
+#include "psimrcc_wfn.h"
+
 namespace psi {
 namespace psimrcc {
 
@@ -125,6 +127,8 @@ class MRCCSD_T {
     void check_intruders();
 
     Options& options_;
+
+    std::shared_ptr<PSIMRCCWfn> wfn_;
 
     int nirreps;
     int nrefs;

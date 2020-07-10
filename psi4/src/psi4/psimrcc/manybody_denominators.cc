@@ -44,13 +44,12 @@
 #include "blas.h"
 #include "manybody.h"
 #include "matrix.h"
-#include "psimrcc.h"
+#include "psimrcc_wfn.h"
 #include "sort.h"
 
 namespace psi {
 
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 /**
  * Generates the MP denominators
@@ -63,14 +62,14 @@ void CCManyBody::generate_denominators() {
     bool keep_denominators_in_core = false;
     if (options_.get_str("CORR_WFN") == "PT2") keep_denominators_in_core = true;
 
-    MatrixMap& matrix_map = blas->get_MatrixMap();
+    MatrixMap& matrix_map = wfn_->blas()->get_MatrixMap();
     MatrixMap::iterator end_iter = matrix_map.end();
     for (MatrixMap::iterator iter = matrix_map.begin(); iter != end_iter; ++iter) {
         std::string str = iter->first;
 
         if (str.find("d1") != std::string::npos) {
             // Load the temporary matrix
-            CCMatTmp MatTmp = blas->get_MatTmp(str, (keep_denominators_in_core ? none : dump));
+            CCMatTmp MatTmp = wfn_->blas()->get_MatTmp(str, (keep_denominators_in_core ? none : dump));
             auto matrix = MatTmp->get_matrix();
 
             // Get the reference number
@@ -82,17 +81,17 @@ void CCManyBody::generate_denominators() {
                 ind += spl_str[i];
             }
 
-            std::vector<int> aocc = moinfo->get_aocc(reference, AllRefs);
-            std::vector<int> bocc = moinfo->get_bocc(reference, AllRefs);
-            std::vector<int> avir = moinfo->get_avir(reference, AllRefs);
-            std::vector<int> bvir = moinfo->get_bvir(reference, AllRefs);
+            std::vector<int> aocc = wfn_->moinfo()->get_aocc(reference, AllRefs);
+            std::vector<int> bocc = wfn_->moinfo()->get_bocc(reference, AllRefs);
+            std::vector<int> avir = wfn_->moinfo()->get_avir(reference, AllRefs);
+            std::vector<int> bvir = wfn_->moinfo()->get_bvir(reference, AllRefs);
 
             // Build the is_arrays for reference ref
-            std::vector<bool> is_aocc(moinfo->get_nocc(), false);
-            std::vector<bool> is_bocc(moinfo->get_nocc(), false);
-            std::vector<bool> is_avir(moinfo->get_nvir(), false);
-            std::vector<bool> is_bvir(moinfo->get_nvir(), false);
-            std::vector<bool> is_frzv(moinfo->get_nfvir(), true);
+            std::vector<bool> is_aocc(wfn_->moinfo()->get_nocc(), false);
+            std::vector<bool> is_bocc(wfn_->moinfo()->get_nocc(), false);
+            std::vector<bool> is_avir(wfn_->moinfo()->get_nvir(), false);
+            std::vector<bool> is_bvir(wfn_->moinfo()->get_nvir(), false);
+            std::vector<bool> is_frzv(wfn_->moinfo()->get_nfvir(), true);
             std::vector<bool> is_element[2];
 
             for (size_t i = 0; i < aocc.size(); i++) is_aocc[aocc[i]] = true;
@@ -101,12 +100,12 @@ void CCManyBody::generate_denominators() {
             for (size_t i = 0; i < bvir.size(); i++) is_bvir[bvir[i]] = true;
 
             //      // Read the Fock matrices
-            CCMatTmp f_oo_Matrix = blas->get_MatTmp("fock[oo]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_OO_Matrix = blas->get_MatTmp("fock[OO]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_vv_Matrix = blas->get_MatTmp("fock[vv]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_VV_Matrix = blas->get_MatTmp("fock[VV]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_ff_Matrix = blas->get_MatTmp("fock[ff]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_FF_Matrix = blas->get_MatTmp("fock[FF]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_oo_Matrix = wfn_->blas()->get_MatTmp("fock[oo]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_OO_Matrix = wfn_->blas()->get_MatTmp("fock[OO]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_vv_Matrix = wfn_->blas()->get_MatTmp("fock[vv]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_VV_Matrix = wfn_->blas()->get_MatTmp("fock[VV]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_ff_Matrix = wfn_->blas()->get_MatTmp("fock[ff]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_FF_Matrix = wfn_->blas()->get_MatTmp("fock[FF]", reference, (keep_denominators_in_core ? none : dump));
 
             std::vector<CCMatrix*> f_Matrix;
             int k = 0;
@@ -151,7 +150,7 @@ void CCManyBody::generate_denominators() {
             // N.B. Never introduce Matrices/Vectors with O or V in the name before you compute the Fock matrix elements
 
             short* ia = new short[2];
-            for (int n = 0; n < moinfo->get_nirreps(); n++)
+            for (int n = 0; n < wfn_->moinfo()->get_nirreps(); n++)
                 for (size_t i = 0; i < MatTmp->get_left_pairpi(n); i++)
                     for (size_t j = 0; j < MatTmp->get_right_pairpi(n); j++) {
                         // Set the denomiator to huge by default
@@ -171,7 +170,7 @@ void CCManyBody::generate_denominators() {
 
         if (str.find("d2") != std::string::npos) {
             // Load the temporary matrix
-            CCMatTmp MatTmp = blas->get_MatTmp(str, (keep_denominators_in_core ? none : dump));
+            CCMatTmp MatTmp = wfn_->blas()->get_MatTmp(str, (keep_denominators_in_core ? none : dump));
             auto matrix = MatTmp->get_matrix();
 
             // Get the reference number
@@ -183,17 +182,17 @@ void CCManyBody::generate_denominators() {
                 ind += spl_str[i];
             }
 
-            std::vector<int> aocc = moinfo->get_aocc(reference, AllRefs);
-            std::vector<int> bocc = moinfo->get_bocc(reference, AllRefs);
-            std::vector<int> avir = moinfo->get_avir(reference, AllRefs);
-            std::vector<int> bvir = moinfo->get_bvir(reference, AllRefs);
+            std::vector<int> aocc = wfn_->moinfo()->get_aocc(reference, AllRefs);
+            std::vector<int> bocc = wfn_->moinfo()->get_bocc(reference, AllRefs);
+            std::vector<int> avir = wfn_->moinfo()->get_avir(reference, AllRefs);
+            std::vector<int> bvir = wfn_->moinfo()->get_bvir(reference, AllRefs);
 
             // Build the is_arrays for reference ref
-            std::vector<bool> is_aocc(moinfo->get_nocc(), false);
-            std::vector<bool> is_bocc(moinfo->get_nocc(), false);
-            std::vector<bool> is_avir(moinfo->get_nvir(), false);
-            std::vector<bool> is_bvir(moinfo->get_nvir(), false);
-            std::vector<bool> is_frzv(moinfo->get_nfvir(), true);
+            std::vector<bool> is_aocc(wfn_->moinfo()->get_nocc(), false);
+            std::vector<bool> is_bocc(wfn_->moinfo()->get_nocc(), false);
+            std::vector<bool> is_avir(wfn_->moinfo()->get_nvir(), false);
+            std::vector<bool> is_bvir(wfn_->moinfo()->get_nvir(), false);
+            std::vector<bool> is_frzv(wfn_->moinfo()->get_nfvir(), true);
             std::vector<bool> is_element[4];
 
             for (size_t i = 0; i < aocc.size(); i++) is_aocc[aocc[i]] = true;
@@ -202,12 +201,12 @@ void CCManyBody::generate_denominators() {
             for (size_t i = 0; i < bvir.size(); i++) is_bvir[bvir[i]] = true;
 
             //      // Read the Fock matrices
-            CCMatTmp f_oo_Matrix = blas->get_MatTmp("fock[oo]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_OO_Matrix = blas->get_MatTmp("fock[OO]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_vv_Matrix = blas->get_MatTmp("fock[vv]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_VV_Matrix = blas->get_MatTmp("fock[VV]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_ff_Matrix = blas->get_MatTmp("fock[ff]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_FF_Matrix = blas->get_MatTmp("fock[FF]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_oo_Matrix = wfn_->blas()->get_MatTmp("fock[oo]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_OO_Matrix = wfn_->blas()->get_MatTmp("fock[OO]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_vv_Matrix = wfn_->blas()->get_MatTmp("fock[vv]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_VV_Matrix = wfn_->blas()->get_MatTmp("fock[VV]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_ff_Matrix = wfn_->blas()->get_MatTmp("fock[ff]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_FF_Matrix = wfn_->blas()->get_MatTmp("fock[FF]", reference, (keep_denominators_in_core ? none : dump));
 
             std::vector<CCMatrix*> f_Matrix;
             int k = 0;
@@ -252,7 +251,7 @@ void CCManyBody::generate_denominators() {
             // N.B. Never introduce Matrices/Vectors with O or V in the name before you compute the Fock matrix elements
 
             short* ijab = new short[4];
-            for (int n = 0; n < moinfo->get_nirreps(); n++)
+            for (int n = 0; n < wfn_->nirrep(); n++)
                 for (size_t i = 0; i < MatTmp->get_left_pairpi(n); i++)
                     for (size_t j = 0; j < MatTmp->get_right_pairpi(n); j++) {
                         // Set the denomiator to huge by default

@@ -46,7 +46,6 @@
 namespace psi {
 
 namespace psimrcc {
-extern MOInfo *moinfo;
 
 /**
  * This is the core of the CCBLAS class. Computes the expression in the CCOperation class.
@@ -104,8 +103,8 @@ void CCOperation::compute() {
  * Add a number to each element of a matrix
  */
 void CCOperation::add_numerical_factor() {
-    for (int h = 0; h < moinfo->get_nirreps(); ++h) {
-        CCMatIrTmp AMatIrTmp = blas->get_MatIrTmp(A_Matrix, h, none);
+    for (int h = 0; h < wfn_->moinfo()->get_nirreps(); ++h) {
+        CCMatIrTmp AMatIrTmp = wfn_->blas()->get_MatIrTmp(A_Matrix, h, none);
         check_and_zero_target_block(h);
         AMatIrTmp->add_numerical_factor(factor, h);
     }
@@ -114,12 +113,12 @@ void CCOperation::add_numerical_factor() {
 void CCOperation::dot_product() {
     if (compatible_dot()) {
         double dot_product = 0.0;
-        for (int h = 0; h < moinfo->get_nirreps(); ++h) {
-            CCMatIrTmp BMatIrTmp = blas->get_MatIrTmp(B_Matrix, h, none);
-            CCMatIrTmp CMatIrTmp = blas->get_MatIrTmp(C_Matrix, h, none);
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); ++h) {
+            CCMatIrTmp BMatIrTmp = wfn_->blas()->get_MatIrTmp(B_Matrix, h, none);
+            CCMatIrTmp CMatIrTmp = wfn_->blas()->get_MatIrTmp(C_Matrix, h, none);
             dot_product += CCMatrix::dot_product(BMatIrTmp.get_CCMatrix(), CMatIrTmp.get_CCMatrix(), h);
         }
-        CCMatTmp AMatTmp = blas->get_MatTmp(A_Matrix, none);
+        CCMatTmp AMatTmp = wfn_->blas()->get_MatTmp(A_Matrix, none);
         if (assignment == "=" || assignment == ">=")
             AMatTmp->set_scalar(dot_product * factor);
         else
@@ -130,11 +129,11 @@ void CCOperation::dot_product() {
 
 void CCOperation::element_by_element_product() {
     if (compatible_element_by_element()) {
-        for (int h = 0; h < moinfo->get_nirreps(); ++h) {
-            CCMatIrTmp AMatIrTmp = blas->get_MatIrTmp(A_Matrix, h, none);
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); ++h) {
+            CCMatIrTmp AMatIrTmp = wfn_->blas()->get_MatIrTmp(A_Matrix, h, none);
             check_and_zero_target_block(h);
-            CCMatIrTmp BMatIrTmp = blas->get_MatIrTmp(B_Matrix, h, none);
-            CCMatIrTmp CMatIrTmp = blas->get_MatIrTmp(C_Matrix, h, none);
+            CCMatIrTmp BMatIrTmp = wfn_->blas()->get_MatIrTmp(B_Matrix, h, none);
+            CCMatIrTmp CMatIrTmp = wfn_->blas()->get_MatIrTmp(C_Matrix, h, none);
             AMatIrTmp->element_by_element_product(factor, BMatIrTmp.get_CCMatrix(), CMatIrTmp.get_CCMatrix(), h);
         }
     } else
@@ -143,11 +142,11 @@ void CCOperation::element_by_element_product() {
 
 void CCOperation::element_by_element_division() {
     if (compatible_element_by_element()) {
-        for (int h = 0; h < moinfo->get_nirreps(); ++h) {
-            CCMatIrTmp AMatIrTmp = blas->get_MatIrTmp(A_Matrix, h, none);
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); ++h) {
+            CCMatIrTmp AMatIrTmp = wfn_->blas()->get_MatIrTmp(A_Matrix, h, none);
             check_and_zero_target_block(h);
-            CCMatIrTmp BMatIrTmp = blas->get_MatIrTmp(B_Matrix, h, none);
-            CCMatIrTmp CMatIrTmp = blas->get_MatIrTmp(C_Matrix, h, none);
+            CCMatIrTmp BMatIrTmp = wfn_->blas()->get_MatIrTmp(B_Matrix, h, none);
+            CCMatIrTmp CMatIrTmp = wfn_->blas()->get_MatIrTmp(C_Matrix, h, none);
             AMatIrTmp->element_by_element_division(factor, BMatIrTmp.get_CCMatrix(), CMatIrTmp.get_CCMatrix(), h);
         }
     } else
@@ -156,16 +155,16 @@ void CCOperation::element_by_element_division() {
 
 void CCOperation::element_by_element_addition() {
     if (compatible_element_by_element() && (reindexing.size() == 0)) {
-        for (int h = 0; h < moinfo->get_nirreps(); ++h) {
-            CCMatIrTmp AMatIrTmp = blas->get_MatIrTmp(A_Matrix, h, none);
+        for (int h = 0; h < wfn_->nirrep(); ++h) {
+            CCMatIrTmp AMatIrTmp = wfn_->blas()->get_MatIrTmp(A_Matrix, h, none);
             check_and_zero_target_block(h);
-            CCMatIrTmp BMatIrTmp = blas->get_MatIrTmp(B_Matrix, h, none);
+            CCMatIrTmp BMatIrTmp = wfn_->blas()->get_MatIrTmp(B_Matrix, h, none);
             AMatIrTmp->element_by_element_addition(factor, BMatIrTmp.get_CCMatrix(), h);
         }
     } else if (reindexing.size() != 0) {
-        CCMatTmp AMatTmp = blas->get_MatTmp(A_Matrix, none);
+        CCMatTmp AMatTmp = wfn_->blas()->get_MatTmp(A_Matrix, none);
         check_and_zero_target();
-        CCMatTmp BMatTmp = blas->get_MatTmp(B_Matrix, none);
+        CCMatTmp BMatTmp = wfn_->blas()->get_MatTmp(B_Matrix, none);
         sort();
     } else
         fail_to_compute();
@@ -174,10 +173,10 @@ void CCOperation::element_by_element_addition() {
 void CCOperation::tensor_product() {
     if (reindexing.size() == 0) reindexing = "1234";
     // Perform this for all the matrix at once
-    CCMatTmp AMatTmp = blas->get_MatTmp(A_Matrix, none);
+    CCMatTmp AMatTmp = wfn_->blas()->get_MatTmp(A_Matrix, none);
     check_and_zero_target();
-    CCMatTmp BMatTmp = blas->get_MatTmp(B_Matrix, none);
-    CCMatTmp CMatTmp = blas->get_MatTmp(C_Matrix, none);
+    CCMatTmp BMatTmp = wfn_->blas()->get_MatTmp(B_Matrix, none);
+    CCMatTmp CMatTmp = wfn_->blas()->get_MatTmp(C_Matrix, none);
     AMatTmp->tensor_product(reindexing, factor, BMatTmp.get_CCMatrix(), CMatTmp.get_CCMatrix());
 }
 
@@ -196,7 +195,7 @@ void CCOperation::check_and_zero_target_block(int h) {
 }
 
 void CCOperation::zero_target() {
-    for (int h = 0; h < moinfo->get_nirreps(); ++h) A_Matrix->zero_matrix();
+    for (int h = 0; h < wfn_->moinfo()->get_nirreps(); ++h) A_Matrix->zero_matrix();
 }
 
 void CCOperation::zero_target_block(int h) {

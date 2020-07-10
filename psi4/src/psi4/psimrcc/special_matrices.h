@@ -63,7 +63,7 @@ class MatrixBase {
 class BlockMatrix {
    public:
     // Constructor and destructor
-    BlockMatrix(int nirreps, std::vector<size_t>& rows_size_, std::vector<size_t>& cols_size_, int sym);
+    BlockMatrix(std::shared_ptr<PSIMRCCWfn> wfn, std::vector<size_t>& rows_size_, std::vector<size_t>& cols_size_, int sym);
     ~BlockMatrix();
 
     void print();
@@ -98,6 +98,7 @@ class BlockMatrix {
     std::vector<size_t> cols_offset;
     int nirreps;
     int sym;
+    std::shared_ptr<PSIMRCCWfn> wfn_;
 };
 
 class IndexMatrix {

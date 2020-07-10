@@ -36,7 +36,6 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libpsi4util/memory_manager.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.h"
@@ -47,16 +46,14 @@
 #include "sort.h"
 #include "transform.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
-extern MemoryManager* memory_manager;
 
-CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm)
-    : fraction_of_memory_for_sorting(0.5), nfzc(0), efzc(0.0) {
+CCSort::CCSort(std::shared_ptr<PSIMRCCWfn> wfn, SortAlgorithm algorithm)
+    : fraction_of_memory_for_sorting(0.5), nfzc(0), efzc(0.0), wfn_(wfn) {
     init();
+
+    trans = std::make_shared<CCTransform>(wfn_);
 
     IntegralTransform* ints;
     // Use libtrans to generate MO basis integrals in Pitzer order
@@ -67,12 +64,12 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm)
         // O represents occ+act, V represents act+vir and A is all orbitals.
         std::shared_ptr<MOSpace> aocc;
         std::shared_ptr<MOSpace> avir;
-        int nirrep = ref_wfn->nirrep();
+        int nirrep = wfn_->nirrep();
         std::vector<int> aocc_orbs;
         std::vector<int> avir_orbs;
-        std::vector<int> actv = moinfo->get_actv();
-        std::vector<int> mopi = moinfo->get_mopi();
-        std::vector<int> occ = moinfo->get_occ();
+        std::vector<int> actv = wfn_->moinfo()->get_actv();
+        std::vector<int> mopi = wfn_->moinfo()->get_mopi();
+        std::vector<int> occ = wfn_->moinfo()->get_occ();
         int offset = 0;
         for (int h = 0; h < nirrep; ++h) {
             for (int i = 0; i < occ[h] + actv[h]; ++i) aocc_orbs.push_back(i + offset);
@@ -83,7 +80,7 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm)
         avir = std::make_shared<MOSpace>('E', avir_orbs, avir_orbs);
         spaces.push_back(aocc);
         spaces.push_back(avir);
-        ints = new IntegralTransform(ref_wfn, spaces, IntegralTransform::TransformationType::Restricted,
+        ints = new IntegralTransform(wfn, spaces, IntegralTransform::TransformationType::Restricted,
                                      IntegralTransform::OutputType::DPDOnly, IntegralTransform::MOOrdering::PitzerOrder,
                                      IntegralTransform::FrozenOrbitals::None);
         ints->set_keep_dpd_so_ints(true);
@@ -93,7 +90,7 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm)
         ints->transform_tei(aocc, aocc, avir, avir);
         build_integrals_mrpt2(ints);
     } else {
-        ints = new IntegralTransform(ref_wfn, spaces, IntegralTransform::TransformationType::Restricted,
+        ints = new IntegralTransform(wfn, spaces, IntegralTransform::TransformationType::Restricted,
                                      IntegralTransform::OutputType::IWLOnly, IntegralTransform::MOOrdering::PitzerOrder,
                                      IntegralTransform::FrozenOrbitals::None);
         ints->transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
@@ -104,7 +101,7 @@ CCSort::CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm)
         build_integrals_out_of_core();
     }
 
-    moinfo->set_fzcore_energy(efzc);
+    wfn_->moinfo()->set_fzcore_energy(efzc);
     outfile->Printf("\n\n    Frozen-core energy                     = %20.9f", efzc);
     delete ints;
 }
@@ -116,13 +113,13 @@ CCSort::~CCSort() {}
  */
 void CCSort::init() {
     // Find the frozen core orbitals in Pitzer ordering
-    nfzc = moinfo->get_nfocc();
-    intvec focc = moinfo->get_focc();
-    intvec mopi = moinfo->get_mopi();
+    nfzc = wfn_->moinfo()->get_nfocc();
+    intvec focc = wfn_->moinfo()->get_focc();
+    intvec mopi = wfn_->moinfo()->get_mopi();
     int count1 = 0;
     int count2 = 0;
     frozen_core = std::vector<int>(nfzc, 0);
-    for (int h = 0; h < moinfo->get_nirreps(); ++h) {
+    for (int h = 0; h < wfn_->nirrep(); ++h) {
         for (int i = 0; i < focc[h]; ++i) frozen_core[count1++] = count2 + i;
         count2 += mopi[h];
     }

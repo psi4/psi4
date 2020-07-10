@@ -48,7 +48,7 @@ double MRCCSD_T::compute_B_ooO_contribution_to_Heff_restricted(int U_abs, int X_
     size_t ij_rel = oo->get_tuple_rel_index(i_abs, j_abs);
 
     if (k_abs == U_abs) {
-        CCIndexIterator ef("[vv]", ijk_sym ^ x_sym);
+        CCIndexIterator ef(wfn_, "[vv]", ijk_sym ^ x_sym);
         for (ef.first(); !ef.end(); ef.next()) {
             int e_sym = v->get_tuple_irrep(ef.ind_abs<0>());
             int ef_sym = vv->get_tuple_irrep(ef.ind_abs<0>(), ef.ind_abs<1>());
@@ -79,7 +79,7 @@ double MRCCSD_T::compute_B_oOO_contribution_to_Heff_restricted(int U_abs, int X_
     size_t ik_rel = oo->get_tuple_rel_index(i_abs, k_abs);
 
     if (k_abs == U_abs) {
-        CCIndexIterator ef("[vv]", ijk_sym ^ x_sym);
+        CCIndexIterator ef(wfn_, "[vv]", ijk_sym ^ x_sym);
         for (ef.first(); !ef.end(); ef.next()) {
             int e_sym = v->get_tuple_irrep(ef.ind_abs<0>());
             int ef_sym = vv->get_tuple_irrep(ef.ind_abs<0>(), ef.ind_abs<1>());
@@ -92,7 +92,7 @@ double MRCCSD_T::compute_B_oOO_contribution_to_Heff_restricted(int U_abs, int X_
         }
     }
     if (j_abs == U_abs) {
-        CCIndexIterator ef("[vv]", ijk_sym ^ x_sym);
+        CCIndexIterator ef(wfn_, "[vv]", ijk_sym ^ x_sym);
         for (ef.first(); !ef.end(); ef.next()) {
             int e_sym = v->get_tuple_irrep(ef.ind_abs<0>());
             int ef_sym = vv->get_tuple_irrep(ef.ind_abs<0>(), ef.ind_abs<1>());
@@ -125,7 +125,7 @@ double MRCCSD_T::compute_B_OOO_contribution_to_Heff_restricted(int U_abs, int X_
     size_t jk_rel = oo->get_tuple_rel_index(j_abs, k_abs);
 
     if (k_abs == U_abs) {
-        CCIndexIterator ef("[vv]", ijk_sym ^ x_sym);
+        CCIndexIterator ef(wfn_, "[vv]", ijk_sym ^ x_sym);
         for (ef.first(); !ef.end(); ef.next()) {
             int e_sym = v->get_tuple_irrep(ef.ind_abs<0>());
             int ef_sym = vv->get_tuple_irrep(ef.ind_abs<0>(), ef.ind_abs<1>());
@@ -138,7 +138,7 @@ double MRCCSD_T::compute_B_OOO_contribution_to_Heff_restricted(int U_abs, int X_
         }
     }
     if (j_abs == U_abs) {
-        CCIndexIterator ef("[vv]", ijk_sym ^ x_sym);
+        CCIndexIterator ef(wfn_, "[vv]", ijk_sym ^ x_sym);
         for (ef.first(); !ef.end(); ef.next()) {
             int e_sym = v->get_tuple_irrep(ef.ind_abs<0>());
             int ef_sym = vv->get_tuple_irrep(ef.ind_abs<0>(), ef.ind_abs<1>());
@@ -151,7 +151,7 @@ double MRCCSD_T::compute_B_OOO_contribution_to_Heff_restricted(int U_abs, int X_
         }
     }
     if (i_abs == U_abs) {
-        CCIndexIterator ef("[vv]", ijk_sym ^ x_sym);
+        CCIndexIterator ef(wfn_, "[vv]", ijk_sym ^ x_sym);
         for (ef.first(); !ef.end(); ef.next()) {
             int e_sym = v->get_tuple_irrep(ef.ind_abs<0>());
             int ef_sym = vv->get_tuple_irrep(ef.ind_abs<0>(), ef.ind_abs<1>());

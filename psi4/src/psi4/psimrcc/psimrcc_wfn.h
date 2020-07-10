@@ -26,24 +26,43 @@
  * @END LICENSE
  */
 
-#ifndef _psi_src_bin_psimrcc_psimrcc_h_
-#define _psi_src_bin_psimrcc_psimrcc_h_
+#ifndef _psi_src_bin_psimrcc_wfn_h_
+#define _psi_src_bin_psimrcc_wfn_h_
+
+#include "psi4/libmints/wavefunction.h"
 
 #include "psi4/libqt/qt.h"
 #define START_TIMER(a) timer_on((a));
 #define END_TIMER(a) timer_off((a));
 
 namespace psi {
+
+class MOInfo;
+
 namespace psimrcc {
 
-void run_psimrcc();
-void transform_integrals();
-void mrccsd(SharedWavefunction ref_wfn, Options &options);
-void mrpt2(SharedWavefunction ref_wfn, Options &options);
-void mrccsd_check();
-void mp2_ccsd(SharedWavefunction ref_wfn, Options &options);
+class CCBLAS;
 
-}  // namespace psimrcc
-}  // namespace psi
+class PSIMRCCWfn : public Wavefunction {
+    public:
+     PSIMRCCWfn(SharedWavefunction ref_wfn, Options &options);
+     double compute_energy() override;
 
-#endif  // _psi_src_bin_psimrcc_psimrcc_h_
+     // Methods
+     const std::shared_ptr<MOInfo> moinfo() const { return moinfo_; }
+     const std::shared_ptr<CCBLAS> blas() const { return blas_; }
+     // Estimate the free memory.
+     size_t free_memory_;
+
+    protected:
+     // Class members
+     std::shared_ptr<MOInfo> moinfo_;
+     std::shared_ptr<CCBLAS> blas_;
+
+     // Methods
+     void active_space_warning() const;
+};
+}
+
+}
+#endif  // _psi_src_bin_psimrcc_wfn_h_

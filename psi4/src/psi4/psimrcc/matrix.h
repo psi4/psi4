@@ -34,9 +34,10 @@
  *  A multireference coupled cluster code
  ***************************************************************************/
 
-#include "psi4/libpsi4util/memory_manager.h"
 #include <vector>
 #include <string>
+
+#include "psimrcc_wfn.h"
 
 namespace psi {
 namespace psimrcc {
@@ -62,6 +63,9 @@ class CCMatrix {
     ///////////////////////////////////////////////////////////////////////////////
     // Class Interface
     ///////////////////////////////////////////////////////////////////////////////
+
+    const std::shared_ptr<PSIMRCCWfn> wfn() const { return wfn_; }
+
     // Functions for scalars
     void add_scalar(double val);
     void set_scalar(double val);
@@ -202,6 +206,7 @@ class CCMatrix {
     Size_tVec memorypi2;      // Memory required for storage in bytes
     BoolVec out_of_core;      // Is this irrep stored on disk?
     int naccess;              // How many times you have called get_matrix();
+    std::shared_ptr<PSIMRCCWfn> wfn_; // The wavefunction
    public:
     static double fraction_of_memory_for_buffer;
 };

@@ -29,7 +29,6 @@
 #include <iostream>
 #include <cmath>
 
-#include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libciomr/libciomr.h"
 
@@ -40,7 +39,6 @@
 namespace psi {
 
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 void CCOperation::sort() { sort(B_Matrix->get_left(), B_Matrix->get_right(), B_Matrix->get_matrix(), factor); }
 
@@ -76,7 +74,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
     // Zero the target matrix (A) if the assignment operator requires it
 
     if (assignment == "=" || assignment == ">=") {
-        for (int h = 0; h < moinfo->get_nirreps(); ++h) {
+        for (int h = 0; h < wfn_->nirrep(); ++h) {
             size_t block_size = A_Matrix->get_block_sizepi(h);
             if (block_size > 0) {
                 double* A_block = &(A_matrix[h][0][0]);
@@ -99,7 +97,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
                 auto& T_left_one_index_to_irrep = T_left->get_one_index_to_irrep();
                 auto& T_left_one_index_to_tuple = T_left->get_one_index_to_tuple_rel_index();
                 auto& T_right_one_index_to_tuple = T_right->get_one_index_to_tuple_rel_index();
-                for (int n = 0; n < moinfo->get_nirreps(); n++) {
+                for (int n = 0; n < wfn_->nirrep(); n++) {
                     for (size_t i = 0; i < A_left_pairpi[n]; i++) {
                         pq[0] = A_left_tuples[i + A_left_first[n]][0];
                         for (size_t j = 0; j < A_right_pairpi[n]; j++) {
@@ -117,7 +115,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
             if ((A_left_nelements == 1) && (T_left_nelements == 2)) {
                 auto& T_left_two_index_to_irrep = T_left->get_two_index_to_irrep();
                 auto& T_left_two_index_to_tuple = T_left->get_two_index_to_tuple_rel_index();
-                for (int n = 0; n < moinfo->get_nirreps(); n++) {
+                for (int n = 0; n < wfn_->nirrep(); n++) {
                     for (size_t i = 0; i < A_left_pairpi[n]; i++) {
                         pq[0] = A_left_tuples[i + A_left_first[n]][0];
                         for (size_t j = 0; j < A_right_pairpi[n]; j++) {
@@ -135,7 +133,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
                 auto& T_left_one_index_to_irrep = T_left->get_one_index_to_irrep();
                 auto& T_left_one_index_to_tuple = T_left->get_one_index_to_tuple_rel_index();
                 auto& T_right_one_index_to_tuple = T_right->get_one_index_to_tuple_rel_index();
-                for (int n = 0; n < moinfo->get_nirreps(); n++) {
+                for (int n = 0; n < wfn_->nirrep(); n++) {
                     for (size_t i = 0; i < A_left_pairpi[n]; i++) {
                         pq[0] = A_left_tuples[i + A_left_first[n]][0];
                         pq[1] = A_left_tuples[i + A_left_first[n]][1];
@@ -152,7 +150,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
             if ((A_left_nelements == 2) && (T_left_nelements == 2)) {
                 auto& T_left_two_index_to_irrep = T_left->get_two_index_to_irrep();
                 auto& T_left_two_index_to_tuple = T_left->get_two_index_to_tuple_rel_index();
-                for (int n = 0; n < moinfo->get_nirreps(); n++) {
+                for (int n = 0; n < wfn_->nirrep(); n++) {
                     for (size_t i = 0; i < A_left_pairpi[n]; i++) {
                         pq[0] = A_left_tuples[i + A_left_first[n]][0];
                         pq[1] = A_left_tuples[i + A_left_first[n]][1];
@@ -174,7 +172,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
                 auto& T_left_one_index_to_irrep = T_left->get_one_index_to_irrep();
                 auto& T_left_one_index_to_tuple = T_left->get_one_index_to_tuple_rel_index();
                 auto& T_right_three_index_to_tuple = T_right->get_three_index_to_tuple_rel_index();
-                for (int n = 0; n < moinfo->get_nirreps(); n++) {
+                for (int n = 0; n < wfn_->nirrep(); n++) {
                     for (size_t i = 0; i < A_left_pairpi[n]; i++) {
                         // Check that this should be handled by this thread
                         pqrs[0] = A_left_tuples[i + A_left_first[n]][0];
@@ -197,7 +195,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
                 auto& T_left_one_index_to_irrep = T_left->get_one_index_to_irrep();
                 auto& T_left_one_index_to_tuple = T_left->get_one_index_to_tuple_rel_index();
                 auto& T_right_three_index_to_tuple = T_right->get_three_index_to_tuple_rel_index();
-                for (int n = 0; n < moinfo->get_nirreps(); n++) {
+                for (int n = 0; n < wfn_->nirrep(); n++) {
                     for (size_t i = 0; i < A_left_pairpi[n]; i++) {
                         // Check that this should be handled by this thread
                         pqrs[0] = A_left_tuples[i + A_left_first[n]][0];
@@ -221,7 +219,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
                 auto& T_left_one_index_to_irrep = T_left->get_one_index_to_irrep();
                 auto& T_left_one_index_to_tuple = T_left->get_one_index_to_tuple_rel_index();
                 auto& T_right_three_index_to_tuple = T_right->get_three_index_to_tuple_rel_index();
-                for (int n = 0; n < moinfo->get_nirreps(); n++) {
+                for (int n = 0; n < wfn_->nirrep(); n++) {
                     for (size_t i = 0; i < A_left_pairpi[n]; i++) {
                         // Check that this should be handled by this thread
                         pqrs[0] = A_left_tuples[i + A_left_first[n]][0];
@@ -245,7 +243,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
                 auto& T_left_two_index_to_irrep = T_left->get_two_index_to_irrep();
                 auto& T_left_two_index_to_tuple = T_left->get_two_index_to_tuple_rel_index();
                 auto& T_right_two_index_to_tuple = T_right->get_two_index_to_tuple_rel_index();
-                for (int n = 0; n < moinfo->get_nirreps(); n++) {
+                for (int n = 0; n < wfn_->nirrep(); n++) {
                     for (size_t i = 0; i < A_left_pairpi[n]; i++) {
                         // Check that this should be handled by this thread
                         pqrs[0] = A_left_tuples[i + A_left_first[n]][0];
@@ -268,7 +266,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
                 auto& T_left_two_index_to_irrep = T_left->get_two_index_to_irrep();
                 auto& T_left_two_index_to_tuple = T_left->get_two_index_to_tuple_rel_index();
                 auto& T_right_two_index_to_tuple = T_right->get_two_index_to_tuple_rel_index();
-                for (int n = 0; n < moinfo->get_nirreps(); n++) {
+                for (int n = 0; n < wfn_->nirrep(); n++) {
                     for (size_t i = 0; i < A_left_pairpi[n]; i++) {
                         // Check that this should be handled by this thread
                         pqrs[0] = A_left_tuples[i + A_left_first[n]][0];
@@ -291,7 +289,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
                 auto& T_left_two_index_to_irrep = T_left->get_two_index_to_irrep();
                 auto& T_left_two_index_to_tuple = T_left->get_two_index_to_tuple_rel_index();
                 auto& T_right_two_index_to_tuple = T_right->get_two_index_to_tuple_rel_index();
-                for (int n = 0; n < moinfo->get_nirreps(); n++) {
+                for (int n = 0; n < wfn_->nirrep(); n++) {
                     for (size_t i = 0; i < A_left_pairpi[n]; i++) {
                         // Check that this should be handled by this thread
                         pqrs[0] = A_left_tuples[i + A_left_first[n]][0];
@@ -314,7 +312,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
                 auto& T_left_three_index_to_tuple = T_left->get_three_index_to_tuple_rel_index();
                 auto& T_right_one_index_to_irrep = T_right->get_one_index_to_irrep();
                 auto& T_right_one_index_to_tuple = T_right->get_one_index_to_tuple_rel_index();
-                for (int n = 0; n < moinfo->get_nirreps(); n++) {
+                for (int n = 0; n < wfn_->nirrep(); n++) {
                     for (size_t i = 0; i < A_left_pairpi[n]; i++) {
                         // Check that this should be handled by this thread
                         pqrs[0] = A_left_tuples[i + A_left_first[n]][0];
@@ -338,7 +336,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
                 auto& T_left_three_index_to_tuple = T_left->get_three_index_to_tuple_rel_index();
                 auto& T_right_one_index_to_irrep = T_right->get_one_index_to_irrep();
                 auto& T_right_one_index_to_tuple = T_right->get_one_index_to_tuple_rel_index();
-                for (int n = 0; n < moinfo->get_nirreps(); n++) {
+                for (int n = 0; n < wfn_->nirrep(); n++) {
                     for (size_t i = 0; i < A_left_pairpi[n]; i++) {
                         // Check that this should be handled by this thread
                         pqrs[0] = A_left_tuples[i + A_left_first[n]][0];
@@ -362,7 +360,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
                 auto& T_left_three_index_to_tuple = T_left->get_three_index_to_tuple_rel_index();
                 auto& T_right_one_index_to_irrep = T_right->get_one_index_to_irrep();
                 auto& T_right_one_index_to_tuple = T_right->get_one_index_to_tuple_rel_index();
-                for (int n = 0; n < moinfo->get_nirreps(); n++) {
+                for (int n = 0; n < wfn_->nirrep(); n++) {
                     for (size_t i = 0; i < A_left_pairpi[n]; i++) {
                         // Check that this should be handled by this thread
                         pqrs[0] = A_left_tuples[i + A_left_first[n]][0];
@@ -391,7 +389,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
                 auto& T_left_three_index_to_irrep = T_left->get_three_index_to_irrep();
                 auto& T_left_three_index_to_tuple = T_left->get_three_index_to_tuple_rel_index();
                 auto& T_right_three_index_to_tuple = T_right->get_three_index_to_tuple_rel_index();
-                for (int n = 0; n < moinfo->get_nirreps(); n++) {
+                for (int n = 0; n < wfn_->nirrep(); n++) {
                     for (size_t i = 0; i < A_left_pairpi[n]; i++) {
                         // Get the pqr indices
                         pqrstu[0] = A_left_tuples[i + A_left_first[n]][0];
@@ -458,7 +456,7 @@ void CCOperation::sort(CCIndex* T_left, CCIndex* T_right, std::vector<double**> 
                 auto& A_left_two_index_to_irrep = A_left->get_two_index_to_irrep();
                 auto& A_left_two_index_to_tuple = A_left->get_two_index_to_tuple_rel_index();
                 auto& A_right_two_index_to_tuple = A_right->get_two_index_to_tuple_rel_index();
-                for (int n = 0; n < moinfo->get_nirreps(); n++) {
+                for (int n = 0; n < wfn_->nirrep(); n++) {
                     for (size_t i = 0; i < T_left_pairpi[n]; i++) {
                         pqrs[0] = T_left_tuples[i + T_left_first[n]][0];
                         pqrs[1] = T_left_tuples[i + T_left_first[n]][1];

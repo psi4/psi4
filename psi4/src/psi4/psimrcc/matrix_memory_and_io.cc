@@ -54,8 +54,6 @@ PRAGMA_WARNING_POP
 namespace psi {
 
 namespace psimrcc {
-extern MOInfo *moinfo;
-extern MemoryManager *memory_manager;
 
 /*********************************************************
   Memory Allocation Routines
@@ -66,7 +64,7 @@ extern MemoryManager *memory_manager;
  * @return
  */
 bool CCMatrix::is_out_of_core() {
-    for (int h = 0; h < moinfo->get_nirreps(); ++h)
+    for (int h = 0; h < wfn_->moinfo()->get_nirreps(); ++h)
         if (!out_of_core[h] && (block_sizepi[h] > 0)) return (false);
     return (true);
 }
@@ -76,7 +74,7 @@ bool CCMatrix::is_out_of_core() {
  * @return
  */
 bool CCMatrix::is_allocated() {
-    for (int h = 0; h < moinfo->get_nirreps(); ++h)
+    for (int h = 0; h < wfn_->moinfo()->get_nirreps(); ++h)
         if (!is_block_allocated(h) && (block_sizepi[h] > 0)) return (false);
     return (true);
 }
@@ -96,7 +94,7 @@ void CCMatrix::allocate_memory() {
 void CCMatrix::allocate_block(int h) {
     if (block_sizepi[h] > 0) {
         if (!is_block_allocated(h)) {
-            if (memorypi2[h] < memory_manager->get_FreeMemory()) {
+            if (memorypi2[h] < wfn_->free_memory_) {
                 matrix[h] = block_matrix(left_pairpi[h], right_pairpi[h]);
             } else {
                 outfile->Printf("\n\nNot enough memory to allocate irrep %d of %s\n", h, label.c_str());
@@ -137,7 +135,7 @@ void CCMatrix::free_block(int h) {
 /**
  * Write the matrix to disk and free the memory.
  */
-void CCMatrix::dump_to_disk() { dump_to_disk(0, moinfo->get_nirreps()); }
+void CCMatrix::dump_to_disk() { dump_to_disk(0, wfn_->moinfo()->get_nirreps()); }
 
 /**
  * Write the matrix to disk and free the memory
@@ -173,8 +171,8 @@ void CCMatrix::write_block_to_disk(int h) {
             //       disk",label.c_str(),h); outfile->Printf("\n    This is a %d x %d
             //       block",left_pairpi[h],right_pairpi[h]);
             // for two electron integrals store strips of the symmetry block on disk
-            size_t max_strip_size = static_cast<size_t>(fraction_of_memory_for_buffer *
-                                                        static_cast<double>(memory_manager->get_FreeMemory()));
+            auto max_strip_size = static_cast<size_t>(fraction_of_memory_for_buffer *
+                                                        static_cast<double>(wfn_->free_memory_));
 
             int strip = 0;
             size_t last_row = 0;
@@ -239,7 +237,7 @@ void CCMatrix::load_irrep(int h) {
 /**
  * Read a matrix from disk.
  */
-void CCMatrix::read_from_disk() { read_from_disk(0, moinfo->get_nirreps()); }
+void CCMatrix::read_from_disk() { read_from_disk(0, wfn_->moinfo()->get_nirreps()); }
 
 /**
  * Read irrep blocks from disk

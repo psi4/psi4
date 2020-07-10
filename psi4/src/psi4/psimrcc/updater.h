@@ -47,7 +47,7 @@ class Hamiltonian;
  */
 class Updater {
    public:
-    Updater(Options &options);
+    Updater(std::shared_ptr<PSIMRCCWfn> wfn, Options &options);
     virtual ~Updater();
     virtual void update(int cycle, Hamiltonian *heff) = 0;
     void zero_internal_amps();
@@ -56,18 +56,19 @@ class Updater {
 
    protected:
     Options &options_;
+    std::shared_ptr<PSIMRCCWfn> wfn_;
 };
 
 class MkUpdater : public Updater {
    public:
-    MkUpdater(Options &options);
+    MkUpdater(std::shared_ptr<PSIMRCCWfn> wfn, Options &options);
     ~MkUpdater() override;
     void update(int cycle, Hamiltonian *heff) override;
 };
 
 class BWUpdater : public Updater {
    public:
-    BWUpdater(Options &options);
+    BWUpdater(std::shared_ptr<PSIMRCCWfn> wfn, Options &options);
     ~BWUpdater() override;
     void update(int cycle, Hamiltonian *heff) override;
 };

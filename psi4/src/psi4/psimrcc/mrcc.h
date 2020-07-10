@@ -42,10 +42,10 @@ class Updater;
 class CCMRCC : public CCManyBody {
    public:
     // Constructor and destructor
-    CCMRCC(SharedWavefunction ref_wfn, Options &options);
+    CCMRCC(std::shared_ptr<PSIMRCCWfn> wfn, Options &options);
     ~CCMRCC() override;
 
-    double compute_energy();
+    double compute_energy() override;
 
     // CCSD(T)
     void compute_perturbative_triples();

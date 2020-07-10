@@ -35,7 +35,6 @@
 #include <cstdlib>
 
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libmoinfo/libmoinfo.h"
 
 #include "blas.h"
 #include "index_iterator.h"
@@ -43,11 +42,8 @@
 #include "mrccsd_t.h"
 #include "special_matrices.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 void MRCCSD_T::compute() {
     outfile->Printf("\n\n  Computing (T) correction using the unrestricted loop algorithm.\n");
@@ -138,7 +134,7 @@ void MRCCSD_T::compute() {
 }
 
 void MRCCSD_T::compute_ooo_triples() {
-    CCIndexIterator ijk("[ooo]");
+    CCIndexIterator ijk(wfn_, "[ooo]");
 
     size_t tot_cycles = 0;
     size_t tot_triplets = 0;
@@ -221,7 +217,7 @@ void MRCCSD_T::compute_ooo_triples() {
                     std::vector<double>& e_vv_mu = e_vv[mu];
                     std::vector<bool>& is_avir_mu = is_avir[mu];
 
-                    CCIndexIterator abc("[vvv]", ijk_sym);
+                    CCIndexIterator abc(wfn_, "[vvv]", ijk_sym);
                     //          abc.reset();
                     //          abc.set_irrep();
                     // Loop over abc
@@ -280,8 +276,8 @@ void MRCCSD_T::compute_ooo_triples() {
 }
 
 void MRCCSD_T::compute_OOO_triples() {
-    CCIndexIterator ijk("[ooo]");
-    CCIndexIterator abc("[vvv]");
+    CCIndexIterator ijk(wfn_, "[ooo]");
+    CCIndexIterator abc(wfn_, "[vvv]");
 
     for (ijk.first(); !ijk.end(); ijk.next()) {
         int i_sym = o->get_tuple_irrep(ijk.ind_abs<0>());
@@ -360,7 +356,7 @@ void MRCCSD_T::compute_OOO_triples() {
                     std::vector<double>& e_VV_mu = e_VV[mu];
                     std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
-                    CCIndexIterator abc("[vvv]", ijk_sym);
+                    CCIndexIterator abc(wfn_, "[vvv]", ijk_sym);
                     //          abc.reset();
                     //          abc.set_irrep();          // Loop over abc
                     for (abc.first(); !abc.end(); abc.next()) {
@@ -418,8 +414,8 @@ void MRCCSD_T::compute_OOO_triples() {
 }
 
 void MRCCSD_T::compute_ooO_triples() {
-    CCIndexIterator ijk("[ooo]");
-    CCIndexIterator abc("[vvv]");
+    CCIndexIterator ijk(wfn_, "[ooo]");
+    CCIndexIterator abc(wfn_, "[vvv]");
 
     for (ijk.first(); !ijk.end(); ijk.next()) {
         int i_sym = o->get_tuple_irrep(ijk.ind_abs<0>());
@@ -521,7 +517,7 @@ void MRCCSD_T::compute_ooO_triples() {
                     std::vector<bool>& is_avir_mu = is_avir[mu];
                     std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
-                    CCIndexIterator abc("[vvv]", ijk_sym);
+                    CCIndexIterator abc(wfn_, "[vvv]", ijk_sym);
                     //          abc.reset();
                     //          abc.set_irrep();
                     // Loop over abc
@@ -591,8 +587,8 @@ void MRCCSD_T::compute_ooO_triples() {
 }
 
 void MRCCSD_T::compute_oOO_triples() {
-    CCIndexIterator ijk("[ooo]");
-    CCIndexIterator abc("[vvv]");
+    CCIndexIterator ijk(wfn_, "[ooo]");
+    CCIndexIterator abc(wfn_, "[vvv]");
 
     for (ijk.first(); !ijk.end(); ijk.next()) {
         int i_sym = o->get_tuple_irrep(ijk.ind_abs<0>());
@@ -692,7 +688,7 @@ void MRCCSD_T::compute_oOO_triples() {
                     std::vector<bool>& is_avir_mu = is_avir[mu];
                     std::vector<bool>& is_bvir_mu = is_bvir[mu];
 
-                    CCIndexIterator abc("[vvv]", ijk_sym);
+                    CCIndexIterator abc(wfn_, "[vvv]", ijk_sym);
                     //          abc.reset();
                     //          abc.set_irrep();
                     // Loop over abc

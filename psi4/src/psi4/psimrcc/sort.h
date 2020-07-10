@@ -38,6 +38,9 @@
 #include <map>
 #include <vector>
 
+#include "psimrcc_wfn.h"
+#include "transform.h"
+
 namespace psi {
 
 class IntegralTransform;
@@ -61,7 +64,7 @@ enum SortAlgorithm { out_of_core_sort, mrpt2_sort };
  */
 class CCSort {
    public:
-    CCSort(SharedWavefunction ref_wfn, SortAlgorithm algorithm);
+    CCSort(std::shared_ptr<PSIMRCCWfn> wfn, SortAlgorithm algorithm);
     ~CCSort();
 
    private:
@@ -100,9 +103,10 @@ class CCSort {
     int nfzc;
     double efzc;
     std::vector<int> frozen_core;
+    // Transformer
+    std::shared_ptr<CCTransform> trans;
+    std::shared_ptr<PSIMRCCWfn> wfn_;
 };
-
-extern CCSort* sorter;
 
 }  // namespace psimrcc
 }  // namespace psi

@@ -38,11 +38,8 @@
 #include "sort.h"
 #include "transform.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 void CCSort::build_integrals_mrpt2(IntegralTransform* ints) {
     trans->read_integrals_mrpt2(ints);
@@ -72,7 +69,7 @@ void CCSort::frozen_core_energy_mrpt2() {
 
 void CCSort::allocate_and_sort_integrals_mrpt2() {
     // Sort the TEI for CC computations
-    MatrixMap matrix_map = blas->get_MatrixMap();
+    MatrixMap matrix_map = wfn_->blas()->get_MatrixMap();
     for (MatrixMap::iterator iter = matrix_map.begin(); iter != matrix_map.end(); ++iter) {
         if (iter->second->is_integral() || iter->second->is_fock()) {
             iter->second->allocate_memory();
@@ -84,7 +81,7 @@ void CCSort::allocate_and_sort_integrals_mrpt2() {
 
 void CCSort::allocate_amplitudes_mrpt2() {
     // Sort the TEI for CC computations
-    MatrixMap matrix_map = blas->get_MatrixMap();
+    MatrixMap matrix_map = wfn_->blas()->get_MatrixMap();
     for (MatrixMap::iterator iter = matrix_map.begin(); iter != matrix_map.end(); ++iter) {
         if (!(iter->second->is_integral() || iter->second->is_fock())) {
             iter->second->allocate_memory();
@@ -98,7 +95,7 @@ void CCSort::form_fock_mrpt2(MatrixMap::iterator& iter) {
         std::string label = Matrix->get_label();
         auto matrix = Matrix->get_matrix();
         auto* pq = new short[2];
-        const intvec& oa2p = moinfo->get_occ_to_mo();
+        const intvec& oa2p = wfn_->moinfo()->get_occ_to_mo();
 
         bool alpha = true;
         if ((label.find("O") != std::string::npos) || (label.find("V") != std::string::npos) ||
@@ -107,9 +104,9 @@ void CCSort::form_fock_mrpt2(MatrixMap::iterator& iter) {
             alpha = false;
 
         // N.B. Never introduce Matrices/Vectors with O or V in the name before you compute the Fock matrix elements
-        std::vector<int> aocc = moinfo->get_aocc(Matrix->get_reference(), AllRefs);
-        std::vector<int> bocc = moinfo->get_bocc(Matrix->get_reference(), AllRefs);
-        for (int h = 0; h < moinfo->get_nirreps(); h++) {
+        std::vector<int> aocc = wfn_->moinfo()->get_aocc(Matrix->get_reference(), AllRefs);
+        std::vector<int> bocc = wfn_->moinfo()->get_bocc(Matrix->get_reference(), AllRefs);
+        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             for (int i = 0; i < Matrix->get_left_pairpi(h); i++) {
                 for (int j = 0; j < Matrix->get_right_pairpi(h); j++) {
                     // Find p and q from the pairs
@@ -147,17 +144,17 @@ void CCSort::form_fock_mrpt2(MatrixMap::iterator& iter) {
     //     string label     = Matrix->get_label();
     //     double*** matrix = Matrix->get_matrix();
     //     short* pq = new short[2];
-    //     int* oa2p = moinfo->get_occ_to_pitzer();
+    //     int* oa2p = wfn_->moinfo()->get_occ_to_pitzer();
     //
     //     bool alpha = true;
     //     if((label.find("O")!=string::npos) || (label.find("V")!=string::npos))
     //       alpha = false;
     //
     //     // N.B. Never introduce Matrices/Vectors with O or V in the name before you compute the Fock matrix elements
-    //     vector<int> aocc = moinfo->get_aocc("a",Matrix->get_reference());
-    //     vector<int> bocc = moinfo->get_bocc("a",Matrix->get_reference());
+    //     vector<int> aocc = wfn_->moinfo()->get_aocc("a",Matrix->get_reference());
+    //     vector<int> bocc = wfn_->moinfo()->get_bocc("a",Matrix->get_reference());
     //
-    //     for(int n=0;n<moinfo->get_nirreps();n++)
+    //     for(int n=0;n<wfn_->moinfo()->get_nirreps();n++)
     //       for(int i = 0;i<Matrix->get_left_pairpi(n);i++)
     //         for(int j = 0;j<Matrix->get_right_pairpi(n);j++){
     //           // Find p and q from the pairs
@@ -204,7 +201,7 @@ void CCSort::form_two_electron_integrals_mrpt2(MatrixMap::iterator& iter) {
         auto matrix = Matrix->get_matrix();
         bool antisymmetric = Matrix->is_antisymmetric();
         if (Matrix->is_chemist()) {
-            for (int n = 0; n < moinfo->get_nirreps(); n++)
+            for (int n = 0; n < wfn_->moinfo()->get_nirreps(); n++)
                 for (int i = 0; i < Matrix->get_left_pairpi(n); i++)
                     for (int j = 0; j < Matrix->get_right_pairpi(n); j++) {
                         Matrix->get_four_indices_pitzer(pqrs, n, i, j);
@@ -218,7 +215,7 @@ void CCSort::form_two_electron_integrals_mrpt2(MatrixMap::iterator& iter) {
                         if (antisymmetric) matrix[n][i][j] -= trans->tei_mrpt2(pqrs[0], pqrs[3], pqrs[1], pqrs[2]);
                     }
         } else {
-            for (int n = 0; n < moinfo->get_nirreps(); n++)
+            for (int n = 0; n < wfn_->moinfo()->get_nirreps(); n++)
                 for (int i = 0; i < Matrix->get_left_pairpi(n); i++)
                     for (int j = 0; j < Matrix->get_right_pairpi(n); j++) {
                         Matrix->get_four_indices_pitzer(pqrs, n, i, j);

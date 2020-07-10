@@ -33,17 +33,12 @@
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libpsi4util/memory_manager.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
 #include "special_matrices.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
-extern MemoryManager* memory_manager;
 
 MatrixBase::MatrixBase(size_t nrows_, size_t ncols_) : nrows(nrows_), ncols(ncols_), matrix(nullptr) {
     matrix = block_matrix(nrows, ncols);
@@ -120,9 +115,10 @@ void MatrixBase::multiply(MatrixBase* A, MatrixBase* B, double alpha, double bet
 }
 
 //  Arrange the block according to the irrep of the columns (it makes it easier for matrix multiplication)
-BlockMatrix::BlockMatrix(int nirreps_, std::vector<size_t>& rows_size_, std::vector<size_t>& cols_size_, int sym_) {
+BlockMatrix::BlockMatrix(std::shared_ptr<PSIMRCCWfn> wfn, std::vector<size_t>& rows_size_, std::vector<size_t>& cols_size_, int sym_) {
     // Copy values
-    nirreps = nirreps_;
+    wfn_ = wfn;
+    nirreps = wfn->nirrep();
     sym = sym_;
 
     // Allocate and compute the offsets
@@ -180,7 +176,7 @@ double BlockMatrix::norm() {
 
 void BlockMatrix::zero() {
     // Loop over the irrep of the summation index
-    for (int h = 0; h < moinfo->get_nirreps(); ++h) {
+    for (int h = 0; h < wfn_->moinfo()->get_nirreps(); ++h) {
         blocks[h]->zero();
     }
 }
@@ -188,7 +184,7 @@ void BlockMatrix::zero() {
 // (this) = alpha (this) + beta A
 void BlockMatrix::add(BlockMatrix* A, double alpha, double beta) {
     // Loop over the irrep of the summation index
-    for (int h = 0; h < moinfo->get_nirreps(); ++h) {
+    for (int h = 0; h < wfn_->moinfo()->get_nirreps(); ++h) {
         blocks[h]->add(A->blocks[h], alpha, beta);
     }
 }
@@ -196,7 +192,7 @@ void BlockMatrix::add(BlockMatrix* A, double alpha, double beta) {
 // (this) = alpha A * B + beta (this)
 void BlockMatrix::contract(BlockMatrix* A, BlockMatrix* B, double alpha, double beta) {
     // Loop over the irrep of the summation index
-    for (int h = 0; h < moinfo->get_nirreps(); ++h) {
+    for (int h = 0; h < wfn_->moinfo()->get_nirreps(); ++h) {
         int row_sym = h;
         int col_sym = h ^ sym;
         blocks[row_sym]->contract(A->blocks[row_sym], B->blocks[col_sym], alpha, beta);
@@ -206,7 +202,7 @@ void BlockMatrix::contract(BlockMatrix* A, BlockMatrix* B, double alpha, double 
 // (this) = alpha A * B + beta (this)
 void BlockMatrix::multiply(BlockMatrix* A, BlockMatrix* B, double alpha, double beta) {
     // Loop over the irrep of the summation index
-    for (int h = 0; h < moinfo->get_nirreps(); ++h) {
+    for (int h = 0; h < wfn_->moinfo()->get_nirreps(); ++h) {
         int row_sym = h;
         int col_sym = h ^ sym;
         blocks[row_sym]->multiply(A->blocks[row_sym], B->blocks[col_sym], alpha, beta);
@@ -214,7 +210,7 @@ void BlockMatrix::multiply(BlockMatrix* A, BlockMatrix* B, double alpha, double 
 }
 
 void BlockMatrix::cyclical_permutation_1_2(BlockMatrix* A, CCIndex* pqr_index, CCIndex* p_index, CCIndex* qr_index) {
-    CCIndexIterator pqr(pqr_index, sym);
+    CCIndexIterator pqr(wfn_, pqr_index, sym);
     for (pqr.first(); !pqr.end(); pqr.next()) {
         int p_sym = p_index->get_tuple_irrep(pqr.ind_abs<0>());
         int q_sym = p_index->get_tuple_irrep(pqr.ind_abs<1>());
@@ -235,7 +231,7 @@ void BlockMatrix::cyclical_permutation_1_2(BlockMatrix* A, CCIndex* pqr_index, C
 }
 
 void BlockMatrix::a_b_permutation_1_2(BlockMatrix* A, CCIndex* pqr_index, CCIndex* p_index, CCIndex* qr_index) {
-    CCIndexIterator pqr(pqr_index, sym);
+    CCIndexIterator pqr(wfn_, pqr_index, sym);
     for (pqr.first(); !pqr.end(); pqr.next()) {
         int p_sym = p_index->get_tuple_irrep(pqr.ind_abs<0>());
         int q_sym = p_index->get_tuple_irrep(pqr.ind_abs<1>());
@@ -252,7 +248,7 @@ void BlockMatrix::a_b_permutation_1_2(BlockMatrix* A, CCIndex* pqr_index, CCInde
 }
 
 void BlockMatrix::a_b_permutation(CCIndex* pqr_index, CCIndex* p_index, CCIndex* qr_index) {
-    CCIndexIterator pqr(pqr_index, sym);
+    CCIndexIterator pqr(wfn_, pqr_index, sym);
     for (pqr.first(); !pqr.end(); pqr.next()) {
         if (pqr.ind_abs<0>() >= pqr.ind_abs<1>()) {
             int p_sym = p_index->get_tuple_irrep(pqr.ind_abs<0>());
@@ -277,7 +273,7 @@ void BlockMatrix::a_b_permutation(CCIndex* pqr_index, CCIndex* p_index, CCIndex*
  */
 void BlockMatrix::add_permutation_1_2(double z, BlockMatrix* A, CCIndex* pqr_index, CCIndex* p_index, CCIndex* qr_index,
                                       double a, double b, double c, double d, double e, double f) {
-    CCIndexIterator pqr(pqr_index, sym);
+    CCIndexIterator pqr(wfn_, pqr_index, sym);
     for (pqr.first(); !pqr.end(); pqr.next()) {
         int p_sym = p_index->get_tuple_irrep(pqr.ind_abs<0>());
         int q_sym = p_index->get_tuple_irrep(pqr.ind_abs<1>());
@@ -309,7 +305,7 @@ void BlockMatrix::add_permutation_1_2(double z, BlockMatrix* A, CCIndex* pqr_ind
  * M(rqp)
  */
 void BlockMatrix::add_acb(double z, BlockMatrix* A, CCIndex* pqr_index, CCIndex* p_index, CCIndex* qr_index, double a) {
-    CCIndexIterator pqr(pqr_index, sym);
+    CCIndexIterator pqr(wfn_, pqr_index, sym);
     for (pqr.first(); !pqr.end(); pqr.next()) {
         int p_sym = p_index->get_tuple_irrep(pqr.ind_abs<0>());
 
@@ -327,7 +323,7 @@ void BlockMatrix::add_acb(double z, BlockMatrix* A, CCIndex* pqr_index, CCIndex*
  * M(rqp)
  */
 void BlockMatrix::add_cab(double z, BlockMatrix* A, CCIndex* pqr_index, CCIndex* p_index, CCIndex* qr_index, double a) {
-    CCIndexIterator pqr(pqr_index, sym);
+    CCIndexIterator pqr(wfn_, pqr_index, sym);
     for (pqr.first(); !pqr.end(); pqr.next()) {
         int p_sym = p_index->get_tuple_irrep(pqr.ind_abs<0>());
         int r_sym = p_index->get_tuple_irrep(pqr.ind_abs<2>());
@@ -349,7 +345,7 @@ void BlockMatrix::add_cab(double z, BlockMatrix* A, CCIndex* pqr_index, CCIndex*
 // qr_index,
 //    double a,double b,double c,double d,double e,double f)
 //{
-//  CCIndexIterator pqr(pqr_index,sym);
+//  CCIndexIterator pqr(wfn_, pqr_index,sym);
 //  for(pqr.first(); !pqr.end(); pqr.next()){
 //    int p_sym    = p_index->get_tuple_irrep(pqr.ind_abs<0>());
 //    int q_sym    = p_index->get_tuple_irrep(pqr.ind_abs<1>());
@@ -381,7 +377,7 @@ void BlockMatrix::add_cab(double z, BlockMatrix* A, CCIndex* pqr_index, CCIndex*
 //
 // void BlockMatrix::add_a_b_permutation_1_2(BlockMatrix* A, CCIndex* pqr_index,CCIndex* p_index,CCIndex* qr_index)
 //{
-//  CCIndexIterator pqr(pqr_index,sym);
+//  CCIndexIterator pqr(wfn_, pqr_index,sym);
 //  while(++pqr){
 //    int p_sym    = p_index->get_tuple_irrep(pqr.ind_abs<0>());
 //    int q_sym    = p_index->get_tuple_irrep(pqr.ind_abs<1>());
@@ -399,7 +395,7 @@ void BlockMatrix::add_cab(double z, BlockMatrix* A, CCIndex* pqr_index, CCIndex*
 //}
 
 void BlockMatrix::add_c_ab_permutation_1_2(BlockMatrix* A, CCIndex* pqr_index, CCIndex* p_index, CCIndex* qr_index) {
-    CCIndexIterator pqr(pqr_index, sym);
+    CCIndexIterator pqr(wfn_, pqr_index, sym);
     for (pqr.first(); !pqr.end(); pqr.next()) {
         int p_sym = p_index->get_tuple_irrep(pqr.ind_abs<0>());
         int r_sym = p_index->get_tuple_irrep(pqr.ind_abs<2>());

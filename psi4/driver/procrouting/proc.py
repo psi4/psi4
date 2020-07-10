@@ -3949,13 +3949,13 @@ def run_psimrcc(name, **kwargs):
 
     """
     mcscf_wfn = run_mcscf(name, **kwargs)
-    psimrcc_e = core.psimrcc(mcscf_wfn)
+    psimrcc_wfn = core.psimrcc(mcscf_wfn)
 
     # Shove variables into global space
-    for k, v in mcscf_wfn.variables().items():
+    for k, v in psimrcc_wfn.variables().items():
         core.set_variable(k, v)
 
-    return mcscf_wfn
+    return psimrcc_wfn
 
 
 def run_psimrcc_scf(name, **kwargs):
@@ -3968,9 +3968,13 @@ def run_psimrcc_scf(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
 
-    psimrcc_e = core.psimrcc(ref_wfn)
+    psimrcc_wfn = core.psimrcc(ref_wfn)
 
-    return ref_wfn
+    # Shove variables into global space
+    for k, v in psimrcc_wfn.variables().items():
+        core.set_variable(k, v)
+
+    return psimrcc_wfn
 
 
 def run_sapt(name, **kwargs):

@@ -49,17 +49,14 @@ PRAGMA_WARNING_POP
 #include "mrcc.h"
 #include "mrccsd_t.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
 
 void CCMRCC::compute_perturbative_triples() {
     Timer timer;
 
     h_eff.set_eigenvalue(current_energy);
-    h_eff.set_matrix(Heff, moinfo->get_nrefs());
+    h_eff.set_matrix(Heff, wfn_->moinfo()->get_nrefs());
     h_eff.set_right_eigenvector(right_eigenvector);
     h_eff.set_left_eigenvector(left_eigenvector);
     h_eff.set_zeroth_order_eigenvector(zeroth_order_eigenvector);
@@ -73,8 +70,8 @@ void CCMRCC::compute_perturbative_triples() {
         outfile->Printf("\n\n  Computing the expectation value of Heff");
         current_energy = h_eff.expectation_value();
     }
-    ref_wfn_->set_scalar_variable("CURRENT ENERGY", current_energy);
-    ref_wfn_->set_scalar_variable("MRCC TOTAL ENERGY", current_energy);
+    wfn_->set_scalar_variable("CURRENT ENERGY", current_energy);
+    wfn_->set_scalar_variable("MRCC TOTAL ENERGY", current_energy);
 
     outfile->Printf("\n\n%6c* Mk-MRCCSD(T) total energy   =    %20.12f", ' ', current_energy);
     outfile->Printf("\n\n  Timing for triples:             %20.6f s", timer.get());

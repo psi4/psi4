@@ -37,11 +37,14 @@ namespace psimrcc {
 /**
         @author Francesco Evangelista <frank@ccc.uga.edu>
 */
+
+// All the MP2_CCSD code is "dead," but talk to Francesco Evangelista before removing it.
+// He's considering finishing the project that was for.
 class MP2_CCSD : public CCManyBody {
    public:
-    MP2_CCSD(SharedWavefunction ref_wfn, Options &options);
+    MP2_CCSD(std::shared_ptr<PSIMRCCWfn> wfn, Options &options);
     ~MP2_CCSD() override;
-    double compute_energy();
+    double compute_energy() override;
 
    private:
     void add_matrices();

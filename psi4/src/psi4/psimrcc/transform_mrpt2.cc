@@ -50,12 +50,8 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/psifiles.h"
 
-extern FILE *outfile;
-
 namespace psi {
 namespace psimrcc {
-
-extern MOInfo *moinfo;
 
 void CCTransform::read_integrals_mrpt2(IntegralTransform *ints) {
     read_oei_mo_integrals_mrpt2();
@@ -86,10 +82,10 @@ void CCTransform::read_tei_mo_integrals_mrpt2(IntegralTransform *ints) {
     std::shared_ptr<PSIO> psio(_default_psio_lib_);
     psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-    std::vector<int> mopi = moinfo->get_mopi();
-    std::vector<int> doccpi = moinfo->get_docc();
-    std::vector<int> foccpi = moinfo->get_focc();
-    int nirreps = moinfo->get_nirreps();
+    std::vector<int> mopi = wfn_->moinfo()->get_mopi();
+    std::vector<int> doccpi = wfn_->moinfo()->get_docc();
+    std::vector<int> foccpi = wfn_->moinfo()->get_focc();
+    int nirreps = wfn_->moinfo()->get_nirreps();
     std::vector<int> offsets(nirreps, 0);
     int offset = 0;
     for (int h = 1; h < nirreps; ++h) {

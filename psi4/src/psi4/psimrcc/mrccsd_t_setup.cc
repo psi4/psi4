@@ -40,14 +40,13 @@
 #include "mrccsd_t.h"
 #include "special_matrices.h"
 
-extern FILE* outfile;
-
 namespace psi {
 namespace psimrcc {
-extern MOInfo* moinfo;
-extern MemoryManager* memory_manager;
 
 void MRCCSD_T::startup() {
+
+    wfn_ = h_eff->wfn();
+
     if (options_.get_str("TRIPLES_ALGORITHM") == "SPIN_ADAPTED") {
         triples_algorithm = SpinAdaptedTriples;
     } else if (options_.get_str("TRIPLES_ALGORITHM") == "RESTRICTED") {
@@ -56,21 +55,21 @@ void MRCCSD_T::startup() {
         triples_algorithm = UnrestrictedTriples;
     }
 
-    nirreps = moinfo->get_nirreps();
-    nrefs = moinfo->get_ref_size(AllRefs);
+    nirreps = wfn_->moinfo()->get_nirreps();
+    nrefs = wfn_->moinfo()->get_ref_size(AllRefs);
     threshold = 0.1 * options_.get_double("E_CONVERGENCE");
 
     build_W_intermediates();
 
-    o = blas->get_index("[o]");
-    oo = blas->get_index("[oo]");
-    ov = blas->get_index("[ov]");
-    v = blas->get_index("[v]");
-    vo = blas->get_index("[vo]");
-    vv = blas->get_index("[vv]");
-    vvv = blas->get_index("[vvv]");
-    ovv = blas->get_index("[ovv]");
-    ooo = blas->get_index("[ooo]");
+    o = wfn_->blas()->get_index("[o]");
+    oo = wfn_->blas()->get_index("[oo]");
+    ov = wfn_->blas()->get_index("[ov]");
+    v = wfn_->blas()->get_index("[v]");
+    vo = wfn_->blas()->get_index("[vo]");
+    vv = wfn_->blas()->get_index("[vv]");
+    vvv = wfn_->blas()->get_index("[vvv]");
+    ovv = wfn_->blas()->get_index("[ovv]");
+    ooo = wfn_->blas()->get_index("[ooo]");
 
     T2_ij_a_b = new IndexMatrix();
     T2_iJ_a_B = new IndexMatrix();
@@ -111,32 +110,32 @@ void MRCCSD_T::startup() {
     if (options_.get_bool("FAVG_CCSD_T")) {
         outfile->Printf("\n\n  Using the average Fock matrix for the all references\n");
         for (int mu = 0; mu < nrefs; ++mu) {
-            int unique_mu = moinfo->get_ref_number(mu, AllRefs);
+            int unique_mu = wfn_->moinfo()->get_ref_number(mu, AllRefs);
             double c_mu_2 =
                 h_eff->get_zeroth_order_eigenvector(unique_mu) * h_eff->get_zeroth_order_eigenvector(unique_mu);
             std::string factor = to_string(c_mu_2);
-            blas->solve("epsilon[o][o]{u} += " + factor + " fock[o][o]{" + to_string(unique_mu) + "}");
-            blas->solve("epsilon[O][O]{u} += " + factor + " fock[O][O]{" + to_string(unique_mu) + "}");
-            blas->solve("epsilon[v][v]{u} += " + factor + " fock[v][v]{" + to_string(unique_mu) + "}");
-            blas->solve("epsilon[V][V]{u} += " + factor + " fock[V][V]{" + to_string(unique_mu) + "}");
+            wfn_->blas()->solve("epsilon[o][o]{u} += " + factor + " fock[o][o]{" + to_string(unique_mu) + "}");
+            wfn_->blas()->solve("epsilon[O][O]{u} += " + factor + " fock[O][O]{" + to_string(unique_mu) + "}");
+            wfn_->blas()->solve("epsilon[v][v]{u} += " + factor + " fock[v][v]{" + to_string(unique_mu) + "}");
+            wfn_->blas()->solve("epsilon[V][V]{u} += " + factor + " fock[V][V]{" + to_string(unique_mu) + "}");
         }
     } else {
-        blas->solve("epsilon[o][o]{u} = fock[o][o]{u}");
-        blas->solve("epsilon[O][O]{u} = fock[O][O]{u}");
-        blas->solve("epsilon[v][v]{u} = fock[v][v]{u}");
-        blas->solve("epsilon[V][V]{u} = fock[V][V]{u}");
+        wfn_->blas()->solve("epsilon[o][o]{u} = fock[o][o]{u}");
+        wfn_->blas()->solve("epsilon[O][O]{u} = fock[O][O]{u}");
+        wfn_->blas()->solve("epsilon[v][v]{u} = fock[v][v]{u}");
+        wfn_->blas()->solve("epsilon[V][V]{u} = fock[V][V]{u}");
     }
 
     for (int mu = 0; mu < nrefs; ++mu) {
-        int unique_mu = moinfo->get_ref_number(mu, AllRefs);
+        int unique_mu = wfn_->moinfo()->get_ref_number(mu, AllRefs);
 
         //  Unique references
         if (mu == unique_mu) {
             // Setup the denominators
-            auto F_oo = blas->get_MatTmp("epsilon[o][o]", mu, none)->get_matrix();
+            auto F_oo = wfn_->blas()->get_MatTmp("epsilon[o][o]", mu, none)->get_matrix();
             std::vector<double> e_oo_mu;
             {
-                CCIndexIterator i("[o]");
+                CCIndexIterator i(wfn_, "[o]");
                 for (i.first(); !i.end(); i.next()) {
                     int i_sym = o->get_tuple_irrep(i.ind_abs<0>());
                     size_t i_rel = o->get_tuple_rel_index(i.ind_abs<0>());
@@ -145,10 +144,10 @@ void MRCCSD_T::startup() {
             }
             e_oo.push_back(e_oo_mu);
 
-            auto F_OO = blas->get_MatTmp("epsilon[O][O]", mu, none)->get_matrix();
+            auto F_OO = wfn_->blas()->get_MatTmp("epsilon[O][O]", mu, none)->get_matrix();
             std::vector<double> e_OO_mu;
             {
-                CCIndexIterator i("[o]");
+                CCIndexIterator i(wfn_, "[o]");
                 for (i.first(); !i.end(); i.next()) {
                     int i_sym = o->get_tuple_irrep(i.ind_abs<0>());
                     size_t i_rel = o->get_tuple_rel_index(i.ind_abs<0>());
@@ -157,10 +156,10 @@ void MRCCSD_T::startup() {
             }
             e_OO.push_back(e_OO_mu);
 
-            auto F_vv = blas->get_MatTmp("epsilon[v][v]", mu, none)->get_matrix();
+            auto F_vv = wfn_->blas()->get_MatTmp("epsilon[v][v]", mu, none)->get_matrix();
             std::vector<double> e_vv_mu;
             {
-                CCIndexIterator a("[v]");
+                CCIndexIterator a(wfn_, "[v]");
                 for (a.first(); !a.end(); a.next()) {
                     int a_sym = v->get_tuple_irrep(a.ind_abs<0>());
                     size_t a_rel = v->get_tuple_rel_index(a.ind_abs<0>());
@@ -169,10 +168,10 @@ void MRCCSD_T::startup() {
             }
             e_vv.push_back(e_vv_mu);
 
-            auto F_VV = blas->get_MatTmp("epsilon[V][V]", mu, none)->get_matrix();
+            auto F_VV = wfn_->blas()->get_MatTmp("epsilon[V][V]", mu, none)->get_matrix();
             std::vector<double> e_VV_mu;
             {
-                CCIndexIterator a("[v]");
+                CCIndexIterator a(wfn_, "[v]");
                 for (a.first(); !a.end(); a.next()) {
                     int a_sym = v->get_tuple_irrep(a.ind_abs<0>());
                     size_t a_rel = v->get_tuple_rel_index(a.ind_abs<0>());
@@ -181,44 +180,44 @@ void MRCCSD_T::startup() {
             }
             e_VV.push_back(e_VV_mu);
 
-            F_ov.push_back(blas->get_MatTmp("fock[o][v]", unique_mu, none)->get_matrix());
-            F_OV.push_back(blas->get_MatTmp("fock[O][V]", unique_mu, none)->get_matrix());
+            F_ov.push_back(wfn_->blas()->get_MatTmp("fock[o][v]", unique_mu, none)->get_matrix());
+            F_OV.push_back(wfn_->blas()->get_MatTmp("fock[O][V]", unique_mu, none)->get_matrix());
 
             if (options_.get_bool("HEFF4")) {
-                F2_ov.push_back(blas->get_MatTmp("F_me[o][v]", unique_mu, none)->get_matrix());
-                F2_OV.push_back(blas->get_MatTmp("F_ME[O][V]", unique_mu, none)->get_matrix());
+                F2_ov.push_back(wfn_->blas()->get_MatTmp("F_me[o][v]", unique_mu, none)->get_matrix());
+                F2_OV.push_back(wfn_->blas()->get_MatTmp("F_ME[O][V]", unique_mu, none)->get_matrix());
             } else {
-                F2_ov.push_back(blas->get_MatTmp("fock[o][v]", unique_mu, none)->get_matrix());
-                F2_OV.push_back(blas->get_MatTmp("fock[O][V]", unique_mu, none)->get_matrix());
+                F2_ov.push_back(wfn_->blas()->get_MatTmp("fock[o][v]", unique_mu, none)->get_matrix());
+                F2_OV.push_back(wfn_->blas()->get_MatTmp("fock[O][V]", unique_mu, none)->get_matrix());
             }
 
-            W_ooov.push_back(blas->get_MatTmp("W_ijka[oo][ov]", unique_mu, none)->get_matrix());
-            W_oOoV.push_back(blas->get_MatTmp("W_iJkA[oO][oV]", unique_mu, none)->get_matrix());
-            W_OoOv.push_back(blas->get_MatTmp("W_IjKa[Oo][Ov]", unique_mu, none)->get_matrix());
-            W_OOOV.push_back(blas->get_MatTmp("W_IJKA[OO][OV]", unique_mu, none)->get_matrix());
+            W_ooov.push_back(wfn_->blas()->get_MatTmp("W_ijka[oo][ov]", unique_mu, none)->get_matrix());
+            W_oOoV.push_back(wfn_->blas()->get_MatTmp("W_iJkA[oO][oV]", unique_mu, none)->get_matrix());
+            W_OoOv.push_back(wfn_->blas()->get_MatTmp("W_IjKa[Oo][Ov]", unique_mu, none)->get_matrix());
+            W_OOOV.push_back(wfn_->blas()->get_MatTmp("W_IJKA[OO][OV]", unique_mu, none)->get_matrix());
 
-            W_vovv.push_back(blas->get_MatTmp("W_aibc[v][ovv]", unique_mu, none)->get_matrix());
-            W_vOvV.push_back(blas->get_MatTmp("W_aIbC[v][OvV]", unique_mu, none)->get_matrix());
-            W_VoVv.push_back(blas->get_MatTmp("W_AiBc[V][oVv]", unique_mu, none)->get_matrix());
-            W_VOVV.push_back(blas->get_MatTmp("W_AIBC[V][OVV]", unique_mu, none)->get_matrix());
+            W_vovv.push_back(wfn_->blas()->get_MatTmp("W_aibc[v][ovv]", unique_mu, none)->get_matrix());
+            W_vOvV.push_back(wfn_->blas()->get_MatTmp("W_aIbC[v][OvV]", unique_mu, none)->get_matrix());
+            W_VoVv.push_back(wfn_->blas()->get_MatTmp("W_AiBc[V][oVv]", unique_mu, none)->get_matrix());
+            W_VOVV.push_back(wfn_->blas()->get_MatTmp("W_AIBC[V][OVV]", unique_mu, none)->get_matrix());
 
-            T1_ov.push_back(blas->get_MatTmp("t1[o][v]", mu, none)->get_matrix());
-            T1_OV.push_back(blas->get_MatTmp("t1[O][V]", mu, none)->get_matrix());
+            T1_ov.push_back(wfn_->blas()->get_MatTmp("t1[o][v]", mu, none)->get_matrix());
+            T1_OV.push_back(wfn_->blas()->get_MatTmp("t1[O][V]", mu, none)->get_matrix());
 
-            T2_oovv.push_back(blas->get_MatTmp("t2[oo][vv]", mu, none)->get_matrix());
-            T2_oOvV.push_back(blas->get_MatTmp("t2[oO][vV]", mu, none)->get_matrix());
-            T2_OOVV.push_back(blas->get_MatTmp("t2[OO][VV]", mu, none)->get_matrix());
+            T2_oovv.push_back(wfn_->blas()->get_MatTmp("t2[oo][vv]", mu, none)->get_matrix());
+            T2_oOvV.push_back(wfn_->blas()->get_MatTmp("t2[oO][vV]", mu, none)->get_matrix());
+            T2_OOVV.push_back(wfn_->blas()->get_MatTmp("t2[OO][VV]", mu, none)->get_matrix());
 
-            is_aocc.push_back(moinfo->get_is_aocc(mu, AllRefs));
-            is_bocc.push_back(moinfo->get_is_bocc(mu, AllRefs));
-            is_avir.push_back(moinfo->get_is_avir(mu, AllRefs));
-            is_bvir.push_back(moinfo->get_is_bvir(mu, AllRefs));
+            is_aocc.push_back(wfn_->moinfo()->get_is_aocc(mu, AllRefs));
+            is_bocc.push_back(wfn_->moinfo()->get_is_bocc(mu, AllRefs));
+            is_avir.push_back(wfn_->moinfo()->get_is_avir(mu, AllRefs));
+            is_bvir.push_back(wfn_->moinfo()->get_is_bvir(mu, AllRefs));
         } else {
             // Setup the denominators
-            auto F_oo = blas->get_MatTmp("epsilon[O][O]", unique_mu, none)->get_matrix();
+            auto F_oo = wfn_->blas()->get_MatTmp("epsilon[O][O]", unique_mu, none)->get_matrix();
             std::vector<double> e_oo_mu;
             {
-                CCIndexIterator i("[o]");
+                CCIndexIterator i(wfn_, "[o]");
                 for (i.first(); !i.end(); i.next()) {
                     int i_sym = o->get_tuple_irrep(i.ind_abs<0>());
                     size_t i_rel = o->get_tuple_rel_index(i.ind_abs<0>());
@@ -227,10 +226,10 @@ void MRCCSD_T::startup() {
             }
             e_oo.push_back(e_oo_mu);
 
-            auto F_OO = blas->get_MatTmp("epsilon[o][o]", unique_mu, none)->get_matrix();
+            auto F_OO = wfn_->blas()->get_MatTmp("epsilon[o][o]", unique_mu, none)->get_matrix();
             std::vector<double> e_OO_mu;
             {
-                CCIndexIterator i("[o]");
+                CCIndexIterator i(wfn_, "[o]");
                 for (i.first(); !i.end(); i.next()) {
                     int i_sym = o->get_tuple_irrep(i.ind_abs<0>());
                     size_t i_rel = o->get_tuple_rel_index(i.ind_abs<0>());
@@ -239,10 +238,10 @@ void MRCCSD_T::startup() {
             }
             e_OO.push_back(e_OO_mu);
 
-            auto F_vv = blas->get_MatTmp("epsilon[V][V]", unique_mu, none)->get_matrix();
+            auto F_vv = wfn_->blas()->get_MatTmp("epsilon[V][V]", unique_mu, none)->get_matrix();
             std::vector<double> e_vv_mu;
             {
-                CCIndexIterator a("[v]");
+                CCIndexIterator a(wfn_, "[v]");
                 for (a.first(); !a.end(); a.next()) {
                     int a_sym = v->get_tuple_irrep(a.ind_abs<0>());
                     size_t a_rel = v->get_tuple_rel_index(a.ind_abs<0>());
@@ -251,10 +250,10 @@ void MRCCSD_T::startup() {
             }
             e_vv.push_back(e_vv_mu);
 
-            auto F_VV = blas->get_MatTmp("epsilon[v][v]", unique_mu, none)->get_matrix();
+            auto F_VV = wfn_->blas()->get_MatTmp("epsilon[v][v]", unique_mu, none)->get_matrix();
             std::vector<double> e_VV_mu;
             {
-                CCIndexIterator a("[v]");
+                CCIndexIterator a(wfn_, "[v]");
                 for (a.first(); !a.end(); a.next()) {
                     int a_sym = v->get_tuple_irrep(a.ind_abs<0>());
                     size_t a_rel = v->get_tuple_rel_index(a.ind_abs<0>());
@@ -263,38 +262,38 @@ void MRCCSD_T::startup() {
             }
             e_VV.push_back(e_VV_mu);
 
-            F_ov.push_back(blas->get_MatTmp("fock[O][V]", unique_mu, none)->get_matrix());
-            F_OV.push_back(blas->get_MatTmp("fock[o][v]", unique_mu, none)->get_matrix());
+            F_ov.push_back(wfn_->blas()->get_MatTmp("fock[O][V]", unique_mu, none)->get_matrix());
+            F_OV.push_back(wfn_->blas()->get_MatTmp("fock[o][v]", unique_mu, none)->get_matrix());
 
             if (options_.get_bool("HEFF4")) {
-                F2_ov.push_back(blas->get_MatTmp("F_ME[O][V]", unique_mu, none)->get_matrix());
-                F2_OV.push_back(blas->get_MatTmp("F_me[o][v]", unique_mu, none)->get_matrix());
+                F2_ov.push_back(wfn_->blas()->get_MatTmp("F_ME[O][V]", unique_mu, none)->get_matrix());
+                F2_OV.push_back(wfn_->blas()->get_MatTmp("F_me[o][v]", unique_mu, none)->get_matrix());
             } else {
-                F2_ov.push_back(blas->get_MatTmp("fock[O][V]", unique_mu, none)->get_matrix());
-                F2_OV.push_back(blas->get_MatTmp("fock[o][v]", unique_mu, none)->get_matrix());
+                F2_ov.push_back(wfn_->blas()->get_MatTmp("fock[O][V]", unique_mu, none)->get_matrix());
+                F2_OV.push_back(wfn_->blas()->get_MatTmp("fock[o][v]", unique_mu, none)->get_matrix());
             }
 
-            W_ooov.push_back(blas->get_MatTmp("W_IJKA[OO][OV]", unique_mu, none)->get_matrix());
-            W_oOoV.push_back(blas->get_MatTmp("W_IjKa[Oo][Ov]", unique_mu, none)->get_matrix());
-            W_OoOv.push_back(blas->get_MatTmp("W_iJkA[oO][oV]", unique_mu, none)->get_matrix());
-            W_OOOV.push_back(blas->get_MatTmp("W_ijka[oo][ov]", unique_mu, none)->get_matrix());
+            W_ooov.push_back(wfn_->blas()->get_MatTmp("W_IJKA[OO][OV]", unique_mu, none)->get_matrix());
+            W_oOoV.push_back(wfn_->blas()->get_MatTmp("W_IjKa[Oo][Ov]", unique_mu, none)->get_matrix());
+            W_OoOv.push_back(wfn_->blas()->get_MatTmp("W_iJkA[oO][oV]", unique_mu, none)->get_matrix());
+            W_OOOV.push_back(wfn_->blas()->get_MatTmp("W_ijka[oo][ov]", unique_mu, none)->get_matrix());
 
-            W_vovv.push_back(blas->get_MatTmp("W_AIBC[V][OVV]", unique_mu, none)->get_matrix());
-            W_vOvV.push_back(blas->get_MatTmp("W_AiBc[V][oVv]", unique_mu, none)->get_matrix());
-            W_VoVv.push_back(blas->get_MatTmp("W_aIbC[v][OvV]", unique_mu, none)->get_matrix());
-            W_VOVV.push_back(blas->get_MatTmp("W_aibc[v][ovv]", unique_mu, none)->get_matrix());
+            W_vovv.push_back(wfn_->blas()->get_MatTmp("W_AIBC[V][OVV]", unique_mu, none)->get_matrix());
+            W_vOvV.push_back(wfn_->blas()->get_MatTmp("W_AiBc[V][oVv]", unique_mu, none)->get_matrix());
+            W_VoVv.push_back(wfn_->blas()->get_MatTmp("W_aIbC[v][OvV]", unique_mu, none)->get_matrix());
+            W_VOVV.push_back(wfn_->blas()->get_MatTmp("W_aibc[v][ovv]", unique_mu, none)->get_matrix());
 
-            T1_ov.push_back(blas->get_MatTmp("t1[O][V]", unique_mu, none)->get_matrix());
-            T1_OV.push_back(blas->get_MatTmp("t1[o][v]", unique_mu, none)->get_matrix());
+            T1_ov.push_back(wfn_->blas()->get_MatTmp("t1[O][V]", unique_mu, none)->get_matrix());
+            T1_OV.push_back(wfn_->blas()->get_MatTmp("t1[o][v]", unique_mu, none)->get_matrix());
 
-            T2_oovv.push_back(blas->get_MatTmp("t2[OO][VV]", unique_mu, none)->get_matrix());
-            T2_oOvV.push_back(blas->get_MatTmp("t2[Oo][Vv]", unique_mu, none)->get_matrix());
-            T2_OOVV.push_back(blas->get_MatTmp("t2[oo][vv]", unique_mu, none)->get_matrix());
+            T2_oovv.push_back(wfn_->blas()->get_MatTmp("t2[OO][VV]", unique_mu, none)->get_matrix());
+            T2_oOvV.push_back(wfn_->blas()->get_MatTmp("t2[Oo][Vv]", unique_mu, none)->get_matrix());
+            T2_OOVV.push_back(wfn_->blas()->get_MatTmp("t2[oo][vv]", unique_mu, none)->get_matrix());
 
-            is_bocc.push_back(moinfo->get_is_aocc(unique_mu, AllRefs));
-            is_aocc.push_back(moinfo->get_is_bocc(unique_mu, AllRefs));
-            is_bvir.push_back(moinfo->get_is_avir(unique_mu, AllRefs));
-            is_avir.push_back(moinfo->get_is_bvir(unique_mu, AllRefs));
+            is_bocc.push_back(wfn_->moinfo()->get_is_aocc(unique_mu, AllRefs));
+            is_aocc.push_back(wfn_->moinfo()->get_is_bocc(unique_mu, AllRefs));
+            is_bvir.push_back(wfn_->moinfo()->get_is_avir(unique_mu, AllRefs));
+            is_avir.push_back(wfn_->moinfo()->get_is_bvir(unique_mu, AllRefs));
         }
 
         if (options_.get_str("CORR_CCSD_T") == "STANDARD") {
@@ -329,14 +328,14 @@ void MRCCSD_T::startup() {
         d_h_eff.push_back(d_h_eff_row);
     }
 
-    V_oovv = blas->get_MatTmp("<[oo]:[vv]>", none)->get_matrix();
-    V_oOvV = blas->get_MatTmp("<[oo]|[vv]>", none)->get_matrix();
+    V_oovv = wfn_->blas()->get_MatTmp("<[oo]:[vv]>", none)->get_matrix();
+    V_oOvV = wfn_->blas()->get_MatTmp("<[oo]|[vv]>", none)->get_matrix();
 
     // Allocate Z, this will hold the results
     Z = std::vector<std::vector<BlockMatrix*>>(nrefs, std::vector<BlockMatrix*>(nirreps));
     for (int mu = 0; mu < nrefs; ++mu) {
         for (int h = 0; h < nirreps; ++h) {
-            Z[mu][h] = new BlockMatrix(nirreps, v->get_tuplespi(), vv->get_tuplespi(), h);
+            Z[mu][h] = new BlockMatrix(wfn_, v->get_tuplespi(), vv->get_tuplespi(), h);
         }
     }
 
@@ -345,7 +344,7 @@ void MRCCSD_T::startup() {
         W = std::vector<std::vector<BlockMatrix*>>(nrefs, std::vector<BlockMatrix*>(nirreps));
         for (int mu = 0; mu < nrefs; ++mu) {
             for (int h = 0; h < nirreps; ++h) {
-                W[mu][h] = new BlockMatrix(nirreps, v->get_tuplespi(), vv->get_tuplespi(), h);
+                W[mu][h] = new BlockMatrix(wfn_, v->get_tuplespi(), vv->get_tuplespi(), h);
             }
         }
     } else if (triples_algorithm == SpinAdaptedTriples) {
@@ -354,9 +353,9 @@ void MRCCSD_T::startup() {
         W_jki = std::vector<std::vector<BlockMatrix*>>(nrefs, std::vector<BlockMatrix*>(nirreps));
         for (int mu = 0; mu < nrefs; ++mu) {
             for (int h = 0; h < nirreps; ++h) {
-                W_ijk[mu][h] = new BlockMatrix(nirreps, v->get_tuplespi(), vv->get_tuplespi(), h);
-                W_ikj[mu][h] = new BlockMatrix(nirreps, v->get_tuplespi(), vv->get_tuplespi(), h);
-                W_jki[mu][h] = new BlockMatrix(nirreps, v->get_tuplespi(), vv->get_tuplespi(), h);
+                W_ijk[mu][h] = new BlockMatrix(wfn_, v->get_tuplespi(), vv->get_tuplespi(), h);
+                W_ikj[mu][h] = new BlockMatrix(wfn_, v->get_tuplespi(), vv->get_tuplespi(), h);
+                W_jki[mu][h] = new BlockMatrix(wfn_, v->get_tuplespi(), vv->get_tuplespi(), h);
             }
         }
     }
@@ -365,7 +364,7 @@ void MRCCSD_T::startup() {
     T = std::vector<std::vector<BlockMatrix*>>(nrefs, std::vector<BlockMatrix*>(nirreps));
     for (int mu = 0; mu < nrefs; ++mu) {
         for (int h = 0; h < nirreps; ++h) {
-            T[mu][h] = new BlockMatrix(nirreps, v->get_tuplespi(), vv->get_tuplespi(), h);
+            T[mu][h] = new BlockMatrix(wfn_, v->get_tuplespi(), vv->get_tuplespi(), h);
         }
     }
 
@@ -392,21 +391,21 @@ void MRCCSD_T::startup() {
 }
 
 void MRCCSD_T::check_intruders() {
-    std::vector<int> occ_to_mo = moinfo->get_occ_to_mo();
-    std::vector<int> vir_to_mo = moinfo->get_vir_to_mo();
+    std::vector<int> occ_to_mo = wfn_->moinfo()->get_occ_to_mo();
+    std::vector<int> vir_to_mo = wfn_->moinfo()->get_vir_to_mo();
     // Identify intruders
     for (int mu = 0; mu < nrefs; ++mu) {
         std::vector<std::pair<double, std::vector<short> > > aaa_sample;
         std::vector<std::pair<double, std::vector<short> > > aab_sample;
         // Loop over ijk
-        CCIndexIterator ijk("[ooo]");
+        CCIndexIterator ijk(wfn_, "[ooo]");
         for (ijk.first(); !ijk.end(); ijk.next()) {
             size_t i_abs = o->get_tuple_abs_index(ijk.ind_abs<0>());
             size_t j_abs = o->get_tuple_abs_index(ijk.ind_abs<1>());
             size_t k_abs = o->get_tuple_abs_index(ijk.ind_abs<2>());
             int ijk_sym = ijk.sym();
             // Loop over abc
-            CCIndexIterator abc("[vvv]", ijk_sym);
+            CCIndexIterator abc(wfn_, "[vvv]", ijk_sym);
             for (abc.first(); !abc.end(); abc.next()) {
                 size_t a_abs = v->get_tuple_abs_index(abc.ind_abs<0>());
                 size_t b_abs = v->get_tuple_abs_index(abc.ind_abs<1>());
@@ -488,7 +487,7 @@ void MRCCSD_T::check_intruders() {
                 "\n  the occupied (docc + actv) and the virtual (actv + extr) spaces.");
 
             outfile->Printf("\n\n  Printing occupied orbital energies for reference %d", mu);
-            CCIndexIterator i("[o]");
+            CCIndexIterator i(wfn_, "[o]");
             outfile->Printf("\n   OCC   MO      e(alpha)         e(beta)");
             for (i.first(); !i.end(); i.next()) {
                 outfile->Printf("\n  %4d %4d", i.ind_abs<0>(), occ_to_mo[i.ind_abs<0>()]);
@@ -504,7 +503,7 @@ void MRCCSD_T::check_intruders() {
                 }
             }
             outfile->Printf("\n\n  Printing virtual orbital energies for reference %d", mu);
-            CCIndexIterator a("[v]");
+            CCIndexIterator a(wfn_, "[v]");
             outfile->Printf("\n   VIR   MO      e(alpha)         e(beta)");
             for (a.first(); !a.end(); a.next()) {
                 outfile->Printf("\n  %4d %4d", a.ind_abs<0>(), vir_to_mo[a.ind_abs<0>()]);
@@ -530,14 +529,14 @@ void MRCCSD_T::check_intruders() {
     for(int mu = 0; mu < nrefs; ++mu){
       outfile->Printf("\n  @@@%d ",mu);
       // Loop over ijk
-      CCIndexIterator  ijk("[ooo]");
+      CCIndexIterator  ijk(wfn_, "[ooo]");
       for(ijk.first(); !ijk.end(); ijk.next()){
         size_t i_abs = o->get_tuple_abs_index(ijk.ind_abs<0>());
         size_t j_abs = o->get_tuple_abs_index(ijk.ind_abs<1>());
         size_t k_abs = o->get_tuple_abs_index(ijk.ind_abs<2>());
         int ijk_sym = ijk.sym();
         // Loop over abc
-        CCIndexIterator  abc("[vvv]",ijk_sym);
+        CCIndexIterator  abc(wfn_, "[vvv]",ijk_sym);
         for(abc.first(); !abc.end(); abc.next()){
           size_t a_abs = v->get_tuple_abs_index(abc.ind_abs<0>());
           size_t b_abs = v->get_tuple_abs_index(abc.ind_abs<1>());
@@ -563,14 +562,14 @@ void MRCCSD_T::check_intruders() {
     for(int mu = 0; mu < nrefs; ++mu){
       outfile->Printf("\n  @@#%d ",mu);
       // Loop over ijk
-      CCIndexIterator  ijk("[ooo]");
+      CCIndexIterator  ijk(wfn_, "[ooo]");
       for(ijk.first(); !ijk.end(); ijk.next()){
         size_t i_abs = o->get_tuple_abs_index(ijk.ind_abs<0>());
         size_t j_abs = o->get_tuple_abs_index(ijk.ind_abs<1>());
         size_t k_abs = o->get_tuple_abs_index(ijk.ind_abs<2>());
         int ijk_sym = ijk.sym();
         // Loop over abc
-        CCIndexIterator  abc("[vvv]",ijk_sym);
+        CCIndexIterator  abc(wfn_, "[vvv]",ijk_sym);
         for(abc.first(); !abc.end(); abc.next()){
           size_t a_abs = v->get_tuple_abs_index(abc.ind_abs<0>());
           size_t b_abs = v->get_tuple_abs_index(abc.ind_abs<1>());
@@ -595,29 +594,29 @@ void MRCCSD_T::check_intruders() {
 }
 
 void MRCCSD_T::build_W_intermediates() {
-    blas->solve("W_ijka[oo][ov]{u}  = <[oo]:[ov]>");
-    if (options_.get_bool("HEFF4")) blas->solve("W_ijka[oo][ov]{u} += #4123# <[v]:[voo]> 1@2 t1[o][v]{u}");
+    wfn_->blas()->solve("W_ijka[oo][ov]{u}  = <[oo]:[ov]>");
+    if (options_.get_bool("HEFF4")) wfn_->blas()->solve("W_ijka[oo][ov]{u} += #4123# <[v]:[voo]> 1@2 t1[o][v]{u}");
 
-    blas->solve("W_iJkA[oO][oV]{u}  = <[oo]|[ov]>");
-    if (options_.get_bool("HEFF4")) blas->solve("W_iJkA[oO][oV]{u} += #4123# <[v]|[voo]> 1@2 t1[o][v]{u}");
+    wfn_->blas()->solve("W_iJkA[oO][oV]{u}  = <[oo]|[ov]>");
+    if (options_.get_bool("HEFF4")) wfn_->blas()->solve("W_iJkA[oO][oV]{u} += #4123# <[v]|[voo]> 1@2 t1[o][v]{u}");
 
-    blas->solve("W_IjKa[Oo][Ov]{u}  = <[oo]|[ov]>");
-    if (options_.get_bool("HEFF4")) blas->solve("W_IjKa[Oo][Ov]{u} += #4123# <[v]|[voo]> 1@2 t1[O][V]{u}");
+    wfn_->blas()->solve("W_IjKa[Oo][Ov]{u}  = <[oo]|[ov]>");
+    if (options_.get_bool("HEFF4")) wfn_->blas()->solve("W_IjKa[Oo][Ov]{u} += #4123# <[v]|[voo]> 1@2 t1[O][V]{u}");
 
-    blas->solve("W_IJKA[OO][OV]{u}  = <[oo]:[ov]>");
-    if (options_.get_bool("HEFF4")) blas->solve("W_IJKA[OO][OV]{u} += #4123# <[v]:[voo]> 1@2 t1[O][V]{u}");
+    wfn_->blas()->solve("W_IJKA[OO][OV]{u}  = <[oo]:[ov]>");
+    if (options_.get_bool("HEFF4")) wfn_->blas()->solve("W_IJKA[OO][OV]{u} += #4123# <[v]:[voo]> 1@2 t1[O][V]{u}");
 
-    blas->solve("W_aibc[v][ovv]{u}  = <[v]:[ovv]>");
-    if (options_.get_bool("HEFF4")) blas->solve("W_aibc[v][ovv]{u} += - t1[o][v]{u} 1@1 <[o]:[ovv]>");
+    wfn_->blas()->solve("W_aibc[v][ovv]{u}  = <[v]:[ovv]>");
+    if (options_.get_bool("HEFF4")) wfn_->blas()->solve("W_aibc[v][ovv]{u} += - t1[o][v]{u} 1@1 <[o]:[ovv]>");
 
-    blas->solve("W_aIbC[v][OvV]{u}  = <[v]|[ovv]>");
-    if (options_.get_bool("HEFF4")) blas->solve("W_aIbC[v][OvV]{u} += - t1[o][v]{u} 1@1 <[o]|[ovv]>");
+    wfn_->blas()->solve("W_aIbC[v][OvV]{u}  = <[v]|[ovv]>");
+    if (options_.get_bool("HEFF4")) wfn_->blas()->solve("W_aIbC[v][OvV]{u} += - t1[o][v]{u} 1@1 <[o]|[ovv]>");
 
-    blas->solve("W_AiBc[V][oVv]{u}  = <[v]|[ovv]>");
-    if (options_.get_bool("HEFF4")) blas->solve("W_AiBc[V][oVv]{u} += - t1[O][V]{u} 1@1 <[o]|[ovv]>");
+    wfn_->blas()->solve("W_AiBc[V][oVv]{u}  = <[v]|[ovv]>");
+    if (options_.get_bool("HEFF4")) wfn_->blas()->solve("W_AiBc[V][oVv]{u} += - t1[O][V]{u} 1@1 <[o]|[ovv]>");
 
-    blas->solve("W_AIBC[V][OVV]{u}  = <[v]:[ovv]>");
-    if (options_.get_bool("HEFF4")) blas->solve("W_AIBC[V][OVV]{u} += - t1[O][V]{u} 1@1 <[o]:[ovv]>");
+    wfn_->blas()->solve("W_AIBC[V][OVV]{u}  = <[v]:[ovv]>");
+    if (options_.get_bool("HEFF4")) wfn_->blas()->solve("W_AIBC[V][OVV]{u} += - t1[O][V]{u} 1@1 <[o]:[ovv]>");
 }
 
 void MRCCSD_T::cleanup() {
