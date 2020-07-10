@@ -29,6 +29,7 @@
 #include "psi4/psifiles.h"
 #include "psi4/libmoinfo/libmoinfo.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsio/psio.hpp"
@@ -90,7 +91,7 @@ double PSIMRCCWfn::compute_energy() {
         blas_ = std::make_shared<CCBLAS>(std::dynamic_pointer_cast<PSIMRCCWfn>(shared_from_this()), options_);
     }
     
-    auto global_timer = std::make_shared<Timer>;
+    auto global_timer = std::make_shared<Timer>();
     active_space_warning();
 
     // TODO: CCManyBody is ancient. Nowadays, they should be wavefunction subclasses.
@@ -112,7 +113,7 @@ double PSIMRCCWfn::compute_energy() {
     }
 
     outfile->Printf("\n\n  PSIMRCC job completed.");
-    outfile->Printf("\n  Wall Time = %20.6f s", global_timer);
+    outfile->Printf("\n  Wall Time = %20.6f s", global_timer->get());
     outfile->Printf("\n  GEMM Time = %20.6f s", moinfo_->get_dgemm_timing());
 
     _default_psio_lib_->close(PSIF_PSIMRCC_INTEGRALS, 1);
