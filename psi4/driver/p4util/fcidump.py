@@ -44,7 +44,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None, write_pntgrp=False):
     This latter format can be used with the HANDE QMC code but is not standard.
     This function converts the irrep labels from Cotton's order (used in psi4)
     to molpro ordering. Since the latter is ambiguous unless the point group is
-    specificied, this function has an option to write the point group label in the
+    specified, this function has an option to write the point group label in the
     FCIDUMP file. This, however, is not part of the standard.
 
     :returns: None
@@ -462,4 +462,3 @@ def _mp2_energy(ERI, epsilon, unrestricted):
         mp2_e = np.einsum('iajb,iajb,iajb->', MO, MO, denom) + np.einsum('iajb,iajb,iajb->', MO - MO.swapaxes(1, 3),
                                                                          MO, denom)
     return mp2_e
-
