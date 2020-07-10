@@ -164,7 +164,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None, write_pntgrp=False):
             # Orbital energies
             core.print_out('Writing orbital energies in FCIDUMP format to ' + fname + '\n')
             if 'EIGENVALUES' in oe_ints:
-                if reference == 'RHF'
+                if reference == 'RHF':
                     eigs_dump = write_eigenvalues(wfn.epsilon_a().get_block(mo_slice).to_array(), mo_idx)
                     intdump.write(eigs_dump)
                 else:
