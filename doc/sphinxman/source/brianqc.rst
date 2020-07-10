@@ -32,7 +32,7 @@
 .. _`sec:brianqc`:
 
 Interface to the BrianQC GPU module by the BrianQC team
-===========================================
+=======================================================
 
 .. codeauthor:: Gergely Kis
 .. sectionauthor:: Gergely Kis
@@ -104,12 +104,25 @@ components have been built (usually `<brianqc_install_path>/build`), then build 
 Using BrianQC from |PSIfour|
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-BrianQC can be enabled and disabled without modifying your input file; just
-set the :envvar:`BRIANQC_INSTALL_PATH` environment variable to the full path of your
-BrianQC installation, and set the :envvar:`BRIANQC_ENABLE` environment variable to
-`1` or `0` to enable or disable BrianQC, respectively. For advanced options
-(such as setting the number of GPUs to be used by BrianQC), please refer to
-the BrianQC manual.
+To use BrianQC, the :envvar:`BRIANQC_INSTALL_PATH` environment variable
+must be set to the full path of your BrianQC installation.
+
+There are two ways to enable BrianQC for a specific calculation:
+
+* setting the |globals__brianqc_enable| input option to `True`;
+
+* setting the :envvar:`BRIANQC_ENABLE` environment variable to `1`.
+
+If both the input option and the environment variable are specified,
+then the environment variable takes precedence.
+
+When to enable BrianQC
+""""""""""""""""""""""
+
+The operation of BrianQC is transparent from a user's point of view; every
+internal computation is either performed by |PSIfour| (if unsupported by BrianQC),
+or taken over by BrianQC, yielding the same result to within the required
+precision. Thus, the only difference is in performance.
 
 BrianQC can speed up a number of internal computations, including Fock and
 gradient computation. Thus, BrianQC will speed up any calculation involving
@@ -124,4 +137,28 @@ those terms, such as
 Note that not every term of every calculation can be handled by BrianQC, thus,
 the actual speedup depends on the specifics of the calculation.
 
-.. TODO: input file option
+Necessary and recommended option values
+"""""""""""""""""""""""""""""""""""""""
+
+To ensure that a calculation works with BrianQC, the following options need to
+be set when enabling BrianQC:
+
+* BrianQC currently only handles the C1 molecular symmetry point group. Thus, if
+  the molecule has any symmetries (which |PSIfour| would detect by default), the
+  input geometry must contain the line ``symmetry c1`` to force |PSIfour| to
+  disregard the symmetry.
+
+To achieve peak performance, the following settings are recommended when enabling
+BrianQC:
+
+* By default, |PSIfour| uses density-fitted preiterations for SCF, which BrianQC
+  doesn't handle yet. To ensure that no non-BrianQC-accelerated iterations are
+  performed, disable the preiterations by setting |scf__df_scf_guess| to `False`.
+* By default, |PSIfour| uses a disk-based Fock building, but BrianQC currently only
+  accelerates direct Fock builds. To ensure that Fock building is accelerated by
+  BrianQC, set |globals__scf_type| to `direct`.
+
+Keywords
+~~~~~~~~
+
+.. include:: autodir_options_c/globals__brianqc_enable.rst

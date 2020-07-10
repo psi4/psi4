@@ -113,6 +113,21 @@ void brianRelease()
     brianAPIRelease(&brianCookie);
     brianCookie = 0;
 }
+
+void handleBrianOption(bool value) {
+    if (brianEnableEnvFound) {
+        outfile->Printf("BRIANQC_ENABLE option found, but overridden by BRIANQC_ENABLE environment variable\n");
+    } else {
+        outfile->Printf("BRIANQC_ENABLE option found, checking value\n");
+        if (value && (brianCookie == 0)) {
+            outfile->Printf("BRIANQC_ENABLE option set to true, initializing BrianQC\n");
+            brianInit();
+        } else if (!value && (brianCookie != 0)) {
+            outfile->Printf("BRIANQC_ENABLE option set to false, releasing BrianQC\n");
+            brianRelease();
+        }
+    }
+}
 #endif
 
 // Python helper wrappers
@@ -640,6 +655,18 @@ bool py_psi_set_global_option_string(std::string const& key, std::string const& 
         else
             throw std::domain_error("Required option type is boolean, no boolean specified");
     }
+    
+#ifdef USING_BrianQC
+    if (nonconst_key == "BRIANQC_ENABLE") {
+        if (to_upper(value) == "TRUE" || to_upper(value) == "YES" || to_upper(value) == "ON")
+            handleBrianOption(true);
+        else if (to_upper(value) == "FALSE" || to_upper(value) == "NO" || to_upper(value) == "OFF")
+            handleBrianOption(false);
+        else
+            throw std::domain_error("Required option type is boolean, no boolean specified");
+    }
+#endif
+
     return true;
 }
 
@@ -665,18 +692,7 @@ bool py_psi_set_global_option_int(std::string const& key, int value) {
     
 #ifdef USING_BrianQC
     if (nonconst_key == "BRIANQC_ENABLE") {
-        if (brianEnableEnvFound) {
-            outfile->Printf("BRIANQC_ENABLE option found, but overridden by BRIANQC_ENABLE environment variable\n");
-        } else {
-            outfile->Printf("BRIANQC_ENABLE option found, checking value\n");
-            if (value && (brianCookie == 0)) {
-                outfile->Printf("BRIANQC_ENABLE option set to true, initializing BrianQC\n");
-                brianInit();
-            } else if (!value && (brianCookie != 0)) {
-                outfile->Printf("BRIANQC_ENABLE option set to false, releasing BrianQC\n");
-                brianRelease();
-            }
-        }
+        handleBrianOption(value);
     }
 #endif
     
