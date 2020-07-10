@@ -36,7 +36,6 @@ from psi4.driver.p4util.testing import compare_integers, compare_values, compare
 from psi4.driver.procrouting.proc_util import check_iwl_file_from_scf_type
 
 from psi4 import core
-from .exceptions import ValidationError, TestComparisonError
 
 
 def fcidump(wfn, fname='INTDUMP', oe_ints=None, write_pntgrp=False):
@@ -50,7 +49,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None, write_pntgrp=False):
 
     :returns: None
 
-    :raises: ValidationError when SCF wavefunction is not RHF
+    :raises: ValidationError when SCF wavefunction is not RHF, ROHF, or UHF
 
     :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, basis, orbitals from which to generate cube files
@@ -76,7 +75,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None, write_pntgrp=False):
     reference = core.get_option('SCF', 'REFERENCE')
     ints_tolerance = core.get_global_option('INTS_TOLERANCE')
     # Some sanity checks
-    if reference not in ['RHF', 'UHF']:
+    if reference not in ['RHF', 'UHF', 'ROHF']:
         raise ValidationError('FCIDUMP not implemented for {} references\n'.format(reference))
     if oe_ints is None:
         oe_ints = []
@@ -92,7 +91,8 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None, write_pntgrp=False):
     nbf = active_mopi.sum() if wfn.same_a_b_orbs() else 2 * active_mopi.sum()
     nirrep = wfn.nirrep()
     nelectron = 2 * active_docc.sum() + active_socc.sum()
-    irrep_map = _irrep_map(wfn)
+    symm = wfn.molecule().point_group().symbol()
+    irrep_map = _irrep_map(symm)
 
     wfn_irrep = 0
     for h, n_socc in enumerate(active_socc):
@@ -115,7 +115,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None, write_pntgrp=False):
     header += 'ORBSYM={}\n'.format(orbsym)
     header += 'ISYM={:d},\n'.format(irrep_map[wfn_irrep])
     if write_pntgrp:
-        header += 'PNTGRP={},\n'.format(wfn.molecule().point_group().symbol().upper())
+        header += 'PNTGRP={},\n'.format(symm.upper())
     header += '&END\n'
     with open(fname, 'w') as intdump:
         intdump.write(header)
@@ -145,7 +145,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None, write_pntgrp=False):
 
     with open(fname, 'a') as intdump:
         core.print_out('Writing frozen core operator in FCIDUMP format to ' + fname + '\n')
-        if reference == 'RHF':
+        if reference == 'RHF' or reference == 'ROHF':
             PSIF_MO_FZC = 'MO-basis Frozen-Core Operator'
             moH = core.Matrix(PSIF_MO_FZC, wfn.nmopi(), wfn.nmopi())
             moH.load(core.IO.shared_object(), psif.PSIF_OEI)
@@ -164,8 +164,11 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None, write_pntgrp=False):
             # Orbital energies
             core.print_out('Writing orbital energies in FCIDUMP format to ' + fname + '\n')
             if 'EIGENVALUES' in oe_ints:
-                eigs_dump = write_eigenvalues(wfn.epsilon_a().get_block(mo_slice).to_array(), mo_idx)
-                intdump.write(eigs_dump)
+                if reference == 'RHF'
+                    eigs_dump = write_eigenvalues(wfn.epsilon_a().get_block(mo_slice).to_array(), mo_idx)
+                    intdump.write(eigs_dump)
+                else:
+                    raise Exception('Cannot write orbital energies for ROHF references')
         else:
             PSIF_MO_A_FZC = 'MO-basis Alpha Frozen-Core Oper'
             moH_A = core.Matrix(PSIF_MO_A_FZC, wfn.nmopi(), wfn.nmopi())
@@ -226,10 +229,9 @@ def write_eigenvalues(eigs, mo_idx):
     return eigs_dump
 
 
-def _irrep_map(wfn):
+def _irrep_map(symm):
     """Returns an array of irrep indices that maps from Psi4's ordering convention to the standard FCIDUMP convention.
     """
-    symm = wfn.molecule().point_group().symbol()
     psi2dump = {'c1' : [1],               # A
                 'ci' : [1,2],             # Ag Au
                 'c2' : [1,2],             # A  B
@@ -240,11 +242,28 @@ def _irrep_map(wfn):
                 'd2h' : [1,4,6,7,8,5,3,2] # Ag B1g B2g B3g Au B1u B2u B3u
                 }
 
-    irrep_map = psi2dump[symm]
+    irrep_map = psi2dump[symm.lower()]
     return np.array(irrep_map, dtype='int')
 
 
-def fcidump_from_file(fname):
+def _irrep_map_inverse(symm):
+    """Returns an array of irrep indices that maps from the standard FCIDUMP convention to the Psi4's ordering convention.
+    """
+    dump2psi = {'c1' : [-1,0],               # A
+                'ci' : [-1,0,1],             # Ag Au
+                'c2' : [-1,0,1],             # A  B
+                'cs' : [-1,0,1],             # A' A"
+                'd2' : [-1,0,3,2,1],         # A  B1  B2  B3
+                'c2v' : [-1,0,2,3,1],        # A1 A2  B1  B2
+                'c2h' : [-1,0,2,3,1],        # Ag Bg  Au  Bu
+                'd2h' : [-1,0,7,6,1,5,2,3,4] # Ag B1g B2g B3g Au B1u B2u B3u
+                }
+
+    irrep_map = dump2psi[symm.lower()]
+    return np.array(irrep_map, dtype='int')
+
+
+def fcidump_from_file(fname, convert_to_psi4=False):
     """Function to read in a FCIDUMP file.
 
     :returns: a dictionary with FCIDUMP header and integrals
@@ -262,6 +281,9 @@ def fcidump_from_file(fname):
       - 'eri' : electron-repulsion integrals
 
     :param fname: FCIDUMP file name
+    :param convert_to_psi4: If turned on and the FCIDUMP
+    file contains the PNTGRP label, the orbital symmetries will
+    be converted to the ordering used in psi4
     """
     intdump = {}
     with open(fname, 'r') as handle:
@@ -280,13 +302,19 @@ def fcidump_from_file(fname):
             if key == 'UHF':
                 value = 'TRUE' in value
             elif key == 'ORBSYM':
-                value = [int(x) for x in value.split(',')]
+                value = [int(x) for x in value.split(',')]                
             elif key == 'PNTGRP':
                 pass
             else:
                 value = int(value.replace(',', ''))
 
             intdump[key.lower()] = value
+
+    if convert_to_psi4 and ('pntgrp' in intdump) and ('orbsym' in intdump):
+        irrep_map_inverse = _irrep_map_inverse(intdump['pntgrp'])
+        psi4_irrep_map = map(lambda x: irrep_map_inverse[x], intdump['orbsym'])
+        intdump['orbsym'] = list(psi4_irrep_map)
+        intdump['isym'] = irrep_map_inverse[intdump['isym']]
 
     # Read the data and index, skip header
     raw_ints = np.genfromtxt(fname, skip_header=skiplines)
@@ -433,3 +461,4 @@ def _mp2_energy(ERI, epsilon, unrestricted):
         mp2_e = np.einsum('iajb,iajb,iajb->', MO, MO, denom) + np.einsum('iajb,iajb,iajb->', MO - MO.swapaxes(1, 3),
                                                                          MO, denom)
     return mp2_e
+
