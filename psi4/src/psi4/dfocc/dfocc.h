@@ -80,8 +80,7 @@ class DFOCC : public Wavefunction {
     void back_trans_cc();
     void dfgrad();
     void oei_grad();
-    void tei_grad_ref();
-    void tei_grad_corr();
+    void tei_grad(std::string aux_type);
     void gfock_oo();
     void gfock_vo();
     void gfock_ov();
@@ -1155,13 +1154,9 @@ class DFOCC : public Wavefunction {
     SharedTensor2d errvecsB;
 
     // SO basis
-    SharedTensor2d gQso;      // Gamma(Q|mu nu): 3-index TPDM
-    SharedTensor2d gQso_ref;  // Gamma(Q|mu nu): 3-index TPDM
     SharedTensor2d gQoo;      // Gamma(Q|i i): 3-index TPDM
     SharedTensor2d gQoo_ref;  // Gamma(Q|i i): 3-index TPDM
     SharedTensor2d gQon_ref;  // Gamma(Q|i nu): 3-index TPDM
-    SharedTensor2d Gaux;      // Gamma(P,Q): 2-index TPDM
-    SharedTensor2d Gaux_ref;  // Gamma(P,Q): 2-index TPDM
     SharedTensor2d dQso;      // D(Q|mu nu): 3-index OPDM for REF WFN
 
     // Amplitudes
