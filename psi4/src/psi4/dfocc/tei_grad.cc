@@ -34,13 +34,14 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/integral.h"
 #include "psi4/libmints/sieve.h"
+#include "psi4/libmints/twobody.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libpsi4util/process.h"
 #include "dfocc.h"
 
 #ifdef _OPENMP
 #include <omp.h>
-#include "psi4/libpsi4util/process.h"
 #endif
 
 using namespace psi;
@@ -48,11 +49,9 @@ using namespace psi;
 namespace psi {
 namespace dfoccwave {
 
-void DFOCC::tei_grad_corr() {
-    // outfile->Printf("\ttei_grad_corr is starting... \n");
-
+void DFOCC::tei_grad(std::string aux_type) {
     //===========================================================================================
-    //========================= Two-electron Gradient:Corr ======================================
+    //============================== Two-electron Gradient ======================================
     //===========================================================================================
     // Two-electron gradients
     int df_ints_num_threads_ = 1;
@@ -60,32 +59,41 @@ void DFOCC::tei_grad_corr() {
     df_ints_num_threads_ = Process::environment.get_n_threads();
 #endif
 
+    std::string aux_name, intermed_name, intermed_short;
+    if (aux_type == "JK") {
+        aux_name = "SCF";
+        intermed_name = "RefSep";
+        intermed_short = "RefSep";
+    } else if (aux_type == "RI") {
+        aux_name = "CC";
+        intermed_name = "Correlation";
+        intermed_short = "Corr";
+    } else {
+        throw PSIEXCEPTION("Contact a developer. An unrecognized aux_type was passed to DFOCC::tei_grad.");
+    }
+
     // Read in the basis set informations
-    std::shared_ptr<BasisSet> primary_ = get_basisset("ORBITAL");
-    std::shared_ptr<BasisSet> auxiliary_ = get_basisset("DF_BASIS_CC");
+    auto primary_ = get_basisset("ORBITAL");
+    auto auxiliary_ = get_basisset("DF_BASIS_" + aux_name);
     std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
-    // auxiliary_->print();
-    int nbasis = primary_->nbf();
-    int nQ_corr = auxiliary_->nbf();
+    auto naux = auxiliary_->nbf();
 
     //===========================================================================================
-    //========================= Metric Gradient:Corr ============================================
+    //============================= Metric Gradient =============================================
     //===========================================================================================
-    // Read Gaux
-    Gaux = SharedTensor2d(new Tensor2d("2-Index Correlation TPDM (P|Q)", nQ_corr, nQ_corr));
-    // Gaux->read(psio_, PSIF_DFOCC_DENS);
+    //R
+    auto Gaux = std::make_shared<Tensor2d>("2-Index " + intermed_name + " TPDM (P|Q)", naux, naux);
     Gaux->read_symm(psio_, PSIF_DFOCC_DENS);
 
     // JPQ_X
-    timer_on("Grad: Metric:Corr");
-    gradients["Metric:Corr"] = SharedMatrix(gradients["Nuclear"]->clone());
-    gradients["Metric:Corr"]->set_name("Metric:Corr Gradient");
-    gradients["Metric:Corr"]->zero();
+    auto metric_short = "Metric:" + intermed_short;
+    timer_on("Grad: " + metric_short);
+    gradients[metric_short] = SharedMatrix(gradients["Nuclear"]->clone());
+    gradients[metric_short]->set_name(metric_short + " Gradient");
+    gradients[metric_short]->zero();
 
     // => Sizing <= //
     int natom = primary_->molecule()->natom();
-    int nso = primary_->nbf();
-    int naux = auxiliary_->nbf();
 
     // => Integrals <= //
     std::shared_ptr<IntegralFactory> rifactory(
@@ -98,7 +106,7 @@ void DFOCC::tei_grad_corr() {
     // => Temporary Gradients <= //
     std::vector<SharedMatrix> Jtemps;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        Jtemps.push_back(SharedMatrix(new Matrix("Jtemp", natom, 3)));
+        Jtemps.push_back(std::make_shared<Matrix>("Jtemp", natom, 3));
     }
 
     std::vector<std::pair<int, int> > PQ_pairs;
@@ -164,38 +172,30 @@ void DFOCC::tei_grad_corr() {
             }
         }
     }
-    Gaux.reset();
 
     // => Temporary Gradient Reduction <= //
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        gradients["Metric:Corr"]->add(Jtemps[t]);
+        gradients[metric_short]->add(Jtemps[t]);
     }
 
-    // gradients["Metric:Corr"]->print_atom_vector();
-    timer_off("Grad: Metric:Corr");
+    timer_off("Grad: " + metric_short);
 
     //===========================================================================================
-    //========================= 3-Index Gradient:Corr ===========================================
+    //============================== 3-Index Gradient ===========================================
     //===========================================================================================
     // Read gQso
-    gQso = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|nn)", nQ_corr, nso_, nso_));
+    auto gQso = std::make_shared<Tensor2d>("" + intermed_name + " 3-Index TPDM (Q|nn)", naux, nso_, nso_);
     gQso->read(psio_, PSIF_DFOCC_DENS, true, true);
 
     // (Q | mu nu)^X
-    timer_on("Grad: 3-Index:Corr");
+    auto idx3_short = "3-Index:" + intermed_short;
+    timer_on("Grad: " + idx3_short);
+    gradients[idx3_short] = SharedMatrix(gradients["Nuclear"]->clone());
+    gradients[idx3_short]->set_name(idx3_short + " Gradient");
+    gradients[idx3_short]->zero();
 
-    // int naux = nQ;
-    gradients["3-Index:Corr"] = SharedMatrix(gradients["Nuclear"]->clone());
-    gradients["3-Index:Corr"]->set_name("3-Index:Corr Gradient");
-    gradients["3-Index:Corr"]->zero();
-
-    // => Sizing <= //
-    // int natom = primary_->molecule()->natom();
-    // int nso = primary_->nbf();
-    // int naux = auxiliary_->nbf();
-
-    std::shared_ptr<ERISieve> sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, 0.0));
-    const std::vector<std::pair<int, int> > &shell_pairs = sieve_->shell_pairs();
+    auto sieve_ = std::make_shared<ERISieve>(primary_, 0.0);
+    const auto &shell_pairs = sieve_->shell_pairs();
     int npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
@@ -227,7 +227,7 @@ void DFOCC::tei_grad_corr() {
     // => Temporary Gradients <= //
     std::vector<SharedMatrix> Jtemps2;
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        Jtemps2.push_back(SharedMatrix(new Matrix("Jtemp2", natom, 3)));
+        Jtemps2.push_back(std::make_shared<Matrix>("Jtemp2", natom, 3));
     }
 
     // => Master Loop <= //
@@ -296,8 +296,7 @@ void DFOCC::tei_grad_corr() {
             for (int p = 0; p < nP; p++) {
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++) {
-                        // double Ival = 1.0 * perm * gQso->get(p + oP + pstart, (m + oM) * nso + (n + oN));
-                        double Ival = 1.0 * perm * gQso->get(p + oP, (m + oM) * nso + (n + oN));
+                        double Ival = 1.0 * perm * gQso->get(p + oP, (m + oM) * nso_ + (n + oN));
                         grad_Jp[aP][0] += Ival * (*Px);
                         grad_Jp[aP][1] += Ival * (*Py);
                         grad_Jp[aP][2] += Ival * (*Pz);
@@ -322,16 +321,15 @@ void DFOCC::tei_grad_corr() {
             }
         }
     }
-    gQso.reset();
 
     // => Temporary Gradient Reduction <= //
     for (int t = 0; t < df_ints_num_threads_; t++) {
-        gradients["3-Index:Corr"]->add(Jtemps2[t]);
+        gradients[idx3_short]->add(Jtemps2[t]);
     }
 
-    // gradients["3-Index:Corr"]->print_atom_vector();
-    timer_off("Grad: 3-Index:Corr");
+    timer_off("Grad: " + idx3_short);
 }  // end
 
 }  // namespace dfoccwave
 }  // namespace psi
+
