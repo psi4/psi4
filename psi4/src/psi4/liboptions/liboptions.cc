@@ -600,13 +600,16 @@ void Options::set_str(const std::string& module, const std::string& key, std::st
     locals_[module][key] = new StringDataType(s);
     locals_[module][key].changed();
 
-    auto gl = get_global(key);
-    to_upper(s);
-    if (gl.choices().size() > 0) {
-        bool wrong_input = true;
-        for (size_t i = 0; i < gl.choices().size(); ++i)
-            if (s == gl.choices()[i]) wrong_input = false;
-        if (wrong_input) throw DataTypeException(s + " is not a valid choice");
+    // check if this option is defined in global. If yes, check choices
+    if (exists_in_global(key)) {
+        auto gl = get_global(key);
+        to_upper(s);
+        if (gl.choices().size() > 0) {
+            bool wrong_input = true;
+            for (size_t i = 0; i < gl.choices().size(); ++i)
+                if (s == gl.choices()[i]) wrong_input = false;
+            if (wrong_input) throw DataTypeException(s + " is not a valid choice");
+        }
     }
 }
 
@@ -614,13 +617,16 @@ void Options::set_str_i(const std::string& module, const std::string& key, std::
     locals_[module][key] = new IStringDataType(s);
     locals_[module][key].changed();
 
-    auto gl = get_global(key);
-    to_upper(s);
-    if (gl.choices().size() > 0) {
-        bool wrong_input = true;
-        for (size_t i = 0; i < gl.choices().size(); ++i)
-            if (s == gl.choices()[i]) wrong_input = false;
-        if (wrong_input) throw DataTypeException(s + " is not a valid choice");
+    // check if this option is defined in global. If yes, check choices
+    if (exists_in_global(key)) {
+        auto gl = get_global(key);
+        to_upper(s);
+        if (gl.choices().size() > 0) {
+            bool wrong_input = true;
+            for (size_t i = 0; i < gl.choices().size(); ++i)
+                if (s == gl.choices()[i]) wrong_input = false;
+            if (wrong_input) throw DataTypeException(s + " is not a valid choice");
+        }
     }
 }
 
