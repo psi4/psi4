@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(casscf-semi "psi;quicktests;casscf")
+add_regression_test(casscf-semi "psi;quicktests;casscf;noc1")
