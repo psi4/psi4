@@ -81,6 +81,7 @@ void CCSort::build_integrals_out_of_core() {
             last_irrep = trans->read_tei_mo_integrals_block(first_irrep);
             if (cycle == 0) frozen_core_energy_out_of_core();
             sort_integrals_out_of_core(first_irrep, last_irrep, to_be_processed);
+            trans->free_tei_mo_block(first_irrep, last_irrep);
             first_irrep = last_irrep;
         }
         // Write to disk and free memory

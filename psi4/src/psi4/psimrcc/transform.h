@@ -55,6 +55,7 @@ class CCTransform {
     void read_integrals_mrpt2(IntegralTransform* ints);
     int read_tei_mo_integrals_block(int first_irrep);
     void free_memory();
+    void free_tei_mo_block(int first_irrep, int last_irrep);
     void transform_tei_integrals();
     double oei(int p, int q);
     double tei_block(int p, int q, int r, int s);
@@ -80,7 +81,6 @@ class CCTransform {
 
     void allocate_oei_so();
     void allocate_oei_mo();
-    void free_oei_so();
 
     // Block
     int first_irrep_in_core;

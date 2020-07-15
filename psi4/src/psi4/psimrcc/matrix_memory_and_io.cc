@@ -96,6 +96,7 @@ void CCMatrix::allocate_block(int h) {
         if (!is_block_allocated(h)) {
             if (memorypi2[h] < wfn_->free_memory_) {
                 matrix[h] = block_matrix(left_pairpi[h], right_pairpi[h]);
+                wfn_->free_memory_ -= memorypi2[h];
             } else {
                 outfile->Printf("\n\nNot enough memory to allocate irrep %d of %s\n", h, label.c_str());
 
@@ -123,6 +124,7 @@ void CCMatrix::free_block(int h) {
     if (block_sizepi[h] > 0) {
         if (is_block_allocated(h)) {
             psi::free_block(matrix[h]);
+            wfn_->free_memory_ += memorypi2[h];
             matrix[h] = nullptr; // Needed for is_block_allocated
         }
     }

@@ -121,9 +121,10 @@ void CCTransform::presort_blocks(int first_irrep, int last_irrep) {
     std::vector<size_t> pairpi = pair_index->get_pairpi();
 
     // Allocate the temporary space
-    std::vector<std::vector<double>> tei_mo(wfn_->nirrep());
+    // This is a local variable, so no need to manage memory
+    std::vector<std::vector<double>> tei_mo_temp(wfn_->nirrep());
     for (int h = first_irrep; h < last_irrep; ++h) {
-        tei_mo[h] = std::vector<double>(INDEX(pairpi[h] - 1, pairpi[h] - 1) + 1, 0);
+        tei_mo_temp[h] = std::vector<double>(INDEX(pairpi[h] - 1, pairpi[h] - 1) + 1, 0);
     }
 
     // Read all the (frozen + non-frozen) TEI in Pitzer order
@@ -149,7 +150,7 @@ void CCTransform::presort_blocks(int first_irrep, int last_irrep) {
                 size_t pq = pair_index->get_tuple_rel_index(p, q);
                 size_t rs = pair_index->get_tuple_rel_index(r, s);
                 size_t pqrs = INDEX(pq, rs);
-                tei_mo[irrep][pqrs] = value;
+                tei_mo_temp[irrep][pqrs] = value;
             }
             fi += 4;
             elements++;
@@ -165,7 +166,7 @@ void CCTransform::presort_blocks(int first_irrep, int last_irrep) {
         char data_label[80];
         sprintf(data_label, "PRESORTED_TEI_IRREP_%d", h);
         _default_psio_lib_->write_entry(
-            PSIF_PSIMRCC_INTEGRALS, data_label, (char*)&(tei_mo[h][0]),
+            PSIF_PSIMRCC_INTEGRALS, data_label, (char*)&(tei_mo_temp[h][0]),
             static_cast<size_t>(INDEX(pairpi[h] - 1, pairpi[h] - 1) + 1) * static_cast<size_t>(sizeof(double)));
     }
 }

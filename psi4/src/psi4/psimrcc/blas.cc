@@ -57,6 +57,14 @@ void CCBLAS::cleanup() {
     free_sortmap();
     free_matrices();
     free_indices();
+    free_work();
+    free_buffer();
+}
+
+void CCBLAS::free_work() {
+    if (work.size()) {
+        wfn_->free_memory_ += sizeof(double) * options_.get_int("CC_NUM_THREADS") * work[0].size();
+    }
 }
 
 void CCBLAS::allocate_work() {
@@ -75,24 +83,28 @@ void CCBLAS::allocate_work() {
         work_size += dimension[2] * dimension[1];
     }
     // Allocate the temporary work space
+    free_work();
+    wfn_->free_memory_ -= sizeof(double) * options_.get_int("CC_NUM_THREADS") * work_size;
     work = std::vector<std::vector<double>>(options_.get_int("CC_NUM_THREADS"), std::vector<double>(work_size, 0));
     outfile->Printf("\n  Allocated work array of size %.2f MiB", work_size * sizeof(double) / 1048576.0);
 }
 
-void CCBLAS::allocate_buffer() {
-    // If buffer previously defined, clear it so as not to interfere with the memory calculation.
-    // If buffer not previously defined, do so now.
-    buffer = std::vector<std::vector<double>>(options_.get_int("CC_NUM_THREADS"));
+void CCBLAS::free_buffer() {
+    if (buffer.size()) {
+        wfn_->free_memory_ += sizeof(double) * options_.get_int("CC_NUM_THREADS") * buffer[0].size();
+    }
+}
 
+void CCBLAS::allocate_buffer() {
+    free_buffer();
     // Compute the temporary buffer space size, 101% of the actual strip size
     buffer_size = static_cast<size_t>(1.01 * CCMatrix::fraction_of_memory_for_buffer *
                                       static_cast<double>(wfn_->free_memory_) /
                                       static_cast<double>(sizeof(double)));
 
     // Allocate the temporary buffer space
-    for (int n = 0; n < options_.get_int("CC_NUM_THREADS"); n++) {
-        buffer[n] = std::vector<double>(buffer_size, 0);
-    }
+    buffer = std::vector<std::vector<double>>(options_.get_int("CC_NUM_THREADS"), std::vector<double>(buffer_size, 0));
+    wfn_->free_memory_ -= sizeof(double) * options_.get_int("CC_NUM_THREADS") * buffer_size;
     outfile->Printf("\n  Allocated buffer array of size %.2f MiB", buffer_size * sizeof(double) / 1048576.0);
 }
 

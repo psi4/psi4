@@ -42,6 +42,10 @@
 namespace psi {
 namespace psimrcc {
 
+// Many functions in this file have six-index local variables.
+// This is a good place to look for large memory expenses.
+// Because the variables are local, updating the wfn memory count is unnecessary.
+
 void CCMRCC::build_t2_amplitudes() {
     build_t2_iJaB_amplitudes();
     build_t2_ijab_amplitudes();
