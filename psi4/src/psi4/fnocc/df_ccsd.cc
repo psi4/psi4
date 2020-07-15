@@ -525,18 +525,26 @@ double DFCoupledCluster::CheckEnergy() {
         tb = tempv;
     }
     double energy = 0.0;
-    for (long int a = 0; a < v; a++) {
-        for (long int b = 0; b < v; b++) {
-            for (long int i = 0; i < o; i++) {
-                for (long int j = 0; j < o; j++) {
+    auto pairs = std::make_shared<Matrix>(o, o);
+    double **pairsp = pairs->pointer();
+    for (long int i = 0; i < o; i++) {
+        for (long int j = 0; j < o; j++) {
+            pairsp[i][j] = 0;
+            for (long int a = 0; a < v; a++) {
+                for (long int b = 0; b < v; b++) {
                     long int ijab = a * v * o * o + b * o * o + i * o + j;
                     long int iajb = i * v * v * o + a * v * o + j * v + b;
                     long int jaib = j * v * v * o + a * v * o + i * v + b;
-                    energy += (2.0 * integrals[iajb] - integrals[jaib]) * (tb[ijab] + t1[a * o + i] * t1[b * o + j]);
+                    double energy_contribution = (2.0 * integrals[iajb] - integrals[jaib]) * (tb[ijab] + t1[a * o + i] * t1[b * o + j]);
+                    energy += energy_contribution;
+                    pairsp[i][j] += energy_contribution;
                 }
             }
         }
     }
+
+    set_array_variable("CCSD PAIR ENERGIES", pairs);
+
     return energy;
 }
 
