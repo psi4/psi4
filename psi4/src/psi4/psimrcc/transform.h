@@ -52,13 +52,11 @@ class CCTransform {
     // Presorting
     void presort_integrals();
     void read_oei_from_transqt() { read_oei_mo_integrals(); }
-    void read_integrals_from_transqt() { read_mo_integrals(); }
     void read_integrals_mrpt2(IntegralTransform* ints);
     int read_tei_mo_integrals_block(int first_irrep);
     void free_memory();
     void transform_tei_integrals();
     double oei(int p, int q);
-    double tei(int p, int q, int r, int s);
     double tei_block(int p, int q, int r, int s);
     double tei_mrpt2(int p, int q, int r, int s);
 
@@ -73,25 +71,16 @@ class CCTransform {
     CCIndex* tei_mo_indexing;
     std::shared_ptr<PSIMRCCWfn> wfn_;
 
-    void read_mo_integrals();
-    void read_so_integrals();
     void read_oei_so_integrals();
     void read_oei_mo_integrals();
     void read_oei_mo_integrals_mrpt2();
-    void read_tei_so_integrals();
-    void read_tei_mo_integrals();
     void read_tei_mo_integrals_mrpt2(IntegralTransform* ints);
 
     void transform_oei_so_integrals();
-    void transform_tei_so_integrals();
 
     void allocate_oei_so();
     void allocate_oei_mo();
     void free_oei_so();
-
-    void allocate_tei_so();
-    void allocate_tei_mo();
-    void allocate_tei_half_transformed();
 
     // Block
     int first_irrep_in_core;
