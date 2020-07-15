@@ -225,6 +225,11 @@ class USAPT0 {
     // Monomer B eps vector (frozen vir), beta spin
     std::shared_ptr<Vector> eps_fvirb_B_;
 
+    // Convenience flag to check whether or not exchange terms
+    // for each spin should be computed
+    bool alpha_exchange_;
+    bool beta_exchange_;
+
     // Shared matrices (Fock-like)
     std::map<std::string, std::shared_ptr<Matrix> > vars_;
 
