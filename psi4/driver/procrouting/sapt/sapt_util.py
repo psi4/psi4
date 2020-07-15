@@ -163,7 +163,7 @@ def print_sapt_dft_summary(data, name, short=False):
     ret += print_sapt_var("  Disp2,r", data["Disp20"]) + "\n"
     ret += print_sapt_var("  Disp2,u", data["Disp20,u"]) + "\n"
     if exch_disp_scheme != "NONE":
-        ret += print_sapt_var("  Exch-Disp2,r (scaled)", data["Exch-Disp20,r"]) + "\n"
+        ret += print_sapt_var("  Est. Exch-Disp2,r", data["Exch-Disp20,r"]) + "\n"
     ret += print_sapt_var("  Exch-Disp2,u", data["Exch-Disp20,u"]) + "\n"
     ret += "\n"
     core.set_variable("SAPT DISP ENERGY", disp)
