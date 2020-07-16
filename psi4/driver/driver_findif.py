@@ -649,7 +649,7 @@ def assemble_dipder_from_dipoles(findifrec, freq_irrep_only):
     """
 
     # This *must* be a Psi molecule at present - CdSalcList generation panics otherwise
-    mol = core.Molecule.from_schema(findifrec["molecule"], verbose=0)
+    mol = core.Molecule.from_schema(findifrec["molecule"], nonphysical=True, verbose=0)
 
     pg = mol.point_group()
     ct = pg.char_table()
@@ -1325,7 +1325,7 @@ def _findif_schema_to_wfn(findifjob):
     """Helper function to keep Wavefunction dependent on FinDif-flavored QCSchemus."""
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
-    mol = core.Molecule.from_schema(findifjob.molecule.dict())
+    mol = core.Molecule.from_schema(findifjob.molecule.dict(), nonphysical=True)
     basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp')
     wfn = core.Wavefunction(mol, basis)
 

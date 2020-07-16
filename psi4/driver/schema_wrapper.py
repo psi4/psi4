@@ -534,7 +534,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         molschemus = json_data["molecule"]  # dtype >=2
     else:
         molschemus = json_data  # dtype =1
-    mol = core.Molecule.from_schema(molschemus)
+    mol = core.Molecule.from_schema(molschemus, nonphysical=True)
 
     # Update molecule geometry as we orient and fix_com
     json_data["molecule"]["geometry"] = mol.geometry().np.ravel().tolist()
