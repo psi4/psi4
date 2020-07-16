@@ -85,11 +85,11 @@ void CCMRCC::add_matrices() {
     */
 
     wfn_->blas()->add_Matrix("([ov]:[vv])");  // Used only three times in ccmrcc_f_int.cpp
-                                      /*
-                                        mrcc_f_int.cc:  wfn_->blas()->append("F_ae[v][v]{c} += #12# ([ov]:[vv]) 1@1 t1[ov]{c}");
-                                        mrcc_f_int.cc:  wfn_->blas()->append("F_ae[v][v]{o} += #12# ([ov]:[vv]) 1@1 t1[ov]{o}");
-                                        mrcc_f_int.cc:  wfn_->blas()->append("F_AE[V][V]{o} += #12# ([ov]:[vv]) 1@1 t1[OV]{o}");
-                                      */
+                                              /*
+                                                mrcc_f_int.cc:  wfn_->blas()->append("F_ae[v][v]{c} += #12# ([ov]:[vv]) 1@1 t1[ov]{c}");
+                                                mrcc_f_int.cc:  wfn_->blas()->append("F_ae[v][v]{o} += #12# ([ov]:[vv]) 1@1 t1[ov]{o}");
+                                                mrcc_f_int.cc:  wfn_->blas()->append("F_AE[V][V]{o} += #12# ([ov]:[vv]) 1@1 t1[OV]{o}");
+                                              */
 
     wfn_->blas()->add_Matrix("<[vo]|[vv]>");
     /*
@@ -119,29 +119,29 @@ void CCMRCC::add_matrices() {
     */
 
     wfn_->blas()->add_Matrix("<[v]:[ovv]>");  // Used several times
-                                      /*
-                                        mrcc_t1_amps.cc:  wfn_->blas()->append("t1_eqns[o][v]{c} += 1/2 t2[o][ovv]{c} 2@2 <[v]:[ovv]>");
-                                        mrcc_t1_amps.cc:  wfn_->blas()->append("t1_eqns[o][v]{o} += 1/2 t2[o][ovv]{o} 2@2 <[v]:[ovv]>");
-                                        mrcc_t1_amps.cc:  wfn_->blas()->append("t1_eqns[O][V]{o} += 1/2 t2[O][OVV]{o} 2@2 <[v]:[ovv]>");
-                                        mrcc_t2_amps.cc:    wfn_->blas()->append("t2_eqns[oo][vv]{c} += #1234#   t1[o][v]{c} 2@1 <[v]:[ovv]>");
-                                        mrcc_t2_amps.cc:    wfn_->blas()->append("t2_eqns[oo][vv]{c} += #2134# - t1[o][v]{c} 2@1 <[v]:[ovv]>");
-                                        mrcc_t2_amps.cc:  wfn_->blas()->append("t2_eqns[oo][vv]{o} += #1234#   t1[o][v]{o} 2@1 <[v]:[ovv]>");
-                                        mrcc_t2_amps.cc:  wfn_->blas()->append("t2_eqns[oo][vv]{o} += #2134# - t1[o][v]{o} 2@1 <[v]:[ovv]>");
-                                        mrcc_t2_amps.cc:  wfn_->blas()->append("t2_eqns[OO][VV]{o} += #1234#   t1[O][V]{o} 2@1 <[v]:[ovv]>");
-                                        mrcc_t2_amps.cc:  wfn_->blas()->append("t2_eqns[OO][VV]{o} += #2134# - t1[O][V]{o} 2@1 <[v]:[ovv]>");
-                                        mrcc_w_t3_int.cc:   wfn_->blas()->solve("W'_abic[vvo][v]{u}  = #4312# <[v]:[ovv]>");
-                                        mrcc_w_t3_int.cc:   wfn_->blas()->solve("W'_ABIC[VVO][V]{u}  = #4312# <[v]:[ovv]>");
-                                        mrcc_w_t3_int.cc:  wfn_->blas()->solve("W_aibc[v][ovv]{u}  = <[v]:[ovv]>");
-                                        mrcc_w_t3_int.cc:  wfn_->blas()->solve("W_AIBC[V][OVV]{u}  = <[v]:[ovv]>");
-                                      */
+                                              /*
+                                                mrcc_t1_amps.cc:  wfn_->blas()->append("t1_eqns[o][v]{c} += 1/2 t2[o][ovv]{c} 2@2 <[v]:[ovv]>");
+                                                mrcc_t1_amps.cc:  wfn_->blas()->append("t1_eqns[o][v]{o} += 1/2 t2[o][ovv]{o} 2@2 <[v]:[ovv]>");
+                                                mrcc_t1_amps.cc:  wfn_->blas()->append("t1_eqns[O][V]{o} += 1/2 t2[O][OVV]{o} 2@2 <[v]:[ovv]>");
+                                                mrcc_t2_amps.cc:    wfn_->blas()->append("t2_eqns[oo][vv]{c} += #1234#   t1[o][v]{c} 2@1 <[v]:[ovv]>");
+                                                mrcc_t2_amps.cc:    wfn_->blas()->append("t2_eqns[oo][vv]{c} += #2134# - t1[o][v]{c} 2@1 <[v]:[ovv]>");
+                                                mrcc_t2_amps.cc:  wfn_->blas()->append("t2_eqns[oo][vv]{o} += #1234#   t1[o][v]{o} 2@1 <[v]:[ovv]>");
+                                                mrcc_t2_amps.cc:  wfn_->blas()->append("t2_eqns[oo][vv]{o} += #2134# - t1[o][v]{o} 2@1 <[v]:[ovv]>");
+                                                mrcc_t2_amps.cc:  wfn_->blas()->append("t2_eqns[OO][VV]{o} += #1234#   t1[O][V]{o} 2@1 <[v]:[ovv]>");
+                                                mrcc_t2_amps.cc:  wfn_->blas()->append("t2_eqns[OO][VV]{o} += #2134# - t1[O][V]{o} 2@1 <[v]:[ovv]>");
+                                                mrcc_w_t3_int.cc:   wfn_->blas()->solve("W'_abic[vvo][v]{u}  = #4312# <[v]:[ovv]>");
+                                                mrcc_w_t3_int.cc:   wfn_->blas()->solve("W'_ABIC[VVO][V]{u}  = #4312# <[v]:[ovv]>");
+                                                mrcc_w_t3_int.cc:  wfn_->blas()->solve("W_aibc[v][ovv]{u}  = <[v]:[ovv]>");
+                                                mrcc_w_t3_int.cc:  wfn_->blas()->solve("W_AIBC[V][OVV]{u}  = <[v]:[ovv]>");
+                                              */
 
     wfn_->blas()->add_Matrix("([vvo]|[v])");  // Used four times in ccmrcc_w_int.cpp
-                                      /*
-                                        mrcc_w_int.cc:  wfn_->blas()->append("W_jbme[ov][ov]{u} += #2431# - ([vvo]|[v]) 2@2 t1[o][v]{u}");
-                                        mrcc_w_int.cc:  wfn_->blas()->append("W_jBmE[oV][oV]{u} += #2431# - ([vvo]|[v]) 2@2 t1[o][v]{u}");
-                                        mrcc_w_int.cc:  wfn_->blas()->append("W_JbMe[Ov][Ov]{o} += #2431# - ([vvo]|[v]) 2@2 t1[O][V]{o}");
-                                        mrcc_w_int.cc:  wfn_->blas()->append("W_JBME[OV][OV]{o} += #2431# - ([vvo]|[v]) 2@2 t1[O][V]{o}");
-                                      */
+                                              /*
+                                                mrcc_w_int.cc:  wfn_->blas()->append("W_jbme[ov][ov]{u} += #2431# - ([vvo]|[v]) 2@2 t1[o][v]{u}");
+                                                mrcc_w_int.cc:  wfn_->blas()->append("W_jBmE[oV][oV]{u} += #2431# - ([vvo]|[v]) 2@2 t1[o][v]{u}");
+                                                mrcc_w_int.cc:  wfn_->blas()->append("W_JbMe[Ov][Ov]{o} += #2431# - ([vvo]|[v]) 2@2 t1[O][V]{o}");
+                                                mrcc_w_int.cc:  wfn_->blas()->append("W_JBME[OV][OV]{o} += #2431# - ([vvo]|[v]) 2@2 t1[O][V]{o}");
+                                              */
 
     // V^4
     wfn_->blas()->add_Matrix("<[v>v]:[v>v]>");
@@ -426,7 +426,6 @@ void CCMRCC::add_matrices() {
 
     wfn_->blas()->add_Matrix("fock[ff]{u}");
     wfn_->blas()->add_Matrix("fock[FF]{u}");
-
 }
 
 }  // namespace psimrcc

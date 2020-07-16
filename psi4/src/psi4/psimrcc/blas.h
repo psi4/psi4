@@ -173,6 +173,8 @@ class CCBLAS {
     void free_sortmap();
     void free_indices();
     void free_matrices();
+    void free_work();
+    void free_buffer();
 };
 
 }  // namespace psimrcc

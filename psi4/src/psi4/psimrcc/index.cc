@@ -46,17 +46,12 @@ namespace psi {
 namespace psimrcc {
 
 CCIndex::CCIndex(std::shared_ptr<PSIMRCCWfn> wfn, std::string str)
-    : label(str),
-      wfn_(wfn),
-      nelements(0),
-      greater_than_or_equal(false),
-      greater_than(false),
-      ntuples(0) {
+    : label(str), wfn_(wfn), nelements(0), greater_than_or_equal(false), greater_than(false), ntuples(0) {
     nirreps = wfn_->nirrep();
     init();
 }
 
-CCIndex::~CCIndex() { }
+CCIndex::~CCIndex() {}
 
 void CCIndex::init() {
     // New orbital spaces must be added here
@@ -130,7 +125,7 @@ void CCIndex::init() {
 }
 
 void CCIndex::make_zero_index() {
-    std::vector<std::vector<short> > pairs;  // The pairs ordered as a vector
+    std::vector<std::vector<short>> pairs;  // The pairs ordered as a vector
     ntuples = 0;
     for (int h = 0; h < nirreps; h++) {
         first.push_back(ntuples);
@@ -143,12 +138,12 @@ void CCIndex::make_zero_index() {
         tuplespi.push_back(last[h] - first[h]);
     }
     // Allocate the memory for the tuples and store them
-    tuples = std::vector<std::array<short, 3>> {{0, 0, 0}};
+    tuples = std::vector<std::array<short, 3>>{{0, 0, 0}};
 }
 
 void CCIndex::make_one_index() {
     // The pairs ordered as a vector
-    std::vector<std::vector<short> > pairs;
+    std::vector<std::vector<short>> pairs;
 
     // Allocate the 1->tuple mapping array and set them to -1
     one_index_to_tuple_rel_index = std::vector<size_t>(dimension[0], 0);
@@ -179,7 +174,7 @@ void CCIndex::make_one_index() {
 }
 
 void CCIndex::make_two_index() {
-    std::vector<std::vector<short> > pairs;  // The pairs ordered as a vector
+    std::vector<std::vector<short>> pairs;  // The pairs ordered as a vector
 
     // Allocate the 2->tuple mapping array and set them to -1
     two_index_to_tuple_rel_index = std::vector<std::vector<size_t>>(dimension[0], std::vector<size_t>(dimension[1], 0));
@@ -284,11 +279,13 @@ void CCIndex::make_three_index() {
         exit(1);
     }
 
-    std::vector<std::vector<short> > pairs;  // The pairs ordered as a vector
+    std::vector<std::vector<short>> pairs;  // The pairs ordered as a vector
 
     // Allocate the 3->tuple mapping array and set them to -1
-    three_index_to_tuple_rel_index = std::vector<std::vector<std::vector<size_t>>>(dimension[0], std::vector<std::vector<size_t>>(dimension[1], std::vector<size_t>(dimension[2], 0)));
-    three_index_to_irrep = std::vector<std::vector<std::vector<int>>>(dimension[0], std::vector<std::vector<int>>(dimension[1], std::vector<int>(dimension[2], -1)));
+    three_index_to_tuple_rel_index = std::vector<std::vector<std::vector<size_t>>>(
+        dimension[0], std::vector<std::vector<size_t>>(dimension[1], std::vector<size_t>(dimension[2], 0)));
+    three_index_to_irrep = std::vector<std::vector<std::vector<int>>>(
+        dimension[0], std::vector<std::vector<int>>(dimension[1], std::vector<int>(dimension[2], -1)));
 
     if (label[2] == '>' && label[4] == '>') {
         ntuples = 0;

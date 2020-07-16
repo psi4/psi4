@@ -89,9 +89,10 @@ class CCManyBody {
     std::shared_ptr<PSIMRCCWfn> wfn_;
     // Effective Hamiltonian and the correpsonding eigenvectors
     void print_eigensystem(int ndets, double** Heff, std::vector<double>& eigenvector);
-    double diagonalize_Heff(int root, int ndets, double** Heff, std::vector<double>& right_eigenvector, std::vector<double>& left_eigenvector,
-                            bool initial);
-    void sort_eigensystem(int ndets, std::vector<double>& real, std::vector<double>& imaginary, double**& left, double**& right);
+    double diagonalize_Heff(int root, int ndets, double** Heff, std::vector<double>& right_eigenvector,
+                            std::vector<double>& left_eigenvector, bool initial);
+    void sort_eigensystem(int ndets, std::vector<double>& real, std::vector<double>& imaginary, double**& left,
+                          double**& right);
     double c_H_c(int ndets, double** H, std::vector<double>& c);
 
     std::vector<double> zeroth_order_eigenvector;

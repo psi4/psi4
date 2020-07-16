@@ -100,12 +100,18 @@ void CCManyBody::generate_denominators() {
             for (size_t i = 0; i < bvir.size(); i++) is_bvir[bvir[i]] = true;
 
             //      // Read the Fock matrices
-            CCMatTmp f_oo_Matrix = wfn_->blas()->get_MatTmp("fock[oo]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_OO_Matrix = wfn_->blas()->get_MatTmp("fock[OO]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_vv_Matrix = wfn_->blas()->get_MatTmp("fock[vv]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_VV_Matrix = wfn_->blas()->get_MatTmp("fock[VV]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_ff_Matrix = wfn_->blas()->get_MatTmp("fock[ff]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_FF_Matrix = wfn_->blas()->get_MatTmp("fock[FF]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_oo_Matrix =
+                wfn_->blas()->get_MatTmp("fock[oo]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_OO_Matrix =
+                wfn_->blas()->get_MatTmp("fock[OO]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_vv_Matrix =
+                wfn_->blas()->get_MatTmp("fock[vv]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_VV_Matrix =
+                wfn_->blas()->get_MatTmp("fock[VV]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_ff_Matrix =
+                wfn_->blas()->get_MatTmp("fock[ff]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_FF_Matrix =
+                wfn_->blas()->get_MatTmp("fock[FF]", reference, (keep_denominators_in_core ? none : dump));
 
             std::vector<CCMatrix*> f_Matrix;
             int k = 0;
@@ -201,12 +207,18 @@ void CCManyBody::generate_denominators() {
             for (size_t i = 0; i < bvir.size(); i++) is_bvir[bvir[i]] = true;
 
             //      // Read the Fock matrices
-            CCMatTmp f_oo_Matrix = wfn_->blas()->get_MatTmp("fock[oo]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_OO_Matrix = wfn_->blas()->get_MatTmp("fock[OO]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_vv_Matrix = wfn_->blas()->get_MatTmp("fock[vv]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_VV_Matrix = wfn_->blas()->get_MatTmp("fock[VV]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_ff_Matrix = wfn_->blas()->get_MatTmp("fock[ff]", reference, (keep_denominators_in_core ? none : dump));
-            CCMatTmp f_FF_Matrix = wfn_->blas()->get_MatTmp("fock[FF]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_oo_Matrix =
+                wfn_->blas()->get_MatTmp("fock[oo]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_OO_Matrix =
+                wfn_->blas()->get_MatTmp("fock[OO]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_vv_Matrix =
+                wfn_->blas()->get_MatTmp("fock[vv]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_VV_Matrix =
+                wfn_->blas()->get_MatTmp("fock[VV]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_ff_Matrix =
+                wfn_->blas()->get_MatTmp("fock[ff]", reference, (keep_denominators_in_core ? none : dump));
+            CCMatTmp f_FF_Matrix =
+                wfn_->blas()->get_MatTmp("fock[FF]", reference, (keep_denominators_in_core ? none : dump));
 
             std::vector<CCMatrix*> f_Matrix;
             int k = 0;

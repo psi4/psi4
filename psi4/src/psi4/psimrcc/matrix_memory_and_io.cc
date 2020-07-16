@@ -96,6 +96,7 @@ void CCMatrix::allocate_block(int h) {
         if (!is_block_allocated(h)) {
             if (memorypi2[h] < wfn_->free_memory_) {
                 matrix[h] = block_matrix(left_pairpi[h], right_pairpi[h]);
+                wfn_->free_memory_ -= memorypi2[h];
             } else {
                 outfile->Printf("\n\nNot enough memory to allocate irrep %d of %s\n", h, label.c_str());
 
@@ -123,7 +124,8 @@ void CCMatrix::free_block(int h) {
     if (block_sizepi[h] > 0) {
         if (is_block_allocated(h)) {
             psi::free_block(matrix[h]);
-            matrix[h] = nullptr; // Needed for is_block_allocated
+            wfn_->free_memory_ += memorypi2[h];
+            matrix[h] = nullptr;  // Needed for is_block_allocated
         }
     }
 }
@@ -171,8 +173,8 @@ void CCMatrix::write_block_to_disk(int h) {
             //       disk",label.c_str(),h); outfile->Printf("\n    This is a %d x %d
             //       block",left_pairpi[h],right_pairpi[h]);
             // for two electron integrals store strips of the symmetry block on disk
-            auto max_strip_size = static_cast<size_t>(fraction_of_memory_for_buffer *
-                                                        static_cast<double>(wfn_->free_memory_));
+            auto max_strip_size =
+                static_cast<size_t>(fraction_of_memory_for_buffer * static_cast<double>(wfn_->free_memory_));
 
             int strip = 0;
             size_t last_row = 0;

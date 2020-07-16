@@ -139,18 +139,18 @@ class MRCCSD_T {
 
     Hamiltonian* h_eff;
 
-    std::vector<std::vector<bool> > is_aocc;
-    std::vector<std::vector<bool> > is_bocc;
-    std::vector<std::vector<bool> > is_avir;
-    std::vector<std::vector<bool> > is_bvir;
+    std::vector<std::vector<bool>> is_aocc;
+    std::vector<std::vector<bool>> is_bocc;
+    std::vector<std::vector<bool>> is_avir;
+    std::vector<std::vector<bool>> is_bvir;
 
     // Denominators
-    std::vector<std::vector<double> > e_oo;
-    std::vector<std::vector<double> > e_OO;
-    std::vector<std::vector<double> > e_vv;
-    std::vector<std::vector<double> > e_VV;
+    std::vector<std::vector<double>> e_oo;
+    std::vector<std::vector<double>> e_OO;
+    std::vector<std::vector<double>> e_vv;
+    std::vector<std::vector<double>> e_VV;
 
-    std::vector<std::vector<double> > Mk_factor;
+    std::vector<std::vector<double>> Mk_factor;
     std::vector<double> Mk_shift;
 
     std::vector<std::vector<double**>> F_ov;
@@ -241,7 +241,7 @@ class MRCCSD_T {
     std::vector<double> E4_oOO;
     std::vector<double> E4_OOO;
 
-    std::vector<std::vector<double> > d_h_eff;
+    std::vector<std::vector<double>> d_h_eff;
 };
 
 }  // namespace psimrcc

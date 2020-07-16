@@ -44,25 +44,24 @@ namespace psimrcc {
 class CCBLAS;
 
 class PSIMRCCWfn : public Wavefunction {
-    public:
-     PSIMRCCWfn(SharedWavefunction ref_wfn, Options &options);
-     double compute_energy() override;
+   public:
+    PSIMRCCWfn(SharedWavefunction ref_wfn, Options &options);
+    double compute_energy() override;
 
-     // Methods
-     const std::shared_ptr<MOInfo> moinfo() const { return moinfo_; }
-     const std::shared_ptr<CCBLAS> blas() const { return blas_; }
-     // Estimate the free memory.
-     size_t free_memory_;
+    // Methods
+    const std::shared_ptr<MOInfo> moinfo() const { return moinfo_; }
+    const std::shared_ptr<CCBLAS> blas() const { return blas_; }
+    // Estimate the free memory.
+    size_t free_memory_;
 
-    protected:
-     // Class members
-     std::shared_ptr<MOInfo> moinfo_;
-     std::shared_ptr<CCBLAS> blas_;
+   protected:
+    // Class members
+    std::shared_ptr<MOInfo> moinfo_;
+    std::shared_ptr<CCBLAS> blas_;
 
-     // Methods
-     void active_space_warning() const;
+    // Methods
+    void active_space_warning() const;
 };
 }
-
 }
 #endif  // _psi_src_bin_psimrcc_wfn_h_

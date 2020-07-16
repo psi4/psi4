@@ -90,7 +90,7 @@ int CCTransform::allocate_tei_mo_block(int first_irrep) {
         static_cast<size_t>(static_cast<double>(wfn_->free_memory_) * fraction_of_memory_for_presorting);
 
     int last_irrep = first_irrep;
-    
+
     tei_mo = std::vector<std::vector<double>>(wfn_->nirrep());
 
     // Find how many irreps we can store in 95% of the free memory
@@ -100,6 +100,7 @@ int CCTransform::allocate_tei_mo_block(int first_irrep) {
         if (required_memory != 0) {
             if (required_memory < available_transform_memory) {
                 available_transform_memory -= required_memory;
+                wfn_->free_memory_ -= required_memory;
                 tei_mo[h] = std::vector<double>(INDEX(pairpi[h] - 1, pairpi[h] - 1) + 1, 0);
                 last_irrep++;
             }
@@ -116,6 +117,13 @@ int CCTransform::allocate_tei_mo_block(int first_irrep) {
     first_irrep_in_core = first_irrep;
     last_irrep_in_core = last_irrep;
     return (last_irrep);
+}
+
+void CCTransform::free_tei_mo_block(int first_irrep, int last_irrep) {
+    for (auto h = first_irrep; h < last_irrep; h++) {
+        wfn_->free_memory_ += sizeof(double) * tei_mo[h].size();
+    }
+    tei_mo.clear();
 }
 
 double CCTransform::tei_block(int p, int q, int r, int s) {

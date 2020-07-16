@@ -96,9 +96,7 @@ CCMatrix::CCMatrix(std::string& str, CCIndex* left_index, CCIndex* right_index)
         reference = to_integer(str.substr(left_curly + 1, right_curly - left_curly - 1));
 }
 
-CCMatrix::~CCMatrix() {
-    free_memory();
-}
+CCMatrix::~CCMatrix() { free_memory(); }
 
 /*********************************************************
   Printing Routines
@@ -111,7 +109,8 @@ void CCMatrix::print() {
     outfile->Printf("\n\n\t\t\t\t\t%s Matrix\n", label.c_str());
     for (int i = 0; i < nirreps; i++) {
         if (left->get_pairpi(i) * right->get_pairpi(i)) {
-            outfile->Printf("\nBlock %d (%s,%s)", i, wfn_->moinfo()->get_irr_labs(i).c_str(), wfn_->moinfo()->get_irr_labs(i).c_str());
+            outfile->Printf("\nBlock %d (%s,%s)", i, wfn_->moinfo()->get_irr_labs(i).c_str(),
+                            wfn_->moinfo()->get_irr_labs(i).c_str());
             print_dpdmatrix(i, "outfile");
         }
     }
@@ -294,8 +293,7 @@ void CCMatrix::print_dpdmatrix(int irrep, std::string out_fname) {
     int ii, jj, kk, nn, ll;
     int i, j;
     auto mode = std::ostream::app;
-    auto printer = out_fname == "outfile" ? psi::outfile
-                                          : std::make_shared<psi::PsiOutStream>(out_fname, mode);
+    auto printer = out_fname == "outfile" ? psi::outfile : std::make_shared<psi::PsiOutStream>(out_fname, mode);
     double** mat = matrix[irrep];
     int left_offset = left->get_first(irrep);
     int right_offset = right->get_first(irrep);

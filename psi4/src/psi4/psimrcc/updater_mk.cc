@@ -139,11 +139,15 @@ void MkUpdater::update(int cycle, Hamiltonian *heff) {
                 wfn_->blas()->set_scalar("factor_mk", unique_j, heff->get_matrix(unique_i, j) * term);
                 if (unique_i != j) {
                     if (j == unique_j) {
-                        wfn_->blas()->solve("t1_eqns[o][v]{" + i_str + "} += factor_mk{" + j_str + "} t1[o][v]{" + j_str + "}");
-                        wfn_->blas()->solve("t1_eqns[O][V]{" + i_str + "} += factor_mk{" + j_str + "} t1[O][V]{" + j_str + "}");
+                        wfn_->blas()->solve("t1_eqns[o][v]{" + i_str + "} += factor_mk{" + j_str + "} t1[o][v]{" +
+                                            j_str + "}");
+                        wfn_->blas()->solve("t1_eqns[O][V]{" + i_str + "} += factor_mk{" + j_str + "} t1[O][V]{" +
+                                            j_str + "}");
                     } else {
-                        wfn_->blas()->solve("t1_eqns[o][v]{" + i_str + "} += factor_mk{" + j_str + "} t1[O][V]{" + j_str + "}");
-                        wfn_->blas()->solve("t1_eqns[O][V]{" + i_str + "} += factor_mk{" + j_str + "} t1[o][v]{" + j_str + "}");
+                        wfn_->blas()->solve("t1_eqns[o][v]{" + i_str + "} += factor_mk{" + j_str + "} t1[O][V]{" +
+                                            j_str + "}");
+                        wfn_->blas()->solve("t1_eqns[O][V]{" + i_str + "} += factor_mk{" + j_str + "} t1[o][v]{" +
+                                            j_str + "}");
                     }
                 }
             }
@@ -152,9 +156,9 @@ void MkUpdater::update(int cycle, Hamiltonian *heff) {
         // Update t1 for reference i
         if (!options_.get_bool("NO_SINGLES")) {
             wfn_->blas()->solve("t1_delta[o][v]{" + i_str + "}  =   t1_eqns[o][v]{" + i_str + "} / d'1[o][v]{" + i_str +
-                        "} - t1[o][v]{" + i_str + "}");
+                                "} - t1[o][v]{" + i_str + "}");
             wfn_->blas()->solve("t1_delta[O][V]{" + i_str + "}  =   t1_eqns[O][V]{" + i_str + "} / d'1[O][V]{" + i_str +
-                        "} - t1[O][V]{" + i_str + "}");
+                                "} - t1[O][V]{" + i_str + "}");
 
             wfn_->blas()->solve("t1[o][v]{" + i_str + "} = t1_eqns[o][v]{" + i_str + "} / d'1[o][v]{" + i_str + "}");
             wfn_->blas()->solve("t1[O][V]{" + i_str + "} = t1_eqns[O][V]{" + i_str + "} / d'1[O][V]{" + i_str + "}");
@@ -188,177 +192,177 @@ void MkUpdater::update(int cycle, Hamiltonian *heff) {
                         wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "}  = t2[oo][vv]{" + j_str + "}");
 
                         // P(ij)t_i^a(nu/mu)t_j^b(nu/mu)
-                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #1324#   t1[o][v]{" + j_str + "} X t1[o][v]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #2314# - t1[o][v]{" + j_str + "} X t1[o][v]{" +
-                                    j_str + "}");
+                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #1324#   t1[o][v]{" + j_str +
+                                            "} X t1[o][v]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #2314# - t1[o][v]{" + j_str +
+                                            "} X t1[o][v]{" + j_str + "}");
 
                         // -P(ij)P(ab)t_i^a(mu)t_j^b(nu/mu)
-                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #1324# - t1[o][v]{" + i_str + "} X t1[o][v]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #2314#   t1[o][v]{" + i_str + "} X t1[o][v]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #1423#   t1[o][v]{" + i_str + "} X t1[o][v]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #2413# - t1[o][v]{" + i_str + "} X t1[o][v]{" +
-                                    j_str + "}");
+                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #1324# - t1[o][v]{" + i_str +
+                                            "} X t1[o][v]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #2314#   t1[o][v]{" + i_str +
+                                            "} X t1[o][v]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #1423#   t1[o][v]{" + i_str +
+                                            "} X t1[o][v]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #2413# - t1[o][v]{" + i_str +
+                                            "} X t1[o][v]{" + j_str + "}");
 
                         // P(ij)t_i^a(mu)t_j^b(mu)
-                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #1324#   t1[o][v]{" + i_str + "} X t1[o][v]{" +
-                                    i_str + "}");
-                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #2314# - t1[o][v]{" + i_str + "} X t1[o][v]{" +
-                                    i_str + "}");
+                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #1324#   t1[o][v]{" + i_str +
+                                            "} X t1[o][v]{" + i_str + "}");
+                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #2314# - t1[o][v]{" + i_str +
+                                            "} X t1[o][v]{" + i_str + "}");
 
-                        wfn_->blas()->solve("t2_eqns[oo][vv]{" + i_str + "} += factor_mk{" + j_str + "} Mk2[oo][vv]{" + i_str +
-                                    "}");
+                        wfn_->blas()->solve("t2_eqns[oo][vv]{" + i_str + "} += factor_mk{" + j_str + "} Mk2[oo][vv]{" +
+                                            i_str + "}");
 
                         // abab case
                         // + t_ij^ab(nu/mu)
                         wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "}  = t2[oO][vV]{" + j_str + "}");
 
                         // P(ij)t_i^a(nu/mu)t_J^B(nu/mu)
-                        wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "} += #1324#   t1[o][v]{" + j_str + "} X t1[O][V]{" +
-                                    j_str + "}");
+                        wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "} += #1324#   t1[o][v]{" + j_str +
+                                            "} X t1[O][V]{" + j_str + "}");
 
                         // -P(iJ)P(aB)t_i^a(mu)t_J^B(nu/mu)
-                        wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "} += #1324# - t1[o][v]{" + i_str + "} X t1[O][V]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "} += #1324# - t1[o][v]{" + j_str + "} X t1[O][V]{" +
-                                    i_str + "}");
+                        wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "} += #1324# - t1[o][v]{" + i_str +
+                                            "} X t1[O][V]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "} += #1324# - t1[o][v]{" + j_str +
+                                            "} X t1[O][V]{" + i_str + "}");
 
                         // P(iJ)t_i^a(mu)t_J^B(mu)
-                        wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "} += #1324#   t1[o][v]{" + i_str + "} X t1[O][V]{" +
-                                    i_str + "}");
+                        wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "} += #1324#   t1[o][v]{" + i_str +
+                                            "} X t1[O][V]{" + i_str + "}");
 
-                        wfn_->blas()->solve("t2_eqns[oO][vV]{" + i_str + "} += factor_mk{" + j_str + "} Mk2[oO][vV]{" + i_str +
-                                    "}");
+                        wfn_->blas()->solve("t2_eqns[oO][vV]{" + i_str + "} += factor_mk{" + j_str + "} Mk2[oO][vV]{" +
+                                            i_str + "}");
 
                         // bbbb case
                         // + t_ij^ab(nu/mu)
                         wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "}  = t2[OO][VV]{" + j_str + "}");
 
                         // P(ij)t_i^a(nu/mu)t_j^b(nu/mu)
-                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #1324#   t1[O][V]{" + j_str + "} X t1[O][V]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #2314# - t1[O][V]{" + j_str + "} X t1[O][V]{" +
-                                    j_str + "}");
+                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #1324#   t1[O][V]{" + j_str +
+                                            "} X t1[O][V]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #2314# - t1[O][V]{" + j_str +
+                                            "} X t1[O][V]{" + j_str + "}");
 
                         // -P(ij)P(ab)t_i^a(mu)t_j^b(nu/mu)
-                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #1324# - t1[O][V]{" + i_str + "} X t1[O][V]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #2314#   t1[O][V]{" + i_str + "} X t1[O][V]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #1423#   t1[O][V]{" + i_str + "} X t1[O][V]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #2413# - t1[O][V]{" + i_str + "} X t1[O][V]{" +
-                                    j_str + "}");
+                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #1324# - t1[O][V]{" + i_str +
+                                            "} X t1[O][V]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #2314#   t1[O][V]{" + i_str +
+                                            "} X t1[O][V]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #1423#   t1[O][V]{" + i_str +
+                                            "} X t1[O][V]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #2413# - t1[O][V]{" + i_str +
+                                            "} X t1[O][V]{" + j_str + "}");
 
                         // P(ij)t_i^a(mu)t_j^b(mu)
-                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #1324#   t1[O][V]{" + i_str + "} X t1[O][V]{" +
-                                    i_str + "}");
-                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #2314# - t1[O][V]{" + i_str + "} X t1[O][V]{" +
-                                    i_str + "}");
+                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #1324#   t1[O][V]{" + i_str +
+                                            "} X t1[O][V]{" + i_str + "}");
+                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #2314# - t1[O][V]{" + i_str +
+                                            "} X t1[O][V]{" + i_str + "}");
 
-                        wfn_->blas()->solve("t2_eqns[OO][VV]{" + i_str + "} += factor_mk{" + j_str + "} Mk2[OO][VV]{" + i_str +
-                                    "}");
+                        wfn_->blas()->solve("t2_eqns[OO][VV]{" + i_str + "} += factor_mk{" + j_str + "} Mk2[OO][VV]{" +
+                                            i_str + "}");
                     } else {
                         // aaaa case
                         // + t_ij^ab(nu/mu)
                         wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "}  = t2[OO][VV]{" + j_str + "}");
 
                         // P(ij)t_i^a(nu/mu)t_j^b(nu/mu)
-                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #1324#   t1[O][V]{" + j_str + "} X t1[O][V]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #2314# - t1[O][V]{" + j_str + "} X t1[O][V]{" +
-                                    j_str + "}");
+                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #1324#   t1[O][V]{" + j_str +
+                                            "} X t1[O][V]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #2314# - t1[O][V]{" + j_str +
+                                            "} X t1[O][V]{" + j_str + "}");
 
                         // -P(ij)P(ab)t_i^a(mu)t_j^b(nu/mu)
-                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #1324# - t1[o][v]{" + i_str + "} X t1[O][V]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #2314#   t1[o][v]{" + i_str + "} X t1[O][V]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #1423#   t1[o][v]{" + i_str + "} X t1[O][V]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #2413# - t1[o][v]{" + i_str + "} X t1[O][V]{" +
-                                    j_str + "}");
+                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #1324# - t1[o][v]{" + i_str +
+                                            "} X t1[O][V]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #2314#   t1[o][v]{" + i_str +
+                                            "} X t1[O][V]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #1423#   t1[o][v]{" + i_str +
+                                            "} X t1[O][V]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #2413# - t1[o][v]{" + i_str +
+                                            "} X t1[O][V]{" + j_str + "}");
 
                         // P(ij)t_i^a(mu)t_j^b(mu)
-                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #1324#   t1[o][v]{" + i_str + "} X t1[o][v]{" +
-                                    i_str + "}");
-                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #2314# - t1[o][v]{" + i_str + "} X t1[o][v]{" +
-                                    i_str + "}");
+                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #1324#   t1[o][v]{" + i_str +
+                                            "} X t1[o][v]{" + i_str + "}");
+                        wfn_->blas()->solve("Mk2[oo][vv]{" + i_str + "} += #2314# - t1[o][v]{" + i_str +
+                                            "} X t1[o][v]{" + i_str + "}");
 
-                        wfn_->blas()->solve("t2_eqns[oo][vv]{" + i_str + "} += factor_mk{" + j_str + "} Mk2[oo][vv]{" + i_str +
-                                    "}");
+                        wfn_->blas()->solve("t2_eqns[oo][vv]{" + i_str + "} += factor_mk{" + j_str + "} Mk2[oo][vv]{" +
+                                            i_str + "}");
 
                         // abab case
                         // + t_ij^ab(nu/mu)
                         wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "}  = #2143# t2[oO][vV]{" + j_str + "}");
 
                         // P(ij)t_i^a(nu/mu)t_J^B(nu/mu)
-                        wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "} += #1324#   t1[O][V]{" + j_str + "} X t1[o][v]{" +
-                                    j_str + "}");
+                        wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "} += #1324#   t1[O][V]{" + j_str +
+                                            "} X t1[o][v]{" + j_str + "}");
 
                         // -P(iJ)P(aB)t_i^a(mu)t_J^B(nu/mu)
-                        wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "} += #1324# - t1[o][v]{" + i_str + "} X t1[o][v]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "} += #1324# - t1[O][V]{" + j_str + "} X t1[O][V]{" +
-                                    i_str + "}");
+                        wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "} += #1324# - t1[o][v]{" + i_str +
+                                            "} X t1[o][v]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "} += #1324# - t1[O][V]{" + j_str +
+                                            "} X t1[O][V]{" + i_str + "}");
 
                         // P(iJ)t_i^a(mu)t_J^B(mu)
-                        wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "} += #1324#   t1[o][v]{" + i_str + "} X t1[O][V]{" +
-                                    i_str + "}");
+                        wfn_->blas()->solve("Mk2[oO][vV]{" + i_str + "} += #1324#   t1[o][v]{" + i_str +
+                                            "} X t1[O][V]{" + i_str + "}");
 
-                        wfn_->blas()->solve("t2_eqns[oO][vV]{" + i_str + "} += factor_mk{" + j_str + "} Mk2[oO][vV]{" + i_str +
-                                    "}");
+                        wfn_->blas()->solve("t2_eqns[oO][vV]{" + i_str + "} += factor_mk{" + j_str + "} Mk2[oO][vV]{" +
+                                            i_str + "}");
 
                         // bbbb case
                         // + t_ij^ab(nu/mu)
                         wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "}  = t2[oo][vv]{" + j_str + "}");
 
                         // P(ij)t_i^a(nu/mu)t_j^b(nu/mu)
-                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #1324#   t1[o][v]{" + j_str + "} X t1[o][v]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #2314# - t1[o][v]{" + j_str + "} X t1[o][v]{" +
-                                    j_str + "}");
+                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #1324#   t1[o][v]{" + j_str +
+                                            "} X t1[o][v]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #2314# - t1[o][v]{" + j_str +
+                                            "} X t1[o][v]{" + j_str + "}");
 
                         // -P(ij)P(ab)t_i^a(mu)t_j^b(nu/mu)
-                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #1324# - t1[O][V]{" + i_str + "} X t1[o][v]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #2314#   t1[O][V]{" + i_str + "} X t1[o][v]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #1423#   t1[O][V]{" + i_str + "} X t1[o][v]{" +
-                                    j_str + "}");
-                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #2413# - t1[O][V]{" + i_str + "} X t1[o][v]{" +
-                                    j_str + "}");
+                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #1324# - t1[O][V]{" + i_str +
+                                            "} X t1[o][v]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #2314#   t1[O][V]{" + i_str +
+                                            "} X t1[o][v]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #1423#   t1[O][V]{" + i_str +
+                                            "} X t1[o][v]{" + j_str + "}");
+                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #2413# - t1[O][V]{" + i_str +
+                                            "} X t1[o][v]{" + j_str + "}");
 
                         // P(ij)t_i^a(mu)t_j^b(mu)
-                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #1324#   t1[O][V]{" + i_str + "} X t1[O][V]{" +
-                                    i_str + "}");
-                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #2314# - t1[O][V]{" + i_str + "} X t1[O][V]{" +
-                                    i_str + "}");
+                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #1324#   t1[O][V]{" + i_str +
+                                            "} X t1[O][V]{" + i_str + "}");
+                        wfn_->blas()->solve("Mk2[OO][VV]{" + i_str + "} += #2314# - t1[O][V]{" + i_str +
+                                            "} X t1[O][V]{" + i_str + "}");
 
-                        wfn_->blas()->solve("t2_eqns[OO][VV]{" + i_str + "} += factor_mk{" + j_str + "} Mk2[OO][VV]{" + i_str +
-                                    "}");
+                        wfn_->blas()->solve("t2_eqns[OO][VV]{" + i_str + "} += factor_mk{" + j_str + "} Mk2[OO][VV]{" +
+                                            i_str + "}");
                     }
                 }
             }
         }
         wfn_->blas()->solve("t2_delta[oo][vv]{" + i_str + "} = t2_eqns[oo][vv]{" + i_str + "} / d'2[oo][vv]{" + i_str +
-                    "} - t2[oo][vv]{" + i_str + "}");
+                            "} - t2[oo][vv]{" + i_str + "}");
         wfn_->blas()->solve("t2_delta[oO][vV]{" + i_str + "} = t2_eqns[oO][vV]{" + i_str + "} / d'2[oO][vV]{" + i_str +
-                    "} - t2[oO][vV]{" + i_str + "}");
+                            "} - t2[oO][vV]{" + i_str + "}");
         wfn_->blas()->solve("t2_delta[OO][VV]{" + i_str + "} = t2_eqns[OO][VV]{" + i_str + "} / d'2[OO][VV]{" + i_str +
-                    "} - t2[OO][VV]{" + i_str + "}");
+                            "} - t2[OO][VV]{" + i_str + "}");
 
         std::string damp = to_string(options_.get_double("DAMPING_PERCENTAGE") / 100.0);
         std::string one_minus_damp = to_string(1.0 - options_.get_double("DAMPING_PERCENTAGE") / 100.0);
-        wfn_->blas()->solve("t2[oo][vv]{" + i_str + "} = " + one_minus_damp + " t2_eqns[oo][vv]{" + i_str + "} / d'2[oo][vv]{" +
-                    i_str + "}");
-        wfn_->blas()->solve("t2[oO][vV]{" + i_str + "} = " + one_minus_damp + " t2_eqns[oO][vV]{" + i_str + "} / d'2[oO][vV]{" +
-                    i_str + "}");
-        wfn_->blas()->solve("t2[OO][VV]{" + i_str + "} = " + one_minus_damp + " t2_eqns[OO][VV]{" + i_str + "} / d'2[OO][VV]{" +
-                    i_str + "}");
+        wfn_->blas()->solve("t2[oo][vv]{" + i_str + "} = " + one_minus_damp + " t2_eqns[oo][vv]{" + i_str +
+                            "} / d'2[oo][vv]{" + i_str + "}");
+        wfn_->blas()->solve("t2[oO][vV]{" + i_str + "} = " + one_minus_damp + " t2_eqns[oO][vV]{" + i_str +
+                            "} / d'2[oO][vV]{" + i_str + "}");
+        wfn_->blas()->solve("t2[OO][VV]{" + i_str + "} = " + one_minus_damp + " t2_eqns[OO][VV]{" + i_str +
+                            "} / d'2[OO][VV]{" + i_str + "}");
         wfn_->blas()->solve("t2[oo][vv]{" + i_str + "} += " + damp + " t2_old[oo][vv]{" + i_str + "}");
         wfn_->blas()->solve("t2[oO][vV]{" + i_str + "} += " + damp + " t2_old[oO][vV]{" + i_str + "}");
         wfn_->blas()->solve("t2[OO][VV]{" + i_str + "} += " + damp + " t2_old[OO][VV]{" + i_str + "}");

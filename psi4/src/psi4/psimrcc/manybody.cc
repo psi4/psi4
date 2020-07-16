@@ -64,6 +64,7 @@ CCManyBody::CCManyBody(std::shared_ptr<PSIMRCCWfn> wfn, Options& options) : wfn_
     left_eigenvector = std::vector<double>(wfn_->moinfo()->get_nrefs(), 0);
     Heff = block_matrix(wfn_->moinfo()->get_nrefs(), wfn_->moinfo()->get_nrefs());
     Heff_mrpt2 = block_matrix(wfn_->moinfo()->get_nrefs(), wfn_->moinfo()->get_nrefs());
+    wfn_->free_memory_ -= 2 * sizeof(double) * wfn_->moinfo()->get_nrefs();
 
     huge = 1.0e100;
     norm_amps = 0.0;
@@ -78,6 +79,17 @@ CCManyBody::CCManyBody(std::shared_ptr<PSIMRCCWfn> wfn, Options& options) : wfn_
 CCManyBody::~CCManyBody() {
     free_block(Heff);
     free_block(Heff_mrpt2);
+    wfn_->free_memory_ += 2 * sizeof(double) * wfn_->moinfo()->get_nrefs();
+    if (d3_ooo.size()) {
+        // Triple denominators were allocated. They are only now de-allocated.
+        auto nrefs = wfn_->moinfo()->get_nunique();
+        auto ooo_indexing = wfn_->blas()->get_index("[ooo]");
+        auto vvv_indexing = wfn_->blas()->get_index("[vvv]");
+        for (int h = 0; h < wfn_->nirrep(); h++) {
+            wfn_->free_memory_ +=
+                4 * sizeof(double) * nrefs * (ooo_indexing->get_pairpi(h) + vvv_indexing->get_pairpi(h));
+        }
+    }
 }
 
 /**
@@ -103,8 +115,14 @@ void CCManyBody::generate_triples_denominators() {
     generate_d3_abc(d3_VVV, false, false, false);
 }
 
-void CCManyBody::generate_d3_ijk(std::vector<std::vector<std::vector<double>>>& d3, bool alpha_i, bool alpha_j, bool alpha_k) {
-    d3 = std::vector<std::vector<std::vector<double>>>(wfn_->moinfo()->get_nunique(), std::vector<std::vector<double>>(wfn_->nirrep()));
+void CCManyBody::generate_d3_ijk(std::vector<std::vector<std::vector<double>>>& d3, bool alpha_i, bool alpha_j,
+                                 bool alpha_k) {
+    d3 = std::vector<std::vector<std::vector<double>>>(wfn_->moinfo()->get_nunique(),
+                                                       std::vector<std::vector<double>>(wfn_->nirrep()));
+    auto ooo_indexing = wfn_->blas()->get_index("[ooo]");
+    for (int h = 0; h < wfn_->nirrep(); h++) {
+        wfn_->free_memory_ -= sizeof(double) * wfn_->moinfo()->get_nunique() * ooo_indexing->get_pairpi(h);
+    }
     // Loop over references
     for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
         int reference = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
@@ -142,10 +160,9 @@ void CCManyBody::generate_d3_ijk(std::vector<std::vector<std::vector<double>>>& 
         else
             f_kk_Matrix = f_OO_Matrix.get_CCMatrix();
 
-        auto ooo_indexing = wfn_->blas()->get_index("[ooo]");
         auto& ooo_tuples = ooo_indexing->get_tuples();
 
-        for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
+        for (int h = 0; h < wfn_->nirrep(); h++) {
             size_t ooo_offset = ooo_indexing->get_first(h);
             d3[ref][h] = std::vector<double>(ooo_indexing->get_pairpi(h), 0);
             for (size_t ijk = 0; ijk < ooo_indexing->get_pairpi(h); ijk++) {
@@ -169,8 +186,14 @@ void CCManyBody::generate_d3_ijk(std::vector<std::vector<std::vector<double>>>& 
     }
 }
 
-void CCManyBody::generate_d3_abc(std::vector<std::vector<std::vector<double>>>& d3, bool alpha_a, bool alpha_b, bool alpha_c) {
-    d3 = std::vector<std::vector<std::vector<double>>>(wfn_->moinfo()->get_nunique(), std::vector<std::vector<double>>(wfn_->nirrep()));
+void CCManyBody::generate_d3_abc(std::vector<std::vector<std::vector<double>>>& d3, bool alpha_a, bool alpha_b,
+                                 bool alpha_c) {
+    d3 = std::vector<std::vector<std::vector<double>>>(wfn_->moinfo()->get_nunique(),
+                                                       std::vector<std::vector<double>>(wfn_->nirrep()));
+    auto vvv_indexing = wfn_->blas()->get_index("[vvv]");
+    for (int h = 0; h < wfn_->nirrep(); h++) {
+        wfn_->free_memory_ -= sizeof(double) * wfn_->moinfo()->get_nunique() * vvv_indexing->get_pairpi(h);
+    }
     // Loop over references
     for (int ref = 0; ref < wfn_->moinfo()->get_nunique(); ref++) {
         int reference = wfn_->moinfo()->get_ref_number(ref, UniqueRefs);
@@ -208,7 +231,6 @@ void CCManyBody::generate_d3_abc(std::vector<std::vector<std::vector<double>>>& 
         else
             f_cc_Matrix = f_VV_Matrix.get_CCMatrix();
 
-        auto vvv_indexing = wfn_->blas()->get_index("[vvv]");
         auto& vvv_tuples = vvv_indexing->get_tuples();
 
         for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
@@ -290,11 +312,11 @@ void CCManyBody::print_eigensystem(int ndets, double** Heff, std::vector<double>
         }
     }
 
-    std::vector<std::pair<double, int> > eigenvector_index_pair;
+    std::vector<std::pair<double, int>> eigenvector_index_pair;
     for (int i = 0; i < ndets; ++i) {
         eigenvector_index_pair.push_back(std::make_pair(eigenvector[i] * eigenvector[i], i));
     }
-    sort(eigenvector_index_pair.begin(), eigenvector_index_pair.end(), std::greater<std::pair<double, int> >());
+    sort(eigenvector_index_pair.begin(), eigenvector_index_pair.end(), std::greater<std::pair<double, int>>());
     int max_size_list = std::min(10, static_cast<int>(eigenvector_index_pair.size()));
     outfile->Printf("\n\n  Most important determinants in the wave function");
     outfile->Printf("\n\n  determinant  eigenvector   eigenvector^2\n");
@@ -439,8 +461,9 @@ double CCManyBody::diagonalize_Heff(int root, int ndets, double** Heff, std::vec
     return (energy);
 }
 
-void CCManyBody::sort_eigensystem(int ndets, std::vector<double>& real, std::vector<double>& imaginary, double**& left, double**& right) {
-    std::vector<std::pair<double, int> > pairs;
+void CCManyBody::sort_eigensystem(int ndets, std::vector<double>& real, std::vector<double>& imaginary, double**& left,
+                                  double**& right) {
+    std::vector<std::pair<double, int>> pairs;
     for (int i = 0; i < ndets; i++) pairs.push_back(std::make_pair(real[i], i));
     sort(pairs.begin(), pairs.end());
 

@@ -180,9 +180,7 @@ void CCOperation::tensor_product() {
     AMatTmp->tensor_product(reindexing, factor, BMatTmp.get_CCMatrix(), CMatTmp.get_CCMatrix());
 }
 
-void CCOperation::contract() {
-    setup_contractions();
-}
+void CCOperation::contract() { setup_contractions(); }
 
 void CCOperation::zero_two_diagonal() { A_Matrix->zero_two_diagonal(); }
 

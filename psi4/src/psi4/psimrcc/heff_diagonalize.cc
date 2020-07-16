@@ -42,7 +42,8 @@ namespace psi {
 
 namespace psimrcc {
 
-void sort_eigensystem(int ndets, std::vector<double>& real, std::vector<double>& imaginary, double**& left, double**& right);
+void sort_eigensystem(int ndets, std::vector<double>& real, std::vector<double>& imaginary, double**& left,
+                      double**& right);
 
 double Hamiltonian::diagonalize(int root) {
     double energy;
@@ -159,8 +160,9 @@ double Hamiltonian::diagonalize(int root) {
     return (energy);
 }
 
-void sort_eigensystem(int ndets, std::vector<double>& real, std::vector<double>& imaginary, double**& left, double**& right) {
-    std::vector<std::pair<double, int> > pairs;
+void sort_eigensystem(int ndets, std::vector<double>& real, std::vector<double>& imaginary, double**& left,
+                      double**& right) {
+    std::vector<std::pair<double, int>> pairs;
     for (int i = 0; i < ndets; i++) pairs.push_back(std::make_pair(real[i], i));
     sort(pairs.begin(), pairs.end());
 

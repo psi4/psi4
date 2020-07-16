@@ -44,7 +44,6 @@ namespace psi {
 namespace psimrcc {
 
 void MRCCSD_T::startup() {
-
     wfn_ = h_eff->wfn();
 
     if (options_.get_str("TRIPLES_ALGORITHM") == "SPIN_ADAPTED") {
@@ -395,8 +394,8 @@ void MRCCSD_T::check_intruders() {
     std::vector<int> vir_to_mo = wfn_->moinfo()->get_vir_to_mo();
     // Identify intruders
     for (int mu = 0; mu < nrefs; ++mu) {
-        std::vector<std::pair<double, std::vector<short> > > aaa_sample;
-        std::vector<std::pair<double, std::vector<short> > > aab_sample;
+        std::vector<std::pair<double, std::vector<short>>> aaa_sample;
+        std::vector<std::pair<double, std::vector<short>>> aab_sample;
         // Loop over ijk
         CCIndexIterator ijk(wfn_, "[ooo]");
         for (ijk.first(); !ijk.end(); ijk.next()) {
