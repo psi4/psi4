@@ -60,7 +60,8 @@ void CCSort::build_integrals_out_of_core() {
     int mat_irrep = 0;
     int cycle = 0;
 
-    auto ccintegrals_memory = static_cast<size_t>(static_cast<double>(wfn_->free_memory_) * fraction_of_memory_for_sorting);
+    auto ccintegrals_memory =
+        static_cast<size_t>(static_cast<double>(wfn_->free_memory_) * fraction_of_memory_for_sorting);
 
     outfile->Printf("\n\n  Sorting integrals:");
     outfile->Printf("\n    Memory available                       = %14lu bytes", wfn_->free_memory_);
@@ -93,7 +94,8 @@ void CCSort::build_integrals_out_of_core() {
 void CCSort::setup_out_of_core_list(MatMapIt& mat_it, int& mat_irrep, MatMapIt& mat_end, MatrixBlks& to_be_processed) {
     outfile->Printf("\n    Setting up the matrix list:");
 
-    size_t ccintegrals_memory = static_cast<size_t>(static_cast<double>(wfn_->free_memory_) * fraction_of_memory_for_sorting);
+    size_t ccintegrals_memory =
+        static_cast<size_t>(static_cast<double>(wfn_->free_memory_) * fraction_of_memory_for_sorting);
 
     int blocks_added = 0;
     bool out_of_memory = false;

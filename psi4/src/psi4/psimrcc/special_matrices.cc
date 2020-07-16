@@ -115,7 +115,8 @@ void MatrixBase::multiply(MatrixBase* A, MatrixBase* B, double alpha, double bet
 }
 
 //  Arrange the block according to the irrep of the columns (it makes it easier for matrix multiplication)
-BlockMatrix::BlockMatrix(std::shared_ptr<PSIMRCCWfn> wfn, std::vector<size_t>& rows_size_, std::vector<size_t>& cols_size_, int sym_) {
+BlockMatrix::BlockMatrix(std::shared_ptr<PSIMRCCWfn> wfn, std::vector<size_t>& rows_size_,
+                         std::vector<size_t>& cols_size_, int sym_) {
     // Copy values
     wfn_ = wfn;
     nirreps = wfn->nirrep();

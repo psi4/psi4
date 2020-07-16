@@ -76,9 +76,9 @@ void BWUpdater::update(int cycle, Hamiltonian* heff) {
         std::string shift = to_string(denominator_shift);
         std::string mu_str = to_string(mu_unique);
         wfn_->blas()->solve("t2_eqns[oo][vv]{" + mu_str + "} += #1324# " + neg_shift + "  t1[o][v]{" + mu_str +
-                    "} X t1[o][v]{" + mu_str + "}");
-        wfn_->blas()->solve("t2_eqns[oo][vv]{" + mu_str + "} += #2314# " + shift + "  t1[o][v]{" + mu_str + "} X t1[o][v]{" +
-                    mu_str + "}");
+                            "} X t1[o][v]{" + mu_str + "}");
+        wfn_->blas()->solve("t2_eqns[oo][vv]{" + mu_str + "} += #2314# " + shift + "  t1[o][v]{" + mu_str +
+                            "} X t1[o][v]{" + mu_str + "}");
     }
 
     // abab case
@@ -92,7 +92,7 @@ void BWUpdater::update(int cycle, Hamiltonian* heff) {
         double denominator_shift = heff->get_eigenvalue() - heff->get_matrix(mu_unique, mu_unique);
         std::string neg_shift = to_string(-denominator_shift);
         wfn_->blas()->solve("t2_eqns[oO][vV]{" + mu_str + "} += #1324# " + neg_shift + "  t1[o][v]{" + mu_str +
-                    "} X t1[O][V]{" + mu_str + "}");
+                            "} X t1[O][V]{" + mu_str + "}");
     }
 
     // bbbb case
@@ -109,9 +109,9 @@ void BWUpdater::update(int cycle, Hamiltonian* heff) {
         std::string shift = to_string(denominator_shift);
         std::string mu_str = to_string(mu_unique);
         wfn_->blas()->solve("t2_eqns[OO][VV]{" + mu_str + "} += #1324# " + neg_shift + "  t1[O][V]{" + mu_str +
-                    "} X t1[O][V]{" + mu_str + "}");
-        wfn_->blas()->solve("t2_eqns[OO][VV]{" + mu_str + "} += #2314# " + shift + "  t1[O][V]{" + mu_str + "} X t1[O][V]{" +
-                    mu_str + "}");
+                            "} X t1[O][V]{" + mu_str + "}");
+        wfn_->blas()->solve("t2_eqns[OO][VV]{" + mu_str + "} += #2314# " + shift + "  t1[O][V]{" + mu_str +
+                            "} X t1[O][V]{" + mu_str + "}");
     }
 
     wfn_->blas()->solve("t2_delta[oo][vv]{u} = t2_eqns[oo][vv]{u} / d'2[oo][vv]{u} - t2[oo][vv]{u}");

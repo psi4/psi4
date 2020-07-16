@@ -90,7 +90,7 @@ int CCTransform::allocate_tei_mo_block(int first_irrep) {
         static_cast<size_t>(static_cast<double>(wfn_->free_memory_) * fraction_of_memory_for_presorting);
 
     int last_irrep = first_irrep;
-    
+
     tei_mo = std::vector<std::vector<double>>(wfn_->nirrep());
 
     // Find how many irreps we can store in 95% of the free memory

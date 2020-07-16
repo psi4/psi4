@@ -38,8 +38,10 @@ void MRCCSD_T::compute_ooo_contribution_to_Heff(int i, int j, int k, int mu, Blo
     // Loop over reference nu (in a safe way)
     for (int nu = 0; nu < nrefs; nu++) {
         if (nu != mu) {
-            std::vector<std::pair<int, int> > alpha_internal_excitation = wfn_->moinfo()->get_alpha_internal_excitation(mu, nu);
-            std::vector<std::pair<int, int> > beta_internal_excitation = wfn_->moinfo()->get_beta_internal_excitation(mu, nu);
+            std::vector<std::pair<int, int> > alpha_internal_excitation =
+                wfn_->moinfo()->get_alpha_internal_excitation(mu, nu);
+            std::vector<std::pair<int, int> > beta_internal_excitation =
+                wfn_->moinfo()->get_beta_internal_excitation(mu, nu);
             double sign_internal_excitation = wfn_->moinfo()->get_sign_internal_excitation(mu, nu);
 
             // Set (alpha)->(alpha) single excitations
@@ -57,8 +59,10 @@ void MRCCSD_T::compute_ooO_contribution_to_Heff(int i, int j, int k, int mu, Blo
     // Loop over reference nu (in a safe way)
     for (int nu = 0; nu < nrefs; nu++) {
         if (nu != mu) {
-            std::vector<std::pair<int, int> > alpha_internal_excitation = wfn_->moinfo()->get_alpha_internal_excitation(mu, nu);
-            std::vector<std::pair<int, int> > beta_internal_excitation = wfn_->moinfo()->get_beta_internal_excitation(mu, nu);
+            std::vector<std::pair<int, int> > alpha_internal_excitation =
+                wfn_->moinfo()->get_alpha_internal_excitation(mu, nu);
+            std::vector<std::pair<int, int> > beta_internal_excitation =
+                wfn_->moinfo()->get_beta_internal_excitation(mu, nu);
             double sign_internal_excitation = wfn_->moinfo()->get_sign_internal_excitation(mu, nu);
 
             // Set (alpha)->(alpha) single excitations
@@ -90,8 +94,10 @@ void MRCCSD_T::compute_oOO_contribution_to_Heff(int i, int j, int k, int mu, Blo
     // Loop over reference nu (in a safe way)
     for (int nu = 0; nu < nrefs; nu++) {
         if (nu != mu) {
-            std::vector<std::pair<int, int> > alpha_internal_excitation = wfn_->moinfo()->get_alpha_internal_excitation(mu, nu);
-            std::vector<std::pair<int, int> > beta_internal_excitation = wfn_->moinfo()->get_beta_internal_excitation(mu, nu);
+            std::vector<std::pair<int, int> > alpha_internal_excitation =
+                wfn_->moinfo()->get_alpha_internal_excitation(mu, nu);
+            std::vector<std::pair<int, int> > beta_internal_excitation =
+                wfn_->moinfo()->get_beta_internal_excitation(mu, nu);
             double sign_internal_excitation = wfn_->moinfo()->get_sign_internal_excitation(mu, nu);
 
             // Set (alpha)->(alpha) single excitations
@@ -123,8 +129,10 @@ void MRCCSD_T::compute_OOO_contribution_to_Heff(int i, int j, int k, int mu, Blo
     // Loop over reference nu (in a safe way)
     for (int nu = 0; nu < nrefs; nu++) {
         if (nu != mu) {
-            std::vector<std::pair<int, int> > alpha_internal_excitation = wfn_->moinfo()->get_alpha_internal_excitation(mu, nu);
-            std::vector<std::pair<int, int> > beta_internal_excitation = wfn_->moinfo()->get_beta_internal_excitation(mu, nu);
+            std::vector<std::pair<int, int> > alpha_internal_excitation =
+                wfn_->moinfo()->get_alpha_internal_excitation(mu, nu);
+            std::vector<std::pair<int, int> > beta_internal_excitation =
+                wfn_->moinfo()->get_beta_internal_excitation(mu, nu);
             double sign_internal_excitation = wfn_->moinfo()->get_sign_internal_excitation(mu, nu);
 
             // Set (beta)->(beta) single excitations

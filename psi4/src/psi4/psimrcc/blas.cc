@@ -43,7 +43,10 @@ namespace psi {
 
 namespace psimrcc {
 
-CCBLAS::CCBLAS(std::shared_ptr<PSIMRCCWfn> wfn, Options& options) : wfn_(wfn), options_(options), full_in_core(false), work_size(0), buffer_size(0) { init(); }
+CCBLAS::CCBLAS(std::shared_ptr<PSIMRCCWfn> wfn, Options& options)
+    : wfn_(wfn), options_(options), full_in_core(false), work_size(0), buffer_size(0) {
+    init();
+}
 
 CCBLAS::~CCBLAS() { cleanup(); }
 
@@ -99,8 +102,7 @@ void CCBLAS::allocate_buffer() {
     free_buffer();
     // Compute the temporary buffer space size, 101% of the actual strip size
     buffer_size = static_cast<size_t>(1.01 * CCMatrix::fraction_of_memory_for_buffer *
-                                      static_cast<double>(wfn_->free_memory_) /
-                                      static_cast<double>(sizeof(double)));
+                                      static_cast<double>(wfn_->free_memory_) / static_cast<double>(sizeof(double)));
 
     // Allocate the temporary buffer space
     buffer = std::vector<std::vector<double>>(options_.get_int("CC_NUM_THREADS"), std::vector<double>(buffer_size, 0));
@@ -268,9 +270,9 @@ int CCBLAS::compute_storage_strategy() {
     // and divide the integrals from all the other matrices.
     // At the same time compute the memory requirements for
     // a fully in-core algorithm.
-    std::vector<std::pair<size_t, std::pair<CCMatrix*, int> > > integrals;
-    std::vector<std::pair<size_t, std::pair<CCMatrix*, int> > > fock;
-    std::vector<std::pair<size_t, std::pair<CCMatrix*, int> > > others;
+    std::vector<std::pair<size_t, std::pair<CCMatrix*, int>>> integrals;
+    std::vector<std::pair<size_t, std::pair<CCMatrix*, int>>> fock;
+    std::vector<std::pair<size_t, std::pair<CCMatrix*, int>>> others;
     for (MatrixMap::iterator it = matrices.begin(); it != matrices.end(); ++it) {
         for (int h = 0; h < wfn_->nirrep(); ++h) {
             size_t block_memory = it->second->get_memorypi2(h);

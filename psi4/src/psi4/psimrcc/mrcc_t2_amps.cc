@@ -326,8 +326,8 @@ void CCMRCC::build_t2_ijab_amplitudes_triples_diagram1() {
         auto& jkc_tuples = jkc_indexing->get_tuples();
 
         // PART A: Sort T[ijk][abc]->T[iab][jkc]
-        std::vector<double **> T_iabjkc(wfn_->nirrep(), nullptr);
-        std::vector<double **> H_iabj(wfn_->nirrep(), nullptr);
+        std::vector<double**> T_iabjkc(wfn_->nirrep(), nullptr);
+        std::vector<double**> H_iabj(wfn_->nirrep(), nullptr);
 
         for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             // Allocate a block of T_iabjkc
@@ -474,8 +474,8 @@ void CCMRCC::build_t2_iJaB_amplitudes_triples_diagram1() {
         auto& ijc_tuples = ijc_indexing->get_tuples();
         auto& ijb_tuples = ijb_indexing->get_tuples();
 
-        std::vector<double **> T_iackjb(wfn_->nirrep(), nullptr);
-        std::vector<double **> H_iabj(wfn_->nirrep());
+        std::vector<double**> T_iackjb(wfn_->nirrep(), nullptr);
+        std::vector<double**> H_iabj(wfn_->nirrep());
 
         for (int h = 0; h < wfn_->moinfo()->get_nirreps(); h++) {
             // Allocate a block of T_iabjkc

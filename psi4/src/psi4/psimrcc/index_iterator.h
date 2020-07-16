@@ -49,7 +49,7 @@ class CCIndexIterator {
     // Class Constructor and Destructor
     explicit CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn, std::string str);
     explicit CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn, std::string str, int select_irrep);
-    explicit CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn ,CCIndex* index);
+    explicit CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn, CCIndex* index);
     explicit CCIndexIterator(std::shared_ptr<PSIMRCCWfn> wfn, CCIndex* index, int select_irrep);
     ~CCIndexIterator();
 

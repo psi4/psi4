@@ -62,9 +62,7 @@ void MP2_CCSD::build_t1_ia_amplitudes() {
     wfn_->blas()->solve("t1[o][v]{u} = t1_eqns[o][v]{u} / d1[o][v]{u}");
 }
 
-void MP2_CCSD::build_t1_IA_amplitudes() {
-    wfn_->blas()->solve("t1[O][V]{u} = t1[o][v]{u}");
-}
+void MP2_CCSD::build_t1_IA_amplitudes() { wfn_->blas()->solve("t1[O][V]{u} = t1[o][v]{u}"); }
 
 }  // namespace psimrcc
 }  // namespace psi

@@ -46,8 +46,8 @@ class Options;
 
 namespace psimrcc {
 PSIMRCCWfn::PSIMRCCWfn(SharedWavefunction ref_wfn, Options &options) : Wavefunction(options) {
-	reference_wavefunction_ = ref_wfn;
-	shallow_copy(ref_wfn);
+    reference_wavefunction_ = ref_wfn;
+    shallow_copy(ref_wfn);
     moinfo_ = std::make_shared<MOInfo>(*(ref_wfn.get()), options);
     moinfo_->setup_model_space();
     memory_ = Process::environment.get_memory();
@@ -90,7 +90,7 @@ double PSIMRCCWfn::compute_energy() {
     if (blas_ == nullptr) {
         blas_ = std::make_shared<CCBLAS>(std::dynamic_pointer_cast<PSIMRCCWfn>(shared_from_this()), options_);
     }
-    
+
     auto global_timer = std::make_shared<Timer>();
     active_space_warning();
 
@@ -120,6 +120,5 @@ double PSIMRCCWfn::compute_energy() {
 
     return energy;
 }
-
 }
 }

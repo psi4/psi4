@@ -64,8 +64,8 @@ double IDMRPT2::compute_energy() {
 
     for (int m = 0; m < wfn_->moinfo()->get_nrefs(); m++)
         for (int n = 0; n < wfn_->moinfo()->get_nrefs(); n++) Heff[m][n] = Heff_mrpt2[m][n];
-    cas_energy = diagonalize_Heff(wfn_->moinfo()->get_root(), wfn_->moinfo()->get_nrefs(), Heff_mrpt2, zeroth_order_eigenvector,
-                                  left_eigenvector, true);
+    cas_energy = diagonalize_Heff(wfn_->moinfo()->get_root(), wfn_->moinfo()->get_nrefs(), Heff_mrpt2,
+                                  zeroth_order_eigenvector, left_eigenvector, true);
     current_energy = cas_energy;
     old_energy = current_energy;
 
@@ -136,16 +136,16 @@ double IDMRPT2::compute_energy() {
     // Diagonalize Heff
     build_Heff_mrpt2_diagonal();
     build_Heff_mrpt2_offdiagonal();
-    current_energy = diagonalize_Heff(wfn_->moinfo()->get_root(), wfn_->moinfo()->get_nrefs(), Heff_mrpt2, right_eigenvector,
-                                      left_eigenvector, false);
+    current_energy = diagonalize_Heff(wfn_->moinfo()->get_root(), wfn_->moinfo()->get_nrefs(), Heff_mrpt2,
+                                      right_eigenvector, left_eigenvector, false);
 
     double pseudo_second_order_energy = current_energy;
 
     // Diagonalize SCS Heff
     build_Heff_scs_mrpt2_diagonal();
     build_Heff_mrpt2_offdiagonal();
-    current_energy = diagonalize_Heff(wfn_->moinfo()->get_root(), wfn_->moinfo()->get_nrefs(), Heff_mrpt2, right_eigenvector,
-                                      left_eigenvector, false);
+    current_energy = diagonalize_Heff(wfn_->moinfo()->get_root(), wfn_->moinfo()->get_nrefs(), Heff_mrpt2,
+                                      right_eigenvector, left_eigenvector, false);
 
     double scs_pseudo_second_order_energy = current_energy;
 
@@ -306,11 +306,15 @@ void IDMRPT2::update_amps_mkpt2() {
             wfn_->blas()->set_scalar("factor_mk", unique_j, Heff[unique_i][j] * term);
             if (unique_i != j) {
                 if (j == unique_j) {
-                    wfn_->blas()->solve("t1_eqns[o][v]{" + i_str + "} += factor_mk{" + j_str + "} t1[o][v]{" + j_str + "}");
-                    wfn_->blas()->solve("t1_eqns[O][V]{" + i_str + "} += factor_mk{" + j_str + "} t1[O][V]{" + j_str + "}");
+                    wfn_->blas()->solve("t1_eqns[o][v]{" + i_str + "} += factor_mk{" + j_str + "} t1[o][v]{" + j_str +
+                                        "}");
+                    wfn_->blas()->solve("t1_eqns[O][V]{" + i_str + "} += factor_mk{" + j_str + "} t1[O][V]{" + j_str +
+                                        "}");
                 } else {
-                    wfn_->blas()->solve("t1_eqns[o][v]{" + i_str + "} += factor_mk{" + j_str + "} t1[O][V]{" + j_str + "}");
-                    wfn_->blas()->solve("t1_eqns[O][V]{" + i_str + "} += factor_mk{" + j_str + "} t1[o][v]{" + j_str + "}");
+                    wfn_->blas()->solve("t1_eqns[o][v]{" + i_str + "} += factor_mk{" + j_str + "} t1[O][V]{" + j_str +
+                                        "}");
+                    wfn_->blas()->solve("t1_eqns[O][V]{" + i_str + "} += factor_mk{" + j_str + "} t1[o][v]{" + j_str +
+                                        "}");
                 }
             }
         }
@@ -330,28 +334,33 @@ void IDMRPT2::update_amps_mkpt2() {
                 if (j == unique_j) {
                     // aaaa case
                     // + t_ij^ab(nu/mu)
-                    wfn_->blas()->solve("t2_eqns[oo][vv]{" + i_str + "} += factor_mk{" + j_str + "} t2[oo][vv]{" + j_str + "}");
+                    wfn_->blas()->solve("t2_eqns[oo][vv]{" + i_str + "} += factor_mk{" + j_str + "} t2[oo][vv]{" +
+                                        j_str + "}");
 
                     // abab case
                     // + t_ij^ab(nu/mu)
-                    wfn_->blas()->solve("t2_eqns[oO][vV]{" + i_str + "} += factor_mk{" + j_str + "} t2[oO][vV]{" + j_str + "}");
+                    wfn_->blas()->solve("t2_eqns[oO][vV]{" + i_str + "} += factor_mk{" + j_str + "} t2[oO][vV]{" +
+                                        j_str + "}");
 
                     // bbbb case
                     // + t_ij^ab(nu/mu)
-                    wfn_->blas()->solve("t2_eqns[OO][VV]{" + i_str + "} += factor_mk{" + j_str + "} t2[OO][VV]{" + j_str + "}");
+                    wfn_->blas()->solve("t2_eqns[OO][VV]{" + i_str + "} += factor_mk{" + j_str + "} t2[OO][VV]{" +
+                                        j_str + "}");
                 } else {
                     // aaaa case
                     // + t_ij^ab(nu/mu)
-                    wfn_->blas()->solve("t2_eqns[oo][vv]{" + i_str + "} += factor_mk{" + j_str + "} t2[OO][VV]{" + j_str + "}");
+                    wfn_->blas()->solve("t2_eqns[oo][vv]{" + i_str + "} += factor_mk{" + j_str + "} t2[OO][VV]{" +
+                                        j_str + "}");
 
                     // abab case
                     // + t_ij^ab(nu/mu)
-                    wfn_->blas()->solve("t2_eqns[oO][vV]{" + i_str + "} += #2143# factor_mk{" + j_str + "} t2[oO][vV]{" +
-                                j_str + "}");
+                    wfn_->blas()->solve("t2_eqns[oO][vV]{" + i_str + "} += #2143# factor_mk{" + j_str +
+                                        "} t2[oO][vV]{" + j_str + "}");
 
                     // bbbb case
                     // + t_ij^ab(nu/mu)
-                    wfn_->blas()->solve("t2_eqns[OO][VV]{" + i_str + "} += factor_mk{" + j_str + "} t2[oo][vv]{" + j_str + "}");
+                    wfn_->blas()->solve("t2_eqns[OO][VV]{" + i_str + "} += factor_mk{" + j_str + "} t2[oo][vv]{" +
+                                        j_str + "}");
                 }
             }
         }

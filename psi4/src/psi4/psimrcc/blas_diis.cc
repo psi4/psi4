@@ -140,7 +140,8 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type) {
                             // Load vector i irrep h
                             char i_data_label[80];
                             sprintf(i_data_label, "%s_%s_%d_%d", (it->second).c_str(), "DIIS", h, i);
-                            _default_psio_lib_->read_entry(PSIF_PSIMRCC_INTEGRALS, i_data_label, reinterpret_cast<char*>(i_matrix.data()),
+                            _default_psio_lib_->read_entry(PSIF_PSIMRCC_INTEGRALS, i_data_label,
+                                                           reinterpret_cast<char*>(i_matrix.data()),
                                                            block_sizepi * sizeof(double));
 
                             for (int j = i; j < options_.get_int("DIIS_MAX_VECS"); j++) {
@@ -148,7 +149,8 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type) {
                                 char j_data_label[80];
                                 sprintf(j_data_label, "%s_%s_%d_%d", (it->second).c_str(), "DIIS", h, j);
                                 _default_psio_lib_->read_entry(PSIF_PSIMRCC_INTEGRALS, j_data_label,
-                                                               reinterpret_cast<char*>(j_matrix.data()), block_sizepi * sizeof(double));
+                                                               reinterpret_cast<char*>(j_matrix.data()),
+                                                               block_sizepi * sizeof(double));
 
                                 int dx = 1;
                                 int length = block_sizepi;
@@ -185,7 +187,8 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type) {
                                 char i_data_label[80];
                                 sprintf(i_data_label, "%s_%s_%d_%d", (it->first).c_str(), "DIIS", h, i);
                                 _default_psio_lib_->read_entry(PSIF_PSIMRCC_INTEGRALS, i_data_label,
-                                                               reinterpret_cast<char*>(i_matrix.data()), block_sizepi * sizeof(double));
+                                                               reinterpret_cast<char*>(i_matrix.data()),
+                                                               block_sizepi * sizeof(double));
                                 for (size_t n = 0; n < block_sizepi; n++) {
                                     t_matrix[n] += diis_A[i] * i_matrix[n];
                                 }

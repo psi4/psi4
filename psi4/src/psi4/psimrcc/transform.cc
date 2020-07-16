@@ -89,9 +89,7 @@ void CCTransform::read_oei_mo_integrals() {
 /**
  * Free all the memory allocated by CCTransform
  */
-void CCTransform::free_memory() {
-    integral_map.clear();
-}
+void CCTransform::free_memory() { integral_map.clear(); }
 
 /**
  * Allocate the oei_mo array
