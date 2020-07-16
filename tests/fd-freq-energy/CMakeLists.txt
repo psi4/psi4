@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(fd-freq-energy "psi;findif")
+add_regression_test(fd-freq-energy "psi;findif;noc1")

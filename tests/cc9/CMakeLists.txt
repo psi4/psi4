@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(cc9 "psi;cc;autotest")
+add_regression_test(cc9 "psi;cc;autotest;noc1")
