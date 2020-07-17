@@ -54,6 +54,8 @@
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
+#include "psi4/libfock/cubature.h"
+#include "psi4/libfock/points.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -821,6 +823,7 @@ void OEProp::compute() {
     if (tasks_.count("MO_EXTENTS")) compute_mo_extents();
     if (tasks_.count("MULLIKEN_CHARGES")) compute_mulliken_charges();
     if (tasks_.count("LOWDIN_CHARGES")) compute_lowdin_charges();
+    if (tasks_.count("MBIS_CHARGES")) compute_mbis_charges();
     if (tasks_.count("MAYER_INDICES")) compute_mayer_indices();
     if (tasks_.count("WIBERG_LOWDIN_INDICES")) compute_wiberg_lowdin_indices();
     if (tasks_.count("NO_OCCUPATIONS")) compute_no_occupations();
@@ -1784,6 +1787,373 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
 
     return std::make_tuple(Qa, Qb, apcs);
 }
+
+void OEProp::compute_mbis_charges() {
+    PAC::SharedStdVector apcs = pac_.compute_mbis_charges(true);
+    wfn_->set_atomic_point_charges(apcs);
+
+    auto vec_apcs = std::make_shared<Matrix>("MBIS Charges: (a.u.)", 1, apcs->size());
+    for (size_t i = 0; i < apcs->size(); i++) {
+        vec_apcs->set(0, i, (*apcs)[i]);
+    }
+
+    wfn_->set_array_variable("MBIS_CHARGES", vec_apcs);
+}
+
+int PopulationAnalysisCalc::get_nai(int z, int m) {
+    if (z <= 2) {
+        return z;
+    }
+
+    else if (z <= 10) {
+        if (m == 1) {
+            return 2;
+        }
+        else {
+            return z - 2;
+        }
+    }
+
+    else if (z <= 18) {
+        if (m == 1) {
+            return 2;
+        }
+        else if (m == 2) {
+            return 8;
+        }
+        else {
+            return z - 10;
+        }
+    }
+
+    else if (z <= 36) {
+        if (m == 1) {
+            return 2;
+        }
+        else if (m == 2) {
+            return 8;
+        }
+        else if (m == 3) {
+            return 8;
+        }
+        else {
+            return z - 18;
+        }
+    }
+}
+
+int PopulationAnalysisCalc::get_mA(int atomic_num) {
+    if (atomic_num <= 2) {
+        return 1;
+    }
+    else if (atomic_num <= 10) {
+        return 2;
+    }
+    else if (atomic_num <= 18) {
+        return 3;
+    }
+    else if (atomic_num <= 36) {
+        return 4;
+    }
+}
+
+double PopulationAnalysisCalc::distance(double x, double y, double z, double Rx, double Ry, double Rz) {
+    return sqrt(pow((x-Rx), 2) + pow((y-Ry), 2) + pow((z-Rz), 2));
+}
+
+
+double PopulationAnalysisCalc::rho_ai_o(double n, double sigma, double distance) {
+
+    if (fabs(sigma) < 1.0e-16) {
+        return 0.0;
+    }
+
+    return n * exp(-distance / sigma) / (pow(sigma, 3) * 8 * M_PI);
+
+}
+
+double PopulationAnalysisCalc::rho_a_o(int atom, const std::vector<std::vector<double>> &n, const std::vector<std::vector<double>> &s, const std::vector<std::vector<double>> &distances, int point_num) {
+
+    double sum = 0.0;
+
+    for (int m = 0; m < 4; m++) {
+        sum += rho_ai_o(n[atom][m], s[atom][m], distances[atom][point_num]);
+    }
+
+    return sum;
+}
+
+double PopulationAnalysisCalc::rho_o(int num_atoms, const std::vector<std::vector<double>> &n, const std::vector<std::vector<double>> &s, const std::vector<std::vector<double>> &distances, int point_num) {
+    double sum = 0.0;
+
+    for (int atom = 0; atom < num_atoms; atom++) {
+        sum += rho_a_o(atom, n, s, distances, point_num);
+    }
+
+    return sum;
+}
+
+void PopulationAnalysisCalc::atomic_positions(SharedMolecule mol, int num_atoms, std::vector<double> &Rxs, std::vector<double> &Rys, std::vector<double> &Rzs) {
+
+    for (int atom = 0; atom < num_atoms; atom++) {
+        Rxs[atom] = mol->fx(atom);
+        Rys[atom] = mol->fy(atom);
+        Rzs[atom] = mol->fz(atom);
+    }
+
+}
+
+PAC::SharedStdVector PopulationAnalysisCalc::compute_mbis_charges(bool print_output) {
+
+    const int MAX_ITER = 100;
+
+    if (print_output) {
+        outfile->Printf("  MBIS Charges: (a.u.)\n");
+    }
+
+    std::shared_ptr<Molecule> mol = basisset_->molecule();
+    int nbf = basisset_->nbf();
+
+    int num_atoms = mol->natom();
+
+    //auto Qa = std::make_shared<std::vector<double>>(natom);
+    //auto Qb = std::make_shared<std::vector<double>>(natom);
+    auto apcs = std::make_shared<std::vector<double>>(num_atoms);
+
+    Options& options = Process::environment.options;
+
+    std::shared_ptr<DFTGrid> grid = std::make_shared<DFTGrid>(mol, basisset_, options);
+    int total_points = grid->npoints();
+
+    SharedMatrix Da;
+    SharedMatrix Db;
+
+    std::shared_ptr<PointFunctions> point_func;
+
+    Da = wfn_->Da_subset("AO");
+
+    if (same_dens_) {
+        Db = Da->clone();
+        point_func = (std::shared_ptr<PointFunctions>) (new RKSFunctions(basisset_, total_points, nbf));
+        point_func->set_pointers(Da);
+    }
+
+    else {
+        Db = wfn_->Db_subset("AO");
+        point_func = (std::shared_ptr<PointFunctions>) (new UKSFunctions(basisset_, total_points, nbf));
+        point_func->set_pointers(Da, Db);
+    }
+
+    //List of blocks in the grid
+    std::vector<std::shared_ptr<BlockOPoints>> blocks = grid->blocks();
+
+    //Number of blocks in the grid
+    int num_blocks = blocks.size();
+
+    //Keeps track of the number of points already calculated after each block iteration
+    int running_points = 0;
+
+    //Will later represent the values of x, y, z, weights, and rho (molecular electron density) at each grid point
+    std::vector<double> x_points(total_points, 0.0);
+    std::vector<double> y_points(total_points, 0.0);
+    std::vector<double> z_points(total_points, 0.0);
+    std::vector<double> weights(total_points, 0.0);
+    std::vector<double> rho(total_points, 0.0);
+
+    //Initializes values of x, y, z, weights, and rho at each grid point
+    for (int b = 0; b < num_blocks; b++) {
+        std::shared_ptr<BlockOPoints> block = blocks[b];
+        point_func->set_max_functions(block->local_nbf());
+        point_func->set_max_points(block->npoints());
+        point_func->compute_points(block);
+        std::size_t num_points = block->npoints();
+
+        SharedVector rho_block = point_func->point_values()["RHO_A"];
+
+        if (!same_dens_) {
+            rho_block->add(point_func->point_values()["RHO_B"]);
+        }
+
+        double* x = block->x();
+        double* y = block->y();
+        double* z = block->z();
+        double* w = block->w();
+
+        for (int p = 0; p < num_points; p++) {
+            x_points[running_points + p] = x[p];
+            y_points[running_points + p] = y[p];
+            z_points[running_points + p] = z[p];
+            weights[running_points + p] = w[p];
+
+            rho[running_points + p] = rho_block->get(p);
+        }
+
+        running_points += num_points;
+    }
+
+    //Represents an array of N_ai, and Sigma_ai (number of atoms by 4, max number of shells) as described by equations 18 and 19 in Verstraelen et al.
+    std::vector<std::vector<double>> Nai(num_atoms, std::vector<double>(4, 0.0));
+    std::vector<std::vector<double>> Sai(num_atoms, std::vector<double>(4, 0.0));
+
+    //Stores values of N_ai and sigma_ai before N_ai and sigma_ai are updated
+    std::vector<std::vector<double>> Nai_temp(num_atoms, std::vector<double>(4, 0.0));
+    std::vector<std::vector<double>> Sai_temp(num_atoms, std::vector<double>(4, 0.0));
+
+    //Stores x, y, and z positions of all nuclei in an atom
+    std::vector<double> Rxs(num_atoms, 0.0);
+    std::vector<double> Rys(num_atoms, 0.0);
+    std::vector<double> Rzs(num_atoms, 0.0);
+    PopulationAnalysisCalc::atomic_positions(mol, num_atoms, Rxs, Rys, Rzs);
+
+    //Stores the distances of all points on the grid to the nuclei of every atom
+    std::vector<std::vector<double>> distances(num_atoms, std::vector<double>(total_points, 0.0));
+
+    for (int atom = 0; atom < num_atoms; atom++) {
+        for (int point = 0; point < total_points; point++) {
+            double x = x_points[point];
+            double y = y_points[point];
+            double z = z_points[point];
+            distances[atom][point] = PopulationAnalysisCalc::distance(x, y, z, Rxs[atom], Rys[atom], Rzs[atom]);
+        }
+    }
+
+    //Stores the values of rho_o at every point and rho_a_not for every point for every atom
+    std::vector<double> rho_o_points(total_points, 0.0);
+    std::vector<std::vector<double>> rho_a_o_points(num_atoms, std::vector<double>(total_points, 0.0));
+
+    //represents the number of shells of an atom and the atomic number of an atom through the iterations
+    int m_A, atomic_num;
+
+    //Whether the MBIS Calculation converged
+    bool is_converged = false;
+
+    int iter = 1;
+
+    while (iter < MAX_ITER) {
+        //represents the convergence criteria integral, the number of atoms that meet the criteria, and the electron population of each atom, respectively
+        double integral;
+        int count = 0;
+        double population;
+
+        outfile->Printf("Iteration %d\n", iter);
+
+        //Initializes Nai and Sai for the first guess
+        if (iter == 1) {
+            for (int atom = 0; atom < num_atoms; atom++) {
+                atomic_num = (int) mol->Z(atom);
+                m_A = PopulationAnalysisCalc::get_mA(atomic_num);
+
+                for (int m = 0; m < m_A; m++) {
+                    Nai[atom][m] = (double) PopulationAnalysisCalc::get_nai(atomic_num, m+1);
+                    Nai_temp[atom][m] = Nai[atom][m];
+			        if (m_A == 1) {
+				        Sai[atom][m] = 1.0/(2.0*atomic_num);
+			        }
+			        else {
+                        Sai[atom][m] = 1.0/(2.0*pow((double)atomic_num, (1.0 - m/(m_A - 1.0))));
+			        }
+                    Sai_temp[atom][m] = Sai[atom][m];
+                }
+            }
+        }
+
+        //Intializes the initial values of rho_o and rho_a_o for every point and every atom
+        for (int point = 0; point < total_points; point++) {
+            rho_o_points[point] = 0.0;
+            for (int atom = 0; atom < num_atoms; atom++) {
+                rho_a_o_points[atom][point] = rho_a_o(atom, Nai, Sai, distances, point);
+                rho_o_points[point] += rho_a_o_points[atom][point];
+            }
+        }
+
+        //Calculates the new values of Nai and Sai for every atom
+        for (int atom = 0; atom < num_atoms; atom++) {
+
+            atomic_num = (int) mol->Z(atom);
+            m_A = (int) get_mA(atomic_num);
+
+            for (int m = 0; m < m_A; m++) {
+
+                double sum_n = 0.0;
+                double sum_s = 0.0;
+
+                for (int point = 0; point < total_points; point++) {
+                    double w = weights[point];
+
+                    if (fabs(w) > 0.0) {
+                        double rho_p = rho[point];
+                        if (fabs(rho_p) > 0.0) {
+                            double rho_o_point = rho_o_points[point];
+                            if (fabs(rho_o_point) > 0.0) {
+                                double rho_ai_o_point = PopulationAnalysisCalc::rho_ai_o(Nai_temp[atom][m], Sai_temp[atom][m], distances[atom][point]);
+                                if (fabs(rho_ai_o_point) > 0.0) {
+                                    sum_n += w * rho_p * rho_ai_o_point/rho_o_point;
+                                    sum_s += w * distances[atom][point] * rho_p * rho_ai_o_point/rho_o_point;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Nai_temp[atom][m] = sum_n;
+                Sai_temp[atom][m] = sum_s/(3*Nai_temp[atom][m]);
+
+            }
+        }
+
+        //Checks for convergence (Equation 20 in Verstraelen et al.), 1.0e-8 instead of 1.0e-16 should be sufficient for our purposes
+        for (int atom = 0; atom < num_atoms; atom++) {
+
+            integral = 0.0;
+
+            for (int point = 0; point < total_points; point++) {
+                double w = weights[point];
+
+                if (fabs(w) > 0.0) {
+                    integral += w * pow((PopulationAnalysisCalc::rho_a_o(atom, Nai_temp, Sai_temp, distances, point) - rho_a_o_points[atom][point]), 2);
+                }
+            }
+
+            if (integral < 1.0e-8) {
+                count += 1;
+            }
+
+        }
+
+        //Calculates the electron population for each atom for every iteration
+        for (int atom = 0; atom < num_atoms; atom++) {
+            population = 0.0;
+            for (int m = 0; m < 4; m++) {
+                Nai[atom][m] = Nai_temp[atom][m];
+                Sai[atom][m] = Sai_temp[atom][m];
+
+                population += Nai[atom][m];
+
+            }
+            outfile->Printf("Atom %d, Population %8.5f\n", atom+1, population);
+            if (count == num_atoms) {
+                (*apcs)[atom] = mol->Z(atom) - population;
+            }
+        }
+
+        //Convergence is achieved if every atom meets the convergence criteria
+        if (count == num_atoms) {
+            outfile->Printf("\n\nMBIS Converged, Buy Andy an ice cream!!!\n\n");
+            is_converged = true;
+            break;
+        }
+
+        iter += 1;
+    }
+
+    //Throws exception if no convergence in MBIS
+    if (!is_converged) {
+        throw PsiException("MBIS failed to converge in " + std::to_string(MAX_ITER) + " iterations. Tell Andy to take a break!", "oeprop.cc", 2097);
+    }
+
+}
+
+
 void OEProp::compute_mayer_indices() {
     SharedMatrix MBI_total, MBI_alpha, MBI_beta;
     SharedVector MBI_valence;

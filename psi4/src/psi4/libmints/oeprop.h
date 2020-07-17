@@ -310,6 +310,27 @@ class PopulationAnalysisCalc : public Prop {
    private:
     PopulationAnalysisCalc();
 
+   protected:
+    ///Helper Methods for MBIS
+
+    ///The initial guess for the number of electrons in each shell of an atom
+    static int get_nai(int z, int m);
+    ///The number of shells of a neutral atom given it's atomic number
+    static int get_mA(int atomic_num);
+    ///The distance between a point (x, y, z) and the center of an atom (Rx, Ry, Rz)
+    static double distance(double x, double y, double z, double Rx, double Ry, double Rz);
+    ///Proatomic density of a specific shell of an atom  (Equation 7 in Verstraelen et al.)
+    static double rho_ai_o(double n, double sigma, double distance);
+    ///The proatomic denisty of an atom in a molecule (Equation 6 in Verstraelen et al.)
+    static double rho_a_o(int atom, const std::vector<std::vector<double>> &n, const std::vector<std::vector<double>> &s,
+        const std::vector<std::vector<double>> &distances, int point_num);
+    ///The sum of all proatomic densities in a molecule (Equation 5 in Verstraelen et al.)
+    static double rho_o(int num_atoms, const std::vector<std::vector<double>> &n, const std::vector<std::vector<double>> &s,
+        const std::vector<std::vector<double>> &distances, int point_num);
+    /////Fills arrays consisting of all of nuclei of every atom in a molecule
+    static void atomic_positions(SharedMolecule mol, int num_atoms, std::vector<double> &Rxs, std::vector<double> &Rys, std::vector<double> &Rzs);
+
+
    public:
     typedef std::shared_ptr<std::vector<double>> SharedStdVector;
     PopulationAnalysisCalc(std::shared_ptr<Wavefunction> wfn);
@@ -318,6 +339,8 @@ class PopulationAnalysisCalc : public Prop {
     std::tuple<SharedStdVector, SharedStdVector, SharedStdVector> compute_mulliken_charges(bool print_output = false);
     /// Compute Lowdin Charges
     std::tuple<SharedStdVector, SharedStdVector, SharedStdVector> compute_lowdin_charges(bool print_output = false);
+    /// Compute MBIS Charges
+    SharedStdVector compute_mbis_charges(bool print_output = false);
     /// Compute Mayer Bond Indices (non-orthogoal basis)
     std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> compute_mayer_indices(bool print_output = false);
     /// Compute Wiberg Bond Indices using Lowdin Orbitals (symmetrically orthogonal basis)
@@ -410,6 +433,8 @@ class PSI_API OEProp : public TaskListComputer {
     void compute_mulliken_charges();
     /// Compute Lowdin Charges
     void compute_lowdin_charges();
+    ///Compute MBIS Charges
+    void compute_mbis_charges();
     /// Compute Mayer Bond Indices (non-orthogoal basis)
     void compute_mayer_indices();
     /// Compute Wiberg Bond Indices using Lowdin Orbitals (symmetrically orthogonal basis)
