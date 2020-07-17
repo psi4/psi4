@@ -49,10 +49,8 @@ to download the BrianQC GPU module and obtain a license.
 
 Note that there are several prerequisites for using BrianQC, including
 having a supported GPU available in the computing node and having the
-proper GPU drivers installed. Please refer to the BrianQC manual for a
-full list of prerequisites.
-
-.. TODO: when we make the manual available from the homepage, link directly to it
+proper GPU drivers installed. Please refer to the `BrianQC manual <https://www.brianqc.com/download/>`_
+for a full list of prerequisites.
 
 When installing BrianQC, choose the SDK installation by setting the
 :envvar:`BRIANQC_SDK_INSTALL` envoronment variable to `1`.
@@ -122,7 +120,8 @@ When to enable BrianQC
 The operation of BrianQC is transparent from a user's point of view; every
 internal computation is either performed by |PSIfour| (if unsupported by BrianQC),
 or taken over by BrianQC, yielding the same result to within the required
-precision. Thus, the only difference is in performance.
+precision. In particular, BrianQC will respect all of |PSIfour|'s usual precision
+parameters, like |scf__ints_tolerance| and |scf__e_convergence|.
 
 BrianQC can speed up a number of internal computations, including Fock and
 gradient computation. Thus, BrianQC will speed up any calculation involving
