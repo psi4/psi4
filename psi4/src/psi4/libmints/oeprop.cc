@@ -1905,10 +1905,13 @@ void PopulationAnalysisCalc::atomic_positions(SharedMolecule mol, int num_atoms,
 
 PAC::SharedStdVector PopulationAnalysisCalc::compute_mbis_charges(bool print_output) {
 
-    const int MAX_ITER = 100;
+    Options& options = Process::environment.options;
+
+    const int MAX_ITER = options.get_int("MBIS_MAX_ITER");
+    const double CONV = options.get_double("MBIS_CONVERGENCE");
 
     if (print_output) {
-        outfile->Printf("  MBIS Charges: (a.u.)\n");
+        outfile->Printf("  ==> Computing MBIS Charges <==\n\n");
     }
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
@@ -1919,8 +1922,6 @@ PAC::SharedStdVector PopulationAnalysisCalc::compute_mbis_charges(bool print_out
     //auto Qa = std::make_shared<std::vector<double>>(natom);
     //auto Qb = std::make_shared<std::vector<double>>(natom);
     auto apcs = std::make_shared<std::vector<double>>(num_atoms);
-
-    Options& options = Process::environment.options;
 
     std::shared_ptr<DFTGrid> grid = std::make_shared<DFTGrid>(mol, basisset_, options);
     int total_points = grid->npoints();
@@ -2035,7 +2036,9 @@ PAC::SharedStdVector PopulationAnalysisCalc::compute_mbis_charges(bool print_out
         int count = 0;
         double population;
 
-        outfile->Printf("Iteration %d\n", iter);
+        if (print_output) {
+            outfile->Printf("  Iteration %d\n", iter);
+        }
 
         //Initializes Nai and Sai for the first guess
         if (iter == 1) {
@@ -2114,7 +2117,7 @@ PAC::SharedStdVector PopulationAnalysisCalc::compute_mbis_charges(bool print_out
                 }
             }
 
-            if (integral < 1.0e-8) {
+            if (integral < pow(CONV, 2)) {
                 count += 1;
             }
 
@@ -2130,25 +2133,43 @@ PAC::SharedStdVector PopulationAnalysisCalc::compute_mbis_charges(bool print_out
                 population += Nai[atom][m];
 
             }
-            outfile->Printf("Atom %d, Population %8.5f\n", atom+1, population);
+            if (print_output) {
+                outfile->Printf("  Atom %d, Population %8.5f\n", atom+1, population);
+            }
+
             if (count == num_atoms) {
                 (*apcs)[atom] = mol->Z(atom) - population;
             }
+
         }
 
         //Convergence is achieved if every atom meets the convergence criteria
         if (count == num_atoms) {
-            outfile->Printf("\n\nMBIS Converged, Buy Andy an ice cream!!!\n\n");
+            if (print_output) {
+                outfile->Printf("\n\n*** MBIS Converged, Buy Andy an ice cream! <@ \n\n");
+            }
             is_converged = true;
             break;
         }
+
+        outfile->Printf("\n");
 
         iter += 1;
     }
 
     //Throws exception if no convergence in MBIS
     if (!is_converged) {
-        throw PsiException("MBIS failed to converge in " + std::to_string(MAX_ITER) + " iterations. Tell Andy to take a break!", "oeprop.cc", 2097);
+        throw PsiException("MBIS failed to converge in " + std::to_string(MAX_ITER) + " iterations. Tell Andy to take a break!", "libmints/oeprop.cc", 2152);
+    }
+
+    if (print_output) {
+
+        outfile->Printf("  MBIS Charges: (a.u.)\n");
+        outfile->Printf("   Center Symbol      Z        Population   Charge\n");
+
+        for (int atom = 0; atom < num_atoms; atom++) {
+            outfile->Printf("  %5d    %2s     %8.5f     %8.5f   %8.5f\n", atom+1, mol->label(atom).c_str(), mol->Z(atom), mol->Z(atom) - (*apcs)[atom], (*apcs)[atom]);
+        }
     }
 
 }

@@ -247,6 +247,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc -*/
     options.add_str("PRINT_NOONS", "3");
 
+    ///MBIS Options (libmints/oeprop.cc)
+
+    /*- How many MBIS Iterations to run -*/
+    options.add_int("MBIS_MAX_ITER", 200);
+    /*- MBIS Convergence Criteria -*/
+    options.add_double("MBIS_CONVERGENCE", 1.0e-8);
+
     /*- PCM boolean for pcmsolver module -*/
     options.add_bool("PCM", false);
     if (name == "PCM" || options.read_globals()) {
@@ -1613,10 +1620,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Verbosity level in TDSCF -*/
         options.add_int("TDSCF_PRINT", 1);
 
-        /*- combine omega exchange and Hartree--Fock exchange into 
-              one matrix for efficiency? 
-            Default is True for MemDFJK 
-              (itself the default for |globals__scf_type| DF), 
+        /*- combine omega exchange and Hartree--Fock exchange into
+              one matrix for efficiency?
+            Default is True for MemDFJK
+              (itself the default for |globals__scf_type| DF),
             False otherwise as not yet implemented. -*/
         options.add_bool("WCOMBINE", false);
     }
