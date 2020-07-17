@@ -58,12 +58,15 @@
 #endif
 
 #ifdef USING_BrianQC
+
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_common.h>
 #include <brian_scf.h>
+
 extern void checkBrian();
 extern BrianCookie brianCookie;
+extern bool brianEnable;
 extern bool brianEnableDFT;
 
 struct brianGrid {
@@ -84,8 +87,7 @@ struct brianGrid {
 };
 
 extern bool brianBuildingNLCGrid;
-extern brianGrid brianDFTGrid;
-extern brianGrid brianNLCGrid;
+
 #endif
 
 namespace psi {
@@ -175,7 +177,7 @@ void VBase::initialize() {
     }
     
 #ifdef USING_BrianQC
-    if (brianCookie != 0 and brianEnableDFT)
+    if (brianEnable and brianEnableDFT)
     {
         static const std::map<std::string, brianInt> functionalIDMap = {
             {"XC_GGA_X_AIRY", BRIAN_FUNCTIONAL_GGA_AIRY_X},
@@ -1266,7 +1268,7 @@ void RV::compute_V(std::vector<SharedMatrix> ret) {
     }
     
 #ifdef USING_BrianQC
-    if (brianCookie != 0 and brianEnableDFT) {
+    if (brianEnable and brianEnableDFT) {
         double DFTEnergy;
         
         brianSCFBuildFockDFT(&brianCookie,
@@ -2404,7 +2406,7 @@ void UV::compute_V(std::vector<SharedMatrix> ret) {
     }
     
 #ifdef USING_BrianQC
-    if (brianCookie != 0 and brianEnableDFT) {
+    if (brianEnable and brianEnableDFT) {
         double DFTEnergy;
         brianSCFBuildFockDFT(&brianCookie,
             D_AO_[0]->get_pointer(0),

@@ -55,17 +55,21 @@
 #endif
 
 #ifdef USING_BrianQC
+
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_common.h>
 #include <brian_scf.h>
 #include <brian_cphf.h>
+
 extern void checkBrian();
 extern BrianCookie brianCookie;
+extern bool brianEnable;
 extern bool brianEnableDFT;
 extern bool brianCPHFFlag;
 extern bool brianCPHFLeftSideFlag;
 extern brianInt brianRestrictionType;
+
 #endif
 
 using namespace psi;
@@ -100,7 +104,7 @@ void DirectJK::preiterations() {
     sieve_ = std::make_shared<ERISieve>(primary_, cutoff_, do_csam_);
     
 #ifdef USING_BrianQC
-    if (brianCookie != 0) {
+    if (brianEnable) {
         double threshold = cutoff_ * (brianCPHFFlag ? 1e-3 : 1e-0); // CPHF needs higher precision
         brianCOMSetPrecisionThresholds(&brianCookie, &threshold);
         checkBrian();
@@ -109,7 +113,7 @@ void DirectJK::preiterations() {
 }
 void DirectJK::compute_JK() {
 #ifdef USING_BrianQC
-    if (brianCookie != 0) {
+    if (brianEnable) {
         brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
         brianBool computeExchange = ((do_K_ || do_wK_) ? BRIAN_TRUE : BRIAN_FALSE);
         

@@ -61,13 +61,17 @@
 #endif
 
 #ifdef USING_BrianQC
+
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_common.h>
 #include <brian_cphf.h>
+
 extern void checkBrian();
 extern BrianCookie brianCookie;
+extern bool brianEnable;
 extern bool brianCPHFLeftSideFlag;
+
 #endif
 
 using namespace psi;
@@ -163,7 +167,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
         std::vector<std::shared_ptr<Matrix>> Smnz;
         std::vector<double*> Smn;
         
-        if (brianCookie != 0) {
+        if (brianEnable) {
             brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
             maxSegmentAtomCount = maxSegmentSize / 3;
             segmentAtomCount = -1;
@@ -186,7 +190,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
 
         for (int A = 0; A < natom; A++) {
 #ifdef USING_BrianQC
-            if (brianCookie != 0) {
+            if (brianEnable) {
                 if (segmentAtomCount < 0 || A < segmentAtomIndexStart || A >= (segmentAtomIndexStart + segmentAtomCount)) {
                     segmentAtomIndexStart = A;
                     segmentAtomCount = (segmentAtomIndexStart + maxSegmentAtomCount > natom) ? (natom - segmentAtomIndexStart) : maxSegmentAtomCount;
@@ -338,7 +342,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
         std::vector<std::shared_ptr<Matrix>> Tmnz;
         std::vector<double*> Tmn;
         
-        if (brianCookie != 0) {
+        if (brianEnable) {
             brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
             maxSegmentAtomCount = maxSegmentSize / 3;
             segmentAtomCount = -1;
@@ -361,7 +365,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
 
         for (int A = 0; A < natom; A++) {
 #ifdef USING_BrianQC
-            if (brianCookie != 0) {
+            if (brianEnable) {
                 if (segmentAtomCount < 0 || A < segmentAtomIndexStart || A >= (segmentAtomIndexStart + segmentAtomCount)) {
                     segmentAtomIndexStart = A;
                     segmentAtomCount = (segmentAtomIndexStart + maxSegmentAtomCount > natom) ? (natom - segmentAtomIndexStart) : maxSegmentAtomCount;
@@ -487,7 +491,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
         std::vector<std::shared_ptr<Matrix>> Vmnz;
         std::vector<double*> Vmn;
         
-        if (brianCookie != 0) {
+        if (brianEnable) {
             brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
             maxSegmentAtomCount = maxSegmentSize / 3;
             segmentAtomCount = -1;
@@ -510,7 +514,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
 
         for (int A = 0; A < natom; A++) {
 #ifdef USING_BrianQC
-            if (brianCookie != 0) {
+            if (brianEnable) {
                 if (segmentAtomCount < 0 || A < segmentAtomIndexStart || A >= (segmentAtomIndexStart + segmentAtomCount)) {
                     segmentAtomIndexStart = A;
                     segmentAtomCount = (segmentAtomIndexStart + maxSegmentAtomCount > natom) ? (natom - segmentAtomIndexStart) : maxSegmentAtomCount;
@@ -957,7 +961,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
              * The conventional integral algorithm
              */
 #ifdef USING_BrianQC
-            if (brianCookie != 0) {
+            if (brianEnable) {
                 brianBool computeCoulomb = BRIAN_TRUE;
                 brianBool computeExchange = BRIAN_TRUE;
                 
@@ -2263,7 +2267,7 @@ void USCFDeriv::overlap_deriv(std::shared_ptr<Matrix> C,
     std::vector<std::shared_ptr<Matrix>> Smnz;
     std::vector<double*> Smn;
     
-    if (brianCookie != 0) {
+    if (brianEnable) {
         brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
         maxSegmentAtomCount = maxSegmentSize / 3;
         segmentAtomCount = -1;
@@ -2310,7 +2314,7 @@ void USCFDeriv::overlap_deriv(std::shared_ptr<Matrix> C,
 
     for (int A = 0; A < natom; A++) {
 #ifdef USING_BrianQC
-        if (brianCookie != 0) {
+        if (brianEnable) {
             if (segmentAtomCount < 0 || A < segmentAtomIndexStart || A >= (segmentAtomIndexStart + segmentAtomCount)) {
                 segmentAtomIndexStart = A;
                 segmentAtomCount = (segmentAtomIndexStart + maxSegmentAtomCount > natom) ? (natom - segmentAtomIndexStart) : maxSegmentAtomCount;
@@ -2469,7 +2473,7 @@ void USCFDeriv::kinetic_deriv(std::shared_ptr<Matrix> C,
     std::vector<std::shared_ptr<Matrix>> Tmnz;
     std::vector<double*> Tmn;
     
-    if (brianCookie != 0) {
+    if (brianEnable) {
         brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
         maxSegmentAtomCount = maxSegmentSize / 3;
         segmentAtomCount = -1;
@@ -2492,7 +2496,7 @@ void USCFDeriv::kinetic_deriv(std::shared_ptr<Matrix> C,
 
     for (int A = 0; A < natom; A++) {
 #ifdef USING_BrianQC
-        if (brianCookie != 0) {
+        if (brianEnable) {
             if (segmentAtomCount < 0 || A < segmentAtomIndexStart || A >= (segmentAtomIndexStart + segmentAtomCount)) {
                 segmentAtomIndexStart = A;
                 segmentAtomCount = (segmentAtomIndexStart + maxSegmentAtomCount > natom) ? (natom - segmentAtomIndexStart) : maxSegmentAtomCount;
@@ -2625,7 +2629,7 @@ void USCFDeriv::potential_deriv(std::shared_ptr<Matrix> C,
     std::vector<std::shared_ptr<Matrix>> Vmnz;
     std::vector<double*> Vmn;
     
-    if (brianCookie != 0) {
+    if (brianEnable) {
         brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
         maxSegmentAtomCount = maxSegmentSize / 3;
         segmentAtomCount = -1;
@@ -2648,7 +2652,7 @@ void USCFDeriv::potential_deriv(std::shared_ptr<Matrix> C,
 
     for (int A = 0; A < natom; A++) {
 #ifdef USING_BrianQC
-        if (brianCookie != 0) {
+        if (brianEnable) {
             if (segmentAtomCount < 0 || A < segmentAtomIndexStart || A >= (segmentAtomIndexStart + segmentAtomCount)) {
                 segmentAtomIndexStart = A;
                 segmentAtomCount = (segmentAtomIndexStart + maxSegmentAtomCount > natom) ? (natom - segmentAtomIndexStart) : maxSegmentAtomCount;
@@ -3108,7 +3112,7 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
          * The conventional integral algorithm
          */
 #ifdef USING_BrianQC
-        if (brianCookie != 0) {
+        if (brianEnable) {
             brianBool computeCoulomb = BRIAN_TRUE;
             brianBool computeExchange = BRIAN_TRUE;
             

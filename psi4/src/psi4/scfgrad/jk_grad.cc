@@ -48,13 +48,17 @@
 #endif
 
 #ifdef USING_BrianQC
+
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_common.h>
 #include <brian_geom_opt.h>
+
 extern void checkBrian();
 extern BrianCookie brianCookie;
+extern bool brianEnable;
 extern brianInt brianRestrictionType;
+
 #endif
 
 using namespace psi;
@@ -199,7 +203,7 @@ void DFJKGrad::compute_gradient()
     sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
 
 #ifdef USING_BrianQC
-    if (brianCookie != 0) {
+    if (brianEnable) {
         double threshold = cutoff_ * 1e-2;
         brianCOMSetPrecisionThresholds(&brianCookie, &threshold);
         checkBrian();
@@ -2352,7 +2356,7 @@ void DirectJKGrad::compute_gradient()
         throw PSIEXCEPTION("Occupation/Density not set");
     
 #ifdef USING_BrianQC
-    if (brianCookie != 0) {
+    if (brianEnable) {
         brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
         brianBool computeExchange = ((do_K_ || do_wK_) ? BRIAN_TRUE : BRIAN_FALSE);
         bool betaFlag = (brianRestrictionType != BRIAN_RESTRICTION_TYPE_RHF);

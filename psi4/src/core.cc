@@ -79,6 +79,8 @@ bool brianEnableEnvFound = false;
 bool brianEnableEnvValue = false;
 
 BrianCookie brianCookie = 0;
+
+bool brianEnable = false;
 bool brianEnableDFT = true;
 brianInt brianRestrictionType = 0;
 bool brianCPHFFlag = false;
@@ -119,6 +121,7 @@ void handleBrianOption(bool value) {
         outfile->Printf("BRIANQC_ENABLE option found, but overridden by BRIANQC_ENABLE environment variable\n");
     } else {
         outfile->Printf("BRIANQC_ENABLE option found, checking value\n");
+        brianEnable = value;
         if (value && (brianCookie == 0)) {
             outfile->Printf("BRIANQC_ENABLE option set to true, initializing BrianQC\n");
             brianInit();
@@ -1070,6 +1073,7 @@ bool psi4_python_module_initialize() {
     if (brianEnableEnvFound) {
         outfile->Printf("BRIANQC_ENABLE environment variable found, checking value\n");
         brianEnableEnvValue = (bool)atoi(brianEnableEnv);
+        brianEnable = brianEnableEnvValue;
         if (brianEnableEnvValue) {
             outfile->Printf("BRIANQC_ENABLE is true, attempting to initialize BrianQC\n");
             brianInit();

@@ -72,14 +72,18 @@ void F_DKH(double *S, double *V, double *T, double *pVp, int *nbf, int *dkh_orde
 #endif
 
 #ifdef USING_BrianQC
+
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_common.h>
 #include <brian_scf.h>
 #include <brian_geom_opt.h>
+
 extern void checkBrian();
 extern BrianCookie brianCookie;
+extern bool brianEnable;
 extern brianInt brianRestrictionType;
+
 #endif
 
 namespace psi {
@@ -592,7 +596,7 @@ SharedMatrix MintsHelper::ao_overlap() {
     auto overlap_mat = std::make_shared<Matrix>(PSIF_AO_S, basisset_->nbf(), basisset_->nbf());
     
 #ifdef USING_BrianQC
-    if (brianCookie != 0) {
+    if (brianEnable) {
         brianInt integralType = BRIAN_INTEGRAL_TYPE_OVERLAP;
         brianSCFBuild1e(&brianCookie, &integralType, overlap_mat->get_pointer());
         checkBrian();
@@ -627,7 +631,7 @@ SharedMatrix MintsHelper::ao_kinetic() {
     auto kinetic_mat = std::make_shared<Matrix>("AO-basis Kinetic Ints", basisset_->nbf(), basisset_->nbf());
     
 #ifdef USING_BrianQC
-    if (brianCookie != 0) {
+    if (brianEnable) {
         brianInt integralType = BRIAN_INTEGRAL_TYPE_KINETIC;
         brianSCFBuild1e(&brianCookie, &integralType, kinetic_mat->get_pointer());
         checkBrian();
@@ -660,7 +664,7 @@ SharedMatrix MintsHelper::ao_potential() {
         std::make_shared<Matrix>("AO-basis Potential Ints", basisset_->nbf(), basisset_->nbf());
     
 #ifdef USING_BrianQC
-    if (brianCookie != 0) {
+    if (brianEnable) {
         brianInt integralType = BRIAN_INTEGRAL_TYPE_NUCLEAR;
         brianSCFBuild1e(&brianCookie, &integralType, potential_mat->get_pointer());
         checkBrian();
@@ -1923,7 +1927,7 @@ SharedMatrix MintsHelper::potential_grad(SharedMatrix D) {
     int natom = basisset_->molecule()->natom();
     auto V = std::make_shared<Matrix>("Potential Gradient", natom, 3);
 #ifdef USING_BrianQC
-    if (brianCookie != 0) {
+    if (brianEnable) {
         int densityCount = (brianRestrictionType == BRIAN_RESTRICTION_TYPE_RHF) ? 1 : 2;
         
         SharedMatrix dummyInput, dummyOutput;
@@ -2016,7 +2020,7 @@ SharedMatrix MintsHelper::kinetic_grad(SharedMatrix D) {
     // Kinetic
     SharedMatrix kinetic_mat(new Matrix("Kinetic Gradient", basisset_->molecule()->natom(), 3));
 #ifdef USING_BrianQC
-    if (brianCookie != 0) {
+    if (brianEnable) {
         int densityCount = (brianRestrictionType == BRIAN_RESTRICTION_TYPE_RHF) ? 1 : 2;
         
         SharedMatrix dummyInput, dummyOutput;
@@ -2050,7 +2054,7 @@ SharedMatrix MintsHelper::overlap_grad(SharedMatrix D) {
     // Overlap
     SharedMatrix overlap_mat(new Matrix("Overlap Gradient", basisset_->molecule()->natom(), 3));
 #ifdef USING_BrianQC
-    if (brianCookie != 0) {
+    if (brianEnable) {
         int densityCount = (brianRestrictionType == BRIAN_RESTRICTION_TYPE_RHF) ? 1 : 2;
         
         SharedMatrix dummyInput, dummyOutput;

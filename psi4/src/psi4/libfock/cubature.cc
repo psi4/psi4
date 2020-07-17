@@ -53,11 +53,14 @@
 #endif
 
 #ifdef USING_BrianQC
+
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_common.h>
+
 extern void checkBrian();
 extern BrianCookie brianCookie;
+extern bool brianEnable;
 extern bool brianEnableDFT;
 
 // auxiliary structures passing the grid to BrianQC
@@ -97,6 +100,7 @@ struct BrianGrid {
 };
 
 bool brianBuildingNLCGrid = false;
+
 #endif
 
 using namespace psi;
@@ -3746,7 +3750,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         double stratmannCutoff = nuc.GetStratmannCutoff(A);
         
 #ifdef USING_BrianQC
-        if (brianCookie != 0 and brianEnableDFT) {
+        if (brianEnable and brianEnableDFT) {
             std::shared_ptr<Matrix> rotationMatrix = orientation_->transpose();
             atomRotations[A] = std::vector<double>(rotationMatrix->get_pointer(0), rotationMatrix->get_pointer(0) + 9);
         }
@@ -3779,7 +3783,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                 const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
                 
 #ifdef USING_BrianQC
-                if (brianCookie != 0 and brianEnableDFT) {
+                if (brianEnable and brianEnableDFT) {
                     if (currentBlockIndex == -1 or atomBlocks[A][currentBlockIndex].angularPoints.size() != numAngPts) {
                         atomBlocks[A].push_back(BrianBlock());
                         currentBlockIndex++;
@@ -3809,7 +3813,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         } else {
             assert(opt.namedGrid == 0 || opt.namedGrid == 1);
 #ifdef USING_BrianQC
-            if (brianCookie != 0 and brianEnableDFT) {
+            if (brianEnable and brianEnableDFT) {
                 atomBlocks[A] = brianStandardGrids.at(opt.namedGrid).at(Z);
             }
 #endif
@@ -3830,7 +3834,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
     
 #ifdef USING_BrianQC
     // TODO: do the same for the other version of buildGridFromOptions below
-    if (brianCookie != 0 and brianEnableDFT) {
+    if (brianEnable and brianEnableDFT) {
         BrianGrid brianGrid;
         brianInt atomBlockOffset = 0;
         brianInt radialOffset = 0;

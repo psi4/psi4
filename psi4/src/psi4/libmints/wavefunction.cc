@@ -62,12 +62,16 @@
 #include <tuple>
 
 #ifdef USING_BrianQC
+
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_common.h>
+
 extern void checkBrian();
 extern BrianCookie brianCookie;
+extern bool brianEnable;
 extern brianInt brianRestrictionType;
+
 #endif
 
 using namespace psi;
@@ -602,7 +606,7 @@ void Wavefunction::common_init() {
     }
     
 #ifdef USING_BrianQC
-    if (brianCookie != 0) {
+    if (brianEnable) {
         if (molecule_->point_group()->bits() != PointGroups::Groups::C1) {
             throw PSIEXCEPTION("BrianQC can only be used with C1 symmetry\n");
         }

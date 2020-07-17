@@ -64,12 +64,16 @@
 #include "stability.h"
 
 #ifdef USING_BrianQC
+
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_types.h>
+
 extern void checkBrian();
 extern BrianCookie brianCookie;
+extern bool brianEnable;
 extern bool brianEnableDFT;
+
 #endif
 
 namespace psi {
@@ -217,7 +221,7 @@ void UHF::form_G() {
     double beta = functional_->x_beta();
     
 #ifdef USING_BrianQC
-    if (brianCookie != 0 and brianEnableDFT) {
+    if (brianEnable and brianEnableDFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
         alpha = 1.0;
         beta = 1.0;
@@ -352,7 +356,7 @@ double UHF::compute_E() {
     double beta = functional_->x_beta();
     
 #ifdef USING_BrianQC
-    if (brianCookie != 0 and brianEnableDFT) {
+    if (brianEnable and brianEnableDFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
         alpha = 1.0;
         beta = 1.0;
@@ -599,7 +603,7 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     double beta = functional_->x_beta();
     
 #ifdef USING_BrianQC
-    if (brianCookie != 0 and brianEnableDFT) {
+    if (brianEnable and brianEnableDFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
         alpha = 1.0;
         beta = 1.0;

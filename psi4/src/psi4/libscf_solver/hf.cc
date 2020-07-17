@@ -78,11 +78,15 @@
 #include "psi4/psi4-dec.h"
 
 #ifdef USING_BrianQC
+
 #include <use_brian_wrapper.h>
 #include <brian_macros.h>
 #include <brian_scf.h>
+
 extern void checkBrian();
 extern BrianCookie brianCookie;
+extern bool brianEnable;
+
 #endif
 
 namespace psi {
@@ -717,7 +721,7 @@ void HF::form_Shalf() {
         throw PSIEXCEPTION("Unrecognized S_ORTHOGONALIZATION method\n");
     
 #if USING_BrianQC
-    if (brianCookie != 0) {
+    if (brianEnable) {
         double S_cutoff = options_.get_double("S_TOLERANCE");
         if (print_) outfile->Printf("  BrianQC enabled, using Canonical Orthogonalization with cutoff of %14.10E.\n", S_cutoff);
         
@@ -1276,7 +1280,7 @@ std::shared_ptr<Vector> HF::occupation_b() const {
 
 void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr<Vector>& epsm) {
 #ifdef USING_BrianQC
-    if (brianCookie != 0) {
+    if (brianEnable) {
         brianInt basisSize = basisset_->nbf();
         brianInt basisRank = X_->coldim(0);
         
