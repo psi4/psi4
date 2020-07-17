@@ -148,10 +148,10 @@ def print_sapt_dft_summary(data, name, short=False):
     exch_disp_scheme = core.get_option("SAPT", "SAPT_DFT_EXCH_DISP_SCALE_SCHEME")
     if exch_disp_scheme == "NONE":
         data["Exch-Disp20,r"] = data["Exch-Disp20,u"] 
-    if exch_disp_scheme == "FIXED":
+    elif exch_disp_scheme == "FIXED":
         exch_disp_scale = core.get_option("SAPT", "SAPT_DFT_EXCH_DISP_FIXED_SCALE")
         data["Exch-Disp20,r"] = exch_disp_scale * data["Exch-Disp20,u"]
-    if exch_disp_scheme == "DISP":
+    elif exch_disp_scheme == "DISP":
         exch_disp_scale = data["Disp20"] / data["Disp20,u"]
         data["Exch-Disp20,r"] = exch_disp_scale * data["Exch-Disp20,u"]
     

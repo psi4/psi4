@@ -807,8 +807,8 @@ void FDDS_Dispersion::form_X(std::string monomer) {
                 size_t a = aap / napblock;
                 size_t ap = aap % napblock;
 
-                // => Contraction ((a')r|R) (R|(a)r') ((a')r'|Q) -> ((a)r|X|Q) for a, a' <= // This one is not correct. Need to figure out why 
-                // => Contraction [((a')r'|R) (R|(a)r)]^T ((a')r'|Q) -> ((a)r|X|Q) for a, a' <= // - Looks like this one is correct 
+                // => Contraction ((a')r|R) (R|(a)r') ((a')r'|Q) -> ((a)r|X|Q) for a, a' <= // This one is not correct. a (a') and r (r') have to be in the same bra/ket, because (ar|a'r') != (ar'|a'r). (ar|a'r') = (ar|R) (R|a'r') defines the ordering of 3-index integrals.
+                // => Contraction [((a')r'|R) (R|(a)r)]^T ((a')r'|Q) -> ((a)r|X|Q) for a, a' <= // Correct expression in terms of (a'r'|R) and (ar|R).  
                 // => Similar for ((a)r|QX|Q) <= //
 
                 C_DGEMM('N', 'T', nvir, nvir, naux, 1.0, aprRp[ap * nvir], naux, arRp[a * nvir], naux, 0.0, Vrrp[0], nvir);
