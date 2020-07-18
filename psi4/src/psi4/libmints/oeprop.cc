@@ -67,6 +67,7 @@
 #include <regex>
 #include <tuple>
 #include <functional>
+#include <memory>
 
 namespace psi {
 
@@ -1929,19 +1930,19 @@ PAC::SharedStdVector PopulationAnalysisCalc::compute_mbis_charges(bool print_out
     SharedMatrix Da;
     SharedMatrix Db;
 
-    std::shared_ptr<PointFunctions> point_func;
+    std::shared_ptr<PointFunctions> point_func(nullptr);
 
     Da = wfn_->Da_subset("AO");
 
     if (same_dens_) {
         Db = Da->clone();
-        point_func = (std::shared_ptr<PointFunctions>) (new RKSFunctions(basisset_, total_points, nbf));
+        point_func = std::make_shared<RKSFunctions>(basisset_, total_points, nbf);
         point_func->set_pointers(Da);
     }
 
     else {
         Db = wfn_->Db_subset("AO");
-        point_func = (std::shared_ptr<PointFunctions>) (new UKSFunctions(basisset_, total_points, nbf));
+        point_func = std::make_shared<UKSFunctions>(basisset_, total_points, nbf);
         point_func->set_pointers(Da, Db);
     }
 
@@ -1964,12 +1965,13 @@ PAC::SharedStdVector PopulationAnalysisCalc::compute_mbis_charges(bool print_out
     //Initializes values of x, y, z, weights, and rho at each grid point
     for (int b = 0; b < num_blocks; b++) {
         std::shared_ptr<BlockOPoints> block = blocks[b];
-        point_func->set_max_functions(block->local_nbf());
-        point_func->set_max_points(block->npoints());
-        point_func->compute_points(block);
+        SharedVector rho_block;
         std::size_t num_points = block->npoints();
 
-        SharedVector rho_block = point_func->point_values()["RHO_A"];
+        point_func->set_max_functions(block->local_nbf());
+        point_func->set_max_points(num_points);
+        point_func->compute_points(block);
+        rho_block = point_func->point_values()["RHO_A"];
 
         if (!same_dens_) {
             rho_block->add(point_func->point_values()["RHO_B"]);
@@ -2159,7 +2161,7 @@ PAC::SharedStdVector PopulationAnalysisCalc::compute_mbis_charges(bool print_out
 
     //Throws exception if no convergence in MBIS
     if (!is_converged) {
-        throw PsiException("MBIS failed to converge in " + std::to_string(MAX_ITER) + " iterations. Tell Andy to take a break!", "libmints/oeprop.cc", 2152);
+        throw PsiException("MBIS failed to converge in " + std::to_string(MAX_ITER) + " iterations. Tell Andy to take a break!", "psi4/psi4/src/psi4/libmints/oeprop.cc", 2161);
     }
 
     if (print_output) {
@@ -2172,8 +2174,9 @@ PAC::SharedStdVector PopulationAnalysisCalc::compute_mbis_charges(bool print_out
         }
     }
 
-}
+    return apcs;
 
+}
 
 void OEProp::compute_mayer_indices() {
     SharedMatrix MBI_total, MBI_alpha, MBI_beta;
