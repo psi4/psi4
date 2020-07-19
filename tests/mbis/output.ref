@@ -77,7 +77,7 @@ set {
   scf_type df
   d_convergence 8
   e_convergence 10
-  mbis_max_iter 200
+  mbis_maxiter 200
   mbis_convergence 1e-8
   dft_pruning_scheme none
   dft_radial_points 99
