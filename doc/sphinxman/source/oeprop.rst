@@ -180,6 +180,6 @@ The Minimal Basis Iterative Stockholder (MBIS) partitioning is one of many proce
 that produce atomic one-electron densities from the molecular one-electron density.
 Calling MBIS in Psi4 will calculate atomic charges, as well as dipoles, quadrupoles, and
 octupoles. The allowed number of iterations and convergence criteria for the stockholder 
-algorithm is controlled by |globals__mbis_max_iter| and |globals__mbis_convergence|. Note 
+algorithm is controlled by |globals__mbis_maxiter| and |globals__mbis_convergence|. Note 
 that the density is partitioned on a molecular grid, so any settings related to the number
 or type of grid points applies.
