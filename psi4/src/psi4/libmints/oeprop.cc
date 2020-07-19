@@ -1802,6 +1802,7 @@ void OEProp::compute_mbis_multipoles() {
 }
 
 int PopulationAnalysisCalc::get_nai(int z, int m) {
+    //MBIS is not supported for elements with atomic number greater than 36
     if (z <= 2) {
         return z;
     } else if (z <= 10) {
@@ -1818,7 +1819,7 @@ int PopulationAnalysisCalc::get_nai(int z, int m) {
         } else {
             return z - 10;
         }
-    } else if (z <= 36) {
+    } else {
         if (m == 1) {
             return 2;
         } else if (m == 2) {

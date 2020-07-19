@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(props1 "psi;properties")
+add_regression_test(mbis "psi;properties")
