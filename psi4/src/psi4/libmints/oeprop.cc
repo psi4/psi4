@@ -1844,7 +1844,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     // => Setup 1RDM on DFTGrid <= //
 
     Options& options = Process::environment.options;
-    const int MAX_ITER = options.get_int("MBIS_MAX_ITER");
+    const int MAX_ITER = options.get_int("MBIS_MAXITER");
     const double CONV = options.get_double("MBIS_CONVERGENCE");
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
