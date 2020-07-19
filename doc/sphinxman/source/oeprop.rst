@@ -77,6 +77,8 @@ summarized in the table below.
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Natural orbital occupations        | NO_OCCUPATIONS        |                                                                                   |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
+   | Stockholder Atomic Multipoles      | MBIS                  | Generates atomic charges, dipoles, etc. See :ref:`sec:oeprop_mbis`                |
+   +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
 
 There are two ways the computation of one-electron properties can be requested. 
 Firstly, the properties can be evaluated from the last
@@ -166,3 +168,18 @@ grid point, in the order that the grid was specified, while the *Exvals*,
 electric field, respectively; all of these arrays can be iterated and
 manipulated using standard Python syntax.  For a complete demonstration of this
 utility, see the :srcsample:`props4` test case.
+
+
+.. _`sec:oeprop_mbis`:
+
+
+Minimal Basis Iterative Stockholder
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The Minimal Basis Iterative Stockholder (MBIS) partitioning is one of many procedures
+that produce atomic one-electron densities from the molecular one-electron density.
+Calling MBIS in Psi4 will calculate atomic charges, as well as dipoles, quadrupoles, and
+octupoles. The allowed number of iterations and convergence criteria for the stockholder 
+algorithm is controlled by |globals__mbis_max_iter| and |globals__mbis_convergence|. Note 
+that the density is partitioned on a molecular grid, so any settings related to the number
+or type of grid points applies.
