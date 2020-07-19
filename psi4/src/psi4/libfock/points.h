@@ -101,7 +101,7 @@ class PSI_API BasisFunctions {
     }
 };
 
-class PSI_API PointFunctions : public BasisFunctions {
+class PointFunctions : public BasisFunctions {
    protected:
     // => Indices <= //
 
@@ -172,7 +172,7 @@ class PSI_API PointFunctions : public BasisFunctions {
     virtual void set_Cs(SharedMatrix Caocc, SharedMatrix Cbocc) = 0;
 };
 
-class PSI_API SAPFunctions : public PointFunctions {
+class SAPFunctions : public PointFunctions {
    protected:
     // => Temps <= //
 
@@ -199,7 +199,7 @@ class PSI_API SAPFunctions : public PointFunctions {
     void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO) override;
 };
 
-class PSI_API RKSFunctions : public PointFunctions {
+class RKSFunctions : public PointFunctions {
    protected:
     // => Pointers <= //
 
@@ -245,7 +245,7 @@ class PSI_API RKSFunctions : public PointFunctions {
     size_t block_index() { return block_index_; }
 };
 
-class PSI_API UKSFunctions : public PointFunctions {
+class UKSFunctions : public PointFunctions {
    protected:
     // => Pointers <= //
 
