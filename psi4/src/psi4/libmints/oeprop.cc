@@ -1984,6 +1984,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     while (iter < MAX_ITER) {
 
         // Calculate proatom and promolecule density at all points
+        #pragma omp parallel for
         for (int point = 0; point < total_points; point++) {
             rho_0_points[point] = 0.0;
             for (int atom = 0; atom < num_atoms; atom++) {
@@ -1996,6 +1997,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
         }
 
         // Self-consistent update of population and density
+        #pragma omp parallel for
         for (int atom = 0; atom < num_atoms; atom++) {
             for (int m = 0; m < mA[atom]; m++) {
 
@@ -2014,21 +2016,23 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
         }
 
         // Convergence check (Equation 20 in Verstraelen et al.)
-        delta_rho_max_0 = 0.0;
+        std::vector<double> delta_rho_atoms_0(num_atoms, 0.0);
+        #pragma omp parallel for
         for (int atom = 0; atom < num_atoms; atom++) {
-
-            double delta_rho_a_0 = 0.0;
 
             for (int point = 0; point < total_points; point++) {
                 double rho_a_0_new = 0.0;
                 for (int m = 0; m < mA[atom]; m++) {
                     rho_a_0_new += rho_ai_0(Nai_next[atom][m], Sai_next[atom][m], distances[atom][point]);
                 }
-                delta_rho_a_0 += weights[point] * (rho_a_0_new - rho_a_0_points[atom][point]) * (rho_a_0_new - rho_a_0_points[atom][point]);
+                delta_rho_atoms_0[atom] += weights[point] * (rho_a_0_new - rho_a_0_points[atom][point]) * (rho_a_0_new - rho_a_0_points[atom][point]);
             }
-            delta_rho_a_0 = sqrt(delta_rho_a_0);
+            delta_rho_atoms_0[atom] = sqrt(delta_rho_atoms_0[atom]);
+        }
 
-            if (delta_rho_a_0 > delta_rho_max_0) delta_rho_max_0 = delta_rho_a_0; 
+        delta_rho_max_0 = 0.0;
+        for(int atom = 0; atom < num_atoms; atom++) {
+            if (delta_rho_atoms_0[atom] > delta_rho_max_0) delta_rho_max_0 = delta_rho_atoms_0[atom]; 
         }
 
         // Update populations and widths
@@ -2088,6 +2092,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     std::vector<std::vector<std::vector<std::vector<double>>>> stone_octupoles(num_atoms, std::vector<std::vector<std::vector<double>>>(3, std::vector<std::vector<double>>(3, std::vector<double>(3, 0.0))));
 
     // Calculate multipoles (redundant cartesian)
+    #pragma omp parallel for
     for (int a = 0; a < num_atoms; a++) {
         
         // Atomic monopole
