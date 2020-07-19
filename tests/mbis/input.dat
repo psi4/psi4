@@ -1,0 +1,56 @@
+#! MBIS calculation on H2O
+
+charges_ref = psi4.Matrix.from_list([   #TEST
+       [-0.84572207],                   #TEST
+       [ 0.42286104],                   #TEST
+       [ 0.42286104]])                  #TEST
+
+dipoles_ref = psi4.Matrix.from_list([           #TEST
+       [0.00000000,  0.00000000, -0.16980239],  #TEST
+       [0.00000000, -0.03057003,  0.00796320],  #TEST
+       [0.00000000,  0.03057003,  0.00796320]]) #TEST
+
+quadrupoles_ref = psi4.Matrix.from_list([                                             #TEST
+       [-4.70466167, 0.00000000, 0.00000000, -4.49125633, -0.00000000, -4.60613700],  #TEST
+       [-0.29829195, 0.00000000, 0.00000000, -0.28802347, -0.00170105, -0.28374129],  #TEST
+       [-0.29829195, 0.00000000, 0.00000000, -0.28802347,  0.00170105, -0.28374129]]) #TEST
+
+octupoles_ref = psi4.Matrix.from_list([                                                                                                    #TEST
+       [ 0.00000000,  0.00000000, -0.15703089, 0.00000000, 0.00000000, 0.00000000,   0.00000000, -0.45651683,  0.00000000, -0.64988960],   #TEST
+       [ 0.00000000, -0.01049888,  0.00088680, 0.00000000, 0.00000000, 0.00000000,  -0.03241728, -0.00186054, -0.01442813, -0.00608710],   #TEST
+       [-0.00000000,  0.01049888,  0.00088680, 0.00000000, 0.00000000, 0.00000000,   0.03241728, -0.00186054,  0.01442813, -0.00608710]])  #TEST
+
+molecule mol {
+  0 1
+  O
+  H 1 1.0
+  H 1 1.0 2 104.5
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  d_convergence 8
+  e_convergence 10
+  mbis_max_iter 200
+  mbis_convergence 1e-8
+  dft_pruning_scheme none
+  dft_radial_points 99
+  dft_spherical_points 590
+}
+
+e, wfn = energy('hf/cc-pvdz', return_wfn=True)
+oeprop(wfn, 'MBIS', title='H20 SCF')
+
+charges = wfn.variable('MBIS_CHARGES')
+dipoles = wfn.variable('MBIS_DIPOLES')
+quadrupoles = wfn.variable('MBIS_QUADRUPOLES')
+octupoles = wfn.variable('MBIS_OCTUPOLES')
+
+compare_matrices(charges_ref, charges, 7, "MBIS Charges")             #TEST
+compare_matrices(dipoles_ref, dipoles, 7, "MBIS Dipoles")             #TEST
+compare_matrices(quadrupoles_ref, quadrupoles, 7, "MBIS Quadrupoles") #TEST
+compare_matrices(octupoles_ref, octupoles, 7, "MBIS Octupoles")       #TEST
+
