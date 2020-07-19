@@ -60,7 +60,7 @@ struct MassPoint {
     double x, y, z, w;
 };
 
-class PSI_API MolecularGrid {
+class MolecularGrid {
    protected:
     int debug_;
 
@@ -201,7 +201,7 @@ class PseudospectralGrid : public MolecularGrid {
     ~PseudospectralGrid() override;
 };
 
-class PSI_API DFTGrid : public MolecularGrid {
+class DFTGrid : public MolecularGrid {
    protected:
     /// The primary basis
     std::shared_ptr<BasisSet> primary_;
@@ -344,7 +344,7 @@ class SphericalGrid {
     void print(std::string out_fname = "outfile", int level = 1) const;
 };
 
-class PSI_API BlockOPoints {
+class BlockOPoints {
    protected:
     /// number of points in this block
     size_t index_;
