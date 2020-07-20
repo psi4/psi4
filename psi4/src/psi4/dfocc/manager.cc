@@ -339,18 +339,11 @@ void DFOCC::omp2_manager() {
         // Save MOs to wfn
         save_mo_to_wfn();
 
-        // OEPROP
-        if (oeprop_ == "TRUE") oeprop();
+        response_helper();
 
         // S2
         if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_response();
         // if (comput_s2_ == "TRUE" && reference_ == "UNRESTRICTED") s2_lagrangian();
-
-        // Compute Analytic Gradients
-        if (dertype == "FIRST") dfgrad();
-
-        // EKT-IP
-        if (ekt_ip_ == "TRUE") ekt_ip();
 
     }  // end if (conver == 1)
 }  // end omp2_manager
@@ -553,9 +546,7 @@ void DFOCC::mp2_manager() {
         omp2_tpdm();
         // mp2l_energy();
         prepare4grad();
-        if (oeprop_ == "TRUE") oeprop();
-        if (dertype == "FIRST") dfgrad();
-        if (ekt_ip_ == "TRUE") ekt_ip();
+        response_helper();
 
     }  // if (dertype == "FIRST" || ekt_ip_ == "TRUE")
 
@@ -894,9 +885,7 @@ void DFOCC::ccsd_manager() {
         ccsd_tpdm();
         // ccl_energy();
         prepare4grad();
-        if (oeprop_ == "TRUE") oeprop();
-        if (dertype == "FIRST") dfgrad();
-        if (ekt_ip_ == "TRUE") ekt_ip();
+        response_helper();
     }  // if (dertype == "FIRST" || ekt_ip_ == "TRUE")
 
 }  // end ccsd_manager
@@ -1304,9 +1293,7 @@ void DFOCC::ccsd_t_manager() {
         ccsd_tpdm();
         // ccl_energy();
         prepare4grad();
-        if (oeprop_ == "TRUE") oeprop();
-        if (dertype == "FIRST") dfgrad();
-        if (ekt_ip_ == "TRUE") ekt_ip();
+        response_helper();
     }  // if (dertype == "FIRST" || ekt_ip_ == "TRUE")
 
 }  // end ccsd_t_manager
@@ -1977,9 +1964,7 @@ void DFOCC::ccd_manager() {
         ccd_tpdm();
         // ccl_energy();
         prepare4grad();
-        if (oeprop_ == "TRUE") oeprop();
-        if (dertype == "FIRST") dfgrad();
-        if (ekt_ip_ == "TRUE") ekt_ip();
+        response_helper();
     }  // if (dertype == "FIRST" || ekt_ip_ == "TRUE")
 
 }  // end ccd_manager
@@ -2281,15 +2266,7 @@ void DFOCC::omp3_manager() {
         // Save MOs to wfn
         save_mo_to_wfn();
 
-        // OEPROP
-        if (oeprop_ == "TRUE") oeprop();
-
-        // Compute Analytic Gradients
-        if (dertype == "FIRST") dfgrad();
-
-        // EKT-IP
-        if (ekt_ip_ == "TRUE") ekt_ip();
-
+        response_helper();
     }  // end if (conver == 1)
 
 }  // end omp3_manager
@@ -2526,9 +2503,7 @@ void DFOCC::mp3_manager() {
         omp3_tpdm();
         // ccl_energy();
         prepare4grad();
-        if (oeprop_ == "TRUE") oeprop();
-        if (dertype == "FIRST") dfgrad();
-        if (ekt_ip_ == "TRUE") ekt_ip();
+        response_helper();
     }  // if (dertype == "FIRST" || ekt_ip_ == "TRUE")
 
 }  // end mp3_manager
@@ -2829,15 +2804,7 @@ void DFOCC::omp2_5_manager() {
         // Save MOs to wfn
         save_mo_to_wfn();
 
-        // OEPROP
-        if (oeprop_ == "TRUE") oeprop();
-
-        // Compute Analytic Gradients
-        if (dertype == "FIRST") dfgrad();
-
-        // EKT-IP
-        if (ekt_ip_ == "TRUE") ekt_ip();
-
+        response_helper();
     }  // end if (conver == 1)
 
 }  // end omp2_5_manager
@@ -3056,9 +3023,7 @@ void DFOCC::mp2_5_manager() {
         omp3_tpdm();
         // ccl_energy();
         prepare4grad();
-        if (oeprop_ == "TRUE") oeprop();
-        if (dertype == "FIRST") dfgrad();
-        if (ekt_ip_ == "TRUE") ekt_ip();
+        response_helper();
     }  // if (dertype == "FIRST" || ekt_ip_ == "TRUE")
 
 }  // end mp2_5_manager
@@ -3330,14 +3295,7 @@ void DFOCC::olccd_manager() {
         // Save MOs to wfn
         save_mo_to_wfn();
 
-        // OEPROP
-        if (oeprop_ == "TRUE") oeprop();
-
-        // Compute Analytic Gradients
-        if (dertype == "FIRST") dfgrad();
-
-        // EKT-IP
-        if (ekt_ip_ == "TRUE") ekt_ip();
+        response_helper();
 
     }  // end if (conver == 1)
 
@@ -3566,11 +3524,9 @@ void DFOCC::lccd_manager() {
         lccd_pdm_3index_intr();
         omp3_opdm();
         olccd_tpdm();
-        // ccl_energy();
         prepare4grad();
-        if (oeprop_ == "TRUE") oeprop();
-        if (dertype == "FIRST") dfgrad();
-        if (ekt_ip_ == "TRUE") ekt_ip();
+        response_helper();
+        // ccl_energy();
     }  // if (dertype == "FIRST" || ekt_ip_ == "TRUE")
 
 }  // end lccd_manager
@@ -3640,6 +3596,13 @@ void DFOCC::qchf_manager() {
     qchf();
 
 }  // end qchf_manager
+
+void DFOCC::response_helper() {
+    set_opdm();
+    if (oeprop_ == "TRUE") oeprop();
+    if (dertype == "FIRST") dfgrad();
+    if (ekt_ip_ == "TRUE" and do_cd == "FALSE") ekt_ip();
+}
 
 }  // namespace dfoccwave
 }  // namespace psi

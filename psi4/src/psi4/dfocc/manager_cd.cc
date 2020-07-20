@@ -1984,11 +1984,7 @@ void DFOCC::omp3_manager_cd() {
         Process::environment.globals["OMP3 TOTAL ENERGY"] = Emp3L;
         Process::environment.globals["OMP3 CORRELATION ENERGY"] = Emp3L - Escf;
 
-        // OEPROP
-        if (oeprop_ == "TRUE") oeprop();
-
-        // Compute Analytic Gradients
-        if (dertype == "FIRST") dfgrad();
+        response_helper();
 
         // Save MOs to wfn
         save_mo_to_wfn();
@@ -2494,11 +2490,7 @@ void DFOCC::omp2_5_manager_cd() {
         Process::environment.globals["OMP2.5 TOTAL ENERGY"] = Emp3L;
         Process::environment.globals["OMP2.5 CORRELATION ENERGY"] = Emp3L - Escf;
 
-        // OEPROP
-        if (oeprop_ == "TRUE") oeprop();
-
-        // Compute Analytic Gradients
-        if (dertype == "FIRST") dfgrad();
+        response_helper();
 
         // Save MOs to wfn
         save_mo_to_wfn();

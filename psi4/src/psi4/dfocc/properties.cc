@@ -42,6 +42,10 @@ void DFOCC::oeprop() {
     outfile->Printf("\tComputing one-electron properties...\n");
 
     timer_on("oeprop");
+    // This density finagling won't be necessary if you just set the density on the wavefunction.
+    // However, CD-OMP2/OLCCD have oeprop enabled but gradients disabled for undocumented reasons.
+    // Accordingly, we'll play it safe and not set the density for those cases just yet.
+    // ...Which means we can't assume the density to be set in general. Sad. - JPM 07/2020
     SharedMatrix Da_ = SharedMatrix(new Matrix("MO-basis alpha OPDM", nmo_, nmo_));
     SharedMatrix Db_ = SharedMatrix(new Matrix("MO-basis beta OPDM", nmo_, nmo_));
     if (reference_ == "RESTRICTED") {

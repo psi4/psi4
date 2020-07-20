@@ -27,6 +27,7 @@
  */
 
 /** Standard library includes */
+#include "psi4/libmints/matrix.h"
 #include "psi4/libqt/qt.h"
 #include "defines.h"
 #include "dfocc.h"
@@ -953,6 +954,22 @@ void DFOCC::effective_pdm_gfm() {
     }  // else if (reference_ == "UNRESTRICTED")
     timer_off("Gamma^eff");
 }  // end effective_pdm_gfm
+
+void DFOCC::set_opdm() {
+    auto Da = std::make_shared<Matrix>("MO-basis alpha OPDM", nmo_, nmo_);
+    auto Db = std::make_shared<Matrix>("MO-basis beta OPDM", nmo_, nmo_);
+    if (reference_ == "RESTRICTED") {
+        G1->to_shared_matrix(Da);
+        Da->scale(0.5);
+        Da_ = linalg::triplet(Ca_, Da, Ca_, false, false, true);
+        Db_ = Da_;
+    } else {
+        G1A->to_shared_matrix(Da);
+        G1B->to_shared_matrix(Db);
+        Da_ = linalg::triplet(Ca_, Da, Ca_, false, false, true);
+        Db_ = linalg::triplet(Cb_, Db, Cb_, false, false, true);
+    }
+}
 
 }  // namespace dfoccwave
 }  // namespace psi

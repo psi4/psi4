@@ -114,6 +114,7 @@ class DFOCC : public Wavefunction {
     void approx_diag_ekt_mohess_vo();
     void approx_diag_ekt_mohess_oo();
     void prepare4grad();
+    void set_opdm();
     void z_vector();
     void z_vector_pcg();
     // void z_vector_cg();
@@ -583,6 +584,9 @@ class DFOCC : public Wavefunction {
     int vo_pair_idxAA(int i, int j);
     int ai_pair_idxAA(int i, int j);
     int get_rotation_block(std::string rotblock);
+
+    // Helpers
+    void response_helper();
 
     // DIIS
     std::shared_ptr<DIISManager> ccsdDiisManager;
