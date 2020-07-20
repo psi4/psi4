@@ -42,8 +42,12 @@ void DFOCC::oeprop() {
     outfile->Printf("\tComputing one-electron properties...\n");
 
     timer_on("oeprop");
-    SharedMatrix Da_ = SharedMatrix(new Matrix("MO-basis alpha OPDM", nmo_, nmo_));
-    SharedMatrix Db_ = SharedMatrix(new Matrix("MO-basis beta OPDM", nmo_, nmo_));
+    // This density finagling won't be necessary if you just set the density on the wavefunction.
+    // However, CD-OMP2/OLCCD have oeprop enabled but gradients disabled for undocumented reasons.
+    // Accordingly, we'll play it safe and not set the density for those cases just yet.
+    // ...Which means we can't assume the density to be set in general. Sad. - JPM 07/2020
+    auto Da_ = std::make_shared<Matrix>("MO-basis alpha OPDM", nmo_, nmo_);
+    auto Db_ = std::make_shared<Matrix>("MO-basis beta OPDM", nmo_, nmo_);
     if (reference_ == "RESTRICTED") {
         G1->to_shared_matrix(Da_);
         Da_->scale(0.5);
@@ -56,7 +60,7 @@ void DFOCC::oeprop() {
     }
 
     // Compute oeprop
-    std::shared_ptr<OEProp> oe(new OEProp(shared_from_this()));
+    auto oe = std::make_shared<OEProp>(shared_from_this());
     oe->set_Da_mo(Da_);
     if (reference_ == "UNRESTRICTED") oe->set_Db_mo(Db_);
     oe->add("DIPOLE");
@@ -82,12 +86,9 @@ void DFOCC::ekt_ip() {
 
     timer_on("ekt");
     if (reference_ == "RESTRICTED") {
-        // malloc
-        eigA = SharedTensor1d(new Tensor1d("epsilon <I|J>", noccA));
-        psA = SharedTensor1d(new Tensor1d("alpha occupied pole strength vector", noccA));
 
         // Call EKT
-        SharedEktip ektA = SharedEktip(new Ektip("Alpha EKT", noccA, nmo_, GF, G1, 1.0, 0.5));
+        auto ektA = std::make_shared<Ektip>("Alpha EKT", noccA, nmo_, GF, G1, 1.0, 0.5);
 
         // Print IPs
         outfile->Printf("\n\tEKT Ionization Potentials (Alpha Spin Case) \n");
@@ -130,6 +131,7 @@ void DFOCC::ekt_ip() {
     }  // end if (reference_ == "RESTRICTED")
 
     else if (reference_ == "UNRESTRICTED") {
+        // Not implemented yet
     }  // else if (reference_ == "UNRESTRICTED")
     timer_off("ekt");
     // outfile->Printf("\tekt is done.\n");
