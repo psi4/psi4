@@ -326,7 +326,7 @@ class PopulationAnalysisCalc : public Prop {
     std::tuple<SharedStdVector, SharedStdVector, SharedStdVector> compute_mulliken_charges(bool print_output = false);
     /// Compute Lowdin Charges
     std::tuple<SharedStdVector, SharedStdVector, SharedStdVector> compute_lowdin_charges(bool print_output = false);
-    /// Compute MBIS Multipoles
+    /// Compute MBIS Multipoles ("Minimal Basis Iterative Stockholder..." By: Toon Verstraelen et al. doi:10.1021/acs.jctc.6b00456.)
     std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> compute_mbis_multipoles(bool print_output = false);
     /// Compute Mayer Bond Indices (non-orthogoal basis)
     std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> compute_mayer_indices(bool print_output = false);
@@ -420,7 +420,7 @@ class PSI_API OEProp : public TaskListComputer {
     void compute_mulliken_charges();
     /// Compute Lowdin Charges
     void compute_lowdin_charges();
-    ///Compute MBIS Multipoles
+    /// Compute MBIS Multipoles ("Minimal Basis Iterative Stockholder..." By: Toon Verstraelen et al. doi:10.1021/acs.jctc.6b00456.)
     void compute_mbis_multipoles();
     /// Compute Mayer Bond Indices (non-orthogoal basis)
     void compute_mayer_indices();

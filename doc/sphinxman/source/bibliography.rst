@@ -504,3 +504,6 @@ Bibliography
 
 .. [Norman2018-tn]
    P. Norman, K. Ruud, T. Saue, "Principles and Practices of Molecular Properties: Theory, Modeling, and Simulations". John Wiley & Sons, 2018
+
+.. [Verstraelen:2016]
+   T. Verstraelen et al. "Minimal Basis Iterative Stockholder: Atoms in Molecules for Force-Field Development". *J. Chem. Theory and Comput.* doi: 10.1021/acs.jctc.6b00456.
