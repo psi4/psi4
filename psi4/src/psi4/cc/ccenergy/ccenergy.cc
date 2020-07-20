@@ -42,6 +42,7 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
@@ -76,6 +77,11 @@ CCEnergyWavefunction::~CCEnergyWavefunction() {}
 void CCEnergyWavefunction::init() {
     shallow_copy(reference_wavefunction_);
     module_ = "ccenergy";
+    // shallow_copy leaves this wfn's Density as the same object as the ref's.
+    // Because ccdensity/ccdensity.cc needs to modify the object at that memory
+    // location, make this object's densities point to a different memory locationn
+    Da_ = reference_wavefunction_->Da()->clone();
+    Db_ = reference_wavefunction_->same_a_b_dens() ? Da_ : reference_wavefunction_->Db()->clone();
 }
 
 double CCEnergyWavefunction::compute_energy() {

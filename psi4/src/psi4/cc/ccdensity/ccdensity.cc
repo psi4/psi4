@@ -365,6 +365,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
         }
 
         /* Transform Da/b to so basis and set in wfn */
+        // If this becomes a wavefunction subclass someday, just redefine the densities directly.
         if (ref_wfn->same_a_b_dens()) {
             Pa->scale(0.5);
             auto Pa_so = linalg::triplet(ref_wfn->Ca(), Pa, ref_wfn->Ca(), false, false, true);
