@@ -334,7 +334,6 @@ class DFOCC : public Wavefunction {
     void tei_vovo_phys_ref_directAB(SharedTensor2d &K);
 
     // df
-    // void df();
     void df_corr();
     void df_ref();
     void trans_corr();
