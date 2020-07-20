@@ -255,10 +255,12 @@ class DCTSolver : public Wavefunction {
     void compute_R_AA_and_BB();
     void presort_mo_tpdm_AB();
     void presort_mo_tpdm_AA();
+    void construct_oo_density_RHF();
 
     // UHF-reference DCT
     void compute_gradient_UHF();
     double compute_energy_UHF();
+    void construct_oo_density_UHF();
 
     bool augment_b(double *vec, double tol);
     /// Controls convergence of the orbital updates

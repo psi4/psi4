@@ -2005,14 +2005,7 @@ void DCTSolver::compute_TPDM_trace() {
     psio_->close(PSIF_DCT_DENSITY, 1);
 }
 
-void DCTSolver::compute_oe_properties() {
-
-    if (options_.get_str("DCT_TYPE") == "DF") {
-        outfile->Printf(
-            "\n\n\t**** Warning: Density-fitted DCT properties are only approximate.\n"
-            "\t     Small errors are expected. ****\n");
-    }
-
+void DCTSolver::construct_oo_density_UHF() {
     // Form one-particle density matrix
     auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
     auto b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);
@@ -2053,13 +2046,22 @@ void DCTSolver::compute_oe_properties() {
         }
     }
 
+    // With the OPDMs constructed, let's set them on the wavefunction.
+    Da_ = linalg::triplet(Ca_, a_opdm, Ca_, false, false, true);
+    Db_ = linalg::triplet(Cb_, b_opdm, Cb_, false, false, true);
+}
+
+void DCTSolver::compute_oe_properties() {
+    if (options_.get_str("DCT_TYPE") == "DF") {
+        outfile->Printf(
+            "\n\n\t**** Warning: Density-fitted DCT properties are only approximate.\n"
+            "\t     Small errors are expected. ****\n");
+    }
+
     // Compute one-electron properties
 
     auto oe = std::make_shared<OEProp>(shared_from_this());
     oe->set_title(options_.get_str("DCT_FUNCTIONAL").c_str());
-
-    oe->set_Da_mo(a_opdm);
-    oe->set_Db_mo(b_opdm);
 
     oe->add("DIPOLE");
 

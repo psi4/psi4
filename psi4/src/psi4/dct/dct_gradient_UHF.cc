@@ -3832,6 +3832,10 @@ void DCTSolver::compute_ewdm_dc() {
     a_opdm->add(a_zia);
     b_opdm->add(b_zia);
 
+    // With the OPDMs constructed, let's set them on the wavefunction.
+    Da_ = linalg::triplet(Ca_, a_opdm, Ca_, false, false, true);
+    Db_ = linalg::triplet(Cb_, b_opdm, Cb_, false, false, true);
+
     // Scale the energy-weighted density matrix by -2.0 to make it the same form as in the coupled-cluster code
     aW.scale(-2.0);
     bW.scale(-2.0);
