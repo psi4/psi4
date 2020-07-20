@@ -154,9 +154,8 @@ double DCTSolver::compute_energy_UHF() {
     print_opdm();
 
     if (orbital_optimized_) {
-        // Compute one-electron properties
+        construct_oo_density_UHF();
         compute_oe_properties();
-        // Write to MOLDEN file if requested
         if (options_.get_bool("MOLDEN_WRITE")) write_molden_file();
     }
 
