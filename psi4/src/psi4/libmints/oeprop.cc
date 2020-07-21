@@ -824,7 +824,7 @@ void OEProp::compute() {
     if (tasks_.count("MO_EXTENTS")) compute_mo_extents();
     if (tasks_.count("MULLIKEN_CHARGES")) compute_mulliken_charges();
     if (tasks_.count("LOWDIN_CHARGES")) compute_lowdin_charges();
-    if (tasks_.count("MBIS")) compute_mbis_multipoles();
+    if (tasks_.count("MBIS_CHARGES")) compute_mbis_multipoles();
     if (tasks_.count("MAYER_INDICES")) compute_mayer_indices();
     if (tasks_.count("WIBERG_LOWDIN_INDICES")) compute_wiberg_lowdin_indices();
     if (tasks_.count("NO_OCCUPATIONS")) compute_no_occupations();
