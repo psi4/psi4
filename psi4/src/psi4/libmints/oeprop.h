@@ -311,8 +311,8 @@ class PopulationAnalysisCalc : public Prop {
     PopulationAnalysisCalc();
 
    protected:
-    ///Helper Methods for MBIS
-
+    ///Helper Methods for MBIS (JCTC, 2016, p. 3894–3912, Verstraelen et al.)
+    
     ///The initial guess for the number of electrons in each shell of an atom
     static int get_nai(int z, int m);
     ///Proatomic density of a specific shell of an atom  (Equation 7 in Verstraelen et al.)
