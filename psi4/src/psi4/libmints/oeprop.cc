@@ -38,6 +38,7 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/vector.h"
+#include "psi4/libmints/vector3.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/integral.h"
@@ -1916,13 +1917,11 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     for (int atom = 0; atom < num_atoms; atom++) {
         for (int point = 0; point < total_points; point++) {
-            double dx = x_points[point] - mol->fx(atom);
-            double dy = y_points[point] - mol->fy(atom);
-            double dz = z_points[point] - mol->fz(atom);
-            distances[atom][point] = sqrt(dx*dx + dy*dy + dz*dz);
-            disps[atom][point][0] = dx;
-            disps[atom][point][1] = dy;
-            disps[atom][point][2] = dz;
+            Vector3 r_nuc = (x_points[point] - mol->fx(atom), y_points[point] - mol->fy(atom), z_points[point] - mol->fz(atom));
+            distances[atom][point] = r_nuc.norm();
+            disps[atom][point][0] = r_nuc[0];
+            disps[atom][point][1] = r_nuc[1];
+            disps[atom][point][2] = r_nuc[2];
         }
     }
 
