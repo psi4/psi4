@@ -1845,8 +1845,8 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     // => Setup 1RDM on DFTGrid <= //
 
     Options& options = Process::environment.options;
-    const int MAX_ITER = options.get_int("MBIS_MAXITER");
-    const double CONV = options.get_double("MBIS_CONVERGENCE");
+    const int max_iter = options.get_int("MBIS_MAXITER");
+    const double conv = options.get_double("MBIS_CONVERGENCE");
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
     std::shared_ptr<DFTGrid> grid = std::make_shared<DFTGrid>(mol, basisset_, options);
@@ -1982,7 +1982,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     double delta_rho_max_0;
 
     outfile->Printf("                     Delta D\n");
-    while (iter < MAX_ITER) {
+    while (iter < max_iter) {
 
         // Calculate proatom and promolecule density at all points
         #pragma omp parallel for
@@ -2046,7 +2046,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
         outfile->Printf("   @MBIS iter %3d:  %.3e\n", iter, delta_rho_max_0);
 
-        if (delta_rho_max_0 < CONV) {
+        if (delta_rho_max_0 < conv) {
             if (print_output) outfile->Printf("  MBIS Atomic Density Converged\n\n");
             is_converged = true;
             break;
@@ -2055,7 +2055,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
         iter += 1;
     }
 
-    if (!is_converged) throw ConvergenceError<int>("MBIS", MAX_ITER, CONV, delta_rho_max_0, __FILE__, __LINE__);
+    if (!is_converged) throw ConvergenceError<int>("MBIS", max_iter, conv, delta_rho_max_0, __FILE__, __LINE__);
 
     // => Post-Processing <= //
 
