@@ -2192,7 +2192,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
                     (int)mol->Z(a), mol->Z(a) - monopoles[a], monopoles[a]);
         }
 
-        outfile->Printf("\n  MBIS Dipoles: (a.u.)\n");
+        outfile->Printf("\n  MBIS Dipoles: [e a0]\n");
         outfile->Printf("   Center  Symbol  Z        X           Y           Z\n");
 
         for (int a = 0; a < num_atoms; a++) {
@@ -2200,7 +2200,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
                     (int)mol->Z(a), dpole_flat->get(a, 0), dpole_flat->get(a, 1), dpole_flat->get(a, 2));
         }
 
-        outfile->Printf("\n  MBIS Quadrupoles: (a.u.)\n");
+        outfile->Printf("\n  MBIS Quadrupoles: [e ao^2]\n");
         outfile->Printf("   Center  Symbol  Z      XX        XY        XZ        YY        YZ        ZZ\n");
 
         for (int a = 0; a < num_atoms; a++) {
@@ -2209,7 +2209,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
                     qpole_flat->get(a, 4), qpole_flat->get(a, 5));
         }
 
-        outfile->Printf("\n  MBIS Octupoles: (a.u.)\n");
+        outfile->Printf("\n  MBIS Octupoles: [e a0^3]\n");
         outfile->Printf("   Center  Symbol  Z      XXX       XXY       XXZ       XYY       XYZ       XZZ       YYY       YYZ       YZZ       ZZZ\n");
 
         for (int a = 0; a < num_atoms; a++) {
