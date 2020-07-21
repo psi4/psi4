@@ -1984,7 +1984,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     while (iter < max_iter) {
 
         // Calculate proatom and promolecule density at all points
-        #pragma omp parallel for
+#pragma omp parallel for
         for (int point = 0; point < total_points; point++) {
             rho_0_points[point] = 0.0;
             for (int atom = 0; atom < num_atoms; atom++) {
@@ -1997,7 +1997,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
         }
 
         // Self-consistent update of population and density
-        #pragma omp parallel for
+#pragma omp parallel for
         for (int atom = 0; atom < num_atoms; atom++) {
             for (int m = 0; m < mA[atom]; m++) {
 
@@ -2017,7 +2017,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
         // Convergence check (Equation 20 in Verstraelen et al.)
         std::vector<double> delta_rho_atoms_0(num_atoms, 0.0);
-        #pragma omp parallel for
+#pragma omp parallel for
         for (int atom = 0; atom < num_atoms; atom++) {
 
             for (int point = 0; point < total_points; point++) {
@@ -2092,7 +2092,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     std::vector<std::vector<std::vector<std::vector<double>>>> stone_octupoles(num_atoms, std::vector<std::vector<std::vector<double>>>(3, std::vector<std::vector<double>>(3, std::vector<double>(3, 0.0))));
 
     // Calculate multipoles (redundant cartesian)
-    #pragma omp parallel for
+#pragma omp parallel for
     for (int a = 0; a < num_atoms; a++) {
         
         // Atomic monopole
