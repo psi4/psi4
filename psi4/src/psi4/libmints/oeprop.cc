@@ -1871,7 +1871,6 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     }
 
     std::vector<std::shared_ptr<BlockOPoints>> blocks = grid->blocks();
-    int num_blocks = blocks.size();
     int running_points = 0;
 
     // Coordinates, weights, and rho (molecular electron density) at each grid point
@@ -1881,7 +1880,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     std::vector<double> weights(total_points, 0.0);
     std::vector<double> rho(total_points, 0.0);
 
-    for (int b = 0; b < num_blocks; b++) {
+    for (int b = 0; b < blocks.size(); b++) {
         std::shared_ptr<BlockOPoints> block = blocks[b];
         SharedVector rho_block;
         std::size_t num_points = block->npoints();
