@@ -1916,8 +1916,9 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     std::vector<std::vector<std::vector<double>>> disps(num_atoms, std::vector<std::vector<double>>(total_points, std::vector<double>(3, 0.0)));
 
     for (int atom = 0; atom < num_atoms; atom++) {
+        Vector3 nuc = mol->xyz(atom);
         for (int point = 0; point < total_points; point++) {
-            Vector3 r_nuc = (x_points[point] - mol->fx(atom), y_points[point] - mol->fy(atom), z_points[point] - mol->fz(atom));
+            Vector3 r_nuc = Vector3(x_points[point], y_points[point], z_points[point]) - nuc;
             distances[atom][point] = r_nuc.norm();
             disps[atom][point][0] = r_nuc[0];
             disps[atom][point][1] = r_nuc[1];
