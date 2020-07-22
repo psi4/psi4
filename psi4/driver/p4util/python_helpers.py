@@ -960,7 +960,7 @@ core.Wavefunction.set_frequencies = _core_wavefunction_set_frequencies
 
 def _core_get_gradient():
     warnings.warn(
-        "Using `psi4.core.get_gradient` (only used internally for C++ optking; deprecated silently in 1.2) is deprecated, and in 1.4 (or whenever Py optking is adopted) it will stop working\n",
+        "Using `psi4.core.get_gradient` (only used internally for C++ optking; deprecated silently in 1.2) is deprecated, and in 1.5 (or whenever Py optking is adopted) it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return core.get_legacy_gradient()
@@ -968,7 +968,7 @@ def _core_get_gradient():
 
 def _core_set_gradient(val):
     warnings.warn(
-        "Using `psi4.core.set_gradient` (only used internally for C++ optking; deprecated silently in 1.2) is deprecated, and in 1.4 (or whenever Py optking is adopted) it will stop working\n",
+        "Using `psi4.core.set_gradient` (only used internally for C++ optking; deprecated silently in 1.2) is deprecated, and in 1.5 (or whenever Py optking is adopted) it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
     return core.set_legacy_gradient(val)

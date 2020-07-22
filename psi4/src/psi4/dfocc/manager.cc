@@ -2495,15 +2495,39 @@ void DFOCC::mp3_manager() {
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
 
-    Process::environment.globals["CURRENT ENERGY"] = Emp3;
-    Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-    Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3 - Escf;
-    Process::environment.globals["MP3 TOTAL ENERGY"] = Emp3;
-    Process::environment.globals["MP3 CORRELATION ENERGY"] = Emp3 - Escf;
+    variables_["MP2 TOTAL ENERGY"] = Emp2;
+    variables_["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
+    variables_["MP2 SINGLES ENERGY"] = 0.0;  // RHF & UHF only
+    variables_["MP2 DOUBLES ENERGY"] = Emp2 - Escf;
+    if (reference_ == "UNRESTRICTED") {
+        variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+    }
+
+    variables_["MP2.5 TOTAL ENERGY"] = 0.5 * (Emp3 + Emp2);
+    variables_["MP2.5 CORRELATION ENERGY"] = (Emp2 - Escf) + 0.5 * (Emp3 - Emp2);
+    variables_["MP2.5 SINGLES ENERGY"] = 0.0;  // RHF & UHF only
+    variables_["MP2.5 DOUBLES ENERGY"] = (Emp2 - Escf) + 0.5 * (Emp3 - Emp2);
+    if (reference_ == "UNRESTRICTED") {
+        variables_["MP2.5 SAME-SPIN CORRELATION ENERGY"] = 0.5 * (Emp2AA + Emp2BB + Emp3AA + Emp3BB);
+        variables_["MP2.5 OPPOSITE-SPIN CORRELATION ENERGY"] = 0.5 * (Emp2AB + Emp3AB);
+    }
+
+    variables_["CURRENT ENERGY"] = Emp3;
+    variables_["CURRENT REFERENCE ENERGY"] = Escf;
+    variables_["CURRENT CORRELATION ENERGY"] = Emp3 - Escf;
+    variables_["MP3 TOTAL ENERGY"] = Emp3;
+    variables_["MP3 CORRELATION ENERGY"] = Emp3 - Escf;
+    variables_["MP3 DOUBLES ENERGY"] = Emp3 - Escf;
+    variables_["MP3 SINGLES ENERGY"] = 0.0;  // RHF & UHF only
+    if (reference_ == "UNRESTRICTED") {
+        variables_["MP3 SAME-SPIN CORRELATION ENERGY"] = Emp3AA + Emp3BB;
+        variables_["MP3 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp3AB;
+    }
     Emp3L = Emp3;
 
     /* updates the wavefunction for checkpointing */
-    energy_ = Process::environment.globals["MP3 TOTAL ENERGY"];
+    energy_ = Emp3;
     name_ = "DF-MP3";
 
     // Compute Analytic Gradients
@@ -3024,16 +3048,48 @@ void DFOCC::mp2_5_manager() {
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
 
-    Process::environment.globals["CURRENT ENERGY"] = Emp3;
-    Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-    Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3 - Escf;
-    Process::environment.globals["MP2.5 TOTAL ENERGY"] = Emp3;
-    Process::environment.globals["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
-    Process::environment.globals["MP3 TOTAL ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2);
+    //Process::environment.globals["CURRENT ENERGY"] = Emp3;
+    //Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
+    //Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3 - Escf;
+    //Process::environment.globals["MP2.5 TOTAL ENERGY"] = Emp3;
+    //Process::environment.globals["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
+    //Process::environment.globals["MP3 TOTAL ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2);
+
+
+    variables_["MP2 TOTAL ENERGY"] = Emp2;
+    variables_["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
+    variables_["MP2 SINGLES ENERGY"] = 0.0;  // RHF & UHF only
+    variables_["MP2 DOUBLES ENERGY"] = Emp2 - Escf;
+    if (reference_ == "UNRESTRICTED") {
+        variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+    }
+
+    variables_["CURRENT ENERGY"] = Emp3;
+    variables_["CURRENT REFERENCE ENERGY"] = Escf;
+    variables_["CURRENT CORRELATION ENERGY"] = Emp3 - Escf;
+    variables_["MP2.5 TOTAL ENERGY"] = Emp3;
+    variables_["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
+    variables_["MP2.5 SINGLES ENERGY"] = 0.0;
+    variables_["MP2.5 DOUBLES ENERGY"] = variables_["MP2.5 CORRELATION ENERGY"];  // RHF & UHF only
+    if (reference_ == "UNRESTRICTED") {
+        variables_["MP2.5 SAME-SPIN CORRELATION ENERGY"] = Emp3AA + Emp3BB;
+        variables_["MP2.5 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp3AB;
+    }
+
+    variables_["MP3 TOTAL ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2);
+    variables_["MP3 CORRELATION ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2) - Escf;
+    variables_["MP3 DOUBLES ENERGY"] = variables_["MP3 CORRELATION ENERGY"];  // RHF & UHF only
+    variables_["MP3 SINGLES ENERGY"] = 0.0;  // RHF & UHF only
+    if (reference_ == "UNRESTRICTED") {
+        variables_["MP3 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB + 2.0 * (Emp3AA + Emp3BB - Emp2AA - Emp2BB);
+        variables_["MP3 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB + 2.0 * (Emp3AB - Emp2AB);
+    }
+
     Emp3L = Emp3;
 
     /* updates the wavefunction for checkpointing */
-    energy_ = Process::environment.globals["MP2.5 TOTAL ENERGY"];
+    energy_ = Emp3;
     name_ = "DF-MP2.5";
 
     // Compute Analytic Gradients
