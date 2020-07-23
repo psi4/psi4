@@ -183,3 +183,5 @@ octupoles. The allowed number of iterations and convergence criteria for the sto
 algorithm is controlled by |globals__mbis_maxiter| and |globals__mbis_convergence|. Note 
 that the density is partitioned on a molecular grid, so any settings related to the number
 or type of grid points applies. (Associated Paper: [Verstraelen:2016]_)
+
+..index:: ISA; MBIS

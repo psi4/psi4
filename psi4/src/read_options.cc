@@ -252,7 +252,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Maximum Number of MBIS Iterations -*/
     options.add_int("MBIS_MAXITER", 200);
     /*- MBIS Convergence Criteria -*/
-    options.add_double("MBIS_CONVERGENCE", 1.0e-8);
+    options.add_double("MBIS_D_CONVERGENCE", 1.0e-8);
 
     /*- PCM boolean for pcmsolver module -*/
     options.add_bool("PCM", false);

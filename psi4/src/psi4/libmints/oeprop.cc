@@ -1790,6 +1790,7 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
     return std::make_tuple(Qa, Qb, apcs);
 }
 
+// See PopulationAnalysisCalc::compute_mbis_multipoles
 void OEProp::compute_mbis_multipoles() {
 
     SharedMatrix mpole, dpole, qpole, opole;
@@ -1802,7 +1803,10 @@ void OEProp::compute_mbis_multipoles() {
     wfn_->set_array_variable("MBIS_OCTUPOLES", opole);
 }
 
-int PopulationAnalysisCalc::get_nai(int z, int m) {
+/// Helper Methods for MBIS (JCTC, 2016, p. 3894–3912, Verstraelen et al.)
+    
+// The initial guess for the number of electrons in each shell of an atom (Defined in Verstraelen et al. Section 2.3)
+int get_nai(int z, int m) {
     //MBIS is not supported for elements with atomic number greater than 36
     if (z <= 2) {
         return z;
@@ -1833,10 +1837,12 @@ int PopulationAnalysisCalc::get_nai(int z, int m) {
     }
 }
 
-double PopulationAnalysisCalc::rho_ai_0(double n, double sigma, double distance) {
+// Proatomic density of a specific shell of an atom  (Equation 7 in Verstraelen et al.)
+double rho_ai_0(double n, double sigma, double distance) {
     return n * exp(-distance / sigma) / (pow(sigma, 3) * 8 * M_PI);
 }
 
+// Minimal Basis Iterative Stockhplder (JCTC, 2016, p. 3894–3912, Verstraelen et al.)
 std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix>
 PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
@@ -1847,7 +1853,8 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     Options& options = Process::environment.options;
     const int max_iter = options.get_int("MBIS_MAXITER");
-    const double conv = options.get_double("MBIS_CONVERGENCE");
+    const double conv = options.get_double("MBIS_D_CONVERGENCE");
+    const int debug = options.get_int("DEBUG");
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
     std::shared_ptr<DFTGrid> grid = std::make_shared<DFTGrid>(mol, basisset_, options);
@@ -1859,15 +1866,14 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     SharedMatrix Da = wfn_->Da_subset("AO");
     SharedMatrix Db;
-    std::shared_ptr<PointFunctions> point_func(nullptr);
+    auto point_func = (std::shared_ptr<PointFunctions>) (std::make_shared<RKSFunctions>(basisset_, total_points, nbf));
 
     if (same_dens_) {
         Db = Da->clone();
-        point_func = std::make_shared<RKSFunctions>(basisset_, total_points, nbf);
         point_func->set_pointers(Da);
     } else {
         Db = wfn_->Db_subset("AO");
-        point_func = std::make_shared<UKSFunctions>(basisset_, total_points, nbf);
+        point_func = (std::shared_ptr<PointFunctions>) (std::make_shared<UKSFunctions>(basisset_, total_points, nbf));
         point_func->set_pointers(Da, Db);
     }
 
@@ -1928,7 +1934,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     // => Setup Proatom Basis Functions <= //
 
-    // Basis functions per atom
+    // mA is the number of shells in an isolated atom
     std::vector<int> mA(num_atoms);
     for (int atom = 0; atom < num_atoms; atom++) {
         int atomic_num = (int) mol->Z(atom);
@@ -1959,7 +1965,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
         int atomic_num = (int) mol->Z(atom);
 
         for (int m = 0; m < mA[atom]; m++) {
-            Nai[atom][m] = (double) PopulationAnalysisCalc::get_nai(atomic_num, m+1);
+            Nai[atom][m] = (double) get_nai(atomic_num, m+1);
 	        if (mA[atom] == 1) {
 		        Sai[atom][m] = 1.0/(2.0 * atomic_num);
 	        } else {
@@ -1980,7 +1986,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     bool is_converged = false;
     double delta_rho_max_0;
 
-    outfile->Printf("                     Delta D\n");
+    if (print_output && debug >= 1) outfile->Printf("                     Delta D\n");
     while (iter < max_iter) {
 
         // Calculate proatom and promolecule density at all points
@@ -1990,7 +1996,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
             for (int atom = 0; atom < num_atoms; atom++) {
                 rho_a_0_points[atom][point] = 0.0;
                 for (int m = 0; m < mA[atom]; m++) {
-                    rho_a_0_points[atom][point] += PopulationAnalysisCalc::rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom][point]);
+                    rho_a_0_points[atom][point] += rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom][point]);
                 }
                 rho_0_points[point] += rho_a_0_points[atom][point];
             }
@@ -2005,7 +2011,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
                 double sum_s = 0.0;
 
                 for (int point = 0; point < total_points; point++) {
-                    double rho_ai_0_point = PopulationAnalysisCalc::rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom][point]);
+                    double rho_ai_0_point = rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom][point]);
                     sum_n += weights[point] * rho[point] * rho_ai_0_point / rho_0_points[point];
                     sum_s += weights[point] * distances[atom][point] * rho[point] * rho_ai_0_point / rho_0_points[point];
                 }
@@ -2043,10 +2049,10 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
             }
         }
 
-        outfile->Printf("   @MBIS iter %3d:  %.3e\n", iter, delta_rho_max_0);
+        if (print_output && debug >= 1) outfile->Printf("   @MBIS iter %3d:  %.3e\n", iter, delta_rho_max_0);
 
         if (delta_rho_max_0 < conv) {
-            if (print_output) outfile->Printf("  MBIS Atomic Density Converged\n\n");
+            if (print_output && debug >= 1) outfile->Printf("  MBIS Atomic Density Converged\n\n");
             is_converged = true;
             break;
         }
@@ -2064,7 +2070,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
         for (int atom = 0; atom < num_atoms; atom++) {
             rho_a_0_points[atom][point] = 0.0;
             for (int m = 0; m < mA[atom]; m++) {
-                rho_a_0_points[atom][point] += PopulationAnalysisCalc::rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom][point]);
+                rho_a_0_points[atom][point] += rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom][point]);
             }
             rho_0_points[point] += rho_a_0_points[atom][point];
         }

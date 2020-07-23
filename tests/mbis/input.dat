@@ -35,14 +35,14 @@ set {
   d_convergence 8
   e_convergence 10
   mbis_maxiter 200
-  mbis_convergence 1e-8
+  mbis_d_convergence 1e-8
   dft_pruning_scheme none
   dft_radial_points 99
   dft_spherical_points 590
 }
 
 e, wfn = energy('hf/cc-pvdz', return_wfn=True)
-oeprop(wfn, 'MBIS', title='H20 SCF')
+oeprop(wfn, 'MBIS_CHARGES', title='H20 SCF')
 
 charges = wfn.variable('MBIS_CHARGES')
 dipoles = wfn.variable('MBIS_DIPOLES')
@@ -53,4 +53,3 @@ compare_matrices(charges_ref, charges, 7, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 7, "MBIS Dipoles")             #TEST
 compare_matrices(quadrupoles_ref, quadrupoles, 7, "MBIS Quadrupoles") #TEST
 compare_matrices(octupoles_ref, octupoles, 7, "MBIS Octupoles")       #TEST
-

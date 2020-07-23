@@ -310,14 +310,6 @@ class PopulationAnalysisCalc : public Prop {
    private:
     PopulationAnalysisCalc();
 
-   protected:
-    ///Helper Methods for MBIS (JCTC, 2016, p. 3894–3912, Verstraelen et al.)
-    
-    ///The initial guess for the number of electrons in each shell of an atom
-    static int get_nai(int z, int m);
-    ///Proatomic density of a specific shell of an atom  (Equation 7 in Verstraelen et al.)
-    static double rho_ai_0(double n, double sigma, double distance);
-
    public:
     typedef std::shared_ptr<std::vector<double>> SharedStdVector;
     PopulationAnalysisCalc(std::shared_ptr<Wavefunction> wfn);
@@ -326,7 +318,7 @@ class PopulationAnalysisCalc : public Prop {
     std::tuple<SharedStdVector, SharedStdVector, SharedStdVector> compute_mulliken_charges(bool print_output = false);
     /// Compute Lowdin Charges
     std::tuple<SharedStdVector, SharedStdVector, SharedStdVector> compute_lowdin_charges(bool print_output = false);
-    /// Compute MBIS Multipoles ("Minimal Basis Iterative Stockholder..." By: Toon Verstraelen et al. doi:10.1021/acs.jctc.6b00456.)
+    /// Compute MBIS Multipoles (doi:10.1021/acs.jctc.6b00456)
     std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> compute_mbis_multipoles(bool print_output = false);
     /// Compute Mayer Bond Indices (non-orthogoal basis)
     std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> compute_mayer_indices(bool print_output = false);
@@ -420,7 +412,7 @@ class PSI_API OEProp : public TaskListComputer {
     void compute_mulliken_charges();
     /// Compute Lowdin Charges
     void compute_lowdin_charges();
-    /// Compute MBIS Multipoles ("Minimal Basis Iterative Stockholder..." By: Toon Verstraelen et al. doi:10.1021/acs.jctc.6b00456.)
+    /// Compute MBIS Multipoles (doi:10.1021/acs.jctc.6b00456)
     void compute_mbis_multipoles();
     /// Compute Mayer Bond Indices (non-orthogoal basis)
     void compute_mayer_indices();
