@@ -43,13 +43,17 @@ _p18 = (psi4.ManagedMethodError, "Method 'mp3' with MP_TYPE 'CONV', FREEZE_CORE 
 _p19 = (psi4.ManagedMethodError, "Method 'mp3' with MP_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'UHF' not directable to QC_MODULE 'OCC'")
 _p20 = (psi4.ManagedMethodError, "Method 'mp2.5' with MP_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'RHF' not directable to QC_MODULE 'OCC'")
 _p21 = (psi4.ManagedMethodError, "Method 'mp2.5' with MP_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'UHF' not directable to QC_MODULE 'OCC'")
+_p22 = (psi4.ManagedMethodError, "Method 'lccd' with CC_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'RHF' not directable to QC_MODULE 'OCC'")
+_p23 = (psi4.ManagedMethodError, "Method 'lccd' with CC_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'UHF' not directable to QC_MODULE 'OCC'")
 
 # yapf: enable
 
-_nyi1 = pytest.mark.xfail(reason="fc conv mp2/mp2.5/mp3 gradients NYI", raises=psi4.ManagedMethodError, strict=True)
-_nyi2 = pytest.mark.xfail(reason="rohf mp2/mp2.5/mp3 gradients NYI", raises=psi4.ManagedMethodError, strict=True)
-_nyi3 = pytest.mark.xfail(reason="cd mp2/mp2.5/mp3 gradients NYI", raises=psi4.ManagedMethodError, strict=True)
-_nyi4 = pytest.mark.xfail(reason="spin components rhf mp2/mp2.5/mp3 energies NYI", raises=KeyError, strict=True)
+_nyi1 = pytest.mark.xfail(
+    reason="fc conv mp2/mp2.5/mp3/lccd gradients NYI", raises=psi4.ManagedMethodError, strict=True
+)
+_nyi2 = pytest.mark.xfail(reason="rohf mp2/mp2.5/mp3/lccd gradients NYI", raises=psi4.ManagedMethodError, strict=True)
+_nyi3 = pytest.mark.xfail(reason="cd mp2/mp2.5/mp3/lccd gradients NYI", raises=psi4.ManagedMethodError, strict=True)
+_nyi4 = pytest.mark.xfail(reason="spin components rhf mp2/mp2.5/mp3/lccd energies NYI", raises=KeyError, strict=True)
 _nyi5 = pytest.mark.xfail(reason="df/cd open-shell ccsd energies NYI", raises=psi4.ManagedMethodError, strict=True)
 _nyi6 = pytest.mark.xfail(reason="rohf ccsd energies mp2 submethod NYI", raises=KeyError, strict=True)
 _nyi7 = pytest.mark.xfail(reason="rohf lccd energies NYI", raises=psi4.ManagedMethodError, strict=True)
@@ -69,8 +73,10 @@ _nyi12 = pytest.mark.xfail(reason="cd scf gradients NYI", raises=psi4.Validation
 #  |  |  |  ||  |`       |  `---.|  ||  |\   --.|  |   ' '-' ' \   '
 #  `--'  `--'`--'        `------'`--''--' `----'`--'   .`-  /.-'  /
 #                                                      `---' `---'
+#  HF Energy
 
 
+@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects",
@@ -135,8 +141,10 @@ def test_hf_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, reques
 #  |  |  |  ||  |`       '  '--'  ||  |   \ '-'  |\ `-' ||  |\   --.|  ||  |  |  |
 #  `--'  `--'`--'         `------' `--'    `--`--' `---' `--' `----'`--''--'  `--'
 #
+#  HF Gradient
 
 
+@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
 @pytest.mark.parametrize(
     "basis, subjects",
@@ -207,6 +215,7 @@ def test_hf_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, requ
 #  |  |   |  ||  | --' /   '-.    |  `---.|  ||  |\   --.|  |   ' '-' ' \   '
 #  `--'   `--'`--'     '-----'    `------'`--''--' `----'`--'   .`-  /.-'  /
 #                                                               `---' `---'
+#  MP2 Energy
 
 
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
@@ -437,6 +446,7 @@ def test_mp2_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, requ
 #  |  |   |  ||  | --' /   '-.    '  '--'  ||  |   \ '-'  |\ `-' ||  |\   --.|  ||  |  |  |
 #  `--'   `--'`--'     '-----'     `------' `--'    `--`--' `---' `--' `----'`--''--'  `--'
 #
+#  MP2 Gradient
 
 
 @pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
@@ -632,8 +642,10 @@ def test_mp2_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, re
 #  |  |   |  ||  | --' /   '-..--..--'  /    |  `---.|  ||  |\   --.|  |   ' '-' ' \   '
 #  `--'   `--'`--'     '-----''--'`----'     `------'`--''--' `----'`--'   .`-  /.-'  /
 #                                                                          `---' `---'
+#  MP2.5 Energy
 
 
+@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
@@ -673,6 +685,7 @@ def test_mp2p5_energy_scftype(inp, dertype, basis, subjects, clsd_open_pmols, re
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
+@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects",
@@ -734,6 +747,7 @@ def test_mp2p5_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, req
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
+@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz", marks=pytest.mark.quick),],
@@ -796,8 +810,10 @@ def test_mp2p5_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, re
 #  |  |   |  ||  | --' /   '-..--..--'  /    '  '--'  ||  |   \ '-'  |\ `-' ||  |\   --.|  ||  |  |  |
 #  `--'   `--'`--'     '-----''--'`----'      `------' `--'    `--`--' `---' `--' `----'`--''--'  `--'
 #
+#  MP2.5 Gradient
 
 
+@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
@@ -845,6 +861,7 @@ def test_mp2p5_gradient_scftype(inp, dertype, basis, subjects, clsd_open_pmols, 
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
+@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
 @pytest.mark.parametrize(
     "basis, subjects",
@@ -892,6 +909,7 @@ def test_mp2p5_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, r
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
+@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize(
     "dertype",
     [pytest.param(1, id="grd1", marks=pytest.mark.quick), pytest.param(0, id="grd0", marks=pytest.mark.long),],
@@ -962,8 +980,10 @@ def test_mp2p5_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, 
 #  |  |   |  ||  | --' /'-'  |    |  `---.|  ||  |\   --.|  |   ' '-' ' \   '
 #  `--'   `--'`--'     `----'     `------'`--''--' `----'`--'   .`-  /.-'  /
 #                                                               `---' `---'
+#  MP3 Energy
 
 
+@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
@@ -1017,6 +1037,7 @@ def test_mp3_energy_scftype(inp, dertype, basis, subjects, clsd_open_pmols, requ
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
+@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects",
@@ -1089,6 +1110,7 @@ def test_mp3_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, reque
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
+@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz", marks=pytest.mark.quick),],
@@ -1151,8 +1173,10 @@ def test_mp3_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, requ
 #  |  |   |  ||  | --' /'-'  |    '  '--'  ||  |   \ '-'  |\ `-' ||  |\   --.|  ||  |  |  |
 #  `--'   `--'`--'     `----'      `------' `--'    `--`--' `---' `--' `----'`--''--'  `--'
 #
+#  MP3 Gradient
 
 
+@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
@@ -1201,6 +1225,7 @@ def test_mp3_gradient_scftype(inp, dertype, basis, subjects, clsd_open_pmols, re
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
+@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
 @pytest.mark.parametrize(
     "basis, subjects",
@@ -1249,6 +1274,7 @@ def test_mp3_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, req
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
+@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize(
     "dertype",
     [pytest.param(1, id="grd1", marks=pytest.mark.quick), pytest.param(0, id="grd0", marks=pytest.mark.long),],
@@ -1320,6 +1346,7 @@ def test_mp3_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, re
 #  |  '--.'  '--'\'  '--'\|  '--'  /    |  `---.|  ||  |\   --.|  |   ' '-' ' \   '
 #  `-----' `-----' `-----'`-------'     `------'`--''--' `----'`--'   .`-  /.-'  /
 #                                                                     `---' `---'
+#  LCCD Energy
 
 
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
@@ -1489,12 +1516,186 @@ def test_lccd_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, req
 
 
 #
+#  ,--.    ,-----. ,-----.,------.       ,----.                     ,--.,--.                 ,--.
+#  |  |   '  .--./'  .--./|  .-.  \     '  .-./   ,--.--. ,--,--. ,-|  |`--' ,---. ,--,--, ,-'  '-.
+#  |  |   |  |    |  |    |  |  \  :    |  | .---.|  .--'' ,-.  |' .-. |,--.| .-. :|      \'-.  .-'
+#  |  '--.'  '--'\'  '--'\|  '--'  /    '  '--'  ||  |   \ '-'  |\ `-' ||  |\   --.|  ||  |  |  |
+#  `-----' `-----' `-----'`-------'      `------' `--'    `--`--' `---' `--' `----'`--''--'  `--'
+#
+#  LCCD Gradient
+
+
+@pytest.mark.skip(reason="needs qcel v0.16.0")
+@pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
+@pytest.mark.parametrize(
+    "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
+)
+@pytest.mark.parametrize(
+    "inp",
+    [
+        # yapf: disable
+        ######## Are scf_types managed properly by proc.py?
+        # * test ae and sole fc that differs
+
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "pk",     }, "error": {1: _p11},       }, id="lccd  rhf   pk/df   rr dfocc",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "direct", }, "error": {1: _p11},       }, id="lccd  rhf drct/df   rr dfocc",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "df",     },                           }, id="lccd  rhf   df/df   rr dfocc",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "mem_df", }, "error": {1: _p1, 0: _p1},}, id="lccd  rhf  mem/df   rr dfocc",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "disk_df",},                           }, id="lccd  rhf disk/df   rr dfocc",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ",   "freeze_core": "false",  "scf_type": "cd",     }, "error": {1: _p10},       }, id="lccd  rhf   cd/df   rr dfocc",),
+
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "true",  "scf_type": "pk",      }, "error": {1: _p22},       }, id="lccd rhf fc pk/conv rr occ  ",),
+        ##
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "pk",     },                           }, id="lccd  rhf   pk/conv rr occ  ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "direct", },                           }, id="lccd  rhf drct/conv rr occ  ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "df",     }, "error": {1: _p12},       }, id="lccd  rhf   df/conv rr occ  ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "mem_df", }, "error": {1: _p12},       }, id="lccd  rhf  mem/conv rr occ  ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "disk_df",}, "error": {1: _p12},       }, id="lccd  rhf disk/conv rr occ  ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ",   "freeze_core": "false",  "scf_type": "cd",     }, "error": {1: _p10},       }, id="lccd  rhf   cd/conv rr occ  ",),
+        # yapf: enable
+    ],
+)
+def test_lccd_gradient_scftype(inp, dertype, basis, subjects, clsd_open_pmols, request):
+    method = "lccd"
+    tnm = request.node.name
+    subject = clsd_open_pmols[subjects[std_refs.index(inp["keywords"]["reference"])]]
+
+    inpcopy = {k: v for k, v in inp.items() if k != "error"}
+    if inp.get("error", False) and inp["error"].get(dertype, False):
+        inpcopy["error"] = inp["error"][dertype]
+    if inp.get("marks", False) and inp["marks"].get(dertype, False):
+        request.node.add_marker(inp["marks"][dertype])
+
+    inpcopy["driver"] = "gradient"
+    inpcopy["call"] = method
+    inpcopy["keywords"]["basis"] = basis
+    inpcopy["keywords"]["function_kwargs"] = {"dertype": dertype}
+
+    runner_asserter(inpcopy, subject, method, basis, tnm)
+
+
+@pytest.mark.skip(reason="needs qcel v0.16.0")
+@pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
+@pytest.mark.parametrize(
+    "basis, subjects",
+    [
+        pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
+        pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
+        pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+    ],
+)
+@pytest.mark.parametrize(
+    "inp",
+    [
+        # yapf: disable
+        ######## Are all possible ways of computing <method> working?
+        # * no mixed-type gradients available (like pk+df) so no grad tests
+
+        ###### occ/dfocc
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _p22},}, id="lccd  rhf    conv fc: * occ  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "conv", "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _p23},}, id="lccd  uhf    conv fc: * occ  ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ", "freeze_core": "false",                    },                    }, id="lccd  rhf    conv ae: * occ  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "conv", "qc_module": "occ", "freeze_core": "false",                    },                    }, id="lccd  uhf    conv ae: * occ  ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ", "freeze_core": "true",                     },                    }, id="lccd  rhf    df   fc:   dfocc",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "df",   "qc_module": "occ", "freeze_core": "true",                     },                    }, id="lccd  uhf    df   fc:   dfocc",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ", "freeze_core": "false",                    },                    }, id="lccd  rhf    df   ae:   dfocc",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "df",   "qc_module": "occ", "freeze_core": "false",                    },                    }, id="lccd  uhf    df   ae:   dfocc",),
+        # yapf: enable
+    ],
+)
+def test_lccd_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, request):
+    method = "lccd"
+    tnm = request.node.name
+    subject = clsd_open_pmols[subjects[std_refs.index(inp["keywords"]["reference"])]]
+
+    inpcopy = {k: v for k, v in inp.items() if k != "error"}
+    if inp.get("error", False) and inp["error"].get(dertype, False):
+        inpcopy["error"] = inp["error"][dertype]
+    if inp.get("marks", False) and inp["marks"].get(dertype, False):
+        request.node.add_marker(inp["marks"][dertype])
+
+    inpcopy["driver"] = "gradient"
+    inpcopy["call"] = method
+    inpcopy["keywords"]["basis"] = basis
+    inpcopy["keywords"]["function_kwargs"] = {"dertype": dertype}
+
+    runner_asserter(inpcopy, subject, method, basis, tnm)
+
+
+@pytest.mark.skip(reason="needs qcel v0.16.0")
+@pytest.mark.parametrize(
+    "dertype",
+    [pytest.param(1, id="grd1", marks=pytest.mark.quick), pytest.param(0, id="grd0", marks=pytest.mark.long),],
+)
+@pytest.mark.parametrize(
+    "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
+)
+@pytest.mark.parametrize(
+    "inp",
+    [
+        # yapf: disable
+        ######## Does the simple interface (default qc_module, scf_type, cc_type) work? Here we xfail the NYI rather than catch graceful exit.
+
+        ###### default qc_module
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv",                     "freeze_core": "true",                     }, "marks": {1: _nyi1},           }, id="lccd  rhf    conv fc: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "conv",                     "freeze_core": "true",                     }, "marks": {1: _nyi1},           }, id="lccd  uhf    conv fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "cc_type": "conv",                     "freeze_core": "true",                     }, "marks": {1: _nyi2, 0: _nyi7 },}, id="lccd rohf    conv fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv",                     "freeze_core": "false",                    },                                }, id="lccd  rhf    conv ae: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "conv",                     "freeze_core": "false",                    },                                }, id="lccd  uhf    conv ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "cc_type": "conv",                     "freeze_core": "false",                    }, "marks": {1: _nyi2, 0: _nyi7 },}, id="lccd rohf    conv ae: dd     ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",                       "freeze_core": "true",                     }, "marks": {1: _nyi4, 0: _nyi4 },}, id="lccd  rhf    df   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "df",                       "freeze_core": "true",                     },                                }, id="lccd  uhf    df   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "cc_type": "df",                       "freeze_core": "true",                     }, "marks": {1: _nyi2, 0: _nyi7 },}, id="lccd rohf    df   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",                       "freeze_core": "false",                    }, "marks": {1: _nyi4, 0: _nyi4 },}, id="lccd  rhf    df   ae: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "df",                       "freeze_core": "false",                    },                                }, id="lccd  uhf    df   ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "cc_type": "df",                       "freeze_core": "false",                    }, "marks": {1: _nyi2, 0: _nyi7 },}, id="lccd rohf    df   ae: dd     ",),
+        ####
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "cd",                       "freeze_core": "true",                     }, "marks": {1: _nyi3, 0: _nyi4 },}, id="lccd  rhf    cd   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "cd",                       "freeze_core": "true",                     }, "marks": {1: _nyi3},           }, id="lccd  uhf    cd   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "cc_type": "cd",                       "freeze_core": "true",                     }, "marks": {1: _nyi3, 0: _nyi7 },}, id="lccd rohf    cd   fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "cd",                       "freeze_core": "false",                    }, "marks": {1: _nyi3, 0: _nyi4 },}, id="lccd  rhf    cd   ae: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "cd",                       "freeze_core": "false",                    }, "marks": {1: _nyi3 },          }, id="lccd  uhf    cd   ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf", "cc_type": "cd",                       "freeze_core": "false",                    }, "marks": {1: _nyi3, 0: _nyi7 },}, id="lccd rohf    cd   ae: dd     ",),
+
+        ###### default qc_module, cc_type
+        pytest.param({"keywords": {"reference": "rhf",                                          "freeze_core": "true",                    }, "marks": {1: _nyi1},           }, id="lccd  rhf         fc: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",                                          "freeze_core": "true",                    }, "marks": {1: _nyi1},           }, id="lccd  uhf         fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf",                                         "freeze_core": "true",                    }, "marks": {1: _nyi2, 0: _nyi7 },}, id="lccd rohf         fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",                                          "freeze_core": "false",                   },                                }, id="lccd  rhf         ae: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",                                          "freeze_core": "false",                   },                                }, id="lccd  uhf         ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rohf",                                         "freeze_core": "false",                   }, "marks": {1: _nyi2, 0: _nyi7 },}, id="lccd rohf         ae: dd     ",),
+        # yapf: enable
+    ],
+)
+def test_lccd_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, request):
+    method = "lccd"
+    tnm = request.node.name
+    subject = clsd_open_pmols[subjects[std_refs.index(inp["keywords"]["reference"])]]
+
+    inpcopy = {k: v for k, v in inp.items() if k != "error"}
+    if inp.get("error", False) and inp["error"].get(dertype, False):
+        inpcopy["error"] = inp["error"][dertype]
+    if inp.get("marks", False) and inp["marks"].get(dertype, False):
+        request.node.add_marker(inp["marks"][dertype])
+
+    inpcopy["driver"] = "gradient"
+    inpcopy["call"] = method
+    inpcopy["keywords"]["basis"] = basis
+    inpcopy["keywords"]["function_kwargs"] = {"dertype": dertype}
+
+    runner_asserter(inpcopy, subject, method, basis, tnm)
+
+
+#
 #  ,--.    ,-----. ,-----. ,---.  ,------.      ,------.
 #  |  |   '  .--./'  .--./'   .-' |  .-.  \     |  .---',--,--,  ,---. ,--.--. ,---.,--. ,--.
 #  |  |   |  |    |  |    `.  `-. |  |  \  :    |  `--, |      \| .-. :|  .--'| .-. |\  '  /
 #  |  '--.'  '--'\'  '--'\.-'    ||  '--'  /    |  `---.|  ||  |\   --.|  |   ' '-' ' \   '
 #  `-----' `-----' `-----'`-----' `-------'     `------'`--''--' `----'`--'   .`-  /.-'  /
 #                                                                             `---' `---'
+#  LCCSD Energy
 
 
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
@@ -1625,6 +1826,7 @@ def test_lccsd_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, re
 #  '  '--'\'  '--'\.-'    ||  '--'  /    |  `---.|  ||  |\   --.|  |   ' '-' ' \   '
 #   `-----' `-----'`-----' `-------'     `------'`--''--' `----'`--'   .`-  /.-'  /
 #                                                                      `---' `---'
+#  CCSD Energy
 
 
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
@@ -1817,6 +2019,7 @@ def test_ccsd_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, req
 #  '  '--'\'  '--'\.-'    ||  '--'  /    '  '--'  ||  |   \ '-'  |\ `-' ||  |\   --.|  ||  |  |  |
 #   `-----' `-----'`-----' `-------'      `------' `--'    `--`--' `---' `--' `----'`--''--'  `--'
 #
+#  CCSD Gradient
 
 
 @pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
@@ -1875,6 +2078,7 @@ def test_ccsd_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, re
 #  '  '--'\'  '--'\.-'    ||  '--'  /|  |    |  |    |  |    |  `---.|  ||  |\   --.|  |   ' '-' ' \   '
 #   `-----' `-----'`-----' `-------'  \ '.   `--'   .' /     `------'`--''--' `----'`--'   .`-  /.-'  /
 #                                      `-'          `-'                                    `---' `---'
+#  CCSD(T) Energy
 
 
 # @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
@@ -2069,6 +2273,7 @@ def test_ccsd_prt_pr_energy_module(inp, dertype, basis, subjects, clsd_open_pmol
 #  '  '-'  '|  '--.'  '--'\'  '--'\|  '--'  /    |  `---.|  ||  |\   --.|  |   ' '-' ' \   '
 #   `-----' `-----' `-----' `-----'`-------'     `------'`--''--' `----'`--'   .`-  /.-'  /
 #                                                                              `---' `---'
+#  OLCCD Energy
 
 
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
