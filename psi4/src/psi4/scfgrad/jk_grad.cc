@@ -937,51 +937,29 @@ void DFJKGrad::build_AB_x_terms()
 
         double perm = (P == Q ? 1.0 : 2.0);
 
-        double** grad_Jp;
-        double** grad_Kp;
-        double** grad_wKp;
+        std::vector<std::pair<double**, double**>> pairs = {};
 
         if (do_J_) {
-            grad_Jp = Jtemps[thread]->pointer();
+            pairs.push_back({Dp, Jtemps[thread]->pointer()});
         }
         if (do_K_) {
-            grad_Kp = Ktemps[thread]->pointer();
+            pairs.push_back({Vp, Ktemps[thread]->pointer()});
         }
         if (do_wK_) {
-            grad_wKp = wKtemps[thread]->pointer();
+            pairs.push_back({Wp, wKtemps[thread]->pointer()});
         }
 
         for (int p = 0; p < nP; p++) {
             for (int q = 0; q < nQ; q++) {
-
-                if (do_J_) {
-                    double Uval = 0.5 * perm * Dp[p + oP][q + oQ];
-                    grad_Jp[aP][0] -= Uval * (*Px);
-                    grad_Jp[aP][1] -= Uval * (*Py);
-                    grad_Jp[aP][2] -= Uval * (*Pz);
-                    grad_Jp[aQ][0] -= Uval * (*Qx);
-                    grad_Jp[aQ][1] -= Uval * (*Qy);
-                    grad_Jp[aQ][2] -= Uval * (*Qz);
-                }
-
-                if (do_K_) {
-                    double Vval = 0.5 * perm * Vp[p + oP][q + oQ];
-                    grad_Kp[aP][0] -= Vval * (*Px);
-                    grad_Kp[aP][1] -= Vval * (*Py);
-                    grad_Kp[aP][2] -= Vval * (*Pz);
-                    grad_Kp[aQ][0] -= Vval * (*Qx);
-                    grad_Kp[aQ][1] -= Vval * (*Qy);
-                    grad_Kp[aQ][2] -= Vval * (*Qz);
-                }
-
-                if (do_wK_) {
-                    double Wval = 0.5 * perm * Wp[p + oP][q + oQ];
-                    grad_wKp[aP][0] -= Wval * (*Px);
-                    grad_wKp[aP][1] -= Wval * (*Py);
-                    grad_wKp[aP][2] -= Wval * (*Pz);
-                    grad_wKp[aQ][0] -= Wval * (*Qx);
-                    grad_wKp[aQ][1] -= Wval * (*Qy);
-                    grad_wKp[aQ][2] -= Wval * (*Qz);
+                for (auto pair : pairs) {
+                    double val = 0.5 * perm * pair.first[p+oP][q+oQ];
+                    auto grad_mat = pair.second;
+                    grad_mat[aP][0] -= val * (*Px);
+                    grad_mat[aP][1] -= val * (*Px);
+                    grad_mat[aP][2] -= val * (*Px);
+                    grad_mat[aQ][0] -= val * (*Qx);
+                    grad_mat[aQ][1] -= val * (*Qx);
+                    grad_mat[aQ][2] -= val * (*Qx);
                 }
 
                 Px++;
