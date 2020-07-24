@@ -1859,6 +1859,8 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
     std::shared_ptr<DFTGrid> grid = std::make_shared<DFTGrid>(mol, basisset_, options);
 
+    if (print_output && debug >= 1) grid->print();
+
     int nbf = basisset_->nbf();
     int num_atoms = mol->natom();
     int total_points = grid->npoints();
@@ -1924,7 +1926,8 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     for (int atom = 0; atom < num_atoms; atom++) {
         Vector3 nuc = mol->xyz(atom);
         for (int point = 0; point < total_points; point++) {
-            Vector3 r_nuc = Vector3(x_points[point], y_points[point], z_points[point]) - nuc;
+            Vector3 r_nuc = Vector3(x_points[point], y_points[point], z_points[point]);
+            r_nuc = r_nuc - nuc;
             distances[atom][point] = r_nuc.norm();
             disps[atom][point][0] = r_nuc[0];
             disps[atom][point][1] = r_nuc[1];
@@ -2076,7 +2079,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
         }
     }
       
-    // Atomic density, as defined in Equation 5 of Verstraelen et al.
+    // Atomic density, as defined in Equation 5 of Verstraelen et al. (Negative to account for negative charge of electron)
     std::vector<std::vector<double>> rho_a(num_atoms, std::vector<double>(total_points, 0.0));
     for (int atom = 0; atom < num_atoms; atom++) {
         for (int point = 0; point < total_points; point++) {
@@ -2102,15 +2105,14 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     for (int a = 0; a < num_atoms; a++) {
         
         // Atomic monopole
-        double population = 0.0;
-        for (int m = 0; m < mA[a]; m++) {
-            population += Nai[a][m];
+        for (int p = 0; p < total_points; p++) {
+            monopoles[a] += weights[p] * rho_a[a][p];
         }
-        monopoles[a] = mol->Z(a) - population;
+        monopoles[a] += mol->Z(a);
 
         // Atomic dipole
         for (int i = 0; i < 3; i++) {
-            for (int p= 0; p < total_points; p++) {
+            for (int p = 0; p < total_points; p++) {
                 dipoles[a][i] += weights[p] * rho_a[a][p] * disps[a][p][i];
             }
         }
