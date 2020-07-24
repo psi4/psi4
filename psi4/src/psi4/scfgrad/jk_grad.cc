@@ -843,18 +843,21 @@ void DFJKGrad::build_AB_x_terms()
     int naux = auxiliary_->nbf();
 
     // => Forcing Terms/Gradients <= //
+    SharedMatrix D;
     SharedMatrix V;
     SharedMatrix W;
-    SharedVector d;
 
+    double** Dp;
     double** Vp;
     double** Wp;
-    double*  dp;
 
     if (do_J_) {
-        d = std::make_shared<Vector>("d", naux);
-        dp = d->pointer();
+        auto d = std::make_shared<Vector>("d", naux);
+        auto dp = d->pointer();
         psio_->read_entry(unit_c_, "c", (char*) dp, sizeof(double) * naux);
+        D = std::make_shared<Matrix>("D", naux, naux);
+        Dp = D->pointer();
+        C_DGER(naux, naux, 1, dp, 1, dp, 1, Dp[0], naux);
     }
     if (do_K_) {
         V = std::make_shared<Matrix>("V", naux, naux);
@@ -952,7 +955,7 @@ void DFJKGrad::build_AB_x_terms()
             for (int q = 0; q < nQ; q++) {
 
                 if (do_J_) {
-                    double Uval = 0.5 * perm * dp[p + oP] * dp[q + oQ];
+                    double Uval = 0.5 * perm * Dp[p + oP][q + oQ];
                     grad_Jp[aP][0] -= Uval * (*Px);
                     grad_Jp[aP][1] -= Uval * (*Py);
                     grad_Jp[aP][2] -= Uval * (*Pz);
