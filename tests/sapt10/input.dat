@@ -53,11 +53,11 @@ set {
 
 ene, wfn = psi4.energy("sapt0", return_wfn=True, molecule=dimer)
 # frozen core results
-compare_values(-0.00013347757, ene, 6, "SAPT0 tot")
 compare_values(-0.00012373875, variable("SAPT ELST ENERGY"), 6, "SAPT0 elst")
 compare_values(0.000376095572, variable("SAPT EXCH ENERGY"), 6, "SAPT0 exch")
 compare_values(-0.00012747623, variable("SAPT IND ENERGY"), 6, "SAPT0 ind")
 # only this should change in freeze_core=True
+compare_values(-0.00013347757, ene, 6, "SAPT0 tot")
 compare_values(-0.00025835816, variable("SAPT DISP ENERGY"), 6, "SAPT0 disp")
 compare_values(-0.00032135293, variable("SAPT DISP20 ENERGY"), 6, "SAPT0 disp20")
 compare_values(6.299476745609e-05, variable("SAPT EXCH-DISP20 ENERGY"), 6, "SAPT0 exch-disp20")
