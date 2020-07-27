@@ -215,7 +215,7 @@ class StringDataType : public DataType {
     void assign(double d) override;
     void assign(std::string s) override;
 
-    std::vector<std::string> choices() { return choices_; }
+    std::vector<std::string> choices() override { return choices_; }
 };
 
 #ifdef __INTEL_COMPILER
@@ -244,7 +244,7 @@ class IStringDataType : public DataType {
     void assign(double d) override;
     void assign(std::string s) override;
 
-    std::vector<std::string> choices() { return choices_; }
+    std::vector<std::string> choices() override { return choices_; }
 };
 
 class PSI_API Data {
