@@ -91,9 +91,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Module name for CURRENT ENERGY
     std::string module_;
 
-    /// DF/RI/F12/etc basis sets
-    std::map<std::string, std::shared_ptr<BasisSet>> basissets_;
-
     /// The ORBITAL basis
     std::shared_ptr<BasisSet> basisset_;
 

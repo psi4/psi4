@@ -1098,9 +1098,9 @@ class PSI_API MemDFJK : public JK {
     */
     void print_header() const override;
 
-    void set_omega_alpha(double alpha);
-    void set_omega_beta(double beta);
-    void set_wcombine(bool wcombine);
+    void set_omega_alpha(double alpha) override;
+    void set_omega_beta(double beta) override;
+    void set_wcombine(bool wcombine) override;
 
     /**
      * Returns the DFHelper object

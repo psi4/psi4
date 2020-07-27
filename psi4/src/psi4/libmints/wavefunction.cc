@@ -179,7 +179,6 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
     name_ = other->name_;
     module_ = other->module_;
     basisset_ = other->basisset_;
-    basissets_ = other->basissets_;
     sobasisset_ = other->sobasisset_;
     AO2SO_ = other->AO2SO_;
     S_ = other->S_;
@@ -260,9 +259,11 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     module_ = other->module_;
     molecule_ = std::make_shared<Molecule>(other->molecule_->clone());
     basisset_ = other->basisset_;
-    basissets_ = other->basissets_;  // Still cannot copy basissets
     integral_ = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
     mintshelper_ = std::make_shared<MintsHelper>(basisset_, options_);
+    for (auto kv : other->mintshelper_->basissets()) {
+        mintshelper_->set_basisset(kv.first, kv.second);
+    }
     sobasisset_ = std::make_shared<SOBasisSet>(basisset_, integral_);
     factory_ = std::make_shared<MatrixFactory>();
     factory_->init_with(other->nsopi_, other->nsopi_);
@@ -663,33 +664,13 @@ std::shared_ptr<MintsHelper> Wavefunction::mintshelper() const { return mintshel
 
 std::shared_ptr<BasisSet> Wavefunction::basisset() const { return basisset_; }
 
-std::map<std::string, std::shared_ptr<BasisSet>> Wavefunction::basissets() const { return basissets_; }
+std::map<std::string, std::shared_ptr<BasisSet>> Wavefunction::basissets() const { return mintshelper_->basissets(); }
 
-std::shared_ptr<BasisSet> Wavefunction::get_basisset(std::string label) {
-    // This may be slightly confusing, but better than changing this in 800 other places
-    if (label == "ORBITAL") {
-        return basisset_;
-    } else if (basissets_.count(label) == 0) {
-        outfile->Printf("Could not find requested basisset (%s).", label.c_str());
-        throw PSIEXCEPTION("Wavefunction::get_basisset: Requested basis set (" + label + ") was not set!\n");
-    } else {
-        return basissets_[label];
-    }
-}
-void Wavefunction::set_basisset(std::string label, std::shared_ptr<BasisSet> basis) {
-    if (label == "ORBITAL") {
-        throw PSIEXCEPTION("Cannot set the ORBITAL basis after the Wavefunction is built!");
-    } else {
-        basissets_[label] = basis;
-    }
-}
+std::shared_ptr<BasisSet> Wavefunction::get_basisset(std::string label) { return mintshelper_->get_basisset(label); }
 
-bool Wavefunction::basisset_exists(std::string label) {
-    if (basissets_.count(label) == 0)
-        return false;
-    else
-        return true;
-}
+void Wavefunction::set_basisset(std::string label, std::shared_ptr<BasisSet> basis) { return mintshelper_->set_basisset(label, basis); }
+
+bool Wavefunction::basisset_exists(std::string label) { return mintshelper_->basisset_exists(label); }
 
 std::shared_ptr<SOBasisSet> Wavefunction::sobasisset() const { return sobasisset_; }
 
