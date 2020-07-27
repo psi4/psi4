@@ -400,8 +400,6 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
         is_hybrid = False
     else:
         if do_hybrid:
-            if not is_x_hybrid and hybrid_specified:
-                raise ValidationError("SAPT(DFT): Pure LDA/GGA functionals not compatible with hybrid xc kernel.") 
             is_hybrid = is_x_hybrid
         else:
             is_hybrid = False
