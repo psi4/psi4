@@ -28,16 +28,17 @@
 
 #include "jk_grad.h"
 
-#include "psi4/libmints/sieve.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/lib3index/3index.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 #include "psi4/psifiles.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/mintshelper.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/sieve.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/process.h"
@@ -60,13 +61,13 @@ JKGrad::JKGrad(int deriv, std::shared_ptr<BasisSet> primary) :
 JKGrad::~JKGrad()
 {
 }
-std::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary)
+std::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, std::shared_ptr<MintsHelper> mints)
 {
     Options& options = Process::environment.options;
 
     if (options.get_str("SCF_TYPE").find("DF") != std::string::npos) {
 
-        DFJKGrad* jk = new DFJKGrad(deriv,primary,auxiliary);
+        DFJKGrad* jk = new DFJKGrad(deriv, mints);
 
         if (options["INTS_TOLERANCE"].has_changed())
             jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
@@ -83,7 +84,7 @@ std::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, std::shared_ptr<BasisSet
         return std::shared_ptr<JKGrad>(jk);
     } else if (options.get_str("SCF_TYPE") == "DIRECT" || options.get_str("SCF_TYPE") == "PK" || options.get_str("SCF_TYPE") == "OUT_OF_CORE") {
 
-        DirectJKGrad* jk = new DirectJKGrad(deriv,primary);
+        DirectJKGrad* jk = new DirectJKGrad(deriv, mints->get_basisset("ORBITAL"));
 
         if (options["INTS_TOLERANCE"].has_changed())
             jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
@@ -122,8 +123,8 @@ void JKGrad::common_init()
     do_wK_ = false;
     omega_ = 0.0;
 }
-DFJKGrad::DFJKGrad(int deriv, std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary) :
-    JKGrad(deriv,primary), auxiliary_(auxiliary)
+DFJKGrad::DFJKGrad(int deriv, std::shared_ptr<MintsHelper> mints) :
+    JKGrad(deriv,mints->get_basisset("ORBITAL")), auxiliary_(mints->get_basisset("DF_BASIS_SCF")), mints_(mints)
 {
     common_init();
 }
@@ -833,170 +834,40 @@ void DFJKGrad::build_UV_terms()
     V->hermitivitize();
     psio_->write_entry(unit_c_,"W",(char*) Vp[0], sizeof(double) * naux * naux);
 }
+
 void DFJKGrad::build_AB_x_terms()
 {
+    auto naux = auxiliary_->nbf();
 
-    // => Sizing <= //
-
-    int natom = primary_->molecule()->natom();
-    int nso = primary_->nbf();
-    int naux = auxiliary_->nbf();
-
-    // => Forcing Terms/Gradients <= //
-    SharedMatrix D;
-    SharedMatrix V;
-    SharedMatrix W;
-
-    double** Dp;
-    double** Vp;
-    double** Wp;
-
+    std::map<std::string, SharedMatrix> densities;
+    
     if (do_J_) {
         auto d = std::make_shared<Vector>("d", naux);
         auto dp = d->pointer();
         psio_->read_entry(unit_c_, "c", (char*) dp, sizeof(double) * naux);
-        D = std::make_shared<Matrix>("D", naux, naux);
-        Dp = D->pointer();
+        auto D = std::make_shared<Matrix>("D", naux, naux);
+        auto Dp = D->pointer();
         C_DGER(naux, naux, 1, dp, 1, dp, 1, Dp[0], naux);
+        densities["Coulomb"] = D;
     }
     if (do_K_) {
-        V = std::make_shared<Matrix>("V", naux, naux);
-        Vp = V->pointer();
+        auto V = std::make_shared<Matrix>("V", naux, naux);
+        auto Vp = V->pointer();
         psio_->read_entry(unit_c_, "V", (char*) Vp[0], sizeof(double) * naux * naux);
+        densities["Exchange"] = V;
     }
     if (do_wK_) {
-        W = std::make_shared<Matrix>("W", naux, naux);
-        Wp = W->pointer();
+        auto W = std::make_shared<Matrix>("W", naux, naux);
+        auto Wp = W->pointer();
         psio_->read_entry(unit_c_, "W", (char*) Wp[0], sizeof(double) * naux * naux);
+        densities["Exchange,LR"] = W;
     }
 
-    // => Integrals <= //
+    auto results = mints_->metric_grad(densities, "DF_BASIS_SCF");
 
-    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_,BasisSet::zero_ao_basis_set(),auxiliary_,BasisSet::zero_ao_basis_set());
-    std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+    for (const auto& kv: results) {
+        gradients_[kv.first] = kv.second;
     }
-
-    // => Temporary Gradients <= //
-
-    std::vector<SharedMatrix> Jtemps;
-    std::vector<SharedMatrix> Ktemps;
-    std::vector<SharedMatrix> wKtemps;
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        if (do_J_) {
-            Jtemps.push_back(std::make_shared<Matrix>("Jtemp", natom, 3));
-        }
-        if (do_K_) {
-            Ktemps.push_back(std::make_shared<Matrix>("Ktemp", natom, 3));
-        }
-        if (do_wK_) {
-            wKtemps.push_back(std::make_shared<Matrix>("wKtemp", natom, 3));
-        }
-    }
-
-    std::vector<std::pair<int,int> > PQ_pairs;
-    for (int P = 0; P < auxiliary_->nshell(); P++) {
-        for (int Q = 0; Q <= P; Q++) {
-            PQ_pairs.push_back(std::pair<int,int>(P,Q));
-        }
-    }
-
-    int nthread_df = df_ints_num_threads_;
-#pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
-    for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
-
-        int P = PQ_pairs[PQ].first;
-        int Q = PQ_pairs[PQ].second;
-
-        int thread = 0;
-#ifdef _OPENMP
-        thread = omp_get_thread_num();
-#endif
-
-        Jint[thread]->compute_shell_deriv1(P,0,Q,0);
-        const double* buffer = Jint[thread]->buffer();
-
-        int nP = auxiliary_->shell(P).nfunction();
-        int cP = auxiliary_->shell(P).ncartesian();
-        int aP = auxiliary_->shell(P).ncenter();
-        int oP = auxiliary_->shell(P).function_index();
-
-        int nQ = auxiliary_->shell(Q).nfunction();
-        int cQ = auxiliary_->shell(Q).ncartesian();
-        int aQ = auxiliary_->shell(Q).ncenter();
-        int oQ = auxiliary_->shell(Q).function_index();
-
-        int ncart = cP * cQ;
-        const double *Px = buffer + 0*ncart;
-        const double *Py = buffer + 1*ncart;
-        const double *Pz = buffer + 2*ncart;
-        const double *Qx = buffer + 3*ncart;
-        const double *Qy = buffer + 4*ncart;
-        const double *Qz = buffer + 5*ncart;
-
-        double perm = (P == Q ? 1.0 : 2.0);
-
-        std::vector<std::pair<double**, double**>> pairs = {};
-
-        if (do_J_) {
-            pairs.push_back({Dp, Jtemps[thread]->pointer()});
-        }
-        if (do_K_) {
-            pairs.push_back({Vp, Ktemps[thread]->pointer()});
-        }
-        if (do_wK_) {
-            pairs.push_back({Wp, wKtemps[thread]->pointer()});
-        }
-
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                for (auto pair : pairs) {
-                    double val = 0.5 * perm * pair.first[p+oP][q+oQ];
-                    auto grad_mat = pair.second;
-                    grad_mat[aP][0] -= val * (*Px);
-                    grad_mat[aP][1] -= val * (*Px);
-                    grad_mat[aP][2] -= val * (*Px);
-                    grad_mat[aQ][0] -= val * (*Qx);
-                    grad_mat[aQ][1] -= val * (*Qx);
-                    grad_mat[aQ][2] -= val * (*Qx);
-                }
-
-                Px++;
-                Py++;
-                Pz++;
-                Qx++;
-                Qy++;
-                Qz++;
-            }
-        }
-    }
-
-    // => Temporary Gradient Reduction <= //
-
-    // gradients_["Coulomb"]->zero();
-    // gradients_["Exchange"]->zero();
-    // gradients_["Exchange,LR"]->zero();
-
-    if (do_J_) {
-        for (int t = 0; t < df_ints_num_threads_; t++) {
-            gradients_["Coulomb"]->add(Jtemps[t]);
-        }
-    }
-    if (do_K_) {
-        for (int t = 0; t < df_ints_num_threads_; t++) {
-            gradients_["Exchange"]->add(Ktemps[t]);
-        }
-    }
-    if (do_wK_) {
-        for (int t = 0; t < df_ints_num_threads_; t++) {
-            gradients_["Exchange,LR"]->add(wKtemps[t]);
-        }
-    }
-
-    // gradients_["Coulomb"]->print();
-    // gradients_["Exchange"]->print();
-    // gradients_["Exchange,LR"]->print();
 }
 void DFJKGrad::build_Amn_x_terms()
 {
