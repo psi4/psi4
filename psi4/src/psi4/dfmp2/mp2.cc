@@ -1502,118 +1502,21 @@ void RDFMP2::form_G_transpose() {
     apply_G_transpose(PSIF_DFMP2_AIA, ribasis_->nbf(), Caocc_->colspi()[0] * (size_t)Cavir_->colspi()[0]);
 }
 void RDFMP2::form_AB_x_terms() {
-    // => Sizing <= //
-
-    int natom = basisset_->molecule()->natom();
-    int nso = basisset_->nbf();
-    int naux = ribasis_->nbf();
-
-    // => Gradient Contribution <= //
-
-    gradients_["(A|B)^x"] = std::make_shared<Matrix>("(A|B)^x Gradient", natom, 3);
-
-    // => Forcing Terms/Gradients <= //
+    auto naux = ribasis_->nbf();
 
     auto V = std::make_shared<Matrix>("V", naux, naux);
-    double** Vp = V->pointer();
+    auto Vp = V->pointer();
     psio_->open(PSIF_DFMP2_AIA, PSIO_OPEN_OLD);
     psio_->read_entry(PSIF_DFMP2_AIA, "G_PQ", (char*)Vp[0], sizeof(double) * naux * naux);
     psio_->close(PSIF_DFMP2_AIA, 1);
+    V->hermitivitize();
+    V->scale(2);
+    std::map<std::string, SharedMatrix> densities = {{"(A|B)^x", V}};
 
-    // => Thread Count <= //
+    auto results = mintshelper_->metric_grad(densities, "DF_BASIS_MP2");
 
-    int num_threads = 1;
-#ifdef _OPENMP
-    num_threads = Process::environment.get_n_threads();
-#endif
-
-    // => Integrals <= //
-
-    std::shared_ptr<IntegralFactory> rifactory = std::make_shared<IntegralFactory>(
-        ribasis_, BasisSet::zero_ao_basis_set(), ribasis_, BasisSet::zero_ao_basis_set());
-    std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
-    for (int t = 0; t < num_threads; t++) {
-        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
-    }
-
-    // => Temporary Gradients <= //
-
-    std::vector<SharedMatrix> Ktemps;
-    for (int t = 0; t < num_threads; t++) {
-        Ktemps.push_back(std::make_shared<Matrix>("Ktemp", natom, 3));
-    }
-
-    std::vector<std::pair<int, int> > PQ_pairs;
-    for (int P = 0; P < ribasis_->nshell(); P++) {
-        for (int Q = 0; Q <= P; Q++) {
-            PQ_pairs.push_back(std::pair<int, int>(P, Q));
-        }
-    }
-
-    // On Prefactors:
-    // Combined, the permutational factor and 0.5 * (V_PQ + V_QP) account for us summing over ordered shell pairs. 
-    // Spin cases are accounted for because G_PQ is spin-summed
-
-#pragma omp parallel for schedule(dynamic) num_threads(num_threads)
-    for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
-        int P = PQ_pairs[PQ].first;
-        int Q = PQ_pairs[PQ].second;
-
-        int thread = 0;
-#ifdef _OPENMP
-        thread = omp_get_thread_num();
-#endif
-
-        Jint[thread]->compute_shell_deriv1(P, 0, Q, 0);
-        const double* buffer = Jint[thread]->buffer();
-
-        int nP = ribasis_->shell(P).nfunction();
-        int cP = ribasis_->shell(P).ncartesian();
-        int aP = ribasis_->shell(P).ncenter();
-        int oP = ribasis_->shell(P).function_index();
-
-        int nQ = ribasis_->shell(Q).nfunction();
-        int cQ = ribasis_->shell(Q).ncartesian();
-        int aQ = ribasis_->shell(Q).ncenter();
-        int oQ = ribasis_->shell(Q).function_index();
-
-        int ncart = cP * cQ;
-        const double* Px = buffer + 0 * ncart;
-        const double* Py = buffer + 1 * ncart;
-        const double* Pz = buffer + 2 * ncart;
-        const double* Qx = buffer + 3 * ncart;
-        const double* Qy = buffer + 4 * ncart;
-        const double* Qz = buffer + 5 * ncart;
-
-        double perm = (P == Q ? 1.0 : 2.0);
-
-        double** grad_Kp = Ktemps[thread]->pointer();
-
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                double Vval = perm * (0.5 * (Vp[p + oP][q + oQ] + Vp[q + oQ][p + oP]));
-                ;
-                grad_Kp[aP][0] -= Vval * (*Px);
-                grad_Kp[aP][1] -= Vval * (*Py);
-                grad_Kp[aP][2] -= Vval * (*Pz);
-                grad_Kp[aQ][0] -= Vval * (*Qx);
-                grad_Kp[aQ][1] -= Vval * (*Qy);
-                grad_Kp[aQ][2] -= Vval * (*Qz);
-
-                Px++;
-                Py++;
-                Pz++;
-                Qx++;
-                Qy++;
-                Qz++;
-            }
-        }
-    }
-
-    // => Temporary Gradient Reduction <= //
-
-    for (int t = 0; t < num_threads; t++) {
-        gradients_["(A|B)^x"]->add(Ktemps[t]);
+    for (const auto& kv: results) {
+        gradients_[kv.first] = kv.second;
     }
 }
 void RDFMP2::form_Amn_x_terms() {
@@ -2699,7 +2602,7 @@ void RDFMP2::form_gradient() {
 
     timer_on("Grad: JK");
 
-    auto jk = CorrGrad::build_CorrGrad(basisset_, get_basisset("DF_BASIS_SCF"));
+    auto jk = CorrGrad::build_CorrGrad(mintshelper_);
     jk->set_memory((size_t)(options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
 
     jk->set_Ca(Cocc);

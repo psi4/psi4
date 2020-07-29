@@ -37,6 +37,7 @@ namespace psi {
 class ERISieve;
 class BasisSet;
 class PSIO;
+class MintsHelper;
 
 namespace dfmp2 {
 
@@ -56,6 +57,7 @@ class CorrGrad {
     double cutoff_;
 
     std::shared_ptr<BasisSet> primary_;
+    std::shared_ptr<MintsHelper> mints_;
 
     /**
      * Rules:
@@ -84,7 +86,7 @@ class CorrGrad {
     void common_init();
 
    public:
-    CorrGrad(std::shared_ptr<BasisSet> primary);
+    CorrGrad(std::shared_ptr<MintsHelper> mints);
     virtual ~CorrGrad();
 
     /**
@@ -93,8 +95,7 @@ class CorrGrad {
      * @param options Options reference, with preset parameters
      * @return abstract Corr object, tuned in with preset options
      */
-    static std::shared_ptr<CorrGrad> build_CorrGrad(std::shared_ptr<BasisSet> primary,
-                                                    std::shared_ptr<BasisSet> auxiliary);
+    static std::shared_ptr<CorrGrad> build_CorrGrad(std::shared_ptr<MintsHelper> mints);
 
     void set_Ca(SharedMatrix Ca) { Ca_ = Ca; }
     void set_Cb(SharedMatrix Cb) { Cb_ = Cb; }
@@ -181,7 +182,7 @@ class DFCorrGrad : public CorrGrad {
     size_t unit_c_;
 
    public:
-    DFCorrGrad(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
+    DFCorrGrad(std::shared_ptr<MintsHelper> mints);
     ~DFCorrGrad() override;
 
     void compute_gradient() override;
