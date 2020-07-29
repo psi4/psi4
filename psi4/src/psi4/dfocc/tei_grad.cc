@@ -31,12 +31,13 @@
 #include "psi4/psifiles.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/mintshelper.h"
+#include "psi4/libmints/molecule.h"
 #include "psi4/libmints/sieve.h"
 #include "psi4/libmints/twobody.h"
-#include "psi4/libmints/integral.h"
 #include "psi4/libpsi4util/process.h"
 #include "dfocc.h"
 
@@ -81,101 +82,21 @@ void DFOCC::tei_grad(std::string aux_type) {
     //===========================================================================================
     //============================= Metric Gradient =============================================
     //===========================================================================================
-    //R
-    auto Gaux = std::make_shared<Tensor2d>("2-Index " + intermed_name + " TPDM (P|Q)", naux, naux);
-    Gaux->read_symm(psio_, PSIF_DFOCC_DENS);
 
-    // JPQ_X
     auto metric_short = "Metric:" + intermed_short;
     timer_on("Grad: " + metric_short);
-    gradients[metric_short] = SharedMatrix(gradients["Nuclear"]->clone());
-    gradients[metric_short]->set_name(metric_short + " Gradient");
-    gradients[metric_short]->zero();
+    auto Gaux = std::make_shared<Tensor2d>("2-Index " + intermed_name + " TPDM (P|Q)", naux, naux);
+    Gaux->read_symm(psio_, PSIF_DFOCC_DENS);
+    auto G = std::make_shared<Matrix>(naux, naux);
+    Gaux->to_shared_matrix(G);
+    G->scale(2);
 
-    // => Sizing <= //
-    int natom = primary_->molecule()->natom();
+    std::map<std::string, SharedMatrix> densities = {{metric_short, G}};
 
-    // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory(
-        new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set()));
-    std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
-    }
+    auto results = mintshelper_->metric_grad(densities, "DF_BASIS_" + aux_name);
 
-    // => Temporary Gradients <= //
-    std::vector<SharedMatrix> Jtemps;
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        Jtemps.push_back(std::make_shared<Matrix>("Jtemp", natom, 3));
-    }
-
-    std::vector<std::pair<int, int> > PQ_pairs;
-    for (int P = 0; P < auxiliary_->nshell(); P++) {
-        for (int Q = 0; Q <= P; Q++) {
-            PQ_pairs.push_back(std::pair<int, int>(P, Q));
-        }
-    }
-
-    int nthread_df = df_ints_num_threads_;
-#pragma omp parallel for schedule(dynamic) num_threads(nthread_df)
-    for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
-        int P = PQ_pairs[PQ].first;
-        int Q = PQ_pairs[PQ].second;
-
-        int thread = 0;
-#ifdef _OPENMP
-        thread = omp_get_thread_num();
-#endif
-
-        Jint[thread]->compute_shell_deriv1(P, 0, Q, 0);
-        const double *buffer = Jint[thread]->buffer();
-
-        int nP = auxiliary_->shell(P).nfunction();
-        int cP = auxiliary_->shell(P).ncartesian();
-        int aP = auxiliary_->shell(P).ncenter();
-        int oP = auxiliary_->shell(P).function_index();
-
-        int nQ = auxiliary_->shell(Q).nfunction();
-        int cQ = auxiliary_->shell(Q).ncartesian();
-        int aQ = auxiliary_->shell(Q).ncenter();
-        int oQ = auxiliary_->shell(Q).function_index();
-
-        int ncart = cP * cQ;
-        const double *Px = buffer + 0 * ncart;
-        const double *Py = buffer + 1 * ncart;
-        const double *Pz = buffer + 2 * ncart;
-        const double *Qx = buffer + 3 * ncart;
-        const double *Qy = buffer + 4 * ncart;
-        const double *Qz = buffer + 5 * ncart;
-
-        double perm = (P == Q ? 1.0 : 2.0);
-
-        double **grad_Jp;
-        grad_Jp = Jtemps[thread]->pointer();
-
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++) {
-                double Uval = perm * Gaux->get(p + oP, q + oQ);
-                grad_Jp[aP][0] -= Uval * (*Px);
-                grad_Jp[aP][1] -= Uval * (*Py);
-                grad_Jp[aP][2] -= Uval * (*Pz);
-                grad_Jp[aQ][0] -= Uval * (*Qx);
-                grad_Jp[aQ][1] -= Uval * (*Qy);
-                grad_Jp[aQ][2] -= Uval * (*Qz);
-
-                Px++;
-                Py++;
-                Pz++;
-                Qx++;
-                Qy++;
-                Qz++;
-            }
-        }
-    }
-
-    // => Temporary Gradient Reduction <= //
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        gradients[metric_short]->add(Jtemps[t]);
+    for (const auto& kv: results) {
+        gradients[kv.first] = kv.second;
     }
 
     timer_off("Grad: " + metric_short);
