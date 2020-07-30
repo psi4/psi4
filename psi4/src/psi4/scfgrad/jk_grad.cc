@@ -840,7 +840,7 @@ void DFJKGrad::build_AB_x_terms()
     auto naux = auxiliary_->nbf();
 
     std::map<std::string, SharedMatrix> densities;
-    
+
     if (do_J_) {
         auto d = std::make_shared<Vector>("d", naux);
         auto dp = d->pointer();

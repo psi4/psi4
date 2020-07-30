@@ -594,7 +594,7 @@ void DFCorrGrad::build_AB_x_terms() {
     psio_->read_entry(unit_c_, "V", (char*)Kp[0], sizeof(double) * naux * naux);
 
     std::map<std::string, SharedMatrix> densities = {{"Coulomb", J}, {"Exchange", K}};
-    
+ 
     auto results = mints_->metric_grad(densities, "DF_BASIS_SCF");
 
     for (const auto& kv: results) {

@@ -2174,7 +2174,7 @@ SharedMatrix MintsHelper::core_hamiltonian_grad(SharedMatrix D) {
     return ret;
 }
 
-std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::string, SharedMatrix> D, std::string aux_name) {
+std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::string, SharedMatrix>& D, const std::string& aux_name) {
     // Construct integral factory.
     auto auxiliary = basissets_[aux_name];
     auto rifactory = std::make_shared<IntegralFactory>(auxiliary, BasisSet::zero_ao_basis_set(), auxiliary, BasisSet::zero_ao_basis_set());
@@ -2236,15 +2236,15 @@ std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::strin
 
         std::vector<std::pair<double**, double**>> read_write_pairs;
         for (auto kv: D) {
-            double ** temp1 = D[kv.first]->pointer();
-            double ** temp2 = temps[kv.first][thread]->pointer();
-            std::pair<double**, double**> pair = std::make_pair(temp1, temp2);
-            read_write_pairs.push_back(pair); 
+            auto temp1 = D[kv.first]->pointer();
+            auto temp2 = temps[kv.first][thread]->pointer();
+            auto pair = std::make_pair(temp1, temp2);
+            read_write_pairs.push_back(pair);
         }
 
         for (int p = 0; p < nP; p++) {
             for (int q = 0; q < nQ; q++) {
-                for (auto pair : read_write_pairs) {
+                for (auto& pair : read_write_pairs) {
                     double val = 0.5 * perm * pair.first[p+oP][q+oQ];
                     auto grad_mat = pair.second;
                     grad_mat[aP][0] -= val * (*Px);
