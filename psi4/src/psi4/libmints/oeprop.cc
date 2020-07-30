@@ -26,45 +26,49 @@
  * @END LICENSE
  */
 
-#include "psi4/psifiles.h"
-#include "psi4/psi4-dec.h"
-#include "psi4/physconst.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libiwl/iwl.hpp"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/libmints/oeprop.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/onebody.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/wavefunction.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libmints/sointegral_onebody.h"
-#include "psi4/libmints/quadrupole.h"
-#include "psi4/libmints/multipolesymmetry.h"
-#include "psi4/libmints/shellrotation.h"
-#include "psi4/libmints/pointgrp.h"
-#include "psi4/libmints/electricfield.h"
-#include "psi4/libmints/electrostatic.h"
-#include "psi4/libmints/petitelist.h"
-#include "psi4/libmints/multipoles.h"
-#include "psi4/libmints/dipole.h"
-#include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
+#include "oeprop.h"
 
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
 #include <cmath>
-#include <sstream>
-#include <utility>
+#include <cstdio>
+#include <cstdlib>
 #include <fstream>
-#include <regex>
-#include <tuple>
 #include <functional>
+#include <iostream>
+#include <regex>
+#include <sstream>
+#include <tuple>
+#include <utility>
+
+#include "psi4/physconst.h"
+#include "psi4/psi4-dec.h"
+#include "psi4/psifiles.h"
+
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libiwl/iwl.hpp"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
+
+#include "basisset.h"
+#include "dipole.h"
+#include "electricfield.h"
+#include "electrostatic.h"
+#include "integral.h"
+#include "matrix.h"
+#include "molecule.h"
+#include "multipoles.h"
+#include "multipolesymmetry.h"
+#include "onebody.h"
+#include "petitelist.h"
+#include "pointgrp.h"
+#include "quadrupole.h"
+#include "shellrotation.h"
+#include "sointegral_onebody.h"
+#include "vector.h"
+#include "vector3.h"
+#include "wavefunction.h"
 
 namespace psi {
 
@@ -660,7 +664,7 @@ SharedMatrix Prop::overlap_so() {
 
 std::string Prop::Da_name() const { return Da_so_->name(); }
 
-Vector3 OEProp::compute_center(const double* property) const {
+Vector3<double> OEProp::compute_center(const double* property) const {
     std::shared_ptr<Molecule> mol = wfn_->molecule();
     int natoms = mol->natom();
     double x = 0.0;
@@ -668,7 +672,7 @@ Vector3 OEProp::compute_center(const double* property) const {
     double z = 0.0;
     double sum = 0.0;
     for (int atom = 0; atom < natoms; ++atom) {
-        Vector3 xyz = mol->xyz(atom);
+        auto xyz = mol->xyz(atom);
         double prop = property[atom];
         x += xyz[0] * prop;
         y += xyz[1] * prop;
@@ -678,7 +682,7 @@ Vector3 OEProp::compute_center(const double* property) const {
     x /= sum;
     y /= sum;
     z /= sum;
-    return Vector3(x, y, z);
+    return {x, y, z};
 }
 
 OEProp::OEProp(std::shared_ptr<Wavefunction> wfn)
@@ -699,7 +703,7 @@ void OEProp::common_init() {
         max_noon_ = to_integer(options.get_str("PRINT_NOONS"));
 }
 
-MultipolePropCalc::MultipolePropCalc(std::shared_ptr<Wavefunction> wfn, Vector3 const& origin)
+MultipolePropCalc::MultipolePropCalc(std::shared_ptr<Wavefunction> wfn, const Vector3<double>& origin)
     : Prop(wfn), origin_(origin) {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
@@ -734,13 +738,13 @@ MultipolePropCalc::MultipolePropCalc(std::shared_ptr<Wavefunction> wfn, Vector3 
     }
 }
 
-Vector3 OEProp::get_origin_from_environment() const {
+Vector3<double> OEProp::get_origin_from_environment() const {
     // This function gets called early in the constructor of OEProp.
     // Take care not to use or initialize members, which are only initialized later.
     // The only member used here is basisset, which is initialized in the base class.
     // See if the user specified the origin
     Options& options = Process::environment.options;
-    Vector3 origin(0.0, 0.0, 0.0);
+    auto origin = from_Ts(0.0, 0.0, 0.0);
 
     std::shared_ptr<Molecule> mol = wfn_->molecule();
     int natoms = mol->natom();
@@ -768,7 +772,7 @@ Vector3 OEProp::get_origin_from_environment() const {
                 y /= pc_bohr2angstroms;
                 z /= pc_bohr2angstroms;
             }
-            origin = Vector3(x, y, z);
+            origin = {x, y, z};
         } else {
             throw PSIEXCEPTION("Invalid specification of PROPERTIES_ORIGIN.  Please consult the manual.");
         }
@@ -975,10 +979,10 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
  */
 class PSI_API GridIterator {
     std::ifstream gridfile_;
-    Vector3 gridpoints_;
+    Vector3<double> gridpoints_;
 
    public:
-    const Vector3& gridpoints() const { return gridpoints_; }
+    const Vector3<double>& gridpoints() const { return gridpoints_; }
     GridIterator(const std::string& filename) {
         gridfile_.open(filename.c_str());
         if (!gridfile_) throw PSIEXCEPTION("Unable to open the grid.dat file.");
@@ -1036,7 +1040,7 @@ void ESPPropCalc::compute_esp_over_grid(bool print_output) {
     if (!gridout) throw PSIEXCEPTION("Unable to write to grid_esp.dat");
     GridIterator griditer("grid.dat");
     for (griditer.first(); !griditer.last(); griditer.next()) {
-        Vector3 origin(griditer.gridpoints());
+        auto origin = griditer.gridpoints();
         if (mol->units() == Molecule::Angstrom) origin /= pc_bohr2angstroms;
         ints->zero();
         epot->compute(ints, origin);
@@ -1044,8 +1048,8 @@ void ESPPropCalc::compute_esp_over_grid(bool print_output) {
         double Vnuc = 0.0;
         int natom = mol->natom();
         for (int i = 0; i < natom; i++) {
-            Vector3 dR = origin - mol->xyz(i);
-            double r = dR.norm();
+            Vector3<double> dR = origin - mol->xyz(i);
+            auto r = psi::norm(dR);
             if (r > 1.0E-8) Vnuc += mol->Z(i) / r;
         }
         Vvals_.push_back(Velec + Vnuc);
@@ -1081,7 +1085,7 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
     bool convert = mol->units() == Molecule::Angstrom;
 
     for (int i = 0; i < number_of_grid_points; ++i) {
-        Vector3 origin(input_grid->get(i, 0), input_grid->get(i, 1), input_grid->get(i, 2));
+        auto origin = from_Ts(input_grid->get(i, 0), input_grid->get(i, 1), input_grid->get(i, 2));
         if (convert) origin /= pc_bohr2angstroms;
         auto ints = std::make_shared<Matrix>(nbf, nbf);
         ints->zero();
@@ -1090,8 +1094,8 @@ SharedVector ESPPropCalc::compute_esp_over_grid_in_memory(SharedMatrix input_gri
         double Vnuc = 0.0;
         int natom = mol->natom();
         for (int iat = 0; iat < natom; iat++) {
-            Vector3 dR = origin - mol->xyz(iat);
-            double r = dR.norm();
+            Vector3<double> dR = origin - mol->xyz(iat);
+            auto r = psi::norm(dR);
             if (r > 1.0E-8) Vnuc += mol->Z(iat) / r;
         }
         double Vtot = Velec + Vnuc;
@@ -1134,7 +1138,7 @@ void ESPPropCalc::compute_field_over_grid(bool print_output) {
     if (!gridout) throw PSIEXCEPTION("Unable to write to grid_field.dat");
     GridIterator griditer("grid.dat");
     for (griditer.first(); !griditer.last(); griditer.next()) {
-        Vector3 origin(griditer.gridpoints());
+        auto origin = griditer.gridpoints();
         if (mol->units() == Molecule::Angstrom) origin /= pc_bohr2angstroms;
         field_ints->set_origin(origin);
         for (int m = 0; m < 3; ++m) intmats[m]->zero();
@@ -1142,7 +1146,7 @@ void ESPPropCalc::compute_field_over_grid(bool print_output) {
         double Ex = Dtot->vector_dot(intmats[0]);
         double Ey = Dtot->vector_dot(intmats[1]);
         double Ez = Dtot->vector_dot(intmats[2]);
-        Vector3 nuc = field_ints->nuclear_contribution(origin, mol);
+        auto nuc = field_ints->nuclear_contribution(origin, mol);
         Exvals_.push_back(Ex + nuc[0]);
         Eyvals_.push_back(Ey + nuc[1]);
         Ezvals_.push_back(Ez + nuc[2]);
@@ -1246,7 +1250,6 @@ void OEProp::compute_dipole(bool transition) {
 SharedVector MultipolePropCalc::compute_dipole(bool transition, bool print_output, bool verbose) {
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
-    Vector3 de;
     SharedMatrix Da;
     SharedMatrix Db;
     std::vector<SharedMatrix> dipole_ints;
@@ -1285,6 +1288,7 @@ SharedVector MultipolePropCalc::compute_dipole(bool transition, bool print_outpu
         for (int n = 0; n < 3; ++n) dipole_ints[n]->print();
     }
 
+    Vector3<double> de;
     de[0] = Da->vector_dot(dipole_ints[0]) + Db->vector_dot(dipole_ints[0]);
     de[1] = Da->vector_dot(dipole_ints[1]) + Db->vector_dot(dipole_ints[1]);
     de[2] = Da->vector_dot(dipole_ints[2]) + Db->vector_dot(dipole_ints[2]);
@@ -1307,10 +1311,11 @@ SharedVector MultipolePropCalc::compute_dipole(bool transition, bool print_outpu
         de[2] += ndip->get(0, 2);
     }
 
+    double norm_de = psi::norm(de);
     if (print_output) {
         outfile->Printf("  %sDipole Moment: [e a0]\n", (transition ? "Transition " : ""));
         outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n", de[0], de[1], de[2],
-                        de.norm());
+                        norm_de);
         outfile->Printf("\n");
     }
 
@@ -1318,7 +1323,7 @@ SharedVector MultipolePropCalc::compute_dipole(bool transition, bool print_outpu
     if (print_output) {
         outfile->Printf("  %sDipole Moment: [D]\n", (transition ? "Transition " : ""));
         outfile->Printf("     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n", de[0] * dfac,
-                        de[1] * dfac, de[2] * dfac, de.norm() * dfac);
+                        de[1] * dfac, de[2] * dfac, norm_de * dfac);
         outfile->Printf("\n");
     }
 
@@ -1495,7 +1500,6 @@ void OEProp::compute_mo_extents() {
 }
 
 std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_output) {
-
     SharedMatrix Ca = Ca_ao();
 
     std::vector<SharedVector> mo_es;
@@ -1527,7 +1531,6 @@ std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_outpu
     quadrupole.push_back(std::make_shared<Vector>("Orbital Quadrupole ZZ", Ca->ncol()));
 
     if (same_orbs_) {
-
         // Quadrupoles
         for (int i = 0; i < Ca->ncol(); ++i) {
             double sumx = 0.0, sumy = 0.0, sumz = 0.0;

@@ -55,15 +55,17 @@
 // The U.S. Government is granted a limited license as per AL 91-7.
 //
 
-#include "psi4/libmints/petitelist.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/shellrotation.h"
-#include "psi4/libmints/dimension.h"
-#include "psi4/libmints/cartesianiter.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libmints/matrix.h"
+#include "petitelist.h"
+
 #include "psi4/libpsi4util/PsiOutStream.h"
+
+#include "basisset.h"
+#include "cartesianiter.h"
+#include "dimension.h"
+#include "integral.h"
+#include "matrix.h"
+#include "molecule.h"
+#include "shellrotation.h"
 
 ;
 
@@ -259,7 +261,7 @@ int **compute_atom_map(const Molecule *molecule, double tol, bool suppress_mol_p
 
     // loop over all centers
     for (int i = 0; i < natom; i++) {
-        Vector3 ac(mol.xyz(i));
+        auto ac = mol.xyz(i);
 
         // then for each symop in the pointgroup, transform the coordinates of
         // center "i" and see which atom it maps into
@@ -476,7 +478,7 @@ void PetiteList::init(double tol) {
 
     // loop over all centers
     for (i = 0; i < natom_; i++) {
-        Vector3 ac(mol.xyz(i));
+        auto ac = mol.xyz(i);
 
         stablizer_[i] = 0;
 

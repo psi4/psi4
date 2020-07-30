@@ -25,12 +25,16 @@
  *
  * @END LICENSE
  */
-#include "psi4/libmints/quadrupole.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libciomr/libciomr.h"
+#include "quadrupole.h"
+
 #include "psi4/physconst.h"
+
+#include "psi4/libciomr/libciomr.h"
+
+#include "basisset.h"
+#include "molecule.h"
+#include "vector.h"
+#include "vector3.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -54,12 +58,12 @@ QuadrupoleInt::QuadrupoleInt(std::vector<SphericalTransform> &st, std::shared_pt
 
 QuadrupoleInt::~QuadrupoleInt() { delete[] buffer_; }
 
-SharedVector QuadrupoleInt::nuclear_contribution(std::shared_ptr<Molecule> mol, const Vector3 &origin) {
+SharedVector QuadrupoleInt::nuclear_contribution(std::shared_ptr<Molecule> mol, const Vector3<double> &origin) {
     auto sret = std::make_shared<Vector>(6);
     double *ret = sret->pointer();
 
     for (int i = 0; i < mol->natom(); ++i) {
-        Vector3 geom = mol->xyz(i) - origin;
+        Vector3<double> geom = mol->xyz(i) - origin;
         ret[0] += mol->Z(i) * geom[0] * geom[0];  // xx
         ret[1] += mol->Z(i) * geom[0] * geom[1];  // xy
         ret[2] += mol->Z(i) * geom[0] * geom[2];  // xz

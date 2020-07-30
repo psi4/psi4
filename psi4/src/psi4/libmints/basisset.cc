@@ -25,28 +25,7 @@
  *
  * @END LICENSE
  */
-// Need libint for maximum angular momentum
-#include <libint/libint.h>
-/*!
-    \defgroup MINTS libmints: Integral library
-    \ingroup MINTS
-*/
-
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/psifiles.h"
-
-#include "vector3.h"
-#include "molecule.h"
 #include "basisset.h"
-#include "dimension.h"
-#include "sobasis.h"
-#include "integral.h"
-#include "gshell.h"
-#include "factory.h"
-#include "pointgrp.h"
-#include "wavefunction.h"
-#include "coordentry.h"
-#include "psi4/libpsi4util/process.h"
 
 #include <memory>
 #include <regex>
@@ -57,11 +36,34 @@
 #include <map>
 #include <list>
 
+// Need libint for maximum angular momentum
+#include <libint/libint.h>
+/*!
+    \defgroup MINTS libmints: Integral library
+    \ingroup MINTS
+*/
+
+#include "psi4/psifiles.h"
+
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libpsi4util/process.h"
+
+#include "coordentry.h"
+#include "dimension.h"
+#include "factory.h"
+#include "gshell.h"
+#include "integral.h"
+#include "molecule.h"
+#include "pointgrp.h"
+#include "sobasis.h"
+#include "vector3.h"
+#include "wavefunction.h"
+
 using namespace psi;
 
 bool BasisSet::initialized_shared_ = false;
 
-std::vector<Vector3> BasisSet::exp_ao[LIBINT_MAX_AM];
+std::vector<Vector3<double>> BasisSet::exp_ao[LIBINT_MAX_AM];
 
 namespace {
 bool has_ending(std::string const &fullString, std::string const &ending) {
@@ -183,13 +185,12 @@ void BasisSet::initialize_singletons() {
     // Populate the exp_ao arrays
     for (int l = 0; l < LIBINT_MAX_AM; ++l) {
         for (int i = 0; i <= l; ++i) {
-            int x = l - i;
+            auto x = static_cast<double>(l - i);
             for (int j = 0; j <= i; ++j) {
-                int y = i - j;
-                int z = j;
+                auto y = static_cast<double>(i - j);
+                auto z = static_cast<double>(j);
 
-                Vector3 xyz_ao(x, y, z);
-                BasisSet::exp_ao[l].push_back(xyz_ao);
+                BasisSet::exp_ao[l].push_back(from_Ts(x, y, z));
             }
         }
     }
@@ -264,8 +265,9 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
         }
         // If we are about to end up with no valence electrons,
         // unfreeze electrons from the largest shell in the molecule
-        if (mol_valence <= 0) num_frozen_el -= period_to_full_shell(largest_shell - 1) - period_to_full_shell(largest_shell - 2);
-        return num_frozen_el/2;
+        if (mol_valence <= 0)
+            num_frozen_el -= period_to_full_shell(largest_shell - 1) - period_to_full_shell(largest_shell - 2);
+        return num_frozen_el / 2;
     } else {
         // Options are filtered in read_options.cc; allowed strings are:
         // TRUE, FALSE, -1, -2, -3
@@ -292,7 +294,7 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
         // If we are about to end up with no valence electrons,
         // throw an exception.
         if (mol_valence <= 0) throw PSIEXCEPTION("Cannot freeze the requested previous shell: valence <= 0.");
-        return num_frozen_el/2;
+        return num_frozen_el / 2;
     }
 }
 
@@ -851,7 +853,7 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
             atom_nprim += shell_nprim;
             shell_count++;
         }
-        Vector3 xyz = molecule_->xyz(n);
+        auto xyz = molecule_->xyz(n);
         xyz_ptr[0] = xyz[0];
         xyz_ptr[1] = xyz[1];
         xyz_ptr[2] = xyz[2];
@@ -1199,7 +1201,7 @@ std::pair<std::vector<std::string>, std::shared_ptr<BasisSet>> BasisSet::test_ba
 
     // Add shells
     for (int A = 0; A < max_centers; A++) {
-        Vector3 center = new_basis->molecule_->fxyz(A);
+        auto center = new_basis->molecule_->fxyz(A);
         for (int Q = 0; Q < max_shells; Q++) {
             new_basis->shells_.push_back(GaussianShell(am[Q], c[Q], e[Q], Pure, A, center, 0));
         }
@@ -1211,7 +1213,7 @@ std::pair<std::vector<std::string>, std::shared_ptr<BasisSet>> BasisSet::test_ba
 #endif
 }
 
-void BasisSet::move_atom(int atom, const Vector3 &trans) {
+void BasisSet::move_atom(int atom, const Vector3<double> &trans) {
     int offset = 3 * atom;
     xyz_[offset + 0] += trans[0];
     xyz_[offset + 1] += trans[1];
@@ -1239,7 +1241,7 @@ void BasisSet::compute_phi(double *phi_ao, double x, double y, double z) {
         for (int np = 0; np < nprim; np++) cexpr += c[np] * exp(-a[np] * rr);
 
         for (int l = 0; l < INT_NCART(am); l++) {
-            Vector3 &components = exp_ao[am][l];
+            auto &components = exp_ao[am][l];
             phi_ao[ao + l] += pow(dx, (double)components[0]) * pow(dy, (double)components[1]) *
                               pow(dz, (double)components[2]) * cexpr;
         }

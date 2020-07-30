@@ -29,20 +29,20 @@
 #ifndef libfock_points_H
 #define libfock_points_H
 
-#include "psi4/libmints/typedefs.h"
-#include "psi4/pragma.h"
-
 #include <cstdio>
 #include <map>
-#include <unordered_map>
-#include <tuple>
-#include <vector>
 #include <string>
+#include <tuple>
+#include <unordered_map>
+#include <vector>
+
+#include "psi4/pragma.h"
+#include "psi4/libmints/tensor.h"
+#include "psi4/libmints/typedefs.h"
 
 namespace psi {
 
 class BasisSet;
-class Vector;
 class BlockOPoints;
 
 class PSI_API BasisFunctions {
@@ -117,7 +117,7 @@ class PointFunctions : public BasisFunctions {
     /// Ansatz (0 - LSDA, 1 - GGA, 2 - Meta-GGA)
     int ansatz_;
     /// Map of value names to Vectors containing values
-    std::map<std::string, std::shared_ptr<Vector>> point_values_;
+    std::map<std::string, SharedVector_<double>> point_values_;
 
     // => Orbital Collocation <= //
 
@@ -141,8 +141,8 @@ class PointFunctions : public BasisFunctions {
 
     // => Accessors <= //
 
-    std::shared_ptr<Vector> point_value(const std::string& key);
-    std::map<std::string, SharedVector>& point_values() { return point_values_; }
+    SharedVector_<double> point_value(const std::string& key);
+    std::map<std::string, SharedVector_<double>>& point_values() { return point_values_; }
 
     SharedMatrix basis_value(const std::string& key) { return (*current_basis_map_)[key]; }
     std::map<std::string, SharedMatrix>& basis_values() { return (*current_basis_map_); }

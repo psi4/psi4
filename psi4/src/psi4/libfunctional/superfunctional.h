@@ -29,12 +29,14 @@
 #ifndef SUPERFUNCTIONAL_H
 #define SUPERFUNCTIONAL_H
 
-#include "psi4/libmints/typedefs.h"
-#include "psi4/pragma.h"
 #include <map>
 #include <vector>
 #include <cstdlib>
 #include <string>
+
+#include "psi4/pragma.h"
+#include "psi4/libmints/tensor.h"
+
 namespace psi {
 
 class Functional;
@@ -98,9 +100,9 @@ class SuperFunctional {
     bool libxc_xc_func_;
     int max_points_;
     int deriv_;
-    std::map<std::string, SharedVector> values_;
-    std::map<std::string, SharedVector> ac_values_;
-    std::map<std::string, SharedVector> vv_values_;
+    std::map<std::string, SharedVector_<double>> values_;
+    std::map<std::string, SharedVector_<double>> ac_values_;
+    std::map<std::string, SharedVector_<double>> vv_values_;
 
     // => Other LibXC settings
     double density_tolerance_;
@@ -129,26 +131,27 @@ class SuperFunctional {
 
     // => Computers <= //
 
-    std::map<std::string, SharedVector>& compute_functional(const std::map<std::string, SharedVector>& vals,
-                                                            int npoints = -1);
-    void test_functional(SharedVector rho_a, SharedVector rho_b, SharedVector gamma_aa, SharedVector gamma_ab,
-                         SharedVector gamma_bb, SharedVector tau_a, SharedVector tau_b);
+    std::map<std::string, SharedVector_<double>>& compute_functional(
+        const std::map<std::string, SharedVector_<double>>& vals, int npoints = -1);
+    void test_functional(SharedVector_<double> rho_a, SharedVector_<double> rho_b, SharedVector_<double> gamma_aa,
+                         SharedVector_<double> gamma_ab, SharedVector_<double> gamma_bb, SharedVector_<double> tau_a,
+                         SharedVector_<double> tau_b);
 
     // Compute the cache data for VV10 dispersion
-    std::map<std::string, SharedVector> compute_vv10_cache(const std::map<std::string, SharedVector>& vals,
-                                                           std::shared_ptr<BlockOPoints> block, double rho_thresh,
-                                                           int npoints = -1, bool internal = false);
+    std::map<std::string, SharedVector_<double>> compute_vv10_cache(
+        const std::map<std::string, SharedVector_<double>>& vals, std::shared_ptr<BlockOPoints> block,
+        double rho_thresh, int npoints = -1, bool internal = false);
 
     // Copmutes the Cache data for VV10 dispersion
-    double compute_vv10_kernel(const std::map<std::string, SharedVector>& vals,
-                               const std::vector<std::map<std::string, SharedVector>>& vv10_cache,
+    double compute_vv10_kernel(const std::map<std::string, SharedVector_<double>>& vals,
+                               const std::vector<std::map<std::string, SharedVector_<double>>>& vv10_cache,
                                std::shared_ptr<BlockOPoints> block, int npoints = -1, bool do_grad = false);
 
     // => Input/Output <= //
 
-    std::map<std::string, SharedVector>& values() { return values_; }
-    SharedVector value(const std::string& key) { return values_[key]; }
-    SharedVector vv_value(const std::string& key) { return vv_values_[key]; }
+    std::map<std::string, SharedVector_<double>>& values() { return values_; }
+    SharedVector_<double> value(const std::string& key) { return values_[key]; }
+    SharedVector_<double> vv_value(const std::string& key) { return vv_values_[key]; }
 
     std::vector<std::shared_ptr<Functional>>& x_functionals() { return x_functionals_; }
     std::vector<std::shared_ptr<Functional>>& c_functionals() { return c_functionals_; }
@@ -237,6 +240,6 @@ class SuperFunctional {
     void py_print() const { print("outfile", 1); }
     void py_print_detail(int level) const { print("outfile", level); }
 };
-}
+}  // namespace psi
 
 #endif

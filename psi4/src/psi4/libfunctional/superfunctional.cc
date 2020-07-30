@@ -26,21 +26,23 @@
  * @END LICENSE
  */
 
-#include "psi4/psi4-dec.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/exception.h"
-#include "psi4/libfock/cubature.h"
-#include "psi4/libfock/points.h"
 #include "superfunctional.h"
-#include "functional.h"
-#include "LibXCfunctional.h"
 
 #include <cmath>
 #include <cstdlib>
 
-// using namespace psi;
+#include "functional.h"
+#include "LibXCfunctional.h"
+
+#include "psi4/psi4-dec.h"
+
+#include "psi4/libfock/cubature.h"
+#include "psi4/libfock/points.h"
+#include "psi4/libmints/linalg.h"
+#include "psi4/libmints/tensor.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
+#include "psi4/libqt/qt.h"
 
 namespace psi {
 
@@ -467,7 +469,7 @@ bool SuperFunctional::is_unpolarized() const {
     }
 }
 void SuperFunctional::allocate() {
-    // Make sure were either polarized or not
+    // Make sure we're either polarized or not
     bool is_polar = !is_unpolarized();
     values_.clear();
 
@@ -584,37 +586,45 @@ void SuperFunctional::allocate() {
         }
     }
 
-    for (int i = 0; i < list.size(); i++) {
-        values_[list[i]] = std::make_shared<Vector>(list[i], max_points_);
+    for (const auto& s : list) {
+        values_[s] = std::make_shared<Vector_<double>>(s, max_points_);
     }
 
     if (needs_grac_) {
-        ac_values_["V"] = std::make_shared<Vector>("V", max_points_);  // Not actually used
-        ac_values_["V_RHO_A"] = std::make_shared<Vector>("V_RHO_A", max_points_);
-        ac_values_["V_GAMMA_AA"] = std::make_shared<Vector>("V_GAMMA_AA", max_points_);
+        list.clear();
+        list.push_back("V");  // Not actually used
+        list.push_back("V_RHO_A");
+        list.push_back("V_GAMMA_AA");
         if (is_polar) {
             throw PSIEXCEPTION("GRAC is not implemented for UKS functionals.");
-            ac_values_["V_RHO_B"] = std::make_shared<Vector>("V_RHO_B", max_points_);
-            ac_values_["V_GAMMA_AB"] = std::make_shared<Vector>("V_GAMMA_AB", max_points_);
-            ac_values_["V_GAMMA_BB"] = std::make_shared<Vector>("V_GAMMA_BB", max_points_);
+            list.push_back("V_RHO_B");
+            list.push_back("V_GAMMA_AB");
+            list.push_back("V_GAMMA_BB");
+        }
+        for (const auto& s : list) {
+            ac_values_[s] = std::make_shared<Vector_<double>>(s, max_points_);
         }
     }
 
     if (needs_vv10_) {
-        vv_values_["W0"] = std::make_shared<Vector>("W0", max_points_);
-        vv_values_["KAPPA"] = std::make_shared<Vector>("KAPPA", max_points_);
-        vv_values_["GRID_WX"] = std::make_shared<Vector>("W_X_GRID", max_points_);
-        vv_values_["GRID_WY"] = std::make_shared<Vector>("W_Y_GRID", max_points_);
-        vv_values_["GRID_WZ"] = std::make_shared<Vector>("W_Z_GRID", max_points_);
+        list.clear();
+        list.push_back("W0");
+        list.push_back("KAPPA");
+        list.push_back("GRID_WX");
+        list.push_back("GRID_WY");
+        list.push_back("GRID_WZ");
+        for (const auto& s : list) {
+            vv_values_[s] = std::make_shared<Vector_<double>>(s, max_points_);
+        }
     }
 }
-std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
-    const std::map<std::string, SharedVector>& vals, int npoints) {
-    npoints = (npoints == -1 ? vals.find("RHO_A")->second->dimpi()[0] : npoints);
+std::map<std::string, SharedVector_<double>>& SuperFunctional::compute_functional(
+    const std::map<std::string, SharedVector_<double>>& vals, int npoints) {
+    npoints = (npoints == -1 ? vals.at("RHO_A")->dimpi()[0] : npoints);
 
     // Zero out values
-    for (auto kv : values_) {
-        kv.second->zero();
+    for (auto& kv : values_) {
+        kv.second = zeros_like(kv.second);
     }
 
     for (int i = 0; i < x_functionals_.size(); i++) {
@@ -626,9 +636,8 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
 
     // Apply the grac shift, only valid for gradient computations
     if (needs_grac_ && (deriv_ == 1)) {
-        for (std::map<std::string, SharedVector>::const_iterator it = ac_values_.begin(); it != ac_values_.end();
-             ++it) {
-            ::memset((void*)((*it).second->pointer()), '\0', sizeof(double) * npoints);
+        for (auto& kv : ac_values_) {
+            kv.second = zeros_like(kv.second);
         }
         if (grac_x_functional_) {
             grac_x_functional_->compute_functional(vals, ac_values_, npoints, 1);
@@ -638,14 +647,14 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
         }
 
         if (is_unpolarized()) {
-            double* rho = vals.find("RHO_A")->second->pointer();
-            double* sigma = vals.find("GAMMA_AA")->second->pointer();
+            double* rho = vals.find("RHO_A")->second->data();
+            double* sigma = vals.find("GAMMA_AA")->second->data();
 
-            double* v_rho = values_["V_RHO_A"]->pointer();
-            double* v_gamma = values_["V_GAMMA_AA"]->pointer();
+            double* v_rho = values_["V_RHO_A"]->data();
+            double* v_gamma = values_["V_GAMMA_AA"]->data();
 
-            double* grac_v_rho = ac_values_["V_RHO_A"]->pointer();
-            double* grac_v_gamma = ac_values_["V_GAMMA_AA"]->pointer();
+            double* grac_v_rho = ac_values_["V_RHO_A"]->data();
+            double* grac_v_gamma = ac_values_["V_GAMMA_AA"]->data();
 
             const double galpha = -1.0 * grac_alpha_;
             const double gbeta = grac_beta_;
@@ -675,27 +684,27 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
         // This is turned off by allocate for now, this doesnt appear to be quite correct.
         else {
             throw PSIEXCEPTION("GRAC is not implemented for UKS functionals.");
-            // double* rho_a = vals.find("RHO_A")->second->pointer();
-            // double* rho_a_x = vals.find("RHO_AX")->second->pointer();
-            // double* rho_a_y = vals.find("RHO_AY")->second->pointer();
-            // double* rho_a_z = vals.find("RHO_AZ")->second->pointer();
+            // double* rho_a = vals.find("RHO_A")->second->data();
+            // double* rho_a_x = vals.find("RHO_AX")->second->data();
+            // double* rho_a_y = vals.find("RHO_AY")->second->data();
+            // double* rho_a_z = vals.find("RHO_AZ")->second->data();
 
-            // double* rho_b = vals.find("RHO_B")->second->pointer();
-            // double* rho_b_x = vals.find("RHO_BX")->second->pointer();
-            // double* rho_b_y = vals.find("RHO_BY")->second->pointer();
-            // double* rho_b_z = vals.find("RHO_BZ")->second->pointer();
+            // double* rho_b = vals.find("RHO_B")->second->data();
+            // double* rho_b_x = vals.find("RHO_BX")->second->data();
+            // double* rho_b_y = vals.find("RHO_BY")->second->data();
+            // double* rho_b_z = vals.find("RHO_BZ")->second->data();
 
-            // double* v_rho_a = values_["V_RHO_A"]->pointer();
-            // double* v_rho_b = values_["V_RHO_B"]->pointer();
-            // double* v_gamma_aa = values_["V_GAMMA_AA"]->pointer();
-            // double* v_gamma_ab = values_["V_GAMMA_AB"]->pointer();
-            // double* v_gamma_bb = values_["V_GAMMA_BB"]->pointer();
+            // double* v_rho_a = values_["V_RHO_A"]->data();
+            // double* v_rho_b = values_["V_RHO_B"]->data();
+            // double* v_gamma_aa = values_["V_GAMMA_AA"]->data();
+            // double* v_gamma_ab = values_["V_GAMMA_AB"]->data();
+            // double* v_gamma_bb = values_["V_GAMMA_BB"]->data();
 
-            // double* grac_v_rho_a = ac_values_["V_RHO_A"]->pointer();
-            // double* grac_v_rho_b = ac_values_["V_RHO_B"]->pointer();
-            // double* grac_v_gamma_aa = ac_values_["V_GAMMA_AA"]->pointer();
-            // double* grac_v_gamma_ab = ac_values_["V_GAMMA_AB"]->pointer();
-            // double* grac_v_gamma_bb = ac_values_["V_GAMMA_BB"]->pointer();
+            // double* grac_v_rho_a = ac_values_["V_RHO_A"]->data();
+            // double* grac_v_rho_b = ac_values_["V_RHO_B"]->data();
+            // double* grac_v_gamma_aa = ac_values_["V_GAMMA_AA"]->data();
+            // double* grac_v_gamma_ab = ac_values_["V_GAMMA_AB"]->data();
+            // double* grac_v_gamma_bb = ac_values_["V_GAMMA_BB"]->data();
 
             // const double galpha = -1.0 * grac_alpha_;
             // const double gbeta = grac_beta_;
@@ -720,10 +729,10 @@ std::map<std::string, SharedVector>& SuperFunctional::compute_functional(
 
     return values_;
 }
-std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(const std::map<std::string, SharedVector>& vals,
-                                                                        std::shared_ptr<BlockOPoints> block,
-                                                                        double rho_thresh, int npoints, bool internal) {
-    npoints = (npoints == -1 ? vals.find("RHO_A")->second->dimpi()[0] : npoints);
+std::map<std::string, SharedVector_<double>> SuperFunctional::compute_vv10_cache(
+    const std::map<std::string, SharedVector_<double>>& vals, std::shared_ptr<BlockOPoints> block, double rho_thresh,
+    int npoints, bool internal) {
+    npoints = (npoints == -1 ? vals.at("RHO_A")->dimpi()[0] : npoints);
 
     // Precompute prefactors
     const double Wp_pref = (4.0 / 3.0) * M_PI;
@@ -735,13 +744,13 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(const st
     // rho_thresh = 0.0;
 
     // Zero out the vectors
-    vv_values_["W0"]->zero();
-    vv_values_["KAPPA"]->zero();
+    vv_values_["W0"] = zeros_like(vv_values_["W0"]);
+    vv_values_["KAPPA"] = zeros_like(vv_values_["KAPPA"]);
 
-    double* w0p = vv_values_["W0"]->pointer();
-    double* kappap = vv_values_["KAPPA"]->pointer();
-    double* rhop = vals.find("RHO_A")->second->pointer();
-    double* gammap = vals.find("GAMMA_AA")->second->pointer();
+    auto w0p = vv_values_["W0"]->data();
+    auto kappap = vv_values_["KAPPA"]->data();
+    auto rhop = vals.at("RHO_A")->data();
+    auto gammap = vals.at("GAMMA_AA")->data();
 
 // Eh, worth a shot
 #pragma omp simd
@@ -762,23 +771,23 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(const st
         return vv_values_;
     }
 
-    // printf("Nact/Ntot %zu / %d\n", nact, npoints);
+    // outfile->Printf("Nact/Ntot %zu / %d\n", nact, npoints);
     // Sieve the results
-    auto w_vec = std::make_shared<Vector>("W Grid points", nact);
-    auto x_vec = std::make_shared<Vector>("X Grid points", nact);
-    auto y_vec = std::make_shared<Vector>("Y Grid points", nact);
-    auto z_vec = std::make_shared<Vector>("Z Grid points", nact);
-    auto rho_vec = std::make_shared<Vector>("RHO points", nact);
-    auto w0_vec = std::make_shared<Vector>("W0 points", nact);
-    auto kappa_vec = std::make_shared<Vector>("KAPPA points", nact);
+    auto w_vec = std::make_shared<Vector_<double>>("W Grid points", nact);
+    auto x_vec = std::make_shared<Vector_<double>>("X Grid points", nact);
+    auto y_vec = std::make_shared<Vector_<double>>("Y Grid points", nact);
+    auto z_vec = std::make_shared<Vector_<double>>("Z Grid points", nact);
+    auto rho_vec = std::make_shared<Vector_<double>>("RHO points", nact);
+    auto w0_vec = std::make_shared<Vector_<double>>("W0 points", nact);
+    auto kappa_vec = std::make_shared<Vector_<double>>("KAPPA points", nact);
 
-    double* w_vecp = w_vec->pointer();
-    double* x_vecp = x_vec->pointer();
-    double* y_vecp = y_vec->pointer();
-    double* z_vecp = z_vec->pointer();
-    double* rho_vecp = rho_vec->pointer();
-    double* w0_vecp = w0_vec->pointer();
-    double* kappa_vecp = kappa_vec->pointer();
+    auto w_vecp = w_vec->data();
+    auto x_vecp = x_vec->data();
+    auto y_vecp = y_vec->data();
+    auto z_vecp = z_vec->data();
+    auto rho_vecp = rho_vec->data();
+    auto w0_vecp = w0_vec->data();
+    auto kappa_vecp = kappa_vec->data();
 
     size_t sieve_pos = 0;
     for (size_t i = 0; i < npoints; i++) {
@@ -796,7 +805,7 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(const st
         sieve_pos++;
     }
 
-    std::map<std::string, SharedVector> ret;
+    std::map<std::string, SharedVector_<double>> ret;
 
     ret["W"] = w_vec;
     ret["X"] = x_vec;
@@ -808,9 +817,9 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(const st
 
     return ret;
 }
-double SuperFunctional::compute_vv10_kernel(const std::map<std::string, SharedVector>& vals,
-                                            const std::vector<std::map<std::string, SharedVector>>& vv10_cache,
-                                            std::shared_ptr<BlockOPoints> block, int npoints, bool do_grad) {
+double SuperFunctional::compute_vv10_kernel(const std::map<std::string, SharedVector_<double>>& vals,
+                                            const std::vector<std::map<std::string, SharedVector_<double>>>& vv10_cache,
+                                            std::shared_ptr<BlockOPoints> block, int /* npoints */, bool do_grad) {
     // Kernel between left (*this) and right (vv10_cache) grids
 
     // Compute the vv10 cache in place
@@ -820,11 +829,11 @@ double SuperFunctional::compute_vv10_kernel(const std::map<std::string, SharedVe
 
     // Grab values to update
     double vv10_e = 0.0;
-    double* v_rho = values_["V_RHO_A"]->pointer();
-    double* v_gamma = values_["V_GAMMA_AA"]->pointer();
-    double* x_grid = vv_values_["GRID_WX"]->pointer();
-    double* y_grid = vv_values_["GRID_WY"]->pointer();
-    double* z_grid = vv_values_["GRID_WZ"]->pointer();
+    auto v_rho = values_["V_RHO_A"]->data();
+    auto v_gamma = values_["V_GAMMA_AA"]->data();
+    auto x_grid = vv_values_["GRID_WX"]->data();
+    auto y_grid = vv_values_["GRID_WY"]->data();
+    auto z_grid = vv_values_["GRID_WZ"]->data();
     std::fill(x_grid, x_grid + l_npoints, 0.0);
     std::fill(y_grid, y_grid + l_npoints, 0.0);
     std::fill(z_grid, z_grid + l_npoints, 0.0);
@@ -837,10 +846,10 @@ double SuperFunctional::compute_vv10_kernel(const std::map<std::string, SharedVe
     const double* l_y = block->y();
     const double* l_z = block->z();
     const double* l_w = block->w();
-    const double* l_rho = vals.find("RHO_A")->second->pointer();
-    const double* l_gamma = vals.find("GAMMA_AA")->second->pointer();
-    const double* l_W0 = vv_values_["W0"]->pointer();
-    const double* l_kappa = vv_values_["KAPPA"]->pointer();
+    const double* l_rho = vals.at("RHO_A")->data();
+    const double* l_gamma = vals.at("GAMMA_AA")->data();
+    const double* l_W0 = vv_values_.at("W0")->data();
+    const double* l_kappa = vv_values_.at("KAPPA")->data();
 
     for (size_t i = 0; i < l_npoints; i++) {
         // Add Phi agnostic quantities
@@ -859,13 +868,13 @@ double SuperFunctional::compute_vv10_kernel(const std::map<std::string, SharedVe
         double zc = 0.0;
         for (auto r_block : vv10_cache) {
             // Get right points
-            const double* r_x = r_block["X"]->pointer();
-            const double* r_y = r_block["Y"]->pointer();
-            const double* r_z = r_block["Z"]->pointer();
-            const double* r_w = r_block["W"]->pointer();
-            const double* r_rho = r_block["RHO"]->pointer();
-            const double* r_W0 = r_block["W0"]->pointer();
-            const double* r_kappa = r_block["KAPPA"]->pointer();
+            const double* r_x = r_block["X"]->data();
+            const double* r_y = r_block["Y"]->data();
+            const double* r_z = r_block["Z"]->data();
+            const double* r_w = r_block["W"]->data();
+            const double* r_rho = r_block["RHO"]->data();
+            const double* r_W0 = r_block["W0"]->data();
+            const double* r_kappa = r_block["KAPPA"]->data();
 
             const size_t r_npoints = r_block["KAPPA"]->dimpi()[0];
 
@@ -946,10 +955,11 @@ double SuperFunctional::compute_vv10_kernel(const std::map<std::string, SharedVe
     // printf("Nact/Ntot Ext %zu / %zu\n", nact, l_npoints);
     return vv10_e;
 }
-void SuperFunctional::test_functional(SharedVector rho_a, SharedVector rho_b, SharedVector gamma_aa,
-                                      SharedVector gamma_ab, SharedVector gamma_bb, SharedVector tau_a,
-                                      SharedVector tau_b) {
-    std::map<std::string, SharedVector> props;
+void SuperFunctional::test_functional(SharedVector_<double> rho_a, SharedVector_<double> rho_b,
+                                      SharedVector_<double> gamma_aa, SharedVector_<double> gamma_ab,
+                                      SharedVector_<double> gamma_bb, SharedVector_<double> tau_a,
+                                      SharedVector_<double> tau_b) {
+    std::map<std::string, SharedVector_<double>> props;
     props["RHO_A"] = rho_a;
     props["RHO_B"] = rho_b;
     props["GAMMA_AA"] = gamma_aa;
@@ -964,4 +974,4 @@ int SuperFunctional::ansatz() const {
     if (is_gga()) return 1;
     return 0;
 }
-}
+}  // namespace psi

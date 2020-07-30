@@ -26,28 +26,31 @@
  * @END LICENSE
  */
 
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libmints/3coverlap.h"
+#include "benchmark.h"
 
-#include "psi4/libqt/qt.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libpsio/psio.h"
-#include "psi4/psi4-dec.h"
-#include "psi4/libpsi4util/libpsi4util.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-
-#include <map>
-#include <string>
 #include <cmath>
 #include <cstdlib>
+#include <map>
+#include <string>
 #include <vector>
 
 #ifdef USING_LAPACK_MKL
-#include <mkl.h>
+#include <mkl_service.h>
 #endif
+
+#include "psi4/psi4-dec.h"
+
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libpsio/psio.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
+
+#include "3coverlap.h"
+#include "basisset.h"
+#include "integral.h"
+#include "molecule.h"
 
 namespace psi {
 

@@ -25,13 +25,16 @@
  *
  * @END LICENSE
  */
-#include "psi4/libmints/electricfield.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/basisset.h"
+#include "electricfield.h"
 #include <stdexcept>
 #include <vector>
-#include "psi4/libciomr/libciomr.h"
+
 #include "psi4/physconst.h"
+
+#include "psi4/libciomr/libciomr.h"
+
+#include "basisset.h"
+#include "molecule.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -62,7 +65,7 @@ ElectricFieldInt::ElectricFieldInt(std::vector<SphericalTransform>& spherical_tr
 
 ElectricFieldInt::~ElectricFieldInt() { delete[] buffer_; }
 
-Vector3 ElectricFieldInt::nuclear_contribution(const Vector3& origin, std::shared_ptr<Molecule> mol) {
+Vector3<double> ElectricFieldInt::nuclear_contribution(const Vector3<double>& origin, std::shared_ptr<Molecule> mol) {
     int natom = mol->natom();
 
     double Ex = 0.0;
@@ -82,12 +85,10 @@ Vector3 ElectricFieldInt::nuclear_contribution(const Vector3& origin, std::share
         Ez += mol->Z(i) * z / (r * r2);
     }
 
-    Vector3 result(Ex, Ey, Ez);
-
-    return result;
+    return {Ex, Ey, Ez};
 }
 
-SharedMatrix ElectricFieldInt::nuclear_contribution_to_gradient(const Vector3& /*origin*/,
+SharedMatrix ElectricFieldInt::nuclear_contribution_to_gradient(const Vector3<double>& /*origin*/,
                                                                 std::shared_ptr<Molecule> /*mol*/) {
     //    int natom = mol->natom();
     //    auto result = std::make_shared<Matrix>("Nuclear contribution to electric field gradient", 1, 6);
@@ -175,7 +176,7 @@ void ElectricFieldInt::compute_pair(const GaussianShell& s1, const GaussianShell
             int atomoffset = 0;
 
             double PC[3];
-            Vector3 C = origin_;
+            auto C = origin_;
 
             PC[0] = P[0] - C[0];
             PC[1] = P[1] - C[1];
@@ -419,7 +420,7 @@ void ElectricFieldInt::compute_pair_deriv1(const GaussianShell& /*s1*/, const Ga
     //            int atomoffset = 0;
 
     //            double PC[3];
-    //            Vector3 C = origin_;
+    //            auto C = origin_;
 
     //            PC[0] = P[0] - C[0];
     //            PC[1] = P[1] - C[1];

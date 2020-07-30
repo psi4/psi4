@@ -2367,7 +2367,7 @@ def run_scf_gradient(name, **kwargs):
 
         for atom in range(natom):
             for xyz in range(3):
-                transvec = core.Vector3(0.0)
+                transvec = psi4.linalg.Vector3([0.0, 0.0, 0.0])
                 transvec[xyz] += delta
                 # +1 displacement
                 Ep1 = displaced_energy(atom,  1*transvec)

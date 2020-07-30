@@ -39,7 +39,8 @@
 
 namespace psi {
 
-ERISieve::ERISieve(std::shared_ptr<BasisSet> primary, double sieve, bool do_csam) : primary_(primary), sieve_(sieve), do_csam_(do_csam){
+ERISieve::ERISieve(std::shared_ptr<BasisSet> primary, double sieve, bool do_csam)
+    : primary_(primary), sieve_(sieve), do_csam_(do_csam) {
     common_init();
 }
 
@@ -351,7 +352,7 @@ bool ERISieve::shell_significant_qqr(int M, int N, int R, int S) {
     double Q_mn = shell_pair_values_[N * nshell_ + M];
     double Q_rs = shell_pair_values_[R * nshell_ + S];
 
-    double dist = contracted_centers_[N * nshell_ + M].distance(contracted_centers_[R * nshell_ + S]);
+    double dist = distance(contracted_centers_[N * nshell_ + M], contracted_centers_[R * nshell_ + S]);
 
     double denom = dist - extents_[N * nshell_ + M] - extents_[R * nshell_ + S];
 

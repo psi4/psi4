@@ -59,10 +59,12 @@ def _compute_fxc(PQrho, half_Saux, halfp_Saux, rho_thresh=1.e-8):
 
     dft_size = rho.shape[0]
 
-    inp = {"RHO_A": rho}
-    out = {"V": core.Vector(dft_size),
-           "V_RHO_A": core.Vector(dft_size),
-           "V_RHO_A_RHO_A": core.Vector(dft_size)}
+    inp = {"RHO_A": core.linalg.transmute(rho)}
+    out = {
+        "V": core.linalg.Vector_D(dft_size),
+        "V_RHO_A": core.linalg.Vector_D(dft_size),
+        "V_RHO_A_RHO_A": core.linalg.Vector_D(dft_size)
+    }
 
     func_x = core.LibXCFunctional('XC_LDA_X', True)
     func_x.compute_functional(inp, out, dft_size, 2)
@@ -70,11 +72,11 @@ def _compute_fxc(PQrho, half_Saux, halfp_Saux, rho_thresh=1.e-8):
     func_c = core.LibXCFunctional('XC_LDA_C_VWN', True)
     func_c.compute_functional(inp, out, dft_size, 2)
 
-    out["V_RHO_A_RHO_A"].np[mask] = 0
+    out["V_RHO_A_RHO_A"][0][mask] = 0
 
     # Rotate back
     Ul = U.clone()
-    Ul.np[:] *= out["V_RHO_A_RHO_A"].np
+    Ul.np[:] *= out["V_RHO_A_RHO_A"][0]
     tmp = core.doublet(Ul, U, False, True)
 
     # Undo the leveling

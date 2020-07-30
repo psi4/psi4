@@ -88,6 +88,7 @@ core.set_num_threads(1, quiet=True)
 from .driver import *
 from .header import print_header
 from .metadata import __version__, version_formatter
+from .linalg import *
 
 # A few extraneous functions
 from .extras import get_input_directory, addons, test

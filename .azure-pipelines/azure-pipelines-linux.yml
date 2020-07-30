@@ -43,6 +43,12 @@ jobs:
     displayName: "Apt-Get Packages"
 
   - bash: |
+      ./devtools/scripts/ninja.sh
+      echo "##vso[task.prependpath]$HOME/Deps/ninja"
+    displayName: 'Install Ninja'
+
+
+  - bash: |
       echo "" && echo "Ubuntu"
       lsb_release -a
 
@@ -69,6 +75,9 @@ jobs:
 
       echo "C Ver:"
       ${C_COMPILER} --version
+
+      echo "Ninja Ver:"
+      ninja --version
     displayName: "Setup Information"
 
   - bash: |
@@ -94,9 +103,13 @@ jobs:
       conda install \
         blas=*=mkl \
         mkl-include \
+        msgpack-python \
+        pybind11 \
         qcelemental \
         qcengine \
-        pybind11 \
+        xsimd \
+        xtensor-blas \
+        xtensor-python \
         pymdi \
         -c conda-forge
       conda install adcc -c adcc -c conda-forge
@@ -115,7 +128,7 @@ jobs:
       #   b/c their c++ symbols don't mix with the different Travis compilers. for other
       #   reasons, pkgs are being compiled less statically, sad for CI.
       # * can't enable trivial plugins b/c no psi4 for them to detect at start (e.g., snsmp2)
-      cmake -Bbuild -H. \
+      cmake -Bbuild -H. -GNinja \
         -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
         -DCMAKE_C_COMPILER=${C_COMPILER} \
         -DCMAKE_Fortran_COMPILER=${F_COMPILER} \

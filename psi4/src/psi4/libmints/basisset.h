@@ -29,20 +29,17 @@
 #ifndef _psi_src_lib_libmints_basisset_h_
 #define _psi_src_lib_libmints_basisset_h_
 
-#include "gshell.h"
-
-#include "psi4/pragma.h"
-#include "psi4/libmints/typedefs.h"
-#include "psi4/psi4-dec.h"
-
 #include <cstdio>
+#include <map>
+#include <memory>
 #include <string>
 #include <vector>
-#include <map>
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
-#include <memory>
-PRAGMA_WARNING_POP
+
+#include "psi4/pragma.h"
+#include "psi4/psi4-dec.h"
+
+#include "gshell.h"
+#include "typedefs.h"
 
 namespace psi {
 
@@ -165,8 +162,8 @@ class PSI_API BasisSet {
     BasisSet();
 
     BasisSet(const std::string &basistype, SharedMolecule mol,
-             std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &shell_map,
-             std::map<std::string, std::map<std::string, std::vector<ShellInfo> > > &ecp_shell_map);
+             std::map<std::string, std::map<std::string, std::vector<ShellInfo>>> &shell_map,
+             std::map<std::string, std::map<std::string, std::vector<ShellInfo>>> &ecp_shell_map);
 
     ~BasisSet();
 
@@ -373,7 +370,7 @@ class PSI_API BasisSet {
      * test basis for use in benchmarking
      * See libmints/benchmark.cc for details
      */
-    static std::pair<std::vector<std::string>, std::shared_ptr<BasisSet> > test_basis_set(int max_am);
+    static std::pair<std::vector<std::string>, std::shared_ptr<BasisSet>> test_basis_set(int max_am);
 
     /** Converts basis set name to a compatible filename.
      * @param basisname Basis name
@@ -382,7 +379,7 @@ class PSI_API BasisSet {
     static std::string make_filename(const std::string &basisname);
 
     /// Global arrays of x, y, z exponents
-    static std::vector<Vector3> exp_ao[];
+    static std::vector<Vector3<double>> exp_ao[];
 
     //! Returns the value of the sorted shell list.
     int get_ao_sorted_shell(const int &i) { return sorted_ao_shell_list_[i]; }
@@ -391,11 +388,11 @@ class PSI_API BasisSet {
 
     // Translate a given atom by a given amount.  Used for debugging/finite difference purposes.  Does NOT modify the
     // underlying molecule object.
-    void move_atom(int atom, const Vector3 &trans);
+    void move_atom(int atom, const Vector3<double> &trans);
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
-    
-   private: 
+
+   private:
     /// Helper functions for frozen core to reduce LOC
     int atom_to_period(int Z);
     int period_to_full_shell(int p);

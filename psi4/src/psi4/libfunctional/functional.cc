@@ -27,9 +27,11 @@
  */
 
 #include "functional.h"
+
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libmints/tensor.h"
 
 namespace psi {
 
@@ -79,10 +81,10 @@ void Functional::print(std::string out, int level) const {
         printer->Printf("\n");
     }
 }
-void Functional::compute_functional(const std::map<std::string, SharedVector>& in,
-                                    const std::map<std::string, SharedVector>& out, int npoints, int deriv) {
+void Functional::compute_functional(const std::map<std::string, SharedVector_<double>>& in,
+                                    const std::map<std::string, SharedVector_<double>>& out, int npoints, int deriv) {
     throw PSIEXCEPTION("Functional: pseudo-abstract class.");
 }
 double Functional::query_density_cutoff(){throw PSIEXCEPTION("Functional: pseudo-abstract class.");}
 void Functional::set_density_cutoff(double cut){throw PSIEXCEPTION("Functional: pseudo-abstract class.");}
-}
+} // namespace psi

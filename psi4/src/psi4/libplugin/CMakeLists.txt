@@ -5,12 +5,14 @@ list(APPEND sources
 
 psi4_add_module(lib plugin sources)
 
-target_compile_definitions(plugin
-  PRIVATE
-    $<$<BOOL:${LIBDL_FOUND}>:HAVE_DLFCN_H>
-  )
+if(CMAKE_DL_LIBS)
+  target_compile_definitions(plugin
+    PRIVATE
+      HAVE_DLFCN_H
+    )
 
-target_link_libraries(plugin
-  PUBLIC
-    ${LIBDL_LIBRARIES}
-  )
+  target_link_libraries(plugin
+    PUBLIC
+      ${CMAKE_DL_LIBS}
+    )
+endif()

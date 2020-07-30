@@ -29,10 +29,12 @@
 #ifndef FUNCTIONAL_H
 #define FUNCTIONAL_H
 
-#include "psi4/libmints/typedefs.h"
 #include <map>
 #include <vector>
 #include <string>
+
+#include "psi4/libmints/typedefs.h"
+#include "psi4/libmints/tensor.h"
 
 namespace psi {
 
@@ -98,8 +100,9 @@ class Functional {
 
     // => Computers <= //
 
-    virtual void compute_functional(const std::map<std::string, SharedVector>& in,
-                                    const std::map<std::string, SharedVector>& out, int npoints, int deriv) = 0;
+    virtual void compute_functional(const std::map<std::string, SharedVector_<double>>& in,
+                                    const std::map<std::string, SharedVector_<double>>& out, int npoints,
+                                    int deriv) = 0;
 
     // => Parameters <= //
 
@@ -147,6 +150,6 @@ class Functional {
     void py_print() const { print("outfile", 1); }
     void py_print_detail(int level) const { print("outfile", level); }
 };
-}
+}  // namespace psi
 
 #endif

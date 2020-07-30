@@ -34,7 +34,7 @@
 
 // MKL Header
 #ifdef USING_LAPACK_MKL
-#include <mkl.h>
+#include <mkl_service.h>
 #endif
 
 // OpenMP Header
@@ -109,4 +109,4 @@ void die_if_not_converged() {
         outfile->Printf("Iterations did not converge.");
     }
 }
-}
+}  // namespace psi

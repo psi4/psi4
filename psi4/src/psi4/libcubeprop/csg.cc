@@ -54,7 +54,7 @@
 namespace psi {
 
 CubicScalarGrid::CubicScalarGrid(std::shared_ptr<BasisSet> primary, Options& options)
-    : primary_(primary), mol_(primary->molecule()), options_(options) {
+    : options_(options), mol_(primary->molecule()), primary_(primary) {
     filepath_ = "";
     npoints_ = 0L;
     x_ = nullptr;
@@ -301,8 +301,8 @@ void CubicScalarGrid::write_cube_file(double* v, const std::string& name, const 
 }
 void CubicScalarGrid::add_density(double* v, std::shared_ptr<Matrix> D) {
     points_->set_pointers(D);
-    std::shared_ptr<Vector> rho = points_->point_value("RHO_A");
-    double* rhop = rho->pointer();
+    auto rho = points_->point_value("RHO_A");
+    auto rhop = rho->data();
 
     size_t offset = 0L;
     for (int ind = 0; ind < blocks_.size(); ind++) {
@@ -500,7 +500,6 @@ void CubicScalarGrid::add_basis_functions(double** v, const std::vector<int>& in
 
         size_t npoints = blocks_[ind]->npoints();
         const std::vector<int>& function_map = blocks_[ind]->functions_local_to_global();
-        int nlocal = function_map.size();
         int nglobal = points_->max_functions();
 
         for (int ind1 = 0; ind1 < indices.size(); ind1++) {
@@ -537,10 +536,10 @@ void CubicScalarGrid::add_LOL(double* v, std::shared_ptr<Matrix> D) {
     points_->set_ansatz(2);
     points_->set_pointers(D);
 
-    std::shared_ptr<Vector> rho = points_->point_value("RHO_A");
-    std::shared_ptr<Vector> tau = points_->point_value("TAU_A");
-    double* rhop = rho->pointer();
-    double* taup = tau->pointer();
+    auto rho = points_->point_value("RHO_A");
+    auto tau = points_->point_value("TAU_A");
+    auto rhop = rho->data();
+    auto taup = tau->data();
 
     double C = 3.0 / 5.0 * pow(6.0 * M_PI * M_PI, 2.0 / 3.0);
 
@@ -564,12 +563,12 @@ void CubicScalarGrid::add_ELF(double* v, std::shared_ptr<Matrix> D) {
     points_->set_ansatz(2);
     points_->set_pointers(D);
 
-    std::shared_ptr<Vector> rho = points_->point_value("RHO_A");
-    std::shared_ptr<Vector> gam = points_->point_value("GAMMA_AA");
-    std::shared_ptr<Vector> tau = points_->point_value("TAU_A");
-    double* rhop = rho->pointer();
-    double* gamp = gam->pointer();
-    double* taup = tau->pointer();
+    auto rho = points_->point_value("RHO_A");
+    auto gam = points_->point_value("GAMMA_AA");
+    auto tau = points_->point_value("TAU_A");
+    auto rhop = rho->data();
+    auto gamp = gam->data();
+    auto taup = tau->data();
 
     double C = 3.0 / 5.0 * pow(6.0 * M_PI * M_PI, 2.0 / 3.0);
 
@@ -665,17 +664,17 @@ void CubicScalarGrid::compute_difference(std::shared_ptr<Matrix> C, const std::v
     double* vp = v->pointer();
     add_orbitals(&v_tp[0], C2);
     for (int i = 0; i < npoints_; i++) {
-         if (square) {
-             v->set(0, i, (v_t->get(0,i) - v_t->get(1,i))*(v_t->get(0,i) + v_t->get(1,i)));
-         } else {
-             v->set(0, i, (v_t->get(0,i) - v_t->get(1,i)));
-         }
+        if (square) {
+            v->set(0, i, (v_t->get(0, i) - v_t->get(1, i)) * (v_t->get(0, i) + v_t->get(1, i)));
+        } else {
+            v->set(0, i, (v_t->get(0, i) - v_t->get(1, i)));
+        }
     }
     std::pair<double, double> isocontour_range = compute_isocontour_range(&vp[0], 2.0);
     double density_percent = 100.0 * options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
     std::stringstream comment;
-    comment << ". Isocontour range for " << density_percent << "% of the density: (" << isocontour_range.first
-            << "," << isocontour_range.second << ")";
+    comment << ". Isocontour range for " << density_percent << "% of the density: (" << isocontour_range.first << ","
+            << isocontour_range.second << ")";
     // Write to disk
     write_gen_file(&vp[0], label, type, comment.str());
 }
@@ -734,12 +733,12 @@ std::string CubicScalarGrid::ecp_header() {
         std::stringstream ecp_ncore;
         for (int A = 0; A < mol_->natom(); A++) {
             if (primary_->n_ecp_core(mol_->label(A)) > 0) {
-                ecp_atoms << A+1 << "[" << mol_->symbol(A) << "], ";
+                ecp_atoms << A + 1 << "[" << mol_->symbol(A) << "], ";
                 ecp_ncore << primary_->n_ecp_core(mol_->label(A)) << ", ";
             }
         }
-        ecp_head << ecp_atoms.str().substr(0,ecp_atoms.str().length()-2) << ") electrons ("
-                 << ecp_ncore.str().substr(0,ecp_ncore.str().length()-2) << ").";
+        ecp_head << ecp_atoms.str().substr(0, ecp_atoms.str().length() - 2) << ") electrons ("
+                 << ecp_ncore.str().substr(0, ecp_ncore.str().length() - 2) << ").";
     }
     return ecp_head.str();
 }

@@ -26,34 +26,12 @@
  * @END LICENSE
  */
 
-#include "x2cint.h"
+#include "mintshelper.h"
 
-#include "psi4/libmints/mintshelper.h"
-#include "psi4/libmints/molecule.h"
-
-#include "psi4/libmints/matrix.h"
-#include "psi4/psifiles.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libiwl/iwl.hpp"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libmints/sointegral_twobody.h"
-#include "psi4/libmints/petitelist.h"
-#include "psi4/libmints/factory.h"
-#include "psi4/libmints/3coverlap.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/libmints/sointegral_onebody.h"
-#include "psi4/psi4-dec.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
-#include "electricfield.h"
-
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <iostream>
-#include <list>
+#include <algorithm>
 #include <map>
 #include <sstream>
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -70,6 +48,26 @@ extern "C" {
 void F_DKH(double *S, double *V, double *T, double *pVp, int *nbf, int *dkh_order);
 }
 #endif
+
+#include "psi4/psifiles.h"
+#include "psi4/psi4-dec.h"
+
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libiwl/iwl.hpp"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libqt/qt.h"
+
+#include "3coverlap.h"
+#include "electricfield.h"
+#include "factory.h"
+#include "matrix.h"
+#include "molecule.h"
+#include "petitelist.h"
+#include "sointegral_onebody.h"
+#include "sointegral_twobody.h"
+#include "x2cint.h"
 
 namespace psi {
 
@@ -132,8 +130,6 @@ MintsHelper::MintsHelper(std::shared_ptr<Wavefunction> wavefunction)
     : options_(wavefunction->options()), print_(wavefunction->get_print()) {
     init_helper(wavefunction);
 }
-
-MintsHelper::~MintsHelper() {}
 
 void MintsHelper::init_helper(std::shared_ptr<Wavefunction> wavefunction) {
     if (wavefunction->basisset().get() == 0) {
@@ -395,7 +391,8 @@ void MintsHelper::integral_hessians() {
     throw FeatureNotImplemented("libmints", "MintsHelper::integral_hessians", __FILE__, __LINE__);
 }
 
-void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix out, bool symm) {
+void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix out,
+                                       bool symm) const {
     // Grab basis info
     std::shared_ptr<BasisSet> bs1 = ints[0]->basis1();
     std::shared_ptr<BasisSet> bs2 = ints[0]->basis2();
@@ -460,6 +457,7 @@ void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>
         }      // End Rectangular
     }          // End Mu
 }
+
 void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix D,
                                            SharedMatrix out) {
     // Grab basis info
@@ -572,7 +570,7 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
     }
 }
 
-SharedMatrix MintsHelper::ao_overlap() {
+SharedMatrix MintsHelper::ao_overlap() const {
     // Overlap
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
     for (size_t i = 0; i < nthread_; i++) {
@@ -585,7 +583,7 @@ SharedMatrix MintsHelper::ao_overlap() {
 }
 
 // JWM 4/3/2015
-SharedMatrix MintsHelper::ao_overlap(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2) {
+SharedMatrix MintsHelper::ao_overlap(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2) const {
     // Overlap
     IntegralFactory factory(bs1, bs2, bs1, bs2);
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
@@ -597,7 +595,7 @@ SharedMatrix MintsHelper::ao_overlap(std::shared_ptr<BasisSet> bs1, std::shared_
     return overlap_mat;
 }
 
-SharedMatrix MintsHelper::ao_kinetic() {
+SharedMatrix MintsHelper::ao_kinetic() const {
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
     for (size_t i = 0; i < nthread_; i++) {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_kinetic()));
@@ -607,7 +605,7 @@ SharedMatrix MintsHelper::ao_kinetic() {
     return kinetic_mat;
 }
 
-SharedMatrix MintsHelper::ao_kinetic(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2) {
+SharedMatrix MintsHelper::ao_kinetic(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2) const {
     IntegralFactory factory(bs1, bs2, bs1, bs2);
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
     for (size_t i = 0; i < nthread_; i++) {
@@ -618,7 +616,7 @@ SharedMatrix MintsHelper::ao_kinetic(std::shared_ptr<BasisSet> bs1, std::shared_
     return kinetic_mat;
 }
 
-SharedMatrix MintsHelper::ao_potential() {
+SharedMatrix MintsHelper::ao_potential() const {
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
     for (size_t i = 0; i < nthread_; i++) {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_potential()));
@@ -629,7 +627,7 @@ SharedMatrix MintsHelper::ao_potential() {
     return potential_mat;
 }
 
-SharedMatrix MintsHelper::ao_potential(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2) {
+SharedMatrix MintsHelper::ao_potential(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2) const {
     IntegralFactory factory(bs1, bs2, bs1, bs2);
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
     for (size_t i = 0; i < nthread_; i++) {
@@ -838,7 +836,7 @@ SharedMatrix MintsHelper::ao_eri(std::shared_ptr<BasisSet> bs1, std::shared_ptr<
 }
 
 SharedMatrix MintsHelper::ao_eri_shell(int M, int N, int P, int Q) {
-    if (eriInts_ == 0) {
+    if (eriInts_ == nullptr) {
         eriInts_ = std::shared_ptr<TwoBodyAOInt>(integral_->eri());
     }
     return ao_shell_getter("AO ERI Tensor", eriInts_, M, N, P, Q);
@@ -1335,7 +1333,7 @@ SharedMatrix MintsHelper::so_potential(bool include_perturbations) {
 
 void MintsHelper::add_dipole_perturbation(SharedMatrix potential_mat) {
     std::string perturb_with = options_.get_str("PERTURB_WITH");
-    Vector3 lambda(0.0, 0.0, 0.0);
+    Vector3<double> lambda{0.0, 0.0, 0.0};
 
     if (perturb_with == "DIPOLE_X")
         lambda[0] = options_.get_double("PERTURB_MAGNITUDE");
@@ -1593,7 +1591,7 @@ std::vector<SharedMatrix> MintsHelper::ao_efp_multipole_potential(const std::vec
 
 std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(const std::vector<double> &origin, int max_k, int deriv) {
     if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
-    Vector3 v3origin(origin[0], origin[1], origin[2]);
+    auto v3origin = from_vector(origin);
 
     std::vector<SharedMatrix> mult;
     bool do_dipole = (max_k >= 1);
@@ -1635,7 +1633,7 @@ std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(const std::vector<
 
 std::vector<SharedMatrix> MintsHelper::electric_field(const std::vector<double> &origin, int deriv) {
     if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
-    Vector3 v3origin(origin[0], origin[1], origin[2]);
+    auto v3origin = from_vector(origin);
 
     std::vector<SharedMatrix> field;
     field.push_back(std::make_shared<Matrix>("Ex integrals", basisset_->nbf(), basisset_->nbf()));

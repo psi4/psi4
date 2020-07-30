@@ -29,20 +29,20 @@
 #include "functional.h"
 #include "LibXCfunctional.h"
 
-#include "psi4/libmints/vector.h"
-#include "psi4/psi4-dec.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/exception.h"
-
+#include <algorithm>
 #include <cmath>
 #include <string>
-#include <algorithm>
 
 // LibXC helper utility for setter functions, not really supposed to do this
 #include <xc.h>
 
-using namespace psi;
+#include "psi4/psi4-dec.h"
+
+#include "psi4/libmints/tensor.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/exception.h"
+#include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libqt/qt.h"
 
 namespace psi {
 
@@ -85,12 +85,11 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
     }
 
     // Extract variables
-    if (xc_functional_->info->family == XC_FAMILY_HYB_GGA
-        || xc_functional_->info->family == XC_FAMILY_HYB_MGGA
+    if (xc_functional_->info->family == XC_FAMILY_HYB_GGA || xc_functional_->info->family == XC_FAMILY_HYB_MGGA
 #ifdef XC_FAMILY_HYB_LDA
         || xc_functional_->info->family == XC_FAMILY_HYB_LDA
 #endif
-        ) {
+    ) {
         /* Range separation? */
         lrc_ = false;
         if (xc_functional_->info->flags & XC_FLAGS_HYB_CAMY) {
@@ -383,8 +382,10 @@ std::vector<std::tuple<std::string, int, double>> LibXCFunctional::get_mix_data(
     }
     return ret;
 }
-void LibXCFunctional::compute_functional(const std::map<std::string, SharedVector>& in,
-                                         const std::map<std::string, SharedVector>& out, int npoints, int deriv) {
+
+void LibXCFunctional::compute_functional(const std::map<std::string, SharedVector_<double>>& in,
+                                         const std::map<std::string, SharedVector_<double>>& out, int npoints,
+                                         int deriv) {
     // => Input variables <= //
 
     if ((deriv >= 1) & (!vxc_)) {
@@ -400,171 +401,61 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
     }
 
     // => Input variables <= //
+    auto is_input_var = [&in](const std::string& k) -> bool { return is_key_in_map(in, k); };
 
-    double* rho_ap = nullptr;
-    double* rho_bp = nullptr;
-    double* gamma_aap = nullptr;
-    double* gamma_abp = nullptr;
-    double* gamma_bbp = nullptr;
-    double* tau_ap = nullptr;
-    double* tau_bp = nullptr;
-    double* lapl_ap = nullptr;
-    double* lapl_bp = nullptr;
+    auto rho_ap = is_input_var("RHO_A") ? in.at("RHO_A")->data() : nullptr;
+    auto rho_bp = is_input_var("RHO_B") ? in.at("RHO_B")->data() : nullptr;
+    auto gamma_aap = is_input_var("GAMMA_AA") ? in.at("GAMMA_AA")->data() : nullptr;
+    auto gamma_abp = is_input_var("GAMMA_AB") ? in.at("GAMMA_AB")->data() : nullptr;
+    auto gamma_bbp = is_input_var("GAMMA_BB") ? in.at("GAMMA_BB")->data() : nullptr;
+    auto tau_ap = is_input_var("TAU_A") ? in.at("TAU_A")->data() : nullptr;
+    auto tau_bp = is_input_var("TAU_B") ? in.at("TAU_B")->data() : nullptr;
+    // auto lapl_ap   = is_input_var("LAPL_RHO_A") ? in.at("LAPL_RHO_A")->data(): nullptr;
+    // auto lapl_bp   = is_input_var("LAPL_RHO_B") ? in.at("LAPL_RHO_B")->data(): nullptr;
 
-    if (true) {
-        rho_ap = in.find("RHO_A")->second->pointer();
+    // => Output variables <= //
+    auto is_output_var = [&out](const std::string& k) -> bool { return is_key_in_map(out, k); };
 
-        if (!unpolarized_) {
-            rho_bp = in.find("RHO_B")->second->pointer();
-        }
-    }
-    if (gga_) {
-        gamma_aap = in.find("GAMMA_AA")->second->pointer();
-        if (!unpolarized_) {
-            gamma_abp = in.find("GAMMA_AB")->second->pointer();
-            gamma_bbp = in.find("GAMMA_BB")->second->pointer();
-        }
-    }
-    if (meta_) {
-        tau_ap = in.find("TAU_A")->second->pointer();
-        // lapl_ap = in.find("LAPL_RHO_A")->second->pointer();
-        if (!unpolarized_) {
-            tau_bp = in.find("TAU_B")->second->pointer();
-            // lapl_bp = in.find("LAPL_RHO_B")->second->pointer();
-        }
-    }
+    auto v = (is_output_var("V") and exc_) ? out.at("V")->data() : nullptr;
 
-    // => Outut variables <= //
+    auto v_rho_a = is_output_var("V_RHO_A") ? out.at("V_RHO_A")->data() : nullptr;
+    auto v_rho_b = is_output_var("V_RHO_B") ? out.at("V_RHO_B")->data() : nullptr;
+    auto v_gamma_aa = is_output_var("V_GAMMA_AA") ? out.at("V_GAMMA_AA")->data() : nullptr;
+    auto v_gamma_ab = is_output_var("V_GAMMA_AB") ? out.at("V_GAMMA_AB")->data() : nullptr;
+    auto v_gamma_bb = is_output_var("V_GAMMA_BB") ? out.at("V_GAMMA_BB")->data() : nullptr;
+    auto v_tau_a = is_output_var("V_TAU_A") ? out.at("V_TAU_A")->data() : nullptr;
+    auto v_tau_b = is_output_var("V_TAU_B") ? out.at("V_TAU_B")->data() : nullptr;
+    // auto v_lapl_a = is_output_var("V_LAPL_A") ? out.at("V_LAPL_A")->data() : nullptr;
+    // auto v_lapl_b = is_output_var("V_LAPL_B") ? out.at("V_LAPL_B")->data() : nullptr;
 
-    double* v = nullptr;
-
-    double* v_rho_a = nullptr;
-    double* v_rho_b = nullptr;
-    double* v_gamma_aa = nullptr;
-    double* v_gamma_ab = nullptr;
-    double* v_gamma_bb = nullptr;
-    double* v_tau_a = nullptr;
-    double* v_tau_b = nullptr;
-    double* v_lapl_a = nullptr;
-    double* v_lapl_b = nullptr;
-
-    double* v_rho_a_rho_a = nullptr;
-    double* v_rho_a_rho_b = nullptr;
-    double* v_rho_b_rho_b = nullptr;
-    double* v_gamma_aa_gamma_aa = nullptr;
-    double* v_gamma_aa_gamma_ab = nullptr;
-    double* v_gamma_aa_gamma_bb = nullptr;
-    double* v_gamma_ab_gamma_ab = nullptr;
-    double* v_gamma_ab_gamma_bb = nullptr;
-    double* v_gamma_bb_gamma_bb = nullptr;
-    double* v_tau_a_tau_a = nullptr;
-    double* v_tau_a_tau_b = nullptr;
-    double* v_tau_b_tau_b = nullptr;
-    double* v_rho_a_gamma_aa = nullptr;
-    double* v_rho_a_gamma_ab = nullptr;
-    double* v_rho_a_gamma_bb = nullptr;
-    double* v_rho_b_gamma_aa = nullptr;
-    double* v_rho_b_gamma_ab = nullptr;
-    double* v_rho_b_gamma_bb = nullptr;
-    double* v_rho_a_tau_a = nullptr;
-    double* v_rho_a_tau_b = nullptr;
-    double* v_rho_b_tau_a = nullptr;
-    double* v_rho_b_tau_b = nullptr;
-    double* v_gamma_aa_tau_a = nullptr;
-    double* v_gamma_aa_tau_b = nullptr;
-    double* v_gamma_ab_tau_a = nullptr;
-    double* v_gamma_ab_tau_b = nullptr;
-    double* v_gamma_bb_tau_a = nullptr;
-    double* v_gamma_bb_tau_b = nullptr;
-
-    if (deriv >= 0) {
-        // Energy doesnt make sense for all functionals
-        if (exc_) {
-            v = out.find("V")->second->pointer();
-        }
-    }
-    if (deriv >= 1) {
-        if (true) {
-            v_rho_a = out.find("V_RHO_A")->second->pointer();
-            if (!unpolarized_) {
-                v_rho_b = out.find("V_RHO_B")->second->pointer();
-            }
-        }
-        if (gga_) {
-            v_gamma_aa = out.find("V_GAMMA_AA")->second->pointer();
-            if (!unpolarized_) {
-                v_gamma_ab = out.find("V_GAMMA_AB")->second->pointer();
-                v_gamma_bb = out.find("V_GAMMA_BB")->second->pointer();
-            }
-        }
-        if (meta_) {
-            v_tau_a = out.find("V_TAU_A")->second->pointer();
-            if (!unpolarized_) {
-                v_tau_b = out.find("V_TAU_B")->second->pointer();
-            }
-            // v_lapl_a = out.find("V_LAPL_A")->second->pointer();
-            // v_lapl_b = out.find("V_LAPL_B")->second->pointer();
-        }
-    }
-    if (deriv >= 2) {
-        if (true) {
-            v_rho_a_rho_a = out.find("V_RHO_A_RHO_A")->second->pointer();
-
-            if (!unpolarized_) {
-                v_rho_a_rho_b = out.find("V_RHO_A_RHO_B")->second->pointer();
-                v_rho_b_rho_b = out.find("V_RHO_B_RHO_B")->second->pointer();
-            }
-        }
-        if (gga_) {
-            v_gamma_aa_gamma_aa = out.find("V_GAMMA_AA_GAMMA_AA")->second->pointer();
-
-            if (!unpolarized_) {
-                v_gamma_aa_gamma_ab = out.find("V_GAMMA_AA_GAMMA_AB")->second->pointer();
-                v_gamma_aa_gamma_bb = out.find("V_GAMMA_AA_GAMMA_BB")->second->pointer();
-                v_gamma_ab_gamma_ab = out.find("V_GAMMA_AB_GAMMA_AB")->second->pointer();
-                v_gamma_ab_gamma_bb = out.find("V_GAMMA_AB_GAMMA_BB")->second->pointer();
-                v_gamma_bb_gamma_bb = out.find("V_GAMMA_BB_GAMMA_BB")->second->pointer();
-            }
-        }
-        if (meta_) {
-            v_tau_a_tau_a = out.find("V_TAU_A_TAU_A")->second->pointer();
-
-            if (!unpolarized_) {
-                v_tau_a_tau_b = out.find("V_TAU_A_TAU_B")->second->pointer();
-                v_tau_b_tau_b = out.find("V_TAU_B_TAU_B")->second->pointer();
-            }
-        }
-        if (gga_) {
-            v_rho_a_gamma_aa = out.find("V_RHO_A_GAMMA_AA")->second->pointer();
-
-            if (!unpolarized_) {
-                v_rho_a_gamma_ab = out.find("V_RHO_A_GAMMA_AB")->second->pointer();
-                v_rho_a_gamma_bb = out.find("V_RHO_A_GAMMA_BB")->second->pointer();
-                v_rho_b_gamma_aa = out.find("V_RHO_B_GAMMA_AA")->second->pointer();
-                v_rho_b_gamma_ab = out.find("V_RHO_B_GAMMA_AB")->second->pointer();
-                v_rho_b_gamma_bb = out.find("V_RHO_B_GAMMA_BB")->second->pointer();
-            }
-        }
-        if (meta_) {
-            v_rho_a_tau_a = out.find("V_RHO_A_TAU_A")->second->pointer();
-
-            if (!unpolarized_) {
-                v_rho_a_tau_b = out.find("V_RHO_A_TAU_B")->second->pointer();
-                v_rho_b_tau_a = out.find("V_RHO_B_TAU_A")->second->pointer();
-                v_rho_b_tau_b = out.find("V_RHO_B_TAU_B")->second->pointer();
-            }
-        }
-        if (gga_ && meta_) {
-            v_gamma_aa_tau_a = out.find("V_GAMMA_AA_TAU_A")->second->pointer();
-            if (!unpolarized_) {
-                v_gamma_aa_tau_b = out.find("V_GAMMA_AA_TAU_B")->second->pointer();
-                v_gamma_ab_tau_a = out.find("V_GAMMA_AB_TAU_A")->second->pointer();
-                v_gamma_ab_tau_b = out.find("V_GAMMA_AB_TAU_B")->second->pointer();
-                v_gamma_bb_tau_a = out.find("V_GAMMA_BB_TAU_A")->second->pointer();
-                v_gamma_bb_tau_b = out.find("V_GAMMA_BB_TAU_B")->second->pointer();
-            }
-        }
-    }
+    auto v_rho_a_rho_a = is_output_var("V_RHO_A_RHO_A") ? out.at("V_RHO_A_RHO_A")->data() : nullptr;
+    auto v_rho_a_rho_b = is_output_var("V_RHO_A_RHO_B") ? out.at("V_RHO_A_RHO_B")->data() : nullptr;
+    auto v_rho_b_rho_b = is_output_var("V_RHO_B_RHO_B") ? out.at("V_RHO_B_RHO_B")->data() : nullptr;
+    auto v_gamma_aa_gamma_aa = is_output_var("V_GAMMA_AA_GAMMA_AA") ? out.at("V_GAMMA_AA_GAMMA_AA")->data() : nullptr;
+    auto v_gamma_aa_gamma_ab = is_output_var("V_GAMMA_AA_GAMMA_AB") ? out.at("V_GAMMA_AA_GAMMA_AB")->data() : nullptr;
+    auto v_gamma_aa_gamma_bb = is_output_var("V_GAMMA_AA_GAMMA_BB") ? out.at("V_GAMMA_AA_GAMMA_BB")->data() : nullptr;
+    auto v_gamma_ab_gamma_ab = is_output_var("V_GAMMA_AB_GAMMA_AB") ? out.at("V_GAMMA_AB_GAMMA_AB")->data() : nullptr;
+    auto v_gamma_ab_gamma_bb = is_output_var("V_GAMMA_AB_GAMMA_BB") ? out.at("V_GAMMA_AB_GAMMA_BB")->data() : nullptr;
+    auto v_gamma_bb_gamma_bb = is_output_var("V_GAMMA_BB_GAMMA_BB") ? out.at("V_GAMMA_BB_GAMMA_BB")->data() : nullptr;
+    auto v_tau_a_tau_a = is_output_var("V_TAU_A_TAU_A") ? out.at("V_TAU_A_TAU_A")->data() : nullptr;
+    auto v_tau_a_tau_b = is_output_var("V_TAU_A_TAU_B") ? out.at("V_TAU_A_TAU_B")->data() : nullptr;
+    auto v_tau_b_tau_b = is_output_var("V_TAU_B_TAU_B") ? out.at("V_TAU_B_TAU_B")->data() : nullptr;
+    auto v_rho_a_gamma_aa = is_output_var("V_RHO_A_GAMMA_AA") ? out.at("V_RHO_A_GAMMA_AA")->data() : nullptr;
+    auto v_rho_a_gamma_ab = is_output_var("V_RHO_A_GAMMA_AB") ? out.at("V_RHO_A_GAMMA_AB")->data() : nullptr;
+    auto v_rho_a_gamma_bb = is_output_var("V_RHO_A_GAMMA_BB") ? out.at("V_RHO_A_GAMMA_BB")->data() : nullptr;
+    auto v_rho_b_gamma_aa = is_output_var("V_RHO_B_GAMMA_AA") ? out.at("V_RHO_B_GAMMA_AA")->data() : nullptr;
+    auto v_rho_b_gamma_ab = is_output_var("V_RHO_B_GAMMA_AB") ? out.at("V_RHO_B_GAMMA_AB")->data() : nullptr;
+    auto v_rho_b_gamma_bb = is_output_var("V_RHO_B_GAMMA_BB") ? out.at("V_RHO_B_GAMMA_BB")->data() : nullptr;
+    auto v_rho_a_tau_a = is_output_var("V_RHO_A_TAU_A") ? out.at("V_RHO_A_TAU_A")->data() : nullptr;
+    auto v_rho_a_tau_b = is_output_var("V_RHO_A_TAU_B") ? out.at("V_RHO_A_TAU_B")->data() : nullptr;
+    auto v_rho_b_tau_a = is_output_var("V_RHO_B_TAU_A") ? out.at("V_RHO_B_TAU_A")->data() : nullptr;
+    auto v_rho_b_tau_b = is_output_var("V_RHO_B_TAU_B") ? out.at("V_RHO_B_TAU_B")->data() : nullptr;
+    auto v_gamma_aa_tau_a = is_output_var("V_GAMMA_AA_TAU_A") ? out.at("V_GAMMA_AA_TAU_A")->data() : nullptr;
+    auto v_gamma_aa_tau_b = is_output_var("V_GAMMA_AA_TAU_B") ? out.at("V_GAMMA_AA_TAU_B")->data() : nullptr;
+    auto v_gamma_ab_tau_a = is_output_var("V_GAMMA_AB_TAU_A") ? out.at("V_GAMMA_AB_TAU_A")->data() : nullptr;
+    auto v_gamma_ab_tau_b = is_output_var("V_GAMMA_AB_TAU_B") ? out.at("V_GAMMA_AB_TAU_B")->data() : nullptr;
+    auto v_gamma_bb_tau_a = is_output_var("V_GAMMA_BB_TAU_A") ? out.at("V_GAMMA_BB_TAU_B")->data() : nullptr;
+    auto v_gamma_bb_tau_b = is_output_var("V_GAMMA_BB_TAU_B") ? out.at("V_GAMMA_BB_TAU_B")->data() : nullptr;
 
     if (unpolarized_) {
         if (deriv == 0) {
@@ -592,10 +483,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
                 fv_tau.resize(npoints);
             }
 
-            double* fvp = nullptr;
-            if (exc_) {
-                fvp = fv.data();
-            }
+            auto fvp = exc_ ? fv.data() : nullptr;
 
             // Compute
             if (meta_) {
@@ -782,10 +670,10 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
                 }
             }
         }
-        if (deriv > 2) { // lgtm[cpp/constant-comparison]
+        if (deriv > 2) {  // lgtm[cpp/constant-comparison]
             throw PSIEXCEPTION("TRYING TO COMPUTE DERIV > 3 ");
         }
     }  // End polarized
 }
 
-}  // End namespace
+}  // namespace psi

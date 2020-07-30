@@ -30,10 +30,11 @@
 #define _psi_src_lib_libmints_multipoles_h_
 
 #include <vector>
+
+#include "integral.h"
+#include "onebody.h"
+#include "osrecur.h"
 #include "typedefs.h"
-#include "psi4/libmints/onebody.h"
-#include "psi4/libmints/osrecur.h"
-#include "psi4/libmints/integral.h"
 
 namespace psi {
 class Molecule;
@@ -67,7 +68,7 @@ class MultipoleInt : public OneBodyAOInt {
     bool has_deriv1() override { return false; }
 
     /// Returns the nuclear contribution to the multipole moments, with angular momentum up to order
-    static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, int order, const Vector3 &origin);
+    static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, int order, const Vector3<double> &origin);
 };
 
 }  // namespace psi

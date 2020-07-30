@@ -29,8 +29,10 @@
 #ifndef _psi_src_lib_libmints_electrostatic_h_
 #define _psi_src_lib_libmints_electrostatic_h_
 
-#include "psi4/libmints/potential.h"
 #include "psi4/pragma.h"
+
+#include "potential.h"
+#include "vector3.h"
 
 namespace psi {
 
@@ -38,7 +40,6 @@ class BasisSet;
 class Molecule;
 class GaussianShell;
 class SphericalTransform;
-class Vector3;
 
 /*! \ingroup MINTS
  *  \class PotentialInt
@@ -58,14 +59,14 @@ class ElectrostaticInt : public PotentialInt {
 // The following line is to shut it up.
 #pragma warning disable 1125
     /// Computes integrals between two shells.
-    void compute_shell(int, int, const Vector3&);
+    void compute_shell(int, int, const Vector3<double>&);
     /// Computes integrals between two shells.
-    void compute_pair(const GaussianShell&, const GaussianShell&, const Vector3&);
+    void compute_pair(const GaussianShell&, const GaussianShell&, const Vector3<double>&);
 
     PRAGMA_WARNING_PUSH
     PRAGMA_WARNING_IGNORE_OVERLOADED_VIRTUAL
     /// Computes integrals and stores in result.
-    void compute(SharedMatrix& result, const Vector3&);
+    void compute(SharedMatrix& result, const Vector3<double>&);
     PRAGMA_WARNING_POP
 
     /// Does the method provide first derivatives?

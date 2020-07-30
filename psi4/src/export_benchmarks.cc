@@ -26,8 +26,9 @@
  * @END LICENSE
  */
 
-#include "psi4/libmints/benchmark.h"
 #include "psi4/pybind11.h"
+
+#include "psi4/libmints/benchmark.h"
 
 namespace py = pybind11;
 

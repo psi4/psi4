@@ -26,51 +26,48 @@
  * @END LICENSE
  */
 
-#include <pybind11/stl.h>
-#include <pybind11/numpy.h>
-#include <pybind11/pytypes.h>
-#include <pybind11/stl_bind.h>
-#include <pybind11/operators.h>
-
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/deriv.h"
-#include "psi4/libmints/twobody.h"
-#include "psi4/libmints/integralparameters.h"
-#include "psi4/libmints/orbitalspace.h"
-#include "psi4/libmints/local.h"
-#include "psi4/libmints/vector3.h"
-#include "psi4/libmints/pointgrp.h"
-#include "psi4/libmints/extern.h"
-#include "psi4/libmints/sobasis.h"
-#include "psi4/libmints/petitelist.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libmints/local.h"
-#include "psi4/libmints/sointegral_onebody.h"
-#include "psi4/libmints/sointegral_twobody.h"
-#include "psi4/libmints/mintshelper.h"
-#include "psi4/libmints/multipolesymmetry.h"
-#include "psi4/libmints/eri.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/3coverlap.h"
-#include "psi4/libmints/pseudospectral.h"
-#include "psi4/libmints/oeprop.h"
-#include "psi4/libmints/nabla.h"
-#include "psi4/libmints/electrostatic.h"
-#include "psi4/libmints/potential.h"
-#include "psi4/libmints/kinetic.h"
-#include "psi4/libmints/factory.h"
-#include "psi4/libmints/writer.h"
-#include "psi4/libmints/corrtab.h"
-#include "psi4/libmints/electricfield.h"
-#include "psi4/libmints/tracelessquadrupole.h"
-#include "psi4/libmints/angularmomentum.h"
-#include "psi4/libmints/multipoles.h"
-#include "psi4/libmints/quadrupole.h"
-#include "psi4/libmints/dipole.h"
-#include "psi4/libmints/overlap.h"
-#include "psi4/libmints/sieve.h"
+#include "psi4/pybind11.h"
 
 #include <string>
+
+#include <xtensor-python/pytensor.hpp>  // Numpy bindings
+
+#include "psi4/libmints/3coverlap.h"
+#include "psi4/libmints/angularmomentum.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/corrtab.h"
+#include "psi4/libmints/deriv.h"
+#include "psi4/libmints/dipole.h"
+#include "psi4/libmints/electricfield.h"
+#include "psi4/libmints/electrostatic.h"
+#include "psi4/libmints/eri.h"
+#include "psi4/libmints/extern.h"
+#include "psi4/libmints/factory.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libmints/integralparameters.h"
+#include "psi4/libmints/kinetic.h"
+#include "psi4/libmints/local.h"
+#include "psi4/libmints/mintshelper.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/multipoles.h"
+#include "psi4/libmints/multipolesymmetry.h"
+#include "psi4/libmints/nabla.h"
+#include "psi4/libmints/oeprop.h"
+#include "psi4/libmints/orbitalspace.h"
+#include "psi4/libmints/overlap.h"
+#include "psi4/libmints/petitelist.h"
+#include "psi4/libmints/pointgrp.h"
+#include "psi4/libmints/potential.h"
+#include "psi4/libmints/pseudospectral.h"
+#include "psi4/libmints/quadrupole.h"
+#include "psi4/libmints/sieve.h"
+#include "psi4/libmints/sobasis.h"
+#include "psi4/libmints/sointegral_onebody.h"
+#include "psi4/libmints/sointegral_twobody.h"
+#include "psi4/libmints/tracelessquadrupole.h"
+#include "psi4/libmints/twobody.h"
+#include "psi4/libmints/vector3.h"
+#include "psi4/libmints/writer.h"
 
 using namespace psi;
 namespace py = pybind11;
@@ -272,8 +269,9 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
             std::string label = elbl.at(iat);
             std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
             std::transform(label.begin(), label.end(), label.begin(), ::toupper);
-            mol->add_atom(elez.at(iat) * int(real.at(iat)), geom.at(3 * iat), geom.at(3 * iat + 1), geom.at(3 * iat + 2),
-                          symbol, mass.at(iat), elez.at(iat) * int(real.at(iat)), symbol + label, elea.at(iat));
+            mol->add_atom(elez.at(iat) * int(real.at(iat)), geom.at(3 * iat), geom.at(3 * iat + 1),
+                          geom.at(3 * iat + 2), symbol, mass.at(iat), elez.at(iat) * int(real.at(iat)), symbol + label,
+                          elea.at(iat));
         }
     }
 
@@ -322,9 +320,9 @@ void export_mints(py::module& m) {
     typedef double (Vector::*vector_getitem_2)(int, int) const;
 
     py::class_<Dimension>(m, "Dimension", "Initializes and defines Dimension Objects")
-        .def(py::init<int>())
-        .def(py::init<int, const std::string&>())
-        .def(py::init<const std::vector<int>&>())
+        .def(py::init<Dimension::value_type>())
+        .def(py::init<Dimension::value_type, const std::string&>())
+        .def(py::init<const std::vector<Dimension::value_type>&>())
         .def("print_out", &Dimension::print, "Print out the dimension object to the output file")
         .def("init", &Dimension::init, "Re-initializes the dimension object")
         .def("sum", &Dimension::sum, "Gets the sum of the values in the dimension object")
@@ -372,48 +370,47 @@ void export_mints(py::module& m) {
         .def("nirrep", &Vector::nirrep, "Returns the number of irreps")
         .def("get_block", &Vector::get_block, "Get a vector block", "slice"_a)
         .def("set_block", &Vector::set_block, "Set a vector block", "slice"_a, "block"_a)
-        .def(
-            "array_interface",
-            [](Vector& v) {
-                // Build a list of NumPy views, used for the .np and .nph accessors.Vy
-                py::list ret;
+        .def("array_interface",
+             [](Vector& v) {
+                 // Build a list of NumPy views, used for the .np and .nph accessors.Vy
+                 py::list ret;
 
-                // If we set a NumPy shape
-                if (v.numpy_shape().size()) {
-                    if (v.nirrep() > 1) {
-                        throw PSIEXCEPTION(
-                            "Vector::array_interface numpy shape with more than one irrep is not "
-                            "valid.");
-                    }
+                 // If we set a NumPy shape
+                 if (v.numpy_shape().size()) {
+                     if (v.nirrep() > 1) {
+                         throw PSIEXCEPTION(
+                             "Vector::array_interface numpy shape with more than one irrep is not "
+                             "valid.");
+                     }
 
-                    // Cast the NumPy shape vector
-                    std::vector<size_t> shape;
-                    for (int val : v.numpy_shape()) {
-                        shape.push_back((size_t)val);
-                    }
+                     // Cast the NumPy shape vector
+                     std::vector<size_t> shape;
+                     for (int val : v.numpy_shape()) {
+                         shape.push_back((size_t)val);
+                     }
 
-                    // Build the array
-                    py::array arr(shape, v.pointer(0), py::cast(&v));
-                    ret.append(arr);
+                     // Build the array
+                     py::array arr(shape, v.pointer(0), py::cast(&v));
+                     ret.append(arr);
 
-                } else {
-                    for (size_t h = 0; h < v.nirrep(); h++) {
-                        // Hmm, sometimes we need to handle empty ptr's correctly
-                        double* ptr = nullptr;
-                        if (v.dim(h) != 0) {
-                            ptr = v.pointer(h);
-                        }
+                 } else {
+                     for (size_t h = 0; h < v.nirrep(); h++) {
+                         // Hmm, sometimes we need to handle empty ptr's correctly
+                         double* ptr = nullptr;
+                         if (v.dim(h) != 0) {
+                             ptr = v.pointer(h);
+                         }
 
-                        // Build the array
-                        std::vector<size_t> shape{(size_t)v.dim(h)};
-                        py::array arr(shape, ptr, py::cast(&v));
-                        ret.append(arr);
-                    }
-                }
+                         // Build the array
+                         std::vector<size_t> shape{(size_t)v.dim(h)};
+                         py::array arr(shape, ptr, py::cast(&v));
+                         ret.append(arr);
+                     }
+                 }
 
-                return ret;
-            },
-            py::return_value_policy::reference_internal);
+                 return ret;
+             },
+             py::return_value_policy::reference_internal);
 
     typedef void (IntVector::*int_vector_set)(int, int, int);
     py::class_<IntVector, std::shared_ptr<IntVector>>(m, "IntVector", "Class handling vectors with integer values")
@@ -596,47 +593,46 @@ void export_mints(py::module& m) {
              "Symmetrizes a gradient-like matrix (N,3) using information from a given molecule", "mol"_a)
         .def("rotate_columns", &Matrix::rotate_columns, "Rotates columns i and j in irrep h by angle theta", "h"_a,
              "i"_a, "j"_a, "theta"_a)
-        .def(
-            "array_interface",
-            [](Matrix& m) {
-                // Build a list of NumPy views, used for the .np and .nph accessors.Vy
-                py::list ret;
+        .def("array_interface",
+             [](Matrix& m) {
+                 // Build a list of NumPy views, used for the .np and .nph accessors.Vy
+                 py::list ret;
 
-                // If we set a NumPy shape
-                if (m.numpy_shape().size()) {
-                    if (m.nirrep() > 1) {
-                        throw PSIEXCEPTION(
-                            "Vector::array_interface numpy shape with more than one irrep is not "
-                            "valid.");
-                    }
+                 // If we set a NumPy shape
+                 if (m.numpy_shape().size()) {
+                     if (m.nirrep() > 1) {
+                         throw PSIEXCEPTION(
+                             "Vector::array_interface numpy shape with more than one irrep is not "
+                             "valid.");
+                     }
 
-                    // Cast the NumPy shape vector
-                    std::vector<size_t> shape;
-                    for (int val : m.numpy_shape()) {
-                        shape.push_back((size_t)val);
-                    }
+                     // Cast the NumPy shape vector
+                     std::vector<size_t> shape;
+                     for (int val : m.numpy_shape()) {
+                         shape.push_back((size_t)val);
+                     }
 
-                    // Build the array
-                    py::array arr(shape, m.pointer(0)[0], py::cast(&m));
-                    ret.append(arr);
+                     // Build the array
+                     py::array arr(shape, m.pointer(0)[0], py::cast(&m));
+                     ret.append(arr);
 
-                } else {
-                    for (size_t h = 0; h < m.nirrep(); h++) {
-                        // Hmm, sometimes we need to overload to nullptr
-                        double* ptr = nullptr;
-                        if ((m.rowdim(h) * m.coldim(h ^ m.symmetry())) != 0) {
-                            ptr = m.pointer(h)[0];
-                        }
+                 } else {
+                     for (size_t h = 0; h < m.nirrep(); h++) {
+                         // Hmm, sometimes we need to overload to nullptr
+                         double* ptr = nullptr;
+                         if ((m.rowdim(h) * m.coldim(h ^ m.symmetry())) != 0) {
+                             ptr = m.pointer(h)[0];
+                         }
 
-                        // Build the array
-                        py::array arr({(size_t)m.rowdim(h), (size_t)m.coldim(h ^ m.symmetry())}, ptr, py::cast(&m));
-                        ret.append(arr);
-                    }
-                }
+                         // Build the array
+                         py::array arr({(size_t)m.rowdim(h), (size_t)m.coldim(h ^ m.symmetry())}, ptr, py::cast(&m));
+                         ret.append(arr);
+                     }
+                 }
 
-                return ret;
-            },
-            py::return_value_policy::reference_internal);
+                 return ret;
+             },
+             py::return_value_policy::reference_internal);
 
     // Free functions
     m.def("doublet", &linalg::doublet,
@@ -683,16 +679,14 @@ void export_mints(py::module& m) {
 
     py::class_<CdSalc, std::shared_ptr<CdSalc>>(m, "CdSalc", "Cartesian displacement SALC")
         .def("irrep", &CdSalc::irrep, "Return the irrep bit representation")
-        .def(
-            "irrep_index", [](const CdSalc& salc) { return static_cast<int>(salc.irrep()); }, "Return the irrep index")
+        .def("irrep_index", [](const CdSalc& salc) { return static_cast<int>(salc.irrep()); }, "Return the irrep index")
         .def("print_out", &CdSalc::print,
              "Print the irrep index and the coordinates of the SALC of Cartesian displacements. \
                                            Irrep index is 0-indexed and Cotton ordered.")
         .def("__getitem__", [](const CdSalc& salc, size_t i) { return salc.component(i); })
         .def("__len__", [](const CdSalc& salc) { return salc.ncomponent(); })
-        .def(
-            "__iter__", [](const CdSalc& salc) { return py::make_iterator(salc.get_components()); },
-            py::keep_alive<0, 1>());
+        .def("__iter__", [](const CdSalc& salc) { return py::make_iterator(salc.get_components()); },
+             py::keep_alive<0, 1>());
 
     py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(
         m, "CdSalcList", "Class for generating symmetry adapted linear combinations of Cartesian displacements")
@@ -705,9 +699,8 @@ void export_mints(py::module& m) {
         .def("nirrep", &CdSalcList::nirrep, "Return the number of irreps")
         .def("__getitem__", [](const CdSalcList& salclist, size_t i) { return salclist[i]; })
         .def("__len__", [](const CdSalcList& salclist) { return salclist.ncd(); })
-        .def(
-            "__iter__", [](const CdSalcList& salclist) { return py::make_iterator(salclist.get_salcs()); },
-            py::keep_alive<0, 1>())
+        .def("__iter__", [](const CdSalcList& salclist) { return py::make_iterator(salclist.get_salcs()); },
+             py::keep_alive<0, 1>())
         .def("print_out", &CdSalcList::print, "Print the SALCs to the output file")
         .def("matrix", &CdSalcList::matrix, "Return the matrix that transforms Cartesian displacements to SALCs")
         .def("matrix_irrep", &CdSalcList::matrix_irrep,
@@ -962,14 +955,23 @@ void export_mints(py::module& m) {
         .def("one_electron_integrals", &MintsHelper::one_electron_integrals, "Standard one-electron integrals")
 
         // One-electron
-        .def("ao_overlap", oneelectron(&MintsHelper::ao_overlap), "AO basis overlap integrals")
-        .def("ao_overlap", oneelectron_mixed_basis(&MintsHelper::ao_overlap), "AO mixed basis overlap integrals")
+        .def("ao_overlap", py::overload_cast<>(&MintsHelper::ao_overlap, py::const_), "AO basis overlap integrals")
+        .def("ao_overlap",
+             py::overload_cast<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>(&MintsHelper::ao_overlap,
+                                                                                     py::const_),
+             "AO mixed basis overlap integrals")
         .def("so_overlap", &MintsHelper::so_overlap, "SO basis overlap integrals", "include_perturbations"_a = true)
-        .def("ao_kinetic", oneelectron(&MintsHelper::ao_kinetic), "AO basis kinetic integrals")
-        .def("ao_kinetic", oneelectron_mixed_basis(&MintsHelper::ao_kinetic), "AO mixed basis kinetic integrals")
+        .def("ao_kinetic", py::overload_cast<>(&MintsHelper::ao_kinetic, py::const_), "AO basis kinetic integrals")
+        .def("ao_kinetic",
+             py::overload_cast<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>(&MintsHelper::ao_kinetic,
+                                                                                     py::const_),
+             "AO mixed basis kinetic integrals")
         .def("so_kinetic", &MintsHelper::so_kinetic, "SO basis kinetic integrals", "include_perturbations"_a = true)
-        .def("ao_potential", oneelectron(&MintsHelper::ao_potential), "AO potential integrals")
-        .def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "AO mixed basis potential integrals")
+        .def("ao_potential", py::overload_cast<>(&MintsHelper::ao_potential, py::const_), "AO potential integrals")
+        .def("ao_potential",
+             py::overload_cast<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>>(&MintsHelper::ao_potential,
+                                                                                     py::const_),
+             "AO mixed basis potential integrals")
         .def("so_potential", &MintsHelper::so_potential, "SO basis potential integrals",
              "include_perturbations"_a = true)
         .def("ao_ecp", oneelectron(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
@@ -1059,58 +1061,72 @@ void export_mints(py::module& m) {
         .def("ao_oei_deriv2", &MintsHelper::ao_oei_deriv2,
              "Hessian  of AO basis OEI integrals: returns (3 * natoms)^2 matrices", "oei_type"_a, "atom1"_a, "atom2"_a)
         .def("ao_overlap_half_deriv1", &MintsHelper::ao_overlap_half_deriv1,
-             "Half-derivative of AO basis overlap integrals: returns (3 * natoms) matrices","side"_a, "atom"_a)
+             "Half-derivative of AO basis overlap integrals: returns (3 * natoms) matrices", "side"_a, "atom"_a)
         .def("ao_tei_deriv1", &MintsHelper::ao_tei_deriv1,
-             "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices",
-             "atom"_a, "omega"_a = 0.0, "factory"_a = nullptr)
+             "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices", "atom"_a, "omega"_a = 0.0,
+             "factory"_a = nullptr)
         .def("ao_tei_deriv2", &MintsHelper::ao_tei_deriv2,
              "Hessian  of AO basis TEI integrals: returns (3 * natoms)^2 matrices", "atom1"_a, "atom2"_a)
         .def("mo_oei_deriv1", &MintsHelper::mo_oei_deriv1,
-             "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices",
-             "oei_type"_a, "atom"_a, "C1"_a, "C2"_a)
+             "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices", "oei_type"_a, "atom"_a, "C1"_a,
+             "C2"_a)
         .def("mo_oei_deriv2", &MintsHelper::mo_oei_deriv2,
-             "Hessian  of MO basis OEI integrals: returns (3 * natoms)^2 matrices",
-             "oei_type"_a, "atom1"_a, "atom2"_a, "C1"_a, "C2"_a)
+             "Hessian  of MO basis OEI integrals: returns (3 * natoms)^2 matrices", "oei_type"_a, "atom1"_a, "atom2"_a,
+             "C1"_a, "C2"_a)
         .def("mo_overlap_half_deriv1", &MintsHelper::mo_overlap_half_deriv1,
-             "Half-derivative of MO basis overlap integrals: returns (3 * natoms) matrices",
-             "side"_a, "atom"_a, "C1"_a, "C2"_a)
+             "Half-derivative of MO basis overlap integrals: returns (3 * natoms) matrices", "side"_a, "atom"_a, "C1"_a,
+             "C2"_a)
         .def("mo_tei_deriv1", &MintsHelper::mo_tei_deriv1,
-             "Gradient of MO basis TEI integrals: returns (3 * natoms) matrices",
-             "atom"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
+             "Gradient of MO basis TEI integrals: returns (3 * natoms) matrices", "atom"_a, "C1"_a, "C2"_a, "C3"_a,
+             "C4"_a)
         .def("mo_tei_deriv2", &MintsHelper::mo_tei_deriv2,
-             "Hessian  of MO basis TEI integrals: returns (3 * natoms)^2 matrices",
-             "atom1"_a, "atom2"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
-        
+             "Hessian  of MO basis TEI integrals: returns (3 * natoms)^2 matrices", "atom1"_a, "atom2"_a, "C1"_a,
+             "C2"_a, "C3"_a, "C4"_a)
+
         // First derivatives of electric dipole integrals in AO and MO basis.
         .def("ao_elec_dip_deriv1", &MintsHelper::ao_elec_dip_deriv1,
              "Gradient of AO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a)
         .def("mo_elec_dip_deriv1", &MintsHelper::mo_elec_dip_deriv1,
-             "Gradient of MO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a, "C1"_a, "C2"_a);
+             "Gradient of MO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a, "C1"_a, "C2"_a)
 
-    py::class_<Vector3>(m, "Vector3",
-                        "Class for vectors of length three, often Cartesian coordinate vectors, "
-                        "and their common operations")
-        .def(py::init<double>())
-        .def(py::init<double, double, double>())
-        .def(py::init<const Vector3&>())
-
-        //      def(self = other<double>()).
-        .def(py::self += py::self)
-        .def(py::self -= py::self)
-        .def(py::self *= double())
-
-        // def(py::self + py::self).
-        // def(py::self - py::self).
-        // def(-py::self).
-        .def("dot", &Vector3::dot, "Returns dot product of arg1 and arg2")
-        .def("distance", &Vector3::distance, "Returns distance between two points represented by arg1 and arg2")
-        .def("normalize", &Vector3::normalize, "Returns vector of unit length and arg1 direction")
-        .def("norm", &Vector3::norm, "Returns Euclidean norm of arg1")
-        .def("cross", &Vector3::cross, "Returns cross product of arg1 and arg2")
-        .def("__str__", &Vector3::to_string, "Returns a string representation of arg1, suitable for printing.")
-        .def(float() * py::self) /* The __mult__ operator */
-        .def("__getitem__", &Vector3::get, "Returns the arg2-th element of arg1.")
-        .def("__setitem__", &Vector3::set, "Set the ar2-th element of to val.");
+        // Methods returning objects with xtensor-based storage (implementation in mintshelper_.cc)
+        .def("ao_overlap_",
+             [](const MintsHelper& obj) -> xt::pytensor<double, 2> { return obj.ao_overlap_()->block(0); },
+             "AO basis overlap integrals")
+        .def("ao_overlap_",
+             [](const MintsHelper& obj, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2)
+                 -> xt::pytensor<double, 2> { return obj.ao_overlap_(bs1, bs2)->block(0); },
+             "AO mixed basis overlap integrals")
+        .def("ao_kinetic_",
+             [](const MintsHelper& obj) -> xt::pytensor<double, 2> { return obj.ao_kinetic_()->block(0); },
+             "AO basis kinetic integrals")
+        .def("ao_kinetic_",
+             [](const MintsHelper& obj, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2)
+                 -> xt::pytensor<double, 2> { return obj.ao_kinetic_(bs1, bs2)->block(0); },
+             "AO mixed basis kinetic integrals")
+        .def("ao_potential_",
+             [](const MintsHelper& obj) -> xt::pytensor<double, 2> { return obj.ao_potential_()->block(0); },
+             "AO basis potential integrals")
+        .def("ao_potential_",
+             [](const MintsHelper& obj, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2)
+                 -> xt::pytensor<double, 2> { return obj.ao_potential_(bs1, bs2)->block(0); },
+             "AO mixed basis potential integrals")
+        .def("ao_eri_",
+             [](const MintsHelper& obj, std::shared_ptr<IntegralFactory> factory) -> xt::pytensor<double, 4> {
+                 return obj.ao_eri_(factory)->block(0);
+             },
+             "AO ERI integrals", "factory"_a = nullptr)
+        .def("ao_eri_",
+             [](const MintsHelper& obj, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
+                std::shared_ptr<BasisSet> bs3, std::shared_ptr<BasisSet> bs4) -> xt::pytensor<double, 4> {
+                 return obj.ao_eri_(bs1, bs2, bs3, bs4)->block(0);
+             },
+             "AO ERI integrals", "bs1"_a, "bs2"_a, "bs3"_a, "bs4"_a)
+        .def("ao_eri_shell_",
+             [](MintsHelper& obj, int M, int N, int P, int Q) -> xt::pytensor<double, 4> {
+                 return obj.ao_eri_shell_(M, N, P, Q)->block(0);
+             },
+             "AO ERI Shell", "M"_a, "N"_a, "P"_a, "Q"_a);
 
     typedef void (SymmetryOperation::*intFunction)(int);
     typedef void (SymmetryOperation::*doubleFunction)(double);
@@ -1194,20 +1210,15 @@ void export_mints(py::module& m) {
              "Return the character of the i'th symmetry operation for the irrep. 0-indexed.")
         .def("symbol", &IrreducibleRepresentation::symbol, "Return the symbol for the irrep");
 
-    typedef void (Molecule::*matrix_set_geometry)(const Matrix&);
-    typedef Vector3 (Molecule::*nuclear_dipole1)(const Vector3&) const;
-    typedef Vector3 (Molecule::*nuclear_dipole2)() const;
-    typedef Vector3 (Molecule::*vector_by_index)(int) const;
-
     py::class_<Molecule, std::shared_ptr<Molecule>>(m, "Molecule", py::dynamic_attr(),
                                                     "Class to store the elements, coordinates, "
                                                     "fragmentation pattern, basis sets, charge, "
                                                     "multiplicity, etc. of a molecule.")
-        .def("set_geometry", matrix_set_geometry(&Molecule::set_geometry),
+        .def("set_geometry", [](Molecule& obj, const Matrix& m) { obj.set_geometry(m); },
              "Sets the geometry, given a (Natom X 3) matrix arg0 of coordinates [a0] (excluding dummies)")
-        .def("nuclear_dipole", nuclear_dipole1(&Molecule::nuclear_dipole),
+        .def("nuclear_dipole", [](const Molecule& obj, const Vector3<double>& v) { return obj.nuclear_dipole(v); },
              "Gets the nuclear contribution to the dipole, with respect to a specified origin atg0")
-        .def("nuclear_dipole", nuclear_dipole2(&Molecule::nuclear_dipole),
+        .def("nuclear_dipole", [](const Molecule& obj) { return obj.nuclear_dipole(); },
              "Gets the nuclear contribution to the dipole, with respect to the origin")
         .def("set_name", &Molecule::set_name, "Sets molecule name")
         .def("name", &Molecule::name, "Gets molecule name")
@@ -1253,7 +1264,8 @@ void export_mints(py::module& m) {
         .def("x", &Molecule::x, "x position [Bohr] of atom arg0 (0-indexed without dummies)")
         .def("y", &Molecule::y, "y position [Bohr] of atom arg0 (0-indexed without dummies)")
         .def("z", &Molecule::z, "z position [Bohr] of atom arg0 (0-indexed without dummies)")
-        .def("xyz", vector_by_index(&Molecule::xyz), "Return the Vector3 for atom i (0-indexed without dummies)", "i"_a)
+        .def("xyz", [](const Molecule& obj, int i) { return obj.xyz(i); },
+             "Return the Vector3 for atom i (0-indexed without dummies)", "i"_a)
         .def("fZ", &Molecule::fZ, py::return_value_policy::copy,
              "Nuclear charge of atom arg1 (0-indexed including dummies)")
         .def("fx", &Molecule::fx, "x position of atom arg0 (0-indexed including dummies in Bohr)")
@@ -1313,15 +1325,14 @@ void export_mints(py::module& m) {
         .def("get_fragments", &Molecule::get_fragments,
              "Returns list of pairs of atom ranges defining each fragment from parent molecule"
              "(fragments[frag_ind] = <Afirst,Alast+1>)")
-        .def(
-            "get_fragment_types",
-            [](Molecule& mol) {
-                const std::string FragmentTypeList[] = {"Absent", "Real", "Ghost"};
-                std::vector<std::string> srt;
-                for (auto item : mol.get_fragment_types()) srt.push_back(FragmentTypeList[item]);
-                return srt;
-            },
-            "Returns a list describing how to handle each fragment {Real, Ghost, Absent}")
+        .def("get_fragment_types",
+             [](Molecule& mol) {
+                 const std::string FragmentTypeList[] = {"Absent", "Real", "Ghost"};
+                 std::vector<std::string> srt;
+                 for (auto item : mol.get_fragment_types()) srt.push_back(FragmentTypeList[item]);
+                 return srt;
+             },
+             "Returns a list describing how to handle each fragment {Real, Ghost, Absent}")
         .def("get_fragment_charges", &Molecule::get_fragment_charges, "Gets the charge of each fragment")
         .def("get_fragment_multiplicities", &Molecule::get_fragment_multiplicities,
              "Gets the multiplicity of each fragment")
@@ -1335,9 +1346,8 @@ void export_mints(py::module& m) {
              "Prints the molecule in Cartesians in Angstroms to output file")
         .def("print_cluster", &Molecule::print_cluster,
              "Prints the molecule in Cartesians in input units adding fragment separators")
-        .def(
-            "rotational_constants", [](Molecule& mol) { return mol.rotational_constants(1.0e-8); },
-            "Returns the rotational constants [cm^-1] of the molecule")
+        .def("rotational_constants", [](Molecule& mol) { return mol.rotational_constants(1.0e-8); },
+             "Returns the rotational constants [cm^-1] of the molecule")
         .def("print_rotational_constants", &Molecule::print_rotational_constants,
              "Print the rotational constants to output file")
         .def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy,
@@ -1394,14 +1404,13 @@ void export_mints(py::module& m) {
         .def("print_out_of_planes", &Molecule::print_out_of_planes,
              "Print the out-of-plane angle geometrical parameters to output file")
         .def("irrep_labels", &Molecule::irrep_labels, "Returns Irreducible Representation symmetry labels")
-        .def(
-            "units",
-            [](Molecule& mol) {
-                const std::string GeometryUnitsList[] = {"Angstrom", "Bohr"};
-                std::string srt = GeometryUnitsList[mol.units()];
-                return srt;
-            },
-            "Returns units used to define the geometry, i.e. 'Angstrom' or 'Bohr'")
+        .def("units",
+             [](Molecule& mol) {
+                 const std::string GeometryUnitsList[] = {"Angstrom", "Bohr"};
+                 std::string srt = GeometryUnitsList[mol.units()];
+                 return srt;
+             },
+             "Returns units used to define the geometry, i.e. 'Angstrom' or 'Bohr'")
         .def("set_units", &Molecule::set_units,
              "Sets units (Angstrom or Bohr) used to define the geometry. Imposes Psi4 physical constants conversion "
              "for input_units_to_au.")
@@ -1413,20 +1422,19 @@ void export_mints(py::module& m) {
                     "should not be relied upon")
         .def("rotational_symmetry_number", &Molecule::rotational_symmetry_number,
              "Returns number of unique orientations of the rigid molecule that only interchange identical atoms")
-        .def(
-            "rotor_type",
-            [](Molecule& mol) {
-                const std::string RotorTypeList[] = {"RT_ASYMMETRIC_TOP", "RT_SYMMETRIC_TOP", "RT_SPHERICAL_TOP",
-                                                     "RT_LINEAR", "RT_ATOM"};
-                std::string srt = RotorTypeList[mol.rotor_type()];
-                return srt;
-            },
-            "Returns rotor type, e.g. 'RT_ATOM' or 'RT_SYMMETRIC_TOP'")
+        .def("rotor_type",
+             [](Molecule& mol) {
+                 const std::string RotorTypeList[] = {"RT_ASYMMETRIC_TOP", "RT_SYMMETRIC_TOP", "RT_SPHERICAL_TOP",
+                                                      "RT_LINEAR", "RT_ATOM"};
+                 std::string srt = RotorTypeList[mol.rotor_type()];
+                 return srt;
+             },
+             "Returns rotor type, e.g. 'RT_ATOM' or 'RT_SYMMETRIC_TOP'")
         .def("geometry", &Molecule::geometry,
              "Gets the geometry [Bohr] as a (Natom X 3) matrix of coordinates (excluding dummies)")
         .def("full_geometry", &Molecule::full_geometry,
              "Gets the geometry [Bohr] as a (Natom X 3) matrix of coordinates (including dummies)")
-        .def("set_full_geometry", matrix_set_geometry(&Molecule::set_full_geometry),
+        .def("set_full_geometry", [](Molecule& obj, const Matrix& m) { obj.set_full_geometry(m); },
              "Sets the geometry, given a (Natom X 3) matrix arg0 of coordinates (in Bohr) (including dummies");
 
     py::class_<PetiteList, std::shared_ptr<PetiteList>>(m, "PetiteList", "Handles symmetry transformations")

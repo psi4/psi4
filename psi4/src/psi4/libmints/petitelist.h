@@ -29,18 +29,13 @@
 #ifndef _psi_src_lib_libmints_petitelist_h_
 #define _psi_src_lib_libmints_petitelist_h_
 
-#include "typedefs.h"
-#include "pointgrp.h"
-
-#include <map>
-#include <cstdio>
 #include <cstdint>
-
-#include "psi4/pragma.h"
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+#include <cstdio>
+#include <map>
 #include <memory>
-PRAGMA_WARNING_POP
+
+#include "pointgrp.h"
+#include "typedefs.h"
 
 namespace psi {
 
@@ -51,7 +46,7 @@ class Matrix;
 class Dimension;
 
 using ShellMapType = std::vector<std::array<int, 8>>;
-static const std::array<int, 8> pgZeros{0, 0, 0, 0, 0, 0, 0, 0};
+static const std::array<int, 8> pgZeros{{0, 0, 0, 0, 0, 0, 0, 0}};
 
 inline int64_t ij_offset64(int64_t i, int64_t j) {
     return (i > j) ? (((i * (i + 1)) >> 1) + j) : (((j * (j + 1)) >> 1) + i);

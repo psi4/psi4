@@ -35,10 +35,6 @@
 #include <omp.h>
 #endif
 
-#ifdef USING_LAPACK_MKL
-#include <mkl.h>
-#endif
-
 #define INDEX(i, j) ((i >= j) ? (ioff_[i] + j) : (ioff_[j] + i))
 
 #include "psi4/libmints/wavefunction.h"

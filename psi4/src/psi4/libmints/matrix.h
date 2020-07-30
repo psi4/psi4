@@ -35,6 +35,7 @@
 #include "psi4/libpsi4util/exception.h"
 
 #include "dimension.h"
+#include "vector3.h"
 
 namespace psi {
 
@@ -46,7 +47,6 @@ class Vector;
 using SharedVector = std::shared_ptr<Vector>;
 class Dimension;
 class Molecule;
-class Vector3;
 class Matrix;
 using SharedMatrix = std::shared_ptr<Matrix>;
 
@@ -122,7 +122,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     /// Name of the matrix
     std::string name_;
     /// Symmetry of this matrix (in most cases this will be 0 [totally symmetric])
-    int symmetry_;
+    unsigned int symmetry_;
 
     /// Allocates matrix_
     void alloc();
@@ -145,7 +145,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      *
      * @param name Name of the matrix, used in saving and printing.
      */
-    Matrix(const std::string& name, int symmetry = 0);
+    Matrix(const std::string& name, unsigned int symmetry = 0);
     /// copy reference constructor
     Matrix(const Matrix& copy);
     Matrix& operator=(const Matrix& copy);
@@ -160,7 +160,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
-    Matrix(int nirrep, const int* rowspi, const int* colspi, int symmetry = 0);
+    Matrix(int nirrep, const int* rowspi, const int* colspi, unsigned int symmetry = 0);
     /**
      * Constructor, sets name_, and sets up the matrix
      *
@@ -169,7 +169,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param rowspi Array of length nirreps giving row dimensionality.
      * @param colspi Array of length nirreps giving column dimensionality.
      */
-    Matrix(const std::string& name, int nirrep, const int* rowspi, const int* colspi, int symmetry = 0);
+    Matrix(const std::string& name, int nirrep, const int* rowspi, const int* colspi, unsigned int symmetry = 0);
     /**
      * Constructor, forms non-standard matrix.
      * @param nirrep Number of blocks.
@@ -226,7 +226,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param cols Dimension object providing column information.
      * @param symmetry overall symmetry of the data.
      */
-    Matrix(const std::string& name, const Dimension& rows, const Dimension& cols, int symmetry = 0);
+    Matrix(const std::string& name, const Dimension& rows, const Dimension& cols, unsigned int symmetry = 0);
 
     /**
      * Constructor using Dimension objects to define order and dimensionality.
@@ -235,7 +235,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param cols Dimension object providing column information.
      * @param symmetry overall symmetry of the data.
      */
-    Matrix(const Dimension& rows, const Dimension& cols, int symmetry = 0);
+    Matrix(const Dimension& rows, const Dimension& cols, unsigned int symmetry = 0);
 
     /// Destructor, frees memory
     virtual ~Matrix();
@@ -249,9 +249,11 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param name Name of the matrix.
      * @param symmetry Overall symmetry of the data.
      */
-    void init(int nirrep, const int* rowspi, const int* colspi, const std::string& name = "", int symmetry = 0);
+    void init(int nirrep, const int* rowspi, const int* colspi, const std::string& name = "",
+              unsigned int symmetry = 0);
 
-    void init(const Dimension& rowspi, const Dimension& colspi, const std::string& name = "", int symmetry = 0);
+    void init(const Dimension& rowspi, const Dimension& colspi, const std::string& name = "",
+              unsigned int symmetry = 0);
 
     /// Creates an exact copy of the matrix and returns it.
     SharedMatrix clone() const;
@@ -276,7 +278,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     **                           perpendicular to rotation
     ** @returns SharedMatrix with rotated points (rows)
     */
-    SharedMatrix matrix_3d_rotation(Vector3 axis, double phi, bool Sn);
+    SharedMatrix matrix_3d_rotation(Vector3<double> axis, double phi, bool Sn);
 
     /// Copies data to the row specified. Assumes data is of correct length.
     void copy_to_row(int h, int row, double const* const data);
@@ -599,9 +601,9 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     void eivprint(const std::shared_ptr<Vector>& values, std::string out = "outfile");
 
     /// Returns the rows in irrep h
-    int rowdim(const int& h = 0) const { return rowspi_[h]; }
+    size_t rowdim(const int& h = 0) const { return rowspi_[h]; }
     /// Returns the cols in irrep h
-    int coldim(const int& h = 0) const { return colspi_[h]; }
+    size_t coldim(const int& h = 0) const { return colspi_[h]; }
 
     /// Returns the rows per irrep array
     const Dimension& rowspi() const { return rowspi_; }
@@ -649,7 +651,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * For a totally-symmetric matrix this will be 0.
      * The value returned is compatible with bitwise XOR (^) math.
      */
-    const int& symmetry() const { return symmetry_; }
+    unsigned int symmetry() const { return symmetry_; }
 
     /**
      * Symmetrizes the a gradient like matrix (N, 3) using information

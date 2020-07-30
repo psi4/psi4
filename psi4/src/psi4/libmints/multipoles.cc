@@ -26,10 +26,12 @@
  * @END LICENSE
  */
 
-#include "psi4/libmints/multipoles.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/vector.h"
+#include "multipoles.h"
+
+#include "basisset.h"
+#include "molecule.h"
+#include "vector.h"
+#include "vector3.h"
 
 using namespace psi;
 
@@ -60,7 +62,8 @@ MultipoleInt::MultipoleInt(std::vector<SphericalTransform> &spherical_transforms
 
 MultipoleInt::~MultipoleInt() { delete[] buffer_; }
 
-SharedVector MultipoleInt::nuclear_contribution(std::shared_ptr<Molecule> mol, int order, const Vector3 &origin) {
+SharedVector MultipoleInt::nuclear_contribution(std::shared_ptr<Molecule> mol, int order,
+                                                const Vector3<double> &origin) {
     int ntot = (order + 1) * (order + 2) * (order + 3) / 6 - 1;
     auto sret = std::make_shared<Vector>(ntot);
     double *ret = sret->pointer();
@@ -72,7 +75,7 @@ SharedVector MultipoleInt::nuclear_contribution(std::shared_ptr<Molecule> mol, i
             for (int lz = 0; lz <= ii; lz++) {
                 int ly = ii - lz;
                 for (int atom = 0; atom < mol->natom(); ++atom) {
-                    Vector3 geom = mol->xyz(atom) - origin;
+                    auto geom = mol->xyz(atom) - origin;
                     ret[address] += mol->Z(atom) * pow(geom[0], lx) * pow(geom[1], ly) * pow(geom[2], lz);
                 }
                 ++address;

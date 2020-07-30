@@ -50,6 +50,7 @@ list(APPEND sources
   intvector.cc
   potential.cc
   mintshelper.cc
+  xthelper.cc # MintsHelper with new tensor storage return types
   coordentry.cc
   kinetic.cc
   tracelessquadrupole.cc

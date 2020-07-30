@@ -57,7 +57,7 @@ if(MSVC)
 else()
   set(PYBIND11_CPP_STANDARD "-std=c++${CMAKE_CXX_STANDARD}")
 endif()
-find_package(pybind11 2.4.3 CONFIG REQUIRED)
+find_package(pybind11 2.5.0 CONFIG REQUIRED)
 message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING} and ${PYBIND11_CPP_STANDARD})")
 message(STATUS "${Cyan}Using Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE}")
 
@@ -175,6 +175,60 @@ get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libxc${ColourReset}: ${_loc} (version ${Libxc_VERSION})")
 
+# <<< The whole xtensor stack >>>
+
+find_package(xtl 0.6.5 CONFIG REQUIRED)
+get_property(_loc TARGET xtl PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using xtl${ColourReset}: ${_loc} (version ${xtl_VERSION})")
+
+if(USE_XSIMD)
+  find_package(xsimd 7.2.3 CONFIG REQUIRED)
+  get_property(_loc TARGET xsimd PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+  list(APPEND _addons ${_loc})
+  message(STATUS "${Cyan}Using xsimd${ColourReset}: ${_loc} (version ${xsimd_VERSION})")
+endif()
+
+find_package(xtensor 0.20.8 CONFIG REQUIRED)
+get_property(_loc TARGET xtensor PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using xtensor${ColourReset}: ${_loc} (version ${xtensor_VERSION})")
+
+find_package(xtensor-blas 0.16.1 CONFIG REQUIRED)
+message(STATUS "${Cyan}Using xtensor-blas${ColourReset}: ${_loc} (version ${xtensor-blas_VERSION})")
+
+find_package(xtensor-python 0.23.1 CONFIG REQUIRED)
+get_property(_loc TARGET xtensor-python PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using xtensor-python${ColourReset}: ${_loc} (version ${xtensor-python_VERSION})")
+find_package(NumPy REQUIRED)
+
+find_package(HighFive CONFIG REQUIRED)
+get_property(_loc TARGET HighFive PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using HighFive${ColourReset}: ${_loc} (version ${xtensor-io_VERSION})")
+
+find_package(xtensor-io 0.9.0 CONFIG REQUIRED)
+get_property(_loc TARGET xtensor-io PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using xtensor-io${ColourReset}: ${_loc} (version ${xtensor-io_VERSION})")
+
+# Compile definitions not exported by xtensor proper
+if(USE_XSIMD)
+  target_compile_definitions(xtensor
+    INTERFACE
+      XTENSOR_USE_XSIMD  # Use xsimd
+      XSIMD_ENABLE_XTL_COMPLEX  # Use xcomplex from xtl
+    )
+endif()
+if(TARGET OpenMP::OpenMP)
+  target_compile_definitions(xtensor
+    INTERFACE
+      XTENSOR_USE_OPENMP  # Use OpenMP in assignment loop>
+    )
+endif()
+
+
 if(APPLE)
     set(PRE_LIBRARY_OPTION -Wl,-all_load)
 elseif(UNIX)
@@ -227,12 +281,16 @@ if(WIN32)
             DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR})
 endif()
 
-    # <<<  install lib/  >>>
+   # <<<  install lib/  >>>
 if(NOT ENABLE_CYTHONIZE)
     install(DIRECTORY driver
             DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
             FILES_MATCHING PATTERN "*.py")
 endif()
+
+install(DIRECTORY linalg
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
+        FILES_MATCHING PATTERN "*.py")
 
 install(FILES header.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
@@ -252,6 +310,11 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/test_qcel_molparse_to_string.py
               ../tests/pytests/test_matrix.py
               ../tests/pytests/test_vector.py
+              ../tests/pytests/test_tensor_ctors.py
+              ../tests/pytests/test_tensor_2d_doublet.py
+              ../tests/pytests/test_tensor_2d_cholesky.py
+              ../tests/pytests/test_tensor_eig.py
+              ../tests/pytests/test_tensor_eigh.py
               ../tests/pytests/test_qcvars.py
               ../tests/pytests/test_dft_benchmarks.py
               ../tests/pytests/test_vibanalysis.py

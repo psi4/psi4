@@ -46,11 +46,6 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 
-// MKL Header
-#ifdef USING_LAPACK_MKL
-#include <mkl.h>
-#endif
-
 // OpenMP Header
 //_OPENMP is defined by the compiler if it exists
 #ifdef _OPENMP
@@ -115,7 +110,7 @@ void FittingMetric::form_fitting_metric() {
     // == (A|B) Block == //
     IntegralFactory rifactory_J(aux_, zero, aux_, zero);
     const auto** Jbuffer = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* Jint = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
+    std::shared_ptr<TwoBodyAOInt>* Jint = new std::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q < nthread; Q++) {
         if (omega_ > 0.0) {
             Jint[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory_J.erf_eri(omega_));
@@ -159,7 +154,7 @@ void FittingMetric::form_fitting_metric() {
         // == (AB) Block == //
         IntegralFactory rifactory_RP(pois_, aux_, zero, zero);
         const auto** Obuffer = new const double*[nthread];
-        std::shared_ptr<OneBodyAOInt>* Oint = new std::shared_ptr<OneBodyAOInt>[ nthread ];
+        std::shared_ptr<OneBodyAOInt>* Oint = new std::shared_ptr<OneBodyAOInt>[nthread];
         for (int Q = 0; Q < nthread; Q++) {
             Oint[Q] = std::shared_ptr<OneBodyAOInt>(rifactory_RP.ao_overlap());
             Obuffer[Q] = Oint[Q]->buffer();
@@ -196,7 +191,7 @@ void FittingMetric::form_fitting_metric() {
         // == (A|T|B) Block == //
         IntegralFactory rifactory_P(pois_, pois_, zero, zero);
         const auto** Tbuffer = new const double*[nthread];
-        std::shared_ptr<OneBodyAOInt>* Tint = new std::shared_ptr<OneBodyAOInt>[ nthread ];
+        std::shared_ptr<OneBodyAOInt>* Tint = new std::shared_ptr<OneBodyAOInt>[nthread];
         for (int Q = 0; Q < nthread; Q++) {
             Tint[Q] = std::shared_ptr<OneBodyAOInt>(rifactory_P.ao_kinetic());
             Tbuffer[Q] = Tint[Q]->buffer();
@@ -241,10 +236,10 @@ void FittingMetric::form_fitting_metric() {
     if (auxpet->nirrep() == 1 || force_C1_ == true) {
         metric_ = AOmetric;
         metric_->set_name("SO Basis Fitting Metric");
-        pivots_ = std::make_shared<IntVector>(naux);
-        rev_pivots_ = std::make_shared<IntVector>(naux);
-        int* piv = pivots_->pointer();
-        int* rpiv = pivots_->pointer();
+        pivots_ = std::make_shared<Vector_<int>>(naux);
+        rev_pivots_ = std::make_shared<Vector_<int>>(naux);
+        auto piv = pivots_->data();
+        auto rpiv = pivots_->data();
         for (int Q = 0; Q < naux; Q++) {
             piv[Q] = Q;
             rpiv[Q] = Q;
@@ -313,11 +308,11 @@ void FittingMetric::form_fitting_metric() {
     }
 
     // Form indexing
-    pivots_ = std::make_shared<IntVector>(nauxpi.n(), nauxpi);
-    rev_pivots_ = std::make_shared<IntVector>(nauxpi.n(), nauxpi);
+    pivots_ = std::make_shared<Vector_<int>>(nauxpi);
+    rev_pivots_ = std::make_shared<Vector_<int>>(nauxpi);
     for (int h = 0; h < auxpet->nirrep(); h++) {
-        int* piv = pivots_->pointer(h);
-        int* rpiv = pivots_->pointer(h);
+        auto piv = pivots_->data(h);
+        auto rpiv = pivots_->data(h);
         for (int Q = 0; Q < nauxpi[h]; Q++) {
             piv[Q] = Q;
             rpiv[Q] = Q;
@@ -485,7 +480,7 @@ void FittingMetric::pivot() {
         if (metric_->colspi()[h] == 0) continue;
 
         double** J = metric_->pointer(h);
-        int* P = pivots_->pointer(h);
+        auto P = pivots_->data(h);
         int norbs = metric_->colspi()[h];
         double* Temp = new double[norbs];
 
@@ -518,8 +513,8 @@ void FittingMetric::pivot() {
         }
         delete[] Temp;
 
-        int* R = rev_pivots_->pointer(h);
+        auto R = rev_pivots_->data(h);
         for (int i = 0; i < norbs; i++) R[P[i]] = i;
     }
 }
-}
+}  // namespace psi

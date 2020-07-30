@@ -1,8 +1,10 @@
 #############################  Superbuild Project  #############################
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR) # 3.8: CXX_STANDARD recognizes C++17
-                                              # 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
-                                              # 3.2: continue()
-                                              # 3.1: CMAKE_CXX_STANDARD, BUILD_ALWAYS
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+# 3.8: CXX_STANDARD recognizes C++17
+# 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
+# 3.2: continue()
+# 3.1: CMAKE_CXX_STANDARD, BUILD_ALWAYS
+
 project(psi4
         LANGUAGES C CXX)
 set(psi4_URL "http://www.psicode.org/")
@@ -152,9 +154,10 @@ option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed
 option_with_default(PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed" /)
 option_with_default(ENABLE_GENERIC "Enables mostly static linking of language libraries for shared library" OFF)
 option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
-option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 14)
+option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 17)
 option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar sse avx avxfma micavx512)" avx)
 option_with_default(SPHINX_THEME "Theme for Sphinx documentation and extensions" sphinx_psi_theme)
+option_with_default(USE_XSIMD "Enable use of xsimd for vectorization of xtensor expressions" ON)
 
 ########################  Process & Validate Options  ##########################
 include(GNUInstallDirs)
@@ -178,6 +181,13 @@ message(STATUS "${Cyan}Found Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MIN
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
 message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")
 add_subdirectory(external/common)
+# Pin versions of the xtensor stack
+set(xtl_pinned 0.6.11)
+set(xsimd_pinned 7.4.5)
+set(xtensor_pinned 0.21.2)
+set(xtensor-blas_pinned 0.17.1)
+set(xtensor-python_pinned 0.24.1)
+set(xtensor-io_pinned 0.9.0)
 add_subdirectory(external/upstream)
 
 # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core
@@ -206,6 +216,13 @@ ExternalProject_Add(psi4-core
            simint_external
            libxc_external
            mdi_external
+           xtl_external
+           xsimd_external
+           xtensor_external
+           xtensor-blas_external
+           xtensor-python_external
+           HighFive_external
+           xtensor-io_external
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -257,6 +274,14 @@ ExternalProject_Add(psi4-core
               -Dpylibefp_DIR=${pylibefp_DIR}
               -Dsimint_DIR=${simint_DIR}
               -DLibxc_DIR=${Libxc_DIR}
+              -Dxtl_DIR=${xtl_DIR}
+              -DUSE_XSIMD=${USE_XSIMD}
+              -Dxsimd_DIR=$<$<BOOL:${USE_XSIMD}>:${xsimd_DIR}>
+              -Dxtensor_DIR=${xtensor_DIR}
+              -Dxtensor-blas_DIR=${xtensor-blas_DIR}
+              -Dxtensor-python_DIR=${xtensor-python_DIR}
+              -DHighFive_DIR=${HighFive_DIR}
+              -Dxtensor-io_DIR=${xtensor-io_DIR}
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DLIBC_INTERJECT=${LIBC_INTERJECT}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}

@@ -1061,33 +1061,33 @@ class LibmintsMolecule():
             self.full_atoms.append(CartesianEntry(currentAtom, Z, charge,
                 mass, symbol, label, A,
                 xval, yval, zval))
-        
+
         # handle first line of Zmat
         elif numEntries == 0:
             self.set_has_zmatrix(True)
             self.full_atoms.append(ZMatrixEntry(currentAtom, Z, charge,
                 mass, symbol, label, A))
-        
+
         # handle second line of Zmat
         elif numEntries == 2:
             self.set_has_zmatrix(True)
-        
+
             rTo = self.get_anchor_atom(anchor[0], '')
             if rTo >= currentAtom:
                 raise ValidationError("Error finding defined anchor atom {}".format(anchor[0]))
             rval = self.get_coord_value(anchor[1])
-        
+
             if self.full_atoms[rTo].symbol() == 'X':
                 rval.set_fixed(True)
-        
+
             self.full_atoms.append(ZMatrixEntry(currentAtom, Z, charge,
                 mass, symbol, label, A,
                 self.full_atoms[rTo], rval))
-        
+
         # handle third line of Zmat
         elif numEntries == 4:
             self.set_has_zmatrix(True)
-        
+
             rTo = self.get_anchor_atom(anchor[0], '')
             if rTo >= currentAtom:
                 raise ValidationError("Error finding defined anchor atom {}".format(anchor[0]))
@@ -1098,21 +1098,21 @@ class LibmintsMolecule():
                 raise ValidationError("Error: atom used multiple times")
             rval = self.get_coord_value(anchor[1])
             aval = self.get_coord_value(anchor[3])
-        
+
             if self.full_atoms[rTo].symbol() == 'X':
                 rval.set_fixed(True)
             if self.full_atoms[aTo].symbol() == 'X':
                 aval.set_fixed(True)
-        
+
             self.full_atoms.append(ZMatrixEntry(currentAtom, Z, charge,
                 mass, symbol, label, A,
                 self.full_atoms[rTo], rval,
                 self.full_atoms[aTo], aval))
-        
+
         # handle fourth line of Zmat
         elif numEntries == 6:
             self.set_has_zmatrix(True)
-        
+
             rTo = self.get_anchor_atom(anchor[0], '')
             if rTo >= currentAtom:
                 raise ValidationError("Error finding defined anchor atom {}".format(anchor[0]))
@@ -1124,27 +1124,27 @@ class LibmintsMolecule():
                 raise ValidationError("Error finding defined anchor atom {}".format(anchor[4]))
             if aTo == rTo or rTo == dTo or aTo == dTo:  # for you star wars fans
                 raise ValidationError("Error: atom used multiple times")
-        
+
             rval = self.get_coord_value(anchor[1])
             aval = self.get_coord_value(anchor[3])
             dval = self.get_coord_value(anchor[5])
-        
+
             if self.full_atoms[rTo].symbol() == 'X':
                 rval.set_fixed(True)
             if self.full_atoms[aTo].symbol() == 'X':
                 aval.set_fixed(True)
             if self.full_atoms[dTo].symbol() == 'X':
                 dval.set_fixed(True)
-        
+
             self.full_atoms.append(ZMatrixEntry(currentAtom, Z, charge,
                 mass, symbol, label, A,
                 self.full_atoms[rTo], rval,
                 self.full_atoms[aTo], aval,
                 self.full_atoms[dTo], dval))
-        
+
         else:
             raise ValidationError('Illegal geometry specification (neither Cartesian nor Z-Matrix)')
-        
+
     def atom_entry(self, atom):
         """Returns the CoordEntry for an atom."""
         return self.atoms[atom]
@@ -2880,7 +2880,6 @@ class LibmintsMolecule():
         self.equiv.append([0])
 
         ct = self.point_group().char_table()
-        so = SymmetryOperation()
         np3 = [0.0, 0.0, 0.0]
 
         current_geom = self.geometry(np_out=False)
@@ -3262,9 +3261,6 @@ def compute_atom_map(mol, tol=0.05):
     for i in range(natom):
         atom_map[i] = [0] * ng
 
-    np3 = [0.0, 0.0, 0.0]
-    so = SymmetryOperation()
-
     # loop over all centers
     for i in range(natom):
         ac = mol.xyz(i)
@@ -3273,9 +3269,8 @@ def compute_atom_map(mol, tol=0.05):
         #   center "i" and see which atom it maps into
         for g in range(ng):
             so = ct.symm_operation(g)
-
+            np3 = [0.0, 0.0, 0.0]
             for ii in range(3):
-                np3[ii] = 0
                 for jj in range(3):
                     np3[ii] += so[ii][jj] * ac[jj]
             atom_map[i][g] = mol.atom_at_position(np3, tol)

@@ -2,6 +2,20 @@
 ### >> This allow to propagate dependencies upwards sanely
 pybind11_add_module(core SHARED NO_EXTRAS core.cc)
 
+# See here: https://github.com/pybind/pybind11/issues/1649
+target_compile_definitions(core
+  PRIVATE
+    $<$<CXX_COMPILER_ID:Intel>:PYBIND11_CPP14>
+  )
+# Always color output (even when using Ninja)
+target_compile_options(core
+  PRIVATE
+    $<$<CXX_COMPILER_ID:GNU>:-fdiagnostics-color=always>
+    $<$<CXX_COMPILER_ID:Clang>:-fcolor-diagnostics>
+    $<$<CONFIG:Debug>:-O0;-g3>
+    $<$<AND:$<CXX_COMPILER_ID:Clang>,$<CONFIG:Debug>>:-glldb;-fno-limit-debug-info>
+  )
+
 ### >> Go into psi4 subdirectory to compile libraries and modules <<
 add_subdirectory(psi4)
 
@@ -18,15 +32,16 @@ target_sources(core
     export_diis.cc
     export_fock.cc
     export_functional.cc
+    export_linalg.cc
     export_mints.cc
     export_misc.cc
     export_oeprop.cc
+    export_options.cc
     export_pcm.cc
     export_plugins.cc
     export_psio.cc
     export_trans.cc
     export_wavefunction.cc
-    export_options.cc
     create_new_plugin.cc
     read_options.cc
     python_data_type.cc
@@ -48,7 +63,11 @@ target_link_libraries(core
     ${psi4_libmodules}
     ${POST_LIBRARY_OPTION}
     ${LIBC_INTERJECT}
+    xtensor-python
+    NumPy
     tgt::lapack # OpenMP flags to core.cc
+  PUBLIC
+    xtensor
   )
 
 if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)

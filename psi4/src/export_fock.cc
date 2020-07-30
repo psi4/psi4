@@ -35,7 +35,7 @@
 #include "psi4/lib3index/dfhelper.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libmints/vector.h"
+#include "psi4/libmints/tensor.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsi4util/process.h"
@@ -98,7 +98,7 @@ void export_fock(py::module &m) {
         .def("dfh", &MemDFJK::dfh, "Return the DFHelper object.");
 
     py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "docstring")
-        .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
+        .def(py::init<SharedVector_<double>, SharedVector_<double>, double>())
         .def("denominator_occ", &LaplaceDenominator::denominator_occ, "docstring")
         .def("denominator_vir", &LaplaceDenominator::denominator_vir, "docstring");
 
@@ -187,7 +187,9 @@ void export_fock(py::module &m) {
 
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",
-                    [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases) { return scf::SADGuess(basis, atomic_bases, Process::environment.options); })
+                    [](std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<BasisSet>> atomic_bases) {
+                        return scf::SADGuess(basis, atomic_bases, Process::environment.options);
+                    })
         .def("compute_guess", &scf::SADGuess::compute_guess)
         .def("set_print", &scf::SADGuess::set_print)
         .def("set_debug", &scf::SADGuess::set_debug)

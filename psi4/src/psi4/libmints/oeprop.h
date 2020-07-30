@@ -29,13 +29,15 @@
 #ifndef _psi_src_lib_oeprop_h
 #define _psi_src_lib_oeprop_h
 
-#include <set>
-#include <vector>
 #include <map>
+#include <set>
 #include <string>
+#include <vector>
+
+#include "psi4/pragma.h"
 
 #include "typedefs.h"
-#include "psi4/libmints/vector3.h"
+#include "vector3.h"
 
 namespace psi {
 
@@ -270,13 +272,13 @@ class MultipolePropCalc : public Prop {
 
    protected:
     /// The center about which properties are computed
-    Vector3 origin_;
+    Vector3<double> origin_;
     /// Whether the origin is on a symmetry axis or not
     bool origin_preserves_symmetry_;
 
    public:
     /// Common initialization
-    MultipolePropCalc(std::shared_ptr<Wavefunction> wfn, Vector3 const& origin);
+    MultipolePropCalc(std::shared_ptr<Wavefunction> wfn, Vector3<double> const& origin);
     // Output Type of multipole function: name, elec, nuc, tot, order
     typedef std::vector<std::tuple<std::string, double, double, double, int>> MultipoleOutputTypeBase;
     typedef std::shared_ptr<MultipoleOutputTypeBase> MultipoleOutputType;
@@ -433,9 +435,9 @@ class PSI_API OEProp : public TaskListComputer {
     int max_noon_ = 3;
 
     // retrieves the Origin vector from the environment.
-    Vector3 get_origin_from_environment() const;
+    Vector3<double> get_origin_from_environment() const;
     /// Computes the center for a given property, for the current molecule. Weighted center of geometry function
-    Vector3 compute_center(const double* property) const;
+    Vector3<double> compute_center(const double* property) const;
 
    public:
     /// Constructor, uses globals

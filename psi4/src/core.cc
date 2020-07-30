@@ -26,11 +26,15 @@
  * @END LICENSE
  */
 
+#include <chrono>
 #include <cstdio>
 #include <iomanip>
 #include <map>
 #include <sstream>
 #include <sys/stat.h>
+
+#include <highfive/H5File.hpp>
+#include <xtensor-io/xhighfive.hpp>
 
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
@@ -39,10 +43,9 @@
 #include "psi4/cc/cclambda/cclambda.h"
 #include "psi4/cc/ccwave.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/pointgrp.h"
-#include "psi4/libmints/vector.h"
+#include "psi4/libmints/tensor.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/writer_file_prefix.h"
 #include "psi4/liboptions/liboptions.h"
@@ -77,15 +80,16 @@ void export_cubeprop(py::module&);
 void export_diis(py::module&);
 void export_fock(py::module&);
 void export_functional(py::module&);
+void export_linalg(py::module&);
 void export_mints(py::module&);
 void export_misc(py::module&);
 void export_oeprop(py::module&);
+void export_options(py::module&);
 void export_pcm(py::module&);
 void export_plugins(py::module&);
 void export_psio(py::module&);
-void export_wavefunction(py::module&);
-void export_options(py::module&);
 void export_trans(py::module&);
+void export_wavefunction(py::module&);
 
 // In export_plugins.cc
 void py_psi_plugin_close_all();
@@ -104,6 +108,8 @@ char* psi_file_prefix;
 std::string outfile_name;
 std::string restart_id;
 std::shared_ptr<PsiOutStream> outfile;
+std::string h5file_name;
+std::shared_ptr<HighFive::File> h5file;
 
 // Wavefunction returns
 namespace adc {
@@ -222,6 +228,16 @@ void py_reopen_outfile() {
     }
 }
 
+void py_reopen_h5file() {
+    try {
+        h5file = std::make_shared<HighFive::File>(h5file_name, HighFive::File::ReadWrite);
+    } catch (HighFive::Exception& err) {
+        std::stringstream line;
+        line << "Psi4: " << err.what() << std::endl;
+        throw PSIEXCEPTION(line.str());
+    }
+}
+
 void py_be_quiet() {
     py_close_outfile();
     auto mode = std::ostream::app;
@@ -230,6 +246,8 @@ void py_be_quiet() {
 }
 
 std::string py_get_outfile_name() { return outfile_name; }
+
+std::string py_get_h5file_name() { return h5file_name; }
 
 void py_psi_prepare_options_for_module(std::string const& name) {
     // Tell the options object which module is about to run
@@ -885,8 +903,8 @@ void py_psi_set_gradient(SharedMatrix grad) { Process::environment.set_gradient(
 
 SharedMatrix py_psi_get_gradient() { return Process::environment.gradient(); }
 
-std::shared_ptr<Vector> py_psi_get_atomic_point_charges() {
-    auto empty = std::make_shared<psi::Vector>();
+SharedVector_<double> py_psi_get_atomic_point_charges() {
+    auto empty = std::make_shared<psi::Vector_<double>>();
     return empty;  // charges not added to process.h for environment - yet(?)
 }
 
@@ -946,6 +964,15 @@ void py_psi_print_variable_map() {
 
 std::string py_psi_top_srcdir() { return TOSTRING(PSI_TOP_SRCDIR); }
 
+std::string get_date_string(std::chrono::system_clock::time_point t) {
+    auto as_time_t = std::chrono::system_clock::to_time_t(t);
+    char buf[128];
+    if (std::strftime(buf, sizeof(buf), "%T %F", std::localtime(&as_time_t))) {
+        return std::string{buf};
+    }
+    throw PSIEXCEPTION("Failed to get current date as string");
+}
+
 bool psi4_python_module_initialize() {
     static bool initialized = false;
 
@@ -961,6 +988,13 @@ bool psi4_python_module_initialize() {
     outfile_name = "stdout";
     std::string fprefix = PSI_DEFAULT_FILE_PREFIX;
     psi_file_prefix = strdup(fprefix.c_str());
+
+    h5file = std::make_shared<HighFive::File>(
+        "psi4.h5", HighFive::File::ReadWrite | HighFive::File::Create | HighFive::File::Truncate);
+
+    auto ini_date_time = get_date_string(std::chrono::system_clock::now());
+    auto i = h5file->createAttribute<std::string>("Psi4 initialized", HighFive::DataSpace::From(ini_date_time));
+    i.write(ini_date_time);
 
     // There is only one timer:
     timer_init();
@@ -1003,6 +1037,10 @@ void psi4_python_module_finalize() {
 
     outfile = std::shared_ptr<PsiOutStream>();
     psi_file_prefix = nullptr;
+
+    auto fin_date_time = get_date_string(std::chrono::system_clock::now());
+    auto f = h5file->createAttribute<std::string>("Psi4 finalized", HighFive::DataSpace::From(fin_date_time));
+    f.write(fin_date_time);
 }
 
 PYBIND11_MODULE(core, core) {
@@ -1259,15 +1297,16 @@ PYBIND11_MODULE(core, core) {
     core.def("set_psi_file_prefix", [](std::string fprefix) { psi_file_prefix = strdup(fprefix.c_str()); });
 
     // Define library classes
-    export_psio(core);
     export_diis(core);
-    export_mints(core);
-    export_functional(core);
-    export_misc(core);
     export_fock(core);
+    export_functional(core);
+    export_linalg(core);
+    export_mints(core);
+    export_misc(core);
+    export_options(core);
+    export_psio(core);
     export_trans(core);
     export_wavefunction(core);
-    export_options(core);
 
     // ??
     // py::class_<Process::Environment>(core, "Environment")

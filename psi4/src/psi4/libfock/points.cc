@@ -29,16 +29,17 @@
 #include "points.h"
 #include "cubature.h"
 
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libqt/qt.h"
+#include <cmath>
 
 #include "gau2grid/gau2grid.h"
 
-#include <cmath>
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/integral.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/tensor.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/libpsi4util.h"
+#include "psi4/libqt/qt.h"
 
 namespace psi {
 
@@ -72,11 +73,10 @@ void SAPFunctions::print(std::string out, int print) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   => SAPFunctions <=\n\n");
     printer->Printf("    Point Values:\n");
-    for (std::map<std::string, std::shared_ptr<Vector> >::const_iterator it = point_values_.begin();
-         it != point_values_.end(); it++) {
-        printer->Printf("    %s\n", (*it).first.c_str());
+    for (const auto kv : point_values_) {
+        printer->Printf("    %s\n", kv.first.c_str());
         if (print > 3) {
-            (*it).second->print();
+            psi::print(kv.second);
         }
     }
     printer->Printf("\n\n");
@@ -126,23 +126,30 @@ void RKSFunctions::allocate() {
 
     point_values_.clear();
 
+    std::vector<std::string> keys;
     if (ansatz_ >= 0) {
-        point_values_["RHO_A"] = std::make_shared<Vector>("RHO_A", max_points_);
+        keys.push_back("RHO_A");
     }
 
     if (ansatz_ >= 1) {
-        point_values_["RHO_AX"] = std::make_shared<Vector>("RHO_AX", max_points_);
-        point_values_["RHO_AY"] = std::make_shared<Vector>("RHO_AY", max_points_);
-        point_values_["RHO_AZ"] = std::make_shared<Vector>("RHO_AZ", max_points_);
-        point_values_["GAMMA_AA"] = std::make_shared<Vector>("GAMMA_AA", max_points_);
+        keys.push_back("RHO_AX");
+        keys.push_back("RHO_AY");
+        keys.push_back("RHO_AZ");
+        keys.push_back("GAMMA_AA");
     }
 
     if (ansatz_ >= 2) {
-        point_values_["RHO_XX"] = std::make_shared<Vector>("RHO_XX", max_points_);
-        point_values_["RHO_YY"] = std::make_shared<Vector>("RHO_YY", max_points_);
-        point_values_["RHO_ZZ"] = std::make_shared<Vector>("RHO_ZZ", max_points_);
-        point_values_["TAU_A"] = std::make_shared<Vector>("TAU_A", max_points_);
+        keys.push_back("RHO_XX");
+        keys.push_back("RHO_YY");
+        keys.push_back("RHO_ZZ");
+        keys.push_back("TAU_A");
     }
+
+    // Fill map
+    for (const auto& k : keys) {
+        point_values_[k] = std::make_shared<Vector_<double>>(k, max_points_);
+    }
+
     build_temps();
 }
 void RKSFunctions::set_pointers(SharedMatrix D_AO) { D_AO_ = D_AO; }
@@ -187,7 +194,7 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
 
     // => Build LSDA quantities <= //
     double** phip = basis_value("PHI")->pointer();
-    double* rhoap = point_value("RHO_A")->pointer();
+    auto rhoap = point_value("RHO_A")->data();
     size_t coll_funcs = basis_value("PHI")->ncol();
 
     // Rho_a = 2.0 * D_xy phi_xa phi_ya
@@ -202,10 +209,10 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
         double** phixp = basis_value("PHI_X")->pointer();
         double** phiyp = basis_value("PHI_Y")->pointer();
         double** phizp = basis_value("PHI_Z")->pointer();
-        double* rhoaxp = point_value("RHO_AX")->pointer();
-        double* rhoayp = point_value("RHO_AY")->pointer();
-        double* rhoazp = point_value("RHO_AZ")->pointer();
-        double* gammaaap = point_value("GAMMA_AA")->pointer();
+        auto rhoaxp = point_value("RHO_AX")->data();
+        auto rhoayp = point_value("RHO_AY")->data();
+        auto rhoazp = point_value("RHO_AZ")->data();
+        auto gammaaap = point_value("GAMMA_AA")->data();
 
         for (int P = 0; P < npoints; P++) {
             // 2.0 for Px D P + P D Px
@@ -224,7 +231,7 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
         double** phixp = basis_value("PHI_X")->pointer();
         double** phiyp = basis_value("PHI_Y")->pointer();
         double** phizp = basis_value("PHI_Z")->pointer();
-        double* taup = point_value("TAU_A")->pointer();
+        auto taup = point_value("TAU_A")->data();
 
         std::fill(taup, taup + npoints, 0.0);
 
@@ -347,11 +354,10 @@ void RKSFunctions::print(std::string out, int print) const {
     printer->Printf("   => RKSFunctions: %s Ansatz <=\n\n", ans.c_str());
 
     printer->Printf("    Point Values:\n");
-    for (std::map<std::string, std::shared_ptr<Vector> >::const_iterator it = point_values_.begin();
-         it != point_values_.end(); it++) {
-        printer->Printf("    %s\n", (*it).first.c_str());
+    for (const auto kv : point_values_) {
+        printer->Printf("    %s\n", kv.first.c_str());
         if (print > 3) {
-            (*it).second->print();
+            psi::print(kv.second);
         }
     }
     printer->Printf("\n\n");
@@ -388,27 +394,34 @@ void UKSFunctions::allocate() {
 
     point_values_.clear();
 
+    std::vector<std::string> keys;
     if (ansatz_ >= 0) {
-        point_values_["RHO_A"] = std::make_shared<Vector>("RHO_A", max_points_);
-        point_values_["RHO_B"] = std::make_shared<Vector>("RHO_B", max_points_);
+        keys.push_back("RHO_A");
+        keys.push_back("RHO_B");
     }
 
     if (ansatz_ >= 1) {
-        point_values_["RHO_AX"] = std::make_shared<Vector>("RHO_AX", max_points_);
-        point_values_["RHO_AY"] = std::make_shared<Vector>("RHO_AY", max_points_);
-        point_values_["RHO_AZ"] = std::make_shared<Vector>("RHO_AZ", max_points_);
-        point_values_["RHO_BX"] = std::make_shared<Vector>("RHO_BX", max_points_);
-        point_values_["RHO_BY"] = std::make_shared<Vector>("RHO_BY", max_points_);
-        point_values_["RHO_BZ"] = std::make_shared<Vector>("RHO_BZ", max_points_);
-        point_values_["GAMMA_AA"] = std::make_shared<Vector>("GAMMA_AA", max_points_);
-        point_values_["GAMMA_AB"] = std::make_shared<Vector>("GAMMA_AB", max_points_);
-        point_values_["GAMMA_BB"] = std::make_shared<Vector>("GAMMA_BB", max_points_);
+        keys.push_back("RHO_AX");
+        keys.push_back("RHO_AY");
+        keys.push_back("RHO_AZ");
+        keys.push_back("RHO_BX");
+        keys.push_back("RHO_BY");
+        keys.push_back("RHO_BZ");
+        keys.push_back("GAMMA_AA");
+        keys.push_back("GAMMA_AB");
+        keys.push_back("GAMMA_BB");
     }
 
     if (ansatz_ >= 2) {
-        point_values_["TAU_A"] = std::make_shared<Vector>("TAU_A", max_points_);
-        point_values_["TAU_B"] = std::make_shared<Vector>("TAU_A", max_points_);
+        keys.push_back("TAU_A");
+        keys.push_back("TAU_B");
     }
+
+    // Fill map
+    for (const auto& k : keys) {
+        point_values_[k] = std::make_shared<Vector_<double>>(k, max_points_);
+    }
+
     build_temps();
 }
 void UKSFunctions::set_pointers(SharedMatrix /*Da_AO*/) {
@@ -462,8 +475,8 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
 
     // => Build LSDA quantities <= //
     double** phip = basis_value("PHI")->pointer();
-    double* rhoap = point_value("RHO_A")->pointer();
-    double* rhobp = point_value("RHO_B")->pointer();
+    double* rhoap = point_value("RHO_A")->data();
+    double* rhobp = point_value("RHO_B")->data();
     size_t coll_funcs = basis_value("PHI")->ncol();
 
     C_DGEMM('N', 'N', npoints, nlocal, nlocal, 1.0, phip[0], coll_funcs, Da2p[0], nglobal, 0.0, Tap[0], nglobal);
@@ -481,15 +494,15 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
         double** phixp = basis_value("PHI_X")->pointer();
         double** phiyp = basis_value("PHI_Y")->pointer();
         double** phizp = basis_value("PHI_Z")->pointer();
-        double* rhoaxp = point_value("RHO_AX")->pointer();
-        double* rhoayp = point_value("RHO_AY")->pointer();
-        double* rhoazp = point_value("RHO_AZ")->pointer();
-        double* rhobxp = point_value("RHO_BX")->pointer();
-        double* rhobyp = point_value("RHO_BY")->pointer();
-        double* rhobzp = point_value("RHO_BZ")->pointer();
-        double* gammaaap = point_value("GAMMA_AA")->pointer();
-        double* gammaabp = point_value("GAMMA_AB")->pointer();
-        double* gammabbp = point_value("GAMMA_BB")->pointer();
+        double* rhoaxp = point_value("RHO_AX")->data();
+        double* rhoayp = point_value("RHO_AY")->data();
+        double* rhoazp = point_value("RHO_AZ")->data();
+        double* rhobxp = point_value("RHO_BX")->data();
+        double* rhobyp = point_value("RHO_BY")->data();
+        double* rhobzp = point_value("RHO_BZ")->data();
+        double* gammaaap = point_value("GAMMA_AA")->data();
+        double* gammaabp = point_value("GAMMA_AB")->data();
+        double* gammabbp = point_value("GAMMA_BB")->data();
 
         for (int P = 0; P < npoints; P++) {
             // 2.0 for Px D P + P D Px
@@ -516,8 +529,8 @@ void UKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
         double** phixp = basis_value("PHI_X")->pointer();
         double** phiyp = basis_value("PHI_Y")->pointer();
         double** phizp = basis_value("PHI_Z")->pointer();
-        double* tauap = point_value("TAU_A")->pointer();
-        double* taubp = point_value("TAU_B")->pointer();
+        double* tauap = point_value("TAU_A")->data();
+        double* taubp = point_value("TAU_B")->data();
 
         std::fill(tauap, tauap + npoints, 0.0);
         std::fill(taubp, taubp + npoints, 0.0);
@@ -626,11 +639,10 @@ void UKSFunctions::print(std::string out, int print) const {
     printer->Printf("   => UKSFunctions: %s Ansatz <=\n\n", ans.c_str());
 
     printer->Printf("    Point Values:\n");
-    for (std::map<std::string, std::shared_ptr<Vector> >::const_iterator it = point_values_.begin();
-         it != point_values_.end(); it++) {
-        printer->Printf("    %s\n", (*it).first.c_str());
+    for (const auto& kv : point_values_) {
+        printer->Printf("    %s\n", kv.first.c_str());
         if (print > 3) {
-            (*it).second->print();
+            psi::print(kv.second);
         }
     }
     printer->Printf("\n\n");
@@ -643,7 +655,7 @@ PointFunctions::PointFunctions(std::shared_ptr<BasisSet> primary, int max_points
     set_ansatz(0);
 }
 PointFunctions::~PointFunctions() {}
-SharedVector PointFunctions::point_value(const std::string& key) { return point_values_[key]; }
+SharedVector_<double> PointFunctions::point_value(const std::string& key) { return point_values_[key]; }
 
 SharedMatrix PointFunctions::orbital_value(const std::string& key) { return orbital_values_[key]; }
 
@@ -712,44 +724,40 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
     // Declare tmps
     std::vector<double> center(3, 0.0);
 
-    // Declare pointers
-    double *tmpp, *tmp_xp, *tmp_yp, *tmp_zp;
-    double *tmp_xxp, *tmp_xyp, *tmp_xzp, *tmp_yyp, *tmp_yzp, *tmp_zzp;
-    double *valuesp, *values_xp, *values_yp, *values_zp;
-    double *values_xxp, *values_xyp, *values_xzp, *values_yyp, *values_yzp, *values_zzp;
+    auto is_in_temps = [temps = this->basis_temps_](const std::string& k) -> bool { return is_key_in_map(temps, k); };
+    auto is_in_values = [values = this->basis_values_](const std::string& k) -> bool {
+        return is_key_in_map(values, k);
+    };
 
-    if (deriv_ >= 0) {
-        tmpp = basis_temps_["PHI"]->pointer()[0];
-        valuesp = basis_values_["PHI"]->pointer()[0];
-    }
-    if (deriv_ >= 1) {
-        tmp_xp = basis_temps_["PHI_X"]->pointer()[0];
-        tmp_yp = basis_temps_["PHI_Y"]->pointer()[0];
-        tmp_zp = basis_temps_["PHI_Z"]->pointer()[0];
-        values_xp = basis_values_["PHI_X"]->pointer()[0];
-        values_yp = basis_values_["PHI_Y"]->pointer()[0];
-        values_zp = basis_values_["PHI_Z"]->pointer()[0];
-    }
-    if (deriv_ >= 2) {
-        tmp_xxp = basis_temps_["PHI_XX"]->pointer()[0];
-        tmp_xyp = basis_temps_["PHI_XY"]->pointer()[0];
-        tmp_xzp = basis_temps_["PHI_XZ"]->pointer()[0];
-        tmp_yyp = basis_temps_["PHI_YY"]->pointer()[0];
-        tmp_yzp = basis_temps_["PHI_YZ"]->pointer()[0];
-        tmp_zzp = basis_temps_["PHI_ZZ"]->pointer()[0];
-        values_xxp = basis_values_["PHI_XX"]->pointer()[0];
-        values_xyp = basis_values_["PHI_XY"]->pointer()[0];
-        values_xzp = basis_values_["PHI_XZ"]->pointer()[0];
-        values_yyp = basis_values_["PHI_YY"]->pointer()[0];
-        values_yzp = basis_values_["PHI_YZ"]->pointer()[0];
-        values_zzp = basis_values_["PHI_ZZ"]->pointer()[0];
-    }
+    // Declare pointers
+    auto tmpp = is_in_temps("PHI") ? basis_temps_.at("PHI")->pointer()[0] : nullptr;
+    auto valuesp = is_in_values("PHI") ? basis_values_.at("PHI")->pointer()[0] : nullptr;
+
+    auto tmp_xp = is_in_temps("PHI_X") ? basis_temps_.at("PHI_X")->pointer()[0] : nullptr;
+    auto tmp_yp = is_in_temps("PHI_Y") ? basis_temps_.at("PHI_Y")->pointer()[0] : nullptr;
+    auto tmp_zp = is_in_temps("PHI_Z") ? basis_temps_.at("PHI_Z")->pointer()[0] : nullptr;
+    auto values_xp = is_in_values("PHI_X") ? basis_values_.at("PHI_X")->pointer()[0] : nullptr;
+    auto values_yp = is_in_values("PHI_Y") ? basis_values_.at("PHI_Y")->pointer()[0] : nullptr;
+    auto values_zp = is_in_values("PHI_Z") ? basis_values_.at("PHI_Z")->pointer()[0] : nullptr;
+
+    auto tmp_xxp = is_in_temps("PHI_XX") ? basis_temps_["PHI_XX"]->pointer()[0] : nullptr;
+    auto tmp_xyp = is_in_temps("PHI_XY") ? basis_temps_["PHI_XY"]->pointer()[0] : nullptr;
+    auto tmp_xzp = is_in_temps("PHI_XZ") ? basis_temps_["PHI_XZ"]->pointer()[0] : nullptr;
+    auto tmp_yyp = is_in_temps("PHI_YY") ? basis_temps_["PHI_YY"]->pointer()[0] : nullptr;
+    auto tmp_yzp = is_in_temps("PHI_YZ") ? basis_temps_["PHI_YZ"]->pointer()[0] : nullptr;
+    auto tmp_zzp = is_in_temps("PHI_ZZ") ? basis_temps_["PHI_ZZ"]->pointer()[0] : nullptr;
+    auto values_xxp = is_in_values("PHI_XX") ? basis_values_["PHI_XX"]->pointer()[0] : nullptr;
+    auto values_xyp = is_in_values("PHI_XY") ? basis_values_["PHI_XY"]->pointer()[0] : nullptr;
+    auto values_xzp = is_in_values("PHI_XZ") ? basis_values_["PHI_XZ"]->pointer()[0] : nullptr;
+    auto values_yyp = is_in_values("PHI_YY") ? basis_values_["PHI_YY"]->pointer()[0] : nullptr;
+    auto values_yzp = is_in_values("PHI_YZ") ? basis_values_["PHI_YZ"]->pointer()[0] : nullptr;
+    auto values_zzp = is_in_values("PHI_ZZ") ? basis_values_["PHI_ZZ"]->pointer()[0] : nullptr;
 
     int nvals = 0;
     for (size_t Qlocal = 0; Qlocal < shells.size(); Qlocal++) {
         int Qglobal = shells[Qlocal];
         const GaussianShell& Qshell = primary_->shell(Qglobal);
-        Vector3 v = Qshell.center();
+        auto v = Qshell.center();
         int L = Qshell.am();
         int nQ = Qshell.nfunction();
         int nprim = Qshell.nprimitive();
@@ -773,8 +781,8 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
             double* phi_x_start = tmp_xp + row_shift;
             double* phi_y_start = tmp_yp + row_shift;
             double* phi_z_start = tmp_zp + row_shift;
-            gg_collocation_deriv1(L, npoints, xyz, 1, nprim, norm, alpha, center.data(), order, phi_start,
-                                  phi_x_start, phi_y_start, phi_z_start);
+            gg_collocation_deriv1(L, npoints, xyz, 1, nprim, norm, alpha, center.data(), order, phi_start, phi_x_start,
+                                  phi_y_start, phi_z_start);
 
         } else if (deriv_ == 2) {
             double* phi_x_start = tmp_xp + row_shift;
@@ -786,9 +794,9 @@ void BasisFunctions::compute_functions(std::shared_ptr<BlockOPoints> block) {
             double* phi_yy_start = tmp_yyp + row_shift;
             double* phi_yz_start = tmp_yzp + row_shift;
             double* phi_zz_start = tmp_zzp + row_shift;
-            gg_collocation_deriv2(L, npoints, xyz, 1, nprim, norm, alpha, center.data(), order, phi_start,
-                                  phi_x_start, phi_y_start, phi_z_start, phi_xx_start, phi_xy_start, phi_xz_start,
-                                  phi_yy_start, phi_yz_start, phi_zz_start);
+            gg_collocation_deriv2(L, npoints, xyz, 1, nprim, norm, alpha, center.data(), order, phi_start, phi_x_start,
+                                  phi_y_start, phi_z_start, phi_xx_start, phi_xy_start, phi_xz_start, phi_yy_start,
+                                  phi_yz_start, phi_zz_start);
         }
 
         if (puream_) {
@@ -820,11 +828,10 @@ void BasisFunctions::print(std::string out, int print) const {
     printer->Printf("   => BasisFunctions: Derivative = %d, Max Points = %d <=\n\n", deriv_, max_points_);
 
     printer->Printf("    Basis Values:\n");
-    for (std::map<std::string, SharedMatrix>::const_iterator it = basis_values_.begin(); it != basis_values_.end();
-         it++) {
-        printer->Printf("    %s\n", (*it).first.c_str());
+    for (const auto kv : basis_values_) {
+        printer->Printf("    %s\n", kv.first.c_str());
         if (print > 3) {
-            (*it).second->print();
+            kv.second->print();
         }
     }
     printer->Printf("\n\n");

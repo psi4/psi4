@@ -29,10 +29,11 @@
 #ifndef three_index_denominator_H
 #define three_index_denominator_H
 
+#include "psi4/libmints/tensor.h"
+
 namespace psi {
 
 class Matrix;
-class Vector;
 
 // Denominator Factorizations (MP2-like for now)
 class PSI_API Denominator {
@@ -41,9 +42,9 @@ class PSI_API Denominator {
     SharedMatrix denominator_;
 
     // Pointer to active occupied orbital eigenvalues
-    std::shared_ptr<Vector> eps_occ_;
+    SharedVector_<double> eps_occ_;
     // Pointer to active virtual orbital eigenvalues
-    std::shared_ptr<Vector> eps_vir_;
+    SharedVector_<double> eps_vir_;
     // Number of vectors required to obtain given accuracy
     int nvector_;
     // Maximum error norm allowed in denominator
@@ -52,12 +53,12 @@ class PSI_API Denominator {
     virtual void decompose() = 0;
 
    public:
-    Denominator(std::shared_ptr<Vector> eps_occ, std::shared_ptr<Vector> eps_vir, double delta);
+    Denominator(SharedVector_<double> eps_occ, SharedVector_<double> eps_vir, double delta);
     virtual ~Denominator();
 
     // Factory method, algorithm should be LAPLACE or CHOLESKY
-    static std::shared_ptr<Denominator> buildDenominator(const std::string& algorithm, std::shared_ptr<Vector> eps_occ,
-                                                         std::shared_ptr<Vector> eps_vir, double delta);
+    static std::shared_ptr<Denominator> buildDenominator(const std::string& algorithm, SharedVector_<double> eps_occ,
+                                                         SharedVector_<double> eps_vir, double delta);
 
     double delta() const { return delta_; }
     int nvector() const { return nvector_; }
@@ -75,7 +76,7 @@ class PSI_API LaplaceDenominator : public Denominator {
     void decompose() override;
 
    public:
-    LaplaceDenominator(std::shared_ptr<Vector> eps_occ_, std::shared_ptr<Vector> eps_vir, double delta);
+    LaplaceDenominator(SharedVector_<double> eps_occ_, SharedVector_<double> eps_vir, double delta);
     ~LaplaceDenominator() override;
     void debug() override;
     SharedMatrix denominator_occ() const { return denominator_occ_; }
@@ -87,7 +88,7 @@ class PSI_API CholeskyDenominator : public Denominator {
     void decompose() override;
 
    public:
-    CholeskyDenominator(std::shared_ptr<Vector> eps_occ_, std::shared_ptr<Vector> eps_vir, double delta);
+    CholeskyDenominator(SharedVector_<double> eps_occ_, SharedVector_<double> eps_vir, double delta);
     ~CholeskyDenominator() override;
     void debug() override;
 };
@@ -100,13 +101,13 @@ class PSI_API SAPTDenominator {
     SharedMatrix denominatorB_;
 
     // Pointer to active occupied orbital eigenvalues (monomer A)
-    std::shared_ptr<Vector> eps_occA_;
+    SharedVector_<double> eps_occA_;
     // Pointer to active virtual orbital eigenvalues (monomer A)
-    std::shared_ptr<Vector> eps_virA_;
+    SharedVector_<double> eps_virA_;
     // Pointer to active occupied orbital eigenvalues (monomer B)
-    std::shared_ptr<Vector> eps_occB_;
+    SharedVector_<double> eps_occB_;
     // Pointer to active virtual orbital eigenvalues (monomer B)
-    std::shared_ptr<Vector> eps_virB_;
+    SharedVector_<double> eps_virB_;
     // Number of vectors required to obtain given accuracy
     int nvector_;
     // Maximum error norm allowed in denominator
@@ -115,17 +116,17 @@ class PSI_API SAPTDenominator {
     bool debug_;
 
     virtual void decompose() = 0;
-    void check_denom(std::shared_ptr<Vector>, std::shared_ptr<Vector>, SharedMatrix);
+    void check_denom(SharedVector_<double>, SharedVector_<double>, SharedMatrix);
 
    public:
-    SAPTDenominator(std::shared_ptr<Vector>, std::shared_ptr<Vector>, std::shared_ptr<Vector>, std::shared_ptr<Vector>,
-                    double, bool);
+    SAPTDenominator(SharedVector_<double>, SharedVector_<double>, SharedVector_<double>, SharedVector_<double>, double,
+                    bool);
     virtual ~SAPTDenominator();
 
     // Factory method, algorithm should be LAPLACE or CHOLESKY
     static std::shared_ptr<SAPTDenominator> buildDenominator(
-        const std::string& algorithm, std::shared_ptr<Vector> eps_occA, std::shared_ptr<Vector> eps_virA,
-        std::shared_ptr<Vector> eps_occB, std::shared_ptr<Vector> eps_virB, double delta, bool debug = false);
+        const std::string& algorithm, SharedVector_<double> eps_occA, SharedVector_<double> eps_virA,
+        SharedVector_<double> eps_occB, SharedVector_<double> eps_virB, double delta, bool debug = false);
 
     double delta() const { return delta_; }
     int nvector() const { return nvector_; }
@@ -146,11 +147,11 @@ class PSI_API SAPTLaplaceDenominator : public SAPTDenominator {
     SharedMatrix denominator_virB_;
 
     void decompose() override;
-    void check_split(std::shared_ptr<Vector>, std::shared_ptr<Vector>, SharedMatrix, SharedMatrix);
+    void check_split(SharedVector_<double>, SharedVector_<double>, SharedMatrix, SharedMatrix);
 
    public:
-    SAPTLaplaceDenominator(std::shared_ptr<Vector>, std::shared_ptr<Vector>, std::shared_ptr<Vector>,
-                           std::shared_ptr<Vector>, double, bool debug = false);
+    SAPTLaplaceDenominator(SharedVector_<double>, SharedVector_<double>, SharedVector_<double>, SharedVector_<double>,
+                           double, bool debug = false);
     ~SAPTLaplaceDenominator() override;
 
     void debug() override;
@@ -165,16 +166,16 @@ class PSI_API SAPTCholeskyDenominator : public SAPTDenominator {
     void decompose() override;
 
    public:
-    SAPTCholeskyDenominator(std::shared_ptr<Vector>, std::shared_ptr<Vector>, std::shared_ptr<Vector>,
-                            std::shared_ptr<Vector>, double, bool debug = false);
+    SAPTCholeskyDenominator(SharedVector_<double>, SharedVector_<double>, SharedVector_<double>, SharedVector_<double>,
+                            double, bool debug = false);
     ~SAPTCholeskyDenominator() override;
 };
 
 class PSI_API TLaplaceDenominator {
     // Pointer to active occupied orbital eigenvalues
-    std::shared_ptr<Vector> eps_occ_;
+    SharedVector_<double> eps_occ_;
     // Pointer to active virtual orbital eigenvalues
-    std::shared_ptr<Vector> eps_vir_;
+    SharedVector_<double> eps_vir_;
     // Maximum error norm allowed in denominator
     double delta_;
 
@@ -188,7 +189,7 @@ class PSI_API TLaplaceDenominator {
     virtual void decompose();
 
    public:
-    TLaplaceDenominator(std::shared_ptr<Vector> eps_occ, std::shared_ptr<Vector> eps_vir, double delta);
+    TLaplaceDenominator(SharedVector_<double> eps_occ, SharedVector_<double> eps_vir, double delta);
     virtual ~TLaplaceDenominator();
 
     double delta() const { return delta_; }

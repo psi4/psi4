@@ -30,6 +30,7 @@
 #define three_index_df_H
 
 #include "psi4/libmints/typedefs.h"
+#include "psi4/libmints/tensor.h"
 #include "psi4/pragma.h"
 
 #include <string>
@@ -38,8 +39,6 @@ namespace psi {
 
 class PSIO;
 class BasisSet;
-class IntVector;
-class Vector3;
 class Options;
 
 class FittingMetric {
@@ -58,9 +57,9 @@ class FittingMetric {
     /// The fitting metric or symmetric inverse
     SharedMatrix metric_;
     /// The indices (per irrep) of pivots
-    std::shared_ptr<IntVector> pivots_;
+    SharedVector_<int> pivots_;
     /// The indices (per irrep) of reverse pivots
-    std::shared_ptr<IntVector> rev_pivots_;
+    SharedVector_<int> rev_pivots_;
 
     /// The fitting algorithm selected
     std::string algorithm_;
@@ -91,9 +90,9 @@ class FittingMetric {
     /// The fitting metric or symmetric inverse
     SharedMatrix get_metric() const { return metric_; }
     /// The vector of pivots (for stability) (pivoted->global)
-    std::shared_ptr<IntVector> get_pivots() const { return pivots_; }
+    SharedVector_<int> get_pivots() const { return pivots_; }
     /// The vector of back pivots (for stability) (global->pivoted)
-    std::shared_ptr<IntVector> get_reverse_pivots() const { return rev_pivots_; }
+    SharedVector_<int> get_reverse_pivots() const { return rev_pivots_; }
 
     /// The gaussian fitting basis
     std::shared_ptr<BasisSet> get_auxiliary_basis() const { return aux_; }
@@ -172,8 +171,8 @@ class PSI_API DFTensor {
              int naocc, int navir, Options& options);
 
     /**
-    * Assumes all orbitals are active and pull options from enviroment
-    **/
+     * Assumes all orbitals are active and pull options from enviroment
+     **/
     DFTensor(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary, SharedMatrix C, int nocc,
              int nvir);
     ~DFTensor();
@@ -187,5 +186,5 @@ class PSI_API DFTensor {
     SharedMatrix Imo();
     SharedMatrix Idfmo();
 };
-}
+}  // namespace psi
 #endif

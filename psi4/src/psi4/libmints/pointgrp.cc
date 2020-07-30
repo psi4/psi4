@@ -160,7 +160,7 @@ PointGroup::PointGroup(const std::string &s) {
     origin_[0] = origin_[1] = origin_[2] = 0;
 }
 
-PointGroup::PointGroup(const std::string &s, const Vector3 &origin) {
+PointGroup::PointGroup(const std::string &s, const Vector3<double> &origin) {
     if (full_name_to_bits(s, bits_) == false) throw PSIEXCEPTION("PointGroup: Unknown point group name provided.");
     set_symbol(bits_to_basic_name(bits_));
     origin_ = origin;
@@ -171,7 +171,7 @@ PointGroup::PointGroup(unsigned char bits) : bits_(bits) {
     origin_[0] = origin_[1] = origin_[2] = 0;
 }
 
-PointGroup::PointGroup(unsigned char bits, const Vector3 &origin) : bits_(bits) {
+PointGroup::PointGroup(unsigned char bits, const Vector3<double> &origin) : bits_(bits) {
     set_symbol(bits_to_basic_name(bits));
     origin_ = origin;
 }

@@ -30,12 +30,13 @@
 #define _psi_src_lib_libmints_electricfield_h_
 
 #include <vector>
+
+#include "integral.h"
+#include "matrix.h"
+#include "osrecur.h"
 #include "typedefs.h"
-#include "psi4/libmints/osrecur.h"
-#include "psi4/libmints/vector3.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/integral.h"
+#include "vector.h"
+#include "vector3.h"
 
 namespace psi {
 class Molecule;
@@ -69,8 +70,8 @@ class ElectricFieldInt : public OneBodyAOInt {
     //! Does the method provide first derivatives?
     bool has_deriv1() override { return false; }
 
-    static Vector3 nuclear_contribution(const Vector3 &origin, std::shared_ptr<Molecule> mol);
-    static SharedMatrix nuclear_contribution_to_gradient(const Vector3 &origin, std::shared_ptr<Molecule> mol);
+    static Vector3<double> nuclear_contribution(const Vector3<double> &origin, std::shared_ptr<Molecule> mol);
+    static SharedMatrix nuclear_contribution_to_gradient(const Vector3<double> &origin, std::shared_ptr<Molecule> mol);
 
     /** Compute field integrals at coords with a functor to obtain
     a) the expectation value of the electric field at all coords (ContractOverDensityFieldFunctor)

@@ -25,15 +25,20 @@
  *
  * @END LICENSE
  */
-#include "psi4/libmints/dipole.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/vector.h"
+#include "dipole.h"
+
 #include <stdexcept>
-#include "psi4/libciomr/libciomr.h"
+
 #include "psi4/physconst.h"
+
+#include "psi4/libciomr/libciomr.h"
+
+#include "basisset.h"
+#include "integral.h"
+#include "matrix.h"
+#include "molecule.h"
+#include "vector.h"
+#include "vector3.h"
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -64,12 +69,12 @@ DipoleInt::DipoleInt(std::vector<SphericalTransform> &spherical_transforms, std:
 
 DipoleInt::~DipoleInt() { delete[] buffer_; }
 
-SharedVector DipoleInt::nuclear_contribution(std::shared_ptr<Molecule> mol, const Vector3 &origin) {
+SharedVector DipoleInt::nuclear_contribution(std::shared_ptr<Molecule> mol, const Vector3<double> &origin) {
     auto sret = std::make_shared<Vector>(3);
     double *ret = sret->pointer();
 
     for (int i = 0; i < mol->natom(); ++i) {
-        Vector3 geom = mol->xyz(i) - origin;
+        auto geom = mol->xyz(i) - origin;
         ret[0] += mol->Z(i) * geom[0];
         ret[1] += mol->Z(i) * geom[1];
         ret[2] += mol->Z(i) * geom[2];

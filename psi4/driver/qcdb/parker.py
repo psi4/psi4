@@ -31,6 +31,7 @@ import math
 import numpy as np
 import qcelemental as qcel
 
+from .vecutil import *
 
 BOND_FACTOR = 1.2  # fudge factor for bond length threshold
 
@@ -42,7 +43,7 @@ _expected_bonds = {
     'F': 1,
     'P': 3,
     'S': 2,
-    }
+}
 
 
 def xyz2mol(self):
@@ -121,12 +122,13 @@ def _bond_profile(self):
         for j in range(i + 1, self.natom()):
             try:
                 # qcdb.Molecule
-                dist = np.linalg.norm(self.xyz(j, np_out=True) - self.xyz(i, np_out=True))
+                dist = norm(self.xyz(j) - self.xyz(i))
             except TypeError:
                 # psi4.core.Molecule
-                dist = self.xyz(j).distance(self.xyz(i))
+                dist = distance(self.xyz(j), self.xyz(i))
             # TOOD check bohr/ang progress
-            bonded_dist = BOND_FACTOR * (qcel.covalentradii.get(self.symbol(i)) + qcel.covalentradii.get(self.symbol(j)))
+            bonded_dist = BOND_FACTOR * (qcel.covalentradii.get(self.symbol(i)) +
+                                         qcel.covalentradii.get(self.symbol(j)))
             if bonded_dist > dist:
                 bonds.append([i, j, 1])
 

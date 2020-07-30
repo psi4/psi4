@@ -26,149 +26,200 @@
  * @END LICENSE
  */
 
-#ifndef _psi_src_lib_libmints__vector3_h
-#define _psi_src_lib_libmints__vector3_h
+#pragma once
 
 #include <array>
 #include <cmath>
+#include <memory>
 #include <sstream>
+#include <vector>
 
-#include "psi4/pragma.h"
+#include <xtensor-blas/xlinalg.hpp>
+#include <xtensor/xadapt.hpp>
+#include <xtensor/xfixed.hpp>
 
 namespace psi {
+template <typename T>
+using Vector3 = xt::xtensor_fixed<T, xt::xshape<3>>;
 
-class PSI_API Vector3 {
-   private:
-    double v_[3];
+template <typename T>
+using SharedVector3 = std::shared_ptr<Vector3<T>>;
 
-   public:
-    Vector3() { v_[0] = v_[1] = v_[2] = 0.0; }
-    Vector3(const double p[3]) {
-        v_[0] = p[0];
-        v_[1] = p[1];
-        v_[2] = p[2];
-    }
-    Vector3(double d) { v_[0] = v_[1] = v_[2] = d; }
-    Vector3(double x, double y, double z) {
-        v_[0] = x;
-        v_[1] = y;
-        v_[2] = z;
-    }
-    Vector3(const Vector3& p) {
-        v_[0] = p.v_[0];
-        v_[1] = p.v_[1];
-        v_[2] = p.v_[2];
-    }
-    Vector3(const std::array<double, 3> p) {
-        v_[0] = p[0];
-        v_[1] = p[1];
-        v_[2] = p[2];
-    }
+template <typename T>
+Vector3<T> from_array(const std::array<T, 3>& a) noexcept {
+    return xt::adapt(a, {3});
+}
 
-    void operator=(const double* x) {
-        v_[0] = x[0];
-        v_[1] = x[1];
-        v_[2] = x[2];
-    }
-    void operator=(const Vector3& x) {
-        v_[0] = x.v_[0];
-        v_[1] = x.v_[1];
-        v_[2] = x.v_[2];
-    }
-    void operator=(double d) {
-        v_[0] = d;
-        v_[1] = d;
-        v_[2] = d;
-    }
-    void operator+=(const Vector3& x) {
-        v_[0] += x.v_[0];
-        v_[1] += x.v_[1];
-        v_[2] += x.v_[2];
-    }
-    void operator-=(const Vector3& x) {
-        v_[0] -= x.v_[0];
-        v_[1] -= x.v_[1];
-        v_[2] -= x.v_[2];
-    }
-    void operator*=(double m) {
-        v_[0] *= m;
-        v_[1] *= m;
-        v_[2] *= m;
-    }
-    void operator/=(double m) {
-        v_[0] /= m;
-        v_[1] /= m;
-        v_[2] /= m;
-    }
+template <typename T>
+Vector3<T> from_vector(const std::vector<T>& v) noexcept {
+    return xt::adapt(v, {3});
+}
 
-    Vector3 operator*(double d) const;
-    Vector3 operator/(double d) const;
-    Vector3 operator+(const Vector3& x) {
-        Vector3 result;
-        result.v_[0] = v_[0] + x.v_[0];
-        result.v_[1] = v_[1] + x.v_[1];
-        result.v_[2] = v_[2] + x.v_[2];
-        return result;
+template <typename T>
+Vector3<T> from_Ts(T x, T y, T z) noexcept {
+    return {x, y, z};
+}
+
+template <typename T>
+Vector3<T> from_Tstack(T stack[3]) noexcept {
+    return xt::adapt(stack, {3});
+}
+
+template <typename T>
+Vector3<T> from_Tptr(T* ptr) noexcept {
+    std::vector<std::size_t> shape = {3};
+    return xt::adapt(ptr, 3, xt::no_ownership(), shape);
+}
+
+template <typename T>
+Vector3<T> from_Tptr(const T* ptr) noexcept {
+    std::vector<std::size_t> shape = {3};
+    return xt::adapt(ptr, 3, xt::no_ownership(), shape);
+}
+
+template <typename T>
+inline auto dot(const Vector3<T>& u, const Vector3<T>& v) noexcept {
+    return xt::linalg::vdot(u, v);
+}
+
+template <typename E1, typename E2>
+inline auto dot(E1&& u, E2&& v) noexcept {
+    return xt::linalg::vdot(u, v);
+}
+
+template <typename T>
+inline auto norm(const Vector3<T>& u) noexcept {
+    return xt::linalg::norm(u);
+}
+
+template <typename E>
+inline auto norm(E&& u) noexcept {
+    return xt::linalg::norm(u);
+}
+
+template <typename T>
+inline auto cross(const Vector3<T>& u, const Vector3<T>& v) noexcept {
+    return xt::linalg::cross(u, v);
+}
+
+template <typename E1, typename E2>
+inline auto cross(E1&& u, E2&& v) noexcept {
+    return xt::eval(xt::linalg::cross(u, v));
+}
+
+template <class T>
+inline auto normalize(const Vector3<T>& u) noexcept {
+    return (u / xt::linalg::norm(u));
+}
+
+template <class E>
+inline auto normalize(E&& u) noexcept {
+    return xt::eval(u / xt::linalg::norm(u));
+}
+
+template <typename T>
+inline auto distance(const Vector3<T>& u, const Vector3<T>& v) noexcept {
+    return xt::linalg::norm(u - v);
+}
+
+template <typename T>
+inline auto angle(const Vector3<T>& u, const Vector3<T>& v) noexcept {
+    Vector3<T> _u = normalize(u);
+    Vector3<T> _v = normalize(v);
+    return std::acos(psi::dot(_u, _v));
+}
+
+template <typename E1, typename E2>
+inline auto angle(E1&& u, E2&& v) noexcept {
+    auto _u = normalize(u);
+    auto _v = normalize(v);
+    return std::acos(xt::linalg::vdot(_u, _v));
+}
+
+template <typename T>
+auto str(const Vector3<T>& u) noexcept -> std::string {
+    std::ostringstream os;
+    os << xt::print_options::threshold(10000) << xt::print_options::line_width(120) << xt::print_options::precision(14)
+       << u << std::endl;
+    return os.str();
+}
+
+template <typename T>
+inline Vector3<T> perp_unit(const Vector3<T>& u, const Vector3<T>& v) noexcept {
+    // try cross product
+    auto result = cross(u, v);
+    auto resultdotresult = dot(result, result);
+
+    if (resultdotresult < 1.e-16) {
+        // cross product is too small to normalize
+        // find the largest of this and v
+        double dotprodu = dot(u, u);
+        double dotprodv = dot(v, v);
+        auto d = from_Ts(0.0, 0.0, 0.0);
+        double dotprodd;
+        if (dotprodu < dotprodv) {
+            d = v;
+            dotprodd = dotprodv;
+        } else {
+            d = u;
+            dotprodd = dotprodu;
+        }
+
+        // see if d is big enough
+        if (dotprodd < 1.e-16) {
+            // choose an arbitrary vector, since the biggest vector is small
+            return from_Ts(1.0, 0.0, 0.0);
+        } else {
+            // choose a vector prependicular to d
+            // choose it in one of the planes xy, xz, yz
+            // choose the plane to be that which contains the two largest
+            // components of d
+            double absd[3];
+            absd[0] = std::abs(d[0]);
+            absd[1] = std::abs(d[1]);
+            absd[2] = std::abs(d[2]);
+            int axis0, axis1;
+            if ((absd[1] - absd[0]) > 1.0e-12) {
+                axis0 = 1;
+                if ((absd[2] - absd[0]) > 1.0e-12) {
+                    axis1 = 2;
+                } else {
+                    axis1 = 0;
+                }
+            } else {
+                axis0 = 0;
+                if ((absd[2] - absd[1]) > 1.0e-12) {
+                    axis1 = 2;
+                } else {
+                    axis1 = 1;
+                }
+            }
+
+            result[0] = 0.0;
+            result[1] = 0.0;
+            result[2] = 0.0;
+            // do the pi/2 rotation in the plane
+            result[axis0] = d[axis1];
+            result[axis1] = -d[axis0];
+        }
+        return normalize(result);
+    } else {
+        // normalize the cross product and return the result
+        return normalize(result);
     }
-    Vector3 operator-(const Vector3& x) const {
-        Vector3 result;
-        result.v_[0] = v_[0] - x.v_[0];
-        result.v_[1] = v_[1] - x.v_[1];
-        result.v_[2] = v_[2] - x.v_[2];
-        return result;
-    }
-    Vector3 operator*(const Vector3& x) const {
-        Vector3 result;
-        result.v_[0] = v_[0] * x.v_[0];
-        result.v_[1] = v_[1] * x.v_[1];
-        result.v_[2] = v_[2] * x.v_[2];
-        return result;
-    }
-    Vector3 operator-() { return Vector3(-v_[0], -v_[1], -v_[2]); }
+}
 
-    double& operator[](int i) { return v_[i]; }
-    const double& operator[](int i) const { return v_[i]; }
+template <typename T>
+inline Vector3<double> rotate(const Vector3<T>& in, double theta, const Vector3<T>& axis) noexcept {
+    Vector3<T> unitaxis = normalize(axis);
 
-    /// Checks for exact equality (i.e. no tolerances)
-    bool operator==(const Vector3& RHS) const {
-        return (v_[0] == RHS.v_[0] && v_[1] == RHS.v_[1] && v_[2] == RHS.v_[2]);
-    }
+    // split into parallel and perpendicular components along axis
+    Vector3<T> parallel = unitaxis * (dot(in, unitaxis) / dot(unitaxis, unitaxis));
+    Vector3<T> perpendicular = in - parallel;
 
-    /// True if the coordinates differ in any bit
-    bool operator!=(const Vector3& RHS) const { return !(*this == RHS); }
+    // form unit vector perpendicular to parallel and perpendicular
+    Vector3<T> third_axis = perp_unit(axis, perpendicular) * xt::linalg::norm(perpendicular);
 
-    double get(int i) {
-        if (i >= 0 && i <= 2)
-            return v_[i];
-        else
-            return 0.0;
-    }
-
-    void set(int i, double val) {
-        if (i >= 0 && i <= 2) v_[i] = val;
-    }
-
-    double dot(const Vector3& x) const { return v_[0] * x.v_[0] + v_[1] * x.v_[1] + v_[2] * x.v_[2]; }
-
-    double distance(const Vector3&) const;
-    void normalize();
-    double norm() const { return sqrt(this->dot(*this)); }
-    void rotate(double theta, Vector3& v);
-    Vector3 perp_unit(const Vector3& v) const;
-
-    Vector3 cross(const Vector3&) const;
-
-    std::string to_string() const {
-        std::stringstream s;
-        s << "[ " << v_[0] << ", " << v_[1] << ", " << v_[2] << " ]";
-        return s.str();
-    }
-};
-
-Vector3 operator*(double, const Vector3&);
-
-#include "vector3.i"
-
+    return parallel + cos(theta) * perpendicular + sin(theta) * third_axis;
+}
 }  // namespace psi
-
-#endif

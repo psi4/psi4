@@ -30,11 +30,12 @@
 #define _psi_src_lib_libmints_dipole_h_
 
 #include <vector>
-#include "typedefs.h"
 
 #include "psi4/pragma.h"
-#include "psi4/libmints/osrecur.h"
-#include "psi4/libmints/onebody.h"
+
+#include "onebody.h"
+#include "osrecur.h"
+#include "typedefs.h"
 
 namespace psi {
 class SphericalTransform;
@@ -64,7 +65,7 @@ class DipoleInt : public OneBodyAOInt {
     bool has_deriv1() override { return true; }
 
     /// Returns the nuclear contribution to the dipole moment
-    static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, const Vector3 &origin);
+    static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, const Vector3<double> &origin);
     static SharedMatrix nuclear_gradient_contribution(std::shared_ptr<Molecule> mol);
 };
 

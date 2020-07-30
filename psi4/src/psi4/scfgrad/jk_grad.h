@@ -29,9 +29,11 @@
 #ifndef JK_GRAD_H
 #define JK_GRAD_H
 
-#include "psi4/libmints/typedefs.h"
 #include <map>
+#include <string>
 #include <vector>
+
+#include "psi4/libmints/typedefs.h"
 
 namespace psi {
 
@@ -43,8 +45,7 @@ class TwoBodyAOInt;
 namespace scfgrad {
 
 class JKGrad {
-
-protected:
+   protected:
     /// Print flag, defaults to 1
     int print_;
     /// Debug flag, defaults to 0
@@ -83,16 +84,16 @@ protected:
 
     void common_init();
 
-public:
+   public:
     JKGrad(int deriv, std::shared_ptr<BasisSet> primary);
     virtual ~JKGrad();
 
     /**
-    * Static instance constructor, used to get prebuilt DFJK/DirectJK objects
-    * using knobs in options.
-    * @param options Options reference, with preset parameters
-    * @return abstract JK object, tuned in with preset options
-    */
+     * Static instance constructor, used to get prebuilt DFJK/DirectJK objects
+     * using knobs in options.
+     * @param options Options reference, with preset parameters
+     * @return abstract JK object, tuned in with preset options
+     */
     static std::shared_ptr<JKGrad> build_JKGrad(int deriv, std::shared_ptr<BasisSet> primary,
                                                 std::shared_ptr<BasisSet> auxiliary);
 
@@ -133,27 +134,27 @@ public:
     /// Bench flag (defaults to 0)
     void set_bench(int bench) { bench_ = bench; }
     /**
-    * Set to do J tasks
-    * @param do_J do J matrices or not,
-    *        defaults to true
-    */
+     * Set to do J tasks
+     * @param do_J do J matrices or not,
+     *        defaults to true
+     */
     void set_do_J(bool do_J) { do_J_ = do_J; }
     /**
-    * Set to do K tasks
-    * @param do_K do K matrices or not,
-    *        defaults to true
-    */
+     * Set to do K tasks
+     * @param do_K do K matrices or not,
+     *        defaults to true
+     */
     void set_do_K(bool do_K) { do_K_ = do_K; }
     /**
-    * Set to do wK tasks
-    * @param do_wK do wK matrices or not,
-    *        defaults to false
-    */
+     * Set to do wK tasks
+     * @param do_wK do wK matrices or not,
+     *        defaults to false
+     */
     void set_do_wK(bool do_wK) { do_wK_ = do_wK; }
     /**
-    * Set the omega value for wK
-    * @param omega range-separation parameter
-    */
+     * Set the omega value for wK
+     * @param omega range-separation parameter
+     */
     void set_omega(double omega) { omega_ = omega; }
 
     std::map<std::string, SharedMatrix>& gradients() { return gradients_; }
@@ -166,8 +167,7 @@ public:
 };
 
 class DFJKGrad : public JKGrad {
-
-protected:
+   protected:
     std::shared_ptr<BasisSet> auxiliary_;
 
     std::shared_ptr<PSIO> psio_;
@@ -193,7 +193,7 @@ protected:
     /// File number for J tensors
     size_t unit_c_;
 
-public:
+   public:
     DFJKGrad(int deriv, std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
     ~DFJKGrad() override;
 
@@ -234,8 +234,7 @@ public:
 };
 
 class DirectJKGrad : public JKGrad {
-
-protected:
+   protected:
     // Number of threads to use
     int ints_num_threads_;
 
@@ -243,7 +242,8 @@ protected:
 
     std::map<std::string, std::shared_ptr<Matrix> > compute1(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints);
     std::map<std::string, std::shared_ptr<Matrix> > compute2(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints);
-public:
+
+   public:
     DirectJKGrad(int deriv, std::shared_ptr<BasisSet> primary);
     ~DirectJKGrad() override;
 
@@ -257,9 +257,8 @@ public:
      * @param val a positive integer
      */
     void set_ints_num_threads(int val) { ints_num_threads_ = val; }
-
-
 };
 
-}} // Namespaces
+}  // namespace scfgrad
+}  // namespace psi
 #endif

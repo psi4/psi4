@@ -27,21 +27,21 @@
  */
 
 #include "psi4/pybind11.h"
-#include "psi4/libfunctional/superfunctional.h"
-#include "psi4/libfunctional/functional.h"
-#include "psi4/libfunctional/LibXCfunctional.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/typedefs.h"
+
 #include "psi4/libdisp/dispersion.h"
-#include "psi4/libfock/v.h"
-#include "psi4/libfock/points.h"
 #include "psi4/libfock/cubature.h"
+#include "psi4/libfock/points.h"
+#include "psi4/libfock/v.h"
+#include "psi4/libfunctional/LibXCfunctional.h"
+#include "psi4/libfunctional/functional.h"
+#include "psi4/libfunctional/superfunctional.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libsapt_solver/fdds_disp.h"
-#include "psi4/libqt/qt.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/molecule.h"
+#include "psi4/libmints/tensor.h"
 #include "psi4/libpsi4util/process.h"
+#include "psi4/libqt/qt.h"
+#include "psi4/libsapt_solver/fdds_disp.h"
 
 using namespace psi;
 namespace py = pybind11;
@@ -217,29 +217,30 @@ void export_functional(py::module &m) {
         .def(py::init<std::shared_ptr<BasisSet>, int, int>());
 
     py::class_<BlockOPoints, std::shared_ptr<BlockOPoints>>(m, "BlockOPoints", "docstring")
-        .def(py::init<SharedVector, SharedVector, SharedVector, SharedVector, std::shared_ptr<BasisExtents>>())
+        .def(py::init<SharedVector_<double>, SharedVector_<double>, SharedVector_<double>, SharedVector_<double>,
+                      std::shared_ptr<BasisExtents>>())
         .def("x",
              [](BlockOPoints &grid) {
-                 auto ret = std::make_shared<Vector>("X Grid points", grid.npoints());
-                 C_DCOPY(grid.npoints(), grid.x(), 1, ret->pointer(), 1);
+                 auto ret = std::make_shared<Vector_<double>>("X Grid points", grid.npoints());
+                 C_DCOPY(grid.npoints(), grid.x(), 1, ret->data(), 1);
                  return ret;
              })
         .def("y",
              [](BlockOPoints &grid) {
-                 auto ret = std::make_shared<Vector>("Y Grid points", grid.npoints());
-                 C_DCOPY(grid.npoints(), grid.y(), 1, ret->pointer(), 1);
+                 auto ret = std::make_shared<Vector_<double>>("Y Grid points", grid.npoints());
+                 C_DCOPY(grid.npoints(), grid.y(), 1, ret->data(), 1);
                  return ret;
              })
         .def("z",
              [](BlockOPoints &grid) {
-                 auto ret = std::make_shared<Vector>("Z Grid points", grid.npoints());
-                 C_DCOPY(grid.npoints(), grid.z(), 1, ret->pointer(), 1);
+                 auto ret = std::make_shared<Vector_<double>>("Z Grid points", grid.npoints());
+                 C_DCOPY(grid.npoints(), grid.z(), 1, ret->data(), 1);
                  return ret;
              })
         .def("w",
              [](BlockOPoints &grid) {
-                 auto ret = std::make_shared<Vector>("Grid Weights", grid.npoints());
-                 C_DCOPY(grid.npoints(), grid.w(), 1, ret->pointer(), 1);
+                 auto ret = std::make_shared<Vector_<double>>("Grid Weights", grid.npoints());
+                 C_DCOPY(grid.npoints(), grid.w(), 1, ret->data(), 1);
                  return ret;
              })
         .def("refresh", &BlockOPoints::refresh, "docstring")
@@ -301,6 +302,8 @@ void export_functional(py::module &m) {
         .def("print_out", &Dispersion::py_print, "docstring");
 
     py::class_<sapt::FDDS_Dispersion, std::shared_ptr<sapt::FDDS_Dispersion>>(m, "FDDS_Dispersion", "docstring")
+        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::map<std::string, SharedMatrix>,
+                      std::map<std::string, SharedVector_<double>>>())
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::map<std::string, SharedMatrix>,
                       std::map<std::string, SharedVector>>())
         .def("metric", &sapt::FDDS_Dispersion::metric, "Obtains the FDDS metric.")

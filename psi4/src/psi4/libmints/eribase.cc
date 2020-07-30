@@ -1904,7 +1904,7 @@ TwoElectronInt::~TwoElectronInt() {
 
 void TwoElectronInt::init_shell_pairs12() {
     ShellPair *sp;
-    Vector3 P, PA, PB, AB, A, B;
+    Vector3<double> P, PA, PB, AB, A, B;
     int i, j, si, sj, np_i, np_j;
     size_t memd;
     double a1, a2, ab2, gam, c1, c2;
@@ -1923,13 +1923,13 @@ void TwoElectronInt::init_shell_pairs12() {
 
     // Loop over all shell pairs (si, sj) and create primitive pairs pairs
     for (si = 0; si < basis1()->nshell(); ++si) {
-        A = basis1()->shell(si).center();
+        A = from_Tptr(basis1()->shell(si).center());
 
         for (sj = 0; sj < basis2()->nshell(); ++sj) {
-            B = basis2()->shell(sj).center();
+            B = from_Tptr(basis2()->shell(sj).center());
 
             AB = A - B;
-            ab2 = AB.dot(AB);
+            ab2 = dot(AB, AB);
 
             // Get the pointer for convenience
             sp = &(pairs12_[si][sj]);
