@@ -3048,14 +3048,6 @@ void DFOCC::mp2_5_manager() {
     outfile->Printf("\t======================================================================= \n");
     outfile->Printf("\n");
 
-    //Process::environment.globals["CURRENT ENERGY"] = Emp3;
-    //Process::environment.globals["CURRENT REFERENCE ENERGY"] = Escf;
-    //Process::environment.globals["CURRENT CORRELATION ENERGY"] = Emp3 - Escf;
-    //Process::environment.globals["MP2.5 TOTAL ENERGY"] = Emp3;
-    //Process::environment.globals["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
-    //Process::environment.globals["MP3 TOTAL ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2);
-
-
     variables_["MP2 TOTAL ENERGY"] = Emp2;
     variables_["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
     variables_["MP2 SINGLES ENERGY"] = 0.0;  // RHF & UHF only

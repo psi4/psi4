@@ -144,7 +144,7 @@ def select_mp2_gradient(name, **kwargs):
     reference = core.get_option('SCF', 'REFERENCE')
     mtd_type = core.get_global_option('MP2_TYPE')
     module = core.get_global_option('QC_MODULE')
-    all_electron = core.get_global_option('FREEZE_CORE') == "FALSE"
+    all_electron = (core.get_global_option('FREEZE_CORE') == "FALSE")
     # Considering only [df]occ/dfmp2
 
     func = None
@@ -427,7 +427,7 @@ def select_mp3_gradient(name, **kwargs):
     reference = core.get_option('SCF', 'REFERENCE')
     mtd_type = core.get_global_option('MP_TYPE')
     module = core.get_global_option('QC_MODULE')
-    all_electron = core.get_global_option('FREEZE_CORE') == "FALSE"
+    all_electron = (core.get_global_option('FREEZE_CORE') == "FALSE")
     # Considering only [df]occ
 
     func = None
@@ -555,7 +555,7 @@ def select_mp2p5_gradient(name, **kwargs):
     reference = core.get_option('SCF', 'REFERENCE')
     mtd_type = core.get_global_option('MP_TYPE')
     module = core.get_global_option('QC_MODULE')
-    all_electron = core.get_global_option('FREEZE_CORE') == "FALSE"
+    all_electron = (core.get_global_option('FREEZE_CORE') == "FALSE")
     # Considering only [df]occ
 
     func = None
@@ -686,7 +686,7 @@ def select_lccd_gradient(name, **kwargs):
     reference = core.get_option('SCF', 'REFERENCE')
     mtd_type = core.get_global_option('CC_TYPE')
     module = core.get_global_option('QC_MODULE')
-    all_electron = core.get_global_option('FREEZE_CORE') == "FALSE"
+    all_electron = (core.get_global_option('FREEZE_CORE') == "FALSE")
     # Considering only [df]occ
 
     func = None
