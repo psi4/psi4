@@ -45,10 +45,6 @@ SharedMatrix scfgrad(SharedWavefunction ref_wfn, Options &options)
     SCFDeriv grad(ref_wfn, options);
     SharedMatrix G = grad.compute_gradient();
 
-    Process::environment.arrays["SCF TOTAL GRADIENT"] = G;
-    Process::environment.arrays["CURRENT GRADIENT"] = G;
-    Process::environment.set_gradient(G);
-
     tstop();
     return G;
 }

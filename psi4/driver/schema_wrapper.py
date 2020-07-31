@@ -573,6 +573,8 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
                     "SOS-MP2 TOTAL ENERGY",
                     "SOS-PI-MP2 CORRELATION ENERGY",
                     "SOS-PI-MP2 TOTAL ENERGY",
+                    "SCS-MP3 CORRELATION ENERGY",
+                    "SCS-MP3 TOTAL ENERGY",
                 ]
             )):
                 json_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)

@@ -1,6 +1,9 @@
 import pytest
 from qcengine.programs.tests.standard_suite_contracts import (
+    # contractual_hf,
     contractual_mp2,
+    # contractual_mp2p5,
+    # contractual_mp3,
     contractual_lccd,
     contractual_lccsd,
     contractual_ccsd,
@@ -30,10 +33,15 @@ def runner_asserter(inp, subject, method, basis, tnm):
     # <<<  Reference Values  >>>
 
     # ? precedence on next two
+    scf_type = inp.get("corl_type", inp["keywords"].get("scf_type", "df"))  # hard-code of read_options.cc SCF_TYPE
     mp2_type = inp.get("corl_type", inp["keywords"].get("mp2_type", "df"))  # hard-code of read_options.cc MP2_TYPE
+    mp_type = inp.get("corl_type", inp["keywords"].get("mp_type", "conv"))  # hard-code of read_options.cc MP_TYPE
     cc_type = inp.get("corl_type", inp["keywords"].get("cc_type", "conv"))  # hard-code of read_options.cc CC_TYPE
     corl_natural_values = {
+        "hf": "df",  # dummy to assure df/cd/conv scf_type refs available
         "mp2": mp2_type,
+        "mp2.5": mp_type,
+        "mp3": mp_type,
         "lccd": cc_type,
         "lccsd": cc_type,
         "ccsd": cc_type,
@@ -85,7 +93,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
         with pytest.raises(errtype) as e:
             driver_call[driver](inp["call"], molecule=subject, **extra_kwargs)
 
-        assert errmsg in str(e.value)
+        assert errmsg in str(e.value), f"({errmsg}) not in ({e.value})"
         return
 
     ret, wfn = driver_call[driver](inp["call"], molecule=subject, return_wfn=True, **extra_kwargs)
@@ -118,8 +126,18 @@ def runner_asserter(inp, subject, method, basis, tnm):
 
     def qcvar_assertions():
         print("BLOCK", chash, contractual_args)
-        if method == "mp2":
+        if method == "hf":
+            _asserter(asserter_args, contractual_args, contractual_hf)
+        elif method == "mp2":
             _asserter(asserter_args, contractual_args, contractual_mp2)
+        elif method == "mp2.5":
+            _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_mp3)
+            _asserter(asserter_args, contractual_args, contractual_mp2p5)
+        elif method == "mp3":
+            _asserter(asserter_args, contractual_args, contractual_mp2)
+            _asserter(asserter_args, contractual_args, contractual_mp2p5)
+            _asserter(asserter_args, contractual_args, contractual_mp3)
         elif method == "lccd":
             _asserter(asserter_args, contractual_args, contractual_mp2)
             _asserter(asserter_args, contractual_args, contractual_lccd)
@@ -152,7 +170,14 @@ def runner_asserter(inp, subject, method, basis, tnm):
     _asserter(asserter_args, contractual_args, contractual_current)
 
     # returns
-    tf, errmsg = compare_values(ref_block[f"{method.upper()} TOTAL ENERGY"], wfn.energy(), tnm + " wfn", atol=atol, return_message=True, quiet=True)
+    tf, errmsg = compare_values(
+        ref_block[f"{method.upper()} TOTAL ENERGY"],
+        wfn.energy(),
+        tnm + " wfn",
+        atol=atol,
+        return_message=True,
+        quiet=True,
+    )
     assert compare_values(ref_block[f"{method.upper()} TOTAL ENERGY"], wfn.energy(), tnm + " wfn", atol=atol), errmsg
 
     if driver == "energy":
@@ -165,10 +190,12 @@ def runner_asserter(inp, subject, method, basis, tnm):
         assert compare_values(ref_block[f"{method.upper()} TOTAL GRADIENT"], ret.np, tnm + " grad return", atol=atol)
 
     # generics
+    # yapf: disable
     assert compare(ref_block["N BASIS FUNCTIONS"], wfn.nso(), tnm + " nbasis wfn"), f"nbasis {wfn.nso()} != {ref_block['N BASIS FUNCTIONS']}"
     assert compare(ref_block["N MOLECULAR ORBITALS"], wfn.nmo(), tnm + " nmo wfn"), f"nmo {wfn.nmo()} != {ref_block['N MOLECULAR ORBITALS']}"
     assert compare(ref_block["N ALPHA ELECTRONS"], wfn.nalpha(), tnm + " nalpha wfn"), f"nalpha {wfn.nalpha()} != {ref_block['N ALPHA ELECTRONS']}"
     assert compare(ref_block["N BETA ELECTRONS"], wfn.nbeta(), tnm + " nbeta wfn"), f"nbeta {wfn.nbeta()} != {ref_block['N BETA ELECTRONS']}"
+    # yapf: enable
 
 
 def _asserter(asserter_args, contractual_args, contractual_fn):

@@ -144,7 +144,7 @@ def select_mp2_gradient(name, **kwargs):
     reference = core.get_option('SCF', 'REFERENCE')
     mtd_type = core.get_global_option('MP2_TYPE')
     module = core.get_global_option('QC_MODULE')
-    all_electron = core.get_global_option('FREEZE_CORE') == "FALSE"
+    all_electron = (core.get_global_option('FREEZE_CORE') == "FALSE")
     # Considering only [df]occ/dfmp2
 
     func = None
@@ -427,26 +427,29 @@ def select_mp3_gradient(name, **kwargs):
     reference = core.get_option('SCF', 'REFERENCE')
     mtd_type = core.get_global_option('MP_TYPE')
     module = core.get_global_option('QC_MODULE')
+    all_electron = (core.get_global_option('FREEZE_CORE') == "FALSE")
     # Considering only [df]occ
 
     func = None
     if reference == 'RHF':
         if mtd_type == 'CONV':
-            if module in ['', 'OCC']:
-                func = run_occ_gradient
+            if all_electron:
+                if module in ['', 'OCC']:
+                    func = run_occ_gradient
         elif mtd_type == 'DF':
-            if module in ['', 'OCC']:
-                func = run_dfocc_gradient
+                if module in ['', 'OCC']:
+                    func = run_dfocc_gradient
     elif reference == 'UHF':
         if mtd_type == 'CONV':
-            if module in ['', 'OCC']:
-                func = run_occ_gradient
+            if all_electron:
+                if module in ['', 'OCC']:
+                    func = run_occ_gradient
         elif mtd_type == 'DF':
-            if module in ['', 'OCC']:
-                func = run_dfocc_gradient
+                if module in ['', 'OCC']:
+                    func = run_dfocc_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_mp3_gradient', name, 'MP_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError(['select_mp3_gradient', name, 'MP_TYPE', mtd_type, reference, module, all_electron])
 
     if kwargs.pop('probe', False):
         return
@@ -552,19 +555,21 @@ def select_mp2p5_gradient(name, **kwargs):
     reference = core.get_option('SCF', 'REFERENCE')
     mtd_type = core.get_global_option('MP_TYPE')
     module = core.get_global_option('QC_MODULE')
+    all_electron = (core.get_global_option('FREEZE_CORE') == "FALSE")
     # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF']:
         if mtd_type == 'CONV':
-            if module in ['', 'OCC']:
-                func = run_occ_gradient
+            if all_electron:
+                if module in ['', 'OCC']:
+                    func = run_occ_gradient
         elif mtd_type == 'DF':
-            if module in ['', 'OCC']:
-                func = run_dfocc_gradient
+                if module in ['', 'OCC']:
+                    func = run_dfocc_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_mp2p5_gradient', name, 'MP_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError(['select_mp2p5_gradient', name, 'MP_TYPE', mtd_type, reference, module, all_electron])
 
     if kwargs.pop('probe', False):
         return
@@ -681,19 +686,21 @@ def select_lccd_gradient(name, **kwargs):
     reference = core.get_option('SCF', 'REFERENCE')
     mtd_type = core.get_global_option('CC_TYPE')
     module = core.get_global_option('QC_MODULE')
+    all_electron = (core.get_global_option('FREEZE_CORE') == "FALSE")
     # Considering only [df]occ
 
     func = None
     if reference in ['RHF', 'UHF']:
         if mtd_type == 'CONV':
-            if module in ['', 'OCC']:
-                func = run_occ_gradient
+            if all_electron:
+                if module in ['', 'OCC']:
+                    func = run_occ_gradient
         elif mtd_type == 'DF':
-            if module in ['', 'OCC']:
-                func = run_dfocc_gradient
+                if module in ['', 'OCC']:
+                    func = run_dfocc_gradient
 
     if func is None:
-        raise ManagedMethodError(['select_lccd_gradient', name, 'CC_TYPE', mtd_type, reference, module])
+        raise ManagedMethodError(['select_lccd_gradient', name, 'CC_TYPE', mtd_type, reference, module, all_electron])
 
     if kwargs.pop('probe', False):
         return
@@ -1781,7 +1788,7 @@ def run_dfocc(name, **kwargs):
     dfocc_wfn = core.dfocc(ref_wfn)
 
     # Shove variables into global space
-    if name in ['mp2', 'omp2', 'lccd',]:
+    if name in ['mp2', 'omp2', 'mp2.5', 'mp3', 'lccd',]:
         for k, v in dfocc_wfn.variables().items():
             core.set_variable(k, v)
 
@@ -1865,7 +1872,7 @@ def run_dfocc_gradient(name, **kwargs):
     dfocc_wfn.set_variable(f"{name.upper()} TOTAL GRADIENT", dfocc_wfn.gradient())
 
     # Shove variables into global space
-    if name in ['mp2', 'omp2', 'ccsd']:
+    if name in ['mp2', 'mp2.5', 'mp3', 'lccd', 'ccsd', 'omp2']:
         for k, v in dfocc_wfn.variables().items():
             core.set_variable(k, v)
 
@@ -2386,6 +2393,16 @@ def run_scf_gradient(name, **kwargs):
         ref_wfn.set_print(old_print)
 
     ref_wfn.set_gradient(grad)
+
+    ref_wfn.set_variable("SCF TOTAL GRADIENT", grad)
+    if ref_wfn.functional().needs_xc():
+        ref_wfn.set_variable("DFT TOTAL GRADIENT", grad)  # overwritten later for DH -- TODO when DH gradients
+    else:
+        ref_wfn.set_variable("HF TOTAL GRADIENT", grad)
+
+    # Shove variables into global space
+    for k, v in ref_wfn.variables().items():
+        core.set_variable(k, v)
 
     optstash.restore()
     return ref_wfn

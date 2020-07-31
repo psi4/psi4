@@ -452,6 +452,7 @@ void OCCWave::mp3_manager() {
     std::map<std::string, double> spin_scale_energies = {
         {"SCS", Escsmp3}, {"CUSTOM", variables_["CUSTOM SCS-MP3 TOTAL ENERGY"]}, {"NONE", Emp3}};
     variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
+    energy_ = variables_["CURRENT ENERGY"];
     variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
 
     // Compute Analytic Gradients
@@ -869,6 +870,7 @@ void OCCWave::mp2_5_manager() {
                                                          {"NONE", Emp3L}};
     variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
     variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
+    energy_ = variables_["CURRENT ENERGY"];
 
     // Compute Analytic Gradients
     if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {

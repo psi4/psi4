@@ -143,6 +143,16 @@ void OCCWave::mp3_postprocessing() {
 
     variables_["CUSTOM SCS-MP3 CORRELATION ENERGY"] = os_scale * Emp3AB + ss_scale * (Emp3AA + Emp3BB);
     variables_["CUSTOM SCS-MP3 TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-MP3 CORRELATION ENERGY"];
+
+    variables_["MP3 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp3AB;
+    variables_["MP3 SAME-SPIN CORRELATION ENERGY"] = Emp3AA + Emp3BB;
+    variables_["MP3 SINGLES ENERGY"] = 0.0;  // RHF & UHF only
+    variables_["MP3 DOUBLES ENERGY"] = Emp3AB + Emp3AA + Emp3BB;
+
+    variables_["MP2.5 OPPOSITE-SPIN CORRELATION ENERGY"] = 0.5 * (Emp2AB + Emp3AB);
+    variables_["MP2.5 SAME-SPIN CORRELATION ENERGY"] = 0.5 * (Emp2AA + Emp2BB + Emp3AA + Emp3BB);
+    variables_["MP2.5 SINGLES ENERGY"] = 0.0;  // RHF & UHF only
+    variables_["MP2.5 DOUBLES ENERGY"] = 0.5 * (Emp2AB + Emp2AA + Emp2BB + Emp3AB + Emp3AA + Emp3BB);
 }
 
 void OCCWave::mp2p5_postprocessing() {
@@ -151,9 +161,20 @@ void OCCWave::mp2p5_postprocessing() {
     variables_["MP2.5 TOTAL ENERGY"] = Emp3;
     variables_["MP2.5 CORRELATION ENERGY"] = Emp3 - Escf;
     variables_["MP3 TOTAL ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2);
+    variables_["MP3 CORRELATION ENERGY"] = Emp2 + 2.0 * (Emp3 - Emp2) - Escf;
 
     variables_["CUSTOM SCS-MP2.5 CORRELATION ENERGY"] = os_scale * Emp3AB + ss_scale * (Emp3AA + Emp3BB);
     variables_["CUSTOM SCS-MP2.5 TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-MP2.5 CORRELATION ENERGY"];
+
+    variables_["MP2.5 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp3AB;
+    variables_["MP2.5 SAME-SPIN CORRELATION ENERGY"] = Emp3AA + Emp3BB;
+    variables_["MP2.5 SINGLES ENERGY"] = 0.0;  // RHF & UHF only
+    variables_["MP2.5 DOUBLES ENERGY"] = Emp3 - Escf;  // RHF & UHF only
+
+    variables_["MP3 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB + 2.0 * (Emp3AB - Emp2AB);
+    variables_["MP3 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB + 2.0 * (Emp3AA + Emp3BB - Emp2AA - Emp2BB);
+    variables_["MP3 SINGLES ENERGY"] = 0.0;  // RHF & UHF only
+    variables_["MP3 DOUBLES ENERGY"] = variables_["MP3 CORRELATION ENERGY"];  // RHF & UHF only
 }
 }
 }
