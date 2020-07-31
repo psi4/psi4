@@ -566,7 +566,6 @@ void IntegralTransform::update_orbitals() {
         throw FeatureNotImplemented("Libtrans", " update of semicanonical orbitals", __FILE__, __LINE__);
     }
     process_eigenvectors();
-    generate_oei();
 }
 /**
  * Sets the orbital matrix, but touches nothing else. This is used for a MCSCF wavefunction
