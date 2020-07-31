@@ -47,6 +47,20 @@
 #include "psi4/libpsi4util/process.h"
 #endif
 
+#ifdef USING_BrianQC
+
+#include <use_brian_wrapper.h>
+#include <brian_macros.h>
+#include <brian_common.h>
+#include <brian_geom_opt.h>
+
+extern void checkBrian();
+extern BrianCookie brianCookie;
+extern bool brianEnable;
+extern brianInt brianRestrictionType;
+
+#endif
+
 using namespace psi;
 
 namespace psi {
@@ -187,6 +201,14 @@ void DFJKGrad::compute_gradient()
 
     // => Build ERI Sieve <= //
     sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
+
+#ifdef USING_BrianQC
+    if (brianEnable) {
+        double threshold = cutoff_ * 1e-2;
+        brianCOMSetPrecisionThresholds(&brianCookie, &threshold);
+        checkBrian();
+    }
+#endif
 
     // => Open temp files <= //
     psio_->open(unit_a_, PSIO_OPEN_NEW);
@@ -2332,6 +2354,61 @@ void DirectJKGrad::compute_gradient()
 
     if (!(Ca_ && Cb_ && Da_ && Db_ && Dt_))
         throw PSIEXCEPTION("Occupation/Density not set");
+    
+#ifdef USING_BrianQC
+    if (brianEnable) {
+        brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
+        brianBool computeExchange = ((do_K_ || do_wK_) ? BRIAN_TRUE : BRIAN_FALSE);
+        bool betaFlag = (brianRestrictionType != BRIAN_RESTRICTION_TYPE_RHF);
+        
+        std::shared_ptr<Matrix> Jgrad, Kgrada, Kgradb;
+        if (computeCoulomb) {
+            Jgrad = std::make_shared<Matrix>("Coulomb Gradient", primary_->molecule()->natom(), 3);
+        }
+        if (computeExchange) {
+            Kgrada = std::make_shared<Matrix>("Exchange Gradient", primary_->molecule()->natom(), 3);
+            if (betaFlag) {
+                Kgradb = std::make_shared<Matrix>("Exchange Gradient beta", primary_->molecule()->natom(), 3);
+            }
+        }
+        
+        brianOPTBuildGradientRepulsionDeriv(&brianCookie,
+            &computeCoulomb,
+            &computeExchange,
+            Da_->get_pointer(),
+            (betaFlag ? Db_->get_pointer() : nullptr),
+            (computeCoulomb ? Jgrad->get_pointer() : nullptr),
+            (computeExchange ? Kgrada->get_pointer() : nullptr),
+            ((computeExchange && betaFlag) ? Kgradb->get_pointer() : nullptr)
+        );
+        
+        if (computeExchange) {
+            if (betaFlag) {
+                Kgrada->add(Kgradb);
+            } else {
+                Kgrada->scale(2.0);
+            }
+        }
+        
+        gradients_.clear();
+        
+        if (do_J_) {
+            gradients_["Coulomb"] = Jgrad;
+        }
+        
+        if (do_K_) {
+            gradients_["Exchange"] = Kgrada;
+            
+            if (do_wK_) {
+                gradients_["Exchange,LR"] = std::make_shared<Matrix>("Exchange,LR Gradient", primary_->molecule()->natom(), 3);
+            }
+        } else if (do_wK_) {
+            gradients_["Exchange,LR"] = Kgrada;
+        }
+        
+        return;
+    }
+#endif
 
     // => Set up gradients <= //
     int natom = primary_->molecule()->natom();

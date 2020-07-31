@@ -62,7 +62,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     prog_setup.rst prog_welcome.rst prog_ways_to_add.rst
     prog_full_integration.rst prog_style_py.rst prog_help.rst
     prog_code_intro.rst prog_debug_profile.rst manage_release.rst
-    plugin_psi4fockci.rst
+    plugin_psi4fockci.rst brianqc.rst
     tdscf.rst
     )
 

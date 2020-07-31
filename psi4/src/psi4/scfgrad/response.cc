@@ -60,6 +60,20 @@
 #include <omp.h>
 #endif
 
+#ifdef USING_BrianQC
+
+#include <use_brian_wrapper.h>
+#include <brian_macros.h>
+#include <brian_common.h>
+#include <brian_cphf.h>
+
+extern void checkBrian();
+extern BrianCookie brianCookie;
+extern bool brianEnable;
+extern bool brianCPHFLeftSideFlag;
+
+#endif
+
 using namespace psi;
 
 namespace psi {
@@ -142,7 +156,54 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
         next_Sij = PSIO_ZERO;
         next_Spi = PSIO_ZERO;
 
+#ifdef USING_BrianQC
+        brianInt maxSegmentSize;
+        brianInt maxSegmentAtomCount;
+        brianInt segmentAtomCount;
+        brianInt segmentAtomIndexStart;
+        
+        std::vector<std::shared_ptr<Matrix>> Smnx;
+        std::vector<std::shared_ptr<Matrix>> Smny;
+        std::vector<std::shared_ptr<Matrix>> Smnz;
+        std::vector<double*> Smn;
+        
+        if (brianEnable) {
+            brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
+            maxSegmentAtomCount = maxSegmentSize / 3;
+            segmentAtomCount = -1;
+            segmentAtomIndexStart = -1;
+            
+            Smnx.resize(maxSegmentAtomCount);
+            Smny.resize(maxSegmentAtomCount);
+            Smnz.resize(maxSegmentAtomCount);
+            Smn.resize(maxSegmentAtomCount * 3);
+            for (int i = 0; i < maxSegmentAtomCount; i++) {
+                Smnx[i] = std::make_shared<Matrix>("Smnx", nso, nso);
+                Smny[i] = std::make_shared<Matrix>("Smny", nso, nso);
+                Smnz[i] = std::make_shared<Matrix>("Smnz", nso, nso);
+                Smn[i * 3 + 0] = Smnx[i]->get_pointer();
+                Smn[i * 3 + 1] = Smny[i]->get_pointer();
+                Smn[i * 3 + 2] = Smnz[i]->get_pointer();
+            }
+        }
+#endif
+
         for (int A = 0; A < natom; A++) {
+#ifdef USING_BrianQC
+            if (brianEnable) {
+                if (segmentAtomCount < 0 || A < segmentAtomIndexStart || A >= (segmentAtomIndexStart + segmentAtomCount)) {
+                    segmentAtomIndexStart = A;
+                    segmentAtomCount = (segmentAtomIndexStart + maxSegmentAtomCount > natom) ? (natom - segmentAtomIndexStart) : maxSegmentAtomCount;
+                    
+                    brianInt integralType = BRIAN_INTEGRAL_TYPE_OVERLAP;
+                    brianCPHFBuild1eDeriv(&brianCookie, &integralType, &segmentAtomCount, &segmentAtomIndexStart, Smn.data());
+                }
+                
+                C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Smnx[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Smix->get_pointer(), nocc);
+                C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Smny[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Smiy->get_pointer(), nocc);
+                C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Smnz[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Smiz->get_pointer(), nocc);
+            } else {
+#endif
             Smix->zero();
             Smiy->zero();
             Smiz->zero();
@@ -211,6 +272,9 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                     }
                 }
             }
+#ifdef USING_BrianQC
+            }
+#endif
             // Smi_x
             psio_->write(PSIF_HESS,"Smi^A",(char*)Smixp[0], static_cast<size_t> (nso) * nocc * sizeof(double),next_Smi,&next_Smi);
             // Smi_y
@@ -267,8 +331,54 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
         double** Tpip = Tpi->pointer();
         psio_address next_Tpi = PSIO_ZERO;
 
+#ifdef USING_BrianQC
+        brianInt maxSegmentSize;
+        brianInt maxSegmentAtomCount;
+        brianInt segmentAtomCount;
+        brianInt segmentAtomIndexStart;
+        
+        std::vector<std::shared_ptr<Matrix>> Tmnx;
+        std::vector<std::shared_ptr<Matrix>> Tmny;
+        std::vector<std::shared_ptr<Matrix>> Tmnz;
+        std::vector<double*> Tmn;
+        
+        if (brianEnable) {
+            brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
+            maxSegmentAtomCount = maxSegmentSize / 3;
+            segmentAtomCount = -1;
+            segmentAtomIndexStart = -1;
+            
+            Tmnx.resize(maxSegmentAtomCount);
+            Tmny.resize(maxSegmentAtomCount);
+            Tmnz.resize(maxSegmentAtomCount);
+            Tmn.resize(maxSegmentAtomCount * 3);
+            for (int i = 0; i < maxSegmentAtomCount; i++) {
+                Tmnx[i] = std::make_shared<Matrix>("Tmnx", nso, nso);
+                Tmny[i] = std::make_shared<Matrix>("Tmny", nso, nso);
+                Tmnz[i] = std::make_shared<Matrix>("Tmnz", nso, nso);
+                Tmn[i * 3 + 0] = Tmnx[i]->get_pointer();
+                Tmn[i * 3 + 1] = Tmny[i]->get_pointer();
+                Tmn[i * 3 + 2] = Tmnz[i]->get_pointer();
+            }
+        }
+#endif
 
         for (int A = 0; A < natom; A++) {
+#ifdef USING_BrianQC
+            if (brianEnable) {
+                if (segmentAtomCount < 0 || A < segmentAtomIndexStart || A >= (segmentAtomIndexStart + segmentAtomCount)) {
+                    segmentAtomIndexStart = A;
+                    segmentAtomCount = (segmentAtomIndexStart + maxSegmentAtomCount > natom) ? (natom - segmentAtomIndexStart) : maxSegmentAtomCount;
+                    
+                    brianInt integralType = BRIAN_INTEGRAL_TYPE_KINETIC;
+                    brianCPHFBuild1eDeriv(&brianCookie, &integralType, &segmentAtomCount, &segmentAtomIndexStart, Tmn.data());
+                }
+                
+                C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Tmnx[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Tmix->get_pointer(), nocc);
+                C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Tmny[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Tmiy->get_pointer(), nocc);
+                C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Tmnz[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Tmiz->get_pointer(), nocc);
+            } else {
+#endif
             Tmix->zero();
             Tmiy->zero();
             Tmiz->zero();
@@ -337,7 +447,9 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                     }
                 }
             }
-
+#ifdef USING_BrianQC
+            }
+#endif
             // Tpi_x
             C_DGEMM('T','N',nmo,nocc,nso,0.5,Cp[0],nmo,Tmixp[0],nocc,0.0,Tpip[0],nocc);
             psio_->write(PSIF_HESS,"Tpi^A",(char*)Tpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Tpi,&next_Tpi);
@@ -368,8 +480,54 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
         double** Vpip = Vpi->pointer();
         psio_address next_Vpi = PSIO_ZERO;
 
+#ifdef USING_BrianQC
+        brianInt maxSegmentSize;
+        brianInt maxSegmentAtomCount;
+        brianInt segmentAtomCount;
+        brianInt segmentAtomIndexStart;
+        
+        std::vector<std::shared_ptr<Matrix>> Vmnx;
+        std::vector<std::shared_ptr<Matrix>> Vmny;
+        std::vector<std::shared_ptr<Matrix>> Vmnz;
+        std::vector<double*> Vmn;
+        
+        if (brianEnable) {
+            brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
+            maxSegmentAtomCount = maxSegmentSize / 3;
+            segmentAtomCount = -1;
+            segmentAtomIndexStart = -1;
+            
+            Vmnx.resize(maxSegmentAtomCount);
+            Vmny.resize(maxSegmentAtomCount);
+            Vmnz.resize(maxSegmentAtomCount);
+            Vmn.resize(maxSegmentAtomCount * 3);
+            for (int i = 0; i < maxSegmentAtomCount; i++) {
+                Vmnx[i] = std::make_shared<Matrix>("Vmnx", nso, nso);
+                Vmny[i] = std::make_shared<Matrix>("Vmny", nso, nso);
+                Vmnz[i] = std::make_shared<Matrix>("Vmnz", nso, nso);
+                Vmn[i * 3 + 0] = Vmnx[i]->get_pointer();
+                Vmn[i * 3 + 1] = Vmny[i]->get_pointer();
+                Vmn[i * 3 + 2] = Vmnz[i]->get_pointer();
+            }
+        }
+#endif
 
         for (int A = 0; A < natom; A++) {
+#ifdef USING_BrianQC
+            if (brianEnable) {
+                if (segmentAtomCount < 0 || A < segmentAtomIndexStart || A >= (segmentAtomIndexStart + segmentAtomCount)) {
+                    segmentAtomIndexStart = A;
+                    segmentAtomCount = (segmentAtomIndexStart + maxSegmentAtomCount > natom) ? (natom - segmentAtomIndexStart) : maxSegmentAtomCount;
+                    
+                    brianInt integralType = BRIAN_INTEGRAL_TYPE_NUCLEAR;
+                    brianCPHFBuild1eDeriv(&brianCookie, &integralType, &segmentAtomCount, &segmentAtomIndexStart, Vmn.data());
+                }
+                
+                C_DGEMM('N', 'N', nso, nocc, nso, 1.0, Vmnx[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Vmix->get_pointer(), nocc);
+                C_DGEMM('N', 'N', nso, nocc, nso, 1.0, Vmny[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Vmiy->get_pointer(), nocc);
+                C_DGEMM('N', 'N', nso, nocc, nso, 1.0, Vmnz[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Vmiz->get_pointer(), nocc);
+            } else {
+#endif
             Vmix->zero();
             Vmiy->zero();
             Vmiz->zero();
@@ -409,7 +567,9 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                     }
                 }
             }
-
+#ifdef USING_BrianQC
+            }
+#endif
             // Vpi_x
             C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Vmixp[0],nocc,0.0,Vpip[0],nocc);
             psio_->write(PSIF_HESS,"Vpi^A",(char*)Vpip[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Vpi,&next_Vpi);
@@ -800,7 +960,62 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
             /*
              * The conventional integral algorithm
              */
-
+#ifdef USING_BrianQC
+            if (brianEnable) {
+                brianBool computeCoulomb = BRIAN_TRUE;
+                brianBool computeExchange = BRIAN_TRUE;
+                
+                brianInt maxSegmentSize;
+                brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
+                brianInt maxSegmentAtomCount = maxSegmentSize / 3;
+                brianInt segmentAtomCount = -1;
+                brianInt segmentAtomIndexStart = -1;
+                
+                std::vector<std::shared_ptr<Matrix>> Jmnx(maxSegmentAtomCount);
+                std::vector<std::shared_ptr<Matrix>> Jmny(maxSegmentAtomCount);
+                std::vector<std::shared_ptr<Matrix>> Jmnz(maxSegmentAtomCount);
+                std::vector<std::shared_ptr<Matrix>> Kmnx(maxSegmentAtomCount);
+                std::vector<std::shared_ptr<Matrix>> Kmny(maxSegmentAtomCount);
+                std::vector<std::shared_ptr<Matrix>> Kmnz(maxSegmentAtomCount);
+                std::vector<double*> Jmn(maxSegmentAtomCount * 3);
+                std::vector<double*> Kmn(maxSegmentAtomCount * 3);
+                for (int i = 0; i < maxSegmentAtomCount; i++) {
+                    Jmnx[i] = std::make_shared<Matrix>("Jmnx", nso, nso);
+                    Jmny[i] = std::make_shared<Matrix>("Jmny", nso, nso);
+                    Jmnz[i] = std::make_shared<Matrix>("Jmnz", nso, nso);
+                    Kmnx[i] = std::make_shared<Matrix>("Kmnx", nso, nso);
+                    Kmny[i] = std::make_shared<Matrix>("Kmny", nso, nso);
+                    Kmnz[i] = std::make_shared<Matrix>("Kmnz", nso, nso);
+                    Jmn[i * 3 + 0] = Jmnx[i]->get_pointer();
+                    Jmn[i * 3 + 1] = Jmny[i]->get_pointer();
+                    Jmn[i * 3 + 2] = Jmnz[i]->get_pointer();
+                    Kmn[i * 3 + 0] = Kmnx[i]->get_pointer();
+                    Kmn[i * 3 + 1] = Kmny[i]->get_pointer();
+                    Kmn[i * 3 + 2] = Kmnz[i]->get_pointer();
+                }
+                
+                for (int A = 0; A < natom; A++) {
+                    if (segmentAtomCount < 0 || A < segmentAtomIndexStart || A >= (segmentAtomIndexStart + segmentAtomCount)) {
+                        segmentAtomIndexStart = A;
+                        segmentAtomCount = (segmentAtomIndexStart + maxSegmentAtomCount > natom) ? (natom - segmentAtomIndexStart) : maxSegmentAtomCount;
+                        
+                        brianInt integralType = BRIAN_INTEGRAL_TYPE_NUCLEAR;
+                        brianCPHFBuildRepulsionDeriv(&brianCookie, &computeCoulomb, &computeExchange, &segmentAtomCount, &segmentAtomIndexStart, Dt->get_pointer(), nullptr, Jmn.data(), Kmn.data(), nullptr);
+                    }
+                    
+                    Jmnx[A - segmentAtomIndexStart]->subtract(Kmnx[A - segmentAtomIndexStart]);
+                    Jmny[A - segmentAtomIndexStart]->subtract(Kmny[A - segmentAtomIndexStart]);
+                    Jmnz[A - segmentAtomIndexStart]->subtract(Kmnz[A - segmentAtomIndexStart]);
+                    
+                    Gpi->transform(C, Jmnx[A - segmentAtomIndexStart], Cocc);
+                    psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
+                    Gpi->transform(C, Jmny[A - segmentAtomIndexStart], Cocc);
+                    psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
+                    Gpi->transform(C, Jmnz[A - segmentAtomIndexStart], Cocc);
+                    psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
+                }
+            } else {
+#endif
             std::shared_ptr<TwoBodyAOInt> ints(integral_->eri(1));
 
             auto sieve = std::make_shared<ERISieve>(basisset_, 0.0);
@@ -1068,7 +1283,9 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                     psio_->write(PSIF_HESS,"Gpi^A",(char*)pGpi[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Gpi,&next_Gpi);
                 }
             } // End loop over A batches
-
+#ifdef USING_BrianQC
+            }
+#endif
         } // End if density fitted
     }
 
@@ -1274,9 +1491,15 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response()
                 b_vecs.push_back(B);
             }
 
+#ifdef USING_BrianQC
+    brianCPHFLeftSideFlag = true;
+#endif
             auto u_matrices = rhf_wfn_->cphf_solve(b_vecs, options_.get_double("SOLVER_CONVERGENCE"),
                                                    options_.get_int("SOLVER_MAXITER"), print_);
 
+#ifdef USING_BrianQC
+    brianCPHFLeftSideFlag = false;
+#endif
             // Result in x
             for (int a = 0; a < nA; a++) {
                 std::stringstream ss;
@@ -1681,10 +1904,15 @@ std::shared_ptr<Matrix> USCFDeriv::hessian_response()
                 b_vecs.push_back(Bb);
             }
 
-            // 
+#ifdef USING_BrianQC
+    brianCPHFLeftSideFlag = true;
+#endif
             auto u_matrices = uhf_wfn_->cphf_solve(b_vecs, options_.get_double("SOLVER_CONVERGENCE"),
                                                    options_.get_int("SOLVER_MAXITER"), print_);
-    
+
+#ifdef USING_BrianQC
+    brianCPHFLeftSideFlag = false;
+#endif
             // Result in x
             // Write Uas to disk
             for (int a = 0; a < nA; a++) {
@@ -2027,7 +2255,38 @@ void USCFDeriv::overlap_deriv(std::shared_ptr<Matrix> C,
     psio_address next_Sij = PSIO_ZERO;
     psio_address next_Smi = PSIO_ZERO;
     psio_address next_Spi = PSIO_ZERO;
-
+    
+#ifdef USING_BrianQC
+    brianInt maxSegmentSize;
+    brianInt maxSegmentAtomCount;
+    brianInt segmentAtomCount;
+    brianInt segmentAtomIndexStart;
+    
+    std::vector<std::shared_ptr<Matrix>> Smnx;
+    std::vector<std::shared_ptr<Matrix>> Smny;
+    std::vector<std::shared_ptr<Matrix>> Smnz;
+    std::vector<double*> Smn;
+    
+    if (brianEnable) {
+        brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
+        maxSegmentAtomCount = maxSegmentSize / 3;
+        segmentAtomCount = -1;
+        segmentAtomIndexStart = -1;
+        
+        Smnx.resize(maxSegmentAtomCount);
+        Smny.resize(maxSegmentAtomCount);
+        Smnz.resize(maxSegmentAtomCount);
+        Smn.resize(maxSegmentAtomCount * 3);
+        for (int i = 0; i < maxSegmentAtomCount; i++) {
+            Smnx[i] = std::make_shared<Matrix>("Smnx", nso, nso);
+            Smny[i] = std::make_shared<Matrix>("Smny", nso, nso);
+            Smnz[i] = std::make_shared<Matrix>("Smnz", nso, nso);
+            Smn[i * 3 + 0] = Smnx[i]->get_pointer();
+            Smn[i * 3 + 1] = Smny[i]->get_pointer();
+            Smn[i * 3 + 2] = Smnz[i]->get_pointer();
+        }
+    }
+#endif
 
     // Get the filenames right
     auto Smi_str = (alpha) ? "Smi^A_a" : "Smi^A_b";
@@ -2054,6 +2313,21 @@ void USCFDeriv::overlap_deriv(std::shared_ptr<Matrix> C,
     next_Spi = PSIO_ZERO;
 
     for (int A = 0; A < natom; A++) {
+#ifdef USING_BrianQC
+        if (brianEnable) {
+            if (segmentAtomCount < 0 || A < segmentAtomIndexStart || A >= (segmentAtomIndexStart + segmentAtomCount)) {
+                segmentAtomIndexStart = A;
+                segmentAtomCount = (segmentAtomIndexStart + maxSegmentAtomCount > natom) ? (natom - segmentAtomIndexStart) : maxSegmentAtomCount;
+                
+                brianInt integralType = BRIAN_INTEGRAL_TYPE_OVERLAP;
+                brianCPHFBuild1eDeriv(&brianCookie, &integralType, &segmentAtomCount, &segmentAtomIndexStart, Smn.data());
+            }
+            
+            C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Smnx[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Smix->get_pointer(), nocc);
+            C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Smny[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Smiy->get_pointer(), nocc);
+            C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Smnz[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Smiz->get_pointer(), nocc);
+        } else {
+#endif
         Smix->zero();
         Smiy->zero();
         Smiz->zero();
@@ -2122,6 +2396,9 @@ void USCFDeriv::overlap_deriv(std::shared_ptr<Matrix> C,
                 }
             }
         }
+#ifdef USING_BrianQC
+        }
+#endif
         // Smi_x
         psio_->write(PSIF_HESS,Smi_str,(char*)Smixp[0], static_cast<size_t> (nso) * nocc * sizeof(double),next_Smi,&next_Smi);
         // Smi_y
@@ -2185,7 +2462,54 @@ void USCFDeriv::kinetic_deriv(std::shared_ptr<Matrix> C,
     double** Tpip = Tpi->pointer();
     psio_address next_Tpi = PSIO_ZERO;
 
+#ifdef USING_BrianQC
+    brianInt maxSegmentSize;
+    brianInt maxSegmentAtomCount;
+    brianInt segmentAtomCount;
+    brianInt segmentAtomIndexStart;
+    
+    std::vector<std::shared_ptr<Matrix>> Tmnx;
+    std::vector<std::shared_ptr<Matrix>> Tmny;
+    std::vector<std::shared_ptr<Matrix>> Tmnz;
+    std::vector<double*> Tmn;
+    
+    if (brianEnable) {
+        brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
+        maxSegmentAtomCount = maxSegmentSize / 3;
+        segmentAtomCount = -1;
+        segmentAtomIndexStart = -1;
+        
+        Tmnx.resize(maxSegmentAtomCount);
+        Tmny.resize(maxSegmentAtomCount);
+        Tmnz.resize(maxSegmentAtomCount);
+        Tmn.resize(maxSegmentAtomCount * 3);
+        for (int i = 0; i < maxSegmentAtomCount; i++) {
+            Tmnx[i] = std::make_shared<Matrix>("Tmnx", nso, nso);
+            Tmny[i] = std::make_shared<Matrix>("Tmny", nso, nso);
+            Tmnz[i] = std::make_shared<Matrix>("Tmnz", nso, nso);
+            Tmn[i * 3 + 0] = Tmnx[i]->get_pointer();
+            Tmn[i * 3 + 1] = Tmny[i]->get_pointer();
+            Tmn[i * 3 + 2] = Tmnz[i]->get_pointer();
+        }
+    }
+#endif
+
     for (int A = 0; A < natom; A++) {
+#ifdef USING_BrianQC
+        if (brianEnable) {
+            if (segmentAtomCount < 0 || A < segmentAtomIndexStart || A >= (segmentAtomIndexStart + segmentAtomCount)) {
+                segmentAtomIndexStart = A;
+                segmentAtomCount = (segmentAtomIndexStart + maxSegmentAtomCount > natom) ? (natom - segmentAtomIndexStart) : maxSegmentAtomCount;
+                
+                brianInt integralType = BRIAN_INTEGRAL_TYPE_KINETIC;
+                brianCPHFBuild1eDeriv(&brianCookie, &integralType, &segmentAtomCount, &segmentAtomIndexStart, Tmn.data());
+            }
+            
+            C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Tmnx[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Tmix->get_pointer(), nocc);
+            C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Tmny[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Tmiy->get_pointer(), nocc);
+            C_DGEMM('N', 'N', nso, nocc, nso, 2.0, Tmnz[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Tmiz->get_pointer(), nocc);
+        } else {
+#endif
         Tmix->zero();
         Tmiy->zero();
         Tmiz->zero();
@@ -2254,7 +2578,9 @@ void USCFDeriv::kinetic_deriv(std::shared_ptr<Matrix> C,
                 }
             }
         }
-
+#ifdef USING_BrianQC
+        }
+#endif
 
         auto Tpi_str = (alpha) ? "Tpi^A_a" : "Tpi^A_b";
 
@@ -2292,7 +2618,54 @@ void USCFDeriv::potential_deriv(std::shared_ptr<Matrix> C,
     double** Vpip = Vpi->pointer();
     psio_address next_Vpi = PSIO_ZERO;
 
+#ifdef USING_BrianQC
+    brianInt maxSegmentSize;
+    brianInt maxSegmentAtomCount;
+    brianInt segmentAtomCount;
+    brianInt segmentAtomIndexStart;
+    
+    std::vector<std::shared_ptr<Matrix>> Vmnx;
+    std::vector<std::shared_ptr<Matrix>> Vmny;
+    std::vector<std::shared_ptr<Matrix>> Vmnz;
+    std::vector<double*> Vmn;
+    
+    if (brianEnable) {
+        brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
+        maxSegmentAtomCount = maxSegmentSize / 3;
+        segmentAtomCount = -1;
+        segmentAtomIndexStart = -1;
+        
+        Vmnx.resize(maxSegmentAtomCount);
+        Vmny.resize(maxSegmentAtomCount);
+        Vmnz.resize(maxSegmentAtomCount);
+        Vmn.resize(maxSegmentAtomCount * 3);
+        for (int i = 0; i < maxSegmentAtomCount; i++) {
+            Vmnx[i] = std::make_shared<Matrix>("Vmnx", nso, nso);
+            Vmny[i] = std::make_shared<Matrix>("Vmny", nso, nso);
+            Vmnz[i] = std::make_shared<Matrix>("Vmnz", nso, nso);
+            Vmn[i * 3 + 0] = Vmnx[i]->get_pointer();
+            Vmn[i * 3 + 1] = Vmny[i]->get_pointer();
+            Vmn[i * 3 + 2] = Vmnz[i]->get_pointer();
+        }
+    }
+#endif
+
     for (int A = 0; A < natom; A++) {
+#ifdef USING_BrianQC
+        if (brianEnable) {
+            if (segmentAtomCount < 0 || A < segmentAtomIndexStart || A >= (segmentAtomIndexStart + segmentAtomCount)) {
+                segmentAtomIndexStart = A;
+                segmentAtomCount = (segmentAtomIndexStart + maxSegmentAtomCount > natom) ? (natom - segmentAtomIndexStart) : maxSegmentAtomCount;
+                
+                brianInt integralType = BRIAN_INTEGRAL_TYPE_NUCLEAR;
+                brianCPHFBuild1eDeriv(&brianCookie, &integralType, &segmentAtomCount, &segmentAtomIndexStart, Vmn.data());
+            }
+            
+            C_DGEMM('N', 'N', nso, nocc, nso, 1.0, Vmnx[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Vmix->get_pointer(), nocc);
+            C_DGEMM('N', 'N', nso, nocc, nso, 1.0, Vmny[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Vmiy->get_pointer(), nocc);
+            C_DGEMM('N', 'N', nso, nocc, nso, 1.0, Vmnz[A - segmentAtomIndexStart]->get_pointer(), nso, Cocc->get_pointer(), nocc, 0.0, Vmiz->get_pointer(), nocc);
+        } else {
+#endif
         Vmix->zero();
         Vmiy->zero();
         Vmiz->zero();
@@ -2332,7 +2705,9 @@ void USCFDeriv::potential_deriv(std::shared_ptr<Matrix> C,
                 }
             }
         }
-
+#ifdef USING_BrianQC
+        }
+#endif
         auto Vpi_str = (alpha) ? "Vpi^A_a" : "Vpi^A_b";
         // Vpi_x
         C_DGEMM('T','N',nmo,nocc,nso,1.0,Cp[0],nmo,Vmixp[0],nocc,0.0,Vpip[0],nocc);
@@ -2736,7 +3111,72 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
         /*
          * The conventional integral algorithm
          */
-
+#ifdef USING_BrianQC
+        if (brianEnable) {
+            brianBool computeCoulomb = BRIAN_TRUE;
+            brianBool computeExchange = BRIAN_TRUE;
+            
+            brianInt maxSegmentSize;
+            brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
+            brianInt maxSegmentAtomCount = maxSegmentSize / 3;
+            brianInt segmentAtomCount = -1;
+            brianInt segmentAtomIndexStart = -1;
+            
+            std::vector<std::shared_ptr<Matrix>> Jmnx(maxSegmentAtomCount);
+            std::vector<std::shared_ptr<Matrix>> Jmny(maxSegmentAtomCount);
+            std::vector<std::shared_ptr<Matrix>> Jmnz(maxSegmentAtomCount);
+            std::vector<std::shared_ptr<Matrix>> Kmnx1(maxSegmentAtomCount);
+            std::vector<std::shared_ptr<Matrix>> Kmny1(maxSegmentAtomCount);
+            std::vector<std::shared_ptr<Matrix>> Kmnz1(maxSegmentAtomCount);
+            std::vector<std::shared_ptr<Matrix>> Kmnx2(maxSegmentAtomCount);
+            std::vector<std::shared_ptr<Matrix>> Kmny2(maxSegmentAtomCount);
+            std::vector<std::shared_ptr<Matrix>> Kmnz2(maxSegmentAtomCount);
+            std::vector<double*> Jmn(maxSegmentAtomCount * 3);
+            std::vector<double*> Kmn1(maxSegmentAtomCount * 3);
+            std::vector<double*> Kmn2(maxSegmentAtomCount * 3);
+            for (int i = 0; i < maxSegmentAtomCount; i++) {
+                Jmnx[i] = std::make_shared<Matrix>("Jmnx", nso, nso);
+                Jmny[i] = std::make_shared<Matrix>("Jmny", nso, nso);
+                Jmnz[i] = std::make_shared<Matrix>("Jmnz", nso, nso);
+                Kmnx1[i] = std::make_shared<Matrix>("Kmnx1", nso, nso);
+                Kmny1[i] = std::make_shared<Matrix>("Kmny1", nso, nso);
+                Kmnz1[i] = std::make_shared<Matrix>("Kmnz1", nso, nso);
+                Kmnx2[i] = std::make_shared<Matrix>("Kmnx2", nso, nso);
+                Kmny2[i] = std::make_shared<Matrix>("Kmny2", nso, nso);
+                Kmnz2[i] = std::make_shared<Matrix>("Kmnz2", nso, nso);
+                Jmn[i * 3 + 0] = Jmnx[i]->get_pointer();
+                Jmn[i * 3 + 1] = Jmny[i]->get_pointer();
+                Jmn[i * 3 + 2] = Jmnz[i]->get_pointer();
+                Kmn1[i * 3 + 0] = Kmnx1[i]->get_pointer();
+                Kmn1[i * 3 + 1] = Kmny1[i]->get_pointer();
+                Kmn1[i * 3 + 2] = Kmnz1[i]->get_pointer();
+                Kmn2[i * 3 + 0] = Kmnx2[i]->get_pointer();
+                Kmn2[i * 3 + 1] = Kmny2[i]->get_pointer();
+                Kmn2[i * 3 + 2] = Kmnz2[i]->get_pointer();
+            }
+            
+            for (int A = 0; A < natom; A++) {
+                if (segmentAtomCount < 0 || A < segmentAtomIndexStart || A >= (segmentAtomIndexStart + segmentAtomCount)) {
+                    segmentAtomIndexStart = A;
+                    segmentAtomCount = (segmentAtomIndexStart + maxSegmentAtomCount > natom) ? (natom - segmentAtomIndexStart) : maxSegmentAtomCount;
+                    
+                    brianInt integralType = BRIAN_INTEGRAL_TYPE_NUCLEAR;
+                    brianCPHFBuildRepulsionDeriv(&brianCookie, &computeCoulomb, &computeExchange, &segmentAtomCount, &segmentAtomIndexStart, D1->get_pointer(), D2->get_pointer(), Jmn.data(), Kmn1.data(), Kmn2.data());
+                }
+                
+                Jmnx[A - segmentAtomIndexStart]->subtract(Kmnx1[A - segmentAtomIndexStart]);
+                Jmny[A - segmentAtomIndexStart]->subtract(Kmny1[A - segmentAtomIndexStart]);
+                Jmnz[A - segmentAtomIndexStart]->subtract(Kmnz1[A - segmentAtomIndexStart]);
+                
+                Gpi->transform(C1, Jmnx[A - segmentAtomIndexStart], C1occ);
+                psio_->write(PSIF_HESS,Gpi_str,(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
+                Gpi->transform(C1, Jmny[A - segmentAtomIndexStart], C1occ);
+                psio_->write(PSIF_HESS,Gpi_str,(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
+                Gpi->transform(C1, Jmnz[A - segmentAtomIndexStart], C1occ);
+                psio_->write(PSIF_HESS,Gpi_str,(char*)pGpi[0],nmo * nocc * sizeof(double),next_Gpi,&next_Gpi);
+            }
+        } else {
+#endif
         std::shared_ptr<TwoBodyAOInt> ints(integral_->eri(1));
 
         auto sieve = std::make_shared<ERISieve>(basisset_, 0.0);
@@ -3004,7 +3444,9 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                 psio_->write(PSIF_HESS,Gpi_str,(char*)pGpi[0], static_cast<size_t> (nmo) * nocc * sizeof(double),next_Gpi,&next_Gpi);
             }
         } // End loop over A batches
-
+#ifdef USING_BrianQC
+        }
+#endif
     } // End if density fitted
 }
 

@@ -63,6 +63,19 @@
 
 #include "stability.h"
 
+#ifdef USING_BrianQC
+
+#include <use_brian_wrapper.h>
+#include <brian_macros.h>
+#include <brian_types.h>
+
+extern void checkBrian();
+extern BrianCookie brianCookie;
+extern bool brianEnable;
+extern bool brianEnableDFT;
+
+#endif
+
 namespace psi {
 namespace scf {
 
@@ -203,11 +216,19 @@ void UHF::form_G() {
     }
     Ga_->add(J_);
     Gb_->add(J_);
-
+    
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
+    
+#ifdef USING_BrianQC
+    if (brianEnable and brianEnableDFT) {
+        // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
 
-    if ( alpha != 0.0 && !(functional_->is_x_lrc() && jk_->get_wcombine()) ){
+    if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine()) ){
         Ga_->axpy(-alpha, Ka_);
         Gb_->axpy(-alpha, Kb_);
     } else {
@@ -331,9 +352,18 @@ double UHF::compute_E() {
         VV10_E = potential_->quadrature_values()["VV10"];
     }
 
-    double exchange_E = 0.0;
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
+    
+#ifdef USING_BrianQC
+    if (brianEnable and brianEnableDFT) {
+        // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
+    
+    double exchange_E = 0.0;
     if (functional_->is_x_hybrid()) {
         exchange_E -= alpha * Da_->vector_dot(Ka_);
         exchange_E -= alpha * Db_->vector_dot(Kb_);
@@ -571,6 +601,15 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     // Build return vector
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
+    
+#ifdef USING_BrianQC
+    if (brianEnable and brianEnableDFT) {
+        // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
+        alpha = 1.0;
+        beta = 1.0;
+    }
+#endif
+    
     std::vector<SharedMatrix> ret;
     if (combine) {
         for (size_t i = 0; i < nvecs; i++) {

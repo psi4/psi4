@@ -275,6 +275,12 @@ if(ENABLE_adcc)
     message(STATUS "Adding test cases: Psi4 + adcc")
 endif()
 
+# <<<  BrianQC  >>>
+if(ENABLE_BrianQC)
+    add_subdirectory(brianqc)
+    message(STATUS "Adding test cases: Psi4 + BrianQC")
+endif()
+
 # plugin regime
 if(ENABLE_PLUGIN_TESTING)
     add_subdirectory(plugins)

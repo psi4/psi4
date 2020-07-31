@@ -70,6 +70,69 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+#ifdef USING_BrianQC
+#include <use_brian_wrapper.h>
+#include <brian_module.h>
+#include <brian_macros.h>
+
+bool brianEnableEnvFound = false;
+bool brianEnableEnvValue = false;
+
+BrianCookie brianCookie = 0;
+
+bool brianEnable = false;
+bool brianEnableDFT = true;
+brianInt brianRestrictionType = 0;
+bool brianCPHFFlag = false;
+bool brianCPHFLeftSideFlag = false;
+
+void checkBrian() {
+    brianBool err = brianAPIGetError(&brianCookie);
+    if (err) {
+        throw PSIEXCEPTION("BrianQC error detected");
+    }
+}
+
+void brianInit() {
+    if (brianCookie != 0) {
+        throw PSIEXCEPTION("Attempting to reinitialize BrianQC without releasing it first");
+    }
+    
+    brianInt brianAPIVersionOfHost = BRIAN_API_VERSION;
+    brianInt hostID = BRIAN_HOST_PSI4;
+    brianCookie = brianAPIInit(&brianAPIVersionOfHost, &hostID);
+    checkBrian();
+    outfile->Printf("BrianQC initialization successful\n");
+}
+
+void brianRelease()
+{
+    if (brianCookie == 0) {
+        throw PSIEXCEPTION("Attempting to release the BrianQC module when it hasn't been initialized\n");
+    }
+    
+    outfile->Printf("Releasing the BrianQC module\n");
+    brianAPIRelease(&brianCookie);
+    brianCookie = 0;
+}
+
+void handleBrianOption(bool value) {
+    if (brianEnableEnvFound) {
+        outfile->Printf("BRIANQC_ENABLE option found, but overridden by BRIANQC_ENABLE environment variable\n");
+    } else {
+        outfile->Printf("BRIANQC_ENABLE option found, checking value\n");
+        brianEnable = value;
+        if (value && (brianCookie == 0)) {
+            outfile->Printf("BRIANQC_ENABLE option set to true, initializing BrianQC\n");
+            brianInit();
+        } else if (!value && (brianCookie != 0)) {
+            outfile->Printf("BRIANQC_ENABLE option set to false, releasing BrianQC\n");
+            brianRelease();
+        }
+    }
+}
+#endif
+
 // Python helper wrappers
 void export_benchmarks(py::module&);
 void export_blas_lapack(py::module&);
@@ -595,6 +658,18 @@ bool py_psi_set_global_option_string(std::string const& key, std::string const& 
         else
             throw std::domain_error("Required option type is boolean, no boolean specified");
     }
+    
+#ifdef USING_BrianQC
+    if (nonconst_key == "BRIANQC_ENABLE") {
+        if (to_upper(value) == "TRUE" || to_upper(value) == "YES" || to_upper(value) == "ON")
+            handleBrianOption(true);
+        else if (to_upper(value) == "FALSE" || to_upper(value) == "NO" || to_upper(value) == "OFF")
+            handleBrianOption(false);
+        else
+            throw std::domain_error("Required option type is boolean, no boolean specified");
+    }
+#endif
+
     return true;
 }
 
@@ -617,6 +692,13 @@ bool py_psi_set_global_option_int(std::string const& key, int value) {
     } else {
         Process::environment.options.set_global_int(nonconst_key, value);
     }
+    
+#ifdef USING_BrianQC
+    if (nonconst_key == "BRIANQC_ENABLE") {
+        handleBrianOption(value);
+    }
+#endif
+    
     return true;
 }
 
@@ -984,6 +1066,23 @@ bool psi4_python_module_initialize() {
     static char* argv = (char*)"";
     for_rtl_init_(&argc, &argv);
 #endif
+    
+#ifdef USING_BrianQC
+    const char* brianEnableEnv = getenv("BRIANQC_ENABLE");
+    brianEnableEnvFound = (bool)brianEnableEnv;
+    if (brianEnableEnvFound) {
+        outfile->Printf("BRIANQC_ENABLE environment variable found, checking value\n");
+        brianEnableEnvValue = (bool)atoi(brianEnableEnv);
+        brianEnable = brianEnableEnvValue;
+        if (brianEnableEnvValue) {
+            outfile->Printf("BRIANQC_ENABLE is true, attempting to initialize BrianQC\n");
+            brianInit();
+        }
+    }
+    
+    const char* brianEnableDFTEnv = getenv("BRIANQC_ENABLE_DFT");
+    brianEnableDFT = brianEnableDFTEnv ? (bool)atoi(brianEnableDFTEnv) : true;
+#endif
 
     initialized = true;
 
@@ -991,6 +1090,12 @@ bool psi4_python_module_initialize() {
 }
 
 void psi4_python_module_finalize() {
+#ifdef USING_BrianQC
+    if (brianCookie != 0) {
+        brianRelease();
+    }
+#endif
+    
 #ifdef INTEL_Fortran_ENABLED
     for_rtl_finish_();
 #endif

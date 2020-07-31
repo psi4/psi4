@@ -61,6 +61,19 @@
 #include <algorithm>
 #include <tuple>
 
+#ifdef USING_BrianQC
+
+#include <use_brian_wrapper.h>
+#include <brian_macros.h>
+#include <brian_common.h>
+
+extern void checkBrian();
+extern BrianCookie brianCookie;
+extern bool brianEnable;
+extern brianInt brianRestrictionType;
+
+#endif
+
 using namespace psi;
 
 // Globals (Seriously? This is where we instantiate these.)
@@ -592,6 +605,94 @@ void Wavefunction::common_init() {
             outfile->Printf("PERTURB_H is true, but PERTURB_WITH not found, applying no perturbation.\n");
         }
     }
+    
+#ifdef USING_BrianQC
+    if (brianEnable) {
+        if (molecule_->point_group()->bits() != PointGroups::Groups::C1) {
+            throw PSIEXCEPTION("BrianQC can only be used with C1 symmetry\n");
+        }
+        
+        brianInt atomCount = molecule_->nallatom();
+        
+        brianInt totalCharge = (brianInt)round(molecule_->molecular_charge());
+        brianInt spinMultiplicity = multiplicity;
+        
+        std::vector<brianInt> atomicNumbers;
+        std::vector<double> atomCoordinates;
+        for (unsigned int atomIndex = 0; atomIndex < molecule_->nallatom(); atomIndex++) {
+            atomicNumbers.push_back(molecule_->ftrue_atomic_number(atomIndex));
+            atomCoordinates.push_back(molecule_->fx(atomIndex));
+            atomCoordinates.push_back(molecule_->fy(atomIndex));
+            atomCoordinates.push_back(molecule_->fz(atomIndex));
+        }
+        
+        brianCOMSetMolecule(&brianCookie, &totalCharge, &spinMultiplicity, &atomCount, atomCoordinates.data(), atomicNumbers.data());
+        checkBrian();
+        
+        std::vector<brianInt> shellSchemas(basisset_->max_am() + 1, -1);
+        for (unsigned int shellIndex = 0; shellIndex < basisset_->nshell(); shellIndex++) {
+            int shellType = basisset_->shell(shellIndex).am();
+            brianInt shellSchema = basisset_->shell(shellIndex).is_pure() ? BRIAN_SHELL_SCHEMA_SPHERICAL_PSI4 : BRIAN_SHELL_SCHEMA_CARTESIAN_STANDARD;
+            
+            if (shellSchemas[shellType] != -1 and shellSchemas[shellType] != shellSchema) {
+                throw PSIEXCEPTION("BrianQC needs shells of the same angular momentum to be either all pure or all cartesian\n");
+            }
+            
+            shellSchemas[shellType] = shellSchema;
+        }
+        
+        brianInt shellCount = basisset_->nshell();
+        
+        std::vector<brianInt> shellAtomIndices;
+        std::vector<brianInt> shellMinTypes;
+        std::vector<brianInt> shellMaxTypes;
+        std::vector<brianInt> shellContractionDegrees;
+        std::vector<brianInt> shellExponentOffsets;
+        std::vector<double> exponents;
+        std::vector<brianInt> shellPrefactorOffsets;
+        std::vector<double> prefactors;
+        for (unsigned int shellIndex = 0; shellIndex < basisset_->nshell(); shellIndex++) {
+            const GaussianShell& shell = basisset_->shell(shellIndex);
+            shellAtomIndices.push_back(shell.ncenter());
+            shellMinTypes.push_back(shell.am());
+            shellMaxTypes.push_back(shell.am());
+            shellContractionDegrees.push_back(shell.nprimitive());
+            shellExponentOffsets.push_back(exponents.size());
+            shellPrefactorOffsets.push_back(prefactors.size());
+            for (unsigned int primitiveIndex = 0; primitiveIndex < shell.nprimitive(); primitiveIndex++) {
+                exponents.push_back(shell.exp(primitiveIndex));
+                prefactors.push_back(shell.coef(primitiveIndex));
+            }
+        }
+        
+        brianInt basisRole = BRIAN_BASIS_ROLE_ORBITAL;
+        
+        // NOTE: if we ever want to use BrianQC's SAD initial guess, then we will need to find the basis name here and map it to the macro value
+        brianInt basisSetID = BRIAN_BASIS_SET_CUSTOM;
+        brianCOMSetBasis(&brianCookie, &basisRole, &basisSetID, shellSchemas.data(), &shellCount, shellAtomIndices.data(), shellMinTypes.data(), shellMaxTypes.data(), shellContractionDegrees.data(), shellExponentOffsets.data(), exponents.data(), shellPrefactorOffsets.data(), prefactors.data());
+        checkBrian();
+        
+        if (options_.get_str("REFERENCE") == "RHF" or options_.get_str("REFERENCE") == "RKS") {
+            brianRestrictionType = BRIAN_RESTRICTION_TYPE_RHF;
+        }
+        else if (options_.get_str("REFERENCE") == "UHF" or options_.get_str("REFERENCE") == "UKS" or options_.get_str("REFERENCE") == "CUHF") {
+            // CUHF is different from UHF, but Fock building works the same, so for the time being we just set BrianQC to UHF
+            brianRestrictionType = BRIAN_RESTRICTION_TYPE_UHF;
+        }
+        else if (options_.get_str("REFERENCE") == "ROHF") {
+            brianRestrictionType = BRIAN_RESTRICTION_TYPE_ROHF;
+        }
+        else {
+            throw PSIEXCEPTION("Currently, BrianQC can only handle RHF, RKS, UHF, UKS, CUHF and ROHF calculations");
+        }
+        
+        brianCOMSetRestriction(&brianCookie, &brianRestrictionType);
+        checkBrian();
+        
+        brianCOMInitIntegrator(&brianCookie);
+        checkBrian();
+    }
+#endif
 }
 
 std::array<double, 3> Wavefunction::get_dipole_field_strength() const { return dipole_field_strength_; }

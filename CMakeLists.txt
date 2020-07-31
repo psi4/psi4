@@ -101,6 +101,7 @@ option(ENABLE_psi4fockci "Enables Psi4FockCI plugin (can also be added at runtim
 option(ENABLE_cct3 "Enables cct3 plugin (requires Fortran; can also be added at runtime)" OFF)
 option(ENABLE_gpu_dfcc "Enables GPU_DFCC plugin for gpu-accelerated df-cc (requires CUDA; can also be added at runtime)" OFF)
 option(ENABLE_mdi "Enables MolSSI driver interface" OFF)
+option(ENABLE_BrianQC "Enables the BrianQC GPU module (requires CUDA; requires separate installation and licensing of the BrianQC module)" OFF)
 # These options are relevant to pasture, expert only
 option(ENABLE_ccsort "Enables ccsort plugin installed from psi4pasture" OFF)
 option(ENABLE_transqt2 "Enables transqt2 plugin installed from psi4pasture" OFF)
@@ -206,6 +207,7 @@ ExternalProject_Add(psi4-core
            simint_external
            libxc_external
            mdi_external
+           brianqc_external
    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/psi4
    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
               -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -239,6 +241,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_gdma=${ENABLE_gdma}
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
               -DENABLE_mdi=${ENABLE_mdi}
+              -DENABLE_BrianQC=${ENABLE_BrianQC}
               -DENABLE_OPENMP=${ENABLE_OPENMP}
               -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
               -DTargetHDF5_DIR=${TargetHDF5_DIR}
@@ -257,6 +260,7 @@ ExternalProject_Add(psi4-core
               -Dpylibefp_DIR=${pylibefp_DIR}
               -Dsimint_DIR=${simint_DIR}
               -DLibxc_DIR=${Libxc_DIR}
+              -DBrianQC_DIR=${BrianQC_DIR}
               -DFortran_ENABLED=${Fortran_ENABLED}
               -DLIBC_INTERJECT=${LIBC_INTERJECT}
               -DRESTRICT_KEYWORD=${RESTRICT_KEYWORD}

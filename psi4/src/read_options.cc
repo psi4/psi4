@@ -150,6 +150,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Integral package to use. If compiled with ERD or Simint support, change this option to use them; LibInt is used
        otherwise. -*/
     options.add_str("INTEGRAL_PACKAGE", "LIBINT", "ERD LIBINT SIMINT");
+    
+#ifdef USING_BrianQC
+    /*- Whether to enable using the BrianQC GPU module -*/
+    options.add_bool("BRIANQC_ENABLE", false);
+#endif
 
     // Note that case-insensitive options are only functional as
     //   globals, not as module-level, and should be defined sparingly

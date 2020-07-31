@@ -71,6 +71,21 @@ void F_DKH(double *S, double *V, double *T, double *pVp, int *nbf, int *dkh_orde
 }
 #endif
 
+#ifdef USING_BrianQC
+
+#include <use_brian_wrapper.h>
+#include <brian_macros.h>
+#include <brian_common.h>
+#include <brian_scf.h>
+#include <brian_geom_opt.h>
+
+extern void checkBrian();
+extern BrianCookie brianCookie;
+extern bool brianEnable;
+extern brianInt brianRestrictionType;
+
+#endif
+
 namespace psi {
 
 /**
@@ -579,6 +594,17 @@ SharedMatrix MintsHelper::ao_overlap() {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_overlap()));
     }
     auto overlap_mat = std::make_shared<Matrix>(PSIF_AO_S, basisset_->nbf(), basisset_->nbf());
+    
+#ifdef USING_BrianQC
+    if (brianEnable) {
+        brianInt integralType = BRIAN_INTEGRAL_TYPE_OVERLAP;
+        brianSCFBuild1e(&brianCookie, &integralType, overlap_mat->get_pointer());
+        checkBrian();
+        
+        return overlap_mat;
+    }
+#endif
+    
     one_body_ao_computer(ints_vec, overlap_mat, true);
 
     return overlap_mat;
@@ -603,6 +629,17 @@ SharedMatrix MintsHelper::ao_kinetic() {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_kinetic()));
     }
     auto kinetic_mat = std::make_shared<Matrix>("AO-basis Kinetic Ints", basisset_->nbf(), basisset_->nbf());
+    
+#ifdef USING_BrianQC
+    if (brianEnable) {
+        brianInt integralType = BRIAN_INTEGRAL_TYPE_KINETIC;
+        brianSCFBuild1e(&brianCookie, &integralType, kinetic_mat->get_pointer());
+        checkBrian();
+        
+        return kinetic_mat;
+    }
+#endif
+    
     one_body_ao_computer(ints_vec, kinetic_mat, true);
     return kinetic_mat;
 }
@@ -625,6 +662,17 @@ SharedMatrix MintsHelper::ao_potential() {
     }
     SharedMatrix potential_mat =
         std::make_shared<Matrix>("AO-basis Potential Ints", basisset_->nbf(), basisset_->nbf());
+    
+#ifdef USING_BrianQC
+    if (brianEnable) {
+        brianInt integralType = BRIAN_INTEGRAL_TYPE_NUCLEAR;
+        brianSCFBuild1e(&brianCookie, &integralType, potential_mat->get_pointer());
+        checkBrian();
+        
+        return potential_mat;
+    }
+#endif
+    
     one_body_ao_computer(ints_vec, potential_mat, true);
     return potential_mat;
 }
@@ -1878,6 +1926,30 @@ SharedMatrix MintsHelper::potential_grad(SharedMatrix D) {
     // Potential derivs
     int natom = basisset_->molecule()->natom();
     auto V = std::make_shared<Matrix>("Potential Gradient", natom, 3);
+#ifdef USING_BrianQC
+    if (brianEnable) {
+        int densityCount = (brianRestrictionType == BRIAN_RESTRICTION_TYPE_RHF) ? 1 : 2;
+        
+        SharedMatrix dummyInput, dummyOutput;
+        if (densityCount > 1) {
+            dummyInput = std::make_shared<Matrix>("dummy", basisset_->nbf(), basisset_->nbf());
+            dummyOutput = std::make_shared<Matrix>("dummy", basisset_->molecule()->natom(), 3);
+        }
+        
+        brianInt integralType = BRIAN_INTEGRAL_TYPE_NUCLEAR;
+        brianOPTBuildGradient1eDeriv(&brianCookie,
+            &integralType,
+            D->get_pointer(),
+            (densityCount > 1 ? dummyInput->get_pointer() : nullptr),
+            nullptr,
+            nullptr,
+            V->get_pointer(),
+            (densityCount > 1 ? dummyOutput->get_pointer() : nullptr)
+        );
+        
+        return V;
+    }
+#endif
 
     // Build temps
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
@@ -1945,22 +2017,70 @@ SharedMatrix MintsHelper::potential_grad(SharedMatrix D) {
 }
 
 SharedMatrix MintsHelper::kinetic_grad(SharedMatrix D) {
-    // Overlap
+    // Kinetic
+    SharedMatrix kinetic_mat(new Matrix("Kinetic Gradient", basisset_->molecule()->natom(), 3));
+#ifdef USING_BrianQC
+    if (brianEnable) {
+        int densityCount = (brianRestrictionType == BRIAN_RESTRICTION_TYPE_RHF) ? 1 : 2;
+        
+        SharedMatrix dummyInput, dummyOutput;
+        if (densityCount > 1) {
+            dummyInput = std::make_shared<Matrix>("dummy", basisset_->nbf(), basisset_->nbf());
+            dummyOutput = std::make_shared<Matrix>("dummy", basisset_->molecule()->natom(), 3);
+        }
+        
+        brianInt integralType = BRIAN_INTEGRAL_TYPE_KINETIC;
+        brianOPTBuildGradient1eDeriv(&brianCookie,
+            &integralType,
+            D->get_pointer(),
+            (densityCount > 1 ? dummyInput->get_pointer() : nullptr),
+            nullptr,
+            nullptr,
+            kinetic_mat->get_pointer(),
+            (densityCount > 1 ? dummyOutput->get_pointer() : nullptr)
+        );
+        
+        return kinetic_mat;
+    }
+#endif
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
     for (size_t i = 0; i < nthread_; i++) {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_kinetic(1)));
     }
-    SharedMatrix kinetic_mat(new Matrix("Kinetic Gradient", basisset_->molecule()->natom(), 3));
     grad_two_center_computer(ints_vec, D, kinetic_mat);
     return kinetic_mat;
 }
 SharedMatrix MintsHelper::overlap_grad(SharedMatrix D) {
     // Overlap
+    SharedMatrix overlap_mat(new Matrix("Overlap Gradient", basisset_->molecule()->natom(), 3));
+#ifdef USING_BrianQC
+    if (brianEnable) {
+        int densityCount = (brianRestrictionType == BRIAN_RESTRICTION_TYPE_RHF) ? 1 : 2;
+        
+        SharedMatrix dummyInput, dummyOutput;
+        if (densityCount > 1) {
+            dummyInput = std::make_shared<Matrix>("dummy", basisset_->nbf(), basisset_->nbf());
+            dummyOutput = std::make_shared<Matrix>("dummy", basisset_->molecule()->natom(), 3);
+        }
+        
+        brianInt integralType = BRIAN_INTEGRAL_TYPE_OVERLAP;
+        brianOPTBuildGradient1eDeriv(&brianCookie,
+            &integralType,
+            nullptr,
+            nullptr,
+            D->get_pointer(),
+            (densityCount > 1 ? dummyInput->get_pointer() : nullptr),
+            overlap_mat->get_pointer(),
+            (densityCount > 1 ? dummyOutput->get_pointer() : nullptr)
+        );
+        
+        return overlap_mat;
+    }
+#endif
     std::vector<std::shared_ptr<OneBodyAOInt>> ints_vec;
     for (size_t i = 0; i < nthread_; i++) {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_overlap(1)));
     }
-    SharedMatrix overlap_mat(new Matrix("Overlap Gradient", basisset_->molecule()->natom(), 3));
     grad_two_center_computer(ints_vec, D, overlap_mat);
     return overlap_mat;
 }

@@ -1,0 +1,26 @@
+#! Water with sto-3g frequencies
+
+import numpy as np
+
+molecule water {
+    symmetry c1
+    0 1
+    8 -0.066308 -0.083391 0.042846
+    1 0.889752 -0.042018 0.021589
+    1 -0.341116 0.73212 -0.376167
+}
+
+set = {
+    basis sto-3g
+    reference rhf
+    scf_type direct
+    df_scf_guess False
+    brianqc_enable True
+}
+
+ref_freqs = np.array([2051.246352900409, 4500.504468103355, 4797.345578128214])
+
+scf_e, scf_wfn = frequencies('scf', project_trans = True, project_rot = True, return_wfn=True)
+
+this_freqs = scf_wfn.frequencies().to_array()                                            #TEST
+compare_arrays(ref_freqs, this_freqs, 6, "Reference frequencies")  #TEST

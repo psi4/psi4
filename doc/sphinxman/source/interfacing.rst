@@ -44,6 +44,7 @@ platform capabilities, *etc*.
 
    numpy
    adcc
+   brianqc
    cfour
    chemps2
    cppe

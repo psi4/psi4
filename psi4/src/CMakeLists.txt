@@ -51,6 +51,21 @@ target_link_libraries(core
     tgt::lapack # OpenMP flags to core.cc
   )
 
+if(TARGET BrianQC::static_wrapper)
+  target_compile_definitions(core
+    PRIVATE
+      USING_BrianQC
+    )
+  target_include_directories(core
+    PRIVATE
+      $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
+    )
+  target_link_libraries(core
+    PRIVATE
+      BrianQC::static_wrapper
+    )
+endif()
+
 if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   # Enable call to for_rtl_init_() which is required if using the
   # Intel fortran compiler

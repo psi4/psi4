@@ -114,3 +114,14 @@ if(TARGET erd::erd)
       erd::erd
     )
 endif()
+
+if(TARGET BrianQC::static_wrapper)
+  target_compile_definitions(mints
+    PUBLIC
+      USING_BrianQC
+    )
+  target_include_directories(mints
+    PUBLIC
+      $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
+    )
+endif()
