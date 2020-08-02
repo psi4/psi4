@@ -2657,15 +2657,15 @@ void USAPT0::mp2_terms() {
         if (na_ablock > 0) {
             dfh->fill_tensor("Aa_ar", Aa_ar, {aastart, aastart + na_ablock});
             dfh->fill_tensor("Da_ar", Da_ar, {aastart, aastart + na_ablock});
-            if (alpha_exchange_ && naa > 0 && nab > 0) dfh->fill_tensor("Ba_as", Ba_as, {aastart, aastart + na_ablock});
-            if (alpha_exchange_ && naa > 0 && nab > 0) dfh->fill_tensor("Ca_as", Ca_as, {aastart, aastart + na_ablock});
+            if (naa > 0 && nab > 0) dfh->fill_tensor("Ba_as", Ba_as, {aastart, aastart + na_ablock});
+            if (naa > 0 && nab > 0) dfh->fill_tensor("Ca_as", Ca_as, {aastart, aastart + na_ablock});
         }
 
         if (nb_ablock > 0) {
             dfh->fill_tensor("Ab_ar", Ab_ar, {bastart, bastart + nb_ablock});
             dfh->fill_tensor("Db_ar", Db_ar, {bastart, bastart + nb_ablock});
-            if (beta_exchange_ && nba > 0 && nbb > 0) dfh->fill_tensor("Bb_as", Bb_as, {bastart, bastart + nb_ablock});
-            if (beta_exchange_ && nba > 0 && nbb > 0) dfh->fill_tensor("Cb_as", Cb_as, {bastart, bastart + nb_ablock});
+            if (nba > 0 && nbb > 0) dfh->fill_tensor("Bb_as", Bb_as, {bastart, bastart + nb_ablock});
+            if (nba > 0 && nbb > 0) dfh->fill_tensor("Cb_as", Cb_as, {bastart, bastart + nb_ablock});
         }
 
         for (size_t abstart = 0, bbstart = 0; abstart < std::max(nab, nbb); abstart += maxa_b, bbstart += maxb_b) {
@@ -2675,19 +2675,15 @@ void USAPT0::mp2_terms() {
             if (na_bblock > 0) {
                 dfh->fill_tensor("Aa_bs", Aa_bs, {abstart, abstart + na_bblock});
                 dfh->fill_tensor("Da_bs", Da_bs, {abstart, abstart + na_bblock});
-                if (alpha_exchange_ && nab > 0 && naa > 0)
-                    dfh->fill_tensor("Ba_br", Ba_br, {abstart, abstart + na_bblock});
-                if (alpha_exchange_ && nab > 0 && naa > 0)
-                    dfh->fill_tensor("Ca_br", Ca_br, {abstart, abstart + na_bblock});
+                if (nab > 0 && naa > 0) dfh->fill_tensor("Ba_br", Ba_br, {abstart, abstart + na_bblock});
+                if (nab > 0 && naa > 0) dfh->fill_tensor("Ca_br", Ca_br, {abstart, abstart + na_bblock});
             }
 
             if (nb_bblock > 0) {
                 dfh->fill_tensor("Ab_bs", Ab_bs, {bbstart, bbstart + nb_bblock});
                 dfh->fill_tensor("Db_bs", Db_bs, {bbstart, bbstart + nb_bblock});
-                if (beta_exchange_ && nbb > 0 && nba > 0)
-                    dfh->fill_tensor("Bb_br", Bb_br, {bbstart, bbstart + nb_bblock});
-                if (beta_exchange_ && nbb > 0 && nba > 0)
-                    dfh->fill_tensor("Cb_br", Cb_br, {bbstart, bbstart + nb_bblock});
+                if (nbb > 0 && nba > 0) dfh->fill_tensor("Bb_br", Bb_br, {bbstart, bbstart + nb_bblock});
+                if (nbb > 0 && nba > 0) dfh->fill_tensor("Cb_br", Cb_br, {bbstart, bbstart + nb_bblock});
             }
 
             long int nab = (na_ablock + nb_ablock) * (na_bblock + nb_bblock);
