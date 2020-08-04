@@ -2294,6 +2294,109 @@ SharedMatrix MintsHelper::core_hamiltonian_grad(SharedMatrix D) {
     return ret;
 }
 
+std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::string, SharedMatrix>& D, const std::string& aux_name) {
+    // Construct integral factory.
+    auto auxiliary = basissets_[aux_name];
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary, BasisSet::zero_ao_basis_set(), auxiliary, BasisSet::zero_ao_basis_set());
+    std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
+    for (int t = 0; t < nthread_; t++) {
+        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+    }
+
+    // Construct temporary matrices for each thread
+    int natom = basisset_->molecule()->natom();
+    std::map<std::string, std::vector<SharedMatrix>> temps;
+    for (auto kv: D) {
+        temps[kv.first] = std::vector<SharedMatrix>();
+        auto& temp = temps[kv.first];
+        for (int j = 0; j < nthread_; j++) {
+            temp.push_back(std::make_shared<Matrix>("temp", natom, 3));
+        }
+    }
+
+    // Construct pairs of aux AOs
+    std::vector<std::pair<int, int>> PQ_pairs;
+    for (int P = 0; P < auxiliary->nshell(); P++) {
+        for (auto Q = 0; Q <= P; Q++) {
+            PQ_pairs.push_back(std::pair<int, int>(P, Q));
+        }
+    }
+
+   // Perform threading contraction of "densities" against metric derivative integrals.
+#pragma omp parallel for schedule(dynamic) num_threads(nthread_)
+    for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
+        auto P = PQ_pairs[PQ].first;
+        auto Q = PQ_pairs[PQ].second;
+        int thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+        Jint[thread]->compute_shell_deriv1(P, 0, Q, 0);
+        const auto buffer = Jint[thread]->buffer();
+
+        int nP = auxiliary->shell(P).nfunction();
+        int cP = auxiliary->shell(P).ncartesian();
+        int aP = auxiliary->shell(P).ncenter();
+        int oP = auxiliary->shell(P).function_index();
+
+        int nQ = auxiliary->shell(Q).nfunction();
+        int cQ = auxiliary->shell(Q).ncartesian();
+        int aQ = auxiliary->shell(Q).ncenter();
+        int oQ = auxiliary->shell(Q).function_index();
+
+        int ncart = cP * cQ;
+        const double *Px = buffer + 0*ncart;
+        const double *Py = buffer + 1*ncart;
+        const double *Pz = buffer + 2*ncart;
+        const double *Qx = buffer + 3*ncart;
+        const double *Qy = buffer + 4*ncart;
+        const double *Qz = buffer + 5*ncart;
+
+        double perm = (P == Q ? 1.0 : 2.0);
+
+        std::vector<std::pair<double**, double**>> read_write_pairs;
+        for (auto kv: D) {
+            auto temp1 = D[kv.first]->pointer();
+            auto temp2 = temps[kv.first][thread]->pointer();
+            auto pair = std::make_pair(temp1, temp2);
+            read_write_pairs.push_back(pair);
+        }
+
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                for (auto& pair : read_write_pairs) {
+                    double val = 0.5 * perm * pair.first[p+oP][q+oQ];
+                    auto grad_mat = pair.second;
+                    grad_mat[aP][0] -= val * (*Px);
+                    grad_mat[aP][1] -= val * (*Py);
+                    grad_mat[aP][2] -= val * (*Pz);
+                    grad_mat[aQ][0] -= val * (*Qx);
+                    grad_mat[aQ][1] -= val * (*Qy);
+                    grad_mat[aQ][2] -= val * (*Qz);
+                }
+
+                Px++;
+                Py++;
+                Pz++;
+                Qx++;
+                Qy++;
+                Qz++;
+            }
+        }
+    }
+
+    // Sum results across the various threads
+    std::map<std::string, SharedMatrix> gradient_contributions;
+    for (auto kv: temps) {
+        auto gradient_contribution = std::make_shared<Matrix>(kv.first + " Gradient", natom, 3);
+        for (auto thread_matrix: kv.second) {
+            gradient_contribution->add(thread_matrix);
+        }
+        gradient_contributions[kv.first] = gradient_contribution;
+    }
+    return gradient_contributions;
+}
+
 void MintsHelper::play() {}
 
 /* 1st and 2nd derivatives of OEI in AO basis  */
