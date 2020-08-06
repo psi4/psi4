@@ -138,10 +138,6 @@ class PSI_API MOSpace {
     /// Get the beta orbital indexing array for IWL
     const std::vector<int> &bIndex() { return bIndex_.size() == 0 ? aIndex_ : bIndex_; }
 
-    /// Whether this is just a placeholder
-    bool placeholder() const { return placeholder_; }
-    void set_placeholder(bool t_f) { placeholder_ = t_f; }
-
    protected:
     /**
      * The identifier for this space; this must be unique for each space.  See the
@@ -157,8 +153,6 @@ class PSI_API MOSpace {
     std::vector<int> aIndex_;
     // The beta reindexing array
     std::vector<int> bIndex_;
-    // Whether this only describes dimensions, and has no orbitals associated with it
-    bool placeholder_;
 };
 
 }  // namespace psi

@@ -61,7 +61,7 @@ MOSpace::MOSpace(const char label) : label_(label), aOrbs_(0), bOrbs_(0), aIndex
  *                 be passed as an empty vector for DPD output.
  */
 MOSpace::MOSpace(const char label, const std::vector<int> aOrbs, const std::vector<int> aIndex)
-    : label_(label), aOrbs_(aOrbs), bOrbs_(aOrbs), aIndex_(aIndex), bIndex_(aIndex), placeholder_(false) {}
+    : label_(label), aOrbs_(aOrbs), bOrbs_(aOrbs), aIndex_(aIndex), bIndex_(aIndex) {}
 
 /**
  * Defines a custom orbital space with different alpha and beta spaces
@@ -79,15 +79,6 @@ MOSpace::MOSpace(const char label, const std::vector<int> aOrbs, const std::vect
  */
 MOSpace::MOSpace(const char label, const std::vector<int> aOrbs, const std::vector<int> bOrbs,
                  const std::vector<int> aIndex, const std::vector<int> bIndex)
-    : label_(label), aOrbs_(aOrbs), bOrbs_(bOrbs), aIndex_(aIndex), bIndex_(bIndex), placeholder_(false) {}
-
-/**
- * Defines a custom orbital space over (symmetrized) atomic orbitals.  Used for auxilliary basis sets.
- * @param label  - a single character to label this space.  This must be unique to this
- *                 space, so see the MOSpace static member variables for a list of the
- *                 labels already used.  The uniqueness is checked internally.
- * @param orbsPI - the numer of orbitals per irrep in this SO space
- */
-MOSpace::MOSpace(const char label, const std::vector<int> orbsPI) : label_(label), aOrbs_(orbsPI), placeholder_(true) {}
+    : label_(label), aOrbs_(aOrbs), bOrbs_(bOrbs), aIndex_(aIndex), bIndex_(bIndex) {}
 
 MOSpace::~MOSpace() {}

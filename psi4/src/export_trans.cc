@@ -51,7 +51,6 @@ void export_trans(py::module& m) {
         .def(py::init<const char, const std::vector<int>, const std::vector<int>, const std::vector<int>,
                       const std::vector<int>>())
         .def(py::init<const char, const std::vector<int>, const std::vector<int>>())
-        .def(py::init<const char, const std::vector<int>>())
         .def_static("fzc", []() { return MOSpace::fzc; })
         .def_static("occ", []() { return MOSpace::occ; })
         .def_static("fzv", []() { return MOSpace::fzv; })
