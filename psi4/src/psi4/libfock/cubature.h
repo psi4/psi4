@@ -408,6 +408,8 @@ class BlockOPoints {
     double* z() const { return z_; }
     /// The weights. You do not own this
     double* w() const { return w_; }
+    /// Bounding Radius of BlockOPoints
+    double r() const { return R_; }
 
     /// Relevant shells, local -> global
     const std::vector<int>& shells_local_to_global() const { return shells_local_to_global_; }
