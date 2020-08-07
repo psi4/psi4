@@ -249,45 +249,31 @@ void IntegralTransform::process_spaces() {
             aIndex[0] = 0;
         } else {
             // This must be a custom MOSpace that the user provided
-            if (moSpace->placeholder()) {
-                // This is an AO space, such as an auxilliary basis set
-                const std::vector<int> &aorbspi = moSpace->aOrbs();
-                int numOrbs = 0;
-                for (int h = 0; h < nirreps_; ++h) {
-                    aOrbsPI[h] = aorbspi[h];
-                    numOrbs += aorbspi[h];
-                }
-                aOrbSym = new int[numOrbs];
-                int orbCount = 0;
-                for (int h = 0; h < nirreps_; ++h)
-                    for (int orb = 0; orb < aOrbsPI[h]; ++orb) aOrbSym[orbCount++] = h;
-            } else {
-                const std::vector<int> aorbs = moSpace->aOrbs();
-                const std::vector<int> aindex = moSpace->aIndex();
+            const std::vector<int> aorbs = moSpace->aOrbs();
+            const std::vector<int> aindex = moSpace->aIndex();
 
-                // Figure out how many orbitals per irrep, and group all orbitals by irrep
-                int nAOrbs = aorbs.size();
-                aOrbSym = new int[nAOrbs];
-                ::memset(aOrbsPI, '\0', nirreps_ * sizeof(int));
-                aIndex = (aindex.empty() ? 0 : new int[nAOrbs]);
-                for (int h = 0, count = 0; h < nirreps_; ++h) {
-                    for (int n = 0; n < nAOrbs; ++n) {
-                        int orb = aorbs[n];
-                        if (mosym_[orb] == h) {
-                            aOrbsPI[h]++;
-                            aOrbSym[count] = h;
-                            if (aIndex) aIndex[count] = aindex[n];
-                            count++;
-                        }
+            // Figure out how many orbitals per irrep, and group all orbitals by irrep
+            int nAOrbs = aorbs.size();
+            aOrbSym = new int[nAOrbs];
+            ::memset(aOrbsPI, '\0', nirreps_ * sizeof(int));
+            aIndex = (aindex.empty() ? 0 : new int[nAOrbs]);
+            for (int h = 0, count = 0; h < nirreps_; ++h) {
+                for (int n = 0; n < nAOrbs; ++n) {
+                    int orb = aorbs[n];
+                    if (mosym_[orb] == h) {
+                        aOrbsPI[h]++;
+                        aOrbSym[count] = h;
+                        if (aIndex) aIndex[count] = aindex[n];
+                        count++;
                     }
                 }
-                // Check that the indexing array was provided, if needed
-                if (useIWL_ && aindex.empty()) {
-                    std::string error("You must provide an indexing array for space ");
-                    error += moSpace->label();
-                    error += " or disable IWL output by changing OutputType.";
-                    throw SanityCheckError(error, __FILE__, __LINE__);
-                }
+            }
+            // Check that the indexing array was provided, if needed
+            if (useIWL_ && aindex.empty()) {
+                std::string error("You must provide an indexing array for space ");
+                error += moSpace->label();
+                error += " or disable IWL output by changing OutputType.";
+                throw SanityCheckError(error, __FILE__, __LINE__);
             }
         }
 
@@ -447,47 +433,32 @@ void IntegralTransform::process_spaces() {
                 bOrbSym[0] = 0;
                 bIndex[0] = 0;
             } else {
-                if (moSpace->placeholder()) {
-                    // This is an AO space, such as an auxilliary basis set
-                    const std::vector<int> borbspi = moSpace->aOrbs();
-                    int numOrbs = 0;
-                    for (int h = 0; h < nirreps_; ++h) {
-                        bOrbsPI[h] = borbspi[h];
-                        numOrbs += borbspi[h];
-                    }
-                    bOrbSym = new int[numOrbs];
-                    int orbCount = 0;
-                    for (int h = 0; h < nirreps_; ++h)
-                        for (int orb = 0; orb < bOrbsPI[h]; ++orb) bOrbSym[orbCount++] = h;
+                // This must be a custom MOSpace that the user provided
+                const std::vector<int> borbs = moSpace->bOrbs();
+                const std::vector<int> bindex = moSpace->bIndex();
 
-                } else {
-                    // This must be a custom MOSpace that the user provided
-                    const std::vector<int> borbs = moSpace->bOrbs();
-                    const std::vector<int> bindex = moSpace->bIndex();
-
-                    // Figure out how many orbitals per irrep, and group all orbitals by irrep
-                    int nBOrbs = borbs.size();
-                    bOrbSym = new int[nBOrbs];
-                    bIndex = (bindex.empty() ? 0 : new int[nBOrbs]);
-                    ::memset(bOrbsPI, '\0', nirreps_ * sizeof(int));
-                    for (int h = 0, count = 0; h < nirreps_; ++h) {
-                        for (int n = 0; n < nBOrbs; ++n) {
-                            int orb = borbs[n];
-                            if (mosym_[orb] == h) {
-                                bOrbsPI[h]++;
-                                bOrbSym[count] = h;
-                                if (bIndex) bIndex[count] = bindex[n];
-                                count++;
-                            }
+                // Figure out how many orbitals per irrep, and group all orbitals by irrep
+                int nBOrbs = borbs.size();
+                bOrbSym = new int[nBOrbs];
+                bIndex = (bindex.empty() ? 0 : new int[nBOrbs]);
+                ::memset(bOrbsPI, '\0', nirreps_ * sizeof(int));
+                for (int h = 0, count = 0; h < nirreps_; ++h) {
+                    for (int n = 0; n < nBOrbs; ++n) {
+                        int orb = borbs[n];
+                        if (mosym_[orb] == h) {
+                            bOrbsPI[h]++;
+                            bOrbSym[count] = h;
+                            if (bIndex) bIndex[count] = bindex[n];
+                            count++;
                         }
                     }
-                    // Check that the indexing array was provided, if needed
-                    if (useIWL_ && bindex.empty()) {
-                        std::string error("You must provide a beta indexing array for space ");
-                        error += moSpace->label();
-                        error += " or disable IWL output by changing OutputType.";
-                        throw SanityCheckError(error, __FILE__, __LINE__);
-                    }
+                }
+                // Check that the indexing array was provided, if needed
+                if (useIWL_ && bindex.empty()) {
+                    std::string error("You must provide a beta indexing array for space ");
+                    error += moSpace->label();
+                    error += " or disable IWL output by changing OutputType.";
+                    throw SanityCheckError(error, __FILE__, __LINE__);
                 }
             }
             if (print_ > 5) {
@@ -566,7 +537,6 @@ void IntegralTransform::update_orbitals() {
         throw FeatureNotImplemented("Libtrans", " update of semicanonical orbitals", __FILE__, __LINE__);
     }
     process_eigenvectors();
-    generate_oei();
 }
 /**
  * Sets the orbital matrix, but touches nothing else. This is used for a MCSCF wavefunction

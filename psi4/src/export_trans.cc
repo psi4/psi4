@@ -51,7 +51,6 @@ void export_trans(py::module& m) {
         .def(py::init<const char, const std::vector<int>, const std::vector<int>, const std::vector<int>,
                       const std::vector<int>>())
         .def(py::init<const char, const std::vector<int>, const std::vector<int>>())
-        .def(py::init<const char, const std::vector<int>>())
         .def_static("fzc", []() { return MOSpace::fzc; })
         .def_static("occ", []() { return MOSpace::occ; })
         .def_static("fzv", []() { return MOSpace::fzv; })
@@ -125,7 +124,6 @@ void export_trans(py::module& m) {
 
     int_trans_bind.def("initialize", &IntegralTransform::initialize, "Initialize an IntegralTransform")
         .def("presort_so_tei", &IntegralTransform::presort_so_tei, "docstring")
-        .def("generate_oei", &IntegralTransform::generate_oei, "docstring")
         .def("update_orbitals", &IntegralTransform::update_orbitals, "docstring")
         .def("transform_oei", &IntegralTransform::transform_oei, "Transform one-electron integrals", "s1"_a, "s2"_a,
              "labels"_a)

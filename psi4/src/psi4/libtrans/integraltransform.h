@@ -147,7 +147,6 @@ class PSI_API IntegralTransform {
 
     void initialize();
     void presort_so_tei();
-    void generate_oei();
     void update_orbitals();
     void transform_T_plus_V(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2);
     void transform_oei(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
