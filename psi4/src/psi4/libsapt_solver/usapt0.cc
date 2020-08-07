@@ -2106,15 +2106,23 @@ void USAPT0::mp2_terms() {
     }
 
     if (alpha_exchange_) {
-        Ca_s1->subtract(Cavira_B_);
-        Ca_r1->subtract(Cavira_A_);
-        Ca_r1->scale(-1.0);
+        if (nab > 0) {
+            Ca_s1->subtract(Cavira_B_);
+        }
+        if (naa > 0) {
+            Ca_r1->subtract(Cavira_A_);
+            Ca_r1->scale(-1.0);
+        }
     }
 
     if (beta_exchange_) {
-        Cb_s1->subtract(Cavirb_B_);
-        Cb_r1->subtract(Cavirb_A_);
-        Cb_r1->scale(-1.0);
+        if (nbb > 0) {
+            Cb_s1->subtract(Cavirb_B_);
+        }
+        if (nba > 0) {
+            Cb_r1->subtract(Cavirb_A_);
+            Cb_r1->scale(-1.0);
+        }
     }
 
     std::shared_ptr<Matrix> Ca_a4;
@@ -2167,15 +2175,23 @@ void USAPT0::mp2_terms() {
     if (alpha_exchange_) {
         Ta_as = linalg::doublet(El_pot_B, Da_AS);
         Ta_br = linalg::doublet(El_pot_A, Da_BS);
-        Sa_Bar = linalg::triplet(Caocca_A_, S, linalg::doublet(Da_BS, Cavira_A_), true, false, false);
-        Sa_Abs = linalg::triplet(Caocca_B_, S, linalg::doublet(Da_AS, Cavira_B_), true, false, false);
+        if (naa > 0) {
+            Sa_Bar = linalg::triplet(Caocca_A_, S, linalg::doublet(Da_BS, Cavira_A_), true, false, false);
+        }
+        if (nab > 0) {
+            Sa_Abs = linalg::triplet(Caocca_B_, S, linalg::doublet(Da_AS, Cavira_B_), true, false, false);
+        }
     }
 
     if (beta_exchange_) {
         Tb_as = linalg::doublet(El_pot_B, Db_AS);
         Tb_br = linalg::doublet(El_pot_A, Db_BS);
-        Sb_Bar = linalg::triplet(Caoccb_A_, S, linalg::doublet(Db_BS, Cavirb_A_), true, false, false);
-        Sb_Abs = linalg::triplet(Caoccb_B_, S, linalg::doublet(Db_AS, Cavirb_B_), true, false, false);
+        if (nba > 0) {
+            Sb_Bar = linalg::triplet(Caoccb_A_, S, linalg::doublet(Db_BS, Cavirb_A_), true, false, false);
+        }
+        if (nbb > 0) {
+            Sb_Abs = linalg::triplet(Caoccb_B_, S, linalg::doublet(Db_AS, Cavirb_B_), true, false, false);
+        }
     }
 
     Da_BS.reset();
@@ -2276,11 +2292,16 @@ void USAPT0::mp2_terms() {
         Cs.push_back(Ca_s3); // a_s3
         Cs.push_back(Ca_b4); // a_b4
     }
+
     if (alpha_exchange_) {
-        Cs.push_back(Ca_r1); // a_r1
-        Cs.push_back(Ca_s1); // a_s1
-        Cs.push_back(Ca_a2); // a_a2
-        Cs.push_back(Ca_b2); // a_b2
+        if (naa > 0) {
+            Cs.push_back(Ca_r1);  // a_r1
+            Cs.push_back(Ca_a2);  // a_a2
+        }
+        if (nab > 0) {
+            Cs.push_back(Ca_s1);  // a_s1
+            Cs.push_back(Ca_b2);  // a_b2
+        }
     }
 
     if (nba > 0) {
@@ -2296,10 +2317,14 @@ void USAPT0::mp2_terms() {
         Cs.push_back(Cb_b4); // b_b4
     }
     if (beta_exchange_) {
-        Cs.push_back(Cb_r1); // b_r1
-        Cs.push_back(Cb_s1); // b_s1
-        Cs.push_back(Cb_a2); // b_a2
-        Cs.push_back(Cb_b2); // b_b2
+        if (nba > 0) {
+            Cs.push_back(Cb_r1);  // b_r1
+            Cs.push_back(Cb_a2);  // b_a2
+        }
+        if (nbb > 0) {
+            Cs.push_back(Cb_s1);  // b_s1
+            Cs.push_back(Cb_b2);  // b_b2
+        }
     }
 
     size_t max_MO = 0, ncol = 0;
@@ -2330,11 +2355,16 @@ void USAPT0::mp2_terms() {
         idx_offset += 4;
     }
     if (alpha_exchange_) {
-        dfh->add_space("a_r1", Cs[idx_offset]);
-        dfh->add_space("a_s1", Cs[idx_offset + 1]);
-        dfh->add_space("a_a2", Cs[idx_offset + 2]);
-        dfh->add_space("a_b2", Cs[idx_offset + 3]);
-        idx_offset += 4;
+        if (naa > 0) {
+            dfh->add_space("a_r1", Cs[idx_offset]);
+            dfh->add_space("a_a2", Cs[idx_offset + 1]);
+            idx_offset += 2;
+        }
+        if (nab > 0) {
+            dfh->add_space("a_s1", Cs[idx_offset]);
+            dfh->add_space("a_b2", Cs[idx_offset + 1]);
+            idx_offset += 2;
+        }
     }
 
     if (nba > 0) {
@@ -2352,10 +2382,15 @@ void USAPT0::mp2_terms() {
         idx_offset += 4;
     }
     if (beta_exchange_) {
-        dfh->add_space("b_r1", Cs[idx_offset]);
-        dfh->add_space("b_s1", Cs[idx_offset + 1]);
-        dfh->add_space("b_a2", Cs[idx_offset + 2]);
-        dfh->add_space("b_b2", Cs[idx_offset + 3]);
+        if (nba > 0) {
+            dfh->add_space("b_r1", Cs[idx_offset]);
+            dfh->add_space("b_a2", Cs[idx_offset + 1]);
+            idx_offset += 2;
+        }
+        if (nbb > 0) {
+            dfh->add_space("b_s1", Cs[idx_offset]);
+            dfh->add_space("b_b2", Cs[idx_offset + 1]);
+        }
     }
 
     if (naa > 0) {
@@ -2369,10 +2404,14 @@ void USAPT0::mp2_terms() {
         dfh->add_transformation("Ea_bs", "a_b4", "a_s", "pqQ");
     }
     if (alpha_exchange_) {
-        dfh->add_transformation("Ba_as", "a_a", "a_s1", "pqQ");
-        dfh->add_transformation("Ba_br", "a_b", "a_r1", "pqQ");
-        dfh->add_transformation("Ca_as", "a_a2", "a_s", "pqQ");
-        dfh->add_transformation("Ca_br", "a_b2", "a_r", "pqQ");
+        if (nab > 0) {
+            dfh->add_transformation("Ba_as", "a_a", "a_s1", "pqQ");
+            dfh->add_transformation("Ca_br", "a_b2", "a_r", "pqQ");
+        }
+        if (naa > 0) {
+            dfh->add_transformation("Ba_br", "a_b", "a_r1", "pqQ");
+            dfh->add_transformation("Ca_as", "a_a2", "a_s", "pqQ");
+        }
     }
 
     if (nba > 0) {
@@ -2386,10 +2425,14 @@ void USAPT0::mp2_terms() {
         dfh->add_transformation("Eb_bs", "b_b4", "b_s", "pqQ");
     }
     if (beta_exchange_) {
-        dfh->add_transformation("Bb_as", "b_a", "b_s1", "pqQ");
-        dfh->add_transformation("Bb_br", "b_b", "b_r1", "pqQ");
-        dfh->add_transformation("Cb_as", "b_a2", "b_s", "pqQ");
-        dfh->add_transformation("Cb_br", "b_b2", "b_r", "pqQ");
+        if (nba > 0) {
+            dfh->add_transformation("Cb_as", "b_a2", "b_s", "pqQ");
+            dfh->add_transformation("Bb_br", "b_b", "b_r1", "pqQ");
+        }
+        if (nbb > 0) {
+            dfh->add_transformation("Bb_as", "b_a", "b_s1", "pqQ");
+            dfh->add_transformation("Cb_br", "b_b2", "b_r", "pqQ");
+        }
     }
 
     dfh->transform();
@@ -2508,12 +2551,20 @@ void USAPT0::mp2_terms() {
     double** Sa_Barp = nullptr;
     double** Sa_Absp = nullptr;
     if (alpha_exchange_) {
-        Sa_asp = Sa_as->pointer();
-        Sa_brp = Sa_br->pointer();
-        Qa_asp = Qa_as->pointer();
-        Qa_brp = Qa_br->pointer();
-        Sa_Barp = Sa_Bar->pointer();
-        Sa_Absp = Sa_Abs->pointer();
+        if (naa > 0 && nab > 0) {
+            Sa_brp = Sa_br->pointer();
+            Qa_brp = Qa_br->pointer();
+            Sa_asp = Sa_as->pointer();
+            Qa_asp = Qa_as->pointer();
+        }
+
+        if (naa > 0) {
+            Sa_Barp = Sa_Bar->pointer();
+        }
+
+        if (nab > 0) {
+            Sa_Absp = Sa_Abs->pointer();
+        }
     }
 
     double** Sb_asp = nullptr;
@@ -2523,12 +2574,18 @@ void USAPT0::mp2_terms() {
     double** Sb_Barp = nullptr;
     double** Sb_Absp = nullptr;
     if (beta_exchange_) {
-        Sb_asp = Sb_as->pointer();
-        Sb_brp = Sb_br->pointer();
-        Qb_asp = Qb_as->pointer();
-        Qb_brp = Qb_br->pointer();
-        Sb_Barp = Sb_Bar->pointer();
-        Sb_Absp = Sb_Abs->pointer();
+        if (nba > 0) {
+            Sb_Barp = Sb_Bar->pointer();
+        }
+        if (nbb > 0) {
+            Sb_Absp = Sb_Abs->pointer();
+        }
+        if (nba > 0 && nbb > 0) {
+            Sb_brp = Sb_br->pointer();
+            Qb_brp = Qb_br->pointer();
+            Sb_asp = Sb_as->pointer();
+            Qb_asp = Qb_as->pointer();
+        }
     }
 
     double** Qa_arp = nullptr;
@@ -2600,15 +2657,15 @@ void USAPT0::mp2_terms() {
         if (na_ablock > 0) {
             dfh->fill_tensor("Aa_ar", Aa_ar, {aastart, aastart + na_ablock});
             dfh->fill_tensor("Da_ar", Da_ar, {aastart, aastart + na_ablock});
-            if (alpha_exchange_) dfh->fill_tensor("Ba_as", Ba_as, {aastart, aastart + na_ablock});
-            if (alpha_exchange_) dfh->fill_tensor("Ca_as", Ca_as, {aastart, aastart + na_ablock});
+            if (naa > 0 && nab > 0) dfh->fill_tensor("Ba_as", Ba_as, {aastart, aastart + na_ablock});
+            if (naa > 0 && nab > 0) dfh->fill_tensor("Ca_as", Ca_as, {aastart, aastart + na_ablock});
         }
 
         if (nb_ablock > 0) {
             dfh->fill_tensor("Ab_ar", Ab_ar, {bastart, bastart + nb_ablock});
             dfh->fill_tensor("Db_ar", Db_ar, {bastart, bastart + nb_ablock});
-            if (beta_exchange_) dfh->fill_tensor("Bb_as", Bb_as, {bastart, bastart + nb_ablock});
-            if (beta_exchange_) dfh->fill_tensor("Cb_as", Cb_as, {bastart, bastart + nb_ablock});
+            if (nba > 0 && nbb > 0) dfh->fill_tensor("Bb_as", Bb_as, {bastart, bastart + nb_ablock});
+            if (nba > 0 && nbb > 0) dfh->fill_tensor("Cb_as", Cb_as, {bastart, bastart + nb_ablock});
         }
 
         for (size_t abstart = 0, bbstart = 0; abstart < std::max(nab, nbb); abstart += maxa_b, bbstart += maxb_b) {
@@ -2618,15 +2675,15 @@ void USAPT0::mp2_terms() {
             if (na_bblock > 0) {
                 dfh->fill_tensor("Aa_bs", Aa_bs, {abstart, abstart + na_bblock});
                 dfh->fill_tensor("Da_bs", Da_bs, {abstart, abstart + na_bblock});
-                if (alpha_exchange_) dfh->fill_tensor("Ba_br", Ba_br, {abstart, abstart + na_bblock});
-                if (alpha_exchange_) dfh->fill_tensor("Ca_br", Ca_br, {abstart, abstart + na_bblock});
+                if (nab > 0 && naa > 0) dfh->fill_tensor("Ba_br", Ba_br, {abstart, abstart + na_bblock});
+                if (nab > 0 && naa > 0) dfh->fill_tensor("Ca_br", Ca_br, {abstart, abstart + na_bblock});
             }
 
             if (nb_bblock > 0) {
                 dfh->fill_tensor("Ab_bs", Ab_bs, {bbstart, bbstart + nb_bblock});
                 dfh->fill_tensor("Db_bs", Db_bs, {bbstart, bbstart + nb_bblock});
-                if (beta_exchange_) dfh->fill_tensor("Bb_br", Bb_br, {bbstart, bbstart + nb_bblock});
-                if (beta_exchange_) dfh->fill_tensor("Cb_br", Cb_br, {bbstart, bbstart + nb_bblock});
+                if (nbb > 0 && nba > 0) dfh->fill_tensor("Bb_br", Bb_br, {bbstart, bbstart + nb_bblock});
+                if (nbb > 0 && nba > 0) dfh->fill_tensor("Cb_br", Cb_br, {bbstart, bbstart + nb_bblock});
             }
 
             long int nab = (na_ablock + nb_ablock) * (na_bblock + nb_bblock);
@@ -2705,8 +2762,8 @@ void USAPT0::mp2_terms() {
                     Dbsp = Da_bsp;
                     Qarp = Qb_arp;
                     Qbsp = Qa_bsp;
-                    if (alpha_exchange_) SAbsp = Sa_Absp;
-                    if (beta_exchange_) SBarp = Sb_Barp;
+                    if (alpha_exchange_ && nab > 0) SAbsp = Sa_Absp;
+                    if (beta_exchange_ && nba > 0) SBarp = Sb_Barp;
                     eap = eb_ap;
                     ebp = ea_bp;
                     erp = eb_rp;
@@ -2723,8 +2780,8 @@ void USAPT0::mp2_terms() {
                     Dbsp = Db_bsp;
                     Qarp = Qa_arp;
                     Qbsp = Qb_bsp;
-                    if (beta_exchange_) SAbsp = Sb_Absp;
-                    if (alpha_exchange_) SBarp = Sa_Barp;
+                    if (beta_exchange_ && nbb > 0) SAbsp = Sb_Absp;
+                    if (alpha_exchange_ && naa > 0) SBarp = Sa_Barp;
                     eap = ea_ap;
                     ebp = eb_bp;
                     erp = ea_rp;
