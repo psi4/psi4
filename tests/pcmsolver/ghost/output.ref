@@ -1,0 +1,349 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.4a2.dev843 
+
+                         Git: Rev {pcm_ghostfix} 6173826 
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Saturday, 08 August 2020 12:27PM
+
+    Process ID: 98915
+    Host:       hokru-2.local
+    PSIDATADIR: /Users/kruse/qc/psi4/objdir/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! ghost atoms for the pcmsolver addon
+
+nucenergy   =  12.0367196636183458 #TEST
+polenergy   =  -13.2757374726765178 #TEST
+totalenergy = -69.0429714614878094 #TEST
+
+molecule NH3 {
+symmetry c1
+N     -0.0000000001    -0.1040380466      0.0000000000
+H     -0.9015844116     0.4818470201     -1.5615900098
+H     -0.9015844116     0.4818470201      1.5615900098
+H      1.8031688251     0.4818470204      0.0000000000
+
+@N     -0.0000000001    -0.1040380466      10.0000000000
+@H     -0.9015844116     0.4818470201      8.4384099902
+@H     -0.9015844116     0.4818470201      11.5615900098
+@H      1.8031688251     0.4818470204      10.0000000000
+
+units bohr
+no_reorient
+no_com
+}
+
+set {
+  basis minix
+  scf_type pk
+  pcm true
+  pcm_scf_type total
+}
+
+pcm = {
+   Units = Angstrom
+   Medium {
+   SolverType = IEFPCM
+   Solvent = Water
+   }
+
+   Cavity {
+   RadiiSet = UFF
+   Type = GePol
+   Scaling = False
+   Area = 0.3
+   Mode = Implicit
+   }
+}
+
+energy_scf, wfn = energy('scf', return_wfn=True)
+compare_values(nucenergy, NH3.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy (PCM, total algorithm)") #TEST
+compare_values(totalenergy, energy_scf, 10, "Total energy (PCM, total algorithm)") #TEST
+compare_values(polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
+
+--------------------------------------------------------------------------
+
+Scratch directory: /Users/kruse/qc/psi4/tests/pcmsolver/ghost/
+
+*** tstart() called on hokru-2.local
+*** at Sat Aug  8 12:27:38 2020
+
+   => Loading Basis Set <=
+
+    Name: MINIX
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1, 5     entry N          line    88 file /Users/kruse/qc/psi4/objdir/stage/share/psi4/basis/minix.gbs 
+    atoms 2-4, 6-8 entry H          line    24 file /Users/kruse/qc/psi4/objdir/stage/share/psi4/basis/minix.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C1
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         N           -0.000000000100    -0.104038046600     0.000000000000    14.003074004430
+         H           -0.901584411600     0.481847020100    -1.561590009800     1.007825032230
+         H           -0.901584411600     0.481847020100     1.561590009800     1.007825032230
+         H            1.803168825100     0.481847020400     0.000000000000     1.007825032230
+      Gh(N)          -0.000000000100    -0.104038046600    10.000000000000    14.003074004430
+      Gh(H)          -0.901584411600     0.481847020100     8.438409990200     1.007825032230
+      Gh(H)          -0.901584411600     0.481847020100    11.561590009800     1.007825032230
+      Gh(H)           1.803168825100     0.481847020400    10.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =      5.21766  B =      0.03512  C =      0.03495 [cm^-1]
+  Rotational constants: A = 156421.54017  B =   1052.82290  C =   1047.85715 [MHz]
+  Nuclear repulsion =   12.036719663618346
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: MINIX
+    Blend: MINIX
+    Number of shells: 12
+    Number of basis function: 16
+    Number of Cartesian functions: 16
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  **PSI4:PCMSOLVER Interface Active**
+
+-----------------------------------------------------------------------
+   PCMSolver: An Open Source API for the Polarizable Continuum Model
+                   PCMSolver 1.2.1+fa7c826
+
+           Git: Branch {HEAD}, Revision {fa7c826}
+
+ R. Di Remigio, A. H. Steindal, K. Mozgawa, V. Weijo, H. Cao, and
+ L. Frediani, Int. J. Quantum Chem., to be submitted
+
+ Source repository: https://github.com/PCMSolver/pcmsolver
+ Documentation: https://pcmsolver.readthedocs.io/
+ PCMSolver initialized on: Saturday, 08 August 2020 12:27 PM
+-----------------------------------------------------------------------
+
+~~~~~~~~~~ PCMSolver ~~~~~~~~~~
+Using CODATA 2010 set of constants.
+Input parsing done API-side
+========== Cavity 
+Atomic radii set: 
+Cavity type: GePol
+Average tesserae area = 0.3 Ang^2
+Solvent probe radius = 1.385 Ang
+Number of spheres = 8 [initial = 8; added = 0]
+Number of finite elements = 428
+Number of irreducible finite elements = 428
+============ Spheres list (in Angstrom)
+ Sphere   on   Radius   Alpha       X            Y            Z     
+-------- ---- -------- ------- -----------  -----------  -----------
+   1      N    1.8300   1.00     -0.000000     -0.055055     0.000000
+   2      H    1.4430   1.00     -0.477098     0.254982     -0.826358
+   3      H    1.4430   1.00     -0.477098     0.254982     0.826358
+   4      H    1.4430   1.00     0.954196     0.254982     0.000000
+   5      N    1.8300   1.00     -0.000000     -0.055055     5.291772
+   6      H    1.4430   1.00     -0.477098     0.254982     4.465414
+   7      H    1.4430   1.00     -0.477098     0.254982     6.118130
+   8      H    1.4430   1.00     0.954196     0.254982     5.291772
+========== Static solver 
+Solver Type: IEFPCM, isotropic
+PCM matrix hermitivitized
+============ Medium 
+Medium initialized from solvent built-in data.
+Solvent name:          Water
+Static  permittivity = 78.39
+Optical permittivity = 1.78
+Solvent radius =       1.39 Ang
+.... Inside 
+Green's function type: vacuum
+.... Outside 
+Green's function type: uniform dielectric
+Permittivity = 78.39
+
+  PCM does not make use of molecular symmetry: further calculations in C1 point group.
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   8
+      Number of AO shells:              12
+      Number of primitives:             36
+      Number of atomic orbitals:        16
+      Number of basis functions:        16
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 18632 doubles for integral storage.
+  We computed 2400 shell quartets total.
+  Whereas there are 3081 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 2.6227750366E-01.
+  Reciprocal condition number of the overlap matrix is 1.2258287514E-01.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         16      16 
+   -------------------------
+    Total      16      16
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter SAD:   -68.10261929522090   -6.81026e+01   0.00000e+00 
+   @RHF iter   1:   -69.02858713068375   -9.25968e-01   8.72747e-03 DIIS
+   @RHF iter   2:   -69.04240263278267   -1.38155e-02   1.76285e-03 DIIS
+   @RHF iter   3:   -69.04292792200901   -5.25289e-04   4.21134e-04 DIIS
+   @RHF iter   4:   -69.04297137567363   -4.34537e-05   1.72080e-05 DIIS
+   @RHF iter   5:   -69.04297146086451   -8.51909e-08   1.45088e-06 DIIS
+   @RHF iter   6:   -69.04297146146752   -6.03009e-10   2.44860e-07 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -14.337958     2A     -0.125721     3A      0.364471  
+       4A      0.413633     5A      0.588208  
+
+    Virtual:                                                              
+
+       6A      1.635627     7A      1.725594     8A      1.828169  
+       9A      3.082610    10A      3.522302    11A      3.522630  
+      12A      4.075027    13A      4.960847    14A      5.663550  
+      15A      5.663572    16A     27.055403  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+
+  @RHF Final Energy:   -69.04297146146752
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             12.0367196636183458
+    One-Electron Energy =                 -99.6151016809086229
+    Two-Electron Energy =                  31.8111488265707862
+    PCM Polarization Energy =             -13.2757382707480254
+    Total Energy =                        -69.0429714614675163
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.7173      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:    -0.0386      Y:    -0.0606      Z:     0.5400
+
+  Dipole Moment: [e a0]
+     X:    -0.0386      Y:     0.6567      Z:     0.5400     Total:     0.8511
+
+  Dipole Moment: [D]
+     X:    -0.0982      Y:     1.6691      Z:     1.3725     Total:     2.1632
+
+
+*** tstop() called on hokru-2.local at Sat Aug  8 12:27:41 2020
+Module time:
+	user time   =       2.63 seconds =       0.04 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =       2.63 seconds =       0.04 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+    Nuclear repulsion energy (PCM, total algorithm).......................................PASSED
+    Total energy (PCM, total algorithm)...................................................PASSED
+    Polarization energy (PCM, total algorithm)............................................PASSED
+
+    Psi4 stopped on: Saturday, 08 August 2020 12:27PM
+    Psi4 wall time for execution: 0:00:02.79
+
+*** Psi4 exiting successfully. Buy a developer a beer!
