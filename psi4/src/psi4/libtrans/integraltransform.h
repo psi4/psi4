@@ -148,9 +148,6 @@ class PSI_API IntegralTransform {
     void initialize();
     void presort_so_tei();
     void update_orbitals();
-    void transform_T_plus_V(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2);
-    void transform_oei(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
-                       const std::array<std::string, 4> &labels);
     void transform_tei(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
                        const std::shared_ptr<MOSpace> s3, const std::shared_ptr<MOSpace> s4,
                        HalfTrans = HalfTrans::MakeAndNuke);
@@ -257,10 +254,6 @@ class PSI_API IntegralTransform {
     void setup_tpdm_buffer(const dpdbuf4 *D);
     void sort_so_tpdm(const dpdbuf4 *B, int irrep, size_t first_row, size_t num_rows, bool first_run);
 
-    void transform_oei_restricted(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
-                                  const std::vector<double> &soInts, std::string label);
-    void transform_oei_unrestricted(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
-                                    const std::vector<double> &soInts, std::string A_label, std::string B_label);
     void trans_one(int m, int n, double *input, double *output, double **C, int soOffset, int *order,
                    bool backtransform = false, double scale = 0.0);
 

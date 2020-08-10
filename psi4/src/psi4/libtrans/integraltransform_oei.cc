@@ -33,144 +33,10 @@
 #include <string>
 #include <vector>
 
-#include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libiwl/iwl.hpp"
 
 using namespace psi;
-
-/**
- * Transforms the kinetic energy plus nuclear attraction one-electron
- * integrals.  This function is currently limited to IWL input and output and
- * Pitzer ordering, regardless of how the parameters passed to the constructor.
- *
- * @param s1 - the MOSpace for the bra
- * @param s2 - the MOSpace for the ket
- *
- * N.B. This need not be called if a two-electron transformation is performed, as
- * the sort_so_tei routine will perform this transformation in addition to the
- * Fock matrix construction.
- */
-void IntegralTransform::transform_T_plus_V(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2) {
-    check_initialized();
-
-//    wfn_->mintshelper()->so_kinetic();
-
-    //
-    // This code is never called
-    std::vector<double> soInts(nTriSo_), T(nTriSo_);
-//    if (print_ > 4) outfile->Printf("The SO basis kinetic energy integrals\n");
-//    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, T.data(), nTriSo_, 0, print_ > 4, "outfile");
-//    if (print_ > 4) outfile->Printf("The SO basis nuclear attraction integrals\n");
-//    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, soInts.data(), nTriSo_, 0, print_ > 4, "outfile");
-//    // Add the nuclear and kinetic energy integrals
-//    std::transform(soInts.begin(), soInts.end(), T.begin(), soInts.begin(), std::plus<double>());
-
-
-
-
-    if (transformationType_ == TransformationType::Restricted) {
-        transform_oei_restricted(s1, s2, soInts, PSIF_MO_OEI);
-    } else {
-        transform_oei_unrestricted(s1, s2, soInts, PSIF_MO_A_OEI, PSIF_MO_B_OEI);
-    }
-}
-
-/**
- * Transforms the one-electron integrals.  This function is currently limited to
- * IWL input and output and Pitzer ordering, regardless of how the parameters passed
- * to the constructor.
- *
- * @param s1 - the MOSpace for the bra
- * @param s2 - the MOSpace for the ket
- * @param labels - array with the labels of the OEI to be transformed
- *
- * @note The labels array is assumed to have the labels for the OEI in this
- * order:
- * 0. labels[0] is the AO integrals label,
- * 1. labels[1] is the MO integrals label, for the restricted case
- * 2. labels[2] is the alpha MO integrals label, for the unrestricted case
- * 3. labels[3] is the beta MO integrals label, for the unrestricted case
- */
-void IntegralTransform::transform_oei(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
-                                      const std::array<std::string, 4> &labels) {
-    check_initialized();
-    std::vector<double> soInts(nTriSo_);
-    if (print_ > 4) outfile->Printf("Grabbing " + labels[0] + "\n");
-    IWL::read_one(psio_.get(), PSIF_OEI, labels[0].c_str(), soInts.data(), nTriSo_, 0, print_ > 4, "outfile");
-    if (transformationType_ == TransformationType::Restricted) {
-        transform_oei_restricted(s1, s2, soInts, labels[1].c_str());
-    } else {
-        transform_oei_unrestricted(s1, s2, soInts, labels[2].c_str(), labels[3].c_str());
-    }
-}
-
-/**
- * Perform restricted transformation of the one-electron integrals. This function is currently limited to
- * IWL input and output and Pitzer ordering, regardless of how the parameters passed
- * to the constructor.
- *
- * @param s1 - the MOSpace for the bra
- * @param s2 - the MOSpace for the ket
- * @param soInts - buffer with the SO-basis integrals to be transformed
- * @param label - MO label
- */
-void IntegralTransform::transform_oei_restricted(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
-                                                 const std::vector<double> &soInts, std::string label) {
-    std::vector<double> moInts(nTriMo_);
-    std::vector<int> order(nmo_);
-    // We want to keep Pitzer ordering, so this is just an identity mapping
-    std::iota(order.begin(), order.end(), 0);
-    for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-        double **pCa = Ca_->pointer(h);
-        trans_one(sopi_[h], mopi_[h], const_cast<double *>(soInts.data()), moInts.data(), pCa, soOffset,
-                  &(order[moOffset]));
-        soOffset += sopi_[h];
-        moOffset += mopi_[h];
-    }
-    if (print_ > 4) {
-        outfile->Printf("The MO basis " + label + "\n");
-        print_array(moInts.data(), nmo_, "outfile");
-    }
-    IWL::write_one(psio_.get(), PSIF_OEI, label.c_str(), nTriMo_, moInts.data());
-}
-
-void IntegralTransform::transform_oei_unrestricted(const std::shared_ptr<MOSpace> s1, const std::shared_ptr<MOSpace> s2,
-                                                   const std::vector<double> &soInts, std::string A_label,
-                                                   std::string B_label) {
-    std::vector<double> moInts(nTriMo_);
-    std::vector<int> order(nmo_);
-    // We want to keep Pitzer ordering, so this is just an identity mapping
-    std::iota(order.begin(), order.end(), 0);
-    for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-        double **pCa = Ca_->pointer(h);
-        trans_one(sopi_[h], mopi_[h], const_cast<double *>(soInts.data()), moInts.data(), pCa, soOffset,
-                  &(order[moOffset]));
-        soOffset += sopi_[h];
-        moOffset += mopi_[h];
-    }
-    if (print_ > 4) {
-        outfile->Printf("The MO basis alpha " + A_label + "\n");
-        print_array(moInts.data(), nmo_, "outfile");
-    }
-    IWL::write_one(psio_.get(), PSIF_OEI, A_label.c_str(), nTriMo_, moInts.data());
-
-    for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-        double **pCb = Cb_->pointer(h);
-        trans_one(sopi_[h], mopi_[h], const_cast<double *>(soInts.data()), moInts.data(), pCb, soOffset,
-                  &(order[moOffset]));
-        soOffset += sopi_[h];
-        moOffset += mopi_[h];
-    }
-    if (print_ > 4) {
-        outfile->Printf("The MO basis beta " + B_label + "\n");
-        print_array(moInts.data(), nmo_, "outfile");
-    }
-    IWL::write_one(psio_.get(), PSIF_OEI, B_label.c_str(), nTriMo_, moInts.data());
-}
 
 /**
  * Transforms a packed symmetric matrix.
@@ -193,9 +59,9 @@ void IntegralTransform::trans_one(int m, int n, double *input, double *output, d
                                   bool backtransform, double scale) {
     // TODO the order argument is actually not used right now.  I don't know that anybody will need it
     // so I haven't bothered so far...
-    int dim = (m > n) ? m : n;
-    double **TMP0 = block_matrix(dim, dim);
-    double **TMP1 = block_matrix(dim, dim);
+    int dim = std::max(m, n);
+    auto TMP0 = block_matrix(dim, dim);
+    auto TMP1 = block_matrix(dim, dim);
 
     for (int p = 0; p < m; ++p) {
         for (int q = 0; q <= p; ++q) {
