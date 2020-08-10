@@ -1,8 +1,12 @@
 #! ghost atoms for the pcmsolver addon
 
 nucenergy   =  12.0367196636183458 #TEST
-polenergy   =  -13.2757374726765178 #TEST
-totalenergy = -69.0429714614878094 #TEST
+polenergy   =  -0.0059568153047844 #TEST
+totalenergy = -55.802798823871 #TEST
+
+ref={}
+ref['noCP'] = 0.011128150727074626 #TEST
+ref['CP'] = 0.012103154107379055 #TEST
 
 molecule NH3 {
 symmetry c1
@@ -49,3 +53,16 @@ compare_values(nucenergy, NH3.nuclear_repulsion_energy(), 10, "Nuclear repulsion
 compare_values(totalenergy, energy_scf, 10, "Total energy (PCM, total algorithm)") #TEST
 compare_values(polenergy, wfn.variable("PCM POLARIZATION ENERGY"), 6, "Polarization energy (PCM, total algorithm)") #TEST
 
+
+molecule dimer {
+symmetry c1
+H            0.000000000000    -0.759061990794     0.521953018286
+O            0.000000000000     0.000000000000    -0.065775570547
+H            0.000000000000     0.759061990794     0.521953018286
+--
+He 2 0 0
+}
+
+for type in ['CP','noCP']:
+  e_nbody = energy('scf/minix',bsse_type=type,molecule=dimer)
+  compare_values(ref[type],e_nbody,10,f" NBody+PCM energy, {type}") #TEST
