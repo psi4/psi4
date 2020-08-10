@@ -57,7 +57,7 @@ std::pair<std::vector<double>, std::vector<double>> collect_atoms(std::shared_pt
     int nat = molecule->natom();
     std::vector<double> charges(nat);
     for (int i = 0; i < nat; ++i) {
-        charges[i] = molecule->Z(i);
+        charges[i] = static_cast<double>(molecule->true_atomic_number(i));
     }
 
     Matrix geom = molecule->geometry();
@@ -172,7 +172,7 @@ PCM::PCM(const std::string &pcmsolver_parsed_fname, int print_level, std::shared
     MEP_n_ = std::make_shared<Vector>(tesspi_);
     // Compute the nuclear potentials at the tesserae
     for (int atom = 0; atom < natom; ++atom) {
-        double Z = charges[atom];
+        double Z =  static_cast<double>(molecule->Z(atom));
         for (int tess = 0; tess < ntess_; ++tess) {
             double dx = ptess_Zxyz[tess][1] - coordinates[atom * 3];
             double dy = ptess_Zxyz[tess][2] - coordinates[atom * 3 + 1];
