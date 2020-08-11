@@ -76,15 +76,14 @@ def runner_asserter(inp, subject, method, basis, tnm):
 
     psi4.set_options(
         {
+            # reference generation conv crit
             # "guess": "sad",
             # "e_convergence": 10,
             # "d_convergence": 9,
             # "r_convergence": 9,
             # "pcg_convergence": 9,
 
-            # runtime conv crit, solely for occ/dfocc needs
-            "e_convergence": 7,
-            "pcg_convergence": 7,
+            # runtime conv crit
             "points": 5,
         }
     )

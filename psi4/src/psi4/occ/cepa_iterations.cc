@@ -119,7 +119,7 @@ void OCCWave::cepa_iterations() {
             throw PSIEXCEPTION("LCCD iterations are diverging");
         }
 
-    } while (std::fabs(DE) >= tol_Eod || rms_t2 >= tol_t2);
+    } while (std::fabs(DE) >= (0.1 * tol_Eod) || rms_t2 >= tol_t2);
 
     // delete
     delete t2DiisManager;
