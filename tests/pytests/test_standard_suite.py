@@ -781,10 +781,10 @@ def test_mp2p5_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, req
         pytest.param({"keywords": {"reference": "rohf", "mp_type": "cd",                       "freeze_core": "false",                    }}, id="mp2.5 rohf    cd   ae: dd     ", marks=_nyi11),
 
         ###### default qc_module, mp_type
-        pytest.param({"keywords": {"reference": "rhf",                                         "freeze_core": "true",                     }}, id="mp2.5  rhf         fc: dd     ",             ),
+        pytest.param({"keywords": {"reference": "rhf",                                         "freeze_core": "true",                     }}, id="mp2.5  rhf         fc: dd     ", marks=_nyi4 ),
         pytest.param({"keywords": {"reference": "uhf",                                         "freeze_core": "true",                     }}, id="mp2.5  uhf         fc: dd     ",             ),
         pytest.param({"keywords": {"reference": "rohf",                                        "freeze_core": "true",                     }}, id="mp2.5 rohf         fc: dd     ", marks=_nyi11),
-        pytest.param({"keywords": {"reference": "rhf",                                         "freeze_core": "false",                    }}, id="mp2.5  rhf         ae: dd     ",             ),
+        pytest.param({"keywords": {"reference": "rhf",                                         "freeze_core": "false",                    }}, id="mp2.5  rhf         ae: dd     ", marks=_nyi4 ),
         pytest.param({"keywords": {"reference": "uhf",                                         "freeze_core": "false",                    }}, id="mp2.5  uhf         ae: dd     ",             ),
         pytest.param({"keywords": {"reference": "rohf",                                        "freeze_core": "false",                    }}, id="mp2.5 rohf         ae: dd     ", marks=_nyi11),
         # yapf: enable
@@ -945,10 +945,10 @@ def test_mp2p5_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, r
         pytest.param({"keywords": {"reference": "rohf", "mp_type": "cd",                       "freeze_core": "false",                    }, "marks": {1: _nyi3, 0: _nyi11},}, id="mp2.5 rohf    cd   ae: dd     ",),
 
         ###### default qc_module, mp_type
-        pytest.param({"keywords": {"reference": "rhf",                                          "freeze_core": "true",                    }, "marks": {1: _nyi1},           }, id="mp2.5  rhf         fc: dd     ",),
-        pytest.param({"keywords": {"reference": "uhf",                                          "freeze_core": "true",                    }, "marks": {1: _nyi1},           }, id="mp2.5  uhf         fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",                                          "freeze_core": "true",                    }, "marks": {1: _nyi4, 0: _nyi4 },}, id="mp2.5  rhf         fc: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",                                          "freeze_core": "true",                    },                                }, id="mp2.5  uhf         fc: dd     ",),
         pytest.param({"keywords": {"reference": "rohf",                                         "freeze_core": "true",                    }, "marks": {1: _nyi2, 0: _nyi11},}, id="mp2.5 rohf         fc: dd     ",),
-        pytest.param({"keywords": {"reference": "rhf",                                          "freeze_core": "false",                   },                                }, id="mp2.5  rhf         ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",                                          "freeze_core": "false",                   }, "marks": {1: _nyi4, 0: _nyi4 },}, id="mp2.5  rhf         ae: dd     ",),
         pytest.param({"keywords": {"reference": "uhf",                                          "freeze_core": "false",                   },                                }, id="mp2.5  uhf         ae: dd     ",),
         pytest.param({"keywords": {"reference": "rohf",                                         "freeze_core": "false",                   }, "marks": {1: _nyi2, 0: _nyi11},}, id="mp2.5 rohf         ae: dd     ",),
         # yapf: enable
@@ -1144,10 +1144,10 @@ def test_mp3_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, reque
         pytest.param({"keywords": {"reference": "rohf", "mp_type": "cd",                       "freeze_core": "false",                    }}, id="mp3 rohf    cd   ae: dd     ", marks=_nyi11),
 
         ###### default qc_module, mp_type
-        pytest.param({"keywords": {"reference": "rhf",                                         "freeze_core": "true",                     }}, id="mp3  rhf         fc: dd     ",             ),
+        pytest.param({"keywords": {"reference": "rhf",                                         "freeze_core": "true",                     }}, id="mp3  rhf         fc: dd     ", marks=_nyi4 ),
         pytest.param({"keywords": {"reference": "uhf",                                         "freeze_core": "true",                     }}, id="mp3  uhf         fc: dd     ",             ),
         pytest.param({"keywords": {"reference": "rohf",                                        "freeze_core": "true",                     }}, id="mp3 rohf         fc: dd     ", marks=_nyi11),
-        pytest.param({"keywords": {"reference": "rhf",                                         "freeze_core": "false",                    }}, id="mp3  rhf         ae: dd     ",             ),
+        pytest.param({"keywords": {"reference": "rhf",                                         "freeze_core": "false",                    }}, id="mp3  rhf         ae: dd     ", marks=_nyi4 ),
         pytest.param({"keywords": {"reference": "uhf",                                         "freeze_core": "false",                    }}, id="mp3  uhf         ae: dd     ",             ),
         pytest.param({"keywords": {"reference": "rohf",                                        "freeze_core": "false",                    }}, id="mp3 rohf         ae: dd     ", marks=_nyi11),
         # yapf: enable
@@ -1311,10 +1311,10 @@ def test_mp3_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, req
         pytest.param({"keywords": {"reference": "rohf", "mp_type": "cd",                       "freeze_core": "false",                    }, "marks": {1: _nyi3, 0: _nyi11},}, id="mp3 rohf    cd   ae: dd     ",),
 
         ###### default qc_module, mp_type
-        pytest.param({"keywords": {"reference": "rhf",                                          "freeze_core": "true",                    }, "marks": {1: _nyi1},           }, id="mp3  rhf         fc: dd     ",),
-        pytest.param({"keywords": {"reference": "uhf",                                          "freeze_core": "true",                    }, "marks": {1: _nyi1},           }, id="mp3  uhf         fc: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",                                          "freeze_core": "true",                    }, "marks": {1: _nyi4, 0: _nyi4 },}, id="mp3  rhf         fc: dd     ",),
+        pytest.param({"keywords": {"reference": "uhf",                                          "freeze_core": "true",                    },                                }, id="mp3  uhf         fc: dd     ",),
         pytest.param({"keywords": {"reference": "rohf",                                         "freeze_core": "true",                    }, "marks": {1: _nyi2, 0: _nyi11},}, id="mp3 rohf         fc: dd     ",),
-        pytest.param({"keywords": {"reference": "rhf",                                          "freeze_core": "false",                   },                                }, id="mp3  rhf         ae: dd     ",),
+        pytest.param({"keywords": {"reference": "rhf",                                          "freeze_core": "false",                   }, "marks": {1: _nyi4, 0: _nyi4 },}, id="mp3  rhf         ae: dd     ",),
         pytest.param({"keywords": {"reference": "uhf",                                          "freeze_core": "false",                   },                                }, id="mp3  uhf         ae: dd     ",),
         pytest.param({"keywords": {"reference": "rohf",                                         "freeze_core": "false",                   }, "marks": {1: _nyi2, 0: _nyi11},}, id="mp3 rohf         ae: dd     ",),
         # yapf: enable

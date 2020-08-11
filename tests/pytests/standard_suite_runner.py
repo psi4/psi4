@@ -35,7 +35,10 @@ def runner_asserter(inp, subject, method, basis, tnm):
     # ? precedence on next two
     scf_type = inp.get("corl_type", inp["keywords"].get("scf_type", "df"))  # hard-code of read_options.cc SCF_TYPE
     mp2_type = inp.get("corl_type", inp["keywords"].get("mp2_type", "df"))  # hard-code of read_options.cc MP2_TYPE
-    mp_type = inp.get("corl_type", inp["keywords"].get("mp_type", "conv"))  # hard-code of read_options.cc MP_TYPE
+    if method in ["mp2.5", "mp3"]:
+        mp_type = inp.get("corl_type", inp["keywords"].get("mp_type", "df"))  # hard-code of proc.py run_dfocc MP_TYPE
+    else:
+        mp_type = inp.get("corl_type", inp["keywords"].get("mp_type", "conv"))  # hard-code of read_options.cc MP_TYPE
     cc_type = inp.get("corl_type", inp["keywords"].get("cc_type", "conv"))  # hard-code of read_options.cc CC_TYPE
     corl_natural_values = {
         "hf": "df",  # dummy to assure df/cd/conv scf_type refs available

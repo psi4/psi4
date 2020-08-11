@@ -369,6 +369,8 @@ or may not be the default in |PSIfour| for available methods. (See
 details.) To call the OCC/DFOCC implementation of any method below in
 preference to the default module, issue ``set qc_module occ``.
 
+Starting in v1.4, MP2.5 and MP3 default to the density-fit algorithm. Set |globals__mp_type| to ``CONV`` to get previous behavior.
+
 .. _`table:occ_nonoo_calls`:
 
 .. table:: Conventional (non-OO) CC and MP capabilities of OCC/DFOCC modules

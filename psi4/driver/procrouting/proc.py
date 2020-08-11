@@ -372,7 +372,7 @@ def select_mp3(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE')
+    mtd_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
     module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ/fnocc/detci
 
@@ -425,7 +425,7 @@ def select_mp3_gradient(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE')
+    mtd_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
     module = core.get_global_option('QC_MODULE')
     all_electron = (core.get_global_option('FREEZE_CORE') == "FALSE")
     # Considering only [df]occ
@@ -522,7 +522,7 @@ def select_mp2p5(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE')
+    mtd_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
     module = core.get_global_option('QC_MODULE')
     # Considering only [df]occ
 
@@ -553,7 +553,7 @@ def select_mp2p5_gradient(name, **kwargs):
 
     """
     reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('MP_TYPE')
+    mtd_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
     module = core.get_global_option('QC_MODULE')
     all_electron = (core.get_global_option('FREEZE_CORE') == "FALSE")
     # Considering only [df]occ
@@ -1697,8 +1697,7 @@ def run_dfocc(name, **kwargs):
         ['DFOCC', 'CHOLESKY'],
         ['DFOCC', 'CC_LAMBDA'])
 
-    def set_cholesky_from(mtd_type):
-        corl_type = core.get_global_option(mtd_type)
+    def set_cholesky_from(corl_type):
         if corl_type == 'DF':
             core.set_local_option('DFOCC', 'CHOLESKY', 'FALSE')
             proc_util.check_disk_df(name.upper(), optstash)
@@ -1715,38 +1714,44 @@ def run_dfocc(name, **kwargs):
         else:
             raise ValidationError(f"""Invalid type '{corl_type}' for DFOCC""")
 
-        return corl_type
-
     if name in ['mp2', 'omp2']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
-        set_cholesky_from('MP2_TYPE')
-    elif name in ['mp2.5', 'omp2.5']:
+        corl_type = core.get_global_option('MP2_TYPE')
+    elif name in ['mp2.5']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
-        set_cholesky_from('MP_TYPE')
-    elif name in ['mp3', 'omp3']:
+        corl_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
+    elif name in ['omp2.5']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
+        corl_type = core.get_global_option('MP_TYPE')
+    elif name in ['mp3']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
-        set_cholesky_from('MP_TYPE')
+        corl_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
+    elif name in ['omp3']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
+        corl_type = core.get_global_option('MP_TYPE')
     elif name in ['lccd', 'olccd']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
-        set_cholesky_from('CC_TYPE')
+        corl_type = core.get_global_option('CC_TYPE')
 
     elif name == 'ccd':
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
-        set_cholesky_from('CC_TYPE')
+        corl_type = core.get_global_option('CC_TYPE')
     elif name == 'ccsd':
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
-        set_cholesky_from('CC_TYPE')
+        corl_type = core.get_global_option('CC_TYPE')
     elif name == 'ccsd(t)':
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
-        set_cholesky_from('CC_TYPE')
+        corl_type = core.get_global_option('CC_TYPE')
     elif name == 'ccsd(at)':
         core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(AT)')
-        set_cholesky_from('CC_TYPE')
+        corl_type = core.get_global_option('CC_TYPE')
     elif name == 'dfocc':
         pass
     else:
         raise ValidationError('Unidentified method %s' % (name))
+
+    set_cholesky_from(corl_type)
 
     # conventional vs. optimized orbitals
     if name in ['mp2', 'mp2.5', 'mp3', 'lccd',

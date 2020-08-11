@@ -184,7 +184,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
     options.add_str("MP2_TYPE", "DF", "DF CONV CD");
     /*- Algorithm to use for MPn ( $n>2$ ) computation (e.g., MP3 or MP2.5 or MP4(SDQ)).
-    See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
+    See :ref:`Cross-module Redundancies <table:managedmethods>` for details.
+    Since v1.4, default for non-orbital-optimized MP2.5 and MP3 is DF. -*/
     options.add_str("MP_TYPE", "CONV", "DF CONV CD");
     // The type of integrals to use in coupled cluster computations. DF activates density fitting for the largest
     // integral files, while CONV results in no approximations being made.
