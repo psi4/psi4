@@ -458,6 +458,10 @@ void HF::find_occupation() {
         }
 
         if (!input_docc_ && !input_socc_) {
+            // Sanity check
+            if ((size_t)std::max(nalpha_, nbeta_) > pairs_a.size())
+                throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
+
             // Alpha
             memset(nalphapi_, 0, sizeof(int) * epsilon_a_->nirrep());
             for (int i = 0; i < nalpha_; ++i) nalphapi_[pairs_a[i].second]++;
@@ -719,29 +723,31 @@ void HF::form_Shalf() {
         method = BasisSetOrthogonalization::Automatic;
     else
         throw PSIEXCEPTION("Unrecognized S_ORTHOGONALIZATION method\n");
-    
+
 #if USING_BrianQC
     if (brianEnable) {
         double S_cutoff = options_.get_double("S_TOLERANCE");
-        if (print_) outfile->Printf("  BrianQC enabled, using Canonical Orthogonalization with cutoff of %14.10E.\n", S_cutoff);
-        
+        if (print_)
+            outfile->Printf("  BrianQC enabled, using Canonical Orthogonalization with cutoff of %14.10E.\n", S_cutoff);
+
         brianInt computeOverlapRoot = BRIAN_FALSE;
         brianInt computeOverlapInverseRoot = BRIAN_TRUE;
         brianInt basisRank;
         SharedMatrix buffer = std::make_shared<Matrix>(nirrep_, nsopi_, nsopi_);
-        brianSCFComputeOverlapRoot(&brianCookie, &computeOverlapRoot, &computeOverlapInverseRoot, S_->get_pointer(), &S_cutoff, &basisRank, nullptr, buffer->get_pointer());
+        brianSCFComputeOverlapRoot(&brianCookie, &computeOverlapRoot, &computeOverlapInverseRoot, S_->get_pointer(),
+                                   &S_cutoff, &basisRank, nullptr, buffer->get_pointer());
         checkBrian();
-        
+
         nmo_ = basisRank;
         nmopi_[0] = basisRank;
-        
+
         X_->init(nirrep_, nsopi_, nmopi_, "X (Canonical Orthogonalization)");
         for (int i = 0; i < nso_; i++) {
             for (int j = 0; j < nmo_; j++) {
                 X_->set(i, j, buffer->get(nmo_ - 1 - j, i));
             }
         }
-        
+
         if (print_) outfile->Printf("  Overall, %d of %d possible MOs eliminated.\n\n", nso_ - nmo_, nso_);
 
         // Double check occupation vectors
@@ -759,7 +765,7 @@ void HF::form_Shalf() {
 
         // Extra matrix dimension changes for specific derived classes
         prepare_canonical_orthogonalization();
-        
+
         // Temporary variables needed by diagonalize_F
         diag_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nsopi_);
         diag_F_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
@@ -1067,7 +1073,10 @@ void HF::guess() {
         guess_E = compute_initial_E();
 
     } else if (guess_type == "SAD") {
-        if (print_) outfile->Printf("  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).\n\n");
+        if (print_)
+            outfile->Printf(
+                "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation "
+                "information).\n\n");
 
         // Superposition of Atomic Density. Modified by Susi Lehtola
         // 2018-12-15 to work also for ROHF, as well as to allow using
@@ -1283,22 +1292,23 @@ void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr
     if (brianEnable) {
         brianInt basisSize = basisset_->nbf();
         brianInt basisRank = X_->coldim(0);
-        
+
         // BrianQC needs the matrices in a column-major memory layout,
         // so we construct a temporary transposed version of the X matrix,
         // and allocate a transposed C matrix for BrianQC to fill
         std::shared_ptr<Matrix> orthonormalizationMatrix = X_->transpose();
         std::shared_ptr<Matrix> C = std::make_shared<Matrix>(basisRank, basisSize);
-        
-        brianSCFDiagonalizeFock(&brianCookie, &basisRank, Fm->get_pointer(0), orthonormalizationMatrix->get_pointer(0), C->get_pointer(0), epsm->pointer(0));
+
+        brianSCFDiagonalizeFock(&brianCookie, &basisRank, Fm->get_pointer(0), orthonormalizationMatrix->get_pointer(0),
+                                C->get_pointer(0), epsm->pointer(0));
         checkBrian();
-        
+
         Cm->copy(C->transpose());
-        
+
         return;
     }
 #endif
-    
+
     // Form F' = X'FX for canonical orthogonalization
     diag_temp_->gemm(true, false, 1.0, X_, Fm, 0.0);
     diag_F_temp_->gemm(false, false, 1.0, diag_temp_, X_, 0.0);
