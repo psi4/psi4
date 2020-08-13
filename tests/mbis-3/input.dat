@@ -1,0 +1,53 @@
+#! MBIS calculation on OH radical
+
+charges_ref = psi4.Matrix.from_list([ #TEST
+ [-0.38932401],   #TEST
+ [ 0.38932396]])  #TEST
+
+dipoles_ref = psi4.Matrix.from_list([ #TEST
+ [ 1.97962833e-15, -4.94377227e-16, -5.71221414e-02],  #TEST
+ [ 7.42045225e-16, -5.81090007e-16,  3.96528739e-02]]) #TEST
+
+quadrupoles_ref = psi4.Matrix.from_list([ #TEST
+ [-3.82614262e+00, -3.80051017e-01, -2.66233770e-16, -4.17517561e+00,
+  -4.36692737e-15, -4.14097649e+00], #TEST
+ [-3.01366089e-01, -1.35611150e-02, -5.58180975e-16, -3.13820408e-01,
+  -3.42159303e-16, -2.90078485e-01]]) #TEST
+
+octupoles_ref = psi4.Matrix.from_list([ #TEST
+ [ 1.25290130e-14, -1.05305411e-14, -6.03652556e-02,  5.27944497e-15,
+   3.87302904e-03, -2.97951175e-16, -3.13684910e-14, -5.68083339e-02,
+  -8.82955611e-15, -4.25447839e-01], #TEST
+ [ 6.05862041e-16, -7.97545424e-16,  7.75041147e-03,  2.69519948e-16,
+   7.35534015e-03, -2.24764514e-15, -3.39597059e-15,  1.45054438e-02,
+  -1.07756255e-15,  4.40364069e-02]]) #TEST
+
+molecule mol {
+  0 2
+  O 0.0 0.0 0.0
+  H 0.0 0.0 1.0
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  d_convergence 8
+  e_convergence 10
+  reference uhf
+}
+
+e, wfn = energy('hf/cc-pvdz', return_wfn=True)
+oeprop(wfn, 'MBIS_CHARGES', title='OH Radical SCF')
+
+#NOTE: wfn.array_variable gives you flattened atomic multipole arrays; for expanded arrays, use wfn.variable
+charges = wfn.array_variable('MBIS_CHARGES')
+dipoles = wfn.array_variable('MBIS_DIPOLES')
+quadrupoles = wfn.array_variable('MBIS_QUADRUPOLES')
+octupoles = wfn.array_variable('MBIS_OCTUPOLES')
+
+compare_matrices(charges_ref, charges, 7, "MBIS Charges")             #TEST
+compare_matrices(dipoles_ref, dipoles, 7, "MBIS Dipoles")             #TEST
+compare_matrices(quadrupoles_ref, quadrupoles, 7, "MBIS Quadrupoles") #TEST
+compare_matrices(octupoles_ref, octupoles, 7, "MBIS Octupoles")       #TEST

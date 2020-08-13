@@ -657,7 +657,23 @@ def _qcvar_reshape_get(key, val):
     """For QCVariables where the 2D psi4.core.Matrix shape is unnatural, convert to natural shape in ndarray."""
 
     reshaper = None
-    if key.upper().endswith("DIPOLE"):
+    if key.upper() == "MBIS_DIPOLES":
+        reshaper = (-1, 3)
+    elif key.upper() == "MBIS_QUADRUPOLES":
+        val = val.np.reshape(-1, 6)
+        val_new = []
+        for atom in range(len(val)):
+            val_new.append(_multipole_plumper(val[atom], 2))
+        val = np.array(val_new)
+        return val
+    elif key.upper() == "MBIS_OCTUPOLES":
+        val = val.np.reshape(-1, 10)
+        val_new = []
+        for atom in range(len(val)):
+            val_new.append(_multipole_plumper(val[atom], 3))
+        val = np.array(val_new)
+        return val
+    elif key.upper().endswith("DIPOLE"):
         reshaper = (3, )
     elif any(key.upper().endswith(p) for p in _multipole_order):
         return _multipole_plumper(val.np.reshape((-1, )), _multipole_order.index(key.upper().split()[-1]))
@@ -668,7 +684,6 @@ def _qcvar_reshape_get(key, val):
         return val.np.reshape(reshaper)
     else:
         return val
-
 
 def _multipole_compressor(complete, order):
     """Form flat unique components multipole array from complete Cartesian array.

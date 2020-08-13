@@ -1807,198 +1807,146 @@ void OEProp::compute_mbis_multipoles() {
 
 /// Helper Methods for MBIS (JCTC, 2016, p. 3894–3912, Verstraelen et al.)
     
-// The initial guess for the number of electrons in each shell of an atom (Defined in Verstraelen et al. Section 2.3)
-int get_nai(int z, int m) {
-    //MBIS is not supported for elements with atomic number greater than 36
-    if (z <= 2) {
-        return z;
-    } else if (z <= 10) {
-        if (m == 1) {
-            return 2;
-        } else {
-            return z - 2;
-        }
-    } else if (z <= 18) {
-        if (m == 1) {
-            return 2;
-        } else if (m == 2) {
-            return 8;
-        } else {
-            return z - 10;
-        }
-    } else if (z <= 20) {
-        if (m == 1) {
-            return 2;
-        } else if (m == 2) {
-            return 8;
-        } else if (m == 3) {
-            return 8;
-        } else {
-            return z - 18;
-        }
-    } else if (z <= 30) {
-        if (m == 1) {
-            return 2;
-        } else if (m == 2) {
-            return 8;
-        } else if (m == 3) {
-            return z - 12;
-        } else {
-            return 2;
-        }
-    } else {
-        if (m == 1) {
-            return 2;
-        } else if (m == 2) {
-            return 8;
-        } else if (m == 3) {
-            return 18;
-        } else {
-            return z - 28;
-        }
-    }
-}
-
 // Proatomic density of a specific shell of an atom  (Equation 7 in Verstraelen et al.)
 double rho_ai_0(double n, double sigma, double distance) {
     return n * exp(-distance / sigma) / (pow(sigma, 3) * 8 * M_PI);
 }
 
+// Updated parameters for initial MBIS params Nai and 1/Sai (from https://github.com/theochem/denspart/blob/740449c375f7e1c7b14cc8a978a8d0b1ed4617e3/denspart/mbis.py#L82)
+// Attention: MBIS is not supported for elements with atomic number greater than 36
+std::tuple<double, double> get_mbis_params(int atomic_num, int shell_num) {
+    std::map<int, std::vector<std::tuple<double, double>>> params;
+    params[1] = {{1.00000, 1.76216}};
+    params[2] = {{2.00000, 3.11975}};
 
-// Updated parameters for initial horton params Nai and 1/Sai (from https://github.com/theochem/denspart/blob/740449c375f7e1c7b14cc8a978a8d0b1ed4617e3/denspart/mbis.py#L82)
-std::tuple<double, double> get_params(int atomic_num, int shell_num) {
-    std::map<int, std::vector<std::tuple<double, double>>> initial_horton;
-    initial_horton[1] = {{1.00000, 1.76216}};
-    initial_horton[2] = {{2.00000, 3.11975}};
+    params[3] = {{1.86359, 5.56763}, {1.13641, 0.80520}};
+    params[4] = {{1.75663, 8.15111}, {2.24337, 1.22219}};
+    params[5] = {{1.73486, 10.46135}, {3.26514, 1.51797}};
+    params[6] = {{1.70730, 12.79758}, {4.29270, 1.85580}};
+    params[7] = {{1.68283, 15.13096}, {5.31717, 2.19942}};
+    params[8] = {{1.66122, 17.46129}, {6.33878, 2.54326}};
+    params[9] = {{1.64171, 19.78991}, {7.35829, 2.88601}};
+    params[10] = {{1.62380, 22.11938}, {8.37620, 3.22746}};
 
-    initial_horton[3] = {{1.86359, 5.56763}, {1.13641, 0.80520}};
-    initial_horton[4] = {{1.75663, 8.15111}, {2.24337, 1.22219}};
-    initial_horton[5] = {{1.73486, 10.46135}, {3.26514, 1.51797}};
-    initial_horton[6] = {{1.70730, 12.79758}, {4.29270, 1.85580}};
-    initial_horton[7] = {{1.68283, 15.13096}, {5.31717, 2.19942}};
-    initial_horton[8] = {{1.66122, 17.46129}, {6.33878, 2.54326}};
-    initial_horton[9] = {{1.64171, 19.78991}, {7.35829, 2.88601}};
-    initial_horton[10] = {{1.62380, 22.11938}, {8.37620, 3.22746}};
-
-    initial_horton[11] = {{1.48140, 25.82522}, {8.28761, 4.02120}, {1.23098, 0.80897}};
-    initial_horton[12] = {{1.39674, 29.19802}, {8.10904, 4.76791}, {2.49422, 1.08302}};
-    initial_horton[13] = {{1.34503, 32.33363}, {8.12124, 5.42812}, {3.53372, 1.15994}};
-    initial_horton[14] = {{1.28865, 35.65432}, {7.98931, 6.17545}, {4.72204, 1.33797}};
-    initial_horton[15] = {{1.23890, 39.00531}, {7.83125, 6.95265}, {5.92985, 1.52690}};
-    initial_horton[16] = {{1.19478, 42.38177}, {7.66565, 7.75584}, {7.13957, 1.71687}};
-    initial_horton[17] = {{1.15482, 45.79189}, {7.50031, 8.58542}, {8.34487, 1.90546}};
-    initial_horton[18] = {{1.11803, 49.24317}, {7.33917, 9.44200}, {9.54280, 2.09210}};
+    params[11] = {{1.48140, 25.82522}, {8.28761, 4.02120}, {1.23098, 0.80897}};
+    params[12] = {{1.39674, 29.19802}, {8.10904, 4.76791}, {2.49422, 1.08302}};
+    params[13] = {{1.34503, 32.33363}, {8.12124, 5.42812}, {3.53372, 1.15994}};
+    params[14] = {{1.28865, 35.65432}, {7.98931, 6.17545}, {4.72204, 1.33797}};
+    params[15] = {{1.23890, 39.00531}, {7.83125, 6.95265}, {5.92985, 1.52690}};
+    params[16] = {{1.19478, 42.38177}, {7.66565, 7.75584}, {7.13957, 1.71687}};
+    params[17] = {{1.15482, 45.79189}, {7.50031, 8.58542}, {8.34487, 1.90546}};
+    params[18] = {{1.11803, 49.24317}, {7.33917, 9.44200}, {9.54280, 2.09210}};
     
-    initial_horton[19] = {
+    params[19] = {
         {1.09120, 52.59376},
         {7.15086, 10.29851},
         {9.57061, 2.42121},
         {1.18733, 0.67314}
     };
-    initial_horton[20] = {
+    params[20] = {
         {1.07196, 55.86008},
         {7.01185, 11.11887},
         {9.29555, 2.76621},
         {2.62063, 0.88692}
     };
-    initial_horton[21] = {
+    params[21] = {
         {1.05870, 59.04659},
         {6.96404, 11.86718},
         {9.97866, 2.93024},
         {2.99860, 0.98040}
     };
-    initial_horton[22] = {
+    params[22] = {
         {1.04755, 62.22091},
         {6.90438, 12.62229},
         {10.84355, 3.08264},
         {3.20452, 1.05403}
     };
-    initial_horton[23] = {
+    params[23] = {
         {1.03828, 65.38117},
         {6.83516, 13.38417},
         {11.79532, 3.23508},
         {3.33124, 1.11609}
     };
-    initial_horton[24] = {
+    params[24] = {
         {1.03069, 68.52633},
         {6.75998, 14.15132},
         {12.79256, 3.38991},
         {3.41677, 1.17116}
     };
-    initial_horton[25] = {
+    params[25] = {
         {1.02450, 71.65908},
         {6.68141, 14.92337},
         {13.81149, 3.54730},
         {3.48260, 1.22220}
     };
-    initial_horton[26] = {
+    params[26] = {
         {1.01960, 74.77846},
         {6.60101, 15.69935},
         {14.84330, 3.70685},
         {3.53609, 1.27026}
     };
-    initial_horton[27] = {
+    params[27] = {
         {1.01575, 77.88779},
         {6.51976, 16.47941},
         {15.88061, 3.86829},
         {3.58388, 1.31647}
     };
-    initial_horton[28] = {
+    params[28] = {
         {1.01282, 80.98814},
         {6.43837, 17.26336},
         {16.92012, 4.03115},
         {3.62869, 1.36133}
     };
-    initial_horton[29] = {
+    params[29] = {
         {1.01839, 83.81831},
         {6.47823, 17.85149},
         {18.65720, 4.05312},
         {2.84618, 1.37570}
     };
-    initial_horton[30] = {
+    params[30] = {
         {1.00931, 87.16777},
         {6.27682, 18.84319},
         {18.99747, 4.35989},
         {3.71640, 1.44857}
     };
-    initial_horton[31] = {
+    params[31] = {
         {1.00600, 90.34057},
         {6.16315, 19.71091},
         {19.81836, 4.57852},
         {4.01249, 1.29122}
     };
-    initial_horton[32] = {
+    params[32] = {
         {0.99467, 93.80965},
         {5.91408, 20.85993},
         {19.89501, 4.95158},
         {5.19624, 1.39361}
     };
-    initial_horton[33] = {
+    params[33] = {
         {0.98548, 97.22822},
         {5.68319, 22.01684},
         {19.83497, 5.33969},
         {6.49637, 1.51963}
     };
-    initial_horton[34] = {
+    params[34] = {
         {0.97822, 100.60094},
         {5.47209, 23.17528},
         {19.68845, 5.73803},
         {7.86124, 1.65366}
     };
-    initial_horton[35] = {
+    params[35] = {
         {0.97231, 103.94730},
         {5.27765, 24.33975},
         {19.48822, 6.14586},
         {9.26182, 1.78869}
     };
-    initial_horton[36] = {
+    params[36] = {
         {0.96735, 107.28121},
         {5.09646, 25.51581},
         {19.25332, 6.56380},
         {10.68288, 1.92256}
     };
 
-    return initial_horton[atomic_num][shell_num];
+    return params[atomic_num][shell_num];
 }
 
 // Minimal Basis Iterative Stockhplder (JCTC, 2016, p. 3894–3912, Verstraelen et al.)
@@ -2015,6 +1963,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     const double conv = options.get_double("MBIS_D_CONVERGENCE");
     const int debug = options.get_int("DEBUG");
 
+    // Sets up MBIS Grid using MBIS_RAIDAL_POINTS and MBIS_SPHERICAL_POINTS options
     std::map<std::string, int> mbis_grid_options_int;
 
     mbis_grid_options_int["DFT_RADIAL_POINTS"] = options.get_int("MBIS_RADIAL_POINTS");
@@ -2087,12 +2036,29 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
         running_points += num_points;
     }
 
-    if (print_output && debug >= 1) {
-        double rho_num_electrons = 0.0;
-        for (int p = 0; p < total_points; p++) {
-            rho_num_electrons += weights[p] * rho[p];
-        }
-        outfile->Printf("RHO NUM ELECTRONS: %8.5f\n\n", rho_num_electrons);
+
+    //Calculates Number of Electrons Based on the Density Obtained using Grid Points
+    double rho_num_electrons = 0.0;
+    for (int p = 0; p < total_points; p++) {
+        rho_num_electrons += weights[p] * rho[p];
+    }
+    if (print_output) outfile->Printf("  NUMBER OF ELECTRONS (GRID DENSITY): %8.5f\n", rho_num_electrons);
+
+    //Checks to see if the number of electrons calculated using the grid densities matches actual number of electrons in molecule
+    double mol_charge = (double) (mol->molecular_charge());
+    double mol_nuc_charge = 0.0;
+
+    for (int a = 0; a < num_atoms; a++) {
+        mol_nuc_charge += mol->fZ(a);
+    }
+    double mol_electron_count = mol_nuc_charge - mol_charge;
+
+    double electron_diff = fabs(mol_electron_count - rho_num_electrons);
+
+    if (print_output) outfile->Printf("  ELECTRON DIFFERENCE: %8.5f\n\n", electron_diff);
+
+    if (electron_diff > 0.001) {
+        throw PsiException("Number of electrons calculated using the grid (" + std::to_string(round(100000.0 * rho_num_electrons) / 100000.0) + ") does not match the number of electrons in molecule. Try increasing the number of radial or spherical points (mbis_radial_points and mbis_spherical_points options).", __FILE__, __LINE__);
     }
 
     // Distances and displacements between grid points and nuclei
@@ -2139,23 +2105,16 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     std::vector<std::vector<double>> Nai_next(num_atoms, std::vector<double>(4, 0.0));
     std::vector<std::vector<double>> Sai_next(num_atoms, std::vector<double>(4, 0.0));
 
-    // Population and width guesses, initial_horton is from "mbis_initial_params.h" file defined at the beginning of this file
+    // Population and width guesses, from get_mbis_params function
     for (int atom = 0; atom < num_atoms; atom++) {
         int atomic_num = (int) mol->Z(atom);        
 
         for (int m = 0; m < mA[atom]; m++) {
-            std::tie(Nai[atom][m], Sai[atom][m]) = get_params(atomic_num, m);
+            std::tie(Nai[atom][m], Sai[atom][m]) = get_mbis_params(atomic_num, m);
             Sai[atom][m] = 1.0/Sai[atom][m];
-            /* 
-            Nai[atom][m] = (double) get_nai(atomic_num, m+1);
-	    if (mA[atom] == 1) {
-                Sai[atom][m] = 1.0/(2.0 * atomic_num);
-	    } else {
-                Sai[atom][m] = 1.0/(2.0 * pow((double)atomic_num, (1.0 - m/(mA[atom] - 1.0))));
-	    }
-            */
+            
             if (print_output && debug >= 1) {
-                outfile->Printf("INITIAL ATOM %d, SHELL %d, POP %8.5f, WIDTH %8.5f\n", atom+1, m+1, Nai[atom][m], Sai[atom][m]);
+                outfile->Printf("  INITIAL ATOM %d, SHELL %d, POP %8.5f, WIDTH %8.5f\n", atom+1, m+1, Nai[atom][m], Sai[atom][m]);
             }
             
             Nai_next[atom][m] = Nai[atom][m];
@@ -2256,6 +2215,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     // => Post-Processing <= //
 
     // Final density calculation afiter convergence
+#pragma omp parallel for
     for (int point = 0; point < total_points; point++) {
         rho_0_points[point] = 0.0;
         for (int atom = 0; atom < num_atoms; atom++) {
@@ -2269,6 +2229,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
       
     // Atomic density, as defined in Equation 5 of Verstraelen et al. (Negative to account for negative charge of electron)
     std::vector<std::vector<double>> rho_a(num_atoms, std::vector<double>(total_points, 0.0));
+#pragma omp parallel for
     for (int atom = 0; atom < num_atoms; atom++) {
         for (int point = 0; point < total_points; point++) {
             rho_a[atom][point] = -rho[point] * rho_a_0_points[atom][point] / rho_0_points[point];

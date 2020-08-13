@@ -1,0 +1,52 @@
+#! MBIS calculation on NaCl
+
+charges_ref = psi4.Matrix.from_list([ #TEST
+ [ 0.9652361 ],   #TEST
+ [-0.96523273]])  #TEST
+
+dipoles_ref = psi4.Matrix.from_list([ #TEST
+ [-1.42467041e-14,  4.53688784e-15, -9.80594926e-03],  #TEST
+ [ 1.63097810e-14,  3.35851284e-14,  6.42358559e-01]]) #TEST
+
+quadrupoles_ref = psi4.Matrix.from_list([ #TEST
+ [-2.34992364e+00, -3.43358726e-15,  4.25170609e-14, -2.34992364e+00,
+  -1.32926359e-14, -2.28980730e+00], #TEST
+ [-1.18919801e+01,  3.84602571e-14,  4.94675913e-14, -1.18919801e+01,
+  -4.42960342e-14, -1.20798264e+01]]) #TEST
+
+octupoles_ref = psi4.Matrix.from_list([ #TEST
+ [-3.49827519e-13, -2.70341979e-13, -2.55755339e-02, -5.56127851e-14,
+   6.03148390e-14, -6.73274814e-14, -1.78172607e-13, -2.55755339e-02,
+   5.26688777e-14, -5.92186150e-02], #TEST
+ [ 9.10891945e-14,  8.85549562e-14,  2.25696361e+00, -1.39974795e-13,
+  -1.61387749e-13, -6.44818499e-14,  4.70577367e-13,  2.25696361e+00,
+   2.06112555e-13,  4.56955103e+00]]) #TEST
+
+molecule mol {
+  0 1
+  Na 0.00 0.00 0.00
+  Cl 0.00 0.00 2.36
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  d_convergence 8
+  e_convergence 10
+}
+
+e, wfn = energy('hf/cc-pvdz', return_wfn=True)
+oeprop(wfn, 'MBIS_CHARGES', title='NaCl SCF')
+
+#NOTE: wfn.array_variable gives you flattened atomic multipole arrays; for expanded arrays, use wfn.variable
+charges = wfn.array_variable('MBIS_CHARGES')
+dipoles = wfn.array_variable('MBIS_DIPOLES')
+quadrupoles = wfn.array_variable('MBIS_QUADRUPOLES')
+octupoles = wfn.array_variable('MBIS_OCTUPOLES')
+
+compare_matrices(charges_ref, charges, 7, "MBIS Charges")             #TEST
+compare_matrices(dipoles_ref, dipoles, 7, "MBIS Dipoles")             #TEST
+compare_matrices(quadrupoles_ref, quadrupoles, 7, "MBIS Quadrupoles") #TEST
+compare_matrices(octupoles_ref, octupoles, 7, "MBIS Octupoles")       #TEST

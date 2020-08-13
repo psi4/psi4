@@ -1,0 +1,333 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.4a2.dev845 
+
+                         Git: Rev {mbis} 42a0579 dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Wednesday, 12 August 2020 06:55PM
+
+    Process ID: 1843
+    Host:       ds4
+    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! MBIS calculation on OH-
+
+charges_ref = psi4.Matrix.from_list([ #TEST
+ [-1.19177658],   #TEST
+ [ 0.19177652]])  #TEST
+
+dipoles_ref = psi4.Matrix.from_list([ #TEST
+ [ 1.05225512e-15, -8.02709582e-15, -1.00289562e-01],   #TEST
+ [ 9.33032846e-16, -1.84806251e-15,  1.61048217e-02]])  #TEST
+
+quadrupoles_ref = psi4.Matrix.from_list([ #TEST
+ [-5.30927644e+00, -1.01355258e-15,  2.56300007e-15, -5.30927644e+00,
+  -1.93100194e-15, -4.98306699e+00], #TEST
+ [-5.48513278e-01,  6.44303276e-17, -1.41139499e-15, -5.48513278e-01,
+  -7.83149261e-16, -5.49323087e-01]]) #TEST
+
+octupoles_ref = psi4.Matrix.from_list([ #TEST
+ [-8.05553480e-15, -1.14632220e-14, -1.94485114e-01, -2.94971385e-15,
+   5.79086101e-16, -3.29212012e-15, -5.07136194e-14, -1.94485114e-01,
+  -1.91664763e-14, -1.04370463e+00],  #TEST
+ [ 2.99840093e-16, -2.03589512e-15, -2.03066382e-03, -5.76089198e-16,
+   1.64202826e-15, -3.70229167e-15, -1.03338930e-14, -2.03066382e-03,
+  -2.48840771e-15, -2.30415328e-03]]) #TEST
+
+molecule mol {
+  -1 1
+  O 0.0 0.0 0.0
+  H 0.0 0.0 1.0
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  d_convergence 8
+  e_convergence 10
+}
+
+e, wfn = energy('hf/cc-pvdz', return_wfn=True)
+oeprop(wfn, 'MBIS_CHARGES', title='OH- SCF')
+
+#NOTE: wfn.array_variable gives you flattened atomic multipole arrays; for expanded arrays, use wfn.variable
+charges = wfn.array_variable('MBIS_CHARGES')
+dipoles = wfn.array_variable('MBIS_DIPOLES')
+quadrupoles = wfn.array_variable('MBIS_QUADRUPOLES')
+octupoles = wfn.array_variable('MBIS_OCTUPOLES')
+
+compare_matrices(charges_ref, charges, 7, "MBIS Charges")             #TEST
+compare_matrices(dipoles_ref, dipoles, 7, "MBIS Dipoles")             #TEST
+compare_matrices(quadrupoles_ref, quadrupoles, 7, "MBIS Quadrupoles") #TEST
+compare_matrices(octupoles_ref, octupoles, 7, "MBIS Octupoles")       #TEST
+--------------------------------------------------------------------------
+
+Scratch directory: /scratch/jiang/
+
+Scratch directory: /scratch/jiang/
+
+*** tstart() called on ds4
+*** at Wed Aug 12 18:55:48 2020
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry O          line   198 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2 entry H          line    22 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C_inf_v
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000     0.000000000000    15.994914619570
+         H            0.000000000000     0.000000000000     1.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A = ************  B =     16.72674  C =     16.72674 [cm^-1]
+  Rotational constants: A = ************  B = 501455.10648  C = 501455.10648 [MHz]
+  Nuclear repulsion =    4.233417685360000
+
+  Charge       = -1
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 9
+    Number of basis function: 19
+    Number of Cartesian functions: 20
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry O          line   221 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2 entry H          line    51 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 33
+    Number of basis function: 93
+    Number of Cartesian functions: 106
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 5.4053854112E-02.
+  Reciprocal condition number of the overlap matrix is 1.8597642084E-02.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         19      19 
+   -------------------------
+    Total      19      19
+   -------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter SAD:   -74.63727338893422   -7.46373e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.16248376772900   -5.25210e-01   3.38206e-02 DIIS
+   @DF-RHF iter   2:   -75.27088408793082   -1.08400e-01   2.15939e-02 DIIS
+   @DF-RHF iter   3:   -75.32903542873817   -5.81513e-02   1.32509e-03 DIIS
+   @DF-RHF iter   4:   -75.32969112476773   -6.55696e-04   3.73381e-04 DIIS
+   @DF-RHF iter   5:   -75.32976360680961   -7.24820e-05   7.23711e-05 DIIS
+   @DF-RHF iter   6:   -75.32976671134428   -3.10453e-06   1.08451e-05 DIIS
+   @DF-RHF iter   7:   -75.32976676507295   -5.37287e-08   8.82377e-07 DIIS
+   @DF-RHF iter   8:   -75.32976676528884   -2.15891e-10   1.13853e-07 DIIS
+   @DF-RHF iter   9:   -75.32976676529141   -2.57216e-12   1.06213e-08 DIIS
+   @DF-RHF iter  10:   -75.32976676529154   -1.27898e-13   1.04873e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.079326     2A     -0.807063     3A     -0.157002  
+       4A     -0.030796     5A     -0.030796  
+
+    Virtual:                                                              
+
+       6A      0.506116     7A      1.180024     8A      1.589093  
+       9A      1.624554    10A      1.624554    11A      1.943684  
+      12A      1.943684    13A      2.107993    14A      2.772927  
+      15A      3.442171    16A      3.442171    17A      3.731771  
+      18A      3.731771    19A      4.438118  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+
+  @DF-RHF Final Energy:   -75.32976676529154
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              4.2334176853600001
+    One-Electron Energy =                -116.9164032575287848
+    Two-Electron Energy =                  37.3532188068772513
+    Total Energy =                        -75.3297667652915379
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     1.8897
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:    -0.0000      Z:    -1.6115
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:    -0.0000      Z:     0.2782     Total:     0.2782
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:    -0.0000      Z:     0.7072     Total:     0.7072
+
+
+*** tstop() called on ds4 at Wed Aug 12 18:55:48 2020
+Module time:
+	user time   =       0.61 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.61 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the OH- SCF density matrix
+
+  ==> Computing MBIS Charges <==
+
+  NUMBER OF ELECTRONS (GRID DENSITY): 10.00000
+  ELECTRON DIFFERENCE:  0.00000
+
+  MBIS Charges: (a.u.)
+   Center  Symbol  Z      Pop.       Charge
+      1       O    8    9.191777   -1.191777
+      2       H    1    0.808223    0.191777
+
+  MBIS Dipoles: [e a0]
+   Center  Symbol  Z        X           Y           Z
+      1       O    8    0.000000   -0.000000   -0.100290
+      2       H    1    0.000000   -0.000000    0.016105
+
+  MBIS Quadrupoles: [e ao^2]
+   Center  Symbol  Z      XX        XY        XZ        YY        YZ        ZZ
+      1       O    8   -5.3093   -0.0000    0.0000   -5.3093   -0.0000   -4.9831
+      2       H    1   -0.5485    0.0000   -0.0000   -0.5485   -0.0000   -0.5493
+
+  MBIS Octupoles: [e a0^3]
+   Center  Symbol  Z      XXX       XXY       XXZ       XYY       XYZ       XZZ       YYY       YYZ       YZZ       ZZZ
+      1       O    8   -0.0000   -0.0000   -0.1945   -0.0000    0.0000   -0.0000   -0.0000   -0.1945   -0.0000   -1.0437
+      2       H    1    0.0000   -0.0000   -0.0020   -0.0000    0.0000   -0.0000   -0.0000   -0.0020   -0.0000   -0.0023
+    MBIS Charges..........................................................................PASSED
+    MBIS Dipoles..........................................................................PASSED
+    MBIS Quadrupoles......................................................................PASSED
+    MBIS Octupoles........................................................................PASSED
+
+    Psi4 stopped on: Wednesday, 12 August 2020 06:55PM
+    Psi4 wall time for execution: 0:00:01.52
+
+*** Psi4 exiting successfully. Buy a developer a beer!

@@ -250,14 +250,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     ///MBIS Options (libmints/oeprop.cc)
 
     /*- Maximum Number of MBIS Iterations -*/
-    options.add_int("MBIS_MAXITER", 200);
+    options.add_int("MBIS_MAXITER", 500);
     /*- MBIS Convergence Criteria -*/
     options.add_double("MBIS_D_CONVERGENCE", 1.0e-8);
     /*- MBIS Number of Radial Points -*/
     /*- Additional Radial Points may be needed for Heavier Atoms (200-300) like Zinc -*/
     options.add_int("MBIS_RADIAL_POINTS", 99);
     /*- MBIS Number of Spherical Points -*/
-    options.add_int("MBIS_SPHERICAL_POINTS", 590);
+    options.add_int("MBIS_SPHERICAL_POINTS", 350);
 
     /*- PCM boolean for pcmsolver module -*/
     options.add_bool("PCM", false);
