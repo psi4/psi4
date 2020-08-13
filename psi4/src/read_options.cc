@@ -254,10 +254,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- MBIS Convergence Criteria -*/
     options.add_double("MBIS_D_CONVERGENCE", 1.0e-8);
     /*- MBIS Number of Radial Points -*/
-    /*- Additional Radial Points may be needed for Heavier Atoms (200-300) like Zinc -*/
-    options.add_int("MBIS_RADIAL_POINTS", 99);
+    /*- Additional Radial and/or Spherical Points may be needed for Heavier Atoms (200-300) like Zinc -*/
+    options.add_int("MBIS_RADIAL_POINTS", 75);
     /*- MBIS Number of Spherical Points -*/
-    options.add_int("MBIS_SPHERICAL_POINTS", 350);
+    options.add_int("MBIS_SPHERICAL_POINTS", 302);
 
     /*- PCM boolean for pcmsolver module -*/
     options.add_bool("PCM", false);

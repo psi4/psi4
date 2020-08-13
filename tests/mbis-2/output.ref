@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.4a2.dev846 
+                               Psi4 1.4a2.dev847 
 
-                         Git: Rev {mbis} d22aa08 dirty
+                         Git: Rev {mbis} b154452 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 13 August 2020 02:08PM
+    Psi4 started on: Thursday, 13 August 2020 06:54PM
 
-    Process ID: 27629
+    Process ID: 18811
     Host:       ds4
     PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
@@ -100,6 +100,8 @@ set {
   scf_type df
   d_convergence 8
   e_convergence 10
+  mbis_radial_points 99
+  mbis_spherical_points 350
 }
 
 e, wfn = energy('hf/cc-pvdz', return_wfn=True)
@@ -122,7 +124,7 @@ Scratch directory: /scratch/jiang/
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds4
-*** at Thu Aug 13 14:08:41 2020
+*** at Thu Aug 13 18:54:01 2020
 
    => Loading Basis Set <=
 
@@ -305,15 +307,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:    -0.0000      Z:     0.7072     Total:     0.7072
 
 
-*** tstop() called on ds4 at Thu Aug 13 14:08:41 2020
+*** tstop() called on ds4 at Thu Aug 13 18:54:02 2020
 Module time:
-	user time   =       0.70 seconds =       0.01 minutes
+	user time   =       0.62 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.70 seconds =       0.01 minutes
+	user time   =       0.62 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -349,7 +351,7 @@ Properties computed using the OH- SCF density matrix
     MBIS Quadrupoles......................................................................PASSED
     MBIS Octupoles........................................................................PASSED
 
-    Psi4 stopped on: Thursday, 13 August 2020 02:08PM
-    Psi4 wall time for execution: 0:00:01.52
+    Psi4 stopped on: Thursday, 13 August 2020 06:54PM
+    Psi4 wall time for execution: 0:00:01.43
 
 *** Psi4 exiting successfully. Buy a developer a beer!
