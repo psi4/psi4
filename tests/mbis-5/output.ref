@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.4a2.dev845 
+                               Psi4 1.4a2.dev846 
 
-                         Git: Rev {mbis} 42a0579 dirty
+                         Git: Rev {mbis} d22aa08 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 12 August 2020 08:00PM
+    Psi4 started on: Thursday, 13 August 2020 05:14PM
 
-    Process ID: 6676
+    Process ID: 7327
     Host:       ds4
     PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
@@ -48,22 +48,22 @@ charges_ref = psi4.Matrix.from_list([ #TEST
  [-0.58427465]])  #TEST
 
 dipoles_ref = psi4.Matrix.from_list([ #TEST
- [-3.49061641e-07, -1.23218693e-06, -2.16390166e-02],   #TEST
- [-7.80571730e-08, -2.75541779e-07,  2.59418122e-01]])  #TEST
+ [-7.54931815e-07, -1.50452584e-07, -2.16390167e-02],   #TEST
+ [-1.68817939e-07, -3.36442282e-08,  2.59418122e-01]])  #TEST
 
 quadrupoles_ref = psi4.Matrix.from_list([ #TEST
- [-9.07094889e+00, -1.97813559e-12,  9.78435243e-08, -9.07094889e+00,
-   3.45387251e-07, -9.20873659e+00],      #TEST
- [-4.84302950e+00, -1.12040179e-13, -2.75859512e-07, -4.84302950e+00,
-  -9.73784163e-07, -4.08709880e+00]])     #TEST
+ [-9.07094889e+00,  1.13900938e-11,  2.11610625e-07, -9.07094889e+00,
+   4.21724433e-08, -9.20873659e+00],      #TEST
+ [-4.84302950e+00,  3.96265330e-12, -5.96614477e-07, -4.84302950e+00,
+  -1.18901038e-07, -4.08709880e+00]])     #TEST
 
 octupoles_ref = psi4.Matrix.from_list([ #TEST
- [-3.51426548e-06, -4.13511913e-06,  4.03768730e-01, -1.17142240e-06,
-  -4.07710873e-13, -1.01076254e-06, -1.24053515e-05,  4.03768730e-01,
-  -3.56799058e-06,  1.08311087e+00],    #TEST
- [-4.57683055e-07, -5.38548093e-07,  4.45386844e-01, -1.52563222e-07,
-   4.04298987e-13, -2.27591025e-07, -1.61562137e-06,  4.45386844e-01,
-  -8.03396167e-07,  1.24370207e+00]])   #TEST
+ [-7.60046525e-06, -5.04906706e-07,  4.03768730e-01, -2.53348984e-06,
+   3.30903477e-12, -2.18602337e-06, -1.51471901e-06,  4.03768730e-01,
+  -4.35658911e-07,  1.08311087e+00],    #TEST
+ [-9.89852916e-07, -6.57578301e-08,  4.45386844e-01, -3.29955685e-07,
+  -2.24011465e-12, -4.92221835e-07, -1.97270780e-07,  4.45386844e-01,
+  -9.80963609e-08,  1.24370207e+00]])   #TEST
 
 molecule mol {
   0 1
@@ -87,10 +87,10 @@ e, wfn = energy('hf/cc-pvdz', return_wfn=True)
 oeprop(wfn, 'MBIS_CHARGES', title='ZnO SCF')
 
 #NOTE: wfn.array_variable gives you flattened atomic multipole arrays; for expanded arrays, use wfn.variable
-charges = wfn.array_variable('MBIS_CHARGES')
-dipoles = wfn.array_variable('MBIS_DIPOLES')
-quadrupoles = wfn.array_variable('MBIS_QUADRUPOLES')
-octupoles = wfn.array_variable('MBIS_OCTUPOLES')
+charges = wfn.array_variable('MBIS CHARGES')
+dipoles = wfn.array_variable('MBIS DIPOLES')
+quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
+octupoles = wfn.array_variable('MBIS OCTUPOLES')
 
 compare_matrices(charges_ref, charges, 7, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 7, "MBIS Dipoles")             #TEST
@@ -103,7 +103,7 @@ Scratch directory: /scratch/jiang/
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds4
-*** at Wed Aug 12 20:00:14 2020
+*** at Thu Aug 13 17:14:42 2020
 
    => Loading Basis Set <=
 
@@ -221,21 +221,21 @@ Scratch directory: /scratch/jiang/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD: -1847.77161182222744   -1.84777e+03   0.00000e+00 
-   @DF-RHF iter   1: -1850.87609204981550   -3.10448e+00   5.72916e-02 DIIS
-   @DF-RHF iter   2: -1838.46244211391377    1.24136e+01   1.40360e-01 DIIS
-   @DF-RHF iter   3: -1852.43421227796762   -1.39718e+01   9.83156e-03 DIIS
-   @DF-RHF iter   4: -1852.49754592791055   -6.33336e-02   6.03975e-03 DIIS
-   @DF-RHF iter   5: -1852.54947159808603   -5.19257e-02   1.14659e-03 DIIS
-   @DF-RHF iter   6: -1852.55190692256497   -2.43532e-03   3.18087e-04 DIIS
-   @DF-RHF iter   7: -1852.55254926256703   -6.42340e-04   2.21836e-04 DIIS
-   @DF-RHF iter   8: -1852.55290923561324   -3.59973e-04   7.77774e-05 DIIS
-   @DF-RHF iter   9: -1852.55294037613362   -3.11405e-05   1.32230e-05 DIIS
-   @DF-RHF iter  10: -1852.55294118132520   -8.05192e-07   3.33114e-06 DIIS
-   @DF-RHF iter  11: -1852.55294121088855   -2.95634e-08   6.66046e-07 DIIS
-   @DF-RHF iter  12: -1852.55294121232419   -1.43564e-09   1.12398e-07 DIIS
-   @DF-RHF iter  13: -1852.55294121237921   -5.50244e-11   2.63126e-08 DIIS
-   @DF-RHF iter  14: -1852.55294121238239   -3.18323e-12   4.43509e-09 DIIS
+   @DF-RHF iter SAD: -1847.77161132873562   -1.84777e+03   0.00000e+00 
+   @DF-RHF iter   1: -1850.87609273265048   -3.10448e+00   5.72916e-02 DIIS
+   @DF-RHF iter   2: -1838.46253478058179    1.24136e+01   1.40360e-01 DIIS
+   @DF-RHF iter   3: -1852.43421229838350   -1.39717e+01   9.83157e-03 DIIS
+   @DF-RHF iter   4: -1852.49754568504386   -6.33334e-02   6.03976e-03 DIIS
+   @DF-RHF iter   5: -1852.54947159776225   -5.19259e-02   1.14658e-03 DIIS
+   @DF-RHF iter   6: -1852.55190691526400   -2.43532e-03   3.18088e-04 DIIS
+   @DF-RHF iter   7: -1852.55254926019506   -6.42345e-04   2.21836e-04 DIIS
+   @DF-RHF iter   8: -1852.55290923600569   -3.59976e-04   7.77770e-05 DIIS
+   @DF-RHF iter   9: -1852.55294037601402   -3.11400e-05   1.32230e-05 DIIS
+   @DF-RHF iter  10: -1852.55294118120469   -8.05191e-07   3.33113e-06 DIIS
+   @DF-RHF iter  11: -1852.55294121076759   -2.95629e-08   6.66045e-07 DIIS
+   @DF-RHF iter  12: -1852.55294121220163   -1.43405e-09   1.12395e-07 DIIS
+   @DF-RHF iter  13: -1852.55294121225711   -5.54792e-11   2.63033e-08 DIIS
+   @DF-RHF iter  14: -1852.55294121226120   -4.09273e-12   4.38637e-09 DIIS
   Energy and wave function converged.
 
 
@@ -274,14 +274,14 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [    19 ]
 
-  @DF-RHF Final Energy: -1852.55294121238239
+  @DF-RHF Final Energy: -1852.55294121226120
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             64.1426922024242430
-    One-Electron Energy =               -2715.3429125377942910
-    Two-Electron Energy =                 798.6472791229876975
-    Total Energy =                      -1852.5529412123823931
+    One-Electron Energy =               -2715.3429125378634126
+    Two-Electron Energy =                 798.6472791231778956
+    Total Energy =                      -1852.5529412122612030
 
 Computation Completed
 
@@ -303,14 +303,14 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:    -0.0000      Z:    -4.9493     Total:     4.9493
 
 
-*** tstop() called on ds4 at Wed Aug 12 20:00:16 2020
+*** tstop() called on ds4 at Thu Aug 13 17:14:44 2020
 Module time:
-	user time   =       2.25 seconds =       0.04 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       2.36 seconds =       0.04 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       2.25 seconds =       0.04 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       2.36 seconds =       0.04 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 
@@ -320,8 +320,8 @@ Properties computed using the ZnO SCF density matrix
 
   ==> Computing MBIS Charges <==
 
-  NUMBER OF ELECTRONS (GRID DENSITY): 38.00079
-  ELECTRON DIFFERENCE:  0.00079
+  Electron Count from Grid (Expected Number): 38.00079 (38.00000)
+  Difference:  0.00079
 
   MBIS Charges: (a.u.)
    Center  Symbol  Z      Pop.       Charge
@@ -330,24 +330,24 @@ Properties computed using the ZnO SCF density matrix
 
   MBIS Dipoles: [e a0]
    Center  Symbol  Z        X           Y           Z
-      1      ZN   30   -0.000000   -0.000001   -0.021639
+      1      ZN   30   -0.000001   -0.000000   -0.021639
       2       O    8   -0.000000   -0.000000    0.259418
 
-  MBIS Quadrupoles: [e ao^2]
+  MBIS Quadrupoles: [e a0^2]
    Center  Symbol  Z      XX        XY        XZ        YY        YZ        ZZ
-      1      ZN   30   -9.0709   -0.0000    0.0000   -9.0709    0.0000   -9.2087
-      2       O    8   -4.8430   -0.0000   -0.0000   -4.8430   -0.0000   -4.0871
+      1      ZN   30   -9.0709    0.0000    0.0000   -9.0709    0.0000   -9.2087
+      2       O    8   -4.8430    0.0000   -0.0000   -4.8430   -0.0000   -4.0871
 
   MBIS Octupoles: [e a0^3]
    Center  Symbol  Z      XXX       XXY       XXZ       XYY       XYZ       XZZ       YYY       YYZ       YZZ       ZZZ
-      1      ZN   30   -0.0000   -0.0000    0.4038   -0.0000   -0.0000   -0.0000   -0.0000    0.4038   -0.0000    1.0831
-      2       O    8   -0.0000   -0.0000    0.4454   -0.0000    0.0000   -0.0000   -0.0000    0.4454   -0.0000    1.2437
+      1      ZN   30   -0.0000   -0.0000    0.4038   -0.0000    0.0000   -0.0000   -0.0000    0.4038   -0.0000    1.0831
+      2       O    8   -0.0000   -0.0000    0.4454   -0.0000   -0.0000   -0.0000   -0.0000    0.4454   -0.0000    1.2437
     MBIS Charges..........................................................................PASSED
     MBIS Dipoles..........................................................................PASSED
     MBIS Quadrupoles......................................................................PASSED
     MBIS Octupoles........................................................................PASSED
 
-    Psi4 stopped on: Wednesday, 12 August 2020 08:00PM
-    Psi4 wall time for execution: 0:00:09.68
+    Psi4 stopped on: Thursday, 13 August 2020 05:14PM
+    Psi4 wall time for execution: 0:00:09.85
 
 *** Psi4 exiting successfully. Buy a developer a beer!

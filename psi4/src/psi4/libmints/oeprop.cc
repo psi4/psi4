@@ -1797,12 +1797,11 @@ void OEProp::compute_mbis_multipoles() {
 
     SharedMatrix mpole, dpole, qpole, opole;
     std::tie(mpole, dpole, qpole, opole) = pac_.compute_mbis_multipoles(true);
-    //wfn_->set_atomic_point_charges(mpole);
 
-    wfn_->set_array_variable("MBIS_CHARGES", mpole);
-    wfn_->set_array_variable("MBIS_DIPOLES", dpole);
-    wfn_->set_array_variable("MBIS_QUADRUPOLES", qpole);
-    wfn_->set_array_variable("MBIS_OCTUPOLES", opole);
+    wfn_->set_array_variable("MBIS CHARGES", mpole);
+    wfn_->set_array_variable("MBIS DIPOLES", dpole);
+    wfn_->set_array_variable("MBIS QUADRUPOLES", qpole);
+    wfn_->set_array_variable("MBIS OCTUPOLES", opole);
 }
 
 /// Helper Methods for MBIS (JCTC, 2016, p. 3894–3912, Verstraelen et al.)
@@ -1816,134 +1815,134 @@ double rho_ai_0(double n, double sigma, double distance) {
 // Attention: MBIS is not supported for elements with atomic number greater than 36
 std::tuple<double, double> get_mbis_params(int atomic_num, int shell_num) {
     std::map<int, std::vector<std::tuple<double, double>>> params;
-    params[1] = {{1.00000, 1.76216}};
-    params[2] = {{2.00000, 3.11975}};
+    params[1] = {std::make_tuple(1.00000, 1.76216)};
+    params[2] = {std::make_tuple(2.00000, 3.11975)};
 
-    params[3] = {{1.86359, 5.56763}, {1.13641, 0.80520}};
-    params[4] = {{1.75663, 8.15111}, {2.24337, 1.22219}};
-    params[5] = {{1.73486, 10.46135}, {3.26514, 1.51797}};
-    params[6] = {{1.70730, 12.79758}, {4.29270, 1.85580}};
-    params[7] = {{1.68283, 15.13096}, {5.31717, 2.19942}};
-    params[8] = {{1.66122, 17.46129}, {6.33878, 2.54326}};
-    params[9] = {{1.64171, 19.78991}, {7.35829, 2.88601}};
-    params[10] = {{1.62380, 22.11938}, {8.37620, 3.22746}};
+    params[3] = {std::make_tuple(1.86359, 5.56763), std::make_tuple(1.13641, 0.80520)};
+    params[4] = {std::make_tuple(1.75663, 8.15111), std::make_tuple(2.24337, 1.22219)};
+    params[5] = {std::make_tuple(1.73486, 10.46135), std::make_tuple(3.26514, 1.51797)};
+    params[6] = {std::make_tuple(1.70730, 12.79758), std::make_tuple(4.29270, 1.85580)};
+    params[7] = {std::make_tuple(1.68283, 15.13096), std::make_tuple(5.31717, 2.19942)};
+    params[8] = {std::make_tuple(1.66122, 17.46129), std::make_tuple(6.33878, 2.54326)};
+    params[9] = {std::make_tuple(1.64171, 19.78991), std::make_tuple(7.35829, 2.88601)};
+    params[10] = {std::make_tuple(1.62380, 22.11938), std::make_tuple(8.37620, 3.22746)};
 
-    params[11] = {{1.48140, 25.82522}, {8.28761, 4.02120}, {1.23098, 0.80897}};
-    params[12] = {{1.39674, 29.19802}, {8.10904, 4.76791}, {2.49422, 1.08302}};
-    params[13] = {{1.34503, 32.33363}, {8.12124, 5.42812}, {3.53372, 1.15994}};
-    params[14] = {{1.28865, 35.65432}, {7.98931, 6.17545}, {4.72204, 1.33797}};
-    params[15] = {{1.23890, 39.00531}, {7.83125, 6.95265}, {5.92985, 1.52690}};
-    params[16] = {{1.19478, 42.38177}, {7.66565, 7.75584}, {7.13957, 1.71687}};
-    params[17] = {{1.15482, 45.79189}, {7.50031, 8.58542}, {8.34487, 1.90546}};
-    params[18] = {{1.11803, 49.24317}, {7.33917, 9.44200}, {9.54280, 2.09210}};
+    params[11] = {std::make_tuple(1.48140, 25.82522), std::make_tuple(8.28761, 4.02120), std::make_tuple(1.23098, 0.80897)};
+    params[12] = {std::make_tuple(1.39674, 29.19802), std::make_tuple(8.10904, 4.76791), std::make_tuple(2.49422, 1.08302)};
+    params[13] = {std::make_tuple(1.34503, 32.33363), std::make_tuple(8.12124, 5.42812), std::make_tuple(3.53372, 1.15994)};
+    params[14] = {std::make_tuple(1.28865, 35.65432), std::make_tuple(7.98931, 6.17545), std::make_tuple(4.72204, 1.33797)};
+    params[15] = {std::make_tuple(1.23890, 39.00531), std::make_tuple(7.83125, 6.95265), std::make_tuple(5.92985, 1.52690)};
+    params[16] = {std::make_tuple(1.19478, 42.38177), std::make_tuple(7.66565, 7.75584), std::make_tuple(7.13957, 1.71687)};
+    params[17] = {std::make_tuple(1.15482, 45.79189), std::make_tuple(7.50031, 8.58542), std::make_tuple(8.34487, 1.90546)};
+    params[18] = {std::make_tuple(1.11803, 49.24317), std::make_tuple(7.33917, 9.44200), std::make_tuple(9.54280, 2.09210)};
     
     params[19] = {
-        {1.09120, 52.59376},
-        {7.15086, 10.29851},
-        {9.57061, 2.42121},
-        {1.18733, 0.67314}
+        std::make_tuple(1.09120, 52.59376),
+        std::make_tuple(7.15086, 10.29851),
+        std::make_tuple(9.57061, 2.42121),
+        std::make_tuple(1.18733, 0.67314)
     };
     params[20] = {
-        {1.07196, 55.86008},
-        {7.01185, 11.11887},
-        {9.29555, 2.76621},
-        {2.62063, 0.88692}
+        std::make_tuple(1.07196, 55.86008),
+        std::make_tuple(7.01185, 11.11887),
+        std::make_tuple(9.29555, 2.76621),
+        std::make_tuple(2.62063, 0.88692)
     };
     params[21] = {
-        {1.05870, 59.04659},
-        {6.96404, 11.86718},
-        {9.97866, 2.93024},
-        {2.99860, 0.98040}
+        std::make_tuple(1.05870, 59.04659),
+        std::make_tuple(6.96404, 11.86718),
+        std::make_tuple(9.97866, 2.93024),
+        std::make_tuple(2.99860, 0.98040)
     };
     params[22] = {
-        {1.04755, 62.22091},
-        {6.90438, 12.62229},
-        {10.84355, 3.08264},
-        {3.20452, 1.05403}
+        std::make_tuple(1.04755, 62.22091),
+        std::make_tuple(6.90438, 12.62229),
+        std::make_tuple(10.84355, 3.08264),
+        std::make_tuple(3.20452, 1.05403)
     };
     params[23] = {
-        {1.03828, 65.38117},
-        {6.83516, 13.38417},
-        {11.79532, 3.23508},
-        {3.33124, 1.11609}
+        std::make_tuple(1.03828, 65.38117),
+        std::make_tuple(6.83516, 13.38417),
+        std::make_tuple(11.79532, 3.23508),
+        std::make_tuple(3.33124, 1.11609)
     };
     params[24] = {
-        {1.03069, 68.52633},
-        {6.75998, 14.15132},
-        {12.79256, 3.38991},
-        {3.41677, 1.17116}
+        std::make_tuple(1.03069, 68.52633),
+        std::make_tuple(6.75998, 14.15132),
+        std::make_tuple(12.79256, 3.38991),
+        std::make_tuple(3.41677, 1.17116)
     };
     params[25] = {
-        {1.02450, 71.65908},
-        {6.68141, 14.92337},
-        {13.81149, 3.54730},
-        {3.48260, 1.22220}
+        std::make_tuple(1.02450, 71.65908),
+        std::make_tuple(6.68141, 14.92337),
+        std::make_tuple(13.81149, 3.54730),
+        std::make_tuple(3.48260, 1.22220)
     };
     params[26] = {
-        {1.01960, 74.77846},
-        {6.60101, 15.69935},
-        {14.84330, 3.70685},
-        {3.53609, 1.27026}
+        std::make_tuple(1.01960, 74.77846),
+        std::make_tuple(6.60101, 15.69935),
+        std::make_tuple(14.84330, 3.70685),
+        std::make_tuple(3.53609, 1.27026)
     };
     params[27] = {
-        {1.01575, 77.88779},
-        {6.51976, 16.47941},
-        {15.88061, 3.86829},
-        {3.58388, 1.31647}
+        std::make_tuple(1.01575, 77.88779),
+        std::make_tuple(6.51976, 16.47941),
+        std::make_tuple(15.88061, 3.86829),
+        std::make_tuple(3.58388, 1.31647)
     };
     params[28] = {
-        {1.01282, 80.98814},
-        {6.43837, 17.26336},
-        {16.92012, 4.03115},
-        {3.62869, 1.36133}
+        std::make_tuple(1.01282, 80.98814),
+        std::make_tuple(6.43837, 17.26336),
+        std::make_tuple(16.92012, 4.03115),
+        std::make_tuple(3.62869, 1.36133)
     };
     params[29] = {
-        {1.01839, 83.81831},
-        {6.47823, 17.85149},
-        {18.65720, 4.05312},
-        {2.84618, 1.37570}
+        std::make_tuple(1.01839, 83.81831),
+        std::make_tuple(6.47823, 17.85149),
+        std::make_tuple(18.65720, 4.05312),
+        std::make_tuple(2.84618, 1.37570)
     };
     params[30] = {
-        {1.00931, 87.16777},
-        {6.27682, 18.84319},
-        {18.99747, 4.35989},
-        {3.71640, 1.44857}
+        std::make_tuple(1.00931, 87.16777),
+        std::make_tuple(6.27682, 18.84319),
+        std::make_tuple(18.99747, 4.35989),
+        std::make_tuple(3.71640, 1.44857)
     };
     params[31] = {
-        {1.00600, 90.34057},
-        {6.16315, 19.71091},
-        {19.81836, 4.57852},
-        {4.01249, 1.29122}
+        std::make_tuple(1.00600, 90.34057),
+        std::make_tuple(6.16315, 19.71091),
+        std::make_tuple(19.81836, 4.57852),
+        std::make_tuple(4.01249, 1.29122)
     };
     params[32] = {
-        {0.99467, 93.80965},
-        {5.91408, 20.85993},
-        {19.89501, 4.95158},
-        {5.19624, 1.39361}
+        std::make_tuple(0.99467, 93.80965),
+        std::make_tuple(5.91408, 20.85993),
+        std::make_tuple(19.89501, 4.95158),
+        std::make_tuple(5.19624, 1.39361)
     };
     params[33] = {
-        {0.98548, 97.22822},
-        {5.68319, 22.01684},
-        {19.83497, 5.33969},
-        {6.49637, 1.51963}
+        std::make_tuple(0.98548, 97.22822),
+        std::make_tuple(5.68319, 22.01684),
+        std::make_tuple(19.83497, 5.33969),
+        std::make_tuple(6.49637, 1.51963)
     };
     params[34] = {
-        {0.97822, 100.60094},
-        {5.47209, 23.17528},
-        {19.68845, 5.73803},
-        {7.86124, 1.65366}
+        std::make_tuple(0.97822, 100.60094),
+        std::make_tuple(5.47209, 23.17528),
+        std::make_tuple(19.68845, 5.73803),
+        std::make_tuple(7.86124, 1.65366)
     };
     params[35] = {
-        {0.97231, 103.94730},
-        {5.27765, 24.33975},
-        {19.48822, 6.14586},
-        {9.26182, 1.78869}
+        std::make_tuple(0.97231, 103.94730),
+        std::make_tuple(5.27765, 24.33975),
+        std::make_tuple(19.48822, 6.14586),
+        std::make_tuple(9.26182, 1.78869)
     };
     params[36] = {
-        {0.96735, 107.28121},
-        {5.09646, 25.51581},
-        {19.25332, 6.56380},
-        {10.68288, 1.92256}
+        std::make_tuple(0.96735, 107.28121),
+        std::make_tuple(5.09646, 25.51581),
+        std::make_tuple(19.25332, 6.56380),
+        std::make_tuple(10.68288, 1.92256)
     };
 
     return params[atomic_num][shell_num];
@@ -2042,22 +2041,22 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     for (int p = 0; p < total_points; p++) {
         rho_num_electrons += weights[p] * rho[p];
     }
-    if (print_output) outfile->Printf("  NUMBER OF ELECTRONS (GRID DENSITY): %8.5f\n", rho_num_electrons);
 
     //Checks to see if the number of electrons calculated using the grid densities matches actual number of electrons in molecule
-    double mol_charge = (double) (mol->molecular_charge());
+    double mol_charge = mol->molecular_charge();
     double mol_nuc_charge = 0.0;
 
     for (int a = 0; a < num_atoms; a++) {
-        mol_nuc_charge += mol->fZ(a);
+        mol_nuc_charge += mol->Z(a);
     }
     double mol_electron_count = mol_nuc_charge - mol_charge;
 
-    double electron_diff = fabs(mol_electron_count - rho_num_electrons);
+    double electron_diff = rho_num_electrons - mol_electron_count;
 
-    if (print_output) outfile->Printf("  ELECTRON DIFFERENCE: %8.5f\n\n", electron_diff);
+    if (print_output) outfile->Printf("  Electron Count from Grid (Expected Number): %8.5f (%8.5f)\n", rho_num_electrons, mol_electron_count);
+    if (print_output) outfile->Printf("  Difference: %8.5f\n\n", electron_diff);
 
-    if (electron_diff > 0.001) {
+    if (fabs(electron_diff) > 0.001) {
         throw PsiException("Number of electrons calculated using the grid (" + std::to_string(round(100000.0 * rho_num_electrons) / 100000.0) + ") does not match the number of electrons in molecule. Try increasing the number of radial or spherical points (mbis_radial_points and mbis_spherical_points options).", __FILE__, __LINE__);
     }
 
@@ -2357,7 +2356,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
                     (int)mol->Z(a), dpole_flat->get(a, 0), dpole_flat->get(a, 1), dpole_flat->get(a, 2));
         }
 
-        outfile->Printf("\n  MBIS Quadrupoles: [e ao^2]\n");
+        outfile->Printf("\n  MBIS Quadrupoles: [e a0^2]\n");
         outfile->Printf("   Center  Symbol  Z      XX        XY        XZ        YY        YZ        ZZ\n");
 
         for (int a = 0; a < num_atoms; a++) {

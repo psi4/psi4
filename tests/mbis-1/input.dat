@@ -50,10 +50,10 @@ e, wfn = energy('hf/cc-pvdz', return_wfn=True)
 oeprop(wfn, 'MBIS_CHARGES', title='H20 SCF')
 
 #NOTE: wfn.array_variable gives you flattened atomic multipole arrays; for expanded arrays, use wfn.variable
-charges = wfn.array_variable('MBIS_CHARGES')
-dipoles = wfn.array_variable('MBIS_DIPOLES')
-quadrupoles = wfn.array_variable('MBIS_QUADRUPOLES')
-octupoles = wfn.array_variable('MBIS_OCTUPOLES')
+charges = wfn.array_variable('MBIS CHARGES')
+dipoles = wfn.array_variable('MBIS DIPOLES')
+quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
+octupoles = wfn.array_variable('MBIS OCTUPOLES')
 
 compare_matrices(charges_ref, charges, 7, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 7, "MBIS Dipoles")             #TEST

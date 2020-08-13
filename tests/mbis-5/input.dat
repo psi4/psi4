@@ -5,22 +5,22 @@ charges_ref = psi4.Matrix.from_list([ #TEST
  [-0.58427465]])  #TEST
 
 dipoles_ref = psi4.Matrix.from_list([ #TEST
- [-3.49061641e-07, -1.23218693e-06, -2.16390166e-02],   #TEST
- [-7.80571730e-08, -2.75541779e-07,  2.59418122e-01]])  #TEST
+ [-7.54931815e-07, -1.50452584e-07, -2.16390167e-02],   #TEST
+ [-1.68817939e-07, -3.36442282e-08,  2.59418122e-01]])  #TEST
 
 quadrupoles_ref = psi4.Matrix.from_list([ #TEST
- [-9.07094889e+00, -1.97813559e-12,  9.78435243e-08, -9.07094889e+00,
-   3.45387251e-07, -9.20873659e+00],      #TEST
- [-4.84302950e+00, -1.12040179e-13, -2.75859512e-07, -4.84302950e+00,
-  -9.73784163e-07, -4.08709880e+00]])     #TEST
+ [-9.07094889e+00,  1.13900938e-11,  2.11610625e-07, -9.07094889e+00,
+   4.21724433e-08, -9.20873659e+00],      #TEST
+ [-4.84302950e+00,  3.96265330e-12, -5.96614477e-07, -4.84302950e+00,
+  -1.18901038e-07, -4.08709880e+00]])     #TEST
 
 octupoles_ref = psi4.Matrix.from_list([ #TEST
- [-3.51426548e-06, -4.13511913e-06,  4.03768730e-01, -1.17142240e-06,
-  -4.07710873e-13, -1.01076254e-06, -1.24053515e-05,  4.03768730e-01,
-  -3.56799058e-06,  1.08311087e+00],    #TEST
- [-4.57683055e-07, -5.38548093e-07,  4.45386844e-01, -1.52563222e-07,
-   4.04298987e-13, -2.27591025e-07, -1.61562137e-06,  4.45386844e-01,
-  -8.03396167e-07,  1.24370207e+00]])   #TEST
+ [-7.60046525e-06, -5.04906706e-07,  4.03768730e-01, -2.53348984e-06,
+   3.30903477e-12, -2.18602337e-06, -1.51471901e-06,  4.03768730e-01,
+  -4.35658911e-07,  1.08311087e+00],    #TEST
+ [-9.89852916e-07, -6.57578301e-08,  4.45386844e-01, -3.29955685e-07,
+  -2.24011465e-12, -4.92221835e-07, -1.97270780e-07,  4.45386844e-01,
+  -9.80963609e-08,  1.24370207e+00]])   #TEST
 
 molecule mol {
   0 1
@@ -44,10 +44,10 @@ e, wfn = energy('hf/cc-pvdz', return_wfn=True)
 oeprop(wfn, 'MBIS_CHARGES', title='ZnO SCF')
 
 #NOTE: wfn.array_variable gives you flattened atomic multipole arrays; for expanded arrays, use wfn.variable
-charges = wfn.array_variable('MBIS_CHARGES')
-dipoles = wfn.array_variable('MBIS_DIPOLES')
-quadrupoles = wfn.array_variable('MBIS_QUADRUPOLES')
-octupoles = wfn.array_variable('MBIS_OCTUPOLES')
+charges = wfn.array_variable('MBIS CHARGES')
+dipoles = wfn.array_variable('MBIS DIPOLES')
+quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
+octupoles = wfn.array_variable('MBIS OCTUPOLES')
 
 compare_matrices(charges_ref, charges, 7, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 7, "MBIS Dipoles")             #TEST
