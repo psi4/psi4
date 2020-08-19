@@ -2,7 +2,6 @@ import pytest
 import psi4
 import numpy as np
 
-@pytest.mark.xfail
 def test_pdms():
     h2o = psi4.geometry("""
         H
@@ -45,8 +44,7 @@ def test_pdms():
         ])
 
     # Test transition matrix
-    #assert psi4.compare_matrices(ref_tdm, wfn.get_opdm(1, 2, "A", True), 6, "TDM", equal_phase=True)
-    assert psi4.compare_matrices(ref_tdm, wfn.get_opdm(1, 2, "A", True), 6, "TDM")  # fails sometimes by a phase. replace with above when qcel v0.16  TODO v1.4
+    assert psi4.compare_matrices(ref_tdm, wfn.get_opdm(1, 2, "A", True), 6, "TDM", equal_phase=True)
     # Test the swapping the bra and the key produces the transpose matrix.
     assert psi4.compare_matrices(wfn.get_opdm(2, 1, "A", True), wfn.get_opdm(1, 2, "A", True).transpose(), 6, "TDM SWAP")
 

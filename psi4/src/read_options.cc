@@ -2869,8 +2869,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("E3_SCALE", 0.25);
         /*- OO scaling factor used in MSD -*/
         options.add_double("OO_SCALE", 0.01);
-        /*- Convergence criterion for residual vector of preconditioned conjugate gradient method. -*/
-        options.add_double("PCG_CONVERGENCE", 1e-6);
+        /*- Convergence criterion for residual vector of preconditioned conjugate gradient method.
+        If this keyword is not set by the user, DFOCC will estimate and use a value required to achieve
+        |dfocc__r_convergence| residual convergence. The listed default will be used for the default value
+        of |dfocc__r_convergence|. -*/
+        options.add_double("PCG_CONVERGENCE", 1e-7);
         /*- Regularization parameter -*/
         options.add_double("REG_PARAM", 0.4);
         /*- tolerance for Cholesky decomposition of the ERI tensor -*/
