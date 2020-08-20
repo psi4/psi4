@@ -76,7 +76,6 @@ _nyi12 = pytest.mark.xfail(reason="cd scf gradients NYI", raises=psi4.Validation
 #  HF Energy
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects",
@@ -144,7 +143,6 @@ def test_hf_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, reques
 #  HF Gradient
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
 @pytest.mark.parametrize(
     "basis, subjects",
@@ -645,7 +643,6 @@ def test_mp2_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, re
 #  MP2.5 Energy
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
@@ -685,7 +682,6 @@ def test_mp2p5_energy_scftype(inp, dertype, basis, subjects, clsd_open_pmols, re
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects",
@@ -747,7 +743,6 @@ def test_mp2p5_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, req
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz", marks=pytest.mark.quick),],
@@ -813,7 +808,6 @@ def test_mp2p5_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, re
 #  MP2.5 Gradient
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
@@ -861,7 +855,6 @@ def test_mp2p5_gradient_scftype(inp, dertype, basis, subjects, clsd_open_pmols, 
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
 @pytest.mark.parametrize(
     "basis, subjects",
@@ -909,7 +902,6 @@ def test_mp2p5_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, r
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize(
     "dertype",
     [pytest.param(1, id="grd1", marks=pytest.mark.quick), pytest.param(0, id="grd0", marks=pytest.mark.long),],
@@ -983,7 +975,6 @@ def test_mp2p5_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, 
 #  MP3 Energy
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
@@ -1037,7 +1028,6 @@ def test_mp3_energy_scftype(inp, dertype, basis, subjects, clsd_open_pmols, requ
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects",
@@ -1110,7 +1100,6 @@ def test_mp3_energy_module(inp, dertype, basis, subjects, clsd_open_pmols, reque
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(0, id="ene0"),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz", marks=pytest.mark.quick),],
@@ -1176,7 +1165,6 @@ def test_mp3_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, requ
 #  MP3 Gradient
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
@@ -1225,7 +1213,6 @@ def test_mp3_gradient_scftype(inp, dertype, basis, subjects, clsd_open_pmols, re
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
 @pytest.mark.parametrize(
     "basis, subjects",
@@ -1274,7 +1261,6 @@ def test_mp3_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, req
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize(
     "dertype",
     [pytest.param(1, id="grd1", marks=pytest.mark.quick), pytest.param(0, id="grd0", marks=pytest.mark.long),],
@@ -1525,7 +1511,6 @@ def test_lccd_energy_default(inp, dertype, basis, subjects, clsd_open_pmols, req
 #  LCCD Gradient
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
 @pytest.mark.parametrize(
     "basis, subjects", [pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),],
@@ -1574,7 +1559,6 @@ def test_lccd_gradient_scftype(inp, dertype, basis, subjects, clsd_open_pmols, r
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize("dertype", [pytest.param(1, id="grd1"), pytest.param(0, id="grd0", marks=pytest.mark.long),])
 @pytest.mark.parametrize(
     "basis, subjects",
@@ -1623,7 +1607,6 @@ def test_lccd_gradient_module(inp, dertype, basis, subjects, clsd_open_pmols, re
     runner_asserter(inpcopy, subject, method, basis, tnm)
 
 
-@pytest.mark.skip(reason="needs qcel v0.16.0")
 @pytest.mark.parametrize(
     "dertype",
     [pytest.param(1, id="grd1", marks=pytest.mark.quick), pytest.param(0, id="grd0", marks=pytest.mark.long),],

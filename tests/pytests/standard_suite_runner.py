@@ -1,9 +1,9 @@
 import pytest
 from qcengine.programs.tests.standard_suite_contracts import (
-    # contractual_hf,
+    contractual_hf,
     contractual_mp2,
-    # contractual_mp2p5,
-    # contractual_mp3,
+    contractual_mp2p5,
+    contractual_mp3,
     contractual_lccd,
     contractual_lccsd,
     contractual_ccsd,
