@@ -103,7 +103,7 @@ def _write_nbo(self, name):
             coefficients.append((shell.am, shell.coef(j)))
     NBO_file += function_nums + prim_nums + prim_indices + exponents
 
-    # opulate contracton coefficients.Because some basis sets(Poples with S and P) use the same
+    # Populate contraction coefficients.Because some basis sets(Poples with S and P) use the same
     # coefficients for multiple angular momenta, we must supply coefficients for all primitives, for all
     # angular momenta.This leads to many zero elements.
     am_labels = ["S", "P", "D", "F", "G", "H"]
@@ -116,7 +116,7 @@ def _write_nbo(self, name):
             NBO_file += f"{coefficient:15.6E}"
     NBO_file += "\n $END"
 
-    # That finishes most of the basis information.Next is the overlap.It would be great if we could just dump Psi's AO
+    # That finishes most of the basis information. Next is the overlap. It would be great if we could just dump Psi's AO
     # overlap matrix, but we can 't. Per CCA guidelines, Psi' s Cartesian d and higher AM AOs aren't normalized to 1.
     # While NBO can "fix" this itself, it changes other AO quantities to match and gets the Fock matrix wrong.
     # Let's normalize ourselves instead.
@@ -198,3 +198,114 @@ def _write_nbo(self, name):
         f.write(NBO_file)
 
 core.Wavefunction.write_nbo = _write_nbo
+
+def _write_molden(self,name='out.molden',dovirtual=None):
+    basisset = self.basisset()
+    mol = self.molecule()
+    #Header and geometry (Atom, Atom #, Z, x, y, z)
+    mol_string = '[Molden Format]\n[Atoms] (AU)\n'
+    for atom in range(mol.natom()):
+        mol_string += f"{mol.symbol(atom):2s}  {atom+1:2d}  {int(mol.Z(atom)):3d}   {mol.x(atom):20.12f} {mol.y(atom):20.12f} {mol.z(atom):20.12f}\n"
+
+    #Dump basis set
+    mol_string += '[GTO]\n'
+    for atom in range(mol.natom()):
+        mol_string += f"  {atom+1:d} 0\n"
+        for rel_shell_idx in range(basisset.nshell_on_center(atom)):
+            abs_shell_idx = basisset.shell_on_center(atom, rel_shell_idx)
+            shell = basisset.shell(abs_shell_idx)
+            mol_string += f" {shell.amchar:s}{shell.nprimitive:5d}  1.00\n"
+            for prim in range(shell.nprimitive):
+                mol_string += f"{shell.exp(prim):20.10f} {shell.original_coef(prim):20.10f}\n"
+        mol_string += '\n'
+
+    #Converting C matrices to AO MO basis. Ca_subset costs information about which symmetry an orbital originally had, which is why we can't use it.
+    aotoso = self.aotoso()
+    Ca_ao_mo = core.doublet(aotoso, self.Ca(), False, False).np
+    Cb_ao_mo = core.doublet(aotoso, self.Cb(), False, False).np
+    ao_overlap = self.mintshelper().ao_overlap().np
+    ao_normalizer = ao_overlap.diagonal()**(-1 / 2)
+    Ca_ao_mo = (Ca_ao_mo.T / ao_normalizer).T
+    Cb_ao_mo = (Cb_ao_mo.T / ao_normalizer).T
+
+    #Reordering AO x MO matrix to fit Molden conventions
+    '''
+    Reordering expected by Molden
+    P: x, y, z
+    5D: D 0, D+1, D-1, D-2
+    6D: xx, yy, zz, xy, xz, yz
+    7F: F 0, F+1, F-1, F+2, F-2, F+3, F-3
+    10F: xxx, yyy, zzz, xyy, xxy, xxz, xzz, yzz, yyz, xyz
+    9G: G 0, G+1, G-1, G+2, G-2, G+3, G-3, G+4, G-4
+    15G: xxxx, yyyy, zzzz, xxxy, xxxz, yyyz, zzzx, zzzy, xxyy, xxzz, yyzz, xxyz, yyxz, zzxy
+    
+    Molden does not handle angular momenta higher than G
+    '''
+    molden_cartesian_order = [
+        [2,0,1,0,0,0,0,0,0,0,0,0,0,0,0], #p
+        [0,3,4,1,5,2,0,0,0,0,0,0,0,0,0], #d
+        [0,4,5,3,9,6,1,8,7,2,0,0,0,0,0], #f
+        [0,3,4,9,12,10,5,13,14,7,1,6,11,8,2] #g
+    ]
+    nirrep = self.nirrep()
+    count = 0 #Keeps track of count for reordering
+    temp_a = Ca_ao_mo.clone() #Placeholders for original AO x MO matrices
+    temp_b = Cb_ao_mo.clone()
+
+    for i in range(basisset.nshell()):
+        am = basisset.shell(i).am
+        if (am == 1 and basisset.has_puream()) or (am > 1 and am < 5 and basisset.shell(i).is_cartesian()):
+            for j in range(basisset.shell(i).nfunction):
+                for h in range(nirrep):        
+                    for k in range(Ca_ao_mo.coldim()[h]):
+                        Ca_ao_mo.set(h,count + molden_cartesian_order[am-1][j],k,temp_a.get(h,count+j,k))
+                        Cb_ao_mo.set(h,count + molden_cartesian_order[am-1][j],k,temp_b.get(h,count+j,k))
+        count += basisset.shell(i).nfunction
+        
+    #Dump MO information
+    if basisset.has_puream():
+        mol_string += '[5D]\n[9G]\n\n'
+    ct = mol.point_group().char_table()
+    mol_string += '[MO]\n'
+    mo_dim = self.nmopi() if dovirtual else (self.doccpi() + self.soccpi())
+    
+    #Alphas. If Alphas and Betas are the same, then only Alphas with double occupation will be written (see line marked "***")
+    mos = []
+    for h in range(nirrep):
+        for n in range(mo_dim[h]):
+            mos.append((self.epsilon_a().get(h, n), (h, n)))
+
+    #Sort mos based on energy
+    def mosSort(element):
+        return element[0]
+    mos.sort(key=mosSort)
+
+    for i in range(len(mos)):
+        h, n = mos[i][1]
+        mol_string += f" Sym= {ct.gamma(h).symbol():s}\n Ene= {mos[i][0]:24.17e}\n Spin= Alpha\n"
+        if self.same_a_b_orbs() and self.epsilon_a() == self.epsilon_b() and self.same_a_b_dens(): # ***
+            mol_string += f" Occup= {round(self.occupation_a().get(h, n) + self.occupation_b().get(h, n), 17):24.17e}\n"
+        else:
+            mol_string += f" Occup= {self.occupation_a().get(h, n):24.17e}\n"
+        for so in range(self.nso()):
+            mol_string += f"{so+1:3d} {Ca_ao_mo.get(h, so, n):24.17e}\n"
+
+    #Betas
+    mos = []
+    if not self.same_a_b_orbs() or self.epsilon_a() != self.epsilon_b() or not self.same_a_b_dens():
+        for h in range(nirrep):
+            for n in range(mo_dim[h]):
+                mos.append((self.epsilon_b().get(h, n), (h, n)))
+        mos.sort(key=mosSort)
+        for i in range(len(mos)):
+            h, n = mos[i][1]
+            mol_string += f" Sym= {ct.gamma(h).symbol():s}\n Ene= {self.epsilon_b().get(h, n):24.17e}\n Spin= Beta\n " \
+                          f"Occup= {self.occupation_b().get(h, n):24.17e}\n"
+            for so in range(self.nso()):
+                mol_string += f"{so+1:3d} {Cb_ao_mo.get(h, so, n):24.17e}\n"
+
+    #Write Molden string to file
+    with open(name,'w') as fn:
+        fn.write(mol_string)
+
+core.Wavefunction.write_molden = _write_molden
