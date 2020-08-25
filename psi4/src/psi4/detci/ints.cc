@@ -81,13 +81,10 @@ namespace detci {
 void CIWavefunction::transform_ci_integrals() {
     outfile->Printf("\n   ==> Transforming CI integrals <==\n\n");
     // Grab orbitals
-    SharedMatrix Cdrc = get_orbitals("DRC");
-    SharedMatrix Cact = get_orbitals("ACT");
-    SharedMatrix Cvir = get_orbitals("VIR");
-    SharedMatrix Cfzv = get_orbitals("FZV");
-
-    // Build up active space
-    std::vector<std::shared_ptr<MOSpace>> spaces;
+    auto Cdrc = get_orbitals("DRC");
+    auto Cact = get_orbitals("ACT");
+    auto Cvir = get_orbitals("VIR");
+    auto Cfzv = get_orbitals("FZV");
 
     // Indices should be empty
     std::vector<int> indices(CalcInfo_->num_ci_orbs, 0);
@@ -102,14 +99,13 @@ void CIWavefunction::transform_ci_integrals() {
     }
 
     auto act_space = std::make_shared<MOSpace>('X', orbitals, indices);
-    spaces.push_back(act_space);
+    std::vector<std::shared_ptr<MOSpace>> spaces {act_space};
 
     IntegralTransform* ints =
         new IntegralTransform(H_, Cdrc, Cact, Cvir, Cfzv, spaces, IntegralTransform::TransformationType::Restricted,
                               IntegralTransform::OutputType::DPDOnly, IntegralTransform::MOOrdering::PitzerOrder,
                               IntegralTransform::FrozenOrbitals::OccAndVir, true);
     ints_ = std::shared_ptr<IntegralTransform>(ints);
-    ints_->set_build_mo_fock(false);
     ints_->set_memory(Process::environment.get_memory() * 0.8);
 
     // Incase we do two ci runs

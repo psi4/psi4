@@ -735,24 +735,10 @@ void OCCWave::trans_ints_uhf() {
         timer_off("Build Fock");
     }
 
-    else if (orb_opt_ == "FALSE" || reference == "ROHF") {
-        double *mo_ints = init_array(ntri);
-        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_MO_A_FOCK, mo_ints, ntri, 0, 0, "outfile");
-        FockA->set(mo_ints);
-        IWL::read_one(psio_.get(), PSIF_OEI, PSIF_MO_B_FOCK, mo_ints, ntri, 0, 0, "outfile");
-        FockB->set(mo_ints);
-        free(mo_ints);
-    }
-
-    else if (orb_opt_ == "FALSE" && reference != "ROHF") {
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < occpiA[h]; ++i) FockA->set(h, i, i, epsilon_a_->get(h, i));
-            for (int i = 0; i < occpiB[h]; ++i) FockB->set(h, i, i, epsilon_b_->get(h, i));
-            for (int a = 0; a < virtpiA[h]; ++a)
-                FockA->set(h, a + occpiA[h], a + occpiA[h], epsilon_a_->get(h, a + occpiA[h]));
-            for (int a = 0; a < virtpiB[h]; ++a)
-                FockB->set(h, a + occpiB[h], a + occpiB[h], epsilon_b_->get(h, a + occpiB[h]));
-        }
+    else if (orb_opt_ == "FALSE") {
+        // Assume that the Fock matrix is up-to-date.
+        FockA = Fa_subset("MO");
+        FockB = Fb_subset("MO");
     }
 
     timer_on("Build Denominators");

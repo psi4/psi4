@@ -174,8 +174,6 @@ class PSI_API IntegralTransform {
     void set_write_dpd_so_tpdm(bool t_f) { write_dpd_so_tpdm_ = t_f; }
     /// Set the level of printing used during transformations (0 -> 6)
     void set_print(int n) { print_ = n; }
-    /// Whether to build the Fock matrix in the MO basis during integral presort
-    void set_build_mo_fock(bool t_f) { buildMOFock_ = t_f; }
     /// Sets the orbitals to the given C matrix. This is a hack for MCSCF wavefunctions.
     /// Use with caution.
     void set_orbitals(SharedMatrix C);
@@ -264,7 +262,10 @@ class PSI_API IntegralTransform {
     std::vector<size_t> tpdm_buffer_sizes_;
     // The buffer used in sorting the SO basis tpdm
     double *tpdm_buffer_;
-    // Frozen core energy
+    // Energy due solely to frozen core orbitals. Some modules request libtrans compute this so
+    // that they don't have to concern themselves with core orbitals at all. In those cases,
+    // contributions due to the valence orbitals feeling the electric field of the core orbitals
+    // are accounted for by writing a "frozen core operator" to disk.
     double frozen_core_energy_;
     // The wavefunction object, containing the orbital infomation
     std::shared_ptr<Wavefunction> wfn_;
@@ -412,8 +413,6 @@ class PSI_API IntegralTransform {
     bool useDPD_;
     // Has this object already pre-sorted?
     bool tpdmAlreadyPresorted_;
-    // Whether to form the MO basis Fock matrix during TEI presort
-    bool buildMOFock_;
     // This keeps track of which labels have been assigned by other spaces
     std::map<char, int> labelsUsed_;
 };

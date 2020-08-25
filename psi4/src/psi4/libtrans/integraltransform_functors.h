@@ -41,12 +41,8 @@ namespace psi {
 
 class FrozenCoreAndFockRestrictedFunctor {
    private:
-    /// The density matrix (stored as a lower triangular array)
-    const double *D_;
     /// The frozen core density matrix (stored as a lower triangular array)
     const double *FzD_;
-    /// The Fock matrix (stored as a lower triangular array)
-    double *F_;
     /// The frozen core operator (stored as a lower triangular array)
     double *Fz_;
     /// Some temporary arrays for handling permutations
@@ -56,13 +52,11 @@ class FrozenCoreAndFockRestrictedFunctor {
     /*
      * Generates the fock and frozen core operators, given the density matrices as input
      *
-     * @param D: The density matrix (stored as a lower triangular array)
      * @param FzD: The frozen core density matrix (stored as a lower triangular array)
-     * @param F: The Fock matrix (stored as a lower triangular array)
      * @param Fz: The frozen core operator (stored as a lower triangular array)
      */
-    FrozenCoreAndFockRestrictedFunctor(const double *D, const double *FzD, double *F, double *Fz)
-        : D_(D), FzD_(FzD), F_(F), Fz_(Fz) {}
+    FrozenCoreRestrictedFunctor(const double *FzD, double *Fz)
+        : FzD_(FzD), Fz_(Fz) {}
 
     void operator()(int pabs, int qabs, int rabs, int sabs, int psym, int prel, int qsym, int qrel, int rsym, int rrel,
                     int ssym, int srel, double value) {
@@ -76,10 +70,8 @@ class FrozenCoreAndFockRestrictedFunctor {
         int ad = INDEX(a, d);
 
         Fz_[cd] += 2.0 * FzD_[ab] * value;
-        F_[cd] += 2.0 * D_[ab] * value;
         if (b >= c) {
             Fz_[bc] -= FzD_[ad] * value;
-            F_[bc] -= D_[ad] * value;
         }
 
         a = al[1] = qabs;
@@ -93,11 +85,9 @@ class FrozenCoreAndFockRestrictedFunctor {
             ad = INDEX(a, d);
             if (c >= d) {
                 Fz_[cd] += 2.0 * FzD_[ab] * value;
-                F_[cd] += 2.0 * D_[ab] * value;
             }
             if (b >= c) {
                 Fz_[bc] -= FzD_[ad] * value;
-                F_[bc] -= D_[ad] * value;
             }
         }
 
@@ -114,11 +104,9 @@ class FrozenCoreAndFockRestrictedFunctor {
             ad = INDEX(a, d);
             if (c >= d) {
                 Fz_[cd] += 2.0 * FzD_[ab] * value;
-                F_[cd] += 2.0 * D_[ab] * value;
             }
             if (b >= c) {
                 Fz_[bc] -= FzD_[ad] * value;
-                F_[bc] -= D_[ad] * value;
             }
         }
 
@@ -135,11 +123,9 @@ class FrozenCoreAndFockRestrictedFunctor {
             ad = INDEX(a, d);
             if (c >= d) {
                 Fz_[cd] += 2.0 * FzD_[ab] * value;
-                F_[cd] += 2.0 * D_[ab] * value;
             }
             if (b >= c) {
                 Fz_[bc] -= FzD_[ad] * value;
-                F_[bc] -= D_[ad] * value;
             }
         }
 
@@ -156,11 +142,9 @@ class FrozenCoreAndFockRestrictedFunctor {
             ad = INDEX(a, d);
             if (c >= d) {
                 Fz_[cd] += 2.0 * FzD_[ab] * value;
-                F_[cd] += 2.0 * D_[ab] * value;
             }
             if (b >= c) {
                 Fz_[bc] -= FzD_[ad] * value;
-                F_[bc] -= D_[ad] * value;
             }
         }
 
@@ -177,11 +161,9 @@ class FrozenCoreAndFockRestrictedFunctor {
             ad = INDEX(a, d);
             if (c >= d) {
                 Fz_[cd] += 2.0 * FzD_[ab] * value;
-                F_[cd] += 2.0 * D_[ab] * value;
             }
             if (b >= c) {
                 Fz_[bc] -= FzD_[ad] * value;
-                F_[bc] -= D_[ad] * value;
             }
         }
 
@@ -198,11 +180,9 @@ class FrozenCoreAndFockRestrictedFunctor {
             ad = INDEX(a, d);
             if (c >= d) {
                 Fz_[cd] += 2.0 * FzD_[ab] * value;
-                F_[cd] += 2.0 * D_[ab] * value;
             }
             if (b >= c) {
                 Fz_[bc] -= FzD_[ad] * value;
-                F_[bc] -= D_[ad] * value;
             }
         }
 
@@ -219,30 +199,20 @@ class FrozenCoreAndFockRestrictedFunctor {
             ad = INDEX(a, d);
             if (c >= d) {
                 Fz_[cd] += 2.0 * FzD_[ab] * value;
-                F_[cd] += 2.0 * D_[ab] * value;
             }
             if (b >= c) {
                 Fz_[bc] -= FzD_[ad] * value;
-                F_[bc] -= D_[ad] * value;
             }
         }
     }
 };
 
-class FrozenCoreAndFockUnrestrictedFunctor {
+class FrozenCoreUnrestrictedFunctor {
    private:
-    /// The alpha density matrix (stored as a lower triangular array)
-    const double *Da_;
-    /// The beta density matrix (stored as a lower triangular array)
-    const double *Db_;
     /// The alpha frozen core density matrix (stored as a lower triangular array)
     const double *FzDa_;
     /// The beta frozen core density matrix (stored as a lower triangular array)
     const double *FzDb_;
-    /// The alpha Fock matrix (stored as a lower triangular array)
-    double *Fa_;
-    /// The beta Fock matrix (stored as a lower triangular array)
-    double *Fb_;
     /// The alpha frozen core operator (stored as a lower triangular array)
     double *Fza_;
     /// The beta frozen core operator (stored as a lower triangular array)
@@ -254,18 +224,13 @@ class FrozenCoreAndFockUnrestrictedFunctor {
     /*
      * Generates the fock and frozen core operators, given the density matrices as input
      *
-     * @param Da: The alpha density matrix (stored as a lower triangular array)
-     * @param Db: The beta density matrix (stored as a lower triangular array)
      * @param FzDa: The alpha frozen core density matrix (stored as a lower triangular array)
      * @param FzDb: The beta frozen core density matrix (stored as a lower triangular array)
-     * @param Fa: The alpha Fock matrix (stored as a lower triangular array)
-     * @param Fa: The beta Fock matrix (stored as a lower triangular array)
      * @param Fza: The alpha frozen core operator (stored as a lower triangular array)
      * @param Fzb: The beta frozen core operator (stored as a lower triangular array)
      */
-    FrozenCoreAndFockUnrestrictedFunctor(const double *Da, const double *Db, const double *FzDa, const double *FzDb,
-                                         double *Fa, double *Fb, double *Fza, double *Fzb)
-        : Da_(Da), Db_(Db), FzDa_(FzDa), FzDb_(FzDb), Fa_(Fa), Fb_(Fb), Fza_(Fza), Fzb_(Fzb) {}
+    FrozenCoreAndFockUnrestrictedFunctor(const double *FzDa, const double *FzDb, double *Fza, double *Fzb)
+        : FzDa_(FzDa), FzDb_(FzDb), Fza_(Fza), Fzb_(Fzb) {}
 
     void operator()(int pabs, int qabs, int rabs, int sabs, int psym, int prel, int qsym, int qrel, int rsym, int rrel,
                     int ssym, int srel, double value) {
@@ -279,13 +244,9 @@ class FrozenCoreAndFockUnrestrictedFunctor {
         int ad = INDEX(a, d);
         Fza_[cd] += (FzDa_[ab] + FzDb_[ab]) * value;
         Fzb_[cd] += (FzDa_[ab] + FzDb_[ab]) * value;
-        Fa_[cd] += (Da_[ab] + Db_[ab]) * value;
-        Fb_[cd] += (Da_[ab] + Db_[ab]) * value;
         if (b >= c) {
             Fza_[bc] -= FzDa_[ad] * value;
-            Fa_[bc] -= Da_[ad] * value;
             Fzb_[bc] -= FzDb_[ad] * value;
-            Fb_[bc] -= Db_[ad] * value;
         }
 
         a = al[1] = qabs;
@@ -299,15 +260,11 @@ class FrozenCoreAndFockUnrestrictedFunctor {
             ad = INDEX(a, d);
             if (c >= d) {
                 Fza_[cd] += (FzDa_[ab] + FzDb_[ab]) * value;
-                Fa_[cd] += (Da_[ab] + Db_[ab]) * value;
                 Fzb_[cd] += (FzDa_[ab] + FzDb_[ab]) * value;
-                Fb_[cd] += (Da_[ab] + Db_[ab]) * value;
             }
             if (b >= c) {
                 Fza_[bc] -= FzDa_[ad] * value;
-                Fa_[bc] -= Da_[ad] * value;
                 Fzb_[bc] -= FzDb_[ad] * value;
-                Fb_[bc] -= Db_[ad] * value;
             }
         }
 
@@ -324,15 +281,11 @@ class FrozenCoreAndFockUnrestrictedFunctor {
             ad = INDEX(a, d);
             if (c >= d) {
                 Fza_[cd] += (FzDa_[ab] + FzDb_[ab]) * value;
-                Fa_[cd] += (Da_[ab] + Db_[ab]) * value;
                 Fzb_[cd] += (FzDa_[ab] + FzDb_[ab]) * value;
-                Fb_[cd] += (Da_[ab] + Db_[ab]) * value;
             }
             if (b >= c) {
                 Fza_[bc] -= FzDa_[ad] * value;
-                Fa_[bc] -= Da_[ad] * value;
                 Fzb_[bc] -= FzDb_[ad] * value;
-                Fb_[bc] -= Db_[ad] * value;
             }
         }
 
@@ -349,15 +302,11 @@ class FrozenCoreAndFockUnrestrictedFunctor {
             ad = INDEX(a, d);
             if (c >= d) {
                 Fza_[cd] += (FzDa_[ab] + FzDb_[ab]) * value;
-                Fa_[cd] += (Da_[ab] + Db_[ab]) * value;
                 Fzb_[cd] += (FzDa_[ab] + FzDb_[ab]) * value;
-                Fb_[cd] += (Da_[ab] + Db_[ab]) * value;
             }
             if (b >= c) {
                 Fza_[bc] -= FzDa_[ad] * value;
-                Fa_[bc] -= Da_[ad] * value;
                 Fzb_[bc] -= FzDb_[ad] * value;
-                Fb_[bc] -= Db_[ad] * value;
             }
         }
 
@@ -374,15 +323,11 @@ class FrozenCoreAndFockUnrestrictedFunctor {
             ad = INDEX(a, d);
             if (c >= d) {
                 Fza_[cd] += (FzDa_[ab] + FzDb_[ab]) * value;
-                Fa_[cd] += (Da_[ab] + Db_[ab]) * value;
                 Fzb_[cd] += (FzDa_[ab] + FzDb_[ab]) * value;
-                Fb_[cd] += (Da_[ab] + Db_[ab]) * value;
             }
             if (b >= c) {
                 Fza_[bc] -= FzDa_[ad] * value;
-                Fa_[bc] -= Da_[ad] * value;
                 Fzb_[bc] -= FzDb_[ad] * value;
-                Fb_[bc] -= Db_[ad] * value;
             }
         }
 
@@ -399,15 +344,11 @@ class FrozenCoreAndFockUnrestrictedFunctor {
             ad = INDEX(a, d);
             if (c >= d) {
                 Fza_[cd] += (FzDa_[ab] + FzDb_[ab]) * value;
-                Fa_[cd] += (Da_[ab] + Db_[ab]) * value;
                 Fzb_[cd] += (FzDa_[ab] + FzDb_[ab]) * value;
-                Fb_[cd] += (Da_[ab] + Db_[ab]) * value;
             }
             if (b >= c) {
                 Fza_[bc] -= FzDa_[ad] * value;
-                Fa_[bc] -= Da_[ad] * value;
                 Fzb_[bc] -= FzDb_[ad] * value;
-                Fb_[bc] -= Db_[ad] * value;
             }
         }
 
@@ -424,15 +365,11 @@ class FrozenCoreAndFockUnrestrictedFunctor {
             ad = INDEX(a, d);
             if (c >= d) {
                 Fza_[cd] += (FzDa_[ab] + FzDb_[ab]) * value;
-                Fa_[cd] += (Da_[ab] + Db_[ab]) * value;
                 Fzb_[cd] += (FzDa_[ab] + FzDb_[ab]) * value;
-                Fb_[cd] += (Da_[ab] + Db_[ab]) * value;
             }
             if (b >= c) {
                 Fza_[bc] -= FzDa_[ad] * value;
-                Fa_[bc] -= Da_[ad] * value;
                 Fzb_[bc] -= FzDb_[ad] * value;
-                Fb_[bc] -= Db_[ad] * value;
             }
         }
 
@@ -449,15 +386,11 @@ class FrozenCoreAndFockUnrestrictedFunctor {
             ad = INDEX(a, d);
             if (c >= d) {
                 Fza_[cd] += (FzDa_[ab] + FzDb_[ab]) * value;
-                Fa_[cd] += (Da_[ab] + Db_[ab]) * value;
                 Fzb_[cd] += (FzDa_[ab] + FzDb_[ab]) * value;
-                Fb_[cd] += (Da_[ab] + Db_[ab]) * value;
             }
             if (b >= c) {
                 Fza_[bc] -= FzDa_[ad] * value;
-                Fa_[bc] -= Da_[ad] * value;
                 Fzb_[bc] -= FzDb_[ad] * value;
-                Fb_[bc] -= Db_[ad] * value;
             }
         }
     }
@@ -550,8 +483,8 @@ class NullFunctor {
 
 template <class DPDFunctor, class FockFunctor>
 void iwl_integrals(IWL *iwl, DPDFunctor &dpd, FockFunctor &fock) {
-    Label *lblptr = iwl->labels();
-    Value *valptr = iwl->values();
+    auto lblptr = iwl->labels();
+    auto valptr = iwl->values();
     int labelIndex, p, q, r, s;
     double value;
     bool lastBuffer;
