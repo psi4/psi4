@@ -183,14 +183,14 @@ void IntegralTransform::presort_so_tei() {
         return;
     }
 
-    /// Construct OEI parts of frozen core and Fock operators
+    /// Initialize frozen core density
     auto aFzcD = std::vector<double>(nTriSo_); // Density matrix from core orbitals only
     std::vector<double> bFzcD, bFzcOp;
     if (transformationType_ != TransformationType::Restricted) {
         bFzcD = std::vector<double>(nTriSo_);
     }
 
-    // Form the Density matrices
+    // Set frozen core density
     for (int h = 0, soOffset = 0; h < nirreps_; ++h) {
         auto pCa = Ca_->pointer(h);
         auto pCb = Cb_->pointer(h);
@@ -206,7 +206,7 @@ void IntegralTransform::presort_so_tei() {
         soOffset += sopi_[h];
     }
 
-    // Copy the OEI into the Frozen Core and Fock operators
+    // Copy the OEI into the frozen core operator
     auto aoH = H_->to_lower_triangle();
     std::vector<double> aFzcOp(aoH, aoH + nTriSo_); // The frozen core operator. Not complete yet.
     if (transformationType_ != TransformationType::Restricted) {
@@ -350,7 +350,7 @@ void IntegralTransform::presort_so_tei() {
     // We want to keep Pitzer ordering, so this is just an identity mapping
     std::vector<int> order(nmo_);
     std::iota(std::begin(order), std::end(order), 0);
-    if (print_) outfile->Printf("\tTransforming the one-electron integrals and constructing Fock matrices\n");
+    if (print_) outfile->Printf("\tConstructing frozen core operators\n");
     if (transformationType_ == TransformationType::Restricted) {
         // Compute frozen core energy
         size_t pq = 0;
@@ -362,18 +362,6 @@ void IntegralTransform::presort_so_tei() {
                 frozen_core_energy_ += prefact * aFzcD[pq] * (aoH[pq] + aFzcOp[pq]);
             }
         }
-
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            auto pCa = Ca_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], aoH, moInts, pCa, soOffset, &(order[moOffset]));
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis one-electron integrals\n");
-            print_array(moInts, nmo_, "outfile");
-        }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_OEI, nTriMo_, moInts);
 
         for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
             auto pCa = Ca_->pointer(h);
@@ -397,30 +385,6 @@ void IntegralTransform::presort_so_tei() {
                 frozen_core_energy_ += prefact * bFzcD[pq] * (aoH[pq] + bFzcOp[pq]);
             }
         }
-
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            auto pCa = Ca_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], aoH, moInts, pCa, soOffset, &(order[moOffset]));
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis alpha one-electron integrals\n");
-            print_array(moInts, nmo_, "outfile");
-        }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_A_OEI, nTriMo_, moInts);
-
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            auto pCb = Cb_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], aoH, moInts, pCb, soOffset, &(order[moOffset]));
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis beta one-electron integrals\n");
-            print_array(moInts, nmo_, "outfile");
-        }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_B_OEI, nTriMo_, moInts);
 
         for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
             auto pCa = Ca_->pointer(h);

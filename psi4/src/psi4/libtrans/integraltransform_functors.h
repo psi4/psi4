@@ -39,7 +39,7 @@
 
 namespace psi {
 
-class FrozenCoreAndFockRestrictedFunctor {
+class FrozenCoreRestrictedFunctor {
    private:
     /// The frozen core density matrix (stored as a lower triangular array)
     const double *FzD_;
@@ -229,7 +229,7 @@ class FrozenCoreUnrestrictedFunctor {
      * @param Fza: The alpha frozen core operator (stored as a lower triangular array)
      * @param Fzb: The beta frozen core operator (stored as a lower triangular array)
      */
-    FrozenCoreAndFockUnrestrictedFunctor(const double *FzDa, const double *FzDb, double *Fza, double *Fzb)
+    FrozenCoreUnrestrictedFunctor(const double *FzDa, const double *FzDb, double *Fza, double *Fzb)
         : FzDa_(FzDa), FzDb_(FzDb), Fza_(Fza), Fzb_(Fzb) {}
 
     void operator()(int pabs, int qabs, int rabs, int sabs, int psym, int prel, int qsym, int qrel, int rsym, int rrel,

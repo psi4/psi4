@@ -5,12 +5,10 @@ General Notes About the Code
    orbitals be either done by libtrans or converted into effective quantities free of frozen
    core orbitals - that way, they don't need to worry about frozen core orbtials at all, and
    the calculation retains all the simplicity of one where core electrons simply don't exist.
-   In particular, libtrans has the following responsibilities:
+   In particular, libtrans:integraltransform_sort_so_tei.cc has the following responsibilities:
    * Computing all energy contributions involving frozen core orbitals only and putting that
      result into frozen_core_energy_. Used to sanity-check the HF energy.
    * Constructing the "frozen-core operator", which is the core hamiltonian for non-frozen orbitals
      plus the Couloumb and exchange contributions terms arising from the electric field of
      the frozen core orbitals. Used to sanity check the correlated energy by computing it from
      density matrices.
-   * Constructing the contribution to the (one-electron) density matrix solely due to frozen
-     core orbitals. This may needed for property calculations later.

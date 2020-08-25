@@ -359,9 +359,6 @@
 #define PSIF_MO_DFDB_Y           "AO-basis dF/dBy Ints"
 #define PSIF_MO_DFDB_Z           "AO-basis dF/dBz Ints"
 
-#define PSIF_MO_OEI              "MO-basis One-electron Ints"
-#define PSIF_MO_A_OEI            "MO-basis Alpha One-electron Ints"
-#define PSIF_MO_B_OEI            "MO-basis Beta One-electron Ints"
 #define PSIF_MO_FZC              "MO-basis Frozen-Core Operator"
 #define PSIF_MO_A_FZC            "MO-basis Alpha Frozen-Core Oper"
 #define PSIF_MO_B_FZC            "MO-basis Beta Frozen-Core Oper"
