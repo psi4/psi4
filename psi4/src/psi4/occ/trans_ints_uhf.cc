@@ -737,8 +737,10 @@ void OCCWave::trans_ints_uhf() {
 
     else if (orb_opt_ == "FALSE") {
         // Assume that the Fock matrix is up-to-date.
-        FockA = Fa_subset("MO");
-        FockB = Fb_subset("MO");
+        FockA = Fa_->clone();
+        FockA->transform(Ca_);
+        FockB = Fb_->clone();
+        FockB->transform(Cb_);
     }
 
     timer_on("Build Denominators");
