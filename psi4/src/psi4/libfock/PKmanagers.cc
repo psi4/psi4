@@ -815,6 +815,7 @@ void PKMgrReorder::prestripe_files() {
         // We need to keep the labels around in a vector
         label_J_.push_back(PKWorker::get_label_J(batch));
         AIO()->zero_disk(pk_file(), label_J_[batch], 1, batch_size);
+        AIO()->synchronize();
         label_K_.push_back(PKWorker::get_label_K(batch));
         AIO()->zero_disk(pk_file(), label_K_[batch], 1, batch_size);
     }
