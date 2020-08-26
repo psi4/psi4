@@ -222,7 +222,7 @@ class FrozenCoreUnrestrictedFunctor {
 
    public:
     /*
-     * Generates the fock and frozen core operators, given the density matrices as input
+     * Generates the frozen core operators, given the density matrices as input
      *
      * @param FzDa: The alpha frozen core density matrix (stored as a lower triangular array)
      * @param FzDb: The beta frozen core density matrix (stored as a lower triangular array)

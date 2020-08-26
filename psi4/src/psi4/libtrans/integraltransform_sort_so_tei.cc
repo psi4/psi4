@@ -307,19 +307,20 @@ void IntegralTransform::presort_so_tei() {
         DPDFillerFunctor dpdfiller(&I, n, bucketMap, bucketOffset, false, true);
         NullFunctor null;
         IWL *iwl = new IWL(psio_.get(), soIntTEIFile_, tolerance_, 1, 1);
-        // In the functors below, we only want to build the Fock matrix on the first pass
+        // We need to feed the IWL integrals to construct the frozen core operator only once
+        // If we're not on the first DPD bucket, skip it for efficiency.
         if (transformationType_ == TransformationType::Restricted) {
-            FrozenCoreRestrictedFunctor fock(aFzcD.data(), aFzcOp.data());
+            FrozenCoreRestrictedFunctor frozencore(aFzcD.data(), aFzcOp.data());
             if (n)
                 iwl_integrals(iwl, dpdfiller, null);
             else
-                iwl_integrals(iwl, dpdfiller, fock);
+                iwl_integrals(iwl, dpdfiller, frozencore);
         } else {
-            FrozenCoreUnrestrictedFunctor fock(aFzcD.data(), bFzcD.data(), aFzcOp.data(), bFzcOp.data());
+            FrozenCoreUnrestrictedFunctor frozencore(aFzcD.data(), bFzcD.data(), aFzcOp.data(), bFzcOp.data());
             if (n)
                 iwl_integrals(iwl, dpdfiller, null);
             else
-                iwl_integrals(iwl, dpdfiller, fock);
+                iwl_integrals(iwl, dpdfiller, frozencore);
         }
         delete iwl;
 
@@ -346,7 +347,7 @@ void IntegralTransform::presort_so_tei() {
     free(bucketRowDim);
     free(bucketSize);
 
-    double *moInts = init_array(nTriMo_);
+    std::vector<double> moInts(nTriMo_, 0);
     // We want to keep Pitzer ordering, so this is just an identity mapping
     std::vector<int> order(nmo_);
     std::iota(std::begin(order), std::end(order), 0);
@@ -365,15 +366,15 @@ void IntegralTransform::presort_so_tei() {
 
         for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
             auto pCa = Ca_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], aFzcOp.data(), moInts, pCa, soOffset, &(order[moOffset]));
+            trans_one(sopi_[h], mopi_[h], aFzcOp.data(), moInts.data(), pCa, soOffset, &(order[moOffset]));
             soOffset += sopi_[h];
             moOffset += mopi_[h];
         }
         if (print_ > 4) {
             outfile->Printf("The MO basis frozen core operator\n");
-            print_array(moInts, nmo_, "outfile");
+            print_array(moInts.data(), nmo_, "outfile");
         }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_FZC, nTriMo_, moInts);
+        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_FZC, nTriMo_, moInts.data());
     } else {
         // Compute frozen-core energy
         size_t pq = 0;
@@ -388,29 +389,28 @@ void IntegralTransform::presort_so_tei() {
 
         for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
             auto pCa = Ca_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], aFzcOp.data(), moInts, pCa, soOffset, &(order[moOffset]));
+            trans_one(sopi_[h], mopi_[h], aFzcOp.data(), moInts.data(), pCa, soOffset, &(order[moOffset]));
             soOffset += sopi_[h];
             moOffset += mopi_[h];
         }
         if (print_ > 4) {
             outfile->Printf("The MO basis alpha frozen core operator\n");
-            print_array(moInts, nmo_, "outfile");
+            print_array(moInts.data(), nmo_, "outfile");
         }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_A_FZC, nTriMo_, moInts);
+        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_A_FZC, nTriMo_, moInts.data());
 
         for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
             auto pCb = Cb_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], bFzcOp.data(), moInts, pCb, soOffset, &(order[moOffset]));
+            trans_one(sopi_[h], mopi_[h], bFzcOp.data(), moInts.data(), pCb, soOffset, &(order[moOffset]));
             soOffset += sopi_[h];
             moOffset += mopi_[h];
         }
         if (print_ > 4) {
             outfile->Printf("The MO basis beta frozen core operator\n");
-            print_array(moInts, nmo_, "outfile");
+            print_array(moInts.data(), nmo_, "outfile");
         }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_B_FZC, nTriMo_, moInts);
+        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_B_FZC, nTriMo_, moInts.data());
     }
-    free(moInts);
     delete[] aoH;
 
     dpd_set_default(currentActiveDPD);
