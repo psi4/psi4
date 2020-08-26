@@ -71,6 +71,7 @@
 #include <memory>
 #include <map>
 #include <vector>
+#include <omp.h>
 
 namespace psi {
 
@@ -1970,7 +1971,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     std::map<std::string, std::string> mbis_grid_options_str;
 
-    mbis_grid_options_str["DFT_PRUNING_SCHEME"] = "NONE";
+    mbis_grid_options_str["DFT_PRUNING_SCHEME"] = options.get_str("MBIS_PRUNING_SCHEME");
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
     std::shared_ptr<DFTGrid> grid = std::make_shared<DFTGrid>(mol, basisset_, mbis_grid_options_int, mbis_grid_options_str, options);
@@ -2056,8 +2057,10 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     if (print_output) outfile->Printf("  Electron Count from Grid (Expected Number): %8.5f (%8.5f)\n", rho_num_electrons, mol_electron_count);
     if (print_output) outfile->Printf("  Difference: %8.5f\n\n", electron_diff);
 
-    if (fabs(electron_diff) > 0.001) {
-        throw PsiException("Number of electrons calculated using the grid (" + std::to_string(round(100000.0 * rho_num_electrons) / 100000.0) + ") does not match the number of electrons in molecule. Try increasing the number of radial or spherical points (mbis_radial_points and mbis_spherical_points options).", __FILE__, __LINE__);
+    if (fabs(electron_diff) > 0.1) {
+        throw PsiException("Number of electrons calculated using the grid (" + std::to_string(round(100000.0 * rho_num_electrons) / 100000.0) + ") does not match the number of electrons in the molecule. Try increasing the number of radial or spherical points (mbis_radial_points and mbis_spherical_points options).", __FILE__, __LINE__);
+    } else if (fabs(electron_diff) > 0.001) {
+        outfile->Printf("WARNING: The number of electrons calculated using the grid (%8.5f) differs from the number of electrons in the molecule by more than 0.001. Try increasing the number of radial or spherical points (mbis_radial_points and mbis_spherical_points options).\n\n", rho_num_electrons);
     }
 
     // Distances and displacements between grid points and nuclei
@@ -2075,6 +2078,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
             disps[atom][point][2] = r_nuc[2];
         }
     }
+
 
     // => Setup Proatom Basis Functions <= //
 
@@ -2125,6 +2129,19 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     std::vector<double> rho_0_points(total_points, 0.0);
     std::vector<std::vector<double>> rho_a_0_points(num_atoms, std::vector<double>(total_points, 0.0));
 
+    // Calculate initial proatom and promolecule density at all points
+#pragma omp parallel for
+    for (int point = 0; point < total_points; point++) {
+        rho_0_points[point] = 0.0;
+        for (int atom = 0; atom < num_atoms; atom++) {
+            rho_a_0_points[atom][point] = 0.0;
+             for (int m = 0; m < mA[atom]; m++) {
+                 rho_a_0_points[atom][point] += rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom][point]);
+             }
+             rho_0_points[point] += rho_a_0_points[atom][point];
+        }
+    }
+
     // => Main Stockholder Loop <= //
 
     int iter = 1;
@@ -2133,19 +2150,6 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     if (print_output && debug >= 1) outfile->Printf("                     Delta D\n");
     while (iter < max_iter) {
-
-        // Calculate proatom and promolecule density at all points
-#pragma omp parallel for
-        for (int point = 0; point < total_points; point++) {
-            rho_0_points[point] = 0.0;
-            for (int atom = 0; atom < num_atoms; atom++) {
-                rho_a_0_points[atom][point] = 0.0;
-                for (int m = 0; m < mA[atom]; m++) {
-                    rho_a_0_points[atom][point] += rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom][point]);
-                }
-                rho_0_points[point] += rho_a_0_points[atom][point];
-            }
-        }
 
         // Self-consistent update of population and density
 #pragma omp parallel for
@@ -2166,23 +2170,36 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
             }
         }
 
-        // Convergence check (Equation 20 in Verstraelen et al.)
+        //New Promolecular and proatomic densities
+        std::vector<double> new_rho_0_points(total_points, 0.0);
+        std::vector<std::vector<double>> new_rho_a_0_points(num_atoms, std::vector<double>(total_points, 0.0));
+
+
+        // Convergence check (Equation 20 in Verstraelen et al.) and update of pro-densities
         std::vector<double> delta_rho_atoms_0(num_atoms, 0.0);
+
+#pragma omp parallel for
+        for (int point = 0; point < total_points; point++) {
+            for (int atom = 0; atom < num_atoms; atom++) {
+                for (int m = 0; m < mA[atom]; m++) {
+                    new_rho_a_0_points[atom][point] += rho_ai_0(Nai_next[atom][m], Sai_next[atom][m], distances[atom][point]);
+                }
+                // delta_rho_atoms_0[atom] += weights[point] * (new_rho_a_0_points[atom][point] - rho_a_0_points[atom][point]) * (new_rho_a_0_points[atom][point] - rho_a_0_points[atom][point]);
+                new_rho_0_points[point] += new_rho_a_0_points[atom][point];
+            }
+        }
+
 #pragma omp parallel for
         for (int atom = 0; atom < num_atoms; atom++) {
-
+//pragma omp parallel for
             for (int point = 0; point < total_points; point++) {
-                double rho_a_0_new = 0.0;
-                for (int m = 0; m < mA[atom]; m++) {
-                    rho_a_0_new += rho_ai_0(Nai_next[atom][m], Sai_next[atom][m], distances[atom][point]);
-                }
-                delta_rho_atoms_0[atom] += weights[point] * (rho_a_0_new - rho_a_0_points[atom][point]) * (rho_a_0_new - rho_a_0_points[atom][point]);
+                delta_rho_atoms_0[atom] += weights[point] * (new_rho_a_0_points[atom][point] - rho_a_0_points[atom][point]) * (new_rho_a_0_points[atom][point] - rho_a_0_points[atom][point]);
             }
             delta_rho_atoms_0[atom] = sqrt(delta_rho_atoms_0[atom]);
         }
 
         delta_rho_max_0 = 0.0;
-        for(int atom = 0; atom < num_atoms; atom++) {
+        for (int atom = 0; atom < num_atoms; atom++) {
             if (delta_rho_atoms_0[atom] > delta_rho_max_0) delta_rho_max_0 = delta_rho_atoms_0[atom]; 
         }
 
@@ -2200,6 +2217,10 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
         if (print_output && debug >= 1) outfile->Printf("   @MBIS iter %3d:  %.3e\n", iter, delta_rho_max_0);
 
+        // Update of proatom and promolecule densities
+        rho_0_points = new_rho_0_points;
+        rho_a_0_points = new_rho_a_0_points;
+
         if (delta_rho_max_0 < conv) {
             if (print_output && debug >= 1) outfile->Printf("  MBIS Atomic Density Converged\n\n");
             is_converged = true;
@@ -2212,25 +2233,12 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     if (!is_converged) throw ConvergenceError<int>("MBIS", max_iter, conv, delta_rho_max_0, __FILE__, __LINE__);
 
     // => Post-Processing <= //
-
-    // Final density calculation afiter convergence
-#pragma omp parallel for
-    for (int point = 0; point < total_points; point++) {
-        rho_0_points[point] = 0.0;
-        for (int atom = 0; atom < num_atoms; atom++) {
-            rho_a_0_points[atom][point] = 0.0;
-            for (int m = 0; m < mA[atom]; m++) {
-                rho_a_0_points[atom][point] += rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom][point]);
-            }
-            rho_0_points[point] += rho_a_0_points[atom][point];
-        }
-    }
-      
+ 
     // Atomic density, as defined in Equation 5 of Verstraelen et al. (Negative to account for negative charge of electron)
     std::vector<std::vector<double>> rho_a(num_atoms, std::vector<double>(total_points, 0.0));
 #pragma omp parallel for
-    for (int atom = 0; atom < num_atoms; atom++) {
-        for (int point = 0; point < total_points; point++) {
+    for (int point = 0; point < total_points; point++) {
+        for (int atom = 0; atom < num_atoms; atom++) {
             rho_a[atom][point] = -rho[point] * rho_a_0_points[atom][point] / rho_0_points[point];
         }
     }

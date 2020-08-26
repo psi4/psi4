@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.4a2.dev847 
+                               Psi4 1.4a2.dev848 
 
-                         Git: Rev {mbis} b154452 dirty
+                         Git: Rev {mbis} e44b23a dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 13 August 2020 06:56PM
+    Psi4 started on: Wednesday, 26 August 2020 06:18PM
 
-    Process ID: 19446
+    Process ID: 2431
     Host:       ds4
     PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
@@ -102,7 +102,7 @@ Scratch directory: /scratch/jiang/
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds4
-*** at Thu Aug 13 18:56:39 2020
+*** at Wed Aug 26 18:18:53 2020
 
    => Loading Basis Set <=
 
@@ -291,15 +291,15 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:    -0.0000      Z:    -9.3337     Total:     9.3337
 
 
-*** tstop() called on ds4 at Thu Aug 13 18:56:39 2020
+*** tstop() called on ds4 at Wed Aug 26 18:18:54 2020
 Module time:
-	user time   =       0.81 seconds =       0.01 minutes
+	user time   =       0.89 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.81 seconds =       0.01 minutes
+	user time   =       0.89 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -335,7 +335,7 @@ Properties computed using the NaCl SCF density matrix
     MBIS Quadrupoles......................................................................PASSED
     MBIS Octupoles........................................................................PASSED
 
-    Psi4 stopped on: Thursday, 13 August 2020 06:56PM
-    Psi4 wall time for execution: 0:00:05.97
+    Psi4 stopped on: Wednesday, 26 August 2020 06:18PM
+    Psi4 wall time for execution: 0:00:04.62
 
 *** Psi4 exiting successfully. Buy a developer a beer!
