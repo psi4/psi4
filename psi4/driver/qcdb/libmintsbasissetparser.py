@@ -315,6 +315,37 @@ class Gaussian94BasisSetParser(object):
                                         gaussian_type, 0, center, 0, 'Unnormalized'))
                                     shell_list.append(ShellInfo(am2, contractions2, exponents,
                                         gaussian_type, 0, center, 0, 'Unnormalized'))
+
+                                elif len(shell_type) >= 3 and shell_type[:2] == 'L=':
+                                    am = int(shell_type[2:])
+                                    if am < 0:
+                                        raise ValidationError("""Gaussian94BasisSetParser::parse: angular momentum type %s not recognized: line %d: %s""" % (shell_type[0], lineno, line))
+
+                                    exponents = [0.0] * nprimitive
+                                    contractions = [0.0] * nprimitive
+
+                                    for p in range(nprimitive):
+                                        line = lines[lineno]
+                                        lineno += 1
+                                        line = line.replace('D', 'e', 2)
+                                        line = line.replace('d', 'e', 2)
+
+                                        what = primitives1.match(line)
+                                        # Must match primitives1; will work on the others later
+                                        if not what:
+                                            raise ValidationError("""Gaussian94BasisSetParser::parse: Unable to match an exponent with one contraction: line %d: %s""" % (lineno, line))
+                                        exponent = float(what.group(1))
+                                        contraction = float(what.group(2))
+
+                                        # Scale the contraction and save the information
+                                        contraction *= scale
+                                        exponents[p] = exponent
+                                        contractions[p] = contraction
+
+                                    # We have a full shell, push it to the basis set
+                                    shell_list.append(ShellInfo(am, contractions, exponents,
+                                        gaussian_type, 0, center, 0, 'Unnormalized'))
+
                                 else:
                                     raise ValidationError("""Gaussian94BasisSetParser::parse: Unable to parse basis sets with spd, or higher grouping""")
                             else:
