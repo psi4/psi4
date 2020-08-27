@@ -155,19 +155,10 @@ void ShellInfo::print(std::string out) const {
 
 double ShellInfo::normalize(int /*l*/, int /*m*/, int /*n*/) { return 1.0; }
 
-const char *ShellInfo::amtypes = "spdfghiklmnopqrtuvwxyz";
-const char *ShellInfo::AMTYPES = "SPDFGHIKLMNOPQRTUVWXYZ";
-
 bool ShellInfo::operator==(const ShellInfo &RHS) const {
-    return (l_ == RHS.l_ &&
-            puream_ == RHS.puream_ &&
-            exp_ == RHS.exp_ &&
-            coef_ == RHS.coef_ &&
-            erd_coef_ == RHS.erd_coef_ &&
-            original_coef_ == RHS.original_coef_ &&
-            n_ == RHS.n_ &&
-            ncartesian_ == RHS.ncartesian_ &&
-            nfunction_ == RHS.nfunction_);
+    return (l_ == RHS.l_ && puream_ == RHS.puream_ && exp_ == RHS.exp_ && coef_ == RHS.coef_ &&
+            erd_coef_ == RHS.erd_coef_ && original_coef_ == RHS.original_coef_ && n_ == RHS.n_ &&
+            ncartesian_ == RHS.ncartesian_ && nfunction_ == RHS.nfunction_);
 }
 
 GaussianShell::GaussianShell(ShellType shelltype, int am, int nprimitive, const double *oc, const double *c,
@@ -240,6 +231,3 @@ double GaussianShell::evaluate(double r, int l) const {
 }
 
 const double *GaussianShell::center() const { return center_; }
-
-const char *GaussianShell::amtypes = "spdfghiklmnopqrtuvwxyz";
-const char *GaussianShell::AMTYPES = "SPDFGHIKLMNOPQRTUVWXYZ";

@@ -30,6 +30,7 @@
 #define _psi_src_lib_libmints_gshell_h_
 
 #include <cstdio>
+#include <ctype>
 #include <vector>
 #include "psi4/libmints/vector3.h"
 
@@ -85,10 +86,8 @@ class PSI_API ShellInfo {
      */
     void contraction_normalization();
 
-    /** Lookup array that when you index the angular momentum it returns the lowercase letter corresponding to it. */
-    static const char* amtypes;
-    /** Lookup array that when you index the angular momentum it returns the uppercase letter corresponding to it. */
-    static const char* AMTYPES;
+    /** Angular momentum types */
+    static const std::string amtypes = "SPDFGHIKLMNOPQRTUVWXYZ";
 
    public:
     /** Constructor; use this version for ECP basis sets.
@@ -123,10 +122,10 @@ class PSI_API ShellInfo {
     int ncartesian() const { return ncartesian_; }
     /// The angular momentum of the given contraction
     int am() const { return l_; }
-    /// The character symbol for the angular momentum of the given contraction
-    char amchar() const { return amtypes[l_]; }
+    /// The character symbol for the angular momentum of the given contraction (lower case)
+    char amchar() const { return tolower(amtypes[l_]); }
     /// The character symbol for the angular momentum of the given contraction (upper case)
-    char AMCHAR() const { return AMTYPES[l_]; }
+    char AMCHAR() const { return toupper(amtypes[l_]); }
     /// Returns true if contraction is Cartesian
     bool is_cartesian() const { return !puream_; }
     /// Returns true if contraction is pure
@@ -209,10 +208,8 @@ class PSI_API GaussianShell {
      */
     void contraction_normalization();
 
-    /** Lookup array that when you index the angular momentum it returns the lowercase letter corresponding to it. */
-    static const char* amtypes;
-    /** Lookup array that when you index the angular momentum it returns the uppercase letter corresponding to it. */
-    static const char* AMTYPES;
+    /** Angular momentum types */
+    static const std::string amtypes = "SPDFGHIKLMNOPQRTUVWXYZ";
 
    public:
     /** Constructor; Use this version for regular Gaussian basis sets.
@@ -259,10 +256,10 @@ class PSI_API GaussianShell {
     int ncartesian() const { return ncartesian_; }
     /// The angular momentum of the given contraction
     int am() const { return l_; }
-    /// The character symbol for the angular momentum of the given contraction
-    char amchar() const { return amtypes[l_]; }
+    /// The character symbol for the angular momentum of the given contraction (lower case)
+    char amchar() const { return tolower(amtypes[l_]); }
     /// The character symbol for the angular momentum of the given contraction (upper case)
-    char AMCHAR() const { return AMTYPES[l_]; }
+    char AMCHAR() const { return toupper(amtypes[l_]); }
     /// Returns true if contraction is Cartesian
     bool is_cartesian() const { return !puream_; }
     /// Returns true if contraction is pure
