@@ -44,6 +44,9 @@ enum GaussianType { Cartesian = 0, Pure = 1 };
 
 enum ShellType { Gaussian = 0, ECPType1 = 1, ECPType2 = 2 };
 
+/** Angular momentum types */
+const std::string amtypes = "SPDFGHIKLMNOPQRTUVWXYZ";
+
 /*! \ingroup MINTS
  *  \class ShellInfo
  *  \brief This class has the same behavior as GaussianShell, but implements everything using
@@ -85,9 +88,6 @@ class PSI_API ShellInfo {
     /** Normalizes an entire contraction set. Applies the normalization to the coefficients
      */
     void contraction_normalization();
-
-    /** Angular momentum types */
-    static const std::string amtypes = "SPDFGHIKLMNOPQRTUVWXYZ";
 
    public:
     /** Constructor; use this version for ECP basis sets.
@@ -207,9 +207,6 @@ class PSI_API GaussianShell {
     /** Normalizes an entire contraction set. Applies the normalization to the coefficients
      */
     void contraction_normalization();
-
-    /** Angular momentum types */
-    static const std::string amtypes = "SPDFGHIKLMNOPQRTUVWXYZ";
 
    public:
     /** Constructor; Use this version for regular Gaussian basis sets.
