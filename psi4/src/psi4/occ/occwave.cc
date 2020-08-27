@@ -384,7 +384,7 @@ void OCCWave::title() {
     else if (wfn_type_ == "OMP3" && orb_opt_ == "FALSE")
         outfile->Printf("                             MP3   \n");
     else if (wfn_type_ == "OCEPA" && orb_opt_ == "TRUE")
-        outfile->Printf("                             OLCCD [OCEPA(0), OO-CEPA(0)]   \n");
+        outfile->Printf("                      OLCCD [OCEPA(0), OO-CEPA(0)]   \n");
     else if (wfn_type_ == "OCEPA" && orb_opt_ == "FALSE")
         outfile->Printf("                             LCCD [CEPA(0)]   \n");
     else if (wfn_type_ == "OMP2.5" && orb_opt_ == "TRUE")
