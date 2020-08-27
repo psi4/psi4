@@ -1962,26 +1962,23 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     const int max_iter = options.get_int("MBIS_MAXITER");
     const double conv = options.get_double("MBIS_D_CONVERGENCE");
     const int debug = options.get_int("DEBUG");
+    std::shared_ptr<Molecule> mol = basisset_->molecule();
 
-    // Sets up MBIS Grid using MBIS_RAIDAL_POINTS and MBIS_SPHERICAL_POINTS options
+    // MBIS grid options
     std::map<std::string, int> mbis_grid_options_int;
+    std::map<std::string, std::string> mbis_grid_options_str;
 
     mbis_grid_options_int["DFT_RADIAL_POINTS"] = options.get_int("MBIS_RADIAL_POINTS");
     mbis_grid_options_int["DFT_SPHERICAL_POINTS"] = options.get_int("MBIS_SPHERICAL_POINTS");
-
-    std::map<std::string, std::string> mbis_grid_options_str;
-
     mbis_grid_options_str["DFT_PRUNING_SCHEME"] = options.get_str("MBIS_PRUNING_SCHEME");
 
-    std::shared_ptr<Molecule> mol = basisset_->molecule();
     std::shared_ptr<DFTGrid> grid = std::make_shared<DFTGrid>(mol, basisset_, mbis_grid_options_int, mbis_grid_options_str, options);
 
     if (print_output && debug >= 1) grid->print();
 
     int nbf = basisset_->nbf();
     int num_atoms = mol->natom();
-    int total_points = grid->npoints();
-    auto apcs = std::make_shared<std::vector<double>>(num_atoms);
+    size_t total_points = grid->npoints();
 
     SharedMatrix Da = wfn_->Da_subset("AO");
     SharedMatrix Db;
@@ -1997,7 +1994,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     }
 
     std::vector<std::shared_ptr<BlockOPoints>> blocks = grid->blocks();
-    int running_points = 0;
+    size_t running_points = 0;
 
     // Coordinates, weights, and rho (molecular electron density) at each grid point
     std::vector<double> x_points(total_points, 0.0);
@@ -2009,7 +2006,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     for (int b = 0; b < blocks.size(); b++) {
         std::shared_ptr<BlockOPoints> block = blocks[b];
         SharedVector rho_block;
-        std::size_t num_points = block->npoints();
+        size_t num_points = block->npoints();
 
         point_func->set_max_functions(block->local_nbf());
         point_func->set_max_points(num_points);
@@ -2025,7 +2022,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
         double* z = block->z();
         double* w = block->w();
 
-        for (int p = 0; p < num_points; p++) {
+        for (size_t p = 0; p < num_points; p++) {
             x_points[running_points + p] = x[p];
             y_points[running_points + p] = y[p];
             z_points[running_points + p] = z[p];
@@ -2036,49 +2033,45 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
         running_points += num_points;
     }
 
-
-    //Calculates Number of Electrons Based on the Density Obtained using Grid Points
-    double rho_num_electrons = 0.0;
+    // Electron count via numerical interagration
+    double grid_electrons = 0.0;
     for (int p = 0; p < total_points; p++) {
-        rho_num_electrons += weights[p] * rho[p];
+        grid_electrons += weights[p] * rho[p];
     }
 
-    //Checks to see if the number of electrons calculated using the grid densities matches actual number of electrons in molecule
-    double mol_charge = mol->molecular_charge();
-    double mol_nuc_charge = 0.0;
-
+    // Actual electron count
+    double mol_electrons = -1.0 * mol->molecular_charge();
     for (int a = 0; a < num_atoms; a++) {
-        mol_nuc_charge += mol->Z(a);
+        mol_electrons += mol->Z(a);
     }
-    double mol_electron_count = mol_nuc_charge - mol_charge;
 
-    double electron_diff = rho_num_electrons - mol_electron_count;
+    double electron_diff = grid_electrons - mol_electrons;
 
-    if (print_output) outfile->Printf("  Electron Count from Grid (Expected Number): %8.5f (%8.5f)\n", rho_num_electrons, mol_electron_count);
+    if (print_output) outfile->Printf("  Electron Count from Grid (Expected Number): %8.5f (%8.5f)\n", grid_electrons, mol_electrons);
     if (print_output) outfile->Printf("  Difference: %8.5f\n\n", electron_diff);
 
     if (fabs(electron_diff) > 0.1) {
-        throw PsiException("Number of electrons calculated using the grid (" + std::to_string(round(100000.0 * rho_num_electrons) / 100000.0) + ") does not match the number of electrons in the molecule. Try increasing the number of radial or spherical points (mbis_radial_points and mbis_spherical_points options).", __FILE__, __LINE__);
+        throw PsiException("Number of electrons calculated using the grid (" + std::to_string(round(100000.0 * grid_electrons) / 100000.0) + ") does not match the number of electrons in the molecule. "
+                "Try increasing the number of radial or spherical points (mbis_radial_points and mbis_spherical_points options).", __FILE__, __LINE__);
     } else if (fabs(electron_diff) > 0.001) {
-        outfile->Printf("WARNING: The number of electrons calculated using the grid (%8.5f) differs from the number of electrons in the molecule by more than 0.001. Try increasing the number of radial or spherical points (mbis_radial_points and mbis_spherical_points options).\n\n", rho_num_electrons);
+        outfile->Printf("WARNING: The number of electrons calculated using the grid (%8.5f) differs from the number of electrons in the molecule by more than 0.001. "
+                "Try increasing the number of radial or spherical points (mbis_radial_points and mbis_spherical_points options).\n\n", grid_electrons);
     }
 
     // Distances and displacements between grid points and nuclei
-    std::vector<std::vector<double>> distances(num_atoms, std::vector<double>(total_points, 0.0));
-    std::vector<std::vector<std::vector<double>>> disps(num_atoms, std::vector<std::vector<double>>(total_points, std::vector<double>(3, 0.0)));
+    std::vector<double> distances(num_atoms * total_points, 0.0);
+    std::vector<std::vector<double>> disps(3, std::vector<double>(num_atoms * total_points, 0.0));
 
+#pragma omp parallel for
     for (int atom = 0; atom < num_atoms; atom++) {
-        Vector3 nuc = mol->xyz(atom);
-        for (int point = 0; point < total_points; point++) {
-            Vector3 r_nuc = Vector3(x_points[point], y_points[point], z_points[point]);
-            r_nuc = r_nuc - nuc;
-            distances[atom][point] = r_nuc.norm();
-            disps[atom][point][0] = r_nuc[0];
-            disps[atom][point][1] = r_nuc[1];
-            disps[atom][point][2] = r_nuc[2];
+        for (size_t point = 0; point < total_points; point++) {
+            Vector3 dr = Vector3(x_points[point], y_points[point], z_points[point]) - mol->xyz(atom);
+            distances[atom * total_points + point] = dr.norm();
+            disps[0][atom * total_points + point] = dr[0];
+            disps[1][atom * total_points + point] = dr[1];
+            disps[2][atom * total_points + point] = dr[2];
         }
     }
-
 
     // => Setup Proatom Basis Functions <= //
 
@@ -2095,7 +2088,6 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
         } else if (atomic_num <= 36) {
             mA[atom] = 4;
         } else {
-            // TODO: good guesses for past second row
             throw PsiException("Atomic Number " + std::to_string(atomic_num) + " unsupported by MBIS", __FILE__, __LINE__);
         }
     }
@@ -2127,18 +2119,22 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     // Promolecular and proatomic densities
     std::vector<double> rho_0_points(total_points, 0.0);
-    std::vector<std::vector<double>> rho_a_0_points(num_atoms, std::vector<double>(total_points, 0.0));
+    std::vector<double> rho_a_0_points(num_atoms * total_points, 0.0);
+
+    // Next iteration densities
+    std::vector<double> rho_0_points_next(total_points, 0.0);
+    std::vector<double> rho_a_0_points_next(num_atoms * total_points, 0.0);
 
     // Calculate initial proatom and promolecule density at all points
 #pragma omp parallel for
-    for (int point = 0; point < total_points; point++) {
+    for (size_t point = 0; point < total_points; point++) {
         rho_0_points[point] = 0.0;
         for (int atom = 0; atom < num_atoms; atom++) {
-            rho_a_0_points[atom][point] = 0.0;
+            rho_a_0_points[atom * total_points + point] = 0.0;
              for (int m = 0; m < mA[atom]; m++) {
-                 rho_a_0_points[atom][point] += rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom][point]);
+                 rho_a_0_points[atom * total_points + point] += rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom * total_points + point]);
              }
-             rho_0_points[point] += rho_a_0_points[atom][point];
+             rho_0_points[point] += rho_a_0_points[atom * total_points + point];
         }
     }
 
@@ -2160,9 +2156,9 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
                 double sum_s = 0.0;
 
                 for (int point = 0; point < total_points; point++) {
-                    double rho_ai_0_point = rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom][point]);
+                    double rho_ai_0_point = rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom * total_points + point]);
                     sum_n += weights[point] * rho[point] * rho_ai_0_point / rho_0_points[point];
-                    sum_s += weights[point] * distances[atom][point] * rho[point] * rho_ai_0_point / rho_0_points[point];
+                    sum_s += weights[point] * distances[atom * total_points + point] * rho[point] * rho_ai_0_point / rho_0_points[point];
                 }
 
                 Nai_next[atom][m] = sum_n;
@@ -2170,30 +2166,28 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
             }
         }
 
-        //New Promolecular and proatomic densities
-        std::vector<double> new_rho_0_points(total_points, 0.0);
-        std::vector<std::vector<double>> new_rho_a_0_points(num_atoms, std::vector<double>(total_points, 0.0));
+        std::fill(rho_0_points_next.begin(), rho_0_points_next.end(), 0.0);
+        std::fill(rho_a_0_points_next.begin(), rho_a_0_points_next.end(), 0.0);
 
+#pragma omp parallel for
+        for (size_t point = 0; point < total_points; point++) {
+            for (int atom = 0; atom < num_atoms; atom++) {
+                for (int m = 0; m < mA[atom]; m++) {
+                    rho_a_0_points_next[atom * total_points + point] += rho_ai_0(Nai_next[atom][m], Sai_next[atom][m], distances[atom * total_points + point]);
+                }
+                rho_0_points_next[point] += rho_a_0_points_next[atom * total_points + point];
+            }
+        }
 
         // Convergence check (Equation 20 in Verstraelen et al.) and update of pro-densities
         std::vector<double> delta_rho_atoms_0(num_atoms, 0.0);
 
 #pragma omp parallel for
-        for (int point = 0; point < total_points; point++) {
-            for (int atom = 0; atom < num_atoms; atom++) {
-                for (int m = 0; m < mA[atom]; m++) {
-                    new_rho_a_0_points[atom][point] += rho_ai_0(Nai_next[atom][m], Sai_next[atom][m], distances[atom][point]);
-                }
-                // delta_rho_atoms_0[atom] += weights[point] * (new_rho_a_0_points[atom][point] - rho_a_0_points[atom][point]) * (new_rho_a_0_points[atom][point] - rho_a_0_points[atom][point]);
-                new_rho_0_points[point] += new_rho_a_0_points[atom][point];
-            }
-        }
-
-#pragma omp parallel for
         for (int atom = 0; atom < num_atoms; atom++) {
-//pragma omp parallel for
-            for (int point = 0; point < total_points; point++) {
-                delta_rho_atoms_0[atom] += weights[point] * (new_rho_a_0_points[atom][point] - rho_a_0_points[atom][point]) * (new_rho_a_0_points[atom][point] - rho_a_0_points[atom][point]);
+            double delta;
+            for (size_t point = 0; point < total_points; point++) {
+                delta = rho_a_0_points_next[atom * total_points + point] - rho_a_0_points[atom * total_points + point];
+                delta_rho_atoms_0[atom] += weights[point] * delta * delta;
             }
             delta_rho_atoms_0[atom] = sqrt(delta_rho_atoms_0[atom]);
         }
@@ -2203,23 +2197,13 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
             if (delta_rho_atoms_0[atom] > delta_rho_max_0) delta_rho_max_0 = delta_rho_atoms_0[atom]; 
         }
 
-        // Update populations and widths
-        //double iter_pop = 0.0;
-        for (int atom = 0; atom < num_atoms; atom++) {
-            for (int m = 0; m < mA[atom]; m++) {
-                Nai[atom][m] = Nai_next[atom][m];
-                Sai[atom][m] = Sai_next[atom][m];
-                //outfile->Printf("ATOM %d, SHELL %d, POP %8.5f, WIDTH %8.5f\n", atom+1, m+1, Nai[atom][m], Sai[atom][m]);
-                //iter_pop += Nai[atom][m];
-            }
-        }
-        //outfile->Printf("TOTAL POPULATION FOR ITERATION %d, %8.5f\n", iter, iter_pop);
+        // Update populations, widths, and densities
+        Nai = Nai_next;
+        Sai = Sai_next;
+        rho_0_points = rho_0_points_next;
+        rho_a_0_points = rho_a_0_points_next;
 
         if (print_output && debug >= 1) outfile->Printf("   @MBIS iter %3d:  %.3e\n", iter, delta_rho_max_0);
-
-        // Update of proatom and promolecule densities
-        rho_0_points = new_rho_0_points;
-        rho_a_0_points = new_rho_a_0_points;
 
         if (delta_rho_max_0 < conv) {
             if (print_output && debug >= 1) outfile->Printf("  MBIS Atomic Density Converged\n\n");
@@ -2235,115 +2219,77 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     // => Post-Processing <= //
  
     // Atomic density, as defined in Equation 5 of Verstraelen et al. (Negative to account for negative charge of electron)
-    std::vector<std::vector<double>> rho_a(num_atoms, std::vector<double>(total_points, 0.0));
+    std::vector<double> rho_a(num_atoms * total_points, 0.0);
 #pragma omp parallel for
-    for (int point = 0; point < total_points; point++) {
-        for (int atom = 0; atom < num_atoms; atom++) {
-            rho_a[atom][point] = -rho[point] * rho_a_0_points[atom][point] / rho_0_points[point];
+    for (int atom = 0; atom < num_atoms; atom++) {
+        for (size_t point = 0; point < total_points; point++) {
+            rho_a[atom * total_points + point] = -rho[point] * rho_a_0_points[atom * total_points + point] / rho_0_points[point];
         }
     }
 
     // Kronecker Delta
     std::vector<std::vector<double>> k_delta = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
 
-    // Cartesian atomic multipoles (Horton convention)
-    std::vector<double> monopoles(num_atoms, 0.0);
-    std::vector<std::vector<double>> dipoles(num_atoms, std::vector<double>(3, 0.0));
-    std::vector<std::vector<std::vector<double>>> quadrupoles(num_atoms, std::vector<std::vector<double>>(3, std::vector<double>(3, 0.0)));
-    std::vector<std::vector<std::vector<std::vector<double>>>> octupoles(num_atoms, std::vector<std::vector<std::vector<double>>>(3, std::vector<std::vector<double>>(3, std::vector<double>(3, 0.0))));
+    // Non-redundant cartesian quadrupole components
+    std::vector<std::vector<int>> qpole_inds = {{0, 0},
+                                                {0, 1},
+                                                {0, 2}, 
+                                                {1, 1}, 
+                                                {1, 2},
+                                                {2, 2}};
 
-    // Cartesian atomic multipoles (convention from Anthony Stone's "The Theory of Intermolecular Forces, Second Edition")
-    std::vector<std::vector<std::vector<double>>> stone_quadrupoles(num_atoms, std::vector<std::vector<double>>(3, std::vector<double>(3, 0.0)));
-    std::vector<std::vector<std::vector<std::vector<double>>>> stone_octupoles(num_atoms, std::vector<std::vector<std::vector<double>>>(3, std::vector<std::vector<double>>(3, std::vector<double>(3, 0.0))));
+    // Non-redundant cartesian octupole components
+    std::vector<std::vector<int>> opole_inds = {{0, 0, 0},
+                                                {0, 0, 1},
+                                                {0, 0, 2}, 
+                                                {0, 1, 1}, 
+                                                {0, 1, 2}, 
+                                                {0, 2, 2}, 
+                                                {1, 1, 1}, 
+                                                {1, 1, 2}, 
+                                                {1, 2, 2}, 
+                                                {2, 2, 2}};
 
-    // Calculate multipoles (redundant cartesian)
+    // Non-redundant cartesian multipoles
+    auto mpole = std::make_shared<Matrix>("MBIS Charges: (a.u.)", num_atoms, 1);
+    auto dpole = std::make_shared<Matrix>("MBIS Dipoles: (a.u.)", num_atoms, 3);
+    auto qpole = std::make_shared<Matrix>("MBIS Quadrupoles: (a.u.)", num_atoms, 6);
+    auto opole = std::make_shared<Matrix>("MBIS Octupoles: (a.u.)", num_atoms, 10);
+    //auto qpole_stone = std::make_shared<Matrix>("MBIS Quadrupoles: (a.u.)", num_atoms, 6);
+    //auto opole_stone = std::make_shared<Matrix>("MBIS Octupoles: (a.u.)", num_atoms, 10);
+
+    // Calculate atomic multipoles
 #pragma omp parallel for
     for (int a = 0; a < num_atoms; a++) {
-        
-        // Atomic monopole
-        for (int p = 0; p < total_points; p++) {
-            monopoles[a] += weights[p] * rho_a[a][p];
-        }
-        monopoles[a] += mol->Z(a);
+        mpole->add(a, 0, mol->Z(a));
+        for (size_t p = 0; p < total_points; p++) {
 
-        // Atomic dipole
-        for (int i = 0; i < 3; i++) {
-            for (int p = 0; p < total_points; p++) {
-                dipoles[a][i] += weights[p] * rho_a[a][p] * disps[a][p][i];
+            auto ap = a * total_points + p;
+
+            // Atomic monopole
+            mpole->add(a, 0, weights[p] * rho_a[ap]);
+
+            // Atomic dipole
+            for (int i = 0; i < 3; i++) {
+                dpole->add(a, i, weights[p] * rho_a[ap] * disps[i][ap]);
+            }
+
+            // Atomic quadrupole
+            for (int q = 0; q < 6; q++) {
+                int i = qpole_inds[q][0], j = qpole_inds[q][1];
+                qpole->add(a, q, weights[p] * rho_a[ap] * (disps[i][ap] * disps[j][ap]));
+                //qpole_stone->add(a, q, weights[p] * rho_a[ap] * (1.5 * disps[i][ap] * disps[j][ap] - 0.5 * pow(distances[ap], 2) * k_delta[i][j]));
+            }
+
+            // Atomic octupole
+            for (int o = 0; o < 10; o++) {
+                int i = opole_inds[o][0], j = opole_inds[o][1], k = opole_inds[o][2];
+                opole->add(a, o, weights[p] * rho_a[ap] * (disps[i][ap] * disps[j][ap] * disps[k][ap]));
+                //opole_stone->add(a, o, weights[p] * rho_a[ap] 
+                //    * (2.5 * disps[i][ap] * disps[j][ap] * disps[k][ap] - 0.5 * pow(distances[ap], 2) 
+                //        * (k_delta[j][k] * disps[i][ap] + k_delta[i][k] * disps[j][ap] + k_delta[i][j] * disps[k][ap])));
             }
         }
-
-        // Atomic quadrupole
-        for (int i = 0; i < 3; i++) {
-            for (int j = i; j < 3; j++) {
-                for (int p = 0; p< total_points; p++) {
-                    quadrupoles[a][i][j] += weights[p] * rho_a[a][p] * (disps[a][p][i] * disps[a][p][j]);
-                    stone_quadrupoles[a][i][j] += weights[p] * rho_a[a][p] 
-                        * (1.5 * disps[a][p][i] * disps[a][p][j] - 0.5 * pow(distances[a][p], 2) * k_delta[i][j]);
-                }
-                quadrupoles[a][j][i] = quadrupoles[a][i][j];
-                stone_quadrupoles[a][j][i] = stone_quadrupoles[a][i][j];
-            }
-        }
-
-        // Atomic octupole
-        for (int i = 0; i < 3; i++) {
-            for (int j = i; j < 3; j++) {
-                for (int k = j; k < 3; k++) {
-                    for (int p = 0; p< total_points; p++) {
-                        octupoles[a][i][j][k] += weights[p] * rho_a[a][p] * (disps[a][p][i] * disps[a][p][j] * disps[a][p][k]);
-
-                        stone_octupoles[a][i][j][k] += weights[p] * rho_a[a][p] 
-                            * (2.5 * disps[a][p][i] * disps[a][p][j] * disps[a][p][k] - 0.5 * pow(distances[a][p], 2) 
-                                    * (k_delta[j][k] * disps[a][p][i] + k_delta[i][k] * disps[a][p][j] + k_delta[i][j] * disps[a][p][k]));
-                    }
-
-                    octupoles[a][j][i][k] = octupoles[a][i][j][k];
-                    octupoles[a][j][k][i] = octupoles[a][i][j][k];
-                    octupoles[a][i][k][j] = octupoles[a][i][j][k];
-                    octupoles[a][k][i][j] = octupoles[a][i][j][k];
-                    octupoles[a][k][j][i] = octupoles[a][i][j][k];
-
-                    stone_octupoles[a][j][i][k] = stone_octupoles[a][i][j][k];
-                    stone_octupoles[a][j][k][i] = stone_octupoles[a][i][j][k];
-                    stone_octupoles[a][i][k][j] = stone_octupoles[a][i][j][k];
-                    stone_octupoles[a][k][i][j] = stone_octupoles[a][i][j][k];
-                    stone_octupoles[a][k][j][i] = stone_octupoles[a][i][j][k];
-                }
-            }
-        }
-    }
-
-    // non-redundant cartesian
-    auto mpole_flat = std::make_shared<Matrix>("MBIS Charges: (a.u.)", num_atoms, 1);
-    auto dpole_flat = std::make_shared<Matrix>("MBIS Dipoles: (a.u.)", num_atoms, 3);
-    auto qpole_flat = std::make_shared<Matrix>("MBIS Quadrupoles: (a.u.)", num_atoms, 6);
-    auto opole_flat = std::make_shared<Matrix>("MBIS Octupoles: (a.u.)", num_atoms, 10);
-
-    for(int a = 0; a < num_atoms; a++) {
-        mpole_flat->set(a, 0, monopoles[a]);
-
-        dpole_flat->set(a, 0, dipoles[a][0]);
-        dpole_flat->set(a, 1, dipoles[a][1]);
-        dpole_flat->set(a, 2, dipoles[a][2]);
-
-        qpole_flat->set(a, 0, quadrupoles[a][0][0]);
-        qpole_flat->set(a, 1, quadrupoles[a][0][1]);
-        qpole_flat->set(a, 2, quadrupoles[a][0][2]);
-        qpole_flat->set(a, 3, quadrupoles[a][1][1]);
-        qpole_flat->set(a, 4, quadrupoles[a][1][2]);
-        qpole_flat->set(a, 5, quadrupoles[a][2][2]);
-
-        opole_flat->set(a, 0, octupoles[a][0][0][0]);
-        opole_flat->set(a, 1, octupoles[a][0][0][1]);
-        opole_flat->set(a, 2, octupoles[a][0][0][2]);
-        opole_flat->set(a, 3, octupoles[a][0][1][1]);
-        opole_flat->set(a, 4, octupoles[a][0][1][2]);
-        opole_flat->set(a, 5, octupoles[a][0][2][2]);
-        opole_flat->set(a, 6, octupoles[a][1][1][1]);
-        opole_flat->set(a, 7, octupoles[a][1][1][2]);
-        opole_flat->set(a, 8, octupoles[a][1][2][2]);
-        opole_flat->set(a, 9, octupoles[a][2][2][2]);
     }
 
     if (print_output) {
@@ -2353,7 +2299,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
         for (int a = 0; a < num_atoms; a++) {
             outfile->Printf("  %5d      %2s %4d   %9.6f   %9.6f\n", a+1, mol->label(a).c_str(), 
-                    (int)mol->Z(a), mol->Z(a) - monopoles[a], monopoles[a]);
+                    (int)mol->Z(a), mol->Z(a) - mpole->get(a, 0), mpole->get(a, 0));
         }
 
         outfile->Printf("\n  MBIS Dipoles: [e a0]\n");
@@ -2361,7 +2307,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
         for (int a = 0; a < num_atoms; a++) {
             outfile->Printf("  %5d      %2s %4d   %9.6f   %9.6f   %9.6f\n", a+1, mol->label(a).c_str(), 
-                    (int)mol->Z(a), dpole_flat->get(a, 0), dpole_flat->get(a, 1), dpole_flat->get(a, 2));
+                    (int)mol->Z(a), dpole->get(a, 0), dpole->get(a, 1), dpole->get(a, 2));
         }
 
         outfile->Printf("\n  MBIS Quadrupoles: [e a0^2]\n");
@@ -2369,8 +2315,8 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
         for (int a = 0; a < num_atoms; a++) {
             outfile->Printf("  %5d      %2s %4d   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f\n", a+1, mol->label(a).c_str(),
-                    (int)mol->Z(a), qpole_flat->get(a, 0), qpole_flat->get(a, 1), qpole_flat->get(a, 2), qpole_flat->get(a, 3), 
-                    qpole_flat->get(a, 4), qpole_flat->get(a, 5));
+                    (int)mol->Z(a), qpole->get(a, 0), qpole->get(a, 1), qpole->get(a, 2), qpole->get(a, 3), 
+                    qpole->get(a, 4), qpole->get(a, 5));
         }
 
         outfile->Printf("\n  MBIS Octupoles: [e a0^3]\n");
@@ -2378,16 +2324,16 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
         for (int a = 0; a < num_atoms; a++) {
             outfile->Printf("  %5d      %2s %4d   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f\n", 
-                    a+1, mol->label(a).c_str(), (int)mol->Z(a), opole_flat->get(a, 0), opole_flat->get(a, 1), opole_flat->get(a, 2), 
-                    opole_flat->get(a, 3), opole_flat->get(a, 4), opole_flat->get(a, 5), opole_flat->get(a, 6), opole_flat->get(a, 7), 
-                    opole_flat->get(a, 8), opole_flat->get(a, 9));
+                    a+1, mol->label(a).c_str(), (int)mol->Z(a), opole->get(a, 0), opole->get(a, 1), opole->get(a, 2), 
+                    opole->get(a, 3), opole->get(a, 4), opole->get(a, 5), opole->get(a, 6), opole->get(a, 7), 
+                    opole->get(a, 8), opole->get(a, 9));
         }
 
     }
 
     timer_off("MBIS");
 
-    return std::make_tuple(mpole_flat, dpole_flat, qpole_flat, opole_flat);
+    return std::make_tuple(mpole, dpole, qpole, opole);
 }
 
 void OEProp::compute_mayer_indices() {
