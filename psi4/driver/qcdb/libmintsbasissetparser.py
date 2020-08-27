@@ -115,7 +115,7 @@ class Gaussian94BasisSetParser(object):
         ATOM = r'(([A-Z]{1,3}\d*)|([A-Z]{1,3}_\w+))'  # match 'C 0', 'Al c 0', 'P p88 p_pass 0' not 'Ofail 0', 'h99_text 0'
         atom_array = re.compile(r'^\s*((' + ATOM + r'\s+)+)0\s*$', re.IGNORECASE)  # array of atomic symbols terminated by 0
         atom_ecp = re.compile(r'^\s*((' + ATOM + r'-ECP\s+)+)(\d+)\s+(\d+)\s*$', re.IGNORECASE)  # atom_ECP number number
-        shell = re.compile(r'^\s*(\w+)\s*(\d+)\s*(-?\d+\.\d+)')  # Match beginning of contraction
+        shell = re.compile(r'^\s*(\w+|L=\d+)\s*(\d+)\s*(-?\d+\.\d+)')  # Match beginning of contraction
         blank = re.compile(r'^\s*$')
         NUMBER = r'((?:[-+]?\d*\.\d+(?:[DdEe][-+]?\d+)?)|(?:[-+]?\d+\.\d*(?:[DdEe][-+]?\d+)?)|(?:[-+]?\d+))'
         primitives1 = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + '.*')  # Match s, p, d, f, g, ... functions
