@@ -247,6 +247,8 @@ class Gaussian94BasisSetParser(object):
 
                                 if len(shell_type) == 1:
                                     am = shell_to_am[shell_type[0]]
+                                    if am < 0:
+                                        raise ValidationError("""Gaussian94BasisSetParser::parse: angular momentum type %s not recognized: line %d: %s""" % (shell_type[0], lineno, line))
 
                                     exponents = [0.0] * nprimitive
                                     contractions = [0.0] * nprimitive
@@ -277,6 +279,8 @@ class Gaussian94BasisSetParser(object):
                                     # This is to handle instances of SP, PD, DF, FG, ...
                                     am1 = shell_to_am[shell_type[0]]
                                     am2 = shell_to_am[shell_type[1]]
+                                    if am1 < 0 or am2 < 0:
+                                        raise ValidationError("""Gaussian94BasisSetParser::parse: angular momentum type %s not recognized: line %d: %s""" % (shell_type[0], lineno, line))
 
                                     exponents = [0.0] * nprimitive
                                     contractions1 = [0.0] * nprimitive
