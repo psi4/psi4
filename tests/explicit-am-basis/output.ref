@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.4a2.dev929 
+                               Psi4 1.4a2.dev932 
 
-                         Git: Rev {amtypes} d29aa62 dirty
+                         Git: Rev {amtypes} 91d69c1 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 27 August 2020 04:00PM
+    Psi4 started on: Thursday, 27 August 2020 06:35PM
 
-    Process ID: 2309667
+    Process ID: 2425584
     Host:       dx7-lehtola.chem.helsinki.fi
     PSIDATADIR: /home/work/psi4/install.susi/share/psi4
     Memory:     500.0 MiB
@@ -75,16 +75,16 @@ S   9   1.00
       7.8100000             -0.1070380
       1.6530000              0.5670500
       0.4869000              0.5652160
-S   1   1.00
+L=0   1   1.00
       0.4869000              1.0000000
 P   4   1.00
      28.3900000              0.0460870
       6.2700000              0.2401810
       1.6950000              0.5087440
       0.4317000              0.4556600
-P   1   1.00
+L=1   1   1.00
       0.4317000              1.0000000
-D   1   1.00
+L=2   1   1.00
       2.2020000              1.0000000
 ****
 }
@@ -93,17 +93,17 @@ set d_convergence 1e-10
 set e_convergence 1e-10
 set scf_type pk
 ene, wfn = energy('scf', return_wfn=True)
-compare_values(-128.48877555174084, ene, 8, "scf energy")  #TEST
+compare_values(-128.48877555174084, ene, 8, "scf energy in general basis")  #TEST
 --------------------------------------------------------------------------
 
 Scratch directory: /home/work/scratch//
 
 *** tstart() called on dx7-lehtola.chem.helsinki.fi
-*** at Thu Aug 27 16:00:23 2020
+*** at Thu Aug 27 18:35:53 2020
 
    => Loading Basis Set <=
 
-    Name: ANONYMOUS4614FFCD
+    Name: ANONYMOUS7CE6FDE4
     Role: ORBITAL
     Keyword: BASIS
     atoms 1 entry NE         line     5 inputblock pvdz 
@@ -151,7 +151,7 @@ Scratch directory: /home/work/scratch//
 
   ==> Primary Basis <==
 
-  Basis Set: ANONYMOUS4614FFCD
+  Basis Set: ANONYMOUS7CE6FDE4
     Blend: PVDZ
     Number of shells: 6
     Number of basis function: 14
@@ -275,18 +275,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-*** tstop() called on dx7-lehtola.chem.helsinki.fi at Thu Aug 27 16:00:24 2020
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Thu Aug 27 18:35:54 2020
 Module time:
-	user time   =       1.01 seconds =       0.02 minutes
+	user time   =       0.96 seconds =       0.02 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.01 seconds =       0.02 minutes
+	user time   =       0.96 seconds =       0.02 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
-    scf energy............................................................................PASSED
+    scf energy in general basis...........................................................PASSED
 
-    Psi4 stopped on: Thursday, 27 August 2020 04:00PM
-    Psi4 wall time for execution: 0:00:01.05
+    Psi4 stopped on: Thursday, 27 August 2020 06:35PM
+    Psi4 wall time for execution: 0:00:01.00
 
 *** Psi4 exiting successfully. Buy a developer a beer!
