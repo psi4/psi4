@@ -77,30 +77,38 @@ jobs:
     displayName: "Add Conda to PATH"
 
   - bash: |
-      conda create -q -n p4env python=$PYTHON_VER psi4 gau2grid=2 --only-deps -c psi4/label/dev
-      source activate p4env
-      which python
-      conda install \
-        dftd3 \
-        gcp \
-        resp \
-        pycppe \
-        pylibefp \
-        snsmp2 \
-        fockci \
-        mp2d \
-        pytest-xdist \
-        pybind11-headers \
-        -c psi4/label/dev
-      conda install \
+      conda create -q \
+        -n p4env \
+        python=$PYTHON_VER \
+        psi4/label/dev::gau2grid=2 \
+        psi4/label/dev::libint \
+        psi4/label/dev::libxc \
+        psi4/label/dev::ambit \
+        psi4/label/dev::chemps2 \
+        psi4/label/dev::dkh \
+        psi4/label/dev::gdma \
+        psi4/label/dev::pcmsolver \
+        psi4/label/dev::simint \
+        psi4/label/dev::dftd3 \
+        psi4/label/dev::gcp \
+        psi4/label/dev::resp \
+        psi4/label/dev::pycppe \
+        psi4/label/dev::pylibefp \
+        psi4/label/dev::snsmp2 \
+        psi4/label/dev::fockci \
+        psi4/label/dev::mp2d \
+        psi4/label/dev::pybind11-headers \
         blas=*=mkl \
         mkl-include \
-        qcelemental \
-        qcengine \
-        pymdi \
-        adcc \
-        -c adcc \
-        -c conda-forge
+        networkx \
+        pytest \
+        pytest-xdist \
+        conda-forge::qcelemental \
+        conda-forge::qcengine \
+        conda-forge::pymdi \
+        adcc::adcc
+      source activate p4env
+      which python
       pip install git+https://github.com/i-pi/i-pi.git@master-py3
       conda list
     displayName: 'Build Environment'
