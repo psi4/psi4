@@ -115,7 +115,7 @@ class Gaussian94BasisSetParser(object):
         ATOM = r'(([A-Z]{1,3}\d*)|([A-Z]{1,3}_\w+))'  # match 'C 0', 'Al c 0', 'P p88 p_pass 0' not 'Ofail 0', 'h99_text 0'
         atom_array = re.compile(r'^\s*((' + ATOM + r'\s+)+)0\s*$', re.IGNORECASE)  # array of atomic symbols terminated by 0
         atom_ecp = re.compile(r'^\s*((' + ATOM + r'-ECP\s+)+)(\d+)\s+(\d+)\s*$', re.IGNORECASE)  # atom_ECP number number
-        shell = re.compile(r'^\s*(\w+)\s*(\d+)\s*(-?\d+\.\d+)')  # Match beginning of contraction
+        shell = re.compile(r'^\s*(\w+|L=\d+)\s*(\d+)\s*(-?\d+\.\d+)')  # Match beginning of contraction
         blank = re.compile(r'^\s*$')
         NUMBER = r'((?:[-+]?\d*\.\d+(?:[DdEe][-+]?\d+)?)|(?:[-+]?\d+\.\d*(?:[DdEe][-+]?\d+)?)|(?:[-+]?\d+))'
         primitives1 = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + '.*')  # Match s, p, d, f, g, ... functions
@@ -245,8 +245,10 @@ class Gaussian94BasisSetParser(object):
                                 nprimitive = int(what.group(2))
                                 scale = float(what.group(3))
 
-                                if len(shell_type) == 1:
-                                    am = shell_to_am[shell_type[0]]
+                                if len(shell_type) == 1 or (len(shell_type) >= 3 and shell_type[:2] == 'L='):
+                                    am = shell_to_am[shell_type[0]] if len(shell_type)==1 else int(shell_type[2:])
+                                    if am < 0:
+                                        raise ValidationError("""Gaussian94BasisSetParser::parse: angular momentum type %s not recognized: line %d: %s""" % (shell_type[0], lineno, line))
 
                                     exponents = [0.0] * nprimitive
                                     contractions = [0.0] * nprimitive
@@ -277,6 +279,8 @@ class Gaussian94BasisSetParser(object):
                                     # This is to handle instances of SP, PD, DF, FG, ...
                                     am1 = shell_to_am[shell_type[0]]
                                     am2 = shell_to_am[shell_type[1]]
+                                    if am1 < 0 or am2 < 0:
+                                        raise ValidationError("""Gaussian94BasisSetParser::parse: angular momentum type %s not recognized: line %d: %s""" % (shell_type[0], lineno, line))
 
                                     exponents = [0.0] * nprimitive
                                     contractions1 = [0.0] * nprimitive
@@ -311,6 +315,7 @@ class Gaussian94BasisSetParser(object):
                                         gaussian_type, 0, center, 0, 'Unnormalized'))
                                     shell_list.append(ShellInfo(am2, contractions2, exponents,
                                         gaussian_type, 0, center, 0, 'Unnormalized'))
+
                                 else:
                                     raise ValidationError("""Gaussian94BasisSetParser::parse: Unable to parse basis sets with spd, or higher grouping""")
                             else:

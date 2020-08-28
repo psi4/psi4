@@ -1,0 +1,292 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.4a2.dev932 
+
+                         Git: Rev {amtypes} 91d69c1 dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 27 August 2020 06:35PM
+
+    Process ID: 2425584
+    Host:       dx7-lehtola.chem.helsinki.fi
+    PSIDATADIR: /home/work/psi4/install.susi/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! Check that basis sets can be input with explicit angular momentum format
+
+molecule {
+0 1
+Ne
+}
+
+basis {
+assign pvdz
+
+[pvdz]
+spherical
+****
+Ne     0
+S   9   1.00
+  17880.0000000              0.0007380
+   2683.0000000              0.0056770
+    611.5000000              0.0288830
+    173.5000000              0.1085400
+     56.6400000              0.2909070
+     20.4200000              0.4483240
+      7.8100000              0.2580260
+      1.6530000              0.0150630
+      0.4869000             -0.0021000
+S   9   1.00
+  17880.0000000             -0.0001720
+   2683.0000000             -0.0013570
+    611.5000000             -0.0067370
+    173.5000000             -0.0276630
+     56.6400000             -0.0762080
+     20.4200000             -0.1752270
+      7.8100000             -0.1070380
+      1.6530000              0.5670500
+      0.4869000              0.5652160
+L=0   1   1.00
+      0.4869000              1.0000000
+P   4   1.00
+     28.3900000              0.0460870
+      6.2700000              0.2401810
+      1.6950000              0.5087440
+      0.4317000              0.4556600
+L=1   1   1.00
+      0.4317000              1.0000000
+L=2   1   1.00
+      2.2020000              1.0000000
+****
+}
+
+set d_convergence 1e-10
+set e_convergence 1e-10
+set scf_type pk
+ene, wfn = energy('scf', return_wfn=True)
+compare_values(-128.48877555174084, ene, 8, "scf energy in general basis")  #TEST
+--------------------------------------------------------------------------
+
+Scratch directory: /home/work/scratch//
+
+*** tstart() called on dx7-lehtola.chem.helsinki.fi
+*** at Thu Aug 27 18:35:53 2020
+
+   => Loading Basis Set <=
+
+    Name: ANONYMOUS7CE6FDE4
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry NE         line     5 inputblock pvdz 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: d2h
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         NE           0.000000000000     0.000000000000     0.000000000000    19.992440176200
+
+  Running in d2h symmetry.
+
+  Rotational constants: A = ************  B = ************  C = ************ [cm^-1]
+  Rotational constants: A = ************  B = ************  C = ************ [MHz]
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: ANONYMOUS7CE6FDE4
+    Blend: PVDZ
+    Number of shells: 6
+    Number of basis function: 14
+    Number of Cartesian functions: 15
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   1
+      Number of AO shells:               6
+      Number of primitives:             25
+      Number of atomic orbitals:        15
+      Number of basis functions:        14
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 11130 doubles for integral storage.
+  We computed 231 shell quartets total.
+  Whereas there are 231 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              375
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Minimum eigenvalue in the overlap matrix is 4.9979356035E-02.
+  Reciprocal condition number of the overlap matrix is 2.5630171345E-02.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         5       5       2       2       2       0
+     B1g        1       1       0       0       0       0
+     B2g        1       1       0       0       0       0
+     B3g        1       1       0       0       0       0
+     Au         0       0       0       0       0       0
+     B1u        2       2       1       1       1       0
+     B2u        2       2       1       1       1       0
+     B3u        2       2       1       1       1       0
+   -------------------------------------------------------
+    Total      14      14       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter   1:  -122.77311103118004   -1.22773e+02   5.12015e-01 DIIS
+   @RHF iter   2:  -127.36669402259999   -4.59358e+00   3.37201e-01 DIIS
+   @RHF iter   3:  -128.48678646886228   -1.12009e+00   1.37111e-02 DIIS
+   @RHF iter   4:  -128.48871754107458   -1.93107e-03   2.88939e-03 DIIS
+   @RHF iter   5:  -128.48877194020662   -5.43991e-05   6.97426e-04 DIIS
+   @RHF iter   6:  -128.48877555151154   -3.61130e-06   4.95379e-06 DIIS
+   @RHF iter   7:  -128.48877555174056   -2.29022e-10   1.64663e-07 DIIS
+   @RHF iter   8:  -128.48877555174087   -3.12639e-13   3.80360e-09 DIIS
+   @RHF iter   9:  -128.48877555174084    2.84217e-14   6.33579e-11 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1Ag   -32.765635     2Ag    -1.918798     1B3u   -0.832097  
+       1B2u   -0.832097     1B1u   -0.832097  
+
+    Virtual:                                                              
+
+       2B3u    1.694558     2B2u    1.694558     2B1u    1.694558  
+       3Ag     2.159425     1B2g    5.196711     1B1g    5.196711  
+       1B3g    5.196711     4Ag     5.196711     5Ag     5.196711  
+
+    Final Occupation by Irrep:
+             Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+    DOCC [     2,    0,    0,    0,    0,    1,    1,    1 ]
+
+  @RHF Final Energy:  -128.48877555174084
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              0.0000000000000000
+    One-Electron Energy =                -182.6161002879330510
+    Two-Electron Energy =                  54.1273247361922074
+    Total Energy =                       -128.4887755517408436
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Thu Aug 27 18:35:54 2020
+Module time:
+	user time   =       0.96 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.96 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+    scf energy in general basis...........................................................PASSED
+
+    Psi4 stopped on: Thursday, 27 August 2020 06:35PM
+    Psi4 wall time for execution: 0:00:01.00
+
+*** Psi4 exiting successfully. Buy a developer a beer!
