@@ -1,0 +1,399 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.4a2.dev932 
+
+                         Git: Rev {amtypes} 91d69c1 dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Saturday, 29 August 2020 05:47PM
+
+    Process ID: 2964534
+    Host:       dx7-lehtola.chem.helsinki.fi
+    PSIDATADIR: /home/work/psi4/install.susi/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+molecule mol {
+0 1
+O 0.44260 -0.88720 -0.29490
+H 0.73940 -0.26640 -0.96690
+H 0.79240 -0.54630 0.53350
+}
+
+basis {
+assign sto3g-redundant
+[sto3g-redundant]
+cartesian
+****
+H     0
+S   3   1.00
+      3.42525091             0.15432897
+      0.62391373             0.53532814
+      0.16885540             0.44463454
+S   3   1.00
+      3.42525091             0.15432897
+      0.62391373             0.53532814
+      0.16885540             0.44463454
+****
+O     0
+S   3   1.00
+    130.7093200              0.15432897
+     23.8088610              0.53532814
+      6.4436083              0.44463454
+SP   3   1.00
+      5.0331513             -0.09996723             0.15591627
+      1.1695961              0.39951283             0.60768372
+      0.3803890              0.70011547             0.39195739
+S   3   1.00
+    130.7093200              0.15432897
+     23.8088610              0.53532814
+      6.4436083              0.44463454
+SP   3   1.00
+      5.0331513             -0.09996723             0.15591627
+      1.1695961              0.39951283             0.60768372
+      0.3803890              0.70011547             0.39195739
+****
+}
+
+set scf_type pk
+set reference rks
+
+psi4.properties("b3lyp", properties=["DIPOLE_POLARIZABILITIES", "DIPOLE"])
+
+bench_vals = {                                 #TEST
+ "DIPOLE POLARIZABILITY XX" :  2.253951033395, #TEST
+ "DIPOLE POLARIZABILITY XY" : -0.390933408152, #TEST
+ "DIPOLE POLARIZABILITY XZ" :  0.000000000000, #TEST
+ "DIPOLE POLARIZABILITY YX" : -0.390933435696, #TEST
+ "DIPOLE POLARIZABILITY YY" :  5.066687820179, #TEST
+ "DIPOLE POLARIZABILITY YZ" :  0.000000000000, #TEST
+ "DIPOLE POLARIZABILITY ZX" :  0.000000000000, #TEST
+ "DIPOLE POLARIZABILITY ZY" :  0.000000000000, #TEST
+ "DIPOLE POLARIZABILITY ZZ" :  0.039091347800  #TEST
+}
+
+for k, v in bench_vals.items():                #TEST
+    compare_values(variable(k), v, 3, k)       #TEST
+--------------------------------------------------------------------------
+
+*** tstart() called on dx7-lehtola.chem.helsinki.fi
+*** at Sat Aug 29 17:47:37 2020
+
+   => Loading Basis Set <=
+
+    Name: ANONYMOUSC5B43901
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    15 inputblock sto3g-redundant 
+    atoms 2-3 entry H          line     5 inputblock sto3g-redundant 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.064836747709     0.008826509736     0.000000000000    15.994914619570
+         H           -0.617610397096     0.686567444421     0.000000000000     1.007825032230
+         H           -0.411395839753    -0.826650559153     0.000000000000     1.007825032230
+
+  Running in cs symmetry.
+
+  Rotational constants: A =     27.54768  B =     14.34323  C =      9.43218 [cm^-1]
+  Rotational constants: A = 825858.67354  B = 429999.28353  C = 282769.74790 [MHz]
+  Nuclear repulsion =    9.150167433581245
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: ANONYMOUSC5B43901
+    Blend: STO3G-REDUNDANT
+    Number of shells: 10
+    Number of basis function: 14
+    Number of Cartesian functions: 14
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> DFT Potential <==
+
+   => Composite Functional: B3LYP <= 
+
+    B3LYP Hyb-GGA Exchange-Correlation Functional
+
+    P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch, J. Phys. Chem. 98, 11623 (1994)
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =           TRUE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    0.0800   Slater exchange
+    0.7200         Becke 88
+
+   => Exact (HF) Exchange <=
+
+    0.2000               HF 
+
+   => Correlation Functionals <=
+
+    0.1900   Vosko, Wilk & Nusair (VWN5_RPA)
+    0.8100   Lee, Yang & Parr
+
+   => LibXC Density Thresholds  <==
+
+    XC_HYB_GGA_XC_B3LYP:  1.00E-32 
+
+   => Molecular Quadrature <=
+
+    Radial Scheme          =       TREUTLER
+    Pruning Scheme         =           NONE
+    Nuclear Scheme         =       TREUTLER
+
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =          65755
+    Total Blocks           =            552
+    Max Points             =            255
+    Max Functions          =             14
+    Weights Tolerance      =       1.00E-15
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              10
+      Number of primitives:             30
+      Number of atomic orbitals:        14
+      Number of basis functions:        14
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 11130 doubles for integral storage.
+  We computed 1540 shell quartets total.
+  Whereas there are 1540 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              348
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Cached 100.0% of DFT collocation blocks in 0.026 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is -4.4711354922E-16.
+  Reciprocal condition number of the overlap matrix is -1.1625867172E-16.
+    Using partial Cholesky orthogonalization (doi:10.1063/1.5139948, doi:10.1103/PhysRevA.101.032504).
+  Cholesky: overall, 7 of 14 possible AOs eliminated.
+
+    Proceeding with canonical orthogonalization in reduced basis.
+  Minimum eigenvalue in the overlap matrix is 3.4526754183E-01.
+  Reciprocal condition number of the overlap matrix is 1.7955325162E-01.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A'        12       6 
+     A"         2       1 
+   -------------------------
+    Total      14       7
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RKS iter SAD:   -74.88720242095690   -7.48872e+01   0.00000e+00 
+   @RKS iter   1:   -75.28717074048983   -3.99968e-01   3.06443e-02 DIIS
+   @RKS iter   2:   -75.30150317623348   -1.43324e-02   2.20766e-02 DIIS
+   @RKS iter   3:   -75.31324764212565   -1.17445e-02   2.64512e-04 DIIS
+   @RKS iter   4:   -75.31324909360944   -1.45148e-06   5.69291e-06 DIIS
+   @RKS iter   5:   -75.31324909430373   -6.94286e-10   1.81363e-07 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1Ap   -18.834876     2Ap    -0.932841     3Ap    -0.443036  
+       4Ap    -0.229011     1App   -0.143540  
+
+    Virtual:                                                              
+
+       5Ap     0.350844     6Ap     0.468729  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [     4,    1 ]
+
+  @RKS Final Energy:   -75.31324909430373
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1501674335812453
+    One-Electron Energy =                -122.2898018769506336
+    Two-Electron Energy =                  45.4564743587116595
+    DFT Exchange-Correlation Energy =      -7.6300890096460030
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    Total Energy =                        -75.3132490943037283
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the B3LYP density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:    -0.9644      Y:    -0.1313      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.3140      Y:     0.0426      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:    -0.6504      Y:    -0.0886      Z:     0.0000     Total:     0.6564
+
+  Dipole Moment: [D]
+     X:    -1.6531      Y:    -0.2253      Z:     0.0000     Total:     1.6684
+
+
+
+         ---------------------------------------------------------
+                       CPSCF Linear Response Solver               
+                 by Marvin Lechner and Daniel G. A. Smith         
+         ---------------------------------------------------------
+
+   ==> Requested Responses <==
+
+    Dipole polarizabilities
+
+   ==> Coupled-Perturbed RKS Solver <==
+
+    Maxiter             =         100
+    Convergence         =   1.000E-06
+    Number of equations =           3
+   -----------------------------------------------------
+     Iter   Residual RMS      Max RMS  Remain  Time [s]
+   -----------------------------------------------------
+    Guess      2.278e+00    2.672e+00       3         0
+        1      1.759e-01    3.819e-01       3         0
+        2      2.005e-02    3.230e-02       2         0
+        3      2.117e-03    4.500e-03       2         0
+        4      1.169e-04    2.405e-04       2         1
+        5      3.693e-06    8.848e-06       2         1
+        6      1.026e-07    2.469e-07       0         1
+   -----------------------------------------------------
+
+    Solver has converged.
+
+
+   ==> Response Properties <==
+
+    => Dipole polarizabilities <=
+
+              X          Y          Z     
+    ----- ---------- ---------- ----------
+      X      2.25395   -0.39093    0.00000
+      Y     -0.39093    5.06669    0.00000
+      Z      0.00000    0.00000    0.03909
+
+*** tstop() called on dx7-lehtola.chem.helsinki.fi at Sat Aug 29 17:47:40 2020
+Module time:
+	user time   =       3.01 seconds =       0.05 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =       3.01 seconds =       0.05 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+    DIPOLE POLARIZABILITY XX..............................................................PASSED
+    DIPOLE POLARIZABILITY XY..............................................................PASSED
+    DIPOLE POLARIZABILITY XZ..............................................................PASSED
+    DIPOLE POLARIZABILITY YX..............................................................PASSED
+    DIPOLE POLARIZABILITY YY..............................................................PASSED
+    DIPOLE POLARIZABILITY YZ..............................................................PASSED
+    DIPOLE POLARIZABILITY ZX..............................................................PASSED
+    DIPOLE POLARIZABILITY ZY..............................................................PASSED
+    DIPOLE POLARIZABILITY ZZ..............................................................PASSED
+
+    Psi4 stopped on: Saturday, 29 August 2020 05:47PM
+    Psi4 wall time for execution: 0:00:03.04
+
+*** Psi4 exiting successfully. Buy a developer a beer!
