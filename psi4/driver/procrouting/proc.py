@@ -1853,7 +1853,6 @@ def run_dfocc_gradient(name, **kwargs):
     core.set_local_option('DFOCC', 'DO_SOS', 'FALSE')
     core.set_local_option('SCF', 'DF_INTS_IO', 'SAVE')
 
-    print(f'{name=} {core.has_global_option_changed("MP_TYPE")=}')
     if name in ["mp2.5", "mp3"] and not core.has_global_option_changed("MP_TYPE"):
         core.print_out(f"    Information: {name.upper()} default algorithm changed to DF in August 2020. Use `set mp_type conv` for previous behavior.\n")
 
