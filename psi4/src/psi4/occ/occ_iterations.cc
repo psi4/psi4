@@ -347,7 +347,7 @@ void OCCWave::occ_iterations() {
             break;
         }
 
-        if (rms_wog < tol_grad && biggest_mograd < mograd_max && std::fabs(DE) < (0.1 * tol_Eod)) break;
+        if (rms_wog < tol_grad && biggest_mograd < mograd_max && std::fabs(DE) < tol_Eod) break;
 
         if (rms_wog >= DIVERGE) {
             throw PSIEXCEPTION("OCC iterations are diverging");

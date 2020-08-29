@@ -2320,6 +2320,10 @@ def test_olccd_energy_scftype(inp, dertype, basis, subjects, clsd_open_pmols, re
         pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ", "freeze_core": "false",                    },              }, id="olccd  rhf    conv ae: * occ  ",),
         pytest.param({"keywords": {"reference": "uhf",  "cc_type": "conv", "qc_module": "occ", "freeze_core": "false",                    },              }, id="olccd  uhf    conv ae: * occ  ",),
         pytest.param({"keywords": {"reference": "rohf", "cc_type": "conv", "qc_module": "occ", "freeze_core": "false",                    },              }, id="olccd rohf    conv ae: * occ  ",),
+        #
+        pytest.param({"keywords": {"reference": "rhf",  "cc_type": "conv", "qc_module": "occ", "freeze_core": "false",                    "ccl_energy": "true", "tpdm_abcd_type": "compute"},              }, id="olccd  rhf  v conv ae:   occ  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "cc_type": "conv", "qc_module": "occ", "freeze_core": "false",                    "ccl_energy": "true", "tpdm_abcd_type": "compute"},              }, id="olccd  uhf  v conv ae:   occ  ",),
+        pytest.param({"keywords": {"reference": "rohf", "cc_type": "conv", "qc_module": "occ", "freeze_core": "false",                    "ccl_energy": "true", "tpdm_abcd_type": "compute"},              }, id="olccd rohf  v conv ae:   occ  ",),
         # ####
         # pytest.param({"keywords": {"reference": "rhf",  "cc_type": "df",   "qc_module": "occ", "freeze_core": "true",                     },}, id="olccd  rhf    df   fc:   dfocc",),
         # pytest.param({"keywords": {"reference": "uhf",  "cc_type": "df",   "qc_module": "occ", "freeze_core": "true",                     },}, id="olccd  uhf    df   fc:   dfocc",),

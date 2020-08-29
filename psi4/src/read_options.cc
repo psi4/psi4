@@ -2787,7 +2787,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do apply DIIS extrapolation? -*/
         options.add_bool("DO_DIIS", true);
         /*- Do compute CC Lambda energy? In order to this option to be valid one should use "TPDM_ABCD_TYPE = COMPUTE"
-         * option. -*/
+        option. -*/
         options.add_bool("CCL_ENERGY", false);
         /*- Do compute OCC poles for ionization potentials? Only valid OMP2. -*/
         options.add_bool("IP_POLES", false);
