@@ -57,7 +57,7 @@ dipoles = wfn.array_variable('MBIS DIPOLES')
 quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
 
-compare_matrices(charges_ref, charges, 7, "MBIS Charges")             #TEST
-compare_matrices(dipoles_ref, dipoles, 7, "MBIS Dipoles")             #TEST
-compare_matrices(quadrupoles_ref, quadrupoles, 7, "MBIS Quadrupoles") #TEST
-compare_matrices(octupoles_ref, octupoles, 7, "MBIS Octupoles")       #TEST
+compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
+compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
+compare_matrices(quadrupoles_ref, quadrupoles, 5, "MBIS Quadrupoles") #TEST
+compare_matrices(octupoles_ref, octupoles, 5, "MBIS Octupoles")       #TEST

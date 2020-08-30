@@ -259,7 +259,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- MBIS Number of Spherical Points -*/
     options.add_int("MBIS_SPHERICAL_POINTS", 302);
     /*- Pruning scheme for MBIS Grid -*/
-    options.add_str("MBIS_PRUNING_SCHEME", "NONE");
+    options.add_str("MBIS_PRUNING_SCHEME", "ROBUST", 
+                    "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
 
     /*- PCM boolean for pcmsolver module -*/
     options.add_bool("PCM", false);

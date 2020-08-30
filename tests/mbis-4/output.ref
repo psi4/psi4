@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.4a2.dev848 
+                               Psi4 1.4a2.dev851 
 
-                         Git: Rev {mbis} e44b23a dirty
+                         Git: Rev {mbis} 8961a5b dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 26 August 2020 06:18PM
+    Psi4 started on: Saturday, 29 August 2020 04:25PM
 
-    Process ID: 2431
+    Process ID: 7407
     Host:       ds4
     PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
@@ -42,28 +42,29 @@
 
 --------------------------------------------------------------------------
 #! MBIS calculation on NaCl
+#Charges generated from e_convergence 9, d_convergence 8
 
 charges_ref = psi4.Matrix.from_list([ #TEST
- [ 0.9652361 ],   #TEST
- [-0.96523273]])  #TEST
+ [ 0.96523585],   #TEST
+ [-0.96523183]])  #TEST
 
 dipoles_ref = psi4.Matrix.from_list([ #TEST
- [-1.42467041e-14,  4.53688784e-15, -9.80594926e-03],  #TEST
- [ 1.63097810e-14,  3.35851284e-14,  6.42358559e-01]]) #TEST
+ [-2.23411999e-14, -2.20439206e-15, -9.80619005e-03],   #TEST
+ [-1.75989793e-14, -2.48615076e-14,  6.42357434e-01]])  #TEST
 
 quadrupoles_ref = psi4.Matrix.from_list([ #TEST
- [-2.34992364e+00, -3.43358726e-15,  4.25170609e-14, -2.34992364e+00,
-  -1.32926359e-14, -2.28980730e+00], #TEST
- [-1.18919801e+01,  3.84602571e-14,  4.94675913e-14, -1.18919801e+01,
-  -4.42960342e-14, -1.20798264e+01]]) #TEST
+ [-2.34992472e+00,  7.61625032e-15,  1.11488363e-14, -2.34992472e+00,
+   1.52174839e-14, -2.28980795e+00],      #TEST
+ [-1.18919799e+01, -8.95107296e-15,  4.38636176e-14, -1.18919799e+01,
+  -1.25080726e-15, -1.20798224e+01]])     #TEST
 
 octupoles_ref = psi4.Matrix.from_list([ #TEST
- [-3.49827519e-13, -2.70341979e-13, -2.55755339e-02, -5.56127851e-14,
-   6.03148390e-14, -6.73274814e-14, -1.78172607e-13, -2.55755339e-02,
-   5.26688777e-14, -5.92186150e-02], #TEST
- [ 9.10891945e-14,  8.85549562e-14,  2.25696361e+00, -1.39974795e-13,
-  -1.61387749e-13, -6.44818499e-14,  4.70577367e-13,  2.25696361e+00,
-   2.06112555e-13,  4.56955103e+00]]) #TEST
+ [-7.08856182e-13,  9.00611501e-14, -2.55766638e-02, -8.21613343e-14,
+   4.11929052e-15, -8.64722183e-14, -2.92947446e-15, -2.55766638e-02,
+   2.96871792e-14, -5.92204894e-02],    #TEST
+ [-1.02278453e-13, -3.95370047e-14,  2.25695766e+00, -2.19172973e-14,
+   5.53616140e-14, -1.58857644e-13, -3.37545507e-13,  2.25695766e+00,
+   5.64299708e-14,  4.56953404e+00]])   #TEST
 
 molecule mol {
   0 1
@@ -77,7 +78,7 @@ molecule mol {
 set {
   scf_type df
   d_convergence 8
-  e_convergence 10
+  e_convergence 9
   mbis_radial_points 99
   mbis_spherical_points 350
 }
@@ -91,10 +92,10 @@ dipoles = wfn.array_variable('MBIS DIPOLES')
 quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
 
-compare_matrices(charges_ref, charges, 7, "MBIS Charges")             #TEST
-compare_matrices(dipoles_ref, dipoles, 7, "MBIS Dipoles")             #TEST
-compare_matrices(quadrupoles_ref, quadrupoles, 7, "MBIS Quadrupoles") #TEST
-compare_matrices(octupoles_ref, octupoles, 7, "MBIS Octupoles")       #TEST
+compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
+compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
+compare_matrices(quadrupoles_ref, quadrupoles, 5, "MBIS Quadrupoles") #TEST
+compare_matrices(octupoles_ref, octupoles, 5, "MBIS Octupoles")       #TEST
 --------------------------------------------------------------------------
 
 Scratch directory: /scratch/jiang/
@@ -102,7 +103,7 @@ Scratch directory: /scratch/jiang/
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds4
-*** at Wed Aug 26 18:18:53 2020
+*** at Sat Aug 29 16:25:52 2020
 
    => Loading Basis Set <=
 
@@ -152,7 +153,7 @@ Scratch directory: /scratch/jiang/
   MOM disabled.
   Fractional occupation disabled.
   Guess Type is SAD.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-09
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -291,13 +292,13 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:    -0.0000      Z:    -9.3337     Total:     9.3337
 
 
-*** tstop() called on ds4 at Wed Aug 26 18:18:54 2020
+*** tstop() called on ds4 at Sat Aug 29 16:25:53 2020
 Module time:
-	user time   =       0.89 seconds =       0.01 minutes
+	user time   =       0.80 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.89 seconds =       0.01 minutes
+	user time   =       0.80 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
@@ -314,28 +315,28 @@ Properties computed using the NaCl SCF density matrix
   MBIS Charges: (a.u.)
    Center  Symbol  Z      Pop.       Charge
       1      NA   11   10.034764    0.965236
-      2      CL   17   17.965233   -0.965233
+      2      CL   17   17.965232   -0.965232
 
   MBIS Dipoles: [e a0]
    Center  Symbol  Z        X           Y           Z
-      1      NA   11   -0.000000    0.000000   -0.009806
-      2      CL   17   -0.000000    0.000000    0.642359
+      1      NA   11   -0.000000   -0.000000   -0.009806
+      2      CL   17   -0.000000   -0.000000    0.642357
 
   MBIS Quadrupoles: [e a0^2]
    Center  Symbol  Z      XX        XY        XZ        YY        YZ        ZZ
-      1      NA   11   -2.3499   -0.0000    0.0000   -2.3499   -0.0000   -2.2898
-      2      CL   17   -11.8920   -0.0000    0.0000   -11.8920    0.0000   -12.0798
+      1      NA   11   -2.3499    0.0000    0.0000   -2.3499    0.0000   -2.2898
+      2      CL   17   -11.8920   -0.0000    0.0000   -11.8920   -0.0000   -12.0798
 
   MBIS Octupoles: [e a0^3]
    Center  Symbol  Z      XXX       XXY       XXZ       XYY       XYZ       XZZ       YYY       YYZ       YZZ       ZZZ
-      1      NA   11   -0.0000   -0.0000   -0.0256   -0.0000    0.0000   -0.0000   -0.0000   -0.0256    0.0000   -0.0592
-      2      CL   17    0.0000   -0.0000    2.2570   -0.0000   -0.0000   -0.0000   -0.0000    2.2570    0.0000    4.5696
+      1      NA   11   -0.0000    0.0000   -0.0256   -0.0000    0.0000   -0.0000   -0.0000   -0.0256    0.0000   -0.0592
+      2      CL   17   -0.0000   -0.0000    2.2570   -0.0000    0.0000   -0.0000   -0.0000    2.2570    0.0000    4.5695
     MBIS Charges..........................................................................PASSED
     MBIS Dipoles..........................................................................PASSED
     MBIS Quadrupoles......................................................................PASSED
     MBIS Octupoles........................................................................PASSED
 
-    Psi4 stopped on: Wednesday, 26 August 2020 06:18PM
-    Psi4 wall time for execution: 0:00:04.62
+    Psi4 stopped on: Saturday, 29 August 2020 04:25PM
+    Psi4 wall time for execution: 0:00:03.31
 
 *** Psi4 exiting successfully. Buy a developer a beer!

@@ -71,7 +71,6 @@
 #include <memory>
 #include <map>
 #include <vector>
-#include <omp.h>
 
 namespace psi {
 
@@ -1812,7 +1811,8 @@ double rho_ai_0(double n, double sigma, double distance) {
     return n * exp(-distance / sigma) / (pow(sigma, 3) * 8 * M_PI);
 }
 
-// Updated parameters for initial MBIS params Nai and 1/Sai (from https://github.com/theochem/denspart/blob/740449c375f7e1c7b14cc8a978a8d0b1ed4617e3/denspart/mbis.py#L82)
+/* Updated parameters for initial MBIS params Nai and 1/Sai 
+   (from https://github.com/theochem/denspart/blob/740449c375f7e1c7b14cc8a978a8d0b1ed4617e3/denspart/mbis.py#L82 by Toon Verstraelen) */
 // Attention: MBIS is not supported for elements with atomic number greater than 36
 std::tuple<double, double> get_mbis_params(int atomic_num, int shell_num) {
     std::map<int, std::vector<std::tuple<double, double>>> params;
@@ -2250,7 +2250,9 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
                                                 {1, 2, 2}, 
                                                 {2, 2, 2}};
 
-    // Non-redundant cartesian multipoles
+    // Non-redundant cartesian multipoles, as given in the convention in the HORTON software
+    /* Commented out lines ending in _stone represent multipole conventions given in 
+       "The Theory of Intermolecular Forces (2nd Edition)" by Anthony Stone (A possible future addition) */
     auto mpole = std::make_shared<Matrix>("MBIS Charges: (a.u.)", num_atoms, 1);
     auto dpole = std::make_shared<Matrix>("MBIS Dipoles: (a.u.)", num_atoms, 3);
     auto qpole = std::make_shared<Matrix>("MBIS Quadrupoles: (a.u.)", num_atoms, 6);
