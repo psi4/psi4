@@ -157,12 +157,13 @@ def cpscf_linear_response(wfn, *args, **kwargs):
     _print_header(complete_dict, n_user)
 
     # fetch wavefunction information
-    nbf = wfn.nmo()
+    nmo = wfn.nmo()
     ndocc = wfn.nalpha()
-    nvirt = nbf - ndocc
+    nvirt = nmo - ndocc
 
     c_occ = wfn.Ca_subset("AO", "OCC")
     c_vir = wfn.Ca_subset("AO", "VIR")
+    nbf = c_occ.shape[0]
 
     # the vectors need to be in the MO basis. if they have the shape nbf x nbf, transform.
     for i in range(len(vectors)):
@@ -173,8 +174,8 @@ def cpscf_linear_response(wfn, *args, **kwargs):
 
         # verify that this vector already has the correct shape
         elif shape != (ndocc, nvirt):
-            raise ValidationError('ERROR: "{}" has an unrecognized shape. Must be either ({}, {}) or ({}, {})'.format(
-                vector_names[i], nbf, nbf, ndocc, nvirt))
+            raise ValidationError('ERROR: "{}" has an unrecognized shape ({}, {}). Must be either ({}, {}) or ({}, {})'.format(
+                vector_names[i], shape[0], shape[1], nbf, nbf, ndocc, nvirt))
 
     # compute response vectors for each input vector
     params = [kwargs.pop("conv_tol", 1.e-5), kwargs.pop("max_iter", 10), kwargs.pop("print_lvl", 2)]
