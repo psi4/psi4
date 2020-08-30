@@ -531,6 +531,12 @@ PSI Variables by Alpha
    The total electronic energy [H] and correlation energy component [H]
    for the full configuration interaction level of theory.
 
+.. psivar:: GRID ELECTRONS TOTAL
+   GRID ELECTRONS ALPHA
+   GRID ELECTRONS BETA
+
+   The number of electrons integrated by the xc quadrature grid.
+
 .. psivar:: HF TOTAL ENERGY
 
    The total electronic energy [H] for the Hartree--Fock method, without
