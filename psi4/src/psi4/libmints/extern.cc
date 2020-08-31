@@ -316,18 +316,20 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
         double zA = mol->z(A);
         double ZA = mol->Z(A);
 
-        for (size_t B = 0; B < charges_.size(); B++) {
-            double ZB = std::get<0>(charges_[B]);
-            double xB = convfac * std::get<1>(charges_[B]);
-            double yB = convfac * std::get<2>(charges_[B]);
-            double zB = convfac * std::get<3>(charges_[B]);
+        if (ZA > 0) { // skip Ghost interaction
+            for (size_t B = 0; B < charges_.size(); B++) {
+                double ZB = std::get<0>(charges_[B]);
+                double xB = convfac * std::get<1>(charges_[B]);
+                double yB = convfac * std::get<2>(charges_[B]);
+                double zB = convfac * std::get<3>(charges_[B]);
 
-            double dx = xA - xB;
-            double dy = yA - yB;
-            double dz = zA - zB;
-            double R = sqrt(dx * dx + dy * dy + dz * dz);
+                double dx = xA - xB;
+                double dy = yA - yB;
+                double dz = zA - zB;
+                double R = sqrt(dx * dx + dy * dy + dz * dz);
 
-            E += ZA * ZB / R;
+                E += ZA * ZB / R;
+            }
         }
     }
 
