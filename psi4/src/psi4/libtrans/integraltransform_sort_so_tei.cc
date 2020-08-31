@@ -347,10 +347,6 @@ void IntegralTransform::presort_so_tei() {
     free(bucketRowDim);
     free(bucketSize);
 
-    std::vector<double> moInts(nTriMo_, 0);
-    // We want to keep Pitzer ordering, so this is just an identity mapping
-    std::vector<int> order(nmo_);
-    std::iota(std::begin(order), std::end(order), 0);
     if (print_) outfile->Printf("\tConstructing frozen core operators\n");
     if (transformationType_ == TransformationType::Restricted) {
         // Compute frozen core energy
@@ -364,17 +360,10 @@ void IntegralTransform::presort_so_tei() {
             }
         }
 
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            auto pCa = Ca_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], aFzcOp.data(), moInts.data(), pCa, soOffset, &(order[moOffset]));
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis frozen core operator\n");
-            print_array(moInts.data(), nmo_, "outfile");
-        }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_FZC, nTriMo_, moInts.data());
+        auto aFzcMat = std::make_shared<Matrix>(PSIF_MO_FZC, mopi_, mopi_);
+        aFzcMat->set(aFzcOp.data());
+        aFzcMat->transform(Ca_);
+        aFzcMat->save(psio_, PSIF_OEI, Matrix::SaveType::LowerTriangle);
     } else {
         // Compute frozen-core energy
         size_t pq = 0;
@@ -387,29 +376,15 @@ void IntegralTransform::presort_so_tei() {
             }
         }
 
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            auto pCa = Ca_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], aFzcOp.data(), moInts.data(), pCa, soOffset, &(order[moOffset]));
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis alpha frozen core operator\n");
-            print_array(moInts.data(), nmo_, "outfile");
-        }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_A_FZC, nTriMo_, moInts.data());
+        auto aFzcMat = std::make_shared<Matrix>(PSIF_MO_A_FZC, mopi_, mopi_);
+        aFzcMat->set(aFzcOp.data());
+        aFzcMat->transform(Ca_);
+        aFzcMat->save(psio_, PSIF_OEI, Matrix::SaveType::LowerTriangle);
 
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            auto pCb = Cb_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], bFzcOp.data(), moInts.data(), pCb, soOffset, &(order[moOffset]));
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis beta frozen core operator\n");
-            print_array(moInts.data(), nmo_, "outfile");
-        }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_B_FZC, nTriMo_, moInts.data());
+        auto bFzcMat = std::make_shared<Matrix>(PSIF_MO_B_FZC, mopi_, mopi_);
+        bFzcMat->set(bFzcOp.data());
+        bFzcMat->transform(Cb_);
+        bFzcMat->save(psio_, PSIF_OEI, Matrix::SaveType::LowerTriangle);
     }
     delete[] aoH;
 
