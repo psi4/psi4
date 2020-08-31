@@ -1,9 +1,9 @@
 import pytest
 from qcengine.programs.tests.standard_suite_contracts import (
-    # contractual_hf,
+    contractual_hf,
     contractual_mp2,
-    # contractual_mp2p5,
-    # contractual_mp3,
+    contractual_mp2p5,
+    contractual_mp3,
     contractual_lccd,
     contractual_lccsd,
     contractual_ccsd,
@@ -35,7 +35,10 @@ def runner_asserter(inp, subject, method, basis, tnm):
     # ? precedence on next two
     scf_type = inp.get("corl_type", inp["keywords"].get("scf_type", "df"))  # hard-code of read_options.cc SCF_TYPE
     mp2_type = inp.get("corl_type", inp["keywords"].get("mp2_type", "df"))  # hard-code of read_options.cc MP2_TYPE
-    mp_type = inp.get("corl_type", inp["keywords"].get("mp_type", "conv"))  # hard-code of read_options.cc MP_TYPE
+    if method in ["mp2.5", "mp3"]:
+        mp_type = inp.get("corl_type", inp["keywords"].get("mp_type", "df"))  # hard-code of proc.py run_dfocc MP_TYPE
+    else:
+        mp_type = inp.get("corl_type", inp["keywords"].get("mp_type", "conv"))  # hard-code of read_options.cc MP_TYPE
     cc_type = inp.get("corl_type", inp["keywords"].get("cc_type", "conv"))  # hard-code of read_options.cc CC_TYPE
     corl_natural_values = {
         "hf": "df",  # dummy to assure df/cd/conv scf_type refs available
@@ -73,15 +76,14 @@ def runner_asserter(inp, subject, method, basis, tnm):
 
     psi4.set_options(
         {
+            # reference generation conv crit
             # "guess": "sad",
             # "e_convergence": 10,
             # "d_convergence": 9,
             # "r_convergence": 9,
             # "pcg_convergence": 9,
 
-            # runtime conv crit, solely for occ/dfocc needs
-            "e_convergence": 7,
-            "pcg_convergence": 7,
+            # runtime conv crit
             "points": 5,
         }
     )
