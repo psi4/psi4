@@ -39,6 +39,7 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 
 #include <cmath>
+#include <numeric>
 
 using namespace psi;
 
@@ -182,26 +183,17 @@ void IntegralTransform::presort_so_tei() {
         return;
     }
 
-    // Set aside some memory for the frozen core density and frozen core operator
-    double *aFzcD = init_array(nTriSo_);
-    double *aFzcOp = init_array(nTriSo_);
-    double *aD = init_array(nTriSo_);
-    double *aFock = init_array(nTriSo_);
-    double *bFzcD = aFzcD;
-    double *bFzcOp = aFzcOp;
-    double *bD = aD;
-    double *bFock = aFock;
+    /// Initialize frozen core density
+    auto aFzcD = std::vector<double>(nTriSo_); // Density matrix from core orbitals only
+    std::vector<double> bFzcD, bFzcOp;
     if (transformationType_ != TransformationType::Restricted) {
-        bFzcD = init_array(nTriSo_);
-        bFzcOp = init_array(nTriSo_);
-        bD = init_array(nTriSo_);
-        bFock = init_array(nTriSo_);
+        bFzcD = std::vector<double>(nTriSo_);
     }
 
-    // Form the Density matrices
+    // Set frozen core density
     for (int h = 0, soOffset = 0; h < nirreps_; ++h) {
-        double **pCa = Ca_->pointer(h);
-        double **pCb = Cb_->pointer(h);
+        auto pCa = Ca_->pointer(h);
+        auto pCb = Cb_->pointer(h);
         for (int p = 0; p < sopi_[h]; ++p) {
             for (int q = 0; q <= p; ++q) {
                 int pq = INDEX((p + soOffset), (q + soOffset));
@@ -209,43 +201,19 @@ void IntegralTransform::presort_so_tei() {
                 if (transformationType_ != TransformationType::Restricted) {
                     for (int i = 0; i < frzcpi_[h]; ++i) bFzcD[pq] += pCb[p][i] * pCb[q][i];
                 }
-                if(buildMOFock_){
-                    for (int i = 0; i < nalphapi_[h]; ++i) aD[pq] += pCa[p][i] * pCa[q][i];
-                    if (transformationType_ != TransformationType::Restricted) {
-                        for (int i = 0; i < nbetapi_[h]; ++i) bD[pq] += pCb[p][i] * pCb[q][i];
-                    }
-                }
             }
         }
         soOffset += sopi_[h];
     }
 
-    /*
-    double *T = init_array(nTriSo_);
-
-    for(int pq=0; pq < nTriSo_; ++pq){
-        aoH[pq] += T[pq];
-        aFzcOp[pq] = aoH[pq];
-        aFock[pq]  = aoH[pq];
-        if(transformationType_ != TransformationType::Restricted){
-            bFock[pq]  = aoH[pq];
-            bFzcOp[pq] = aoH[pq];
-        }
-    }
-    free(T);
-    */
-
-    // H_->print();
-    double *aoH = H_->to_lower_triangle();
-    for (int pq = 0; pq < nTriSo_; ++pq) {
-        aFzcOp[pq] = aoH[pq];
-        aFock[pq] = aoH[pq];
-        if (transformationType_ != TransformationType::Restricted) {
-            bFock[pq] = aoH[pq];
-            bFzcOp[pq] = aoH[pq];
-        }
+    // Copy the OEI into the frozen core operator
+    auto aoH = H_->to_lower_triangle();
+    std::vector<double> aFzcOp(aoH, aoH + nTriSo_); // The frozen core operator. Not complete yet.
+    if (transformationType_ != TransformationType::Restricted) {
+        bFzcOp = std::vector<double>(aoH, aoH + nTriSo_);
     }
 
+    /// Resume TEI sorting
     int currentActiveDPD = psi::dpd_default;
     dpd_set_default(myDPDNum_);
 
@@ -339,19 +307,20 @@ void IntegralTransform::presort_so_tei() {
         DPDFillerFunctor dpdfiller(&I, n, bucketMap, bucketOffset, false, true);
         NullFunctor null;
         IWL *iwl = new IWL(psio_.get(), soIntTEIFile_, tolerance_, 1, 1);
-        // In the functors below, we only want to build the Fock matrix on the first pass
+        // We need to feed the IWL integrals to construct the frozen core operator only once
+        // If we're not on the first DPD bucket, skip it for efficiency.
         if (transformationType_ == TransformationType::Restricted) {
-            FrozenCoreAndFockRestrictedFunctor fock(aD, aFzcD, aFock, aFzcOp);
+            FrozenCoreRestrictedFunctor frozencore(aFzcD.data(), aFzcOp.data());
             if (n)
                 iwl_integrals(iwl, dpdfiller, null);
             else
-                iwl_integrals(iwl, dpdfiller, fock);
+                iwl_integrals(iwl, dpdfiller, frozencore);
         } else {
-            FrozenCoreAndFockUnrestrictedFunctor fock(aD, bD, aFzcD, bFzcD, aFock, bFock, aFzcOp, bFzcOp);
+            FrozenCoreUnrestrictedFunctor frozencore(aFzcD.data(), bFzcD.data(), aFzcOp.data(), bFzcOp.data());
             if (n)
                 iwl_integrals(iwl, dpdfiller, null);
             else
-                iwl_integrals(iwl, dpdfiller, fock);
+                iwl_integrals(iwl, dpdfiller, frozencore);
         }
         delete iwl;
 
@@ -378,11 +347,7 @@ void IntegralTransform::presort_so_tei() {
     free(bucketRowDim);
     free(bucketSize);
 
-    double *moInts = init_array(nTriMo_);
-    int *order = init_int_array(nmo_);
-    // We want to keep Pitzer ordering, so this is just an identity mapping
-    for (int n = 0; n < nmo_; ++n) order[n] = n;
-    if (print_) outfile->Printf("\tTransforming the one-electron integrals and constructing Fock matrices\n");
+    if (print_) outfile->Printf("\tConstructing frozen core operators\n");
     if (transformationType_ == TransformationType::Restricted) {
         // Compute frozen core energy
         size_t pq = 0;
@@ -395,42 +360,10 @@ void IntegralTransform::presort_so_tei() {
             }
         }
 
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            double **pCa = Ca_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], aoH, moInts, pCa, soOffset, &(order[moOffset]));
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis one-electron integrals\n");
-            print_array(moInts, nmo_, "outfile");
-        }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_OEI, nTriMo_, moInts);
-
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            double **pCa = Ca_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], aFzcOp, moInts, pCa, soOffset, &(order[moOffset]));
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis frozen core operator\n");
-            print_array(moInts, nmo_, "outfile");
-        }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_FZC, nTriMo_, moInts);
-
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            double **pCa = Ca_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], aFock, moInts, pCa, soOffset, &(order[moOffset]));
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis Fock operator\n");
-            print_array(moInts, nmo_, "outfile");
-        }
-
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_FOCK, nTriMo_, moInts);
+        auto aFzcMat = std::make_shared<Matrix>(PSIF_MO_FZC, mopi_, mopi_);
+        aFzcMat->set(aFzcOp.data());
+        aFzcMat->transform(Ca_);
+        aFzcMat->save(psio_, PSIF_OEI, Matrix::SaveType::LowerTriangle);
     } else {
         // Compute frozen-core energy
         size_t pq = 0;
@@ -443,88 +376,15 @@ void IntegralTransform::presort_so_tei() {
             }
         }
 
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            double **pCa = Ca_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], aoH, moInts, pCa, soOffset, &(order[moOffset]));
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis alpha one-electron integrals\n");
-            print_array(moInts, nmo_, "outfile");
-        }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_A_OEI, nTriMo_, moInts);
+        auto aFzcMat = std::make_shared<Matrix>(PSIF_MO_A_FZC, mopi_, mopi_);
+        aFzcMat->set(aFzcOp.data());
+        aFzcMat->transform(Ca_);
+        aFzcMat->save(psio_, PSIF_OEI, Matrix::SaveType::LowerTriangle);
 
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            double **pCb = Cb_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], aoH, moInts, pCb, soOffset, &(order[moOffset]));
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis beta one-electron integrals\n");
-            print_array(moInts, nmo_, "outfile");
-        }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_B_OEI, nTriMo_, moInts);
-
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            double **pCa = Ca_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], aFzcOp, moInts, pCa, soOffset, &(order[moOffset]));
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis alpha frozen core operator\n");
-            print_array(moInts, nmo_, "outfile");
-        }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_A_FZC, nTriMo_, moInts);
-
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            double **pCb = Cb_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], bFzcOp, moInts, pCb, soOffset, &(order[moOffset]));
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis beta frozen core operator\n");
-            print_array(moInts, nmo_, "outfile");
-        }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_B_FZC, nTriMo_, moInts);
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            double **pCa = Ca_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], aFock, moInts, pCa, soOffset, &(order[moOffset]));
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis alpha Fock operator\n");
-            print_array(moInts, nmo_, "outfile");
-        }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_A_FOCK, nTriMo_, moInts);
-
-        for (int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h) {
-            double **pCb = Cb_->pointer(h);
-            trans_one(sopi_[h], mopi_[h], bFock, moInts, pCb, soOffset, &(order[moOffset]));
-            soOffset += sopi_[h];
-            moOffset += mopi_[h];
-        }
-        if (print_ > 4) {
-            outfile->Printf("The MO basis beta Fock operator\n");
-            print_array(moInts, nmo_, "outfile");
-        }
-        IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_B_FOCK, nTriMo_, moInts);
-    }
-    free(order);
-    free(moInts);
-    free(aFzcD);
-    free(aFzcOp);
-    free(aD);
-    free(aFock);
-    if (transformationType_ != TransformationType::Restricted) {
-        free(bFzcD);
-        free(bFzcOp);
-        free(bD);
-        free(bFock);
+        auto bFzcMat = std::make_shared<Matrix>(PSIF_MO_B_FZC, mopi_, mopi_);
+        bFzcMat->set(bFzcOp.data());
+        bFzcMat->transform(Cb_);
+        bFzcMat->save(psio_, PSIF_OEI, Matrix::SaveType::LowerTriangle);
     }
     delete[] aoH;
 
