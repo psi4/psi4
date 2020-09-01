@@ -571,13 +571,13 @@ def scf_finalize_energy(self):
         self.set_variable("GRID ELECTRONS BETA",rho_b)
         dev_a = rho_a - self.nalpha()
         dev_b = rho_b - self.nbeta()
-        core.print_out(f"   electrons on quadrature grid:\n")
+        core.print_out(f"   Electrons on quadrature grid:\n")
         if self.same_a_b_dens():
-            core.print_out(f"      NTotal = {rho_ab:15.10f} ; deviation = {dev_b+dev_a:.3e} \n\n")
+            core.print_out(f"      Ntotal   = {rho_ab:15.10f} ; deviation = {dev_b+dev_a:.3e} \n\n")
         else:
             core.print_out(f"      Nalpha   = {rho_a:15.10f} ; deviation = {dev_a:.3e}\n")
             core.print_out(f"      Nbeta    = {rho_b:15.10f} ; deviation = {dev_b:.3e}\n")
-            core.print_out(f"      NTotal   = {rho_ab:15.10f} ; deviation = {dev_b+dev_a:.3e} \n\n")
+            core.print_out(f"      Ntotal   = {rho_ab:15.10f} ; deviation = {dev_b+dev_a:.3e} \n\n")
         if ((dev_b+dev_a) > 0.1):
             core.print_out("   WARNING: large deviation in the electron count on grid detected. Check grid size!")
     self.check_phases()
