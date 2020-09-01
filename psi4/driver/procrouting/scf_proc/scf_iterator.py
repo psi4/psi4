@@ -561,6 +561,25 @@ def scf_finalize_energy(self):
 
     core.print_out("\n  ==> Post-Iterations <==\n\n")
 
+    if self.V_potential():
+        quad = self.V_potential().quadrature_values()
+        rho_a = quad['RHO_A']/2 if self.same_a_b_dens() else quad['RHO_A']
+        rho_b = quad['RHO_B']/2 if self.same_a_b_dens() else quad['RHO_B']
+        rho_ab = (rho_a + rho_b)
+        self.set_variable("GRID ELECTRONS TOTAL",rho_ab)
+        self.set_variable("GRID ELECTRONS ALPHA",rho_a)
+        self.set_variable("GRID ELECTRONS BETA",rho_b)
+        dev_a = rho_a - self.nalpha()
+        dev_b = rho_b - self.nbeta()
+        core.print_out(f"   Electrons on quadrature grid:\n")
+        if self.same_a_b_dens():
+            core.print_out(f"      Ntotal   = {rho_ab:15.10f} ; deviation = {dev_b+dev_a:.3e} \n\n")
+        else:
+            core.print_out(f"      Nalpha   = {rho_a:15.10f} ; deviation = {dev_a:.3e}\n")
+            core.print_out(f"      Nbeta    = {rho_b:15.10f} ; deviation = {dev_b:.3e}\n")
+            core.print_out(f"      Ntotal   = {rho_ab:15.10f} ; deviation = {dev_b+dev_a:.3e} \n\n")
+        if ((dev_b+dev_a) > 0.1):
+            core.print_out("   WARNING: large deviation in the electron count on grid detected. Check grid size!")
     self.check_phases()
     self.compute_spin_contamination()
     self.frac_renormalize()
