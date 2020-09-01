@@ -253,6 +253,21 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- How many NOONS to print -- used in libscf_solver/uhf.cc and libmints/oeprop.cc -*/
     options.add_str("PRINT_NOONS", "3");
 
+    ///MBIS Options (libmints/oeprop.cc)
+
+    /*- Maximum Number of MBIS Iterations -*/
+    options.add_int("MBIS_MAXITER", 500);
+    /*- MBIS Convergence Criteria -*/
+    options.add_double("MBIS_D_CONVERGENCE", 1.0e-8);
+    /*- MBIS Number of Radial Points -*/
+    /*- Additional Radial and/or Spherical Points may be needed for Heavier Atoms (200-300) like Zinc -*/
+    options.add_int("MBIS_RADIAL_POINTS", 75);
+    /*- MBIS Number of Spherical Points -*/
+    options.add_int("MBIS_SPHERICAL_POINTS", 302);
+    /*- Pruning scheme for MBIS Grid -*/
+    options.add_str("MBIS_PRUNING_SCHEME", "ROBUST", 
+                    "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
+
     /*- PCM boolean for pcmsolver module -*/
     options.add_bool("PCM", false);
     if (name == "PCM" || options.read_globals()) {
@@ -1619,10 +1634,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Verbosity level in TDSCF -*/
         options.add_int("TDSCF_PRINT", 1);
 
-        /*- combine omega exchange and Hartree--Fock exchange into 
-              one matrix for efficiency? 
-            Default is True for MemDFJK 
-              (itself the default for |globals__scf_type| DF), 
+        /*- combine omega exchange and Hartree--Fock exchange into
+              one matrix for efficiency?
+            Default is True for MemDFJK
+              (itself the default for |globals__scf_type| DF),
             False otherwise as not yet implemented. -*/
         options.add_bool("WCOMBINE", false);
     }

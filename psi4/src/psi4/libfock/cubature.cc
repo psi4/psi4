@@ -4317,7 +4317,7 @@ void DFTGrid::buildGridFromOptions(std::map<std::string, int> int_opts_map,
     static const std::vector<std::string> function_names = {"FLAT",       "P_SLATER",   "D_SLATER",    "LOG_SLATER",
                                                             "P_GAUSSIAN", "D_GAUSSIAN", "LOG_GAUSSIAN"};
     static const std::vector<std::string> region_names = {"ROBUST", "TREUTLER"};
-    opt.prunescheme = options_.get_str("DFT_PRUNING_SCHEME");
+    opt.prunescheme = full_str_options["DFT_PRUNING_SCHEME"];
 
     for (auto key : region_names) {
         if (opt.prunescheme == key) {
