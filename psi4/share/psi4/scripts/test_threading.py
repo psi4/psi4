@@ -240,13 +240,15 @@ def print_math_ldd(args):
     okmkl = report['mkl'] and report['iomp5'] and not report['openblas'] and not report['gomp']
     okiomp5 = not report['mkl'] and report['iomp5'] and not report['openblas'] and not report['gomp']
     okopenblas = not report['mkl'] and not report['iomp5'] and report['openblas'] and report['gomp']
+    
+    omplike = (report['iomp5'] or report['omp']) and not report['gomp']
+    okmkl2 = report['mkl'] and omplike and not report['openblas']
     if args.passfail:
         if sys.platform.startswith('linux'):
             assert okmkl != okopenblas
         elif sys.platform.startswith('darwin'):
             # plugins on Mac won't show mkl through otool (linked to psi4.core)
-            assert (okmkl != okopenblas) or (okiomp5 != okopenblas)
-
+            assert (okmkl2 != okopenblas) or (okiomp5 != okopenblas)
 
 if __name__ == '__main__':
     import argparse
