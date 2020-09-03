@@ -1250,6 +1250,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         ['PUREAM'],
         ['BASIS'],
         ['QMEFP'],
+        ['INTS_TOLERANCE'],
         ['DF_BASIS_SCF'],
         ['SCF', 'GUESS'],
         ['SCF', 'DF_INTS_IO'],
@@ -1262,6 +1263,9 @@ def scf_helper(name, post_scf=True, **kwargs):
         ['SCF_TYPE'],
         ['SCF', 'DF_INTS_IO'],
     )
+
+    # Make sure we grab the correctly scoped integral threshold for SCF
+    core.set_global_option('INTS_TOLERANCE', core.get_option('SCF', 'INTS_TOLERANCE'))
 
     # Grab a few kwargs
     use_c1 = kwargs.get('use_c1', False)
