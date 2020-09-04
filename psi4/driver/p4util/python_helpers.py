@@ -447,7 +447,7 @@ def set_options(options_dict, verbose=1):
         option = mobj.group('option').upper()
 
         if module:
-            if (module, option, v) not in [('SCF', 'GUESS', 'READ')]:
+            if ((module, option, v) not in [('SCF', 'GUESS', 'READ')]) and ((module, option) not in [('PCM', 'INPUT')]):
                 # TODO guess/read exception is for distributed driver. should be handled differently.
                 try:
                     core.set_local_option(module, option, v)
@@ -455,6 +455,10 @@ def set_options(options_dict, verbose=1):
                     rejected[k] = (v, err)
                 if verbose > 1:
                     print('Setting: core.set_local_option', module, option, v)
+
+            if (module, option) == ("PCM", "INPUT"):
+                pcm_helper(v)
+
         else:
             try:
                 core.set_global_option(option, v)
