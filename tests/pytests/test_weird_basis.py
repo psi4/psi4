@@ -383,14 +383,18 @@ I 1 1.0
 ****
 """
 
+
+_hijhik = pytest.mark.xfail(reason="HIJ/HIK convention uncertail", raises=psi4.driver.qcdb.exceptions.ValidationError, strict=True)
+
+
 @pytest.mark.parametrize(
     "subject,bas",
     [
         pytest.param("H", _av10z_feller_H.format(L7="L=7", L8="L=8", L9="L=9"), id="HI7_num"),
         pytest.param("H", _av10z_feller_H.format(L7="K",   L8="L",   L9="L=9"), id="HIK_num"),
         pytest.param("H", _av10z_feller_H.format(L7="J",   L8="K",   L9="L=9"), id="HIJ_num"),
-        pytest.param("H", _av10z_feller_H.format(L7="L=7", L8="L=8", L9="M"  ), id="HI7_charM"),  # error
-        pytest.param("H", _av10z_feller_H.format(L7="L=7", L8="L=8", L9="L"  ), id="HI7_charL"),  # error
+        pytest.param("H", _av10z_feller_H.format(L7="L=7", L8="L=8", L9="M"  ), id="HI7_charM", marks=_hijhik),
+        pytest.param("H", _av10z_feller_H.format(L7="L=7", L8="L=8", L9="L"  ), id="HI7_charL", marks=_hijhik),
         pytest.param("H", _av10z_feller_H.format(L7="K",   L8="L",   L9="M"  ), id="HIK_char"),
         pytest.param("H", _av10z_feller_H.format(L7="J",   L8="K",   L9="L"  ), id="HIJ_char"),
     ],
@@ -409,19 +413,53 @@ def test_high_angmom_basis(subject, bas, mols, request):
 
     psi4.driver.qcdb.libmintsbasisset.basishorde["FELLER"] = basisspec_psi4_yo__anonymous1234
 
-    if "HI7_char" in request.node.name:
-        with pytest.raises(psi4.driver.qcdb.exceptions.ValidationError) as e:
-            wert = psi4.core.BasisSet.build(mol, "BASIS", "FELLER")
+    wert = psi4.core.BasisSet.build(mol, "BASIS", "FELLER")
 
-        assert "HIJ/HIK convention uncertain" in str(e.value)
+    assert wert.nbf() == 485
+    assert wert.max_am() == 9
 
-    else:
-        wert = psi4.core.BasisSet.build(mol, "BASIS", "FELLER")
+    # Psi uses HI_K for export
+    count = Counter(wert.shell(ish).AMCHAR for ish in range(wert.nshell()))
+    assert dict(count) == {'S': 11, 'P': 10, 'D': 9, 'F': 8, 'G': 7, 'H': 6, 'I': 5, 'K': 4, 'L': 3, 'M': 2}
 
-        assert wert.nbf() == 485
-        assert wert.max_am() == 9
 
-        # Psi uses HI_K for export
-        count = Counter(wert.shell(ish).AMCHAR for ish in range(wert.nshell()))
-        assert dict(count) == {'S': 11, 'P': 10, 'D': 9, 'F': 8, 'G': 7, 'H': 6, 'I': 5, 'K': 4, 'L': 3, 'M': 2}
+@pytest.mark.parametrize(
+    "subject,bas",
+    [
+        pytest.param("H", "PSDG"),
+        pytest.param("H", "PSDGIF"),
+        pytest.param("H", "PSDGKIF", marks=_hijhik),
+        pytest.param("H", "PSDGLIF", marks=_hijhik),
+    ],
+)
+def test_skipped_angmom(subject, bas, mols, request):
 
+    def fake_basis_string(seq):
+        amchar = "SPDFGHIKLM"
+
+        nbf = 0
+        basis_string = ["spherical", "****", "H 0"]
+
+        for am in seq:
+            basis_string.append(f"{am} 1 1.0")
+            basis_string.append(" 2.2 1.0")
+            l = amchar.index(am)
+            nbf += 2 * l + 1
+
+        basis_string.append("****")
+
+        return nbf, "\n".join(basis_string)
+
+    nbf, basis_string = fake_basis_string(bas)
+
+    mol = mols[subject]
+
+    def basisspec_psi4_yo__anonymous1234(mol, role):
+        mol.set_basis_all_atoms("test", role=role)
+        return {"test": basis_string}
+
+    psi4.driver.qcdb.libmintsbasisset.basishorde["FAKE"] = basisspec_psi4_yo__anonymous1234
+
+    wert = psi4.core.BasisSet.build(mol, "BASIS", "FAKE")
+
+    assert wert.nbf() == nbf

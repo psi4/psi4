@@ -646,7 +646,6 @@ void DFCoupledCluster::AllocateMemory() {
 
     outfile->Printf("  ==> Memory <==\n\n");
     outfile->Printf("        Total memory available:          %9.2lf mb\n", available_memory);
-    outfile->Printf("\n");
     outfile->Printf("        CCSD memory requirements:        %9.2lf mb\n",
                     df_memory + total_memory - size_of_t2 * t2_on_disk);
     outfile->Printf("            3-index integrals:           %9.2lf mb\n", df_memory);
@@ -655,16 +654,12 @@ void DFCoupledCluster::AllocateMemory() {
     if (options_.get_bool("COMPUTE_TRIPLES")) {
         int nthreads = Process::environment.get_n_threads();
         double mem_t = 8. * (2L * o * o * v * v + 1L * o * o * o * v + o * v + 3L * v * v * v * nthreads);
-        outfile->Printf("\n");
-        outfile->Printf("        (T) part (regular algorithm):    %9.2lf mb\n", mem_t / 1024. / 1024.);
-        if (mem_t > memory) {
-            outfile->Printf("        <<< warning! >>> switched to low-memory (t) algorithm\n\n");
-        }
         if (mem_t > memory || options_.get_bool("TRIPLES_LOW_MEMORY")) {
             isLowMemory = true;
             mem_t = 8. * (2L * o * o * v * v + o * o * o * v + o * v + 5L * o * o * o * nthreads);
-            outfile->Printf("        (T) part (low-memory alg.):      %9.2lf mb\n\n", mem_t / 1024. / 1024.);
         }
+        outfile->Printf("        (T) algorithm:                   %9.2lf mb (%s-memory)\n", mem_t / 1024. / 1024., isLowMemory ? "low" : "high");
+
     }
     outfile->Printf("\n");
     outfile->Printf("  ==> Input parameters <==\n\n");

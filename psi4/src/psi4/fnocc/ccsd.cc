@@ -776,13 +776,11 @@ void CoupledCluster::AllocateMemory() {
         }
         if (options_.get_bool("COMPUTE_TRIPLES") || options_.get_bool("COMPUTE_MP4_TRIPLES")) {
             double tempmem = 8. * (2L * o * o * v * v + o * o * o * v + o * v + 3L * v * v * v * nthreads);
-            if (tempmem > memory) {
-                outfile->Printf("\n        <<< warning! >>> switched to low-memory (t) algorithm\n\n");
-            }
             if (tempmem > memory || options_.get_bool("TRIPLES_LOW_MEMORY")) {
                 isLowMemory = true;
                 tempmem = 8. * (2L * o * o * v * v + o * o * o * v + o * v + 5L * o * o * o * nthreads);
             }
+            outfile->Printf("        (T) algorithm:                             %9.2lf mb (%s-memory)\n", tempmem / 1024. / 1024., isLowMemory ? "low" : "high");
             if (isccsd)
                 outfile->Printf("        memory requirements for CCSD(T) =          %9.2lf mb\n",
                                 tempmem / 1024. / 1024.);
