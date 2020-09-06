@@ -384,7 +384,7 @@ I 1 1.0
 """
 
 
-_hijhik = pytest.mark.xfail(reason="HIJ/HIK convention uncertail", raises=psi4.driver.qcdb.exceptions.ValidationError, strict=True)
+_hijhik = pytest.mark.xfail(reason="HIJ/HIK convention uncertain", raises=psi4.driver.qcdb.exceptions.ValidationError, strict=True)
 
 
 @pytest.mark.parametrize(
