@@ -1,6 +1,24 @@
 *******************************************************************************
 *******************************************************************************
 
+Friday, September 4, 2020 -- LAB
+
+[50] Removed ambiguity of L>=7 character from HIJ (GBS convention)
+     and HIK (BSE convention) by replacing K with L=7 in following basis sets:
+
+                 7zapa-nr.gbs
+           aug-cc-pv6z-ri.gbs       aug-cc-pv_6pd_z-ri.gbs
+     heavy-aug-cc-pv6z-ri.gbs heavy-aug-cc-pv_6pd_z-ri.gbs
+           jun-cc-pv6z-ri.gbs       jun-cc-pv_6pd_z-ri.gbs
+           may-cc-pv6z-ri.gbs       may-cc-pv_6pd_z-ri.gbs
+           apr-cc-pv6z-ri.gbs       apr-cc-pv_6pd_z-ri.gbs
+           mar-cc-pv6z-ri.gbs       mar-cc-pv_6pd_z-ri.gbs
+           feb-cc-pv6z-ri.gbs       feb-cc-pv_6pd_z-ri.gbs
+               cc-pv6z-ri.gbs           cc-pv_6pd_z-ri.gbs
+
+*******************************************************************************
+*******************************************************************************
+
 Friday, March 20, 2020 -- JBS
 
 [49] Adds STO-6G for H-Xe 

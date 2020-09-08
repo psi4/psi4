@@ -81,11 +81,15 @@ definition files at :source:`psi4/share/psi4/basis` in the source.  For basis se
 element and the default value for keyword |globals__puream|, consult
 Appendix :ref:`apdx:basisElement`.
 
-|PSIfour| uses the angular momentum convention below that, consistent
-with EMSL, skips the letter ``J``. Note that Gaussian94 convention is
-*not* to skip this letter. Another portion of the G94 format, labeling
-angular momentum with :samp:`L={l}` syntax is not presently implemented,
-though this is coming. ::
+|PSIfour| uses the angular momentum convention below that
+skips the letter ``J``. Note that Gaussian94 convention is
+*not* to skip this letter.
+|PSIfour| can use either convention for ``.gbs`` import (assuming
+angular momentum levels are not skipped), but it will always output
+in the ``HIK`` sequence. Another portion of the G94 format, labeling
+angular momentum with :samp:`L={l}` syntax is newly (August 2020)
+implemented, and this is preferred for ``L=7`` and above to
+avoid ambiguity. ::
 
     L:    0123456789...
     Psi4: SPDFGHIKLM...

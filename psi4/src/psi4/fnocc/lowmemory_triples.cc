@@ -69,8 +69,7 @@ PsiReturnType CoupledCluster::lowmemory_triples() {
     outfile->Printf("\n");
 
     outfile->Printf("\n");
-    outfile->Printf("        Warning: due to limited available memory,\n");
-    outfile->Printf("        using less efficient, low-memory algorithm\n");
+    outfile->Printf("        Using low-memory algorithm.\n");
     outfile->Printf("\n");
 
     long int o = ndoccact;

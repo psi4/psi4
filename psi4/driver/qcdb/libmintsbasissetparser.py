@@ -130,9 +130,17 @@ class Gaussian94BasisSetParser(object):
         #shell_to_am = [-1,-1,-1, 2,-1, 3, 4, 5, 6,-1, 7, 8, 9,10,11, 1,12,13, 0,14,15,16,17,18,19,20]
         alpha = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
             'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
-        angmo = [-1, -1, -1, 2, -1, 3, 4, 5, 6, -1, 7, 8,
+        angmo = [-1, -1, -1, 2, -1, 3, 4, 5, 6, -1,-1,-1,
+           -1, -1, -1, 1, -1, -1, 0, -1, -1, -1, -1, -1, -1, -1]
+        angmo_HIK = [-1, -1, -1, 2, -1, 3, 4, 5, 6, -1, 7, 8,
             9, 10, 11, 1, 12, 13, 0, 14, 15, 16, 17, 18, 19, 20]
+        angmo_HIJ = [-1, -1, -1, 2, -1, 3, 4, 5, 6,  7, 8, 9,
+            10,11,12, 1,13,14, 0,15,16,17,18,19,20,21]
         shell_to_am = dict(zip(alpha, angmo))
+        shell_to_am_HIK = dict(zip(alpha, angmo_HIK))
+        shell_to_am_HIJ = dict(zip(alpha, angmo_HIJ))
+        am_convention = None  # None is undetermined; "HIK" is the natural Psi4 HIK convention; "HIJ" is the GBS HIJ convention
+        max_am_to_date = 0
 
         # Basis type.
         gaussian_type = 'Pure'
@@ -198,7 +206,8 @@ class Gaussian94BasisSetParser(object):
                                         2: 2,   'd': 2,   'D': 2,
                                         3: 3,   'f': 3,   'F': 3,
                                         4: 4,   'g': 4,   'G': 4,
-                                        5: 5,   'h': 5,   'H': 5}
+                                        5: 5,   'h': 5,   'H': 5,
+                                        6: 6,   'i': 6,   'I': 6}
                         # This is an ECP spec like "KR-ECP    3     28"
                         matchobj = atom_ecp.match(line)
                         sl = line.split()
@@ -246,7 +255,20 @@ class Gaussian94BasisSetParser(object):
                                 scale = float(what.group(3))
 
                                 if len(shell_type) == 1 or (len(shell_type) >= 3 and shell_type[:2] == 'L='):
-                                    am = shell_to_am[shell_type[0]] if len(shell_type)==1 else int(shell_type[2:])
+                                    if len(shell_type) == 1:
+                                        am = shell_to_am[shell_type[0]]
+                                        if am_convention == "HIK" or (am == -1 and shell_type[0].upper() == "K" and max_am_to_date == 6):
+                                            am_convention = "HIK"
+                                            am = shell_to_am_HIK[shell_type[0]]
+                                        if am_convention == "HIJ" or (am == -1 and shell_type[0].upper() == "J" and max_am_to_date == 6):
+                                            am_convention = "HIJ"
+                                            am = shell_to_am_HIJ[shell_type[0]]
+                                        if am_convention is None and am == -1:
+                                            raise ValidationError(f"""Gaussian94BasisSetParser::parse: angular momentum type {shell_type[0]} too high and HIJ/HIK convention uncertain. Use, for example, `L=7` notation. line {lineno}: {line}""")
+                                    else:
+                                        am = int(shell_type[2:])
+
+                                    max_am_to_date = max(max_am_to_date, am)
                                     if am < 0:
                                         raise ValidationError("""Gaussian94BasisSetParser::parse: angular momentum type %s not recognized: line %d: %s""" % (shell_type[0], lineno, line))
 

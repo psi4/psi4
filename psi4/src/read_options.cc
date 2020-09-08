@@ -3051,8 +3051,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("DIIS_MAX_VECS", 8);
         /*- Do use low memory option for triples contribution? Note that this
             option is enabled automatically if the memory requirements of the
-            conventional algorithm would exceed the available resources -*/
-        options.add_bool("TRIPLES_LOW_MEMORY", false);
+            conventional algorithm would exceed the available resources.
+            The low memory algorithm is faster in general and has been turned
+            on by default starting September 2020. -*/
+        options.add_bool("TRIPLES_LOW_MEMORY", true);
         /*- Do compute triples contribution? !expert -*/
         options.add_bool("COMPUTE_TRIPLES", true);
         /*- Do compute MP4 triples contribution? !expert -*/

@@ -288,6 +288,7 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/test_detci_opdm.py
               ../tests/pytests/test_gradients.py
               ../tests/pytests/test_mdi.py
+              ../tests/pytests/test_weird_basis.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 
     # <<<  install psi4 share/ & include/  >>>

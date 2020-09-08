@@ -531,7 +531,10 @@ def test_libefp():
 
 @pytest.mark.smoke
 @using_pcmsolver
-def test_pcmsolver():
+@pytest.mark.parametrize("how", ["pcm_helper"])
+#@pytest.mark.parametrize("how", ["pcm_helper", "pcm_helper1"])  # fail b/c pcm not restartable
+#@pytest.mark.parametrize("how", ["pcm_helper", "set_options"])  # fail b/c pcm not restartable
+def test_pcmsolver(how, request):
     """pcmsolver/scf"""
     #! pcm
 
@@ -557,7 +560,7 @@ def test_pcmsolver():
       'pcm_scf_type': 'total',
     })
 
-    psi4.pcm_helper("""
+    pcm_string = """
        Units = Angstrom
        Medium {
        SolverType = IEFPCM
@@ -571,7 +574,12 @@ def test_pcmsolver():
        Area = 0.3
        Mode = Implicit
        }
-    """)
+    """
+
+    if "pcm_helper" in request.node.name:
+        psi4.pcm_helper(pcm_string)
+    elif "set_options" in request.node.name:
+        psi4.set_options({"pcm__input": pcm_string})
 
     print('RHF-PCM, total algorithm')
     energy_scf1, wfn1 = psi4.energy('scf', return_wfn=True)
