@@ -76,12 +76,6 @@ void DiskDFJK::common_init() {
     n_function_pairs_ = tmperi->function_pairs().size();
 }
 size_t DiskDFJK::memory_estimate() {
-    // We need to make an integral object so we can figure out memory requirements from the sieve
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    std::shared_ptr<IntegralFactory> rifactory =
-        std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    auto tmp = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-
     size_t three_memory = ((size_t)auxiliary_->nbf()) * n_function_pairs_;
     size_t two_memory = 2 * ((size_t)auxiliary_->nbf()) * auxiliary_->nbf();
 

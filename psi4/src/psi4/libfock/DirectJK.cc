@@ -405,7 +405,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
     size_t numPQtasks = PQtask_offsets.size();
     size_t numRStasks = RStask_offsets.size();
     size_t numPQRStasks = numPQtasks * numRStasks;
-#pragma omp parallel for schedule(dynamic) num_threads(nthread)
+#pragma omp parallel for schedule(dynamic) num_threads(nthread)  reduction(+ : computed_shells)
     for (size_t PQRStask = 0; PQRStask < numPQRStasks; ++PQRStask) {
 #ifdef _OPENMP
         const int rank = omp_get_thread_num();

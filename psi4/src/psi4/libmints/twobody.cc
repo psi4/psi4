@@ -155,7 +155,7 @@ void TwoBodyAOInt::setup_sieve() {
         case ScreeningType::Schwarz:
             sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_schwarz(M, N, R, S); };
             break;
-        case ScreeningType::None:
+        case ScreeningType::None:   
             sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_none(M, N, R, S); };
             break;
         default:
@@ -272,40 +272,18 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
 
     shell_pairs.clear();
     std::fill_n(shell_pairs_reverse_.begin(), nshell_ * (nshell_ + 1) / 2, -1);
-    int natoms1 = bs->molecule()->natom();
-    int natoms2;
-    if (is_bra) {
-        natoms2 = bra_same_ ? basis2()->molecule()->natom() : 1;
-    } else{
-        natoms2 = ket_same_ ? basis4()->molecule()->natom() : 1;
-    }
-    const auto am1 = bs->max_am();
-    const auto am2 = bs->max_am();
-    int task = 0;
-    for (int atom1 = 0; atom1 < natoms1; ++atom1) {
-        for (int atom2 = 0; atom2 < natoms2; ++atom2) {
-            for (int iam = 0; iam <= am1; iam++) {
-                for (int jam = 0; jam <= am2; jam++) {
-                    for (int ishell = 0; ishell < nshell_; ishell++) {
-                        if (bs->shell(ishell).am() != iam) continue;
-                        if (bs->shell(ishell).ncenter() != atom1) continue;
-                        // In this case there's a list of shell pair info to loop over; use it
-                        for (const auto &jshell : shell_to_shell_[ishell]) {
-                            if (bs->shell(jshell).am() == jam && bs->shell(jshell).ncenter() == atom2) {
-                                if (ishell >= jshell) {
-                                    shell_pairs_reverse_[ishell*(ishell+1)/2 + jshell] = shell_pairs.size();
-                                    shell_pairs.push_back({ishell, jshell});
-                                }
-                            }
-                        }
-                    }
-                }
+
+    offset = 0L;
+    size_t MUNU = 0L;
+    for (int MU = 0; MU < nshell_; MU++) {
+        for (int NU = 0; NU <= MU; NU++, MUNU++) {
+            if (shell_pair_values_[MU * nshell_ + NU] >= screening_threshold_squared_over_max) {
+                shell_pairs.push_back(std::make_pair(MU, NU));
+                shell_pairs_reverse_[MUNU] = offset;
+                offset++;
             }
         }
     }
-
-    std::sort(shell_pairs.begin(),shell_pairs.end(),
-         [](const std::pair<int, int>&i, const std::pair<int, int>&j) {return i.first < j.first || i.first == j.first && i.second < j.second;});
 
     for (int mu = 0; mu < nbf_; mu++) {
         for (int nu = 0; nu < nbf_; nu++) {
@@ -324,7 +302,6 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
 
         for (int P = 0; P < nshell_; P++) {
             for (int Q = P; Q >= 0; Q--) {
-            //for (int Q = 0; Q < nshell_; Q++) {
                 int nP = bs->shell(P).nfunction();
                 int nQ = bs->shell(Q).nfunction();
                 int oP = bs->shell(P).function_index();
