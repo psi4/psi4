@@ -101,8 +101,7 @@ void DirectJK::print_header() const {
     }
 }
 void DirectJK::preiterations() {
-    sieve_ = std::make_shared<ERISieve>(primary_, cutoff_, do_csam_);
-    
+
 #ifdef USING_BrianQC
     if (brianEnable) {
         double threshold = cutoff_ * (brianCPHFFlag ? 1e-3 : 1e-0); // CPHF needs higher precision
@@ -116,16 +115,16 @@ void DirectJK::compute_JK() {
     if (brianEnable) {
         brianBool computeCoulomb = (do_J_ ? BRIAN_TRUE : BRIAN_FALSE);
         brianBool computeExchange = ((do_K_ || do_wK_) ? BRIAN_TRUE : BRIAN_FALSE);
-        
+
         if (do_wK_ and not brianEnableDFT) {
             throw PSIEXCEPTION("Currently, BrianQC cannot compute range-separated exact exchange when Psi4 is handling the DFT terms");
         }
-        
+
         if (not brianCPHFFlag) {
             if (!lr_symmetric_) {
                 throw PSIEXCEPTION("Currently, BrianQC's non-CPHF Fock building only works with symmetric densities");
             }
-            
+
             // BrianQC only computes the sum of all Coulomb contributions.
             // For ROHF, the matrices are not the alpha and beta densities, but
             // the doubly and singly occupied densities, and the weight of
@@ -136,7 +135,7 @@ void DirectJK::compute_JK() {
             if (brianRestrictionType == BRIAN_RESTRICTION_TYPE_ROHF) {
                 D_ao_[0]->scale(2.0);
             }
-            
+
             double* exchangeAlpha = nullptr;
             double* exchangeBeta = nullptr;
             if (do_K_) {
@@ -146,7 +145,7 @@ void DirectJK::compute_JK() {
                 exchangeAlpha = wK_ao_[0]->get_pointer();
                 exchangeBeta = (D_ao_.size() > 1) ? wK_ao_[1]->get_pointer() : nullptr;
             }
-                
+
             brianSCFBuildFockRepulsion(&brianCookie,
                 &computeCoulomb,
                 &computeExchange,
@@ -157,7 +156,7 @@ void DirectJK::compute_JK() {
                 exchangeBeta
             );
             checkBrian();
-            
+
             // BrianQC computes the sum of all Coulomb contributions into
             // J_ao_[0], so all other contributions must be zeroed out for
             // the sum to be correct. For RHF/RKS, Psi4 expects J_ao_[0]
@@ -167,23 +166,23 @@ void DirectJK::compute_JK() {
                 if (brianRestrictionType == BRIAN_RESTRICTION_TYPE_RHF) {
                     J_ao_[0]->scale(0.5);
                 }
-                
+
                 for (size_t ind = 1; ind < J_ao_.size(); ind++) {
                     J_ao_[ind]->zero();
                 }
             }
-            
+
             if (brianRestrictionType == BRIAN_RESTRICTION_TYPE_ROHF) {
                 D_ao_[0]->scale(0.5);
-                
+
                 if (do_J_) {
                     J_ao_[0]->scale(0.5);
                 }
-                
+
                 if (do_K_) {
                     K_ao_[0]->scale(0.5);
                 }
-                
+
                 if (do_wK_) {
                     wK_ao_[0]->scale(0.5);
                 }
@@ -191,17 +190,17 @@ void DirectJK::compute_JK() {
         } else {
             brianInt maxSegmentSize;
             brianCPHFMaxSegmentSize(&brianCookie, &maxSegmentSize);
-            
+
             brianInt densityCount = (brianRestrictionType == BRIAN_RESTRICTION_TYPE_RHF) ? 1 : 2;
             if (D_ao_.size() % densityCount != 0) {
                 throw PSIEXCEPTION("Invalid number of density matrices for CPHF");
             }
-            
+
             brianInt derivativeCount = D_ao_.size() / densityCount;
-            
+
             for (brianInt segmentStartIndex = 0; segmentStartIndex < derivativeCount; segmentStartIndex += maxSegmentSize) {
                 brianInt segmentSize = std::min(maxSegmentSize, derivativeCount - segmentStartIndex);
-                
+
                 std::vector<std::vector<std::shared_ptr<Matrix>>> pseudoDensitySymmetrized(densityCount);
                 std::vector<std::vector<const double*>> pseudoDensityPointers(densityCount);
                 std::vector<std::vector<double*>> pseudoExchangePointers(densityCount);
@@ -212,12 +211,12 @@ void DirectJK::compute_JK() {
                     for (brianInt i = 0; i < segmentSize; i++) {
                         // Psi4's code computing the left- and right-hand side CPHF terms use different indexing conventions
                         brianInt psi4Index = brianCPHFLeftSideFlag ? (densityIndex * derivativeCount + segmentStartIndex + i) : ((segmentStartIndex + i) * densityCount + densityIndex);
-                        
+
                         pseudoDensitySymmetrized[densityIndex][i] = D_ao_[psi4Index]->clone();
                         pseudoDensitySymmetrized[densityIndex][i]->add(D_ao_[psi4Index]->transpose());
                         pseudoDensitySymmetrized[densityIndex][i]->scale(0.5);
                         pseudoDensityPointers[densityIndex][i] = pseudoDensitySymmetrized[densityIndex][i]->get_pointer();
-                        
+
                         if (do_K_) {
                             pseudoExchangePointers[densityIndex][i] = K_ao_[psi4Index]->get_pointer();
                         } else if (do_wK_) {
@@ -225,7 +224,7 @@ void DirectJK::compute_JK() {
                         }
                     }
                 }
-                
+
                 std::vector<double*> pseudoCoulombPointers(segmentSize, nullptr);
                 for (brianInt i = 0; i < segmentSize; i++) {
                     if (do_J_) {
@@ -234,7 +233,7 @@ void DirectJK::compute_JK() {
                         pseudoCoulombPointers[i] = J_ao_[psi4Index]->get_pointer();
                     }
                 }
-                
+
                 brianCPHFBuildRepulsion(&brianCookie,
                     &computeCoulomb,
                     &computeExchange,
@@ -246,7 +245,7 @@ void DirectJK::compute_JK() {
                     (densityCount > 1) ? pseudoExchangePointers[1].data() : nullptr
                 );
                 checkBrian();
-                
+
                 // BrianQC computes the sum of all Coulomb contributions into
                 // J_ao_[0], so all other contributions must be zeroed out for
                 // the sum to be correct. For RHF/RKS, Psi4 expects J_ao_[0]
@@ -258,7 +257,7 @@ void DirectJK::compute_JK() {
                             brianInt psi4Index = brianCPHFLeftSideFlag ? (0 * derivativeCount + segmentStartIndex + i) : ((segmentStartIndex + i) * densityCount + 0);
                             J_ao_[psi4Index]->scale(0.5);
                         }
-                        
+
                         for (brianInt densityIndex = 1; densityIndex < densityCount; densityIndex++) {
                             brianInt psi4Index = brianCPHFLeftSideFlag ? (densityIndex * derivativeCount + segmentStartIndex + i) : ((segmentStartIndex + i) * densityCount + densityIndex);
                             J_ao_[psi4Index]->zero();
@@ -267,7 +266,7 @@ void DirectJK::compute_JK() {
                 }
             }
         }
-        
+
         return;
     }
 #endif
@@ -770,7 +769,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
     if (bench_) {
         auto mode = std::ostream::app;
         auto printer = std::make_shared<PsiOutStream>("bench.dat", mode);
-        size_t ntri = nshell * (nshell + 1L) / 2L;
+        size_t ntri = primary_->nshell() * (primary_->nshell() + 1L) / 2L;
         size_t possible_shells = ntri * (ntri + 1L) / 2L;
         printer->Printf("Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
                         possible_shells, computed_shells / (double)possible_shells);

@@ -2332,7 +2332,7 @@ std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::strin
         thread = omp_get_thread_num();
 #endif
         Jint[thread]->compute_shell_deriv1(P, 0, Q, 0);
-        const auto buffer = Jint[thread]->buffer();
+        const auto buffers = Jint[thread]->buffers();
 
         int nP = auxiliary->shell(P).nfunction();
         int cP = auxiliary->shell(P).ncartesian();
@@ -2345,12 +2345,12 @@ std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::strin
         int oQ = auxiliary->shell(Q).function_index();
 
         int ncart = cP * cQ;
-        const double *Px = buffer + 0*ncart;
-        const double *Py = buffer + 1*ncart;
-        const double *Pz = buffer + 2*ncart;
-        const double *Qx = buffer + 3*ncart;
-        const double *Qy = buffer + 4*ncart;
-        const double *Qz = buffer + 5*ncart;
+        const double *Px = buffers[0];
+        const double *Py = buffers[1];
+        const double *Pz = buffers[2];
+        const double *Qx = buffers[3];
+        const double *Qy = buffers[4];
+        const double *Qz = buffers[5];
 
         double perm = (P == Q ? 1.0 : 2.0);
 

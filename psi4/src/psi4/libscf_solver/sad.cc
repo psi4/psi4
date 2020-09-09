@@ -515,7 +515,6 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
 
     // Setup JK
     std::unique_ptr<JK> jk;
-
     // Need a very special auxiliary basis here
     if (SAD_use_fitting(options_)) {
         MemDFJK* dfjk = new MemDFJK(bas, fit);

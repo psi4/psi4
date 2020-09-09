@@ -82,8 +82,6 @@ std::shared_ptr<JKGrad> JKGrad::build_JKGrad(int deriv, std::shared_ptr<MintsHel
     Options& options = Process::environment.options;
 
     if (options.get_str("SCF_TYPE").find("DF") != std::string::npos) {
-        DFJKGrad* jk = new DFJKGrad(deriv, primary, auxiliary);
-
         DFJKGrad* jk = new DFJKGrad(deriv, mints);
 
         if (options["INTS_TOLERANCE"].has_changed())

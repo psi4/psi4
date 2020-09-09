@@ -599,6 +599,7 @@ void SAPT0::df_integrals() {
 
                         if (sqrt(Schwartz[MUNU] * DFSchwartz[Pshell]) > schwarz_) {
                             eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                            const auto *buffer = eri[rank]->buffers()[0];
 
                             if (MU != NU) {
                                 for (int P = 0, index = 0; P < numPshell; ++P) {
@@ -610,7 +611,7 @@ void SAPT0::df_integrals() {
                                         for (int nu = 0; nu < numnu; ++nu, ++index, ++munu) {
                                             int onu = basisset_->shell(NU).function_index() + nu;
 
-                                            AO_RI[munu + munu_offset][oP] = eri[rank]->buffer()[index];
+                                            AO_RI[munu + munu_offset][oP] = buffer[index];
                                         }
                                     }
                                 }
@@ -625,7 +626,7 @@ void SAPT0::df_integrals() {
                                             int onu = basisset_->shell(NU).function_index() + nu;
                                             int index = P * nummu * nummu + mu * nummu + nu;
 
-                                            AO_RI[munu + munu_offset][oP] = eri[rank]->buffer()[index];
+                                            AO_RI[munu + munu_offset][oP] = buffer[index];
                                         }
                                     }
                                 }

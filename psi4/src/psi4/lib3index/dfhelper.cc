@@ -1331,8 +1331,6 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm_abw(const size_t start, const 
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        buffer[rank] = eri[rank]->buffer();
-        wbuffer[rank] = weri[rank]->buffer();
     }
 
 
@@ -1355,6 +1353,8 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm_abw(const size_t start, const 
                 size_t numP = aux_->shell(Pshell).nfunction();
                 eri[rank]->compute_shell(Pshell, 0, MU, NU);
                 weri[rank]->compute_shell(Pshell, 0, MU, NU);
+                buffer[rank] = eri[rank]->buffers()[0];
+                wbuffer[rank] = weri[rank]->buffers()[0];
 
                 for (size_t mu = 0; mu < nummu; mu++) {
                     size_t omu = primary_->shell(MU).function_index() + mu;
