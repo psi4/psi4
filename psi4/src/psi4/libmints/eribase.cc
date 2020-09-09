@@ -3076,9 +3076,16 @@ Libint2TwoElectronInt::Libint2TwoElectronInt(const IntegralFactory *integral, in
     // Initialize libint static data
     libint2::initialize();
 
-    zero_vec_ = std::vector<double>(basis1()->max_function_per_shell() * basis2()->max_function_per_shell() *
-                                        basis3()->max_function_per_shell() * basis4()->max_function_per_shell(),
-                                    0.0);
+    // Make sure there's enough space for the sieve generation.  This array is used to return an array of
+    // zeros back to the caller if libint2 gave us nullptr, so the caller doesn't have to check.
+    size_t sieve_size =  std::max(
+                           basis1()->max_function_per_shell() * basis2()->max_function_per_shell() *
+                           basis1()->max_function_per_shell() * basis2()->max_function_per_shell(),
+                           basis3()->max_function_per_shell() * basis4()->max_function_per_shell() *
+                           basis3()->max_function_per_shell() * basis4()->max_function_per_shell());
+    size_t size = std::max((size_t) basis1()->max_function_per_shell() * basis2()->max_function_per_shell() *
+                           basis3()->max_function_per_shell() * basis4()->max_function_per_shell(), sieve_size);
+    zero_vec_ = std::vector<double>(size, 0.0);
 }
 
 Libint2TwoElectronInt::Libint2TwoElectronInt(const Libint2TwoElectronInt &rhs)
