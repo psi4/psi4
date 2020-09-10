@@ -10,11 +10,10 @@ molecule mol {
 }
 
 # Define point charge on top of first Ghost atom
-Chrgfield = QMMM()
-Chrgfield.extern.addCharge(7.05, 0., 0., 1.)
-psi4.set_global_option_python('EXTERN', Chrgfield.extern)
+import numpy as np
+embedding_charges = [[7.05, np.array([0., 0., 1.]) / psi_bohr2angstroms]]
 
 set basis 6-31G
 set reference rhf
-e = energy('pbe')
+e = energy('pbe', embedding_charges=embedding_charges)
 compare_values(-110.2168666458496773, e, 6, 'Total energy') #TEST

@@ -76,7 +76,6 @@ class MDIEngine():
         self.nlattice = 0  # number of lattice point charges
         self.clattice = []  # list of lattice coordinates
         self.lattice = []  # list of lattice charges
-        self.lattice_field = psi4.QMMM()  # Psi4 chargefield
 
         # MPI variables
         self.mpi_world = None
@@ -281,12 +280,14 @@ class MDIEngine():
     def set_lattice_field(self):
         """ Set a field of lattice point charges using information received through MDI
         """
-        self.lattice_field = psi4.QMMM()
-        unit_conv = self.length_conversion()
+        from psi4.driver import qmmm
+
+        self.lattice_field = qmmm.QMMMbohr()
+        # since DDD branch, external charge field must be in Bohr, regardless of molecule units
         for ilat in range(self.nlattice):
-            latx = self.clattice[3 * ilat + 0] * unit_conv
-            laty = self.clattice[3 * ilat + 1] * unit_conv
-            latz = self.clattice[3 * ilat + 2] * unit_conv
+            latx = self.clattice[3 * ilat + 0]
+            laty = self.clattice[3 * ilat + 1]
+            latz = self.clattice[3 * ilat + 2]
             self.lattice_field.extern.addCharge(self.lattice[ilat], latx, laty, latz)
         psi4.core.set_global_option_python('EXTERN', self.lattice_field.extern)
         self.set_lattice = True

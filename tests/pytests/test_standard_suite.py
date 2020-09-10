@@ -40,29 +40,29 @@ _p14 = (psi4.MissingMethodError, "not directable to QC_MODULE 'OCC'")
 _p15 = (psi4.ValidationError, "Invalid scf_type for DFCC.")
 _p16 = (psi4.ValidationError, "Frozen core is not available for the CC gradients.")
 _p17 = (RuntimeError, "Frozen core/virtual not implemented in Orbital-optimized methods")
-_p18 = (psi4.ManagedMethodError, "Method 'mp3' with MP_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'RHF' not directable to QC_MODULE 'OCC'")
-_p19 = (psi4.ManagedMethodError, "Method 'mp3' with MP_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'UHF' not directable to QC_MODULE 'OCC'")
-_p20 = (psi4.ManagedMethodError, "Method 'mp2.5' with MP_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'RHF' not directable to QC_MODULE 'OCC'")
-_p21 = (psi4.ManagedMethodError, "Method 'mp2.5' with MP_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'UHF' not directable to QC_MODULE 'OCC'")
-_p22 = (psi4.ManagedMethodError, "Method 'lccd' with CC_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'RHF' not directable to QC_MODULE 'OCC'")
-_p23 = (psi4.ManagedMethodError, "Method 'lccd' with CC_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'UHF' not directable to QC_MODULE 'OCC'")
+_p18 = (psi4.MissingMethodError, "Method 'mp3' with MP_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'RHF' not directable to QC_MODULE 'OCC'")
+_p19 = (psi4.MissingMethodError, "Method 'mp3' with MP_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'UHF' not directable to QC_MODULE 'OCC'")
+_p20 = (psi4.MissingMethodError, "Method 'mp2.5' with MP_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'RHF' not directable to QC_MODULE 'OCC'")
+_p21 = (psi4.MissingMethodError, "Method 'mp2.5' with MP_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'UHF' not directable to QC_MODULE 'OCC'")
+_p22 = (psi4.MissingMethodError, "Method 'lccd' with CC_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'RHF' not directable to QC_MODULE 'OCC'")
+_p23 = (psi4.MissingMethodError, "Method 'lccd' with CC_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'UHF' not directable to QC_MODULE 'OCC'")
 _p24 = (psi4.ValidationError, "Derivative method 'name' mp2 and derivative level 'dertype' 2 are not available.")
 
 # yapf: enable
 
 _nyi1 = pytest.mark.xfail(
-    reason="fc conv mp2/mp2.5/mp3/lccd gradients NYI", raises=psi4.ManagedMethodError, strict=True
+    reason="fc conv mp2/mp2.5/mp3/lccd gradients NYI", raises=psi4.MissingMethodError, strict=True
 )
-_nyi2 = pytest.mark.xfail(reason="rohf mp2/mp2.5/mp3/lccd gradients NYI", raises=psi4.ManagedMethodError, strict=True)
-_nyi3 = pytest.mark.xfail(reason="cd mp2/mp2.5/mp3/lccd gradients NYI", raises=psi4.ManagedMethodError, strict=True)
+_nyi2 = pytest.mark.xfail(reason="rohf mp2/mp2.5/mp3/lccd gradients NYI", raises=psi4.ValidationError, strict=True)
+_nyi3 = pytest.mark.xfail(reason="cd mp2/mp2.5/mp3/lccd gradients NYI", raises=psi4.ValidationError, strict=True)
 _nyi4 = pytest.mark.xfail(reason="spin components rhf mp2/mp2.5/mp3/lccd energies NYI", raises=KeyError, strict=True)
-_nyi5 = pytest.mark.xfail(reason="df/cd open-shell ccsd energies NYI", raises=psi4.ManagedMethodError, strict=True)
+_nyi5 = pytest.mark.xfail(reason="df/cd open-shell ccsd energies NYI", raises=psi4.ValidationError, strict=True)
 _nyi6 = pytest.mark.xfail(reason="rohf ccsd energies mp2 submethod NYI", raises=KeyError, strict=True)
-_nyi7 = pytest.mark.xfail(reason="rohf lccd energies NYI", raises=psi4.ManagedMethodError, strict=True)
+_nyi7 = pytest.mark.xfail(reason="rohf lccd energies NYI", raises=psi4.ValidationError, strict=True)
 _nyi8 = pytest.mark.xfail(reason="rohf lccsd energies NYI", raises=psi4.ValidationError, strict=True)
 _nyi9 = pytest.mark.xfail(reason="fc conv orbital-optimized energies NYI", raises=RuntimeError, strict=True)
 _nyi10 = pytest.mark.xfail(reason="rohf olccd energies mp2 submethod NYI", raises=KeyError, strict=True)
-_nyi11 = pytest.mark.xfail(reason="rohf mp2.5/mp3 energies NYI", raises=psi4.ManagedMethodError, strict=True)
+_nyi11 = pytest.mark.xfail(reason="rohf mp2.5/mp3 energies NYI", raises=psi4.ValidationError, strict=True)
 _nyi12 = pytest.mark.xfail(reason="cd scf gradients NYI", raises=psi4.ValidationError, strict=True)
 
 # http://patorjk.com/software/taag/#p=display&c=bash&f=Soft&t=MP3

@@ -1169,6 +1169,7 @@ class FiniteDifferenceComputer(BaseComputer):
         reference = self.findifrec["reference"]
         task = results_list["reference"]
         response = task.return_result
+        reference["module"] = getattr(task.provenance, "module", None)
 
         if task.driver == 'energy':
             reference['energy'] = response
@@ -1292,7 +1293,7 @@ class FiniteDifferenceComputer(BaseComputer):
                     'nuclear_repulsion_energy': self.molecule.nuclear_repulsion_energy(),
                     'return_energy': qcvars['CURRENT ENERGY'],
                 },
-                'provenance': p4util.provenance_stamp(__name__),
+                'provenance': p4util.provenance_stamp(__name__, module=self.findifrec["reference"]["module"]),
                 'extras': {
                     'qcvars': qcvars,
                     'findif_record': copy.deepcopy(self.findifrec),
@@ -1328,6 +1329,8 @@ def _findif_schema_to_wfn(findifjob):
     mol = core.Molecule.from_schema(findifjob.molecule.dict(), nonphysical=True)
     basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp')
     wfn = core.Wavefunction(mol, basis)
+    if hasattr(findifjob.provenance, "module"):
+        wfn.set_module(findifjob.provenance.module)
 
     # setting CURRENT E/G/H on wfn below catches Wfn.energy_, gradient_, hessian_
     # setting CURRENT E/G/H on core below is authoritative P::e record

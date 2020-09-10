@@ -1569,6 +1569,13 @@ class CompositeComputer(BaseComputer):
     def _prepare_results(self, client=None):
         results_list = [x.get_results(client=client) for x in self.task_list]
 
+        modules = [getattr(v.provenance, "module", None) for v in results_list]
+        if self.driver != "energy" and len(set(modules)) == 2 and modules.count("scf") == len(modules) / 2:
+            # signature of "MP2 GRAD" - "HF GRAD" implementation detail
+            modules = set(modules) - set(["scf"])
+        modules = list(set(modules))
+        modules = modules[0] if len(modules) == 1 else "(mixed)"
+
         #for x in self.task_list:
         #    print('\nTASK')
         #    pp.pprint(x)
@@ -1629,6 +1636,7 @@ class CompositeComputer(BaseComputer):
         # logger.debug('CBS_RESULTS\n' + pp.pformat(cbs_results))
         # logger.debug('GRAND_NEED\n' + pp.pformat(self.cbsrec))
 
+        cbs_results["module"] = modules
         return cbs_results
 
     def get_results(self, client=None):
@@ -1683,7 +1691,7 @@ class CompositeComputer(BaseComputer):
                     'nuclear_repulsion_energy': self.molecule.nuclear_repulsion_energy(),
                     'return_energy': assembled_results['energy'],
                 },
-                'provenance': p4util.provenance_stamp(__name__),
+                'provenance': p4util.provenance_stamp(__name__, module=assembled_results["module"]),
                 'extras': {
                     'qcvars': qcvars,
                     'cbs_record': copy.deepcopy(self.cbsrec),
@@ -1720,6 +1728,8 @@ def _cbs_schema_to_wfn(cbsjob):
     mol = core.Molecule.from_schema(cbsjob.molecule.dict())
     basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp', quiet=True)
     wfn = core.Wavefunction(mol, basis)
+    if hasattr(cbsjob.provenance, "module"):
+        wfn.set_module(cbsjob.provenance.module)
 
     # wfn.set_energy(cbsjob['extras'['qcvars'].get('CBS TOTAL ENERGY'))  # catches Wfn.energy_
     for qcv, val in cbsjob.extras['qcvars'].items():
