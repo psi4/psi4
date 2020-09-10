@@ -59,6 +59,10 @@
 
 #include "rhf.h"
 
+#ifdef USING_PCMSolver
+#include "psi4/libpsipcm/psipcm.h"
+#endif
+
 #ifdef USING_BrianQC
 
 #include <use_brian_wrapper.h>
@@ -516,7 +520,17 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         }
         potential_->compute_Vx(Dx, Vx);
     }
-
+    
+#ifdef USING_PCMSolver
+    std::vector<SharedMatrix> Vpot;
+    if (PCM_enabled_) {
+        std::vector<SharedMatrix> Dx;
+        for (size_t i = 0; i < x_vec.size(); i++) {
+            Dx.push_back(linalg::doublet(Cl[i], Cr[i], false, true));
+            Vpot.push_back(PCM_->compute_V_PCM(Dx[i]));
+        }
+    }
+#endif
     Cl.clear();
     Cr.clear();
     
@@ -548,6 +562,11 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             if (functional_->needs_xc()) {
                 J[i]->axpy(4.0, Vx[i]);
             }
+#ifdef USING_PCMSolver
+            if (PCM_enabled_) {
+                J[i]->axpy(4.0, Vpot[i]);
+            }
+#endif
             ret.push_back(J[i]);
         }
     } else {
@@ -559,6 +578,11 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             if (functional_->needs_xc()) {
                 J[i]->add(Vx[i]);
             }
+#ifdef USING_PCMSolver
+            if (PCM_enabled_) {
+                J[i]->add(Vpot[i]);
+            }
+#endif
             ret.push_back(J[i]);
             // may have K^HF
             if (functional_->is_x_hybrid()) {
@@ -673,6 +697,9 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         outfile->Printf("    Maxiter             = %11d\n", max_iter);
         outfile->Printf("    Convergence         = %11.3E\n", conv_tol);
         outfile->Printf("    Number of equations = %11ld\n", x_vec.size());
+#ifdef USING_PCMSolver
+        outfile->Printf("    PCMsolver active    = %11s\n", PCM_enabled_ ? "true" : "false");
+#endif
         outfile->Printf("   -----------------------------------------------------\n");
         outfile->Printf("     %4s %14s %12s  %6s  %6s\n", "Iter", "Residual RMS", "Max RMS", "Remain", "Time [s]");
         outfile->Printf("   -----------------------------------------------------\n");

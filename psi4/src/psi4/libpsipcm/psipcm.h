@@ -57,6 +57,7 @@ class PCM final {
      *  \param[in] type how to treat MEP and ASC
      */
     std::pair<double, SharedMatrix> compute_PCM_terms(const SharedMatrix &D, CalcType type = CalcType::Total) const;
+    SharedMatrix compute_V_PCM(const SharedMatrix &D);
 
    private:
     /// The number of tesserae in PCMSolver.

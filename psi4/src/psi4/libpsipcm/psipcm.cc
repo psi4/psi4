@@ -69,6 +69,7 @@ std::pair<std::vector<double>, std::vector<double>> collect_atoms(std::shared_pt
         }
     }
 
+
     return std::make_pair(charges, centers);
 }
 
@@ -264,6 +265,26 @@ std::pair<double, SharedMatrix> PCM::compute_PCM_terms(const SharedMatrix &D, Ca
     }
     return std::make_pair(upcm, compute_V(ASC));
 }
+
+SharedMatrix PCM::compute_V_PCM(const SharedMatrix &D)  {
+    // simplified version that only returns V for a given D
+    // with CalcType=total
+    double upcm = 0.0;
+    auto MEP_e = compute_electronic_MEP(D);
+    auto ASC = std::make_shared<Vector>(tesspi_);
+    upcm = compute_E_total(MEP_e);
+    pcmsolver_get_surface_function(context_.get(), ntess_, ASC->pointer(0), "TotASC");
+    return compute_V(ASC);
+    // multiple matrices?
+    // std::vector<SharedMatrix> ASC_vec;
+    // std::vector<SharedMatrix> MEP_vec;
+    // for (size_t i = 0; i < Dx.size(); i++) {
+    //     MEP_vec.push_back(PCM::compute_electronic_MEP(D[i]));
+    //     ASC_vec.push_back(std::make_shared<Vector>(tesspi_));
+    // }
+    // pcmsolver_get_surface_function(context_.get(), ntess_, ASC->pointer(0), "TotASC");   
+}
+
 
 double PCM::compute_E_total(const SharedVector &MEP_e) const {
     // Combine the nuclear and electronic potentials at each tessera
