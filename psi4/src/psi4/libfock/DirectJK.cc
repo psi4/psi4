@@ -358,7 +358,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                 for (int pshell = min_p; pshell <= max_p; ++pshell) dim_p += primary_->shell(pshell).nfunction();
                 for (int qshell = min_q; qshell <= max_q; ++qshell) dim_q += primary_->shell(qshell).nfunction();
                 PQtask_offsets.emplace_back(std::array<int, 10>{
-                    {atom_p, atom_q, current_offset, blockPQ_idx, min_p, min_q, max_p, max_q, dim_p, dim_q}});
+                    {atom_p, atom_q, current_offset, static_cast<int>(blockPQ_idx), min_p, min_q, max_p, max_q, dim_p, dim_q}});
             }
             current_offset = blockPQ_idx;
             current_atom_p = atom_p;
@@ -378,7 +378,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
     for (int pshell = min_p; pshell <= max_p; ++pshell) dim_p += primary_->shell(pshell).nfunction();
     for (int qshell = min_q; qshell <= max_q; ++qshell) dim_q += primary_->shell(qshell).nfunction();
     PQtask_offsets.emplace_back(std::array<int, 10>{
-        {atom_p, atom_q, current_offset, blocksPQ.size(), min_p, min_q, max_p, max_q, dim_p, dim_q}});
+        {atom_p, atom_q, current_offset, static_cast<int>(blocksPQ.size()), min_p, min_q, max_p, max_q, dim_p, dim_q}});
     std::vector<std::array<int, 10>> RStask_offsets = PQtask_offsets;
 
     // => The maximum amount of storage associated with any atom =< //
