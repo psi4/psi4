@@ -35,7 +35,6 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/sieve.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
 #include "dfocc.h"
@@ -194,8 +193,15 @@ void DFOCC::tei_grad_ref() {
     // int nso = primary_->nbf();
     // int naux = auxiliary_->nbf();
 
-    std::shared_ptr<ERISieve> sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, 0.0));
-    const std::vector<std::pair<int, int> > &shell_pairs = sieve_->shell_pairs();
+    // => Integrals <= //
+    std::shared_ptr<IntegralFactory> rifactory2(
+        new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
+    for (int t = 0; t < df_ints_num_threads_; t++) {
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri(1)));
+    }
+
+    const std::vector<std::pair<int, int> > &shell_pairs = eri[0]->shell_pairs();
     int npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
@@ -215,14 +221,6 @@ void DFOCC::tei_grad_ref() {
         counter += nP;
     }
     Pstarts.push_back(auxiliary_->nshell());
-
-    // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory2(
-        new IntegralFactory(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_));
-    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri(1)));
-    }
 
     // => Temporary Gradients <= //
     std::vector<SharedMatrix> Jtemps2;

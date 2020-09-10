@@ -31,7 +31,6 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
-#include "psi4/libmints/sieve.h"
 #include "psi4/psi4-dec.h"
 
 #include "defines.h"
@@ -277,8 +276,16 @@ void DFOCC::b_so(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> a
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    std::shared_ptr<ERISieve> sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff));
-    const std::vector<std::pair<int, int> >& shell_pairs = sieve_->shell_pairs();
+    // => Integrals <= //
+    std::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary_, zero, primary_, primary_));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
+    std::vector<const double*> buffer;
+    for (int t = 0; t < nthreads; t++) {
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
+        buffer.push_back(eri[t]->buffer());
+    }
+
+    const std::vector<std::pair<int, int> >& shell_pairs = eri[0]->shell_pairs();
     int npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
@@ -299,14 +306,6 @@ void DFOCC::b_so(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> a
     }
     Pstarts.push_back(auxiliary_->nshell());
 
-    // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary_, zero, primary_, primary_));
-    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
-    std::vector<const double*> buffer;
-    for (int t = 0; t < nthreads; t++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
-        buffer.push_back(eri[t]->buffer());
-    }
 
     // => Master Loop <= //
 
