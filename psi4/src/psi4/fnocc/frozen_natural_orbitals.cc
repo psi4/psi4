@@ -48,7 +48,6 @@
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/lib3index/dftensor.h"
 #include "psi4/lib3index/cholesky.h"
-#include "psi4/libmints/sieve.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/basisset.h"
@@ -525,8 +524,10 @@ void DFFrozenNO::ThreeIndexIntegrals() {
     // 1.  read scf 3-index integrals from disk
 
     // get ntri from sieve
-    auto sieve = std::make_shared<ERISieve>(basisset_, options_.get_double("INTS_TOLERANCE"));
-    const std::vector<std::pair<int, int> >& function_pairs = sieve->function_pairs();
+    std::shared_ptr<BasisSet> primary = basisset();
+    std::shared_ptr<IntegralFactory> integral = std::make_shared<IntegralFactory>(primary, primary, primary, primary);
+    auto eri = std::shared_ptr<TwoBodyAOInt>(integral->eri());
+    const std::vector<std::pair<int, int> >& function_pairs = eri->function_pairs();
     long int ntri = function_pairs.size();
 
     auto psio = std::make_shared<PSIO>();
@@ -626,9 +627,6 @@ void DFFrozenNO::ThreeIndexIntegrals() {
         } else {
             // generate Cholesky 3-index integrals
             outfile->Printf("        Generating Cholesky vectors ...\n");
-            std::shared_ptr<BasisSet> primary = basisset();
-            std::shared_ptr<IntegralFactory> integral =
-                std::make_shared<IntegralFactory>(primary, primary, primary, primary);
             double tol = options_.get_double("CHOLESKY_TOLERANCE");
             std::shared_ptr<CholeskyERI> Ch = std::make_shared<CholeskyERI>(
                 std::shared_ptr<TwoBodyAOInt>(integral->eri()), 0.0, tol, Process::environment.get_memory());
