@@ -102,6 +102,9 @@ jobs:
         mkl-include \
         networkx \
         pytest \
+        eigen \
+        boost \
+        mpfr \
         pytest-xdist \
         conda-forge::qcelemental \
         conda-forge::qcengine \
