@@ -267,12 +267,11 @@ std::pair<double, SharedMatrix> PCM::compute_PCM_terms(const SharedMatrix &D, Ca
 }
 
 SharedMatrix PCM::compute_V_PCM(const SharedMatrix &D, bool enable_response_)  {
-    // simplified version that only returns V for a given D
-    // with CalcType=total
-    double upcm = 0.0;
+    // returns V for a given D with CalcType=total and response_asc if needed
+    // double upcm = 0.0;
     auto MEP_e = compute_electronic_MEP(D);
     auto ASC = std::make_shared<Vector>(tesspi_);
-    MEP_e->add(MEP_n_);
+    // MEP_e->add(MEP_n_); // dont want nuclear everytime, right?
     std::string MEP_label("TotMEP");
     std::string ASC_label("TotASC");
     pcmsolver_set_surface_function(context_.get(), ntess_, MEP_e->pointer(0), MEP_label.c_str());
