@@ -527,7 +527,7 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         std::vector<SharedMatrix> Dx;
         for (size_t i = 0; i < x_vec.size(); i++) {
             Dx.push_back(linalg::doublet(Cl[i], Cr[i], false, true));
-            Vpot.push_back(PCM_->compute_V_PCM(Dx[i]));
+            Vpot.push_back(PCM_->compute_V_PCM(Dx[i],true));
         }
     }
 #endif
