@@ -48,7 +48,6 @@
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/lib3index/3index.h"
 
-#include "psi4/libmints/sieve.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/apps.h"
 #include "psi4/physconst.h"
@@ -219,8 +218,15 @@ void DCTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<Basi
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    auto sieve = std::make_shared<ERISieve>(primary, 1.0E-20);
-    const std::vector<std::pair<int, int>>& shell_pairs = sieve->shell_pairs();
+    // => Integrals <= //
+    auto rifactory2 = std::make_shared<IntegralFactory>(auxiliary, zero, primary, primary);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri;
+    std::vector<const double*> buffer;
+    for (int t = 0; t < nthreads; t++) {
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
+        buffer.push_back(eri[t]->buffer());
+    }
+    const std::vector<std::pair<int, int>>& shell_pairs = eri[0]->shell_pairs();
     size_t npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
@@ -240,15 +246,6 @@ void DCTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<Basi
         counter += nP;
     }
     Pstarts.push_back(auxiliary->nshell());
-
-    // => Integrals <= //
-    auto rifactory2 = std::make_shared<IntegralFactory>(auxiliary, zero, primary, primary);
-    std::vector<std::shared_ptr<TwoBodyAOInt>> eri;
-    std::vector<const double*> buffer;
-    for (int t = 0; t < nthreads; t++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
-        buffer.push_back(eri[t]->buffer());
-    }
 
     // => Master Loop <= //
 
@@ -2675,8 +2672,15 @@ void DCTSolver::formb_ao_scf(std::shared_ptr<BasisSet> primary, std::shared_ptr<
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    auto sieve = std::make_shared<ERISieve>(primary, 1.0E-20);
-    const std::vector<std::pair<int, int>>& shell_pairs = sieve->shell_pairs();
+    // => Integrals <= //
+    auto rifactory2 = std::make_shared<IntegralFactory>(auxiliary, zero, primary, primary);
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri;
+    std::vector<const double*> buffer;
+    for (int t = 0; t < nthreads; t++) {
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
+        buffer.push_back(eri[t]->buffer());
+    }
+    const std::vector<std::pair<int, int>>& shell_pairs = eri[0]->shell_pairs();
     int npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
@@ -2696,15 +2700,6 @@ void DCTSolver::formb_ao_scf(std::shared_ptr<BasisSet> primary, std::shared_ptr<
         counter += nP;
     }
     Pstarts.push_back(auxiliary->nshell());
-
-    // => Integrals <= //
-    auto rifactory2 = std::make_shared<IntegralFactory>(auxiliary, zero, primary, primary);
-    std::vector<std::shared_ptr<TwoBodyAOInt>> eri;
-    std::vector<const double*> buffer;
-    for (int t = 0; t < nthreads; t++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
-        buffer.push_back(eri[t]->buffer());
-    }
 
     // => Master Loop <= //
 
