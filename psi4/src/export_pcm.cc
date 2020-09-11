@@ -48,6 +48,7 @@ void export_pcm(py::module& m) {
 
     pcm.def(py::init<std::string, int, std::shared_ptr<BasisSet>>())
         .def("compute_PCM_terms", &PCM::compute_PCM_terms, "Compute PCM contributions to energy and Fock matrix", "D"_a,
-             "type"_a);
+             "type"_a)
+        .def("compute_V_PCM", &PCM::compute_V_PCM, "Compute PCM contributions to energy and Fock matrix");
 }
 #endif

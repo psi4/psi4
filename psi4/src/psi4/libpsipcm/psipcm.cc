@@ -269,6 +269,7 @@ std::pair<double, SharedMatrix> PCM::compute_PCM_terms(const SharedMatrix &D, Ca
 SharedMatrix PCM::compute_V_PCM(const SharedMatrix &D, bool enable_response_)  {
     // simplified 'compute_PCM_terms'
     // returns V for a given D with CalcType=total and response_asc if needed
+    // verified in scf_iterator.py
     auto MEP_e = compute_electronic_MEP(D);
     auto ASC = std::make_shared<Vector>(tesspi_);
     MEP_e->add(MEP_n_); 
