@@ -44,7 +44,6 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/potential.h"
-#include "psi4/libmints/sieve.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -342,8 +341,7 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(Ifact->eri()));
     }
 
-    auto sieve = std::make_shared<ERISieve>(primary_, cutoff);
-    const std::vector<std::pair<int, int>>& pairs = sieve->shell_pairs();
+    const std::vector<std::pair<int, int>>& pairs = ints[0]->shell_pairs();
 
     auto c = std::make_shared<Vector>("c", naux);
     double* cp = c->pointer();

@@ -41,7 +41,6 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libmints/sieve.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/vector.h"
@@ -129,9 +128,6 @@ void DFCorrGrad::compute_gradient() {
     gradients_["Coulomb"] = std::make_shared<Matrix>("Coulomb Gradient", natom, 3);
     gradients_["Exchange"] = std::make_shared<Matrix>("Exchange Gradient", natom, 3);
 
-    // => Build ERI Sieve <= //
-    sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
-
     // => Open temp files <= //
     psio_->open(unit_a_, PSIO_OPEN_NEW);
     psio_->open(unit_b_, PSIO_OPEN_NEW);
@@ -184,7 +180,14 @@ void DFCorrGrad::build_Amn_terms() {
 
     bool restricted = (Ca_ == Cb_);
 
-    const std::vector<std::pair<int, int> >& shell_pairs = sieve_->shell_pairs();
+    // => Integrals <= //
+
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
+    for (int t = 0; t < df_ints_num_threads_; t++) {
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
+    }
+    const std::vector<std::pair<int, int> >& shell_pairs = eri[0]->shell_pairs();
     int npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
@@ -283,14 +286,6 @@ void DFCorrGrad::build_Amn_terms() {
     next_Ailb = PSIO_ZERO;
     next_Aira = PSIO_ZERO;
     next_Airb = PSIO_ZERO;
-
-    // => Integrals <= //
-
-    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
-    }
 
     // => Master Loop <= //
 
@@ -622,7 +617,14 @@ void DFCorrGrad::build_Amn_x_terms() {
 
     bool restricted = (Ca_ == Cb_);
 
-    const std::vector<std::pair<int, int> >& shell_pairs = sieve_->shell_pairs();
+    // => Integrals <= //
+
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
+    for (int t = 0; t < df_ints_num_threads_; t++) {
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+    }
+    const std::vector<std::pair<int, int> >& shell_pairs = eri[0]->shell_pairs();
     int npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
@@ -696,14 +698,6 @@ void DFCorrGrad::build_Amn_x_terms() {
     psio_address next_Ailb = PSIO_ZERO;
     psio_address next_Aira = PSIO_ZERO;
     psio_address next_Airb = PSIO_ZERO;
-
-    // => Integrals <= //
-
-    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
-    }
 
     // => Temporary Gradients <= //
 

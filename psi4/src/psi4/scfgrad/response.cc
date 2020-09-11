@@ -34,7 +34,6 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libmints/dipole.h"
-#include "psi4/libmints/sieve.h"
 #include "psi4/libmints/cdsalclist.h"
 #include "psi4/libfock/v.h"
 //#include "psi4/libfock/jk.h"
@@ -1087,9 +1086,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
 #endif
             std::shared_ptr<TwoBodyAOInt> ints(integral_->eri(1));
 
-            auto sieve = std::make_shared<ERISieve>(basisset_, 0.0);
-
-            const std::vector<std::pair<int, int>>& shell_pairs = sieve->shell_pairs();
+            const std::vector<std::pair<int, int>>& shell_pairs = ints.shell_pairs();
             size_t npairs = shell_pairs.size();
             size_t npairs2 = npairs * npairs;
 
@@ -3655,9 +3652,7 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
 #endif
         std::shared_ptr<TwoBodyAOInt> ints(integral_->eri(1));
 
-        auto sieve = std::make_shared<ERISieve>(basisset_, 0.0);
-
-        const std::vector<std::pair<int, int> >& shell_pairs = sieve->shell_pairs();
+        const std::vector<std::pair<int, int> >& shell_pairs = ints.shell_pairs();
         size_t npairs = shell_pairs.size();
         size_t npairs2 = npairs * npairs;
 
@@ -3685,7 +3680,7 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                 int R = shell_pairs[RS].first;
                 int S = shell_pairs[RS].second;
 
-                if (!sieve->shell_significant(P,Q,R,S)) continue;
+                if (!ints.shell_significant(P,Q,R,S)) continue;
 
                 int Pcenter = basisset_->shell(P).ncenter();
                 int Qcenter = basisset_->shell(Q).ncenter();
