@@ -1086,7 +1086,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
 #endif
             std::shared_ptr<TwoBodyAOInt> ints(integral_->eri(1));
 
-            const std::vector<std::pair<int, int>>& shell_pairs = ints.shell_pairs();
+            const std::vector<std::pair<int, int>>& shell_pairs = ints->shell_pairs();
             size_t npairs = shell_pairs.size();
             size_t npairs2 = npairs * npairs;
 
@@ -3652,7 +3652,7 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
 #endif
         std::shared_ptr<TwoBodyAOInt> ints(integral_->eri(1));
 
-        const std::vector<std::pair<int, int> >& shell_pairs = ints.shell_pairs();
+        const std::vector<std::pair<int, int> >& shell_pairs = ints->shell_pairs();
         size_t npairs = shell_pairs.size();
         size_t npairs2 = npairs * npairs;
 
@@ -3680,7 +3680,7 @@ void USCFDeriv::JK_deriv1(std::shared_ptr<Matrix> D1,
                 int R = shell_pairs[RS].first;
                 int S = shell_pairs[RS].second;
 
-                if (!ints.shell_significant(P,Q,R,S)) continue;
+                if (!ints->shell_significant(P,Q,R,S)) continue;
 
                 int Pcenter = basisset_->shell(P).ncenter();
                 int Qcenter = basisset_->shell(Q).ncenter();
