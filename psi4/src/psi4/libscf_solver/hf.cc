@@ -293,15 +293,6 @@ void HF::common_init() {
     // CPHF info
     cphf_nfock_builds_ = 0;
     cphf_converged_ = false;
-
-    // #ifdef USING_PCMSolver
-
-    // pcm_enabled_ = options_.get_bool("PCM");
-    // if (pcm_enabled_) {
-
-        // pcm_ = PCM::PCM(options_, 2, basisset_);
-    // }
-    // #endif
 }
 
 void HF::damping_update(double damping_percentage) {
@@ -1189,8 +1180,6 @@ void HF::guess() {
         std::vector<SharedMatrix> Vsap;
         Vsap.push_back(SharedMatrix(factory_->create_matrix("Vsap")));
         builder->compute_V(Vsap);
-        // PCM_->compute_V_PCM(D);
-        // PCM_.compute_PCM_terms();
         Fa_->copy(T_);
         Fa_->add(Vsap[0]);
         Fb_->copy(Fa_);
