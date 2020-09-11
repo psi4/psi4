@@ -284,6 +284,8 @@ SharedMatrix PCM::compute_V_PCM(const SharedMatrix &D, bool enable_response_)  {
         pcmsolver_compute_asc(context_.get(), MEP_label.c_str(), ASC_label.c_str(), irrep);
     }
     pcmsolver_get_surface_function(context_.get(), ntess_, ASC->pointer(0), "TotASC");
+    // double Epol = pcmsolver_compute_polarization_energy(context_.get(), MEP_label.c_str(), ASC_label.c_str());
+    // outfile->Printf("   PCM polarization energy = %16.14f\n", Epol);
     return compute_V(ASC);
     // multiple matrices at once?
     // std::vector<SharedMatrix> ASC_vec;
