@@ -35,7 +35,6 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
-#include "psi4/libmints/sieve.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
