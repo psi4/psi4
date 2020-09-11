@@ -276,7 +276,6 @@ SharedMatrix PCM::compute_V_PCM(const SharedMatrix &D, bool enable_response_)  {
     std::string ASC_label("TotASC");
     pcmsolver_set_surface_function(context_.get(), ntess_, MEP_e->pointer(0), MEP_label.c_str());
     int irrep = 0;
-    // printf("response asc: %s \n",enable_response_ ? "true": "false");
     if (enable_response_){
         pcmsolver_compute_response_asc(context_.get(), MEP_label.c_str(), ASC_label.c_str(), irrep);
     }

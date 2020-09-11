@@ -522,12 +522,12 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     }
     
 #ifdef USING_PCMSolver
-    std::vector<SharedMatrix> Vpot;
+    std::vector<SharedMatrix> Vpcm;
     if (PCM_enabled_) {
         std::vector<SharedMatrix> Dx;
         for (size_t i = 0; i < x_vec.size(); i++) {
             Dx.push_back(linalg::doublet(Cl[i], Cr[i], false, true));
-            Vpot.push_back(PCM_->compute_V_PCM(Dx[i],true));
+            Vpcm.push_back(PCM_->compute_V_PCM(Dx[i],true));
         }
     }
 #endif
@@ -564,7 +564,7 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             }
 #ifdef USING_PCMSolver
             if (PCM_enabled_) {
-                J[i]->axpy(4.0, Vpot[i]);
+                J[i]->axpy(4.0, Vpcm[i]);
             }
 #endif
             ret.push_back(J[i]);
@@ -580,7 +580,7 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             }
 #ifdef USING_PCMSolver
             if (PCM_enabled_) {
-                J[i]->add(Vpot[i]);
+                J[i]->add(Vpcm[i]);
             }
 #endif
             ret.push_back(J[i]);
