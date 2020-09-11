@@ -248,7 +248,7 @@ def print_math_ldd(args):
             assert okmkl != okopenblas
         elif sys.platform.startswith('darwin'):
             # plugins on Mac won't show mkl through otool (linked to psi4.core)
-            assert (okmkl2 != okopenblas) or (okiomp5 != okopenblas)
+            assert (okmkl2 != okopenblas) or (omplike != okopenblas)
 
 if __name__ == '__main__':
     import argparse
