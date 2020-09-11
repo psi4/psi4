@@ -267,15 +267,16 @@ std::pair<double, SharedMatrix> PCM::compute_PCM_terms(const SharedMatrix &D, Ca
 }
 
 SharedMatrix PCM::compute_V_PCM(const SharedMatrix &D, bool enable_response_)  {
+    // simplified 'compute_PCM_terms'
     // returns V for a given D with CalcType=total and response_asc if needed
-    // double upcm = 0.0;
     auto MEP_e = compute_electronic_MEP(D);
     auto ASC = std::make_shared<Vector>(tesspi_);
-    // MEP_e->add(MEP_n_); // dont want nuclear everytime, right?
+    MEP_e->add(MEP_n_); 
     std::string MEP_label("TotMEP");
     std::string ASC_label("TotASC");
     pcmsolver_set_surface_function(context_.get(), ntess_, MEP_e->pointer(0), MEP_label.c_str());
     int irrep = 0;
+    // printf("response asc: %s \n",enable_response_ ? "true": "false");
     if (enable_response_){
         pcmsolver_compute_response_asc(context_.get(), MEP_label.c_str(), ASC_label.c_str(), irrep);
     }
@@ -284,7 +285,7 @@ SharedMatrix PCM::compute_V_PCM(const SharedMatrix &D, bool enable_response_)  {
     }
     pcmsolver_get_surface_function(context_.get(), ntess_, ASC->pointer(0), "TotASC");
     return compute_V(ASC);
-    // multiple matrices?
+    // multiple matrices at once?
     // std::vector<SharedMatrix> ASC_vec;
     // std::vector<SharedMatrix> MEP_vec;
     // for (size_t i = 0; i < Dx.size(); i++) {
