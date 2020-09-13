@@ -82,7 +82,7 @@ void IntegralFactory::set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<B
     bs4_ = bs4;
 
     // Use the max am from libint
-    init_spherical_harmonics(LIBINT_MAX_AM + 1);
+    init_spherical_harmonics(12);
 }
 
 OneBodyAOInt* IntegralFactory::ao_overlap(int deriv) {

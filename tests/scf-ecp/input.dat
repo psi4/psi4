@@ -19,7 +19,7 @@ set = {
 
 e = energy('scf')
 compare_values(nucenergy, arwater.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")   #TEST
-compare_values(refenergy, e, 10, "SCF energy with ECP")                                        #TEST
+compare_values(refenergy, e, 9, "SCF energy with ECP")                                        #TEST
 
 agrad = gradient('scf')
 set points 5
