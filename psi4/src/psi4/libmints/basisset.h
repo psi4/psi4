@@ -48,7 +48,7 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 PRAGMA_WARNING_POP
 
 namespace libint2 {
-    class Shell;
+    struct Shell;
 }
 namespace psi {
 
