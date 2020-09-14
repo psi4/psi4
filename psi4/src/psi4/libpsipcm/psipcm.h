@@ -57,7 +57,11 @@ class PCM final {
      *  \param[in] type how to treat MEP and ASC
      */
     std::pair<double, SharedMatrix> compute_PCM_terms(const SharedMatrix &D, CalcType type = CalcType::Total) const;
-    SharedMatrix compute_V_PCM(const SharedMatrix &D, bool enable_response_);
+    SharedMatrix compute_Ve_PCM(const SharedMatrix &D);
+
+    /// for frequency-dependent properties
+    void set_dynamic_asc(bool enable) { dynamic_asc_ = enable; } ;
+    bool dynamic_asc() const {return dynamic_asc_; }
 
    private:
     /// The number of tesserae in PCMSolver.
@@ -103,7 +107,7 @@ class PCM final {
     int pcm_print_;
 
     /// for frequency-dependent properties
-    bool enable_response_;
+    bool dynamic_asc_;
 };
 
 namespace detail {
