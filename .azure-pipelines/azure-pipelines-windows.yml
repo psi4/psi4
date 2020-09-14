@@ -9,7 +9,10 @@ jobs:
     variables:
       llvm.version: '7.0.1' # Note: LLVM 8.0.0 fails to build the optimized libint
       mkl.version: '2019.1'
-      cmake.build_type: 'Debug'
+      cmake.build_type: 'Release'
+      # Note: libint2 is missing a copy constructor in the custom allocator. With debug builds this results in problems, c.f.
+      # https://stackoverflow.com/questions/31498391/confirm-this-standard-library-bug-relating-to-allocators-in-msvc-2015-rc
+      # https://social.msdn.microsoft.com/Forums/en-US/e748419c-c046-43fc-90ee-4738f12501ef/vs2008-to-vs2010-breack-change-on-custom-memory-allocator?forum=vcgeneral
     steps:
 
       # Check Python
