@@ -272,7 +272,7 @@ SharedMatrix PCM::compute_V_PCM(const SharedMatrix &D, bool enable_response_)  {
     // verified in scf_iterator.py
     auto MEP_e = compute_electronic_MEP(D);
     auto ASC = std::make_shared<Vector>(tesspi_);
-    MEP_e->add(MEP_n_); 
+    // MEP_e->add(MEP_n_);  // nope!
     std::string MEP_label("TotMEP");
     std::string ASC_label("TotASC");
     pcmsolver_set_surface_function(context_.get(), ntess_, MEP_e->pointer(0), MEP_label.c_str());
