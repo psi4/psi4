@@ -214,6 +214,7 @@ PCM::PCM(const PCM *other) {
     potential_int_ = other->potential_int_;
     context_ = detail::init_PCMSolver(other->pcmsolver_parsed_fname_, basisset_->molecule());
     pcm_print_ = other->pcm_print_;
+    dynamic_asc_ = other->dynamic_asc_;
 }
 
 SharedVector PCM::compute_electronic_MEP(const SharedMatrix &D) const {
@@ -271,7 +272,6 @@ SharedMatrix PCM::compute_Ve_PCM(const SharedMatrix &D) {
     // returns V_elec for a given D with CalcType=total and response_asc if needed
     auto MEP_e = compute_electronic_MEP(D);
     auto ASC = std::make_shared<Vector>(tesspi_);
-    // MEP_e->add(MEP_n_);  // nope!
     std::string MEP_label("TotMEP");
     std::string ASC_label("TotASC");
     pcmsolver_set_surface_function(context_.get(), ntess_, MEP_e->pointer(0), MEP_label.c_str());
