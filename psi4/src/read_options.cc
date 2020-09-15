@@ -303,6 +303,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Thole damping factor for multipole fields -*/
         options.add_double("DAMPING_FACTOR_MULTIPOLE", 2.1304);
 
+        /*- Summation scheme for field computations, can be direct or fmm -*/
+        options.add_str_i("SUMMATION_FIELDS", "DIRECT", "DIRECT FMM");
+        /*- Expansion order of the multipoles for FMM -*/
+        options.add_int("TREE_EXPANSION_ORDER", 7);
+        /*- Opening angle theta -*/
+        options.add_double("TREE_THETA", 0.3);
+
         /*- Activate border options for sites in proximity to the QM/MM border -*/
         options.add_bool("BORDER", false);
         /*- border type, either remove or redistribute moments/polarizabilities -*/

@@ -46,6 +46,10 @@ def get_pe_options():
         "iso_pol": core.get_option('PE', 'ISOTROPIC_POL'),
         "induced_thresh": core.get_option('PE', 'INDUCED_CONVERGENCE'),
         "maxiter": core.get_option('PE', 'MAXITER'),
+        # tree options
+        "summation_induced_fields": core.get_option('PE', 'SUMMATION_FIELDS').lower(),
+        "tree_expansion_order": core.get_option('PE', 'TREE_EXPANSION_ORDER'),
+        "theta": core.get_option('PE', 'TREE_THETA'),
         # damping options
         "damp_induced": core.get_option('PE', 'DAMP_INDUCED'),
         "damping_factor_induced": core.get_option('PE', 'DAMPING_FACTOR_INDUCED'),
@@ -90,6 +94,10 @@ class CppeInterface:
             core.print_out("{}\n".format(output))
 
         self.cppe_state = cppe.CppeState(self.options, psi4mol_to_cppemol(self.molecule), callback)
+        core.print_out("CPPE Options:\n")
+        for k in cppe.valid_option_keys:
+            core.print_out(f"{k} = {self.cppe_state.options[k]}\n")
+        core.print_out("-------------------------\n\n")
         self.cppe_state.calculate_static_energies_and_fields()
         # obtain coordinates of polarizable sites
         self._enable_induction = False
