@@ -619,6 +619,8 @@ def scf_finalize_energy(self):
         Dt.add(self.Db())
         _, Vpcm = self.get_PCM().compute_PCM_terms(Dt, calc_type)
         self.push_back_external_potential(Vpcm)
+        # Set callback function for CPSCF
+        self.set_external_cpscf_perturbation("PCM", lambda pert_dm : self.get_PCM().compute_Ve_PCM(pert_dm))
 
     if core.get_option('SCF', 'PE'):
         Dt = self.Da().clone()
@@ -627,6 +629,8 @@ def scf_finalize_energy(self):
             Dt, elec_only=False
         )
         self.push_back_external_potential(Vpe)
+        # Set callback function for CPSCF
+        self.set_external_cpscf_perturbation("PE", lambda pert_dm : self.pe_state.get_pe_contribution(pert_dm, elec_only=True)[1])
 
     # Properties
     #  Comments so that autodoc utility will find these PSI variables
