@@ -76,7 +76,12 @@ using namespace psi;
 namespace py = pybind11;
 using namespace pybind11::literals;
 
+#include <pybind11/functional.h>
+#include <functional>
+PYBIND11_MAKE_OPAQUE(std::map<std::string, std::function<SharedMatrix(SharedMatrix)>>);
+
 void export_wavefunction(py::module& m) {
+    py::bind_map<std::map<std::string, std::function<SharedMatrix(SharedMatrix)>>>(m, "MapMatrixFunction");
     typedef void (Wavefunction::*take_sharedwfn)(SharedWavefunction);
     py::class_<Wavefunction, std::shared_ptr<Wavefunction>>(m, "Wavefunction", "docstring", py::dynamic_attr())
         .def(py::init<std::shared_ptr<Molecule>, std::shared_ptr<BasisSet>, Options&>())
@@ -245,7 +250,8 @@ void export_wavefunction(py::module& m) {
         .def("set_PCM", &Wavefunction::set_PCM, "Set the PCM object")
         .def("get_PCM", &Wavefunction::get_PCM, "Get the PCM object")
 #endif
-        .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation");
+        .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation")
+        .def_readwrite("external_cpscf_perturbations", &Wavefunction::external_cpscf_perturbations_, "Map with functions to compute external perturbations for CPSCF");
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.")

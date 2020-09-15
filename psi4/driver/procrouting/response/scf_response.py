@@ -180,6 +180,10 @@ def cpscf_linear_response(wfn, *args, **kwargs):
     # compute response vectors for each input vector
     params = [kwargs.pop("conv_tol", 1.e-5), kwargs.pop("max_iter", 10), kwargs.pop("print_lvl", 2)]
 
+    if core.get_option('SCF', 'PCM'):
+        wfn.external_cpscf_perturbations["PCM"] = lambda pert_dm : wfn.get_PCM().compute_Ve_PCM(pert_dm)
+    if core.get_option('SCF', 'PE'):
+        wfn.external_cpscf_perturbations["PE"] = lambda pert_dm : wfn.pe_state.get_pe_contribution(pert_dm, elec_only=True)[1]
     responses = wfn.cphf_solve(vectors, *params)
 
     # zip vectors, responses for easy access

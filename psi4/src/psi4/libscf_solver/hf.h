@@ -407,9 +407,6 @@ class HF : public Wavefunction {
     void set_energies(std::string key, double value) { energies_[key] = value; }
     double get_energies(std::string key) { return energies_[key]; }
 
-    // PCM interface
-    bool pcm_enabled_;
-
     // External potentials
     void clear_external_potentials() { external_potentials_.clear(); }
     void push_back_external_potential(const SharedMatrix& V) { external_potentials_.push_back(V); }

@@ -24,10 +24,3 @@ if(TARGET BrianQC::static_wrapper)
       $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
     )
 endif()
-
-if(TARGET PCMSolver::pcm)
-  target_link_libraries(scf_solver
-    PUBLIC
-      PCMSolver::pcm
-    )
-endif()

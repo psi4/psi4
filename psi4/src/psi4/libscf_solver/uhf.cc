@@ -61,10 +61,6 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libtrans/integraltransform.h"
 
-#ifdef USING_PCMSolver
-#include "psi4/libpsipcm/psipcm.h"
-#endif
-
 #include "stability.h"
 
 #ifdef USING_BrianQC
@@ -598,17 +594,18 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         }
         potential_->compute_Vx(Dx, Vx);
     } 
-#ifdef USING_PCMSolver
-    std::vector<SharedMatrix> Vpcm;
-    if (PCM_enabled_) {
+    
+    std::vector<SharedMatrix> V_ext_pert;
+    for (const auto& pert : external_cpscf_perturbations_) {
+        // TODO: remove...
+        outfile->Printf("Adding external CPSCF contribution %s.\n", pert.first.c_str());
         for (size_t i = 0; i < nvecs; i++) {
             auto Dx_a = linalg::doublet(Cl[i], Cr[i], false, true);
             auto Dx_b = linalg::doublet(Cl[nvecs + i], Cr[nvecs + i], false, true);
-            Vpcm.push_back(PCM_->compute_Ve_PCM(Dx_a));
-            Vpcm.push_back(PCM_->compute_Ve_PCM(Dx_b));
+            V_ext_pert.push_back(pert.second(Dx_a));
+            V_ext_pert.push_back(pert.second(Dx_b));
         }
     }
-#endif
 
     Cl.clear();
     Cr.clear();
@@ -649,12 +646,10 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
                 J[nvecs + i]->axpy(-beta, wK[nvecs + i]);
                 J[nvecs + i]->axpy(-beta, wK[nvecs + i]->transpose());
             }
-#ifdef USING_PCMSolver
-            if (PCM_enabled_) {
-                J[i]->axpy(2.0, Vpcm[2 * i]);
-                J[nvecs + i]->axpy(2.0, Vpcm[2 * i + 1]);
+            if (V_ext_pert.size()) {
+                J[i]->axpy(2.0, V_ext_pert[2 * i]);
+                J[nvecs + i]->axpy(2.0, V_ext_pert[2 * i + 1]);
             }
-#endif
             ret.push_back(J[i]);
             ret.push_back(J[nvecs + i]);
         }
@@ -669,12 +664,10 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
                 J[i]->add(Vx[2 * i]);
                 J[nvecs + i]->add(Vx[2 * i + 1]);
             }
-#ifdef USING_PCMSolver
-            if (PCM_enabled_) {
-                J[i]->add(Vpcm[2 * i]);
-                J[nvecs + i]->add(Vpcm[2 * i + 1]);
+            if (V_ext_pert.size()) {
+                J[i]->add(V_ext_pert[2 * i]);
+                J[nvecs + i]->add(V_ext_pert[2 * i + 1]);
             }
-#endif      
             ret.push_back(J[i]);
             ret.push_back(J[nvecs + i]);
             if (functional_->is_x_hybrid()) {

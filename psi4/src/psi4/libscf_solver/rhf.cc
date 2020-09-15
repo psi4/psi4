@@ -59,10 +59,6 @@
 
 #include "rhf.h"
 
-#ifdef USING_PCMSolver
-#include "psi4/libpsipcm/psipcm.h"
-#endif
-
 #ifdef USING_BrianQC
 
 #include <use_brian_wrapper.h>
@@ -521,15 +517,16 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         potential_->compute_Vx(Dx, Vx);
     }
     
-#ifdef USING_PCMSolver
-    std::vector<SharedMatrix> Vpcm;
-    if (PCM_enabled_) {
+    std::vector<SharedMatrix> V_ext_pert;
+    for (const auto& pert : external_cpscf_perturbations_) {
+        // TODO: remove...
+        outfile->Printf("Adding external CPSCF contribution %s.\n", pert.first.c_str());
         for (size_t i = 0; i < x_vec.size(); i++) {
             auto Dx = linalg::doublet(Cl[i], Cr[i], false, true);
-            Vpcm.push_back(PCM_->compute_Ve_PCM(Dx));
+            V_ext_pert.push_back(pert.second(Dx));
         }
     }
-#endif
+
     Cl.clear();
     Cr.clear();
     
@@ -561,11 +558,9 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             if (functional_->needs_xc()) {
                 J[i]->axpy(4.0, Vx[i]);
             }
-#ifdef USING_PCMSolver
-            if (PCM_enabled_) {
-                J[i]->axpy(4.0, Vpcm[i]);
+            if (V_ext_pert.size()) {
+                J[i]->axpy(4.0, V_ext_pert[i]);
             }
-#endif
             ret.push_back(J[i]);
         }
     } else {
@@ -577,11 +572,9 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             if (functional_->needs_xc()) {
                 J[i]->add(Vx[i]);
             }
-#ifdef USING_PCMSolver
-            if (PCM_enabled_) {
-                J[i]->add(Vpcm[i]);
+            if (V_ext_pert.size()) {
+                J[i]->add(V_ext_pert[i]);
             }
-#endif
             ret.push_back(J[i]);
             // may have K^HF
             if (functional_->is_x_hybrid()) {
@@ -696,9 +689,6 @@ std::vector<SharedMatrix> RHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         outfile->Printf("    Maxiter             = %11d\n", max_iter);
         outfile->Printf("    Convergence         = %11.3E\n", conv_tol);
         outfile->Printf("    Number of equations = %11ld\n", x_vec.size());
-#ifdef USING_PCMSolver
-        outfile->Printf("    PCMsolver active    = %11s\n", PCM_enabled_ ? "true" : "false");
-#endif
         outfile->Printf("   -----------------------------------------------------\n");
         outfile->Printf("     %4s %14s %12s  %6s  %6s\n", "Iter", "Residual RMS", "Max RMS", "Remain", "Time [s]");
         outfile->Printf("   -----------------------------------------------------\n");
