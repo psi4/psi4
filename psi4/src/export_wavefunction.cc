@@ -77,8 +77,6 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 #include <pybind11/functional.h>
-#include <functional>
-PYBIND11_MAKE_OPAQUE(std::map<std::string, std::function<SharedMatrix(SharedMatrix)>>);
 
 void export_wavefunction(py::module& m) {
     py::bind_map<std::map<std::string, std::function<SharedMatrix(SharedMatrix)>>>(m, "MapMatrixFunction");
@@ -250,8 +248,7 @@ void export_wavefunction(py::module& m) {
         .def("set_PCM", &Wavefunction::set_PCM, "Set the PCM object")
         .def("get_PCM", &Wavefunction::get_PCM, "Get the PCM object")
 #endif
-        .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation")
-        .def_readwrite("external_cpscf_perturbations", &Wavefunction::external_cpscf_perturbations_, "Map with functions to compute external perturbations for CPSCF");
+        .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation");
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
         .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.")
@@ -311,6 +308,9 @@ void export_wavefunction(py::module& m) {
         .def("clear_external_potentials", &scf::HF::clear_external_potentials, "Clear private external_potentials list")
         .def("push_back_external_potential", &scf::HF::push_back_external_potential,
              "Add an external potential to the private external_potentials list", "V"_a)
+        .def("set_external_cpscf_perturbation", &scf::HF::set_external_cpscf_perturbation,
+             "Add an external potential/perturbation to the private external_cpscf_perturbations map for CPSCF", "name"_a, "function"_a)
+        .def("clear_external_cpscf_perturbations", &scf::HF::clear_external_cpscf_perturbations, "Clear private external_cpscf_perturbations map")
         .def_property("iteration_", &scf::HF::iteration, &scf::HF::set_iteration, "docstring")
         .def_property("diis_enabled_", &scf::HF::diis_enabled, &scf::HF::set_diis_enabled, "docstring")
         .def_property("diis_start_", &scf::HF::diis_start, &scf::HF::set_diis_start, "docstring")

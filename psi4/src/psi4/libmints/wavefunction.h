@@ -38,7 +38,6 @@
 #include <array>
 #include <memory>
 #include <map>
-#include <functional>
 
 #define MAX_IOFF 30000
 extern size_t ioff[MAX_IOFF];
@@ -704,8 +703,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Get PCM object
     std::shared_ptr<PCM> get_PCM() const;
     bool PCM_enabled() const { return PCM_enabled_; }
-
-    std::map<std::string, std::function<SharedMatrix(SharedMatrix)>> external_cpscf_perturbations_;
 };
 
 }  // namespace psi
