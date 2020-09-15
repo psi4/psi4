@@ -43,3 +43,6 @@ print_variables()
 compare_values(alpha_diag[0],variable('DIPOLE POLARIZABILITY XX'),5,'PCM DIPOLE POLARIZABILITY XX') #TEST
 compare_values(alpha_diag[1],variable('DIPOLE POLARIZABILITY YY'),5,'PCM DIPOLE POLARIZABILITY YY') #TEST
 compare_values(alpha_diag[2],variable('DIPOLE POLARIZABILITY ZZ'),5,'PCM DIPOLE POLARIZABILITY ZZ') #TEST
+
+
+# ToDo: UHF
