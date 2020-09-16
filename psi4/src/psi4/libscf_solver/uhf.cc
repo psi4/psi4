@@ -593,10 +593,10 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             Dx.push_back(Dx_b);
         }
         potential_->compute_Vx(Dx, Vx);
-    } 
-    
+    }
+
     std::vector<SharedMatrix> V_ext_pert;
-    for (const auto& pert : external_cpscf_perturbations_) {
+    for (const auto &pert : external_cpscf_perturbations_) {
         // TODO: remove...
         outfile->Printf("Adding external CPSCF contribution %s.\n", pert.first.c_str());
         for (size_t i = 0; i < nvecs; i++) {
