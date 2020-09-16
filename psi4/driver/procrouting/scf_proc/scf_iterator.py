@@ -620,7 +620,7 @@ def scf_finalize_energy(self):
         _, Vpcm = self.get_PCM().compute_PCM_terms(Dt, calc_type)
         self.push_back_external_potential(Vpcm)
         # Set callback function for CPSCF
-        self.set_external_cpscf_perturbation("PCM", lambda pert_dm : self.get_PCM().compute_Ve_PCM(pert_dm))
+        self.set_external_cpscf_perturbation("PCM", lambda pert_dm : self.get_PCM().compute_V(pert_dm))
 
     if core.get_option('SCF', 'PE'):
         Dt = self.Da().clone()

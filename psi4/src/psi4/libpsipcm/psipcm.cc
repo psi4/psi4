@@ -263,10 +263,10 @@ std::pair<double, SharedMatrix> PCM::compute_PCM_terms(const SharedMatrix &D, Ca
         default:
             throw PSIEXCEPTION("Unknown PCM calculation type.");
     }
-    return std::make_pair(upcm, compute_V(ASC));
+    return std::make_pair(upcm, compute_Vpcm(ASC));
 }
 
-SharedMatrix PCM::compute_Ve_PCM(const SharedMatrix &D) {
+SharedMatrix PCM::compute_V(const SharedMatrix &D) {
     // returns V_elec for a given D with CalcType=total and response_asc if needed
     auto MEP_e = compute_electronic_MEP(D);
     auto ASC = std::make_shared<Vector>(tesspi_);
@@ -276,7 +276,7 @@ SharedMatrix PCM::compute_Ve_PCM(const SharedMatrix &D) {
     int irrep = 0;
     pcmsolver_compute_response_asc(context_.get(), MEP_label.c_str(), ASC_label.c_str(), irrep);
     pcmsolver_get_surface_function(context_.get(), ntess_, ASC->pointer(0), ASC_label.c_str());
-    return compute_V(ASC);
+    return compute_Vpcm(ASC);
 }
 
 double PCM::compute_E_total(const SharedVector &MEP_e) const {
@@ -374,7 +374,7 @@ double PCM::compute_E_electronic(const SharedVector &MEP_e) const {
     return Epol;
 }
 
-SharedMatrix PCM::compute_V(const SharedVector &ASC) const {
+SharedMatrix PCM::compute_Vpcm(const SharedVector &ASC) const {
     auto V_pcm_cart = std::make_shared<Matrix>("PCM potential cart", basisset_->nao(), basisset_->nao());
     ContractOverChargesFunctor contract_charges_functor(ASC->pointer(0), V_pcm_cart);
     potential_int_->compute(contract_charges_functor);
