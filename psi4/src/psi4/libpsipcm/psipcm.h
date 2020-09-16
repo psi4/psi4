@@ -59,10 +59,6 @@ class PCM final {
     std::pair<double, SharedMatrix> compute_PCM_terms(const SharedMatrix &D, CalcType type = CalcType::Total) const;
     SharedMatrix compute_Ve_PCM(const SharedMatrix &D);
 
-    /// for frequency-dependent properties
-    void set_dynamic_asc(bool enable) { dynamic_asc_ = enable; } ;
-    bool dynamic_asc() const {return dynamic_asc_; }
-
    private:
     /// The number of tesserae in PCMSolver.
     int ntess_;
@@ -105,9 +101,6 @@ class PCM final {
 
     /// print level
     int pcm_print_;
-
-    /// for frequency-dependent properties
-    bool dynamic_asc_;
 };
 
 namespace detail {

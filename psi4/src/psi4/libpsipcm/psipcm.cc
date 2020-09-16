@@ -160,7 +160,6 @@ PCM::PCM(const std::string &pcmsolver_parsed_fname, int print_level, std::shared
     std::vector<int> tmp(int(ntess_ / ntessirr_));
     std::fill(tmp.begin(), tmp.end(), ntessirr_);
     tesspi_ = Dimension(tmp);
-    set_dynamic_asc(false);
 
     // The charge and {x,y,z} coordinates (in bohr) for each tessera
     tess_Zxyz_ = std::make_shared<Matrix>("Tess Zxyz", ntess_, 4);
@@ -214,7 +213,6 @@ PCM::PCM(const PCM *other) {
     potential_int_ = other->potential_int_;
     context_ = detail::init_PCMSolver(other->pcmsolver_parsed_fname_, basisset_->molecule());
     pcm_print_ = other->pcm_print_;
-    dynamic_asc_ = other->dynamic_asc_;
 }
 
 SharedVector PCM::compute_electronic_MEP(const SharedMatrix &D) const {
@@ -272,28 +270,13 @@ SharedMatrix PCM::compute_Ve_PCM(const SharedMatrix &D) {
     // returns V_elec for a given D with CalcType=total and response_asc if needed
     auto MEP_e = compute_electronic_MEP(D);
     auto ASC = std::make_shared<Vector>(tesspi_);
-    std::string MEP_label("TotMEP");
-    std::string ASC_label("TotASC");
+    std::string MEP_label("OITMEP");  // one-index-transformed MEP
+    std::string ASC_label("OITASC");  // one-index-transformed ASC
     pcmsolver_set_surface_function(context_.get(), ntess_, MEP_e->pointer(0), MEP_label.c_str());
     int irrep = 0;
-    if (dynamic_asc()){
-        pcmsolver_compute_response_asc(context_.get(), MEP_label.c_str(), ASC_label.c_str(), irrep);
-    }
-    else{
-        pcmsolver_compute_asc(context_.get(), MEP_label.c_str(), ASC_label.c_str(), irrep);
-    }
-    pcmsolver_get_surface_function(context_.get(), ntess_, ASC->pointer(0), "TotASC");
-    // double Epol = pcmsolver_compute_polarization_energy(context_.get(), MEP_label.c_str(), ASC_label.c_str());
-    // outfile->Printf("   PCM polarization energy = %16.14f\n", Epol);
+    pcmsolver_compute_response_asc(context_.get(), MEP_label.c_str(), ASC_label.c_str(), irrep);
+    pcmsolver_get_surface_function(context_.get(), ntess_, ASC->pointer(0), ASC_label.c_str());
     return compute_V(ASC);
-    // multiple matrices at once?
-    // std::vector<SharedMatrix> ASC_vec;
-    // std::vector<SharedMatrix> MEP_vec;
-    // for (size_t i = 0; i < Dx.size(); i++) {
-    //     MEP_vec.push_back(PCM::compute_electronic_MEP(D[i]));
-    //     ASC_vec.push_back(std::make_shared<Vector>(tesspi_));
-    // }
-    // pcmsolver_get_surface_function(context_.get(), ntess_, ASC->pointer(0), "TotASC");   
 }
 
 double PCM::compute_E_total(const SharedVector &MEP_e) const {

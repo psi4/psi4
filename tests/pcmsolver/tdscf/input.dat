@@ -1,0 +1,68 @@
+#! PCM TDSCF Ref. values from lsdaton test case: opa_hf_H2O_noneq_pcmsolver.out
+#       Excitation              Transition Dipole Moments               Oscillator
+#        Energies            x               y               z           Strengths
+#  ===============================================================================
+#       0.53739940      0.00000000     -0.00000000     -0.46873812      0.07871662
+#       0.62328100     -0.29826571      0.00000000      0.00000000      0.03696573
+#       0.62742027     -0.00000000     -0.00000000     -0.00000000      0.00000000
+#       0.71034705     -0.00000000     -0.08459875      0.00000000      0.00338928
+#       1.01071645     -0.00000000     -0.46594750     -0.00000000      0.14628913
+
+exc_energies = [
+    0.53739940,
+    0.62328100,
+    0.62742027,
+    0.71034705,
+    1.01071645,
+]
+
+osc_strengths = [
+    0.07871662,
+    0.03696573,
+    0.00000000,
+    0.00338928,
+    0.14628913,
+]
+
+ref_scf_energy = -74.069207686891
+
+
+molecule wat {
+unit bohr
+  O     0.00000   0.00000   0.00000
+  H     0.55168   0.77340   0.00000
+  H     0.55168  -0.77340   0.00000
+symmetry c1
+no_reorient
+}
+
+set = {
+    scf_type   pk
+    basis      3-21G
+    e_convergence 8
+    pcm true
+    maxiter 50
+    tdscf_states 5
+}
+
+pcm = {
+   Units=Angstrom
+   Medium {
+   SolverType = IEFPCM
+   Solvent = Water
+   Nonequilibrium = True
+   }
+
+   Cavity {
+   Type = GePol
+   Area = 0.3
+   Mode = Implicit
+   }
+}
+
+scf_energy = energy("TD-SCF")
+print_variables()
+compare_values(ref_scf_energy, scf_energy, 6, "PCM-SCF Energy") #TEST
+for i in range(5):
+    compare_values(exc_energies[i], variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A SYMMETRY'), 5, f'PCM EXCITATION ENERGY {i}') #TEST
+    compare_values(osc_strengths[i], variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A SYMMETRY'), 5, f'PCM OSCILLATOR STRENGTH {i}') #TEST
