@@ -100,6 +100,7 @@ def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, re
             eenc = _check_degen_modes(eenc, expected['omega'].data)
             same = np.allclose(eenc, ccnc, atol=ktol)
             print_stuff(asp=asp, same=same, ref=eenc, val=ccnc, space='\n')
+            same = _check_rank_degen_modes(ccnc, computed["omega"].data, eenc)
 
         elif asp in ['gamma', 'TRV']:
             same = all([computed[asp].data[idx] == val for idx, val in enumerate(expected[asp].data)])
@@ -231,6 +232,25 @@ def print_molden_vibs(vibinfo, atom_symbol, geom, standalone=True):
 
     return text
 
+
+def _check_rank_degen_modes(arr, freq, ref, tol=1.e-3, verbose=1):
+    arr2 = np.zeros_like(arr)
+    dfreq, didx, dinv, dcts = np.unique(np.around(freq, 1), return_index=True, return_inverse=True, return_counts=True)
+
+    ranks_ok = True
+    for idegen, istart in enumerate(didx):
+        degree = dcts[idegen]
+        cvecs = arr[:, istart:istart + degree]
+        evecs = ref[:, istart:istart + degree]
+        cevecs = np.concatenate((cvecs, evecs), axis=1)
+        rank_cvecs = np.linalg.matrix_rank(cvecs, tol=tol)
+        rank_evecs = np.linalg.matrix_rank(evecs, tol=tol)
+        rank_cevecs = np.linalg.matrix_rank(cevecs, tol=tol)
+        ranks_ok = ranks_ok and rank_cvecs == rank_cevecs and rank_evecs == rank_cevecs
+        if verbose >= 2 or not ranks_ok:
+            print(degree, cvecs.shape, rank_cvecs, "==", rank_evecs, "==", rank_cevecs)
+
+    return ranks_ok
 
 def _check_degen_modes(arr, freq, verbose=1):
     """Use `freq` to identify degenerate columns of eigenvectors `arr` and
