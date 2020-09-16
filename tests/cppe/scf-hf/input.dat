@@ -1,15 +1,5 @@
-#          Polarizability tensor for frequency     0.000000 au
-#          ----------------------------------------------------
-#                            Ex             Ey             Ez
-#
-#                Ex    36.14995      -26.70382       3.599036
-#                Ey   -26.70384       35.10354       8.957926
-#                Ez    3.598892       8.958217       78.45963
-
 #! PE-SCF of PNA in presence of 6 water molecules
-#! Reference data from Q-Chem
-
-alpha_diag = [36.14995,  35.10354, 78.45963] 
+#! Reference data from Q-Chem calculation
 
 ref_pe_energy = -0.03424830892844 #TEST
 ref_scf_energy = -482.9411084900 #TEST
@@ -48,7 +38,6 @@ set pe {
  potfile pna_6w.pot
 }
 
-scf_energy, wfn = energy("SCF", return_wfn=True)
-print_variables()
+scf_energy, wfn = energy('scf', return_wfn=True)
 compare_values(ref_pe_energy, wfn.get_variable("PE ENERGY"), 6, "PE Energy contribution") #TEST
 compare_values(ref_scf_energy, scf_energy, 6, "Total PE-SCF Energy") #TEST
