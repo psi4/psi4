@@ -324,254 +324,278 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
     for (size_t ind = 0; ind < K.size(); ind++) {
         K[ind]->zero();
     }
+    // => Sizing <= //
 
+    int nshell = primary_->nshell();
     int nthread = df_ints_num_threads_;
 
-    // Get function pair blocking info from the integral engine. We don't use batching in the ket here
-    // because the experimental code that implemented it showed a speedup in the generation of the ints
-    // but a fairly dramatic slowdown in the speed of their consumption in building the Fock matrix.
-    auto blocksPQ = ints[0]->get_blocks12();
-    auto blocksRS = ints[0]->get_blocks12();
+    // => Task Blocking <= //
 
-    // => Find the groups of PQ/RS blocks that have the same atoms involved <= //
-    std::vector<std::array<int, 10>> PQtask_offsets;
-    int current_atom_p = -1;
-    int current_atom_q = -1;
-    int dim_p = 0;
-    int dim_q = 0;
-    int max_p = 0;
-    int max_q = 0;
-    int min_p = std::numeric_limits<int>::max();
-    int min_q = std::numeric_limits<int>::max();
-    int current_offset = 0;
-    int atom_p;
-    int atom_q;
-    for (size_t blockPQ_idx = 0; blockPQ_idx < blocksPQ.size(); blockPQ_idx++) {
-        int shell_p = blocksPQ[blockPQ_idx][0].first;
-        int shell_q = blocksPQ[blockPQ_idx][0].second;
-        atom_p = primary_->shell(shell_p).ncenter();
-        atom_q = primary_->shell(shell_q).ncenter();
-        if (current_atom_p != atom_p || current_atom_q != atom_q) {
-            if (blockPQ_idx != 0) {
-                dim_p = 0;
-                dim_q = 0;
-                for (int pshell = min_p; pshell <= max_p; ++pshell) dim_p += primary_->shell(pshell).nfunction();
-                for (int qshell = min_q; qshell <= max_q; ++qshell) dim_q += primary_->shell(qshell).nfunction();
-                PQtask_offsets.emplace_back(std::array<int, 10>{
-                    {atom_p, atom_q, current_offset, static_cast<int>(blockPQ_idx), min_p, min_q, max_p, max_q, dim_p, dim_q}});
-            }
-            current_offset = blockPQ_idx;
-            current_atom_p = atom_p;
-            current_atom_q = atom_q;
-            max_p = 0;
-            max_q = 0;
-            min_p = std::numeric_limits<int>::max();
-            min_q = std::numeric_limits<int>::max();
+    std::vector<int> task_shells;
+    std::vector<int> task_starts;
+
+    // > Atomic Blocking < //
+
+    int atomic_ind = -1;
+    for (int P = 0; P < nshell; P++) {
+        if (primary_->shell(P).ncenter() > atomic_ind) {
+            task_starts.push_back(P);
+            atomic_ind++;
         }
-        min_p = std::min(min_p, shell_p);
-        min_q = std::min(min_q, shell_q);
-        max_p = std::max(max_p, shell_p);
-        max_q = std::max(max_q, shell_q);
+        task_shells.push_back(P);
     }
-    dim_p = 0;
-    dim_q = 0;
-    for (int pshell = min_p; pshell <= max_p; ++pshell) dim_p += primary_->shell(pshell).nfunction();
-    for (int qshell = min_q; qshell <= max_q; ++qshell) dim_q += primary_->shell(qshell).nfunction();
-    PQtask_offsets.emplace_back(std::array<int, 10>{
-        {atom_p, atom_q, current_offset, static_cast<int>(blocksPQ.size()), min_p, min_q, max_p, max_q, dim_p, dim_q}});
-    std::vector<std::array<int, 10>> RStask_offsets = PQtask_offsets;
+    task_starts.push_back(nshell);
 
-    // => The maximum amount of storage associated with any atom =< //
-    std::vector<int> nfunctions(primary_->molecule()->natom(), 0);
-    for (int shellnum = 0; shellnum < primary_->nshell(); ++shellnum) {
-        const auto& shell = primary_->shell(shellnum);
-        nfunctions[shell.ncenter()] += shell.nfunction();
+    // < End Atomic Blocking > //
+
+    size_t ntask = task_starts.size() - 1;
+
+    std::vector<int> task_offsets;
+    task_offsets.push_back(0);
+    for (int P2 = 0; P2 < primary_->nshell(); P2++) {
+        task_offsets.push_back(task_offsets[P2] + primary_->shell(task_shells[P2]).nfunction());
     }
-    size_t max_task = *std::max_element(nfunctions.begin(), nfunctions.end());
+
+    size_t max_task = 0L;
+    for (size_t task = 0; task < ntask; task++) {
+        size_t size = 0L;
+        for (int P2 = task_starts[task]; P2 < task_starts[task + 1]; P2++) {
+            size += primary_->shell(task_shells[P2]).nfunction();
+        }
+        max_task = (max_task >= size ? max_task : size);
+    }
+
+    if (debug_) {
+        outfile->Printf("  ==> DirectJK: Task Blocking <==\n\n");
+        for (size_t task = 0; task < ntask; task++) {
+            outfile->Printf("  Task: %3d, Task Start: %4d, Task End: %4d\n", task, task_starts[task],
+                            task_starts[task + 1]);
+            for (int P2 = task_starts[task]; P2 < task_starts[task + 1]; P2++) {
+                int P = task_shells[P2];
+                int size = primary_->shell(P).nfunction();
+                int off = primary_->shell(P).function_index();
+                int off2 = task_offsets[P2];
+                outfile->Printf("    Index %4d, Shell: %4d, Size: %4d, Offset: %4d, Offset2: %4d\n", P2, P, size, off,
+                                off2);
+            }
+        }
+        outfile->Printf("\n");
+    }
+
+    // => Significant Task Pairs (PQ|-style <= //
+
+    std::vector<std::pair<int, int> > task_pairs;
+    for (size_t Ptask = 0; Ptask < ntask; Ptask++) {
+        for (size_t Qtask = 0; Qtask < ntask; Qtask++) {
+            if (Qtask > Ptask) continue;
+            bool found = false;
+            for (int P2 = task_starts[Ptask]; P2 < task_starts[Ptask + 1]; P2++) {
+                for (int Q2 = task_starts[Qtask]; Q2 < task_starts[Qtask + 1]; Q2++) {
+                    int P = task_shells[P2];
+                    int Q = task_shells[Q2];
+                    if (ints[0]->shell_pair_significant(P, Q)) {
+                        found = true;
+                        task_pairs.push_back(std::pair<int, int>(Ptask, Qtask));
+                        break;
+                    }
+                }
+                if (found) break;
+            }
+        }
+    }
+    size_t ntask_pair = task_pairs.size();
+    size_t ntask_pair2 = ntask_pair * ntask_pair;
 
     // => Intermediate Buffers <= //
 
-    std::vector<std::vector<std::shared_ptr<Matrix>>> JKT;
+    std::vector<std::vector<std::shared_ptr<Matrix> > > JKT;
     for (int thread = 0; thread < nthread; thread++) {
-        std::vector<std::shared_ptr<Matrix>> JK2;
+        std::vector<std::shared_ptr<Matrix> > JK2;
         for (size_t ind = 0; ind < D.size(); ind++) {
             JK2.push_back(std::make_shared<Matrix>("JKT", (lr_symmetric_ ? 6 : 10) * max_task, max_task));
         }
         JKT.push_back(JK2);
     }
 
+    // => Benchmarks <= //
+
     size_t computed_shells = 0L;
-    size_t numPQtasks = PQtask_offsets.size();
-    size_t numRStasks = RStask_offsets.size();
-    size_t numPQRStasks = numPQtasks * numRStasks;
-#pragma omp parallel for schedule(dynamic) num_threads(nthread)  reduction(+ : computed_shells)
-    for (size_t PQRStask = 0; PQRStask < numPQRStasks; ++PQRStask) {
+
+// ==> Master Task Loop <== //
+
+#pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells)
+    for (size_t task = 0L; task < ntask_pair2; task++) {
+        size_t task1 = task / ntask_pair;
+        size_t task2 = task % ntask_pair;
+
+        int Ptask = task_pairs[task1].first;
+        int Qtask = task_pairs[task1].second;
+        int Rtask = task_pairs[task2].first;
+        int Stask = task_pairs[task2].second;
+
+        // GOTCHA! Thought this should be RStask > PQtask, but
+        // H2/3-21G: Task (10|11) gives valid quartets (30|22) and (31|22)
+        // This is an artifact that multiple shells on each task allow
+        // for for the Ptask's index to possibly trump any RStask pair,
+        // regardless of Qtask's index
+        if (Rtask > Ptask) continue;
+
+        // printf("Task: %2d %2d %2d %2d\n", Ptask, Qtask, Rtask, Stask);
+
+        int nPtask = task_starts[Ptask + 1] - task_starts[Ptask];
+        int nQtask = task_starts[Qtask + 1] - task_starts[Qtask];
+        int nRtask = task_starts[Rtask + 1] - task_starts[Rtask];
+        int nStask = task_starts[Stask + 1] - task_starts[Stask];
+
+        int P2start = task_starts[Ptask];
+        int Q2start = task_starts[Qtask];
+        int R2start = task_starts[Rtask];
+        int S2start = task_starts[Stask];
+
+        int dPsize = task_offsets[P2start + nPtask] - task_offsets[P2start];
+        int dQsize = task_offsets[Q2start + nQtask] - task_offsets[Q2start];
+        int dRsize = task_offsets[R2start + nRtask] - task_offsets[R2start];
+        int dSsize = task_offsets[S2start + nStask] - task_offsets[S2start];
+
+        int thread = 0;
 #ifdef _OPENMP
-        const int rank = omp_get_thread_num();
-#else
-        const int rank = 0;
+        thread = omp_get_thread_num();
 #endif
-        size_t PQtask = PQRStask / numRStasks;
-        size_t RStask = PQRStask % numRStasks;
-        const auto& PQBlockInfo = PQtask_offsets[PQtask];
-        const auto& RSBlockInfo = RStask_offsets[RStask];
-        const auto& atomP = PQBlockInfo[0];
-        const auto& atomQ = PQBlockInfo[1];
-        const auto& atomR = RSBlockInfo[0];
-        const auto& atomS = RSBlockInfo[1];
-        if (atomR > atomP) continue;
-        const auto& buffers = ints[rank]->buffers();
+
+        // => Master shell quartet loops <= //
+
         bool touched = false;
-        const auto& firstPQ = PQBlockInfo[2];
-        const auto& firstRS = RSBlockInfo[2];
-        const auto& lastPQ = PQBlockInfo[3];
-        const auto& lastRS = RSBlockInfo[3];
-        const auto& firstP = PQBlockInfo[4];
-        const auto& firstQ = PQBlockInfo[5];
-        const auto& firstR = RSBlockInfo[4];
-        const auto& firstS = RSBlockInfo[5];
-        const auto& lastP = PQBlockInfo[6];
-        const auto& lastQ = PQBlockInfo[7];
-        const auto& lastR = RSBlockInfo[6];
-        const auto& lastS = RSBlockInfo[7];
-        const auto& totalPsize = PQBlockInfo[8];
-        const auto& totalQsize = PQBlockInfo[9];
-        const auto& totalRsize = RSBlockInfo[8];
-        const auto& totalSsize = RSBlockInfo[9];
-        const auto& firstPshell = primary_->shell(firstP);
-        const auto& firstQshell = primary_->shell(firstQ);
-        const auto& firstRshell = primary_->shell(firstR);
-        const auto& firstSshell = primary_->shell(firstS);
-        const auto firstPoff = firstPshell.function_index();
-        const auto firstQoff = firstQshell.function_index();
-        const auto firstRoff = firstRshell.function_index();
-        const auto firstSoff = firstSshell.function_index();
+        for (int P2 = P2start; P2 < P2start + nPtask; P2++) {
+            for (int Q2 = Q2start; Q2 < Q2start + nQtask; Q2++) {
+                if (Q2 > P2) continue;
+                int P = task_shells[P2];
+                int Q = task_shells[Q2];
+                if (!ints[0]->shell_pair_significant(P, Q)) continue;
+                for (int R2 = R2start; R2 < R2start + nRtask; R2++) {
+                    for (int S2 = S2start; S2 < S2start + nStask; S2++) {
+                        if (S2 > R2) continue;
+                        int R = task_shells[R2];
+                        int S = task_shells[S2];
+                        if (R2 * nshell + S2 > P2 * nshell + Q2) continue;
+                        if (!ints[0]->shell_pair_significant(R, S)) continue;
+                        if (!ints[0]->shell_significant(P, Q, R, S)) continue;
 
-        // loop over all the blocks of (P>=Q| belonging to the bra atom pair
-        for (size_t blockPQ_idx = firstPQ; blockPQ_idx < lastPQ; blockPQ_idx++) {
-            const auto& blockPQ = blocksPQ[blockPQ_idx];
-            // Loop over all of the P,Q,R,S shells within the blocks.  We have P>=Q, R>=S and PQ<=RS.
-            const auto& pairPQ = blockPQ[0];
-            int P = pairPQ.first;
-            int Q = pairPQ.second;
-            const auto& Pshell = primary_->shell(P);
-            const auto& Qshell = primary_->shell(Q);
-            const auto& Pam = Pshell.am();
-            const auto& Qam = Qshell.am();
-            const auto& Psize = Pshell.nfunction();
-            const auto& Qsize = Qshell.nfunction();
-            const auto& Poff = Pshell.function_index();
-            const auto& Qoff = Qshell.function_index();
-            const int relPoff = Poff - firstPoff;
-            const int relQoff = Qoff - firstQoff;
-            // loop over all the blocks of |R>=S) belonging to the ket atom pair
-            for (int blockRS_idx = firstRS; blockRS_idx < lastRS; ++blockRS_idx) {
-                if (blockRS_idx > blockPQ_idx) continue;
-                const auto& blockRS = blocksRS[blockRS_idx];
+                        // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
 
-                const auto& pairRS = blockRS[0];
-                int R = pairRS.first;
-                int S = pairRS.second;
-                const auto& Rshell = primary_->shell(R);
-                const auto& Sshell = primary_->shell(S);
-                const auto& Ram = Rshell.am();
-                const auto& Sam = Sshell.am();
-                const auto& Rsize = Rshell.nfunction();
-                const auto& Ssize = Sshell.nfunction();
-                const auto& Roff = Rshell.function_index();
-                const auto& Soff = Sshell.function_index();
-                const int relRoff = Roff - firstRoff;
-                const int relSoff = Soff - firstSoff;
+                        // if (thread == 0) timer_on("JK: Ints");
+                        if (ints[thread]->compute_shell(P, Q, R, S) == 0)
+                            continue;  // No integrals in this shell quartet
+                        computed_shells++;
+                        // if (thread == 0) timer_off("JK: Ints");
 
-                size_t block_size = Psize * Qsize * Rsize * Ssize;
-                // compute the integrals and continue if none were computed
-                // if (rank == 0) timer_off("JK: INTS");
-                if (!ints[rank]->shell_significant(P, Q, R, S)) continue;
-                if (ints[rank]->compute_shell(P, Q, R, S) == 0) continue;
-                computed_shells++;
+                        const double* buffer = ints[thread]->buffer();
 
-                double prefactor = 1.0;
-                if (P == Q) prefactor *= 0.5;
-                if (R == S) prefactor *= 0.5;
-                if (P == R && Q == S) prefactor *= 0.5;
+                        int Psize = primary_->shell(P).nfunction();
+                        int Qsize = primary_->shell(Q).nfunction();
+                        int Rsize = primary_->shell(R).nfunction();
+                        int Ssize = primary_->shell(S).nfunction();
 
-                // if (rank == 0) timer_on("JK: GEMV");
-                for (size_t ind = 0; ind < D.size(); ind++) {
-                    const double* int_ptr = ints[rank]->buffers()[0];
-                    double** Dp = D[ind]->pointer();
-                    double** JKTp = JKT[rank][ind]->pointer();
+                        int Poff = primary_->shell(P).function_index();
+                        int Qoff = primary_->shell(Q).function_index();
+                        int Roff = primary_->shell(R).function_index();
+                        int Soff = primary_->shell(S).function_index();
 
-                    double* J1p = JKTp[0L * max_task];
-                    double* J2p = JKTp[1L * max_task];
-                    double* K1p = JKTp[2L * max_task];
-                    double* K2p = JKTp[3L * max_task];
-                    double* K3p = JKTp[4L * max_task];
-                    double* K4p = JKTp[5L * max_task];
-                    double* K5p;
-                    double* K6p;
-                    double* K7p;
-                    double* K8p;
-                    if (!lr_symmetric_) {
-                        K5p = JKTp[6L * max_task];
-                        K6p = JKTp[7L * max_task];
-                        K7p = JKTp[8L * max_task];
-                        K8p = JKTp[9L * max_task];
-                    }
+                        int Poff2 = task_offsets[P2] - task_offsets[P2start];
+                        int Qoff2 = task_offsets[Q2] - task_offsets[Q2start];
+                        int Roff2 = task_offsets[R2] - task_offsets[R2start];
+                        int Soff2 = task_offsets[S2] - task_offsets[S2start];
 
-                    if (!touched) {
-                        std::fill_n(JKTp[0L * max_task], totalPsize * totalQsize, 0.0);
-                        std::fill_n(JKTp[1L * max_task], totalRsize * totalSsize, 0.0);
-                        std::fill_n(JKTp[2L * max_task], totalPsize * totalRsize, 0.0);
-                        std::fill_n(JKTp[3L * max_task], totalPsize * totalSsize, 0.0);
-                        std::fill_n(JKTp[4L * max_task], totalQsize * totalRsize, 0.0);
-                        std::fill_n(JKTp[5L * max_task], totalQsize * totalSsize, 0.0);
-                        if (!lr_symmetric_) {
-                            std::fill_n(JKTp[6L * max_task], totalRsize * totalPsize, 0.0);
-                            std::fill_n(JKTp[7L * max_task], totalSsize * totalPsize, 0.0);
-                            std::fill_n(JKTp[8L * max_task], totalRsize * totalQsize, 0.0);
-                            std::fill_n(JKTp[9L * max_task], totalSsize * totalQsize, 0.0);
-                        }
-                    }
-                    for (int p = 0; p < Psize; p++) {
-                        const int Prel = p + relPoff;
-                        const int Pabs = p + Poff;
-                        for (int q = 0; q < Qsize; q++) {
-                            const int Qrel = q + relQoff;
-                            const int Qabs = q + Qoff;
-                            for (int r = 0; r < Rsize; r++) {
-                                const int Rrel = r + relRoff;
-                                const int Rabs = r + Roff;
-                                for (int s = 0; s < Ssize; s++) {
-                                    const int Srel = s + relSoff;
-                                    const int Sabs = s + Soff;
-                                    double val = prefactor * (*int_ptr++);
-                                    J1p[Prel * totalQsize + Qrel] += val * (Dp[Rabs][Sabs] + Dp[Sabs][Rabs]);
-                                    J2p[Rrel * totalSsize + Srel] += val * (Dp[Pabs][Qabs] + Dp[Qabs][Pabs]);
-                                    K1p[Prel * totalRsize + Rrel] += val * Dp[Qabs][Sabs];
-                                    K2p[Prel * totalSsize + Srel] += val * Dp[Qabs][Rabs];
-                                    K3p[Qrel * totalRsize + Rrel] += val * Dp[Pabs][Sabs];
-                                    K4p[Qrel * totalSsize + Srel] += val * Dp[Pabs][Rabs];
-                                    if (!lr_symmetric_) {
-                                        K5p[Rrel * totalPsize + Prel] += val * Dp[Sabs][Qabs];
-                                        K6p[Srel * totalPsize + Prel] += val * Dp[Rabs][Qabs];
-                                        K7p[Rrel * totalQsize + Qrel] += val * Dp[Sabs][Pabs];
-                                        K8p[Srel * totalQsize + Qrel] += val * Dp[Rabs][Pabs];
+                        // if (thread == 0) timer_on("JK: GEMV");
+                        for (size_t ind = 0; ind < D.size(); ind++) {
+                            double** Dp = D[ind]->pointer();
+                            double** JKTp = JKT[thread][ind]->pointer();
+                            const double* buffer2 = buffer;
+
+                            if (!touched) {
+                                ::memset((void*)JKTp[0L * max_task], '\0', dPsize * dQsize * sizeof(double));
+                                ::memset((void*)JKTp[1L * max_task], '\0', dRsize * dSsize * sizeof(double));
+                                ::memset((void*)JKTp[2L * max_task], '\0', dPsize * dRsize * sizeof(double));
+                                ::memset((void*)JKTp[3L * max_task], '\0', dPsize * dSsize * sizeof(double));
+                                ::memset((void*)JKTp[4L * max_task], '\0', dQsize * dRsize * sizeof(double));
+                                ::memset((void*)JKTp[5L * max_task], '\0', dQsize * dSsize * sizeof(double));
+                                if (!lr_symmetric_) {
+                                    ::memset((void*)JKTp[6L * max_task], '\0', dRsize * dPsize * sizeof(double));
+                                    ::memset((void*)JKTp[7L * max_task], '\0', dSsize * dPsize * sizeof(double));
+                                    ::memset((void*)JKTp[8L * max_task], '\0', dRsize * dQsize * sizeof(double));
+                                    ::memset((void*)JKTp[9L * max_task], '\0', dSsize * dQsize * sizeof(double));
+                                }
+                            }
+
+                            double* J1p = JKTp[0L * max_task];
+                            double* J2p = JKTp[1L * max_task];
+                            double* K1p = JKTp[2L * max_task];
+                            double* K2p = JKTp[3L * max_task];
+                            double* K3p = JKTp[4L * max_task];
+                            double* K4p = JKTp[5L * max_task];
+                            double* K5p;
+                            double* K6p;
+                            double* K7p;
+                            double* K8p;
+                            if (!lr_symmetric_) {
+                                K5p = JKTp[6L * max_task];
+                                K6p = JKTp[7L * max_task];
+                                K7p = JKTp[8L * max_task];
+                                K8p = JKTp[9L * max_task];
+                            }
+
+                            double prefactor = 1.0;
+                            if (P == Q) prefactor *= 0.5;
+                            if (R == S) prefactor *= 0.5;
+                            if (P == R && Q == S) prefactor *= 0.5;
+
+                            for (int p = 0; p < Psize; p++) {
+                                for (int q = 0; q < Qsize; q++) {
+                                    for (int r = 0; r < Rsize; r++) {
+                                        for (int s = 0; s < Ssize; s++) {
+                                            J1p[(p + Poff2) * dQsize + q + Qoff2] +=
+                                                prefactor * (Dp[r + Roff][s + Soff] + Dp[s + Soff][r + Roff]) *
+                                                (*buffer2);
+                                            J2p[(r + Roff2) * dSsize + s + Soff2] +=
+                                                prefactor * (Dp[p + Poff][q + Qoff] + Dp[q + Qoff][p + Poff]) *
+                                                (*buffer2);
+                                            K1p[(p + Poff2) * dRsize + r + Roff2] +=
+                                                prefactor * (Dp[q + Qoff][s + Soff]) * (*buffer2);
+                                            K2p[(p + Poff2) * dSsize + s + Soff2] +=
+                                                prefactor * (Dp[q + Qoff][r + Roff]) * (*buffer2);
+                                            K3p[(q + Qoff2) * dRsize + r + Roff2] +=
+                                                prefactor * (Dp[p + Poff][s + Soff]) * (*buffer2);
+                                            K4p[(q + Qoff2) * dSsize + s + Soff2] +=
+                                                prefactor * (Dp[p + Poff][r + Roff]) * (*buffer2);
+                                            if (!lr_symmetric_) {
+                                                K5p[(r + Roff2) * dPsize + p + Poff2] +=
+                                                    prefactor * (Dp[s + Soff][q + Qoff]) * (*buffer2);
+                                                K6p[(s + Soff2) * dPsize + p + Poff2] +=
+                                                    prefactor * (Dp[r + Roff][q + Qoff]) * (*buffer2);
+                                                K7p[(r + Roff2) * dQsize + q + Qoff2] +=
+                                                    prefactor * (Dp[s + Soff][p + Poff]) * (*buffer2);
+                                                K8p[(s + Soff2) * dQsize + q + Qoff2] +=
+                                                    prefactor * (Dp[r + Roff][p + Poff]) * (*buffer2);
+                                            }
+                                            buffer2++;
+                                        }
                                     }
                                 }
                             }
                         }
+                        touched = true;
+                        // if (thread == 0) timer_off("JK: GEMV");
                     }
                 }
-                touched = true;
-                // if (rank == 0) timer_off("JK: GEMV");
-            }  // pairRS
-        }      // pairPQ
+            }
+        }  // End Shell Quartets
 
-        // => Accumulate atom blocks into full J and K matrices <= //
         if (!touched) continue;
-        // if (rank == 0) timer_on("JK: Atomic");
+
+        // => Stripe out <= //
+
+        // if (thread == 0) timer_on("JK: Atomic");
         for (size_t ind = 0; ind < D.size(); ind++) {
-            double** JKTp = JKT[rank][ind]->pointer();
+            double** JKTp = JKT[thread][ind]->pointer();
             double** Jp = J[ind]->pointer();
             double** Kp = K[ind]->pointer();
 
@@ -591,25 +615,23 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                 K7p = JKTp[8L * max_task];
                 K8p = JKTp[9L * max_task];
             }
+
             // > J_PQ < //
-            for (int P = firstP; P <= lastP; ++P) {
-                for (int Q = firstQ; Q <= lastQ; ++Q) {
-                    const auto& Pshell = primary_->shell(P);
-                    const int Psize = Pshell.nfunction();
-                    const int Poff = Pshell.function_index();
-                    const int relPoff = Poff - firstPoff;
-                    const auto& Qshell = primary_->shell(Q);
-                    const int Qsize = Qshell.nfunction();
-                    const int Qoff = Qshell.function_index();
-                    const int relQoff = Qoff - firstQoff;
+
+            for (int P2 = 0; P2 < nPtask; P2++) {
+                for (int Q2 = 0; Q2 < nQtask; Q2++) {
+                    int P = task_shells[P2start + P2];
+                    int Q = task_shells[Q2start + Q2];
+                    int Psize = primary_->shell(P).nfunction();
+                    int Qsize = primary_->shell(Q).nfunction();
+                    int Poff = primary_->shell(P).function_index();
+                    int Qoff = primary_->shell(Q).function_index();
+                    int Poff2 = task_offsets[P2 + P2start] - task_offsets[P2start];
+                    int Qoff2 = task_offsets[Q2 + Q2start] - task_offsets[Q2start];
                     for (int p = 0; p < Psize; p++) {
-                        const int pRel = p + relPoff;
-                        const int pAbs = p + Poff;
                         for (int q = 0; q < Qsize; q++) {
-                            const int qRel = q + relQoff;
-                            const int qAbs = q + Qoff;
 #pragma omp atomic
-                            Jp[pAbs][qAbs] += J1p[pRel * totalQsize + qRel];
+                            Jp[p + Poff][q + Qoff] += J1p[(p + Poff2) * dQsize + q + Qoff2];
                         }
                     }
                 }
@@ -617,24 +639,20 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
 
             // > J_RS < //
 
-            for (int R = firstR; R <= lastR; ++R) {
-                for (int S = firstS; S <= lastS; ++S) {
-                    const auto& Rshell = primary_->shell(R);
-                    const int Rsize = Rshell.nfunction();
-                    const int Roff = Rshell.function_index();
-                    const int relRoff = Roff - firstRoff;
-                    const auto& Sshell = primary_->shell(S);
-                    const int Ssize = Sshell.nfunction();
-                    const int Soff = Sshell.function_index();
-                    const int relSoff = Soff - firstSoff;
+            for (int R2 = 0; R2 < nRtask; R2++) {
+                for (int S2 = 0; S2 < nStask; S2++) {
+                    int R = task_shells[R2start + R2];
+                    int S = task_shells[S2start + S2];
+                    int Rsize = primary_->shell(R).nfunction();
+                    int Ssize = primary_->shell(S).nfunction();
+                    int Roff = primary_->shell(R).function_index();
+                    int Soff = primary_->shell(S).function_index();
+                    int Roff2 = task_offsets[R2 + R2start] - task_offsets[R2start];
+                    int Soff2 = task_offsets[S2 + S2start] - task_offsets[S2start];
                     for (int r = 0; r < Rsize; r++) {
-                        const int rRel = r + relRoff;
-                        const int rAbs = r + Roff;
                         for (int s = 0; s < Ssize; s++) {
-                            const int sRel = s + relSoff;
-                            const int sAbs = s + Soff;
 #pragma omp atomic
-                            Jp[rAbs][sAbs] += J2p[rRel * totalSsize + sRel];
+                            Jp[r + Roff][s + Soff] += J2p[(r + Roff2) * dSsize + s + Soff2];
                         }
                     }
                 }
@@ -642,27 +660,23 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
 
             // > K_PR < //
 
-            for (int P = firstP; P <= lastP; ++P) {
-                for (int R = firstR; R <= lastR; ++R) {
-                    const auto& Pshell = primary_->shell(P);
-                    const int Psize = Pshell.nfunction();
-                    const int Poff = Pshell.function_index();
-                    const int relPoff = Poff - firstPoff;
-                    const auto& Rshell = primary_->shell(R);
-                    const int Rsize = Rshell.nfunction();
-                    const int Roff = Rshell.function_index();
-                    const int relRoff = Roff - firstRoff;
+            for (int P2 = 0; P2 < nPtask; P2++) {
+                for (int R2 = 0; R2 < nRtask; R2++) {
+                    int P = task_shells[P2start + P2];
+                    int R = task_shells[R2start + R2];
+                    int Psize = primary_->shell(P).nfunction();
+                    int Rsize = primary_->shell(R).nfunction();
+                    int Poff = primary_->shell(P).function_index();
+                    int Roff = primary_->shell(R).function_index();
+                    int Poff2 = task_offsets[P2 + P2start] - task_offsets[P2start];
+                    int Roff2 = task_offsets[R2 + R2start] - task_offsets[R2start];
                     for (int p = 0; p < Psize; p++) {
-                        const int pRel = p + relPoff;
-                        const int pAbs = p + Poff;
                         for (int r = 0; r < Rsize; r++) {
-                            const int rRel = r + relRoff;
-                            const int rAbs = r + Roff;
 #pragma omp atomic
-                            Kp[pAbs][rAbs] += K1p[pRel * totalRsize + rRel];
+                            Kp[p + Poff][r + Roff] += K1p[(p + Poff2) * dRsize + r + Roff2];
                             if (!lr_symmetric_) {
 #pragma omp atomic
-                                Kp[rAbs][pAbs] += K5p[rRel * totalPsize + pRel];
+                                Kp[r + Roff][p + Poff] += K5p[(r + Roff2) * dPsize + p + Poff2];
                             }
                         }
                     }
@@ -671,27 +685,23 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
 
             // > K_PS < //
 
-            for (int P = firstP; P <= lastP; ++P) {
-                for (int S = firstS; S <= lastS; ++S) {
-                    const auto& Pshell = primary_->shell(P);
-                    const int Psize = Pshell.nfunction();
-                    const int Poff = Pshell.function_index();
-                    const int relPoff = Poff - firstPoff;
-                    const auto& Sshell = primary_->shell(S);
-                    const int Ssize = Sshell.nfunction();
-                    const int Soff = Sshell.function_index();
-                    const int relSoff = Soff - firstSoff;
+            for (int P2 = 0; P2 < nPtask; P2++) {
+                for (int S2 = 0; S2 < nStask; S2++) {
+                    int P = task_shells[P2start + P2];
+                    int S = task_shells[S2start + S2];
+                    int Psize = primary_->shell(P).nfunction();
+                    int Ssize = primary_->shell(S).nfunction();
+                    int Poff = primary_->shell(P).function_index();
+                    int Soff = primary_->shell(S).function_index();
+                    int Poff2 = task_offsets[P2 + P2start] - task_offsets[P2start];
+                    int Soff2 = task_offsets[S2 + S2start] - task_offsets[S2start];
                     for (int p = 0; p < Psize; p++) {
-                        const int pRel = p + relPoff;
-                        const int pAbs = p + Poff;
                         for (int s = 0; s < Ssize; s++) {
-                            const int sRel = s + relSoff;
-                            const int sAbs = s + Soff;
 #pragma omp atomic
-                            Kp[pAbs][sAbs] += K2p[pRel * totalSsize + sRel];
+                            Kp[p + Poff][s + Soff] += K2p[(p + Poff2) * dSsize + s + Soff2];
                             if (!lr_symmetric_) {
 #pragma omp atomic
-                                Kp[sAbs][pAbs] += K6p[sRel * totalPsize + pRel];
+                                Kp[s + Soff][p + Poff] += K6p[(s + Soff2) * dPsize + p + Poff2];
                             }
                         }
                     }
@@ -700,63 +710,59 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
 
             // > K_QR < //
 
-            for (int Q = firstQ; Q <= lastQ; ++Q) {
-                for (int R = firstR; R <= lastR; ++R) {
-                    const auto& Qshell = primary_->shell(Q);
-                    const int Qsize = Qshell.nfunction();
-                    const int Qoff = Qshell.function_index();
-                    const int relQoff = Qoff - firstQoff;
-                    const auto& Rshell = primary_->shell(R);
-                    const int Rsize = Rshell.nfunction();
-                    const int Roff = Rshell.function_index();
-                    const int relRoff = Roff - firstRoff;
+            for (int Q2 = 0; Q2 < nQtask; Q2++) {
+                for (int R2 = 0; R2 < nRtask; R2++) {
+                    int Q = task_shells[Q2start + Q2];
+                    int R = task_shells[R2start + R2];
+                    int Qsize = primary_->shell(Q).nfunction();
+                    int Rsize = primary_->shell(R).nfunction();
+                    int Qoff = primary_->shell(Q).function_index();
+                    int Roff = primary_->shell(R).function_index();
+                    int Qoff2 = task_offsets[Q2 + Q2start] - task_offsets[Q2start];
+                    int Roff2 = task_offsets[R2 + R2start] - task_offsets[R2start];
                     for (int q = 0; q < Qsize; q++) {
-                        const int qRel = q + relQoff;
-                        const int qAbs = q + Qoff;
                         for (int r = 0; r < Rsize; r++) {
-                            const int rRel = r + relRoff;
-                            const int rAbs = r + Roff;
 #pragma omp atomic
-                            Kp[qAbs][rAbs] += K3p[qRel * totalRsize + rRel];
+                            Kp[q + Qoff][r + Roff] += K3p[(q + Qoff2) * dRsize + r + Roff2];
                             if (!lr_symmetric_) {
 #pragma omp atomic
-                                Kp[rAbs][qAbs] += K7p[rRel * totalQsize + qRel];
+                                Kp[r + Roff][q + Qoff] += K7p[(r + Roff2) * dQsize + q + Qoff2];
                             }
                         }
                     }
                 }
             }
+
             // > K_QS < //
 
-            for (int Q = firstQ; Q <= lastQ; ++Q) {
-                for (int S = firstS; S <= lastS; ++S) {
-                    const auto& Qshell = primary_->shell(Q);
-                    const int Qsize = Qshell.nfunction();
-                    const int Qoff = Qshell.function_index();
-                    const int relQoff = Qoff - firstQoff;
-                    const auto& Sshell = primary_->shell(S);
-                    const int Ssize = Sshell.nfunction();
-                    const int Soff = Sshell.function_index();
-                    const int relSoff = Soff - firstSoff;
+            for (int Q2 = 0; Q2 < nQtask; Q2++) {
+                for (int S2 = 0; S2 < nStask; S2++) {
+                    int Q = task_shells[Q2start + Q2];
+                    int S = task_shells[S2start + S2];
+                    int Qsize = primary_->shell(Q).nfunction();
+                    int Ssize = primary_->shell(S).nfunction();
+                    int Qoff = primary_->shell(Q).function_index();
+                    int Soff = primary_->shell(S).function_index();
+                    int Qoff2 = task_offsets[Q2 + Q2start] - task_offsets[Q2start];
+                    int Soff2 = task_offsets[S2 + S2start] - task_offsets[S2start];
                     for (int q = 0; q < Qsize; q++) {
-                        const int qRel = q + relQoff;
-                        const int qAbs = q + Qoff;
                         for (int s = 0; s < Ssize; s++) {
-                            const int sRel = s + relSoff;
-                            const int sAbs = s + Soff;
 #pragma omp atomic
-                            Kp[qAbs][sAbs] += K4p[qRel * totalSsize + sRel];
+                            Kp[q + Qoff][s + Soff] += K4p[(q + Qoff2) * dSsize + s + Soff2];
                             if (!lr_symmetric_) {
 #pragma omp atomic
-                                Kp[sAbs][qAbs] += K8p[sRel * totalQsize + qRel];
+                                Kp[s + Soff][q + Qoff] += K8p[(s + Soff2) * dQsize + q + Qoff2];
                             }
                         }
                     }
                 }
             }
-        }
-        // if (rank == 0) timer_off("JK: Atomic");
-    }  // PQRS task
+
+        }  // End stripe out
+        // if (thread == 0) timer_off("JK: Atomic");
+
+    }  // End master task list
+
     for (size_t ind = 0; ind < D.size(); ind++) {
         J[ind]->scale(2.0);
         J[ind]->hermitivitize();
@@ -769,18 +775,11 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
     if (bench_) {
         auto mode = std::ostream::app;
         auto printer = std::make_shared<PsiOutStream>("bench.dat", mode);
-        size_t ntri = primary_->nshell() * (primary_->nshell() + 1L) / 2L;
+        size_t ntri = nshell * (nshell + 1L) / 2L;
         size_t possible_shells = ntri * (ntri + 1L) / 2L;
         printer->Printf("Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
                         possible_shells, computed_shells / (double)possible_shells);
     }
-    
-//     for (size_t ind = 0; ind < J.size(); ind++) {
-//         outfile->Printf("J[%d] psi:\n", ind);
-//         J[ind]->print();
-//         outfile->Printf("K[%d] psi:\n", ind);
-//         K[ind]->print();
-//     }
 }
 
 }  // namespace psi

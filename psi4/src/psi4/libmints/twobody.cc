@@ -386,6 +386,10 @@ bool TwoBodyAOInt::shell_block_significant(int shellpair12, int shellpair34) con
     return false;
 }
 
+bool TwoBodyAOInt::shell_pair_significant(int M, int N) const {
+    return shell_pair_values_[M * nshell_ + N] * max_integral_ >= screening_threshold_squared_;
+}
+
 void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34, int npair12, int npair34) {
     // Default implementation - go through the blocks and do each quartet
     // one at a time

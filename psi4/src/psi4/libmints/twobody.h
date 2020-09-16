@@ -202,6 +202,8 @@ class PSI_API TwoBodyAOInt {
     bool shell_significant(int M, int N, int R, int S) const { return sieve_impl_(M, N, R, S); };
     /// Are any of the quartets within a given shellpair list significant
     bool shell_block_significant(int shellpair12, int shellpair34) const;
+    /// Does a given shell pair contribute to any significant integrals?
+    bool shell_pair_significant(int shell1, int shell2) const;
     /// Square of ceiling of shell quartet (MN|RS)
      inline double shell_ceiling2(int M, int N, int R, int S) {
         return shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S];
