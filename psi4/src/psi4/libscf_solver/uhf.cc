@@ -597,8 +597,7 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
 
     std::vector<SharedMatrix> V_ext_pert;
     for (const auto &pert : external_cpscf_perturbations_) {
-        // TODO: remove...
-        outfile->Printf("Adding external CPSCF contribution %s.\n", pert.first.c_str());
+        if (print_ > 1) outfile->Printf("Adding external CPSCF contribution %s.\n", pert.first.c_str());
         for (size_t i = 0; i < nvecs; i++) {
             auto Dx_a = linalg::doublet(Cl[i], Cr[i], false, true);
             auto Dx_b = linalg::doublet(Cl[nvecs + i], Cr[nvecs + i], false, true);
