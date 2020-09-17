@@ -107,9 +107,11 @@ is achieved by setting |globals__pe| ``true`` in your input file.
           wavefunctions and CC wavefunctions in the PTE approximation [Cammi:2009:164104]_.
           All ERI algorithms (``PK``, ``OUT_OF_CORE``, ``DIRECT``, ``DF``, ``CD``) are supported.
 
+.. note:: linear response calculations (static polarisabilities, TD-SCF) are supported for RHF/UHF if available.
+
 .. warning:: The CPPE library **cannot** exploit molecular point group symmetry.
 
-.. .. warning:: Analytic gradients and Hessians **are not** available with PCM. Finite differences will be used
+.. .. warning:: Analytic gradients and Hessians **are not** available with PE. Finite differences will be used
 ..              regardless of the ``dertype`` passed to the ``optimize`` function.
 ..              See :srcsample:`pcmsolver/opt-fd` for a sample input.
 

@@ -1,5 +1,6 @@
 #! PE-SCF of PNA in presence of 6 water molecules
-#! Reference data from Dalton
+#! RHF Reference data from Dalton
+#! UHF data in good faith because PCM version looks fine
 
 ref_pe_energy = -0.03424830892844 #TEST
 ref_scf_energy = -482.9411084900 #TEST
@@ -19,6 +20,26 @@ osc_strengths = [
     1.13168661e-01,
     1.90262828e-02,
 ]
+
+pe_uhf = -0.0205612607760474
+scf_uhf =-54.8574855299258388
+
+exc_uhf = [
+0.10127093659047763,
+0.36026243740116887,
+0.4991013815039879,
+0.5097654655683802,
+0.5542193540734713,
+]
+
+osc_uhf = [
+0.005726019396442727,
+1.1052876769210551e-08,
+4.1341553724988216e-06,
+0.0015188940376984871,
+0.0006496149064569229,
+]
+
 
 molecule pna {
 C          8.64800        1.07500       -1.71100
@@ -52,16 +73,39 @@ set {
 }
 
 set pe {
- potfile pna_6w.pot
+ potfile ../scf-hf/pna_6w.pot
 }
 
 scf_energy, wfn = energy("TD-SCF", return_wfn=True)
 print_variables()
 
-compare_values(ref_pe_energy, wfn.get_variable("PE ENERGY"), 6, "PE Energy contribution") #TEST
+compare_values(ref_pe_energy, wfn.variable("PE ENERGY"), 6, "PE Energy contribution") #TEST
 compare_values(ref_scf_energy, scf_energy, 6, "Total PE-SCF Energy") #TEST
 
+e_calc = []
+r_calc = []
 for i in range(5):
-    compare_values(exc_energies[i], variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A SYMMETRY'), 5, f'PE EXCITATION ENERGY {i}') #TEST
-    compare_values(osc_strengths[i], variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A SYMMETRY'), 4, f'PE OSCILLATOR STRENGTH {i}') #TEST
+    e_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A SYMMETRY'))
+    r_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A SYMMETRY'))
+compare_arrays(exc_energies, e_calc, 5, f'PE EXCITATION ENERGY') #TEST
+compare_arrays(osc_strengths, r_calc, 5, f'PE OSCILLATOR STRENGTH') #TEST
 
+molecule NH2 {
+0, 2
+N  0.000000000000     0.000000000000    -0.079859033927
+H  0.000000000000    -0.803611003426     0.554794694632
+H  0.000000000000     0.803611003426     0.554794694632
+symmetry c1
+no_reorient
+}
+set reference uhf
+scf_energy, uwfn = energy("TD-SCF", return_wfn=True)
+compare_values(pe_uhf, uwfn.variable("PE ENERGY"), 6, "PE Energy contribution") #TEST
+compare_values(scf_uhf, scf_energy, 6, "Total PE-SCF Energy") #TEST
+e_calc = []
+r_calc = []
+for i in range(5):
+    e_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A SYMMETRY'))
+    r_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A SYMMETRY'))
+compare_arrays(exc_uhf, e_calc, 5, f'UHF PE EXCITATION ENERGY') #TEST
+compare_arrays(osc_uhf, r_calc, 5, f'UHF PE OSCILLATOR STRENGTH') #TEST

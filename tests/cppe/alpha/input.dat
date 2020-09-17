@@ -44,12 +44,12 @@ set {
 }
 
 set pe {
- potfile pna_6w.pot
+ potfile ../scf-hf/pna_6w.pot
 }
 
 scf_energy, wfn = properties("SCF", properties=["DIPOLE_POLARIZABILITIES"], return_wfn=True)
 print_variables()
-compare_values(ref_pe_energy, wfn.get_variable("PE ENERGY"), 6, "PE Energy contribution") #TEST
+compare_values(ref_pe_energy, wfn.variable("PE ENERGY"), 6, "PE Energy contribution") #TEST
 compare_values(ref_scf_energy, scf_energy, 6, "Total PE-SCF Energy") #TEST
 compare_values(alpha_diag[0],variable('DIPOLE POLARIZABILITY XX'),4,'PCM DIPOLE POLARIZABILITY XX') #TEST
 compare_values(alpha_diag[1],variable('DIPOLE POLARIZABILITY YY'),4,'PCM DIPOLE POLARIZABILITY YY') #TEST

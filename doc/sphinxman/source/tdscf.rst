@@ -255,7 +255,7 @@ Psithon keywords
 PsiAPI usage
 ~~~~~~~~~~~~
 
-The TDSCF functionality is also accessible from PsiAPI. The example calculation shown above can be carried out as follows::
+The TDSCF functionality is also accessible from PsiAPI. The example calculation shown above can be carried out as follows:
 
 .. code-block:: python
 
