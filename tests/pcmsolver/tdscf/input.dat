@@ -19,39 +19,23 @@
 #4	10.1063	9.848	10.1017
 #5	10.2178	10.365	10.3305
 
-exc_energies = [
-    0.53739940,
-    0.62328100,
-    0.62742027,
-    0.71034705,
-    1.01071645,
-]
+exc_energies = [ #TEST
+    0.53739940,  #TEST
+    0.62328100, #TEST
+    0.62742027, #TEST
+    0.71034705, #TEST
+    1.01071645, #TEST
+] #TEST
 
-osc_strengths = [
-    0.07871662,
-    0.03696573,
-    0.00000000,
-    0.00338928,
-    0.14628913,
-]
+osc_strengths = [ #TEST
+    0.07871662, #TEST
+    0.03696573, #TEST
+    0.00000000, #TEST
+    0.00338928, #TEST
+    0.14628913, #TEST
+] #TEST
 
-exc_energies_uhf = [
-0.08972598844884663,
-0.2719972189552112,
-0.33525624703045037,
-0.3713900898382711,
-0.3762084431466903,
-]
-
-osc_strengths_uhf = [
-0.00414272407997719,
-4.590977316768732e-28,
-0.005715258102198367,
-0.018432750255865125,
-0.006434117688452513,
-]
-
-ref_scf_energy = -74.069207686891
+ref_scf_energy = -74.069207686891 #TEST
 
 
 molecule wat {
@@ -95,5 +79,5 @@ compare_values(ref_scf_energy, scf_energy, 6, "PCM-SCF Energy") #TEST
 for i in range(5):
     e_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A SYMMETRY'))
     r_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A SYMMETRY'))
-compare_arrays(exc_energies, e_calc, 5, f'PCM EXCITATION ENERGY ') #TEST
-compare_arrays(osc_strengths, r_calc, 5, f'PCM OSCILLATOR STRENGTH ') #TEST
+compare_arrays(exc_energies, e_calc, 4, f'PCM EXCITATION ENERGY ') #TEST
+compare_arrays(osc_strengths, r_calc, 4, f'PCM OSCILLATOR STRENGTH ') #TEST

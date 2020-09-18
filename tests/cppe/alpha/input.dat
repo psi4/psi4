@@ -44,7 +44,7 @@ set {
 }
 
 set pe {
- potfile ../scf-hf/pna_6w.pot
+ potfile pna_6w.pot
 }
 
 scf_energy, wfn = properties("SCF", properties=["DIPOLE_POLARIZABILITIES"], return_wfn=True)

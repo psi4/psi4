@@ -10,23 +10,23 @@
 #4	10.1063	9.848	10.1017
 #5	10.2178	10.365	10.3305
 
-exc_energies_uhf = [
-0.08972598844884663,
-0.2719972189552112,
-0.33525624703045037,
-0.3713900898382711,
-0.3762084431466903,
-]
+exc_energies_uhf = [ #TEST
+0.08972598844884663, #TEST
+0.2719972189552112, #TEST
+0.33525624703045037, #TEST
+0.3713900898382711, #TEST
+0.3762084431466903, #TEST
+] #TEST
 
-osc_strengths_uhf = [
-0.00414272407997719,
-4.590977316768732e-28, 
-0.005715258102198367, 
-0.018432750255865125, 
-0.006434117688452513,
-]
+osc_strengths_uhf = [ #TEST
+0.00414272407997719, #TEST
+4.590977316768732e-28, #TEST
+0.005715258102198367, #TEST
+0.018432750255865125, #TEST
+0.006434117688452513,#TEST
+] #TEST
 
-scf_ref = -55.5218518303635165
+scf_ref = -55.5218518303635165 #TEST
 
 r_calc = []
 e_calc = []
@@ -71,5 +71,5 @@ compare_values(scf_ref, scf_energy, 6, "PCM-UHF Energy") #TEST
 for i in range(5):
     e_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A SYMMETRY'))
     r_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A SYMMETRY'))
-compare_arrays(exc_energies_uhf, e_calc, 5, f'UHF PCM EXCITATION ENERGY {i}') #TEST
-compare_arrays(osc_strengths_uhf, r_calc, 5, f'UHF PCM OSCILLATOR STRENGTH {i}') #TEST
+compare_arrays(exc_energies_uhf, e_calc, 4, f'UHF PCM EXCITATION ENERGY {i}') #TEST
+compare_arrays(osc_strengths_uhf, r_calc, 4, f'UHF PCM OSCILLATOR STRENGTH {i}') #TEST

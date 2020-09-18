@@ -5,40 +5,40 @@
 ref_pe_energy = -0.03424830892844 #TEST
 ref_scf_energy = -482.9411084900 #TEST
 
-exc_energies = [
-    0.14366763,
-    0.15492819,
-    0.24641827,
-    0.25335815,
-    0.25716370,
-]
+exc_energies = [  #TEST
+    0.14366763, #TEST
+    0.15492819, #TEST
+    0.24641827, #TEST
+    0.25335815, #TEST
+    0.25716370, #TEST
+] #TEST
 
-osc_strengths = [
-    4.40691123e-06,
-    8.93210578e-05,
-    4.32081257e-01,
-    1.13168661e-01,
-    1.90262828e-02,
-]
+osc_strengths = [ #TEST
+    4.40691123e-06, #TEST
+    8.93210578e-05, #TEST
+    4.32081257e-01, #TEST
+    1.13168661e-01, #TEST
+    1.90262828e-02, #TEST
+] #TEST
 
-pe_uhf = -0.0205612607760474
-scf_uhf =-54.8574855299258388
+pe_uhf = -0.0205612607760474  #TEST
+scf_uhf =-54.8574855299258388 #TEST
 
-exc_uhf = [
-0.10127093659047763,
-0.36026243740116887,
-0.4991013815039879,
-0.5097654655683802,
-0.5542193540734713,
-]
+exc_uhf = [  #TEST
+0.10127093659047763,  #TEST
+0.36026243740116887, #TEST
+0.4991013815039879, #TEST
+0.5097654655683802, #TEST
+0.5542193540734713, #TEST
+] #TEST
 
-osc_uhf = [
-0.005726019396442727,
-1.1052876769210551e-08,
-4.1341553724988216e-06,
-0.0015188940376984871,
-0.0006496149064569229,
-]
+osc_uhf = [  #TEST
+0.005726019396442727,  #TEST
+1.1052876769210551e-08, #TEST
+4.1341553724988216e-06, #TEST
+0.0015188940376984871, #TEST
+0.0006496149064569229, #TEST
+]  #TEST
 
 
 molecule pna {
@@ -73,7 +73,7 @@ set {
 }
 
 set pe {
- potfile ../scf-hf/pna_6w.pot
+ potfile pna_6w.pot
 }
 
 scf_energy, wfn = energy("TD-SCF", return_wfn=True)
@@ -87,8 +87,8 @@ r_calc = []
 for i in range(5):
     e_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A SYMMETRY'))
     r_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A SYMMETRY'))
-compare_arrays(exc_energies, e_calc, 5, f'PE EXCITATION ENERGY') #TEST
-compare_arrays(osc_strengths, r_calc, 5, f'PE OSCILLATOR STRENGTH') #TEST
+compare_arrays(exc_energies, e_calc, 4, f'PE EXCITATION ENERGY') #TEST
+compare_arrays(osc_strengths, r_calc, 4, f'PE OSCILLATOR STRENGTH') #TEST
 
 molecule NH2 {
 0, 2
@@ -100,12 +100,12 @@ no_reorient
 }
 set reference uhf
 scf_energy, uwfn = energy("TD-SCF", return_wfn=True)
-compare_values(pe_uhf, uwfn.variable("PE ENERGY"), 6, "PE Energy contribution") #TEST
-compare_values(scf_uhf, scf_energy, 6, "Total PE-SCF Energy") #TEST
+compare_values(pe_uhf, uwfn.variable("PE ENERGY"), 6, "UHF PE Energy contribution") #TEST
+compare_values(scf_uhf, scf_energy, 6, "Total PE-UHF Energy") #TEST
 e_calc = []
 r_calc = []
 for i in range(5):
     e_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A SYMMETRY'))
     r_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A SYMMETRY'))
-compare_arrays(exc_uhf, e_calc, 5, f'UHF PE EXCITATION ENERGY') #TEST
-compare_arrays(osc_uhf, r_calc, 5, f'UHF PE OSCILLATOR STRENGTH') #TEST
+compare_arrays(exc_uhf, e_calc, 4, f'UHF PE EXCITATION ENERGY') #TEST
+compare_arrays(osc_uhf, r_calc, 4, f'UHF PE OSCILLATOR STRENGTH') #TEST
