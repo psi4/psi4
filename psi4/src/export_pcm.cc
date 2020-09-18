@@ -49,6 +49,6 @@ void export_pcm(py::module& m) {
     pcm.def(py::init<std::string, int, std::shared_ptr<BasisSet>>())
         .def("compute_PCM_terms", &PCM::compute_PCM_terms, "Compute PCM contributions to energy and Fock matrix", "D"_a,
              "type"_a)
-        .def("compute_V", &PCM::compute_V, "Computes electronic PCM contributions to first-order perturbed densities", "D"_a);
+        .def("compute_V", &PCM::compute_V, "Computes electronic PCM contributions due to first-order perturbed densities", "D"_a);
 }
 #endif
