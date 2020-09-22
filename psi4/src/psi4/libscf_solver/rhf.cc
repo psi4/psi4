@@ -516,6 +516,15 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         }
         potential_->compute_Vx(Dx, Vx);
     }
+    
+    std::vector<SharedMatrix> V_ext_pert;
+    for (const auto& pert : external_cpscf_perturbations_) {
+        if (print_ > 1) outfile->Printf("Adding external CPSCF contribution %s.\n", pert.first.c_str());
+        for (size_t i = 0; i < x_vec.size(); i++) {
+            auto Dx = linalg::doublet(Cl[i], Cr[i], false, true);
+            V_ext_pert.push_back(pert.second(Dx));
+        }
+    }
 
     Cl.clear();
     Cr.clear();
@@ -548,6 +557,9 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             if (functional_->needs_xc()) {
                 J[i]->axpy(4.0, Vx[i]);
             }
+            if (V_ext_pert.size()) {
+                J[i]->axpy(4.0, V_ext_pert[i]);
+            }
             ret.push_back(J[i]);
         }
     } else {
@@ -558,6 +570,9 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             // always have a J-like piece (optionally include Xc)
             if (functional_->needs_xc()) {
                 J[i]->add(Vx[i]);
+            }
+            if (V_ext_pert.size()) {
+                J[i]->add(V_ext_pert[i]);
             }
             ret.push_back(J[i]);
             // may have K^HF

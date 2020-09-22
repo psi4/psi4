@@ -69,10 +69,6 @@
 #include "psi4/libmints/quadrupole.h"
 #include "psi4/libmints/sobasis.h"
 
-#ifdef USING_PCMSolver
-#include "psi4/libpsipcm/psipcm.h"
-#endif
-
 #include "hf.h"
 
 #include "psi4/psi4-dec.h"
@@ -1184,7 +1180,6 @@ void HF::guess() {
         std::vector<SharedMatrix> Vsap;
         Vsap.push_back(SharedMatrix(factory_->create_matrix("Vsap")));
         builder->compute_V(Vsap);
-
         Fa_->copy(T_);
         Fa_->add(Vsap[0]);
         Fb_->copy(Fa_);

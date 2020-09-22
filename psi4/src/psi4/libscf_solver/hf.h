@@ -30,11 +30,14 @@
 #define HF_H
 
 #include <vector>
+#include <functional>
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/vector3.h"
 #include "psi4/psi4-dec.h"
 
 namespace psi {
+using PerturbedPotentialFunction = std::function<SharedMatrix(SharedMatrix)>;
+using PerturbedPotentials = std::map<std::string, PerturbedPotentialFunction>;
 class Vector;
 class JK;
 class PCM;
@@ -67,6 +70,10 @@ class HF : public Wavefunction {
     /// List of external potentials to add to Fock matrix and updated at every iteration
     /// e.g. PCM potential
     std::vector<SharedMatrix> external_potentials_;
+
+    /// Map of external potentials/perturbations to add to the CPSCF two-electron contribution
+    /// e.g. PCM or PE potential
+    PerturbedPotentials external_cpscf_perturbations_;
 
     /// Old C Alpha matrix (if needed for MOM)
     SharedMatrix Ca_old_;
@@ -410,6 +417,8 @@ class HF : public Wavefunction {
     // External potentials
     void clear_external_potentials() { external_potentials_.clear(); }
     void push_back_external_potential(const SharedMatrix& V) { external_potentials_.push_back(V); }
+    void set_external_cpscf_perturbation(const std::string name, PerturbedPotentialFunction fun) { external_cpscf_perturbations_[name] = fun; }
+    void clear_external_cpscf_perturbations() { external_cpscf_perturbations_.clear(); }
 };
 }  // namespace scf
 }  // namespace psi

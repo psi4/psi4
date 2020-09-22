@@ -24,3 +24,4 @@ if(TARGET BrianQC::static_wrapper)
       $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
     )
 endif()
+
