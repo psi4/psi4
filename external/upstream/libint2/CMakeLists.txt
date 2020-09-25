@@ -102,3 +102,35 @@ else()
 
 endif()
 
+
+# -------------          -------   ----
+# Orbital Basis          1st Row   File
+# -------------          -------   ----
+# cc-pVDZ                   D2      F3
+# cc-pVTZ                   F3      G4
+# cc-pVQZ                   G4      H5
+# cc-pV5Z                   H5      I6
+# cc-pV6Z                   I6      I6
+# lesser zapa follow Dunning
+# 7zapa-nr                   7       7
+# def2-svp*                 F3      F3
+# def2-tzvp*                G4      G4
+# def2-qzvp*                G4      G4
+# -------------          -------   ----
+
+# -------------          -------   ----
+# Fitting Basis          1st Row   File
+# -------------          -------   ----
+# cc-pVDZ-RI                F3      G4
+#        -JKFIT             F3      F3
+# cc-pVTZ-RI                G4      H5
+#        -JKFIT             G4      G4
+# cc-pVQZ-RI                H5      I6
+#        -JKFIT             H5      H5
+# cc-pV5Z-RI                I6      I6
+#        -JKFIT             I6      I6
+# cc-pV6Z-RI                 7       7
+#        -JKFIT             --      --
+# def2-universal-jkfit      G4      I6
+# -------------          -------   ----
+
