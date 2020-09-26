@@ -39,4 +39,5 @@ void export_misc(py::module &m) {
     m.def("timer_off", timer_off, "Stop timer of label argument");
     m.def("tstart", tstart, "docstring");
     m.def("tstop", tstop, "docstring");
+    m.def("clean_timers", clean_timers, "Reinitialize timers for independent timer.dat entries. Vital when earlier independent calc finished improperly.");
 }
