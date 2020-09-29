@@ -142,7 +142,7 @@ endif()
 
 # CHOOSE! this one for pure cmake libint2 library
 if(DEFINED ENV{LGTM_SRC})
-    find_package(Libint2 CONFIG REQUIRED COMPONENTS gss "e${MAX_AM_ERI}" eri3_e4 eri2_e4)
+    find_package(Libint2 CONFIG REQUIRED COMPONENTS gss "e${MAX_AM_ERI}")
 else()
     find_package(Libint2 CONFIG REQUIRED COMPONENTS gss "e${MAX_AM_ERI}" g2 h2 eri3_e4 eri3_g3 eri3_h3 eri2_e4 eri2_g3 eri2_h3)
 endif()
