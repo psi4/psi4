@@ -53,15 +53,16 @@ else()
     endif()
 
     if(NOT ${BUILD_Libint2_GENERATOR})
-        if (DEFINED ENV{LGTM_SRC})
-            set(_url_am_src "2-0-0-0-0-0")
-            #set(_url_am_src "3-0-0-4-0-0")
-        elseif (${MAX_AM_ERI} GREATER 5)
+        if (${MAX_AM_ERI} GREATER 5)
             set(_url_am_src "7-7-4-7-7-5")
-        elseif (${MAX_AM_ERI} GREATER 3)
-            set(_url_am_src "5-4-3-6-5-4")
-        else()
-            set(_url_am_src "3-2-2-4-3-3")
+        elseif (${MAX_AM_ERI} EQUAL 5)
+            set(_url_am_src "5-4-3-6-5-4")  # 12383  # passes full. production Mac, temp production Linux_7
+        elseif (${MAX_AM_ERI} EQUAL 4)
+            set(_url_am_src "4-3-3-5-4-4")  # 10498  # passes quick tests with Bi->Sb mod
+        elseif (${MAX_AM_ERI} EQUAL 3)
+            set(_url_am_src "3-2-2-4-3-3")  #  5485  # passes find_package(Libint2 COMPONENTS ...)
+        elseif (${MAX_AM_ERI} EQUAL 2)
+            set(_url_am_src "2-0-0-0-0-0")  #   389  # LGTM_SRC bulids
         endif()
         set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-${_url_am_src}_0.tgz")
 
