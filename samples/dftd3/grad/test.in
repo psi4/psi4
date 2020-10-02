@@ -23,7 +23,19 @@ set {
     d_convergence 8
 }
 
-grad = gradient('bp86-d2gr')
-compare_matrices(ref, grad, 7, "Outsourced dft gradients called by name")  #TEST
+grad = gradient('bp86-d2', engine='libdisp')
+compare_matrices(ref, grad, 7, "Outsourced dft gradients called by name: libdisp")  #TEST
 clean()
 
+grad = gradient('bp86-d2', engine='dftd3')
+compare_matrices(ref, grad, 7, "Outsourced dft gradients called by name: dftd3")  #TEST
+
+molecule atoms {
+  @He
+  Ne 1 1.0
+}
+
+E, G = atoms.run_dftd3('bp86-d3(bj)')
+compare_values(0.0, E, 7, "One-real-one-ghost-atom energy")  #TEST
+import numpy as np  #TEST
+compare_arrays(np.zeros((2, 3)), G, 7, "One-real-one-ghost-atom gradient")  #TEST

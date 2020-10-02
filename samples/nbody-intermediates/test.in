@@ -37,6 +37,6 @@ energy('SCF/cc-pvdz', molecule=noble_trimer, bsse_type=['cp', 'nocp', 'vmfc'])
 
 for compl in comparison_dict.keys():
     var_key = 'N-BODY %s TOTAL ENERGY' % compl                                #TEST
-    computed_value = psi4.get_variable(var_key)                               #TEST
+    computed_value = psi4.variable(var_key)                               #TEST
     compare_values(comparison_dict[compl], computed_value, 8, var_key)        #TEST
 

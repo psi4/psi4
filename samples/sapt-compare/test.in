@@ -30,13 +30,13 @@ set {
 }
 
 energy('sapt0', molecule=dimer)
-sapt0_vars = psi4.core.get_variables() #TEST
+sapt0_vars = psi4.core.variables() #TEST
 
 energy('fisapt0', molecule=dimer)
-fisapt0_vars = psi4.core.get_variables() #TEST
+fisapt0_vars = psi4.core.variables() #TEST
 
 energy('sapt(dft)', molecule=dimer)
-sapt_dft_vars = psi4.core.get_variables() #TEST
+sapt_dft_vars = psi4.core.variables() #TEST
 
 for k in ["SAPT ELST ENERGY", "SAPT EXCH ENERGY", "SAPT IND ENERGY"]: #TEST
     compare_values(Eref[k], sapt_dft_vars[k], 5, "SAPT(DFT) " + k) #TEST

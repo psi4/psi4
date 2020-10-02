@@ -33,7 +33,7 @@ set {
 }
 
 fd_grad = gradient('scf', molecule=water, dertype=0)
-fd_ener = psi4.get_variable('CURRENT ENERGY')
+fd_ener = psi4.variable('CURRENT ENERGY')
 an_grad = gradient('scf', molecule=water)
-an_ener = psi4.get_variable('CURRENT ENERGY')
+an_ener = psi4.variable('CURRENT ENERGY')
 

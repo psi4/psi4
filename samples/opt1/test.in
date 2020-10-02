@@ -47,3 +47,7 @@ mol_from_error.print_out()
 
 compare_integers(1, int(convergence_error_set), 'opt() exit gracefully but truthfully')
 compare_values(9.297919, wfn_from_error.molecule().nuclear_repulsion_energy(), 2, 'NRE from error exit')
+
+# clean up scratch since optimization ended abruptly
+psi4_io.set_specific_retention(1, False)
+clean()

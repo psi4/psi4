@@ -29,5 +29,5 @@ set = {
 
 thisenergy = energy('scf')
 
-stab = get_array_variable("SCF STABILITY EIGENVALUES")
+stab = variable("SCF STABILITY EIGENVALUES")
 

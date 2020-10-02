@@ -25,9 +25,9 @@ reflen_355   =   -214.73273  #TEST
 refvel_355   =    384.88786  #TEST
 refmvg_355   =   -644.44746  #TEST
 
-compare_values(reflen_589,   get_variable("CCSD SPECIFIC ROTATION (LEN) @ 589NM"),  3, "CCSD rotation @ 589nm in length gauge") #TEST
-compare_values(refvel_589,   get_variable("CCSD SPECIFIC ROTATION (VEL) @ 589NM"),  3, "CCSD rotation @ 589nm in velocity gauge") #TEST
-compare_values(refmvg_589,   get_variable("CCSD SPECIFIC ROTATION (MVG) @ 589NM"),  3, "CCSD rotation @ 589nm in modified velocity gauge") #TEST
-compare_values(reflen_355,   get_variable("CCSD SPECIFIC ROTATION (LEN) @ 355NM"),  3, "CCSD rotation @ 355nm in length gauge") #TEST
-compare_values(reflen_355,   get_variable("CCSD SPECIFIC ROTATION (LEN) @ 355NM"),  3, "CCSD rotation @ 355nm in velocity gauge") #TEST
-compare_values(reflen_355,   get_variable("CCSD SPECIFIC ROTATION (LEN) @ 355NM"),  3, "CCSD rotation @ 355nm in modified velocity gauge") #TEST
+compare_values(reflen_589,   variable("CCSD SPECIFIC ROTATION (LEN) @ 589NM"),  3, "CCSD rotation @ 589nm in length gauge") #TEST
+compare_values(refvel_589,   variable("CCSD SPECIFIC ROTATION (VEL) @ 589NM"),  3, "CCSD rotation @ 589nm in velocity gauge") #TEST
+compare_values(refmvg_589,   variable("CCSD SPECIFIC ROTATION (MVG) @ 589NM"),  3, "CCSD rotation @ 589nm in modified velocity gauge") #TEST
+compare_values(reflen_355,   variable("CCSD SPECIFIC ROTATION (LEN) @ 355NM"),  3, "CCSD rotation @ 355nm in length gauge") #TEST
+compare_values(reflen_355,   variable("CCSD SPECIFIC ROTATION (LEN) @ 355NM"),  3, "CCSD rotation @ 355nm in velocity gauge") #TEST
+compare_values(reflen_355,   variable("CCSD SPECIFIC ROTATION (LEN) @ 355NM"),  3, "CCSD rotation @ 355nm in modified velocity gauge") #TEST

@@ -20,8 +20,8 @@ set {
   cc_type cd
 }
 energy('ccsd(t)')
-edfccsd  = get_variable("CCSD CORRELATION ENERGY")
-edfccsdt = get_variable("CCSD(T) CORRELATION ENERGY")
+edfccsd  = variable("CCSD CORRELATION ENERGY")
+edfccsdt = variable("CCSD(T) CORRELATION ENERGY")
 
 
 
@@ -36,9 +36,9 @@ set fnocc {
     r_convergence 1e1
 }
 energy('ccsd')
-emp2    = get_variable("MP2 CORRELATION ENERGY")
+emp2    = variable("MP2 CORRELATION ENERGY")
 clean()
 energy('mp2')
-emp2_2  = get_variable("MP2 CORRELATION ENERGY")
+emp2_2  = variable("MP2 CORRELATION ENERGY")
 
 clean()

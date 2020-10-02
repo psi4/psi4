@@ -24,8 +24,8 @@ MEMORY=20000000)
 
 energy('cfour')
 
-compare_values(-0.200539527276, get_variable('mp2 correlation energy'), 6, 'MP2 corl')
-compare_values(-55.785276787341, get_variable('mp2 total energy'), 6, 'MP2')
+compare_values(-0.200539527276, variable('mp2 correlation energy'), 6, 'MP2 corl')
+compare_values(-55.785276787341, variable('mp2 total energy'), 6, 'MP2')
 
 
 clean()

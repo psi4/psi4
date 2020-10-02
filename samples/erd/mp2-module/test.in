@@ -44,27 +44,27 @@ set mp2_type conv
 
 set qc_module occ
 ugur = energy('mp2', molecule=hf)
-compare_values(scftot, get_variable('hf total energy'), 6, 'mp2 rhf conv: 3 occ*')  #TEST
-compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, 'mp2 rhf conv: 3 occ*')  #TEST
-compare_values(mp2tot, get_variable('mp2 total energy'), 6, 'mp2 rhf conv: 3 occ*')  #TEST
+compare_values(scftot, variable('hf total energy'), 6, 'mp2 rhf conv: 3 occ*')  #TEST
+compare_values(mp2corl, variable('mp2 correlation energy'), 6, 'mp2 rhf conv: 3 occ*')  #TEST
+compare_values(mp2tot, variable('mp2 total energy'), 6, 'mp2 rhf conv: 3 occ*')  #TEST
 compare_values(mp2tot, ugur, 6, 'mp2 rhf conv: 3 occ*')  #TEST
 clean_variables()
 clean()
 
 set qc_module fnocc
 eugene = energy('mp2', molecule=hf)
-compare_values(scftot, get_variable('hf total energy'), 6, 'mp2 rhf conv: 3 fnocc')  #TEST
-compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, 'mp2 rhf conv: 3 fnocc')  #TEST
-compare_values(mp2tot, get_variable('mp2 total energy'), 6, 'mp2 rhf conv: 3 fnocc')  #TEST
+compare_values(scftot, variable('hf total energy'), 6, 'mp2 rhf conv: 3 fnocc')  #TEST
+compare_values(mp2corl, variable('mp2 correlation energy'), 6, 'mp2 rhf conv: 3 fnocc')  #TEST
+compare_values(mp2tot, variable('mp2 total energy'), 6, 'mp2 rhf conv: 3 fnocc')  #TEST
 compare_values(mp2tot, eugene, 6, 'mp2 rhf conv: 3 fnocc')  #TEST
 clean_variables()
 clean()
 
 set qc_module detci
 david = energy('mp2', molecule=hf)
-compare_values(scftot, get_variable('hf total energy'), 6, 'mp2 rhf conv: 3 detci')  #TEST
-compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, 'mp2 rhf conv: 3 detci')  #TEST
-compare_values(mp2tot, get_variable('mp2 total energy'), 6, 'mp2 rhf conv: 3 detci')  #TEST
+compare_values(scftot, variable('hf total energy'), 6, 'mp2 rhf conv: 3 detci')  #TEST
+compare_values(mp2corl, variable('mp2 correlation energy'), 6, 'mp2 rhf conv: 3 detci')  #TEST
+compare_values(mp2tot, variable('mp2 total energy'), 6, 'mp2 rhf conv: 3 detci')  #TEST
 compare_values(mp2tot, david, 6, 'mp2 rhf conv: 3 detci')  #TEST
 clean_variables()
 clean()
@@ -80,18 +80,18 @@ set mp2_type df
 set qc_module occ
 ugur = energy('mp2', molecule=hf)
 print_variables()
-compare_values(scftot, get_variable('hf total energy'), 6, 'mp2 rhf df: 2 occ')  #TEST
-compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, 'mp2 rhf df: 2 occ')  #TEST
-compare_values(mp2tot, get_variable('mp2 total energy'), 6, 'mp2 rhf df: 2 occ')  #TEST
+compare_values(scftot, variable('hf total energy'), 6, 'mp2 rhf df: 2 occ')  #TEST
+compare_values(mp2corl, variable('mp2 correlation energy'), 6, 'mp2 rhf df: 2 occ')  #TEST
+compare_values(mp2tot, variable('mp2 total energy'), 6, 'mp2 rhf df: 2 occ')  #TEST
 compare_values(mp2tot, ugur, 6, 'mp2 rhf df: 2 occ')  #TEST
 clean_variables()
 clean()
 
 set qc_module dfmp2
 rob = energy('mp2', molecule=hf)
-compare_values(scftot, get_variable('hf total energy'), 6, 'mp2 rhf df: 2 dfmp2*')  #TEST
-compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, 'mp2 rhf df: 2 dfmp2*')  #TEST
-compare_values(mp2tot, get_variable('mp2 total energy'), 6, 'mp2 rhf df: 2 dfmp2*')  #TEST
+compare_values(scftot, variable('hf total energy'), 6, 'mp2 rhf df: 2 dfmp2*')  #TEST
+compare_values(mp2corl, variable('mp2 correlation energy'), 6, 'mp2 rhf df: 2 dfmp2*')  #TEST
+compare_values(mp2tot, variable('mp2 total energy'), 6, 'mp2 rhf df: 2 dfmp2*')  #TEST
 compare_values(mp2tot, rob, 6, 'mp2 rhf df: 2 dfmp2*')  #TEST
 clean_variables()
 clean()
@@ -106,9 +106,9 @@ set mp2_type cd
 
 set qc_module occ
 ugur = energy('mp2', molecule=hf)
-compare_values(scftot, get_variable('hf total energy'), 6, 'mp2 rhf cd: 1 occ*')  #TEST
-compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, 'mp2 rhf cd: 1 occ*')  #TEST
-compare_values(mp2tot, get_variable('mp2 total energy'), 6, 'mp2 rhf cd: 1 occ*')  #TEST
+compare_values(scftot, variable('hf total energy'), 6, 'mp2 rhf cd: 1 occ*')  #TEST
+compare_values(mp2corl, variable('mp2 correlation energy'), 6, 'mp2 rhf cd: 1 occ*')  #TEST
+compare_values(mp2tot, variable('mp2 total energy'), 6, 'mp2 rhf cd: 1 occ*')  #TEST
 compare_values(mp2tot, ugur, 6, 'mp2 rhf cd: 1 occ*')  #TEST
 clean_variables()
 clean()
@@ -124,9 +124,9 @@ set mp2_type conv
 
 set qc_module occ
 ugur = energy('mp2', molecule=bh_h2p)
-compare_values(scftot, get_variable('hf total energy'), 6, 'mp2 uhf conv: 1 occ*')  #TEST
-compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, 'mp2 uhf conv: 1 occ*')  #TEST
-compare_values(mp2tot, get_variable('mp2 total energy'), 6, 'mp2 uhf conv: 1 occ*')  #TEST
+compare_values(scftot, variable('hf total energy'), 6, 'mp2 uhf conv: 1 occ*')  #TEST
+compare_values(mp2corl, variable('mp2 correlation energy'), 6, 'mp2 uhf conv: 1 occ*')  #TEST
+compare_values(mp2tot, variable('mp2 total energy'), 6, 'mp2 uhf conv: 1 occ*')  #TEST
 compare_values(mp2tot, ugur, 6, 'mp2 uhf conv: 1 occ*')  #TEST
 clean_variables()
 clean()
@@ -142,18 +142,18 @@ set mp2_type df
 
 set qc_module occ
 ugur = energy('mp2', molecule=bh_h2p)
-compare_values(scftot, get_variable('hf total energy'), 6, 'mp2 uhf df: 2 occ')  #TEST
-compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, 'mp2 uhf df: 2 occ')  #TEST
-compare_values(mp2tot, get_variable('mp2 total energy'), 6, 'mp2 uhf df: 2 occ')  #TEST
+compare_values(scftot, variable('hf total energy'), 6, 'mp2 uhf df: 2 occ')  #TEST
+compare_values(mp2corl, variable('mp2 correlation energy'), 6, 'mp2 uhf df: 2 occ')  #TEST
+compare_values(mp2tot, variable('mp2 total energy'), 6, 'mp2 uhf df: 2 occ')  #TEST
 compare_values(mp2tot, ugur, 6, 'mp2 uhf df: 2 occ')  #TEST
 clean_variables()
 clean()
 
 set qc_module dfmp2
 david = energy('mp2', molecule=bh_h2p)
-compare_values(scftot, get_variable('hf total energy'), 6, 'mp2 uhf df: 2 dfmp2*')  #TEST
-compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, 'mp2 uhf df: 2 dfmp2*')  #TEST
-compare_values(mp2tot, get_variable('mp2 total energy'), 6, 'mp2 uhf df: 2 dfmp2*')  #TEST
+compare_values(scftot, variable('hf total energy'), 6, 'mp2 uhf df: 2 dfmp2*')  #TEST
+compare_values(mp2corl, variable('mp2 correlation energy'), 6, 'mp2 uhf df: 2 dfmp2*')  #TEST
+compare_values(mp2tot, variable('mp2 total energy'), 6, 'mp2 uhf df: 2 dfmp2*')  #TEST
 compare_values(mp2tot, david, 6, 'mp2 uhf df: 2 dfmp2*')  #TEST
 clean_variables()
 clean()
@@ -168,9 +168,9 @@ set mp2_type cd
 
 set qc_module occ
 ugur = energy('mp2', molecule=bh_h2p)
-compare_values(scftot, get_variable('hf total energy'), 6, 'mp2 uhf cd: 1 occ*')  #TEST
-compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, 'mp2 uhf cd: 1 occ*')  #TEST
-compare_values(mp2tot, get_variable('mp2 total energy'), 6, 'mp2 uhf cd: 1 occ*')  #TEST
+compare_values(scftot, variable('hf total energy'), 6, 'mp2 uhf cd: 1 occ*')  #TEST
+compare_values(mp2corl, variable('mp2 correlation energy'), 6, 'mp2 uhf cd: 1 occ*')  #TEST
+compare_values(mp2tot, variable('mp2 total energy'), 6, 'mp2 uhf cd: 1 occ*')  #TEST
 compare_values(mp2tot, ugur, 6, 'mp2 uhf cd: 1 occ*')  #TEST
 clean_variables()
 clean()
@@ -186,18 +186,18 @@ set mp2_type conv
 
 set qc_module occ
 ugur = energy('mp2', molecule=bh_h2p)
-compare_values(scftot, get_variable('hf total energy'), 6, 'mp2 rohf conv: 2 occ*')  #TEST
-#compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, 'mp2 rohf conv: 2 occ*')  #TEST
-#compare_values(mp2tot, get_variable('mp2 total energy'), 6, 'mp2 rohf conv: 2 occ*')  #TEST
+compare_values(scftot, variable('hf total energy'), 6, 'mp2 rohf conv: 2 occ*')  #TEST
+#compare_values(mp2corl, variable('mp2 correlation energy'), 6, 'mp2 rohf conv: 2 occ*')  #TEST
+#compare_values(mp2tot, variable('mp2 total energy'), 6, 'mp2 rohf conv: 2 occ*')  #TEST
 #compare_values(mp2tot, ugur, 6, 'mp2 rohf conv: 2 occ*')  #TEST
 clean_variables()
 clean()
 
 set qc_module detci
 david = energy('mp2', molecule=bh_h2p)
-compare_values(scftot, get_variable('hf total energy'), 6, 'mp2 rohf conv: 2 detci')  #TEST
-compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, 'mp2 rohf conv: 2 detci')  #TEST
-compare_values(mp2tot, get_variable('mp2 total energy'), 6, 'mp2 rohf conv: 2 detci')  #TEST
+compare_values(scftot, variable('hf total energy'), 6, 'mp2 rohf conv: 2 detci')  #TEST
+compare_values(mp2corl, variable('mp2 correlation energy'), 6, 'mp2 rohf conv: 2 detci')  #TEST
+compare_values(mp2tot, variable('mp2 total energy'), 6, 'mp2 rohf conv: 2 detci')  #TEST
 compare_values(mp2tot, david, 6, 'mp2 rohf conv: 2 detci')  #TEST
 clean_variables()
 clean()
@@ -212,18 +212,18 @@ set mp2_type df
 
 set qc_module occ
 ugur = energy('mp2', molecule=bh_h2p)
-compare_values(scftot, get_variable('hf total energy'), 6, 'mp2 rohf df: 2 occ')  #TEST
-compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, 'mp2 rohf df: 2 occ')  #TEST
-compare_values(mp2tot, get_variable('mp2 total energy'), 6, 'mp2 rohf df: 2 occ')  #TEST
+compare_values(scftot, variable('hf total energy'), 6, 'mp2 rohf df: 2 occ')  #TEST
+compare_values(mp2corl, variable('mp2 correlation energy'), 6, 'mp2 rohf df: 2 occ')  #TEST
+compare_values(mp2tot, variable('mp2 total energy'), 6, 'mp2 rohf df: 2 occ')  #TEST
 compare_values(mp2tot, ugur, 6, 'mp2 rohf df: 2 occ')  #TEST
 clean_variables()
 clean()
 
 set qc_module dfmp2
 david = energy('mp2', molecule=bh_h2p)
-compare_values(scftot, get_variable('hf total energy'), 6, 'mp2 rohf df: 2 dfmp2*')  #TEST
-compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, 'mp2 rohf df: 2 dfmp2*')  #TEST
-compare_values(mp2tot, get_variable('mp2 total energy'), 6, 'mp2 rohf df: 2 dfmp2*')  #TEST
+compare_values(scftot, variable('hf total energy'), 6, 'mp2 rohf df: 2 dfmp2*')  #TEST
+compare_values(mp2corl, variable('mp2 correlation energy'), 6, 'mp2 rohf df: 2 dfmp2*')  #TEST
+compare_values(mp2tot, variable('mp2 total energy'), 6, 'mp2 rohf df: 2 dfmp2*')  #TEST
 compare_values(mp2tot, david, 6, 'mp2 rohf df: 2 dfmp2*')  #TEST
 clean_variables()
 clean()
@@ -238,9 +238,9 @@ set mp2_type cd
 
 set qc_module occ
 ugur = energy('mp2', molecule=bh_h2p)
-compare_values(scftot, get_variable('hf total energy'), 6, 'mp2 rohf cd: 1 occ*')  #TEST
-compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, 'mp2 rohf cd: 1 occ*')  #TEST
-compare_values(mp2tot, get_variable('mp2 total energy'), 6, 'mp2 rohf cd: 1 occ*')  #TEST
+compare_values(scftot, variable('hf total energy'), 6, 'mp2 rohf cd: 1 occ*')  #TEST
+compare_values(mp2corl, variable('mp2 correlation energy'), 6, 'mp2 rohf cd: 1 occ*')  #TEST
+compare_values(mp2tot, variable('mp2 total energy'), 6, 'mp2 rohf cd: 1 occ*')  #TEST
 compare_values(mp2tot, ugur, 6, 'mp2 rohf cd: 1 occ*')  #TEST
 clean_variables()
 clean()
@@ -271,9 +271,9 @@ set freeze_core true
 #set qc_module occ
 #theme = 'mp2 grad rhf conv fc: 1 occ*'
 #retG = gradient('mp2', molecule=hf)
-#compare_values(scftot, get_variable('hf total energy'), 6, theme)  #TEST
-#compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, theme)  #TEST
-#compare_values(mp2tot, get_variable('mp2 total energy'), 6, theme)  #TEST
+#compare_values(scftot, variable('hf total energy'), 6, theme)  #TEST
+#compare_values(mp2corl, variable('mp2 correlation energy'), 6, theme)  #TEST
+#compare_values(mp2tot, variable('mp2 total energy'), 6, theme)  #TEST
 #compare_matrices(mp2totg, retG, 6, theme)  #TEST
 #clean_variables()
 #clean()
@@ -291,9 +291,9 @@ set freeze_core false
 ### set qc_module occ
 ### theme = 'mp2 grad rhf conv nfc: 1 occ*'
 ### retG = gradient('mp2', molecule=hf)
-### compare_values(scftot, get_variable('hf total energy'), 6, theme)  #TEST
-### compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, theme)  #TEST
-### compare_values(mp2tot, get_variable('mp2 total energy'), 6, theme)  #TEST
+### compare_values(scftot, variable('hf total energy'), 6, theme)  #TEST
+### compare_values(mp2corl, variable('mp2 correlation energy'), 6, theme)  #TEST
+### compare_values(mp2tot, variable('mp2 total energy'), 6, theme)  #TEST
 ### compare_matrices(mp2totg, retG, 6, theme)  #TEST
 ### clean_variables()
 ### clean()
@@ -316,9 +316,9 @@ set freeze_core true
 ### set qc_module occ
 ### theme = 'mp2 grad rhf df fc: 2 occ'
 ### retG = gradient('mp2', molecule=hf)
-### compare_values(scftot, get_variable('hf total energy'), 6, theme)  #TEST
-### compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, theme)  #TEST
-### compare_values(mp2tot, get_variable('mp2 total energy'), 6, theme)  #TEST
+### compare_values(scftot, variable('hf total energy'), 6, theme)  #TEST
+### compare_values(mp2corl, variable('mp2 correlation energy'), 6, theme)  #TEST
+### compare_values(mp2tot, variable('mp2 total energy'), 6, theme)  #TEST
 ### compare_matrices(mp2totg, retG, 6, theme)  #TEST
 ### clean_variables()
 ### clean()
@@ -326,9 +326,9 @@ set freeze_core true
 ### set qc_module dfmp2
 ### theme = 'mp2 grad rhf df fc: 2 dfmp2*'
 ### retG = gradient('mp2', molecule=hf)
-### compare_values(scftot, get_variable('hf total energy'), 6, theme)  #TEST
-### compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, theme)  #TEST
-### compare_values(mp2tot, get_variable('mp2 total energy'), 6, theme)  #TEST
+### compare_values(scftot, variable('hf total energy'), 6, theme)  #TEST
+### compare_values(mp2corl, variable('mp2 correlation energy'), 6, theme)  #TEST
+### compare_values(mp2tot, variable('mp2 total energy'), 6, theme)  #TEST
 ### compare_matrices(mp2totg, retG, 6, theme)  #TEST
 ### clean_variables()
 ### clean()
@@ -346,9 +346,9 @@ set freeze_core false
 ### set qc_module occ
 ### theme = 'mp2 grad rhf df nfc: 2 occ'
 ### retG = gradient('mp2', molecule=hf)
-### compare_values(scftot, get_variable('hf total energy'), 6, theme)  #TEST
-### compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, theme)  #TEST
-### compare_values(mp2tot, get_variable('mp2 total energy'), 6, theme)  #TEST
+### compare_values(scftot, variable('hf total energy'), 6, theme)  #TEST
+### compare_values(mp2corl, variable('mp2 correlation energy'), 6, theme)  #TEST
+### compare_values(mp2tot, variable('mp2 total energy'), 6, theme)  #TEST
 ### compare_matrices(mp2totg, retG, 6, theme)  #TEST
 ### clean_variables()
 ### clean()
@@ -356,9 +356,9 @@ set freeze_core false
 ### set qc_module dfmp2
 ### theme = 'mp2 grad rhf df nfc: 2 dfmp2*'
 ### retG = gradient('mp2', molecule=hf)
-### compare_values(scftot, get_variable('hf total energy'), 6, theme)  #TEST
-### compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, theme)  #TEST
-### compare_values(mp2tot, get_variable('mp2 total energy'), 6, theme)  #TEST
+### compare_values(scftot, variable('hf total energy'), 6, theme)  #TEST
+### compare_values(mp2corl, variable('mp2 correlation energy'), 6, theme)  #TEST
+### compare_values(mp2tot, variable('mp2 total energy'), 6, theme)  #TEST
 ### compare_matrices(mp2totg, retG, 6, theme)  #TEST
 ### clean_variables()
 ### clean()
@@ -385,9 +385,9 @@ set freeze_core false
 ### set qc_module occ
 ### theme = 'mp2 grad uhf conv nfc: 1 occ*'
 ### retG = gradient('mp2', molecule=bh_h2p)
-### compare_values(scftot, get_variable('hf total energy'), 6, theme)  #TEST
-### compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, theme)  #TEST
-### compare_values(mp2tot, get_variable('mp2 total energy'), 6, theme)  #TEST
+### compare_values(scftot, variable('hf total energy'), 6, theme)  #TEST
+### compare_values(mp2corl, variable('mp2 correlation energy'), 6, theme)  #TEST
+### compare_values(mp2tot, variable('mp2 total energy'), 6, theme)  #TEST
 ### compare_matrices(mp2totg, retG, 6, theme)  #TEST
 ### clean_variables()
 ### clean()
@@ -412,9 +412,9 @@ set freeze_core true
 ### set qc_module occ
 ### theme = 'mp2 grad uhf df fc: 1 occ*'
 ### retG = gradient('mp2', molecule=bh_h2p)
-### compare_values(scftot, get_variable('hf total energy'), 6, theme)  #TEST
-### compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, theme)  #TEST
-### compare_values(mp2tot, get_variable('mp2 total energy'), 6, theme)  #TEST
+### compare_values(scftot, variable('hf total energy'), 6, theme)  #TEST
+### compare_values(mp2corl, variable('mp2 correlation energy'), 6, theme)  #TEST
+### compare_values(mp2tot, variable('mp2 total energy'), 6, theme)  #TEST
 ### compare_matrices(mp2totg, retG, 6, theme)  #TEST
 ### clean_variables()
 ### clean()
@@ -434,9 +434,9 @@ set freeze_core false
 ### set qc_module occ
 ### theme = 'mp2 grad uhf df nfc: 1 occ*'
 ### retG = gradient('mp2', molecule=bh_h2p)
-### compare_values(scftot, get_variable('hf total energy'), 6, theme)  #TEST
-### compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, theme)  #TEST
-### compare_values(mp2tot, get_variable('mp2 total energy'), 6, theme)  #TEST
+### compare_values(scftot, variable('hf total energy'), 6, theme)  #TEST
+### compare_values(mp2corl, variable('mp2 correlation energy'), 6, theme)  #TEST
+### compare_values(mp2tot, variable('mp2 total energy'), 6, theme)  #TEST
 ### compare_matrices(mp2totg, retG, 6, theme)  #TEST
 ### clean_variables()
 ### clean()
@@ -477,9 +477,9 @@ set points 5
 
 retG = gradient('mp2', molecule=bh_h2p)
 theme = 'mp2 grad rohf df nfc: findif'
-compare_values(scftot, get_variable('hf total energy'), 6, theme)  #TEST
-compare_values(mp2corl, get_variable('mp2 correlation energy'), 6, theme)  #TEST
-compare_values(mp2tot, get_variable('mp2 total energy'), 6, theme)  #TEST
+compare_values(scftot, variable('hf total energy'), 6, theme)  #TEST
+compare_values(mp2corl, variable('mp2 correlation energy'), 6, theme)  #TEST
+compare_values(mp2tot, variable('mp2 total energy'), 6, theme)  #TEST
 compare_matrices(mp2totg, retG, 6, theme)  #TEST
 clean_variables()
 clean()

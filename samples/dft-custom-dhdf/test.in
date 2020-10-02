@@ -40,39 +40,39 @@ set scf_type direct
 # ======= Ne tests =======
 activate(ne)
 edhdf = energy('b2plyp')
-e_dft=get_variable('SCF TOTAL ENERGY')
-e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
 compare_values(-128.82658637, e_dft, 6, 'Ne: B2PLYP_DFT')   #TEST
 compare_values(-0.084559253, e_mp2, 6,  'Ne: B2PLYP_PT2')   #TEST
 compare_values(-128.911145626722, edhdf, 6,  'Ne: B2PLYP')   #TEST
 clean()
 
 edhdf = energy('b2gpplyp')
-e_dft=get_variable('SCF TOTAL ENERGY')
-e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
 compare_values(-128.78793537, e_dft, 6, 'Ne: B2GPPLYP_DFT')   #TEST
 compare_values(-0.109088934, e_mp2, 6,  'Ne: B2GPPLYP_PT2')   #TEST
 compare_values(-128.897024329309, edhdf, 6,  'Ne: B2GPPLYP')   #TEST
 clean()
 
 #edhdf = energy('core-dsd-blyp')
-#e_dft=get_variable('SCF TOTAL ENERGY')
-#e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+#e_dft=variable('SCF TOTAL ENERGY')
+#e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
 #compare_values(, e_dft, 6, 'Ne: DSD-BLYP_DFT')   #TEST
 #compare_values(, e_mp2, 7,  'Ne: DSD-BLYP_PT2')   #TEST 
 #compare_values(, edhdf, 6,  'Ne: DSD-BLYP')   #TEST
 #clean()
 
 edhdf = energy('ptpss')
-e_dft=get_variable('SCF TOTAL ENERGY')
-e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
 compare_values(-128.809366, e_dft, 6, 'Ne: PTPSS_DFT')   #TEST
 compare_values(-0.086404, e_mp2, 4,  'Ne: PTPSS_PT2')   #TEST error=1e-5 OK?
 compare_values(-128.895770, edhdf, 4,  'Ne: PTPSS')   #TEST only 4 decimals because of PT2
 
 edhdf = energy('pwpb95')
-e_dft=get_variable('SCF TOTAL ENERGY')
-e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
 compare_values(-128.85817666, e_dft, 5, 'Ne: PWPB95_DFT')   #TEST 
 compare_values(-0.062529936, e_mp2, 5,  'Ne: PWPB95_PT2')   #TEST
 compare_values(-128.920706595202, edhdf, 5,  'Ne: PWPB95')   #TEST
@@ -80,8 +80,8 @@ clean()
 
 set freeze_core true 
 edhdf = energy('dsd-blyp')
-e_dft=get_variable('SCF TOTAL ENERGY')
-e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
 # new fctl definition, ref in ref_outputs/orca_rev_dsdblyp.out 
 compare_values(-128.74250101, e_dft, 6, 'Ne: DSD-BLYP_DFT')   #TEST
 compare_values(-0.140004832412, e_mp2, 7,  'Ne: DSD-BLYP_PT2')   #TEST 
@@ -93,8 +93,8 @@ compare_values(-128.882505842412, edhdf, 6,  'Ne: DSD-BLYP')   #TEST
 clean()
 
 edhdf = energy('pbe0-dh')
-e_dft=get_variable('SCF TOTAL ENERGY')
-e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
 compare_values(-128.81862850, e_dft, 4, 'Ne: PBE0-DH DFT')   #TEST 
 compare_values(-0.037540749, e_mp2, 5,  'Ne: PBE0-DH PT2')   #TEST
 compare_values(-128.856169249025, edhdf, 4,  'Ne: PBE0-DH')   #TEST
@@ -169,7 +169,7 @@ compare_values(-3.3187, e_dhdft * 627.509, 2, "DSD-PBEP86: Ammonia")  #TEST
 #clean()
 
 #edhdf = energy('pwpb95')
-#e_dft=get_variable('SCF TOTAL ENERGY')
-#e_mp2=get_variable('DOUBLE-HYBRID CORRECTION ENERGY')
+#e_dft=variable('SCF TOTAL ENERGY')
+#e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
 #compare_values(-76.34572003, e_dft, 5, 'wat: PWPB95_DFT')   #TEST 
 #clean()

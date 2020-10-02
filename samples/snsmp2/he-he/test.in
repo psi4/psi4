@@ -9,5 +9,5 @@ He 2 0 0
 
 energy('sns-mp2')
 
-compare_values(  0.00176708227, get_variable('SNS-MP2 TOTAL ENERGY'),                         5, "SNS-MP2 IE [Eh]")  #TEST
+compare_values(  0.00176708227, variable('SNS-MP2 TOTAL ENERGY'),                         5, "SNS-MP2 IE [Eh]")  #TEST
 

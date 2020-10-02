@@ -20,8 +20,6 @@ C          3.26501        4.60083       -2.90366
 H          4.24594        4.99166       -2.95361
 }
 
-memory 1 Gb
-
 set {
   guess sad
   basis cc-pVDZ

@@ -34,7 +34,7 @@ ggaval ={
 #"bp86"    : -128.903070321, #G09  LDA-PW86
 "pw91"    : -128.871229934635,  # ORCA
 "mpwpw"   : -128.893378250504,  # ORCA
-"ft97"    : -128.850056371480 , # NWCHEM xfine xc ft97 screening 1-e14
+#"ft97"    : -128.850056371480 , # NWCHEM xfine xc ft97 screening 1-e14
 "bop"     : -128.892404778404, # NWCHEM
 #"b86bpbe" : , # ???
 "pw86pbe" : -128.946484366 , # G09 iop(3/74=809)
@@ -93,4 +93,16 @@ activate(h2o)
 edft=energy('scf', dft_functional="b86bpbe")
 compare_values(E15,edft, 4, "H2O: B86BPBE ") #TEST
 
+# Another special flower. FT97 does not converge readily.
+molecule ne {
+  0 1
+  Ne
+}
 
+set dft_spherical_points 770
+set d_convergence 1e-5
+set basis cc-pvdz
+
+activate(ne)
+edft = energy("ft97")
+compare_values(-128.850056371480, edft, 4, "Ne: FT97")

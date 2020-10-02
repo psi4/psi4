@@ -370,11 +370,11 @@ for codelist in [codes[0], codes[2], codes[6], codes[14]]:
     for subcode in codelist:
         for term in ['ELST ENERGY', 'EXCH ENERGY', 'IND ENERGY', 'DISP ENERGY', 'TOTAL ENERGY']:
             pv = ' '.join([subcode, term])
-            compare_values(refs[alpha][subcode][term], h2kc * get_variable(pv), digits, pv)  #TEST
+            compare_values(refs[alpha][subcode][term], h2kc * variable(pv), digits, pv)  #TEST
             if subcode == method:
                 gpv = ' '.join(['SAPT', term])
-                compare_values(refs[alpha][subcode][term], h2kc * get_variable(gpv), digits, gpv)  #TEST
-    compare_values(refs[alpha][method]['TOTAL ENERGY'], h2kc * get_variable('CURRENT ENERGY'), digits, 'CURRENT ENERGY')  #TEST
+                compare_values(refs[alpha][subcode][term], h2kc * variable(gpv), digits, gpv)  #TEST
+    compare_values(refs[alpha][method]['TOTAL ENERGY'], h2kc * variable('CURRENT ENERGY'), digits, 'CURRENT ENERGY')  #TEST
 
     clean()
     clean_variables()
@@ -392,11 +392,11 @@ for codelist in [codes[1], codes[3], codes[9]]:
             continue
         for term in ['ELST ENERGY', 'EXCH ENERGY', 'IND ENERGY', 'DISP ENERGY', 'TOTAL ENERGY']:
             pv = ' '.join([subcode, term])
-            compare_values(refs[alpha][subcode][term], h2kc * get_variable(pv), digits, pv)  #TEST
+            compare_values(refs[alpha][subcode][term], h2kc * variable(pv), digits, pv)  #TEST
             if subcode == method:
                 gpv = ' '.join(['SAPT', term])
-                compare_values(refs[alpha][subcode][term], h2kc * get_variable(gpv), digits, gpv)  #TEST
-    compare_values(refs[alpha][method]['TOTAL ENERGY'], h2kc * get_variable('CURRENT ENERGY'), digits, 'CURRENT ENERGY')  #TEST
+                compare_values(refs[alpha][subcode][term], h2kc * variable(gpv), digits, gpv)  #TEST
+    compare_values(refs[alpha][method]['TOTAL ENERGY'], h2kc * variable('CURRENT ENERGY'), digits, 'CURRENT ENERGY')  #TEST
 
     clean()
     clean_variables()

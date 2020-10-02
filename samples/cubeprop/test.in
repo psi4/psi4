@@ -13,8 +13,8 @@ set scf_type pk
 set cubeprop_tasks ['orbitals','density','frontier_orbitals','dual_descriptor']
 set cubeprop_orbitals [1,2,3,4,5,6]
 set cubic_grid_overage [1.0,1.0,1.0]
-set e_convergence 9
-set d_convergence 8
+set e_convergence 12
+set d_convergence 12
 
 scf_e, scf_wfn = energy('scf', return_wfn=True)
 cubeprop(scf_wfn)

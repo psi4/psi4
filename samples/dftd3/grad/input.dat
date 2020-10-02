@@ -19,6 +19,14 @@ set {
     d_convergence 8
 }
 
-grad = gradient('bp86-d2gr')
+grad = gradient('bp86-d2', engine='libdisp')
 clean()
 
+grad = gradient('bp86-d2', engine='dftd3')
+
+molecule atoms {
+  @He
+  Ne 1 1.0
+}
+
+E, G = atoms.run_dftd3('bp86-d3(bj)')

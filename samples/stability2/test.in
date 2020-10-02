@@ -42,7 +42,7 @@ set = {
 
 thisenergy = energy('scf')
 
-stab = get_array_variable("SCF STABILITY EIGENVALUES")
+stab = variable("SCF STABILITY EIGENVALUES")
 
 compare_values(nucenergy, cn.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST

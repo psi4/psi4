@@ -64,7 +64,7 @@ clean()
 #energy('cfour')
 #
 #for vari in test_psivars:
-#    store[vari] = get_variable(vari)
+#    store[vari] = variable(vari)
 #    set_variable(vari, 0.0)
 #
 #molecule nh2 {
@@ -88,7 +88,7 @@ clean()
 #clean()
 #
 #for vari in test_psivars:
-#    compare_values(store[vari], get_variable(vari), 6, vari.upper())
+#    compare_values(store[vari], variable(vari), 6, vari.upper())
 #
 #
 #print '    <<<  ROHF  >>>'
@@ -113,7 +113,7 @@ clean()
 #energy('cfour')
 #
 #for vari in test_psivars:
-#    store[vari] = get_variable(vari)
+#    store[vari] = variable(vari)
 #    set_variable(vari, 0.0)
 #
 #set reference rohf
@@ -123,6 +123,6 @@ clean()
 #clean()
 #
 #for vari in test_psivars:
-#    compare_values(store[vari], get_variable(vari), 6, vari.upper())
+#    compare_values(store[vari], variable(vari), 6, vari.upper())
 ##print store
 #

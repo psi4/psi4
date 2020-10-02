@@ -17,7 +17,7 @@ set {
 
 casscf_energy, cas_wfn = energy('casscf', return_wfn=True)
 
-compare_values(-76.01725998335047, psi4.get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
+compare_values(-76.01725998335047, psi4.variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
 compare_values(-76.07373669020915, casscf_energy, 5, 'FZC CASSCF Energy')  #TEST
 
 cas_orbs = cas_wfn.get_orbitals("ACT")

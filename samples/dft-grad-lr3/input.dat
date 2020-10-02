@@ -29,4 +29,3 @@ set {
 anl_grad = gradient('wB97X-D', dertype=1)
 
 #fd_grad = gradient('wB97X-D', dertype=1)
-

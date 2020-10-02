@@ -20,8 +20,8 @@ set {
 }
 energy('omp2')
 
-compare_values(refnuc, get_variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)");  #TEST
-compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 6, "CD-HF Energy (a.u.)");                        #TEST
-compare_values(refomp2, get_variable("OMP2 TOTAL ENERGY"), 6, "CD-OMP2 Total Energy (a.u.)");               #TEST
+compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)");  #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "CD-HF Energy (a.u.)");                        #TEST
+compare_values(refomp2, variable("OMP2 TOTAL ENERGY"), 6, "CD-OMP2 Total Energy (a.u.)");               #TEST
 
 

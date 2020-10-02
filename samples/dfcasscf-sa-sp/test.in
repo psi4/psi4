@@ -27,8 +27,8 @@ set {
 
 casscf_energy = energy('casscf')
 
-compare_values(-153.017422024965640, psi4.get_variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
-compare_values(-153.103748057296741, psi4.get_variable("CI ROOT 0 TOTAL ENERGY"), 6, 'CASSCF Root 0 Energy')  #TEST
-compare_values(-152.826395504293657, psi4.get_variable("CI ROOT 1 TOTAL ENERGY"), 6, 'CASSCF Root 1 Energy')  #TEST
+compare_values(-153.017422024965640, psi4.variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
+compare_values(-153.103748057296741, psi4.variable("CI ROOT 0 TOTAL ENERGY"), 6, 'CASSCF Root 0 Energy')  #TEST
+compare_values(-152.826395504293657, psi4.variable("CI ROOT 1 TOTAL ENERGY"), 6, 'CASSCF Root 1 Energy')  #TEST
 compare_values(-152.965071780795427, casscf_energy, 6, 'CASSCF Energy')  #TEST
 

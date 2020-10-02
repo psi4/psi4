@@ -107,11 +107,11 @@ Eref = {  #TEST
     
 Epsi = {  #TEST
     'Enuc'  : mol.nuclear_repulsion_energy(),           #TEST
-    'Eelst' : psi4.get_variable("SAPT ELST ENERGY"),    #TEST
-    'Eexch' : psi4.get_variable("SAPT EXCH ENERGY"),    #TEST    
-    'Eind'  : psi4.get_variable("SAPT IND ENERGY"),     #TEST   
-    'Edisp' : psi4.get_variable("SAPT DISP ENERGY"),    #TEST   
-    'Etot'  : psi4.get_variable("SAPT0 TOTAL ENERGY"),  #TEST   
+    'Eelst' : psi4.variable("SAPT ELST ENERGY"),    #TEST
+    'Eexch' : psi4.variable("SAPT EXCH ENERGY"),    #TEST
+    'Eind'  : psi4.variable("SAPT IND ENERGY"),     #TEST
+    'Edisp' : psi4.variable("SAPT DISP ENERGY"),    #TEST
+    'Etot'  : psi4.variable("SAPT0 TOTAL ENERGY"),  #TEST
     }  #TEST
 
 for key in keys:  #TEST

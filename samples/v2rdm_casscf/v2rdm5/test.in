@@ -35,6 +35,6 @@ refv2rdm = -109.091487394061   # TEST
 
 energy('v2rdm-casscf')
 
-compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 8, "SCF total energy") # TEST
-compare_values(refv2rdm, get_variable("CURRENT ENERGY"), 4, "v2RDM-CASSCF total energy") # TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 8, "SCF total energy") # TEST
+compare_values(refv2rdm, variable("CURRENT ENERGY"), 4, "v2RDM-CASSCF total energy") # TEST
 

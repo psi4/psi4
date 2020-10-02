@@ -18,7 +18,7 @@ set {
 
 optimize('scf')
 frequencies('scf')
-compare_values( N2_321G_RHF_G, get_variable('GIBBS FREE ENERGY'), 6, "N2 Gibbs Free Energy") #TEST
+compare_values( N2_321G_RHF_G, variable('GIBBS FREE ENERGY'), 6, "N2 Gibbs Free Energy") #TEST
 
 #
 
@@ -36,11 +36,12 @@ set {
 
 optimize('scf')
 frequencies('scf')
-compare_values( H2O_321G_RHF_G, get_variable('GIBBS FREE ENERGY'), 6, "H2O Gibbs Free Energy") #TEST
+compare_values( H2O_321G_RHF_G, variable('GIBBS FREE ENERGY'), 6, "H2O Gibbs Free Energy") #TEST
 
 #
 
 molecule nh3 {
+  symmetry cs
   N         -0.000000000075    -0.055054563313     0.000000000000
   H         -0.477097924216     0.254982462134    -0.826357845779
   H         -0.477097924216     0.254982462134     0.826357845779
@@ -50,15 +51,17 @@ molecule nh3 {
 set {
   basis 3-21G
   max_disp_g_convergence = 1e-5
+  docc [4, 1]
 }
 
 optimize('scf')
 frequencies('scf')
-compare_values( NH3_321G_RHF_G, get_variable('GIBBS FREE ENERGY'), 6, "NH3 Gibbs Free Energy") #TEST
+compare_values( NH3_321G_RHF_G, variable('GIBBS FREE ENERGY'), 6, "NH3 Gibbs Free Energy") #TEST
 
 #
 
 molecule CH4 {
+   symmetry c2v
    C
    H 1 r
    H 1 r 2 TDA
@@ -70,9 +73,10 @@ molecule CH4 {
 set {
   basis 3-21G
   max_disp_g_convergence = 1e-5
+  docc [3, 0, 1, 1]
 }
 
 optimize('scf')
 frequencies('scf')
-compare_values( CH4_321G_RHF_G, get_variable('GIBBS FREE ENERGY'), 6, "CH4 Gibbs Free Energy") #TEST
+compare_values( CH4_321G_RHF_G, variable('GIBBS FREE ENERGY'), 6, "CH4 Gibbs Free Energy") #TEST
 

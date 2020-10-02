@@ -55,11 +55,11 @@ scf_e, scf_wfn = energy('scf', return_wfn=True)
 oeprop(scf_wfn, "MULTIPOLES(7)", "ESP_AT_NUCLEI")
 
 for mpole,val in reversed(sorted(refs.items())):        #TEST
-    compare_values(val, get_variable(mpole),  4, mpole) #TEST
+    compare_values(val, variable(mpole),  4, mpole) #TEST
 
 for n in range(1,13):                                   #TEST
     st = "ESP AT CENTER %d" % n                         #TEST
-    compare_values(esps[n-1], get_variable(st),  4, st) #TEST
+    compare_values(esps[n-1], variable(st),  4, st) #TEST
     
 clean()
 

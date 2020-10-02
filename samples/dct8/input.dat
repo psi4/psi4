@@ -1,0 +1,66 @@
+#! DCT calculation for the NH3+ radical using the ODC-12 and ODC-13 functionals. This performs both
+#! simultaneous and QC update of the orbitals and cumulant using DIIS extrapolation.
+#! Four-virtual integrals are first handled in the MO Basis for the first two energy computations.
+#! In the next computation ao_basis=disk algorithm is used, where the transformation of integrals for 
+#! four-virtual case is avoided. 
+
+
+
+# ODC-13
+
+molecule NH3 {
+1 2
+N
+X 1 r
+H 1 r 2 TDA
+H 1 r 2 TDA 3 120
+H 1 r 2 TDA 4 120
+
+r = 1.09
+}
+
+set {
+    r_convergence 12
+    d_convergence 12
+    ao_basis    disk
+    algorithm   simultaneous
+    basis       sto-3g
+    reference   uhf 
+}
+
+#ODC-12 (Lambda_3)
+set three_particle perturbative
+set dct_functional odc-12
+set ao_basis none
+set algorithm simultaneous
+energy('dct')
+
+
+
+set ao_basis disk
+set algorithm simultaneous
+energy('dct')
+
+set ao_basis none
+set algorithm qc
+set qc_type simultaneous
+energy('dct')
+
+
+#ODC-13 (Lambda_3)
+set three_particle perturbative
+set dct_functional odc-13
+set ao_basis none
+set algorithm simultaneous
+energy('dct')
+
+
+set ao_basis disk
+set algorithm simultaneous
+energy('dct')
+
+set ao_basis none
+set algorithm qc
+set qc_type simultaneous
+energy('dct')
+
