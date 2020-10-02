@@ -720,10 +720,7 @@ void DFCoupledCluster::AllocateMemory() {
     Ca = reference_wavefunction_->Ca()->pointer();
 
     // one-electron integrals
-    //    auto mints = std::make_shared<MintsHelper>(basisset_, options_, 0);
-    auto mints = std::make_shared<MintsHelper>(reference_wavefunction_);
-    H = mints->so_kinetic();
-    H->add(mints->so_potential());
+    H = reference_wavefunction_->H()->clone();
 
     if (t2_on_disk) {
         auto psio = std::make_shared<PSIO>();

@@ -2174,6 +2174,12 @@ void DFOCC::ccsdl_canonic_triples_disk() {
     SharedTensor2d V, J1, J2, J3, Jt;
     SharedTensor1d Eijk;
     long int Nijk;
+    
+    // progress counter
+    std::time_t stop, start = std::time(nullptr);
+    long int ind = 0;
+    double step_print = 10.0;
+    double next_print = step_print;
 
     // Find number of unique ijk combinations (i>=j>=k)
     Nijk = naoccA * (naoccA + 1) * (naoccA + 2) / 6;
@@ -2539,6 +2545,15 @@ void DFOCC::ccsdl_canonic_triples_disk() {
                             sum += (value * factor) / Dijkabc;
                         }
                     }
+                }
+                // progress counter
+                ind += 1;
+                double percent = static_cast<double>(ind) / static_cast<double>(Nijk) * 100.0;
+                if (percent >= next_print) {
+                    stop = std::time(nullptr);
+                    next_print += step_print;
+                    outfile->Printf("              %5.1lf  %8d s\n", percent,
+                                    static_cast<int>(stop) - static_cast<int>(start));
                 }
 
             }  // k
