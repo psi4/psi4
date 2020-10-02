@@ -197,8 +197,8 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
     nshell_ = bs->nshell();
     nbf_ = bs->nbf();
 
-    function_pair_values_.resize(nbf_ * nbf_, 0.0);
-    shell_pair_values_.resize(nshell_ * nshell_, 0.0);
+    function_pair_values_.resize((size_t)nbf_ * nbf_, 0.0);
+    shell_pair_values_.resize((size_t)nshell_ * nshell_, 0.0);
     max_integral_ = 0.0;
 
     bs1_ = bs;
@@ -296,7 +296,7 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
     if (screening_type_ == ScreeningType::CSAM) {
         // Setup information for exchange term screening
         function_sqrt_.resize(nbf_);
-        shell_pair_exchange_values_.resize(nshell_ * nshell_);
+        shell_pair_exchange_values_.resize((size_t)nshell_ * nshell_);
         std::fill(function_sqrt_.begin(), function_sqrt_.end(), 0.0);
         std::fill(shell_pair_exchange_values_.begin(), shell_pair_exchange_values_.end(), 0.0);
 
@@ -384,6 +384,10 @@ bool TwoBodyAOInt::shell_block_significant(int shellpair12, int shellpair34) con
     }
 
     return false;
+}
+
+bool TwoBodyAOInt::shell_pair_significant(int M, int N) const {
+    return shell_pair_values_[M * nshell_ + N] * max_integral_ >= screening_threshold_squared_;
 }
 
 void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34, int npair12, int npair34) {
@@ -776,7 +780,7 @@ void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk
     for (int ichunk = 0; ichunk < nchunk; ++ichunk) {
         // Compute the offset in source_, and target
         size_t sourcechunkoffset = ichunk * (nao1 * nao2 * nao3 * nao4);
-        size_t targetchunkoffset = ichunk * (nbf1 * nbf2 * nbf3 * nbf4);
+        size_t targetchunkoffset = ichunk * ((size_t)nbf1 * nbf2 * nbf3 * nbf4);
         double *source1, *target1;
         double *source2, *target2;
         double *source3, *target3;

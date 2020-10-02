@@ -1119,7 +1119,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                 for (int thread = 0; thread < nthreads; thread++) {
                     ints.push_back(std::shared_ptr<TwoBodyAOInt>(integral_->eri(1)));
                     std::vector<std::vector<double>> temps(4);
-                    for (auto& t : temps) t.resize(nbuffers * maxnpair);
+                    for (auto& t : temps) t.resize((size_t)nbuffers * maxnpair);
                     thread_temps.push_back(temps);
                 }
                 size_t computed_shells = 0L;
@@ -1207,7 +1207,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                                 const auto& Rcenter = Rshell.ncenter();
                                 const auto& Scenter = Sshell.ncenter();
 
-                                size_t block_size = Psize * Qsize * Rsize * Ssize;
+                                size_t block_size = (size_t)Psize * Qsize * Rsize * Ssize;
                                 // When there are chunks of shellpairs in RS, we need to make sure
                                 // we filter out redundant combinations.  This should probably be done
                                 // by having a block of RS generated for each PQ at list build time.

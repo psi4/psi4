@@ -101,10 +101,10 @@ def test_schwarz_vs_csam_quartets():
             screen_count_schwarz += 1
         else:
             screen_count_none += 1
-    assert compare_integers(85440, screen_count_both, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
-    assert compare_integers(96, screen_count_csam, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
+    assert compare_integers(75072, screen_count_both, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
+    assert compare_integers(2336, screen_count_csam, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
     assert compare_integers(0, screen_count_schwarz, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
-    assert compare_integers(19440, screen_count_none, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
+    assert compare_integers(27568, screen_count_none, 'Schwarz vs CSAM Screening, Cutoff 1.0e-12')
 
 
 def test_schwarz_vs_csam_energy():

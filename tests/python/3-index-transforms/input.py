@@ -18,6 +18,9 @@ H 0.0 10.0 0.0
 primary = psi4.core.BasisSet.build(mol, "ORBITAL", "cc-pVTZ")
 aux = psi4.core.BasisSet.build(mol, "ORBITAL", "cc-pVTZ-jkfit")
 
+# don't sieve the integrals, because we're checking to high precision
+psi4.set_options({'ints_tolerance': 0.0,})
+
 # setup ~
 nbf = primary.nbf()
 naux = aux.nbf()

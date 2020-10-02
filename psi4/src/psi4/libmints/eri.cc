@@ -177,12 +177,33 @@ Libint2ERI::Libint2ERI(const IntegralFactory *integral, double screening_thresho
         std::max(std::max(basis1()->max_am(), basis2()->max_am()), std::max(basis3()->max_am(), basis4()->max_am()));
     int max_nprim = std::max(std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive()),
                              std::max(basis3()->max_nprimitive(), basis4()->max_nprimitive()));
-    const auto engine_precision = std::numeric_limits<double>::epsilon() * std::pow((double)max_nprim, -4.0);
-    const auto max_precision = std::numeric_limits<double>::epsilon() * 1e-10;
-    for (int der = 0; der <= deriv; ++der) {
-        engines_.emplace_back(libint2::Operator::coulomb, max_nprim, max_am, der, engine_precision);
+    const auto max_precision = std::numeric_limits<double>::epsilon() * 1e-13;
+    const auto engine_precision = screening_threshold == 0.0 ? max_precision : std::numeric_limits<double>::epsilon() * std::pow((double)max_nprim, -4.0);
+
+    bool dummy1 = basis1()->l2_shell(0) == libint2::Shell::unit();
+    bool dummy2 = basis2()->l2_shell(0) == libint2::Shell::unit();
+    bool dummy3 = basis3()->l2_shell(0) == libint2::Shell::unit();
+    bool dummy4 = basis4()->l2_shell(0) == libint2::Shell::unit();
+
+     if (!dummy1 && !dummy2 && !dummy3 && !dummy4) {
+        braket_ = libint2::BraKet::xx_xx;
+    } else if (!dummy1 && dummy2 && !dummy3 && !dummy4) {
+        braket_ = libint2::BraKet::xs_xx;
+    } else if (!dummy1 && !dummy2 && !dummy3 && dummy4) {
+        braket_ = libint2::BraKet::xx_xs;
+    } else if (!dummy1 && dummy2 && !dummy3 && dummy4) {
+        braket_ = libint2::BraKet::xs_xs;
+    } else {
+        throw PSIEXCEPTION("Bad BraKet type in Libint2TwoElectronInt");
     }
-    schwarz_engine_ = libint2::Engine(libint2::Operator::coulomb, max_nprim, max_am, 0, max_precision);
+
+    for (int der = 0; der <= deriv; ++der) {
+        // set braket upon engine construction so particular LIBINT2_MAX_AM_eri[|2|3] limit governs validity
+        engines_.emplace_back(libint2::Operator::coulomb, max_nprim, max_am, der, engine_precision, libint2::operator_traits<libint2::Operator::coulomb>::default_params(), braket_);
+    }
+    // set max_am for primary basis to be sieved, not all basis1234
+    max_am = bra_same_ ? basis1()->max_am() : ket_same_ ? basis3()->max_am() : 0;
+    schwarz_engine_ = libint2::Engine(libint2::Operator::coulomb, max_nprim, max_am, 0, max_precision, libint2::operator_traits<libint2::Operator::coulomb>::default_params(), libint2::BraKet::xx_xx);
     common_init();
     timer_off("Libint2ERI::Libint2ERI");
 }
@@ -257,12 +278,31 @@ Libint2ErfERI::Libint2ErfERI(double omega, const IntegralFactory *integral, doub
         std::max(std::max(basis1()->max_am(), basis2()->max_am()), std::max(basis3()->max_am(), basis4()->max_am()));
     int max_nprim = std::max(std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive()),
                              std::max(basis3()->max_nprimitive(), basis4()->max_nprimitive()));
-    const auto engine_precision = std::numeric_limits<double>::epsilon() * std::pow((double)max_nprim, -4.0);
-    const auto max_precision = std::numeric_limits<double>::epsilon() * 1e-10;
-    for (int der = 0; der <= deriv; ++der) {
-        engines_.emplace_back(libint2::Operator::erf_coulomb, max_nprim, max_am, der, engine_precision, omega);
+    const auto max_precision = std::numeric_limits<double>::epsilon() * 1e-13;
+    const auto engine_precision = screening_threshold == 0.0 ? max_precision : std::numeric_limits<double>::epsilon() * std::pow((double)max_nprim, -4.0);
+
+    bool dummy1 = basis1()->l2_shell(0) == libint2::Shell::unit();
+    bool dummy2 = basis2()->l2_shell(0) == libint2::Shell::unit();
+    bool dummy3 = basis3()->l2_shell(0) == libint2::Shell::unit();
+    bool dummy4 = basis4()->l2_shell(0) == libint2::Shell::unit();
+
+     if (!dummy1 && !dummy2 && !dummy3 && !dummy4) {
+        braket_ = libint2::BraKet::xx_xx;
+    } else if (!dummy1 && dummy2 && !dummy3 && !dummy4) {
+        braket_ = libint2::BraKet::xs_xx;
+    } else if (!dummy1 && !dummy2 && !dummy3 && dummy4) {
+        braket_ = libint2::BraKet::xx_xs;
+    } else if (!dummy1 && dummy2 && !dummy3 && dummy4) {
+        braket_ = libint2::BraKet::xs_xs;
+    } else {
+        throw PSIEXCEPTION("Bad BraKet type in Libint2TwoElectronInt");
     }
-    schwarz_engine_ = libint2::Engine(libint2::Operator::erf_coulomb, max_nprim, max_am, 0, max_precision, omega);
+
+    for (int der = 0; der <= deriv; ++der) {
+        engines_.emplace_back(libint2::Operator::erf_coulomb, max_nprim, max_am, der, engine_precision, omega, braket_);
+    }
+    max_am = bra_same_ ? basis1()->max_am() : ket_same_ ? basis3()->max_am() : 0;
+    schwarz_engine_ = libint2::Engine(libint2::Operator::erf_coulomb, max_nprim, max_am, 0, max_precision, omega, libint2::BraKet::xx_xx);
     common_init();
     timer_off("Libint2ErfERI::Libint2ErfERI");
 }
@@ -336,12 +376,31 @@ Libint2ErfComplementERI::Libint2ErfComplementERI(double omega, const IntegralFac
         std::max(std::max(basis1()->max_am(), basis2()->max_am()), std::max(basis3()->max_am(), basis4()->max_am()));
     int max_nprim = std::max(std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive()),
                              std::max(basis3()->max_nprimitive(), basis4()->max_nprimitive()));
-    const auto engine_precision = std::numeric_limits<double>::epsilon() * std::pow((double)max_nprim, -4.0);
-    const auto max_precision = std::numeric_limits<double>::epsilon() * 1e-10;
-    for (int der = 0; der <= deriv; ++der) {
-        engines_.emplace_back(libint2::Operator::erfc_coulomb, max_nprim, max_am, der, engine_precision, omega);
+    const auto max_precision = std::numeric_limits<double>::epsilon() * 1e-13;
+    const auto engine_precision = screening_threshold == 0.0 ? max_precision : std::numeric_limits<double>::epsilon() * std::pow((double)max_nprim, -4.0);
+
+    bool dummy1 = basis1()->l2_shell(0) == libint2::Shell::unit();
+    bool dummy2 = basis2()->l2_shell(0) == libint2::Shell::unit();
+    bool dummy3 = basis3()->l2_shell(0) == libint2::Shell::unit();
+    bool dummy4 = basis4()->l2_shell(0) == libint2::Shell::unit();
+
+     if (!dummy1 && !dummy2 && !dummy3 && !dummy4) {
+        braket_ = libint2::BraKet::xx_xx;
+    } else if (!dummy1 && dummy2 && !dummy3 && !dummy4) {
+        braket_ = libint2::BraKet::xs_xx;
+    } else if (!dummy1 && !dummy2 && !dummy3 && dummy4) {
+        braket_ = libint2::BraKet::xx_xs;
+    } else if (!dummy1 && dummy2 && !dummy3 && dummy4) {
+        braket_ = libint2::BraKet::xs_xs;
+    } else {
+        throw PSIEXCEPTION("Bad BraKet type in Libint2TwoElectronInt");
     }
-    schwarz_engine_ = libint2::Engine(libint2::Operator::erfc_coulomb, max_nprim, max_am, 0, max_precision, omega);
+
+    for (int der = 0; der <= deriv; ++der) {
+        engines_.emplace_back(libint2::Operator::erfc_coulomb, max_nprim, max_am, der, engine_precision, omega, braket_);
+    }
+    max_am = bra_same_ ? basis1()->max_am() : ket_same_ ? basis3()->max_am() : 0;
+    schwarz_engine_ = libint2::Engine(libint2::Operator::erfc_coulomb, max_nprim, max_am, 0, max_precision, omega, libint2::BraKet::xx_xx);
     common_init();
     timer_off("Libint2ErfComplementERI::Libint2ErfComplementERI");
 }

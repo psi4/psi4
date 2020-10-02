@@ -1041,6 +1041,15 @@ void timer_done() {
     omp_destroy_lock(&lock_timer);
 }
 
+void clean_timers() {
+    timer_done();
+    Timer_Structure new_root_timer(nullptr, ""), new_parallel_timer(nullptr, "");
+    extern Timer_Structure root_timer, parallel_timer;
+    root_timer = new_root_timer;
+    parallel_timer = new_parallel_timer;
+    timer_init();
+}
+
 void start_skip_timers() {
     omp_set_lock(&lock_timer);
     extern bool skip_timers;
