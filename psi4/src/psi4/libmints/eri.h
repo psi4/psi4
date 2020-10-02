@@ -32,7 +32,6 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
-#include <unordered_map>
 #include <numeric>
 #ifdef ENABLE_Libint1t
 #include <libint/libint.h>

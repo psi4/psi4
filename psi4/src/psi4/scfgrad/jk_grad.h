@@ -32,6 +32,7 @@
 #include "psi4/libmints/typedefs.h"
 #include <map>
 #include <vector>
+#include <string>
 
 namespace psi {
 
