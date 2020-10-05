@@ -54,7 +54,7 @@ else()
 
     if(NOT ${BUILD_Libint2_GENERATOR})
         if (${MAX_AM_ERI} GREATER 5)
-            set(_url_am_src "7-7-4-7-7-5")
+            set(_url_am_src "7-7-4-7-7-5")  # 22920  # passes E&G 7z conv and 6z df, H Qz conv and df. covers all internal basis sets for energy and gradient
         elseif (${MAX_AM_ERI} EQUAL 5)
             set(_url_am_src "5-4-3-6-5-4")  # 12383  # passes full. production Mac, temp production Linux_7
         elseif (${MAX_AM_ERI} EQUAL 4)
