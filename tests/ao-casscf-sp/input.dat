@@ -12,7 +12,6 @@ set {
     restricted_docc [1, 0, 0, 0]
     active          [3, 0, 1, 2] 
     scf_type        direct
-    ints_tolerance  1e-14
     mcscf_type      ao
 }
 

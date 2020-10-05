@@ -177,15 +177,16 @@ Libint2ERI::Libint2ERI(const IntegralFactory *integral, double screening_thresho
         std::max(std::max(basis1()->max_am(), basis2()->max_am()), std::max(basis3()->max_am(), basis4()->max_am()));
     int max_nprim = std::max(std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive()),
                              std::max(basis3()->max_nprimitive(), basis4()->max_nprimitive()));
-    const auto max_precision = std::numeric_limits<double>::epsilon() * 1e-13;
-    const auto engine_precision = screening_threshold == 0.0 ? max_precision : std::numeric_limits<double>::epsilon() * std::pow((double)max_nprim, -4.0);
+    const auto max_precision = 0.;  // equivalent in accuracy and timings is `std::numeric_limits<double>::epsilon() * 1e-30;`
+    const auto basis_precision = std::numeric_limits<double>::epsilon() * std::pow((double)max_nprim, -4.0) * 1.e-2;
+    const auto engine_precision = screening_threshold == 0.0 ? max_precision : basis_precision;
 
     bool dummy1 = basis1()->l2_shell(0) == libint2::Shell::unit();
     bool dummy2 = basis2()->l2_shell(0) == libint2::Shell::unit();
     bool dummy3 = basis3()->l2_shell(0) == libint2::Shell::unit();
     bool dummy4 = basis4()->l2_shell(0) == libint2::Shell::unit();
 
-     if (!dummy1 && !dummy2 && !dummy3 && !dummy4) {
+    if (!dummy1 && !dummy2 && !dummy3 && !dummy4) {
         braket_ = libint2::BraKet::xx_xx;
     } else if (!dummy1 && dummy2 && !dummy3 && !dummy4) {
         braket_ = libint2::BraKet::xs_xx;
@@ -278,8 +279,9 @@ Libint2ErfERI::Libint2ErfERI(double omega, const IntegralFactory *integral, doub
         std::max(std::max(basis1()->max_am(), basis2()->max_am()), std::max(basis3()->max_am(), basis4()->max_am()));
     int max_nprim = std::max(std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive()),
                              std::max(basis3()->max_nprimitive(), basis4()->max_nprimitive()));
-    const auto max_precision = std::numeric_limits<double>::epsilon() * 1e-13;
-    const auto engine_precision = screening_threshold == 0.0 ? max_precision : std::numeric_limits<double>::epsilon() * std::pow((double)max_nprim, -4.0);
+    const auto max_precision = 0.;
+    const auto basis_precision = std::numeric_limits<double>::epsilon() * std::pow((double)max_nprim, -4.0) * 1.e-2;
+    const auto engine_precision = screening_threshold == 0.0 ? max_precision : basis_precision;
 
     bool dummy1 = basis1()->l2_shell(0) == libint2::Shell::unit();
     bool dummy2 = basis2()->l2_shell(0) == libint2::Shell::unit();
@@ -376,8 +378,9 @@ Libint2ErfComplementERI::Libint2ErfComplementERI(double omega, const IntegralFac
         std::max(std::max(basis1()->max_am(), basis2()->max_am()), std::max(basis3()->max_am(), basis4()->max_am()));
     int max_nprim = std::max(std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive()),
                              std::max(basis3()->max_nprimitive(), basis4()->max_nprimitive()));
-    const auto max_precision = std::numeric_limits<double>::epsilon() * 1e-13;
-    const auto engine_precision = screening_threshold == 0.0 ? max_precision : std::numeric_limits<double>::epsilon() * std::pow((double)max_nprim, -4.0);
+    const auto max_precision = 0.;
+    const auto basis_precision = std::numeric_limits<double>::epsilon() * std::pow((double)max_nprim, -4.0) * 1.e-2;
+    const auto engine_precision = screening_threshold == 0.0 ? max_precision : basis_precision;
 
     bool dummy1 = basis1()->l2_shell(0) == libint2::Shell::unit();
     bool dummy2 = basis2()->l2_shell(0) == libint2::Shell::unit();

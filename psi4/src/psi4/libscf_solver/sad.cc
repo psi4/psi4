@@ -529,9 +529,18 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         jk = std::unique_ptr<JK>(directjk);
     }
 
+    // JK object primary libint2::Engine used to construct Schwarz externally, so need to zero precision for SAD scope
+    std::string ints_tolerance_key = "INTS_TOLERANCE";
+    auto ints_tolerance_value = Process::environment.options.get_double(ints_tolerance_key);
+    auto ints_tolerance_changed = Process::environment.options.use_local(ints_tolerance_key).has_changed();
+    Process::environment.options.set_double("SCF", ints_tolerance_key, 0.0);
+
     jk->set_memory((size_t)(0.5 * (Process::environment.get_memory() / 8L)));
     jk->initialize();
     if (print_ > 1) jk->print_header();
+
+    Process::environment.options.set_double("SCF", ints_tolerance_key, ints_tolerance_value);
+    if (!ints_tolerance_changed) Process::environment.options.use_local(ints_tolerance_key).dechanged();
 
     // These are static so lets just grab them now
     std::vector<SharedMatrix>& jkC = jk->C_left();

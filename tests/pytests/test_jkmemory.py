@@ -32,13 +32,13 @@ def _build_system(basis):
     ["cc-pvdz", "OUT_OF_CORE",  0],
 
     # pvdz tests
-    ["cc-pvdz", "MEM_DF",  1590520],
+    ["cc-pvdz", "MEM_DF",  1542360],
     ["cc-pvdz", "DISK_DF", 1286244],
     ["cc-pvdz", "CD",      2916000],
     ["cc-pvdz", "PK",      65610000],
 
     # 5z tests
-    ["cc-pv5z", "MEM_DF",  57020770],
+    ["cc-pv5z", "MEM_DF",  55172760],
     ["cc-pv5z", "DISK_DF", 26984120],
 ]) # yapf: disable
 
