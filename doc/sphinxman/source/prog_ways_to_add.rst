@@ -64,7 +64,7 @@ developing methods: this is detailed in the next section.
 Rapid initial development using Psi4NumPy
 -----------------------------------------
 
-The :p4numpy:`Psi4NumPy <>` project [Smith:2018:3504]_ is the recommended
+The `Psi4NumPy <https://github.com/psi4/psi4numpy>`_ project [Smith:2018:3504]_ is the recommended
 mechanism for developing and prototyping new methods in Psi4.  Because
 :numpy:`NumPy <>` provides such a rich set of features for efficient linear
 algebra, Fourier transforms, and general tensor manipulations, a massive number
