@@ -860,6 +860,11 @@ def return_energy_components():
                             'mp2': 'MP2 TOTAL ENERGY',
                            'ccsd': 'CCSD TOTAL ENERGY',
                         'ccsd(t)': 'CCSD(T) TOTAL ENERGY'}
+    VARH['ccsd(at)'] = {
+                             'hf': 'HF TOTAL ENERGY',
+                            'mp2': 'MP2 TOTAL ENERGY',
+                           'ccsd': 'CCSD TOTAL ENERGY',
+                       'ccsd(at)': 'CCSD(AT) TOTAL ENERGY'}
     VARH['bccd(t)'] = {
                              'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
