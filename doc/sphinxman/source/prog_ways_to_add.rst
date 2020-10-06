@@ -76,7 +76,7 @@ desired input quantities, retrieve them in NumPy format, and then write the
 remaining code using standard Python and/or NumPy syntax.  This approach does
 not require any recompilation of code, resulting in a particularly facile
 development workflow.  Detailed examples and tutorials are available in the
-:p4numpy:`Psi4NumPy <>` repository.
+`Psi4NumPy <https://github.com/psi4/psi4numpy>`_ repository.
 
 .. _`sec:prog_plugins`:
 
