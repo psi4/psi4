@@ -87,7 +87,7 @@ The recent push to move sections of the code that are not a bottleneck into the
 Python layer requires that the C++ code is callable from Python and that its
 results are accessible.  The result accessibility is addressed by populating
 the appropriate variables in the Wavefunction object.  To make the code
-callable from Python, we rely on the excellent :pybind11:`PyBind11 <>` library
+callable from Python, we rely on the excellent `PyBind11 <https://pybind11.readthedocs.io/en/stable/>`_ library
 to create the bindings.  Existing code to export various |PSIfour| classes can
 be found in :source:`psi4/src` in the files whose name begins with `export_`.
 The code to export functions that run entire calculations is usually found in
