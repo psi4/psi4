@@ -66,7 +66,7 @@ Rapid initial development using Psi4NumPy
 
 The `Psi4NumPy <https://github.com/psi4/psi4numpy>`_ project [Smith:2018:3504]_ is the recommended
 mechanism for developing and prototyping new methods in Psi4.  Because
-:numpy:`NumPy <>` provides such a rich set of features for efficient linear
+`NumPy <https://numpy.org/>`_ provides such a rich set of features for efficient linear
 algebra, Fourier transforms, and general tensor manipulations, a massive number
 of methods can be easily implemented very easily using that library.  To
 facilitate this workflow, |PSIfour| exports key quantities such as integrals,
