@@ -54,7 +54,7 @@ and making these C++ functions available in Python, most of the code to implemen
 the overall calculation can be written in simpler Python code.  Python is far
 better suited to management tasks such as directory navigation and retrieval,
 making it a natural choice for overall calculation layout than C++.  With the
-emergence of :numpy:`NumPy <>` as a standard tool for executing almost any
+emergence of `NumPy <https://numpy.org/>`_ as a standard tool for executing almost any
 mathematical technique efficiently in Python, the transitioning of code from
 C++ to Python has facilitated a much simpler work flow for prototyping and
 developing methods: this is detailed in the next section.
