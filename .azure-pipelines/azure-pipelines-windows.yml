@@ -170,6 +170,8 @@ jobs:
           cmake --build . ^
                 --config %CMAKE_BUILD_TYPE% ^
                 -- -j %NUMBER_OF_PROCESSORS%
+          DUMPBIN /DEPENDENTS stage\lib\psi4\core.cp36-win_amd64.pyd
+          type CMakeCache.txt
         displayName: "Build Psi4"
         workingDirectory: $(Build.BinariesDirectory)/build
 
