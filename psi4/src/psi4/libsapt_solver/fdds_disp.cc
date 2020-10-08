@@ -230,8 +230,6 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
         form_Y("A");
         form_Y("B");
         timer_off("Form Y");
-
-        // print_tensor_pqQ("arQ", "/theoryfs2/ds/xie/Gits/psi4numpy/Symmetry-Adapted-Perturbation-Theory/test/arQ2.dat", {na, nr, nQ});
     }
 
 }

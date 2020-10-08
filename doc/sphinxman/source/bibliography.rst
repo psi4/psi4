@@ -507,3 +507,15 @@ Bibliography
 
 .. [Verstraelen:2016]
    T. Verstraelen et al. "Minimal Basis Iterative Stockholder: Atoms in Molecules for Force-Field Development". *J. Chem. Theory and Comput.* doi: 10.1021/acs.jctc.6b00456.
+
+.. [Misquitta:2005:214103]
+   A. J. Misquitta and R. Podeszwa,
+   *J. Chem. Phys.* **123**, 214103 (2005).
+
+.. [Hesselmann:2005:014103]
+   A. Hesselmann and G. Jansen,
+   *J. Chem. Phys.* **122**, 014103 (2005).
+    
+.. [Hesselmann:2014:094107]
+   A. Hesselmann and T. Korona,
+   *J. Chem. Phys.* **141**, 094107 (2014).

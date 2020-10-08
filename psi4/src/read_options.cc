@@ -1012,14 +1012,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION SAPT(DFT) -*/
 
-        /*- How is the GRAC correction determined? -*/
-        options.add_str("SAPT_DFT_GRAC_DETERMINATION", "INPUT", "INPUT");
-        /*- Monomer A GRAC shift? -*/
+        /*- Monomer A GRAC shift in Hartree -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_A", 0.0);
-        /*- Monomer B GRAC shift? -*/
+        /*- Monomer B GRAC shift in Hartree -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_B", 0.0);
         /*- Compute the Delta-HF correction? -*/
         options.add_bool("SAPT_DFT_DO_DHF", true);
+        /*- How is the GRAC correction determined? !expert -*/
+        options.add_str("SAPT_DFT_GRAC_DETERMINATION", "INPUT", "INPUT");
         /*- Enables the hybrid xc kernel in dispersion? !expert -*/
         options.add_bool("SAPT_DFT_DO_HYBRID", true);
         /*- Scheme for approximating exchange-dispersion for SAPT-DFT.
