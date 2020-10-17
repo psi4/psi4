@@ -78,6 +78,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libmints/wavefunction.h"
 #include "psi4/psi4-dec.h"
 
 #include "MOInfo.h"
@@ -95,7 +96,7 @@ void compute_X(const char *pert, int irrep, double omega);
 void linresp(double *tensor, double A, double B, const char *pert_x, int x_irrep, double omega_x, const char *pert_y,
              int y_irrep, double omega_y);
 
-void optrot(std::shared_ptr<Molecule> molecule) {
+void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
     double ***tensor_rl, ***tensor_pl, ***tensor_rp, **tensor0;
     double **tensor_rl0, **tensor_rl1, **tensor_pl0, **tensor_pl1;
     char **cartcomp, pert[32], pert_x[32], pert_y[32];
@@ -104,6 +105,8 @@ void optrot(std::shared_ptr<Molecule> molecule) {
     double *rotation_rl, *rotation_pl, *rotation_rp, *rotation_mod, **delta;
     char lbl1[32], lbl2[32], lbl3[32];
     int compute_rl = 0, compute_pl = 0;
+    std::shared_ptr<Molecule> molecule;
+    molecule = ref_wfn->molecule();
 
     /* Booleans for convenience */
     if (params.gauge == "LENGTH" || params.gauge == "BOTH") compute_rl = 1;
