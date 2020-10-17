@@ -442,12 +442,18 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
 
             if (params.wfn == "CC2") {
                 std::stringstream tag;
+                std::stringstream tag_au;
                 tag << "CC2 SPECIFIC ROTATION (LEN) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_rl[i];
+                tag_au << "CC2 SPECIFIC ROTATION (LEN) @ " << params.omega[i];
+                ref_wfn->set_scalar_variable(tag_au.str(),rotation_rl[i]);
             } else if (params.wfn == "CCSD") {
                 std::stringstream tag;
+                std::stringstream tag_au;
                 tag << "CCSD SPECIFIC ROTATION (LEN) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_rl[i];
+                tag_au << "CCSD SPECIFIC ROTATION (LEN) @ " << params.omega[i];
+                ref_wfn->set_scalar_variable(tag_au.str(),rotation_rl[i]);
             }
         }
 
@@ -476,12 +482,18 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
 
             if (params.wfn == "CC2") {
                 std::stringstream tag;
+                std::stringstream tag_au;
                 tag << "CC2 SPECIFIC ROTATION (VEL) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_pl[i];
+                tag_au << "CC2 SPECIFIC ROTATION (VEL) @ " << params.omega[i];
+                ref_wfn->set_scalar_variable(tag_au.str(),rotation_pl[i]);
             } else if (params.wfn == "CCSD") {
                 std::stringstream tag;
+                std::stringstream tag_au;
                 tag << "CCSD SPECIFIC ROTATION (VEL) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_pl[i];
+                tag_au << "CCSD SPECIFIC ROTATION (VEL) @ " << params.omega[i];
+                ref_wfn->set_scalar_variable(tag_au.str(),rotation_pl[i]);
             }
 
             /* subtract the zero-frequency beta tensor */
@@ -510,12 +522,18 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
 
             if (params.wfn == "CC2") {
                 std::stringstream tag;
+                std::stringstream tag_au;
                 tag << "CC2 SPECIFIC ROTATION (MVG) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_mod[i];
+                tag_au << "CC2 SPECIFIC ROTATION (MVG) @ " << params.omega[i];
+                ref_wfn->set_scalar_variable(tag_au.str(),rotation_mod[i]);
             } else if (params.wfn == "CCSD") {
                 std::stringstream tag;
+                std::stringstream tag_au;
                 tag << "CCSD SPECIFIC ROTATION (MVG) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_mod[i];
+                tag_au << "CCSD SPECIFIC ROTATION (MVG) @ " << params.omega[i];
+                ref_wfn->set_scalar_variable(tag_au.str(),rotation_mod[i]);
             }
         }
 
