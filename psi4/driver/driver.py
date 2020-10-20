@@ -1980,6 +1980,9 @@ def fchk(wfn, filename, debug=False):
         core.print_out(f"FCHKWriter: Theory module {module_} is currently not supported by the FCHK writer.")
         return None
 
+    if (wfn.basisset().has_ECP()):
+        core.print_out(f"FCHKWriter: Limited ECP support! No ECP data will be written to the FCHK file.")
+
     # fix orbital coefficients and energies for DFMP2
     if (module_ in ['DFMP2']):
         wfn_ = core.Wavefunction.build(wfn.molecule(), core.get_global_option('BASIS'))

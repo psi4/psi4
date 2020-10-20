@@ -382,14 +382,11 @@ void FCHKWriter::write(const std::string &filename) {
     std::vector<double> atomic_weights;
     double to_bohr = mol->units() == Molecule::Angstrom ? 1.0 / pc_bohr2angstroms : 1.0;
     for (int atom = 0; atom < natoms; ++atom) {
-        double Z = mol->Z(atom);
-        auto intZ = static_cast<int>(Z);
-        double mass = an2masses[intZ];
-        auto intmass = static_cast<int>(mass);
-        atomic_weights.push_back(mass);
-        int_atomic_weights.push_back(intmass);
-        nuc_charges.push_back(Z);
-        atomic_numbers.push_back(intZ);
+        int intZ = static_cast<int>(mol->Z(atom));
+        atomic_weights.push_back(mol->mass(atom));
+        int_atomic_weights.push_back(mol->mass_number(atom));
+        nuc_charges.push_back(mol->Z(atom));
+        atomic_numbers.push_back(intZ > 0 ? mol->true_atomic_number(atom) : intZ); // care about ECP & ghosts!
         const Vector3 &xyz = mol->xyz(atom);
         coords.push_back(xyz[0]);
         coords.push_back(xyz[1]);
