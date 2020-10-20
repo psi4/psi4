@@ -544,7 +544,6 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
             ref_wfn->set_array_variable(tag_tensor_pl2.str(),tensor_mat_pl2);
         }
 
-/*        std::stringstream tag_tensor_quad; */
         std::stringstream* tag_quad = new std::stringstream[3];
         if (params.wfn == "CC2") {
             outfile->Printf("\n    CC2 Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");
@@ -564,8 +563,6 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
                         pc_hartree2wavenumbers * params.omega[i]);
         outfile->Printf("  -------------------------------------------------------------------------\n");
         for (alpha = 0; alpha < 3; alpha++) mat_print(tensor_rQ[i][alpha], 3, 3, "outfile");
-/*        auto* quad_mat = new std::make_shared<Matrix>(3, 3)[3]; 
-        auto quad_mat = new std::make_shared<Matrix>[3]; */
         auto quad_mat = new SharedMatrix[3];
         for (alpha = 0; alpha < 3; alpha++) {
             quad_mat[alpha] = std::make_shared<Matrix>(3, 3);
