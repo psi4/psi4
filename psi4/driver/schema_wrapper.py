@@ -591,15 +591,9 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         # Dipole/quadrupole still special case
         # CC* dipole/quadrupole use umbrella qcvars
         if "dipole" in kwargs["properties"]:
-            if "CC" in mtd:
-                ret["dipole"] = _serial_translation(psi_props["CC DIPOLE"], json=json_serialization)
-            else:
-                ret["dipole"] = _serial_translation(psi_props[mtd + " DIPOLE"], json=json_serialization)
+            ret["dipole"] = _serial_translation(psi_props[mtd + " DIPOLE"], json=json_serialization)
         if "quadrupole" in kwargs["properties"]:
-            if "CC" in mtd:
-                ret["quadrupole"] = _serial_translation(psi_props["CC QUADRUPOLE"], json=json_serialization)
-            else:
-                ret["quadrupole"] = _serial_translation(psi_props[mtd + " QUADRUPOLE"], json=json_serialization)
+            ret["quadrupole"] = _serial_translation(psi_props[mtd + " QUADRUPOLE"], json=json_serialization)
         ret.update(_convert_variables(wfn.variables(), context="properties", json=json_serialization))
 
         json_data["return_result"] = ret
