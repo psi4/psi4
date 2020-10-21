@@ -589,7 +589,6 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         mtd = json_data["model"]["method"].upper()
 
         # Dipole/quadrupole still special case
-        # CC* dipole/quadrupole use umbrella qcvars
         if "dipole" in kwargs["properties"]:
             ret["dipole"] = _serial_translation(psi_props[mtd + " DIPOLE"], json=json_serialization)
         if "quadrupole" in kwargs["properties"]:
