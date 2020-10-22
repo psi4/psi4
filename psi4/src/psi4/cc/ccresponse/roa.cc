@@ -40,6 +40,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include <cmath>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
@@ -75,6 +76,9 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
     /* Booleans for convenience */
     if (params.gauge == "LENGTH" || params.gauge == "BOTH") compute_rl = 1;
     if (params.gauge == "VELOCITY" || params.gauge == "BOTH") compute_pl = 1;
+
+    /* grab omega in nm, rounded to nearest int */
+    long om_nm = std::lround((pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]));
 
     cartcomp = (char **)malloc(3 * sizeof(char *));
     cartcomp[0] = strdup("X");
@@ -144,11 +148,11 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
         std::stringstream tag_tensor0;
         if (params.wfn == "CC2") {
             outfile->Printf("\n     CC2 Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
-            tag_tensor0 << "CC2 OPTICAL ROTATION TENSOR (VEL) @ 0";
+            tag_tensor0 << "CC2 OPTICAL ROTATION TENSOR (VEL) @ 0NM";
         }
         else if (params.wfn == "CCSD") {
             outfile->Printf("\n    CCSD Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
-            tag_tensor0 << "CCSD OPTICAL ROTATION TENSOR (VEL) @ 0";
+            tag_tensor0 << "CCSD OPTICAL ROTATION TENSOR (VEL) @ 0NM";
         }
 
         outfile->Printf("  -------------------------------------------------------------------------\n");
@@ -443,12 +447,12 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
         std::stringstream tag_polar;
         if (params.wfn == "CC2") {
             outfile->Printf("\n                 CC2 Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
-            tag_polar << "CC2 DIPOLE POLARIZABILITY TENSOR @ " << params.omega[i];
+            tag_polar << "CC2 DIPOLE POLARIZABILITY TENSOR @ " << om_nm << "NM";
         }
         else {
             outfile->Printf("\n                 CCSD Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
         outfile->Printf("  -------------------------------------------------------------------------\n");
-            tag_polar << "CCSD DIPOLE POLARIZABILITY TENSOR @ " << params.omega[i];
+            tag_polar << "CCSD DIPOLE POLARIZABILITY TENSOR @ " << om_nm << "NM";
         }
 
         outfile->Printf("   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
@@ -468,11 +472,11 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
             std::stringstream tag_tensor_rl;
             if (params.wfn == "CC2") {
                 outfile->Printf("\n            CC2 Optical Rotation Tensor (Length Gauge):\n");
-                tag_tensor_rl << "CC2 OPTICAL ROTATION TENSOR (LEN) @ " << params.omega[i];
+                tag_tensor_rl << "CC2 OPTICAL ROTATION TENSOR (LEN) @ " << om_nm << "NM";
             }
             else if (params.wfn == "CCSD") {
                 outfile->Printf("\n           CCSD Optical Rotation Tensor (Length Gauge):\n");
-                tag_tensor_rl << "CCSD OPTICAL ROTATION TENSOR (LEN) @ " << params.omega[i];
+                tag_tensor_rl << "CCSD OPTICAL ROTATION TENSOR (LEN) @ " << om_nm << "NM";
             }
 
             outfile->Printf("  -------------------------------------------------------------------------\n");
@@ -494,11 +498,11 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
             std::stringstream tag_tensor_pl;
             if (params.wfn == "CC2") {
                 outfile->Printf("\n          CC2 Optical Rotation Tensor (Velocity Gauge):\n");
-                tag_tensor_pl << "CC2 OPTICAL ROTATION TENSOR (VEL) @ " << params.omega[i];
+                tag_tensor_pl << "CC2 OPTICAL ROTATION TENSOR (VEL) @ " << om_nm << "NM";
             }
             else if (params.wfn == "CCSD") {
                 outfile->Printf("\n         CCSD Optical Rotation Tensor (Velocity Gauge):\n");
-                tag_tensor_pl << "CCSD OPTICAL ROTATION TENSOR (VEL) @ " << params.omega[i];
+                tag_tensor_pl << "CCSD OPTICAL ROTATION TENSOR (VEL) @ " << om_nm << "NM";
             }
 
             outfile->Printf("  -------------------------------------------------------------------------\n");
@@ -522,11 +526,11 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
             std::stringstream tag_tensor_pl2;
             if (params.wfn == "CC2") {
                 outfile->Printf("\n        CC2 Optical Rotation Tensor (Modified Velocity Gauge):\n");
-                tag_tensor_pl2 << "CC2 OPTICAL ROTATION TENSOR (MVG) @ " << params.omega[i];
+                tag_tensor_pl2 << "CC2 OPTICAL ROTATION TENSOR (MVG) @ " << om_nm << "NM";
             }
             else if (params.wfn == "CCSD") {
                 outfile->Printf("\n        CCSD Optical Rotation Tensor (Modified Velocity Gauge):\n");
-                tag_tensor_pl2 << "CCSD OPTICAL ROTATION TENSOR (MVG) @ " << params.omega[i];
+                tag_tensor_pl2 << "CCSD OPTICAL ROTATION TENSOR (MVG) @ " << om_nm << "NM";
             }
 
             outfile->Printf("  -------------------------------------------------------------------------\n");
@@ -547,15 +551,15 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
         std::stringstream* tag_quad = new std::stringstream[3];
         if (params.wfn == "CC2") {
             outfile->Printf("\n    CC2 Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");
-            tag_quad[0] << "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 0 @ " << params.omega[i];
-            tag_quad[1] << "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 1 @ " << params.omega[i];
-            tag_quad[2] << "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 2 @ " << params.omega[i];
+            tag_quad[0] << "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 0 @ " << om_nm << "NM";
+            tag_quad[1] << "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 1 @ " << om_nm << "NM";
+            tag_quad[2] << "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 2 @ " << om_nm << "NM";
         }
         else {
             outfile->Printf("\n    CCSD Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");
-            tag_quad[0] << "CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 0 @ " << params.omega[i];
-            tag_quad[1] << "CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 1 @ " << params.omega[i];
-            tag_quad[2] << "CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 2 @ " << params.omega[i];
+            tag_quad[0] << "CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 0 @ " << om_nm << "NM";
+            tag_quad[1] << "CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 1 @ " << om_nm << "NM";
+            tag_quad[2] << "CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 2 @ " << om_nm << "NM";
         }
         outfile->Printf("  -------------------------------------------------------------------------\n");
         outfile->Printf("   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],

@@ -188,11 +188,11 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
         std::stringstream tag_tensor0;
         if (params.wfn == "CC2") {
             outfile->Printf("\n     CC2 Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
-            tag_tensor0 << "CC2 OPTICAL ROTATION TENSOR (VEL) @ 0";
+            tag_tensor0 << "CC2 OPTICAL ROTATION TENSOR (VEL) @ 0NM";
         }
         else if (params.wfn == "CCSD") {
             outfile->Printf("\n    CCSD Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
-            tag_tensor0 << "CCSD OPTICAL ROTATION TENSOR (VEL) @ 0";
+            tag_tensor0 << "CCSD OPTICAL ROTATION TENSOR (VEL) @ 0NM";
         }
 
         outfile->Printf("  -------------------------------------------------------------------------\n");
@@ -433,13 +433,16 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
 
         if (compute_rl) {
             std::stringstream tag_tensor_rl;
+            /* grab omega in nm, rounded to nearest int */
+            long om_nm = std::lround((pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]));
+
             if (params.wfn == "CC2") {
                 outfile->Printf("\n            CC2 Optical Rotation Tensor (Length Gauge):\n");
-                tag_tensor_rl << "CC2 OPTICAL ROTATION TENSOR (LEN) @ " << params.omega[i];
+                tag_tensor_rl << "CC2 OPTICAL ROTATION TENSOR (LEN) @ " << om_nm << "NM";
             }
             else if (params.wfn == "CCSD") {
                 outfile->Printf("\n           CCSD Optical Rotation Tensor (Length Gauge):\n");
-                tag_tensor_rl << "CCSD OPTICAL ROTATION TENSOR (LEN) @ " << params.omega[i];
+                tag_tensor_rl << "CCSD OPTICAL ROTATION TENSOR (LEN) @ " << om_nm << "NM";
             }
 
             outfile->Printf("  -------------------------------------------------------------------------\n");
@@ -462,35 +465,32 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
             outfile->Printf("\n   Specific rotation using length-gauge electric-dipole Rosenfeld tensor.\n");
             outfile->Printf("\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_rl[i]);
 
-            /* grab omega in nm, rounded to nearest int */
-            long om_nm = std::lround((pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]));
-
             if (params.wfn == "CC2") {
                 std::stringstream tag;
                 std::stringstream tag_au;
                 tag << "CC2 SPECIFIC ROTATION (LEN) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_rl[i];
-                tag_au << "CC2 SPECIFIC ROTATION (LEN) @ " << params.omega[i];
-                ref_wfn->set_scalar_variable(tag_au.str(),rotation_rl[i]);
+                ref_wfn->set_scalar_variable(tag.str(),rotation_rl[i]);
             } else if (params.wfn == "CCSD") {
                 std::stringstream tag;
-                std::stringstream tag_au;
                 tag << "CCSD SPECIFIC ROTATION (LEN) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_rl[i];
-                tag_au << "CCSD SPECIFIC ROTATION (LEN) @ " << params.omega[i];
-                ref_wfn->set_scalar_variable(tag_au.str(),rotation_rl[i]);
+                ref_wfn->set_scalar_variable(tag.str(),rotation_rl[i]);
             }
         }
 
         if (compute_pl) {
             std::stringstream tag_tensor_pl;
+            /* grab omega in nm, rounded to nearest int */
+            long om_nm = std::lround((pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]));
+
             if (params.wfn == "CC2") {
                 outfile->Printf("\n          CC2 Optical Rotation Tensor (Velocity Gauge):\n");
-                tag_tensor_pl << "CC2 OPTICAL ROTATION TENSOR (VEL) @ " << params.omega[i];
+                tag_tensor_pl << "CC2 OPTICAL ROTATION TENSOR (VEL) @ " << om_nm << "NM";
             }
             else if (params.wfn == "CCSD") {
                 outfile->Printf("\n         CCSD Optical Rotation Tensor (Velocity Gauge):\n");
-                tag_tensor_pl << "CCSD OPTICAL ROTATION TENSOR (VEL) @ " << params.omega[i];
+                tag_tensor_pl << "CCSD OPTICAL ROTATION TENSOR (VEL) @ " << om_nm << "NM";
             }
 
             outfile->Printf("  -------------------------------------------------------------------------\n");
@@ -514,23 +514,16 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
             outfile->Printf("\n   Specific rotation using velocity-gauge electric-dipole Rosenfeld tensor.\n");
             outfile->Printf("\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_pl[i]);
 
-            /* grab omega in nm, rounded to nearest int */
-            long om_nm = std::lround((pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]));
-
             if (params.wfn == "CC2") {
                 std::stringstream tag;
-                std::stringstream tag_au;
                 tag << "CC2 SPECIFIC ROTATION (VEL) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_pl[i];
-                tag_au << "CC2 SPECIFIC ROTATION (VEL) @ " << params.omega[i];
-                ref_wfn->set_scalar_variable(tag_au.str(),rotation_pl[i]);
+                ref_wfn->set_scalar_variable(tag.str(),rotation_pl[i]);
             } else if (params.wfn == "CCSD") {
                 std::stringstream tag;
-                std::stringstream tag_au;
                 tag << "CCSD SPECIFIC ROTATION (VEL) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_pl[i];
-                tag_au << "CCSD SPECIFIC ROTATION (VEL) @ " << params.omega[i];
-                ref_wfn->set_scalar_variable(tag_au.str(),rotation_pl[i]);
+                ref_wfn->set_scalar_variable(tag.str(),rotation_pl[i]);
             }
 
             /* subtract the zero-frequency beta tensor */
@@ -540,11 +533,11 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
             std::stringstream tag_tensor_pl2;
             if (params.wfn == "CC2") {
                 outfile->Printf("\n        CC2 Optical Rotation Tensor (Modified Velocity Gauge):\n");
-                tag_tensor_pl2 << "CC2 OPTICAL ROTATION TENSOR (MVG) @ " << params.omega[i];
+                tag_tensor_pl2 << "CC2 OPTICAL ROTATION TENSOR (MVG) @ " << om_nm << "NM";
             }
             else if (params.wfn == "CCSD") {
                 outfile->Printf("\n        CCSD Optical Rotation Tensor (Modified Velocity Gauge):\n");
-                tag_tensor_pl2 << "CCSD OPTICAL ROTATION TENSOR (MVG) @ " << params.omega[i];
+                tag_tensor_pl2 << "CCSD OPTICAL ROTATION TENSOR (MVG) @ " << om_nm << "NM";
             }
 
             outfile->Printf("  -------------------------------------------------------------------------\n");
@@ -571,18 +564,14 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
 
             if (params.wfn == "CC2") {
                 std::stringstream tag;
-                std::stringstream tag_au;
                 tag << "CC2 SPECIFIC ROTATION (MVG) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_mod[i];
-                tag_au << "CC2 SPECIFIC ROTATION (MVG) @ " << params.omega[i];
-                ref_wfn->set_scalar_variable(tag_au.str(),rotation_mod[i]);
+                ref_wfn->set_scalar_variable(tag.str(),rotation_mod[i]);
             } else if (params.wfn == "CCSD") {
                 std::stringstream tag;
-                std::stringstream tag_au;
                 tag << "CCSD SPECIFIC ROTATION (MVG) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_mod[i];
-                tag_au << "CCSD SPECIFIC ROTATION (MVG) @ " << params.omega[i];
-                ref_wfn->set_scalar_variable(tag_au.str(),rotation_mod[i]);
+                ref_wfn->set_scalar_variable(tag.str(),rotation_mod[i]);
             }
         }
 
