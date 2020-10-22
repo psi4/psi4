@@ -160,11 +160,7 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
         outfile->Printf("  -------------------------------------------------------------------------\n");
         mat_print(tensor0, 3, 3, "outfile");
         auto tensor_mat0 = std::make_shared<Matrix>(3, 3);
-        for (int m = 0; m < 3; m++) {
-            for (int n = 0; n < 3; n++) {
-                tensor_mat0->set(m,n,tensor0[m][n]);
-            }
-        }
+        tensor_mat0->set(tensor0);
         ref_wfn->set_array_variable(tag_tensor0.str(),tensor_mat0);
     }
 
@@ -461,11 +457,7 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
         outfile->Printf("  -------------------------------------------------------------------------\n");
         mat_print(tensor_rr[i], 3, 3, "outfile");
         auto tensor_mat_rr = std::make_shared<Matrix>(3, 3);
-        for (int m = 0; m < 3; m++) {
-            for (int n = 0; n < 3; n++) {
-                tensor_mat_rr->set(m,n,tensor_rr[i][m][n]);
-            }
-        }
+        tensor_mat_rr->set(tensor_rr[i]);
         ref_wfn->set_array_variable(tag_polar.str(),tensor_mat_rr);
 
         if (compute_rl) {
@@ -486,11 +478,7 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
             outfile->Printf("  -------------------------------------------------------------------------\n");
             mat_print(tensor_rl[i], 3, 3, "outfile");
             auto tensor_mat_rl = std::make_shared<Matrix>(3, 3);
-            for (int m = 0; m < 3; m++) {
-                for (int n = 0; n < 3; n++) {
-                    tensor_mat_rl->set(m,n,tensor_rl[i][m][n]);
-                }
-            }
+            tensor_mat_rl->set(tensor_rl[i]);
             ref_wfn->set_array_variable(tag_tensor_rl.str(),tensor_mat_rl);
         }
 
@@ -512,11 +500,7 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
             outfile->Printf("  -------------------------------------------------------------------------\n");
             mat_print(tensor_pl[i], 3, 3, "outfile");
             auto tensor_mat_pl = std::make_shared<Matrix>(3, 3);
-            for (int m = 0; m < 3; m++) {
-                for (int n = 0; n < 3; n++) {
-                    tensor_mat_pl->set(m,n,tensor_pl[i][m][n]);
-                }
-            }
+            tensor_mat_pl->set(tensor_pl[i]);
             ref_wfn->set_array_variable(tag_tensor_pl.str(),tensor_mat_pl);
 
             /* subtract the zero-frequency beta tensor */
@@ -540,11 +524,7 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
             outfile->Printf("  -------------------------------------------------------------------------\n");
             mat_print(tensor_pl[i], 3, 3, "outfile");
             auto tensor_mat_pl2 = std::make_shared<Matrix>(3, 3);
-            for (int m = 0; m < 3; m++) {
-                for (int n = 0; n < 3; n++) {
-                    tensor_mat_pl2->set(m,n,tensor_pl[i][m][n]);
-                }
-            }
+            tensor_mat_pl2->set(tensor_pl[i]);
             ref_wfn->set_array_variable(tag_tensor_pl2.str(),tensor_mat_pl2);
         }
 
@@ -567,15 +547,14 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
                         pc_hartree2wavenumbers * params.omega[i]);
         outfile->Printf("  -------------------------------------------------------------------------\n");
         for (alpha = 0; alpha < 3; alpha++) mat_print(tensor_rQ[i][alpha], 3, 3, "outfile");
-        auto quad_mat = new SharedMatrix[3];
         for (alpha = 0; alpha < 3; alpha++) {
-            quad_mat[alpha] = std::make_shared<Matrix>(3, 3);
+            auto tmp = std::make_shared<Matrix>(3, 3);
             for (int m = 0; m < 3; m++) {
                 for (int n = 0; n < 3; n++) {
-                    quad_mat[alpha]->set(m,n,tensor_rQ[i][alpha][m][n]);
+                    tmp->set(m,n,tensor_rQ[i][alpha][m][n]);
                 }
             }
-            ref_wfn->set_array_variable(tag_quad[alpha].str(),quad_mat[alpha]);
+            ref_wfn->set_array_variable(tag_quad[alpha].str(),tmp);
         }
 
     } /* loop i over nomega */

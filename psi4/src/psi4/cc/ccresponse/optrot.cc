@@ -106,8 +106,7 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
     double *rotation_rl, *rotation_pl, *rotation_rp, *rotation_mod, **delta;
     char lbl1[32], lbl2[32], lbl3[32];
     int compute_rl = 0, compute_pl = 0;
-    std::shared_ptr<Molecule> molecule;
-    molecule = ref_wfn->molecule();
+    auto molecule = ref_wfn->molecule();
 
     /* Booleans for convenience */
     if (params.gauge == "LENGTH" || params.gauge == "BOTH") compute_rl = 1;
@@ -200,11 +199,7 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
         outfile->Printf("  -------------------------------------------------------------------------\n");
         mat_print(tensor0, 3, 3, "outfile");
         auto tensor_mat0 = std::make_shared<Matrix>(3, 3);
-        for (int m = 0; m < 3; m++) {
-            for (int n = 0; n < 3; n++) {
-                tensor_mat0->set(m,n,tensor0[m][n]);
-            }
-        }
+        tensor_mat0->set(tensor0);
         ref_wfn->set_array_variable(tag_tensor0.str(),tensor_mat0);
     }
 
@@ -452,11 +447,7 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
             outfile->Printf("  -------------------------------------------------------------------------\n");
             mat_print(tensor_rl[i], 3, 3, "outfile");
             auto tensor_mat_rl = std::make_shared<Matrix>(3, 3);
-            for (int m = 0; m < 3; m++) {
-                for (int n = 0; n < 3; n++) {
-                    tensor_mat_rl->set(m,n,tensor_rl[i][m][n]);
-                }
-            }
+            tensor_mat_rl->set(tensor_rl[i]);
             ref_wfn->set_array_variable(tag_tensor_rl.str(),tensor_mat_rl);
 
             TrG_rl = -(tensor_rl[i][0][0] + tensor_rl[i][1][1] + tensor_rl[i][2][2]) / (3.0 * params.omega[i]);
@@ -467,7 +458,6 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
 
             if (params.wfn == "CC2") {
                 std::stringstream tag;
-                std::stringstream tag_au;
                 tag << "CC2 SPECIFIC ROTATION (LEN) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_rl[i];
                 ref_wfn->set_scalar_variable(tag.str(),rotation_rl[i]);
@@ -500,11 +490,7 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
             outfile->Printf("  -------------------------------------------------------------------------\n");
             mat_print(tensor_pl[i], 3, 3, "outfile");
             auto tensor_mat_pl = std::make_shared<Matrix>(3, 3);
-            for (int m = 0; m < 3; m++) {
-                for (int n = 0; n < 3; n++) {
-                    tensor_mat_pl->set(m,n,tensor_pl[i][m][n]);
-                }
-            }
+            tensor_mat_pl->set(tensor_pl[i]);
             ref_wfn->set_array_variable(tag_tensor_pl.str(),tensor_mat_pl);
 
             TrG_pl = -(tensor_pl[i][0][0] + tensor_pl[i][1][1] + tensor_pl[i][2][2]) / (3.0 * params.omega[i]);
@@ -547,11 +533,7 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
             outfile->Printf("  -------------------------------------------------------------------------\n");
             mat_print(tensor_pl[i], 3, 3, "outfile");
             auto tensor_mat_pl2 = std::make_shared<Matrix>(3, 3);
-            for (int m = 0; m < 3; m++) {
-                for (int n = 0; n < 3; n++) {
-                    tensor_mat_pl2->set(m,n,tensor_pl[i][m][n]);
-                }
-            }
+            tensor_mat_pl2->set(tensor_pl[i]);
             ref_wfn->set_array_variable(tag_tensor_pl2.str(),tensor_mat_pl2);
 
             /* compute the specific rotation */
