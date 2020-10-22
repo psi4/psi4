@@ -2,8 +2,6 @@ import numpy as np
 import pytest
 import psi4
 
-pytestmark = [pytest.mark.cc]
-
 def test_cc_polaroptrot():
     # cc29 + polarizabilities + tensors
     mol = psi4.geometry("""
