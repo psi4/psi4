@@ -70,7 +70,7 @@ else()
         # tarballs updated
         if (${MAX_AM_ERI} EQUAL 4)
             set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-4-3-3-5-4-4_1.tgz")
-        endif
+        endif()
 
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2 ${_url_am_src}${ColourReset} instead.")
 
