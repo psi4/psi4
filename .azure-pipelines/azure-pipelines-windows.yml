@@ -177,14 +177,15 @@ jobs:
                 -DBUILD_STATIC=ON ^
                 -DBUILD_SHARED=OFF ^
                 -DBUILD_FPIC=ON ^
-                $(Build.SourcesDirectory)
+                $(Build.SourcesDirectory)\export
         displayName: "Configure libint2"
         workingDirectory: $(Build.BinariesDirectory)\export
 
       # Build and install libint2
       - script: |
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
-          cmake --install . ^
+          cmake --build . ^
+                --target install ^
                 --config %CMAKE_BUILD_TYPE% ^
                 -- -j %NUMBER_OF_PROCESSORS%
         displayName: "Build and install libint2"
