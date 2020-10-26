@@ -66,12 +66,6 @@ else()
         endif()
         set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-${_url_am_src}_0.tgz")
 
-        # Testing the updated tarball with Windows memory bug fixed.  This should eventually be removed and the download
-        # tarballs updated
-        if (${MAX_AM_ERI} EQUAL 4)
-            set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-4-3-3-5-4-4_1.tgz")
-        endif()
-
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2 ${_url_am_src}${ColourReset} instead.")
 
         ExternalProject_Add(libint2_external

@@ -150,6 +150,46 @@ jobs:
           echo '##vso[task.setvariable variable=LIB]%LIB%'
         displayName: "Install Intel OpenMP import library"
 
+      # Download libint2
+      - script: |
+          setlocal EnableDelayedExpansion
+          curl -L https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-4-3-3-5-4-4_1.tgz --output l2.tgz
+          tar -xzf l2.tgz
+        displayName: "Download and extract libint2"
+        workingDirectory: $(Build.BinariesDirectory)
+
+      # Configure libint2
+      - script: |
+          setlocal EnableDelayedExpansion
+          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+          mkdir build & cd build
+          cmake -G Ninja ^
+                -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% ^
+                -DCMAKE_INSTALL_PREFIX=../l2install ^
+                -DCMAKE_C_COMPILER=clang-cl ^
+                -DCMAKE_CXX_COMPILER=clang-cl ^
+                -DENABLE_XHOST=!ENABLE_XHOST! ^
+                -DMAX_AM_ERI=!MAX_AM_ERI! ^
+                -DCMAKE_CXX_FLAGS_RELEASE=“/MD /Od /DNDEBUG” ^
+                -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
+                -DEigen_ROOT="C:/tools/miniconda3/Library" ^
+                -DLIBINT2_SHGAUSS_ORDERING=gaussian ^
+                -DBUILD_STATIC=ON ^
+                -DBUILD_SHARED=OFF ^
+                -DBUILD_FPIC=ON ^
+                $(Build.SourcesDirectory)
+        displayName: "Configure libint2"
+        workingDirectory: $(Build.BinariesDirectory)\export
+
+      # Build and install libint2
+      - script: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+          cmake --install . ^
+                --config %CMAKE_BUILD_TYPE% ^
+                -- -j %NUMBER_OF_PROCESSORS%
+        displayName: "Build and install libint2"
+        workingDirectory: $(Build.BinariesDirectory)\export\build
+
       # Configure
       - script: |
           setlocal EnableDelayedExpansion
@@ -171,6 +211,7 @@ jobs:
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
                 -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
                 -DEigen_ROOT="C:/tools/miniconda3/Library" ^
+                -DLibint2_DIR=$(Build.BinariesDirectory)\l2install ^
                 -DBUILD_Libint2_GENERATOR=OFF ^
                 $(Build.SourcesDirectory)
         displayName: "Configure Psi4"
