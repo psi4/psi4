@@ -154,9 +154,7 @@ jobs:
       - script: |
           setlocal EnableDelayedExpansion
           curl -L https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-4-3-3-5-4-4_1.tgz --output l2.tgz
-          dir
           tar -xzf l2.tgz
-          dir
         displayName: "Download and extract libint2"
         workingDirectory: $(Build.BinariesDirectory)
 
@@ -164,9 +162,6 @@ jobs:
       - script: |
           setlocal EnableDelayedExpansion
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
-          cd
-          cd $(Build.BinariesDirectory)\export
-          cd
           mkdir build & cd build
           cmake -G Ninja ^
                 -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% ^
@@ -182,14 +177,14 @@ jobs:
                 -DBUILD_STATIC=ON ^
                 -DBUILD_SHARED=OFF ^
                 -DBUILD_FPIC=ON ^
-                $(Build.SourcesDirectory)\export
+                ..
         displayName: "Configure libint2"
         workingDirectory: $(Build.BinariesDirectory)\export
 
       # Build and install libint2
       - script: |
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
-          cmake --build $(Build.BinariesDirectory)\export\build ^
+          cmake --build . ^
                 --target install ^
                 --config %CMAKE_BUILD_TYPE% ^
                 -- -j %NUMBER_OF_PROCESSORS%
