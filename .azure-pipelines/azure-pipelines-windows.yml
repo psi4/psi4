@@ -154,7 +154,9 @@ jobs:
       - script: |
           setlocal EnableDelayedExpansion
           curl -L https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-4-3-3-5-4-4_1.tgz --output l2.tgz
+          dir
           tar -xzf l2.tgz
+          dir
         displayName: "Download and extract libint2"
         workingDirectory: $(Build.BinariesDirectory)
 
