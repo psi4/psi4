@@ -170,7 +170,7 @@ jobs:
                 -DCMAKE_CXX_COMPILER=clang-cl ^
                 -DENABLE_XHOST=!ENABLE_XHOST! ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
-                -DCMAKE_CXX_FLAGS_RELEASE=“/MD /Od /DNDEBUG” ^
+                -DCMAKE_CXX_FLAGS_RELEASE="/MD /Od /DNDEBUG" ^
                 -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
                 -DEigen_ROOT="C:/tools/miniconda3/Library" ^
                 -DLIBINT2_SHGAUSS_ORDERING=gaussian ^
