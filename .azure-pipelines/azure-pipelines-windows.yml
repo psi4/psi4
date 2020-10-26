@@ -165,7 +165,7 @@ jobs:
           mkdir build & cd build
           cmake -G Ninja ^
                 -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% ^
-                -DCMAKE_INSTALL_PREFIX=../l2install ^
+                -DCMAKE_INSTALL_PREFIX=..\..\l2install ^
                 -DCMAKE_C_COMPILER=clang-cl ^
                 -DCMAKE_CXX_COMPILER=clang-cl ^
                 -DENABLE_XHOST=!ENABLE_XHOST! ^
@@ -212,7 +212,7 @@ jobs:
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
                 -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
                 -DEigen_ROOT="C:/tools/miniconda3/Library" ^
-                -DLibint2_DIR=$(Build.BinariesDirectory)\l2install ^
+                -DLibint2_DIR=$(Build.BinariesDirectory)\l2install\share\cmake\Libint2 ^
                 -DBUILD_Libint2_GENERATOR=OFF ^
                 $(Build.SourcesDirectory)
         displayName: "Configure Psi4"
