@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Sunday, 25 October 2020 05:13PM
+    Psi4 started on: Tuesday, 27 October 2020 03:19PM
 
-    Process ID: 91691
+    Process ID: 60663
     Host:       Mash.local
     PSIDATADIR: /Users/mash/installed/psi4/share/psi4
     Memory:     500.0 MiB
@@ -145,14 +145,13 @@ with warnings.catch_warnings():
 
     # Checking that the wfn.Da/Db have been set by ccdensity
     oeprop(wfn,"DIPOLE", "QUADRUPOLE", title="CCDENSITY-SET-WFN-TEST EOM-CC2")
-    print(psi4.variables())
     for tag,refval in gs_refs.items():
         oeprop_val = psi4.variable("CCDENSITY-SET-WFN-TEST {}".format(tag))
         compare_values(oeprop_val,refval,4,"CCDENSITY-SET-WFN-TEST {}".format(tag))   #TEST
 --------------------------------------------------------------------------
 
 *** tstart() called on Mash.local
-*** at Sun Oct 25 17:13:23 2020
+*** at Tue Oct 27 15:19:57 2020
 
    => Loading Basis Set <=
 
@@ -342,14 +341,14 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     3.0690     Total:     3.0690
 
 
-*** tstop() called on Mash.local at Sun Oct 25 17:13:24 2020
+*** tstop() called on Mash.local at Tue Oct 27 15:19:58 2020
 Module time:
-	user time   =       0.44 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.45 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.44 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.45 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -376,7 +375,7 @@ Total time:
 
 
 *** tstart() called on Mash.local
-*** at Sun Oct 25 17:13:24 2020
+*** at Tue Oct 27 15:19:58 2020
 
 
 	Wfn Parameters:
@@ -455,14 +454,14 @@ Total time:
 	Two-electron energy          =     45.23861563750454
 	Reference energy             =   -150.77918387213020
 
-*** tstop() called on Mash.local at Sun Oct 25 17:13:24 2020
+*** tstop() called on Mash.local at Tue Oct 27 15:19:58 2020
 Module time:
 	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	system time =       0.10 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.56 seconds =       0.01 minutes
-	system time =       0.10 seconds =       0.00 minutes
+	user time   =       0.57 seconds =       0.01 minutes
+	system time =       0.12 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
             **************************
             *                        *
@@ -1894,7 +1893,7 @@ Properties computed using the CCDENSITY-SET-WFN-TEST EOM-CC2 density matrix
     CCDENSITY-SET-WFN-TEST EOM-CC2 DIPOLE.................................................PASSED
     CCDENSITY-SET-WFN-TEST EOM-CC2 QUADRUPOLE.............................................PASSED
 
-    Psi4 stopped on: Sunday, 25 October 2020 05:13PM
-    Psi4 wall time for execution: 0:00:02.79
+    Psi4 stopped on: Tuesday, 27 October 2020 03:20PM
+    Psi4 wall time for execution: 0:00:03.00
 
 *** Psi4 exiting successfully. Buy a developer a beer!

@@ -102,7 +102,6 @@ with warnings.catch_warnings():
 
     # Checking that the wfn.Da/Db have been set by ccdensity
     oeprop(wfn,"DIPOLE", "QUADRUPOLE", title="CCDENSITY-SET-WFN-TEST EOM-CC2")
-    print(psi4.variables())
     for tag,refval in gs_refs.items():
         oeprop_val = psi4.variable("CCDENSITY-SET-WFN-TEST {}".format(tag))
         compare_values(oeprop_val,refval,4,"CCDENSITY-SET-WFN-TEST {}".format(tag))   #TEST
