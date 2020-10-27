@@ -247,7 +247,7 @@ def _check_rank_degen_modes(arr, freq, ref, difftol, svdtol, verbose=1):
 
         rank_cvecs = np.linalg.matrix_rank(cvecs)
         rank_evecs = np.linalg.matrix_rank(evecs)
-        CE = np.linalg.svd(cevecs, compute_uv=False, hermitian=False)
+        CE = np.linalg.svd(cevecs, compute_uv=False)  # hermitian=False
         rank_cevecs = np.count_nonzero(CE > svdtol, axis=-1)
         # expected normal coordinates and computed normal coordinates span the same space
         ranks_ok = rank_cvecs == rank_evecs == rank_cevecs
