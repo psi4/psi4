@@ -80,7 +80,7 @@ class PSI_API PsiException : public std::runtime_error {
     PsiException &operator=(const PsiException &other) {
         if (this != &other) {
             msg_ = other.msg_;
-            file_ = strdup(other.file_);
+            file_ = _strdup(other.file_);
             line_ = other.line_;
         }
         return *this;
