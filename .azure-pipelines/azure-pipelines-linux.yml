@@ -103,7 +103,6 @@ jobs:
         networkx \
         pytest \
         eigen \
-        boost \
         mpfr \
         pytest-xdist \
         conda-forge::qcelemental \
