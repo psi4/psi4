@@ -10,9 +10,6 @@ jobs:
       llvm.version: '7.0.1' # Note: LLVM 8.0.0 fails to build the optimized libint
       mkl.version: '2019.1'
       cmake.build_type: 'Release'
-      # Note: libint2 is missing a copy constructor in the custom allocator. With debug builds this results in problems, c.f.
-      # https://stackoverflow.com/questions/31498391/confirm-this-standard-library-bug-relating-to-allocators-in-msvc-2015-rc
-      # https://social.msdn.microsoft.com/Forums/en-US/e748419c-c046-43fc-90ee-4738f12501ef/vs2008-to-vs2010-breack-change-on-custom-memory-allocator?forum=vcgeneral
     steps:
 
       # Check Python
@@ -102,7 +99,6 @@ jobs:
       - script: |
           conda config --set always_yes yes
           conda config --append channels conda-forge
-          conda config --append channels psi4
           conda info
         displayName: "Configure Miniconda"
 
@@ -112,15 +108,12 @@ jobs:
       - script: |
           conda install cmake ^
                         conda-build ^
+                        conda-forge::eigen ^
                         conda-verify ^
                         intel-openmp=%MKL_VERSION% ^
                         mkl-devel=%MKL_VERSION% ^
-                        mpmath ^
                         networkx ^
                         ninja ^
-                        conda-forge::eigen ^
-                        boost ^
-                        conda-forge::mpfr ^
                         numpy ^
                         pint ^
                         pybind11 ^
@@ -128,8 +121,11 @@ jobs:
                         pytest ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
-                        qcelemental ^
-                        qcengine
+                        psi4/label/dev::libint2 ^
+                        conda-forge::mpfr ^
+                        conda-forge::mpmath ^
+                        conda-forge::qcelemental ^
+                        conda-forge::qcengine
           pip install git+https://github.com/i-pi/i-pi.git@master-py3
           conda list
         displayName: "Install conda packages"
@@ -150,55 +146,54 @@ jobs:
           echo '##vso[task.setvariable variable=LIB]%LIB%'
         displayName: "Install Intel OpenMP import library"
 
-      # Download libint2
-      - script: |
-          setlocal EnableDelayedExpansion
-          curl -L https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-4-3-3-5-4-4_1.tgz --output l2.tgz
-          tar -xzf l2.tgz
-        displayName: "Download and extract libint2"
-        workingDirectory: $(Build.BinariesDirectory)
+      #### Download libint2
+      ###- script: |
+      ###    setlocal EnableDelayedExpansion
+      ###    curl -L https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-4-3-3-5-4-4_1.tgz --output l2.tgz
+      ###    tar -xzf l2.tgz
+      ###  displayName: "Download and extract libint2"
+      ###  workingDirectory: $(Build.BinariesDirectory)
 
-      # Configure libint2
-      - script: |
-          setlocal EnableDelayedExpansion
-          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
-          mkdir build & cd build
-          cmake -G Ninja ^
-                -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% ^
-                -DCMAKE_INSTALL_PREFIX=..\..\l2install ^
-                -DCMAKE_C_COMPILER=clang-cl ^
-                -DCMAKE_CXX_COMPILER=clang-cl ^
-                -DENABLE_XHOST=!ENABLE_XHOST! ^
-                -DMAX_AM_ERI=!MAX_AM_ERI! ^
-                -DCMAKE_CXX_FLAGS_RELEASE="/MD /Od /DNDEBUG" ^
-                -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
-                -DEigen_ROOT="C:/tools/miniconda3/Library" ^
-                -DLIBINT2_SHGAUSS_ORDERING=gaussian ^
-                -DBUILD_STATIC=ON ^
-                -DBUILD_SHARED=OFF ^
-                -DBUILD_FPIC=ON ^
-                ..
-        displayName: "Configure libint2"
-        workingDirectory: $(Build.BinariesDirectory)\export
+      #### Configure libint2
+      ###- script: |
+      ###    setlocal EnableDelayedExpansion
+      ###    call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+      ###    mkdir build & cd build
+      ###    cmake -G Ninja ^
+      ###          -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% ^
+      ###          -DCMAKE_INSTALL_PREFIX=..\..\l2install ^
+      ###          -DCMAKE_C_COMPILER=clang-cl ^
+      ###          -DCMAKE_CXX_COMPILER=clang-cl ^
+      ###          -DENABLE_XHOST=!ENABLE_XHOST! ^
+      ###          -DMAX_AM_ERI=!MAX_AM_ERI! ^
+      ###          -DCMAKE_CXX_FLAGS_RELEASE="/MD /Od /DNDEBUG" ^
+      ###          -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
+      ###          -DEigen_ROOT="C:/tools/miniconda3/Library" ^
+      ###          -DLIBINT2_SHGAUSS_ORDERING=gaussian ^
+      ###          -DBUILD_STATIC=ON ^
+      ###          -DBUILD_SHARED=OFF ^
+      ###          -DBUILD_FPIC=ON ^
+      ###          ..
+      ###  displayName: "Configure libint2"
+      ###  workingDirectory: $(Build.BinariesDirectory)\export
 
-      # Build and install libint2
-      - script: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
-          cmake --build . ^
-                --target install ^
-                --config %CMAKE_BUILD_TYPE% ^
-                -- -j %NUMBER_OF_PROCESSORS%
-        displayName: "Build and install libint2"
-        workingDirectory: $(Build.BinariesDirectory)\export\build
+      #### Build and install libint2
+      ###- script: |
+      ###    call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+      ###    cmake --build . ^
+      ###          --target install ^
+      ###          --config %CMAKE_BUILD_TYPE% ^
+      ###          -- -j %NUMBER_OF_PROCESSORS%
+      ###  displayName: "Build and install libint2"
+      ###  workingDirectory: $(Build.BinariesDirectory)\export\build
 
       # Configure
       - script: |
           setlocal EnableDelayedExpansion
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
           mkdir build & cd build
-          if "%CMAKE_BUILD_TYPE%"=="Debug" set MAX_AM_ERI=6
-          if "%CMAKE_BUILD_TYPE%"=="Release" set MAX_AM_ERI=8
-          set MAX_AM_ERI=4
+          if "%CMAKE_BUILD_TYPE%"=="Debug" set MAX_AM_ERI=4
+          if "%CMAKE_BUILD_TYPE%"=="Release" set MAX_AM_ERI=5
           if not defined MAX_AM_ERI exit 1
           if "%CMAKE_BUILD_TYPE%"=="Debug" set ENABLE_XHOST=OFF
           if "%CMAKE_BUILD_TYPE%"=="Release" set ENABLE_XHOST=ON
@@ -212,7 +207,6 @@ jobs:
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
                 -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
                 -DEigen_ROOT="C:/tools/miniconda3/Library" ^
-                -DLibint2_DIR=$(Build.BinariesDirectory)\l2install\share\cmake\Libint2 ^
                 -DBUILD_Libint2_GENERATOR=OFF ^
                 $(Build.SourcesDirectory)
         displayName: "Configure Psi4"
