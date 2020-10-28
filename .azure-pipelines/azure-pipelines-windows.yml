@@ -106,7 +106,8 @@ jobs:
       # Note: conda activate doesn't work here, because it creates a new shell!
       # Note: c-f eigen has Config.cmake file
       - script: |
-          conda install cmake ^
+          conda install boost ^
+                        cmake ^
                         conda-build ^
                         conda-forge::eigen ^
                         conda-verify ^
