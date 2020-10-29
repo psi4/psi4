@@ -81,7 +81,7 @@ class CppeInterface:
     def __init__(self, molecule, options, basisset):
         # verify that the minimal version is used if CPPE is provided
         # from outside the Psi4 ecosystem
-        min_version = "0.2.0"
+        min_version = "0.3.1"
         if parse_version(cppe.__version__) < parse_version(min_version):
             raise ModuleNotFoundError("CPPE version {} is required at least. "
                                       "Version {}"
@@ -113,7 +113,6 @@ class CppeInterface:
         self.V_es = None
         if self.pe_ecp:
             self._setup_pe_ecp()
-
 
     def _setup_pe_ecp(self):    
         mol_clone = self.molecule.clone()
