@@ -62,6 +62,8 @@ def get_pe_options():
         "border_nredist": core.get_option('PE', 'BORDER_N_REDIST'),
         "border_redist_order": core.get_option('PE', 'BORDER_REDIST_ORDER'),
         "border_redist_pol": core.get_option('PE', 'BORDER_REDIST_POL'),
+        # PE(ECP)
+        "pe_ecp": core.get_option('PE', 'PE_ECP'),
     }
     return pol_embed_options
 
@@ -88,6 +90,7 @@ class CppeInterface:
         # setup the initial CppeState
         self.molecule = molecule
         self.options = options
+        self.pe_ecp = self.options.pop("pe_ecp", False)
         self.basisset = basisset
         self.mints = core.MintsHelper(self.basisset)
 
@@ -96,6 +99,7 @@ class CppeInterface:
 
         self.cppe_state = cppe.CppeState(self.options, psi4mol_to_cppemol(self.molecule), callback)
         core.print_out("CPPE Options:\n")
+        core.print_out(f"PE(ECP) repulsive potentials = {self.pe_ecp}\n")
         for k in cppe.valid_option_keys:
             core.print_out(f"{k} = {self.cppe_state.options[k]}\n")
         core.print_out("-------------------------\n\n")
@@ -107,7 +111,11 @@ class CppeInterface:
             coords = self.cppe_state.positions_polarizable
             self.polarizable_coords = core.Matrix.from_array(coords)
         self.V_es = None
+        if self.pe_ecp:
+            self._setup_pe_ecp()
 
+
+    def _setup_pe_ecp(self):    
         mol_clone = self.molecule.clone()
         geom, _, elems, _, _ = mol_clone.to_arrays()
         n_qmatoms = len(elems)
@@ -123,15 +131,19 @@ class CppeInterface:
             fix_com=True, fix_orientation=True, fix_symmetry="c1"
         )
         n_qmmmatoms = len(elems)
-        def basisspec_pe_ecp(mol, role):
+
+        def __basisspec_pe_ecp(mol, role):
             global_basis = core.get_global_option("BASIS")
             for i in range(n_qmatoms):
                 mol.set_basis_by_number(i, global_basis, role=role)
             for i in range(n_qmatoms, n_qmmmatoms):
                 mol.set_basis_by_number(i, "pe_ecp", role=role)
             return {}
-        libmintsbasisset.basishorde["CRAZY_PE_ECP"] = basisspec_pe_ecp
-        self.pe_ecp_bas = core.BasisSet.build(qmmm_mol, "BASIS", "CRAZY_PE_ECP")
+
+        libmintsbasisset.basishorde["PE_ECP_BASIS"] = __basisspec_pe_ecp
+        self.pe_ecp_basis = core.BasisSet.build(qmmm_mol, "BASIS", "PE_ECP_BASIS")
+        ecp_mints = core.MintsHelper(self.pe_ecp_basis)
+        self.V_pe_ecp = ecp_mints.ao_ecp().np
 
 
     def get_pe_contribution(self, density_matrix, elec_only=False):
@@ -155,12 +167,13 @@ class CppeInterface:
         if elec_only:
             E_pe = self.cppe_state.energies["Polarization"]["Electronic"]
         else:
-            ecp_mints = core.MintsHelper(self.pe_ecp_bas)
-            self.V_ecp = ecp_mints.ao_ecp().np
             e_el = np.sum(density_matrix.np * self.V_es)
-            E_ecp = np.sum(density_matrix.np * self.V_ecp)
             self.cppe_state.energies["Electrostatic"]["Electronic"] = e_el
-            V_pe += self.V_es + self.V_ecp
+            V_pe += self.V_es
+            E_ecp = 0.0
+            if self.pe_ecp:
+                E_ecp = np.sum(density_matrix.np * self.V_pe_ecp)
+                V_pe += self.V_pe_ecp
             E_pe = self.cppe_state.total_energy + E_ecp
         return E_pe, core.Matrix.from_array(V_pe)
 

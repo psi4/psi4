@@ -328,6 +328,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("BORDER_N_REDIST", -1);
         /*- redistribute polarizabilities? If false, polarizabilities are removed (default) -*/
         options.add_bool("BORDER_REDIST_POL", false);
+
+        /*- use PE(ECP) repulsive potentials -*/
+        options.add_bool("PE_ECP", false);
     }
 
     if (name == "DETCI" || options.read_globals()) {
