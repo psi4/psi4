@@ -306,9 +306,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Summation scheme for field computations, can be direct or fmm -*/
         options.add_str_i("SUMMATION_FIELDS", "DIRECT", "DIRECT FMM");
         /*- Expansion order of the multipoles for FMM -*/
-        options.add_int("TREE_EXPANSION_ORDER", 7);
+        options.add_int("TREE_EXPANSION_ORDER", 5);
         /*- Opening angle theta -*/
-        options.add_double("TREE_THETA", 0.3);
+        options.add_double("TREE_THETA", 0.5);
 
         /*- Activate border options for sites in proximity to the QM/MM border -*/
         options.add_bool("BORDER", false);

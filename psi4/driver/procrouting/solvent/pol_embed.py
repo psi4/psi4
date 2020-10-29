@@ -32,6 +32,7 @@ from qcelemental import constants
 from pkg_resources import parse_version
 
 from psi4 import core
+from psi4.driver.qcdb import libmintsbasisset
 from psi4.driver.p4util.exceptions import ValidationError
 
 
@@ -91,7 +92,7 @@ class CppeInterface:
         self.mints = core.MintsHelper(self.basisset)
 
         def callback(output):
-            core.print_out("{}\n".format(output))
+            core.print_out(f"{output}\n")
 
         self.cppe_state = cppe.CppeState(self.options, psi4mol_to_cppemol(self.molecule), callback)
         core.print_out("CPPE Options:\n")
@@ -106,6 +107,32 @@ class CppeInterface:
             coords = self.cppe_state.positions_polarizable
             self.polarizable_coords = core.Matrix.from_array(coords)
         self.V_es = None
+
+        mol_clone = self.molecule.clone()
+        geom, _, elems, _, _ = mol_clone.to_arrays()
+        n_qmatoms = len(elems)
+        geom = geom.tolist()
+        elems = elems.tolist()
+        for p in self.cppe_state.potentials:
+            if p.element == "X":
+                continue
+            elems.append(f"{p.element}_pe")
+            geom.append([p.x, p.y, p.z])
+        qmmm_mol = core.Molecule.from_arrays(
+            geom=geom, elbl=elems, units="Bohr",
+            fix_com=True, fix_orientation=True, fix_symmetry="c1"
+        )
+        n_qmmmatoms = len(elems)
+        def basisspec_pe_ecp(mol, role):
+            global_basis = core.get_global_option("BASIS")
+            for i in range(n_qmatoms):
+                mol.set_basis_by_number(i, global_basis, role=role)
+            for i in range(n_qmatoms, n_qmmmatoms):
+                mol.set_basis_by_number(i, "pe_ecp", role=role)
+            return {}
+        libmintsbasisset.basishorde["CRAZY_PE_ECP"] = basisspec_pe_ecp
+        self.pe_ecp_bas = core.BasisSet.build(qmmm_mol, "BASIS", "CRAZY_PE_ECP")
+
 
     def get_pe_contribution(self, density_matrix, elec_only=False):
         # build electrostatics operator
@@ -128,15 +155,19 @@ class CppeInterface:
         if elec_only:
             E_pe = self.cppe_state.energies["Polarization"]["Electronic"]
         else:
+            ecp_mints = core.MintsHelper(self.pe_ecp_bas)
+            self.V_ecp = ecp_mints.ao_ecp().np
             e_el = np.sum(density_matrix.np * self.V_es)
+            E_ecp = np.sum(density_matrix.np * self.V_ecp)
             self.cppe_state.energies["Electrostatic"]["Electronic"] = e_el
-            V_pe += self.V_es
-            E_pe = self.cppe_state.total_energy
+            V_pe += self.V_es + self.V_ecp
+            E_pe = self.cppe_state.total_energy + E_ecp
         return E_pe, core.Matrix.from_array(V_pe)
 
     def build_electrostatics_operator(self):
         n_bas = self.basisset.nbf()
         self.V_es = np.zeros((n_bas, n_bas))
+        # TODO: run this in one go...
         for site in self.cppe_state.potentials:
             prefactors = []
             for multipole in site.multipoles:
