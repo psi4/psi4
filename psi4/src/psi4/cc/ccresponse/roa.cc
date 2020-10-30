@@ -40,9 +40,12 @@
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include <cmath>
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/physconst.h"
 #include "MOInfo.h"
 #include "Params.h"
@@ -58,7 +61,7 @@ void compute_X(const char *pert, int irrep, double omega);
 void linresp(double *tensor, double A, double B, const char *pert_x, int x_irrep, double omega_x, const char *pert_y,
              int y_irrep, double omega_y);
 
-void roa() {
+void roa(std::shared_ptr<Wavefunction> ref_wfn) {
     double ***tensor_rl, ***tensor_pl, **tensor0, ***tensor_rr;
     double ****tensor_rQ, ***tensor_rQ0, ***tensor_rQ1;
     double **tensor_rl0, **tensor_rl1, **tensor_pl0, **tensor_pl1;
@@ -73,6 +76,9 @@ void roa() {
     /* Booleans for convenience */
     if (params.gauge == "LENGTH" || params.gauge == "BOTH") compute_rl = 1;
     if (params.gauge == "VELOCITY" || params.gauge == "BOTH") compute_pl = 1;
+
+    /* grab omega in nm, rounded to nearest int */
+    long om_nm = std::lround((pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]));
 
     cartcomp = (char **)malloc(3 * sizeof(char *));
     cartcomp[0] = strdup("X");
@@ -139,15 +145,23 @@ void roa() {
             psio_read_entry(PSIF_CC_INFO, lbl1, (char *)tensor0[0], 9 * sizeof(double));
         }
 
-        if (params.wfn == "CC2")
+        std::stringstream tag_tensor0;
+        if (params.wfn == "CC2") {
             outfile->Printf("\n     CC2 Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
-        else if (params.wfn == "CCSD")
+            tag_tensor0 << "CC2 OPTICAL ROTATION TENSOR (VEL) @ 0NM";
+        }
+        else if (params.wfn == "CCSD") {
             outfile->Printf("\n    CCSD Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
+            tag_tensor0 << "CCSD OPTICAL ROTATION TENSOR (VEL) @ 0NM";
+        }
 
         outfile->Printf("  -------------------------------------------------------------------------\n");
         outfile->Printf("   Evaluated at omega = 0.00 E_h (Inf nm, 0.0 eV, 0.0 cm-1)\n");
         outfile->Printf("  -------------------------------------------------------------------------\n");
         mat_print(tensor0, 3, 3, "outfile");
+        auto tensor_mat0 = std::make_shared<Matrix>(3, 3);
+        tensor_mat0->set(tensor0);
+        ref_wfn->set_array_variable(tag_tensor0.str(),tensor_mat0);
     }
 
     for (i = 0; i < params.nomega; i++) {
@@ -426,23 +440,36 @@ void roa() {
                 }
             }
 
-        if (params.wfn == "CC2")
+        std::stringstream tag_polar;
+        if (params.wfn == "CC2") {
             outfile->Printf("\n                 CC2 Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
-        else
+            tag_polar << "CC2 DIPOLE POLARIZABILITY TENSOR @ " << om_nm << "NM";
+        }
+        else {
             outfile->Printf("\n                 CCSD Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
         outfile->Printf("  -------------------------------------------------------------------------\n");
+            tag_polar << "CCSD DIPOLE POLARIZABILITY TENSOR @ " << om_nm << "NM";
+        }
 
         outfile->Printf("   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
                         (pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]), pc_hartree2ev * params.omega[i],
                         pc_hartree2wavenumbers * params.omega[i]);
         outfile->Printf("  -------------------------------------------------------------------------\n");
         mat_print(tensor_rr[i], 3, 3, "outfile");
+        auto tensor_mat_rr = std::make_shared<Matrix>(3, 3);
+        tensor_mat_rr->set(tensor_rr[i]);
+        ref_wfn->set_array_variable(tag_polar.str(),tensor_mat_rr);
 
         if (compute_rl) {
-            if (params.wfn == "CC2")
+            std::stringstream tag_tensor_rl;
+            if (params.wfn == "CC2") {
                 outfile->Printf("\n            CC2 Optical Rotation Tensor (Length Gauge):\n");
-            else if (params.wfn == "CCSD")
+                tag_tensor_rl << "CC2 OPTICAL ROTATION TENSOR (LEN) @ " << om_nm << "NM";
+            }
+            else if (params.wfn == "CCSD") {
                 outfile->Printf("\n           CCSD Optical Rotation Tensor (Length Gauge):\n");
+                tag_tensor_rl << "CCSD OPTICAL ROTATION TENSOR (LEN) @ " << om_nm << "NM";
+            }
 
             outfile->Printf("  -------------------------------------------------------------------------\n");
             outfile->Printf("   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
@@ -450,13 +477,21 @@ void roa() {
                             pc_hartree2wavenumbers * params.omega[i]);
             outfile->Printf("  -------------------------------------------------------------------------\n");
             mat_print(tensor_rl[i], 3, 3, "outfile");
+            auto tensor_mat_rl = std::make_shared<Matrix>(3, 3);
+            tensor_mat_rl->set(tensor_rl[i]);
+            ref_wfn->set_array_variable(tag_tensor_rl.str(),tensor_mat_rl);
         }
 
         if (compute_pl) {
-            if (params.wfn == "CC2")
+            std::stringstream tag_tensor_pl;
+            if (params.wfn == "CC2") {
                 outfile->Printf("\n          CC2 Optical Rotation Tensor (Velocity Gauge):\n");
-            else if (params.wfn == "CCSD")
+                tag_tensor_pl << "CC2 OPTICAL ROTATION TENSOR (VEL) @ " << om_nm << "NM";
+            }
+            else if (params.wfn == "CCSD") {
                 outfile->Printf("\n         CCSD Optical Rotation Tensor (Velocity Gauge):\n");
+                tag_tensor_pl << "CCSD OPTICAL ROTATION TENSOR (VEL) @ " << om_nm << "NM";
+            }
 
             outfile->Printf("  -------------------------------------------------------------------------\n");
             outfile->Printf("   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
@@ -464,15 +499,23 @@ void roa() {
                             pc_hartree2wavenumbers * params.omega[i]);
             outfile->Printf("  -------------------------------------------------------------------------\n");
             mat_print(tensor_pl[i], 3, 3, "outfile");
+            auto tensor_mat_pl = std::make_shared<Matrix>(3, 3);
+            tensor_mat_pl->set(tensor_pl[i]);
+            ref_wfn->set_array_variable(tag_tensor_pl.str(),tensor_mat_pl);
 
             /* subtract the zero-frequency beta tensor */
             for (j = 0; j < 3; j++)
                 for (k = 0; k < 3; k++) tensor_pl[i][j][k] -= tensor0[j][k];
 
-            if (params.wfn == "CC2")
+            std::stringstream tag_tensor_pl2;
+            if (params.wfn == "CC2") {
                 outfile->Printf("\n        CC2 Optical Rotation Tensor (Modified Velocity Gauge):\n");
-            else if (params.wfn == "CCSD")
+                tag_tensor_pl2 << "CC2 OPTICAL ROTATION TENSOR (MVG) @ " << om_nm << "NM";
+            }
+            else if (params.wfn == "CCSD") {
                 outfile->Printf("\n        CCSD Optical Rotation Tensor (Modified Velocity Gauge):\n");
+                tag_tensor_pl2 << "CCSD OPTICAL ROTATION TENSOR (MVG) @ " << om_nm << "NM";
+            }
 
             outfile->Printf("  -------------------------------------------------------------------------\n");
             outfile->Printf("   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
@@ -480,18 +523,39 @@ void roa() {
                             pc_hartree2wavenumbers * params.omega[i]);
             outfile->Printf("  -------------------------------------------------------------------------\n");
             mat_print(tensor_pl[i], 3, 3, "outfile");
+            auto tensor_mat_pl2 = std::make_shared<Matrix>(3, 3);
+            tensor_mat_pl2->set(tensor_pl[i]);
+            ref_wfn->set_array_variable(tag_tensor_pl2.str(),tensor_mat_pl2);
         }
 
-        if (params.wfn == "CC2")
+        std::stringstream* tag_quad = new std::stringstream[3];
+        if (params.wfn == "CC2") {
             outfile->Printf("\n    CC2 Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");
-        else
+            tag_quad[0] << "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 0 @ " << om_nm << "NM";
+            tag_quad[1] << "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 1 @ " << om_nm << "NM";
+            tag_quad[2] << "CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 2 @ " << om_nm << "NM";
+        }
+        else {
             outfile->Printf("\n    CCSD Electric-Dipole/Quadrupole Polarizability [(e^2 a0^2)/E_h]:\n");
+            tag_quad[0] << "CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 0 @ " << om_nm << "NM";
+            tag_quad[1] << "CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 1 @ " << om_nm << "NM";
+            tag_quad[2] << "CCSD QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 2 @ " << om_nm << "NM";
+        }
         outfile->Printf("  -------------------------------------------------------------------------\n");
         outfile->Printf("   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
                         (pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]), pc_hartree2ev * params.omega[i],
                         pc_hartree2wavenumbers * params.omega[i]);
         outfile->Printf("  -------------------------------------------------------------------------\n");
         for (alpha = 0; alpha < 3; alpha++) mat_print(tensor_rQ[i][alpha], 3, 3, "outfile");
+        for (alpha = 0; alpha < 3; alpha++) {
+            auto tmp = std::make_shared<Matrix>(3, 3);
+            for (int m = 0; m < 3; m++) {
+                for (int n = 0; n < 3; n++) {
+                    tmp->set(m,n,tensor_rQ[i][alpha][m][n]);
+                }
+            }
+            ref_wfn->set_array_variable(tag_quad[alpha].str(),tmp);
+        }
 
     } /* loop i over nomega */
 

@@ -78,6 +78,7 @@
 #include "psi4/libpsio/psio.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libmints/wavefunction.h"
 #include "psi4/psi4-dec.h"
 
 #include "MOInfo.h"
@@ -86,6 +87,7 @@
 #define EXTERN
 #include "globals.h"
 #include "psi4/physconst.h"
+#include "psi4/libmints/matrix.h"
 
 namespace psi {
 namespace ccresponse {
@@ -95,7 +97,7 @@ void compute_X(const char *pert, int irrep, double omega);
 void linresp(double *tensor, double A, double B, const char *pert_x, int x_irrep, double omega_x, const char *pert_y,
              int y_irrep, double omega_y);
 
-void optrot(std::shared_ptr<Molecule> molecule) {
+void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
     double ***tensor_rl, ***tensor_pl, ***tensor_rp, **tensor0;
     double **tensor_rl0, **tensor_rl1, **tensor_pl0, **tensor_pl1;
     char **cartcomp, pert[32], pert_x[32], pert_y[32];
@@ -104,6 +106,7 @@ void optrot(std::shared_ptr<Molecule> molecule) {
     double *rotation_rl, *rotation_pl, *rotation_rp, *rotation_mod, **delta;
     char lbl1[32], lbl2[32], lbl3[32];
     int compute_rl = 0, compute_pl = 0;
+    auto molecule = ref_wfn->molecule();
 
     /* Booleans for convenience */
     if (params.gauge == "LENGTH" || params.gauge == "BOTH") compute_rl = 1;
@@ -181,15 +184,23 @@ void optrot(std::shared_ptr<Molecule> molecule) {
             psio_read_entry(PSIF_CC_INFO, lbl1, (char *)tensor0[0], 9 * sizeof(double));
         }
 
-        if (params.wfn == "CC2")
+        std::stringstream tag_tensor0;
+        if (params.wfn == "CC2") {
             outfile->Printf("\n     CC2 Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
-        else if (params.wfn == "CCSD")
+            tag_tensor0 << "CC2 OPTICAL ROTATION TENSOR (VEL) @ 0NM";
+        }
+        else if (params.wfn == "CCSD") {
             outfile->Printf("\n    CCSD Optical Rotation Tensor (Velocity Gauge): %s\n", lbl1);
+            tag_tensor0 << "CCSD OPTICAL ROTATION TENSOR (VEL) @ 0NM";
+        }
 
         outfile->Printf("  -------------------------------------------------------------------------\n");
         outfile->Printf("   Evaluated at omega = 0.00 E_h (Inf nm, 0.0 eV, 0.0 cm-1)\n");
         outfile->Printf("  -------------------------------------------------------------------------\n");
         mat_print(tensor0, 3, 3, "outfile");
+        auto tensor_mat0 = std::make_shared<Matrix>(3, 3);
+        tensor_mat0->set(tensor0);
+        ref_wfn->set_array_variable(tag_tensor0.str(),tensor_mat0);
     }
 
     for (i = 0; i < params.nomega; i++) {
@@ -416,10 +427,18 @@ void optrot(std::shared_ptr<Molecule> molecule) {
         prefactor *= 288.0e-30 * pc_pi * pc_pi * pc_na * bohr2a4;
 
         if (compute_rl) {
-            if (params.wfn == "CC2")
+            std::stringstream tag_tensor_rl;
+            /* grab omega in nm, rounded to nearest int */
+            long om_nm = std::lround((pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]));
+
+            if (params.wfn == "CC2") {
                 outfile->Printf("\n            CC2 Optical Rotation Tensor (Length Gauge):\n");
-            else if (params.wfn == "CCSD")
+                tag_tensor_rl << "CC2 OPTICAL ROTATION TENSOR (LEN) @ " << om_nm << "NM";
+            }
+            else if (params.wfn == "CCSD") {
                 outfile->Printf("\n           CCSD Optical Rotation Tensor (Length Gauge):\n");
+                tag_tensor_rl << "CCSD OPTICAL ROTATION TENSOR (LEN) @ " << om_nm << "NM";
+            }
 
             outfile->Printf("  -------------------------------------------------------------------------\n");
             outfile->Printf("   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
@@ -427,15 +446,15 @@ void optrot(std::shared_ptr<Molecule> molecule) {
                             pc_hartree2wavenumbers * params.omega[i]);
             outfile->Printf("  -------------------------------------------------------------------------\n");
             mat_print(tensor_rl[i], 3, 3, "outfile");
+            auto tensor_mat_rl = std::make_shared<Matrix>(3, 3);
+            tensor_mat_rl->set(tensor_rl[i]);
+            ref_wfn->set_array_variable(tag_tensor_rl.str(),tensor_mat_rl);
 
             TrG_rl = -(tensor_rl[i][0][0] + tensor_rl[i][1][1] + tensor_rl[i][2][2]) / (3.0 * params.omega[i]);
 
             rotation_rl[i] = prefactor * TrG_rl * nu * nu / M;
             outfile->Printf("\n   Specific rotation using length-gauge electric-dipole Rosenfeld tensor.\n");
             outfile->Printf("\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_rl[i]);
-
-            /* grab omega in nm, rounded to nearest int */
-            long om_nm = std::lround((pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]));
 
             if (params.wfn == "CC2") {
                 std::stringstream tag;
@@ -449,10 +468,18 @@ void optrot(std::shared_ptr<Molecule> molecule) {
         }
 
         if (compute_pl) {
-            if (params.wfn == "CC2")
+            std::stringstream tag_tensor_pl;
+            /* grab omega in nm, rounded to nearest int */
+            long om_nm = std::lround((pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]));
+
+            if (params.wfn == "CC2") {
                 outfile->Printf("\n          CC2 Optical Rotation Tensor (Velocity Gauge):\n");
-            else if (params.wfn == "CCSD")
+                tag_tensor_pl << "CC2 OPTICAL ROTATION TENSOR (VEL) @ " << om_nm << "NM";
+            }
+            else if (params.wfn == "CCSD") {
                 outfile->Printf("\n         CCSD Optical Rotation Tensor (Velocity Gauge):\n");
+                tag_tensor_pl << "CCSD OPTICAL ROTATION TENSOR (VEL) @ " << om_nm << "NM";
+            }
 
             outfile->Printf("  -------------------------------------------------------------------------\n");
             outfile->Printf("   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
@@ -460,6 +487,9 @@ void optrot(std::shared_ptr<Molecule> molecule) {
                             pc_hartree2wavenumbers * params.omega[i]);
             outfile->Printf("  -------------------------------------------------------------------------\n");
             mat_print(tensor_pl[i], 3, 3, "outfile");
+            auto tensor_mat_pl = std::make_shared<Matrix>(3, 3);
+            tensor_mat_pl->set(tensor_pl[i]);
+            ref_wfn->set_array_variable(tag_tensor_pl.str(),tensor_mat_pl);
 
             TrG_pl = -(tensor_pl[i][0][0] + tensor_pl[i][1][1] + tensor_pl[i][2][2]) / (3.0 * params.omega[i]);
             TrG_pl /= params.omega[i];
@@ -467,9 +497,6 @@ void optrot(std::shared_ptr<Molecule> molecule) {
             rotation_pl[i] = prefactor * TrG_pl * nu * nu / M;
             outfile->Printf("\n   Specific rotation using velocity-gauge electric-dipole Rosenfeld tensor.\n");
             outfile->Printf("\t[alpha]_(%5.3f) = %10.5f deg/[dm (g/cm^3)]\n", params.omega[i], rotation_pl[i]);
-
-            /* grab omega in nm, rounded to nearest int */
-            long om_nm = std::lround((pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]));
 
             if (params.wfn == "CC2") {
                 std::stringstream tag;
@@ -485,10 +512,15 @@ void optrot(std::shared_ptr<Molecule> molecule) {
             for (j = 0; j < 3; j++)
                 for (k = 0; k < 3; k++) tensor_pl[i][j][k] -= tensor0[j][k];
 
-            if (params.wfn == "CC2")
+            std::stringstream tag_tensor_pl2;
+            if (params.wfn == "CC2") {
                 outfile->Printf("\n        CC2 Optical Rotation Tensor (Modified Velocity Gauge):\n");
-            else if (params.wfn == "CCSD")
+                tag_tensor_pl2 << "CC2 OPTICAL ROTATION TENSOR (MVG) @ " << om_nm << "NM";
+            }
+            else if (params.wfn == "CCSD") {
                 outfile->Printf("\n        CCSD Optical Rotation Tensor (Modified Velocity Gauge):\n");
+                tag_tensor_pl2 << "CCSD OPTICAL ROTATION TENSOR (MVG) @ " << om_nm << "NM";
+            }
 
             outfile->Printf("  -------------------------------------------------------------------------\n");
             outfile->Printf("   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i],
@@ -496,6 +528,9 @@ void optrot(std::shared_ptr<Molecule> molecule) {
                             pc_hartree2wavenumbers * params.omega[i]);
             outfile->Printf("  -------------------------------------------------------------------------\n");
             mat_print(tensor_pl[i], 3, 3, "outfile");
+            auto tensor_mat_pl2 = std::make_shared<Matrix>(3, 3);
+            tensor_mat_pl2->set(tensor_pl[i]);
+            ref_wfn->set_array_variable(tag_tensor_pl2.str(),tensor_mat_pl2);
 
             /* compute the specific rotation */
             TrG_pl = -(tensor_pl[i][0][0] + tensor_pl[i][1][1] + tensor_pl[i][2][2]) / (3.0 * params.omega[i]);
