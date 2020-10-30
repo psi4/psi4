@@ -146,7 +146,6 @@ void polar(std::shared_ptr<Wavefunction> ref_wfn) {
             std::stringstream tag_tensor;
             tag << "CC2 DIPOLE POLARIZABILITY @ " << omega_nm_rd << "NM";
             Process::environment.globals[tag.str()] = trace[i] / 3.0;
-            ref_wfn->set_scalar_variable(tag.str(),trace[i] / 3.0);
             tag_tensor << "CC2 DIPOLE POLARIZABILITY TENSOR @ " << omega_nm_rd << "NM";
             auto tensor_mat = std::make_shared<Matrix>(3, 3);
             tensor_mat->set(tensor[i]);
@@ -156,7 +155,6 @@ void polar(std::shared_ptr<Wavefunction> ref_wfn) {
             std::stringstream tag_tensor;
             tag << "CCSD DIPOLE POLARIZABILITY @ " << omega_nm_rd << "NM";
             Process::environment.globals[tag.str()] = trace[i] / 3.0;
-            ref_wfn->set_scalar_variable(tag.str(),trace[i] / 3.0);
             tag_tensor << "CCSD DIPOLE POLARIZABILITY TENSOR @ " << omega_nm_rd << "NM";
             auto tensor_mat = std::make_shared<Matrix>(3, 3);
             tensor_mat->set(tensor[i]);

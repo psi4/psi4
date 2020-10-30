@@ -460,12 +460,10 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
                 std::stringstream tag;
                 tag << "CC2 SPECIFIC ROTATION (LEN) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_rl[i];
-                ref_wfn->set_scalar_variable(tag.str(),rotation_rl[i]);
             } else if (params.wfn == "CCSD") {
                 std::stringstream tag;
                 tag << "CCSD SPECIFIC ROTATION (LEN) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_rl[i];
-                ref_wfn->set_scalar_variable(tag.str(),rotation_rl[i]);
             }
         }
 
@@ -504,12 +502,10 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
                 std::stringstream tag;
                 tag << "CC2 SPECIFIC ROTATION (VEL) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_pl[i];
-                ref_wfn->set_scalar_variable(tag.str(),rotation_pl[i]);
             } else if (params.wfn == "CCSD") {
                 std::stringstream tag;
                 tag << "CCSD SPECIFIC ROTATION (VEL) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_pl[i];
-                ref_wfn->set_scalar_variable(tag.str(),rotation_pl[i]);
             }
 
             /* subtract the zero-frequency beta tensor */
@@ -548,12 +544,10 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
                 std::stringstream tag;
                 tag << "CC2 SPECIFIC ROTATION (MVG) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_mod[i];
-                ref_wfn->set_scalar_variable(tag.str(),rotation_mod[i]);
             } else if (params.wfn == "CCSD") {
                 std::stringstream tag;
                 tag << "CCSD SPECIFIC ROTATION (MVG) @ " << om_nm << "NM";
                 Process::environment.globals[tag.str()] = rotation_mod[i];
-                ref_wfn->set_scalar_variable(tag.str(),rotation_mod[i]);
             }
         }
 
