@@ -1388,6 +1388,8 @@ void export_mints(py::module& m) {
              "Sets basis set arg1 to all atoms with symbol (e.g., H) arg0")
         .def("set_basis_by_label", &Molecule::set_basis_by_label,
              "Sets basis set arg1 to all atoms with label (e.g., H4) arg0")
+        .def("set_basis_by_number", &Molecule::set_basis_by_number,
+             "Sets basis set arg1 to all atoms with number arg0")
         .def("distance_matrix", &Molecule::distance_matrix, "Returns Matrix of interatom distances")
         .def("print_distances", &Molecule::print_distances, "Print the interatomic distance geometrical parameters")
         .def("print_bond_angles", &Molecule::print_bond_angles, "Print the bond angle geometrical parameters")
