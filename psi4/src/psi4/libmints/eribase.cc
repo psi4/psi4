@@ -3103,7 +3103,7 @@ void Libint2TwoElectronInt::common_init() {
     bool dummy3 = basis3()->l2_shell(0) == libint2::Shell::unit();
     bool dummy4 = basis4()->l2_shell(0) == libint2::Shell::unit();
 
-     if (!dummy1 && !dummy2 && !dummy3 && !dummy4) {
+    if (!dummy1 && !dummy2 && !dummy3 && !dummy4) {
         braket_ = libint2::BraKet::xx_xx;
     } else if (!dummy1 && dummy2 && !dummy3 && !dummy4) {
         braket_ = libint2::BraKet::xs_xx;

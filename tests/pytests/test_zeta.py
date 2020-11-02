@@ -180,6 +180,8 @@ ref = {
 }
 
 
+# hand-adjust zetas -- what to pass/xfail/fail is NOT read from Libint2 config
+# * @pytest.mark.parametrize("zeta", ["d", "t", "q", "5"])
 @pytest.mark.parametrize("zeta", ["d", "t", "q", "5", "6/5", "6", "7/6", "7"])
 @pytest.mark.parametrize("scftype", ["conv", "df"])
 @pytest.mark.parametrize("der", ["ene", "grd", "hss"])
