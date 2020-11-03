@@ -40,6 +40,20 @@
 
 using namespace psi;
 
+
+size_t *init_size_t_array(int size) {
+    size_t *array;
+
+    if ((array = (size_t *)malloc(sizeof(size_t) * size)) == nullptr) {
+        outfile->Printf("init_size_t_array:  trouble allocating memory \n");
+        outfile->Printf("size = %d\n", size);
+        exit(PSI_RETURN_FAILURE);
+    }
+    memset(array, 0, sizeof(size_t) * size);
+    return (array);
+}
+
+
 /**
  * Presort the (restricted) MO TPDM into DPD buffers to prepare it
  * for the the transformation.
@@ -77,8 +91,11 @@ void IntegralTransform::presort_mo_tpdm_restricted() {
     bucketOffset[0] = init_int_array(nirreps_);
     int **bucketRowDim = (int **)malloc(sizeof(int *));
     bucketRowDim[0] = init_int_array(nirreps_);
-    int **bucketSize = (int **)malloc(sizeof(int *));
-    bucketSize[0] = init_int_array(nirreps_);
+    //int **bucketSize = (int **)malloc(sizeof(int *));
+    //bucketSize[0] = init_int_array(nirreps_);
+    size_t **bucketSize = (size_t **) malloc(sizeof(size_t *));
+    bucketSize[0] = init_size_t_array(nirreps_);
+
 
     /* Figure out how many passes we need and where each p,q goes */
     int nBuckets = 1;
@@ -115,13 +132,17 @@ void IntegralTransform::presort_mo_tpdm_restricted() {
                 bucketRowDim[nBuckets - 1] = init_int_array(nirreps_);
                 bucketRowDim[nBuckets - 1][h] = 1;
 
-                p = static_cast<int **>(realloc(static_cast<void *>(bucketSize), nBuckets * sizeof(int *)));
-                if (p == nullptr) {
+                //p = static_cast<int **>(realloc(static_cast<void *>(bucketSize), nBuckets * sizeof(int *)));
+                size_t **P = static_cast<size_t **>(realloc(static_cast<void *>(bucketSize),
+                                                    nBuckets * sizeof(size_t *)));
+
+                if (P == nullptr) {
                     throw PsiException("file_build: allocation error", __FILE__, __LINE__);
                 } else {
-                    bucketSize = p;
+                    bucketSize = P;
                 }
-                bucketSize[nBuckets - 1] = init_int_array(nirreps_);
+                //bucketSize[nBuckets - 1] = init_int_array(nirreps_);
+                bucketSize[nBuckets - 1] = init_size_t_array(nirreps_);
                 bucketSize[nBuckets - 1][h] = rowLength;
             }
             int p = I.params->roworb[h][row][0];
