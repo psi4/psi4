@@ -1241,8 +1241,8 @@ void DFJKGrad::build_Amn_x_terms() {
 }
 
 void DFJKGrad::compute_hessian() {
+    // clang-format off
     /*
-     * clang-format off
      * If we define Minv as the inverse metric matrix, and use the identity
      *
      *    d Minv          d M
@@ -1256,27 +1256,24 @@ void DFJKGrad::compute_hessian() {
      *                dx
      *
      * whose 2 terms we call term1 and term2, respectively.  Indices {m,n,r,s} refer to AOs,
-     * while {A,B,C,D...} are aux basis indices.  The superscripts are just a shorthand for derivatives.  Expanding to
-     * get second derivatives, we have
+     * while {A,B,C,D...} are aux basis indices.  The superscripts are just a shorthand for derivatives.  Expanding to get second derivatives, we have
      *
-     *    d term1           xy                               x             y                                    x y
-     *    ------- = 2 (mn|A)   Minv[A][B] (B|rs)  -  2 (mn|A)  Minv[A][B] M[B][C] Minv[C][D] (D|rs)  +  2 (mn|A) *
-     * Minv[A][B] (B|rs) dy
+     *    d term1           xy                               x             y                                    x                 y
+     *    ------- = 2 (mn|A)   Minv[A][B] (B|rs)  -  2 (mn|A)  Minv[A][B] M[B][C] Minv[C][D] (D|rs)  +  2 (mn|A) Minv[A][B] (B|rs)
+     *       dy
      *
-     *    d term2            y             x                                                 y                  x
-     *    ------- = -2 (mn|A)  Minv[A][B] M[B][C] Minv[C][D] (D|rs)  +  2 (mn|A) Minv[A][B] M[B][C] Minv[C][D] M[D][E] *
-     * Minv[E][F] (F|rs) dy x                       y
-     *              -  2 (mn|A) Minv[A][B] M[B][C] Minv[C][D] (D|rs)
+     *    d term2            y             x                                                 y                  x                                                 xy
+     *    ------- = -2 (mn|A)  Minv[A][B] M[B][C] Minv[C][D] (D|rs)  +  2 (mn|A) Minv[A][B] M[B][C] Minv[C][D] M[D][E] Minv[E][F] (F|rs)  -  2 (mn|A) Minv[A][B] M[B][C] Minv[C][D] (D|rs)
+     *       dy
      *
-     * Note that the second term from term1 and the first from term2 are the same, leaving us with 5 terms to implement.
-     * The code below is a first attempt at this, and uses intermediates that were the first thing that came to mind.
-     * The code needs to be adapted to run out of core (c.f. DFJKGrad::build_gradient()) and should call routines like
-     * build_Amn_terms() to generate intermediates, rather than re-coding that stuff here.  We also need to add UHF
-     * capabilities.
+     * Note that the second term from term1 and the first from term2 are the same, leaving us with 5 terms to implement.  The code below is a first attempt at
+     * this, and uses intermediates that were the first thing that came to mind.  The code needs to be adapted to run out of core (c.f. DFJKGrad::build_gradient())
+     * and should call routines like build_Amn_terms() to generate intermediates, rather than re-coding that stuff here.  We also need to add UHF capabilities.
      *
      * Andy Simmonett (07/16)
-     * clang-format on
+     *
      */
+     // clang-format on
 
     // => Set up hessians <= //
     int natom = primary_->molecule()->natom();
