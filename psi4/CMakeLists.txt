@@ -170,7 +170,7 @@ else()
 endif ()
 
 if(${ENABLE_cppe})
-    find_package(cppe 0.2.1 CONFIG REQUIRED)
+    find_package(cppe 0.3.1 CONFIG REQUIRED)
     get_property(_loc TARGET cppe::cppe PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using cppe${ColourReset}: ${_loc} (version ${cppe_VERSION})")
@@ -306,6 +306,7 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/test_gradients.py
               ../tests/pytests/test_mdi.py
               ../tests/pytests/test_weird_basis.py
+              ../tests/pytests/test_ccresponse.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 
     # <<<  install psi4 share/ & include/  >>>

@@ -1,8 +1,8 @@
 ## Description
-Provide a brief description of the PR's purpose here.
+<!-- Provide a brief description of the PR's purpose here. -->
 
 ## Todos
-Notable points (developer or user-interest) that this PR has or will accomplish.
+<!-- Notable points (developer or user-interest) that this PR has or will accomplish. -->
 - [ ] Feature1
 - [ ] Feature2
 

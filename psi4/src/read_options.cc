@@ -302,6 +302,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Thole damping factor for multipole fields -*/
         options.add_double("DAMPING_FACTOR_MULTIPOLE", 2.1304);
 
+        /*- Summation scheme for field computations, can be direct or fmm -*/
+        options.add_str_i("SUMMATION_FIELDS", "DIRECT", "DIRECT FMM");
+        /*- Expansion order of the multipoles for FMM -*/
+        options.add_int("TREE_EXPANSION_ORDER", 5);
+        /*- Opening angle theta -*/
+        options.add_double("TREE_THETA", 0.5);
+
         /*- Activate border options for sites in proximity to the QM/MM border -*/
         options.add_bool("BORDER", false);
         /*- border type, either remove or redistribute moments/polarizabilities -*/
@@ -320,6 +327,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("BORDER_N_REDIST", -1);
         /*- redistribute polarizabilities? If false, polarizabilities are removed (default) -*/
         options.add_bool("BORDER_REDIST_POL", false);
+
+        /*- use PE(ECP) repulsive potentials -*/
+        options.add_bool("PE_ECP", false);
     }
 
     if (name == "DETCI" || options.read_globals()) {

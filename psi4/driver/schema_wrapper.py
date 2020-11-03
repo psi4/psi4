@@ -321,7 +321,7 @@ def _convert_wavefunction(wfn, context=None):
         # Return results
         "orbitals_a": "scf_orbitals_a",
         "orbitals_b": "scf_orbitals_b",
-        "density_a": "scf_density_ba",
+        "density_a": "scf_density_a",
         "density_b": "scf_density_b",
         "fock_a": "scf_fock_a",
         "fock_b": "scf_fock_b",

@@ -28,20 +28,20 @@ cc_energy, wfn = properties('eom-cc2', properties=['dipole','quadrupole'],return
 
 
 gs_refs = {
-        "CC DIPOLE X":                 0.0000,
-        "CC DIPOLE Y":                 0.0000,
-        "CC DIPOLE Z":                 2.8972,
-        "CC QUADRUPOLE XX":          -11.6671,
-        "CC QUADRUPOLE XY":           -1.4071,
-        "CC QUADRUPOLE XZ":            0.0000,
-        "CC QUADRUPOLE YY":          -11.0457,
-        "CC QUADRUPOLE YZ":            0.0000,
-        "CC QUADRUPOLE ZZ":           -9.3692
+        "EOM-CC2 DIPOLE X":                 0.0000,
+        "EOM-CC2 DIPOLE Y":                 0.0000,
+        "EOM-CC2 DIPOLE Z":                 2.8972,
+        "EOM-CC2 QUADRUPOLE XX":          -11.6671,
+        "EOM-CC2 QUADRUPOLE XY":           -1.4071,
+        "EOM-CC2 QUADRUPOLE XZ":            0.0000,
+        "EOM-CC2 QUADRUPOLE YY":          -11.0457,
+        "EOM-CC2 QUADRUPOLE YZ":            0.0000,
+        "EOM-CC2 QUADRUPOLE ZZ":           -9.3692
         }
-pole = [gs_refs["CC DIPOLE " + cart] for cart in "XYZ"]  #TEST
-gs_refs["CC DIPOLE"] = np.array(pole).reshape((3,)) * d2au  #TEST
-pole = [gs_refs["CC QUADRUPOLE " + cart] for cart in ["XX", "XY", "XZ", "XY", "YY", "YZ", "XZ", "YZ", "ZZ"]]  #TEST
-gs_refs["CC QUADRUPOLE"] = np.array(pole).reshape((3, 3)) * q2au  #TEST
+pole = [gs_refs["EOM-CC2 DIPOLE " + cart] for cart in "XYZ"]  #TEST
+gs_refs["EOM-CC2 DIPOLE"] = np.array(pole).reshape((3,)) * d2au  #TEST
+pole = [gs_refs["EOM-CC2 QUADRUPOLE " + cart] for cart in ["XX", "XY", "XZ", "XY", "YY", "YZ", "XZ", "YZ", "ZZ"]]  #TEST
+gs_refs["EOM-CC2 QUADRUPOLE"] = np.array(pole).reshape((3, 3)) * q2au  #TEST
 
 root_refs = {
         "CC ROOT 1 DIPOLE X":          0.0000,
@@ -101,7 +101,7 @@ with warnings.catch_warnings():
 
 
     # Checking that the wfn.Da/Db have been set by ccdensity
-    oeprop(wfn,"DIPOLE", "QUADRUPOLE", title="CCDENSITY-SET-WFN-TEST CC")
+    oeprop(wfn,"DIPOLE", "QUADRUPOLE", title="CCDENSITY-SET-WFN-TEST EOM-CC2")
     for tag,refval in gs_refs.items():
         oeprop_val = psi4.variable("CCDENSITY-SET-WFN-TEST {}".format(tag))
         compare_values(oeprop_val,refval,4,"CCDENSITY-SET-WFN-TEST {}".format(tag))   #TEST

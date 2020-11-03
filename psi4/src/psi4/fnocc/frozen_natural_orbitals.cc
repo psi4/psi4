@@ -1037,9 +1037,7 @@ void DFFrozenNO::BuildFock(long int nQ, double* Qso, double* F) {
 
     // transform H
     // one-electron integrals
-    auto mints = std::make_shared<MintsHelper>(basisset_, options_, 0);
-    SharedMatrix H = mints->so_kinetic();
-    H->add(mints->so_potential());
+    auto H = reference_wavefunction_->H()->clone();
 
     long int max = nQ > nso * nso ? nQ : nso * nso;
     double* temp2 = (double*)malloc(max * sizeof(double));

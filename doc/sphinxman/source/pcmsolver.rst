@@ -104,9 +104,19 @@ is achieved by setting |globals__pcm| ``true`` in your input file.
 The latter forces the separate handling of nuclear and electronic electrostatic potentials and
 polarization charges. It is mainly useful for debugging.
 
+For the calculation of vertical excitation energies with PCM non-equilibrium solvation should be included with: ::
+
+    pcm = {
+       Medium {
+       Nonequilibrium = True
+       }
+    }
+
 .. note:: At present PCM can only be used for energy calculations with SCF
           wavefunctions and CC wavefunctions in the PTE approximation [Cammi:2009:164104]_.
           All ERI algorithms (``PK``, ``OUT_OF_CORE``, ``DIRECT``, ``DF``, ``CD``) are supported.
+
+.. note:: linear response calculations (static polarisabilities, TD-SCF) are supported for RHF/UHF if available.
 
 .. warning:: The PCMSolver library **cannot** exploit molecular point group symmetry.
 

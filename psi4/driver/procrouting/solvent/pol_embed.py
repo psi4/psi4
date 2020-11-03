@@ -32,6 +32,7 @@ from qcelemental import constants
 from pkg_resources import parse_version
 
 from psi4 import core
+from psi4.driver.qcdb import libmintsbasisset
 from psi4.driver.p4util.exceptions import ValidationError
 
 
@@ -46,6 +47,10 @@ def get_pe_options():
         "iso_pol": core.get_option('PE', 'ISOTROPIC_POL'),
         "induced_thresh": core.get_option('PE', 'INDUCED_CONVERGENCE'),
         "maxiter": core.get_option('PE', 'MAXITER'),
+        # tree options
+        "summation_induced_fields": core.get_option('PE', 'SUMMATION_FIELDS').lower(),
+        "tree_expansion_order": core.get_option('PE', 'TREE_EXPANSION_ORDER'),
+        "theta": core.get_option('PE', 'TREE_THETA'),
         # damping options
         "damp_induced": core.get_option('PE', 'DAMP_INDUCED'),
         "damping_factor_induced": core.get_option('PE', 'DAMPING_FACTOR_INDUCED'),
@@ -57,6 +62,8 @@ def get_pe_options():
         "border_nredist": core.get_option('PE', 'BORDER_N_REDIST'),
         "border_redist_order": core.get_option('PE', 'BORDER_REDIST_ORDER'),
         "border_redist_pol": core.get_option('PE', 'BORDER_REDIST_POL'),
+        # PE(ECP)
+        "pe_ecp": core.get_option('PE', 'PE_ECP'),
     }
     return pol_embed_options
 
@@ -74,7 +81,7 @@ class CppeInterface:
     def __init__(self, molecule, options, basisset):
         # verify that the minimal version is used if CPPE is provided
         # from outside the Psi4 ecosystem
-        min_version = "0.2.0"
+        min_version = "0.3.1"
         if parse_version(cppe.__version__) < parse_version(min_version):
             raise ModuleNotFoundError("CPPE version {} is required at least. "
                                       "Version {}"
@@ -83,21 +90,60 @@ class CppeInterface:
         # setup the initial CppeState
         self.molecule = molecule
         self.options = options
+        self.pe_ecp = self.options.pop("pe_ecp", False)
         self.basisset = basisset
         self.mints = core.MintsHelper(self.basisset)
 
         def callback(output):
-            core.print_out("{}\n".format(output))
+            core.print_out(f"{output}\n")
 
         self.cppe_state = cppe.CppeState(self.options, psi4mol_to_cppemol(self.molecule), callback)
+        core.print_out("CPPE Options:\n")
+        core.print_out(f"PE(ECP) repulsive potentials = {self.pe_ecp}\n")
+        for k in cppe.valid_option_keys:
+            core.print_out(f"{k} = {self.cppe_state.options[k]}\n")
+        core.print_out("-------------------------\n\n")
         self.cppe_state.calculate_static_energies_and_fields()
         # obtain coordinates of polarizable sites
         self._enable_induction = False
         if self.cppe_state.get_polarizable_site_number():
             self._enable_induction = True
-            coords = np.array([site.position for site in self.cppe_state.potentials if site.is_polarizable])
+            coords = self.cppe_state.positions_polarizable
             self.polarizable_coords = core.Matrix.from_array(coords)
         self.V_es = None
+        if self.pe_ecp:
+            self._setup_pe_ecp()
+
+    def _setup_pe_ecp(self):    
+        mol_clone = self.molecule.clone()
+        geom, _, elems, _, _ = mol_clone.to_arrays()
+        n_qmatoms = len(elems)
+        geom = geom.tolist()
+        elems = elems.tolist()
+        for p in self.cppe_state.potentials:
+            if p.element == "X":
+                continue
+            elems.append(f"{p.element}_pe")
+            geom.append([p.x, p.y, p.z])
+        qmmm_mol = core.Molecule.from_arrays(
+            geom=geom, elbl=elems, units="Bohr",
+            fix_com=True, fix_orientation=True, fix_symmetry="c1"
+        )
+        n_qmmmatoms = len(elems)
+
+        def __basisspec_pe_ecp(mol, role):
+            global_basis = core.get_global_option("BASIS")
+            for i in range(n_qmatoms):
+                mol.set_basis_by_number(i, global_basis, role=role)
+            for i in range(n_qmatoms, n_qmmmatoms):
+                mol.set_basis_by_number(i, "pe_ecp", role=role)
+            return {}
+
+        libmintsbasisset.basishorde["PE_ECP_BASIS"] = __basisspec_pe_ecp
+        self.pe_ecp_basis = core.BasisSet.build(qmmm_mol, "BASIS", "PE_ECP_BASIS")
+        ecp_mints = core.MintsHelper(self.pe_ecp_basis)
+        self.V_pe_ecp = ecp_mints.ao_ecp().np
+
 
     def get_pe_contribution(self, density_matrix, elec_only=False):
         # build electrostatics operator
@@ -123,12 +169,17 @@ class CppeInterface:
             e_el = np.sum(density_matrix.np * self.V_es)
             self.cppe_state.energies["Electrostatic"]["Electronic"] = e_el
             V_pe += self.V_es
-            E_pe = self.cppe_state.total_energy
+            E_ecp = 0.0
+            if self.pe_ecp:
+                E_ecp = np.sum(density_matrix.np * self.V_pe_ecp)
+                V_pe += self.V_pe_ecp
+            E_pe = self.cppe_state.total_energy + E_ecp
         return E_pe, core.Matrix.from_array(V_pe)
 
     def build_electrostatics_operator(self):
         n_bas = self.basisset.nbf()
         self.V_es = np.zeros((n_bas, n_bas))
+        # TODO: run this in one go...
         for site in self.cppe_state.potentials:
             prefactors = []
             for multipole in site.multipoles:

@@ -121,7 +121,7 @@ void DFOCC::common_init() {
         tol_pcg = options_.get_double("PCG_CONVERGENCE");
     } else {
         tol_pcg = 0.01 * tol_t2;
-        outfile->Printf("\tFor this residual convergence, default PCG convergence is: %12.2e\n", tol_grad);
+        outfile->Printf("\tFor this residual convergence, default PCG convergence is: %12.2e\n", tol_pcg);
     }
 
     //   Given default orbital convergence, set the criteria by what should

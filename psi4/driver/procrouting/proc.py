@@ -3012,7 +3012,7 @@ def run_cc_property(name, **kwargs):
     if n_one > 0:
         # call oe prop for GS density
         oe = core.OEProp(ccwfn)
-        oe.set_title("CC")
+        oe.set_title(name.upper())
         for oe_name in one:
             oe.add(oe_name.upper())
         oe.compute()

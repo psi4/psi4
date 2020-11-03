@@ -744,7 +744,7 @@ std::map<std::string, SharedVector> SuperFunctional::compute_vv10_cache(const st
     double* gammap = vals.find("GAMMA_AA")->second->pointer();
 
 // Eh, worth a shot
-#pragma omp simd
+// clang 10 on Mac objects at runtime: #pragma omp simd
     for (size_t i = 0; i < npoints; i++) {
         if (rhop[i] < rho_thresh) continue;
 
