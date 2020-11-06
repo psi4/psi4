@@ -40,20 +40,6 @@
 
 using namespace psi;
 
-
-size_t *init_size_t_array(int size) {
-    size_t *array;
-
-    if ((array = (size_t *)malloc(sizeof(size_t) * size)) == nullptr) {
-        outfile->Printf("init_size_t_array:  trouble allocating memory \n");
-        outfile->Printf("size = %d\n", size);
-        exit(PSI_RETURN_FAILURE);
-    }
-    memset(array, 0, sizeof(size_t) * size);
-    return (array);
-}
-
-
 /**
  * Presort the (restricted) MO TPDM into DPD buffers to prepare it
  * for the the transformation.
