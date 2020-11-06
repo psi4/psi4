@@ -97,7 +97,7 @@ jobs:
         psi4/label/dev::snsmp2 \
         psi4/label/dev::fockci \
         psi4/label/dev::mp2d \
-        psi4/label/dev::pybind11-headers \
+        psi4/label/trial::pybind11-headers \
         blas=*=mkl \
         mkl-include \
         networkx \

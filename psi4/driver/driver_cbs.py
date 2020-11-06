@@ -1522,7 +1522,7 @@ def cbs(func, label, **kwargs):
         dups = -1
         for indx_job, job in enumerate(JOBS):
             if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']) and \
-               (job['f_options'] == mc['f_options']) and (job['f_options'] != False):
+               (job['f_options'] == mc['f_options']):
                 dups += 1
                 if dups >= 1:
                     del JOBS[indx_job]

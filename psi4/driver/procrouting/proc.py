@@ -1524,7 +1524,7 @@ def scf_helper(name, post_scf=True, **kwargs):
     # PE preparation
     if core.get_option('SCF', 'PE'):
         if not solvent._have_pe:
-            raise ValidationError("Could not find cppe module.")
+            raise ModuleNotFoundError('Python module cppe not found. Solve by installing it: `conda install -c psi4 pycppe`')
         use_c1 = True
         core.print_out("""  PE does not make use of molecular symmetry: """
                        """further calculations in C1 point group.\n""")
