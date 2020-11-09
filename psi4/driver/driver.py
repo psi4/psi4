@@ -1931,7 +1931,7 @@ def gdma(wfn, datafile=""):
     if not datafile:
         os.remove(commands)
 
-def fchk(wfn, filename, debug=False):
+def fchk(wfn, filename, debug=False, strict_label=True):
     """Function to write wavefunction information in *wfn* to *filename* in
     Gaussian FCHK format.
 
@@ -1948,11 +1948,14 @@ def fchk(wfn, filename, debug=False):
     :type debug: boolean
     :param debug: returns a dictionary to aid with debugging
 
+    :type strict_label: boolean
+    :param strict_label: Set a standard label if possible. A warning will be printed if this is not possible.
+
     Notes
     -----
     * A description of the FCHK format is http://wild.life.nctu.edu.tw/~jsyu/compchem/g09/g09ur/f_formchk.htm
     * The allowed headers for methods are general and limited, i.e., "Total SCF|MP2|CI|CC Density",
-      PSI4 will try to find the right one for the current calculation.
+      PSI4 will try to find the right one for the current calculation. If `strict_label=False` the PSI4 method name will be used as label.
     * Not all theory modules in PSI4 are compatible with the FCHK writer.
       A warning will be printed if a theory module is not supported.
     * Caution! For orbital-optimized correlated methods (e.g. DCT, OMP2) the 'Orbital Energy' field contains ambiguous data.
@@ -1967,12 +1970,15 @@ def fchk(wfn, filename, debug=False):
     >>> E, wfn = gradient('ccsd', return_wfn=True)
     >>> fchk(wfn, 'mycalc.fchk')
 
+    >>> # [2] Write FCHK file with non-standard label.
+    >>> E, wfn = gradient('mp2.5', return_wfn=True)
+    >>> fchk(wfn, 'mycalc.fchk', strict_label=False)
+
     """
     # * Known limitations and notes *
     #
-    # OCC: (occ theory module only, not dfocc) is turned off as it densities are not set. 
-    # DFMP2: Contains natural orbitals in wfn.C() and wfn.epsilon() data.
-    # This is fixed to contain respective HF data.
+    # OCC: (occ theory module only, not dfocc) is turned off as densities are not correctly set. 
+    # DFMP2: Contains natural orbitals in wfn.C() and wfn.epsilon() data. This is fixed to contain respective HF data.
 
     allowed = ['DFMP2', 'SCF', 'CCENERGY', 'DCT', 'DFOCC']
     module_ = wfn.module().upper()
@@ -1999,7 +2005,7 @@ def fchk(wfn, filename, debug=False):
 
     if (module_ in ['DCT', 'DFOCC']):
         core.print_out("""FCHKWriter: Caution! For orbital-optimized correlated methods
-            the 'Orbital Energy' field contains ambiguous data.""")
+            the 'Orbital Energy' field contains ambiguous data. \n""")
 
     # At this point we don't know the method name, so we try to search for it.
     # idea: get the method from the variable matching closely the 'current energy'
@@ -2014,11 +2020,13 @@ def fchk(wfn, filename, debug=False):
 
     # find closest matching energy
     for (key, val) in varlist.items():
-        if (np.isclose(val, current, 1e-10)):
-            method = key
+        print(key,val)
+        if (np.isclose(val, current, 1e-12)):
+            method = key.split()[0]
 
-    # The labels this functions knows. Extend if needed.
-    labels = {
+    # The 'official' list of labels for compatibility.
+    # OMP2,MP2.5,OCCD, etc get reduced to MP2,CC.
+    allowed_labels = {
         "HF": " SCF Density",
         "SCF": " SCF Density",
         "DFT": " SCF Density",
@@ -2027,15 +2035,18 @@ def fchk(wfn, filename, debug=False):
         "MP4": " MP4 Density",
         "CI": " CI Density",
         "CC": " CC Density",
-        "DCT": " DCT Density",
     }
     # assign label from method name
-    fchk_label = 'UNKNOWN'
-    for key in labels:
-        if key in method:
-            fchk_label = labels[key]
-    if fchk_label == 'UNKNOWN':
-        raise ValidationError('Unknown density in FCHKWriter')
+    fchk_label = f" {method} Density"
+    if strict_label:
+        in_list = False
+        for key in allowed_labels:
+            if key in method:
+                fchk_label = allowed_labels[key]
+                in_list = True
+        if not in_list:
+            core.print_out(f"FCHKWriter: !WARNING! {method} is not recognized. Using non-standard label.\n")
+    core.print_out(f"FCHKWriter: Writing {filename} with label '{fchk_label}'.\n")
     fw.set_postscf_density_label(fchk_label)
 
     fw.write(filename)
