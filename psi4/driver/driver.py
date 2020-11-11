@@ -1982,7 +1982,7 @@ def fchk(wfn, filename, debug=False, strict_label=True):
 
     allowed = ['DFMP2', 'SCF', 'CCENERGY', 'DCT', 'DFOCC']
     module_ = wfn.module().upper()
-    if (module_ not in allowed):
+    if module_ not in allowed:
         core.print_out(f"FCHKWriter: Theory module {module_} is currently not supported by the FCHK writer.")
         return None
 
@@ -1990,7 +1990,7 @@ def fchk(wfn, filename, debug=False, strict_label=True):
         core.print_out(f"FCHKWriter: Limited ECP support! No ECP data will be written to the FCHK file.")
 
     # fix orbital coefficients and energies for DFMP2
-    if (module_ in ['DFMP2']):
+    if module_ in ['DFMP2']:
         wfn_ = core.Wavefunction.build(wfn.molecule(), core.get_global_option('BASIS'))
         wfn_.deep_copy(wfn)
         refwfn = wfn.reference_wavefunction()
@@ -2003,7 +2003,7 @@ def fchk(wfn, filename, debug=False, strict_label=True):
     else:
         fw = core.FCHKWriter(wfn)
 
-    if (module_ in ['DCT', 'DFOCC']):
+    if module_ in ['DCT', 'DFOCC']:
         core.print_out("""FCHKWriter: Caution! For orbital-optimized correlated methods
             the 'Orbital Energy' field contains ambiguous data. \n""")
 
@@ -2020,9 +2020,9 @@ def fchk(wfn, filename, debug=False, strict_label=True):
 
     # find closest matching energy
     for (key, val) in varlist.items():
-        print(key,val)
         if (np.isclose(val, current, 1e-12)):
             method = key.split()[0]
+            break
 
     # The 'official' list of labels for compatibility.
     # OMP2,MP2.5,OCCD, etc get reduced to MP2,CC.
@@ -2042,6 +2042,8 @@ def fchk(wfn, filename, debug=False, strict_label=True):
         in_list = False
         for key in allowed_labels:
             if key in method:
+                if key is not method:
+                    core.print_out(f"FCHKWriter: !WARNING! method '{method}'' renamed to label '{key}'.\n")
                 fchk_label = allowed_labels[key]
                 in_list = True
         if not in_list:
@@ -2051,7 +2053,7 @@ def fchk(wfn, filename, debug=False, strict_label=True):
 
     fw.write(filename)
     # needed for the pytest. The SCF density below follows PSI4 ordering not FCHK ordering.
-    if (debug):
+    if debug:
         ret = {
             "filename": filename,
             "detected energy": method,
