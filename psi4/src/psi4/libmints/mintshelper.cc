@@ -3111,7 +3111,6 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1(int atom, double omega,
                     int Rcenter = bs3->shell(R).ncenter();
                     int Scenter = bs4->shell(S).ncenter();
 
-                    size_t stride = Pncart * Qncart * Rncart * Sncart;
                     size_t delta;
 
                     delta = 0L;
@@ -3266,7 +3265,6 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2(int atom1, int atom2) {
         int Rcenter = bs3->shell(R).ncenter();
         int Scenter = bs4->shell(S).ncenter();
 
-        size_t stride = Pncart * Qncart * Rncart * Sncart;
         size_t delta;
 
         delta = 0L;

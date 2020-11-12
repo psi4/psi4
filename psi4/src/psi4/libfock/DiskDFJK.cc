@@ -311,7 +311,6 @@ int DiskDFJK::max_rows() const {
     row_cost += (lr_symmetric_ ? 1L : 2L) * max_nocc() * primary_->nbf();
     // Slices of Qmn tensor, including AIO buffer (NOTE: AIO not implemented yet)
     row_cost += (is_core_ ? 1L : 1L) * n_function_pairs_;
-    //row_cost += (is_core_ ? 1L : 1L) * eri_.front()->function_pairs().size();
 
     size_t max_rows = mem / row_cost;
 
@@ -1010,8 +1009,8 @@ void DiskDFJK::initialize_wK_core() {
                         omu = primary_->shell(MU).function_index() + mu;
                         for (nu = 0; nu < numnu; ++nu) {
                             onu = primary_->shell(NU).function_index() + nu;
-                        size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu :
-                                                  onu * (onu + 1) / 2 + omu;
+                            size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu :
+                                                      onu * (onu + 1) / 2 + omu;
                             if (schwarz_fun_pairs[addr] > -1) {
                                 for (P = 0; P < numP; ++P) {
                                     PHI = auxiliary_->shell(Pshell).function_index() + P;
@@ -1070,8 +1069,8 @@ void DiskDFJK::initialize_wK_core() {
                         omu = primary_->shell(MU).function_index() + mu;
                         for (nu = 0; nu < numnu; ++nu) {
                             onu = primary_->shell(NU).function_index() + nu;
-                        size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu :
-                                                  onu * (onu + 1) / 2 + omu;
+                            size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu :
+                                                      onu * (onu + 1) / 2 + omu;
                             if (schwarz_fun_pairs[addr] > -1) {
                                 for (P = 0; P < numP; ++P) {
                                     PHI = auxiliary_->shell(Pshell).function_index() + P;

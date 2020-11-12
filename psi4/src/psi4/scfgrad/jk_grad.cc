@@ -1082,7 +1082,6 @@ void DFJKGrad::build_Amn_x_terms() {
             int aN = primary_->shell(N).ncenter();
             int oN = primary_->shell(N).function_index();
 
-            int ncart = cP * cM * cN;
             const auto& buffers = eri[thread]->buffers();
             const double* Px = buffers[0];
             const double* Py = buffers[1];
@@ -1482,8 +1481,6 @@ void DFJKGrad::compute_hessian() {
                 int ny = 3 * Ncenter + 1;
                 int nz = 3 * Ncenter + 2;
 
-                size_t stride = static_cast<size_t>(Pncart) * Mncart * Nncart;
-
                 Pmnint->compute_shell_deriv1(P, 0, M, N);
                 const double* buffer = Pmnint->buffer();
                 const auto& buffers = Pmnint->buffers();
@@ -1627,7 +1624,7 @@ void DFJKGrad::compute_hessian() {
             int Qy = 3 * Qcenter + 1;
             int Qz = 3 * Qcenter + 2;
 
-            size_t stride = static_cast<size_t>(Pncart) * Qncart;
+            //size_t stride = static_cast<size_t>(Pncart) * Qncart;
 
             PQint->compute_shell_deriv1(P, 0, Q, 0);
             const auto& buffers = PQint->buffers();
@@ -1699,8 +1696,6 @@ void DFJKGrad::compute_hessian() {
                 int nx = 3 * Ncenter + 0;
                 int ny = 3 * Ncenter + 1;
                 int nz = 3 * Ncenter + 2;
-
-                size_t stride = static_cast<size_t>(Pncart) * Mncart * Nncart;
 
                 Pmnint->compute_shell_deriv2(P, 0, M, N);
                 const auto& buffers = Pmnint->buffers();
@@ -1996,8 +1991,6 @@ void DFJKGrad::compute_hessian() {
             int Qx = 3 * Qcenter + 0;
             int Qy = 3 * Qcenter + 1;
             int Qz = 3 * Qcenter + 2;
-
-            size_t stride = static_cast<size_t>(Pncart) * Qncart;
 
             PQint->compute_shell_deriv2(P, 0, Q, 0);
             const auto& buffers = PQint->buffers();

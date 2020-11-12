@@ -111,7 +111,7 @@ class TwoElectronInt : public TwoBodyAOInt {
     Fjt* fjt_;
 
     //! The number of integrals in the current shell quartet
-    int batchsize_;
+    size_t batchsize_;
 
     //! Computes the ERIs between four shells.
     size_t compute_quartet(int, int, int, int);

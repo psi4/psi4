@@ -1668,7 +1668,6 @@ void RDFMP2::form_Amn_x_terms() {
             int aN = basisset_->shell(N).ncenter();
             int oN = basisset_->shell(N).function_index();
 
-            int ncart = cP * cM * cN;
             const double* Px = buffers[0];
             const double* Py = buffers[1];
             const double* Pz = buffers[2];
