@@ -76,10 +76,10 @@ void psio_error(size_t unit, size_t errval) {
         case PSIO_ERROR_OPEN:
             sprintf(msg,"PSIO_ERROR: %d (open call failed)\n\n"
                         " Check the location of your scratch directory which can be\n"
-                        " specified via the $PSI_SCRATCH environment variable or in\n"
-                        " the $HOME/.psi4rc file.\n\n"
-                        " Please note that the scratch directory must exist and be\n"
-                        " writable by Psi4\n", PSIO_ERROR_OPEN);
+                        " specified via the $PSI_SCRATCH environment variable.\n"
+                        " A local (non-network) scratch disk is strongly preferred.\n\n"
+                        " Please note that the scratch directory must exist, be\n"
+                        " writable by Psi4, and have available space.\n", PSIO_ERROR_OPEN);
             break;
         case PSIO_ERROR_REOPEN:
             sprintf(msg,"PSIO_ERROR: %d (file is already open)\n", PSIO_ERROR_REOPEN);
