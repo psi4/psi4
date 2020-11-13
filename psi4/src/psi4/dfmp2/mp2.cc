@@ -1424,7 +1424,7 @@ void RDFMP2::form_Pij() {
                 ::memcpy((void*)Bjbp[0], (void*)Biap[0], sizeof(double) * (na * naocc * naux));
             } else {
                 next_BAI = psio_get_address(PSIO_ZERO, sizeof(double) * (bstart * naocc * naux));
-                psio_->read(PSIF_DFMP2_AIA, "(Q|ai)", (char*)Bjbp[0], sizeof(double) * (nb * naocc * naux), next_BAI,
+                psio_->read(PSIF_DFMP2_AIA, "B(ai|Q)", (char*)Bjbp[0], sizeof(double) * (nb * naocc * naux), next_BAI,
                             &next_BAI);
             }
             timer_off("DFMP2 Qai Read");
