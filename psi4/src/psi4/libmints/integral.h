@@ -475,6 +475,22 @@ class PSI_API IntegralFactory {
     /// Want to change the name of this after the PCM dust settles
     virtual OneBodyAOInt* pcm_potentialint();
 
+    /// Returns an OneBodyInt that computes the derivatives of the overlap of LONDON
+    /// orbitals (GIAOs)    
+    virtual OneBodyAOInt *giao_overlap_deriv(int deriv=0);
+
+    /// Returns an OneBodyInt that computes integrals of the type <mu|L_N|nu>,
+    /// where L_N = (R - R_N) x p, and N is the center of |nu>
+    virtual OneBodyAOInt *giao_angmom(int deriv=0);
+
+    /// Returns an OneBodyInt that computes integrals of the type 1/2 <mu|R_MN x r T|nu>,
+    /// where R_MN = (R_M - R_N), M and N are Gaussian centers and T is the kinetic energy operator
+    virtual OneBodyAOInt *giao_kinetic(int deriv=0);
+
+    /// Returns an OneBodyInt that computes integrals of the type 1/2 <mu|R_MN x r V|nu>,
+    /// where R_MN = (R_M - R_N), M and N are Gaussian centers and V is the potential energy operator
+    virtual OneBodyAOInt *giao_potential(int deriv=0);
+
     /// Returns an ERI integral object
     virtual TwoBodyAOInt* eri(int deriv = 0, bool use_shell_pairs = true);
 
@@ -503,6 +519,9 @@ class PSI_API IntegralFactory {
     /// Returns an F12 double commutator integral object
     virtual TwoBodyAOInt* f12_double_commutator(std::shared_ptr<CorrelationFactor> cf, int deriv = 0,
                                                 bool use_shell_pairs = true);
+
+    /// Returns an GIAO integral object
+    virtual TwoBodyAOInt* giao_eri_deriv(int deriv=0, bool use_shell_pairs=true, int increment = 0);
 
     /// Returns a general ERI iterator object for any (P Q | R S) in shells
     AOIntegralsIterator integrals_iterator(int p, int q, int r, int s);

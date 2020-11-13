@@ -85,7 +85,7 @@ class TwoElectronInt : public TwoBodyAOInt {
     Fjt* fjt_;
 
     //! Computes the ERIs between four shells.
-    size_t compute_quartet(int, int, int, int);
+    size_t compute_quartet(int, int, int, int, const std::vector<int>& AM_increments = {0, 0, 0, 0});
 
     //! Computes the ERI derivatives between four shells.
     size_t compute_quartet_deriv1(int, int, int, int);
@@ -121,15 +121,15 @@ class TwoElectronInt : public TwoBodyAOInt {
 
    public:
     //! Constructor. Use an IntegralFactory to create this object.
-    TwoElectronInt(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
+    TwoElectronInt(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false, int increment=0);
 
     ~TwoElectronInt() override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    size_t compute_shell(const AOShellCombinationsIterator&) override;
+    size_t compute_shell(const AOShellCombinationsIterator&, const std::vector<int>& AM_increments = {0, 0, 0, 0}) override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    size_t compute_shell(int, int, int, int) override;
+    size_t compute_shell(int, int, int, int, const std::vector<int>& AM_increments = {0, 0, 0, 0}) override;
 
     /// Compute ERI derivatives between 4 shells. Result is stored in buffer.
     size_t compute_shell_deriv1(int, int, int, int) override;
@@ -193,6 +193,13 @@ class ErfComplementERI : public TwoElectronInt {
     ~ErfComplementERI() override;
 
     void setOmega(double omega);
+};
+
+class GiaoERI : public TwoElectronInt {
+   public:
+    GiaoERI(const IntegralFactory* integral, int deriv=0, bool use_shell_pairs=false, int increment = 0);
+    ~GiaoERI() override;
+    void prepare_pure_transform(int M, int N, int P, int Q, double *, double *);
 };
 
 }  // namespace psi

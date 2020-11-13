@@ -233,7 +233,7 @@ void TwoBodyAOInt::normalize_am(std::shared_ptr<GaussianShell> s1, std::shared_p
 }
 
 void TwoBodyAOInt::permute_target(double *s, double *t, int sh1, int sh2, int sh3, int sh4, bool p12, bool p34,
-                                  bool p13p24) {
+                                  bool p13p24, const std::vector<int>& AM_increments) {
 #ifdef MINTS_TIMER
     timer_on("Permute target");
 #endif
@@ -242,17 +242,32 @@ void TwoBodyAOInt::permute_target(double *s, double *t, int sh1, int sh2, int sh
     const GaussianShell &s3 = bs3_->shell(sh3);
     const GaussianShell &s4 = bs4_->shell(sh4);
 
+
+    int am1, am2, am3, am4;
+    int am_inc_1, am_inc_2, am_inc_3, am_inc_4;
+
+    am1 = bs1_->shell(sh1).am();
+    am2 = bs2_->shell(sh2).am();
+    am3 = bs3_->shell(sh3).am();
+    am4 = bs4_->shell(sh4).am();
+
+    am_inc_1 = AM_increments[0];
+    am_inc_2 = AM_increments[1];
+    am_inc_3 = AM_increments[2];
+    am_inc_4 = AM_increments[3];
+
+    am1 += am_inc_1;
+    am2 += am_inc_2;
+    am3 += am_inc_3;
+    am4 += am_inc_4;
+
     int nbf1, nbf2, nbf3, nbf4;
     if (force_cartesian_) {
-        nbf1 = s1.ncartesian();
-        nbf2 = s2.ncartesian();
-        nbf3 = s3.ncartesian();
-        nbf4 = s4.ncartesian();
+        nbf1 = INT_NCART(am1); nbf2 = INT_NCART(am2) ;
+        nbf3 = INT_NCART(am3); nbf4 = INT_NCART(am4) ;
     } else {
-        nbf1 = s1.nfunction();
-        nbf2 = s2.nfunction();
-        nbf3 = s3.nfunction();
-        nbf4 = s4.nfunction();
+        nbf1 = INT_NFUNC(s1.is_pure(), am1); nbf2 = INT_NFUNC(s2.is_pure(), am2);
+        nbf3 = INT_NFUNC(s3.is_pure(), am3); nbf4 = INT_NFUNC(s4.is_pure(), am4);
     }
 
     if (!p13p24) {
@@ -413,24 +428,24 @@ void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk
     const GaussianShell &s3 = bs3_->shell(sh3);
     const GaussianShell &s4 = bs4_->shell(sh4);
 
+    // Get the angular momentum for each shell 
+    int am1 = s1.am();
+    int am2 = s2.am();
+    int am3 = s3.am();
+    int am4 = s4.am();
+
     // Get the transforms from the basis set
     SphericalTransformIter trans1(*integral()->spherical_transform(s1.am()));
     SphericalTransformIter trans2(*integral()->spherical_transform(s2.am()));
     SphericalTransformIter trans3(*integral()->spherical_transform(s3.am()));
     SphericalTransformIter trans4(*integral()->spherical_transform(s4.am()));
 
-    // Get the angular momentum for each shell
-    int am1 = s1.am();
-    int am2 = s2.am();
-    int am3 = s3.am();
-    int am4 = s4.am();
-
     // Get number of Cartesian functions for each shell
     int nao1 = s1.ncartesian();
     int nao2 = s2.ncartesian();
     int nao3 = s3.ncartesian();
     int nao4 = s4.ncartesian();
-
+    
     int nbf1 = s1.nfunction();
     int nbf2 = s2.nfunction();
     int nbf3 = s3.nfunction();

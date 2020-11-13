@@ -104,7 +104,8 @@ class PSI_API TwoBodyAOInt {
      */
     void create_blocks();
 
-    void permute_target(double *s, double *t, int sh1, int sh2, int sh3, int sh4, bool p12, bool p34, bool p13p24);
+    void permute_target(double *s, double *t, int sh1, int sh2, int sh3, int sh4, bool p12, bool p34, bool p13p24, 
+                       const std::vector<int>& AM_increments = {0, 0, 0, 0});
     void permute_1234_to_1243(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4);
     void permute_1234_to_2134(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4);
     void permute_1234_to_2143(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4);
@@ -150,10 +151,10 @@ class PSI_API TwoBodyAOInt {
     const IntegralFactory *integral() const { return integral_; }
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    virtual size_t compute_shell(const AOShellCombinationsIterator &) = 0;
+    virtual size_t compute_shell(const AOShellCombinationsIterator &, const std::vector<int>& AM_increments = {0, 0, 0, 0}) = 0;
 
     /// Compute the integrals
-    virtual size_t compute_shell(int, int, int, int) = 0;
+    virtual size_t compute_shell(int, int, int, int, const std::vector<int>& AM_increments = {0, 0, 0, 0}) = 0;
 
     //! Get optimal blocks of shell pairs for centers 1 & 2
     std::vector<ShellPairBlock> get_blocks12() const;

@@ -29,6 +29,7 @@
 #include "psi4/libmints/eri.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libmints/twobody.h"
 #include "psi4/libmints/fjt.h"
 ;
 using namespace psi;
@@ -138,3 +139,31 @@ ErfComplementERI::ErfComplementERI(double omega, const IntegralFactory *integral
 ErfComplementERI::~ErfComplementERI() { delete fjt_; }
 
 void ErfComplementERI::setOmega(double omega) { (static_cast<ErfComplementFundamental *>(fjt_))->setOmega(omega); }
+
+/////////
+// Derivative of two electron integrals of GIAOs.
+/////////
+
+GiaoERI::GiaoERI(const IntegralFactory *integral, int deriv, bool use_shell_pairs, int increment)
+    //: TwoElectronInt(integral, deriv, use_shell_pairs) {
+    : TwoElectronInt(integral, deriv, false, increment) {
+    // The +1 is needed for derivatives to work. either +1 or +2
+    fjt_ = new Taylor_Fjt(
+        basis1()->max_am() + basis2()->max_am() + basis3()->max_am() + basis4()->max_am() + deriv_ + increment, 1e-15);
+}
+
+GiaoERI::~GiaoERI() { delete fjt_; }
+
+void GiaoERI::prepare_pure_transform(int M, int N, int P, int Q, double * source, double * target){
+ double *osource, *otarget;
+ osource = source_;
+ otarget = target_;
+
+ source_ = source;
+ target_ = target;
+
+ pure_transform(M, N, P, Q, 1);
+
+ source_ = osource;
+ target_ = otarget;
+}

@@ -238,8 +238,8 @@ SimintTwoElectronInt::~SimintTwoElectronInt() {
     SIMINT_FREE(sharedwork_);
 }
 
-size_t SimintTwoElectronInt::compute_shell(const AOShellCombinationsIterator &shellIter) {
-    return compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s());
+size_t SimintTwoElectronInt::compute_shell(const AOShellCombinationsIterator &shellIter, const std::vector<int>& AM_increments) {
+    return compute_shell(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s(), AM_increments);
 }
 
 size_t SimintTwoElectronInt::compute_shell_deriv1(int, int, int, int) {
@@ -250,7 +250,7 @@ size_t SimintTwoElectronInt::compute_shell_deriv2(int, int, int, int) {
     throw PSIEXCEPTION("ERROR - SIMINT CANNOT HANDLE DERIVATIVES\n");
 }
 
-size_t SimintTwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4) {
+size_t SimintTwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4, const std::vector<int>& AM_increments) {
     target_ = target_full_;
     source_ = source_full_;
 

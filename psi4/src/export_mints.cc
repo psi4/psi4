@@ -69,6 +69,10 @@
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/overlap.h"
 #include "psi4/libmints/sieve.h"
+#include "psi4/libmints/giao_overlap_deriv.h"
+#include "psi4/libmints/giao_angmom.h"
+#include "psi4/libmints/giao_kinetic.h"
+#include "psi4/libmints/giao_potential.h"
 
 #include <string>
 
@@ -808,15 +812,17 @@ void export_mints(py::module& m) {
     py::class_<AngularMomentumInt, std::shared_ptr<AngularMomentumInt>>(m, "AngularMomentumInt", pyOneBodyAOInt,
                                                                         "Computes angular momentum integrals");
 
-    typedef size_t (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
+    typedef size_t (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int, const std::vector<int>& AM);
     py::class_<TwoBodyAOInt, std::shared_ptr<TwoBodyAOInt>> pyTwoBodyAOInt(m, "TwoBodyAOInt",
                                                                            "Two body integral base class");
     pyTwoBodyAOInt.def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell),
-                       "Compute ERIs between 4 shells");  // <-- Semicolon
+                       "Compute ERIs between 4 shells", "sh1"_a, "sh2"_a, "sh3"_a, "sh4"_a, 
+                       "AM_increment"_a = std::vector<int>{0, 0, 0, 0});  // <-- Semicolon
 
     py::class_<TwoElectronInt, std::shared_ptr<TwoElectronInt>>(m, "TwoElectronInt", pyTwoBodyAOInt,
                                                                 "Computes two-electron repulsion integrals")
-        .def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "Compute ERIs between 4 shells");
+        .def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "Compute ERIs between 4 shells", 
+                              "sh1"_a, "sh2"_a, "sh3"_a, "sh4"_a, "AM_increment"_a = std::vector<int>{0, 0, 0, 0});
 
     py::class_<ERI, std::shared_ptr<ERI>>(m, "ERI", pyTwoBodyAOInt, "Computes normal two electron reuplsion integrals");
     py::class_<F12, std::shared_ptr<F12>>(m, "F12", pyTwoBodyAOInt, "Computes F12 electron repulsion integrals");
@@ -1003,6 +1009,11 @@ void export_mints(py::module& m) {
              "coordinates (needed for EFP and PE)")
         .def("electric_field_value", &MintsHelper::electric_field_value,
              "Electric field expectation value at given sites")
+        .def("giao_overlap_deriv", &MintsHelper::giao_overlap_deriv, "Vector of GIAO overlap integrals")
+        .def("giao_angmom", &MintsHelper::giao_angmom, "Vector of GIAO angular momentum integrals")
+        .def("giao_kinetic", &MintsHelper::giao_kinetic, "Vector of GIAO kinetic energy integrals")
+        .def("giao_potential", &MintsHelper::giao_potential, "Vector of GIAO potential energy integrals")
+        .def("giao_tei_deriv1", &MintsHelper::giao_tei_deriv1, "Vector of first deriv. of GIAO tei integrals")
 
         // Two-electron AO
         .def("ao_eri", normal_eri_factory(&MintsHelper::ao_eri), "AO ERI integrals", "factory"_a = nullptr)
