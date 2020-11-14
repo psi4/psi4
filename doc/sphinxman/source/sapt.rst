@@ -473,14 +473,14 @@ Specific open-shell SAPT0 keywords
 SAPT(DFT)
 ^^^^^^^^^
 
-In general, SAPT(DFT) should provide more accurate
-interaction components, and overall interaction energies, than SAPT0.
-While being significantly more computationally expensive than SAPT0,
-SAPT(DFT) can still be applied to medium-sized or large systems. The
-SAPT(DFT) program was successful in computations of systems with up
-to 2000 basis functions, and the code should be scalable to 3000 basis
-functions. Like higher-order SAPT, SAPT(DFT) requires sufficient memory
-to hold :math:`2ovN_aux` doubles in core.
+In general, SAPT(DFT) should provide more accurate interaction energy 
+components, and overall interaction energies, than SAPT0. The drawback 
+is SAPT(DFT) method is more computationally demanding than SAPT0, 
+SAPT(DFT) can still be applied to medium-sized or large systems. The 
+SAPT(DFT) module was employed successfully in computations of systems 
+with up to 2000 basis functions, and the code should be scalable to 
+3000 basis functions. Like higher-order SAPT, SAPT(DFT) requires 
+sufficient memory to hold :math:`2ovN_aux` doubles.
 
 
 SAPT(DFT) requires a few special treatements to obtain accurate

@@ -543,7 +543,7 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
     return ret;
 }
 
-std::vector<SharedMatrix> FDDS_Dispersion::form_aux_matrices(std::string monomer, double omega){
+std::map<std::string, SharedMatrix> FDDS_Dispersion::form_aux_matrices(std::string monomer, double omega){
 
     // => Configuration <= //
     SharedVector eps_occ, eps_vir;
@@ -621,18 +621,19 @@ std::vector<SharedMatrix> FDDS_Dispersion::form_aux_matrices(std::string monomer
     auto YarQL = std::make_shared<Matrix>("YarQL", maxo * nvir, naux);
 
     // => Target <= //    
-    std::vector<SharedMatrix> ret;
-    for (size_t i = 0; i < 5; i++) {
-        ret.push_back(std::make_shared<Matrix>(naux, naux));
-        ret[i]->zero();
-    }
+    std::map<std::string, SharedMatrix> ret;
+    ret["amp"] = std::make_shared<Matrix>("amp", naux, naux); // Uncoupled amplitude
+    ret["K1LD"] = std::make_shared<Matrix>("K1LD", naux, naux);
+    ret["K2LD"] = std::make_shared<Matrix>("K2LD", naux, naux);
+    ret["K2L"] = std::make_shared<Matrix>("K2L", naux, naux);
+    ret["K21L"] = std::make_shared<Matrix>("K21L", naux, naux);
+
+    // Zero out matrices
+    
+    for (auto const &mat : ret)
+        mat.second->zero();
 
     // => Pointers <= //
-
-    std::vector<double**> retp;
-    for (size_t i = 0; i < 5; i++) {
-        retp.push_back(ret[i]->pointer());
-    }    
 
     double** arQp = arQ->pointer();
     double** arQLDp = arQLD->pointer();
@@ -641,6 +642,12 @@ std::vector<SharedMatrix> FDDS_Dispersion::form_aux_matrices(std::string monomer
     double** YarQLp = YarQL->pointer();
     double** QXarQp = QXarQ->pointer();
     double** QYarQp = QYarQ->pointer();
+
+    double** ampp = ret["amp"]->pointer();
+    double** K1LDp = ret["K1LD"]->pointer();
+    double** K2LDp = ret["K2LD"]->pointer();
+    double** K2Lp = ret["K2L"]->pointer();
+    double** K21Lp = ret["K21L"]->pointer();
 
     // => Master Loop <= //
 
@@ -654,13 +661,6 @@ std::vector<SharedMatrix> FDDS_Dispersion::form_aux_matrices(std::string monomer
         dfh_->fill_tensor(QXarQ_name, QXarQ, {astart, astart + nablock});
         dfh_->fill_tensor(YarQ_name, YarQ, {astart, astart + nablock});
         dfh_->fill_tensor(QYarQ_name, QYarQ, {astart, astart + nablock});
-
-        ret.push_back(arQ);
-        ret.push_back(XarQ);
-        ret.push_back(QXarQ);
-        ret.push_back(YarQ);
-        ret.push_back(QYarQ);
-
         
         // X <- X + Y, Y <- Y - X
         XarQ->axpy(1.0, YarQ);
@@ -687,17 +687,14 @@ std::vector<SharedMatrix> FDDS_Dispersion::form_aux_matrices(std::string monomer
             }
         }
 
-        C_DGEMM('T', 'N', naux, naux, navir, 1.0, arQLDp[0], naux, arQp[0], naux, 1.0, retp[0][0], naux);
-        C_DGEMM('T', 'N', naux, naux, navir, 1.0, arQLDp[0], naux, QXarQp[0], naux, 1.0, retp[1][0], naux);
-        C_DGEMM('T', 'N', naux, naux, navir, 1.0, arQLDp[0], naux, QYarQp[0], naux, 1.0, retp[2][0], naux);
-        C_DGEMM('T', 'N', naux, naux, navir, 1.0, arQp[0], naux, YarQLp[0], naux, 1.0, retp[3][0], naux);
-        C_DGEMM('T', 'N', naux, naux, navir, 1.0, YarQLp[0], naux, QXarQp[0], naux, 1.0, retp[4][0], naux);
+        C_DGEMM('T', 'N', naux, naux, navir, 1.0, arQLDp[0], naux, arQp[0], naux, 1.0, ampp[0], naux);
+        C_DGEMM('T', 'N', naux, naux, navir, 1.0, arQLDp[0], naux, QXarQp[0], naux, 1.0, K1LDp[0], naux);
+        C_DGEMM('T', 'N', naux, naux, navir, 1.0, arQLDp[0], naux, QYarQp[0], naux, 1.0, K2LDp[0], naux);
+        C_DGEMM('T', 'N', naux, naux, navir, 1.0, arQp[0], naux, YarQLp[0], naux, 1.0, K2Lp[0], naux);
+        C_DGEMM('T', 'N', naux, naux, navir, 1.0, YarQLp[0], naux, QXarQp[0], naux, 1.0, K21Lp[0], naux);
 
     }
     
-    ret.push_back(Lar);
-    ret.push_back(LDar);
-
     return ret;
 }
 

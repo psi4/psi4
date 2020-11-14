@@ -153,15 +153,13 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
 
         # Monomer A
         if is_hybrid:
-            aux_list = fdds_obj.form_aux_matrices("A", omega)
-            aux_length = len(aux_list)
-            for i in range(aux_length):
-                aux_list[i] = aux_list[i].to_array()
-            X_A_uc = aux_list[0].copy() 
-            X_A = X_A_uc - x_alpha * aux_list[3]
+            aux_dict = fdds_obj.form_aux_matrices("A", omega)
+            aux_dict = {k: v.to_array() for k, v in aux_dict.items()}
+            X_A_uc = aux_dict["amp"].copy() 
+            X_A = X_A_uc - x_alpha * aux_dict["K2L"]
 
             # K matrices
-            K_A = - x_alpha * aux_list[1] - x_alpha * aux_list[2] + x_alpha * x_alpha * aux_list[4] 
+            K_A = - x_alpha * aux_dict["K1LD"] - x_alpha * aux_dict["K2LD"] + x_alpha * x_alpha * aux_dict["K21L"] 
             KRS_A = K_A.dot(Rtinv_A).dot(metric)
         else:
             X_A = fdds_obj.form_unc_amplitude("A", omega)
@@ -179,18 +177,17 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
 
         del X_A, XSW_A, amplitude
         if is_hybrid:
-            del K_A, KRS_A, aux_list
+            del K_A, KRS_A, aux_dict
 
         # Monomer B
         if is_hybrid:
-            aux_list = fdds_obj.form_aux_matrices("B", omega)
-            for i in range(5):
-                aux_list[i] = aux_list[i].to_array()
-            X_B_uc = aux_list[0].copy()
-            X_B = X_B_uc - x_alpha * aux_list[3]
+            aux_dict = fdds_obj.form_aux_matrices("B", omega)
+            aux_dict = {k: v.to_array() for k, v in aux_dict.items()}
+            X_B_uc = aux_dict["amp"].copy()
+            X_B = X_B_uc - x_alpha * aux_dict["K2L"]
 
             # K matrices
-            K_B = - x_alpha * aux_list[1] - x_alpha * aux_list[2] + x_alpha * x_alpha * aux_list[4] 
+            K_B = - x_alpha * aux_dict["K1LD"] - x_alpha * aux_dict["K2LD"] + x_alpha * x_alpha * aux_dict["K21L"] 
             KRS_B = K_B.dot(Rtinv_B).dot(metric)
         else:
             X_B = fdds_obj.form_unc_amplitude("B", omega)
@@ -208,7 +205,7 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
 
         del X_B, XSW_B, amplitude
         if is_hybrid:
-            del K_B, KRS_B, aux_list
+            del K_B, KRS_B, aux_dict
 
         # Make sure the results are symmetrized
         X_A_uc = _symmetrize(X_A_uc)
