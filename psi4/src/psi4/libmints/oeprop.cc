@@ -1167,46 +1167,44 @@ SharedMatrix ESPPropCalc::compute_field_over_grid_in_memory(SharedMatrix input_g
         throw PSIEXCEPTION("ESPPropCalc only allows \"plain\" input matrices with a dimension of N (rows) x 3 (cols)");
     }
 
-    int number_of_grid_points = input_grid->rowdim();
-    SharedMatrix output = std::make_shared<Matrix>("Output E field", number_of_grid_points, 3);
-
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
-    SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "AO", "D");
+    SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "CartAO", "D");
     if (same_dens_) {
         Dtot->scale(2.0);
     } else {
-        Dtot->add(wfn_->matrix_subset_helper(Db_so_, Cb_so_, "AO", "D beta"));
+        Dtot->add(wfn_->matrix_subset_helper(Db_so_, Cb_so_, "CartAO", "D beta"));
     }
 
     std::shared_ptr<ElectricFieldInt> field_ints(dynamic_cast<ElectricFieldInt*>(wfn_->integral()->electric_field()));
 
-    int const nbf = basisset_->nbf();
+    // Scale the coordinates if needed
+    auto coords = input_grid;
 
-    std::vector<SharedMatrix> intmats;
-    intmats.push_back(std::make_shared<Matrix>("Ex integrals", nbf, nbf));
-    intmats.push_back(std::make_shared<Matrix>("Ey integrals", nbf, nbf));
-    intmats.push_back(std::make_shared<Matrix>("Ez integrals", nbf, nbf));
-
-    bool convert = mol->units() == Molecule::Angstrom;
-
-    for (int i = 0; i < number_of_grid_points; ++i) {
-        Vector3 origin(input_grid->get(i, 0), input_grid->get(i, 1), input_grid->get(i, 2));
-        if (convert) origin /= pc_bohr2angstroms;
-        field_ints->set_origin(origin);
-        for (int m = 0; m < 3; ++m) intmats[m]->zero();
-        field_ints->compute(intmats);
-        double Ex = Dtot->vector_dot(intmats[0]);
-        double Ey = Dtot->vector_dot(intmats[1]);
-        double Ez = Dtot->vector_dot(intmats[2]);
-        Vector3 nuc = field_ints->nuclear_contribution(origin, mol);
-        output->set(i, 0, Ex + nuc[0]);
-        output->set(i, 1, Ey + nuc[1]);
-        output->set(i, 2, Ez + nuc[2]);
+    if (mol->units() == Molecule::Angstrom)
+    {
+        coords = input_grid->clone();
+        coords->scale(1.0 / pc_bohr2angstroms);
     }
-    return output;
-}
 
+    // Compute the electric field at all grid points.
+    int number_of_grid_points = coords->rowdim();
+
+    SharedMatrix efield = std::make_shared<Matrix>("efield", number_of_grid_points, 3);
+
+    auto field_functor = ContractOverDensityFieldFunctor(efield, Dtot);
+    field_ints->compute_with_functor(field_functor, coords);
+
+    // Add the nuclear contribution.
+    for (int i = 0; i < number_of_grid_points; ++i) {
+        Vector3 origin(coords->get(i, 0), coords->get(i, 1), coords->get(i, 2));
+        Vector3 nuc = field_ints->nuclear_contribution(origin, mol);
+        efield->set(i, 0, efield->get(i, 0) + nuc[0]);
+        efield->set(i, 1, efield->get(i, 1) + nuc[1]);
+        efield->set(i, 2, efield->get(i, 2) + nuc[2]);
+    }
+    return efield;
+}
 
 void OEProp::compute_esp_at_nuclei() {
     std::shared_ptr<std::vector<double>> nesps = epc_.compute_esp_at_nuclei(true, print_ > 2);
