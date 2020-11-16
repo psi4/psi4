@@ -1733,10 +1733,12 @@ def cbs(func, label, **kwargs):
     if len(metadata) > 2:
         dc = 3
         for delta in metadata[2:]:
+            deltaE_total = GRAND_NEED[dc]['d_energy'] - GRAND_NEED[dc + 1]['d_energy']
             tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
                 GRAND_NEED[dc]['d_stage'], GRAND_NEED[dc]['d_wfn'] + ' - ' + GRAND_NEED[dc + 1]['d_wfn'], '/',
-                GRAND_NEED[dc]['d_basis'], '', GRAND_NEED[dc]['d_energy'] - GRAND_NEED[dc + 1]['d_energy'],
+                GRAND_NEED[dc]['d_basis'], '', deltaE_total,
                 GRAND_NEED[dc]['d_scheme'].__name__)
+            core.set_variable(f"{GRAND_NEED[dc]['d_stage'].upper()} TOTAL ENERGY", deltaE_total)
             dc += 2
 
     tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % ('total', 'CBS', '', '', '', finalenergy, '')
