@@ -615,6 +615,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         "calcinfo_nalpha": wfn.nalpha(),
         "calcinfo_nbeta": wfn.nbeta(),
         "calcinfo_natom": mol.geometry().shape[0],
+        "nuclear_repulsion_energy": mol.nuclear_repulsion_energy(),  # use this b/c psivar is monomer for SAPT
     }
     props.update(_convert_variables(psi_props, context="generics", json=json_serialization))
     if not list(set(['CBS NUMBER', 'NBODY NUMBER', 'FINDIF NUMBER']) & set(json_data["extras"]["qcvars"].keys())):

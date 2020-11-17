@@ -426,6 +426,73 @@ def prepare_options_for_modules(changedOnly=False, commandsInsteadDict=False):
         return options
 
 
+def prepare_options_for_set_options():
+    """Capture current state of C++ psi4.core.Options information for reloading by `psi4.set_options()`.
+
+    Returns
+    -------
+    dict
+        Dictionary where keys are option names to be set globally or module__option
+        mangled names to be set locally. Values are option values.
+
+    """
+    flat_options = {}
+    has_changed_snapshot = {module: core.options_to_python(module) for module in _modules}
+
+    for opt in core.get_global_option_list():
+
+        handled_locally = False
+        ghoc = core.has_global_option_changed(opt)
+        opt_snapshot = {k: v[opt] for k, v in has_changed_snapshot.items() if opt in v}
+        for module, (lhoc, ohoc) in opt_snapshot.items():
+            if ohoc:
+                if lhoc:
+                    key = module + '__' + opt
+                    val = core.get_local_option(module, opt)
+                else:
+                    key = opt
+                    val = core.get_global_option(opt)
+                    handled_locally = True
+                flat_options[key] = val
+
+        if ghoc and not handled_locally:
+            # some options are globals section (not level) so not in any module
+            flat_options[opt] = core.get_global_option(opt)
+
+    return flat_options
+
+
+def state_to_atomicinput(*, driver, method, basis=None, molecule=None, function_kwargs=None) -> "AtomicInput":
+    """Form a QCSchema for job input from the current state of Psi4 settings."""
+
+    import qcelemental as qcel
+
+    if molecule is None:
+        molecule = core.get_active_molecule()
+
+    # keywords = _prepare_keywords_for_atomicinput()
+    keywords = {k.lower(): v for k, v in prepare_options_for_set_options().items()}
+    if function_kwargs is not None:
+        keywords["function_kwargs"] = function_kwargs
+
+    kw_basis = keywords.pop("basis", None)
+    basis = basis or kw_basis
+
+    resi = qcel.models.AtomicInput(
+         **{
+            "driver": driver,
+            "model": {
+                "method": method,
+                "basis": basis,
+            },
+            "keywords": keywords,
+            "molecule": molecule.to_schema(dtype=2),
+            "provenance": provenance_stamp(__name__),
+         })
+
+    return resi
+
+
 def mat2arr(mat):
     """Function to convert core.Matrix *mat* to Python array of arrays.
     Expects core.Matrix to be flat with respect to symmetry.
