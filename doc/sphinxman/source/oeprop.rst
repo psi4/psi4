@@ -77,7 +77,7 @@ summarized in the table below.
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Natural orbital occupations        | NO_OCCUPATIONS        |                                                                                   |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
-   | Stockholder Atomic Multipoles      | MBIS                  | Generates atomic charges, dipoles, etc. See :ref:`sec:oeprop_mbis`                |
+   | Stockholder Atomic Multipoles      | MBIS_CHARGES          | Generates atomic charges, dipoles, etc. See :ref:`sec:oeprop_mbis`                |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
 
 There are two ways the computation of one-electron properties can be requested. 
@@ -170,18 +170,18 @@ manipulated using standard Python syntax.  For a complete demonstration of this
 utility, see the :srcsample:`props4` test case.
 
 
-.. _`sec:oeprop_mbis`:
+..index:: ISA; MBIS
 
+.. _`sec:oeprop_mbis`:
 
 Minimal Basis Iterative Stockholder
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Minimal Basis Iterative Stockholder (MBIS) partitioning is one of many procedures
-that produce atomic one-electron densities from the molecular one-electron density.
-Calling MBIS in |PSIfour| will calculate atomic charges, as well as dipoles, quadrupoles, and
+The Minimal Basis Iterative Stockholder (MBIS) method is one of many procedures
+that partitions a molecular one-particle density matrix into atomic electron densities.
+Running MBIS in |PSIfour| will calculate atomic charges, as well as dipoles, quadrupoles, and
 octupoles. The allowed number of iterations and convergence criteria for the stockholder 
-algorithm is controlled by |globals__mbis_maxiter| and |globals__mbis_convergence|. Note 
-that the density is partitioned on a molecular grid, so any settings related to the number
-or type of grid points applies. (Associated Paper: [Verstraelen:2016]_)
-
-..index:: ISA; MBIS
+algorithm is controlled by |globals__mbis_maxiter| and |globals__mbis_d_convergence|. Note 
+that the density is partitioned on a molecular quadrature grid, the details of which can be
+controlled with the keywords |globals__mbis_radial_points|, |globals__mbis_spherical_points|, and 
+|globals__mbis_pruning_scheme|. (Associated Paper: [Verstraelen:2016]_)

@@ -591,7 +591,7 @@ def basis_helper(block, name='', key='BASIS', set_option=True):
 
 core.OEProp.valid_methods = [
     'DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES', 'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES',
-    'MAYER_INDICES', 'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI', 'NO_OCCUPATIONS'
+    'MBIS_CHARGES', 'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI', 'NO_OCCUPATIONS'
 ]
 
 ## Option helpers
@@ -643,7 +643,22 @@ def _qcvar_reshape_set(key, val):
     """Reverse `_qcvar_reshape_get` for internal psi4.core.Matrix storage."""
 
     reshaper = None
-    if key.upper().endswith("DIPOLE"):
+
+    if key.upper().startswith("MBIS"):
+        if key.upper().endswith("CHARGES"):
+            return val
+        elif key.upper().endswith("DIPOLES"):
+            reshaper = (-1, 3)
+            return val.reshape(reshaper)
+        elif key.upper().endswith("QUADRUPOLES"):
+            val = val.reshape(-1, 3, 3)
+            val = np.array([_multipole_compressor(val[iat], 2) for iat in range(len(val))])
+            return val
+        elif key.upper().endswith("OCTUPOLES"):
+            val = val.reshape(-1, 3, 3, 3)
+            val = np.array([_multipole_compressor(val[iat], 3) for iat in range(len(val))])
+            return val
+    elif key.upper().endswith("DIPOLE"):
         reshaper = (1, 3)
     elif any(key.upper().endswith(p) for p in _multipole_order):
         val = _multipole_compressor(val, _multipole_order.index(key.upper().split()[-1]))
@@ -661,18 +676,20 @@ def _qcvar_reshape_get(key, val):
     """For QCVariables where the 2D psi4.core.Matrix shape is unnatural, convert to natural shape in ndarray."""
 
     reshaper = None
-    if key.upper() == "MBIS CHARGES":
-        return val.np
-    elif key.upper() == "MBIS DIPOLES":
-        reshaper = (-1, 3)
-    elif key.upper() == "MBIS QUADRUPOLES":
-        val = val.np.reshape(-1, 6)
-        val = np.array([_multipole_plumper(val[iat], 2) for iat in range(len(val))])
-        return val
-    elif key.upper() == "MBIS OCTUPOLES":
-        val = val.np.reshape(-1, 10)
-        val = np.array([_multipole_plumper(val[iat], 3) for iat in range(len(val))])
-        return val
+    if key.upper().startswith("MBIS"):
+        if key.upper().endswith("CHARGES"):
+            return val.np
+        elif key.upper().endswith("DIPOLES"):
+            reshaper = (-1, 3)
+            return val.np.reshape(reshaper)
+        elif key.upper().endswith("QUADRUPOLES"):
+            val = val.np.reshape(-1, 6)
+            val = np.array([_multipole_plumper(val[iat], 2) for iat in range(len(val))])
+            return val
+        elif key.upper().endswith("OCTUPOLES"):
+            val = val.np.reshape(-1, 10)
+            val = np.array([_multipole_plumper(val[iat], 3) for iat in range(len(val))])
+            return val
     elif key.upper().endswith("DIPOLE"):
         reshaper = (3, )
     elif any(key.upper().endswith(p) for p in _multipole_order):
