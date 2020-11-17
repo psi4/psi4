@@ -156,7 +156,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     // Build DFHelper
     dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_);
     dfh_->set_memory(doubles);
-    if (is_hybrid) {
+    if (is_hybrid_) {
         dfh_->set_method("DIRECT");
     } else {
         dfh_->set_method("DIRECT_iaQ");
