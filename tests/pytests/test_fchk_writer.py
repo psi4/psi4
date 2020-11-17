@@ -36,7 +36,7 @@ def test_uhf_fchk(inp2):
   psi4.set_options(inp2['options'])
   e, wfn = psi4.gradient(inp2['name'], return_wfn=True,molecule=mol)
   ret = psi4.driver.fchk(wfn, f"uhf-{inp2['name']}.fchk", debug=True)
-  psi4.compare_arrays(ret["Total SCF Density"],calcD(wfn),9)
+  psi4.compare_arrays(ret["Total SCF Density"],calcD(wfn),9, "FCHK UHF Density")
 
 
 @pytest.mark.parametrize('inp', [
@@ -69,4 +69,4 @@ def test_rhf_fchk(inp):
       expected = calcD(refwfn)
   else:
       expected = calcD(wfn)
-  psi4.compare_arrays(ret["Total SCF Density"],expected,9)
+  psi4.compare_arrays(ret["Total SCF Density"],expected,9, "FCHK RHF Density")
