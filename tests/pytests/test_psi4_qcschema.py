@@ -7,7 +7,6 @@ import psi4
 
 pytestmark = [pytest.mark.quick, pytest.mark.smoke]
 
-
 # Generating
 # * equivalent to test_psi4. copy over the job, then run below to generate atomicinput
 #    atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="ccsd", molecule=ethene_ethyne)
@@ -15,6 +14,7 @@ pytestmark = [pytest.mark.quick, pytest.mark.smoke]
 #    assert 0
 # * switch to json running
 #    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
+
 
 def test_psi4_basic():
     """tu1-h2o-energy"""
@@ -27,42 +27,27 @@ def test_psi4_basic():
     assert psi4.compare_values(-76.0266327341067125, atres.return_result, 6, 'SCF energy')
 
 
-def hide_test_psi4_cc():
+def test_psi4_cc():
     """cc1"""
     #! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
 
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["O", "H", "H"], "geometry": [0.0, 0.0, -0.12770502190246294, 0.0, -1.4345476276003923, 1.013385685261514, 0.0, 1.4345476276003923, 1.013385685261514], "name": "H2O", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [15.99491461957, 1.00782503223, 1.00782503223], "real": [true, true, true], "atom_labels": ["", "", ""], "atomic_numbers": [8, 1, 1], "mass_numbers": [16, 1, 1], "fragments": [[0, 1, 2]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "optimize", "model": {"method": "ccsd", "basis": "6-31G**"}, "keywords": {}, "protocols": {}, "extras": {}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1087", "routine": "psi4.driver.p4util.procutil"}}"""
 
-#    psi4.core.clean()
-#    h2o = psi4.geometry("""
-#        O
-#        H 1 0.97
-#        H 1 0.97 2 103.0
-#    """)
-#
-#    psi4.set_options({"basis": '6-31G**'})
+    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
 
-#    atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="ccsd")
-#    print(f'    jatin = """{atin.serialize("json")}"""')
-#    assert 0
-#
-#    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
+    if "qcengine.exceptions.InputError" in atres.error.error_message:
+        pytest.xfail("no AtomicInput optimization")
 
-    #atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-    atres = psi4.schema_wrapper.run_json(json.loads(jatin))
-    #pprint.pprint(atres.dict())
-    pprint.pprint(atres)
+    # psi4.optimize('ccsd')
 
-#    psi4.optimize('ccsd')
-
-    refnuc   =   9.1654609427539
-    refscf   = -76.0229427274435
-    refccsd  = -0.20823570806196
+    refnuc = 9.1654609427539
+    refscf = -76.0229427274435
+    refccsd = -0.20823570806196
     reftotal = -76.2311784355056
 
-#    assert psi4.compare_values(refnuc,   atres["properties"]nuclear_repulsion_energy, 3, "Nuclear repulsion energy")
-    assert psi4.compare_values(refscf,   atres["extras"]["qcvars"]["SCF total energy"], 5, "SCF energy")
-    assert psi4.compare_values(refccsd,  psi4.variable("CCSD correlation energy"), 4, "CCSD contribution")
+    assert psi4.compare_values(refnuc, atres.properties.nuclear_repulsion_energy, 3, "Nuclear repulsion energy")
+    assert psi4.compare_values(refscf, atres.extras["qcvars"]["SCF total energy"], 5, "SCF energy")
+    assert psi4.compare_values(refccsd, psi4.variable("CCSD correlation energy"), 4, "CCSD contribution")
     assert psi4.compare_values(reftotal, psi4.variable("Current energy"), 7, "Total energy")
 
 
@@ -89,7 +74,7 @@ def test_psi4_dfmp2():
     #! using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
 
     Enuc = 235.94662124
-    Ecp  = -0.0224119246
+    Ecp = -0.0224119246
 
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["C", "O", "O", "H", "H", "C", "O", "O", "H", "H"], "geometry": [-3.5694961194727894, -0.33956866693576815, 0.0, -2.8218902286236656, 2.0289781539166896, 0.0, -2.2118015976502328, -2.204535600697848, 0.0, -5.630416314088094, -0.48911592332612425, 0.0, -0.9426577523405049, 2.09229531747628, 0.0, 3.5694961194727894, 0.33956866693576815, 0.0, 2.8218902286236656, -2.0289781539166896, 0.0, 2.2118015976502328, 2.204535600697848, 0.0, 5.630416314088094, 0.48911592332612425, 0.0, 0.9426577523405049, -2.09229531747628, 0.0], "name": "C2H4O4", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [12.0, 15.99491461957, 15.99491461957, 1.00782503223, 1.00782503223, 12.0, 15.99491461957, 15.99491461957, 1.00782503223, 1.00782503223], "real": [true, true, true, true, true, true, true, true, true, true], "atom_labels": ["", "", "", "", "", "", "", "", "", ""], "atomic_numbers": [6, 8, 8, 1, 1, 6, 8, 8, 1, 1], "mass_numbers": [12, 16, 16, 1, 1, 12, 16, 16, 1, 1], "fragments": [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]], "fragment_charges": [0.0, 0.0], "fragment_multiplicities": [1, 1], "fix_com": false, "fix_orientation": true, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "mp2", "basis": "CC-PVDZ"}, "keywords": {"df_basis_mp2": "CC-PVDZ-RI", "df_basis_scf": "CC-PVDZ-JKFIT", "d_convergence": 1e-11, "guess": "SAD", "scf_type": "DF", "function_kwargs": {"bsse_type": "cp"}}, "protocols": {}, "extras": {}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1087", "routine": "psi4.driver.p4util.procutil"}}"""
 
@@ -127,11 +112,10 @@ def test_psi4_scfproperty():
     ref_b3lyp_di_au = np.array([0.0, 0.0, 0.252480541747])
     ref_b3lyp_quad_au = np.array([[-5.66266837697, 0.0, 0.0], [0.0, -4.46523692003, 0.0], [0.0, 0.0, -5.22054902407]])
 
-    props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
-             'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',
-             'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
-             'MULTIPOLE(5)', 'NO_OCCUPATIONS']
-
+    props = [
+        'DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES', 'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES',
+        'MAYER_INDICES', 'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI', 'MULTIPOLE(5)', 'NO_OCCUPATIONS'
+    ]
 
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["C", "H", "H"], "geometry": [0.0, 0.0, -0.12548920214507722, 0.0, -1.6762075450210006, 0.7470892156790888, 0.0, 1.6762075450210006, 0.7470892156790888], "name": "CH2", "molecular_charge": 0.0, "molecular_multiplicity": 3, "masses": [12.0, 1.00782503223, 1.00782503223], "real": [true, true, true], "atom_labels": ["", "", ""], "atomic_numbers": [6, 1, 1], "mass_numbers": [12, 1, 1], "fragments": [[0, 1, 2]], "fragment_charges": [0.0], "fragment_multiplicities": [3], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "properties", "model": {"method": "scf", "basis": "6-31G**"}, "keywords": {"docc": [2, 0, 0, 1], "e_convergence": 1e-08, "reference": "UHF", "scf_type": "PK", "socc": [1, 0, 1, 0], "function_kwargs": {"properties": ["DIPOLE", "QUADRUPOLE", "MULLIKEN_CHARGES", "LOWDIN_CHARGES", "WIBERG_LOWDIN_INDICES", "MAYER_INDICES", "MAYER_INDICES", "MO_EXTENTS", "GRID_FIELD", "GRID_ESP", "ESP_AT_NUCLEI", "MULTIPOLE(5)", "NO_OCCUPATIONS"]}}, "protocols": {}, "extras": {}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1087", "routine": "psi4.driver.p4util.procutil"}}"""
 

@@ -1,10 +1,10 @@
 import pytest
 from .utils import *
-from .addons import using_dftd3
+from .addons import using
 
 import psi4
 
-@using_dftd3
+@using("dftd3")
 def test_dftd3_dft_grad_lr3():
     """modified VV10-less B97 functional gradient wB97X-V -> wB97X-D3BJ"""
 
