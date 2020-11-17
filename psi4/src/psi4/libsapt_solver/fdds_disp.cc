@@ -156,9 +156,10 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     // Build DFHelper
     dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_);
     dfh_->set_memory(doubles);
-    dfh_->set_method("DIRECT_iaQ");
-    if (is_hybrid_) {
+    if (is_hybrid) {
         dfh_->set_method("DIRECT");
+    } else {
+        dfh_->set_method("DIRECT_iaQ");
     }
     dfh_->set_nthreads(nthread);
     dfh_->set_metric_pow(0.0);
@@ -524,7 +525,7 @@ SharedMatrix FDDS_Dispersion::form_unc_amplitude(std::string monomer, double ome
 
         dfh_->fill_tensor(ovQ_tensor_name, tmp, {bcount, bcount + osize});
         size_t shift_i = block * bsize;
-        
+
 #pragma omp parallel for collapse(2)
         for (size_t i = 0; i < osize; i++) {
             for (size_t a = 0; a < nvir; a++) {

@@ -37,9 +37,11 @@ from psi4.driver import psifiles as psif
 
 from .sapt_util import print_sapt_var
 
+
 def _symmetrize(mat):
     tmp = 0.5 * (mat + mat.transpose())
     return tmp
+
 
 def _compute_fxc(PQrho, half_Saux, halfp_Saux, x_alpha, rho_thresh=1.e-8):
     """
@@ -63,9 +65,7 @@ def _compute_fxc(PQrho, half_Saux, halfp_Saux, x_alpha, rho_thresh=1.e-8):
     dft_size = rho.shape[0]
 
     inp = {"RHO_A": rho}
-    out = {"V": core.Vector(dft_size),
-           "V_RHO_A": core.Vector(dft_size),
-           "V_RHO_A_RHO_A": core.Vector(dft_size)}
+    out = {"V": core.Vector(dft_size), "V_RHO_A": core.Vector(dft_size), "V_RHO_A_RHO_A": core.Vector(dft_size)}
 
     func_x = core.LibXCFunctional('XC_LDA_X', True)
     func_x.compute_functional(inp, out, dft_size, 2)
@@ -155,11 +155,11 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
         if is_hybrid:
             aux_dict = fdds_obj.form_aux_matrices("A", omega)
             aux_dict = {k: v.to_array() for k, v in aux_dict.items()}
-            X_A_uc = aux_dict["amp"].copy() 
+            X_A_uc = aux_dict["amp"].copy()
             X_A = X_A_uc - x_alpha * aux_dict["K2L"]
 
             # K matrices
-            K_A = - x_alpha * aux_dict["K1LD"] - x_alpha * aux_dict["K2LD"] + x_alpha * x_alpha * aux_dict["K21L"] 
+            K_A = -x_alpha * aux_dict["K1LD"] - x_alpha * aux_dict["K2LD"] + x_alpha * x_alpha * aux_dict["K21L"]
             KRS_A = K_A.dot(Rtinv_A).dot(metric)
         else:
             X_A = fdds_obj.form_unc_amplitude("A", omega)
@@ -187,7 +187,7 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
             X_B = X_B_uc - x_alpha * aux_dict["K2L"]
 
             # K matrices
-            K_B = - x_alpha * aux_dict["K1LD"] - x_alpha * aux_dict["K2LD"] + x_alpha * x_alpha * aux_dict["K21L"] 
+            K_B = -x_alpha * aux_dict["K1LD"] - x_alpha * aux_dict["K2LD"] + x_alpha * x_alpha * aux_dict["K21L"]
             KRS_B = K_B.dot(Rtinv_B).dot(metric)
         else:
             X_B = fdds_obj.form_unc_amplitude("B", omega)

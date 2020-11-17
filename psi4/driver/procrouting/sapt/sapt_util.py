@@ -29,6 +29,7 @@
 from psi4 import core
 from psi4.driver import constants
 
+
 def print_sapt_var(name, value, short=False, start_spacer="    "):
     """
     Converts the incoming value as hartree to a correctly formatted Psi print format.
@@ -39,6 +40,7 @@ def print_sapt_var(name, value, short=False, start_spacer="    "):
         return start_spacer + "%-28s % 15.8f [mEh]" % vals[:2]
     else:
         return start_spacer + "%-28s % 15.8f [mEh] % 15.8f [kcal/mol] % 15.8f [kJ/mol]" % vals
+
 
 def print_sapt_hf_summary(data, name, short=False, delta_hf=False):
 
@@ -82,10 +84,10 @@ def print_sapt_hf_summary(data, name, short=False, delta_hf=False):
         ret += print_sapt_var("Delta HF", sapt_hf_delta, start_spacer="    ") + "\n"
 
         ret += "  " + "-" * 105 + "\n"
-        
+
         # Induction with dHF and scaling
         Sdelta = (ind + sapt_hf_delta) / ind
- 
+
         ret += "   Partial %s Results, alternate SAPT0-like display\n" % name
         ret += "  " + "-" * 105 + "\n"
 
@@ -143,7 +145,7 @@ def print_sapt_dft_summary(data, name, short=False):
     ind_ba = data["Ind20,r (A->B)"] + data["Exch-Ind20,r (A->B)"]
 
     if "Delta HF Correction" in list(data):
-        ind +=  data["Delta HF Correction"]
+        ind += data["Delta HF Correction"]
 
     ret += print_sapt_var("Induction", ind) + "\n"
 
@@ -158,21 +160,18 @@ def print_sapt_dft_summary(data, name, short=False):
     ret += "\n"
     core.set_variable("SAPT IND ENERGY", ind)
 
-
     # Exchange-dispersion scaling
     exch_disp_scheme = core.get_option("SAPT", "SAPT_DFT_EXCH_DISP_SCALE_SCHEME")
     if exch_disp_scheme == "NONE":
-        data["Exch-Disp20,r"] = data["Exch-Disp20,u"] 
+        data["Exch-Disp20,r"] = data["Exch-Disp20,u"]
     elif exch_disp_scheme == "FIXED":
         exch_disp_scale = core.get_option("SAPT", "SAPT_DFT_EXCH_DISP_FIXED_SCALE")
         data["Exch-Disp20,r"] = exch_disp_scale * data["Exch-Disp20,u"]
     elif exch_disp_scheme == "DISP":
         exch_disp_scale = data["Disp20"] / data["Disp20,u"]
         data["Exch-Disp20,r"] = exch_disp_scale * data["Exch-Disp20,u"]
-    
 
     # Dispersion
-    # disp = data["Disp20"] + data["Exch-Disp20,u"]
     disp = data["Disp20"] + data["Exch-Disp20,r"]
     ret += print_sapt_var("Dispersion", disp) + "\n"
     ret += print_sapt_var("  Disp2,r", data["Disp20"]) + "\n"

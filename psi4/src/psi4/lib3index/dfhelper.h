@@ -455,7 +455,6 @@ class PSI_API DFHelper {
         FILE* get_stream(std::string op);
         void change_stream(std::string op);
         void close_stream();
-        void flush_stream();
 
         FILE* fp_;
         std::string op_;
