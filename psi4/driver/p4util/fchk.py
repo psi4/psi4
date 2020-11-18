@@ -33,16 +33,16 @@ from psi4 import core
 from .exceptions import ValidationError
 
 
-def consume_fchk_section(input_list, index):
-    """compare a float matrix section"""
+def _consume_fchk_section(input_list, index):
+    """compare a float or integer matrix section"""
 
     n = int(input_list[index].split()[-1])
     kind = input_list[index].split()[-3]
 
-    if " R " in kind:
+    if "R" in kind:
         dtype = np.float64
         format_counter = 5
-    elif " I " in kind:
+    elif "I" in kind:
         dtype = np.float64
         format_counter = 6
     else:
@@ -70,52 +70,58 @@ def fchkfile_to_string(fname):
 def compare_fchkfiles(expected, computed, label):
     # """Function to compare two FCHK files.
 
+    # an older format description can be found here
+    # http://wild.life.nctu.edu.tw/~jsyu/compchem/g09/g09ur/f_formchk.htm
+    # It lists more fields (logical, character) that are not included in this
+    # test function. They should be covered by the string comparison.
+    # This function is only meant to work with PSI4's FCHK files.
+    #
     # :param expected: reference FCHK file name
     # :param computed: computed FCHK file name
     # :param label: string labelling the test
     # """
 
+    fchk_ref = fchkfile_to_string(expected).splitlines()
+    fchk_calc = fchkfile_to_string(computed).splitlines()
+
     high_accuracy = 9
     low_accuracy = 3
 
-    # those need super high scf convergence (d_conv 1e-12). Unsure how it is
-    # on different machines. Thus they get low_accuracy.
-    # Rest seems okay with d_conv 1e-10.
+    # Those listed below need super high scf convergence (d_conv 1e-12) and might
+    # show machine dependence. They will be tested with low_accuracy.
     sensitive = ['Current cartesian coordinates', 'MO coefficients']
-
-    fchk_ref = fchkfile_to_string('dct.ref').splitlines()
-    fchk_calc = fchkfile_to_string('dct.fchk').splitlines()
 
     if len(fchk_ref) != len(fchk_calc):
         raise ValidationError('The two FCHK files to compare have a different file length! \n')
 
-    i = 0
+    index = 0
     max_length = len(fchk_calc)
     tests = []
     for start in range(max_length):
-        if i >= max_length:
+        if index >= max_length:
             break
-        if "N=" in fchk_calc[i]:
-            offset, calc = consume_fchk_section(fchk_calc, i)
-            _, ref = consume_fchk_section(fchk_ref, i)
-            if any(x in fchk_calc[i] for x in sensitive):
-                test = compare_arrays(ref, calc, low_accuracy, f" matrix section: {fchk_calc[i]}")
+        line = fchk_calc[index]
+        if "N=" in line:
+            offset, calc = _consume_fchk_section(fchk_calc, index)
+            _, ref = _consume_fchk_section(fchk_ref, index)
+            if any(x in line for x in sensitive):
+                test = compare_arrays(ref, calc, low_accuracy, f" matrix section: {line}")
             else:
-                test = compare_arrays(ref, calc, high_accuracy, f" matrix section: {fchk_calc[i]}")
-            i += offset
-        elif " R " in fchk_calc[i] and not "N=" in fchk_calc[i]:
-            calc = fchk_calc[i].split()[-1]
-            ref = fchk_ref[i].split()[-1]
-            test = compare_values(ref, calc, high_accuracy, f" float value: {fchk_calc[i]}")
-            i += 1
-        elif " I " in fchk_calc[i] and not "N=" in fchk_calc[i]:
-            calc = fchk_calc[i].split()[-1]
-            ref = fchk_ref[i].split()[-1]
-            test = compare_integers(ref, calc, f" int value: {fchk_calc[i]}")
-            i += 1
+                test = compare_arrays(ref, calc, high_accuracy, f" matrix section: {line}")
+            index += offset
+        elif " R " in line and not "N=" in line:
+            calc = line.split()[-1]
+            ref = fchk_ref[index].split()[-1]
+            test = compare_values(ref, calc, high_accuracy, f" float value: {line}")
+            index += 1
+        elif " I " in line and not "N=" in line:
+            calc = line.split()[-1]
+            ref = fchk_ref[index].split()[-1]
+            test = compare_integers(ref, calc, f" int value: {line}")
+            index += 1
         else:
-            test = compare_strings(fchk_calc[i], fchk_ref[i], f"FCK text line {i+1}.")
-            i += 1
+            test = compare_strings(line, fchk_ref[index], f"FCK text line {index+1}.")
+            index += 1
         tests.append(test)
 
     return compare_integers(True, all(tests), label)

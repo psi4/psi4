@@ -1,6 +1,7 @@
 list(APPEND sources
   exceptions
   fcidump
+  fchk
   inpsight
   numpy_helper
   optproc
