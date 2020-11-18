@@ -313,6 +313,16 @@ def _convert_wavefunction(wfn, context=None):
 
         return arr
 
+    # get occupations in orbital-energy ordering
+    def sort_occs(noccpi, epsilon):
+        occs = []
+        for irrep, nocc in enumerate(noccpi):
+            for i, e in enumerate(epsilon[irrep]):
+                occs.append((e, int(i < nocc)))
+
+        occs.sort(key = lambda x : x[0])
+        return np.array([occ[1] for occ in occs])
+
     # Map back out what we can
     ret = {
         "basis": basis,
@@ -341,8 +351,8 @@ def _convert_wavefunction(wfn, context=None):
         "scf_fock_b": re2d(wfn.Fa_subset("AO")),
         "scf_eigenvalues_a": re1d(wfn.epsilon_a_subset("AO", "ALL")),
         "scf_eigenvalues_b": re1d(wfn.epsilon_b_subset("AO", "ALL")),
-        # "scf_occupations_a": np.hstack(wfn.occupation_a().nph),
-        # "scf_occupations_b": np.hstack(wfn.occupation_b().nph),
+        "scf_occupations_a": re1d(sort_occs((wfn.doccpi() + wfn.soccpi()).to_tuple(), wfn.epsilon_a().nph)),
+        "scf_occupations_b": re1d(sort_occs(wfn.doccpi().to_tuple(), wfn.epsilon_b().nph)),
     }
 
     return ret
