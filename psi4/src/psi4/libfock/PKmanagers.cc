@@ -219,7 +219,7 @@ void PKManager::compute_integrals(bool wK) {
     }
 
     size_t nshqu = 0;
-//#pragma omp parallel for num_threads(nthreads_) schedule(dynamic) reduction(+ : nshqu)
+#pragma omp parallel for num_threads(nthreads_) schedule(dynamic) reduction(+ : nshqu)
     for (size_t i = 0; i < ntasks_; ++i) {
         // We need to get the list of shell quartets for each task
         int thread = 0;
