@@ -470,7 +470,6 @@ def state_to_atomicinput(*, driver, method, basis=None, molecule=None, function_
     if molecule is None:
         molecule = core.get_active_molecule()
 
-    # keywords = _prepare_keywords_for_atomicinput()
     keywords = {k.lower(): v for k, v in prepare_options_for_set_options().items()}
     if function_kwargs is not None:
         keywords["function_kwargs"] = function_kwargs
@@ -481,6 +480,9 @@ def state_to_atomicinput(*, driver, method, basis=None, molecule=None, function_
     resi = qcel.models.AtomicInput(
          **{
             "driver": driver,
+            "extras": {
+                "wfn_qcvars_only": True,
+            },
             "model": {
                 "method": method,
                 "basis": basis,

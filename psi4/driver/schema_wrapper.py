@@ -74,7 +74,7 @@ _qcschema_translation = {
     # Generics
     "generics": {
         "return_energy": {"variables": "CURRENT ENERGY"},
-        "nuclear_repulsion_energy": {"variables": "NUCLEAR REPULSION ENERGY"},
+        # "nuclear_repulsion_energy": {"variables": "NUCLEAR REPULSION ENERGY"},  # use mol instead
     },
 
     # Properties
@@ -204,7 +204,7 @@ def _convert_variables(data, context=None, json=False):
             value = var["default"]
 
         # Cast if called
-        if "cast" in var:
+        if (value is not None) and ("cast" in var):
             value = var["cast"](value)
 
         ret[key] = _serial_translation(value, json=json)

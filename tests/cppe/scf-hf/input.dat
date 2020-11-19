@@ -39,5 +39,5 @@ set pe {
 }
 
 scf_energy, wfn = energy('scf', return_wfn=True)
-compare_values(ref_pe_energy, wfn.get_variable("PE ENERGY"), 6, "PE Energy contribution") #TEST
+compare_values(ref_pe_energy, wfn.variable("PE ENERGY"), 6, "PE Energy contribution") #TEST
 compare_values(ref_scf_energy, scf_energy, 6, "Total PE-SCF Energy") #TEST
