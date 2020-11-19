@@ -66,7 +66,7 @@ class PSI_API FCHKWriter {
     SharedMatrix Cb_ao;
     FCHKWriter(std::shared_ptr<Wavefunction> wavefunction);
     void write(const std::string &filename);
-    void set_pHF_density_label(const std::string &label);
+    void set_postscf_density_label(const std::string &label);
     const SharedMatrix SCF_Dtot() const { return Dtot_ao; }
 };
 

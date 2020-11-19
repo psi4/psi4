@@ -32,6 +32,7 @@ from psi4.driver.p4util.testing import compare_strings, compare_arrays, compare_
 from psi4 import core
 from .exceptions import ValidationError
 
+__all__ = ['fchkfile_to_string','compare_fchkfiles']
 
 def _consume_fchk_section(input_list, index):
     """compare a float or integer matrix section"""

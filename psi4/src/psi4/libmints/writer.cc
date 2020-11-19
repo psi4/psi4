@@ -312,7 +312,7 @@ void FCHKWriter::write_matrix(const char *label, const std::vector<int> &mat) {
     if (count % 6) fprintf(chk_, "\n");
 }
 
-void FCHKWriter::set_pHF_density_label(const std::string &label) {
+void FCHKWriter::set_postscf_density_label(const std::string &label) {
     postscf_density_label_ = ("Total" + label);
     spin_postscf_density_label_ = ("Spin" + label);
 }

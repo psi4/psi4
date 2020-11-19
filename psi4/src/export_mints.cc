@@ -1548,7 +1548,7 @@ void export_mints(py::module& m) {
         .def(py::init<std::shared_ptr<Wavefunction>>())
         .def("write", &FCHKWriter::write, "Write wavefunction information to file", "filename"_a)
         .def("SCF_Dtot",&FCHKWriter::SCF_Dtot,py::return_value_policy::reference_internal)
-        .def("set_postscf_density_label", &FCHKWriter::set_pHF_density_label, "Set base label for post-SCF density, e.g. ' CC Density'.", "label"_a);
+        .def("set_postscf_density_label", &FCHKWriter::set_postscf_density_label, "Set base label for post-SCF density, e.g. ' CC Density'.", "label"_a);
 
     py::class_<MoldenWriter, std::shared_ptr<MoldenWriter>>(m, "MoldenWriter",
                                                             "Writes wavefunction information in molden format")

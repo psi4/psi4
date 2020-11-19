@@ -1931,7 +1931,7 @@ def gdma(wfn, datafile=""):
     if not datafile:
         os.remove(commands)
 
-def fchk(wfn, filename, debug=False, strict_label=True):
+def fchk(wfn, filename, *, debug=False, strict_label=True):
     """Function to write wavefunction information in *wfn* to *filename* in
     Gaussian FCHK format.
 
@@ -1949,7 +1949,8 @@ def fchk(wfn, filename, debug=False, strict_label=True):
     :param debug: returns a dictionary to aid with debugging
 
     :type strict_label: boolean
-    :param strict_label: Set a standard label if possible. A warning will be printed if this is not possible.
+    :param strict_label: If true set a density label compliant with what Gaussian would write. A warning will be printed if this is not possible.
+                         Otherwise set the density label according to the method name.
 
     Notes
     -----
@@ -1977,7 +1978,7 @@ def fchk(wfn, filename, debug=False, strict_label=True):
     """
     # * Known limitations and notes *
     #
-    # OCC: (occ theory module only, not dfocc) is turned off as densities are not correctly set. 
+    # OCC: (occ theory module only, not dfocc) is turned off as densities are not correctly set.
     # DFMP2: Contains natural orbitals in wfn.C() and wfn.epsilon() data. This is fixed to contain respective HF data.
 
     allowed = ['DFMP2', 'SCF', 'CCENERGY', 'DCT', 'DFOCC']
@@ -2013,10 +2014,8 @@ def fchk(wfn, filename, debug=False, strict_label=True):
     current = varlist['CURRENT ENERGY']
 
     # delete problematic entries
-    delete_list = ['CURRENT ENERGY', 'CURRENT REFERENCE ENERGY']
-    for key in delete_list:
-        if key in varlist:
-            del varlist[key]
+    for key in ['CURRENT ENERGY', 'CURRENT REFERENCE ENERGY']:
+        varlist.pop(key, None)
 
     # find closest matching energy
     for (key, val) in varlist.items():
