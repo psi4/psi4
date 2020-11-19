@@ -1153,8 +1153,8 @@ void RDFMP2::form_Pab() {
 #endif
 
     // Memory
-    size_t doubles = ((size_t)(options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
-    doubles -= navir * navir;
+    size_t doubles = static_cast<size_t>(options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L);
+    doubles -= static_cast<double>(navir) * static_cast<double>(navir);
     double C = -(double)doubles;
     double B = 4.0 * navir * naux;
     double A = 2.0 * navir * (double)navir;
@@ -1349,7 +1349,7 @@ void RDFMP2::form_Pij() {
 #endif
 
     // Memory
-    size_t doubles = ((size_t)(options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
+    size_t doubles = static_cast<size_t>(options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L);
     doubles -= naocc * naocc;
     double C = -(double)doubles;
     double B = 2.0 * naocc * naux;
@@ -1359,7 +1359,7 @@ void RDFMP2::form_Pij() {
     if (max_a <= 0) {
         throw PSIEXCEPTION("Not enough memory in DFMP2");
     }
-    max_a = (max_a <= 0 ? 1 : max_a);
+
     max_a = (max_a > navir ? navir : max_a);
 
     // Blocks
@@ -1641,7 +1641,7 @@ void RDFMP2::form_Amn_x_terms() {
 
 // > Integrals < //
 #pragma omp parallel for schedule(dynamic) num_threads(num_threads)
-        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
+        for (long int PMN = 0L; PMN < static_cast<long int>(NP) * npairs; PMN++) {
             int thread = 0;
 #ifdef _OPENMP
             thread = omp_get_thread_num();
@@ -1742,21 +1742,21 @@ void RDFMP2::form_L() {
 
     // => Memory Constraints <= //
 
-    size_t memory = ((size_t)(options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
-    memory -= naocc * nso;
-    memory -= navir * nso;
-    memory -= naocc * navir;
+    size_t memory = static_cast<size_t>((options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
+    memory -= static_cast<size_t>(naocc) * static_cast<size_t>(nso);
+    memory -= static_cast<size_t>(navir) * static_cast<size_t>(nso);
+    memory -= static_cast<size_t>(naocc) * static_cast<size_t>(navir);
     int max_rows;
     int maxP = ribasis_->max_function_per_shell();
     size_t row_cost = 0L;
-    row_cost += nso * (size_t)nso;
-    row_cost += nso * (size_t)naocc;
-    row_cost += nso * (size_t)navir;
-    row_cost += naocc * (size_t)navir;
+    row_cost += static_cast<size_t>(nso)   * static_cast<size_t>(nso);
+    row_cost += static_cast<size_t>(nso)   * static_cast<size_t>(naocc);
+    row_cost += static_cast<size_t>(nso)   * static_cast<size_t>(navir);
+    row_cost += static_cast<size_t>(naocc) * static_cast<size_t>(navir);
     size_t rows = memory / row_cost;
     rows = (rows > naux ? naux : rows);
     rows = (rows < maxP ? maxP : rows);
-    max_rows = (int)rows;
+    max_rows = static_cast<int>(rows);
 
     // => Block Sizing <= //
 
@@ -1839,7 +1839,7 @@ void RDFMP2::form_L() {
         // > Integrals < //
         Gmn->zero();
 #pragma omp parallel for schedule(dynamic) num_threads(num_threads)
-        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
+        for (long int PMN = 0L; PMN < static_cast<long int>(NP) * npairs; PMN++) {
             int thread = 0;
 #ifdef _OPENMP
             thread = omp_get_thread_num();

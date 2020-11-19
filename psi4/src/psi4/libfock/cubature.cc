@@ -3039,13 +3039,13 @@ class OrientationMgr {
     }
     static inline LVector normalToTriangle(LVector a, LVector b, LVector c) { return vcross(vsub(b, a), vsub(c, a)); }
 
-    static inline LVector mvtimes(LMatrix Q, LVector v) {
+    static inline LVector mvtimes(const LMatrix &Q, const LVector &v) {
         LVector out = {Q.xx * v.x + Q.xy * v.y + Q.xz * v.z, Q.yx * v.x + Q.yy * v.y + Q.yz * v.z,
                        Q.zx * v.x + Q.zy * v.y + Q.zz * v.z};
         return out;
     }
 
-    static inline LMatrix mmtimes(LMatrix A, LMatrix B) {
+    static inline LMatrix mmtimes(const LMatrix &A, const LMatrix &B) {
         LMatrix C;
         C.xx = A.xx * B.xx + A.xy * B.yx + A.xz * B.zx;
         C.xy = A.xx * B.xy + A.xy * B.yy + A.xz * B.zy;
@@ -3059,7 +3059,7 @@ class OrientationMgr {
         return C;
     }
 
-    static inline LMatrix cycleXtoZ(LMatrix in) {
+    static inline LMatrix cycleXtoZ(const LMatrix &in) {
         // We want to swap the x-row with the z-row, but that
         // can interfere with chirality, so we instead rotate
         // x->z, z->x, x->y.
@@ -4235,7 +4235,7 @@ void BlockOPoints::populate() {
 }
 void BlockOPoints::print(std::string out, int print) {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
-    printer->Printf("   => BlockOPoints: %d Points <=\n\n", npoints_);
+    printer->Printf("   => BlockOPoints: %zu Points <=\n\n", npoints_);
 
     printer->Printf("    Center = <%11.3E,%11.3E,%11.3E>, R = %11.3E\n\n", xc_[0], xc_[1], xc_[2], R_);
 
@@ -4516,14 +4516,14 @@ void MolecularGrid::print_details(std::string out, int /*print*/) const {
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
     printer->Printf("   > Grid Details <\n\n");
     for (size_t A = 0; A < radial_grids_.size(); A++) {
-        printer->Printf("    Atom: %4d, Nrad = %6d, Alpha = %11.3E:\n", A, radial_grids_[A]->npoints(),
+        printer->Printf("    Atom: %4zu, Nrad = %6d, Alpha = %11.3E:\n", A, radial_grids_[A]->npoints(),
                         radial_grids_[A]->alpha());
         for (size_t R = 0; R < spherical_grids_[A].size(); R++) {
             double Rval = radial_grids_[A]->r()[R];
             double Wval = radial_grids_[A]->w()[R];
             int Nsphere = spherical_grids_[A][R]->npoints();
             int Lsphere = spherical_grids_[A][R]->order();
-            printer->Printf("    Node: %4d, R = %11.3E, WR = %11.3E, Nsphere = %6d, Lsphere = %6d\n", R, Rval, Wval,
+            printer->Printf("    Node: %4zu, R = %11.3E, WR = %11.3E, Nsphere = %6d, Lsphere = %6d\n", R, Rval, Wval,
                             Nsphere, Lsphere);
         }
     }
@@ -4555,7 +4555,7 @@ void NaiveGridBlocker::block() {
     npoints_ = npoints_ref_;
     max_points_ = tol_max_points_;
     max_functions_ = extents_->basis()->nbf();
-    collocation_size_ = max_points_ * max_functions_;
+    collocation_size_ = static_cast<size_t>(max_points_) * max_functions_;
 
     x_ = new double[npoints_];
     y_ = new double[npoints_];
@@ -4565,8 +4565,7 @@ void NaiveGridBlocker::block() {
 
     ::memcpy((void *)x_, (void *)x_ref_, sizeof(double) * npoints_);
     ::memcpy((void *)y_, (void *)y_ref_, sizeof(double) * npoints_);
-    ::memcpy((void *)z_, (void *)z_ref_, sizeof(double) * npoints_);
-    ::memcpy((void *)w_, (void *)w_ref_, sizeof(double) * npoints_);
+    ::memcpy((void *)z_, (void *)z_ref_, sizeof(double) * npoints_); ::memcpy((void *)w_, (void *)w_ref_, sizeof(double) * npoints_);
     ::memcpy((void *)index_, (void *)index_ref_, sizeof(int) * npoints_);
 
     blocks_.clear();
@@ -4644,7 +4643,7 @@ void OctreeGridBlocker::block() {
                     XC[0] /= block.size();
                     XC[1] /= block.size();
                     XC[2] /= block.size();
-                    printer->Printf("   %4d %5d %15.6E %15.6E %15.6E\n", tree_level, A, XC[0], XC[1], XC[2]);
+                    printer->Printf("   %4d %5zu %15.6E %15.6E %15.6E\n", tree_level, A, XC[0], XC[1], XC[2]);
                 }
 
                 std::vector<int> left;
