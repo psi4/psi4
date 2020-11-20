@@ -30,7 +30,7 @@ def result_data_fixture():
         "keywords": {
             "scf_type": "df",
             "mp2_type": "df",
-            "scf_properties": ["mayer_indices"]
+            "scf_properties": ["mayer_indices"],
         }
     }
 
@@ -140,3 +140,28 @@ def test_qcschema_wavefunction_scf_orbitals(result_data_fixture):
 
     expected_keys = {'basis', 'restricted', 'scf_orbitals_a', 'scf_eigenvalues_a', 'orbitals_a', 'eigenvalues_a'}
     assert wfn.dict().keys() == expected_keys
+
+def test_qcschema_wavefunction_scf_occupations_gs(result_data_fixture):
+    result_data_fixture["protocols"] = {"wavefunction": "all"}
+    result_data_fixture["keywords"]["docc"] = [3, 0, 1, 1] # ground state
+    ret = psi4.schema_wrapper.run_qcschema(result_data_fixture)
+    wfn = ret.wavefunction
+
+    ref_occupations_a = np.array([1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,])
+    ref_occupied_energies_a = np.array([-20.55785069,  -1.31618596,  -0.6770761,  -0.49037545,  -0.55872283])
+
+    assert compare_arrays(ref_occupations_a, wfn.scf_occupations_a, 6, "Orbital Occupations")
+    assert compare_arrays(ref_occupied_energies_a, wfn.scf_eigenvalues_a[wfn.scf_occupations_a == 1], 6, "Occupied Orbital Energies")
+
+def test_qcschema_wavefunction_scf_occupations_es(result_data_fixture):
+    result_data_fixture["protocols"] = {"wavefunction": "all"}
+    result_data_fixture["keywords"]["docc"] = [2, 1, 1, 1] # excited state
+    ret = psi4.schema_wrapper.run_qcschema(result_data_fixture)
+    wfn = ret.wavefunction
+
+    ref_occupations_a = np.array([1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,])
+    ref_occupied_energies_a = np.array([-20.86710716,  -1.38875044,  -0.77442913,  -0.6598582,    1.10374473])
+
+    assert compare_arrays(ref_occupations_a, ret.wavefunction.scf_occupations_a, 6, "Orbital Occupations")
+    assert compare_arrays(ref_occupied_energies_a, wfn.scf_eigenvalues_a[wfn.scf_occupations_a == 1], 6, "Occupied Orbital Energies")
+
