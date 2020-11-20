@@ -502,8 +502,6 @@ def test_pcmsolver(how, request):
     H     -0.9015844116     0.4818470201      1.5615900098
     H      1.8031688251     0.4818470204      0.0000000000
     units bohr
-    no_reorient
-    no_com
     """)
 
     psi4.set_options({
@@ -1237,9 +1235,6 @@ def test_cppe():
     O          9.55600       -0.11000       -3.46600
     H          7.74900        2.71100        2.65200
     H          8.99100        1.57500        2.99500
-    symmetry c1
-    no_reorient
-    no_com
     """)
 
     psi4.set_options({
@@ -1382,7 +1377,7 @@ EXCLISTS
         fp.write(potfile)
 
     scf_energy, wfn = psi4.energy('scf', return_wfn=True)
-    assert psi4.compare_values(ref_pe_energy, wfn.get_variable("PE ENERGY"), 6, "PE Energy contribution")
+    assert psi4.compare_values(ref_pe_energy, wfn.variable("PE ENERGY"), 6, "PE Energy contribution")
     assert psi4.compare_values(ref_scf_energy, scf_energy, 6, "Total PE-SCF Energy")
     psi4.core.print_variables()
 

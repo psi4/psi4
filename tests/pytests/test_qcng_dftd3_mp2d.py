@@ -320,7 +320,7 @@ def test_molecule__run_dftd3__23body(inp, subjects):
     assert compare_values(gexpected, G, atol=1.e-7)
 
 
-@using("psi4")
+@using("qcdb")
 def test_qcdb__energy_d3():
     eneyne = qcdb.set_molecule(seneyne)
     eneyne.update_geometry()

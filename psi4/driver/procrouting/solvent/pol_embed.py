@@ -26,6 +26,8 @@
 # @END LICENSE
 #
 
+from tempfile import NamedTemporaryFile
+
 import numpy as np
 import cppe
 from qcelemental import constants
@@ -42,8 +44,20 @@ def get_pe_options():
     rmin = core.get_option('PE', 'BORDER_RMIN')
     if core.get_option('PE', 'BORDER_RMIN_UNIT').upper() == "AA":
         rmin *= 1.0 / constants.bohr2angstroms
+
+    # potfile option can be filename or contents
+    potfile_keyword = core.get_option('PE', 'POTFILE')
+    if len(potfile_keyword) > 300:
+        core.get_option('PE', 'POTFILE')
+        fl = NamedTemporaryFile(mode="w+t", delete=False)
+        fl.write(potfile_keyword)
+        fl.close()
+        potfile_name = fl.name
+    else:
+        potfile_name = potfile_keyword
+
     pol_embed_options = {
-        "potfile": core.get_option('PE', 'POTFILE'),
+        "potfile": potfile_name,
         "iso_pol": core.get_option('PE', 'ISOTROPIC_POL'),
         "induced_thresh": core.get_option('PE', 'INDUCED_CONVERGENCE'),
         "maxiter": core.get_option('PE', 'MAXITER'),
@@ -114,7 +128,7 @@ class CppeInterface:
         if self.pe_ecp:
             self._setup_pe_ecp()
 
-    def _setup_pe_ecp(self):    
+    def _setup_pe_ecp(self):
         mol_clone = self.molecule.clone()
         geom, _, elems, _, _ = mol_clone.to_arrays()
         n_qmatoms = len(elems)

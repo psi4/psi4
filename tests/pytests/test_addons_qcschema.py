@@ -28,19 +28,25 @@ def test_gdma():
     #! Water RHF/cc-pVTZ distributed multipole analysis
 
     ref_energy = -76.0571685433842219
-    ref_dma_mat = psi4.core.Matrix.from_list([
-      [ -0.43406697290168, -0.18762673939633,  0.00000000000000,  0.00000000000000,  0.03206686487531,
-         0.00000000000000, -0.00000000000000, -0.53123477172696,  0.00000000000000 ],
-      [  0.21703348903257, -0.06422316619952,  0.00000000000000, -0.11648289410022,  0.01844320206227,
-         0.00000000000000,  0.07409226544133, -0.07115302332866,  0.00000000000000 ],
-      [  0.21703348903257, -0.06422316619952,  0.00000000000000,  0.11648289410022,  0.01844320206227,
-         0.00000000000000, -0.07409226544133, -0.07115302332866,  0.00000000000000 ]
-    ])
+    ref_dma_mat = psi4.core.Matrix.from_list([[
+        -0.43406697290168, -0.18762673939633, 0.00000000000000, 0.00000000000000, 0.03206686487531, 0.00000000000000,
+        -0.00000000000000, -0.53123477172696, 0.00000000000000
+    ],
+                                              [
+                                                  0.21703348903257, -0.06422316619952, 0.00000000000000,
+                                                  -0.11648289410022, 0.01844320206227, 0.00000000000000,
+                                                  0.07409226544133, -0.07115302332866, 0.00000000000000
+                                              ],
+                                              [
+                                                  0.21703348903257, -0.06422316619952, 0.00000000000000,
+                                                  0.11648289410022, 0.01844320206227, 0.00000000000000,
+                                                  -0.07409226544133, -0.07115302332866, 0.00000000000000
+                                              ]])
     ref_tot_mat = psi4.core.Matrix(1, 9)
     ref_tot_mat.name = "Reference total values"
     ref_tot_arr = [
-         0.00000000516346, -0.79665315928128,  0.00000000000000,  0.00000000000000,  0.10813259329390,
-         0.00000000000000,  0.00000000000000, -2.01989585894142,  0.00000000000000
+        0.00000000516346, -0.79665315928128, 0.00000000000000, 0.00000000000000, 0.10813259329390, 0.00000000000000,
+        0.00000000000000, -2.01989585894142, 0.00000000000000
     ]
     for i in range(9):
         ref_tot_mat.set(0, i, ref_tot_arr[i])
@@ -71,6 +77,7 @@ def test_ipi_broker1():
     """ipi_broker1"""
 
     pytest.xfail("IPI doesn't use basic psi4 functions, so can't transmit as AtomicInput")
+
 
 #    water = psi4.geometry("""
 #      O -1.216  -0.015  -0.261
@@ -143,7 +150,6 @@ def test_ipi_broker1():
 #    assert psi4.compare_values(reftotal, b._potential,                                  7, "Total energy (Broker)")
 #    assert psi4.compare_arrays(frc,     -b._force,                                      4, "Total force (Broker)")
 
-
 #@using("mrcc")
 #def test_mrcc():
 #    """mrcc/ccsdt"""
@@ -203,31 +209,34 @@ def test_mp2d():
 def test_dftd3():
     """dftd3/energy"""
 
-    ref_d2         = [-0.00390110, -0.00165271, -0.00058118]
-    ref_d3zero     = [-0.00285088, -0.00084340, -0.00031923]
-    ref_d3bj       = [-0.00784595, -0.00394347, -0.00226683]
+    ref_d2 = [-0.00390110, -0.00165271, -0.00058118]
+    ref_d3zero = [-0.00285088, -0.00084340, -0.00031923]
+    ref_d3bj = [-0.00784595, -0.00394347, -0.00226683]
 
-    ref_pbe_d2     = [-0.00278650, -0.00118051, -0.00041513]
+    ref_pbe_d2 = [-0.00278650, -0.00118051, -0.00041513]
     ref_pbe_d3zero = [-0.00175474, -0.00045421, -0.00016839]
-    ref_pbe_d3bj   = [-0.00475937, -0.00235265, -0.00131239]
+    ref_pbe_d3bj = [-0.00475937, -0.00235265, -0.00131239]
 
     # mA, b3lyp-d2, libdisp
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["C", "C", "H", "H", "H", "H"], "geometry": [3.8623510442091865e-17, -1.261539587380886, 0.00041472029798115525, -3.862351044209187e-17, 1.261539587380886, 0.00041472029798115525, 1.745390733721485, -2.3286206872737854, -0.0024690017694669127, -1.7453907337214847, -2.3286206872737854, -0.0024690017694669127, -1.745390733721485, 2.3286206872737854, -0.0024690017694669127, 1.7453907337214847, 2.3286206872737854, -0.0024690017694669127], "name": "C2H4", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [12.0, 12.0, 1.00782503223, 1.00782503223, 1.00782503223, 1.00782503223], "real": [true, true, true, true, true, true], "atom_labels": ["", "", "", "", "", ""], "atomic_numbers": [6, 6, 1, 1, 1, 1], "mass_numbers": [12, 12, 1, 1, 1, 1], "fragments": [[0, 1, 2, 3, 4, 5]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "b3lyp-d2", "basis": "STO-3G"}, "keywords": {"dft_radial_points": 50, "dft_spherical_points": 110, "scf_type": "DF", "function_kwargs": {"engine": "libdisp"}}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
     atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-    assert psi4.compare_values(ref_d2[1], atres.extras["qcvars"]["DISPERSION CORRECTION ENERGY"], 7, 'Ethene -D2 (calling psi4 Disp class)')
+    assert psi4.compare_values(ref_d2[1], atres.extras["qcvars"]["DISPERSION CORRECTION ENERGY"], 7,
+                               'Ethene -D2 (calling psi4 Disp class)')
 
     # mA, b3lyp-d3bj, dftd3
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["C", "C", "H", "H", "H", "H"], "geometry": [3.8623510442091865e-17, -1.261539587380886, 0.00041472029798115525, -3.862351044209187e-17, 1.261539587380886, 0.00041472029798115525, 1.745390733721485, -2.3286206872737854, -0.0024690017694669127, -1.7453907337214847, -2.3286206872737854, -0.0024690017694669127, -1.745390733721485, 2.3286206872737854, -0.0024690017694669127, 1.7453907337214847, 2.3286206872737854, -0.0024690017694669127], "name": "C2H4", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [12.0, 12.0, 1.00782503223, 1.00782503223, 1.00782503223, 1.00782503223], "real": [true, true, true, true, true, true], "atom_labels": ["", "", "", "", "", ""], "atomic_numbers": [6, 6, 1, 1, 1, 1], "mass_numbers": [12, 12, 1, 1, 1, 1], "fragments": [[0, 1, 2, 3, 4, 5]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "B3LYP-D3BJ", "basis": "STO-3G"}, "keywords": {"dft_radial_points": 50, "dft_spherical_points": 110, "scf_type": "DF"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
     atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-    assert psi4.compare_values(ref_d3bj[1], atres.extras["qcvars"]["DISPERSION CORRECTION ENERGY"], 7, 'Ethene -D3 (calling dftd3 -bj)')
+    assert psi4.compare_values(ref_d3bj[1], atres.extras["qcvars"]["DISPERSION CORRECTION ENERGY"], 7,
+                               'Ethene -D3 (calling dftd3 -bj)')
 
     # mB, pbe-d3bj, custom parmeters
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["C", "C", "H", "H"], "geometry": [3.7092061506874214e-68, -3.7092061506874214e-68, 1.1408784499704554, 3.7092061506874214e-68, -3.7092061506874214e-68, -1.140517981428138, 3.7092061506874214e-68, -3.7092061506874214e-68, -3.154754381840132, 3.7092061506874214e-68, -3.7092061506874214e-68, 3.1504623446615714], "name": "C2H2", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [12.0, 12.0, 1.00782503223, 1.00782503223], "real": [true, true, true, true], "atom_labels": ["", "", "", ""], "atomic_numbers": [6, 6, 1, 1], "mass_numbers": [12, 12, 1, 1], "fragments": [[0, 1, 2, 3]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "pbe-d3bj", "basis": "STO-3G"}, "keywords": {"dft_dispersion_parameters": [2.0, 0.7875, 0.4289, 4.4407], "dft_radial_points": 50, "dft_spherical_points": 110, "scf_type": "DF"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
     atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-    assert psi4.compare_values(-0.002238400, atres.extras["qcvars"]["DISPERSION CORRECTION ENERGY"], 7, 'Ethene -D3 (calling dftd3 -bj)')
+    assert psi4.compare_values(-0.002238400, atres.extras["qcvars"]["DISPERSION CORRECTION ENERGY"], 7,
+                               'Ethene -D3 (calling dftd3 -bj)')
 
 
 @using("libefp")
@@ -255,17 +264,14 @@ def test_libefp():
     """)
 
     #  <<<  EFP calc  >>>
-    psi4.set_options({
-        'basis': '6-31g*',
-        'scf_type': 'pk',
-        'guess': 'core',
-        'df_scf_guess': False})
+    psi4.set_options({'basis': '6-31g*', 'scf_type': 'pk', 'guess': 'core', 'df_scf_guess': False})
 
-#    psi4.energy('efp')
-#
+    #    psi4.energy('efp')
+    #
     atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="efp")
     print(f'    jatin = """{atin.serialize("json")}"""')
     assert 0
+
 
 ##    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
 ##    pprint.pprint(atres.dict())
@@ -304,57 +310,62 @@ def test_pcmsolver():
     """pcmsolver/scf"""
     #! pcm
 
-    nucenergy   =  12.0367196636183458
-    polenergy   =  -0.0053060443528559
+    nucenergy = 12.0367196636183458
+    polenergy = -0.0053060443528559
     totalenergy = -55.4559426361734040
 
-#    pcm_string = """
-#       Units = Angstrom
-#       Medium {
-#       SolverType = IEFPCM
-#       Solvent = Water
-#       }
-#
-#       Cavity {
-#       RadiiSet = UFF
-#       Type = GePol
-#       Scaling = False
-#       Area = 0.3
-#       Mode = Implicit
-#       }
-#    """
-#    psi4.set_options({
-#      'basis': 'STO-3G',
-#      'scf_type': 'pk',
-#      'pcm': True,
-#      'pcm_scf_type': 'total',
-#    "pcm__input": pcm_string,
-#    })
+    #    pcm_string = """
+    #       Units = Angstrom
+    #       Medium {
+    #       SolverType = IEFPCM
+    #       Solvent = Water
+    #       }
+    #
+    #       Cavity {
+    #       RadiiSet = UFF
+    #       Type = GePol
+    #       Scaling = False
+    #       Area = 0.3
+    #       Mode = Implicit
+    #       }
+    #    """
+    #    psi4.set_options({
+    #      'basis': 'STO-3G',
+    #      'scf_type': 'pk',
+    #      'pcm': True,
+    #      'pcm_scf_type': 'total',
+    #    "pcm__input": pcm_string,
+    #    })
 
-    jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["N", "H", "H", "H"], "geometry": [-1e-10, -0.1040380466, 0.0, -0.9015844116, 0.4818470201, -1.5615900098, -0.9015844116, 0.4818470201, 1.5615900098, 1.8031688251, 0.4818470204, 0.0], "name": "H3N", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [14.00307400443, 1.00782503223, 1.00782503223, 1.00782503223], "real": [true, true, true, true], "atom_labels": ["", "", "", ""], "atomic_numbers": [7, 1, 1, 1], "mass_numbers": [14, 1, 1, 1], "fragments": [[0, 1, 2, 3]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": true, "fix_orientation": true, "fix_symmetry": "c1", "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "STO-3G"}, "keywords": {"pcm": 1, "pcm__pcmsolver_parsed_fname": "@pcmsolver.4292.0c93715d", "pcm_scf_type": "TOTAL", "scf_type": "PK"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
+    jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["N", "H", "H", "H"], "geometry": [-1e-10, -0.1040380466, 0.0, -0.9015844116, 0.4818470201, -1.5615900098, -0.9015844116, 0.4818470201, 1.5615900098, 1.8031688251, 0.4818470204, 0.0], "name": "H3N", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [14.00307400443, 1.00782503223, 1.00782503223, 1.00782503223], "real": [true, true, true, true], "atom_labels": ["", "", "", ""], "atomic_numbers": [7, 1, 1, 1], "mass_numbers": [14, 1, 1, 1], "fragments": [[0, 1, 2, 3]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "fix_symmetry": "c1", "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "STO-3G"}, "keywords": {"pcm": 1, "pcm__pcmsolver_parsed_fname": "@pcmsolver.4292.0c93715d", "pcm_scf_type": "TOTAL", "scf_type": "PK"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
     atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-    assert psi4.compare_values(nucenergy, atres.properties.nuclear_repulsion_energy, 10, "Nuclear repulsion energy (PCM, total algorithm)")
+    assert psi4.compare_values(nucenergy, atres.properties.nuclear_repulsion_energy, 10,
+                               "Nuclear repulsion energy (PCM, total algorithm)")
     assert psi4.compare_values(totalenergy, atres.return_result, 10, "Total energy (PCM, total algorithm)")
-    assert psi4.compare_values(polenergy, atres.extras["qcvars"]["PCM POLARIZATION ENERGY"], 6, "Polarization energy (PCM, total algorithm)")
+    assert psi4.compare_values(polenergy, atres.extras["qcvars"]["PCM POLARIZATION ENERGY"], 6,
+                               "Polarization energy (PCM, total algorithm)")
 
-    jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["N", "H", "H", "H"], "geometry": [-1e-10, -0.1040380466, 0.0, -0.9015844116, 0.4818470201, -1.5615900098, -0.9015844116, 0.4818470201, 1.5615900098, 1.8031688251, 0.4818470204, 0.0], "name": "H3N", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [14.00307400443, 1.00782503223, 1.00782503223, 1.00782503223], "real": [true, true, true, true], "atom_labels": ["", "", "", ""], "atomic_numbers": [7, 1, 1, 1], "mass_numbers": [14, 1, 1, 1], "fragments": [[0, 1, 2, 3]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": true, "fix_orientation": true, "fix_symmetry": "c1", "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "STO-3G"}, "keywords": {"pcm": 1, "pcm__pcmsolver_parsed_fname": "@pcmsolver.4292.0c93715d", "pcm_scf_type": "SEPARATE", "scf_type": "PK"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
-
-    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-    assert psi4.compare_values(totalenergy, atres.return_result, 10, "Total energy (PCM, separate algorithm)")
-    assert psi4.compare_values(polenergy, atres.extras["qcvars"]["PCM POLARIZATION ENERGY"], 6, "Polarization energy (PCM, separate algorithm)")
-
-    jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["N", "H", "H", "H"], "geometry": [-1e-10, -0.1040380466, 0.0, -0.9015844116, 0.4818470201, -1.5615900098, -0.9015844116, 0.4818470201, 1.5615900098, 1.8031688251, 0.4818470204, 0.0], "name": "H3N", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [14.00307400443, 1.00782503223, 1.00782503223, 1.00782503223], "real": [true, true, true, true], "atom_labels": ["", "", "", ""], "atomic_numbers": [7, 1, 1, 1], "mass_numbers": [14, 1, 1, 1], "fragments": [[0, 1, 2, 3]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": true, "fix_orientation": true, "fix_symmetry": "c1", "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "STO-3G"}, "keywords": {"pcm": 1, "pcm__pcmsolver_parsed_fname": "@pcmsolver.4292.0c93715d", "pcm_scf_type": "TOTAL", "scf_type": "PK", "reference": "uhf"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
+    jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["N", "H", "H", "H"], "geometry": [-1e-10, -0.1040380466, 0.0, -0.9015844116, 0.4818470201, -1.5615900098, -0.9015844116, 0.4818470201, 1.5615900098, 1.8031688251, 0.4818470204, 0.0], "name": "H3N", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [14.00307400443, 1.00782503223, 1.00782503223, 1.00782503223], "real": [true, true, true, true], "atom_labels": ["", "", "", ""], "atomic_numbers": [7, 1, 1, 1], "mass_numbers": [14, 1, 1, 1], "fragments": [[0, 1, 2, 3]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "fix_symmetry": "c1", "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "STO-3G"}, "keywords": {"pcm": 1, "pcm__pcmsolver_parsed_fname": "@pcmsolver.4292.0c93715d", "pcm_scf_type": "SEPARATE", "scf_type": "PK"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
     atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
     assert psi4.compare_values(totalenergy, atres.return_result, 10, "Total energy (PCM, separate algorithm)")
-    assert psi4.compare_values(polenergy, atres.extras["qcvars"]["PCM POLARIZATION ENERGY"], 6, "Polarization energy (PCM, separate algorithm)")
+    assert psi4.compare_values(polenergy, atres.extras["qcvars"]["PCM POLARIZATION ENERGY"], 6,
+                               "Polarization energy (PCM, separate algorithm)")
 
-    jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["N", "H", "H", "H"], "geometry": [-1e-10, -0.1040380466, 0.0, -0.9015844116, 0.4818470201, -1.5615900098, -0.9015844116, 0.4818470201, 1.5615900098, 1.8031688251, 0.4818470204, 0.0], "name": "H3N", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [14.00307400443, 1.00782503223, 1.00782503223, 1.00782503223], "real": [true, true, true, true], "atom_labels": ["", "", "", ""], "atomic_numbers": [7, 1, 1, 1], "mass_numbers": [14, 1, 1, 1], "fragments": [[0, 1, 2, 3]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": true, "fix_orientation": true, "fix_symmetry": "c1", "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "STO-3G"}, "keywords": {"pcm": 1, "pcm__pcmsolver_parsed_fname": "@pcmsolver.4292.0c93715d", "pcm_scf_type": "TOTAL", "scf_type": "PK", "reference": "rohf"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
+    jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["N", "H", "H", "H"], "geometry": [-1e-10, -0.1040380466, 0.0, -0.9015844116, 0.4818470201, -1.5615900098, -0.9015844116, 0.4818470201, 1.5615900098, 1.8031688251, 0.4818470204, 0.0], "name": "H3N", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [14.00307400443, 1.00782503223, 1.00782503223, 1.00782503223], "real": [true, true, true, true], "atom_labels": ["", "", "", ""], "atomic_numbers": [7, 1, 1, 1], "mass_numbers": [14, 1, 1, 1], "fragments": [[0, 1, 2, 3]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "fix_symmetry": "c1", "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "STO-3G"}, "keywords": {"pcm": 1, "pcm__pcmsolver_parsed_fname": "@pcmsolver.4292.0c93715d", "pcm_scf_type": "TOTAL", "scf_type": "PK", "reference": "uhf"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
     atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
     assert psi4.compare_values(totalenergy, atres.return_result, 10, "Total energy (PCM, separate algorithm)")
-    assert psi4.compare_values(polenergy, atres.extras["qcvars"]["PCM POLARIZATION ENERGY"], 6, "Polarization energy (PCM, separate algorithm)")
+    assert psi4.compare_values(polenergy, atres.extras["qcvars"]["PCM POLARIZATION ENERGY"], 6,
+                               "Polarization energy (PCM, separate algorithm)")
+
+    jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["N", "H", "H", "H"], "geometry": [-1e-10, -0.1040380466, 0.0, -0.9015844116, 0.4818470201, -1.5615900098, -0.9015844116, 0.4818470201, 1.5615900098, 1.8031688251, 0.4818470204, 0.0], "name": "H3N", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [14.00307400443, 1.00782503223, 1.00782503223, 1.00782503223], "real": [true, true, true, true], "atom_labels": ["", "", "", ""], "atomic_numbers": [7, 1, 1, 1], "mass_numbers": [14, 1, 1, 1], "fragments": [[0, 1, 2, 3]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "fix_symmetry": "c1", "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "STO-3G"}, "keywords": {"pcm": 1, "pcm__pcmsolver_parsed_fname": "@pcmsolver.4292.0c93715d", "pcm_scf_type": "TOTAL", "scf_type": "PK", "reference": "rohf"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
+
+    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
+    assert psi4.compare_values(totalenergy, atres.return_result, 10, "Total energy (PCM, separate algorithm)")
+    assert psi4.compare_values(polenergy, atres.extras["qcvars"]["PCM POLARIZATION ENERGY"], 6,
+                               "Polarization energy (PCM, separate algorithm)")
 
 
 @pytest.mark.parametrize("integral_package", [
@@ -366,11 +377,11 @@ def test_integrals(integral_package):
     #! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set and using ERD integrals.
 
     Eref_sing_can = -149.58723684929720
-    Eref_sing_df  = -149.58715054487624
-    Eref_uhf_can  = -149.67135517240553
-    Eref_uhf_df   = -149.67125624291961
+    Eref_sing_df = -149.58715054487624
+    Eref_uhf_can = -149.67135517240553
+    Eref_uhf_df = -149.67125624291961
     Eref_rohf_can = -149.65170765757173
-    Eref_rohf_df  = -149.65160796208073
+    Eref_rohf_df = -149.65160796208073
 
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["O", "O"], "geometry": [0.0, 0.0, -1.0393493690018054, 0.0, 0.0, 1.0393493690018054], "name": "O2", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [15.99491461957, 15.99491461957], "real": [true, true], "atom_labels": ["", ""], "atomic_numbers": [8, 8], "mass_numbers": [16, 16], "fragments": [[0, 1]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "CC-PVTZ"}, "keywords": {"df_basis_scf": "CC-PVTZ-JKFIT", "print": 2, "scf__scf_type": "DIRECT"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
@@ -422,8 +433,7 @@ def test_json():
     assert psi4.compare_integers(True, json_ret["success"], "Success")
     assert psi4.compare_values(-5.474227786274896, json_ret["properties"]["return_energy"], 4, "SCF ENERGY")
 
-    bench_gradient = np.array([[  0.0 , 0.0 ,   0.32746933],
-                               [  0.0 , 0.0 ,  -0.32746933]])
+    bench_gradient = np.array([[0.0, 0.0, 0.32746933], [0.0, 0.0, -0.32746933]])
     cgradient = np.array(json_ret["return_result"]).reshape(-1, 3)
     assert psi4.compare_arrays(bench_gradient, cgradient, 4, "SCF RETURN GRADIENT")
 
@@ -485,7 +495,7 @@ def test_v2rdm_casscf():
     """)
 
     # NOTES
-    # * add plugin keywords to atonicinput by hand, not set_module_options
+    # * add plugin keywords to AtomicInput by hand, not set_module_options, since the module list doesn't know about v2rdm
 
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["N", "N"], "geometry": [0.0, 0.0, -0.4724315332214108, 0.0, 0.0, 0.4724315332214108], "name": "N2", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [14.00307400443, 14.00307400443], "real": [true, true], "atom_labels": ["", ""], "atomic_numbers": [7, 7], "mass_numbers": [14, 14], "fragments": [[0, 1]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "v2rdm-casscf", "basis": "CC-PVDZ"}, "keywords": {"active": [1, 0, 1, 1, 0, 1, 1, 1], "cholesky_tolerance": 1e-12, "d_convergence": 1e-10, "maxiter": 500, "restricted_docc": [2, 0, 0, 0, 0, 2, 0, 0], "scf_type": "CD", "v2rdm_casscf__r_convergence": 1e-5, "v2rdm_casscf__e_convergence": 1e-6, "v2rdm_casscf__maxiter": 20000}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
@@ -556,7 +566,8 @@ def test_grimme_3c():
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["C", "C", "H", "H", "H", "H", "C", "C", "H", "H"], "geometry": [2.676440890378796e-18, -1.261539587380886, -4.02163254721969, 2.676440890378796e-18, 1.261539587380886, -4.02163254721969, 1.7453907337214847, -2.3286206872737854, -4.0245162692871395, -1.7453907337214847, -2.3286206872737854, -4.0245162692871395, -1.7453907337214847, 2.3286206872737854, -4.0245162692871395, 1.7453907337214847, 2.3286206872737854, -4.0245162692871395, 2.676440890378796e-18, -1.8740279466317074e-17, 5.47454736883822, 2.676440890378796e-18, -1.8740279466317074e-17, 3.193150937439626, 2.676440890378796e-18, -1.8740279466317074e-17, 1.1789145370276326, 2.676440890378796e-18, -1.8740279466317074e-17, 7.484131263529336], "name": "C4H6", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [12.0, 12.0, 1.00782503223, 1.00782503223, 1.00782503223, 1.00782503223, 12.0, 12.0, 1.00782503223, 1.00782503223], "real": [true, true, true, true, true, true, true, true, true, true], "atom_labels": ["", "", "", "", "", "", "", "", "", ""], "atomic_numbers": [6, 6, 1, 1, 1, 1, 6, 6, 1, 1], "mass_numbers": [12, 12, 1, 1, 1, 1, 12, 12, 1, 1], "fragments": [[0, 1, 2, 3, 4, 5], [6, 7, 8, 9]], "fragment_charges": [0.0, 0.0], "fragment_multiplicities": [1, 1], "fix_com": false, "fix_orientation": false, "fix_symmetry": "c1", "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "pbeh3c", "basis": "(auto)"}, "keywords": {"function_kwargs": {"bsse_type": "nocp"}}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
     atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-    assert psi4.compare_values(-2.153, atres.return_result * psi4.constants.hartree2kcalmol, 0.03, 'S22-16 PBEh-3c/def2-mSVP')
+    assert psi4.compare_values(-2.153, atres.return_result * psi4.constants.hartree2kcalmol, 0.03,
+                               'S22-16 PBEh-3c/def2-mSVP')
 
     jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["C", "C", "H", "H", "H", "H", "C", "C", "H", "H"], "geometry": [2.676440890378796e-18, -1.261539587380886, -4.02163254721969, 2.676440890378796e-18, 1.261539587380886, -4.02163254721969, 1.7453907337214847, -2.3286206872737854, -4.0245162692871395, -1.7453907337214847, -2.3286206872737854, -4.0245162692871395, -1.7453907337214847, 2.3286206872737854, -4.0245162692871395, 1.7453907337214847, 2.3286206872737854, -4.0245162692871395, 2.676440890378796e-18, -1.8740279466317074e-17, 5.47454736883822, 2.676440890378796e-18, -1.8740279466317074e-17, 3.193150937439626, 2.676440890378796e-18, -1.8740279466317074e-17, 1.1789145370276326, 2.676440890378796e-18, -1.8740279466317074e-17, 7.484131263529336], "name": "C4H6", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [12.0, 12.0, 1.00782503223, 1.00782503223, 1.00782503223, 1.00782503223, 12.0, 12.0, 1.00782503223, 1.00782503223], "real": [true, true, true, true, true, true, true, true, true, true], "atom_labels": ["", "", "", "", "", "", "", "", "", ""], "atomic_numbers": [6, 6, 1, 1, 1, 1, 6, 6, 1, 1], "mass_numbers": [12, 12, 1, 1, 1, 1, 12, 12, 1, 1], "fragments": [[0, 1, 2, 3, 4, 5], [6, 7, 8, 9]], "fragment_charges": [0.0, 0.0], "fragment_multiplicities": [1, 1], "fix_com": false, "fix_orientation": false, "fix_symmetry": "c1", "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "hf3c", "basis": ""}, "keywords": {"scf_type": "pk", "function_kwargs": {"bsse_type": "nocp"}}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1089", "routine": "psi4.driver.p4util.procutil"}}"""
 
@@ -693,185 +704,42 @@ def test_cppe():
     #! PE-SCF of PNA in presence of 6 water molecules
     #! Reference data from Q-Chem calculation
 
-    ref_pe_energy = -0.03424830892844
-    ref_scf_energy = -482.9411084900
+    #    potfile = """
+    #! Generated by PyFraME 0.1.0
+    #@COORDINATES
+    #18
+    #AA
+    #O      9.37100000     2.95300000    -6.07800000       1
+    #H      8.87200000     2.13400000    -6.04900000       2
+    #...
+    #@MULTIPOLES
+    #ORDER 0
+    #...
+    #ORDER 1
+    #...
+    #ORDER 2
+    #...
+    #@POLARIZABILITIES
+    #ORDER 1 1
+    #...
+    #EXCLISTS
+    #...
+    #17   16  18
+    #18   16  17
+    #"""
+    #    potfile = "\\n".join(potfile.split("\n"))
+    #
+    #    psi4.set_options({
+    #     'pe': True,
+    #     ...
+    #     'pe__potfile': potfile,
+    #    })
 
-    pna = psi4.geometry("""
-    C          8.64800        1.07500       -1.71100
-    C          9.48200        0.43000       -0.80800
-    C          9.39600        0.75000        0.53800
-    C          8.48200        1.71200        0.99500
-    C          7.65300        2.34500        0.05500
-    C          7.73200        2.03100       -1.29200
-    H         10.18300       -0.30900       -1.16400
-    H         10.04400        0.25200        1.24700
-    H          6.94200        3.08900        0.38900
-    H          7.09700        2.51500       -2.01800
-    N          8.40100        2.02500        2.32500
-    N          8.73400        0.74100       -3.12900
-    O          7.98000        1.33100       -3.90100
-    O          9.55600       -0.11000       -3.46600
-    H          7.74900        2.71100        2.65200
-    H          8.99100        1.57500        2.99500
-    symmetry c1
-    no_reorient
-    no_com
-    """)
-
-# TODO nix no_com/no_reorient/c1
-
-    psi4.set_options({
-     'basis': 'sto-3g',
-     'pe': True,
-     'e_convergence': 10,
-     'd_convergence': 10,
-     'scf_type': 'pk',
-     'pe__potfile': 'pna_6w.pot',
-    })
-
-    potfile = """
-! Generated by PyFraME 0.1.0
-@COORDINATES
-18
-AA
-O      9.37100000     2.95300000    -6.07800000       1
-H      8.87200000     2.13400000    -6.04900000       2
-H      9.87300000     2.94000000    -5.26100000       3
-O      7.72000000     5.12000000    -5.51900000       4
-H      7.63800000     5.70400000    -6.27600000       5
-H      8.29100000     4.41700000    -5.83600000       6
-O     10.45300000     3.07700000    -3.43400000       7
-H      9.94500000     3.80300000    -3.06600000       8
-H     11.35900000     3.30000000    -3.21200000       9
-O      6.15200000     4.88500000    -1.44700000      10
-H      5.50700000     5.59100000    -1.36900000      11
-H      5.89100000     4.42800000    -2.24900000      12
-O      5.82300000     3.53700000    -3.94100000      13
-H      6.31400000     2.71500000    -4.01100000      14
-H      6.27500000     4.12300000    -4.55200000      15
-O      8.86000000     5.34600000    -2.74900000      16
-H      8.46500000     5.48700000    -3.61200000      17
-H      8.10300000     5.25400000    -2.16700000      18
-@MULTIPOLES
-ORDER 0
-18
-1      -0.67072060
-2       0.33528566
-3       0.33543494
-4      -0.67055041
-5       0.33526795
-6       0.33528246
-7      -0.67071744
-8       0.33530196
-9       0.33541547
-10     -0.67067328
-11      0.33530711
-12      0.33536617
-13     -0.67033801
-14      0.33511794
-15      0.33522007
-16     -0.67061076
-17      0.33527067
-18      0.33534009
-ORDER 1
-18
-1       0.00080560    -0.20614866     0.20971724
-2       0.12061233     0.19534842    -0.00437020
-3      -0.12142692     0.00052018    -0.19496774
-4       0.12128208    -0.02952128    -0.26636264
-5       0.02123859    -0.14133483     0.17957852
-6      -0.13641247     0.16937441     0.07336077
-7       0.09874019     0.23525681     0.14626863
-8       0.12395337    -0.17250412    -0.08710686
-9      -0.21781638    -0.05098712    -0.05185290
-10     -0.22463142     0.06171102    -0.17953533
-11      0.15306787    -0.16979678    -0.02103891
-12      0.06031266     0.11119740     0.19160536
-13      0.23374507    -0.05843888    -0.16882627
-14     -0.11567937     0.19764719     0.01487010
-15     -0.10631260    -0.14219349     0.14548634
-16     -0.28549425     0.01213605    -0.06959331
-17      0.09187853    -0.03392224     0.20768211
-18      0.17941729     0.02239518    -0.14158334
-ORDER 2
-18
-1      -3.82946639     0.38325366     0.37670941    -3.74967413     0.05052330    -3.75455511
-2      -0.30950705     0.24207772    -0.02491219    -0.03438601    -0.02932713    -0.45703642
-3      -0.30728365    -0.02024246     0.24345483    -0.45782760    -0.02099977    -0.03545985
-4      -4.01843560    -0.42071343    -0.05131494    -3.51375485    -0.22366647    -3.80188906
-5      -0.45058853    -0.01355906     0.03221603    -0.26454826    -0.26763342    -0.08600138
-6      -0.24883865    -0.23689663    -0.12134441    -0.16776157     0.15242467    -0.38450342
-7      -3.29787344    -0.20331433    -0.01414521    -3.86392383     0.23538575    -4.17197450
-8      -0.32338453    -0.21790162    -0.11343377    -0.11675396     0.16862725    -0.36084577
-9       0.03250781     0.14275944     0.13176702    -0.41814694     0.03110778    -0.41507187
-10     -3.94275214    -0.29331092     0.07399890    -3.64071323     0.42271528    -3.75038841
-11     -0.18497857    -0.27928790    -0.02349247    -0.15879913     0.01388996    -0.45721403
-12     -0.40467967     0.08377330     0.14054460    -0.34162736     0.21069480    -0.05454010
-13     -3.98817938    -0.10562980    -0.21981136    -3.34423732    -0.30490142    -4.00186338
-14     -0.29272797    -0.25436911    -0.02365191    -0.05984813     0.05198185    -0.44875356
-15     -0.31577317     0.16791558    -0.17641064    -0.26949266    -0.21058649    -0.21581787
-16     -3.76934440     0.01997274    -0.13330175    -4.28009915    -0.16523022    -3.28439494
-17     -0.34779244    -0.03700706     0.22659090    -0.43533186    -0.07018391    -0.01780670
-18     -0.08414919     0.04219414    -0.26720999    -0.44242465    -0.02713904    -0.27419185
-@POLARIZABILITIES
-ORDER 1 1
-18
-1       2.30791521     0.59643991     0.58658837     2.61100398    -0.10257978     2.60785108
-2       1.30711897     0.90889808    -0.14203759     2.23138041     0.03064426     0.56363899
-3       1.31473738    -0.12335800     0.91322978     0.56426081     0.06343491     2.22049295
-4       2.07587445    -0.67088756    -0.21506644     2.80527167    -0.31578724     2.64886958
-5       0.72279353     0.00751649     0.24603845     1.44539448    -1.05520399     1.93525324
-6       1.51667446    -0.87135876    -0.35833460     1.82612167     0.59796749     0.76044651
-7       3.17597352    -0.21979725     0.03827106     2.48641276     0.51074529     1.86433465
-8       1.15711080    -0.91546924    -0.49534521     1.87545624     0.51559151     1.06960779
-9       2.55558469     0.50338563     0.46922356     0.68876452    -0.02563589     0.85563095
-10      2.34307583    -0.51517500     0.28388438     2.61854341     0.61181317     2.56593966
-11      1.63329191    -1.01651663    -0.24252266     1.86507920     0.04484738     0.60387225
-12      0.76841032     0.41201391     0.40278140     1.14519478     0.81893980     2.18754212
-13      2.29130369    -0.22262257    -0.50824047     3.08292101    -0.43438854     2.16011928
-14      1.20133160    -0.94148299     0.07075699     2.22478033     0.20477680     0.68049498
-15      1.10983723     0.72098321    -0.53040485     1.39825592    -0.82860371     1.59671491
-16      2.74369667     0.01646994    -0.12367515     1.60703710    -0.26089660     3.17839863
-17      0.86347479    -0.13575237     0.83717068     0.86374986    -0.25419187     2.37549183
-18      1.89994613     0.17584219    -1.10556667     0.83549707    -0.08475173     1.36594908
-EXCLISTS
-18 3
-1     2   3
-2     1   3
-3     1   2
-4     5   6
-5     4   6
-6     4   5
-7     8   9
-8     7   9
-9     7   8
-10   11  12
-11   10  12
-12   10  11
-13   14  15
-14   13  15
-15   13  14
-16   17  18
-17   16  18
-18   16  17
-"""
-
-    with open('pna_6w.pot', 'w') as fp:
-        fp.write(potfile)
-
-#    atin = psi4.driver.p4util.state_to_atomicinput(driver="energy", method="scf")
-#    print(f'    jatin = """{atin.serialize("json")}"""')
-#    assert 0
-
-    jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["C", "C", "C", "C", "C", "C", "H", "H", "H", "H", "N", "N", "O", "O", "H", "H"], "geometry": [16.3423515329593, 2.031455584867165, -3.233321400658344, 17.918383121591127, 0.8125822339468661, -1.5268987093699253, 17.755866674801755, 1.417294594093371, 1.0166726554963117, 16.028656996133297, 3.2352111267838017, 1.880277494830539, 14.462074038128758, 4.431407764198608, 0.10393493690018055, 14.611362402039928, 3.838033760804849, -2.441526154091514, 19.243081135537064, -0.5839253727664689, -2.1996412100329117, 18.980409204098425, 0.4762109836153727, 2.356488478445912, 13.118478762928243, 5.837364001539231, 0.7351034628030951, 13.411386312374207, 4.752661205526438, -3.813467321173897, 15.875589179971215, 3.826695404052102, 4.393613241689451, 16.50486797974867, 1.4002870589642507, -5.912953046557544, 15.08001448115347, 2.515225472984369, -7.371821615410987, 18.058222854875005, -0.2078698738003611, -6.5497907508368325, 14.64348774617271, 5.123047526116172, 5.01155368471416, 16.99052759399133, 2.9763186475960794, 5.659729745746196], "name": "C6H6N2O2", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 1.00782503223, 1.00782503223, 1.00782503223, 1.00782503223, 14.00307400443, 14.00307400443, 15.99491461957, 15.99491461957, 1.00782503223, 1.00782503223], "real": [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], "atom_labels": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "atomic_numbers": [6, 6, 6, 6, 6, 6, 1, 1, 1, 1, 7, 7, 8, 8, 1, 1], "mass_numbers": [12, 12, 12, 12, 12, 12, 1, 1, 1, 1, 14, 14, 16, 16, 1, 1], "fragments": [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": true, "fix_orientation": true, "fix_symmetry": "c1", "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "STO-3G"}, "keywords": {"d_convergence": 1e-10, "e_convergence": 1e-10, "pe": 1, "scf_type": "PK"}, "protocols": {}, "extras": {}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1088", "routine": "psi4.driver.p4util.procutil"}}"""
+    jatin = """{"id": null, "schema_name": "qcschema_input", "schema_version": 1, "molecule": {"schema_name": "qcschema_molecule", "schema_version": 2, "validated": true, "symbols": ["C", "C", "C", "C", "C", "C", "H", "H", "H", "H", "N", "N", "O", "O", "H", "H"], "geometry": [16.3423515329593, 2.031455584867165, -3.233321400658344, 17.918383121591127, 0.8125822339468661, -1.5268987093699253, 17.755866674801755, 1.417294594093371, 1.0166726554963117, 16.028656996133297, 3.2352111267838017, 1.880277494830539, 14.462074038128758, 4.431407764198608, 0.10393493690018055, 14.611362402039928, 3.838033760804849, -2.441526154091514, 19.243081135537064, -0.5839253727664689, -2.1996412100329117, 18.980409204098425, 0.4762109836153727, 2.356488478445912, 13.118478762928243, 5.837364001539231, 0.7351034628030951, 13.411386312374207, 4.752661205526438, -3.813467321173897, 15.875589179971215, 3.826695404052102, 4.393613241689451, 16.50486797974867, 1.4002870589642507, -5.912953046557544, 15.08001448115347, 2.515225472984369, -7.371821615410987, 18.058222854875005, -0.2078698738003611, -6.5497907508368325, 14.64348774617271, 5.123047526116172, 5.01155368471416, 16.99052759399133, 2.9763186475960794, 5.659729745746196], "name": "C6H6N2O2", "molecular_charge": 0.0, "molecular_multiplicity": 1, "masses": [12.0, 12.0, 12.0, 12.0, 12.0, 12.0, 1.00782503223, 1.00782503223, 1.00782503223, 1.00782503223, 14.00307400443, 14.00307400443, 15.99491461957, 15.99491461957, 1.00782503223, 1.00782503223], "real": [true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true], "atom_labels": ["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""], "atomic_numbers": [6, 6, 6, 6, 6, 6, 1, 1, 1, 1, 7, 7, 8, 8, 1, 1], "mass_numbers": [12, 12, 12, 12, 12, 12, 1, 1, 1, 1, 14, 14, 16, 16, 1, 1], "fragments": [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]], "fragment_charges": [0.0], "fragment_multiplicities": [1], "fix_com": false, "fix_orientation": false, "provenance": {"creator": "QCElemental", "version": "v0.17.0+7.gf55d5ac.dirty", "routine": "qcelemental.molparse.from_string"}}, "driver": "energy", "model": {"method": "scf", "basis": "STO-3G"}, "keywords": {"d_convergence": 1e-10, "e_convergence": 1e-10, "pe": 1, "pe__potfile": "\\n! Generated by PyFraME 0.1.0\\n@COORDINATES\\n18\\nAA\\nO      9.37100000     2.95300000    -6.07800000       1\\nH      8.87200000     2.13400000    -6.04900000       2\\nH      9.87300000     2.94000000    -5.26100000       3\\nO      7.72000000     5.12000000    -5.51900000       4\\nH      7.63800000     5.70400000    -6.27600000       5\\nH      8.29100000     4.41700000    -5.83600000       6\\nO     10.45300000     3.07700000    -3.43400000       7\\nH      9.94500000     3.80300000    -3.06600000       8\\nH     11.35900000     3.30000000    -3.21200000       9\\nO      6.15200000     4.88500000    -1.44700000      10\\nH      5.50700000     5.59100000    -1.36900000      11\\nH      5.89100000     4.42800000    -2.24900000      12\\nO      5.82300000     3.53700000    -3.94100000      13\\nH      6.31400000     2.71500000    -4.01100000      14\\nH      6.27500000     4.12300000    -4.55200000      15\\nO      8.86000000     5.34600000    -2.74900000      16\\nH      8.46500000     5.48700000    -3.61200000      17\\nH      8.10300000     5.25400000    -2.16700000      18\\n@MULTIPOLES\\nORDER 0\\n18\\n1      -0.67072060\\n2       0.33528566\\n3       0.33543494\\n4      -0.67055041\\n5       0.33526795\\n6       0.33528246\\n7      -0.67071744\\n8       0.33530196\\n9       0.33541547\\n10     -0.67067328\\n11      0.33530711\\n12      0.33536617\\n13     -0.67033801\\n14      0.33511794\\n15      0.33522007\\n16     -0.67061076\\n17      0.33527067\\n18      0.33534009\\nORDER 1\\n18\\n1       0.00080560    -0.20614866     0.20971724\\n2       0.12061233     0.19534842    -0.00437020\\n3      -0.12142692     0.00052018    -0.19496774\\n4       0.12128208    -0.02952128    -0.26636264\\n5       0.02123859    -0.14133483     0.17957852\\n6      -0.13641247     0.16937441     0.07336077\\n7       0.09874019     0.23525681     0.14626863\\n8       0.12395337    -0.17250412    -0.08710686\\n9      -0.21781638    -0.05098712    -0.05185290\\n10     -0.22463142     0.06171102    -0.17953533\\n11      0.15306787    -0.16979678    -0.02103891\\n12      0.06031266     0.11119740     0.19160536\\n13      0.23374507    -0.05843888    -0.16882627\\n14     -0.11567937     0.19764719     0.01487010\\n15     -0.10631260    -0.14219349     0.14548634\\n16     -0.28549425     0.01213605    -0.06959331\\n17      0.09187853    -0.03392224     0.20768211\\n18      0.17941729     0.02239518    -0.14158334\\nORDER 2\\n18\\n1      -3.82946639     0.38325366     0.37670941    -3.74967413     0.05052330    -3.75455511\\n2      -0.30950705     0.24207772    -0.02491219    -0.03438601    -0.02932713    -0.45703642\\n3      -0.30728365    -0.02024246     0.24345483    -0.45782760    -0.02099977    -0.03545985\\n4      -4.01843560    -0.42071343    -0.05131494    -3.51375485    -0.22366647    -3.80188906\\n5      -0.45058853    -0.01355906     0.03221603    -0.26454826    -0.26763342    -0.08600138\\n6      -0.24883865    -0.23689663    -0.12134441    -0.16776157     0.15242467    -0.38450342\\n7      -3.29787344    -0.20331433    -0.01414521    -3.86392383     0.23538575    -4.17197450\\n8      -0.32338453    -0.21790162    -0.11343377    -0.11675396     0.16862725    -0.36084577\\n9       0.03250781     0.14275944     0.13176702    -0.41814694     0.03110778    -0.41507187\\n10     -3.94275214    -0.29331092     0.07399890    -3.64071323     0.42271528    -3.75038841\\n11     -0.18497857    -0.27928790    -0.02349247    -0.15879913     0.01388996    -0.45721403\\n12     -0.40467967     0.08377330     0.14054460    -0.34162736     0.21069480    -0.05454010\\n13     -3.98817938    -0.10562980    -0.21981136    -3.34423732    -0.30490142    -4.00186338\\n14     -0.29272797    -0.25436911    -0.02365191    -0.05984813     0.05198185    -0.44875356\\n15     -0.31577317     0.16791558    -0.17641064    -0.26949266    -0.21058649    -0.21581787\\n16     -3.76934440     0.01997274    -0.13330175    -4.28009915    -0.16523022    -3.28439494\\n17     -0.34779244    -0.03700706     0.22659090    -0.43533186    -0.07018391    -0.01780670\\n18     -0.08414919     0.04219414    -0.26720999    -0.44242465    -0.02713904    -0.27419185\\n@POLARIZABILITIES\\nORDER 1 1\\n18\\n1       2.30791521     0.59643991     0.58658837     2.61100398    -0.10257978     2.60785108\\n2       1.30711897     0.90889808    -0.14203759     2.23138041     0.03064426     0.56363899\\n3       1.31473738    -0.12335800     0.91322978     0.56426081     0.06343491     2.22049295\\n4       2.07587445    -0.67088756    -0.21506644     2.80527167    -0.31578724     2.64886958\\n5       0.72279353     0.00751649     0.24603845     1.44539448    -1.05520399     1.93525324\\n6       1.51667446    -0.87135876    -0.35833460     1.82612167     0.59796749     0.76044651\\n7       3.17597352    -0.21979725     0.03827106     2.48641276     0.51074529     1.86433465\\n8       1.15711080    -0.91546924    -0.49534521     1.87545624     0.51559151     1.06960779\\n9       2.55558469     0.50338563     0.46922356     0.68876452    -0.02563589     0.85563095\\n10      2.34307583    -0.51517500     0.28388438     2.61854341     0.61181317     2.56593966\\n11      1.63329191    -1.01651663    -0.24252266     1.86507920     0.04484738     0.60387225\\n12      0.76841032     0.41201391     0.40278140     1.14519478     0.81893980     2.18754212\\n13      2.29130369    -0.22262257    -0.50824047     3.08292101    -0.43438854     2.16011928\\n14      1.20133160    -0.94148299     0.07075699     2.22478033     0.20477680     0.68049498\\n15      1.10983723     0.72098321    -0.53040485     1.39825592    -0.82860371     1.59671491\\n16      2.74369667     0.01646994    -0.12367515     1.60703710    -0.26089660     3.17839863\\n17      0.86347479    -0.13575237     0.83717068     0.86374986    -0.25419187     2.37549183\\n18      1.89994613     0.17584219    -1.10556667     0.83549707    -0.08475173     1.36594908\\nEXCLISTS\\n18 3\\n1     2   3\\n2     1   3\\n3     1   2\\n4     5   6\\n5     4   6\\n6     4   5\\n7     8   9\\n8     7   9\\n9     7   8\\n10   11  12\\n11   10  12\\n12   10  11\\n13   14  15\\n14   13  15\\n15   13  14\\n16   17  18\\n17   16  18\\n18   16  17\\n", "scf_type": "PK"}, "protocols": {}, "extras": {"wfn_qcvars_only": true}, "provenance": {"creator": "Psi4", "version": "1.4a2.dev1090", "routine": "psi4.driver.p4util.procutil"}}"""
 
     atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
-    pprint.pprint(atres.dict())
-
-
-#    scf_energy, wfn = psi4.energy('scf', return_wfn=True)
-#    assert psi4.compare_values(ref_pe_energy, wfn.get_variable("PE ENERGY"), 6, "PE Energy contribution")
-    assert psi4.compare_values(ref_scf_energy, atres.return_result, 6, "Total PE-SCF Energy")
+    assert psi4.compare_values(-0.03424830892844, atres.extras["qcvars"]["PE ENERGY"], 6, "PE Energy contribution")
+    assert psi4.compare_values(-482.9411084900, atres.return_result, 6, "Total PE-SCF Energy")
 
 
 #@pytest.mark.smoke

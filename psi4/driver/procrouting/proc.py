@@ -1276,6 +1276,29 @@ def scf_helper(name, post_scf=True, **kwargs):
     if ref_wfn is not None:
         raise ValidationError("Cannot seed an SCF calculation with a reference wavefunction ('ref_wfn' kwarg).")
 
+    # PCM needs to be run w/o symmetry
+    if core.get_option("SCF", "PCM"):
+        c1_molecule = scf_molecule.clone()
+        c1_molecule.reset_point_group('c1')
+        c1_molecule.update_geometry()
+
+        scf_molecule = c1_molecule
+
+    # PE needs to use exactly input orientation to correspond to potfile
+    if core.get_option("SCF", "PE"):
+        c1_molecule = scf_molecule.clone()
+        if getattr(scf_molecule, "_initial_cartesian", None) is not None:
+            c1_molecule._initial_cartesian = scf_molecule._initial_cartesian.clone()
+            c1_molecule.set_geometry(c1_molecule._initial_cartesian)
+            c1_molecule.reset_point_group('c1')
+            c1_molecule.fix_orientation(True)
+            c1_molecule.fix_com(True)
+            c1_molecule.update_geometry()
+        else:
+            raise ValidationError("Set no_com/no_reorient/symmetry c1 by hand for PCM or PE on non-Cartesian molecules.")
+
+        scf_molecule = c1_molecule
+
     # SCF Banner data
     banner = kwargs.pop('banner', None)
     bannername = name

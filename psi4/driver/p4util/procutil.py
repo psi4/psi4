@@ -342,6 +342,7 @@ _modules = [
     "OCC",
     "OPTKING",
     "PCM",
+    "PE",
     "PSIMRCC",
     "RESPONSE",
     "SAPT",
