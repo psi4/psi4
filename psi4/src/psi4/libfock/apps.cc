@@ -358,7 +358,7 @@ void RCIS::print_wavefunctions() {
         int j = std::get<1>(states_[i]);
         int m = std::get<2>(states_[i]);
         int h = std::get<3>(states_[i]);
-        outfile->Printf("  %-5d %1s%-5d(%3s) %14.6E %14.6E\n", i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h].c_str(), E,
+        outfile->Printf("  %-5zu %1s%-5d(%3s) %14.6E %14.6E\n", i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h].c_str(), E,
                         pc_hartree2ev * E);
     }
     outfile->Printf("  -----------------------------------------------\n");
@@ -436,7 +436,7 @@ void RCIS::print_amplitudes() {
                                 labels[std::get<4>(amps[index])].c_str(), std::get<0>(amps[index]));
             }
         } else {
-            outfile->Printf("  %-5d %1s%-5d(%3s) %s\n", i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h].c_str(),
+            outfile->Printf("  %-5zu %1s%-5d(%3s) %s\n", i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h].c_str(),
                             "No Significant Amplitudes");
         }
 
@@ -486,7 +486,7 @@ void RCIS::print_transitions() {
         // Oscillator strength
         double f = 2.0 / 3.0 * E * (mu[0] * mu[0] + mu[1] * mu[1] + mu[2] * mu[2]);
 
-        outfile->Printf("  %-5d %1s%-5d(%3s) %11.3E %11.3E %11.3E %14.6E\n", i + 1, (m == 1 ? "S" : "T"), j + 1,
+        outfile->Printf("  %-5zu %1s%-5d(%3s) %11.3E %11.3E %11.3E %14.6E\n", i + 1, (m == 1 ? "S" : "T"), j + 1,
                         labels[h].c_str(), mu[0], mu[1], mu[2], f);
     }
     outfile->Printf("  --------------------------------------------------------------------\n");
@@ -503,7 +503,7 @@ void RCIS::print_densities() {
         s << (singlet ? "S" : "T") << state << "_D.dat";
 
         FILE* fh = fopen(s.str().c_str(), "w");
-        fwrite((void*)D->pointer()[0], sizeof(double), nso_ * nso_, fh);
+        fwrite((void*)D->pointer()[0], sizeof(double), static_cast<size_t>(nso_) * nso_, fh);
         fclose(fh);
     }
     for (size_t i = 0; i < options_["CIS_DOPDM_STATES"].size(); i++) {
@@ -516,7 +516,7 @@ void RCIS::print_densities() {
         s << (singlet ? "S" : "T") << state << "_dD.dat";
 
         FILE* fh = fopen(s.str().c_str(), "w");
-        fwrite((void*)D->pointer()[0], sizeof(double), nso_ * nso_, fh);
+        fwrite((void*)D->pointer()[0], sizeof(double), static_cast<size_t>(nso_) * nso_, fh);
         fclose(fh);
     }
     for (size_t i = 0; i < options_["CIS_TOPDM_STATES"].size(); i++) {
@@ -529,7 +529,7 @@ void RCIS::print_densities() {
         s << (singlet ? "S" : "T") << state << "_TD.dat";
 
         FILE* fh = fopen(s.str().c_str(), "w");
-        fwrite((void*)D->pointer()[0], sizeof(double), nso_ * nso_, fh);
+        fwrite((void*)D->pointer()[0], sizeof(double), static_cast<size_t>(nso_) * nso_, fh);
         fclose(fh);
     }
     for (size_t i = 0; i < options_["CIS_NO_STATES"].size(); i++) {
@@ -543,7 +543,7 @@ void RCIS::print_densities() {
         s << (singlet ? "S" : "T") << state << "_N.dat";
 
         FILE* fh = fopen(s.str().c_str(), "w");
-        fwrite((void*)stuff.first->pointer()[0], sizeof(double), nso_ * nmo_, fh);
+        fwrite((void*)stuff.first->pointer()[0], sizeof(double), static_cast<size_t>(nso_) * nmo_, fh);
         fwrite((void*)stuff.second->pointer(), sizeof(double), nmo_, fh);
         fclose(fh);
     }
@@ -558,8 +558,8 @@ void RCIS::print_densities() {
         s << (singlet ? "S" : "T") << state << "_AD.dat";
 
         FILE* fh = fopen(s.str().c_str(), "w");
-        fwrite((void*)stuff.first->pointer()[0], sizeof(double), nso_ * nso_, fh);
-        fwrite((void*)stuff.second->pointer()[0], sizeof(double), nso_ * nso_, fh);
+        fwrite((void*)stuff.first->pointer()[0], sizeof(double), static_cast<size_t>(nso_) * nso_, fh);
+        fwrite((void*)stuff.second->pointer()[0], sizeof(double), static_cast<size_t>(nso_) * nso_, fh);
         fclose(fh);
     }
 }

@@ -201,7 +201,7 @@ std::shared_ptr<Vector> CISRHamiltonian::diagonal() {
                     dp[i * nvir + a + offset] = evp[a] - eop[i];
                 }
             }
-            offset += nocc * nvir;
+            offset += static_cast<long int>(nocc) * nvir;
         }
     }
 
@@ -248,20 +248,20 @@ void CISRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
                 int nvir = Cavir_->colspi()[h ^ symm];
                 for (int i = 0; i < nocc; i++) {
                     for (int a = 0; a < nvir; a++) {
-                        double x = xp[i * nvir + a + offset];
-                        if (x != 0.0 && x != 1.0) {
+                        double our_x = xp[i * nvir + a + offset];
+                        if (our_x != 0.0 && our_x != 1.0) {
                             delta_vector = false;
                             break;
                         }
-                        delta_sum += x;
-                        if (x == 1.0) {
+                        delta_sum += our_x;
+                        if (our_x == 1.0) {
                             delta_i = i;
                             delta_a = a;
                             delta_h = h;
                         }
                     }
                 }
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
             if (delta_sum != 1.0) {
                 delta_vector = false;
@@ -310,7 +310,7 @@ void CISRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
                     C_DGEMM('N', 'T', nso, nocc, nvir, 1.0, Cvp[0], nvir, &xp[offset], nvir, 0.0, Crp[0], nocc);
 
-                    offset += nocc * nvir;
+                    offset += static_cast<long int>(nocc) * nvir;
                 }
 
                 C_left.push_back(Caocc_);
@@ -364,7 +364,7 @@ void CISRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
                     }
                 }
 
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
         }
     }
@@ -392,7 +392,7 @@ std::vector<SharedMatrix> CISRHamiltonian::unpack(const std::shared_ptr<Vector>&
 
             ::memcpy((void*)(t->pointer(h)[0]), (void*)(&eig->pointer(symm)[offset]), sizeof(double) * nocc * nvir);
 
-            offset += nocc * nvir;
+            offset += static_cast<long int>(nocc) * nvir;
         }
 
         t1.push_back(t);
@@ -440,7 +440,7 @@ std::shared_ptr<Vector> TDHFRHamiltonian::diagonal() {
                     dp[i * nvir + a + offset + nov] = -(evp[a] - eop[i]);
                 }
             }
-            offset += nocc * nvir;
+            offset += static_cast<long int>(nocc) * nvir;
         }
     }
 
@@ -482,7 +482,7 @@ void TDHFRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
                 C_DGEMM('N', 'T', nso, nocc, nvir, 1.0, Cvp[0], nvir, &xp[offset], nvir, 0.0, Crp[0], nocc);
 
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
 
             C_right.push_back(CXr);
@@ -504,7 +504,7 @@ void TDHFRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
                 C_DGEMM('N', 'T', nso, nocc, nvir, 1.0, Cvp[0], nvir, &xp[offset + nov], nvir, 0.0, Crp[0], nocc);
 
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
 
             C_right.push_back(CYr);
@@ -595,7 +595,7 @@ void TDHFRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
                     }
                 }
 
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
         }
     }
@@ -647,7 +647,7 @@ std::shared_ptr<Vector> CPHFRHamiltonian::diagonal() {
                     dp[i * nvir + a + offset] = evp[a] - eop[i];
                 }
             }
-            offset += nocc * nvir;
+            offset += static_cast<long int>(nocc) * nvir;
         }
     }
 
@@ -714,7 +714,7 @@ void CPHFRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
                 C_DGEMM('N', 'T', nso, nocc, nvir, 1.0, Cvp[0], nvir, &xp[offset], nvir, 0.0, Crp[0], nocc);
 
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
 
             C_right.push_back(Cr);
@@ -768,7 +768,7 @@ void CPHFRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
                     }
                 }
 
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
         }
     }
@@ -798,7 +798,7 @@ std::vector<SharedMatrix> CPHFRHamiltonian::unpack(const std::vector<std::shared
                 ::memcpy((void*)(t->pointer(h)[0]), (void*)(&x[i]->pointer(symm)[offset]),
                          sizeof(double) * nocc * nvir);
 
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
 
             t1.push_back(t);
@@ -864,7 +864,7 @@ void TDARHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
                 C_DGEMM('N', 'T', nso, nocc, nvir, 1.0, Cvp[0], nvir, &xp[offset], nvir, 0.0, Crp[0], nocc);
 
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
 
             C_right.push_back(Cr);
@@ -881,7 +881,7 @@ void TDARHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
                 if (!nocc || !nvir) continue;
                 double** P2p = P2->pointer(h);
                 ::memcpy((void*)P2p[0], (void*)&xp[offset], sizeof(double) * nocc * nvir);
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
 
             // P.push_back(P2);
@@ -941,7 +941,7 @@ void TDARHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
                     }
                 }
 
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
         }
     }
@@ -1016,7 +1016,7 @@ void TDDFTRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
                 C_DGEMM('N', 'T', nso, nocc, nvir, 1.0, Cvp[0], nvir, &xp[offset], nvir, 0.0, Crp[0], nocc);
 
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
 
             C_right.push_back(CXr);
@@ -1038,7 +1038,7 @@ void TDDFTRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
                 C_DGEMM('N', 'T', nso, nocc, nvir, 1.0, Cvp[0], nvir, &xp[offset + nov], nvir, 0.0, Crp[0], nocc);
 
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
 
             C_right.push_back(CYr);
@@ -1129,7 +1129,7 @@ void TDDFTRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
                     }
                 }
 
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
         }
     }
@@ -1200,7 +1200,7 @@ void CPKSRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
 
                 C_DGEMM('N', 'T', nso, nocc, nvir, 1.0, Cvp[0], nvir, &xp[offset], nvir, 0.0, Crp[0], nocc);
 
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
 
             C_right.push_back(Cr);
@@ -1254,7 +1254,7 @@ void CPKSRHamiltonian::product(const std::vector<std::shared_ptr<Vector> >& x,
                     }
                 }
 
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
         }
     }
@@ -1326,7 +1326,7 @@ std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > USTABHamiltonian::d
                     dp[i * nvir + a + offset] = evp[a] - eop[i];
                 }
             }
-            offset += nocc * nvir;
+            offset += static_cast<long int>(nocc) * nvir;
         }
     }
     for (int symm = 0; symm < nirrepb; ++symm) {
@@ -1346,7 +1346,7 @@ std::pair<std::shared_ptr<Vector>, std::shared_ptr<Vector> > USTABHamiltonian::d
                     dp[i * nvir + a + offset] = evp[a] - eop[i];
                 }
             }
-            offset += nocc * nvir;
+            offset += static_cast<long int>(nocc) * nvir;
         }
     }
 
@@ -1387,20 +1387,20 @@ void USTABHamiltonian::product(const std::vector<std::pair<std::shared_ptr<Vecto
                 int nvir = Cvira_->colspi()[h ^ symm];
                 for (int i = 0; i < nocc; i++) {
                     for (int a = 0; a < nvir; a++) {
-                        double x = xp[i * nvir + a + offset];
-                        if (x != 0.0 && x != 1.0) {
+                        double our_x = xp[i * nvir + a + offset];
+                        if (our_x != 0.0 && our_x != 1.0) {
                             delta_vector = false;
                             break;
                         }
-                        delta_sum += x;
-                        if (x == 1.0) {
+                        delta_sum += our_x;
+                        if (our_x == 1.0) {
                             delta_i = i;
                             delta_a = a;
                             delta_h = h;
                         }
                     }
                 }
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
             if (delta_sum != 1.0) {
                 delta_vector = false;
@@ -1449,7 +1449,7 @@ void USTABHamiltonian::product(const std::vector<std::pair<std::shared_ptr<Vecto
 
                     C_DGEMM('N', 'T', nso, nocc, nvir, 1.0, Cvp[0], nvir, &xp[offset], nvir, 0.0, Crp[0], nocc);
 
-                    offset += nocc * nvir;
+                    offset += static_cast<long int>(nocc) * nvir;
                 }
 
                 C_left.push_back(Cocca_);
@@ -1476,20 +1476,20 @@ void USTABHamiltonian::product(const std::vector<std::pair<std::shared_ptr<Vecto
                 int nvir = Cvirb_->colspi()[h ^ symm];
                 for (int i = 0; i < nocc; i++) {
                     for (int a = 0; a < nvir; a++) {
-                        double x = xp[i * nvir + a + offset];
-                        if (x != 0.0 && x != 1.0) {
+                        double our_x = xp[i * nvir + a + offset];
+                        if (our_x != 0.0 && our_x != 1.0) {
                             delta_vector = false;
                             break;
                         }
-                        delta_sum += x;
-                        if (x == 1.0) {
+                        delta_sum += our_x;
+                        if (our_x == 1.0) {
                             delta_i = i;
                             delta_a = a;
                             delta_h = h;
                         }
                     }
                 }
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
             if (delta_sum != 1.0) {
                 delta_vector = false;
@@ -1538,7 +1538,7 @@ void USTABHamiltonian::product(const std::vector<std::pair<std::shared_ptr<Vecto
 
                     C_DGEMM('N', 'T', nso, nocc, nvir, 1.0, Cvp[0], nvir, &xp[offset], nvir, 0.0, Crp[0], nocc);
 
-                    offset += nocc * nvir;
+                    offset += static_cast<long int>(nocc) * nvir;
                 }
 
                 C_left.push_back(Coccb_);
@@ -1604,7 +1604,7 @@ void USTABHamiltonian::product(const std::vector<std::pair<std::shared_ptr<Vecto
                     }
                 }
 
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
         }
     }
@@ -1661,7 +1661,7 @@ void USTABHamiltonian::product(const std::vector<std::pair<std::shared_ptr<Vecto
                     }
                 }
 
-                offset += nocc * nvir;
+                offset += static_cast<long int>(nocc) * nvir;
             }
         }
     }
@@ -1704,7 +1704,7 @@ std::vector<std::pair<SharedMatrix, SharedMatrix> > USTABHamiltonian::unpack_pai
             ::memcpy((void*)(talpha->pointer(h)[0]), (void*)(&eig->pointer(symm)[offseta]),
                      sizeof(double) * nocca * nvira);
 
-            offseta += nocca * nvira;
+            offseta += static_cast<long int>(nocca) * nvira;
         }
         for (int h = 0; h < nirrep; ++h) {
             int noccb = Coccb_->colspi()[h];
@@ -1715,7 +1715,7 @@ std::vector<std::pair<SharedMatrix, SharedMatrix> > USTABHamiltonian::unpack_pai
             ::memcpy((void*)(tbeta->pointer(h)[0]), (void*)(&eig->pointer(symm)[offseta + offsetb]),
                      sizeof(double) * noccb * nvirb);
 
-            offsetb += noccb * nvirb;
+            offsetb += static_cast<long int>(noccb) * nvirb;
         }
 
         t1.push_back(make_pair(talpha, tbeta));

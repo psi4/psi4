@@ -221,7 +221,7 @@ SharedVector DiskDFJK::iaia(SharedMatrix Ci, SharedMatrix Ca) {
         // (ia|Q)(Q|ia)
         for (int i = 0; i < nocc; i++) {
             for (int a = 0; a < nvir; a++) {
-                double* Ep = &Erp[0][a * (size_t)nocc * rows + i * rows];
+                double* Ep = &Erp[0][a * static_cast<size_t>(nocc) * rows + i * rows];
                 Iiap[i * nvir + a] += C_DDOT(rows, Ep, 1, Ep, 1);
             }
         }
