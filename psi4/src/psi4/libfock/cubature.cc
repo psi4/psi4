@@ -4565,7 +4565,8 @@ void NaiveGridBlocker::block() {
 
     ::memcpy((void *)x_, (void *)x_ref_, sizeof(double) * npoints_);
     ::memcpy((void *)y_, (void *)y_ref_, sizeof(double) * npoints_);
-    ::memcpy((void *)z_, (void *)z_ref_, sizeof(double) * npoints_); ::memcpy((void *)w_, (void *)w_ref_, sizeof(double) * npoints_);
+    ::memcpy((void *)z_, (void *)z_ref_, sizeof(double) * npoints_); 
+    ::memcpy((void *)w_, (void *)w_ref_, sizeof(double) * npoints_);
     ::memcpy((void *)index_, (void *)index_ref_, sizeof(int) * npoints_);
 
     blocks_.clear();
