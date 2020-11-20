@@ -486,7 +486,7 @@ sufficient memory to hold :math:`2ovN_aux` doubles.
 SAPT(DFT) requires a few special treatments to obtain accurate
 result. The DFT functionals used in SAPT(DFT) need to be asymptotically
 corrected with Gradient Regulated Asymptotic Correction scheme (GRAC),
-in order to recover the correct long-range asymptotically behavior
+in order to recover the correct long-range asymptotic behavior
 (approaching :math:`-1/r` as :math:`r` approaches infinity). The program
 requires manual input of GRAC shift parameter for each monomer through
 keywords |sapt__sapt_dft_grac_shift_a| and |sapt__sapt_dft_grac_shift_b|,
