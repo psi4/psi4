@@ -483,7 +483,7 @@ with up to 2000 basis functions, and the code should be scalable to
 sufficient memory to hold :math:`2ovN_aux` doubles.
 
 
-SAPT(DFT) requires a few special treatements to obtain accurate
+SAPT(DFT) requires a few special treatments to obtain accurate
 result. The DFT functionals used in SAPT(DFT) need to be asymptotically
 corrected with Gradient Regulated Asymptotic Correction scheme (GRAC),
 in order to recover the correct long-range asymptotically behavior
@@ -925,4 +925,3 @@ density-fitting scheme of [J. M. Waldrop et al., to be published].
 
 .. include:: autodir_options_c/sapt__do_ind_exch_sinf.rst
 .. include:: autodir_options_c/sapt__do_disp_exch_sinf.rst
-
