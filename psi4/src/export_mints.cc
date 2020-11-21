@@ -996,6 +996,8 @@ void export_mints(py::module& m) {
              "Vector AO EFP multipole integrals", "origin"_a = std::vector<double>{0, 0, 0}, "deriv"_a = 0)
         .def("ao_multipole_potential", &MintsHelper::ao_multipole_potential, "Vector AO multipole potential integrals",
              "origin"_a = std::vector<double>{0, 0, 0}, "max_k"_a = 0, "deriv"_a = 0)
+        .def("ao_multipole_potential_gradient", &MintsHelper::ao_multipole_potential_gradient, "Nuclear gradient of multipole potentials",
+             "Dt"_a, "moments"_a, "origin"_a = std::vector<double>{0, 0, 0}, "max_k"_a = 0)
         .def("electric_field", &MintsHelper::electric_field, "Vector electric field integrals",
              "origin"_a = std::vector<double>{0, 0, 0}, "deriv"_a = 0)
         .def("induction_operator", &MintsHelper::induction_operator,
@@ -1521,6 +1523,8 @@ void export_mints(py::module& m) {
         .def("clear", &ExternalPotential::clear, "Reset the field to zero (eliminates all entries)")
         .def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix,
              "Compute the external potential matrix in the given basis set", "basis"_a)
+        .def("computePotentialGradients", &ExternalPotential::computePotentialGradients,
+             "Compute the gradients due to the external potential", "basis"_a, "Dt"_a)
         .def("print_out", &ExternalPotential::py_print, "Print python print helper to the outfile");
 
     typedef std::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, std::shared_ptr<BasisSet>,

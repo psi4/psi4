@@ -51,13 +51,16 @@ class SphericalTransform;
  */
 class MultipolePotentialInt : public OneBodyAOInt {
     // OS Recursion for this type of potential integral
-    ObaraSaikaTwoCenterMultipolePotentialRecursion mvi_recur_;
+    ObaraSaikaTwoCenterMultipolePotentialRecursion* mvi_recur_;
 
     // maximum multipole order to compute
     int max_k_;
 
+    std::vector<double> moments_;
+
     //! Computes the electric field between two gaussian shells.
     void compute_pair(const GaussianShell&, const GaussianShell&) override;
+    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&) override;
 
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
@@ -65,6 +68,9 @@ class MultipolePotentialInt : public OneBodyAOInt {
                           int max_k = 0, int deriv = 0);
     //! Virtual destructor
     ~MultipolePotentialInt() override;
+    void compute_shell_deriv1(int sh1, int sh2) override;
+
+    void set_moments(const std::vector<double>& moments) { moments_ = moments; }
 };
 
 }  // namespace psi

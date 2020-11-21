@@ -176,6 +176,41 @@ class CppeInterface:
             E_pe = self.cppe_state.total_energy + E_ecp
         return E_pe, core.Matrix.from_array(V_pe)
 
+    def nuclear_gradient_scf(self, density_matrix):
+        pe_grad = np.zeros_like(self.molecule.geometry().np)
+        n_bas = self.basisset.nbf()
+
+        nuc_ee_grad = self.cppe_state.nuclear_interaction_energy_gradient()
+
+        el_ee_grad = 0
+        for site in self.cppe_state.potentials:
+            scaled_moments = []
+            max_k = 0
+            for multipole in site.multipoles:
+                if multipole.k > 2:
+                    raise NotImplementedError("k > 2 not implemented.")
+                if multipole.k > max_k:
+                    max_k = multipole.k
+                scaled_moments.extend(cppe.prefactors(multipole.k) * multipole.values)
+            el_ee_grad -= self.mints.ao_multipole_potential_gradient(density_matrix, scaled_moments, site.position, max_k).np
+        pe_grad += el_ee_grad + nuc_ee_grad
+
+        if self._enable_induction:
+            n_polsites = self.polarizable_coords.shape[0]
+            natoms = self.molecule.natom()
+            nuc_field_grad = self.cppe_state.nuclear_field_gradient().reshape(natoms, 3, n_polsites, 3)
+            induced_moments = np.array(self.cppe_state.get_induced_moments()).reshape(self.polarizable_coords.shape)
+            grad_induction_nuc = -np.einsum("acpk,pk->ac", nuc_field_grad, induced_moments)
+            pe_grad += grad_induction_nuc
+
+            grad_induction_el = 0
+            for ii, site in enumerate(self.polarizable_coords.np):
+                scaled_moments = [0.0, *cppe.prefactors(1)*induced_moments[ii]]
+                grad_induction_el -= self.mints.ao_multipole_potential_gradient(density_matrix, scaled_moments, site, 1).np
+            pe_grad += grad_induction_el
+
+        return core.Matrix.from_array(pe_grad)
+
     def build_electrostatics_operator(self):
         n_bas = self.basisset.nbf()
         self.V_es = np.zeros((n_bas, n_bas))

@@ -2402,6 +2402,14 @@ def run_scf_gradient(name, **kwargs):
         grad.add(ecpgradmat)
         grad.print_atom_vector()
         ref_wfn.set_print(old_print)
+    
+    if hasattr(ref_wfn, "pe_state"):
+        core.print_out("\n\n Adding PE gradient terms. \n")
+        Dt = ref_wfn.Da().clone()
+        Dt.add(ref_wfn.Db())
+        pe_grad = ref_wfn.pe_state.nuclear_gradient_scf(Dt)
+        grad.add(pe_grad)
+        grad.print_atom_vector()
 
     ref_wfn.set_gradient(grad)
 

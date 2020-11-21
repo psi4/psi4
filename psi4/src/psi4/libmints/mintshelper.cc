@@ -45,7 +45,9 @@
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
+// TODO: I (Max) know this is actually not allowed...
 #include "electricfield.h"
+#include "multipolepotential.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -1677,8 +1679,86 @@ std::vector<SharedMatrix> MintsHelper::ao_multipole_potential(const std::vector<
     std::shared_ptr<OneBodyAOInt> ints(integral_->ao_multipole_potential(max_k, deriv));
     ints->set_origin(v3origin);
     ints->compute(mult);
-
     return mult;
+}
+
+SharedMatrix MintsHelper::ao_multipole_potential_gradient(SharedMatrix Dt, const std::vector<double>& moments, const std::vector<double> &origin, int max_k) {
+    if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
+    Vector3 v3origin(origin[0], origin[1], origin[2]);
+    SharedMolecule mol = basisset_->molecule();
+    int natom = mol->natom();
+
+    auto grad = std::make_shared<Matrix>("External Potential Gradient", natom, 3);
+    // double **Gp = grad->pointer();
+
+    // Thread count
+    int threads = 1;
+#ifdef _OPENMP
+    threads = Process::environment.get_n_threads();
+#endif
+
+    // Potential derivatives
+    std::vector<std::shared_ptr<MultipolePotentialInt> > Vint;
+    std::vector<SharedMatrix> Vtemps;
+    for (int t = 0; t < threads; t++) {
+        Vint.push_back(std::shared_ptr<MultipolePotentialInt>(dynamic_cast<MultipolePotentialInt *>(integral_->ao_multipole_potential(max_k, 1))));
+        Vint[t]->set_origin(v3origin);
+        Vint[t]->set_moments(moments);
+        Vtemps.push_back(SharedMatrix(grad->clone()));
+        Vtemps[t]->zero();
+    }
+
+    // Lower Triangle
+    std::vector<std::pair<int, int> > PQ_pairs;
+    for (int P = 0; P < basisset_->nshell(); P++) {
+        for (int Q = 0; Q <= P; Q++) {
+            PQ_pairs.push_back(std::pair<int, int>(P, Q));
+        }
+    }
+
+#pragma omp parallel for schedule(dynamic) num_threads(threads)
+    for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
+        int P = PQ_pairs[PQ].first;
+        int Q = PQ_pairs[PQ].second;
+
+        int thread = 0;
+#ifdef _OPENMP
+        thread = omp_get_thread_num();
+#endif
+        Vint[thread]->compute_shell_deriv1(P, Q);
+
+        const double *buffer = Vint[thread]->buffer();
+
+        int nP = basisset_->shell(P).nfunction();
+        int oP = basisset_->shell(P).function_index();
+
+        int nQ = basisset_->shell(Q).nfunction();
+        int oQ = basisset_->shell(Q).function_index();
+
+        double perm = (P == Q ? 1.0 : 2.0);
+
+        double **Vp = Vtemps[thread]->pointer();
+        double **Dp = Dt->pointer();
+
+        for (int A = 0; A < natom; A++) {
+            const double *ref0 = &buffer[3 * A * nP * nQ + 0 * nP * nQ];
+            const double *ref1 = &buffer[3 * A * nP * nQ + 1 * nP * nQ];
+            const double *ref2 = &buffer[3 * A * nP * nQ + 2 * nP * nQ];
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    double Vval = perm * Dp[p + oP][q + oQ];
+                    Vp[A][0] += Vval * (*ref0++);
+                    Vp[A][1] += Vval * (*ref1++);
+                    Vp[A][2] += Vval * (*ref2++);
+                }
+            }
+        }
+    }
+
+    for (int t = 0; t < threads; t++) {
+        grad->add(Vtemps[t]);
+    }
+    return grad;
 }
 
 std::vector<SharedMatrix> MintsHelper::electric_field(const std::vector<double> &origin, int deriv) {
