@@ -107,6 +107,16 @@ subscript, :math:`resp`, indicates that orbital relaxation effects are included.
    - \delta_{HF}^{(2)} + \delta_{HF}^{(3)}
    :label: SAPT2p3
 
+For SAPT(DFT), the SAPT expansion is truncated at the same level of SAPT0, but the zeroth-order Hamiltonian is chosen to be :math:`K_A+K_B`, the monomer Kohn-Sham operators, instead of the Fock operators. The dispersion term needs to be computed with orbital relaxation for the result to be reasonable, and this is possible by computing dispersion energy through coupled frequency-dependent density susceptibility (FDDS). The exchange-dispersion term is estimated by scaling the uncoupled exchange-dispersion energy. 
+
+.. math:: E_{SAPT(DFT)} =  E_{elst}^{(10)} + E_{exch}^{(10)} + E_{ind,resp}^{(20)} +
+   E_{exch-ind,resp}^{(20)} + E_{disp,resp}^{(20)} + E_{exch-disp,resp}^{(20)}(est.) + \delta_{HF}^{(2)}
+   :label: SAPTDFT
+.. math:: E_{disp,resp}^{(20)} = -\frac{1}{2\pi}\int_0^\infty d\omega \int d\mathbf{r}_A d\mathbf{r}'_A d\mathbf{r}_B d\mathbf{r}'_B \frac{1}{\left|\mathbf{r}_A-\mathbf{r}_B\right|}\frac{1}{\left|\mathbf{r}'_A-\mathbf{r}'_B\right|}\chi^A_{coup}\left(\mathbf{r}_A,\mathbf{r}'_A|i\omega\right)\chi^B_{coup}\left(\mathbf{r}_B,\mathbf{r}'_B|i\omega\right)
+
+.. math:: \chi_{coup}\left(\mathbf{r},\mathbf{r}'|\omega\right) = \chi_0\left(\mathbf{r},\mathbf{r}'|\omega\right) + \int d\omega d\mathbf{r}_1 d\mathbf{r}_2 \chi_0\left(\mathbf{r},\mathbf{r}_1|\omega\right)\left[\frac{1}{r_{12}} + f_{xc}\left(\mathbf{r}_1,\mathbf{r}_2,\omega\right)\right]\chi\left(\mathbf{r}_2,\mathbf{r}'|\omega\right)
+
+
 The :math:`\delta_{HF}^{(2)}` and :math:`\delta_{HF}^{(3)}` terms take into
 account higher-order induction effects and are included in the definition
 of SAPT terms. They are computed from the Hartree--Fock supermolecular interaction energy
@@ -204,7 +214,8 @@ A First Example
 ^^^^^^^^^^^^^^^
 
 The following is the simplest possible input that will perform all
-available SAPT computations (normally, you would pick one of these methods). ::
+available SAPT computations (normally, you would pick one of these methods,
+not all of them). ::
 
 	molecule water_dimer {
 	     0 1
@@ -237,59 +248,90 @@ These requirements are imposed whenever a SAPT calculation is requested
 but can also be set explicitly with the ``no_reorient`` and ``symmetry
 c1`` molecule keywords, as in the example above. As a reminder, only
 SAPT0 can handle the interaction of both closed- and open-shell monomers.
-Higher-order SAPT is only available for computation of interactions between
-closed-shell singlets.
+Higher-order SAPT and SAPT(DFT) are currently available only 
+for computation of interactions between
+closed-shell singlets.  The SAPT codes in |PSIfour| have been written
+to utilize density fitting, which is much faster than using conventional
+4-index electron repulsion integrals.  This happens automatically and
+does not require any additional keywords to be specified (both the 
+SAPT computations and the underlying Hartree-Fock computations will
+utilize density fitting).
 
-The example input shown above would not be used in practice.
-To exploit the efficiency of the density-fitted SAPT implementation in
-|PSIfour|, the SCF computations should also be performed with density-fitted
-(DF) integrals. ::
+
+For SAPT(DFT), the user will need to manually specify the GRAC shift of 
+both monomers, defined by the difference of ionization potential (IP) and
+Kohn-Sham HOMO energy. The ionization potential data for many common molecules 
+is available in NIST Chemistry Webbook. Alternatively, one can estimate the
+ionization potential of molecule by computing the energy difference between
+the molecule as given, and the molecule after one electron has been removed
+(e.g., the energy difference between a neutral molecule and its cation).
+
+The values of GRAC shifts should be given in Hartree. For the example above,
+the GRAC shift value of both molecules are calculated to be 0.1307, and the 
+user would specify them using the following keywords::
+
 
     set globals {
-        basis         aug-cc-pvdz
-        df_basis_scf  aug-cc-pvdz-jkfit
-        df_basis_sapt aug-cc-pvdz-ri
-        guess         sad
-        scf_type      df
-    }
-    
-    set sapt {
-        print         1
+        sapt_dft_grac_shift_a 0.1307
+        sapt_dft_grac_shift_b 0.1307 
     }
 
-These options will perform the SAPT computation with DF-HF and a 
-superposition-of-atomic-densities guess. This is the preferred method of 
-running the SAPT module.
+A complete, minimal example of a SAPT(DFT) computation is given below. ::
+
+    molecule {
+        0 1
+        O  -1.551007  -0.114520   0.000000
+        H  -1.934259   0.762503   0.000000
+        H  -0.599677   0.040712   0.000000
+        --
+        0 1
+        O   1.350625   0.111469   0.000000
+        H   1.680398  -0.373741  -0.758561
+        H   1.680398  -0.373741   0.758561
+
+        units angstrom
+    }
+    
+    set {
+        basis                  aug-cc-pVDZ
+        sapt_dft_grac_shift_a  0.1307
+        sapt_dft_grac_shift_b  0.1307
+    }
+    
+    energy('sapt(dft)')
+
+
 As already mentioned above, the SAPT0 module for open-shell cases can also
 use exact integrals for all terms except for dispersion. In practice,
 density fitting is considerably faster and introduces negligible errors, thus
 it is the preferred method for open-shell cases as well.
-
 Below, you can find a minimum example of open-shell SAPT0 computation. ::
 
-  molecule {
-       0 1
-       O 0.000000  0.000000  6.000000
-       H 0.000000  1.431500  4.890600
-       H 0.000000 -1.431500  4.890600
-       --
-       0 2
-       O 0.000000  0.000000  0.000000
-       O 0.000000  2.503900  0.000000
-       H 0.000000 -0.424700 -1.839500
-       units bohr
-       symmetry c1
-       no_reorient
-       no_com
-  }
-  
-  set {
-  reference uhf
-  scf_type     df
-  basis         cc-pVDZ
-  }
-
-  energy('sapt0')
+    molecule {
+        0 1
+        O 0.000000  0.000000  6.000000
+        H 0.000000  1.431500  4.890600
+        H 0.000000 -1.431500  4.890600
+        --
+        0 2
+        O 0.000000  0.000000  0.000000
+        O 0.000000  2.503900  0.000000
+        H 0.000000 -0.424700 -1.839500
+        units bohr
+        symmetry c1
+        no_reorient
+        no_com
+    }
+    
+    set {
+        reference    uhf
+        scf_type     df
+        basis        aug-cc-pVDZ
+    }
+    
+    energy('sapt0')
+    
+    
 
 |scf__reference| needs to be ``UHF``  or ``ROHF`` for the open-shell computation to proceed.
 
@@ -424,6 +466,60 @@ Specific open-shell SAPT0 keywords
 
 .. include:: autodir_options_c/sapt__sapt_mem_safety.rst
 .. include:: autodir_options_c/sapt__coupled_induction.rst
+
+.. index:: SAPT; SAPT(DFT)
+
+
+SAPT(DFT)
+^^^^^^^^^
+
+In general, SAPT(DFT) should provide more accurate interaction energy 
+components, and overall interaction energies, than SAPT0. The drawback 
+is SAPT(DFT) method is more computationally demanding than SAPT0, 
+SAPT(DFT) can still be applied to medium-sized or large systems. The 
+SAPT(DFT) module was employed successfully in computations of systems 
+with up to 2000 basis functions, and the code should be scalable to 
+3000 basis functions. Like higher-order SAPT, SAPT(DFT) requires 
+sufficient memory to hold :math:`2ovN_aux` doubles.
+
+
+SAPT(DFT) requires a few special treatments to obtain accurate
+result. The DFT functionals used in SAPT(DFT) need to be asymptotically
+corrected with Gradient Regulated Asymptotic Correction scheme (GRAC),
+in order to recover the correct long-range asymptotic behavior
+(approaching :math:`-1/r` as :math:`r` approaches infinity). The program
+requires manual input of GRAC shift parameter for each monomer through
+keywords |sapt__sapt_dft_grac_shift_a| and |sapt__sapt_dft_grac_shift_b|,
+which should be equal to the difference of the actual ionization
+potential and the corresponding Kohn-Sham HOMO energy. The dispersion
+term needs to be computed with orbital response for good accuracy,
+and it is recommended to enable |sapt__sapt_dft_do_hybrid| (set to
+``True`` by default). The coupled exchange-dispersion energy is usually
+estimated by scaling from the uncoupled value either by a fitted fixed
+value as suggested by [Hesselmann:2014:094107]_, or by the ratio of
+coupled and uncoupled dispersion energy. This can be controlled by
+keyword |sapt__sapt_dft_exch_disp_scale_scheme|, with ``FIXED`` being
+the former approach, ``DISP`` being the latter and ``NONE`` for not
+scaling and use the uncoupled exchange-dispersion energy directly.
+
+
+Basic Keywords for SAPT(DFT) 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. include:: autodir_options_c/sapt__sapt_dft_grac_shift_a.rst
+.. include:: autodir_options_c/sapt__sapt_dft_grac_shift_b.rst
+.. include:: autodir_options_c/sapt__sapt_dft_do_dhf.rst
+.. include:: autodir_options_c/sapt__sapt_dft_exch_disp_scale_scheme.rst
+
+Advanced Keywords for SAPT(DFT)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. include:: autodir_options_c/sapt__sapt_dft_functional.rst
+.. include:: autodir_options_c/sapt__sapt_dft_do_hybrid.rst
+.. include:: autodir_options_c/sapt__sapt_dft_exch_disp_fixed_scale.rst
+.. include:: autodir_options_c/sapt__sapt_dft_mp2_disp_alg.rst
+.. include:: autodir_options_c/sapt__sapt_quiet.rst
+
 
 .. index:: SAPT; higher-order
 
@@ -809,6 +905,7 @@ splittings. This method can be invoked with `energy("SF-SAPT")` and
 publications resulting from the use of the SF-SAPT code should cite the
 following publications: [Patkowski:2018:164110]_
 
+
 Second-Order Exchange Terms without Single-Exchange Approximation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -828,4 +925,3 @@ density-fitting scheme of [J. M. Waldrop et al., to be published].
 
 .. include:: autodir_options_c/sapt__do_ind_exch_sinf.rst
 .. include:: autodir_options_c/sapt__do_disp_exch_sinf.rst
-

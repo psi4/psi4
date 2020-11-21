@@ -45,10 +45,8 @@ from . import sapt_sf_terms
 __all__ = ['run_sapt_dft', 'sapt_dft', 'run_sf_sapt']
 
 
-
 def run_sapt_dft(name, **kwargs):
-    optstash = p4util.OptionsState(['SCF_TYPE'], ['SCF', 'REFERENCE'], ['SCF', 'DFT_GRAC_SHIFT'],
-                                   ['SCF', 'SAVE_JK'])
+    optstash = p4util.OptionsState(['SCF_TYPE'], ['SCF', 'REFERENCE'], ['SCF', 'DFT_GRAC_SHIFT'], ['SCF', 'SAVE_JK'])
 
     core.tstart()
     # Alter default algorithm
@@ -177,13 +175,12 @@ def run_sapt_dft(name, **kwargs):
 
         # Induction
         core.timer_on("SAPT(DFT):SAPT:ind")
-        ind = sapt_jk_terms.induction(
-            hf_cache,
-            sapt_jk,
-            True,
-            maxiter=core.get_option("SAPT", "MAXITER"),
-            conv=core.get_option("SAPT", "D_CONVERGENCE"),
-            Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"))
+        ind = sapt_jk_terms.induction(hf_cache,
+                                      sapt_jk,
+                                      True,
+                                      maxiter=core.get_option("SAPT", "MAXITER"),
+                                      conv=core.get_option("SAPT", "D_CONVERGENCE"),
+                                      Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"))
         hf_data.update(ind)
         core.timer_off("SAPT(DFT):SAPT:ind")
 
@@ -214,8 +211,11 @@ def run_sapt_dft(name, **kwargs):
         core.set_global_option("DFT_GRAC_SHIFT", mon_a_shift)
 
     core.IO.set_default_namespace('monomerA')
-    wfn_A = scf_helper(
-        sapt_dft_functional, post_scf=False, molecule=monomerA, banner="SAPT(DFT): DFT Monomer A", **kwargs)
+    wfn_A = scf_helper(sapt_dft_functional,
+                       post_scf=False,
+                       molecule=monomerA,
+                       banner="SAPT(DFT): DFT Monomer A",
+                       **kwargs)
     data["DFT MONOMERA"] = core.variable("CURRENT ENERGY")
 
     core.set_global_option("DFT_GRAC_SHIFT", 0.0)
@@ -231,8 +231,11 @@ def run_sapt_dft(name, **kwargs):
 
     core.set_global_option("SAVE_JK", True)
     core.IO.set_default_namespace('monomerB')
-    wfn_B = scf_helper(
-        sapt_dft_functional, post_scf=False, molecule=monomerB, banner="SAPT(DFT): DFT Monomer B", **kwargs)
+    wfn_B = scf_helper(sapt_dft_functional,
+                       post_scf=False,
+                       molecule=monomerB,
+                       banner="SAPT(DFT): DFT Monomer B",
+                       **kwargs)
     data["DFT MONOMERB"] = core.variable("CURRENT ENERGY")
 
     # Save JK object
@@ -321,7 +324,7 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
     """
 
     # Handle the input options
-    core.timer_on("SAPT(DFT):SAPT(DFT):JK")
+    core.timer_on("SAPT(DFT):SAPT(DFT):Build JK")
     if print_header:
         sapt_dft_header()
 
@@ -332,8 +335,8 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
         sapt_jk.set_do_J(True)
         sapt_jk.set_do_K(True)
         if wfn_A.functional().is_x_lrc():
-            sapt_jk.set_do_wK(True);
-            sapt_jk.set_omega(wfn_A.functional().x_omega());
+            sapt_jk.set_do_wK(True)
+            sapt_jk.set_omega(wfn_A.functional().x_omega())
         sapt_jk.initialize()
         sapt_jk.print_header()
 
@@ -343,8 +346,8 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
             sapt_jk_B = core.JK.build(dimer_wfn.basisset())
             sapt_jk_B.set_do_J(True)
             sapt_jk_B.set_do_K(True)
-            sapt_jk_B.set_do_wK(True);
-            sapt_jk_B.set_omega(wfn_B.functional().x_omega());
+            sapt_jk_B.set_do_wK(True)
+            sapt_jk_B.set_omega(wfn_B.functional().x_omega())
             sapt_jk_B.initialize()
             sapt_jk_B.print_header()
     else:
@@ -355,7 +358,7 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
 
     # Build SAPT cache
     cache = sapt_jk_terms.build_sapt_jk_cache(wfn_A, wfn_B, sapt_jk, True)
-    core.timer_off("SAPT(DFT):SAPT(DFT):JK")
+    core.timer_off("SAPT(DFT):SAPT(DFT):Build JK")
 
     # Electrostatics
     core.timer_on("SAPT(DFT):SAPT(DFT):elst")
@@ -371,14 +374,13 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
 
     # Induction
     core.timer_on("SAPT(DFT):SAPT(DFT):ind")
-    ind = sapt_jk_terms.induction(
-        cache,
-        sapt_jk,
-        True,
-        sapt_jk_B=sapt_jk_B,
-        maxiter=core.get_option("SAPT", "MAXITER"),
-        conv=core.get_option("SAPT", "D_CONVERGENCE"),
-        Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"))
+    ind = sapt_jk_terms.induction(cache,
+                                  sapt_jk,
+                                  True,
+                                  sapt_jk_B=sapt_jk_B,
+                                  maxiter=core.get_option("SAPT", "MAXITER"),
+                                  conv=core.get_option("SAPT", "D_CONVERGENCE"),
+                                  Sinf=core.get_option("SAPT", "DO_IND_EXCH_SINF"))
     data.update(ind)
     core.timer_off("SAPT(DFT):SAPT(DFT):ind")
 
@@ -386,20 +388,49 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
     if cleanup_jk:
         sapt_jk.finalize()
 
+    # Hybrid xc kernel check
+    do_hybrid = core.get_option("SAPT", "SAPT_DFT_DO_HYBRID")
+    is_x_hybrid = wfn_B.functional().is_x_hybrid()
+    is_x_lrc = wfn_B.functional().is_x_lrc()
+    hybrid_specified = core.has_option_changed("SAPT", "SAPT_DFT_DO_HYBRID")
+    if is_x_lrc:
+        if do_hybrid:
+            if hybrid_specified:
+                raise ValidationError(
+                    "SAPT(DFT): Hybrid xc kernel not yet implemented for range-separated funtionals.")
+            else:
+                core.print_out(
+                    "Warning: Hybrid xc kernel not yet implemented for range-separated funtionals; hybrid kernel capability is turned off.\n"
+                )
+        is_hybrid = False
+    else:
+        if do_hybrid:
+            is_hybrid = is_x_hybrid
+        else:
+            is_hybrid = False
+
     # Dispersion
     core.timer_on("SAPT(DFT):SAPT(DFT):disp")
     primary_basis = wfn_A.basisset()
     core.print_out("\n")
-    aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_MP2",
-                                    core.get_option("DFMP2", "DF_BASIS_MP2"), "RIFIT", core.get_global_option('BASIS'))
-    fdds_disp = sapt_mp2_terms.df_fdds_dispersion(primary_basis, aux_basis, cache)
+    aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_MP2", core.get_option("DFMP2", "DF_BASIS_MP2"),
+                                    "RIFIT", core.get_global_option('BASIS'))
+    x_alpha = wfn_B.functional().x_alpha()
+    if not is_hybrid:
+        x_alpha = 0.0
+    fdds_disp = sapt_mp2_terms.df_fdds_dispersion(primary_basis, aux_basis, cache, is_hybrid, x_alpha)
     data.update(fdds_disp)
 
     if core.get_option("SAPT", "SAPT_DFT_MP2_DISP_ALG") == "FISAPT":
         mp2_disp = sapt_mp2_terms.df_mp2_fisapt_dispersion(wfn_A, primary_basis, aux_basis, cache, do_print=True)
     else:
-        mp2_disp = sapt_mp2_terms.df_mp2_sapt_dispersion(
-            dimer_wfn, wfn_A, wfn_B, primary_basis, aux_basis, cache, do_print=True)
+        mp2_disp = sapt_mp2_terms.df_mp2_sapt_dispersion(dimer_wfn,
+                                                         wfn_A,
+                                                         wfn_B,
+                                                         primary_basis,
+                                                         aux_basis,
+                                                         cache,
+                                                         do_print=True)
     data.update(mp2_disp)
     core.timer_off("SAPT(DFT):SAPT(DFT):disp")
 
@@ -411,10 +442,7 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
 
 
 def run_sf_sapt(name, **kwargs):
-    optstash = p4util.OptionsState(['SCF_TYPE'],
-                                   ['SCF', 'REFERENCE'],
-                                   ['SCF', 'DFT_GRAC_SHIFT'],
-                                   ['SCF', 'SAVE_JK'])
+    optstash = p4util.OptionsState(['SCF_TYPE'], ['SCF', 'REFERENCE'], ['SCF', 'DFT_GRAC_SHIFT'], ['SCF', 'SAVE_JK'])
 
     core.tstart()
 
@@ -501,7 +529,7 @@ def run_sf_sapt(name, **kwargs):
 
     for k, v in sf_data.items():
         psi_k = psivar_tanslator[k]
-        
+
         dimer_wfn.set_variable(psi_k, v)
         core.set_variable(psi_k, v)
 

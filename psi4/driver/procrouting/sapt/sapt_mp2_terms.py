@@ -38,7 +38,12 @@ from psi4.driver import psifiles as psif
 from .sapt_util import print_sapt_var
 
 
-def _compute_fxc(PQrho, half_Saux, halfp_Saux, rho_thresh=1.e-8):
+def _symmetrize(mat):
+    tmp = 0.5 * (mat + mat.transpose())
+    return tmp
+
+
+def _compute_fxc(PQrho, half_Saux, halfp_Saux, x_alpha, rho_thresh=1.e-8):
     """
     Computes the gridless (P|fxc|Q) ALDA tensor.
     """
@@ -60,12 +65,11 @@ def _compute_fxc(PQrho, half_Saux, halfp_Saux, rho_thresh=1.e-8):
     dft_size = rho.shape[0]
 
     inp = {"RHO_A": rho}
-    out = {"V": core.Vector(dft_size),
-           "V_RHO_A": core.Vector(dft_size),
-           "V_RHO_A_RHO_A": core.Vector(dft_size)}
+    out = {"V": core.Vector(dft_size), "V_RHO_A": core.Vector(dft_size), "V_RHO_A_RHO_A": core.Vector(dft_size)}
 
     func_x = core.LibXCFunctional('XC_LDA_X', True)
     func_x.compute_functional(inp, out, dft_size, 2)
+    out["V_RHO_A_RHO_A"].scale(1.0 - x_alpha)
 
     func_c = core.LibXCFunctional('XC_LDA_C_VWN', True)
     func_c.compute_functional(inp, out, dft_size, 2)
@@ -81,7 +85,7 @@ def _compute_fxc(PQrho, half_Saux, halfp_Saux, rho_thresh=1.e-8):
     return core.triplet(halfp_Saux, tmp, halfp_Saux, False, False, False)
 
 
-def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3, do_print=True):
+def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points=10, leg_lambda=0.3, do_print=True):
 
     rho_thresh = core.get_option("SAPT", "SAPT_FDDS_V2_RHO_CUTOFF")
     if do_print:
@@ -98,7 +102,7 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
     df_vector_keys = ["eps_occ_A", "eps_vir_A", "eps_occ_B", "eps_vir_B"]
     fdds_vector_cache = {key: cache[key] for key in df_vector_keys}
 
-    fdds_obj = core.FDDS_Dispersion(primary, auxiliary, fdds_matrix_cache, fdds_vector_cache)
+    fdds_obj = core.FDDS_Dispersion(primary, auxiliary, fdds_matrix_cache, fdds_vector_cache, is_hybrid)
 
     # Aux Densities
     D = fdds_obj.project_densities([cache["D_A"], cache["D_B"]])
@@ -112,27 +116,35 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
 
     # Builds potentials
     W_A = fdds_obj.metric().clone()
-    W_A.axpy(1.0, _compute_fxc(D[0], half_Saux, halfp_Saux, rho_thresh=rho_thresh))
+    W_A.axpy(1.0, _compute_fxc(D[0], half_Saux, halfp_Saux, x_alpha, rho_thresh=rho_thresh))
+    W_A = W_A.to_array()
 
     W_B = fdds_obj.metric().clone()
-    W_B.axpy(1.0, _compute_fxc(D[1], half_Saux, halfp_Saux, rho_thresh=rho_thresh))
+    W_B.axpy(1.0, _compute_fxc(D[1], half_Saux, halfp_Saux, x_alpha, rho_thresh=rho_thresh))
+    W_B = W_B.to_array()
 
     # Nuke the densities
     del D
 
-    metric = fdds_obj.metric()
-    metric_inv = fdds_obj.metric_inv()
+    metric = fdds_obj.metric().clone().to_array()
+    metric_inv = fdds_obj.metric_inv().clone().to_array()
 
     # Integrate
     core.print_out("\n   => Time Integration <= \n\n")
 
     val_pack = ("Omega", "Weight", "Disp20,u", "Disp20", "time [s]")
     core.print_out("% 12s % 12s % 14s % 14s % 10s\n" % val_pack)
-    # print("% 12s % 12s % 14s % 14s % 10s" % val_pack)
     start_time = time.time()
 
     total_uc = 0
     total_c = 0
+
+    # Read R
+    if is_hybrid:
+        R_A = fdds_obj.R_A().to_array()
+        R_B = fdds_obj.R_B().to_array()
+        Rtinv_A = np.linalg.pinv(R_A, rcond=1.e-13).transpose()
+        Rtinv_B = np.linalg.pinv(R_B, rcond=1.e-13).transpose()
 
     for point, weight in zip(*np.polynomial.legendre.leggauss(leg_points)):
 
@@ -140,47 +152,74 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
         lambda_scale = ((2.0 * leg_lambda) / (point + 1.0)**2)
 
         # Monomer A
-        X_A = fdds_obj.form_unc_amplitude("A", omega)
+        if is_hybrid:
+            aux_dict = fdds_obj.form_aux_matrices("A", omega)
+            aux_dict = {k: v.to_array() for k, v in aux_dict.items()}
+            X_A_uc = aux_dict["amp"].copy()
+            X_A = X_A_uc - x_alpha * aux_dict["K2L"]
+
+            # K matrices
+            K_A = -x_alpha * aux_dict["K1LD"] - x_alpha * aux_dict["K2LD"] + x_alpha * x_alpha * aux_dict["K21L"]
+            KRS_A = K_A.dot(Rtinv_A).dot(metric)
+        else:
+            X_A = fdds_obj.form_unc_amplitude("A", omega)
+            X_A.scale(-1.0)
+            X_A = X_A.to_array()
+            X_A_uc = X_A.copy()
 
         # Coupled A
-        X_A_coupled = X_A.clone()
-        XSW_A = core.triplet(X_A, metric_inv, W_A, False, False, False)
+        XSW_A = X_A.dot(metric_inv).dot(W_A)
+        if is_hybrid:
+            XSW_A += 0.25 * KRS_A
 
-        amplitude_inv = metric.clone()
-        amplitude_inv.axpy(1.0, XSW_A)
-        nremoved = 0
-        amplitude = amplitude_inv.pseudoinverse(1.e-13, nremoved)
-        amplitude.transpose_this()  # Why is this coming out transposed?
-        X_A_coupled.axpy(-1.0, core.triplet(XSW_A, amplitude, X_A, False, False, False))
-        del XSW_A, amplitude
+        amplitude = np.linalg.pinv(metric - XSW_A, rcond=1.e-13)
+        X_A_coupled = X_A + XSW_A.dot(amplitude).dot(X_A)
 
-        X_B = fdds_obj.form_unc_amplitude("B", omega)
-        # print(np.linalg.norm(X_B))
+        del X_A, XSW_A, amplitude
+        if is_hybrid:
+            del K_A, KRS_A, aux_dict
+
+        # Monomer B
+        if is_hybrid:
+            aux_dict = fdds_obj.form_aux_matrices("B", omega)
+            aux_dict = {k: v.to_array() for k, v in aux_dict.items()}
+            X_B_uc = aux_dict["amp"].copy()
+            X_B = X_B_uc - x_alpha * aux_dict["K2L"]
+
+            # K matrices
+            K_B = -x_alpha * aux_dict["K1LD"] - x_alpha * aux_dict["K2LD"] + x_alpha * x_alpha * aux_dict["K21L"]
+            KRS_B = K_B.dot(Rtinv_B).dot(metric)
+        else:
+            X_B = fdds_obj.form_unc_amplitude("B", omega)
+            X_B.scale(-1.0)
+            X_B = X_B.to_array()
+            X_B_uc = X_B.copy()
 
         # Coupled B
-        X_B_coupled = X_B.clone()
-        XSW_B = core.triplet(X_B, metric_inv, W_B, False, False, False)
+        XSW_B = X_B.dot(metric_inv).dot(W_B)
+        if is_hybrid:
+            XSW_B += 0.25 * KRS_B
 
-        amplitude_inv = metric.clone()
-        amplitude_inv.axpy(1.0, XSW_B)
-        amplitude = amplitude_inv.pseudoinverse(1.e-13, nremoved)
-        amplitude.transpose_this()  # Why is this coming out transposed?
-        X_B_coupled.axpy(-1.0, core.triplet(XSW_B, amplitude, X_B, False, False, False))
-        del XSW_B, amplitude
+        amplitude = np.linalg.pinv(metric - XSW_B, rcond=1.e-13)
+        X_B_coupled = X_B + XSW_B.dot(amplitude).dot(X_B)
+
+        del X_B, XSW_B, amplitude
+        if is_hybrid:
+            del K_B, KRS_B, aux_dict
 
         # Make sure the results are symmetrized
-        for tensor in [X_A, X_B, X_A_coupled, X_B_coupled]:
-            tensor.add(tensor.transpose())
-            tensor.scale(0.5)
+        X_A_uc = _symmetrize(X_A_uc)
+        X_B_uc = _symmetrize(X_B_uc)
+        X_A_coupled = _symmetrize(X_A_coupled)
+        X_B_coupled = _symmetrize(X_B_coupled)
 
         # Combine
-        tmp_uc = core.triplet(metric_inv, X_A, metric_inv, False, False, False)
-        value_uc = tmp_uc.vector_dot(X_B)
+        tmp_uc = metric_inv.dot(X_A_uc).dot(metric_inv)
+        value_uc = np.dot(tmp_uc.flatten(), X_B_uc.flatten())
         del tmp_uc
 
-        tmp_c = core.triplet(metric_inv, X_A_coupled, metric_inv, False, False, False)
-        value_c = tmp_c.vector_dot(X_B_coupled)
-        del tmp_c
+        tmp_c = metric_inv.dot(X_A_coupled).dot(metric_inv)
+        value_c = np.dot(tmp_c.flatten(), X_B_coupled.flatten())
 
         # Tally
         total_uc += value_uc * weight * lambda_scale
@@ -193,7 +232,6 @@ def df_fdds_dispersion(primary, auxiliary, cache, leg_points=10, leg_lambda=0.3,
 
             val_pack = (omega, weight, tmp_disp_unc, tmp_disp, fdds_time)
             core.print_out("% 12.3e % 12.3e % 14.3e % 14.3e %10d\n" % val_pack)
-            # print("% 12.3e % 12.3e % 14.3e % 14.3e %10d" % val_pack)
 
     Disp20_uc = -1.0 / (2.0 * np.pi) * total_uc
     Disp20_c = -1.0 / (2.0 * np.pi) * total_c

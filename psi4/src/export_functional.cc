@@ -302,12 +302,20 @@ void export_functional(py::module &m) {
 
     py::class_<sapt::FDDS_Dispersion, std::shared_ptr<sapt::FDDS_Dispersion>>(m, "FDDS_Dispersion", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::map<std::string, SharedMatrix>,
-                      std::map<std::string, SharedVector>>())
+                      std::map<std::string, SharedVector>, bool>())
         .def("metric", &sapt::FDDS_Dispersion::metric, "Obtains the FDDS metric.")
         .def("metric_inv", &sapt::FDDS_Dispersion::metric_inv, "Obtains the FDDS metric_inv.")
         .def("aux_overlap", &sapt::FDDS_Dispersion::aux_overlap, "Obtains the FDDS aux_overlap.")
         .def("project_densities", &sapt::FDDS_Dispersion::project_densities,
              "Projects a density from the primary AO to auxiliary AO space.")
         .def("form_unc_amplitude", &sapt::FDDS_Dispersion::form_unc_amplitude,
-             "Forms the uncoupled amplitudes for either monomer.");
+             "Forms the uncoupled amplitudes for either monomer.")
+        .def("get_tensor_pqQ", &sapt::FDDS_Dispersion::get_tensor_pqQ,
+             "Debug only: fetches 3-index intermediate from disk and return as matrix.")
+        .def("print_tensor_pqQ", &sapt::FDDS_Dispersion::print_tensor_pqQ,
+             "Debug only: prints formatted 3-index intermediate to file.")
+        .def("form_aux_matrices", &sapt::FDDS_Dispersion::form_aux_matrices,
+             "Forms the uncoupled amplitudes and other matrices for either monomer.")
+        .def("R_A", &sapt::FDDS_Dispersion::R_A, "Obtains (R^t)^-1 for monomer A.")
+        .def("R_B", &sapt::FDDS_Dispersion::R_B, "Obtains (R^t)^-1 for monomer B.");
 }
