@@ -1527,6 +1527,8 @@ void export_mints(py::module& m) {
         .def(py::init<>())
         .def("setName", &ExternalPotential::setName, "Sets the name")
         .def("addCharge", &ExternalPotential::addCharge, "Add a charge Z at (x,y,z)", "Z"_a, "x"_a, "y"_a, "z"_a)
+        .def("getCharges", &ExternalPotential::getCharges, "Get the vector of charge tuples")
+        .def("appendCharges", &ExternalPotential::appendCharges, "Append a vector of charge tuples to a current ExternalPotential")
         .def("addBasis", &ExternalPotential::addBasis, "Add a basis of S auxiliary functions iwth Df coefficients",
              "basis"_a, "coefs"_a)
         .def("clear", &ExternalPotential::clear, "Reset the field to zero (eliminates all entries)")

@@ -73,6 +73,17 @@ class PSI_API ExternalPotential {
 
     /// Add a charge Z at (x,y,z)
     void addCharge(double Z, double x, double y, double z);
+
+    /// get the vector of charges
+    std::vector<std::tuple<double, double, double, double>> getCharges() const {
+        return charges_;
+    }
+
+    /// Append some charges
+    void appendCharges(std::vector<std::tuple<double, double, double, double>> new_charges) {
+        charges_.insert(charges_.end(), new_charges.begin(), new_charges.end());
+    }
+ 
     /// Add a basis of S auxiliary functions with DF coefficients
     void addBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs);
 

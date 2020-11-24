@@ -622,11 +622,18 @@ void FISAPT::nuclear() {
 
     // => External potential <= //
 
-    if (reference_->external_pot()) {
+    std::vector<std::shared_ptr<ExternalPotential>> pot_list;
+    std::vector<int> pot_ids;
+
+    if (reference_->external_pot_c()) { // this is where any "external potential C" goes... any common potential felt by all subsystems
+        
+        pot_list.push_back(reference_->external_pot_c());
+        pot_ids.push_back(2); // code 2 == C
+
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
             throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
 
-        std::shared_ptr<Matrix> V_extern = reference_->external_pot()->computePotentialMatrix(primary_);
+        std::shared_ptr<Matrix> V_extern = reference_->external_pot_c()->computePotentialMatrix(primary_);
 
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
             // Attempt to apply symmetry. No error checking is performed.
@@ -636,44 +643,126 @@ void FISAPT::nuclear() {
         }
 
         if (reference_->get_print()) {
-            reference_->external_pot()->set_print(reference_->get_print());
-            reference_->external_pot()->print();
+            reference_->external_pot_c()->set_print(reference_->get_print());
+            reference_->external_pot_c()->print();
         }
+
         if (reference_->get_print() > 3) V_extern->print();
+
 
         // Save external potential to add to one-electron SCF potential
         matrices_["VE"] = V_extern;
 
-        // Extra nuclear repulsion
+    }
+
+    if (reference_->external_pot_a()) {
+        
+        pot_list.push_back(reference_->external_pot_a());
+        pot_ids.push_back(0); // code 0 == A
+
+        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
+            throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
+
+        std::shared_ptr<Matrix> VA_extern = reference_->external_pot_a()->computePotentialMatrix(primary_);
+
+        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
+            // Attempt to apply symmetry. No error checking is performed.
+            std::shared_ptr<Matrix> VA_extern_sym = reference_->matrix_factory()->create_shared_matrix("External Potential");
+            VA_extern_sym->apply_symmetry(VA_extern, reference_->aotoso());
+            VA_extern = VA_extern_sym;
+        }
+
+        if (reference_->get_print()) {
+            reference_->external_pot_a()->set_print(reference_->get_print());
+            reference_->external_pot_a()->print();
+        }
+        if (reference_->get_print() > 3) VA_extern->print();
+
+        matrices_["VA"]->add(VA_extern);
+    }
+
+    if (reference_->external_pot_b()) {
+        
+        pot_list.push_back(reference_->external_pot_b());
+        pot_ids.push_back(1); // code 1 == B
+
+        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
+            throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
+
+        std::shared_ptr<Matrix> VB_extern = reference_->external_pot_b()->computePotentialMatrix(primary_);
+
+        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
+            // Attempt to apply symmetry. No error checking is performed.
+            std::shared_ptr<Matrix> VB_extern_sym = reference_->matrix_factory()->create_shared_matrix("External Potential");
+            VB_extern_sym->apply_symmetry(VB_extern, reference_->aotoso());
+            VB_extern = VB_extern_sym;
+        }
+
+        if (reference_->get_print()) {
+            reference_->external_pot_b()->set_print(reference_->get_print());
+            reference_->external_pot_b()->print();
+        }
+        if (reference_->get_print() > 3) VB_extern->print();
+
+        matrices_["VB"]->add(VB_extern);
+    }
+
+    // are there any external potentials? If so, we need all QM atoms to feel their effects in the nuclear 
+    // repulsion energy.  
+    // Apparently, we were using C full strength, but the others I think get scaled by 0.5 because Rob counts
+    // A->B and B->A separately and adds them (see a few lines up this fn...maybe due to how FSAPT files are written) 
+
+    if (pot_list.size() > 0) { 
+
+        for (int A = 0; A < mol->nfragments(); A++) {
+            outfile->Printf("           Old Nuclear Repulsion %c: %24.16E [Eh]\n", 'A'+A, Enucsp[A][A]);
+        }
+
         std::vector<int> none;
         std::vector<int> frag_list(1);
         double Enuc_extern;
         char frag = '@'; // Next characters are 'A', 'B', 'C'
+        for (int p = 0; p < pot_list.size(); p++) {
+            for (int A = 0; A < mol->nfragments(); A++) {
+                frag++;
+                frag_list[0] = A;
+                std::shared_ptr<Molecule> mol_frag = mol->extract_subsets(frag_list, none);
+                Enuc_extern = pot_list[p]->computeNuclearEnergy(mol_frag);
+                // I think maybe everything is scaled by 1/2 since it appears twice, unless it is a diagonal
+                // entry, or unless it is envC, which for some reason hadn't ever been scaled in previous version
+                // of code (although code maybe didn't fully test 3-body SAPT stuff, only A-B in presence of C)
+                Etot += Enuc_extern; // I think this gets the full effect, before we scale it down
+                // C charges were considered part of A, B, and C, and so were added to AA, BB, and CC
+                if (pot_ids[p] == 2) { // C charges... do as code did before (although not tested with C QM Atoms I think)
+                    Enucsp[A][A] += Enuc_extern;
+                }
+                else {  // diagonal terms will get full effect, off-diagonal terms will get 1/2 effect
+                    Enuc_extern *= 0.5;
+                    Enucsp[A][pot_ids[p]] += Enuc_extern;
+                    Enucsp[pot_ids[p]][A] += Enuc_extern;
+                }
+            } // end frag loop
+        } // end pot loop
+    
         for (int A = 0; A < mol->nfragments(); A++) {
-            frag++;
-            frag_list[0] = A;
-            std::shared_ptr<Molecule> mol_frag = mol->extract_subsets(frag_list, none);
-            Enuc_extern = reference_->external_pot()->computeNuclearEnergy(mol_frag);
-
-            outfile->Printf("           Old Nuclear Repulsion %c: %24.16E [Eh]\n", frag, Enucsp[A][A]);
-            outfile->Printf("    Additional Nuclear Repulsion %c: %24.16E [Eh]\n", frag, Enuc_extern);
-            outfile->Printf("         Total Nuclear Repulsion %c: %24.16E [Eh]\n", frag, Enucsp[A][A] + Enuc_extern);
-
-            Enucsp[A][A] += Enuc_extern;
-            Etot += Enuc_extern;
+            outfile->Printf("       Updated Nuclear Repulsion %c: %24.16E [Eh]\n", 'A'+A, Enucsp[A][A]);
         }
-        matrices_["E NUC"] = Enucs;
+        matrices_["E NUC"] = Enucs; // not sure we really need this if we just updated pointed-to matrix
         outfile->Printf("\n");
-    }
+    } // end dealing with external potentials
 
     // => Print <= //
 
     // Zs->print();
     // Enucs->print();
 
+    // Note: we are still missing extern/extern contributions
     outfile->Printf("    Nuclear Repulsion Tot: %24.16E [Eh]\n", Etot);
     outfile->Printf("\n");
 }
+
+
+
 
 void FISAPT::coulomb() {
     outfile->Printf("  ==> Coulomb Integrals <==\n\n");
@@ -743,7 +832,7 @@ void FISAPT::scf() {
     outfile->Printf("  ==> SCF A: <==\n\n");
     std::shared_ptr<Matrix> VA_SCF(matrices_["VA"]->clone());
     VA_SCF->copy(matrices_["VA"]);
-    if (reference_->external_pot()) VA_SCF->add(matrices_["VE"]);
+    if (reference_->external_pot_c()) VA_SCF->add(matrices_["VE"]);
     std::shared_ptr<FISAPTSCF> scfA =
         std::make_shared<FISAPTSCF>(jk_, matrices_["E NUC"]->get(0, 0), matrices_["S"], matrices_["XC"], matrices_["T"],
                                     VA_SCF, matrices_["WC"], matrices_["LoccA"], options_);
@@ -762,7 +851,7 @@ void FISAPT::scf() {
     outfile->Printf("  ==> SCF B: <==\n\n");
     std::shared_ptr<Matrix> VB_SCF(matrices_["VB"]->clone());
     VB_SCF->copy(matrices_["VB"]);
-    if (reference_->external_pot()) VB_SCF->add(matrices_["VE"]);
+    if (reference_->external_pot_c()) VB_SCF->add(matrices_["VE"]);
     std::shared_ptr<FISAPTSCF> scfB =
         std::make_shared<FISAPTSCF>(jk_, matrices_["E NUC"]->get(1, 1), matrices_["S"], matrices_["XC"], matrices_["T"],
                                     VB_SCF, matrices_["WC"], matrices_["LoccB"], options_);
@@ -974,7 +1063,7 @@ void FISAPT::dHF() {
     H_AC->copy(T);
     H_AC->add(V_A);
     H_AC->add(V_C);
-    if (reference_->external_pot()) H_AC->add(matrices_["VE"]);
+    if (reference_->external_pot_c()) H_AC->add(matrices_["VE"]);
 
     std::shared_ptr<Matrix> F_AC(D_A->clone());
     F_AC->copy(H_AC);
@@ -1007,7 +1096,7 @@ void FISAPT::dHF() {
     H_BC->copy(T);
     H_BC->add(V_B);
     H_BC->add(V_C);
-    if (reference_->external_pot()) H_BC->add(matrices_["VE"]);
+    if (reference_->external_pot_c()) H_BC->add(matrices_["VE"]);
 
     std::shared_ptr<Matrix> F_BC(D_B->clone());
     F_BC->copy(H_BC);
@@ -1039,7 +1128,7 @@ void FISAPT::dHF() {
     std::shared_ptr<Matrix> H_A(D_A->clone());
     H_A->copy(T);
     H_A->add(V_A);
-    if (reference_->external_pot()) H_A->add(matrices_["VE"]);
+    if (reference_->external_pot_c()) H_A->add(matrices_["VE"]);
 
     std::shared_ptr<Matrix> F_A(D_A->clone());
     F_A->copy(H_A);
@@ -1057,7 +1146,7 @@ void FISAPT::dHF() {
     std::shared_ptr<Matrix> H_B(D_B->clone());
     H_B->copy(T);
     H_B->add(V_B);
-    if (reference_->external_pot()) H_B->add(matrices_["VE"]);
+    if (reference_->external_pot_c()) H_B->add(matrices_["VE"]);
 
     std::shared_ptr<Matrix> F_B(D_B->clone());
     F_B->copy(H_B);
@@ -1075,7 +1164,7 @@ void FISAPT::dHF() {
     std::shared_ptr<Matrix> H_C(D_C->clone());
     H_C->copy(T);
     H_C->add(V_C);
-    if (reference_->external_pot()) H_C->add(matrices_["VE"]);
+    if (reference_->external_pot_c()) H_C->add(matrices_["VE"]);
 
     std::shared_ptr<Matrix> F_C(D_C->clone());
     F_C->copy(H_C);
@@ -1126,7 +1215,7 @@ void FISAPT::dHF() {
     std::shared_ptr<Matrix> LH_A(T->clone());
     LH_A->copy(T);
     LH_A->add(V_A);
-    if (reference_->external_pot()) LH_A->add(matrices_["VE"]);
+    if (reference_->external_pot_c()) LH_A->add(matrices_["VE"]);
     std::shared_ptr<Matrix> LF_A(LH_A->clone());
     LF_A->copy(LH_A);
     LF_A->add(LJ_A);
@@ -1142,7 +1231,7 @@ void FISAPT::dHF() {
     std::shared_ptr<Matrix> LH_B(T->clone());
     LH_B->copy(T);
     LH_B->add(V_B);
-    if (reference_->external_pot()) LH_B->add(matrices_["VE"]);
+    if (reference_->external_pot_c()) LH_B->add(matrices_["VE"]);
     std::shared_ptr<Matrix> LF_B(LH_B->clone());
     LF_B->copy(LH_B);
     LF_B->add(LJ_B);
@@ -1163,7 +1252,7 @@ void FISAPT::dHF() {
     LH_AC->copy(T);
     LH_AC->add(V_A);
     LH_AC->add(V_C);
-    if (reference_->external_pot()) LH_AC->add(matrices_["VE"]);
+    if (reference_->external_pot_c()) LH_AC->add(matrices_["VE"]);
     std::shared_ptr<Matrix> LF_AC(LH_AC->clone());
     LF_AC->copy(LH_AC);
     LF_AC->add(J_C);
@@ -1192,7 +1281,7 @@ void FISAPT::dHF() {
     LH_BC->copy(T);
     LH_BC->add(V_B);
     LH_BC->add(V_C);
-    if (reference_->external_pot()) LH_BC->add(matrices_["VE"]);
+    if (reference_->external_pot_c()) LH_BC->add(matrices_["VE"]);
     std::shared_ptr<Matrix> LF_BC(LH_BC->clone());
     LF_BC->copy(LH_BC);
     LF_BC->add(J_C);
@@ -1221,7 +1310,7 @@ void FISAPT::dHF() {
     LH_BA->copy(T);
     LH_BA->add(V_B);
     LH_BA->add(V_A);
-    if (reference_->external_pot()) LH_BA->add(matrices_["VE"]);
+    if (reference_->external_pot_c()) LH_BA->add(matrices_["VE"]);
     std::shared_ptr<Matrix> LF_BA(LH_BA->clone());
     LF_BA->copy(LH_BA);
     LF_BA->add(LJ_A);

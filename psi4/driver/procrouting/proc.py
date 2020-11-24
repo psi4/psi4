@@ -1228,14 +1228,34 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
             wfn.set_sad_fitting_basissets(sad_fitting_list)
             optstash.restore()
 
-    # Deal with the EXTERN issues
+    # If EXTERN is set, then place that potential on the wfn
+    # For FSAPT, we can take a dictionary of external potentials, e.g.,
+    # external_potentials={'A': potA, 'B': potB, 'C': potC} (any optional)
+    extern_set = False
     if hasattr(core, "EXTERN"):
+        wfn.set_external_potential_c(core.EXTERN)
         wfn.set_external_potential(core.EXTERN)
-    elif 'external_potentials' in kwargs and list(kwargs['external_potentials'].keys()) == ['A', 'B', 'C']:
-        wfn.set_external_potential_a(kwargs['external_potentials']['A'].extern)
-        wfn.set_external_potential_b(kwargs['external_potentials']['B'].extern)
-        wfn.set_external_potential_c(kwargs['external_potentials']['C'].extern)
-        wfn.set_external_potential(kwargs['external_potentials']['C'].extern)  # for the SCF
+        extern_set = True
+    elif 'external_potentials' in kwargs and 'C' in kwargs['external_potentials'].keys():
+        newpot = kwargs['external_potentials']['C'].extern
+        wfn.set_external_potential_c(newpot)
+        wfn.set_external_potential(newpot)
+        extern_set = True
+    if 'external_potentials' in kwargs and 'A' in kwargs['external_potentials'].keys():
+        newpot = kwargs['external_potentials']['A'].extern
+        wfn.set_external_potential_a(newpot)
+        if extern_set:
+            wfn.external_pot().appendCharges(newpot.getCharges())
+        else:
+            wfn.set_external_potential(newpot)
+            extern_set = True
+    if 'external_potentials' in kwargs and 'B' in kwargs['external_potentials'].keys():
+        newpot = kwargs['external_potentials']['B'].extern
+        wfn.set_external_potential_b(newpot)
+        if extern_set:
+            wfn.external_pot().appendCharges(newpot.getCharges())
+        else:
+            wfn.set_external_potential(newpot)
 
     return wfn
 
