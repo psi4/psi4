@@ -96,7 +96,7 @@ def check_iwl_file_from_scf_type(scf_type, wfn):
     """
 
 
-    if scf_type in ['DF', 'DISK_DF', 'MEM_DF', 'CD', 'PK', 'DIRECT']:
+    if scf_type in ['DF', 'DISK_DF', 'MEM_DF', 'CD', 'PK', 'DIRECT', 'DIRECT_DF']:
         mints = core.MintsHelper(wfn.basisset())
         if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
             rel_bas = core.BasisSet.build(wfn.molecule(), "BASIS_RELATIVISTIC",
@@ -113,7 +113,7 @@ def check_non_symmetric_jk_density(name):
     Ensure non-symmetric density matrices are supported for the selected JK routine.
     """
     scf_type = core.get_global_option('SCF_TYPE')
-    supp_jk_type = ['DF', 'DISK_DF', 'MEM_DF', 'CD', 'PK', 'DIRECT', 'OUT_OF_CORE']
+    supp_jk_type = ['DF', 'DISK_DF', 'MEM_DF', 'CD', 'PK', 'DIRECT', 'OUT_OF_CORE', 'DIRECT_DF']
     supp_string = ', '.join(supp_jk_type[:-1]) + ', or ' + supp_jk_type[-1] + '.'
 
     if scf_type not in supp_jk_type:
