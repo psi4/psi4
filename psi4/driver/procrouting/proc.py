@@ -2163,7 +2163,7 @@ def run_occ_gradient(name, **kwargs):
         ['OCC', 'DO_SOS'],
         ['GLOBALS', 'DERTYPE'])
 
-    if core.get_global_option('SCF_TYPE') in ['CD', 'DF', 'MEM_DF', 'DISK_DF']:
+    if core.get_global_option('SCF_TYPE') in ['CD', 'DF', 'MEM_DF', 'DISK_DF', 'DIRECT_DF']:
         raise ValidationError('OCC gradients need conventional SCF reference.')
 
     if name == 'mp2':

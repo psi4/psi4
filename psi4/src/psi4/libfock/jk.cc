@@ -108,6 +108,12 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         if (options["WCOMBINE"].has_changed()) { jk->set_wcombine(options.get_bool("WCOMBINE")); }
 
         return std::shared_ptr<JK>(jk);
+
+    } else if (jk_type == "DIRECT_DF") {
+        DirectDFJK* jk = new DirectDFJK(primary, auxiliary);
+        _set_dfjk_options<DirectDFJK>(jk, options);
+
+        return std::shared_ptr<JK>(jk);
     } else if (jk_type == "PK") {
         PKJK* jk = new PKJK(primary, options);
 
