@@ -33,6 +33,7 @@ import uuid
 import warnings
 from collections import Counter
 from itertools import product
+from tempfile import NamedTemporaryFile
 
 import numpy as np
 
@@ -493,18 +494,16 @@ def pcm_helper(block):
     ----------
     block: multiline string with PCM input in PCMSolver syntax.
     """
-
-    suffix = str(os.getpid()) + '.' + str(uuid.uuid4())[:8]
-    pcmsolver_fname = 'pcmsolver.' + suffix + '.inp'
-    with open(pcmsolver_fname, 'w') as handle:
-        handle.write(block)
     import pcmsolver
-    parsed_pcm = pcmsolver.parse_pcm_input(pcmsolver_fname)
-    os.remove(pcmsolver_fname)
-    pcmsolver_parsed_fname = '@pcmsolver.' + suffix
-    with open(pcmsolver_parsed_fname, 'w') as tmp:
-        tmp.write(parsed_pcm)
-    core.set_local_option('PCM', 'PCMSOLVER_PARSED_FNAME', '{}'.format(pcmsolver_parsed_fname))
+
+    with NamedTemporaryFile(mode="w+t", delete=True) as fl:
+        fl.write(block)
+        fl.flush()
+        parsed_pcm = pcmsolver.parse_pcm_input(fl.name)
+
+    with NamedTemporaryFile(mode="w+t", delete=False) as fl:
+        fl.write(parsed_pcm)
+        core.set_local_option("PCM", "PCMSOLVER_PARSED_FNAME", fl.name)
 
 
 def basname(name):

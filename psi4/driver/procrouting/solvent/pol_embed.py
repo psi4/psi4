@@ -47,8 +47,7 @@ def get_pe_options():
 
     # potfile option can be filename or contents
     potfile_keyword = core.get_option('PE', 'POTFILE')
-    if len(potfile_keyword) > 300:
-        core.get_option('PE', 'POTFILE')
+    if "@COORDINATES" in potfile_keyword:
         fl = NamedTemporaryFile(mode="w+t", delete=False)
         fl.write(potfile_keyword)
         fl.close()
