@@ -33,7 +33,7 @@ molecule mol {
 
 set {
   scf_type df
-  d_convergence 8
+  d_convergence 10
   e_convergence 10
   mbis_radial_points 99
   mbis_spherical_points 350
