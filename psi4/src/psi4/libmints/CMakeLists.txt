@@ -74,10 +74,17 @@ psi4_add_module(lib mints sources)
 # Always linked-to external projects
 target_link_libraries(mints
   PUBLIC
-    Libint::libint
+    Libint2::cxx
   )
 
 # Conditionally linked-to external projects
+if(TARGET Libint::libint)
+  target_link_libraries(mints
+    PUBLIC
+      Libint::libint
+    )
+endif()
+
 if(TARGET simint::simint)
   target_sources(mints
     PRIVATE

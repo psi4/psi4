@@ -29,6 +29,7 @@
 #ifndef _psi_src_lib_libmints_local_h_
 #define _psi_src_lib_libmints_local_h_
 
+#include <string>
 #include <vector>
 #include <memory>
 

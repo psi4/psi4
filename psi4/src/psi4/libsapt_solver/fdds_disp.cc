@@ -112,6 +112,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
             size_t numnu = auxiliary_->shell(NU).nfunction();
 
             metric_ints[thread]->compute_shell(MU, 0, NU, 0);
+            metric_buff[thread] = metric_ints[thread]->buffer();
 
             size_t index = 0;
             // #pragma simd collapse(2)
@@ -313,6 +314,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
             size_t Qshell = PQshell.second;
 
             df_ints[thread]->compute_shell(Rshell, 0, Pshell, Qshell);
+            df_buff[thread] = df_ints[thread]->buffer();
 
             size_t num_p = primary_->shell(Pshell).nfunction();
             size_t index_p = primary_->shell(Pshell).function_index();
@@ -408,6 +410,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
             size_t index_r = auxiliary_->shell(Rshell).function_index();
 
             aux_ints[thread]->compute_shell(Pshell, Qshell, Rshell);
+            aux_buff[thread] = aux_ints[thread]->buffer();
 
             size_t index = 0;
             for (size_t p = 0; p < num_p; p++) {

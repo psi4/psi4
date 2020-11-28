@@ -38,6 +38,8 @@
 #include "psi4/psi4-dec.h"
 #include <cstdio>
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/process.h"
 ;
 using namespace psi;
 
@@ -193,7 +195,7 @@ void SOBasisSet::init() {
         }
     }
 
-    bool include_pure_transform = true;
+    bool include_pure_transform = false;
 
     petite_ = std::make_shared<PetiteList>(basis_, integral_, include_pure_transform);
 

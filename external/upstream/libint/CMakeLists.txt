@@ -1,3 +1,4 @@
+if(${ENABLE_Libint1t})
 find_package(Libint 1.2.0 CONFIG QUIET COMPONENTS ${MAX_AM_ERI})
 
 if(${Libint_FOUND})
@@ -13,7 +14,7 @@ else()
     message(STATUS "Suitable Libint could not be located, ${Magenta}Building Libint${ColourReset} instead.")
     ExternalProject_Add(libint_external
         # "git checkout" fails on Windows, because of "*" in filenames (e.g. basis set files)
-        URL https://github.com/evaleev/libint/archive/b13e71d3cf9960460c4019e5ecf2546a5f361c71.zip
+        URL https://github.com/loriab/libint/archive/libint_t.tar.gz
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -32,5 +33,8 @@ else()
                          -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS})
 
     set(Libint_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/Libint CACHE PATH "path to internally built LibintConfig.cmake" FORCE)
+endif()
+else()
+    add_library(libint_external INTERFACE)  # dummy
 endif()
 

@@ -7,8 +7,10 @@ jobs:
       vmImage: 'vs2017-win2016'
     timeoutInMinutes: 360
     variables:
-      llvm.version: '7.0.1' # Note: LLVM 8.0.0 fails to build the optimized libint
+      llvm.version: '11.0.0'
       mkl.version: '2019.1'
+      cmake.build_type: 'Release'
+      MKL_CBWR: AVX
     steps:
 
       # Check Python
@@ -98,19 +100,19 @@ jobs:
       - script: |
           conda config --set always_yes yes
           conda config --append channels conda-forge
-          conda config --append channels psi4
           conda info
         displayName: "Configure Miniconda"
 
       # Create conda enviroment
       # Note: conda activate doesn't work here, because it creates a new shell!
+      # Note: c-f eigen has Config.cmake file
       - script: |
           conda install cmake ^
                         conda-build ^
+                        conda-forge::eigen ^
                         conda-verify ^
                         intel-openmp=%MKL_VERSION% ^
                         mkl-devel=%MKL_VERSION% ^
-                        mpmath ^
                         networkx ^
                         ninja ^
                         numpy ^
@@ -120,8 +122,11 @@ jobs:
                         pytest ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
-                        qcelemental ^
-                        qcengine
+                        psi4/label/dev::libint2 ^
+                        conda-forge::mpfr ^
+                        conda-forge::mpmath ^
+                        conda-forge::qcelemental ^
+                        conda-forge::qcengine
           pip install git+https://github.com/i-pi/i-pi.git@master-py3
           conda list
         displayName: "Install conda packages"
@@ -147,8 +152,8 @@ jobs:
           setlocal EnableDelayedExpansion
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
           mkdir build & cd build
-          if "%CMAKE_BUILD_TYPE%"=="Debug" set MAX_AM_ERI=6
-          if "%CMAKE_BUILD_TYPE%"=="Release" set MAX_AM_ERI=8
+          if "%CMAKE_BUILD_TYPE%"=="Debug" set MAX_AM_ERI=4
+          if "%CMAKE_BUILD_TYPE%"=="Release" set MAX_AM_ERI=5
           if not defined MAX_AM_ERI exit 1
           if "%CMAKE_BUILD_TYPE%"=="Debug" set ENABLE_XHOST=OFF
           if "%CMAKE_BUILD_TYPE%"=="Release" set ENABLE_XHOST=ON
@@ -160,6 +165,9 @@ jobs:
                 -DCMAKE_CXX_COMPILER=clang-cl ^
                 -DENABLE_XHOST=!ENABLE_XHOST! ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
+                -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
+                -DEigen_ROOT="C:/tools/miniconda3/Library" ^
+                -DBUILD_Libint2_GENERATOR=OFF ^
                 $(Build.SourcesDirectory)
         displayName: "Configure Psi4"
         workingDirectory: $(Build.BinariesDirectory)
@@ -195,7 +203,7 @@ jobs:
           setlocal EnableDelayedExpansion
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
           psi4 $(Build.SourcesDirectory)\tests\tu1-h2o-energy\input.dat
-        displayName: 'Spot Test'
+        displayName: 'Run, Run, Spot, Run Test'
         workingDirectory: $(Build.BinariesDirectory)/build
 
       # Test (ctest)

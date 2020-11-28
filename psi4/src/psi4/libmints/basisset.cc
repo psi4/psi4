@@ -26,7 +26,10 @@
  * @END LICENSE
  */
 // Need libint for maximum angular momentum
+#ifdef ENABLE_Libint1t
 #include <libint/libint.h>
+#endif
+#include <libint2/shell.h>
 /*!
     \defgroup MINTS libmints: Integral library
     \ingroup MINTS
@@ -100,6 +103,7 @@ BasisSet::BasisSet() {
     shell_first_ao_ = new int[1];
     shell_first_basis_function_ = new int[1];
     shells_ = new GaussianShell[1];
+    l2_shells_.push_back(libint2::Shell::unit());
     ao_to_shell_ = new int[1];
     function_to_shell_ = new int[1];
     function_center_ = new int[1];
@@ -264,8 +268,9 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
         }
         // If we are about to end up with no valence electrons,
         // unfreeze electrons from the largest shell in the molecule
-        if (mol_valence <= 0) num_frozen_el -= period_to_full_shell(largest_shell - 1) - period_to_full_shell(largest_shell - 2);
-        return num_frozen_el/2;
+        if (mol_valence <= 0)
+            num_frozen_el -= period_to_full_shell(largest_shell - 1) - period_to_full_shell(largest_shell - 2);
+        return num_frozen_el / 2;
     } else {
         // Options are filtered in read_options.cc; allowed strings are:
         // TRUE, FALSE, -1, -2, -3
@@ -292,7 +297,7 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
         // If we are about to end up with no valence electrons,
         // throw an exception.
         if (mol_valence <= 0) throw PSIEXCEPTION("Cannot freeze the requested previous shell: valence <= 0.");
-        return num_frozen_el/2;
+        return num_frozen_el / 2;
     }
 }
 
@@ -643,6 +648,16 @@ const GaussianShell &BasisSet::ecp_shell(int si) const {
     return ecp_shells_[si];
 }
 
+const libint2::Shell &BasisSet::l2_shell(int si) const {
+    if (si < 0 || si > nshell()) {
+        outfile->Printf("Libint2 BasisSet::shell(si = %d), requested a shell out-of-bound.\n", si);
+        outfile->Printf("     Max shell size: %d\n", nshell());
+        outfile->Printf("     Name: %s\n", name().c_str());
+        throw PSIEXCEPTION("BasisSet::shell: requested shell is out-of-bounds.");
+    }
+    return l2_shells_[si];
+}
+
 const GaussianShell &BasisSet::shell(int center, int si) const { return shell(center_to_shell_[center] + si); }
 
 std::shared_ptr<BasisSet> BasisSet::zero_ao_basis_set() {
@@ -788,6 +803,7 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
     shell_first_basis_function_ = new int[n_shells_];
     shells_ = new GaussianShell[n_shells_];
     ecp_shells_ = new GaussianShell[n_ecp_shells_];
+    l2_shells_.resize(n_shells_);
     ao_to_shell_ = new int[nao_];
     function_to_shell_ = new int[nbf_];
     function_center_ = new int[nbf_];
@@ -819,6 +835,10 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
         int nshells = shells.size();
         center_to_nshell_[n] = nshells;
         center_to_shell_[n] = shell_count;
+        Vector3 xyz = molecule_->xyz(n);
+        xyz_ptr[0] = xyz[0];
+        xyz_ptr[1] = xyz[1];
+        xyz_ptr[2] = xyz[2];
         int atom_nprim = 0;
         for (int i = 0; i < nshells; ++i) {
             const ShellInfo &thisshell = shells[i];
@@ -838,6 +858,12 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                     GaussianShell(shelltype, am, shell_nprim, &uoriginal_coefficients_[ustart + atom_nprim],
                                   &ucoefficients_[ustart + atom_nprim], &uerd_coefficients_[ustart + atom_nprim],
                                   &uexponents_[ustart + atom_nprim], puream, n, xyz_ptr, bf_count);
+                auto l2c = libint2::svector<double>(&uoriginal_coefficients_[ustart + atom_nprim],
+                                                    &uoriginal_coefficients_[ustart + atom_nprim + shell_nprim]);
+                auto l2e = libint2::svector<double>(&uexponents_[ustart + atom_nprim],
+                                                    &uexponents_[ustart + atom_nprim + shell_nprim]);
+                l2_shells_[shell_count] =
+                    libint2::Shell{l2e, {{am, static_cast<bool>(puream), l2c}}, {{xyz_ptr[0], xyz_ptr[1], xyz_ptr[2]}}};
             } else {
                 throw PSIEXCEPTION("Unexpected shell type in BasisSet constructor!");
             }
@@ -851,10 +877,6 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
             atom_nprim += shell_nprim;
             shell_count++;
         }
-        Vector3 xyz = molecule_->xyz(n);
-        xyz_ptr[0] = xyz[0];
-        xyz_ptr[1] = xyz[1];
-        xyz_ptr[2] = xyz[2];
         xyz_ptr += 3;
         if (atom_nprim != uend - ustart) {
             throw PSIEXCEPTION("Problem with nprimitive in basis set construction!");

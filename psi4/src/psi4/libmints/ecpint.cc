@@ -368,7 +368,7 @@ double RadialIntegral::calcKij(double Na, double Nb, double zeta_a, double zeta_
 // Assumes that p is the pretabulated integrand at the abscissae
 double RadialIntegral::integrand(double r, double *p, int ix) { return p[ix]; }
 
-void RadialIntegral::buildParameters(const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data) {
+void RadialIntegral::buildParameters(const GaussianShell &shellA, const GaussianShell &shellB, ECPShellPairData &data) {
     int npA = shellA.nprimitive();
     int npB = shellB.nprimitive();
 
@@ -424,7 +424,7 @@ int RadialIntegral::integrate(int maxL, int gridSize, TwoIndex<double> &intValue
 }
 
 void RadialIntegral::type1(int maxL, int N, int offset, const GaussianShell &U, const GaussianShell &shellA,
-                           const GaussianShell &shellB, ShellPairData &data, TwoIndex<double> &values) {
+                           const GaussianShell &shellB, ECPShellPairData &data, TwoIndex<double> &values) {
     int npA = shellA.nprimitive();
     int npB = shellB.nprimitive();
 
@@ -532,7 +532,7 @@ void RadialIntegral::buildF(const GaussianShell &shell, double A, int lstart, in
 }
 
 void RadialIntegral::type2(int l, int l1start, int l1end, int l2start, int l2end, int N, const GaussianShell &U,
-                           const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data,
+                           const GaussianShell &shellA, const GaussianShell &shellB, ECPShellPairData &data,
                            TwoIndex<double> &values) {
     std::function<double(double, double *, int)> intgd = integrand;
     int npA = shellA.nprimitive();
@@ -684,7 +684,7 @@ void ECPInt::makeC(FiveIndex<double> &C, int L, double *A) {
 }
 
 void ECPInt::type1(const GaussianShell &U, const GaussianShell &shellA, const GaussianShell &shellB,
-                   ShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, TwoIndex<double> &values) {
+                   ECPShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, TwoIndex<double> &values) {
     int LA = data.LA;
     int LB = data.LB;
     int maxLBasis = data.maxLBasis;
@@ -767,7 +767,7 @@ void ECPInt::type1(const GaussianShell &U, const GaussianShell &shellA, const Ga
 }
 
 void ECPInt::type2(int lam, const GaussianShell &U, const GaussianShell &shellA, const GaussianShell &shellB,
-                   ShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, ThreeIndex<double> &values) {
+                   ECPShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, ThreeIndex<double> &values) {
     double prefac = 16.0 * M_PI * M_PI;
     int LA = data.LA;
     int LB = data.LB;
@@ -859,7 +859,7 @@ void ECPInt::type2(int lam, const GaussianShell &U, const GaussianShell &shellA,
 
 void ECPInt::compute_shell_pair(const GaussianShell &U, const GaussianShell &shellA, const GaussianShell &shellB,
                                 TwoIndex<double> &values, int shiftA, int shiftB) {
-    ShellPairData data;
+    ECPShellPairData data;
     // Shift A and B to be relative to U
     const double *C = U.center();
     data.A[0] = shellA.center()[0] - C[0];

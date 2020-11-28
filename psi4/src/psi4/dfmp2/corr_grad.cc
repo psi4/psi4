@@ -41,7 +41,6 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libmints/sieve.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/vector.h"
@@ -129,9 +128,6 @@ void DFCorrGrad::compute_gradient() {
     gradients_["Coulomb"] = std::make_shared<Matrix>("Coulomb Gradient", natom, 3);
     gradients_["Exchange"] = std::make_shared<Matrix>("Exchange Gradient", natom, 3);
 
-    // => Build ERI Sieve <= //
-    sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
-
     // => Open temp files <= //
     psio_->open(unit_a_, PSIO_OPEN_NEW);
     psio_->open(unit_b_, PSIO_OPEN_NEW);
@@ -184,7 +180,14 @@ void DFCorrGrad::build_Amn_terms() {
 
     bool restricted = (Ca_ == Cb_);
 
-    const std::vector<std::pair<int, int> >& shell_pairs = sieve_->shell_pairs();
+    // => Integrals <= //
+
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
+    for (int t = 0; t < df_ints_num_threads_; t++) {
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
+    }
+    const std::vector<std::pair<int, int> >& shell_pairs = eri[0]->shell_pairs();
     int npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
@@ -283,14 +286,6 @@ void DFCorrGrad::build_Amn_terms() {
     next_Ailb = PSIO_ZERO;
     next_Aira = PSIO_ZERO;
     next_Airb = PSIO_ZERO;
-
-    // => Integrals <= //
-
-    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
-    }
 
     // => Master Loop <= //
 
@@ -622,7 +617,14 @@ void DFCorrGrad::build_Amn_x_terms() {
 
     bool restricted = (Ca_ == Cb_);
 
-    const std::vector<std::pair<int, int> >& shell_pairs = sieve_->shell_pairs();
+    // => Integrals <= //
+
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
+    for (int t = 0; t < df_ints_num_threads_; t++) {
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+    }
+    const std::vector<std::pair<int, int> >& shell_pairs = eri[0]->shell_pairs();
     int npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
@@ -696,14 +698,6 @@ void DFCorrGrad::build_Amn_x_terms() {
     psio_address next_Ailb = PSIO_ZERO;
     psio_address next_Aira = PSIO_ZERO;
     psio_address next_Airb = PSIO_ZERO;
-
-    // => Integrals <= //
-
-    auto rifactory = std::make_shared<IntegralFactory>(auxiliary_, BasisSet::zero_ao_basis_set(), primary_, primary_);
-    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
-    for (int t = 0; t < df_ints_num_threads_; t++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
-    }
 
     // => Temporary Gradients <= //
 
@@ -830,15 +824,16 @@ void DFCorrGrad::build_Amn_x_terms() {
             int oN = primary_->shell(N).function_index();
 
             int ncart = cP * cM * cN;
-            const double* Px = buffer + 0 * ncart;
-            const double* Py = buffer + 1 * ncart;
-            const double* Pz = buffer + 2 * ncart;
-            const double* Mx = buffer + 3 * ncart;
-            const double* My = buffer + 4 * ncart;
-            const double* Mz = buffer + 5 * ncart;
-            const double* Nx = buffer + 6 * ncart;
-            const double* Ny = buffer + 7 * ncart;
-            const double* Nz = buffer + 8 * ncart;
+            const auto & buffers = eri[thread]->buffers();
+            const double* Px = buffers[0];
+            const double* Py = buffers[1];
+            const double* Pz = buffers[2];
+            const double* Mx = buffers[3];
+            const double* My = buffers[4];
+            const double* Mz = buffers[5];
+            const double* Nx = buffers[6];
+            const double* Ny = buffers[7];
+            const double* Nz = buffers[8];
 
             double perm = (M == N ? 1.0 : 2.0);
 

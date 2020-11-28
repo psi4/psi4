@@ -26,12 +26,16 @@
  * @END LICENSE
  */
 
+#include <algorithm>
 #include <stdexcept>
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/molecule.h"
+#include "psi4/libpsi4util/process.h"
+
+#include "libint2/shell.h"
 
 ;
 using namespace psi;
@@ -56,23 +60,276 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
       source_full_(nullptr),
       source_(nullptr),
       deriv_(deriv) {
-    // outfile->Printf( "TwoBodyAOInt object created with: %s, %s, %s, %s\n",
-    //        original_bs1_->name().c_str(),
-    //        original_bs2_->name().c_str(),
-    //        original_bs3_->name().c_str(),
-    //        original_bs4_->name().c_str());
     // The derived classes allocate this memory.
-    force_cartesian_ = false;
     tformbuf_ = nullptr;
     natom_ = original_bs1_->molecule()->natom();  // This assumes the 4 bases come from the same molecule.
+
+    // Figure out how equivalent
+    bra_same_ = (original_bs1_ == original_bs2_);
+    ket_same_ = (original_bs3_ == original_bs4_);
+    braket_same_ = (original_bs1_ == original_bs3_ && original_bs2_ == original_bs4_);
+
+    // Setup sieve data
+    screening_threshold_ = Process::environment.options.get_double("INTS_TOLERANCE");
+    auto screentype = Process::environment.options.get_str("SCREENING");
+    if (screentype == "SCHWARZ")
+        screening_type_ = ScreeningType::Schwarz;
+    else if (screentype == "CSAM")
+        screening_type_ = ScreeningType::CSAM;
+    else
+        throw PSIEXCEPTION("Unknown screening type " + screentype + " in TwoBodyAOInt()");
+    
+    if (screening_threshold_ == 0.0) screening_type_ = ScreeningType::None;
 }
 
 TwoBodyAOInt::TwoBodyAOInt(const TwoBodyAOInt &rhs) : TwoBodyAOInt(rhs.integral_, rhs.deriv_) {
+    buffers_.resize(rhs.buffers_.size());
     blocks12_ = rhs.blocks12_;
     blocks34_ = rhs.blocks34_;
+    bra_same_ = rhs.bra_same_;
+    ket_same_ = rhs.ket_same_;
+    braket_same_ = rhs.braket_same_;
+    screening_threshold_ = rhs.screening_threshold_;
+    screening_threshold_squared_ = rhs.screening_threshold_squared_;
+    nshell_ = rhs.nshell_;
+    nbf_ = rhs.nbf_;
+    screening_type_ = rhs.screening_type_;
+    function_pair_values_ = rhs.function_pair_values_;
+    shell_pair_values_ = rhs.shell_pair_values_;
+    shell_pair_exchange_values_ = rhs.shell_pair_exchange_values_;
+    function_sqrt_ = rhs.function_sqrt_;
+    function_pairs_ = rhs.function_pairs_;
+    shell_pairs_ = rhs.shell_pairs_;
+    shell_pairs_bra_ = rhs.shell_pairs_bra_;
+    shell_pairs_ket_ = rhs.shell_pairs_ket_;
+    max_integral_ = rhs.max_integral_;
+    function_pairs_reverse_ = rhs.function_pairs_reverse_;
+    shell_pairs_reverse_ = rhs.shell_pairs_reverse_;
+    shell_to_shell_ = rhs.shell_to_shell_;
+    function_to_function_ = rhs.function_to_function_;
+    sieve_impl_ = rhs.sieve_impl_;
 }
 
 TwoBodyAOInt::~TwoBodyAOInt() {}
+
+bool TwoBodyAOInt::shell_significant_csam(int M, int N, int R, int S) { 
+    // Square of standard Cauchy-Schwarz Q_mu_nu terms (Eq. 1)
+    double mn_mn = shell_pair_values_[N * nshell_ + M];
+    double rs_rs = shell_pair_values_[S * nshell_ + R];
+
+    // Square of M~_mu_nu terms (Eq. 9)
+    double mm_rr = shell_pair_exchange_values_[R * nshell_ + M];
+    double nn_ss = shell_pair_exchange_values_[S * nshell_ + N];
+    double mm_ss = shell_pair_exchange_values_[S * nshell_ + M];
+    double nn_rr = shell_pair_exchange_values_[R * nshell_ + N];
+
+    // Square of M_mu_nu_lam_sig (Eq. 12)
+    double csam_2 = std::max(mm_rr * nn_ss, mm_ss * nn_rr);
+
+    // Square of Eq. 11
+    double mnrs_2 = mn_mn * rs_rs * csam_2;
+
+    return std::abs(mnrs_2) >= screening_threshold_squared_;
+}
+
+bool TwoBodyAOInt::shell_significant_schwarz(int M, int N, int R, int S) {
+    return shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S] >= screening_threshold_squared_;
+}
+bool TwoBodyAOInt::shell_significant_none(int M, int N, int R, int S) { return true; }
+
+void TwoBodyAOInt::setup_sieve() {
+    /*
+     * Create metadata to screen (PQ|RS) using some relationship involving (PQ|PQ) and (RS|RS). We make a
+     * few assumptions here: 1) we only want to create sieves where there is an equivalent basis set pair
+     * in bra or ket.  So DF integrals like (A0|RS) with 0 denoting the dummy index will have a sieve
+     * constructed from the RS pair in the ket that can be used to build dense indexing of the RS target.
+     * The other type of DF integral (A0|B0) will not have any sieve associated with it.  Where dummy indices
+     * are present they must occupy the 2nd and/or 4th index.
+     */
+
+    // Different approaches are possible, so we use a function pointer and set it once, to avoid logic later on
+    switch (screening_type_) {
+        case ScreeningType::CSAM:
+            sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_csam(M, N, R, S); };
+            break;
+        case ScreeningType::Schwarz:
+            sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_schwarz(M, N, R, S); };
+            break;
+        case ScreeningType::None:   
+            sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_none(M, N, R, S); };
+            break;
+        default:
+            throw PSIEXCEPTION("Unimplemented screening type in TwoBodyAOInt::setup_sieve()");
+    }
+
+
+    // We assume that only the bra or the ket has a pair that generates a sieve.  If all bases are the same, either
+    // can be used.  If only bra or ket has a matching pair, that matching pair is used.  If both bra and ket have
+    // matching pairs but those pairs are different, we need to generalize this machinery a little to disambiguate
+    // which pair should be used to form the sieve.  I don't know of a need for that right now, so I'll assume its
+    // not needed and add a safety check to futureproof the code against that kind of use case further down the road.
+    if(bra_same_ && ket_same_ && !braket_same_) throw PSIEXCEPTION("Unexpected integral type (aa|bb) in setup_sieve()");
+
+    if(bra_same_) {
+        create_sieve_pair_info(basis1(), shell_pairs_bra_, true);
+        shell_pairs_ = shell_pairs_bra_;
+    } else {
+        if (basis2()->l2_shell(0) != libint2::Shell::unit()) 
+               throw PSIEXCEPTION("If different basis sets exist in the bra, basis3 is expected to be dummy in setup_sieve()");
+        for(int shell = 0; shell < basis1()->nshell(); ++shell) shell_pairs_bra_.emplace_back(shell,0);
+    }
+    if(ket_same_) {
+        if(braket_same_) {
+            shell_pairs_ket_ = shell_pairs_bra_;
+        } else {
+            create_sieve_pair_info(basis3(), shell_pairs_ket_, false);
+            shell_pairs_ = shell_pairs_ket_;
+        }
+    } else {
+        if (basis4()->l2_shell(0) != libint2::Shell::unit()) 
+               throw PSIEXCEPTION("If different basis sets exist in the ket, basis4 is expected to be dummy in setup_sieve()");
+        for(int shell = 0; shell < basis3()->nshell(); ++shell) shell_pairs_ket_.emplace_back(shell,0);
+    }
+}
+
+void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, PairList &shell_pairs, bool is_bra) {
+
+    nshell_ = bs->nshell();
+    nbf_ = bs->nbf();
+
+    function_pair_values_.resize((size_t)nbf_ * nbf_, 0.0);
+    shell_pair_values_.resize((size_t)nshell_ * nshell_, 0.0);
+    max_integral_ = 0.0;
+
+    bs1_ = bs;
+    bs2_ = bs;
+    bs3_ = bs;
+    bs4_ = bs;
+    for (int P = 0; P < nshell_; P++) {
+        for (int Q = 0; Q <= P; Q++) {
+            int nP = bs->shell(P).nfunction();
+            int nQ = bs->shell(Q).nfunction();
+            int oP = bs->shell(P).function_index();
+            int oQ = bs->shell(Q).function_index();
+            compute_shell_for_sieve(bs, P, Q, P, Q, is_bra);
+            const double *buffer = target_full_;
+            double shell_max_val = 0.0;
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    shell_max_val =
+                        std::max(shell_max_val, std::abs(buffer[p * (nQ * nP * nQ + nQ) + q * (nP * nQ + 1)]));
+                }
+            }
+            max_integral_ = std::max(max_integral_, shell_max_val);
+            shell_pair_values_[P * nshell_ + Q] = shell_pair_values_[Q * nshell_ + P] = shell_max_val;
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    function_pair_values_[(p + oP) * nbf_ + (q + oQ)] = function_pair_values_[(q + oQ) * nbf_ + (p + oP)] = shell_max_val;
+                }
+            }
+        }
+    }
+    bs1_ = original_bs1_;
+    bs2_ = original_bs2_;
+    bs3_ = original_bs3_;
+    bs4_ = original_bs4_;
+
+    screening_threshold_squared_ = screening_threshold_ * screening_threshold_;
+    double screening_threshold_over_max = screening_threshold_ / max_integral_;
+    double screening_threshold_squared_over_max = screening_threshold_squared_ / max_integral_;
+
+    shell_pairs.clear();
+    function_pairs_.clear();
+    shell_pairs_reverse_.resize(nshell_ * (nshell_ + 1L) / 2L);
+    function_pairs_reverse_.resize(nbf_ * (nbf_ + 1L) / 2L);
+
+    long int offset = 0L;
+    size_t munu = 0L;
+    for (int mu = 0; mu < nbf_; mu++) {
+        for (int nu = 0; nu <= mu; nu++, munu++) {
+            if (function_pair_values_[mu * nbf_ + nu] >= screening_threshold_squared_over_max) {
+                function_pairs_.push_back(std::make_pair(mu, nu));
+                function_pairs_reverse_[munu] = offset;
+                offset++;
+            } else {
+                function_pairs_reverse_[munu] = -1L;
+            }
+        }
+    }
+
+    shell_to_shell_.clear();
+    function_to_function_.clear();
+    shell_to_shell_.resize(nshell_);
+    function_to_function_.resize(nbf_);
+
+    for (int MU = 0; MU < nshell_; MU++) {
+        for (int NU = 0; NU < nshell_; NU++) {
+            if (shell_pair_values_[MU * nshell_ + NU] >= screening_threshold_squared_over_max) {
+                shell_to_shell_[MU].push_back(NU);
+            }
+        }
+    }
+
+    shell_pairs.clear();
+    std::fill_n(shell_pairs_reverse_.begin(), nshell_ * (nshell_ + 1) / 2, -1);
+
+    offset = 0L;
+    size_t MUNU = 0L;
+    for (int MU = 0; MU < nshell_; MU++) {
+        for (int NU = 0; NU <= MU; NU++, MUNU++) {
+            if (shell_pair_values_[MU * nshell_ + NU] >= screening_threshold_squared_over_max) {
+                shell_pairs.push_back(std::make_pair(MU, NU));
+                shell_pairs_reverse_[MUNU] = offset;
+                offset++;
+            }
+        }
+    }
+
+    for (int mu = 0; mu < nbf_; mu++) {
+        for (int nu = 0; nu < nbf_; nu++) {
+            if (function_pair_values_[mu * nbf_ + nu] >= screening_threshold_squared_over_max) {
+                function_to_function_[mu].push_back(nu);
+            }
+        }
+    }
+
+    if (screening_type_ == ScreeningType::CSAM) {
+        // Setup information for exchange term screening
+        function_sqrt_.resize(nbf_);
+        shell_pair_exchange_values_.resize((size_t)nshell_ * nshell_);
+        std::fill(function_sqrt_.begin(), function_sqrt_.end(), 0.0);
+        std::fill(shell_pair_exchange_values_.begin(), shell_pair_exchange_values_.end(), 0.0);
+
+        for (int P = 0; P < nshell_; P++) {
+            for (int Q = P; Q >= 0; Q--) {
+                int nP = bs->shell(P).nfunction();
+                int nQ = bs->shell(Q).nfunction();
+                int oP = bs->shell(P).function_index();
+                int oQ = bs->shell(Q).function_index();
+                compute_shell_for_sieve(bs, P, P, Q, Q, is_bra);
+                const double *buffer = target_full_;
+
+                // Computing Q_mu_mu (for denominator of Eq.9)
+                if (Q == P) {
+                    int oP = bs->shell(P).function_index();
+                    for (int p = 0; p < nP; ++p) {
+                        function_sqrt_[oP + p] = std::sqrt(std::abs(buffer[p * (nP * nP * nP + nP) + p * (nP * nP + 1)]));
+                    }
+                }
+
+                // Computing square of M~_mu_lam (defined in Eq. 9)
+                double max_val = 0.0;
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        max_val = std::max(max_val, std::abs(buffer[p * nQ * nQ * (nP + 1) + q * (nQ + 1)]) /
+                                                        (function_sqrt_[p + oP] * function_sqrt_[q + oQ]));
+                    }
+                }
+                shell_pair_exchange_values_[P * nshell_ + Q] = shell_pair_exchange_values_[Q * nshell_ + P] = max_val;
+            }
+        }
+    }
+}
 
 std::shared_ptr<BasisSet> TwoBodyAOInt::basis() { return original_bs1_; }
 
@@ -84,19 +341,13 @@ std::shared_ptr<BasisSet> TwoBodyAOInt::basis3() { return original_bs3_; }
 
 std::shared_ptr<BasisSet> TwoBodyAOInt::basis4() { return original_bs4_; }
 
-bool TwoBodyAOInt::cloneable() const { return false; }
-
-TwoBodyAOInt *TwoBodyAOInt::clone() const {
-    throw FeatureNotImplemented("libmints", "TwoBodyInt::clone()", __FILE__, __LINE__);
-}
-
 std::vector<ShellPairBlock> TwoBodyAOInt::get_blocks12() const { return blocks12_; }
 
 std::vector<ShellPairBlock> TwoBodyAOInt::get_blocks34() const { return blocks34_; }
 
 // Expected to be overridden by derived classes
 void TwoBodyAOInt::create_blocks() {
-    // Default implementation : do no blocking.
+    // Default implementation : do no blocking but use the sieved shell pairs if possible
     // Each ShellPairBlock will only contain one shell pair
     blocks12_.clear();
     blocks34_.clear();
@@ -106,17 +357,80 @@ void TwoBodyAOInt::create_blocks() {
     const auto nshell3 = basis3()->nshell();
     const auto nshell4 = basis4()->nshell();
 
-    blocks12_.reserve(nshell1 * nshell2);
-    blocks34_.reserve(nshell3 * nshell4);
+    // Push back only the pairs that survived the sieving process.  This is only
+    // possible if all four basis sets are the same in the current implementation.
+    blocks12_.reserve(shell_pairs_bra_.size());
+    for (const auto &pair : shell_pairs_bra_) {
+        const auto &s1 = pair.first;
+        const auto &s2 = pair.second;
+        blocks12_.push_back({{s1, s2}});
+    }
+    blocks34_.reserve(shell_pairs_ket_.size());
+    for (const auto &pair : shell_pairs_ket_) {
+        const auto &s3 = pair.first;
+        const auto &s4 = pair.second;
+        blocks34_.push_back({{s3, s4}});
+    }
+}
 
-    for (int ishell = 0; ishell < basis1()->nshell(); ishell++)
-        for (int jshell = 0; jshell < basis2()->nshell(); jshell++) blocks12_.push_back({{ishell, jshell}});
+bool TwoBodyAOInt::shell_block_significant(int shellpair12, int shellpair34) const {
+    const auto &vsh12 = blocks12_[shellpair12];
+    const auto &vsh34 = blocks34_[shellpair34];
 
-    for (int kshell = 0; kshell < basis3()->nshell(); kshell++)
-        for (int lshell = 0; lshell < basis4()->nshell(); lshell++) blocks34_.push_back({{kshell, lshell}});
+    for (const auto &sh12 : vsh12) {
+        for (const auto &sh34 : vsh34) {
+            if(shell_significant(sh12.first, sh12.second, sh34.first, sh34.second)) return true;
+        }
+    }
+
+    return false;
+}
+
+bool TwoBodyAOInt::shell_pair_significant(int M, int N) const {
+    return shell_pair_values_[M * nshell_ + N] * max_integral_ >= screening_threshold_squared_;
 }
 
 void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34, int npair12, int npair34) {
+    // Default implementation - go through the blocks and do each quartet
+    // one at a time
+
+    // reset the target & source pointers
+    target_ = target_full_;
+    source_ = source_full_;
+
+    const auto &vsh12 = blocks12_[shellpair12];
+    const auto &vsh34 = blocks34_[shellpair34];
+
+    for (const auto &sh12 : vsh12) {
+        const auto &shell1 = bs1_->shell(sh12.first);
+        const auto &shell2 = bs2_->shell(sh12.second);
+
+        int n1 = shell1.nfunction();
+        int n2 = shell2.nfunction();
+
+        for (const auto &sh34 : vsh34) {
+            const auto &shell3 = bs3_->shell(sh34.first);
+            const auto &shell4 = bs4_->shell(sh34.second);
+
+            int n3 = shell3.nfunction();
+            int n4 = shell4.nfunction();
+
+            const int n1234 = n1 * n2 * n3 * n4;
+
+            // actually compute the eri
+            // this will put the results in target_
+            auto ret = compute_shell(sh12.first, sh12.second, sh34.first, sh34.second);
+
+            //// advance the target pointer
+            target_ += n1234;
+
+            // Since we are only doing one at a time we don't need to
+            // move the source_ pointer
+        }
+    }
+}
+
+void TwoBodyAOInt::compute_shell_blocks_deriv1(int shellpair12, int shellpair34, int npair12, int npair34) {
     // Default implementation - go through the blocks and do each quartet
     // one at a time
 
@@ -131,35 +445,64 @@ void TwoBodyAOInt::compute_shell_blocks(int shellpair12, int shellpair34, int np
         const auto &shell1 = original_bs1_->shell(sh12.first);
         const auto &shell2 = original_bs2_->shell(sh12.second);
 
-        int n1, n2;
-        if (force_cartesian_) {
-            n1 = shell1.ncartesian();
-            n2 = shell2.ncartesian();
-        } else {
-            n1 = shell1.nfunction();
-            n2 = shell2.nfunction();
-        }
+        int n1 = shell1.nfunction();
+        int n2 = shell2.nfunction();
 
         for (const auto sh34 : vsh34) {
             const auto &shell3 = original_bs3_->shell(sh34.first);
             const auto &shell4 = original_bs4_->shell(sh34.second);
 
-            int n3, n4;
-            if (force_cartesian_) {
-                n3 = shell3.ncartesian();
-                n4 = shell4.ncartesian();
-            } else {
-                n3 = shell3.nfunction();
-                n4 = shell4.nfunction();
-            }
+            int n3 = shell3.nfunction();
+            int n4 = shell4.nfunction();
 
-            const int n1234 = n1 * n2 * n3 * n4;
+            const int n1234 = 12 * n1 * n2 * n3 * n4;
 
             // actually compute the eri
             // this will put the results in target_
-            auto ret = compute_shell(sh12.first, sh12.second, sh34.first, sh34.second);
+            compute_shell_deriv1(sh12.first, sh12.second, sh34.first, sh34.second);
 
-            // advance the target pointer
+            //// advance the target pointer
+            target_ += n1234;
+
+            // Since we are only doing one at a time we don't need to
+            // move the source_ pointer
+        }
+    }
+}
+
+void TwoBodyAOInt::compute_shell_blocks_deriv2(int shellpair12, int shellpair34, int npair12, int npair34) {
+    // Default implementation - go through the blocks and do each quartet
+    // one at a time
+
+    // reset the target & source pointers
+    target_ = target_full_;
+    source_ = source_full_;
+
+    auto vsh12 = blocks12_[shellpair12];
+    auto vsh34 = blocks34_[shellpair34];
+
+    for (const auto sh12 : vsh12) {
+        const auto &shell1 = original_bs1_->shell(sh12.first);
+        const auto &shell2 = original_bs2_->shell(sh12.second);
+
+        int n1 = shell1.nfunction();
+        int n2 = shell2.nfunction();
+
+        for (const auto sh34 : vsh34) {
+            const auto &shell3 = original_bs3_->shell(sh34.first);
+            const auto &shell4 = original_bs4_->shell(sh34.second);
+
+            int n3 = shell3.nfunction();
+            int n4 = shell4.nfunction();
+
+            // TODO: figure out if tranlational invariance relations are applied automagically
+            const int n1234 = 78 * n1 * n2 * n3 * n4;
+
+            // actually compute the eri
+            // this will put the results in target_
+            compute_shell_deriv2(sh12.first, sh12.second, sh34.first, sh34.second);
+
+            //// advance the target pointer
             target_ += n1234;
 
             // Since we are only doing one at a time we don't need to
@@ -242,18 +585,10 @@ void TwoBodyAOInt::permute_target(double *s, double *t, int sh1, int sh2, int sh
     const GaussianShell &s3 = bs3_->shell(sh3);
     const GaussianShell &s4 = bs4_->shell(sh4);
 
-    int nbf1, nbf2, nbf3, nbf4;
-    if (force_cartesian_) {
-        nbf1 = s1.ncartesian();
-        nbf2 = s2.ncartesian();
-        nbf3 = s3.ncartesian();
-        nbf4 = s4.ncartesian();
-    } else {
-        nbf1 = s1.nfunction();
-        nbf2 = s2.nfunction();
-        nbf3 = s3.nfunction();
-        nbf4 = s4.nfunction();
-    }
+    int nbf1 = s1.nfunction();
+    int nbf2 = s2.nfunction();
+    int nbf3 = s3.nfunction();
+    int nbf4 = s4.nfunction();
 
     if (!p13p24) {
         if (p12) {
@@ -445,12 +780,13 @@ void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk
     for (int ichunk = 0; ichunk < nchunk; ++ichunk) {
         // Compute the offset in source_, and target
         size_t sourcechunkoffset = ichunk * (nao1 * nao2 * nao3 * nao4);
+        size_t targetchunkoffset = ichunk * ((size_t)nbf1 * nbf2 * nbf3 * nbf4);
         double *source1, *target1;
         double *source2, *target2;
         double *source3, *target3;
         double *source4, *target4;
         double *source = source_ + sourcechunkoffset;
-        double *target = target_ + sourcechunkoffset;
+        double *target = target_ + targetchunkoffset;
         double *tmpbuf = tformbuf_;
 
         int transform_index = 8 * is_pure1 + 4 * is_pure2 + 2 * is_pure3 + is_pure4;
@@ -585,7 +921,6 @@ void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk
             transform2e_1(am1, trans1, source1, target1, nbf2 * nbf3 * nbf4);
             //            size *= nbf1;
         }
-
         // The permute indices routines depend on the integrals being in source_
         if (copy_to_source && (is_pure1 || is_pure2 || is_pure3 || is_pure4))
             memcpy(source, target, size * sizeof(double));

@@ -64,9 +64,6 @@ class PSI_API OneBodyAOInt {
     double* target_;
     double* tformbuf_;
 
-    /// Whether we want to always generate Cartesian integrals;
-    bool force_cartesian_;
-
     size_t count_;
     int deriv_;
     int natom_;
@@ -100,9 +97,6 @@ class PSI_API OneBodyAOInt {
 
     /// Number of chunks. Normally 1, but dipoles (3) quadrupoles (6).
     int nchunk() const { return nchunk_; }
-
-    /// Sets whether we're forcing this object to always generate Cartesian integrals
-    void set_force_cartesian(bool t_f) { force_cartesian_ = t_f; }
 
     /// Buffer where the integrals are placed.
     const double* buffer() const;

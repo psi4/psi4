@@ -32,7 +32,6 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
-#include "psi4/libmints/sieve.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/vector.h"
@@ -68,15 +67,15 @@ void DiskDFJK::common_init() {
     unit_ = PSIF_DFSCF_BJ;
     is_core_ = true;
     psio_ = PSIO::shared_object();
+    // We need to make an integral object so we can figure out memory requirements from the sieve
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    std::shared_ptr<IntegralFactory> rifactory =
+        std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
+    auto tmperi = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    n_function_pairs_ = tmperi->function_pairs().size();
 }
 size_t DiskDFJK::memory_estimate() {
-    // DF requires constant sieve, must be static throughout object life
-    if (!sieve_) {
-        sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
-    }
-
-    size_t ntri = sieve_->function_pairs().size();
-    size_t three_memory = ((size_t)auxiliary_->nbf()) * ntri;
+    size_t three_memory = ((size_t)auxiliary_->nbf()) * n_function_pairs_;
     size_t two_memory = 2 * ((size_t)auxiliary_->nbf()) * auxiliary_->nbf();
 
     if (do_wK_) { three_memory *= 3; }
@@ -138,8 +137,8 @@ SharedVector DiskDFJK::iaia(SharedMatrix Ci, SharedMatrix Ca) {
     int naux = auxiliary_->nbf();
     int maxrows = max_rows();
 
-    const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
-    const std::vector<long int>& function_pairs_reverse = sieve_->function_pairs_reverse();
+    const std::vector<std::pair<int, int> >& function_pairs = eri_.front()->function_pairs();
+    const std::vector<long int>& function_pairs_to_dense = eri_.front()->function_pairs_to_dense();
     size_t num_nm = function_pairs.size();
 
 // Temps
@@ -200,12 +199,12 @@ SharedVector DiskDFJK::iaia(SharedMatrix Ci, SharedMatrix Ca) {
             double** Ctp = C_temp_[thread]->pointer();
             double** QSp = Q_temp_[thread]->pointer();
 
-            const std::vector<int>& pairs = sieve_->function_to_function()[m];
+            const std::vector<int>& pairs = eri_.front()->significant_partners_per_function()[m];
             int mrows = pairs.size();
 
             for (int i = 0; i < mrows; i++) {
                 int n = pairs[i];
-                long int ij = function_pairs_reverse[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
+                long int ij = function_pairs_to_dense[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
                 C_DCOPY(rows, &Qmnp[0][ij], num_nm, &QSp[0][i], nso);
                 C_DCOPY(nocc, Clp[n], 1, &Ctp[0][i], nso);
             }
@@ -292,7 +291,7 @@ size_t DiskDFJK::memory_temp() const {
     size_t mem = 0L;
 
     // J Overhead (Jtri, Dtri, d)
-    mem += 2L * sieve_->function_pairs().size() + auxiliary_->nbf();
+    mem += 2L * n_function_pairs_ + auxiliary_->nbf();
     // K Overhead (C_temp, Q_temp)
     mem += omp_nthread_ * (size_t)primary_->nbf() * (auxiliary_->nbf() + max_nocc());
 
@@ -311,7 +310,7 @@ int DiskDFJK::max_rows() const {
     // Copies of E tensor
     row_cost += (lr_symmetric_ ? 1L : 2L) * max_nocc() * primary_->nbf();
     // Slices of Qmn tensor, including AIO buffer (NOTE: AIO not implemented yet)
-    row_cost += (is_core_ ? 1L : 1L) * sieve_->function_pairs().size();
+    row_cost += (is_core_ ? 1L : 1L) * n_function_pairs_;
 
     size_t max_rows = mem / row_cost;
 
@@ -328,8 +327,8 @@ int DiskDFJK::max_nocc() const {
     return max_nocc;
 }
 void DiskDFJK::initialize_temps() {
-    J_temp_ = std::make_shared<Vector>("Jtemp", sieve_->function_pairs().size());
-    D_temp_ = std::make_shared<Vector>("Dtemp", sieve_->function_pairs().size());
+    J_temp_ = std::make_shared<Vector>("Jtemp", n_function_pairs_);
+    D_temp_ = std::make_shared<Vector>("Dtemp", n_function_pairs_);
     d_temp_ = std::make_shared<Vector>("dtemp", max_rows_);
 
 #ifdef _OPENMP
@@ -397,10 +396,26 @@ void DiskDFJK::free_w_temps() {
     Q_temp_.clear();
 }
 void DiskDFJK::preiterations() {
-
-    // DF requires constant sieve, must be static throughout object life
-    if (!sieve_) {
-        sieve_ = std::make_shared<ERISieve>(primary_, cutoff_);
+    // Setup integral objects
+    eri_.clear();
+    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    std::shared_ptr<IntegralFactory> rifactory =
+        std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
+    eri_.emplace_back(rifactory->eri());
+    for (int Q = 1; Q < df_ints_num_threads_; Q++) {
+        eri_.emplace_back(eri_.front()->clone());
+    }
+    n_function_pairs_ = eri_.front()->function_pairs().size();
+    // Setup erf integrals, if needed
+    if (do_wK_) {
+        erf_eri_.clear();
+        std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+        std::shared_ptr<IntegralFactory> rifactory =
+            std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
+        erf_eri_.emplace_back(rifactory->erf_eri(omega_));
+        for (int Q = 1; Q < df_ints_num_threads_; Q++) {
+            erf_eri_.emplace_back(erf_eri_.front()->clone());
+        }
     }
 
     // Core or disk?
@@ -453,8 +468,7 @@ void DiskDFJK::postiterations() {
     Qrmn_.reset();
 }
 void DiskDFJK::initialize_JK_core() {
-    size_t ntri = sieve_->function_pairs().size();
-    size_t three_memory = ((size_t)auxiliary_->nbf()) * ntri;
+    size_t three_memory = ((size_t)auxiliary_->nbf()) * n_function_pairs_;
     size_t two_memory = ((size_t)auxiliary_->nbf()) * auxiliary_->nbf();
 
     int nthread = 1;
@@ -462,13 +476,13 @@ void DiskDFJK::initialize_JK_core() {
     nthread = df_ints_num_threads_;
 #endif
 
-    Qmn_ = std::make_shared<Matrix>("Qmn (Fitted Integrals)", auxiliary_->nbf(), ntri);
+    Qmn_ = std::make_shared<Matrix>("Qmn (Fitted Integrals)", auxiliary_->nbf(), n_function_pairs_);
     double** Qmnp = Qmn_->pointer();
 
     // Try to load
     if (df_ints_io_ == "LOAD") {
         psio_->open(unit_, PSIO_OPEN_OLD);
-        psio_->read_entry(unit_, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
+        psio_->read_entry(unit_, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * n_function_pairs_ * auxiliary_->nbf());
         psio_->close(unit_, 1);
         return;
     }
@@ -478,30 +492,12 @@ void DiskDFJK::initialize_JK_core() {
     const int primary_nshell = primary_->nshell();
     const int aux_nshell = auxiliary_->nshell();
 
-    const std::vector<long int>& schwarz_shell_pairs = sieve_->shell_pairs_reverse();
-    const std::vector<long int>& schwarz_fun_pairs = sieve_->function_pairs_reverse();
-
-    // Get a TEI for each thread
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    std::shared_ptr<IntegralFactory> rifactory =
-        std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    const auto** buffer = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
-    eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-    buffer[0] = eri[0]->buffer();
-
-    for (int Q = 1; Q < nthread; Q++) {
-        if (eri[0]->cloneable())
-            eri[Q] = std::shared_ptr<TwoBodyAOInt>(eri[0]->clone());
-        else
-            eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-
-        buffer[Q] = eri[Q]->buffer();
-    }
+    const std::vector<long int>& schwarz_shell_pairs = eri_.front()->shell_pairs_to_dense();
+    const std::vector<long int>& schwarz_fun_pairs = eri_.front()->function_pairs_to_dense();
 
     // shell pair blocks
-    std::vector<ShellPairBlock> p_blocks = eri[0]->get_blocks12();
-    std::vector<ShellPairBlock> mn_blocks = eri[0]->get_blocks34();
+    std::vector<ShellPairBlock> p_blocks = eri_[0]->get_blocks12();
+    std::vector<ShellPairBlock> mn_blocks = eri_[0]->get_blocks34();
 
     timer_on("JK: (A|mn)");
 
@@ -537,14 +533,14 @@ void DiskDFJK::initialize_JK_core() {
 #else
         const int rank = 0;
 #endif
-
+        const auto &buffers = eri_[rank]->buffers();
         const auto& mn_block = mn_blocks[mn_block_idx];
 
         // loop over all the blocks of P
         for (int p_block_idx = 0; p_block_idx < p_blocks.size(); ++p_block_idx) {
             // compute the
-            eri[rank]->compute_shell_blocks(p_block_idx, mn_block_idx);
-            double const* my_buffer = buffer[rank];
+            eri_[rank]->compute_shell_blocks(p_block_idx, mn_block_idx);
+            const auto* buffer = buffers[0];
 
             const auto& p_block = p_blocks[p_block_idx];
 
@@ -569,30 +565,28 @@ void DiskDFJK::initialize_JK_core() {
                         for (int in = 0; in < num_n; ++in) {
                             const int in_idx = n_start + in;
                             const int imn_idx = im * num_n + in;
-                            const int sfp_idx = (im_idx * (im_idx + 1)) / 2 + in_idx;
+                            const int sfp_idx = im_idx > in_idx ? (im_idx * (im_idx + 1)) / 2 + in_idx :
+                                               (in_idx * (in_idx + 1))/2 + im_idx;
 
                             int sfp;
 
                             // note the assignment in the following conditional
-                            if (im_idx >= in_idx && (sfp = schwarz_fun_pairs[sfp_idx]) > -1) {
+                            if ((sfp = schwarz_fun_pairs[sfp_idx]) > -1) {
                                 for (int ip = 0; ip < num_p; ++ip) {
                                     const int ip_idx = p_start + ip;
-                                    Qmnp[ip_idx][sfp] = my_buffer[ip * num_mn + imn_idx];
+                                    Qmnp[ip_idx][sfp] = buffer[ip * num_mn + imn_idx];
                                 }
                             }
+
                         }
                     }
 
-                    my_buffer += num_mn * num_p;
+                    buffer += num_mn * num_p;
                 }
             }
         }
     }
-
     timer_off("JK: (A|mn)");
-
-    delete[] buffer;
-    delete[] eri;
 
     timer_on("JK: (A|Q)^-1/2");
 
@@ -604,12 +598,12 @@ void DiskDFJK::initialize_JK_core() {
 
     size_t max_cols = (memory_ - three_memory - two_memory) / auxiliary_->nbf();
     if (max_cols < 1) max_cols = 1;
-    if (max_cols > ntri) max_cols = ntri;
+    if (max_cols > n_function_pairs_) max_cols = n_function_pairs_;
     auto temp = std::make_shared<Matrix>("Qmn buffer", auxiliary_->nbf(), max_cols);
     double** tempp = temp->pointer();
 
-    size_t nblocks = ntri / max_cols;
-    if ((size_t)nblocks * max_cols != ntri) nblocks++;
+    size_t nblocks = n_function_pairs_ / max_cols;
+    if ((size_t)nblocks * max_cols != n_function_pairs_) nblocks++;
 
     size_t ncol = 0;
     size_t col = 0;
@@ -618,10 +612,10 @@ void DiskDFJK::initialize_JK_core() {
 
     for (size_t block = 0; block < nblocks; block++) {
         ncol = max_cols;
-        if (col + ncol > ntri) ncol = ntri - col;
+        if (col + ncol > n_function_pairs_) ncol = n_function_pairs_ - col;
 
         C_DGEMM('N', 'N', auxiliary_->nbf(), ncol, auxiliary_->nbf(), 1.0, Jinvp[0], auxiliary_->nbf(), &Qmnp[0][col],
-                ntri, 0.0, tempp[0], max_cols);
+                n_function_pairs_, 0.0, tempp[0], max_cols);
 
         for (int Q = 0; Q < auxiliary_->nbf(); Q++) {
             C_DCOPY(ncol, tempp[Q], 1, &Qmnp[Q][col], 1);
@@ -635,7 +629,7 @@ void DiskDFJK::initialize_JK_core() {
 
     if (df_ints_io_ == "SAVE") {
         psio_->open(unit_, PSIO_OPEN_NEW);
-        psio_->write_entry(unit_, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
+        psio_->write_entry(unit_, "(Q|mn) Integrals", (char*)Qmnp[0], sizeof(double) * n_function_pairs_ * auxiliary_->nbf());
         psio_->close(unit_, 1);
     }
 }
@@ -649,12 +643,11 @@ void DiskDFJK::initialize_JK_disk() {
     int naux = auxiliary_->nbf();
 
     // ==> Schwarz Indexing <== //
-    const std::vector<std::pair<int, int> >& schwarz_shell_pairs = sieve_->shell_pairs();
-    const std::vector<std::pair<int, int> >& schwarz_fun_pairs = sieve_->function_pairs();
+    const std::vector<std::pair<int, int> >& schwarz_shell_pairs = eri_.front()->shell_pairs();
+    const std::vector<std::pair<int, int> >& schwarz_fun_pairs = eri_.front()->function_pairs();
     int nshellpairs = schwarz_shell_pairs.size();
-    int ntri = schwarz_fun_pairs.size();
-    const std::vector<long int>& schwarz_shell_pairs_r = sieve_->shell_pairs_reverse();
-    const std::vector<long int>& schwarz_fun_pairs_r = sieve_->function_pairs_reverse();
+    const std::vector<long int>& schwarz_shell_pairs_r = eri_.front()->shell_pairs_to_dense();
+    const std::vector<long int>& schwarz_fun_pairs_r = eri_.front()->function_pairs_to_dense();
 
     // ==> Memory Sizing <== //
     size_t two_memory = ((size_t)auxiliary_->nbf()) * auxiliary_->nbf();
@@ -687,14 +680,14 @@ void DiskDFJK::initialize_JK_disk() {
     auto MN_mem = std::make_shared<IntVector>("Memory per MN pair", nshell * (nshell + 1) / 2);
     int* MN_memp = MN_mem->pointer();
 
-    for (int mn = 0; mn < ntri; mn++) {
+    for (int mn = 0; mn < n_function_pairs_; mn++) {
         int m = schwarz_fun_pairs[mn].first;
         int n = schwarz_fun_pairs[mn].second;
 
         int M = primary_->function_to_shell(m);
         int N = primary_->function_to_shell(n);
-
-        MN_memp[M * (M + 1) / 2 + N] += naux;
+        size_t addr = M > N ? M * (M + 1) / 2 + N : N * (N + 1) / 2 + M;
+        MN_memp[addr] += naux;
     }
 
     // MN_mem->print(outfile);
@@ -715,7 +708,7 @@ void DiskDFJK::initialize_JK_disk() {
     // outfile->Printf("\n");
 
     // Find and check the minimum required memory for this problem
-    size_t min_mem = naux * (size_t)ntri;
+    size_t min_mem = naux * (size_t)n_function_pairs_;
     for (int M = 0; M < nshell; M++) {
         if (min_mem > M_memp[M]) min_mem = M_memp[M];
     }
@@ -743,7 +736,7 @@ void DiskDFJK::initialize_JK_disk() {
     MN_startp[0] = schwarz_shell_pairs_r[0];
     int M_index = 1;
     for (int MN = 0; MN < nshellpairs; MN++) {
-        if (schwarz_shell_pairs[MN].first == M_index) {
+        if (std::max(schwarz_shell_pairs[MN].first, schwarz_shell_pairs[MN].second) == M_index) {
             MN_startp[M_index] = MN;
             M_index++;
         }
@@ -755,7 +748,7 @@ void DiskDFJK::initialize_JK_disk() {
 
     mn_startp[0] = schwarz_fun_pairs[0].first;
     int m_index = 1;
-    for (int mn = 0; mn < ntri; mn++) {
+    for (int mn = 0; mn < n_function_pairs_; mn++) {
         if (primary_->function_to_shell(schwarz_fun_pairs[mn].first) == m_index) {
             mn_startp[m_index] = mn;
             m_index++;
@@ -778,7 +771,7 @@ void DiskDFJK::initialize_JK_disk() {
     for (int M = 1; M < nshell; M++) {
         mn_colp[M - 1] = mn_startp[M] - mn_startp[M - 1];
     }
-    mn_colp[nshell - 1] = ntri - mn_startp[nshell - 1];
+    mn_colp[nshell - 1] = n_function_pairs_ - mn_startp[nshell - 1];
 
     // MN_start->print(outfile);
     // MN_col->print(outfile);
@@ -850,7 +843,7 @@ void DiskDFJK::initialize_JK_disk() {
     auto aio = std::make_shared<AIOHandler>(psio_);
 
     // Dispatch the prestripe
-    aio->zero_disk(unit_, "(Q|mn) Integrals", naux, ntri);
+    aio->zero_disk(unit_, "(Q|mn) Integrals", naux, n_function_pairs_);
 
     // Form the J symmetric inverse
     auto Jinv = std::make_shared<FittingMetric>(auxiliary_, true);
@@ -867,17 +860,6 @@ void DiskDFJK::initialize_JK_disk() {
 #ifdef _OPENMP
     nthread = df_ints_num_threads_;
 #endif
-
-    // ==> ERI initialization <== //
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    std::shared_ptr<IntegralFactory> rifactory =
-        std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    const auto** buffer = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
-    for (int Q = 0; Q < nthread; Q++) {
-        eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-        buffer[Q] = eri[Q]->buffer();
-    }
 
     // ==> Main loop <== //
     for (int block = 0; block < nblock; block++) {
@@ -896,7 +878,7 @@ void DiskDFJK::initialize_JK_disk() {
 #ifdef _OPENMP
             rank = omp_get_thread_num();
 #endif
-
+            const auto &buffers = eri_[rank]->buffers();
             int MU = schwarz_shell_pairs[MUNU + 0].first;
             int NU = schwarz_shell_pairs[MUNU + 0].second;
             int nummu = primary_->shell(MU).nfunction();
@@ -906,16 +888,19 @@ void DiskDFJK::initialize_JK_disk() {
             for (int P = 0; P < auxiliary_->nshell(); P++) {
                 int nump = auxiliary_->shell(P).nfunction();
                 int p = auxiliary_->shell(P).function_index();
-                eri[rank]->compute_shell(P, 0, MU, NU);
+                eri_[rank]->compute_shell(P, 0, MU, NU);
+                const auto *buffer = buffers[0];
                 for (int dm = 0; dm < nummu; dm++) {
                     int omu = mu + dm;
                     for (int dn = 0; dn < numnu; dn++) {
                         int onu = nu + dn;
-                        if (omu >= onu && schwarz_fun_pairs_r[omu * (omu + 1) / 2 + onu] >= 0) {
-                            int delta = schwarz_fun_pairs_r[omu * (omu + 1) / 2 + onu] - mn_start_val;
+                        size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu :
+                                                  onu * (onu + 1) / 2 + omu;
+                        if (schwarz_fun_pairs_r[addr] >= 0) {
+                            int delta = schwarz_fun_pairs_r[addr] - mn_start_val;
                             for (int dp = 0; dp < nump; dp++) {
                                 int op = p + dp;
-                                Qmnp[op][delta] = buffer[rank][dp * nummu * numnu + dm * numnu + dn];
+                                Qmnp[op][delta] = buffer[dp * nummu * numnu + dm * numnu + dn];
                             }
                         }
                     }
@@ -946,7 +931,7 @@ void DiskDFJK::initialize_JK_disk() {
 
         psio_address addr;
         for (int Q = 0; Q < naux; Q++) {
-            addr = psio_get_address(PSIO_ZERO, (Q * (size_t)ntri + mn_start_val) * sizeof(double));
+            addr = psio_get_address(PSIO_ZERO, (Q * (size_t)n_function_pairs_ + mn_start_val) * sizeof(double));
             psio_->write(unit_, "(Q|mn) Integrals", (char*)Qmnp[Q], mn_col_val * sizeof(double), addr, &addr);
         }
 
@@ -955,14 +940,11 @@ void DiskDFJK::initialize_JK_disk() {
 
     // ==> Close out <== //
     Qmn_.reset();
-    delete[] eri;
-    delete[] buffer;
 
     psio_->close(unit_, 1);
 }
 void DiskDFJK::initialize_wK_core() {
     int naux = auxiliary_->nbf();
-    int ntri = sieve_->function_pairs().size();
 
     int nthread = 1;
 #ifdef _OPENMP
@@ -981,37 +963,26 @@ void DiskDFJK::initialize_wK_core() {
         psio_->close(unit_, 1);
     }
 
-    Qlmn_ = std::make_shared<Matrix>("Qlmn (Fitted Integrals)", auxiliary_->nbf(), ntri);
+    Qlmn_ = std::make_shared<Matrix>("Qlmn (Fitted Integrals)", auxiliary_->nbf(), n_function_pairs_);
     double** Qmnp = Qlmn_->pointer();
 
-    Qrmn_ = std::make_shared<Matrix>("Qrmn (Fitted Integrals)", auxiliary_->nbf(), ntri);
+    Qrmn_ = std::make_shared<Matrix>("Qrmn (Fitted Integrals)", auxiliary_->nbf(), n_function_pairs_);
     double** Qmn2p = Qrmn_->pointer();
 
     // Try to load
     if (df_ints_io_ == "LOAD") {
         psio_->open(unit_, PSIO_OPEN_OLD);
-        psio_->read_entry(unit_, "Left (Q|w|mn) Integrals", (char*)Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
+        psio_->read_entry(unit_, "Left (Q|w|mn) Integrals", (char*)Qmnp[0], sizeof(double) * n_function_pairs_ * auxiliary_->nbf());
         psio_->read_entry(unit_, "Right (Q|w|mn) Integrals", (char*)Qmn2p[0],
-                          sizeof(double) * ntri * auxiliary_->nbf());
+                          sizeof(double) * n_function_pairs_ * auxiliary_->nbf());
         psio_->close(unit_, 1);
         return;
     }
 
     // => Left Integrals <= //
 
-    // Get a TEI for each thread
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    std::shared_ptr<IntegralFactory> rifactory =
-        std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    const auto** buffer = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
-    for (int Q = 0; Q < nthread; Q++) {
-        eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-        buffer[Q] = eri[Q]->buffer();
-    }
-
-    const std::vector<long int>& schwarz_shell_pairs = sieve_->shell_pairs_reverse();
-    const std::vector<long int>& schwarz_fun_pairs = sieve_->function_pairs_reverse();
+    const std::vector<long int>& schwarz_shell_pairs = eri_.front()->shell_pairs_to_dense();
+    const std::vector<long int>& schwarz_fun_pairs = eri_.front()->function_pairs_to_dense();
 
     int numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu;
     // The integrals (A|mn)
@@ -1024,22 +995,27 @@ void DiskDFJK::initialize_wK_core() {
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
+        const auto& buffers = eri_[rank]->buffers();
         nummu = primary_->shell(MU).nfunction();
         for (NU = 0; NU <= MU; ++NU) {
             numnu = primary_->shell(NU).nfunction();
-            if (schwarz_shell_pairs[MU * (MU + 1) / 2 + NU] > -1) {
+            size_t addr = MU > NU ? MU * (MU + 1) / 2 + NU : NU * (NU + 1) / 2 + MU;
+            if (schwarz_shell_pairs[addr] > -1) {
                 for (Pshell = 0; Pshell < auxiliary_->nshell(); ++Pshell) {
                     numP = auxiliary_->shell(Pshell).nfunction();
-                    eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                    eri_[rank]->compute_shell(Pshell, 0, MU, NU);
+                    const auto *buffer = buffers[0];
                     for (mu = 0; mu < nummu; ++mu) {
                         omu = primary_->shell(MU).function_index() + mu;
                         for (nu = 0; nu < numnu; ++nu) {
                             onu = primary_->shell(NU).function_index() + nu;
-                            if (omu >= onu && schwarz_fun_pairs[omu * (omu + 1) / 2 + onu] > -1) {
+                            size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu :
+                                                      onu * (onu + 1) / 2 + omu;
+                            if (schwarz_fun_pairs[addr] > -1) {
                                 for (P = 0; P < numP; ++P) {
                                     PHI = auxiliary_->shell(Pshell).function_index() + P;
-                                    Qmn2p[PHI][schwarz_fun_pairs[omu * (omu + 1) / 2 + onu]] =
-                                        buffer[rank][P * nummu * numnu + mu * numnu + nu];
+                                    Qmn2p[PHI][schwarz_fun_pairs[addr]] =
+                                        buffer[P * nummu * numnu + mu * numnu + nu];
                                 }
                             }
                         }
@@ -1050,9 +1026,6 @@ void DiskDFJK::initialize_wK_core() {
     }
 
     timer_off("JK: (A|mn)^L");
-
-    delete[] buffer;
-    delete[] eri;
 
     // => Fitting <= //
 
@@ -1068,18 +1041,9 @@ void DiskDFJK::initialize_wK_core() {
     timer_on("JK: (Q|mn)^L");
 
     // Fitting in one GEMM (being a clever bastard)
-    C_DGEMM('N', 'N', naux, ntri, naux, 1.0, Jinvp[0], naux, Qmn2p[0], ntri, 0.0, Qmnp[0], ntri);
+    C_DGEMM('N', 'N', naux, n_function_pairs_, naux, 1.0, Jinvp[0], naux, Qmn2p[0], n_function_pairs_, 0.0, Qmnp[0], n_function_pairs_);
 
     timer_off("JK: (Q|mn)^L");
-
-    // => Right Integrals <= //
-
-    const auto** buffer2 = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri2 = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
-    for (int Q = 0; Q < nthread; Q++) {
-        eri2[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
-        buffer2[Q] = eri2[Q]->buffer();
-    }
 
     // The integrals (A|w|mn)
 
@@ -1091,22 +1055,27 @@ void DiskDFJK::initialize_wK_core() {
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
+        const auto& buffers = erf_eri_[rank]->buffers();
         nummu = primary_->shell(MU).nfunction();
         for (NU = 0; NU <= MU; ++NU) {
             numnu = primary_->shell(NU).nfunction();
-            if (schwarz_shell_pairs[MU * (MU + 1) / 2 + NU] > -1) {
+            size_t addr = MU > NU ? MU * (MU + 1) / 2 + NU : NU * (NU + 1) / 2 + MU;
+            if (schwarz_shell_pairs[addr] > -1) {
                 for (Pshell = 0; Pshell < auxiliary_->nshell(); ++Pshell) {
                     numP = auxiliary_->shell(Pshell).nfunction();
-                    eri2[rank]->compute_shell(Pshell, 0, MU, NU);
+                    erf_eri_[rank]->compute_shell(Pshell, 0, MU, NU);
+                    const auto *buffer = buffers[0];
                     for (mu = 0; mu < nummu; ++mu) {
                         omu = primary_->shell(MU).function_index() + mu;
                         for (nu = 0; nu < numnu; ++nu) {
                             onu = primary_->shell(NU).function_index() + nu;
-                            if (omu >= onu && schwarz_fun_pairs[omu * (omu + 1) / 2 + onu] > -1) {
+                            size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu :
+                                                      onu * (onu + 1) / 2 + omu;
+                            if (schwarz_fun_pairs[addr] > -1) {
                                 for (P = 0; P < numP; ++P) {
                                     PHI = auxiliary_->shell(Pshell).function_index() + P;
-                                    Qmn2p[PHI][schwarz_fun_pairs[omu * (omu + 1) / 2 + onu]] =
-                                        buffer2[rank][P * nummu * numnu + mu * numnu + nu];
+                                    Qmn2p[PHI][schwarz_fun_pairs[addr]] =
+                                        buffer[P * nummu * numnu + mu * numnu + nu];
                                 }
                             }
                         }
@@ -1118,15 +1087,12 @@ void DiskDFJK::initialize_wK_core() {
 
     timer_off("JK: (A|mn)^R");
 
-    delete[] buffer2;
-    delete[] eri2;
-
     // Try to save
     if (df_ints_io_ == "SAVE") {
         psio_->open(unit_, PSIO_OPEN_OLD);
-        psio_->write_entry(unit_, "Left (Q|w|mn) Integrals", (char*)Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
+        psio_->write_entry(unit_, "Left (Q|w|mn) Integrals", (char*)Qmnp[0], sizeof(double) * n_function_pairs_ * auxiliary_->nbf());
         psio_->write_entry(unit_, "Right (Q|w|mn) Integrals", (char*)Qmn2p[0],
-                           sizeof(double) * ntri * auxiliary_->nbf());
+                           sizeof(double) * n_function_pairs_ * auxiliary_->nbf());
         psio_->write_entry(unit_, "Omega", (char*)&omega_, sizeof(double));
         psio_->close(unit_, 1);
     }
@@ -1147,12 +1113,11 @@ void DiskDFJK::initialize_wK_disk() {
     size_t naux = auxiliary_->nbf();
 
     // ==> Schwarz Indexing <== //
-    const std::vector<std::pair<int, int> >& schwarz_shell_pairs = sieve_->shell_pairs();
-    const std::vector<std::pair<int, int> >& schwarz_fun_pairs = sieve_->function_pairs();
+    const std::vector<std::pair<int, int> >& schwarz_shell_pairs = eri_.front()->shell_pairs();
+    const std::vector<std::pair<int, int> >& schwarz_fun_pairs = eri_.front()->function_pairs();
     int nshellpairs = schwarz_shell_pairs.size();
-    int ntri = schwarz_fun_pairs.size();
-    const std::vector<long int>& schwarz_shell_pairs_r = sieve_->shell_pairs_reverse();
-    const std::vector<long int>& schwarz_fun_pairs_r = sieve_->function_pairs_reverse();
+    const std::vector<long int>& schwarz_shell_pairs_r = eri_.front()->shell_pairs_to_dense();
+    const std::vector<long int>& schwarz_fun_pairs_r = eri_.front()->function_pairs_to_dense();
 
     // ==> Memory Sizing <== //
     size_t two_memory = ((size_t)auxiliary_->nbf()) * auxiliary_->nbf();
@@ -1185,14 +1150,14 @@ void DiskDFJK::initialize_wK_disk() {
     auto MN_mem = std::make_shared<IntVector>("Memory per MN pair", nshell * (nshell + 1) / 2);
     int* MN_memp = MN_mem->pointer();
 
-    for (int mn = 0; mn < ntri; mn++) {
+    for (int mn = 0; mn < n_function_pairs_; mn++) {
         int m = schwarz_fun_pairs[mn].first;
         int n = schwarz_fun_pairs[mn].second;
 
         int M = primary_->function_to_shell(m);
         int N = primary_->function_to_shell(n);
-
-        MN_memp[M * (M + 1) / 2 + N] += naux;
+        size_t addr = M > N ? M * (M + 1) / 2 + N : N * (N + 1) / 2 + M;
+        MN_memp[addr] += naux;
     }
 
     // MN_mem->print(outfile);
@@ -1213,7 +1178,7 @@ void DiskDFJK::initialize_wK_disk() {
     // outfile->Printf("\n");
 
     // Find and check the minimum required memory for this problem
-    size_t min_mem = naux * (size_t)ntri;
+    size_t min_mem = naux * (size_t)n_function_pairs_;
     for (size_t M = 0; M < nshell; M++) {
         if (min_mem > M_memp[M]) min_mem = M_memp[M];
     }
@@ -1241,7 +1206,7 @@ void DiskDFJK::initialize_wK_disk() {
     MN_startp[0] = schwarz_shell_pairs_r[0];
     int M_index = 1;
     for (int MN = 0; MN < nshellpairs; MN++) {
-        if (schwarz_shell_pairs[MN].first == M_index) {
+        if (std::max(schwarz_shell_pairs[MN].first, schwarz_shell_pairs[MN].second) == M_index) {
             MN_startp[M_index] = MN;
             M_index++;
         }
@@ -1253,8 +1218,9 @@ void DiskDFJK::initialize_wK_disk() {
 
     mn_startp[0] = schwarz_fun_pairs[0].first;
     int m_index = 1;
-    for (int mn = 0; mn < ntri; mn++) {
-        if (primary_->function_to_shell(schwarz_fun_pairs[mn].first) == m_index) {
+    for (int mn = 0; mn < n_function_pairs_; mn++) {
+        int fn = std::max(schwarz_fun_pairs[mn].first, schwarz_fun_pairs[mn].second);
+        if (primary_->function_to_shell(fn) == m_index) {
             mn_startp[m_index] = mn;
             m_index++;
         }
@@ -1276,7 +1242,7 @@ void DiskDFJK::initialize_wK_disk() {
     for (size_t M = 1; M < nshell; M++) {
         mn_colp[M - 1] = mn_startp[M] - mn_startp[M - 1];
     }
-    mn_colp[nshell - 1] = ntri - mn_startp[nshell - 1];
+    mn_colp[nshell - 1] = n_function_pairs_ - mn_startp[nshell - 1];
 
     // MN_start->print(outfile);
     // MN_col->print(outfile);
@@ -1345,7 +1311,7 @@ void DiskDFJK::initialize_wK_disk() {
     auto aio = std::make_shared<AIOHandler>(psio_);
 
     // Dispatch the prestripe
-    aio->zero_disk(unit_, "Left (Q|w|mn) Integrals", naux, ntri);
+    aio->zero_disk(unit_, "Left (Q|w|mn) Integrals", naux, n_function_pairs_);
 
     // Form the J full inverse
     auto Jinv = std::make_shared<FittingMetric>(auxiliary_, true);
@@ -1360,17 +1326,6 @@ void DiskDFJK::initialize_wK_disk() {
 #ifdef _OPENMP
     nthread = df_ints_num_threads_;
 #endif
-
-    // ==> ERI initialization <== //
-    std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    std::shared_ptr<IntegralFactory> rifactory =
-        std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    const auto** buffer = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
-    for (int Q = 0; Q < nthread; Q++) {
-        eri[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-        buffer[Q] = eri[Q]->buffer();
-    }
 
     // ==> Main loop <== //
     for (int block = 0; block < nblock; block++) {
@@ -1389,7 +1344,7 @@ void DiskDFJK::initialize_wK_disk() {
 #ifdef _OPENMP
             rank = omp_get_thread_num();
 #endif
-
+            const auto& buffers = eri_[rank]->buffers();
             int MU = schwarz_shell_pairs[MUNU + 0].first;
             int NU = schwarz_shell_pairs[MUNU + 0].second;
             int nummu = primary_->shell(MU).nfunction();
@@ -1399,16 +1354,19 @@ void DiskDFJK::initialize_wK_disk() {
             for (int P = 0; P < auxiliary_->nshell(); P++) {
                 int nump = auxiliary_->shell(P).nfunction();
                 int p = auxiliary_->shell(P).function_index();
-                eri[rank]->compute_shell(P, 0, MU, NU);
+                eri_[rank]->compute_shell(P, 0, MU, NU);
+                const auto *buffer = buffers[0];
                 for (int dm = 0; dm < nummu; dm++) {
                     int omu = mu + dm;
                     for (int dn = 0; dn < numnu; dn++) {
                         int onu = nu + dn;
-                        if (omu >= onu && schwarz_fun_pairs_r[omu * (omu + 1) / 2 + onu] >= 0) {
-                            int delta = schwarz_fun_pairs_r[omu * (omu + 1) / 2 + onu] - mn_start_val;
+                        size_t addr = omu > onu ? omu * (omu + 1) / 2 + onu :
+                                                  onu * (onu + 1) / 2 + omu;
+                        if (schwarz_fun_pairs_r[addr] >= 0) {
+                            int delta = schwarz_fun_pairs_r[addr] - mn_start_val;
                             for (int dp = 0; dp < nump; dp++) {
                                 int op = p + dp;
-                                Qmnp[op][delta] = buffer[rank][dp * nummu * numnu + dm * numnu + dn];
+                                Qmnp[op][delta] = buffer[dp * nummu * numnu + dm * numnu + dn];
                             }
                         }
                     }
@@ -1439,7 +1397,7 @@ void DiskDFJK::initialize_wK_disk() {
 
         psio_address addr;
         for (size_t Q = 0; Q < naux; Q++) {
-            addr = psio_get_address(PSIO_ZERO, (Q * (size_t)ntri + mn_start_val) * sizeof(double));
+            addr = psio_get_address(PSIO_ZERO, (Q * (size_t)n_function_pairs_ + mn_start_val) * sizeof(double));
             psio_->write(unit_, "Left (Q|w|mn) Integrals", (char*)Qmnp[Q], mn_col_val * sizeof(double), addr, &addr);
         }
 
@@ -1447,19 +1405,11 @@ void DiskDFJK::initialize_wK_disk() {
     }
 
     Qmn_.reset();
-    delete[] eri;
 
     // => Right Integrals <= //
 
-    const auto** buffer2 = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri2 = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
-    for (int Q = 0; Q < nthread; Q++) {
-        eri2[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
-        buffer2[Q] = eri2[Q]->buffer();
-    }
-
     size_t maxP = auxiliary_->max_function_per_shell();
-    size_t max_rows = memory_ / ntri;
+    size_t max_rows = memory_ / n_function_pairs_;
     max_rows = (max_rows > naux ? naux : max_rows);
     max_rows = (max_rows < maxP ? maxP : max_rows);
 
@@ -1477,11 +1427,11 @@ void DiskDFJK::initialize_wK_disk() {
     }
     block_Q_starts.push_back(auxiliary_->nshell());
 
-    auto Amn2 = std::make_shared<Matrix>("(A|mn) Block", max_rows, ntri);
+    auto Amn2 = std::make_shared<Matrix>("(A|mn) Block", max_rows, n_function_pairs_);
     double** Amn2p = Amn2->pointer();
     psio_address next_AIA = PSIO_ZERO;
 
-    const std::vector<std::pair<int, int> >& shell_pairs = sieve_->shell_pairs();
+    const std::vector<std::pair<int, int> >& shell_pairs = eri_.front()->shell_pairs();
     const size_t npairs = shell_pairs.size();
 
     // Loop over blocks of Qshell
@@ -1504,7 +1454,7 @@ void DiskDFJK::initialize_wK_disk() {
 #ifdef _OPENMP
             thread = omp_get_thread_num();
 #endif
-
+            const auto &buffers = erf_eri_[thread]->buffers();
             int Q = QMN / npairs + Qstart;
             int MN = QMN % npairs;
 
@@ -1520,16 +1470,18 @@ void DiskDFJK::initialize_wK_disk() {
             int sm = primary_->shell(M).function_index();
             int sn = primary_->shell(N).function_index();
 
-            eri2[thread]->compute_shell(Q, 0, M, N);
+            erf_eri_[thread]->compute_shell(Q, 0, M, N);
+            const auto *buffer = buffers[0];
 
             for (int om = 0; om < nm; om++) {
                 for (int on = 0; on < nn; on++) {
                     long int m = sm + om;
                     long int n = sn + on;
-                    if (m >= n && schwarz_fun_pairs_r[m * (m + 1) / 2 + n] >= 0) {
-                        long int delta = schwarz_fun_pairs_r[m * (m + 1) / 2 + n];
+                    size_t addr = m > n ? m * (m + 1) / 2 + n : n * (n + 1) / 2 + m;
+                    if (schwarz_fun_pairs_r[addr] >= 0) {
+                        long int delta = schwarz_fun_pairs_r[addr];
                         for (int oq = 0; oq < nq; oq++) {
-                            Amn2p[sq + oq - qoff][delta] = buffer2[thread][oq * nm * nn + om * nn + on];
+                            Amn2p[sq + oq - qoff][delta] = buffer[oq * nm * nn + om * nn + on];
                         }
                     }
                 }
@@ -1541,15 +1493,12 @@ void DiskDFJK::initialize_wK_disk() {
         // Dump block to disk
         timer_on("JK: (Q|mn)^R Write");
 
-        psio_->write(unit_, "Right (Q|w|mn) Integrals", (char*)Amn2p[0], sizeof(double) * nrows * ntri, next_AIA,
+        psio_->write(unit_, "Right (Q|w|mn) Integrals", (char*)Amn2p[0], sizeof(double) * nrows * n_function_pairs_, next_AIA,
                      &next_AIA);
 
         timer_off("JK: (Q|mn)^R Write");
     }
     Amn2.reset();
-    delete[] eri2;
-    delete[] buffer;
-    delete[] buffer2;
 
     psio_->write_entry(unit_, "Omega", (char*)&omega_, sizeof(double));
     psio_->close(unit_, 1);
@@ -1561,9 +1510,8 @@ void DiskDFJK::rebuild_wK_disk() {
     size_t naux = auxiliary_->nbf();
 
     // ==> Schwarz Indexing <== //
-    const std::vector<std::pair<int, int> >& schwarz_fun_pairs = sieve_->function_pairs();
-    int ntri = schwarz_fun_pairs.size();
-    const std::vector<long int>& schwarz_fun_pairs_r = sieve_->function_pairs_reverse();
+    const std::vector<std::pair<int, int> >& schwarz_fun_pairs = eri_.front()->function_pairs();
+    const std::vector<long int>& schwarz_fun_pairs_r = eri_.front()->function_pairs_to_dense();
 
     // ==> Thread setup <== //
     int nthread = 1;
@@ -1574,15 +1522,9 @@ void DiskDFJK::rebuild_wK_disk() {
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     std::shared_ptr<IntegralFactory> rifactory =
         std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
-    const auto** buffer2 = new const double*[nthread];
-    std::shared_ptr<TwoBodyAOInt>* eri2 = new std::shared_ptr<TwoBodyAOInt>[ nthread ];
-    for (int Q = 0; Q < nthread; Q++) {
-        eri2[Q] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
-        buffer2[Q] = eri2[Q]->buffer();
-    }
 
     size_t maxP = auxiliary_->max_function_per_shell();
-    size_t max_rows = memory_ / ntri;
+    size_t max_rows = memory_ / n_function_pairs_;
     max_rows = (max_rows > naux ? naux : max_rows);
     max_rows = (max_rows < maxP ? maxP : max_rows);
 
@@ -1600,11 +1542,11 @@ void DiskDFJK::rebuild_wK_disk() {
     }
     block_Q_starts.push_back(auxiliary_->nshell());
 
-    auto Amn2 = std::make_shared<Matrix>("(A|mn) Block", max_rows, ntri);
+    auto Amn2 = std::make_shared<Matrix>("(A|mn) Block", max_rows, n_function_pairs_);
     double** Amn2p = Amn2->pointer();
     psio_address next_AIA = PSIO_ZERO;
 
-    const std::vector<std::pair<int, int> >& shell_pairs = sieve_->shell_pairs();
+    const std::vector<std::pair<int, int> >& shell_pairs = eri_.front()->shell_pairs();
     const size_t npairs = shell_pairs.size();
 
     // Loop over blocks of Qshell
@@ -1627,7 +1569,7 @@ void DiskDFJK::rebuild_wK_disk() {
 #ifdef _OPENMP
             thread = omp_get_thread_num();
 #endif
-
+            const auto &buffers = erf_eri_[thread]->buffers();
             int Q = QMN / npairs + Qstart;
             int MN = QMN % npairs;
 
@@ -1643,16 +1585,18 @@ void DiskDFJK::rebuild_wK_disk() {
             int sm = primary_->shell(M).function_index();
             int sn = primary_->shell(N).function_index();
 
-            eri2[thread]->compute_shell(Q, 0, M, N);
+            erf_eri_[thread]->compute_shell(Q, 0, M, N);
+            const auto *buffer = buffers[0];
 
             for (int om = 0; om < nm; om++) {
                 for (int on = 0; on < nn; on++) {
                     long int m = sm + om;
                     long int n = sn + on;
-                    if (m >= n && schwarz_fun_pairs_r[m * (m + 1) / 2 + n] >= 0) {
-                        long int delta = schwarz_fun_pairs_r[m * (m + 1) / 2 + n];
+                    size_t addr = m > n ? m * (m + 1) / 2 + n : n * (n + 1) / 2 + m;
+                    if (schwarz_fun_pairs_r[addr] >= 0) {
+                        long int delta = schwarz_fun_pairs_r[addr];
                         for (int oq = 0; oq < nq; oq++) {
-                            Amn2p[sq + oq - qoff][delta] = buffer2[thread][oq * nm * nn + om * nn + on];
+                            Amn2p[sq + oq - qoff][delta] = buffer[oq * nm * nn + om * nn + on];
                         }
                     }
                 }
@@ -1664,14 +1608,12 @@ void DiskDFJK::rebuild_wK_disk() {
         // Dump block to disk
         timer_on("JK: (Q|mn)^R Write");
 
-        psio_->write(unit_, "Right (Q|w|mn) Integrals", (char*)Amn2p[0], sizeof(double) * nrows * ntri, next_AIA,
+        psio_->write(unit_, "Right (Q|w|mn) Integrals", (char*)Amn2p[0], sizeof(double) * nrows * n_function_pairs_, next_AIA,
                      &next_AIA);
 
         timer_off("JK: (Q|mn)^R Write");
     }
     Amn2.reset();
-    delete[] eri2;
-    delete[] buffer2;
 
     psio_->write_entry(unit_, "Omega", (char*)&omega_, sizeof(double));
     // No need to close
@@ -1692,15 +1634,14 @@ void DiskDFJK::manage_JK_core() {
     }
 }
 void DiskDFJK::manage_JK_disk() {
-    int ntri = sieve_->function_pairs().size();
-    Qmn_ = std::make_shared<Matrix>("(Q|mn) Block", max_rows_, ntri);
+    Qmn_ = std::make_shared<Matrix>("(Q|mn) Block", max_rows_, n_function_pairs_);
     psio_->open(unit_, PSIO_OPEN_OLD);
     for (int Q = 0; Q < auxiliary_->nbf(); Q += max_rows_) {
         int naux = (auxiliary_->nbf() - Q <= max_rows_ ? auxiliary_->nbf() - Q : max_rows_);
-        psio_address addr = psio_get_address(PSIO_ZERO, (Q * (size_t)ntri) * sizeof(double));
+        psio_address addr = psio_get_address(PSIO_ZERO, (Q * (size_t)n_function_pairs_) * sizeof(double));
 
         timer_on("JK: (Q|mn) Read");
-        psio_->read(unit_, "(Q|mn) Integrals", (char*)(Qmn_->pointer()[0]), sizeof(double) * naux * ntri, addr, &addr);
+        psio_->read(unit_, "(Q|mn) Integrals", (char*)(Qmn_->pointer()[0]), sizeof(double) * naux * n_function_pairs_, addr, &addr);
         timer_off("JK: (Q|mn) Read");
 
         if (do_J_) {
@@ -1731,23 +1672,22 @@ void DiskDFJK::manage_wK_core() {
 void DiskDFJK::manage_wK_disk() {
     int max_rows_w = max_rows_ / 2;
     max_rows_w = (max_rows_w < 1 ? 1 : max_rows_w);
-    int ntri = sieve_->function_pairs().size();
-    Qlmn_ = std::make_shared<Matrix>("(Q|mn) Block", max_rows_w, ntri);
-    Qrmn_ = std::make_shared<Matrix>("(Q|mn) Block", max_rows_w, ntri);
+    Qlmn_ = std::make_shared<Matrix>("(Q|mn) Block", max_rows_w, n_function_pairs_);
+    Qrmn_ = std::make_shared<Matrix>("(Q|mn) Block", max_rows_w, n_function_pairs_);
     psio_->open(unit_, PSIO_OPEN_OLD);
     for (int Q = 0; Q < auxiliary_->nbf(); Q += max_rows_w) {
         int naux = (auxiliary_->nbf() - Q <= max_rows_w ? auxiliary_->nbf() - Q : max_rows_w);
-        psio_address addr = psio_get_address(PSIO_ZERO, (Q * (size_t)ntri) * sizeof(double));
+        psio_address addr = psio_get_address(PSIO_ZERO, (Q * (size_t)n_function_pairs_) * sizeof(double));
 
         timer_on("JK: (Q|mn)^L Read");
-        psio_->read(unit_, "Left (Q|w|mn) Integrals", (char*)(Qlmn_->pointer()[0]), sizeof(double) * naux * ntri, addr,
+        psio_->read(unit_, "Left (Q|w|mn) Integrals", (char*)(Qlmn_->pointer()[0]), sizeof(double) * naux * n_function_pairs_, addr,
                     &addr);
         timer_off("JK: (Q|mn)^L Read");
 
-        addr = psio_get_address(PSIO_ZERO, (Q * (size_t)ntri) * sizeof(double));
+        addr = psio_get_address(PSIO_ZERO, (Q * (size_t)n_function_pairs_) * sizeof(double));
 
         timer_on("JK: (Q|mn)^R Read");
-        psio_->read(unit_, "Right (Q|w|mn) Integrals", (char*)(Qrmn_->pointer()[0]), sizeof(double) * naux * ntri, addr,
+        psio_->read(unit_, "Right (Q|w|mn) Integrals", (char*)(Qrmn_->pointer()[0]), sizeof(double) * naux * n_function_pairs_, addr,
                     &addr);
         timer_off("JK: (Q|mn)^R Read");
 
@@ -1760,7 +1700,7 @@ void DiskDFJK::manage_wK_disk() {
     Qrmn_.reset();
 }
 void DiskDFJK::block_J(double** Qmnp, int naux) {
-    const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
+    const std::vector<std::pair<int, int> >& function_pairs = eri_.front()->function_pairs();
     size_t num_nm = function_pairs.size();
 
     for (size_t N = 0; N < J_ao_.size(); N++) {
@@ -1791,8 +1731,8 @@ void DiskDFJK::block_J(double** Qmnp, int naux) {
     }
 }
 void DiskDFJK::block_K(double** Qmnp, int naux) {
-    const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
-    const std::vector<long int>& function_pairs_reverse = sieve_->function_pairs_reverse();
+    const std::vector<std::pair<int, int> >& function_pairs = eri_.front()->function_pairs();
+    const std::vector<long int>& function_pairs_to_dense = eri_.front()->function_pairs_to_dense();
     size_t num_nm = function_pairs.size();
 
     for (size_t N = 0; N < K_ao_.size(); N++) {
@@ -1820,12 +1760,12 @@ void DiskDFJK::block_K(double** Qmnp, int naux) {
                 double** Ctp = C_temp_[thread]->pointer();
                 double** QSp = Q_temp_[thread]->pointer();
 
-                const std::vector<int>& pairs = sieve_->function_to_function()[m];
+                const std::vector<int>& pairs = eri_.front()->significant_partners_per_function()[m];
                 int rows = pairs.size();
 
                 for (int i = 0; i < rows; i++) {
                     int n = pairs[i];
-                    long int ij = function_pairs_reverse[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
+                    long int ij = function_pairs_to_dense[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
                     C_DCOPY(naux, &Qmnp[0][ij], num_nm, &QSp[0][i], nbf);
                     C_DCOPY(nocc, Clp[n], 1, &Ctp[0][i], nbf);
                 }
@@ -1853,13 +1793,13 @@ void DiskDFJK::block_K(double** Qmnp, int naux) {
                     double** Ctp = C_temp_[thread]->pointer();
                     double** QSp = Q_temp_[thread]->pointer();
 
-                    const std::vector<int>& pairs = sieve_->function_to_function()[m];
+                    const std::vector<int>& pairs = eri_.front()->significant_partners_per_function()[m];
                     int rows = pairs.size();
 
                     for (int i = 0; i < rows; i++) {
                         int n = pairs[i];
                         long int ij =
-                            function_pairs_reverse[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
+                            function_pairs_to_dense[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
                         C_DCOPY(naux, &Qmnp[0][ij], num_nm, &QSp[0][i], nbf);
                         C_DCOPY(nocc, Crp[n], 1, &Ctp[0][i], nbf);
                     }
@@ -1878,8 +1818,8 @@ void DiskDFJK::block_K(double** Qmnp, int naux) {
     }
 }
 void DiskDFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux) {
-    const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
-    const std::vector<long int>& function_pairs_reverse = sieve_->function_pairs_reverse();
+    const std::vector<std::pair<int, int> >& function_pairs = eri_.front()->function_pairs();
+    const std::vector<long int>& function_pairs_to_dense = eri_.front()->function_pairs_to_dense();
     size_t num_nm = function_pairs.size();
 
     for (size_t N = 0; N < wK_ao_.size(); N++) {
@@ -1907,12 +1847,12 @@ void DiskDFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux) {
                 double** Ctp = C_temp_[thread]->pointer();
                 double** QSp = Q_temp_[thread]->pointer();
 
-                const std::vector<int>& pairs = sieve_->function_to_function()[m];
+                const std::vector<int>& pairs = eri_.front()->significant_partners_per_function()[m];
                 int rows = pairs.size();
 
                 for (int i = 0; i < rows; i++) {
                     int n = pairs[i];
-                    long int ij = function_pairs_reverse[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
+                    long int ij = function_pairs_to_dense[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
                     C_DCOPY(naux, &Qlmnp[0][ij], num_nm, &QSp[0][i], nbf);
                     C_DCOPY(nocc, Clp[n], 1, &Ctp[0][i], nbf);
                 }
@@ -1936,12 +1876,12 @@ void DiskDFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux) {
             double** Ctp = C_temp_[thread]->pointer();
             double** QSp = Q_temp_[thread]->pointer();
 
-            const std::vector<int>& pairs = sieve_->function_to_function()[m];
+            const std::vector<int>& pairs = eri_.front()->significant_partners_per_function()[m];
             int rows = pairs.size();
 
             for (int i = 0; i < rows; i++) {
                 int n = pairs[i];
-                long int ij = function_pairs_reverse[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
+                long int ij = function_pairs_to_dense[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
                 C_DCOPY(naux, &Qrmnp[0][ij], num_nm, &QSp[0][i], nbf);
                 C_DCOPY(nocc, Crp[n], 1, &Ctp[0][i], nbf);
             }

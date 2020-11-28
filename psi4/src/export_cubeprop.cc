@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include <libint2/shell.h>
 #include "psi4/pybind11.h"
 
 #include "psi4/libcubeprop/cubeprop.h"

@@ -32,7 +32,6 @@
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libmints/sieve.h"
 #include "psi4/psifiles.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/libpsio/psio.hpp"
@@ -91,18 +90,19 @@ void DFOCC::df_ref() {
 
     // if (read_scf_3index == "TRUE" && dertype == "NONE") {
     // 1.  read scf 3-index integrals from disk
+    std::shared_ptr<BasisSet> primary = get_basisset("ORBITAL");
+    std::shared_ptr<BasisSet> auxiliary = get_basisset("DF_BASIS_SCF");
+    std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
+    std::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary, zero, primary, primary));
+    auto eri = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
 
     // get ntri from sieve
-    std::shared_ptr<ERISieve> sieve(new ERISieve(basisset_, options_.get_double("INTS_TOLERANCE")));
-    const std::vector<std::pair<int, int> >& function_pairs = sieve->function_pairs();
+    const std::vector<std::pair<int, int> >& function_pairs = eri->function_pairs();
     long int ntri_cd = function_pairs.size();
 
     // read integrals from disk if they were generated in the SCF
     if (options_.get_str("SCF_TYPE") == "DISK_DF") {
         outfile->Printf("\tReading DF integrals from disk ...\n");
-        std::shared_ptr<BasisSet> primary = get_basisset("ORBITAL");
-        std::shared_ptr<BasisSet> auxiliary = get_basisset("DF_BASIS_SCF");
-        std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
         nQ_ref = auxiliary->nbf();
 
         // ntri comes from sieve above
@@ -164,22 +164,17 @@ void DFOCC::df_ref() {
 
     // else if (read_scf_3index == "FALSE") {
     else {
-        // Read in the basis set informations
-        std::shared_ptr<BasisSet> primary_ = get_basisset("ORBITAL");
-        std::shared_ptr<BasisSet> auxiliary_ = get_basisset("DF_BASIS_SCF");
-        std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
-
         // Read number of auxilary basis
-        nQ_ref = auxiliary_->nbf();
+        nQ_ref = auxiliary->nbf();
 
         // Form J^-1/2
         timer_on("Form J");
-        formJ_ref(auxiliary_, zero);
+        formJ_ref(auxiliary, zero);
         timer_off("Form J");
 
         // Form B(Q,mu nu)
         timer_on("Form B(Q,munu)");
-        b_so_ref(primary_, auxiliary_, zero);
+        b_so_ref(primary, auxiliary, zero);
         timer_off("Form B(Q,munu)");
     }  // end if (read_scf_3index == "FALSE")
 
@@ -225,7 +220,7 @@ void DFOCC::formJ_ref(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<Basi
 #endif
 
         Jint[thread]->compute_shell(P, 0, Q, 0);
-        // const double* buffer = Jint[thread]->buffer();
+        const double* buf = Jint[thread]->buffer();
 
         int nP = auxiliary_->shell(P).nfunction();
         int oP = auxiliary_->shell(P).function_index();
@@ -236,7 +231,7 @@ void DFOCC::formJ_ref(std::shared_ptr<BasisSet> auxiliary_, std::shared_ptr<Basi
         int index = 0;
         for (int p = 0; p < nP; p++) {
             for (int q = 0; q < nQ; q++, ++index) {
-                J[p + oP][q + oQ] = buffer[thread][index];
+                J[p + oP][q + oQ] = buf[index];
             }
         }
     }
@@ -322,8 +317,16 @@ void DFOCC::b_so_ref(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSe
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    std::shared_ptr<ERISieve> sieve_ = std::shared_ptr<ERISieve>(new ERISieve(primary_, 0.0));
-    const std::vector<std::pair<int, int> >& shell_pairs = sieve_->shell_pairs();
+    // => Integrals <= //
+    std::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary_, zero, primary_, primary_));
+    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
+    std::vector<const double*> buffer;
+    for (int t = 0; t < nthreads; t++) {
+        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
+        buffer.push_back(eri[t]->buffer());
+    }
+
+    const std::vector<std::pair<int, int> >& shell_pairs = eri[0]->shell_pairs();
     int npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
@@ -343,15 +346,6 @@ void DFOCC::b_so_ref(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSe
         counter += nP;
     }
     Pstarts.push_back(auxiliary_->nshell());
-
-    // => Integrals <= //
-    std::shared_ptr<IntegralFactory> rifactory2(new IntegralFactory(auxiliary_, zero, primary_, primary_));
-    std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
-    std::vector<const double*> buffer;
-    for (int t = 0; t < nthreads; t++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
-        buffer.push_back(eri[t]->buffer());
-    }
 
     // => Master Loop <= //
 
@@ -380,6 +374,7 @@ void DFOCC::b_so_ref(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSe
             int N = shell_pairs[MN].second;
 
             eri[thread]->compute_shell(P, 0, M, N);
+            const double *buf = eri[thread]->buffer();
 
             int nP = auxiliary_->shell(P).nfunction();
             int oP = auxiliary_->shell(P).function_index();
@@ -396,8 +391,8 @@ void DFOCC::b_so_ref(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSe
                     for (int n = 0; n < nN; n++, index++) {
                         // Bp[p + oP][(m + oM) * nso_ + (n + oN)] = buffer[thread][p * nM * nN + m * nN + n];
                         // Bp[p + oP][(n + oN) * nso_ + (m + oM)] = buffer[thread][p * nM * nN + m * nN + n];
-                        Bp[p + oP][(m + oM) * nso_ + (n + oN)] = buffer[thread][index];
-                        Bp[p + oP][(n + oN) * nso_ + (m + oM)] = buffer[thread][index];
+                        Bp[p + oP][(m + oM) * nso_ + (n + oN)] = buf[index];
+                        Bp[p + oP][(n + oN) * nso_ + (m + oM)] = buf[index];
                     }
                 }
             }

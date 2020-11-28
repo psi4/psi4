@@ -845,8 +845,12 @@ class PSI_API DiskDFJK : public JK {
     int max_rows_;
     /// Maximum number of nocc in C vectors
     int max_nocc_;
-    /// Sieve, must be static throughout the life of the object
-    std::shared_ptr<ERISieve> sieve_;
+    /// Number of significant function pairs that survive the sieve process
+    size_t n_function_pairs_ = 0;
+    /// Integral engines for each thread
+    std::vector<std::shared_ptr<TwoBodyAOInt>> eri_;
+    /// Integral engines for each thread for erf integrals
+    std::vector<std::shared_ptr<TwoBodyAOInt>> erf_eri_;
 
     /// Main (Q|mn) Tensor (or chunk for disk-based)
     SharedMatrix Qmn_;
@@ -973,6 +977,8 @@ class PSI_API CDJK : public DiskDFJK {
     std::string name() override { return "CDJK"; }
     size_t memory_estimate() override;
 
+    /// integral engine for computing CD integrals
+    std::shared_ptr<TwoBodyAOInt> cderi_;
 
     // the number of cholesky vectors
     long int ncholesky_;

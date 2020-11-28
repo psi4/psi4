@@ -32,7 +32,6 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"
-#include "psi4/libmints/sieve.h"
 #include "psi4/libiwl/iwl.hpp"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
@@ -67,7 +66,8 @@ size_t CDJK::memory_estimate() {
 void CDJK::initialize_JK_core() {
     timer_on("CD: cholesky decomposition");
     auto integral = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
-    int ntri = sieve_->function_pairs().size();
+    cderi_ = std::shared_ptr<TwoBodyAOInt>(integral->eri());
+    int ntri = cderi_->function_pairs().size();
     /// If user asks to read integrals from disk, just read them from disk.
     /// Qmn is only storing upper triangle.
     /// Ugur needs ncholesky_ in NAUX (SCF), but it can also be read from disk
@@ -84,7 +84,7 @@ void CDJK::initialize_JK_core() {
     }
 
     /// If user does not want to read from disk, recompute the cholesky integrals
-    auto Ch = std::make_shared<CholeskyERI>(std::shared_ptr<TwoBodyAOInt>(integral->eri()), 0.0, cholesky_tolerance_,
+    auto Ch = std::make_shared<CholeskyERI>(cderi_, 0.0, cholesky_tolerance_,
                                             memory_);
     Ch->choleskify();
     ncholesky_ = Ch->Q();
@@ -104,7 +104,7 @@ void CDJK::initialize_JK_core() {
 
     double** Qmnp = Qmn_->pointer();
 
-    const std::vector<long int>& schwarz_fun_pairs = sieve_->function_pairs_reverse();
+    const std::vector<long int>& schwarz_fun_pairs = cderi_->function_pairs_to_dense();
 
     timer_on("CD: schwarz");
     for (size_t mu = 0; mu < nbf; mu++) {

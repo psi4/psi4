@@ -211,7 +211,6 @@ void ERISieve::integrals() {
 
     IntegralFactory schwarzfactory(primary_, primary_, primary_, primary_);
     std::shared_ptr<TwoBodyAOInt> eri = std::shared_ptr<TwoBodyAOInt>(schwarzfactory.eri());
-    const double *buffer = eri->buffer();
 
     for (int P = 0; P < nshell_; P++) {
         for (int Q = 0; Q <= P; Q++) {
@@ -220,6 +219,7 @@ void ERISieve::integrals() {
             int oP = primary_->shell(P).function_index();
             int oQ = primary_->shell(Q).function_index();
             eri->compute_shell(P, Q, P, Q);
+            const double *buffer = eri->buffer();
             double max_val = 0.0;
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
@@ -338,7 +338,7 @@ void ERISieve::csam_integrals() {
             double max_val = 0.0;
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
-                    max_val = std::max(max_val, std::abs(buffer[p * nQ * nQ * (nP + 1) + q * (nQ * nQ + 1)]) /
+                    max_val = std::max(max_val, std::abs(buffer[p * nQ * nQ * (nP + 1) + q * (nQ + 1)]) /
                                                     (function_sqrt_[p + oP] * function_sqrt_[q + oQ]));
                 }
             }

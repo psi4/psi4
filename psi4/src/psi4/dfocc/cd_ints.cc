@@ -26,7 +26,6 @@
  * @END LICENSE
  */
 
-#include "psi4/libmints/sieve.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libciomr/libciomr.h"
@@ -122,8 +121,11 @@ void DFOCC::cd_ints() {
     // 1.  read scf 3-index integrals from disk
 
     // get ntri from sieve
-    std::shared_ptr<ERISieve> sieve(new ERISieve(basisset_, options_.get_double("INTS_TOLERANCE")));
-    const std::vector<std::pair<int, int> >& function_pairs = sieve->function_pairs();
+    std::shared_ptr<BasisSet> primary = basisset();
+    std::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary, primary, primary, primary));
+    auto eri = std::shared_ptr<TwoBodyAOInt>(integral->eri());
+
+    const std::vector<std::pair<int, int> >& function_pairs = eri->function_pairs();
     long int ntri_cd = function_pairs.size();
 
     // Cholesky
@@ -162,8 +164,6 @@ void DFOCC::cd_ints() {
     else {
         // generate Cholesky 3-index integrals
         outfile->Printf("\tGenerating Cholesky vectors ...\n");
-        std::shared_ptr<BasisSet> primary = basisset();
-        std::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary, primary, primary, primary));
         double tol_cd = options_.get_double("CHOLESKY_TOLERANCE");
         std::shared_ptr<CholeskyERI> Ch(new CholeskyERI(std::shared_ptr<TwoBodyAOInt>(integral->eri()), cutoff, tol_cd,
                                                         Process::environment.get_memory()));

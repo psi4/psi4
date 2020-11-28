@@ -129,10 +129,27 @@ else()
     message(STATUS "Disabled gdma")
 endif()
 
+if(${ENABLE_Libint1t})
 find_package(Libint 1.2.0 CONFIG REQUIRED COMPONENTS ${MAX_AM_ERI})
 get_property(_loc TARGET Libint::int PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint ${Libint_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint_VERSION})")
+endif()
+
+# CHOOSE! this one for `make export` libint2 library (bad caps)
+#find_package(libint2 2.6 CONFIG REQUIRED) # COMPONENTS ${MAX_AM_ERI})
+#get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
+
+# CHOOSE! this one for pure cmake libint2 library
+if(DEFINED ENV{LGTM_SRC})
+    find_package(Libint2 CONFIG REQUIRED COMPONENTS gss "e${MAX_AM_ERI}")
+else()
+    find_package(Libint2 CONFIG REQUIRED COMPONENTS gss "e${MAX_AM_ERI}" g2 h2 eri3_e4 eri3_g3 eri3_h3 eri2_e4 eri2_g3 eri2_h3)
+endif()
+get_property(_loc TARGET Libint2::cxx PROPERTY LOCATION)
+
+list(APPEND _addons ${_loc})
+message(STATUS "${Cyan}Using Libint2 ${Libint2_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint2_VERSION})")
 
 if(${ENABLE_mdi})
     find_package(mdi 1.1.6 CONFIG REQUIRED)

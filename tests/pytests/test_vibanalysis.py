@@ -994,7 +994,7 @@ def test_harmonic_analysis_vs_cfour(subject, request):
     "subject", [
         pytest.param('co2'),
         pytest.param('c2h4', marks=pytest.mark.long),
-        pytest.param('ch4', marks=pytest.mark.xfail(reason="unaligned degen mode pair")),
+        pytest.param('ch4'),
         pytest.param('nh3'),
         pytest.param('h2co', marks=pytest.mark.quick),
         pytest.param('hooh'),
@@ -1021,6 +1021,7 @@ def test_hessian_vs_cfour(scf_type, subject, dertype, request):
             "omega": 0.9,
             "IR_intensity": 0.3,
             "k": 0.02,
+            "svd": 1.e-4,
         }
         if subject in ['hooh']:
             toldict["omega"] = 2.0

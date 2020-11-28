@@ -62,6 +62,7 @@ Programmers' Manual
    prog_intro
    prog_newcode
    prog_corelibs
+   prog_integrals
    add_tests
    prog_debug_profile
    documentation

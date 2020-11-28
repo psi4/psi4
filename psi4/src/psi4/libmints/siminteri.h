@@ -40,14 +40,15 @@ class SimintTwoElectronInt : public TwoBodyAOInt {
     typedef std::vector<simint_multi_shellpair> ShellPairVec;
     typedef std::vector<simint_shell> ShellVec;
 
-    SimintTwoElectronInt(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
+    SimintTwoElectronInt(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false, bool needs_exchange = false);
     ~SimintTwoElectronInt() override;
 
     size_t compute_shell(const AOShellCombinationsIterator&) override;
 
-    size_t compute_shell(int, int, int, int) override;
+    size_t compute_shell(int s1, int s2, int s3, int s4) override;
 
     void compute_shell_blocks(int shellpair1, int shellpair2, int npair1 = -1, int npair2 = -1) override;
+    void compute_shell_blocks_deriv1(int shellpair1, int shellpair2, int npair1 = -1, int npair2 = -1) override;
 
     size_t compute_shell_deriv1(int, int, int, int) override;
 
@@ -59,13 +60,19 @@ class SimintTwoElectronInt : public TwoBodyAOInt {
    private:
     void create_blocks(void);
 
+    size_t compute_shell_for_sieve(const std::shared_ptr<BasisSet> bs, int s1, int s2, int s3, int s4, bool is_bra) override;
     int maxam_;
     size_t batchsize_;
     size_t allwork_size_;
-    bool bra_same_, ket_same_, braket_same_;
 
     double* allwork_;
     double* sharedwork_;
+    std::vector<size_t> RSblock_starts_;
+
+
+    virtual size_t first_RS_shell_block(size_t PQpair) const override { return braket_same_ ? RSblock_starts_[PQpair] : 0; }
+
+    virtual int maximum_block_size() const override { return batchsize_; }
 
     // plain simint shells
     // WARNING - these may be shared across threads, so
@@ -88,10 +95,9 @@ class SimintERI : public SimintTwoElectronInt {
     SimintERI(const SimintERI& rhs);
 
    public:
-    bool cloneable() const override { return true; };
     SimintERI* clone() const override { return new SimintERI(*this); }
 
-    SimintERI(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false);
+    SimintERI(const IntegralFactory* integral, int deriv = 0, bool use_shell_pairs = false, bool needs_exchange = false);
 };
 
 }  // namespace psi

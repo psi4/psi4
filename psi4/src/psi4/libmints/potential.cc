@@ -744,10 +744,10 @@ void PotentialInt::compute_deriv1(std::vector<SharedMatrix> &result) {
                                __LINE__);
 
     for (int i = 0; i < ns1; ++i) {
-        int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
+        int ni = bs1_->shell(i).nfunction();
         int j_offset = 0;
         for (int j = 0; j < ns2; ++j) {
-            int nj = force_cartesian_ ? bs2_->shell(j).ncartesian() : bs2_->shell(j).nfunction();
+            int nj = bs2_->shell(j).nfunction();
 
             // Compute the shell
             compute_shell_deriv1(i, j);
@@ -779,7 +779,7 @@ void PotentialInt::compute_shell_deriv1_no_charge_term(int sh1, int sh2) {
     normalize_am(s1, s2, nchunk_);
 
     // Pure angular momentum (6d->5d, ...) transformation
-    if (!force_cartesian_) pure_transform(s1, s2, nchunk_);
+    pure_transform(s1, s2, nchunk_);
 }
 
 void PotentialInt::compute_deriv1_no_charge_term(std::vector<SharedMatrix> &result) {
@@ -801,10 +801,10 @@ void PotentialInt::compute_deriv1_no_charge_term(std::vector<SharedMatrix> &resu
                                __LINE__);
 
     for (int i = 0; i < ns1; ++i) {
-        int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
+        int ni = bs1_->shell(i).nfunction();
         int j_offset = 0;
         for (int j = 0; j < ns2; ++j) {
-            int nj = force_cartesian_ ? bs2_->shell(j).ncartesian() : bs2_->shell(j).nfunction();
+            int nj = bs2_->shell(j).nfunction();
 
             // Compute the shell
             compute_shell_deriv1_no_charge_term(i, j);
@@ -844,10 +844,10 @@ void PotentialInt::compute_deriv2(std::vector<SharedMatrix> &result) {
                                __LINE__);
 
     for (int i = 0; i < ns1; ++i) {
-        int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
+        int ni = bs1_->shell(i).nfunction();
         int j_offset = 0;
         for (int j = 0; j < ns2; ++j) {
-            int nj = force_cartesian_ ? bs2_->shell(j).ncartesian() : bs2_->shell(j).nfunction();
+            int nj = bs2_->shell(j).nfunction();
 
             // Compute the shell
             compute_shell_deriv2(i, j);

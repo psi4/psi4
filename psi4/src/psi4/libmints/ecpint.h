@@ -69,10 +69,10 @@ static TwoIndex<double> realSphericalHarmonics(int lmax, double x, double phi);
 
 /**
  * \ingroup MINTS
- * \class ShellPairData
+ * \class ECPShellPairData
  * \brief Stores the (shifted) angular momenta, number of cartesians in a shell pair, and shifted centers
  */
-struct ShellPairData {
+struct ECPShellPairData {
     int LA, LB, maxLBasis;
     int ncartA, ncartB;
     double A[3], B[3];
@@ -279,7 +279,7 @@ class RadialIntegral {
      * @param A - position vector (relative to the ECP center) of shell A
      * @param B - position vector (relative to the ECP center) of shell B
      */
-    void buildParameters(const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data);
+    void buildParameters(const GaussianShell &shellA, const GaussianShell &shellB, ECPShellPairData &data);
 
     /**
      * Calculates all type 1 radial integrals over two Gaussian shells up to the given maximum angular momentum.
@@ -294,7 +294,7 @@ class RadialIntegral {
      * @param values - the matrix to return the integrals in
      */
     void type1(int maxL, int N, int offset, const GaussianShell &U, const GaussianShell &shellA,
-               const GaussianShell &shellB, ShellPairData &data, TwoIndex<double> &values);
+               const GaussianShell &shellB, ECPShellPairData &data, TwoIndex<double> &values);
 
     /**
      * Calculates all type 2 radial integrals over two Gaussian shells for the given ECP angular momentum l
@@ -312,7 +312,7 @@ class RadialIntegral {
      * @param values - the matrix to return the integrals in
      */
     void type2(int lam, int l1start, int l1end, int l2start, int l2end, int N, const GaussianShell &U,
-               const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data, TwoIndex<double> &values);
+               const GaussianShell &shellA, const GaussianShell &shellB, ECPShellPairData &data, TwoIndex<double> &values);
 };
 
 /**
@@ -335,11 +335,11 @@ class ECPInt : public OneBodyAOInt {
     void makeC(FiveIndex<double> &C, int L, double *A);
 
     /// Calculates the type 1 integrals for the given ECP center over the given shell pair
-    void type1(const GaussianShell &U, const GaussianShell &shellA, const GaussianShell &shellB, ShellPairData &data,
+    void type1(const GaussianShell &U, const GaussianShell &shellA, const GaussianShell &shellB, ECPShellPairData &data,
                FiveIndex<double> &CA, FiveIndex<double> &CB, TwoIndex<double> &values);
     /// Calculates the type 2 integrals for the given ECP center over the given shell pair
     void type2(int l, const GaussianShell &U, const GaussianShell &shellA, const GaussianShell &shellB,
-               ShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, ThreeIndex<double> &values);
+               ECPShellPairData &data, FiveIndex<double> &CA, FiveIndex<double> &CB, ThreeIndex<double> &values);
 
     /// Overridden shell-pair integral calculation over all ECP centers
     void compute_pair(const GaussianShell &shellA, const GaussianShell &shellB) override;

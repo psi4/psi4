@@ -55,8 +55,6 @@
 #include "psi4/libmints/siminteri.h"
 #endif
 
-#include <libint/libint.h>
-
 using namespace psi;
 
 IntegralFactory::IntegralFactory(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
@@ -84,7 +82,7 @@ void IntegralFactory::set_basis(std::shared_ptr<BasisSet> bs1, std::shared_ptr<B
     bs4_ = bs4;
 
     // Use the max am from libint
-    init_spherical_harmonics(LIBINT_MAX_AM + 1);
+    init_spherical_harmonics(8);
 }
 
 OneBodyAOInt* IntegralFactory::ao_overlap(int deriv) {
@@ -203,65 +201,93 @@ OneBodyAOInt* IntegralFactory::electric_field(int deriv) {
     return new ElectricFieldInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs) {
+TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
+    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
 #ifdef USING_simint
-    if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs);
+    if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs, needs_exchange);
 #endif
+    if (integral_package == "LIBINT2") return new Libint2ERI(this, threshold, deriv, use_shell_pairs, needs_exchange);
 #ifdef USING_erd
     if (deriv == 0 && integral_package == "ERD") return new ERDERI(this, deriv, use_shell_pairs);
 #endif
-    if (deriv > 0 && integral_package != "LIBINT")
+    if (deriv > 0 && integral_package != "LIBINT1")
         outfile->Printf("ERI derivative integrals only available using Libint");
     if (integral_package == "SIMINT" || integral_package == "ERD")
         outfile->Printf("Chosen integral package " + integral_package +
                         " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
+#ifdef ENABLE_Libint1t
     return new ERI(this, deriv, use_shell_pairs);
+#endif
 }
 
-TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs) {
+TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
+    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
 #ifdef USING_simint
-    if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs);
+    if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs, needs_exchange);
 #endif
+    if (integral_package == "LIBINT2") return new Libint2ERI(this, threshold, deriv, use_shell_pairs, needs_exchange);
 #ifdef USING_erd
     if (deriv == 0 && integral_package == "ERD") return new ERDERI(this, deriv, use_shell_pairs);
 #endif
-    if (deriv > 0 && integral_package != "LIBINT")
+    if (deriv > 0 && integral_package != "LIBINT1")
         outfile->Printf("ERI derivative integrals only available using Libint");
     if (integral_package == "SIMINT" || integral_package == "ERD")
         outfile->Printf("Chosen integral package " + integral_package +
                         " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
+#ifdef ENABLE_Libint1t
     return new ERI(this, deriv, use_shell_pairs);
+#endif
 }
 
-TwoBodyAOInt* IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs) {
+TwoBodyAOInt* IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
+    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
+    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+    if (integral_package == "LIBINT2") return new Libint2ErfERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
+#ifdef ENABLE_Libint1t
     return new ErfERI(omega, this, deriv, use_shell_pairs);
+#endif
 }
 
-TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs) {
+TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
+    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
+    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+    if (integral_package == "LIBINT2") return new Libint2ErfComplementERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
+#ifdef ENABLE_Libint1t
     return new ErfComplementERI(omega, this, deriv, use_shell_pairs);
+#endif
 }
 
 TwoBodyAOInt* IntegralFactory::f12(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs) {
+#ifdef ENABLE_Libint1t
     return new F12(cf, this, deriv, use_shell_pairs);
+#endif
 }
 
 TwoBodyAOInt* IntegralFactory::f12_scaled(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs) {
+#ifdef ENABLE_Libint1t
     return new F12Scaled(cf, this, deriv, use_shell_pairs);
+#endif
 }
 
 TwoBodyAOInt* IntegralFactory::f12_squared(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs) {
+#ifdef ENABLE_Libint1t
     return new F12Squared(cf, this, deriv, use_shell_pairs);
+#endif
 }
 
 TwoBodyAOInt* IntegralFactory::f12g12(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs) {
+#ifdef ENABLE_Libint1t
     return new F12G12(cf, this, deriv, use_shell_pairs);
+#endif
 }
 
 TwoBodyAOInt* IntegralFactory::f12_double_commutator(std::shared_ptr<CorrelationFactor> cf, int deriv,
                                                      bool use_shell_pairs) {
+#ifdef ENABLE_Libint1t
     return new F12DoubleCommutator(cf, this, deriv, use_shell_pairs);
+#endif
 }
 
 void IntegralFactory::init_spherical_harmonics(int max_am) {

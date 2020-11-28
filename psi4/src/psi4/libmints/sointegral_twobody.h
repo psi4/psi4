@@ -43,6 +43,7 @@
 #include "basisset.h"
 
 #include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <vector>
 
@@ -213,7 +214,6 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     mints_timer_on("TwoBodySOInt::compute_shell overall");
     mints_timer_on("TwoBodySOInt::compute_shell setup");
 
-    const double *aobuff = tb_[thread]->buffer();
 
     const SOTransform &t1 = b1_->sotrans(uish);
     const SOTransform &t2 = b2_->sotrans(ujsh);
@@ -333,6 +333,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
         // Compute this unique AO shell
         // timer_on("Computing the AO shell");
         tb_[thread]->compute_shell(si, sj, sk, sl);
+        const double *aobuff = tb_[thread]->buffer();
         // timer_off("Computing the AO shell");
 
         mints_timer_on("TwoBodySOInt::compute_shell actual transform");
@@ -555,7 +556,6 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
     int thread = 0;
     // Old call: WorldComm->thread_id(pthread_self());
 
-    const double *aobuffer = tb_[thread]->buffer();
 
     const SOTransform &t1 = b1_->sotrans(uish);
     const SOTransform &t2 = b2_->sotrans(ujsh);
@@ -686,6 +686,19 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
 
         // Compute this unique AO shell
         tb_[thread]->compute_shell_deriv1(si, sj, sk, sl);
+        const auto& buffers = tb_[thread]->buffers();
+        const double *pAx = buffers[0];
+        const double *pAy = buffers[1];
+        const double *pAz = buffers[2];
+        const double *pBx = buffers[3];
+        const double *pBy = buffers[4];
+        const double *pBz = buffers[5];
+        const double *pCx = buffers[6];
+        const double *pCy = buffers[7];
+        const double *pCz = buffers[8];
+        const double *pDx = buffers[9];
+        const double *pDy = buffers[10];
+        const double *pDz = buffers[11];
 
         int nirrep = b1_->nirrep();
 
@@ -755,20 +768,18 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                                     // from centers A, C, and D.
                                     double A[3], B[3], C[3], D[3];
 
-                                    A[0] = aobuffer[0 * nao + laooff];
-                                    A[1] = aobuffer[1 * nao + laooff];
-                                    A[2] = aobuffer[2 * nao + laooff];
-                                    C[0] = aobuffer[3 * nao + laooff];
-                                    C[1] = aobuffer[4 * nao + laooff];
-                                    C[2] = aobuffer[5 * nao + laooff];
-                                    D[0] = aobuffer[6 * nao + laooff];
-                                    D[1] = aobuffer[7 * nao + laooff];
-                                    D[2] = aobuffer[8 * nao + laooff];
-
-                                    // Use translational invariance to determine B
-                                    B[0] = -(A[0] + C[0] + D[0]);
-                                    B[1] = -(A[1] + C[1] + D[1]);
-                                    B[2] = -(A[2] + C[2] + D[2]);
+                                    A[0] = pAx[laooff];
+                                    A[1] = pAy[laooff];
+                                    A[2] = pAz[laooff];
+                                    B[0] = pBx[laooff];
+                                    B[1] = pBy[laooff];
+                                    B[2] = pBz[laooff];
+                                    C[0] = pCx[laooff];
+                                    C[1] = pCy[laooff];
+                                    C[2] = pCz[laooff];
+                                    D[0] = pDx[laooff];
+                                    D[1] = pDy[laooff];
+                                    D[2] = pDz[laooff];
 
                                     A[0] *= lambda_T * pfac * lcoef;
                                     A[1] *= lambda_T * pfac * lcoef;

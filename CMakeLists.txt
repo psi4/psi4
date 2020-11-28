@@ -55,7 +55,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #    - PYTHON_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python3.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
-#    For any ${AddOn} of: ambit, CheMPS2, dkh, libefp, erd, gau2grid, gdma, Libint, PCMSolver, pybind11, pylibefp,
+#    For any ${AddOn} of: ambit, CheMPS2, dkh, libefp, erd, gau2grid, gdma, Libint2, PCMSolver, pybind11, pylibefp,
 #                         qcelemental, qcengine, simint, Libxc
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
@@ -102,6 +102,7 @@ option(ENABLE_cct3 "Enables cct3 plugin (requires Fortran; can also be added at 
 option(ENABLE_gpu_dfcc "Enables GPU_DFCC plugin for gpu-accelerated df-cc (requires CUDA; can also be added at runtime)" OFF)
 option(ENABLE_mdi "Enables MolSSI driver interface" OFF)
 option(ENABLE_BrianQC "Enables the BrianQC GPU module (requires CUDA; requires separate installation and licensing of the BrianQC module)" OFF)
+option(ENABLE_Libint1t "Enables Libint1 in special _t variety" OFF)
 # These options are relevant to pasture, expert only
 option(ENABLE_ccsort "Enables ccsort plugin installed from psi4pasture" OFF)
 option(ENABLE_transqt2 "Enables transqt2 plugin installed from psi4pasture" OFF)
@@ -150,7 +151,7 @@ option_with_flags(ENABLE_UBSAN "Enables undefined behavior sanitizer (requires s
                   "-fsanitize=undefined -fno-omit-frame-pointer")
 option_with_flags(ENABLE_MSAN "Enables memory sanitizer (requires similarly compiled Python and Numpy)" OFF
                   "-fsanitize=memory -fPIE -pie -fno-omit-frame-pointer")
-option_with_default(MAX_AM_ERI "Maximum angular momentum for integrals" 5)
+option_with_default(MAX_AM_ERI "Maximum angular momentum for integrals. The definition changed with Libint2. Default fine for production." 5)
 option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
 option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC "Compile static libraries with position independent code" ON)
@@ -161,6 +162,7 @@ option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation mes
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 14)
 option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar sse avx avxfma micavx512)" avx)
 option_with_default(SPHINX_THEME "Theme for Sphinx documentation and extensions" sphinx_psi_theme)
+option_with_default(BUILD_Libint2_GENERATOR "If prebuilt not found, don't build Libint2 from source tarball but instead build and run generator (several hours for production library). Edit angular momentum and integrals classes directly in `external/upstream/libint2/CMakeLists.txt` (requires Ninja)." OFF)
 
 ########################  Process & Validate Options  ##########################
 include(GNUInstallDirs)
@@ -180,6 +182,13 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 set(Python_ADDITIONAL_VERSIONS 3.8 3.7 3.6)  # adjust with CMake minimum FindPythonInterp
 find_package(PythonLibsNew 3.6 REQUIRED)
 message(STATUS "${Cyan}Found Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE} (found version ${PYTHON_VERSION_STRING})")
+
+if(DEFINED ENV{LGTM_SRC})
+    set(BUILD_TESTING OFF)
+    set(BUILD_Libint2_GENERATOR OFF)
+    set(MAX_AM_ERI 2)
+    message(STATUS "LGTM enviroment detected so downgrading Libint2 build.")
+endif()
 
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
 message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")
@@ -204,6 +213,7 @@ ExternalProject_Add(psi4-core
            gau2grid_external
            gdma_external
            libint_external
+           libint2_external
            pcmsolver_external
            pybind11_external
            pylibefp_external
@@ -259,6 +269,8 @@ ExternalProject_Add(psi4-core
               -Dgau2grid_DIR=${gau2grid_DIR}
               -Dgdma_DIR=${gdma_DIR}
               -DLibint_DIR=${Libint_DIR}
+              -DLibint2_DIR=${Libint2_DIR}
+              -Dlibint2_DIR=${Libint2_DIR}
               -DPCMSolver_DIR=${PCMSolver_DIR}
               -Dmdi_DIR=${mdi_DIR}
               -Dpybind11_DIR=${pybind11_DIR}

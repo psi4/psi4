@@ -84,6 +84,7 @@ def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, re
         checkkeys = required
     checkkeys.extend(expected.keys())
 
+    svdtol = 1.e-6 if toldict is None else toldict.get("svd", 1.e-6)
     for asp in checkkeys:
         if asp not in computed and asp in forgive:
             continue
@@ -100,6 +101,7 @@ def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, re
             eenc = _check_degen_modes(eenc, expected['omega'].data)
             same = np.allclose(eenc, ccnc, atol=ktol)
             print_stuff(asp=asp, same=same, ref=eenc, val=ccnc, space='\n')
+            same = _check_rank_degen_modes(ccnc, computed["omega"].data, eenc, difftol=ktol, svdtol=svdtol)
 
         elif asp in ['gamma', 'TRV']:
             same = all([computed[asp].data[idx] == val for idx, val in enumerate(expected[asp].data)])
@@ -109,8 +111,8 @@ def compare_vibinfos(expected, computed, tol, label, verbose=1, forgive=None, re
             same = abs(expected[asp].data - computed[asp].data) < ktol
             print_stuff(asp=asp, same=same, ref=expected[asp].data, val=computed[asp].data)
         else:
-            same = np.allclose(expected[asp].data, computed[asp].data, atol=ktol) and \
-                   (expected[asp].data.shape == computed[asp].data.shape)
+            same = (np.allclose(expected[asp].data, computed[asp].data, atol=ktol) and
+                   (expected[asp].data.shape == computed[asp].data.shape))
             print_stuff(asp=asp, same=same, ref=expected[asp].data, val=computed[asp].data)
 
         if asp not in forgive:
@@ -231,6 +233,34 @@ def print_molden_vibs(vibinfo, atom_symbol, geom, standalone=True):
 
     return text
 
+
+def _check_rank_degen_modes(arr, freq, ref, difftol, svdtol, verbose=1):
+    dfreq, didx, dinv, dcts = np.unique(np.around(freq, 1), return_index=True, return_inverse=True, return_counts=True)
+
+    normco_ok = True
+    for idegen, istart in enumerate(didx):
+        degree = dcts[idegen]
+        cvecs = arr[:, istart:istart + degree]
+        evecs = ref[:, istart:istart + degree]
+        cevecs = np.concatenate((cvecs, evecs), axis=1)
+        diff_ok = np.allclose(evecs, cvecs, atol=difftol)
+
+        rank_cvecs = np.linalg.matrix_rank(cvecs)
+        rank_evecs = np.linalg.matrix_rank(evecs)
+        CE = np.linalg.svd(cevecs, compute_uv=False)  # hermitian=False
+        rank_cevecs = np.count_nonzero(CE > svdtol, axis=-1)
+        # expected normal coordinates and computed normal coordinates span the same space
+        ranks_ok = rank_cvecs == rank_evecs == rank_cevecs
+
+        if degree == 1:
+            normco_ok = normco_ok and diff_ok
+        else:
+            normco_ok = normco_ok and ranks_ok
+        if verbose >= 2 or not normco_ok:
+            with np.printoptions(precision=4):
+                print(f"degree={degree} difftol={difftol} {diff_ok} svdtol={svdtol} {rank_cvecs} == {rank_evecs} == {rank_cevecs} {rank_cvecs == rank_evecs == rank_cevecs} svd={CE}")
+
+    return normco_ok
 
 def _check_degen_modes(arr, freq, verbose=1):
     """Use `freq` to identify degenerate columns of eigenvectors `arr` and

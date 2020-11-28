@@ -50,7 +50,6 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/twobody.h"
-#include "psi4/libmints/sieve.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.hpp"
@@ -275,16 +274,15 @@ void DFHelper::prepare_sparsity() {
     size_t nthreads = (nthreads_ == 1 ? 1 : 2);  // for now
     auto rifactory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads);
-    std::vector<const double*> buffer(nthreads);
 
+    eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
 #pragma omp parallel num_threads(nthreads) if (nbf_ > 1000)
     {
         int rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-        buffer[rank] = eri[rank]->buffer();
+        if (rank) eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
     }
 
     double max_val = 0.0;
@@ -294,11 +292,12 @@ void DFHelper::prepare_sparsity() {
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
+        const auto& buffers = eri[rank]->buffers();
         size_t nummu = primary_->shell(MU).nfunction();
         for (size_t NU = 0; NU <= MU; ++NU) {
             size_t numnu = primary_->shell(NU).nfunction();
             eri[rank]->compute_shell(MU, NU, MU, NU);
-
+            const auto *buffer = buffers[0];
             // Loop over basis functions inside shell pair
             for (size_t mu = 0; mu < nummu; ++mu) {
                 size_t omu = primary_->shell(MU).function_index() + mu;
@@ -308,7 +307,7 @@ void DFHelper::prepare_sparsity() {
                     // Find shell and function maximums
                     if (omu >= onu) {
                         size_t index = mu * (numnu * nummu * numnu + numnu) + nu * (nummu * numnu + 1);
-                        double val = fabs(buffer[rank][index]);
+                        double val = fabs(buffer[index]);
                         max_val = std::max(val, max_val);
                         if (shell_max_vals[MU * pshells_ + NU] <= val) {
                             shell_max_vals[MU * pshells_ + NU] = val;
@@ -387,13 +386,14 @@ void DFHelper::prepare_AO() {
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
+    eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
 #pragma omp parallel num_threads(nthreads_)
     {
         int rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
     }
 
     // gather blocking info
@@ -462,13 +462,14 @@ void DFHelper::prepare_AO_wK() {
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
+    eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
 #pragma omp parallel num_threads(nthreads_)
     {
         int rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
     }
 
     // gather blocking info
@@ -480,13 +481,14 @@ void DFHelper::prepare_AO_core() {
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
+    eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
 #pragma omp parallel num_threads(nthreads_)
     {
         int rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        if(rank) eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
     }
 
     // determine blocking
@@ -555,14 +557,18 @@ void DFHelper::prepare_AO_wK_core() {
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthreads_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> weri(nthreads_);
 
+    eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    weri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
 #pragma omp parallel num_threads(nthreads_)
     {
         int rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
-        weri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
+        if (rank) {
+            eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
+            weri[rank] = std::shared_ptr<TwoBodyAOInt>(weri.front()->clone());
+        }
     }
 
     // use blocking as for prepare_AO_core
@@ -1103,6 +1109,7 @@ void DFHelper::compute_dense_Qpq_blocking_Q(const size_t start, const size_t sto
                 size_t PHI = aux_->shell(Pshell).function_index();
                 size_t numP = aux_->shell(Pshell).nfunction();
                 eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                buffer[rank] = eri[rank]->buffer();
                 for (size_t mu = 0; mu < nummu; mu++) {
                     size_t omu = primary_->shell(MU).function_index() + mu;
                     for (size_t nu = 0; nu < numnu; nu++) {
@@ -1158,6 +1165,7 @@ void DFHelper::compute_sparse_pQq_blocking_Q(const size_t start, const size_t st
                 size_t PHI = aux_->shell(Pshell).function_index();
                 size_t numP = aux_->shell(Pshell).nfunction();
                 eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                buffer[rank] = eri[rank]->buffer();
                 for (size_t mu = 0; mu < nummu; mu++) {
                     size_t omu = primary_->shell(MU).function_index() + mu;
                     for (size_t nu = 0; nu < numnu; nu++) {
@@ -1215,6 +1223,7 @@ void DFHelper::compute_sparse_pQq_blocking_p(const size_t start, const size_t st
                 size_t PHI = aux_->shell(Pshell).function_index();
                 size_t numP = aux_->shell(Pshell).nfunction();
                 eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                buffer[rank] = eri[rank]->buffer();
                 for (size_t mu = 0; mu < nummu; mu++) {
                     size_t omu = primary_->shell(MU).function_index() + mu;
                     for (size_t nu = 0; nu < numnu; nu++) {
@@ -1253,7 +1262,6 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm(const size_t start, const size
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        buffer[rank] = eri[rank]->buffer();
     }
 
 // Block over p in pQq 3-index integrals
@@ -1275,6 +1283,7 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm(const size_t start, const size
                 size_t PHI = aux_->shell(Pshell).function_index();
                 size_t numP = aux_->shell(Pshell).nfunction();
                 eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                buffer[rank] = eri[rank]->buffer();
 
                 for (size_t mu = 0; mu < nummu; mu++) {
                     size_t omu = primary_->shell(MU).function_index() + mu;
@@ -1321,8 +1330,6 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm_abw(const size_t start, const 
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        buffer[rank] = eri[rank]->buffer();
-        wbuffer[rank] = weri[rank]->buffer();
     }
 
 
@@ -1345,6 +1352,8 @@ void DFHelper::compute_sparse_pQq_blocking_p_symm_abw(const size_t start, const 
                 size_t numP = aux_->shell(Pshell).nfunction();
                 eri[rank]->compute_shell(Pshell, 0, MU, NU);
                 weri[rank]->compute_shell(Pshell, 0, MU, NU);
+                buffer[rank] = eri[rank]->buffers()[0];
+                wbuffer[rank] = weri[rank]->buffers()[0];
 
                 for (size_t mu = 0; mu < nummu; mu++) {
                     size_t omu = primary_->shell(MU).function_index() + mu;
@@ -1846,6 +1855,7 @@ void DFHelper::transform() {
     std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     auto rifactory = std::make_shared<IntegralFactory>(aux_, zero, primary_, primary_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eri(nthread);
+    eri[0] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
 #pragma omp parallel num_threads(nthreads_)
     {
         int rank = 0;
@@ -1854,7 +1864,7 @@ void DFHelper::transform() {
 #endif
         std::vector<double> Cp(nbf_ * wtmp);
         C_buffers[rank] = Cp;
-        eri[rank] = std::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        if (rank) eri[rank] = std::shared_ptr<TwoBodyAOInt>(eri.front()->clone());
     }
 
     // allocate in-core transformed integrals if necessary

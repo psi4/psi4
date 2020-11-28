@@ -29,6 +29,9 @@
 #ifndef _psi_src_lib_libmints_basisset_h_
 #define _psi_src_lib_libmints_basisset_h_
 
+#ifdef _MSC_VER
+#include <libint2/shell.h>
+#endif
 #include "gshell.h"
 
 #include "psi4/pragma.h"
@@ -44,6 +47,9 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
 PRAGMA_WARNING_POP
 
+namespace libint2 {
+    struct Shell;
+}
 namespace psi {
 
 class Molecule;
@@ -75,9 +81,8 @@ class PSI_API BasisSet {
     GaussianShell *shells_;
     //! Array of ECP shells
     GaussianShell *ecp_shells_;
-
-    //! vector of shells numbers sorted in ascending AM order.
-    std::vector<int> sorted_ao_shell_list_;
+    //! Array of Libint2 shells
+    std::vector<libint2::Shell> l2_shells_;
 
     //! The number of core electrons for each atom type
     std::map<std::string, int> ncore_;
@@ -273,6 +278,12 @@ class PSI_API BasisSet {
      */
     const GaussianShell &ecp_shell(int si) const;
 
+    /** Return the si'th Gaussian shell
+     *  @param si Shell number
+     *  @return A shared pointer to the libint2::Shell object for the i'th shell.
+     */
+    const libint2::Shell &l2_shell(int si) const;
+
     /** Return the i'th Gaussian shell on center
      *  @param center atomic center
      *  @param si Shell number
@@ -383,11 +394,6 @@ class PSI_API BasisSet {
 
     /// Global arrays of x, y, z exponents
     static std::vector<Vector3> exp_ao[];
-
-    //! Returns the value of the sorted shell list.
-    int get_ao_sorted_shell(const int &i) { return sorted_ao_shell_list_[i]; }
-    //! Returns the vector of sorted shell list.
-    std::vector<int> get_ao_sorted_list() { return sorted_ao_shell_list_; }
 
     // Translate a given atom by a given amount.  Used for debugging/finite difference purposes.  Does NOT modify the
     // underlying molecule object.

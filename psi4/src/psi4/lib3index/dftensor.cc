@@ -136,7 +136,6 @@ SharedMatrix DFTensor::Qso() {
 
     auto fact = std::make_shared<IntegralFactory>(auxiliary_, zero, primary_, primary_);
     std::shared_ptr<TwoBodyAOInt> eri(fact->eri());
-    const double* buffer = eri->buffer();
 
     for (int P = 0; P < auxiliary_->nshell(); P++) {
         int np = auxiliary_->shell(P).nfunction();
@@ -149,6 +148,7 @@ SharedMatrix DFTensor::Qso() {
                 int nstart = primary_->shell(N).function_index();
 
                 eri->compute_shell(P, 0, M, N);
+                const double* buffer = eri->buffer();
 
                 for (int p = 0, index = 0; p < np; p++) {
                     for (int m = 0; m < nm; m++) {

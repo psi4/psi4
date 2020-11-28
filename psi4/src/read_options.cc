@@ -149,8 +149,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_bool("DIE_IF_NOT_CONVERGED", true);
     /*- Integral package to use. If compiled with ERD or Simint support, change this option to use them; LibInt is used
        otherwise. -*/
-    options.add_str("INTEGRAL_PACKAGE", "LIBINT", "ERD LIBINT SIMINT");
-    
+    options.add_str("INTEGRAL_PACKAGE", "LIBINT2", "ERD LIBINT1 SIMINT LIBINT2");
 #ifdef USING_BrianQC
     /*- Whether to enable using the BrianQC GPU module -*/
     options.add_bool("BRIANQC_ENABLE", false);
@@ -985,7 +984,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do use Combined Schwarz Approximation Maximum (CSAM) screening on
         two-electron integrals. This is a slightly tighter bound than that of
         default Schwarz screening. -*/
-        options.add_str("SCREENING", "SCHWARZ" "SCHWARZ CSAM");
+        options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM");
         /*- Memory safety -*/
         options.add_double("SAPT_MEM_SAFETY", 0.9);
         /*- Do force SAPT2 and higher to die if it thinks there isn't enough
@@ -1325,7 +1324,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Tolerance for partial Cholesky decomposition of overlap matrix. -*/
         options.add_double("S_CHOLESKY_TOLERANCE", 1E-8);
         /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
-        options.add_double("INTS_TOLERANCE", 0.0);
+        options.add_double("INTS_TOLERANCE", 1E-12);
         /*- The type of guess orbitals.  Defaults to ``READ`` for geometry optimizations after the first step, to
           ``CORE`` for single atoms, and to ``SAD`` otherwise. The ``HUCKEL`` guess employs on-the-fly calculations
           like SAD, as described in doi:10.1021/acs.jctc.8b01089 which also describes the SAP guess. -*/
