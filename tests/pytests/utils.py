@@ -25,6 +25,7 @@ __all__ = [
     'compare_matrices',
     'compare_wavefunctions',
     'compare_fcidumps',
+    'compare_fchkfiles',
     'run_psi4_cli',
     'tnm',
 ]
@@ -64,7 +65,7 @@ compare_vectors = true_false_decorator(psi4.compare_vectors)
 compare_matrices = true_false_decorator(psi4.compare_matrices)
 compare_fcidumps = true_false_decorator(psi4.compare_fcidumps)
 compare_wavefunctions = true_false_decorator(psi4.compare_wavefunctions)
-
+compare_fchkfiles = true_false_decorator(psi4.compare_fchkfiles)
 
 def tnm():
     """Returns the name of the calling function, usually name of test case."""

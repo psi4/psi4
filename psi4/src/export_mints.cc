@@ -321,6 +321,7 @@ void export_mints(py::module& m) {
     typedef void (Vector::*vector_setitem_2)(int, int, double);
     typedef double (Vector::*vector_getitem_1)(int) const;
     typedef double (Vector::*vector_getitem_2)(int, int) const;
+    typedef void (Vector::*vector_one)(const Vector &other);
 
     py::class_<Dimension>(m, "Dimension", "Initializes and defines Dimension Objects")
         .def(py::init<int>())
@@ -366,6 +367,7 @@ void export_mints(py::module& m) {
         .def("set", vector_setitem_1(&Vector::set), "Sets a single element value located at m", "m"_a, "val"_a)
         .def("set", vector_setitem_2(&Vector::set), "Sets a single element value located at m in irrep h", "h"_a, "m"_a,
              "val"_a)
+        .def("copy", vector_one(&Vector::copy), "Returns a copy of the matrix")
         .def("print_out", &Vector::print_out, "Prints the vector to the output file")
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", "sc"_a)
         .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", "h"_a = 0)
@@ -1552,7 +1554,9 @@ void export_mints(py::module& m) {
                                                         "Extracts information from a wavefunction object, \
                                                                           and writes it to an FCHK file")
         .def(py::init<std::shared_ptr<Wavefunction>>())
-        .def("write", &FCHKWriter::write, "Write wavefunction information to file", "filename"_a);
+        .def("write", &FCHKWriter::write, "Write wavefunction information to file", "filename"_a)
+        .def("SCF_Dtot",&FCHKWriter::SCF_Dtot,py::return_value_policy::reference_internal)
+        .def("set_postscf_density_label", &FCHKWriter::set_postscf_density_label, "Set base label for post-SCF density, e.g. ' CC Density'.", "label"_a);
 
     py::class_<MoldenWriter, std::shared_ptr<MoldenWriter>>(m, "MoldenWriter",
                                                             "Writes wavefunction information in molden format")
