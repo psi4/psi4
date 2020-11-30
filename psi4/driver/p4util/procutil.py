@@ -38,6 +38,7 @@ import collections
 from typing import List, Union
 
 import numpy as np
+import qcelemental as qcel
 
 from psi4 import core
 from psi4.metadata import __version__
@@ -465,8 +466,6 @@ def prepare_options_for_set_options():
 
 def state_to_atomicinput(*, driver, method, basis=None, molecule=None, function_kwargs=None) -> "AtomicInput":
     """Form a QCSchema for job input from the current state of Psi4 settings."""
-
-    import qcelemental as qcel
 
     if molecule is None:
         molecule = core.get_active_molecule()
