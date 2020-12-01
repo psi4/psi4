@@ -2876,6 +2876,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("PCG_CONVERGENCE", 1e-6);
         /*- Damping factor for the orbital gradient (Rendell et al., JCP, vol. 87, pp. 5976, 1987) -*/
         options.add_double("MOGRAD_DAMPING", 1.0);
+        /*- mixing parameter for the REMP hybrid perturbation theory, A specifies the Moller-Plesset fraction -*/
+        options.add_double("REMP_A", 0.15);
 
         /*- The solver will be used for simultaneous linear equations. -*/
         options.add_str("LINEQ_SOLVER", "CDGESV", "CDGESV FLIN POPLE");

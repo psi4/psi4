@@ -81,6 +81,7 @@ void OCCWave::common_init() {
     ss_scale = options_.get_double("SS_SCALE");
     e3_scale = options_.get_double("E3_SCALE");
     lambda_damping = options_.get_double("MOGRAD_DAMPING");
+    remp_A = options_.get_double("REMP_A");
 
     orth_type = options_.get_str("ORTH_TYPE");
     opt_method = options_.get_str("OPT_METHOD");
