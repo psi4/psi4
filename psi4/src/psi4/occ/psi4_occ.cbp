@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="psi4_occ" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="./psi4_occ" prefix_auto="1" extension_auto="1" />
+				<Option object_output="./" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Unit filename="arrays.cc" />
+		<Unit filename="arrays.h" />
+		<Unit filename="cc_energy.cc" />
+		<Unit filename="ccl_energy.cc" />
+		<Unit filename="cepa_iterations.cc" />
+		<Unit filename="coord_grad.cc" />
+		<Unit filename="corr_tpdm.cc" />
+		<Unit filename="defines.h" />
+		<Unit filename="diis.cc" />
+		<Unit filename="dpd.cc" />
+		<Unit filename="dpd.h" />
+		<Unit filename="ekt_ea.cc" />
+		<Unit filename="ekt_ip.cc" />
+		<Unit filename="ep2_ip.cc" />
+		<Unit filename="fock_alpha.cc" />
+		<Unit filename="fock_beta.cc" />
+		<Unit filename="get_moinfo.cc" />
+		<Unit filename="gfock.cc" />
+		<Unit filename="gfock_diag.cc" />
+		<Unit filename="gfock_ea.cc" />
+		<Unit filename="idp.cc" />
+		<Unit filename="idp2.cc" />
+		<Unit filename="kappa_msd.cc" />
+		<Unit filename="kappa_orb_resp.cc" />
+		<Unit filename="kappa_orb_resp_iter.cc" />
+		<Unit filename="main.cc" />
+		<Unit filename="manager.cc" />
+		<Unit filename="mograd.cc" />
+		<Unit filename="occ_iterations.cc" />
+		<Unit filename="occwave.cc" />
+		<Unit filename="occwave.h" />
+		<Unit filename="ocepa_g_int.cc" />
+		<Unit filename="ocepa_response_pdms.cc" />
+		<Unit filename="ocepa_t2_1st_sc.cc" />
+		<Unit filename="omp2_ip_poles.cc" />
+		<Unit filename="omp2_response_pdms.cc" />
+		<Unit filename="omp2_t2_1st.cc" />
+		<Unit filename="omp3_g_int.cc" />
+		<Unit filename="omp3_ip_poles.cc" />
+		<Unit filename="omp3_response_pdms.cc" />
+		<Unit filename="omp3_t2_1st_general.cc" />
+		<Unit filename="omp3_t2_1st_sc.cc" />
+		<Unit filename="psi4_occ.cbp" />
+		<Unit filename="psi4_occ.cbp.save" />
+		<Unit filename="psi4_occ.layout" />
+		<Unit filename="psi4_occ.layout.save" />
+		<Unit filename="second_order_opdm.cc" />
+		<Unit filename="semi_canonic.cc" />
+		<Unit filename="t1_1st.cc" />
+		<Unit filename="t2_2nd_general.cc" />
+		<Unit filename="t2_2nd_sc.cc" />
+		<Unit filename="t2_amps.cc" />
+		<Unit filename="tei_sort_iabc.cc" />
+		<Unit filename="tpdm_ref_corr_opdm.cc" />
+		<Unit filename="trans_ints_rhf.cc" />
+		<Unit filename="trans_ints_rmp2.cc" />
+		<Unit filename="trans_ints_uhf.cc" />
+		<Unit filename="trans_ints_ump2.cc" />
+		<Unit filename="update_mo.cc" />
+		<Unit filename="v_2nd_order.cc" />
+		<Unit filename="v_int.cc" />
+		<Unit filename="w_1st_order.cc" />
+		<Unit filename="w_int.cc" />
+		<Unit filename="z_vector.cc" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<lib_finder disable_auto="1" />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

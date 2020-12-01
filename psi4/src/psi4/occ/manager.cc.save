@@ -696,7 +696,7 @@ void OCCWave::cepa_manager() {
 //======================================================================
 //             CEPA Manager
 //======================================================================
-void OCCWave::remp_manager() {
+void OCCWave::cepa_manager() {
     timer_on("trans_ints");
     if (reference_ == "RESTRICTED")
         trans_ints_rhf();
@@ -786,7 +786,7 @@ void OCCWave::remp_manager() {
             outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
         }
     }
-}  // end remp_manager
+}  // end cepa_manager
 
 //======================================================================
 //             OMP2.5 Manager

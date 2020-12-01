@@ -55,7 +55,7 @@ namespace psi {
 **                 ket) of Y is the target pair.
 **   double alpha: A prefactor for the product alpha * X * Y.
 **   double beta: A prefactor for the target beta * Z.
-** -> i.e. form Z = alpha*X*Y + beta*Z by tensor contraction of X and Y
+** -> i.e. form Z = alpha*X*Y + beta*Z
 */
 
 int DPD::contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z, int target_X, int target_Y, double alpha, double beta) {
