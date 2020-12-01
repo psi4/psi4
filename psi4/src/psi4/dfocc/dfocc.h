@@ -33,6 +33,7 @@
 
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libdiis/diismanager.h"
 #include "psi4/psifiles.h"
 
 namespace psi {
@@ -147,6 +148,7 @@ class DFOCC : public Wavefunction {
     void save_mo_to_wfn();
     void remove_binary_file(int fileno);
     void ekt_ip();
+    void oo_diis();
 
     void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new,
               SharedTensor1d &errvec_new);
@@ -456,6 +458,15 @@ class DFOCC : public Wavefunction {
     void lccdl_energy();
     void lccd_energy();
 
+    // REMP & OO-REMP
+    void remp_manager();
+    void oremp_manager();
+    void remp_manager_cd();
+    void oremp_manager_cd();
+    void remp_iterations();
+    void remp_t2_amps();
+    void oremp_tpdm();
+
     // CCSD
     void ccsd_manager();
     void ccsd_manager_cd();
@@ -681,10 +692,11 @@ class DFOCC : public Wavefunction {
 
     // DIIS
     std::shared_ptr<DIISManager> ccsdDiisManager;
-    std::shared_ptr<DIISManager> ccsdDiisManagerAA;
-    std::shared_ptr<DIISManager> ccsdDiisManagerBB;
-    std::shared_ptr<DIISManager> ccsdDiisManagerAB;
+//    std::shared_ptr<DIISManager> ccsdDiisManagerAA; // What for?? DIISManager can handle arbitrary numbers of quantities
+//    std::shared_ptr<DIISManager> ccsdDiisManagerBB; // so there is no need for three managers except one wants to extrapolate
+//    std::shared_ptr<DIISManager> ccsdDiisManagerAB; // aa, ab and bb sepatarely... These  are used nowhere, anyway.
     std::shared_ptr<DIISManager> ccsdlDiisManager;
+    std::shared_ptr<DIISManager> orbitalDIIS;
 
     int natom;
     int nmo;      // Number of MOs
@@ -841,6 +853,7 @@ class DFOCC : public Wavefunction {
     double sos_scale;
     double sos_scale2;
     double e3_scale;
+    double remp_a;
     double rms_t2;
     double rms_t2AA;
     double rms_t2AB;
@@ -883,6 +896,15 @@ class DFOCC : public Wavefunction {
     double ElccdAB;
     double ElccdL;
     double ElccdL_old;
+
+    // OREMP
+    double Eremp;
+    double Eremp_old;
+    double ErempAA;
+    double ErempBB;
+    double ErempAB;
+    double ErempL;
+    double ErempL_old;
 
     // CCSD
     double Eccsd;

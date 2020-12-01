@@ -1796,16 +1796,34 @@ void OCCWave::effective_gfock() {
 // OEPROP
 //=========================
 void OCCWave::oeprop() {
+
     outfile->Printf("\tComputing one-electron properties...\n");
+    // back-ported from the dfocc module
+    auto Da_ = std::make_shared<Matrix>("MO-basis alpha OPDM", nmo_, nmo_);
+    auto Db_ = std::make_shared<Matrix>("MO-basis beta OPDM", nmo_, nmo_);
+    if (reference_ == "RESTRICTED") {
+        Da_->copy(g1symm);
+        Da_->scale(0.5);
+        Db_->copy(Da_);
+    }
+
+    else if (reference_ == "UNRESTRICTED") {
+        Da_->copy(g1symmA);
+        Db_->copy(g1symmB);
+    }
 
     // Compute oeprop
     auto oe = std::make_shared<OEProp>(shared_from_this());
+    oe->set_Da_mo(Da_);
+    if (reference_ == "UNRESTRICTED") oe->set_Db_mo(Db_);
     oe->add("DIPOLE");
     oe->add("QUADRUPOLE");
     oe->add("MULLIKEN_CHARGES");
     oe->add("NO_OCCUPATIONS");
     oe->set_title(wfn_type_);
     oe->compute();
+    Da_.reset();
+    Db_.reset();
 
 }  // end oeprop
 }  // namespace occwave

@@ -253,7 +253,8 @@ OptReturnType optking(void) {
   // If first iteration, start optional xyz trajectory file.
   if (p_Opt_data->g_iteration() == 1)
     if (Opt_params.print_trajectory_xyz_file && Opt_params.opt_type != OPT_PARAMS::IRC)
-      mol1->print_xyz(-1);
+      mol1->print_xyz_molden(mol1->g_energy());
+//      mol1->print_xyz(-1);
 
   mol1->update_fb_values(); // EFP values calculated from old opt_data
 
@@ -403,7 +404,8 @@ OptReturnType optking(void) {
         oprintf_out("\tFinal (next step) structure:\n");
         mol1->print_geom_out();  // write geometry -> output file
         if (Opt_params.print_trajectory_xyz_file)
-          mol1->print_xyz();
+          mol1->print_xyz_molden(mol1->g_energy());
+//          mol1->print_xyz();
         oprintf_out("\tSaving final (next step) structure.\n");
       }
       else { // default - get last geometry and write that one
@@ -411,7 +413,9 @@ OptReturnType optking(void) {
         mol1->set_geom_array(x);
         oprintf_out("\tFinal (previous) structure:\n");
         mol1->print_geom_out();  // write geometry -> output file
-        if (Opt_params.print_trajectory_xyz_file) mol1->print_xyz();
+        if (Opt_params.print_trajectory_xyz_file)
+           mol1->print_xyz_molden(mol1->g_energy());
+//           mol1->print_xyz();
         oprintf_out("\tSaving final (previous) structure.\n");
       }
 
@@ -455,7 +459,8 @@ OptReturnType optking(void) {
   oprintf_out("\tStructure for next step:\n");
   mol1->print_geom_out(); // write geometry for next step to output file
   if (Opt_params.print_trajectory_xyz_file && Opt_params.opt_type != OPT_PARAMS::IRC)
-    mol1->print_xyz();
+    mol1->print_xyz_molden(mol1->g_energy());
+//    mol1->print_xyz();
 
   mol1->write_geom(); // write geometry -> chkpt (also output for QChem)
   print_end_out();
@@ -477,7 +482,8 @@ OptReturnType optking(void) {
       oprintf_out("\tStructure for next step:\n");
       mol1->print_geom_out(); // write geometry for next step to output file
       if (Opt_params.print_trajectory_xyz_file && Opt_params.opt_type != OPT_PARAMS::IRC)
-        mol1->print_xyz();
+        mol1->print_xyz_molden(mol1->g_energy());
+//        mol1->print_xyz();
 
       mol1->write_geom(); // write geometry -> chkpt (also output for QChem)
       print_end_out();

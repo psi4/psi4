@@ -81,7 +81,7 @@ void DFOCC::gfock_oo() {
         G.reset();
         K.reset();
 
-        // Fia += \sum_{Q} \sum_{e} G_je^Q b_ie^Q = \sum_{e} G_ej^Q b_ei^Q
+        // Fij += \sum_{Q} \sum_{e} G_je^Q b_ie^Q = \sum_{e} G_ej^Q b_ei^Q
         K2 = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA);
         K2->read(psio_, PSIF_DFOCC_INTS);
         K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA);
@@ -165,7 +165,7 @@ void DFOCC::gfock_oo() {
         G.reset();
         K.reset();
 
-        // FIA += \sum_{Q} \sum_{E} G_JE^Q b_IE^Q = \sum_{E} G_EJ^Q b_EI^Q
+        // FIJ += \sum_{Q} \sum_{E} G_JE^Q b_IE^Q = \sum_{E} G_EJ^Q b_EI^Q
         K2 = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA);
         K2->read(psio_, PSIF_DFOCC_INTS);
         K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VO)", nQ_ref, nvirA, noccA);
@@ -177,7 +177,7 @@ void DFOCC::gfock_oo() {
         G.reset();
         K.reset();
 
-        // Fia += \sum_{Q} \sum_{e} G_je^Q b_ie^Q = \sum_{e} G_ej^Q b_ei^Q
+        // Fij += \sum_{Q} \sum_{e} G_je^Q b_ie^Q = \sum_{e} G_ej^Q b_ei^Q
         K2 = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB, nvirB);
         K2->read(psio_, PSIF_DFOCC_INTS);
         K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|vo)", nQ_ref, nvirB, noccB);

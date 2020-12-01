@@ -41,7 +41,7 @@ namespace occwave {
 void OCCWave::cepa_iterations() {
     outfile->Printf("\n  \n");
     outfile->Printf(" ============================================================================== \n");
-    outfile->Printf(" ================ Performing LCCD iterations... =============================== \n");
+    outfile->Printf(" ================ Performing LCCD iterations with REMP modification... =============================== \n");
     outfile->Printf(" ============================================================================== \n");
     outfile->Printf("\n");
     outfile->Printf("  Iter    E_corr           E_total            DE           T2 RMS        \n");
@@ -90,6 +90,7 @@ void OCCWave::cepa_iterations() {
     do {
         itr_occ++;
         timer_on("T2");
+//        t2_amps();
         t2_amps();
         timer_off("T2");
         timer_on("CEPA Energy");

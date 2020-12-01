@@ -81,6 +81,7 @@ list(APPEND sources
   mp3_pdm_3index_intr.cc
   occ_iterations.cc
   olccd_tpdm.cc
+  oremp_tpdm.cc
   omp2_opdm.cc
   omp2_tpdm.cc
   omp3_opdm.cc
@@ -89,6 +90,8 @@ list(APPEND sources
   prepare4grad.cc
   properties.cc
   qchf.cc
+  remp_iterations.cc
+  remp_t2_amps.cc
   s2_response.cc
   semi_canonic.cc
   separable_tpdm.cc

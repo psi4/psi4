@@ -190,7 +190,7 @@ set(Python_ADDITIONAL_VERSIONS 3.10 3.9 3.8)  # adjust with CMake minimum FindPy
 if(DEFINED ENV{LGTM_SRC})
     find_package(Python 3.8 EXACT COMPONENTS Interpreter Development REQUIRED)
 else()
-    find_package(Python 3.8 COMPONENTS Interpreter Development NumPy REQUIRED)
+    find_package(Python 3.7 COMPONENTS Interpreter Development NumPy REQUIRED)
 endif()
 message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION})")
 

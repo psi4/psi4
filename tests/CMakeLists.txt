@@ -37,7 +37,7 @@ foreach(test_name adc1 adc2 aediis-1
                   cc29 cc3 cc30 cc31 cc32 cc33 cc34 cc35 cc36 cc37 cc38 cc39
                   cc4 cc40 cc41 cc42 cc43 cc44 cc45 cc46 cc47 cc48 cc49 cc4a
                   cc50 cc51 cc52 cc53 cc54 cc55 cc56 cc5a cc6 cc7 cc8 cc8a cc8b cc8c
-                  cc9 cc9a cdomp2-1 cdomp2-2 cepa1
+                  cc9 cc9a cdomp2-1 cdomp2-2 cdoremp-energy1 cdoremp-energy2 cdremp-1 cdremp-2 cepa1
                   cepa2 cepa3 cepa-module ci-multi cisd-h2o+-0 cisd-h2o+-1
                   cisd-h2o+-2 cisd-h2o-clpse cisd-opt-fd cisd-sp cisd-sp-2
                   ci-property cubeprop cubeprop-frontier decontract dct-grad1 dct-grad2
@@ -49,7 +49,8 @@ foreach(test_name adc1 adc2 aediis-1
                   dfmp2-grad1 dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfmp2-grad5 dfomp2-1 dfomp2-2 dfomp2-3
                   dfoccdat1 dfoccdat2 dfoccd-grad1 dfoccd-grad2 dfoccdt1 dfoccdt2 fnodfccsdt1 fnodfccsdt2
                   dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfomp2-grad3 dfomp3-1 dfomp3-2
-                  dfomp3-grad1 dfomp3-grad2 dfomp2p5-1 dfomp2p5-2 dfomp2p5-grad1
+                  dfomp3-grad1 dfomp3-grad2 dfomp2p5-1 dfomp2p5-2 dfomp2p5-grad1 
+                  dforemp-engrad1 dforemp-engrad2 dfremp-1 dfremp-2
                   dft-grad-lr1 dft-grad-lr2 dft-grad-lr3 dft-grad-disk
                   dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-grac dft-ghost dft-grad-meta
                   dft-freq dft-freq-analytic dft-grad1 dft-grad2 dft-psivar dft-b3lyp dft1 dft-vv10
@@ -90,8 +91,9 @@ foreach(test_name adc1 adc2 aediis-1
                   rasci-ne rasscf-sp sad-scf-type sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc
                   remp-energy1 remp-energy2
                   sapt-exch-disp-inf sapt-exch-ind-inf sapt-exch-ind30-inf
-                  sapt7 sapt8 scf-bz2 scf-dipder scf-guess scf-guess-read1 scf-upcast-custom-basis
-                  scf-guess-read2 scf-guess-read3 scf1 scf-occ scf2 scf3 scf4 scf5 scf6
+                  sapt7 sapt8 scf-bz2 scf-dipder scf-ecp scf-guess scf-guess-read1 scf-upcast-custom-basis
+                  scf-guess-read2 scf-guess-read3 scf-bs scf1 scf-occ scf2 scf3 scf4 scf5 scf6
+                  remp-energy1
                   scf7 scf-level-shift-rks scf-level-shift-uhf scf-level-shift-cuhf scf-level-shift-rohf
                   scf-property soscf-large soscf-ref
                   soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare sapt-sf1 dft-custom dft-reference
