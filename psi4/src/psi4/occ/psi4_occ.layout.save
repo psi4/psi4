@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_layout_file>
+	<FileVersion major="1" minor="0" />
+	<ActiveTarget name="Debug" />
+	<File name="t2_amps.cc" open="1" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="semi_canonic.cc" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1223" topLine="15" />
+		</Cursor>
+	</File>
+	<File name="cepa_iterations.cc" open="1" top="1" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="occ_iterations.cc" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="3" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="9072" topLine="173" />
+		</Cursor>
+	</File>
+	<File name="corr_tpdm.cc" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="3" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="29194" topLine="588" />
+		</Cursor>
+	</File>
+	<File name="ocepa_response_pdms.cc" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="4" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4427" topLine="13" />
+		</Cursor>
+	</File>
+	<File name="arrays.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1462" topLine="18" />
+		</Cursor>
+	</File>
+	<File name="tpdm_ref_corr_opdm.cc" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="3" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="6713" topLine="133" />
+		</Cursor>
+	</File>
+	<File name="ocepa_t2_1st_sc.cc" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="1" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="4977" topLine="17" />
+		</Cursor>
+	</File>
+	<File name="v_int.cc" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="4" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="5237" topLine="71" />
+		</Cursor>
+	</File>
+	<File name="mograd.cc" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="6" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1132" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="omp2_response_pdms.cc" open="0" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="3" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="900" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="ccl_energy.cc" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="942" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="gfock.cc" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="2" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="17268" topLine="286" />
+		</Cursor>
+	</File>
+	<File name="ocepa_g_int.cc" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="3" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2993" topLine="39" />
+		</Cursor>
+	</File>
+	<File name="occwave.cc" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1400" topLine="370" />
+		</Cursor>
+	</File>
+	<File name="occwave.h" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="4" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="13508" topLine="441" />
+		</Cursor>
+	</File>
+	<File name="manager.cc" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="3" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="34705" topLine="900" />
+		</Cursor>
+	</File>
+	<File name="second_order_opdm.cc" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1332" topLine="24" />
+		</Cursor>
+	</File>
+</CodeBlocks_layout_file>
