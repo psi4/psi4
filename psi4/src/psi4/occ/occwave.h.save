@@ -160,9 +160,10 @@ class OCCWave : public Wavefunction {
     void w_int();
     void v_int();
     void cepa_energy();
-    
+
     // REMP
     void t2_amps_remp();
+    void remp_manager();
 
     // MP2
     void denominators_rmp2();
@@ -318,6 +319,7 @@ class OCCWave : public Wavefunction {
     double s2_proj;
     double s2_lag;
     double s2_ref;
+    double remp_A;
 
     // OMP3
     double e3_scale;

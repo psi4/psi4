@@ -319,6 +319,7 @@ class OCCWave : public Wavefunction {
     double s2_proj;
     double s2_lag;
     double s2_ref;
+    double remp_A;
 
     // OMP3
     double e3_scale;
