@@ -16,6 +16,11 @@ autom4te.cache
 *.includes
 CMakeLists.txt.user
 
+
+# Code::Blocks project and backup files
+*.cbp
+*.save
+
 # Files resulting from compilation
 *.o
 *.a
