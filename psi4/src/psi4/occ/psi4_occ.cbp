@@ -19,6 +19,7 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="../../read_options.cc" />
 		<Unit filename="../libdpd/3d_sort.cc" />
 		<Unit filename="../libdpd/4mat_irrep_print.cc" />
 		<Unit filename="../libdpd/T3_AAA.cc" />

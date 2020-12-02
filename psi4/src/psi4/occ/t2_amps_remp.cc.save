@@ -59,9 +59,9 @@ void OCCWave::t2_amps_remp() {
                                "Tau (OV|OV)");
         global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                                "MO Ints (OV|OV)");
-        global_dpd_->contract444(&Tp, &K, &T, 0, 0, 0.15, 0.0);
+        global_dpd_->contract444(&Tp, &K, &T, 0, 0, (1.0E0-remp_A), 0.0);
         // T_IJ^AB(2) += \sum_{M,E} Tau_JM^BE(1) W_MAEI(1) => T(IA,JB)(2) = \sum_{M,E} Tau'(JB,ME) (ME|IA)
-        global_dpd_->contract444(&K, &Tp, &T, 0, 0, 0.15, 1.0);
+        global_dpd_->contract444(&K, &Tp, &T, 0, 0, (1.0E0-remp_A), 1.0);
         global_dpd_->buf4_close(&K);
         global_dpd_->buf4_close(&Tp);
 
@@ -70,9 +70,9 @@ void OCCWave::t2_amps_remp() {
                                "T2 (OV|OV)");
         global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                                "MO Ints <OV|OV>");
-        global_dpd_->contract444(&Tp, &K, &T, 0, 0, -1.0, 1.0);
+        global_dpd_->contract444(&Tp, &K, &T, 0, 0, -(1.0E0-remp_A), 1.0);
         // T_IJ^AB(2) -= \sum_{m,e} T_jm^be(1) W_maie(1) => T(IA,JB)(2) -= \sum_{m,e} T'(jb,me) <me|ia>
-        global_dpd_->contract444(&K, &Tp, &T, 0, 0, -1.0, 1.0);
+        global_dpd_->contract444(&K, &Tp, &T, 0, 0, -(1.0E0-remp_A), 1.0);
         global_dpd_->buf4_close(&K);
         global_dpd_->buf4_close(&Tp);
 
@@ -88,9 +88,9 @@ void OCCWave::t2_amps_remp() {
                                "T2pp (OV|OV)");
         global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                                "MO Ints <OV|OV>");
-        global_dpd_->contract444(&Tp, &K, &T, 0, 0, -1.0, 0.0);
+        global_dpd_->contract444(&Tp, &K, &T, 0, 0, -(1.0E0-remp_A), 0.0);
         // T_IJ^AB(2) = -\sum_{M,E} T_IM^EB(1) W_MAJE(1) => T(JA,IB)(2) = -\sum_{M,E} T"(ME,IB) <ME|JA>
-        global_dpd_->contract444(&K, &Tp, &T, 1, 1, -1.0, 1.0);
+        global_dpd_->contract444(&K, &Tp, &T, 1, 1, -(1.0E0-remp_A), 1.0);
         global_dpd_->buf4_close(&K);
         global_dpd_->buf4_close(&Tp);
 
@@ -124,7 +124,7 @@ void OCCWave::t2_amps_remp() {
                                "T2 <OO|VV>");
         global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0,
                                "MO Ints <OO|OO>");
-        global_dpd_->contract444(&K, &TAA, &T, 1, 1, 1.0, 1.0);
+        global_dpd_->contract444(&K, &TAA, &T, 1, 1, 1.0E0-remp_A, 1.0);
         global_dpd_->buf4_close(&K);
         global_dpd_->buf4_close(&T);
 
@@ -133,7 +133,7 @@ void OCCWave::t2_amps_remp() {
                                "Z2 <VV|OO>");
         global_dpd_->buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0,
                                "MO Ints <VV|VV>");
-        global_dpd_->contract444(&K, &TAA, &T, 0, 0, 1.0, 0.0);
+        global_dpd_->contract444(&K, &TAA, &T, 0, 0, 1.0E0-remp_A, 0.0);
         global_dpd_->buf4_close(&K);
         global_dpd_->buf4_close(&TAA);
         global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, rspq, ID("[O,O]"), ID("[V,V]"), "Z2 <OO|VV>");
@@ -233,9 +233,9 @@ void OCCWave::t2_amps_remp() {
         global_dpd_->buf4_init(&Tp, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                                "T2 (OV|OV)");
         global_dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "W (OV|OV)");
-        global_dpd_->contract444(&Tp, &W, &T, 0, 0, 1.0, 0.0);
+        global_dpd_->contract444(&Tp, &W, &T, 0, 0, 1.0E0-remp_A, 0.0);
         // T_IJ^AB(2) += \sum_{M,E} T_JM^BE(1) W_MAEI(1) => T(IA,JB)(2) = \sum_{M,E} T(JB,ME) W(ME,IA)
-        global_dpd_->contract444(&W, &Tp, &T, 0, 0, 1.0, 1.0);
+        global_dpd_->contract444(&W, &Tp, &T, 0, 0, 1.0E0-remp_A, 1.0);
         global_dpd_->buf4_close(&W);
         global_dpd_->buf4_close(&Tp);
 
@@ -243,9 +243,9 @@ void OCCWave::t2_amps_remp() {
         global_dpd_->buf4_init(&Tp, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0,
                                "T2 (OV|ov)");
         global_dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0, "W (OV|ov)");
-        global_dpd_->contract444(&Tp, &W, &T, 0, 0, 1.0, 1.0);
+        global_dpd_->contract444(&Tp, &W, &T, 0, 0, 1.0-remp_A, 1.0);
         // T_IJ^AB(2) += \sum_{m,e} T_Jm^Be(1) W_IeAm(1) => T(IA,JB)(2) += \sum_{m,e} T(JB,me) W(IA,me)
-        global_dpd_->contract444(&W, &Tp, &T, 0, 0, 1.0, 1.0);
+        global_dpd_->contract444(&W, &Tp, &T, 0, 0, 1.0E0-remp_A, 1.0);
         global_dpd_->buf4_close(&W);
         global_dpd_->buf4_close(&Tp);
 
@@ -260,9 +260,9 @@ void OCCWave::t2_amps_remp() {
         global_dpd_->buf4_init(&Tp, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                                "T2 (OV|OV)");
         global_dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "W (OV|OV)");
-        global_dpd_->contract444(&Tp, &W, &T, 0, 0, -1.0, 0.0);
+        global_dpd_->contract444(&Tp, &W, &T, 0, 0, -(1.0E0-remp_A), 0.0);
         // T_IJ^AB(2) = -\sum_{M,E} T_IM^BE(1) W_MAEJ(1) => T(JA,IB)(2) = -\sum_{M,E} T(IB,ME) W(ME,JA)
-        global_dpd_->contract444(&W, &Tp, &T, 0, 0, -1.0, 1.0);
+        global_dpd_->contract444(&W, &Tp, &T, 0, 0, -(1.0E0-remp_A), 1.0);
         global_dpd_->buf4_close(&W);
         global_dpd_->buf4_close(&Tp);
 
@@ -270,9 +270,9 @@ void OCCWave::t2_amps_remp() {
         global_dpd_->buf4_init(&Tp, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0,
                                "T2 (OV|ov)");
         global_dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0, "W (OV|ov)");
-        global_dpd_->contract444(&Tp, &W, &T, 0, 0, -1.0, 1.0);
+        global_dpd_->contract444(&Tp, &W, &T, 0, 0, -(1.0E0-remp_A), 1.0);
         // T_IJ^AB(2) = -\sum_{m,e} T_Im^Be(1) W_JeAm(1) => T(JA,IB)(2) -= \sum_{m,e} T(IB,me) W(JA,me)
-        global_dpd_->contract444(&W, &Tp, &T, 0, 0, -1.0, 1.0);
+        global_dpd_->contract444(&W, &Tp, &T, 0, 0, -(1.0E0-remp_A), 1.0);
         global_dpd_->buf4_close(&W);
         global_dpd_->buf4_close(&Tp);
 
@@ -308,7 +308,7 @@ void OCCWave::t2_amps_remp() {
         //              ID("[O,O]"), ID("[O,O]"), 0, "W_1 <OO|OO>");
         global_dpd_->buf4_init(&W, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0,
                                "MO Ints <OO||OO>");
-        global_dpd_->contract444(&W, &TAA, &T, 1, 1, 0.5, 1.0);
+        global_dpd_->contract444(&W, &TAA, &T, 1, 1, 0.5E0*(1.0E0-remp_A), 1.0);
         global_dpd_->buf4_close(&W);
         global_dpd_->buf4_close(&T);
 
@@ -317,7 +317,7 @@ void OCCWave::t2_amps_remp() {
                                "Z2 <VV|OO>");
         global_dpd_->buf4_init(&W, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0,
                                "MO Ints <VV|VV>");
-        global_dpd_->contract444(&W, &TAA, &T, 0, 0, 1.0, 0.0);
+        global_dpd_->contract444(&W, &TAA, &T, 0, 0, 1.0E0-remp_A, 0.0);
         global_dpd_->buf4_close(&W);
         global_dpd_->buf4_close(&TAA);
         global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, rspq, ID("[O,O]"), ID("[V,V]"), "Z2 <OO|VV>");
@@ -366,9 +366,9 @@ void OCCWave::t2_amps_remp() {
         global_dpd_->buf4_init(&Tp, PSIF_OCC_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0,
                                "T2 (ov|ov)");
         global_dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0, "W (ov|ov)");
-        global_dpd_->contract444(&Tp, &W, &T, 0, 0, 1.0, 0.0);
+        global_dpd_->contract444(&Tp, &W, &T, 0, 0, 1.0E0-remp_A, 0.0);
         // T_ij^ab(2) += \sum_{m,e} T_jm^be(1) W_maei(1) => T(ia,jb)(2) = \sum_{m,e} T(jb,me) W(me,ia)
-        global_dpd_->contract444(&W, &Tp, &T, 0, 0, 1.0, 1.0);
+        global_dpd_->contract444(&W, &Tp, &T, 0, 0, 1.0E0-remp_A, 1.0);
         global_dpd_->buf4_close(&W);
         global_dpd_->buf4_close(&Tp);
 
@@ -376,9 +376,9 @@ void OCCWave::t2_amps_remp() {
         global_dpd_->buf4_init(&Tp, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0,
                                "T2 (OV|ov)");
         global_dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0, "W (OV|ov)");
-        global_dpd_->contract444(&Tp, &W, &T, 1, 1, 1.0, 1.0);
+        global_dpd_->contract444(&Tp, &W, &T, 1, 1, 1.0E0-remp_A, 1.0);
         // T_ij^ab(2) += \sum_{M,E} T_Mj^Eb(1) W_MaEi(1) => T(ia,jb)(2) += \sum_{M,E} T(ME,jb) W(ME,ia)
-        global_dpd_->contract444(&W, &Tp, &T, 1, 1, 1.0, 1.0);
+        global_dpd_->contract444(&W, &Tp, &T, 1, 1, 1.0E0-remp_A, 1.0);
         global_dpd_->buf4_close(&W);
         global_dpd_->buf4_close(&Tp);
 
@@ -393,9 +393,9 @@ void OCCWave::t2_amps_remp() {
         global_dpd_->buf4_init(&Tp, PSIF_OCC_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0,
                                "T2 (ov|ov)");
         global_dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0, "W (ov|ov)");
-        global_dpd_->contract444(&Tp, &W, &T, 0, 0, -1.0, 0.0);
+        global_dpd_->contract444(&Tp, &W, &T, 0, 0, -(1.0E0-remp_A), 0.0);
         // T_ij^ab(2) = -\sum_{m,e} T_im^be(1) W_maej(1) => T(ja,ib)(2) = -\sum_{m,e} T(ib,me) W(me,ja)
-        global_dpd_->contract444(&W, &Tp, &T, 0, 0, -1.0, 1.0);
+        global_dpd_->contract444(&W, &Tp, &T, 0, 0, -(1.0E0-remp_A), 1.0);
         global_dpd_->buf4_close(&W);
         global_dpd_->buf4_close(&Tp);
 
@@ -403,9 +403,9 @@ void OCCWave::t2_amps_remp() {
         global_dpd_->buf4_init(&Tp, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0,
                                "T2 (OV|ov)");
         global_dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0, "W (OV|ov)");
-        global_dpd_->contract444(&Tp, &W, &T, 1, 1, -1.0, 1.0);
+        global_dpd_->contract444(&Tp, &W, &T, 1, 1, -(1.0E0-remp_A), 1.0);
         // T_ij^ab(2) = -\sum_{M,E} T_Mi^Eb(1) W_MaEj(1) => T(ja,ib)(2) -= \sum_{M,E} T(ME,ib) W(ME,ja)
-        global_dpd_->contract444(&W, &Tp, &T, 1, 1, -1.0, 1.0);
+        global_dpd_->contract444(&W, &Tp, &T, 1, 1, -(1.0E0-remp_A), 1.0);
         global_dpd_->buf4_close(&W);
         global_dpd_->buf4_close(&Tp);
 
@@ -441,7 +441,7 @@ void OCCWave::t2_amps_remp() {
         //              ID("[o,o]"), ID("[o,o]"), 0, "W_1 <oo|oo>");
         global_dpd_->buf4_init(&W, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,o]"), ID("[o,o]"), ID("[o,o]"), 0,
                                "MO Ints <oo||oo>");
-        global_dpd_->contract444(&W, &TBB, &T, 1, 1, 0.5, 1.0);
+        global_dpd_->contract444(&W, &TBB, &T, 1, 1, 0.5E0*(1.0E0-remp_A), 1.0);
         global_dpd_->buf4_close(&W);
         global_dpd_->buf4_close(&T);
 
@@ -450,7 +450,7 @@ void OCCWave::t2_amps_remp() {
                                "Z2 <vv|oo>");
         global_dpd_->buf4_init(&W, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"), ID("[v,v]"), ID("[v,v]"), 0,
                                "MO Ints <vv|vv>");
-        global_dpd_->contract444(&W, &TBB, &T, 0, 0, 1.0, 0.0);
+        global_dpd_->contract444(&W, &TBB, &T, 0, 0, 1.0E0-remp_A, 0.0);
         global_dpd_->buf4_close(&W);
         global_dpd_->buf4_close(&TBB);
         global_dpd_->buf4_sort(&T, PSIF_OCC_DPD, rspq, ID("[o,o]"), ID("[v,v]"), "Z2 <oo|vv>");
@@ -499,7 +499,7 @@ void OCCWave::t2_amps_remp() {
         global_dpd_->buf4_init(&Tp, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                                "T2 (OV|OV)");
         global_dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), 0, "W (ov|OV)");
-        global_dpd_->contract444(&Tp, &W, &T, 0, 0, 1.0, 0.0);
+        global_dpd_->contract444(&Tp, &W, &T, 0, 0, 1.0E0-remp_A, 0.0);
         global_dpd_->buf4_close(&Tp);
         global_dpd_->buf4_close(&W);
 
@@ -507,7 +507,7 @@ void OCCWave::t2_amps_remp() {
         global_dpd_->buf4_init(&Tp, PSIF_OCC_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0,
                                "T2 (ov|ov)");
         global_dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0, "W (OV|ov)");
-        global_dpd_->contract444(&W, &Tp, &T, 0, 0, 1.0, 1.0);
+        global_dpd_->contract444(&W, &Tp, &T, 0, 0, 1.0E0-remp_A, 1.0);
         global_dpd_->buf4_close(&W);
         global_dpd_->buf4_close(&Tp);
 
@@ -515,7 +515,7 @@ void OCCWave::t2_amps_remp() {
         global_dpd_->buf4_init(&Tp, PSIF_OCC_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0,
                                "T2 (OV|ov)");
         global_dpd_->buf4_init(&W, PSIF_OCC_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0, "W (ov|ov)");
-        global_dpd_->contract444(&Tp, &W, &T, 0, 0, 1.0, 1.0);
+        global_dpd_->contract444(&Tp, &W, &T, 0, 0, 1.0E0-remp_A, 1.0);
         global_dpd_->buf4_close(&W);
 
         // T_Ij^Ab(2) += \sum_{M,E} T_Mj^Eb(1) W_MAEI(1) => T(IA,jb)(2) += \sum_{M,E} W(ME,IA) T(ME,jb)
