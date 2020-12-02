@@ -18,9 +18,9 @@ CMakeLists.txt.user
 
 
 # Code::Blocks project and backup files
-*.cbp
-*.save
-*.layout
+**/*.cbp
+**/*.save
+**/*.layout
 
 # Files resulting from compilation
 *.o
