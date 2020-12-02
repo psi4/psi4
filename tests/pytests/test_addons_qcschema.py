@@ -375,7 +375,7 @@ def test_pcmsolver():
 
 
 @pytest.mark.parametrize("integral_package", [
-    pytest.param("libint"),
+    pytest.param("libint2"),
     pytest.param("simint", marks=using("simint")),
 ])
 def test_integrals(integral_package):
