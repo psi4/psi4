@@ -4857,7 +4857,7 @@ std::shared_ptr<RadialGrid> RadialGrid::build(const std::string &scheme, int npo
     if (scheme == "BECKE") {
         return RadialGrid::build_becke(npoints, alpha, Z);
     } else if (scheme == "TREUTLER") {
-        return RadialGrid::build_becke(npoints, alpha, Z);
+        return RadialGrid::build_treutler(npoints, alpha, Z);
     } else {
         throw PSIEXCEPTION("RadialGrid::build: Unrecognized radial grid.");
     }
