@@ -160,7 +160,7 @@ void get_params(std::shared_ptr<Wavefunction> wfn, Options &options) {
 
     params.prop = options.get_str("PROPERTY");
     if (params.prop != "POLARIZABILITY" && params.prop != "ROTATION" && params.prop != "ROA" &&
-        params.prop != "ROA_TENSOR" && params.prop != "ALL") {
+        params.prop != "ROA_TENSOR" && params.prop != "HYPERPOLARIZABILITY" && params.prop != "ALL") {
         throw PsiException("Invalid choice of resp. property", __FILE__, __LINE__);
     }
 
