@@ -387,6 +387,8 @@ void OCCWave::title() {
         outfile->Printf("                             OMP2.5 (OO-MP2.5)   \n");
     else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE")
         outfile->Printf("                             MP2.5  \n");
+    else if (wfn_type_ == "REMP" && orb_opt_ == "FALSE")
+        outfile->Printf("                             REMP2  \n");
     outfile->Printf("                    Program Written by Ugur Bozkaya,\n");
     outfile->Printf("              Additional Contributions by J. P. Misiewicz\n");
     outfile->Printf("\n");
@@ -419,6 +421,11 @@ double OCCWave::compute_energy() {
         mem_release();
         throw FeatureNotImplemented("OCC module analytic gradients", "Frozen core/virtual", __FILE__, __LINE__);
     }
+   else if ((wfn_type_ == "REMP" || wfn_type_ == "=REMP") && dertype != "NONE") {
+        mem_release();
+        throw FeatureNotImplemented("OCC module analytic gradients", "no gradients for REMP yet", __FILE__, __LINE__);
+    }
+
 
     // Call the appropriate manager
     if (wfn_type_ == "OMP2" && orb_opt_ == "TRUE")
@@ -437,6 +444,8 @@ double OCCWave::compute_energy() {
         omp2_5_manager();
     else if (wfn_type_ == "OMP2.5" && orb_opt_ == "FALSE")
         mp2_5_manager();
+    else if (wfn_type_ == "REMP" && orb_opt_ == "FALSE")
+        remp_manager();
 
     // Write MO coefficients to Cmo.psi
     if (write_mo_coeff == "TRUE") {

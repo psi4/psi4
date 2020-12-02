@@ -694,7 +694,7 @@ void OCCWave::cepa_manager() {
 }  // end cepa_manager
 
 //======================================================================
-//             CEPA Manager
+//             REMP Manager
 //======================================================================
 void OCCWave::remp_manager() {
     timer_on("trans_ints");
@@ -716,11 +716,11 @@ void OCCWave::remp_manager() {
     mp2_postprocessing();
 
     // Perform CEPA iterations
-    cepa_iterations();
+    remp_iterations();
 
     outfile->Printf("\n");
     outfile->Printf("\t============================================================================== \n");
-    outfile->Printf("\t================ LCCD [CEPA(0)] FINAL RESULTS ================================ \n");
+    outfile->Printf("\t================ REMP2 FINAL RESULTS ================================ \n");
     outfile->Printf("\t============================================================================== \n");
     outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
     outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
@@ -728,30 +728,32 @@ void OCCWave::remp_manager() {
     outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", EcepaAA);
     outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", EcepaAB);
     outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", EcepaBB);
-    outfile->Printf("\tLCCD Correlation Energy (a.u.)     : %20.14f\n", Ecorr);
-    outfile->Printf("\tLCCD Total Energy (a.u.)           : %20.14f\n", Ecepa);
+    outfile->Printf("\tREMP Correlation Energy (a.u.)     : %20.14f\n", Ecorr);
+    outfile->Printf("\tREMP Total Energy (a.u.)           : %20.14f\n", Ecepa);
     outfile->Printf("\t============================================================================== \n");
     outfile->Printf("\n");
 
     // Set the global variables with the energies
-    variables_["LCCD TOTAL ENERGY"] = Ecepa;
-    variables_["LCCD CORRELATION ENERGY"] = Ecorr;
-    variables_["LCCD SAME-SPIN CORRELATION ENERGY"] = EcepaAA + EcepaBB;
-    variables_["LCCD OPPOSITE-SPIN CORRELATION ENERGY"] = EcepaAB;
-    variables_["LCCD SINGLES ENERGY"] = 0.0;  // CEPA is RHF/UHF only
-    variables_["LCCD DOUBLES ENERGY"] = EcepaAB + EcepaAA + EcepaBB;
+    variables_["REMP TOTAL ENERGY"] = Ecepa;
+    variables_["REMP CORRELATION ENERGY"] = Ecorr;
+    variables_["REMP SAME-SPIN CORRELATION ENERGY"] = EcepaAA + EcepaBB;
+    variables_["REMP OPPOSITE-SPIN CORRELATION ENERGY"] = EcepaAB;
+    variables_["REMP SINGLES ENERGY"] = 0.0;  // CEPA is RHF/UHF only
+    variables_["REMP DOUBLES ENERGY"] = EcepaAB + EcepaAA + EcepaBB;
     variables_["CURRENT REFERENCE ENERGY"] = Eref;
-    variables_["CUSTOM SCS-LCCD CORRELATION ENERGY"] = os_scale * EcepaAB + ss_scale * (EcepaAA + EcepaBB);
-    variables_["CUSTOM SCS-LCCD TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-LCCD CORRELATION ENERGY"];
+    variables_["CUSTOM SCS-REMP CORRELATION ENERGY"] = os_scale * EcepaAB + ss_scale * (EcepaAA + EcepaBB);
+    variables_["CUSTOM SCS-REMP TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-REMP CORRELATION ENERGY"];
     // EcepaL = Ecepa;
 
-    std::map<std::string, double> spin_scale_energies = {{"CUSTOM", variables_["CUSTOM SCS-LCCD TOTAL ENERGY"]},
+    std::map<std::string, double> spin_scale_energies = {{"CUSTOM", variables_["CUSTOM SCS-REMP TOTAL ENERGY"]},
                                                          {"NONE", Ecepa}};
     variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
     variables_["CURRENT CORRELATION ENERGY"] = variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
     energy_ = variables_["CURRENT ENERGY"];
 
     // Compute Analytic Gradients
+    // NO ANALYTIC GRADIENTS YET
+    /*-
     if (dertype == "FIRST" || ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
         time4grad = 1;
         outfile->Printf("\tAnalytic gradient computation is starting...\n");
@@ -786,6 +788,8 @@ void OCCWave::remp_manager() {
             outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
         }
     }
+    -*/
+
 }  // end remp_manager
 
 //======================================================================
