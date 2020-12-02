@@ -147,7 +147,7 @@ void OCCWave::cepa_iterations() {
 void OCCWave::remp_iterations() {
     outfile->Printf("\n  \n");
     outfile->Printf(" ============================================================================== \n");
-    outfile->Printf(" ================ Performing REMP iterations ... =============================== \n");
+    outfile->Printf(" ================ Performing REMP iterations ... ============================== \n");
     outfile->Printf(" ============================================================================== \n");
     outfile->Printf("\n");
     outfile->Printf("  Iter    E_corr           E_total            DE           T2 RMS        \n");

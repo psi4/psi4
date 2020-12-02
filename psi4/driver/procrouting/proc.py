@@ -2118,6 +2118,11 @@ def run_occ(name, **kwargs):
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
         core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
 
+    elif name == 'remp':
+        core.set_local_option('OCC', 'WFN_TYPE', 'REMP')
+        core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
+
     elif name == 'olccd':
         core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
