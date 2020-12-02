@@ -264,7 +264,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- MBIS Number of Spherical Points -*/
     options.add_int("MBIS_SPHERICAL_POINTS", 302);
     /*- Pruning scheme for MBIS Grid -*/
-    options.add_str("MBIS_PRUNING_SCHEME", "ROBUST", 
+    options.add_str("MBIS_PRUNING_SCHEME", "ROBUST",
                     "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
 
     /*- PCM boolean for pcmsolver module -*/
@@ -2772,7 +2772,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Damping factor for the orbital gradient (Rendell et al., JCP, vol. 87, pp. 5976, 1987) -*/
         options.add_double("MOGRAD_DAMPING", 1.0);
         /*- mixing parameter for the REMP hybrid perturbation theory, A specifies the Moller-Plesset fraction -*/
-        options.add_double("REMP_A", 0.15);
+        options.add_double("REMP_A", 0.15E0);
 
         /*- The solver will be used for simultaneous linear equations. -*/
         options.add_str("LINEQ_SOLVER", "CDGESV", "CDGESV FLIN POPLE");
