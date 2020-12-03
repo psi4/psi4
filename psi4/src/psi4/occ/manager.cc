@@ -693,6 +693,113 @@ void OCCWave::cepa_manager() {
     }
 }  // end cepa_manager
 
+
+//======================================================================
+//             OREMP Manager
+//======================================================================
+void OCCWave::oremp_manager() {
+    mo_optimized = 0;  // means MOs are not optimized yet.
+    orbs_already_opt = 0;
+    orbs_already_sc = 0;
+    time4grad = 0;  // means i will not compute the gradient
+    timer_on("trans_ints");
+    if (reference_ == "RESTRICTED")
+        trans_ints_rhf();
+    else if (reference_ == "UNRESTRICTED")
+        trans_ints_uhf();
+    timer_off("trans_ints");
+    timer_on("REF Energy");
+    ref_energy();
+    timer_off("REF Energy");
+    timer_on("T2(1)");
+    set_t2_amplitudes_mp2();
+    timer_off("T2(1)");
+    timer_on("MP2 Energy");
+    mp2_energy();
+    timer_off("MP2 Energy");
+    Ecepa = Emp2;
+    EcepaL = Ecepa;
+    EcorrL = Ecorr;
+    EcepaL_old = Ecepa;
+
+    mp2_postprocessing();
+
+    occ_iterations();
+
+    if (conver == 1) {
+        ref_energy();
+        cepa_energy();
+        if (orbs_already_opt == 1) EcepaL = Ecepa;
+
+        // EKT
+        if (ekt_ip_ == "TRUE" || ekt_ea_ == "TRUE") {
+            if (orbs_already_opt == 1) {
+                ocepa_response_pdms();
+                gfock();
+            }
+            gfock_diag();
+            if (ekt_ip_ == "TRUE") ekt_ip();
+            if (ekt_ea_ == "TRUE") ekt_ea();
+        }
+
+        outfile->Printf("\n");
+        outfile->Printf("\t============================================================================== \n");
+        outfile->Printf("\t================ OREMP FINAL RESULTS ============================== \n");
+        outfile->Printf("\t============================================================================== \n");
+        outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+        outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+        outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+        outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", EcepaAA);
+        outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", EcepaAB);
+        outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", EcepaBB);
+        outfile->Printf("\tOREMP Correlation Energy (a.u.)    : %20.14f\n", EcepaL - Escf);
+        outfile->Printf("\tEoremp - Eref (a.u.)               : %20.14f\n", EcepaL - Eref);
+        outfile->Printf("\tOREMP Total Energy (a.u.)          : %20.14f\n", EcepaL);
+        outfile->Printf("\t============================================================================== \n");
+        outfile->Printf("\n");
+
+        // Set the global variables with the energies
+        variables_["OLCCD TOTAL ENERGY"] = EcepaL;
+        variables_["CURRENT REFERENCE ENERGY"] = Escf;
+
+        variables_["OREMP REFERENCE CORRECTION ENERGY"] = Eref - Escf;
+        variables_["OREMP CORRELATION ENERGY"] = EcepaL - Escf;
+        variables_["OREMP SAME-SPIN CORRELATION ENERGY"] = EcepaAA + EcepaBB;
+        variables_["OREMP OPPOSITE-SPIN CORRELATION ENERGY"] = EcepaAB;
+
+        variables_["CUSTOM SCS-OREMP CORRELATION ENERGY"] = os_scale * EcepaAB + ss_scale * (EcepaAA + EcepaBB);
+        variables_["CUSTOM SCS-OREMP TOTAL ENERGY"] = Escf + variables_["CUSTOM SCS-OREMP CORRELATION ENERGY"];
+
+        std::map<std::string, double> spin_scale_energies = {{"CUSTOM", variables_["CUSTOM SCS-OREMP TOTAL ENERGY"]},
+                                                             {"NONE", EcepaL}};
+        variables_["CURRENT ENERGY"] = spin_scale_energies[spin_scale_type_];
+        variables_["CURRENT CORRELATION ENERGY"] =
+            variables_["CURRENT ENERGY"] - variables_["CURRENT REFERENCE ENERGY"];
+        energy_ = variables_["CURRENT ENERGY"];
+
+        // ordinary ROHF-MP2 not available in course of ROHF-OLCCD
+        if (reference == "ROHF") {
+            del_scalar_variable("MP2 CORRELATION ENERGY");
+            del_scalar_variable("MP2 SINGLES ENERGY");
+            del_scalar_variable("MP2 TOTAL ENERGY");
+        }
+
+        if (natorb == "TRUE") nbo();
+        if (occ_orb_energy == "TRUE") semi_canonic();
+
+        // Compute Analytic Gradients
+        if (dertype == "FIRST") {
+            time4grad = 1;
+            outfile->Printf("\tAnalytic gradient computation is starting...\n");
+
+            coord_grad();
+            outfile->Printf("\tNecessary information has been sent to DERIV, which will take care of the rest.\n");
+        }
+
+    }  // end if (conver == 1)
+}  // end oremp_manager
+
+
 //======================================================================
 //             REMP Manager
 //======================================================================

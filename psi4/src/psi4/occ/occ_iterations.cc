@@ -53,6 +53,8 @@ void OCCWave::occ_iterations() {
         outfile->Printf(" ================ Performing OLCCD iterations... ============================== \n");
     else if (wfn_type_ == "OMP2.5")
         outfile->Printf(" ================ Performing OMP2.5 iterations... ============================= \n");
+    else if (wfn_type_ == "OREMP")
+        outfile->Printf(" ================ Performing OREMP iterations... ============================= \n");
     outfile->Printf(" ============================================================================== \n");
     if (wfn_type_ == "OMP2")
         outfile->Printf("\t            Minimizing MP2-L Functional \n");
@@ -62,6 +64,8 @@ void OCCWave::occ_iterations() {
         outfile->Printf("\t            Minimizing LCCD-L Functional \n");
     else if (wfn_type_ == "OMP2.5")
         outfile->Printf("\t            Minimizing MP2.5-L Functional \n");
+    else if (wfn_type_ == "OREMP")
+        outfile->Printf("\t            Minimizing REMP-L Functional \n");
     outfile->Printf("\t            --------------------------- \n");
     outfile->Printf(" Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    \n");
     outfile->Printf(" ----    ---------------    ----------     -----------      -----------     ---------- \n");

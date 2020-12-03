@@ -2460,6 +2460,11 @@ def run_occ(name, **kwargs):
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
 
+    elif name == 'oremp':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OREMP')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
+
     else:
         raise ValidationError("""Invalid method %s""" % name)
 
