@@ -44,9 +44,11 @@ def calcD(wfn):
 def test_uhf_fchk(inp2, datadir):
     """  FCHK UHF """
     mol = psi4.geometry("""
-  0 3
-  O 0.0 0.0 0.0
-  O 0.0 0.0 1.1
+  no_reorient
+  0 2
+  O
+  O 1 1.46
+  H 2 0.97 1 104.6
   """)
     psi4.set_options({
         "BASIS": "pcseg-0",
@@ -74,11 +76,11 @@ def test_uhf_fchk(inp2, datadir):
 def test_rhf_fchk(inp, datadir):
     """  FCHK RHF """
     mol = psi4.geometry("""
+  no_reorient
   0 1
   O
-  H 1 1.0
+  H 1 1.01
   H 1 1.0 2 104.5
-  # symmetry c1
   """)
     psi4.set_options({
         "BASIS": "pcseg-0",
