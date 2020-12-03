@@ -28,8 +28,6 @@
 
 /** Standard library includes */
 #include <fstream>
-#include "psi4/psifiles.h"
-#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
@@ -49,7 +47,7 @@ using namespace psi;
 namespace psi {
 namespace dfoccwave {
 
-void DFOCC::tei_grad(std::string aux_type) {
+void DFOCC::tei_grad(std::string aux_type, std::map<std::string, SharedMatrix>& gradients) {
     //===========================================================================================
     //============================== Two-electron Gradient ======================================
     //===========================================================================================

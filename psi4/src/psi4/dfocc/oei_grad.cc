@@ -28,14 +28,10 @@
 
 /** Standard library includes */
 #include <fstream>
-#include "psi4/psifiles.h"
-#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/integral.h"
 #include "psi4/libmints/mintshelper.h"
 #include "dfocc.h"
 
@@ -49,7 +45,7 @@ using namespace psi;
 namespace psi {
 namespace dfoccwave {
 
-void DFOCC::oei_grad() {
+void DFOCC::oei_grad(std::map<std::string, SharedMatrix>& gradients) {
     /********************************************************************************************/
     /************************** Gradient ********************************************************/
     /********************************************************************************************/
@@ -60,6 +56,7 @@ void DFOCC::oei_grad() {
     /************************** Nuclear Gradient ************************************************/
     /********************************************************************************************/
     // => Nuclear Gradient <= //
+    // TODO: Where should external potentials be added?
     gradients["Nuclear"] = SharedMatrix(molecule_->nuclear_repulsion_energy_deriv1(dipole_field_strength_).clone());
     gradients["Nuclear"]->set_name("Nuclear Gradient");
     gradients["Nuclear"]->print_atom_vector();
@@ -92,8 +89,6 @@ void DFOCC::oei_grad() {
     /****************************************************************************************/
     /****************************************************************************************/
     /****************************************************************************************/
-
-    // outfile->Printf("\toei_grad is done. \n");
 }
 }  // namespace dfoccwave
 }  // namespace psi

@@ -79,8 +79,8 @@ class DFOCC : public Wavefunction {
     void tpdm_tilde_cc();
     void back_trans_cc();
     void dfgrad();
-    void oei_grad();
-    void tei_grad(std::string aux_type);
+    void oei_grad(std::map<std::string, SharedMatrix>&);
+    void tei_grad(std::string aux_type, std::map<std::string, SharedMatrix>&);
     void gfock_oo();
     void gfock_vo();
     void gfock_ov();
@@ -594,10 +594,6 @@ class DFOCC : public Wavefunction {
     std::shared_ptr<DIISManager> ccsdDiisManagerBB;
     std::shared_ptr<DIISManager> ccsdDiisManagerAB;
     std::shared_ptr<DIISManager> ccsdlDiisManager;
-
-    // Gradients
-    std::map<std::string, SharedMatrix> gradients;
-    std::vector<std::string> gradient_terms;
 
     int natom;
     int nmo;      // Number of MOs

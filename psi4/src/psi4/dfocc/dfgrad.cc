@@ -28,8 +28,6 @@
 
 /** Standard library includes */
 #include <fstream>
-#include "psi4/psifiles.h"
-#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libmints/matrix.h"
@@ -66,37 +64,25 @@ void DFOCC::dfgrad() {
     //===========================================================================================
     outfile->Printf("\tComputing analytic gradients...\n");
 
-    gradient_terms.push_back("Nuclear");
-    gradient_terms.push_back("Core");
-    gradient_terms.push_back("Overlap");
-    gradient_terms.push_back("3-Index:RefSep");
-    gradient_terms.push_back("3-Index:Corr");
-    gradient_terms.push_back("Metric:RefSep");
-    gradient_terms.push_back("Metric:Corr");
-    gradient_terms.push_back("Total");
+    std::map<std::string, SharedMatrix> gradients;
 
     // OEI GRAD
-    oei_grad();
+    oei_grad(gradients);
 
     // TEI GRAD
-    tei_grad("JK");
-    tei_grad("RI");
+    tei_grad("JK", gradients);
+    tei_grad("RI", gradients);
 
     //===========================================================================================
     //========================= Total Gradient ==================================================
     //===========================================================================================
     // => Total Gradient <= //
-    SharedMatrix total = SharedMatrix(gradients["Nuclear"]->clone());
+    auto total = SharedMatrix(gradients["Nuclear"]->clone());
     total->zero();
 
-    for (int i = 0; i < gradient_terms.size(); i++) {
-        if (gradients.count(gradient_terms[i])) {
-            total->add(gradients[gradient_terms[i]]);
-        }
+    for (auto& kv: gradients) {
+        total->add(kv.second);
     }
-
-    gradients["Total"] = total;
-    gradients["Total"]->set_name("Total Gradient");
 
     // OEI grad
     gradients["One-Electron"] = gradients["Core"]->clone();
@@ -113,12 +99,13 @@ void DFOCC::dfgrad() {
     gradients["Two-Electron"]->add(gradients["Metric:Corr"]);
     gradients["Two-Electron"]->print_atom_vector();  // UB
 
+    gradients["Total"] = total;
+    gradients["Total"]->set_name("Total Gradient");
+
     // => Final Printing <= //
     if (print_ > 1) {
-        for (int i = 0; i < gradient_terms.size(); i++) {
-            if (gradients.count(gradient_terms[i])) {
-                gradients[gradient_terms[i]]->print_atom_vector();
-            }
+        for (auto& kv: gradients) {
+            kv.second->print_atom_vector();
         }
     } else {
         gradients["Total"]->print_atom_vector();
