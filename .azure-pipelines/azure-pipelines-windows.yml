@@ -100,7 +100,6 @@ jobs:
       # Configure Miniconda
       - script: |
           conda config --set always_yes yes
-          conda config --append channels conda-forge
           conda info
         displayName: "Configure Miniconda"
 
@@ -173,63 +172,65 @@ jobs:
         displayName: "Configure Psi4"
         workingDirectory: $(Build.BinariesDirectory)
 
-      # Build
-      - script: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
-          cmake --build . ^
-                --config %CMAKE_BUILD_TYPE% ^
-                -- -j %NUMBER_OF_PROCESSORS%
-        displayName: "Build Psi4"
-        workingDirectory: $(Build.BinariesDirectory)/build
-
-      # Install
-      - script: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
-          cmake --build . ^
-                --config %CMAKE_BUILD_TYPE% ^
-                --target install ^
-                -- -j %NUMBER_OF_PROCESSORS%
-        displayName: "Install Psi4"
-        workingDirectory: $(Build.BinariesDirectory)/build
-
-      # Test (OpenMP)
-      # Check if OpenMP configuration had not failed silently
-      - script: |
-          python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
-        displayName: "Test Psi4 (OpenMP)"
-        workingDirectory: $(Build.BinariesDirectory)/install/lib
-
-      # Spot Test
-      - script: |
-          setlocal EnableDelayedExpansion
-          set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
-          psi4 $(Build.SourcesDirectory)\tests\tu1-h2o-energy\input.dat
-        displayName: 'Run, Run, Spot, Run Test'
-        workingDirectory: $(Build.BinariesDirectory)/build
-
-      # Test (ctest)
-      - script: |
-          setlocal EnableDelayedExpansion
-          if "%CTEST_TYPE%"=="full" set CTEST_TYPE=".*"
-          ctest --build-config %CMAKE_BUILD_TYPE% ^
-                --label-regex !CTEST_TYPE! ^
-                --output-on-failure ^
-                --parallel %NUMBER_OF_PROCESSORS% ^
-                --timeout 3000
-        displayName: "Test Psi4 (ctest $(ctest.type))"
-        workingDirectory: $(Build.BinariesDirectory)/build
-
-      # Test (pytest)
-      - script: |
-          set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
-          set PYTHONPATH=$(Build.BinariesDirectory)\install\lib;%PYTHONPATH%
-          psi4 --test %PYTEST_TYPE% -n %NUMBER_OF_PROCESSORS%
-        displayName: "Test Psi4 (pytest $(pytest.type))"
-        workingDirectory: $(Build.BinariesDirectory)
+#      # Build
+#      - script: |
+#          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+#          cmake --build . ^
+#                --config %CMAKE_BUILD_TYPE% ^
+#                -- -j %NUMBER_OF_PROCESSORS%
+#        displayName: "Build Psi4"
+#        workingDirectory: $(Build.BinariesDirectory)/build
+#
+#      # Install
+#      - script: |
+#          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+#          cmake --build . ^
+#                --config %CMAKE_BUILD_TYPE% ^
+#                --target install ^
+#                -- -j %NUMBER_OF_PROCESSORS%
+#        displayName: "Install Psi4"
+#        workingDirectory: $(Build.BinariesDirectory)/build
+#
+#      # Test (OpenMP)
+#      # Check if OpenMP configuration had not failed silently
+#      - script: |
+#          python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
+#        displayName: "Test Psi4 (OpenMP)"
+#        workingDirectory: $(Build.BinariesDirectory)/install/lib
+#
+#      # Spot Test
+#      - script: |
+#          setlocal EnableDelayedExpansion
+#          set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
+#          psi4 $(Build.SourcesDirectory)\tests\tu1-h2o-energy\input.dat
+#        displayName: 'Run, Run, Spot, Run Test'
+#        workingDirectory: $(Build.BinariesDirectory)/build
+#
+#      # Test (ctest)
+#      - script: |
+#          setlocal EnableDelayedExpansion
+#          if "%CTEST_TYPE%"=="full" set CTEST_TYPE=".*"
+#          ctest --build-config %CMAKE_BUILD_TYPE% ^
+#                --label-regex !CTEST_TYPE! ^
+#                --output-on-failure ^
+#                --parallel %NUMBER_OF_PROCESSORS% ^
+#                --timeout 3000
+#        displayName: "Test Psi4 (ctest $(ctest.type))"
+#        workingDirectory: $(Build.BinariesDirectory)/build
+#
+#      # Test (pytest)
+#      - script: |
+#          set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
+#          set PYTHONPATH=$(Build.BinariesDirectory)\install\lib;%PYTHONPATH%
+#          psi4 --test %PYTEST_TYPE% -n %NUMBER_OF_PROCESSORS%
+#        displayName: "Test Psi4 (pytest $(pytest.type))"
+#        workingDirectory: $(Build.BinariesDirectory)
 
       # Build package
       - script: |
           set INSTALL_DIR=$(Build.BinariesDirectory)\install
+          conda config --append channels conda-forge
+          conda config --append channels psi4/label/dev
           conda build --python %PYTHON_VERSION% ^
                       conda\win
           copy /y C:\tools\miniconda3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)
