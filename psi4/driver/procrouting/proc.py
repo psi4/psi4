@@ -2132,6 +2132,11 @@ def run_occ(name, **kwargs):
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
         core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'CUSTOM')
 
+    elif name == 'oremp':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OREMP')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+        core.set_local_option('OCC', 'SPIN_SCALE_TYPE', 'NONE')
+
     else:
         raise ValidationError("""Invalid method %s""" % name)
 
@@ -4055,7 +4060,7 @@ def run_sapt(name, **kwargs):
     core.print_out('\n')
 
     # Compute dimer wavefunction
-    
+
     if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
@@ -4070,7 +4075,7 @@ def run_sapt(name, **kwargs):
     if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.set_global_option('DF_INTS_IO', 'LOAD')
 
-    
+
     # Compute Monomer A wavefunction
     if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.IO.change_file_namespace(97, 'dimer', 'monomerA')
@@ -4079,7 +4084,7 @@ def run_sapt(name, **kwargs):
     core.print_out('\n')
     p4util.banner('Monomer A HF')
     core.print_out('\n')
-    
+
     core.timer_on("SAPT: Monomer A SCF")
     monomerA_wfn = scf_helper('RHF', molecule=monomerA, **kwargs)
     core.timer_off("SAPT: Monomer A SCF")

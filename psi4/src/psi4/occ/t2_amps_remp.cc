@@ -38,7 +38,7 @@ namespace psi {
 namespace occwave {
 
 void OCCWave::t2_amps_remp() {
-     outfile->Printf("\n t2_amps_remp is starting... \n");
+//     outfile->Printf("\n t2_amps_remp is starting... \n");
 
     //===========================================================================================
     //========================= RHF =============================================================

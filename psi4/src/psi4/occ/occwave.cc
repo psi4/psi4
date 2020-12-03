@@ -451,6 +451,8 @@ double OCCWave::compute_energy() {
         mp2_5_manager();
     else if (wfn_type_ == "REMP" && orb_opt_ == "FALSE")
         remp_manager();
+    else if (wfn_type_ == "OREMP" && orb_opt_ == "TRUE")
+        oremp_manager();
 
     // Write MO coefficients to Cmo.psi
     if (write_mo_coeff == "TRUE") {
