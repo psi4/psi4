@@ -106,22 +106,6 @@ void FISAPT::print_header() {
 }
 
 void FISAPT::localize() {
-    if (reference_->external_pot()) {
-        printf("pot\n");
-        reference_->external_pot()->print();
-    }
-    if (reference_->external_pot_a()) {
-        printf("pot A\n");
-        reference_->external_pot_a()->print();
-    }
-    if (reference_->external_pot_b()) {
-        printf("pot B\n");
-        reference_->external_pot_b()->print();
-    }
-    if (reference_->external_pot_c()) {
-        printf("pot C\n");
-        reference_->external_pot_c()->print();
-    }
 
     outfile->Printf("  ==> Localization (IBO) <==\n\n");
 
@@ -679,6 +663,7 @@ void FISAPT::nuclear() {
         if (reference_->get_print() > 3) VA_extern->print();
 
         matrices_["VA"]->add(VA_extern);
+        matrices_["VA_extern"] = VA_extern;
     }
 
     if (reference_->external_pot_b()) {
@@ -705,6 +690,7 @@ void FISAPT::nuclear() {
         if (reference_->get_print() > 3) VB_extern->print();
 
         matrices_["VB"]->add(VB_extern);
+        matrices_["VB_extern"] = VB_extern;
     }
 
     // are there any external potentials? If so, we need all QM atoms to feel their effects in the nuclear 
@@ -717,6 +703,11 @@ void FISAPT::nuclear() {
         for (int A = 0; A < mol->nfragments(); A++) {
             outfile->Printf("           Old Nuclear Repulsion %c: %24.16E [Eh]\n", 'A'+A, Enucsp[A][A]);
         }
+
+        // First compute mol-extern interaction
+        // a maximum of 3 external potentials and 3 fragments
+        auto extern_mol_IE_mat = std::make_shared<Matrix>("extern_mol_IE", 3, 3);
+        double** extern_mol_IE_matp = extern_mol_IE_mat->pointer();
 
         std::vector<int> none;
         std::vector<int> frag_list(1);
@@ -737,10 +728,13 @@ void FISAPT::nuclear() {
                     Enucsp[A][A] += Enuc_extern;
                 }
                 else {  // diagonal terms will get full effect, off-diagonal terms will get 1/2 effect
-                    Enuc_extern *= 0.5;
-                    Enucsp[A][pot_ids[p]] += Enuc_extern;
-                    Enucsp[pot_ids[p]][A] += Enuc_extern;
+                    Enucsp[A][pot_ids[p]] += Enuc_extern * 0.5;
+                    Enucsp[pot_ids[p]][A] += Enuc_extern * 0.5;
                 }
+
+                // save the value in the matrix
+                extern_mol_IE_matp[pot_ids[p]][A] = Enuc_extern;
+
             } // end frag loop
         } // end pot loop
     
@@ -749,19 +743,57 @@ void FISAPT::nuclear() {
         }
         matrices_["E NUC"] = Enucs; // not sure we really need this if we just updated pointed-to matrix
         outfile->Printf("\n");
+
+        matrices_["extern_mol_IE"] = extern_mol_IE_mat; // save interaction energy between external potential and molecule
+        extern_mol_IE_mat->print();
+
+        // Now compute extern-extern interaction
+        // We store the interaction energy between the external potentials in A, B, and C.
+        auto extern_extern_IE_mat = std::make_shared<Matrix>("extern_extern_IE", 3, 3);
+        double** extern_extern_IE_matp = extern_extern_IE_mat->pointer();
+        double extern_extern_IE = 0.0;
+        for (int p1 = 0; p1 < pot_list.size(); p1++) {
+            for (int p2 = p1+1; p2 < pot_list.size(); p2++) {
+
+                bool in_angstrom = false;
+                if (mol->units() == Molecule::Angstrom) {
+                    in_angstrom = true;
+                }
+
+                double IE = pot_list[p1]->computeExternExternInteraction(pot_list[p2], in_angstrom);
+                // store half the interaction so that Eij + Eji = Etotal
+                extern_extern_IE_matp[pot_ids[p1]][pot_ids[p2]] = IE * 0.5;
+                extern_extern_IE_matp[pot_ids[p2]][pot_ids[p1]] = IE * 0.5;
+                extern_extern_IE += IE;
+
+                // Add extern-extern IE value to nuclear repulsion energy matrix if it is A-B interaction
+                // This makes the interaction goes to the electrostatic term instead of the induction term
+                // Note that C-extern interactions with A-extern and B-extern should not affect the IE
+                // as A-extern and B-extern are not polarizable.
+                //if (pot_ids[p1] != 2 && pot_ids[p2] != 2) { 
+                //    Enucsp[pot_ids[p1]][pot_ids[p2]] += IE * 0.5;
+                //    Enucsp[pot_ids[p2]][pot_ids[p1]] += IE * 0.5;
+                //}
+
+                outfile->Printf("    Interaction Energy between External Potentials %c and %c: %24.16E [Eh]\n",
+                                'A'+pot_ids[p1], 'A'+pot_ids[p2], IE);
+                outfile->Printf("\n");
+            }
+        }
+
+        matrices_["extern_extern_IE"] = extern_extern_IE_mat;
+        extern_extern_IE_mat->print();
+
     } // end dealing with external potentials
 
     // => Print <= //
 
     // Zs->print();
-    // Enucs->print();
+    //Enucs->print();
 
-    // Note: we are still missing extern/extern contributions
     outfile->Printf("    Nuclear Repulsion Tot: %24.16E [Eh]\n", Etot);
     outfile->Printf("\n");
 }
-
-
 
 
 void FISAPT::coulomb() {
@@ -1388,10 +1420,23 @@ void FISAPT::elst() {
     // for (int k = 0; k < Elst10_terms.size(); k++) {
     //    outfile->Printf("    Elst10,r (%1d)        = %18.12lf [Eh]\n",k+1,Elst10_terms[k]);
     //}
+
     scalars_["Elst10,r"] = Elst10;
     outfile->Printf("    Elst10,r            = %18.12lf [Eh]\n", Elst10);
-    outfile->Printf("\n");
+
+    // External potential interactions
+    if (reference_->external_pot_a() && reference_->external_pot_b()) {
+        // Add the interaction between the external potenitals in A and B
+        // Multiply by 2 to get the full A-B + B-A interaction energy
+        scalars_["Extern-Extern"] = matrices_["extern_extern_IE"]->get(0, 1)*2.0; 
+    outfile->Printf("    Extern-Extern       = %18.12lf [Eh]\n", scalars_["Extern-Extern"]);
+    }
+
+   outfile->Printf("\n");
     // fflush(outfile);
+
+    for (auto t: Elst10_terms) {std::cout << t << " ";}
+    std::cout << std::endl;
 }
 
 // Compute total exchange contribution
@@ -2882,6 +2927,9 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
 
 void FISAPT::print_trailer() {
     scalars_["Electrostatics"] = scalars_["Elst10,r"];
+    if (reference_->external_pot_a() && reference_->external_pot_b()) {
+        scalars_["Electrostatics"] += scalars_["Extern-Extern"];
+    }
     scalars_["Exchange"] = scalars_["Exch10"];
     scalars_["Induction"] = scalars_["Ind20,r"] + scalars_["Exch-Ind20,r"] + scalars_["delta HF,r (2)"];
     scalars_["sInduction"] = scalars_["Ind20,r"] + scalars_["sExch-Ind20,r"] + scalars_["delta HF,r (2)"];
@@ -2905,9 +2953,16 @@ void FISAPT::print_trailer() {
     outfile->Printf("    Electrostatics            %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
                     scalars_["Electrostatics"] * 1000.0, scalars_["Electrostatics"] * pc_hartree2kcalmol,
                     scalars_["Electrostatics"] * pc_hartree2kJmol);
-    outfile->Printf("      Elst10,r                %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n\n",
+    outfile->Printf("      Elst10,r                %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
                     scalars_["Elst10,r"] * 1000.0, scalars_["Elst10,r"] * pc_hartree2kcalmol,
                     scalars_["Elst10,r"] * pc_hartree2kJmol);
+
+    if (reference_->external_pot_a() && reference_->external_pot_b()) {
+        outfile->Printf("      Extern-Extern           %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
+                        scalars_["Extern-Extern"] * 1000.0, scalars_["Extern-Extern"] * pc_hartree2kcalmol,
+                        scalars_["Extern-Extern"] * pc_hartree2kJmol);
+    }
+    outfile->Printf("\n");
 
     outfile->Printf("    Exchange %3s              %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n", scaled.c_str(),
                     scalars_["Exchange"] * 1000.0, scalars_["Exchange"] * pc_hartree2kcalmol,
@@ -2968,6 +3023,9 @@ void FISAPT::print_trailer() {
 
     Process::environment.globals["SAPT ELST ENERGY"] = scalars_["Electrostatics"];
     Process::environment.globals["SAPT ELST10,R ENERGY"] = scalars_["Elst10,r"];
+    if (reference_->external_pot_a() && reference_->external_pot_b()) {
+        Process::environment.globals["SAPT ELST EXTERN-EXTERN ENERGY"] = scalars_["Extern-Extern"];
+    }
 
     Process::environment.globals["SAPT EXCH ENERGY"] = scalars_["Exchange"];
     Process::environment.globals["SAPT EXCH10 ENERGY"] = scalars_["Exch10"];
@@ -3228,7 +3286,8 @@ void FISAPT::felst() {
     std::vector<double> Elst10_terms;
     Elst10_terms.resize(4);
 
-    matrices_["Elst_AB"] = std::make_shared<Matrix>("Elst_AB", nA + na, nB + nb);
+    matrices_["Elst_AB"] = std::make_shared<Matrix>("Elst_AB", nA + na + 1, nB + nb + 1); // Add one entry for external
+                                                                                          // potentials in A and B
     double** Ep = matrices_["Elst_AB"]->pointer();
 
     // => A <-> B <= //
@@ -3243,6 +3302,45 @@ void FISAPT::felst() {
             Elst10_terms[3] += E;
         }
     }
+
+    // Extern A-atom B interaction
+    // Compute the interaction between the external potenrial and each atom in the fragment
+    if (reference_->external_pot_a()) {
+        std::shared_ptr<Molecule> B_mol = mol->extract_subsets({1}, {});
+        double conv = 1;
+        if (mol->units() == Molecule::Angstrom) {
+            conv *= pc_bohr2angstroms;
+        }
+        double E = 0.0;
+        for (int B = 0; B < B_mol->natom(); B++) {
+            auto atom = std::make_shared<Molecule>();
+            atom->add_atom(B_mol->Z(B), B_mol->x(B)*conv, B_mol->y(B)*conv, B_mol->z(B)*conv);
+            double interaction = reference_->external_pot_a()->computeNuclearEnergy(atom);
+            Ep[nA + na][B] = interaction;
+            E += interaction;
+        }
+        Elst10_terms[3] += E;
+    }
+
+    // Extern B-atom A interaction
+    // Compute the interaction between the external potenrial and each atom in the fragment
+    if (reference_->external_pot_b()) {
+        std::shared_ptr<Molecule> A_mol = mol->extract_subsets({0}, {});
+        double conv = 1;
+        if (mol->units() == Molecule::Angstrom) {
+            conv *= pc_bohr2angstroms;
+        }
+        double E = 0.0;
+        for (int A = 0; A < A_mol->natom(); A++) {
+            auto atom = std::make_shared<Molecule>();
+            atom->add_atom(A_mol->Z(A), A_mol->x(A)*conv, A_mol->y(A)*conv, A_mol->z(A)*conv);
+            double interaction = reference_->external_pot_b()->computeNuclearEnergy(atom);
+            Ep[A][nB + nb] = interaction;
+            E += interaction;
+        }
+        Elst10_terms[3] += E;
+    }
+
 
     // => a <-> b <= //
 
@@ -3322,6 +3420,18 @@ void FISAPT::felst() {
         }
     }
 
+    // Add Extern-A - Orbital b interaction
+    if (reference_->external_pot_a()) {
+        std::shared_ptr<Matrix> Vbb =
+            linalg::triplet(matrices_["Locc0B"], matrices_["VA_extern"], matrices_["Locc0B"], true, false, false);
+        double** Vbbp = Vbb->pointer();
+        for (int b = 0; b < nb; b++) {
+            double E = 2.0 * Vbbp[b][b];
+            Elst10_terms[1] += E;
+            Ep[nA + na][b + nB] += E;
+        }
+    }
+
     // => a <-> B <= //
 
     for (int B = 0; B < nB; B++) {
@@ -3342,6 +3452,19 @@ void FISAPT::felst() {
         }
     }
 
+    // Add Extern-B - Orbital a interaction
+    if (reference_->external_pot_b()) {
+        std::shared_ptr<Matrix> Vaa =
+            linalg::triplet(matrices_["Locc0A"], matrices_["VB_extern"], matrices_["Locc0A"], true, false, false);
+        double** Vaap = Vaa->pointer();
+        for (int a = 0; a < na; a++) {
+            double E = 2.0 * Vaap[a][a];
+            Elst10_terms[0] += E;
+            Ep[a + nA][nB + nb] += E;
+        }
+    }
+
+
     // Prepare DFHelper object for the next module
     dfh_->clear_spaces();
 
@@ -3355,8 +3478,22 @@ void FISAPT::felst() {
     //}
     // scalars_["Elst10,r"] = Elst10;
     outfile->Printf("    Elst10,r            = %18.12lf [Eh]\n", Elst10);
+
+    // Add extern-extern contribution
+    if (reference_->external_pot_a() && reference_->external_pot_b()) {
+        // Add the interaction between the external potenitals in A and B
+        // Multiply by 2 to get the full A-B + B-A interaction energy
+        double ext = matrices_["extern_extern_IE"]->get(0, 1)*2.0; 
+        Ep[nA + na][nB + nb] += ext;
+        outfile->Printf("    Extern-Extern       = %18.12lf [Eh]\n", ext);
+    }
+
     outfile->Printf("\n");
+
     // fflush(outfile);
+
+    for (auto t: Elst10_terms) {std::cout << t << " ";}
+    std::cout << std::endl;
 }
 
 // Compute fragment-fragment partitioning of exchange contribution
@@ -3380,7 +3517,8 @@ void FISAPT::fexch() {
     std::vector<double> Exch10_2_terms;
     Exch10_2_terms.resize(3);
 
-    matrices_["Exch_AB"] = std::make_shared<Matrix>("Exch_AB", nA + na, nB + nb);
+    matrices_["Exch_AB"] = std::make_shared<Matrix>("Exch_AB", nA + na + 1, nB + nb + 1); // Add one entry for external
+                                                                                          // potentials in A and B
     double** Ep = matrices_["Exch_AB"]->pointer();
 
     // ==> Stack Variables <== //
@@ -3603,8 +3741,8 @@ void FISAPT::find() {
 
     // => ESPs <= //
 
-    dfh_->add_disk_tensor("WBar", std::make_tuple(nB + nb, na, nr));
-    dfh_->add_disk_tensor("WAbs", std::make_tuple(nA + na, nb, ns));
+    dfh_->add_disk_tensor("WBar", std::make_tuple(nB + nb + 1, na, nr)); // add entry for external potentials
+    dfh_->add_disk_tensor("WAbs", std::make_tuple(nA + na + 1, nb, ns)); // add entry for external potentials
 
     // => Nuclear Part (PITA) <= //
 
@@ -3776,16 +3914,16 @@ void FISAPT::find() {
 
     // ==> Uncoupled Targets <== //
 
-    auto Ind20u_AB_terms = std::make_shared<Matrix>("Ind20 [A<-B] (a x B)", na, nB + nb);
-    auto Ind20u_BA_terms = std::make_shared<Matrix>("Ind20 [B<-A] (A x b)", nA + na, nb);
+    auto Ind20u_AB_terms = std::make_shared<Matrix>("Ind20 [A<-B] (a x B)", na, nB + nb + 1); // add one entry for external potential 
+    auto Ind20u_BA_terms = std::make_shared<Matrix>("Ind20 [B<-A] (A x b)", nA + na + 1, nb); // add one entry for external potential
     double** Ind20u_AB_termsp = Ind20u_AB_terms->pointer();
     double** Ind20u_BA_termsp = Ind20u_BA_terms->pointer();
 
     double Ind20u_AB = 0.0;
     double Ind20u_BA = 0.0;
 
-    auto ExchInd20u_AB_terms = std::make_shared<Matrix>("ExchInd20 [A<-B] (a x B)", na, nB + nb);
-    auto ExchInd20u_BA_terms = std::make_shared<Matrix>("ExchInd20 [B<-A] (A x b)", nA + na, nb);
+    auto ExchInd20u_AB_terms = std::make_shared<Matrix>("ExchInd20 [A<-B] (a x B)", na, nB + nb + 1); // add one for external potential 
+    auto ExchInd20u_BA_terms = std::make_shared<Matrix>("ExchInd20 [B<-A] (A x b)", nA + na + 1, nb); // add one for external potential
     double** ExchInd20u_AB_termsp = ExchInd20u_AB_terms->pointer();
     double** ExchInd20u_BA_termsp = ExchInd20u_BA_terms->pointer();
 
@@ -3805,25 +3943,25 @@ void FISAPT::find() {
     }
 
     std::shared_ptr<Matrix> sExchInd20u_AB_terms =
-        std::make_shared<Matrix>("sExchInd20 [A<-B] (a x B)", sna, snB + snb);
+        std::make_shared<Matrix>("sExchInd20 [A<-B] (a x B)", sna, snB + snb + 1); // add one entry for external potential
     std::shared_ptr<Matrix> sExchInd20u_BA_terms =
-        std::make_shared<Matrix>("sExchInd20 [B<-A] (A x b)", snA + sna, snb);
+        std::make_shared<Matrix>("sExchInd20 [B<-A] (A x b)", snA + sna + 1, snb); // add one entry for external potential
     double** sExchInd20u_AB_termsp = sExchInd20u_AB_terms->pointer();
     double** sExchInd20u_BA_termsp = sExchInd20u_BA_terms->pointer();
 
     double sExchInd20u_AB = 0.0;
     double sExchInd20u_BA = 0.0;
 
-    auto Indu_AB_terms = std::make_shared<Matrix>("Ind [A<-B] (a x B)", na, nB + nb);
-    auto Indu_BA_terms = std::make_shared<Matrix>("Ind [B<-A] (A x b)", nA + na, nb);
+    auto Indu_AB_terms = std::make_shared<Matrix>("Ind [A<-B] (a x B)", na, nB + nb + 1); // add one entry for external potential
+    auto Indu_BA_terms = std::make_shared<Matrix>("Ind [B<-A] (A x b)", nA + na + 1, nb); // add one entry for external potential
     double** Indu_AB_termsp = Indu_AB_terms->pointer();
     double** Indu_BA_termsp = Indu_BA_terms->pointer();
 
     double Indu_AB = 0.0;
     double Indu_BA = 0.0;
 
-    auto sIndu_AB_terms = std::make_shared<Matrix>("sInd [A<-B] (a x B)", sna, snB + snb);
-    auto sIndu_BA_terms = std::make_shared<Matrix>("sInd [B<-A] (A x b)", snA + sna, snb);
+    auto sIndu_AB_terms = std::make_shared<Matrix>("sInd [A<-B] (a x B)", sna, snB + snb + 1); // add one entry for external potential 
+    auto sIndu_BA_terms = std::make_shared<Matrix>("sInd [B<-A] (A x b)", snA + sna + 1, snb); // add one entry for external potential
     double** sIndu_AB_termsp = sIndu_AB_terms->pointer();
     double** sIndu_BA_termsp = sIndu_BA_terms->pointer();
 
@@ -3832,7 +3970,19 @@ void FISAPT::find() {
 
     // ==> A <- B Uncoupled <== //
 
-    for (size_t B = 0; B < nB + nb; B++) {
+    // Add the external potential
+    if (reference_->external_pot_b()) {
+        std::shared_ptr<Matrix> Var = linalg::triplet(Cocc_A, matrices_["VB_extern"], Cvir_A, true, false, false);
+        dfh_->write_disk_tensor("WBar", Var, {(size_t) nB + nb, (size_t) nB + nb + 1});
+    }
+
+    else { // Add empty matrix
+        std::shared_ptr<Matrix> Var = std::make_shared<Matrix>("zero", na, nr);
+        Var->zero();
+        dfh_->write_disk_tensor("WBar", Var, {(size_t) nB + nb, (size_t) nB + nb + 1});
+    }
+
+    for (size_t B = 0; B < nB + nb + 1; B++) { // add one for external potential
         // ESP
         dfh_->fill_tensor("WBar", wB, {B, B + 1});
 
@@ -3869,7 +4019,20 @@ void FISAPT::find() {
 
     // ==> B <- A Uncoupled <== //
 
-    for (size_t A = 0; A < nA + na; A++) {
+    // Add the external potential
+    if (reference_->external_pot_a()) {
+        std::shared_ptr<Matrix> Vbs = linalg::triplet(Cocc_B, matrices_["VA_extern"], Cvir_B, true, false, false);
+        dfh_->write_disk_tensor("WAbs", Vbs, {(size_t) nA + na, (size_t) nA + na + 1});
+    }
+
+    else { // add empty matrix
+        std::shared_ptr<Matrix> Vbs = std::make_shared<Matrix>("zero", nb, ns);
+        Vbs->zero();
+        dfh_->write_disk_tensor("WAbs", Vbs, {(size_t) nA + na, (size_t) nA + na + 1});
+    }
+
+
+    for (size_t A = 0; A < nA + na + 1; A++) { // add one for extenral potential
         // ESP
         dfh_->fill_tensor("WAbs", wA, {A, A + 1});
 
@@ -3934,24 +4097,26 @@ void FISAPT::find() {
 
         // ==> Coupled Targets <== //
 
-        auto Ind20r_AB_terms = std::make_shared<Matrix>("Ind20 [A<-B] (a x B)", na, nB + nb);
-        auto Ind20r_BA_terms = std::make_shared<Matrix>("Ind20 [B<-A] (A x b)", nA + na, nb);
+        auto Ind20r_AB_terms = std::make_shared<Matrix>("Ind20 [A<-B] (a x B)", na, nB + nb + 1); // add one for external potential 
+        auto Ind20r_BA_terms = std::make_shared<Matrix>("Ind20 [B<-A] (A x b)", nA + na + 1, nb); // add one for external potential
         double** Ind20r_AB_termsp = Ind20r_AB_terms->pointer();
         double** Ind20r_BA_termsp = Ind20r_BA_terms->pointer();
 
         double Ind20r_AB = 0.0;
         double Ind20r_BA = 0.0;
 
-        auto ExchInd20r_AB_terms = std::make_shared<Matrix>("ExchInd20 [A<-B] (a x B)", na, nB + nb);
-        auto ExchInd20r_BA_terms = std::make_shared<Matrix>("ExchInd20 [B<-A] (A x b)", nA + na, nb);
+        auto ExchInd20r_AB_terms = std::make_shared<Matrix>("ExchInd20 [A<-B] (a x B)", na, nB + nb + 1); // add one for external
+                                                                                                          // potential
+        auto ExchInd20r_BA_terms = std::make_shared<Matrix>("ExchInd20 [B<-A] (A x b)", nA + na + 1, nb); // add one for external
+                                                                                                          // potential
         double** ExchInd20r_AB_termsp = ExchInd20r_AB_terms->pointer();
         double** ExchInd20r_BA_termsp = ExchInd20r_BA_terms->pointer();
 
         double ExchInd20r_AB = 0.0;
         double ExchInd20r_BA = 0.0;
 
-        auto Indr_AB_terms = std::make_shared<Matrix>("Ind [A<-B] (a x B)", na, nB + nb);
-        auto Indr_BA_terms = std::make_shared<Matrix>("Ind [B<-A] (A x b)", nA + na, nb);
+        auto Indr_AB_terms = std::make_shared<Matrix>("Ind [A<-B] (a x B)", na, nB + nb + 1); // add one entry for external potential 
+        auto Indr_BA_terms = std::make_shared<Matrix>("Ind [B<-A] (A x b)", nA + na + 1, nb); // add one entry for external potential
         double** Indr_AB_termsp = Indr_AB_terms->pointer();
         double** Indr_BA_termsp = Indr_BA_terms->pointer();
 
@@ -3981,14 +4146,14 @@ void FISAPT::find() {
 
         // ==> Master Loop over perturbing atoms <== //
 
-        int nC = std::max(nA + na, nB + nb);
+        int nC = std::max(nA + na + 1, nB + nb + 1); // add one for external potential
 
         for (size_t C = 0; C < nC; C++) {
             if (C < nB + nb) dfh_->fill_tensor("WBar", wB, {C, C + 1});
             if (C < nA + na) dfh_->fill_tensor("WAbs", wB, {C, C + 1});
 
             outfile->Printf("    Responses for (A <- Source B = %3zu) and (B <- Source A = %3zu)\n\n",
-                            (C < nB + nb ? C : nB + nb - 1), (C < nA + na ? C : nA + na - 1));
+                            (C < nB + nb ? C : nB + nb), (C < nA + na ? C : nA + na));
 
             auto cphf = std::make_shared<CPHF_FISAPT>();
 
@@ -4018,7 +4183,7 @@ void FISAPT::find() {
             xA->scale(-1.0);
             xB->scale(-1.0);
 
-            if (C < nB + nb) {
+            if (C < nB + nb + 1) {
                 // Backtransform the amplitude to LO
                 std::shared_ptr<Matrix> x2A = linalg::doublet(Uocc_A, xA, true, false);
                 double** x2Ap = x2A->pointer();
@@ -4036,7 +4201,7 @@ void FISAPT::find() {
                 }
             }
 
-            if (C < nA + na) {
+            if (C < nA + na + 1) {
                 // Backtransform the amplitude to LO
                 std::shared_ptr<Matrix> x2B = linalg::doublet(Uocc_B, xB, true, false);
                 double** x2Bp = x2B->pointer();
@@ -4121,12 +4286,14 @@ void FISAPT::find() {
         sInd_BA_terms->scale(sSdelta * SrBA);
     }
 
-    matrices_["IndAB_AB"] = std::make_shared<Matrix>("IndAB_AB", nA + na, nB + nb);
-    matrices_["IndBA_AB"] = std::make_shared<Matrix>("IndBA_AB", nA + na, nB + nb);
-    matrices_["Ind20u_AB_terms"] = std::make_shared<Matrix>("Ind20uAB_AB", nA + na, nB + nb);
-    matrices_["ExchInd20u_AB_terms"] = std::make_shared<Matrix>("ExchInd20uAB_AB", nA + na, nB + nb);
-    matrices_["Ind20u_BA_terms"] = std::make_shared<Matrix>("Ind20uBA_AB", nA + na, nB + nb);
-    matrices_["ExchInd20u_BA_terms"] = std::make_shared<Matrix>("ExchInd20uBA_AB", nA + na, nB + nb);
+    matrices_["IndAB_AB"] = std::make_shared<Matrix>("IndAB_AB", nA + na + 1, nB + nb + 1); // add one entry for external
+                                                                                            // potentials in A and B
+    matrices_["IndBA_AB"] = std::make_shared<Matrix>("IndBA_AB", nA + na + 1, nB + nb + 1); // add one entry for external
+                                                                                            // potentials in A and B
+    matrices_["Ind20u_AB_terms"] = std::make_shared<Matrix>("Ind20uAB_AB", nA + na + 1, nB + nb + 1); // add one for external pot
+    matrices_["ExchInd20u_AB_terms"] = std::make_shared<Matrix>("ExchInd20uAB_AB", nA + na + 1, nB + nb + 1); // add one for external
+    matrices_["Ind20u_BA_terms"] = std::make_shared<Matrix>("Ind20uBA_AB", nA + na + 1, nB + nb + 1); // add one for external
+    matrices_["ExchInd20u_BA_terms"] = std::make_shared<Matrix>("ExchInd20uBA_AB", nA + na + 1, nB + nb + 1); // add one for external
     double** EABp = matrices_["IndAB_AB"]->pointer();
     double** EBAp = matrices_["IndBA_AB"]->pointer();
     double** Ind20ABp = matrices_["Ind20u_AB_terms"]->pointer();
@@ -4141,14 +4308,14 @@ void FISAPT::find() {
     double** ExchInd20BA2p = ExchInd20u_BA_terms->pointer();
 
     for (int a = 0; a < na; a++) {
-        for (int B = 0; B < nB + nb; B++) {
+        for (int B = 0; B < nB + nb + 1; B++) { // add one for external potential
             EABp[a + nA][B] = EAB2p[a][B];
             Ind20ABp[a + nA][B] = Ind20AB2p[a][B];
             ExchInd20ABp[a + nA][B] = ExchInd20AB2p[a][B];
         }
     }
 
-    for (int A = 0; A < nA + na; A++) {
+    for (int A = 0; A < nA + na + 1; A++) { // add one for external potential
         for (int b = 0; b < nb; b++) {
             EBAp[A][b + nB] = EBA2p[A][b];
             Ind20BAp[A][b + nB] = Ind20BA2p[A][b];
@@ -4156,20 +4323,22 @@ void FISAPT::find() {
         }
     }
 
-    matrices_["sIndAB_AB"] = std::make_shared<Matrix>("sIndAB_AB", snA + sna, snB + snb);
-    matrices_["sIndBA_AB"] = std::make_shared<Matrix>("sIndBA_AB", snA + sna, snB + snb);
+    matrices_["sIndAB_AB"] = std::make_shared<Matrix>("sIndAB_AB", snA + sna + 1, snB + snb + 1); // add one entry for external
+                                                                                                  // potentials in A and B
+    matrices_["sIndBA_AB"] = std::make_shared<Matrix>("sIndBA_AB", snA + sna + 1, snB + snb + 1); // add one entry for external
+                                                                                                  // potentials in A and B
     double** sEABp = matrices_["sIndAB_AB"]->pointer();
     double** sEBAp = matrices_["sIndBA_AB"]->pointer();
     double** sEAB2p = sInd_AB_terms->pointer();
     double** sEBA2p = sInd_BA_terms->pointer();
 
     for (int a = 0; a < sna; a++) {
-        for (int B = 0; B < snB + snb; B++) {
+        for (int B = 0; B < snB + snb + 1; B++) { // add one for external potential
             sEABp[a + snA][B] = sEAB2p[a][B];
         }
     }
 
-    for (int A = 0; A < snA + sna; A++) {
+    for (int A = 0; A < snA + sna + 1; A++) { // add one for external potential
         for (int b = 0; b < snb; b++) {
             sEBAp[A][b + snB] = sEBA2p[A][b];
         }
@@ -4210,7 +4379,8 @@ void FISAPT::fdisp() {
 
     // => Targets <= //
 
-    matrices_["Disp_AB"] = std::make_shared<Matrix>("Disp_AB", nA + nfa + na, nB + nfb + nb);
+    matrices_["Disp_AB"] = std::make_shared<Matrix>("Disp_AB", nA + nfa + na + 1, nB + nfb + nb + 1); // add one entry for external
+                                                                                                      // potentials in A and B
     double** Ep = matrices_["Disp_AB"]->pointer();
 
     int snA = 0;
@@ -4229,7 +4399,9 @@ void FISAPT::fdisp() {
         snb = nb;
     }
 
-    matrices_["sDisp_AB"] = std::make_shared<Matrix>("Disp_AB", snA + snfa + sna, snB + snfb + snb);
+    matrices_["sDisp_AB"] = std::make_shared<Matrix>("Disp_AB", snA + snfa + sna + 1, snB + snfb + snb + 1); // add one entry for
+                                                                                                             // external potenrials
+                                                                                                             // in A and B
     double** sEp = matrices_["sDisp_AB"]->pointer();
 
     // => Stashed Variables <= //

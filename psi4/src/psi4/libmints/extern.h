@@ -87,6 +87,16 @@ class PSI_API ExternalPotential {
     /// Add a basis of S auxiliary functions with DF coefficients
     void addBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs);
 
+    /// get the vector of basis
+    std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector> > getBases() const {
+        return bases_;
+    }
+
+    /// Append some bases
+    void appendBases(std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector> > new_bases) {
+        bases_.insert(bases_.end(), new_bases.begin(), new_bases.end());
+    }
+
     /// Reset the field to zero (eliminates all entries)
     void clear();
 
@@ -96,6 +106,9 @@ class PSI_API ExternalPotential {
     SharedMatrix computePotentialGradients(std::shared_ptr<BasisSet> basis, std::shared_ptr<Matrix> Dt);
     /// Compute the contribution to the nuclear repulsion energy for the given molecule
     double computeNuclearEnergy(std::shared_ptr<Molecule> mol);
+
+    // Compute the interaction of this potential with an external potential
+    double computeExternExternInteraction(std::shared_ptr<ExternalPotential> other_extern, bool in_angstrom=false);
 
     /// Print a trace of the external potential
     void print(std::string out_fname = "outfile") const;

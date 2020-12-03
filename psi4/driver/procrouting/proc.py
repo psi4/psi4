@@ -1236,26 +1236,26 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
         wfn.set_external_potential_c(core.EXTERN)
         wfn.set_external_potential(core.EXTERN)
         extern_set = True
-    elif 'external_potentials' in kwargs and 'C' in kwargs['external_potentials'].keys():
-        newpot = kwargs['external_potentials']['C'].extern
-        wfn.set_external_potential_c(newpot)
-        wfn.set_external_potential(newpot)
-        extern_set = True
-    if 'external_potentials' in kwargs and 'A' in kwargs['external_potentials'].keys():
-        newpot = kwargs['external_potentials']['A'].extern
-        wfn.set_external_potential_a(newpot)
-        if extern_set:
-            wfn.external_pot().appendCharges(newpot.getCharges())
-        else:
-            wfn.set_external_potential(newpot)
-            extern_set = True
-    if 'external_potentials' in kwargs and 'B' in kwargs['external_potentials'].keys():
-        newpot = kwargs['external_potentials']['B'].extern
-        wfn.set_external_potential_b(newpot)
-        if extern_set:
-            wfn.external_pot().appendCharges(newpot.getCharges())
-        else:
-            wfn.set_external_potential(newpot)
+
+    elif 'external_potentials' in kwargs:
+        total_external_potential = core.ExternalPotential()
+
+        if "A" in kwargs['external_potentials']:
+            wfn.set_external_potential_a(kwargs['external_potentials']['A'].extern)
+            total_external_potential.appendCharges(kwargs['external_potentials']['A'].extern.getCharges())
+            total_external_potential.appendBases(kwargs['external_potentials']['A'].extern.getBases())
+
+        if "B" in kwargs['external_potentials']:
+            wfn.set_external_potential_b(kwargs['external_potentials']['B'].extern)
+            total_external_potential.appendCharges(kwargs['external_potentials']['B'].extern.getCharges())
+            total_external_potential.appendBases(kwargs['external_potentials']['B'].extern.getBases())
+
+        if "C" in kwargs['external_potentials']:
+            wfn.set_external_potential_c(kwargs['external_potentials']['C'].extern)
+            total_external_potential.appendCharges(kwargs['external_potentials']['C'].extern.getCharges())
+            total_external_potential.appendBases(kwargs['external_potentials']['C'].extern.getBases())
+
+        wfn.set_external_potential(total_external_potential)  # for the SCF
 
     return wfn
 
