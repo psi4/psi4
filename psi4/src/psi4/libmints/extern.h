@@ -120,6 +120,9 @@ class PSI_API ExternalPotential {
     void set_print(int print) { print_ = print; }
     /// Debug flag
     void set_debug(int debug) { debug_ = debug; }
+
+    /// Get the centers of the external potential in xyz format
+    std::string get_xyz();
 };
 
 }  // namespace psi

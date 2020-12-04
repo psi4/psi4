@@ -805,7 +805,37 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
 
     order2  = extract_order2_fsapt(osapt, total_ws['A'], total_ws['B'], frags)
 
-    order2r = collapse_links(order2, frags, Qs, orbital_ws, links5050)
+    # Add external potential data for A
+    if os.path.exists("%s/Extern_A.xyz" %dirname):
+        fragkeys['A'].append("Extern-A")
+        fragkeysr['A'].append("Extern-A")
+        orbital_ws['A']['Extern-A'] = [0.0 for i in range(len(Qs['A']))]
+        total_ws['A']['Extern-A'] = [0.0 for i in range(len(osapt['Elst']))]
+        total_ws['A']['Extern-A'][-1] = 1.0
+        geom_extern_A = readXYZ('%s/Extern_A.xyz' % dirname)
+        for a in geom_extern_A:
+            geom.append(a)
+        frags['A']['Extern-A'] = list(range(len(Zs['A']), len(Zs['A']) + len(geom_extern_A)))
+
+    # Add external potential data for B
+    if os.path.exists("%s/Extern_B.xyz" %dirname):
+        fragkeys['B'].append("Extern-B")
+        fragkeysr['B'].append("Extern-B")
+        orbital_ws['B']['Extern-B'] = [0.0 for i in range(len(Qs['B']))]
+        total_ws['B']['Extern-B'] = [0.0 for i in range(len(osapt['Elst'][0]))]
+        total_ws['B']['Extern-B'][-1] = 1.0
+        geom_extern_B = readXYZ('%s/Extern_B.xyz' % dirname)
+        for b in geom_extern_B:
+            geom.append(b)
+        if os.path.exists("%s/Extern_A.xyz" %dirname):
+            frags['B']['Extern-B'] = list(range(len(Zs['A']) + len(geom_extern_A),
+                                                len(Zs['A']) + len(geom_extern_A) + len(geom_extern_B)))
+        else:
+            frags['B']['Extern-B'] = list(range(len(Zs['B']), len(Zs['B']) + len(geom_extern_B)))
+
+
+    order2  = extractOrder2Fsapt(osapt, total_ws['A'], total_ws['B'])
+    order2r = collapseLinks(order2, frags, Qs, orbital_ws, links5050)
 
     stuff = {}
     stuff['order2'] = order2

@@ -4499,7 +4499,7 @@ def run_fisapt(name, **kwargs):
 
     fisapt_wfn = core.FISAPT(ref_wfn)
     from .sapt import fisapt_proc
-    fisapt_wfn.compute_energy()
+    fisapt_wfn.compute_energy(external_potentials=kwargs.get("external_potentials", None))
 
     # Compute -D dispersion
     if "-d" in name.lower():

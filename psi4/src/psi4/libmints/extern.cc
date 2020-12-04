@@ -92,6 +92,38 @@ void ExternalPotential::print(std::string out) const {
     }
 }
 
+std::string ExternalPotential::get_xyz() {
+
+    std::string xyz = "";
+    size_t n_atoms = 0;
+    // Charges
+    if (charges_.size()) {
+        for (size_t i = 0; i < charges_.size(); i++) {
+            xyz += "Ch "  + std::to_string(std::get<1>(charges_[i])) + " " +
+                   std::to_string(std::get<2>(charges_[i])) + " "  + std::to_string(std::get<3>(charges_[i])) + "\n";
+            n_atoms += 1;
+        }
+    }
+
+    // Bases
+    if (bases_.size()) {
+        for (size_t i = 0; i < bases_.size(); i++) {
+            auto mol = bases_[i].first->molecule();
+            for (int i = 0; i < mol->nallatom(); i++) {
+                double c = pc_bohr2angstroms;
+                xyz += mol->symbol(i) + " " + std::to_string(mol->x(i)*c) + " " + std::to_string(mol->y(i)*c) + " " +
+                       std::to_string(mol->z(i)*c) + "\n";
+                n_atoms += 1;
+            }
+        }
+    }
+
+    xyz = std::to_string(n_atoms) + "\n\n" + xyz;
+
+    return xyz;
+}
+
+
 SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet> basis) {
     int n = basis->nbf();
     auto V = std::make_shared<Matrix>("External Potential", n, n);

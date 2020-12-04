@@ -34,7 +34,7 @@ from psi4 import core
 from .. import empirical_dispersion
 
 
-def fisapt_compute_energy(self):
+def fisapt_compute_energy(self, external_potentials=None):
     """Computes the FSAPT energy. FISAPT::compute_energy"""
 
     # => Header <=
@@ -111,7 +111,7 @@ def fisapt_compute_energy(self):
         #    text.append("\n    Empirical Dispersion Energy [Eh] =     {:24.16f}\n".format(Edisp))
         #    text.append('\n')
         #    core.print_out('\n'.join(text))
-        self.fdrop()
+        self.fdrop(external_potentials)
 
     # => Scalar-Field Analysis <=
 
@@ -125,7 +125,7 @@ def fisapt_compute_energy(self):
     self.print_trailer()
 
 
-def fisapt_fdrop(self):
+def fisapt_fdrop(self, external_potentials=None):
     """Drop output files from FSAPT calculation. FISAPT::fdrop"""
 
     core.print_out("  ==> F-SAPT Output <==\n\n")
@@ -139,6 +139,18 @@ def fisapt_fdrop(self):
     xyz = self.molecule().to_string(dtype='xyz', units='Angstrom')
     with open(geomfile, 'w') as fh:
         fh.write(xyz)
+
+    # write external potential geometries
+    if external_potentials is not None:
+        if external_potentials.get("A", None) is not None:
+            xyz = external_potentials['A'].extern.get_xyz()
+            with open(filepath + os.sep + "Extern_A.xyz", "w") as fh:
+                fh.write(xyz)
+
+        if external_potentials.get("B", None) is not None:
+            xyz = external_potentials['B'].extern.get_xyz()
+            with open(filepath + os.sep + "Extern_B.xyz", "w") as fh:
+                fh.write(xyz)
 
     vectors = self.vectors()
     matrices = self.matrices()

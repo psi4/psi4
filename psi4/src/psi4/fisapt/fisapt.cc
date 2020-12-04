@@ -1434,9 +1434,6 @@ void FISAPT::elst() {
 
    outfile->Printf("\n");
     // fflush(outfile);
-
-    for (auto t: Elst10_terms) {std::cout << t << " ";}
-    std::cout << std::endl;
 }
 
 // Compute total exchange contribution
@@ -3306,15 +3303,14 @@ void FISAPT::felst() {
     // Extern A-atom B interaction
     // Compute the interaction between the external potenrial and each atom in the fragment
     if (reference_->external_pot_a()) {
-        std::shared_ptr<Molecule> B_mol = mol->extract_subsets({1}, {});
         double conv = 1;
         if (mol->units() == Molecule::Angstrom) {
             conv *= pc_bohr2angstroms;
         }
         double E = 0.0;
-        for (int B = 0; B < B_mol->natom(); B++) {
+        for (int B = 0; B < nB; B++) {
             auto atom = std::make_shared<Molecule>();
-            atom->add_atom(B_mol->Z(B), B_mol->x(B)*conv, B_mol->y(B)*conv, B_mol->z(B)*conv);
+            atom->add_atom(ZBp[B], mol->x(B)*conv, mol->y(B)*conv, mol->z(B)*conv);
             double interaction = reference_->external_pot_a()->computeNuclearEnergy(atom);
             Ep[nA + na][B] = interaction;
             E += interaction;
@@ -3325,22 +3321,20 @@ void FISAPT::felst() {
     // Extern B-atom A interaction
     // Compute the interaction between the external potenrial and each atom in the fragment
     if (reference_->external_pot_b()) {
-        std::shared_ptr<Molecule> A_mol = mol->extract_subsets({0}, {});
         double conv = 1;
         if (mol->units() == Molecule::Angstrom) {
             conv *= pc_bohr2angstroms;
         }
         double E = 0.0;
-        for (int A = 0; A < A_mol->natom(); A++) {
+        for (int A = 0; A < nA; A++) {
             auto atom = std::make_shared<Molecule>();
-            atom->add_atom(A_mol->Z(A), A_mol->x(A)*conv, A_mol->y(A)*conv, A_mol->z(A)*conv);
+            atom->add_atom(ZAp[A], mol->x(A)*conv, mol->y(A)*conv, mol->z(A)*conv);
             double interaction = reference_->external_pot_b()->computeNuclearEnergy(atom);
             Ep[A][nB + nb] = interaction;
             E += interaction;
         }
         Elst10_terms[3] += E;
     }
-
 
     // => a <-> b <= //
 
@@ -3491,9 +3485,6 @@ void FISAPT::felst() {
     outfile->Printf("\n");
 
     // fflush(outfile);
-
-    for (auto t: Elst10_terms) {std::cout << t << " ";}
-    std::cout << std::endl;
 }
 
 // Compute fragment-fragment partitioning of exchange contribution
