@@ -3403,8 +3403,49 @@ SharedMatrix doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, 
 
 SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA, bool transB,
                      bool transC) {
-    SharedMatrix T = doublet(A, B, transA, transB);
-    SharedMatrix S = doublet(T, C, false, transC);
+
+    int dim1 = A->nrow();
+    int dim2 = A->ncol();
+    int dim3 = B->nrow();
+    int dim4 = B->ncol();
+    int dim5 = C->nrow();
+    int dim6 = C->ncol();
+
+    int temp = 0;
+
+    if (transA) {
+        temp = dim1;
+        dim1 = dim2;
+        dim2 = temp;
+    }
+
+    if (transB) {
+        temp = dim3;
+        dim3 = dim4;
+        dim4 = temp;
+    }
+
+    if (transC) {
+        temp = dim5;
+        dim5 = dim6;
+        dim6 = temp;
+    }
+
+    if (dim2 != dim3 || dim4 != dim5) {
+        throw new PsiException("Input matrices are of invalid size", __FILE__, __LINE__);
+    }
+
+    SharedMatrix T;
+    SharedMatrix S;
+
+    if (dim1 * dim4 * (dim2 + dim6) <= dim2 * dim6 * (dim1 + dim4)) {
+        T = doublet(A, B, transA, transB);
+        S = doublet(T, C, false, transC);
+    } else {
+        T = doublet(B, C, transB, transC);
+        S = doublet(A, T, transA, false);
+    }
+
     return S;
 }
 
