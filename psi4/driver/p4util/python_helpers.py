@@ -443,9 +443,7 @@ def set_options(options_dict, verbose=1):
 
     for k, v, in options_dict.items():
 
-        k = k.strip()
-
-        mobj = optionre.match(k)
+        mobj = optionre.match(k.strip())
         module = mobj.group('module').upper()[:-2] if mobj.group('module') else None
         option = mobj.group('option').upper()
 
