@@ -274,6 +274,7 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/addons.py
               ../tests/pytests/utils.py
               ../tests/pytests/test_psi4.py
+              ../tests/pytests/test_option.py
               ../tests/pytests/test_addons.py
               ../tests/pytests/test_qcel_molparse_to_string.py
               ../tests/pytests/test_matrix.py
