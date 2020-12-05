@@ -24,7 +24,7 @@ def test_triplet_speedup():
     time2 = time.time() - start
 
     assert (time1 < time2)
-    assert psi4.compare_matrices(R, S, 5, "linalg::triplet speedup test")
+    assert psi4.compare_matrices(R, S, 8, "linalg::triplet speedup test")
 
 @pytest.mark.quick
 def test_triplet_normal_case():
