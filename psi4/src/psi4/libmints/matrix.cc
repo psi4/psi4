@@ -3404,40 +3404,25 @@ SharedMatrix doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, 
 SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA, bool transB,
                      bool transC) {
 
-    int dim1 = A->nrow();
-    int dim2 = A->ncol();
-    int dim3 = B->nrow();
-    int dim4 = B->ncol();
-    int dim5 = C->nrow();
-    int dim6 = C->ncol();
+    int dim1 = transA ? A->ncol() : A->nrow();
+    int dim2 = transA ? A->nrow() : A->ncol();
+    int dim3 = transB ? B->ncol() : B->nrow();
+    int dim4 = transB ? B->nrow() : B->ncol();
+    int dim5 = transC ? C->ncol() : C->nrow();
+    int dim6 = transC ? C->nrow() : C->ncol();
 
-    int temp = 0;
-
-    if (transA) {
-        temp = dim1;
-        dim1 = dim2;
-        dim2 = temp;
-    }
-
-    if (transB) {
-        temp = dim3;
-        dim3 = dim4;
-        dim4 = temp;
-    }
-
-    if (transC) {
-        temp = dim5;
-        dim5 = dim6;
-        dim6 = temp;
-    }
-
+    // Checks validity of Matrix Multiply, don't want calculation to suddenly fail halfway through
     if (dim2 != dim3 || dim4 != dim5) {
-        throw new PsiException("Input matrices are of invalid size", __FILE__, __LINE__);
+        throw PsiException("Input matrices are of invalid size", __FILE__, __LINE__);
     }
 
     SharedMatrix T;
     SharedMatrix S;
 
+    // Cost of (AB)C compared to A(BC)
+    // A = dim1 * dim2, B = dim3 * dim4, C = dim5 * dim6
+    // (AB)C cost = dim1 * (dim2 == dim3) * dim4 + dim1 * (dim4 == dim5) * dim6
+    // A(BC) cost = (dim3 == dim2) * (dim4 == dim5) * dim6 + dim1 * (dim2 == dim3) * dim6
     if (dim1 * dim4 * (dim2 + dim6) <= dim2 * dim6 * (dim1 + dim4)) {
         T = doublet(A, B, transA, transB);
         S = doublet(T, C, false, transC);
