@@ -628,6 +628,7 @@ void FISAPT::nuclear() {
 
         if (reference_->get_print()) {
             reference_->external_pot_c()->set_print(reference_->get_print());
+            outfile->Printf("  External Potential C:\n");
             reference_->external_pot_c()->print();
         }
 
@@ -658,6 +659,7 @@ void FISAPT::nuclear() {
 
         if (reference_->get_print()) {
             reference_->external_pot_a()->set_print(reference_->get_print());
+            outfile->Printf("  External Potential A:\n");
             reference_->external_pot_a()->print();
         }
         if (reference_->get_print() > 3) VA_extern->print();
@@ -685,6 +687,7 @@ void FISAPT::nuclear() {
 
         if (reference_->get_print()) {
             reference_->external_pot_b()->set_print(reference_->get_print());
+            outfile->Printf("  External Potential B:\n");
             reference_->external_pot_b()->print();
         }
         if (reference_->get_print() > 3) VB_extern->print();
@@ -745,7 +748,6 @@ void FISAPT::nuclear() {
         outfile->Printf("\n");
 
         matrices_["extern_mol_IE"] = extern_mol_IE_mat; // save interaction energy between external potential and molecule
-        extern_mol_IE_mat->print();
 
         // Now compute extern-extern interaction
         // We store the interaction energy between the external potentials in A, B, and C.
@@ -766,23 +768,13 @@ void FISAPT::nuclear() {
                 extern_extern_IE_matp[pot_ids[p2]][pot_ids[p1]] = IE * 0.5;
                 extern_extern_IE += IE;
 
-                // Add extern-extern IE value to nuclear repulsion energy matrix if it is A-B interaction
-                // This makes the interaction goes to the electrostatic term instead of the induction term
-                // Note that C-extern interactions with A-extern and B-extern should not affect the IE
-                // as A-extern and B-extern are not polarizable.
-                //if (pot_ids[p1] != 2 && pot_ids[p2] != 2) { 
-                //    Enucsp[pot_ids[p1]][pot_ids[p2]] += IE * 0.5;
-                //    Enucsp[pot_ids[p2]][pot_ids[p1]] += IE * 0.5;
-                //}
-
                 outfile->Printf("    Interaction Energy between External Potentials %c and %c: %24.16E [Eh]\n",
                                 'A'+pot_ids[p1], 'A'+pot_ids[p2], IE);
-                outfile->Printf("\n");
             }
         }
 
+        outfile->Printf("\n");
         matrices_["extern_extern_IE"] = extern_extern_IE_mat;
-        extern_extern_IE_mat->print();
 
     } // end dealing with external potentials
 
