@@ -7,7 +7,7 @@ pytestmark = pytest.mark.quick
 
 
 @pytest.mark.smoke
-def test_psi4_basic():
+def test_spacious_option():
     """tu1-h2o-energy"""
     #! Sample HF/cc-pVDZ H2O computation
 
