@@ -152,6 +152,11 @@ def fisapt_fdrop(self, external_potentials=None):
             with open(filepath + os.sep + "Extern_B.xyz", "w") as fh:
                 fh.write(xyz)
 
+        if external_potentials.get("C", None) is not None:
+            xyz = external_potentials['C'].extern.get_xyz()
+            with open(filepath + os.sep + "Extern_C.xyz", "w") as fh:
+                fh.write(xyz)
+
     vectors = self.vectors()
     matrices = self.matrices()
 

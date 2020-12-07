@@ -833,6 +833,11 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
         else:
             frags['B']['Extern-B'] = list(range(len(Zs['B']), len(Zs['B']) + len(geom_extern_B)))
 
+    # Add external potential data for C
+    if os.path.exists("%s/Extern_C.xyz" %dirname):
+        geom_extern_C = readXYZ('%s/Extern_C.xyz' % dirname)
+        for c in geom_extern_C:
+            geom.append(c)
 
     order2  = extractOrder2Fsapt(osapt, total_ws['A'], total_ws['B'])
     order2r = collapseLinks(order2, frags, Qs, orbital_ws, links5050)
