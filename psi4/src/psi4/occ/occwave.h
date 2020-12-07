@@ -164,6 +164,7 @@ class OCCWave : public Wavefunction {
     // REMP
     void t2_amps_remp();
     void remp_manager();
+    void oremp_manager();
     void remp_iterations();
 
     // MP2

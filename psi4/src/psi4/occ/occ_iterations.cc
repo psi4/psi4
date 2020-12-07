@@ -81,7 +81,7 @@ void OCCWave::occ_iterations() {
     // if (nooA + nooB != 1) {
     if (do_diis_ == 1) {
         orbitalDiis = new DIISManager(maxdiis_, "Orbital Optimized DIIS", DIISManager::LargestError, DIISManager::OnDisk);
-        std::string tensor_name = (wfn_type_ == "OCEPA") ? "T2" : (wfn_type_ == "OMP2" ? "T" : "T2_1");
+        std::string tensor_name = (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") ? "T2" : (wfn_type_ == "OMP2" ? "T" : "T2_1");
         if (reference_ == "RESTRICTED") {
             dpdbuf4 T;
             std::string temp1 = tensor_name + " <OO|VV>";
@@ -251,8 +251,8 @@ void OCCWave::occ_iterations() {
             }
         }
 
-        else if (wfn_type_ == "OCEPA") {
-            if (compute_ccl == "TRUE") {
+        else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") {
+            if (compute_ccl == "TRUE" ) {
                 timer_on("CEPAL Energy");
                 ccl_energy();
                 timer_off("CEPAL Energy");
@@ -310,6 +310,12 @@ void OCCWave::occ_iterations() {
             timer_off("T2");
         }
 
+        else if (wfn_type_ == "OREMP") {
+            timer_on("T2");
+            t2_amps_remp();
+            timer_off("T2");
+        }
+
         /********************************************************************************************/
         /************************** Print ***********************************************************/
         /********************************************************************************************/
@@ -337,7 +343,7 @@ void OCCWave::occ_iterations() {
         else if (wfn_type_ == "OMP3")
             outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n", itr_occ, Emp3L, DE, rms_wog,
                             biggest_mograd, rms_t2);
-        else if (wfn_type_ == "OCEPA")
+        else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP")
             outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n", itr_occ, EcepaL, DE, rms_wog,
                             biggest_mograd, rms_t2);
         else if (wfn_type_ == "OMP2.5")
@@ -361,7 +367,7 @@ void OCCWave::occ_iterations() {
         oo_diis();
 
         // Handle any needed resorts of amplitudes, after the DIIS.
-        if (wfn_type_ == "OCEPA") {
+        if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") {
             cepa_chemist();
         } else if (wfn_type_ == "OMP2.5" || wfn_type_ == "OMP3") {
             iterative_mp_postdiis_amplitudes();
@@ -381,6 +387,8 @@ void OCCWave::occ_iterations() {
             outfile->Printf(" ======================== OMP3 ITERATIONS ARE CONVERGED ======================= \n");
         else if (wfn_type_ == "OCEPA")
             outfile->Printf(" ======================== OLCCD ITERATIONS ARE CONVERGED ====================== \n");
+        else if (wfn_type_ == "OREMP")
+            outfile->Printf(" ======================== OREMP ITERATIONS ARE CONVERGED ====================== \n");
         else if (wfn_type_ == "OMP2.5")
             outfile->Printf(" ======================== OMP2.5 ITERATIONS ARE CONVERGED ===================== \n");
         outfile->Printf(" ============================================================================== \n");
@@ -396,6 +404,9 @@ void OCCWave::occ_iterations() {
                             mo_maxiter);
         else if (wfn_type_ == "OCEPA")
             outfile->Printf("\n ======================== OLCCD IS NOT CONVERGED IN %2d ITERATIONS ============ \n",
+                            mo_maxiter);
+        else if (wfn_type_ == "OREMP")
+            outfile->Printf("\n ======================== OREMP IS NOT CONVERGED IN %2d ITERATIONS ============ \n",
                             mo_maxiter);
         else if (wfn_type_ == "OMP2.5")
             outfile->Printf("\n ======================== OMP2.5 IS NOT CONVERGED IN %2d ITERATIONS =========== \n",
@@ -461,7 +472,7 @@ void OCCWave::response_pdms() {
         omp2_response_pdms();
     else if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5")
         omp3_response_pdms();
-    else if (wfn_type_ == "OCEPA")
+    else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP" )
         ocepa_response_pdms();
 }
 
@@ -516,7 +527,7 @@ void OCCWave::oo_diis() {
             if (orbitalDiis->subspace_size() >= mindiis_) {
                 orbitalDiis->extrapolate(3, kappa_bar_[SpinType::Alpha].get(), &T1, &T2);
             }
-        } else if (wfn_type_ == "OCEPA") {
+        } else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") {
             dpdbuf4 T, R;
             global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "T2 <OO|VV>");
@@ -597,7 +608,7 @@ void OCCWave::oo_diis() {
             global_dpd_->buf4_close(&R2aa);
             global_dpd_->buf4_close(&R2ab);
             global_dpd_->buf4_close(&R2bb);
-        } else if (wfn_type_ == "OCEPA") {
+        } else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") {
             dpdbuf4 Taa, Tab, Tbb, Raa, Rab, Rbb;
             global_dpd_->buf4_init(&Taa, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "T2 <OO|VV>");
