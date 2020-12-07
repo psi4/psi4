@@ -389,6 +389,8 @@ void OCCWave::title() {
         outfile->Printf("                             MP2.5  \n");
     else if (wfn_type_ == "REMP" && orb_opt_ == "FALSE")
         outfile->Printf("                             REMP2  \n");
+    else if (wfn_type_ == "OREMP" && orb_opt_ == "TRUE")
+        outfile->Printf("                           OO-REMP2  \n");
     outfile->Printf("                    Program Written by Ugur Bozkaya,\n");
     outfile->Printf("              Additional Contributions by J. P. Misiewicz\n");
     outfile->Printf("\n");
@@ -491,7 +493,7 @@ double OCCWave::compute_energy() {
         return Emp2L;
     else if (wfn_type_ == "OMP3" || wfn_type_ == "OMP2.5")
         return Emp3L;
-    else if (wfn_type_ == "OCEPA")
+    else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP")
         return EcepaL;
     else if (wfn_type_ == "CEPA")
         return Ecepa;
