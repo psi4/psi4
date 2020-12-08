@@ -3404,26 +3404,43 @@ SharedMatrix doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, 
 SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA, bool transB,
                      bool transC) {
 
-    int dim1 = transA ? A->ncol() : A->nrow();
-    int dim2 = transA ? A->nrow() : A->ncol();
-    int dim3 = transB ? B->ncol() : B->nrow();
-    int dim4 = transB ? B->nrow() : B->ncol();
-    int dim5 = transC ? C->ncol() : C->nrow();
-    int dim6 = transC ? C->nrow() : C->ncol();
+    int nirrep = A->nirrep();
+    
+    if (nirrep != B->nirrep() || nirrep != C->nirrep()) {
+        throw PsiException("Input Matrices A, B, and C do not have the same number of irreps.", __FILE__, __LINE__);
+    }
 
-    // Checks validity of Matrix Multiply, don't want calculation to suddenly fail halfway through
-    if (dim2 != dim3 || dim4 != dim5) {
-        throw PsiException("Input matrices are of invalid size", __FILE__, __LINE__);
+    // cost1 = cost of (AB)C
+    // cost2 = cost of A(BC)
+    int cost1 = 0;
+    int cost2 = 0;
+
+    for (int h = 0; h < nirrep; h++) {
+
+        int dim1 = transA ? A->colspi(h) : A->rowspi(h);
+        int dim2 = transA ? A->rowspi(h) : A->colspi(h);
+        int dim3 = transB ? B->colspi(h) : B->rowspi(h);
+        int dim4 = transB ? B->rowspi(h) : B->colspi(h);
+        int dim5 = transC ? C->colspi(h) : C->rowspi(h);
+        int dim6 = transC ? C->rowspi(h) : C->colspi(h);
+        // Checks validity of Matrix Multiply, don't want calculation to suddenly fail halfway through
+        if (dim2 != dim3 || dim4 != dim5) {
+            throw PsiException("Input matrices are of invalid size", __FILE__, __LINE__);
+        }
+
+        // Cost of (AB)C compared to A(BC) per irrep
+        // A = dim1 * dim2, B = dim3 * dim4, C = dim5 * dim6
+        // (AB)C cost = dim1 * (dim2 == dim3) * dim4 + dim1 * (dim4 == dim5) * dim6
+        // A(BC) cost = (dim3 == dim2) * (dim4 == dim5) * dim6 + dim1 * (dim2 == dim3) * dim6
+        cost1 += dim1 * dim4 * (dim2 + dim6);
+        cost2 += dim2 * dim6 * (dim1 + dim4);
+
     }
 
     SharedMatrix T;
     SharedMatrix S;
 
-    // Cost of (AB)C compared to A(BC)
-    // A = dim1 * dim2, B = dim3 * dim4, C = dim5 * dim6
-    // (AB)C cost = dim1 * (dim2 == dim3) * dim4 + dim1 * (dim4 == dim5) * dim6
-    // A(BC) cost = (dim3 == dim2) * (dim4 == dim5) * dim6 + dim1 * (dim2 == dim3) * dim6
-    if (dim1 * dim4 * (dim2 + dim6) <= dim2 * dim6 * (dim1 + dim4)) {
+    if (cost1 <= cost2) {
         T = doublet(A, B, transA, transB);
         S = doublet(T, C, false, transC);
     } else {
