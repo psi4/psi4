@@ -186,6 +186,7 @@ class MOLECULE {
   }
 
   void print_xyz(int iter_shift = 0);
+  void print_xyz_molden(double energy=0.0E0);
   void print_xyz_irc(int point, bool direction);
 
   void print_geom_grad(std::string psi_fp, FILE *qc_fp, bool print_mass = false) {

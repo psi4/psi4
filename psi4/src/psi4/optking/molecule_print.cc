@@ -94,6 +94,23 @@ void MOLECULE::print_xyz(int iter_shift) {
   return;
 }
 
+void MOLECULE::print_xyz_molden(double energy) {
+  FILE *qc_fp = nullptr;
+
+#if defined(OPTKING_PACKAGE_QCHEM)
+  qc_fp = fopen("geoms.xyz", "a");
+#endif
+  oprintf("geoms.xyz", qc_fp, "%d\n", g_natom());
+  oprintf("geoms.xyz", qc_fp, "Energy= %16.10f\n", energy);
+  for (std::size_t i=0; i<fragments.size(); ++i)
+    fragments[i]->print_geom("geoms.xyz", qc_fp);
+#if defined(OPTKING_PACKAGE_QCHEM)
+  fclose(qc_fp);
+#endif
+  return;
+}
+
+
 void MOLECULE::print_xyz_irc(int point, bool forward) {
   FILE *qc_fp = nullptr;
 
