@@ -41,7 +41,7 @@ void OCCWave::coord_grad() {
         outfile->Printf("\tComputing G_abcd...\n");
 
         omp3_tpdm_vvvv();
-    } else if (wfn_type_ == "OCEPA") {
+    } else if (wfn_type_ == "OCEPA" || wfn_type_ == "OREMP") {
         outfile->Printf("\tComputing G_abcd...\n");
 
         ocepa_tpdm_vvvv();

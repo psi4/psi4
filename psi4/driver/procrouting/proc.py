@@ -766,6 +766,34 @@ def select_olccd_gradient(name, **kwargs):
     else:
         return func(name, **kwargs)
 
+def select_oremp_gradient(name, **kwargs):
+    """Function selecting the algorithm for an OREMP gradient call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
+    # Considering only [df]occ
+
+    func = None
+    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+        if mtd_type == 'CONV':
+            if module in ['', 'OCC']:
+                func = run_occ_gradient
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                raise NotImplementedError(f"No DF gradients for OREMP (yet)")
+                #func = run_dfocc_gradient
+
+    if func is None:
+        raise ManagedMethodError(['select_oremp_gradient', name, 'CC_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
 
 def select_fnoccsd(name, **kwargs):
     """Function selecting the algorithm for a FNO-CCSD energy call
@@ -2206,6 +2234,9 @@ def run_occ_gradient(name, **kwargs):
         core.set_local_option('OCC', 'ORB_OPT', 'FALSE')
     elif name == 'olccd':
         core.set_local_option('OCC', 'WFN_TYPE', 'OCEPA')
+        core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
+    elif name == 'oremp':
+        core.set_local_option('OCC', 'WFN_TYPE', 'OREMP')
         core.set_local_option('OCC', 'ORB_OPT', 'TRUE')
     else:
         raise ValidationError("""Invalid method %s""" % name)
