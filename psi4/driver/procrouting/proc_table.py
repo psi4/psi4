@@ -200,6 +200,7 @@ procedures = {
         'mp2d'          : proc.run_dfmp2d_gradient,  # alias to match dft aliasing
         'lccd'          : proc.select_lccd_gradient,
         'olccd'         : proc.select_olccd_gradient,
+        'oremp'         : proc.select_oremp_gradient,
         'ccd'           : proc.run_dfocc_gradient,
         'occd'          : proc.run_dfocc_gradient,
         # Upon adding a method to this list, add it to the docstring in driver.optimize below
