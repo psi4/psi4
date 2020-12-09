@@ -833,6 +833,7 @@ void OEProp::compute() {
     if (tasks_.count("NO_OCCUPATIONS")) compute_no_occupations();
     if (tasks_.count("GRID_FIELD")) compute_field_over_grid();
     if (tasks_.count("GRID_ESP")) compute_esp_over_grid();
+    if (tasks_.count("ATOMIC_VOLUMES")) compute_atomic_volumes();
 }
 
 void OEProp::compute_multipoles(int order, bool transition) {
@@ -2020,7 +2021,9 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     mbis_grid_options_int["DFT_SPHERICAL_POINTS"] = options.get_int("MBIS_SPHERICAL_POINTS");
     mbis_grid_options_str["DFT_PRUNING_SCHEME"] = options.get_str("MBIS_PRUNING_SCHEME");
 
-    std::shared_ptr<DFTGrid> grid = std::make_shared<DFTGrid>(mol, basisset_, mbis_grid_options_int, mbis_grid_options_str, options);
+    grid_ = std::make_shared<DFTGrid>(mol, basisset_, mbis_grid_options_int, mbis_grid_options_str, options);
+    
+    std::shared_ptr<DFTGrid>& grid = grid_;
 
     if (print_output && debug >= 1) grid->print();
 
@@ -2107,7 +2110,8 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     }
 
     // Distances and displacements between grid points and nuclei
-    std::vector<double> distances(num_atoms * total_points, 0.0);
+    distances_.resize(num_atoms * total_points, 0.0);
+    std::vector<double>& distances = distances_;
     std::vector<std::vector<double>> disps(3, std::vector<double>(num_atoms * total_points, 0.0));
 
 #pragma omp parallel for
@@ -2167,7 +2171,8 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     // Promolecular and proatomic densities
     std::vector<double> rho_0_points(total_points, 0.0);
-    std::vector<double> rho_a_0_points(num_atoms * total_points, 0.0);
+    rho_a_0_points_.resize(num_atoms * total_points, 0.0);
+    std::vector<double>& rho_a_0_points = rho_a_0_points_;
 
     // Next iteration densities
     std::vector<double> rho_0_points_next(total_points, 0.0);
@@ -2267,11 +2272,13 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     // => Post-Processing <= //
  
     // Atomic density, as defined in Equation 5 of Verstraelen et al. (Negative to account for negative charge of electron)
-    std::vector<double> rho_a(num_atoms * total_points, 0.0);
+    rho_a_points_.resize(num_atoms * total_points, 0.0);
+    std::vector<double>& rho_a = rho_a_points_;
+
 #pragma omp parallel for
     for (int atom = 0; atom < num_atoms; atom++) {
         for (size_t point = 0; point < total_points; point++) {
-            rho_a[atom * total_points + point] = -rho[point] * rho_a_0_points[atom * total_points + point] / rho_0_points[point];
+            rho_a[atom * total_points + point] = rho[point] * rho_a_0_points[atom * total_points + point] / rho_0_points[point];
         }
     }
 
@@ -2317,24 +2324,24 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
             auto ap = a * total_points + p;
 
             // Atomic monopole
-            mpole->add(a, 0, weights[p] * rho_a[ap]);
+            mpole->add(a, 0, weights[p] * -rho_a[ap]);
 
             // Atomic dipole
             for (int i = 0; i < 3; i++) {
-                dpole->add(a, i, weights[p] * rho_a[ap] * disps[i][ap]);
+                dpole->add(a, i, weights[p] * -rho_a[ap] * disps[i][ap]);
             }
 
             // Atomic quadrupole
             for (int q = 0; q < 6; q++) {
                 int i = qpole_inds[q][0], j = qpole_inds[q][1];
-                qpole->add(a, q, weights[p] * rho_a[ap] * (disps[i][ap] * disps[j][ap]));
+                qpole->add(a, q, weights[p] * -rho_a[ap] * (disps[i][ap] * disps[j][ap]));
                 //qpole_stone->add(a, q, weights[p] * rho_a[ap] * (1.5 * disps[i][ap] * disps[j][ap] - 0.5 * pow(distances[ap], 2) * k_delta[i][j]));
             }
 
             // Atomic octupole
             for (int o = 0; o < 10; o++) {
                 int i = opole_inds[o][0], j = opole_inds[o][1], k = opole_inds[o][2];
-                opole->add(a, o, weights[p] * rho_a[ap] * (disps[i][ap] * disps[j][ap] * disps[k][ap]));
+                opole->add(a, o, weights[p] * -rho_a[ap] * (disps[i][ap] * disps[j][ap] * disps[k][ap]));
                 //opole_stone->add(a, o, weights[p] * rho_a[ap] 
                 //    * (2.5 * disps[i][ap] * disps[j][ap] * disps[k][ap] - 0.5 * pow(distances[ap], 2) 
                 //        * (k_delta[j][k] * disps[i][ap] + k_delta[i][k] * disps[j][ap] + k_delta[i][j] * disps[k][ap])));
@@ -2384,6 +2391,57 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     timer_off("MBIS");
 
     return std::make_tuple(mpole, dpole, qpole, opole);
+}
+
+void OEProp::compute_atomic_volumes() {
+
+     SharedMatrix atom_vols, pro_atom_vols;
+     std::tie(atom_vols, pro_atom_vols) = pac_.compute_atomic_volumes(true);
+ 
+     wfn_->set_array_variable("ATOMIC VOLUMES", atom_vols);
+     wfn_->set_array_variable("PROATOMIC VOLUMES", pro_atom_vols);
+
+}
+
+std::tuple<SharedMatrix, SharedMatrix> PopulationAnalysisCalc::compute_atomic_volumes(bool print_output) {
+
+    Options& options = Process::environment.options;    
+    const int exp = options.get_double("ATOMIC_VOLUME_EXPONENT");
+    auto mol = basisset_->molecule();
+    int num_atoms = mol->natom();
+
+    auto atomic_vols = std::make_shared<Matrix>("ATOMIC VOLUMES", num_atoms, 1);
+    auto pro_atomic_vols = std::make_shared<Matrix>("PROATOMIC VOLUMES", num_atoms, 1);
+
+    auto blocks = grid_->blocks();
+    size_t total_points = grid_->npoints();
+
+#pragma omp parallel for
+    for (int a = 0; a < num_atoms; a++) {
+        size_t running_points = 0;
+        double atom_vol = 0;
+        double proatom_vol = 0;
+        for (int b = 0; b < blocks.size(); b++) {
+            auto block = blocks[b];
+            SharedVector rho_block;
+            size_t num_points = block->npoints();
+
+            double* x = block->x();
+            double* y = block->y();
+            double* z = block->z();
+            double* w = block->w();
+            
+            for (size_t p = running_points; p < running_points + num_points; p++) {
+                auto ap = a * total_points + p;
+                atom_vol += w[p - running_points] * rho_a_points_[ap] * pow(distances_[ap], exp);
+                proatom_vol += w[p - running_points] * rho_a_0_points_[ap] * pow(distances_[ap], exp);
+            }
+        }
+        atomic_vols->set(a, 0, atom_vol);
+        pro_atomic_vols->set(a, 0, proatom_vol);
+    }
+
+    return std::make_tuple(atomic_vols, pro_atomic_vols);
 }
 
 void OEProp::compute_mayer_indices() {
