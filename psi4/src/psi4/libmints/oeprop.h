@@ -36,7 +36,6 @@
 
 #include "typedefs.h"
 #include "psi4/libmints/vector3.h"
-#include "psi4/libfock/cubature.h"
 
 namespace psi {
 
@@ -310,14 +309,6 @@ class MultipolePropCalc : public Prop {
 class PopulationAnalysisCalc : public Prop {
    private:
     PopulationAnalysisCalc();
-    // The Integration Grid Used in Atomic Charge Partitioning Schemes
-    std::shared_ptr<DFTGrid> grid_{nullptr};
-    // The proatomic densities
-    std::vector<double> rho_a_0_points_;
-    // The atomic densities
-    std::vector<double> rho_a_points_;
-    // Distances from Atomic Centers
-    std::vector<double> distances_;
 
    public:
     typedef std::shared_ptr<std::vector<double>> SharedStdVector;
@@ -328,7 +319,7 @@ class PopulationAnalysisCalc : public Prop {
     /// Compute Lowdin Charges
     std::tuple<SharedStdVector, SharedStdVector, SharedStdVector> compute_lowdin_charges(bool print_output = false);
     /// Compute MBIS Multipoles (doi:10.1021/acs.jctc.6b00456)
-    std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> compute_mbis_multipoles(bool print_output = false);
+    std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> compute_mbis_multipoles(bool print_output = false);
     /// Compute Mayer Bond Indices (non-orthogoal basis)
     std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> compute_mayer_indices(bool print_output = false);
     /// Compute Wiberg Bond Indices using Lowdin Orbitals (symmetrically orthogonal basis)
@@ -337,8 +328,6 @@ class PopulationAnalysisCalc : public Prop {
     /// Compute/display natural orbital occupations around the bandgap. Displays max_num above and below the bandgap
     std::shared_ptr<std::vector<std::vector<std::tuple<double, int, int>>>> compute_no_occupations(
         int max_noon = 3, bool print_output = false);
-    /// Compute Expected Atomic and Proatomic Volumes
-    std::tuple<SharedMatrix, SharedMatrix> compute_atomic_volumes(bool print_output);
 };
 
 /**
@@ -442,8 +431,6 @@ class PSI_API OEProp : public TaskListComputer {
     void compute_esp_over_grid();
     /// Compute field at specified grid points
     void compute_field_over_grid();
-    /// Compute expected atomic volumes
-    void compute_atomic_volumes();
 
     MultipolePropCalc mpc_;
     PopulationAnalysisCalc pac_;

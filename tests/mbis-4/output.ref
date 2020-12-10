@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.4a2.dev851 
+                               Psi4 undefined 
 
-                         Git: Rev {mbis} 8961a5b dirty
+                         Git: Rev {exp_vol} b6988f5 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Saturday, 29 August 2020 04:25PM
+    Psi4 started on: Thursday, 10 December 2020 01:43PM
 
-    Process ID: 7407
+    Process ID: 22538
     Host:       ds4
     PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
@@ -66,6 +66,14 @@ octupoles_ref = psi4.Matrix.from_list([ #TEST
    5.53616140e-14, -1.58857644e-13, -3.37545507e-13,  2.25695766e+00,
    5.64299708e-14,  4.56953404e+00]])   #TEST
 
+# Reference Atomic Volumes From Horton
+# Na 10.98578655626551
+# Cl 93.71387402878563
+
+avols_ref = psi4.Matrix.from_list([  #TEST
+ [10.98566322],    #TEST
+ [93.71382434]])   #TEST
+
 molecule mol {
   0 1
   Na 0.00 0.00 0.00
@@ -91,11 +99,13 @@ charges = wfn.array_variable('MBIS CHARGES')
 dipoles = wfn.array_variable('MBIS DIPOLES')
 quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
+avols = wfn.array_variable('MBIS ATOMIC VOLUMES')
 
 compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
 compare_matrices(quadrupoles_ref, quadrupoles, 5, "MBIS Quadrupoles") #TEST
 compare_matrices(octupoles_ref, octupoles, 5, "MBIS Octupoles")       #TEST
+compare_matrices(avols_ref, avols, 5, "MBIS Atomic Volumes")          #TEST
 --------------------------------------------------------------------------
 
 Scratch directory: /scratch/jiang/
@@ -103,7 +113,7 @@ Scratch directory: /scratch/jiang/
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds4
-*** at Sat Aug 29 16:25:52 2020
+*** at Thu Dec 10 13:43:12 2020
 
    => Loading Basis Set <=
 
@@ -155,7 +165,7 @@ Scratch directory: /scratch/jiang/
   Guess Type is SAD.
   Energy threshold   = 1.00e-09
   Density threshold  = 1.00e-08
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
@@ -221,17 +231,17 @@ Scratch directory: /scratch/jiang/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:  -620.94148883006937   -6.20941e+02   0.00000e+00 
-   @DF-RHF iter   1:  -621.38771176638375   -4.46223e-01   6.97696e-03 DIIS
-   @DF-RHF iter   2:  -621.42850815191593   -4.07964e-02   2.82756e-03 DIIS
-   @DF-RHF iter   3:  -621.43354006962841   -5.03192e-03   2.04236e-04 DIIS
-   @DF-RHF iter   4:  -621.43361675134668   -7.66817e-05   5.31379e-05 DIIS
-   @DF-RHF iter   5:  -621.43362372640229   -6.97506e-06   9.60511e-06 DIIS
-   @DF-RHF iter   6:  -621.43362400372200   -2.77320e-07   3.19411e-06 DIIS
-   @DF-RHF iter   7:  -621.43362404928723   -4.55652e-08   5.24071e-07 DIIS
-   @DF-RHF iter   8:  -621.43362405022958   -9.42350e-10   7.94199e-08 DIIS
-   @DF-RHF iter   9:  -621.43362405024561   -1.60298e-11   1.13427e-08 DIIS
-   @DF-RHF iter  10:  -621.43362405024561    0.00000e+00   1.33383e-09 DIIS
+   @DF-RHF iter SAD:  -620.94148883010337   -6.20941e+02   0.00000e+00 
+   @DF-RHF iter   1:  -621.38771176641853   -4.46223e-01   6.97696e-03 DIIS
+   @DF-RHF iter   2:  -621.42850815195050   -4.07964e-02   2.82756e-03 DIIS
+   @DF-RHF iter   3:  -621.43354006966274   -5.03192e-03   2.04236e-04 DIIS
+   @DF-RHF iter   4:  -621.43361675138169   -7.66817e-05   5.31379e-05 DIIS
+   @DF-RHF iter   5:  -621.43362372643662   -6.97505e-06   9.60511e-06 DIIS
+   @DF-RHF iter   6:  -621.43362400375702   -2.77320e-07   3.19411e-06 DIIS
+   @DF-RHF iter   7:  -621.43362404932225   -4.55652e-08   5.24071e-07 DIIS
+   @DF-RHF iter   8:  -621.43362405026346   -9.41213e-10   7.94199e-08 DIIS
+   @DF-RHF iter   9:  -621.43362405028006   -1.65983e-11   1.13427e-08 DIIS
+   @DF-RHF iter  10:  -621.43362405027960    4.54747e-13   1.33383e-09 DIIS
   Energy and wave function converged.
 
 
@@ -263,14 +273,14 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [    14 ]
 
-  @DF-RHF Final Energy:  -621.43362405024561
+  @DF-RHF Final Energy:  -621.43362405027960
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             41.9305671166483052
-    One-Electron Energy =                -949.1924605667131800
-    Two-Electron Energy =                 285.8282693998193054
-    Total Energy =                       -621.4336240502456121
+    One-Electron Energy =                -949.1924605667152264
+    Two-Electron Energy =                 285.8282693997872457
+    Total Energy =                       -621.4336240502797182
 
 Computation Completed
 
@@ -283,22 +293,22 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    75.8158
 
   Electronic Dipole Moment: [e a0]
-     X:    -0.0000      Y:    -0.0000      Z:   -79.4880
+     X:     0.0000      Y:    -0.0000      Z:   -79.4880
 
   Dipole Moment: [e a0]
-     X:    -0.0000      Y:    -0.0000      Z:    -3.6722     Total:     3.6722
+     X:     0.0000      Y:    -0.0000      Z:    -3.6722     Total:     3.6722
 
   Dipole Moment: [D]
-     X:    -0.0000      Y:    -0.0000      Z:    -9.3337     Total:     9.3337
+     X:     0.0000      Y:    -0.0000      Z:    -9.3337     Total:     9.3337
 
 
-*** tstop() called on ds4 at Sat Aug 29 16:25:53 2020
+*** tstop() called on ds4 at Thu Dec 10 13:43:13 2020
 Module time:
-	user time   =       0.80 seconds =       0.01 minutes
+	user time   =       0.72 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.80 seconds =       0.01 minutes
+	user time   =       0.72 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
@@ -325,18 +335,19 @@ Properties computed using the NaCl SCF density matrix
   MBIS Quadrupoles: [e a0^2]
    Center  Symbol  Z      XX        XY        XZ        YY        YZ        ZZ
       1      NA   11   -2.3499    0.0000    0.0000   -2.3499    0.0000   -2.2898
-      2      CL   17   -11.8920   -0.0000    0.0000   -11.8920   -0.0000   -12.0798
+      2      CL   17   -11.8920    0.0000    0.0000   -11.8920    0.0000   -12.0798
 
   MBIS Octupoles: [e a0^3]
    Center  Symbol  Z      XXX       XXY       XXZ       XYY       XYZ       XZZ       YYY       YYZ       YZZ       ZZZ
       1      NA   11   -0.0000    0.0000   -0.0256   -0.0000    0.0000   -0.0000   -0.0000   -0.0256    0.0000   -0.0592
-      2      CL   17   -0.0000   -0.0000    2.2570   -0.0000    0.0000   -0.0000   -0.0000    2.2570    0.0000    4.5695
+      2      CL   17   -0.0000   -0.0000    2.2570   -0.0000   -0.0000   -0.0000   -0.0000    2.2570   -0.0000    4.5695
     MBIS Charges..........................................................................PASSED
     MBIS Dipoles..........................................................................PASSED
     MBIS Quadrupoles......................................................................PASSED
     MBIS Octupoles........................................................................PASSED
+    MBIS Atomic Volumes...................................................................PASSED
 
-    Psi4 stopped on: Saturday, 29 August 2020 04:25PM
-    Psi4 wall time for execution: 0:00:03.31
+    Psi4 stopped on: Thursday, 10 December 2020 01:43PM
+    Psi4 wall time for execution: 0:00:03.21
 
 *** Psi4 exiting successfully. Buy a developer a beer!

@@ -22,6 +22,14 @@ octupoles_ref = psi4.Matrix.from_list([ #TEST
   -2.23989073e-12, -4.92237390e-07, -1.97235542e-07,  4.45294729e-01,
   -9.80994678e-08,  1.24298633e+00]])   #TEST
 
+# Reference Atomic Volumes from Horton
+# Zn 63.44244885428372
+# O  27.11773534802673
+
+avols_ref = psi4.Matrix.from_list([  #TEST
+ [63.44245356],    #TEST
+ [27.11771735]])   #TEST
+
 molecule mol {
   0 1
   Zn 0.00 0.00 0.00
@@ -47,8 +55,10 @@ charges = wfn.array_variable('MBIS CHARGES')
 dipoles = wfn.array_variable('MBIS DIPOLES')
 quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
+avols = wfn.array_variable('MBIS ATOMIC VOLUMES')
 
 compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
 compare_matrices(quadrupoles_ref, quadrupoles, 5, "MBIS Quadrupoles") #TEST
 compare_matrices(octupoles_ref, octupoles, 5, "MBIS Octupoles")       #TEST
+compare_matrices(avols_ref, avols, 5, "MBIS Atomic Volumes")          #TEST
