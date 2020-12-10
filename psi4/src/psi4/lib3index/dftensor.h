@@ -42,7 +42,7 @@ class IntVector;
 class Vector3;
 class Options;
 
-class FittingMetric {
+class PSI_API FittingMetric {
    protected:
     /// Pointer to the auxiliary basis set
     std::shared_ptr<BasisSet> aux_;
