@@ -2271,7 +2271,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     // => Post-Processing <= //
  
-    // Atomic density, as defined in Equation 5 of Verstraelen et al. (Negative to account for negative charge of electron)
+    // Atomic density, as defined in Equation 5 of Verstraelen et al.
     rho_a_points_.resize(num_atoms * total_points, 0.0);
     std::vector<double>& rho_a = rho_a_points_;
 
@@ -2404,6 +2404,10 @@ void OEProp::compute_atomic_volumes() {
 }
 
 std::tuple<SharedMatrix, SharedMatrix> PopulationAnalysisCalc::compute_atomic_volumes(bool print_output) {
+
+    if (!grid_) {
+        throw PsiException("Cannot Calculate Atomic Volumes without an AIM Method Called (e.g. MBIS)", __FILE__, __LINE__);
+    }
 
     Options& options = Process::environment.options;    
     const int exp = options.get_double("ATOMIC_VOLUME_EXPONENT");
