@@ -449,6 +449,8 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     SharedVector epsilon_b() const;
     /// Returns the SO basis Lagrangian
     SharedMatrix Lagrangian() const;
+    /// Set the SO basis Lagrangian
+    void set_Lagrangian(SharedMatrix L);
 
     SharedMatrix aotoso() const { return AO2SO_; }
 

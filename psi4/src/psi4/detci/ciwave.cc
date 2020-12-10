@@ -748,34 +748,71 @@ void CIWavefunction::semicanonical_orbs() {
     Dimension noccpi = get_dimension("DOCC");
     Dimension nactpi = get_dimension("ACT");
     Dimension nvirpi = get_dimension("VIR");
-
-    // Allocate unitary transformation (only for DOCC + ACTV + VIR orbs)
-    auto U = std::make_shared<Matrix>("U to semi", nrotpi, nrotpi);
+    Dimension ntotpi = noccpi + nactpi + nvirpi;
 
     // Diagonalize each block of Favg
+    Dimension zero_dim(nirrep_);
     Dimension offset_start(nirrep_);
     Dimension offset_end(nirrep_);
-    for (Dimension block : {noccpi, nactpi, nvirpi}) {
+
+    std::vector<std::pair<std::string, Dimension>> spaces = {{"DOCC", noccpi}, {"ACT", nactpi}, {"VIR", nvirpi}};
+
+    auto full_C = std::make_shared<Matrix>("C", ntotpi, ntotpi);
+    auto full_C_rotated = std::make_shared<Matrix>("C", ntotpi, ntotpi);
+    auto U = std::make_shared<Matrix>("U to semi", nrotpi, nrotpi);
+    auto Crot_orig = get_orbitals("ROT")->clone();
+
+    for (const auto& label_block : spaces) {
+        const auto label = label_block.first;
+        const auto block = label_block.second;
         offset_end += block;
 
         // Grab a block of Favg
         Slice slice(offset_start, offset_end);
         SharedMatrix F = Favg->get_block(slice, slice);
+        Slice full_slice(zero_dim, ntotpi);
+        full_C->set_block(full_slice, slice, get_orbitals(label));
 
         // Diagonalize it
         auto evals = std::make_shared<Vector>("F Evals", block);
         auto evecs = std::make_shared<Matrix>("F Evecs", block, block);
         F->diagonalize(evecs, evals, ascending);
 
-        // Put block in U
         U->set_block(slice, slice, evecs);
+        evecs->print();
+
+        // Rotate the orbital block
+        SharedMatrix Cblock = get_orbitals(label);
+        SharedMatrix Cblock_semi = linalg::doublet(Cblock, evecs);
+        set_orbitals(label, Cblock_semi);
 
         offset_start += block;
     }
 
-    // rotate MOs and push them to the ciwfn
-    SharedMatrix Cnew = linalg::doublet(get_orbitals("ROT"), U, false, false);
-    set_orbitals("ROT", Cnew);
+//    U->print();
+
+//    for (int h = 0; h < nirrep_; ++)
+
+
+    //    SharedMatrix Cnew = linalg::doublet(Crot_orig, U, false, false);
+//    SharedMatrix Cnew2 = linalg::doublet(full_C, U, false, false);
+
+
+
+    //    set_orbitals("ROT", Cnew2);
+
+    //    Cnew->subtract(Cnew2);
+    //    Cnew->print();
+    //    auto Crot = get_orbitals("ROT");
+    //    Crot->subtract(Cnew);
+    //    Crot->print();
+
+    //    auto Cact = get_orbitals("ACT");
+    //    Cact->print();
+
+    //    auto Cvir = get_orbitals("VIR");
+    //    Cvir->print();
+
     Cb_ = Ca_;
 }
 }  // namespace detci
