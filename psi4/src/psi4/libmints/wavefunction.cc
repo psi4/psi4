@@ -245,6 +245,7 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
     epsilon_a_ = other->epsilon_a_;
     epsilon_b_ = other->epsilon_b_;
 
+    Lagrangian_ = other->Lagrangian_;
     gradient_ = other->gradient_;
     hessian_ = other->hessian_;
     external_pot_ = other->external_pot_;
@@ -329,6 +330,7 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     if (other->epsilon_a_) epsilon_a_ = SharedVector(other->epsilon_a_->clone());
     if (other->epsilon_b_) epsilon_b_ = SharedVector(other->epsilon_b_->clone());
 
+    if (other->Lagrangian_) Lagrangian_ = other->Lagrangian_->clone();
     if (other->gradient_) gradient_ = other->gradient_->clone();
     if (other->hessian_) hessian_ = other->hessian_->clone();
 
@@ -424,6 +426,9 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
 
     wfn->H_ = wfn->factory_->create_shared_matrix("One-electron Hamiltonian");
     wfn->H_->remove_symmetry(H_, SO2AO);
+
+    wfn->Lagrangian_ = wfn->factory_->create_shared_matrix("Lagrangian");
+    wfn->Lagrangian_->remove_symmetry(Lagrangian_, SO2AO);
 
     /* This stuff we need to copy in the subclass functions, b/c
     ** constructors like RHF() just blow these away anyway
@@ -605,18 +610,18 @@ void Wavefunction::common_init() {
             outfile->Printf("PERTURB_H is true, but PERTURB_WITH not found, applying no perturbation.\n");
         }
     }
-    
+
 #ifdef USING_BrianQC
     if (brianEnable) {
         if (molecule_->point_group()->bits() != PointGroups::Groups::C1) {
             throw PSIEXCEPTION("BrianQC can only be used with C1 symmetry\n");
         }
-        
+
         brianInt atomCount = molecule_->nallatom();
-        
+
         brianInt totalCharge = (brianInt)round(molecule_->molecular_charge());
         brianInt spinMultiplicity = multiplicity;
-        
+
         std::vector<brianInt> atomicNumbers;
         std::vector<double> atomCoordinates;
         for (unsigned int atomIndex = 0; atomIndex < molecule_->nallatom(); atomIndex++) {
@@ -625,24 +630,24 @@ void Wavefunction::common_init() {
             atomCoordinates.push_back(molecule_->fy(atomIndex));
             atomCoordinates.push_back(molecule_->fz(atomIndex));
         }
-        
+
         brianCOMSetMolecule(&brianCookie, &totalCharge, &spinMultiplicity, &atomCount, atomCoordinates.data(), atomicNumbers.data());
         checkBrian();
-        
+
         std::vector<brianInt> shellSchemas(basisset_->max_am() + 1, -1);
         for (unsigned int shellIndex = 0; shellIndex < basisset_->nshell(); shellIndex++) {
             int shellType = basisset_->shell(shellIndex).am();
             brianInt shellSchema = basisset_->shell(shellIndex).is_pure() ? BRIAN_SHELL_SCHEMA_SPHERICAL_PSI4 : BRIAN_SHELL_SCHEMA_CARTESIAN_STANDARD;
-            
+
             if (shellSchemas[shellType] != -1 and shellSchemas[shellType] != shellSchema) {
                 throw PSIEXCEPTION("BrianQC needs shells of the same angular momentum to be either all pure or all cartesian\n");
             }
-            
+
             shellSchemas[shellType] = shellSchema;
         }
-        
+
         brianInt shellCount = basisset_->nshell();
-        
+
         std::vector<brianInt> shellAtomIndices;
         std::vector<brianInt> shellMinTypes;
         std::vector<brianInt> shellMaxTypes;
@@ -664,14 +669,14 @@ void Wavefunction::common_init() {
                 prefactors.push_back(shell.coef(primitiveIndex));
             }
         }
-        
+
         brianInt basisRole = BRIAN_BASIS_ROLE_ORBITAL;
-        
+
         // NOTE: if we ever want to use BrianQC's SAD initial guess, then we will need to find the basis name here and map it to the macro value
         brianInt basisSetID = BRIAN_BASIS_SET_CUSTOM;
         brianCOMSetBasis(&brianCookie, &basisRole, &basisSetID, shellSchemas.data(), &shellCount, shellAtomIndices.data(), shellMinTypes.data(), shellMaxTypes.data(), shellContractionDegrees.data(), shellExponentOffsets.data(), exponents.data(), shellPrefactorOffsets.data(), prefactors.data());
         checkBrian();
-        
+
         if (options_.get_str("REFERENCE") == "RHF" or options_.get_str("REFERENCE") == "RKS") {
             brianRestrictionType = BRIAN_RESTRICTION_TYPE_RHF;
         }
@@ -685,10 +690,10 @@ void Wavefunction::common_init() {
         else {
             throw PSIEXCEPTION("Currently, BrianQC can only handle RHF, RKS, UHF, UKS, CUHF and ROHF calculations");
         }
-        
+
         brianCOMSetRestriction(&brianCookie, &brianRestrictionType);
         checkBrian();
-        
+
         brianCOMInitIntegrator(&brianCookie);
         checkBrian();
     }

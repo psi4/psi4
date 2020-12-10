@@ -576,6 +576,8 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
 
     /// Returns the Lagrangian in SO basis for the wavefunction
     SharedMatrix X() const;
+    /// Set Lagrangian matrix in SO basis
+    void set_Lagrangian(SharedMatrix X) { Lagrangian_ = X; }
 
     /// Returns the gradient
     SharedMatrix gradient() const;
