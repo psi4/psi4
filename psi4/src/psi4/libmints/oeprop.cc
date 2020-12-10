@@ -2436,6 +2436,7 @@ std::tuple<SharedMatrix, SharedMatrix> PopulationAnalysisCalc::compute_atomic_vo
                 atom_vol += w[p - running_points] * rho_a_points_[ap] * pow(distances_[ap], exp);
                 proatom_vol += w[p - running_points] * rho_a_0_points_[ap] * pow(distances_[ap], exp);
             }
+            running_points += num_points;
         }
         atomic_vols->set(a, 0, atom_vol);
         pro_atomic_vols->set(a, 0, proatom_vol);
