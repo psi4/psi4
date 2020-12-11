@@ -221,13 +221,12 @@ def _write_molden(self,name='out.molden',dovirtual=None):
 
     #Converting C matrices to AO MO basis. Ca_subset costs information about which symmetry an orbital originally had, which is why we can't use it.
     aotoso = self.aotoso()
-    Ca_ao_mo = core.doublet(aotoso, self.Ca(), False, False).np
-    Cb_ao_mo = core.doublet(aotoso, self.Cb(), False, False).np
+    Ca_ao_mo = core.doublet(aotoso, self.Ca(), False, False).nph
+    Cb_ao_mo = core.doublet(aotoso, self.Cb(), False, False).nph
     ao_overlap = self.mintshelper().ao_overlap().np
     ao_normalizer = ao_overlap.diagonal()**(-1 / 2)
-    Ca_ao_mo = (Ca_ao_mo.T / ao_normalizer).T
-    Cb_ao_mo = (Cb_ao_mo.T / ao_normalizer).T
-
+    Ca_ao_mo = core.Matrix.from_array([(i.T / ao_normalizer).T for i in Ca_ao_mo])
+    Cb_ao_mo = core.Matrix.from_array([(i.T / ao_normalizer).T for i in Cb_ao_mo])
     #Reordering AO x MO matrix to fit Molden conventions
     '''
     Reordering expected by Molden
