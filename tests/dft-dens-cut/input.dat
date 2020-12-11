@@ -1,6 +1,6 @@
-# LibXC density screening test. Tests empty, C-only, X-only and XC superfunctionals.
-# 'super_mix' showcases how to use different screening values for X and C parts.
-# SCF will fail or crash (nans) without screening!
+#! LibXC density screening test. Tests empty, C-only, X-only and XC superfunctionals.
+#! 'super_mix' showcases how to use different screening values for X and C parts.
+#! SCF will fail or crash (nans) without screening!
 
 molecule h2o {
 0 2

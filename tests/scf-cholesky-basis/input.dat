@@ -1,3 +1,5 @@
+#! incremental Cholesky filtered SCF
+
 # Reference energies
 e_cholesky_4  = -230.64140555147105
 e_cholesky_5  = -230.64149225179662

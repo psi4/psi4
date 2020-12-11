@@ -1,4 +1,4 @@
-!# check nonphysical masses possible
+#! check nonphysical masses possible
 
 import psi4
 
