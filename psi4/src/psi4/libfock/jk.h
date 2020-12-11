@@ -720,6 +720,9 @@ class PSI_API DirectJK : public JK {
     /// Delete integrals, files, etc
     void postiterations() override;
 
+    /// Performs a density screen (non-iterative Fock build)
+    bool shell_significant_density(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D, int M, int N, int R, int S);
+
     /// Build the J and K matrices for this integral class
     void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
                   std::vector<std::shared_ptr<Matrix> >& J, std::vector<std::shared_ptr<Matrix> >& K);
