@@ -1,0 +1,33 @@
+#! CONV SCF 6-31G analytical vs finite-difference tests
+#! Tests UHF hessian code for Ca != Cb
+
+molecule h2o {
+  symmetry c1
+  units bohr
+  nocom
+  noreorient
+0 3
+  O            0.134467872279     0.000255539126     0.000000000000
+  H           -1.069804624577     1.430455315728    -0.000000000000
+  H           -1.064298089419    -1.434510907104    -0.000000000000
+}
+
+set { 
+puream false
+df_scf_guess false
+d_convergence 10
+r_convergence 10
+scf_type pk
+basis 6-31g 
+reference uhf
+}
+
+anal_hess = hessian('scf')
+
+set findif { 
+print 2
+points 5
+}
+
+fd_hess = hessian('scf', dertype=1)
+

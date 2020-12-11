@@ -20,6 +20,9 @@ set {
     scf_type      df
 }
 
+# Disable scaling exch-disp
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
+
 # Prepare the fragments
 sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(dimer, "dimer")
 

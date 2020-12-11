@@ -1,10 +1,16 @@
 #! SAPT(DFT) aug-cc-pVDZ computation for the water dimer interaction energy.
 
-Eref = {"SAPT ELST ENERGY":  -12.86731900, #TEST
-        "SAPT EXCH ENERGY":   12.77393901, #TEST
-        "SAPT IND ENERGY":    -3.53895378, #TEST 
-        "SAPT DISP ENERGY":   -2.67884677, #TEST
-        "CURRENT ENERGY":     -6.31117998} #TEST
+Eref_nh = {"SAPT ELST ENERGY":  -12.86731900, #TEST
+           "SAPT EXCH ENERGY":   12.77393901, #TEST
+           "SAPT IND ENERGY":    -3.53895378, #TEST 
+           "SAPT DISP ENERGY":   -2.67884677, #TEST
+           "CURRENT ENERGY":     -6.31117998} #TEST
+
+Eref_h = {"SAPT ELST ENERGY":  -12.86733667, #TEST
+          "SAPT EXCH ENERGY":   12.77398997, #TEST
+          "SAPT IND ENERGY":    -3.53895908, #TEST 
+          "SAPT DISP ENERGY":   -3.17821838, #TEST
+          "CURRENT ENERGY":     -6.81052415} #TEST
 
 molecule dimer {
   O -2.930978458   -0.216411437    0.000000000
@@ -27,8 +33,14 @@ set {
     SAPT_DFT_MP2_DISP_ALG FISAPT
 }
 
+set SAPT_DFT_DO_HYBRID False
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
 energy('sapt(dft)', molecule=dimer)
-
-for k, v in Eref.items():                                  #TEST
+for k, v in Eref_nh.items():                                  #TEST
     compare_values(v / 1000.0, psi4.variable(k), 6, k) #TEST
 
+set SAPT_DFT_DO_HYBRID True
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME disp
+energy('sapt(dft)', molecule=dimer)
+for k, v in Eref_h.items():                                  #TEST
+    compare_values(v / 1000.0, psi4.variable(k), 6, k) #TEST

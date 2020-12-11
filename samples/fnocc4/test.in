@@ -18,6 +18,7 @@ set {
   occ_tolerance       1e-4
   scf_type cd
   cc_type cd
+  docc 5
 }
 energy('ccsd(t)')
 edfccsd  = variable("CCSD CORRELATION ENERGY")
@@ -30,6 +31,13 @@ refccsdt = -0.236177474967    #TEST
 compare_values(refscf, variable("SCF TOTAL ENERGY"), 8, "SCF energy")  #TEST
 compare_values(refccsd, edfccsd, 8, "DF-CCSD correlation energy")          #TEST 
 compare_values(refccsdt, edfccsdt, 8, "DF-CCSD(T) correlation energy")     #TEST 
+
+ref_pair_ene = [
+      [-0.010244054671, -0.010471430803, -0.008926897738, -0.008901781427],
+      [-0.010471430803, -0.023051607323, -0.017447839602, -0.015432374743],
+      [-0.008926897738, -0.017447839602, -0.021088561478, -0.01636417494 ],
+      [-0.008901781427, -0.015432374743, -0.01636417494 , -0.020436212035]]
+compare_values(ref_pair_ene, variable("CCSD PAIR ENERGIES"), 6, "ccsd pair energies")  #TEST
 
 # verify that DFCC and DFMP2 give the same MP2 results
 set scf_type df

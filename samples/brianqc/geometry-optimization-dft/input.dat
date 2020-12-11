@@ -1,0 +1,28 @@
+#! Geometry optimization for ethane with sto-3g, b3lyp with sg1 grid
+
+refenergy = -78.88590255
+
+molecule ethane {
+    symmetry c1
+    0 1
+    H      1.1851     -0.0039      0.9875
+    C      0.7516     -0.0225     -0.0209
+    H      1.1669      0.8330     -0.5693
+    H      1.1155     -0.9329     -0.5145
+    C     -0.7516      0.0225      0.0209
+    H     -1.1669     -0.8334      0.5687
+    H     -1.1157      0.9326      0.5151
+    H     -1.1850      0.0044     -0.9875
+}
+
+set = {
+    basis sto-3g
+    reference rhf
+    dft_grid_name sg1
+    df_scf_guess False
+    scf_type direct
+    brianqc_enable True
+}
+
+thisenergy = optimize('scf', dft_functional='b3lyp')
+

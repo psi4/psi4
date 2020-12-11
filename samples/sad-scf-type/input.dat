@@ -1,0 +1,58 @@
+#! Test SAD SCF guesses on noble gas atom
+
+molecule {
+0 1
+Ar
+}
+
+ref_dfhf = -526.79986827914422
+ref_hf = -526.79986530974611
+
+set {
+  basis cc-pVDZ
+  reference rhf
+  guess sad
+  sad_print 2
+  # Use tight thresholds
+  e_convergence 10
+  d_convergence 10
+  sad_e_convergence 10
+  sad_d_convergence 10
+  # No DF guess
+  df_scf_guess false
+  # Make sure guess is exact: this is 2 since we don't have orbitals in the first iteration
+  maxiter 2
+
+  # First test: DF
+  scf_type df
+  sad_scf_type df
+  df_basis_scf cc-pVDZ-JKfit
+  df_basis_sad cc-pVDZ-JKfit
+}
+energy('scf')
+
+set {
+  scf_type pk
+  sad_scf_type pk
+}
+energy('scf')
+
+set {
+  scf_type direct
+  sad_scf_type direct
+}
+energy('scf')
+
+set {
+  scf_type out_of_core
+  sad_scf_type out_of_core
+}
+energy('scf')
+
+set {
+  scf_type cd
+  sad_scf_type cd
+  # Need a tight tolerance since SAD actually uses exact integrals
+  cholesky_tolerance 1e-8
+}
+energy('scf')

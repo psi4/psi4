@@ -34,8 +34,10 @@ set dmrg_scf_state_avg     false
 set dmrg_scf_active_space  NO  # INPUT; NO; LOC
 set dmrg_local_init        false
 
-energy("dmrg-scf")
+ene = energy("dmrg-scf")
 
 ref_energy = -109.1035023353  #TEST
 compare_values(ref_energy, variable("CURRENT ENERGY"), 6, "DMRG Energy")  #TEST
+compare_values(ref_energy, variable("dmrg-scf total ENERGY"), 6, "DMRG Energy")  #TEST
+compare_values(ref_energy, ene, 6, "DMRG Energy")  #TEST
 

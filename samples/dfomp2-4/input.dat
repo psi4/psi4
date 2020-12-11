@@ -18,4 +18,5 @@ set {
 }
 energy('omp2')
 
+# Warning! DFOCC orbitals converge so slowly, we can't be sure we have the OMP2 energy to 6 decimals.
 

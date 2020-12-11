@@ -58,21 +58,21 @@ scf_e, scf_wfn = frequencies('scf', irrep=1, dertype=1,  return_wfn=True)
 fd_freqs = scf_wfn.frequencies()
 clean()
 
-compare_vectors(a1_freqs, fd_freqs, 0, "A1 Finite-difference frequencies with 3-pt. formula to 1 cm^-1")  #TEST
+compare_vectors(a1_freqs, fd_freqs, 0.1, "A1 Finite-difference frequencies with 3-pt. formula to 1 cm^-1")  #TEST
 del fd_freqs
 
 scf_e, scf_wfn = frequencies('scf', irrep=2, dertype=1,  return_wfn=True)
 fd_freqs = scf_wfn.frequencies()
 clean()
 
-compare_vectors(a2_freqs, fd_freqs, 0, "A2 Finite-difference frequencies with 3-pt. formula to 1 cm^-1")  #TEST
+compare_vectors(a2_freqs, fd_freqs, 0.1, "A2 Finite-difference frequencies with 3-pt. formula to 1 cm^-1")  #TEST
 del fd_freqs
 
 scf_e, scf_wfn = frequencies('scf', irrep=3, dertype=1,  return_wfn=True)
 fd_freqs = scf_wfn.frequencies()
 clean()
 
-compare_vectors(b1_freqs, fd_freqs, 0, "B1 Finite-difference frequencies with 3-pt. formula to 1 cm^-1")  #TEST
+compare_vectors(b1_freqs, fd_freqs, 0.1, "B1 Finite-difference frequencies with 3-pt. formula to 1 cm^-1")  #TEST
 del fd_freqs
 
 
@@ -80,7 +80,7 @@ scf_e, scf_wfn = frequencies('scf', irrep=4, dertype=1,  return_wfn=True)
 fd_freqs = scf_wfn.frequencies()
 clean()
 
-compare_vectors(b2_freqs, fd_freqs, 0, "B2 Finite-difference frequencies with 3-pt. formula to 1 cm^-1")  #TEST
+compare_vectors(b2_freqs, fd_freqs, 0.1, "B2 Finite-difference frequencies with 3-pt. formula to 1 cm^-1")  #TEST
 del fd_freqs
 
 set findif {points 5}
@@ -89,7 +89,7 @@ scf_e, scf_wfn = frequencies('scf', irrep=1, dertype=1, return_wfn=True)
 fd_freqs = scf_wfn.frequencies()
 clean()
 
-compare_vectors(a1_freqs, fd_freqs, 0, "A1 Finite-difference frequencies with 5-pt. formula to 1 cm^-1")  #TEST
+compare_vectors(a1_freqs, fd_freqs, 0.1, "A1 Finite-difference frequencies with 5-pt. formula to 1 cm^-1")  #TEST
 del fd_freqs
 
 
