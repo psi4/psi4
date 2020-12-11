@@ -1,3 +1,5 @@
+#! Cholesky filter a complete basis
+
 # Reference HF energy
 reference_energy = -40.2170789282755266
 

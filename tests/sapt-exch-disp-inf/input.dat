@@ -1,3 +1,5 @@
+#! SAPT0 with S^inf exch-disp20
+
 molecule hcn_dimer {
 0 1
 H 0.000000 0.000000 3.409664

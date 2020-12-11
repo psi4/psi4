@@ -1,3 +1,5 @@
+#! check that methods can act on single atom
+
 molecule {
 0 2
 H 0 0 0

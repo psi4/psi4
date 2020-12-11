@@ -1,3 +1,5 @@
+#! Compute the dipole polarizability for water with custom basis set.
+
 molecule mol {
 0 1
 O 0.44260 -0.88720 -0.29490

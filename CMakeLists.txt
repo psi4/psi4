@@ -36,6 +36,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #    - pint (runtime only; e.g., `conda install pint -c conda-forge`)
 #    - pydantic >=1.0 (runtime only; e.g., `conda install pydantic -c conda-forge`)
 #    - msgpack-python (runtime only; e.g., `conda install msgpack-python`)
+#    - mpfr (for Libint2; e.g., `conda install mpfr`))
+#    - Eigen (for Libint2; e.g., `conda install eigen`)
 
 #  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
 
