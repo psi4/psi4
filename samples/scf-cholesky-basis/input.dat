@@ -1,0 +1,142 @@
+#! incremental Cholesky filtered SCF
+
+# Reference energies
+e_cholesky_4  = -230.64140555147105
+e_cholesky_5  = -230.64149225179662
+e_cholesky_6  = -230.64152237465416
+e_cholesky_7  = -230.64152543273579
+e_cholesky_8  = -230.64152543273792
+e_cholesky_9  = -230.64152543312593
+e_cholesky_10 = -230.64152543331562
+e_cholesky_11 = -230.64152543331298
+e_canonical   = -230.64152543331906
+
+# Acceptable tolerances, judged from the change in reference
+# energy. The Cholesky procedure works by hiding basis functions from
+# the SCF; the used basis functions are obtained from the pivot
+# indices. Since there's no guarantee that the same functions get
+# picked every time, we need to allow for changes in the energy that
+# go to zero when the tolerance is tightened.
+
+tol_4 = 3
+tol_5 = 4
+tol_6 = 5
+tol_7 = 8
+tol_8 = 8
+tol_9 = 8
+tol_10 = 8
+tol_11 = 8
+tol_can = 8
+
+molecule {
+-1 2
+C          0.00000        0.00000        1.39495
+C          0.00000        1.20806        0.69748
+C          0.00000        1.20806       -0.69748
+C          0.00000        0.00000       -1.39495
+C          0.00000       -1.20806       -0.69748
+C          0.00000       -1.20806        0.69748
+H          0.00000        0.00000        2.47753
+H          0.00000        2.14560        1.23877
+H          0.00000        2.14560       -1.23877
+H          0.00000        0.00000       -2.47753
+H          0.00000       -2.14560       -1.23877
+H          0.00000       -2.14560        1.23877
+}
+
+basis {
+assign daug-pcseg-1
+
+[daug-pcseg-1]
+spherical
+****
+H  0
+S   3   1.00
+  1.2251800000e+01   2.3337100000e-02
+  1.8687100000e+00   1.5915000000e-01
+  4.1820800000e-01   5.0000000000e-01
+S   1   1.00
+  1.0610000000e-01   1.0000000000e+00
+S   1   1.00
+  2.6525000000e-02   1.0000000000e+00
+S   1   1.00
+  6.6312500000e-03   1.0000000000e+00
+P   1   1.00
+  1.0000000000e+00   1.0000000000e+00
+P   1   1.00
+  7.9575000000e-02   1.0000000000e+00
+P   1   1.00
+  6.3321806250e-03   1.0000000000e+00
+****
+C  0
+S   5   1.00
+  1.2432000000e+03   6.0336600000e-03
+  1.8714500000e+02   4.4957600000e-02
+  4.2512600000e+01   1.9790100000e-01
+  1.1739300000e+01   5.0000000000e-01
+  3.5054800000e+00   4.8036400000e-01
+S   2   1.00
+  5.3908900000e+00  -7.0398000000e-02
+  4.9334100000e-01   5.0000000000e-01
+S   1   1.00
+  1.4974100000e-01   1.0000000000e+00
+S   1   1.00
+  4.2849000000e-02   1.0000000000e+00
+S   1   1.00
+  1.2261416720e-02   1.0000000000e+00
+P   3   1.00
+  9.1805600000e+00   4.3170100000e-02
+  1.9365800000e+00   2.2499900000e-01
+  5.2629600000e-01   5.0000000000e-01
+P   1   1.00
+  1.3631900000e-01   1.0000000000e+00
+P   1   1.00
+  3.4080000000e-02   1.0000000000e+00
+P   1   1.00
+  8.5200625005e-03   1.0000000000e+00
+D   1   1.00
+  8.0000000000e-01   1.0000000000e+00
+D   1   1.00
+  1.0224000000e-01   1.0000000000e+00
+D   1   1.00
+  1.3066272000e-02   1.0000000000e+00
+****
+}
+
+df_basis_scf {
+assign def2-universal-jkfit
+}
+
+set reference uhf
+set s_orthogonalization partialcholesky
+set d_convergence  10
+    
+set s_cholesky_tolerance 1e-4
+set print 3
+e_chol_4 = energy('HF')
+
+set df_scf_guess false
+set guess read
+set s_cholesky_tolerance 1e-5
+e_chol_5 = energy('HF')
+
+set s_cholesky_tolerance 1e-6
+e_chol_6 = energy('HF')
+
+set s_cholesky_tolerance 1e-7
+e_chol_7 = energy('HF')
+
+set s_cholesky_tolerance 1e-8
+e_chol_8 = energy('HF')
+
+set s_cholesky_tolerance 1e-9
+e_chol_9 = energy('HF')
+
+set s_cholesky_tolerance 1e-10
+e_chol_10 = energy('HF')
+
+set s_cholesky_tolerance 1e-11
+e_chol_11 = energy('HF')
+
+set s_orthogonalization canonical
+e_can = energy('HF')

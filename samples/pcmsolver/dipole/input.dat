@@ -1,4 +1,5 @@
 #! dipole moment for HF and B3LYP in presence of perturbation
+#! updated B3LYP values due to new BraggSlater radii
 
                }
 # Reference values, in atomic units, for finite difference formulas
@@ -60,5 +61,5 @@ for m in ['HF', 'B3LYP']:
     set perturb_h false
     e, wfn = energy(m, return_wfn=True)
     oeprop(wfn, 'MULTIPOLES(1)')
-    analytic = variable('SCF DIPOLE Z')
+    analytic = variable('SCF DIPOLE')
 

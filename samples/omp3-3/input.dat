@@ -1,4 +1,4 @@
-#! OMP3 cc-pVDZ energy with B3LYP initial guess for the NO radical
+#! OMP3 cc-pCVDZ energy with B3LYP initial guess for the NO radical
 
 
 molecule no {

@@ -1,0 +1,23 @@
+#! Water with sto-3g, b3lyp with sg1 grid
+
+refenergy = -75.31258673036
+
+molecule water {
+    symmetry c1
+    0 1
+    8 -0.066308 -0.083391 0.042846
+    1 0.889752 -0.042018 0.021589
+    1 -0.341116 0.73212 -0.376167
+}
+
+set = {
+    basis sto-3g
+    reference rhf
+    dft_grid_name sg1
+    scf_type direct
+    df_scf_guess False
+    brianqc_enable True
+}
+
+thisenergy = energy('scf', dft_functional = 'b3lyp')
+

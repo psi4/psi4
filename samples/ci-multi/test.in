@@ -16,6 +16,7 @@ refmp4   = -25.2109921859091   #TEST
 set {
   basis cc-pVDZ
   docc [3, 0, 0, 0]
+  mp_type conv
 }
 
 ecisd  = energy('cisd')

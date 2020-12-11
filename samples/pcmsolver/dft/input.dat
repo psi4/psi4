@@ -1,4 +1,5 @@
 #! pcm
+#! updated totalenergy to new BraggSlater radii values
 
 
 molecule NH3 {

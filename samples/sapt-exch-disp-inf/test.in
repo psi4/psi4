@@ -1,0 +1,67 @@
+#! SAPT0 with S^inf exch-disp20
+
+molecule hcn_dimer {
+0 1
+H 0.000000 0.000000 3.409664
+C 0.000000 0.000000 2.340950
+N 0.000000 0.000000 1.185959
+--
+0 1
+H 0.000000 0.000000 -0.148222
+C 0.000000 0.000000 -1.222546
+N 0.000000 0.000000 -2.379698
+
+    units angstrom
+    no_reorient
+    symmetry c1
+}
+
+molecule hf_dimer {
+0 1
+H 0.000000  0.803322 1.423647
+F 0.000000 -0.045324 1.068702
+--
+0 1
+H 0.000000 -0.121050 -0.219182
+F 0.000000  0.009127 -1.132603
+
+    units angstrom
+    no_reorient
+    symmetry c1
+}
+
+molecule h2o_dimer {
+0 1
+O -0.064997  0.000000  1.202015
+H  0.817736  0.000000  1.573527
+H  0.070857  0.000000  0.246803
+--
+0 1
+O  0.060546  0.000000 -1.130293
+H -0.408968 -0.760178 -1.479405
+H -0.408968  0.760178 -1.479405
+
+    units angstrom
+    no_reorient
+    symmetry c1
+}
+
+set reference RHF
+set basis jun-cc-pvdz
+set df_basis_scf aug-cc-pvtz-jkfit
+set df_basis_mp2 aug-cc-pvtz-ri
+set e_convergence 1e-8
+set d_convergence 1e-8
+set scf_type mem_df
+set SAPT_DFT_MP2_DISP_ALG fisapt
+set SAPT_DFT_FUNCTIONAL HF
+set DO_DISP_EXCH_SINF true
+
+energy('sapt(dft)', molecule=hcn_dimer)
+compare_values(0.00271925, variable('sapt exch-disp20(s^inf) energy'), 7, "SAPT EXCH-DISP20(S^inf) ENERGY")
+
+energy('sapt(dft)', molecule=hf_dimer)
+compare_values(0.00211996, variable('sapt exch-disp20(s^inf) energy'), 7, "SAPT EXCH-DISP20(S^inf) ENERGY")
+
+energy('sapt(dft)', molecule=h2o_dimer)
+compare_values(0.00324766, variable('sapt exch-disp20(s^inf) energy'), 7, "SAPT EXCH-DISP20(S^inf) ENERGY")

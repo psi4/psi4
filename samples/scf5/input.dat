@@ -40,7 +40,10 @@ E = energy('scf')
 set scf_type out_of_core
 E = energy('scf')
 
-set scf_type df
+set scf_type disk_df
+E = energy('scf')
+
+set scf_type mem_df
 E = energy('scf')
 
 set scf reference uhf
@@ -54,7 +57,10 @@ E = energy('scf')
 set scf_type out_of_core
 E = energy('scf')
 
-set scf_type df
+set scf_type disk_df
+E = energy('scf')
+
+set scf_type mem_df
 E = energy('scf')
 
 set scf reference cuhf
@@ -68,7 +74,10 @@ E = energy('scf')
 set scf_type out_of_core
 E = energy('scf')
 
-set scf_type df
+set scf_type disk_df
+E = energy('scf')
+
+set scf_type mem_df
 E = energy('scf')
 
 activate(triplet_o2)
@@ -90,7 +99,10 @@ E = energy('scf')
 set scf_type out_of_core
 E = energy('scf')
 
-set scf_type df
+set scf_type disk_df
+E = energy('scf')
+
+set scf_type mem_df
 E = energy('scf')
 
 clean()
@@ -109,7 +121,10 @@ set scf_type out_of_core
 E = energy('scf')
 clean()
 
-set scf_type df
+set scf_type disk_df
+E = energy('scf')
+
+set scf_type mem_df
 E = energy('scf')
 
 clean()
@@ -128,5 +143,8 @@ set scf_type out_of_core
 E = energy('scf')
 clean()
 
-set scf_type df
+set scf_type disk_df
+E = energy('scf')
+
+set scf_type mem_df
 E = energy('scf')

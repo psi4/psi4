@@ -8,7 +8,7 @@ scf_dtz_karton_ref           = -76.0507952348    #TEST
 scf_def2_a_0_5_ref           = -76.0596925496    #TEST
 mp2_corl_a_3_0_ref           =  -0.3049557793    #TEST
 mp2_corl_a_2_4_ref           =  -0.3159281582    #TEST
-corl_delta_a_2_4_ref         =  -0.3203639699    #TEST 
+corl_delta_a_2_4_ref         =  -0.3203639699    #TEST
 scf_123_aug_pcsseg_ref       = -76.0611194710    #TEST
 
 molecule h2o {

@@ -31,6 +31,9 @@ scf_e, scf_wfn = energy('scf', return_wfn=True)
 oeprop(scf_wfn, "MULTIPOLES(7)", "ESP_AT_NUCLEI")
 
 
+
+
+# make sure non-compressed elements accessible
+
     
 clean()
-

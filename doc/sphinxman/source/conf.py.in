@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2019 The Psi4 Developers.
+# Copyright (c) 2007-2020 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -115,7 +115,7 @@ suppress_warnings = ['image.nonlocal_uri']
 
 # General information about the project.
 project = u'Psi4'  # u'P\uA731\u026A4'
-copyright = u'2019, The {0} Project'.format(project)
+copyright = u'2020, The {0} Project'.format(project)
 
 def get_version_info():
     import psi4

@@ -1,5 +1,6 @@
 #! SOS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
 
+# NRE and SCF aren't for tightly converged opt
 
 molecule h2o { 
 0 1

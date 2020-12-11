@@ -14,7 +14,7 @@
 #-> MN15L
 ## Notes
 # M11L only up to 4 decimals even for Ne with fine grid
-
+#! updated dldf reference to new BraggSlater radii 
 
 molecule ne {
   0 1
@@ -74,7 +74,6 @@ set basis aug-cc-pvdz
 set scf_type df
 set dft_radial_points 99
 set dft_spherical_points 302
-
 edft = energy('dldf+d')
 clean()
 

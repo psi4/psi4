@@ -1,5 +1,6 @@
 #! RHF STO-3G (Cartesian) and cc-pVDZ (spherical) water Hessian test, against Psi3 reference values.
 
+ref_ene = -74.96590118978119
 
 molecule {
 units bohr
@@ -19,7 +20,7 @@ set {
   d_convergence 10
 }
 
-psi4_hess = hessian('scf')
+psi4_hess, wfn = hessian('scf', return_wfn=True)
 
 
 # Clean out scratch files and go again with cc-pVDZ

@@ -35,5 +35,6 @@ ref_t   = -208.915761028789774 #TEST
 compare_values(refnuc, C4H4N.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refscf, variable("SCF total energy"), 7, "SCF energy") #TEST
 compare_values(refccsd, variable("CCSD total energy"), 7, "CCSD energy") #TEST
+compare_values(ref_t, variable("CCSD(T) total energy"), 7, "CCSD(T) energy") #TEST
 compare_values(ref_t, variable("Current energy"), 7, "CCSD(T) energy") #TEST
 

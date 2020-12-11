@@ -1,6 +1,7 @@
 #! HF and DFT variants single-points on zmat methane, mostly to test that 
 #!   PSI variables are set and computed correctly.
 #!   Now also testing that CSX harvesting PSI variables correctly
+#!   update ref_dft_2e/xc due to new BraggSlater radii
 
 molecule meth {
 0 1
@@ -25,7 +26,6 @@ set scf d_convergence 8
 
 
 
-
 energy('scf')
 clean()
 
@@ -39,4 +39,3 @@ energy('b2plyp')
 clean()
 
 energy('b2plyp-d')
-

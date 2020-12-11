@@ -1,0 +1,25 @@
+#! OLCCD cc-pVDZ gradient for the NO radical
+
+# Test values are analytic from Jonathon's Psi4Numpy code, run 03/20, residual convergence 12. # TEST
+ref = psi4.Matrix.from_list([                                #TEST
+        [ 0.000000000000,  0.000000000000,  0.00748631976],  #TEST
+        [ 0.000000000000,  0.000000000000, -0.00748631976]   #TEST
+      ])                                                     #TEST
+
+molecule no {
+0 2
+n
+o 1 1.158
+}
+
+set {
+  basis cc-pvdz
+  reference rohf
+  guess gwh
+  e_convergence 7
+}
+
+grad = gradient('olccd')
+
+compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
+

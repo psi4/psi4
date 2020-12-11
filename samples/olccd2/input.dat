@@ -1,0 +1,16 @@
+#! OLCCD cc-pVDZ energy with B3LYP initial guess for the NO radical
+
+
+molecule no {
+0 2
+n
+o 1 1.158
+}
+
+set {
+  basis cc-pcvdz
+  reference uks
+  e_convergence 8
+}
+energy('olccd', dft_functional='b3lyp')
+

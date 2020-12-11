@@ -73,6 +73,7 @@ for k, v in wfn.frequency_analysis.items():
 with open(core.get_writer_file_prefix(dto.name()) + ".vibrec") as handle:
     import json
     jsondata = json.load(handle)
+jsondata = {k: (v if k in ['molecule', 'hessian'] else json.loads(v)) for k, v in jsondata.items()}
 
 for k, v in jsondata.items():
     print(k, v)
