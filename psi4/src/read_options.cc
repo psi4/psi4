@@ -1864,9 +1864,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel
         and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
         options.add_double("LOCAL_CUTOFF", 0.02);
-        /*- Type of local-CCSD scheme to be simulated. ``WERNER`` (unique available option) selects the method
-        developed by H.-J. Werner and co-workers. -*/
-        options.add_str("LOCAL_METHOD", "WERNER");
+        /*- Type of local-CCSD scheme to be simulated. ``WERNER`` selects the method
+        developed by H.-J. Werner and co-workers. 
+        ``PNO`` selects the Pair Natural Orbital method
+        developed by Meyer, Ahlrichs, and most recently by Neese and co-workers.
+        ``PNO++`` selects the Perturbed Pair Natural Orbital method
+        developed by Crawford and co-workers. -*/
+        options.add_str("LOCAL_METHOD", "WERNER", "WERNER PNO PNO++");
         /*- Do apply local filtering to single de-excitation ($\lambda 1$ amplitudes? -*/
         options.add_bool("LOCAL_FILTER_SINGLES", true);
         /*- Cutoff value for local-coupled-perturbed-Hartree-Fock -*/
@@ -2123,7 +2127,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("LOCAL_CUTOFF", 0.01);
         /*- Type of local-CCSD scheme to be simulated. ``WERNER`` (unique available option) selects the method
         developed by H.-J. Werner and co-workers. -*/
-        options.add_str("LOCAL_METHOD", "WERNER");
+        options.add_str("LOCAL_METHOD", "WERNER PNO PNO++");
         /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE`` (unique available option)
         treats weak pairs in the same manner as strong pairs. -*/
         options.add_str("LOCAL_WEAKP", "NONE");

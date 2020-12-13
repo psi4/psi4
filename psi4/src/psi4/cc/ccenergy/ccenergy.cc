@@ -166,11 +166,6 @@ double CCEnergyWavefunction::compute_energy() {
         return Success;
     }
 
-    if (params_.local) {
-        local_init();
-        if (local_.weakp == "MP2") lmp2();
-    }
-
     init_amps();
 
     /* Compute the MP2 energy while we're here */
@@ -186,6 +181,11 @@ double CCEnergyWavefunction::compute_energy() {
         set_scalar_variable("MP2 TOTAL ENERGY", moinfo_.emp2 + moinfo_.eref);
         set_scalar_variable("MP2 SINGLES ENERGY", moinfo_.emp2_s);
         set_scalar_variable("MP2 DOUBLES ENERGY", moinfo_.emp2_ss + moinfo_.emp2_os);
+    }
+
+    if (params_.local) {
+        local_init();
+        if (local_.weakp == "MP2") lmp2();
     }
 
     if (params_.print_mp2_amps) amp_write();

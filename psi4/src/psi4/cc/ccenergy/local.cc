@@ -43,6 +43,10 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/psifiles.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/local.h"
+#include "psi4/libmints/basisset.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -75,10 +79,151 @@ void CCEnergyWavefunction::local_init() {
     local_.weak_pair_energy = 0.0;
 
     local_.weak_pairs = init_int_array(nocc * nocc);
-    psio_read_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *)local_.weak_pairs,
-                    sizeof(int) * local_.nocc * local_.nocc);
-
+    // The following used to read "Local Weak Pairs", not generated
+    // in the current version of Psi4
+    // psio_read_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *)local_.weak_pairs,
+    //                sizeof(int) * local_.nocc * local_.nocc);
+    
+    if (local_.method == "PNO")
+        localize_occupied();
+        init_pno();
+    if (local_.method == "PNO++")
+        localize_occupied();
+        outfile->Printf(" Local correlation using Perturbed Pair Natural Orbitals\nCutoff value: %e", local_.cutoff);
     outfile->Printf("    Localization parameters ready.\n\n");
+}
+
+void CCEnergyWavefunction::init_pno() {
+    outfile->Printf(" Local correlation using Pair Natural Orbitals\nCutoff value: %e \n", local_.cutoff);
+    auto nocc = local_.nocc;
+    auto nvir = local_.nvir;
+    auto pno_cut = local_.cutoff;
+    auto npairs = nocc*nocc;
+    dpdbuf4 T2;
+    dpdbuf4 T2tilde;
+    dpdbuf4 D;
+    std::vector<SharedMatrix> Tij;
+    std::vector<SharedMatrix> Ttij;
+    SharedMatrix temp(new Matrix(nvir, nvir));
+
+    // Create T2_tilde and "vectorize" it
+    global_dpd_->buf4_init(&T2tilde, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+    global_dpd_->buf4_init(&D, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
+    global_dpd_->buf4_dirprd(&D, &T2tilde);
+    get_matvec(&T2tilde, &Ttij);
+    global_dpd_->buf4_close(&T2tilde);
+    global_dpd_->buf4_close(&D);
+
+    //Print check
+    // This doesn't work; why?
+    amp_write();
+
+    // "Vectorize" T2
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS,  0, 0, 5, 0, 5, 0, "tIjAb");
+    get_matvec(&T2, &Tij);
+    global_dpd_->buf4_close(&T2);
+
+    // Create Density
+    std::vector<SharedMatrix> Dij;
+    temp->zero();
+    for(int ij=0; ij < npairs; ++ij) {
+        temp->zero();
+        int i = ij/nocc;
+        int j = ij/nocc;
+        temp->gemm(0, 1, 1, Tij[ij], Ttij[ij], 0);
+        temp->gemm(1, 0, 1, Tij[ij], Ttij[ij], 1);
+        temp->scale(2.0 * 1/(1+(i==j)));
+        Dij.push_back(temp->clone());
+    }
+
+    // Print checking
+
+    /* outfile->Printf("\t***** Dij Matrix *****\n");
+    for(int ij=0; ij < nocc*nocc; ++ij) {
+        int i = ij/nocc;
+        int j = ij%nocc;
+        outfile->Printf("ij = %2d, i = %2d, j = %2d", ij, i, j);
+        Dij[ij]->print();
+    }*/
+
+    // Diagonalize Density
+    std::vector<SharedMatrix> Q_full(npairs);
+    std::vector<SharedVector> occ_num(npairs);
+    for(int ij=0; ij < npairs; ++ij) {
+        occ_num[ij] = std::make_shared<Vector>(nvir);
+        Q_full[ij]   = std::make_shared<Matrix>(nvir, nvir);
+    }
+
+    for(int ij=0; ij < npairs; ++ij) {
+        Dij[ij]->diagonalize(Q_full[ij], occ_num[ij], descending);
+    }
+
+    // Print checking
+
+    /*for(int ij=0; ij < npairs; ++ij) {
+        outfile->Printf( "Pair: %d\n", ij);
+        for(int a=0; a < nvir; ++a) {
+            outfile->Printf("%20.12lf\n", occ_num[ij]->get(a));
+        }
+    }*/
+
+    // Identify survivors
+    double abs_occ;
+    int survivors;
+    auto survivor_list = std::make_shared<Vector>(npairs);
+    for(int ij=0; ij < npairs; ++ij) {
+        survivors = 0;
+        for(int a=0; a < nvir; ++a) {
+            abs_occ = fabs(occ_num[ij]->get(a));
+            if( abs_occ >= pno_cut) {
+                ++survivors;
+            }
+        }
+        survivor_list->set(ij, survivors);
+    }
+
+    // Compute stats
+    int total_pno = 0;
+    double t2_ratio = 0.0;
+    for(int ij=0; ij < npairs; ++ij) {
+        total_pno += survivor_list->get(ij);
+        t2_ratio += survivor_list->get(ij)*survivor_list->get(ij);
+    }
+    double avg_pno = total_pno / npairs;
+    t2_ratio /= (nocc*nocc*nvir*nvir);
+
+    // Print stats
+    outfile->Printf("\nTotal number of PNOs: %i \n", total_pno);
+    outfile->Printf("Average number of PNOs: %d \n", avg_pno);
+    outfile->Printf("T2 ratio: %d \n", t2_ratio);
+
+}
+
+
+void CCEnergyWavefunction::get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec) {
+    
+    auto nocc = local_.nocc;
+    auto nvir = local_.nvir;
+    auto mat = std::make_shared<Matrix>(nvir, nvir);
+
+    global_dpd_->buf4_mat_irrep_init(buf_obj,0);
+    global_dpd_->buf4_mat_irrep_rd(buf_obj, 0);
+
+    for(int ij=0; ij < nocc*nocc; ++ij) {
+        for(int ab=0; ab < nvir*nvir; ++ab) {
+            int a =  ab/(nvir);
+            int b = ab%(nvir);
+            // outfile->Printf("ij: %d, ab: %d a: %d b: %d \nT2 val(ij,ab): %f \n", ij, ab, a, b, buf_obj->matrix[0][ij][ab]);
+            mat->set(a, b, buf_obj->matrix[0][ij][ab]);
+        }
+        matvec->push_back(mat->clone());
+    }
+
+    global_dpd_->buf4_mat_irrep_close(buf_obj, 0);
+    // Print check
+    outfile->Printf("*** IJ Matrices ***\n");
+    for(int ij=0; ij<matvec->size(); ++ij)
+        matvec->at(ij)->print();
 }
 
 void CCEnergyWavefunction::local_done() { outfile->Printf("    Local parameters free.\n"); }

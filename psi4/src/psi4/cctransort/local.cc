@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -27,55 +27,19 @@
  */
 
 /*! \file
-    \ingroup CCENERGY
+    \ingroup CCTRANSORT
     \brief Enter brief description of file here
 */
 
-#ifndef _psi_src_bin_ccenergy_local_h
-#define _psi_src_bin_ccenergy_local_h
-
-#include <string>
-#include "psi4/libmints/wavefunction.h"
-#include "psi4/libdpd/dpd.h"
-
 namespace psi {
-namespace ccenergy {
+namespace cctransort {
+void localize_occupied() {
+    // Build localizer obj using active occupied orbitals
+    Local = Localizer.build("PIPEK_MEZEY", basisset_, moinfo_.Co);
+    Local.localize();
 
-struct Local {
-    int natom;
-    int nso;
-    int nocc;
-    int nvir;
-    int *aostart;
-    int *aostop;
-    int **domain;
-    int **pairdomain;
-    int *pairdom_len;
-    int *pairdom_nrlen;
-    int *weak_pairs;
-    double ***V;
-    double ***W;
-    double *eps_occ;
-    double **eps_vir;
-    double cutoff;
-    double pno_cut;
-    std::string method;
-    std::string weakp;
-    int filter_singles;
-    double weak_pair_energy;
-    double cphf_cutoff;
-    int freeze_core;
-    std::string pairdef;
+    moinfo_.Co = Local.L; 
+}
 
-    // For PNOs
-    std::vector<SharedVector> occ_num;
-    // std::vector<SharedVector> eps_vir;
-
-    std::vector<SharedMatrix> Q;
-    std::vector<SharedMatrix> L;
-};
-
-}  // namespace ccenergy
+} //namespace cctransort
 }  // namespace psi
-
-#endif  // _psi_src_bin_ccenergy_local_h

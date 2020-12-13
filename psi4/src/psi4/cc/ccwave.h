@@ -167,6 +167,8 @@ class CCEnergyWavefunction : public Wavefunction {
     double d2diag_rhf();
 
     /* local correlation */
+    void init_pno();
+    void get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec);
     void lmp2();
     void local_filter_T1(dpdfile2 *T1);
     void local_filter_T2(dpdbuf4 *T2);

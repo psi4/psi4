@@ -133,6 +133,13 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
         epe = ref->reference_wavefunction() ? ref->reference_wavefunction()->scalar_variable("PE ENERGY")
                                             : ref->scalar_variable("PE ENERGY");
     }
+    
+    // Localization of occupied orbitals
+    // while doing local correlation
+    if (options.get_bool("LOCAL")) {
+        outfile->Printf("Localizing occupied orbitals for local correlation methods.\n");
+        localize_occupied();
+    }
 
     Dimension nmopi = ref->nmopi();
     Dimension nsopi = ref->nsopi();
