@@ -16,6 +16,7 @@ list(APPEND sources
   scf_check.cc
   sort_tei_rhf.cc
   sort_tei_uhf.cc
+  local.cc
   )
 
 psi4_add_module(bin cctransort sources)

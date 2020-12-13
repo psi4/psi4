@@ -75,6 +75,8 @@ double scf_check(int reference, Dimension &openpi);
 void denom_rhf(Dimension &openpi);
 void denom_uhf();
 
+void localize_occupied(std::shared_ptr<Wavefunction> wfn);
+
 PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
     tstart();
 
@@ -138,7 +140,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
     // while doing local correlation
     if (options.get_bool("LOCAL")) {
         outfile->Printf("Localizing occupied orbitals for local correlation methods.\n");
-        localize_occupied();
+        localize_occupied(ref);
     }
 
     Dimension nmopi = ref->nmopi();

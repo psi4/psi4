@@ -85,10 +85,8 @@ void CCEnergyWavefunction::local_init() {
     //                sizeof(int) * local_.nocc * local_.nocc);
     
     if (local_.method == "PNO")
-        localize_occupied();
         init_pno();
     if (local_.method == "PNO++")
-        localize_occupied();
         outfile->Printf(" Local correlation using Perturbed Pair Natural Orbitals\nCutoff value: %e", local_.cutoff);
     outfile->Printf("    Localization parameters ready.\n\n");
 }
