@@ -245,7 +245,6 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
     epsilon_a_ = other->epsilon_a_;
     epsilon_b_ = other->epsilon_b_;
 
-    Lagrangian_ = other->Lagrangian_;
     gradient_ = other->gradient_;
     hessian_ = other->hessian_;
     external_pot_ = other->external_pot_;
@@ -330,7 +329,6 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
     if (other->epsilon_a_) epsilon_a_ = SharedVector(other->epsilon_a_->clone());
     if (other->epsilon_b_) epsilon_b_ = SharedVector(other->epsilon_b_->clone());
 
-    if (other->Lagrangian_) Lagrangian_ = other->Lagrangian_->clone();
     if (other->gradient_) gradient_ = other->gradient_->clone();
     if (other->hessian_) hessian_ = other->hessian_->clone();
 
@@ -426,9 +424,6 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
 
     wfn->H_ = wfn->factory_->create_shared_matrix("One-electron Hamiltonian");
     wfn->H_->remove_symmetry(H_, SO2AO);
-
-    wfn->Lagrangian_ = wfn->factory_->create_shared_matrix("Lagrangian");
-    wfn->Lagrangian_->remove_symmetry(Lagrangian_, SO2AO);
 
     /* This stuff we need to copy in the subclass functions, b/c
     ** constructors like RHF() just blow these away anyway
