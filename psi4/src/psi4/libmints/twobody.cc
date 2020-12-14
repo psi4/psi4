@@ -69,6 +69,8 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
     ket_same_ = (original_bs3_ == original_bs4_);
     braket_same_ = (original_bs1_ == original_bs3_ && original_bs2_ == original_bs4_);
 
+    do_dens_screen_ = Process::environment.options.get_bool("SCF_DENSITY_SCREENING");
+
     // Setup sieve data
     screening_threshold_ = Process::environment.options.get_double("INTS_TOLERANCE");
     auto screentype = Process::environment.options.get_str("SCREENING");
@@ -80,6 +82,8 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
         throw PSIEXCEPTION("Unknown screening type " + screentype + " in TwoBodyAOInt()");
     
     if (screening_threshold_ == 0.0) screening_type_ = ScreeningType::None;
+
+    max_dens_shell_pair_.resize(bs1_->nshell(), std::vector<double>(bs1_->nshell(), 1.0));
 }
 
 TwoBodyAOInt::TwoBodyAOInt(const TwoBodyAOInt &rhs) : TwoBodyAOInt(rhs.integral_, rhs.deriv_) {
@@ -112,6 +116,65 @@ TwoBodyAOInt::TwoBodyAOInt(const TwoBodyAOInt &rhs) : TwoBodyAOInt(rhs.integral_
 
 TwoBodyAOInt::~TwoBodyAOInt() {}
 
+void TwoBodyAOInt::update_density(const SharedMatrix &D) {
+    
+    timer_on("Density Screen");
+#pragma omp parallel for
+    for (int M = 0; M < nshell_; M++) {
+        for (int N = 0; N < nshell_; N++) {
+            int m_start = bs1_->shell(M).function_index();
+            int num_m = bs1_->shell(M).nfunction();
+
+            int n_start = bs1_->shell(N).function_index();
+            int num_n = bs1_->shell(N).nfunction();
+            
+            double max_dens = 0.0;
+
+            for (int m = m_start; m < m_start + num_m; m++) {
+                for (int n = n_start; n < n_start + num_n; n++) {
+                    double val = fabs(D->get(m, n));
+                    if (val > max_dens) max_dens = val;
+                }
+            }
+            max_dens_shell_pair_[M][N] = max_dens;
+        }
+    }
+    timer_off("Density Screen");
+
+}
+
+bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
+
+    Options& options = Process::environment.options;
+    double density_threshold = options.get_double("DENSITY_SCREENING_THRESHOLD");
+
+    double Q_MN = sqrt(shell_pair_values_[N * nshell_ + M]);
+    double Q_RS = sqrt(shell_pair_values_[S * nshell_ + R]);
+
+    double max_dens_factor = 0.0;
+    
+    std::vector<std::tuple<int, int, bool>> shell_doublets{std::make_tuple(M, N, true), std::make_tuple(R, S, true), std::make_tuple(M, R, false), std::make_tuple(M, S, false), std::make_tuple(N, R, false), std::make_tuple(N, R, false), std::make_tuple(N, S, false)};
+
+    for (int d = 0; d < shell_doublets.size(); d++) {
+        
+        int S1 = 0;
+        int S2 = 0;
+        bool is_pair = false;
+        
+        std::tie(S1, S2, is_pair) = shell_doublets[d];
+
+        double val = max_dens_shell_pair_[S1][S2];
+        if (!is_pair) val *= 0.25;
+        if (val > max_dens_factor) max_dens_factor = val;
+
+    }
+
+    if (Q_MN * Q_RS * max_dens_factor > density_threshold) return true;
+
+    return false;
+
+}
+
 bool TwoBodyAOInt::shell_significant_csam(int M, int N, int R, int S) { 
     // Square of standard Cauchy-Schwarz Q_mu_nu terms (Eq. 1)
     double mn_mn = shell_pair_values_[N * nshell_ + M];
@@ -129,13 +192,31 @@ bool TwoBodyAOInt::shell_significant_csam(int M, int N, int R, int S) {
     // Square of Eq. 11
     double mnrs_2 = mn_mn * rs_rs * csam_2;
 
-    return std::abs(mnrs_2) >= screening_threshold_squared_;
+    bool dens = true;
+
+    if (do_dens_screen_) dens = shell_significant_density(M, N, R, S);
+
+    return (std::abs(mnrs_2) >= screening_threshold_squared_ && dens);
 }
 
 bool TwoBodyAOInt::shell_significant_schwarz(int M, int N, int R, int S) {
-    return shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S] >= screening_threshold_squared_;
+
+    bool dens = true;
+
+    if (do_dens_screen_) dens = shell_significant_density(M, N, R, S);
+
+    return (shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S] >= screening_threshold_squared_ && dens);
 }
-bool TwoBodyAOInt::shell_significant_none(int M, int N, int R, int S) { return true; }
+
+bool TwoBodyAOInt::shell_significant_none(int M, int N, int R, int S) {
+
+    bool dens = true;
+
+    if (do_dens_screen_) dens = shell_significant_density(M, N, R, S);
+
+    return dens; 
+
+}
 
 void TwoBodyAOInt::setup_sieve() {
     /*

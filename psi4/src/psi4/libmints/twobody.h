@@ -43,6 +43,7 @@
 #undef _XOPEN_SOURCE
 #endif
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libmints/matrix.h"
 
 namespace psi {
 
@@ -106,6 +107,8 @@ class PSI_API TwoBodyAOInt {
     bool ket_same_;
     /// Are the basis sets in the bra and the ket all the same?
     bool braket_same_;
+    /// Do density screening?
+    bool do_dens_screen_;
 
     /// The blocking scheme used for the integrals
     std::vector<ShellPairBlock> blocks12_, blocks34_;
@@ -144,10 +147,14 @@ class PSI_API TwoBodyAOInt {
     /// Significant shell pairs, indexes by shell
     std::vector<std::vector<int>> function_to_function_;
     std::function<bool(int, int, int, int)> sieve_impl_;
+    /// Max Density per Shell Pair
+    std::vector<std::vector<double>> max_dens_shell_pair_;
 
     void setup_sieve();
     void create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, PairList &shell_pairs, bool is_bra);
 
+    /// Density Screening of a shell quartet
+    bool shell_significant_density(int M, int N, int R, int S);
     /// Implements CSAM screening of a shell quartet
     bool shell_significant_csam(int M, int N, int R, int S);
     /// Implements Schwarz inequality screening of a shell quartet
@@ -198,6 +205,8 @@ class PSI_API TwoBodyAOInt {
     /*
      * Sieve information
      */
+    /// Update the Max Density Per Shell Pair given an updated Density Matrix
+    void update_density(const SharedMatrix &D);
     /// Ask the built in sieve whether this quartet contributes
     bool shell_significant(int M, int N, int R, int S) const { return sieve_impl_(M, N, R, S); };
     /// Are any of the quartets within a given shellpair list significant
