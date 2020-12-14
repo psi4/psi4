@@ -1235,7 +1235,7 @@ SharedMatrix Wavefunction::Fa() const { return Fa_; }
 
 SharedMatrix Wavefunction::Fb() const { return Fb_; }
 
-SharedMatrix Wavefunction::Lagrangian() const { return Lagrangian_; }
+SharedMatrix Wavefunction::lagrangian() const { return Lagrangian_; }
 
 SharedVector Wavefunction::epsilon_a() const { return epsilon_a_; }
 
