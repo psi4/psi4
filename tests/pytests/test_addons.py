@@ -1155,7 +1155,8 @@ def test_resp():
 
     assert np.allclose(charges2[1], reference_charges2, atol=5e-4)
 
-
+@pytest.mark.smoke
+@using_resp
 def test_resp_2():
     import resp
     import numpy as np
@@ -1521,4 +1522,3 @@ def test_psixas():
 
     # not much of a psixas test
     assert psi4.compare_values(-66.7129145004314, e, 5, "psixas dft")
-
