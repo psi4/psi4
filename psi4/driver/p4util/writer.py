@@ -199,15 +199,15 @@ def _write_nbo(self, name):
 
 core.Wavefunction.write_nbo = _write_nbo
 
-def _write_molden(self,name='out.molden',dovirtual=None):
+def _write_molden(self, name='out.molden', dovirtual=None):
     basisset = self.basisset()
     mol = self.molecule()
-    #Header and geometry (Atom, Atom #, Z, x, y, z)
+    # Header and geometry (Atom, Atom #, Z, x, y, z)
     mol_string = '[Molden Format]\n[Atoms] (AU)\n'
     for atom in range(mol.natom()):
         mol_string += f"{mol.symbol(atom):2s}  {atom+1:2d}  {int(mol.Z(atom)):3d}   {mol.x(atom):20.12f} {mol.y(atom):20.12f} {mol.z(atom):20.12f}\n"
 
-    #Dump basis set
+    # Dump basis set
     mol_string += '[GTO]\n'
     for atom in range(mol.natom()):
         mol_string += f"  {atom+1:d} 0\n"
@@ -219,15 +219,16 @@ def _write_molden(self,name='out.molden',dovirtual=None):
                 mol_string += f"{shell.exp(prim):20.10f} {shell.original_coef(prim):20.10f}\n"
         mol_string += '\n'
 
-    #Converting C matrices to AO MO basis. Ca_subset costs information about which symmetry an orbital originally had, which is why we can't use it.
+    # Convert C matrices to AO MO basis. Ca_subset costs information about which symmetry an orbital originally had, which is why we can't use it.
     aotoso = self.aotoso()
     Ca_ao_mo = core.doublet(aotoso, self.Ca(), False, False).nph
     Cb_ao_mo = core.doublet(aotoso, self.Cb(), False, False).nph
     ao_overlap = self.mintshelper().ao_overlap().np
+    # Convert from Psi4 internal normalization to the unit normalization expected by Molden
     ao_normalizer = ao_overlap.diagonal()**(-1 / 2)
     Ca_ao_mo = core.Matrix.from_array([(i.T / ao_normalizer).T for i in Ca_ao_mo])
     Cb_ao_mo = core.Matrix.from_array([(i.T / ao_normalizer).T for i in Cb_ao_mo])
-    #Reordering AO x MO matrix to fit Molden conventions
+    # Reorder AO x MO matrix to fit Molden conventions
     '''
     Reordering expected by Molden
     P: x, y, z
@@ -241,14 +242,14 @@ def _write_molden(self,name='out.molden',dovirtual=None):
     Molden does not handle angular momenta higher than G
     '''
     molden_cartesian_order = [
-        [2,0,1,0,0,0,0,0,0,0,0,0,0,0,0], #p
-        [0,3,4,1,5,2,0,0,0,0,0,0,0,0,0], #d
-        [0,4,5,3,9,6,1,8,7,2,0,0,0,0,0], #f
-        [0,3,4,9,12,10,5,13,14,7,1,6,11,8,2] #g
+        [2,0,1,0,0,0,0,0,0,0,0,0,0,0,0], # p
+        [0,3,4,1,5,2,0,0,0,0,0,0,0,0,0], # d
+        [0,4,5,3,9,6,1,8,7,2,0,0,0,0,0], # f
+        [0,3,4,9,12,10,5,13,14,7,1,6,11,8,2] # g
     ]
     nirrep = self.nirrep()
-    count = 0 #Keeps track of count for reordering
-    temp_a = Ca_ao_mo.clone() #Placeholders for original AO x MO matrices
+    count = 0 # Keeps track of count for reordering
+    temp_a = Ca_ao_mo.clone() # Placeholders for original AO x MO matrices
     temp_b = Cb_ao_mo.clone()
 
     for i in range(basisset.nshell()):
@@ -261,20 +262,20 @@ def _write_molden(self,name='out.molden',dovirtual=None):
                         Cb_ao_mo.set(h,count + molden_cartesian_order[am-1][j],k,temp_b.get(h,count+j,k))
         count += basisset.shell(i).nfunction
         
-    #Dump MO information
+    # Dump MO information
     if basisset.has_puream():
         mol_string += '[5D]\n[9G]\n\n'
     ct = mol.point_group().char_table()
     mol_string += '[MO]\n'
     mo_dim = self.nmopi() if dovirtual else (self.doccpi() + self.soccpi())
     
-    #Alphas. If Alphas and Betas are the same, then only Alphas with double occupation will be written (see line marked "***")
+    # Alphas. If Alphas and Betas are the same, then only Alphas with double occupation will be written (see line marked "***")
     mos = []
     for h in range(nirrep):
         for n in range(mo_dim[h]):
             mos.append((self.epsilon_a().get(h, n), (h, n)))
 
-    #Sort mos based on energy
+    # Sort mos based on energy
     def mosSort(element):
         return element[0]
     mos.sort(key=mosSort)
@@ -282,14 +283,14 @@ def _write_molden(self,name='out.molden',dovirtual=None):
     for i in range(len(mos)):
         h, n = mos[i][1]
         mol_string += f" Sym= {ct.gamma(h).symbol():s}\n Ene= {mos[i][0]:24.17e}\n Spin= Alpha\n"
-        if self.same_a_b_orbs() and self.epsilon_a() == self.epsilon_b() and self.same_a_b_dens(): # ***
+        if self.same_a_b_orbs() and self.epsilon_a() == self.epsilon_b() and self.same_a_b_dens():
             mol_string += f" Occup= {round(self.occupation_a().get(h, n) + self.occupation_b().get(h, n), 17):24.17e}\n"
         else:
             mol_string += f" Occup= {self.occupation_a().get(h, n):24.17e}\n"
         for so in range(self.nso()):
             mol_string += f"{so+1:3d} {Ca_ao_mo.get(h, so, n):24.17e}\n"
 
-    #Betas
+    # Betas
     mos = []
     if not self.same_a_b_orbs() or self.epsilon_a() != self.epsilon_b() or not self.same_a_b_dens():
         for h in range(nirrep):
@@ -303,7 +304,7 @@ def _write_molden(self,name='out.molden',dovirtual=None):
             for so in range(self.nso()):
                 mol_string += f"{so+1:3d} {Cb_ao_mo.get(h, so, n):24.17e}\n"
 
-    #Write Molden string to file
+    # Write Molden string to file
     with open(name,'w') as fn:
         fn.write(mol_string)
 
