@@ -1,5 +1,5 @@
 import pytest
-from .addons import hardware_nvidia_gpu, using_dftd3, using_gcp, using_cppe
+from .addons import hardware_nvidia_gpu, using_dftd3, using_gcp, using_cppe, using_psixas
 
 import json
 
@@ -1490,4 +1490,35 @@ def test_cct3():
 
     ene = psi4.energy("cct3")
     assert psi4.compare_values(-4.220587742726, ene, 10, "cc(t;3) energy")
+
+
+@pytest.mark.smoke
+@using_psixas
+def test_psixas():
+    import psixas
+
+    psi4.geometry("""
+      O   0.27681793323501      0.00000014791107      0.00000000000000
+      H   0.86159097690242      0.76505117501585      0.00000000000000
+      H   0.86159108986257     -0.76505132292693      0.00000000000000
+    symmetry c1
+    """)
+
+    psi4.set_options({
+        "basis": "def2-TZVP",
+        "scf__reference": "uks",
+        "scf_type": "MEM_DF",
+        "psixas__prefix": "WATER",
+        "psixas__MODE": "GS+EX+SPEC",
+        "psixas__ORBS": [0  ],
+        "psixas__OCCS": [0.5],
+        "psixas__SPIN": ["b"  ],
+        "psixas__DAMP": 0.8,
+        "psixas__OVL":    ["T"],
+        "psixas__FREEZE": ["T"],
+    })
+    e = psi4.energy('psixas',functional='PBE')
+
+    # not much of a psixas test
+    assert psi4.compare_values(-66.7129145004314, e, 5, "psixas dft")
 
