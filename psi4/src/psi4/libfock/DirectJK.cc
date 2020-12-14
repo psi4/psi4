@@ -353,7 +353,7 @@ bool DirectJK::shell_significant_density(const SharedMatrix& EST_shell_pairs, co
 
 void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<std::shared_ptr<Matrix>>& D,
                         std::vector<std::shared_ptr<Matrix>>& J, std::vector<std::shared_ptr<Matrix>>& K) {
-
+    timer_on("build_JK()");
     // Get reference to Options object
     Options& options = Process::environment.options;
 
@@ -375,6 +375,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
     SharedMatrix EST_shell_pairs;
     SharedMatrix dens_factor_shell_pairs;
 
+    timer_on("Density Screen");
     // => Compute ESTs for all shell pairs (Density Screening) <= //
     if (density_screen) {
     EST_shell_pairs = std::make_shared<Matrix>("DS Shell Pair ESTs", nshell, nshell);
@@ -383,7 +384,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
         for (int M = 0; M < nshell; M++) {
             for (int N = 0; N < nshell; N++) {
                 ints[0]->compute_shell(M, N, M, N);
-                const double* buffer1 = (ints[0]->buffers())[0];
+                const double* buffer1 = ints[0]->buffer();
 
                 int m_start = primary_->shell(M).function_index();
                 int num_m = primary_->shell(M).nfunction();
@@ -411,6 +412,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
             }
         }
     }
+    timer_off("Density Screen");
 
     // => Task Blocking <= //
 
@@ -566,10 +568,12 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
 
+                        timer_on("compute_shell(P, Q, R, S)");
                         // if (thread == 0) timer_on("JK: Ints");
                         if (ints[thread]->compute_shell(P, Q, R, S) == 0)
                             continue;  // No integrals in this shell quartet
                         computed_shells++;
+                        timer_off("compute_shell(P, Q, R, S)");
                         // if (thread == 0) timer_off("JK: Ints");
 
                         const double* buffer = ints[thread]->buffer();
@@ -864,6 +868,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
         printer->Printf("Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
                         possible_shells, computed_shells / (double)possible_shells);
     }
+    timer_off("build_JK()");
 }
 
 }  // namespace psi
