@@ -273,12 +273,14 @@ void DirectJK::compute_JK() {
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
 
+    bool dens_screen = Process::environment.options.get_bool("SCF_DENSITY_SCREENING");
+
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         for (int thread = 0; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
         }
-        ints[0]->update_density(D_ao_[0]);
+        if (dens_screen) ints[0]->update_density(D_ao_[0]);
         // TODO: Fast K algorithm
         if (do_J_) {
             build_JK(ints, D_ao_, J_ao_, wK_ao_);
@@ -297,7 +299,7 @@ void DirectJK::compute_JK() {
         for (int thread = 1; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
-        ints[0]->update_density(D_ao_[0]);
+        if (dens_screen) ints[0]->update_density(D_ao_[0]);
         if (do_J_ && do_K_) {
             build_JK(ints, D_ao_, J_ao_, K_ao_);
         } else if (do_J_) {
