@@ -315,60 +315,19 @@ void DirectJK::compute_JK() {
 }
 void DirectJK::postiterations() {}
 
-bool DirectJK::shell_significant_density(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D, int M, int N, int R, int S) {
+bool DirectJK::shell_significant_density(const SharedMatrix& EST_shell_pairs, const SharedMatrix& dens_factor_shell_pairs, int M, int N, int R, int S) {
     
     Options& options = Process::environment.options;
     double density_threshold = options.get_double("DENSITY_SCREENING_THRESHOLD");
 
-    ints[0]->compute_shell(M, N, M, N);
-    const double* buffer1 = (ints[0]->buffers())[0];
-
-    int m_start = primary_->shell(M).function_index();
-    int num_m = primary_->shell(M).nfunction();
-
-    int n_start = primary_->shell(N).function_index();
-    int num_n = primary_->shell(N).nfunction();
-
-    double Q_MN = 0.0;
-    
-    for (int m = m_start; m < m_start + num_m; m++) {
-        for (int n = n_start; n < n_start + num_n; n++) {
-            int dm = m - m_start;
-            int dn = n - n_start;
-            double temp = sqrt(buffer1[dm * num_n * num_m * num_n + dn * num_m * num_n + dm * num_n + dn]);
-            if (temp > Q_MN) {
-                Q_MN = temp;
-            }
-        }
-    }
-
-    ints[0]->compute_shell(R, S, R, S);
-    const double* buffer2 = (ints[0]->buffers())[0];
-
-    int r_start = primary_->shell(R).function_index();
-    int num_r = primary_->shell(R).nfunction();
-
-    int s_start = primary_->shell(S).function_index();
-    int num_s = primary_->shell(S).nfunction();
-
-    double Q_RS = 0.0;
-    
-    for (int r = r_start; r < r_start + num_r; r++) {
-        for (int s = s_start; s < s_start + num_s; s++) {
-            int dr = r - r_start;
-            int ds = s - s_start;
-            double temp = sqrt(buffer2[dr * num_s * num_r * num_s + ds * num_r * num_s + dr * num_s + ds]);
-            if (temp > Q_RS) {
-                Q_RS = temp;
-            }
-        }
-    }
+    double Q_MN = EST_shell_pairs->get(M, N);
+    double Q_RS = EST_shell_pairs->get(R, S);
 
     double EST = Q_MN * Q_RS;
-    
-    std::vector<std::tuple<int, int, bool>> shell_densities{std::make_tuple(M, N, true), std::make_tuple(R, S, true), std::make_tuple(M, R, false), std::make_tuple(M, S, false), std::make_tuple(N, R, false), std::make_tuple(N, R, false), std::make_tuple(N, S, false)};
 
     double dens_factor = 0.0;
+    
+    std::vector<std::tuple<int, int, bool>> shell_densities{std::make_tuple(M, N, true), std::make_tuple(R, S, true), std::make_tuple(M, R, false), std::make_tuple(M, S, false), std::make_tuple(N, R, false), std::make_tuple(N, R, false), std::make_tuple(N, S, false)};
 
     for (int el = 0; el < shell_densities.size(); el++) {
         
@@ -378,21 +337,11 @@ bool DirectJK::shell_significant_density(std::vector<std::shared_ptr<TwoBodyAOIn
 
         std::tie(S1, S2, is_pair) = shell_densities[el];
         
-        int s1_start = primary_->shell(S1).function_index();
-        int num_s1 = primary_->shell(S1).nfunction();
-
-        int s2_start = primary_->shell(S2).function_index();
-        int num_s2 = primary_->shell(S2).nfunction();
-
-        for (int s1 = s1_start; s1 < s1_start + num_s1; s1++) {
-            for (int s2 = s2_start; s2 < s2_start + num_s2; s2++) {
-                double val = fabs(D[0]->get(s1, s2));
-                if (!is_pair) val *= 0.25;
-                if (val > dens_factor) dens_factor = val;
-            }
-        }
+        double val = dens_factor_shell_pairs->get(S1, S2);
+        if (!is_pair) val *= 0.25;
+        if (val > dens_factor) dens_factor = val;
+        
     }
-
         
     double screen_result = EST * dens_factor;
 
@@ -404,9 +353,12 @@ bool DirectJK::shell_significant_density(std::vector<std::shared_ptr<TwoBodyAOIn
 
 void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<std::shared_ptr<Matrix>>& D,
                         std::vector<std::shared_ptr<Matrix>>& J, std::vector<std::shared_ptr<Matrix>>& K) {
-    
+
+    // Get reference to Options object
+    Options& options = Process::environment.options;
+
     // Perform Density Screening?    
-    bool density_screen = (Process::environment.options).get_bool("SCF_DENSITY_SCREENING");
+    bool density_screen = options.get_bool("SCF_DENSITY_SCREENING");
 
     // => Zeroing <= //
     for (size_t ind = 0; ind < J.size(); ind++) {
@@ -419,6 +371,46 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
 
     int nshell = primary_->nshell();
     int nthread = df_ints_num_threads_;
+
+    SharedMatrix EST_shell_pairs;
+    SharedMatrix dens_factor_shell_pairs;
+
+    // => Compute ESTs for all shell pairs (Density Screening) <= //
+    if (density_screen) {
+    EST_shell_pairs = std::make_shared<Matrix>("DS Shell Pair ESTs", nshell, nshell);
+    dens_factor_shell_pairs = std::make_shared<Matrix>("Shell Pair Density",nshell, nshell);
+#pragma omp parallel for
+        for (int M = 0; M < nshell; M++) {
+            for (int N = 0; N < nshell; N++) {
+                ints[0]->compute_shell(M, N, M, N);
+                const double* buffer1 = (ints[0]->buffers())[0];
+
+                int m_start = primary_->shell(M).function_index();
+                int num_m = primary_->shell(M).nfunction();
+
+                int n_start = primary_->shell(N).function_index();
+                int num_n = primary_->shell(N).nfunction();
+
+                double Q_MN = 0.0;
+                double dens_factor = 0.0;
+
+                for (int m = m_start; m < m_start + num_m; m++) {
+                    for (int n = n_start; n < n_start + num_n; n++) {
+                        int dm = m - m_start;
+                        int dn = n - n_start;
+                        double temp = sqrt(buffer1[dm * num_n * num_m * num_n + dn * num_m * num_n + dm * num_n + dn]);
+                        if (temp > Q_MN) {
+                            Q_MN = temp;
+                        }
+                        double val = fabs(D[0]->get(m, n));
+                        if (val > dens_factor) dens_factor = val;
+                    }
+                    EST_shell_pairs->set(M, N, Q_MN);
+                    dens_factor_shell_pairs->set(M, N, dens_factor);
+                }
+            }
+        }
+    }
 
     // => Task Blocking <= //
 
@@ -570,7 +562,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                         if (R2 * nshell + S2 > P2 * nshell + Q2) continue;
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
-                        if (density_screen && !shell_significant_density(ints, D, P, Q, R, S)) continue;
+                        if (density_screen && !shell_significant_density(EST_shell_pairs, dens_factor_shell_pairs, P, Q, R, S)) continue;
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
 
