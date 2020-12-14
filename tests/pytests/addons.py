@@ -78,3 +78,6 @@ using_mdi = pytest.mark.skipif(
 using_dftd3 = using('dftd3')
 using_dftd3_321 = using('dftd3')
 using_mp2d = using('mp2d')
+
+using_psixas = pytest.mark.skipif(which_import("psixas", return_bool=True) is False, reason="Not detecting plugin psixas")
+
