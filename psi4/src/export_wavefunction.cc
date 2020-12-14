@@ -155,6 +155,8 @@ void export_wavefunction(py::module& m) {
         .def("epsilon_a_subset", &Wavefunction::epsilon_a_subset, "Returns the requested Alpha Eigenvalues subset.")
         .def("epsilon_b_subset", &Wavefunction::epsilon_b_subset, "Returns the requested Beta Eigenvalues subset.")
         .def("X", &Wavefunction::X, "Returns the Lagrangian Matrix.")
+        .def("Lagrangian", &Wavefunction::Lagrangian, "Returns the Lagrangian Matrix.")
+        .def("set_Lagrangian", &Wavefunction::set_Lagrangian, "Sets the orbital Lagrangian matrix.")
         .def("basis_projection", &Wavefunction::basis_projection,
              "Projects a orbital matrix from one basis to another.")
         .def("H", &Wavefunction::H, "Returns the 'Core' Matrix (Potential + Kinetic) Integrals.")
