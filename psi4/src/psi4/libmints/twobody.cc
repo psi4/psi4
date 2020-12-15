@@ -132,7 +132,7 @@ void TwoBodyAOInt::update_density(const SharedMatrix &D) {
 
             for (int m = m_start; m < m_start + num_m; m++) {
                 for (int n = n_start; n < n_start + num_n; n++) {
-                    double val = fabs(D->get(m, n));
+                    double val = std::abs(D->get(m, n));
                     if (val > max_dens) max_dens = val;
                 }
             }
@@ -148,8 +148,8 @@ bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
     Options& options = Process::environment.options;
     double density_threshold = options.get_double("DENSITY_SCREENING_THRESHOLD");
 
-    double Q_MN = sqrt(shell_pair_values_[N * nshell_ + M]);
-    double Q_RS = sqrt(shell_pair_values_[S * nshell_ + R]);
+    double Q_MN_sq = shell_pair_values_[N * nshell_ + M];
+    double Q_RS_sq = shell_pair_values_[S * nshell_ + R];
 
     double max_dens_factor = 0.0;
     
@@ -169,7 +169,10 @@ bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
 
     }
 
-    if (Q_MN * Q_RS * max_dens_factor > density_threshold) return true;
+    max_dens_factor *= max_dens_factor;
+    density_threshold *= density_threshold;
+
+    if (Q_MN_sq * Q_RS_sq * max_dens_factor > density_threshold) return true;
 
     return false;
 
