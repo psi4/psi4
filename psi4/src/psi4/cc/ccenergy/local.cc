@@ -112,6 +112,11 @@ void CCEnergyWavefunction::init_pno() {
     global_dpd_->buf4_close(&T2tilde);
     global_dpd_->buf4_close(&D);
 
+    // Print check
+    outfile->Printf("*** IJ Matrices ***\n");
+    for(int ij=0; ij<Ttij.size(); ++ij)
+        Ttij.at(ij)->print();
+
     //Print check
     // This doesn't work; why?
     amp_write();
@@ -136,11 +141,9 @@ void CCEnergyWavefunction::init_pno() {
 
     // Print checking
 
-    /* outfile->Printf("\t***** Dij Matrix *****\n");
+    /*outfile->Printf("\t***** Dij Matrix *****\n");
     for(int ij=0; ij < nocc*nocc; ++ij) {
-        int i = ij/nocc;
-        int j = ij%nocc;
-        outfile->Printf("ij = %2d, i = %2d, j = %2d", ij, i, j);
+        outfile->Printf("ij = %2d\n", ij);
         Dij[ij]->print();
     }*/
 
@@ -158,42 +161,46 @@ void CCEnergyWavefunction::init_pno() {
 
     // Print checking
 
-    /*for(int ij=0; ij < npairs; ++ij) {
-        outfile->Printf( "Pair: %d\n", ij);
-        for(int a=0; a < nvir; ++a) {
-            outfile->Printf("%20.12lf\n", occ_num[ij]->get(a));
-        }
+    //for(int ij=0; ij < npairs; ++ij) {
+
+    /*outfile->Printf( "Pair: %d\n", 1);
+    for(int a=0; a < nvir; ++a) {
+        outfile->Printf("%20.12lf\n", occ_num[1]->get(a));
     }*/
 
     // Identify survivors
     double abs_occ;
     int survivors;
-    auto survivor_list = std::make_shared<Vector>(npairs);
+    std::vector<int> survivor_list(npairs);
     for(int ij=0; ij < npairs; ++ij) {
         survivors = 0;
         for(int a=0; a < nvir; ++a) {
-            abs_occ = fabs(occ_num[ij]->get(a));
+            abs_occ = abs(occ_num[ij]->get(a));
             if( abs_occ >= pno_cut) {
-                ++survivors;
+                survivors += 1;
             }
         }
-        survivor_list->set(ij, survivors);
+        outfile->Printf("Survivors: %i \t", survivors);
+        survivor_list[ij] = survivors;
     }
 
     // Compute stats
     int total_pno = 0;
     double t2_ratio = 0.0;
+    outfile->Printf("Survivor list: "); 
     for(int ij=0; ij < npairs; ++ij) {
-        total_pno += survivor_list->get(ij);
-        t2_ratio += survivor_list->get(ij)*survivor_list->get(ij);
+        outfile->Printf("%d\t", survivor_list[ij]);
+        total_pno += survivor_list[ij];
+        t2_ratio += pow(survivor_list[ij],2);
     }
-    double avg_pno = total_pno / npairs;
+    outfile->Printf("\nT2 ratio: %10.10lf \n", t2_ratio);
+    double avg_pno = static_cast<float>(total_pno) / static_cast<float>(npairs);
     t2_ratio /= (nocc*nocc*nvir*nvir);
 
     // Print stats
-    outfile->Printf("\nTotal number of PNOs: %i \n", total_pno);
-    outfile->Printf("Average number of PNOs: %d \n", avg_pno);
-    outfile->Printf("T2 ratio: %d \n", t2_ratio);
+    outfile->Printf("Total number of PNOs: %i \n", total_pno);
+    outfile->Printf("Average number of PNOs: %10.10lf \n", avg_pno);
+    outfile->Printf("T2 ratio: %10.10lf \n", t2_ratio);
 
 }
 
@@ -218,10 +225,6 @@ void CCEnergyWavefunction::get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix
     }
 
     global_dpd_->buf4_mat_irrep_close(buf_obj, 0);
-    // Print check
-    outfile->Printf("*** IJ Matrices ***\n");
-    for(int ij=0; ij<matvec->size(); ++ij)
-        matvec->at(ij)->print();
 }
 
 void CCEnergyWavefunction::local_done() { outfile->Printf("    Local parameters free.\n"); }
