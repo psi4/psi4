@@ -487,13 +487,13 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
-                        timer_on("compute_shell(P, Q, R, S)");
+                        // timer_on("compute_shell(P, Q, R, S)");
                         // if (thread == 0) timer_on("JK: Ints");
                         if (ints[thread]->compute_shell(P, Q, R, S) == 0)
                             continue;  // No integrals in this shell quartet
                         computed_shells++;
                         // if (thread == 0) timer_off("JK: Ints");
-                        timer_off("compute_shell(P, Q, R, S)");
+                        // timer_off("compute_shell(P, Q, R, S)");
 
                         const double* buffer = ints[thread]->buffer();
 

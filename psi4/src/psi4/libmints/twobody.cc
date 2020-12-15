@@ -69,7 +69,9 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
     ket_same_ = (original_bs3_ == original_bs4_);
     braket_same_ = (original_bs1_ == original_bs3_ && original_bs2_ == original_bs4_);
 
+    // Density Screening Options
     do_dens_screen_ = Process::environment.options.get_bool("SCF_DENSITY_SCREENING");
+    dens_screen_threshold_ = Process::environment.options.get_double("DENSITY_SCREENING_THRESHOLD");
 
     // Setup sieve data
     screening_threshold_ = Process::environment.options.get_double("INTS_TOLERANCE");
@@ -145,29 +147,17 @@ void TwoBodyAOInt::update_density(const SharedMatrix &D) {
 
 bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
 
-    Options& options = Process::environment.options;
-    double density_threshold = options.get_double("DENSITY_SCREENING_THRESHOLD");
+    double density_threshold = dens_screen_threshold_;
 
     double Q_MN_sq = shell_pair_values_[N * nshell_ + M];
     double Q_RS_sq = shell_pair_values_[S * nshell_ + R];
 
-    double max_dens_factor = 0.0;
-    
-    std::vector<std::tuple<int, int, bool>> shell_doublets{std::make_tuple(M, N, true), std::make_tuple(R, S, true), std::make_tuple(M, R, false), std::make_tuple(M, S, false), std::make_tuple(N, R, false), std::make_tuple(N, R, false), std::make_tuple(N, S, false)};
-
-    for (int d = 0; d < shell_doublets.size(); d++) {
-        
-        int S1 = 0;
-        int S2 = 0;
-        bool is_pair = false;
-        
-        std::tie(S1, S2, is_pair) = shell_doublets[d];
-
-        double val = max_dens_shell_pair_[S1][S2];
-        if (!is_pair) val *= 0.25;
-        if (val > max_dens_factor) max_dens_factor = val;
-
-    }
+    double max_dens_factor = max_dens_shell_pair_[M][N];
+    max_dens_factor = std::max(max_dens_factor, max_dens_shell_pair_[R][S]);
+    max_dens_factor = std::max(max_dens_factor, 0.25 * max_dens_shell_pair_[M][R]);
+    max_dens_factor = std::max(max_dens_factor, 0.25 * max_dens_shell_pair_[M][S]);
+    max_dens_factor = std::max(max_dens_factor, 0.25 * max_dens_shell_pair_[N][R]);
+    max_dens_factor = std::max(max_dens_factor, 0.25 * max_dens_shell_pair_[N][S]);
 
     max_dens_factor *= max_dens_factor;
     density_threshold *= density_threshold;
