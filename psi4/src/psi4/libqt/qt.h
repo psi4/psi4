@@ -207,6 +207,7 @@ int C_DGELSX(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, int
 int C_DGELSY(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, int* jpvt, double rcond, int* rank,
              double* work, int lwork);
 int C_DGEQLF(int m, int n, double* a, int lda, double* tau, double* work, int lwork);
+PSI_API
 int C_DGEQP3(int m, int n, double* a, int lda, int* jpvt, double* tau, double* work, int lwork);
 PSI_DEPRECATED("DGEQPF will soon be removed from LAPACK. Please use DGEQPF3")
 int C_DGEQPF(int m, int n, double* a, int lda, int* jpvt, double* tau, double* work);

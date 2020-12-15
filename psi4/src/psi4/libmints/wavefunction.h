@@ -447,8 +447,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     SharedVector epsilon_a() const;
     /// Returns the beta orbital energies
     SharedVector epsilon_b() const;
-    /// Returns the SO basis Lagrangian
-    SharedMatrix Lagrangian() const;
 
     SharedMatrix aotoso() const { return AO2SO_; }
 
@@ -574,8 +572,12 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     SharedMatrix basis_projection(SharedMatrix Cold, Dimension noccpi, std::shared_ptr<BasisSet> old_basis,
                                   std::shared_ptr<BasisSet> new_basis);
 
+    /// Returns the SO basis Lagrangian
+    SharedMatrix lagrangian() const;
     /// Returns the Lagrangian in SO basis for the wavefunction
     SharedMatrix X() const;
+    /// Set Lagrangian matrix in SO basis
+    void set_lagrangian(SharedMatrix X) { Lagrangian_ = X; }
 
     /// Returns the gradient
     SharedMatrix gradient() const;
