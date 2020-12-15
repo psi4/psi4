@@ -107,8 +107,6 @@ class PSI_API TwoBodyAOInt {
     bool ket_same_;
     /// Are the basis sets in the bra and the ket all the same?
     bool braket_same_;
-    /// Do density screening?
-    bool do_dens_screen_;
 
     /// The blocking scheme used for the integrals
     std::vector<ShellPairBlock> blocks12_, blocks34_;
@@ -147,6 +145,10 @@ class PSI_API TwoBodyAOInt {
     /// Significant shell pairs, indexes by shell
     std::vector<std::vector<int>> function_to_function_;
     std::function<bool(int, int, int, int)> sieve_impl_;
+    /// Do Density Screening?
+    bool do_dens_screen_;
+    /// Density Screening Threshold
+    double dens_screen_threshold_;
     /// Max Density per Shell Pair
     std::vector<std::vector<double>> max_dens_shell_pair_;
 
