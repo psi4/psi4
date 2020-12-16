@@ -32,6 +32,7 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/potential.h"
+#include "psi4/libmints/wavefunction.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/physconst.h"
@@ -59,6 +60,66 @@ void ExternalPotential::addCharge(double Z, double x, double y, double z) {
 
 void ExternalPotential::addBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs) {
     bases_.push_back(std::make_pair(basis, coefs));
+}
+
+void ExternalPotential::addMultipoles(std::shared_ptr<BasisSet> basis, SharedVector coefs) {
+    // This is where the addBasis and addMultipoles routines differ. Add basis is for a general basis set that has been fit to a given
+    // density, so the normalization is included in the fit.  When specifying some arbitrary multipoles from a classical force field, we
+    // want each function |A) defining the multipole to be normalized to 1.  However, standard basis sets are normalized such that (A|A) = 1
+    // so the user would not get the expected pertubation.  Instead we work out the renormalization factor needed to convert the condition
+    // (A|A) = 1 into ||A|) = 1.
+    std::vector<double> scale_facs;
+    for (int Q = 0; Q < basis->nshell(); Q++) {
+        const auto &shell = basis->shell(Q);
+        const auto &l = shell.am();
+        const auto *exps = shell.exps();
+        const double PI_3_2 = M_PI * sqrt(M_PI);
+        double N2 = sqrt((pow(2.0, l) * pow(2.0 * exps[0], l + 1.5)) / (PI_3_2 * df[2 * l]));
+        double N1;
+        if (shell.nprimitive() > 1)
+            throw PSIEXCEPTION("Multipoles must be specified as uncontracted basis functions");
+        if (l%2 == 1) {
+            // clang-format off
+            //                  2
+            //    /inf  2n+1 -ax           n!
+            //    |    x    e    dx  =  -------
+            //    /0                       n+1
+            //                           2a
+            // clang-format on
+            N1 = pow(2.0, 0.5*l+0.5) * pow(exps[0], 0.5*l+2) / (PI_3_2 * df[l]);
+        } else {
+            // clang-format off
+            //                2
+            //    /inf  2n -ax        (2n-1)!!     ---
+            //    |    x  e    dx  =  --------    / pi
+            //    /0                    n  n+1   / ---
+            //                        a   2    \/   a
+            // clang-format on
+            N1 = pow(2.0, 0.5*l) * pow(exps[0], 0.5*l + 1.5) / (PI_3_2 * df[l]);
+        }
+        double normfac = N1/N2;
+        if (shell.is_pure()){
+            for (int m = 0; m < 2*l + 1; ++m){
+                scale_facs.push_back(normfac);
+            }
+        }else{
+            // Cartesian functions in Psi4 are normalized according to the CCA standard, so only axis aligned functions (e.g. xxx, yyy, zzz) are
+            // normalized to unity.  Here we provide the extra angular momentum normalization to ensure that all functions are unit normalized.
+            for(int lx=l; lx >= 0; lx--) {
+                for(int lz=0; lz<=l-lx; lz++) {
+                    int ly = l-lx-lz;
+                    double angmomfac = sqrt(df[lx] * df[ly] * df[lz] / df[l]);
+                    scale_facs.push_back(normfac * angmomfac);
+                }
+            }
+        }
+    }
+    if (coefs->dim() != scale_facs.size()) {
+        throw PSIEXCEPTION("The number of coefficients specified is inconsistent with the number of multipoles provided");
+    }
+    auto scaled = std::shared_ptr<Vector>(new Vector(coefs->dim()));
+    std::transform(scale_facs.cbegin(), scale_facs.cend(), coefs->pointer(), scaled->pointer(), std::multiplies<>{});
+    bases_.push_back(std::make_pair(basis, scaled));
 }
 
 void ExternalPotential::print(std::string out) const {
@@ -180,22 +241,22 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
         double *dp = d->pointer();
 
         for (int Q = 0; Q < aux->nshell(); Q++) {
+            int numQ = aux->shell(Q).nfunction();
+            int Qstart = aux->shell(Q).function_index();
             for (int M = 0; M < basis->nshell(); M++) {
+                int numM = basis->shell(M).nfunction();
+                int Mstart = basis->shell(M).function_index();
                 for (int N = 0; N < basis->nshell(); N++) {
-                    int numQ = aux->shell(Q).nfunction();
-                    int numM = basis->shell(M).nfunction();
                     int numN = basis->shell(N).nfunction();
-                    int Qstart = aux->shell(Q).function_index();
-                    int Mstart = basis->shell(M).function_index();
                     int Nstart = basis->shell(N).function_index();
 
                     eri->compute_shell(Q, 0, M, N);
-                    const double *buffer = eri->buffer();
+                    const double *buffer = eri->buffers()[0];
 
                     for (int oq = 0, index = 0; oq < numQ; oq++) {
                         for (int om = 0; om < numM; om++) {
                             for (int on = 0; on < numN; on++, index++) {
-                                Vp[om + Mstart][on + Nstart] += dp[oq + Qstart] * buffer[index];
+                                Vp[om + Mstart][on + Nstart] -= dp[oq + Qstart] * buffer[index];
                             }
                         }
                     }
@@ -203,14 +264,10 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
             }
         }
     }
-
     return V;
 }
 
 SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisSet> basis, std::shared_ptr<Matrix> Dt) {
-    // This will be easy to implement, I think, but just throw for now.
-    if (bases_.size()) throw PSIEXCEPTION("Gradients with blurred external charges are not implemented yet.");
-
     SharedMolecule mol = basis->molecule();
     int natom = mol->natom();
     int nextc = charges_.size();
@@ -231,7 +288,6 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
     }
 
     // Start with the nuclear contribution
-    grad->zero();
     for (int cen = 0; cen < natom; ++cen) {
         double xc = mol->x(cen);
         double yc = mol->y(cen);
@@ -250,109 +306,220 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
         }
     }
 
-    // Now the electronic contribution.
-    auto fact = std::make_shared<IntegralFactory>(basis, basis, basis, basis);
-#if 0
-    // Slow, but correct, memory hog version
-    std::shared_ptr<PotentialInt> potential_deriv_ints(dynamic_cast<PotentialInt*>(fact->ao_potential(1)));
-
-    int nbf = basis->nbf();
-    std::vector<SharedMatrix> intmats;
-    for(int i = 0; i < 3*basis->molecule()->natom(); ++i)
-        intmats.push_back(std::make_shared<Matrix>("V derivative integrals", nbf, nbf));
-
-
-    potential_deriv_ints->set_charge_field(Zxyz);
-    potential_deriv_ints->compute_deriv1_no_charge_term(intmats);
-    SharedMatrix nucgrad = grad->clone();
-    nucgrad->set_name("Nuclear grad");
-    grad->zero();
-    for (int i = 0; i < basis->molecule()->natom(); ++i){
-        Gp[i][0] += Dt->vector_dot(intmats[3*i+0]);
-        Gp[i][1] += Dt->vector_dot(intmats[3*i+1]);
-        Gp[i][2] += Dt->vector_dot(intmats[3*i+2]);
-    }
-    nucgrad->print();
-    grad->print();
-    grad->add(nucgrad);
-    grad->print();
-    return grad;
-#else
-
     // Thread count
     int threads = 1;
 #ifdef _OPENMP
     threads = Process::environment.get_n_threads();
 #endif
-
-    // Potential derivatives
-    std::vector<std::shared_ptr<PotentialInt> > Vint;
+    // Potential derivative matrices for each thread
     std::vector<SharedMatrix> Vtemps;
     for (int t = 0; t < threads; t++) {
-        Vint.push_back(std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(fact->ao_potential(1))));
-        Vint[t]->set_charge_field(Zxyz);
-        Vtemps.push_back(SharedMatrix(grad->clone()));
-        Vtemps[t]->zero();
+        Vtemps.push_back(std::make_shared<Matrix>("Gradient thread temp", natom, 3));
     }
 
-    // Lower Triangle
+    // Lower Triangular shell pairs
     std::vector<std::pair<int, int> > PQ_pairs;
     for (int P = 0; P < basis->nshell(); P++) {
         for (int Q = 0; Q <= P; Q++) {
             PQ_pairs.push_back(std::pair<int, int>(P, Q));
         }
     }
+    long int nPQ = PQ_pairs.size();
 
+    if (charges_.size()) {
+        // Now the electronic contribution.
+        auto fact = std::make_shared<IntegralFactory>(basis, basis, basis, basis);
+        std::vector<std::shared_ptr<PotentialInt> > Vint;
+        for (int t = 0; t < threads; t++) {
+            Vint.push_back(std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(fact->ao_potential(1))));
+            Vint[t]->set_charge_field(Zxyz);
+        }
 #pragma omp parallel for schedule(dynamic) num_threads(threads)
-    for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
-        int P = PQ_pairs[PQ].first;
-        int Q = PQ_pairs[PQ].second;
+        for (long int PQ = 0L; PQ < nPQ; PQ++) {
+            int P = PQ_pairs[PQ].first;
+            int Q = PQ_pairs[PQ].second;
 
-        int thread = 0;
+            int thread = 0;
 #ifdef _OPENMP
-        thread = omp_get_thread_num();
+            thread = omp_get_thread_num();
 #endif
 
-        Vint[thread]->compute_shell_deriv1_no_charge_term(P, Q);
-        const double *buffer = Vint[thread]->buffer();
+            Vint[thread]->compute_shell_deriv1_no_charge_term(P, Q);
+            const double *buffer = Vint[thread]->buffer();
+            const auto &shellP = basis->shell(P);
+            const auto &shellQ = basis->shell(Q);
 
-        int nP = basis->shell(P).nfunction();
-        int oP = basis->shell(P).function_index();
+            int aP = shellP.ncenter();
+            int nP = shellP.nfunction();
+            int oP = shellP.function_index();
 
-        int nQ = basis->shell(Q).nfunction();
-        int oQ = basis->shell(Q).function_index();
+            int aQ = shellQ.ncenter();
+            int nQ = shellQ.nfunction();
+            int oQ = shellQ.function_index();
 
-        double perm = (P == Q ? 1.0 : 2.0);
+            double perm = (P == Q ? 1.0 : 2.0);
 
-        double **Vp = Vtemps[thread]->pointer();
-        double **Dp = Dt->pointer();
+            double **Vp = Vtemps[thread]->pointer();
+            double **Dp = Dt->pointer();
 
-        for (int A = 0; A < basis->molecule()->natom(); A++) {
-            const double *ref0 = &buffer[3 * A * nP * nQ + 0 * nP * nQ];
-            const double *ref1 = &buffer[3 * A * nP * nQ + 1 * nP * nQ];
-            const double *ref2 = &buffer[3 * A * nP * nQ + 2 * nP * nQ];
+            int npq = nP * nQ;
+            const double *intPx = buffer + 3 * aP * npq + 0 * npq;
+            const double *intPy = buffer + 3 * aP * npq + 1 * npq;
+            const double *intPz = buffer + 3 * aP * npq + 2 * npq;
+            const double *intQx = buffer + 3 * aQ * npq + 0 * npq;
+            const double *intQy = buffer + 3 * aQ * npq + 1 * npq;
+            const double *intQz = buffer + 3 * aQ * npq + 2 * npq;
+
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
                     double Vval = perm * Dp[p + oP][q + oQ];
-                    Vp[A][0] += Vval * (*ref0++);
-                    Vp[A][1] += Vval * (*ref1++);
-                    Vp[A][2] += Vval * (*ref2++);
+                    Vp[aP][0] += Vval * (*intPx);
+                    Vp[aP][1] += Vval * (*intPy);
+                    Vp[aP][2] += Vval * (*intPz);
+                    if(aP != aQ) {
+                        Vp[aQ][0] += Vval * (*intQx);
+                        Vp[aQ][1] += Vval * (*intQy);
+                        Vp[aQ][2] += Vval * (*intQz);
+                    }
+                    ++intPx;
+                    ++intPy;
+                    ++intPz;
+                    ++intQx;
+                    ++intQy;
+                    ++intQz;
                 }
             }
         }
     }
 
+    if (bases_.size()) {
+        //                       x              x
+        // Add the contribution V  <- d_A (A|PQ)
+        //
+
+        // Potential derivatives
+        for (size_t ind = 0; ind < bases_.size(); ind++) {
+            std::shared_ptr<BasisSet> aux = bases_[ind].first;
+            SharedVector d = bases_[ind].second;
+            const double *pD = d->pointer();
+
+            const auto &zero = BasisSet::zero_ao_basis_set();
+            auto Afact = std::make_shared<IntegralFactory>(aux, zero, zero, zero);
+            std::shared_ptr<PotentialInt> pot(static_cast<PotentialInt *>(Afact->ao_potential(1)));
+            auto Zxyz = std::make_shared<Matrix>("Charges (Z,x,y,z)", 1, 4);
+            double **Zxyzp = Zxyz->pointer();
+            for (int atom = 0; atom < mol->natom(); atom++) {
+                Zxyzp[0][0] = mol->Z(atom);
+                Zxyzp[0][1] = mol->x(atom);
+                Zxyzp[0][2] = mol->y(atom);
+                Zxyzp[0][3] = mol->z(atom);
+                pot->set_charge_field(Zxyz);
+
+                for (int A = 0; A < aux->nshell(); A++) {
+                    pot->compute_shell_deriv1_no_charge_term(A, 0);
+                    const auto* buffer = pot->buffer();
+
+                    const auto &shellA = aux->shell(A);
+                    int aA = shellA.ncenter();
+                    int nA = shellA.nfunction();
+                    int oA = shellA.function_index();
+
+                    const double *intAx = buffer + 3 * aA * nA + 0 * nA;
+                    const double *intAy = buffer + 3 * aA * nA + 1 * nA;
+                    const double *intAz = buffer + 3 * aA * nA + 2 * nA;
+
+                    for (int a = 0; a < nA; a++) {
+                        double prefac = pD[a + oA];
+                        Gp[atom][0] += prefac * (*intAx);
+                        Gp[atom][1] += prefac * (*intAy);
+                        Gp[atom][2] += prefac * (*intAz);
+                        ++intAx;
+                        ++intAy;
+                        ++intAz;
+                    }
+                }
+            }
+
+            auto APQfact = std::make_shared<IntegralFactory>(aux, zero, basis, basis);
+            std::vector<std::shared_ptr<TwoBodyAOInt> > eri;
+            for (int t = 0; t < threads; t++) {
+                eri.push_back(std::shared_ptr<TwoBodyAOInt>(APQfact->eri(1)));
+            }
+            long int nAPQ = aux->nshell() * nPQ;
+#pragma omp parallel for schedule(dynamic) num_threads(threads)
+            for (long int APQ = 0L; APQ < nAPQ; APQ++) {
+                int thread = 0;
+#ifdef _OPENMP
+                thread = omp_get_thread_num();
+#endif
+                size_t A = APQ / nPQ;
+                size_t PQ = APQ % nPQ;
+                int P = PQ_pairs[PQ].first;
+                int Q = PQ_pairs[PQ].second;
+
+                eri[thread]->compute_shell_deriv1(A, 0, P, Q);
+
+                double **Vp = Vtemps[thread]->pointer();
+                double **Dp = Dt->pointer();
+
+                // We don't need any derivatives w.r.t. the external potential center (A| here
+                const auto &shellA = aux->shell(A);
+                int nA = shellA.nfunction();
+                int oA = shellA.function_index();
+
+                const auto &shellP = basis->shell(P);
+                int nP = shellP.nfunction();
+                int aP = shellP.ncenter();
+                int oP = shellP.function_index();
+
+                const auto &shellQ = basis->shell(Q);
+                int nQ = shellQ.nfunction();
+                int aQ = shellQ.ncenter();
+                int oQ = shellQ.function_index();
+
+                const auto& buffers = eri[thread]->buffers();
+                const double* Px = buffers[3];
+                const double* Py = buffers[4];
+                const double* Pz = buffers[5];
+                const double* Qx = buffers[6];
+                const double* Qy = buffers[7];
+                const double* Qz = buffers[8];
+
+                double perm = (P == Q ? 1.0 : 2.0);
+
+                for (int a = 0; a < nA; a++) {
+                    double scale_fac = perm * pD[a + oA];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            double val = -scale_fac * Dp[p + oP][q + oQ];
+                            Vp[aP][0] += val * (*Px);
+                            Vp[aP][1] += val * (*Py);
+                            Vp[aP][2] += val * (*Pz);
+                            Vp[aQ][0] += val * (*Qx);
+                            Vp[aQ][1] += val * (*Qy);
+                            Vp[aQ][2] += val * (*Qz);
+
+                            Px++;
+                            Py++;
+                            Pz++;
+                            Qx++;
+                            Qy++;
+                            Qz++;
+                        }
+                    }
+                }
+            }
+        }
+    }
     for (int t = 0; t < threads; t++) {
         grad->add(Vtemps[t]);
     }
     return grad;
-#endif
 }
 
 double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
     double E = 0.0;
     double convfac = 1.0;
-
     if (mol->units() == Molecule::Angstrom) convfac /= pc_bohr2angstroms;
 
     // Nucleus-charge interaction
@@ -368,12 +535,10 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
                 double xB = convfac * std::get<1>(charges_[B]);
                 double yB = convfac * std::get<2>(charges_[B]);
                 double zB = convfac * std::get<3>(charges_[B]);
-
                 double dx = xA - xB;
                 double dy = yA - yB;
                 double dz = zA - zB;
                 double R = sqrt(dx * dx + dy * dy + dz * dz);
-
                 E += ZA * ZB / R;
             }
         }
@@ -399,10 +564,10 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
             std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
             auto fact = std::make_shared<IntegralFactory>(aux, zero, zero, zero);
             std::shared_ptr<PotentialInt> pot(static_cast<PotentialInt *>(fact->ao_potential()));
+
             pot->set_charge_field(Zxyz);
             pot->compute(V);
-
-            E += C_DDOT(aux->nbf(), d->pointer(), 1, V->pointer()[0], 1);
+            E -= C_DDOT(aux->nbf(), d->pointer(), 1, V->pointer()[0], 1);
         }
     }
 
