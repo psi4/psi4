@@ -76,8 +76,6 @@ class DFOCC : public Wavefunction {
     // void combine_ref_sep_tpdm();
     void tpdm_tilde();
     void back_trans();
-    void tpdm_tilde_cc();
-    void back_trans_cc();
     void dfgrad();
     void oei_grad(std::map<std::string, SharedMatrix>&);
     void tei_grad(std::string aux_type, std::map<std::string, SharedMatrix>&);
