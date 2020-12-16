@@ -129,7 +129,6 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
         auto fact2 = std::make_shared<IntegralFactory>(aux, BasisSet::zero_ao_basis_set(), basis, basis);
         std::shared_ptr<TwoBodyAOInt> eri(fact2->eri());
 
-        const double *buffer = eri->buffer();
 
         double **Vp = V->pointer();
         double *dp = d->pointer();
@@ -145,6 +144,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
                     int Nstart = basis->shell(N).function_index();
 
                     eri->compute_shell(Q, 0, M, N);
+                    const double *buffer = eri->buffer();
 
                     for (int oq = 0, index = 0; oq < numQ; oq++) {
                         for (int om = 0; om < numM; om++) {
