@@ -752,7 +752,7 @@ def _multipole_plumper(compressed, order):
     -------
     complete : ndarray
         Multipole array, order-dimensional Cartesian array expanded to complete components.
-        
+
     """
     shape = tuple([3] * order)
     complete = np.zeros(shape)
@@ -987,6 +987,17 @@ def _core_wavefunction_set_frequencies(cls, val):
 core.Wavefunction.frequencies = _core_wavefunction_frequencies
 core.Wavefunction.legacy_frequencies = _core_wavefunction_legacy_frequencies
 core.Wavefunction.set_frequencies = _core_wavefunction_set_frequencies
+
+
+def _core_wavefunction_X(cls):
+    warnings.warn(
+        "Using `psi4.core.Wavefunction.X` instead of `psi4.core.Wavefunction.lagrangian` is deprecated, and in 1.4 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return cls.lagrangian()
+
+
+core.Wavefunction.X = _core_wavefunction_X
 
 ## Psi4 v1.3 Export Deprecations
 
