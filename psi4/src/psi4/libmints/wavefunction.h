@@ -573,11 +573,11 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
                                   std::shared_ptr<BasisSet> new_basis);
 
     /// Returns the SO basis Lagrangian
-    SharedMatrix lagrangian() const;
+    SharedMatrix Lagrangian() const;
     /// Returns the Lagrangian in SO basis for the wavefunction
     SharedMatrix X() const;
     /// Set Lagrangian matrix in SO basis
-    void set_lagrangian(SharedMatrix X) { Lagrangian_ = X; }
+    void set_Lagrangian(SharedMatrix X) { Lagrangian_ = X; }
 
     /// Returns the gradient
     SharedMatrix gradient() const;

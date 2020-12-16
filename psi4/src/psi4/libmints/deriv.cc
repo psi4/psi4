@@ -494,7 +494,7 @@ SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
         tpdm_ref_contr_ = factory_->create_shared_matrix("Reference two-electron contribution to gradient", natom_, 3);
 
         // Here we need to extract the reference contributions
-        SharedMatrix X_ref = ref_wfn->lagrangian();
+        SharedMatrix X_ref = ref_wfn->Lagrangian();
         SharedMatrix Da_ref = ref_wfn->Da();
 
         for (size_t cd = 0; cd < cdsalcs_.ncd(); ++cd) {
