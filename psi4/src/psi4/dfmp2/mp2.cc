@@ -1502,10 +1502,9 @@ void RDFMP2::form_G_transpose() {
 void RDFMP2::form_AB_x_terms() {
     auto naux = ribasis_->nbf();
 
-    auto V = std::make_shared<Matrix>("V", naux, naux);
-    auto Vp = V->pointer();
+    auto V = std::make_shared<Matrix>("G_PQ", naux, naux);
     psio_->open(PSIF_DFMP2_AIA, PSIO_OPEN_OLD);
-    psio_->read_entry(PSIF_DFMP2_AIA, "G_PQ", (char*)Vp[0], sizeof(double) * naux * naux);
+    V->load(psio_, PSIF_DFMP2_AIA, Matrix::SaveType::Full);
     psio_->close(PSIF_DFMP2_AIA, 1);
     V->hermitivitize();
     V->scale(2);

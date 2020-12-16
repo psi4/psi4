@@ -85,8 +85,6 @@ void DFOCC::dfgrad() {
     gradients["Two-Electron"] = matrix_factory()->create_shared_matrix("Two-Electron Gradient", natom, 3);
     gradients["Two-Electron"]->add(gradients["3-Index:RefSep"]);
     gradients["Two-Electron"]->add(gradients["3-Index:Corr"]);
-    gradients["Two-Electron"]->add(gradients["Metric:RefSep"]);
-    gradients["Two-Electron"]->add(gradients["Metric:Corr"]);
     gradients["Two-Electron"]->print_atom_vector();  // UB
 
     gradients["Total"] = total;

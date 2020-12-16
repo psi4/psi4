@@ -78,28 +78,6 @@ void DFOCC::tei_grad(std::string aux_type, std::map<std::string, SharedMatrix>& 
     auto naux = auxiliary_->nbf();
 
     //===========================================================================================
-    //============================= Metric Gradient =============================================
-    //===========================================================================================
-
-    auto metric_short = "Metric:" + intermed_short;
-    timer_on("Grad: " + metric_short);
-    auto Gaux = std::make_shared<Tensor2d>("2-Index " + intermed_name + " TPDM (P|Q)", naux, naux);
-    Gaux->read_symm(psio_, PSIF_DFOCC_DENS);
-    auto G = std::make_shared<Matrix>(naux, naux);
-    Gaux->to_shared_matrix(G);
-    G->scale(2);
-
-    std::map<std::string, SharedMatrix> densities = {{metric_short, G}};
-
-    auto results = mintshelper_->metric_grad(densities, "DF_BASIS_" + aux_name);
-
-    for (const auto& kv: results) {
-        gradients[kv.first] = kv.second;
-    }
-
-    timer_off("Grad: " + metric_short);
-
-    //===========================================================================================
     //============================== 3-Index Gradient ===========================================
     //===========================================================================================
     // Read gQso

@@ -2296,7 +2296,7 @@ SharedMatrix MintsHelper::core_hamiltonian_grad(SharedMatrix D) {
 
 std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::string, SharedMatrix>& D, const std::string& aux_name) {
     // Construct integral factory.
-    auto auxiliary = basissets_[aux_name];
+    auto auxiliary = get_basisset(aux_name);
     auto rifactory = std::make_shared<IntegralFactory>(auxiliary, BasisSet::zero_ao_basis_set(), auxiliary, BasisSet::zero_ao_basis_set());
     std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     for (int t = 0; t < nthread_; t++) {
@@ -2314,7 +2314,7 @@ std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::strin
         }
     }
 
-    // Construct pairs of aux AOs
+    // Construct pairs of aux AO shells
     std::vector<std::pair<int, int>> PQ_pairs;
     for (int P = 0; P < auxiliary->nshell(); P++) {
         for (auto Q = 0; Q <= P; Q++) {

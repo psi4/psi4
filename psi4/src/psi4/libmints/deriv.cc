@@ -391,7 +391,7 @@ Deriv::Deriv(const std::shared_ptr<Wavefunction> &wave, char needed_irreps, bool
     cdsalcs_.print();
 }
 
-SharedMatrix Deriv::compute_df() {
+SharedMatrix Deriv::compute_df(const std::map<std::string, std::string> &stuff) {
     molecule_->print_in_bohr();
     
     if (!wfn_) throw("In Deriv: The wavefunction passed in is empty!");
@@ -404,27 +404,28 @@ SharedMatrix Deriv::compute_df() {
         return gradient_;
     }
 
-    // Compute one-electron derivatives.
-    auto s_deriv = cdsalcs_.create_matrices("S'", *factory_);
-    auto s_int = integral_->so_overlap(1);
+    std::vector<SharedMatrix> gradient_terms;
 
-    s_int->compute_deriv1(s_deriv, cdsalcs_);
+    // Obtain nuclear repulsion contribution from the wavefunction
+    auto enuc = std::make_shared<Matrix>(molecule_->nuclear_repulsion_energy_deriv1(wfn_->get_dipole_field_strength()));
+    gradient_terms.push_back(enuc);
 
-    auto mints = std::make_shared<MintsHelper>(wfn_->basisset(), wfn_->options());
+    const auto& mints = wfn_->mintshelper();;
 
-    // Try and grab the OPDM and lagrangian from the wavefunction
+    // One-electron derivatives.
     auto Da = wfn_->Da();
     auto Db = wfn_->Db();
-
-    // Now, compute the one electron terms
-    // First, construct the density in the AO (rather than SO) basis
     auto Dtot_AO = std::make_shared<Matrix>("AO basis total D", wfn_->nso(), wfn_->nso());
     auto Dtot = Da->clone();
     Dtot->add(Db);
     Dtot_AO->remove_symmetry(Dtot, wfn_->aotoso()->transpose());
-    auto opdm_contr = mints->core_hamiltonian_grad(Dtot_AO);
+    gradient_terms.push_back(mints->core_hamiltonian_grad(Dtot_AO));
 
-    auto X = wfn_->X();
+    // Overlap derivatives
+    auto s_deriv = cdsalcs_.create_matrices("S'", *factory_);
+    auto s_int = integral_->so_overlap(1);
+    s_int->compute_deriv1(s_deriv, cdsalcs_);
+    auto X = wfn_->lagrangian();
     std::vector<double> Xcont;
     for (size_t cd = 0; cd < cdsalcs_.ncd(); ++cd) {
         Xcont.push_back(-X->vector_dot(s_deriv[cd]));
@@ -439,24 +440,31 @@ SharedMatrix Deriv::compute_df() {
     auto x_contr = factory_->create_shared_matrix("Lagrangian contribution to gradient", natom_, 3);
     for (int a = 0; a < natom_; ++a)
         for (int xyz = 0; xyz < 3; ++xyz) x_contr->set(a, xyz, cart[3 * a + xyz]);
+    gradient_terms.push_back(x_contr);
 
-    // Obtain nuclear repulsion contribution from the wavefunction
-    auto enuc = std::make_shared<Matrix>(molecule_->nuclear_repulsion_energy_deriv1(wfn_->get_dipole_field_strength()));
+    // Metric derivatives
+    // basistype
+    // name of entry saved to disk = name of resulting matrix
+    for (const auto& kv: stuff) {
+        auto basistype = kv.first;
+        auto naux = wfn_->get_basisset(basistype)->nbf();
+        auto metric_density = std::make_shared<Matrix>(kv.second, naux, naux);
+        metric_density->load(_default_psio_lib_, PSIF_AO_TPDM, Matrix::SaveType::LowerTriangle);
+        metric_density->scale(2);
+        std::map<std::string, SharedMatrix> densities;
+        densities[kv.second] = metric_density;
+        auto results = mints->metric_grad(densities, basistype);
+        for (const auto& kv2: results) {
+            gradient_terms.push_back(kv2.second);
+        }
+    }
 
-    // Print things out, after making sure that each component is properly symmetrized
-    enuc->symmetrize_gradient(molecule_);
-    opdm_contr->symmetrize_gradient(molecule_);
-    x_contr->symmetrize_gradient(molecule_);
-
-    enuc->print_atom_vector();
-    opdm_contr->print_atom_vector();
-    x_contr->print_atom_vector();
-
-    // Add everything up into a temp.
     gradient_ = wfn_->gradient();
-    gradient_->add(enuc);
-    gradient_->add(opdm_contr);
-    gradient_->add(x_contr);
+    for (auto gradient: gradient_terms) {
+        gradient->symmetrize_gradient(molecule_);
+        gradient->print_atom_vector();
+        gradient_->add(gradient);
+    }
 
     // Print the atom vector
     gradient_->print_atom_vector();

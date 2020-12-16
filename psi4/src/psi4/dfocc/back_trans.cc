@@ -111,11 +111,11 @@ void DFOCC::back_trans() {
         Gao.reset();
 
         // G_PQ = 1/2 \sum_{mn} c_mn^P G_mn^Q = 1/2 \sum_{m>=n} c_mn^P G_mn^Q (2 - \delta_{mn})
-        G = SharedTensor2d(new Tensor2d("2-Index RefSep TPDM (P|Q)", nQ_ref, nQ_ref));
+        G = SharedTensor2d(new Tensor2d("Metric:RefSep", nQ_ref, nQ_ref));
         G->gemm(false, true, cQso2, Gao2, 0.5, 0.0);
         Gao2.reset();
         cQso2.reset();
-        G->write_symm(psio_, PSIF_DFOCC_DENS);
+        G->write_symm(psio_, PSIF_AO_TPDM);
         G.reset();
 
         //=========================
@@ -176,11 +176,11 @@ void DFOCC::back_trans() {
         Gao.reset();
 
         // G_PQ = 1/2 \sum_{mn} c_mn^P G_mn^Q = 1/2 \sum_{m>=n} c_mn^P G_mn^Q (2 - \delta_{mn})
-        G = SharedTensor2d(new Tensor2d("2-Index Correlation TPDM (P|Q)", nQ, nQ));
+        G = SharedTensor2d(new Tensor2d("Metric:Corr", nQ, nQ));
         G->gemm(false, true, cQso2, Gao2, 0.5, 0.0);
         Gao2.reset();
         cQso2.reset();
-        G->write_symm(psio_, PSIF_DFOCC_DENS);
+        G->write_symm(psio_, PSIF_AO_TPDM);
         G.reset();
 
     }  // end if (reference_ == "RESTRICTED")
@@ -289,11 +289,11 @@ void DFOCC::back_trans() {
         Gao.reset();
 
         // G_PQ = 1/2 \sum_{mn} c_mn^P G_mn^Q = 1/2 \sum_{m>=n} c_mn^P G_mn^Q (2 - \delta_{mn})
-        G = SharedTensor2d(new Tensor2d("2-Index RefSep TPDM (P|Q)", nQ_ref, nQ_ref));
+        G = SharedTensor2d(new Tensor2d("Metric:RefSep", nQ_ref, nQ_ref));
         G->gemm(false, true, cQso2, Gao2, 0.5, 0.0);
         Gao2.reset();
         cQso2.reset();
-        G->write_symm(psio_, PSIF_DFOCC_DENS);
+        G->write_symm(psio_, PSIF_AO_TPDM);
         G.reset();
 
         //=========================
@@ -381,11 +381,11 @@ void DFOCC::back_trans() {
         Gao.reset();
 
         // G_PQ = 1/2 \sum_{mn} c_mn^P G_mn^Q = 1/2 \sum_{m>=n} c_mn^P G_mn^Q (2 - \delta_{mn})
-        G = SharedTensor2d(new Tensor2d("2-Index Correlation TPDM (P|Q)", nQ, nQ));
+        G = SharedTensor2d(new Tensor2d("Metric:Corr", nQ, nQ));
         G->gemm(false, true, cQso2, Gao2, 0.5, 0.0);
         Gao2.reset();
         cQso2.reset();
-        G->write_symm(psio_, PSIF_DFOCC_DENS);
+        G->write_symm(psio_, PSIF_AO_TPDM);
         G.reset();
 
     }  // else if (reference_ == "UNRESTRICTED")
