@@ -19,6 +19,7 @@ requirements:
     - qcengine
     - msgpack-python
     - libint2
+    - gau2grid
 
     #- {{ pin_compatible('mkl', upper_bound='2021.0') }}  # [linux]
     #- {{ pin_compatible('python', max_pin='x.x') }}
