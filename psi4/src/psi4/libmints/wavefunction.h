@@ -579,8 +579,13 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Returns the SO basis Lagrangian
     PSI_DEPRECATED(
         "Using `Wavefunction.Lagrangian` instead of `Wavefunction.lagrangian` is deprecated,"
-        " and in 1.4 it will stop working")
+        " and in 1.5 it will stop working")
     SharedMatrix Lagrangian() const { return lagrangian(); }
+    /// Returns the SO basis Lagrangian (duplicated one)
+    PSI_DEPRECATED(
+        "Using `Wavefunction.X` instead of `Wavefunction.lagrangian` is deprecated,"
+        " and in 1.5 it will stop working")
+    SharedMatrix X() const { return lagrangian(); }
 
     /// Returns the gradient
     SharedMatrix gradient() const;
