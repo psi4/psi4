@@ -30,6 +30,7 @@
 #include <fstream>
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/basisset.h"
+#include "psi4/libmints/factory.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/mintshelper.h"
@@ -108,8 +109,7 @@ void DFOCC::tei_grad(std::string aux_type, std::map<std::string, SharedMatrix>& 
     // (Q | mu nu)^X
     auto idx3_short = "3-Index:" + intermed_short;
     timer_on("Grad: " + idx3_short);
-    gradients[idx3_short] = SharedMatrix(gradients["Nuclear"]->clone());
-    gradients[idx3_short]->set_name(idx3_short + " Gradient");
+    gradients[idx3_short] = matrix_factory()->create_shared_matrix(idx3_short + " Gradient", natom, 3);
     gradients[idx3_short]->zero();
 
     // => Integrals <= //

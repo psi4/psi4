@@ -66,25 +66,12 @@ class PSI_API Deriv {
 
     CdSalcList cdsalcs_;
 
-    SharedMatrix P_2_;
-    SharedMatrix W_2_;
-    SharedMatrix SCF_D_;
-
     int natom_;
     bool tpdm_presorted_;
     bool deriv_density_backtransformed_;
     bool ignore_reference_;
 
-    std::vector<SharedMatrix> dH_;
-    std::vector<SharedMatrix> dS_;
-
     // Results go here.
-    /// One-electron contribution to the gradient
-    SharedMatrix opdm_contr_;
-    /// Reference one-electron contribution to the gradient
-    SharedMatrix opdm_ref_contr_;
-    /// Overlap contribution to the gradient
-    SharedMatrix x_contr_;
     /// Reference overlap contribution to the gradient
     SharedMatrix x_ref_contr_;
     /// Two-electron contribution to the gradient
@@ -117,9 +104,7 @@ class PSI_API Deriv {
 
     SharedMatrix compute(DerivCalcType deriv_calc_type = DerivCalcType::Default);
 
-    const SharedMatrix& one_electron() { return opdm_contr_; }
-
-    const SharedMatrix& lagrangian() { return x_contr_; }
+    SharedMatrix compute_df();
 
     const SharedMatrix& two_body() { return tpdm_contr_; }
 

@@ -30,6 +30,7 @@
 #include <fstream>
 #include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libmints/factory.h"
 #include "psi4/libmints/matrix.h"
 #include "dfocc.h"
 
@@ -62,7 +63,9 @@ void DFOCC::dfgrad() {
     std::map<std::string, SharedMatrix> gradients;
 
     // OEI GRAD
-    oei_grad(gradients);
+    auto W = std::make_shared<Matrix>("AO-basis Energy-Weighted OPDM", nmo_, nmo_);
+    GFao->to_shared_matrix(W);
+    Lagrangian_ = W;
 
     // TEI GRAD
     tei_grad("JK", gradients);
@@ -72,22 +75,14 @@ void DFOCC::dfgrad() {
     //========================= Total Gradient ==================================================
     //===========================================================================================
     // => Total Gradient <= //
-    auto total = SharedMatrix(gradients["Nuclear"]->clone());
-    total->zero();
+    auto total = matrix_factory()->create_shared_matrix("Total Gradient", natom, 3);
 
     for (auto& kv: gradients) {
         total->add(kv.second);
     }
 
-    // OEI grad
-    gradients["One-Electron"] = gradients["Core"]->clone();
-    gradients["One-Electron"]->set_name("One-Electron Gradient");
-    gradients["One-Electron"]->print_atom_vector();
-
     // TEI grad
-    gradients["Two-Electron"] = SharedMatrix(gradients["Nuclear"]->clone());
-    gradients["Two-Electron"]->set_name("Two-Electron Gradient");
-    gradients["Two-Electron"]->zero();
+    gradients["Two-Electron"] = matrix_factory()->create_shared_matrix("Two-Electron Gradient", natom, 3);
     gradients["Two-Electron"]->add(gradients["3-Index:RefSep"]);
     gradients["Two-Electron"]->add(gradients["3-Index:Corr"]);
     gradients["Two-Electron"]->add(gradients["Metric:RefSep"]);
@@ -95,7 +90,6 @@ void DFOCC::dfgrad() {
     gradients["Two-Electron"]->print_atom_vector();  // UB
 
     gradients["Total"] = total;
-    gradients["Total"]->set_name("Total Gradient");
 
     // => Final Printing <= //
     if (print_ > 1) {
@@ -108,7 +102,6 @@ void DFOCC::dfgrad() {
 
     set_gradient(total);
 
-    // outfile->Printf("\tdfgrad is done. \n");
 }  // end dfgrad
 
 }  // namespace dfoccwave

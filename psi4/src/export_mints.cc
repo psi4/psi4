@@ -664,7 +664,8 @@ void export_mints(py::module& m) {
              "Ignore reference contributions to the gradient? Default is False", "val"_a = false)
         .def("set_deriv_density_backtransformed", &Deriv::set_deriv_density_backtransformed,
              "Is the deriv_density already backtransformed? Default is False", "val"_a = false)
-        .def("compute", &Deriv::compute, "Compute the gradient", "deriv_calc_type"_a = DerivCalcType::Default);
+        .def("compute", &Deriv::compute, "Compute the gradient", "deriv_calc_type"_a = DerivCalcType::Default)
+        .def("compute_df", &Deriv::compute_df, "Compute the density-fitted gradient");
 
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix)() const;
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&) const;

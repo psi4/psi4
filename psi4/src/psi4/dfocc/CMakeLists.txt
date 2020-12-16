@@ -79,7 +79,6 @@ list(APPEND sources
   mp3_W_intr.cc
   mp3_pdm_3index_intr.cc
   occ_iterations.cc
-  oei_grad.cc
   olccd_tpdm.cc
   omp2_opdm.cc
   omp2_tpdm.cc

@@ -1785,7 +1785,7 @@ void DCTSolver::build_gbarlambda_UHF_v3mem() {
 
     /********** Alpha-Alpha **********/
 
-    // Put detailed information of b(Q|AB) block into 'block_AB'
+    // block_ab[h1][h2] is (#AB pairs of irrep h1 and A irrep *before* h2, #AB pairs of irrep h1 and A irrep *of* h2)
     std::vector<std::vector<std::pair<long int, long int>>> block_AB;
     for (int hAB = 0; hAB < nirrep_; ++hAB) {
         long int entrance = 0;
