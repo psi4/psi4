@@ -1,0 +1,143 @@
+#! External potential test, comparing tight finite vs. point charges and the same for
+#! dipoles.  The analytic gradients of all systems are tested by finite differences.
+
+molecule qmwater{
+units bohr
+nocom
+noreorient
+symmetry c1
+  O     0.000     0.000     0.134  
+  H     1.430    -0.000    -1.069  
+  H    -1.434    -0.000    -1.069  
+}
+
+set {
+    scf_type df
+    d_convergence 12
+    basis DZ
+}
+
+# Define a collection of point charges as the external potential
+q = 1.0
+Chrgfield = QMMM()
+Chrgfield.extern.addCharge(  q, 4.0, 0.0, 5.0)
+Chrgfield.extern.addCharge(2*q, 3.0, 2.0, 3.0)
+Chrgfield.extern.addCharge( -q, 0.0, 4.0, 0.0)
+Chrgfield.extern.addCharge(3*q, 4.0, 1.0, 4.0)
+psi4.set_global_option_python('EXTERN', Chrgfield.extern)
+
+point_charge_grad_fd = gradient('scf', molecule=qmwater, dertype=0)
+point_charge_grad_an = gradient('scf', molecule=qmwater, dertype=1)
+point_charge_ener = psi4.variable('CURRENT ENERGY')
+
+# Define a unit 'diffuse' charge as the external potential
+# Note that the atom type here is unused - it's randomly chosen to be oxygen here but it's
+# just a placeholder to specify exponents in this case. The coefficients are defined below
+molecule diffuse_charge_mol {
+  O  4.0 0.0 5.0
+  O  3.0 2.0 3.0
+  O  0.0 4.0 0.0
+  O  4.0 1.0 4.0
+  no_reorient
+  no_com
+  units bohr
+}
+
+# Choose a tight exponent so that the results agree with the point charge case
+basis  {
+    assign diffuse_charge_exponents
+    [diffuse_charge_exponents]
+    cartesian
+    ****
+    O     0
+    S   1   1.00
+        99999999.0          1.0
+    ****
+}
+
+diffuse_charge_field = QMMM()
+diffuse_charge_basis = psi4.core.BasisSet.build(diffuse_charge_mol, "BASIS", psi4.core.get_global_option("BASIS"))
+# The magnitude of each diffuse charge in the system
+diffuse_charges = psi4.core.Vector(4)
+diffuse_charges.set(0,   q)
+diffuse_charges.set(1, 2*q)
+diffuse_charges.set(2,  -q)
+diffuse_charges.set(3, 3*q)
+diffuse_charge_field.extern.addMultipoles(diffuse_charge_basis, diffuse_charges)
+psi4.set_global_option_python('EXTERN', diffuse_charge_field.extern)
+
+# In building the "basis set" used to define the charges, we overrode the default basis - reassign it here
+set basis DZ
+
+diffuse_charge_grad_fd = gradient('scf', molecule=qmwater, dertype=0)
+diffuse_charge_grad_an = gradient('scf', molecule=qmwater, dertype=1)
+diffuse_charge_ener = psi4.variable('CURRENT ENERGY')
+
+compare_values(point_charge_ener, diffuse_charge_ener, 6, 'Point charges vs. diffuse charges energy')  #TEST
+compare_matrices(point_charge_grad_fd, point_charge_grad_an, 5, "Point charges findif grad vs. point charges analytic grad") #TEST
+compare_matrices(point_charge_grad_fd, diffuse_charge_grad_fd, 5, "Point charges findif grad vs. diffuse charges findif grad") #TEST
+compare_matrices(point_charge_grad_fd, diffuse_charge_grad_an, 5, "Point charges findif grad vs. diffuse charges analytic grad") #TEST
+
+#
+# Now test a dipole as the external potential
+#
+
+# The location of external dipole in the following tests
+x = 4.4
+y = 1.0
+z = 5.0
+
+# Define a unit point dipole as the external potential
+delta = 0.01
+q = 1.0 / (2 * delta)
+Chrgfield = QMMM()
+Chrgfield.extern.addCharge( q, x, y, z + delta)
+Chrgfield.extern.addCharge(-q, x, y, z - delta)
+psi4.set_global_option_python('EXTERN', Chrgfield.extern)
+
+point_dipole_grad_fd = gradient('scf', molecule=qmwater, dertype=0)
+point_dipole_grad_an = gradient('scf', molecule=qmwater, dertype=1)
+point_dipole_ener = psi4.variable('CURRENT ENERGY')
+
+# Diffuse dipole external potential
+molecule diffuse_dipole_mol {
+  O  x y z
+  no_reorient
+  no_com
+  units bohr
+}
+
+diffuse_dipole_mol.x = x
+diffuse_dipole_mol.y = y
+diffuse_dipole_mol.z = z
+
+basis  {
+    assign diffuse_dipole_exponents
+    [diffuse_dipole_exponents]
+    cartesian
+    ****
+    O     0
+    P   1   1.00
+        99999999.0          1.0
+    ****
+}
+
+diffuse_dipole_field = QMMM()
+diffuse_dipole_basis = psi4.core.BasisSet.build(diffuse_dipole_mol, "BASIS", psi4.core.get_global_option("BASIS"))
+diffuse_dipoles = psi4.core.Vector(3)
+diffuse_dipoles.set(0, 0)
+diffuse_dipoles.set(1, 0)
+diffuse_dipoles.set(2, 1)
+diffuse_dipole_field.extern.addMultipoles(diffuse_dipole_basis, diffuse_dipoles)
+psi4.set_global_option_python('EXTERN', diffuse_dipole_field.extern)
+
+set basis DZ
+
+diffuse_dipole_grad_fd = gradient('scf', molecule=qmwater, dertype=0)
+diffuse_dipole_grad_an = gradient('scf', molecule=qmwater, dertype=1)
+diffuse_dipole_ener = psi4.variable('CURRENT ENERGY')
+
+compare_values(point_dipole_ener, diffuse_dipole_ener, 6, 'Point dipole vs. diffuse dipole energy')  #TEST
+compare_matrices(point_dipole_grad_fd, point_dipole_grad_an, 5, "Point dipole findif grad vs. point dipole analytic grad") #TEST
+compare_matrices(point_dipole_grad_fd, diffuse_dipole_grad_fd, 5, "Point dipole findif grad vs. diffuse dipole findif grad") #TEST
+compare_matrices(point_dipole_grad_fd, diffuse_dipole_grad_an, 5, "Point dipole findif grad vs. diffuse dipole analytic grad") #TEST
