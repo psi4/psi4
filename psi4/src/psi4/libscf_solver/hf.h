@@ -192,7 +192,6 @@ class HF : public Wavefunction {
 
     /// Determine how many core and virtual orbitals to freeze
     void compute_fcpi();
-    void compute_fvpi();
 
     /// Prints the orbitals energies and symmetries (helper method)
     void print_orbital_pairs(const char* header, std::vector<std::pair<double, std::pair<std::string, int>>> orbs);
@@ -419,6 +418,8 @@ class HF : public Wavefunction {
     void push_back_external_potential(const SharedMatrix& V) { external_potentials_.push_back(V); }
     void set_external_cpscf_perturbation(const std::string name, PerturbedPotentialFunction fun) { external_cpscf_perturbations_[name] = fun; }
     void clear_external_cpscf_perturbations() { external_cpscf_perturbations_.clear(); }
+    void compute_fvpi();
+
 };
 }  // namespace scf
 }  // namespace psi

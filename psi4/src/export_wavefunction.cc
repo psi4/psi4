@@ -252,6 +252,7 @@ void export_wavefunction(py::module& m) {
         .def("PCM_enabled", &Wavefunction::PCM_enabled, "Whether running a PCM calculation");
 
     py::class_<scf::HF, std::shared_ptr<scf::HF>, Wavefunction>(m, "HF", "docstring")
+        .def("compute_fvpi", &scf::HF::compute_fvpi, "Update number of frozen virtuals")
         .def("form_C", &scf::HF::form_C, "Forms the Orbital Matrices from the current Fock Matrices.")
         .def("form_initial_C", &scf::HF::form_initial_C,
              "Forms the initial Orbital Matrices from the current Fock Matrices.")
