@@ -1235,8 +1235,6 @@ SharedMatrix Wavefunction::Fa() const { return Fa_; }
 
 SharedMatrix Wavefunction::Fb() const { return Fb_; }
 
-SharedMatrix Wavefunction::lagrangian() const { return Lagrangian_; }
-
 SharedVector Wavefunction::epsilon_a() const { return epsilon_a_; }
 
 SharedVector Wavefunction::epsilon_b() const { return epsilon_b_; }
@@ -1245,7 +1243,9 @@ const SharedMatrix Wavefunction::Da() const { return Da_; }
 
 SharedMatrix Wavefunction::Db() const { return Db_; }
 
-SharedMatrix Wavefunction::X() const { return Lagrangian_; }
+SharedMatrix Wavefunction::lagrangian() const { return Lagrangian_; }
+
+void Wavefunction::set_lagrangian(SharedMatrix X) { Lagrangian_ = X; }
 
 void Wavefunction::set_energy(double ene) { set_scalar_variable("CURRENT ENERGY", ene); }
 

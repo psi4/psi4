@@ -437,7 +437,7 @@ SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
     // Try and grab the OPDM and lagrangian from the wavefunction
     SharedMatrix Da = wfn_->Da();
     SharedMatrix Db = wfn_->Db();
-    SharedMatrix X = wfn_->X();
+    SharedMatrix X = wfn_->lagrangian();
 
     // The current wavefunction's reference wavefunction, nullptr for SCF/DFT
     std::shared_ptr<Wavefunction> ref_wfn = wfn_->reference_wavefunction();
