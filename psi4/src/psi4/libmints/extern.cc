@@ -43,6 +43,8 @@
 #include <omp.h>
 #endif
 
+#include <algorithm>
+
 namespace psi {
 
 ExternalPotential::ExternalPotential() : debug_(0), print_(1) {}
