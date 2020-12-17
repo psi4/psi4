@@ -997,16 +997,7 @@ def _core_wavefunction_X(cls):
     return cls.lagrangian()
 
 
-def _core_wavefunction_Lagrangian(cls):
-    warnings.warn(
-        "Using `psi4.core.Wavefunction.Lagrangian` instead of `psi4.core.Wavefunction.lagrangian` is deprecated, and in 1.5 it will stop working\n",
-        category=FutureWarning,
-        stacklevel=2)
-    return cls.lagrangian()
-
-
 core.Wavefunction.X = _core_wavefunction_X
-core.Wavefunction.Lagrangian = _core_wavefunction_Lagrangian
 
 ## Psi4 v1.3 Export Deprecations
 
