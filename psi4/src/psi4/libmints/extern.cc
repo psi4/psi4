@@ -65,11 +65,11 @@ void ExternalPotential::addBasis(std::shared_ptr<BasisSet> basis, SharedVector c
 }
 
 void ExternalPotential::addMultipoles(std::shared_ptr<BasisSet> basis, SharedVector coefs) {
-    // This is where the addBasis and addMultipoles routines differ. Add basis is for a general basis set that has been fit to a given
-    // density, so the normalization is included in the fit.  When specifying some arbitrary multipoles from a classical force field, we
-    // want each function |A) defining the multipole to be normalized to 1.  However, standard basis sets are normalized such that (A|A) = 1
-    // so the user would not get the expected pertubation.  Instead we work out the renormalization factor needed to convert the condition
-    // (A|A) = 1 into ||A|) = 1.
+    // This is where the addBasis and addMultipoles routines differ. Add basis is for a general basis set that has been
+    // fit to a given density, so the normalization is included in the fit.  When specifying some arbitrary multipoles
+    // from a classical force field, we want each function |A) defining the multipole to be normalized to 1.  However,
+    // standard basis sets are normalized such that (A|A) = 1 so the user would not get the expected pertubation.
+    // Instead we work out the renormalization factor needed to convert the condition (A|A) = 1 into ||A|) = 1.
     std::vector<double> scale_facs;
     for (int Q = 0; Q < basis->nshell(); Q++) {
         const auto &shell = basis->shell(Q);
@@ -78,9 +78,8 @@ void ExternalPotential::addMultipoles(std::shared_ptr<BasisSet> basis, SharedVec
         const double PI_3_2 = M_PI * sqrt(M_PI);
         double N2 = sqrt((pow(2.0, l) * pow(2.0 * exps[0], l + 1.5)) / (PI_3_2 * df[2 * l]));
         double N1;
-        if (shell.nprimitive() > 1)
-            throw PSIEXCEPTION("Multipoles must be specified as uncontracted basis functions");
-        if (l%2 == 1) {
+        if (shell.nprimitive() > 1) throw PSIEXCEPTION("Multipoles must be specified as uncontracted basis functions");
+        if (l % 2 == 1) {
             // clang-format off
             //                  2
             //    /inf  2n+1 -ax           n!
@@ -88,7 +87,7 @@ void ExternalPotential::addMultipoles(std::shared_ptr<BasisSet> basis, SharedVec
             //    /0                       n+1
             //                           2a
             // clang-format on
-            N1 = pow(2.0, 0.5*l+0.5) * pow(exps[0], 0.5*l+2) / (PI_3_2 * df[l]);
+            N1 = pow(2.0, 0.5 * l + 0.5) * pow(exps[0], 0.5 * l + 2) / (PI_3_2 * df[l]);
         } else {
             // clang-format off
             //                2
@@ -97,19 +96,20 @@ void ExternalPotential::addMultipoles(std::shared_ptr<BasisSet> basis, SharedVec
             //    /0                    n  n+1   / ---
             //                        a   2    \/   a
             // clang-format on
-            N1 = pow(2.0, 0.5*l) * pow(exps[0], 0.5*l + 1.5) / (PI_3_2 * df[l]);
+            N1 = pow(2.0, 0.5 * l) * pow(exps[0], 0.5 * l + 1.5) / (PI_3_2 * df[l]);
         }
-        double normfac = N1/N2;
-        if (shell.is_pure()){
-            for (int m = 0; m < 2*l + 1; ++m){
+        double normfac = N1 / N2;
+        if (shell.is_pure()) {
+            for (int m = 0; m < 2 * l + 1; ++m) {
                 scale_facs.push_back(normfac);
             }
-        }else{
-            // Cartesian functions in Psi4 are normalized according to the CCA standard, so only axis aligned functions (e.g. xxx, yyy, zzz) are
-            // normalized to unity.  Here we provide the extra angular momentum normalization to ensure that all functions are unit normalized.
-            for(int lx=l; lx >= 0; lx--) {
-                for(int lz=0; lz<=l-lx; lz++) {
-                    int ly = l-lx-lz;
+        } else {
+            // Cartesian functions in Psi4 are normalized according to the CCA standard, so only axis aligned functions
+            // (e.g. xxx, yyy, zzz) are normalized to unity.  Here we provide the extra angular momentum normalization
+            // to ensure that all functions are unit normalized.
+            for (int lx = l; lx >= 0; lx--) {
+                for (int lz = 0; lz <= l - lx; lz++) {
+                    int ly = l - lx - lz;
                     double angmomfac = sqrt(df[lx] * df[ly] * df[lz] / df[l]);
                     scale_facs.push_back(normfac * angmomfac);
                 }
@@ -117,7 +117,8 @@ void ExternalPotential::addMultipoles(std::shared_ptr<BasisSet> basis, SharedVec
         }
     }
     if (coefs->dim() != scale_facs.size()) {
-        throw PSIEXCEPTION("The number of coefficients specified is inconsistent with the number of multipoles provided");
+        throw PSIEXCEPTION(
+            "The number of coefficients specified is inconsistent with the number of multipoles provided");
     }
     auto scaled = std::shared_ptr<Vector>(new Vector(coefs->dim()));
     std::transform(scale_facs.cbegin(), scale_facs.cend(), coefs->pointer(), scaled->pointer(), std::multiplies<>{});
@@ -237,7 +238,6 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
         // TODO thread this
         auto fact2 = std::make_shared<IntegralFactory>(aux, BasisSet::zero_ao_basis_set(), basis, basis);
         std::shared_ptr<TwoBodyAOInt> eri(fact2->eri());
-
 
         double **Vp = V->pointer();
         double *dp = d->pointer();
@@ -378,7 +378,7 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
                     Vp[aP][0] += Vval * (*intPx);
                     Vp[aP][1] += Vval * (*intPy);
                     Vp[aP][2] += Vval * (*intPz);
-                    if(aP != aQ) {
+                    if (aP != aQ) {
                         Vp[aQ][0] += Vval * (*intQx);
                         Vp[aQ][1] += Vval * (*intQy);
                         Vp[aQ][2] += Vval * (*intQz);
@@ -419,7 +419,7 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
 
                 for (int A = 0; A < aux->nshell(); A++) {
                     pot->compute_shell_deriv1_no_charge_term(A, 0);
-                    const auto* buffer = pot->buffer();
+                    const auto *buffer = pot->buffer();
 
                     const auto &shellA = aux->shell(A);
                     int aA = shellA.ncenter();
@@ -479,13 +479,13 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
                 int aQ = shellQ.ncenter();
                 int oQ = shellQ.function_index();
 
-                const auto& buffers = eri[thread]->buffers();
-                const double* Px = buffers[3];
-                const double* Py = buffers[4];
-                const double* Pz = buffers[5];
-                const double* Qx = buffers[6];
-                const double* Qy = buffers[7];
-                const double* Qz = buffers[8];
+                const auto &buffers = eri[thread]->buffers();
+                const double *Px = buffers[3];
+                const double *Py = buffers[4];
+                const double *Pz = buffers[5];
+                const double *Qx = buffers[6];
+                const double *Qy = buffers[7];
+                const double *Qz = buffers[8];
 
                 double perm = (P == Q ? 1.0 : 2.0);
 
@@ -531,7 +531,7 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
         double zA = mol->z(A);
         double ZA = mol->Z(A);
 
-        if (ZA > 0) { // skip Ghost interaction
+        if (ZA > 0) {  // skip Ghost interaction
             for (size_t B = 0; B < charges_.size(); B++) {
                 double ZB = std::get<0>(charges_[B]);
                 double xB = convfac * std::get<1>(charges_[B]);
