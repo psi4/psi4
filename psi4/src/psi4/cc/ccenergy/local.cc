@@ -104,27 +104,48 @@ void CCEnergyWavefunction::init_pno() {
     std::vector<SharedMatrix> Ttij;
     SharedMatrix temp(new Matrix(nvir, nvir));
 
+
+    // Check if occupied block of Fock matrix is non-diagonal (localized)
+    // On the way, store the occupied orbital energies
+    dpdfile2 Fij;
+    global_dpd_->file2_init(&Fij, PSIF_CC_OEI, 0, 1, 1, "fIJ");
+    global_dpd_->file2_mat_init(&Fij);
+    global_dpd_->file2_mat_rd(&Fij);
+
+    /* outfile->Printf("*** Vir block of F ***");
+    global_dpd_->file2_mat_print(&Fij, "outfile");
+    global_dpd_->file2_close(&Fij);*/
+
     // Create T2_tilde and "vectorize" it
-    global_dpd_->buf4_init(&T2tilde, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+    // While the Dints and denoms are correct, this code does not create
+    // the correct T2~s
+    /* global_dpd_->buf4_init(&T2tilde, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
     global_dpd_->buf4_init(&D, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
     global_dpd_->buf4_dirprd(&D, &T2tilde);
     get_matvec(&T2tilde, &Ttij);
     global_dpd_->buf4_close(&T2tilde);
-    global_dpd_->buf4_close(&D);
+    global_dpd_->buf4_close(&D);*/
 
-    // Print check
-    outfile->Printf("*** IJ Matrices ***\n");
-    for(int ij=0; ij<Ttij.size(); ++ij)
-        Ttij.at(ij)->print();
-
-    //Print check
-    // This doesn't work; why?
-    amp_write();
 
     // "Vectorize" T2
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS,  0, 0, 5, 0, 5, 0, "tIjAb");
+    /*outfile->Printf("*** T2s ***");
+    global_dpd_->buf4_print(&T2, "outfile", 1);*/
+    // Create T2~
     get_matvec(&T2, &Tij);
+    global_dpd_->buf4_scmcopy(&T2, PSIF_CC_TMP0, "tIjAb ~", 2);
+    global_dpd_->buf4_sort_axpy(&T2, PSIF_CC_TMP0, pqsr, 0, 5, "tIjAb ~", -1);
     global_dpd_->buf4_close(&T2);
+
+    // "Vectorize" T2~
+    global_dpd_->buf4_init(&T2tilde, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "tIjAb ~");
+    get_matvec(&T2tilde, &Ttij);
+    global_dpd_->buf4_close(&T2tilde);
+
+    // Print check
+    /* outfile->Printf("*** IJ Matrices ***\n");
+    for(int ij=0; ij<Ttij.size(); ++ij)
+        Ttij.at(ij)->print(); */
 
     // Create Density
     std::vector<SharedMatrix> Dij;
@@ -132,10 +153,12 @@ void CCEnergyWavefunction::init_pno() {
     for(int ij=0; ij < npairs; ++ij) {
         temp->zero();
         int i = ij/nocc;
-        int j = ij/nocc;
+        int j = ij%nocc;
         temp->gemm(0, 1, 1, Tij[ij], Ttij[ij], 0);
         temp->gemm(1, 0, 1, Tij[ij], Ttij[ij], 1);
         temp->scale(2.0 * 1/(1+(i==j)));
+        temp->axpy(1.0, temp->transpose());
+        temp->scale(0.5);
         Dij.push_back(temp->clone());
     }
 
@@ -202,6 +225,62 @@ void CCEnergyWavefunction::init_pno() {
     outfile->Printf("Average number of PNOs: %10.10lf \n", avg_pno);
     outfile->Printf("T2 ratio: %10.10lf \n", t2_ratio);
 
+    // Truncate Q
+    // If I understood Slices I wouldn't need to use
+    // for loops to set individual matrix elements
+    for(int ij=0; ij < npairs; ++ij) {
+        int npno = survivor_list[ij];
+        auto qtemp = std::make_shared<Matrix>(nvir, npno);
+        for(int a=0; a < nvir; ++a) {
+            for(int aij=0; aij < npno; ++aij) {
+                qtemp->set(a, aij, Q_full[ij]->get(a, aij));
+            }
+        }
+        local_.Q.push_back(qtemp->clone());
+        qtemp->zero();
+    }
+
+    // Print check Q
+    outfile->Printf("**** Truncated Q ****\n");
+    for (auto &qel : local_.Q) {
+        qel->print();
+    }
+    /* for(int ij=0; ij < npairs; ++ij) {
+        outfile->Printf("Pair: %d \n", ij);
+        local_.Q[ij]->print();
+    }*/
+
+    // Get semicanonical transforms
+    get_semicanonical_transforms(npairs, survivor_list);
+    // Print check L
+    outfile->Printf("**** Truncated L ****\n");
+    for (auto &qel : local_.L) {
+        qel->print();
+    }
+
+    // Write Q, L, eps_pno to file
+    psio_address next;
+    psio_write_entry(PSIF_CC_INFO, "PNO dimensions", (char *) &survivor_list, npairs * sizeof(int));
+    next = PSIO_ZERO;
+    for(int ij=0; ij < npairs; ++ij) {
+        int npno = survivor_list[ij];
+        psio_write(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *) local_.Q[ij]->pointer()[0],
+                nvir * npno * sizeof(double), next, &next);
+    }
+    next = PSIO_ZERO;
+    for(int ij=0; ij < npairs; ++ij) {
+        int npno = survivor_list[ij];
+        psio_write(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *) local_.L[ij]->pointer()[0],
+                npno * npno * sizeof(double), next, &next);
+    }
+
+    // Check if they can be read back in
+    SharedMatrix Ltest(new Matrix("Ltest of PSIO",nvir,nvir));
+    next = PSIO_ZERO;
+    psio_read(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *) Ltest->pointer()[0],
+        nvir * nvir * sizeof(double), next, &next);
+    outfile->Printf("**** Read-in Truncated L ****\n");
+    Ltest->print();
 }
 
 
@@ -227,6 +306,39 @@ void CCEnergyWavefunction::get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix
     global_dpd_->buf4_mat_irrep_close(buf_obj, 0);
 }
 
+void CCEnergyWavefunction::get_semicanonical_transforms(int npairs, std::vector<int> survivor_list) {
+    
+    auto nocc = local_.nocc;
+    auto nvir = local_.nvir;
+    // Read in virtual block of Fock matrix
+    dpdfile2 Fab;
+    global_dpd_->file2_init(&Fab, PSIF_CC_OEI, 0, 1, 1, "fAB");
+    global_dpd_->file2_mat_init(&Fab);
+    global_dpd_->file2_mat_rd(&Fab);
+    auto Fvir = std::make_shared<Matrix>(nvir, nvir);
+    for(int a=0; a < nvir; ++a) {
+        for(int b=0; b < nvir; ++b) {
+            Fvir->set(a, b, Fab.matrix[0][a][b]);
+        }
+    }
+    global_dpd_->file2_close(&Fab);
+
+    // Transform F_vir to PNO basis
+    for(int ij=0; ij < npairs; ++ij) {
+        int npno = survivor_list[ij];
+        auto atemp = std::make_shared<Matrix>(nvir, npno);
+        auto Fpno = std::make_shared<Matrix>(npno, npno);
+        auto eps = std::make_shared<Vector>(npno);
+        atemp->gemm(0, 0, 1, Fvir, local_.Q[ij], 0);
+        Fpno->gemm(1, 0, 1, local_.Q[ij], atemp, 1);
+    // Diagonalize to obtain L, eps_vir
+        auto evecs = std::make_shared<Matrix>(npno, npno);
+        Fpno->diagonalize(evecs, eps, ascending);
+        local_.L.push_back(evecs->clone());
+        local_.eps_pno.push_back(eps);
+    }
+}
+
 void CCEnergyWavefunction::local_done() { outfile->Printf("    Local parameters free.\n"); }
 
 void CCEnergyWavefunction::local_filter_T1(dpdfile2 *T1) {
@@ -237,6 +349,8 @@ void CCEnergyWavefunction::local_filter_T1(dpdfile2 *T1) {
     auto nocc = local_.nocc;
     auto nvir = local_.nvir;
 
+    if (local_.method == "PNO")
+        pno_filter_T1(&T1);
     /*   local.weak_pairs = init_int_array(nocc*nocc); */
     local_.pairdom_len = init_int_array(nocc * nocc);
     local_.pairdom_nrlen = init_int_array(nocc * nocc);
@@ -325,6 +439,94 @@ void CCEnergyWavefunction::local_filter_T1(dpdfile2 *T1) {
     /*   free(local.weak_pairs); */
 }
 
+void CCEnergyWavefunction::pno_filter_T1(dpdfile2 *T1) {
+    int ii;
+    double *T1tilde, *T1bar;
+    psio_address next;
+
+    auto nocc = local_.nocc;
+    auto nvir = local_.nvir;
+
+    /*   local.weak_pairs = init_int_array(nocc*nocc); */
+    local_.eps_occ = init_array(nocc);
+    psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *)local_.eps_occ, nocc * sizeof(double));
+
+    local_.W = (double ***)malloc(sizeof(double **) * nocc * nocc);
+    local_.V = (double ***)malloc(sizeof(double **) * nocc * nocc);
+    local_.eps_vir = (double **)malloc(sizeof(double *) * nocc * nocc);
+    next = PSIO_ZERO;
+    for (int ij = 0; ij < nocc * nocc; ij++) {
+        local_.eps_vir[ij] = init_array(local_.pairdom_nrlen[ij]);
+        psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *)local_.eps_vir[ij],
+                  local_.pairdom_nrlen[ij] * sizeof(double), next, &next);
+    }
+    next = PSIO_ZERO;
+    for (int ij = 0; ij < nocc * nocc; ij++) {
+        local_.V[ij] = block_matrix(nvir, local_.pairdom_len[ij]);
+        psio_read(PSIF_CC_INFO, "Local Residual Vector (V)", (char *)local_.V[ij][0],
+                  sizeof(double) * nvir * local_.pairdom_len[ij], next, &next);
+    }
+    next = PSIO_ZERO;
+    for (int ij = 0; ij < nocc * nocc; ij++) {
+        local_.W[ij] = block_matrix(local_.pairdom_len[ij], local_.pairdom_nrlen[ij]);
+        psio_read(PSIF_CC_INFO, "Local Transformation Matrix (W)", (char *)local_.W[ij][0],
+                  sizeof(double) * local_.pairdom_len[ij] * local_.pairdom_nrlen[ij], next, &next);
+    }
+
+    global_dpd_->file2_mat_init(T1);
+    global_dpd_->file2_mat_rd(T1);
+
+    for (int i = 0; i < nocc; i++) {
+        ii = i * nocc + i; /* diagonal element of pair matrices */
+
+        if (!local_.pairdom_len[ii]) {
+            outfile->Printf("\n    local_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n", ii);
+            throw PsiException("local_filter_T1: Pair ii is zero-length, which makes no sense.", __FILE__, __LINE__);
+        }
+
+        T1tilde = init_array(local_.pairdom_len[ii]);
+        T1bar = init_array(local_.pairdom_nrlen[ii]);
+
+        /* Transform the virtuals to the redundant projected virtual basis */
+        C_DGEMV('t', nvir, local_.pairdom_len[ii], 1.0, &(local_.V[ii][0][0]), local_.pairdom_len[ii],
+                &(T1->matrix[0][i][0]), 1, 0.0, &(T1tilde[0]), 1);
+
+        /* Transform the virtuals to the non-redundant virtual basis */
+        C_DGEMV('t', local_.pairdom_len[ii], local_.pairdom_nrlen[ii], 1.0, &(local_.W[ii][0][0]),
+                local_.pairdom_nrlen[ii], &(T1tilde[0]), 1, 0.0, &(T1bar[0]), 1);
+
+        /* Apply the denominators */
+        for (int a = 0; a < local_.pairdom_nrlen[ii]; a++) T1bar[a] /= (local_.eps_occ[i] - local_.eps_vir[ii][a]);
+
+        /* Transform the new T1's to the redundant projected virtual basis */
+        C_DGEMV('n', local_.pairdom_len[ii], local_.pairdom_nrlen[ii], 1.0, &(local_.W[ii][0][0]),
+                local_.pairdom_nrlen[ii], &(T1bar[0]), 1, 0.0, &(T1tilde[0]), 1);
+
+        /* Transform the new T1's to the MO basis */
+        C_DGEMV('n', nvir, local_.pairdom_len[ii], 1.0, &(local_.V[ii][0][0]), local_.pairdom_len[ii], &(T1tilde[0]), 1,
+                0.0, &(T1->matrix[0][i][0]), 1);
+
+        free(T1bar);
+        free(T1tilde);
+    }
+
+    global_dpd_->file2_mat_wrt(T1);
+    global_dpd_->file2_mat_close(T1);
+
+    for (int ij = 0; ij < nocc * nocc; ij++) {
+        free_block(local_.W[ij]);
+        free_block(local_.V[ij]);
+        free(local_.eps_vir[ij]);
+    }
+    free(local_.W);
+    free(local_.V);
+    free(local_.eps_vir);
+
+    free(local_.eps_occ);
+    free(local_.pairdom_len);
+    free(local_.pairdom_nrlen);
+    /*   free(local.weak_pairs); */
+}
 void CCEnergyWavefunction::local_filter_T2(dpdbuf4 *T2) {
     psio_address next;
 

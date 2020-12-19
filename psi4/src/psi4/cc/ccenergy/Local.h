@@ -69,7 +69,7 @@ struct Local {
 
     // For PNOs
     std::vector<SharedVector> occ_num;
-    // std::vector<SharedVector> eps_vir;
+    std::vector<SharedVector> eps_pno;
 
     std::vector<SharedMatrix> Q;
     std::vector<SharedMatrix> L;

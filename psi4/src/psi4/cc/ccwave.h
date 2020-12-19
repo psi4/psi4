@@ -169,6 +169,8 @@ class CCEnergyWavefunction : public Wavefunction {
     /* local correlation */
     void init_pno();
     void get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec);
+    void get_semicanonical_transforms(int npairs, std::vector<int> survivor_list); 
+    void pno_filter_T1(dpdfile2 *T1);
     void lmp2();
     void local_filter_T1(dpdfile2 *T1);
     void local_filter_T2(dpdbuf4 *T2);
