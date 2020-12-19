@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2020 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -149,8 +149,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_bool("DIE_IF_NOT_CONVERGED", true);
     /*- Integral package to use. If compiled with ERD or Simint support, change this option to use them; LibInt is used
        otherwise. -*/
-    options.add_str("INTEGRAL_PACKAGE", "LIBINT", "ERD LIBINT SIMINT");
-    
+    options.add_str("INTEGRAL_PACKAGE", "LIBINT2", "ERD LIBINT1 SIMINT LIBINT2");
 #ifdef USING_BrianQC
     /*- Whether to enable using the BrianQC GPU module -*/
     options.add_bool("BRIANQC_ENABLE", false);
@@ -303,6 +302,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Thole damping factor for multipole fields -*/
         options.add_double("DAMPING_FACTOR_MULTIPOLE", 2.1304);
 
+        /*- Summation scheme for field computations, can be direct or fmm -*/
+        options.add_str_i("SUMMATION_FIELDS", "DIRECT", "DIRECT FMM");
+        /*- Expansion order of the multipoles for FMM -*/
+        options.add_int("TREE_EXPANSION_ORDER", 5);
+        /*- Opening angle theta -*/
+        options.add_double("TREE_THETA", 0.5);
+
         /*- Activate border options for sites in proximity to the QM/MM border -*/
         options.add_bool("BORDER", false);
         /*- border type, either remove or redistribute moments/polarizabilities -*/
@@ -321,6 +327,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("BORDER_N_REDIST", -1);
         /*- redistribute polarizabilities? If false, polarizabilities are removed (default) -*/
         options.add_bool("BORDER_REDIST_POL", false);
+
+        /*- use PE(ECP) repulsive potentials -*/
+        options.add_bool("PE_ECP", false);
     }
 
     if (name == "DETCI" || options.read_globals()) {
@@ -975,7 +984,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do use Combined Schwarz Approximation Maximum (CSAM) screening on
         two-electron integrals. This is a slightly tighter bound than that of
         default Schwarz screening. -*/
-        options.add_str("SCREENING", "SCHWARZ" "SCHWARZ CSAM");
+        options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM");
         /*- Memory safety -*/
         options.add_double("SAPT_MEM_SAFETY", 0.9);
         /*- Do force SAPT2 and higher to die if it thinks there isn't enough
@@ -1012,14 +1021,23 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION SAPT(DFT) -*/
 
-        /*- How is the GRAC correction determined? -*/
-        options.add_str("SAPT_DFT_GRAC_DETERMINATION", "INPUT", "INPUT");
-        /*- Monomer A GRAC shift? -*/
+        /*- Monomer A GRAC shift in Hartree -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_A", 0.0);
-        /*- Monomer B GRAC shift? -*/
+        /*- Monomer B GRAC shift in Hartree -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_B", 0.0);
         /*- Compute the Delta-HF correction? -*/
         options.add_bool("SAPT_DFT_DO_DHF", true);
+        /*- How is the GRAC correction determined? !expert -*/
+        options.add_str("SAPT_DFT_GRAC_DETERMINATION", "INPUT", "INPUT");
+        /*- Enables the hybrid xc kernel in dispersion? !expert -*/
+        options.add_bool("SAPT_DFT_DO_HYBRID", true);
+        /*- Scheme for approximating exchange-dispersion for SAPT-DFT.
+        ``NONE`` Use unscaled ``Exch-Disp2,u`` .
+        ``FIXED`` Use a fixed factor |sapt__sapt_dft_exch_disp_fixed_scale| to scale ``Exch-Disp2,u`` .
+        ``DISP`` Use the ratio of ``Disp2,r`` and ``Disp2,u`` to scale ``Exch-Disp2,u`` . -*/
+        options.add_str("SAPT_DFT_EXCH_DISP_SCALE_SCHEME", "DISP", "NONE FIXED DISP");
+        /*- Exch-disp scaling factor for FIXED scheme for |sapt__sapt_dft_exch_disp_scale_scheme|. Default value of 0.686 suggested by Hesselmann and Korona, J. Chem. Phys. 141, 094107 (2014). !expert -*/
+        options.add_double("SAPT_DFT_EXCH_DISP_FIXED_SCALE", 0.686);
         /*- Underlying funcitonal to use for SAPT(DFT) !expert -*/
         options.add_str("SAPT_DFT_FUNCTIONAL", "PBE0", "");
         /*- Number of points in the Legendre FDDS Dispersion time integration !expert -*/
@@ -1306,7 +1324,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Tolerance for partial Cholesky decomposition of overlap matrix. -*/
         options.add_double("S_CHOLESKY_TOLERANCE", 1E-8);
         /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
-        options.add_double("INTS_TOLERANCE", 0.0);
+        options.add_double("INTS_TOLERANCE", 1E-12);
         /*- The type of guess orbitals.  Defaults to ``READ`` for geometry optimizations after the first step, to
           ``CORE`` for single atoms, and to ``SAD`` otherwise. The ``HUCKEL`` guess employs on-the-fly calculations
           like SAD, as described in doi:10.1021/acs.jctc.8b01089 which also describes the SAP guess. -*/
@@ -1511,7 +1529,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Maximum number of atomic SCF iterations within SAD !expert -*/
         options.add_int("SAD_MAXITER", 50);
         /*- SCF type used for atomic calculations in SAD guess !expert -*/
-        options.add_str("SAD_SCF_TYPE", "DF", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK DIRECT_DF");
+        options.add_str("SAD_SCF_TYPE", "DF", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK");
         /*- Do force an even distribution of occupations across the last partially occupied orbital shell? !expert -*/
         options.add_bool("SAD_FRAC_OCC", true);
         /*- Do use spin-averaged occupations instead of atomic ground spin state in fractional SAD? !expert -*/
