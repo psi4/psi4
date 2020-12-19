@@ -439,7 +439,7 @@ class PSI_API JK {
     *        defaults to false
     */
     virtual void set_do_wK(bool do_wK) { do_wK_ = do_wK; }
-    bool get_do_wK() {return do_wK_;}
+    bool get_do_wK() { return do_wK_; }
     /**
     * Set to combine wK integral tensors
     * @param wcombine do we combine wK matrices?
@@ -456,14 +456,14 @@ class PSI_API JK {
     double get_omega() { return omega_; }
 
     /**
-    * Set the alpha value for w exchange: weight for HF Term                
+    * Set the alpha value for w exchange: weight for HF Term
     * @param omega_alpha HF-Exchange weight
     */
     virtual void set_omega_alpha(double alpha) { omega_alpha_ = alpha; }
-    double get_omega_alpha() {return omega_alpha_; }
+    double get_omega_alpha() { return omega_alpha_; }
 
     /**
-    * Set the alpha value for w exchange: weight for dampened Term                
+    * Set the alpha value for w exchange: weight for dampened Term
     * @param omega_beta Dampened Exchange weight
     */
     virtual void set_omega_beta(double beta) { omega_beta_ = beta; }
@@ -562,9 +562,6 @@ class PSI_API JK {
     * type on output file
     */
     virtual void print_header() const = 0;
-/*JSOB_DEBUG_JSOB_DEBUG_JSOB_DEBUG_JSOB_DEBUG_JSOB_DEBUG_JSOB_DEBUG_JSOB_DEBUG_*/
-    int n_col_last_ = -1;
-/*JSOB_DEBUG_JSOB_DEBUG_JSOB_DEBUG_JSOB_DEBUG_JSOB_DEBUG_JSOB_DEBUG_JSOB_DEBUG_*/
 };
 
 // => APPLIED CLASSES <= //
@@ -629,7 +626,6 @@ class PSI_API DiskJK : public JK {
  * integral technology
  */
 class PSI_API PKJK : public JK {
-
     std::string name() override { return "PKJK"; }
     size_t memory_estimate() override;
 
@@ -724,8 +720,8 @@ class PSI_API DirectJK : public JK {
     void postiterations() override;
 
     /// Build the J and K matrices for this integral class
-    void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
-                  std::vector<std::shared_ptr<Matrix> >& J, std::vector<std::shared_ptr<Matrix> >& K);
+    void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<std::shared_ptr<Matrix>>& D,
+                  std::vector<std::shared_ptr<Matrix>>& J, std::vector<std::shared_ptr<Matrix>>& K);
 
     /// Common initialization
     void common_init();
@@ -976,7 +972,6 @@ class PSI_API CDJK : public DiskDFJK {
     std::string name() override { return "CDJK"; }
     size_t memory_estimate() override;
 
-
     // the number of cholesky vectors
     long int ncholesky_;
 
@@ -1026,7 +1021,6 @@ class PSI_API CDJK : public DiskDFJK {
  */
 class PSI_API MemDFJK : public JK {
    protected:
-
     // => DF-Specific stuff <= //
 
     std::string name() override { return "MemDFJK"; }
@@ -1115,33 +1109,32 @@ class PSI_API MemDFJK : public JK {
 //
 //#endif
 
-
 class PSI_API DirectDFJK : public JK {
-    protected:
-	// uses pQq storage for integrals
-	bool pQq_ = true;
-	bool Qpq_ = !pQq_;
-	bool Qpq_store_sparse_ = false;
+   protected:
+    // uses pQq storage for integrals
+    bool pQq_ = true;
+    bool Qpq_ = !pQq_;
+    bool Qpq_store_sparse_ = false;
     bool ao_sparse_ = true;
 
-	bool BB_;
+    bool BB_;
     /// Condition cutoff in fitting metric, defaults to 1.0E-12
     double condition_ = 1e-12;
-	double tolerance_;
+    double tolerance_;
 
-	// used to determine which jk algorithm is used.
-	int nocc_last_;
+    // used to determine which jk algorithm is used.
+    int nocc_last_;
 
-	int erilast_;
+    int erilast_;
 
-	/// threads for openmp
+    /// threads for openmp
     int df_ints_num_threads_ = 1;
 
-    //only calls the sieve object
+    // only calls the sieve object
     void preiterations() override;
 
-	// Is this for an unrestricted Hartree Fock calculation
-	bool uhf_ = false;
+    // Is this for an unrestricted Hartree Fock calculation
+    bool uhf_ = false;
 
     // auxiliary basis set object
     std::shared_ptr<BasisSet> auxiliary_;
@@ -1149,184 +1142,192 @@ class PSI_API DirectDFJK : public JK {
     // Numbers of basis functions
     size_t nbf_;
     size_t naux_;
-	size_t p_shells_;
-	size_t Q_shells_;
+    size_t p_shells_;
+    size_t Q_shells_;
 
-	// The amount of memory we can use for AO tensors
-	size_t free_memory_;
-	// Number of blocks over which AO's will be constructed
-	size_t num_blocks_;
-	size_t ABX_block_size_;
-    
+    // The amount of memory we can use for AO tensors
+    size_t free_memory_;
+    // Number of blocks over which AO's will be constructed
+    size_t num_blocks_;
+    size_t ABX_block_size_;
+
     std::vector<std::vector<size_t>> k_disps_;
-    
+
     // AO integrals in the biggest block
-	size_t biggest_block_;
+    size_t biggest_block_;
 
-	size_t biggest_shell_;
+    size_t biggest_shell_;
 
-	// size of the tensor x used in K construction.
-	size_t x_size_;
+    // size of the tensor x used in K construction.
+    size_t x_size_;
 
     // sparse funcs per function
     //     takes the place of nbf_ for sparse storage
-	size_t sparse_fpf_ = 0;
+    size_t sparse_fpf_ = 0;
 
-	// size of each block of x. In the rhf case, this vector will only
-	//   have one element, but in the uhf case, we will have:
-	//   x_slices_[0] is C_left_ao.ncols() & 
-	//   x_slices_[1] is C_right_ao.ncols()
-	std::vector<size_t> x_slice_;
-	
-	//  from starts_[i] to stops_[i]
-	//  Be aware that these arrays store shell indices and not sizes.
-	std::vector<size_t> Shell_starts_;
-	std::vector<size_t> Shell_stops_;
+    // size of each block of x. In the rhf case, this vector will only
+    //   have one element, but in the uhf case, we will have:
+    //   x_slices_[0] is C_left_ao.ncols() &
+    //   x_slices_[1] is C_right_ao.ncols()
+    std::vector<size_t> x_slice_;
 
-	// Block_funcs[i] is the number of functions in the [i]th AO Block
-	std::vector<size_t> Block_funcs_;
-	
-	// Amount of memory DirectDFJK plans on using
-	size_t total_needs_;
+    //  from starts_[i] to stops_[i]
+    //  Be aware that these arrays store shell indices and not sizes.
+    std::vector<size_t> Shell_starts_;
+    std::vector<size_t> Shell_stops_;
 
-	//fills total_needs;
-	void our_needs();
+    // Block_funcs[i] is the number of functions in the [i]th AO Block
+    std::vector<size_t> Block_funcs_;
+
+    // Amount of memory DirectDFJK plans on using
+    size_t total_needs_;
+
+    // fills total_needs;
+    void our_needs();
 
     void common_init();
 
-	// schwarz sparsity mask for AO_construction
-	std::vector<std::vector<size_t>> schwarz_shell_mask_pQq_;
-	//We're going to use a 
+    // schwarz sparsity mask for AO_construction
+    std::vector<std::vector<size_t>> schwarz_shell_mask_pQq_;
+    // We're going to use a
 
-	// The each unscreened shell's start function as indexed
-	// in the basis function
-	std::vector<std::vector<size_t>> schwarz_func_starts_pQq_;
+    // The each unscreened shell's start function as indexed
+    // in the basis function
+    std::vector<std::vector<size_t>> schwarz_func_starts_pQq_;
 
-	std::vector<size_t> schwarz_dense_funcs_;
+    std::vector<size_t> schwarz_dense_funcs_;
 
-	// sparsity mask by mP for AO construction
-	std::vector<std::vector<size_t>> mP_func_map_pQq_;
-	std::vector<std::vector<size_t>> mP_shel_map_pQq_;
+    // sparsity mask by mP for AO construction
+    std::vector<std::vector<size_t>> mP_func_map_pQq_;
+    std::vector<std::vector<size_t>> mP_shel_map_pQq_;
 
-	// Functions to prepare sparsity. These will work differently
-	//   for different memory layouts
-	
-	// Number of integrals NOT screened out: 
-	std::vector<size_t> schwarz_func_ints_;
+    // Functions to prepare sparsity. These will work differently
+    //   for different memory layouts
 
-	//LU solution for a CMPQ_LU_uu 
-	std::vector<double> CMPQ_LU_;
-	std::vector<int> PERMUTE_;
+    // Number of integrals NOT screened out:
+    std::vector<size_t> schwarz_func_ints_;
 
-    //Coulomb metric inverse
+    // LU solution for a CMPQ_LU_uu
+    std::vector<double> CMPQ_LU_;
+    std::vector<int> PERMUTE_;
+
+    // Coulomb metric inverse
     std::vector<double> CMPQ_inv_;
 
-	// Determines which elements of A_mu_Q_nui need to be computed
-	// Determines which shell pairs are significant
-	//	(schwarz_shell_map_pQq_)
-	// Determines global starting indices for basis functions
-	//  (schwarz_func_starts_pQq_)
-	// Determines the number of significant integrals per primary
-	//    basis function
-	//  (schwarz_func_ints_)
-	// Will be called in sparsity prep in memory estimator
-	void sparsity_prep_pQq();
+    // Determines which elements of A_mu_Q_nui need to be computed
+    // Determines which shell pairs are significant
+    //	(schwarz_shell_map_pQq_)
+    // Determines global starting indices for basis functions
+    //  (schwarz_func_starts_pQq_)
+    // Determines the number of significant integrals per primary
+    //    basis function
+    //  (schwarz_func_ints_)
+    // Will be called in sparsity prep in memory estimator
+    void sparsity_prep_pQq();
 
-	void prune_pQq( size_t bf, size_t nocc, double* pruned_c, double* raw_c );
+    void prune_pQq(size_t bf, size_t nocc, double* pruned_c, double* raw_c);
 
-	void unprune_j_pQq( size_t mu, double* pruned_j, double* j);
+    void unprune_j_pQq(size_t mu, double* pruned_j, double* j);
 
-	//I find it helpful to have a good description of 
-	//  what these functions do and don't do.
-	//  we'll try to add it.
+    // I find it helpful to have a good description of
+    //  what these functions do and don't do.
+    //  we'll try to add it.
     void compute_JK() override;
 
-	void postiterations() override;
+    void postiterations() override;
 
-    void compute_AO_block_Qpq(size_t start_Q, size_t stop_Q, double* ao_block, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+    void compute_AO_block_Qpq(size_t start_Q, size_t stop_Q, double* ao_block,
+                              std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
 
-//	void compute_AO_block_p_pQq(size_t start_p, size_t stop_p, double* ao_block, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+    //	void compute_AO_block_p_pQq(size_t start_p, size_t stop_p, double* ao_block,
+    //std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
 
     void compute_dense_AO_block_p_pQq(size_t shell, double* ao_block, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
-    
-	std::string name() override { return "DirectDFJK"; }
 
-	bool C1() const override { return true; }
+    std::string name() override { return "DirectDFJK"; }
+
+    bool C1() const override { return true; }
 
     size_t memory_estimate() override;
 
-	void prepare_blocking();
+    void prepare_blocking();
 
-	// fills up starts and stops in a pQq scheme
-	void prepare_p_blocks();
+    // fills up starts and stops in a pQq scheme
+    void prepare_p_blocks();
 
-	// fills up starts and stops in a Qpq scheme
-	void prepare_Q_blocks();
+    // fills up starts and stops in a Qpq scheme
+    void prepare_Q_blocks();
 
+    // works the same as in dfhelper
+    // std::map<double, SharedMatrix> metric_;
 
-	// works the same as in dfhelper
-	//std::map<double, SharedMatrix> metric_;
-
-	// DO NOT CHANGE ELEMENTS OF metric_ WITHOUT CORRESPONDINGLY CHANGING
-    //   THE CORRESPONDING ELEMENTS OF met_powers_! OTHERWISE, YOU WILL 
+    // DO NOT CHANGE ELEMENTS OF metric_ WITHOUT CORRESPONDINGLY CHANGING
+    //   THE CORRESPONDING ELEMENTS OF met_powers_! OTHERWISE, YOU WILL
     //   HAVE NON-PHYSICAL RESULTS WITH VERY LITTLE IN THE WAY OF TELLING
     //   YOURSELF WHY!
-	std::vector<double> met_powers_;
-	std::vector<SharedMatrix> metric_;
+    std::vector<double> met_powers_;
+    std::vector<SharedMatrix> metric_;
 
-	std::vector<int> met_cols_;
-	std::vector<int> met_rows_;
+    std::vector<int> met_cols_;
+    std::vector<int> met_rows_;
 
-	void prepare_metric_power(double power);
+    void prepare_metric_power(double power);
 
-	// I want to be able to compute powers without the machinery to get them
-	double* get_metric_power(double power);
+    // I want to be able to compute powers without the machinery to get them
+    double* get_metric_power(double power);
 
-	void get_met();
+    void get_met();
 
-	void prune_c( size_t &mu, size_t nocc, double* pruned_c, double* raw_c );
-	void prune_d( size_t &mu, double* pruned_d, double* raw_d);
-	void prune_cmpq(size_t big_Mu, double* raw_CMPQ, double* pruned_CMPQ);
-	void unprune_V( size_t big_Mu, double* raw_v, double* pruned_v);
-	void unprune_J( size_t &mu, double* raw_j, double* pruned_j );
-	void prune_phi( size_t big_Mu, double* raw_phi, double* pruned_phi );
+    void prune_c(size_t& mu, size_t nocc, double* pruned_c, double* raw_c);
+    void prune_d(size_t& mu, double* pruned_d, double* raw_d);
+    void prune_cmpq(size_t big_Mu, double* raw_CMPQ, double* pruned_CMPQ);
+    void unprune_V(size_t big_Mu, double* raw_v, double* pruned_v);
+    void unprune_J(size_t& mu, double* raw_j, double* pruned_j);
+    void prune_phi(size_t big_Mu, double* raw_phi, double* pruned_phi);
 
-	// Line  7 algorithm  8
-	void V_gets_AD( size_t stop, double* v, double* a, double* d);
+    // Line  7 algorithm  8
+    void V_gets_AD(size_t stop, double* v, double* a, double* d);
 
-	// Line  7 algorithm 10
-	void F_gets_AD_pQq( size_t stop, double* f, double* a, double* d);
+    // Line  7 algorithm 10
+    void F_gets_AD_pQq(size_t stop, double* f, double* a, double* d);
 
-	// Line  9 algorithm  8
-	void Accumulate_J( size_t stop, double* j, double* a, double* phi);
-	void Accumulate_J_pQq( size_t stop, double* j, double* a, double* phi);
+    // Line  9 algorithm  8
+    void Accumulate_J(size_t stop, double* j, double* a, double* phi);
+    void Accumulate_J_pQq(size_t stop, double* j, double* a, double* phi);
 
+    void X_Block(char coul_work, bool compute_k, size_t block, double* ao_block, double* x, double* u,
+                 double* coulomb_vector, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
 
-    void X_Block( char coul_work, bool compute_k, size_t block, double* ao_block, double* x, double* u, double* coulomb_vector, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+    void X_Block_sparse(char coul_work, bool compute_k, size_t block, double* pruned_c, double* pruned_d,
+                        double* ao_block, double* x, double* u, double* coulomb_vector, double* pruned_j,
+                        std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
 
-	void X_Block_sparse(char coul_work, bool compute_k, size_t block, double* pruned_c, double* pruned_d, double* ao_block, double* x, double* u, double* coulomb_vector, double* pruned_j, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+    void X_Block_mn_sparse_set_mP(bool with_contraction, bool compute_k, size_t block, double* pruned_c,
+                                  double* pruned_d, double* ao_block, double* x, double* u, double* coulomb_vector,
+                                  double* pruned_coulomb_vector, double* pruned_j, double* pruned_cm,
+                                  std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
 
-	void X_Block_mn_sparse_set_mP( bool with_contraction, bool compute_k, size_t block, double* pruned_c, double* pruned_d, double* ao_block, double* x, double* u, double* coulomb_vector, double* pruned_coulomb_vector, double* pruned_j, double* pruned_cm, std::vector<std::shared_ptr<TwoBodyAOInt>> eri );
-
-	void X_Block_mn_mP_sparse(char coul_work, bool compute_k, size_t block, double* pruned_c, double* pruned_d, double* ao_block, double* x, double* u, double* coulomb_vector, double* pruned_coulomb_vector, double* pruned_j, double* pruned_cm, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+    void X_Block_mn_mP_sparse(char coul_work, bool compute_k, size_t block, double* pruned_c, double* pruned_d,
+                              double* ao_block, double* x, double* u, double* coulomb_vector,
+                              double* pruned_coulomb_vector, double* pruned_j, double* pruned_cm,
+                              std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
 
     void pQp();
 
-	void pQp_sparse();
+    void pQp_sparse();
 
-	void pQp_mn_sparse_set_mP();
+    void pQp_mn_sparse_set_mP();
 
-	void pQp_mn_mP_sparse();
+    void pQp_mn_mP_sparse();
 
-	//prepares the Density matrix if C* == C
+    // prepares the Density matrix if C* == C
 
-	void compute_sparse_AO_block_p_pQq( size_t shell, double* ao_block, std::vector<std::shared_ptr<TwoBodyAOInt>> eri );
+    void compute_sparse_AO_block_p_pQq(size_t shell, double* ao_block, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
 
     void build_jk_CC_Qpq_direct();
-	void build_jk_CC_Qpq_blocks();
+    void build_jk_CC_Qpq_blocks();
 
-    public:
-
+   public:
     // => Constructor <=
     /**
     * @param primary: primary basis set for this system
@@ -1336,18 +1337,15 @@ class PSI_API DirectDFJK : public JK {
     */
 
     DirectDFJK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary);
-    /// Destructor 
+    /// Destructor
     ~DirectDFJK() override;
 
-    void set_condition( double condition ) { condition_ = condition; }
+    void set_condition(double condition) { condition_ = condition; }
 
-	void set_df_ints_num_threads(int threads) { df_ints_num_threads_ = threads; }
-    
+    void set_df_ints_num_threads(int threads) { df_ints_num_threads_ = threads; }
+
     void print_header() const override;
-
 };
-
 }
 
 #endif
-
