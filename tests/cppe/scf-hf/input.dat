@@ -21,9 +21,6 @@ O          7.98000        1.33100       -3.90100
 O          9.55600       -0.11000       -3.46600
 H          7.74900        2.71100        2.65200
 H          8.99100        1.57500        2.99500
-symmetry c1
-no_reorient
-no_com
 }
 
 set {
@@ -39,5 +36,5 @@ set pe {
 }
 
 scf_energy, wfn = energy('scf', return_wfn=True)
-compare_values(ref_pe_energy, wfn.get_variable("PE ENERGY"), 6, "PE Energy contribution") #TEST
+compare_values(ref_pe_energy, wfn.variable("PE ENERGY"), 6, "PE Energy contribution") #TEST
 compare_values(ref_scf_energy, scf_energy, 6, "Total PE-SCF Energy") #TEST

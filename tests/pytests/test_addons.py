@@ -1,55 +1,16 @@
 import pytest
-from .addons import hardware_nvidia_gpu, using_dftd3, using_gcp, using_cppe, using_psixas
+from .addons import hardware_nvidia_gpu, using
 
 import json
 
 import qcengine as qcng
-from qcengine.testing import using
 
 import psi4
 
-pytestmark = pytest.mark.quick
-
-using_ambit = pytest.mark.skipif(psi4.addons("ambit") is False,
-                                reason="Psi4 not compiled with ambit. Rebuild with -DENABLE_ambit")
-using_cfour = pytest.mark.skipif(psi4.addons("cfour") is False,
-                                reason="Psi4 not detecting CFOUR. Add `xcfour` to envvar PSIPATH or PATH")
-using_chemps2 = pytest.mark.skipif(psi4.addons("chemps2") is False,
-                                reason="Psi4 not compiled with CheMPS2. Rebuild with -DENABLE_CheMPS2")
-using_dkh = pytest.mark.skipif(psi4.addons("dkh") is False,
-                                reason="Psi4 not compiled with dkh. Rebuild with -DENABLE_dkh")
-using_libefp = pytest.mark.skipif(psi4.addons("libefp") is False,
-                                reason="Psi4 not compiled with libefp. Rebuild with -DENABLE_libefp")
-using_erd = pytest.mark.skipif(psi4.addons("erd") is False,
-                                reason="Psi4 not compiled with erd. Rebuild with -DENABLE_erd")
-using_gdma = pytest.mark.skipif(psi4.addons("gdma") is False,
-                                reason="Psi4 not compiled with gdma. Rebuild with -DENABLE_gdma")
-using_ipi = pytest.mark.skipif(psi4.addons("ipi") is False,
-                                reason="Psi4 not detecting i-pi. pip install git+https://github.com/i-pi/i-pi.git@master-py3")
-using_mrcc = pytest.mark.skipif(psi4.addons("mrcc") is False,
-                                reason="Psi4 not detecting MRCC. Add `dmrcc` to envvar PSIPATH or PATH")
-using_pcmsolver = pytest.mark.skipif(psi4.addons("pcmsolver") is False,
-                                reason="Psi4 not compiled with PCMSolver. Rebuild with -DENABLE_PCMSolver")
-using_simint = pytest.mark.skipif(psi4.addons("simint") is False,
-                                reason="Psi4 not compiled with simint. Rebuild with -DENABLE_simint")
-using_v2rdm_casscf = pytest.mark.skipif(psi4.addons("v2rdm_casscf") is False,
-                                reason="Psi4 not detecting plugin v2rdm_casscf. Build plugin if necessary and add to envvar PYTHONPATH")
-using_gpu_dfcc = pytest.mark.skipif(psi4.addons("gpu_dfcc") is False,
-                                reason="Psi4 not detecting plugin gpu_dfcc. Build plugin if necessary and add to envvar PYTHONPATH")
-using_forte = pytest.mark.skipif(psi4.addons("forte") is False,
-                                reason="Psi4 not detecting plugin forte. Build plugin if necessary and add to envvar PYTHONPATH")
-using_snsmp2 = pytest.mark.skipif(psi4.addons("snsmp2") is False,
-                                reason="Psi4 not detecting plugin snsmp2. Build plugin if necessary and add to envvar PYTHONPATH (or rebuild Psi with -DENABLE_snsmp2)")
-using_resp = pytest.mark.skipif(psi4.addons("resp") is False,
-                                reason="Psi4 not detecting plugin resp. Build plugin if necessary and add to envvar PYTHONPATH (or rebuild Psi with -DENABLE_resp)")
-using_psi4fockci = pytest.mark.skipif(psi4.addons("psi4fockci") is False,
-                                reason="Psi4 not detecting plugin psi4fockci. Build plugin if necessary and add to envvar PYTHONPATH")
-using_cct3 = pytest.mark.skipif(psi4.addons("cct3") is False,
-                                reason="Psi4 not detecting plugin cct3. Build plugin if necessary and add to envvar PYTHONPATH")
+pytestmark = [pytest.mark.smoke, pytest.mark.quick]
 
 
-@pytest.mark.smoke
-@using_gdma
+@using("gdma")
 def test_gdma():
     """gdma1"""
     #! Water RHF/cc-pVTZ distributed multipole analysis
@@ -105,7 +66,6 @@ def test_gdma():
     assert psi4.compare_matrices(totvals, ref_tot_mat, 6, "DMA Total Multipoles")
 
 
-@pytest.mark.smoke
 def test_ipi_broker1():
     """ipi_broker1"""
 
@@ -165,7 +125,6 @@ def test_ipi_broker1():
     assert psi4.compare_arrays(frc,     -b._force,                                      4, "Total force (Broker)")
 
 
-@pytest.mark.smoke
 def test_ipi_broker2():
     """ipi_broker2"""
 
@@ -200,8 +159,7 @@ def test_ipi_broker2():
     assert psi4.compare_arrays(ref, -b._force, 6, "Outsourced dft gradients called by name: libdisp")
 
 
-@pytest.mark.smoke
-@using_mrcc
+@using("mrcc")
 def test_mrcc():
     """mrcc/ccsdt"""
     #! CCSDT cc-pVDZ energy for the H2O molecule using MRCC
@@ -225,8 +183,7 @@ def test_mrcc():
     assert psi4.compare_values(-76.239133655413, psi4.variable("CURRENT ENERGY"), 6, 'CCSDT')
 
 
-@pytest.mark.smoke
-@using_chemps2
+@using("chemps2")
 def test_chemps2():
     """chemps2/scf-n2"""
     #! dmrg-scf on N2
@@ -273,7 +230,6 @@ def test_chemps2():
     assert psi4.compare_values(ref_energy, psi4.variable("CURRENT ENERGY"), 6, "DMRG Energy")
 
 
-@pytest.mark.smoke
 @using('mp2d')
 def test_mp2d():
     eneyne = psi4.geometry("""
@@ -310,8 +266,7 @@ def test_mp2d():
     assert psi4.compare_values(expected, jrec['extras']['qcvars']['MP2-DMP2 DISPERSION CORRECTION ENERGY'], 7, 'mp2d disp E')
 
 
-@pytest.mark.smoke
-@using_dftd3
+@using("dftd3")
 def test_dftd3():
     """dftd3/energy"""
     #! Exercises the various DFT-D corrections, both through python directly and through c++
@@ -470,8 +425,7 @@ def test_dftd3():
     assert psi4.compare_values(ref_pbe_d2[0], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D2 (alias)')
 
 
-@pytest.mark.smoke
-@using_libefp
+@using("libefp")
 def test_libefp():
     """libefp/qchem-qmefp-sp"""
     #! EFP on mixed QM (water) and EFP (water + 2 * ammonia) system.
@@ -529,8 +483,7 @@ def test_libefp():
     psi4.core.print_variables()
 
 
-@pytest.mark.smoke
-@using_pcmsolver
+@using("pcmsolver")
 @pytest.mark.parametrize("how", ["pcm_helper"])
 #@pytest.mark.parametrize("how", ["pcm_helper", "pcm_helper1"])  # fail b/c pcm not restartable
 #@pytest.mark.parametrize("how", ["pcm_helper", "set_options"])  # fail b/c pcm not restartable
@@ -549,8 +502,6 @@ def test_pcmsolver(how, request):
     H     -0.9015844116     0.4818470201      1.5615900098
     H      1.8031688251     0.4818470204      0.0000000000
     units bohr
-    no_reorient
-    no_com
     """)
 
     psi4.set_options({
@@ -779,8 +730,7 @@ def _test_scf5():
     assert psi4.compare_values(Eref_rohf_df, E, 6, 'Triplet DF CUHF energy')
 
 
-@pytest.mark.smoke
-@using_erd
+@using("erd")
 def test_erd():
     """erd/scf5"""
 
@@ -788,15 +738,13 @@ def test_erd():
     _test_scf5()
 
 
-@pytest.mark.smoke
-@using_simint
+@using("simint")
 def test_simint():
     """simint/scf5"""
 
     psi4.set_options({'integral_package': 'simint'})
     _test_scf5()
 
-@pytest.mark.smoke
 def test_json():
     """json/energy"""
 
@@ -832,8 +780,7 @@ def test_json():
         json.dump(json_ret["raw_output"], f)
 
 
-@pytest.mark.smoke
-@using_cfour
+@using("cfour")
 def test_cfour():
     """cfour/sp-rhf-ccsd_t_"""
     #! single-point CCSD(T)/qz2p on water
@@ -866,8 +813,7 @@ def test_cfour():
     assert psi4.compare_values(-0.282969089769, psi4.variable('ccsd(t) correlation energy'), 6, 'CCSD(T) corl')
 
 
-@pytest.mark.smoke
-@using_v2rdm_casscf
+@using("v2rdm_casscf")
 def test_v2rdm_casscf():
     """v2rdm_casscf/tests/v2rdm1"""
     #! cc-pvdz N2 (6,6) active space Test DQG
@@ -919,9 +865,8 @@ def test_v2rdm_casscf():
     assert psi4.compare_values(refv2rdm, psi4.variable("CURRENT ENERGY"), 5, "v2RDM-CASSCF total energy")
 
 
-@pytest.mark.smoke
 @hardware_nvidia_gpu
-@using_gpu_dfcc
+@using("gpu_dfcc")
 def test_gpu_dfcc():
     """gpu_dfcc/tests/gpu_dfcc1"""
     #! cc-pvdz (H2O)2 Test DF-CCSD vs GPU-DF-CCSD
@@ -956,9 +901,8 @@ def test_gpu_dfcc():
 
 
 
-@pytest.mark.smoke
-@using_dftd3
-@using_gcp
+@using("dftd3")
+@using("gcp")
 def test_grimme_3c():
 
     s16di = psi4.geometry("""
@@ -984,8 +928,7 @@ def test_grimme_3c():
     ene = psi4.energy('hf3c/', bsse_type='nocp')
     assert psi4.compare_values(-0.00240232, ene, 6, 'S22-16 HF-3c/minix')
 
-@pytest.mark.smoke
-@using_dkh
+@using("dkh")
 def test_dkh():
     """dkh/molpro-2order"""
 
@@ -1006,8 +949,8 @@ def test_dkh():
 
     assert psi4.compare_values(-128.66891610, e, 6, '2nd order vs Molpro')
 
-@using_ambit
-@using_forte
+@using("ambit")
+@using("forte")
 def disabled_test_forte():
     """aci-10: Perform aci on benzyne"""
 
@@ -1069,8 +1012,7 @@ def disabled_test_forte():
     assert psi4.compare_values(refacipt2, psi4.variable("ACI+PT2 ENERGY"),8,"ACI+PT2 energy")
 
 
-@pytest.mark.smoke
-@using_snsmp2
+@using("snsmp2")
 def test_snsmp2():
     """snsmp2/he-he"""
 
@@ -1086,8 +1028,7 @@ def test_snsmp2():
     assert psi4.compare_values(0.00176708227, psi4.variable('SNS-MP2 TOTAL ENERGY'), 5, "SNS-MP2 IE [Eh]")
 
 
-@pytest.mark.smoke
-@using_resp
+@using("resp")
 def test_resp():
     """resp/tests/test_resp_1"""
     import resp
@@ -1156,7 +1097,7 @@ def test_resp():
     assert np.allclose(charges2[1], reference_charges2, atol=5e-4)
 
 @pytest.mark.smoke
-@using_resp
+@using("resp")
 def test_resp_2():
     import resp
     import numpy as np
@@ -1245,8 +1186,7 @@ def test_resp_2():
     assert np.allclose(charges2[1], reference_charges2, atol=1e-5)
 
 
-@pytest.mark.smoke
-@using_psi4fockci
+@using("fockci")
 def test_psi4fockci():
     """psi4fockci/n2"""
 
@@ -1270,8 +1210,7 @@ def test_psi4fockci():
         add_opts=options )
     assert psi4.compare_values(-108.600832070267, psi4.core.variable("CI ROOT 0 TOTAL ENERGY"), 7, "2SF-EA Energy")
 
-@pytest.mark.smoke
-@using_cppe
+@using("cppe")
 def test_cppe():
     #! PE-SCF of PNA in presence of 6 water molecules
     #! Reference data from Q-Chem calculation
@@ -1296,9 +1235,6 @@ def test_cppe():
     O          9.55600       -0.11000       -3.46600
     H          7.74900        2.71100        2.65200
     H          8.99100        1.57500        2.99500
-    symmetry c1
-    no_reorient
-    no_com
     """)
 
     psi4.set_options({
@@ -1441,13 +1377,12 @@ EXCLISTS
         fp.write(potfile)
 
     scf_energy, wfn = psi4.energy('scf', return_wfn=True)
-    assert psi4.compare_values(ref_pe_energy, wfn.get_variable("PE ENERGY"), 6, "PE Energy contribution")
+    assert psi4.compare_values(ref_pe_energy, wfn.variable("PE ENERGY"), 6, "PE Energy contribution")
     assert psi4.compare_values(ref_scf_energy, scf_energy, 6, "Total PE-SCF Energy")
     psi4.core.print_variables()
 
 
-@pytest.mark.smoke
-@using_cct3
+@using("cct3")
 def test_cct3():
     import cct3
 
@@ -1494,7 +1429,7 @@ def test_cct3():
 
 
 @pytest.mark.smoke
-@using_psixas
+@using("psixas")
 def test_psixas():
     import psixas
 

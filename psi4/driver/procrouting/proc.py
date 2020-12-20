@@ -1276,6 +1276,35 @@ def scf_helper(name, post_scf=True, **kwargs):
     if ref_wfn is not None:
         raise ValidationError("Cannot seed an SCF calculation with a reference wavefunction ('ref_wfn' kwarg).")
 
+    # PCM needs to be run w/o symmetry
+    if core.get_option("SCF", "PCM"):
+        c1_molecule = scf_molecule.clone()
+        c1_molecule.reset_point_group('c1')
+        c1_molecule.update_geometry()
+
+        scf_molecule = c1_molecule
+        core.print_out("""  PCM does not make use of molecular symmetry: """
+                       """further calculations in C1 point group.\n""")
+
+    # PE needs to use exactly input orientation to correspond to potfile
+    if core.get_option("SCF", "PE"):
+        c1_molecule = scf_molecule.clone()
+        if getattr(scf_molecule, "_initial_cartesian", None) is not None:
+            c1_molecule._initial_cartesian = scf_molecule._initial_cartesian.clone()
+            c1_molecule.set_geometry(c1_molecule._initial_cartesian)
+            c1_molecule.reset_point_group("c1")
+            c1_molecule.fix_orientation(True)
+            c1_molecule.fix_com(True)
+            c1_molecule.update_geometry()
+        else:
+            raise ValidationError("Set no_com/no_reorient/symmetry c1 by hand for PE on non-Cartesian molecules.")
+
+        scf_molecule = c1_molecule
+        core.print_out("""  PE does not make use of molecular symmetry: """
+                       """further calculations in C1 point group.\n""")
+        core.print_out("""  PE geometry must align with POTFILE keyword: """
+                       """resetting coordinates with fixed origin and orientation.\n""")
+
     # SCF Banner data
     banner = kwargs.pop('banner', None)
     bannername = name
@@ -1521,17 +1550,11 @@ def scf_helper(name, post_scf=True, **kwargs):
         pcmsolver_parsed_fname = core.get_local_option('PCM', 'PCMSOLVER_PARSED_FNAME')
         pcm_print_level = core.get_option('SCF', "PRINT")
         scf_wfn.set_PCM(core.PCM(pcmsolver_parsed_fname, pcm_print_level, scf_wfn.basisset()))
-        core.print_out("""  PCM does not make use of molecular symmetry: """
-                       """further calculations in C1 point group.\n""")
-        use_c1 = True
 
     # PE preparation
     if core.get_option('SCF', 'PE'):
         if not solvent._have_pe:
             raise ModuleNotFoundError('Python module cppe not found. Solve by installing it: `conda install -c psi4 pycppe`')
-        use_c1 = True
-        core.print_out("""  PE does not make use of molecular symmetry: """
-                       """further calculations in C1 point group.\n""")
         # PE needs information about molecule and basis set
         pol_embed_options = solvent.pol_embed.get_pe_options()
         core.print_out(f""" Using potential file
