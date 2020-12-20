@@ -1,5 +1,5 @@
     if(${ENABLE_PCMSolver})
-    find_package(PCMSolver 1.3.1 CONFIG QUIET)
+    find_package(PCMSolver 1.2.1 CONFIG QUIET)
 
     if(${PCMSolver_FOUND})
         get_property(_loc TARGET PCMSolver::pcm PROPERTY LOCATION)
@@ -23,7 +23,7 @@
 
         ExternalProject_Add(pcmsolver_external
             #URL https://github.com/PCMSolver/pcmsolver/archive/v1.3.1.tar.gz
-            URL https://github.com/PCMSolver/pcmsolver/archive/master.tar.gz
+            URL https://github.com/loriab/pcmsolver/archive/v1211.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
