@@ -1097,7 +1097,7 @@ def test_resp():
     assert np.allclose(charges2[1], reference_charges2, atol=5e-4)
 
 @pytest.mark.smoke
-@using_resp
+@using("resp")
 def test_resp_2():
     import resp
     import numpy as np
@@ -1429,7 +1429,7 @@ def test_cct3():
 
 
 @pytest.mark.smoke
-@using_psixas
+@using("psixas")
 def test_psixas():
     import psixas
 
