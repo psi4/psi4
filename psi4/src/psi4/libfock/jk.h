@@ -1109,10 +1109,16 @@ class PSI_API MemDFJK : public JK {
 //
 //#endif
 
+/* A JK object related to the work of Florian Weigend doi.org/10.1039/B204199P
+ * which also includes recalculation of AO ERI terms for the case where they
+ * do not all fit in memory. Wariable names are inspired by his notation,
+ * and a detailed explanation of the algorithms can be found in the thesis
+ * of Joseph Senan O'Brien which is available upon request from the
+ * Georgia Tech library                                                       */
 class PSI_API DirectDFJK : public JK {
    protected:
     // uses pQq storage for integrals
-    bool pQq_ = true;
+    bool pQq_ = false;
     bool Qpq_ = !pQq_;
     bool Qpq_store_sparse_ = false;
     bool ao_sparse_ = true;
@@ -1165,7 +1171,7 @@ class PSI_API DirectDFJK : public JK {
     //     takes the place of nbf_ for sparse storage
     size_t sparse_fpf_ = 0;
 
-    // size of each block of x. In the rhf case, this vector will only
+    // size of each block of x^Q_{mi} = (Q|mi). In the rhf case, this vector will only
     //   have one element, but in the uhf case, we will have:
     //   x_slices_[0] is C_left_ao.ncols() &
     //   x_slices_[1] is C_right_ao.ncols()
@@ -1285,40 +1291,16 @@ class PSI_API DirectDFJK : public JK {
     void unprune_J(size_t& mu, double* raw_j, double* pruned_j);
     void prune_phi(size_t big_Mu, double* raw_phi, double* pruned_phi);
 
-    // Line  7 algorithm  8
-    void V_gets_AD(size_t stop, double* v, double* a, double* d);
-
-    // Line  7 algorithm 10
-    void F_gets_AD_pQq(size_t stop, double* f, double* a, double* d);
-
-    // Line  9 algorithm  8
-    void Accumulate_J(size_t stop, double* j, double* a, double* phi);
-    void Accumulate_J_pQq(size_t stop, double* j, double* a, double* phi);
-
-    void X_Block(char coul_work, bool compute_k, size_t block, double* ao_block, double* x, double* u,
+    void QMI_Block(char coul_work, bool compute_k, size_t block, double* ao_block, double* x, double* u,
                  double* coulomb_vector, std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
 
-    void X_Block_sparse(char coul_work, bool compute_k, size_t block, double* pruned_c, double* pruned_d,
+    void QMI_Block_sparse(char coul_work, bool compute_k, size_t block, double* pruned_c, double* pruned_d,
                         double* ao_block, double* x, double* u, double* coulomb_vector, double* pruned_j,
                         std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
 
-    void X_Block_mn_sparse_set_mP(bool with_contraction, bool compute_k, size_t block, double* pruned_c,
-                                  double* pruned_d, double* ao_block, double* x, double* u, double* coulomb_vector,
-                                  double* pruned_coulomb_vector, double* pruned_j, double* pruned_cm,
-                                  std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
+    void JK_build_pQq();
 
-    void X_Block_mn_mP_sparse(char coul_work, bool compute_k, size_t block, double* pruned_c, double* pruned_d,
-                              double* ao_block, double* x, double* u, double* coulomb_vector,
-                              double* pruned_coulomb_vector, double* pruned_j, double* pruned_cm,
-                              std::vector<std::shared_ptr<TwoBodyAOInt>> eri);
-
-    void pQp();
-
-    void pQp_sparse();
-
-    void pQp_mn_sparse_set_mP();
-
-    void pQp_mn_mP_sparse();
+    void JK_build_pQq_sparse();
 
     // prepares the Density matrix if C* == C
 

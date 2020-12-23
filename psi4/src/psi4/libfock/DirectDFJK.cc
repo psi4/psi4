@@ -184,13 +184,12 @@ void DirectDFJK::sparsity_prep_pQq() {
     size_t Shell_N_start;
     double val = 0.0;
 
-#pragma omp parallel for schedule(guided) num_threads(procs) private( \
-    Shell_M_count, Shell_M_start, Shell_N_count, Shell_N_start, val) reduction(max : global_max_int)
+//#pragma omp parallel for schedule(guided) num_threads(procs) private(Shell_M_count, Shell_M_start, Shell_N_count, Shell_N_start, val) reduction(max : global_max_int)
     for (size_t Shell_M = 0; Shell_M < p_shells_; Shell_M++) {
         int rank = 0;
-#ifdef _OPENMP
-        rank = omp_get_thread_num();
-#endif
+//#ifdef _OPENMP
+//        rank = omp_get_thread_num();
+//#endif
         Shell_M_start = primary_->shell(Shell_M).function_index();
         Shell_M_count = primary_->shell(Shell_M).nfunction();
         for (size_t Shell_N = 0; Shell_N < p_shells_; Shell_N++) {
@@ -236,21 +235,33 @@ void DirectDFJK::sparsity_prep_pQq() {
 // calculates a block of AO's then conducts the proper contractions to get them
 //   where they need to go. I don't think it makes sense to have separate J and
 //   K function calls as J and K are never fully built in a single function.
+/* Functions are named for the memory layout of the 3-index eri tensors. 
+ * Multiple functions are kept to save future programmers from having to write
+ * Pilot implementations
+ * In most cases, only the pQp_sparse function will run. This is due to
+ * the fact that it is the only one that takes advantage of Schwarz Screeining 
+ * and it performs best in testing. The BB variable controls whether or not
+ * the Coulomb Metric Contraction comes before the orbital coefficient
+ * contraction ("K1" in DiskDJK) */
 void DirectDFJK::compute_JK() {
     BB_ = false;
 
-    if (pQq_) {
+    if (pQq_) { /* No need for separate blocking and direct functions:
+                   Both are part of the same general case encoded      */
         if (ao_sparse_) {
-            pQp_sparse();
-        } else {
-            pQp();
+            JK_build_pQq_sparse(); 
+            } else {
+            JK_build_pQq();
         }
 
     } else {
+        prepare_Q_blocks();
         if (num_blocks_ == 1) {
-            build_jk_CC_Qpq_direct();
+            build_jk_CC_Qpq_direct(); /* No code for recomputing eri
+                                      terms that don't fit in memory */
         } else {
-            build_jk_CC_Qpq_blocks();
+            build_jk_CC_Qpq_blocks(); /* Has code for recomputing eri
+                                     terms that don't fit in memory */
         }
     }
 }
@@ -274,6 +285,12 @@ void DirectDFJK::our_needs() {
 
     for (int atom_iter = 0; atom_iter < mol_ptr->natom(); atom_iter++) charges_f += mol_ptr->fZ(atom_iter);
 
+    /* The fact that this code is necessary is a headache.
+     * The actual dimension of the SCF orbital coefficient matrix
+     * is unknown when this funciton is called, so half the number 
+     * of electrons in the molecule is used as a proxy. A separate
+     * function is used during the SCF iterations to determine
+     * the number of blocks over which AO ERI's need to be calculated */
     charges_f = charges_f / 2.0;
 
     charges_z = static_cast<size_t>(charges_f);
@@ -397,7 +414,7 @@ void DirectDFJK::get_met() {
 //    }
 }
 
-// called after sparsity_prep_pQq() which is called in the memory estimate
+// called after sparsity_prep_pQq() 
 // is called in the memory estimate because the maximum permissable
 // block size is needed for an effective memory estimate, and determining
 // that is equivalent to estimating the total amount of memory
@@ -419,6 +436,9 @@ void DirectDFJK::prepare_p_blocks() {
     // one of two things. Either nelectron/2 + 1 or C_left_ao->ncol()
     size_t charges_z;
 
+    /* Used because psi won't tell us the number of occupied orbitals until 
+     * the actual scf iterations, so we need to use this as a stand in.
+     * I'm not a huge fan either. */
     if (C_left_ao_.size() == 0) {
         // atomic charges float
         double charges_f;
@@ -465,7 +485,6 @@ void DirectDFJK::prepare_p_blocks() {
     }
 
     Shell_starts_.push_back(0);
-
     for (size_t shell_iter = 0; shell_iter < p_shells_; shell_iter++) {
         shell_funcs = primary_->shell(shell_iter).nfunction();
         // The 5 is where we're getting our fudge factor we're getting charges_z
@@ -525,20 +544,21 @@ void DirectDFJK::prepare_Q_blocks() {
 
     charges_z = static_cast<size_t>(charges_f);
     ++charges_z;
-
-    current_costs += 3 * sizeof(size_t) * nbf_ * nbf_;
-    current_costs += 2 * sizeof(double) * naux_ * naux_;
-    current_costs += 4 * sizeof(double) * nbf_ * nbf_;
-    current_costs += 4 * sizeof(double) * nbf_ * nbf_;
+    current_costs += 3 * nbf_ * nbf_;
+    current_costs += 2 * naux_ * naux_;
+    current_costs += 4 * nbf_ * nbf_;
+    current_costs += 4 * nbf_ * nbf_;
 
     size_t block_max = (free_memory_) / 2;
     size_t block_size = 0;
     size_t shell_funcs;
 
+    Shell_stops_.clear();
+    Shell_starts_.clear();
+    Block_funcs_.clear();
+
     Shell_starts_.push_back(0);
-
     biggest_block_ = 0;
-
     for (size_t shell_iter = 0; shell_iter < Q_shells_; shell_iter++) {
         shell_funcs = auxiliary_->shell(shell_iter).nfunction();
         if ((shell_funcs + block_size + 3) * nbf_ * (nbf_ + 2 * charges_z) > memory_ - current_costs) {
@@ -594,8 +614,7 @@ void DirectDFJK::compute_dense_AO_block_p_pQq(size_t shell, double* ao_block,
 //   however, in this code, we only need two because we only have one shell
 //   to compute in the slowest running index, so we're just going to write
 //   2 loops to accomodate that.
-#pragma omp parallel for schedule(guided) num_threads(procs) private(ShellP_count, ShellP_start, ShellN_count, \
-                                                                     ShellN_start, Shell_ind_0, Buff_ind_0, rank)
+#pragma omp parallel for schedule(guided) num_threads(procs) private(ShellP_count, ShellP_start, ShellN_count, ShellN_start, Shell_ind_0, Buff_ind_0, rank)
     for (size_t ShellP = 0; ShellP < Q_shells_; ShellP++) {
 #ifdef _OPENMP
         rank = omp_get_thread_num();
@@ -653,8 +672,7 @@ void DirectDFJK::compute_sparse_AO_block_p_pQq(size_t shell, double* ao_block,
 // We're building A_\mu P \nu
 
 // Loop over auxes
-#pragma omp parallel for schedule(guided) num_threads(procs) private(ShellP_start, ShellP_count, ShellN_start, \
-                                                                     ShellN_count, Shell_ind_0)
+#pragma omp parallel for schedule(guided) num_threads(procs) private(ShellP_start, ShellP_count, ShellN_start, ShellN_count, Shell_ind_0)
     for (size_t ShellP = 0; ShellP < Q_shells_; ShellP++) {
         int rank = 0;
 #ifdef _OPENMP
@@ -737,8 +755,7 @@ void DirectDFJK::compute_AO_block_Qpq(size_t start_Q, size_t stop_Q, double* ao_
 // We're building A^P_{\mu \nu}
 // Loop over auxes
 // timer_on("DDF AO_CONST");
-#pragma omp parallel for schedule(guided) num_threads(procs) private( \
-    ShellP_start, ShellP_count, ShellM_start, ShellM_count, ShellN_start, ShellN_count, Shell_ind_0)
+#pragma omp parallel for schedule(guided) num_threads(procs) private(ShellP_start, ShellP_count, ShellM_start, ShellM_count, ShellN_start, ShellN_count, Shell_ind_0)
     for (size_t ShellP = start_Q; ShellP <= stop_Q; ShellP++) {
         int rank = 0;
 #ifdef _OPENMP
@@ -778,6 +795,8 @@ void DirectDFJK::compute_AO_block_Qpq(size_t start_Q, size_t stop_Q, double* ao_
 }
 
 void DirectDFJK::build_jk_CC_Qpq_direct() {
+printf("Direct\n");
+
     int procs = 1;
 #ifdef _OPENMP
     procs = omp_nthread_;
@@ -803,17 +822,21 @@ void DirectDFJK::build_jk_CC_Qpq_direct() {
     double* met_m_1_0 = get_metric_power(-1.0);
     double* met_m_0_5 = get_metric_power(-0.5);
 
-    std::unique_ptr<double[]> A(new double[nbf_ * nbf_ * naux_]);
-    std::unique_ptr<double[]> B(new double[nbf_ * nbf_ * naux_]);
-    std::unique_ptr<double[]> U(new double[x_size_]);
-    std::unique_ptr<double[]> X(new double[x_size_]);
+    /* allocation for eri terms */
+    std::unique_ptr<double[]> AMN(new double[nbf_ * nbf_ * naux_]);
+    //std::unique_ptr<double[]> B(new double[nbf_ * nbf_ * naux_]);
+    std::unique_ptr<double[]> AMI(new double[x_size_]);
+    std::unique_ptr<double[]> QMI(new double[x_size_]);
     std::unique_ptr<double[]> V(new double[naux_]);
     std::unique_ptr<double[]> PHI(new double[naux_]);
 
-    double* a = A.get();
-    double* b = B.get();
-    double* u = U.get();
-    double* x = X.get();
+    /* AO ERI terms (A|mn) */
+    double* amn = AMN.get();
+    //double* b = B.get();
+    /* Contracted ERI terms (A|mi) = C_{ni}(A|mn) */
+    double* ami = AMI.get();
+    /* Contracted ERI terms (Q|mi) = [J^{-1/2}]_{mi} */
+    double* qmi = QMI.get();
     double* v = V.get();
     double* phi = PHI.get();
 
@@ -822,28 +845,25 @@ void DirectDFJK::build_jk_CC_Qpq_direct() {
 
     memset(j, 0, nbf_ * nbf_ * sizeof(double));
     memset(k, 0, nbf_ * nbf_ * sizeof(double));
+    memset(v, 0, naux_ * sizeof(double) );
+    memset(qmi, 0, x_size_ * sizeof(double) );
 
     // x_slice_.push_back(nbf_*C_left_ao_[0]->ncol());
 
     size_t nbf_squared = nbf_ * nbf_;
 
-    for (size_t x_iter = 0; x_iter < x_size_; x_iter++) {
-        x[x_iter] = 0.0;
-    }
-
-    // We'll be accumulating into both these vectors. Make them zero.
-    for (size_t phi_v_iter = 0; phi_v_iter < naux_; phi_v_iter++) {
-        phi[phi_v_iter] = 0.0;
-        v[phi_v_iter] = 0.0;
-    }
+//    for (size_t x_iter = 0; x_iter < x_size_; x_iter++) {
+//        qmi[x_iter] = 0.0;
+//    }
 
     timer_on("DDF Qpq AO Construction");
-    compute_AO_block_Qpq(Shell_starts_[0], Shell_stops_[0], a, eri);
+    compute_AO_block_Qpq(Shell_starts_[0], Shell_stops_[0], amn, eri);
     timer_off("DDF Qpq AO Construction");
 
     // timer_on("Tensor Contractions");
 
-    /* this is the BB formulation of J: J = BBD
+ /* // this is the BB formulation of J: J = BBD
+  * //  keep it here to save someone writing their own pilate implementations
     timer_on("DDF Qpq Metric Contraction");
             C_DGEMM( 'N', 'N', naux_, nbf_*nbf_, naux_, 1.0, met_m_0_5, naux_, a, nbf_*nbf_, 0.0, b, nbf_*nbf_);
     timer_off("DDF Qpq Metric Contraction");
@@ -864,15 +884,23 @@ void DirectDFJK::build_jk_CC_Qpq_direct() {
     //changed a to b. changed a to b. changed a to b. changed a to b.
     */
 
+    /* cmpq_invp
+       c oulomb
+       m etric
+       pq indexing variables
+       _
+       inv erse
+       p ointer */
     double* cmpq_invp = &CMPQ_inv_.front();
     int* pert = &PERMUTE_.front();
 
-    //	V_gets_AD( naux_, v + in_block_off, a, d);
+    // density contraction V^A = (A|mn)D_{mn}
     timer_on("DDF Qpq J1");
-    C_DGEMV('N', (int)naux_, (int)nbf_squared, 1.0, a, (int)nbf_squared, d, 1, 0.0, v, 1);
+    C_DGEMV('N', (int)naux_, (int)nbf_squared, 1.0, amn, (int)nbf_squared, d, 1, 0.0, v, 1);
     timer_off("DDF Qpq J1");
 
-    // PHI /gets \cmpq V
+    //metric inverse for coulomb matrix contraction PHI /gets \cmpq V
+    // P^{Q} = (A|Q) V^A
     C_DGEMV('T', (int)naux_, (int)naux_, 1.0, met_m_1_0, (int)naux_, v, 1, 0.0, phi, 1);
     // C_DGETRS( 'N', naux_, 1, cmpq_invp, naux_, pert, v, naux_);
 
@@ -880,38 +908,35 @@ void DirectDFJK::build_jk_CC_Qpq_direct() {
 
     // C_DCOPY(naux_, v, 1, phi, 1);
 
-    //	Accumulate_J( Block_funcs_[0] , j, a, phi);
-    // Accumulate_J
     timer_on("DDF Qpq J2");
-    C_DGEMV('T', (int)naux_, (int)nbf_squared, 1.0, a, (int)nbf_squared, phi, 1, 0.0, j, 1);
+    C_DGEMV('T', (int)naux_, (int)nbf_squared, 1.0, amn, (int)nbf_squared, phi, 1, 0.0, j, 1);
     timer_off("DDF Qpq J2");
-    //	U_gets_AC(Block_funcs_[0], static_cast<size_t>(C_left_ao_[0]->ncol()), u, a, c);
-    // Form U by flattening out U over the auxiliary basis.
 
+    // (A|mi) = (A|mn)C_{ni}
     timer_on("DDF Qpq K1");
-    C_DGEMM('N', 'N', (int)(nbf_ * naux_), C_left_ao_[0]->ncol(), (int)nbf_, 1.0, a, (int)nbf_, c,
-            C_left_ao_[0]->ncol(), 0.0, u, C_left_ao_[0]->ncol());
+    C_DGEMM('N', 'N', (int)(nbf_ * naux_), C_left_ao_[0]->ncol(), (int)nbf_, 1.0, amn, (int)nbf_, c,
+            C_left_ao_[0]->ncol(), 0.0, ami, C_left_ao_[0]->ncol());
     timer_off("DDF Qpq K1");
 
-    //	X_accumulates_JU(Block_funcs_[0], Block_funcs_[0], x_slice_[0], ou_block_off, in_block_off,
-    //static_cast<size_t>(C_left_ao_[0]->ncol()), x, met_m_0_5, u );
-    // Form x by flattening out U along the auxiliary basis and transposing
-    // to contract over the auxiliary basis set.
+    // (Q|mi) = (Q|A)(A|mi)
     timer_on("DDF Qpq Metric Contraction");
-    C_DGEMM('N', 'N', (int)naux_, ((int)nbf_) * C_left_ao_[0]->ncol(), (int)naux_, 1.0, met_m_0_5, (int)naux_, u,
-            ((int)nbf_) * C_left_ao_[0]->ncol(), 0.0, x, ((int)nbf_) * C_left_ao_[0]->ncol());
+    C_DGEMM('N', 'N', (int)naux_, ((int)nbf_) * C_left_ao_[0]->ncol(), (int)naux_, 1.0, met_m_0_5, (int)naux_, ami,
+            ((int)nbf_) * C_left_ao_[0]->ncol(), 0.0, qmi, ((int)nbf_) * C_left_ao_[0]->ncol());
     timer_off("DDF Qpq Metric Contraction");
 
     //	Accumulate_K_c_is_c(Block_funcs_[0], x_slice_[0], static_cast<size_t>(C_left_ao_[0]->ncol()), k, x);
+    /* Keep to avoid rewriting a pilot implementation. */
     // timer_on("DDF Qpq K2");
     //	C_DGEMM( 'N', 'T', (int) nbf_, (int) nbf_, ((int) naux_) * C_left_ao_[0]->ncol(), 1.0, x, ((int) naux_) *
     //C_left_ao_[0]->ncol(), x, ((int) naux_) * C_left_ao_[0]->ncol()  , 0.0, k, (int) nbf_);
     // timer_off("DDF Qpq K2");
 
+
+    // K_{mn} = (Q|mi)(Q|ni)
     timer_on("DDF Qpq K2");
     for (size_t R_it = 0; R_it < naux_; R_it++) {
-        C_DGEMM('N', 'T', nbf_, nbf_, C_left_ao_[0]->ncol(), 1.0, x + R_it * nbf_ * C_left_ao_[0]->ncol(),
-                C_left_ao_[0]->ncol(), x + R_it * nbf_ * C_left_ao_[0]->ncol(), C_left_ao_[0]->ncol(), 1.0, k, nbf_);
+        C_DGEMM('N', 'T', nbf_, nbf_, C_left_ao_[0]->ncol(), 1.0, qmi + R_it * nbf_ * C_left_ao_[0]->ncol(),
+                C_left_ao_[0]->ncol(), qmi + R_it * nbf_ * C_left_ao_[0]->ncol(), C_left_ao_[0]->ncol(), 1.0, k, nbf_);
     }
     timer_off("DDF Qpq K2");
 
@@ -923,7 +948,10 @@ void DirectDFJK::build_jk_CC_Qpq_direct() {
     // x_slice_.erase(x_slice_.begin(), x_slice_.end() );
 }
 
+/* same as the above function, but it works in the case where more 
+ * eri's must be calculated than fit in memory */
 void DirectDFJK::build_jk_CC_Qpq_blocks() {
+prepare_Q_blocks();
     int procs = 1;
 #ifdef _OPENMP
     procs = omp_nthread_;
@@ -949,32 +977,29 @@ void DirectDFJK::build_jk_CC_Qpq_blocks() {
     double* met_m_1_0 = get_metric_power(-1.0);
     double* met_m_0_5 = get_metric_power(-0.5);
 
-    std::unique_ptr<double[]> HCMT(new double[naux_ * naux_]);
-
-    double* met_m_0_5_T = HCMT.get();
-
-    for (size_t ni = 0; ni < naux_; ni++) {
-        for (size_t nj = 0; nj < naux_; nj++) {
-            met_m_0_5_T[ni * naux_ + nj] = met_m_0_5[nj * naux_ + ni];
-        }
-    }
-
-    std::unique_ptr<double[]> A(new double[biggest_block_]);
-    std::unique_ptr<double[]> U(new double[x_size_]);
-    std::unique_ptr<double[]> X(new double[x_size_]);
+    /* Storage allocation for eri terms */
+    /* AO ERI terms (A|mn) */
+    std::unique_ptr<double[]> AMN(new double[biggest_block_]);
+    /* Contracted ERI terms (A|mi) = (A|mn)C_{ni} */
+    std::unique_ptr<double[]> AMI(new double[x_size_]);
+    /* Doubly Contracted ERI terms (Q|mi) = [J^{-1/2}]_{QA}(A|mi) */
+    std::unique_ptr<double[]> QMI(new double[x_size_]);
+    /* V^A = (A|mn)D_{mn} */
     std::unique_ptr<double[]> V(new double[naux_]);
-    std::unique_ptr<double[]> PHI(new double[naux_]);
 
-    double* a = A.get();
-    double* u = U.get();
-    double* x = X.get();
+    /* Pointers to access eri terms*/
+    double* amn = AMN.get();
+    double* ami = AMI.get();
+    double* qmi = QMI.get();
     double* v = V.get();
-    double* phi = PHI.get();
 
     double* j = J_ao_[0]->pointer(0)[0];
     double* k = K_ao_[0]->pointer(0)[0];
 
-    for (size_t jk_iter = 0; jk_iter < nbf_ * nbf_; jk_iter++) j[0] = k[0] = 0.0;
+    memset(j, 0, nbf_ * nbf_ * sizeof(double));
+    memset(k, 0, nbf_ * nbf_ * sizeof(double));
+    memset(v, 0, naux_ * sizeof(double) );
+    memset(qmi, 0, x_size_ * sizeof(double) );
 
     x_slice_.push_back(nbf_ * C_left_ao_[0]->ncol());
 
@@ -984,74 +1009,72 @@ void DirectDFJK::build_jk_CC_Qpq_blocks() {
 
     size_t nbf_squared = nbf_ * nbf_;
 
-    for (size_t phi_v_iter = 0; phi_v_iter < naux_; phi_v_iter++) {
-        phi[phi_v_iter] = 0.0;
-        v[phi_v_iter] = 0.0;
-    }
+    double* metp = &CMPQ_LU_.front();
+    int* pert = &PERMUTE_.front();
 
     for (size_t block_iter_ou = 0; block_iter_ou < num_blocks_; block_iter_ou++) {
         // there should be a blas call for this
         for (size_t x_iter = 0; x_iter < x_size_; x_iter++) {
-            x[x_iter] = 0.0;
+            qmi[x_iter] = 0.0;
         }
         in_block_off = 0;
         if (block_iter_ou == 1) {
-            C_DGEMV('N', naux_, naux_, 1.0, met_m_1_0, naux_, v, 1, 0.0, phi, 1);
+            // Metric contraction for Coulomb matrix
+            C_DGETRS('N', naux_, 1, metp, naux_, pert, v, naux_);
         }
         for (size_t block_iter_in = 0; block_iter_in < num_blocks_; block_iter_in++) {
             timer_on("DDF Qpq AO Construction");
-            compute_AO_block_Qpq(Shell_starts_[block_iter_in], Shell_stops_[block_iter_in], a, eri);
+            //construct terms (A|mn)
+            compute_AO_block_Qpq(Shell_starts_[block_iter_in], Shell_stops_[block_iter_in], amn, eri);
             timer_off("DDF Qpq AO Construction");
             if (block_iter_ou == 0) {
-                //				V_gets_AD( Block_funcs_[block_iter_in], v + in_block_off, a, d);// +
-                //v_phi_add);
                 timer_on("DDF Qpq J1");
-                C_DGEMV('N', Block_funcs_[block_iter_in], nbf_squared, 1.0, a, nbf_squared, d, 1, 0.0, v + in_block_off,
+                // V^A = (A|mn) D_{mn}
+                C_DGEMV('N', Block_funcs_[block_iter_in], nbf_squared, 1.0, amn, nbf_squared, d, 1, 0.0, v + in_block_off,
                         1);
-                timer_on("DDF Qpq J1");
+                timer_off("DDF Qpq J1");
             }
             if (block_iter_ou == 1) {
-                //				Accumulate_J( Block_funcs_[block_iter_in] , j, a, phi + in_block_off);
                 timer_on("DDF Qpq J2");
-                C_DGEMV('T', Block_funcs_[block_iter_in], nbf_squared, 1.0, a, nbf_squared, phi + in_block_off, 1, 1.0,
+                // J_{mn} = P^Q (Q|mn)
+                C_DGEMV('T', Block_funcs_[block_iter_in], nbf_squared, 1.0, amn, nbf_squared, v + in_block_off, 1, 1.0,
                         j, 1);
                 timer_off("DDF Qpq J2");
             }
             // timer_on("Tensor Contractions");
             timer_on("DDF Qpq K1");
-            //			U_gets_AC(Block_funcs_[block_iter_in], static_cast<size_t>(C_left_ao_[0]->ncol()), u, a,
-            //c);
-            C_DGEMM('N', 'N', Block_funcs_[block_iter_in] * nbf_, C_left_ao_[0]->ncol(), nbf_, 1.0, a, nbf_, c,
-                    C_left_ao_[0]->ncol(), 0.0, u, C_left_ao_[0]->ncol());
+            // (A|mi) = (A|mn) C_{ni}
+            C_DGEMM('N', 'N', Block_funcs_[block_iter_in] * nbf_, C_left_ao_[0]->ncol(), nbf_, 1.0, amn, nbf_, c,
+                    C_left_ao_[0]->ncol(), 0.0, ami, C_left_ao_[0]->ncol());
             timer_off("DDF Qpq K1");
-            //			X_accumulates_JU(Block_funcs_[block_iter_ou], Block_funcs_[block_iter_in], x_slice_[0],
-            //ou_block_off, in_block_off, static_cast<size_t>(C_left_ao_[0]->ncol()), x, met_m_0_5, u );
             timer_on("DDF Qpq Metric Contraction");
+            // (Q|mi) =  [J^{-1/2}]_{QA}(A|mi)
             C_DGEMM('T', 'N', nbf_ * C_left_ao_[0]->ncol(), Block_funcs_[block_iter_ou], Block_funcs_[block_iter_in],
-                    1.0, u, nbf_ * C_left_ao_[0]->ncol(), met_m_0_5 + (in_block_off * naux_) + ou_block_off, naux_, 1.0,
-                    x, Block_funcs_[block_iter_ou]);
+                    1.0, ami, nbf_ * C_left_ao_[0]->ncol(), met_m_0_5 + (in_block_off * naux_) + ou_block_off, naux_, 1.0,
+                    qmi, Block_funcs_[block_iter_ou]);
             timer_off("DDF Qpq Metric Contraction");
             in_block_off += Block_funcs_[block_iter_in];
             // timer_off("Tensor Contractions");
         }
         // timer_on("Tensor Contractions");
         timer_on("DDF Qpq K2");
-        C_DGEMM('N', 'T', nbf_, nbf_, Block_funcs_[block_iter_ou] * C_left_ao_[0]->ncol(), 1.0, x,
-                Block_funcs_[block_iter_ou] * C_left_ao_[0]->ncol(), x,
+        // K_{mn} = (Q|mi)(Q|ni)
+        C_DGEMM('N', 'T', nbf_, nbf_, Block_funcs_[block_iter_ou] * C_left_ao_[0]->ncol(), 1.0, qmi,
+                Block_funcs_[block_iter_ou] * C_left_ao_[0]->ncol(), qmi,
                 Block_funcs_[block_iter_ou] * C_left_ao_[0]->ncol(), 1.0, k, nbf_);
         timer_off("DDF Qpq K2");
         // timer_off("Tensor Contractions");
-        //		Accumulate_K_c_is_c(Block_funcs_[block_iter_ou], x_slice_[0],
-        //static_cast<size_t>(C_left_ao_[0]->ncol()), k, x);
         ou_block_off += Block_funcs_[block_iter_ou];
         //		x_block = x_block + Block_funcs[block_iter_ou] * x_slice_[0];
     }
-    // J_ao_[0]->save("/theoryfs2/ds/obrien/Debug/Psi4/directdfjk_J.txt", false, false, true);
-    // K_ao_[0]->save("/theoryfs2/ds/obrien/Debug/Psi4/directdfjk_K.txt", false, false, true);
-    x_slice_.erase(x_slice_.begin(), x_slice_.end());
+    x_slice_.clear();
 }
 
-void DirectDFJK::pQp() {
+/* Similar to the function below except that schwarz screening is not included
+ * This code is useful for benchmarking as there is a significant amount
+ * of overhead involved with spatial sparsity, and it may be useful to measure
+ * the cost and loss of accuracy on a given architecture */
+void DirectDFJK::JK_build_pQq() {
     // In principle, this function call should be in preiterations or in
     //   memory estimator. However, it depends on knowing the memory_
     //   value from input which precludes its calling in either of those
@@ -1081,29 +1104,34 @@ void DirectDFJK::pQp() {
     double* j = J_ao_[0]->pointer(0)[0];
     double* k = K_ao_[0]->pointer(0)[0];
 
-    std::unique_ptr<double[]> A(new double[biggest_shell_ * naux_ * nbf_]);
-    std::unique_ptr<double[]> U(new double[1U]);
-    if (BB_) {
-        U.reset(new double[biggest_shell_ * naux_ * nbf_]);
+    /* Allocation of memory for eri terms */
+    /* Eri terms (A|mn) */
+    std::unique_ptr<double[]> AMN(new double[biggest_shell_ * naux_ * nbf_]);
+    /* Eri terms (A|mi) = (A|mn)C_{ni} */
+    std::unique_ptr<double[]> AMI(new double[1U]);
+    if (BB_) { /* As mentioned earlier, Coulomb Metric ordering. BB_ is 
+                * false by default */
+        AMI.reset(new double[biggest_shell_ * naux_ * nbf_]);
     } else {
-        U.reset(new double[biggest_shell_ * naux_ * nocc]);
+        AMI.reset(new double[biggest_shell_ * naux_ * nocc]);
     }
-    std::unique_ptr<double[]> XN(new double[biggest_block_ / nbf_ * nocc]);
-    std::unique_ptr<double[]> XO(new double[biggest_block_ / nbf_ * nocc]);
+    /* Look at comments in DirectDFJK::pQp_sparse to see the reason why there
+     * are two of these */
+    /* Doubly contracted terms (Q|mi) = [J^{-1/2}]_{QA}(A|mi) 
+     * The reason for having two blocks of memory is described in 
+     * DirectDFJK::pQp_sparse() and in JSOB thesis (see header) */
+    std::unique_ptr<double[]> QMI_NEW(new double[biggest_block_ / nbf_ * nocc]);
+    std::unique_ptr<double[]> QMI_OLD(new double[biggest_block_ / nbf_ * nocc]);
     std::unique_ptr<double[]> V(new double[naux_]);
 
-    double* a = A.get();
-    double* u = U.get();
-    double* xn = XN.get();
-    double* xo = XO.get();
-    double* xh;
+    /* Access pointers to eri arrays */
+    double* amn = AMN.get();
+    double* ami = AMI.get();
+    double* qmi_new = QMI_NEW.get();
+    double* qmi_old = QMI_OLD.get();
+    double* qmi_hold;
     double* v = V.get();
-    double Zero = 0.0;
-    double* zero = &Zero;
 
-    // C_DCOPY( nbf_*nbf_, zero, 0, j, 1);
-    // C_DCOPY( nbf_*nbf_, zero, 0, k, 1);
-    // C_DCOPY(naux_, zero, 0, v, 1);
     memset(j, 0, nbf_ * nbf_ * 8);
     memset(k, 0, nbf_ * nbf_ * 8);
     memset(v, 0, naux_ * 8);
@@ -1111,58 +1139,60 @@ void DirectDFJK::pQp() {
     // for (size_t i = 0; i < naux_; i++) { v[i] = 0.0;}
     char first_char = (num_blocks_ == 1 ? 'B' : 'V');
 
-    size_t xo_ind = 0U;
-    size_t xn_ind;
+    size_t qmi_old_ind = 0U;
+    size_t qmi_new_ind;
 
-    X_Block(first_char, true, 0, a, xo, u, v, eri);
+    QMI_Block(first_char, true, 0, amn, qmi_old, ami, v, eri);
     timer_on("DDF pQq K2");
-    C_DGEMM('N', 'T', Block_funcs_[0], Block_funcs_[0], naux_ * nocc, 1.0, xo, naux_ * nocc, xo, naux_ * nocc, 1.0, k,
+    C_DGEMM('N', 'T', Block_funcs_[0], Block_funcs_[0], naux_ * nocc, 1.0, qmi_old, naux_ * nocc, qmi_old, naux_ * nocc, 1.0, k,
             nbf_);
     timer_off("DDF pQq K2");
+    /* x stands for (Q|mi) = qmi to shorten the iterating variable names */
+    /* explanation of loops in the pQp_sparse codes. */
     for (size_t xo_iter = 0; xo_iter < num_blocks_ - 1; xo_iter++) {
         for (size_t xn_iter = 1; xn_iter < num_blocks_ - xo_iter; xn_iter++) {
             if (xo_iter == 0 && xn_iter != num_blocks_ - 1) {
-                X_Block('V', true, xn_iter, a, xn, u, v, eri);
-                xn_ind = xn_iter;
+                QMI_Block('V', true, xn_iter, amn, qmi_new, ami, v, eri);
+                qmi_new_ind = xn_iter;
                 timer_on("DDF pQq K2");
-                C_DGEMM('N', 'T', Block_funcs_[xn_ind], Block_funcs_[xn_ind], naux_ * nocc, 1.0, xn, naux_ * nocc, xn,
-                        naux_ * nocc, 1.0, k + k_disps_[xn_ind][xn_ind], nbf_);
+                C_DGEMM('N', 'T', Block_funcs_[qmi_new_ind], Block_funcs_[qmi_new_ind], naux_ * nocc, 1.0, qmi_new, naux_ * nocc, qmi_new,
+                        naux_ * nocc, 1.0, k + k_disps_[qmi_new_ind][qmi_new_ind], nbf_);
                 timer_off("DDF pQq K2");
                 timer_on("DDF pQq K2");
-                C_DGEMM('N', 'T', Block_funcs_[xo_ind], Block_funcs_[xn_ind], naux_ * nocc, 1.0, xo, naux_ * nocc, xn,
-                        naux_ * nocc, 1.0, k + k_disps_[xo_ind][xn_ind], nbf_);
+                C_DGEMM('N', 'T', Block_funcs_[qmi_old_ind], Block_funcs_[qmi_new_ind], naux_ * nocc, 1.0, qmi_old, naux_ * nocc, qmi_new,
+                        naux_ * nocc, 1.0, k + k_disps_[qmi_old_ind][qmi_new_ind], nbf_);
                 timer_off("DDF pQq K2");
             } else if (xo_iter == 0 && xn_iter == num_blocks_ - 1) {
-                X_Block('B', true, xn_iter, a, xn, u, v, eri);
-                xn_ind = xn_iter;
+                QMI_Block('B', true, xn_iter, amn, qmi_new, ami, v, eri);
+                qmi_new_ind = xn_iter;
                 timer_on("DDF pQq K2");
-                C_DGEMM('N', 'T', Block_funcs_[xn_ind], Block_funcs_[xn_ind], naux_ * nocc, 1.0, xn, naux_ * nocc, xn,
-                        naux_ * nocc, 1.0, k + k_disps_[xn_ind][xn_ind], nbf_);
+                C_DGEMM('N', 'T', Block_funcs_[qmi_new_ind], Block_funcs_[qmi_new_ind], naux_ * nocc, 1.0, qmi_new, naux_ * nocc, qmi_new,
+                        naux_ * nocc, 1.0, k + k_disps_[qmi_new_ind][qmi_new_ind], nbf_);
                 timer_off("DDF pQq K2");
                 timer_on("DDF pQq K2");
-                C_DGEMM('N', 'T', Block_funcs_[xo_ind], Block_funcs_[xn_ind], naux_ * nocc, 1.0, xo, naux_ * nocc, xn,
-                        naux_ * nocc, 1.0, k + k_disps_[xo_ind][xn_ind], nbf_);
+                C_DGEMM('N', 'T', Block_funcs_[qmi_old_ind], Block_funcs_[qmi_new_ind], naux_ * nocc, 1.0, qmi_old, naux_ * nocc, qmi_new,
+                        naux_ * nocc, 1.0, k + k_disps_[qmi_old_ind][qmi_new_ind], nbf_);
                 timer_off("DDF pQq K2");
             } else if (xo_iter == 1) {
-                X_Block('P', true, xn_iter, a, xn, u, v, eri);
-                xn_ind = xn_iter;
+                QMI_Block('P', true, xn_iter, amn, qmi_new, ami, v, eri);
+                qmi_new_ind = xn_iter;
                 timer_on("DDF pQq K2");
-                C_DGEMM('N', 'T', Block_funcs_[xn_ind], Block_funcs_[xo_ind], naux_ * nocc, 1.0, xn, naux_ * nocc, xo,
-                        naux_ * nocc, 1.0, k + k_disps_[xn_ind][xo_ind], nbf_);
+                C_DGEMM('N', 'T', Block_funcs_[qmi_new_ind], Block_funcs_[qmi_old_ind], naux_ * nocc, 1.0, qmi_new, naux_ * nocc, qmi_old,
+                        naux_ * nocc, 1.0, k + k_disps_[qmi_new_ind][qmi_old_ind], nbf_);
                 timer_off("DDF pQq K2");
             } else {
-                X_Block('N', true, xn_iter, a, xn, u, nullptr, eri);
-                xn_ind = xn_iter;
+                QMI_Block('N', true, xn_iter, amn, qmi_new, ami, nullptr, eri);
+                qmi_new_ind = xn_iter;
                 timer_on("DDF pQq K2");
-                C_DGEMM('N', 'T', Block_funcs_[xn_ind], Block_funcs_[xo_ind], naux_ * nocc, 1.0, xn, naux_ * nocc, xo,
-                        naux_ * nocc, 0.0, k + k_disps_[xn_ind][xo_ind], nbf_);
+                C_DGEMM('N', 'T', Block_funcs_[qmi_new_ind], Block_funcs_[qmi_old_ind], naux_ * nocc, 1.0, qmi_new, naux_ * nocc, qmi_old,
+                        naux_ * nocc, 0.0, k + k_disps_[qmi_new_ind][qmi_old_ind], nbf_);
                 timer_off("DDF pQq K2");
             }
         }
-        xh = xn;
-        xn = xo;  // XO.get();
-        xo = xh;  // XN.get();
-        xo_ind = xn_ind;
+        qmi_hold = qmi_new;
+        qmi_new = qmi_old;  // XO.get();
+        qmi_old = qmi_hold;  // XN.get();
+        qmi_old_ind = qmi_new_ind;
     }
     for (size_t kf_i = 0; kf_i < nbf_; kf_i++) {
         for (size_t kf_j = 0; kf_j < kf_i; kf_j++) {
@@ -1171,11 +1201,11 @@ void DirectDFJK::pQp() {
     }
 
     if (first_char != 'B') {
-        X_Block('P', false, 0, a, nullptr, u, v, eri);
+        QMI_Block('P', false, 0, amn, nullptr, ami, v, eri);
     }
 }
 
-void DirectDFJK::pQp_sparse() {
+void DirectDFJK::JK_build_pQq_sparse() {
     // In principle, this function call should be in preiterations or in
     //   memory estimator. However, it depends on knowing the memory_
     //   value from input which precludes its calling in either of those
@@ -1205,88 +1235,136 @@ void DirectDFJK::pQp_sparse() {
     double* j = J_ao_[0]->pointer(0)[0];
     double* k = K_ao_[0]->pointer(0)[0];
 
-    std::unique_ptr<double[]> A(new double[biggest_shell_ * naux_ * nbf_]);
-    std::unique_ptr<double[]> U(new double[biggest_shell_ * naux_ * nocc]);
-    std::unique_ptr<double[]> XN(new double[biggest_block_ / nbf_ * nocc]);
-    std::unique_ptr<double[]> XO(new double[biggest_block_ / nbf_ * nocc]);
+    /* Choices of variable letters below from 
+       doi.org/10.1039/B204199P */
+    /* Allocation for holding uncontracted eri terms (A|mn) */
+    std::unique_ptr<double[]> AMN(new double[biggest_shell_ * naux_ * nbf_]);
+    /* Allocation for holding contracted eri terms (A|mi) = C_{ n i}(A|m n) */
+    std::unique_ptr<double[]> AMI(new double[biggest_shell_ * naux_ * nocc]);
+    /* Allocation for holding one block of doubly contracted integrals
+       (Q|mi) = C_{mi}(A|mn)[J^{-1/2}]_{AQ} */
+    std::unique_ptr<double[]> QMI_NEW(new double[biggest_block_ / nbf_ * nocc]);
+    /* Allocation for retaining another block of doubly contracted integrals
+       (Q|mi) = C_{mi}(A|mn)[J^{-1/2}]_{AQ} */
+    std::unique_ptr<double[]> QMI_OLD(new double[biggest_block_ / nbf_ * nocc]);
+    /* Allocation for holding terms for constructing the coulomb matrix */
     std::unique_ptr<double[]> V(new double[naux_]);
 
-    double* a = A.get();
-    double* u = U.get();
-    double* xn = XN.get();
-    double* xo = XO.get();
-    double* xh;
+    /* Pointer to uncontracted eri terms (A|mn) */
+    double* amn = AMN.get();
+    /* Pointer to contracted eri terms (A|mi) = C_{ n i}(A|m n) */
+    double* ami = AMI.get();
+    /* Pointer to one block of doubly contracted integrals
+       (Q|mi) = C_{mi}(A|mn)[J^{-1/2}]_{AQ} */
+    double* qmi_new = QMI_NEW.get();
+    /* Pointer to another block of doubly contracted integrals
+       (Q|mi) = C_{mi}(A|mn)[J^{-1/2}]_{AQ} */
+    double* qmi_old = QMI_OLD.get();
+    /* Pointer used for swapping addresses */
+    double* qmi_hold;
     double* v = V.get();
-    double Zero = 0.0;
-    double* zero = &Zero;
 
+    /* containers for temporary storage of data shaped for sparsity */
     std::unique_ptr<double[]> P_C(new double[nbf_ * nocc]);
     std::unique_ptr<double[]> P_D(new double[nbf_]);
     std::unique_ptr<double[]> P_J(new double[nbf_]);
 
+    /* pointers to temperary storage for data shaped for sparsity */
     double* pruned_c = P_C.get();
     double* pruned_d = P_D.get();
     double* pruned_j = P_J.get();
 
-    // C_DCOPY( nbf_*nbf_, zero, 0, j, 1);
-    // C_DCOPY( nbf_*nbf_, zero, 0, k, 1);
-    // C_DCOPY(naux_, zero, 0, v, 1);
+    /* zeroing out terms that will be accumulated into */
     memset(j, 0, nbf_ * nbf_ * 8);
     memset(k, 0, nbf_ * nbf_ * 8);
     memset(v, 0, naux_ * 8);
-    // for (size_t i = 0; i < naux_; i++) { v[i] = 0.0;}
     char first_char = (num_blocks_ == 1 ? 'B' : 'V');
 
-    size_t xo_ind = 0U;
-    size_t xn_ind;
+    /* variables to track which block of eri's each pointer holds*/
+    size_t qmi_old_ind = 0U;
+    size_t qmi_new_ind;
 
     outfile->Printf("num_blocks_ is %zu\n", num_blocks_);
 
-    X_Block_sparse(first_char, true, 0UL, pruned_c, pruned_d, a, xo, u, v, pruned_j, eri);
+    /* See comments below regarding X_Block */
+    QMI_Block_sparse(first_char, true, 0UL, pruned_c, pruned_d, amn, qmi_old, ami, v, pruned_j, eri);
     timer_on("DDF pQq big K DGEMM");
-    C_DGEMM('N', 'T', Block_funcs_[0], Block_funcs_[0], naux_ * nocc, 1.0, xo, naux_ * nocc, xo, naux_ * nocc, 1.0, k,
+    C_DGEMM('N', 'T', Block_funcs_[0], Block_funcs_[0], naux_ * nocc, 1.0, qmi_old, naux_ * nocc, qmi_old, naux_ * nocc, 1.0, k,
             nbf_);
     timer_off("DDF pQq big K DGEMM");
-    for (size_t xo_iter = 0; xo_iter < num_blocks_ - 1; xo_iter++) {
-        for (size_t xn_iter = 1; xn_iter < num_blocks_ - xo_iter; xn_iter++) {
-            if (xo_iter == 0 && xn_iter != num_blocks_ - 1) {
-                X_Block_sparse('V', true, xn_iter, pruned_c, pruned_d, a, xn, u, v, pruned_j, eri);
-                xn_ind = xn_iter;
+    /* Loop over blocks of exchange matrix construction. The blocking scheme 
+       is over blocks (A| [m]_i n) where [m]_i is the i^th block over the 
+       primary basis set. The exchange matrix will be constructed as 
+       
+       old_iter = 0
+       x o o o  before loop
+       x x o o  new_iter = 1
+       x o x o  new_iter = 2
+       x o o x  new_iter = 3
+
+       old_iter = 1          old_iter = 2
+       x o o o               x o o o
+       x x o o               x x o o
+       x o x o               x x x o
+       x x x x               x x x x
+         1 2<----new_iter      1<------new_iter
+
+       final: copy lower to upper
+       Legend x: constructed o: empty
+
+       Details can be found by requesting
+       Joseph Senan O'Brien thesis from the Georgia Tech Library
+       In that document (Q|mi) <--> X^Q_{\mu a}
+    */
+    for (size_t old_iter = 0; old_iter < num_blocks_ - 1; old_iter++) {
+        for (size_t new_iter = 1; new_iter < num_blocks_ - old_iter; new_iter++) {
+            if (old_iter == 0 && new_iter != num_blocks_ - 1) {
+    /* QMI_Block: function  to: 
+       construct integrals (A|mn)
+       contract integrals  (A|mi)  = C_{ni}(A|mn)
+       contract integrals  V^{A}  += (Q|mn) D_{mn}
+       solve               F^P     = (P|Q)^{-1}V^A
+       contract integrals  (Q|mi)  = [J^{-1/2}]_{QA} (A|mi) 
+       contract integrals  J_{mn} += (A|mn)F^A */
+                QMI_Block_sparse('V', true, new_iter, pruned_c, pruned_d, amn, qmi_new, ami, v, pruned_j, eri);
+                qmi_new_ind = new_iter;
                 timer_on("DDF pQq big K DGEMM");
-                C_DGEMM('N', 'T', Block_funcs_[xn_ind], Block_funcs_[xn_ind], naux_ * nocc, 1.0, xn, naux_ * nocc, xn,
-                        naux_ * nocc, 1.0, k + k_disps_[xn_ind][xn_ind], nbf_);
-                C_DGEMM('N', 'T', Block_funcs_[xo_ind], Block_funcs_[xn_ind], naux_ * nocc, 1.0, xo, naux_ * nocc, xn,
-                        naux_ * nocc, 1.0, k + k_disps_[xo_ind][xn_ind], nbf_);
+    /* All D_GEMM's in this function are to calculate
+       K_{[m]_j [n]_k} = (Q|[m]_j i)(Q|[n]_k i)  */
+                C_DGEMM('N', 'T', Block_funcs_[qmi_new_ind], Block_funcs_[qmi_new_ind], naux_ * nocc, 1.0, qmi_new, naux_ * nocc, qmi_new,
+                        naux_ * nocc, 1.0, k + k_disps_[qmi_new_ind][qmi_new_ind], nbf_);
+                C_DGEMM('N', 'T', Block_funcs_[qmi_old_ind], Block_funcs_[qmi_new_ind], naux_ * nocc, 1.0, qmi_old, naux_ * nocc, qmi_new,
+                        naux_ * nocc, 1.0, k + k_disps_[qmi_old_ind][qmi_new_ind], nbf_);
                 timer_off("DDF pQq big K DGEMM");
-            } else if (xo_iter == 0 && xn_iter == num_blocks_ - 1) {
-                X_Block_sparse('B', true, xn_iter, pruned_c, pruned_d, a, xn, u, v, pruned_j, eri);
-                xn_ind = xn_iter;
+            } else if (old_iter == 0 && new_iter == num_blocks_ - 1) {
+                QMI_Block_sparse('B', true, new_iter, pruned_c, pruned_d, amn, qmi_new, ami, v, pruned_j, eri);
+                qmi_new_ind = new_iter;
                 timer_on("DDF pQq big K DGEMM");
-                C_DGEMM('N', 'T', Block_funcs_[xn_ind], Block_funcs_[xn_ind], naux_ * nocc, 1.0, xn, naux_ * nocc, xn,
-                        naux_ * nocc, 1.0, k + k_disps_[xn_ind][xn_ind], nbf_);
-                C_DGEMM('N', 'T', Block_funcs_[xo_ind], Block_funcs_[xn_ind], naux_ * nocc, 1.0, xo, naux_ * nocc, xn,
-                        naux_ * nocc, 1.0, k + k_disps_[xo_ind][xn_ind], nbf_);
+                C_DGEMM('N', 'T', Block_funcs_[qmi_new_ind], Block_funcs_[qmi_new_ind], naux_ * nocc, 1.0, qmi_new, naux_ * nocc, qmi_new,
+                        naux_ * nocc, 1.0, k + k_disps_[qmi_new_ind][qmi_new_ind], nbf_);
+                C_DGEMM('N', 'T', Block_funcs_[qmi_old_ind], Block_funcs_[qmi_new_ind], naux_ * nocc, 1.0, qmi_old, naux_ * nocc, qmi_new,
+                        naux_ * nocc, 1.0, k + k_disps_[qmi_old_ind][qmi_new_ind], nbf_);
                 timer_off("DDF pQq big K DGEMM");
-            } else if (xo_iter == 1) {
-                X_Block_sparse('P', true, xn_iter, pruned_c, pruned_d, a, xn, u, v, pruned_j, eri);
-                xn_ind = xn_iter;
+            } else if (old_iter == 1) {
+                QMI_Block_sparse('P', true, new_iter, pruned_c, pruned_d, amn, qmi_new, ami, v, pruned_j, eri);
+                qmi_new_ind = new_iter;
                 timer_on("DDF pQq big K DGEMM");
-                C_DGEMM('N', 'T', Block_funcs_[xn_ind], Block_funcs_[xo_ind], naux_ * nocc, 1.0, xn, naux_ * nocc, xo,
-                        naux_ * nocc, 1.0, k + k_disps_[xn_ind][xo_ind], nbf_);
+                C_DGEMM('N', 'T', Block_funcs_[qmi_new_ind], Block_funcs_[qmi_old_ind], naux_ * nocc, 1.0, qmi_new, naux_ * nocc, qmi_old,
+                        naux_ * nocc, 1.0, k + k_disps_[qmi_new_ind][qmi_old_ind], nbf_);
                 timer_off("DDF pQq big K DGEMM");
             } else {
-                X_Block_sparse('N', true, xn_iter, pruned_c, pruned_d, a, xn, u, nullptr, nullptr, eri);
-                xn_ind = xn_iter;
+                QMI_Block_sparse('N', true, new_iter, pruned_c, pruned_d, amn, qmi_new, ami, nullptr, nullptr, eri);
+                qmi_new_ind = new_iter;
                 timer_on("DDF pQq big K DGEMM");
-                C_DGEMM('N', 'T', Block_funcs_[xn_ind], Block_funcs_[xo_ind], naux_ * nocc, 1.0, xn, naux_ * nocc, xo,
-                        naux_ * nocc, 0.0, k + k_disps_[xn_ind][xo_ind], nbf_);
+                C_DGEMM('N', 'T', Block_funcs_[qmi_new_ind], Block_funcs_[qmi_old_ind], naux_ * nocc, 1.0, qmi_new, naux_ * nocc, qmi_old,
+                        naux_ * nocc, 0.0, k + k_disps_[qmi_new_ind][qmi_old_ind], nbf_);
                 timer_off("DDF pQq big K DGEMM");
             }
         }
-        xh = xn;
-        xn = xo;  // XO.get();
-        xo = xh;  // XN.get();
-        xo_ind = xn_ind;
+        qmi_hold = qmi_new;
+        qmi_new = qmi_old;  
+        qmi_old = qmi_hold; 
+        qmi_old_ind = qmi_new_ind;
     }
 
     for (size_t kf_i = 0; kf_i < nbf_; kf_i++) {
@@ -1296,7 +1374,7 @@ void DirectDFJK::pQp_sparse() {
     }
 
     if (first_char != 'B') {
-        X_Block_sparse('P', false, 0, pruned_c, pruned_d, a, nullptr, u, v, pruned_j, eri);
+        QMI_Block_sparse('P', false, 0, pruned_c, pruned_d, amn, nullptr, ami, v, pruned_j, eri);
     }
 }
 
@@ -1306,7 +1384,7 @@ void DirectDFJK::pQp_sparse() {
 //    We handle this with a switch.
 // coul_work \in { 'V', 'P', 'B', 'N' }
 // 'V' means we compute a vector to be contracted against the coulomb Metric.
-void DirectDFJK::X_Block(char coul_work, bool compute_k, size_t block, double* ao_block, double* x, double* u,
+void DirectDFJK::QMI_Block(char coul_work, bool compute_k, size_t block, double* amn, double* qmi, double* ami,
                          double* coulomb_vector, std::vector<std::shared_ptr<TwoBodyAOInt>> eri) {
     double* cmpq_invp = &CMPQ_inv_.front();
     size_t nocc = C_left_ao_[0]->ncol();
@@ -1314,27 +1392,27 @@ void DirectDFJK::X_Block(char coul_work, bool compute_k, size_t block, double* a
     double* met_m_0_5 = get_metric_power(-0.5);
     double* j = J_ao_[0]->pointer()[0];
     double* d = D_ao_[0]->pointer()[0];
-
+/* Explanation of code blocks in QMI_Block_sparse */
     switch (coul_work) {
         case 'N':
             for (size_t shell_iter = Shell_starts_[block]; shell_iter <= Shell_stops_[block]; shell_iter++) {
-                timer_on("DDF AO_CONST");
-                compute_dense_AO_block_p_pQq(shell_iter, ao_block, eri);
-                timer_off("DDF AO_CONST");
+timer_on("DDF pQq dense AO eri");
+                compute_dense_AO_block_p_pQq(shell_iter, amn, eri);
+timer_off("DDF pQq dense AO eri");
                 if (compute_k) {
-                    timer_on("DDF pQq K1");
-                    C_DGEMM('N', 'N', primary_->shell(shell_iter).nfunction() * naux_, nocc, nbf_, 1.0, ao_block, nbf_,
-                            c, nocc, 0.0, u, nocc);
-                    timer_off("DDF pQq K1");
+timer_on("DDF pQq small K DGEMM");
+                    C_DGEMM('N', 'N', primary_->shell(shell_iter).nfunction() * naux_, nocc, nbf_, 1.0, amn, nbf_,
+                            c, nocc, 0.0, ami, nocc);
+timer_off("DDF pQq small K DGEMM");
                     for (size_t func_it = 0; func_it < primary_->shell(shell_iter).nfunction(); func_it++) {
-                        timer_on("DDF pQq Metric Contraction");
-                        C_DGEMM('N', 'N', naux_, nocc, naux_, 1.0, met_m_0_5, naux_, u + func_it * naux_ * nocc, nocc,
-                                0.0, x +
+timer_on("DDF pQq Metric Contraction");
+                        C_DGEMM('N', 'N', naux_, nocc, naux_, 1.0, met_m_0_5, naux_, ami + func_it * naux_ * nocc, nocc,
+                                0.0, qmi +
                                          (primary_->shell(shell_iter).function_index() -
                                           primary_->shell(Shell_starts_[block]).function_index() + func_it) *
                                              naux_ * nocc,
                                 nocc);
-                        timer_off("DDF pQq Metric Contraction");
+timer_off("DDF pQq Metric Contraction");
                     }
                 }
             }
@@ -1342,63 +1420,67 @@ void DirectDFJK::X_Block(char coul_work, bool compute_k, size_t block, double* a
         case 'V':
             for (size_t shell_iter = Shell_starts_[block]; shell_iter <= Shell_stops_[block]; shell_iter++) {
                 // compute ao blocks
-                timer_on("DDF pQq AO_CONST");
-                compute_dense_AO_block_p_pQq(shell_iter, ao_block, eri);
-                timer_off("DDF pQq AO_CONST");
+timer_on("DDF pQq dense AO eri");
+                compute_dense_AO_block_p_pQq(shell_iter, amn, eri);
+timer_off("DDF pQq dense AO eri");
                 for (size_t func_it = 0; func_it < primary_->shell(shell_iter).nfunction(); func_it++) {
                     // Form V for Coulomb Matrix construction
-                    timer_on("DDF pQq J1");
-                    C_DGEMV('N', (int)naux_, (int)nbf_, 1.0, ao_block + func_it * naux_ * nbf_, nbf_,
+timer_on("DDF pQq J orbitals");
+                    C_DGEMV('N', (int)naux_, (int)nbf_, 1.0, amn + func_it * naux_ * nbf_, nbf_,
                             d + (primary_->shell(shell_iter).function_index() + func_it) * nbf_, 1, 1.0, coulomb_vector,
                             1);
-                    timer_off("DDF pQq J1");
+timer_off("DDF pQq J orbitals");
                 }
                 if (compute_k) {
-                    timer_on("DDF pQq K1");
+timer_on("DDF pQq small K DGEMM");
                     // Form U for Exchange Matrix construction
-                    C_DGEMM('N', 'N', primary_->shell(shell_iter).nfunction() * naux_, nocc, nbf_, 1.0, ao_block, nbf_,
-                            c, nocc, 0.0, u, nocc);
-                    timer_off("DDF pQq K1");
+                    C_DGEMM('N', 'N', primary_->shell(shell_iter).nfunction() * naux_, nocc, nbf_, 1.0, amn, nbf_,
+                            c, nocc, 0.0, ami, nocc);
+timer_off("DDF pQq small K DGEMM");
                     // Contract this u into the corresponding portion of x
                     for (size_t func_it = 0; func_it < primary_->shell(shell_iter).nfunction(); func_it++) {
-                        timer_on("DDF pQq Metric Contraction");
-                        C_DGEMM('N', 'N', naux_, nocc, naux_, 1.0, met_m_0_5, naux_, u + func_it * naux_ * nocc, nocc,
-                                0.0, x +
+timer_on("DDF pQq Metric Contraction");
+                        C_DGEMM('N', 'N', naux_, nocc, naux_, 1.0, met_m_0_5, naux_, ami + func_it * naux_ * nocc, nocc,
+                                0.0, qmi +
                                          (primary_->shell(shell_iter).function_index() -
                                           primary_->shell(Shell_starts_[block]).function_index() + func_it) *
                                              naux_ * nocc,
                                 nocc);
-                        timer_off("DDF pQq Metric Contraction");
+timer_off("DDF pQq Metric Contraction");
                     }
                 }
             }
             break;
         case 'P':
             for (size_t shell_iter = Shell_starts_[block]; shell_iter <= Shell_stops_[block]; shell_iter++) {
-                timer_on("DDF pQq AO_CONST");  // timer_on("DDF AO_SPARSE");
-                compute_dense_AO_block_p_pQq(shell_iter, ao_block, eri);
-                timer_off("DDF pQq AO_CONST");  // timer_on("DDF AO_SPARSE");//timer_off("DDF AO_SPARSE");
+timer_on("DDF pQq dense AO eri");
+                compute_dense_AO_block_p_pQq(shell_iter, amn, eri);
+timer_off("DDF pQq dense AO eri");
                 for (size_t func_it = 0; func_it < primary_->shell(shell_iter).nfunction(); func_it++) {
                     timer_on("DDF pQq J2");
-                    C_DGEMV('T', (int)naux_, (int)nbf_, 1.0, ao_block + func_it * naux_ * nbf_, nbf_, coulomb_vector, 1,
+timer_on("DDF pQq J vector");
+                    C_DGEMV('T', (int)naux_, (int)nbf_, 1.0, amn + func_it * naux_ * nbf_, nbf_, coulomb_vector, 1,
                             0.0, j + nbf_ * (primary_->shell(shell_iter).function_index() + func_it), 1);
+timer_off("DDF pQq J vector");
                     timer_off("DDF pQq J2");
                 }
                 if (compute_k) {
                     // timer_on("DDF pQq small K DGEMM");
                     timer_on("DDF pQq K1");
-                    C_DGEMM('N', 'N', primary_->shell(shell_iter).nfunction() * naux_, nocc, nbf_, 1.0, ao_block, nbf_,
-                            c, nocc, 0.0, u, nocc);
+timer_on("DDF pQq small K DGEMM");
+                    C_DGEMM('N', 'N', primary_->shell(shell_iter).nfunction() * naux_, nocc, nbf_, 1.0, amn, nbf_,
+                            c, nocc, 0.0, ami, nocc);
+timer_off("DDF pQq small K DGEMM");
                     timer_off("DDF pQq K1");
                     for (size_t func_it = 0; func_it < primary_->shell(shell_iter).nfunction(); func_it++) {
-                        timer_on("DDF pQq Metric Contraction");
-                        C_DGEMM('N', 'N', naux_, nocc, naux_, 1.0, met_m_0_5, naux_, u + func_it * naux_ * nocc, nocc,
-                                0.0, x +
+timer_on("DDF pQq Metric Contraction");
+                        C_DGEMM('N', 'N', naux_, nocc, naux_, 1.0, met_m_0_5, naux_, qmi + func_it * naux_ * nocc, nocc,
+                                0.0, qmi +
                                          (primary_->shell(shell_iter).function_index() -
                                           primary_->shell(Shell_starts_[block]).function_index() + func_it) *
                                              naux_ * nocc,
                                 nocc);
-                        timer_off("DDF pQq Metric Contraction");
+timer_off("DDF pQq Metric Contraction");
                     }
                     // timer_off("DDF pQq small K DGEMM");
                 }
@@ -1408,27 +1490,27 @@ void DirectDFJK::X_Block(char coul_work, bool compute_k, size_t block, double* a
             double* metp = &CMPQ_LU_.front();
             int* pert = &PERMUTE_.front();
             for (size_t shell_iter = Shell_starts_[block]; shell_iter <= Shell_stops_[block]; shell_iter++) {
-                timer_on("DDF pQq AO_CONST");
-                compute_dense_AO_block_p_pQq(shell_iter, ao_block, eri);
-                timer_off("DDF pQq AO_CONST");
-                timer_on("DDF pQq K1");
-                C_DGEMM('N', 'N', primary_->shell(shell_iter).nfunction() * naux_, nocc, nbf_, 1.0, ao_block, nbf_, c,
-                        nocc, 0.0, u, nocc);
-                timer_off("DDF pQq K1");
+timer_on("DDF pQq dense AO eri");
+                compute_dense_AO_block_p_pQq(shell_iter, amn, eri);
+timer_off("DDF pQq dense AO eri");
+timer_on("DDF pQq small K DGEMM");
+                C_DGEMM('N', 'N', primary_->shell(shell_iter).nfunction() * naux_, nocc, nbf_, 1.0, amn, nbf_, c,
+                        nocc, 0.0, ami, nocc);
+timer_off("DDF pQq small K DGEMM");
                 for (size_t func_it = 0; func_it < primary_->shell(shell_iter).nfunction(); func_it++) {
-                    timer_on("DDF pQq Metric Contraction");
-                    C_DGEMM('N', 'N', naux_, nocc, naux_, 1.0, met_m_0_5, naux_, u + func_it * naux_ * nocc, nocc, 0.0,
-                            x +
+timer_on("DDF pQq Metric Contraction");
+                    C_DGEMM('N', 'N', naux_, nocc, naux_, 1.0, met_m_0_5, naux_, ami + func_it * naux_ * nocc, nocc, 0.0,
+                            qmi +
                                 (primary_->shell(shell_iter).function_index() -
                                  primary_->shell(Shell_starts_[block]).function_index() + func_it) *
                                     naux_ * nocc,
                             nocc);
-                    timer_off("DDF pQq Metric Contraction");
-                    timer_on("DDF pQq J1");
-                    C_DGEMV('N', naux_, nbf_, 1.0, ao_block + func_it * naux_ * nbf_, nbf_,
+timer_off("DDF pQq Metric Contraction");
+timer_on("DDF pQq J orbitals");
+                    C_DGEMV('N', naux_, nbf_, 1.0, amn + func_it * naux_ * nbf_, nbf_,
                             d + (primary_->shell(shell_iter).function_index() + func_it) * nbf_, 1, 1.0, coulomb_vector,
                             1);
-                    timer_off("DDF pQq J1");
+timer_on("DDF pQq J orbitals");
                 }
                 // timer_off("DDF pQq small K DGEMM");
             }
@@ -1442,21 +1524,21 @@ void DirectDFJK::X_Block(char coul_work, bool compute_k, size_t block, double* a
             // free(my_vec);
 
             for (size_t shell_iter = Shell_starts_[block]; shell_iter <= Shell_stops_[block]; shell_iter++) {
-                timer_on("DDF AO_SPARSE");
-                compute_dense_AO_block_p_pQq(shell_iter, ao_block, eri);
-                timer_off("DDF AO_SPARSE");
+timer_on("DDF pQq dense AO eri");
+                compute_dense_AO_block_p_pQq(shell_iter, amn, eri);
+timer_on("DDF pQq dense AO eri");
                 for (size_t func_it = 0; func_it < primary_->shell(shell_iter).nfunction(); func_it++) {
-                    timer_on("DDF pQq J2");
-                    C_DGEMV('T', naux_, nbf_, 1.0, ao_block + func_it * naux_ * nbf_, nbf_, coulomb_vector, 1, 0.0,
+timer_on("DDF pQq J vector");
+                    C_DGEMV('T', naux_, nbf_, 1.0, amn + func_it * naux_ * nbf_, nbf_, coulomb_vector, 1, 0.0,
                             j + (primary_->shell(shell_iter).function_index() + func_it) * nbf_, 1);
-                    timer_off("DDF pQq J2");
+timer_off("DDF pQq J vector");
                 }
             }
             break;
     }
 }
 
-void DirectDFJK::X_Block_sparse(char coul_work, bool compute_k, size_t block, double* pruned_c, double* pruned_d,
+void DirectDFJK::QMI_Block_sparse(char coul_work, bool compute_k, size_t block, double* pruned_c, double* pruned_d,
                                 double* ao_block, double* x, double* u, double* coulomb_vector, double* pruned_j,
                                 std::vector<std::shared_ptr<TwoBodyAOInt>> eri) {
     size_t nocc = C_left_ao_[0]->ncol();
@@ -1464,78 +1546,119 @@ void DirectDFJK::X_Block_sparse(char coul_work, bool compute_k, size_t block, do
     double* met_m_0_5 = get_metric_power(-0.5);
     double* j = J_ao_[0]->pointer()[0];
     double* d = D_ao_[0]->pointer()[0];
+/*
+ We're going to let the timers take the place of comments to match
+ The labels in my thesis
+DDF pQq sparse AO eri : (A|mn)
+DDF pQq small K DGEMM : (A|mi) = (A|mn)C_{ni}
+DDF pQq Metric Contraction : (Q|mi) = [J^{-1/2}]_{AQ} (A|mi)
+DDF pQq J orbitals : V^A = (A|[m]_i n) D_{[m]_i n}
+DDF pQq J vector   : J_{[m]_i n} = 
 
+Not all timers are done in all cases
+
+This function manages construction of doubly contracted eri terms
+(Q|mi) = C_{ni} (A|mi) [J^{-1/2}]_{Q A}
+
+as well as construction of the Coulomb matrix
+
+Cases distinguished by what work is done for the coulomb matrix in each of them
+N is NO coulomb work
+V is accumulation (reduction) into the vector V as V += (A|[m]_i n)D_{[m]_i n}
+P is formation of a block of the Coulomb Matrix as 
+          J_{[m]_i n } = (A|[m]i n)F^Q
+B involves the work in the V and P cases as well as 
+    F^P = (P|A)V^A
+*/
     switch (coul_work) {
         case 'N':
             for (size_t shell_iter = Shell_starts_[block]; shell_iter <= Shell_stops_[block]; shell_iter++) {
+timer_on("DDF pQq sparse AO eri");
                 compute_sparse_AO_block_p_pQq(shell_iter, ao_block, eri);
+timer_off("DDF pQq sparse AO eri");
                 if (compute_k) {
                     prune_c(shell_iter, nocc, pruned_c, c);
+timer_on("DDF pQq small K DGEMM");
                     C_DGEMM('N', 'N', primary_->shell(shell_iter).nfunction() * naux_, nocc,
                             schwarz_dense_funcs_[shell_iter], 1.0, ao_block, schwarz_dense_funcs_[shell_iter], pruned_c,
                             nocc, 0.0, u, nocc);
+timer_off("DDF pQq small K DGEMM");
                     for (size_t func_it = 0; func_it < primary_->shell(shell_iter).nfunction(); func_it++) {
+timer_on("DDF pQq Metric Contraction");
                         C_DGEMM('N', 'N', naux_, nocc, naux_, 1.0, met_m_0_5, naux_, u + func_it * naux_ * nocc, nocc,
                                 0.0, x +
                                          (primary_->shell(shell_iter).function_index() -
                                           primary_->shell(Shell_starts_[block]).function_index() + func_it) *
                                              naux_ * nocc,
                                 nocc);
+timer_off("DDF pQq Metric Contraction");
                     }
                 }
             }
             break;
         case 'V':
             for (size_t shell_iter = Shell_starts_[block]; shell_iter <= Shell_stops_[block]; shell_iter++) {
-                // compute ao blocks
+timer_on("DDF pQq sparse AO eri");
                 compute_sparse_AO_block_p_pQq(shell_iter, ao_block, eri);
+timer_off("DDF pQq sparse AO eri");
                 for (size_t func_it = 0; func_it < primary_->shell(shell_iter).nfunction(); func_it++) {
                     prune_d(shell_iter, pruned_d, d + nbf_ * (func_it + primary_->shell(shell_iter).function_index()));
-                    // Form V for Coulomb Matrix construction
+timer_on("DDF pQq J orbitals");
                     C_DGEMV('N', (int)naux_, (int)schwarz_dense_funcs_[shell_iter], 1.0,
                             ao_block + func_it * naux_ * schwarz_dense_funcs_[shell_iter],
                             schwarz_dense_funcs_[shell_iter], pruned_d, 1, 1.0, coulomb_vector, 1);
+timer_off("DDF pQq J orbitals");
                 }
                 if (compute_k) {
                     prune_c(shell_iter, nocc, pruned_c, c);
-                    // Form U for Exchange Matrix construction
+timer_on("DDF pQq small K DGEMM");
                     C_DGEMM('N', 'N', primary_->shell(shell_iter).nfunction() * naux_, nocc,
                             schwarz_dense_funcs_[shell_iter], 1.0, ao_block, schwarz_dense_funcs_[shell_iter], pruned_c,
                             nocc, 0.0, u, nocc);
-                    // Contract this u into the corresponding portion of x
+timer_off("DDF pQq small K DGEMM");
                     for (size_t func_it = 0; func_it < primary_->shell(shell_iter).nfunction(); func_it++) {
+timer_on("DDF pQq Metric Contraction");
                         C_DGEMM('N', 'N', naux_, nocc, naux_, 1.0, met_m_0_5, naux_, u + func_it * naux_ * nocc, nocc,
                                 0.0, x +
                                          (primary_->shell(shell_iter).function_index() -
                                           primary_->shell(Shell_starts_[block]).function_index() + func_it) *
                                              naux_ * nocc,
                                 nocc);
+timer_off("DDF pQq Metric Contraction");
                     }
                 }
             }
             break;
         case 'P':
             for (size_t shell_iter = Shell_starts_[block]; shell_iter <= Shell_stops_[block]; shell_iter++) {
+timer_on("DDF pQq sparse AO eri");
                 compute_sparse_AO_block_p_pQq(shell_iter, ao_block, eri);
+timer_off("DDF pQq sparse AO eri");
                 for (size_t func_it = 0; func_it < primary_->shell(shell_iter).nfunction(); func_it++) {
+timer_on("DDF pQq J vector");
                     C_DGEMV('T', (int)naux_, (int)schwarz_dense_funcs_[shell_iter], 1.0,
                             ao_block + func_it * naux_ * schwarz_dense_funcs_[shell_iter],
                             schwarz_dense_funcs_[shell_iter], coulomb_vector, 1, 0.0, pruned_j, 1);
                     unprune_J(shell_iter, j + nbf_ * (primary_->shell(shell_iter).function_index() + func_it),
                               pruned_j);
+timer_off("DDF pQq J vector");
                 }
                 if (compute_k) {
                     prune_c(shell_iter, nocc, pruned_c, c);
+timer_on("DDF pQq small K DGEMM");
                     C_DGEMM('N', 'N', primary_->shell(shell_iter).nfunction() * naux_, nocc,
                             schwarz_dense_funcs_[shell_iter], 1.0, ao_block, schwarz_dense_funcs_[shell_iter], pruned_c,
                             nocc, 0.0, u, nocc);
+timer_off("DDF pQq small K DGEMM");
                     for (size_t func_it = 0; func_it < primary_->shell(shell_iter).nfunction(); func_it++) {
+timer_on("DDF pQq Metric Contraction");
                         C_DGEMM('N', 'N', naux_, nocc, naux_, 1.0, met_m_0_5, naux_, u + func_it * naux_ * nocc, nocc,
                                 0.0, x +
                                          (primary_->shell(shell_iter).function_index() -
                                           primary_->shell(Shell_starts_[block]).function_index() + func_it) *
                                              naux_ * nocc,
                                 nocc);
+timer_off("DDF pQq Metric Contraction");
                     }
                 }
             }
@@ -1544,44 +1667,61 @@ void DirectDFJK::X_Block_sparse(char coul_work, bool compute_k, size_t block, do
             double* metp = &CMPQ_LU_.front();
             int* pert = &PERMUTE_.front();
             for (size_t shell_iter = Shell_starts_[block]; shell_iter <= Shell_stops_[block]; shell_iter++) {
+timer_on("DDF pQq sparse AO eri");
                 compute_sparse_AO_block_p_pQq(shell_iter, ao_block, eri);
+timer_off("DDF pQq sparse AO eri");
                 if (compute_k) {
                     prune_c(shell_iter, nocc, pruned_c, c);
+timer_on("DDF pQq small K DGEMM");
                     C_DGEMM('N', 'N', primary_->shell(shell_iter).nfunction() * naux_, nocc,
                             schwarz_dense_funcs_[shell_iter], 1.0, ao_block, schwarz_dense_funcs_[shell_iter], pruned_c,
                             nocc, 0.0, u, nocc);
+timer_off("DDF pQq small K DGEMM");
                     for (size_t func_it = 0; func_it < primary_->shell(shell_iter).nfunction(); func_it++) {
+timer_on("DDF pQq Metric Contraction");
                         C_DGEMM('N', 'N', naux_, nocc, naux_, 1.0, met_m_0_5, naux_, u + func_it * naux_ * nocc, nocc,
                                 0.0, x +
                                          (primary_->shell(shell_iter).function_index() -
                                           primary_->shell(Shell_starts_[block]).function_index() + func_it) *
                                              naux_ * nocc,
                                 nocc);
+timer_off("DDF pQq Metric Contraction");
                     }
                 }
                 for (size_t func_it = 0; func_it < primary_->shell(shell_iter).nfunction(); func_it++) {
                     prune_d(shell_iter, pruned_d, d + nbf_ * (func_it + primary_->shell(shell_iter).function_index()));
+timer_on("DDF pQq J orbitals");
                     C_DGEMV('N', naux_, schwarz_dense_funcs_[shell_iter], 1.0,
                             ao_block + func_it * naux_ * schwarz_dense_funcs_[shell_iter],
                             schwarz_dense_funcs_[shell_iter], pruned_d, 1, 1.0, coulomb_vector, 1);
+timer_off("DDF pQq J orbitals");
                 }
             }
 
             C_DGETRS('N', naux_, 1, metp, naux_, pert, coulomb_vector, naux_);
             for (size_t shell_iter = Shell_starts_[block]; shell_iter <= Shell_stops_[block]; shell_iter++) {
+timer_on("DDF pQq sparse AO eri");
                 compute_sparse_AO_block_p_pQq(shell_iter, ao_block, eri);
+timer_off("DDF pQq sparse AO eri");
                 for (size_t func_it = 0; func_it < primary_->shell(shell_iter).nfunction(); func_it++) {
+timer_on("DDF pQq J vector");
                     C_DGEMV('T', (int)naux_, (int)schwarz_dense_funcs_[shell_iter], 1.0,
                             ao_block + func_it * naux_ * schwarz_dense_funcs_[shell_iter],
                             schwarz_dense_funcs_[shell_iter], coulomb_vector, 1, 0.0, pruned_j, 1);
                     unprune_J(shell_iter, j + nbf_ * (primary_->shell(shell_iter).function_index() + func_it),
                               pruned_j);
+timer_off("DDF pQq J vector");
                 }
             }
             break;
     }
 }
 
+/* Function to transform the orbital coefficient matrix for sparsity. 
+ * Schwarz screening effectively makes a set of primary basis
+ * functions that are kept for each member of the primary basis set.
+ * Only eri's from these functions are stored, so we have to make a
+ * coefficient matrix that only has these rows.*/
 void DirectDFJK::prune_c(size_t& mu, size_t nocc, double* pruned_c, double* raw_c) {
     int procs = 1;
 #ifdef _OPENMP
@@ -1603,6 +1743,11 @@ void DirectDFJK::prune_c(size_t& mu, size_t nocc, double* pruned_c, double* raw_
     }
 }
 
+/* Function to transform the scf density matrix for sparsity. 
+ * Schwarz screening effectively makes a set of primary basis
+ * functions that are kept for each member of the primary basis set.
+ * Only eri's from these functions are stored, so we have to make a
+ * density matrix that only has these columns.*/
 void DirectDFJK::prune_d(size_t& mu, double* pruned_d, double* raw_d) {
     int procs = 1;
 #ifdef _OPENMP
@@ -1618,6 +1763,11 @@ void DirectDFJK::prune_d(size_t& mu, double* pruned_d, double* raw_d) {
     }
 }
 
+/* Function to transform the scf density matrix for sparsity. 
+ * Schwarz screening effectively makes a set of primary basis
+ * functions that are kept for each member of the primary basis set.
+ * Only eri's from these functions are stored, so we have to make a
+ * density matrix that only has these columns.*/
 // You should only pass in one row of J in at a time. We will trust
 //    the wrapping function to take care of this.
 // mu is a shell index. we need it to get at sparsity information.
@@ -1629,28 +1779,6 @@ void DirectDFJK::unprune_J(size_t& mu, double* raw_j, double* pruned_j) {
             raw_j[primary_->shell(schwarz_shell_mask_pQq_[mu][shell_iter]).function_index() + in_shell] =
                 pruned_j[schwarz_func_starts_pQq_[mu][shell_iter] + in_shell];
         }
-    }
-}
-
-void DirectDFJK::prune_cmpq(size_t big_Mu, double* raw_CMPQ, double* pruned_CMPQ) {
-#pragma omp parallel for
-    for (size_t row_iter = 0; row_iter < naux_; row_iter++) {
-        for (size_t col_iter = 0; col_iter < mP_func_map_pQq_[big_Mu].size(); col_iter++) {
-            pruned_CMPQ[row_iter * mP_func_map_pQq_[big_Mu].size() + col_iter] =
-                raw_CMPQ[row_iter * naux_ + mP_func_map_pQq_[big_Mu][col_iter]];
-        }
-    }
-}
-
-void DirectDFJK::unprune_V(size_t big_Mu, double* raw_v, double* pruned_v) {
-    for (size_t i = 0; i < mP_func_map_pQq_[big_Mu].size(); i++) {
-        raw_v[mP_func_map_pQq_[big_Mu][i]] += pruned_v[i];
-    }
-}
-
-void DirectDFJK::prune_phi(size_t big_Mu, double* raw_phi, double* pruned_phi) {
-    for (size_t i = 0; i < mP_func_map_pQq_[big_Mu].size(); i++) {
-        pruned_phi[i] = raw_phi[mP_func_map_pQq_[big_Mu][i]];
     }
 }
 
