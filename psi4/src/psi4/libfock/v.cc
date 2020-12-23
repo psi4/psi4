@@ -1258,7 +1258,6 @@ void Num1Int::initialize() {
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 
-// not working!?
 // needed? Best to avoid changing the options.
     // Process::environment.options.set_double("SCF","DFT_BS_RADIUS_ALPHA",1.1);
     // Process::environment.options.set_double("SCF","DFT_WEIGHTS_TOLERANCE",-1.0);
@@ -1291,7 +1290,11 @@ void Num1Int::initialize() {
 void Num1Int::print_grid() const {
     numint_grid->print("outfile", print_);
 }
-// void Num1Int::compute_V_operator(std::vector<SharedMatrix> ret) {}
+SharedMatrix Num1Int::V_point_charges_operator(const SharedVector &ASC,const SharedMatrix &Zxyz_) {
+    timer_on("Num1Int: Fock-like operator");
+    throw PSIEXCEPTION("not yet implemented");
+    timer_on("Num1Int: Fock-like operator");
+}
 
 // std::vector<double> Num1Int::V_point_charges(SharedMatrix D) {
 SharedVector Num1Int::V_point_charges(const SharedMatrix &D, const SharedMatrix &Zxyz_) {
@@ -1301,8 +1304,8 @@ SharedVector Num1Int::V_point_charges(const SharedMatrix &D, const SharedMatrix 
     // Similar to PotentialInt, setup the field of partial charges
     int ncharges = Zxyz_->rowspi()[0];
     // double **Zxyzp = Zxyz_->pointer();
-    Zxyz_->print();
-    D->print();
+    // Zxyz_->print();
+    // D->print();
     // Thread info
     int rank = 0;
 
@@ -1336,7 +1339,6 @@ SharedVector Num1Int::V_point_charges(const SharedMatrix &D, const SharedMatrix 
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        // printf("block %i \n",Q);
         // Get per-rank workers
         std::shared_ptr<BlockOPoints> block = numint_grid->blocks()[Q];
         std::shared_ptr<PointFunctions> pworker = numint_point_workers[rank];
@@ -1388,7 +1390,7 @@ SharedVector Num1Int::V_point_charges(const SharedMatrix &D, const SharedMatrix 
         } // points in block
     } // grid blocks
     printf("Num1Int: Skipped %i of %i points \n",skipped,numint_grid->npoints());
-    Vpot->scale(0.5); //ToDo: Why? Solves this :)
+    Vpot->scale(0.5); //ToDo: Why? Solve this :)
     timer_off("Num1Int: MEP_e");
     return Vpot;
 }

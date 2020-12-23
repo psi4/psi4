@@ -173,17 +173,21 @@ class Num1Int {
     void finalize() ;
 
     // std::vector<double> V_point_charges(SharedMatrix D);
+
     SharedVector V_point_charges(const SharedMatrix &D, const SharedMatrix &Zxyz_);
+
+    SharedMatrix V_point_charges_operator(const SharedVector &ASC,const SharedMatrix &Zxyz_);
+
     void print_grid() const;
     std::shared_ptr<DFTGrid> numint_grid;
     /// Matrix of coordinates/charges of partial charges
-    SharedMatrix Zxyz_;
+    // SharedMatrix Zxyz_;
     /// Set the field of charges
-    void set_charge_field(SharedMatrix Zxyz) { Zxyz_ = Zxyz; }
+    // void set_charge_field(SharedMatrix Zxyz) { Zxyz_ = Zxyz; }
     /// Basis set used in the integration
     std::shared_ptr<BasisSet> basisset_;
     /// Get the field of charges
-    SharedMatrix charge_field() const { return Zxyz_; }
+    // SharedMatrix charge_field() const { return Zxyz_; }
     /// Debug flag
     int debug_;
     /// Print flag
