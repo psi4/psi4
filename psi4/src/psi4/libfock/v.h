@@ -161,6 +161,42 @@ class SAP : public VBase {
     void print_header() const override;
 };
 
+// => Derived Classes <= //
+class Num1Int {
+   protected:
+   public:
+    Num1Int(std::shared_ptr<BasisSet> basisset_);
+    ~Num1Int() ;
+    std::vector<std::shared_ptr<PointFunctions>> numint_point_workers;
+    // std::vector<std::shared_ptr<SuperFunctional>> numint_workers_;
+    void initialize() ;
+    void finalize() ;
+
+    // std::vector<double> V_point_charges(SharedMatrix D);
+    SharedVector V_point_charges(const SharedMatrix &D, const SharedMatrix &Zxyz_);
+    void print_grid() const;
+    std::shared_ptr<DFTGrid> numint_grid;
+    /// Matrix of coordinates/charges of partial charges
+    SharedMatrix Zxyz_;
+    /// Set the field of charges
+    void set_charge_field(SharedMatrix Zxyz) { Zxyz_ = Zxyz; }
+    /// Basis set used in the integration
+    std::shared_ptr<BasisSet> basisset_;
+    /// Get the field of charges
+    SharedMatrix charge_field() const { return Zxyz_; }
+    /// Debug flag
+    int debug_;
+    /// Print flag
+    int print_;
+    /// Number of threads
+    int num_threads_;
+    /// Point function computer (densities, gammas, basis values)
+    // std::vector<std::shared_ptr<PointFunctions>> point_workers_;
+    //
+    // Options& options_;
+};
+
+
 class RV : public VBase {
    protected:
    public:

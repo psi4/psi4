@@ -1243,6 +1243,156 @@ void SAP::compute_V(std::vector<SharedMatrix> ret) {
     timer_off("SAP: Form V");
 }
 
+Num1Int::Num1Int(std::shared_ptr<BasisSet> basisset)
+        : basisset_(basisset){
+    initialize();
+}
+Num1Int::~Num1Int() {}
+void Num1Int::initialize() {
+
+    num_threads_ = 1;
+#ifdef _OPENMP
+    num_threads_ = omp_get_max_threads();
+#endif
+    Options& options_ = Process::environment.options;
+    print_ = options_.get_int("PRINT");
+    debug_ = options_.get_int("DEBUG");
+
+// not working!?
+// needed? Best to avoid changing the options.
+    // Process::environment.options.set_double("SCF","DFT_BS_RADIUS_ALPHA",1.1);
+    // Process::environment.options.set_double("SCF","DFT_WEIGHTS_TOLERANCE",-1.0);
+
+    // same_dens_ = wfn_->same_a_b_dens();
+
+    // ToDo: i) check if DFT grid is available to use ii) don't rebuild grid every iteration
+    std::map<std::string, int> numint_grid_options_int;
+    std::map<std::string, std::string> numint_grid_options_str;
+    // basisset_->print_detail();
+    std::shared_ptr<Molecule> mol = basisset_->molecule();
+    numint_grid_options_int["DFT_RADIAL_POINTS"] = 75;
+    numint_grid_options_int["DFT_SPHERICAL_POINTS"] = 302;
+    numint_grid_options_str["DFT_PRUNING_SCHEME"] = "ROBUST";
+    timer_on("Num1Int: grid");
+    // numint_grid = std::make_shared<DFTGrid>(mol, basisset_, numint_grid_options_int, numint_grid_options_str, options_);
+    numint_grid = std::make_shared<DFTGrid>(mol, basisset_, options_);
+    timer_off("Num1Int: grid");
+    // if (debug_) print_grid();
+    print_grid();
+    
+    // Initialize symmetry
+    // std::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_, primary_, primary_, primary_));
+    // auto pet = std::make_shared<PetiteList>(primary_, integral);
+    // AO2USO_ = SharedMatrix(pet->aotoso());
+    // USO2AO_ = AO2USO_->transpose();
+    // nbf_ = AO2USO_->rowspi()[0];
+}
+// void Num1Int::finalize() { VBase::finalize(); }
+void Num1Int::print_grid() const {
+    numint_grid->print("outfile", print_);
+}
+// void Num1Int::compute_V_operator(std::vector<SharedMatrix> ret) {}
+
+// std::vector<double> Num1Int::V_point_charges(SharedMatrix D) {
+SharedVector Num1Int::V_point_charges(const SharedMatrix &D, const SharedMatrix &Zxyz_) {
+    timer_on("Num1Int: MEP_e");
+    // computes electrostatic potential of external charges on cubature grid
+    // potential integrals contracted with density
+    // Similar to PotentialInt, setup the field of partial charges
+    int ncharges = Zxyz_->rowspi()[0];
+    // double **Zxyzp = Zxyz_->pointer();
+    Zxyz_->print();
+    D->print();
+    // Thread info
+    int rank = 0;
+
+    // potential vector
+    auto Vpot = std::make_shared<Vector>(ncharges);
+    
+    // skip points with tiny densities.
+    double density_tolerance_ =  1e-12; //ToDo: set dynamically, move to init
+    
+
+    // move it init?
+    const int max_points = numint_grid->max_points();
+    const int max_functions = numint_grid->max_functions();
+
+    int ansatz = 0;
+    // D->print();
+    for (size_t i = 0; i < num_threads_; i++) {
+        // Need a points worker per thread. Use RKSFunctions or make own?
+        auto point_tmp = std::make_shared<RKSFunctions>(basisset_, max_points, max_functions);
+        point_tmp->set_ansatz(ansatz);
+        point_tmp->set_pointers(D);
+        numint_point_workers.push_back(point_tmp);
+    }
+
+    // counter for skipped grid points. ToDo: hide in debug
+    size_t skipped=0;
+// Traverse the blocks of points
+#pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
+    for (size_t Q = 0; Q < numint_grid->blocks().size(); Q++) {
+
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+        // printf("block %i \n",Q);
+        // Get per-rank workers
+        std::shared_ptr<BlockOPoints> block = numint_grid->blocks()[Q];
+        std::shared_ptr<PointFunctions> pworker = numint_point_workers[rank];
+
+        // Compute Rho, Phi, etc
+        parallel_timer_on("Properties", rank);
+        pworker->compute_points(block, false);
+        parallel_timer_off("Properties", rank);
+
+        // double* rho_a = pworker->point_value("RHO_A")->pointer();
+        SharedVector rho_block;
+        rho_block = pworker->point_values()["RHO_A"];
+        // if (!same_dens_) {
+        //     rho_block->add(pworker->point_values()["RHO_B"]);
+        // }
+
+        // Compute the potential at grid points
+        for (int ip = 0; ip < block->npoints(); ip++) {
+            // Coordinates of the point
+            double xi = block->x()[ip];
+            double yi = block->y()[ip];
+            double zi = block->z()[ip];
+            double wi = block->w()[ip];
+
+            // surface potential at grid point
+            double V = 0.0;
+
+            // get density at point
+            // double rho_ =  rho_a[ip] * block->w()[ip];
+            double rho_ = rho_block->get(ip) * wi;
+
+            // works, but OFF for testing
+            if (std::fabs(rho_) < density_tolerance_) {
+                skipped+=1;
+                continue;
+            }
+
+            // Loop over surface point charges
+            for (size_t ichrg = 0; ichrg < ncharges; ichrg++) {
+                // charge to grid point distance
+                double dx = Zxyz_->get(ichrg,1) - xi;
+                double dy = Zxyz_->get(ichrg,2) - yi;
+                double dz = Zxyz_->get(ichrg,3) - zi;
+                double r = std::sqrt(dx * dx + dy * dy + dz * dz);
+                // J_screened is 1/r for point charges, where Z=1. Any reason to include Z explicitly here?
+                V = -rho_ / r; 
+                Vpot->add(ichrg,V);
+            } // point charges
+        } // points in block
+    } // grid blocks
+    printf("Num1Int: Skipped %i of %i points \n",skipped,numint_grid->npoints());
+    Vpot->scale(0.5); //ToDo: Why? Solves this :)
+    timer_off("Num1Int: MEP_e");
+    return Vpot;
+}
+
 RV::RV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options)
     : VBase(functional, primary, options) {}
 RV::~RV() {}

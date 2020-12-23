@@ -40,6 +40,9 @@
 #include "psi4/libmints/potentialint.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libfock/v.h"
+#include "psi4/libqt/qt.h"
+#include "psi4/libpsi4util/process.h"
 
 #include <PCMSolver/PCMInput.h>
 
@@ -141,7 +144,7 @@ std::shared_ptr<pcmsolver_context_t> init_PCMSolver(const std::string &pcmsolver
 PCM::PCM(const std::string &pcmsolver_parsed_fname, int print_level, std::shared_ptr<BasisSet> basisset)
     : pcmsolver_parsed_fname_(pcmsolver_parsed_fname), pcm_print_(print_level), basisset_(basisset) {
     if (!pcmsolver_is_compatible_library()) throw PSIEXCEPTION("Incompatible PCMSolver library version.");
-
+    
     std::shared_ptr<Molecule> molecule = basisset_->molecule();
 
     auto integrals = std::make_shared<IntegralFactory>(basisset, basisset, basisset, basisset);
@@ -153,6 +156,14 @@ PCM::PCM(const std::string &pcmsolver_parsed_fname, int print_level, std::shared
 
     context_ = detail::init_PCMSolver(pcmsolver_parsed_fname_, molecule);
     outfile->Printf("  **PSI4:PCMSOLVER Interface Active**\n");
+
+    do_numerical_ = Process::environment.options.get_str("PCM_VPOT_SOLVER") == "NUMERICAL" ? true : false;
+    if (do_numerical_) {
+        outfile->Printf("Calculating PCM potentials numerically \n");
+            numeric_ = std::make_shared<Num1Int>(basisset_);
+            // numeric_ = Num1Int(basisset_); 
+    }
+
     pcmsolver_print(context_.get());
     ntess_ = pcmsolver_get_cavity_size(context_.get());
     ntessirr_ = pcmsolver_get_irreducible_cavity_size(context_.get());
@@ -215,6 +226,7 @@ PCM::PCM(const PCM *other) {
 }
 
 SharedVector PCM::compute_electronic_MEP(const SharedMatrix &D) const {
+    timer_on("PCMSolver: MEP_e");
     double **ptess_Zxyz = tess_Zxyz_->pointer();
     for (int tess = 0; tess < ntess_; ++tess) ptess_Zxyz[tess][0] = 1.0;
     potential_int_->set_charge_field(tess_Zxyz_);
@@ -227,10 +239,17 @@ SharedVector PCM::compute_electronic_MEP(const SharedMatrix &D) const {
         D_carts = D;
     }
 
-    auto MEP = std::make_shared<Vector>(tesspi_);
-    ContractOverDensityFunctor contract_density_functor(ntess_, MEP->pointer(0), D_carts);
     // Add in the electronic contribution to the potential at each tessera
-    potential_int_->compute(contract_density_functor);
+    auto MEP = std::make_shared<Vector>(tesspi_);
+    if (do_numerical_) {
+        // Mind the pure/cart issues for BF on the grid!. Spherical does not work yet!!
+        // auto numeric_ = std::make_shared<Num1Int>(basisset_); // must not be here.
+        // MEP = numeric_->V_point_charges(D_carts, tess_Zxyz_);
+        MEP = numeric_->V_point_charges(D_carts, tess_Zxyz_);
+    } else {
+        ContractOverDensityFunctor contract_density_functor(ntess_, MEP->pointer(0), D_carts);
+        potential_int_->compute(contract_density_functor);
+    }
 
     // A little debug info
     if (pcm_print_ > 2) {
@@ -238,7 +257,7 @@ SharedVector PCM::compute_electronic_MEP(const SharedMatrix &D) const {
         outfile->Printf("-------------------------------\n");
         for (int tess = 0; tess < ntess_; ++tess) outfile->Printf("tess[%4d] -> %16.10f\n", tess, MEP->get(0, tess));
     }
-
+    timer_off("PCMSolver: MEP_e");
     return MEP;
 }
 
@@ -374,9 +393,18 @@ double PCM::compute_E_electronic(const SharedVector &MEP_e) const {
 }
 
 SharedMatrix PCM::compute_Vpcm(const SharedVector &ASC) const {
+    timer_on("PCMSolver: Vpcm");
     auto V_pcm_cart = std::make_shared<Matrix>("PCM potential cart", basisset_->nao(), basisset_->nao());
-    ContractOverChargesFunctor contract_charges_functor(ASC->pointer(0), V_pcm_cart);
-    potential_int_->compute(contract_charges_functor);
+    if (do_numerical_) {
+        // not done yet. Keep analytical for testing
+        ContractOverChargesFunctor contract_charges_functor(ASC->pointer(0), V_pcm_cart);
+        potential_int_->compute(contract_charges_functor);
+    }
+    else{
+        ContractOverChargesFunctor contract_charges_functor(ASC->pointer(0), V_pcm_cart);
+        potential_int_->compute(contract_charges_functor);
+    }
+    timer_off("PCMSolver: Vpcm");
     // The potential might need to be transformed to the spherical harmonic basis
     SharedMatrix V_pcm_pure;
     if (basisset_->has_puream()) {

@@ -22,6 +22,7 @@ set {
   scf_type pk
   pcm true
   pcm_scf_type total
+  print 3
 }
 
 pcm = {

@@ -278,6 +278,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str_i("PCMSOLVER_PARSED_FNAME", "");
         /*- PCM-CCSD algorithm type. -*/
         options.add_str("PCM_CC_TYPE", "PTE", "PTE");
+        /* Integrate PCM potentials numerically over DFT grids */
+        options.add_str("PCM_VPOT_SOLVER","ANALYTICAL","ANALYTICAL NUMERICAL");
     }
 
     /*- PE boolean for polarizable embedding module -*/
