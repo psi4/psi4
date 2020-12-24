@@ -58,7 +58,6 @@ struct Local {
     double *eps_occ;
     double **eps_vir;
     double cutoff;
-    double pno_cut;
     std::string method;
     std::string weakp;
     int filter_singles;
@@ -68,6 +67,9 @@ struct Local {
     std::string pairdef;
 
     // For PNOs
+    int npairs;
+    double pno_cut;
+    std::vector<int> survivor_list;
     std::vector<SharedVector> occ_num;
     std::vector<SharedVector> eps_pno;
 

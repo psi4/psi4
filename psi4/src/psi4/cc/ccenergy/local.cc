@@ -96,7 +96,7 @@ void CCEnergyWavefunction::init_pno() {
     auto nocc = local_.nocc;
     auto nvir = local_.nvir;
     auto pno_cut = local_.cutoff;
-    auto npairs = nocc*nocc;
+    local_.npairs = nocc*nocc;
     dpdbuf4 T2;
     dpdbuf4 T2tilde;
     dpdbuf4 D;
@@ -111,7 +111,22 @@ void CCEnergyWavefunction::init_pno() {
     global_dpd_->file2_init(&Fij, PSIF_CC_OEI, 0, 1, 1, "fIJ");
     global_dpd_->file2_mat_init(&Fij);
     global_dpd_->file2_mat_rd(&Fij);
-
+    auto Focc = std::make_shared<Matrix>(nocc, nocc);
+    for(int i=0; i < nocc; ++i) {
+        for(int j=0; j < nocc; ++j) {
+            Focc->set(i, j, Fij.matrix[0][i][j]);
+        }
+    }
+    global_dpd_->file2_close(&Fij);
+    auto local_occ_eps = std::make_shared<Vector>(nocc);
+    auto evecs = std::make_shared<Matrix>(nocc, nocc);
+    Focc->diagonalize(evecs, local_occ_eps, ascending);
+    outfile->Printf("Here are original local occ orbital energies\n");
+    for(int i=0; i < nocc; i++) {
+        outfile->Printf("%f ", local_occ_eps->get(i));
+    }
+    psio_write_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) local_occ_eps->pointer(),
+            nocc * sizeof(double));
     /* outfile->Printf("*** Vir block of F ***");
     global_dpd_->file2_mat_print(&Fij, "outfile");
     global_dpd_->file2_close(&Fij);*/
@@ -150,7 +165,7 @@ void CCEnergyWavefunction::init_pno() {
     // Create Density
     std::vector<SharedMatrix> Dij;
     temp->zero();
-    for(int ij=0; ij < npairs; ++ij) {
+    for(int ij=0; ij < local_.npairs; ++ij) {
         temp->zero();
         int i = ij/nocc;
         int j = ij%nocc;
@@ -171,20 +186,20 @@ void CCEnergyWavefunction::init_pno() {
     }*/
 
     // Diagonalize Density
-    std::vector<SharedMatrix> Q_full(npairs);
-    std::vector<SharedVector> occ_num(npairs);
-    for(int ij=0; ij < npairs; ++ij) {
+    std::vector<SharedMatrix> Q_full(local_.npairs);
+    std::vector<SharedVector> occ_num(local_.npairs);
+    for(int ij=0; ij < local_.npairs; ++ij) {
         occ_num[ij] = std::make_shared<Vector>(nvir);
         Q_full[ij]   = std::make_shared<Matrix>(nvir, nvir);
     }
 
-    for(int ij=0; ij < npairs; ++ij) {
+    for(int ij=0; ij < local_.npairs; ++ij) {
         Dij[ij]->diagonalize(Q_full[ij], occ_num[ij], descending);
     }
 
     // Print checking
 
-    //for(int ij=0; ij < npairs; ++ij) {
+    //for(int ij=0; ij < local_.npairs; ++ij) {
 
     /*outfile->Printf( "Pair: %d\n", 1);
     for(int a=0; a < nvir; ++a) {
@@ -194,8 +209,7 @@ void CCEnergyWavefunction::init_pno() {
     // Identify survivors
     double abs_occ;
     int survivors;
-    std::vector<int> survivor_list(npairs);
-    for(int ij=0; ij < npairs; ++ij) {
+    for(int ij=0; ij < local_.npairs; ++ij) {
         survivors = 0;
         for(int a=0; a < nvir; ++a) {
             abs_occ = abs(occ_num[ij]->get(a));
@@ -203,21 +217,21 @@ void CCEnergyWavefunction::init_pno() {
                 survivors += 1;
             }
         }
-        outfile->Printf("Survivors: %i \t", survivors);
-        survivor_list[ij] = survivors;
+        //outfile->Printf("Survivors: %i \t", survivors);
+        local_.survivor_list.push_back(survivors);
     }
 
     // Compute stats
     int total_pno = 0;
     double t2_ratio = 0.0;
-    outfile->Printf("Survivor list: "); 
-    for(int ij=0; ij < npairs; ++ij) {
-        outfile->Printf("%d\t", survivor_list[ij]);
-        total_pno += survivor_list[ij];
-        t2_ratio += pow(survivor_list[ij],2);
+    outfile->Printf("\nSurvivor list: "); 
+    for(int ij=0; ij < local_.npairs; ++ij) {
+        outfile->Printf("%d\t", local_.survivor_list[ij]);
+        total_pno += local_.survivor_list[ij];
+        t2_ratio += pow(local_.survivor_list[ij],2);
     }
     outfile->Printf("\nT2 ratio: %10.10lf \n", t2_ratio);
-    double avg_pno = static_cast<float>(total_pno) / static_cast<float>(npairs);
+    double avg_pno = static_cast<float>(total_pno) / static_cast<float>(local_.npairs);
     t2_ratio /= (nocc*nocc*nvir*nvir);
 
     // Print stats
@@ -228,8 +242,8 @@ void CCEnergyWavefunction::init_pno() {
     // Truncate Q
     // If I understood Slices I wouldn't need to use
     // for loops to set individual matrix elements
-    for(int ij=0; ij < npairs; ++ij) {
-        int npno = survivor_list[ij];
+    for(int ij=0; ij < local_.npairs; ++ij) {
+        int npno = local_.survivor_list[ij];
         auto qtemp = std::make_shared<Matrix>(nvir, npno);
         for(int a=0; a < nvir; ++a) {
             for(int aij=0; aij < npno; ++aij) {
@@ -241,46 +255,61 @@ void CCEnergyWavefunction::init_pno() {
     }
 
     // Print check Q
-    outfile->Printf("**** Truncated Q ****\n");
+    /*outfile->Printf("**** Truncated Q ****\n");
     for (auto &qel : local_.Q) {
         qel->print();
-    }
-    /* for(int ij=0; ij < npairs; ++ij) {
+    }*/
+    /* for(int ij=0; ij < local_.npairs; ++ij) {
         outfile->Printf("Pair: %d \n", ij);
         local_.Q[ij]->print();
     }*/
 
     // Get semicanonical transforms
-    get_semicanonical_transforms(npairs, survivor_list);
+    get_semicanonical_transforms();
     // Print check L
-    outfile->Printf("**** Truncated L ****\n");
+    /*outfile->Printf("**** Truncated L ****\n");
     for (auto &qel : local_.L) {
         qel->print();
-    }
+    }*/
 
     // Write Q, L, eps_pno to file
     psio_address next;
-    psio_write_entry(PSIF_CC_INFO, "PNO dimensions", (char *) &survivor_list, npairs * sizeof(int));
+    psio_write_entry(PSIF_CC_INFO, "PNO dimensions", (char *) &local_.survivor_list, local_.npairs * sizeof(int));
     next = PSIO_ZERO;
-    for(int ij=0; ij < npairs; ++ij) {
-        int npno = survivor_list[ij];
+    for(int ij=0; ij < local_.npairs; ++ij) {
+        int npno = local_.survivor_list[ij];
         psio_write(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *) local_.Q[ij]->pointer()[0],
                 nvir * npno * sizeof(double), next, &next);
     }
     next = PSIO_ZERO;
-    for(int ij=0; ij < npairs; ++ij) {
-        int npno = survivor_list[ij];
+    for(int ij=0; ij < local_.npairs; ++ij) {
+        int npno = local_.survivor_list[ij];
         psio_write(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *) local_.L[ij]->pointer()[0],
                 npno * npno * sizeof(double), next, &next);
     }
+    next = PSIO_ZERO;
+    for(int ij=0; ij < local_.npairs; ++ij) {
+        int npno = local_.survivor_list[ij];
+        psio_write(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *) local_.eps_pno[ij]->pointer(),
+                npno * sizeof(double), next, &next);
+    }
 
     // Check if they can be read back in
-    SharedMatrix Ltest(new Matrix("Ltest of PSIO",nvir,nvir));
-    next = PSIO_ZERO;
-    psio_read(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *) Ltest->pointer()[0],
-        nvir * nvir * sizeof(double), next, &next);
-    outfile->Printf("**** Read-in Truncated L ****\n");
-    Ltest->print();
+    /*next = PSIO_ZERO;
+    outfile->Printf("**** Read-in Truncated Q ****\n");
+    for(int ij=0; ij < local_.npairs; ++ij) {
+        int npno = local_.survivor_list[ij];
+        auto Ltest = std::make_shared<Matrix>(nvir,npno);
+        psio_read(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *) Ltest->pointer()[0],
+        nvir * npno * sizeof(double), next, &next);
+        Ltest->print();
+        Ltest->zero();
+    }*/
+
+    // Assuming this memory needs to be freed
+    /*free(&local_.Q);
+    free(&local_.L);
+    free(&local_.eps_pno);*/
 }
 
 
@@ -306,10 +335,12 @@ void CCEnergyWavefunction::get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix
     global_dpd_->buf4_mat_irrep_close(buf_obj, 0);
 }
 
-void CCEnergyWavefunction::get_semicanonical_transforms(int npairs, std::vector<int> survivor_list) {
+void CCEnergyWavefunction::get_semicanonical_transforms() {
     
     auto nocc = local_.nocc;
     auto nvir = local_.nvir;
+    auto npairs = local_.npairs;
+    auto survivor_list = local_.survivor_list;
     // Read in virtual block of Fock matrix
     dpdfile2 Fab;
     global_dpd_->file2_init(&Fab, PSIF_CC_OEI, 0, 1, 1, "fAB");
@@ -328,10 +359,10 @@ void CCEnergyWavefunction::get_semicanonical_transforms(int npairs, std::vector<
         int npno = survivor_list[ij];
         auto atemp = std::make_shared<Matrix>(nvir, npno);
         auto Fpno = std::make_shared<Matrix>(npno, npno);
-        auto eps = std::make_shared<Vector>(npno);
         atemp->gemm(0, 0, 1, Fvir, local_.Q[ij], 0);
         Fpno->gemm(1, 0, 1, local_.Q[ij], atemp, 1);
     // Diagonalize to obtain L, eps_vir
+        auto eps = std::make_shared<Vector>(npno);
         auto evecs = std::make_shared<Matrix>(npno, npno);
         Fpno->diagonalize(evecs, eps, ascending);
         local_.L.push_back(evecs->clone());
@@ -349,8 +380,9 @@ void CCEnergyWavefunction::local_filter_T1(dpdfile2 *T1) {
     auto nocc = local_.nocc;
     auto nvir = local_.nvir;
 
-    if (local_.method == "PNO")
-        pno_filter_T1(&T1);
+    if (local_.method == "PNO") {
+        pno_filter_T1(T1);
+    }
     /*   local.weak_pairs = init_int_array(nocc*nocc); */
     local_.pairdom_len = init_int_array(nocc * nocc);
     local_.pairdom_nrlen = init_int_array(nocc * nocc);
@@ -446,31 +478,46 @@ void CCEnergyWavefunction::pno_filter_T1(dpdfile2 *T1) {
 
     auto nocc = local_.nocc;
     auto nvir = local_.nvir;
+    auto npairs = local_.npairs;
+    auto survivor_list = local_.survivor_list;
 
     /*   local.weak_pairs = init_int_array(nocc*nocc); */
     local_.eps_occ = init_array(nocc);
-    psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *)local_.eps_occ, nocc * sizeof(double));
+    psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) local_.eps_occ, nocc * sizeof(double));
 
-    local_.W = (double ***)malloc(sizeof(double **) * nocc * nocc);
-    local_.V = (double ***)malloc(sizeof(double **) * nocc * nocc);
-    local_.eps_vir = (double **)malloc(sizeof(double *) * nocc * nocc);
+    local_.Q.resize(npairs);
+    local_.L.resize(npairs);
     next = PSIO_ZERO;
-    for (int ij = 0; ij < nocc * nocc; ij++) {
-        local_.eps_vir[ij] = init_array(local_.pairdom_nrlen[ij]);
-        psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *)local_.eps_vir[ij],
-                  local_.pairdom_nrlen[ij] * sizeof(double), next, &next);
+    for (int ij = 0; ij < npairs; ++ij) {
+        int npno = survivor_list[ij];
+        auto eps_pno_temp = std::make_shared<Vector>(npno);
+        psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *)eps_pno_temp->pointer(),
+                  npno * sizeof(double), next, &next);
+        local_.eps_pno.push_back(eps_pno_temp);
+    }
+    /*outfile->Printf("Testing read-in of virtual orbital energies\n");
+    for(int ij=0; ij < npairs; ++ij) {
+        outfile->Printf("\nPair %d ", ij);
+        int npno = survivor_list[ij];
+        for(int a=0; a < npno; ++a) {
+            outfile->Printf("%f ", local_.eps_pno[ij]->get(a));
+        }
+    }*/
+    next = PSIO_ZERO;
+    for (int ij = 0; ij < npairs; ij++) {
+        int npno = survivor_list[ij];
+        auto qtemp = std::make_shared<Matrix>(nvir, npno);
+        psio_read(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *)qtemp->pointer()[0],
+                  sizeof(double) * nvir * npno, next, &next);
+        local_.Q.push_back(qtemp);
     }
     next = PSIO_ZERO;
     for (int ij = 0; ij < nocc * nocc; ij++) {
-        local_.V[ij] = block_matrix(nvir, local_.pairdom_len[ij]);
-        psio_read(PSIF_CC_INFO, "Local Residual Vector (V)", (char *)local_.V[ij][0],
-                  sizeof(double) * nvir * local_.pairdom_len[ij], next, &next);
-    }
-    next = PSIO_ZERO;
-    for (int ij = 0; ij < nocc * nocc; ij++) {
-        local_.W[ij] = block_matrix(local_.pairdom_len[ij], local_.pairdom_nrlen[ij]);
-        psio_read(PSIF_CC_INFO, "Local Transformation Matrix (W)", (char *)local_.W[ij][0],
-                  sizeof(double) * local_.pairdom_len[ij] * local_.pairdom_nrlen[ij], next, &next);
+        int npno = survivor_list[ij];
+        auto ltemp = std::make_shared<Matrix>(npno, npno);
+        psio_read(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *)ltemp->pointer()[0],
+                  sizeof(double) * npno * npno, next, &next);
+        local_.L.push_back(ltemp);
     }
 
     global_dpd_->file2_mat_init(T1);
@@ -478,54 +525,54 @@ void CCEnergyWavefunction::pno_filter_T1(dpdfile2 *T1) {
 
     for (int i = 0; i < nocc; i++) {
         ii = i * nocc + i; /* diagonal element of pair matrices */
+        int npno = survivor_list[ii];
 
-        if (!local_.pairdom_len[ii]) {
-            outfile->Printf("\n    local_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n", ii);
-            throw PsiException("local_filter_T1: Pair ii is zero-length, which makes no sense.", __FILE__, __LINE__);
+        // TODO: check if this is the best way to do this
+        // (probably not)
+        Vector T1vec(nvir);
+        for(int a=0; a < nvir; ++a) {
+            T1vec.set(a, T1->matrix[0][i][a]);
         }
-
-        T1tilde = init_array(local_.pairdom_len[ii]);
-        T1bar = init_array(local_.pairdom_nrlen[ii]);
+        auto T1tilde = std::make_shared<Vector>(npno);
+        auto T1bar = std::make_shared<Vector>(npno);
 
         /* Transform the virtuals to the redundant projected virtual basis */
-        C_DGEMV('t', nvir, local_.pairdom_len[ii], 1.0, &(local_.V[ii][0][0]), local_.pairdom_len[ii],
-                &(T1->matrix[0][i][0]), 1, 0.0, &(T1tilde[0]), 1);
+        T1tilde->gemv(1, 1, local_.Q[ii].get(), &T1vec, 0);
 
         /* Transform the virtuals to the non-redundant virtual basis */
-        C_DGEMV('t', local_.pairdom_len[ii], local_.pairdom_nrlen[ii], 1.0, &(local_.W[ii][0][0]),
-                local_.pairdom_nrlen[ii], &(T1tilde[0]), 1, 0.0, &(T1bar[0]), 1);
+        T1bar->gemv(1, 1, local_.L[ii].get(), T1tilde.get(), 0);
 
         /* Apply the denominators */
-        for (int a = 0; a < local_.pairdom_nrlen[ii]; a++) T1bar[a] /= (local_.eps_occ[i] - local_.eps_vir[ii][a]);
+        for (int a = 0; a < npno; a++) {
+            T1bar->set(a, T1bar->get(a) / (local_.eps_occ[i] - local_.eps_pno[ii]->get(a)));
+        }
 
         /* Transform the new T1's to the redundant projected virtual basis */
-        C_DGEMV('n', local_.pairdom_len[ii], local_.pairdom_nrlen[ii], 1.0, &(local_.W[ii][0][0]),
-                local_.pairdom_nrlen[ii], &(T1bar[0]), 1, 0.0, &(T1tilde[0]), 1);
+        T1tilde->gemv(0, 1, local_.L[ii].get(), T1bar.get(), 0);
 
         /* Transform the new T1's to the MO basis */
-        C_DGEMV('n', nvir, local_.pairdom_len[ii], 1.0, &(local_.V[ii][0][0]), local_.pairdom_len[ii], &(T1tilde[0]), 1,
-                0.0, &(T1->matrix[0][i][0]), 1);
+        T1vec.gemv(0, 1, local_.Q[ii].get(), T1tilde.get(), 0);
 
-        free(T1bar);
-        free(T1tilde);
+        for(int a=0; a < nvir; ++a) {
+            T1->matrix[0][i][a] = T1vec.get(a);
+        }
+
+
     }
 
     global_dpd_->file2_mat_wrt(T1);
     global_dpd_->file2_mat_close(T1);
 
-    for (int ij = 0; ij < nocc * nocc; ij++) {
-        free_block(local_.W[ij]);
-        free_block(local_.V[ij]);
-        free(local_.eps_vir[ij]);
+    /*for (int ij = 0; ij < npairs; ij++) {
+        free_block(local_.Q[ij]);
+        free_block(local_.L[ij]);
+        free(local_.eps_pno[ij]);
     }
-    free(local_.W);
-    free(local_.V);
-    free(local_.eps_vir);
-
+    free(local_.Q);
+    free(local_.L);
+    free(local_.eps_pno);
     free(local_.eps_occ);
-    free(local_.pairdom_len);
-    free(local_.pairdom_nrlen);
-    /*   free(local.weak_pairs); */
+    free(local.weak_pairs); */
 }
 void CCEnergyWavefunction::local_filter_T2(dpdbuf4 *T2) {
     psio_address next;
@@ -534,6 +581,9 @@ void CCEnergyWavefunction::local_filter_T2(dpdbuf4 *T2) {
     auto nocc = local_.nocc;
     auto nvir = local_.nvir;
 
+    if (local_.method == "PNO") {
+        pno_filter_T2(T2);
+    }
     /*   local.weak_pairs = init_int_array(nocc*nocc); */
     local_.pairdom_len = init_int_array(nocc * nocc);
     local_.pairdom_nrlen = init_int_array(nocc * nocc);
@@ -636,5 +686,101 @@ void CCEnergyWavefunction::local_filter_T2(dpdbuf4 *T2) {
     free(local_.pairdom_nrlen);
     /*   free(local.weak_pairs); */
 }
+
+void CCEnergyWavefunction::pno_filter_T2(dpdbuf4 *T2) {
+    psio_address next;
+
+    auto nso = local_.nso;
+    auto nocc = local_.nocc;
+    auto nvir = local_.nvir;
+    auto npairs = local_.npairs;
+
+    local_.eps_occ = init_array(nocc);
+    psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) local_.eps_occ, nocc * sizeof(double));
+
+    local_.Q.resize(npairs);
+    local_.L.resize(npairs);
+    next = PSIO_ZERO;
+    for (int ij = 0; ij < npairs; ++ij) {
+        int npno = survivor_list[ij];
+        auto eps_pno_temp = std::make_shared<Vector>(npno);
+        psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *)eps_pno_temp->pointer(),
+                  npno * sizeof(double), next, &next);
+        local_.eps_pno.push_back(eps_pno_temp);
+    }
+    /*outfile->Printf("Testing read-in of virtual orbital energies\n");
+    for(int ij=0; ij < npairs; ++ij) {
+        outfile->Printf("\nPair %d ", ij);
+        int npno = survivor_list[ij];
+        for(int a=0; a < npno; ++a) {
+            outfile->Printf("%f ", local_.eps_pno[ij]->get(a));
+        }
+    }*/
+    next = PSIO_ZERO;
+    for (int ij = 0; ij < npairs; ij++) {
+        int npno = survivor_list[ij];
+        auto qtemp = std::make_shared<Matrix>(nvir, npno);
+        psio_read(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *)qtemp->pointer()[0],
+                  sizeof(double) * nvir * npno, next, &next);
+        local_.Q.push_back(qtemp);
+    }
+    next = PSIO_ZERO;
+    for (int ij = 0; ij < nocc * nocc; ij++) {
+        int npno = survivor_list[ij];
+        auto ltemp = std::make_shared<Matrix>(npno, npno);
+        psio_read(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *)ltemp->pointer()[0],
+                  sizeof(double) * npno * npno, next, &next);
+        local_.L.push_back(ltemp);
+    }
+
+    /* Grab the MO-basis T2's */
+    global_dpd_->buf4_mat_irrep_init(T2, 0);
+    global_dpd_->buf4_mat_irrep_rd(T2, 0);
+
+    for (int ij = 0; ij < npairs; ++ij) {
+        int npno = survivor_list[ij];
+        auto atemp = std::make_shared<Matrix>(nvir, npno);
+        auto T2tilde = std::make_shared<Matrix>(npno, npno);
+        /* Transform the virtuals to the redundant projected virtual basis */
+        atemp->gemm(0, 0, 1, T2->matrix[0][ij], local_.Q[ij], 0);
+        T2tilde->gemm(1, 0, 1, local_.Q[ij], atemp, 1);
+
+        auto btemp = std::make_shared<Matrix>(npno, npno);
+        auto T2bar = std::make_shared<Matrix>(npno, npno);
+        /* Transform the virtuals to the non-redundant virtual basis */
+        btemp->gemm(0, 0, 1, T2tilde, local_.L[ij], 0);
+        T2bar->gemm(1, 0, 1, local_.L[ij], btemp, 1);
+
+        /* Divide the new amplitudes by the denominators */
+        int i = ij / nocc;
+        int j = ij % nocc;
+        for (int a = 0; a < npno; a++) {
+            for (int b = 0; b < npno; b++) {
+                T2bar->set(a, b, T2bar->get(a,b) /
+                    (local_.eps_occ[i] + local_.eps_occ[j] - local_.eps_pno[ij].get(a) - local_.eps_pno[ij].get(b));
+            }
+        }
+        /* Transform the new T2's to the redundant virtual basis */
+        btemp->gemm(0, 1, 1, T2bar, local_.L[ij], 0);
+        T2tilde->gemm(0, 0, 1, local_.L[ij], btemp, 1);
+
+        /* Transform the new T2's to the MO basis */
+        atemp->gemm(0, 1, 1, T2tilde, local_.Q[ij], 0);
+        T2->matrix[0][ij]->gemm(0, 0, 1, local_.Q[ij], atemp, 1);
+    }
+
+    /*free_block(T2tilde);
+    free_block(T2bar);*/
+
+    /* Write the updated MO-basis T2's to disk */
+    global_dpd_->buf4_mat_irrep_wrt(T2, 0);
+    global_dpd_->buf4_mat_irrep_close(T2, 0);
+
+    /*for (int i = 0; i < nocc * nocc; i++) {
+        free_block(local_.W[i]);
+        free_block(local_.V[i]);
+        free(local_.eps_vir[i]); */
+}
+
 }  // namespace ccenergy
 }  // namespace psi
