@@ -161,7 +161,6 @@ PCM::PCM(const std::string &pcmsolver_parsed_fname, int print_level, std::shared
     if (do_numerical_) {
         outfile->Printf("Calculating PCM potentials numerically \n");
             numeric_ = std::make_shared<Num1Int>(basisset_);
-            // numeric_ = Num1Int(basisset_); 
     }
 
     pcmsolver_print(context_.get());
@@ -223,6 +222,8 @@ PCM::PCM(const PCM *other) {
     potential_int_ = other->potential_int_;
     context_ = detail::init_PCMSolver(other->pcmsolver_parsed_fname_, basisset_->molecule());
     pcm_print_ = other->pcm_print_;
+    do_numerical_ = other->do_numerical_;
+    if (do_numerical_) numeric_ = other->numeric_;
 }
 
 SharedVector PCM::compute_electronic_MEP(const SharedMatrix &D) const {
@@ -243,9 +244,12 @@ SharedVector PCM::compute_electronic_MEP(const SharedMatrix &D) const {
     auto MEP = std::make_shared<Vector>(tesspi_);
     if (do_numerical_) {
         // Mind the pure/cart issues for BF on the grid!. Spherical does not work yet!!
-        // auto numeric_ = std::make_shared<Num1Int>(basisset_); // must not be here
-        MEP = numeric_->V_point_charges(D_carts, tess_Zxyz_);
-        MEP->print(); // same values if numeric is not constructed here??
+        auto numeric_ = std::make_shared<psi::Num1Int>(basisset_); // must not be here
+        // MEP = numeric_->V_point_charges(D_carts, tess_Zxyz_);
+        // numeric_->V_point_charges(D_carts, tess_Zxyz_, MEP->pointer(0));
+        numeric_->set_charge_field(tess_Zxyz_);
+        MEP=numeric_->V_point_charges(D_carts);
+        // MEP->print(); // same values if numeric is not constructed here??
         // numeric_ is const std::shared_ptr<psi::Num1Int>
     } else {
         ContractOverDensityFunctor contract_density_functor(ntess_, MEP->pointer(0), D_carts);

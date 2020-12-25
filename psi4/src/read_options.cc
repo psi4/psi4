@@ -267,6 +267,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_str("MBIS_PRUNING_SCHEME", "ROBUST", 
                     "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
 
+
+    /// Options for numerical integration of 1e integrals
+    /*- screening threshold for small densities !expert -*/
+    options.add_double("VPOT_DENSITY_TOLERANCE", 1.0e-12);
+    
     /*- PCM boolean for pcmsolver module -*/
     options.add_bool("PCM", false);
     if (name == "PCM" || options.read_globals()) {
