@@ -251,6 +251,8 @@ SharedVector PCM::compute_electronic_MEP(const SharedMatrix &D) const {
         // numeric_->V_point_charges(D_carts, tess_Zxyz_, MEP->pointer(0));
         numeric_->set_charge_field(tess_Zxyz_);
         MEP=numeric_->V_point_charges(D_carts);
+        // ContractOverDensityFunctor contract_density_functor(ntess_, MEP->pointer(0), D_carts);
+        // potential_int_->compute(contract_density_functor);
     } else {
         ContractOverDensityFunctor contract_density_functor(ntess_, MEP->pointer(0), D_carts);
         potential_int_->compute(contract_density_functor);
@@ -400,8 +402,13 @@ double PCM::compute_E_electronic(const SharedVector &MEP_e) const {
 SharedMatrix PCM::compute_Vpcm(const SharedVector &ASC) const {
     timer_on("PCMSolver: Vpcm");
     auto V_pcm_cart = std::make_shared<Matrix>("PCM potential cart", basisset_->nao(), basisset_->nao());
+    // auto TMP = std::make_shared<Matrix>("reference", basisset_->nao(), basisset_->nao());
     if (do_numerical_) {
-        V_pcm_cart = numeric_->V_point_charges_operator(ASC);
+        V_pcm_cart->copy(numeric_->V_point_charges_operator(ASC));
+        // V_pcm_cart->print();
+        // ContractOverChargesFunctor contract_charges_functor(ASC->pointer(0), TMP);
+        // potential_int_->compute(contract_charges_functor);
+        // TMP->print();
     }
     else{
         ContractOverChargesFunctor contract_charges_functor(ASC->pointer(0), V_pcm_cart);

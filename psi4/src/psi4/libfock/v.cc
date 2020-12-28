@@ -1351,30 +1351,37 @@ SharedMatrix Num1Int::V_point_charges_operator(const SharedVector &ASC) {
         parallel_timer_on("Properties", rank);
         pworker->compute_points(block, false);
         parallel_timer_off("Properties", rank);
-
+        // SharedMatrix phi_block = pworker->basis_values()["PHI"];
+        // phi_block->print();
         // Compute the potential at grid points
         parallel_timer_on("grid points loop", rank);
         potential[rank].resize(block->npoints());
+        // std::fill(potential[rank].begin(),potential[rank].end(),0.0);
         for (int ip = 0; ip < block->npoints(); ip++) {
             double xi = block->x()[ip];
             double yi = block->y()[ip];
             double zi = block->z()[ip];
-            double wi = block->w()[ip];
+            // weights enter in integrator
+            // double wi = block->w()[ip];
             double V = 0.0;
             for (size_t ichrg = 0; ichrg < ncharges; ichrg++) {
                 double dx = Zxyz_->get(ichrg,1) - xi;
                 double dy = Zxyz_->get(ichrg,2) - yi;
                 double dz = Zxyz_->get(ichrg,3) - zi;
                 double r = std::sqrt(dx * dx + dy * dy + dz * dz);
-                V = -wi * ASC->get(ichrg) / r; 
-                potential[rank][ip] += V;
+                V -= ASC->get(ichrg) / r; 
             } // point charges
+            potential[rank][ip] = V ;
         } // points in block
         parallel_timer_off("grid points loop", rank);
 
-    // Can use sap_potential function also to map the current potential
+    // 
     parallel_timer_on("finish operator", rank);
+    // PHI * potential * PHI
+    // Not sure the below is right.
+    // pworker->print();
     dft_integrators::sap_integrator(block, potential[rank], pworker, V_local[rank]);
+
     // => Unpacking <= //
         double** V2p = V_local[rank]->pointer();
         const std::vector<int>& function_map = block->functions_local_to_global();
@@ -1501,7 +1508,8 @@ SharedVector Num1Int::V_point_charges(const SharedMatrix &D) {
     } // grid blocks
     
     double percent = 100.0 * skipped/numint_grid->npoints();
-    printf("Num1Int: Skipped %i of %i points [%5.2f %%] \n",skipped,numint_grid->npoints(),percent);
+    // around 6-7% for dense basis sets%
+    // printf("Num1Int: Skipped %i of %i points [%5.2f %%] \n",skipped,numint_grid->npoints(),percent);
     Vpot->scale(0.5); //ToDo: Why? Solve this :)
     timer_off("Num1Int: MEP_e");
     // Vpot->print();
