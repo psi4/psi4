@@ -172,6 +172,8 @@ class Num1Int {
     int num_threads_;
     /// treshold for small densities
     double density_tolerance_;
+    /// Number of basis functions;
+    int nbf_;
 
     void initialize();
 
@@ -179,9 +181,8 @@ class Num1Int {
     Num1Int(std::shared_ptr<BasisSet> basisset_);
     ~Num1Int() ;
     std::vector<std::shared_ptr<PointFunctions>> numint_point_workers;
-    // std::vector<std::shared_ptr<SuperFunctional>> numint_workers_;
     
-    SharedVector Vpot;
+    // SharedVector Vpot;
 
     // void finalize();
 
@@ -189,11 +190,11 @@ class Num1Int {
 
     // SharedVector V_point_charges(const SharedMatrix &D, const SharedMatrix &Zxyz_);
     // SharedVector V_point_charges(SharedMatrix D,SharedMatrix Zxyz_);
-    SharedVector V_point_charges(SharedMatrix D);
+    SharedVector V_point_charges(const SharedMatrix &D);
     // void V_point_charges(const SharedMatrix D,const SharedMatrix Zxyz, double *Vpot);
 
-    SharedMatrix V_point_charges_operator(const SharedVector &ASC,const SharedMatrix &Zxyz_);
-
+    SharedMatrix V_point_charges_operator(const SharedVector &ASC);
+    // void V_point_charges_operator(const SharedVector &ASC, SharedMatrix ret);
     void print_details() const;
 
     /// grid object

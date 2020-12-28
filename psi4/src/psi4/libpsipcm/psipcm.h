@@ -101,8 +101,8 @@ class PCM final {
     std::string pcmsolver_parsed_fname_;
 
     /// numeric integrator
-    std::shared_ptr<Num1Int> numeric_;
-    // Num1Int numeric_;
+    // std::shared_ptr<Num1Int> numeric_;
+    Num1Int *numeric_;
 
     /// print level
     int pcm_print_;

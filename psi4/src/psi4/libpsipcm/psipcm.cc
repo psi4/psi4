@@ -159,8 +159,10 @@ PCM::PCM(const std::string &pcmsolver_parsed_fname, int print_level, std::shared
 
     do_numerical_ = Process::environment.options.get_str("PCM_VPOT_SOLVER") == "NUMERICAL" ? true : false;
     if (do_numerical_) {
-        outfile->Printf("Calculating PCM potentials numerically \n");
-            numeric_ = std::make_shared<Num1Int>(basisset_);
+        outfile->Printf(" Calculating PCM potentials numerically \n");
+            // auto tmp = std::make_shared<Num1Int>(basisset_);
+            numeric_ = static_cast<Num1Int*>(new Num1Int(basisset_));
+            // Num1Int numeric_(basisset_);
     }
 
     pcmsolver_print(context_.get());
@@ -244,13 +246,11 @@ SharedVector PCM::compute_electronic_MEP(const SharedMatrix &D) const {
     auto MEP = std::make_shared<Vector>(tesspi_);
     if (do_numerical_) {
         // Mind the pure/cart issues for BF on the grid!. Spherical does not work yet!!
-        auto numeric_ = std::make_shared<psi::Num1Int>(basisset_); // must not be here
+        // auto numeric_ = std::make_shared<psi::Num1Int>(basisset_); // must not be here
         // MEP = numeric_->V_point_charges(D_carts, tess_Zxyz_);
         // numeric_->V_point_charges(D_carts, tess_Zxyz_, MEP->pointer(0));
         numeric_->set_charge_field(tess_Zxyz_);
         MEP=numeric_->V_point_charges(D_carts);
-        // MEP->print(); // same values if numeric is not constructed here??
-        // numeric_ is const std::shared_ptr<psi::Num1Int>
     } else {
         ContractOverDensityFunctor contract_density_functor(ntess_, MEP->pointer(0), D_carts);
         potential_int_->compute(contract_density_functor);
@@ -401,10 +401,7 @@ SharedMatrix PCM::compute_Vpcm(const SharedVector &ASC) const {
     timer_on("PCMSolver: Vpcm");
     auto V_pcm_cart = std::make_shared<Matrix>("PCM potential cart", basisset_->nao(), basisset_->nao());
     if (do_numerical_) {
-        // not done yet. Keep analytical for testing
-        // V_cpm_cart = numeric_->V_point_charges_operator(ASC, tess_Zxyz_);
-        ContractOverChargesFunctor contract_charges_functor(ASC->pointer(0), V_pcm_cart);
-        potential_int_->compute(contract_charges_functor);
+        V_pcm_cart = numeric_->V_point_charges_operator(ASC);
     }
     else{
         ContractOverChargesFunctor contract_charges_functor(ASC->pointer(0), V_pcm_cart);
