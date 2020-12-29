@@ -1843,14 +1843,13 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
 // See PopulationAnalysisCalc::compute_mbis_multipoles
 void OEProp::compute_mbis_multipoles() {
 
-    SharedMatrix mpole, dpole, qpole, opole, avols;
-    std::tie(mpole, dpole, qpole, opole, avols) = pac_.compute_mbis_multipoles(true);
+    SharedMatrix mpole, dpole, qpole, opole;
+    std::tie(mpole, dpole, qpole, opole) = pac_.compute_mbis_multipoles(true);
 
     wfn_->set_array_variable("MBIS CHARGES", mpole);
     wfn_->set_array_variable("MBIS DIPOLES", dpole);
     wfn_->set_array_variable("MBIS QUADRUPOLES", qpole);
     wfn_->set_array_variable("MBIS OCTUPOLES", opole);
-    wfn_->set_array_variable("MBIS ATOMIC VOLUMES", avols);
 
 }
 
@@ -2038,7 +2037,7 @@ SharedMatrix compute_atomic_volumes(const std::shared_ptr<DFTGrid>& grid, const 
 }
 
 // Minimal Basis Iterative Stockhplder (JCTC, 2016, p. 3894–3912, Verstraelen et al.)
-std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix>
+std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix>
 PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     if (print_output) outfile->Printf("  ==> Computing MBIS Charges <==\n\n");
@@ -2423,10 +2422,17 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     }
 
     auto avols = compute_atomic_volumes(grid, rho_a, distances, num_atoms);
+    wfn_->set_array_variable("MBIS ATOMIC VOLUMES", avols);
+
+    auto valence_widths = std::make_shared<Matrix>("MBIS Valence Widths", num_atoms, 1);
+    for (int atom = 0; atom < num_atoms; atom++) {
+        valence_widths->set(atom, 0, Sai[atom][mA[atom]]);
+    }
+    wfn_->set_array_variable("MBIS VALENCE WIDTHS", valence_widths);
 
     timer_off("MBIS");
 
-    return std::make_tuple(mpole, dpole, qpole, opole, avols);
+    return std::make_tuple(mpole, dpole, qpole, opole);
 }
 
 void OEProp::compute_mayer_indices() {
