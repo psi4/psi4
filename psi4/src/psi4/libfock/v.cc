@@ -1424,7 +1424,7 @@ SharedVector Num1Int::V_point_charges(const SharedMatrix &D) {
     int rank = 0;
 
     // potential vector
-    auto Vpot = std::make_shared<Vector>(ncharges);
+    auto Vpot = std::make_shared<Vector>("Vpot PC",ncharges);
 
     // move it init?
     const int max_points = numint_grid->max_points();
@@ -1432,7 +1432,9 @@ SharedVector Num1Int::V_point_charges(const SharedMatrix &D) {
 
     int ansatz = 0;
     // D->print();
+    std::vector<SharedVector> V_local;
     for (size_t i = 0; i < num_threads_; i++) {
+        V_local.push_back(std::make_shared<Vector>("V Temp", ncharges));
         // Need a points worker per thread. Use RKSFunctions or make own?
         auto point_tmp = std::make_shared<RKSFunctions>(basisset_, max_points, max_functions);
         point_tmp->set_ansatz(ansatz);
@@ -1447,7 +1449,7 @@ SharedVector Num1Int::V_point_charges(const SharedMatrix &D) {
     // counter for skipped grid points. ToDo: hide in debug
     size_t skipped=0;
 // Traverse the blocks of points
-#pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
+#pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_) 
     for (size_t Q = 0; Q < numint_grid->blocks().size(); Q++) {
 
 #ifdef _OPENMP
@@ -1499,13 +1501,21 @@ SharedVector Num1Int::V_point_charges(const SharedMatrix &D) {
                 double r = std::sqrt(dx * dx + dy * dy + dz * dz);
                 // J_screened is 1/r for point charges, where Z=1. Any reason to include Z explicitly here?
                 V = -rho_ / r; 
-                Vpot->add(ichrg,V); // NOT parallel yet
+                V_local[rank]->add(ichrg,V);
                 // Vpot[ichrg]+=V;
             } // point charges
             parallel_timer_off("loop over charges", rank);
         } // points in block
         parallel_timer_off("loop over grid points", rank);
     } // grid blocks
+
+    // manual reduction. Better way?
+    for (size_t i = 0; i < num_threads_; i++) {
+        for (size_t ichrg = 0; ichrg < ncharges; ichrg++) {
+        Vpot->add(ichrg,V_local[i]->get(ichrg));
+        }
+    }
+
     
     double percent = 100.0 * skipped/numint_grid->npoints();
     // around 6-7% for dense basis sets%
