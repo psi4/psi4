@@ -2426,7 +2426,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     auto valence_widths = std::make_shared<Matrix>("MBIS Valence Widths", num_atoms, 1);
     for (int atom = 0; atom < num_atoms; atom++) {
-        valence_widths->set(atom, 0, Sai[atom][mA[atom]]);
+        valence_widths->set(atom, 0, Sai[atom][mA[atom]-1]);
     }
     wfn_->set_array_variable("MBIS VALENCE WIDTHS", valence_widths);
 
