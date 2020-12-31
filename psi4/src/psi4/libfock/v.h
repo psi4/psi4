@@ -184,7 +184,7 @@ class Num1Int {
     
     // SharedVector Vpot;
 
-    // void finalize();
+    void finalize();
 
     // std::vector<double> V_point_charges(SharedMatrix D);
 
