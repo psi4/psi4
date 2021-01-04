@@ -1315,7 +1315,6 @@ SharedMatrix Num1Int::V_point_charges_operator(const SharedVector &ASC) {
     }
 
     auto V_AO = std::make_shared<Matrix>("V AO Temp", nbf_, nbf_);
-    auto Dtmp = std::make_shared<Matrix>("Dtmp", nbf_, nbf_);
     double** Vp = V_AO->pointer();
 
     std::vector<std::vector<double>> potential(num_threads_);
@@ -1323,10 +1322,9 @@ SharedMatrix Num1Int::V_point_charges_operator(const SharedVector &ASC) {
     int ansatz = 0;
     // D->print();
     for (size_t i = 0; i < num_threads_; i++) {
-        auto point_tmp = std::make_shared<RKSFunctions>(basisset_, max_points, max_functions);
-        // Cannot use PointFunctions directly, so RKS for now as fallback, but rho is not needed
+        // auto point_tmp = std::make_shared<RKSFunctions>(basisset_, max_points, max_functions);
+        auto point_tmp = std::make_shared<SAPFunctions>(basisset_, max_points, max_functions);
         point_tmp->set_ansatz(0);
-        point_tmp->set_pointers(Dtmp); // empty matrix as input..
         numint_point_workers.push_back(point_tmp);
     }
     // counter for skipped grid points. ToDo: hide in debug
@@ -1422,7 +1420,7 @@ SharedVector Num1Int::V_point_charges(const SharedMatrix& D) {
         // Can use RKSFunctions with ansatz=0, it will provide only PHI and RHO
         auto point_tmp = std::make_shared<RKSFunctions>(basisset_, max_points, max_functions);
         point_tmp->set_ansatz(0);
-        point_tmp->set_pointers(D);  // not updating the density as expected.
+        point_tmp->set_pointers(D);  // not updating the density as expected?!
         numint_point_workers.push_back(point_tmp);
     }
 
@@ -1491,7 +1489,7 @@ SharedVector Num1Int::V_point_charges(const SharedMatrix& D) {
             Vpot->add(ichrg, V_local[i]->get(ichrg));
         }
     }
-    Vpot->scale(0.5);  // Why?
+    Vpot->scale(0.5); 
 
     double percent = 100.0 * skipped / numint_grid->npoints();
     if (print_ > 2) {
