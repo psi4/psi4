@@ -36,23 +36,29 @@ from psi4.driver.p4util.testing import compare_integers, compare_values, compare
 from psi4.driver.procrouting.proc_util import check_iwl_file_from_scf_type
 
 from psi4 import core
-from .exceptions import ValidationError, TestComparisonError
 
 
-def fcidump(wfn, fname='INTDUMP', oe_ints=None):
+def fcidump(wfn, fname='INTDUMP', oe_ints=None, write_pntgrp=False):
     """Save integrals to file in FCIDUMP format as defined in Comp. Phys. Commun. 54 75 (1989)
     Additional one-electron integrals, including orbital energies, can also be saved.
     This latter format can be used with the HANDE QMC code but is not standard.
+    This function converts the irrep labels from Cotton's order (used in psi4)
+    to molpro ordering. Since the latter is ambiguous unless the point group is
+    specified, this function has an option to write the point group label in the
+    FCIDUMP file. This, however, is not part of the standard.
 
     :returns: None
 
-    :raises: ValidationError when SCF wavefunction is not RHF
+    :raises: ValidationError when SCF wavefunction is not RHF, ROHF, or UHF
 
     :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, basis, orbitals from which to generate cube files
     :param fname: name of the integrals file, defaults to INTDUMP
     :param oe_ints: list of additional one-electron integrals to save to file.
     So far only EIGENVALUES is a valid option.
+    :param write_pntgrp: write the point group to file. This information is not
+    part of the Comp Phys Chem standard and might create issues with parsing for codes
+    that do not support it.
 
     :examples:
 
@@ -69,7 +75,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
     reference = core.get_option('SCF', 'REFERENCE')
     ints_tolerance = core.get_global_option('INTS_TOLERANCE')
     # Some sanity checks
-    if reference not in ['RHF', 'UHF']:
+    if reference not in ['RHF', 'UHF', 'ROHF']:
         raise ValidationError('FCIDUMP not implemented for {} references\n'.format(reference))
     if oe_ints is None:
         oe_ints = []
@@ -85,7 +91,8 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
     nbf = active_mopi.sum() if wfn.same_a_b_orbs() else 2 * active_mopi.sum()
     nirrep = wfn.nirrep()
     nelectron = 2 * active_docc.sum() + active_socc.sum()
-    irrep_map = _irrep_map(wfn)
+    symm = wfn.molecule().point_group().symbol()
+    irrep_map = _irrep_map(symm)
 
     wfn_irrep = 0
     for h, n_socc in enumerate(active_socc):
@@ -107,6 +114,8 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
                 orbsym += '{:d},'.format(irrep_map[h])
     header += 'ORBSYM={}\n'.format(orbsym)
     header += 'ISYM={:d},\n'.format(irrep_map[wfn_irrep])
+    if write_pntgrp:
+        header += 'PNTGRP={},\n'.format(symm.upper())
     header += '&END\n'
     with open(fname, 'w') as intdump:
         intdump.write(header)
@@ -136,7 +145,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
 
     with open(fname, 'a') as intdump:
         core.print_out('Writing frozen core operator in FCIDUMP format to ' + fname + '\n')
-        if reference == 'RHF':
+        if reference == 'RHF' or reference == 'ROHF':
             PSIF_MO_FZC = 'MO-basis Frozen-Core Operator'
             moH = core.Matrix(PSIF_MO_FZC, wfn.nmopi(), wfn.nmopi())
             moH.load(core.IO.shared_object(), psif.PSIF_OEI)
@@ -155,8 +164,11 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
             # Orbital energies
             core.print_out('Writing orbital energies in FCIDUMP format to ' + fname + '\n')
             if 'EIGENVALUES' in oe_ints:
-                eigs_dump = write_eigenvalues(wfn.epsilon_a().get_block(mo_slice).to_array(), mo_idx)
-                intdump.write(eigs_dump)
+                if reference == 'RHF':
+                    eigs_dump = write_eigenvalues(wfn.epsilon_a().get_block(mo_slice).to_array(), mo_idx)
+                    intdump.write(eigs_dump)
+                else:
+                    raise Exception('Cannot write orbital energies for ROHF references')
         else:
             PSIF_MO_A_FZC = 'MO-basis Alpha Frozen-Core Oper'
             moH_A = core.Matrix(PSIF_MO_A_FZC, wfn.nmopi(), wfn.nmopi())
@@ -217,10 +229,9 @@ def write_eigenvalues(eigs, mo_idx):
     return eigs_dump
 
 
-def _irrep_map(wfn):
+def _irrep_map(symm):
     """Returns an array of irrep indices that maps from Psi4's ordering convention to the standard FCIDUMP convention.
     """
-    symm = wfn.molecule().point_group().symbol()
     psi2dump = {'c1' : [1],               # A
                 'ci' : [1,2],             # Ag Au
                 'c2' : [1,2],             # A  B
@@ -231,11 +242,29 @@ def _irrep_map(wfn):
                 'd2h' : [1,4,6,7,8,5,3,2] # Ag B1g B2g B3g Au B1u B2u B3u
                 }
 
-    irrep_map = psi2dump[symm]
+    irrep_map = psi2dump[symm.lower()]
     return np.array(irrep_map, dtype='int')
 
 
-def fcidump_from_file(fname):
+def _irrep_map_inverse(symm):
+    """Returns an array of irrep indices that maps from the standard FCIDUMP convention to the Psi4's ordering convention.
+    """
+    # this is the inverse of _irrep_map
+    dump2psi = {'c1' : [-1,0],
+                'ci' : [-1,0,1],
+                'c2' : [-1,0,1],
+                'cs' : [-1,0,1],
+                'd2' : [-1,0,3,2,1],
+                'c2v' : [-1,0,2,3,1],
+                'c2h' : [-1,0,2,3,1],
+                'd2h' : [-1,0,7,6,1,5,2,3,4]
+                }
+
+    irrep_map = dump2psi[symm.lower()]
+    return np.array(irrep_map, dtype='int')
+
+
+def fcidump_from_file(fname, convert_to_psi4=False):
     """Function to read in a FCIDUMP file.
 
     :returns: a dictionary with FCIDUMP header and integrals
@@ -244,6 +273,7 @@ def fcidump_from_file(fname):
       - 'nelec' : number of electrons
       - 'ms2' : spin polarization of the system
       - 'isym' : symmetry of state (if present in FCIDUMP)
+      - 'pntgrp' : point group (if present in FCIDUMP)
       - 'orbsym' : list of symmetry labels of each orbital
       - 'uhf' : whether restricted or unrestricted
       - 'enuc' : nuclear repulsion plus frozen core energy
@@ -252,6 +282,9 @@ def fcidump_from_file(fname):
       - 'eri' : electron-repulsion integrals
 
     :param fname: FCIDUMP file name
+    :param convert_to_psi4: If turned on and the FCIDUMP
+    file contains the PNTGRP label, the orbital symmetries will
+    be converted to the ordering used in psi4
     """
     intdump = {}
     with open(fname, 'r') as handle:
@@ -270,11 +303,19 @@ def fcidump_from_file(fname):
             if key == 'UHF':
                 value = 'TRUE' in value
             elif key == 'ORBSYM':
-                value = [int(x) for x in value.split(',')]
+                value = [int(x) for x in value.split(',')]                
+            elif key == 'PNTGRP':
+                pass
             else:
                 value = int(value.replace(',', ''))
 
             intdump[key.lower()] = value
+
+    if convert_to_psi4 and ('pntgrp' in intdump) and ('orbsym' in intdump):
+        irrep_map_inverse = _irrep_map_inverse(intdump['pntgrp'])
+        psi4_irrep_map = map(lambda x: irrep_map_inverse[x], intdump['orbsym'])
+        intdump['orbsym'] = list(psi4_irrep_map)
+        intdump['isym'] = irrep_map_inverse[intdump['isym']]
 
     # Read the data and index, skip header
     raw_ints = np.genfromtxt(fname, skip_header=skiplines)
@@ -292,15 +333,19 @@ def fcidump_from_file(fname):
     # Slices
     sl = slice(ints.shape[0] - nbf, ints.shape[0])
 
-    # Extract orbital energies
-    epsilon = np.zeros(nbf)
-    epsilon[idxs[sl, 0]] = ints[sl]
-    intdump['epsilon'] = epsilon
+    # Count how many 1-index intdump we have
+    one_index = np.all(idxs[sl, 1:] == -1, axis=1).sum()
+
+    # Extract orbital energies if present
+    if one_index > 0:
+        epsilon = np.zeros(nbf)
+        epsilon[idxs[sl, 0]] = ints[sl]
+        intdump['epsilon'] = epsilon
 
     # Count how many 2-index intdump we have
-    sl = slice(sl.start - nbf * nbf, sl.stop - nbf)
+    sl = slice(ints.shape[0] - one_index - nbf * nbf, sl.stop - one_index)
     two_index = np.all(idxs[sl, 2:] == -1, axis=1).sum()
-    sl = slice(sl.stop - two_index, sl.stop)
+    sl = slice(ints.shape[0] - two_index - one_index, ints.shape[0] - one_index)
 
     # Extract Hcore
     Hcore = np.zeros((nbf, nbf))
