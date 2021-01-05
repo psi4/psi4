@@ -1,4 +1,4 @@
-find_package(Libxc 5.0.0 CONFIG QUIET)
+find_package(Libxc 5.1.0 CONFIG QUIET)
 
 if(${Libxc_FOUND})
     get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
@@ -15,8 +15,7 @@ else()
         # Default: use a stable release tarball of libxc. To use the
         # development version of libxc, instead, comment the first URL line,
         # and uncomment the second URL line.
-        URL https://gitlab.com/libxc/libxc/-/archive/5.0.0/libxc-5.0.0.tar.gz
-        #URL https://gitlab.com/libxc/libxc/-/archive/master/libxc-master.tar.gz
+        URL https://gitlab.com/libxc/libxc/-/archive/hotfix5.1.0/libxc-hotfix5.1.0.tar.gz
         #UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
