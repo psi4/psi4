@@ -38,6 +38,7 @@
 #include "psi4/libqt/qt.h"
 #include "MOInfo.h"
 #include "Params.h"
+#include "cclambda.h"
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
@@ -45,7 +46,8 @@
 namespace psi {
 namespace cclambda {
 
-void local_filter_T1(dpdfile2 *);
+void pno_filter_T1(dpdfile2 *T1);
+void local_filter_T1(dpdfile2 *T1);
 
 void L1_build(const struct L_Params& L_params) {
     dpdfile2 newLIA, newLia, LIA, Lia;

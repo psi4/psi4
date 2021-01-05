@@ -185,7 +185,13 @@ double CCEnergyWavefunction::compute_energy() {
 
     if (params_.local) {
         local_init();
-        if (local_.weakp == "MP2") lmp2();
+        dpdbuf4 T2;
+        global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+        local_filter_T2(&T2);
+        global_dpd_->buf4_close(&T2);
+        moinfo_.emp2 = mp2_energy();
+        outfile->Printf("MP2 correlation energy after filtering T2's: %2.10f \n",moinfo_.emp2); 
+        //if (local_.weakp == "MP2") lmp2();
     }
 
     if (params_.print_mp2_amps) amp_write();

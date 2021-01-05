@@ -32,6 +32,8 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/cc/ccwave.h"
 
+#include "Local.h"
+
 namespace psi {
 class Wavefunction;
 class Options;
@@ -60,6 +62,10 @@ class CCLambdaWavefunction final : public psi::ccenergy::CCEnergyWavefunction {
     void get_params(psi::Options &);
     void local_init();
     void local_done();
+    void local_filter_T1(dpdfile2 *T1);
+    void local_filter_T2(dpdbuf4 *T2);
+    void pno_filter_T1(dpdfile2 *T1);
+    void pno_filter_T2(dpdbuf4 *T2);
     void exit_io();
     void title();
     void get_moinfo(std::shared_ptr<psi::Wavefunction> wfn);
@@ -72,6 +78,9 @@ class CCLambdaWavefunction final : public psi::ccenergy::CCEnergyWavefunction {
 
     void cc2_L2_build(const struct L_Params&);
     void L2_build(const struct L_Params&);
+
+    /* Local as a member variable */
+    //Local local_;
 };
 
 }  // namespace cclambda
