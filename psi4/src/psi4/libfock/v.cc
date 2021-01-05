@@ -1265,6 +1265,7 @@ void Num1Int::initialize() {
     // basisset_->print_detail();
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
+    // Maybe a custom grid
     // std::map<std::string, std::string> opt_map;
     // std::map<std::string, int> opt_int_map;
     // opt_map["DFT_PRUNING_SCHEME"] = "NUMINT_PRUNING_SCHEME";
@@ -1281,7 +1282,7 @@ void Num1Int::initialize() {
     // if (print_ > 1) print_details();
     print_details();
 
-    nbf_ = basisset_->nao(); // mind the cartesian issue
+    dim_ = basisset_->nao(); // mind the cartesian issue
 }
 void Num1Int::finalize() { numint_grid.reset(); }
 void Num1Int::print_details() const {
@@ -1291,9 +1292,8 @@ void Num1Int::print_details() const {
     outfile->Printf("    Density tolerance = %8.2E \n", density_tolerance_);
 }
 
-// void Num1Int::V_point_charges_operator(const SharedVector &ASC, SharedMatrix ret) {
 SharedMatrix Num1Int::V_point_charges_operator(const SharedVector &ASC) {
-    timer_on("Num1Int: Fock-like operator");
+    timer_on("Num1Int: V_point_charges_operator");
     // potential integrals contracted with charges
     // Similar to PotentialInt, setup the field of partial charges
     // This is very similar to the numerical SAP potential routine.
@@ -1314,20 +1314,17 @@ SharedMatrix Num1Int::V_point_charges_operator(const SharedVector &ASC) {
         V_local.push_back(std::make_shared<Matrix>("V Temp", max_functions, max_functions));
     }
 
-    auto V_AO = std::make_shared<Matrix>("V AO Temp", nbf_, nbf_);
+    auto V_AO = std::make_shared<Matrix>("V(PC) operator", dim_, dim_);
     double** Vp = V_AO->pointer();
 
     std::vector<std::vector<double>> potential(num_threads_);
 
-    int ansatz = 0;
-    // D->print();
     for (size_t i = 0; i < num_threads_; i++) {
-        // auto point_tmp = std::make_shared<RKSFunctions>(basisset_, max_points, max_functions);
         auto point_tmp = std::make_shared<SAPFunctions>(basisset_, max_points, max_functions);
         point_tmp->set_ansatz(0);
         numint_point_workers.push_back(point_tmp);
     }
-    // counter for skipped grid points. ToDo: hide in debug
+
     size_t skipped=0;
 // Traverse the blocks of points
 #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
@@ -1388,15 +1385,12 @@ SharedMatrix Num1Int::V_point_charges_operator(const SharedVector &ASC) {
         }
         parallel_timer_off("finish operator", rank);
     } // grid blocks
-    timer_off("Num1Int: Fock-like operator");
+    timer_off("Num1Int: V_point_charges_operator");
     return V_AO;
 }
 
-// std::vector<double> Num1Int::V_point_charges(SharedMatrix D) {
-// SharedVector Num1Int::V_point_charges(SharedMatrix D, SharedMatrix Zxyz_) {
 SharedVector Num1Int::V_point_charges(const SharedMatrix& D) {
-    // void Num1Int::V_point_charges(const SharedMatrix D, const SharedMatrix Zxyz, double *Vpot) {
-    timer_on("Num1Int: MEP_e");
+    timer_on("Num1Int: V_point_charges");
     // computes electrostatic potential of external charges on cubature grid
     // potential integrals contracted with density
 
@@ -1408,7 +1402,7 @@ SharedVector Num1Int::V_point_charges(const SharedMatrix& D) {
     int rank = 0;
 
     // potential vector
-    auto Vpot = std::make_shared<Vector>("Vpot PC", ncharges);
+    auto Vpot = std::make_shared<Vector>("V(PC)", ncharges);
     double* Vp = Vpot->pointer();
 
     const int max_points = numint_grid->max_points();
@@ -1417,14 +1411,12 @@ SharedVector Num1Int::V_point_charges(const SharedMatrix& D) {
     std::vector<SharedVector> V_local;
     for (size_t i = 0; i < num_threads_; i++) {
         V_local.push_back(std::make_shared<Vector>("V Temp", ncharges));
-        // Can use RKSFunctions with ansatz=0, it will provide only PHI and RHO
         auto point_tmp = std::make_shared<RKSFunctions>(basisset_, max_points, max_functions);
         point_tmp->set_ansatz(0);
         point_tmp->set_pointers(D);  // not updating the density as expected?!
         numint_point_workers.push_back(point_tmp);
     }
 
-    // counter for skipped grid points. ToDo: hide in debug
     size_t skipped = 0;
     // Traverse the blocks of points
 #pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
@@ -1495,7 +1487,7 @@ SharedVector Num1Int::V_point_charges(const SharedMatrix& D) {
     if (print_ > 2) {
         outfile->Printf("Num1Int::V_point_charges: Skipped %5.2f %% of all grid points \n",percent);
     }
-    timer_off("Num1Int: MEP_e");
+    timer_off("Num1Int: V_point_charges");
     return Vpot;
 }
 
