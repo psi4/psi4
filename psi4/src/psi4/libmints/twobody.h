@@ -155,7 +155,7 @@ class PSI_API TwoBodyAOInt {
     void setup_sieve();
     void create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, PairList &shell_pairs, bool is_bra);
 
-    /// Density Screening of a shell quartet
+    /// Density Screening of a shell quartet (Haser 1989)
     bool shell_significant_density(int M, int N, int R, int S);
     /// Implements CSAM screening of a shell quartet
     bool shell_significant_csam(int M, int N, int R, int S);
@@ -207,7 +207,7 @@ class PSI_API TwoBodyAOInt {
     /*
      * Sieve information
      */
-    /// Update the Max Density Per Shell Pair given an updated Density Matrix
+    /// Update the Max Density Per Shell Pair given an updated Density Matrix (Haser 1989)
     void update_density(const SharedMatrix &D);
     /// Ask the built in sieve whether this quartet contributes
     bool shell_significant(int M, int N, int R, int S) const { return sieve_impl_(M, N, R, S); };

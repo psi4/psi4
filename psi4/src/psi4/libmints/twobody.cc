@@ -118,6 +118,7 @@ TwoBodyAOInt::TwoBodyAOInt(const TwoBodyAOInt &rhs) : TwoBodyAOInt(rhs.integral_
 
 TwoBodyAOInt::~TwoBodyAOInt() {}
 
+// Haser 1989, Equation 7 
 void TwoBodyAOInt::update_density(const SharedMatrix &D) {
     
     timer_on("Density Screen");
@@ -145,13 +146,17 @@ void TwoBodyAOInt::update_density(const SharedMatrix &D) {
 
 }
 
+// Haser 1989 Equations 6 to 14
 bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
 
+    // THR in Equation 9
     double density_threshold = dens_screen_threshold_;
 
+    // Equation 13
     double Q_MN_sq = shell_pair_values_[N * nshell_ + M];
     double Q_RS_sq = shell_pair_values_[S * nshell_ + R];
 
+    // Equation 6
     double max_dens_factor = max_dens_shell_pair_[M][N];
     max_dens_factor = std::max(max_dens_factor, max_dens_shell_pair_[R][S]);
     max_dens_factor = std::max(max_dens_factor, 0.25 * max_dens_shell_pair_[M][R]);
@@ -159,9 +164,11 @@ bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
     max_dens_factor = std::max(max_dens_factor, 0.25 * max_dens_shell_pair_[N][R]);
     max_dens_factor = std::max(max_dens_factor, 0.25 * max_dens_shell_pair_[N][S]);
 
+    // Squared to account for the fact that Q_MN is given as its square
     max_dens_factor *= max_dens_factor;
     density_threshold *= density_threshold;
 
+    // Equations 6, 9, and 14
     if (Q_MN_sq * Q_RS_sq * max_dens_factor > density_threshold) return true;
 
     return false;

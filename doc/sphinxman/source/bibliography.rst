@@ -519,3 +519,7 @@ Bibliography
 .. [Hesselmann:2014:094107]
    A. Hesselmann and T. Korona,
    *J. Chem. Phys.* **141**, 094107 (2014).
+
+.. [Haser:1989:104]
+   M. Haser and R. Ahlrichs,
+   *J. Comp. Chem.* **10(1)**, 104 (1989). 
