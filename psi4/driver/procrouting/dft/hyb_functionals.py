@@ -646,6 +646,21 @@ funcs.append({
     '    BMK Hybrid Meta-GGA XC Functional for kinetics\n',
 })
 
+funcs.append({
+    "name": "t-HCTHh",
+    "x_functionals": {
+        "HYB_MGGA_X_TAU_HCTH": {
+            "use_libxc": True,
+        },
+    },
+    "c_functionals": {
+        "GGA_C_HYB_TAU_HCTH": {}
+    },
+    "description": '    Hybrid Tau HCTH Meta-GGA XC Functional\n',
+    "citation": '    A. D. Boese and N. C. Handy, J. Chem. Phys. 116, 9559, 2002\n',
+    "doi": "10.1063/1.1476309",
+})
+
 functional_list = {}
 for functional in funcs:
     functional_list[functional["name"].lower()] = functional
