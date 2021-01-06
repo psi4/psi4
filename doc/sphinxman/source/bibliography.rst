@@ -533,3 +533,6 @@ Bibliography
     D. G. A. Smith, L. A. Burns, D. A. Sirianni, D. R. Nascimento, A. Kumar, A. M. James, J. B. Schriber, T. Zhang, B. Zhang, A. S. Abbott, E. J. Berquist, M. H. Lechner, L. A. Cunha, A. G. Heide, J. M. Waldrop, T. Y. Takeshita, A. Alenaizan, D. Neuhauser, R. A. King, A. C. Simmonett, J. M. Turney, H. F. Schaefer III, F. A. Evangelista, A. E. DePrince, T. D. Crawford, K. Patkowski, and C. D. Sherrill
     *J. Chem. Theory Comput.* **14**, 3504-3511 (2018).
 
+.. [Haser:1989:104]
+   M. Haser and R. Ahlrichs,
+   *J. Comp. Chem.* **10(1)**, 104 (1989). 
