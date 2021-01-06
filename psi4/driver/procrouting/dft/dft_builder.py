@@ -377,7 +377,10 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
     if "citation" in func_dictionary:
         sup.set_citation(func_dictionary["citation"])
     if "description" in func_dictionary:
-        sup.set_description(func_dictionary["description"])
+        if "doi" in func_dictionary:
+            sup.set_description(func_dictionary["description"] + "(" + func_dictionary["doi"] + ")")
+        else:
+            sup.set_description(func_dictionary["description"])
 
     # Dispersion handling for tuple assembly
     dispersion = False

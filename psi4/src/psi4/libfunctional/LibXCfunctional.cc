@@ -81,6 +81,11 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
             }
             citation_ += "    ";
             citation_ += xc_functional_->info->refs[i]->ref;
+            if (strlen(xc_functional_->info->refs[i]->doi) > 0) {
+                citation_ += " (";
+                citation_ += xc_functional_->info->refs[i]->doi;
+                citation_ += ")";
+            }
         }
     }
 

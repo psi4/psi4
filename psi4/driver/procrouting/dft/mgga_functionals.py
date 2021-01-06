@@ -254,8 +254,6 @@ funcs.append({
         "GGA_C_TAU_HCTH": {}
     },
     "description": '    Tau HCTH Meta-GGA XC Functional\n',
-    "citation": '    A. D. Boese and N. C. Handy, J. Chem. Phys. 116, 9559, 2002\n',
-    "doi": "10.1063/1.1476309",
 })
 
 functional_list = {}
