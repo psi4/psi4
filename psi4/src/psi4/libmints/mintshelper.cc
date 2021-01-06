@@ -2397,6 +2397,140 @@ std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::strin
     return gradient_contributions;
 }
 
+SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name) {
+    // Construct integral factory.
+    auto primary = get_basisset("ORBITAL");
+    auto auxiliary = get_basisset(aux_name);
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary, BasisSet::zero_ao_basis_set(), primary, primary);
+    std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
+    for (int t = 0; t < nthread_; t++) {
+        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+    }
+
+    const auto &shell_pairs = eri[0]->shell_pairs();
+    int npairs = shell_pairs.size(); // Number of pairs of primary orbital shells
+
+    // => Memory Constraints <= //
+    //TODO: Why does this represent the meaximum number of rows?
+    //This is probably sub-optimal.
+    auto max_rows = auxiliary_->nshell();
+
+    // => Block Sizing <= //
+    std::vector<int> Pstarts;
+    int counter = 0;
+    Pstarts.push_back(0);
+    for (int P = 0; P < auxiliary_->nshell(); P++) {
+        int nP = auxiliary_->shell(P).nfunction();
+        if (counter + nP > max_rows) {
+            counter = 0;
+            Pstarts.push_back(P);
+        }
+        counter += nP;
+    }
+    Pstarts.push_back(auxiliary_->nshell());
+
+    // Construct temporary matrices for each thread
+    int natom = basisset_->molecule()->natom();
+    std::vector<SharedMatrix> temps;
+    for (int j = 0; j < nthread_; j++) {
+        temps.push_back(std::make_shared<Matrix>("temp", natom, 3));
+    }
+
+    // Perform threaded contraction of "densities" against 3-index derivative integrals.
+    // Loop over blocks. We assume each block fits in memory
+    for (int block = 0; block < Pstarts.size() - 1; block++) {
+        int Pstart = Pstarts[block];
+        int Pstop = Pstarts[block + 1];
+        int NP = Pstop - Pstart;
+
+        // For each block, loop over aux. shell, then primary shell pairs
+#pragma omp parallel for schedule(dynamic) num_threads(nthread_)
+        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
+            int thread = 0;
+#ifdef _OPENMP
+            thread = omp_get_thread_num();
+#endif
+
+            int P = PMN / npairs + Pstart;
+            int MN = PMN % npairs;
+            int M = shell_pairs[MN].first;
+            int N = shell_pairs[MN].second;
+
+            Jint[thread]->compute_shell_deriv1(P, 0, M, N);
+
+            const auto& buffers = eri[thread]->buffers();
+
+            int nP = auxiliary->shell(P).nfunction();
+            int cP = auxiliary->shell(P).ncartesian();
+            int aP = auxiliary->shell(P).ncenter();
+            int oP = auxiliary->shell(P).function_index();
+
+            int nM = primary->shell(M).nfunction();
+            int cM = primary->shell(M).ncartesian();
+            int aM = primary->shell(M).ncenter();
+            int oM = primary->shell(M).function_index();
+
+            int nN = primary->shell(N).nfunction();
+            int cN = primary->shell(N).ncartesian();
+            int aN = primary->shell(N).ncenter();
+            int oN = primary->shell(N).function_index();
+
+            int ncart = cP * cM * cN;
+            const double *Px = buffers[0];
+            const double *Py = buffers[1];
+            const double *Pz = buffers[2];
+            const double *Mx = buffers[3];
+            const double *My = buffers[4];
+            const double *Mz = buffers[5];
+            const double *Nx = buffers[6];
+            const double *Ny = buffers[7];
+            const double *Nz = buffers[8];
+
+            double perm = (M == N ? 1.0 : 2.0);
+
+            double **grad_Jp;
+            auto grad_Jp = Jtemps2[thread]->pointer();
+
+            // Within each of those, then loop over each function in the shell. 
+            for (int p = 0; p < nP; p++) {
+                for (int m = 0; m < nM; m++) {
+                    for (int n = 0; n < nN; n++) {
+                        // TODO: gQso has to come from SOMEWHERE
+                        double Ival = 1.0 * perm * gQso->get(p + oP, (m + oM) * nso_ + (n + oN));
+                        grad_Jp[aP][0] += Ival * (*Px);
+                        grad_Jp[aP][1] += Ival * (*Py);
+                        grad_Jp[aP][2] += Ival * (*Pz);
+                        grad_Jp[aM][0] += Ival * (*Mx);
+                        grad_Jp[aM][1] += Ival * (*My);
+                        grad_Jp[aM][2] += Ival * (*Mz);
+                        grad_Jp[aN][0] += Ival * (*Nx);
+                        grad_Jp[aN][1] += Ival * (*Ny);
+                        grad_Jp[aN][2] += Ival * (*Nz);
+
+                        Px++;
+                        Py++;
+                        Pz++;
+                        Mx++;
+                        My++;
+                        Mz++;
+                        Nx++;
+                        Ny++;
+                        Nz++;
+                    }
+                }
+            }
+        }
+    }
+
+    // Sum results across the various threads
+    auto idx3_grad = std::make_shared<Matrix>("Temp", natom, 3);
+    for (const auto& thread_contribution : Jint) {
+        idx3_grad->add(thread_contribution);
+    }
+
+    return idx3_grad;
+}
+
 void MintsHelper::play() {}
 
 /* 1st and 2nd derivatives of OEI in AO basis  */
