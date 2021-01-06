@@ -625,11 +625,11 @@ def get_pwpb95_tweaks():
     c_pw = 0.32620  # paper values
     expo_pw6 = 3.7868  # paper values
     alpha_pw6 = c_pw / X2S / X2S
-    a_pw6 = 6.0 * bt / X2S
-    b_pw6 = 1.0 / X2S
-    c_pw6 = bt / (X_FACTOR_C * X2S * X2S)
-    d_pw6 = -(bt - beta) / (X_FACTOR_C * X2S * X2S)
-    f_pw6 = 1.0e-6 / (X_FACTOR_C * X2S**expo_pw6)
+    a_pw6 = 6.0 * bt / X2S  # lgtm [py/unused-local-variable]
+    b_pw6 = 1.0 / X2S  # lgtm [py/unused-local-variable]
+    c_pw6 = bt / (X_FACTOR_C * X2S * X2S)  # lgtm [py/unused-local-variable]
+    d_pw6 = -(bt - beta) / (X_FACTOR_C * X2S * X2S)  # lgtm [py/unused-local-variable]
+    f_pw6 = 1.0e-6 / (X_FACTOR_C * X2S**expo_pw6)  # lgtm [py/unused-local-variable]
     return ([bt, alpha_pw6, expo_pw6])
 
 
