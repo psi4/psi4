@@ -214,11 +214,11 @@ void LibXCFunctional::set_omega(double omega) {
     omega_ = omega;
     user_omega_ = true;
     if (xc_func_name_ == "XC_GGA_X_WPBEH") {
-        xc_func_set_ext_params(xc_functional_.get(), &omega);
+        xc_functional_->cam_omega = omega;
     } else if (xc_func_name_ == "XC_GGA_X_HJS_PBE") {
-        xc_func_set_ext_params(xc_functional_.get(), &omega);
+        xc_functional_->cam_omega = omega;
     } else if (xc_func_name_ == "XC_HYB_GGA_XC_LRC_WPBEH") {
-        xc_func_set_ext_params(xc_functional_->func_aux[0], &omega);
+        xc_functional_->cam_omega = omega;
     } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97X") {
         xc_functional_->cam_omega = omega;
     } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97") {
