@@ -213,22 +213,10 @@ double LibXCFunctional::query_density_cutoff() {
 void LibXCFunctional::set_omega(double omega) {
     omega_ = omega;
     user_omega_ = true;
-    if (xc_func_name_ == "XC_GGA_X_WPBEH") {
-        xc_functional_->cam_omega = omega;
-    } else if (xc_func_name_ == "XC_GGA_X_HJS_PBE") {
-        xc_functional_->cam_omega = omega;
-    } else if (xc_func_name_ == "XC_HYB_GGA_XC_LRC_WPBEH") {
-        xc_functional_->cam_omega = omega;
-    } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97X") {
-        xc_functional_->cam_omega = omega;
-    } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97") {
-        xc_functional_->cam_omega = omega;
-    } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97X_V") {
-        xc_functional_->cam_omega = omega;
-    } else if (xc_func_name_ == "XC_HYB_GGA_XC_WB97X_D") {
-        xc_functional_->cam_omega = omega;
-    } else if (xc_func_name_ == "XC_HYB_MGGA_X_M11") {
-        xc_functional_->cam_omega = omega;
+    if ((xc_func_name_ == "XC_GGA_X_WPBEH") || (xc_func_name_ == "XC_GGA_X_HJS_PBE") || (xc_func_name_ == "XC_HYB_GGA_XC_LRC_WPBEH") ||
+        (xc_func_name_ == "XC_HYB_GGA_XC_WB97X") || (xc_func_name_ == "XC_HYB_GGA_XC_WB97") || (xc_func_name_ == "XC_HYB_GGA_XC_WB97X_V") ||
+        (xc_func_name_ == "XC_HYB_GGA_XC_WB97X_D") || (xc_func_name_ == "XC_HYB_MGGA_X_M11")) {
+        xc_func_set_ext_params_name(xc_functional_.get(), "_omega", omega);
     } else {
         outfile->Printf("LibXCfunctional: set_omega is not defined for functional %s\n.", xc_func_name_.c_str());
         throw PSIEXCEPTION("LibXCfunctional: set_omega not defined for input functional");
