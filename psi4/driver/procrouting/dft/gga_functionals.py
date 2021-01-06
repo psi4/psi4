@@ -327,6 +327,33 @@ funcs.append({
     '    BP86 GGA Exchange-Correlation Functional\n',
 })
 
+funcs.append({
+    "name": "PBE-SOL",
+    "alias": ["PBESOL"],
+    "x_functionals": {
+        "GGA_X_PBE_SOL": {}
+    },
+    "c_functionals": {
+        "GGA_C_PBE_SOL": {}
+    },
+    "description":
+    '    Perdew, Burke & Ernzerhof exchange (solids)',
+})
+
+funcs.append({
+    "name": "BP86-VWN",
+    "alias": ["BP86VWN"],
+    "x_functionals": {
+        "GGA_X_B88": {}
+    },
+    "c_functionals": {
+        "GGA_C_P86VWN_FT": {}
+    },
+    "description":
+    '    BP86 GGA Exchange-Correlation Functional based on VWN5 correlation with more accurate value for ftilde\n',
+
+})
+
 functional_list = {}
 for functional in funcs:
     functional_list[functional["name"].lower()] = functional
