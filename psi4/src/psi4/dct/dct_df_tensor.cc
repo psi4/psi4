@@ -33,7 +33,6 @@
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libpsio/psio.h"
-#include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/twobody.h"
@@ -43,9 +42,7 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libtrans/integraltransform.h"
-#include "psi4/libtrans/mospace.h"
 #include "psi4/libdpd/dpd.h"
-#include "psi4/libdiis/diismanager.h"
 #include "psi4/lib3index/3index.h"
 
 #include "psi4/libfock/jk.h"
@@ -72,11 +69,11 @@ namespace dct {
  * b(Q|mn) = Sum_P (mn|P) [J^-1/2]_PQ
  * where J is the matrix of (P|Q)
  */
-void DCTSolver::df_build_b_ao() {
-    dct_timer_on("DCTSolver::df_build_b_ao()");
+void DCTSolver::df_build_b() {
+    dct_timer_on("DCTSolver::df_build_b()");
 
     outfile->Printf("\n\n\t                  ************************************************\n");
-    outfile->Printf("\t                  *        Density Fitting Module in DCT        *\n");
+    outfile->Printf("\t                  *         Density Fitting Module in DCT        *\n");
     outfile->Printf("\t                  *                by Xiao Wang                  *\n");
     outfile->Printf("\t                  ************************************************\n");
     outfile->Printf("\n");
@@ -97,121 +94,54 @@ void DCTSolver::df_build_b_ao() {
 
     // Form J(P,Q)^-1/2
     dct_timer_on("DCTSolver::Form J^-1/2");
-    formJm12(auxiliary_, zero);
+    auto Jm12 = formJm12(auxiliary_);
     dct_timer_off("DCTSolver::Form J^-1/2");
 
     // Form B(Q, mu, nu)
     dct_timer_on("DCTSolver::Form B(Q,mn)");
-    formb_ao(primary_, auxiliary_, zero);
+    auto bQmn_ao = formb_ao(primary_, auxiliary_, zero, Jm12);
     dct_timer_off("DCTSolver::Form B(Q,mn)");
 
-    // Form J(P,Q)^-1/2 for SCF terms
-    dct_timer_on("DCTSolver::Form J^-1/2 (SCF terms)");
-    formJm12_scf(auxiliary_scf_, zero);
-    dct_timer_off("DCTSolver::Form J^-1/2 (SCF terms)");
+    // Transform B to the SO basis.
+    // TODO: Evaluate whether it would be better to have symmetry in the previous steps.
+    // FittingMetric makes symmetry of the metric easy.
+    dct_timer_on("DCTSolver::Transform B(Q,mn) AO-basis -> SO-basis");
+    bQmn_so_ = transform_b_ao2so(bQmn_ao);
+    dct_timer_off("DCTSolver::Transform B(Q,mn) AO-basis -> SO-basis");
 
-    // Form B(Q, mu, nu) for SCF terms
-    dct_timer_on("DCTSolver::Form B(Q,mn) (SCF terms)");
-    formb_ao_scf(primary_, auxiliary_scf_, zero);
-    dct_timer_off("DCTSolver::Form B(Q,mn) (SCF terms)");
+    // Now do the same for the JKFIT terms.
+    dct_timer_on("DCTSolver::Form J^-1/2 (JKFIT)");
+    auto Jm12scf = formJm12(auxiliary_scf_);
+    dct_timer_off("DCTSolver::Form J^-1/2 (JKFIT)");
 
-    dct_timer_off("DCTSolver::df_build_b_ao()");
+    dct_timer_on("DCTSolver::Form B(Q,mn) (JKFIT)");
+    auto bQmn_ao_scf = formb_ao(primary_, auxiliary_scf_, zero, Jm12scf);
+    dct_timer_off("DCTSolver::Form B(Q,mn) (JKFIT)");
+
+    dct_timer_on("DCTSolver::Transform B(Q,mn) (JKFIT)");
+    bQmn_so_scf_ = transform_b_ao2so(bQmn_ao_scf);
+    dct_timer_off("DCTSolver::Transform B(Q,mn) (JKFIT)");
+
+    dct_timer_off("DCTSolver::df_build_b()");
 }
 
 /**
  * Form J(P,Q)^-1/2
  */
-void DCTSolver::formJm12(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero) {
-    //    outfile->Printf("\tForming J(P,Q)^-1/2 ...\n\n");
-    int nthreads = 1;
-#ifdef _OPENMP
-    nthreads = Process::environment.get_n_threads();
-#endif
-
-    double** J = block_matrix(nQ_, nQ_);
-    Jm12_ = block_matrix(nQ_, nQ_);
-
-    // => Integrals <= //
-    auto rifactory = std::make_shared<IntegralFactory>(auxiliary, zero, auxiliary, zero);
-    std::vector<std::shared_ptr<TwoBodyAOInt>> Jint;
-    std::vector<const double*> buffer;
-    for (int t = 0; t < nthreads; t++) {
-        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
-        buffer.push_back(Jint[t]->buffer());
-    }
-
-    std::vector<std::pair<int, int>> PQ_pairs;
-    for (int P = 0; P < auxiliary->nshell(); P++) {
-        for (int Q = 0; Q <= P; Q++) {
-            PQ_pairs.push_back(std::pair<int, int>(P, Q));
-        }
-    }
-
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-    for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
-        int P = PQ_pairs[PQ].first;
-        int Q = PQ_pairs[PQ].second;
-
-        int thread = 0;
-#ifdef _OPENMP
-        thread = omp_get_thread_num();
-#endif
-
-        Jint[thread]->compute_shell(P, 0, Q, 0);
-        buffer[thread] = Jint[thread]->buffer();
-
-        int nP = auxiliary->shell(P).nfunction();
-        int oP = auxiliary->shell(P).function_index();
-
-        int nQ = auxiliary->shell(Q).nfunction();
-        int oQ = auxiliary->shell(Q).function_index();
-
-        int index = 0;
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++, ++index) {
-                J[p + oP][q + oQ] = buffer[thread][index];
-            }
-        }
-    }
-
-    // First, diagonalize J(P,Q)
-    int lwork = nQ_ * 3;
-    double* eigval = init_array(nQ_);
-    double* work = init_array(lwork);
-    int status = C_DSYEV('v', 'u', nQ_, J[0], nQ_, eigval, work, lwork);
-    if (status) {
-        throw PsiException("Diagonalization of J failed", __FILE__, __LINE__);
-    }
-    free(work);
-
-    // Now J contains eigenvectors of the original J
-    double** J_copy = block_matrix(nQ_, nQ_);
-    C_DCOPY(nQ_ * nQ_, J[0], 1, J_copy[0], 1);
-
-    // Now form J^-1/2 = U(T) * j^-1/2 * U
-    // where j^-1/2 is the diagonal matrix of inverse square
-    // of the eigenvalues, and U is the matrix of eigenvectors of J
-    for (int i = 0; i < nQ_; ++i) {
-        eigval[i] = (eigval[i] < 1.0E-10) ? 0.0 : 1.0 / sqrt(eigval[i]);
-        // scale one set of eigenvectors by the diagonal elements j^-1/2
-        C_DSCAL(nQ_, eigval[i], J[i], 1);
-    }
-    free(eigval);
-
-    // J^-1/2 = J_copy(T) * J
-    C_DGEMM('t', 'n', nQ_, nQ_, nQ_, 1.0, J_copy[0], nQ_, J[0], nQ_, 0.0, Jm12_[0], nQ_);
-    free_block(J);
-    free_block(J_copy);
+SharedMatrix DCTSolver::formJm12(std::shared_ptr<BasisSet> auxiliary) {
+    auto metric = std::make_shared<FittingMetric>(auxiliary, true);
+    metric->form_eig_inverse(1.0E-10); // This is hardcoded at present, but should be replaced with a global fitting option...
+    return metric->get_metric();
 }
 
 /**
  * Form b(Q|mn)
  */
-void DCTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
-                          std::shared_ptr<BasisSet> zero) {
-    bQmn_ao_ = std::make_shared<Matrix>(nQ_, nso_ * nso_);
-    double** Ap = bQmn_ao_->pointer();
-    double** Bp = block_matrix(nQ_, nso_ * nso_);
+SharedMatrix DCTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
+                          std::shared_ptr<BasisSet> zero, SharedMatrix Jm12) {
+    auto nQ = auxiliary->nbf();
+    auto A_ao = std::make_shared<Matrix>(nQ, nso_ * nso_);
+    auto Bp = A_ao->pointer();
 
     int nthreads = 1;
 #ifdef _OPENMP
@@ -226,7 +156,7 @@ void DCTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<Basi
         eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
         buffer.push_back(eri[t]->buffer());
     }
-    const std::vector<std::pair<int, int>>& shell_pairs = eri[0]->shell_pairs();
+    const auto& shell_pairs = eri[0]->shell_pairs();
     size_t npairs = shell_pairs.size();
 
     // => Memory Constraints <= //
@@ -257,7 +187,7 @@ void DCTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<Basi
         int NP = Pstop - Pstart;
 
         int pstart = auxiliary->shell(Pstart).function_index();
-        int pstop = (Pstop == auxiliary->nshell() ? nQ_ : auxiliary->shell(Pstop).function_index());
+        int pstop = (Pstop == auxiliary->nshell() ? nQ : auxiliary->shell(Pstop).function_index());
         int np = pstop - pstart;
 
 // > Integrals < //
@@ -297,7 +227,7 @@ void DCTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<Basi
         }
     }
 
-    C_DGEMM('N', 'N', nQ_, nso_ * nso_, nQ_, 1.0, Jm12_[0], nQ_, Bp[0], nso_ * nso_, 0.0, Ap[0], nso_ * nso_);
+    return linalg::doublet(Jm12, A_ao, false, false);
 }
 
 /**
@@ -370,25 +300,24 @@ void DCTSolver::transform_b() {
 /**
  * Transform b(Q|mu,nu) from AO basis to SO basis
  */
-void DCTSolver::transform_b_ao2so() {
-    dct_timer_on("DCTSolver::Transform b(Q|mn) AO-basis -> SO-basis");
-
+SharedMatrix DCTSolver::transform_b_ao2so(SharedMatrix bQmn_ao) {
     int nthreads = 1;
 #ifdef _OPENMP
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    double** bQmn_ao_p = bQmn_ao_->pointer();
+    auto nQ = bQmn_ao->rowspi(0); // Read the number of aux. functions from the b matrix.
+    auto bQmn_ao_p = bQmn_ao->pointer();
 
     // Set up dimensions for SO-basis b(Q|mn)
     Dimension Q(nirrep_), mn(nirrep_);
     for (int hn = 0; hn < nirrep_; ++hn) {
-        Q[hn] = nQ_;
+        Q[hn] = nQ;
         for (int hm = 0; hm < nirrep_; ++hm) {
             mn[hm ^ hn] += nsopi_[hm] * nsopi_[hn];
         }
     }
-    bQmn_so_ = std::make_shared<Matrix>("Fully-transformed b", Q, mn);
+    auto bQmn_so = std::make_shared<Matrix>("Fully-transformed b", Q, mn);
 
     std::vector<int> offset(nirrep_);
     for (int h = 0; h < nirrep_; ++h) {
@@ -397,20 +326,20 @@ void DCTSolver::transform_b_ao2so() {
 
     // AO-basis b(Q|mn) -> SO-basis b(Q|mn)
     for (int h = 0; h < nirrep_; ++h) {
-        double** bQmn_so_p = bQmn_so_->pointer(h);
+        auto bQmn_so_p = bQmn_so->pointer(h);
         for (int hm = 0; hm < nirrep_; ++hm) {
             int hn = h ^ hm;
             if (nsopi_[hm] > 0 && nsopi_[hn] > 0) {
-                auto tmp = std::make_shared<Matrix>("Half-transformed b", nQ_, nso_ * nsopi_[hn]);
-                double** tmpp = tmp->pointer();
-                double** ao2so_n_p = reference_wavefunction()->aotoso()->pointer(hn);
-                double** ao2so_m_p = reference_wavefunction()->aotoso()->pointer(hm);
+                auto tmp = std::make_shared<Matrix>("Half-transformed b", nQ, nso_ * nsopi_[hn]);
+                auto tmpp = tmp->pointer();
+                auto ao2so_n_p = reference_wavefunction()->aotoso()->pointer(hn);
+                auto ao2so_m_p = reference_wavefunction()->aotoso()->pointer(hm);
                 // First-half transformation
-                C_DGEMM('N', 'N', nQ_ * nso_, nsopi_[hn], nso_, 1.0, bQmn_ao_p[0], nso_, ao2so_n_p[0], nsopi_[hn], 0.0,
+                C_DGEMM('N', 'N', nQ * nso_, nsopi_[hn], nso_, 1.0, bQmn_ao_p[0], nso_, ao2so_n_p[0], nsopi_[hn], 0.0,
                         tmpp[0], nsopi_[hn]);
 // Second-half transformation
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                for (int Q = 0; Q < nQ_; ++Q) {
+                for (int Q = 0; Q < nQ; ++Q) {
                     C_DGEMM('T', 'N', nsopi_[hm], nsopi_[hn], nso_, 1.0, ao2so_m_p[0], nsopi_[hm], tmpp[Q], nsopi_[hn],
                             0.0, bQmn_so_p[Q] + offset[h], nsopi_[hn]);
                 }
@@ -419,9 +348,7 @@ void DCTSolver::transform_b_ao2so() {
         }
     }
 
-    bQmn_ao_.reset();
-
-    dct_timer_off("DCTSolver::Transform b(Q|mn) AO-basis -> SO-basis");
+    return bQmn_so;
 }
 
 /**
@@ -1406,7 +1333,6 @@ void DCTSolver::form_df_g_vvvv() {
  */
 void DCTSolver::build_DF_tensors_RHF() {
     dct_timer_on("DCTSolver::build_df_tensors_RHF()");
-
     // Form gbar<AB|CD> lambda<CD|IJ>
     build_gbarlambda_RHF_v3mem();
 
@@ -1578,7 +1504,6 @@ void DCTSolver::build_gbarlambda_RHF_v3mem() {
  */
 void DCTSolver::build_gbarGamma_RHF() {
     dct_timer_on("DCTSolver::Gbar<QS|PR> Gamma<R|S> (FastBuilder)");
-
     build_gbarKappa_RHF();
 
     int nthreads = 1;
@@ -2570,246 +2495,6 @@ void DCTSolver::build_gbarKappa_UHF() {
     bQpqB_mo_scf_.reset();
 
     dct_timer_off("DCTSolver::Gbar<QS|PR> Kappa<R|S>");
-}
-
-/**
- * Form J(P,Q)^-1/2 for SCF terms
- */
-void DCTSolver::formJm12_scf(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero) {
-    //    outfile->Printf("\tForming J(P,Q)^-1/2 ...\n\n");
-    int nthreads = 1;
-#ifdef _OPENMP
-    nthreads = Process::environment.get_n_threads();
-#endif
-
-    double** J = block_matrix(nQ_scf_, nQ_scf_);
-    Jm12_scf_ = block_matrix(nQ_scf_, nQ_scf_);
-
-    // => Integrals <= //
-    auto rifactory = std::make_shared<IntegralFactory>(auxiliary, zero, auxiliary, zero);
-    std::vector<std::shared_ptr<TwoBodyAOInt>> Jint;
-    std::vector<const double*> buffer;
-    for (int t = 0; t < nthreads; t++) {
-        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri()));
-        buffer.push_back(Jint[t]->buffer());
-    }
-
-    std::vector<std::pair<int, int>> PQ_pairs;
-    for (int P = 0; P < auxiliary->nshell(); P++) {
-        for (int Q = 0; Q <= P; Q++) {
-            PQ_pairs.push_back(std::pair<int, int>(P, Q));
-        }
-    }
-
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-    for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
-        int P = PQ_pairs[PQ].first;
-        int Q = PQ_pairs[PQ].second;
-
-        int thread = 0;
-#ifdef _OPENMP
-        thread = omp_get_thread_num();
-#endif
-
-        Jint[thread]->compute_shell(P, 0, Q, 0);
-        buffer[thread] = Jint[thread]->buffer();
-
-        int nP = auxiliary->shell(P).nfunction();
-        int oP = auxiliary->shell(P).function_index();
-
-        int nQ = auxiliary->shell(Q).nfunction();
-        int oQ = auxiliary->shell(Q).function_index();
-
-        int index = 0;
-        for (int p = 0; p < nP; p++) {
-            for (int q = 0; q < nQ; q++, ++index) {
-                J[p + oP][q + oQ] = buffer[thread][index];
-            }
-        }
-    }
-
-    // First, diagonalize J(P,Q)
-    int lwork = nQ_scf_ * 3;
-    double* eigval = init_array(nQ_scf_);
-    double* work = init_array(lwork);
-    int status = C_DSYEV('v', 'u', nQ_scf_, J[0], nQ_scf_, eigval, work, lwork);
-    if (status) {
-        throw PsiException("Diagonalization of J failed", __FILE__, __LINE__);
-    }
-    free(work);
-
-    // Now J contains eigenvectors of the original J
-    double** J_copy = block_matrix(nQ_scf_, nQ_scf_);
-    C_DCOPY(nQ_scf_ * nQ_scf_, J[0], 1, J_copy[0], 1);
-
-    // Now form J^-1/2 = U(T) * j^-1/2 * U
-    // where j^-1/2 is the diagonal matrix of inverse square
-    // of the eigenvalues, and U is the matrix of eigenvectors of J
-    for (int i = 0; i < nQ_scf_; ++i) {
-        eigval[i] = (eigval[i] < 1.0E-10) ? 0.0 : 1.0 / sqrt(eigval[i]);
-        // scale one set of eigenvectors by the diagonal elements j^-1/2
-        C_DSCAL(nQ_scf_, eigval[i], J[i], 1);
-    }
-    free(eigval);
-
-    // J^-1/2 = J_copy(T) * J
-    C_DGEMM('t', 'n', nQ_scf_, nQ_scf_, nQ_scf_, 1.0, J_copy[0], nQ_scf_, J[0], nQ_scf_, 0.0, Jm12_scf_[0], nQ_scf_);
-    free_block(J);
-    free_block(J_copy);
-}
-
-/**
- * Form b(Q|mn) for SCF terms
- */
-void DCTSolver::formb_ao_scf(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
-                              std::shared_ptr<BasisSet> zero) {
-    bQmn_ao_scf_ = std::make_shared<Matrix>(nQ_scf_, nso_ * nso_);
-    double** Ap = bQmn_ao_scf_->pointer();
-    double** Bp = block_matrix(nQ_scf_, nso_ * nso_);
-
-    int nthreads = 1;
-#ifdef _OPENMP
-    nthreads = Process::environment.get_n_threads();
-#endif
-
-    // => Integrals <= //
-    auto rifactory2 = std::make_shared<IntegralFactory>(auxiliary, zero, primary, primary);
-    std::vector<std::shared_ptr<TwoBodyAOInt>> eri;
-    std::vector<const double*> buffer;
-    for (int t = 0; t < nthreads; t++) {
-        eri.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory2->eri()));
-        buffer.push_back(eri[t]->buffer());
-    }
-    const std::vector<std::pair<int, int>>& shell_pairs = eri[0]->shell_pairs();
-    int npairs = shell_pairs.size();
-
-    // => Memory Constraints <= //
-    int max_rows;
-    max_rows = auxiliary->nshell();
-
-    // => Block Sizing <= //
-    std::vector<int> Pstarts;
-    int counter = 0;
-    Pstarts.push_back(0);
-    for (int P = 0; P < auxiliary->nshell(); P++) {
-        int nP = auxiliary->shell(P).nfunction();
-        if (counter + nP > max_rows) {
-            counter = 0;
-            Pstarts.push_back(P);
-        }
-        counter += nP;
-    }
-    Pstarts.push_back(auxiliary->nshell());
-
-    // => Master Loop <= //
-
-    for (int block = 0; block < Pstarts.size() - 1; block++) {
-        // > Sizing < //
-
-        int Pstart = Pstarts[block];
-        int Pstop = Pstarts[block + 1];
-        int NP = Pstop - Pstart;
-
-        int pstart = auxiliary->shell(Pstart).function_index();
-        int pstop = (Pstop == auxiliary->nshell() ? nQ_scf_ : auxiliary->shell(Pstop).function_index());
-        int np = pstop - pstart;
-
-// > Integrals < //
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
-            int thread = 0;
-#ifdef _OPENMP
-            thread = omp_get_thread_num();
-#endif
-
-            int P = PMN / npairs + Pstart;
-            int MN = PMN % npairs;
-            int M = shell_pairs[MN].first;
-            int N = shell_pairs[MN].second;
-
-            eri[thread]->compute_shell(P, 0, M, N);
-            buffer[thread] = eri[thread]->buffer();
-
-            int nP = auxiliary->shell(P).nfunction();
-            int oP = auxiliary->shell(P).function_index();
-
-            int nM = primary->shell(M).nfunction();
-            int oM = primary->shell(M).function_index();
-
-            int nN = primary->shell(N).nfunction();
-            int oN = primary->shell(N).function_index();
-
-            int index = 0;
-            for (int p = 0; p < nP; p++) {
-                for (int m = 0; m < nM; m++) {
-                    for (int n = 0; n < nN; n++, index++) {
-                        Bp[p + oP][(m + oM) * nso_ + (n + oN)] = buffer[thread][index];
-                        Bp[p + oP][(n + oN) * nso_ + (m + oM)] = buffer[thread][index];
-                    }
-                }
-            }
-        }
-    }
-
-    C_DGEMM('N', 'N', nQ_scf_, nso_ * nso_, nQ_scf_, 1.0, Jm12_scf_[0], nQ_scf_, Bp[0], nso_ * nso_, 0.0, Ap[0],
-            nso_ * nso_);
-}
-
-/**
- * Transform b(Q|mu,nu) from AO basis to SO basis for SCF terms
- */
-void DCTSolver::transform_b_ao2so_scf() {
-    dct_timer_on("DCTSolver::Transform b(Q|mn) AO-basis -> SO-basis");
-
-    int nthreads = 1;
-#ifdef _OPENMP
-    nthreads = Process::environment.get_n_threads();
-#endif
-
-    double** bQmn_ao_p = bQmn_ao_scf_->pointer();
-
-    // Set up dimensions for SO-basis b(Q|mn)
-    Dimension Q(nirrep_), mn(nirrep_);
-    for (int hn = 0; hn < nirrep_; ++hn) {
-        Q[hn] = nQ_scf_;
-        for (int hm = 0; hm < nirrep_; ++hm) {
-            mn[hm ^ hn] += nsopi_[hm] * nsopi_[hn];
-        }
-    }
-    bQmn_so_scf_ = std::make_shared<Matrix>("Fully-transformed b", Q, mn);
-
-    std::vector<int> offset(nirrep_);
-    for (int h = 0; h < nirrep_; ++h) {
-        offset.push_back(0);
-    }
-
-    // AO-basis b(Q|mn) -> SO-basis b(Q|mn)
-    for (int h = 0; h < nirrep_; ++h) {
-        double** bQmn_so_p = bQmn_so_scf_->pointer(h);
-        for (int hm = 0; hm < nirrep_; ++hm) {
-            int hn = h ^ hm;
-            if (nsopi_[hm] > 0 && nsopi_[hn] > 0) {
-                auto tmp = std::make_shared<Matrix>("Half-transformed b", nQ_scf_, nso_ * nsopi_[hn]);
-                double** tmpp = tmp->pointer();
-                double** ao2so_n_p = reference_wavefunction()->aotoso()->pointer(hn);
-                double** ao2so_m_p = reference_wavefunction()->aotoso()->pointer(hm);
-                // First-half transformation
-                C_DGEMM('N', 'N', nQ_scf_ * nso_, nsopi_[hn], nso_, 1.0, bQmn_ao_p[0], nso_, ao2so_n_p[0], nsopi_[hn],
-                        0.0, tmpp[0], nsopi_[hn]);
-// Second-half transformation
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                for (int Q = 0; Q < nQ_scf_; ++Q) {
-                    C_DGEMM('T', 'N', nsopi_[hm], nsopi_[hn], nso_, 1.0, ao2so_m_p[0], nsopi_[hm], tmpp[Q], nsopi_[hn],
-                            0.0, bQmn_so_p[Q] + offset[h], nsopi_[hn]);
-                }
-            }
-            offset[h] += nsopi_[hm] * nsopi_[hn];
-        }
-    }
-
-    bQmn_ao_scf_.reset();
-
-    dct_timer_off("DCTSolver::Transform b(Q|mn) AO-basis -> SO-basis");
 }
 
 /**

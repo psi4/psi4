@@ -53,11 +53,9 @@ double DCTSolver::compute_energy_UHF() {
     // Perform SCF guess for the orbitals
     scf_guess();
 
-    // If DCT computation type is density fitting, build b(Q|mn) in AO basis
+    // If DCT computation type is density fitting, build b(Q|mn)
     if (options_.get_str("DCT_TYPE") == "DF") {
-        df_build_b_ao();
-        transform_b_ao2so();
-        transform_b_ao2so_scf();
+        df_build_b();
     }
 
     // Perform MP2 guess for the cumulant
