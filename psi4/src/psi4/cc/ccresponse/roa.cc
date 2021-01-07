@@ -77,9 +77,6 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
     if (params.gauge == "LENGTH" || params.gauge == "BOTH") compute_rl = 1;
     if (params.gauge == "VELOCITY" || params.gauge == "BOTH") compute_pl = 1;
 
-    /* grab omega in nm, rounded to nearest int */
-    long om_nm = std::lround((pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]));
-
     cartcomp = (char **)malloc(3 * sizeof(char *));
     cartcomp[0] = strdup("X");
     cartcomp[1] = strdup("Y");
@@ -165,6 +162,9 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
     }
 
     for (i = 0; i < params.nomega; i++) {
+        /* grab omega in nm, rounded to nearest int */
+        long om_nm = std::lround((pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]));
+
         zero_mat(tensor_rl0, 3, 3);
         zero_mat(tensor_rl1, 3, 3);
         zero_mat(tensor_pl0, 3, 3);
