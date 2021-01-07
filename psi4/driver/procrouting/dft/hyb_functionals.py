@@ -343,9 +343,7 @@ funcs.append({
 
 
 def get_pw6b95_tweaks():
-    beta = 0.0018903811666999256  # 5.0*(36.0*math.pi)**(-5.0/3.0)
     X2S = 0.1282782438530421943003109254455883701296
-    X_FACTOR_C = 0.9305257363491000250020102180716672510262  #    /* 3/8*cur(3/pi)*4^(2/3) */
     bt = 0.00538  # paper values
     c_pw = 1.7382  # paper values
     expo_pw6 = 3.8901  # paperl values
