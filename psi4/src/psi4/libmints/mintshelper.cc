@@ -2411,9 +2411,12 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name, const std:
     int npairs = shell_pairs.size(); // Number of pairs of primary orbital shells
 
     // => Memory Constraints <= //
-    //TODO: Why does this represent the meaximum number of rows?
-    //This is probably sub-optimal.
-    auto max_rows = auxiliary->nshell();
+    const auto nprim = primary->nbf();
+    const auto naux = auxiliary->nbf();
+    const auto ntri = (nprim * (nprim + 1)) / 2;
+    auto row_cost = sizeof(double) * (nprim * nprim + ntri);
+    // Assume we can devote 80% of Psi's memory to this. 80% was pulled from a hat.
+    auto max_rows = 0.8 * Process::environment.get_memory() / row_cost;
 
     // => Block Sizing <= //
     std::vector<int> Pstarts;
@@ -2436,34 +2439,39 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name, const std:
         temps.push_back(std::make_shared<Matrix>("temp", natom, 3));
     }
 
-    // Read values from disk.
-    const auto naux = auxiliary->nbf();
-    const auto nprim = primary->nbf();
-    const auto ntri = (nprim * (nprim + 1)) / 2;
-    auto temp = std::vector<double>(naux * ntri);
-    auto data = temp.data();
-    psio_->read_entry(PSIF_AO_TPDM, intermed_name.c_str(), (char*)temp.data(), naux * ntri * sizeof(double));
-
-    // Now get them into a matrix.
-    auto idx3_matrix = std::make_shared<Matrix>(naux, nprim * nprim);
-    auto idx3p = idx3_matrix->pointer();
-#pragma omp parallel for
-    for (int aux = 0; aux < naux; aux++) {
-        for (int p = 0; p < nprim; p++) {
-            for (int q = 0; q <= p; q++) {
-                idx3p[aux][p * nprim + q] = *data;
-                idx3p[aux][q * nprim + p] = *data;
-                data++;
-            }
-        }
-    }
+    psio_address next_Pmn = PSIO_ZERO;
 
     // Perform threaded contraction of "densities" against 3-index derivative integrals.
-    // Loop over blocks. We assume each block fits in memory
+    // Loop over blocks. Each block is all (P|mn) belonging to certain aux. orbital shells.
+    // Large aux. basis sets may require multiple blocks.
     for (int block = 0; block < Pstarts.size() - 1; block++) {
         int Pstart = Pstarts[block];
         int Pstop = Pstarts[block + 1];
         int NP = Pstop - Pstart;
+
+        int pstart = auxiliary->shell(Pstart).function_index();
+        int pstop = (Pstop == auxiliary->nshell() ? naux : auxiliary->shell(Pstop).function_index());
+        int np = pstop - pstart;
+
+        // Read values from disk. We assume that only the "lower triangle" of (P|mn) is stored.
+        auto temp = std::vector<double>(np * ntri);
+        auto data = temp.data();
+        psio_->read(PSIF_AO_TPDM, intermed_name.c_str(), (char*)temp.data(), np * ntri * sizeof(double), next_Pmn, &next_Pmn);
+
+        // Now get them into a matrix, not just the lower triangle.
+        // This is the price of only storing the lower triangle on disk.
+        auto idx3_matrix = std::make_shared<Matrix>(np, nprim * nprim);
+        auto idx3p = idx3_matrix->pointer();
+#pragma omp parallel for
+        for (int aux = 0; aux < np; aux++) {
+            for (int p = 0; p < nprim; p++) {
+                for (int q = 0; q <= p; q++) {
+                    idx3p[aux][p * nprim + q] = *data;
+                    idx3p[aux][q * nprim + p] = *data;
+                    data++;
+                }
+            }
+        }
 
         // For each block, loop over aux. shell, then primary shell pairs
 #pragma omp parallel for schedule(dynamic) num_threads(nthread_)
@@ -2485,7 +2493,7 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name, const std:
             int nP = auxiliary->shell(P).nfunction();
             int cP = auxiliary->shell(P).ncartesian();
             int aP = auxiliary->shell(P).ncenter();
-            int oP = auxiliary->shell(P).function_index();
+            int oP = auxiliary->shell(P).function_index() - pstart;
 
             int nM = primary->shell(M).nfunction();
             int cM = primary->shell(M).ncartesian();

@@ -410,7 +410,7 @@ SharedMatrix Deriv::compute_df(const std::map<std::string, std::pair<std::string
     auto enuc = std::make_shared<Matrix>(molecule_->nuclear_repulsion_energy_deriv1(wfn_->get_dipole_field_strength()));
     gradient_terms.push_back(enuc);
 
-    const auto& mints = wfn_->mintshelper();;
+    const auto& mints = wfn_->mintshelper();
 
     // One-electron derivatives.
     auto Da = wfn_->Da();
