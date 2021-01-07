@@ -247,6 +247,7 @@ funcs.append({
 
 funcs.append({
     "name": "t-HCTH",
+    "alias": ["tHCTH", "tau-HCTH"],
     "x_functionals": {
         "MGGA_X_TAU_HCTH": {}
     },
