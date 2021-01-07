@@ -2397,7 +2397,7 @@ std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::strin
     return gradient_contributions;
 }
 
-SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name) {
+SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name, const std::string& intermed_name) {
     // Construct integral factory.
     auto primary = get_basisset("ORBITAL");
     auto auxiliary = get_basisset(aux_name);
@@ -2407,33 +2407,55 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name) {
         Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
     }
 
-    const auto &shell_pairs = eri[0]->shell_pairs();
+    const auto &shell_pairs = Jint[0]->shell_pairs();
     int npairs = shell_pairs.size(); // Number of pairs of primary orbital shells
 
     // => Memory Constraints <= //
     //TODO: Why does this represent the meaximum number of rows?
     //This is probably sub-optimal.
-    auto max_rows = auxiliary_->nshell();
+    auto max_rows = auxiliary->nshell();
 
     // => Block Sizing <= //
     std::vector<int> Pstarts;
     int counter = 0;
     Pstarts.push_back(0);
-    for (int P = 0; P < auxiliary_->nshell(); P++) {
-        int nP = auxiliary_->shell(P).nfunction();
+    for (int P = 0; P < auxiliary->nshell(); P++) {
+        int nP = auxiliary->shell(P).nfunction();
         if (counter + nP > max_rows) {
             counter = 0;
             Pstarts.push_back(P);
         }
         counter += nP;
     }
-    Pstarts.push_back(auxiliary_->nshell());
+    Pstarts.push_back(auxiliary->nshell());
 
     // Construct temporary matrices for each thread
     int natom = basisset_->molecule()->natom();
     std::vector<SharedMatrix> temps;
     for (int j = 0; j < nthread_; j++) {
         temps.push_back(std::make_shared<Matrix>("temp", natom, 3));
+    }
+
+    // Read values from disk.
+    const auto naux = auxiliary->nbf();
+    const auto nprim = primary->nbf();
+    const auto ntri = (nprim * (nprim + 1)) / 2;
+    auto temp = std::vector<double>(naux * ntri);
+    auto data = temp.data();
+    psio_->read_entry(PSIF_AO_TPDM, intermed_name.c_str(), (char*)temp.data(), naux * ntri * sizeof(double));
+
+    // Now get them into a matrix.
+    auto idx3_matrix = std::make_shared<Matrix>(naux, nprim * nprim);
+    auto idx3p = idx3_matrix->pointer();
+#pragma omp parallel for
+    for (int aux = 0; aux < naux; aux++) {
+        for (int p = 0; p < nprim; p++) {
+            for (int q = 0; q <= p; q++) {
+                idx3p[aux][p * nprim + q] = *data;
+                idx3p[aux][q * nprim + p] = *data;
+                data++;
+            }
+        }
     }
 
     // Perform threaded contraction of "densities" against 3-index derivative integrals.
@@ -2458,7 +2480,7 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name) {
 
             Jint[thread]->compute_shell_deriv1(P, 0, M, N);
 
-            const auto& buffers = eri[thread]->buffers();
+            const auto& buffers = Jint[thread]->buffers();
 
             int nP = auxiliary->shell(P).nfunction();
             int cP = auxiliary->shell(P).ncartesian();
@@ -2488,15 +2510,13 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name) {
 
             double perm = (M == N ? 1.0 : 2.0);
 
-            double **grad_Jp;
-            auto grad_Jp = Jtemps2[thread]->pointer();
+            auto grad_Jp = temps[thread]->pointer();
 
             // Within each of those, then loop over each function in the shell. 
             for (int p = 0; p < nP; p++) {
                 for (int m = 0; m < nM; m++) {
                     for (int n = 0; n < nN; n++) {
-                        // TODO: gQso has to come from SOMEWHERE
-                        double Ival = 1.0 * perm * gQso->get(p + oP, (m + oM) * nso_ + (n + oN));
+                        double Ival = 1.0 * perm * idx3p[p + oP][(m + oM) * nprim + (n + oN)];
                         grad_Jp[aP][0] += Ival * (*Px);
                         grad_Jp[aP][1] += Ival * (*Py);
                         grad_Jp[aP][2] += Ival * (*Pz);
@@ -2524,7 +2544,7 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name) {
 
     // Sum results across the various threads
     auto idx3_grad = std::make_shared<Matrix>("Temp", natom, 3);
-    for (const auto& thread_contribution : Jint) {
+    for (const auto& thread_contribution : temps) {
         idx3_grad->add(thread_contribution);
     }
 

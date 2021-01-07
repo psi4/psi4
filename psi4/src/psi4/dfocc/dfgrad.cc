@@ -54,52 +54,9 @@ void DFOCC::dfgrad() {
 
     tpdm_tilde();
     back_trans();
-
-    //===========================================================================================
-    //============================ Gradient =====================================================
-    //===========================================================================================
-    outfile->Printf("\tComputing analytic gradients...\n");
-
-    std::map<std::string, SharedMatrix> gradients;
-
-    // OEI GRAD
     auto W = std::make_shared<Matrix>("AO-basis Energy-Weighted OPDM", nmo_, nmo_);
     GFao->to_shared_matrix(W);
     Lagrangian_ = W;
-
-    // TEI GRAD
-    tei_grad("JK", gradients);
-    tei_grad("RI", gradients);
-
-    //===========================================================================================
-    //========================= Total Gradient ==================================================
-    //===========================================================================================
-    // => Total Gradient <= //
-    auto total = matrix_factory()->create_shared_matrix("Total Gradient", natom, 3);
-
-    for (auto& kv: gradients) {
-        total->add(kv.second);
-    }
-
-    // TEI grad
-    gradients["Two-Electron"] = matrix_factory()->create_shared_matrix("Two-Electron Gradient", natom, 3);
-    gradients["Two-Electron"]->add(gradients["3-Index:RefSep"]);
-    gradients["Two-Electron"]->add(gradients["3-Index:Corr"]);
-    gradients["Two-Electron"]->print_atom_vector();  // UB
-
-    gradients["Total"] = total;
-
-    // => Final Printing <= //
-    if (print_ > 1) {
-        for (auto& kv: gradients) {
-            kv.second->print_atom_vector();
-        }
-    } else {
-        gradients["Total"]->print_atom_vector();
-    }
-
-    set_gradient(total);
-
 }  // end dfgrad
 
 }  // namespace dfoccwave

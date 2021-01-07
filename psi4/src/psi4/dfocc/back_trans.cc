@@ -88,7 +88,7 @@ void DFOCC::back_trans() {
 
         // symmetrize : This is necessary since we only consider OV block
         Gao->symmetrize3(Gao);
-        Gao->write(psio_, PSIF_DFOCC_DENS, true, true);
+        Gao->write(psio_, PSIF_AO_TPDM, true, true);
 
         // 2-Index TPDM
         bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
@@ -153,7 +153,7 @@ void DFOCC::back_trans() {
 
         // symmetrize : This is necessary since we only consider OV block
         Gao->symmetrize3(Gao);
-        Gao->write(psio_, PSIF_DFOCC_DENS, true, true);
+        Gao->write(psio_, PSIF_AO_TPDM, true, true);
 
         // 2-Index TPDM
         bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
@@ -266,7 +266,7 @@ void DFOCC::back_trans() {
 
         // symmetrize : This is necessary since we only consider OV block
         Gao->symmetrize3(Gao);
-        Gao->write(psio_, PSIF_DFOCC_DENS, true, true);
+        Gao->write(psio_, PSIF_AO_TPDM, true, true);
 
         // 2-Index TPDM
         bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
@@ -358,7 +358,7 @@ void DFOCC::back_trans() {
 
         // symmetrize : This is necessary since we only consider OV block
         Gao->symmetrize3(Gao);
-        Gao->write(psio_, PSIF_DFOCC_DENS, true, true);
+        Gao->write(psio_, PSIF_AO_TPDM, true, true);
 
         // 2-Index TPDM
         bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));

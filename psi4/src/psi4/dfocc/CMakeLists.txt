@@ -97,7 +97,6 @@ list(APPEND sources
   t2_2nd_gen.cc
   t2_2nd_sc.cc
   t2_mp2_direct.cc
-  tei_grad.cc
   tensors.cc
   tpdm_tilde.cc
   update_hfmo.cc
