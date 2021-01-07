@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {exp_vol} b6988f5 dirty
+                         Git: Rev {exp_vol} e67118a dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,13 +30,13 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 10 December 2020 01:48PM
+    Psi4 started on: Thursday, 07 January 2021 12:04PM
 
-    Process ID: 22633
-    Host:       ds4
+    Process ID: 4022816
+    Host:       hornet
     PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
-    Threads:    6
+    Threads:    1
     
   ==> Input File <==
 
@@ -73,6 +73,14 @@ avols_ref = psi4.Matrix.from_list([  #TEST
  [63.44245356],    #TEST
  [27.11771735]])   #TEST
 
+# Reference Valence Widths from Horton
+# Zn 0.7055868992061838
+# O 0.40965750899754616
+
+vwidths_ref = psi4.Matrix.from_list([  #TEST
+ [0.70558769],     #TEST
+ [0.40965805]])    #TEST
+
 molecule mol {
   0 1
   Zn 0.00 0.00 0.00
@@ -99,20 +107,22 @@ dipoles = wfn.array_variable('MBIS DIPOLES')
 quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
 avols = wfn.array_variable('MBIS ATOMIC VOLUMES')
+vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
 
 compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
 compare_matrices(quadrupoles_ref, quadrupoles, 5, "MBIS Quadrupoles") #TEST
 compare_matrices(octupoles_ref, octupoles, 5, "MBIS Octupoles")       #TEST
 compare_matrices(avols_ref, avols, 5, "MBIS Atomic Volumes")          #TEST
+compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
 --------------------------------------------------------------------------
 
 Scratch directory: /scratch/jiang/
 
 Scratch directory: /scratch/jiang/
 
-*** tstart() called on ds4
-*** at Thu Dec 10 13:48:14 2020
+*** tstart() called on hornet
+*** at Thu Jan  7 12:04:03 2021
 
    => Loading Basis Set <=
 
@@ -128,7 +138,7 @@ Scratch directory: /scratch/jiang/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RHF Reference
-                        6 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -193,7 +203,7 @@ Scratch directory: /scratch/jiang/
     J tasked:                   Yes
     K tasked:                   Yes
     wK tasked:                   No
-    OpenMP threads:               6
+    OpenMP threads:               1
     Memory [MiB]:               375
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -230,27 +240,27 @@ Scratch directory: /scratch/jiang/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD: -1847.77161187024399   -1.84777e+03   0.00000e+00 
-   @DF-RHF iter   1: -1850.87609179324659   -3.10448e+00   5.72916e-02 DIIS
-   @DF-RHF iter   2: -1838.46241431830458    1.24137e+01   1.40360e-01 DIIS
-   @DF-RHF iter   3: -1852.43421225610041   -1.39718e+01   9.83156e-03 DIIS
-   @DF-RHF iter   4: -1852.49754598135314   -6.33337e-02   6.03974e-03 DIIS
-   @DF-RHF iter   5: -1852.54947159807443   -5.19256e-02   1.14659e-03 DIIS
-   @DF-RHF iter   6: -1852.55190692465703   -2.43533e-03   3.18086e-04 DIIS
-   @DF-RHF iter   7: -1852.55254926335215   -6.42339e-04   2.21835e-04 DIIS
-   @DF-RHF iter   8: -1852.55290923569305   -3.59972e-04   7.77775e-05 DIIS
-   @DF-RHF iter   9: -1852.55294037633439   -3.11406e-05   1.32230e-05 DIIS
-   @DF-RHF iter  10: -1852.55294118152779   -8.05193e-07   3.33114e-06 DIIS
-   @DF-RHF iter  11: -1852.55294121109091   -2.95631e-08   6.66046e-07 DIIS
-   @DF-RHF iter  12: -1852.55294121252655   -1.43564e-09   1.12396e-07 DIIS
-   @DF-RHF iter  13: -1852.55294121258407   -5.75255e-11   2.63063e-08 DIIS
-   @DF-RHF iter  14: -1852.55294121258748   -3.41061e-12   4.40233e-09 DIIS
-   @DF-RHF iter  15: -1852.55294121258544    2.04636e-12   1.41697e-09 DIIS
-   @DF-RHF iter  16: -1852.55294121258521    2.27374e-13   6.10798e-10 DIIS
-   @DF-RHF iter  17: -1852.55294121258657   -1.36424e-12   5.06729e-10 DIIS
-   @DF-RHF iter  18: -1852.55294121258612    4.54747e-13   4.30665e-10 DIIS
-   @DF-RHF iter  19: -1852.55294121258657   -4.54747e-13   2.01177e-10 DIIS
-   @DF-RHF iter  20: -1852.55294121258635    2.27374e-13   7.17915e-11 DIIS
+   @DF-RHF iter SAD: -1847.77161114683395   -1.84777e+03   0.00000e+00 
+   @DF-RHF iter   1: -1850.87609272177883   -3.10448e+00   5.72916e-02 DIIS
+   @DF-RHF iter   2: -1838.46254479587492    1.24135e+01   1.40360e-01 DIIS
+   @DF-RHF iter   3: -1852.43421226597479   -1.39717e+01   9.83157e-03 DIIS
+   @DF-RHF iter   4: -1852.49754562814019   -6.33334e-02   6.03976e-03 DIIS
+   @DF-RHF iter   5: -1852.54947159681433   -5.19260e-02   1.14658e-03 DIIS
+   @DF-RHF iter   6: -1852.55190691378061   -2.43532e-03   3.18088e-04 DIIS
+   @DF-RHF iter   7: -1852.55254925958866   -6.42346e-04   2.21836e-04 DIIS
+   @DF-RHF iter   8: -1852.55290923589746   -3.59976e-04   7.77769e-05 DIIS
+   @DF-RHF iter   9: -1852.55294037582098   -3.11399e-05   1.32230e-05 DIIS
+   @DF-RHF iter  10: -1852.55294118101074   -8.05190e-07   3.33113e-06 DIIS
+   @DF-RHF iter  11: -1852.55294121057341   -2.95627e-08   6.66045e-07 DIIS
+   @DF-RHF iter  12: -1852.55294121201155   -1.43814e-09   1.12395e-07 DIIS
+   @DF-RHF iter  13: -1852.55294121206725   -5.57066e-11   2.63026e-08 DIIS
+   @DF-RHF iter  14: -1852.55294121206839   -1.13687e-12   4.38295e-09 DIIS
+   @DF-RHF iter  15: -1852.55294121206748    9.09495e-13   1.36320e-09 DIIS
+   @DF-RHF iter  16: -1852.55294121206930   -1.81899e-12   4.93822e-10 DIIS
+   @DF-RHF iter  17: -1852.55294121206862    6.82121e-13   3.80159e-10 DIIS
+   @DF-RHF iter  18: -1852.55294121206839    2.27374e-13   3.34377e-10 DIIS
+   @DF-RHF iter  19: -1852.55294121207021   -1.81899e-12   1.94905e-10 DIIS
+   @DF-RHF iter  20: -1852.55294121206975    4.54747e-13   6.83529e-11 DIIS
   Energy and wave function converged.
 
 
@@ -289,14 +299,14 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [    19 ]
 
-  @DF-RHF Final Energy: -1852.55294121258635
+  @DF-RHF Final Energy: -1852.55294121206975
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             64.1426922024242430
-    One-Electron Energy =               -2715.3429115743142575
-    Two-Electron Energy =                 798.6472781593035961
-    Total Energy =                      -1852.5529412125863473
+    One-Electron Energy =               -2715.3429115728336001
+    Two-Electron Energy =                 798.6472781583394180
+    Total Energy =                      -1852.5529412120699817
 
 Computation Completed
 
@@ -318,15 +328,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -4.9493     Total:     4.9493
 
 
-*** tstop() called on ds4 at Thu Dec 10 13:48:20 2020
+*** tstop() called on hornet at Thu Jan  7 12:04:10 2021
 Module time:
-	user time   =       9.52 seconds =       0.16 minutes
-	system time =       0.53 seconds =       0.01 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       6.22 seconds =       0.10 minutes
+	system time =       0.28 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 Total time:
-	user time   =       9.52 seconds =       0.16 minutes
-	system time =       0.53 seconds =       0.01 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       6.22 seconds =       0.10 minutes
+	system time =       0.28 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -355,15 +365,16 @@ Properties computed using the ZnO SCF density matrix
 
   MBIS Octupoles: [e a0^3]
    Center  Symbol  Z      XXX       XXY       XXZ       XYY       XYZ       XZZ       YYY       YYZ       YZZ       ZZZ
-      1      ZN   30    0.0000    0.0000    0.4035    0.0000   -0.0000    0.0000    0.0000    0.4035    0.0000    1.0825
+      1      ZN   30    0.0000    0.0000    0.4035    0.0000    0.0000    0.0000    0.0000    0.4035    0.0000    1.0825
       2       O    8    0.0000    0.0000    0.4453    0.0000    0.0000    0.0000    0.0000    0.4453    0.0000    1.2430
     MBIS Charges..........................................................................PASSED
     MBIS Dipoles..........................................................................PASSED
     MBIS Quadrupoles......................................................................PASSED
     MBIS Octupoles........................................................................PASSED
     MBIS Atomic Volumes...................................................................PASSED
+    MBIS Valence Widths...................................................................PASSED
 
-    Psi4 stopped on: Thursday, 10 December 2020 01:48PM
-    Psi4 wall time for execution: 0:00:07.11
+    Psi4 stopped on: Thursday, 07 January 2021 12:04PM
+    Psi4 wall time for execution: 0:00:07.52
 
 *** Psi4 exiting successfully. Buy a developer a beer!

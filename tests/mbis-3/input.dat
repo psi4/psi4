@@ -30,6 +30,14 @@ avols_ref = psi4.Matrix.from_list([    #TEST
  [22.4122239 ],   #TEST
  [ 1.54670646]])  #TEST
 
+# Reference Values for Valence Widths from Horton
+# O 0.3907094315779262
+# H 0.355789207347543
+
+vwidths_ref = psi4.Matrix.from_list([  #TEST
+ [0.39070772],    #TEST
+ [0.35579084]])   #TEST
+
 molecule mol {
   0 2
   O 0.0 0.0 0.0
@@ -57,10 +65,12 @@ dipoles = wfn.array_variable('MBIS DIPOLES')
 quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
 avols = wfn.array_variable('MBIS ATOMIC VOLUMES')
+vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
 
 compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
 compare_matrices(avols_ref, avols, 5, "MBIS Atomic Volumes")          #TEST
+compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
 
 # lands on different degenerate solutions due to high-symmetry wfn, so test stable values. (happens for molecular quadrupole, too, not just mbis.)
 compare_values(quadrupoles_ref.np[0, 5], quadrupoles.np[0, 5], 5, "MBIS Quadrupoles: ZZ of O") #TEST

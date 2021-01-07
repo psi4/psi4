@@ -31,6 +31,14 @@ avols_ref = psi4.Matrix.from_list([  #TEST
  [10.98566322],    #TEST
  [93.71382434]])   #TEST
 
+# Reference Valence Widths From Horton
+# Na 1.1345834723888377
+# Cl 0.5682903211811192
+
+vwidths_ref = psi4.Matrix.from_list([  #TEST
+ [1.13464706],     #TEST
+ [0.56829083]])    #TEST
+
 molecule mol {
   0 1
   Na 0.00 0.00 0.00
@@ -57,9 +65,12 @@ dipoles = wfn.array_variable('MBIS DIPOLES')
 quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
 avols = wfn.array_variable('MBIS ATOMIC VOLUMES')
+vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+
 
 compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
 compare_matrices(quadrupoles_ref, quadrupoles, 5, "MBIS Quadrupoles") #TEST
 compare_matrices(octupoles_ref, octupoles, 5, "MBIS Octupoles")       #TEST
 compare_matrices(avols_ref, avols, 5, "MBIS Atomic Volumes")          #TEST
+compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
