@@ -139,6 +139,7 @@ funcs.append({"name": "OTPSS-D"        , "xc_functionals": {"MGGA_XC_OTPSS_D"   
 funcs.append({"name": "TPSSLYP1W"      , "xc_functionals": {"MGGA_XC_TPSSLYP1W"         : {}}})
 funcs.append({"name": "B97M-V"         , "xc_functionals": {"MGGA_XC_B97M_V"            : {}}})
 funcs.append({"name": "B5050LYP"       , "xc_functionals": {"HYB_GGA_XC_B5050LYP"       : {}}})
+funcs.append({"name": "LC-BOP"         , "xc_functionals": {"HYB_GGA_XC_LC_BOP"         : {}}, "alias": ["LRC-BOP"]})
 # yapf: enable
 
 functional_list = {}
