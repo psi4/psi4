@@ -3404,6 +3404,17 @@ SharedMatrix doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, 
 SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA, bool transB,
                      bool transC) {
 
+    bool same_symmetry = (A->symmetry() == B->symmetry() && A->symmetry() == C->symmetry());
+
+    SharedMatrix T;
+    SharedMatrix S;
+
+    if (!same_symmetry) {
+	T = doublet(A, B, transA, transB);
+        S = doublet(T, C, false, transC);
+	return S;
+    }
+
     int nirrep = A->nirrep();
     
     if (nirrep != B->nirrep() || nirrep != C->nirrep()) {
@@ -3436,9 +3447,6 @@ SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedM
         cost2 += dim2 * dim6 * (dim1 + dim4);
 
     }
-
-    SharedMatrix T;
-    SharedMatrix S;
 
     if (cost1 <= cost2) {
         T = doublet(A, B, transA, transB);

@@ -6,9 +6,9 @@ import psi4
 
 @pytest.mark.quick
 def test_triplet_speedup():
-    a = np.random.rand(1000, 100);
-    b = np.random.rand(100, 1000);
-    c = np.random.rand(1000, 100);
+    a = np.random.rand(10000, 10);
+    b = np.random.rand(10, 10000);
+    c = np.random.rand(10000, 10);
 
     A = psi4.core.Matrix.from_array(a)
     B = psi4.core.Matrix.from_array(b)
