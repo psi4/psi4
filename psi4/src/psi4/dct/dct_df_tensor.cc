@@ -73,7 +73,7 @@ void DCTSolver::df_build_b() {
     dct_timer_on("DCTSolver::df_build_b()");
 
     outfile->Printf("\n\n\t                  ************************************************\n");
-    outfile->Printf("\t                  *        Density Fitting Module in DCT        *\n");
+    outfile->Printf("\t                  *         Density Fitting Module in DCT        *\n");
     outfile->Printf("\t                  *                by Xiao Wang                  *\n");
     outfile->Printf("\t                  ************************************************\n");
     outfile->Printf("\n");
