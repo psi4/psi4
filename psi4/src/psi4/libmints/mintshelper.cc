@@ -2458,9 +2458,9 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name, const std:
         int np = pstop - pstart;
 
         // Read values from disk. We assume that only the "lower triangle" of (P|mn) is stored.
-        auto temp = std::vector<double>(np * ntri);
+        auto temp = std::vector<double>(static_cast<size_t>(np) * ntri);
         auto data = temp.data();
-        psio_->read(PSIF_AO_TPDM, intermed_name.c_str(), (char*)temp.data(), np * ntri * sizeof(double), next_Pmn, &next_Pmn);
+        psio_->read(PSIF_AO_TPDM, intermed_name.c_str(), (char*)temp.data(), sizeof(double) * np * ntri, next_Pmn, &next_Pmn);
 
         // Now get them into a matrix, not just the lower triangle.
         // This is the price of only storing the lower triangle on disk.
@@ -2479,7 +2479,7 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name, const std:
 
         // For each block, loop over aux. shell, then primary shell pairs
 #pragma omp parallel for schedule(dynamic) num_threads(nthread_)
-        for (long int PMN = 0L; PMN < NP * npairs; PMN++) {
+        for (long int PMN = 0L; PMN < static_cast<long int>(NP) * npairs; PMN++) {
             int thread = 0;
 #ifdef _OPENMP
             thread = omp_get_thread_num();

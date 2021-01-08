@@ -1909,7 +1909,7 @@ def run_dfocc_gradient(name, **kwargs):
     dfocc_wfn = core.dfocc(ref_wfn)
 
     derivobj = core.Deriv(dfocc_wfn)
-    grad = derivobj.compute_df("DF_BASIS_SCF", "DF_BASIS_CC")
+    derivobj.compute_df("DF_BASIS_SCF", "DF_BASIS_CC")
 
     dfocc_wfn.set_variable(f"{name.upper()} TOTAL GRADIENT", dfocc_wfn.gradient())
 
