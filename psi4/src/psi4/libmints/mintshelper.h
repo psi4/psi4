@@ -335,7 +335,7 @@ class PSI_API MintsHelper {
     // Computes the metric derivative gradient terms for DF methods
     // Uses a vector of "densities" for methods that decompose the "densities"
     std::map<std::string, SharedMatrix> metric_grad(std::map<std::string, SharedMatrix>& D, const std::string& aux_name);
-    SharedMatrix three_idx_grad(const std::string& aux_name, const std::string& intermed_name);
+    SharedMatrix three_idx_grad(const std::string& aux_name, const std::string& intermed_name, const std::string& gradient_name);
 
     SharedMatrix kinetic_grad(SharedMatrix D);
     SharedMatrix potential_grad(SharedMatrix D);

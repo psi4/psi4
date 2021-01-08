@@ -55,7 +55,6 @@ class DFOCC : public Wavefunction {
     void mem_release();
     void get_moinfo();
     void title();
-    void title_grad();
     void lambda_title();
     void pt_title();
     void pat_title();

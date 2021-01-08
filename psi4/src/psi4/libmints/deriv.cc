@@ -391,7 +391,7 @@ Deriv::Deriv(const std::shared_ptr<Wavefunction> &wave, char needed_irreps, bool
     cdsalcs_.print();
 }
 
-SharedMatrix Deriv::compute_df(const std::map<std::string, std::pair<std::string, std::string>> &stuff) {
+SharedMatrix Deriv::compute_df(const std::string& ref_aux_name, const std::string& cor_aux_name) {
     molecule_->print_in_bohr();
     
     if (!wfn_) throw("In Deriv: The wavefunction passed in is empty!");
@@ -443,21 +443,20 @@ SharedMatrix Deriv::compute_df(const std::map<std::string, std::pair<std::string
     gradient_terms.push_back(x_contr);
 
     // DF TEI derivatives
-    // basistype: (name of metric density, name of 3-idx density)
+    std::vector<std::pair<std::string, std::string>> aux_data{{ref_aux_name, "Reference"}, {cor_aux_name, "Correlation"}};
     _default_psio_lib_->open(PSIF_AO_TPDM, PSIO_OPEN_OLD);
-    for (const auto& kv: stuff) {
-        auto basistype = kv.first;
-        auto naux = wfn_->get_basisset(basistype)->nbf();
-        auto metric_density = std::make_shared<Matrix>(kv.second.first, naux, naux);
+    for (const auto& aux_datum: aux_data) {
+        auto naux = wfn_->get_basisset(aux_datum.first)->nbf();
+        auto metric_density = std::make_shared<Matrix>("Metric " + aux_datum.second + " Density", naux, naux);
         metric_density->load(_default_psio_lib_, PSIF_AO_TPDM, Matrix::SaveType::LowerTriangle);
         metric_density->scale(2);
         std::map<std::string, SharedMatrix> densities;
-        densities[kv.second.first] = metric_density;
-        auto results = mints->metric_grad(densities, basistype);
-        for (const auto& kv2: results) {
-            gradient_terms.push_back(kv2.second);
+        densities["Metric " + aux_datum.second] = metric_density;
+        auto results = mints->metric_grad(densities, aux_datum.first);
+        for (const auto& kv: results) {
+            gradient_terms.push_back(kv.second);
         }
-        auto result = mints->three_idx_grad(basistype, kv.second.second);
+        auto result = mints->three_idx_grad(aux_datum.first, "3-Center " + aux_datum.second + " Density" , "3-Center " + aux_datum.second);
         gradient_terms.push_back(result);
     }
     _default_psio_lib_->close(PSIF_AO_TPDM, 1); // 1 = keep contents of PSIF_AO_TPDM

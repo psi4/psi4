@@ -44,14 +44,8 @@ namespace psi {
 namespace dfoccwave {
 
 void DFOCC::dfgrad() {
-    //===========================================================================================
-    //============================ Preliminaries ================================================
-    //===========================================================================================
     tstop();
     tstart();
-    title_grad();
-    outfile->Printf("\tAnalytic gradients computation is starting...\n");
-
     tpdm_tilde();
     back_trans();
     auto W = std::make_shared<Matrix>("AO-basis Energy-Weighted OPDM", nmo_, nmo_);

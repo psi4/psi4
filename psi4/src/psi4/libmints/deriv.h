@@ -104,7 +104,7 @@ class PSI_API Deriv {
 
     SharedMatrix compute(DerivCalcType deriv_calc_type = DerivCalcType::Default);
 
-    SharedMatrix compute_df(const std::map<std::string, std::pair<std::string, std::string>> &stuff);
+    SharedMatrix compute_df(const std::string& ref_aux_name, const std::string& cor_aux_name);
 
     const SharedMatrix& two_body() { return tpdm_contr_; }
 

@@ -2397,7 +2397,11 @@ std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::strin
     return gradient_contributions;
 }
 
-SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name, const std::string& intermed_name) {
+// TODO: DFMP2 might be able to use this, if we resolve the following:
+//  1. Should we move density back transform into this loop?
+//  2. Should we explicitly hermitivitize during contraction against derivative integral?
+//  3. Can we force a relation between intermed_name and gradient_name, to simplify the argument list?
+SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name, const std::string& intermed_name, const std::string& gradient_name) {
     // Construct integral factory.
     auto primary = get_basisset("ORBITAL");
     auto auxiliary = get_basisset(aux_name);
@@ -2551,7 +2555,7 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name, const std:
     }
 
     // Sum results across the various threads
-    auto idx3_grad = std::make_shared<Matrix>("Temp", natom, 3);
+    auto idx3_grad = std::make_shared<Matrix>(intermed_name + " Gradient", natom, 3);
     for (const auto& thread_contribution : temps) {
         idx3_grad->add(thread_contribution);
     }
