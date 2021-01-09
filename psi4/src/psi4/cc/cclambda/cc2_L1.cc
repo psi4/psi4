@@ -35,7 +35,7 @@
 #include "psi4/libqt/qt.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "cclambda.h"
+#include "Local.h"
 #define EXTERN
 #include "globals.h"
 

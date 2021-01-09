@@ -34,7 +34,6 @@
 #include "psi4/libdpd/dpd.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "cclambda.h"
 #define EXTERN
 #include "globals.h"
 
@@ -43,8 +42,6 @@ namespace cclambda {
 
 void local_filter_T1(dpdfile2 *T1);
 void local_filter_T2(dpdbuf4 *T2);
-void pno_filter_T1(dpdfile2 *T1);
-void pno_filter_T2(dpdbuf4 *T2);
 
 void dijabL2(int L_irr) {
     dpdbuf4 L2, newLIJAB, newLijab, newLIjAb;

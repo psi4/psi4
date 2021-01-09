@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -28,7 +28,7 @@
 
 /*! \file
     \ingroup CCENERGY
-    \brief Local_cc class definition for PNO simulation
+    \brief Enter brief description of file here
 */
 
 #ifndef _psi_src_bin_ccenergy_local_h
@@ -39,44 +39,45 @@
 #include "psi4/libdpd/dpd.h"
 
 namespace psi {
+namespace ccenergy {
 
-class Local_cc {
-    public:
-        Local_cc();
-        ~Local_cc();
-        void local_init();
-        void local_filter_T1(dpdfile2 *T1);
-        void local_filter_T2(dpdbuf4 *T2);
-        void local_done();
+struct Local {
+    int natom;
+    int nso;
+    int nocc;
+    int nvir;
+    int *aostart;
+    int *aostop;
+    int **domain;
+    int **pairdomain;
+    int *pairdom_len;
+    int *pairdom_nrlen;
+    int *weak_pairs;
+    double ***V;
+    double ***W;
+    double *eps_occ;
+    double **eps_vir;
+    double cutoff;
+    std::string method;
+    std::string weakp;
+    int filter_singles;
+    double weak_pair_energy;
+    double cphf_cutoff;
+    int freeze_core;
+    std::string pairdef;
 
-        std::string method;
-        std::string weakp;
-        std::string pairdef;
-        int filter_singles;
-        int nocc;
-        int nvir;
-        double cutoff;
-        double weak_pair_energy;
-        double cphf_cutoff;
+    // For PNOs
+    int npairs;
+    double pno_cut;
+    std::vector<int> survivor_list;
+    std::vector<SharedVector> occ_num;
+    std::vector<SharedVector> eps_pno;
 
-    private:
-        void init_pno();
-        void get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec);
-        void get_semicanonical_transforms();
-        
-        int npairs;
-        double pno_cut;
-        int *weak_pairs;
-        double *eps_occ;
-        std::vector<int> survivor_list;
-        std::vector<SharedVector> occ_num;
-        std::vector<SharedVector> eps_pno;
-
-        std::vector<SharedMatrix> Q;
-        std::vector<SharedMatrix> L;
-
+    std::vector<SharedMatrix> Q;
+    std::vector<SharedMatrix> L;
 };
 
-} //namespace psi
+}  // namespace ccenergy
+}  // namespace psi
 
 #endif  // _psi_src_bin_ccenergy_local_h

@@ -34,13 +34,11 @@
 #include <cstdlib>
 #include "psi4/libdpd/dpd.h"
 #include "Params.h"
-#include "Local.h"
 #include "psi4/cc/ccwave.h"
 
 namespace psi {
 namespace ccenergy {
 
-void local_filter_T1(dpdfile2 *T1);
 void dijabT2();
 
 /* apply denominators to t1 and t2 */
@@ -55,7 +53,7 @@ void CCEnergyWavefunction::denom() {
 
         global_dpd_->file2_init(&newtIA, PSIF_CC_OEI, 0, 0, 1, "New tIA Increment");
         if (params_.local && local_.filter_singles) {
-            local_filter_T1(&newtIA);
+            local_.local_filter_T1(&newtIA);
         } else {
             global_dpd_->file2_init(&dIA, PSIF_CC_OEI, 0, 0, 1, "dIA");
             global_dpd_->file2_dirprd(&dIA, &newtIA);

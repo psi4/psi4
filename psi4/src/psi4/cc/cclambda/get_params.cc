@@ -132,18 +132,17 @@ void CCLambdaWavefunction::get_params(Options &options) {
     params.local = options.get_bool("LOCAL");
     local.cutoff = 0.02;
     local.cutoff = options.get_double("LOCAL_CUTOFF");
-    /* if (options["LOCAL_METHOD"].has_changed()) {
-        local_.method = options.get_str("LOCAL_METHOD");
-        if (local_.method == "AOBASIS" && local_.method == "WERNER") {
-            outfile->Printf("Invalid local correlation method: %s\n", local_.method.c_str());
+    if (options["LOCAL_METHOD"].has_changed()) {
+        local.method = options.get_str("LOCAL_METHOD");
+        if (local.method == "AOBASIS" && local.method == "WERNER") {
+            outfile->Printf("Invalid local correlation method: %s\n", local.method.c_str());
             throw PsiException("cclambda: error", __FILE__, __LINE__);
         }
     } else if (params.local) {
-        local_.method = "WERNER";
-    }*/
-    local.method = options.get_str("LOCAL_METHOD");
+        local.method = "WERNER";
+    }
 
-    /* if (options["LOCAL_WEAKP"].has_changed()) {
+    if (options["LOCAL_WEAKP"].has_changed()) {
         local.weakp = options.get_str("LOCAL_WEAKP");
         if (local.weakp != "MP2" && local.weakp != "NEGLECT" && local.weakp != "NONE") {
             outfile->Printf("Invalid method for treating local pairs: %s\n", local.weakp.c_str());
@@ -151,8 +150,7 @@ void CCLambdaWavefunction::get_params(Options &options) {
         }
     } else if (params.local) {
         local.weakp = "NONE";
-    }*/
-    local.weakp = options.get_str("LOCAL_WEAKP");
+    }
 
     if (params.dertype == 3)
         local.filter_singles = 0;

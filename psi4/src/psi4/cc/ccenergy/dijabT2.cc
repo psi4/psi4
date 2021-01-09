@@ -39,8 +39,6 @@
 namespace psi {
 namespace ccenergy {
 
-void local_filter_T2(dpdbuf4 *T2);
-
 void CCEnergyWavefunction::dijabT2() {
     dpdbuf4 newtIJAB, newtijab, newtIjAb, tIjAb;
     dpdbuf4 dIJAB, dijab, dIjAb;
@@ -52,7 +50,7 @@ void CCEnergyWavefunction::dijabT2() {
 
         global_dpd_->buf4_init(&newtIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "New tIjAb Increment");
         if (params_.local) {
-            local_filter_T2(&newtIjAb);
+            local_.local_filter_T2(&newtIjAb);
         } else {
             global_dpd_->buf4_init(&dIjAb, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
             global_dpd_->buf4_dirprd(&dIjAb, &newtIjAb);

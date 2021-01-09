@@ -32,7 +32,6 @@
 */
 
 #include "Params.h"
-#include "Local.h"
 #include "MOInfo.h"
 #include "psi4/cc/ccwave.h"
 
@@ -140,10 +139,10 @@ void CCEnergyWavefunction::get_params(Options &options) {
     local_.method = options.get_str("LOCAL_METHOD");
     local_.weakp = options.get_str("LOCAL_WEAKP");
 
-    // local.filter_singles = options.get_bool("LOCAL_FILTER_SINGLES");
+    local_.filter_singles = options.get_bool("LOCAL_FILTER_SINGLES");
     // if(params.dertype == 3) local.filter_singles = 0;
 
-    local_.cphf_cutoff = options.get_double("LOCAL_CPHF_CUTOFF");
+    /*local_.cphf_cutoff = options.get_double("LOCAL_CPHF_CUTOFF");
     std::string freeze_docc = options.get_str("FREEZE_CORE");
     local_.freeze_core = (freeze_docc != "FALSE");
 
@@ -151,7 +150,7 @@ void CCEnergyWavefunction::get_params(Options &options) {
     if (params_.local && params_.dertype == 3)
         local_.pairdef = "RESPONSE";
     else if (params_.local)
-        local_.pairdef = "BP";
+        local_.pairdef = "BP";*/
 
     params_.num_amps = options.get_int("NUM_AMPS_PRINT");
     params_.bconv = options.get_double("BRUECKNER_ORBS_R_CONVERGENCE");

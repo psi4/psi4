@@ -34,8 +34,6 @@
 */
 
 #include <string>
-#include "psi4/libmints/wavefunction.h"
-#include "psi4/libdpd/dpd.h"
 
 namespace psi {
 namespace cclambda {
@@ -63,12 +61,6 @@ struct Local {
     std::string freeze_core;
     std::string pairdef;
 
-    // For PNOs
-    int npairs;
-    double pno_cut;
-    std::vector<int> survivor_list;
-    std::vector<SharedVector> occ_num;
-    std::vector<SharedVector> eps_pno;
 };
 
 }  // namespace cclambda

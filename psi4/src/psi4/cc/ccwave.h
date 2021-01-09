@@ -167,16 +167,16 @@ class CCEnergyWavefunction : public Wavefunction {
     double d2diag_rhf();
 
     /* local correlation */
-    void init_pno();
-    void get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec);
-    void get_semicanonical_transforms(); 
-    void pno_filter_T1(dpdfile2 *T1);
-    void pno_filter_T2(dpdbuf4 *T2);
-    void lmp2();
-    void local_filter_T1(dpdfile2 *T1);
-    void local_filter_T2(dpdbuf4 *T2);
-    void local_init();
-    void local_done();
+    // void init_pno();
+    // void get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec);
+    // void get_semicanonical_transforms(); 
+    // void pno_filter_T1(dpdfile2 *T1);
+    // void pno_filter_T2(dpdbuf4 *T2);
+    //void lmp2();
+    //void local_filter_T1(dpdfile2 *T1);
+    //void local_filter_T2(dpdbuf4 *T2);
+    //void local_init();
+    //void local_done();
 
     /* AO basis */
     void BT2_AO();
@@ -201,7 +201,7 @@ class CCEnergyWavefunction : public Wavefunction {
     /* member variables */
     MOInfo moinfo_;
     Params params_;
-    Local local_;
+    Local_cc local_;
     std::array<dpd_file4_cache_entry, 113> cache_priority_list_;
 };
 

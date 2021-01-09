@@ -79,6 +79,11 @@ struct Params {
     double scscc_scale_ss;
     int newtrips;
     int df;
+    std::string local_cc_method;
+    double local_cc_cutoff;
+    int local_cc_weakp;
+    int local_cc_filter_singles;
+    
 };
 
 }  // namespace ccenergy

@@ -36,7 +36,6 @@
 
 #include "Params.h"
 #include "MOInfo.h"
-#include "Local.h"
 #include "psi4/cc/ccwave.h"
 
 #include "psi4/libciomr/libciomr.h"
@@ -184,10 +183,12 @@ double CCEnergyWavefunction::compute_energy() {
     }
 
     if (params_.local) {
-        local_init();
+        local_.nocc = moinfo_.occpi[0];
+        local_.nvir = moinfo_.occpi[0];
+        local_.local_init();
         dpdbuf4 T2;
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-        local_filter_T2(&T2);
+        local_.local_filter_T2(&T2);
         global_dpd_->buf4_close(&T2);
         moinfo_.emp2 = mp2_energy();
         outfile->Printf("MP2 correlation energy after filtering T2's: %2.10f \n",moinfo_.emp2); 
@@ -470,7 +471,7 @@ double CCEnergyWavefunction::compute_energy() {
 
     if (params_.local) {
         /*    local_print_T1_norm(); */
-        local_done();
+        local_.local_done();
     }
 
     if (params_.brueckner) Process::environment.globals["BRUECKNER CONVERGED"] = rotate();
