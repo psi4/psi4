@@ -34,16 +34,14 @@
 #include "psi4/libdpd/dpd.h"
 #include "MOInfo.h"
 #include "Params.h"
+#include "cclambda.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi {
 namespace cclambda {
 
-void local_filter_T1(dpdfile2 *T1);
-void local_filter_T2(dpdbuf4 *T2);
-
-void dijabL2(int L_irr) {
+void CCLambdaWavefunction::dijabL2(int L_irr) {
     dpdbuf4 L2, newLIJAB, newLijab, newLIjAb;
     dpdbuf4 d2, dIJAB, dijab, dIjAb;
 
@@ -54,7 +52,7 @@ void dijabL2(int L_irr) {
 
         global_dpd_->buf4_init(&newLIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb Increment");
         if (params.local)
-            local_filter_T2(&newLIjAb);
+            local_.local_filter_T2(&newLIjAb);
         else {
             global_dpd_->buf4_init(&dIjAb, PSIF_CC_DENOM, L_irr, 0, 5, 0, 5, 0, "dIjAb");
             global_dpd_->buf4_dirprd(&dIjAb, &newLIjAb);

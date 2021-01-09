@@ -55,6 +55,7 @@ class CCEnergyWavefunction : public Wavefunction {
     double compute_energy() override;
 
     std::map<std::string, SharedMatrix> get_amplitudes();
+    Local_cc local_;
 
    private:
     /* setup, info and teardown */
@@ -201,7 +202,6 @@ class CCEnergyWavefunction : public Wavefunction {
     /* member variables */
     MOInfo moinfo_;
     Params params_;
-    Local_cc local_;
     std::array<dpd_file4_cache_entry, 113> cache_priority_list_;
 };
 

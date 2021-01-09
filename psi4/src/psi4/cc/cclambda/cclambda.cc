@@ -36,7 +36,6 @@
 
 #include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
 #include "globals.h"
 #include "cclambda.h"
 
@@ -61,8 +60,6 @@ namespace cclambda {
 
 double pseudoenergy(const struct L_Params& L_params);
 void G_build(int L_irr);
-void L1_build(const struct L_Params& L_params);
-void L2_build(const struct L_Params& L_params);
 void sort_amps(int L_irr);
 void Lsave(int L_irr);
 void Lnorm(const struct L_Params& L_params);
@@ -190,7 +187,8 @@ double CCLambdaWavefunction::compute_energy() {
         }
     }
 
-    if (params.local) local_init();
+    if (params.local) { Local_cc local_;
+    }
 
     if (params.ref == 0) {
         if (params.wfn == "CC2" || params.wfn == "EOM_CC2")
@@ -251,7 +249,9 @@ double CCLambdaWavefunction::compute_energy() {
 
             } else {
                 G_build(pL_params[i].irrep);
+                outfile->Printf("\n Before L1 build\n");
                 L1_build(pL_params[i]);
+                outfile->Printf("\n After L1 build\n");
                 if (params.print & 2) status("L1 amplitudes", "outfile");
                 L2_build(pL_params[i]);
 
@@ -306,7 +306,7 @@ double CCLambdaWavefunction::compute_energy() {
         projections(pL_params);
     }
 
-    if (params.local) local_done();
+    if (params.local) local_.local_done();
 
     dpd_close(0);
 
