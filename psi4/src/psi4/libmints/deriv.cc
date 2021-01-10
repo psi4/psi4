@@ -391,6 +391,48 @@ Deriv::Deriv(const std::shared_ptr<Wavefunction> &wave, char needed_irreps, bool
     cdsalcs_.print();
 }
 
+/* Technical Documentation
+ * This requires five intermediates.
+ * 1. One-Particle Density Matrix
+ *  Analagous to <Ψ|a^p_q|Ψ>. The (pq) element contracts against the integral derivative h^x_(pq).
+ *  This quantity separates into alpha and beta blocks. Each block must be back-transformed, and then
+ *  stored on the wavefunction as Da_ and Db_.
+ * 2. Lagrangian, AKA, Energy-Weighted Density Matrix, AKA, Generalized Fock Matrix
+ *  The (pq) element contracts against the overlap integral derivative -S^x_(pq).
+ *  This quantity separates into alpha and beta blocks. Each block must be back-transformed, the blocks
+ *  summed together, and the result stored on the wavefunction as Lagangian_.
+ *  Note that this is NOT the behavior of the Lagrangian for RHF! As defined in Psi4, for Lagrangians
+ *  for RHF wavefunctions, the blocks are not added together.
+ * 3. Metric Density
+ *  The (pq) element contracts against the metric integral derivative -J^x_(pq).
+ *  Again, this quantity separates into alpha and beta blocks. Back-transform the blocks, and add them
+ *  together. Each auxiliary basis set has its own density. These must be stored in PSIF_AO_TPDM in
+ *  LowerTriangular format under the names "Metric Reference Density" and "Metric Correlation Density".
+ * 4. 3-Center Density
+ *  The (Q|pq) element contracts against the 3-center integral derivative (Q|pq)^x.
+ *  These must be stored in PSIF_AO_TPDM under the names "3-Center Reference Density" and
+ *  "3-Center Correlation Density". First looping over the auxiliary index and then store
+ *  the lower triangular block of the relevant slice of metric elements.
+ * Note (Back-Transformation):
+ *  An MO basis quantity is back-transformed to the AO index when each index is contracted against the C
+ *  matrix to give a quantity in the AO basis. A back-transformed density matrix contracted against the AO
+ *  basis derivative integrals gives the same result as the density matrix contracted against the MO basis
+ *  derivative integrals. This single back-transformation allows us to avoid back-transforming the derivative
+ *  integrals for each perturbation.
+ * Note (Densities):
+ *  Analytic gradient theory can always be formulated as involving a derivative of the two-electron integrals
+ *  against contracted some other quantity, known as the (relaxed) two-particle density matrix. In the density-fitting
+ *  approximation, inserting the expression for the two-electron intermediates and applying the chain rules shows that
+ *  with suitably defined intermediates, all derivative integral contractions are against two or three index quantities.
+ *  This is the one and only difference between conventional integral and density-fitted integral analytic gradient
+ *  theory. But it's important, as the explicit, nao^4 two-particle density matrix reduces to a naux^2 and nao^2*naux
+ *  intermediate.
+ * Note (Basis Sets):
+ *  It is standard for electronic structure methods to use one basis set for density-fitting the SCF reference and a
+ *  different basis set for a correlated correction. In this case, the derivatives of both basis sets appear in the
+ *  gradient formula, and each have their associated density matrix. Contracting a term against derivatives of integrals
+ *  from the wrong auxiliary basis can lead to gradient errors on the order of 10^-5. When implementing density-fitted
+ */
 SharedMatrix Deriv::compute_df(const std::string& ref_aux_name, const std::string& cor_aux_name) {
     molecule_->print_in_bohr();
     

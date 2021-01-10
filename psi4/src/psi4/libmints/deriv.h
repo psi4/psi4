@@ -104,6 +104,14 @@ class PSI_API Deriv {
 
     SharedMatrix compute(DerivCalcType deriv_calc_type = DerivCalcType::Default);
 
+    /*!
+     * Computes gradients assuming density-fitted two electron integrals.
+     * All density matrix intermediates are assumed stored on the wavefunction or written to disk.
+     * That is the responsibility of the caller code. See deriv.cc for expected format.
+     * Generating integral derivatives and contracting is the job of this code.
+     * \param ref_aux_name Name of reference auxiliary basis set, e.g., DF_BASIS_SCF
+     * \param cor_aux_name Name of correlated auxiliary basis set, e.g., DF_BASIS_CC
+     */
     SharedMatrix compute_df(const std::string& ref_aux_name, const std::string& cor_aux_name);
 
     const SharedMatrix& two_body() { return tpdm_contr_; }
