@@ -174,7 +174,7 @@ jobs:
                 -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
                 -DBUILD_Libint2_GENERATOR=OFF ^
                 -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
-                -DBUILD_SHARED_LIBS=ON ^
+                -DBUILD_SHARED_LIBS=OFF ^
                 $(Build.SourcesDirectory)
         displayName: "Configure Psi4"
         workingDirectory: $(Build.BinariesDirectory)
