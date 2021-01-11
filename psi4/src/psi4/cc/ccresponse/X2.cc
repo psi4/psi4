@@ -38,9 +38,9 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/cc/ccenergy/Local.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
 #define EXTERN
 #include "globals.h"
 
@@ -48,7 +48,6 @@ namespace psi {
 namespace ccresponse {
 
 void denom2(dpdbuf4 *X2, double omega);
-void local_filter_T2(dpdbuf4 *T2);
 
 void X2_build(const char *pert, int irrep, double omega) {
     dpdfile2 X1, z, F, t1;
@@ -472,8 +471,12 @@ void X2_build(const char *pert, int irrep, double omega) {
     global_dpd_->buf4_init(&X2new, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl); /* re-open X2new here */
     global_dpd_->buf4_close(&Z);
 
-    if (params.local)
-        local_filter_T2(&X2new);
+    if (params.local) {
+        Local_cc local_;
+        local_.nocc = *moinfo.occpi;
+        local_.nvir = *moinfo.virtpi;
+        local_.local_filter_T2(&X2new);
+    }
     else
         denom2(&X2new, omega);
     global_dpd_->buf4_close(&X2new);

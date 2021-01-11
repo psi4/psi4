@@ -35,6 +35,7 @@
 */
 #include "psi4/psifiles.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/cc/ccenergy/Local.h"
 #include <cstdio>
 
 namespace psi {
@@ -50,7 +51,6 @@ namespace ccresponse {
 
 EXTERN struct MOInfo moinfo;
 EXTERN struct Params params;
-EXTERN struct Local local;
 
 #define MIN0(a, b) (((a) < (b)) ? (a) : (b))
 }

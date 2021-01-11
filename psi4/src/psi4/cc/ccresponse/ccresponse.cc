@@ -48,7 +48,6 @@
 #include "psi4/psi4-dec.h"
 #include "Params.h"
 #include "MOInfo.h"
-#include "Local.h"
 #include "globals.h"
 
 namespace psi {
@@ -69,9 +68,6 @@ void hbar_extra();
 void cc2_hbar_extra();
 void sort_lamps();
 void lambda_residuals();
-
-void local_init();
-void local_done();
 
 void polar(std::shared_ptr<Wavefunction> ref_wfn);
 void optrot(std::shared_ptr<Wavefunction> ref_wfn);
@@ -113,7 +109,11 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
     }
 
-    if (params.local) local_init();
+    /*if (params.local) {
+        Local_cc local_;
+        local_.nocc = moinfo.occpi[0];
+        local_.nvir = moinfo.virtpi[0];
+    }*/
 
     if (params.wfn == "CC2") {
         cc2_hbar_extra();
@@ -130,7 +130,7 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
     if (params.prop == "ROTATION") optrot(ref_wfn);
     if (params.prop == "ROA_TENSOR") roa(ref_wfn);
 
-    if (params.local) local_done();
+    //if (params.local) local_.local_done();
 
     dpd_close(0);
 

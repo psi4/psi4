@@ -27,7 +27,7 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/init_X.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/lambda_residuals.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/linresp.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/local.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/local.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/optrot.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/pertbar.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/polar.cc
