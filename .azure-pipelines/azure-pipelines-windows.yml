@@ -12,6 +12,7 @@ jobs:
       cmake.build_type: 'Release'
       conda.build: true
       MKL_CBWR: AVX
+      PYTHON_VERSION: '3.8'
     steps:
 
       # Check Python
@@ -21,6 +22,8 @@ jobs:
           set VALID=false
           if "%PYTHON_VERSION%"=="3.6" set VALID=true
           if "%PYTHON_VERSION%"=="3.7" set VALID=true
+          if "%PYTHON_VERSION%"=="3.8" set VALID=true
+          if "%PYTHON_VERSION%"=="3.9" set VALID=true
           if "!VALID!"=="false" (
             echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.6" and "3.7".
             exit 1
@@ -122,6 +125,7 @@ jobs:
                         pytest ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
+                        psi4/label/trial::gau2grid ^
                         psi4/label/dev::libint2 ^
                         conda-forge::mpfr ^
                         conda-forge::mpmath ^
@@ -131,8 +135,6 @@ jobs:
           conda list
         displayName: "Install conda packages"
 
-                        #psi4/label/trial::gau2grid ^
-                #-DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
       # Install LLVM
       # Note: LLVM distributed by conda is too old
       - script: |
@@ -169,7 +171,7 @@ jobs:
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
                 -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
                 -DEigen_ROOT="C:/tools/miniconda3/Library" ^
-                -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=OFF ^
+                -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
                 -DBUILD_Libint2_GENERATOR=OFF ^
                 -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
                 -DBUILD_SHARED_LIBS=ON ^
