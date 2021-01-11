@@ -3412,13 +3412,7 @@ SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedM
     if (!same_symmetry) {
 	T = doublet(A, B, transA, transB);
         S = doublet(T, C, false, transC);
-	return S;
-    }
-
-    int nirrep = A->nirrep();
-    
-    if (nirrep != B->nirrep() || nirrep != C->nirrep()) {
-        throw PsiException("Input Matrices A, B, and C do not have the same number of irreps.", __FILE__, __LINE__);
+        return S;
     }
 
     // cost1 = cost of (AB)C
