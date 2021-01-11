@@ -3410,7 +3410,7 @@ SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedM
     SharedMatrix S;
 
     if (!same_symmetry) {
-	T = doublet(A, B, transA, transB);
+        T = doublet(A, B, transA, transB);
         S = doublet(T, C, false, transC);
         return S;
     }
