@@ -306,6 +306,7 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/test_fchk_writer.py
               ../tests/pytests/test_psi4_qcschema.py
               ../tests/pytests/test_addons_qcschema.py
+	      ../tests/pytests/test_triplet.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 install(DIRECTORY ../tests/pytests/test_fchk_writer
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)

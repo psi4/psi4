@@ -3420,7 +3420,7 @@ SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedM
     int cost1 = 0;
     int cost2 = 0;
 
-    for (int h = 0; h < nirrep; h++) {
+    for (int h = 0; h < A->nirrep(); h++) {
 
         int dim1 = transA ? A->colspi(h) : A->rowspi(h);
         int dim2 = transA ? A->rowspi(h) : A->colspi(h);
