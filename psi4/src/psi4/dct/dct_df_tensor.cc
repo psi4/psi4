@@ -289,10 +289,16 @@ void DCTSolver::df_memory() {
 void DCTSolver::transform_b() {
     dct_timer_on("DCTSolver::Transform B(Q,mn) -> B(Q,pq)");
 
-    formb_oo();
-    formb_ov();
-    formb_vv();
-    formb_pq();
+    bQijA_mo_ = three_idx_primary_transform(bQmn_so_, Ca_subset("SO", "OCC"), Ca_subset("SO", "OCC"));
+    bQiaA_mo_ = three_idx_primary_transform(bQmn_so_, Ca_subset("SO", "OCC"), Ca_subset("SO", "VIR"));
+    bQabA_mo_ = three_idx_primary_transform(bQmn_so_, Ca_subset("SO", "VIR"), Ca_subset("SO", "VIR"));
+    bQpqA_mo_ = three_idx_primary_transform(bQmn_so_, Ca_subset("SO", "ALL"), Ca_subset("SO", "ALL"));
+    if (options_.get_str("REFERENCE") != "RHF") {
+        bQijB_mo_ = three_idx_primary_transform(bQmn_so_, Cb_subset("SO", "OCC"), Cb_subset("SO", "OCC"));
+        bQiaB_mo_ = three_idx_primary_transform(bQmn_so_, Cb_subset("SO", "OCC"), Cb_subset("SO", "VIR"));
+        bQabB_mo_ = three_idx_primary_transform(bQmn_so_, Cb_subset("SO", "VIR"), Cb_subset("SO", "VIR"));
+        bQpqB_mo_ = three_idx_primary_transform(bQmn_so_, Cb_subset("SO", "ALL"), Cb_subset("SO", "ALL"));
+    }
 
     dct_timer_off("DCTSolver::Transform B(Q,mn) -> B(Q,pq)");
 }
@@ -351,392 +357,66 @@ SharedMatrix DCTSolver::transform_b_ao2so(SharedMatrix bQmn_ao) {
     return bQmn_so;
 }
 
-/**
- * form b(Q,ij)
- */
-void DCTSolver::formb_oo() {
-    dct_timer_on("DCTSolver::b(Q|mn) -> b(Q|ij)");
+// TODO: This should probably be migrated to/replaced with lib3index's DFHelper.
+// However, we need symmetry, and lib3index currently doesn't support it. JPM 01/2021
+SharedMatrix DCTSolver::three_idx_primary_transform(const SharedMatrix three_idx, const SharedMatrix left, const SharedMatrix right) const {
+    dct_timer_on("DCTSolver::Three-Index SO -> MO");
+
+    if (three_idx->symmetry() || left->symmetry() || right->symmetry())
+        throw PSIEXCEPTION("three_idx_primary_transform: Can only handle totally symmetric matrices.");
+
+    if (three_idx->nirrep() != left->nirrep() || three_idx->nirrep() != right->nirrep()) {
+        throw PSIEXCEPTION("three_idx_primary_transform: Number of irreps don't equal.");
+    }
 
     int nthreads = 1;
 #ifdef _OPENMP
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    // Set up dimensions for b(Q|IJ)
-    Dimension OO(nirrep_), Q(nirrep_);
-    for (int hI = 0; hI < nirrep_; ++hI) {
-        Q[hI] = nQ_;
-        for (int hJ = 0; hJ < nirrep_; ++hJ) {
-            OO[hI ^ hJ] += naoccpi_[hI] * naoccpi_[hJ];
-        }
-    }
-    bQijA_mo_ = std::make_shared<Matrix>("b(Q|IJ)", Q, OO);
-
-    std::vector<int> offset_so(nirrep_), offset_mo(nirrep_);
-    for (int h = 0; h < nirrep_; ++h) {
-        offset_so.push_back(0);
-        offset_mo.push_back(0);
-    }
-
-    for (int h = 0; h < nirrep_; ++h) {
-        double** bQmn_so_p = bQmn_so_->pointer(h);
-        double** bQijA_mo_p = bQijA_mo_->pointer(h);
-        for (int hI = 0; hI < nirrep_; ++hI) {
-            int hJ = h ^ hI;
-            if (naoccpi_[hI] > 0 && naoccpi_[hJ] > 0) {
-                double** CaJp = Ca_->pointer(hJ);
-                double** CaIp = Ca_->pointer(hI);
-                auto tmp = std::make_shared<Matrix>("Half-transformed b_IJ", nQ_, nsopi_[hI] * naoccpi_[hJ]);
-                double** tmpp = tmp->pointer();
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                for (int Q = 0; Q < nQ_; ++Q) {
-                    // First-half transformation
-                    C_DGEMM('N', 'N', nsopi_[hI], naoccpi_[hJ], nsopi_[hJ], 1.0, bQmn_so_p[Q] + offset_so[h],
-                            nsopi_[hJ], CaJp[0], nsopi_[hJ], 0.0, tmpp[Q], naoccpi_[hJ]);
-                    // Second-half transformation
-                    C_DGEMM('T', 'N', naoccpi_[hI], naoccpi_[hJ], nsopi_[hI], 1.0, CaIp[0], nsopi_[hI], tmpp[Q],
-                            naoccpi_[hJ], 0.0, bQijA_mo_p[Q] + offset_mo[h], naoccpi_[hJ]);
-                }
-            }
-            offset_so[h] += nsopi_[h ^ hI] * nsopi_[hI];
-            offset_mo[h] += naoccpi_[h ^ hI] * naoccpi_[hI];
-        }
-    }
-
-    if (options_.get_str("REFERENCE") != "RHF") {
-        // Set up dimensions for b(Q|ij)
-        Dimension oo(nirrep_), Q(nirrep_);
-        for (int hi = 0; hi < nirrep_; ++hi) {
-            Q[hi] = nQ_;
-            for (int hj = 0; hj < nirrep_; ++hj) {
-                oo[hi ^ hj] += nboccpi_[hi] * nboccpi_[hj];
-            }
-        }
-
-        bQijB_mo_ = std::make_shared<Matrix>("b(Q|ij)", Q, oo);
-
-        std::vector<int> offset_so(nirrep_), offset_mo(nirrep_);
-        for (int h = 0; h < nirrep_; ++h) {
-            offset_so.push_back(0);
-            offset_mo.push_back(0);
-        }
-
-        for (int h = 0; h < nirrep_; ++h) {
-            double** bQmn_so_p = bQmn_so_->pointer(h);
-            double** bQijB_mo_p = bQijB_mo_->pointer(h);
-            for (int hi = 0; hi < nirrep_; ++hi) {
-                int hj = h ^ hi;
-                if (nboccpi_[hi] > 0 && nboccpi_[hj] > 0) {
-                    double** Cbjp = Cb_->pointer(hj);
-                    double** Cbip = Cb_->pointer(hi);
-                    SharedMatrix tmp =
-                        std::make_shared<Matrix>("Half-transformed b_ij", nQ_, nsopi_[hi] * nboccpi_[hj]);
-                    double** tmpp = tmp->pointer();
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                    for (int Q = 0; Q < nQ_; ++Q) {
-                        // First-half transformation
-                        C_DGEMM('N', 'N', nsopi_[hi], nboccpi_[hj], nsopi_[hj], 1.0, bQmn_so_p[Q] + offset_so[h],
-                                nsopi_[hj], Cbjp[0], nsopi_[hj], 0.0, tmpp[Q], nboccpi_[hj]);
-                        // Second-half transformation
-                        C_DGEMM('T', 'N', nboccpi_[hi], nboccpi_[hj], nsopi_[hi], 1.0, Cbip[0], nsopi_[hi], tmpp[Q],
-                                nboccpi_[hj], 0.0, bQijB_mo_p[Q] + offset_mo[h], nboccpi_[hj]);
-                    }
-                }
-                offset_so[h] += nsopi_[h ^ hi] * nsopi_[hi];
-                offset_mo[h] += nboccpi_[h ^ hi] * nboccpi_[hi];
-            }
-        }
-    }
-
-    dct_timer_off("DCTSolver::b(Q|mn) -> b(Q|ij)");
-}
-
-/**
- * form b(Q,ia)
- */
-void DCTSolver::formb_ov() {
-    dct_timer_on("DCTSolver::b(Q|mn) -> b(Q|ia)");
-
-    int nthreads = 1;
-#ifdef _OPENMP
-    nthreads = Process::environment.get_n_threads();
-#endif
-
-    // Set up dimensions for b(Q|IA)
-    Dimension OV(nirrep_), Q(nirrep_);
-    for (int hI = 0; hI < nirrep_; ++hI) {
-        Q[hI] = nQ_;
-        for (int hA = 0; hA < nirrep_; ++hA) {
-            OV[hI ^ hA] += naoccpi_[hI] * navirpi_[hA];
-        }
-    }
-    bQiaA_mo_ = std::make_shared<Matrix>("b(Q|IA)", Q, OV);
-
-    std::vector<int> offset_so(nirrep_), offset_mo(nirrep_);
-    for (int h = 0; h < nirrep_; ++h) {
-        offset_so.push_back(0);
-        offset_mo.push_back(0);
-    }
-
-    for (int h = 0; h < nirrep_; ++h) {
-        double** bQmn_so_p = bQmn_so_->pointer(h);
-        double** bQiaA_mo_p = bQiaA_mo_->pointer(h);
-        for (int hI = 0; hI < nirrep_; ++hI) {
-            int hA = h ^ hI;
-            if (naoccpi_[hI] > 0 && navirpi_[hA] > 0) {
-                double** CaVp = Ca_->pointer(hA);
-                double** CaOp = Ca_->pointer(hI);
-                auto tmp = std::make_shared<Matrix>("Half-transformed b_OV", nQ_, nsopi_[hI] * navirpi_[hA]);
-                double** tmpp = tmp->pointer();
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                for (int Q = 0; Q < nQ_; ++Q) {
-                    // First-half transformation
-                    C_DGEMM('N', 'N', nsopi_[hI], navirpi_[hA], nsopi_[hA], 1.0, bQmn_so_p[Q] + offset_so[h],
-                            nsopi_[hA], CaVp[0] + naoccpi_[hA], nsopi_[hA], 0.0, tmpp[Q], navirpi_[hA]);
-                    // Second-half transformation
-                    C_DGEMM('T', 'N', naoccpi_[hI], navirpi_[hA], nsopi_[hI], 1.0, CaOp[0], nsopi_[hI], tmpp[Q],
-                            navirpi_[hA], 0.0, bQiaA_mo_p[Q] + offset_mo[h], navirpi_[hA]);
-                }
-            }
-            offset_so[h] += nsopi_[h ^ hI] * nsopi_[hI];
-            offset_mo[h] += navirpi_[h ^ hI] * naoccpi_[hI];
-        }
-    }
-
-    if (options_.get_str("REFERENCE") != "RHF") {
-        // Set up dimensions for b(Q|ia)
-        Dimension ov(nirrep_), Q(nirrep_);
-        for (int hi = 0; hi < nirrep_; ++hi) {
-            Q[hi] = nQ_;
-            for (int ha = 0; ha < nirrep_; ++ha) {
-                ov[hi ^ ha] += nboccpi_[hi] * nbvirpi_[ha];
-            }
-        }
-        bQiaB_mo_ = std::make_shared<Matrix>("b(Q|ia)", Q, ov);
-
-        std::vector<int> offset_so(nirrep_), offset_mo(nirrep_);
-        for (int h = 0; h < nirrep_; ++h) {
-            offset_mo.push_back(0);
-            offset_so.push_back(0);
-        }
-
-        for (int h = 0; h < nirrep_; ++h) {
-            double** bQmn_so_p = bQmn_so_->pointer(h);
-            double** bQiaB_mo_p = bQiaB_mo_->pointer(h);
-            for (int hi = 0; hi < nirrep_; ++hi) {
-                int ha = h ^ hi;
-                if (nboccpi_[hi] > 0 && nbvirpi_[ha] > 0) {
-                    double** Cbvp = Cb_->pointer(ha);
-                    double** Cbop = Cb_->pointer(hi);
-                    SharedMatrix tmp =
-                        std::make_shared<Matrix>("Half-transformed b_ov", nQ_, nsopi_[hi] * nbvirpi_[ha]);
-                    double** tmpp = tmp->pointer();
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                    for (int Q = 0; Q < nQ_; ++Q) {
-                        // First-half transformation
-                        C_DGEMM('N', 'N', nsopi_[hi], nbvirpi_[ha], nsopi_[ha], 1.0, bQmn_so_p[Q] + offset_so[h],
-                                nsopi_[ha], Cbvp[0] + nboccpi_[ha], nsopi_[ha], 0.0, tmpp[Q], nbvirpi_[ha]);
-                        // Second-half transformation
-                        C_DGEMM('T', 'N', nboccpi_[hi], nbvirpi_[ha], nsopi_[hi], 1.0, Cbop[0], nsopi_[hi], tmpp[Q],
-                                nbvirpi_[ha], 0.0, bQiaB_mo_p[Q] + offset_mo[h], nbvirpi_[ha]);
-                    }
-                }
-                offset_so[h] += nsopi_[h ^ hi] * nsopi_[hi];
-                offset_mo[h] += nbvirpi_[h ^ hi] * nboccpi_[hi];
-            }
-        }
-    }
-    dct_timer_off("DCTSolver::b(Q|mn) -> b(Q|ia)");
-}
-
-/**
- * form b(Q,ab)
- */
-void DCTSolver::formb_vv() {
-    dct_timer_on("DCTSolver::b(Q|mn) -> b(Q|ab)");
-
-    int nthreads = 1;
-#ifdef _OPENMP
-    nthreads = Process::environment.get_n_threads();
-#endif
-
-    // Set up dimensions for b(Q|AB)
-    Dimension VV(nirrep_), Q(nirrep_);
-    for (int hA = 0; hA < nirrep_; ++hA) {
-        Q[hA] = nQ_;
-        for (int hB = 0; hB < nirrep_; ++hB) {
-            VV[hA ^ hB] += navirpi_[hA] * navirpi_[hB];
-        }
-    }
-    bQabA_mo_ = std::make_shared<Matrix>("b(Q|AB)", Q, VV);
-
-    std::vector<int> offset_so(nirrep_), offset_mo(nirrep_);
-    for (int h = 0; h < nirrep_; ++h) {
-        offset_so.push_back(0);
-        offset_mo.push_back(0);
-    }
-
-    for (int h = 0; h < nirrep_; ++h) {
-        double** bQmn_so_p = bQmn_so_->pointer(h);
-        double** bQabA_mo_p = bQabA_mo_->pointer(h);
-        for (int hA = 0; hA < nirrep_; ++hA) {
-            int hB = h ^ hA;
-            if (navirpi_[hA] > 0 && navirpi_[hB] > 0) {
-                double** CaBp = Ca_->pointer(hB);
-                double** CaAp = Ca_->pointer(hA);
-                auto tmp = std::make_shared<Matrix>("Half-transformed b_VV", nQ_, nsopi_[hA] * navirpi_[hB]);
-                double** tmpp = tmp->pointer();
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                for (int Q = 0; Q < nQ_; ++Q) {
-                    // First-half transformation
-                    C_DGEMM('N', 'N', nsopi_[hA], navirpi_[hB], nsopi_[hB], 1.0, bQmn_so_p[Q] + offset_so[h],
-                            nsopi_[hB], CaBp[0] + naoccpi_[hB], nsopi_[hB], 0.0, tmpp[Q], navirpi_[hB]);
-                    // Second-half transformation
-                    C_DGEMM('T', 'N', navirpi_[hA], navirpi_[hB], nsopi_[hA], 1.0, CaAp[0] + naoccpi_[hA], nsopi_[hA],
-                            tmpp[Q], navirpi_[hB], 0.0, bQabA_mo_p[Q] + offset_mo[h], navirpi_[hB]);
-                }
-            }
-            offset_so[h] += nsopi_[h ^ hA] * nsopi_[hA];
-            offset_mo[h] += navirpi_[h ^ hA] * navirpi_[hA];
-        }
-    }
-
-    if (options_.get_str("REFERENCE") != "RHF") {
-        // Set up dimensions for b(Q|ab)
-        Dimension vv(nirrep_), Q(nirrep_);
-        for (int ha = 0; ha < nirrep_; ++ha) {
-            Q[ha] = nQ_;
-            for (int hb = 0; hb < nirrep_; ++hb) {
-                vv[ha ^ hb] += nbvirpi_[ha] * nbvirpi_[hb];
-            }
-        }
-        bQabB_mo_ = std::make_shared<Matrix>("b(Q|ab)", Q, vv);
-
-        std::vector<int> offset_so(nirrep_), offset_mo(nirrep_);
-        for (int h = 0; h < nirrep_; ++h) {
-            offset_so.push_back(0);
-            offset_mo.push_back(0);
-        }
-
-        for (int h = 0; h < nirrep_; ++h) {
-            double** bQmn_so_p = bQmn_so_->pointer(h);
-            double** bQabB_mo_p = bQabB_mo_->pointer(h);
-            for (int ha = 0; ha < nirrep_; ++ha) {
-                int hb = h ^ ha;
-                if (nbvirpi_[ha] > 0 && nbvirpi_[hb] > 0) {
-                    double** Cbbp = Cb_->pointer(hb);
-                    double** Cbap = Cb_->pointer(ha);
-                    SharedMatrix tmp =
-                        std::make_shared<Matrix>("Half-transformed b_vv", nQ_, nsopi_[ha] * nbvirpi_[hb]);
-                    double** tmpp = tmp->pointer();
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                    for (int Q = 0; Q < nQ_; ++Q) {
-                        // First-half transformation
-                        C_DGEMM('N', 'N', nsopi_[ha], nbvirpi_[hb], nsopi_[hb], 1.0, bQmn_so_p[Q] + offset_so[h],
-                                nsopi_[hb], Cbbp[0] + nboccpi_[hb], nsopi_[hb], 0.0, tmpp[Q], nbvirpi_[hb]);
-                        // Second-half transformation
-                        C_DGEMM('T', 'N', nbvirpi_[ha], nbvirpi_[hb], nsopi_[ha], 1.0, Cbap[0] + nboccpi_[ha],
-                                nsopi_[ha], tmpp[Q], nbvirpi_[hb], 0.0, bQabB_mo_p[Q] + offset_mo[h], nbvirpi_[hb]);
-                    }
-                }
-                offset_so[h] += nsopi_[h ^ ha] * nsopi_[ha];
-                offset_mo[h] += nbvirpi_[h ^ ha] * nbvirpi_[ha];
-            }
-        }
-    }
-
-    dct_timer_off("DCTSolver::b(Q|mn) -> b(Q|ab)");
-}
-
-/**
- * form b(Q,pq)
- */
-void DCTSolver::formb_pq() {
-    dct_timer_on("DCTSolver::b(Q|mn) -> b(Q|pq)");
-
-    int nthreads = 1;
-#ifdef _OPENMP
-    nthreads = Process::environment.get_n_threads();
-#endif
-
+    auto nQ = three_idx->rowdim(0);
     // Set up dimensions for b(Aux|PQ)
-    Dimension PQ(nirrep_), Aux(nirrep_);
-    for (int hP = 0; hP < nirrep_; ++hP) {
-        Aux[hP] = nQ_;
-        for (int hQ = 0; hQ < nirrep_; ++hQ) {
-            PQ[hP ^ hQ] += nsopi_[hP] * nsopi_[hQ];
+    Dimension LR(nirrep_), Aux(nirrep_);
+    for (int hL = 0; hL < nirrep_; ++hL) {
+        Aux[hL] = nQ;
+        for (int hR = 0; hR < nirrep_; ++hR) {
+            LR[hL ^ hR] += left->colspi(hL) * right->colspi(hR);
         }
     }
-    bQpqA_mo_ = std::make_shared<Matrix>("b(Aux|PQ)", Aux, PQ);
 
-    std::vector<int> offset_so(nirrep_), offset_mo(nirrep_);
-    for (int h = 0; h < nirrep_; ++h) {
-        offset_so.push_back(0);
-        offset_mo.push_back(0);
-    }
+    auto result = std::make_shared<Matrix>("Three-Index Tensor", Aux, LR);
+    std::vector<int> offset_mo(three_idx->nirrep(), 0), offset_so(three_idx->nirrep(), 0);
 
     for (int h = 0; h < nirrep_; ++h) {
-        double** bQmn_so_p = bQmn_so_->pointer(h);
-        double** bQpqA_mo_p = bQpqA_mo_->pointer(h);
-        for (int hP = 0; hP < nirrep_; ++hP) {
-            int hQ = h ^ hP;
-            if (nsopi_[hP] > 0 && nsopi_[hQ] > 0) {
-                double** Caqp = Ca_->pointer(hQ);
-                double** Capp = Ca_->pointer(hP);
-                auto tmp = std::make_shared<Matrix>("Half-transformed b_PQ", nQ_, nsopi_[hP] * nsopi_[hQ]);
-                double** tmpp = tmp->pointer();
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                for (int Aux = 0; Aux < nQ_; ++Aux) {
+        auto three_idx_p = three_idx->pointer(h);
+        auto result_p = result->pointer(h);
+        for (int hL = 0; hL < nirrep_; ++hL) {
+            const auto hR = h ^ hL;
+            if (left->colspi(hL) > 0 && right->colspi(hR) > 0) {
+                const auto leftP = left->pointer(hL);
+                const auto rightP = right->pointer(hR);
+                auto tmp = std::make_shared<Matrix>("Half-Transformed", nQ, left->rowspi(hL) * right->colspi(hR));
+                auto tmpp = tmp->pointer();
+//#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+                for (int Q = 0; Q < nQ; ++Q) {
                     // First-half transformation
-                    C_DGEMM('N', 'N', nsopi_[hP], nsopi_[hQ], nsopi_[hQ], 1.0, bQmn_so_p[Aux] + offset_so[h],
-                            nsopi_[hQ], Caqp[0], nsopi_[hQ], 0.0, tmpp[Aux], nsopi_[hQ]);
+                    C_DGEMM('N', 'N', left->rowspi(hL), right->colspi(hR), right->rowspi(hR), 1.0, three_idx_p[Q] + offset_so[h],
+                            right->rowspi(hR), rightP[0], right->colspi(hR), 0.0, tmpp[Q], right->colspi(hR));
                     // Second-half transformation
-                    C_DGEMM('T', 'N', nsopi_[hP], nsopi_[hQ], nsopi_[hP], 1.0, Capp[0], nsopi_[hP], tmpp[Aux],
-                            nsopi_[hQ], 0.0, bQpqA_mo_p[Aux] + offset_mo[h], nsopi_[hQ]);
+                    C_DGEMM('T', 'N', left->colspi(hL), right->colspi(hR), left->rowspi(hL), 1.0, leftP[0], left->colspi(hL), tmpp[Q],
+                            right->colspi(hR), 0.0, result_p[Q] + offset_mo[h], right->colspi(hR));
                 }
             }
-            offset_so[h] += nsopi_[h ^ hP] * nsopi_[hP];
-            offset_mo[h] += nsopi_[h ^ hP] * nsopi_[hP];
+            offset_so[h] += left->rowspi(hL) * right->rowspi(hR);
+            offset_mo[h] += left->colspi(hL) * right->colspi(hR);
         }
+        if (offset_so[h] != three_idx->colspi(h))
+            throw PSIEXCEPTION("three_idx_primary_transform: Dimension mismatch");
     }
 
-    if (options_.get_str("REFERENCE") != "RHF") {
-        // Set up dimensions for b(Aux|pq)
-        bQpqB_mo_ = std::make_shared<Matrix>("b(Aux|pq)", Aux, PQ);
+    dct_timer_off("DCTSolver::Three-Index SO -> MO");
 
-        std::vector<int> offset_so(nirrep_), offset_mo(nirrep_);
-        for (int h = 0; h < nirrep_; ++h) {
-            offset_so.push_back(0);
-            offset_mo.push_back(0);
-        }
-
-        for (int h = 0; h < nirrep_; ++h) {
-            double** bQmn_so_p = bQmn_so_->pointer(h);
-            double** bQpqB_mo_p = bQpqB_mo_->pointer(h);
-            for (int hp = 0; hp < nirrep_; ++hp) {
-                int hq = h ^ hp;
-                if (nsopi_[hp] > 0 && nsopi_[hq] > 0) {
-                    double** Cbqp = Cb_->pointer(hq);
-                    double** Cbpp = Cb_->pointer(hp);
-                    auto tmp = std::make_shared<Matrix>("Half-transformed b_pq", nQ_, nsopi_[hp] * nsopi_[hq]);
-                    double** tmpp = tmp->pointer();
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                    for (int Aux = 0; Aux < nQ_; ++Aux) {
-                        // First-half transformation
-                        C_DGEMM('N', 'N', nsopi_[hp], nsopi_[hq], nsopi_[hq], 1.0, bQmn_so_p[Aux] + offset_so[h],
-                                nsopi_[hq], Cbqp[0], nsopi_[hq], 0.0, tmpp[Aux], nsopi_[hq]);
-                        // Second-half transformation
-                        C_DGEMM('T', 'N', nsopi_[hp], nsopi_[hq], nsopi_[hp], 1.0, Cbpp[0], nsopi_[hp], tmpp[Aux],
-                                nsopi_[hq], 0.0, bQpqB_mo_p[Aux] + offset_mo[h], nsopi_[hq]);
-                    }
-                }
-                offset_so[h] += nsopi_[h ^ hp] * nsopi_[hp];
-                offset_mo[h] += nsopi_[h ^ hp] * nsopi_[hp];
-            }
-        }
-    }
-
-    dct_timer_off("DCTSolver::b(Q|mn) -> b(Q|pq)");
+    return result;
 }
 
 /**
@@ -1613,7 +1293,7 @@ void DCTSolver::build_gbarGamma_RHF() {
 void DCTSolver::build_gbarKappa_RHF() {
     dct_timer_on("DCTSolver::Gbar<QS|PR> Kappa<R|S>");
 
-    formb_pq_scf();
+    bQpqA_mo_scf_ = three_idx_primary_transform(bQmn_so_scf_, Ca_subset("SO", "ALL"), Ca_subset("SO", "ALL"));
 
     int nthreads = 1;
 #ifdef _OPENMP
@@ -2338,7 +2018,8 @@ void DCTSolver::build_gbarGamma_UHF() {
 void DCTSolver::build_gbarKappa_UHF() {
     dct_timer_on("DCTSolver::Gbar<QS|PR> Kappa<R|S>");
 
-    formb_pq_scf();
+    bQpqA_mo_scf_ = three_idx_primary_transform(bQmn_so_scf_, Ca_subset("SO", "ALL"), Ca_subset("SO", "ALL"));
+    bQpqB_mo_scf_ = three_idx_primary_transform(bQmn_so_scf_, Cb_subset("SO", "ALL"), Cb_subset("SO", "ALL"));
 
     int nthreads = 1;
 #ifdef _OPENMP
@@ -2495,199 +2176,6 @@ void DCTSolver::build_gbarKappa_UHF() {
 
 
     dct_timer_off("DCTSolver::Gbar<QS|PR> Kappa<R|S>");
-}
-
-/**
- * form b(Q,ij) for SCF terms
- */
-void DCTSolver::formb_oo_scf() {
-    dct_timer_on("DCTSolver::b(Q|mn) -> b(Q|ij)");
-
-    int nthreads = 1;
-#ifdef _OPENMP
-    nthreads = Process::environment.get_n_threads();
-#endif
-
-    // Set up dimensions for b(Q|IJ)
-    Dimension OO(nirrep_), Q(nirrep_);
-    for (int hI = 0; hI < nirrep_; ++hI) {
-        Q[hI] = nQ_scf_;
-        for (int hJ = 0; hJ < nirrep_; ++hJ) {
-            OO[hI ^ hJ] += naoccpi_[hI] * naoccpi_[hJ];
-        }
-    }
-    bQijA_mo_scf_ = std::make_shared<Matrix>("b(Q|IJ)", Q, OO);
-
-    std::vector<int> offset_so(nirrep_), offset_mo(nirrep_);
-    for (int h = 0; h < nirrep_; ++h) {
-        offset_so.push_back(0);
-        offset_mo.push_back(0);
-    }
-
-    for (int h = 0; h < nirrep_; ++h) {
-        double** bQmn_so_p = bQmn_so_scf_->pointer(h);
-        double** bQijA_mo_p = bQijA_mo_scf_->pointer(h);
-        for (int hI = 0; hI < nirrep_; ++hI) {
-            int hJ = h ^ hI;
-            if (naoccpi_[hI] > 0 && naoccpi_[hJ] > 0) {
-                double** CaJp = Ca_->pointer(hJ);
-                double** CaIp = Ca_->pointer(hI);
-                SharedMatrix tmp =
-                    std::make_shared<Matrix>("Half-transformed b_IJ", nQ_scf_, nsopi_[hI] * naoccpi_[hJ]);
-                double** tmpp = tmp->pointer();
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                for (int Q = 0; Q < nQ_scf_; ++Q) {
-                    // First-half transformation
-                    C_DGEMM('N', 'N', nsopi_[hI], naoccpi_[hJ], nsopi_[hJ], 1.0, bQmn_so_p[Q] + offset_so[h],
-                            nsopi_[hJ], CaJp[0], nsopi_[hJ], 0.0, tmpp[Q], naoccpi_[hJ]);
-                    // Second-half transformation
-                    C_DGEMM('T', 'N', naoccpi_[hI], naoccpi_[hJ], nsopi_[hI], 1.0, CaIp[0], nsopi_[hI], tmpp[Q],
-                            naoccpi_[hJ], 0.0, bQijA_mo_p[Q] + offset_mo[h], naoccpi_[hJ]);
-                }
-            }
-            offset_so[h] += nsopi_[h ^ hI] * nsopi_[hI];
-            offset_mo[h] += naoccpi_[h ^ hI] * naoccpi_[hI];
-        }
-    }
-
-    if (options_.get_str("REFERENCE") != "RHF") {
-        // Set up dimensions for b(Q|ij)
-        Dimension oo(nirrep_), Q(nirrep_);
-        for (int hi = 0; hi < nirrep_; ++hi) {
-            Q[hi] = nQ_scf_;
-            for (int hj = 0; hj < nirrep_; ++hj) {
-                oo[hi ^ hj] += nboccpi_[hi] * nboccpi_[hj];
-            }
-        }
-
-        bQijB_mo_scf_ = std::make_shared<Matrix>("b(Q|ij)", Q, oo);
-
-        std::vector<int> offset_so(nirrep_), offset_mo(nirrep_);
-        for (int h = 0; h < nirrep_; ++h) {
-            offset_so.push_back(0);
-            offset_mo.push_back(0);
-        }
-
-        for (int h = 0; h < nirrep_; ++h) {
-            double** bQmn_so_p = bQmn_so_scf_->pointer(h);
-            double** bQijB_mo_p = bQijB_mo_scf_->pointer(h);
-            for (int hi = 0; hi < nirrep_; ++hi) {
-                int hj = h ^ hi;
-                if (nboccpi_[hi] > 0 && nboccpi_[hj] > 0) {
-                    double** Cbjp = Cb_->pointer(hj);
-                    double** Cbip = Cb_->pointer(hi);
-                    SharedMatrix tmp =
-                        std::make_shared<Matrix>("Half-transformed b_ij", nQ_scf_, nsopi_[hi] * nboccpi_[hj]);
-                    double** tmpp = tmp->pointer();
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                    for (int Q = 0; Q < nQ_scf_; ++Q) {
-                        // First-half transformation
-                        C_DGEMM('N', 'N', nsopi_[hi], nboccpi_[hj], nsopi_[hj], 1.0, bQmn_so_p[Q] + offset_so[h],
-                                nsopi_[hj], Cbjp[0], nsopi_[hj], 0.0, tmpp[Q], nboccpi_[hj]);
-                        // Second-half transformation
-                        C_DGEMM('T', 'N', nboccpi_[hi], nboccpi_[hj], nsopi_[hi], 1.0, Cbip[0], nsopi_[hi], tmpp[Q],
-                                nboccpi_[hj], 0.0, bQijB_mo_p[Q] + offset_mo[h], nboccpi_[hj]);
-                    }
-                }
-                offset_so[h] += nsopi_[h ^ hi] * nsopi_[hi];
-                offset_mo[h] += nboccpi_[h ^ hi] * nboccpi_[hi];
-            }
-        }
-    }
-
-    dct_timer_off("DCTSolver::b(Q|mn) -> b(Q|ij)");
-}
-
-/**
- * form b(Q,pq) for SCF terms
- */
-void DCTSolver::formb_pq_scf() {
-    dct_timer_on("DCTSolver::b(Q|mn) -> b(Q|pq)");
-
-    int nthreads = 1;
-#ifdef _OPENMP
-    nthreads = Process::environment.get_n_threads();
-#endif
-
-    // Set up dimensions for b(Aux|PQ)
-    Dimension PQ(nirrep_), Aux(nirrep_);
-    for (int hP = 0; hP < nirrep_; ++hP) {
-        Aux[hP] = nQ_scf_;
-        for (int hQ = 0; hQ < nirrep_; ++hQ) {
-            PQ[hP ^ hQ] += nsopi_[hP] * nsopi_[hQ];
-        }
-    }
-    bQpqA_mo_scf_ = std::make_shared<Matrix>("b(Aux|PQ)", Aux, PQ);
-
-    std::vector<int> offset_so(nirrep_), offset_mo(nirrep_);
-    for (int h = 0; h < nirrep_; ++h) {
-        offset_so.push_back(0);
-        offset_mo.push_back(0);
-    }
-
-    for (int h = 0; h < nirrep_; ++h) {
-        double** bQmn_so_p = bQmn_so_scf_->pointer(h);
-        double** bQpqA_mo_p = bQpqA_mo_scf_->pointer(h);
-        for (int hP = 0; hP < nirrep_; ++hP) {
-            int hQ = h ^ hP;
-            if (nsopi_[hP] > 0 && nsopi_[hQ] > 0) {
-                double** Caqp = Ca_->pointer(hQ);
-                double** Capp = Ca_->pointer(hP);
-                auto tmp = std::make_shared<Matrix>("Half-transformed b_PQ", nQ_scf_, nsopi_[hP] * nsopi_[hQ]);
-                double** tmpp = tmp->pointer();
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                for (int Aux = 0; Aux < nQ_scf_; ++Aux) {
-                    // First-half transformation
-                    C_DGEMM('N', 'N', nsopi_[hP], nsopi_[hQ], nsopi_[hQ], 1.0, bQmn_so_p[Aux] + offset_so[h],
-                            nsopi_[hQ], Caqp[0], nsopi_[hQ], 0.0, tmpp[Aux], nsopi_[hQ]);
-                    // Second-half transformation
-                    C_DGEMM('T', 'N', nsopi_[hP], nsopi_[hQ], nsopi_[hP], 1.0, Capp[0], nsopi_[hP], tmpp[Aux],
-                            nsopi_[hQ], 0.0, bQpqA_mo_p[Aux] + offset_mo[h], nsopi_[hQ]);
-                }
-            }
-            offset_so[h] += nsopi_[h ^ hP] * nsopi_[hP];
-            offset_mo[h] += nsopi_[h ^ hP] * nsopi_[hP];
-        }
-    }
-
-    if (options_.get_str("REFERENCE") != "RHF") {
-        // Set up dimensions for b(Aux|pq)
-        bQpqB_mo_scf_ = std::make_shared<Matrix>("b(Aux|pq)", Aux, PQ);
-
-        std::vector<int> offset_so(nirrep_), offset_mo(nirrep_);
-        for (int h = 0; h < nirrep_; ++h) {
-            offset_so.push_back(0);
-            offset_mo.push_back(0);
-        }
-
-        for (int h = 0; h < nirrep_; ++h) {
-            double** bQmn_so_p = bQmn_so_scf_->pointer(h);
-            double** bQpqB_mo_p = bQpqB_mo_scf_->pointer(h);
-            for (int hp = 0; hp < nirrep_; ++hp) {
-                int hq = h ^ hp;
-                if (nsopi_[hp] > 0 && nsopi_[hq] > 0) {
-                    double** Cbqp = Cb_->pointer(hq);
-                    double** Cbpp = Cb_->pointer(hp);
-                    SharedMatrix tmp =
-                        std::make_shared<Matrix>("Half-transformed b_pq", nQ_scf_, nsopi_[hp] * nsopi_[hq]);
-                    double** tmpp = tmp->pointer();
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                    for (int Aux = 0; Aux < nQ_scf_; ++Aux) {
-                        // First-half transformation
-                        C_DGEMM('N', 'N', nsopi_[hp], nsopi_[hq], nsopi_[hq], 1.0, bQmn_so_p[Aux] + offset_so[h],
-                                nsopi_[hq], Cbqp[0], nsopi_[hq], 0.0, tmpp[Aux], nsopi_[hq]);
-                        // Second-half transformation
-                        C_DGEMM('T', 'N', nsopi_[hp], nsopi_[hq], nsopi_[hp], 1.0, Cbpp[0], nsopi_[hp], tmpp[Aux],
-                                nsopi_[hq], 0.0, bQpqB_mo_p[Aux] + offset_mo[h], nsopi_[hq]);
-                    }
-                }
-                offset_so[h] += nsopi_[h ^ hp] * nsopi_[hp];
-                offset_mo[h] += nsopi_[h ^ hp] * nsopi_[hp];
-            }
-        }
-    }
-
-    dct_timer_off("DCTSolver::b(Q|mn) -> b(Q|pq)");
 }
 }  // namespace dct
 }  // namespace psi

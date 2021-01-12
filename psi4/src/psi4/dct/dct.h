@@ -518,16 +518,8 @@ class DCTSolver : public Wavefunction {
     void transform_b();
     /// Transform b(Q|mu,nu) from AO basis to SO basis
     SharedMatrix transform_b_ao2so(SharedMatrix bQmn_ao);
-    /// Form MO-basis b(Q, ij)
-    void formb_oo();
-    void formb_oo_scf();
-    /// Form MO-basis b(Q, ia)
-    void formb_ov();
-    /// Form MO-basis b(Q, ab)
-    void formb_vv();
-    /// Form MO-basis b(Q, pq)
-    void formb_pq();
-    void formb_pq_scf();
+    /// Transform b(Q|mu,nu) from SO basis to another basis with symmetry
+    SharedMatrix three_idx_primary_transform(const SharedMatrix three_idx, const SharedMatrix left, const SharedMatrix right) const;
 
     /// Form density-fitted MO-basis TEI g(OV|OV) in chemists' notation
     void form_df_g_ovov();
