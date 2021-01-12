@@ -158,10 +158,10 @@ jobs:
       - script: |
           setlocal EnableDelayedExpansion
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
-          call echo C:\tools\miniconda3\Library\share\cmake\gau2grid\gau2gridTargets.cmake
-          call echo C:\tools\miniconda3\Library\share\cmake\Libxc\LibxcTargets.cmake
-          call echo C:\tools\miniconda3\Library\share\cmake\Libxc\LibxcTargets-C-release.cmake
-          call echo C:\tools\miniconda3\Library\share\cmake\gau2grid\gau2gridTargets-release.cmake
+          call type C:\tools\miniconda3\Library\share\cmake\Libxc\LibxcTargets.cmake
+          call type C:\tools\miniconda3\Library\share\cmake\gau2grid\gau2gridTargets.cmake
+          call type C:\tools\miniconda3\Library\share\cmake\Libxc\LibxcTargets-C-release.cmake
+          call type C:\tools\miniconda3\Library\share\cmake\gau2grid\gau2gridTargets-release.cmake
           mkdir build & cd build
           if "%CMAKE_BUILD_TYPE%"=="Debug" set MAX_AM_ERI=4
           if "%CMAKE_BUILD_TYPE%"=="Release" set MAX_AM_ERI=5

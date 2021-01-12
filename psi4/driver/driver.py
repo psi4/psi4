@@ -31,12 +31,12 @@ functionality, namely single-point energies, geometry optimizations,
 properties, and vibrational frequency calculations.
 
 """
-import os
-import re
-import sys
 import copy
 import json
+import os
+import re
 import shutil
+import sys
 
 import numpy as np
 
