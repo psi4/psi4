@@ -254,6 +254,9 @@ class PSI_API JK {
     /// Do wK matrices? Defaults to false
     bool do_wK_;
 
+    /// Perform an incremental fock build?
+    bool incr_fock_;
+
     /// Combine (pq|rs) and (pq|w|rs) integrals before contracting?
     bool wcombine_;
 
@@ -283,6 +286,8 @@ class PSI_API JK {
     std::vector<SharedMatrix> K_;
     /// wK matrices: \f$K_{mn}(\omega)=(ml|\omega|ns)C_{li}^{left}C_{si}^{right}\f$
     std::vector<SharedMatrix> wK_;
+    /// Previous D Matrix, used in incremental Fock build
+    std::vector<SharedMatrix> D_prev_;
 
     // => Microarchitecture-Level State Variables (No Spatial Symmetry) <= //
 
@@ -302,6 +307,8 @@ class PSI_API JK {
     std::vector<SharedMatrix> K_ao_;
     /// wK matrices: wK_mn = (ml|w|ns) C_li^left C_si^right
     std::vector<SharedMatrix> wK_ao_;
+    /// Previous D Matrix (AO), used in incremental Fock build
+    std::vector<SharedMatrix> D_ao_prev_;
 
     // => Per-Iteration Setup/Finalize Routines <= //
 

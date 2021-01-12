@@ -94,6 +94,9 @@ class HF : public Wavefunction {
     std::vector<std::shared_ptr<BasisSet>> sad_basissets_;
     std::vector<std::shared_ptr<BasisSet>> sad_fitting_basissets_;
 
+    /// Perform Incremental Fock Build?
+    bool incr_fock_{false};
+
     /// Current Iteration
     int iteration_;
 
