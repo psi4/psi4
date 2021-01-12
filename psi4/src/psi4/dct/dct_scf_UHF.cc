@@ -320,6 +320,8 @@ void DCTSolver::scf_guess() {
 
 /**
  * Computes the SCF energy from the latest Fock and density matrices.
+ * WARNING! This quantity is a misnomer from earlier days of the theory.
+ * "SCF" here means "excluding 2RDM cumulant, including 1RDM and 1RDM products."
  */
 void DCTSolver::compute_scf_energy() {
     dct_timer_on("DCTSolver::compute_scf_energy");
@@ -332,9 +334,6 @@ void DCTSolver::compute_scf_energy() {
     scf_energy_ += 0.5 * tau_so_b_->vector_dot(so_h_);
 
     if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
-        mo_gammaA_->add(kappa_mo_a_);
-        mo_gammaB_->add(kappa_mo_b_);
-
         scf_energy_ += 0.5 * mo_gammaA_->vector_dot(moFa_);
         scf_energy_ += 0.5 * mo_gammaB_->vector_dot(moFb_);
     } else {

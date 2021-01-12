@@ -128,7 +128,7 @@ void DCTSolver::df_build_b() {
 /**
  * Form J(P,Q)^-1/2
  */
-SharedMatrix DCTSolver::formJm12(std::shared_ptr<BasisSet> auxiliary) {
+SharedMatrix DCTSolver::formJm12(std::shared_ptr<BasisSet> auxiliary) const {
     auto metric = std::make_shared<FittingMetric>(auxiliary, true);
     metric->form_eig_inverse(1.0E-10); // This is hardcoded at present, but should be replaced with a global fitting option...
     return metric->get_metric();
@@ -306,7 +306,7 @@ void DCTSolver::transform_b() {
 /**
  * Transform b(Q|mu,nu) from AO basis to SO basis
  */
-SharedMatrix DCTSolver::transform_b_ao2so(SharedMatrix bQmn_ao) {
+SharedMatrix DCTSolver::transform_b_ao2so(SharedMatrix bQmn_ao) const {
     int nthreads = 1;
 #ifdef _OPENMP
     nthreads = Process::environment.get_n_threads();
@@ -1184,7 +1184,6 @@ void DCTSolver::build_gbarlambda_RHF_v3mem() {
  */
 void DCTSolver::build_gbarGamma_RHF() {
     dct_timer_on("DCTSolver::Gbar<QS|PR> Gamma<R|S> (FastBuilder)");
-    build_gbarKappa_RHF();
 
     int nthreads = 1;
 #ifdef _OPENMP
@@ -1197,6 +1196,7 @@ void DCTSolver::build_gbarGamma_RHF() {
     //    mo_gammaA_->add(mo_tauA_);
     mo_gbarGamma_A_ = std::make_shared<Matrix>("MO-basis Gbar*Gamma", nirrep_, nmopi_, nmopi_);
     mo_gammaA_->copy(mo_tauA_);
+    mo_gammaA_->add(kappa_mo_a_);
 
     // Put detailed information of b(Q|pq) block into 'block'
     std::vector<std::vector<std::pair<long int, long int>>> block;
@@ -1212,6 +1212,8 @@ void DCTSolver::build_gbarGamma_RHF() {
         block.push_back(subblock);
     }
 
+    const auto bQpqA_mo_scf = three_idx_primary_transform(bQmn_so_scf_, Ca_subset("SO", "ALL"), Ca_subset("SO", "ALL"));
+
 /*
  *  f_tilde <Q|P> = gbar<QS|PR> gamma<R|S> + gbar<Qs|Pr> gamma<r|s>
  *                  = 2 g(QP|SR) gamma<R|S> - g(QR|SP) gamma<R|S>
@@ -1224,7 +1226,7 @@ void DCTSolver::build_gbarGamma_RHF() {
         int hp = hq;
         if (nsopi_[hq] > 0) {
             double** tFAp = mo_gbarGamma_A_->pointer(hq);
-            double** bQpqAp = bQpqA_mo_scf_->pointer(0);
+            double** bQpqAp = bQpqA_mo_scf->pointer(0);
             auto Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
             double** Qp = Q->pointer();
             // (Q) = b(Q|SR) gamma<R|S>
@@ -1233,11 +1235,11 @@ void DCTSolver::build_gbarGamma_RHF() {
                 if (nsopi_[hr] > 0) {
                     double** gamma_rs_p = mo_gammaA_->pointer(hr);
                     C_DGEMV('N', nQ_scf_, nsopi_[hr] * nsopi_[hs], 1.0, bQpqAp[0] + block[0][hr].first,
-                            bQpqA_mo_scf_->coldim(0), gamma_rs_p[0], 1, 1.0, Qp[0], 1);
+                            bQpqA_mo_scf->coldim(0), gamma_rs_p[0], 1, 1.0, Qp[0], 1);
                 }
             }
             // tilde_f <Q|P> = 2 b(QP|Aux)*(Aux) where (Aux) = (Q)
-            C_DGEMV('T', nQ_scf_, nsopi_[hp] * nsopi_[hq], 2.0, bQpqAp[0] + block[0][hp].first, bQpqA_mo_scf_->coldim(0), Qp[0],
+            C_DGEMV('T', nQ_scf_, nsopi_[hp] * nsopi_[hq], 2.0, bQpqAp[0] + block[0][hp].first, bQpqA_mo_scf->coldim(0), Qp[0],
                     1, 0.0, tFAp[0], 1);
         }
     }
@@ -1249,7 +1251,7 @@ void DCTSolver::build_gbarGamma_RHF() {
             for (int hr = 0; hr < nirrep_; ++hr) {
                 int hs = hr;
                 if (nsopi_[hr] > 0) {
-                    double** bQpqAp = bQpqA_mo_scf_->pointer(hq ^ hr);
+                    double** bQpqAp = bQpqA_mo_scf->pointer(hq ^ hr);
                     double** gamma_rs_p = mo_gammaA_->pointer(hr);
 
                     std::vector<SharedMatrix> rs;
@@ -1268,8 +1270,8 @@ void DCTSolver::build_gbarGamma_RHF() {
 
                             // <Q'P'|RS> = b(Q'R|Aux) b(Aux|P'S)
                             C_DGEMM('T', 'N', nsopi_[hr], nsopi_[hs], nQ_scf_, 1.0,
-                                    bQpqAp[0] + block[hq ^ hr][hq].first + q * nsopi_[hr], bQpqA_mo_scf_->coldim(hq ^ hr),
-                                    bQpqAp[0] + block[hp ^ hs][hp].first + p * nsopi_[hs], bQpqA_mo_scf_->coldim(hp ^ hs),
+                                    bQpqAp[0] + block[hq ^ hr][hq].first + q * nsopi_[hr], bQpqA_mo_scf->coldim(hq ^ hr),
+                                    bQpqAp[0] + block[hp ^ hs][hp].first + p * nsopi_[hs], bQpqA_mo_scf->coldim(hp ^ hs),
                                     0.0, rsp[0], nsopi_[hs]);
                             // - <Q'P'|RS> * gamma<R|S>
                             double value = -C_DDOT(nsopi_[hr] * nsopi_[hs], rsp[0], 1, gamma_rs_p[0], 1);
@@ -1284,113 +1286,7 @@ void DCTSolver::build_gbarGamma_RHF() {
         }
     }
 
-    bQpqA_mo_scf_.reset();
-    mo_gbarGamma_A_->add(mo_gbarKappa_A_);
-
     dct_timer_off("DCTSolver::Gbar<QS|PR> Gamma<R|S> (FastBuilder)");
-}
-
-void DCTSolver::build_gbarKappa_RHF() {
-    dct_timer_on("DCTSolver::Gbar<QS|PR> Kappa<R|S>");
-
-    bQpqA_mo_scf_ = three_idx_primary_transform(bQmn_so_scf_, Ca_subset("SO", "ALL"), Ca_subset("SO", "ALL"));
-
-    int nthreads = 1;
-#ifdef _OPENMP
-    nthreads = Process::environment.get_n_threads();
-#endif
-
-    mo_gbarKappa_A_ = std::make_shared<Matrix>("MO-basis Gbar*Kappa", nirrep_, nmopi_, nmopi_);
-
-    // Put detailed information of b(Q|pq) block into 'block'
-    std::vector<std::vector<std::pair<long int, long int>>> block;
-    for (int hpq = 0; hpq < nirrep_; ++hpq) {
-        long int entrance = 0;
-        std::vector<std::pair<long int, long int>> subblock;
-        for (int hp = 0; hp < nirrep_; ++hp) {
-            int hq = hpq ^ hp;
-            std::pair<long int, long int> subsubblock(entrance, nsopi_[hp] * nsopi_[hq]);
-            subblock.push_back(subsubblock);
-            entrance += subsubblock.second;
-        }
-        block.push_back(subblock);
-    }
-
-/*
- *  f_tilde <Q|P> = gbar<QS|PR> gamma<R|S> + gbar<Qs|Pr> gamma<r|s>
- *                  = 2 g(QP|SR) gamma<R|S> - g(QR|SP) gamma<R|S>
- *                  = 2 b(QP|Aux) b(Aux|SR) gamma<R|S> - b(QR|Aux) b(Aux|SP) gamma<R|S>
- */
-
-// f_tilde <Q|P> = 2 b(QP|Aux) b(Aux|SR) gamma<R|S>
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-    for (int hq = 0; hq < nirrep_; ++hq) {
-        int hp = hq;
-        if (nsopi_[hq] > 0) {
-            double** tFAp = mo_gbarKappa_A_->pointer(hq);
-            double** bQpqAp = bQpqA_mo_scf_->pointer(0);
-            auto Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
-            double** Qp = Q->pointer();
-            // (Q) = b(Q|SR) gamma<R|S>
-            for (int hr = 0; hr < nirrep_; ++hr) {
-                int hs = hr;
-                if (nsopi_[hr] > 0) {
-                    double** gamma_rs_p = kappa_mo_a_->pointer(hr);
-                    C_DGEMV('N', nQ_scf_, nsopi_[hr] * nsopi_[hs], 1.0, bQpqAp[0] + block[0][hr].first,
-                            bQpqA_mo_scf_->coldim(0), gamma_rs_p[0], 1, 1.0, Qp[0], 1);
-                }
-            }
-            // tilde_f <Q|P> = 2 b(QP|Aux)*(Aux) where (Aux) = (Q)
-            C_DGEMV('T', nQ_scf_, nsopi_[hp] * nsopi_[hq], 2.0, bQpqAp[0] + block[0][hp].first,
-                    bQpqA_mo_scf_->coldim(0), Qp[0], 1, 0.0, tFAp[0], 1);
-        }
-    }
-
-    // f_tilde <Q|P> -= b(QR|Aux) b(Aux|SP) gamma<R|S>
-    for (int hq = 0; hq < nirrep_; ++hq) {
-        int hp = hq;
-        if (nsopi_[hq] > 0) {
-            for (int hr = 0; hr < nirrep_; ++hr) {
-                int hs = hr;
-                if (nsopi_[hr] > 0) {
-                    double** bQpqAp = bQpqA_mo_scf_->pointer(hq ^ hr);
-                    double** gamma_rs_p = kappa_mo_a_->pointer(hr);
-
-                    std::vector<SharedMatrix> rs;
-                    for (int i = 0; i < nthreads; ++i) {
-                        rs.push_back(std::make_shared<Matrix>("<Q'P'|RS>", nsopi_[hr], nsopi_[hs]));
-                    }
-
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                    for (int q = 0; q < nsopi_[hq]; ++q) {
-                        for (int p = q; p < nsopi_[hp]; ++p) {
-                            int thread = 0;
-#ifdef _OPENMP
-                            thread = omp_get_thread_num();
-#endif
-                            double** rsp = rs[thread]->pointer();
-
-                            // <Q'P'|RS> = b(Q'R|Aux) b(Aux|P'S)
-                            C_DGEMM('T', 'N', nsopi_[hr], nsopi_[hs], nQ_scf_, 1.0,
-                                    bQpqAp[0] + block[hq ^ hr][hq].first + q * nsopi_[hr],
-                                    bQpqA_mo_scf_->coldim(hq ^ hr),
-                                    bQpqAp[0] + block[hp ^ hs][hp].first + p * nsopi_[hs],
-                                    bQpqA_mo_scf_->coldim(hp ^ hs), 0.0, rsp[0], nsopi_[hs]);
-                            // - <Q'P'|RS> * gamma<R|S>
-                            double value = -C_DDOT(nsopi_[hr] * nsopi_[hs], rsp[0], 1, gamma_rs_p[0], 1);
-                            mo_gbarKappa_A_->add(hp, q, p, value);
-                            if (q != p) {
-                                mo_gbarKappa_A_->add(hp, p, q, value);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-    dct_timer_off("DCTSolver::Gbar<QS|PR> Kappa<R|S>");
 }
 
 /**
@@ -1844,8 +1740,6 @@ void DCTSolver::build_gbarlambda_UHF_v3mem() {
 void DCTSolver::build_gbarGamma_UHF() {
     dct_timer_on("DCTSolver::Gbar<QS|PR> Gamma<R|S> (FastBuilder)");
 
-    build_gbarKappa_UHF();
-
     int nthreads = 1;
 #ifdef _OPENMP
     nthreads = Process::environment.get_n_threads();
@@ -1862,7 +1756,9 @@ void DCTSolver::build_gbarGamma_UHF() {
     mo_gbarGamma_B_ = std::make_shared<Matrix>("MO-basis Gbar_Gamma_B", nirrep_, nmopi_, nmopi_);
 
     mo_gammaA_->copy(mo_tauA_);
+    mo_gammaA_->add(kappa_mo_a_);
     mo_gammaB_->copy(mo_tauB_);
+    mo_gammaB_->add(kappa_mo_b_);
 
     // Put detailed information of b(Q|pq) block into 'block'
     std::vector<std::vector<std::pair<long int, long int>>> block;
@@ -1877,6 +1773,9 @@ void DCTSolver::build_gbarGamma_UHF() {
         }
         block.push_back(subblock);
     }
+
+    const auto bQpqA_mo_scf = three_idx_primary_transform(bQmn_so_scf_, Ca_subset("SO", "ALL"), Ca_subset("SO", "ALL"));
+    const auto bQpqB_mo_scf = three_idx_primary_transform(bQmn_so_scf_, Cb_subset("SO", "ALL"), Cb_subset("SO", "ALL"));
 
 /*
  *  f_tilde <Q|P> = gbar<QS|PR> gamma<R|S> + gbar<Qs|Pr> gamma<r|s>
@@ -1893,8 +1792,8 @@ void DCTSolver::build_gbarGamma_UHF() {
             double** tFAp = mo_gbarGamma_A_->pointer(hQ);
             double** tFBp = mo_gbarGamma_B_->pointer(hQ);
 
-            double** bQpqAp = bQpqA_mo_scf_->pointer(0);
-            double** bQpqBp = bQpqB_mo_scf_->pointer(0);
+            double** bQpqAp = bQpqA_mo_scf->pointer(0);
+            double** bQpqBp = bQpqB_mo_scf->pointer(0);
 
             // (Q) = b(Q|SR)*gamma<R|S> + b(Q|sr)*gamma<r|s>
             auto Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
@@ -1906,19 +1805,19 @@ void DCTSolver::build_gbarGamma_UHF() {
                     double** gamma_rsBp = mo_gammaB_->pointer(hR);
                     // (Q) = b(Q|SR) gamma<R|S>
                     C_DGEMV('N', nQ_scf_, nsopi_[hR] * nsopi_[hS], 1.0, bQpqAp[0] + block[0][hR].first,
-                            bQpqA_mo_scf_->coldim(0), gamma_rsAp[0], 1, 1.0, Qp[0], 1);
+                            bQpqA_mo_scf->coldim(0), gamma_rsAp[0], 1, 1.0, Qp[0], 1);
                     // (Q) += b(Q|sr) gamma<r|s>
                     C_DGEMV('N', nQ_scf_, nsopi_[hR] * nsopi_[hS], 1.0, bQpqBp[0] + block[0][hR].first,
-                            bQpqB_mo_scf_->coldim(0), gamma_rsBp[0], 1, 1.0, Qp[0], 1);
+                            bQpqB_mo_scf->coldim(0), gamma_rsBp[0], 1, 1.0, Qp[0], 1);
                 }
             }
 
             // f_tilde <Q|P> = b(QP|Aux)*(Aux) where (Aux) = (Q)
-            C_DGEMV('T', nQ_scf_, nsopi_[hP] * nsopi_[hQ], 1.0, bQpqAp[0] + block[0][hP].first, bQpqA_mo_scf_->coldim(0), Qp[0],
+            C_DGEMV('T', nQ_scf_, nsopi_[hP] * nsopi_[hQ], 1.0, bQpqAp[0] + block[0][hP].first, bQpqA_mo_scf->coldim(0), Qp[0],
                     1, 0.0, tFAp[0], 1);
 
             // f_tilde <q|p> = b(qp|Aux)*(Aux) where (Aux) = (Q)
-            C_DGEMV('T', nQ_scf_, nsopi_[hP] * nsopi_[hQ], 1.0, bQpqBp[0] + block[0][hP].first, bQpqB_mo_scf_->coldim(0), Qp[0],
+            C_DGEMV('T', nQ_scf_, nsopi_[hP] * nsopi_[hQ], 1.0, bQpqBp[0] + block[0][hP].first, bQpqB_mo_scf->coldim(0), Qp[0],
                     1, 0.0, tFBp[0], 1);
         }
     }
@@ -1930,7 +1829,7 @@ void DCTSolver::build_gbarGamma_UHF() {
             for (int hR = 0; hR < nirrep_; ++hR) {
                 int hS = hR;
                 if (nsopi_[hR] > 0) {
-                    double** bQpqAp = bQpqA_mo_scf_->pointer(hQ ^ hR);
+                    double** bQpqAp = bQpqA_mo_scf->pointer(hQ ^ hR);
                     double** gamma_rsA_p = mo_gammaA_->pointer(hR);
 
                     std::vector<SharedMatrix> RS;
@@ -1949,8 +1848,8 @@ void DCTSolver::build_gbarGamma_UHF() {
 
                             // <Q'P'|RS> = b(Q'R|Aux) b(Aux|P'S)
                             C_DGEMM('T', 'N', nsopi_[hR], nsopi_[hS], nQ_scf_, 1.0,
-                                    bQpqAp[0] + block[hQ ^ hR][hQ].first + Q * nsopi_[hR], bQpqA_mo_scf_->coldim(hQ ^ hR),
-                                    bQpqAp[0] + block[hP ^ hS][hP].first + P * nsopi_[hS], bQpqA_mo_scf_->coldim(hP ^ hS),
+                                    bQpqAp[0] + block[hQ ^ hR][hQ].first + Q * nsopi_[hR], bQpqA_mo_scf->coldim(hQ ^ hR),
+                                    bQpqAp[0] + block[hP ^ hS][hP].first + P * nsopi_[hS], bQpqA_mo_scf->coldim(hP ^ hS),
                                     0.0, RSp[0], nsopi_[hS]);
                             // - <Q'P'|RS> * gamma<R|S>
                             double value = -C_DDOT(nsopi_[hR] * nsopi_[hS], RSp[0], 1, gamma_rsA_p[0], 1);
@@ -1972,7 +1871,7 @@ void DCTSolver::build_gbarGamma_UHF() {
             for (int hr = 0; hr < nirrep_; ++hr) {
                 int hs = hr;
                 if (nsopi_[hr] > 0) {
-                    double** bQpqBp = bQpqB_mo_scf_->pointer(hq ^ hr);
+                    double** bQpqBp = bQpqB_mo_scf->pointer(hq ^ hr);
                     double** gamma_rsB_p = mo_gammaB_->pointer(hr);
 
                     std::vector<SharedMatrix> rs;
@@ -1991,8 +1890,8 @@ void DCTSolver::build_gbarGamma_UHF() {
 
                             // <q'p'|rs> = b(q'r|Aux) b(Aux|p's)
                             C_DGEMM('T', 'N', nsopi_[hr], nsopi_[hs], nQ_scf_, 1.0,
-                                    bQpqBp[0] + block[hq ^ hr][hq].first + q * nsopi_[hr], bQpqB_mo_scf_->coldim(hq ^ hr),
-                                    bQpqBp[0] + block[hp ^ hs][hp].first + p * nsopi_[hs], bQpqB_mo_scf_->coldim(hp ^ hs),
+                                    bQpqBp[0] + block[hq ^ hr][hq].first + q * nsopi_[hr], bQpqB_mo_scf->coldim(hq ^ hr),
+                                    bQpqBp[0] + block[hp ^ hs][hp].first + p * nsopi_[hs], bQpqB_mo_scf->coldim(hp ^ hs),
                                     0.0, rsp[0], nsopi_[hs]);
                             // - <q'p'|rs> * gamma<r|s>
                             double value = -C_DDOT(nsopi_[hr] * nsopi_[hs], rsp[0], 1, gamma_rsB_p[0], 1);
@@ -2007,175 +1906,8 @@ void DCTSolver::build_gbarGamma_UHF() {
         }
     }
 
-    bQpqA_mo_scf_.reset();
-    bQpqB_mo_scf_.reset();
-    mo_gbarGamma_A_->add(mo_gbarKappa_A_);
-    mo_gbarGamma_B_->add(mo_gbarKappa_B_);
-
     dct_timer_off("DCTSolver::Gbar<QS|PR> Gamma<R|S> (FastBuilder)");
 }
 
-void DCTSolver::build_gbarKappa_UHF() {
-    dct_timer_on("DCTSolver::Gbar<QS|PR> Kappa<R|S>");
-
-    bQpqA_mo_scf_ = three_idx_primary_transform(bQmn_so_scf_, Ca_subset("SO", "ALL"), Ca_subset("SO", "ALL"));
-    bQpqB_mo_scf_ = three_idx_primary_transform(bQmn_so_scf_, Cb_subset("SO", "ALL"), Cb_subset("SO", "ALL"));
-
-    int nthreads = 1;
-#ifdef _OPENMP
-    nthreads = Process::environment.get_n_threads();
-#endif
-
-    mo_gbarKappa_A_ = std::make_shared<Matrix>("MO-basis Gbar_Kappa_A", nirrep_, nmopi_, nmopi_);
-    mo_gbarKappa_B_ = std::make_shared<Matrix>("MO-basis Gbar_Kappa_B", nirrep_, nmopi_, nmopi_);
-
-    // Put detailed information of b(Q|pq) block into 'block'
-    std::vector<std::vector<std::pair<long int, long int>>> block;
-    for (int hpq = 0; hpq < nirrep_; ++hpq) {
-        long int entrance = 0;
-        std::vector<std::pair<long int, long int>> subblock;
-        for (int hp = 0; hp < nirrep_; ++hp) {
-            int hq = hpq ^ hp;
-            std::pair<long int, long int> subsubblock(entrance, nsopi_[hp] * nsopi_[hq]);
-            subblock.push_back(subsubblock);
-            entrance += subsubblock.second;
-        }
-        block.push_back(subblock);
-    }
-
-/*
- *  f_tilde <Q|P> = gbar<QS|PR> gamma<R|S> + gbar<Qs|Pr> gamma<r|s>
- *             = g(QP|SR) gamma<R|S> - g(QR|SP) gamma<R|S> + g(QP|sr) gamma<r|s>
- *
- *  f_tilde <q|p> = gbar<qs|pr> gamma<r|s> + gbar<qS|pR> gamma<R|S>
- *             = g(qp|sr) gamma<r|s> - g(qr|sp) gamma<r|s> + g(qp|SR) gamma<R|S>
- */
-
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-    for (int hQ = 0; hQ < nirrep_; ++hQ) {
-        int hP = hQ;
-        if (nsopi_[hQ] > 0) {
-            double** tFAp = mo_gbarKappa_A_->pointer(hQ);
-            double** tFBp = mo_gbarKappa_B_->pointer(hQ);
-
-            double** bQpqAp = bQpqA_mo_scf_->pointer(0);
-            double** bQpqBp = bQpqB_mo_scf_->pointer(0);
-
-            // (Q) = b(Q|SR)*gamma<R|S> + b(Q|sr)*gamma<r|s>
-            auto Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
-            double** Qp = Q->pointer();
-            for (int hR = 0; hR < nirrep_; ++hR) {
-                int hS = hR;
-                if (nsopi_[hR] > 0) {
-                    double** gamma_rsAp = kappa_mo_a_->pointer(hR);
-                    double** gamma_rsBp = kappa_mo_b_->pointer(hR);
-                    // (Q) = b(Q|SR) gamma<R|S>
-                    C_DGEMV('N', nQ_scf_, nsopi_[hR] * nsopi_[hS], 1.0, bQpqAp[0] + block[0][hR].first,
-                            bQpqA_mo_scf_->coldim(0), gamma_rsAp[0], 1, 1.0, Qp[0], 1);
-                    // (Q) += b(Q|sr) gamma<r|s>
-                    C_DGEMV('N', nQ_scf_, nsopi_[hR] * nsopi_[hS], 1.0, bQpqBp[0] + block[0][hR].first,
-                            bQpqB_mo_scf_->coldim(0), gamma_rsBp[0], 1, 1.0, Qp[0], 1);
-                }
-            }
-
-            // f_tilde <Q|P> = b(QP|Aux)*(Aux) where (Aux) = (Q)
-            C_DGEMV('T', nQ_scf_, nsopi_[hP] * nsopi_[hQ], 1.0, bQpqAp[0] + block[0][hP].first,
-                    bQpqA_mo_scf_->coldim(0), Qp[0], 1, 0.0, tFAp[0], 1);
-
-            // f_tilde <q|p> = b(qp|Aux)*(Aux) where (Aux) = (Q)
-            C_DGEMV('T', nQ_scf_, nsopi_[hP] * nsopi_[hQ], 1.0, bQpqBp[0] + block[0][hP].first,
-                    bQpqB_mo_scf_->coldim(0), Qp[0], 1, 0.0, tFBp[0], 1);
-        }
-    }
-
-    // f_tilde <Q|P> -= b(QR|Aux) b(Aux|SP) gamma<R|S>
-    for (int hQ = 0; hQ < nirrep_; ++hQ) {
-        int hP = hQ;
-        if (nsopi_[hQ] > 0) {
-            for (int hR = 0; hR < nirrep_; ++hR) {
-                int hS = hR;
-                if (nsopi_[hR] > 0) {
-                    double** bQpqAp = bQpqA_mo_scf_->pointer(hQ ^ hR);
-                    double** gamma_rsA_p = kappa_mo_a_->pointer(hR);
-
-                    std::vector<SharedMatrix> RS;
-                    for (int i = 0; i < nthreads; ++i) {
-                        RS.push_back(std::make_shared<Matrix>("<Q'P'|RS>", nsopi_[hR], nsopi_[hS]));
-                    }
-
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                    for (int Q = 0; Q < nsopi_[hQ]; ++Q) {
-                        for (int P = Q; P < nsopi_[hP]; ++P) {
-                            int thread = 0;
-#ifdef _OPENMP
-                            thread = omp_get_thread_num();
-#endif
-                            double** RSp = RS[thread]->pointer();
-
-                            // <Q'P'|RS> = b(Q'R|Aux) b(Aux|P'S)
-                            C_DGEMM('T', 'N', nsopi_[hR], nsopi_[hS], nQ_scf_, 1.0,
-                                    bQpqAp[0] + block[hQ ^ hR][hQ].first + Q * nsopi_[hR],
-                                    bQpqA_mo_scf_->coldim(hQ ^ hR),
-                                    bQpqAp[0] + block[hP ^ hS][hP].first + P * nsopi_[hS],
-                                    bQpqA_mo_scf_->coldim(hP ^ hS), 0.0, RSp[0], nsopi_[hS]);
-                            // - <Q'P'|RS> * gamma<R|S>
-                            double value = -C_DDOT(nsopi_[hR] * nsopi_[hS], RSp[0], 1, gamma_rsA_p[0], 1);
-                            mo_gbarKappa_A_->add(hP, Q, P, value);
-                            if (Q != P) {
-                                mo_gbarKappa_A_->add(hP, P, Q, value);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // f_tilde <q|p> -= b(qr|Aux) b(Aux|sp) gamma<r|s>
-    for (int hq = 0; hq < nirrep_; ++hq) {
-        int hp = hq;
-        if (nsopi_[hq] > 0) {
-            for (int hr = 0; hr < nirrep_; ++hr) {
-                int hs = hr;
-                if (nsopi_[hr] > 0) {
-                    double** bQpqBp = bQpqB_mo_scf_->pointer(hq ^ hr);
-                    double** gamma_rsB_p = kappa_mo_b_->pointer(hr);
-
-                    std::vector<SharedMatrix> rs;
-                    for (int i = 0; i < nthreads; ++i) {
-                        rs.push_back(std::make_shared<Matrix>("<q'p'|rs>", nsopi_[hr], nsopi_[hs]));
-                    }
-
-#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
-                    for (int q = 0; q < nsopi_[hq]; ++q) {
-                        for (int p = q; p < nsopi_[hp]; ++p) {
-                            int thread = 0;
-#ifdef _OPENMP
-                            thread = omp_get_thread_num();
-#endif
-                            double** rsp = rs[thread]->pointer();
-
-                            // <q'p'|rs> = b(q'r|Aux) b(Aux|p's)
-                            C_DGEMM('T', 'N', nsopi_[hr], nsopi_[hs], nQ_scf_, 1.0,
-                                    bQpqBp[0] + block[hq ^ hr][hq].first + q * nsopi_[hr],
-                                    bQpqB_mo_scf_->coldim(hq ^ hr),
-                                    bQpqBp[0] + block[hp ^ hs][hp].first + p * nsopi_[hs],
-                                    bQpqB_mo_scf_->coldim(hp ^ hs), 0.0, rsp[0], nsopi_[hs]);
-                            // - <q'p'|rs> * gamma<r|s>
-                            double value = -C_DDOT(nsopi_[hr] * nsopi_[hs], rsp[0], 1, gamma_rsB_p[0], 1);
-                            mo_gbarKappa_B_->add(hp, q, p, value);
-                            if (q != p) {
-                                mo_gbarKappa_B_->add(hp, p, q, value);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
-    dct_timer_off("DCTSolver::Gbar<QS|PR> Kappa<R|S>");
-}
 }  // namespace dct
 }  // namespace psi

@@ -510,14 +510,14 @@ class DCTSolver : public Wavefunction {
     void build_DF_tensors_RHF();
     void build_DF_tensors_UHF();
     /// Form J(P|Q)^-1/2
-    SharedMatrix formJm12(std::shared_ptr<BasisSet> auxiliary);
+    SharedMatrix formJm12(std::shared_ptr<BasisSet> auxiliary) const;
     /// Form AO basis b(Q|mu,nu)
     SharedMatrix formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                   std::shared_ptr<BasisSet> zero, SharedMatrix Jm12);
     /// Transform AO-basis b(Q, mn) to MO-basis b(Q, pq)
     void transform_b();
     /// Transform b(Q|mu,nu) from AO basis to SO basis
-    SharedMatrix transform_b_ao2so(SharedMatrix bQmn_ao);
+    SharedMatrix transform_b_ao2so(SharedMatrix bQmn_ao) const;
     /// Transform b(Q|mu,nu) from SO basis to another basis with symmetry
     SharedMatrix three_idx_primary_transform(const SharedMatrix three_idx, const SharedMatrix left, const SharedMatrix right) const;
 
@@ -536,9 +536,6 @@ class DCTSolver : public Wavefunction {
     /// Form MO-based Gbar*Gamma
     void build_gbarGamma_RHF();
     void build_gbarGamma_UHF();
-    /// Form MO-based Gbar*Kappa
-    void build_gbarKappa_RHF();
-    void build_gbarKappa_UHF();
     /// Form gbar<ab|cd> * lambda <ij|cd>
     void build_gbarlambda_RHF_v3mem();
     void build_gbarlambda_UHF_v3mem();
@@ -563,8 +560,6 @@ class DCTSolver : public Wavefunction {
     /// b(Q|i, j)
     SharedMatrix bQijA_mo_;
     SharedMatrix bQijB_mo_;
-    SharedMatrix bQijA_mo_scf_;
-    SharedMatrix bQijB_mo_scf_;
 
     /// b(Q|i, a)
     SharedMatrix bQiaA_mo_;
@@ -578,8 +573,6 @@ class DCTSolver : public Wavefunction {
     /// b(Q|p, q)
     SharedMatrix bQpqA_mo_;
     SharedMatrix bQpqB_mo_;
-    SharedMatrix bQpqA_mo_scf_;
-    SharedMatrix bQpqB_mo_scf_;
 
     /// The Tau in the MO basis (All)
     SharedMatrix mo_tauA_;
@@ -587,8 +580,6 @@ class DCTSolver : public Wavefunction {
     /// MO-based (Gbar Tau + Gbar Kappa)
     SharedMatrix mo_gbarGamma_A_;
     SharedMatrix mo_gbarGamma_B_;
-    SharedMatrix mo_gbarKappa_A_;
-    SharedMatrix mo_gbarKappa_B_;
     /// MO-based Gamma <r|s>
     SharedMatrix mo_gammaA_;
     SharedMatrix mo_gammaB_;
