@@ -80,7 +80,7 @@ jobs:
       conda create -q \
         -n p4env \
         python=$PYTHON_VER \
-        psi4/label/dev::gau2grid=2 \
+        psi4/label/trial::gau2grid \
         psi4/label/dev::libint2 \
         psi4/label/dev::libxc \
         psi4/label/dev::ambit \
