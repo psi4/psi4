@@ -185,8 +185,8 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 # * library: not at all
 
 set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7 3.6)  # adjust with CMake minimum FindPythonInterp
-#find_package(PythonLibsNew 3.6 REQUIRED)
-find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
+find_package(PythonLibsNew 3.6 REQUIRED)
+#find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
 message(STATUS "${Cyan}Found Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE} (found version ${PYTHON_VERSION_STRING})")
 
 if(DEFINED ENV{LGTM_SRC})
