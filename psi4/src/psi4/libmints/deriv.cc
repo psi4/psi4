@@ -432,6 +432,9 @@ Deriv::Deriv(const std::shared_ptr<Wavefunction> &wave, char needed_irreps, bool
  *  different basis set for a correlated correction. In this case, the derivatives of both basis sets appear in the
  *  gradient formula, and each have their associated density matrix. Contracting a term against derivatives of integrals
  *  from the wrong auxiliary basis can lead to gradient errors on the order of 10^-5. When implementing density-fitted
+ *  gradients, you must correctly assign which TEI terms in the conventional integral theory come from which basis set.
+ *  For SCF reference theories, these terms always come from the orbital Z-vector or the Fock matrix. For non-SCF
+ *  reference theories, proceed with extra caution.
  */
 SharedMatrix Deriv::compute_df(const std::string& ref_aux_name, const std::string& cor_aux_name) {
     molecule_->print_in_bohr();
