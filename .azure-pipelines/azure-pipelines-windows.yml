@@ -108,6 +108,7 @@ jobs:
         displayName: "Configure Miniconda"
 
       # Create conda enviroment
+                        #psi4/label/trial::gau2grid ^
       # Note: conda activate doesn't work here, because it creates a new shell!
       # Note: c-f eigen has Config.cmake file
       - script: |
@@ -155,6 +156,7 @@ jobs:
         displayName: "Install Intel OpenMP import library"
 
       # Configure
+                #-DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
       - script: |
           setlocal EnableDelayedExpansion
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
@@ -175,7 +177,6 @@ jobs:
                 -DPython_EXECUTABLE="C:/tools/miniconda3/python.exe" ^
                 -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
                 -DEigen_ROOT="C:/tools/miniconda3/Library" ^
-                -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
                 -DBUILD_Libint2_GENERATOR=OFF ^
                 -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
                 -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
