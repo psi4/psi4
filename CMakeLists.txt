@@ -1,5 +1,7 @@
 #############################  Superbuild Project  #############################
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR) # 3.8: CXX_STANDARD recognizes C++17
+cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+                                              # 3.12: useable FindPython
+                                              # 3.8: CXX_STANDARD recognizes C++17
                                               # 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
                                               # 3.2: continue()
                                               # 3.1: CMAKE_CXX_STANDARD, BUILD_ALWAYS
@@ -182,7 +184,8 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 # * library: not at all
 
 set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7 3.6)  # adjust with CMake minimum FindPythonInterp
-find_package(PythonLibsNew 3.6 REQUIRED)
+#find_package(PythonLibsNew 3.6 REQUIRED)
+find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
 message(STATUS "${Cyan}Found Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE} (found version ${PYTHON_VERSION_STRING})")
 
 if(DEFINED ENV{LGTM_SRC})
