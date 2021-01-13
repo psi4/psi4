@@ -23,9 +23,9 @@ if(${ENABLE_psi4fockci})
             URL https://github.com/shannonhouck/psi4fockci/archive/267e171.tar.gz # v0.1.0
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
-            BUILD_COMMAND ${PYTHON_EXECUTABLE} setup.py build
+            BUILD_COMMAND ${Python_EXECUTABLE} setup.py build
             BUILD_IN_SOURCE 1
-            INSTALL_COMMAND ${PYTHON_EXECUTABLE} setup.py install
+            INSTALL_COMMAND ${Python_EXECUTABLE} setup.py install
                                                           --record=record.txt
                                                           --install-lib=${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR})
     endif()

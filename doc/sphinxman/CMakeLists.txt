@@ -15,11 +15,11 @@ if(NOT (LATEX_COMPILER AND PDFLATEX_COMPILER))
 endif()
 
 if(SPHINX_THEME STREQUAL sphinx_psi_theme)
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
+    execute_process(COMMAND ${Python_EXECUTABLE} -c
         "import sphinx_psi_theme; import cloud_sptheme; import sphinx_automodapi; import graphviz"
         OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _exec_python_err)
 else()
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
+    execute_process(COMMAND ${Python_EXECUTABLE} -c
         "import ${SPHINX_THEME}; import sphinx_automodapi; import graphviz"
         OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _exec_python_err)
 endif()
@@ -69,11 +69,11 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     )
 
     # * compute relative path btwn top_srcdir and objdir/doc/sphinxman
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
+    execute_process(COMMAND ${Python_EXECUTABLE} -c
         "import sys; import os; print('/' + os.path.relpath('${psi4_SOURCE_DIR}', '${CCBD}') + '/../')"
         OUTPUT_VARIABLE SFNX_INCLUDE OUTPUT_STRIP_TRAILING_WHITESPACE)
     # * add ipynb doc if build env can handle it
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c
+    execute_process(COMMAND ${Python_EXECUTABLE} -c
         "import nbsphinx; import jupyter_client; import ipykernel"
         OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _exec_python_err)
     if(_exec_python_err)
@@ -130,7 +130,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
 
     # Autodoc binary scratch files
     add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_psifiles.py ${CCSD}
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_psifiles.py ${CCSD}
         OUTPUT  ${CCBD}/source/autodoc_psifiles.rst
         DEPENDS ${CCSD}/document_psifiles.py
                 ${psi4_SOURCE_DIR}/psi4/include/psi4/psifiles.h
@@ -174,7 +174,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     # Autodoc Cfour PSI variables
     add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E make_directory source/autodir_psivariables
-        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_cfour.py ${CCSD}
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_cfour.py ${CCSD}
         OUTPUT  ${CCBD}/source/autodir_psivariables/module__cfour.rst
         DEPENDS ${CCSD}/document_cfour.py
                 ${psi4_SOURCE_DIR}/psi4/driver/qcdb/cfour.py
@@ -184,7 +184,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
 
     # Autodoc databases
     add_custom_command(
-        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_databases.py ${CCSD}
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_databases.py ${CCSD}
         OUTPUT  ${CCBD}/source/autodoc_available_databases.rst
         DEPENDS ${CCSD}/document_databases.py
                 ${psi4_SOURCE_DIR}/psi4/share/psi4/databases/*.py
@@ -204,7 +204,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
 
 #    # Autodoc driver
 #    add_custom_command(
-#        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_driver.py ${CCSD}
+#        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_driver.py ${CCSD}
 #        OUTPUT  ${CCBD}/source/autodoc_driver.rst
 #        DEPENDS ${psi4_SOURCE_DIR}/psi4/driver/*.py
 #                ${CCSD}/document_driver.py
@@ -270,7 +270,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     #   Not at all in working order
     add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E make_directory source/autodir_plugins
-        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_plugins.py ${CCSD}
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_plugins.py ${CCSD}
         OUTPUT  ${CCBD}/source/autodoc_abbr_options_plugins.rst
                 ${CCBD}/source/autodoc_available_plugins.rst
                 ${CCBD}/source/autodir_plugins/glossary__aointegrals.rst
@@ -285,7 +285,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     # Autodoc efp fragments
     if(${ENABLE_libefp})
         add_custom_command(
-            COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/document_efpfrag.py ${CCSD}
+            COMMAND ${Python_EXECUTABLE} ${CCSD}/document_efpfrag.py ${CCSD}
             OUTPUT  ${CCBD}/source/autodoc_available_efpfrag.rst
             DEPENDS ${CCSD}/document_efpfrag.py
                     ${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_DATADIR}/psi4/efpfrag/*efp
@@ -298,7 +298,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     # Format git log for feed
     add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E make_directory feed
-        COMMAND ${PYTHON_EXECUTABLE} ${CCSD}/extract_changeset.py ${CCBD}
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/extract_changeset.py ${CCBD}
         OUTPUT  ${CCBD}/feed/history_trac_changeset.txt
                 ${CCBD}/feed/latest_trac_changeset.txt
         DEPENDS ${CCSD}/extract_changeset.py

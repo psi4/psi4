@@ -133,7 +133,7 @@ jobs:
         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
         -DMAX_AM_ERI=4 \
         -DCMAKE_PREFIX_PATH=${CONDA}/envs/p4env \
-        -DPYTHON_EXECUTABLE="${CONDA}/envs/p4env/bin/python" \
+        -DPython_EXECUTABLE="${CONDA}/envs/p4env/bin/python" \
         -DMPFR_ROOT=${CONDA}/envs/p4env \
         -DENABLE_adcc=ON \
         -DENABLE_CheMPS2=OFF \

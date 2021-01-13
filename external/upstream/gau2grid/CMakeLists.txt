@@ -26,7 +26,7 @@ else()
                    -DBUILD_FPIC=${BUILD_FPIC}
                    -DMAX_AM=${MAX_AM_ERI}
                    -DENABLE_GENERIC=${ENABLE_GENERIC}
-                   -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
+                   -DPYTHON_EXECUTABLE=${Python_EXECUTABLE}
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
 
     set(gau2grid_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gau2grid CACHE PATH "path to internally built gau2gridConfig.cmake" FORCE)

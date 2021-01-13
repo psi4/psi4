@@ -1325,9 +1325,9 @@ How to configure Python for building Psi4
 
 **CMake Variables**
 
-* :makevar:`PYTHON_EXECUTABLE` |w---w| specify name or full path to Python interpreter.
-* :makevar:`PYTHON_LIBRARY` |w---w| specify path to Python library.
-* :makevar:`PYTHON_INCLUDE_DIR` |w---w| specify directory of Python headers. Contains ``Python.h``.
+* :makevar:`Python_EXECUTABLE` |w---w| specify name or full path to Python interpreter.
+* :makevar:`Python_LIBRARY` |w---w| specify path to Python library.
+* :makevar:`Python_INCLUDE_DIR` |w---w| specify directory of Python headers. Contains ``Python.h``.
 
 **Examples**
 
@@ -1341,15 +1341,15 @@ B. Build with specific Python
 
   .. code-block:: bash
 
-    >>> cmake -DPYTHON_EXECUTABLE=/path/to/interp/python3.6
+    >>> cmake -DPython_EXECUTABLE=/path/to/interp/python3.6
 
 C. Build with full Python specification to root directory ``${PFXC}``
 
   .. code-block:: bash
 
-    >>> cmake -DPYTHON_EXECUTABLE="${PFXC}/bin/python" \
-              -DPYTHON_LIBRARY="${PFXC}/lib/libpython3.5m.so" \
-              -DPYTHON_INCLUDE_DIR="${PFXC}/include/python3.5m"
+    >>> cmake -DPython_EXECUTABLE="${PFXC}/bin/python" \
+              -DPython_LIBRARY="${PFXC}/lib/libpython3.5m.so" \
+              -DPython_INCLUDE_DIR="${PFXC}/include/python3.5m"
 
 
 .. _`faq:runtimepython`:
@@ -1450,7 +1450,7 @@ How to handle "runtime library may be hidden" when building with Anaconda Python
 --------------------------------------------------------------------------------
 
 When building against Ana/Miniconda python (e.g., ``cmake
--DPYTHON_EXECUTABLE=/path/to/conda/bin/python``), the warning below often
+-DPython_EXECUTABLE=/path/to/conda/bin/python``), the warning below often
 appears. It is harmless, proceed.
 
 .. code-block:: bash
