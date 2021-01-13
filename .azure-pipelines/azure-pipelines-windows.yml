@@ -162,7 +162,6 @@ jobs:
           if "%CMAKE_BUILD_TYPE%"=="Debug" set ENABLE_XHOST=OFF
           if "%CMAKE_BUILD_TYPE%"=="Release" set ENABLE_XHOST=ON
           if not defined ENABLE_XHOST exit 1
-          type "%PREFIX%"\Library\share\cmake\gau2grid\gau2grid-Targets-shared.cmake
           cmake -G Ninja ^
                 -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% ^
                 -DCMAKE_INSTALL_PREFIX=../install ^
