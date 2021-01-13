@@ -18,13 +18,8 @@ requirements:
     - qcelemental
     - qcengine
     - msgpack-python
-    - libint2
     - gau2grid
-
-    #- {{ pin_compatible('mkl', upper_bound='2021.0') }}  # [linux]
-    #- {{ pin_compatible('python', max_pin='x.x') }}
-    #- {{ pin_compatible('qcelemental', max_pin='x') }}
-    #- {{ pin_compatible('qcengine', max_pin='x') }}
+    - libint2
 
 build:
   string: py{{ environ['PY_VER'].replace('.', '') }}_{{ 'debug' if environ['CMAKE_BUILD_TYPE'] == 'Debug' else '0' }}

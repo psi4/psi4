@@ -125,7 +125,7 @@ jobs:
                         pytest ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
-                        psi4/label/trial::gau2grid ^
+                        psi4/label/dev::gau2grid ^
                         psi4/label/dev::libint2 ^
                         conda-forge::mpfr ^
                         conda-forge::mpmath ^
@@ -237,7 +237,6 @@ jobs:
       - script: |
           set INSTALL_DIR=$(Build.BinariesDirectory)\install
           conda config --append channels conda-forge
-          conda config --append channels psi4/label/trial
           conda config --append channels psi4/label/dev
           conda build --python %PYTHON_VERSION% ^
                       conda\win

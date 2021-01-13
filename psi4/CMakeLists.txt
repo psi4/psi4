@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 project(psi4-core
         LANGUAGES C CXX)
 # no Fortran in psi4-core proper, but language needs to be declared

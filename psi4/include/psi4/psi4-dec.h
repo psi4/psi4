@@ -33,6 +33,11 @@
 #include <string>
 #include <memory>
 
+#ifdef _MSC_VER
+#define strdup _strdup
+#define sscanf sscanf_s
+#endif
+
 /// This is all defined in python.cc initialize
 namespace psi {
 

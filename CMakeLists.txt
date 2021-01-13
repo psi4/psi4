@@ -1,6 +1,6 @@
 #############################  Superbuild Project  #############################
-cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
-                                              # 3.12: useable FindPython
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+                                              # 3.14: useable FindPython with NumPy component
                                               # 3.8: CXX_STANDARD recognizes C++17
                                               # 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
                                               # 3.2: continue()
@@ -185,6 +185,7 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 
 set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7 3.6)  # adjust with CMake minimum FindPythonInterp
 if(WIN32)
+    # NumPy not found on Azure, so skipping for now
     find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
 else()
     find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
