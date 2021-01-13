@@ -2444,6 +2444,9 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name, const std:
     }
 
     psio_address next_Pmn = PSIO_ZERO;
+    // Individual block reads may very well not use all of this memory.
+    auto temp = std::vector<double>(static_cast<size_t>(max_rows) * ntri);
+    auto data = temp.data();
 
     // Perform threaded contraction of "densities" against 3-index derivative integrals.
     // Loop over blocks. Each block is all (P|mn) belonging to certain aux. orbital shells.
@@ -2458,8 +2461,6 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name, const std:
         int np = pstop - pstart;
 
         // Read values from disk. We assume that only the "lower triangle" of (P|mn) is stored.
-        auto temp = std::vector<double>(static_cast<size_t>(np) * ntri);
-        auto data = temp.data();
         psio_->read(PSIF_AO_TPDM, intermed_name.c_str(), (char*)temp.data(), sizeof(double) * np * ntri, next_Pmn, &next_Pmn);
 
         // Now get them into a matrix, not just the lower triangle.

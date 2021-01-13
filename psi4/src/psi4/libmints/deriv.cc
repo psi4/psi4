@@ -388,7 +388,7 @@ Deriv::Deriv(const std::shared_ptr<Wavefunction> &wave, char needed_irreps, bool
     tpdm_contr_ = factory_->create_shared_matrix("Two-electron contribution to gradient", natom_, 3);
     gradient_ = factory_->create_shared_matrix("Total gradient", natom_, 3);
 
-    cdsalcs_.print();
+    if (wfn_->options().get_int("PRINT") > 2) cdsalcs_.print();
 }
 
 /* Technical Documentation
@@ -449,11 +449,12 @@ SharedMatrix Deriv::compute_df(const std::string& ref_aux_name, const std::strin
         return gradient_;
     }
 
-    std::vector<SharedMatrix> gradient_terms;
+    // The indirection of letting this be a pointer allows us to define tei_terms later.
+    auto gradient_terms = std::make_shared<std::vector<SharedMatrix>>();
 
     // Obtain nuclear repulsion contribution from the wavefunction
     auto enuc = std::make_shared<Matrix>(molecule_->nuclear_repulsion_energy_deriv1(wfn_->get_dipole_field_strength()));
-    gradient_terms.push_back(enuc);
+    gradient_terms->push_back(enuc);
 
     const auto& mints = wfn_->mintshelper();
 
@@ -464,7 +465,7 @@ SharedMatrix Deriv::compute_df(const std::string& ref_aux_name, const std::strin
     auto Dtot = Da->clone();
     Dtot->add(Db);
     Dtot_AO->remove_symmetry(Dtot, wfn_->aotoso()->transpose());
-    gradient_terms.push_back(mints->core_hamiltonian_grad(Dtot_AO));
+    gradient_terms->push_back(mints->core_hamiltonian_grad(Dtot_AO));
 
     // Overlap derivatives
     auto s_deriv = cdsalcs_.create_matrices("S'", *factory_);
@@ -485,11 +486,13 @@ SharedMatrix Deriv::compute_df(const std::string& ref_aux_name, const std::strin
     auto x_contr = factory_->create_shared_matrix("Lagrangian contribution to gradient", natom_, 3);
     for (int a = 0; a < natom_; ++a)
         for (int xyz = 0; xyz < 3; ++xyz) x_contr->set(a, xyz, cart[3 * a + xyz]);
-    gradient_terms.push_back(x_contr);
+    gradient_terms->push_back(x_contr);
 
     // DF TEI derivatives
     std::vector<std::pair<std::string, std::string>> aux_data{{ref_aux_name, "Reference"}, {cor_aux_name, "Correlation"}};
     _default_psio_lib_->open(PSIF_AO_TPDM, PSIO_OPEN_OLD);
+    bool separate_tei = wfn_->options().get_int("PRINT") > 2;
+    auto tei_terms = separate_tei ? gradient_terms : std::make_shared<std::vector<SharedMatrix>>();
     for (const auto& aux_datum: aux_data) {
         auto naux = wfn_->get_basisset(aux_datum.first)->nbf();
         auto metric_density = std::make_shared<Matrix>("Metric " + aux_datum.second + " Density", naux, naux);
@@ -499,16 +502,23 @@ SharedMatrix Deriv::compute_df(const std::string& ref_aux_name, const std::strin
         densities["Metric " + aux_datum.second] = metric_density;
         auto results = mints->metric_grad(densities, aux_datum.first);
         for (const auto& kv: results) {
-            gradient_terms.push_back(kv.second);
+            tei_terms->push_back(kv.second);
         }
         auto result = mints->three_idx_grad(aux_datum.first, "3-Center " + aux_datum.second + " Density" , "3-Center " + aux_datum.second);
-        gradient_terms.push_back(result);
+        tei_terms->push_back(result);
     }
     _default_psio_lib_->close(PSIF_AO_TPDM, 1); // 1 = keep contents of PSIF_AO_TPDM
 
-    for (auto gradient: gradient_terms) {
+    if (!separate_tei) {
+        for (const auto& tei_term : *tei_terms) {
+            tpdm_contr_->add(tei_term);
+        }
+        gradient_terms->push_back(tpdm_contr_);
+    }
+
+    for (auto gradient: *gradient_terms) {
         gradient->symmetrize_gradient(molecule_);
-        gradient->print_atom_vector();
+        if (wfn_->options().get_int("PRINT") > 1) gradient->print_atom_vector();
         gradient_->add(gradient);
     }
 
@@ -750,18 +760,20 @@ SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
     x_contr->symmetrize_gradient(molecule_);
     tpdm_contr_->symmetrize_gradient(molecule_);
 
-    enuc->print_atom_vector();
-    opdm_contr->print_atom_vector();
-    x_contr->print_atom_vector();
-    tpdm_contr_->print_atom_vector();
+    if (wfn_->options().get_int("PRINT") > 1) {
+        enuc->print_atom_vector();
+        opdm_contr->print_atom_vector();
+        x_contr->print_atom_vector();
+        tpdm_contr_->print_atom_vector();
+    }
 
     if (x_ref_contr_) {
         x_ref_contr_->symmetrize_gradient(molecule_);
-        x_ref_contr_->print_atom_vector();
+        if (wfn_->options().get_int("PRINT") > 1) x_ref_contr_->print_atom_vector();
     }
     if (tpdm_ref_contr_) {
         tpdm_ref_contr_->symmetrize_gradient(molecule_);
-        tpdm_ref_contr_->print_atom_vector();
+        if (wfn_->options().get_int("PRINT") > 1) tpdm_ref_contr_->print_atom_vector();
     }
 
     // Add everything up into a temp.
