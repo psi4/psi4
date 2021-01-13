@@ -67,8 +67,8 @@ class Local_cc {
         int npairs;
         double pno_cut;
         int *weak_pairs;
-        double *eps_occ;
         std::vector<int> survivor_list;
+        std::vector<double> eps_occ;
         std::vector<SharedVector> occ_num;
         std::vector<SharedVector> eps_pno;
 

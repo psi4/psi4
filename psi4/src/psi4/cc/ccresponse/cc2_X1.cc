@@ -158,9 +158,9 @@ void cc2_X1_build(const char *pert, int irrep, double omega) {
        Local_cc local_;
        local_.nocc = moinfo.occpi[0];
        local_.nvir = moinfo.virtpi[0];
-       if (local_.filter_singles) {
-        local_.local_filter_T1(&X1new);
-       }
+       //if (local_.filter_singles) {
+       local_.local_filter_T1(&X1new);
+       //}
     }
     else {
         denom1(&X1new, omega);

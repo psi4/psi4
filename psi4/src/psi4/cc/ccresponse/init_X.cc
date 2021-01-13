@@ -62,9 +62,7 @@ void init_X(const char *pert, int irrep, double omega) {
             //if (local_.filter_singles) {
             local_.nocc = *moinfo.occpi;
             local_.nvir = *moinfo.virtpi;
-            outfile->Printf("Local obj initialized with nocc: %d and nvir: %d", local_.nocc, local_.nvir);
             local_.local_filter_T1(&X1);
-            outfile->Printf("Local filter T1 complete");
             //}
         }
         else

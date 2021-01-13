@@ -249,9 +249,7 @@ double CCLambdaWavefunction::compute_energy() {
 
             } else {
                 G_build(pL_params[i].irrep);
-                outfile->Printf("\n Before L1 build\n");
                 L1_build(pL_params[i]);
-                outfile->Printf("\n After L1 build\n");
                 if (params.print & 2) status("L1 amplitudes", "outfile");
                 L2_build(pL_params[i]);
 

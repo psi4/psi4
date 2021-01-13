@@ -101,10 +101,12 @@ void Local_cc::init_pno() {
     auto evecs = std::make_shared<Matrix>(nocc, nocc);
     Focc->diagonalize(evecs, local_occ_eps, ascending);
     outfile->Printf("Here are original local occ orbital energies\n");
+    double *temp_occ_array = init_array(nocc);
     for(int i=0; i < nocc; i++) {
         outfile->Printf("%f ", local_occ_eps->get(i));
+        temp_occ_array[i] = local_occ_eps->get(i);
     }
-    psio_write_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) local_occ_eps->pointer(),
+    psio_write_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) temp_occ_array,
             nocc * sizeof(double));
     /* outfile->Printf("*** Vir block of F ***");
     global_dpd_->file2_mat_print(&Fij, "outfile");
@@ -235,8 +237,12 @@ void Local_cc::init_pno() {
     }*/
 
     // Write Q, L, eps_pno to file
+    int *survivors_list = init_int_array(npairs);
+    for (int ij=0; ij < npairs; ij++) {
+        survivors_list[ij] = survivor_list[ij];
+    }
+    psio_write_entry(PSIF_CC_INFO, "PNO dimensions", (char *) survivors_list, npairs * sizeof(int));
     psio_address next;
-    psio_write_entry(PSIF_CC_INFO, "PNO dimensions", (char *) &survivor_list, npairs * sizeof(int));
     next = PSIO_ZERO;
     for(int ij=0; ij < npairs; ++ij) {
         int npno = survivor_list[ij];
@@ -253,12 +259,6 @@ void Local_cc::init_pno() {
     for(int ij=0; ij < npairs; ++ij) {
         int npno = survivor_list[ij];
         psio_write(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *) eps_pno[ij]->pointer(),
-                npno * sizeof(double), next, &next);
-    }
-    next = PSIO_ZERO;
-    for(int ij=0; ij < npairs; ++ij) {
-        int npno = survivor_list[ij];
-        psio_write(PSIF_CC_INFO, "Local Survivor List", (char *) eps_pno[ij]->pointer(),
                 npno * sizeof(double), next, &next);
     }
 
@@ -338,21 +338,28 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
     psio_address next;
     npairs = nocc*nocc;
 
+    // Is there an issue with using local_ variables?
+    eps_pno.clear();
+    Q.clear();
+    L.clear();
+    //survivor_list.resize(npairs);
+    //eps_occ.resize(nocc);
+    int *survivors = init_int_array(npairs);
+    double *occ_eps = init_array(nocc);
     /*   local.weak_pairs = init_int_array(nocc*nocc); */
-    eps_occ = init_array(nocc);
-    double *survivors = init_array(npairs);
-    psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) eps_occ, nocc * sizeof(double));
-    psio_read_entry(PSIF_CC_INFO, "PNO dimensions", (char *) &survivor_list, npairs * sizeof(int));
+    psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) occ_eps, nocc * sizeof(double));
+    psio_read_entry(PSIF_CC_INFO, "PNO dimensions", (char *) survivors, npairs * sizeof(int));
     //survivor_list.insert(survivor_list.begin(), std::begin(survivors), std::end(survivors));
 
-    // Is there an issue with using local_ variables?
-    std::vector<SharedVector> eps_pno;
-    std::vector<SharedMatrix> Q;
-    std::vector<SharedMatrix> L;
+    /*outfile->Printf("\nChecking read_in of survivor_list, nocc=%d\n", nocc);
+    for (auto sel : survivors) {
+        outfile->Printf("%d\t", sel);
+    }
+    outfile->Printf("End\n");*/
 
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ++ij) {
-        int npno = survivor_list[ij];
+        int npno = survivors[ij];
         auto eps_pno_temp = std::make_shared<Vector>(npno);
         psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *)eps_pno_temp->pointer(),
                   npno * sizeof(double), next, &next);
@@ -360,7 +367,7 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
     }
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ++ij) {
-        int npno = survivor_list[ij];
+        int npno = survivors[ij];
         auto qtemp = std::make_shared<Matrix>(nvir, npno);
         psio_read(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *)qtemp->pointer()[0],
                   sizeof(double) * nvir * npno, next, &next);
@@ -373,7 +380,7 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
     }*/
     next = PSIO_ZERO;
     for (int ij = 0; ij < nocc * nocc; ij++) {
-        int npno = survivor_list[ij];
+        int npno = survivors[ij];
         auto ltemp = std::make_shared<Matrix>(npno, npno);
         psio_read(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *)ltemp->pointer()[0],
                   sizeof(double) * npno * npno, next, &next);
@@ -389,7 +396,7 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
 
     for (int i = 0; i < nocc; i++) {
         ii = i * nocc + i; /* diagonal element of pair matrices */
-        int npno = survivor_list[ii];
+        int npno = survivors[ii];
 
         // Print checking
         /*Vector T1vec(nvir);
@@ -413,7 +420,7 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
 
         /* Apply the denominators */
         for (int a = 0; a < npno; a++) {
-            T1bar[a] /= eps_occ[i] - eps_pno[ii]->get(a);
+            T1bar[a] /= occ_eps[i] - eps_pno[ii]->get(a);
         }
 
         /* Transform the new T1's to the redundant projected virtual basis */
@@ -445,22 +452,30 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
     psio_address next;
     npairs = nocc*nocc;
 
-    eps_occ = init_array(nocc);
-    psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) eps_occ, nocc * sizeof(double));
-    psio_read_entry(PSIF_CC_INFO, "PNO dimensions", (char *) &survivor_list, npairs * sizeof(int));
-
     // Is there an issue with using local_ variables?
-    std::vector<SharedVector> eps_pno;
-    std::vector<SharedMatrix> Q;
-    std::vector<SharedMatrix> L;
+    eps_pno.clear();
+    Q.clear();
+    L.clear();
+    //survivor_list.resize(npairs, 0);
+    //eps_occ.resize(nocc, 0);
+    int *survivors = init_int_array(npairs);
+    double *occ_eps = init_array(nocc);
+
+    psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) occ_eps, nocc * sizeof(double));
+    psio_read_entry(PSIF_CC_INFO, "PNO dimensions", (char *) survivors, npairs * sizeof(int));
+    /*outfile->Printf("Testing read-in of eps_occ\n");
+    for (auto qel : eps_occ) {
+        outfile->Printf("%20.10f\t", qel);;
+    }*/
 
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ++ij) {
-        int npno = survivor_list[ij];
+        int npno = survivors[ij];
         auto eps_pno_temp = std::make_shared<Vector>(npno);
         psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *)eps_pno_temp->pointer(),
                   npno * sizeof(double), next, &next);
         eps_pno.push_back(eps_pno_temp);
+        eps_pno_temp->zero();
     }
     /*outfile->Printf("Testing read-in of virtual orbital energies\n");
     for(int ij=0; ij < npairs; ++ij) {
@@ -472,7 +487,7 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
     }*/
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ij++) {
-        int npno = survivor_list[ij];
+        int npno = survivors[ij];
         auto qtemp = std::make_shared<Matrix>(nvir, npno);
         psio_read(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *)qtemp->pointer()[0],
                   sizeof(double) * nvir * npno, next, &next);
@@ -480,24 +495,29 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
         qtemp->zero();
     }
     next = PSIO_ZERO;
-    for (int ij = 0; ij < nocc * nocc; ij++) {
-        int npno = survivor_list[ij];
+    for (int ij = 0; ij < npairs; ij++) {
+        int npno = survivors[ij];
         auto ltemp = std::make_shared<Matrix>(npno, npno);
         psio_read(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *)ltemp->pointer()[0],
                   sizeof(double) * npno * npno, next, &next);
         L.push_back(ltemp->clone());
         ltemp->zero();
     }
+    /*outfile->Printf("Testing read-in of L\n");
+    for (auto &qel : L) {
+        qel->print();
+    }*/
 
     /* Grab the MO-basis T2's */
     global_dpd_->buf4_mat_irrep_init(T2, 0);
     global_dpd_->buf4_mat_irrep_rd(T2, 0);
 
     for (int ij = 0; ij < npairs; ++ij) {
-        int npno = survivor_list[ij];
-        auto atemp = std::make_shared<Matrix>(nvir, npno);
-        auto T2tilde = std::make_shared<Matrix>(npno, npno);
+        int npno = survivors[ij];
         auto T2temp = std::make_shared<Matrix>(nvir, nvir);
+        auto atemp = std::make_shared<Matrix>(nvir, npno);
+        auto btemp = std::make_shared<Matrix>(npno, npno);
+        auto T2bar = std::make_shared<Matrix>(npno, npno);
 
         for(int ab=0; ab < nvir*nvir; ++ab) {
             int a = ab / nvir;
@@ -507,12 +527,10 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
 
         /* Transform the virtuals to the redundant projected virtual basis */
         atemp->gemm(0, 0, 1, T2temp, Q[ij], 0);
-        T2tilde->gemm(1, 0, 1, Q[ij], atemp, 0);
+        T2bar->gemm(1, 0, 1, Q[ij], atemp, 0);
 
-        auto btemp = std::make_shared<Matrix>(npno, npno);
-        auto T2bar = std::make_shared<Matrix>(npno, npno);
         /* Transform the virtuals to the non-redundant virtual basis */
-        btemp->gemm(0, 0, 1, T2tilde, L[ij], 0);
+        btemp->gemm(0, 0, 1, T2bar, L[ij], 0);
         T2bar->gemm(1, 0, 1, L[ij], btemp, 0);
 
         /* Divide the new amplitudes by the denominators */
@@ -520,16 +538,17 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
         int j = ij % nocc;
         for (int a = 0; a < npno; a++) {
             for (int b = 0; b < npno; b++) {
-                T2bar->set(a, b, T2bar->get(a,b) /
-                    (eps_occ[i] + eps_occ[j] - eps_pno[ij]->get(a) - eps_pno[ij]->get(b)));
+                double val = T2bar->get(a,b);
+                T2bar->set(a, b, val /
+                    (occ_eps[i] + occ_eps[j] - eps_pno[ij]->get(a) - eps_pno[ij]->get(b)));
             }
         }
         /* Transform the new T2's to the redundant virtual basis */
         btemp->gemm(0, 0, 1, L[ij], T2bar, 0);
-        T2tilde->gemm(0, 1, 1, btemp, L[ij], 0);
+        T2bar->gemm(0, 1, 1, btemp, L[ij], 0);
 
         /* Transform the new T2's to the MO basis */
-        atemp->gemm(0, 0, 1, Q[ij], T2tilde, 0);
+        atemp->gemm(0, 0, 1, Q[ij], T2bar, 0);
         T2temp->gemm(0, 1, 1, atemp, Q[ij], 0);
 
         for(int ab=0; ab < nvir*nvir; ++ab) {
