@@ -119,9 +119,10 @@ class EmpiricalDispersion(object):
 
     """
 
-    def __init__(self, name_hint=None, level_hint=None, param_tweaks=None, **kwargs):
+    def __init__(self, name_hint=None, level_hint=None, param_tweaks=None, save_pairwise_disp = False, **kwargs):
         from .dft import dashcoeff_supplement
         self.dashcoeff_supplement = dashcoeff_supplement
+        self.save_pairwise_disp = save_pairwise_disp
 
         resolved = qcng.programs.empirical_dispersion_resources.from_arrays(
             name_hint=name_hint,
@@ -201,6 +202,7 @@ class EmpiricalDispersion(object):
                         'level_hint': self.dashlevel,
                         'params_tweaks': self.dashparams,
                         'dashcoeff_supplement': self.dashcoeff_supplement,
+                        'save_pairwise_dispersion': self.save_pairwise_disp,
                         'verbose': 1,
                     },
                     'molecule': molecule.to_schema(dtype=2),
@@ -212,8 +214,15 @@ class EmpiricalDispersion(object):
             dashd_part = float(jobrec.extras['qcvars']['DISPERSION CORRECTION ENERGY'])
             if wfn is not None:
                 for k, qca in jobrec.extras['qcvars'].items():
-                    if 'CURRENT' not in k:
-                        wfn.set_variable(k, p4util.plump_qcvar(qca, k))
+                    # The pairwise dispersion analysis is already a nparray
+                    # Do we always want to save it?
+                    if ('CURRENT' not in k) and ('PAIRWISE' not in k):
+                       wfn.set_variable(k, p4util.plump_qcvar(qca, k))
+
+                # Pass along the pairwise dispersion decomposition if we need it
+                if self.save_pairwise_disp is True:
+                    wfn.set_variable("PAIRWISE DISPERSION CORRECTION ANALYSIS", 
+                                     jobrec.extras['qcvars']["PAIRWISE DISPERSION CORRECTION ANALYSIS"])
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=0)
