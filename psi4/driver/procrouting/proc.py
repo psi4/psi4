@@ -1127,12 +1127,13 @@ def select_adc2(name, **kwargs):
         return func(name, **kwargs)
 
 
-def build_disp_functor(name, restricted, **kwargs):
+def build_disp_functor(name, restricted, save_pairwise_disp = False, **kwargs):
 
     if core.has_option_changed("SCF", "DFT_DISPERSION_PARAMETERS"):
         modified_disp_params = core.get_option("SCF", "DFT_DISPERSION_PARAMETERS")
     else:
         modified_disp_params = None
+    
 
     # Figure out functional
     superfunc, disp_type = dft.build_superfunctional(name, restricted)
@@ -1145,6 +1146,7 @@ def build_disp_functor(name, restricted, **kwargs):
                 name_hint='',
                 level_hint=disp_type["type"],
                 param_tweaks=disp_type["params"],
+                save_pairwise_disp = save_pairwise_disp,
                 engine=kwargs.get('engine', None))
         else:
             # dft/*functionals.py spec - name & type for lookup, option val for param tweaks
@@ -1152,6 +1154,7 @@ def build_disp_functor(name, restricted, **kwargs):
                 name_hint=superfunc.name(),
                 level_hint=disp_type["type"],
                 param_tweaks=modified_disp_params,
+                save_pairwise_disp = save_pairwise_disp,
                 engine=kwargs.get('engine', None))
 
         # [Aug 2018] there once was a breed of `disp_type` that quacked
@@ -4419,14 +4422,68 @@ def run_fisapt(name, **kwargs):
                                 core.get_global_option("MINAO_BASIS"))
     ref_wfn.set_basisset("MINAO", minao)
 
+    # Turn of dispersion for -d
+    if "-d" in name.lower():
+        core.set_global_option("FISAPT_DO_FSAPT_DISP", False)
 
     fisapt_wfn = core.FISAPT(ref_wfn)
     from .sapt import fisapt_proc
     fisapt_wfn.compute_energy()
 
+    # Compute -D dispersion
+    if "-d" in name.lower():
+        sapt_dimer = ref_wfn.molecule()
+        sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(sapt_dimer, "dimer")
+        disp_name = name.split("fisapt0-")[1]
+        _, _disp_functor = build_disp_functor('hf-' + disp_name, restricted=True, save_pairwise_disp = True ,**kwargs) 
+
+        ## Dimer dispersion
+        dimer_disp_energy = _disp_functor.compute_energy(sapt_dimer, ref_wfn)
+
+        ## Monomer dispersion
+        mon_disp_energy = _disp_functor.compute_energy(monomerA)
+        mon_disp_energy += _disp_functor.compute_energy(monomerB)
+        
+        disp_interaction_energy = dimer_disp_energy - mon_disp_energy 
+
+        total = disp_interaction_energy
+        saptd_en = {}
+        saptd_en['DISP'] = disp_interaction_energy
+        for term in ['ELST', 'EXCH', 'IND']:
+            en = core.variable(' '.join(['SAPT', term, 'ENERGY']))
+            saptd_en[term] = en
+            core.set_variable(' '.join(['FISAPT0-D', term, 'ENERGY']),en)
+            total += en
+
+        core.set_variable('FISAPT0-D TOTAL ENERGY',total)
+        core.set_variable('CURRENT ENERGY',total)
+
+        # Save pairwise dispersion info to file
+        pw_disp = ref_wfn.variable("PAIRWISE DISPERSION CORRECTION ANALYSIS")
+        pw_disp.name = "EDisp"
+        filepath = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
+        fisapt_proc._drop(pw_disp, filepath)  
+
+        ## Print Energy Summary
+        units = (1000.0, constants.hartree2kcalmol, constants.hartree2kJmol)
+        core.print_out("    => FISAPT0-D Energy Summary <=\n")
+        dash = "-"*92
+        core.print_out("    %s\n" % dash)
+        core.print_out("    Electrostatics: %16.8f [mEh] %16.8f [kcal/mol] %16.8f [kJ/mol]\n" % 
+                      (saptd_en['ELST']*units[0], saptd_en['ELST']*units[1], saptd_en['ELST']*units[2])) 
+        core.print_out("    Exchange:       %16.8f [mEh] %16.8f [kcal/mol] %16.8f [kJ/mol]\n" % 
+                      (saptd_en['EXCH']*units[0], saptd_en['EXCH']*units[1], saptd_en['EXCH']*units[2])) 
+        core.print_out("    Induction:      %16.8f [mEh] %16.8f [kcal/mol] %16.8f [kJ/mol]\n" % 
+                      (saptd_en['IND']*units[0], saptd_en['IND']*units[1], saptd_en['IND']*units[2])) 
+        core.print_out("    Dispersion:     %16.8f [mEh] %16.8f [kcal/mol] %16.8f [kJ/mol]\n\n" % 
+                      (saptd_en['DISP']*units[0], saptd_en['DISP']*units[1], saptd_en['DISP']*units[2])) 
+        core.print_out("    Total:          %16.8f [mEh] %16.8f [kcal/mol] %16.8f [kJ/mol]\n" % 
+                      (total*units[0], total*units[1], total*units[2])) 
+        core.print_out("    %s\n" % dash)
+     
+
     optstash.restore()
     return ref_wfn
-
 
 def run_mrcc(name, **kwargs):
     """Function that prepares environment and input files
@@ -5057,3 +5114,170 @@ def run_efp(name, **kwargs):
         core.set_variable('EFP TORQUE', torq)
 
     return ene['total']
+
+def run_sapt0d(name, **kwargs):
+    """ Function to call SAPT0-D, uses existing SAPT0 and dispersion routines """
+
+    # First, we need to run SAPT0 without the usual dispersion    
+    ## Call SAPT0
+    optstash = p4util.OptionsState(
+        ['SCF_TYPE'])
+
+    ## Alter default algorithm
+    if not core.has_global_option_changed('SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
+
+    ## Get the molecule of interest
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        sapt_dimer = kwargs.pop('molecule', core.get_active_molecule())
+    else:
+        core.print_out('Warning! SAPT argument "ref_wfn" is only able to use molecule information.')
+        sapt_dimer = ref_wfn.molecule()
+
+    sapt_basis = kwargs.pop('sapt_basis', 'dimer')
+    sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(sapt_dimer, sapt_basis)
+
+    if (core.get_option('SCF', 'REFERENCE') != 'RHF') and (name.upper() != "SAPT0"):
+        raise ValidationError('Only SAPT0 supports a reference different from \"reference rhf\".')
+
+    ri = core.get_global_option('SCF_TYPE')
+    df_ints_io = core.get_option('SCF', 'DF_INTS_IO')
+
+    core.IO.set_default_namespace('dimer')
+    core.print_out('\n')
+    p4util.banner('Dimer HF')
+    core.print_out('\n')
+
+    ## Compute dimer wavefunction
+    if (sapt_basis == 'dimer') and (ri == 'DF'):
+        core.set_global_option('DF_INTS_IO', 'SAVE')
+
+    core.timer_on("SAPT: Dimer SCF")
+    dimer_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
+    core.timer_off("SAPT: Dimer SCF")
+
+    if (sapt_basis == 'dimer') and (ri == 'DF'):
+        core.set_global_option('DF_INTS_IO', 'LOAD')
+    
+    ## Compute Monomer A wavefunction
+    if (sapt_basis == 'dimer') and (ri == 'DF'):
+        core.IO.change_file_namespace(97, 'dimer', 'monomerA')
+
+    core.IO.set_default_namespace('monomerA')
+    core.print_out('\n')
+    p4util.banner('Monomer A HF')
+    core.print_out('\n')
+    
+    core.timer_on("SAPT: Monomer A SCF")
+    monomerA_wfn = scf_helper('RHF', molecule=monomerA, **kwargs)
+    core.timer_off("SAPT: Monomer A SCF")
+
+    ## Compute Monomer B wavefunction
+    if (sapt_basis == 'dimer') and (ri == 'DF'):
+        core.IO.change_file_namespace(97, 'monomerA', 'monomerB')
+    core.IO.set_default_namespace('monomerB')
+    core.print_out('\n')
+    p4util.banner('Monomer B HF')
+    core.print_out('\n')
+
+    core.timer_on("SAPT: Monomer B SCF")
+    monomerB_wfn = scf_helper('RHF', molecule=monomerB, **kwargs)
+    core.timer_off("SAPT: Monomer B SCF")
+    core.set_global_option('DF_INTS_IO', df_ints_io)
+
+    if core.get_option('SCF', 'REFERENCE') == 'RHF':
+        core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERA, 'monomerA', 'dimer')
+        core.IO.change_file_namespace(psif.PSIF_SAPT_MONOMERB, 'monomerB', 'dimer')
+
+    ## Force SAPT0
+    core.set_local_option('SAPT', 'SAPT_LEVEL', 'SAPT0')
+    core.set_local_option('SAPT','COUPLED_INDUCTION',False)
+    
+    ## Make sure we are not going to run CPHF on ROHF, since its MO Hessian
+    ## is not SPD
+    if core.get_option('SCF', 'REFERENCE') == 'ROHF':
+        core.set_local_option('SAPT','COUPLED_INDUCTION',False)
+        core.print_out('  Coupled induction not available for ROHF.\n')
+        core.print_out('  Proceeding with uncoupled induction only.\n')
+
+    core.print_out("  Constructing Basis Sets for SAPT...\n\n")
+    aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_SAPT",
+                                    core.get_global_option("DF_BASIS_SAPT"),
+                                    "RIFIT", core.get_global_option("BASIS"))
+    dimer_wfn.set_basisset("DF_BASIS_SAPT", aux_basis)
+    if core.get_global_option("DF_BASIS_ELST") == "":
+        dimer_wfn.set_basisset("DF_BASIS_ELST", aux_basis)
+    else:
+        aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_ELST",
+                                            core.get_global_option("DF_BASIS_ELST"),
+                                            "RIFIT", core.get_global_option("BASIS"))
+        dimer_wfn.set_basisset("DF_BASIS_ELST", aux_basis)
+
+    ## Make sure we are turning SAPT0 dispersion off
+    core.set_local_option('SAPT', 'SAPT0_E10', True)
+    core.set_local_option('SAPT', 'SAPT0_E20IND', True)
+    core.set_local_option('SAPT', 'SAPT0_E20Disp', False)
+
+
+    ## Get the SAPT0 Elst, Exch, and Ind interaction energies
+    core.print_out('\n')
+    p4util.banner(name.upper())
+    core.print_out('\n')
+    e_sapt = core.sapt(dimer_wfn, monomerA_wfn, monomerB_wfn)
+    dimer_wfn.set_module("sapt")
+
+    from psi4.driver.qcdb.psivardefs import sapt_psivars
+    p4util.expand_psivars(sapt_psivars())
+    optstash.restore()
+
+    # For SAPT0-D, the interaction energy without dispersion is equivalent to HF,
+    # so no need to add a SAPT0 functional
+    disp_name = name.split("sapt0-")[1]
+    _, _disp_functor = build_disp_functor('hf-' + disp_name, restricted=True,**kwargs) 
+
+    ## Dimer dispersion
+    dimer_disp_energy = _disp_functor.compute_energy(dimer_wfn.molecule(), dimer_wfn)
+
+    ## Monomer dispersion
+    mon_disp_energy = _disp_functor.compute_energy(monomerA_wfn.molecule(), monomerA_wfn)
+    mon_disp_energy += _disp_functor.compute_energy(monomerB_wfn.molecule(), monomerB_wfn)
+    
+    disp_interaction_energy = dimer_disp_energy - mon_disp_energy 
+    core.set_variable("SAPT0-D DISP ENERGY", disp_interaction_energy)
+
+    ## Set SAPT0-D3 variables
+    total = disp_interaction_energy
+    saptd_en = {}
+    saptd_en['DISP'] = disp_interaction_energy
+    for term in ['ELST', 'EXCH', 'IND']:
+        if term == 'IND':
+            en = core.variable(' '.join(['SAPT0 IND,U ENERGY']))
+        else:
+            en = core.variable(' '.join(['SAPT0', term, 'ENERGY']))
+        saptd_en[term] = en
+        core.set_variable(' '.join(['SAPT0-D', term, 'ENERGY']),en)
+        total += en
+
+    core.set_variable('SAPT0-D TOTAL ENERGY',total)
+    core.set_variable('CURRENT ENERGY',total)
+
+    ## Print Energy Summary
+    units = (1000.0, constants.hartree2kcalmol, constants.hartree2kJmol)
+    core.print_out("    => SAPT0-D Energy Summary <=\n")
+    dash = "-"*92
+    core.print_out("    %s\n" % dash)
+    core.print_out("    Electrostatics: %16.8f [mEh] %16.8f [kcal/mol] %16.8f [kJ/mol]\n" % 
+                  (saptd_en['ELST']*units[0], saptd_en['ELST']*units[1], saptd_en['ELST']*units[2])) 
+    core.print_out("    Exchange:       %16.8f [mEh] %16.8f [kcal/mol] %16.8f [kJ/mol]\n" % 
+                  (saptd_en['EXCH']*units[0], saptd_en['EXCH']*units[1], saptd_en['EXCH']*units[2])) 
+    core.print_out("    Induction:      %16.8f [mEh] %16.8f [kcal/mol] %16.8f [kJ/mol]\n" % 
+                  (saptd_en['IND']*units[0], saptd_en['IND']*units[1], saptd_en['IND']*units[2])) 
+    core.print_out("    Dispersion:     %16.8f [mEh] %16.8f [kcal/mol] %16.8f [kJ/mol]\n\n" % 
+                  (saptd_en['DISP']*units[0], saptd_en['DISP']*units[1], saptd_en['DISP']*units[2])) 
+    core.print_out("    Total:          %16.8f [mEh] %16.8f [kcal/mol] %16.8f [kJ/mol]\n" % 
+                  (total*units[0], total*units[1], total*units[2])) 
+    core.print_out("    %s\n" % dash)
+     
+
+    return dimer_wfn
