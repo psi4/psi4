@@ -52,14 +52,15 @@ else()
 endif()
 
 #  <<  Pybind11 & Python  >>
-if(WIN32)
-    find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
-else()
-    find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
-endif()
+#if(WIN32)
+#    find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
+#else()
+#    find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
+#endif()
 find_package(pybind11 2.6.1 CONFIG REQUIRED)
 message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${Python_VERSION} and ${CMAKE_CXX_STANDARD})")
-message(STATUS "${Cyan}Using Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE}")
+message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${PYTHON_VERSION} and ${CMAKE_CXX_STANDARD})")
+#message(STATUS "${Cyan}Using Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE}")
 
 find_package(DL)
 
