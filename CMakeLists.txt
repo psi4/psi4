@@ -188,7 +188,7 @@ if(WIN32)
     find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
 else()
     find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
-endir()
+endif()
 message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION})")
 
 if(DEFINED ENV{LGTM_SRC})
