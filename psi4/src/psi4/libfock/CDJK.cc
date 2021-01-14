@@ -163,4 +163,4 @@ void CDJK::print_header() const {
         outfile->Printf("    No. Cholesky vectors: %11li\n\n", ncholesky_);
     }
 }
-}
+}  // namespace psi

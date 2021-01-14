@@ -1440,4 +1440,4 @@ void IncoreSOMCSCF::set_eri_tensors(SharedMatrix aaaa, SharedMatrix aaar) {
     eri_tensor_set_ = true;
 }  // End DiskSOMCSCF object
 
-}  // Namespace psi
+}  // namespace psi

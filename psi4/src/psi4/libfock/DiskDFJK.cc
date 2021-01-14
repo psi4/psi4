@@ -1897,4 +1897,4 @@ void DiskDFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux) {
         timer_off("JK: wK2");
     }
 }
-}
+}  // namespace psi

@@ -1506,4 +1506,4 @@ double RTDDFT::compute_energy() {
 
     return 0.0;
 }
-}
+}  // namespace psi

@@ -1632,5 +1632,5 @@ void PKMgrInCore::form_J(std::vector<SharedMatrix> J, std::string exch, std::vec
 
 void PKMgrInCore::finalize_JK() { finalize_D(); }
 
-}  // End namespace pk
-}  // End namespace psi
+}  // namespace pk
+}  // namespace psi

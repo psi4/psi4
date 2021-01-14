@@ -629,4 +629,4 @@ void JK::set_wcombine(bool wcombine) {
     }
 }
 void JK::finalize() { postiterations(); }
-}
+}  // namespace psi
