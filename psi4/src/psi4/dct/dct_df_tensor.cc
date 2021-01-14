@@ -138,7 +138,7 @@ SharedMatrix DCTSolver::formJm12(std::shared_ptr<BasisSet> auxiliary) const {
  * Form b(Q|mn)
  */
 SharedMatrix DCTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
-                          std::shared_ptr<BasisSet> zero, SharedMatrix Jm12) {
+                          std::shared_ptr<BasisSet> zero, SharedMatrix Jm12) const {
     auto nQ = auxiliary->nbf();
     auto A_ao = std::make_shared<Matrix>(nQ, nso_ * nso_);
     auto Bp = A_ao->pointer();
@@ -233,7 +233,7 @@ SharedMatrix DCTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_
 /**
  * Calculate memory required for density-fitting
  */
-void DCTSolver::df_memory() {
+void DCTSolver::df_memory() const {
     double memory = Process::environment.get_memory();
     int nthreads = 1;
 #ifdef _OPENMP

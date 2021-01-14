@@ -505,7 +505,7 @@ class DCTSolver : public Wavefunction {
     /// Construct the B tensors
     void df_build_b();
     /// Calculate memory required for density-fitting
-    void df_memory();
+    void df_memory() const;
     /// Build density-fitted <VV||VV>, <vv||vv>, and <Vv|Vv> tensors in G intermediate
     void build_DF_tensors_RHF();
     void build_DF_tensors_UHF();
@@ -513,7 +513,7 @@ class DCTSolver : public Wavefunction {
     SharedMatrix formJm12(std::shared_ptr<BasisSet> auxiliary) const;
     /// Form AO basis b(Q|mu,nu)
     SharedMatrix formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
-                  std::shared_ptr<BasisSet> zero, SharedMatrix Jm12);
+                  std::shared_ptr<BasisSet> zero, SharedMatrix Jm12) const;
     /// Transform AO-basis b(Q, mn) to MO-basis b(Q, pq)
     void transform_b();
     /// Transform b(Q|mu,nu) from AO basis to SO basis
