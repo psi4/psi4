@@ -232,12 +232,10 @@ energy_only_methods += ['efp', 'cphf', 'tdhf', 'cis']
 # Catch all SAPT-D variants
 for key in functionals:
     # Grab the available -Ds from HF, since that's what SAPT0-D calls
-    # This may be too hacky
-    key = key.split("-")
-    if len(key) > 1:
-        if (key[0] == 'hf') and (key[-1][0] == "d"):
-            procedures['energy']['sapt0-' + key[-1]] = proc.run_sapt0d
-            procedures['energy']['fisapt0-' + key[-1]] = proc.run_fisapt
+    if key.startswith('hf-d'):
+        disp = key.split('-')[-1]
+        procedures['energy']['sapt0-' + disp] = proc.run_sapt
+        procedures['energy']['fisapt0-' + disp] = proc.run_fisapt
 
 # Will complete modelchem spec with basis='(auto)' for following methods
 integrated_basis_methods = ['g2', 'gaussian-2', 'hf3c', 'hf-3c', 'pbeh3c', 'pbeh-3c', 'sns-mp2']
