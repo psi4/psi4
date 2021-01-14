@@ -64,7 +64,7 @@ void DFOCC::back_trans() {
         G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|On)", nQ_ref, noccA, nso_));
         G->contract(false, true, nQ_ref * noccA, nso_, noccA, Gmo, CoccA, 1.0, 0.0);
         Gmo.reset();
-        Gao = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|nn)", nQ_ref, nso_, nso_));
+        Gao = SharedTensor2d(new Tensor2d("3-Center Reference Density", nQ_ref, nso_, nso_));
         Gao->contract233(false, false, nso_, nso_, CoccA, G, 1.0, 0.0);
         G.reset();
 
@@ -88,7 +88,7 @@ void DFOCC::back_trans() {
 
         // symmetrize : This is necessary since we only consider OV block
         Gao->symmetrize3(Gao);
-        Gao->write(psio_, PSIF_DFOCC_DENS, true, true);
+        Gao->write(psio_, PSIF_AO_TPDM, true, true);
 
         // 2-Index TPDM
         bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
@@ -111,11 +111,11 @@ void DFOCC::back_trans() {
         Gao.reset();
 
         // G_PQ = 1/2 \sum_{mn} c_mn^P G_mn^Q = 1/2 \sum_{m>=n} c_mn^P G_mn^Q (2 - \delta_{mn})
-        G = SharedTensor2d(new Tensor2d("2-Index RefSep TPDM (P|Q)", nQ_ref, nQ_ref));
+        G = SharedTensor2d(new Tensor2d("Metric Reference Density", nQ_ref, nQ_ref));
         G->gemm(false, true, cQso2, Gao2, 0.5, 0.0);
         Gao2.reset();
         cQso2.reset();
-        G->write_symm(psio_, PSIF_DFOCC_DENS);
+        G->write_symm(psio_, PSIF_AO_TPDM);
         G.reset();
 
         //=========================
@@ -127,7 +127,7 @@ void DFOCC::back_trans() {
         G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|On)", nQ, noccA, nso_));
         G->contract(false, true, nQ * noccA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
         Gmo.reset();
-        Gao = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|nn)", nQ, nso_, nso_));
+        Gao = SharedTensor2d(new Tensor2d("3-Center Correlation Density", nQ, nso_, nso_));
         Gao->contract233(false, false, nso_, nso_, CoccA, G, 2.0, 0.0);
         G.reset();
 
@@ -153,7 +153,7 @@ void DFOCC::back_trans() {
 
         // symmetrize : This is necessary since we only consider OV block
         Gao->symmetrize3(Gao);
-        Gao->write(psio_, PSIF_DFOCC_DENS, true, true);
+        Gao->write(psio_, PSIF_AO_TPDM, true, true);
 
         // 2-Index TPDM
         bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
@@ -176,11 +176,11 @@ void DFOCC::back_trans() {
         Gao.reset();
 
         // G_PQ = 1/2 \sum_{mn} c_mn^P G_mn^Q = 1/2 \sum_{m>=n} c_mn^P G_mn^Q (2 - \delta_{mn})
-        G = SharedTensor2d(new Tensor2d("2-Index Correlation TPDM (P|Q)", nQ, nQ));
+        G = SharedTensor2d(new Tensor2d("Metric Correlation Density", nQ, nQ));
         G->gemm(false, true, cQso2, Gao2, 0.5, 0.0);
         Gao2.reset();
         cQso2.reset();
-        G->write_symm(psio_, PSIF_DFOCC_DENS);
+        G->write_symm(psio_, PSIF_AO_TPDM);
         G.reset();
 
     }  // end if (reference_ == "RESTRICTED")
@@ -211,7 +211,7 @@ void DFOCC::back_trans() {
         G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|On)", nQ_ref, noccA, nso_));
         G->contract(false, true, nQ_ref * noccA, nso_, noccA, Gmo, CoccA, 1.0, 0.0);
         Gmo.reset();
-        Gao = SharedTensor2d(new Tensor2d("RefSep 3-Index TPDM (Q|nn)", nQ_ref, nso_, nso_));
+        Gao = SharedTensor2d(new Tensor2d("3-Center Reference Density", nQ_ref, nso_, nso_));
         Gao->contract233(false, false, nso_, nso_, CoccA, G, 1.0, 0.0);
         G.reset();
 
@@ -266,7 +266,7 @@ void DFOCC::back_trans() {
 
         // symmetrize : This is necessary since we only consider OV block
         Gao->symmetrize3(Gao);
-        Gao->write(psio_, PSIF_DFOCC_DENS, true, true);
+        Gao->write(psio_, PSIF_AO_TPDM, true, true);
 
         // 2-Index TPDM
         bQso = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|mn)", nQ_ref, nso_, nso_));
@@ -289,11 +289,11 @@ void DFOCC::back_trans() {
         Gao.reset();
 
         // G_PQ = 1/2 \sum_{mn} c_mn^P G_mn^Q = 1/2 \sum_{m>=n} c_mn^P G_mn^Q (2 - \delta_{mn})
-        G = SharedTensor2d(new Tensor2d("2-Index RefSep TPDM (P|Q)", nQ_ref, nQ_ref));
+        G = SharedTensor2d(new Tensor2d("Metric Reference Density", nQ_ref, nQ_ref));
         G->gemm(false, true, cQso2, Gao2, 0.5, 0.0);
         Gao2.reset();
         cQso2.reset();
-        G->write_symm(psio_, PSIF_DFOCC_DENS);
+        G->write_symm(psio_, PSIF_AO_TPDM);
         G.reset();
 
         //=========================
@@ -305,7 +305,7 @@ void DFOCC::back_trans() {
         G = SharedTensor2d(new Tensor2d("3-Index Correlation TPDM (Q|On)", nQ, noccA, nso_));
         G->contract(false, true, nQ * noccA, nso_, nvirA, Gmo, CvirA, 1.0, 0.0);
         Gmo.reset();
-        Gao = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|nn)", nQ, nso_, nso_));
+        Gao = SharedTensor2d(new Tensor2d("3-Center Correlation Density", nQ, nso_, nso_));
         Gao->contract233(false, false, nso_, nso_, CoccA, G, 2.0, 0.0);
         G.reset();
 
@@ -358,7 +358,7 @@ void DFOCC::back_trans() {
 
         // symmetrize : This is necessary since we only consider OV block
         Gao->symmetrize3(Gao);
-        Gao->write(psio_, PSIF_DFOCC_DENS, true, true);
+        Gao->write(psio_, PSIF_AO_TPDM, true, true);
 
         // 2-Index TPDM
         bQso = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|mn)", nQ, nso_, nso_));
@@ -381,11 +381,11 @@ void DFOCC::back_trans() {
         Gao.reset();
 
         // G_PQ = 1/2 \sum_{mn} c_mn^P G_mn^Q = 1/2 \sum_{m>=n} c_mn^P G_mn^Q (2 - \delta_{mn})
-        G = SharedTensor2d(new Tensor2d("2-Index Correlation TPDM (P|Q)", nQ, nQ));
+        G = SharedTensor2d(new Tensor2d("Metric Correlation Density", nQ, nQ));
         G->gemm(false, true, cQso2, Gao2, 0.5, 0.0);
         Gao2.reset();
         cQso2.reset();
-        G->write_symm(psio_, PSIF_DFOCC_DENS);
+        G->write_symm(psio_, PSIF_AO_TPDM);
         G.reset();
 
     }  // else if (reference_ == "UNRESTRICTED")

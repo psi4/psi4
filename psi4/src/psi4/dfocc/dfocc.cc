@@ -419,25 +419,6 @@ void DFOCC::title() {
 
 }  //
 
-void DFOCC::title_grad() {
-    outfile->Printf("\n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf("\n");
-    outfile->Printf("                         DFGRAD   \n");
-    outfile->Printf("            A General Analytic Gradients Code   \n");
-    outfile->Printf("               for Density-Fitted Methods       \n");
-    outfile->Printf("                   by Ugur Bozkaya\n");
-    outfile->Printf("              Latest Revision December 19, 2016\n");
-    outfile->Printf("\n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf("\n");
-
-}  //
-
 void DFOCC::lambda_title() {
     outfile->Printf("\n");
     outfile->Printf(" ============================================================================== \n");

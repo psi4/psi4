@@ -30,6 +30,7 @@
 #include <fstream>
 #include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libmints/factory.h"
 #include "psi4/libmints/matrix.h"
 #include "dfocc.h"
 
@@ -43,72 +44,13 @@ namespace psi {
 namespace dfoccwave {
 
 void DFOCC::dfgrad() {
-    //===========================================================================================
-    //============================ Preliminaries ================================================
-    //===========================================================================================
     tstop();
     tstart();
-    title_grad();
-    outfile->Printf("\tAnalytic gradients computation is starting...\n");
-
     tpdm_tilde();
     back_trans();
-
-    //===========================================================================================
-    //============================ Gradient =====================================================
-    //===========================================================================================
-    outfile->Printf("\tComputing analytic gradients...\n");
-
-    std::map<std::string, SharedMatrix> gradients;
-
-    // OEI GRAD
-    oei_grad(gradients);
-
-    // TEI GRAD
-    tei_grad("JK", gradients);
-    tei_grad("RI", gradients);
-
-    //===========================================================================================
-    //========================= Total Gradient ==================================================
-    //===========================================================================================
-    // => Total Gradient <= //
-    auto total = SharedMatrix(gradients["Nuclear"]->clone());
-    total->zero();
-
-    for (auto& kv: gradients) {
-        total->add(kv.second);
-    }
-
-    // OEI grad
-    gradients["One-Electron"] = gradients["Core"]->clone();
-    gradients["One-Electron"]->set_name("One-Electron Gradient");
-    gradients["One-Electron"]->print_atom_vector();
-
-    // TEI grad
-    gradients["Two-Electron"] = SharedMatrix(gradients["Nuclear"]->clone());
-    gradients["Two-Electron"]->set_name("Two-Electron Gradient");
-    gradients["Two-Electron"]->zero();
-    gradients["Two-Electron"]->add(gradients["3-Index:RefSep"]);
-    gradients["Two-Electron"]->add(gradients["3-Index:Corr"]);
-    gradients["Two-Electron"]->add(gradients["Metric:RefSep"]);
-    gradients["Two-Electron"]->add(gradients["Metric:Corr"]);
-    gradients["Two-Electron"]->print_atom_vector();  // UB
-
-    gradients["Total"] = total;
-    gradients["Total"]->set_name("Total Gradient");
-
-    // => Final Printing <= //
-    if (print_ > 1) {
-        for (auto& kv: gradients) {
-            kv.second->print_atom_vector();
-        }
-    } else {
-        gradients["Total"]->print_atom_vector();
-    }
-
-    set_gradient(total);
-
-    // outfile->Printf("\tdfgrad is done. \n");
+    auto W = std::make_shared<Matrix>("AO-basis Energy-Weighted OPDM", nmo_, nmo_);
+    GFao->to_shared_matrix(W);
+    Lagrangian_ = W;
 }  // end dfgrad
 
 }  // namespace dfoccwave

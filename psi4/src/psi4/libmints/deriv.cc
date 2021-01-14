@@ -385,16 +385,156 @@ Deriv::Deriv(const std::shared_ptr<Wavefunction> &wave, char needed_irreps, bool
     ignore_reference_ = false;
 
     // Results go here.
-    opdm_contr_ = factory_->create_shared_matrix("One-electron contribution to gradient", natom_, 3);
-    x_contr_ = factory_->create_shared_matrix("Lagrangian contribution to gradient", natom_, 3);
     tpdm_contr_ = factory_->create_shared_matrix("Two-electron contribution to gradient", natom_, 3);
     gradient_ = factory_->create_shared_matrix("Total gradient", natom_, 3);
 
-    cdsalcs_.print();
+    if (wfn_->options().get_int("PRINT") > 2) cdsalcs_.print();
+}
+
+/* Technical Documentation
+ * This requires five intermediates.
+ * 1. One-Particle Density Matrix
+ *  Analagous to <Ψ|a^p_q|Ψ>. The (pq) element contracts against the integral derivative h^x_(pq).
+ *  This quantity separates into alpha and beta blocks. Each block must be back-transformed, and then
+ *  stored on the wavefunction as Da_ and Db_.
+ * 2. Lagrangian, AKA, Energy-Weighted Density Matrix, AKA, Generalized Fock Matrix
+ *  The (pq) element contracts against the overlap integral derivative -S^x_(pq).
+ *  This quantity separates into alpha and beta blocks. Each block must be back-transformed, the blocks
+ *  summed together, and the result stored on the wavefunction as Lagangian_.
+ *  Note that this is NOT the behavior of the Lagrangian for RHF! As defined in Psi4, for Lagrangians
+ *  for RHF wavefunctions, the blocks are not added together.
+ * 3. Metric Density
+ *  The (pq) element contracts against the metric integral derivative -J^x_(pq).
+ *  Again, this quantity separates into alpha and beta blocks. Back-transform the blocks, and add them
+ *  together. Each auxiliary basis set has its own density. These must be stored in PSIF_AO_TPDM in
+ *  LowerTriangular format under the names "Metric Reference Density" and "Metric Correlation Density".
+ * 4. 3-Center Density
+ *  The (Q|pq) element contracts against the 3-center integral derivative (Q|pq)^x.
+ *  These must be stored in PSIF_AO_TPDM under the names "3-Center Reference Density" and
+ *  "3-Center Correlation Density". First looping over the auxiliary index and then store
+ *  the lower triangular block of the relevant slice of metric elements.
+ * Note (Back-Transformation):
+ *  An MO basis quantity is back-transformed to the AO index when each index is contracted against the C
+ *  matrix to give a quantity in the AO basis. A back-transformed density matrix contracted against the AO
+ *  basis derivative integrals gives the same result as the density matrix contracted against the MO basis
+ *  derivative integrals. This single back-transformation allows us to avoid back-transforming the derivative
+ *  integrals for each perturbation.
+ * Note (Densities):
+ *  Analytic gradient theory can always be formulated as involving a derivative of the two-electron integrals
+ *  against contracted some other quantity, known as the (relaxed) two-particle density matrix. In the density-fitting
+ *  approximation, inserting the expression for the two-electron intermediates and applying the chain rules shows that
+ *  with suitably defined intermediates, all derivative integral contractions are against two or three index quantities.
+ *  This is the one and only difference between conventional integral and density-fitted integral analytic gradient
+ *  theory. But it's important, as the explicit, nao^4 two-particle density matrix reduces to a naux^2 and nao^2*naux
+ *  intermediate.
+ * Note (Basis Sets):
+ *  It is standard for electronic structure methods to use one basis set for density-fitting the SCF reference and a
+ *  different basis set for a correlated correction. In this case, the derivatives of both basis sets appear in the
+ *  gradient formula, and each have their associated density matrix. Contracting a term against derivatives of integrals
+ *  from the wrong auxiliary basis can lead to gradient errors on the order of 10^-5. When implementing density-fitted
+ *  gradients, you must correctly assign which TEI terms in the conventional integral theory come from which basis set.
+ *  For SCF reference theories, these terms always come from the orbital Z-vector or the Fock matrix. For non-SCF
+ *  reference theories, proceed with extra caution.
+ */
+SharedMatrix Deriv::compute_df(const std::string& ref_aux_name, const std::string& cor_aux_name) {
+    molecule_->print_in_bohr();
+    
+    if (!wfn_) throw("In Deriv: The wavefunction passed in is empty!");
+
+    if (natom_ == 1) {
+        // This is an atom...there is no gradient.
+        outfile->Printf("    A single atom has no gradient.\n");
+        // Save the gradient to the wavefunction so that optking can optimize with it
+        wfn_->set_gradient(gradient_);
+        return gradient_;
+    }
+
+    // The indirection of letting this be a pointer allows us to define tei_terms later.
+    auto gradient_terms = std::make_shared<std::vector<SharedMatrix>>();
+
+    // Obtain nuclear repulsion contribution from the wavefunction
+    auto enuc = std::make_shared<Matrix>(molecule_->nuclear_repulsion_energy_deriv1(wfn_->get_dipole_field_strength()));
+    gradient_terms->push_back(enuc);
+
+    const auto& mints = wfn_->mintshelper();
+
+    // One-electron derivatives.
+    auto Da = wfn_->Da();
+    auto Db = wfn_->Db();
+    auto Dtot_AO = std::make_shared<Matrix>("AO basis total D", wfn_->nso(), wfn_->nso());
+    auto Dtot = Da->clone();
+    Dtot->add(Db);
+    Dtot_AO->remove_symmetry(Dtot, wfn_->aotoso()->transpose());
+    gradient_terms->push_back(mints->core_hamiltonian_grad(Dtot_AO));
+
+    // Overlap derivatives
+    auto s_deriv = cdsalcs_.create_matrices("S'", *factory_);
+    auto s_int = integral_->so_overlap(1);
+    s_int->compute_deriv1(s_deriv, cdsalcs_);
+    auto X = wfn_->lagrangian();
+    std::vector<double> Xcont;
+    for (size_t cd = 0; cd < cdsalcs_.ncd(); ++cd) {
+        Xcont.push_back(-X->vector_dot(s_deriv[cd]));
+    }
+    // B^t g_q^t = g_x^t -> g_q B = g_x
+    // In einsum notation i,ijk -> jk
+    auto st = cdsalcs_.matrix();
+    auto B = st->pointer(0);
+    auto *cart = new double[3 * natom_];
+    C_DGEMM('n', 'n', 1, 3 * natom_, cdsalcs_.ncd(), 1.0, Xcont.data(), cdsalcs_.ncd(), B[0], 3 * natom_, 0.0, cart,
+            3 * natom_);
+    auto x_contr = factory_->create_shared_matrix("Lagrangian contribution to gradient", natom_, 3);
+    for (int a = 0; a < natom_; ++a)
+        for (int xyz = 0; xyz < 3; ++xyz) x_contr->set(a, xyz, cart[3 * a + xyz]);
+    gradient_terms->push_back(x_contr);
+
+    // DF TEI derivatives
+    std::vector<std::pair<std::string, std::string>> aux_data{{ref_aux_name, "Reference"}, {cor_aux_name, "Correlation"}};
+    _default_psio_lib_->open(PSIF_AO_TPDM, PSIO_OPEN_OLD);
+    bool separate_tei = wfn_->options().get_int("PRINT") > 2;
+    auto tei_terms = separate_tei ? gradient_terms : std::make_shared<std::vector<SharedMatrix>>();
+    for (const auto& aux_datum: aux_data) {
+        auto naux = wfn_->get_basisset(aux_datum.first)->nbf();
+        auto metric_density = std::make_shared<Matrix>("Metric " + aux_datum.second + " Density", naux, naux);
+        metric_density->load(_default_psio_lib_, PSIF_AO_TPDM, Matrix::SaveType::LowerTriangle);
+        metric_density->scale(2);
+        std::map<std::string, SharedMatrix> densities;
+        densities["Metric " + aux_datum.second] = metric_density;
+        auto results = mints->metric_grad(densities, aux_datum.first);
+        for (const auto& kv: results) {
+            tei_terms->push_back(kv.second);
+        }
+        auto result = mints->three_idx_grad(aux_datum.first, "3-Center " + aux_datum.second + " Density" , "3-Center " + aux_datum.second);
+        tei_terms->push_back(result);
+    }
+    _default_psio_lib_->close(PSIF_AO_TPDM, 1); // 1 = keep contents of PSIF_AO_TPDM
+
+    if (!separate_tei) {
+        for (const auto& tei_term : *tei_terms) {
+            tpdm_contr_->add(tei_term);
+        }
+        gradient_terms->push_back(tpdm_contr_);
+    }
+
+    for (auto gradient: *gradient_terms) {
+        gradient->symmetrize_gradient(molecule_);
+        if (wfn_->options().get_int("PRINT") > 1) gradient->print_atom_vector();
+        gradient_->add(gradient);
+    }
+
+    // Print the atom vector
+    gradient_->print_atom_vector();
+
+    // Save the gradient to the wavefunction so that optking can optimize with it
+    wfn_->set_gradient(gradient_);
+
+    return gradient_;
 }
 
 SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
     molecule_->print_in_bohr();
+
+    if (!wfn_) throw("In Deriv: The wavefunction passed in is empty!");
 
     if (natom_ == 1) {
         // This is an atom...there is no gradient.
@@ -415,8 +555,8 @@ SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
     so_eri.set_only_totally_symmetric(true);
 
     // Compute one-electron derivatives.
-    std::vector<SharedMatrix> s_deriv = cdsalcs_.create_matrices("S'", *factory_);
-    std::shared_ptr<OneBodySOInt> s_int(integral_->so_overlap(1));
+    auto s_deriv = cdsalcs_.create_matrices("S'", *factory_);
+    auto s_int = integral_->so_overlap(1);
 
     s_int->compute_deriv1(s_deriv, cdsalcs_);
 
@@ -427,17 +567,15 @@ SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
     auto Dcont_vector = std::make_shared<Vector>(ncd);
     SharedVector TPDM_ref_cont_vector;
     SharedVector X_ref_cont_vector;
-    double *Xcont = Xcont_vector->pointer();
-    double *TPDMcont = TPDMcont_vector->pointer();
+    auto Xcont = Xcont_vector->pointer();
+    auto TPDMcont = TPDMcont_vector->pointer();
     double *TPDM_ref_cont = nullptr;
     double *X_ref_cont = nullptr;
 
-    if (!wfn_) throw("In Deriv: The wavefunction passed in is empty!");
-
     // Try and grab the OPDM and lagrangian from the wavefunction
-    SharedMatrix Da = wfn_->Da();
-    SharedMatrix Db = wfn_->Db();
-    SharedMatrix X = wfn_->lagrangian();
+    auto Da = wfn_->Da();
+    auto Db = wfn_->Db();
+    auto X = wfn_->lagrangian();
 
     // The current wavefunction's reference wavefunction, nullptr for SCF/DFT
     std::shared_ptr<Wavefunction> ref_wfn = wfn_->reference_wavefunction();
@@ -570,15 +708,14 @@ SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
     auto Dtot = Da->clone();
     Dtot->add(Db);
     Dtot_AO->remove_symmetry(Dtot, wfn_->aotoso()->transpose());
-    opdm_contr_ = mints->core_hamiltonian_grad(Dtot_AO);
+    auto opdm_contr = mints->core_hamiltonian_grad(Dtot_AO);
     for (size_t cd = 0; cd < cdsalcs_.ncd(); ++cd) {
-        double temp = X->vector_dot(s_deriv[cd]);
-        Xcont[cd] = -temp;
+        Xcont[cd] = -X->vector_dot(s_deriv[cd]);
     }
 
     // Transform the SALCs back to cartesian space
-    SharedMatrix st = cdsalcs_.matrix();
-    double **B = st->pointer(0);
+    auto st = cdsalcs_.matrix();
+    auto B = st->pointer(0);
     auto *cart = new double[3 * natom_];
 
     if (TPDM_ref_cont) {
@@ -600,9 +737,10 @@ SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
     // B^t g_q^t = g_x^t -> g_q B = g_x
     C_DGEMM('n', 'n', 1, 3 * natom_, cdsalcs_.ncd(), 1.0, Xcont, cdsalcs_.ncd(), B[0], 3 * natom_, 0.0, cart,
             3 * natom_);
-
+    
+    auto x_contr = factory_->create_shared_matrix("Lagrangian contribution to gradient", natom_, 3);
     for (int a = 0; a < natom_; ++a)
-        for (int xyz = 0; xyz < 3; ++xyz) x_contr_->set(a, xyz, cart[3 * a + xyz]);
+        for (int xyz = 0; xyz < 3; ++xyz) x_contr->set(a, xyz, cart[3 * a + xyz]);
 
     if (X_ref_cont) {
         // B^t g_q^t = g_x^t -> g_q B = g_x
@@ -618,29 +756,31 @@ SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
 
     // Print things out, after making sure that each component is properly symmetrized
     enuc->symmetrize_gradient(molecule_);
-    opdm_contr_->symmetrize_gradient(molecule_);
-    x_contr_->symmetrize_gradient(molecule_);
+    opdm_contr->symmetrize_gradient(molecule_);
+    x_contr->symmetrize_gradient(molecule_);
     tpdm_contr_->symmetrize_gradient(molecule_);
 
-    enuc->print_atom_vector();
-    opdm_contr_->print_atom_vector();
-    x_contr_->print_atom_vector();
-    tpdm_contr_->print_atom_vector();
+    if (wfn_->options().get_int("PRINT") > 1) {
+        enuc->print_atom_vector();
+        opdm_contr->print_atom_vector();
+        x_contr->print_atom_vector();
+        tpdm_contr_->print_atom_vector();
+    }
 
     if (x_ref_contr_) {
         x_ref_contr_->symmetrize_gradient(molecule_);
-        x_ref_contr_->print_atom_vector();
+        if (wfn_->options().get_int("PRINT") > 1) x_ref_contr_->print_atom_vector();
     }
     if (tpdm_ref_contr_) {
         tpdm_ref_contr_->symmetrize_gradient(molecule_);
-        tpdm_ref_contr_->print_atom_vector();
+        if (wfn_->options().get_int("PRINT") > 1) tpdm_ref_contr_->print_atom_vector();
     }
 
     // Add everything up into a temp.
     auto corr = std::make_shared<Matrix>("Correlation contribution to gradient", molecule_->natom(), 3);
     gradient_->add(enuc);
-    corr->add(opdm_contr_);
-    corr->add(x_contr_);
+    corr->add(opdm_contr);
+    corr->add(x_contr);
     corr->add(tpdm_contr_);
     if (reference_separate && !ignore_reference_) {
         gradient_->add(x_ref_contr_);

@@ -1907,6 +1907,10 @@ def run_dfocc_gradient(name, **kwargs):
     if core.get_option('SCF', 'REFERENCE') == 'ROHF':
         ref_wfn.semicanonicalize()
     dfocc_wfn = core.dfocc(ref_wfn)
+
+    derivobj = core.Deriv(dfocc_wfn)
+    derivobj.compute_df("DF_BASIS_SCF", "DF_BASIS_CC")
+
     dfocc_wfn.set_variable(f"{name.upper()} TOTAL GRADIENT", dfocc_wfn.gradient())
 
     # Shove variables into global space
