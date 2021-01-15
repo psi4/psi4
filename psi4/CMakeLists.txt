@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 project(psi4-core
         LANGUAGES C CXX)
 # no Fortran in psi4-core proper, but language needs to be declared
@@ -8,6 +8,7 @@ if(${Fortran_ENABLED})
     enable_language(Fortran)
 endif()
 
+cmake_policy(SET CMP0094 NEW)
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
 
 include(psi4OptionsTools)
