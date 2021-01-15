@@ -1127,13 +1127,13 @@ def select_adc2(name, **kwargs):
         return func(name, **kwargs)
 
 
-def build_disp_functor(name, restricted, save_pairwise_disp = False, **kwargs):
+
+def build_disp_functor(name, restricted, save_pairwise_disp=False, **kwargs):
 
     if core.has_option_changed("SCF", "DFT_DISPERSION_PARAMETERS"):
         modified_disp_params = core.get_option("SCF", "DFT_DISPERSION_PARAMETERS")
     else:
         modified_disp_params = None
-    
 
     # Figure out functional
     superfunc, disp_type = dft.build_superfunctional(name, restricted)
@@ -1142,20 +1142,18 @@ def build_disp_functor(name, restricted, save_pairwise_disp = False, **kwargs):
         if isinstance(name, dict):
             # user dft_functional={} spec - type for lookup, dict val for param defs,
             #   name & citation discarded so only param matches to existing defs will print labels
-            _disp_functor = empirical_dispersion.EmpiricalDispersion(
-                name_hint='',
-                level_hint=disp_type["type"],
-                param_tweaks=disp_type["params"],
-                save_pairwise_disp = save_pairwise_disp,
-                engine=kwargs.get('engine', None))
+            _disp_functor = empirical_dispersion.EmpiricalDispersion(name_hint='',
+                                                                     level_hint=disp_type["type"],
+                                                                     param_tweaks=disp_type["params"],
+                                                                     save_pairwise_disp=save_pairwise_disp,
+                                                                     engine=kwargs.get('engine', None))
         else:
             # dft/*functionals.py spec - name & type for lookup, option val for param tweaks
-            _disp_functor = empirical_dispersion.EmpiricalDispersion(
-                name_hint=superfunc.name(),
-                level_hint=disp_type["type"],
-                param_tweaks=modified_disp_params,
-                save_pairwise_disp = save_pairwise_disp,
-                engine=kwargs.get('engine', None))
+            _disp_functor = empirical_dispersion.EmpiricalDispersion(name_hint=superfunc.name(),
+                                                                     level_hint=disp_type["type"],
+                                                                     param_tweaks=modified_disp_params,
+                                                                     save_pairwise_disp=save_pairwise_disp,
+                                                                     engine=kwargs.get('engine', None))
 
         # [Aug 2018] there once was a breed of `disp_type` that quacked
         #   like a list rather than the more common dict handled above. if
@@ -1166,7 +1164,6 @@ def build_disp_functor(name, restricted, save_pairwise_disp = False, **kwargs):
 
     else:
         return superfunc, None
-
 
 def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
     """Builds the correct (R/U/RO/CU HF/KS) wavefunction from the
@@ -4044,8 +4041,7 @@ def run_sapt(name, **kwargs):
     a SAPT calculation of any level.
 
     """
-    optstash = p4util.OptionsState(
-        ['SCF_TYPE'])
+    optstash = p4util.OptionsState(['SCF_TYPE'])
 
     # Alter default algorithm
     if not core.has_global_option_changed('SCF_TYPE'):
@@ -4087,7 +4083,7 @@ def run_sapt(name, **kwargs):
     core.print_out('\n')
 
     # Compute dimer wavefunction
-    
+
     if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
@@ -4102,7 +4098,6 @@ def run_sapt(name, **kwargs):
     if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.set_global_option('DF_INTS_IO', 'LOAD')
 
-    
     # Compute Monomer A wavefunction
     if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.IO.change_file_namespace(97, 'dimer', 'monomerA')
@@ -4111,7 +4106,7 @@ def run_sapt(name, **kwargs):
     core.print_out('\n')
     p4util.banner('Monomer A HF')
     core.print_out('\n')
-    
+
     core.timer_on("SAPT: Monomer A SCF")
     monomerA_wfn = scf_helper('RHF', molecule=monomerA, **kwargs)
     core.timer_off("SAPT: Monomer A SCF")
@@ -4176,23 +4171,20 @@ def run_sapt(name, **kwargs):
     # Make sure we are not going to run CPHF on ROHF, since its MO Hessian
     # is not SPD
     if core.get_option('SCF', 'REFERENCE') == 'ROHF':
-        core.set_local_option('SAPT','COUPLED_INDUCTION',False)
+        core.set_local_option('SAPT', 'COUPLED_INDUCTION', False)
         core.print_out('  Coupled induction not available for ROHF.\n')
         core.print_out('  Proceeding with uncoupled induction only.\n')
 
     core.print_out("  Constructing Basis Sets for SAPT...\n\n")
-    aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_SAPT",
-                                    core.get_global_option("DF_BASIS_SAPT"),
+    aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_SAPT", core.get_global_option("DF_BASIS_SAPT"),
                                     "RIFIT", core.get_global_option("BASIS"))
     dimer_wfn.set_basisset("DF_BASIS_SAPT", aux_basis)
     if core.get_global_option("DF_BASIS_ELST") == "":
         dimer_wfn.set_basisset("DF_BASIS_ELST", aux_basis)
     else:
-        aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_ELST",
-                                            core.get_global_option("DF_BASIS_ELST"),
-                                            "RIFIT", core.get_global_option("BASIS"))
+        aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_ELST", core.get_global_option("DF_BASIS_ELST"),
+                                        "RIFIT", core.get_global_option("BASIS"))
         dimer_wfn.set_basisset("DF_BASIS_ELST", aux_basis)
-
 
     core.print_out('\n')
     p4util.banner(name.upper())
@@ -4214,14 +4206,14 @@ def run_sapt(name, **kwargs):
     which_ind = 'IND'
     target_ind = 'IND'
     if not core.has_variable(' '.join((sapt_name.upper(), which_ind, 'ENERGY'))):
-        which_ind='IND,U'
+        which_ind = 'IND,U'
 
     for term in ['ELST', 'EXCH', 'DISP', 'TOTAL']:
         core.set_variable(' '.join(['SAPT', term, 'ENERGY']),
-            core.variable(' '.join([sapt_name.upper(), term, 'ENERGY'])))
+                          core.variable(' '.join([sapt_name.upper(), term, 'ENERGY'])))
     # Special induction case
     core.set_variable(' '.join(['SAPT', target_ind, 'ENERGY']),
-        core.variable(' '.join([sapt_name.upper(), which_ind, 'ENERGY'])))
+                      core.variable(' '.join([sapt_name.upper(), which_ind, 'ENERGY'])))
     core.set_variable('CURRENT ENERGY', core.variable('SAPT TOTAL ENERGY'))
 
     # Empirical dispersion
@@ -4383,14 +4375,12 @@ def run_sapt_ct(name, **kwargs):
     optstash.restore()
     return dimer_wfn
 
-
 def run_fisapt(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an F/ISAPT0 computation
 
     """
-    optstash = p4util.OptionsState(
-        ['SCF_TYPE'])
+    optstash = p4util.OptionsState(['SCF_TYPE'])
 
     # Alter default algorithm
     if not core.has_global_option_changed('SCF_TYPE'):
@@ -4423,25 +4413,25 @@ def run_fisapt(name, **kwargs):
         core.timer_off("FISAPT: Dimer SCF")
 
     core.print_out("  Constructing Basis Sets for FISAPT...\n\n")
-    scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SCF",
+    scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(),
+                                        "DF_BASIS_SCF",
                                         core.get_option("SCF", "DF_BASIS_SCF"),
-                                        "JKFIT", core.get_global_option('BASIS'),
+                                        "JKFIT",
+                                        core.get_global_option('BASIS'),
                                         puream=ref_wfn.basisset().has_puream())
     ref_wfn.set_basisset("DF_BASIS_SCF", scf_aux_basis)
 
-    sapt_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SAPT",
-                                     core.get_global_option("DF_BASIS_SAPT"),
+    sapt_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_SAPT", core.get_global_option("DF_BASIS_SAPT"),
                                      "RIFIT", core.get_global_option("BASIS"),
                                      ref_wfn.basisset().has_puream())
     ref_wfn.set_basisset("DF_BASIS_SAPT", sapt_basis)
 
-    minao = core.BasisSet.build(ref_wfn.molecule(), "BASIS",
-                                core.get_global_option("MINAO_BASIS"))
+    minao = core.BasisSet.build(ref_wfn.molecule(), "BASIS", core.get_global_option("MINAO_BASIS"))
     ref_wfn.set_basisset("MINAO", minao)
 
     # Turn of dispersion for -d
     if "-d" in name.lower():
-        core.set_global_option("FISAPT_DO_FSAPT_DISP", False)
+        core.set_local_option("FISAPT", "FISAPT_DO_FSAPT_DISP", False)
 
     fisapt_wfn = core.FISAPT(ref_wfn)
     from .sapt import fisapt_proc
