@@ -69,6 +69,7 @@ message("RR Python_LIBRARY ${Python_LIBRARY}")
 message("RR Python_LIBRARIES ${Python_LIBRARIES}")
 message("QQ Python_INCLUDE_DIR ${Python_INCLUDE_DIR}")
 message("QQ Python_INCLUDE_DIRS ${Python_INCLUDE_DIRS}")
+message("YY ${Python_VERSION}")
 
 
 find_package(DL)

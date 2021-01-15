@@ -171,7 +171,7 @@ jobs:
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
                 -DPython_ROOT_DIR="C:/tools/miniconda3" ^
                 -DPython_EXECUTABLE="C:/tools/miniconda3/python.exe" ^
-                -DPython_LIBRARY="C:/tools/miniconda3/python38.dll" ^
+                -DPython_LIBRARY="C:/tools/miniconda3/libs/python38.lib" ^
                 -DPython_INCLUDE_DIR="C:/tools/miniconda3/include" ^
                 -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
                 -DEigen_ROOT="C:/tools/miniconda3/Library" ^
