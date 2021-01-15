@@ -75,11 +75,12 @@ if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     )
 endif()
 
-#if(MSVC)
-#  target_link_libraries(core PRIVATE Ws2_32)
+if(MSVC)
+  # gethostname
+  target_link_libraries(core PRIVATE Ws2_32)
 #  # Increase the number of addressable sections
 #  target_compile_options(core PRIVATE "/bigobj")
-#endif()
+endif()
 
 target_include_directories(core
   INTERFACE
