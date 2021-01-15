@@ -191,6 +191,7 @@ else()
     find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
 endif()
 message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION})")
+message("OUTER A ${Python_ROOT_DIR} B ${Python_EXECUTABLE} C ${_Python_EXECUTABLE} D ${Python_SITELIB}") 
 
 if(DEFINED ENV{LGTM_SRC})
     set(BUILD_TESTING OFF)
@@ -251,7 +252,8 @@ ExternalProject_Add(psi4-core
               -DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
               -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
               -DMAX_AM_ERI=${MAX_AM_ERI}
-              -DPython_EXECUTABLE=${Python_EXECUTABLE}
+              -DPython_ROOT_DIR=${Python_SITELIB}
+              #-DPython_EXECUTABLE=${Python_EXECUTABLE}
               #-DPython_INCLUDE_DIR=${Python_INCLUDE_DIR}
               #-DPython_LIBRARY=${Python_LIBRARY}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
