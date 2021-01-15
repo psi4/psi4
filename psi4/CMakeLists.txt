@@ -62,6 +62,13 @@ message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (ve
 message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${PYTHON_VERSION} and ${CMAKE_CXX_STANDARD})")
 message(STATUS "${Cyan}Using Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE}")
 message("INNER A ${Python_ROOT_DIR} B ${Python_EXECUTABLE} C ${_Python_EXECUTABLE} D ${Python_SITELIB}") 
+message("RR Python_STDLIB   ${Python_STDLIB}")
+message("RR Python_EXECUTABLE ${Python_STDARCH}")
+message("RR Python_LIBRARY ${Python_LIBRARY}")
+message("RR Python_LIBRARIES ${Python_LIBRARIES}")
+message("QQ Python_INCLUDE_DIR ${Python_INCLUDE_DIR}")
+message("QQ Python_INCLUDE_DIRS ${Python_INCLUDE_DIRS}")
+
 
 find_package(DL)
 
