@@ -112,7 +112,7 @@ class SphericalTransform {
    protected:
     std::vector<SphericalTransformComponent> components_;
     int l_;  // The angular momentum this transform is for.
-    int subl_;
+    int subl_;  // The sub angular momentum (default: l_)
 
     SphericalTransform();
 

@@ -80,12 +80,13 @@ void SphericalTransform::init() {
 
     // Go through and grab the values.
     int pureindex = 0;
-    int cartindex = 0;
+    //int cartindex = 0; this is not used
 
     for (int i = 1; i <= (l_ - subl_) / 2; ++i) pureindex += npure(subl_ + 2 * i);
 
+    // There is npure and a INT_NPURE macro than do the same thing. Why is that?
     for (int p = 0; p < npure(subl_); ++p) {
-        cartindex = 0;
+        //cartindex = 0;
         //        for (int ii=0; ii<=l_; ++ii) {
         //            int a = l_ - ii;
         //            for (int jj=0; jj<=ii; ++jj) {
@@ -106,7 +107,7 @@ void SphericalTransform::init() {
                     component.init(a, b, c, coef, cart2, p);
                     components_.push_back(component);
                 }
-                cartindex++;
+                //cartindex++;
             }
         }
     }
