@@ -152,6 +152,7 @@ jobs:
         displayName: "Install Intel OpenMP import library"
 
       # Configure
+                #-DPython_ROOT_DIR="C:/tools/miniconda3" ^
                 #-DPython_LIBRARY="C:/tools/miniconda3/libs/python38.lib" ^
                 #-DPython_INCLUDE_DIR="C:/tools/miniconda3/include" ^
       - script: |
@@ -171,7 +172,6 @@ jobs:
                 -DCMAKE_CXX_COMPILER=clang-cl ^
                 -DENABLE_XHOST=!ENABLE_XHOST! ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
-                -DPython_ROOT_DIR="C:/tools/miniconda3" ^
                 -DPython_EXECUTABLE="C:/tools/miniconda3/python.exe" ^
                 -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
                 -DEigen_ROOT="C:/tools/miniconda3/Library" ^
