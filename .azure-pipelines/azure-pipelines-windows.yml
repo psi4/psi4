@@ -152,9 +152,6 @@ jobs:
         displayName: "Install Intel OpenMP import library"
 
       # Configure
-                #-DPython_ROOT_DIR="C:/tools/miniconda3" ^
-                #-DPython_LIBRARY="C:/tools/miniconda3/libs/python38.lib" ^
-                #-DPython_INCLUDE_DIR="C:/tools/miniconda3/include" ^
       - script: |
           setlocal EnableDelayedExpansion
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64

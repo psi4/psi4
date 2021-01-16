@@ -44,8 +44,8 @@ if(${ENABLE_ambit})
                        -DEXTRA_C_FLAGS=${CMAKE_C_FLAGS}
                        -DEXTRA_CXX_FLAGS=${CMAKE_CXX_FLAGS}
                        -DPYTHON_EXECUTABLE=${Python_EXECUTABLE}
-                       #-DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
-                       #-DPYTHON_LIBRARY=${PYTHON_LIBRARY}
+                       -DPYTHON_INCLUDE_DIR=${Python_INCLUDE_DIRS}
+                       -DPYTHON_LIBRARY=${Python_LIBRARIES}
                        -DPYTHON_INTERPRETER=${Python_EXECUTABLE}
                        -DENABLE_XHOST=${ENABLE_XHOST}
                        -DBUILD_FPIC=${BUILD_FPIC}

@@ -185,20 +185,8 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 # * library: not at all
 
 set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7 3.6)  # adjust with CMake minimum FindPythonInterp
-#if(WIN32)
-#    # NumPy not found on Azure, so skipping for now
-#    find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
-#else()
 find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
-#endif()
 message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION})")
-message("OUTER A ${Python_ROOT_DIR} B ${Python_EXECUTABLE} C ${_Python_EXECUTABLE} D ${Python_SITELIB}") 
-message("RR Python_STDLIB   ${Python_STDLIB}")
-message("RR Python_EXECUTABLE ${Python_STDARCH}")
-message("RR Python_LIBRARY ${Python_LIBRARY}")
-message("RR Python_LIBRARIES ${Python_LIBRARIES}")
-message("QQ Python_INCLUDE_DIR ${Python_INCLUDE_DIR}")
-message("QQ Python_INCLUDE_DIRS ${Python_INCLUDE_DIRS}")
 
 if(DEFINED ENV{LGTM_SRC})
     set(BUILD_TESTING OFF)
