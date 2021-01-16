@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {exp_vol} e67118a dirty
+                         Git: Rev {exp_vol} 8157af7 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,10 +30,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 07 January 2021 11:56AM
+    Psi4 started on: Friday, 15 January 2021 08:32PM
 
-    Process ID: 4022263
-    Host:       hornet
+    Process ID: 44010
+    Host:       ds5
     PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -107,12 +107,12 @@ charges = wfn.array_variable('MBIS CHARGES')
 dipoles = wfn.array_variable('MBIS DIPOLES')
 quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
-avols = wfn.array_variable('MBIS ATOMIC VOLUMES')
+avols = wfn.array_variable('MBIS ATOMIC VOLUMES <r^n>')
 vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
 
 compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
-compare_matrices(avols_ref, avols, 5, "MBIS Atomic Volumes")          #TEST
+compare_matrices(avols_ref, avols, 5, "MBIS Atomic Volumes <r^n>")    #TEST
 compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
 
 # lands on different degenerate solutions due to high-symmetry wfn, so test stable values. (happens for molecular quadrupole, too, not just mbis.)
@@ -126,8 +126,8 @@ Scratch directory: /scratch/jiang/
 
 Scratch directory: /scratch/jiang/
 
-*** tstart() called on hornet
-*** at Thu Jan  7 11:56:16 2021
+*** tstart() called on ds5
+*** at Fri Jan 15 20:32:48 2021
 
    => Loading Basis Set <=
 
@@ -245,18 +245,18 @@ Scratch directory: /scratch/jiang/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-UHF iter SAD:   -74.63727338893405   -7.46373e+01   0.00000e+00 
-   @DF-UHF iter   1:   -75.37019015876562   -7.32917e-01   1.08751e-02 DIIS
-   @DF-UHF iter   2:   -75.38982038300773   -1.96302e-02   3.75405e-03 DIIS
-   @DF-UHF iter   3:   -75.39186957302340   -2.04919e-03   1.13211e-03 DIIS
-   @DF-UHF iter   4:   -75.39222890259330   -3.59330e-04   3.91575e-04 DIIS
-   @DF-UHF iter   5:   -75.39229045956384   -6.15570e-05   1.67750e-04 DIIS
-   @DF-UHF iter   6:   -75.39230826490510   -1.78053e-05   6.99524e-05 DIIS
+   @DF-UHF iter SAD:   -74.63727338893418   -7.46373e+01   0.00000e+00 
+   @DF-UHF iter   1:   -75.37019015876564   -7.32917e-01   1.08751e-02 DIIS
+   @DF-UHF iter   2:   -75.38982038300770   -1.96302e-02   3.75405e-03 DIIS
+   @DF-UHF iter   3:   -75.39186957302337   -2.04919e-03   1.13211e-03 DIIS
+   @DF-UHF iter   4:   -75.39222890259327   -3.59330e-04   3.91575e-04 DIIS
+   @DF-UHF iter   5:   -75.39229045956385   -6.15570e-05   1.67750e-04 DIIS
+   @DF-UHF iter   6:   -75.39230826490507   -1.78053e-05   6.99524e-05 DIIS
    @DF-UHF iter   7:   -75.39231257488126   -4.30998e-06   1.86310e-05 DIIS
-   @DF-UHF iter   8:   -75.39231285353628   -2.78655e-07   4.04152e-06 DIIS
-   @DF-UHF iter   9:   -75.39231286142542   -7.88914e-09   6.95681e-07 DIIS
-   @DF-UHF iter  10:   -75.39231286163549   -2.10065e-10   6.65174e-08 DIIS
-   @DF-UHF iter  11:   -75.39231286163724   -1.74794e-12   8.59548e-09 DIIS
+   @DF-UHF iter   8:   -75.39231285353631   -2.78655e-07   4.04152e-06 DIIS
+   @DF-UHF iter   9:   -75.39231286142532   -7.88901e-09   6.95681e-07 DIIS
+   @DF-UHF iter  10:   -75.39231286163550   -2.10179e-10   6.65174e-08 DIIS
+   @DF-UHF iter  11:   -75.39231286163727   -1.76215e-12   8.59548e-09 DIIS
   Energy and wave function converged.
 
 
@@ -302,14 +302,14 @@ Scratch directory: /scratch/jiang/
     DOCC [     4 ]
     SOCC [     1 ]
 
-  @DF-UHF Final Energy:   -75.39231286163724
+  @DF-UHF Final Energy:   -75.39231286163727
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              4.2334176853600001
-    One-Electron Energy =                -112.5058729378287410
-    Two-Electron Energy =                  32.8801423908315016
-    Total Energy =                        -75.3923128616372367
+    One-Electron Energy =                -112.5058729378289399
+    Two-Electron Energy =                  32.8801423908316650
+    Total Energy =                        -75.3923128616372793
 
   UHF NO Occupations:
   HONO-2 :    3  A 1.9994099
@@ -332,24 +332,24 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     1.8897
 
   Electronic Dipole Moment: [e a0]
-     X:     0.0000      Y:    -0.0000      Z:    -1.1715
+     X:    -0.0000      Y:    -0.0000      Z:    -1.1715
 
   Dipole Moment: [e a0]
-     X:     0.0000      Y:    -0.0000      Z:     0.7182     Total:     0.7182
+     X:    -0.0000      Y:    -0.0000      Z:     0.7182     Total:     0.7182
 
   Dipole Moment: [D]
-     X:     0.0000      Y:    -0.0000      Z:     1.8256     Total:     1.8256
+     X:    -0.0000      Y:    -0.0000      Z:     1.8256     Total:     1.8256
 
 
-*** tstop() called on hornet at Thu Jan  7 11:56:16 2021
+*** tstop() called on ds5 at Fri Jan 15 20:32:49 2021
 Module time:
-	user time   =       0.16 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.19 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.16 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.19 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -368,28 +368,28 @@ Properties computed using the OH Radical SCF density matrix
 
   MBIS Dipoles: [e a0]
    Center  Symbol  Z        X           Y           Z
-      1       O    8    0.000000    0.000000   -0.057122
-      2       H    1    0.000000    0.000000    0.039653
+      1       O    8   -0.000000   -0.000000   -0.057122
+      2       H    1   -0.000000   -0.000000    0.039653
 
   MBIS Quadrupoles: [e a0^2]
    Center  Symbol  Z      XX        XY        XZ        YY        YZ        ZZ
-      1       O    8   -3.5825   -0.0025   -0.0000   -4.4189    0.0000   -4.1410
-      2       H    1   -0.2927   -0.0001   -0.0000   -0.3225   -0.0000   -0.2901
+      1       O    8   -3.5825    0.0057   -0.0000   -4.4188   -0.0000   -4.1410
+      2       H    1   -0.2927    0.0002   -0.0000   -0.3225   -0.0000   -0.2901
 
   MBIS Octupoles: [e a0^3]
    Center  Symbol  Z      XXX       XXY       XXZ       XYY       XYZ       XZZ       YYY       YYZ       YZZ       ZZZ
-      1       O    8   -0.0000   -0.0000   -0.0628    0.0000    0.0000   -0.0000   -0.0000   -0.0543   -0.0000   -0.4254
-      2       H    1   -0.0000   -0.0000    0.0030   -0.0000    0.0000   -0.0000   -0.0000    0.0192   -0.0000    0.0440
+      1       O    8   -0.0000   -0.0000   -0.0628    0.0000   -0.0001   -0.0000   -0.0000   -0.0543   -0.0000   -0.4254
+      2       H    1   -0.0000   -0.0000    0.0030   -0.0000   -0.0001   -0.0000   -0.0000    0.0192   -0.0000    0.0440
     MBIS Charges..........................................................................PASSED
     MBIS Dipoles..........................................................................PASSED
-    MBIS Atomic Volumes...................................................................PASSED
+    MBIS Atomic Volumes <r^n>.............................................................PASSED
     MBIS Valence Widths...................................................................PASSED
     MBIS Quadrupoles: ZZ of O.............................................................PASSED
     MBIS Quadrupoles: ZZ of H.............................................................PASSED
     MBIS Octupoles: ZZZ of O..............................................................PASSED
     MBIS Octupoles: ZZZ of H..............................................................PASSED
 
-    Psi4 stopped on: Thursday, 07 January 2021 11:56AM
-    Psi4 wall time for execution: 0:00:00.49
+    Psi4 stopped on: Friday, 15 January 2021 08:32PM
+    Psi4 wall time for execution: 0:00:00.48
 
 *** Psi4 exiting successfully. Buy a developer a beer!

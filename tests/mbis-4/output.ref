@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {exp_vol} e67118a dirty
+                         Git: Rev {exp_vol} 8157af7 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,10 +30,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 07 January 2021 11:59AM
+    Psi4 started on: Friday, 15 January 2021 08:33PM
 
-    Process ID: 4022502
-    Host:       hornet
+    Process ID: 44037
+    Host:       ds5
     PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -107,7 +107,7 @@ charges = wfn.array_variable('MBIS CHARGES')
 dipoles = wfn.array_variable('MBIS DIPOLES')
 quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
-avols = wfn.array_variable('MBIS ATOMIC VOLUMES')
+avols = wfn.array_variable('MBIS ATOMIC VOLUMES <r^n>')
 vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
 
 
@@ -115,7 +115,7 @@ compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
 compare_matrices(quadrupoles_ref, quadrupoles, 5, "MBIS Quadrupoles") #TEST
 compare_matrices(octupoles_ref, octupoles, 5, "MBIS Octupoles")       #TEST
-compare_matrices(avols_ref, avols, 5, "MBIS Atomic Volumes")          #TEST
+compare_matrices(avols_ref, avols, 5, "MBIS Atomic Volumes <r^n>")    #TEST
 compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
 --------------------------------------------------------------------------
 
@@ -123,8 +123,8 @@ Scratch directory: /scratch/jiang/
 
 Scratch directory: /scratch/jiang/
 
-*** tstart() called on hornet
-*** at Thu Jan  7 11:59:45 2021
+*** tstart() called on ds5
+*** at Fri Jan 15 20:33:30 2021
 
    => Loading Basis Set <=
 
@@ -242,17 +242,17 @@ Scratch directory: /scratch/jiang/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:  -620.94148883009802   -6.20941e+02   0.00000e+00 
-   @DF-RHF iter   1:  -621.38771176641217   -4.46223e-01   6.97696e-03 DIIS
-   @DF-RHF iter   2:  -621.42850815194481   -4.07964e-02   2.82756e-03 DIIS
-   @DF-RHF iter   3:  -621.43354006965660   -5.03192e-03   2.04236e-04 DIIS
-   @DF-RHF iter   4:  -621.43361675137612   -7.66817e-05   5.31379e-05 DIIS
-   @DF-RHF iter   5:  -621.43362372643060   -6.97505e-06   9.60511e-06 DIIS
-   @DF-RHF iter   6:  -621.43362400375054   -2.77320e-07   3.19411e-06 DIIS
-   @DF-RHF iter   7:  -621.43362404931599   -4.55655e-08   5.24071e-07 DIIS
-   @DF-RHF iter   8:  -621.43362405025812   -9.42123e-10   7.94199e-08 DIIS
-   @DF-RHF iter   9:  -621.43362405027369   -1.55751e-11   1.13427e-08 DIIS
-   @DF-RHF iter  10:  -621.43362405027460   -9.09495e-13   1.33383e-09 DIIS
+   @DF-RHF iter SAD:  -620.94148883009655   -6.20941e+02   0.00000e+00 
+   @DF-RHF iter   1:  -621.38771176641137   -4.46223e-01   6.97696e-03 DIIS
+   @DF-RHF iter   2:  -621.42850815194390   -4.07964e-02   2.82756e-03 DIIS
+   @DF-RHF iter   3:  -621.43354006965569   -5.03192e-03   2.04236e-04 DIIS
+   @DF-RHF iter   4:  -621.43361675137419   -7.66817e-05   5.31379e-05 DIIS
+   @DF-RHF iter   5:  -621.43362372642991   -6.97506e-06   9.60511e-06 DIIS
+   @DF-RHF iter   6:  -621.43362400374951   -2.77320e-07   3.19411e-06 DIIS
+   @DF-RHF iter   7:  -621.43362404931486   -4.55653e-08   5.24071e-07 DIIS
+   @DF-RHF iter   8:  -621.43362405025664   -9.41782e-10   7.94199e-08 DIIS
+   @DF-RHF iter   9:  -621.43362405027256   -1.59162e-11   1.13427e-08 DIIS
+   @DF-RHF iter  10:  -621.43362405027312   -5.68434e-13   1.33383e-09 DIIS
   Energy and wave function converged.
 
 
@@ -284,14 +284,14 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [    14 ]
 
-  @DF-RHF Final Energy:  -621.43362405027460
+  @DF-RHF Final Energy:  -621.43362405027312
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             41.9305671166483052
-    One-Electron Energy =                -949.1924605667061314
-    Two-Electron Energy =                 285.8282693997833235
-    Total Energy =                       -621.4336240502746023
+    One-Electron Energy =                -949.1924605667220476
+    Two-Electron Energy =                 285.8282693998007176
+    Total Energy =                       -621.4336240502730107
 
 Computation Completed
 
@@ -313,14 +313,14 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:     0.0000      Z:    -9.3337     Total:     9.3337
 
 
-*** tstop() called on hornet at Thu Jan  7 11:59:46 2021
+*** tstop() called on ds5 at Fri Jan 15 20:33:31 2021
 Module time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 
@@ -340,26 +340,26 @@ Properties computed using the NaCl SCF density matrix
 
   MBIS Dipoles: [e a0]
    Center  Symbol  Z        X           Y           Z
-      1      NA   11    0.000000   -0.000000   -0.009806
+      1      NA   11   -0.000000   -0.000000   -0.009806
       2      CL   17   -0.000000    0.000000    0.642357
 
   MBIS Quadrupoles: [e a0^2]
    Center  Symbol  Z      XX        XY        XZ        YY        YZ        ZZ
-      1      NA   11   -2.3499    0.0000   -0.0000   -2.3499    0.0000   -2.2898
-      2      CL   17   -11.8920    0.0000    0.0000   -11.8920    0.0000   -12.0798
+      1      NA   11   -2.3499   -0.0000    0.0000   -2.3499    0.0000   -2.2898
+      2      CL   17   -11.8920   -0.0000    0.0000   -11.8920   -0.0000   -12.0798
 
   MBIS Octupoles: [e a0^3]
    Center  Symbol  Z      XXX       XXY       XXZ       XYY       XYZ       XZZ       YYY       YYZ       YZZ       ZZZ
-      1      NA   11    0.0000    0.0000   -0.0256    0.0000   -0.0000    0.0000    0.0000   -0.0256    0.0000   -0.0592
-      2      CL   17   -0.0000    0.0000    2.2570   -0.0000   -0.0000    0.0000    0.0000    2.2570    0.0000    4.5695
+      1      NA   11   -0.0000    0.0000   -0.0256   -0.0000    0.0000   -0.0000    0.0000   -0.0256    0.0000   -0.0592
+      2      CL   17   -0.0000    0.0000    2.2570   -0.0000    0.0000   -0.0000   -0.0000    2.2570    0.0000    4.5695
     MBIS Charges..........................................................................PASSED
     MBIS Dipoles..........................................................................PASSED
     MBIS Quadrupoles......................................................................PASSED
     MBIS Octupoles........................................................................PASSED
-    MBIS Atomic Volumes...................................................................PASSED
+    MBIS Atomic Volumes <r^n>.............................................................PASSED
     MBIS Valence Widths...................................................................PASSED
 
-    Psi4 stopped on: Thursday, 07 January 2021 11:59AM
-    Psi4 wall time for execution: 0:00:01.51
+    Psi4 stopped on: Friday, 15 January 2021 08:33PM
+    Psi4 wall time for execution: 0:00:01.83
 
 *** Psi4 exiting successfully. Buy a developer a beer!

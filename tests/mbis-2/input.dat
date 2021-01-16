@@ -85,12 +85,12 @@ charges = wfn.variable("MBIS CHARGES")
 dipoles = wfn.variable("MBIS DIPOLES")
 quadrupoles = wfn.variable("MBIS QUADRUPOLES")
 octupoles = wfn.variable("MBIS OCTUPOLES")
-avols = wfn.variable("MBIS ATOMIC VOLUMES")
+avols = wfn.variable("MBIS ATOMIC VOLUMES <r^n>")
 vwidths = wfn.variable("MBIS VALENCE WIDTHS")
 
 compare_values(charges_ref, charges, "MBIS Charges", atol=1.e-5)             #TEST
 compare_values(dipoles_ref, dipoles, "MBIS Dipoles", atol=1.e-5)             #TEST
 compare_values(quadrupoles_ref, quadrupoles, "MBIS Quadrupoles", atol=1.e-5) #TEST
 compare_values(octupoles_ref, octupoles, "MBIS Octupoles", atol=1.e-5)       #TEST
-compare_values(avols_ref, avols, "MBIS Atomic Volumes", atol=1.e-5)          #TEST
+compare_values(avols_ref, avols, "MBIS Atomic Volumes <r^n>", atol=1.e-5)    #TEST
 compare_values(vwidths_ref, vwidths, "MBIS Valence Widths", atol=1.e-5)      #TEST
