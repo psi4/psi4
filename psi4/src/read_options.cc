@@ -2026,6 +2026,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("VECS_CC3", 10);
         /*- Do collapse with last vector? -*/
         options.add_bool("COLLAPSE_WITH_LAST", true);
+        /*- Do collapse with last vector in CC3 iterations? -*/
+        options.add_bool("COLLAPSE_WITH_LAST_CC3", false);
         /*- Complex tolerance applied in CCEOM computations -*/
         options.add_double("COMPLEX_TOLERANCE", 1E-12);
         /*- Convergence criterion for norm of the residual vector in the Davidson algorithm for CC-EOM. -*/

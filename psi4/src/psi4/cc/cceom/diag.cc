@@ -78,7 +78,7 @@ extern void scm_C_full(double C0, dpdfile2 *CME, dpdfile2 *Cme, dpdbuf4 *CMNEF, 
                        double a);
 extern void scm_C2(dpdbuf4 *CMNEF, dpdbuf4 *Cmnef, dpdbuf4 *CMnEf, double a);
 extern void restart(double **alpha, int L, int num, int irrep, int ortho, double **alpha_old, int L_old,
-                    int use_alpha_old);
+                    bool use_alpha_old);
 extern void precondition(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab, dpdbuf4 *RIjAb, double eval);
 extern void precondition_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, double eval);
 void form_diagonal(int irrep);
@@ -822,10 +822,10 @@ void diag() {
             /* restart with new B vectors if there are too many */
             if (L >= vectors_per_root * eom_params.cs_per_irrep[C_irr]) {
                 if ((params.wfn == "EOM_CC3") && (cc3_stage > 0)) {
-                    restart(alpha, L, cc3_index + 1, C_irr, 1, alpha_old, L_old, eom_params.collapse_with_last);
+                    restart(alpha, L, cc3_index + 1, C_irr, 1, alpha_old, L_old, eom_params.collapse_with_last_cc3);
                     L_old = L;
                     L = cc3_index + 1;
-                    if (eom_params.collapse_with_last) L *= 2;
+                    if (eom_params.collapse_with_last_cc3) L *= 2;
                     outfile->Printf("Collapsing to %d vector(s).\n", L);
                     already_sigma = 0;
                     ignore_G_old = 1;
