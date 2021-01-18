@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {exp_vol} 8157af7 dirty
+                         Git: Rev {exp_vol} c5d4875 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Friday, 15 January 2021 08:31PM
+    Psi4 started on: Monday, 18 January 2021 09:15AM
 
-    Process ID: 43971
+    Process ID: 106070
     Host:       ds5
     PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
@@ -118,6 +118,7 @@ set {
   e_convergence 10
   mbis_radial_points 99
   mbis_spherical_points 350
+  radial_moment 3
 }
 
 e, wfn = energy('hf/cc-pvdz', return_wfn=True)
@@ -128,14 +129,14 @@ charges = wfn.variable("MBIS CHARGES")
 dipoles = wfn.variable("MBIS DIPOLES")
 quadrupoles = wfn.variable("MBIS QUADRUPOLES")
 octupoles = wfn.variable("MBIS OCTUPOLES")
-avols = wfn.variable("MBIS ATOMIC VOLUMES <r^n>")
+avols = wfn.variable("MBIS RADIAL MOMENTS <R^3>")
 vwidths = wfn.variable("MBIS VALENCE WIDTHS")
 
 compare_values(charges_ref, charges, "MBIS Charges", atol=1.e-5)             #TEST
 compare_values(dipoles_ref, dipoles, "MBIS Dipoles", atol=1.e-5)             #TEST
 compare_values(quadrupoles_ref, quadrupoles, "MBIS Quadrupoles", atol=1.e-5) #TEST
 compare_values(octupoles_ref, octupoles, "MBIS Octupoles", atol=1.e-5)       #TEST
-compare_values(avols_ref, avols, "MBIS Atomic Volumes <r^n>", atol=1.e-5)    #TEST
+compare_values(avols_ref, avols, "MBIS Radial Moments <r^3>", atol=1.e-5)    #TEST
 compare_values(vwidths_ref, vwidths, "MBIS Valence Widths", atol=1.e-5)      #TEST
 --------------------------------------------------------------------------
 
@@ -144,7 +145,7 @@ Scratch directory: /scratch/jiang/
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds5
-*** at Fri Jan 15 20:31:59 2021
+*** at Mon Jan 18 09:15:26 2021
 
    => Loading Basis Set <=
 
@@ -327,14 +328,14 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:    -0.0000      Z:     0.7072     Total:     0.7072
 
 
-*** tstop() called on ds5 at Fri Jan 15 20:31:59 2021
+*** tstop() called on ds5 at Mon Jan 18 09:15:26 2021
 Module time:
 	user time   =       0.19 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =       0.19 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 
@@ -370,10 +371,10 @@ Properties computed using the OH- SCF density matrix
     MBIS Dipoles..........................................................................PASSED
     MBIS Quadrupoles......................................................................PASSED
     MBIS Octupoles........................................................................PASSED
-    MBIS Atomic Volumes <r^n>.............................................................PASSED
+    MBIS Radial Moments <r^3>.............................................................PASSED
     MBIS Valence Widths...................................................................PASSED
 
-    Psi4 stopped on: Friday, 15 January 2021 08:32PM
+    Psi4 stopped on: Monday, 18 January 2021 09:15AM
     Psi4 wall time for execution: 0:00:00.46
 
 *** Psi4 exiting successfully. Buy a developer a beer!

@@ -2003,9 +2003,9 @@ SharedMatrix compute_atomic_volumes(const std::shared_ptr<DFTGrid>& grid, const 
 
 
     Options& options = Process::environment.options;    
-    const double power = options.get_double("ATOMIC_VOLUME_EXPONENT");
+    const double power = options.get_double("RADIAL_MOMENT");
 
-    auto atomic_vols = std::make_shared<Matrix>("ATOMIC VOLUMES", num_atoms, 1);
+    auto atomic_vols = std::make_shared<Matrix>("ATOMIC RADIAL MOMENTS", num_atoms, 1);
 
     auto blocks = grid->blocks();
     size_t total_points = grid->npoints();
@@ -2421,10 +2421,17 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     }
 
-    // const double power = options.get_double("ATOMIC_VOLUME_EXPONENT");
+    const int power = options.get_int("RADIAL_MOMENT");
     
     auto avols = compute_atomic_volumes(grid, rho_a, distances, num_atoms);
-    wfn_->set_array_variable("MBIS ATOMIC VOLUMES <r^n>", avols);
+    
+    std::stringstream sstream;
+
+    sstream << "MBIS RADIAL MOMENTS <R^" << power << ">";
+
+    auto var_name = sstream.str();
+    
+    wfn_->set_array_variable(var_name, avols);
 
     auto valence_widths = std::make_shared<Matrix>("MBIS Valence Widths", num_atoms, 1);
     for (int atom = 0; atom < num_atoms; atom++) {

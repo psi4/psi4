@@ -266,8 +266,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Pruning scheme for MBIS Grid -*/
     options.add_str("MBIS_PRUNING_SCHEME", "ROBUST", 
                     "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
-    /*- Calculates an expected atomic hypervolume given an arbitrary exponent -*/
-    options.add_double("ATOMIC_VOLUME_EXPONENT", 3.0);
+    /*- Calculates nth radial moment -*/
+    options.add_int("RADIAL_MOMENT", 3);
 
     /*- PCM boolean for pcmsolver module -*/
     options.add_bool("PCM", false);
