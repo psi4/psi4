@@ -37,7 +37,7 @@
 
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsio/psio.h"
+#include "psi4/libpsio/psio.hpp"
 #include "psi4/libiwl/iwl.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libdpd/dpd.h"
@@ -87,20 +87,15 @@ void Local_cc::init_pno() {
     // Check if occupied block of Fock matrix is non-diagonal (localized)
     // On the way, store the occupied orbital energies
     dpdfile2 Fij;
-    global_dpd_->file2_init(&Fij, PSIF_CC_OEI, 0, 1, 1, "fIJ");
+    global_dpd_->file2_init(&Fij, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     global_dpd_->file2_mat_init(&Fij);
     global_dpd_->file2_mat_rd(&Fij);
-    auto Focc = std::make_shared<Matrix>(nocc, nocc);
+    auto local_occ_eps = std::make_shared<Vector>(nocc);
     for(int i=0; i < nocc; ++i) {
-        for(int j=0; j < nocc; ++j) {
-            Focc->set(i, j, Fij.matrix[0][i][j]);
-        }
+        local_occ_eps->set(i, Fij.matrix[0][i][i]);
     }
     global_dpd_->file2_close(&Fij);
-    auto local_occ_eps = std::make_shared<Vector>(nocc);
-    auto evecs = std::make_shared<Matrix>(nocc, nocc);
-    Focc->diagonalize(evecs, local_occ_eps, ascending);
-    outfile->Printf("Here are original local occ orbital energies\n");
+    //outfile->Printf("Here are original local occ orbital energies\n");
     double *temp_occ_array = init_array(nocc);
     for(int i=0; i < nocc; i++) {
         outfile->Printf("%f ", local_occ_eps->get(i));
@@ -262,8 +257,29 @@ void Local_cc::init_pno() {
                 npno * sizeof(double), next, &next);
     }
 
+    /*for (auto eps: eps_pno) {
+        eps->print();
+    }*/
     // Check if they can be read back in
-    /*next = PSIO_ZERO;
+    /*eps_pno.clear();
+    next = PSIO_ZERO;
+    for (int ij = 0; ij < npairs; ++ij) {
+        int npno = survivor_list[ij];
+        //auto eps_pno_temp = std::make_shared<Vector>(npno);
+        SharedVector eps_pno_temp(new Vector(npno));
+        psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *) eps_pno_temp->pointer(),
+                  npno * sizeof(double), next, &next);
+        eps_pno.push_back(eps_pno_temp);
+    }
+    outfile->Printf("Testing read-in of virtual orbital energies\n");
+    for(int ij=0; ij < npairs; ++ij) {
+        outfile->Printf("\nPair %d ", ij);
+        int npno = survivor_list[ij];
+        for(int a=0; a < npno; ++a) {
+            outfile->Printf("%10.10f\t", eps_pno[ij]->get(a));
+        }
+    }
+    next = PSIO_ZERO;
     outfile->Printf("**** Read-in Truncated Q ****\n");
     for(int ij=0; ij < npairs; ++ij) {
         int npno = survivor_list[ij];
@@ -372,7 +388,6 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
         psio_read(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *)qtemp->pointer()[0],
                   sizeof(double) * nvir * npno, next, &next);
         Q.push_back(qtemp->clone());
-        qtemp->zero();
     }
     /*outfile->Printf("Testing read-in of Q\n");
     for (auto &qel : Q) {
@@ -385,7 +400,6 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
         psio_read(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *)ltemp->pointer()[0],
                   sizeof(double) * npno * npno, next, &next);
         L.push_back(ltemp->clone());
-        ltemp->zero();
     }
 
     global_dpd_->file2_mat_init(T1);
@@ -420,7 +434,9 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
 
         /* Apply the denominators */
         for (int a = 0; a < npno; a++) {
+            //outfile->Printf("T1 Residual before denom: %10.15f \n", T1bar[a]);
             T1bar[a] /= occ_eps[i] - eps_pno[ii]->get(a);
+            //outfile->Printf("T1 Residual after denom: %10.15f \n", T1bar[a]);
         }
 
         /* Transform the new T1's to the redundant projected virtual basis */
@@ -464,6 +480,9 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
     psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) occ_eps, nocc * sizeof(double));
     psio_read_entry(PSIF_CC_INFO, "PNO dimensions", (char *) survivors, npairs * sizeof(int));
     /*outfile->Printf("Testing read-in of eps_occ\n");
+    for (int i=0; i < nocc; i++) {
+        outfile->Printf("%5.15f\t",occ_eps[i]);
+    }
     for (auto qel : eps_occ) {
         outfile->Printf("%20.10f\t", qel);;
     }*/
@@ -475,14 +494,13 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
         psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *)eps_pno_temp->pointer(),
                   npno * sizeof(double), next, &next);
         eps_pno.push_back(eps_pno_temp);
-        eps_pno_temp->zero();
     }
     /*outfile->Printf("Testing read-in of virtual orbital energies\n");
     for(int ij=0; ij < npairs; ++ij) {
         outfile->Printf("\nPair %d ", ij);
-        int npno = survivor_list[ij];
+        int npno = survivors[ij];
         for(int a=0; a < npno; ++a) {
-            outfile->Printf("%f ", local_.eps_pno[ij]->get(a));
+            outfile->Printf("%10.10f\t", eps_pno[ij]->get(a));
         }
     }*/
     next = PSIO_ZERO;
@@ -492,7 +510,6 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
         psio_read(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *)qtemp->pointer()[0],
                   sizeof(double) * nvir * npno, next, &next);
         Q.push_back(qtemp->clone());
-        qtemp->zero();
     }
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ij++) {
@@ -501,7 +518,6 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
         psio_read(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *)ltemp->pointer()[0],
                   sizeof(double) * npno * npno, next, &next);
         L.push_back(ltemp->clone());
-        ltemp->zero();
     }
     /*outfile->Printf("Testing read-in of L\n");
     for (auto &qel : L) {
@@ -525,6 +541,8 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
             T2temp->set(a, b, T2->matrix[0][ij][ab]);
         }
 
+        //outfile->Printf("T2 residual before change of basis\n");
+        //T2temp->print();
         /* Transform the virtuals to the redundant projected virtual basis */
         atemp->gemm(0, 0, 1, T2temp, Q[ij], 0);
         T2bar->gemm(1, 0, 1, Q[ij], atemp, 0);
@@ -539,7 +557,7 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
         for (int a = 0; a < npno; a++) {
             for (int b = 0; b < npno; b++) {
                 double val = T2bar->get(a,b);
-                T2bar->set(a, b, val /
+                T2bar->set(a, b, val * 1.0 /
                     (occ_eps[i] + occ_eps[j] - eps_pno[ij]->get(a) - eps_pno[ij]->get(b)));
             }
         }
@@ -566,6 +584,22 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
     global_dpd_->buf4_mat_irrep_wrt(T2, 0);
     global_dpd_->buf4_mat_irrep_close(T2, 0);
 
+}
+
+void Local_cc::init_filter_T2() {
+    dpdbuf4 T2;
+    dpdbuf4 D;
+
+    //Re-initialize T2s, but with local filter applied
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D <ij|ab>");
+    global_dpd_->buf4_copy(&D, PSIF_CC_TAMPS, "tIjAb");
+    global_dpd_->buf4_close(&D);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    local_filter_T2(&T2);
+    global_dpd_->buf4_close(&T2);
+}
+void Local_cc::mp2_pair_energy() {
+    
 }
 
 // Destructor attempt

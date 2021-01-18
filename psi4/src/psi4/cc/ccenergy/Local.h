@@ -45,6 +45,7 @@ class Local_cc {
         Local_cc();
         ~Local_cc();
         void local_init();
+        void init_filter_T2();
         void local_filter_T1(dpdfile2 *T1);
         void local_filter_T2(dpdbuf4 *T2);
         void local_done();
@@ -63,6 +64,7 @@ class Local_cc {
         void init_pno();
         void get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec);
         void get_semicanonical_transforms();
+        void mp2_pair_energy();
         
         int npairs;
         double pno_cut;

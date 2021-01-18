@@ -55,7 +55,7 @@ psio_address psio_get_entry_end(size_t unit, const char *key);
 
 int psio_tocwrite(size_t unit);
 int psio_tocread(size_t unit);
-void psio_tocprint(size_t unit, FILE *output);
+void psio_tocprint(size_t unit); //, FILE *output);
 psio_tocentry *psio_tocscan(size_t unit, const char *key);
 bool psio_tocentry_exists(size_t unit, const char *key);
 psio_tocentry *psio_toclast(size_t unit);
