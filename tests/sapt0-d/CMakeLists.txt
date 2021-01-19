@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(sapt1 "psi;quicktests;smoketests;sapt;cart")
+add_regression_test(sapt0d "psi;quicktests;smoketests;sapt;cart")
