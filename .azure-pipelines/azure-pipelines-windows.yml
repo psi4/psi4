@@ -128,7 +128,7 @@ jobs:
                         python=%PYTHON_VERSION% ^
                         conda-forge::gau2grid ^
                         psi4/label/dev::libint2 ^
-                        psi4/label/trial::libxc ^
+                        conda-forge::libxc ^
                         conda-forge::mpfr ^
                         conda-forge::mpmath ^
                         conda-forge::qcelemental ^
