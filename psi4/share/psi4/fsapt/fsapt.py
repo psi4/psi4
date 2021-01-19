@@ -670,8 +670,10 @@ def collapseLinks(order2, frags, Qs, orbital_ws, links5050):
 
     # Add dispersion to total
     for keyA in frags['A'].keys():
-        for keyB in frags['B'].keys():
-            vals['Total'][keyA][keyB] += vals['EDisp'][keyA][keyB]
+        if keyA[:4] != 'Link':
+            for keyB in frags['B'].keys():
+                if keyB[:4] != 'Link':
+                    vals['Total'][keyA][keyB] += vals['EDisp'][keyA][keyB]
                 
     
     
@@ -719,7 +721,7 @@ def printOrder2(order2, fragkeys, saptkeys=saptkeys_):
         for keyB in fragkeys['B']:
             print('%-9s %-9s ' % (keyA, keyB), end='')
             for saptkey in saptkeys:
-                if 'D3' in saptkey and ('Link' in keyA or 'Link' in keyB):
+                if saptkey is "EDisp" and ('Link' in keyA or 'Link' in keyB):
                     print('%8.3f' % 0.0, end='')
                 else:
                     try:
@@ -981,10 +983,6 @@ if __name__ == '__main__':
     printOrder2(stuff['order2'], stuff['fragkeys'])
     print('   => Reduced Analysis <=\n')
     printOrder2(stuff['order2r'], stuff['fragkeysr'])
-
-
-    import pprint
-    pprint.pprint(stuff)
 
     print('  ==> F-ISAPT: Links 50-50 <==\n')
     stuff = computeFsapt(dirname, True)
