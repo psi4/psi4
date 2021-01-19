@@ -2024,9 +2024,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("VECS_PER_ROOT", 12);
         /*- Vectors stored in CC3 computations -*/
         options.add_int("VECS_CC3", 10);
-        /*- Do collapse with last vector? -*/
+        /*- When collapsing Davidson subspace, whether to also include the
+        previous approximate solution (for each root)? This doubles the
+        number of resulting vectors but generally improves convergence. -*/
         options.add_bool("COLLAPSE_WITH_LAST", true);
-        /*- Do collapse with last vector in CC3 iterations? -*/
+        /*- Has the same effect as "COLLAPSE_WITH_LAST" but only in 
+        CC3 computations and after the initial solution of EOM CCSD.
+        May help efficiency, but hazardous when solving for higher roots. -*/
         options.add_bool("COLLAPSE_WITH_LAST_CC3", false);
         /*- Complex tolerance applied in CCEOM computations -*/
         options.add_double("COMPLEX_TOLERANCE", 1E-12);
