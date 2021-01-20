@@ -13,7 +13,7 @@ else()
     message(STATUS "Suitable Libxc could not be located, ${Magenta}Building Libxc${ColourReset} instead.")
     ExternalProject_Add(libxc_external
         # Default: use a stable release tarball of libxc. To use the
-        # development version of libxc, instead, comment the first URL line,
+        # development version of libxc, instead, comment the URL line,
         # and uncomment the GIT lines.
         URL https://gitlab.com/libxc/libxc/-/archive/5.1.0/libxc-5.1.0.tar.gz
         #GIT_REPOSITORY https://gitlab.com/libxc/libxc.git

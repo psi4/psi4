@@ -623,7 +623,7 @@ def get_pwpb95_tweaks():
     c_pw = 0.32620  # paper values
     expo_pw6 = 3.7868  # paper values
     alpha_pw6 = c_pw / X2S / X2S
-    return dict(zip(["_bt", "_alpha", "_expo"], [bt, alpha_pw6, expo_pw6]))
+    return {"_bt": bt, "_alpha": alpha_pw6, "_expo": expo_pw6}
 
 
 funcs.append({

@@ -272,13 +272,19 @@ void LibXCFunctional::set_tweak(std::vector<double> values, bool quiet) {
 
     std::vector<double> tweakers_list = values;
     std::map<std::string, double> tweakers_dict;
+    std::string allowed_keys_join;
 
     for (int par = 0; par < npars; par++) {
         std::string key = xc_func_info_get_ext_params_name(const_cast<xc_func_info_type*>(xc_functional_->info), par);
+        allowed_keys_join += key;
+        if (par+1 != npars) allowed_keys_join += ", ";
         double default_value = xc_func_info_get_ext_params_default_value(const_cast<xc_func_info_type*>(xc_functional_->info), par);
         if (!quiet) outfile->Printf("Setting parameter #%d (%d/%d) %16s to %16.8f (Libxc default %16.8f).\n", par, par+1, npars, key.c_str(), tweakers_list[par], default_value);
         tweakers_dict.insert(std::pair<std::string, double>(key, tweakers_list[par]));
     }
+
+    outfile->Printf(
+        "Using `LibXCFunctional.set_tweak(std::vector<double>)` instead of `LibXCFunctional.set_tweak(std::map<std::string, double>)` is deprecated, and in 1.5 it will stop working. Allowed keys are: %s\n", allowed_keys_join.c_str());
 
     xc_func_set_ext_params(xc_functional_.get(), tweakers_list.data());
     user_tweakers_ = tweakers_dict;
