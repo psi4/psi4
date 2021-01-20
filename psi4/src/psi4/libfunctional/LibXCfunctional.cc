@@ -191,7 +191,7 @@ std::shared_ptr<Functional> LibXCFunctional::build_worker() {
 
     // User tweakers
     if (user_tweakers_.size()) {
-        func->set_tweak(user_tweakers_);
+        func->set_tweak(user_tweakers_, true);
     }
 
     func->set_alpha(alpha_);
@@ -254,8 +254,7 @@ std::map<std::string, double> LibXCFunctional::query_libxc(const std::string& fu
 
     return params;
 }
-void LibXCFunctional::set_tweak(std::vector<double> values) {
-    bool failed = true;
+void LibXCFunctional::set_tweak(std::vector<double> values, bool quiet) {
     size_t vsize = values.size();
     int npars = xc_func_info_get_n_ext_params(xc_functional_.get()->info);
     if (npars == 0) {
@@ -271,34 +270,58 @@ void LibXCFunctional::set_tweak(std::vector<double> values) {
             oss.str() + "\n");
     }
 
-    if (xc_func_name_ == "XC_GGA_C_PBE") {
-        if (vsize == 3) {
-            // (XC(func_type) *p, FLOAT beta); FLOAT gamma, FLOAT BB
-            // xc_gga_c_pbe_set_params(xc_functional_.get(), values[0]);
-            values[1] =
-                xc_func_info_get_ext_params_default_value(const_cast<xc_func_info_type*>(xc_functional_->info), 1);
-            values[2] =
-                xc_func_info_get_ext_params_default_value(const_cast<xc_func_info_type*>(xc_functional_->info), 2);
-            xc_func_set_ext_params(xc_functional_.get(), values.data());
-            failed = false;
-        }
-    } else if (xc_func_name_ == "XC_MGGA_X_TPSS") {
-        if (vsize == 7) {
-            // (xc_func_type *p, double b, double c, double e, double kappa, double mu, double BLOC_a, double BLOC_bu);
-            // xc_mgga_x_tpss_set_params(xc_functional_.get(), values[0], values[1], values[2], values[3],
-            // values[4], 2.0,
-            //                           0.0);
-            values[5] = 2.0;
-            values[6] = 0.0;
-            xc_func_set_ext_params(xc_functional_.get(), values.data());
-            failed = false;
-        }
-    } else {
-        xc_func_set_ext_params(xc_functional_.get(), values.data());
-        failed = false;
+    std::vector<double> tweakers_list = values;
+    std::map<std::string, double> tweakers_dict;
+
+    for (int par = 0; par < npars; par++) {
+        std::string key = xc_func_info_get_ext_params_name(const_cast<xc_func_info_type*>(xc_functional_->info), par);
+        double default_value = xc_func_info_get_ext_params_default_value(const_cast<xc_func_info_type*>(xc_functional_->info), par);
+        if (!quiet) outfile->Printf("Setting parameter #%d (%d/%d) %16s to %16.8f (Libxc default %16.8f).\n", par, par+1, npars, key.c_str(), tweakers_list[par], default_value);
+        tweakers_dict.insert(std::pair<std::string, double>(key, tweakers_list[par]));
     }
 
-    user_tweakers_ = values;
+    xc_func_set_ext_params(xc_functional_.get(), tweakers_list.data());
+    user_tweakers_ = tweakers_dict;
+}
+void LibXCFunctional::set_tweak(std::map<std::string, double> values, bool quiet) {
+    int npars = xc_func_info_get_n_ext_params(xc_functional_.get()->info);
+    if (npars == 0) {
+        throw PSIEXCEPTION(
+            "LibXCfunctional: set_tweak: There are no known tweaks for this functional, please double check "
+            "the functional form and add them if required.");
+    }
+
+    std::vector<double> tweakers_list;
+    std::map<std::string, double> tweakers_dict = values;
+    std::vector<std::string> allowed_keys;
+    std::string allowed_keys_join;
+
+    for (int par = 0; par < npars; par++) {
+        std::string key = xc_func_info_get_ext_params_name(const_cast<xc_func_info_type*>(xc_functional_->info), par);
+        double default_value = xc_func_info_get_ext_params_default_value(const_cast<xc_func_info_type*>(xc_functional_->info), par);
+        tweakers_list.push_back(default_value);
+        allowed_keys.push_back(key);
+        allowed_keys_join += key;
+        if (par+1 != npars) allowed_keys_join += ", ";
+    }
+
+    for (auto const& tweak : tweakers_dict) {
+        auto it = std::find(allowed_keys.begin(), allowed_keys.end(), tweak.first);
+        if (it != allowed_keys.end()) {
+            int par = it - allowed_keys.begin();
+            if (!quiet) outfile->Printf("Setting parameter #%d (%d/%d) %16s to %16.8f (Libxc default %16.8f).\n", par, par+1, npars, tweak.first.c_str(), tweak.second, tweakers_list[par]);
+            tweakers_list[par] = tweak.second;
+            // after https://gitlab.com/libxc/libxc/-/issues/285 resolved, set parameters successively in loop
+            // xc_func_set_ext_params_name(xc_functional_.get(), tweak.first.c_str(), tweak.second);
+        } else {
+            auto msg = new char[800];
+            sprintf(msg, "LibXCfunctional: set_tweak: requested parameter (%s=%f) not among allowed parameters (%s).\n", tweak.first.c_str(), tweak.second, allowed_keys_join.c_str());
+            throw PSIEXCEPTION(msg);
+        }
+    }
+
+    xc_func_set_ext_params(xc_functional_.get(), tweakers_list.data());
+    user_tweakers_ = tweakers_dict;
 }
 std::vector<std::tuple<std::string, int, double>> LibXCFunctional::get_mix_data() {
     std::vector<std::tuple<std::string, int, double>> ret;

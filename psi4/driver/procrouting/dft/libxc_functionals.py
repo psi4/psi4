@@ -129,7 +129,7 @@ funcs.append({"name": "mPW1B95"        , "xc_functionals": {"HYB_MGGA_XC_MPW1B95
 funcs.append({"name": "mPWB1K"         , "xc_functionals": {"HYB_MGGA_XC_MPWB1K"        : {}}})
 funcs.append({"name": "X1B95"          , "xc_functionals": {"HYB_MGGA_XC_X1B95"         : {}}})
 funcs.append({"name": "XB1K"           , "xc_functionals": {"HYB_MGGA_XC_XB1K"          : {}}})
-funcs.append({"name": "PW6B95"         , "xc_functionals": {"HYB_MGGA_XC_PW6B95"        : {}}})
+#funcs.append({"name": "PW6B95"         , "xc_functionals": {"HYB_MGGA_XC_PW6B95"        : {}}})  # duplicate of dict-based in hyb_functionals.py
 funcs.append({"name": "PWB6K"          , "xc_functionals": {"HYB_MGGA_XC_PWB6K"         : {}}})
 funcs.append({"name": "TPSSh"          , "xc_functionals": {"HYB_MGGA_XC_TPSSH"         : {}}, "alias": ["TPSS0"]})
 funcs.append({"name": "revTPSSh"       , "xc_functionals": {"HYB_MGGA_XC_REVTPSSH"      : {}}})

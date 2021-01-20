@@ -623,7 +623,7 @@ def get_pwpb95_tweaks():
     c_pw = 0.32620  # paper values
     expo_pw6 = 3.7868  # paper values
     alpha_pw6 = c_pw / X2S / X2S
-    return ([bt, alpha_pw6, expo_pw6])
+    return dict(zip(["_bt", "_alpha", "_expo"], [bt, alpha_pw6, expo_pw6]))
 
 
 funcs.append({
@@ -639,7 +639,10 @@ funcs.append({
     },
     "c_functionals": {
         "MGGA_C_BC95": {
-            "tweak": [0.03241, 0.00250],
+            "tweak": {
+                "_css": 0.03241,
+                "_copp": 0.00250,
+            },
             "alpha": 0.731
         }
     },
@@ -655,7 +658,13 @@ funcs.append({
     "name": "PTPSS",
     "x_functionals": {
         "MGGA_X_TPSS": {
-            "tweak": [0.15, 0.88491, 0.047, 0.872, 0.16952, -999., -999.],  # last two are filled in from defaults
+            "tweak": {
+                "_b": 0.15,
+                "_c": 0.88491,
+                "_e": 0.047,
+                "_kappa": 0.872,
+                "_mu": 0.16952,
+            },
             "alpha": 0.50
         }
     },
@@ -664,7 +673,10 @@ funcs.append({
     },
     "c_functionals": {
         "MGGA_C_TPSS": {
-            "tweak": [0.06080, 6.3, 0.53, 0.87, 0.50, 2.26],
+            "tweak": {
+                "_beta": 0.06080,
+                "_d": 6.3,
+            },
             "alpha": 0.625
         }
     },

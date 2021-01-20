@@ -31,7 +31,6 @@ functionality, namely single-point energies, geometry optimizations,
 properties, and vibrational frequency calculations.
 
 """
-import copy
 import json
 import os
 import re

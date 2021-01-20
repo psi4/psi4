@@ -289,7 +289,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
                     x_func.set_alpha(1.0)
 
                 if "tweak" in x_params:
-                    x_func.set_tweak(x_params["tweak"])
+                    x_func.set_tweak(x_params["tweak"], quiet=True)
                 if "alpha" in x_params:
                     x_func.set_alpha(x_params["alpha"])
                 if "omega" in x_params:
@@ -340,7 +340,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
                 c_func = core.LibXCFunctional(c_name, restricted)
                 c_params = func_dictionary["c_functionals"][c_key]
                 if "tweak" in c_params:
-                    c_func.set_tweak(c_params["tweak"])
+                    c_func.set_tweak(c_params["tweak"], quiet=True)
                 if "alpha" in c_params:
                     c_func.set_alpha(c_params["alpha"])
                 else:

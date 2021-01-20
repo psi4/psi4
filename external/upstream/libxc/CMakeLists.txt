@@ -14,8 +14,10 @@ else()
     ExternalProject_Add(libxc_external
         # Default: use a stable release tarball of libxc. To use the
         # development version of libxc, instead, comment the first URL line,
-        # and uncomment the second URL line.
+        # and uncomment the GIT lines.
         URL https://gitlab.com/libxc/libxc/-/archive/5.1.0/libxc-5.1.0.tar.gz
+        #GIT_REPOSITORY https://gitlab.com/libxc/libxc.git
+        #GIT_TAG 5.1.0
         #UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

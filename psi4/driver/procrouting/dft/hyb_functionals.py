@@ -163,7 +163,10 @@ funcs.append({
     "alias": ["PBEH-3C"],
     "x_functionals": {
         "GGA_X_PBE": {
-            "tweak": [1.0245, 0.12345679],
+            "tweak": {
+                "_kappa": 1.0245,
+                "_mu": 0.12345679,
+            },
             "alpha": 0.58
         }
     },
@@ -172,7 +175,9 @@ funcs.append({
     },
     "c_functionals": {
         "GGA_C_PBE": {
-            "tweak": [0.03, -999., -999.]  # last two are filled in from defaults
+            "tweak": {
+                "_beta": 0.03,
+            },
         }
     },
     "dispersion": {
@@ -346,9 +351,9 @@ def get_pw6b95_tweaks():
     X2S = 0.1282782438530421943003109254455883701296
     bt = 0.00538  # paper values
     c_pw = 1.7382  # paper values
-    expo_pw6 = 3.8901  # paperl values
+    expo_pw6 = 3.8901  # paper values
     alpha_pw6 = c_pw / X2S / X2S
-    return ([bt, alpha_pw6, expo_pw6])
+    return dict(zip(["_bt", "_alpha", "_expo"], [bt, alpha_pw6, expo_pw6]))
 
 
 funcs.append({
@@ -364,7 +369,10 @@ funcs.append({
     },
     "c_functionals": {
         "MGGA_C_BC95": {
-            "tweak": [0.03668, 0.00262]
+            "tweak": {
+                "_css": 0.03668,
+                "_copp": 0.00262,
+            },
         }
     },
     "description": '    PW6B95 Hybrid Meta-GGA XC Functional\n',
