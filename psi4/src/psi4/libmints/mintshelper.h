@@ -202,6 +202,8 @@ class PSI_API MintsHelper {
                                             SharedMatrix C4);
     std::vector<SharedMatrix> mo_tei_deriv2(int atom1, int atom2, SharedMatrix C1, SharedMatrix C2, SharedMatrix C3,
                                             SharedMatrix C4);
+    std::vector<SharedMatrix> ao_metric_deriv1(int atom, const std::string& aux_name);
+    std::vector<SharedMatrix> ao_3center_deriv1(int atom, const std::string& aux_name);
 
     /// AO ERF Integrals
     SharedMatrix ao_erf_eri(double omega, std::shared_ptr<IntegralFactory> = nullptr);
