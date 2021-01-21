@@ -291,6 +291,8 @@ def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
     disp_interaction_energy = dimer_disp_energy - mon_disp_energy
     core.set_variable(saptd_name + "-D DISP ENERGY", disp_interaction_energy)
     core.set_variable("SAPT DISP ENERGY", disp_interaction_energy)
+    core.set_variable("DISPERSION CORRECTION ENERGY", disp_interaction_energy)
+    core.set_variable(saptd_name + "DISPERSION CORRECTION ENERGY", disp_interaction_energy)
 
     ## Set SAPT0-D3 variables
     total = disp_interaction_energy
