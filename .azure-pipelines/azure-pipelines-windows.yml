@@ -25,7 +25,7 @@ jobs:
           if "%PYTHON_VERSION%"=="3.8" set VALID=true
           if "%PYTHON_VERSION%"=="3.9" set VALID=true
           if "!VALID!"=="false" (
-            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.6" and "3.7".
+            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.6" through "3.9".
             exit 1
           )
         displayName: "Check Python version: $(python.version)"
@@ -125,7 +125,7 @@ jobs:
                         pytest ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
-                        psi4/label/dev::gau2grid ^
+                        conda-forge::gau2grid ^
                         psi4/label/dev::libint2 ^
                         conda-forge::mpfr ^
                         conda-forge::mpmath ^
@@ -172,8 +172,8 @@ jobs:
                 -DPython_EXECUTABLE="C:/tools/miniconda3/python.exe" ^
                 -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
                 -DEigen_ROOT="C:/tools/miniconda3/Library" ^
-                -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
                 -DBUILD_Libint2_GENERATOR=OFF ^
+                -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
                 -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
                 -DBUILD_SHARED_LIBS=OFF ^
                 $(Build.SourcesDirectory)

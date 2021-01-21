@@ -1,5 +1,10 @@
 #############################  Superbuild Project  #############################
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+if(DEFINED ENV{LGTM_SRC})
+    cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+else ()
+    cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+    cmake_policy(SET CMP0094 NEW)
+endif()
                                               # 3.15: useable FindPython with NumPy component and LOCATION
                                               # 3.8: CXX_STANDARD recognizes C++17
                                               # 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
@@ -12,7 +17,6 @@ set(psi4_EMAIL "psi4aiqc+cmake@gmail.com")
 set(psi4_LICENSE "GNU Lesser General Public License, version 3 (LGPL-3.0)")
 set(psi4_DESCRIPTION "Open-Source Quantum Chemistry")
 
-cmake_policy(SET CMP0094 NEW)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 ################  Options: Overview and Not Otherwise Mentioned  ###############

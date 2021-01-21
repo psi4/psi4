@@ -11,7 +11,7 @@ jobs:
   strategy:
     maxParallel: 8
     matrix:
-      gcc_52:
+      gcc_5:
         CXX_COMPILER: 'g++-5'
         PYTHON_VER: '3.6'
         C_COMPILER: 'gcc-5'
@@ -29,7 +29,7 @@ jobs:
 
       clang_latest:
         CXX_COMPILER: 'clang++'
-        PYTHON_VER: '3.8'
+        PYTHON_VER: '3.9'
         C_COMPILER: 'clang'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
@@ -108,7 +108,7 @@ jobs:
         conda-forge::qcelemental \
         conda-forge::qcengine \
         conda-forge::pymdi \
-        psi4/label/dev::adcc
+        adcc::adcc
       source activate p4env
       which python
       pip install git+https://github.com/i-pi/i-pi.git@master-py3
@@ -135,6 +135,9 @@ jobs:
         -DCMAKE_PREFIX_PATH=${CONDA}/envs/p4env \
         -DPython_EXECUTABLE="${CONDA}/envs/p4env/bin/python" \
         -DMPFR_ROOT=${CONDA}/envs/p4env \
+        -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
+        -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
+        -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
         -DENABLE_adcc=ON \
         -DENABLE_CheMPS2=OFF \
         -DENABLE_dkh=ON \

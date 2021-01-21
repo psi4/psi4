@@ -1,4 +1,9 @@
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+if(DEFINED ENV{LGTM_SRC})
+    cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+else()
+    cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+    cmake_policy(SET CMP0094 NEW)
+endif()
 project(psi4-core
         LANGUAGES C CXX)
 # no Fortran in psi4-core proper, but language needs to be declared
@@ -8,7 +13,6 @@ if(${Fortran_ENABLED})
     enable_language(Fortran)
 endif()
 
-cmake_policy(SET CMP0094 NEW)
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
 
 include(psi4OptionsTools)
