@@ -199,7 +199,7 @@ message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MIN
 if(DEFINED ENV{LGTM_SRC})
     set(BUILD_TESTING OFF)
     set(BUILD_Libint2_GENERATOR OFF)
-    set(MAX_AM_ERI 2)
+    set(MAX_AM_ERI 1)
     message(STATUS "LGTM enviroment detected so downgrading Libint2 build.")
 endif()
 
