@@ -94,7 +94,7 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
 #ifdef XC_FAMILY_HYB_LDA
         || xc_functional_->info->family == XC_FAMILY_HYB_LDA
 #endif
-    ) {
+        ) {
         /* Range separation? */
         lrc_ = false;
         if (xc_functional_->info->flags & XC_FLAGS_HYB_CAMY) {
@@ -208,18 +208,17 @@ std::shared_ptr<Functional> LibXCFunctional::build_worker() {
 }
 void LibXCFunctional::set_density_cutoff(double cut) {
     density_cutoff_ = cut;
-    if (density_cutoff_ > 0){
-        xc_func_set_dens_threshold(xc_functional_.get(),cut);
+    if (density_cutoff_ > 0) {
+        xc_func_set_dens_threshold(xc_functional_.get(), cut);
     }
 }
-double LibXCFunctional::query_density_cutoff() {
-    return xc_functional_->dens_threshold ;
-}
+double LibXCFunctional::query_density_cutoff() { return xc_functional_->dens_threshold; }
 void LibXCFunctional::set_omega(double omega) {
     omega_ = omega;
     user_omega_ = true;
-    if ((xc_func_name_ == "XC_GGA_X_WPBEH") || (xc_func_name_ == "XC_GGA_X_HJS_PBE") || (xc_func_name_ == "XC_HYB_GGA_XC_LRC_WPBEH") ||
-        (xc_func_name_ == "XC_HYB_GGA_XC_WB97X") || (xc_func_name_ == "XC_HYB_GGA_XC_WB97") || (xc_func_name_ == "XC_HYB_GGA_XC_WB97X_V") ||
+    if ((xc_func_name_ == "XC_GGA_X_WPBEH") || (xc_func_name_ == "XC_GGA_X_HJS_PBE") ||
+        (xc_func_name_ == "XC_HYB_GGA_XC_LRC_WPBEH") || (xc_func_name_ == "XC_HYB_GGA_XC_WB97X") ||
+        (xc_func_name_ == "XC_HYB_GGA_XC_WB97") || (xc_func_name_ == "XC_HYB_GGA_XC_WB97X_V") ||
         (xc_func_name_ == "XC_HYB_GGA_XC_WB97X_D") || (xc_func_name_ == "XC_HYB_MGGA_X_M11")) {
         xc_func_set_ext_params_name(xc_functional_.get(), "_omega", omega);
     } else {
@@ -277,14 +276,20 @@ void LibXCFunctional::set_tweak(std::vector<double> values, bool quiet) {
     for (int par = 0; par < npars; par++) {
         std::string key = xc_func_info_get_ext_params_name(const_cast<xc_func_info_type*>(xc_functional_->info), par);
         allowed_keys_join += key;
-        if (par+1 != npars) allowed_keys_join += ", ";
-        double default_value = xc_func_info_get_ext_params_default_value(const_cast<xc_func_info_type*>(xc_functional_->info), par);
-        if (!quiet) outfile->Printf("Setting parameter #%d (%d/%d) %16s to %16.8f (Libxc default %16.8f).\n", par, par+1, npars, key.c_str(), tweakers_list[par], default_value);
+        if (par + 1 != npars) allowed_keys_join += ", ";
+        double default_value =
+            xc_func_info_get_ext_params_default_value(const_cast<xc_func_info_type*>(xc_functional_->info), par);
+        if (!quiet)
+            outfile->Printf("Setting parameter #%d (%d/%d) %16s to %16.8f (Libxc default %16.8f).\n", par, par + 1,
+                            npars, key.c_str(), tweakers_list[par], default_value);
         tweakers_dict.insert(std::pair<std::string, double>(key, tweakers_list[par]));
     }
 
     outfile->Printf(
-        "Using `LibXCFunctional.set_tweak(std::vector<double>)` instead of `LibXCFunctional.set_tweak(std::map<std::string, double>)` is deprecated, and in 1.5 it will stop working. Allowed keys are: %s\n", allowed_keys_join.c_str());
+        "Using `LibXCFunctional.set_tweak(std::vector<double>)` instead of "
+        "`LibXCFunctional.set_tweak(std::map<std::string, double>)` is deprecated, and in 1.5 it will stop working. "
+        "Allowed keys are: %s\n",
+        allowed_keys_join.c_str());
 
     xc_func_set_ext_params(xc_functional_.get(), tweakers_list.data());
     user_tweakers_ = tweakers_dict;
@@ -304,24 +309,28 @@ void LibXCFunctional::set_tweak(std::map<std::string, double> values, bool quiet
 
     for (int par = 0; par < npars; par++) {
         std::string key = xc_func_info_get_ext_params_name(const_cast<xc_func_info_type*>(xc_functional_->info), par);
-        double default_value = xc_func_info_get_ext_params_default_value(const_cast<xc_func_info_type*>(xc_functional_->info), par);
+        double default_value =
+            xc_func_info_get_ext_params_default_value(const_cast<xc_func_info_type*>(xc_functional_->info), par);
         tweakers_list.push_back(default_value);
         allowed_keys.push_back(key);
         allowed_keys_join += key;
-        if (par+1 != npars) allowed_keys_join += ", ";
+        if (par + 1 != npars) allowed_keys_join += ", ";
     }
 
     for (auto const& tweak : tweakers_dict) {
         auto it = std::find(allowed_keys.begin(), allowed_keys.end(), tweak.first);
         if (it != allowed_keys.end()) {
             int par = it - allowed_keys.begin();
-            if (!quiet) outfile->Printf("Setting parameter #%d (%d/%d) %16s to %16.8f (Libxc default %16.8f).\n", par, par+1, npars, tweak.first.c_str(), tweak.second, tweakers_list[par]);
+            if (!quiet)
+                outfile->Printf("Setting parameter #%d (%d/%d) %16s to %16.8f (Libxc default %16.8f).\n", par, par + 1,
+                                npars, tweak.first.c_str(), tweak.second, tweakers_list[par]);
             tweakers_list[par] = tweak.second;
             // after https://gitlab.com/libxc/libxc/-/issues/285 resolved, set parameters successively in loop
             // xc_func_set_ext_params_name(xc_functional_.get(), tweak.first.c_str(), tweak.second);
         } else {
             auto msg = new char[800];
-            sprintf(msg, "LibXCfunctional: set_tweak: requested parameter (%s=%f) not among allowed parameters (%s).\n", tweak.first.c_str(), tweak.second, allowed_keys_join.c_str());
+            sprintf(msg, "LibXCfunctional: set_tweak: requested parameter (%s=%f) not among allowed parameters (%s).\n",
+                    tweak.first.c_str(), tweak.second, allowed_keys_join.c_str());
             throw PSIEXCEPTION(msg);
         }
     }
@@ -748,7 +757,7 @@ void LibXCFunctional::compute_functional(const std::map<std::string, SharedVecto
                 }
             }
         }
-        if (deriv > 2) { // lgtm[cpp/constant-comparison]
+        if (deriv > 2) {  // lgtm[cpp/constant-comparison]
             throw PSIEXCEPTION("TRYING TO COMPUTE DERIV >= 3 ");
         }
     }  // End polarized

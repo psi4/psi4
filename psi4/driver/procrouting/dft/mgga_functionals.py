@@ -211,12 +211,13 @@ funcs.append({
             'a1': -0.0780,
             'a2': 5.59460
         },
-    "citation": '    A. Najib, L. Goerigk J. Comput. Theory Chem., 14, 5725, 2018\n',
+        "citation": '    A. Najib, L. Goerigk J. Comput. Theory Chem., 14, 5725, 2018\n',
     },
-    "description": '    B97M-V with D3(BJ) instead of VV10 dispersion \n',
-    "citation": '    A. Najib, L. Goerigk J. Comput. Theory Chem., 14, 5725, 2018\n'+
-                '    N. Mardirossian, M. Head-Gordon J. Chem. Phys. 142, 074111 (2015)\n',
-
+    "description":
+    '    B97M-V with D3(BJ) instead of VV10 dispersion \n',
+    "citation":
+    '    A. Najib, L. Goerigk J. Comput. Theory Chem., 14, 5725, 2018\n' +
+    '    N. Mardirossian, M. Head-Gordon J. Chem. Phys. 142, 074111 (2015)\n',
 })
 
 funcs.append({

@@ -42,7 +42,6 @@ funcs.append({
     },
 })
 
-
 funcs.append({
     "name": "MP2D",
     "alias": ["MP2-D"],
@@ -65,7 +64,6 @@ funcs.append({
         "citation": "    Rezac, J.; Greenwell, C.; Beran, G. (2018), J. Chem. Theory Comput., 14: 4711-4721\n",
     },
 })
-
 
 funcs.append({
     "name": "B2PLYP",
@@ -178,9 +176,9 @@ funcs.append({
 })
 
 funcs.append({
-# note by H.Kruse: Uses the full-core parameters in the Yu paper. But my and L. Georigk's experience shows that it hardly matters.
-# Use FC is recommended by S. Grimme.
-# May this madness never end.
+    # note by H.Kruse: Uses the full-core parameters in the Yu paper. But my and L. Georigk's experience shows that it hardly matters.
+    # Use FC is recommended by S. Grimme.
+    # May this madness never end.
     "name": "DSD-BLYP-NL",
     "x_functionals": {
         "GGA_X_B88": {
@@ -211,9 +209,6 @@ funcs.append({
     "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
     "description": '    DSD-BLYP-NL (D3BJ,FC parameters) VV10 SCS Double Hybrid XC Functional\n',
 })
-
-
-
 
 funcs.append({
     "name": "CORE-DSD-BLYP",
@@ -342,7 +337,7 @@ funcs.append({
 })
 
 funcs.append({
-# note: Using the D3BJ form for NL, which is sensible but not explicitly mentioned in the paper
+    # note: Using the D3BJ form for NL, which is sensible but not explicitly mentioned in the paper
     "name": "DSD-PBEP86-NL",
     "x_functionals": {
         "GGA_X_PBE": {
@@ -372,8 +367,6 @@ funcs.append({
     "citation": '    S. Kozuch, J.M.L. Martin, J. Comp. Chem., 34, 2327-2344, 2013\n',
     "description": '    DSD-PBEP86-NL (D3BJ parameters) VV10 SCS Double Hybrid XC Functional\n',
 })
-
-
 
 funcs.append({
     "name": "DSD-PBEP86-D2",
@@ -496,7 +489,6 @@ funcs.append({
     },
 })
 
-
 funcs.append({
     "name": "DSD-PBEPBE-NL",
     "x_functionals": {
@@ -528,7 +520,6 @@ funcs.append({
         "citation": '    M. K. Kesharwani, A. Karton, J.M. L. Martin, J. Chem. Theory Comput. 12, 444-454, 2016\n'
     },
 })
-
 
 funcs.append({
     "name": "DSD-BP86-D2",
@@ -699,7 +690,7 @@ funcs.append({
         "alpha": 0.69
     },
     "c_functionals": {
-      "MGGA_C_BC95": {
+        "MGGA_C_BC95": {
             "alpha": 0.54
         }
     },
@@ -722,7 +713,7 @@ funcs.append({
         "alpha": 0.65
     },
     "c_functionals": {
-      "MGGA_C_BC95": {
+        "MGGA_C_BC95": {
             "alpha": 0.55
         }
     },
@@ -754,7 +745,7 @@ funcs.append({
         "alpha": 0.66
     },
     "c_functionals": {
-      "MGGA_C_BC95": {
+        "MGGA_C_BC95": {
             "alpha": 0.55
         }
     },
@@ -787,7 +778,7 @@ funcs.append({
         "alpha": 0.66
     },
     "c_functionals": {
-      "MGGA_C_BC95": {
+        "MGGA_C_BC95": {
             "alpha": 0.55
         }
     },
@@ -807,8 +798,6 @@ funcs.append({
     },
 })
 
-
 functional_list = {}
 for functional in funcs:
     functional_list[functional["name"].lower()] = functional
-

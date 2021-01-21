@@ -438,7 +438,7 @@ funcs.append({
 funcs.append({
     "name": "M05",
     "x_functionals": {
-        "HYB_MGGA_X_M05" : {
+        "HYB_MGGA_X_M05": {
             "use_libxc": True
         }
     },
@@ -565,7 +565,7 @@ funcs.append({
         "HYB_MGGA_XC_WB97M_V": {}
     },
     "dispersion": {
-        "nlc":False,
+        "nlc": False,
         "type": "d3bj",
         "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem.,14, 5725, 2018\n',
         "params": {
@@ -575,9 +575,11 @@ funcs.append({
             'a2': 3.1280
         },
     },
-    "description": '    wB97M-V with D3(BJ) instead of VV10 dispersion \n',
-    "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem.,14, 5725, 2018\n'+
-                '    N. Mardirossian, M. Head-Gordon, J. Chem. Phys. 144, 214110, 2016\n'
+    "description":
+    '    wB97M-V with D3(BJ) instead of VV10 dispersion \n',
+    "citation":
+    '    A. Najib, L. Goerigk, J. Comput. Theory Chem.,14, 5725, 2018\n' +
+    '    N. Mardirossian, M. Head-Gordon, J. Chem. Phys. 144, 214110, 2016\n'
 })
 
 funcs.append({
@@ -586,7 +588,7 @@ funcs.append({
         "HYB_GGA_XC_WB97X_V": {}
     },
     "dispersion": {
-        "nlc":False,
+        "nlc": False,
         "type": "d3bj",
         "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem.,14 5725, 2018\n',
         "params": {
@@ -596,9 +598,11 @@ funcs.append({
             'a2': 5.4959
         },
     },
-    "description": '    wB97X-V with D3(BJ) instead of VV10 dispersion \n',
-    "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem., 14 5725, 2018)\n'+
-                '    N. Mardirossian, M. Head-Gordon, Phys. Chem. Chem. Phys, 16, 9904, 2014\n'
+    "description":
+    '    wB97X-V with D3(BJ) instead of VV10 dispersion \n',
+    "citation":
+    '    A. Najib, L. Goerigk, J. Comput. Theory Chem., 14 5725, 2018)\n' +
+    '    N. Mardirossian, M. Head-Gordon, Phys. Chem. Chem. Phys, 16, 9904, 2014\n'
 })
 
 funcs.append({
@@ -641,10 +645,8 @@ funcs.append({
     "c_functionals": {
         "GGA_C_BMK": {}
     },
-    "citation":
-    '    A. D. Boese, J. M. L. Martin, J. Chem. Phys. 121, 3405, 2004\n',
-    "description":
-    '    BMK Hybrid Meta-GGA XC Functional for kinetics\n',
+    "citation": '    A. D. Boese, J. M. L. Martin, J. Chem. Phys. 121, 3405, 2004\n',
+    "description": '    BMK Hybrid Meta-GGA XC Functional for kinetics\n',
 })
 
 funcs.append({
