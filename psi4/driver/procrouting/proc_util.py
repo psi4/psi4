@@ -290,6 +290,7 @@ def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
 
     disp_interaction_energy = dimer_disp_energy - mon_disp_energy
     core.set_variable(saptd_name + "-D DISP ENERGY", disp_interaction_energy)
+    core.set_variable("SAPT DISP ENERGY", disp_interaction_energy)
 
     ## Set SAPT0-D3 variables
     total = disp_interaction_energy
@@ -299,9 +300,11 @@ def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
         en = core.variable(' '.join([sapt0_name, term, 'ENERGY']))
         saptd_en[term] = en
         core.set_variable(' '.join([saptd_name + '-D', term, 'ENERGY']), en)
+        core.set_variable(' '.join(['SAPT', term, 'ENERGY']), en)
         total += en
 
     core.set_variable(saptd_name + '-D TOTAL ENERGY', total)
+    core.set_variable('SAPT TOTAL ENERGY', total)
     core.set_variable('CURRENT ENERGY', total)
 
     ## Print Energy Summary
