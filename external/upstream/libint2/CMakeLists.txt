@@ -64,7 +64,7 @@ else()
 
         if(DEFINED ENV{LGTM_SRC})
           # set(_url_am_src "2-0-0-0-0-0")  #   389  # LGTM_SRC bulids
-            set(_url_am_src "1-0-0-0-0-0")  #    15  # LGTM_SRC bulids
+            set(_url_am_src "1-0-0-0-0-0")  #    99  # LGTM_SRC bulids
         endif()
 
         set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-${_url_am_src}_1.tgz")
