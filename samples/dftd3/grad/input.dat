@@ -1,4 +1,5 @@
 #! DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN, calling Grimme's dftd3 program for -D2 gradients
+#! update reference for new BraggSlater radii
 
 
 molecule {

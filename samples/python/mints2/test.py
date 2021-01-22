@@ -122,4 +122,4 @@ scfenergy = psi4.energy('scf')
 
 psi4.compare_strings("c2v", bz.schoenflies_symbol(), "Point group")  #TEST
 psi4.compare_values(refnuc, bz.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy")  #TEST
-psi4.compare_values(refscf, scfenergy, 10, "SCF Energy")  #TEST
+psi4.compare_values(refscf, scfenergy, 9, "SCF Energy")  #TEST

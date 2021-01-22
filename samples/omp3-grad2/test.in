@@ -1,8 +1,9 @@
 #! OMP3 cc-pVDZ gradient for the NO radical
 
+# Test values are analytic from Jonathon's Psi4Numpy code, run 03/20, residual convergence 12. # TEST
 ref = psi4.Matrix.from_list([                                 #TEST
-        [ 0.000000000000,  0.000000000000, -0.020148084940],  #TEST
-        [ 0.000000000000,  0.000000000000,  0.020148084940]   #TEST
+        [ 0.000000000000,  0.000000000000, -0.020150373690],  #TEST
+        [ 0.000000000000,  0.000000000000,  0.020150373690]   #TEST
       ])                                                      #TEST
 
 molecule no {

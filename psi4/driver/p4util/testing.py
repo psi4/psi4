@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2019 The Psi4 Developers.
+# Copyright (c) 2007-2021 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -121,7 +121,7 @@ def _mergedapis_compare_wavefunctions(expected, computed, *args, **kwargs):
     if expected.Fb():          compare_matrices(expected.Fb(), computed.Fb(), 'compare Fb', atol=atol, **kwargscopy)
     if expected.H():           compare_matrices(expected.H(), computed.H(), 'compare H', atol=atol, **kwargscopy)
     if expected.S():           compare_matrices(expected.S(), computed.S(), 'compare S', atol=atol, **kwargscopy)
-    if expected.X():           compare_matrices(expected.X(), computed.X(), 'compare X', atol=atol, **kwargscopy)
+    if expected.lagrangian():  compare_matrices(expected.lagrangian(), computed.lagrangian(), 'compare lagrangian', atol=atol, **kwargscopy)
     if expected.aotoso():      compare_matrices(expected.aotoso(), computed.aotoso(), 'compare aotoso', atol=atol, **kwargscopy)
     if expected.gradient():    compare_matrices(expected.gradient(), computed.gradient(), 'compare gradient', atol=atol, **kwargscopy)
     if expected.hessian():     compare_matrices(expected.hessian(), computed.hessian(), 'compare hessian', atol=atol, **kwargscopy)

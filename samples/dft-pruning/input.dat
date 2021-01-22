@@ -1,0 +1,28 @@
+#! Tests all grid pruning options available and screening of small weights. Check against grid size.
+
+molecule water{ 
+0 1
+ O  -1.551007  -0.114520   0.000000
+ H  -1.934259   0.762503   0.000000
+ H  -0.599677   0.040712   0.000000
+}
+
+set scf_type pk
+set maxiter 1
+set FAIL_ON_MAXITER false
+set DFT_WEIGHTS_TOLERANCE -1.0
+
+
+SCHEMES = {
+}
+
+for scheme in SCHEMES:
+    set DFT_PRUNING_SCHEME $scheme
+    energy('pbe/sto-3g')
+
+# screening based on small weights
+set DFT_PRUNING_SCHEME ROBUST
+for val, points, error in [(1e-12, 45198, 0), (1e-14, 45429, 0), (1e-16, 45679, 5)]:
+    set DFT_WEIGHTS_TOLERANCE $val
+    energy('pbe/sto-3g')
+    compare_integers(True, abs(points - int(variable('XC GRID TOTAL POINTS'))) <= error,

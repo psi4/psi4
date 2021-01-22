@@ -20,5 +20,5 @@ set dft_radial_points 50
 set dft_spherical_points 302
 
 e_dhdft = energy('DSD-PBEP86', bsse_type="nocp")
-compare_values(e_dhdft * 627.509,  -3.2076, 2, "DSD-PBE-PBE86: Ammonia")  #TEST
+compare_values(-3.2076, e_dhdft * 627.509, 2, "DSD-PBE-PBE86: Ammonia")  #TEST
 

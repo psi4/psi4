@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -28,10 +28,9 @@
 
 /** Standard library includes */
 #include <fstream>
-#include "psi4/psifiles.h"
-#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libciomr/libciomr.h"
+#include "psi4/libmints/factory.h"
 #include "psi4/libmints/matrix.h"
 #include "dfocc.h"
 
@@ -45,88 +44,13 @@ namespace psi {
 namespace dfoccwave {
 
 void DFOCC::dfgrad() {
-    //===========================================================================================
-    //============================ Preliminaries ================================================
-    //===========================================================================================
     tstop();
     tstart();
-    title_grad();
-    outfile->Printf("\tAnalytic gradients computation is starting...\n");
-
-    if (wfn_type_ == "DF-OMP2") {
-        tpdm_tilde();
-        back_trans();
-    } else {
-        tpdm_tilde_cc();
-        back_trans_cc();
-    }
-
-    //===========================================================================================
-    //============================ Gradient =====================================================
-    //===========================================================================================
-    outfile->Printf("\tComputing analytic gradients...\n");
-
-    gradient_terms.push_back("Nuclear");
-    gradient_terms.push_back("Core");
-    gradient_terms.push_back("Overlap");
-    gradient_terms.push_back("3-Index:RefSep");
-    gradient_terms.push_back("3-Index:Corr");
-    gradient_terms.push_back("Metric:RefSep");
-    gradient_terms.push_back("Metric:Corr");
-    gradient_terms.push_back("Total");
-
-    // OEI GRAD
-    oei_grad();
-
-    // TEI GRAD
-    tei_grad("JK");
-    tei_grad("RI");
-
-    //===========================================================================================
-    //========================= Total Gradient ==================================================
-    //===========================================================================================
-    // => Total Gradient <= //
-    SharedMatrix total = SharedMatrix(gradients["Nuclear"]->clone());
-    total->zero();
-
-    for (int i = 0; i < gradient_terms.size(); i++) {
-        if (gradients.count(gradient_terms[i])) {
-            total->add(gradients[gradient_terms[i]]);
-        }
-    }
-
-    gradients["Total"] = total;
-    gradients["Total"]->set_name("Total Gradient");
-
-    // OEI grad
-    gradients["One-Electron"] = gradients["Core"]->clone();
-    gradients["One-Electron"]->set_name("One-Electron Gradient");
-    gradients["One-Electron"]->print_atom_vector();
-
-    // TEI grad
-    gradients["Two-Electron"] = SharedMatrix(gradients["Nuclear"]->clone());
-    gradients["Two-Electron"]->set_name("Two-Electron Gradient");
-    gradients["Two-Electron"]->zero();
-    gradients["Two-Electron"]->add(gradients["3-Index:RefSep"]);
-    gradients["Two-Electron"]->add(gradients["3-Index:Corr"]);
-    gradients["Two-Electron"]->add(gradients["Metric:RefSep"]);
-    gradients["Two-Electron"]->add(gradients["Metric:Corr"]);
-    gradients["Two-Electron"]->print_atom_vector();  // UB
-
-    // => Final Printing <= //
-    if (print_ > 1) {
-        for (int i = 0; i < gradient_terms.size(); i++) {
-            if (gradients.count(gradient_terms[i])) {
-                gradients[gradient_terms[i]]->print_atom_vector();
-            }
-        }
-    } else {
-        gradients["Total"]->print_atom_vector();
-    }
-
-    set_gradient(total);
-
-    // outfile->Printf("\tdfgrad is done. \n");
+    tpdm_tilde();
+    back_trans();
+    auto W = std::make_shared<Matrix>("AO-basis Energy-Weighted OPDM", nmo_, nmo_);
+    GFao->to_shared_matrix(W);
+    Lagrangian_ = W;
 }  // end dfgrad
 
 }  // namespace dfoccwave

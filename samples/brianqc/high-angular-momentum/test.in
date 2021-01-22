@@ -1,0 +1,23 @@
+#! Water with cc-pvqz
+
+refenergy = -76.06479161237
+
+molecule water {
+    symmetry c1
+    0 1
+    8 -0.066308 -0.083391 0.042846
+    1 0.889752 -0.042018 0.021589
+    1 -0.341116 0.73212 -0.376167
+}
+
+set = {
+    basis cc-pvqz
+    reference rhf
+    scf_type direct
+    df_scf_guess False
+    brianqc_enable True
+}
+
+thisenergy = energy('scf')
+
+compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST

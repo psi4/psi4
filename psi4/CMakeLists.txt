@@ -52,13 +52,8 @@ else()
 endif()
 
 #  <<  Pybind11 & Python  >>
-if(MSVC)
-  set(PYBIND11_CPP_STANDARD "/std:c++${CMAKE_CXX_STANDARD}")
-else()
-  set(PYBIND11_CPP_STANDARD "-std=c++${CMAKE_CXX_STANDARD}")
-endif()
-find_package(pybind11 2.4.3 CONFIG REQUIRED)
-message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING} and ${PYBIND11_CPP_STANDARD})")
+find_package(pybind11 2.6.1 CONFIG REQUIRED)
+message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING} and ${CMAKE_CXX_STANDARD})")
 message(STATUS "${Cyan}Using Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE}")
 
 find_package(DL)
@@ -274,6 +269,7 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/addons.py
               ../tests/pytests/utils.py
               ../tests/pytests/test_psi4.py
+              ../tests/pytests/test_option.py
               ../tests/pytests/test_addons.py
               ../tests/pytests/test_qcel_molparse_to_string.py
               ../tests/pytests/test_matrix.py
@@ -308,6 +304,12 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/test_weird_basis.py
               ../tests/pytests/test_ccresponse.py
               ../tests/pytests/test_fchk_writer.py
+              ../tests/pytests/test_psi4_qcschema.py
+              ../tests/pytests/test_addons_qcschema.py
+              ../tests/pytests/test_triplet.py
+              ../tests/pytests/test_raises.py
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
+install(DIRECTORY ../tests/pytests/test_fchk_writer
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 
     # <<<  install psi4 share/ & include/  >>>

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2019 The Psi4 Developers.
+# Copyright (c) 2007-2021 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -201,10 +201,14 @@ def molecule_from_schema(cls, molschema, return_dict=False, nonphysical=False, v
     """
     molrec = qcel.molparse.from_schema(molschema, nonphysical=nonphysical, verbose=verbose)
 
+    qmol = core.Molecule.from_dict(molrec)
+    geom = np.array(molrec["geom"]).reshape((-1, 3))
+    qmol._initial_cartesian = core.Matrix.from_array(geom)
+
     if return_dict:
-        return core.Molecule.from_dict(molrec), molrec
+        return qmol, molrec
     else:
-        return core.Molecule.from_dict(molrec)
+        return qmol
 
 
 def dynamic_variable_bind(cls):
@@ -252,6 +256,11 @@ def geometry(geom, name="default"):
         geom, enable_qm=True, missing_enabled_return_qm='minimal', enable_efp=True, missing_enabled_return_efp='none')
 
     molecule = core.Molecule.from_dict(molrec['qm'])
+    if "geom" in molrec["qm"]:
+        geom = np.array(molrec["qm"]["geom"]).reshape((-1, 3))
+        if molrec["qm"]["units"] == "Angstrom":
+            geom = geom / qcel.constants.bohr2angstroms
+        molecule._initial_cartesian = core.Matrix.from_array(geom)
     molecule.set_name(name)
 
     if 'efp' in molrec:

@@ -82,7 +82,7 @@ jobs:
         python=$PYTHON_VER \
         psi4/label/dev::gau2grid=2 \
         psi4/label/dev::libint2 \
-        psi4/label/dev::libxc \
+        psi4/label/dev::libxc=4 \
         psi4/label/dev::ambit \
         psi4/label/dev::chemps2 \
         psi4/label/dev::dkh \
@@ -97,7 +97,7 @@ jobs:
         psi4/label/dev::snsmp2 \
         psi4/label/dev::fockci \
         psi4/label/dev::mp2d \
-        psi4/label/trial::pybind11-headers \
+        psi4/label/dev::pybind11-headers \
         blas=*=mkl \
         mkl-include \
         networkx \
@@ -108,7 +108,7 @@ jobs:
         conda-forge::qcelemental \
         conda-forge::qcengine \
         conda-forge::pymdi \
-        adcc::adcc
+        psi4/label/dev::adcc
       source activate p4env
       which python
       pip install git+https://github.com/i-pi/i-pi.git@master-py3
@@ -134,7 +134,6 @@ jobs:
         -DMAX_AM_ERI=4 \
         -DCMAKE_PREFIX_PATH=${CONDA}/envs/p4env \
         -DPYTHON_EXECUTABLE="${CONDA}/envs/p4env/bin/python" \
-        -DENABLE_adcc=ON \
         -DMPFR_ROOT=${CONDA}/envs/p4env \
         -DENABLE_adcc=ON \
         -DENABLE_CheMPS2=OFF \

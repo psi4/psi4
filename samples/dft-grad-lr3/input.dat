@@ -1,4 +1,7 @@
 #! wB97X-D test for a large UKS molecule
+#! update ref gradient due to new BraggSlater radii
+
+
 
 
 molecule {

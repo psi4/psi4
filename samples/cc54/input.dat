@@ -1,5 +1,6 @@
 #! CCSD dipole with user-specified basis set
 
+
 molecule h2o {
   0 1
   H
@@ -101,3 +102,5 @@ D 2 1.00
 ccsd_e, wfn = properties('ccsd',properties=['dipole'],return_wfn=True)
 oeprop(wfn,"DIPOLE", "QUADRUPOLE", title="(OEPROP)CC")
 print_variables()
+
+# prefer array dipole/quadrupole over deprecated scalar variables in section above

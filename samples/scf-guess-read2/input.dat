@@ -9,15 +9,16 @@ molecule oxygen {
 set reference rhf
 set basis cc-pVDZ
 set guess sad
+set d_convergence 10
 energy('scf')
 
 set guess read
 energy('scf')
 
-
-# ROHF
+### Open-shell section
 oxygen.set_multiplicity(3)
 
+# ROHF
 set reference rohf
 set guess sad
 energy('scf')
@@ -25,6 +26,13 @@ energy('scf')
 set guess read
 energy('scf')
 
+# CUHF
+set reference cuhf
+set guess sad
+energy('scf')
+
+set guess read
+energy('scf')
 
 # UHF
 set reference uhf
@@ -33,6 +41,3 @@ energy('scf')
 
 set guess read
 energy('scf')
-
-
-

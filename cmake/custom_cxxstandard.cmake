@@ -60,7 +60,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Clang)
     endif()
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES MSVC)
-    # As for MSVC 14.0, it is not possible to set anything bellow C++14
+    # As for MSVC 14.0, it is not possible to set anything below C++14
     # FIXME Remove following line when we switch to C++14
     set(psi4_CXX_STANDARD 14)
     if(MSVC_TOOLSET_VERSION LESS 140)

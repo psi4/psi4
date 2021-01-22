@@ -1,20 +1,13 @@
 import pytest
 
 from qcelemental.util import parse_version, which, which_import
-from qcengine.testing import using
+from qcengine.testing import _programs as _programs_qcng
+
+import psi4
 
 __all__ = [
-    'hardware_nvidia_gpu',
-    'using_cppe',
-    'using_dftd3',
-    'using_dftd3_321',
-    'using_gcp',
-    'using_mdi',
-    'using_mp2d',
-    'using_memory_profiler',
-    'using_networkx',
-    'using_psi4',
-    'using_qcdb',
+    "hardware_nvidia_gpu",
+    "using",
 ]
 
 
@@ -46,35 +39,60 @@ def is_nvidia_gpu_present():
             return ngpu > 0
 
 
-hardware_nvidia_gpu = pytest.mark.skipif(True, #is_nvidia_gpu_present() is False,
-                                         reason='Psi4 not detecting Nvidia GPU via `nvidia-smi`. Install one')
+# Figure out what is imported
+# * only using psi4.addons for C-linked b/c _programs more responsive to env
+# * `which` not taking PSIPATH into account
+_programs = {
+    # non-QC
+    "memory_profiler": which_import('memory_profiler', return_bool=True),
+    "networkx": which_import("networkx", return_bool=True),
 
-using_memory_profiler = pytest.mark.skipif(
-    which_import('memory_profiler', return_bool=True) is False,
-    reason='Not detecting module memory_profiler. Install package if necessary and add to envvar PYTHONPATH')
+    # QC
+    "adcc": which_import("adcc", return_bool=True),
+    "ambit": psi4.addons("ambit"),
+    "cct3": which_import("cct3", return_bool=True),
+    "chemps2": psi4.addons("chemps2"),
+    "cppe": which_import("cppe", return_bool=True),  # package pycppe, import cppe
+    "dkh": psi4.addons("dkh"),
+    "libefp": which_import("pylibefp", return_bool=True),
+    "erd": psi4.addons("erd"),
+    "fockci": which_import("psi4fockci", return_bool=True),  # package fockci, import psi4fockci
+    "forte": which_import("forte", return_bool=True),
+    "gdma": psi4.addons("gdma"),
+    "gpu_dfcc": which_import("gpu_dfcc", return_bool=True),
+    "ipi": which_import("ipi", return_bool=True),
+    "mrcc": which("dmrcc", return_bool=True),
+    "pcmsolver": psi4.addons("pcmsolver"),
+    "psixas": which_import("psixas", return_bool=True),
+    "resp": which_import("resp", return_bool=True),
+    "simint": psi4.addons("simint"),
+    "snsmp2": which_import("snsmp2", return_bool=True),
+    "v2rdm_casscf": which_import("v2rdm_casscf", return_bool=True),
+}
 
-using_psi4 = pytest.mark.skipif(
-    False, reason='Not detecting module psi4. Install package if necessary and add to envvar PYTHONPATH')
 
-using_qcdb = pytest.mark.skipif(
-    True, reason='Not detecting common driver. Install package if necessary and add to envvar PYTHONPATH')
+def has_program(name):
+    if name in _programs:
+        return _programs[name]
+    elif name in _programs_qcng:
+        return _programs_qcng[name]
+    else:
+        raise KeyError(f"Program {name} not registered with Psi4 testing.")
 
-using_gcp = pytest.mark.skipif(
-    which("gcp", return_bool=True) is False,
-    reason="Not detecting executable gcp. Install package if necessary and add to envvar PATH")
 
-using_cppe = pytest.mark.skipif(
-    which_import('cppe', return_bool=True) is False,
-    reason="Not detecting module cppe. Rebuild with -DENABLE_cppe")
+_using_cache = {}
 
-using_networkx = pytest.mark.skipif(
-    which_import('networkx', return_bool=True) is False,
-    reason='Not detecting module networkx. Install package if necessary and add to envvar PYTHONPATH')
 
-using_mdi = pytest.mark.skipif(
-    which_import('mdi', return_bool=True) is False,
-    reason="Not detecting module mdi. Install package if necessary and add to envvar PYTHONPATH (or rebuild Psi with -DENABLE_mdi)")
+def using(program):
 
-using_dftd3 = using('dftd3')
-using_dftd3_321 = using('dftd3')
-using_mp2d = using('mp2d')
+    if program not in _using_cache:
+        import_message = f"Not detecting module {program}. Install package if necessary to enable tests."
+        skip = pytest.mark.skipif(has_program(program) is False, reason=import_message)
+        _using_cache[program] = skip
+
+    return _using_cache[program]
+
+
+hardware_nvidia_gpu = pytest.mark.skipif(
+    True,  #is_nvidia_gpu_present() is False,
+    reason='Psi4 not detecting Nvidia GPU via `nvidia-smi`. Install one')

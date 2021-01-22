@@ -13,7 +13,7 @@ set {
     dft_radial_points     120
     dft_spherical_points  434
     e_convergence         12
-    d_convergence         12
+    d_convergence         10
     points 5
 }
 

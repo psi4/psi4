@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -664,7 +664,8 @@ void export_mints(py::module& m) {
              "Ignore reference contributions to the gradient? Default is False", "val"_a = false)
         .def("set_deriv_density_backtransformed", &Deriv::set_deriv_density_backtransformed,
              "Is the deriv_density already backtransformed? Default is False", "val"_a = false)
-        .def("compute", &Deriv::compute, "Compute the gradient", "deriv_calc_type"_a = DerivCalcType::Default);
+        .def("compute", &Deriv::compute, "Compute the gradient", "deriv_calc_type"_a = DerivCalcType::Default)
+        .def("compute_df", &Deriv::compute_df, "Compute the density-fitted gradient");
 
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix)() const;
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&) const;
@@ -1075,6 +1076,12 @@ void export_mints(py::module& m) {
              "atom"_a, "omega"_a = 0.0, "factory"_a = nullptr)
         .def("ao_tei_deriv2", &MintsHelper::ao_tei_deriv2,
              "Hessian  of AO basis TEI integrals: returns (3 * natoms)^2 matrices", "atom1"_a, "atom2"_a)
+        .def("ao_metric_deriv1", &MintsHelper::ao_metric_deriv1,
+             "Gradient of AO basis metric integrals: returns 3 matrices",
+             "atom"_a, "aux_name"_a)
+        .def("ao_3center_deriv1", &MintsHelper::ao_3center_deriv1,
+             "Gradient of AO basis 3-center, density-fitted integrals: returns 3 matrices",
+             "atom"_a, "aux_name"_a)
         .def("mo_oei_deriv1", &MintsHelper::mo_oei_deriv1,
              "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices",
              "oei_type"_a, "atom"_a, "C1"_a, "C2"_a)

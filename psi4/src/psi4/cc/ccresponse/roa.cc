@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -76,9 +76,6 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
     /* Booleans for convenience */
     if (params.gauge == "LENGTH" || params.gauge == "BOTH") compute_rl = 1;
     if (params.gauge == "VELOCITY" || params.gauge == "BOTH") compute_pl = 1;
-
-    /* grab omega in nm, rounded to nearest int */
-    long om_nm = std::lround((pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]));
 
     cartcomp = (char **)malloc(3 * sizeof(char *));
     cartcomp[0] = strdup("X");
@@ -165,6 +162,9 @@ void roa(std::shared_ptr<Wavefunction> ref_wfn) {
     }
 
     for (i = 0; i < params.nomega; i++) {
+        /* grab omega in nm, rounded to nearest int */
+        long om_nm = std::lround((pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]));
+
         zero_mat(tensor_rl0, 3, 3);
         zero_mat(tensor_rl1, 3, 3);
         zero_mat(tensor_pl0, 3, 3);

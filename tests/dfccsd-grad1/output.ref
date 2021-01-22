@@ -1,27 +1,40 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1rc3.dev5 
+                               Psi4 undefined 
 
-                         Git: Rev {master} 3fbd859 
+                         Git: Rev {dfgrad} e7012ae dirty
 
 
-    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
-    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
-    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
-    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
-    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
-    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    J. Chem. Theory Comput. in press (2017).
-    (doi: 10.1021/acs.jctc.7b00174)
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 15 May 2017 03:35PM
+    Psi4 started on: Wednesday, 13 January 2021 09:02AM
 
-    Process ID:  13702
-    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Process ID: 11670
+    Host:       Jonathons-MacBook-Pro.local
+    PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -30,13 +43,11 @@
 --------------------------------------------------------------------------
 #! DF-CCSD cc-pVDZ gradients for the H2O molecule.
 
-ref_vals = [                                                             #TEST
-             [  0.000000000000,    -0.00000000005273,     0.01239995246730],  #TEST
-             [  0.000000000000,     0.00259229696603,    -0.00619997625407],  #TEST
-             [  0.000000000000,    -0.00259229691330,    -0.00619997621323]   #TEST
-           ]                                                             #TEST
-ref = psi4.Matrix(3, 3)                                                #TEST
-ref.set(ref_vals)
+ref = psi4.Matrix.from_list([                                            #TEST
+        [  0.000000000000,    -0.00000000005273,     0.01239995246730],  #TEST
+        [  0.000000000000,     0.00259229696603,    -0.00619997625407],  #TEST
+        [  0.000000000000,    -0.00259229691330,    -0.00619997621323]   #TEST
+      ])                                                            #TEST
 
 molecule h2o {
 0 1
@@ -62,23 +73,27 @@ compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
 
 
 --------------------------------------------------------------------------
-gradient() will perform analytic gradient computation.
 
-*** tstart() called on psinet
-*** at Mon May 15 15:35:34 2017
+Scratch directory: /tmp/
+gradient() will perform analytic gradient computation.
+    For method 'CCSD', SCF Algorithm Type (re)set to DISK_DF.
+
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Wed Jan 13 09:02:51 2021
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
-    atoms 2-3 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1   entry O          line   198 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RHF Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -92,15 +107,15 @@ gradient() will perform analytic gradient computation.
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.065655108074    15.994914619560
-           H          0.000000000000    -0.757365949175     0.520997104936     1.007825032070
-           H          0.000000000000     0.757365949175     0.520997104936     1.007825032070
+         O            0.000000000000     0.000000000000    -0.065655108083    15.994914619570
+         H            0.000000000000    -0.757365949175     0.520997104927     1.007825032230
+         H            0.000000000000     0.757365949175     0.520997104927     1.007825032230
 
   Running in c1 symmetry.
 
   Rotational constants: A =     27.36310  B =     14.58041  C =      9.51197 [cm^-1]
-  Rotational constants: A = 820325.16776  B = 437109.76453  C = 285161.58706 [MHz]
-  Nuclear repulsion =    9.187386421477592
+  Rotational constants: A = 820325.17390  B = 437109.76779  C = 285161.58919 [MHz]
+  Nuclear repulsion =    9.187386457589813
 
   Charge       = 0
   Multiplicity = 1
@@ -110,14 +125,14 @@ gradient() will perform analytic gradient computation.
 
   ==> Algorithm <==
 
-  SCF Algorithm Type is DF.
+  SCF Algorithm Type is DISK_DF.
   DIIS enabled.
   MOM disabled.
   Fractional occupation disabled.
   Guess Type is SAD.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-10
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
@@ -134,33 +149,23 @@ gradient() will perform analytic gradient computation.
     Name: CC-PVDZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A         24      24       0       0       0       0
-   -------------------------------------------------------
-    Total      24      24       5       5       5       0
-   -------------------------------------------------------
+    atoms 1   entry O          line   221 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
-  ==> DFJK: Density-Fitted J/K Matrices <==
+  ==> DiskDFJK: Density-Fitted J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
     OpenMP threads:              1
     Integrals threads:           1
-    Memory (MB):               375
+    Memory [MiB]:              375
     Algorithm:                Core
     Integral Cache:           SAVE
     Schwarz Cutoff:          1E-12
-    Fitting Condition:       1E-12
+    Fitting Condition:       1E-10
 
    => Auxiliary Basis Set <=
 
@@ -172,35 +177,46 @@ gradient() will perform analytic gradient computation.
     Spherical Harmonics?: true
     Max angular momentum: 3
 
-  Minimum eigenvalue in the overlap matrix is 3.4230868664E-02.
-  Using Symmetric Orthogonalization.
+  Minimum eigenvalue in the overlap matrix is 3.4230868396E-02.
+  Reciprocal condition number of the overlap matrix is 9.2312643042E-03.
+    Using symmetric orthogonalization.
 
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         24      24 
+   -------------------------
+    Total      24      24
+   -------------------------
 
   ==> Iterations <==
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter   0:   -76.05124131707881   -7.60512e+01   7.05721e-02 
-   @DF-RHF iter   1:   -75.98268109612502    6.85602e-02   1.27030e-02 
-   @DF-RHF iter   2:   -76.01796198002032   -3.52809e-02   6.22730e-03 DIIS
-   @DF-RHF iter   3:   -76.02598528615204   -8.02331e-03   1.19025e-03 DIIS
-   @DF-RHF iter   4:   -76.02666667525563   -6.81389e-04   3.27864e-04 DIIS
-   @DF-RHF iter   5:   -76.02673656003468   -6.98848e-05   6.32151e-05 DIIS
-   @DF-RHF iter   6:   -76.02673999414142   -3.43411e-06   1.35687e-05 DIIS
-   @DF-RHF iter   7:   -76.02674017093882   -1.76797e-07   2.91763e-06 DIIS
-   @DF-RHF iter   8:   -76.02674017941325   -8.47443e-09   6.56497e-07 DIIS
-   @DF-RHF iter   9:   -76.02674017977012   -3.56863e-10   1.32813e-07 DIIS
-   @DF-RHF iter  10:   -76.02674017978481   -1.46940e-11   2.89913e-08 DIIS
-   @DF-RHF iter  11:   -76.02674017978538   -5.68434e-13   3.61026e-09 DIIS
-   @DF-RHF iter  12:   -76.02674017978532    5.68434e-14   7.95216e-10 DIIS
-   @DF-RHF iter  13:   -76.02674017978543   -1.13687e-13   2.65575e-10 DIIS
-   @DF-RHF iter  14:   -76.02674017978541    2.84217e-14   6.55463e-11 DIIS
+   @DF-RHF iter SAD:   -75.51051580740349   -7.55105e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.95398196559601   -4.43466e-01   1.74087e-02 DIIS
+   @DF-RHF iter   2:   -76.00726660807729   -5.32846e-02   9.94719e-03 DIIS
+   @DF-RHF iter   3:   -76.02633445213590   -1.90678e-02   9.08033e-04 DIIS
+   @DF-RHF iter   4:   -76.02671997191803   -3.85520e-04   2.08273e-04 DIIS
+   @DF-RHF iter   5:   -76.02673923525624   -1.92633e-05   3.82750e-05 DIIS
+   @DF-RHF iter   6:   -76.02674015352511   -9.18269e-07   6.09821e-06 DIIS
+   @DF-RHF iter   7:   -76.02674017941368   -2.58886e-08   8.54387e-07 DIIS
+   @DF-RHF iter   8:   -76.02674017993722   -5.23542e-10   1.98026e-07 DIIS
+   @DF-RHF iter   9:   -76.02674017996972   -3.25002e-11   3.37234e-08 DIIS
+   @DF-RHF iter  10:   -76.02674017997063   -9.09495e-13   2.77909e-09 DIIS
+   @DF-RHF iter  11:   -76.02674017997060    2.84217e-14   4.86464e-10 DIIS
+   @DF-RHF iter  12:   -76.02674017997060    0.00000e+00   2.81795e-11 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -221,175 +237,179 @@ gradient() will perform analytic gradient computation.
               A 
     DOCC [     5 ]
 
-  Energy converged.
-
-  @DF-RHF Final Energy:   -76.02674017978541
+  @DF-RHF Final Energy:   -76.02674017997060
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =              9.1873864214775924
-    One-Electron Energy =                -123.1375342580428622
-    Two-Electron Energy =                  37.9234076567798510
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                        -76.0267401797854063
+    Nuclear Repulsion Energy =              9.1873864575898132
+    One-Electron Energy =                -123.1375343259835233
+    Two-Electron Energy =                  37.9234076884231186
+    Total Energy =                        -76.0267401799706022
+
+Computation Completed
 
 
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.9765
 
-  Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:    -0.1669
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.1669
 
-  Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.8097     Total:     0.8097
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.8097     Total:     0.8097
 
-  Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     2.0580     Total:     2.0580
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     2.0580     Total:     2.0580
 
 
-*** tstop() called on psinet at Mon May 15 15:35:35 2017
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed Jan 13 09:02:53 2021
 Module time:
-	user time   =       0.43 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.61 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       0.43 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.61 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+  Constructing Basis Sets for DFOCC...
+
    => Loading Basis Set <=
 
     Name: CC-PVDZ-JKFIT
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    50 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   221 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ-RI
     Role: RIFIT
     Keyword: DF_BASIS_CC
-    atoms 1   entry O          line   234 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
-    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 1   entry O          line   235 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    19 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
 
 
-*** tstart() called on psinet
-*** at Mon May 15 15:35:35 2017
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Wed Jan 13 09:02:53 2021
 
 
 
-  Options:
+  Module DFOCC Options:
   ----------------------------------------------------------------------------
-  ACTIVE                      => [  ]             
-  BASIS_RELATIVISTIC          => (empty)          
-  BENCH                       => 0                
-  CC_DIIS_MAX_VECS            => 6                
-  CC_DIIS_MIN_VECS            => 2                
-  CC_LAMBDA                   => TRUE            !
-  CC_MAXITER                  => 50               
-  CC_TYPE                     => DF              !
-  CHOLESKY                    => FALSE            
-  CHOLESKY_TOLERANCE          => 0.0001           
-  CI_TYPE                     => CONV             
-  COMPUT_S2                   => FALSE            
-  CUBEPROP_BASIS_FUNCTIONS    => [  ]             
-  CUBEPROP_FILEPATH           => .                
-  CUBEPROP_ORBITALS           => [  ]             
-  CUBEPROP_TASKS              => [  ]             
-  CUBIC_BASIS_TOLERANCE       => 1e-12            
-  CUBIC_BLOCK_MAX_POINTS      => 1000             
-  CUBIC_GRID_OVERAGE          => [  ]             
-  CUBIC_GRID_SPACING          => [  ]             
-  CUTOFF                      => 8                
-  DEBUG                       => 0                
-  DERTYPE                     => FIRST           !
-  DF_BASIS_CC                 => CC-PVDZ-RI      !
-  DIE_IF_NOT_CONVERGED        => TRUE             
-  DKH_ORDER                   => 2                
-  DOCC                        => [  ]             
-  DO_DIIS                     => TRUE             
-  DO_LEVEL_SHIFT              => TRUE             
-  DO_SCS                      => FALSE           !
-  DO_SOS                      => FALSE           !
-  E3_SCALE                    => 0.25             
-  EKT_IP                      => FALSE            
-  EXTERNAL_POTENTIAL_SYMMETRY => FALSE            
-  E_CONVERGENCE               => 1e-08           !
-  FREEZE_CORE                 => TRUE            !
-  FROZEN_DOCC                 => [  ]             
-  FROZEN_UOCC                 => [  ]             
-  HESS_TYPE                   => HF               
-  INTEGRAL_CUTOFF             => 9                
-  INTEGRAL_PACKAGE            => LIBINT           
-  LEVEL_SHIFT                 => 0.02             
-  LINEQ_SOLVER                => CDGESV           
-  LITERAL_CFOUR               => (empty)          
-  MAT_NUM_COLUMN_PRINT        => 5                
-  MAX_MOGRAD_CONVERGENCE      => 0.001            
-  MOLDEN_WITH_VIRTUAL         => TRUE             
-  MOLDEN_WRITE                => FALSE            
-  MO_DIIS_NUM_VECS            => 6                
-  MO_MAXITER                  => 50               
-  MO_STEP_MAX                 => 0.5              
-  MP2_AMP_TYPE                => DIRECT           
-  MP2_OS_SCALE                => 1.2              
-  MP2_SOS_SCALE               => 1.3              
-  MP2_SOS_SCALE2              => 1.2              
-  MP2_SS_SCALE                => 0.333333         
-  MP2_TYPE                    => DF               
-  MP_TYPE                     => CONV             
-  NAT_ORBS                    => FALSE            
-  NUM_FROZEN_DOCC             => 0                
-  NUM_FROZEN_UOCC             => 0                
-  OCC_ORBS_PRINT              => FALSE            
-  OEPROP                      => FALSE            
-  OO_SCALE                    => 0.01             
-  OPT_METHOD                  => QNR              
-  ORB_OPT                     => FALSE           !
-  ORB_RESP_SOLVER             => PCG              
-  ORTH_TYPE                   => MGS              
-  PCG_BETA_TYPE               => FLETCHER_REEVES  
-  PCG_CONVERGENCE             => 1e-06            
-  PCG_MAXITER                 => 50               
-  PCM                         => FALSE            
-  PCM_CC_TYPE                 => PTE              
-  PCM_SCF_TYPE                => TOTAL            
-  PPL_TYPE                    => AUTO             
-  PRINT                       => 1                
-  PRINT_NOONS                 => 3                
-  PROPERTIES                  => [  ]             
-  PROPERTIES_ORIGIN           => [  ]             
-  PUREAM                      => TRUE             
-  QCHF                        => FALSE            
-  QC_MODULE                   => (empty)          
-  RAS1                        => [  ]             
-  RAS2                        => [  ]             
-  RAS3                        => [  ]             
-  RAS4                        => [  ]             
-  READ_SCF_3INDEX             => TRUE             
-  REGULARIZATION              => FALSE            
-  REG_PARAM                   => 0.4              
-  RELATIVISTIC                => NO               
-  RESTRICTED_DOCC             => [  ]             
-  RESTRICTED_UOCC             => [  ]             
-  RMS_MOGRAD_CONVERGENCE      => 1e-06            
-  R_CONVERGENCE               => 1e-05            
-  SCS_TYPE                    => SCS              
-  SOCC                        => [  ]             
-  SOS_TYPE                    => SOS              
-  TRIPLES_IABC_TYPE           => DISK             
-  UNITS                       => ANGSTROMS        
-  WFN                         => SCF              
-  WFN_TYPE                    => DF-CCSD         !
-  WRITER_FILE_LABEL           => (empty)          
+  ACTIVE                        => (empty)          
+  BASIS_RELATIVISTIC            => (empty)          
+  BENCH                         => (empty)          
+  CC_DIIS_MAX_VECS              => (empty)          
+  CC_DIIS_MIN_VECS              => (empty)          
+  CC_LAMBDA                     => TRUE            !
+  CC_MAXITER                    => (empty)          
+  CC_TYPE                       => DF              !
+  CHOLESKY                      => (empty)          
+  CHOLESKY_TOLERANCE            => (empty)          
+  CI_TYPE                       => (empty)          
+  COMPUT_S2                     => (empty)          
+  CUBEPROP_BASIS_FUNCTIONS      => (empty)          
+  CUBEPROP_FILEPATH             => (empty)          
+  CUBEPROP_ISOCONTOUR_THRESHOLD => (empty)          
+  CUBEPROP_ORBITALS             => (empty)          
+  CUBEPROP_TASKS                => (empty)          
+  CUBIC_BASIS_TOLERANCE         => (empty)          
+  CUBIC_BLOCK_MAX_POINTS        => (empty)          
+  CUBIC_GRID_OVERAGE            => (empty)          
+  CUBIC_GRID_SPACING            => (empty)          
+  CUTOFF                        => (empty)          
+  DEBUG                         => (empty)          
+  DERTYPE                       => FIRST           !
+  DF_BASIS_CC                   => CC-PVDZ-RI      !
+  DIE_IF_NOT_CONVERGED          => (empty)          
+  DKH_ORDER                     => (empty)          
+  DOCC                          => (empty)          
+  DO_DIIS                       => (empty)          
+  DO_LEVEL_SHIFT                => (empty)          
+  DO_SCS                        => FALSE           !
+  DO_SOS                        => FALSE           !
+  E3_SCALE                      => (empty)          
+  EKT_IP                        => (empty)          
+  EXTERNAL_POTENTIAL_SYMMETRY   => (empty)          
+  E_CONVERGENCE                 => 1e-08           !
+  FREEZE_CORE                   => TRUE            !
+  FROZEN_DOCC                   => (empty)          
+  FROZEN_UOCC                   => (empty)          
+  HESS_TYPE                     => (empty)          
+  INTEGRAL_CUTOFF               => (empty)          
+  INTEGRAL_PACKAGE              => (empty)          
+  LEVEL_SHIFT                   => (empty)          
+  LINEQ_SOLVER                  => (empty)          
+  LITERAL_CFOUR                 => (empty)          
+  MAT_NUM_COLUMN_PRINT          => (empty)          
+  MAX_MOGRAD_CONVERGENCE        => (empty)          
+  MBIS_D_CONVERGENCE            => (empty)          
+  MBIS_MAXITER                  => (empty)          
+  MBIS_PRUNING_SCHEME           => (empty)          
+  MBIS_RADIAL_POINTS            => (empty)          
+  MBIS_SPHERICAL_POINTS         => (empty)          
+  MOLDEN_WITH_VIRTUAL           => (empty)          
+  MOLDEN_WRITE                  => (empty)          
+  MO_DIIS_NUM_VECS              => (empty)          
+  MO_MAXITER                    => (empty)          
+  MO_STEP_MAX                   => (empty)          
+  MP2_AMP_TYPE                  => (empty)          
+  MP2_OS_SCALE                  => (empty)          
+  MP2_SOS_SCALE                 => (empty)          
+  MP2_SOS_SCALE2                => (empty)          
+  MP2_SS_SCALE                  => (empty)          
+  MP2_TYPE                      => (empty)          
+  MP_TYPE                       => (empty)          
+  NAT_ORBS                      => (empty)          
+  NUM_FROZEN_DOCC               => (empty)          
+  NUM_FROZEN_UOCC               => (empty)          
+  NUM_GPUS                      => (empty)          
+  OCC_ORBS_PRINT                => (empty)          
+  OEPROP                        => (empty)          
+  OO_SCALE                      => (empty)          
+  OPT_METHOD                    => (empty)          
+  ORB_OPT                       => FALSE           !
+  ORB_RESP_SOLVER               => (empty)          
+  ORTH_TYPE                     => (empty)          
+  PARENT_SYMMETRY               => (empty)          
+  PCG_BETA_TYPE                 => (empty)          
+  PCG_CONVERGENCE               => (empty)          
+  PCG_MAXITER                   => (empty)          
+  PCM                           => (empty)          
+  PE                            => (empty)          
+  PPL_TYPE                      => (empty)          
+  PRINT                         => (empty)          
+  PRINT_NOONS                   => (empty)          
+  PROPERTIES                    => (empty)          
+  PROPERTIES_ORIGIN             => (empty)          
+  PUREAM                        => (empty)          
+  QCHF                          => (empty)          
+  QC_MODULE                     => (empty)          
+  RAS1                          => (empty)          
+  RAS2                          => (empty)          
+  RAS3                          => (empty)          
+  RAS4                          => (empty)          
+  READ_SCF_3INDEX               => (empty)          
+  REGULARIZATION                => (empty)          
+  REG_PARAM                     => (empty)          
+  RELATIVISTIC                  => (empty)          
+  RESTRICTED_DOCC               => (empty)          
+  RESTRICTED_UOCC               => (empty)          
+  RMS_MOGRAD_CONVERGENCE        => (empty)          
+  R_CONVERGENCE                 => (empty)          
+  SCF_TYPE                      => DISK_DF         !
+  SCS_TYPE                      => (empty)          
+  SOCC                          => (empty)          
+  SOS_TYPE                      => (empty)          
+  TRIPLES_IABC_TYPE             => (empty)          
+  WFN                           => (empty)          
+  WFN_TYPE                      => DF-CCSD         !
+  WRITER_FILE_LABEL             => (empty)          
 
 
  ============================================================================== 
@@ -398,12 +418,13 @@ Total time:
 
                        DF-CCSD   
               Program Written by Ugur Bozkaya
-              Latest Revision April 17, 2016
+              Latest Revision September 9, 2017
 
  ============================================================================== 
  ============================================================================== 
  ============================================================================== 
 
+	For this residual convergence, default PCG convergence is:     1.00e-07
 	MO spaces... 
 
 	 FC   OCC   VIR   FV 
@@ -417,8 +438,8 @@ Total time:
 	Available memory                      :    500.00 MB 
 	Memory requirement for 3-index ints   :      0.29 MB 
 	Memory requirement for DF-CC int trans:      0.89 MB 
-	Memory requirement for CC contractions:      0.28 MB 
-	Total memory requirement for DF+CC int:      0.57 MB 
+	Memory requirement for CC contractions:      0.18 MB 
+	Total memory requirement for DF+CC int:      0.47 MB 
 	Memory requirement for Wabef term (T2):      0.99 MB 
 	Memory requirement for Wefab term (L2):      1.00 MB 
 	Memory for high mem Wabef algorithm   :      1.27 MB 
@@ -426,11 +447,11 @@ Total time:
 
 	Computing DF-MP2 energy ... 
 	======================================================================= 
-	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	DF-HF Energy (a.u.)                :   -76.02674017978541
-	REF Energy (a.u.)                  :   -76.02674017978541
-	DF-MP2 Correlation Energy (a.u.)   :    -0.20165224256007
-	DF-MP2 Total Energy (a.u.)         :   -76.22839242234548
+	Nuclear Repulsion Energy (a.u.)    :     9.18738645758981
+	DF-HF Energy (a.u.)                :   -76.02674017997060
+	REF Energy (a.u.)                  :   -76.02674017997060
+	DF-MP2 Correlation Energy (a.u.)   :    -0.20165224228872
+	DF-MP2 Total Energy (a.u.)         :   -76.22839242225932
 	======================================================================= 
 
  ============================================================================== 
@@ -439,48 +460,48 @@ Total time:
 
   Iter       E_corr                  DE                 T2 RMS        T1 RMS     
   ----   ----------------      ----------------       ----------    ----------   
-   1      -0.2069481721         -0.0052959295          3.09e-04      1.46e-03 
-   2      -0.2109463902         -0.0039982181          1.20e-04      2.65e-04 
-   3      -0.2113507298         -0.0004043396          2.71e-05      1.43e-04 
-   4      -0.2113619407         -0.0000112110          6.70e-06      2.67e-05 
-   5      -0.2113727764         -0.0000108356          1.40e-06      1.45e-05 
-   6      -0.2113709408         0.0000018355          4.32e-07      5.11e-06 
-   7      -0.2113711444         -0.0000002036          9.75e-08      1.48e-06 
-   8      -0.2113706147         0.0000005298          3.81e-08      2.43e-07 
-   9      -0.2113705907         0.0000000239          7.98e-09      4.02e-08 
-  10      -0.2113705675         0.0000000232          2.08e-09      5.36e-09 
-  11      -0.2113705677         -0.0000000002          4.23e-10      1.53e-09 
+   1      -0.2069481718         -0.0052959295         3.09e-04      1.46e-03 
+   2      -0.2109463899         -0.0039982181         1.20e-04      2.65e-04 
+   3      -0.2113507295         -0.0004043396         2.71e-05      1.43e-04 
+   4      -0.2113619405         -0.0000112110         6.70e-06      2.67e-05 
+   5      -0.2113727761         -0.0000108356         1.40e-06      1.45e-05 
+   6      -0.2113709406          0.0000018355         4.32e-07      5.11e-06 
+   7      -0.2113711442         -0.0000002036         9.75e-08      1.48e-06 
+   8      -0.2113706144          0.0000005298         3.81e-08      2.43e-07 
+   9      -0.2113705905          0.0000000239         7.98e-09      4.02e-08 
+  10      -0.2113705672          0.0000000232         2.08e-09      5.36e-09 
+  11      -0.2113705675         -0.0000000002         4.23e-10      1.53e-09 
 
  ============================================================================== 
  ===================== DF-CCSD ITERATIONS ARE CONVERGED ======================= 
  ============================================================================== 
 
 	T1 diagnostic reference value:     0.02000000000000
-	T1 diagnostic                :     0.00589797292514
+	T1 diagnostic                :     0.00589797286432
 
 	======================================================================= 
 	================ CCSD FINAL RESULTS =================================== 
 	======================================================================= 
-	Nuclear Repulsion Energy (a.u.)    :     9.18738642147759
-	SCF Energy (a.u.)                  :   -76.02674017978541
-	REF Energy (a.u.)                  :   -76.02674017978541
-	DF-CCSD Correlation Energy (a.u.)  :    -0.21137056774819
-	DF-CCSD Total Energy (a.u.)        :   -76.23811074753360
+	Nuclear Repulsion Energy (a.u.)    :     9.18738645758981
+	SCF Energy (a.u.)                  :   -76.02674017997060
+	REF Energy (a.u.)                  :   -76.02674017997060
+	DF-CCSD Correlation Energy (a.u.)  :    -0.21137056747268
+	DF-CCSD Total Energy (a.u.)        :   -76.23811074744329
 	======================================================================= 
 
 
-*** tstop() called on psinet at Mon May 15 15:35:35 2017
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed Jan 13 09:02:54 2021
 Module time:
-	user time   =       0.19 seconds =       0.00 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.69 seconds =       0.01 minutes
-	system time =       0.14 seconds =       0.00 minutes
+	user time   =       0.20 seconds =       0.00 minutes
+	system time =       0.62 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.93 seconds =       0.02 minutes
+	system time =       0.67 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
 
-*** tstart() called on psinet
-*** at Mon May 15 15:35:35 2017
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Wed Jan 13 09:02:54 2021
 
 
  ============================================================================== 
@@ -489,7 +510,7 @@ Total time:
 
                        DF-CCSD-Lambda   
               Program Written by Ugur Bozkaya
-              Latest Revision September 4, 2015
+              Latest Revision May 31, 2016
 
  ============================================================================== 
  ============================================================================== 
@@ -503,16 +524,16 @@ Total time:
 
   Iter       E_corr                  DE                 L2 RMS        L1 RMS     
   ----   ----------------      ----------------       ----------    ----------   
-   1      -0.2086760856         0.0026944821          4.38e-05      3.82e-04 
-   2      -0.2083654041         0.0003106816          1.07e-05      5.62e-05 
-   3      -0.2083112863         0.0000541178          2.44e-06      3.31e-05 
-   4      -0.2083034973         0.0000077890          9.25e-07      9.23e-06 
-   5      -0.2083063569         -0.0000028596          2.24e-07      3.46e-06 
-   6      -0.2083061417         0.0000002153          7.54e-08      7.28e-07 
-   7      -0.2083061780         -0.0000000364          1.78e-08      1.73e-07 
-   8      -0.2083062000         -0.0000000220          4.52e-09      2.58e-08 
-   9      -0.2083062118         -0.0000000117          9.56e-10      5.02e-09 
-  10      -0.2083062139         -0.0000000022          2.13e-10      7.67e-10 
+   1      -0.2086760854          0.0026944821         4.38e-05      3.82e-04 
+   2      -0.2083654038          0.0003106816         1.07e-05      5.62e-05 
+   3      -0.2083112860          0.0000541178         2.44e-06      3.31e-05 
+   4      -0.2083034970          0.0000077890         9.25e-07      9.23e-06 
+   5      -0.2083063567         -0.0000028596         2.24e-07      3.46e-06 
+   6      -0.2083061414          0.0000002153         7.54e-08      7.28e-07 
+   7      -0.2083061778         -0.0000000364         1.78e-08      1.73e-07 
+   8      -0.2083061998         -0.0000000220         4.52e-09      2.58e-08 
+   9      -0.2083062115         -0.0000000117         9.56e-10      5.02e-09 
+  10      -0.2083062137         -0.0000000022         2.13e-10      7.67e-10 
 
  ============================================================================== 
  ===================== DF-CCSDL ITERATIONS ARE CONVERGED ====================== 
@@ -520,18 +541,18 @@ Total time:
 
 	Computing 3-index intermediates...
 
-*** tstop() called on psinet at Mon May 15 15:35:36 2017
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed Jan 13 09:02:57 2021
 Module time:
-	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.25 seconds =       0.00 minutes
+	system time =       1.58 seconds =       0.03 minutes
+	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =       0.78 seconds =       0.01 minutes
-	system time =       0.32 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.18 seconds =       0.02 minutes
+	system time =       2.25 seconds =       0.04 minutes
+	total time  =          6 seconds =       0.10 minutes
 
-*** tstart() called on psinet
-*** at Mon May 15 15:35:36 2017
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Wed Jan 13 09:02:57 2021
 
 
  ============================================================================== 
@@ -542,7 +563,7 @@ Total time:
               Particle Density Matrix Code   
                for Density-Fitted Methods       
                    by Ugur Bozkaya
-              Latest Revision August 17, 2015
+              Latest Revision December 19, 2016
 
  ============================================================================== 
  ============================================================================== 
@@ -565,107 +586,57 @@ Total time:
 	  2         1.45e-05         6.51e-06
 	  3         3.21e-06         1.15e-06
 	  4         3.68e-07         2.26e-07
+	  5         6.54e-08         5.24e-08
 
 	Computing the relaxed PDMs and GFM...
 
-*** tstop() called on psinet at Mon May 15 15:35:36 2017
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed Jan 13 09:02:58 2021
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.81 seconds =       0.01 minutes
-	system time =       0.35 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.22 seconds =       0.02 minutes
+	system time =       2.48 seconds =       0.04 minutes
+	total time  =          7 seconds =       0.12 minutes
 
-*** tstart() called on psinet
-*** at Mon May 15 15:35:36 2017
+*** tstart() called on Jonathons-MacBook-Pro.local
+*** at Wed Jan 13 09:02:58 2021
 
-
- ============================================================================== 
- ============================================================================== 
- ============================================================================== 
-
-                         DFGRAD   
-            A General Analytic Gradients Code   
-               for Density-Fitted Methods       
-                   by Ugur Bozkaya
-              Latest Revision October 7, 2015
-
- ============================================================================== 
- ============================================================================== 
- ============================================================================== 
-
-	Analytic gradients computation is starting...
 	Forming Gamma^tilde...
 	Backtransforming OPDM, TPDM, and GFM to the AO basis...
-	Computing analytic gradients...
 
-  -Nuclear Gradient:
-     Atom            X                  Y                   Z
-    ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     2.989554195418
-       2        0.000000000000     2.051800004663    -1.494777097709
-       3        0.000000000000    -2.051800004663    -1.494777097709
-
-
-  -Kinetic Gradient:
-     Atom            X                  Y                   Z
-    ------   -----------------  -----------------  -----------------
-       1        0.000000000002     0.000000000008     0.890389612086
-       2       -0.000000000000     0.592897172391    -0.445194806039
-       3       -0.000000000002    -0.592897172399    -0.445194806048
-
-
-  -Potential Gradient:
-     Atom            X                  Y                   Z
-    ------   -----------------  -----------------  -----------------
-       1       -0.000000000014    -0.000000000002    -8.368965886168
-       2        0.000000000001    -5.579800026680     4.184482943067
-       3        0.000000000013     5.579800026683     4.184482943100
-
-
-  -Overlap Gradient:
-     Atom            X                  Y                   Z
-    ------   -----------------  -----------------  -----------------
-       1        0.000000000010     0.000000000005     0.472623966019
-       2       -0.000000000002     0.288508088585    -0.236311972808
-       3       -0.000000000009    -0.288508088590    -0.236311993211
-
-
-  -One-Electron Gradient:
-     Atom            X                  Y                   Z
-    ------   -----------------  -----------------  -----------------
-       1       -0.000000000012     0.000000000006    -7.478576274082
-       2        0.000000000001    -4.986902854289     3.739288137029
-       3        0.000000000012     4.986902854283     3.739288137053
-
-
-  -Two-Electron Gradient:
-     Atom            X                  Y                   Z
-    ------   -----------------  -----------------  -----------------
-       1        0.000000000001    -0.000000000013     4.028800105566
-       2        0.000000000001     2.649187611098    -2.014400052774
-       3       -0.000000000002    -2.649187611084    -2.014400052791
-
-
-  -Total Gradient:
-     Atom            X                  Y                   Z
-    ------   -----------------  -----------------  -----------------
-       1       -0.000000000001    -0.000000000002     0.012401992921
-       2        0.000000000000     0.002592850056    -0.006200986262
-       3        0.000000000001    -0.002592850054    -0.006201006659
-
-
-*** tstop() called on psinet at Mon May 15 15:35:36 2017
+*** tstop() called on Jonathons-MacBook-Pro.local at Wed Jan 13 09:02:58 2021
 Module time:
-	user time   =       0.15 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.96 seconds =       0.02 minutes
-	system time =       0.37 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
-	Analytic gradients................................................PASSED
+	user time   =       1.23 seconds =       0.02 minutes
+	system time =       2.52 seconds =       0.04 minutes
+	total time  =          7 seconds =       0.12 minutes
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.124070173015
+         H            0.000000000000    -1.431214220689     0.984541840469
+         H            0.000000000000     1.431214220689     0.984541840469
+
+
+  -Total gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1       -0.000000000000    -0.000000000000     0.012399816665
+       2        0.000000000000     0.002592173439    -0.006199908333
+       3        0.000000000000    -0.002592173439    -0.006199908333
+
+    Analytic gradients....................................................................PASSED
+
+    Psi4 stopped on: Wednesday, 13 January 2021 09:02AM
+    Psi4 wall time for execution: 0:00:06.83
 
 *** Psi4 exiting successfully. Buy a developer a beer!

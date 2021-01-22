@@ -2,6 +2,7 @@
 
 
 
+
 molecule dimer {
   Ne
   --
@@ -28,6 +29,18 @@ energyB, wfnB = energy("PBE0", molecule=monomerB, return_wfn=True)
 
 # Build a blank dimer wavefunction
 wfnD = core.Wavefunction.build(sapt_dimer) 
+
+# No hybrid kernel & exch-disp scaling
+set SAPT_DFT_DO_HYBRID False 
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
+
+# Compute SAPT(DFT) from the provided wavefunctions
+data = procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
+
+
+# Hybrid kernel & exch-disp scaling
+set SAPT_DFT_DO_HYBRID True
+set SAPT_DFT_EXCH_DISP_SCALE_SCHEME disp 
 
 # Compute SAPT(DFT) from the provided wavefunctions
 data = procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)

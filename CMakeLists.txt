@@ -36,6 +36,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #    - pint (runtime only; e.g., `conda install pint -c conda-forge`)
 #    - pydantic >=1.0 (runtime only; e.g., `conda install pydantic -c conda-forge`)
 #    - msgpack-python (runtime only; e.g., `conda install msgpack-python`)
+#    - mpfr (for Libint2; e.g., `conda install mpfr`))
+#    - Eigen (for Libint2; e.g., `conda install eigen`)
 
 #  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
 
@@ -179,7 +181,7 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 # * headers: Python.h for pybind11 to build against in psi4-core
 # * library: not at all
 
-set(Python_ADDITIONAL_VERSIONS 3.8 3.7 3.6)  # adjust with CMake minimum FindPythonInterp
+set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7 3.6)  # adjust with CMake minimum FindPythonInterp
 find_package(PythonLibsNew 3.6 REQUIRED)
 message(STATUS "${Cyan}Found Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE} (found version ${PYTHON_VERSION_STRING})")
 

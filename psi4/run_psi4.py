@@ -5,7 +5,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2019 The Psi4 Developers.
+# Copyright (c) 2007-2021 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -351,13 +351,18 @@ except Exception as exception:
 
     in_str = "Printing out the relevant lines from the Psithon --> Python processed input file:\n"
     lines = content.splitlines()
-    suspect_lineno = traceback.extract_tb(exc_traceback)[1].lineno - 1  # -1 for 0 indexing
-    first_line = max(0, suspect_lineno - 5)  # Try to show five lines back...
-    last_line = min(len(lines), suspect_lineno + 6)  # Try to show five lines forward
-    for lineno in range(first_line, last_line):
-        mark = "--> " if lineno == suspect_lineno else "    "
-        in_str += mark + lines[lineno] + "\n"
-    psi4.core.print_out(in_str)
+    try:
+        suspect_lineno = traceback.extract_tb(exc_traceback)[1].lineno - 1  # -1 for 0 indexing
+    except IndexError:
+        # module error where lineno useless (e.g., `print "asdf"`)
+        pass
+    else:
+        first_line = max(0, suspect_lineno - 5)  # Try to show five lines back...
+        last_line = min(len(lines), suspect_lineno + 6)  # Try to show five lines forward
+        for lineno in range(first_line, last_line):
+            mark = "--> " if lineno == suspect_lineno else "    "
+            in_str += mark + lines[lineno] + "\n"
+        psi4.core.print_out(in_str)
 
     # extact expection message and print it in a box for attention.
     ex = ','.join(traceback.format_exception_only(type(exception), exception))

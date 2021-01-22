@@ -139,7 +139,7 @@ except qcdb.BasisSetNotFound:
     error_tripped = 1
 
 psi4.basis_helper(key='df_basis_scf', name='uggh', block="""
-    assign he DEF2-QZVPP-JKFIT
+    assign he DEF2-UNIVERSAL-JKFIT
 """)
 hene.print_out()
 

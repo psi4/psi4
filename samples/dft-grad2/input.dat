@@ -1,4 +1,5 @@
 #! DF-BP86-D2 cc-pVDZ frozen core gradient of S22 HCN
+#! updated ref gradient due to new BraggSlater radii
 
 
 molecule {

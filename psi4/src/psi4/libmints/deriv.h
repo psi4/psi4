@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -66,25 +66,12 @@ class PSI_API Deriv {
 
     CdSalcList cdsalcs_;
 
-    SharedMatrix P_2_;
-    SharedMatrix W_2_;
-    SharedMatrix SCF_D_;
-
     int natom_;
     bool tpdm_presorted_;
     bool deriv_density_backtransformed_;
     bool ignore_reference_;
 
-    std::vector<SharedMatrix> dH_;
-    std::vector<SharedMatrix> dS_;
-
     // Results go here.
-    /// One-electron contribution to the gradient
-    SharedMatrix opdm_contr_;
-    /// Reference one-electron contribution to the gradient
-    SharedMatrix opdm_ref_contr_;
-    /// Overlap contribution to the gradient
-    SharedMatrix x_contr_;
     /// Reference overlap contribution to the gradient
     SharedMatrix x_ref_contr_;
     /// Two-electron contribution to the gradient
@@ -117,9 +104,15 @@ class PSI_API Deriv {
 
     SharedMatrix compute(DerivCalcType deriv_calc_type = DerivCalcType::Default);
 
-    const SharedMatrix& one_electron() { return opdm_contr_; }
-
-    const SharedMatrix& lagrangian() { return x_contr_; }
+    /*!
+     * Computes gradients assuming density-fitted two electron integrals.
+     * All density matrix intermediates are assumed stored on the wavefunction or written to disk.
+     * That is the responsibility of the caller code. See deriv.cc for expected format.
+     * Generating integral derivatives and contracting is the job of this code.
+     * \param ref_aux_name Name of reference auxiliary basis set, e.g., DF_BASIS_SCF
+     * \param cor_aux_name Name of correlated auxiliary basis set, e.g., DF_BASIS_CC
+     */
+    SharedMatrix compute_df(const std::string& ref_aux_name, const std::string& cor_aux_name);
 
     const SharedMatrix& two_body() { return tpdm_contr_; }
 

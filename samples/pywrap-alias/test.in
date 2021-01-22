@@ -13,6 +13,7 @@ set {
     scf_type pk  # no fitting bases for helium
     #df_scf_guess cc-pvdz-ri
     df_scf_guess false
+    mp_type conv
 }
 
 set scf {

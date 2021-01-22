@@ -99,7 +99,7 @@ ref_rmsd = math.sqrt(2. * 0.2 * 0.2 / 3.)
 rmsd, mill, mol = oco12.B787(oco10, verbose=0)
 qcdb.compare_values(ref_rmsd, rmsd, 6, 'known rmsd Mol.B787')
 
-from psi4.driver.qcdb.align import B787
+from qcelemental.molutil import B787
 rmsd, mill = B787(oco10.geometry(np_out=True), oco12.geometry(np_out=True), np.array(['O', 'C', 'O']), np.array(['O', 'O', 'C']), verbose=0, do_plot=False)
 qcdb.compare_values(ref_rmsd, rmsd, 6, 'known rmsd B787')
 

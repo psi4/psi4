@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -57,11 +57,9 @@ double DCTSolver::compute_energy_RHF() {
     // Perform SCF guess for the orbitals
     scf_guess_RHF();
 
-    // If DCT computation type is density fitting, build b(Q|mn) in AO and SO basis
+    // If DCT computation type is density fitting, build b(Q|mn)
     if (options_.get_str("DCT_TYPE") == "DF") {
-        df_build_b_ao();
-        transform_b_ao2so();
-        transform_b_ao2so_scf();
+        df_build_b();
     }
 
     // Perform MP2 guess for the cumulant

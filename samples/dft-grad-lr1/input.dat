@@ -1,4 +1,5 @@
 #! wB97X-D cc-pVDZ gradient of S22 HCN
+#! update df/pk_ref values due to new BraggSlater radii
 
 
 
@@ -19,7 +20,6 @@ set {
 }
 
 anl_grad = gradient('wB97X-D', dertype=1)
-
 # fd_grad = gradient('wB97X-D', dertype=0)
 
 set scf_type pk

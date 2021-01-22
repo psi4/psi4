@@ -22,7 +22,8 @@
         endif()
 
         ExternalProject_Add(pcmsolver_external
-            URL https://github.com/PCMSolver/pcmsolver/archive/v1.2.1.tar.gz
+            #URL https://github.com/PCMSolver/pcmsolver/archive/v1.3.1.tar.gz
+            URL https://github.com/loriab/pcmsolver/archive/v1211.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

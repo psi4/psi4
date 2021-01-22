@@ -1,6 +1,6 @@
 import pytest
 from .utils import *
-from .addons import using_psi4
+from .addons import using
 
 import pint
 import qcelemental
@@ -93,8 +93,8 @@ M  END
 @pytest.mark.parametrize(
     "subjects",
     [
-        pytest.param("pmol", marks=using_psi4),
-        pytest.param("qmol", marks=using_psi4),  # needs qcdb.Molecule, presently more common in psi4 than in qcdb
+        pytest.param("pmol", marks=using("psi4")),
+        pytest.param("qmol", marks=using("psi4")),  # needs qcdb.Molecule, presently more common in psi4 than in qcdb
         pytest.param("qcmol"),
     ],
 )
@@ -146,8 +146,8 @@ def test_to_string_xyz(subjects, inp, expected):
 @pytest.mark.parametrize(
     "subjects",
     [
-        pytest.param("pmol", marks=using_psi4),
-        pytest.param("qmol", marks=using_psi4),  # needs qcdb.Molecule, presently more common in psi4 than in qcdb
+        pytest.param("pmol", marks=using("psi4")),
+        pytest.param("qmol", marks=using("psi4")),  # needs qcdb.Molecule, presently more common in psi4 than in qcdb
     ],
 )
 @pytest.mark.parametrize("inp,expected", [(("subject3", {}), "ans3_mol"),])  # yapf: disable

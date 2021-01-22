@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2019 The Psi4 Developers.
+# Copyright (c) 2007-2021 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -98,9 +98,9 @@ from psi4.core import variable, set_variable
 # * Note that this is a "battening down the hatches" for the many
 #   rather than letting PYTHONPATH rule for the few.
 import sys
-if "@ENABLE_PCMSolver@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
+if "@ENABLE_PCMSolver@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # PCMSolver
     sys.path.insert(1, "@PCMSolver_PYMOD@")
-if "@ENABLE_cppe@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
+if "@ENABLE_cppe@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # cppe
     sys.path.insert(1, "@cppe_PYMOD@")
-if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:
+if "@ENABLE_libefp@".upper() in ["1", "ON", "YES", "TRUE", "Y"]:  # pylibefp
     sys.path.insert(1, "@pylibefp_PYMOD@")

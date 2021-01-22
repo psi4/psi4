@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -502,26 +502,22 @@ class DCTSolver : public Wavefunction {
     std::string indent;
 
     // Density-Fitting DCT
-    /// Density-fitted MP2 (DF-MP2) guess
-    void df_build_b_ao();
+    /// Construct the B tensors
+    void df_build_b();
     /// Calculate memory required for density-fitting
     void df_memory();
     /// Build density-fitted <VV||VV>, <vv||vv>, and <Vv|Vv> tensors in G intermediate
     void build_DF_tensors_RHF();
     void build_DF_tensors_UHF();
     /// Form J(P|Q)^-1/2
-    void formJm12(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero);
-    void formJm12_scf(std::shared_ptr<BasisSet> auxiliary, std::shared_ptr<BasisSet> zero);
+    SharedMatrix formJm12(std::shared_ptr<BasisSet> auxiliary);
     /// Form AO basis b(Q|mu,nu)
-    void formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
-                  std::shared_ptr<BasisSet> zero);
-    void formb_ao_scf(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
-                      std::shared_ptr<BasisSet> zero);
+    SharedMatrix formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
+                  std::shared_ptr<BasisSet> zero, SharedMatrix Jm12);
     /// Transform AO-basis b(Q, mn) to MO-basis b(Q, pq)
     void transform_b();
     /// Transform b(Q|mu,nu) from AO basis to SO basis
-    void transform_b_ao2so();
-    void transform_b_ao2so_scf();
+    SharedMatrix transform_b_ao2so(SharedMatrix bQmn_ao);
     /// Form MO-basis b(Q, ij)
     void formb_oo();
     void formb_oo_scf();
@@ -569,13 +565,8 @@ class DCTSolver : public Wavefunction {
     int nQ_scf_;
     /// Number of alpha occupied orbitals
     int naocc_;
-    /// J^-1/2 Matrix
-    double **Jm12_;
-    double **Jm12_scf_;
     /// b(Q|mu,nu)
-    SharedMatrix bQmn_ao_;
     SharedMatrix bQmn_so_;
-    SharedMatrix bQmn_ao_scf_;
     SharedMatrix bQmn_so_scf_;
     /// b(Q|i, j)
     SharedMatrix bQijA_mo_;

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -411,25 +411,6 @@ void DFOCC::title() {
         outfile->Printf("                      QCHF   \n");
     outfile->Printf("              Program Written by Ugur Bozkaya\n");
     outfile->Printf("              Latest Revision September 9, 2017\n");
-    outfile->Printf("\n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf("\n");
-
-}  //
-
-void DFOCC::title_grad() {
-    outfile->Printf("\n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf("\n");
-    outfile->Printf("                         DFGRAD   \n");
-    outfile->Printf("            A General Analytic Gradients Code   \n");
-    outfile->Printf("               for Density-Fitted Methods       \n");
-    outfile->Printf("                   by Ugur Bozkaya\n");
-    outfile->Printf("              Latest Revision December 19, 2016\n");
     outfile->Printf("\n");
     outfile->Printf(" ============================================================================== \n");
     outfile->Printf(" ============================================================================== \n");

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2019 The Psi4 Developers.
+# Copyright (c) 2007-2021 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -68,7 +68,7 @@ def fchkfile_to_string(fname):
     return fchk_string
 
 
-def compare_fchkfiles(expected, computed, label):
+def compare_fchkfiles(expected, computed, digits, label):
     # """Function to compare two FCHK files.
 
     # an older format description can be found here
@@ -79,13 +79,14 @@ def compare_fchkfiles(expected, computed, label):
     #
     # :param expected: reference FCHK file name
     # :param computed: computed FCHK file name
+    # :param digits: tolerance for high accuracy fields -- 1.e-8 or 1.e-9 suitable
     # :param label: string labelling the test
     # """
 
     fchk_ref = fchkfile_to_string(expected).splitlines()
     fchk_calc = fchkfile_to_string(computed).splitlines()
 
-    high_accuracy = 9
+    high_accuracy = digits
     low_accuracy = 3
 
     # Those listed below need super high scf convergence (d_conv 1e-12) and might

@@ -1,7 +1,8 @@
 #! He Dimer VV10 functional test.
 #! notes: DFT_VV10_B/C overwrites the NL_.. tuple
-#
+#! updated 'bench' reference values for new BraggSlater radii.
 
+#
 
 # references (from psi4)
 Enl_blypnl_b50_c01=0.0246749861696854

@@ -15,6 +15,7 @@ set {
   basis cc-pvdz
   reference uhf
   guess gwh
+  mp_type conv
 }
 
 grad = gradient('mp2.5')

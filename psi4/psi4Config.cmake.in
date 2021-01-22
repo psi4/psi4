@@ -1,7 +1,7 @@
 # psi4Config.cmake
 # ----------------
 #
-# PSI4 cmake module.
+# Psi4 cmake module.
 # This module sets the following variables in your project::
 #
 #   psi4_FOUND - true if psi4 and all required components found on the system
@@ -114,7 +114,7 @@ endif()
 #-----------------------------------------------------------------------------
 if(NOT TARGET ${PN}::core)
     include("${CMAKE_CURRENT_LIST_DIR}/${PN}Targets.cmake")
-    set(PYBIND11_CPP_STANDARD "-std=c++@CMAKE_CXX_STANDARD@")
+    set(CMAKE_CXX_STANDARD @CMAKE_CXX_STANDARD@)
     find_package(pybind11 CONFIG REQUIRED)
     if(NOT DEFINED ENABLE_OPENMP)
       set(ENABLE_OPENMP "@ENABLE_OPENMP@")

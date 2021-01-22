@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -285,7 +285,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     if (name == "PE" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs polarizable embedding model (PE) computations. -*/
 
-        /*- Name of the potential file -*/
+        /*- Name of the potential file OR contents of potential file to be written anonymously on-the-fly. -*/
         options.add_str_i("POTFILE", "potfile.pot");
         /*- Threshold for induced moments convergence -*/
         options.add_double("INDUCED_CONVERGENCE", 1e-8);
