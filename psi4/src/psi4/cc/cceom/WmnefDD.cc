@@ -217,8 +217,8 @@ void WmnefDD(int i, int C_irr) {
         global_dpd_->buf4_close(&CMnEf);
 
         /*
-           dpd_file2_mat_init(&X);
-           dpd_file2_mat_rd(&X);
+           global_dpd_->file2_mat_init(&X);
+           global_dpd_->file2_mat_rd(&X);
            for(h=0; h < nC_irrs; h++) {
            for(l=0; l<occpi[h]; l++)
            for(I=(occpi[h]-openpi[h]); I<occpi[h]; I++)
@@ -227,8 +227,8 @@ void WmnefDD(int i, int C_irr) {
            for(l=(occpi[h]-openpi[h]); l<occpi[h]; l++)
            X.matrix[h][l][I] = 0.0;
            }
-           dpd_file2_mat_wrt(&X);
-           dpd_file2_mat_close(&X);
+           global_dpd_->file2_mat_wrt(&X);
+           global_dpd_->file2_mat_close(&X);
          */
 
         global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 0, 7, 0, 7, 0, "SIJAB");

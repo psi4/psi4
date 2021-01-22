@@ -110,13 +110,13 @@ void sigmaCC3_RHF_obsolete(int i, int C_irr, double omega) {
     global_dpd_->buf4_close(&WMnIe);
 
 #ifdef EOM_DEBUG
-    dpd_file2_close(&SIA);
-    dpd_buf4_close(&SIjAb);
+    global_dpd_->file2_close(&SIA);
+    global_dpd_->buf4_close(&SIjAb);
     check_sum("<Psi|Hhat<T|(Uhat C2)c|0>|T>/(w-wt)", i, C_irr);
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+    global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "SIjAb", i);
-    dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
 #endif
 
     /* do alpha-alpha-beta term 2 */
@@ -144,13 +144,13 @@ void sigmaCC3_RHF_obsolete(int i, int C_irr, double omega) {
     global_dpd_->buf4_close(&WMnIe);
 
 #ifdef EOM_DEBUG
-    dpd_file2_close(&SIA);
-    dpd_buf4_close(&SIjAb);
+    global_dpd_->file2_close(&SIA);
+    global_dpd_->buf4_close(&SIjAb);
     check_sum("<Psi|Hhat<T|(Utilde T2)c|0>|T>/(w-wt)", i, C_irr);
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+    global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "SIjAb", i);
-    dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
 #endif
 
     /* alpha-alpha-beta term 3 */
@@ -176,13 +176,13 @@ void sigmaCC3_RHF_obsolete(int i, int C_irr, double omega) {
     global_dpd_->buf4_close(&WMnIe);
 
 #ifdef EOM_DEBUG
-    dpd_file2_close(&SIA);
-    dpd_buf4_close(&SIjAb);
+    global_dpd_->file2_close(&SIA);
+    global_dpd_->buf4_close(&SIjAb);
     check_sum("<Psi|H'<T|(Uhat T2)c|0>|T>/(w-wt)", i, C_irr);
     sprintf(lbl, "%s %d", "SIA", i);
-    dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+    global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
     sprintf(lbl, "%s %d", "SIjAb", i);
-    dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+    global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
 #endif
 
     global_dpd_->file2_close(&SIA);
