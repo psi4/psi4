@@ -27,6 +27,11 @@ else()
                    -DMAX_AM=${MAX_AM_ERI}
                    -DENABLE_GENERIC=${ENABLE_GENERIC}
                    -DPYTHON_EXECUTABLE=${Python_EXECUTABLE}
+                   -DPYTHON_INCLUDE_DIR=${Python_INCLUDE_DIRS}
+                   -DPYTHON_LIBRARY=${Python_LIBRARIES}
+                   -DPython_EXECUTABLE=${Python_EXECUTABLE}
+                   -DPython_INCLUDE_DIR=${Python_INCLUDE_DIRS}
+                   -DPython_LIBRARY=${Python_LIBRARIES}
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
 
     set(gau2grid_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gau2grid CACHE PATH "path to internally built gau2gridConfig.cmake" FORCE)
