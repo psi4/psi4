@@ -3360,6 +3360,199 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1(int atom, double omega,
     return grad;
 }
 
+/* 1st and 2nd derivatives of metric in AO basis  */
+
+std::vector<SharedMatrix> MintsHelper::ao_metric_deriv1(int atom, const std::string& aux_name) {
+    std::array<std::string, 3> cartcomp{ {"X", "Y", "Z"} };
+
+    auto aux = get_basisset(aux_name);
+    auto factory = std::make_shared<IntegralFactory>(aux, BasisSet::zero_ao_basis_set(), aux, BasisSet::zero_ao_basis_set());
+
+    auto ints = std::shared_ptr<TwoBodyAOInt>(factory->eri(1));
+    auto naux = aux->nbf();
+    int natom = basisset_->molecule()->natom();
+
+    std::vector<SharedMatrix> grad;
+    for (int p = 0; p < 3; p++) {
+        std::stringstream sstream;
+        sstream << "ao_metric_deriv1_" << atom << cartcomp[p];
+        grad.push_back(std::make_shared<Matrix>(sstream.str(), naux, naux));
+    }
+
+
+    const auto &buffers = ints->buffers();
+    for (int P = 0; P < aux->nshell(); P++) {
+        for (int Q = 0; Q < aux->nshell(); Q++) {
+            int Psize = aux->shell(P).nfunction();
+            int Qsize = aux->shell(Q).nfunction();
+
+            int Poff = aux->shell(P).function_index();
+            int Qoff = aux->shell(Q).function_index();
+
+            int Pcenter = aux->shell(P).ncenter();
+            int Qcenter = aux->shell(Q).ncenter();
+
+            size_t delta;
+
+            delta = 0L;
+
+            if (Pcenter != atom && Qcenter != atom) continue;
+
+            if (Pcenter == atom && Qcenter == atom) continue;
+
+            ints->compute_shell_deriv1(P, 0, Q, 0);
+
+            double Ax, Ay, Az;
+            double Bx, By, Bz;
+            double X = 0, Y = 0, Z = 0;
+
+            for (int p = 0; p < Psize; p++) {
+                for (int q = 0; q < Qsize; q++) {
+                    int i = p + Poff;
+                    int j = q + Qoff;
+
+                    Ax = buffers[0][delta];
+                    Ay = buffers[1][delta];
+                    Az = buffers[2][delta];
+                    Bx = buffers[3][delta];
+                    By = buffers[4][delta];
+                    Bz = buffers[5][delta];
+
+                    if (Pcenter == atom) {
+                        X += Ax;
+                        Y += Ay;
+                        Z += Az;
+                    }
+
+                    if (Qcenter == atom) {
+                        X += Bx;
+                        Y += By;
+                        Z += Bz;
+                    }
+
+                    grad[0]->set(i, j, X);
+                    grad[1]->set(i, j, Y);
+                    grad[2]->set(i, j, Z);
+
+                    X = 0, Y = 0, Z = 0;
+                    delta++;
+                }
+            }
+        }
+    }
+
+    return grad;
+}
+
+/* 1st and 2nd derivatives of TEI in AO basis  */
+
+std::vector<SharedMatrix> MintsHelper::ao_3center_deriv1(int atom, const std::string& aux_name) {
+    std::array<std::string, 3> cartcomp{ {"X", "Y", "Z"} };
+
+    auto aux = get_basisset(aux_name);
+    auto factory = std::make_shared<IntegralFactory>(aux, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
+
+    auto ints = std::shared_ptr<TwoBodyAOInt>(factory->eri(1));
+    auto naux = aux->nbf();
+    int natom = basisset_->molecule()->natom();
+
+    std::vector<SharedMatrix> grad;
+    for (int p = 0; p < 3; p++) {
+        std::stringstream sstream;
+        sstream << "ao_3center_deriv1_" << atom << cartcomp[p];
+        grad.push_back(std::make_shared<Matrix>(sstream.str(), naux, nbf() * nbf()));
+    }
+
+
+    const auto &buffers = ints->buffers();
+    for (int P = 0; P < aux->nshell(); P++) {
+        for (int Q = 0; Q < basisset_->nshell(); Q++) {
+            for (int R = 0; R < basisset_->nshell(); R++) {
+                int Psize = aux->shell(P).nfunction();
+                int Qsize = basisset_->shell(Q).nfunction();
+                int Rsize = basisset_->shell(R).nfunction();
+
+                int Pncart = aux->shell(P).ncartesian();
+                int Qncart = basisset_->shell(Q).ncartesian();
+                int Rncart = basisset_->shell(R).ncartesian();
+
+                int Poff = aux->shell(P).function_index();
+                int Qoff = basisset_->shell(Q).function_index();
+                int Roff = basisset_->shell(R).function_index();
+
+                int Pcenter = aux->shell(P).ncenter();
+                int Qcenter = basisset_->shell(Q).ncenter();
+                int Rcenter = basisset_->shell(R).ncenter();
+
+                size_t delta;
+
+                delta = 0L;
+
+                if (Pcenter != atom && Qcenter != atom && Rcenter != atom) continue;
+
+                if (Pcenter == atom && Qcenter == atom && Rcenter == atom) continue;
+
+                ints->compute_shell_deriv1(P, 0, Q, R);
+
+                double Ax, Ay, Az;
+                double Bx, By, Bz;
+                double Cx, Cy, Cz;
+                double X = 0, Y = 0, Z = 0;
+
+                for (int p = 0; p < Psize; p++) {
+                    for (int q = 0; q < Qsize; q++) {
+                        for (int r = 0; r < Rsize; r++) {
+                            int i = Poff + p;
+                            int j = (Qoff + q) * nbf() + Roff + r;
+
+                            Ax = buffers[0][delta];
+                            Ay = buffers[1][delta];
+                            Az = buffers[2][delta];
+                            Bx = buffers[3][delta];
+                            By = buffers[4][delta];
+                            Bz = buffers[5][delta];
+                            Cx = buffers[6][delta];
+                            Cy = buffers[7][delta];
+                            Cz = buffers[8][delta];
+
+                            if (Pcenter == atom) {
+                                X += Ax;
+                                Y += Ay;
+                                Z += Az;
+                            }
+
+                            if (Qcenter == atom) {
+                                X += Bx;
+                                Y += By;
+                                Z += Bz;
+                            }
+
+                            if (Rcenter == atom) {
+                                X += Cx;
+                                Y += Cy;
+                                Z += Cz;
+                            }
+
+                            grad[0]->set(i, j, X);
+                            grad[1]->set(i, j, Y);
+                            grad[2]->set(i, j, Z);
+
+                            X = 0, Y = 0, Z = 0;
+                            delta++;
+                    }
+                    }
+                }
+            }
+        }
+    }
+
+    // Build numpy and final matrix shape
+    std::vector<int> nshape{naux, nbf(), nbf()};
+    for (int p = 0; p < 3; p++) grad[p]->set_numpy_shape(nshape);
+
+    return grad;
+}
+
 std::vector<SharedMatrix> MintsHelper::ao_tei_deriv2(int atom1, int atom2) {
     /* NOTE: the x, y, and z in this vector must remain lowercase for this function */
     std::array<std::string, 3> cartcomp{ {"x", "y", "z"} };
