@@ -63,19 +63,12 @@ class Local_cc {
     private:
         void init_pno();
         void get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec);
-        void get_semicanonical_transforms();
+        void get_semicanonical_transforms(std::vector<SharedMatrix> Q);
         void mp2_pair_energy();
         
         int npairs;
         double pno_cut;
         int *weak_pairs;
-        std::vector<int> survivor_list;
-        std::vector<double> eps_occ;
-        std::vector<SharedVector> occ_num;
-        std::vector<SharedVector> eps_pno;
-
-        std::vector<SharedMatrix> Q;
-        std::vector<SharedMatrix> L;
 
 };
 

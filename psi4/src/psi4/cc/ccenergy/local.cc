@@ -82,7 +82,9 @@ void Local_cc::init_pno() {
     std::vector<SharedMatrix> Tij;
     std::vector<SharedMatrix> Ttij;
     SharedMatrix temp(new Matrix(nvir, nvir));
-
+    
+    std::vector<SharedMatrix> Q;
+    std::vector<int> survivor_list;
 
     // Check if occupied block of Fock matrix is non-diagonal (localized)
     // On the way, store the occupied orbital energies
@@ -90,17 +92,13 @@ void Local_cc::init_pno() {
     global_dpd_->file2_init(&Fij, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     global_dpd_->file2_mat_init(&Fij);
     global_dpd_->file2_mat_rd(&Fij);
-    auto local_occ_eps = std::make_shared<Vector>(nocc);
-    for(int i=0; i < nocc; ++i) {
-        local_occ_eps->set(i, Fij.matrix[0][i][i]);
+    //outfile->Printf("Here are original local occ orbital energies\n");
+    double *temp_occ_array = new double[nocc];
+    for(int i=0; i < nocc; i++) {
+        //outfile->Printf("%f ", local_occ_eps->get(i));
+        temp_occ_array[i] = Fij.matrix[0][i][i];
     }
     global_dpd_->file2_close(&Fij);
-    //outfile->Printf("Here are original local occ orbital energies\n");
-    double *temp_occ_array = init_array(nocc);
-    for(int i=0; i < nocc; i++) {
-        outfile->Printf("%f ", local_occ_eps->get(i));
-        temp_occ_array[i] = local_occ_eps->get(i);
-    }
     psio_write_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) temp_occ_array,
             nocc * sizeof(double));
     /* outfile->Printf("*** Vir block of F ***");
@@ -175,7 +173,7 @@ void Local_cc::init_pno() {
     for(int ij=0; ij < npairs; ++ij) {
         survivors = 0;
         for(int a=0; a < nvir; ++a) {
-            abs_occ = abs(occ_num[ij]->get(a));
+            abs_occ = fabs(occ_num[ij]->get(a));
             if( abs_occ >= cutoff) {
                 survivors += 1;
             }
@@ -224,15 +222,10 @@ void Local_cc::init_pno() {
     }*/
 
     // Get semicanonical transforms
-    get_semicanonical_transforms();
-    // Print check L
-    /*outfile->Printf("**** Truncated L ****\n");
-    for (auto &qel : L) {
-        qel->print();
-    }*/
+    get_semicanonical_transforms(Q);
 
-    // Write Q, L, eps_pno to file
-    int *survivors_list = init_int_array(npairs);
+    // Write PNO dimensions, Q to file
+    int *survivors_list = new int[npairs];
     for (int ij=0; ij < npairs; ij++) {
         survivors_list[ij] = survivor_list[ij];
     }
@@ -244,19 +237,6 @@ void Local_cc::init_pno() {
         psio_write(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *) Q[ij]->pointer()[0],
                 nvir * npno * sizeof(double), next, &next);
     }
-    next = PSIO_ZERO;
-    for(int ij=0; ij < npairs; ++ij) {
-        int npno = survivor_list[ij];
-        psio_write(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *) L[ij]->pointer()[0],
-                npno * npno * sizeof(double), next, &next);
-    }
-    next = PSIO_ZERO;
-    for(int ij=0; ij < npairs; ++ij) {
-        int npno = survivor_list[ij];
-        psio_write(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *) eps_pno[ij]->pointer(),
-                npno * sizeof(double), next, &next);
-    }
-
     /*for (auto eps: eps_pno) {
         eps->print();
     }*/
@@ -291,6 +271,8 @@ void Local_cc::init_pno() {
     }*/
 
     // Assuming this memory needs to be freed
+    delete[] survivors_list;
+    delete[] temp_occ_array;
     /*free(&Q);
     free(&L);
     free(&eps_pno);*/
@@ -316,8 +298,11 @@ void Local_cc::get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec) {
     global_dpd_->buf4_mat_irrep_close(buf_obj, 0);
 }
 
-void Local_cc::get_semicanonical_transforms() {
+void Local_cc::get_semicanonical_transforms(std::vector<SharedMatrix> Q) {
     
+    std::vector<SharedMatrix> L;
+    std::vector<SharedVector> eps_pno;
+
     // Read in virtual block of Fock matrix
     dpdfile2 Fab;
     global_dpd_->file2_init(&Fab, PSIF_CC_OEI, 0, 1, 1, "fAB");
@@ -333,7 +318,7 @@ void Local_cc::get_semicanonical_transforms() {
 
     // Transform F_vir to PNO basis
     for(int ij=0; ij < npairs; ++ij) {
-        int npno = survivor_list[ij];
+        int npno = Q[ij]->colspi(0);
         auto atemp = std::make_shared<Matrix>(nvir, npno);
         auto Fpno = std::make_shared<Matrix>(npno, npno);
         atemp->gemm(0, 0, 1, Fvir, Q[ij], 0);
@@ -345,6 +330,23 @@ void Local_cc::get_semicanonical_transforms() {
         L.push_back(evecs->clone());
         eps_pno.push_back(eps);
     }
+
+    // Write L and eps_pno to file
+    // for use during CC iterations
+    psio_address next;
+    next = PSIO_ZERO;
+    for(int ij=0; ij < npairs; ++ij) {
+        int npno = Q[ij]->colspi(0);
+        psio_write(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *) L[ij]->pointer()[0],
+                npno * npno * sizeof(double), next, &next);
+    }
+    next = PSIO_ZERO;
+    for(int ij=0; ij < npairs; ++ij) {
+        int npno = Q[ij]->colspi(0);
+        psio_write(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *) eps_pno[ij]->pointer(),
+                npno * sizeof(double), next, &next);
+    }
+
 }
 
 void Local_cc::local_done() { outfile->Printf("    Local parameters free.\n"); }
@@ -354,17 +356,17 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
     psio_address next;
     npairs = nocc*nocc;
 
-    // Is there an issue with using local_ variables?
-    eps_pno.clear();
-    Q.clear();
-    L.clear();
+    // Switching to cleaner std::vector for memory allocation
+    std::vector<SharedMatrix> Q;
+    std::vector<SharedMatrix> L;
+    std::vector<SharedVector> eps_pno;
+
     //survivor_list.resize(npairs);
-    //eps_occ.resize(nocc);
-    int *survivors = init_int_array(npairs);
-    double *occ_eps = init_array(nocc);
+    int *survivors_list = new int[npairs];
+    double *occ_eps = new double[nocc];
     /*   local.weak_pairs = init_int_array(nocc*nocc); */
     psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) occ_eps, nocc * sizeof(double));
-    psio_read_entry(PSIF_CC_INFO, "PNO dimensions", (char *) survivors, npairs * sizeof(int));
+    psio_read_entry(PSIF_CC_INFO, "PNO dimensions", (char *) survivors_list, npairs * sizeof(int));
     //survivor_list.insert(survivor_list.begin(), std::begin(survivors), std::end(survivors));
 
     /*outfile->Printf("\nChecking read_in of survivor_list, nocc=%d\n", nocc);
@@ -375,7 +377,7 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
 
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ++ij) {
-        int npno = survivors[ij];
+        int npno = survivors_list[ij];
         auto eps_pno_temp = std::make_shared<Vector>(npno);
         psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *)eps_pno_temp->pointer(),
                   npno * sizeof(double), next, &next);
@@ -383,7 +385,7 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
     }
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ++ij) {
-        int npno = survivors[ij];
+        int npno = survivors_list[ij];
         auto qtemp = std::make_shared<Matrix>(nvir, npno);
         psio_read(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *)qtemp->pointer()[0],
                   sizeof(double) * nvir * npno, next, &next);
@@ -395,7 +397,7 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
     }*/
     next = PSIO_ZERO;
     for (int ij = 0; ij < nocc * nocc; ij++) {
-        int npno = survivors[ij];
+        int npno = survivors_list[ij];
         auto ltemp = std::make_shared<Matrix>(npno, npno);
         psio_read(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *)ltemp->pointer()[0],
                   sizeof(double) * npno * npno, next, &next);
@@ -410,7 +412,7 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
 
     for (int i = 0; i < nocc; i++) {
         ii = i * nocc + i; /* diagonal element of pair matrices */
-        int npno = survivors[ii];
+        int npno = survivors_list[ii];
 
         // Print checking
         /*Vector T1vec(nvir);
@@ -452,33 +454,27 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
     global_dpd_->file2_mat_wrt(T1);
     global_dpd_->file2_mat_close(T1);
 
-    /*for (int ij = 0; ij < npairs; ij++) {
-        free_block(Q[ij]);
-        free_block(L[ij]);
-        free(eps_pno[ij]);
-    }
-    free(Q);
-    free(L);
-    free(eps_pno);
-    free(eps_occ);
-    free(weak_pairs); */
+    delete[] survivors_list;
+    delete[] occ_eps;
+    free(T1tilde);
+    free(T1bar);
 }
 
 void Local_cc::local_filter_T2(dpdbuf4 *T2) {
     psio_address next;
     npairs = nocc*nocc;
 
-    // Is there an issue with using local_ variables?
-    eps_pno.clear();
-    Q.clear();
-    L.clear();
+    // Switching to cleaner std::vector for memory allocation
+    std::vector<SharedMatrix> Q;
+    std::vector<SharedMatrix> L;
+    std::vector<SharedVector> eps_pno;
+
     //survivor_list.resize(npairs, 0);
-    //eps_occ.resize(nocc, 0);
-    int *survivors = init_int_array(npairs);
-    double *occ_eps = init_array(nocc);
+    int *survivors_list = new int[npairs];
+    double *occ_eps = new double[nocc];
 
     psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) occ_eps, nocc * sizeof(double));
-    psio_read_entry(PSIF_CC_INFO, "PNO dimensions", (char *) survivors, npairs * sizeof(int));
+    psio_read_entry(PSIF_CC_INFO, "PNO dimensions", (char *) survivors_list, npairs * sizeof(int));
     /*outfile->Printf("Testing read-in of eps_occ\n");
     for (int i=0; i < nocc; i++) {
         outfile->Printf("%5.15f\t",occ_eps[i]);
@@ -489,7 +485,7 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
 
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ++ij) {
-        int npno = survivors[ij];
+        int npno = survivors_list[ij];
         auto eps_pno_temp = std::make_shared<Vector>(npno);
         psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *)eps_pno_temp->pointer(),
                   npno * sizeof(double), next, &next);
@@ -505,7 +501,7 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
     }*/
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ij++) {
-        int npno = survivors[ij];
+        int npno = survivors_list[ij];
         auto qtemp = std::make_shared<Matrix>(nvir, npno);
         psio_read(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *)qtemp->pointer()[0],
                   sizeof(double) * nvir * npno, next, &next);
@@ -513,7 +509,7 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
     }
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ij++) {
-        int npno = survivors[ij];
+        int npno = survivors_list[ij];
         auto ltemp = std::make_shared<Matrix>(npno, npno);
         psio_read(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *)ltemp->pointer()[0],
                   sizeof(double) * npno * npno, next, &next);
@@ -529,7 +525,7 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
     global_dpd_->buf4_mat_irrep_rd(T2, 0);
 
     for (int ij = 0; ij < npairs; ++ij) {
-        int npno = survivors[ij];
+        int npno = survivors_list[ij];
         auto T2temp = std::make_shared<Matrix>(nvir, nvir);
         auto atemp = std::make_shared<Matrix>(nvir, npno);
         auto btemp = std::make_shared<Matrix>(npno, npno);
@@ -577,12 +573,12 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
         }
     }
 
-    /*free_block(T2tilde);
-    free_block(T2bar);*/
-
     /* Write the updated MO-basis T2's to disk */
     global_dpd_->buf4_mat_irrep_wrt(T2, 0);
     global_dpd_->buf4_mat_irrep_close(T2, 0);
+
+    delete[] survivors_list;
+    delete[] occ_eps;
 
 }
 
