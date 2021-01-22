@@ -2439,6 +2439,25 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     }
     wfn_->set_array_variable("MBIS VALENCE WIDTHS", valence_widths);
 
+    if (print_output) {
+	outfile->Printf("\n  MBIS Radial Moments: [a0^%d]\n", power);
+        outfile->Printf("   Center  Symbol  Z     Rad Mo\n");
+
+        for (int a = 0; a < num_atoms; a++) {
+            outfile->Printf("  %5d      %2s %4d   %9.6f\n", a+1, mol->label(a).c_str(), 
+                    (int)mol->Z(a), avols->get(a, 0));
+        }
+
+	outfile->Printf("\n  MBIS Valence Widths: [a0]\n");
+        outfile->Printf("   Center  Symbol  Z     Width\n");
+
+        for (int a = 0; a < num_atoms; a++) {
+            outfile->Printf("  %5d      %2s %4d   %9.6f\n", a+1, mol->label(a).c_str(),
+            (int)mol->Z(a), valence_widths->get(a, 0));
+        }
+
+    }
+
     timer_off("MBIS");
 
     return std::make_tuple(mpole, dpole, qpole, opole);

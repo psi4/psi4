@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {exp_vol} c5d4875 dirty
+                         Git: Rev {exp_vol} ab74ac3 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 18 January 2021 09:18AM
+    Psi4 started on: Thursday, 21 January 2021 10:12PM
 
-    Process ID: 106150
+    Process ID: 158971
     Host:       ds5
     PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
@@ -123,7 +123,7 @@ Scratch directory: /scratch/jiang/
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds5
-*** at Mon Jan 18 09:18:43 2021
+*** at Thu Jan 21 22:12:49 2021
 
    => Loading Basis Set <=
 
@@ -329,15 +329,15 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:     0.0000      Z:    -4.9493     Total:     4.9493
 
 
-*** tstop() called on ds5 at Mon Jan 18 09:18:49 2021
+*** tstop() called on ds5 at Thu Jan 21 22:12:54 2021
 Module time:
-	user time   =       4.82 seconds =       0.08 minutes
-	system time =       0.31 seconds =       0.01 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       4.90 seconds =       0.08 minutes
+	system time =       0.32 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
 Total time:
-	user time   =       4.82 seconds =       0.08 minutes
-	system time =       0.31 seconds =       0.01 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       4.90 seconds =       0.08 minutes
+	system time =       0.32 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -368,6 +368,16 @@ Properties computed using the ZnO SCF density matrix
    Center  Symbol  Z      XXX       XXY       XXZ       XYY       XYZ       XZZ       YYY       YYZ       YZZ       ZZZ
       1      ZN   30   -0.0000    0.0000    0.4035   -0.0000   -0.0000   -0.0000    0.0000    0.4035    0.0000    1.0825
       2       O    8   -0.0000    0.0000    0.4453   -0.0000    0.0000   -0.0000    0.0000    0.4453    0.0000    1.2430
+
+  MBIS Radial Moments: [a0^3]
+   Center  Symbol  Z     Rad Mo
+      1      ZN   30   63.442454
+      2       O    8   27.117717
+
+  MBIS Valence Widths: [a0]
+   Center  Symbol  Z     Width
+      1      ZN   30    0.705588
+      2       O    8    0.409658
     MBIS Charges..........................................................................PASSED
     MBIS Dipoles..........................................................................PASSED
     MBIS Quadrupoles......................................................................PASSED
@@ -375,7 +385,7 @@ Properties computed using the ZnO SCF density matrix
     MBIS Radial Moments <r^3>.............................................................PASSED
     MBIS Valence Widths...................................................................PASSED
 
-    Psi4 stopped on: Monday, 18 January 2021 09:18AM
-    Psi4 wall time for execution: 0:00:06.26
+    Psi4 stopped on: Thursday, 21 January 2021 10:12PM
+    Psi4 wall time for execution: 0:00:06.39
 
 *** Psi4 exiting successfully. Buy a developer a beer!
