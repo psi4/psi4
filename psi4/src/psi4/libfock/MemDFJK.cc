@@ -147,4 +147,4 @@ void MemDFJK::set_wcombine(bool wcombine) {
         dfh_->set_wcombine(wcombine); 
     }
 }
-}
+}  // namespace psi

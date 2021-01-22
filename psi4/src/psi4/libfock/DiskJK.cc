@@ -580,4 +580,4 @@ void DiskJK::postiterations() {
     delete[] so2symblk_;
     delete[] so2index_;
 }
-}
+}  // namespace psi

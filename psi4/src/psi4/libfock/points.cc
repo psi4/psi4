@@ -830,4 +830,4 @@ void BasisFunctions::print(std::string out, int print) const {
     printer->Printf("\n\n");
 }
 
-}  // Namespace psi
+}  // namespace psi

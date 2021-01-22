@@ -1723,4 +1723,4 @@ std::vector<std::pair<SharedMatrix, SharedMatrix> > USTABHamiltonian::unpack_pai
 
     return t1;
 }
-}
+}  // namespace psi

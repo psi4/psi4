@@ -2800,4 +2800,4 @@ void DLUSolver::subspaceCollapse() {
         }
     }
 }
-}
+}  // namespace psi
