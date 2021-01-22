@@ -35,7 +35,7 @@
                        -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_DATADIR=${CMAKE_INSTALL_DATADIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
-                       -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
+                       -DPYTHON_INTERPRETER=${Python_EXECUTABLE}
                        -DSTATIC_LIBRARY_ONLY=${_a_only}
                        -DSHARED_LIBRARY_ONLY=${_so_only}
                        -DENABLE_OPENMP=OFF

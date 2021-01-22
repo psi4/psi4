@@ -26,4 +26,4 @@
 :: @END LICENSE
 ::
 
-@PYTHON_EXECUTABLE@ %~dp0psi4 %*
+@Python_EXECUTABLE@ %~dp0psi4 %*

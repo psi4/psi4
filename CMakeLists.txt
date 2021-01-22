@@ -1,5 +1,12 @@
 #############################  Superbuild Project  #############################
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR) # 3.8: CXX_STANDARD recognizes C++17
+if(DEFINED ENV{LGTM_SRC})
+    cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+else ()
+    cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+    cmake_policy(SET CMP0094 NEW)
+endif()
+                                              # 3.15: useable FindPython with NumPy component and LOCATION
+                                              # 3.8: CXX_STANDARD recognizes C++17
                                               # 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
                                               # 3.2: continue()
                                               # 3.1: CMAKE_CXX_STANDARD, BUILD_ALWAYS
@@ -52,9 +59,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 #  <<<  Detecting dependencies and add-ons  >>>
 #
-#    - PYTHON_EXECUTABLE "Python interpreter to use (e.g., /path/to/bin/python3.7)"
-#    - PYTHON_LIBRARY "Python library that goes with the interpreter (e.g., /path/to/lib/python3.7.so)"
-#    - PYTHON_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python3.7)"
+#    - Python_EXECUTABLE "Python interpreter to use (e.g., /path/to/bin/python3.7)"
+#    - Python_LIBRARY "Python library that goes with the interpreter (e.g., /path/to/lib/python3.7.so)"
+#    - Python_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python3.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
 #    For any ${AddOn} of: ambit, CheMPS2, dkh, libefp, erd, gau2grid, gdma, Libint2, PCMSolver, pybind11, pylibefp,
@@ -182,8 +189,12 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 # * library: not at all
 
 set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7 3.6)  # adjust with CMake minimum FindPythonInterp
-find_package(PythonLibsNew 3.6 REQUIRED)
-message(STATUS "${Cyan}Found Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE} (found version ${PYTHON_VERSION_STRING})")
+if(DEFINED ENV{LGTM_SRC})
+    find_package(Python 3.7 EXACT COMPONENTS Interpreter Development REQUIRED)
+else()
+    find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
+endif()
+message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION})")
 
 if(DEFINED ENV{LGTM_SRC})
     set(BUILD_TESTING OFF)
@@ -244,9 +255,9 @@ ExternalProject_Add(psi4-core
               -DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
               -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
               -DMAX_AM_ERI=${MAX_AM_ERI}
-              -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
-              -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
-              -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
+              -DPython_EXECUTABLE=${Python_EXECUTABLE}
+              -DPython_INCLUDE_DIR=${Python_INCLUDE_DIRS}
+              -DPython_LIBRARY=${Python_LIBRARIES}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
               -DENABLE_ambit=${ENABLE_ambit}
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}

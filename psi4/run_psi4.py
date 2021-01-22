@@ -1,4 +1,4 @@
-#!@PYTHON_EXECUTABLE@
+#!@Python_EXECUTABLE@
 
 #
 # @BEGIN LICENSE
@@ -161,7 +161,7 @@ if args['plugin_compile']:
         print("""Install "psi4-dev" via `conda install psi4-dev -c psi4[/label/dev]`, then reissue command.""")
 
 if args['psiapi_path']:
-    pyexe_dir = os.path.dirname("@PYTHON_EXECUTABLE@")
+    pyexe_dir = os.path.dirname("@Python_EXECUTABLE@")
     bin_dir = Path(cmake_install_prefix) / 'bin'
     print(f"""export PATH={pyexe_dir}:$PATH  # python interpreter\nexport PATH={bin_dir}:$PATH  # psi4 executable\nexport PYTHONPATH={lib_dir}:$PYTHONPATH  # psi4 pymodule""")
     sys.exit()
@@ -364,7 +364,7 @@ except Exception as exception:
             in_str += mark + lines[lineno] + "\n"
         psi4.core.print_out(in_str)
 
-    # extact expection message and print it in a box for attention.
+    # extract exception message and print it in a box for attention.
     ex = ','.join(traceback.format_exception_only(type(exception), exception))
     ex_list = ex.split(":", 1)[-1]
     error = ''.join(ex_list)

@@ -7,6 +7,7 @@ extraction:
   cpp:
     prepare:
       packages:
+        - python3.7
         - python3-pint
         - python3-numpy
 path_classifiers:
@@ -16,3 +17,4 @@ path_classifiers:
     - conda/*
     - devtools/*
     - codemeta.json
+    - external

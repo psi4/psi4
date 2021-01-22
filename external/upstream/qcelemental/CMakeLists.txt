@@ -22,9 +22,9 @@ else()
         URL https://github.com/MolSSI/QCElemental/archive/v0.16.0.tar.gz
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
-        BUILD_COMMAND ${PYTHON_EXECUTABLE} setup.py build
+        BUILD_COMMAND ${Python_EXECUTABLE} setup.py build
         BUILD_IN_SOURCE 1
-        INSTALL_COMMAND ${PYTHON_EXECUTABLE} setup.py install
+        INSTALL_COMMAND ${Python_EXECUTABLE} setup.py install
                                                       --record=record.txt
                                                       --single-version-externally-managed
                                                       --install-lib=${_install_lib})

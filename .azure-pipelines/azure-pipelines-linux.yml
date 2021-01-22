@@ -11,7 +11,7 @@ jobs:
   strategy:
     maxParallel: 8
     matrix:
-      gcc_52:
+      gcc_5:
         CXX_COMPILER: 'g++-5'
         PYTHON_VER: '3.6'
         C_COMPILER: 'gcc-5'
@@ -29,7 +29,7 @@ jobs:
 
       clang_latest:
         CXX_COMPILER: 'clang++'
-        PYTHON_VER: '3.8'
+        PYTHON_VER: '3.9'
         C_COMPILER: 'clang'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
@@ -80,7 +80,7 @@ jobs:
       conda create -q \
         -n p4env \
         python=$PYTHON_VER \
-        psi4/label/dev::gau2grid=2 \
+        psi4/label/dev::gau2grid \
         psi4/label/dev::libint2 \
         psi4/label/dev::libxc=4 \
         psi4/label/dev::ambit \
@@ -108,7 +108,7 @@ jobs:
         conda-forge::qcelemental \
         conda-forge::qcengine \
         conda-forge::pymdi \
-        psi4/label/dev::adcc
+        adcc::adcc
       source activate p4env
       which python
       pip install git+https://github.com/i-pi/i-pi.git@master-py3
@@ -133,8 +133,11 @@ jobs:
         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
         -DMAX_AM_ERI=4 \
         -DCMAKE_PREFIX_PATH=${CONDA}/envs/p4env \
-        -DPYTHON_EXECUTABLE="${CONDA}/envs/p4env/bin/python" \
+        -DPython_EXECUTABLE="${CONDA}/envs/p4env/bin/python" \
         -DMPFR_ROOT=${CONDA}/envs/p4env \
+        -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
+        -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
+        -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
         -DENABLE_adcc=ON \
         -DENABLE_CheMPS2=OFF \
         -DENABLE_dkh=ON \

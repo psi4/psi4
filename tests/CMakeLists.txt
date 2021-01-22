@@ -100,10 +100,10 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   basis-ecp dft-pruning freq-masses sapt9 sapt10
 )
     # Some tests fail in python 3
-    if("${PYTHON_VERSION_MAJOR}" VERSION_EQUAL "3")
+    if("${Python_VERSION_MAJOR}" VERSION_EQUAL "3")
         if (${test_name} IN_LIST py3_fail_list)
             message("Python3 incompatible test: ${test_name}... skipping")
-        elseif(("${PYTHON_VERSION_MINOR}" VERSION_EQUAL "6") AND
+        elseif(("${Python_VERSION_MINOR}" VERSION_EQUAL "6") AND
                (${test_name} IN_LIST py36_fail_list))
             message("Python3.6 recalcitrant test: ${test_name}... skipping")
         else()

@@ -1,4 +1,9 @@
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+if(DEFINED ENV{LGTM_SRC})
+    cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+else()
+    cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+    cmake_policy(SET CMP0094 NEW)
+endif()
 project(psi4-core
         LANGUAGES C CXX)
 # no Fortran in psi4-core proper, but language needs to be declared
@@ -52,9 +57,14 @@ else()
 endif()
 
 #  <<  Pybind11 & Python  >>
+if(DEFINED ENV{LGTM_SRC})
+    find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
+else()
+    find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
+endif()
 find_package(pybind11 2.6.1 CONFIG REQUIRED)
-message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING} and ${CMAKE_CXX_STANDARD})")
-message(STATUS "${Cyan}Using Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE}")
+message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${Python_VERSION} and ${CMAKE_CXX_STANDARD})")
+message(STATUS "${Cyan}Using Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE}")
 
 find_package(DL)
 
@@ -224,7 +234,7 @@ endif()
 # * calls cmake to run write_basic_package_version_file
 
 add_custom_target(update_version ALL
-                  COMMAND ${PYTHON_EXECUTABLE} versioner.py --metaout ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
+                  COMMAND ${Python_EXECUTABLE} versioner.py --metaout ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
                                                             --cmakeout ${CMAKE_CURRENT_BINARY_DIR}/metadata.cmake
                   COMMAND ${CMAKE_COMMAND} -DWTO="${CMAKE_CURRENT_BINARY_DIR}/${CMAKECONFIG_INSTALL_DIR}"
                                            -DPN="psi4"
