@@ -7,8 +7,11 @@ extraction:
   cpp:
     prepare:
       packages:
+        - python3.9
         - python3-pint
         - python3-numpy
+        - libgg2
+        - libgg-dev
 path_classifiers:
   library:
     - psi4/versioner.py
@@ -16,3 +19,4 @@ path_classifiers:
     - conda/*
     - devtools/*
     - codemeta.json
+    - external
