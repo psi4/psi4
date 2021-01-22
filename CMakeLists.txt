@@ -190,7 +190,7 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 
 set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7 3.6)  # adjust with CMake minimum FindPythonInterp
 if(DEFINED ENV{LGTM_SRC})
-    find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
+    find_package(Python 3.7 EXACT COMPONENTS Interpreter Development REQUIRED)
 else()
     find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
 endif()
