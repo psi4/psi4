@@ -7,7 +7,7 @@ extraction:
   cpp:
     prepare:
       packages:
-        - python3.8
+        - python3.7
         - python3-pint
         - python3-numpy
 path_classifiers:
