@@ -56,6 +56,7 @@ procedures = {
         'scs-omp2'      : proc.run_occ,
         'sos-omp2'       : proc.run_occ,
         'custom-scs-omp2' : proc.run_occ,
+        'dlpno-mp2'     : proc.run_dlpnomp2,
         'mp2.5'         : proc.select_mp2p5,
         'custom-scs-mp2.5' : proc.run_occ,
         'omp2.5'        : proc.select_omp2p5,

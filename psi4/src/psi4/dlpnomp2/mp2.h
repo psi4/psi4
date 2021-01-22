@@ -26,36 +26,38 @@
  * @END LICENSE
  */
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
-#include "psi4/psi4-dec.h"
-#include "psi4/physconst.h"
-#include "psi4/psifiles.h"
-
-#include "psi4/lib3index/3index.h"
-#include "psi4/libfock/apps.h"
-#include "psi4/libfock/jk.h"
-#include "psi4/libmints/basisset.h"
-#include "psi4/libmints/extern.h"
-#include "psi4/libmints/integral.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libmints/mintshelper.h"
-#include "psi4/libmints/molecule.h"
-#include "psi4/libmints/oeprop.h"
-#include "psi4/libmints/twobody.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
-#include "psi4/libpsio/psio.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libqt/qt.h"
-
+#include "psi4/libmints/wavefunction.h"
 
 namespace psi {
-namespace dfmp2 {
+namespace dlpnomp2 {
 
+// References to DiStasio are to J Comput Chem 28: 839–856, 2007; DOI: 10.1002/jcc.20604
 
-}  // namespace dfmp2
+class DLPNOMP2 : public Wavefunction {
+   protected:
+    // Auxiliary basis
+    std::shared_ptr<BasisSet> ribasis_;
+
+    SharedMatrix Cfocc_;
+    SharedMatrix Caocc_;
+    SharedMatrix Cavir_;
+    SharedMatrix Cfvir_;
+
+    SharedVector eps_focc_;
+    SharedVector eps_aocc_;
+    SharedVector eps_avir_;
+    SharedVector eps_fvir_;
+
+    void common_init();
+
+    void print_header();
+
+   public:
+    DLPNOMP2(SharedWavefunction ref_wfn, Options& options);
+    ~DLPNOMP2() override;
+
+    double compute_energy();
+};
+
+}  // namespace dlpnomp2
 }  // namespace psi

@@ -136,6 +136,7 @@ void C_DTBSV(char uplo, char trans, char diag, int n, int k, double* a, int lda,
 void C_DTPMV(char uplo, char trans, char diag, int n, double* ap, double* x, int incx);
 void C_DTPSV(char uplo, char trans, char diag, int n, double* ap, double* x, int incx);
 void C_DTRMV(char uplo, char trans, char diag, int n, double* a, int lda, double* x, int incx);
+PSI_API
 void C_DTRSM(char side, char uplo, char transa, char diag, int m, int n, double alpha, double* a, int lda, double* b,
              int ldb);
 
@@ -332,6 +333,7 @@ int C_DPOSV(char uplo, int n, int nrhs, double* a, int lda, double* b, int ldb);
 int C_DPOSVX(char fact, char uplo, int n, int nrhs, double* a, int lda, double* af, int ldaf, char equed, double* s,
              double* b, int ldb, double* x, int ldx, double* rcond, double* ferr, double* berr, double* work,
              int* iwork);
+PSI_API
 int C_DPOTRF(char uplo, int n, double* a, int lda);
 int C_DPOTRI(char uplo, int n, double* a, int lda);
 int C_DPOTRS(char uplo, int n, int nrhs, double* a, int lda, double* b, int ldb);

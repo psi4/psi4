@@ -2379,6 +2379,37 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- What is the maximum number of iterations? -*/
         options.add_int("EP2_MAXITER", 20);
     }
+    if (name == "DLPNOMP2" || options.read_globals()) {
+        /*- MODULEDESCRIPTION Performs DLPNO-MP2 computations for RHF reference wavefunctions. -*/
+
+        /*- Auxiliary basis set for MP2 density fitting computations.
+        :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
+        options.add_str("DF_BASIS_MP2", "");
+
+        // LMO -> LMO
+        options.add_double("T_CUT_DO_ij", 1e-5); // DOI threshold for lmos (i, j)
+        options.add_double("T_CUT_PRE", 1e-6); // Energy threshold for linear dipole approx. of lmos (i, j)
+
+        // LMO -> PAO 
+        options.add_double("T_CUT_DO_PRE", 3e-2); // DOI threshold for lmo (i) and pao (u) during prescreening
+        options.add_double("T_CUT_DO", 1e-2); // DOI threshold for lmo (i) and pao (u)
+
+        // LMO -> AUX
+        options.add_double("T_CUT_MKN", 1e-3); // Mulliken charge threshold for lmo (i) and atom (a) (DF)
+
+        // Integral transformation sparsity
+        options.add_double("T_CUT_CLMO", 1e-2);
+        options.add_double("T_CUT_CPAO", 1e-3);
+
+        // Other
+        options.add_double("S_CUT", 1e-8); // Overlap matrix linear dependency threshold
+        options.add_double("T_CUT_PNO", 1e-8); // Occupation number threshold for discarding pnos
+        options.add_double("F_CUT", 1e-5); // threshold for treating LMOs as coupled in LMP2 iterations
+        options.add_double("E_CONVERGENCE", 1e-8); // LMP2 energy convergence criteria
+        options.add_double("R_CONVERGENCE", 1e-8); // LMP2 residual convergence criteria
+        // TODO: put convergence criteria somewhere else?
+
+    }
     if (name == "PSIMRCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs multireference coupled cluster computations.  This theory
            should be used only by advanced users with a good working knowledge of multireference
