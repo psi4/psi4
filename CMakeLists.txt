@@ -35,7 +35,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #  <<<  Required build dependencies that Psi4 can't build itself  >>>
 #
 #    - CMake (e.g., `conda install cmake`)
-#    - C++ and C compilers (C++11 compliant)
+#    - C++ and C compilers (C++14 compliant)
 #    - BLAS/LAPACK (also runtime; e.g., `conda install mkl-devel`)
 #    - Python (also runtime; interpreter and headers; e.g., `conda install python`)
 #    - NumPy (also runtime; avoidable at buildtime if gau2grid pre-built; e.g., `conda install numpy`)

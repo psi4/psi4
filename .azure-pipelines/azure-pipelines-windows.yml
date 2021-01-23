@@ -9,10 +9,10 @@ jobs:
     variables:
       llvm.version: '11.0.0'
       mkl.version: '2019.1'
-      #cmake.build_type: 'Release'
-      #conda.build: true
+      cmake.build_type: 'Release'
+      conda.build: true
       MKL_CBWR: AVX
-      #PYTHON_VERSION: '3.8'
+      PYTHON_VERSION: '3.8'
     steps:
 
       # Check Python
