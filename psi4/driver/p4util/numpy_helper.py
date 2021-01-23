@@ -236,7 +236,7 @@ def _to_array(matrix, copy=True, dense=False):
     Examples
     --------
 
-    >>> data = psi4.Matrix(3, 3)
+    >>> data = psi4.core.Matrix(3, 3)
     >>> data.to_array()
     [[ 0.  0.  0.]
      [ 0.  0.  0.]
