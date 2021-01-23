@@ -101,6 +101,7 @@ jobs:
         displayName: "Install Miniconda"
 
       # Configure Miniconda
+      #    conda config --append channels conda-forge
       - script: |
           conda config --set always_yes yes
           conda info
@@ -127,6 +128,7 @@ jobs:
                         python=%PYTHON_VERSION% ^
                         conda-forge::gau2grid ^
                         psi4/label/dev::libint2 ^
+                        conda-forge::libxc ^
                         conda-forge::mpfr ^
                         conda-forge::mpmath ^
                         conda-forge::qcelemental ^
@@ -175,6 +177,7 @@ jobs:
                 -DBUILD_Libint2_GENERATOR=OFF ^
                 -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
                 -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
+                -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON ^
                 -DBUILD_SHARED_LIBS=OFF ^
                 $(Build.SourcesDirectory)
         displayName: "Configure Psi4"

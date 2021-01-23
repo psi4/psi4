@@ -35,7 +35,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #  <<<  Required build dependencies that Psi4 can't build itself  >>>
 #
 #    - CMake (e.g., `conda install cmake`)
-#    - C++ and C compilers (C++11 compliant)
+#    - C++ and C compilers (C++14 compliant)
 #    - BLAS/LAPACK (also runtime; e.g., `conda install mkl-devel`)
 #    - Python (also runtime; interpreter and headers; e.g., `conda install python`)
 #    - NumPy (also runtime; avoidable at buildtime if gau2grid pre-built; e.g., `conda install numpy`)
@@ -183,6 +183,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 
+
 # Python use in psi4 (not incl. external/)
 # * interpreter: run the versioner in psi4-core. run tests and build docs in psi4
 # * headers: Python.h for pybind11 to build against in psi4-core
@@ -199,7 +200,7 @@ message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MIN
 if(DEFINED ENV{LGTM_SRC})
     set(BUILD_TESTING OFF)
     set(BUILD_Libint2_GENERATOR OFF)
-    set(MAX_AM_ERI 2)
+    set(MAX_AM_ERI 1)
     message(STATUS "LGTM enviroment detected so downgrading Libint2 build.")
 endif()
 

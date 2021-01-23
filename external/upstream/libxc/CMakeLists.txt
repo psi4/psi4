@@ -1,4 +1,4 @@
-find_package(Libxc 4.3.0 CONFIG QUIET)
+find_package(Libxc 5.1.0 CONFIG QUIET COMPONENTS C)
 
 if(${Libxc_FOUND})
     get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
@@ -15,10 +15,10 @@ else()
         # Default: use a stable release tarball of libxc. To use the
         # development version of libxc, instead, comment the URL line,
         # and uncomment the GIT lines.
-        #URL http://www.tddft.org/programs/octopus/down.php?file=libxc/4.3.4/libxc-4.3.4.tar.gz
-        URL https://gitlab.com/libxc/libxc/-/archive/4.3.4/libxc-4.3.4.tar.gz
+        URL https://gitlab.com/libxc/libxc/-/archive/5.1.0/libxc-5.1.0.tar.gz
         #GIT_REPOSITORY https://gitlab.com/libxc/libxc.git
-        #GIT_TAG 4.3.4
+        #GIT_TAG 5.1.0
+        #UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
                    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}

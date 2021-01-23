@@ -149,10 +149,16 @@ void export_functional(py::module &m) {
         .def("print_out", &Functional::py_print, "docstring")
         .def("print_detail", &Functional::py_print_detail, "docstring");
 
+    typedef void (LibXCFunctional::*tweak_set1)(std::vector<double>, bool);
+    typedef void (LibXCFunctional::*tweak_set2)(std::map<std::string, double>, bool);
+
     py::class_<LibXCFunctional, std::shared_ptr<LibXCFunctional>, Functional>(m, "LibXCFunctional", "docstring")
         .def(py::init<std::string, bool>())
         .def("get_mix_data", &LibXCFunctional::get_mix_data, "docstring")
-        .def("set_tweak", &LibXCFunctional::set_tweak, "docstring")
+        .def("set_tweak", tweak_set1(&LibXCFunctional::set_tweak), "tweaks"_a, "quiet"_a = false,
+            "Set all tweaks on a LibXC functional through a list. Deprecated in v1.4")
+        .def("set_tweak", tweak_set2(&LibXCFunctional::set_tweak), "tweaks"_a, "quiet"_a = false,
+            "Set all tweaks on a LibXC functional through a dictionary of names (usually underscore prepended) and values. New in v1.4")
         .def("set_omega", &LibXCFunctional::set_omega, "docstring")
         .def("set_density_cutoff", &LibXCFunctional::set_density_cutoff, "docstring")
         .def("density_cutoff", &LibXCFunctional::density_cutoff, "docstring")
