@@ -389,20 +389,20 @@ def print_fragments(geom, Z, Q, fragkeys, frags, nuclear_ws, orbital_ws, filenam
 def extract_osapt_data(filepath):
 
     vals = {}
-    vals['Elst']  = np.array(readBlock('%s/Elst.dat'  % filepath, H_to_kcal_))
-    vals['Exch']  = np.array(readBlock('%s/Exch.dat'  % filepath, H_to_kcal_))
-    vals['IndAB'] = np.array(readBlock('%s/IndAB.dat' % filepath, H_to_kcal_))
-    vals['IndBA'] = np.array(readBlock('%s/IndBA.dat' % filepath, H_to_kcal_))
+    vals['Elst']  = np.array(read_block('%s/Elst.dat'  % filepath, H_to_kcal_))
+    vals['Exch']  = np.array(read_block('%s/Exch.dat'  % filepath, H_to_kcal_))
+    vals['IndAB'] = np.array(read_block('%s/IndAB.dat' % filepath, H_to_kcal_))
+    vals['IndBA'] = np.array(read_block('%s/IndBA.dat' % filepath, H_to_kcal_))
     # Read exact F-SAPT0 dispersion data
     try:
-        vals['Disp'] = readBlock('%s/Disp.dat'  % filepath, H_to_kcal_) # Exact F-SAPT0 Dispersion
+        vals['Disp'] = read_block('%s/Disp.dat'  % filepath, H_to_kcal_) # Exact F-SAPT0 Dispersion
     except FileNotFoundError:
         print('No exact dispersion present.  Copying & zeroing `Elst.dat`->`Disp.dat`, and proceeding.\n')
         vals['Disp'] = np.zeros_like(np.array(vals['Elst']))
 
     # Read empirical F-SAPT0-D dispersion data
     try:
-        vals['EDisp'] = readBlock('%s/Empirical_Disp.dat'  % filepath, H_to_kcal_) # Exact F-SAPT0 Dispersion
+        vals['EDisp'] = read_block('%s/Empirical_Disp.dat'  % filepath, H_to_kcal_) # Exact F-SAPT0 Dispersion
     except (FileNotFoundError, OSError):
         vals['EDisp'] = np.zeros_like(np.array(vals['Elst']))
 
@@ -768,8 +768,8 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
     check_fragments(geom, Zs['B'], frags['B'])
 
     Qs = {}
-    Qs['A'] = readBlock('%s/QA.dat' % dirname)
-    Qs['B'] = readBlock('%s/QB.dat' % dirname)
+    Qs['A'] = read_block('%s/QA.dat' % dirname)
+    Qs['B'] = read_block('%s/QB.dat' % dirname)
 
     holder1 = partition_fragments(fragkeys['A'], frags['A'], Zs['A'], Qs['A'], completeness)
     holder2 = partition_fragments(fragkeys['B'], frags['B'], Zs['B'], Qs['B'], completeness)
