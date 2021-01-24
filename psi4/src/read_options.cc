@@ -2405,8 +2405,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("S_CUT", 1e-8); // Overlap matrix linear dependency threshold
         options.add_double("T_CUT_PNO", 1e-8); // Occupation number threshold for discarding pnos
         options.add_double("F_CUT", 1e-5); // threshold for treating LMOs as coupled in LMP2 iterations
-        options.add_double("E_CONVERGENCE", 1e-8); // LMP2 energy convergence criteria
-        options.add_double("R_CONVERGENCE", 1e-8); // LMP2 residual convergence criteria
+        options.add_double("E_CONVERGENCE", 1e-6); // LMP2 energy convergence criteria
+        options.add_double("R_CONVERGENCE", 1e-6); // LMP2 residual convergence criteria
         // TODO: put convergence criteria somewhere else?
 
     }

@@ -89,6 +89,40 @@ void DLPNOMP2::common_init() {
     ribasis_ = get_basisset("DF_BASIS_MP2");
 }
 
+/* Utility function for easily performing making C_DGESV calls
+ *
+ * C_DGESV solves AX=B for X, given symmetric NxN matrix A and NxM matrix B
+ * B is expected in fortran layout, which complicates the call when (M > 1)
+ * The workaround used here is switching layouts of B before and after the call
+ */
+void C_DGESV_wrapper(SharedMatrix A, SharedMatrix B) {
+
+    int N = B->rowspi(0);
+    int M = B->colspi(0);
+    if(N == 0 || M == 0) return;
+
+    // create a copy of B in fortran ordering
+    double* B_fortran = new double[N * M];
+    for(int n = 0; n < N; n++) {
+        for(int m = 0; m < M; m++) {
+            B_fortran[m * N + n] = B->get(n, m);
+        }
+    }
+
+    // make the C_DGESV call, solving AX=B for X
+    int *ipiv = init_int_array(N);
+    int errcode = C_DGESV(N, M, A->pointer()[0], N, ipiv, B_fortran, N);
+    free(ipiv);
+
+    // copy the fortran-ordered X into the original matrix, reverting to C-ordering
+    for(int n = 0; n < N; n++) {
+        for(int m = 0; m < M; m++) {
+            B->set(n, m, B_fortran[m * N + n]);
+        }
+    }
+
+}
+
 std::pair<SharedMatrix, SharedVector> canonicalizer(SharedMatrix C, SharedMatrix F) {
     /* Args: orthonormal orbitals C (ao x mo) and fock matrix F (ao x ao)
      * Return: canonical transformation matrix U (mo x mo) and energy vector e (mo) 
@@ -419,7 +453,43 @@ void DLPNOMP2::sparsity_prep() {
 
     int natom = molecule_->natom();
     int nbf = basisset_->nbf();
+    int nshell = basisset_->nshell();
+    int naux = ribasis_->nbf();
+    int nshellri = ribasis_->nshell();
     int naocc = nalpha_ - basisset_->n_frozen_core(options_.get_str("FREEZE_CORE"), molecule_);
+
+    // map from atomic center to orbital/aux basis function/shell index
+
+    atom_to_bf_.resize(natom);
+    atom_to_ribf_.resize(natom);
+    atom_to_shell_.resize(natom);
+    atom_to_rishell_.resize(natom);
+
+    auto bf_to_atom_ = std::vector<int>(nbf);
+    auto ribf_to_atom_ = std::vector<int>(naux);
+
+    for(size_t i = 0; i < nbf; ++i) {
+        atom_to_bf_[basisset_->function_to_center(i)].push_back(i);
+        bf_to_atom_[i] = basisset_->function_to_center(i);
+    }
+
+    for(size_t i = 0; i < naux; ++i) {
+        atom_to_ribf_[ribasis_->function_to_center(i)].push_back(i);
+        ribf_to_atom_[i] = ribasis_->function_to_center(i);
+    }
+
+    for(size_t s = 0; s < nshell; s++) {
+        atom_to_shell_[basisset_->shell_to_center(s)].push_back(s);
+    }
+
+    for(size_t s = 0; s < nshellri; s++) {
+        atom_to_rishell_[ribasis_->shell_to_center(s)].push_back(s);
+    }
+
+    outfile->Printf("  ==> Forming Local MO Domains <==\n");
+
+    // map from LMO to local DF domain (aux basis functions)
+    // locality determined via mulliken charges
 
     lmo_to_ribfs_.resize(naocc);
     lmo_to_riatoms_.resize(naocc);
@@ -445,11 +515,12 @@ void DLPNOMP2::sparsity_prep() {
             }
         }
 
-        // if non-zero mulliken pop on atom, include atom in the MO's fitting domain
+        // if non-zero mulliken pop on atom, include atom in the LMO's fitting domain
         for(size_t a = 0; a < natom; a++) {
             if (fabs(mkn_pop[a]) > options_.get_double("T_CUT_MKN")) {
                 lmo_to_riatoms_[i].push_back(a);
-                // atom's aux orbitals are all-or-nothing
+
+                // each atom's aux orbitals are all-or-nothing for each LMO
                 for(int u : atom_to_ribf_[a]) { 
                     lmo_to_ribfs_[i].push_back(u);
                 }
@@ -457,6 +528,8 @@ void DLPNOMP2::sparsity_prep() {
         }
     }
 
+    // map from LMO to local virtual domain (PAOs)
+    // locality determined via differential overlap integrals
 
     lmo_to_paos_.resize(naocc);
     lmo_to_paoatoms_.resize(naocc);
@@ -478,6 +551,9 @@ void DLPNOMP2::sparsity_prep() {
 
     }
 
+    // map from LMO to local occupied domain (other LMOs)
+    // locality determined via differential overlap integrals
+    //   and also approximated pair energies from dipole integrals
 
     i_j_to_ij.resize(naocc);
     de_dipole_ = 0.0;
@@ -511,11 +587,10 @@ void DLPNOMP2::sparsity_prep() {
     print_pao_domains();
     print_lmo_domains();
 
-    //                          //
-    // =>    Pair Domains    <= //
-    //                          //
-
     outfile->Printf("\n  ==> Merging LMO Domains into LMO Pair Domains <==\n");
+
+    // map from (LMO, LMO) pair to local auxiliary and virtual domains
+    // LMO pair domains are the union of LMO domains
 
     lmopair_to_paos.resize(n_lmo_pairs);
     lmopair_to_paoatoms.resize(n_lmo_pairs);
@@ -537,9 +612,11 @@ void DLPNOMP2::sparsity_prep() {
     print_aux_pair_domains();
     print_pao_pair_domains();
 
+    // => Coefficient Sparsity <= //
+
     // which basis functions (on which atoms) contribute to each local MO?
-    std::vector<std::vector<int>> lmo_to_bfs(naocc);
-    std::vector<std::vector<int>> lmo_to_atoms(naocc);
+    SparseMap lmo_to_bfs(naocc);
+    SparseMap lmo_to_atoms(naocc);
 
     for(int i = 0; i < naocc; ++i) {
         for(int bf_ind = 0; bf_ind < nbf; ++bf_ind) {
@@ -551,8 +628,8 @@ void DLPNOMP2::sparsity_prep() {
     }
 
     // which basis functions (on which atoms) contribute to each projected AO?
-    std::vector<std::vector<int>> pao_to_bfs(nbf);
-    std::vector<std::vector<int>> pao_to_atoms(nbf);
+    SparseMap pao_to_bfs(nbf);
+    SparseMap pao_to_atoms(nbf);
 
     for(int u = 0; u < nbf; ++u) {
         for(int bf_ind = 0; bf_ind < nbf; ++bf_ind) {
@@ -561,29 +638,35 @@ void DLPNOMP2::sparsity_prep() {
             }
         }
         pao_to_atoms[u] = block_list(pao_to_bfs[u], bf_to_atom_);
-        //outfile->Printf("  PAO %d -> BF:  %d / %d bf    %d / %d atoms\n", u, pao_to_bfs[u].size(), nbf, pao_to_atoms[u].size(), natom);
     }
 
-    // extended fitting map (include fitting domains of all local MOs in your domain)
-    lmo_to_riatoms_ext = extend_maps(lmo_to_riatoms_, ij_to_i_j);
+    // determine maps to extended LMO domains, which are the union of an LMO's domain with domains
+    //   of all interacting LMOs
 
-    // target of the integral transformation
+    lmo_to_riatoms_ext = extend_maps(lmo_to_riatoms_, ij_to_i_j);
     riatom_to_lmos_ext = invert_map(lmo_to_riatoms_ext, natom);
     riatom_to_paos_ext = chain_maps(riatom_to_lmos_ext, lmo_to_paos_);
 
-    // We'll use these maps to screen the local MO transform: (mn|Q) * C_mi -> (in|Q)
+    // We'll use these maps to screen the the local MO transform (first index): 
+    //   (mn|Q) * C_mi -> (in|Q)
     riatom_to_atoms1 = chain_maps(riatom_to_lmos_ext, lmo_to_atoms);
     riatom_to_shells1 = chain_maps(riatom_to_atoms1, atom_to_shell_);
     riatom_to_bfs1 = chain_maps(riatom_to_atoms1, atom_to_bf_);
 
-    // We'll use these maps to screen the projected AO transform: (mn|Q) * C_nu -> (mu|Q) 
+    // We'll use these maps to screen the projected AO transform (second index): 
+    //   (mn|Q) * C_nu -> (mu|Q) 
     riatom_to_atoms2 = chain_maps(riatom_to_lmos_ext, chain_maps(lmo_to_paos_, pao_to_atoms));
     riatom_to_shells2 = chain_maps(riatom_to_atoms2, atom_to_shell_);
     riatom_to_bfs2 = chain_maps(riatom_to_atoms2, atom_to_bf_);
 
     // Need dense versions of previous maps for quick lookup
-    // arr[riatom][lmo] is the index of lmo in riatom_to_lmos_ext[riatom] (if present), else -1
+
+    // riatom_to_lmos_ext_dense[riatom][lmo] is the index of lmo in riatom_to_lmos_ext[riatom]
+    //   (if present), else -1
     riatom_to_lmos_ext_dense.resize(natom);
+
+    // riatom_to_atoms1_dense(1,2)[riatom][a] is true if the orbitals basis functions of atom A 
+    //   are needed for the (LMO,PAO) transform
     riatom_to_atoms1_dense.resize(natom);
     riatom_to_atoms2_dense.resize(natom);
 
@@ -592,21 +675,17 @@ void DLPNOMP2::sparsity_prep() {
         riatom_to_atoms1_dense[a_ri] = std::vector<bool>(natom, false);
         riatom_to_atoms2_dense[a_ri] = std::vector<bool>(natom, false);
 
+        for(int i_ind = 0; i_ind < riatom_to_lmos_ext[a_ri].size(); i_ind++) {
+            int i = riatom_to_lmos_ext[a_ri][i_ind];
+            riatom_to_lmos_ext_dense[a_ri][i] = i_ind;
+        }
         for(int a_bf : riatom_to_atoms1[a_ri]) {
             riatom_to_atoms1_dense[a_ri][a_bf] = true;
         }
         for(int a_bf : riatom_to_atoms2[a_ri]) {
             riatom_to_atoms2_dense[a_ri][a_bf] = true;
         }
-        for(int i_ind = 0; i_ind < riatom_to_lmos_ext[a_ri].size(); i_ind++) {
-            int i = riatom_to_lmos_ext[a_ri][i_ind];
-            riatom_to_lmos_ext_dense[a_ri][i] = i_ind;
-        }
     }
-
-    print_integral_sparsity();
-
-
 
 }
 
@@ -630,6 +709,8 @@ void DLPNOMP2::df_ints() {
     }
 
     outfile->Printf("\n  ==> Transforming 3-Index Integrals to LMO/PAO basis <==\n");
+
+    print_integral_sparsity();
 
     SharedMatrix SC_lmo = linalg::doublet(reference_wavefunction_->S(), C_lmo, false, false); // intermediate for coefficient fitting
 
@@ -704,7 +785,6 @@ void DLPNOMP2::df_ints() {
             } // N loop
         } // M loop
 
-        SharedMatrix C_lmo_slice = get_rows_and_cols(C_lmo, riatom_to_bfs1[centerQ], riatom_to_lmos_ext[centerQ]);
         SharedMatrix C_pao_slice = get_rows(C_pao, riatom_to_bfs2[centerQ]); // TODO: PAO slices
 
         //// Here we'll refit the coefficients of C_lmo_slice to minimize residual from unscreened orbitals
@@ -712,38 +792,9 @@ void DLPNOMP2::df_ints() {
         //// Boughton and Pulay 1992 JCC, Equation 3
 
         // Solve for C_lmo_slice such that S[local,local] @ C_lmo_slice ~= S[local,all] @ C_lmo
-        SharedMatrix SC_lmo_slice = get_rows_and_cols(SC_lmo, riatom_to_bfs1[centerQ], riatom_to_lmos_ext[centerQ]);
+        SharedMatrix C_lmo_slice = get_rows_and_cols(SC_lmo, riatom_to_bfs1[centerQ], riatom_to_lmos_ext[centerQ]);
         SharedMatrix S_aa = get_rows_and_cols(reference_wavefunction_->S(), riatom_to_bfs1[centerQ], riatom_to_bfs1[centerQ]);
-
-        int nbf_solve = riatom_to_bfs1[centerQ].size();
-        int nmo_solve = riatom_to_lmos_ext[centerQ].size();
-
-        // DGESV expects data in fortran ordering, so we have to be more explicit with memory
-        // TODO: Can I use this function w/o doing this stupid copy?
-        double* C_lmo_slice_fit = new double[nbf_solve * nmo_solve];
-        for(int ind1 = 0; ind1 < nbf_solve; ind1++) {
-            for(int ind2 = 0; ind2 < nmo_solve; ind2++) {
-                C_lmo_slice_fit[ind2 * nbf_solve + ind1] = SC_lmo_slice->get(ind1, ind2);
-            }
-        }
-
-        if(nmo_solve > 0) {
-            int *ipiv = init_int_array(nbf_solve);
-            int errcode = C_DGESV(nbf_solve, nmo_solve, S_aa->pointer()[0], nbf_solve, ipiv, C_lmo_slice_fit, nbf_solve);
-            if(errcode != 0) {
-                outfile->Printf("C_DGESV Error: %d\n", errcode);
-            }
-            free(ipiv);
-        }
-
-        // reverse the fortran ordering
-        for(int ind1 = 0; ind1 < nbf_solve; ind1++) {
-            for(int ind2 = 0; ind2 < nmo_solve; ind2++) {
-                C_lmo_slice->set(ind1, ind2, C_lmo_slice_fit[ind2 * nbf_solve + ind1]);
-            }
-        }
-
-        delete[] C_lmo_slice_fit;
+        C_DGESV_wrapper(S_aa, C_lmo_slice);
 
         // (mn|Q) C_mi C_nu -> (iu|Q)
         for(size_t q = 0; q < nq; q++) {
@@ -810,38 +861,18 @@ void DLPNOMP2::pno_transform() {
                 int a = lmopair_to_paos[ij][a_ij];
                 i_qa->set(q_ij, a_ij, qia[q]->get(riatom_to_lmos_ext_dense[centerq][i], a));  
                 j_qa->set(q_ij, a_ij, qia[q]->get(riatom_to_lmos_ext_dense[centerq][j], a));  
+
+                if(riatom_to_lmos_ext_dense[centerq][i] == -1) {
+                    outfile->Printf("Uh-oh\n");
+                } else if(riatom_to_lmos_ext_dense[centerq][j] == -1) {
+                    outfile->Printf("Uh-oh\n");
+                }
             }
         }
-
-        int N_solve = naux_ij;
-        int M_solve = npao_ij;
 
         SharedMatrix A_solve = get_rows_and_cols(full_metric, lmopair_to_ribfs[ij], lmopair_to_ribfs[ij]);
+        C_DGESV_wrapper(A_solve, i_qa);
 
-        // DGESV expects data in fortran ordering, so we have to be more explicit with memory
-        // TODO: Can I use this function w/o doing this stupid copy?
-        double* B_solve = new double[N_solve * M_solve];
-        for(int indn = 0; indn < N_solve; indn++) {
-            for(int indm = 0; indm < M_solve; indm++) {
-                B_solve[indm * N_solve + indn] = i_qa->get(indn, indm);
-            }
-        }
-
-        int *ipiv = init_int_array(N_solve);
-        int errcode = C_DGESV(N_solve, M_solve, A_solve->pointer()[0], N_solve, ipiv, B_solve, N_solve);
-        if(errcode != 0) {
-            outfile->Printf("C_DGESV Error: %d\n", errcode);
-        }
-        free(ipiv);
-
-        // reverse the fortran ordering
-        for(int indn = 0; indn < N_solve; indn++) {
-            for(int indm = 0; indm < M_solve; indm++) {
-                i_qa->set(indn, indm, B_solve[indm * N_solve + indn]);
-            }
-        }
-
-        delete[] B_solve;
         SharedMatrix K_pao_ij = linalg::doublet(i_qa, j_qa, true, false);
 
         //                                      //
@@ -922,13 +953,6 @@ void DLPNOMP2::pno_transform() {
 
         // truncation error
         double de_pno_ij = e_ij_initial - e_ij_trunc;
-
-        //outfile->Printf("  PNO truncation energy error of %16.12f (from %16.12f to %16.12f) \n", e_mp2_vir - e_mp2_pno, e_mp2_vir, e_mp2_pno);
-
-
-
-
-
 
         X_pno_ij = linalg::doublet(X_pao_ij, X_pno_ij, false, false);
 
@@ -1040,23 +1064,23 @@ void DLPNOMP2::lmp2_iterations() {
     outfile->Printf("    E_CONVERGENCE = %.2e\n", options_.get_double("E_CONVERGENCE"));
     outfile->Printf("    R_CONVERGENCE = %.2e\n", options_.get_double("R_CONVERGENCE"));
 
-    // computed every iteration
-    iter_energies.push_back(eval_amplitudes());
-    iter_delta_energies.push_back(iter_energies[0]);
-    iter_max_residuals.push_back(1000.0);
-
     outfile->Printf("\n");
     outfile->Printf("                     Corr. Energy    Delta E     Max R");
     outfile->Printf("\n");
-    outfile->Printf("  @LMP2 iter  SC: %16.12f ---------- ----------\n", iter_energies[0]);
+    //outfile->Printf("  @LMP2 iter  SC: %16.12f ---------- ----------\n", e_curr);
+
+    R_iajb.resize(n_lmo_pairs);
 
     int iteration = 0;
-    while(fabs(iter_delta_energies[iteration]) > options_.get_double("E_CONVERGENCE") || iter_max_residuals[iteration] > options_.get_double("R_CONVERGENCE")) {
+    double e_curr = 0.0, e_prev = 0.0, r_curr = 0.0;
+    bool e_converged = false, r_converged = false;
 
-        std::vector<SharedMatrix> R_iajb(n_lmo_pairs);
+    while(!(e_converged && r_converged)) {
+
+        // RMS of residual per LMO pair, for assessing convergence
         std::vector<double> R_iajb_rms(n_lmo_pairs, 0.0);
 
-        timer_on("Main Loop");
+        // Calculate residuals
 #pragma omp parallel for schedule(static, 1)    
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
 
@@ -1093,6 +1117,15 @@ void DLPNOMP2::lmp2_iterations() {
 
         }
 
+        // evaluate energy and residual convergence
+        e_prev = e_curr;
+        e_curr = eval_amplitudes();
+        r_curr = *max_element(R_iajb_rms.begin(), R_iajb_rms.end());
+
+        r_converged = (fabs(r_curr) < options_.get_double("R_CONVERGENCE"));
+        e_converged = (fabs(e_curr - e_prev) < options_.get_double("E_CONVERGENCE"));
+
+        // update amplitudes
 #pragma omp parallel for schedule(static, 1)    
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
 
@@ -1110,23 +1143,12 @@ void DLPNOMP2::lmp2_iterations() {
             Tt_iajb[ij]->subtract(T_iajb[ij]->transpose());
         }
 
-        timer_off("Main Loop");
+        outfile->Printf("  @LMP2 iter %3d: %16.12f %10.3e %10.3e\n", iteration, e_curr, e_curr - e_prev, r_curr);
 
         iteration++;
-
-        // the max residual over all ij pairs
-        double max_R_rms = *max_element(R_iajb_rms.begin(), R_iajb_rms.end());
-        double e_curr = eval_amplitudes();
-        double e_prev = iter_energies[iter_energies.size() - 1];
-
-        iter_max_residuals.push_back(max_R_rms);
-        iter_energies.push_back(e_curr);
-        iter_delta_energies.push_back(e_curr - e_prev);
-
-        outfile->Printf("  @LMP2 iter %3d: %16.12f %10.3e %10.3e\n", iteration, e_curr, e_curr - e_prev, max_R_rms);
     }
 
-    //ref_wfn->set_scalar_variable("DLPNO-MP2 CORRELATION ENERGY", iter_energies[iter_energies.size() - 1] + de_pno_total + de_dipole);
+    e_lmp2_ = e_curr;
 
 }
 
@@ -1134,56 +1156,14 @@ double DLPNOMP2::eval_amplitudes() {
     double e_mp2 = 0.0;
     for (int ij = 0; ij < Tt_iajb.size(); ++ij) {
         e_mp2 += K_iajb[ij]->vector_dot(Tt_iajb[ij]);
+        e_mp2 += R_iajb[ij]->vector_dot(Tt_iajb[ij]);
     }
     return e_mp2;
 }
 
 void DLPNOMP2::setup() {
 
-    int natom = molecule_->natom();
     int nbf = basisset_->nbf();
-    int nshell = basisset_->nshell();
-    int naux = ribasis_->nbf();
-    int nshellri = ribasis_->nshell();
-
-    int nocc = nalpha_;
-    int nvir = nbf - nocc;
-
-    int nfocc = basisset_->n_frozen_core(options_.get_str("FREEZE_CORE"), molecule_);
-    int naocc = nocc - nfocc;
-
-    outfile->Printf("  Debug Info:\n");
-    outfile->Printf("    NATOM = %d\n", natom);
-    outfile->Printf("    NFOCC = %d\n", nfocc);
-    outfile->Printf("    NAOCC = %d\n", naocc);
-    outfile->Printf("    NAVIR = %d\n", nvir);
-    outfile->Printf("    NBF   = %d\n", nbf);
-    outfile->Printf("    NAUX  = %d\n", naux);
-    outfile->Printf("\n");
-
-    atom_to_bf_.resize(natom);
-    bf_to_atom_.resize(nbf);
-    for(size_t i = 0; i < nbf; ++i) {
-        atom_to_bf_[basisset_->function_to_center(i)].push_back(i);
-        bf_to_atom_[i] = basisset_->function_to_center(i);
-    }
-
-    atom_to_ribf_.resize(natom);
-    ribf_to_atom_.resize(naux);
-    for(size_t i = 0; i < naux; ++i) {
-        atom_to_ribf_[ribasis_->function_to_center(i)].push_back(i);
-        ribf_to_atom_[i] = ribasis_->function_to_center(i);
-    }
-
-    atom_to_shell_.resize(natom);
-    for(size_t s = 0; s < nshell; s++) {
-        atom_to_shell_[basisset_->shell_to_center(s)].push_back(s);
-    }
-
-    atom_to_rishell_.resize(natom);
-    for(size_t s = 0; s < nshellri; s++) {
-        atom_to_rishell_[ribasis_->shell_to_center(s)].push_back(s);
-    }
 
     SharedMatrix C_vir = reference_wavefunction_->Ca_subset("AO", "VIR");
     SharedVector e_vir = reference_wavefunction_->epsilon_a_subset("AO", "VIR");
@@ -1201,8 +1181,6 @@ void DLPNOMP2::setup() {
     S_lmo = linalg::triplet(C_lmo, reference_wavefunction_->S(), C_lmo, true, false, false);
     F_lmo = linalg::triplet(C_lmo, reference_wavefunction_->Fa(), C_lmo, true, false, false);
     //SharedMatrix H_lmo = linalg::triplet(C_lmo, reference_wavefunction_->H(), C_lmo, true, false, false);
-
-    outfile->Printf("  ==> Forming Local MO Domains <==\n");
 
     // Form projected atomic orbitals by removing occupied space from the basis
     C_pao = std::make_shared<Matrix>("Projected Atomic Orbitals", nbf, nbf);
@@ -1259,20 +1237,21 @@ double DLPNOMP2::compute_energy() {
 
     timer_off("DLPNO-MP2");
 
+    double e_scf = reference_wavefunction_->energy();
+    double e_mp2_corr = e_lmp2_ + de_dipole_ + de_pno_total_;
+    double e_mp2_total = e_scf + e_mp2_corr;
 
-    //energy_ = emp2 + escf;
-    //set_scalar_variable("MP2 SINGLES ENERGY", 0.0);  // fnocc RHF only
-    //set_scalar_variable("MP2 DOUBLES ENERGY", emp2_os + emp2_ss);
-    //set_scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY", emp2_os);
-    //set_scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY", emp2_ss);
-    //set_scalar_variable("MP2 CORRELATION ENERGY", emp2);
-    //set_scalar_variable("MP2 TOTAL ENERGY", emp2 + escf);
-    //set_scalar_variable("CURRENT ENERGY", emp2 + escf);
-    //set_scalar_variable("CURRENT CORRELATION ENERGY", emp2);
-    //tstop();
-    //return emp2 + escf;
+    set_scalar_variable("MP2 CORRELATION ENERGY", e_mp2_corr);
+    set_scalar_variable("CURRENT CORRELATION ENERGY", e_mp2_corr);
+    set_scalar_variable("MP2 TOTAL ENERGY", e_mp2_total);
+    set_scalar_variable("CURRENT ENERGY", e_mp2_total);
 
-    return 0.0; // correlation energy? or add to SCF?
+    set_scalar_variable("MP2 SINGLES ENERGY", 0.0);
+    set_scalar_variable("MP2 DOUBLES ENERGY", e_mp2_corr);
+    set_scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY", 0.0); // TODO
+    set_scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY", 0.0); // TODO
+
+    return e_mp2_total; // correct, or return just correlation energy?
 }
 
 void DLPNOMP2::print_header() {
@@ -1490,8 +1469,8 @@ void DLPNOMP2::print_integral_sparsity() {
 void DLPNOMP2::print_results() {
 
     outfile->Printf("  \n"); 
-    outfile->Printf("  Total DLPNO-MP2 Correlation Energy: %16.12f \n", iter_energies[iter_energies.size() - 1] + de_pno_total_ + de_dipole_);
-    outfile->Printf("    MP2 Correlation Energy:           %16.12f \n", iter_energies[iter_energies.size() - 1]);
+    outfile->Printf("  Total DLPNO-MP2 Correlation Energy: %16.12f \n", e_lmp2_ + de_pno_total_ + de_dipole_);
+    outfile->Printf("    MP2 Correlation Energy:           %16.12f \n", e_lmp2_);
     outfile->Printf("    LMO Truncation Correction:        %16.12f \n", de_dipole_);
     outfile->Printf("    PNO Truncation Correction:        %16.12f \n", de_pno_total_);
 
