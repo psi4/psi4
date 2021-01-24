@@ -30,14 +30,13 @@ freeze_core true
 
 energy('fisapt0-d3m')
 
-keys = ['Enuc', 'Eelst', 'Eexch', 'Eind', 'Edisp', 'Eedisp', 'Etot']  #TEST
+keys = ['Enuc', 'Eelst', 'Eexch', 'Eind', 'Eedisp', 'Etot']  #TEST
 
 Eref = {  #TEST
     'Enuc'  : 35.07529824960602,        #TEST
     'Eelst' : -3.8035153870907834e-06,  #TEST
     'Eexch' : 1.7912112685446533e-07,   #TEST
     'Eind'  : -3.833795151474493e-08,   #TEST
-    'Edisp' :  0.000000000000,          #TEST
     'Eedisp': -0.00005312000,           #TEST
     'Etot'  : -0.00005678273
     }  #TEST
@@ -48,7 +47,6 @@ Epsi = {  #TEST
     'Eelst' : variable("SAPT ELST ENERGY"),    #TEST
     'Eexch' : variable("SAPT EXCH ENERGY"),    #TEST
     'Eind'  : variable("SAPT IND ENERGY"),     #TEST
-    'Edisp' : variable("SAPT DISP ENERGY"),    #TEST
     'Eedisp' : variable("FISAPT0-D DISP ENERGY"),    #TEST
     'Etot'  : variable("FISAPT0-D TOTAL ENERGY"),  #TEST
     }  #TEST
