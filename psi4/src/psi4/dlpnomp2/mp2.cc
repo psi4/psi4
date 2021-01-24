@@ -27,6 +27,7 @@
  */
 
 #include "mp2.h"
+#include "sparse.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -88,176 +89,7 @@ void DLPNOMP2::common_init() {
     ribasis_ = get_basisset("DF_BASIS_MP2");
 }
 
-std::vector<int> merge_lists(const std::vector<int> &l1, const std::vector<int> &l2) {
-    /* Args: sorted lists l1 and l2
-     * Returns: sorted union of l1 and l2
-     */
-
-    std::vector<int> l12;
-
-    int i1 = 0, i2 = 0;
-    while(i1 < l1.size() || i2 < l2.size()) {
-        if(i1 == l1.size()) {
-            l12.push_back(l2[i2]);
-            ++i2;
-        } else if(i2 == l2.size()) {
-            l12.push_back(l1[i1]);
-            ++i1;
-        } else if(l1[i1] == l2[i2]) {
-            l12.push_back(l1[i1]);
-            ++i1;
-            ++i2;
-        } else if(l1[i1] < l2[i2]) {
-            l12.push_back(l1[i1]);
-            ++i1;
-        } else {
-            l12.push_back(l2[i2]);
-            ++i2;
-        }
-    }
-
-    return l12;
-
-}
-
-std::vector<int> contract_lists(const std::vector<int> &y, const std::vector<std::vector<int>> &A_to_y) {
-    /* Args: sorted list of values y, sparse map from A to y (assume sorted)
-     * Returns: sorted list yA
-     *
-     * For all a, every value in A_to_y[a] is included in yA if at least one is present in y
-     */
-
-    // TODO: runtime is proportional to A_to_y size (system size, O(N))
-    // could maybe reduce to &y size (domain size, O(1)), probably doesn't matter
-
-    std::vector<int> yA;
-
-    for(int a = 0, y_ind = 0; a < A_to_y.size(); ++a) {
-
-        bool is_a = false;
-        for(auto y_val : A_to_y[a]) {
-            if (y_ind < y.size() && y[y_ind] == y_val) {
-                y_ind++;
-                is_a = true;
-            }
-        }
-
-        if(is_a) {
-            for(auto y_val : A_to_y[a]) {
-                yA.push_back(y_val);
-            }
-        }
-
-    }
-
-    return yA;
-
-}
-
-std::vector<int> block_list(const std::vector<int> &x_list, const std::vector<int> &x_to_y_map) {
-    /* Args: x is a list of values (sorted), y is a map from values of x to values of y
-     * Returns: a list of y values
-     *
-     * Multiple values in x may map to the same value in y (i.e. x is a list of bf, y is atoms)
-     */
-
-    std::vector<int> y_list;
-
-    for(int x_val : x_list) {
-        int y_val = x_to_y_map[x_val];
-        if(y_list.size() == 0) {
-            y_list.push_back(y_val);
-        } else if(y_list[y_list.size() - 1] != y_val) {
-            y_list.push_back(y_val);
-        }
-    }
-
-    return y_list;
-
-}
-
-std::vector<std::vector<int>> invert_map(const std::vector<std::vector<int>> &x_to_y, int ny) {
-    /* Args: 
-     * Returns: 
-     *
-     *
-     */
-
-    int nx = x_to_y.size();
-    std::vector<std::vector<int>> y_to_x(ny);
-
-    for(int x = 0; x < nx; x++) {
-        for(auto y : x_to_y[x]) {
-            y_to_x[y].push_back(x);
-        }
-    }
-
-    return y_to_x;
-
-}
-
-std::vector<std::vector<int>> chain_maps(const std::vector<std::vector<int>> &x_to_y, const std::vector<std::vector<int>> &y_to_z) {
-    /* Args: 
-     * Returns: 
-     *
-     *
-     */
-
-    int nx = x_to_y.size();
-    std::vector<std::vector<int>> x_to_z(nx);
-
-    for(int x = 0; x < nx; x++) {
-        for(auto y : x_to_y[x]) {
-            for(auto z : y_to_z[y]) {
-                //if(x_to_z[x].size() == 0) {
-                    x_to_z[x].push_back(z);
-                //} else if(x_to_z[x][x_to_z[x].size() - 1] != z) {
-                    x_to_z[x].push_back(z);
-                //}
-            }
-        }
-        std::sort(x_to_z[x].begin(), x_to_z[x].end());
-        x_to_z[x].erase(std::unique(x_to_z[x].begin(), x_to_z[x].end()), x_to_z[x].end());
-
-        for(auto z: x_to_z[x]) {
-            //outfile->Printf(" %d", z);
-        }
-    }
-
-    return x_to_z;
-
-}
-
-std::vector<std::vector<int>> extend_maps(const std::vector<std::vector<int>> &i_to_y, const std::vector<std::pair<int,int>> &ij_to_i_j) {
-    /* Args: 
-     * Returns: 
-     *
-     *
-     */
-
-    int ni = i_to_y.size();
-    std::vector<std::vector<int>> iext_to_y(ni);
-
-    for(auto pair : ij_to_i_j) {
-        size_t i, j;
-        std::tie(i,j) = pair;
-        iext_to_y[i] = merge_lists(iext_to_y[i], i_to_y[j]);
-    }
-
-    return iext_to_y;
-
-}
-
-void normalize_orbitals(SharedMatrix C, SharedMatrix S) {
-
-    // could do this way more efficiently (we only need the diagonals)
-    SharedMatrix C_norm = linalg::triplet(C, S, C, true, false, false);
-    for(size_t i = 0; i < C->colspi(0); ++i) {
-        C->scale_column(0, i, pow(C_norm->get(i,i), -0.5));
-    }
-}
-
-std::pair<SharedMatrix, SharedVector> get_canonicalizer(SharedMatrix C, SharedMatrix F) {
+std::pair<SharedMatrix, SharedVector> canonicalizer(SharedMatrix C, SharedMatrix F) {
     /* Args: orthonormal orbitals C (ao x mo) and fock matrix F (ao x ao)
      * Return: canonical transformation matrix U (mo x mo) and energy vector e (mo) 
      *
@@ -275,7 +107,7 @@ std::pair<SharedMatrix, SharedVector> get_canonicalizer(SharedMatrix C, SharedMa
 }
 
 
-std::pair<SharedMatrix, SharedVector> get_orthocanonicalizer(SharedMatrix Smo, SharedMatrix Fmo, Options &options) {
+std::pair<SharedMatrix, SharedVector> orthocanonicalizer(SharedMatrix Smo, SharedMatrix Fmo, Options &options) {
     /* Args: normalized orbitals C (ao x mo), overlap matrix S (ao x ao), fock matrix F (ao x ao)
      * Return: transformation matrix X (mo x mo_new) and energy vector e (mo_new)
      *
@@ -512,7 +344,7 @@ void DLPNOMP2::dipole_ints() {
 
         SharedMatrix X_pao_i;
         SharedVector e_pao_i;
-        std::tie(X_pao_i, e_pao_i) = get_orthocanonicalizer(S_pao_i, F_pao_i, options_);
+        std::tie(X_pao_i, e_pao_i) = orthocanonicalizer(S_pao_i, F_pao_i, options_);
         C_pao_i = linalg::doublet(C_pao_i, X_pao_i, false, false); // now in a nonredundant basis
 
         int npao_i_new = X_pao_i->colspi(0);
@@ -535,16 +367,12 @@ void DLPNOMP2::dipole_ints() {
 
     e_actual = std::make_shared<Matrix>("Dipole SC MP2 Energies", naocc, naocc);
     e_linear = std::make_shared<Matrix>("Parallel Dipole SC MP2 Energies", naocc, naocc);
-    lmo_distances = std::make_shared<Matrix>("blah", naocc, naocc);
-
 
     for (size_t i = 0; i < naocc; ++i) {
         for (size_t j = i+1; j < naocc; ++j) {
 
             Vector3 R_ij = R_i[i] - R_i[j];
             Vector3 Rh_ij = R_ij / R_ij.norm();
-            lmo_distances->set(i, j, R_ij.norm());
-            lmo_distances->set(j, i, R_ij.norm());
 
             double e_actual_temp = 0.0;
             double e_linear_temp = 0.0;
@@ -1025,7 +853,7 @@ void DLPNOMP2::pno_transform() {
 
         SharedMatrix X_pao_ij; // canonical transformation of this domain's PAOs to
         SharedVector e_pao_ij; // energies of the canonical PAOs
-        std::tie(X_pao_ij, e_pao_ij) = get_orthocanonicalizer(S_pao_ij, F_pao_ij, options_);
+        std::tie(X_pao_ij, e_pao_ij) = orthocanonicalizer(S_pao_ij, F_pao_ij, options_);
 
         //S_pao_ij = linalg::triplet(X_pao_ij, S_pao_ij, X_pao_ij, true, false, false);
         F_pao_ij = linalg::triplet(X_pao_ij, F_pao_ij, X_pao_ij, true, false, false);
@@ -1080,7 +908,7 @@ void DLPNOMP2::pno_transform() {
 
         SharedMatrix pno_canon;
         SharedVector e_pno_ij;
-        std::tie(pno_canon, e_pno_ij) = get_canonicalizer(X_pno_ij, F_pao_ij);
+        std::tie(pno_canon, e_pno_ij) = canonicalizer(X_pno_ij, F_pao_ij);
 
         // This transformation gives orbitals that are orthonormal and canonical
         X_pno_ij = linalg::doublet(X_pno_ij, pno_canon, false, false);
@@ -1310,11 +1138,7 @@ double DLPNOMP2::eval_amplitudes() {
     return e_mp2;
 }
 
-double DLPNOMP2::compute_energy() {
-
-    timer_on("DLPNO-MP2");
-
-    print_header();
+void DLPNOMP2::setup() {
 
     int natom = molecule_->natom();
     int nbf = basisset_->nbf();
@@ -1393,12 +1217,20 @@ double DLPNOMP2::compute_energy() {
     S_pao = linalg::triplet(C_pao, reference_wavefunction_->S(), C_pao, true, false, false);
     F_pao = linalg::triplet(C_pao, reference_wavefunction_->Fa(), C_pao, true, false, false);
 
-    // Calculate differential overlap integrals for (LMO, LMO) and (LMO, PAO) pairs
+}
+
+double DLPNOMP2::compute_energy() {
+
+    timer_on("DLPNO-MP2");
+
+    print_header();
+
+    setup();
+
     timer_on("Overlap Ints");
     overlap_ints();
     timer_off("Overlap Ints");
  
-    // Calculate approximate dipole energies for (LMO, LMO) pairs
     timer_on("Dipole Ints");
     dipole_ints();
     timer_off("Dipole Ints");
@@ -1426,6 +1258,19 @@ double DLPNOMP2::compute_energy() {
     print_results();
 
     timer_off("DLPNO-MP2");
+
+
+    //energy_ = emp2 + escf;
+    //set_scalar_variable("MP2 SINGLES ENERGY", 0.0);  // fnocc RHF only
+    //set_scalar_variable("MP2 DOUBLES ENERGY", emp2_os + emp2_ss);
+    //set_scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY", emp2_os);
+    //set_scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY", emp2_ss);
+    //set_scalar_variable("MP2 CORRELATION ENERGY", emp2);
+    //set_scalar_variable("MP2 TOTAL ENERGY", emp2 + escf);
+    //set_scalar_variable("CURRENT ENERGY", emp2 + escf);
+    //set_scalar_variable("CURRENT CORRELATION ENERGY", emp2);
+    //tstop();
+    //return emp2 + escf;
 
     return 0.0; // correlation energy? or add to SCF?
 }
