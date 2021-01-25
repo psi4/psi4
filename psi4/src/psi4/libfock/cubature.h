@@ -201,7 +201,7 @@ class PseudospectralGrid : public MolecularGrid {
     ~PseudospectralGrid() override;
 };
 
-class PSI_API DFTGrid : public MolecularGrid {
+class DFTGrid : public MolecularGrid {
    protected:
     /// The primary basis
     std::shared_ptr<BasisSet> primary_;

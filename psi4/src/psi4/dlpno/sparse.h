@@ -49,6 +49,6 @@ SharedMatrix submatrix_rows(SharedMatrix mat, const std::vector<int> &row_inds);
 SharedMatrix submatrix_cols(SharedMatrix mat, const std::vector<int> &col_inds);
 SharedMatrix submatrix_rows_and_cols(SharedMatrix mat, const std::vector<int> &row_inds, const std::vector<int> &col_inds);
 
-}
+} // namespace psi
 
 #endif // PSI4_SRC_DLPNO_SPARSE_H_

@@ -74,7 +74,6 @@ std::vector<int> contract_lists(const std::vector<int> &y, const std::vector<std
 
     // TODO: runtime is proportional to A_to_y size (system size, O(N))
     // could maybe reduce to &y size (domain size, O(1)), probably doesn't matter
-
     std::vector<int> yA;
 
     for(int a = 0, y_ind = 0; a < A_to_y.size(); ++a) {
@@ -123,8 +122,6 @@ std::vector<int> block_list(const std::vector<int> &x_list, const std::vector<in
 
 /* Args: SparseMap from x to y, maximum possible y value
  * Returns: SparseMap from y to x
- *
- *
  */
 std::vector<std::vector<int>> invert_map(const std::vector<std::vector<int>> &x_to_y, int ny) {
 
@@ -141,10 +138,8 @@ std::vector<std::vector<int>> invert_map(const std::vector<std::vector<int>> &x_
 
 }
 
-/* Args: SparseMap from x to y, SparseMap from y to x
+/* Args: SparseMap from x to y, SparseMap from y to z
  * Returns: SparseMap from x to z
- *
- *
  */
 std::vector<std::vector<int>> chain_maps(const std::vector<std::vector<int>> &x_to_y, const std::vector<std::vector<int>> &y_to_z) {
 
@@ -154,47 +149,35 @@ std::vector<std::vector<int>> chain_maps(const std::vector<std::vector<int>> &x_
     for(int x = 0; x < nx; x++) {
         for(auto y : x_to_y[x]) {
             for(auto z : y_to_z[y]) {
-                //if(x_to_z[x].size() == 0) {
-                    x_to_z[x].push_back(z);
-                //} else if(x_to_z[x][x_to_z[x].size() - 1] != z) {
-                    x_to_z[x].push_back(z);
-                //}
+                x_to_z[x].push_back(z);
             }
         }
         std::sort(x_to_z[x].begin(), x_to_z[x].end());
         x_to_z[x].erase(std::unique(x_to_z[x].begin(), x_to_z[x].end()), x_to_z[x].end());
-
-        for(auto z: x_to_z[x]) {
-            //outfile->Printf(" %d", z);
-        }
     }
 
     return x_to_z;
 
 }
 
-/* Args: SparseMap from x to y, TODO
- * Returns: TODO
- *
- *
+/* Args: SparseMap from x to y, list of pairs of type x
+ * Returns: extended SparseMap from x to y
  */
-std::vector<std::vector<int>> extend_maps(const std::vector<std::vector<int>> &i_to_y, const std::vector<std::pair<int,int>> &ij_to_i_j) {
+std::vector<std::vector<int>> extend_maps(const std::vector<std::vector<int>> &x_to_y, const std::vector<std::pair<int,int>> &xpairs) {
 
-    int ni = i_to_y.size();
-    std::vector<std::vector<int>> iext_to_y(ni);
+    int nx = x_to_y.size();
+    std::vector<std::vector<int>> xext_to_y(ni);
 
-    for(auto pair : ij_to_i_j) {
-        size_t i, j;
-        std::tie(i,j) = pair;
-        iext_to_y[i] = merge_lists(iext_to_y[i], i_to_y[j]);
+    for(auto xpair : xpairs) {
+        size_t x1, x2;
+        std::tie(x1,x2) = pair;
+        xext_to_y[x1] = merge_lists(xext_to_y[x1], x_to_y[x2]);
     }
 
-    return iext_to_y;
+    return xext_to_y;
 
 }
 
-/*
- */
 SharedMatrix submatrix_rows(SharedMatrix mat, const std::vector<int> &row_inds) {
 
     SharedMatrix mat_new = std::make_shared<Matrix>("blah", row_inds.size(), mat->colspi(0));
@@ -207,8 +190,6 @@ SharedMatrix submatrix_rows(SharedMatrix mat, const std::vector<int> &row_inds) 
     return mat_new;
 }
 
-/*
- */
 SharedMatrix submatrix_cols(SharedMatrix mat, const std::vector<int> &col_inds) {
 
     SharedMatrix mat_new = std::make_shared<Matrix>("blah", mat->rowspi(0), col_inds.size());
@@ -221,8 +202,6 @@ SharedMatrix submatrix_cols(SharedMatrix mat, const std::vector<int> &col_inds) 
     return mat_new;
 }
 
-/*
- */
 SharedMatrix submatrix_rows_and_cols(SharedMatrix mat, const std::vector<int> &row_inds, const std::vector<int> &col_inds) {
 
     SharedMatrix mat_new = std::make_shared<Matrix>("blah", row_inds.size(), col_inds.size());
@@ -236,5 +215,5 @@ SharedMatrix submatrix_rows_and_cols(SharedMatrix mat, const std::vector<int> &r
     return mat_new;
 }
 
-}
+} // namespace psi
 

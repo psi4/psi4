@@ -26,11 +26,9 @@
  * @END LICENSE
  */
 
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
+#include "mp2.h"
+
+#include "psi4/psi4-dec.h"
 
 #include "psi4/psifiles.h"
 #include "psi4/libciomr/libciomr.h"
@@ -42,9 +40,12 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/exception.h"
 
-#include "psi4/psi4-dec.h"
+#include <iostream>
+#include <cstdlib>
+#include <cstdio>
+#include <cmath>
+#include <sstream>
 
-#include "mp2.h"
 
 namespace psi {
 namespace dlpno {

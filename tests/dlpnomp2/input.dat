@@ -1,4 +1,4 @@
-#! conventional and density-fitting mp2 test of mp2 itself and setting scs-mp2
+#! comparison of DF-MP2 and DLPNO-MP2
 
 ref_scf                  =    -76.0267872755965              #TEST
                               
@@ -51,7 +51,7 @@ print('   Testing DLPNO-MP2 w/ tight settings ...')
 val = energy('dlpno-mp2')
 
 # DLPNO-MP2 matches DF-MP2 if the thresholds are tightened enough
-# Although there are many DLPNO thresholds, T_CUT_PNO is by far the most important
+# Although there are many DLPNO thresholds, T_CUT_PNO is the most important
 compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'mp2 ref')                        #TEST
 compare_values(ref_dfmp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')          #TEST
 compare_values(ref_dfmp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')                  #TEST

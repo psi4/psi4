@@ -3982,14 +3982,6 @@ def run_dlpnomp2(name, **kwargs):
     dlpnomp2_wfn = core.dlpno(ref_wfn)
     dlpnomp2_wfn.compute_energy()
 
-    #if name == 'scs-mp2':
-    #    dfmp2_wfn.set_variable('CURRENT ENERGY', dfmp2_wfn.variable('SCS-MP2 TOTAL ENERGY'))
-    #    dfmp2_wfn.set_variable('CURRENT CORRELATION ENERGY', dfmp2_wfn.variable('SCS-MP2 CORRELATION ENERGY'))
-
-    #elif name == 'mp2':
-    #    dfmp2_wfn.set_variable('CURRENT ENERGY', dfmp2_wfn.variable('MP2 TOTAL ENERGY'))
-    #    dfmp2_wfn.set_variable('CURRENT CORRELATION ENERGY', dfmp2_wfn.variable('MP2 CORRELATION ENERGY'))
-
     # Shove variables into global space
     for k, v in dlpnomp2_wfn.variables().items():
         core.set_variable(k, v)
