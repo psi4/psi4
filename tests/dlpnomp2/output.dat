@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {dlpno} a90c57d dirty
+                         Git: Rev {dlpno} cc7e800 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 25 January 2021 12:39AM
+    Psi4 started on: Monday, 25 January 2021 06:49PM
 
-    Process ID: 29592
+    Process ID: 31715
     Host:       ds10
     PSIDATADIR: /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
@@ -41,7 +41,7 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-#! conventional and density-fitting mp2 test of mp2 itself and setting scs-mp2
+#! comparison of DF-MP2 and DLPNO-MP2
 
 ref_scf                  =    -76.0267872755965              #TEST
                               
@@ -94,7 +94,7 @@ print('   Testing DLPNO-MP2 w/ tight settings ...')
 val = energy('dlpno-mp2')
 
 # DLPNO-MP2 matches DF-MP2 if the thresholds are tightened enough
-# Although there are many DLPNO thresholds, T_CUT_PNO is by far the most important
+# Although there are many DLPNO thresholds, T_CUT_PNO is the most important
 compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'mp2 ref')                        #TEST
 compare_values(ref_dfmp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')          #TEST
 compare_values(ref_dfmp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')                  #TEST
@@ -108,7 +108,7 @@ clean()
 Scratch directory: /scratch/glick/
 
 *** tstart() called on ds10
-*** at Mon Jan 25 00:39:22 2021
+*** at Mon Jan 25 18:49:23 2021
 
    => Loading Basis Set <=
 
@@ -294,18 +294,18 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:     0.0000      Z:     2.0567     Total:     2.0567
 
 
-*** tstop() called on ds10 at Mon Jan 25 00:39:22 2021
+*** tstop() called on ds10 at Mon Jan 25 18:49:23 2021
 Module time:
-	user time   =       0.35 seconds =       0.01 minutes
+	user time   =       0.36 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.35 seconds =       0.01 minutes
+	user time   =       0.36 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on ds10
-*** at Mon Jan 25 00:39:22 2021
+*** at Mon Jan 25 18:49:23 2021
 
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -367,15 +367,15 @@ Total time:
 	-----------------------------------------------------------
 
 
-*** tstop() called on ds10 at Mon Jan 25 00:39:23 2021
+*** tstop() called on ds10 at Mon Jan 25 18:49:23 2021
 Module time:
 	user time   =       0.05 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.40 seconds =       0.01 minutes
+	user time   =       0.41 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
     mp2 ref...............................................................................PASSED
     mp2 corl..............................................................................PASSED
     mp2 tot...............................................................................PASSED
@@ -387,7 +387,7 @@ Total time:
 Scratch directory: /scratch/glick/
 
 *** tstart() called on ds10
-*** at Mon Jan 25 00:39:23 2021
+*** at Mon Jan 25 18:49:23 2021
 
    => Loading Basis Set <=
 
@@ -573,18 +573,18 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:    -0.0000      Z:     2.0567     Total:     2.0567
 
 
-*** tstop() called on ds10 at Mon Jan 25 00:39:23 2021
+*** tstop() called on ds10 at Mon Jan 25 18:49:24 2021
 Module time:
-	user time   =       0.26 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.30 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.67 seconds =       0.01 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.72 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on ds10
-*** at Mon Jan 25 00:39:23 2021
+*** at Mon Jan 25 18:49:24 2021
 
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -672,10 +672,10 @@ Total time:
       Min     =   84 AUX BFs (3 atoms)
       Max     =   84 AUX BFs (3 atoms)
   
-    Projected AOs per Local MO pair (possibly linearly dependent):
-      Average =   24 AUX BFs (3 atoms)
-      Min     =   24 AUX BFs (3 atoms)
-      Max     =   24 AUX BFs (3 atoms)
+    Projected AOs per Local MO pair:
+      Average =   24 PAOs (3 atoms)
+      Min     =   24 PAOs (3 atoms)
+      Max     =   24 PAOs (3 atoms)
 
   ==> Transforming 3-Index Integrals to LMO/PAO basis <==
 
@@ -713,14 +713,14 @@ Total time:
     LMO Truncation Correction:          0.000000000000 
     PNO Truncation Correction:         -0.000000056167 
 
-*** tstop() called on ds10 at Mon Jan 25 00:39:23 2021
+*** tstop() called on ds10 at Mon Jan 25 18:49:24 2021
 Module time:
 	user time   =       0.10 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.77 seconds =       0.01 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.82 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
     mp2 ref...............................................................................PASSED
     mp2 corl..............................................................................PASSED
@@ -733,7 +733,7 @@ Total time:
 Scratch directory: /scratch/glick/
 
 *** tstart() called on ds10
-*** at Mon Jan 25 00:39:23 2021
+*** at Mon Jan 25 18:49:24 2021
 
    => Loading Basis Set <=
 
@@ -919,18 +919,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0567     Total:     2.0567
 
 
-*** tstop() called on ds10 at Mon Jan 25 00:39:23 2021
+*** tstop() called on ds10 at Mon Jan 25 18:49:24 2021
 Module time:
-	user time   =       0.24 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.25 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.02 seconds =       0.02 minutes
+	user time   =       1.08 seconds =       0.02 minutes
 	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on ds10
-*** at Mon Jan 25 00:39:23 2021
+*** at Mon Jan 25 18:49:24 2021
 
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -1018,10 +1018,10 @@ Total time:
       Min     =   84 AUX BFs (3 atoms)
       Max     =   84 AUX BFs (3 atoms)
   
-    Projected AOs per Local MO pair (possibly linearly dependent):
-      Average =   24 AUX BFs (3 atoms)
-      Min     =   24 AUX BFs (3 atoms)
-      Max     =   24 AUX BFs (3 atoms)
+    Projected AOs per Local MO pair:
+      Average =   24 PAOs (3 atoms)
+      Min     =   24 PAOs (3 atoms)
+      Max     =   24 PAOs (3 atoms)
 
   ==> Transforming 3-Index Integrals to LMO/PAO basis <==
 
@@ -1059,14 +1059,14 @@ Total time:
     LMO Truncation Correction:          0.000000000000 
     PNO Truncation Correction:         -0.000000000000 
 
-*** tstop() called on ds10 at Mon Jan 25 00:39:23 2021
+*** tstop() called on ds10 at Mon Jan 25 18:49:24 2021
 Module time:
 	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.12 seconds =       0.02 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       1.18 seconds =       0.02 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
     mp2 ref...............................................................................PASSED
     mp2 corl..............................................................................PASSED
@@ -1076,7 +1076,7 @@ Total time:
     mp2 tot...............................................................................PASSED
     mp2 return............................................................................PASSED
 
-    Psi4 stopped on: Monday, 25 January 2021 12:39AM
-    Psi4 wall time for execution: 0:00:01.30
+    Psi4 stopped on: Monday, 25 January 2021 06:49PM
+    Psi4 wall time for execution: 0:00:01.36
 
 *** Psi4 exiting successfully. Buy a developer a beer!

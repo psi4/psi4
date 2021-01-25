@@ -551,7 +551,7 @@ void DLPNOMP2::sparsity_prep() {
                 ij_to_i_j.push_back(std::make_pair(i,j));
                 ij++;
             } else {
-                de_dipole_ += e_actual->get(i,j); // TODO: scale this number?
+                de_dipole_ += e_actual->get(i,j);
                 i_j_to_ij[i].push_back(-1);
             }
         }
@@ -899,7 +899,7 @@ void DLPNOMP2::pno_transform() {
 
         int nvir_ij_final= 0;
         for(size_t a = 0; a < nvir_ij; ++a) {
-            if (fabs(pno_occ->get(a)) >= options_.get_double("T_CUT_PNO")) { // TODO: can this be negative? Or is that just a precision thing?
+            if (fabs(pno_occ->get(a)) >= options_.get_double("T_CUT_PNO")) {
                 nvir_ij_final++;
             }
         }
@@ -1428,10 +1428,10 @@ void DLPNOMP2::print_pao_pair_domains() {
     }
 
     outfile->Printf("  \n");
-    outfile->Printf("    Projected AOs per Local MO pair (possibly linearly dependent):\n");
-    outfile->Printf("      Average = %4d AUX BFs (%d atoms)\n", total_domain_pao / n_lmo_pairs, total_domain_atom / n_lmo_pairs);
-    outfile->Printf("      Min     = %4d AUX BFs (%d atoms)\n", min_domain_pao, min_domain_atom);
-    outfile->Printf("      Max     = %4d AUX BFs (%d atoms)\n", max_domain_pao, max_domain_atom);
+    outfile->Printf("    Projected AOs per Local MO pair:\n");
+    outfile->Printf("      Average = %4d PAOs (%d atoms)\n", total_domain_pao / n_lmo_pairs, total_domain_atom / n_lmo_pairs);
+    outfile->Printf("      Min     = %4d PAOs (%d atoms)\n", min_domain_pao, min_domain_atom);
+    outfile->Printf("      Max     = %4d PAOs (%d atoms)\n", max_domain_pao, max_domain_atom);
 
 }
 

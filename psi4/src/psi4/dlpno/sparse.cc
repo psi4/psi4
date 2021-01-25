@@ -166,11 +166,11 @@ std::vector<std::vector<int>> chain_maps(const std::vector<std::vector<int>> &x_
 std::vector<std::vector<int>> extend_maps(const std::vector<std::vector<int>> &x_to_y, const std::vector<std::pair<int,int>> &xpairs) {
 
     int nx = x_to_y.size();
-    std::vector<std::vector<int>> xext_to_y(ni);
+    std::vector<std::vector<int>> xext_to_y(nx);
 
     for(auto xpair : xpairs) {
         size_t x1, x2;
-        std::tie(x1,x2) = pair;
+        std::tie(x1,x2) = xpair;
         xext_to_y[x1] = merge_lists(xext_to_y[x1], x_to_y[x2]);
     }
 

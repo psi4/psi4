@@ -36,7 +36,7 @@
 namespace psi {
 namespace dlpno {
 
-// References to DiStasio are to J Comput Chem 28: 839–856, 2007; DOI: 10.1002/jcc.20604
+// Equation refer to Pinski et al. (JCP 143, 034108, 2015; DOI: 10.1063/1.4926879
 
 class DLPNOMP2 : public Wavefunction {
    protected:

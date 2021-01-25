@@ -2389,30 +2389,33 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("LOCAL_CONVERGENCE", 1.0E-12);
         /*- Maximum iterations in localization -*/
         options.add_int("LOCAL_MAXITER", 1000);
-        /*- DOI threshold for treating LMOs (i,j) as interacting -*/
-        options.add_double("T_CUT_DO_ij", 1e-5);
-        /*- Pair energy threshold (dipole approximation) for treating LMOs (i, j) as interacting -*/
-        options.add_double("T_CUT_PRE", 1e-6); 
-        /*- DOI threshold for including PAO (u) in domain of LMO (i) during pre-screening -*/
-        options.add_double("T_CUT_DO_PRE", 3e-2);
-        /*- DOI threshold for including PAO (u) in domain of LMO (i) -*/
-        options.add_double("T_CUT_DO", 1e-2);
-        /*- Mulliken charge threshold for including aux BFs on atom (a) in domain of LMO (i) -*/
-        options.add_double("T_CUT_MKN", 1e-3);
-        /*- Basis set coefficient threshold for including basis function (m) in domain of LMO (i) -*/
-        options.add_double("T_CUT_CLMO", 1e-2);
-        /*- Basis set coefficient threshold for including basis function (n) in domain of PAO (u) -*/
-        options.add_double("T_CUT_CPAO", 1e-3);
-        /*- Overlap matrix threshold for removing linear dependencies -*/
-        options.add_double("S_CUT", 1e-8);
-        /*- Occupation number threshold for removing PNOs -*/
-        options.add_double("T_CUT_PNO", 1e-8);
-        /*- Fock matrix threshold for treating ampltudes as coupled during local MP2 iterations -*/
-        options.add_double("F_CUT", 1e-5);
         /*- Energy convergence criteria for local MP2 iterations -*/
         options.add_double("E_CONVERGENCE", 1e-6);
         /*- Residual convergence criteria for local MP2 iterations -*/
         options.add_double("R_CONVERGENCE", 1e-6);
+        /*- Occupation number threshold for removing PNOs -*/
+        options.add_double("T_CUT_PNO", 1e-8);
+        /*- DOI threshold for including PAO (u) in domain of LMO (i) -*/
+        options.add_double("T_CUT_DO", 1e-2);
+
+        /*- SUBSECTION Expert -*/
+
+        /*- DOI threshold for treating LMOs (i,j) as interacting !expert -*/
+        options.add_double("T_CUT_DO_ij", 1e-5);
+        /*- Pair energy threshold (dipole approximation) for treating LMOs (i, j) as interacting !expert -*/
+        options.add_double("T_CUT_PRE", 1e-6); 
+        /*- DOI threshold for including PAO (u) in domain of LMO (i) during pre-screening !expert -*/
+        options.add_double("T_CUT_DO_PRE", 3e-2);
+        /*- Mulliken charge threshold for including aux BFs on atom (a) in domain of LMO (i) !expert -*/
+        options.add_double("T_CUT_MKN", 1e-3);
+        /*- Basis set coefficient threshold for including basis function (m) in domain of LMO (i) !expert -*/
+        options.add_double("T_CUT_CLMO", 1e-2);
+        /*- Basis set coefficient threshold for including basis function (n) in domain of PAO (u) !expert -*/
+        options.add_double("T_CUT_CPAO", 1e-3);
+        /*- Overlap matrix threshold for removing linear dependencies !expert -*/
+        options.add_double("S_CUT", 1e-8);
+        /*- Fock matrix threshold for treating ampltudes as coupled during local MP2 iterations !expert -*/
+        options.add_double("F_CUT", 1e-5);
 
     }
     if (name == "PSIMRCC" || options.read_globals()) {
