@@ -43,7 +43,7 @@ namespace dct {
 SharedMatrix DCTSolver::compute_gradient() {
     // Print out the header
     outfile->Printf("\n\n\t***********************************************************************************\n");
-    outfile->Printf("\t*                           DCT Analytic Gradients Code                          *\n");
+    outfile->Printf("\t*                            DCT Analytic Gradients Code                          *\n");
     outfile->Printf("\t*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *\n");
     outfile->Printf("\t***********************************************************************************\n\n");
 

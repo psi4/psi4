@@ -239,6 +239,12 @@ void DCTSolver::compute_gradient_dc() {
 }
 
 void DCTSolver::compute_gradient_odc() {
+    if (options_.get_str("DCT_TYPE") == "DF") {
+        three_idx_separable_density();
+        three_idx_cumulant_density();
+        construct_metric_density("Reference");
+        construct_metric_density("Correlation");
+    }
     // Compute the VVVV block of the relaxed TPDM
     compute_unrelaxed_density_VVVV();
     outfile->Printf("\t Computing energy-weighted density matrix from one- and two-particle densities...\n");
@@ -4708,6 +4714,16 @@ void DCTSolver::compute_ewdm_odc() {
     global_dpd_->file2_close(&X_OV);
     global_dpd_->file2_close(&X_OO);
     global_dpd_->file2_close(&X_VV);
+
+    /* Save the SO EWDM to the wavefunction as Lagrangian_.
+     * All other EWDM processing operations are then redundant, but it's what deriv.cc:compute expects...
+     */
+    Lagrangian_ = std::make_shared<Matrix>("Lagrangian matrix", nirrep_, nsopi_, nsopi_);
+    auto temp_lagrangian = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
+    Lagrangian_->back_transform(aW, *Ca_);
+    temp_lagrangian->back_transform(bW, *Cb_);
+    Lagrangian_->add(temp_lagrangian);
+    Lagrangian_->scale(-1.0);
 
     // Scale the energy-weighted density matrix by -2.0 to make it the same form as in the coupled-cluster code
     aW.scale(-2.0);

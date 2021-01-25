@@ -2049,6 +2049,8 @@ void DCTSolver::construct_oo_density_UHF() {
     // With the OPDMs constructed, let's set them on the wavefunction.
     Da_ = linalg::triplet(Ca_, a_opdm, Ca_, false, false, true);
     Db_ = linalg::triplet(Cb_, b_opdm, Cb_, false, false, true);
+    Da_->print_out();
+    Db_->print_out();
 }
 
 void DCTSolver::compute_oe_properties() {

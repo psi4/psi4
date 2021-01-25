@@ -509,17 +509,28 @@ class DCTSolver : public Wavefunction {
     /// Build density-fitted <VV||VV>, <vv||vv>, and <Vv|Vv> tensors in G intermediate
     void build_DF_tensors_RHF();
     void build_DF_tensors_UHF();
-    /// Form J(P|Q)^-1/2
-    SharedMatrix formJm12(std::shared_ptr<BasisSet> auxiliary) const;
+    /// Form J(P|Q)^-1/2 and write to disk
+    SharedMatrix formJm12(std::shared_ptr<BasisSet> auxiliary, const std::string& name);
     /// Form AO basis b(Q|mu,nu)
-    SharedMatrix formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
-                  std::shared_ptr<BasisSet> zero, SharedMatrix Jm12) const;
+    Matrix formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
+                  std::shared_ptr<BasisSet> zero, SharedMatrix Jm12, const std::string& name);
     /// Transform AO-basis b(Q, mn) to MO-basis b(Q, pq)
     void transform_b();
     /// Transform b(Q|mu,nu) from AO basis to SO basis
-    SharedMatrix transform_b_ao2so(SharedMatrix bQmn_ao) const;
+    Matrix transform_b_ao2so(const Matrix& bQmn_ao) const;
+    /// Transform b(Q|mu,nu) from AO basis to SO basis
+    Matrix transform_b_so2ao(const Matrix& bQmn_so) const;
+    void construct_metric_density(const std::string& basis_type);
     /// Transform b(Q|mu,nu) from SO basis to another basis with symmetry
-    SharedMatrix three_idx_primary_transform(const SharedMatrix three_idx, const SharedMatrix left, const SharedMatrix right) const;
+    SharedMatrix three_idx_primary_transform(const Matrix& three_idx, const SharedMatrix left, const SharedMatrix right) const;
+    void three_idx_primary_transform_gemm(const Matrix& three_idx, const Matrix& left, const Matrix& right, Matrix& result, double alpha, double beta) const;
+    void three_idx_cumulant_density();
+    void three_idx_separable_density();
+    SharedMatrix three_idx_cumulant_helper(Matrix& temp, const Matrix& J, const SharedMatrix bt1, const SharedMatrix bt2);
+    SharedMatrix three_idx_separable_helper(const Matrix& Q, const Matrix& J, const SharedMatrix RDM, const SharedMatrix C_subset);
+    void contract343(const Matrix& b, dpdbuf4& G, Matrix& result, bool transpose, double alpha, double beta) const; 
+    Matrix contract123(const Matrix& Q, const Matrix& G) const;
+    Matrix contract233(const Matrix& J, const Matrix& B) const;
 
     /// Form density-fitted MO-basis TEI g(OV|OV) in chemists' notation
     void form_df_g_ovov();
@@ -555,8 +566,8 @@ class DCTSolver : public Wavefunction {
     /// Number of alpha occupied orbitals
     int naocc_;
     /// b(Q|mu,nu)
-    SharedMatrix bQmn_so_;
-    SharedMatrix bQmn_so_scf_;
+    Matrix bQmn_so_;
+    Matrix bQmn_so_scf_;
     /// b(Q|i, j)
     SharedMatrix bQijA_mo_;
     SharedMatrix bQijB_mo_;
@@ -564,9 +575,6 @@ class DCTSolver : public Wavefunction {
     /// b(Q|i, a)
     SharedMatrix bQiaA_mo_;
     SharedMatrix bQiaB_mo_;
-    /// b(Q|a, i)
-    SharedMatrix bQaiA_mo_;
-    SharedMatrix bQaiB_mo_;
     /// b(Q|a, b)
     SharedMatrix bQabA_mo_;
     SharedMatrix bQabB_mo_;

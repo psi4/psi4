@@ -515,6 +515,13 @@ void DCTSolver::compute_ewdm_odc_RHF() {
     global_dpd_->file2_close(&X_OO);
     global_dpd_->file2_close(&X_VV);
 
+    /* Save the SO EWDM to the wavefunction as Lagrangian_.
+     * All other EWDM processing operations are then redundant, but it's what deriv.cc:compute expects...
+     */
+    Lagrangian_ = std::make_shared<Matrix>("Lagrangian matrix", nirrep_, nsopi_, nsopi_);
+    Lagrangian_->back_transform(aW, *Ca_);
+    Lagrangian_->scale(-2.0); // Doubling is equivalent to adding beta spin case
+
     // Scale the energy-weighted density matrix by -2.0 to make it the same form as in the coupled-cluster code
     aW.scale(-4.0);  // scale by -4.0 because Lagragian_beta = Lagragian_alpha
 

@@ -94,12 +94,12 @@ void DCTSolver::df_build_b() {
 
     // Form J(P,Q)^-1/2
     dct_timer_on("DCTSolver::Form J^-1/2");
-    auto Jm12 = formJm12(auxiliary_);
+    auto Jm12 = formJm12(auxiliary_, "J^-1/2 Correlation");
     dct_timer_off("DCTSolver::Form J^-1/2");
 
     // Form B(Q, mu, nu)
     dct_timer_on("DCTSolver::Form B(Q,mn)");
-    auto bQmn_ao = formb_ao(primary_, auxiliary_, zero, Jm12);
+    auto bQmn_ao = formb_ao(primary_, auxiliary_, zero, Jm12, "B(Q|mn) Correlation");
     dct_timer_off("DCTSolver::Form B(Q,mn)");
 
     // Transform B to the SO basis.
@@ -111,11 +111,11 @@ void DCTSolver::df_build_b() {
 
     // Now do the same for the JKFIT terms.
     dct_timer_on("DCTSolver::Form J^-1/2 (JKFIT)");
-    auto Jm12scf = formJm12(auxiliary_scf_);
+    auto Jm12scf = formJm12(auxiliary_scf_, "J^-1/2 Reference");
     dct_timer_off("DCTSolver::Form J^-1/2 (JKFIT)");
 
     dct_timer_on("DCTSolver::Form B(Q,mn) (JKFIT)");
-    auto bQmn_ao_scf = formb_ao(primary_, auxiliary_scf_, zero, Jm12scf);
+    auto bQmn_ao_scf = formb_ao(primary_, auxiliary_scf_, zero, Jm12scf, "B(Q|mn) Reference");
     dct_timer_off("DCTSolver::Form B(Q,mn) (JKFIT)");
 
     dct_timer_on("DCTSolver::Transform B(Q,mn) (JKFIT)");
@@ -125,20 +125,24 @@ void DCTSolver::df_build_b() {
     dct_timer_off("DCTSolver::df_build_b()");
 }
 
-/**
+/*
  * Form J(P,Q)^-1/2
  */
-SharedMatrix DCTSolver::formJm12(std::shared_ptr<BasisSet> auxiliary) const {
-    auto metric = std::make_shared<FittingMetric>(auxiliary, true);
-    metric->form_eig_inverse(1.0E-10); // This is hardcoded at present, but should be replaced with a global fitting option...
-    return metric->get_metric();
+SharedMatrix DCTSolver::formJm12(std::shared_ptr<BasisSet> auxiliary, const std::string& name) {
+    auto metric_obj = FittingMetric(auxiliary, true);
+    metric_obj.form_eig_inverse(1.0E-10); // This is hardcoded at present, but should be replaced with a global fitting option...
+    auto metric = metric_obj.get_metric();
+    metric->set_name(name);
+    // Save the metric for later use.
+    metric->save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::LowerTriangle); 
+    return metric;
 }
 
 /**
  * Form b(Q|mn)
  */
-SharedMatrix DCTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
-                          std::shared_ptr<BasisSet> zero, SharedMatrix Jm12) const {
+Matrix DCTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
+                          std::shared_ptr<BasisSet> zero, SharedMatrix Jm12, const std::string& name) {
     auto nQ = auxiliary->nbf();
     auto A_ao = std::make_shared<Matrix>(nQ, nso_ * nso_);
     auto Bp = A_ao->pointer();
@@ -227,7 +231,11 @@ SharedMatrix DCTSolver::formb_ao(std::shared_ptr<BasisSet> primary, std::shared_
         }
     }
 
-    return linalg::doublet(Jm12, A_ao, false, false);
+    auto b = *linalg::doublet(Jm12, A_ao, false, false);
+    b.set_name(name);
+    // Cache this for possible use in the gradient program.
+    b.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    return b;
 }
 
 /**
@@ -306,14 +314,14 @@ void DCTSolver::transform_b() {
 /**
  * Transform b(Q|mu,nu) from AO basis to SO basis
  */
-SharedMatrix DCTSolver::transform_b_ao2so(SharedMatrix bQmn_ao) const {
+Matrix DCTSolver::transform_b_ao2so(const Matrix& bQmn_ao) const {
     int nthreads = 1;
 #ifdef _OPENMP
     nthreads = Process::environment.get_n_threads();
 #endif
 
-    auto nQ = bQmn_ao->rowspi(0); // Read the number of aux. functions from the b matrix.
-    auto bQmn_ao_p = bQmn_ao->pointer();
+    auto nQ = bQmn_ao.rowspi(0); // Read the number of aux. functions from the b matrix.
+    auto bQmn_ao_p = bQmn_ao.pointer();
 
     // Set up dimensions for SO-basis b(Q|mn)
     Dimension Q(nirrep_), mn(nirrep_);
@@ -323,21 +331,18 @@ SharedMatrix DCTSolver::transform_b_ao2so(SharedMatrix bQmn_ao) const {
             mn[hm ^ hn] += nsopi_[hm] * nsopi_[hn];
         }
     }
-    auto bQmn_so = std::make_shared<Matrix>("Fully-transformed b", Q, mn);
+    auto bQmn_so = Matrix("Fully-transformed b", Q, mn);
 
-    std::vector<int> offset(nirrep_);
-    for (int h = 0; h < nirrep_; ++h) {
-        offset.push_back(0);
-    }
+    std::vector<int> offset(nirrep_, 0);
 
     // AO-basis b(Q|mn) -> SO-basis b(Q|mn)
     for (int h = 0; h < nirrep_; ++h) {
-        auto bQmn_so_p = bQmn_so->pointer(h);
+        auto bQmn_so_p = bQmn_so.pointer(h);
         for (int hm = 0; hm < nirrep_; ++hm) {
             int hn = h ^ hm;
             if (nsopi_[hm] > 0 && nsopi_[hn] > 0) {
-                auto tmp = std::make_shared<Matrix>("Half-transformed b", nQ, nso_ * nsopi_[hn]);
-                auto tmpp = tmp->pointer();
+                auto tmp = Matrix("Half-transformed b", nQ, nso_ * nsopi_[hn]);
+                auto tmpp = tmp.pointer();
                 auto ao2so_n_p = reference_wavefunction()->aotoso()->pointer(hn);
                 auto ao2so_m_p = reference_wavefunction()->aotoso()->pointer(hm);
                 // First-half transformation
@@ -357,24 +362,9 @@ SharedMatrix DCTSolver::transform_b_ao2so(SharedMatrix bQmn_ao) const {
     return bQmn_so;
 }
 
-// TODO: This should probably be migrated to/replaced with lib3index's DFHelper.
-// However, we need symmetry, and lib3index currently doesn't support it. JPM 01/2021
-SharedMatrix DCTSolver::three_idx_primary_transform(const SharedMatrix three_idx, const SharedMatrix left, const SharedMatrix right) const {
-    dct_timer_on("DCTSolver::Three-Index SO -> MO");
-
-    if (three_idx->symmetry() || left->symmetry() || right->symmetry())
-        throw PSIEXCEPTION("three_idx_primary_transform: Can only handle totally symmetric matrices.");
-
-    if (three_idx->nirrep() != left->nirrep() || three_idx->nirrep() != right->nirrep()) {
-        throw PSIEXCEPTION("three_idx_primary_transform: Number of irreps don't equal.");
-    }
-
-    int nthreads = 1;
-#ifdef _OPENMP
-    nthreads = Process::environment.get_n_threads();
-#endif
-
-    auto nQ = three_idx->rowdim(0);
+// Convenience function for the simple case of a (Q|pq) pr qs -> (Q|qs).
+SharedMatrix DCTSolver::three_idx_primary_transform(const Matrix& three_idx, const SharedMatrix left, const SharedMatrix right) const {
+    auto nQ = three_idx.rowdim(0);
     // Set up dimensions for b(Aux|PQ)
     Dimension LR(nirrep_), Aux(nirrep_);
     for (int hL = 0; hL < nirrep_; ++hL) {
@@ -385,38 +375,104 @@ SharedMatrix DCTSolver::three_idx_primary_transform(const SharedMatrix three_idx
     }
 
     auto result = std::make_shared<Matrix>("Three-Index Tensor", Aux, LR);
-    std::vector<int> offset_mo(three_idx->nirrep(), 0), offset_so(three_idx->nirrep(), 0);
+
+    three_idx_primary_transform_gemm(three_idx, *left, *right, *result, 1.0, 0.0);
+
+    return result;
+}
+
+// TODO: This should probably be migrated to/replaced with lib3index's DFHelper.
+// However, we need symmetry, and lib3index currently doesn't support it. JPM 01/2021
+void DCTSolver::three_idx_primary_transform_gemm(const Matrix& three_idx, const Matrix& left, const Matrix& right, Matrix& result, double alpha, double beta) const {
+    dct_timer_on("DCTSolver::Three-Index SO -> MO");
+
+    if (three_idx.symmetry() || left.symmetry() || right.symmetry() || result.symmetry())
+        throw PSIEXCEPTION("three_idx_primary_transform_gemm: Can only handle totally symmetric matrices.");
+
+    if (three_idx.nirrep() != left.nirrep() || three_idx.nirrep() != right.nirrep() || three_idx.nirrep() != result.nirrep()) {
+        throw PSIEXCEPTION("three_idx_primary_transform_gemm: Number of irreps don't equal.");
+    }
+
+    if (three_idx.rowspi() != result.rowspi()) {
+        throw PSIEXCEPTION("three_idx_primary_transform_gemm: Tensor to transform and result must agree about number of number of aux. functions");
+    }
+
+    int nthreads = 1;
+#ifdef _OPENMP
+    nthreads = Process::environment.get_n_threads();
+#endif
+
+    auto nQ = three_idx.rowdim(0);
+    std::vector<int> offset_mo(three_idx.nirrep(), 0), offset_so(three_idx.nirrep(), 0);
 
     for (int h = 0; h < nirrep_; ++h) {
-        auto three_idx_p = three_idx->pointer(h);
-        auto result_p = result->pointer(h);
+        auto three_idx_p = three_idx.pointer(h);
+        auto result_p = result.pointer(h);
         for (int hL = 0; hL < nirrep_; ++hL) {
             const auto hR = h ^ hL;
-            if (left->colspi(hL) > 0 && right->colspi(hR) > 0) {
-                const auto leftP = left->pointer(hL);
-                const auto rightP = right->pointer(hR);
-                auto tmp = std::make_shared<Matrix>("Half-Transformed", nQ, left->rowspi(hL) * right->colspi(hR));
-                auto tmpp = tmp->pointer();
+            if (left.colspi(hL) > 0 && right.colspi(hR) > 0 && left.rowspi(hL) > 0 && right.rowspi(hR) > 0) {
+                const auto leftP = left.pointer(hL);
+                const auto rightP = right.pointer(hR);
+                auto tmp = Matrix("Half-Transformed", nQ, left.rowspi(hL) * right.colspi(hR));
+                auto tmpp = tmp.pointer();
 //#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
                 for (int Q = 0; Q < nQ; ++Q) {
                     // First-half transformation
-                    C_DGEMM('N', 'N', left->rowspi(hL), right->colspi(hR), right->rowspi(hR), 1.0, three_idx_p[Q] + offset_so[h],
-                            right->rowspi(hR), rightP[0], right->colspi(hR), 0.0, tmpp[Q], right->colspi(hR));
+                    C_DGEMM('N', 'N', left.rowspi(hL), right.colspi(hR), right.rowspi(hR), 1.0, three_idx_p[Q] + offset_so[h],
+                            right.rowspi(hR), rightP[0], right.colspi(hR), 0.0, tmpp[Q], right.colspi(hR));
                     // Second-half transformation
-                    C_DGEMM('T', 'N', left->colspi(hL), right->colspi(hR), left->rowspi(hL), 1.0, leftP[0], left->colspi(hL), tmpp[Q],
-                            right->colspi(hR), 0.0, result_p[Q] + offset_mo[h], right->colspi(hR));
+                    C_DGEMM('T', 'N', left.colspi(hL), right.colspi(hR), left.rowspi(hL), alpha, leftP[0], left.colspi(hL), tmpp[Q],
+                            right.colspi(hR), beta, result_p[Q] + offset_mo[h], right.colspi(hR));
                 }
             }
-            offset_so[h] += left->rowspi(hL) * right->rowspi(hR);
-            offset_mo[h] += left->colspi(hL) * right->colspi(hR);
+            offset_so[h] += left.rowspi(hL) * right.rowspi(hR);
+            offset_mo[h] += left.colspi(hL) * right.colspi(hR);
         }
-        if (offset_so[h] != three_idx->colspi(h))
+        if (offset_so[h] != three_idx.colspi(h))
             throw PSIEXCEPTION("three_idx_primary_transform: Dimension mismatch");
     }
 
     dct_timer_off("DCTSolver::Three-Index SO -> MO");
+}
 
-    return result;
+/**
+ * Transform b(Q|mu,nu) from SO to AO basis
+ */
+Matrix DCTSolver::transform_b_so2ao(const Matrix& bQmn_so) const {
+    int nthreads = 1;
+#ifdef _OPENMP
+    nthreads = Process::environment.get_n_threads();
+#endif
+
+    auto nQ = bQmn_so.rowspi(0);
+    auto bQmn_ao = Matrix("AO basis quantity", nQ, bQmn_so.ncol());
+    auto bQmn_ao_p = bQmn_ao.pointer();
+
+    std::vector<int> offset(nirrep_, 0);
+
+    for (int h = 0; h < nirrep_; ++h) {
+        auto bQmn_so_p = bQmn_so.pointer(h);
+        for (int hm = 0; h < nirrep_; ++h) {
+            int hn = h ^ hm;
+            auto morbs = aotoso()->colspi(hm);
+            auto norbs = aotoso()->colspi(hn);
+            if (morbs > 0 && norbs > 0) {
+                auto m_p = aotoso()->pointer(hm);
+                auto n_p = aotoso()->pointer(hn);
+                auto tmp = Matrix("Half-transformed Matrix", nQ, morbs * nso_);
+                auto tmpp = tmp.pointer();
+                // First transformation
+                C_DGEMM('N', 'T', nQ * morbs, nso_, norbs, 1.0, bQmn_so_p[0] + offset[h], norbs, n_p[0], nsopi_[hn], 0.0, tmpp[0], nso_);
+                // Second transformation
+                for (int Q = 0; Q < nQ; ++Q) {
+                    C_DGEMM('N', 'N', nso_, nso_, morbs, 1.0, m_p[0], nsopi_[hm], tmpp[Q], nso_, 1.0, bQmn_ao_p[Q], nso_);
+                }
+            }
+            offset[h] += morbs * norbs;
+        }
+    }
+
+    return bQmn_ao;
 }
 
 /**
@@ -703,7 +759,7 @@ void DCTSolver::form_df_g_vooo() {
     }
 
     // Sort b(Q|IA) -> b(Q|AI)
-    bQaiA_mo_ = std::make_shared<Matrix>("b(Q|AI)", Q, VO);
+    auto bQaiA_mo = std::make_shared<Matrix>("b(Q|AI)", Q, VO);
     for (int h = 0; h < nirrep_; ++h) {
         for (int hA = 0; hA < nirrep_; ++hA) {
             int hI = h ^ hA;
@@ -713,7 +769,7 @@ void DCTSolver::form_df_g_vooo() {
                     for (int I = 0; I < naoccpi_[hI]; ++I) {
                         long int IA = block_Qia[h][hI].first + I * navirpi_[hA] + A;
                         long int AI = block_Qai[h][hA].first + A * naoccpi_[hI] + I;
-                        bQaiA_mo_->set_column(h, AI, bQiaA_mo_->get_column(h, IA));
+                        bQaiA_mo->set_column(h, AI, bQiaA_mo_->get_column(h, IA));
                     }
                 }
             }
@@ -727,10 +783,10 @@ void DCTSolver::form_df_g_vooo() {
                            "MO Ints (VO|OO)");
     for (int h = 0; h < nirrep_; ++h) {
         if (I.params->rowtot[h] > 0 && I.params->coltot[h] > 0) {
-            double** bQaiA_mo_p = bQaiA_mo_->pointer(h);
+            double** bQaiA_mo_p = bQaiA_mo->pointer(h);
             double** bQijA_mo_p = bQijA_mo_->pointer(h);
             global_dpd_->buf4_mat_irrep_init(&I, h);
-            C_DGEMM('T', 'N', I.params->rowtot[h], I.params->coltot[h], nQ_, 1.0, bQaiA_mo_p[0], bQaiA_mo_->coldim(h),
+            C_DGEMM('T', 'N', I.params->rowtot[h], I.params->coltot[h], nQ_, 1.0, bQaiA_mo_p[0], bQaiA_mo->coldim(h),
                     bQijA_mo_p[0], bQijA_mo_->coldim(h), 0.0, I.matrix[h][0], I.params->coltot[h]);
             global_dpd_->buf4_mat_irrep_wrt(&I, h);
             global_dpd_->buf4_mat_irrep_close(&I, h);
@@ -772,7 +828,7 @@ void DCTSolver::form_df_g_vooo() {
         }
 
         // Sort b(Q|ia) -> b(Q|ai)
-        bQaiB_mo_ = std::make_shared<Matrix>("b(Q|ai)", Q, vo);
+        auto bQaiB_mo = std::make_shared<Matrix>("b(Q|ai)", Q, vo);
         for (int h = 0; h < nirrep_; ++h) {
             for (int ha = 0; ha < nirrep_; ++ha) {
                 int hi = h ^ ha;
@@ -782,7 +838,7 @@ void DCTSolver::form_df_g_vooo() {
                         for (int i = 0; i < nboccpi_[hi]; ++i) {
                             long int ia = block_Qia[h][hi].first + i * nbvirpi_[ha] + a;
                             long int ai = block_Qai[h][ha].first + a * nboccpi_[hi] + i;
-                            bQaiB_mo_->set_column(h, ai, bQiaB_mo_->get_column(h, ia));
+                            bQaiB_mo->set_column(h, ai, bQiaB_mo_->get_column(h, ia));
                         }
                     }
                 }
@@ -796,11 +852,11 @@ void DCTSolver::form_df_g_vooo() {
                                "MO Ints (VO|oo)");
         for (int h = 0; h < nirrep_; ++h) {
             if (I.params->rowtot[h] > 0 && I.params->coltot[h] > 0) {
-                double** bQaiA_mo_p = bQaiA_mo_->pointer(h);
+                double** bQaiA_mo_p = bQaiA_mo->pointer(h);
                 double** bQijB_mo_p = bQijB_mo_->pointer(h);
                 global_dpd_->buf4_mat_irrep_init(&I, h);
                 C_DGEMM('T', 'N', I.params->rowtot[h], I.params->coltot[h], nQ_, 1.0, bQaiA_mo_p[0],
-                        bQaiA_mo_->coldim(h), bQijB_mo_p[0], bQijB_mo_->coldim(h), 0.0, I.matrix[h][0],
+                        bQaiA_mo->coldim(h), bQijB_mo_p[0], bQijB_mo_->coldim(h), 0.0, I.matrix[h][0],
                         I.params->coltot[h]);
                 global_dpd_->buf4_mat_irrep_wrt(&I, h);
                 global_dpd_->buf4_mat_irrep_close(&I, h);
@@ -813,11 +869,11 @@ void DCTSolver::form_df_g_vooo() {
                                "MO Ints (vo|oo)");
         for (int h = 0; h < nirrep_; ++h) {
             if (I.params->rowtot[h] > 0 && I.params->coltot[h] > 0) {
-                double** bQaiB_mo_p = bQaiB_mo_->pointer(h);
+                double** bQaiB_mo_p = bQaiB_mo->pointer(h);
                 double** bQijB_mo_p = bQijB_mo_->pointer(h);
                 global_dpd_->buf4_mat_irrep_init(&I, h);
                 C_DGEMM('T', 'N', I.params->rowtot[h], I.params->coltot[h], nQ_, 1.0, bQaiB_mo_p[0],
-                        bQaiB_mo_->coldim(h), bQijB_mo_p[0], bQijB_mo_->coldim(h), 0.0, I.matrix[h][0],
+                        bQaiB_mo->coldim(h), bQijB_mo_p[0], bQijB_mo_->coldim(h), 0.0, I.matrix[h][0],
                         I.params->coltot[h]);
                 global_dpd_->buf4_mat_irrep_wrt(&I, h);
                 global_dpd_->buf4_mat_irrep_close(&I, h);
@@ -833,10 +889,10 @@ void DCTSolver::form_df_g_vooo() {
         for (int h = 0; h < nirrep_; ++h) {
             if (I.params->rowtot[h] > 0 && I.params->coltot[h] > 0) {
                 double** bQijA_mo_p = bQijA_mo_->pointer(h);
-                double** bQaiB_mo_p = bQaiB_mo_->pointer(h);
+                double** bQaiB_mo_p = bQaiB_mo->pointer(h);
                 global_dpd_->buf4_mat_irrep_init(&I, h);
                 C_DGEMM('T', 'N', I.params->rowtot[h], I.params->coltot[h], nQ_, 1.0, bQijA_mo_p[0],
-                        bQijA_mo_->coldim(h), bQaiB_mo_p[0], bQaiB_mo_->coldim(h), 0.0, I.matrix[h][0],
+                        bQijA_mo_->coldim(h), bQaiB_mo_p[0], bQaiB_mo->coldim(h), 0.0, I.matrix[h][0],
                         I.params->coltot[h]);
                 global_dpd_->buf4_mat_irrep_wrt(&I, h);
                 global_dpd_->buf4_mat_irrep_close(&I, h);
@@ -1220,26 +1276,29 @@ void DCTSolver::build_gbarGamma_RHF() {
  *                  = 2 b(QP|Aux) b(Aux|SR) gamma<R|S> - b(QR|Aux) b(Aux|SP) gamma<R|S>
  */
 
+    // (Q) = b(Q|SR) gamma<R|S>
+    auto Q = Matrix("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
+    auto Qp = Q.pointer();
+    const auto bQpqAp0 = bQpqA_mo_scf->pointer(0);
+    for (int hr = 0; hr < nirrep_; ++hr) {
+        int hs = hr;
+        if (nsopi_[hr] > 0) {
+            double** gamma_rs_p = mo_gammaA_->pointer(hr);
+            C_DGEMV('N', nQ_scf_, nsopi_[hr] * nsopi_[hs], 1.0, bQpqAp0[0] + block[0][hr].first,
+                    bQpqA_mo_scf->coldim(0), gamma_rs_p[0], 1, 1.0, Qp[0], 1);
+        }
+    }
+    // This Q intermediate can be reused when computing gradients! Save it.
+    Q.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::Full);
+
 // f_tilde <Q|P> = 2 b(QP|Aux) b(Aux|SR) gamma<R|S>
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
     for (int hq = 0; hq < nirrep_; ++hq) {
         int hp = hq;
         if (nsopi_[hq] > 0) {
-            double** tFAp = mo_gbarGamma_A_->pointer(hq);
-            double** bQpqAp = bQpqA_mo_scf->pointer(0);
-            auto Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
-            double** Qp = Q->pointer();
-            // (Q) = b(Q|SR) gamma<R|S>
-            for (int hr = 0; hr < nirrep_; ++hr) {
-                int hs = hr;
-                if (nsopi_[hr] > 0) {
-                    double** gamma_rs_p = mo_gammaA_->pointer(hr);
-                    C_DGEMV('N', nQ_scf_, nsopi_[hr] * nsopi_[hs], 1.0, bQpqAp[0] + block[0][hr].first,
-                            bQpqA_mo_scf->coldim(0), gamma_rs_p[0], 1, 1.0, Qp[0], 1);
-                }
-            }
+            auto tFAp = mo_gbarGamma_A_->pointer(hq);
             // tilde_f <Q|P> = 2 b(QP|Aux)*(Aux) where (Aux) = (Q)
-            C_DGEMV('T', nQ_scf_, nsopi_[hp] * nsopi_[hq], 2.0, bQpqAp[0] + block[0][hp].first, bQpqA_mo_scf->coldim(0), Qp[0],
+            C_DGEMV('T', nQ_scf_, nsopi_[hp] * nsopi_[hq], 2.0, bQpqAp0[0] + block[0][hp].first, bQpqA_mo_scf->coldim(0), Qp[0],
                     1, 0.0, tFAp[0], 1);
         }
     }
@@ -1774,6 +1833,10 @@ void DCTSolver::build_gbarGamma_UHF() {
         block.push_back(subblock);
     }
 
+// TODO: Efficiency Optimization: Replace the full gamma matrix with its occupied and virtual blocks.
+// This means we need overall smaller DGEMV, smaller primary transforms below, and can reuse the bQpq
+// blocks when constructing the 
+
     const auto bQpqA_mo_scf = three_idx_primary_transform(bQmn_so_scf_, Ca_subset("SO", "ALL"), Ca_subset("SO", "ALL"));
     const auto bQpqB_mo_scf = three_idx_primary_transform(bQmn_so_scf_, Cb_subset("SO", "ALL"), Cb_subset("SO", "ALL"));
 
@@ -1785,6 +1848,27 @@ void DCTSolver::build_gbarGamma_UHF() {
  *             = g(qp|sr) gamma<r|s> - g(qr|sp) gamma<r|s> + g(qp|SR) gamma<R|S>
  */
 
+    // (Q) = b(Q|SR)*gamma<R|S> + b(Q|sr)*gamma<r|s>
+    auto Q = Matrix("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
+    auto Qp = Q.pointer();
+    const auto bQpqAp0 = bQpqA_mo_scf->pointer(0);
+    const auto bQpqBp0 = bQpqB_mo_scf->pointer(0);
+    for (int hR = 0; hR < nirrep_; ++hR) {
+        int hS = hR;
+        if (nsopi_[hR] > 0) {
+            auto gamma_rsAp = mo_gammaA_->pointer(hR);
+            auto gamma_rsBp = mo_gammaB_->pointer(hR);
+            // (Q) = b(Q|SR) gamma<R|S>
+            C_DGEMV('N', nQ_scf_, nsopi_[hR] * nsopi_[hS], 1.0, bQpqAp0[0] + block[0][hR].first,
+                    bQpqA_mo_scf->coldim(0), gamma_rsAp[0], 1, 1.0, Qp[0], 1);
+            // (Q) += b(Q|sr) gamma<r|s>
+            C_DGEMV('N', nQ_scf_, nsopi_[hR] * nsopi_[hS], 1.0, bQpqBp0[0] + block[0][hR].first,
+                    bQpqB_mo_scf->coldim(0), gamma_rsBp[0], 1, 1.0, Qp[0], 1);
+        }
+    }
+    // This Q intermediate can be reused when computing gradients! Save it.
+    Q.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::Full);
+
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)
     for (int hQ = 0; hQ < nirrep_; ++hQ) {
         int hP = hQ;
@@ -1795,22 +1879,6 @@ void DCTSolver::build_gbarGamma_UHF() {
             double** bQpqAp = bQpqA_mo_scf->pointer(0);
             double** bQpqBp = bQpqB_mo_scf->pointer(0);
 
-            // (Q) = b(Q|SR)*gamma<R|S> + b(Q|sr)*gamma<r|s>
-            auto Q = std::make_shared<Matrix>("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
-            double** Qp = Q->pointer();
-            for (int hR = 0; hR < nirrep_; ++hR) {
-                int hS = hR;
-                if (nsopi_[hR] > 0) {
-                    double** gamma_rsAp = mo_gammaA_->pointer(hR);
-                    double** gamma_rsBp = mo_gammaB_->pointer(hR);
-                    // (Q) = b(Q|SR) gamma<R|S>
-                    C_DGEMV('N', nQ_scf_, nsopi_[hR] * nsopi_[hS], 1.0, bQpqAp[0] + block[0][hR].first,
-                            bQpqA_mo_scf->coldim(0), gamma_rsAp[0], 1, 1.0, Qp[0], 1);
-                    // (Q) += b(Q|sr) gamma<r|s>
-                    C_DGEMV('N', nQ_scf_, nsopi_[hR] * nsopi_[hS], 1.0, bQpqBp[0] + block[0][hR].first,
-                            bQpqB_mo_scf->coldim(0), gamma_rsBp[0], 1, 1.0, Qp[0], 1);
-                }
-            }
 
             // f_tilde <Q|P> = b(QP|Aux)*(Aux) where (Aux) = (Q)
             C_DGEMV('T', nQ_scf_, nsopi_[hP] * nsopi_[hQ], 1.0, bQpqAp[0] + block[0][hP].first, bQpqA_mo_scf->coldim(0), Qp[0],
@@ -1907,6 +1975,351 @@ void DCTSolver::build_gbarGamma_UHF() {
     }
 
     dct_timer_off("DCTSolver::Gbar<QS|PR> Gamma<R|S> (FastBuilder)");
+}
+
+// Compute gpq = (Q|rs) L^pr_qs where (Q|rs) is a B tensor, and L is a cumulant element.
+// In DCT, the 2RDM is always written as 1RDM^p_r 1RDM^q_s - 1RDM^p_s 1RDM^q_r + L^pq_rs.
+// When density-fit, the first two terms contract against JKFIT integrals. The last contracts against RIFIT
+// integrals. We are concerned about the RIFIT three index density in this function.
+void DCTSolver::three_idx_cumulant_density() {
+    dpdbuf4 G;
+
+    psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
+
+    /// OOOO Spin-Blocks
+    // 1. From IJKL
+    // TODO: If we can fit all needed intermediates in-core, we generate Gamma (OO|OO) in-core, write it to disk, then
+    // read it from disk to get it back in core. That's just wasteful.
+    // TODO: There's probably a bad scaling factor, from how the I intermediate is defined. Check it.
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[O,O]"), ID("[O>O]-"), ID("[O>O]-"), 0, "I <OO|OO>");
+    global_dpd_->buf4_sort(&G, PSIF_DCT_DPD, prqs, ID("[O,O]"), ID("[O,O]"), "Lambda (OO|OO)");
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0, "Lambda (OO|OO)");
+    // The memory will be automatically freed when we re-assign result.
+    auto result = Matrix("3-Center PDM B: IJ", bQijA_mo_->rowspi(), bQijA_mo_->colspi());
+    // gIJ = b(Q|KL) L^IK_JL
+    contract343(*bQijA_mo_, G, result, false, 1.0, 0.0);
+    global_dpd_->buf4_close(&G);
+
+    // 2. From IjKl
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), 0, "I <Oo|Oo>");
+    global_dpd_->buf4_sort(&G, PSIF_DCT_DPD, qspr, ID("[o,o]"), ID("[O,O]"), "Lambda (oo|OO)");
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[O,O]"), ID("[o,o]"), ID("[O,O]"), 0, "Lambda (oo|OO)");
+    // gIJ += b(Q|ij) L^iI_jJ
+    contract343(*bQijB_mo_, G, result, false, 1.0, 1.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    result = Matrix("3-Center PDM B: ij", bQijB_mo_->rowspi(), bQijB_mo_->colspi());
+    // gij = b(Q|IJ) L^Ii_Jj
+    contract343(*bQijA_mo_, G, result, true, 1.0, 0.0);
+    global_dpd_->buf4_close(&G);
+
+    // 3. From ijkl
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[o,o]"), ID("[o>o]-"), ID("[o>o]-"), 0, "I <oo|oo>");
+    global_dpd_->buf4_sort(&G, PSIF_DCT_DPD, prqs, ID("[o,o]"), ID("[o,o]"), "Lambda (oo|oo)");
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[o,o]"), ID("[o,o]"), ID("[o,o]"), 0, "Lambda (oo|oo)");
+    // gij += b(Q|kl) L^ki_lj
+    contract343(*bQijB_mo_, G, result, false, 1.0, 1.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    global_dpd_->buf4_close(&G);
+
+    //// OVOV Spin-Blocks
+    // 4. From IAJB
+    // -L^IA_JB = K (IJ|AB)
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "K (OO|VV)");
+    result = Matrix("3-Center PDM B: AB", bQabA_mo_->rowspi(), bQabA_mo_->colspi());
+    // gAB = b(Q|IJ) L^IA_JB
+    contract343(*bQijA_mo_, G, result, false, -1.0, 0.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    result = Matrix("3-Center PDM B: IJ", bQijA_mo_->rowspi(), bQijA_mo_->colspi());
+    result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks); 
+    // gIJ += b(Q|AB) L^AI_BJ
+    contract343(*bQabA_mo_, G, result, true, -1.0, 1.0);
+    global_dpd_->buf4_close(&G);
+    // K(IA|JB) = -L^IB_JA = L^IB_AJ
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "K (OV|OV)");
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    result = Matrix("3-Center PDM B: IA", bQiaA_mo_->rowspi(), bQiaA_mo_->colspi());
+    // gIA = b(Q|BJ) L^BI_JA = b(Q|BJ) K(IA|JB) = b(Q|JB) K(IA|JB)
+    contract343(*bQiaA_mo_, G, result, true, 1.0, 0.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    global_dpd_->buf4_close(&G);
+
+    // 5. From iajb
+    // -L^ia_jb = K (ij|ab)
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0, "K (oo|vv)");
+    result = Matrix("3-Center PDM B: ab", bQabB_mo_->rowspi(), bQabB_mo_->colspi());
+    // gab = b(Q|ij) L^ia_jb
+    contract343(*bQijB_mo_, G, result, false, -1.0, 0.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    result = Matrix("3-Center PDM B: ij", bQijB_mo_->rowspi(), bQijB_mo_->colspi());
+    result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks); 
+    // gij += b(Q|ab) L^ia_jb
+    contract343(*bQabB_mo_, G, result, true, -1.0, 1.0);
+    global_dpd_->buf4_close(&G);
+    // K(ia|jb) = -L^ib_ja = L^ib_aj
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0, "K (ov|ov)");
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    result = Matrix("3-Center PDM B: ia", bQiaB_mo_->rowspi(), bQiaB_mo_->colspi());
+    // gia = b(Q|bj) L^ib_aj = b(Q|bj) K(ia|jb) = b(Q|jb) K(ia|jb)
+    contract343(*bQiaB_mo_, G, result, true, 1.0, 0.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    global_dpd_->buf4_close(&G);
+
+    // 6. From IabJ
+    // -LIa_Jb = K <Ja|Ib> = K (JI|ab)
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[v,v]"), ID("[O,O]"), ID("[v,v]"), 0, "K (OO|vv)");
+    result = Matrix("3-Center PDM B: ab", bQabB_mo_->rowspi(), bQabB_mo_->colspi());
+    result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    // gab = b(Q|IJ) L^Ia_Jb = - b(Q|JI) K(JI|ab)
+    contract343(*bQijA_mo_, G, result, false, -1.0, 1.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    result = Matrix("3-Center PDM B: IJ", bQijA_mo_->rowspi(), bQijA_mo_->colspi());
+    result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    // gIJ = b(Q|ab) L^aI_bJ
+    contract343(*bQabB_mo_, G, result, true, -1.0, 1.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    global_dpd_->buf4_close(&G);
+
+    // 7. From iABj
+    // -L^iA_jB = K <jA|iB> = K (ji|AB)
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[V,V]"), ID("[o,o]"), ID("[V,V]"), 0, "K (oo|VV)");
+    result = Matrix("3-Center PDM B: AB", bQabA_mo_->rowspi(), bQabA_mo_->colspi());
+    result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    // gAB = b(Q|ij) L^iA_jB = - b(Q|ji) K(ji|AB)
+    contract343(*bQijB_mo_, G, result, false, -1.0, 1.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    result = Matrix("3-Center PDM B: ij", bQijB_mo_->rowspi(), bQijB_mo_->colspi());
+    result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    // gij = b(Q|AB) L^Ai_Bj
+    contract343(*bQabA_mo_, G, result, true, -1.0, 1.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    global_dpd_->buf4_close(&G);
+
+    // 8. From IaBj (Hermiticity-equivalent to iAbJ case)
+    // L^Ia_Ai = -L^Ia_iA = K (IA|ia)
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0, "K (OV|ov");
+    result = Matrix("3-Center PDM B: ia", bQiaB_mo_->rowspi(), bQiaB_mo_->colspi());
+    result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    // gia += b(Q|AI) L^Ia_Ai = b(Q|AI) K(IA|ia) = b(Q|IA) K(IA|ia)
+    contract343(*bQiaA_mo_, G, result, false, 1.0, 1.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    result = Matrix("3-Center PDM B: IA", bQiaA_mo_->rowspi(), bQiaA_mo_->colspi());
+    result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    // gIA += b(Q|ai) L^aI_iA = b(Q|ai) K(IA|ia) = b(Q|ia) K(IA|ia)
+    contract343(*bQiaB_mo_, G, result, true, 1.0, 1.0);
+    global_dpd_->buf4_close(&G);
+
+    // OOVV Spin-Blocks
+    // 9. From IJAB
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "Lambda (OV|OV)");
+    // gIA += b(Q|jb) L^IJ_AB
+    contract343(*bQiaA_mo_, G, result, false, 1.0, 1.0);
+    global_dpd_->buf4_close(&G);
+
+    // 10. From IjAb
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0, "Lambda (OV|ov)");
+    // gIA += b(Q|jb) L^Ij_Ab
+    contract343(*bQiaB_mo_, G, result, true, 1, 1);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    result = Matrix("3-Center PDM B: ia", bQiaB_mo_->rowspi(), bQiaB_mo_->colspi());
+    result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    // gia += b(Q|IA) L^Ij_Ab
+    contract343(*bQiaA_mo_, G, result, false, 1.0, 1.0);
+    global_dpd_->buf4_close(&G);
+    
+    // 11. From ijab
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0, "Lambda (ov|ov)");
+    // gia += b(Q|jb) L^ij_ab
+    contract343(*bQiaB_mo_, G, result, false, 1.0, 1.0);
+    global_dpd_->buf4_close(&G);
+
+    // VVVV Spin-Blocks
+    // AS A FIRST CODE, assume nvir^4 fits in memory. This is a dangerous assumption, so we'll add an nvir^3
+    // but slower algorithm later.
+    // We can't assume that nvir^4 fits in memory. Our algorithm instead is to compute L^AB_CD for fixed A,
+    // which is only nvir^3 memory, then construct its contribution to gAB and gab..
+    // This is a potentially large intermediate.
+    // 12. From ABCD
+    // TODO: Add this.
+
+    auto J = Matrix("J^-1/2 Correlation", nQ_, nQ_);
+    J.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::LowerTriangle);
+
+    auto CaO = Ca_subset("SO", "OCC");
+    auto CbO = Cb_subset("SO", "OCC");
+    auto CaV = Ca_subset("SO", "VIR");
+    auto CbV = Cb_subset("SO", "VIR");
+
+    auto temp = Matrix("3-Center PDM B: IJ", bQijA_mo_->rowspi(), bQijA_mo_->colspi());
+    auto SO_matrix = three_idx_cumulant_helper(temp, J, CaO, CaO);
+
+    temp = Matrix("3-Center PDM B: ij", bQijB_mo_->rowspi(), bQijB_mo_->colspi());
+    SO_matrix->add(three_idx_cumulant_helper(temp, J, CbO, CbO));
+
+    temp = Matrix("3-Center PDM B: AB", bQabA_mo_->rowspi(), bQabA_mo_->colspi());
+    SO_matrix->add(three_idx_cumulant_helper(temp, J, CaV, CaV));
+
+    temp = Matrix("3-Center PDM B: ab", bQabB_mo_->rowspi(), bQabB_mo_->colspi());
+    SO_matrix->add(three_idx_cumulant_helper(temp, J, CbV, CbV));
+    
+    temp = Matrix("3-Center PDM B: IA", bQiaA_mo_->rowspi(), bQiaA_mo_->colspi());
+    SO_matrix->add(three_idx_cumulant_helper(temp, J, CaO, CaV));
+
+    temp = Matrix("3-Center PDM B: ia", bQiaB_mo_->rowspi(), bQiaB_mo_->colspi());
+    SO_matrix->add(three_idx_cumulant_helper(temp, J, CbO, CbV));
+
+    // Now transform from SO back to AO
+    auto AO_matrix = transform_b_so2ao(*SO_matrix);
+    AO_matrix.set_name("3-Center Correlation Density");
+    AO_matrix.save(psio_, PSIF_AO_TPDM, Matrix::SaveType::Full);
+
+    psio_->close(PSIF_DCT_DENSITY, 1);
+}
+
+SharedMatrix DCTSolver::three_idx_cumulant_helper(Matrix& temp, const Matrix& J, const SharedMatrix bt1, const SharedMatrix bt2) {
+    temp.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    // 10.1063/1.4896235:55 - MO basis
+    auto int55 = contract233(J, temp);
+    return three_idx_primary_transform(int55, bt1->transpose(), bt2->transpose());
+}
+
+void DCTSolver::contract343(const Matrix& b, dpdbuf4 &G, Matrix& result, bool transpose, double alpha, double beta) const {
+    if (b.rowspi() != result.rowspi()) {
+        throw PSIEXCEPTION("contract343: Left operand and result disagree about number of rows.");
+    }
+    char trans; 
+    int* N, *K;
+    if (transpose) {
+        trans = 'T';
+        N = G.params->rowtot;
+        K = G.params->coltot;
+    } else {
+        trans = 'N';
+        N = G.params->coltot;
+        K = G.params->rowtot;
+    }
+    for (int h = 0; h < nirrep_; ++h) {
+        if (b.colspi(h) > 0 && result.colspi(h) > 0) {
+            global_dpd_->buf4_mat_irrep_init(&G, h);
+            global_dpd_->buf4_mat_irrep_rd(&G, h);
+            auto bp = b.pointer(h);
+            auto rp = result.pointer(h);
+            C_DGEMM('N', trans, b.rowspi(h), N[h], K[h], alpha, bp[0], b.colspi(h), G.matrix[h][0], G.params->coltot[h], beta, rp[0], result.colspi(h));
+        }
+    }
+} 
+
+// See documentation for three_idx_cumulant_density. We now care about those last two terms.
+void DCTSolver::three_idx_separable_density() {
+
+    // Load useful intermediates.
+    auto Q = Matrix("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
+    Q.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::Full);
+    Q.print_out();
+
+    auto J = Matrix("J^-1/2 Reference", nQ_scf_, nQ_scf_);
+    J.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::LowerTriangle);
+
+    auto SO_matrix = three_idx_separable_helper(Q, J, mo_gammaA_, Ca_);
+    SO_matrix->add(three_idx_separable_helper(Q, J, mo_gammaB_, Cb_));
+
+    /*
+    Dimension zero(nirrep_);
+    Slice aocc_slice(zero, doccpi_ + soccpi_);
+    auto gammaIJ = mo_gammaA_->get_block(aocc_slice, aocc_slice);
+    auto SO_matrix = three_idx_separable_helper(Q, J, gammaIJ, Ca_subset("SO", "OCC"));
+    // OO Beta
+    Slice bocc_slice(zero, doccpi_);
+    auto gammaij = mo_gammaB_->get_block(bocc_slice, bocc_slice);
+    SO_matrix->add(three_idx_separable_helper(Q, J, gammaij, Cb_subset("SO", "OCC")));
+    // VV Alpha
+    SO_matrix->add(three_idx_separable_helper(Q, J, avir_tau_, Ca_subset("SO", "VIR")));
+    // VV Beta
+    SO_matrix->add(three_idx_separable_helper(Q, J, bvir_tau_, Cb_subset("SO", "VIR")));
+    */
+
+    // Now transform from SO back to AO
+    auto AO_matrix = transform_b_so2ao(*SO_matrix);
+    AO_matrix.set_name("3-Center Reference Density");
+    AO_matrix.save(psio_, PSIF_AO_TPDM, Matrix::SaveType::Full);
+}
+
+SharedMatrix DCTSolver::three_idx_separable_helper(const Matrix& Q, const Matrix& J, const SharedMatrix RDM, const SharedMatrix C_subset) {
+    // Coulomb-like term of 10.1063/1.4896235:54 b(Q|pq) gamma^p_q gamma^r_s
+    auto temp = contract123(Q, *RDM);
+    // Exchange-like term of 10.1063/1.4896235:54 b(Q|pq) gamma^p_s gamma^r_q
+    // This doublet compensates for not having MO basis B integrals in the three_idx transform below
+    auto gamma = linalg::doublet(C_subset, RDM, false, false);
+    three_idx_primary_transform_gemm(bQmn_so_scf_, *gamma, *gamma, temp, -1.0, 1.0);
+    // 10.1063/1.4896235:55 - MO basis
+    auto int55 = contract233(J, temp);
+    auto backtransformer = C_subset->transpose();
+    // Backtransform eq. 55 to SO basiss
+    return three_idx_primary_transform(int55, backtransformer, backtransformer);
+}
+
+void DCTSolver::construct_metric_density(const std::string& basis_type) {
+    auto nQ = (basis_type == "Correlation") ? nQ_ : nQ_scf_;
+    auto b = std::make_shared<Matrix>("B(Q|mn) " + basis_type, nQ, nso_ * nso_);
+    b->load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    auto J = std::make_shared<Matrix>("J^-1/2 " + basis_type, nQ, nQ);
+    J->load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::LowerTriangle);
+    auto c = linalg::doublet(J, b, true, false);
+    b.reset();
+    J.reset();
+    auto g = std::make_shared<Matrix>("3-Center " + basis_type + " Density", nQ, nso_ * nso_);
+    g->load(psio_, PSIF_AO_TPDM, Matrix::SaveType::Full);
+    auto G = linalg::doublet(c, g, false, true);
+    G->set_name("Metric " + basis_type + " Density");
+    G->save(psio_, PSIF_AO_TPDM, Matrix::SaveType::LowerTriangle);
+}
+
+// r(Q|pq) = \sum_Q J(PQ) B(P|pq)
+Matrix DCTSolver::contract233(const Matrix& J, const Matrix& B) const {
+    if (J.nirrep() != 1) {
+        throw PSIEXCEPTION("contract233: Expected first argument to have no symmetry.");
+    }
+    auto result = Matrix(B.rowspi(), B.colspi());
+    auto Jp = J.pointer()[0];
+    auto Jcols = J.colspi(0);
+    // Sadly, we can't just make this a doublet due to symmetry...
+    for (int h = 0; h < nirrep_; ++h) {
+        if (B.colspi(h) > 0) {
+            C_DGEMM('T', 'N', result.rowspi(h), result.colspi(h), B.rowspi(h), 1.0, Jp, Jcols, B.pointer(h)[0], B.colspi(h), 0.0, result.pointer(h)[0], result.colspi(h)); 
+        }
+    }
+
+    return result;
+}
+
+Matrix DCTSolver::contract123(const Matrix& Q, const Matrix& G) const {
+    if (Q.nirrep() != 1) {throw PSIEXCEPTION("contract123: Left argument must have exactly one irrep.");}
+
+    // Sizing for the result
+    auto nirrep = G.nirrep();
+    auto Aux = Q.colspi();
+    Dimension LR(nirrep);
+    for (int h = 0; h < nirrep; ++h) {
+        for (int hp = 0; hp < nirrep; ++ hp) {
+            LR[h] += G.rowspi(hp) * G.colspi(h ^ hp);
+        }
+    }
+    auto result = Matrix("Result", Aux, LR);
+
+    int offset = 0;
+    for (int h = 0; h < nirrep; ++h) {
+        if (G.colspi(h) > 0) {
+            C_DGER(Q.ncol(), G.rowspi(h) * G.colspi(h), 1.0, Q.pointer()[0], 1, G.pointer(h)[0], 1, result.pointer(0)[0] + offset, result.colspi(0)); 
+        }
+        offset += G.rowspi(h) * G.colspi(h);
+    }
+
+    return result;
 }
 
 }  // namespace dct
