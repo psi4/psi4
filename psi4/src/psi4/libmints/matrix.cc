@@ -481,23 +481,22 @@ void Matrix::set(const double *const *const sq) {
         throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
     }
 
-    int h, i, j, ii, jj;
-    int offset;
-
     if (sq == nullptr) {
         throw PSIEXCEPTION("Matrix::set: Set call with a nullptr double** matrix");
     }
-    offset = 0;
-    for (h = 0; h < nirrep_; ++h) {
-        for (i = 0; i < rowspi_[h]; ++i) {
-            ii = i + offset;
-            for (j = 0; j <= i; ++j) {
-                jj = j + offset;
+
+    int row_offset = 0;
+    int col_offset = 0;
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < rowspi_[h]; ++i) {
+            int ii = i + row_offset;
+            for (int j = 0; j < colspi_[h]; ++j) {
+                int jj = j + col_offset;
                 matrix_[h][i][j] = sq[ii][jj];
-                matrix_[h][j][i] = sq[jj][ii];
             }
         }
-        offset += rowspi_[h];
+        row_offset += rowspi_[h];
+        col_offset += colspi_[h];
     }
 }
 
@@ -3037,7 +3036,7 @@ void Matrix::load(psi::PSIO *const psio, size_t fileno, SaveType st) {
             psio->read_entry(fileno, name_.c_str(), (char *)fullblock[0], sizeof(double) * sizer * sizec);
 
         set(fullblock);
-        linalg::detail::free(fullblock);
+        free_block(fullblock);
     } else if (st == LowerTriangle) {
         double *lower = to_lower_triangle();
 
