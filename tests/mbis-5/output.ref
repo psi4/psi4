@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {exp_vol} ab74ac3 dirty
+                         Git: Rev {exp_vol} 3e7263c dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,11 +30,11 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 21 January 2021 10:12PM
+    Psi4 started on: Monday, 25 January 2021 06:33PM
 
-    Process ID: 158971
+    Process ID: 238280
     Host:       ds5
-    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4
+    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-dev/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -96,7 +96,7 @@ set {
   e_convergence 10
   mbis_radial_points 99
   mbis_spherical_points 350
-  radial_moment 3
+  max_radial_moment 4
 }
 
 e, wfn = energy('hf/cc-pvdz', return_wfn=True)
@@ -123,15 +123,15 @@ Scratch directory: /scratch/jiang/
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds5
-*** at Thu Jan 21 22:12:49 2021
+*** at Mon Jan 25 18:33:05 2021
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1 entry ZN         line  2599 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
-    atoms 2 entry O          line   198 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1 entry ZN         line  2599 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-dev/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2 entry O          line   198 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-dev/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
@@ -192,8 +192,8 @@ Scratch directory: /scratch/jiang/
     Name: (CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1 entry ZN         line  2482 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/def2-universal-jkfit.gbs 
-    atoms 2 entry O          line   221 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1 entry ZN         line  2482 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-dev/stage/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 2 entry O          line   221 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-dev/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -241,27 +241,27 @@ Scratch directory: /scratch/jiang/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD: -1847.77160958077002   -1.84777e+03   0.00000e+00 
-   @DF-RHF iter   1: -1850.87609481417667   -3.10449e+00   5.72915e-02 DIIS
-   @DF-RHF iter   2: -1838.46283453916521    1.24133e+01   1.40359e-01 DIIS
-   @DF-RHF iter   3: -1852.43421231255161   -1.39714e+01   9.83159e-03 DIIS
-   @DF-RHF iter   4: -1852.49754485315748   -6.33325e-02   6.03980e-03 DIIS
-   @DF-RHF iter   5: -1852.54947159606377   -5.19267e-02   1.14657e-03 DIIS
-   @DF-RHF iter   6: -1852.55190689156007   -2.43530e-03   3.18092e-04 DIIS
-   @DF-RHF iter   7: -1852.55254925309737   -6.42362e-04   2.21838e-04 DIIS
-   @DF-RHF iter   8: -1852.55290923823736   -3.59985e-04   7.77756e-05 DIIS
-   @DF-RHF iter   9: -1852.55294037655221   -3.11383e-05   1.32229e-05 DIIS
-   @DF-RHF iter  10: -1852.55294118173038   -8.05178e-07   3.33110e-06 DIIS
-   @DF-RHF iter  11: -1852.55294121129373   -2.95634e-08   6.66044e-07 DIIS
-   @DF-RHF iter  12: -1852.55294121273073   -1.43700e-09   1.12399e-07 DIIS
-   @DF-RHF iter  13: -1852.55294121278598   -5.52518e-11   2.63173e-08 DIIS
-   @DF-RHF iter  14: -1852.55294121278939   -3.41061e-12   4.45732e-09 DIIS
-   @DF-RHF iter  15: -1852.55294121278848    9.09495e-13   1.56059e-09 DIIS
-   @DF-RHF iter  16: -1852.55294121279053   -2.04636e-12   8.61515e-10 DIIS
-   @DF-RHF iter  17: -1852.55294121278780    2.72848e-12   7.56082e-10 DIIS
-   @DF-RHF iter  18: -1852.55294121278735    4.54747e-13   5.83379e-10 DIIS
-   @DF-RHF iter  19: -1852.55294121278962   -2.27374e-12   1.94153e-10 DIIS
-   @DF-RHF iter  20: -1852.55294121278985   -2.27374e-13   7.53051e-11 DIIS
+   @DF-RHF iter SAD: -1847.77161408234269   -1.84777e+03   0.00000e+00 
+   @DF-RHF iter   1: -1850.87609049515481   -3.10448e+00   5.72916e-02 DIIS
+   @DF-RHF iter   2: -1838.46215842313859    1.24139e+01   1.40361e-01 DIIS
+   @DF-RHF iter   3: -1852.43421241194756   -1.39721e+01   9.83153e-03 DIIS
+   @DF-RHF iter   4: -1852.49754686178358   -6.33344e-02   6.03970e-03 DIIS
+   @DF-RHF iter   5: -1852.54947160336178   -5.19247e-02   1.14660e-03 DIIS
+   @DF-RHF iter   6: -1852.55190694793964   -2.43534e-03   3.18082e-04 DIIS
+   @DF-RHF iter   7: -1852.55254927071746   -6.42323e-04   2.21833e-04 DIIS
+   @DF-RHF iter   8: -1852.55290923399116   -3.59963e-04   7.77789e-05 DIIS
+   @DF-RHF iter   9: -1852.55294037627550   -3.11423e-05   1.32232e-05 DIIS
+   @DF-RHF iter  10: -1852.55294118147140   -8.05196e-07   3.33117e-06 DIIS
+   @DF-RHF iter  11: -1852.55294121103589   -2.95645e-08   6.66047e-07 DIIS
+   @DF-RHF iter  12: -1852.55294121247243   -1.43655e-09   1.12395e-07 DIIS
+   @DF-RHF iter  13: -1852.55294121252723   -5.47971e-11   2.63013e-08 DIIS
+   @DF-RHF iter  14: -1852.55294121253132   -4.09273e-12   4.37780e-09 DIIS
+   @DF-RHF iter  15: -1852.55294121253041    9.09495e-13   1.34861e-09 DIIS
+   @DF-RHF iter  16: -1852.55294121253110   -6.82121e-13   4.57996e-10 DIIS
+   @DF-RHF iter  17: -1852.55294121253110    0.00000e+00   3.38686e-10 DIIS
+   @DF-RHF iter  18: -1852.55294121253155   -4.54747e-13   3.00345e-10 DIIS
+   @DF-RHF iter  19: -1852.55294121253087    6.82121e-13   1.88986e-10 DIIS
+   @DF-RHF iter  20: -1852.55294121253064    2.27374e-13   6.65977e-11 DIIS
   Energy and wave function converged.
 
 
@@ -300,14 +300,14 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [    19 ]
 
-  @DF-RHF Final Energy: -1852.55294121278985
+  @DF-RHF Final Energy: -1852.55294121253064
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             64.1426922024242430
-    One-Electron Energy =               -2715.3429115755784551
-    Two-Electron Energy =                 798.6472781603641806
-    Total Energy =                      -1852.5529412127898468
+    One-Electron Energy =               -2715.3429115728408760
+    Two-Electron Energy =                 798.6472781578859212
+    Total Energy =                      -1852.5529412125306408
 
 Computation Completed
 
@@ -320,23 +320,23 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    29.9333
 
   Electronic Dipole Moment: [e a0]
-     X:    -0.0000      Y:     0.0000      Z:   -31.8805
+     X:    -0.0000      Y:    -0.0000      Z:   -31.8805
 
   Dipole Moment: [e a0]
-     X:    -0.0000      Y:     0.0000      Z:    -1.9472     Total:     1.9472
+     X:    -0.0000      Y:    -0.0000      Z:    -1.9472     Total:     1.9472
 
   Dipole Moment: [D]
-     X:    -0.0000      Y:     0.0000      Z:    -4.9493     Total:     4.9493
+     X:    -0.0000      Y:    -0.0000      Z:    -4.9493     Total:     4.9493
 
 
-*** tstop() called on ds5 at Thu Jan 21 22:12:54 2021
+*** tstop() called on ds5 at Mon Jan 25 18:33:10 2021
 Module time:
-	user time   =       4.90 seconds =       0.08 minutes
-	system time =       0.32 seconds =       0.01 minutes
+	user time   =       4.89 seconds =       0.08 minutes
+	system time =       0.30 seconds =       0.01 minutes
 	total time  =          5 seconds =       0.08 minutes
 Total time:
-	user time   =       4.90 seconds =       0.08 minutes
-	system time =       0.32 seconds =       0.01 minutes
+	user time   =       4.89 seconds =       0.08 minutes
+	system time =       0.30 seconds =       0.01 minutes
 	total time  =          5 seconds =       0.08 minutes
 
 
@@ -356,23 +356,33 @@ Properties computed using the ZnO SCF density matrix
 
   MBIS Dipoles: [e a0]
    Center  Symbol  Z        X           Y           Z
-      1      ZN   30   -0.000000    0.000000   -0.021736
-      2       O    8   -0.000000    0.000000    0.259064
+      1      ZN   30   -0.000000   -0.000000   -0.021736
+      2       O    8   -0.000000   -0.000000    0.259064
 
   MBIS Quadrupoles: [e a0^2]
    Center  Symbol  Z      XX        XY        XZ        YY        YZ        ZZ
-      1      ZN   30   -9.0711   -0.0000    0.0000   -9.0711   -0.0000   -9.2090
-      2       O    8   -4.8427   -0.0000   -0.0000   -4.8427    0.0000   -4.0866
+      1      ZN   30   -9.0711   -0.0000    0.0000   -9.0711    0.0000   -9.2090
+      2       O    8   -4.8427    0.0000   -0.0000   -4.8427   -0.0000   -4.0866
 
   MBIS Octupoles: [e a0^3]
    Center  Symbol  Z      XXX       XXY       XXZ       XYY       XYZ       XZZ       YYY       YYZ       YZZ       ZZZ
-      1      ZN   30   -0.0000    0.0000    0.4035   -0.0000   -0.0000   -0.0000    0.0000    0.4035    0.0000    1.0825
-      2       O    8   -0.0000    0.0000    0.4453   -0.0000    0.0000   -0.0000    0.0000    0.4453    0.0000    1.2430
+      1      ZN   30   -0.0000   -0.0000    0.4035   -0.0000    0.0000   -0.0000   -0.0000    0.4035   -0.0000    1.0825
+      2       O    8   -0.0000   -0.0000    0.4453   -0.0000    0.0000   -0.0000   -0.0000    0.4453   -0.0000    1.2430
+
+  MBIS Radial Moments: [a0^2]
+   Center  Symbol  Z     Rad Mo
+      1      ZN   30   27.351067
+      2       O    8   13.771977
 
   MBIS Radial Moments: [a0^3]
    Center  Symbol  Z     Rad Mo
       1      ZN   30   63.442454
       2       O    8   27.117717
+
+  MBIS Radial Moments: [a0^4]
+   Center  Symbol  Z     Rad Mo
+      1      ZN   30   213.782611
+      2       O    8   63.184116
 
   MBIS Valence Widths: [a0]
    Center  Symbol  Z     Width
@@ -385,7 +395,7 @@ Properties computed using the ZnO SCF density matrix
     MBIS Radial Moments <r^3>.............................................................PASSED
     MBIS Valence Widths...................................................................PASSED
 
-    Psi4 stopped on: Thursday, 21 January 2021 10:12PM
-    Psi4 wall time for execution: 0:00:06.39
+    Psi4 stopped on: Monday, 25 January 2021 06:33PM
+    Psi4 wall time for execution: 0:00:08.15
 
 *** Psi4 exiting successfully. Buy a developer a beer!

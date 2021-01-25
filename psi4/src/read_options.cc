@@ -266,8 +266,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Pruning scheme for MBIS Grid -*/
     options.add_str("MBIS_PRUNING_SCHEME", "ROBUST", 
                     "ROBUST TREUTLER NONE FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER NONE");
-    /*- Calculates nth radial moment -*/
-    options.add_int("RADIAL_MOMENT", 3);
+    /*- Maximum Radial Moment to Calculate -*/
+    options.add_int("MAX_RADIAL_MOMENT", 4);
 
     /*- PCM boolean for pcmsolver module -*/
     options.add_bool("PCM", false);

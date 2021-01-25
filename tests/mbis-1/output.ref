@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {exp_vol} ab74ac3 dirty
+                         Git: Rev {exp_vol} 3e7263c dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,11 +30,11 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 21 January 2021 10:10PM
+    Psi4 started on: Monday, 25 January 2021 06:27PM
 
-    Process ID: 158883
+    Process ID: 238117
     Host:       ds5
-    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4
+    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-dev/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -109,7 +109,7 @@ set {
   e_convergence 10
   mbis_radial_points 99
   mbis_spherical_points 350
-  radial_moment 3
+  max_radial_moment 4
 }
 
 e, wfn = energy('hf/cc-pvdz', return_wfn=True)
@@ -136,15 +136,15 @@ Scratch directory: /scratch/jiang/
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds5
-*** at Thu Jan 21 22:10:00 2021
+*** at Mon Jan 25 18:27:12 2021
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   198 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
-    atoms 2-3 entry H          line    22 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1   entry O          line   198 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-dev/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-dev/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
@@ -206,8 +206,8 @@ Scratch directory: /scratch/jiang/
     Name: (CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   221 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    51 file /theoryfs2/ds/jiang/p4dev/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   221 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-dev/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-dev/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -255,17 +255,17 @@ Scratch directory: /scratch/jiang/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:   -75.45137243474954   -7.54514e+01   0.00000e+00 
-   @DF-RHF iter   1:   -75.94580099112399   -4.94429e-01   1.74038e-02 DIIS
-   @DF-RHF iter   2:   -75.99964867099514   -5.38477e-02   1.04495e-02 DIIS
-   @DF-RHF iter   3:   -76.02091630759637   -2.12676e-02   9.59211e-04 DIIS
-   @DF-RHF iter   4:   -76.02136941091378   -4.53103e-04   2.41284e-04 DIIS
-   @DF-RHF iter   5:   -76.02139623763949   -2.68267e-05   4.32356e-05 DIIS
-   @DF-RHF iter   6:   -76.02139743202507   -1.19439e-06   6.70672e-06 DIIS
-   @DF-RHF iter   7:   -76.02139746368368   -3.16586e-08   1.07122e-06 DIIS
-   @DF-RHF iter   8:   -76.02139746459136   -9.07676e-10   2.63034e-07 DIIS
-   @DF-RHF iter   9:   -76.02139746465343   -6.20730e-11   4.16358e-08 DIIS
-   @DF-RHF iter  10:   -76.02139746465471   -1.27898e-12   3.60702e-09 DIIS
+   @DF-RHF iter SAD:   -75.45137243475268   -7.54514e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.94580099112714   -4.94429e-01   1.74038e-02 DIIS
+   @DF-RHF iter   2:   -75.99964867099831   -5.38477e-02   1.04495e-02 DIIS
+   @DF-RHF iter   3:   -76.02091630759966   -2.12676e-02   9.59211e-04 DIIS
+   @DF-RHF iter   4:   -76.02136941091693   -4.53103e-04   2.41284e-04 DIIS
+   @DF-RHF iter   5:   -76.02139623764272   -2.68267e-05   4.32356e-05 DIIS
+   @DF-RHF iter   6:   -76.02139743202831   -1.19439e-06   6.70672e-06 DIIS
+   @DF-RHF iter   7:   -76.02139746368687   -3.16586e-08   1.07122e-06 DIIS
+   @DF-RHF iter   8:   -76.02139746459460   -9.07733e-10   2.63034e-07 DIIS
+   @DF-RHF iter   9:   -76.02139746465662   -6.20162e-11   4.16358e-08 DIIS
+   @DF-RHF iter  10:   -76.02139746465794   -1.32161e-12   3.60702e-09 DIIS
   Energy and wave function converged.
 
 
@@ -293,14 +293,14 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [     5 ]
 
-  @DF-RHF Final Energy:   -76.02139746465471
+  @DF-RHF Final Energy:   -76.02139746465794
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8014655645673745
-    One-Electron Energy =                -122.4453031892436741
-    Two-Electron Energy =                  37.6224401600215828
-    Total Energy =                        -76.0213974646547115
+    One-Electron Energy =                -122.4453031892467294
+    Two-Electron Energy =                  37.6224401600214122
+    Total Energy =                        -76.0213974646579373
 
 Computation Completed
 
@@ -313,24 +313,24 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: [e a0]
-     X:    -0.0000      Y:     0.0000      Z:    -0.1945
+     X:     0.0000      Y:    -0.0000      Z:    -0.1945
 
   Dipole Moment: [e a0]
-     X:    -0.0000      Y:     0.0000      Z:     0.8246     Total:     0.8246
+     X:     0.0000      Y:    -0.0000      Z:     0.8246     Total:     0.8246
 
   Dipole Moment: [D]
-     X:    -0.0000      Y:     0.0000      Z:     2.0958     Total:     2.0958
+     X:     0.0000      Y:    -0.0000      Z:     2.0958     Total:     2.0958
 
 
-*** tstop() called on ds5 at Thu Jan 21 22:10:00 2021
+*** tstop() called on ds5 at Mon Jan 25 18:27:13 2021
 Module time:
-	user time   =       0.20 seconds =       0.00 minutes
+	user time   =       0.21 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.20 seconds =       0.00 minutes
+	user time   =       0.21 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 
 Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
@@ -352,25 +352,37 @@ Properties computed using the H20 SCF density matrix
    Center  Symbol  Z        X           Y           Z
       1       O    8    0.000000   -0.000000   -0.169807
       2       H    1   -0.000000   -0.030570    0.007963
-      3       H    1   -0.000000    0.030570    0.007963
+      3       H    1    0.000000    0.030570    0.007963
 
   MBIS Quadrupoles: [e a0^2]
    Center  Symbol  Z      XX        XY        XZ        YY        YZ        ZZ
-      1       O    8   -4.7047    0.0000    0.0000   -4.4913   -0.0000   -4.6061
+      1       O    8   -4.7047    0.0000    0.0000   -4.4913    0.0000   -4.6061
       2       H    1   -0.2983    0.0000   -0.0000   -0.2880   -0.0017   -0.2837
       3       H    1   -0.2983    0.0000    0.0000   -0.2880    0.0017   -0.2837
 
   MBIS Octupoles: [e a0^3]
    Center  Symbol  Z      XXX       XXY       XXZ       XYY       XYZ       XZZ       YYY       YYZ       YZZ       ZZZ
-      1       O    8    0.0000   -0.0000   -0.1570   -0.0000    0.0000   -0.0000   -0.0000   -0.4565    0.0000   -0.6499
+      1       O    8    0.0000   -0.0000   -0.1570    0.0000    0.0000    0.0000   -0.0000   -0.4565   -0.0000   -0.6499
       2       H    1   -0.0000   -0.0105    0.0009   -0.0000    0.0000   -0.0000   -0.0324   -0.0019   -0.0144   -0.0061
-      3       H    1   -0.0000    0.0105    0.0009   -0.0000    0.0000   -0.0000    0.0324   -0.0019    0.0144   -0.0061
+      3       H    1    0.0000    0.0105    0.0009    0.0000    0.0000    0.0000    0.0324   -0.0019    0.0144   -0.0061
+
+  MBIS Radial Moments: [a0^2]
+   Center  Symbol  Z     Rad Mo
+      1       O    8   13.802065
+      2       H    1    0.870057
+      3       H    1    0.870057
 
   MBIS Radial Moments: [a0^3]
    Center  Symbol  Z     Rad Mo
       1       O    8   26.337652
       2       H    1    1.509465
       3       H    1    1.509465
+
+  MBIS Radial Moments: [a0^4]
+   Center  Symbol  Z     Rad Mo
+      1       O    8   59.340866
+      2       H    1    3.115289
+      3       H    1    3.115289
 
   MBIS Valence Widths: [a0]
    Center  Symbol  Z     Width
@@ -384,7 +396,7 @@ Properties computed using the H20 SCF density matrix
     MBIS Radial Moments <r^3>.............................................................PASSED
     MBIS Valence Widths...................................................................PASSED
 
-    Psi4 stopped on: Thursday, 21 January 2021 10:10PM
-    Psi4 wall time for execution: 0:00:00.77
+    Psi4 stopped on: Monday, 25 January 2021 06:27PM
+    Psi4 wall time for execution: 0:00:01.33
 
 *** Psi4 exiting successfully. Buy a developer a beer!
