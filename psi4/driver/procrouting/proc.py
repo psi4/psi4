@@ -3975,11 +3975,11 @@ def run_dlpnomp2(name, **kwargs):
     core.print_out('\n')
 
     aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_MP2",
-                                    core.get_option("DLPNOMP2", "DF_BASIS_MP2"),
+                                    core.get_option("DLPNO", "DF_BASIS_MP2"),
                                     "RIFIT", core.get_global_option('BASIS'))
     ref_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
 
-    dlpnomp2_wfn = core.dlpnomp2(ref_wfn)
+    dlpnomp2_wfn = core.dlpno(ref_wfn)
     dlpnomp2_wfn.compute_energy()
 
     #if name == 'scs-mp2':

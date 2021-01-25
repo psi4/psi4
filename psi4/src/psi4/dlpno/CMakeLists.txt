@@ -3,4 +3,4 @@ list(APPEND sources
   wrapper.cc
   sparse.cc
   )
-psi4_add_module(bin dlpnomp2 sources)
+psi4_add_module(bin dlpno sources)

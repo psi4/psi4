@@ -2379,7 +2379,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- What is the maximum number of iterations? -*/
         options.add_int("EP2_MAXITER", 20);
     }
-    if (name == "DLPNOMP2" || options.read_globals()) {
+    if (name == "DLPNO" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs DLPNO-MP2 computations for RHF reference wavefunctions. -*/
 
         /*- Auxiliary basis set for MP2 density fitting computations.

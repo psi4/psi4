@@ -34,7 +34,7 @@
 #include "psi4/libmints/wavefunction.h"
 
 namespace psi {
-namespace dlpnomp2 {
+namespace dlpno {
 
 // References to DiStasio are to J Comput Chem 28: 839–856, 2007; DOI: 10.1002/jcc.20604
 
@@ -169,7 +169,7 @@ class DLPNOMP2 : public Wavefunction {
     double compute_energy();
 };
 
-}  // namespace dlpnomp2
+}  // namespace dlpno
 }  // namespace psi
 
 #endif //PSI4_SRC_DLPNO_MP2_H_

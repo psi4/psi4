@@ -47,18 +47,18 @@
 #include "mp2.h"
 
 namespace psi {
-namespace dlpnomp2 {
+namespace dlpno {
 
-SharedWavefunction dlpnomp2(SharedWavefunction ref_wfn, Options& options) {
+SharedWavefunction dlpno(SharedWavefunction ref_wfn, Options& options) {
 
-    std::shared_ptr<Wavefunction> dlpnomp2;
-    if (options.get_str("REFERENCE") == "RHF" || options.get_str("REFERENCE") == "RKS") {
-        dlpnomp2 = std::make_shared<DLPNOMP2>(ref_wfn, options);
+    std::shared_ptr<Wavefunction> dlpno;
+    if (options.get_str("REFERENCE") == "RHF") {
+        dlpno = std::make_shared<DLPNOMP2>(ref_wfn, options);
     } else {
         throw PSIEXCEPTION("DLPNO-MP2 requires closed-shell reference: %s"); 
     }
 
-    return dlpnomp2;
+    return dlpno;
 }
-}  // namespace dlpnomp2
+}  // namespace dlpno
 }  // namespace psi

@@ -65,7 +65,7 @@
 
 
 namespace psi {
-namespace dlpnomp2 {
+namespace dlpno {
 
 DLPNOMP2::DLPNOMP2(SharedWavefunction ref_wfn, Options& options) : Wavefunction(options) {
     shallow_copy(ref_wfn);
@@ -79,7 +79,7 @@ void DLPNOMP2::common_init() {
     debug_ = options_.get_int("DEBUG");
 
     name_ = "DLPNO-MP2";
-    module_ = "dlpnomp2";
+    module_ = "dlpno";
 
     variables_["SCF TOTAL ENERGY"] = reference_wavefunction_->energy();
 
@@ -1494,5 +1494,5 @@ void DLPNOMP2::print_results() {
 
 }
 
-}  // namespace dlpnomp2
+}  // namespace dlpno
 }  // namespace psi
