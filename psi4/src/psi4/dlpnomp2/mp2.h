@@ -29,9 +29,9 @@
 #ifndef PSI4_SRC_DLPNO_MP2_H_
 #define PSI4_SRC_DLPNO_MP2_H_
 
-#include "psi4/libmints/wavefunction.h"
-
 #include "sparse.h"
+
+#include "psi4/libmints/wavefunction.h"
 
 namespace psi {
 namespace dlpnomp2 {
@@ -123,6 +123,8 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<std::vector<bool>> riatom_to_atoms2_dense;
 
     void common_init();
+
+    std::pair<SharedMatrix, SharedVector> orthocanonicalizer(SharedMatrix S, SharedMatrix F);
 
     // form LMOs, PAOs, etc.
     void setup();

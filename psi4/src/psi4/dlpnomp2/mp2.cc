@@ -29,15 +29,12 @@
 #include "mp2.h"
 #include "sparse.h"
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
 #include "psi4/psi4-dec.h"
 #include "psi4/physconst.h"
 #include "psi4/psifiles.h"
 
 #include "psi4/lib3index/3index.h"
+#include "psi4/libdiis/diismanager.h"
 #include "psi4/libfock/apps.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/cubature.h"
@@ -123,113 +120,117 @@ void C_DGESV_wrapper(SharedMatrix A, SharedMatrix B) {
 
 }
 
-std::pair<SharedMatrix, SharedVector> canonicalizer(SharedMatrix C, SharedMatrix F) {
-    /* Args: orthonormal orbitals C (ao x mo) and fock matrix F (ao x ao)
-     * Return: canonical transformation matrix U (mo x mo) and energy vector e (mo) 
-     *
-     * U and e are defined as: FCU = eCU (CU is canonical)
-     */
+/*
+ * In order to use DIIS to accelerate convergence of the MP2 amplitudes,
+ * we need to "flatten" the sparse data structure (list of Matrix objects)
+ * into a single Matrix
+ */
+SharedMatrix flatten_mats(const std::vector<SharedMatrix> &mat_list) {
 
-    SharedMatrix U = std::make_shared<Matrix>("eigenvectors", C->colspi(0), C->colspi(0));
+    size_t total_size = 0;
+    for(SharedMatrix mat : mat_list) {
+        total_size += (mat->colspi(0) * mat->rowspi(0));
+    }
+    //outfile->Printf("total_size: %zu\n",total_size);
+
+    SharedMatrix flat = std::make_shared<Matrix>("flattened matrix list", 1, total_size);
+    //outfile->Printf("made it!\n");
+    size_t ind = 0;
+
+    for(SharedMatrix mat : mat_list) {
+        //outfile->Printf("%d %d\n", mat->rowspi(0), mat->colspi(0));
+        for(size_t r = 0; r < mat->rowspi(0); r++) {
+            for(size_t c = 0; c < mat->colspi(0); c++, ind++) {
+                flat->set(0, ind, mat->get(r,c));
+            }
+        }
+    }
+    //outfile->Printf("ind: %zu\n",ind);
+
+    return flat;
+
+}
+
+/* This function is a complement to flatten_mats(). A flattened Matrix is
+ * copied into a list of Matrix objects.
+ */
+void copy_flat_mats(SharedMatrix result, std::vector<SharedMatrix> &mat_list) {
+
+    size_t ind = 0;
+    for(SharedMatrix mat : mat_list) {
+        for(size_t r = 0; r < mat->rowspi(0); r++) {
+            for(size_t c = 0; c < mat->colspi(0); c++, ind++) {
+                mat->set(r, c, result->get(0, ind));
+            }
+        }
+    }
+
+}
+
+/* Args: orthonormal orbitals C (ao x mo) and fock matrix F (ao x ao)
+ * Return: transformation matrix X (mo x mo) and energy vector e (mo) 
+ *
+ * CX are canonical orbitals (i.e. F(CX) = e(CX))
+ */
+std::pair<SharedMatrix, SharedVector> canonicalizer(SharedMatrix C, SharedMatrix F) {
+
+    SharedMatrix X = std::make_shared<Matrix>("eigenvectors", C->colspi(0), C->colspi(0));
     SharedVector e = std::make_shared<Vector>("eigenvalues", C->colspi(0));
 
     auto temp = linalg::triplet(C, F, C, true, false, false);
-    temp->diagonalize(U, e, descending);
+    temp->diagonalize(X, e, descending);
 
-    return std::make_pair(U, e);
+    return std::make_pair(X, e);
 
 }
 
 
-std::pair<SharedMatrix, SharedVector> orthocanonicalizer(SharedMatrix Smo, SharedMatrix Fmo, Options &options) {
-    /* Args: normalized orbitals C (ao x mo), overlap matrix S (ao x ao), fock matrix F (ao x ao)
-     * Return: transformation matrix X (mo x mo_new) and energy vector e (mo_new)
-     *
-     * X is defined as: SCX = CX (CX is orthogonal) AND FCX = eCX (CX is canonical, w/ energies e)
-     * linear dependencies are removed with keyword S_CUT, so (mo_new <= mo)
-     */
+/* Args: normalized orbitals C (ao x mo), overlap matrix S (ao x ao), fock matrix F (ao x ao)
+ * Return: transformation matrix X (mo x mo_new) and energy vector e (mo_new)
+ *
+ * CX are orthonormal orbitals (i.e. S(CX) = CX) and also canonical (i.e. F(CX) = e(CX))
+ * linear dependencies are removed with keyword S_CUT, so (mo_new <= mo)
+ */
+std::pair<SharedMatrix, SharedVector> DLPNOMP2::orthocanonicalizer(SharedMatrix S, SharedMatrix F) {
 
-    int nmo_initial = Smo->colspi(0);
-    int nmo_final = Smo->colspi(0);
+    int nmo_initial = S->colspi(0);
+    int nmo_final = nmo_initial;
 
     SharedMatrix X = std::make_shared<Matrix>("eigenvectors", nmo_initial, nmo_initial);
     SharedVector n = std::make_shared<Vector>("eigenvalues", nmo_initial);
 
-    Smo->diagonalize(X, n, descending);
-    //n->print_out();
+    S->diagonalize(X, n, descending);
 
     for(size_t i = 0; i < nmo_initial; ++i) {
-        if (fabs(n->get(i)) < options.get_double("S_CUT")) {
+        if (fabs(n->get(i)) < options_.get_double("S_CUT")) {
             nmo_final -= 1;
         }
     }
-
-    //outfile->Printf("  orthogonalizer: %d to %d \n", nmo_initial, nmo_final);
 
     Dimension zero = Dimension(1);
     Dimension dim_final = Dimension(1);
     dim_final.fill(nmo_final);
 
-    // Can I get a block of X without having to make these dimension objects?
     X = X->get_block({zero, X->rowspi()}, {zero, dim_final});
     n = n->get_block({zero, dim_final});
 
-    auto Smo_orth = linalg::triplet(X, Smo, X, true, false, false);
+    auto S_orth = linalg::triplet(X, S, X, true, false, false);
 
-    // Can/should I do this scaling earlier? Can/should I also scale eigenvalues?
     for(size_t i = 0; i < nmo_final; ++i) {
-        X->scale_column(0, i, pow(Smo_orth->get(i,i), -0.5));
+        X->scale_column(0, i, pow(S_orth->get(i,i), -0.5));
     }
 
     SharedMatrix U = std::make_shared<Matrix>("eigenvectors", nmo_final, nmo_final);
     SharedVector e = std::make_shared<Vector>("eigenvalues", nmo_final);
 
-    auto Fmo_orth = linalg::triplet(X, Fmo, X, true, false, false);
-    Fmo_orth->diagonalize(U, e, descending);
+    auto F_orth = linalg::triplet(X, F, X, true, false, false);
+    F_orth->diagonalize(U, e, descending);
 
     X = linalg::doublet(X, U, false, false);
 
     return std::make_pair(X, e);
 
 }
-
-SharedMatrix get_rows(SharedMatrix mat, const std::vector<int> &row_inds) {
-
-    SharedMatrix mat_new = std::make_shared<Matrix>("blah", row_inds.size(), mat->colspi(0));
-    for(int r_new = 0; r_new < row_inds.size(); r_new++) {
-        int r_old = row_inds[r_new];
-        for(int c = 0; c < mat->colspi(0); c++) {
-            mat_new->set(r_new, c, mat->get(r_old, c));
-        }
-    }
-    return mat_new;
-}
-
-SharedMatrix get_cols(SharedMatrix mat, const std::vector<int> &col_inds) {
-
-    SharedMatrix mat_new = std::make_shared<Matrix>("blah", mat->rowspi(0), col_inds.size());
-    for(int r = 0; r < mat->rowspi(0); r++) {
-        for(int c_new = 0; c_new < col_inds.size(); c_new++) {
-            int c_old = col_inds[c_new];
-            mat_new->set(r, c_new, mat->get(r, c_old));
-        }
-    }
-    return mat_new;
-}
-
-SharedMatrix get_rows_and_cols(SharedMatrix mat, const std::vector<int> &row_inds, const std::vector<int> &col_inds) {
-
-    SharedMatrix mat_new = std::make_shared<Matrix>("blah", row_inds.size(), col_inds.size());
-    for(int r_new = 0; r_new < row_inds.size(); r_new++) {
-        int r_old = row_inds[r_new];
-        for(int c_new = 0; c_new < col_inds.size(); c_new++) {
-            int c_old = col_inds[c_new];
-            mat_new->set(r_new, c_new, mat->get(r_old, c_old));
-        }
-    }
-    return mat_new;
-}
-
 
 void DLPNOMP2::overlap_ints() {
 
@@ -284,8 +285,8 @@ void DLPNOMP2::overlap_ints() {
             }
         }
 
-        SharedMatrix C_lmo_slice = get_rows(C_lmo, bf_map); //bf_block x naocc
-        SharedMatrix C_pao_slice = get_rows(C_pao, bf_map); //bf_block x npao
+        SharedMatrix C_lmo_slice = submatrix_rows(C_lmo, bf_map); //bf_block x naocc
+        SharedMatrix C_pao_slice = submatrix_rows(C_pao, bf_map); //bf_block x npao
 
         // value of mo at each point squared
         C_lmo_slice = linalg::doublet(point_values_trim, C_lmo_slice, false, false); // points x naocc
@@ -372,17 +373,16 @@ void DLPNOMP2::dipole_ints() {
         }
         pao_inds = contract_lists(pao_inds, atom_to_bf_);;
         
-        SharedMatrix C_pao_i = get_cols(C_pao, pao_inds);
-        SharedMatrix S_pao_i = get_rows_and_cols(S_pao, pao_inds, pao_inds);
-        SharedMatrix F_pao_i = get_rows_and_cols(F_pao, pao_inds, pao_inds);
+        SharedMatrix C_pao_i = submatrix_cols(C_pao, pao_inds);
+        SharedMatrix S_pao_i = submatrix_rows_and_cols(S_pao, pao_inds, pao_inds);
+        SharedMatrix F_pao_i = submatrix_rows_and_cols(F_pao, pao_inds, pao_inds);
 
         SharedMatrix X_pao_i;
         SharedVector e_pao_i;
-        std::tie(X_pao_i, e_pao_i) = orthocanonicalizer(S_pao_i, F_pao_i, options_);
+        std::tie(X_pao_i, e_pao_i) = orthocanonicalizer(S_pao_i, F_pao_i);
         C_pao_i = linalg::doublet(C_pao_i, X_pao_i, false, false); // now in a nonredundant basis
 
         int npao_i_new = X_pao_i->colspi(0);
-        //outfile->Printf("  LMO %d has domain size of %d / %d AOs (%d / %d VIR) \n", i, npao_i, nbf, npao_i_new,nbf-naocc);
 
         for(size_t u = 0; u < npao_i_new; u++) {
             double dx_iu = 0.0;
@@ -455,35 +455,17 @@ void DLPNOMP2::sparsity_prep() {
     int nbf = basisset_->nbf();
     int nshell = basisset_->nshell();
     int naux = ribasis_->nbf();
-    int nshellri = ribasis_->nshell();
     int naocc = nalpha_ - basisset_->n_frozen_core(options_.get_str("FREEZE_CORE"), molecule_);
-
-    // map from atomic center to orbital/aux basis function/shell index
-
-    atom_to_bf_.resize(natom);
-    atom_to_ribf_.resize(natom);
-    atom_to_shell_.resize(natom);
-    atom_to_rishell_.resize(natom);
 
     auto bf_to_atom_ = std::vector<int>(nbf);
     auto ribf_to_atom_ = std::vector<int>(naux);
 
     for(size_t i = 0; i < nbf; ++i) {
-        atom_to_bf_[basisset_->function_to_center(i)].push_back(i);
         bf_to_atom_[i] = basisset_->function_to_center(i);
     }
 
     for(size_t i = 0; i < naux; ++i) {
-        atom_to_ribf_[ribasis_->function_to_center(i)].push_back(i);
         ribf_to_atom_[i] = ribasis_->function_to_center(i);
-    }
-
-    for(size_t s = 0; s < nshell; s++) {
-        atom_to_shell_[basisset_->shell_to_center(s)].push_back(s);
-    }
-
-    for(size_t s = 0; s < nshellri; s++) {
-        atom_to_rishell_[ribasis_->shell_to_center(s)].push_back(s);
     }
 
     outfile->Printf("  ==> Forming Local MO Domains <==\n");
@@ -785,15 +767,15 @@ void DLPNOMP2::df_ints() {
             } // N loop
         } // M loop
 
-        SharedMatrix C_pao_slice = get_rows(C_pao, riatom_to_bfs2[centerQ]); // TODO: PAO slices
+        SharedMatrix C_pao_slice = submatrix_rows(C_pao, riatom_to_bfs2[centerQ]); // TODO: PAO slices
 
         //// Here we'll refit the coefficients of C_lmo_slice to minimize residual from unscreened orbitals
         //// This lets us get away with agressive coefficient screening
         //// Boughton and Pulay 1992 JCC, Equation 3
 
         // Solve for C_lmo_slice such that S[local,local] @ C_lmo_slice ~= S[local,all] @ C_lmo
-        SharedMatrix C_lmo_slice = get_rows_and_cols(SC_lmo, riatom_to_bfs1[centerQ], riatom_to_lmos_ext[centerQ]);
-        SharedMatrix S_aa = get_rows_and_cols(reference_wavefunction_->S(), riatom_to_bfs1[centerQ], riatom_to_bfs1[centerQ]);
+        SharedMatrix C_lmo_slice = submatrix_rows_and_cols(SC_lmo, riatom_to_bfs1[centerQ], riatom_to_lmos_ext[centerQ]);
+        SharedMatrix S_aa = submatrix_rows_and_cols(reference_wavefunction_->S(), riatom_to_bfs1[centerQ], riatom_to_bfs1[centerQ]);
         C_DGESV_wrapper(S_aa, C_lmo_slice);
 
         // (mn|Q) C_mi C_nu -> (iu|Q)
@@ -861,16 +843,10 @@ void DLPNOMP2::pno_transform() {
                 int a = lmopair_to_paos[ij][a_ij];
                 i_qa->set(q_ij, a_ij, qia[q]->get(riatom_to_lmos_ext_dense[centerq][i], a));  
                 j_qa->set(q_ij, a_ij, qia[q]->get(riatom_to_lmos_ext_dense[centerq][j], a));  
-
-                if(riatom_to_lmos_ext_dense[centerq][i] == -1) {
-                    outfile->Printf("Uh-oh\n");
-                } else if(riatom_to_lmos_ext_dense[centerq][j] == -1) {
-                    outfile->Printf("Uh-oh\n");
-                }
             }
         }
 
-        SharedMatrix A_solve = get_rows_and_cols(full_metric, lmopair_to_ribfs[ij], lmopair_to_ribfs[ij]);
+        SharedMatrix A_solve = submatrix_rows_and_cols(full_metric, lmopair_to_ribfs[ij], lmopair_to_ribfs[ij]);
         C_DGESV_wrapper(A_solve, i_qa);
 
         SharedMatrix K_pao_ij = linalg::doublet(i_qa, j_qa, true, false);
@@ -879,12 +855,12 @@ void DLPNOMP2::pno_transform() {
         // ==> Canonicalize PAOs of pair ij <== //
         //                                      //
 
-        SharedMatrix S_pao_ij = get_rows_and_cols(S_pao, lmopair_to_paos[ij], lmopair_to_paos[ij]);
-        SharedMatrix F_pao_ij = get_rows_and_cols(F_pao, lmopair_to_paos[ij], lmopair_to_paos[ij]);
+        SharedMatrix S_pao_ij = submatrix_rows_and_cols(S_pao, lmopair_to_paos[ij], lmopair_to_paos[ij]);
+        SharedMatrix F_pao_ij = submatrix_rows_and_cols(F_pao, lmopair_to_paos[ij], lmopair_to_paos[ij]);
 
         SharedMatrix X_pao_ij; // canonical transformation of this domain's PAOs to
         SharedVector e_pao_ij; // energies of the canonical PAOs
-        std::tie(X_pao_ij, e_pao_ij) = orthocanonicalizer(S_pao_ij, F_pao_ij, options_);
+        std::tie(X_pao_ij, e_pao_ij) = orthocanonicalizer(S_pao_ij, F_pao_ij);
 
         //S_pao_ij = linalg::triplet(X_pao_ij, S_pao_ij, X_pao_ij, true, false, false);
         F_pao_ij = linalg::triplet(X_pao_ij, F_pao_ij, X_pao_ij, true, false, false);
@@ -927,7 +903,6 @@ void DLPNOMP2::pno_transform() {
                 nvir_ij_final++;
             }
         }
-        //outfile->Printf("  %d PNOs for pair (reduced from %d) \n", nvir_ij_final, nvir_ij);
 
         Dimension zero = Dimension(1);
         Dimension dim_final = Dimension(1);
@@ -1008,8 +983,6 @@ void DLPNOMP2::pno_overlaps() {
     int n_lmo_pairs = ij_to_i_j.size();
     int naocc = nalpha_ - basisset_->n_frozen_core(options_.get_str("FREEZE_CORE"), molecule_);
 
-    //outfile->Printf("\n  ==> Precalculating PNO Overlaps <==\n");
-
     S_pno_ij_kj.resize(n_lmo_pairs);
     S_pno_ij_ik.resize(n_lmo_pairs);
 
@@ -1030,14 +1003,14 @@ void DLPNOMP2::pno_overlaps() {
 
             int kj = i_j_to_ij[k][j];
             if (kj != -1 && i != k && fabs(F_lmo->get(i,k)) > options_.get_double("F_CUT") && n_pno[kj] > 0) {
-                S_pno_ij_kj[ij][k] = get_rows_and_cols(S_pao, lmopair_to_paos[ij], lmopair_to_paos[kj]);
+                S_pno_ij_kj[ij][k] = submatrix_rows_and_cols(S_pao, lmopair_to_paos[ij], lmopair_to_paos[kj]);
                 S_pno_ij_kj[ij][k] = linalg::triplet(X_pno[ij], S_pno_ij_kj[ij][k], X_pno[kj], true, false, false);
 
             }
 
             int ik = i_j_to_ij[i][k];
             if (ik != -1 && j != k && fabs(F_lmo->get(k,j)) > options_.get_double("F_CUT") && n_pno[ik] > 0) {
-                S_pno_ij_ik[ij][k] = get_rows_and_cols(S_pao, lmopair_to_paos[ij], lmopair_to_paos[ik]);
+                S_pno_ij_ik[ij][k] = submatrix_rows_and_cols(S_pao, lmopair_to_paos[ij], lmopair_to_paos[ik]);
                 S_pno_ij_ik[ij][k] = linalg::triplet(X_pno[ij], S_pno_ij_ik[ij][k], X_pno[ik], true, false, false);
 
             }
@@ -1067,20 +1040,20 @@ void DLPNOMP2::lmp2_iterations() {
     outfile->Printf("\n");
     outfile->Printf("                     Corr. Energy    Delta E     Max R");
     outfile->Printf("\n");
-    //outfile->Printf("  @LMP2 iter  SC: %16.12f ---------- ----------\n", e_curr);
 
     R_iajb.resize(n_lmo_pairs);
 
     int iteration = 0;
     double e_curr = 0.0, e_prev = 0.0, r_curr = 0.0;
     bool e_converged = false, r_converged = false;
+    auto diis = std::make_shared<DIISManager>(options_.get_int("DIIS_MAX_VECS"), "LMP2 DIIS", DIISManager::LargestError, DIISManager::InCore);
 
     while(!(e_converged && r_converged)) {
 
         // RMS of residual per LMO pair, for assessing convergence
         std::vector<double> R_iajb_rms(n_lmo_pairs, 0.0);
 
-        // Calculate residuals
+        // Calculate residuals from current amplitudes
 #pragma omp parallel for schedule(static, 1)    
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
 
@@ -1117,7 +1090,7 @@ void DLPNOMP2::lmp2_iterations() {
 
         }
 
-        // evaluate energy and residual convergence
+        // evaluate convergence using current amplitudes and residuals
         e_prev = e_curr;
         e_curr = eval_amplitudes();
         r_curr = *max_element(R_iajb_rms.begin(), R_iajb_rms.end());
@@ -1125,7 +1098,7 @@ void DLPNOMP2::lmp2_iterations() {
         r_converged = (fabs(r_curr) < options_.get_double("R_CONVERGENCE"));
         e_converged = (fabs(e_curr - e_prev) < options_.get_double("E_CONVERGENCE"));
 
-        // update amplitudes
+        // use residuals to get next amplitudes
 #pragma omp parallel for schedule(static, 1)    
         for (int ij = 0; ij < n_lmo_pairs; ++ij) {
 
@@ -1137,6 +1110,23 @@ void DLPNOMP2::lmp2_iterations() {
                 }
             }
 
+        }
+
+        // DIIS extrapolation
+        SharedMatrix T_iajb_flat = flatten_mats(T_iajb);
+    //outfile->Printf("debug5a\n");
+        SharedMatrix R_iajb_flat = flatten_mats(R_iajb);
+    //outfile->Printf("debug5b\n");
+        if(iteration == 0) {
+            diis->set_error_vector_size(1, DIISEntry::Matrix, R_iajb_flat.get());
+            diis->set_vector_size(1, DIISEntry::Matrix, T_iajb_flat.get());
+        }
+        diis->add_entry(R_iajb_flat, T_iajb_flat);
+        diis->extrapolate(T_iajb_flat);
+        copy_flat_mats(T_iajb_flat, T_iajb);
+
+#pragma omp parallel for schedule(static, 1)    
+        for (int ij = 0; ij < n_lmo_pairs; ++ij) {
             Tt_iajb[ij]->zero();
             Tt_iajb[ij]->add(T_iajb[ij]);
             Tt_iajb[ij]->scale(2.0);
@@ -1163,7 +1153,12 @@ double DLPNOMP2::eval_amplitudes() {
 
 void DLPNOMP2::setup() {
 
+    int natom = molecule_->natom();
     int nbf = basisset_->nbf();
+    int nshell = basisset_->nshell();
+    int naux = ribasis_->nbf();
+    int nshellri = ribasis_->nshell();
+    int naocc = nalpha_ - basisset_->n_frozen_core(options_.get_str("FREEZE_CORE"), molecule_);
 
     SharedMatrix C_vir = reference_wavefunction_->Ca_subset("AO", "VIR");
     SharedVector e_vir = reference_wavefunction_->epsilon_a_subset("AO", "VIR");
@@ -1180,7 +1175,6 @@ void DLPNOMP2::setup() {
     C_lmo = localizer->L();
     S_lmo = linalg::triplet(C_lmo, reference_wavefunction_->S(), C_lmo, true, false, false);
     F_lmo = linalg::triplet(C_lmo, reference_wavefunction_->Fa(), C_lmo, true, false, false);
-    //SharedMatrix H_lmo = linalg::triplet(C_lmo, reference_wavefunction_->H(), C_lmo, true, false, false);
 
     // Form projected atomic orbitals by removing occupied space from the basis
     C_pao = std::make_shared<Matrix>("Projected Atomic Orbitals", nbf, nbf);
@@ -1194,6 +1188,30 @@ void DLPNOMP2::setup() {
     }
     S_pao = linalg::triplet(C_pao, reference_wavefunction_->S(), C_pao, true, false, false);
     F_pao = linalg::triplet(C_pao, reference_wavefunction_->Fa(), C_pao, true, false, false);
+
+    // map from atomic center to orbital/aux basis function/shell index
+
+    atom_to_bf_.resize(natom);
+    atom_to_ribf_.resize(natom);
+    atom_to_shell_.resize(natom);
+    atom_to_rishell_.resize(natom);
+
+    for(size_t i = 0; i < nbf; ++i) {
+        atom_to_bf_[basisset_->function_to_center(i)].push_back(i);
+    }
+
+    for(size_t i = 0; i < naux; ++i) {
+        atom_to_ribf_[ribasis_->function_to_center(i)].push_back(i);
+    }
+
+    for(size_t s = 0; s < nshell; s++) {
+        atom_to_shell_[basisset_->shell_to_center(s)].push_back(s);
+    }
+
+    for(size_t s = 0; s < nshellri; s++) {
+        atom_to_rishell_[ribasis_->shell_to_center(s)].push_back(s);
+    }
+
 
 }
 

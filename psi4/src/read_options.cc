@@ -2385,29 +2385,34 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Auxiliary basis set for MP2 density fitting computations.
         :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
         options.add_str("DF_BASIS_MP2", "");
-
-        // LMO -> LMO
-        options.add_double("T_CUT_DO_ij", 1e-5); // DOI threshold for lmos (i, j)
-        options.add_double("T_CUT_PRE", 1e-6); // Energy threshold for linear dipole approx. of lmos (i, j)
-
-        // LMO -> PAO 
-        options.add_double("T_CUT_DO_PRE", 3e-2); // DOI threshold for lmo (i) and pao (u) during prescreening
-        options.add_double("T_CUT_DO", 1e-2); // DOI threshold for lmo (i) and pao (u)
-
-        // LMO -> AUX
-        options.add_double("T_CUT_MKN", 1e-3); // Mulliken charge threshold for lmo (i) and atom (a) (DF)
-
-        // Integral transformation sparsity
+        /*- Relative convergence in orbital localization -*/
+        options.add_double("LOCAL_CONVERGENCE", 1.0E-12);
+        /*- Maximum iterations in localization -*/
+        options.add_int("LOCAL_MAXITER", 1000);
+        /*- DOI threshold for treating LMOs (i,j) as interacting -*/
+        options.add_double("T_CUT_DO_ij", 1e-5);
+        /*- Pair energy threshold (dipole approximation) for treating LMOs (i, j) as interacting -*/
+        options.add_double("T_CUT_PRE", 1e-6); 
+        /*- DOI threshold for including PAO (u) in domain of LMO (i) during pre-screening -*/
+        options.add_double("T_CUT_DO_PRE", 3e-2);
+        /*- DOI threshold for including PAO (u) in domain of LMO (i) -*/
+        options.add_double("T_CUT_DO", 1e-2);
+        /*- Mulliken charge threshold for including aux BFs on atom (a) in domain of LMO (i) -*/
+        options.add_double("T_CUT_MKN", 1e-3);
+        /*- Basis set coefficient threshold for including basis function (m) in domain of LMO (i) -*/
         options.add_double("T_CUT_CLMO", 1e-2);
+        /*- Basis set coefficient threshold for including basis function (n) in domain of PAO (u) -*/
         options.add_double("T_CUT_CPAO", 1e-3);
-
-        // Other
-        options.add_double("S_CUT", 1e-8); // Overlap matrix linear dependency threshold
-        options.add_double("T_CUT_PNO", 1e-8); // Occupation number threshold for discarding pnos
-        options.add_double("F_CUT", 1e-5); // threshold for treating LMOs as coupled in LMP2 iterations
-        options.add_double("E_CONVERGENCE", 1e-6); // LMP2 energy convergence criteria
-        options.add_double("R_CONVERGENCE", 1e-6); // LMP2 residual convergence criteria
-        // TODO: put convergence criteria somewhere else?
+        /*- Overlap matrix threshold for removing linear dependencies -*/
+        options.add_double("S_CUT", 1e-8);
+        /*- Occupation number threshold for removing PNOs -*/
+        options.add_double("T_CUT_PNO", 1e-8);
+        /*- Fock matrix threshold for treating ampltudes as coupled during local MP2 iterations -*/
+        options.add_double("F_CUT", 1e-5);
+        /*- Energy convergence criteria for local MP2 iterations -*/
+        options.add_double("E_CONVERGENCE", 1e-6);
+        /*- Residual convergence criteria for local MP2 iterations -*/
+        options.add_double("R_CONVERGENCE", 1e-6);
 
     }
     if (name == "PSIMRCC" || options.read_globals()) {

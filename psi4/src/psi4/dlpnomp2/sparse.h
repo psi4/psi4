@@ -29,17 +29,26 @@
 #ifndef PSI4_SRC_DLPNO_SPARSE_H_
 #define PSI4_SRC_DLPNO_SPARSE_H_
 
+#include "psi4/libmints/matrix.h"
+
 #include <vector>
 
 typedef std::vector<std::vector<int>> SparseMap;
 
 namespace psi{
+
 std::vector<int> merge_lists(const std::vector<int> &l1, const std::vector<int> &l2);
 std::vector<int> contract_lists(const std::vector<int> &y, const std::vector<std::vector<int>> &A_to_y);
 std::vector<int> block_list(const std::vector<int> &x_list, const std::vector<int> &x_to_y_map);
+
 SparseMap invert_map(const SparseMap &x_to_y, int ny);
 SparseMap chain_maps(const SparseMap &x_to_y, const SparseMap &y_to_z);
 SparseMap extend_maps(const SparseMap &i_to_y, const std::vector<std::pair<int,int>> &ij_to_i_j);
+
+SharedMatrix submatrix_rows(SharedMatrix mat, const std::vector<int> &row_inds);
+SharedMatrix submatrix_cols(SharedMatrix mat, const std::vector<int> &col_inds);
+SharedMatrix submatrix_rows_and_cols(SharedMatrix mat, const std::vector<int> &row_inds, const std::vector<int> &col_inds);
+
 }
 
 #endif // PSI4_SRC_DLPNO_SPARSE_H_

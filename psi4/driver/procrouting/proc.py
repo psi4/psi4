@@ -3952,10 +3952,10 @@ def run_dlpnomp2(name, **kwargs):
         ['DF_BASIS_MP2'],
         ['SCF_TYPE'])
 
-    ## Alter default algorithm
-    #if not core.has_global_option_changed('SCF_TYPE'):
-    #    core.set_global_option('SCF_TYPE', 'DF')
-    #    core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+    # Alter default algorithm
+    if not core.has_global_option_changed('SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
+        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
