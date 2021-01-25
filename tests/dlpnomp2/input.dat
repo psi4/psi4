@@ -1,0 +1,62 @@
+#! conventional and density-fitting mp2 test of mp2 itself and setting scs-mp2
+
+ref_scf                  =    -76.0267872755965              #TEST
+                              
+ref_dfmp2_corl           =     -0.2015791266780              #TEST
+ref_dfmp2_tot            =    -76.2283664022745              #TEST
+                                               
+ref_dlpnomp2_corl        =     -0.2015778022639              #TEST
+ref_dlpnomp2_tot         =    -76.2283650778585              #TEST
+
+molecule h2o {
+O
+H 1 0.957
+H 1 0.957 2 104.5
+symmetry c1
+}
+
+set basis cc-pvdz
+set freeze_core True
+set scf_type df
+set mp2_type df
+
+print('   Testing DF-MP2 ...')
+val = energy('mp2')
+
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'mp2 ref')                        #TEST
+compare_values(ref_dfmp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')          #TEST
+compare_values(ref_dfmp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')                  #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')                #TEST
+compare_values(ref_dfmp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')      #TEST
+compare_values(ref_dfmp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                    #TEST
+compare_values(ref_dfmp2_tot, val, 7, 'mp2 return')                                        #TEST
+clean()
+
+print('   Testing DLPNO-MP2 ...')
+val = energy('dlpno-mp2')
+
+# The DLPNO-MP2 energy is close to the DF-MP2 energy, but not exactly the same
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'mp2 ref')                        #TEST
+compare_values(ref_dlpnomp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')       #TEST
+compare_values(ref_dlpnomp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')               #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')                #TEST
+compare_values(ref_dlpnomp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')   #TEST
+compare_values(ref_dlpnomp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                 #TEST
+compare_values(ref_dlpnomp2_tot, val, 7, 'mp2 return')                                     #TEST
+clean()
+
+set T_CUT_PNO 1e-10 
+
+print('   Testing DLPNO-MP2 w/ tight settings ...')
+val = energy('dlpno-mp2')
+
+# DLPNO-MP2 matches DF-MP2 if the thresholds are tightened enough
+# Although there are many DLPNO thresholds, T_CUT_PNO is by far the most important
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'mp2 ref')                        #TEST
+compare_values(ref_dfmp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')          #TEST
+compare_values(ref_dfmp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')                  #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')                #TEST
+compare_values(ref_dfmp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')      #TEST
+compare_values(ref_dfmp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                    #TEST
+compare_values(ref_dfmp2_tot, val, 7, 'mp2 return')                                        #TEST
+clean()
