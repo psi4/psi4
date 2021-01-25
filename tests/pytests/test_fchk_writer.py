@@ -53,7 +53,10 @@ def test_uhf_fchk(inp2, datadir):
     psi4.set_options({
         "BASIS": "pcseg-0",
         'reference': 'uhf',
+        'e_convergence': 1e-12,
         'd_convergence': 1e-12,
+        'r_convergence': 1e-10,
+        'pcg_convergence': 1e-10,
     })
     FCHK_file = f"uhf-{inp2['name']}.fchk"
     reference_file = datadir.join(f"uhf-{inp2['name']}.ref")
@@ -84,7 +87,10 @@ def test_rhf_fchk(inp, datadir):
   """)
     psi4.set_options({
         "BASIS": "pcseg-0",
+        'e_convergence': 1e-12,
         'd_convergence': 1e-12,
+        'r_convergence': 1e-10,
+        'pcg_convergence': 1e-10,
     })
     FCHK_file = f"rhf-{inp['name']}.fchk"
     reference_file = datadir.join(f"rhf-{inp['name']}.ref")
