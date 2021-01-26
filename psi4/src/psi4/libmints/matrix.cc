@@ -1022,7 +1022,7 @@ double Matrix::trace() {
     return val;
 }
 
-SharedMatrix Matrix::transpose() {
+SharedMatrix Matrix::transpose() const {
     auto temp = std::make_shared<Matrix>(name_, nirrep_, colspi_, rowspi_, symmetry_);
 
     if (symmetry_) {
@@ -3390,14 +3390,18 @@ SharedMatrix vertcat(const std::vector<SharedMatrix> &mats) {
     return cat;
 }
 
-SharedMatrix doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, bool transB) {
-    Dimension m = (transA ? A->colspi() : A->rowspi());
-    Dimension n = (transB ? B->rowspi() : B->colspi());
+Matrix doublet(const Matrix& A, const Matrix& B, bool transA, bool transB) {
+    Dimension m = (transA ? A.colspi() : A.rowspi());
+    Dimension n = (transB ? B.rowspi() : B.colspi());
 
-    auto T = std::make_shared<Matrix>("T", m, n, A->symmetry() ^ B->symmetry());
-    T->gemm(transA, transB, 1.0, A, B, 0.0);
+    auto T = Matrix("T", m, n, A.symmetry() ^ B.symmetry());
+    T.gemm(transA, transB, 1.0, A, B, 0.0);
 
     return T;
+}
+
+SharedMatrix doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, bool transB) {
+    return std::make_shared<Matrix>(std::move(doublet(*A, *B, transA, transB)));
 }
 
 SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA, bool transB,

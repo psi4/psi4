@@ -73,8 +73,11 @@ SharedMatrix vertcat(const std::vector<SharedMatrix>& mats);
  * \param transA Transpose the first matrix
  * \param transB Transpose the second matrix
  */
+
 PSI_API
 SharedMatrix doublet(const SharedMatrix& A, const SharedMatrix& B, bool transA = false, bool transB = false);
+
+Matrix doublet(const Matrix& A, const Matrix& B, bool transA = false, bool transB = false);
 
 /** Simple triplet GEMM with on-the-fly allocation
  * \param A The first matrix
@@ -678,7 +681,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     /// Returns the trace of this
     double trace();
     /// Creates a new matrix which is the transpose of this
-    SharedMatrix transpose();
+    SharedMatrix transpose() const;
 
     /// In place transposition
     void transpose_this();
