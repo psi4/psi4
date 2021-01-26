@@ -338,6 +338,10 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                         std::vector<std::shared_ptr<Matrix>>& J, std::vector<std::shared_ptr<Matrix>>& K) {
     timer_on("build_JK()");
 
+    Options& options = Process::environment.options;
+    bool do_linK = options.get_bool("SCF_DO_LINK");
+    double linK_thresh = options.get_double("LINK_THRESHOLD");
+
     // => Zeroing <= //
     for (size_t ind = 0; ind < J.size(); ind++) {
         J[ind]->zero();
@@ -482,6 +486,31 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
 #ifdef _OPENMP
         thread = omp_get_thread_num();
 #endif
+
+	std::map<int, std::vector<int>> sig_shell_map;
+
+	// => linK code <= //
+	if (do_linK) {
+	    for (int P2 = P2start; P2 < P2start + nPtask; P2++) {
+		// List of every R that is significant for a given P
+	        std::vector<std::tuple<double, int>> val_r;
+		for (int R2 = R2start; R2 < R2start + nRtask; R2++) {
+	            int P = task_shells[P2];
+		    int R = task_shells[R2];
+		    double screen_val = ints[0]->shell_screen_linK(P, R);
+		    if (screen_val > linK_thresh) {
+		        val_r.add(std::make_tuple<screen_val, R>);
+		    }
+	        }
+		std::sort(val_r.begin(), val_r.end(), std::greater<double>());
+		
+		std::vector<int> pr;
+		for (int n = 0; n < val_r.size(); n++) {
+		    pr.add(std::get<1>(val_r[n]));
+		}
+		sig_shell_map.insert(std::pair<int, std::vector<int>>(P, pr);
+	    }
+	}
 
         // => Master shell quartet loops <= //
 

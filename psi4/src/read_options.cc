@@ -185,6 +185,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     options.add_bool("SCF_DENSITY_SCREENING", false);
     /*- Threshold for SCF Density Screening -*/
     options.add_double("DENSITY_SCREENING_THRESHOLD", 1.0e-9);
+    
+    /*- Perform linK SCF optimization? -*/
+    options.add_bool("SCF_DO_LINK", false);
+    /*- Threshold for linK screening -*/
+    options.get_double("LINK_THRESHOLD", 1.0e-8);
+    
     /*- Algorithm to use for MP2 computation.
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
     options.add_str("MP2_TYPE", "DF", "DF CONV CD");
