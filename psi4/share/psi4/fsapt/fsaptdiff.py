@@ -30,7 +30,10 @@
 
 import sys, os
 
-sys.path.append('%s/fsapt' % os.environ['PSIDATADIR'])
+import psi4
+path = psi4.core.get_datadir()
+sys.path.append('%s/fsapt' % path)
+
 from fsapt import *
 
 # => Driver Code <= #
