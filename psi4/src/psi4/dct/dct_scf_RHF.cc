@@ -482,7 +482,7 @@ void DCTSolver::compute_scf_energy_RHF() {
     scf_energy_ += tau_so_a_->vector_dot(so_h_);
 
     if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
-        scf_energy_ += mo_gammaA_->vector_dot(moFa_);
+        scf_energy_ += mo_gammaA_.vector_dot(moFa_);
     } else {
         scf_energy_ += kappa_so_a_->vector_dot(Fa_);
         scf_energy_ += tau_so_a_->vector_dot(Fa_);

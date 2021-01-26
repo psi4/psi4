@@ -45,6 +45,7 @@ namespace dct {
 void DCTSolver::transform_integrals() {
     dct_timer_on("DCTSolver::transform_integrals()");
 
+    _ints->update_orbitals();
     if (options_.get_str("DCT_TYPE") == "DF") {
         // Transform b(Q|mn) to b(Q|pq) in MO basis
         transform_b();
@@ -64,10 +65,7 @@ void DCTSolver::transform_integrals() {
         }
 
         psio_->close(PSIF_LIBTRANS_DPD, 1);
-
-        _ints->update_orbitals();
     } else {
-        _ints->update_orbitals();
         if (print_ > 1) {
             outfile->Printf("\tTransforming integrals...\n");
         }
