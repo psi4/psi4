@@ -58,7 +58,7 @@ namespace psi {
 Local_cc::Local_cc() {
 };
 
-void Local_cc::local_init() {
+void Local_cc::local_init(std::shared_ptr<BasisSet> basis) {
 
     //TODO: compute mp2 energy and store weak pairs
     weak_pair_energy = 0.0;
@@ -69,7 +69,7 @@ void Local_cc::local_init() {
     if (method == "PNO")
         init_pno();
     if (method == "PNO++")
-        outfile->Printf(" Local correlation using Perturbed Pair Natural Orbitals\nCutoff value: %e", cutoff);
+        init_pnopp(basis);
     outfile->Printf("    Localization parameters ready.\n\n");
 
 }
@@ -87,28 +87,22 @@ void Local_cc::init_pno() {
     std::vector<int> survivor_list;
 
     // Check if occupied block of Fock matrix is non-diagonal (localized)
-    // On the way, store the occupied orbital energies
+    // On the way, store the diagonal Fock matrix elements
     dpdfile2 Fij;
     global_dpd_->file2_init(&Fij, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     global_dpd_->file2_mat_init(&Fij);
     global_dpd_->file2_mat_rd(&Fij);
-    //outfile->Printf("Here are original local occ orbital energies\n");
+
     double *temp_occ_array = new double[nocc];
     for(int i=0; i < nocc; i++) {
-        //outfile->Printf("%f ", local_occ_eps->get(i));
         temp_occ_array[i] = Fij.matrix[0][i][i];
     }
     global_dpd_->file2_close(&Fij);
     psio_write_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) temp_occ_array,
             nocc * sizeof(double));
-    /* outfile->Printf("*** Vir block of F ***");
-    global_dpd_->file2_mat_print(&Fij, "outfile");
-    global_dpd_->file2_close(&Fij);*/
 
     // "Vectorize" T2
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS,  0, 0, 5, 0, 5, 0, "tIjAb");
-    /*outfile->Printf("*** T2s ***");
-    global_dpd_->buf4_print(&T2, "outfile", 1);*/
     // Create T2~
     get_matvec(&T2, &Tij);
     global_dpd_->buf4_scmcopy(&T2, PSIF_CC_TMP0, "tIjAb ~", 2);
@@ -147,99 +141,12 @@ void Local_cc::init_pno() {
         Dij[ij]->print();
     }*/
 
-    // Diagonalize Density
-    std::vector<SharedMatrix> Q_full(npairs);
-    std::vector<SharedVector> occ_num(npairs);
-    for(int ij=0; ij < npairs; ++ij) {
-        occ_num[ij] = std::make_shared<Vector>(nvir);
-        Q_full[ij]   = std::make_shared<Matrix>(nvir, nvir);
-    }
-
-    for(int ij=0; ij < npairs; ++ij) {
-        Dij[ij]->diagonalize(Q_full[ij], occ_num[ij], descending);
-    }
-
-    // Print checking
-    //for(int ij=0; ij < npairs; ++ij) {
-
-    /*outfile->Printf( "Pair: %d\n", 1);
-    for(int a=0; a < nvir; ++a) {
-        outfile->Printf("%20.12lf\n", occ_num[1]->get(a));
-    }*/
-
-    // Identify survivors
-    double abs_occ;
-    int survivors;
-    for(int ij=0; ij < npairs; ++ij) {
-        survivors = 0;
-        for(int a=0; a < nvir; ++a) {
-            abs_occ = fabs(occ_num[ij]->get(a));
-            if( abs_occ >= cutoff) {
-                survivors += 1;
-            }
-        }
-        //outfile->Printf("Survivors: %i \t", survivors);
-        survivor_list.push_back(survivors);
-    }
-
-    // Compute stats
-    int total_pno = 0;
-    double t2_ratio = 0.0;
-    outfile->Printf("\nSurvivor list: "); 
-    for(int ij=0; ij < npairs; ++ij) {
-        outfile->Printf("%d\t", survivor_list[ij]);
-        total_pno += survivor_list[ij];
-        t2_ratio += pow(survivor_list[ij],2);
-    }
-    outfile->Printf("\nT2 ratio: %10.10lf \n", t2_ratio);
-    double avg_pno = static_cast<float>(total_pno) / static_cast<float>(npairs);
-    t2_ratio /= (nocc*nocc*nvir*nvir);
-
-    // Print stats
-    outfile->Printf("Total number of PNOs: %i \n", total_pno);
-    outfile->Printf("Average number of PNOs: %10.10lf \n", avg_pno);
-    outfile->Printf("T2 ratio: %10.10lf \n", t2_ratio);
-
-    // Truncate Q
-    // If I understood Slices I wouldn't need to use
-    // for loops to set individual matrix elements
-    for(int ij=0; ij < npairs; ++ij) {
-        int npno = survivor_list[ij];
-        auto qtemp = std::make_shared<Matrix>(nvir, npno);
-        for(int a=0; a < nvir; ++a) {
-            for(int aij=0; aij < npno; ++aij) {
-                qtemp->set(a, aij, Q_full[ij]->get(a, aij));
-            }
-        }
-        Q.push_back(qtemp->clone());
-        qtemp->zero();
-    }
-
-    // Print check Q
-    /*outfile->Printf("**** Truncated Q ****\n");
-    for (auto &qel : Q) {
-        qel->print();
-    }*/
+    // Diagonalize density
+    Q = build_PNO_lists(cutoff, Dij);
 
     // Get semicanonical transforms
     get_semicanonical_transforms(Q);
 
-    // Write PNO dimensions, Q to file
-    int *survivors_list = new int[npairs];
-    for (int ij=0; ij < npairs; ij++) {
-        survivors_list[ij] = survivor_list[ij];
-    }
-    psio_write_entry(PSIF_CC_INFO, "PNO dimensions", (char *) survivors_list, npairs * sizeof(int));
-    psio_address next;
-    next = PSIO_ZERO;
-    for(int ij=0; ij < npairs; ++ij) {
-        int npno = survivor_list[ij];
-        psio_write(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *) Q[ij]->pointer()[0],
-                nvir * npno * sizeof(double), next, &next);
-    }
-    /*for (auto eps: eps_pno) {
-        eps->print();
-    }*/
     // Check if they can be read back in
     /*eps_pno.clear();
     next = PSIO_ZERO;
@@ -271,13 +178,57 @@ void Local_cc::init_pno() {
     }*/
 
     // Assuming this memory needs to be freed
-    delete[] survivors_list;
     delete[] temp_occ_array;
-    /*free(&Q);
-    free(&L);
-    free(&eps_pno);*/
 }
 
+void Local_cc:init_pnopp(std::shared_ptr<BasisSet> basis) {
+    outfile->Printf(" Local correlation using Perturbed Pair Natural Orbitals\nCutoff value: %e", cutoff);
+    dpdbuf4 T2;
+    dpdbuf4 T2tilde;
+    dpdbuf4 D;
+    std::vector<SharedMatrix> Xij;
+    std::vector<SharedMatrix> Xtij;
+
+    // Check if occupied block of Fock matrix is non-diagonal (localized)
+    // On the way, store the diagonal Fock matrix elements
+    dpdfile2 Fij;
+    global_dpd_->file2_init(&Fij, PSIF_CC_OEI, 0, 0, 0, "fIJ");
+    global_dpd_->file2_mat_init(&Fij);
+    global_dpd_->file2_mat_rd(&Fij);
+
+    double *temp_occ_array = new double[nocc];
+    for(int i=0; i < nocc; i++) {
+        temp_occ_array[i] = Fij.matrix[0][i][i];
+    }
+    global_dpd_->file2_close(&Fij);
+    psio_write_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) temp_occ_array,
+            nocc * sizeof(double));
+
+    // Build the denominator of Hbar elements
+
+    // Build the similarity-transformed perturbation
+
+    // Create density
+    std::vector<SharedMatrix> Dij;
+    temp->zero();
+    for(int ij=0; ij < npairs; ++ij) {
+        temp->zero();
+        int i = ij/nocc;
+        int j = ij%nocc;
+        temp->gemm(0, 1, 1, Xij[ij], Xtij[ij], 0);
+        temp->gemm(1, 0, 1, Xij[ij], Xtij[ij], 1);
+        temp->scale(2.0 * 1/(1+(i==j)));
+        temp->axpy(1.0, temp->transpose());
+        temp->scale(0.5);
+        Dij.push_back(temp->clone());
+    }
+
+    // Diagonalize density
+    Q = build_PNO_lists(cutoff, Dij);
+
+    // Get semicanonical transforms
+    get_semicanonical_transforms(Q);
+}
 void Local_cc::get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec) {
     
     auto mat = std::make_shared<Matrix>(nvir, nvir);
@@ -347,6 +298,90 @@ void Local_cc::get_semicanonical_transforms(std::vector<SharedMatrix> Q) {
                 npno * sizeof(double), next, &next);
     }
 
+}
+
+std::vector<SharedMatrix> Local_cc::build_PNO_lists(double cutoff, std::vector<SharedMatrix> D) {
+    std::vector<SharedMatrix> Q_full(npairs);
+    std::vector<SharedVector> occ_num(npairs);
+    for(int ij=0; ij < npairs; ++ij) {
+        occ_num[ij] = std::make_shared<Vector>(nvir);
+        Q_full[ij]   = std::make_shared<Matrix>(nvir, nvir);
+    }
+
+    // Diagonalize D
+    for(int ij=0; ij < npairs; ++ij) {
+        Dij[ij]->diagonalize(Q_full[ij], occ_num[ij], descending);
+    }
+
+    // Identify survivors
+    double abs_occ;
+    int survivors;
+    for(int ij=0; ij < npairs; ++ij) {
+        survivors = 0;
+        for(int a=0; a < nvir; ++a) {
+            abs_occ = fabs(occ_num[ij]->get(a));
+            if( abs_occ >= cutoff) {
+                survivors += 1;
+            }
+        }
+        //outfile->Printf("Survivors: %i \t", survivors);
+        survivor_list.push_back(survivors);
+    }
+
+    // Compute stats
+    int total_pno = 0;
+    double t2_ratio = 0.0;
+    outfile->Printf("\nSurvivor list: "); 
+    for(int ij=0; ij < npairs; ++ij) {
+        outfile->Printf("%d\t", survivor_list[ij]);
+        total_pno += survivor_list[ij];
+        t2_ratio += pow(survivor_list[ij],2);
+    }
+    outfile->Printf("\nT2 ratio: %10.10lf \n", t2_ratio);
+    double avg_pno = static_cast<float>(total_pno) / static_cast<float>(npairs);
+    t2_ratio /= (nocc*nocc*nvir*nvir);
+
+    // Print stats
+    outfile->Printf("Total number of PNOs: %i \n", total_pno);
+    outfile->Printf("Average number of PNOs: %10.10lf \n", avg_pno);
+    outfile->Printf("T2 ratio: %10.10lf \n", t2_ratio);
+
+    // Truncate Q
+    // If I understood Slices I wouldn't need to use
+    // for loops to set individual matrix elements
+    for(int ij=0; ij < npairs; ++ij) {
+        int npno = survivor_list[ij];
+        auto qtemp = std::make_shared<Matrix>(nvir, npno);
+        for(int a=0; a < nvir; ++a) {
+            for(int aij=0; aij < npno; ++aij) {
+                qtemp->set(a, aij, Q_full[ij]->get(a, aij));
+            }
+        }
+        Q.push_back(qtemp->clone());
+    }
+
+    // Print check Q
+    /*outfile->Printf("**** Truncated Q ****\n");
+    for (auto &qel : Q) {
+        qel->print();
+    }*/
+
+    // Write PNO dimensions, Q to file
+    int *survivors_list = new int[npairs];
+    for (int ij=0; ij < npairs; ij++) {
+        survivors_list[ij] = survivor_list[ij];
+    }
+    psio_write_entry(PSIF_CC_INFO, "PNO dimensions", (char *) survivors_list, npairs * sizeof(int));
+    psio_address next;
+    next = PSIO_ZERO;
+    for(int ij=0; ij < npairs; ++ij) {
+        int npno = survivor_list[ij];
+        psio_write(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *) Q[ij]->pointer()[0],
+                nvir * npno * sizeof(double), next, &next);
+    }
+    
+    delete[] survivors_list;
+    return Q;
 }
 
 void Local_cc::local_done() { outfile->Printf("    Local parameters free.\n"); }
