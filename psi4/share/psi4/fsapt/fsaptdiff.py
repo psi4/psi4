@@ -123,7 +123,7 @@ if __name__ == '__main__':
 
     # > Order-1 PBD Files < #
 
-    pdbA = PDB.fromGeom(stuffA['geom'])
+    pdbA = PDB.from_geom(stuffA['geom'])
     print_order1(dirA, stuffA['order2r'], pdbA, stuffA['frags'])
 
     pdbB = PDB.from_geom(stuffB['geom'])
