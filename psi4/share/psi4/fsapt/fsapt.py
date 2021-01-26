@@ -32,6 +32,8 @@ import psi4
 import numpy as np
 from typing import Dict, List, Optional, Tuple
 import sys, os, re, math, copy
+import numpy as np
+import time
 
 # => Global Data <= #
 
@@ -439,7 +441,7 @@ def fragment_d3_disp(d3disp: np.ndarray, frags: Dict[str, Dict[str, List[str]]])
         idA = np.array(idA)
         D3frags[fA] = {}
         for fB, idB in frags['B'].items():
-            if 'Link' in fA:
+            if 'Link' in fB:
                 continue
             fe = 0.0
             for i in idA:
@@ -457,14 +459,14 @@ def extract_order2_fsapt(osapt, wsA, wsB, frags):
         if key == 'EDisp':
             vals[key] = fragment_d3_disp(value, frags)
         else:
+            value = np.asarray(value)
             vals[key] = {}
             for keyA, valueA in wsA.items():
                 vals[key][keyA] = {}
+                valueA = np.asarray(valueA)
                 for keyB, valueB in wsB.items():
-                    val = 0.0
-                    for k in range(len(valueA)):
-                        for l in range(len(valueB)):
-                            val += valueA[k] * valueB[l] * value[k][l]
+                    valueB = np.asarray(valueB)
+                    val = np.einsum('i,ij,j', valueA, value, valueB)
                     vals[key][keyA][keyB] = val
 
     return vals
@@ -802,6 +804,7 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
     osapt = extract_osapt_data(dirname)
 
     order2  = extract_order2_fsapt(osapt, total_ws['A'], total_ws['B'], frags)
+
     order2r = collapse_links(order2, frags, Qs, orbital_ws, links5050)
 
     stuff = {}
@@ -962,13 +965,16 @@ if __name__ == '__main__':
 
     print('  ==> F-ISAPT: Links by Charge <==\n')
     stuff = compute_fsapt(dirname, False)
+
     print('   => Full Analysis <=\n')
     print_order2(stuff['order2'], stuff['fragkeys'])
+
     print('   => Reduced Analysis <=\n')
     print_order2(stuff['order2r'], stuff['fragkeysr'])
 
     print('  ==> F-ISAPT: Links 50-50 <==\n')
     stuff = compute_fsapt(dirname, True)
+
     saptkeys_ = stuff['order2r'].keys()
     print('   => Full Analysis <=\n')
     print_order2(stuff['order2'], stuff['fragkeys'])
