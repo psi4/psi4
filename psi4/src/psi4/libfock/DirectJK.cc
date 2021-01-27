@@ -436,6 +436,35 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
     size_t ntask_pair = task_pairs.size();
     size_t ntask_pair2 = ntask_pair * ntask_pair;
 
+    // => linK Significant Task BraKets (P*|R*)
+    
+    std::map<int, std::vector<int>> linK_braket_map;
+    
+    if (do_linK) {
+	for (int P = 0; P < nshell; P++) {
+	    // List of every R that is significant for a given P
+            std::vector<std::tuple<double, int>> Rsig;
+	    for (int R = 0; R < nshell; R++) {
+		double pair_val = ints[0]->pair_screen_linK(P, R);
+		if (pair_val > linK_thresh) {
+                    Rsig.push_back(std::tuple<double, int>(pair_val, R));
+		}
+	    }
+	
+	
+	    std::sort(Rsig.begin(), Rsig.end(), linK_sort_helper);
+
+            std::vector<int> Rlist;
+	
+	    for (int n = 0; n < Rsig.size(); n++) {
+	        Rlist.push_back(std::get<1>(Rsig[n]));
+	    }
+        
+	    linK_braket_map.insert(std::pair<int, std::vector<int>>(P, Rlist));
+
+	}
+    }
+
     // => Intermediate Buffers <= //
 
     std::vector<std::vector<std::shared_ptr<Matrix> > > JKT;
@@ -492,33 +521,6 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
         thread = omp_get_thread_num();
 #endif
 
-	std::map<int, std::vector<int>> linK_braket_map;
-
-	// => linK code <= //
-	if (do_linK) {
-	    
-	    for (int P2 = P2start; P2 < P2start + nPtask; P2++) {
-		// List of every R that is significant for a given P
-		int P = task_shells[P2];
-	        std::vector<std::tuple<double, int>> Rsig;
-		for (int R2 = R2start; R2 < R2start + nRtask; R2++) {
-		    int R = task_shells[R2];
-		    double pair_val = ints[0]->pair_screen_linK(P, R);
-		    if (pair_val > linK_thresh) {
-		        Rsig.push_back(std::tuple<int, int>(pair_val, R));
-		    }
-	        }
-		std::sort(Rsig.begin(), Rsig.end(), linK_sort_helper);
-		
-		std::vector<int> pr;
-		for (int n = 0; n < Rsig.size(); n++) {
-		    pr.push_back(std::get<1>(Rsig[n]));
-		}
-		linK_braket_map.insert(std::pair<int, std::vector<int>>(P, pr));
-	    }
-
-	}
-
         // => Master shell quartet loops <= //
 
         bool touched = false;
@@ -531,38 +533,36 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
 
 		std::set<std::pair<int, int>> PQ_sig_ket;
 
-		if (do_linK) {
-		    
+		if (do_linK) {    
 		    for (int R2 = 0; R2 < linK_braket_map[P].size(); R2++) {
-		        int R = linK_braket_map[P][R2];
-		        int count = 0;
+			int R = linK_braket_map[P][R2];
+			int count = 0;
 			for (int S2 = 0; S2 < linK_braket_map[P].size(); S2++) {
-		            if (S2 > R2) continue;
 			    int S = linK_braket_map[P][S2];
-                            double quart_val = ints[0]->quart_screen_linK(P, Q, R, S);
+			    double quart_val = ints[0]->quart_screen_linK(P, Q, R, S);
 			    if (quart_val > linK_thresh) {
-			        PQ_sig_ket.insert(std::pair<int, int>(R, S));
-			        count++;
+				if (S <= R) PQ_sig_ket.insert(std::pair<int, int>(R, S));
+				count++;
 			    }
-		        }
+			}
 			if (count == 0) break;
 		    }
 
 		    for (int R2 = 0; R2 < linK_braket_map[Q].size(); R2++) {
-                        int R = linK_braket_map[Q][R2];
-                        int count = 0;
-                        for (int S2 = 0; S2 < linK_braket_map[Q].size(); S2++) {
-                            if (S2 > R2) continue;
+			int R = linK_braket_map[Q][R2];
+			int count = 0;
+			for (int S2 = 0; S2 < linK_braket_map[Q].size(); S2++) {
                             int S = linK_braket_map[Q][S2];
-			    if (PQ_sig_ket.count(std::pair<int, int>(R, S)) > 0) continue;
-                            double quart_val = ints[0]->quart_screen_linK(P, Q, R, S);
-                            if (quart_val > linK_thresh) {
-                                PQ_sig_ket.insert(std::pair<int, int>(R, S));
+			    double quart_val = ints[0]->quart_screen_linK(P, Q, R, S);
+			    if (quart_val > linK_thresh) {
+				if (PQ_sig_ket.count(std::pair<int, int>(R, S)) == 0 && S <= R) {
+				    PQ_sig_ket.insert(std::pair<int, int>(R, S));
+				}
 				count++;
-                            }
-                        }
-                        if (count == 0) break;
-                    }
+			    }
+			}
+			if (count == 0) break;
+		    }
 		}
 
                 for (int R2 = R2start; R2 < R2start + nRtask; R2++) {
@@ -573,7 +573,6 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                         if (R2 * nshell + S2 > P2 * nshell + Q2) continue;
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
-
 			if (do_linK && PQ_sig_ket.count(std::pair<int, int>(R, S)) == 0) continue;
 			
 
