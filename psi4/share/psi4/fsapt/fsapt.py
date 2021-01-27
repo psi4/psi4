@@ -179,7 +179,7 @@ def read_d3_fragments(dirname: Optional[str] = '.') -> Dict[str, Dict[str, List[
         Dictionary of dictionaries with fragment lists for each monomer
     """
     frags = {'A': {}, 'B': {}}
-    for mono in ['A', 'B']:
+    for mono in "AB":
         fragdict = {}
         # Read lines from frag file
         with open(f"{dirname}{os.sep}f{mono}.dat", 'r') as f:

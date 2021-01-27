@@ -271,13 +271,12 @@ def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
 
     # Get the names right between SAPT0 and FISAPT0
     saptd_name = name.split('-')[0].upper()
-    sapt0_name = ""
     if saptd_name == "SAPT0":
         sapt0_name = "SAPT0"
     else:
         sapt0_name = "SAPT"
 
-    save_pair = True if saptd_name == "FISAPT0" else False
+    save_pair = (saptd_name == "FISAPT0")
 
     from .proc import build_disp_functor
     _, _disp_functor = build_disp_functor('hf-' + disp_name, restricted=True, save_pairwise_disp=save_pair, **kwargs)
