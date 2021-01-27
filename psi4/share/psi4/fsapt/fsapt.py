@@ -37,6 +37,7 @@ import numpy as np
 # => Global Data <= #
 
 # H to kcal constant
+# H_to_kcal_ = 627.5095 prior to Feb 2021
 H_to_kcal_ = psi4.constants.hartree2kcalmol
 
 # SAPT Keys
