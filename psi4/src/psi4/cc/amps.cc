@@ -50,15 +50,15 @@ std::map<std::string, SharedMatrix> CCEnergyWavefunction::get_amplitudes() {
     std::vector<DPDMOSpace> spaces;
     if (dpd_list[0] == nullptr) {
         if (ref == "RHF") {
-            Dimension occpi_ = nalphapi_;
+            Dimension occpi_ = nalphapi_ - frzcpi_;
             Dimension virtpi_ = nmopi_ - nalphapi_;
             cachelist = cacheprep_rhf(options_.get_int("CACHELEVEL"), cachefiles.data());
             spaces = {DPDMOSpace{'o', "ijkl", occpi_}, DPDMOSpace{'v', "abcd", virtpi_}};
         } else if (ref == "ROHF") {
-            Dimension doccpi_ = nalphapi_;
-            Dimension soccpi_ = nbetapi_ - nalphapi_;
+            Dimension doccpi_ = nbetapi_ - frzcpi_;
+            Dimension soccpi_ = nalphapi_ - nbetapi_;
             Dimension occpi_ = doccpi_ + soccpi_;
-            Dimension virtpi_ = (nmopi_ - doccpi_) + soccpi_;
+            Dimension virtpi_ = nmopi_ - (occpi_ + frzcpi_);
             cachelist = cacheprep_rhf(options_.get_int("CACHELEVEL"), cachefiles.data());
             spaces = {DPDMOSpace{'o', "ijkl", occpi_}, DPDMOSpace{'v', "abcd", virtpi_}};
         } else /*UHF*/{
