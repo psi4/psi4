@@ -1,8 +1,10 @@
+import os
 import numpy as np
 import pytest
 import time
 
 import psi4
+
 
 @pytest.mark.quick
 def test_triplet_speedup():
@@ -23,8 +25,10 @@ def test_triplet_speedup():
     S = psi4.core.doublet(S, C, False, False)
     time2 = time.time() - start
 
-    assert (time1 < time2)
+    if int(os.environ["PYTEST_XDIST_WORKER_COUNT"]) == 1:
+        assert time1 < time2
     assert psi4.compare_matrices(R, S, 8, "linalg::triplet speedup test")
+
 
 @pytest.mark.quick
 def test_triplet_normal_case():
@@ -43,10 +47,11 @@ def test_triplet_normal_case():
 
     assert psi4.compare_matrices(R, S, 8, "linalg::triplet avg_case test")
 
+
 @pytest.mark.quick
 def test_triplet_with_irreps():
     A = psi4.core.Matrix.from_array([np.random.rand(10000, 5), np.random.rand(5, 10000), np.random.rand(10000, 5)])
-    B = psi4.core.Matrix.from_array([np.random.rand(5, 10000), np.random.rand(10000, 5), np.random.rand(5, 10000)]) 
+    B = psi4.core.Matrix.from_array([np.random.rand(5, 10000), np.random.rand(10000, 5), np.random.rand(5, 10000)])
     C = psi4.core.Matrix.from_array([np.random.rand(10000, 5), np.random.rand(5, 10000), np.random.rand(10000, 5)])
 
     start = time.time()
@@ -58,8 +63,10 @@ def test_triplet_with_irreps():
     S = psi4.core.doublet(S, C, False, False)
     time2 = time.time() - start
 
-    assert (time1 < time2)
+    if int(os.environ["PYTEST_XDIST_WORKER_COUNT"]) == 1:
+        assert time1 < time2
     assert psi4.compare_matrices(R, S, 8, "linalg::triplet irrep test")
+
 
 @pytest.mark.quick
 def test_triplet_with_transpose():
@@ -76,5 +83,6 @@ def test_triplet_with_transpose():
     S = psi4.core.doublet(S, C, False, False)
     time2 = time.time() - start
 
-    assert (time1 < time2)
+    if int(os.environ["PYTEST_XDIST_WORKER_COUNT"]) == 1:
+        assert time1 < time2
     assert psi4.compare_matrices(R, S, 8, "linalg::triplet transpose test")
