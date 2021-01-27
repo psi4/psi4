@@ -101,8 +101,8 @@ this operation is identical to the above.
 |PSIfour| Data Objects with Irreps
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|PSIfour| data objects natively support multiple `irreducible representations
-<https://psicode.org/psi4manual/4.0b3/psithoninput.html#symmetry>`_
+|PSIfour| data objects natively support multiple :ref:`irreducible representations
+<sec:symmetry>`
 which is quite useful for Quantum Chemistry. However, this is not fundamental
 to NumPy and some work around are required to natively support these
 operations. Take the following irreped Matrix::
@@ -131,6 +131,5 @@ Matrix to Array
 A general function that converts NumPy arrays to |PSIfour| data objects.
 
 .. autofunction:: psi4.driver.p4util.numpy_helper._to_array
-
 
 
