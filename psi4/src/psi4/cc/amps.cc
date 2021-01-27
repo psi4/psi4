@@ -34,7 +34,8 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libmints/molecule.h"
 #include <memory>
-namespace psi::ccenergy {
+namespace psi {
+namespace ccenergy {
 
 std::map<std::string, SharedMatrix> CCEnergyWavefunction::get_amplitudes() {
     // re-init dpd
@@ -143,4 +144,5 @@ std::map<std::string, SharedMatrix> CCEnergyWavefunction::get_amplitudes() {
     }
     return amps;
 }
-}  // namespace psi::ccenergy
+}  // namespace ccenergy
+}  // namespace psi
