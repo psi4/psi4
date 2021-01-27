@@ -189,7 +189,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Perform linK SCF optimization? -*/
     options.add_bool("SCF_DO_LINK", false);
     /*- Threshold for linK screening -*/
-    options.get_double("LINK_THRESHOLD", 1.0e-8);
+    options.add_double("LINK_THRESHOLD", 1.0e-8);
     
     /*- Algorithm to use for MP2 computation.
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/

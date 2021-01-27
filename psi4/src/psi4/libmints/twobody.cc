@@ -177,8 +177,8 @@ bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
 
 }
 
-// Shell Screening Used for Bra Shell M and Ket Shell N, Ochsenfeld 1998 Equation 3
-double TwoBodyAOInt::shell_screen_linK(int M, int N) {
+// Pair Screening Used for Bra Shell M and Ket Shell N, Ochsenfeld 1998 Equation 3
+double TwoBodyAOInt::pair_screen_linK(int M, int N) {
     // (m_max|m_man) and (n_max|n_max) in Equation 3
     // Note that this is not square_rooted
     int Q_M_sq_max = 0.0;
@@ -190,6 +190,13 @@ double TwoBodyAOInt::shell_screen_linK(int M, int N) {
     }
 
     return max_dens_shell_pair_[M][N] * sqrt(Q_M_sq_max * Q_N_sq_max);  
+
+}
+
+// Quartet Screening Used in LinK procedure
+double TwoBodyAOInt::quart_screen_linK(int M, int N, int R, int S) {
+
+    return max_dens_shell_pair_[M][N] * sqrt(shell_pair_values_[M * nshell_ + R] * shell_pair_values_[N * nshell_ + S]);
 
 }
 

@@ -44,6 +44,7 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
 
+// #include <template>
 #include <algorithm>
 #include <limits>
 #include <sstream>
@@ -334,6 +335,10 @@ void DirectJK::compute_JK() {
 }
 void DirectJK::postiterations() {}
 
+bool linK_sort_helper(const std::tuple<double, int>& t1, const std::tuple<double, int>& t2) {
+    return std::get<0>(t1) > std::get<0>(t2);
+}
+
 void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<std::shared_ptr<Matrix>>& D,
                         std::vector<std::shared_ptr<Matrix>>& J, std::vector<std::shared_ptr<Matrix>>& K) {
     timer_on("build_JK()");
@@ -487,48 +492,90 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
         thread = omp_get_thread_num();
 #endif
 
-	std::map<int, std::vector<int>> sig_shell_map;
+	std::map<int, std::vector<int>> linK_braket_map;
 
 	// => linK code <= //
 	if (do_linK) {
+	    
 	    for (int P2 = P2start; P2 < P2start + nPtask; P2++) {
 		// List of every R that is significant for a given P
-	        std::vector<std::tuple<double, int>> val_r;
+		int P = task_shells[P2];
+	        std::vector<std::tuple<double, int>> Rsig;
 		for (int R2 = R2start; R2 < R2start + nRtask; R2++) {
-	            int P = task_shells[P2];
 		    int R = task_shells[R2];
-		    double screen_val = ints[0]->shell_screen_linK(P, R);
-		    if (screen_val > linK_thresh) {
-		        val_r.add(std::make_tuple<screen_val, R>);
+		    double pair_val = ints[0]->pair_screen_linK(P, R);
+		    if (pair_val > linK_thresh) {
+		        Rsig.push_back(std::tuple<int, int>(pair_val, R));
 		    }
 	        }
-		std::sort(val_r.begin(), val_r.end(), std::greater<double>());
+		std::sort(Rsig.begin(), Rsig.end(), linK_sort_helper);
 		
 		std::vector<int> pr;
-		for (int n = 0; n < val_r.size(); n++) {
-		    pr.add(std::get<1>(val_r[n]));
+		for (int n = 0; n < Rsig.size(); n++) {
+		    pr.push_back(std::get<1>(Rsig[n]));
 		}
-		sig_shell_map.insert(std::pair<int, std::vector<int>>(P, pr);
+		linK_braket_map.insert(std::pair<int, std::vector<int>>(P, pr));
 	    }
+
 	}
 
         // => Master shell quartet loops <= //
 
         bool touched = false;
         for (int P2 = P2start; P2 < P2start + nPtask; P2++) {
-            for (int Q2 = Q2start; Q2 < Q2start + nQtask; Q2++) {
+	    for (int Q2 = Q2start; Q2 < Q2start + nQtask; Q2++) {
                 if (Q2 > P2) continue;
                 int P = task_shells[P2];
                 int Q = task_shells[Q2];
                 if (!ints[0]->shell_pair_significant(P, Q)) continue;
+
+		std::set<std::pair<int, int>> PQ_sig_ket;
+
+		if (do_linK) {
+		    
+		    for (int R2 = 0; R2 < linK_braket_map[P].size(); R2++) {
+		        int R = linK_braket_map[P][R2];
+		        int count = 0;
+			for (int S2 = 0; S2 < linK_braket_map[P].size(); S2++) {
+		            if (S2 > R2) continue;
+			    int S = linK_braket_map[P][S2];
+                            double quart_val = ints[0]->quart_screen_linK(P, Q, R, S);
+			    if (quart_val > linK_thresh) {
+			        PQ_sig_ket.insert(std::pair<int, int>(R, S));
+			        count++;
+			    }
+		        }
+			if (count == 0) break;
+		    }
+
+		    for (int R2 = 0; R2 < linK_braket_map[Q].size(); R2++) {
+                        int R = linK_braket_map[Q][R2];
+                        int count = 0;
+                        for (int S2 = 0; S2 < linK_braket_map[Q].size(); S2++) {
+                            if (S2 > R2) continue;
+                            int S = linK_braket_map[Q][S2];
+			    if (PQ_sig_ket.count(std::pair<int, int>(R, S)) > 0) continue;
+                            double quart_val = ints[0]->quart_screen_linK(P, Q, R, S);
+                            if (quart_val > linK_thresh) {
+                                PQ_sig_ket.insert(std::pair<int, int>(R, S));
+				count++;
+                            }
+                        }
+                        if (count == 0) break;
+                    }
+		}
+
                 for (int R2 = R2start; R2 < R2start + nRtask; R2++) {
                     for (int S2 = S2start; S2 < S2start + nStask; S2++) {
                         if (S2 > R2) continue;
-                        int R = task_shells[R2];
+			int R = task_shells[R2];
                         int S = task_shells[S2];
                         if (R2 * nshell + S2 > P2 * nshell + Q2) continue;
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
+
+			if (do_linK && PQ_sig_ket.count(std::pair<int, int>(R, S)) == 0) continue;
+			
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
                         // timer_on("compute_shell(P, Q, R, S)");
