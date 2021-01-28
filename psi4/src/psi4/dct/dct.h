@@ -195,10 +195,11 @@ class DCTSolver : public Wavefunction {
     // Compute 2RDMs. These arise as intermediates in computing the
     // orbital residual. For DF variants, only the cumulant of the
     // 2RDM is needed (as the RIFIT part).
+    // Setting cumulant_only saves as "Cumulant", else "Gamma", in
+    // addition to changing what is actually computed.
     void compute_unrelaxed_density_OOOO(bool cumulant_only = false);
     void compute_unrelaxed_separable_density_OOOO();
-    // OOVV is already cumulant_only for all implemented methods.
-    void compute_unrelaxed_density_OOVV();
+    void compute_unrelaxed_density_OOVV(bool cumulant_only = false);
     void compute_unrelaxed_density_OVOV(bool cumulant_only = false);
     void compute_unrelaxed_separable_density_OVOV();
     void compute_unrelaxed_density_VVVV();
