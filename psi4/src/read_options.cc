@@ -2385,21 +2385,23 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Auxiliary basis set for MP2 density fitting computations.
         :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
         options.add_str("DF_BASIS_MP2", "");
-        /*- Relative convergence in orbital localization -*/
+        /*- General convergence criteria for DLPNO methods -*/
+        options.add_str("PNO_CONVERGENCE", "NORMAL", "LOOSE NORMAL TIGHT");
+        /*- Convergence criteria for the Foster-Boys orbital localization -*/
         options.add_double("LOCAL_CONVERGENCE", 1.0E-12);
-        /*- Maximum iterations in localization -*/
+        /*- Maximum iterations in Foster-Boys localization -*/
         options.add_int("LOCAL_MAXITER", 1000);
         /*- Energy convergence criteria for local MP2 iterations -*/
         options.add_double("E_CONVERGENCE", 1e-6);
         /*- Residual convergence criteria for local MP2 iterations -*/
         options.add_double("R_CONVERGENCE", 1e-6);
-        /*- Occupation number threshold for removing PNOs -*/
-        options.add_double("T_CUT_PNO", 1e-8);
-        /*- DOI threshold for including PAO (u) in domain of LMO (i) -*/
-        options.add_double("T_CUT_DO", 1e-2);
 
         /*- SUBSECTION Expert -*/
 
+        /*- Occupation number threshold for removing PNOs !expert -*/
+        options.add_double("T_CUT_PNO", 1e-8);
+        /*- DOI threshold for including PAO (u) in domain of LMO (i) !expert -*/
+        options.add_double("T_CUT_DO", 1e-2);
         /*- DOI threshold for treating LMOs (i,j) as interacting !expert -*/
         options.add_double("T_CUT_DO_ij", 1e-5);
         /*- Pair energy threshold (dipole approximation) for treating LMOs (i, j) as interacting !expert -*/

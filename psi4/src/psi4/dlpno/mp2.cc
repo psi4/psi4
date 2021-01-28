@@ -78,6 +78,26 @@ void DLPNOMP2::common_init() {
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
 
+    T_CUT_PNO = options_.get_double("T_CUT_PNO");
+    T_CUT_DO = options_.get_double("T_CUT_DO");
+
+    // did the user manually change expert level options?
+    bool T_CUT_PNO_changed = options_["T_CUT_PNO"].has_changed();
+    bool T_CUT_DO_changed = options_["T_CUT_DO"].has_changed();
+    
+    // if not, values are determined by the user-friendly "PNO_CONVERGENCE"
+    if(options_.get_str("PNO_CONVERGENCE") == "LOOSE") {
+        if (!T_CUT_PNO_changed) T_CUT_PNO = 1e-7;
+        if (!T_CUT_DO_changed) T_CUT_DO = 2e-5;
+    } else if(options_.get_str("PNO_CONVERGENCE") == "NORMAL") {
+        if (!T_CUT_PNO_changed) T_CUT_PNO = 1e-8;
+        if (!T_CUT_DO_changed) T_CUT_DO = 1e-2;
+    } else if(options_.get_str("PNO_CONVERGENCE") == "TIGHT") {
+        if (!T_CUT_PNO_changed) T_CUT_PNO = 1e-9;
+        if (!T_CUT_DO_changed) T_CUT_DO = 5e-3;
+    }
+
+
     name_ = "DLPNO-MP2";
     module_ = "dlpno";
 
@@ -520,7 +540,7 @@ void DLPNOMP2::sparsity_prep() {
         // PAO domains determined by differential overlap integral
         std::vector<int> lmo_to_paos_temp;
         for(size_t u = 0; u < nbf; ++u) {
-            if(fabs(DOI_iu->get(i,u)) > options_.get_double("T_CUT_DO")) {
+            if(fabs(DOI_iu->get(i,u)) > T_CUT_DO) {
                 lmo_to_paos_temp.push_back(u);
             }
         }
@@ -899,7 +919,7 @@ void DLPNOMP2::pno_transform() {
 
         int nvir_ij_final= 0;
         for(size_t a = 0; a < nvir_ij; ++a) {
-            if (fabs(pno_occ->get(a)) >= options_.get_double("T_CUT_PNO")) {
+            if (fabs(pno_occ->get(a)) >= T_CUT_PNO) {
                 nvir_ij_final++;
             }
         }
@@ -1277,19 +1297,18 @@ void DLPNOMP2::print_header() {
     outfile->Printf("   --------------------------------------------\n");
     outfile->Printf("                     DLPNO-MP2                 \n");
     outfile->Printf("                   by Zach Glick               \n");
-    outfile->Printf("   --------------------------------------------\n");
-    outfile->Printf("\n");
-
-    outfile->Printf("  DLPNO thresholds and cutoffs:\n");
+    outfile->Printf("   --------------------------------------------\n\n");
+    outfile->Printf("  DLPNO convergence set to %s.\n\n", options_.get_str("PNO_CONVERGENCE").c_str());
+    outfile->Printf("  Detailed DLPNO thresholds and cutoffs:\n");
+    outfile->Printf("    T_CUT_DO     = %6.3e \n", T_CUT_DO);
+    outfile->Printf("    T_CUT_PNO    = %6.3e \n", T_CUT_PNO);
     outfile->Printf("    T_CUT_DO_ij  = %6.3e \n", options_.get_double("T_CUT_DO_ij"));
     outfile->Printf("    T_CUT_PRE    = %6.3e \n", options_.get_double("T_CUT_PRE"));
     outfile->Printf("    T_CUT_DO_PRE = %6.3e \n", options_.get_double("T_CUT_DO_PRE"));
-    outfile->Printf("    T_CUT_DO     = %6.3e \n", options_.get_double("T_CUT_DO"));
     outfile->Printf("    T_CUT_MKN    = %6.3e \n", options_.get_double("T_CUT_MKN"));
     outfile->Printf("    T_CUT_CLMO   = %6.3e \n", options_.get_double("T_CUT_CLMO"));
     outfile->Printf("    T_CUT_CPAO   = %6.3e \n", options_.get_double("T_CUT_CPAO"));
     outfile->Printf("    S_CUT        = %6.3e \n", options_.get_double("S_CUT"));
-    outfile->Printf("    T_CUT_PNO    = %6.3e \n", options_.get_double("T_CUT_PNO"));
     outfile->Printf("    F_CUT        = %6.3e \n", options_.get_double("F_CUT"));
     outfile->Printf("\n");
 
