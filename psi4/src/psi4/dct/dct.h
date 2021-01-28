@@ -96,7 +96,6 @@ class DCTSolver : public Wavefunction {
     void build_gtau();
     void print_opdm();
     void check_n_representability();
-    void print_orbital_energies();
     void build_cumulant_intermediates();
     void process_so_ints();
     void build_G();
