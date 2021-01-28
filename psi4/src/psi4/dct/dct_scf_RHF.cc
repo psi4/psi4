@@ -164,7 +164,7 @@ void DCTSolver::process_so_ints_RHF() {
 
         /********** AB ***********/
         global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                               "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
         global_dpd_->buf4_init(&tau1_AO_ab, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[n,n]"), ID("[O,O]"), ID("[n,n]"), 0,
                                "tau1AO <OO|nn>");  // tau1AO <Oo|nn>
         global_dpd_->buf4_scm(&tau1_AO_ab, 0.0);

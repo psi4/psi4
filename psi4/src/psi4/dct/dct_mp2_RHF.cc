@@ -67,13 +67,13 @@ void DCTSolver::initialize_amplitudes_RHF() {
         dct_timer_on("DCTSolver::g_IJAB / D_IJAB");
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "MO Ints <OO|VV>");                       // MO Ints <Oo|Vv>
-        global_dpd_->buf4_copy(&I, PSIF_DCT_DPD, "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+        global_dpd_->buf4_copy(&I, PSIF_DCT_DPD, "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
         global_dpd_->buf4_close(&I);
 
         global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
                                "D <OO|VV>");  // D <Oo|Vv>
         global_dpd_->buf4_init(&I, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                               "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
         global_dpd_->buf4_dirprd(&D, &I);
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_close(&D);
@@ -81,12 +81,12 @@ void DCTSolver::initialize_amplitudes_RHF() {
 
         /* build lambda <OO|VV> for tau and G intermediates */
         dpdbuf4 T;
-        // Lambda_IJAB = Lambda_IjAb - Lambda_JiAb
+        // Amplitude_IJAB = Amplitude_IjAb - Amplitude_JiAb
         global_dpd_->buf4_init(&I, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 1,
-                               "Lambda SF <OO|VV>");
-        global_dpd_->buf4_copy(&I, PSIF_DCT_DPD, "Lambda <OO|VV>");
-        // The purpose of having Lambda <oo|vv> is for better performance of DIIS
-        global_dpd_->buf4_copy(&I, PSIF_DCT_DPD, "Lambda <oo|vv>");
+                               "Amplitude SF <OO|VV>");
+        global_dpd_->buf4_copy(&I, PSIF_DCT_DPD, "Amplitude <OO|VV>");
+        // The purpose of having Amplitude <oo|vv> is for better performance of DIIS
+        global_dpd_->buf4_copy(&I, PSIF_DCT_DPD, "Amplitude <oo|vv>");
         global_dpd_->buf4_close(&I);
 
         /*
@@ -112,7 +112,7 @@ void DCTSolver::initialize_amplitudes_RHF() {
 
         dct_timer_on("DCTSolver::lambda_IjAb M_IjAb");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "Lambda SF <OO|VV>");
+                               "Amplitude SF <OO|VV>");
 
         // E_MP2 = lambda_IjAb * M_IjAb
         double eMP2 = global_dpd_->buf4_dot(&L, &M);

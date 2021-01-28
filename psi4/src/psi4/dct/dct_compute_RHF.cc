@@ -145,11 +145,11 @@ void DCTSolver::run_simult_dct_RHF() {
     // DIIS on orbitals (AA and BB) and cumulants (AA, AB, BB)
     dpdbuf4 Laa, Lab, Lbb;
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");
+                           "Amplitude SF <OO|VV>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     diisManager.set_error_vector_size(5, DIISEntry::Matrix, scf_error_a_.get(), DIISEntry::Matrix, scf_error_b_.get(),
                                       DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4, &Lbb);
     diisManager.set_vector_size(5, DIISEntry::Matrix, Fa_.get(), DIISEntry::Matrix, Fb_.get(), DIISEntry::DPDBuf4, &Laa,
@@ -231,11 +231,11 @@ void DCTSolver::run_simult_dct_RHF() {
             global_dpd_->buf4_init(&Rbb, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                    "R <oo|vv>");
             global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                                   "Lambda <OO|VV>");
+                                   "Amplitude <OO|VV>");
             global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                                   "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                                   "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
             global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                                   "Lambda <oo|vv>");
+                                   "Amplitude <oo|vv>");
             if (diisManager.add_entry(10, scf_error_a_.get(), scf_error_b_.get(), &Raa, &Rab, &Rbb, Fa_.get(),
                                       Fb_.get(), &Laa, &Lab, &Lbb)) {
                 diisString += "S";

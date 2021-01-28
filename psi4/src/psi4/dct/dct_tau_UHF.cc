@@ -54,10 +54,11 @@ void DCTSolver::compute_SO_tau_U() {
 }
 
 /**
- * Forms Tau in the MO basis from the Lambda tensors.
+ * Forms Tau in the MO basis from the Amplitude tensors.
+ * Several variables used in this function are labeled Tau. At this time, they are NOT Tau, but d.
  */
 void DCTSolver::build_d_U() {
-    dct_timer_on("DCTSolver::build_tau()");
+    dct_timer_on("DCTSolver::build_d()");
     dpdbuf4 L1, L2;
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
 
@@ -67,53 +68,53 @@ void DCTSolver::build_d_U() {
     global_dpd_->file2_init(&T_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
     global_dpd_->buf4_init(&L1, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&L2, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     /*
-     * Tau_IJ = -1/2 Lambda_IKAB Lambda_JKAB
+     * d_IJ = -1/2 Amplitude_IKAB Amplitude_JKAB
      */
     global_dpd_->contract442(&L1, &L2, &T_OO, 0, 0, -0.5, 0.0);
     /*
-     * Tau_AB = +1/2 Lambda_IJAC Lambda_IJBC
+     * d_AB = +1/2 Amplitude_IJAC Amplitude_IJBC
      */
     global_dpd_->contract442(&L1, &L2, &T_VV, 2, 2, 0.5, 0.0);
     global_dpd_->buf4_close(&L1);
     global_dpd_->buf4_close(&L2);
 
     global_dpd_->buf4_init(&L1, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->buf4_init(&L2, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     /*
-     * Tau_ij = -1/2 Lambda_ikab Lambda_jkab
+     * d_ij = -1/2 Amplitude_ikab Amplitude_jkab
      */
     global_dpd_->contract442(&L1, &L2, &T_oo, 0, 0, -0.5, 0.0);
     /*
-     * Tau_ab = +1/2 Lambda_ijac Lambda_ijbc
+     * d_ab = +1/2 Amplitude_ijac Amplitude_ijbc
      */
     global_dpd_->contract442(&L1, &L2, &T_vv, 2, 2, 0.5, 0.0);
     global_dpd_->buf4_close(&L1);
     global_dpd_->buf4_close(&L2);
 
     global_dpd_->buf4_init(&L1, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&L2, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     /*
-     * Tau_IJ -= 1/2 Lambda_IkAb Lambda_JkAb - 1/2 Lambda_IkaB Lambda_JkaB
+     * d_IJ -= 1/2 Amplitude_IkAb Amplitude_JkAb - 1/2 Amplitude_IkaB Amplitude_JkaB
      */
     global_dpd_->contract442(&L1, &L2, &T_OO, 0, 0, -1.0, 1.0);
     /*
-     * Tau_ij -= 1/2 Lambda_KiAb Lambda_KjAb - 1/2 Lambda_KiaB Lambda_KjaB
+     * d_ij -= 1/2 Amplitude_KiAb Amplitude_KjAb - 1/2 Amplitude_KiaB Amplitude_KjaB
      */
     global_dpd_->contract442(&L1, &L2, &T_oo, 1, 1, -1.0, 1.0);
     /*
-     * Tau_AB += 1/2 Lambda_IjAc Lambda_IjBc + 1/2 Lambda_iJAc Lambda_iJBc
+     * d_AB += 1/2 Amplitude_IjAc Amplitude_IjBc + 1/2 Amplitude_iJAc Amplitude_iJBc
      */
     global_dpd_->contract442(&L1, &L2, &T_VV, 2, 2, 1.0, 1.0);
     /*
-     * Tau_ab += 1/2 Lambda_IjCa Lambda_IjCb + 1/2 Lambda_iJCa Lambda_iJCb
+     * d_ab += 1/2 Amplitude_IjCa Amplitude_IjCb + 1/2 Amplitude_iJCa Amplitude_iJCb
      */
     global_dpd_->contract442(&L1, &L2, &T_vv, 3, 3, 1.0, 1.0);
     global_dpd_->buf4_close(&L1);
@@ -134,45 +135,17 @@ void DCTSolver::build_d_U() {
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
     global_dpd_->file2_init(&T_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
-    global_dpd_->file2_mat_init(&T_OO);
-    global_dpd_->file2_mat_init(&T_oo);
-    global_dpd_->file2_mat_init(&T_VV);
-    global_dpd_->file2_mat_init(&T_vv);
-
-    global_dpd_->file2_mat_rd(&T_OO);
-    global_dpd_->file2_mat_rd(&T_oo);
-    global_dpd_->file2_mat_rd(&T_VV);
-    global_dpd_->file2_mat_rd(&T_vv);
-
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < naoccpi_[h]; ++i) {
-            for (int j = 0; j < naoccpi_[h]; ++j) {
-                aocc_tau_->set(h, i, j, T_OO.matrix[h][i][j]);
-            }
-        }
-        for (int a = 0; a < navirpi_[h]; ++a) {
-            for (int b = 0; b < navirpi_[h]; ++b) {
-                avir_tau_->set(h, a, b, T_VV.matrix[h][a][b]);
-            }
-        }
-        for (int i = 0; i < nboccpi_[h]; ++i) {
-            for (int j = 0; j < nboccpi_[h]; ++j) {
-                bocc_tau_->set(h, i, j, T_oo.matrix[h][i][j]);
-            }
-        }
-        for (int a = 0; a < nbvirpi_[h]; ++a) {
-            for (int b = 0; b < nbvirpi_[h]; ++b) {
-                bvir_tau_->set(h, a, b, T_vv.matrix[h][a][b]);
-            }
-        }
-    }
+    aocc_tau_ = std::make_shared<Matrix>(&T_OO);
+    avir_tau_ = std::make_shared<Matrix>(&T_VV);
+    bocc_tau_ = std::make_shared<Matrix>(&T_oo);
+    bvir_tau_ = std::make_shared<Matrix>(&T_vv);
 
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_oo);
     global_dpd_->file2_close(&T_VV);
     global_dpd_->file2_close(&T_vv);
 
-    dct_timer_off("DCTSolver::build_tau()");
+    dct_timer_off("DCTSolver::build_d()");
 }
 
 void DCTSolver::build_d_fourth_order_U() {
@@ -212,7 +185,7 @@ void DCTSolver::build_d_fourth_order_U() {
     global_dpd_->file2_close(&T_VV);
     global_dpd_->file2_close(&T_vv);
 
-    // Compute I, K, and O intermediates needed for the fourth-order Tau terms
+    // Compute I, K, and O intermediates needed for the fourth-order d terms
     compute_I_intermediate();
 
     compute_K_intermediate();
@@ -222,7 +195,7 @@ void DCTSolver::build_d_fourth_order_U() {
     // Fourth-order Tau terms
 
     /*
-     * Tau_ij += 1/3 T_ik T_kj
+     * d_ij += 1/3 T_ik T_kj
      */
 
     // Open Tau_OO
@@ -233,36 +206,36 @@ void DCTSolver::build_d_fourth_order_U() {
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "T <O|O>");
     global_dpd_->file2_init(&T_oo, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "T <o|o>");
 
-    // 1. Tau_IJ += 1/3 T_IK T_KJ
+    // 1. d_IJ += 1/3 T_IK T_KJ
     global_dpd_->file2_init(&TT_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "T <O|O>");
     global_dpd_->contract222(&T_OO, &TT_OO, &Tau_OO, 0, 1, 1.0 / 3.0, 1.0);
     global_dpd_->file2_close(&TT_OO);
 
-    // 1. Tau_ij += 1/3 T_ik T_kj
+    // 1. d_ij += 1/3 T_ik T_kj
     global_dpd_->file2_init(&TT_oo, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "T <o|o>");
     global_dpd_->contract222(&T_oo, &TT_oo, &Tau_oo, 0, 1, 1.0 / 3.0, 1.0);
     global_dpd_->file2_close(&TT_oo);
 
     /*
-     * Tau_ij -= 1/12 I_ikjl T_lk
+     * d_ij -= 1/12 I_ikjl T_lk
      */
 
-    // 2. Tau_IJ -= 1/12 I_(IJ|KL) T_KL
+    // 2. d_IJ -= 1/12 I_(IJ|KL) T_KL
     global_dpd_->buf4_init(&I, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0, "I (OO|OO)");
     global_dpd_->contract422(&I, &T_OO, &Tau_OO, 0, 0, -1.0 / 12.0, 1.0);
     global_dpd_->buf4_close(&I);
 
-    // 2. Tau_IJ -= 1/12 I_(IJ|kl) T_kl
+    // 2. d_IJ -= 1/12 I_(IJ|kl) T_kl
     global_dpd_->buf4_init(&I, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[o,o]"), ID("[O,O]"), ID("[o,o]"), 0, "I (OO|oo)");
     global_dpd_->contract422(&I, &T_oo, &Tau_OO, 0, 0, -1.0 / 12.0, 1.0);
     global_dpd_->buf4_close(&I);
 
-    // 2. Tau_ij -= 1/12 I_(ij|KL) T_KL
+    // 2. d_ij -= 1/12 I_(ij|KL) T_KL
     global_dpd_->buf4_init(&I, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[O,O]"), ID("[o,o]"), ID("[O,O]"), 0, "I (oo|OO)");
     global_dpd_->contract422(&I, &T_OO, &Tau_oo, 0, 0, -1.0 / 12.0, 1.0);
     global_dpd_->buf4_close(&I);
 
-    // 2. Tau_ij -= 1/12 I_(ij|kl) T_kl
+    // 2. d_ij -= 1/12 I_(ij|kl) T_kl
     global_dpd_->buf4_init(&I, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[o,o]"), ID("[o,o]"), ID("[o,o]"), 0, "I (oo|oo)");
     global_dpd_->contract422(&I, &T_oo, &Tau_oo, 0, 0, -1.0 / 12.0, 1.0);
     global_dpd_->buf4_close(&I);
@@ -272,31 +245,31 @@ void DCTSolver::build_d_fourth_order_U() {
     global_dpd_->file2_close(&T_oo);
 
     /*
-     * Tau_ij += 1/6 K_icjd T_dc
+     * d_ij += 1/6 K_icjd T_dc
      */
 
-    // 3. Tau_IJ += 1/6 K_(IJ|CD) T_CD
+    // 3. d_IJ += 1/6 K_(IJ|CD) T_CD
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "T <V|V>");
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "K (OO|VV)");
     global_dpd_->contract422(&K, &T_VV, &Tau_OO, 0, 0, 1.0 / 6.0, 1.0);
     global_dpd_->buf4_close(&K);
     global_dpd_->file2_close(&T_VV);
 
-    // 3. Tau_IJ += 1/6 K_(IJ|cd) T_cd
+    // 3. d_IJ += 1/6 K_(IJ|cd) T_cd
     global_dpd_->file2_init(&T_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "T <v|v>");
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[v,v]"), ID("[O,O]"), ID("[v,v]"), 0, "K (OO|vv)");
     global_dpd_->contract422(&K, &T_vv, &Tau_OO, 0, 0, 1.0 / 6.0, 1.0);
     global_dpd_->buf4_close(&K);
     global_dpd_->file2_close(&T_vv);
 
-    // 3. Tau_ij += 1/6 K_(ij|CD) T_CD
+    // 3. d_ij += 1/6 K_(ij|CD) T_CD
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "T <V|V>");
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[V,V]"), ID("[o,o]"), ID("[V,V]"), 0, "K (oo|VV)");
     global_dpd_->contract422(&K, &T_VV, &Tau_oo, 0, 0, 1.0 / 6.0, 1.0);
     global_dpd_->buf4_close(&K);
     global_dpd_->file2_close(&T_VV);
 
-    // 3. Tau_ij += 1/6 K_(ij|cd) T_cd
+    // 3. d_ij += 1/6 K_(ij|cd) T_cd
     global_dpd_->file2_init(&T_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "T <v|v>");
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0, "K (oo|vv)");
     global_dpd_->contract422(&K, &T_vv, &Tau_oo, 0, 0, 1.0 / 6.0, 1.0);
@@ -304,10 +277,10 @@ void DCTSolver::build_d_fourth_order_U() {
     global_dpd_->file2_close(&T_vv);
 
     /*
-     * Tau_ij -= 1/24 I_iklm I_lmjk
+     * d_ij -= 1/24 I_iklm I_lmjk
      */
 
-    // 4. Tau_IJ -= 1/24 I<IK|LM> I<JK|LM>
+    // 4. d_IJ -= 1/24 I<IK|LM> I<JK|LM>
     global_dpd_->buf4_init(&I, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[O,O]"), ID("[O>O]-"), ID("[O>O]-"), 0, "I <OO|OO>");
     global_dpd_->buf4_init(&II, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[O,O]"), ID("[O>O]-"), ID("[O>O]-"), 0, "I <OO|OO>");
     global_dpd_->contract442(&I, &II, &Tau_OO, 0, 0, -1.0 / 24.0, 1.0);
@@ -316,14 +289,14 @@ void DCTSolver::build_d_fourth_order_U() {
 
     global_dpd_->buf4_init(&I, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), 0, "I <Oo|Oo>");
     global_dpd_->buf4_init(&II, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), 0, "I <Oo|Oo>");
-    // 4. Tau_IJ -= 1/12 I<Ik|Lm> I<Jk|Lm>
+    // 4. d_IJ -= 1/12 I<Ik|Lm> I<Jk|Lm>
     global_dpd_->contract442(&I, &II, &Tau_OO, 0, 0, -1.0 / 12.0, 1.0);
-    // 4. Tau_ij -= 1/12 I<Ki|Lm> I<Kj|Lm>
+    // 4. d_ij -= 1/12 I<Ki|Lm> I<Kj|Lm>
     global_dpd_->contract442(&I, &II, &Tau_oo, 1, 1, -1.0 / 12.0, 1.0);
     global_dpd_->buf4_close(&II);
     global_dpd_->buf4_close(&I);
 
-    // 4. Tau_ij -= 1/24 I<ik|lm> I<jk|lm>
+    // 4. d_ij -= 1/24 I<ik|lm> I<jk|lm>
     global_dpd_->buf4_init(&I, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[o,o]"), ID("[o>o]-"), ID("[o>o]-"), 0, "I <oo|oo>");
     global_dpd_->buf4_init(&II, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[o,o]"), ID("[o>o]-"), ID("[o>o]-"), 0, "I <oo|oo>");
     global_dpd_->contract442(&I, &II, &Tau_oo, 0, 0, -1.0 / 24.0, 1.0);
@@ -331,17 +304,17 @@ void DCTSolver::build_d_fourth_order_U() {
     global_dpd_->buf4_close(&I);
 
     /*
-     * Tau_ij -= 1/3 K_ickd I_kdjc
+     * d_ij -= 1/3 K_ickd I_kdjc
      */
 
-    // 5. Tau_IJ -= 1/3 K<IC|KD> K<JC|KD>
+    // 5. d_IJ -= 1/3 K<IC|KD> K<JC|KD>
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "K <OV|OV>");
     global_dpd_->buf4_init(&KK, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "K <OV|OV>");
     global_dpd_->contract442(&K, &KK, &Tau_OO, 0, 0, -1.0 / 3.0, 1.0);
     global_dpd_->buf4_close(&KK);
     global_dpd_->buf4_close(&K);
 
-    // 5. Tau_IJ -= 1/3 K<Ic|Kd> K<Jc|Kd>
+    // 5. d_IJ -= 1/3 K<Ic|Kd> K<Jc|Kd>
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), 0, "K <Ov|Ov>");
     global_dpd_->buf4_init(&KK, PSIF_DCT_DPD, 0, ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), 0, "K <Ov|Ov>");
     global_dpd_->contract442(&K, &KK, &Tau_OO, 0, 0, -1.0 / 3.0, 1.0);
@@ -350,21 +323,21 @@ void DCTSolver::build_d_fourth_order_U() {
 
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[O,v]"), ID("[o,V]"), ID("[O,v]"), ID("[o,V]"), 0, "K <Ov|oV>");
     global_dpd_->buf4_init(&KK, PSIF_DCT_DPD, 0, ID("[O,v]"), ID("[o,V]"), ID("[O,v]"), ID("[o,V]"), 0, "K <Ov|oV>");
-    // 5. Tau_IJ -= 1/3 K<Ic|kD> K<Jc|kD>
+    // 5. d_IJ -= 1/3 K<Ic|kD> K<Jc|kD>
     global_dpd_->contract442(&K, &KK, &Tau_OO, 0, 0, -1.0 / 3.0, 1.0);
-    // 5. Tau_ij -= 1/3 K<Kc|iD> K<Kc|jD>
+    // 5. d_ij -= 1/3 K<Kc|iD> K<Kc|jD>
     global_dpd_->contract442(&K, &KK, &Tau_oo, 2, 2, -1.0 / 3.0, 1.0);
     global_dpd_->buf4_close(&KK);
     global_dpd_->buf4_close(&K);
 
-    // 5. Tau_ij -= 1/3 K<iC|kD> K<jC|kD>
+    // 5. d_ij -= 1/3 K<iC|kD> K<jC|kD>
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), 0, "K <oV|oV>");
     global_dpd_->buf4_init(&KK, PSIF_DCT_DPD, 0, ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), 0, "K <oV|oV>");
     global_dpd_->contract442(&K, &KK, &Tau_oo, 0, 0, -1.0 / 3.0, 1.0);
     global_dpd_->buf4_close(&KK);
     global_dpd_->buf4_close(&K);
 
-    // 5. Tau_ij -= 1/3 K<ic|kd> K<jc|kd>
+    // 5. d_ij -= 1/3 K<ic|kd> K<jc|kd>
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0, "K <ov|ov>");
     global_dpd_->buf4_init(&KK, PSIF_DCT_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0, "K <ov|ov>");
     global_dpd_->contract442(&K, &KK, &Tau_oo, 0, 0, -1.0 / 3.0, 1.0);
@@ -376,7 +349,7 @@ void DCTSolver::build_d_fourth_order_U() {
     global_dpd_->file2_close(&Tau_OO);
 
     /*
-     * Tau_ab -= 1/3 T_ac T_cb
+     * d_ab -= 1/3 T_ac T_cb
      */
 
     // Open Tau_VV
@@ -387,61 +360,61 @@ void DCTSolver::build_d_fourth_order_U() {
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "T <V|V>");
     global_dpd_->file2_init(&T_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "T <v|v>");
 
-    // 1. Tau_AB -= 1/3 T_AC T_CB
+    // 1. d_AB -= 1/3 T_AC T_CB
     global_dpd_->file2_init(&TT_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "T <V|V>");
     global_dpd_->contract222(&T_VV, &TT_VV, &Tau_VV, 0, 1, -1.0 / 3.0, 1.0);
     global_dpd_->file2_close(&TT_VV);
 
-    // 1. Tau_ab -= 1/3 T_ac T_cb
+    // 1. d_ab -= 1/3 T_ac T_cb
     global_dpd_->file2_init(&TT_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "T <v|v>");
     global_dpd_->contract222(&T_vv, &TT_vv, &Tau_vv, 0, 1, -1.0 / 3.0, 1.0);
     global_dpd_->file2_close(&TT_vv);
 
     /*
-     * Tau_ab -= 1/12 Lambda_ackl Lambda_klbd T_dc
+     * d_ab -= 1/12 Amplitude_ackl Amplitude_klbd T_dc
      */
 
-    // Precompute Temp_klbc = Lambda_klbd T_dc
+    // Precompute Temp_klbc = Amplitude_klbd T_dc
 
     // OOVV
 
-    // Temp_IJAB = Lambda_IJAC * T_CB
+    // Temp_IJAB = Amplitude_IJAC * T_CB
 
     global_dpd_->buf4_init(&Temp, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "Temp <OO|VV>");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->contract424(&L, &T_VV, &Temp, 3, 0, 0, 1.0, 0.0);
     global_dpd_->buf4_close(&L);
     global_dpd_->buf4_close(&Temp);
 
     // OoVv
 
-    // Temp_IjAb = Lambda_IjAc * T_cb
+    // Temp_IjAb = Amplitude_IjAc * T_cb
     global_dpd_->buf4_init(&Temp, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "Temp <Oo|Vv>");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->contract424(&L, &T_vv, &Temp, 3, 0, 0, 1.0, 0.0);
     global_dpd_->buf4_close(&L);
     global_dpd_->buf4_close(&Temp);
 
-    // Temp2_JiBa = T_CB * Lambda_JiCa
+    // Temp2_JiBa = T_CB * Amplitude_JiCa
     global_dpd_->buf4_init(&Temp, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "Temp2 <Oo|Vv>");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->contract244(&T_VV, &L, &Temp, 1, 2, 1, 1.0, 0.0);
     global_dpd_->buf4_close(&L);
     global_dpd_->buf4_close(&Temp);
 
     // oovv
 
-    // Temp_ijab = Lambda_ijac * T_cb
+    // Temp_ijab = Amplitude_ijac * T_cb
     global_dpd_->buf4_init(&Temp, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                            "Temp <oo|vv>");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->contract424(&L, &T_vv, &Temp, 3, 0, 0, 1.0, 0.0);
     global_dpd_->buf4_close(&L);
     global_dpd_->buf4_close(&Temp);
@@ -452,68 +425,68 @@ void DCTSolver::build_d_fourth_order_U() {
 
     // Compute Tau contribution
 
-    // 2. Tau_AB -= 1/12 Lambda<KL|AC> Temp_<KL|BC>
+    // 2. d_AB -= 1/12 Amplitude<KL|AC> Temp_<KL|BC>
     global_dpd_->buf4_init(&Temp, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "Temp <OO|VV>");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->contract442(&L, &Temp, &Tau_VV, 2, 2, -1.0 / 12.0, 1.0);
     global_dpd_->buf4_close(&L);
     global_dpd_->buf4_close(&Temp);
 
-    // 2. Tau_AB -= 1/6 Lambda<Kl|Ac> Temp_<Kl|Bc>
+    // 2. d_AB -= 1/6 Amplitude<Kl|Ac> Temp_<Kl|Bc>
     global_dpd_->buf4_init(&Temp, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "Temp <Oo|Vv>");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->contract442(&L, &Temp, &Tau_VV, 2, 2, -1.0 / 6.0, 1.0);
     global_dpd_->buf4_close(&L);
     global_dpd_->buf4_close(&Temp);
 
-    // 2. Tau_ab -= 1/6 Lambda<Kl|Ca> Temp2_<Kl|Cb>
+    // 2. d_ab -= 1/6 Amplitude<Kl|Ca> Temp2_<Kl|Cb>
     global_dpd_->buf4_init(&Temp, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "Temp2 <Oo|Vv>");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->contract442(&L, &Temp, &Tau_vv, 3, 3, -1.0 / 6.0, 1.0);
     global_dpd_->buf4_close(&L);
     global_dpd_->buf4_close(&Temp);
 
-    // 2. Tau_ab -= 1/12 Lambda<kl|ac> Temp_<kl|bc>
+    // 2. d_ab -= 1/12 Amplitude<kl|ac> Temp_<kl|bc>
     global_dpd_->buf4_init(&Temp, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                            "Temp <oo|vv>");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->contract442(&L, &Temp, &Tau_vv, 2, 2, -1.0 / 12.0, 1.0);
     global_dpd_->buf4_close(&L);
     global_dpd_->buf4_close(&Temp);
 
     /*
-     * Tau_ab += 1/6 K_kalb T_lk
+     * d_ab += 1/6 K_kalb T_lk
      */
 
-    // 3. Tau_AB += 1/6 K_(AB|KL) T_KL
+    // 3. d_AB += 1/6 K_(AB|KL) T_KL
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "T <O|O>");
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), 0, "K (VV|OO)");
     global_dpd_->contract422(&K, &T_OO, &Tau_VV, 0, 0, 1.0 / 6.0, 1.0);
     global_dpd_->buf4_close(&K);
     global_dpd_->file2_close(&T_OO);
 
-    // 3. Tau_AB += 1/6 K_(AB|kl) T_kl
+    // 3. d_AB += 1/6 K_(AB|kl) T_kl
     global_dpd_->file2_init(&T_oo, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "T <o|o>");
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[V,V]"), ID("[o,o]"), ID("[V,V]"), ID("[o,o]"), 0, "K (VV|oo)");
     global_dpd_->contract422(&K, &T_oo, &Tau_VV, 0, 0, 1.0 / 6.0, 1.0);
     global_dpd_->buf4_close(&K);
     global_dpd_->file2_close(&T_oo);
 
-    // 3. Tau_ab += 1/6 K_(ab|KL) T_KL
+    // 3. d_ab += 1/6 K_(ab|KL) T_KL
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "T <O|O>");
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[v,v]"), ID("[O,O]"), ID("[v,v]"), ID("[O,O]"), 0, "K (vv|OO)");
     global_dpd_->contract422(&K, &T_OO, &Tau_vv, 0, 0, 1.0 / 6.0, 1.0);
     global_dpd_->buf4_close(&K);
     global_dpd_->file2_close(&T_OO);
 
-    // 3. Tau_ab += 1/6 K_(ab|kl) T_kl
+    // 3. d_ab += 1/6 K_(ab|kl) T_kl
     global_dpd_->file2_init(&T_oo, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "T <o|o>");
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), 0, "K (vv|oo)");
     global_dpd_->contract422(&K, &T_oo, &Tau_vv, 0, 0, 1.0 / 6.0, 1.0);
@@ -521,47 +494,47 @@ void DCTSolver::build_d_fourth_order_U() {
     global_dpd_->file2_close(&T_oo);
 
     /*
-     * Tau_ab += 1/24 Lambda_ackl O_klbc
+     * d_ab += 1/24 Amplitude_ackl O_klbc
      */
 
-    // 4. Tau_AB += 1/24 Lambda<KL|AC> O<KL|BC>
+    // 4. d_AB += 1/24 Amplitude<KL|AC> O<KL|BC>
     global_dpd_->buf4_init(&O, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0, "O <OO|VV>");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->contract442(&L, &O, &Tau_VV, 2, 2, 1.0 / 24.0, 1.0);
     global_dpd_->buf4_close(&L);
     global_dpd_->buf4_close(&O);
 
     global_dpd_->buf4_init(&O, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "O <Oo|Vv>");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
-    // 4. Tau_AB += 1/12 Lambda<Kl|Ac> O<Kl|Bc>
+                           "Amplitude <Oo|Vv>");
+    // 4. d_AB += 1/12 Amplitude<Kl|Ac> O<Kl|Bc>
     global_dpd_->contract442(&L, &O, &Tau_VV, 2, 2, 1.0 / 12.0, 1.0);
-    // 4. Tau_AB += 1/24 Lambda<Lk|Ca> O<Lk|Cb>
+    // 4. d_AB += 1/24 Amplitude<Lk|Ca> O<Lk|Cb>
     global_dpd_->contract442(&L, &O, &Tau_vv, 3, 3, 1.0 / 12.0, 1.0);
     global_dpd_->buf4_close(&L);
     global_dpd_->buf4_close(&O);
 
-    // 4. Tau_ab += 1/24 Lambda<kl|ac> O<kl|bc>
+    // 4. d_ab += 1/24 Amplitude<kl|ac> O<kl|bc>
     global_dpd_->buf4_init(&O, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0, "O <oo|vv>");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->contract442(&L, &O, &Tau_vv, 2, 2, 1.0 / 24.0, 1.0);
     global_dpd_->buf4_close(&L);
     global_dpd_->buf4_close(&O);
 
     /*
-     * Tau_ab += 1/3 K_kalc K_lckb
+     * d_ab += 1/3 K_kalc K_lckb
      */
 
-    // 5. Tau_AB += 1/3 K<KA|LC> K<KB|LC>
+    // 5. d_AB += 1/3 K<KA|LC> K<KB|LC>
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "K <OV|OV>");
     global_dpd_->buf4_init(&KK, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "K <OV|OV>");
     global_dpd_->contract442(&K, &KK, &Tau_VV, 1, 1, 1.0 / 3.0, 1.0);
     global_dpd_->buf4_close(&KK);
     global_dpd_->buf4_close(&K);
 
-    // 5. Tau_AB += 1/3 K<kA|lC> K<kB|lC>
+    // 5. d_AB += 1/3 K<kA|lC> K<kB|lC>
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), 0, "K <oV|oV>");
     global_dpd_->buf4_init(&KK, PSIF_DCT_DPD, 0, ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), 0, "K <oV|oV>");
     global_dpd_->contract442(&K, &KK, &Tau_VV, 1, 1, 1.0 / 3.0, 1.0);
@@ -570,21 +543,21 @@ void DCTSolver::build_d_fourth_order_U() {
 
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[O,v]"), ID("[o,V]"), ID("[O,v]"), ID("[o,V]"), 0, "K <Ov|oV>");
     global_dpd_->buf4_init(&KK, PSIF_DCT_DPD, 0, ID("[O,v]"), ID("[o,V]"), ID("[O,v]"), ID("[o,V]"), 0, "K <Ov|oV>");
-    // 5. Tau_AB += 1/3 K<Lc|kA> K<Lc|kB>
+    // 5. d_AB += 1/3 K<Lc|kA> K<Lc|kB>
     global_dpd_->contract442(&K, &KK, &Tau_VV, 3, 3, 1.0 / 3.0, 1.0);
-    // 5. Tau_ab += 1/3 K<Ka|lC> K<Kb|lC>
+    // 5. d_ab += 1/3 K<Ka|lC> K<Kb|lC>
     global_dpd_->contract442(&K, &KK, &Tau_vv, 1, 1, 1.0 / 3.0, 1.0);
     global_dpd_->buf4_close(&KK);
     global_dpd_->buf4_close(&K);
 
-    // 5. Tau_ab += 1/3 K<Ka|Lc> K<Kb|Lc>
+    // 5. d_ab += 1/3 K<Ka|Lc> K<Kb|Lc>
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), 0, "K <Ov|Ov>");
     global_dpd_->buf4_init(&KK, PSIF_DCT_DPD, 0, ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), 0, "K <Ov|Ov>");
     global_dpd_->contract442(&K, &KK, &Tau_vv, 1, 1, 1.0 / 3.0, 1.0);
     global_dpd_->buf4_close(&KK);
     global_dpd_->buf4_close(&K);
 
-    // 5. Tau_ab += 1/3 K<ka|lc> K<kb|lc>
+    // 5. d_ab += 1/3 K<ka|lc> K<kb|lc>
     global_dpd_->buf4_init(&K, PSIF_DCT_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0, "K <ov|ov>");
     global_dpd_->buf4_init(&KK, PSIF_DCT_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0, "K <ov|ov>");
     global_dpd_->contract442(&K, &KK, &Tau_vv, 1, 1, 1.0 / 3.0, 1.0);
@@ -982,38 +955,10 @@ void DCTSolver::build_tau_U() {
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
     global_dpd_->file2_init(&T_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
-    global_dpd_->file2_mat_init(&T_OO);
-    global_dpd_->file2_mat_init(&T_oo);
-    global_dpd_->file2_mat_init(&T_VV);
-    global_dpd_->file2_mat_init(&T_vv);
-
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < naoccpi_[h]; ++i) {
-            for (int j = 0; j < naoccpi_[h]; ++j) {
-                T_OO.matrix[h][i][j] = aocc_tau_->get(h, i, j);
-            }
-        }
-        for (int a = 0; a < navirpi_[h]; ++a) {
-            for (int b = 0; b < navirpi_[h]; ++b) {
-                T_VV.matrix[h][a][b] = avir_tau_->get(h, a, b);
-            }
-        }
-        for (int i = 0; i < nboccpi_[h]; ++i) {
-            for (int j = 0; j < nboccpi_[h]; ++j) {
-                T_oo.matrix[h][i][j] = bocc_tau_->get(h, i, j);
-            }
-        }
-        for (int a = 0; a < nbvirpi_[h]; ++a) {
-            for (int b = 0; b < nbvirpi_[h]; ++b) {
-                T_vv.matrix[h][a][b] = bvir_tau_->get(h, a, b);
-            }
-        }
-    }
-
-    global_dpd_->file2_mat_wrt(&T_OO);
-    global_dpd_->file2_mat_wrt(&T_oo);
-    global_dpd_->file2_mat_wrt(&T_VV);
-    global_dpd_->file2_mat_wrt(&T_vv);
+    aocc_tau_->write_to_dpdfile2(&T_OO);
+    avir_tau_->write_to_dpdfile2(&T_VV);
+    bocc_tau_->write_to_dpdfile2(&T_oo);
+    bvir_tau_->write_to_dpdfile2(&T_vv);
 
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_oo);

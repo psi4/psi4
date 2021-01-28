@@ -61,11 +61,11 @@ void DCTSolver::run_simult_dct_oo() {
     DIISManager diisManager(maxdiis_, "DCT DIIS vectors");
     dpdbuf4 Laa, Lab, Lbb;
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     diisManager.set_error_vector_size(5, DIISEntry::Matrix, orbital_gradient_a_.get(), DIISEntry::Matrix,
                                       orbital_gradient_b_.get(), DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab,
                                       DIISEntry::DPDBuf4, &Lbb);
@@ -147,11 +147,11 @@ void DCTSolver::run_simult_dct_oo() {
             global_dpd_->buf4_init(&Rbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                                    "R <oo|vv>");
             global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                                   "Lambda <OO|VV>");
+                                   "Amplitude <OO|VV>");
             global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                                   "Lambda <Oo|Vv>");
+                                   "Amplitude <Oo|Vv>");
             global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                                   "Lambda <oo|vv>");
+                                   "Amplitude <oo|vv>");
             if (diisManager.add_entry(10, orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Raa, &Rab, &Rbb,
                                       Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb)) {
                 diisString += "S";
@@ -393,7 +393,7 @@ void DCTSolver::compute_orbital_gradient_OV() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V>V]-"), ID("[O,V]"), ID("[V,V]"), 1,
                            "MO Ints <OV|VV>");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&W, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), ID("[O>O]-"), 0, "W <OV|OO>");
     global_dpd_->contract444(&I, &L, &W, 0, 0, 2.0, 0.0);
     global_dpd_->buf4_close(&I);
@@ -404,7 +404,7 @@ void DCTSolver::compute_orbital_gradient_OV() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[V,v]"), ID("[O,v]"), ID("[V,v]"), 0,
                            "MO Ints <Ov|Vv>");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&W, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[O,v]"), ID("[O,o]"), ID("[O,v]"), 0, "W <Oo|Ov>");
     global_dpd_->contract444(&L, &I, &W, 0, 0, 2.0, 0.0);
     global_dpd_->buf4_close(&I);
@@ -415,7 +415,7 @@ void DCTSolver::compute_orbital_gradient_OV() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,o]"), ID("[V,v]"), ID("[V,o]"), ID("[V,v]"), 0,
                            "MO Ints <Vo|Vv>");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&W, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,o]"), ID("[O,o]"), ID("[V,o]"), 0, "W <Oo|Vo>");
     global_dpd_->contract444(&L, &I, &W, 0, 0, 2.0, 0.0);
     global_dpd_->buf4_close(&I);
@@ -426,7 +426,7 @@ void DCTSolver::compute_orbital_gradient_OV() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v>v]-"), ID("[o,v]"), ID("[v,v]"), 1,
                            "MO Ints <ov|vv>");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->buf4_init(&W, PSIF_DCT_DPD, 0, ID("[o,v]"), ID("[o,o]"), ID("[o,v]"), ID("[o>o]-"), 0, "W <ov|oo>");
     global_dpd_->contract444(&I, &L, &W, 0, 0, 2.0, 0.0);
     global_dpd_->buf4_close(&I);
@@ -437,7 +437,7 @@ void DCTSolver::compute_orbital_gradient_OV() {
     global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
     global_dpd_->buf4_init(&W, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), ID("[O>O]-"), 0, "W <OV|OO>");
     global_dpd_->buf4_init(&LL, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
 
     global_dpd_->contract442(&W, &LL, &X, 0, 2, 0.25, 1.0);
     global_dpd_->buf4_close(&W);
@@ -448,7 +448,7 @@ void DCTSolver::compute_orbital_gradient_OV() {
     global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
     global_dpd_->buf4_init(&W, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[O,v]"), ID("[O,o]"), ID("[O,v]"), 0, "W <Oo|Ov>");
     global_dpd_->buf4_init(&LL, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
 
     global_dpd_->contract442(&W, &LL, &X, 2, 2, 0.5, 1.0);
     global_dpd_->buf4_close(&W);
@@ -459,7 +459,7 @@ void DCTSolver::compute_orbital_gradient_OV() {
     global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
     global_dpd_->buf4_init(&W, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,o]"), ID("[O,o]"), ID("[V,o]"), 0, "W <Oo|Vo>");
     global_dpd_->buf4_init(&LL, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
 
     global_dpd_->contract442(&W, &LL, &X, 3, 3, 0.5, 1.0);
     global_dpd_->buf4_close(&W);
@@ -470,7 +470,7 @@ void DCTSolver::compute_orbital_gradient_OV() {
     global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
     global_dpd_->buf4_init(&W, PSIF_DCT_DPD, 0, ID("[o,v]"), ID("[o,o]"), ID("[o,v]"), ID("[o>o]-"), 0, "W <ov|oo>");
     global_dpd_->buf4_init(&LL, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
 
     global_dpd_->contract442(&W, &LL, &X, 0, 2, 0.25, 1.0);
     global_dpd_->buf4_close(&W);

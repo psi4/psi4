@@ -1140,7 +1140,7 @@ void DCTSolver::build_gbarlambda_RHF_v3mem() {
     dpdbuf4 Laa, Gaa;
 
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");
+                           "Amplitude SF <OO|VV>");
     global_dpd_->buf4_init(&Gaa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "tau(temp) SF <OO|VV>");
     global_dpd_->buf4_scm(&Gaa, 0.0);
@@ -1452,7 +1452,7 @@ void DCTSolver::build_gbarlambda_UHF_v3mem() {
     dpdbuf4 Laa, Gaa;
 
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&Gaa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "tau(temp) <OO|VV>");
     global_dpd_->buf4_scm(&Gaa, 0.0);
@@ -1575,7 +1575,7 @@ void DCTSolver::build_gbarlambda_UHF_v3mem() {
     dpdbuf4 Lbb, Gbb;
 
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->buf4_init(&Gbb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                            "tau(temp) <oo|vv>");
     global_dpd_->buf4_scm(&Gbb, 0.0);
@@ -1698,7 +1698,7 @@ void DCTSolver::build_gbarlambda_UHF_v3mem() {
     dpdbuf4 Lab, Gab;
 
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Gab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "tau(temp) <Oo|Vv>");
     global_dpd_->buf4_scm(&Gab, 0.0);

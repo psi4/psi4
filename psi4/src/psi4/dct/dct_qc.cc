@@ -77,11 +77,11 @@ void DCTSolver::run_qc_dct() {
     DIISManager diisManager(maxdiis_, "DCT DIIS vectors");
     dpdbuf4 Laa, Lab, Lbb;
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     diisManager.set_error_vector_size(5, DIISEntry::Matrix, orbital_gradient_a_.get(), DIISEntry::Matrix,
                                       orbital_gradient_b_.get(), DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab,
                                       DIISEntry::DPDBuf4, &Lbb);
@@ -144,11 +144,11 @@ void DCTSolver::run_qc_dct() {
                 global_dpd_->buf4_init(&Rbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"),
                                        0, "R <oo|vv>");
                 global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"),
-                                       0, "Lambda <OO|VV>");
+                                       0, "Amplitude <OO|VV>");
                 global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                                       "Lambda <Oo|Vv>");
+                                       "Amplitude <Oo|Vv>");
                 global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"),
-                                       0, "Lambda <oo|vv>");
+                                       0, "Amplitude <oo|vv>");
                 if (diisManager.add_entry(10, orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Raa, &Rab, &Rbb,
                                           Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb)) {
                     diisString += "S";
@@ -860,12 +860,12 @@ void DCTSolver::compute_sigma_vector_orb_cum() {
     dpdfile2 S2, LD_OO, LD_oo, LD_VV, LD_vv;
     dpdbuf4 I, L, D4;
 
-    // Orbital-Lambda block of the Hessian
+    // Orbital-Amplitude block of the Hessian
 
-    // Sigma_IA += 0.25 * (<AM||IK> + <AK||IM>) * Lambda_MLCD * D_KLCD
-    // Sigma_IA -= 0.25 * (<IC||AE> + <IE||AC>) * Lambda_KLED * D_KLCD
+    // Sigma_IA += 0.25 * (<AM||IK> + <AK||IM>) * Amplitude_MLCD * D_KLCD
+    // Sigma_IA -= 0.25 * (<IC||AE> + <IE||AC>) * Amplitude_KLED * D_KLCD
 
-    // Compute Lambda * D intermediates for both terms
+    // Compute Amplitude * D intermediates for both terms
 
     global_dpd_->file2_init(&LD_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Temp <O|O>");
     global_dpd_->file2_init(&LD_oo, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "Temp <o|o>");
@@ -873,44 +873,44 @@ void DCTSolver::compute_sigma_vector_orb_cum() {
     global_dpd_->file2_init(&LD_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "Temp <v|v>");
 
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&D4, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "D4 <OO|VV>");
 
-    // LD_IJ = Lambda_MLCD * D_KLCD
+    // LD_IJ = Amplitude_MLCD * D_KLCD
     global_dpd_->contract442(&L, &D4, &LD_OO, 0, 0, 1.0, 0.0);
 
-    // LD_AB = Lambda_KLED * D_KLCD
+    // LD_AB = Amplitude_KLED * D_KLCD
     global_dpd_->contract442(&L, &D4, &LD_VV, 2, 2, 1.0, 0.0);
 
     global_dpd_->buf4_close(&D4);
     global_dpd_->buf4_close(&L);
 
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->buf4_init(&D4, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "D4 <oo|vv>");
 
-    // LD_ij = Lambda_mlcd * D_klcd
+    // LD_ij = Amplitude_mlcd * D_klcd
     global_dpd_->contract442(&L, &D4, &LD_oo, 0, 0, 1.0, 0.0);
 
-    // LD_ab = Lambda_kled * D_klcd
+    // LD_ab = Amplitude_kled * D_klcd
     global_dpd_->contract442(&L, &D4, &LD_vv, 2, 2, 1.0, 0.0);
 
     global_dpd_->buf4_close(&D4);
     global_dpd_->buf4_close(&L);
 
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&D4, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "D4 <Oo|Vv>");
 
-    // LD_IJ += Lambda_IkAb D4_JkAb + Lambda_IkaB D4_JkaB
+    // LD_IJ += Amplitude_IkAb D4_JkAb + Amplitude_IkaB D4_JkaB
     global_dpd_->contract442(&L, &D4, &LD_OO, 0, 0, 2.0, 1.0);
-    // LD_ij += Lambda_KiAb D4_KjAb + Lambda_KiaB D4_KjaB
+    // LD_ij += Amplitude_KiAb D4_KjAb + Amplitude_KiaB D4_KjaB
     global_dpd_->contract442(&L, &D4, &LD_oo, 1, 1, 2.0, 1.0);
-    // LD_AB += Lambda_IjAc D4_IjBc + Lambda_iJAc D4_iJBc
+    // LD_AB += Amplitude_IjAc D4_IjBc + Amplitude_iJAc D4_iJBc
     global_dpd_->contract442(&L, &D4, &LD_VV, 2, 2, 2.0, 1.0);
-    // LD_ab += Lambda_IjCa D4_IjCb + Lambda_iJCa D4_iJCb
+    // LD_ab += Amplitude_IjCa D4_IjCb + Amplitude_iJCa D4_iJCb
     global_dpd_->contract442(&L, &D4, &LD_vv, 3, 3, 2.0, 1.0);
 
     global_dpd_->buf4_close(&D4);
@@ -1005,7 +1005,7 @@ void DCTSolver::compute_sigma_vector_orb_cum() {
     global_dpd_->file2_close(&LD_oo);
     global_dpd_->file2_close(&S2);
 
-    // Sigma_IA -= 0.25 * (<IC||AE> + <IE||AC>) * Lambda_KLED * D_KLCD
+    // Sigma_IA -= 0.25 * (<IC||AE> + <IE||AC>) * Amplitude_KLED * D_KLCD
     // Sigma_IA -= 0.25 * (2(EC|AI) - <IA|EC> - <AI|EC>) LD_EC
     // Sigma_IA -= 0.5 * (AI|CE) LD_CE
     global_dpd_->file2_init(&S2, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "Sigma <O|V>");
@@ -1047,7 +1047,7 @@ void DCTSolver::compute_sigma_vector_orb_cum() {
     global_dpd_->file2_close(&LD_VV);
     global_dpd_->file2_close(&S2);
 
-    // Sigma_ia -= 0.25 * (<ic||ae> + <ie||ac>) * Lambda_kled * D_klcd
+    // Sigma_ia -= 0.25 * (<ic||ae> + <ie||ac>) * Amplitude_kled * D_klcd
     // Sigma_ia -= 0.25 * (2(ec|ai) - <ia|ec> - <ai|ec>) LD_ec
     // Sigma_ia -= 0.5 * (ia|ce) LD_ce
     global_dpd_->file2_init(&S2, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "Sigma <o|v>");
@@ -1093,7 +1093,7 @@ void DCTSolver::compute_sigma_vector_orb_cum() {
 void DCTSolver::compute_sigma_vector_cum_cum() {
     dpdbuf4 I, D4, S4, T, Taa, Tab, Tbb, D4aa, D4ab, D4bb;
 
-    // Lambda-Lambda block of the Hessian
+    // Amplitude-Amplitude block of the Hessian
 
     /*
      * Sigma_ijab += 1/16 Sum_cd gbar_cdab D_ijcd
@@ -1403,13 +1403,13 @@ void DCTSolver::compute_sigma_vector_cum_orb() {
     dpdfile2 D2, DI, DIsym;
     dpdbuf4 I, L, S4, T;
 
-    // Lambda-Orbital block of the Hessian
+    // Amplitude-Orbital block of the Hessian
 
-    // Sigma_IJAB += 0.5 * (<CM||KI> + <CI||KM>) * Lambda_MJAB * D_KC
-    // Sigma_IJAB -= 0.5 * (<CM||KJ> + <CJ||KM>) * Lambda_MIAB * D_KC
+    // Sigma_IJAB += 0.5 * (<CM||KI> + <CI||KM>) * Amplitude_MJAB * D_KC
+    // Sigma_IJAB -= 0.5 * (<CM||KJ> + <CJ||KM>) * Amplitude_MIAB * D_KC
 
-    // Sigma_IJAB -= 0.5 * (<KA||CE> + <KE||CA>) * Lambda_IJEB * D_KC;
-    // Sigma_IJAB += 0.5 * (<KB||CE> + <KE||CB>) * Lambda_IJEA * D_KC;
+    // Sigma_IJAB -= 0.5 * (<KA||CE> + <KE||CA>) * Amplitude_IJEB * D_KC;
+    // Sigma_IJAB += 0.5 * (<KB||CE> + <KE||CB>) * Amplitude_IJEA * D_KC;
 
     // Compute D * I intermediates for both terms
 
@@ -1619,11 +1619,11 @@ void DCTSolver::compute_sigma_vector_cum_orb() {
     global_dpd_->file2_close(&DI);
     global_dpd_->file2_close(&DIsym);
 
-    // Sigma_IJAB += 0.5 * (<CM||KI> + <CI||KM>) * Lambda_MJAB * D_KC
-    // Sigma_IJAB -= 0.5 * (<CM||KJ> + <CJ||KM>) * Lambda_MIAB * D_KC
+    // Sigma_IJAB += 0.5 * (<CM||KI> + <CI||KM>) * Amplitude_MJAB * D_KC
+    // Sigma_IJAB -= 0.5 * (<CM||KJ> + <CJ||KM>) * Amplitude_MIAB * D_KC
 
-    // Sigma_IJAB -= 0.5 * (<KA||CE> + <KE||CA>) * Lambda_IJEB * D_KC;
-    // Sigma_IJAB += 0.5 * (<KB||CE> + <KE||CB>) * Lambda_IJEA * D_KC;
+    // Sigma_IJAB -= 0.5 * (<KA||CE> + <KE||CA>) * Amplitude_IJEB * D_KC;
+    // Sigma_IJAB += 0.5 * (<KB||CE> + <KE||CB>) * Amplitude_IJEA * D_KC;
 
     //
     // Sigma <OO|VV>
@@ -1631,7 +1631,7 @@ void DCTSolver::compute_sigma_vector_cum_orb() {
 
     global_dpd_->file2_init(&DIsym, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "DI <V|V> sym");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&S4, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "Sigma <OO|VV>");
     global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
@@ -1656,7 +1656,7 @@ void DCTSolver::compute_sigma_vector_cum_orb() {
 
     global_dpd_->file2_init(&DIsym, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "DI <O|O> sym");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
     // Temp_IJAB = DIsym_IK lambda_KJAB
     global_dpd_->contract244(&DIsym, &L, &T, 1, 0, 0, 1.0, 0.0);
@@ -1679,7 +1679,7 @@ void DCTSolver::compute_sigma_vector_cum_orb() {
     //
 
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&S4, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "Sigma <Oo|Vv>");
     global_dpd_->file2_init(&DIsym, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "DI <V|V> sym");
@@ -1707,7 +1707,7 @@ void DCTSolver::compute_sigma_vector_cum_orb() {
 
     global_dpd_->file2_init(&DIsym, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "DI <v|v> sym");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->buf4_init(&S4, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Sigma <oo|vv>");
     global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
@@ -1728,7 +1728,7 @@ void DCTSolver::compute_sigma_vector_cum_orb() {
 
     global_dpd_->file2_init(&DIsym, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "DI <o|o> sym");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
     // Temp_ijab = DIsym_ik lambda_kjab
     global_dpd_->contract244(&DIsym, &L, &T, 1, 0, 0, 1.0, 0.0);
@@ -1949,7 +1949,7 @@ void DCTSolver::update_cumulant_nr() {
     // Update the density cumulant
     // Alpha-Alpha spin
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&L, h);
         global_dpd_->buf4_mat_irrep_rd(&L, h);
@@ -1970,7 +1970,7 @@ void DCTSolver::update_cumulant_nr() {
 
     // Alpha-Beta spin
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&L, h);
         global_dpd_->buf4_mat_irrep_rd(&L, h);
@@ -1991,7 +1991,7 @@ void DCTSolver::update_cumulant_nr() {
 
     // Beta-Beta spin
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&L, h);
         global_dpd_->buf4_mat_irrep_rd(&L, h);

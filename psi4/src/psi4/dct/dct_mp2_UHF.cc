@@ -66,10 +66,10 @@ void DCTSolver::initialize_amplitudes() {
         // L_IJAB = <IJ||AB> / D_IJAB
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O,O]"), ID("[V,V]"), 1,
                                "MO Ints <OO|VV>");
-        global_dpd_->buf4_copy(&I, PSIF_DCT_DPD, "Lambda <OO|VV>");
+        global_dpd_->buf4_copy(&I, PSIF_DCT_DPD, "Amplitude <OO|VV>");
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_init(&I, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               "Lambda <OO|VV>");
+                               "Amplitude <OO|VV>");
         global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
                                "D <OO|VV>");
         global_dpd_->buf4_dirprd(&D, &I);
@@ -79,10 +79,10 @@ void DCTSolver::initialize_amplitudes() {
         // L_IjAb = <Ij|Ab> / D_IjAb
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "MO Ints <Oo|Vv>");
-        global_dpd_->buf4_copy(&I, PSIF_DCT_DPD, "Lambda <Oo|Vv>");
+        global_dpd_->buf4_copy(&I, PSIF_DCT_DPD, "Amplitude <Oo|Vv>");
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_init(&I, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               "Lambda <Oo|Vv>");
+                               "Amplitude <Oo|Vv>");
         global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "D <Oo|Vv>");
         global_dpd_->buf4_dirprd(&D, &I);
@@ -92,10 +92,10 @@ void DCTSolver::initialize_amplitudes() {
         // L_ijab = <ij||ab> / D_ijab
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o,o]"), ID("[v,v]"), 1,
                                "MO Ints <oo|vv>");
-        global_dpd_->buf4_copy(&I, PSIF_DCT_DPD, "Lambda <oo|vv>");
+        global_dpd_->buf4_copy(&I, PSIF_DCT_DPD, "Amplitude <oo|vv>");
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_init(&I, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               "Lambda <oo|vv>");
+                               "Amplitude <oo|vv>");
         global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
                                "D <oo|vv>");
         global_dpd_->buf4_dirprd(&D, &I);
@@ -112,7 +112,7 @@ void DCTSolver::initialize_amplitudes() {
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 1,
                                "MO Ints <OO|VV>");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               "Lambda <OO|VV>");
+                               "Amplitude <OO|VV>");
         double eAA = 0.25 * global_dpd_->buf4_dot(&L, &I);
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_close(&L);
@@ -121,7 +121,7 @@ void DCTSolver::initialize_amplitudes() {
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "MO Ints <Oo|Vv>");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               "Lambda <Oo|Vv>");
+                               "Amplitude <Oo|Vv>");
         double eAB = global_dpd_->buf4_dot(&L, &I);
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_close(&L);
@@ -130,7 +130,7 @@ void DCTSolver::initialize_amplitudes() {
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 1,
                                "MO Ints <oo|vv>");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               "Lambda <oo|vv>");
+                               "Amplitude <oo|vv>");
         double eBB = 0.25 * global_dpd_->buf4_dot(&L, &I);
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_close(&L);
@@ -154,16 +154,16 @@ void DCTSolver::initialize_amplitudes() {
         // Copy the AA amplitudes from CCEnergy
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
                                "tIJAB");
-        global_dpd_->buf4_copy(&T2, PSIF_DCT_DPD, "Lambda <OO|VV>");
+        global_dpd_->buf4_copy(&T2, PSIF_DCT_DPD, "Amplitude <OO|VV>");
         global_dpd_->buf4_close(&T2);
         // Copy the AB amplitudes from CCEnergy
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "tIjAb");
-        global_dpd_->buf4_copy(&T2, PSIF_DCT_DPD, "Lambda <Oo|Vv>");
+        global_dpd_->buf4_copy(&T2, PSIF_DCT_DPD, "Amplitude <Oo|Vv>");
         global_dpd_->buf4_close(&T2);
         // Copy the BB amplitudes from CCEnergy
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                                "tijab");
-        global_dpd_->buf4_copy(&T2, PSIF_DCT_DPD, "Lambda <oo|vv>");
+        global_dpd_->buf4_copy(&T2, PSIF_DCT_DPD, "Amplitude <oo|vv>");
         global_dpd_->buf4_close(&T2);
         psio_->close(PSIF_CC_TAMPS, 1);
     }

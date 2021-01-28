@@ -203,7 +203,7 @@ void DCTSolver::update_cumulant_jacobi() {
     dpdbuf4 L, D, R;
 
     /*
-     * Lambda_ijab += R_ijab / D_ijab
+     * Amplitude_ijab += R_ijab / D_ijab
      */
 
     // L_IJAB += R_IJAB / D_IJAB
@@ -213,7 +213,7 @@ void DCTSolver::update_cumulant_jacobi() {
     global_dpd_->buf4_dirprd(&D, &R);
     global_dpd_->buf4_close(&D);
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     dpd_buf4_add(&L, &R, 1.0);
     global_dpd_->buf4_close(&R);
     global_dpd_->buf4_close(&L);
@@ -225,7 +225,7 @@ void DCTSolver::update_cumulant_jacobi() {
     global_dpd_->buf4_dirprd(&D, &R);
     global_dpd_->buf4_close(&D);
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     dpd_buf4_add(&L, &R, 1.0);
     global_dpd_->buf4_close(&R);
     global_dpd_->buf4_close(&L);
@@ -237,7 +237,7 @@ void DCTSolver::update_cumulant_jacobi() {
     global_dpd_->buf4_dirprd(&D, &R);
     global_dpd_->buf4_close(&D);
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     dpd_buf4_add(&L, &R, 1.0);
     global_dpd_->buf4_close(&R);
     global_dpd_->buf4_close(&L);

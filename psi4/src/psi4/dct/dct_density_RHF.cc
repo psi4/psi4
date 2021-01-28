@@ -44,13 +44,11 @@ void DCTSolver::compute_unrelaxed_density_OOOO_RHF() {
 
     // Compute the N^6 terms for Gamma OOOO
 
-    // Gamma_ijkl = 1/16 (Lambda_ijab * Z_klab + Z_ijab * Lambda_klab)
-
     // The Alpha - Beta case
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                           "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
     global_dpd_->buf4_init(&LLab, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                           "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
     global_dpd_->buf4_init(&Gab, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0,
                            "Gamma SF <OO|OO>");  // Gamma <Oo|Oo>
     global_dpd_->contract444(&Lab, &LLab, &Gab, 0, 0, 0.25, 0.0);
@@ -117,7 +115,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV_RHF() {
      */
 
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");                          // Lambda <Oo|Vv>
+                           "Amplitude SF <OO|VV>");                          // Amplitude <Oo|Vv>
     global_dpd_->buf4_copy(&Lab, PSIF_DCT_DENSITY, "Gamma SF <OO|VV>");  // Gamma <Oo|Vv>
     global_dpd_->buf4_sort(&Lab, PSIF_DCT_DENSITY, rspq, ID("[V,V]"), ID("[O,O]"),
                            "Gamma SF <VV|OO>");  // Gamma <Vv|Oo>
@@ -161,17 +159,17 @@ void DCTSolver::compute_unrelaxed_density_OVOV_RHF() {
     global_dpd_->buf4_init(&Gaa, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "Gamma (OV|OV)");
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Lambda (OV|OV)");
+                           "Amplitude (OV|OV)");
     global_dpd_->buf4_init(&LLaa, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Lambda (OV|OV)");
+                           "Amplitude (OV|OV)");
     global_dpd_->contract444(&Laa, &LLaa, &Gaa, 0, 0, -1.0, 0.0);
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&LLaa);
 
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Lambda SF (OV|OV):(OV|ov)");  // Lambda (OV|ov)
+                           "Amplitude SF (OV|OV):(OV|ov)");  // Amplitude (OV|ov)
     global_dpd_->buf4_init(&LLab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Lambda SF (OV|OV):(OV|ov)");  // Lambda (OV|ov)
+                           "Amplitude SF (OV|OV):(OV|ov)");  // Amplitude (OV|ov)
 
     global_dpd_->contract444(&Lab, &LLab, &Gaa, 0, 0, -1.0, 1.0);
     global_dpd_->buf4_close(&Lab);
@@ -220,9 +218,9 @@ void DCTSolver::compute_unrelaxed_density_OVOV_RHF() {
     // Г<IaJb> spin case:
 
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Lambda SF (OV|OV):(Ov|oV)");  // Lambda (Ov|oV)
+                           "Amplitude SF (OV|OV):(Ov|oV)");  // Amplitude (Ov|oV)
     global_dpd_->buf4_init(&LLab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Lambda SF (OV|OV):(Ov|oV)");  // ambda (Ov|oV)
+                           "Amplitude SF (OV|OV):(Ov|oV)");  // ambda (Ov|oV)
 
     global_dpd_->buf4_init(&Gab, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "Gamma SF <OV|OV>:<Ov|Ov>");  // Gamma <Ov|Ov>
@@ -269,13 +267,13 @@ void DCTSolver::compute_unrelaxed_density_OVOV_RHF() {
     global_dpd_->buf4_init(&Tab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "Temp (OV|OV)");  // Temp (OV|ov)
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Lambda SF (OV|OV):(OV|ov)");  // Lambda (OV|ov)
+                           "Amplitude SF (OV|OV):(OV|ov)");  // Amplitude (OV|ov)
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Lambda (OV|OV)");
+                           "Amplitude (OV|OV)");
     global_dpd_->contract444(&Laa, &Lab, &Tab, 0, 1, -1.0, 0.0);
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_init(&LLaa, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Lambda (OV|OV)");  // Lambda (ov|ov)
+                           "Amplitude (OV|OV)");  // Amplitude (ov|ov)
     global_dpd_->contract444(&Lab, &LLaa, &Tab, 0, 1, -1.0, 1.0);
     global_dpd_->buf4_close(&LLaa);
     global_dpd_->buf4_close(&Tab);
@@ -298,13 +296,13 @@ void DCTSolver::compute_unrelaxed_density_VVVV_RHF() {
      * The VVVV block
      */
 
-    // Gamma_abcd = 1/16 (Lambda_ijab * Lambda_ijcd + Lambda_ijab * Lambda_ijcd)
+    // Gamma_abcd = 1/16 (Amplitude_ijab * Amplitude_ijcd + Amplitude_ijab * Amplitude_ijcd)
     global_dpd_->buf4_init(&Gaa, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0,
                            "Gamma SF <VV|VV>");
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");
+                           "Amplitude SF <OO|VV>");
     global_dpd_->buf4_init(&LLaa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");
+                           "Amplitude SF <OO|VV>");
     global_dpd_->contract444(&Laa, &LLaa, &Gaa, 1, 1, 0.25, 0.0);
     global_dpd_->buf4_close(&LLaa);
     global_dpd_->buf4_close(&Gaa);

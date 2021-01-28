@@ -50,8 +50,8 @@ double DCTSolver::compute_energy() {
 
     if (options_.get_str("DCT_GUESS") == "DCT") {
         // We're reusing DCT files from a previous computation. Let's check that one exists.
-        if (!((same_a_b_orbs_ == true && psio_tocentry_exists(PSIF_DCT_DPD, "Lambda SF <OO|VV>")) ||
-              (same_a_b_orbs_ == false && psio_tocentry_exists(PSIF_DCT_DPD, "Lambda <Oo|Vv>")))) {
+        if (!((same_a_b_orbs_ == true && psio_tocentry_exists(PSIF_DCT_DPD, "Amplitude SF <OO|VV>")) ||
+              (same_a_b_orbs_ == false && psio_tocentry_exists(PSIF_DCT_DPD, "Amplitude <Oo|Vv>")))) {
             throw PSIEXCEPTION("Could not find a previous DCT computation as the DCT_GUESS=DCT guess.");
         }
     } else {

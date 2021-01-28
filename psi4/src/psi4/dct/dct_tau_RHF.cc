@@ -52,10 +52,11 @@ void DCTSolver::compute_SO_tau_R() {
 }
 
 /**
- * Forms Tau in the MO basis from the Lambda tensors.
+ * Forms d in the MO basis from the Amplitude tensors.
+ * Several variables used in this function are labeled Tau. At this time, they are NOT Tau, but d.
  */
 void DCTSolver::build_d_R() {
-    dct_timer_on("DCTSolver::build_tau()");
+    dct_timer_on("DCTSolver::build_d()");
     dpdbuf4 L1, L2;
     dpdfile2 T_OO, T_VV;
 
@@ -68,32 +69,32 @@ void DCTSolver::build_d_R() {
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
 
     global_dpd_->buf4_init(&L1, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"),
-                           ID("[V,V]"), 0, "Lambda <OO|VV>");
+                           ID("[V,V]"), 0, "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&L2, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"),
-                           ID("[V,V]"), 0, "Lambda <OO|VV>");
+                           ID("[V,V]"), 0, "Amplitude <OO|VV>");
 
     /*
-     * Tau_IJ = -1/2 Lambda_IKAB Lambda_JKAB
+     * d_IJ = -1/2 Amplitude_IKAB Amplitude_JKAB
      */
     global_dpd_->contract442(&L1, &L2, &T_OO, 0, 0, -0.5, 0.0);
     /*
-     * Tau_AB = +1/2 Lambda_IJAC Lambda_IJBC
+     * d_AB = +1/2 Amplitude_IJAC Amplitude_IJBC
      */
     global_dpd_->contract442(&L1, &L2, &T_VV, 2, 2, 0.5, 0.0);
     global_dpd_->buf4_close(&L1);
     global_dpd_->buf4_close(&L2);
 
     global_dpd_->buf4_init(&L1, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                           "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
     global_dpd_->buf4_init(&L2, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                           "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
 
     /*
-     * Tau_IJ -= 1/2 Lambda_IkAb Lambda_JkAb - 1/2 Lambda_IkaB Lambda_JkaB
+     * d_IJ -= 1/2 Amplitude_IkAb Amplitude_JkAb - 1/2 Amplitude_IkaB Amplitude_JkaB
      */
     global_dpd_->contract442(&L1, &L2, &T_OO, 0, 0, -1.0, 1.0);
     /*
-     * Tau_AB += 1/2 Lambda_IjAc Lambda_IjBc + 1/2 Lambda_iJAc Lambda_iJBc
+     * d_AB += 1/2 Amplitude_IjAc Amplitude_IjBc + 1/2 Amplitude_iJAc Amplitude_iJBc
      */
     global_dpd_->contract442(&L1, &L2, &T_VV, 2, 2, 1.0, 1.0);
 
@@ -115,13 +116,12 @@ void DCTSolver::build_d_R() {
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
 
-    dct_timer_off("DCTSolver::build_tau()");
+    dct_timer_off("DCTSolver::build_d()");
 }
 
 void DCTSolver::build_tau_R() {
-    dct_timer_on("DCTSolver::refine_tau()");
+    dct_timer_on("DCTSolver::build_tau()");
 
-    // Read MO-basis Tau from disk into the memory
     dpdfile2 T_OO, T_VV;
 
     // Iteratively compute the exact Tau
@@ -228,7 +228,7 @@ void DCTSolver::build_tau_R() {
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
 
-    dct_timer_off("DCTSolver::refine_tau()");
+    dct_timer_off("DCTSolver::build_tau()");
 }
 
 void DCTSolver::transform_tau_R() {

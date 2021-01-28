@@ -50,7 +50,7 @@ void DCTSolver::compute_dct_energy() {
 
     // E += 1/4 L_IJAB G_IJAB
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "G <OO|VV>");
     eGaa = global_dpd_->buf4_dot(&G, &L);
@@ -72,7 +72,7 @@ void DCTSolver::compute_dct_energy() {
     } else {
         // E += 1/2 gbar_IJAB L_IJAB
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               "Lambda <OO|VV>");
+                               "Amplitude <OO|VV>");
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O,O]"), ID("[V,V]"), 1,
                                "MO Ints <OO|VV>");
         eIaa = 2.0 * global_dpd_->buf4_dot(&I, &L);
@@ -82,7 +82,7 @@ void DCTSolver::compute_dct_energy() {
 
     // E += L_IjAb G_IjAb
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
     eGab = global_dpd_->buf4_dot(&G, &L);
     global_dpd_->buf4_close(&G);
@@ -100,7 +100,7 @@ void DCTSolver::compute_dct_energy() {
     } else {
         // E += 2.0 gbar_IjAb L_IjAb
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               "Lambda <Oo|Vv>");
+                               "Amplitude <Oo|Vv>");
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "MO Ints <Oo|Vv>");
         eIab = 2.0 * global_dpd_->buf4_dot(&I, &L);
@@ -110,7 +110,7 @@ void DCTSolver::compute_dct_energy() {
 
     // E += 1/4 L_ijab G_ijab
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "G <oo|vv>");
     eGbb = global_dpd_->buf4_dot(&G, &L);
@@ -131,7 +131,7 @@ void DCTSolver::compute_dct_energy() {
     } else {
         // E += 1/2 gbar_ijab L_ijab
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               "Lambda <oo|vv>");
+                               "Amplitude <oo|vv>");
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o,o]"), ID("[v,v]"), 1,
                                "MO Ints <oo|vv>");
         eIbb = 2.0 * global_dpd_->buf4_dot(&I, &L);

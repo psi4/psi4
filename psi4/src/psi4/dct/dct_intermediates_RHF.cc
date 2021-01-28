@@ -64,7 +64,7 @@ void DCTSolver::build_cumulant_intermediates_RHF() {
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0,
                                "MO Ints <VV|VV>");  // MO Ints <Vv|Vv>
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                               "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
         global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "G <OO|VV>");  // G <Oo|Vv>
         global_dpd_->contract444(&L, &I, &G, 0, 0, 1.0, 1.0);
@@ -89,7 +89,7 @@ void DCTSolver::build_cumulant_intermediates_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0,
                            "MO Ints <OO|OO>");  // MO Ints <Oo|Oo>
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                           "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
     global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "G <OO|VV>");  // G <Oo|Vv>
     global_dpd_->contract444(&I, &L, &G, 0, 1, 1.0, 1.0);
@@ -107,18 +107,18 @@ void DCTSolver::build_cumulant_intermediates_RHF() {
                            "Temp SF (OV|OV):(Ov|oV)");
 
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <OO|VV>");
-    global_dpd_->buf4_sort(&Laa, PSIF_DCT_DPD, prqs, ID("[O,V]"), ID("[O,V]"), "Lambda (OV|OV)");
+                           "Amplitude <OO|VV>");
+    global_dpd_->buf4_sort(&Laa, PSIF_DCT_DPD, prqs, ID("[O,V]"), ID("[O,V]"), "Amplitude (OV|OV)");
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Lambda (OV|OV)");
+                           "Amplitude (OV|OV)");
 
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");
-    global_dpd_->buf4_sort(&Lab, PSIF_DCT_DPD, psqr, ID("[O,V]"), ID("[O,V]"), "Lambda SF (OV|OV):(Ov|oV)");
+                           "Amplitude SF <OO|VV>");
+    global_dpd_->buf4_sort(&Lab, PSIF_DCT_DPD, psqr, ID("[O,V]"), ID("[O,V]"), "Amplitude SF (OV|OV):(Ov|oV)");
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Lambda SF (OV|OV):(Ov|oV)");
+                           "Amplitude SF (OV|OV):(Ov|oV)");
 
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "MO Ints <OV|OV>");
@@ -139,12 +139,12 @@ void DCTSolver::build_cumulant_intermediates_RHF() {
     global_dpd_->buf4_init(&Tab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "Temp SF (OV|OV):(OV|ov)");
 
-    // Lambda_IbkC -> Lambda_ICkb
-    global_dpd_->buf4_sort(&Lab, PSIF_DCT_DPD, psrq, ID("[O,V]"), ID("[O,V]"), "Lambda SF (OV|OV):(OV|ov)");
+    // Amplitude_IbkC -> Amplitude_ICkb
+    global_dpd_->buf4_sort(&Lab, PSIF_DCT_DPD, psrq, ID("[O,V]"), ID("[O,V]"), "Amplitude SF (OV|OV):(OV|ov)");
     global_dpd_->buf4_close(&Lab);
 
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Lambda SF (OV|OV):(OV|ov)");
+                           "Amplitude SF (OV|OV):(OV|ov)");
 
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
@@ -224,7 +224,7 @@ void DCTSolver::compute_F_intermediate_RHF() {
     global_dpd_->buf4_init(&F, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "F <OO|VV>");  // F <Oo|Vv>
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                           "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
 
     // F_IjAb += lambda_IjCb F_AC
     global_dpd_->file2_init(&F_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "F <V|V>");

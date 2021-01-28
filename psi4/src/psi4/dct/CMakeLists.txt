@@ -21,7 +21,6 @@ list(APPEND sources
   dct_memory.cc
   dct_mp2_RHF.cc
   dct_mp2_UHF.cc
-  dct_n_representability.cc
   dct_oo_RHF.cc
   dct_oo_UHF.cc
   dct_qc.cc

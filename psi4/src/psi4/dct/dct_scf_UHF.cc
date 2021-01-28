@@ -445,7 +445,7 @@ void DCTSolver::process_so_ints() {
 
         /********** AA ***********/
         global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               "Lambda <OO|VV>");
+                               "Amplitude <OO|VV>");
         global_dpd_->buf4_init(&tau1_AO_aa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[n,n]"), ID("[O,O]"), ID("[n,n]"), 0,
                                "tau1AO <OO|nn>");
         global_dpd_->buf4_scm(&tau1_AO_aa, 0.0);
@@ -470,7 +470,7 @@ void DCTSolver::process_so_ints() {
 
         /********** BB ***********/
         global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               "Lambda <oo|vv>");
+                               "Amplitude <oo|vv>");
         global_dpd_->buf4_init(&tau1_AO_bb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[n,n]"), ID("[o,o]"), ID("[n,n]"), 0,
                                "tau1AO <oo|nn>");
         global_dpd_->buf4_scm(&tau1_AO_bb, 0.0);
@@ -494,7 +494,7 @@ void DCTSolver::process_so_ints() {
 
         /********** AB ***********/
         global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               "Lambda <Oo|Vv>");
+                               "Amplitude <Oo|Vv>");
         global_dpd_->buf4_init(&tau1_AO_ab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[n,n]"), ID("[O,o]"), ID("[n,n]"), 0,
                                "tau1AO <Oo|nn>");
         global_dpd_->buf4_scm(&tau1_AO_ab, 0.0);
@@ -1059,7 +1059,7 @@ void DCTSolver::build_AO_tensors() {
 
     /********** AA ***********/
     global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&tau1_AO_aa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[n,n]"), ID("[O,O]"), ID("[n,n]"), 0,
                            "tau1AO <OO|nn>");
     global_dpd_->buf4_scm(&tau1_AO_aa, 0.0);
@@ -1084,7 +1084,7 @@ void DCTSolver::build_AO_tensors() {
 
     /********** BB ***********/
     global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->buf4_init(&tau1_AO_bb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[n,n]"), ID("[o,o]"), ID("[n,n]"), 0,
                            "tau1AO <oo|nn>");
     global_dpd_->buf4_scm(&tau1_AO_bb, 0.0);
@@ -1108,7 +1108,7 @@ void DCTSolver::build_AO_tensors() {
 
     /********** AB ***********/
     global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&tau1_AO_ab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[n,n]"), ID("[O,o]"), ID("[n,n]"), 0,
                            "tau1AO <Oo|nn>");
     global_dpd_->buf4_scm(&tau1_AO_ab, 0.0);

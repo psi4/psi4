@@ -240,7 +240,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
 
     // OOVV
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_copy(&Laa, PSIF_DCT_DENSITY, "Gamma <OO|VV>");
     global_dpd_->buf4_close(&Laa);
 
@@ -251,7 +251,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
 
     // OoVv
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_copy(&Lab, PSIF_DCT_DENSITY, "Gamma <Oo|Vv>");
     global_dpd_->buf4_close(&Lab);
 
@@ -262,7 +262,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
 
     // oovv
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->buf4_copy(&Lbb, PSIF_DCT_DENSITY, "Gamma <oo|vv>");
     global_dpd_->buf4_close(&Lbb);
 
@@ -288,7 +288,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "Temp <OO|VV>");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               "Lambda <OO|VV>");
+                               "Amplitude <OO|VV>");
         global_dpd_->contract424(&L, &T_OO, &T, 1, 0, 1, 1.0 / 6.0, 0.0);
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&T);
@@ -322,7 +322,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "Gamma <Oo|Vv>");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               "Lambda <Oo|Vv>");
+                               "Amplitude <Oo|Vv>");
         global_dpd_->contract424(&L, &T_oo, &G, 1, 0, 1, 1.0 / 6.0, 1.0);
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&G);
@@ -331,7 +331,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "Gamma <Oo|Vv>");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               "Lambda <Oo|Vv>");
+                               "Amplitude <Oo|Vv>");
         global_dpd_->contract244(&T_OO, &L, &G, 1, 0, 0, 1.0 / 6.0, 1.0);
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&G);
@@ -342,7 +342,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                "Temp <oo|vv>");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               "Lambda <oo|vv>");
+                               "Amplitude <oo|vv>");
         global_dpd_->contract424(&L, &T_oo, &T, 1, 0, 1, 1.0 / 6.0, 0.0);
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&T);
@@ -380,7 +380,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "Temp <OO|VV>");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               "Lambda <OO|VV>");
+                               "Amplitude <OO|VV>");
         global_dpd_->contract424(&L, &T_VV, &T, 3, 0, 0, -1.0 / 6.0, 0.0);
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&T);
@@ -414,7 +414,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "Gamma <Oo|Vv>");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               "Lambda <Oo|Vv>");
+                               "Amplitude <Oo|Vv>");
         global_dpd_->contract424(&L, &T_vv, &G, 3, 0, 0, -1.0 / 6.0, 1.0);
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&G);
@@ -423,7 +423,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "Gamma <Oo|Vv>");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               "Lambda <Oo|Vv>");
+                               "Amplitude <Oo|Vv>");
         global_dpd_->contract244(&T_VV, &L, &G, 1, 2, 1, -1.0 / 6.0, 1.0);
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&G);
@@ -434,7 +434,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                "Temp <oo|vv>");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               "Lambda <oo|vv>");
+                               "Amplitude <oo|vv>");
         global_dpd_->contract424(&L, &T_vv, &T, 3, 0, 0, -1.0 / 6.0, 0.0);
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&T);
@@ -475,7 +475,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
                                "Gamma <OO|VV>");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               "Lambda <OO|VV>");
+                               "Amplitude <OO|VV>");
         global_dpd_->buf4_init(&II, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[O>O]-"), ID("[O>O]-"), ID("[O>O]-"), 0,
                                "I <OO|OO>");
         global_dpd_->contract444(&II, &L, &G, 0, 1, 1.0 / 6.0, 1.0);
@@ -487,7 +487,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "Gamma <Oo|Vv>");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               "Lambda <Oo|Vv>");
+                               "Amplitude <Oo|Vv>");
         global_dpd_->buf4_init(&II, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), 0,
                                "I <Oo|Oo>");
         global_dpd_->contract444(&II, &L, &G, 0, 1, 1.0 / 6.0, 1.0);
@@ -499,7 +499,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                                "Gamma <oo|vv>");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               "Lambda <oo|vv>");
+                               "Amplitude <oo|vv>");
         global_dpd_->buf4_init(&II, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[o>o]-"), ID("[o>o]-"), ID("[o>o]-"), 0,
                                "I <oo|oo>");
         global_dpd_->contract444(&II, &L, &G, 0, 1, 1.0 / 6.0, 1.0);
@@ -520,15 +520,15 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&Kab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0,
                                "K (OV|ov)");
 
-        // T_IAJB = 1/6 Lambda_(IA|KC) K_(KC|JB)
+        // T_IAJB = 1/6 Amplitude_(IA|KC) K_(KC|JB)
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                               "Lambda (OV|OV)");
+                               "Amplitude (OV|OV)");
         global_dpd_->contract444(&L, &Kaa, &Taa, 0, 0, 1.0 / 6.0, 0.0);
         global_dpd_->buf4_close(&L);
 
-        // T_IAJB += 1/6 Lambda_(IA|kc) K_(JB|kc)
+        // T_IAJB += 1/6 Amplitude_(IA|kc) K_(JB|kc)
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0,
-                               "Lambda (OV|ov)");
+                               "Amplitude (OV|ov)");
         global_dpd_->contract444(&L, &Kab, &Taa, 0, 0, 1.0 / 6.0, 1.0);
         global_dpd_->buf4_close(&L);
 
@@ -600,27 +600,27 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&Tab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0,
                                "Temp (OV|ov)");
 
-        // T_IAjb = 1/6 Lambda_(IA|kc) K_(kc|jb)
+        // T_IAjb = 1/6 Amplitude_(IA|kc) K_(kc|jb)
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0,
-                               "Lambda (OV|ov)");
+                               "Amplitude (OV|ov)");
         global_dpd_->contract444(&L, &Kbb, &Tab, 0, 1, 1.0 / 6.0, 0.0);
         global_dpd_->buf4_close(&L);
 
-        // T_IAjb += 1/6 Lambda_(IA|KC) K_(KC|jb)
+        // T_IAjb += 1/6 Amplitude_(IA|KC) K_(KC|jb)
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                               "Lambda (OV|OV)");
+                               "Amplitude (OV|OV)");
         global_dpd_->contract444(&L, &Kab, &Tab, 0, 1, 1.0 / 6.0, 1.0);
         global_dpd_->buf4_close(&L);
 
-        // T_IAjb += 1/6 K_(IA|KC) Lambda_(KC|jb)
+        // T_IAjb += 1/6 K_(IA|KC) Amplitude_(KC|jb)
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0,
-                               "Lambda (OV|ov)");
+                               "Amplitude (OV|ov)");
         global_dpd_->contract444(&Kaa, &L, &Tab, 0, 1, 1.0 / 6.0, 1.0);
         global_dpd_->buf4_close(&L);
 
-        // T_IAjb += 1/6 K_(IA|kc) Lambda_(jb|kc)
+        // T_IAjb += 1/6 K_(IA|kc) Amplitude_(jb|kc)
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0,
-                               "Lambda (ov|ov)");
+                               "Amplitude (ov|ov)");
         global_dpd_->contract444(&Kab, &L, &Tab, 0, 0, 1.0 / 6.0, 1.0);
         global_dpd_->buf4_close(&L);
 
@@ -645,25 +645,25 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_close(&Kab);
         global_dpd_->buf4_close(&Kbb);
 
-        // T_IbAj = 1/6 K_(Ib|Kc) Lambda_(Kc|Aj)
+        // T_IbAj = 1/6 K_(Ib|Kc) Amplitude_(Kc|Aj)
         global_dpd_->buf4_init(&Tab, PSIF_DCT_DPD, 0, ID("[O,v]"), ID("[V,o]"), ID("[O,v]"), ID("[V,o]"), 0,
                                "Temp (Ov|Vo)");
         global_dpd_->buf4_init(&Kab, PSIF_DCT_DPD, 0, ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), 0,
                                "K <Ov|Ov>");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,v]"), ID("[V,o]"), ID("[O,v]"), ID("[V,o]"), 0,
-                               "Lambda (Ov|Vo)");
+                               "Amplitude (Ov|Vo)");
         global_dpd_->contract444(&Kab, &L, &Tab, 0, 1, 1.0 / 6.0, 0.0);
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&Kab);
         global_dpd_->buf4_close(&Tab);
 
-        // T_IbAj += 1/6 Lambda_(Ib|Ck) K_(Ck|Aj)
+        // T_IbAj += 1/6 Amplitude_(Ib|Ck) K_(Ck|Aj)
         global_dpd_->buf4_init(&Tab, PSIF_DCT_DPD, 0, ID("[O,v]"), ID("[V,o]"), ID("[O,v]"), ID("[V,o]"), 0,
                                "Temp (Ov|Vo)");
         global_dpd_->buf4_init(&Kab, PSIF_DCT_DPD, 0, ID("[V,o]"), ID("[V,o]"), ID("[V,o]"), ID("[V,o]"), 0,
                                "K <Vo|Vo>");
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,v]"), ID("[V,o]"), ID("[O,v]"), ID("[V,o]"), 0,
-                               "Lambda (Ov|Vo)");
+                               "Amplitude (Ov|Vo)");
         global_dpd_->contract444(&L, &Kab, &Tab, 0, 1, 1.0 / 6.0, 1.0);
         global_dpd_->buf4_close(&L);
         global_dpd_->buf4_close(&Kab);
@@ -693,15 +693,15 @@ void DCTSolver::compute_unrelaxed_density_OOVV() {
         global_dpd_->buf4_init(&Kab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0,
                                "K (OV|ov)");
 
-        // T_iajb = 1/6 Lambda_(ia|kc) K_(kc|jb)
+        // T_iajb = 1/6 Amplitude_(ia|kc) K_(kc|jb)
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0,
-                               "Lambda (ov|ov)");
+                               "Amplitude (ov|ov)");
         global_dpd_->contract444(&L, &Kbb, &Tbb, 0, 0, 1.0 / 6.0, 0.0);
         global_dpd_->buf4_close(&L);
 
-        // T_iajb += 1/6 Lambda_(KC|ia) K_(KC|jb)
+        // T_iajb += 1/6 Amplitude_(KC|ia) K_(KC|jb)
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0,
-                               "Lambda (OV|ov)");
+                               "Amplitude (OV|ov)");
         global_dpd_->contract444(&L, &Kab, &Tbb, 1, 1, 1.0 / 6.0, 1.0);
         global_dpd_->buf4_close(&L);
 
@@ -1008,22 +1008,22 @@ void DCTSolver::compute_unrelaxed_density_VVVV() {
      * The VVVV block
      */
 
-    // Gamma_abcd = 1/16 (Lambda_ijab * Lambda_ijcd + Lambda_ijab * Lambda_ijcd)
+    // Gamma_abcd = 1/16 (Amplitude_ijab * Amplitude_ijcd + Amplitude_ijab * Amplitude_ijcd)
     global_dpd_->buf4_init(&Gaa, PSIF_DCT_DENSITY, 0, ID("[V>V]-"), ID("[V>V]-"), ID("[V>V]-"), ID("[V>V]-"), 0,
                            "Gamma <VV|VV>");
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&LLaa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->contract444(&Laa, &LLaa, &Gaa, 1, 1, 0.25, 0.0);
     global_dpd_->buf4_close(&LLaa);
     global_dpd_->buf4_close(&Gaa);
     global_dpd_->buf4_close(&Laa);
 
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&LLab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Gab, PSIF_DCT_DENSITY, 0, ID("[V,v]"), ID("[V,v]"), ID("[V,v]"), ID("[V,v]"), 0,
                            "Gamma <Vv|Vv>");
     global_dpd_->contract444(&Lab, &LLab, &Gab, 1, 1, 0.25, 0.0);
@@ -1034,9 +1034,9 @@ void DCTSolver::compute_unrelaxed_density_VVVV() {
     global_dpd_->buf4_init(&Gbb, PSIF_DCT_DENSITY, 0, ID("[v>v]-"), ID("[v>v]-"), ID("[v>v]-"), ID("[v>v]-"), 0,
                            "Gamma <vv|vv>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->buf4_init(&LLbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->contract444(&Lbb, &LLbb, &Gbb, 1, 1, 0.25, 0.0);
     global_dpd_->buf4_close(&LLbb);
     global_dpd_->buf4_close(&Gbb);
@@ -1279,6 +1279,182 @@ void DCTSolver::write_molden_file() {
     auto dummy_b = std::make_shared<Vector>("Dummy Vector Beta", nirrep_, nmopi_);
 
     molden->write(filename, aAONO, bAONO, dummy_a, dummy_b, aevals, bevals, true);
+}
+
+void DCTSolver::compute_TPDM_trace() {
+    dpdbuf4 G;
+
+    psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
+
+    double tpdm_trace = 0.0;
+
+    // OOOO density
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O>O]-"), ID("[O>O]-"), ID("[O>O]-"), ID("[O>O]-"), 0,
+                           "Gamma <OO|OO>");
+    for (int h = 0; h < nirrep_; ++h) {
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        for (size_t ij = 0; ij < G.params->rowtot[h]; ++ij) {
+            tpdm_trace += 8.0 * G.matrix[h][ij][ij];
+        }
+
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), 0,
+                           "Gamma <Oo|Oo>");
+    for (int h = 0; h < nirrep_; ++h) {
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        for (size_t ij = 0; ij < G.params->rowtot[h]; ++ij) {
+            tpdm_trace += 8.0 * G.matrix[h][ij][ij];
+        }
+
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o>o]-"), ID("[o>o]-"), ID("[o>o]-"), ID("[o>o]-"), 0,
+                           "Gamma <oo|oo>");
+    for (int h = 0; h < nirrep_; ++h) {
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        for (size_t ij = 0; ij < G.params->rowtot[h]; ++ij) {
+            tpdm_trace += 8.0 * G.matrix[h][ij][ij];
+        }
+
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+    global_dpd_->buf4_close(&G);
+
+    // VVVV density
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V>V]-"), ID("[V>V]-"), ID("[V>V]-"), ID("[V>V]-"), 0,
+                           "Gamma <VV|VV>");
+    for (int h = 0; h < nirrep_; ++h) {
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        for (size_t ab = 0; ab < G.params->rowtot[h]; ++ab) {
+            tpdm_trace += 8.0 * G.matrix[h][ab][ab];
+        }
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,v]"), ID("[V,v]"), ID("[V,v]"), ID("[V,v]"), 0,
+                           "Gamma <Vv|Vv>");
+    for (int h = 0; h < nirrep_; ++h) {
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        for (size_t ab = 0; ab < G.params->rowtot[h]; ++ab) {
+            tpdm_trace += 8.0 * G.matrix[h][ab][ab];
+        }
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[v>v]-"), ID("[v>v]-"), ID("[v>v]-"), ID("[v>v]-"), 0,
+                           "Gamma <vv|vv>");
+    for (int h = 0; h < nirrep_; ++h) {
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        for (size_t ab = 0; ab < G.params->rowtot[h]; ++ab) {
+            tpdm_trace += 8.0 * G.matrix[h][ab][ab];
+        }
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+
+    global_dpd_->buf4_close(&G);
+
+    // OVOV density
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
+                           "Gamma <OV|OV>");
+    for (int h = 0; h < nirrep_; ++h) {
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        for (size_t ia = 0; ia < G.params->rowtot[h]; ++ia) {
+            tpdm_trace += 2.0 * G.matrix[h][ia][ia];
+        }
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), 0,
+                           "Gamma <Ov|Ov>");
+    for (int h = 0; h < nirrep_; ++h) {
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        for (size_t ia = 0; ia < G.params->rowtot[h]; ++ia) {
+            tpdm_trace += 2.0 * G.matrix[h][ia][ia];
+        }
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), 0,
+                           "Gamma <oV|oV>");
+    for (int h = 0; h < nirrep_; ++h) {
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        for (size_t ia = 0; ia < G.params->rowtot[h]; ++ia) {
+            tpdm_trace += 2.0 * G.matrix[h][ia][ia];
+        }
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0,
+                           "Gamma <ov|ov>");
+
+    for (int h = 0; h < nirrep_; ++h) {
+        global_dpd_->buf4_mat_irrep_init(&G, h);
+        global_dpd_->buf4_mat_irrep_rd(&G, h);
+
+        for (size_t ia = 0; ia < G.params->rowtot[h]; ++ia) {
+            tpdm_trace += 2.0 * G.matrix[h][ia][ia];
+        }
+        global_dpd_->buf4_mat_irrep_wrt(&G, h);
+        global_dpd_->buf4_mat_irrep_close(&G, h);
+    }
+
+    global_dpd_->buf4_close(&G);
+
+    // Compute OPDM trace
+    double opdm_trace = (kappa_mo_a_->trace() + kappa_mo_b_->trace());
+    opdm_trace += (aocc_tau_->trace() + bocc_tau_->trace() + avir_tau_->trace() + bvir_tau_->trace());
+
+    // Compute deviations from N-representability
+    auto N = (double)(nalpha_ + nbeta_);
+    double opdm_dev = N - opdm_trace;
+    double tpdm_dev = N * (N - 1.0) - tpdm_trace;
+
+    outfile->Printf("\t OPDM trace: \t%10.6f\t\tDeviation: \t%8.4e\n", opdm_trace, opdm_dev);
+    outfile->Printf("\t TPDM trace: \t%10.6f\t\tDeviation: \t%8.4e\n", tpdm_trace, tpdm_dev);
+
+    psio_->close(PSIF_DCT_DENSITY, 1);
 }
 
 }  // namespace dct
