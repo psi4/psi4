@@ -53,17 +53,17 @@ double DCTSolver::compute_energy_RHF() {
     cumulantDone_ = false;
     densityConverged_ = false;
     energyConverged_ = false;
-
-    // Perform SCF guess for the orbitals
-    scf_guess_RHF();
+    initialize_orbitals_from_reference_U();
 
     // If DCT computation type is density fitting, build b(Q|mn)
     if (options_.get_str("DCT_TYPE") == "DF") {
-        df_build_b();
+        initialize_df();
+        build_df_b();
     }
 
+    initialize_integraltransform();
     // Perform MP2 guess for the cumulant
-    mp2_guess_RHF();
+    initialize_amplitudes_RHF();
 
     // Print out information about the job
     outfile->Printf("\n\tDCT Functional:    \t\t %s", options_.get_str("DCT_FUNCTIONAL").c_str());
@@ -163,11 +163,7 @@ void DCTSolver::run_simult_dct_RHF() {
         // Save the old energy
         old_total_energy_ = new_total_energy_;
         // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
-        build_tau_RHF();
-        if (exact_tau_) {
-            refine_tau_RHF();
-        }
-        transform_tau_RHF();
+        compute_SO_tau_R();
 
         if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
             build_DF_tensors_RHF();

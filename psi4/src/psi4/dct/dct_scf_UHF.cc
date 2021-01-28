@@ -228,13 +228,8 @@ for (int h = 0; h < nirrep_; ++h) {
  * Reads the orbitals and related quantities from the reference wavefunction
  * and reads the one-electron integrals from PSIO.
  */
-void DCTSolver::scf_guess() {
+void DCTSolver::initialize_orbitals_from_reference_U() {
     dct_timer_on("DCTSolver::scf_guess");
-    auto T = mintshelper()->so_kinetic()->clone();
-    auto V = mintshelper()->so_potential()->clone();
-
-    so_h_->add(T);
-    so_h_->add(V);
 
     epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
     epsilon_b_->copy(reference_wavefunction_->epsilon_b().get());

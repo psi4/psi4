@@ -25,6 +25,7 @@ list(APPEND sources
   dct_oo_RHF.cc
   dct_oo_UHF.cc
   dct_qc.cc
+  dct_response_density_UHF.cc
   dct_scf_RHF.cc
   dct_scf_UHF.cc
   dct_sort_mo_tpdm.cc

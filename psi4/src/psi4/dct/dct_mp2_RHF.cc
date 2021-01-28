@@ -47,23 +47,8 @@ namespace dct {
  * Computes the Hartree-Fock energy and then the MP2 energy as an initial guess.
  * This code is responible for initializing the integral transformation too.
  */
-void DCTSolver::mp2_guess_RHF() {
-    dct_timer_on("DCTSolver::mp2_guess()");
-
-    // Initialize the integral transformation object
-    std::vector<std::shared_ptr<MOSpace> > spaces;
-    spaces.push_back(MOSpace::occ);
-    spaces.push_back(MOSpace::vir);
-    spaces.push_back(MOSpace::all);
-
-    // This wavefunction is really the global reference wavefunction
-    _ints = new IntegralTransform(shared_from_this(), spaces, IntegralTransform::TransformationType::Restricted);
-    _ints->set_keep_iwl_so_ints(true);
-    _ints->set_keep_dpd_so_ints(true);
-    dpd_set_default(_ints->get_dpd_id());
-
-    outfile->Printf("\n\n\tTransforming two-electron integrals (transformation type: restricted)...\n");
-    transform_integrals_RHF();
+void DCTSolver::initialize_amplitudes_RHF() {
+    dct_timer_on("DCTSolver::initialize_amplitudes()");
 
     std::string guess = options_.get_str("DCT_GUESS");
 
@@ -151,7 +136,7 @@ void DCTSolver::mp2_guess_RHF() {
         throw FeatureNotImplemented("Spin-adapted RHF-reference ODC-12", "DCT_GUESS=CC/BCC", __FILE__, __LINE__);
     }
 
-    dct_timer_off("DCTSolver::mp2_guess()");
+    dct_timer_off("DCTSolver::initialize_amplitudes()");
 }
 }  // namespace dct
 }  // namespace psi

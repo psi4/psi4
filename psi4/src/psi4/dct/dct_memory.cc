@@ -95,7 +95,7 @@ void DCTSolver::init() {
     moG_tau_a_ = std::make_shared<Matrix>("GTau in the MO basis (Alpha)", nirrep_, nmopi_, nmopi_);
     moG_tau_b_ = std::make_shared<Matrix>("GTau in the MO basis (Beta)", nirrep_, nmopi_, nmopi_);
     ao_s_ = std::make_shared<Matrix>("SO Basis Overlap Integrals", nirrep_, nsopi_, nsopi_);
-    so_h_ = std::make_shared<Matrix>("SO basis one-electron integrals", nirrep_, nsopi_, nsopi_);
+    so_h_ = Matrix("SO basis one-electron integrals", nirrep_, nsopi_, nsopi_);
     s_half_inv_ = std::make_shared<Matrix>("SO Basis Inverse Square Root Overlap Matrix", nirrep_, nsopi_, nsopi_);
     epsilon_a_ = std::make_shared<Vector>(nirrep_, nsopi_);
     epsilon_b_ = std::make_shared<Vector>(nirrep_, nsopi_);
@@ -179,6 +179,10 @@ void DCTSolver::init() {
         }
     }
 
+    // Construct the Core Hamiltonian
+    so_h_.add(*mintshelper()->so_kinetic()->clone());
+    so_h_.add(*mintshelper()->so_potential()->clone());
+
     // Grab the SO overlap matrix from MintsHelper
     ao_s_->copy(mintshelper_->so_overlap());
 
@@ -205,7 +209,9 @@ void DCTSolver::init() {
  */
 void DCTSolver::finalize() {
     psio_->close(PSIF_DCT_DPD, 1);
-    delete _ints;
+    // We need to manually reset _ints to trigger freeing PSIF_DCT_DPD.
+    // Having two at once is forbidden.
+    _ints.reset();
 
     aocc_c_.reset();
     bocc_c_.reset();
@@ -222,19 +228,7 @@ void DCTSolver::finalize() {
     g_tau_a_.reset();
     g_tau_b_.reset();
     ao_s_.reset();
-    so_h_.reset();
     s_half_inv_.reset();
-
-    //    for(int h = 0; h < nirrep_; ++h){
-    //        free_block(a_tau_[h]);
-    //        free_block(b_tau_[h]);
-    //    }
-    //    delete [] a_tau_;
-    //    delete [] b_tau_;
-    //    delete [] naoccpi_;
-    //    delete [] nboccpi_;
-    //    delete [] navirpi_;
-    //    delete [] nbvirpi_;
 }
 
 }  // namespace dct

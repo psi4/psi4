@@ -85,12 +85,7 @@ void DCTSolver::run_simult_dct_oo_RHF() {
 
     while ((!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_) && cycle++ < maxiter_) {
         std::string diisString;
-        // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
-        build_tau_RHF();
-        if (exact_tau_) {
-            refine_tau_RHF();
-        }
-        transform_tau_RHF();
+        compute_SO_tau_R();
 
         if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
             build_DF_tensors_RHF();

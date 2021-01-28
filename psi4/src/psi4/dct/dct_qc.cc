@@ -203,11 +203,7 @@ void DCTSolver::run_qc_dct() {
 
 void DCTSolver::compute_orbital_gradient() {
     // Build guess Tau from the density cumulant in the MO basis and transform it to the SO basis
-    build_tau();
-    if (exact_tau_) {
-        refine_tau();
-    }
-    transform_tau();
+    compute_SO_tau_U();
     // Copy core hamiltonian into the Fock matrix array: F = H
     Fa_->copy(so_h_);
     Fb_->copy(so_h_);

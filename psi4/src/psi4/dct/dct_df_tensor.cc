@@ -69,7 +69,7 @@ namespace dct {
  * b(Q|mn) = Sum_P (mn|P) [J^-1/2]_PQ
  * where J is the matrix of (P|Q)
  */
-void DCTSolver::df_build_b() {
+void DCTSolver::initialize_df() {
     dct_timer_on("DCTSolver::df_build_b()");
 
     outfile->Printf("\n\n\t                  ************************************************\n");
@@ -82,15 +82,15 @@ void DCTSolver::df_build_b() {
     auxiliary_ = get_basisset("DF_BASIS_DCT");
     auxiliary_scf_ = get_basisset("DF_BASIS_SCF");
 
-    std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
-
     nn_ = primary_->nbf();
     nQ_ = auxiliary_->nbf();
     nQ_scf_ = auxiliary_scf_->nbf();
 
-    // Print memory
-    // TODO: print memory information for UHF
     df_memory();
+}
+
+void DCTSolver::build_df_b() {
+    std::shared_ptr<BasisSet> zero(BasisSet::zero_ao_basis_set());
 
     // Form J(P,Q)^-1/2
     dct_timer_on("DCTSolver::Form J^-1/2");
@@ -1815,12 +1815,8 @@ void DCTSolver::build_gbarGamma_UHF() {
 
     // Form gamma<R|S> = kappa<R|S> + tau<R|S>
     mo_gammaA_ = Matrix("MO-basis Gamma Alpha", nirrep_, nmopi_, nmopi_);
-    //    mo_gammaA_->copy(kappa_mo_a_);
-    //    mo_gammaA_->add(mo_tauA_);
     mo_gbarGamma_A_ = Matrix("MO-basis Gbar_Gamma_A", nirrep_, nmopi_, nmopi_);
     mo_gammaB_ = Matrix("MO-basis Gamma Beta", nirrep_, nmopi_, nmopi_);
-    //    mo_gammaB_->copy(kappa_mo_b_);
-    //    mo_gammaB_->add(mo_tauB_);
     mo_gbarGamma_B_ = Matrix("MO-basis Gbar_Gamma_B", nirrep_, nmopi_, nmopi_);
 
     mo_gammaA_.copy(mo_tauA_);

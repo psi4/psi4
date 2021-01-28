@@ -42,12 +42,19 @@
 
 namespace psi {
 namespace dct {
+
+void DCTSolver::compute_SO_tau_R() {
+    build_d_R();
+    if (exact_tau_) {
+        build_tau_R();
+    }
+    transform_tau_R();
+}
+
 /**
- * Forms Tau in the MO basis from the Lambda tensors and transforms it back
- * to the SO basis
- * for RHF reference.
+ * Forms Tau in the MO basis from the Lambda tensors.
  */
-void DCTSolver::build_tau_RHF() {
+void DCTSolver::build_d_R() {
     dct_timer_on("DCTSolver::build_tau()");
     dpdbuf4 L1, L2;
     dpdfile2 T_OO, T_VV;
@@ -60,9 +67,9 @@ void DCTSolver::build_tau_RHF() {
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
 
-    global_dpd_->buf4_init(&L1, PSIF_DCT_DPD, 0, _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"), ID("[O,O]"),
+    global_dpd_->buf4_init(&L1, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"),
                            ID("[V,V]"), 0, "Lambda <OO|VV>");
-    global_dpd_->buf4_init(&L2, PSIF_DCT_DPD, 0, _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"), ID("[O,O]"),
+    global_dpd_->buf4_init(&L2, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"),
                            ID("[V,V]"), 0, "Lambda <OO|VV>");
 
     /*
@@ -111,7 +118,7 @@ void DCTSolver::build_tau_RHF() {
     dct_timer_off("DCTSolver::build_tau()");
 }
 
-void DCTSolver::refine_tau_RHF() {
+void DCTSolver::build_tau_R() {
     dct_timer_on("DCTSolver::refine_tau()");
 
     // Read MO-basis Tau from disk into the memory
@@ -224,7 +231,7 @@ void DCTSolver::refine_tau_RHF() {
     dct_timer_off("DCTSolver::refine_tau()");
 }
 
-void DCTSolver::transform_tau_RHF() {
+void DCTSolver::transform_tau_R() {
     dct_timer_on("DCTSolver::transform_tau()");
 
     dpdfile2 T_OO, T_VV;

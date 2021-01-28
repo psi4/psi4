@@ -37,6 +37,7 @@
 
 namespace psi {
 namespace dct {
+
 /**
  * Updates the MO coefficients, transforms the integrals into both chemists'
  * and physcists' notation

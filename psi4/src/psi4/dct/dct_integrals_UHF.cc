@@ -38,6 +38,32 @@
 namespace psi {
 namespace dct {
 
+void DCTSolver::initialize_integraltransform() {
+    IntegralTransform::TransformationType transtype;
+    std::string type_string;
+    if (same_a_b_orbs_ == true) {
+        transtype = IntegralTransform::TransformationType::Restricted;
+        type_string = "restricted";
+    } else {
+        transtype = IntegralTransform::TransformationType::Unrestricted;
+        type_string = "unrestricted";
+    }
+
+    std::vector<std::shared_ptr<MOSpace>> spaces {MOSpace::occ, MOSpace::vir, MOSpace::all};
+    _ints = std::make_unique<IntegralTransform>(shared_from_this(), spaces, transtype);
+    _ints->set_keep_iwl_so_ints(true);
+    _ints->set_keep_dpd_so_ints(true);
+    dpd_set_default(_ints->get_dpd_id());
+
+    outfile->Printf("\n\n\tTransforming two-electron integrals (transformation type: %s)...\n", type_string.c_str());
+
+    if (same_a_b_orbs_ == true) {
+        transform_integrals_RHF();
+    } else {
+        transform_integrals();
+    }
+}
+
 /**
  * Updates the MO coefficients, transforms the integrals into both chemists'
  * and physcists' notation.

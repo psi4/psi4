@@ -50,16 +50,17 @@ double DCTSolver::compute_energy_UHF() {
     cumulantDone_ = false;
     densityConverged_ = false;
     energyConverged_ = false;
-    // Perform SCF guess for the orbitals
-    scf_guess();
+    initialize_orbitals_from_reference_U();
 
     // If DCT computation type is density fitting, build b(Q|mn)
     if (options_.get_str("DCT_TYPE") == "DF") {
-        df_build_b();
+        initialize_df();
+        build_df_b();
     }
 
+    initialize_integraltransform();
     // Perform MP2 guess for the cumulant
-    mp2_guess();
+    initialize_amplitudes();
 
     // Print out information about the job
     outfile->Printf("\n\tDCT Functional:    \t\t %s", options_.get_str("DCT_FUNCTIONAL").c_str());
@@ -196,13 +197,8 @@ void DCTSolver::run_twostep_dct() {
             run_twostep_dct_cumulant_updates();
         } else
             outfile->Printf("\tSkipping the cumulant update to relax guess orbitals\n");
-        // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
-        build_tau();
-        // Compute tau exactly if requested
-        if (exact_tau_) {
-            refine_tau();
-        }
-        transform_tau();
+
+        compute_SO_tau_U();
         run_twostep_dct_orbital_updates();
     }
 
@@ -235,14 +231,14 @@ int DCTSolver::run_twostep_dct_cumulant_updates() {
         std::string diisString;
         // Build new Tau from current Lambda
         if (options_.get_bool("RELAX_TAU")) {
-            build_tau();
+            build_d_U();
             // Compute tau exactly if requested
             if (exact_tau_) {
-                refine_tau();
+                build_tau_U();
             }
             if (options_.get_str("AO_BASIS") == "DISK") {
                 // Transform new Tau to the SO basis
-                transform_tau();
+                transform_tau_U();
                 // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
                 build_AO_tensors();
             } else {
@@ -423,11 +419,7 @@ void DCTSolver::run_simult_dct() {
         // Save the old energy
         old_total_energy_ = new_total_energy_;
         // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
-        build_tau();
-        if (exact_tau_) {
-            refine_tau();
-        }
-        transform_tau();
+        compute_SO_tau_U();
         if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
             build_DF_tensors_UHF();
 

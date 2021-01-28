@@ -45,11 +45,18 @@
 namespace psi {
 namespace dct {
 
+void DCTSolver::compute_SO_tau_U() {
+    build_d_U();
+    if (exact_tau_) {
+        build_tau_U();
+    }
+    transform_tau_U();
+}
+
 /**
- * Forms Tau in the MO basis from the Lambda tensors and transforms it back
- * to the SO basis.
+ * Forms Tau in the MO basis from the Lambda tensors.
  */
-void DCTSolver::build_tau() {
+void DCTSolver::build_d_U() {
     dct_timer_on("DCTSolver::build_tau()");
     dpdbuf4 L1, L2;
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
@@ -118,7 +125,7 @@ void DCTSolver::build_tau() {
 
     // Compute fourth-order Tau terms if requested
     if (options_.get_str("DCT_FUNCTIONAL") == "ODC-13") {
-        build_tau_fourth_order();
+        build_d_fourth_order_U();
     }
 
     // Read MO-basis Tau from disk into the memory
@@ -168,7 +175,7 @@ void DCTSolver::build_tau() {
     dct_timer_off("DCTSolver::build_tau()");
 }
 
-void DCTSolver::build_tau_fourth_order() {
+void DCTSolver::build_d_fourth_order_U() {
     dpdbuf4 I, K, II, KK, Temp, L, O;
     dpdfile2 T_OO, T_oo, T_VV, T_vv, TT_OO, TT_oo, TT_VV, TT_vv, Tau_OO, Tau_oo, Tau_VV, Tau_vv;
 
@@ -589,7 +596,7 @@ void DCTSolver::build_tau_fourth_order() {
     global_dpd_->file2_close(&Tau_VV);
 }
 
-void DCTSolver::transform_tau() {
+void DCTSolver::transform_tau_U() {
     dct_timer_on("DCTSolver::transform_tau()");
 
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
@@ -765,7 +772,7 @@ void DCTSolver::print_opdm() {
     outfile->Printf("\n\n");
 }
 
-void DCTSolver::refine_tau() {
+void DCTSolver::build_tau_U() {
     // Read MO-basis Tau from disk into the memory
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
 

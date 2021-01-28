@@ -46,24 +46,11 @@ namespace dct {
 
 /**
  * Computes the Hartree-Fock energy and then the MP2 energy as an initial guess.
- * This code is responible for initializing the integral transformation too.
  */
-void DCTSolver::mp2_guess() {
-    dct_timer_on("DCTSolver::mp2_guess()");
+void DCTSolver::initialize_amplitudes() {
+    dct_timer_on("DCTSolver::initialize_amplitudes()");
 
     dpdbuf4 I, D;
-
-    // Initialize the integral transformation object
-    std::vector<std::shared_ptr<MOSpace> > spaces;
-    spaces.push_back(MOSpace::occ);
-    spaces.push_back(MOSpace::vir);
-    _ints = new IntegralTransform(shared_from_this(), spaces, IntegralTransform::TransformationType::Unrestricted);
-    _ints->set_keep_iwl_so_ints(true);
-    _ints->set_keep_dpd_so_ints(true);
-    dpd_set_default(_ints->get_dpd_id());
-
-    outfile->Printf("\n\n\tTransforming two-electron integrals (transformation type: unrestricted)...\n");
-    transform_integrals();
 
     std::string guess = options_.get_str("DCT_GUESS");
 
@@ -181,7 +168,7 @@ void DCTSolver::mp2_guess() {
         psio_->close(PSIF_CC_TAMPS, 1);
     }
 
-    dct_timer_off("DCTSolver::mp2_guess()");
+    dct_timer_off("DCTSolver::initialize_amplitudes()");
 }
 
 }  // namespace dct

@@ -50,13 +50,8 @@ namespace dct {
  * and reads the one-electron integrals from PSIO.
  * for RHF reference.
  */
-void DCTSolver::scf_guess_RHF() {
+void DCTSolver::initialize_orbitals_from_reference_R() {
     dct_timer_on("DCTSolver::rhf_guess");
-    auto T = mintshelper()->so_kinetic()->clone();
-    auto V = mintshelper()->so_potential()->clone();
-
-    so_h_->add(T);
-    so_h_->add(V);
 
     epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
     epsilon_b_->copy(epsilon_a_.get());

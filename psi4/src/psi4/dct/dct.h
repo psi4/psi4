@@ -72,10 +72,12 @@ class DCTSolver : public Wavefunction {
     double compute_energy() override;
 
    protected:
-    IntegralTransform *_ints;
+    std::unique_ptr<IntegralTransform> _ints;
 
-    void mp2_guess();
-    void scf_guess();
+    void initialize_amplitudes();
+    void initialize_orbitals_from_reference_U();
+    void initialize_orbitals_from_reference_R();
+    void initialize_integraltransform();
     void finalize();
     void transform_integrals();
     void transform_core_integrals();
@@ -90,12 +92,18 @@ class DCTSolver : public Wavefunction {
     void compute_cepa0_energy();
     void update_cumulant_jacobi();
     void compute_scf_energy();
-    void build_tau_fourth_order();
-    void build_tau();
-    void transform_tau();
+    // Compute tau in the SO basis for unrestricted orbitals
+    void compute_SO_tau_U();
+    void compute_SO_tau_R();
+    void build_d_fourth_order_U();
+    void build_d_U();
+    void build_d_R();
+    void build_tau_U();
+    void build_tau_R();
+    void transform_tau_U();
+    void transform_tau_R();
     void build_gtau();
     void print_opdm();
-    void check_n_representability();
     void build_cumulant_intermediates();
     void process_so_ints();
     void build_G();
@@ -184,9 +192,15 @@ class DCTSolver : public Wavefunction {
     // Orbital-optimized DCT
     void run_simult_dc_guess();
     double compute_orbital_residual();
-    void compute_unrelaxed_density_OOOO();
+    // Compute 2RDMs. These arise as intermediates in computing the
+    // orbital residual. For DF variants, only the cumulant of the
+    // 2RDM is needed (as the RIFIT part).
+    void compute_unrelaxed_density_OOOO(bool cumulant_only = false);
+    void compute_unrelaxed_separable_density_OOOO();
+    // OOVV is already cumulant_only for all implemented methods.
     void compute_unrelaxed_density_OOVV();
-    void compute_unrelaxed_density_OVOV();
+    void compute_unrelaxed_density_OVOV(bool cumulant_only = false);
+    void compute_unrelaxed_separable_density_OVOV();
     void compute_unrelaxed_density_VVVV();
     void compute_orbital_gradient_OV();
     void compute_orbital_gradient_VO();
@@ -209,11 +223,10 @@ class DCTSolver : public Wavefunction {
 
     // RHF-reference DCT
     double compute_energy_RHF();
-    void scf_guess_RHF();
     double update_scf_density_RHF(bool damp = false);
     double compute_scf_error_vector_RHF();
     void build_denominators_RHF();
-    void mp2_guess_RHF();
+    void initialize_amplitudes_RHF();
     void transform_integrals_RHF();
     void transform_core_integrals_RHF();
     void sort_OOOO_integrals_RHF();
@@ -224,9 +237,6 @@ class DCTSolver : public Wavefunction {
     void sort_OOOV_integrals_RHF();
     void run_simult_dct_oo_RHF();
     void run_simult_dct_RHF();
-    void build_tau_RHF();
-    void refine_tau_RHF();
-    void transform_tau_RHF();
     void process_so_ints_RHF();
     void build_cumulant_intermediates_RHF();
     void form_density_weighted_fock_RHF();
@@ -425,7 +435,7 @@ class DCTSolver : public Wavefunction {
     /// The overlap matrix in the AO basis
     SharedMatrix ao_s_;
     /// The one-electron integrals in the SO basis
-    SharedMatrix so_h_;
+    Matrix so_h_;
     /// The alpha Fock matrix (without Tau contribution) in the MO basis
     SharedMatrix moF0a_;
     /// The beta Fock matrix (without Tau contribution) in the MO basis
@@ -501,8 +511,10 @@ class DCTSolver : public Wavefunction {
     std::string indent;
 
     // Density-Fitting DCT
+    /// Set DF variables. Print header.
+    void initialize_df();
     /// Construct the B tensors
-    void df_build_b();
+    void build_df_b();
     /// Calculate memory required for density-fitting
     void df_memory() const;
     /// Build density-fitted <VV||VV>, <vv||vv>, and <Vv|Vv> tensors in G intermediate

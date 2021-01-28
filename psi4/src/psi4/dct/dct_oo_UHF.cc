@@ -77,12 +77,7 @@ void DCTSolver::run_simult_dct_oo() {
 
     while ((!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_) && cycle++ < maxiter_) {
         std::string diisString;
-        // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
-        build_tau();
-        if (exact_tau_) {
-            refine_tau();
-        }
-        transform_tau();
+        compute_SO_tau_U();
 
         if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
             build_DF_tensors_UHF();
@@ -232,6 +227,8 @@ double DCTSolver::compute_orbital_residual() {
     dpdfile2 Xai, Xia;
 
     // Compute the unrelaxed densities for the orbital gradient
+    // For the conventional integral case, we want the entire density.
+    // For the DF case, we want only the RIFIT terms, which happens to be the cumulant.
     compute_unrelaxed_density_OOOO();
     compute_unrelaxed_density_OOVV();
     compute_unrelaxed_density_OVOV();
