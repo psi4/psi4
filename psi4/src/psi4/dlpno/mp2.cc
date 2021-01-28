@@ -106,11 +106,11 @@ void DLPNOMP2::common_init() {
     ribasis_ = get_basisset("DF_BASIS_MP2");
 }
 
-/* Utility function for easily performing making C_DGESV calls
+/* Utility function for making C_DGESV calls
  *
  * C_DGESV solves AX=B for X, given symmetric NxN matrix A and NxM matrix B
  * B is expected in fortran layout, which complicates the call when (M > 1)
- * The workaround used here is switching layouts of B before and after the call
+ * The workaround used here is to switch the layout of B before and after the call
  */
 void C_DGESV_wrapper(SharedMatrix A, SharedMatrix B) {
 
@@ -254,6 +254,7 @@ void DLPNOMP2::overlap_ints() {
 
     timer_on("Construct Grid");
     std::shared_ptr<DFTGrid> grid = std::make_shared<DFTGrid>(molecule_, basisset_, options_);
+    timer_off("Construct Grid");
 
     size_t nthread = 1;
 #ifdef _OPENMP
@@ -264,11 +265,9 @@ void DLPNOMP2::overlap_ints() {
     std::vector<SharedMatrix> DOI_iu_temps(nthread);
     for(size_t thread = 0; thread < nthread; thread++) {
         point_funcs[thread] = std::make_shared<BasisFunctions>(basisset_, grid->max_points(), nbf);
-        DOI_ij_temps[thread] = SharedMatrix(new Matrix("(i,i) Differential Overlap Integral", naocc, naocc));
-        DOI_iu_temps[thread] = SharedMatrix(new Matrix("(i,u) Differential Overlap Integral", naocc, nbf));
+        DOI_ij_temps[thread] = std::make_shared<Matrix>("(i,j) Differential Overlap Integrals", naocc, naocc);
+        DOI_iu_temps[thread] = std::make_shared<Matrix>("(i,u) Differential Overlap Integrals", naocc, nbf);
     }
-    
-    timer_off("Construct Grid");
 
     timer_on("Integration");
 #pragma omp parallel for schedule(static, 1)    
@@ -292,7 +291,7 @@ void DLPNOMP2::overlap_ints() {
         std::vector<int> bf_map = block->functions_local_to_global();
 
         // resize point_values buffer to size of this block
-        SharedMatrix point_values_trim = std::make_shared<Matrix>("blah", npoints_block, nbf_block); // points x bf_block
+        SharedMatrix point_values_trim = std::make_shared<Matrix>("DFTGrid PHI Buffer", npoints_block, nbf_block); // points x bf_block
         for (size_t p = 0; p < npoints_block; p++) {
             for(size_t k = 0; k < nbf_block; k++) {
                 point_values_trim->set(p,k,point_values->get(p,k));
@@ -326,8 +325,8 @@ void DLPNOMP2::overlap_ints() {
     }
     timer_off("Integration");
 
-    DOI_ij = std::make_shared<Matrix>("(i,i) Differential Overlap Integral", naocc, naocc);
-    DOI_iu = std::make_shared<Matrix>("(i,u) Differential Overlap Integral", naocc, nbf);
+    DOI_ij = std::make_shared<Matrix>("(i,j) Differential Overlap Integrals", naocc, naocc);
+    DOI_iu = std::make_shared<Matrix>("(i,u) Differential Overlap Integrals", naocc, nbf);
 
     for(size_t thread = 0; thread < nthread; thread++) {
         DOI_ij->add(DOI_ij_temps[thread]);
@@ -344,7 +343,6 @@ void DLPNOMP2::overlap_ints() {
     }
 
 }
-
 
 void DLPNOMP2::dipole_ints() {
 
@@ -841,8 +839,8 @@ void DLPNOMP2::pno_transform() {
         // number of auxiliary basis in the domain
         int naux_ij = lmopair_to_ribfs[ij].size();
 
-        SharedMatrix i_qa = std::make_shared<Matrix>("blah", naux_ij, npao_ij);
-        SharedMatrix j_qa = std::make_shared<Matrix>("blah", naux_ij, npao_ij);
+        SharedMatrix i_qa = std::make_shared<Matrix>("Three-index Integrals", naux_ij, npao_ij);
+        SharedMatrix j_qa = std::make_shared<Matrix>("Three-index Integrals", naux_ij, npao_ij);
 
         for (int q_ij = 0; q_ij < naux_ij; q_ij++) {
             int q = lmopair_to_ribfs[ij][q_ij];
@@ -1043,11 +1041,8 @@ void DLPNOMP2::lmp2_iterations() {
 
     outfile->Printf("\n  ==> Local MP2 <==\n\n");
     outfile->Printf("    E_CONVERGENCE = %.2e\n", options_.get_double("E_CONVERGENCE"));
-    outfile->Printf("    R_CONVERGENCE = %.2e\n", options_.get_double("R_CONVERGENCE"));
-
-    outfile->Printf("\n");
-    outfile->Printf("                     Corr. Energy    Delta E     Max R");
-    outfile->Printf("\n");
+    outfile->Printf("    R_CONVERGENCE = %.2e\n\n", options_.get_double("R_CONVERGENCE"));
+    outfile->Printf("                     Corr. Energy    Delta E     Max R\n");
 
     R_iajb.resize(n_lmo_pairs);
 
@@ -1122,9 +1117,7 @@ void DLPNOMP2::lmp2_iterations() {
 
         // DIIS extrapolation
         SharedMatrix T_iajb_flat = flatten_mats(T_iajb);
-    //outfile->Printf("debug5a\n");
         SharedMatrix R_iajb_flat = flatten_mats(R_iajb);
-    //outfile->Printf("debug5b\n");
         if(iteration == 0) {
             diis->set_error_vector_size(1, DIISEntry::Matrix, R_iajb_flat.get());
             diis->set_vector_size(1, DIISEntry::Matrix, T_iajb_flat.get());
@@ -1181,7 +1174,6 @@ void DLPNOMP2::setup() {
     localizer->localize();
 
     C_lmo = localizer->L();
-    S_lmo = linalg::triplet(C_lmo, reference_wavefunction_->S(), C_lmo, true, false, false);
     F_lmo = linalg::triplet(C_lmo, reference_wavefunction_->Fa(), C_lmo, true, false, false);
 
     // Form projected atomic orbitals by removing occupied space from the basis

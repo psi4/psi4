@@ -180,7 +180,7 @@ std::vector<std::vector<int>> extend_maps(const std::vector<std::vector<int>> &x
 
 SharedMatrix submatrix_rows(SharedMatrix mat, const std::vector<int> &row_inds) {
 
-    SharedMatrix mat_new = std::make_shared<Matrix>("blah", row_inds.size(), mat->colspi(0));
+    SharedMatrix mat_new = std::make_shared<Matrix>(mat->name(), row_inds.size(), mat->colspi(0));
     for(int r_new = 0; r_new < row_inds.size(); r_new++) {
         int r_old = row_inds[r_new];
         for(int c = 0; c < mat->colspi(0); c++) {
@@ -192,7 +192,7 @@ SharedMatrix submatrix_rows(SharedMatrix mat, const std::vector<int> &row_inds) 
 
 SharedMatrix submatrix_cols(SharedMatrix mat, const std::vector<int> &col_inds) {
 
-    SharedMatrix mat_new = std::make_shared<Matrix>("blah", mat->rowspi(0), col_inds.size());
+    SharedMatrix mat_new = std::make_shared<Matrix>(mat->name(), mat->rowspi(0), col_inds.size());
     for(int r = 0; r < mat->rowspi(0); r++) {
         for(int c_new = 0; c_new < col_inds.size(); c_new++) {
             int c_old = col_inds[c_new];
@@ -204,7 +204,7 @@ SharedMatrix submatrix_cols(SharedMatrix mat, const std::vector<int> &col_inds) 
 
 SharedMatrix submatrix_rows_and_cols(SharedMatrix mat, const std::vector<int> &row_inds, const std::vector<int> &col_inds) {
 
-    SharedMatrix mat_new = std::make_shared<Matrix>("blah", row_inds.size(), col_inds.size());
+    SharedMatrix mat_new = std::make_shared<Matrix>(mat->name(), row_inds.size(), col_inds.size());
     for(int r_new = 0; r_new < row_inds.size(); r_new++) {
         int r_old = row_inds[r_new];
         for(int c_new = 0; c_new < col_inds.size(); c_new++) {
