@@ -8,8 +8,8 @@ if(NOT psi4_CXX_STANDARD IN_LIST _allowed_cxx_standards)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)
-        message(FATAL_ERROR "GCC version must be at least 5.0!")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)
+        message(FATAL_ERROR "GCC version must be at least 6.0!")
     endif()
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
