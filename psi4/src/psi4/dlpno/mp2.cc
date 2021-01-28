@@ -149,23 +149,18 @@ SharedMatrix flatten_mats(const std::vector<SharedMatrix> &mat_list) {
 
     size_t total_size = 0;
     for(SharedMatrix mat : mat_list) {
-        total_size += (mat->colspi(0) * mat->rowspi(0));
+        total_size += mat->size();
     }
-    //outfile->Printf("total_size: %zu\n",total_size);
 
     SharedMatrix flat = std::make_shared<Matrix>("flattened matrix list", 1, total_size);
-    //outfile->Printf("made it!\n");
-    size_t ind = 0;
+    double** flatp = flat->pointer();
 
+    size_t flat_ind = 0;
     for(SharedMatrix mat : mat_list) {
-        //outfile->Printf("%d %d\n", mat->rowspi(0), mat->colspi(0));
-        for(size_t r = 0; r < mat->rowspi(0); r++) {
-            for(size_t c = 0; c < mat->colspi(0); c++, ind++) {
-                flat->set(0, ind, mat->get(r,c));
-            }
-        }
+        if (mat->size() == 0) continue;
+        ::memcpy(&flatp[0][flat_ind], mat->pointer()[0], sizeof(double) * mat->size());
+        flat_ind += mat->size();
     }
-    //outfile->Printf("ind: %zu\n",ind);
 
     return flat;
 
@@ -174,15 +169,14 @@ SharedMatrix flatten_mats(const std::vector<SharedMatrix> &mat_list) {
 /* This function is a complement to flatten_mats(). A flattened Matrix is
  * copied into a list of Matrix objects.
  */
-void copy_flat_mats(SharedMatrix result, std::vector<SharedMatrix> &mat_list) {
+void copy_flat_mats(SharedMatrix flat, std::vector<SharedMatrix> &mat_list) {
 
-    size_t ind = 0;
+    double** flatp = flat->pointer();
+    size_t flat_ind = 0;
     for(SharedMatrix mat : mat_list) {
-        for(size_t r = 0; r < mat->rowspi(0); r++) {
-            for(size_t c = 0; c < mat->colspi(0); c++, ind++) {
-                mat->set(r, c, result->get(0, ind));
-            }
-        }
+        if (mat->size() == 0) continue;
+        ::memcpy(mat->pointer()[0], &flatp[0][flat_ind], sizeof(double) * mat->size());
+        flat_ind += mat->size();
     }
 
 }
@@ -361,27 +355,26 @@ void DLPNOMP2::dipole_ints() {
     std::shared_ptr<MintsHelper> mints = std::make_shared<MintsHelper>(basisset_, options_);
     std::vector<SharedMatrix> ao_dipole = mints->ao_dipole();
 
+    SharedMatrix lmo_lmo_dipx = linalg::triplet(C_lmo, ao_dipole[0], C_lmo, true, false, false);
+    SharedMatrix lmo_lmo_dipy = linalg::triplet(C_lmo, ao_dipole[1], C_lmo, true, false, false);
+    SharedMatrix lmo_lmo_dipz = linalg::triplet(C_lmo, ao_dipole[2], C_lmo, true, false, false);
+
+    SharedMatrix lmo_pao_dipx = linalg::triplet(C_lmo, ao_dipole[0], C_pao, true, false, false);
+    SharedMatrix lmo_pao_dipy = linalg::triplet(C_lmo, ao_dipole[1], C_pao, true, false, false);
+    SharedMatrix lmo_pao_dipz = linalg::triplet(C_lmo, ao_dipole[2], C_pao, true, false, false);
+
+    // < i | dipole | i >
     std::vector<Vector3> R_i;
 
-    // probably a BLAS-ier way to do this
-    for (size_t i = 0; i < naocc; ++i) {
-        double rx = 0, ry = 0, rz = 0;
-        for (size_t u = 0; u < nbf; ++u) {
-            for (size_t v = 0; v < nbf; ++v) {
-                rx += C_lmo->get(u,i) * ao_dipole[0]->get(u,v) * C_lmo->get(v,i);
-                ry += C_lmo->get(u,i) * ao_dipole[1]->get(u,v) * C_lmo->get(v,i);
-                rz += C_lmo->get(u,i) * ao_dipole[2]->get(u,v) * C_lmo->get(v,i);
-            }
-        }
-        R_i.push_back(Vector3(rx, ry, rz));
-    }
-
-    SharedMatrix lmo_bf_dx = linalg::doublet(C_lmo, ao_dipole[0], true, false);
-    SharedMatrix lmo_bf_dy = linalg::doublet(C_lmo, ao_dipole[1], true, false);
-    SharedMatrix lmo_bf_dz = linalg::doublet(C_lmo, ao_dipole[2], true, false);
-
+    // < i | dipole | u >
     std::vector<std::vector<Vector3>> lmo_pao_dr(naocc);
+
+    // e_u
     std::vector<SharedVector> lmo_pao_e(naocc);
+
+    for (size_t i = 0; i < naocc; ++i) {
+        R_i.push_back(Vector3(lmo_lmo_dipx->get(i,i), lmo_lmo_dipy->get(i,i), lmo_lmo_dipz->get(i,i)));
+    }
 
     for (size_t i = 0; i < naocc; ++i) {
 
@@ -400,20 +393,19 @@ void DLPNOMP2::dipole_ints() {
         SharedMatrix X_pao_i;
         SharedVector e_pao_i;
         std::tie(X_pao_i, e_pao_i) = orthocanonicalizer(S_pao_i, F_pao_i);
-        C_pao_i = linalg::doublet(C_pao_i, X_pao_i, false, false); // now in a nonredundant basis
 
-        int npao_i_new = X_pao_i->colspi(0);
+        SharedMatrix lmo_pao_dipx_i = submatrix_rows_and_cols(lmo_pao_dipx, {(int)i}, pao_inds);
+        SharedMatrix lmo_pao_dipy_i = submatrix_rows_and_cols(lmo_pao_dipy, {(int)i}, pao_inds);
+        SharedMatrix lmo_pao_dipz_i = submatrix_rows_and_cols(lmo_pao_dipz, {(int)i}, pao_inds);
 
-        for(size_t u = 0; u < npao_i_new; u++) {
-            double dx_iu = 0.0;
-            double dy_iu = 0.0;
-            double dz_iu = 0.0;
-            for(size_t v = 0; v < nbf; v++) {
-                dx_iu += lmo_bf_dx->get(i,v) * C_pao_i->get(v,u);
-                dy_iu += lmo_bf_dy->get(i,v) * C_pao_i->get(v,u);
-                dz_iu += lmo_bf_dz->get(i,v) * C_pao_i->get(v,u);
-            }
-            lmo_pao_dr[i].push_back(Vector3(dx_iu, dy_iu, dz_iu));
+        lmo_pao_dipx_i = linalg::doublet(lmo_pao_dipx_i, X_pao_i);
+        lmo_pao_dipy_i = linalg::doublet(lmo_pao_dipy_i, X_pao_i);
+        lmo_pao_dipz_i = linalg::doublet(lmo_pao_dipz_i, X_pao_i);
+
+        int npao_i = X_pao_i->colspi(0);
+
+        for(size_t u = 0; u < npao_i; u++) {
+            lmo_pao_dr[i].push_back(Vector3(lmo_pao_dipx_i->get(0,u), lmo_pao_dipy_i->get(0,u), lmo_pao_dipz_i->get(0,u)));
         }
         lmo_pao_e[i] = e_pao_i;
 
@@ -444,10 +436,6 @@ void DLPNOMP2::dipole_ints() {
                     num_linear *= num_linear;
 
                     double denom = (lmo_pao_e[i]->get(u) + lmo_pao_e[j]->get(v)) - (F_lmo->get(i,i) + F_lmo->get(j,j));
-
-                    if (denom < 0.0) {
-                        outfile->Printf("  ERROR: denom=%f \n", denom);
-                    }
 
                     e_actual_temp += (num_actual / denom);
                     e_linear_temp += (num_linear / denom);
