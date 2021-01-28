@@ -93,4 +93,8 @@ int DPD::file2_init(dpdfile2 *File, int filenum, int irrep, int pnum, int qnum, 
     return 0;
 }
 
+int DPD::file2_init(dpdfile2 *File, int filenum, int irrep, int pnum, int qnum, const std::string& label) {
+    return file2_init(File, filenum, irrep, pnum, qnum, label.c_str());
+}
+
 }  // namespace psi

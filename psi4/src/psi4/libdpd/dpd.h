@@ -344,6 +344,7 @@ class PSI_API DPD {
     int trace42_13(dpdbuf4 *A, dpdfile2 *B, int transb, double alpha, double beta);
 
     int file2_init(dpdfile2 *File, int filenum, int irrep, int pnum, int qnum, const char *label);
+    int file2_init(dpdfile2 *File, int filenum, int irrep, int pnum, int qnum, const std::string& label);
     int file2_close(dpdfile2 *File);
     int file2_mat_init(dpdfile2 *File);
     int file2_mat_close(dpdfile2 *File);
