@@ -69,9 +69,6 @@ double DCTSolver::compute_energy() {
     }
 
     if (options_.get_str("DCT_TYPE") == "DF") {
-        outfile->Printf(
-            "\n\n\t**** Warning: The density-fitted DCT cumulant is only approximately variational.\n"
-            "\t     The stationarity conditions, and thus DF-DCT energy, are subject to change. ****\n");
         if (!options_["AO_BASIS"].has_changed())
             options_.set_str("DCT", "AO_BASIS", "NONE");
         else if (options_.get_str("AO_BASIS") == "DISK") {

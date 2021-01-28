@@ -54,40 +54,38 @@ void DCTSolver::compute_unrelaxed_density_OOOO(bool cumulant_only) {
         compute_I_intermediate();
     }
 
-    const std::string tensor_name = cumulant_only ? "Lambda" : "Gamma";
-    auto aa_str = tensor_name + " <OO|OO>";
-    auto ab_str = tensor_name + " <Oo|Oo>";
-    auto bb_str = tensor_name + " <oo|oo>";
+    const std::string density_variable = cumulant_only ? "Lambda " : "Gamma ";
+    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
 
     psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
 
     // Gamma_ijkl = 1/8 * I_ijkl
     global_dpd_->buf4_init(&Iaa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[O>O]-"), ID("[O>O]-"), ID("[O>O]-"), 0,
                            "I <OO|OO>");
-    global_dpd_->buf4_copy(&Iaa, PSIF_DCT_DENSITY, aa_str.c_str());
+    global_dpd_->buf4_copy(&Iaa, PSIF_DCT_DENSITY, varname("<OO|OO>"));
     global_dpd_->buf4_close(&Iaa);
 
     global_dpd_->buf4_init(&Iab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), 0, "I <Oo|Oo>");
-    global_dpd_->buf4_copy(&Iab, PSIF_DCT_DENSITY, ab_str.c_str());
+    global_dpd_->buf4_copy(&Iab, PSIF_DCT_DENSITY, varname("<Oo|Oo>"));
     global_dpd_->buf4_close(&Iab);
 
     global_dpd_->buf4_init(&Ibb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[o>o]-"), ID("[o>o]-"), ID("[o>o]-"), 0,
                            "I <oo|oo>");
-    global_dpd_->buf4_copy(&Ibb, PSIF_DCT_DENSITY, bb_str.c_str());
+    global_dpd_->buf4_copy(&Ibb, PSIF_DCT_DENSITY, varname("<oo|oo>"));
     global_dpd_->buf4_close(&Ibb);
 
     global_dpd_->buf4_init(&Gaa, PSIF_DCT_DENSITY, 0, ID("[O>O]-"), ID("[O>O]-"), ID("[O>O]-"), ID("[O>O]-"), 0,
-                           aa_str.c_str());
+                           varname("<OO|OO>"));
     global_dpd_->buf4_scm(&Gaa, 1.0 / 8.0);
     global_dpd_->buf4_close(&Gaa);
 
     global_dpd_->buf4_init(&Gab, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), 0,
-                           ab_str.c_str());
+                           varname("<Oo|Oo>"));
     global_dpd_->buf4_scm(&Gab, 1.0 / 8.0);
     global_dpd_->buf4_close(&Gab);
 
     global_dpd_->buf4_init(&Gbb, PSIF_DCT_DENSITY, 0, ID("[o>o]-"), ID("[o>o]-"), ID("[o>o]-"), ID("[o>o]-"), 0,
-                           bb_str.c_str());
+                           varname("<oo|oo>"));
     global_dpd_->buf4_scm(&Gbb, 1.0 / 8.0);
     global_dpd_->buf4_close(&Gbb);
 
@@ -232,10 +230,8 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
     dpdbuf4 L, G, T, II, Taa, Tab, Tbb, Kaa, Kab, Kbb;
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
 
-    const std::string tensor_name = cumulant_only ? "Lambda" : "Gamma";
-    auto aa_str = tensor_name + " <OO|VV>";
-    auto ab_str = tensor_name + " <Oo|Vv>";
-    auto bb_str = tensor_name + " <oo|vv>";
+    const std::string density_variable = cumulant_only ? "Lambda " : "Gamma ";
+    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
 
     /*
      * The OOVV and VVOO blocks
@@ -246,33 +242,33 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
     // OOVV
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "Amplitude <OO|VV>");
-    global_dpd_->buf4_copy(&Laa, PSIF_DCT_DENSITY, aa_str.c_str());
+    global_dpd_->buf4_copy(&Laa, PSIF_DCT_DENSITY, varname("<OO|VV>"));
     global_dpd_->buf4_close(&Laa);
 
     global_dpd_->buf4_init(&Gaa, PSIF_DCT_DENSITY, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           aa_str.c_str());
+                           varname("<OO|VV>"));
     global_dpd_->buf4_scm(&Gaa, 0.5);
     global_dpd_->buf4_close(&Gaa);
 
     // OoVv
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "Amplitude <Oo|Vv>");
-    global_dpd_->buf4_copy(&Lab, PSIF_DCT_DENSITY, ab_str.c_str());
+    global_dpd_->buf4_copy(&Lab, PSIF_DCT_DENSITY, varname("<Oo|Vv>"));
     global_dpd_->buf4_close(&Lab);
 
     global_dpd_->buf4_init(&Gab, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           ab_str.c_str());
+                           varname("<Oo|Vv>"));
     global_dpd_->buf4_scm(&Gab, 0.5);
     global_dpd_->buf4_close(&Gab);
 
     // oovv
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Amplitude <oo|vv>");
-    global_dpd_->buf4_copy(&Lbb, PSIF_DCT_DENSITY, bb_str.c_str());
+    global_dpd_->buf4_copy(&Lbb, PSIF_DCT_DENSITY, varname("<oo|vv>"));
     global_dpd_->buf4_close(&Lbb);
 
     global_dpd_->buf4_init(&Gbb, PSIF_DCT_DENSITY, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           bb_str.c_str());
+                           varname("<oo|vv>"));
     global_dpd_->buf4_scm(&Gbb, 0.5);
     global_dpd_->buf4_close(&Gbb);
 
@@ -307,7 +303,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "Temp <OO|VV>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               aa_str.c_str());
+                               varname("<OO|VV>"));
         dpd_buf4_add(&G, &T, 1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -316,7 +312,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "P(Temp) <OO|VV>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               aa_str.c_str());
+                               varname("<OO|VV>"));
         dpd_buf4_add(&G, &T, -1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -325,7 +321,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
 
         // G_IjAb += 1/6 lambda_IkAb * T_kj
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               ab_str.c_str());
+                               varname("<Oo|Vv>"));
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "Amplitude <Oo|Vv>");
         global_dpd_->contract424(&L, &T_oo, &G, 1, 0, 1, 1.0 / 6.0, 1.0);
@@ -334,7 +330,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
 
         // G_IjAb += 1/6 T_IK * lambda_KjAb
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               ab_str.c_str());
+                               varname("<Oo|Vv>"));
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "Amplitude <Oo|Vv>");
         global_dpd_->contract244(&T_OO, &L, &G, 1, 0, 0, 1.0 / 6.0, 1.0);
@@ -361,7 +357,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                "Temp <oo|vv>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               bb_str.c_str());
+                               varname("<oo|vv>"));
         dpd_buf4_add(&G, &T, 1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -370,7 +366,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                "P(Temp) <oo|vv>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               bb_str.c_str());
+                               varname("<oo|vv>"));
         dpd_buf4_add(&G, &T, -1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -399,7 +395,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "Temp <OO|VV>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               aa_str.c_str());
+                               varname("<OO|VV>"));
         dpd_buf4_add(&G, &T, 1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -408,7 +404,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "P(Temp) <OO|VV>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               aa_str.c_str());
+                               varname("<OO|VV>"));
         dpd_buf4_add(&G, &T, -1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -417,7 +413,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
 
         // G_IjAb -= 1/6 lambda_IjAc * T_cb
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               ab_str.c_str());
+                               varname("<Oo|Vv>"));
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "Amplitude <Oo|Vv>");
         global_dpd_->contract424(&L, &T_vv, &G, 3, 0, 0, -1.0 / 6.0, 1.0);
@@ -426,7 +422,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
 
         // G_IjAb -= 1/6 lambda_IjCb * T_CA
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               ab_str.c_str());
+                               varname("<Oo|Vv>"));
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "Amplitude <Oo|Vv>");
         global_dpd_->contract244(&T_VV, &L, &G, 1, 2, 1, -1.0 / 6.0, 1.0);
@@ -453,7 +449,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                "Temp <oo|vv>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               bb_str.c_str());
+                               varname("<oo|vv>"));
         dpd_buf4_add(&G, &T, 1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -462,7 +458,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                "P(Temp) <oo|vv>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               bb_str.c_str());
+                               varname("<oo|vv>"));
         dpd_buf4_add(&G, &T, -1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -478,7 +474,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
 
         // Gamma_IJAB += 1/12 * lambda_ABKL * I_KLIJ
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               aa_str.c_str());
+                               varname("<OO|VV>"));
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
                                "Amplitude <OO|VV>");
         global_dpd_->buf4_init(&II, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[O>O]-"), ID("[O>O]-"), ID("[O>O]-"), 0,
@@ -490,7 +486,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
 
         // Gamma_IjAb += 1/6 * lambda_AbKl * I_KlIj
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               ab_str.c_str());
+                               varname("<Oo|Vv>"));
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "Amplitude <Oo|Vv>");
         global_dpd_->buf4_init(&II, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), 0,
@@ -502,7 +498,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
 
         // Gamma_ijab += 1/12 * lambda_abkl * I_klij
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               bb_str.c_str());
+                               varname("<oo|vv>"));
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                                "Amplitude <oo|vv>");
         global_dpd_->buf4_init(&II, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[o>o]-"), ID("[o>o]-"), ID("[o>o]-"), 0,
@@ -548,7 +544,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O,O]"), ID("[V,V]"), 0,
                                "Temp <OO|VV>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               aa_str.c_str());
+                               varname("<OO|VV>"));
         dpd_buf4_add(&G, &T, 1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -563,7 +559,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O,O]"), ID("[V,V]"), 0,
                                "P(Temp) <OO|VV>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               aa_str.c_str());
+                               varname("<OO|VV>"));
         dpd_buf4_add(&G, &T, -1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -575,7 +571,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O,O]"), ID("[V,V]"), 0,
                                "P(Temp) <OO|VV>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               aa_str.c_str());
+                               varname("<OO|VV>"));
         dpd_buf4_add(&G, &T, -1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -587,7 +583,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O,O]"), ID("[V,V]"), 0,
                                "P(Temp) <OO|VV>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               aa_str.c_str());
+                               varname("<OO|VV>"));
         dpd_buf4_add(&G, &T, 1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -641,7 +637,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "Temp <Oo|Vv>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               ab_str.c_str());
+                               varname("<Oo|Vv>"));
         dpd_buf4_add(&G, &T, 1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -684,7 +680,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "Temp <Oo|Vv>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               ab_str.c_str());
+                               varname("<Oo|Vv>"));
         dpd_buf4_add(&G, &T, 1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -721,7 +717,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o,o]"), ID("[v,v]"), 0,
                                "Temp <oo|vv>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               bb_str.c_str());
+                               varname("<oo|vv>"));
         dpd_buf4_add(&G, &T, 1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -736,7 +732,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o,o]"), ID("[v,v]"), 0,
                                "P(Temp) <oo|vv>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               bb_str.c_str());
+                               varname("<oo|vv>"));
         dpd_buf4_add(&G, &T, -1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -748,7 +744,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o,o]"), ID("[v,v]"), 0,
                                "P(Temp) <oo|vv>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               bb_str.c_str());
+                               varname("<oo|vv>"));
         dpd_buf4_add(&G, &T, -1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -760,7 +756,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
         global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o,o]"), ID("[v,v]"), 0,
                                "P(Temp) <oo|vv>");
         global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               bb_str.c_str());
+                               varname("<oo|vv>"));
         dpd_buf4_add(&G, &T, 1.0);
         global_dpd_->buf4_close(&G);
         global_dpd_->buf4_close(&T);
@@ -770,20 +766,20 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
 
     // Sort OOVV density to VVOO
     global_dpd_->buf4_init(&Gaa, PSIF_DCT_DENSITY, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           aa_str.c_str());
-    global_dpd_->buf4_sort(&Gaa, PSIF_DCT_DENSITY, rspq, ID("[V>V]-"), ID("[O>O]-"), "Gamma <VV|OO>");
+                           varname("<OO|VV>"));
+    global_dpd_->buf4_sort(&Gaa, PSIF_DCT_DENSITY, rspq, ID("[V>V]-"), ID("[O>O]-"), varname("<VV|OO>"));
     global_dpd_->buf4_close(&Gaa);
 
     // Sort OoVv density to VvOo
     global_dpd_->buf4_init(&Gab, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           ab_str.c_str());
-    global_dpd_->buf4_sort(&Gab, PSIF_DCT_DENSITY, rspq, ID("[V,v]"), ID("[O,o]"), "Gamma <Vv|Oo>");
+                           varname("<Oo|Vv>"));
+    global_dpd_->buf4_sort(&Gab, PSIF_DCT_DENSITY, rspq, ID("[V,v]"), ID("[O,o]"), varname("<Vv|Oo>"));
     global_dpd_->buf4_close(&Gab);
 
     // Sort oovv density to vvoo
     global_dpd_->buf4_init(&Gbb, PSIF_DCT_DENSITY, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           bb_str.c_str());
-    global_dpd_->buf4_sort(&Gbb, PSIF_DCT_DENSITY, rspq, ID("[v>v]-"), ID("[o>o]-"), "Gamma <vv|oo>");
+                           varname("<oo|vv>"));
+    global_dpd_->buf4_sort(&Gbb, PSIF_DCT_DENSITY, rspq, ID("[v>v]-"), ID("[o>o]-"), varname("<vv|oo>"));
     global_dpd_->buf4_close(&Gbb);
 
     psio_->close(PSIF_DCT_DENSITY, 1);
@@ -802,17 +798,20 @@ void DCTSolver::compute_unrelaxed_density_OVOV(bool cumulant_only) {
 
     psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
 
+    const std::string density_variable = cumulant_only ? "Lambda " : "Gamma ";
+    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+
     // There are five unique spin cases: Г<IAJB>, Г<iajb>, Г<IaJb>, Г<iAjB>, Г<IajB>
 
     // Г<IAJB> spin case
 
     // Gamma_IAJB = -1.0 * K_IAJB
     global_dpd_->buf4_init(&Kaa, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "K <OV|OV>");
-    global_dpd_->buf4_copy(&Kaa, PSIF_DCT_DENSITY, "Gamma <OV|OV>");
+    global_dpd_->buf4_copy(&Kaa, PSIF_DCT_DENSITY, varname("<OV|OV>"));
     global_dpd_->buf4_close(&Kaa);
 
     global_dpd_->buf4_init(&Gaa, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Gamma <OV|OV>");
+                           varname("<OV|OV>"));
     global_dpd_->buf4_scm(&Gaa, -1.0);
     global_dpd_->buf4_close(&Gaa);
 
@@ -820,51 +819,51 @@ void DCTSolver::compute_unrelaxed_density_OVOV(bool cumulant_only) {
     // Gamma_IaJb = -1.0 * K_IaJb
     // Gamma_iAjB = -1.0 * K_iAjB
     global_dpd_->buf4_init(&Kab, PSIF_DCT_DPD, 0, ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), 0, "K <Ov|Ov>");
-    global_dpd_->buf4_copy(&Kab, PSIF_DCT_DENSITY, "Gamma <Ov|Ov>");
+    global_dpd_->buf4_copy(&Kab, PSIF_DCT_DENSITY, varname("<Ov|Ov>"));
     global_dpd_->buf4_close(&Kab);
 
     global_dpd_->buf4_init(&Kba, PSIF_DCT_DPD, 0, ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), 0, "K <oV|oV>");
-    global_dpd_->buf4_copy(&Kba, PSIF_DCT_DENSITY, "Gamma <oV|oV>");
+    global_dpd_->buf4_copy(&Kba, PSIF_DCT_DENSITY, varname("<oV|oV>"));
     global_dpd_->buf4_close(&Kba);
 
     global_dpd_->buf4_init(&Gab, PSIF_DCT_DENSITY, 0, ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), ID("[O,v]"), 0,
-                           "Gamma <Ov|Ov>");
+                           varname("<Ov|Ov>"));
     global_dpd_->buf4_scm(&Gab, -1.0);
     global_dpd_->buf4_close(&Gab);
 
     global_dpd_->buf4_init(&Gba, PSIF_DCT_DENSITY, 0, ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), ID("[o,V]"), 0,
-                           "Gamma <oV|oV>");
+                           varname("<oV|oV>"));
     global_dpd_->buf4_scm(&Gba, -1.0);
     global_dpd_->buf4_close(&Gba);
 
     // Г<IajB> spin case:
     // Gamma_IajB = -1.0 * K_IajB
     global_dpd_->buf4_init(&Kab, PSIF_DCT_DPD, 0, ID("[O,v]"), ID("[o,V]"), ID("[O,v]"), ID("[o,V]"), 0, "K <Ov|oV>");
-    global_dpd_->buf4_copy(&Kab, PSIF_DCT_DENSITY, "Gamma <Ov|oV>");
+    global_dpd_->buf4_copy(&Kab, PSIF_DCT_DENSITY, varname("<Ov|oV>"));
     global_dpd_->buf4_close(&Kab);
 
     global_dpd_->buf4_init(&Kab, PSIF_DCT_DPD, 0, ID("[o,V]"), ID("[O,v]"), ID("[o,V]"), ID("[O,v]"), 0, "K <oV|Ov>");
-    global_dpd_->buf4_copy(&Kab, PSIF_DCT_DENSITY, "Gamma <oV|Ov>");
+    global_dpd_->buf4_copy(&Kab, PSIF_DCT_DENSITY, varname("<oV|Ov>"));
     global_dpd_->buf4_close(&Kab);
 
     global_dpd_->buf4_init(&Gab, PSIF_DCT_DENSITY, 0, ID("[O,v]"), ID("[o,V]"), ID("[O,v]"), ID("[o,V]"), 0,
-                           "Gamma <Ov|oV>");
+                           varname("<Ov|oV>"));
     global_dpd_->buf4_scm(&Gab, -1.0);
     global_dpd_->buf4_close(&Gab);
 
     global_dpd_->buf4_init(&Gab, PSIF_DCT_DENSITY, 0, ID("[o,V]"), ID("[O,v]"), ID("[o,V]"), ID("[O,v]"), 0,
-                           "Gamma <oV|Ov>");
+                           varname("<oV|Ov>"));
     global_dpd_->buf4_scm(&Gab, -1.0);
     global_dpd_->buf4_close(&Gab);
 
     // Г<iajb> spin case:
     // Gamma_iajb = -1.0 * K_iajb
     global_dpd_->buf4_init(&Kbb, PSIF_DCT_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0, "K <ov|ov>");
-    global_dpd_->buf4_copy(&Kbb, PSIF_DCT_DENSITY, "Gamma <ov|ov>");
+    global_dpd_->buf4_copy(&Kbb, PSIF_DCT_DENSITY, varname("<ov|ov>"));
     global_dpd_->buf4_close(&Kbb);
 
     global_dpd_->buf4_init(&Gbb, PSIF_DCT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0,
-                           "Gamma <ov|ov>");
+                           varname("<ov|ov>"));
     global_dpd_->buf4_scm(&Gbb, -1.0);
     global_dpd_->buf4_close(&Gbb);
 
@@ -1202,12 +1201,6 @@ void DCTSolver::construct_oo_density_UHF() {
 }
 
 void DCTSolver::compute_oe_properties() {
-    if (options_.get_str("DCT_TYPE") == "DF") {
-        outfile->Printf(
-            "\n\n\t**** Warning: Density-fitted DCT properties are only approximate.\n"
-            "\t     Small errors are expected. ****\n");
-    }
-
     // Compute one-electron properties
 
     auto oe = std::make_shared<OEProp>(shared_from_this());

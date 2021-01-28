@@ -197,14 +197,14 @@ class DCTSolver : public Wavefunction {
     // 2RDM is needed (as the RIFIT part).
     // Setting cumulant_only saves as "Cumulant", else "Gamma", in
     // addition to changing what is actually computed.
-    void compute_unrelaxed_density_OOOO(bool cumulant_only = false);
+    void compute_unrelaxed_density_OOOO(bool cumulant_only);
     void compute_unrelaxed_separable_density_OOOO();
-    void compute_unrelaxed_density_OOVV(bool cumulant_only = false);
-    void compute_unrelaxed_density_OVOV(bool cumulant_only = false);
+    void compute_unrelaxed_density_OOVV(bool cumulant_only);
+    void compute_unrelaxed_density_OVOV(bool cumulant_only);
     void compute_unrelaxed_separable_density_OVOV();
     void compute_unrelaxed_density_VVVV();
-    void compute_orbital_gradient_OV();
-    void compute_orbital_gradient_VO();
+    void compute_orbital_gradient_OV(bool separate_gbargamma);
+    void compute_orbital_gradient_VO(bool separate_gbargamma);
     void compute_orbital_rotation_jacobi();
     void rotate_orbitals();
     void compute_oe_properties();
