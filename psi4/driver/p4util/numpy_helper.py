@@ -95,12 +95,12 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
     Examples
     --------
 
-    >>> data = np.random.rand(20)
-    >>> vector = array_to_matrix(data)
+    >>> data = np.random.rand(20,1)
+    >>> vector = psi4.core.Matrix.from_array(data)
 
     >>> irrep_data = [np.random.rand(2, 2), np.empty(shape=(0,3)), np.random.rand(4, 4)]
-    >>> matrix = array_to_matrix(irrep_data)
-    >>> print matrix.rowspi().to_tuple()
+    >>> matrix = psi4.core.Matrix.from_array(irrep_data)
+    >>> print(matrix.rowdim().to_tuple())
     (2, 0, 4)
     """
 
@@ -236,7 +236,7 @@ def _to_array(matrix, copy=True, dense=False):
     Examples
     --------
 
-    >>> data = psi4.Matrix(3, 3)
+    >>> data = psi4.core.Matrix(3, 3)
     >>> data.to_array()
     [[ 0.  0.  0.]
      [ 0.  0.  0.]
