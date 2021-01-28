@@ -377,6 +377,10 @@ class PSI_API DPD {
     int file4_mat_irrep_wrt_block(dpdfile4 *File, int irrep, int start_pq, int num_pq);
 
     int buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, int pqnum, int rsnum, int file_pqnum, int file_rsnum,
+                  int anti, const std::string& label);
+    int buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, std::string pq, std::string rs, std::string file_pq,
+                  std::string file_rs, int anti, const std::string& label);
+    int buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, int pqnum, int rsnum, int file_pqnum, int file_rsnum,
                   int anti, const char *label);
     int buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, std::string pq, std::string rs, std::string file_pq,
                   std::string file_rs, int anti, const char *label);
@@ -390,9 +394,13 @@ class PSI_API DPD {
     int buf4_mat_irrep_wrt(dpdbuf4 *Buf, int irrep);
     int buf4_print(dpdbuf4 *Buf, std::string out_fname, int print_data);
     int buf4_copy(dpdbuf4 *InBuf, int outfilenum, const char *label);
+    int buf4_copy(dpdbuf4 *InBuf, int outfilenum, const std::string& label);
     int buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum, int rsnum, const char *label);
     int buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, std::string pq, std::string rs,
                   const char *label);
+    int buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum, int rsnum, const std::string& label);
+    int buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, std::string pq, std::string rs,
+                  const std::string& label);
     int buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum, int rsnum, const char *label);
     int buf4_sort_axpy(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum, int rsnum, const char *label,
                        double alpha);

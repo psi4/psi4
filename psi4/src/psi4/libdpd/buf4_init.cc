@@ -128,4 +128,14 @@ int DPD::buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, string pq, string rs,
     return buf4_init(Buf, inputfile, irrep, pairnum(pq), pairnum(rs), pairnum(pq), pairnum(rs), anti, label);
 }
 
+int DPD::buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, string pq, string rs, string file_pq, string file_rs,
+                   int anti, const std::string& label) {
+    return buf4_init(Buf, inputfile, irrep, pairnum(pq), pairnum(rs), pairnum(file_pq), pairnum(file_rs), anti, label.c_str());
+}
+
+int DPD::buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, int pqnum, int rsnum, int file_pqnum, int file_rsnum,
+                   int anti, const std::string& label) {
+    return buf4_init(Buf, inputfile, irrep, pqnum, rsnum, file_pqnum, file_rsnum, anti, label.c_str());
+}
+
 }  // namespace psi

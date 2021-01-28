@@ -1973,5 +1973,12 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
 int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, string pq, string rs, const char *label) {
     return buf4_sort(InBuf, outfilenum, index, pairnum(pq), pairnum(rs), label);
 }
+int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum, int rsnum, const std::string& label) {
+    return buf4_sort(InBuf, outfilenum, index, pqnum, rsnum, label.c_str());
+}
+
+int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, string pq, string rs, const std::string& label) {
+    return buf4_sort(InBuf, outfilenum, index, pairnum(pq), pairnum(rs), label.c_str());
+}
 
 }  // namespace psi

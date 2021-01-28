@@ -144,4 +144,8 @@ int DPD::buf4_copy(dpdbuf4 *InBuf, int outfilenum, const char *label) {
     return 0;
 }
 
+int DPD::buf4_copy(dpdbuf4 *InBuf, int outfilenum, const std::string& label) {
+    return buf4_copy(InBuf, outfilenum, label.c_str());
+}
+
 }  // namespace psi
