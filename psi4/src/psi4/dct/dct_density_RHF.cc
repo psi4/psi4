@@ -307,7 +307,7 @@ void DCTSolver::compute_unrelaxed_separable_density_OVOV_RHF() {
 
 }
 
-void DCTSolver::compute_unrelaxed_density_VVVV_RHF() {
+void DCTSolver::compute_unrelaxed_density_VVVV_RHF(bool cumulant_only) {
     psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
 
     dpdbuf4 LLaa, Laa, Gaa, Gab;
@@ -327,6 +327,14 @@ void DCTSolver::compute_unrelaxed_density_VVVV_RHF() {
     global_dpd_->buf4_close(&LLaa);
     global_dpd_->buf4_close(&Gaa);
     global_dpd_->buf4_close(&Laa);
+
+    if (!cumulant_only) { compute_unrelaxed_separable_density_VVVV_RHF(); };
+
+    psio_->close(PSIF_DCT_DENSITY, 1);
+}
+
+void DCTSolver::compute_unrelaxed_separable_density_VVVV_RHF() {
+    dpdbuf4 Gab;
 
     global_dpd_->buf4_init(&Gab, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0,
                            "Gamma SF <VV|VV>");  // Gamma <Vv|Vv>
@@ -365,8 +373,6 @@ void DCTSolver::compute_unrelaxed_density_VVVV_RHF() {
                            "Gamma SF <VV|VV>");
     global_dpd_->buf4_copy(&Gab, PSIF_DCT_DENSITY, "Gamma <VV|VV>");
     global_dpd_->buf4_close(&Gab);
-
-    psio_->close(PSIF_DCT_DENSITY, 1);
 }
 
 void DCTSolver::construct_oo_density_RHF() {

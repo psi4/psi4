@@ -52,10 +52,6 @@ void DCTSolver::compute_gradient_RHF() {
 }
 
 void DCTSolver::gradient_init_RHF() {
-    // Allocate memory for the global objects
-    aocc_ptau_ = std::make_shared<Matrix>("MO basis Perturbed Tau (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
-    avir_ptau_ = std::make_shared<Matrix>("MO basis Perturbed Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
-
     // Transform the two-electron integrals to the (VO|OO) and (OV|VV) subspaces in chemists' notation
 
     if ((options_.get_str("DCT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") != "QC") ||
@@ -84,18 +80,20 @@ void DCTSolver::gradient_init_RHF() {
 }
 
 void DCTSolver::compute_gradient_odc_RHF() {
+    bool is_df = options_.get_str("DCT_TYPE") == "DF";
+    
     // Compute the VVVV block of the relaxed TPDM
-    compute_unrelaxed_density_VVVV_RHF();
+    compute_unrelaxed_density_VVVV_RHF(is_df);
     outfile->Printf("\t Computing energy-weighted density matrix from one- and two-particle densities...\n");
     // Compute the OO block of MO Lagrangian
-    compute_lagrangian_OO_RHF();
+    compute_lagrangian_OO_RHF(is_df);
     // Compute the VV block of MO Lagrangian
-    compute_lagrangian_VV_RHF();
+    compute_lagrangian_VV_RHF(is_df);
     // Compute the energy-weighted density matrix
     compute_ewdm_odc_RHF();
 }
 
-void DCTSolver::compute_lagrangian_OO_RHF() {
+void DCTSolver::compute_lagrangian_OO_RHF(bool separate_gbargamma) {
     psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
@@ -104,90 +102,54 @@ void DCTSolver::compute_lagrangian_OO_RHF() {
 
     // X_OO: One-electron contributions
 
-    if (!orbital_optimized_) {
-        // X_KI = H_JK pTau_JI
-        global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "X <O|O>");
-        global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "H <O|O>");
-        global_dpd_->file2_init(&pT, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "pTau <O|O>");
-        global_dpd_->file2_mat_init(&X);
-        global_dpd_->file2_mat_init(&H);
-        global_dpd_->file2_mat_init(&pT);
-        global_dpd_->file2_mat_rd(&H);
-        global_dpd_->file2_mat_rd(&pT);
-        for (int h = 0; h < nirrep_; ++h) {
+    // X_KI = H_JK Tau_JI
+    global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "X <O|O>");
+    global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "H <O|O>");
+    global_dpd_->file2_init(&pT, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    global_dpd_->file2_mat_init(&X);
+    global_dpd_->file2_mat_init(&H);
+    global_dpd_->file2_mat_init(&pT);
+    global_dpd_->file2_mat_rd(&H);
+    global_dpd_->file2_mat_rd(&pT);
+    for (int h = 0; h < nirrep_; ++h) {
 #pragma omp parallel for
-            for (int i = 0; i < naoccpi_[h]; ++i) {
-                for (int k = 0; k < naoccpi_[h]; ++k) {
-                    double value = 0.0;
-                    for (int j = 0; j < naoccpi_[h]; ++j) {
-                        value += H.matrix[h][j][k] * (pT.matrix[h][j][i] + (i == j ? 1.0 : 0.0));
-                    }
-                    X.matrix[h][k][i] = value;
+        for (int i = 0; i < naoccpi_[h]; ++i) {
+            for (int k = 0; k < naoccpi_[h]; ++k) {
+                double value = 0.0;
+                for (int j = 0; j < naoccpi_[h]; ++j) {
+                    value += H.matrix[h][j][k] * (pT.matrix[h][j][i] + (i == j ? 1.0 : 0.0));
                 }
+                X.matrix[h][k][i] = value;
             }
         }
-        global_dpd_->file2_mat_wrt(&X);
-        global_dpd_->file2_close(&pT);
-        global_dpd_->file2_close(&H);
-        global_dpd_->file2_close(&X);
-
-        // X_ki = H_jk pTau_ji
-        global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "X <o|o>");
-        global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "H <o|o>");
-        global_dpd_->file2_init(&pT, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "pTau <o|o>");
-        global_dpd_->file2_mat_init(&X);
-        global_dpd_->file2_mat_init(&H);
-        global_dpd_->file2_mat_init(&pT);
-        global_dpd_->file2_mat_rd(&H);
-        global_dpd_->file2_mat_rd(&pT);
-        for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for
-            for (int i = 0; i < nboccpi_[h]; ++i) {
-                for (int k = 0; k < nboccpi_[h]; ++k) {
-                    double value = 0.0;
-                    for (int j = 0; j < nboccpi_[h]; ++j) {
-                        value += H.matrix[h][j][k] * (pT.matrix[h][j][i] + (i == j ? 1.0 : 0.0));
-                    }
-                    X.matrix[h][k][i] = value;
-                }
-            }
-        }
-        global_dpd_->file2_mat_wrt(&X);
-        global_dpd_->file2_close(&pT);
-        global_dpd_->file2_close(&H);
-        global_dpd_->file2_close(&X);
-    } else {
-        // X_KI = H_JK Tau_JI
-        global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "X <O|O>");
-        global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "H <O|O>");
-        global_dpd_->file2_init(&pT, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
-        global_dpd_->file2_mat_init(&X);
-        global_dpd_->file2_mat_init(&H);
-        global_dpd_->file2_mat_init(&pT);
-        global_dpd_->file2_mat_rd(&H);
-        global_dpd_->file2_mat_rd(&pT);
-        for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for
-            for (int i = 0; i < naoccpi_[h]; ++i) {
-                for (int k = 0; k < naoccpi_[h]; ++k) {
-                    double value = 0.0;
-                    for (int j = 0; j < naoccpi_[h]; ++j) {
-                        value += H.matrix[h][j][k] * (pT.matrix[h][j][i] + (i == j ? 1.0 : 0.0));
-                    }
-                    X.matrix[h][k][i] = value;
-                }
-            }
-        }
-        global_dpd_->file2_mat_wrt(&X);
-        global_dpd_->file2_mat_close(&pT);
-        global_dpd_->file2_mat_close(&H);
-        global_dpd_->file2_mat_close(&X);
-        global_dpd_->file2_close(&pT);
-        global_dpd_->file2_close(&H);
-        global_dpd_->file2_close(&X);
     }
+    global_dpd_->file2_mat_wrt(&X);
+    global_dpd_->file2_mat_close(&pT);
+    global_dpd_->file2_mat_close(&H);
+    global_dpd_->file2_mat_close(&X);
+    global_dpd_->file2_close(&pT);
+    global_dpd_->file2_close(&H);
+    global_dpd_->file2_close(&X);
 
     // X_OO: Two-electron contributions
+    
+    // If we have gbar_gamma separate, just like when computing the OO gradient, we compute these terms special.
+    if (separate_gbargamma) {
+        auto zero = Dimension(nirrep_);
+        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(zero, soccpi_ + doccpi_), Slice(zero, nsopi_));
+        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), Slice(zero, soccpi_ + doccpi_));
+        auto alpha_jk = linalg::doublet(gbar_alpha_block, gamma_alpha_block, false, false);
+
+        global_dpd_->file2_init(&H, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "X JK <O|O>");
+        alpha_jk->write_to_dpdfile2(&H);
+        global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "X <O|O>");
+        global_dpd_->file2_axpy(&H, &X, 1.0, 0);
+        global_dpd_->file2_close(&X);
+        global_dpd_->file2_close(&H);
+    } 
+    
+    const std::string density_variable = separate_gbargamma ? "Lambda " : "Gamma ";
+    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
 
     //
     // 2 * <OO||OO> Г_OOOO
@@ -198,7 +160,7 @@ void DCTSolver::compute_lagrangian_OO_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 1,
                            "MO Ints <OO|OO>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0,
-                           "Gamma <OO|OO>");
+                           varname("<OO|OO>"));
 
     global_dpd_->contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -210,7 +172,7 @@ void DCTSolver::compute_lagrangian_OO_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0,
                            "MO Ints <OO|OO>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0,
-                           "Gamma SF <OO|OO>");
+                           varname("SF <OO|OO>"));
 
     global_dpd_->contract442(&I, &G, &X, 0, 0, 4.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -226,7 +188,7 @@ void DCTSolver::compute_lagrangian_OO_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 1,
                            "MO Ints <OO|VV>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Gamma <OO|VV>");
+                           varname("<OO|VV>"));
 
     global_dpd_->contract442(&I, &G, &X, 1, 1, 1.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -238,7 +200,7 @@ void DCTSolver::compute_lagrangian_OO_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "MO Ints <OO|VV>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Gamma SF <OO|VV>");
+                           varname("SF <OO|VV>"));
 
     global_dpd_->contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -254,7 +216,7 @@ void DCTSolver::compute_lagrangian_OO_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "MO Ints <OV|OV> - <OV|VO>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Gamma <OV|OV>");
+                           varname("<OV|OV>"));
 
     global_dpd_->contract442(&I, &G, &X, 2, 2, 1.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -266,7 +228,7 @@ void DCTSolver::compute_lagrangian_OO_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "MO Ints <OV|OV>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Gamma SF <OV|OV>:<Ov|Ov>");
+                           varname("SF <OV|OV>:<Ov|Ov>"));
 
     global_dpd_->contract442(&I, &G, &X, 2, 2, 1.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -278,7 +240,7 @@ void DCTSolver::compute_lagrangian_OO_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "MO Ints SF <OV|OV>:<Ov|oV>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Gamma SF <OV|OV>:<Ov|oV>");
+                           varname("SF <OV|OV>:<Ov|oV>"));
 
     global_dpd_->contract442(&I, &G, &X, 0, 0, -1.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -289,7 +251,7 @@ void DCTSolver::compute_lagrangian_OO_RHF() {
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
 
-void DCTSolver::compute_lagrangian_VV_RHF() {
+void DCTSolver::compute_lagrangian_VV_RHF(bool separate_gbargamma) {
     psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
@@ -298,39 +260,34 @@ void DCTSolver::compute_lagrangian_VV_RHF() {
 
     // X_VV: One-electron contributions
 
-    if (!orbital_optimized_) {
-        // X_CA = H_CB pTau_BA
+    // X_CA = H_CB Tau_BA
+    global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "X <V|V>");
+    global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "H <V|V>");
+    global_dpd_->file2_init(&pT, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+
+    global_dpd_->contract222(&H, &pT, &X, 0, 1, 1.0, 0.0);
+    global_dpd_->file2_close(&pT);
+    global_dpd_->file2_close(&H);
+    global_dpd_->file2_close(&X);
+
+    // X_VV: Two-electron contributions
+
+    if (separate_gbargamma) {
+        auto zero = Dimension(nirrep_);
+        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(soccpi_ + doccpi_, nsopi_), Slice(zero, nsopi_));
+        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), Slice(soccpi_ + doccpi_, nsopi_));
+        auto alpha_jk = linalg::doublet(gbar_alpha_block, gamma_alpha_block, false, false);
+
+        global_dpd_->file2_init(&H, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "X JK <V|V>");
+        alpha_jk->write_to_dpdfile2(&H);
         global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "X <V|V>");
-        global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "H <V|V>");
-        global_dpd_->file2_init(&pT, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "pTau <V|V>");
-
-        global_dpd_->contract222(&H, &pT, &X, 0, 1, 1.0, 0.0);
-        global_dpd_->file2_close(&pT);
-        global_dpd_->file2_close(&H);
+        global_dpd_->file2_axpy(&H, &X, 1.0, 0);
         global_dpd_->file2_close(&X);
-
-        // X_ca = H_ib pTau_ba
-        global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "X <v|v>");
-        global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "H <v|v>");
-        global_dpd_->file2_init(&pT, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "pTau <v|v>");
-
-        global_dpd_->contract222(&H, &pT, &X, 0, 1, 1.0, 0.0);
-        global_dpd_->file2_close(&pT);
         global_dpd_->file2_close(&H);
-        global_dpd_->file2_close(&X);
-    } else {
-        // X_CA = H_CB Tau_BA
-        global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "X <V|V>");
-        global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "H <V|V>");
-        global_dpd_->file2_init(&pT, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
-
-        global_dpd_->contract222(&H, &pT, &X, 0, 1, 1.0, 0.0);
-        global_dpd_->file2_close(&pT);
-        global_dpd_->file2_close(&H);
-        global_dpd_->file2_close(&X);
     }
 
-    // X_OV: Two-electron contributions
+    const std::string density_variable = separate_gbargamma ? "Lambda " : "Gamma ";
+    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
 
     //
     // 2 * <VV||VV> Г_VVVV
@@ -342,7 +299,7 @@ void DCTSolver::compute_lagrangian_VV_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 1,
                            "MO Ints <VV|VV>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0,
-                           "Gamma <VV|VV>");
+                           varname("<VV|VV>"));
 
     global_dpd_->contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -355,7 +312,7 @@ void DCTSolver::compute_lagrangian_VV_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0,
                            "MO Ints <VV|VV>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0,
-                           "Gamma SF <VV|VV>");
+                           varname("SF <VV|VV>"));
 
     global_dpd_->contract442(&I, &G, &X, 0, 0, 4.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -371,7 +328,7 @@ void DCTSolver::compute_lagrangian_VV_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 1,
                            "MO Ints <OO|VV>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Gamma <OO|VV>");
+                           varname("<OO|VV>"));
 
     global_dpd_->contract442(&I, &G, &X, 2, 2, 1.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -383,7 +340,7 @@ void DCTSolver::compute_lagrangian_VV_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "MO Ints <OO|VV>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Gamma SF <OO|VV>");
+                           varname("SF <OO|VV>"));
 
     global_dpd_->contract442(&I, &G, &X, 2, 2, 2.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -399,7 +356,7 @@ void DCTSolver::compute_lagrangian_VV_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "MO Ints <OV|OV> - <OV|VO>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Gamma <OV|OV>");
+                           varname("<OV|OV>"));
 
     global_dpd_->contract442(&I, &G, &X, 3, 3, 1.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -411,7 +368,7 @@ void DCTSolver::compute_lagrangian_VV_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "MO Ints <OV|OV>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Gamma SF <OV|OV>:<Ov|Ov>");  // Г<oV|oV> = Г <Ov|Ov>
+                           varname("SF <OV|OV>:<Ov|Ov>"));  // Г<oV|oV> = Г <Ov|Ov>
 
     global_dpd_->contract442(&I, &G, &X, 3, 3, 1.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -423,7 +380,7 @@ void DCTSolver::compute_lagrangian_VV_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "MO Ints SF <OV|OV>:<Ov|oV>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Gamma SF <OV|OV>:<Ov|oV>");
+                           varname("SF <OV|OV>:<Ov|oV>"));
 
     global_dpd_->contract442(&I, &G, &X, 3, 3, -1.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -524,6 +481,8 @@ void DCTSolver::compute_ewdm_odc_RHF() {
 
     // Scale the energy-weighted density matrix by -2.0 to make it the same form as in the coupled-cluster code
     aW.scale(-4.0);  // scale by -4.0 because Lagragian_beta = Lagragian_alpha
+
+    if (options_.get_str("DCT_TYPE") == "DF") {return;}
 
     // Reorder the energy-weighted density matrix to the QT order
     double **a_qt = block_matrix(nmo_, nmo_);

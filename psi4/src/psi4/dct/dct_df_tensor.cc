@@ -2225,32 +2225,37 @@ void DCTSolver::three_idx_separable_density() {
     // Load useful intermediates.
     auto Q = Matrix("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
     Q.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
-    Q.print_out();
 
     auto J = Matrix("J^-1/2 Reference", nQ_scf_, nQ_scf_);
     J.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::LowerTriangle);
 
     auto SO_matrix = three_idx_separable_helper(Q, J, mo_gammaA_, *Ca_);
     SO_matrix.add(three_idx_separable_helper(Q, J, mo_gammaB_, *Cb_));
-    /*
-    Dimension zero(nirrep_);
-    Slice aocc_slice(zero, doccpi_ + soccpi_);
-    auto gammaIJ = mo_gammaA_->get_block(aocc_slice, aocc_slice);
-    auto SO_matrix = three_idx_separable_helper(Q, J, gammaIJ, Ca_subset("SO", "OCC"));
-    // OO Beta
-    Slice bocc_slice(zero, doccpi_);
-    auto gammaij = mo_gammaB_->get_block(bocc_slice, bocc_slice);
-    SO_matrix->add(three_idx_separable_helper(Q, J, gammaij, Cb_subset("SO", "OCC")));
-    // VV Alpha
-    SO_matrix->add(three_idx_separable_helper(Q, J, avir_tau_, Ca_subset("SO", "VIR")));
-    // VV Beta
-    SO_matrix->add(three_idx_separable_helper(Q, J, bvir_tau_, Cb_subset("SO", "VIR")));
-    */
 
     // Now transform from SO back to AO
     auto AO_matrix = transform_b_so2ao(SO_matrix);
     AO_matrix.set_name("3-Center Reference Density");
     AO_matrix.save(psio_, PSIF_AO_TPDM, Matrix::SaveType::Full);
+
+    // We have Hermitian symmetry in the last two indices. To reduce IO costs,
+    // only store the lower triangle of each pair.
+/*
+    auto p = AO_matrix.pointer(0);
+    int count = 0
+    int ntri = nso_ * (nso_ + 1) / 2
+    std::vector<double> temp(nQ_scf_ * ntri, 0);
+    for (auto P = 0; P < nQ_scf_; P++) {
+        for (auto i = 0; i < nso_; i++) {
+            for (auto j = 0; j <= o; j++; count++) {
+                temp[count] = p[P][i * nso_ + j];
+            }
+        }
+    }
+
+    psio->open(PSIF_AO_TPDM, PSIO_OPEN_OLD);
+    psio->write_entry(PSIF_AO_TPDM, "3-Center Reference Density", (char *) temp.get, sizeof(double) * temp.size());
+    psio->close(PSIF_AO_TPDM, 1); // Close and keep
+    */
 }
 
 Matrix DCTSolver::three_idx_separable_helper(const Matrix& Q, const Matrix& J, const Matrix& RDM, const Matrix& C_subset) {
@@ -2258,8 +2263,6 @@ Matrix DCTSolver::three_idx_separable_helper(const Matrix& Q, const Matrix& J, c
     auto temp = contract123(Q, RDM);
     // Exchange-like term of 10.1063/1.4896235:54 b(Q|pq) gamma^p_s gamma^r_q
     // This doublet compensates for not having MO basis B integrals in the three_idx transform below
-    //auto backtransformer = C_subset.transpose();
-    //return three_idx_primary_transform(temp, backtransformer, backtransformer);
     auto gamma = linalg::doublet(C_subset, RDM, false, false);
     three_idx_primary_transform_gemm(bQmn_so_scf_, gamma, gamma, temp, -1.0, 1.0);
     // 10.1063/1.4896235:55 - MO basis
@@ -2302,8 +2305,10 @@ Matrix DCTSolver::contract233(const Matrix& J, const Matrix& B) const {
     return result;
 }
 
+// (Q) (p|q) -> (Q|pq)
 Matrix DCTSolver::contract123(const Matrix& Q, const Matrix& G) const {
     if (Q.nirrep() != 1) {throw PSIEXCEPTION("contract123: Left argument must have exactly one irrep.");}
+    if (G.symmetry()) {throw PSIEXCEPTION("contract123: Right argument must have trivial pont group symmetry");}
 
     // Sizing for the result
     auto nirrep = G.nirrep();

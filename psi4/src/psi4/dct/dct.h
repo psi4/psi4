@@ -147,8 +147,8 @@ class DCTSolver : public Wavefunction {
     void compute_cumulant_response_intermediates();
     double compute_cumulant_response_residual();
     void update_cumulant_response();
-    void compute_lagrangian_OO();
-    void compute_lagrangian_VV();
+    void compute_lagrangian_OO(bool separate_gbargamma);
+    void compute_lagrangian_VV(bool separate_gbargamma);
     void compute_ewdm_dc();
     void compute_ewdm_odc();
     void compute_relaxed_density_OOOO();
@@ -202,7 +202,8 @@ class DCTSolver : public Wavefunction {
     void compute_unrelaxed_density_OOVV(bool cumulant_only);
     void compute_unrelaxed_density_OVOV(bool cumulant_only);
     void compute_unrelaxed_separable_density_OVOV();
-    void compute_unrelaxed_density_VVVV();
+    void compute_unrelaxed_density_VVVV(bool cumulant_only);
+    void compute_unrelaxed_separable_density_VVVV();
     void compute_orbital_gradient_OV(bool separate_gbargamma);
     void compute_orbital_gradient_VO(bool separate_gbargamma);
     void compute_orbital_rotation_jacobi();
@@ -251,7 +252,8 @@ class DCTSolver : public Wavefunction {
     void rotate_orbitals_RHF();
     void compute_orbital_gradient_VO_RHF(bool separate_gbargamma);
     void compute_orbital_gradient_OV_RHF(bool separate_gbargamma);
-    void compute_unrelaxed_density_VVVV_RHF();
+    void compute_unrelaxed_density_VVVV_RHF(bool cumulant_only);
+    void compute_unrelaxed_separable_density_VVVV_RHF();
     void compute_unrelaxed_density_OVOV_RHF(bool cumulant_only);
     void compute_unrelaxed_separable_density_OVOV_RHF();
     void compute_unrelaxed_density_OOVV_RHF(bool cumulant_only);
@@ -260,8 +262,8 @@ class DCTSolver : public Wavefunction {
     void compute_gradient_RHF();
     void gradient_init_RHF();
     void compute_gradient_odc_RHF();
-    void compute_lagrangian_OO_RHF();
-    void compute_lagrangian_VV_RHF();
+    void compute_lagrangian_OO_RHF(bool separate_gbargamma);
+    void compute_lagrangian_VV_RHF(bool separate_gbargamma);
     void compute_ewdm_odc_RHF();
     void print_opdm_RHF();
     void compute_R_AA_and_BB();
@@ -424,13 +426,13 @@ class DCTSolver : public Wavefunction {
     /// The Tau matrix in the MO basis (beta virtual)
     SharedMatrix bvir_tau_;
     /// The perturbed Tau matrix in the MO basis (alpha occupied)
-    SharedMatrix aocc_ptau_;
+    Matrix aocc_ptau_;
     /// The perturbed Tau matrix in the MO basis (beta occupied)
-    SharedMatrix bocc_ptau_;
+    Matrix bocc_ptau_;
     /// The perturbed Tau matrix in the MO basis (alpha virtual)
-    SharedMatrix avir_ptau_;
+    Matrix avir_ptau_;
     /// The perturbed Tau matrix in the MO basis (beta virtual)
-    SharedMatrix bvir_ptau_;
+    Matrix bvir_ptau_;
     /// The Kappa in the MO basis (alpha occupied)
     SharedMatrix kappa_mo_a_;
     /// The Kappa in the MO basis (beta occupied)

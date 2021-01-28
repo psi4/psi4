@@ -969,47 +969,47 @@ void DCTSolver::rotate_orbitals() {
     dct_timer_on("DCTSolver::rotate_orbitals()");
 
     // Initialize the orbital rotation matrix
-    auto U_a = std::make_shared<Matrix>("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_);
-    auto U_b = std::make_shared<Matrix>("Orbital rotation matrix (Beta)", nirrep_, nmopi_, nmopi_);
+    auto U_a = Matrix("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto U_b = Matrix("Orbital rotation matrix (Beta)", nirrep_, nmopi_, nmopi_);
 
     // Compute the orbital rotation matrix and rotate the orbitals
 
     // U = I
-    U_a->identity();
-    U_b->identity();
+    U_a.identity();
+    U_b.identity();
 
     // U += X
-    U_a->add(Xtotal_a_);
-    U_b->add(Xtotal_b_);
+    U_a.add(Xtotal_a_);
+    U_b.add(Xtotal_b_);
 
     // U += 0.5 * X * X
-    U_a->gemm(false, false, 0.5, Xtotal_a_, Xtotal_a_, 1.0);
-    U_b->gemm(false, false, 0.5, Xtotal_b_, Xtotal_b_, 1.0);
+    U_a.gemm(false, false, 0.5, Xtotal_a_, Xtotal_a_, 1.0);
+    U_b.gemm(false, false, 0.5, Xtotal_b_, Xtotal_b_, 1.0);
 
     // Orthogonalize the U vectors
-    int rowA = U_a->nrow();
-    int colA = U_a->ncol();
+    int rowA = U_a.nrow();
+    int colA = U_a.ncol();
 
     double **U_a_block = block_matrix(rowA, colA);
     memset(U_a_block[0], 0, sizeof(double) * rowA * colA);
-    U_a_block = U_a->to_block_matrix();
+    U_a_block = U_a.to_block_matrix();
     schmidt(U_a_block, rowA, colA, "outfile");
-    U_a->set(U_a_block);
+    U_a.set(U_a_block);
     free_block(U_a_block);
 
-    int rowB = U_b->nrow();
-    int colB = U_b->ncol();
+    int rowB = U_b.nrow();
+    int colB = U_b.ncol();
 
     double **U_b_block = block_matrix(rowB, colB);
     memset(U_b_block[0], 0, sizeof(double) * rowB * colB);
-    U_b_block = U_b->to_block_matrix();
+    U_b_block = U_b.to_block_matrix();
     schmidt(U_b_block, rowB, colB, "outfile");
-    U_b->set(U_b_block);
+    U_b.set(U_b_block);
     free_block(U_b_block);
 
     // Rotate the orbitals
-    Ca_->gemm(false, false, 1.0, old_ca_, U_a, 0.0);
-    Cb_->gemm(false, false, 1.0, old_cb_, U_b, 0.0);
+    Ca_->gemm(false, false, 1.0, *old_ca_, U_a, 0.0);
+    Cb_->gemm(false, false, 1.0, *old_cb_, U_b, 0.0);
 
     dct_timer_off("DCTSolver::rotate_orbitals()");
 }

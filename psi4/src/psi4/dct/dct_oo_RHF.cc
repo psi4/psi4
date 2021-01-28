@@ -651,30 +651,30 @@ void DCTSolver::rotate_orbitals_RHF() {
     dct_timer_on("DCTSolver::rotate_orbitals_RHF()");
 
     // Initialize the orbital rotation matrix
-    auto U_a = std::make_shared<Matrix>("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto U_a = Matrix("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_);
 
     // Compute the orbital rotation matrix and rotate the orbitals
 
     // U = I
-    U_a->identity();
+    U_a.identity();
 
     // U += X
-    U_a->add(Xtotal_a_);
+    U_a.add(Xtotal_a_);
 
     // U += 0.5 * X * X
-    U_a->gemm(false, false, 0.5, Xtotal_a_, Xtotal_a_, 1.0);
+    U_a.gemm(false, false, 0.5, Xtotal_a_, Xtotal_a_, 1.0);
 
     // Orthogonalize the U vectors
-    int rowA = U_a->nrow();
-    int colA = U_a->ncol();
+    int rowA = U_a.nrow();
+    int colA = U_a.ncol();
 
-    auto U_a_block = U_a->to_block_matrix();
+    auto U_a_block = U_a.to_block_matrix();
     schmidt(U_a_block, rowA, colA, "outfile");
-    U_a->set(U_a_block);
+    U_a.set(U_a_block);
     free_block(U_a_block);
 
     // Rotate the orbitals
-    Ca_->gemm(false, false, 1.0, old_ca_, U_a, 0.0);
+    Ca_->gemm(false, false, 1.0, *old_ca_, U_a, 0.0);
 
     // Copy alpha case to beta case
     Cb_->copy(Ca_);
