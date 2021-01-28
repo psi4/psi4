@@ -487,16 +487,23 @@ void DLPNOMP2::sparsity_prep() {
         // atomic mulliken populations for this orbital
         std::vector<double> mkn_pop(natom, 0.0);
 
+        SharedMatrix P_i = reference_wavefunction_->S()->clone();
+
+        for(size_t u=0; u < nbf; u++){
+            P_i->scale_row(0, u, C_lmo->get(u, i));
+            P_i->scale_column(0, u, C_lmo->get(u, i));
+        }
+
         for(size_t u=0; u < nbf; u++){
             int centerU = basisset_->function_to_center(u);
-            double p_uu = reference_wavefunction_->S()->get(u, u) * pow(C_lmo->get(u, i), 2);
+            double p_uu = P_i->get(u,u);
 
             for(size_t v=0; v < nbf; v++){
                 int centerV = basisset_->function_to_center(u);
-                double p_vv = reference_wavefunction_->S()->get(v, v) * pow(C_lmo->get(v, i), 2);
+                double p_vv = P_i->get(v,v);
 
                 // off-diag pops (p_uv) split between u and v prop to diag pops
-                double p_uv = reference_wavefunction_->S()->get(u, v) * C_lmo->get(u, i) * C_lmo->get(v, i);
+                double p_uv = P_i->get(u,v);
                 mkn_pop[centerU] += p_uv * ((p_uu) / (p_uu + p_vv));
                 mkn_pop[centerV] += p_uv * ((p_vv) / (p_uu + p_vv));
 
