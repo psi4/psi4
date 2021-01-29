@@ -220,6 +220,12 @@ Thus, if a user requests multiple roots (|detci__num_roots| = :math:`n`), the pr
 will typically return singlets and not triplets.  However, if enough roots are sought,
 higher-multiplicities may enter in.  This can be avoided by ensuring that all the guess
 vectors have the correct spin multiplicity, by setting |detci__calc_s_squared| to ``TRUE``).
+It is also possible to ask DETCI to compute roots of higher multiplicities.  The desired value of spin may be
+provided by setting |detci__S| = :math:`S`.  Typically, it would be a good idea in this context to also set
+|detci__calc_s_squared| to ``TRUE`` to ensure the guess roots have the right spin.  However, be advised that
+seeking these higher roots may cause convergence problems, because roundoff may allow the lower-lying
+roots of lower multiplicities to re-enter the computation (reducing convergence criteria may help).
+
 For open-shell systems, the |detci__ms0| keyword is typically not relevant, and there
 is no control over spin multiplicities of higher roots unless|detci__calc_s_squared| is
 used.
@@ -292,4 +298,3 @@ to the desired coupled-cluster excitation level, and invoke
 ``energy('detci')``.  Various other DETCI options have a similar
 option for coupled-cluster, usually named beginning with CC.  The full
 list of options is given in Appendix :ref:`apdx:detci`.
-
