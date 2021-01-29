@@ -586,7 +586,7 @@ void DFMP2::apply_gamma(size_t file, size_t naux, size_t nia) {
     // Tensor blocks
     auto Gia = std::make_shared<Matrix>("G(ia|Q)", max_nia, naux);
     auto Cia = std::make_shared<Matrix>("C(ia|Q)", max_nia, naux);
-    auto G = std::make_shared<Matrix>("g", naux, naux);
+    auto G = std::make_shared<Matrix>("G_PQ", naux, naux);
     double** Giap = Gia->pointer();
     double** Ciap = Cia->pointer();
     double** Gp = G->pointer();
@@ -618,7 +618,7 @@ void DFMP2::apply_gamma(size_t file, size_t naux, size_t nia) {
         timer_off("DFMP2 g");
     }
 
-    psio_->write_entry(file, "G_PQ", (char*)Gp[0], sizeof(double) * naux * naux);
+    G->save(psio_, file, Matrix::SaveType::SubBlocks);
 
     psio_->close(file, 1);
 }
@@ -1503,9 +1503,7 @@ void RDFMP2::form_AB_x_terms() {
     auto naux = ribasis_->nbf();
 
     auto V = std::make_shared<Matrix>("G_PQ", naux, naux);
-    psio_->open(PSIF_DFMP2_AIA, PSIO_OPEN_OLD);
-    V->load(psio_, PSIF_DFMP2_AIA, Matrix::SaveType::Full);
-    psio_->close(PSIF_DFMP2_AIA, 1);
+    V->load(psio_, PSIF_DFMP2_AIA, Matrix::SaveType::SubBlocks);
     V->hermitivitize();
     V->scale(2);
     std::map<std::string, SharedMatrix> densities = {{"(A|B)^x", V}};

@@ -281,7 +281,11 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     /// Copies data to the row specified. Assumes data is of correct length.
     void copy_to_row(int h, int row, double const* const data);
 
-    enum SaveType { Full, SubBlocks, LowerTriangle };
+    enum SaveType { Full
+    PSI_DEPRECATED(
+        "Using `Matrix::SaveType::Full` instead of `Matrix::SaveType::SubBlocks` is deprecated, "
+        "and in 1.5 it will stop working"),
+    SubBlocks, LowerTriangle };
 
     /**
      * @{
