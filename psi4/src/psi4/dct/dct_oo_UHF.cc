@@ -82,13 +82,13 @@ void DCTSolver::run_simult_dct_oo() {
         if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
             build_DF_tensors_UHF();
 
-            auto mo_h_A = std::make_shared<Matrix>("MO-based H Alpha", nirrep_, nmopi_, nmopi_);
-            mo_h_A->copy(so_h_);
-            mo_h_A->transform(Ca_);
+            auto mo_h_A = Matrix("MO-based H Alpha", nirrep_, nmopi_, nmopi_);
+            mo_h_A.copy(so_h_);
+            mo_h_A.transform(Ca_);
 
-            auto mo_h_B = std::make_shared<Matrix>("MO-based H Beta", nirrep_, nmopi_, nmopi_);
-            mo_h_B->copy(so_h_);
-            mo_h_B->transform(Cb_);
+            auto mo_h_B = Matrix("MO-based H Beta", nirrep_, nmopi_, nmopi_);
+            mo_h_B.copy(so_h_);
+            mo_h_B.transform(Cb_);
 
             moFa_->copy(mo_h_A);
             moFb_->copy(mo_h_B);

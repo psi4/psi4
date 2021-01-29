@@ -1385,11 +1385,11 @@ double DCTSolver::update_orbital_response() {
                 double value = 0.0;
                 for (int j = 0; j < naoccpi_[h]; ++j) {
                     value -= (zI_ai.matrix[h][a][j] + zI_ia.matrix[h][j][a]) *
-                             (aocc_tau_->get(h, i, j) + kappa_mo_a_->get(h, i, j));
+                             (aocc_tau_.get(h, i, j) + kappa_mo_a_->get(h, i, j));
                     value += z_ia.matrix[h][j][a] * moFa_->get(h, j, i);
                 }
                 for (int b = 0; b < navirpi_[h]; ++b) {
-                    value += (zI_ai.matrix[h][b][i] + zI_ia.matrix[h][i][b]) * (avir_tau_->get(h, a, b));
+                    value += (zI_ai.matrix[h][b][i] + zI_ia.matrix[h][i][b]) * (avir_tau_.get(h, a, b));
                     value -= z_ia.matrix[h][i][b] * moFa_->get(h, b + naoccpi_[h], a + naoccpi_[h]);
                 }
                 value += 2.0 * (X_ia.matrix[h][i][a] - X_ai.matrix[h][a][i]);
@@ -1436,11 +1436,11 @@ double DCTSolver::update_orbital_response() {
                 double value = 0.0;
                 for (int j = 0; j < nboccpi_[h]; ++j) {
                     value -= (zI_ai.matrix[h][a][j] + zI_ia.matrix[h][j][a]) *
-                             (bocc_tau_->get(h, i, j) + kappa_mo_b_->get(h, i, j));
+                             (bocc_tau_.get(h, i, j) + kappa_mo_b_->get(h, i, j));
                     value += z_ia.matrix[h][j][a] * moFb_->get(h, j, i);
                 }
                 for (int b = 0; b < nbvirpi_[h]; ++b) {
-                    value += (zI_ai.matrix[h][b][i] + zI_ia.matrix[h][i][b]) * (bvir_tau_->get(h, a, b));
+                    value += (zI_ai.matrix[h][b][i] + zI_ia.matrix[h][i][b]) * (bvir_tau_.get(h, a, b));
                     value -= z_ia.matrix[h][i][b] * moFb_->get(h, b + nboccpi_[h], a + nboccpi_[h]);
                 }
                 value += 2.0 * (X_ia.matrix[h][i][a] - X_ai.matrix[h][a][i]);
@@ -3672,11 +3672,11 @@ void DCTSolver::compute_ewdm_dc() {
                 double value = 0.0;
                 for (int j = 0; j < naoccpi_[h]; ++j) {
                     value -= 0.25 * (zI_VO.matrix[h][a][j] + zI_OV.matrix[h][j][a]) *
-                             (aocc_tau_->get(h, i, j) + kappa_mo_a_->get(h, i, j));
+                             (aocc_tau_.get(h, i, j) + kappa_mo_a_->get(h, i, j));
                     value -= 0.25 * z_OV.matrix[h][j][a] * moFa_->get(h, j, i);
                 }
                 for (int b = 0; b < navirpi_[h]; ++b) {
-                    value -= 0.25 * (zI_VO.matrix[h][b][i] + zI_OV.matrix[h][i][b]) * (avir_tau_->get(h, a, b));
+                    value -= 0.25 * (zI_VO.matrix[h][b][i] + zI_OV.matrix[h][i][b]) * (avir_tau_.get(h, a, b));
                     value -= 0.25 * z_OV.matrix[h][i][b] * moFa_->get(h, b + naoccpi_[h], a + naoccpi_[h]);
                 }
                 value -= 0.5 * (X_OV.matrix[h][i][a] + X_VO.matrix[h][a][i]);
@@ -3691,8 +3691,8 @@ void DCTSolver::compute_ewdm_dc() {
             for (int j = 0; j <= i; ++j) {
                 double value = 0.0;
                 for (int k = 0; k < naoccpi_[h]; ++k) {
-                    value -= 0.25 * zI_OO.matrix[h][i][k] * (aocc_tau_->get(h, k, j) + kappa_mo_a_->get(h, k, j));
-                    value -= 0.25 * zI_OO.matrix[h][j][k] * (aocc_tau_->get(h, k, i) + kappa_mo_a_->get(h, k, i));
+                    value -= 0.25 * zI_OO.matrix[h][i][k] * (aocc_tau_.get(h, k, j) + kappa_mo_a_->get(h, k, j));
+                    value -= 0.25 * zI_OO.matrix[h][j][k] * (aocc_tau_.get(h, k, i) + kappa_mo_a_->get(h, k, i));
                 }
                 value -= 0.5 * (X_OO.matrix[h][i][j] + X_OO.matrix[h][j][i]);
                 aW.set(h, i, j, value);
@@ -3707,8 +3707,8 @@ void DCTSolver::compute_ewdm_dc() {
             for (int b = 0; b <= a; ++b) {
                 double value = 0.0;
                 for (int c = 0; c < navirpi_[h]; ++c) {
-                    value -= 0.25 * zI_VV.matrix[h][a][c] * avir_tau_->get(h, c, b);
-                    value -= 0.25 * zI_VV.matrix[h][b][c] * avir_tau_->get(h, c, a);
+                    value -= 0.25 * zI_VV.matrix[h][a][c] * avir_tau_.get(h, c, b);
+                    value -= 0.25 * zI_VV.matrix[h][b][c] * avir_tau_.get(h, c, a);
                 }
                 value -= 0.5 * (X_VV.matrix[h][a][b] + X_VV.matrix[h][b][a]);
                 aW.set(h, a + naoccpi_[h], b + naoccpi_[h], value);
@@ -3767,11 +3767,11 @@ void DCTSolver::compute_ewdm_dc() {
                 double value = 0.0;
                 for (int j = 0; j < nboccpi_[h]; ++j) {
                     value -= 0.25 * (zI_VO.matrix[h][a][j] + zI_OV.matrix[h][j][a]) *
-                             (bocc_tau_->get(h, i, j) + kappa_mo_b_->get(h, i, j));
+                             (bocc_tau_.get(h, i, j) + kappa_mo_b_->get(h, i, j));
                     value -= 0.25 * z_OV.matrix[h][j][a] * moFb_->get(h, j, i);
                 }
                 for (int b = 0; b < nbvirpi_[h]; ++b) {
-                    value -= 0.25 * (zI_VO.matrix[h][b][i] + zI_OV.matrix[h][i][b]) * (bvir_tau_->get(h, a, b));
+                    value -= 0.25 * (zI_VO.matrix[h][b][i] + zI_OV.matrix[h][i][b]) * (bvir_tau_.get(h, a, b));
                     value -= 0.25 * z_OV.matrix[h][i][b] * moFb_->get(h, b + nboccpi_[h], a + nboccpi_[h]);
                 }
                 value -= 0.5 * (X_OV.matrix[h][i][a] + X_VO.matrix[h][a][i]);
@@ -3787,8 +3787,8 @@ void DCTSolver::compute_ewdm_dc() {
             for (int j = 0; j <= i; ++j) {
                 double value = 0.0;
                 for (int k = 0; k < nboccpi_[h]; ++k) {
-                    value -= 0.25 * zI_OO.matrix[h][i][k] * (bocc_tau_->get(h, k, j) + kappa_mo_b_->get(h, k, j));
-                    value -= 0.25 * zI_OO.matrix[h][j][k] * (bocc_tau_->get(h, k, i) + kappa_mo_b_->get(h, k, i));
+                    value -= 0.25 * zI_OO.matrix[h][i][k] * (bocc_tau_.get(h, k, j) + kappa_mo_b_->get(h, k, j));
+                    value -= 0.25 * zI_OO.matrix[h][j][k] * (bocc_tau_.get(h, k, i) + kappa_mo_b_->get(h, k, i));
                 }
                 value -= 0.5 * (X_OO.matrix[h][i][j] + X_OO.matrix[h][j][i]);
                 bW.set(h, i, j, value);
@@ -3803,8 +3803,8 @@ void DCTSolver::compute_ewdm_dc() {
             for (int b = 0; b <= a; ++b) {
                 double value = 0.0;
                 for (int c = 0; c < nbvirpi_[h]; ++c) {
-                    value -= 0.25 * zI_VV.matrix[h][a][c] * bvir_tau_->get(h, c, b);
-                    value -= 0.25 * zI_VV.matrix[h][b][c] * bvir_tau_->get(h, c, a);
+                    value -= 0.25 * zI_VV.matrix[h][a][c] * bvir_tau_.get(h, c, b);
+                    value -= 0.25 * zI_VV.matrix[h][b][c] * bvir_tau_.get(h, c, a);
                 }
                 value -= 0.5 * (X_VV.matrix[h][a][b] + X_VV.matrix[h][b][a]);
                 bW.set(h, a + nboccpi_[h], b + nboccpi_[h], value);
@@ -3961,10 +3961,10 @@ void DCTSolver::compute_ewdm_dc() {
                 int Ga = G.params->ssym[a];
                 a -= G.params->soff[Ga];
                 if (Gi == Gk && Gj == Ga)
-                    G.matrix[h][ij][ka] = 0.5 * (kappa_mo_a_->get(Gi, i, k) + aocc_tau_->get(Gi, i, k)) *
+                    G.matrix[h][ij][ka] = 0.5 * (kappa_mo_a_->get(Gi, i, k) + aocc_tau_.get(Gi, i, k)) *
                                           a_zia->get(Gj, j, a + naoccpi_[Gj]);
                 if (Gj == Gk && Gi == Ga)
-                    G.matrix[h][ij][ka] -= 0.5 * (kappa_mo_a_->get(Gj, j, k) + aocc_tau_->get(Gj, j, k)) *
+                    G.matrix[h][ij][ka] -= 0.5 * (kappa_mo_a_->get(Gj, j, k) + aocc_tau_.get(Gj, j, k)) *
                                            a_zia->get(Gi, i, a + naoccpi_[Gi]);
             }
         }
@@ -3993,7 +3993,7 @@ void DCTSolver::compute_ewdm_dc() {
                 int Ga = G.params->ssym[a];
                 a -= G.params->soff[Ga];
                 if (Gi == Gk && Gj == Ga)
-                    G.matrix[h][ij][ka] = 0.5 * (kappa_mo_a_->get(Gi, i, k) + aocc_tau_->get(Gi, i, k)) *
+                    G.matrix[h][ij][ka] = 0.5 * (kappa_mo_a_->get(Gi, i, k) + aocc_tau_.get(Gi, i, k)) *
                                           b_zia->get(Gj, j, a + nboccpi_[Gj]);
             }
         }
@@ -4022,7 +4022,7 @@ void DCTSolver::compute_ewdm_dc() {
                 int Ga = G.params->ssym[a];
                 a -= G.params->soff[Ga];
                 if (Gi == Gk && Gj == Ga)
-                    G.matrix[h][ij][ka] = 0.5 * (kappa_mo_b_->get(Gi, i, k) + bocc_tau_->get(Gi, i, k)) *
+                    G.matrix[h][ij][ka] = 0.5 * (kappa_mo_b_->get(Gi, i, k) + bocc_tau_.get(Gi, i, k)) *
                                           a_zia->get(Gj, j, a + naoccpi_[Gj]);
             }
         }
@@ -4051,10 +4051,10 @@ void DCTSolver::compute_ewdm_dc() {
                 int Ga = G.params->ssym[a];
                 a -= G.params->soff[Ga];
                 if (Gi == Gk && Gj == Ga)
-                    G.matrix[h][ij][ka] = 0.5 * (kappa_mo_b_->get(Gi, i, k) + bocc_tau_->get(Gi, i, k)) *
+                    G.matrix[h][ij][ka] = 0.5 * (kappa_mo_b_->get(Gi, i, k) + bocc_tau_.get(Gi, i, k)) *
                                           b_zia->get(Gj, j, a + nboccpi_[Gj]);
                 if (Gj == Gk && Gi == Ga)
-                    G.matrix[h][ij][ka] -= 0.5 * (kappa_mo_b_->get(Gj, j, k) + bocc_tau_->get(Gj, j, k)) *
+                    G.matrix[h][ij][ka] -= 0.5 * (kappa_mo_b_->get(Gj, j, k) + bocc_tau_.get(Gj, j, k)) *
                                            b_zia->get(Gi, i, a + nboccpi_[Gi]);
             }
         }
@@ -4084,9 +4084,9 @@ void DCTSolver::compute_ewdm_dc() {
                 int Gc = G.params->ssym[c];
                 c -= G.params->soff[Gc];
                 if (Gi == Gb && Ga == Gc)
-                    G.matrix[h][ia][bc] = 0.5 * avir_tau_->get(Ga, a, c) * a_zia->get(Gi, i, b + naoccpi_[Gi]);
+                    G.matrix[h][ia][bc] = 0.5 * avir_tau_.get(Ga, a, c) * a_zia->get(Gi, i, b + naoccpi_[Gi]);
                 if (Gi == Gc && Ga == Gb)
-                    G.matrix[h][ia][bc] -= 0.5 * avir_tau_->get(Ga, a, b) * a_zia->get(Gi, i, c + naoccpi_[Gi]);
+                    G.matrix[h][ia][bc] -= 0.5 * avir_tau_.get(Ga, a, b) * a_zia->get(Gi, i, c + naoccpi_[Gi]);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&G, h);
@@ -4114,7 +4114,7 @@ void DCTSolver::compute_ewdm_dc() {
                 int Gc = G.params->ssym[c];
                 c -= G.params->soff[Gc];
                 if (Gi == Gb && Ga == Gc)
-                    G.matrix[h][ia][bc] = 0.5 * bvir_tau_->get(Ga, a, c) * a_zia->get(Gi, i, b + naoccpi_[Gi]);
+                    G.matrix[h][ia][bc] = 0.5 * bvir_tau_.get(Ga, a, c) * a_zia->get(Gi, i, b + naoccpi_[Gi]);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&G, h);
@@ -4142,7 +4142,7 @@ void DCTSolver::compute_ewdm_dc() {
                 int Gc = G.params->ssym[c];
                 c -= G.params->soff[Gc];
                 if (Gi == Gb && Ga == Gc)
-                    G.matrix[h][ia][bc] = 0.5 * avir_tau_->get(Ga, a, c) * b_zia->get(Gi, i, b + nboccpi_[Gi]);
+                    G.matrix[h][ia][bc] = 0.5 * avir_tau_.get(Ga, a, c) * b_zia->get(Gi, i, b + nboccpi_[Gi]);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&G, h);
@@ -4170,9 +4170,9 @@ void DCTSolver::compute_ewdm_dc() {
                 int Gc = G.params->ssym[c];
                 c -= G.params->soff[Gc];
                 if (Gi == Gb && Ga == Gc)
-                    G.matrix[h][ia][bc] = 0.5 * bvir_tau_->get(Ga, a, c) * b_zia->get(Gi, i, b + nboccpi_[Gi]);
+                    G.matrix[h][ia][bc] = 0.5 * bvir_tau_.get(Ga, a, c) * b_zia->get(Gi, i, b + nboccpi_[Gi]);
                 if (Gi == Gc && Ga == Gb)
-                    G.matrix[h][ia][bc] -= 0.5 * bvir_tau_->get(Ga, a, b) * b_zia->get(Gi, i, c + nboccpi_[Gi]);
+                    G.matrix[h][ia][bc] -= 0.5 * bvir_tau_.get(Ga, a, b) * b_zia->get(Gi, i, c + nboccpi_[Gi]);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&G, h);
@@ -4629,8 +4629,8 @@ void DCTSolver::compute_ewdm_odc() {
                 double value = -0.5 * (X_OO.matrix[h][i][j] + X_OO.matrix[h][j][i]);
                 aW.set(h, i, j, value);
                 aW.set(h, j, i, value);
-                a_opdm->set(h, i, j, (aocc_tau_->get(h, i, j) + kappa_mo_a_->get(h, i, j)));
-                if (i != j) a_opdm->set(h, j, i, (aocc_tau_->get(h, i, j) + kappa_mo_a_->get(h, i, j)));
+                a_opdm->set(h, i, j, (aocc_tau_.get(h, i, j) + kappa_mo_a_->get(h, i, j)));
+                if (i != j) a_opdm->set(h, j, i, (aocc_tau_.get(h, i, j) + kappa_mo_a_->get(h, i, j)));
             }
         }
 // V-V
@@ -4640,8 +4640,8 @@ void DCTSolver::compute_ewdm_odc() {
                 double value = -0.5 * (X_VV.matrix[h][a][b] + X_VV.matrix[h][b][a]);
                 aW.set(h, a + naoccpi_[h], b + naoccpi_[h], value);
                 aW.set(h, b + naoccpi_[h], a + naoccpi_[h], value);
-                a_opdm->set(h, a + naoccpi_[h], b + naoccpi_[h], avir_tau_->get(h, a, b));
-                if (a != b) a_opdm->set(h, b + naoccpi_[h], a + naoccpi_[h], avir_tau_->get(h, a, b));
+                a_opdm->set(h, a + naoccpi_[h], b + naoccpi_[h], avir_tau_.get(h, a, b));
+                if (a != b) a_opdm->set(h, b + naoccpi_[h], a + naoccpi_[h], avir_tau_.get(h, a, b));
             }
         }
     }
@@ -4683,8 +4683,8 @@ void DCTSolver::compute_ewdm_odc() {
                 double value = -0.5 * (X_OO.matrix[h][i][j] + X_OO.matrix[h][j][i]);
                 bW.set(h, i, j, value);
                 bW.set(h, j, i, value);
-                b_opdm->set(h, i, j, (bocc_tau_->get(h, i, j) + kappa_mo_b_->get(h, i, j)));
-                if (i != j) b_opdm->set(h, j, i, (bocc_tau_->get(h, i, j) + kappa_mo_b_->get(h, i, j)));
+                b_opdm->set(h, i, j, (bocc_tau_.get(h, i, j) + kappa_mo_b_->get(h, i, j)));
+                if (i != j) b_opdm->set(h, j, i, (bocc_tau_.get(h, i, j) + kappa_mo_b_->get(h, i, j)));
             }
         }
 // V-V
@@ -4694,8 +4694,8 @@ void DCTSolver::compute_ewdm_odc() {
                 double value = -0.5 * (X_VV.matrix[h][a][b] + X_VV.matrix[h][b][a]);
                 bW.set(h, a + nboccpi_[h], b + nboccpi_[h], value);
                 bW.set(h, b + nboccpi_[h], a + nboccpi_[h], value);
-                b_opdm->set(h, a + nboccpi_[h], b + nboccpi_[h], bvir_tau_->get(h, a, b));
-                if (a != b) b_opdm->set(h, b + nboccpi_[h], a + nboccpi_[h], bvir_tau_->get(h, a, b));
+                b_opdm->set(h, a + nboccpi_[h], b + nboccpi_[h], bvir_tau_.get(h, a, b));
+                if (a != b) b_opdm->set(h, b + nboccpi_[h], a + nboccpi_[h], bvir_tau_.get(h, a, b));
             }
         }
     }

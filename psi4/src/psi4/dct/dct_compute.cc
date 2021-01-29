@@ -105,7 +105,7 @@ double DCTSolver::compute_energy() {
         compute_gradient();
         if (options_.get_str("REFERENCE") != "RHF") {
             // Compute TPDM trace
-            compute_TPDM_trace();
+            compute_TPDM_trace(options_.get_str("DCT_TYPE") == "DF");
         }
     }
 

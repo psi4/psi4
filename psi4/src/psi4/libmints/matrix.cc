@@ -1144,6 +1144,8 @@ void Matrix::subtract(const Matrix *const plus) {
 
 void Matrix::subtract(const SharedMatrix &sub) { subtract(sub.get()); }
 
+void Matrix::subtract(const Matrix &sub) { subtract(&sub); }
+
 void Matrix::apply_denominator(const Matrix *const plus) {
     double *lhs, *rhs;
     for (int h = 0; h < nirrep_; ++h) {

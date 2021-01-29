@@ -155,7 +155,7 @@ class DCTSolver : public Wavefunction {
     void compute_relaxed_density_OOVV();
     void compute_relaxed_density_OVOV();
     void compute_relaxed_density_VVVV();
-    void compute_TPDM_trace();
+    void compute_TPDM_trace(bool cumulant_only);
     // Quadratically-convergent DCT
     void run_qc_dct();
     void compute_orbital_gradient();
@@ -418,13 +418,13 @@ class DCTSolver : public Wavefunction {
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the beta Fock matrix
     SharedMatrix tau_so_b_;
     /// The Tau matrix in the MO basis (alpha occupied)
-    SharedMatrix aocc_tau_;
+    Matrix aocc_tau_;
     /// The Tau matrix in the MO basis (beta occupied)
-    SharedMatrix bocc_tau_;
+    Matrix bocc_tau_;
     /// The Tau matrix in the MO basis (alpha virtual)
-    SharedMatrix avir_tau_;
+    Matrix avir_tau_;
     /// The Tau matrix in the MO basis (beta virtual)
-    SharedMatrix bvir_tau_;
+    Matrix bvir_tau_;
     /// The perturbed Tau matrix in the MO basis (alpha occupied)
     Matrix aocc_ptau_;
     /// The perturbed Tau matrix in the MO basis (beta occupied)

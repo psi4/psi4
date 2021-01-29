@@ -103,10 +103,10 @@ void DCTSolver::init() {
     kappa_mo_b_ = std::make_shared<Matrix>("MO basis Kappa (Beta)", nirrep_, nmopi_, nmopi_);
     tau_so_a_ = std::make_shared<Matrix>("Alpha Tau Matrix", nirrep_, nsopi_, nsopi_);
     tau_so_b_ = std::make_shared<Matrix>("Beta Tau Matrix", nirrep_, nsopi_, nsopi_);
-    aocc_tau_ = std::make_shared<Matrix>("MO basis Tau (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
-    bocc_tau_ = std::make_shared<Matrix>("MO basis Tau (Beta Occupied)", nirrep_, nboccpi_, nboccpi_);
-    avir_tau_ = std::make_shared<Matrix>("MO basis Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
-    bvir_tau_ = std::make_shared<Matrix>("MO basis Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_);
+    aocc_tau_ = Matrix("MO basis Tau (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
+    bocc_tau_ = Matrix("MO basis Tau (Beta Occupied)", nirrep_, nboccpi_, nboccpi_);
+    avir_tau_ = Matrix("MO basis Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
+    bvir_tau_ = Matrix("MO basis Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_);
 
     // Compute MO offsets
     aocc_off_ = new int[nirrep_];

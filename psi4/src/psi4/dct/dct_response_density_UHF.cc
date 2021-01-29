@@ -126,16 +126,16 @@ void DCTSolver::compute_relaxed_density_OOOO() {
                 if (Gi == Gl && Gj == Gk) tpdm -= 0.25 * kappa_mo_a_->get(Gi, i, l) * kappa_mo_a_->get(Gj, j, k);
 
                 if (Gi == Gk && Gj == Gl)
-                    tpdm += 0.25 * (kappa_mo_a_->get(Gi, i, k) + aocc_tau_->get(Gi, i, k)) * aocc_ptau_.get(Gj, j, l);
+                    tpdm += 0.25 * (kappa_mo_a_->get(Gi, i, k) + aocc_tau_.get(Gi, i, k)) * aocc_ptau_.get(Gj, j, l);
                 if (Gi == Gl && Gj == Gk)
-                    tpdm -= 0.25 * (kappa_mo_a_->get(Gi, i, l) + aocc_tau_->get(Gi, i, l)) * aocc_ptau_.get(Gj, j, k);
+                    tpdm -= 0.25 * (kappa_mo_a_->get(Gi, i, l) + aocc_tau_.get(Gi, i, l)) * aocc_ptau_.get(Gj, j, k);
                 if (Gj == Gk && Gi == Gl)
-                    tpdm -= 0.25 * (kappa_mo_a_->get(Gj, j, k) + aocc_tau_->get(Gj, j, k)) * aocc_ptau_.get(Gi, i, l);
+                    tpdm -= 0.25 * (kappa_mo_a_->get(Gj, j, k) + aocc_tau_.get(Gj, j, k)) * aocc_ptau_.get(Gi, i, l);
                 if (Gj == Gl && Gi == Gk)
-                    tpdm += 0.25 * (kappa_mo_a_->get(Gj, j, l) + aocc_tau_->get(Gj, j, l)) * aocc_ptau_.get(Gi, i, k);
+                    tpdm += 0.25 * (kappa_mo_a_->get(Gj, j, l) + aocc_tau_.get(Gj, j, l)) * aocc_ptau_.get(Gi, i, k);
 
-                if (Gi == Gk && Gj == Gl) tpdm -= 0.25 * aocc_tau_->get(Gi, i, k) * aocc_tau_->get(Gj, j, l);
-                if (Gi == Gl && Gj == Gk) tpdm += 0.25 * aocc_tau_->get(Gi, i, l) * aocc_tau_->get(Gj, j, k);
+                if (Gi == Gk && Gj == Gl) tpdm -= 0.25 * aocc_tau_.get(Gi, i, k) * aocc_tau_.get(Gj, j, l);
+                if (Gi == Gl && Gj == Gk) tpdm += 0.25 * aocc_tau_.get(Gi, i, l) * aocc_tau_.get(Gj, j, k);
 
                 Gaa.matrix[h][ij][kl] += tpdm;
             }
@@ -171,11 +171,11 @@ void DCTSolver::compute_relaxed_density_OOOO() {
                 if (Gi == Gk && Gj == Gl) tpdm += 0.25 * kappa_mo_a_->get(Gi, i, k) * kappa_mo_b_->get(Gj, j, l);
 
                 if (Gi == Gk && Gj == Gl)
-                    tpdm += 0.25 * (kappa_mo_a_->get(Gi, i, k) + aocc_tau_->get(Gi, i, k)) * bocc_ptau_.get(Gj, j, l);
+                    tpdm += 0.25 * (kappa_mo_a_->get(Gi, i, k) + aocc_tau_.get(Gi, i, k)) * bocc_ptau_.get(Gj, j, l);
                 if (Gj == Gl && Gi == Gk)
-                    tpdm += 0.25 * (kappa_mo_b_->get(Gj, j, l) + bocc_tau_->get(Gj, j, l)) * aocc_ptau_.get(Gi, i, k);
+                    tpdm += 0.25 * (kappa_mo_b_->get(Gj, j, l) + bocc_tau_.get(Gj, j, l)) * aocc_ptau_.get(Gi, i, k);
 
-                if (Gi == Gk && Gj == Gl) tpdm -= 0.25 * aocc_tau_->get(Gi, i, k) * bocc_tau_->get(Gj, j, l);
+                if (Gi == Gk && Gj == Gl) tpdm -= 0.25 * aocc_tau_.get(Gi, i, k) * bocc_tau_.get(Gj, j, l);
 
                 Gab.matrix[h][ij][kl] += tpdm;
             }
@@ -212,16 +212,16 @@ void DCTSolver::compute_relaxed_density_OOOO() {
                 if (Gi == Gl && Gj == Gk) tpdm -= 0.25 * kappa_mo_b_->get(Gi, i, l) * kappa_mo_b_->get(Gj, j, k);
 
                 if (Gi == Gk && Gj == Gl)
-                    tpdm += 0.25 * (kappa_mo_b_->get(Gi, i, k) + bocc_tau_->get(Gi, i, k)) * bocc_ptau_.get(Gj, j, l);
+                    tpdm += 0.25 * (kappa_mo_b_->get(Gi, i, k) + bocc_tau_.get(Gi, i, k)) * bocc_ptau_.get(Gj, j, l);
                 if (Gi == Gl && Gj == Gk)
-                    tpdm -= 0.25 * (kappa_mo_b_->get(Gi, i, l) + bocc_tau_->get(Gi, i, l)) * bocc_ptau_.get(Gj, j, k);
+                    tpdm -= 0.25 * (kappa_mo_b_->get(Gi, i, l) + bocc_tau_.get(Gi, i, l)) * bocc_ptau_.get(Gj, j, k);
                 if (Gj == Gk && Gi == Gl)
-                    tpdm -= 0.25 * (kappa_mo_b_->get(Gj, j, k) + bocc_tau_->get(Gj, j, k)) * bocc_ptau_.get(Gi, i, l);
+                    tpdm -= 0.25 * (kappa_mo_b_->get(Gj, j, k) + bocc_tau_.get(Gj, j, k)) * bocc_ptau_.get(Gi, i, l);
                 if (Gj == Gl && Gi == Gk)
-                    tpdm += 0.25 * (kappa_mo_b_->get(Gj, j, l) + bocc_tau_->get(Gj, j, l)) * bocc_ptau_.get(Gi, i, k);
+                    tpdm += 0.25 * (kappa_mo_b_->get(Gj, j, l) + bocc_tau_.get(Gj, j, l)) * bocc_ptau_.get(Gi, i, k);
 
-                if (Gi == Gk && Gj == Gl) tpdm -= 0.25 * bocc_tau_->get(Gi, i, k) * bocc_tau_->get(Gj, j, l);
-                if (Gi == Gl && Gj == Gk) tpdm += 0.25 * bocc_tau_->get(Gi, i, l) * bocc_tau_->get(Gj, j, k);
+                if (Gi == Gk && Gj == Gl) tpdm -= 0.25 * bocc_tau_.get(Gi, i, k) * bocc_tau_.get(Gj, j, l);
+                if (Gi == Gl && Gj == Gk) tpdm += 0.25 * bocc_tau_.get(Gi, i, l) * bocc_tau_.get(Gj, j, k);
 
                 Gbb.matrix[h][ij][kl] += tpdm;
             }
@@ -380,9 +380,9 @@ void DCTSolver::compute_relaxed_density_OVOV() {
                 b -= Gaa.params->soff[Gb];
                 if (Gi == Gj && Ga == Gb) {
                     Gaa.matrix[h][ia][jb] +=
-                        (kappa_mo_a_->get(Gi, i, j) + aocc_tau_->get(Gi, i, j)) * avir_ptau_.get(Ga, a, b);
+                        (kappa_mo_a_->get(Gi, i, j) + aocc_tau_.get(Gi, i, j)) * avir_ptau_.get(Ga, a, b);
                     Gaa.matrix[h][ia][jb] +=
-                        avir_tau_->get(Ga, a, b) * (aocc_ptau_.get(Gi, i, j) - aocc_tau_->get(Gi, i, j));
+                        avir_tau_.get(Ga, a, b) * (aocc_ptau_.get(Gi, i, j) - aocc_tau_.get(Gi, i, j));
                 }
             }
         }
@@ -439,9 +439,9 @@ void DCTSolver::compute_relaxed_density_OVOV() {
                 b -= Gab.params->soff[Gb];
                 if (Gi == Gj && Ga == Gb) {
                     Gab.matrix[h][ia][jb] +=
-                        (kappa_mo_a_->get(Gi, i, j) + aocc_tau_->get(Gi, i, j)) * bvir_ptau_.get(Ga, a, b);
+                        (kappa_mo_a_->get(Gi, i, j) + aocc_tau_.get(Gi, i, j)) * bvir_ptau_.get(Ga, a, b);
                     Gab.matrix[h][ia][jb] +=
-                        bvir_tau_->get(Ga, a, b) * (aocc_ptau_.get(Gi, i, j) - aocc_tau_->get(Gi, i, j));
+                        bvir_tau_.get(Ga, a, b) * (aocc_ptau_.get(Gi, i, j) - aocc_tau_.get(Gi, i, j));
                 }
             }
         }
@@ -474,9 +474,9 @@ void DCTSolver::compute_relaxed_density_OVOV() {
                 b -= Gba.params->soff[Gb];
                 if (Gi == Gj && Ga == Gb) {
                     Gba.matrix[h][ia][jb] +=
-                        (kappa_mo_b_->get(Gi, i, j) + bocc_tau_->get(Gi, i, j)) * avir_ptau_.get(Ga, a, b);
+                        (kappa_mo_b_->get(Gi, i, j) + bocc_tau_.get(Gi, i, j)) * avir_ptau_.get(Ga, a, b);
                     Gba.matrix[h][ia][jb] +=
-                        avir_tau_->get(Ga, a, b) * (bocc_ptau_.get(Gi, i, j) - bocc_tau_->get(Gi, i, j));
+                        avir_tau_.get(Ga, a, b) * (bocc_ptau_.get(Gi, i, j) - bocc_tau_.get(Gi, i, j));
                 }
             }
         }
@@ -571,9 +571,9 @@ void DCTSolver::compute_relaxed_density_OVOV() {
                 b -= Gbb.params->soff[Gb];
                 if (Gi == Gj && Ga == Gb) {
                     Gbb.matrix[h][ia][jb] +=
-                        (kappa_mo_b_->get(Gi, i, j) + bocc_tau_->get(Gi, i, j)) * bvir_ptau_.get(Ga, a, b);
+                        (kappa_mo_b_->get(Gi, i, j) + bocc_tau_.get(Gi, i, j)) * bvir_ptau_.get(Ga, a, b);
                     Gbb.matrix[h][ia][jb] +=
-                        bvir_tau_->get(Ga, a, b) * (bocc_ptau_.get(Gi, i, j) - bocc_tau_->get(Gi, i, j));
+                        bvir_tau_.get(Ga, a, b) * (bocc_ptau_.get(Gi, i, j) - bocc_tau_.get(Gi, i, j));
                 }
             }
         }
@@ -653,13 +653,13 @@ void DCTSolver::compute_relaxed_density_VVVV() {
                 size_t d = Gaa.params->colorb[h][cd][1];
                 int Gd = Gaa.params->ssym[d];
                 d -= Gaa.params->soff[Gd];
-                if (Ga == Gc && Gb == Gd) tpdm += 0.25 * avir_tau_->get(Ga, a, c) * avir_ptau_.get(Gb, b, d);
-                if (Ga == Gd && Gb == Gc) tpdm -= 0.25 * avir_tau_->get(Ga, a, d) * avir_ptau_.get(Gb, b, c);
-                if (Gb == Gc && Ga == Gd) tpdm -= 0.25 * avir_tau_->get(Gb, b, c) * avir_ptau_.get(Ga, a, d);
-                if (Ga == Gc && Gb == Gd) tpdm += 0.25 * avir_tau_->get(Gb, b, d) * avir_ptau_.get(Ga, a, c);
+                if (Ga == Gc && Gb == Gd) tpdm += 0.25 * avir_tau_.get(Ga, a, c) * avir_ptau_.get(Gb, b, d);
+                if (Ga == Gd && Gb == Gc) tpdm -= 0.25 * avir_tau_.get(Ga, a, d) * avir_ptau_.get(Gb, b, c);
+                if (Gb == Gc && Ga == Gd) tpdm -= 0.25 * avir_tau_.get(Gb, b, c) * avir_ptau_.get(Ga, a, d);
+                if (Ga == Gc && Gb == Gd) tpdm += 0.25 * avir_tau_.get(Gb, b, d) * avir_ptau_.get(Ga, a, c);
 
-                if (Ga == Gc && Gb == Gd) tpdm -= 0.25 * avir_tau_->get(Ga, a, c) * avir_tau_->get(Gb, b, d);
-                if (Ga == Gd && Gb == Gc) tpdm += 0.25 * avir_tau_->get(Ga, a, d) * avir_tau_->get(Gb, b, c);
+                if (Ga == Gc && Gb == Gd) tpdm -= 0.25 * avir_tau_.get(Ga, a, c) * avir_tau_.get(Gb, b, d);
+                if (Ga == Gd && Gb == Gc) tpdm += 0.25 * avir_tau_.get(Ga, a, d) * avir_tau_.get(Gb, b, c);
 
                 Gaa.matrix[h][ab][cd] += tpdm;
             }
@@ -692,10 +692,10 @@ void DCTSolver::compute_relaxed_density_VVVV() {
                 size_t d = Gab.params->colorb[h][cd][1];
                 int Gd = Gab.params->ssym[d];
                 d -= Gab.params->soff[Gd];
-                if (Ga == Gc && Gb == Gd) tpdm += 0.25 * avir_tau_->get(Ga, a, c) * bvir_ptau_.get(Gb, b, d);
-                if (Ga == Gc && Gb == Gd) tpdm += 0.25 * bvir_tau_->get(Gb, b, d) * avir_ptau_.get(Ga, a, c);
+                if (Ga == Gc && Gb == Gd) tpdm += 0.25 * avir_tau_.get(Ga, a, c) * bvir_ptau_.get(Gb, b, d);
+                if (Ga == Gc && Gb == Gd) tpdm += 0.25 * bvir_tau_.get(Gb, b, d) * avir_ptau_.get(Ga, a, c);
 
-                if (Ga == Gc && Gb == Gd) tpdm -= 0.25 * avir_tau_->get(Ga, a, c) * bvir_tau_->get(Gb, b, d);
+                if (Ga == Gc && Gb == Gd) tpdm -= 0.25 * avir_tau_.get(Ga, a, c) * bvir_tau_.get(Gb, b, d);
                 Gab.matrix[h][ab][cd] += tpdm;
             }
         }
@@ -727,13 +727,13 @@ void DCTSolver::compute_relaxed_density_VVVV() {
                 size_t d = Gbb.params->colorb[h][cd][1];
                 int Gd = Gbb.params->ssym[d];
                 d -= Gbb.params->soff[Gd];
-                if (Ga == Gc && Gb == Gd) tpdm += 0.25 * bvir_tau_->get(Ga, a, c) * bvir_ptau_.get(Gb, b, d);
-                if (Ga == Gd && Gb == Gc) tpdm -= 0.25 * bvir_tau_->get(Ga, a, d) * bvir_ptau_.get(Gb, b, c);
-                if (Gb == Gc && Ga == Gd) tpdm -= 0.25 * bvir_tau_->get(Gb, b, c) * bvir_ptau_.get(Ga, a, d);
-                if (Ga == Gc && Gb == Gd) tpdm += 0.25 * bvir_tau_->get(Gb, b, d) * bvir_ptau_.get(Ga, a, c);
+                if (Ga == Gc && Gb == Gd) tpdm += 0.25 * bvir_tau_.get(Ga, a, c) * bvir_ptau_.get(Gb, b, d);
+                if (Ga == Gd && Gb == Gc) tpdm -= 0.25 * bvir_tau_.get(Ga, a, d) * bvir_ptau_.get(Gb, b, c);
+                if (Gb == Gc && Ga == Gd) tpdm -= 0.25 * bvir_tau_.get(Gb, b, c) * bvir_ptau_.get(Ga, a, d);
+                if (Ga == Gc && Gb == Gd) tpdm += 0.25 * bvir_tau_.get(Gb, b, d) * bvir_ptau_.get(Ga, a, c);
 
-                if (Ga == Gc && Gb == Gd) tpdm -= 0.25 * bvir_tau_->get(Ga, a, c) * bvir_tau_->get(Gb, b, d);
-                if (Ga == Gd && Gb == Gc) tpdm += 0.25 * bvir_tau_->get(Ga, a, d) * bvir_tau_->get(Gb, b, c);
+                if (Ga == Gc && Gb == Gd) tpdm -= 0.25 * bvir_tau_.get(Ga, a, c) * bvir_tau_.get(Gb, b, d);
+                if (Ga == Gd && Gb == Gc) tpdm += 0.25 * bvir_tau_.get(Ga, a, d) * bvir_tau_.get(Gb, b, c);
                 Gbb.matrix[h][ab][cd] += tpdm;
             }
         }

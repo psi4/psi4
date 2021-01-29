@@ -135,10 +135,10 @@ void DCTSolver::build_d_U() {
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
     global_dpd_->file2_init(&T_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
-    aocc_tau_ = std::make_shared<Matrix>(&T_OO);
-    avir_tau_ = std::make_shared<Matrix>(&T_VV);
-    bocc_tau_ = std::make_shared<Matrix>(&T_oo);
-    bvir_tau_ = std::make_shared<Matrix>(&T_vv);
+    aocc_tau_ = Matrix(&T_OO);
+    avir_tau_ = Matrix(&T_VV);
+    bocc_tau_ = Matrix(&T_oo);
+    bvir_tau_ = Matrix(&T_vv);
 
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_oo);
@@ -661,15 +661,15 @@ void DCTSolver::print_opdm() {
         // O-O
         for (int i = 0; i < naoccpi_[h]; ++i) {
             for (int j = 0; j <= i; ++j) {
-                a_opdm->set(h, i, j, (aocc_tau_->get(h, i, j) + kappa_mo_a_->get(h, i, j)));
-                if (i != j) a_opdm->set(h, j, i, (aocc_tau_->get(h, i, j) + kappa_mo_a_->get(h, i, j)));
+                a_opdm->set(h, i, j, (aocc_tau_.get(h, i, j) + kappa_mo_a_->get(h, i, j)));
+                if (i != j) a_opdm->set(h, j, i, (aocc_tau_.get(h, i, j) + kappa_mo_a_->get(h, i, j)));
             }
         }
         // V-V
         for (int a = 0; a < navirpi_[h]; ++a) {
             for (int b = 0; b <= a; ++b) {
-                a_opdm->set(h, a + naoccpi_[h], b + naoccpi_[h], avir_tau_->get(h, a, b));
-                if (a != b) a_opdm->set(h, b + naoccpi_[h], a + naoccpi_[h], avir_tau_->get(h, a, b));
+                a_opdm->set(h, a + naoccpi_[h], b + naoccpi_[h], avir_tau_.get(h, a, b));
+                if (a != b) a_opdm->set(h, b + naoccpi_[h], a + naoccpi_[h], avir_tau_.get(h, a, b));
             }
         }
     }
@@ -679,15 +679,15 @@ void DCTSolver::print_opdm() {
         // O-O
         for (int i = 0; i < nboccpi_[h]; ++i) {
             for (int j = 0; j <= i; ++j) {
-                b_opdm->set(h, i, j, (bocc_tau_->get(h, i, j) + kappa_mo_b_->get(h, i, j)));
-                if (i != j) b_opdm->set(h, j, i, (bocc_tau_->get(h, i, j) + kappa_mo_b_->get(h, i, j)));
+                b_opdm->set(h, i, j, (bocc_tau_.get(h, i, j) + kappa_mo_b_->get(h, i, j)));
+                if (i != j) b_opdm->set(h, j, i, (bocc_tau_.get(h, i, j) + kappa_mo_b_->get(h, i, j)));
             }
         }
         // V-V
         for (int a = 0; a < nbvirpi_[h]; ++a) {
             for (int b = 0; b <= a; ++b) {
-                b_opdm->set(h, a + nboccpi_[h], b + nboccpi_[h], bvir_tau_->get(h, a, b));
-                if (a != b) b_opdm->set(h, b + nboccpi_[h], a + nboccpi_[h], bvir_tau_->get(h, a, b));
+                b_opdm->set(h, a + nboccpi_[h], b + nboccpi_[h], bvir_tau_.get(h, a, b));
+                if (a != b) b_opdm->set(h, b + nboccpi_[h], a + nboccpi_[h], bvir_tau_.get(h, a, b));
             }
         }
     }
@@ -773,10 +773,10 @@ void DCTSolver::build_tau_U() {
 
     DIISManager diisManager(maxdiis_, "DCT DIIS Tau", DIISManager::LargestError, DIISManager::InCore);
     if ((nalpha_ + nbeta_) > 1) {
-        diisManager.set_error_vector_size(4, DIISEntry::Matrix, aocc_tau_.get(), DIISEntry::Matrix, bocc_tau_.get(),
-                                          DIISEntry::Matrix, avir_tau_.get(), DIISEntry::Matrix, bvir_tau_.get());
-        diisManager.set_vector_size(4, DIISEntry::Matrix, aocc_tau_.get(), DIISEntry::Matrix, bocc_tau_.get(),
-                                    DIISEntry::Matrix, avir_tau_.get(), DIISEntry::Matrix, bvir_tau_.get());
+        diisManager.set_error_vector_size(4, DIISEntry::Matrix, &aocc_tau_, DIISEntry::Matrix, &bocc_tau_,
+                                          DIISEntry::Matrix, &avir_tau_, DIISEntry::Matrix, &bvir_tau_);
+        diisManager.set_vector_size(4, DIISEntry::Matrix, &aocc_tau_, DIISEntry::Matrix, &bocc_tau_,
+                                    DIISEntry::Matrix, &avir_tau_, DIISEntry::Matrix, &bvir_tau_);
     }
 
     auto aocc_r = std::make_shared<Matrix>("Residual (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
@@ -823,70 +823,26 @@ void DCTSolver::build_tau_U() {
         converged = (rms < cumulant_threshold_);
         failed = (++cycle == maxiter_);
 
-        aocc_tau_->add(aocc_r);
-        bocc_tau_->add(bocc_r);
-        avir_tau_->add(avir_r);
-        bvir_tau_->add(bvir_r);
+        aocc_tau_.add(aocc_r);
+        bocc_tau_.add(bocc_r);
+        avir_tau_.add(avir_r);
+        bvir_tau_.add(bvir_r);
 
         if (rms < diis_start_thresh_) {
             // Store the DIIS vectors
-            if (diisManager.add_entry(8, aocc_r.get(), bocc_r.get(), avir_r.get(), bvir_r.get(), aocc_tau_.get(),
-                                      bocc_tau_.get(), avir_tau_.get(), bvir_tau_.get())) {
+            if (diisManager.add_entry(8, aocc_r.get(), bocc_r.get(), avir_r.get(), bvir_r.get(), &aocc_tau_,
+                                      &bocc_tau_, &avir_tau_, &bvir_tau_)) {
                 diisString += "S";
             }
             if (diisManager.subspace_size() > mindiisvecs_) {
                 diisString += "/E";
-                diisManager.extrapolate(4, aocc_tau_.get(), bocc_tau_.get(), avir_tau_.get(), bvir_tau_.get());
+                diisManager.extrapolate(4, &aocc_tau_, &bocc_tau_, &avir_tau_, &bvir_tau_);
             }
         }
 
         if (print_ > 1) outfile->Printf("\t Exact Tau Iterations: %-3d %20.12f %-3s\n", cycle, rms, diisString.c_str());
 
     }  // end of macroiterations
-
-    //    while(!converged && !failed){
-
-    //        // Save old tau from previous iteration
-    //        aocc_tau_old->copy(aocc_tau_);
-    //        avir_tau_old->copy(avir_tau_);
-    //        bocc_tau_old->copy(bocc_tau_);
-    //        bvir_tau_old->copy(bvir_tau_);
-
-    //        // Tau_ij = d_ij
-    //        // Tau_ab = -d_ab
-    //        aocc_tau_->copy(aocc_d);
-    //        avir_tau_->copy(avir_d);
-    //        bocc_tau_->copy(bocc_d);
-    //        bvir_tau_->copy(bvir_d);
-
-    //        // Tau_ij -= Tau_ik * Tau_kj
-    //        // Tau_ab += Tau_ac * Tau_cb
-    //        aocc_tau_->gemm(false, false, -1.0, aocc_tau_old, aocc_tau_old, 1.0);
-    //        avir_tau_->gemm(false, false, 1.0, avir_tau_old, avir_tau_old, 1.0);
-    //        bocc_tau_->gemm(false, false, -1.0, bocc_tau_old, bocc_tau_old, 1.0);
-    //        bvir_tau_->gemm(false, false, 1.0, bvir_tau_old, bvir_tau_old, 1.0);
-
-    //        // Compute RMS
-    //        aocc_tau_old->subtract(aocc_tau_);
-    //        avir_tau_old->subtract(avir_tau_);
-    //        bocc_tau_old->subtract(bocc_tau_);
-    //        bvir_tau_old->subtract(bvir_tau_);
-
-    //        double rms = aocc_tau_old->rms();
-    //        rms += avir_tau_old->rms();
-    //        rms += bocc_tau_old->rms();
-    //        rms += bvir_tau_old->rms();
-
-    //        converged = (rms < cumulant_threshold_);
-    //        failed    = (++cycle == maxiter_);
-
-    //        if (print_ > 2) fprintf(outfile, "\t Exact Tau Iterations: %-3d %20.12f\n", cycle, rms);
-
-    //    } // end of macroiterations
-
-    // Test the trace of Tau
-    // double trace = aocc_tau_->trace() + avir_tau_->trace() + bocc_tau_->trace() + bvir_tau_->trace();
-    // outfile->Printf( "\t Trace of Tau: %8.7e\n", trace);
 
     // If exact tau iterations failed, throw a message about it and compute it non-iteratively
     if (failed) {
@@ -907,10 +863,10 @@ void DCTSolver::build_tau_U() {
         avir_tau_old->add(avir_d);
         bvir_tau_old->add(bvir_d);
         // Zero out new tau
-        aocc_tau_->zero();
-        avir_tau_->zero();
-        bocc_tau_->zero();
-        bvir_tau_->zero();
+        aocc_tau_.zero();
+        avir_tau_.zero();
+        bocc_tau_.zero();
+        bvir_tau_.zero();
         // Diagonalize and take a square root
         auto aocc_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
         auto bocc_evecs = std::make_shared<Matrix>("Eigenvectors (Beta Occupied)", nirrep_, nboccpi_, nboccpi_);
@@ -929,23 +885,23 @@ void DCTSolver::build_tau_U() {
             if (nsopi_[h] == 0) continue;
 
             // Alpha occupied
-            for (int p = 0; p < naoccpi_[h]; ++p) aocc_tau_->set(h, p, p, (-1.0 + sqrt(aocc_evals->get(h, p))) / 2.0);
+            for (int p = 0; p < naoccpi_[h]; ++p) aocc_tau_.set(h, p, p, (-1.0 + sqrt(aocc_evals->get(h, p))) / 2.0);
 
             // Beta occupied
-            for (int p = 0; p < nboccpi_[h]; ++p) bocc_tau_->set(h, p, p, (-1.0 + sqrt(bocc_evals->get(h, p))) / 2.0);
+            for (int p = 0; p < nboccpi_[h]; ++p) bocc_tau_.set(h, p, p, (-1.0 + sqrt(bocc_evals->get(h, p))) / 2.0);
 
             // Alpha virtual
-            for (int p = 0; p < navirpi_[h]; ++p) avir_tau_->set(h, p, p, (1.0 - sqrt(avir_evals->get(h, p))) / 2.0);
+            for (int p = 0; p < navirpi_[h]; ++p) avir_tau_.set(h, p, p, (1.0 - sqrt(avir_evals->get(h, p))) / 2.0);
 
             // Beta virtual
-            for (int p = 0; p < nbvirpi_[h]; ++p) bvir_tau_->set(h, p, p, (1.0 - sqrt(bvir_evals->get(h, p))) / 2.0);
+            for (int p = 0; p < nbvirpi_[h]; ++p) bvir_tau_.set(h, p, p, (1.0 - sqrt(bvir_evals->get(h, p))) / 2.0);
         }
 
         // Back-transform the diagonal Tau to the original basis
-        aocc_tau_->back_transform(aocc_evecs);
-        bocc_tau_->back_transform(bocc_evecs);
-        avir_tau_->back_transform(avir_evecs);
-        bvir_tau_->back_transform(bvir_evecs);
+        aocc_tau_.back_transform(aocc_evecs);
+        bocc_tau_.back_transform(bocc_evecs);
+        avir_tau_.back_transform(avir_evecs);
+        bvir_tau_.back_transform(bvir_evecs);
     }
 
     // Write the exact tau back to disk
@@ -955,10 +911,10 @@ void DCTSolver::build_tau_U() {
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
     global_dpd_->file2_init(&T_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
-    aocc_tau_->write_to_dpdfile2(&T_OO);
-    avir_tau_->write_to_dpdfile2(&T_VV);
-    bocc_tau_->write_to_dpdfile2(&T_oo);
-    bvir_tau_->write_to_dpdfile2(&T_vv);
+    aocc_tau_.write_to_dpdfile2(&T_OO);
+    avir_tau_.write_to_dpdfile2(&T_VV);
+    bocc_tau_.write_to_dpdfile2(&T_oo);
+    bvir_tau_.write_to_dpdfile2(&T_vv);
 
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_oo);

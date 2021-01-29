@@ -1087,7 +1087,7 @@ void DCTSolver::build_DF_tensors_RHF() {
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {
             for (int j = 0; j < naoccpi_[h]; ++j) {
-                mo_tauA_.set(h, i, j, aocc_tau_->get(h, i, j));
+                mo_tauA_.set(h, i, j, aocc_tau_.get(h, i, j));
             }
         }
     }
@@ -1096,7 +1096,7 @@ void DCTSolver::build_DF_tensors_RHF() {
     for (int h = 0; h < nirrep_; ++h) {
         for (int a = naoccpi_[h]; a < nmopi_[h]; ++a) {
             for (int b = naoccpi_[h]; b < nmopi_[h]; ++b) {
-                mo_tauA_.set(h, a, b, avir_tau_->get(h, a - naoccpi_[h], b - naoccpi_[h]));
+                mo_tauA_.set(h, a, b, avir_tau_.get(h, a - naoccpi_[h], b - naoccpi_[h]));
             }
         }
     }
@@ -1376,7 +1376,7 @@ void DCTSolver::build_DF_tensors_UHF() {
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {
             for (int j = 0; j < naoccpi_[h]; ++j) {
-                mo_tauA_.set(h, i, j, aocc_tau_->get(h, i, j));
+                mo_tauA_.set(h, i, j, aocc_tau_.get(h, i, j));
             }
         }
     }
@@ -1384,7 +1384,7 @@ void DCTSolver::build_DF_tensors_UHF() {
     for (int h = 0; h < nirrep_; ++h) {
         for (int a = naoccpi_[h]; a < nmopi_[h]; ++a) {
             for (int b = naoccpi_[h]; b < nmopi_[h]; ++b) {
-                mo_tauA_.set(h, a, b, avir_tau_->get(h, a - naoccpi_[h], b - naoccpi_[h]));
+                mo_tauA_.set(h, a, b, avir_tau_.get(h, a - naoccpi_[h], b - naoccpi_[h]));
             }
         }
     }
@@ -1395,7 +1395,7 @@ void DCTSolver::build_DF_tensors_UHF() {
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < nboccpi_[h]; ++i) {
             for (int j = 0; j < nboccpi_[h]; ++j) {
-                mo_tauB_.set(h, i, j, bocc_tau_->get(h, i, j));
+                mo_tauB_.set(h, i, j, bocc_tau_.get(h, i, j));
             }
         }
     }
@@ -1403,7 +1403,7 @@ void DCTSolver::build_DF_tensors_UHF() {
     for (int h = 0; h < nirrep_; ++h) {
         for (int a = nboccpi_[h]; a < nmopi_[h]; ++a) {
             for (int b = nboccpi_[h]; b < nmopi_[h]; ++b) {
-                mo_tauB_.set(h, a, b, bvir_tau_->get(h, a - nboccpi_[h], b - nboccpi_[h]));
+                mo_tauB_.set(h, a, b, bvir_tau_.get(h, a - nboccpi_[h], b - nboccpi_[h]));
             }
         }
     }

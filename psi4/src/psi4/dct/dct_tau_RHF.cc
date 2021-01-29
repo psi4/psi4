@@ -107,11 +107,11 @@ void DCTSolver::build_d_R() {
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
 
-    aocc_tau_ = std::make_shared<Matrix>(&T_OO);
-    avir_tau_ = std::make_shared<Matrix>(&T_VV);
+    aocc_tau_ = Matrix(&T_OO);
+    avir_tau_ = Matrix(&T_VV);
 
-    bocc_tau_->copy(aocc_tau_);
-    bvir_tau_->copy(avir_tau_);
+    bocc_tau_.copy(aocc_tau_);
+    bvir_tau_.copy(avir_tau_);
 
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
@@ -126,41 +126,40 @@ void DCTSolver::build_tau_R() {
 
     // Iteratively compute the exact Tau
 
-    auto aocc_tau_old = std::make_shared<Matrix>("MO basis Tau (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
-    auto avir_tau_old = std::make_shared<Matrix>("MO basis Tau (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
-    auto aocc_d =
-        std::make_shared<Matrix>("Non-idempotency of OPDM (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
-    auto avir_d = std::make_shared<Matrix>("Non-idempotency of OPDM (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
+    auto aocc_tau_old = Matrix("MO basis Tau (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
+    auto avir_tau_old = Matrix("MO basis Tau (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
+    auto aocc_d = Matrix("Non-idempotency of OPDM (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
+    auto avir_d = Matrix("Non-idempotency of OPDM (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
 
     bool converged = false;
     bool failed = false;
     int cycle = 0;
 
     // Copy approximate Tau as the non-idempotency of OPDM
-    aocc_d->copy(aocc_tau_);
-    avir_d->copy(avir_tau_);
+    aocc_d.copy(aocc_tau_);
+    avir_d.copy(avir_tau_);
 
     while (!converged && !failed) {
         // Save old tau from previous iteration
-        aocc_tau_old->copy(aocc_tau_);
-        avir_tau_old->copy(avir_tau_);
+        aocc_tau_old.copy(aocc_tau_);
+        avir_tau_old.copy(avir_tau_);
 
         // Tau_ij = d_ij
         // Tau_ab = -d_ab
-        aocc_tau_->copy(aocc_d);
-        avir_tau_->copy(avir_d);
+        aocc_tau_.copy(aocc_d);
+        avir_tau_.copy(avir_d);
 
         // Tau_ij -= Tau_ik * Tau_kj
         // Tau_ab += Tau_ac * Tau_cb
-        aocc_tau_->gemm(false, false, -1.0, aocc_tau_old, aocc_tau_old, 1.0);
-        avir_tau_->gemm(false, false, 1.0, avir_tau_old, avir_tau_old, 1.0);
+        aocc_tau_.gemm(false, false, -1.0, aocc_tau_old, aocc_tau_old, 1.0);
+        avir_tau_.gemm(false, false, 1.0, avir_tau_old, avir_tau_old, 1.0);
 
         // Compute RMS
-        aocc_tau_old->subtract(aocc_tau_);
-        avir_tau_old->subtract(avir_tau_);
+        aocc_tau_old.subtract(aocc_tau_);
+        avir_tau_old.subtract(avir_tau_);
 
-        double rms = aocc_tau_old->rms();
-        rms += avir_tau_old->rms();
+        double rms = aocc_tau_old.rms();
+        rms += avir_tau_old.rms();
         rms *= 2.0;
 
         converged = (rms < cumulant_threshold_);
@@ -171,59 +170,55 @@ void DCTSolver::build_tau_R() {
 
     }  // end of macroiterations
 
-    // Test the trace of Tau
-    // double trace = aocc_tau_->trace() + avir_tau_->trace() + bocc_tau_->trace() + bvir_tau_->trace();
-    // outfile->Printf( "\t Trace of Tau: %8.7e\n", trace);
-
     // If exact tau iterations failed, throw a message about it and compute it non-iteratively
     if (failed) {
         outfile->Printf("\t Exact Tau didn't converge. Evaluating it non-iteratively\n");
         // Set old tau matrices to identity
-        aocc_tau_old->identity();
-        avir_tau_old->identity();
+        aocc_tau_old.identity();
+        avir_tau_old.identity();
         // Scale the non-idempotency elements
-        aocc_d->scale(4.0);
-        avir_d->scale(-4.0);
+        aocc_d.scale(4.0);
+        avir_d.scale(-4.0);
         // Add them to the old tau
-        aocc_tau_old->add(aocc_d);
-        avir_tau_old->add(avir_d);
+        aocc_tau_old.add(aocc_d);
+        avir_tau_old.add(avir_d);
         // Zero out new tau
-        aocc_tau_->zero();
-        avir_tau_->zero();
+        aocc_tau_.zero();
+        avir_tau_.zero();
         // Diagonalize and take a square root
         auto aocc_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
         auto avir_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
         auto aocc_evals = std::make_shared<Vector>("Eigenvalues (Alpha Occupied)", nirrep_, naoccpi_);
         auto avir_evals = std::make_shared<Vector>("Eigenvalues (Alpha Virtual)", nirrep_, navirpi_);
-        aocc_tau_old->diagonalize(aocc_evecs, aocc_evals);
-        avir_tau_old->diagonalize(avir_evecs, avir_evals);
+        aocc_tau_old.diagonalize(aocc_evecs, aocc_evals);
+        avir_tau_old.diagonalize(avir_evecs, avir_evals);
 
         for (int h = 0; h < nirrep_; ++h) {
             if (nsopi_[h] == 0) continue;
 
             // Alpha occupied
-            for (int p = 0; p < naoccpi_[h]; ++p) aocc_tau_->set(h, p, p, (-1.0 + sqrt(aocc_evals->get(h, p))) / 2.0);
+            for (int p = 0; p < naoccpi_[h]; ++p) aocc_tau_.set(h, p, p, (-1.0 + sqrt(aocc_evals->get(h, p))) / 2.0);
 
             // Alpha virtual
-            for (int p = 0; p < navirpi_[h]; ++p) avir_tau_->set(h, p, p, (1.0 - sqrt(avir_evals->get(h, p))) / 2.0);
+            for (int p = 0; p < navirpi_[h]; ++p) avir_tau_.set(h, p, p, (1.0 - sqrt(avir_evals->get(h, p))) / 2.0);
         }
 
         // Back-transform the diagonal Tau to the original basis
-        aocc_tau_->back_transform(aocc_evecs);
-        avir_tau_->back_transform(avir_evecs);
+        aocc_tau_.back_transform(aocc_evecs);
+        avir_tau_.back_transform(avir_evecs);
     }
 
     // Copy Tau_alpha to Tau_beta
-    bocc_tau_->copy(aocc_tau_);
-    bvir_tau_->copy(avir_tau_);
+    bocc_tau_.copy(aocc_tau_);
+    bvir_tau_.copy(avir_tau_);
 
     // Write the exact tau back to disk
 
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
 
-    aocc_tau_->write_to_dpdfile2(&T_OO);
-    avir_tau_->write_to_dpdfile2(&T_VV);
+    aocc_tau_.write_to_dpdfile2(&T_OO);
+    avir_tau_.write_to_dpdfile2(&T_VV);
 
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);

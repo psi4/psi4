@@ -697,6 +697,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     void subtract(const Matrix* const);
     /// Subtracts a matrix from this
     void subtract(const SharedMatrix&);
+    void subtract(const Matrix&);
     /// Multiplies the two arguments and adds their result to this
     void accumulate_product(const Matrix* const, const Matrix* const);
     void accumulate_product(const SharedMatrix&, const SharedMatrix&);
