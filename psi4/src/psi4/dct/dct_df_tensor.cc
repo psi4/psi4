@@ -2235,27 +2235,7 @@ void DCTSolver::three_idx_separable_density() {
     // Now transform from SO back to AO
     auto AO_matrix = transform_b_so2ao(SO_matrix);
     AO_matrix.set_name("3-Center Reference Density");
-    AO_matrix.save(psio_, PSIF_AO_TPDM, Matrix::SaveType::Full);
-
-    // We have Hermitian symmetry in the last two indices. To reduce IO costs,
-    // only store the lower triangle of each pair.
-/*
-    auto p = AO_matrix.pointer(0);
-    int count = 0
-    int ntri = nso_ * (nso_ + 1) / 2
-    std::vector<double> temp(nQ_scf_ * ntri, 0);
-    for (auto P = 0; P < nQ_scf_; P++) {
-        for (auto i = 0; i < nso_; i++) {
-            for (auto j = 0; j <= o; j++; count++) {
-                temp[count] = p[P][i * nso_ + j];
-            }
-        }
-    }
-
-    psio->open(PSIF_AO_TPDM, PSIO_OPEN_OLD);
-    psio->write_entry(PSIF_AO_TPDM, "3-Center Reference Density", (char *) temp.get, sizeof(double) * temp.size());
-    psio->close(PSIF_AO_TPDM, 1); // Close and keep
-    */
+    AO_matrix.save(psio_, PSIF_AO_TPDM, Matrix::SaveType::ThreeIndexLowerTriangle);
 }
 
 Matrix DCTSolver::three_idx_separable_helper(const Matrix& Q, const Matrix& J, const Matrix& RDM, const Matrix& C_subset) {
@@ -2281,9 +2261,10 @@ void DCTSolver::construct_metric_density(const std::string& basis_type) {
     auto c = linalg::doublet(J, b, true, false);
     // TODO: How do I clear J and b? Those are large objects.
     auto g = Matrix("3-Center " + basis_type + " Density", nQ, nso_ * nso_);
-    g.load(psio_, PSIF_AO_TPDM, Matrix::SaveType::Full);
+    g.load(psio_, PSIF_AO_TPDM, Matrix::SaveType::ThreeIndexLowerTriangle);
     auto G = linalg::doublet(c, g, false, true);
     G.set_name("Metric " + basis_type + " Density");
+    G.scale(0.5);
     G.save(psio_, PSIF_AO_TPDM, Matrix::SaveType::LowerTriangle);
 }
 

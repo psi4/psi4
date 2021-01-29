@@ -2973,6 +2973,29 @@ void Matrix::save(psi::PSIO *const psio, size_t fileno, SaveType st) {
         if (sizer > 0)
             psio->write_entry(fileno, const_cast<char *>(name_.c_str()), (char *)lower, sizeof(double) * ioff[sizer]);
         delete[] lower;
+    } else if (st == ThreeIndexLowerTriangle) {
+        if (nirrep_ != 1) {
+            throw PSIEXCEPTION("Matrix::save: ThreeIndexLowerTriangle only applies to matrices without symmetry. This will be changing soon!\n");
+        }
+        auto nP = rowspi(0);
+        auto np = static_cast<int>(sqrt(colspi(0)));
+        if (np * np != colspi(0)) {
+            throw PSIEXCEPTION("Matrix::save: ThreeIndexLowerTriangle columns must be indexed by pairs of the same vector.\n");
+        }
+        auto ntri = np * (np + 1) / 2;
+        std::vector<double> temp(nP * ntri, 0);
+        auto data = temp.data();
+        int count = 0;
+        if (nP > 0 && ntri > 0) {
+            for (int aux = 0; aux < nP; ++aux) {
+                for (int i = 0; i < np; ++i) {
+                    for (int j = 0; j <= i; ++j, ++count) {
+                        temp[count] = matrix_[0][aux][i * np + j];
+                    }
+                }
+            }
+            psio->write_entry(fileno, const_cast<char *>(name_.c_str()), (char *)data, sizeof(double) * temp.size());
+        }
     } else {
         throw PSIEXCEPTION("Matrix::save: Unknown SaveType\n");
     }
@@ -3046,6 +3069,30 @@ void Matrix::load(psi::PSIO *const psio, size_t fileno, SaveType st) {
 
         set(lower);
         delete[] lower;
+    } else if (st == ThreeIndexLowerTriangle) {
+        if (nirrep_ != 1) {
+            throw PSIEXCEPTION("Matrix::load: ThreeIndexLowerTriangle only applies to matrices without symmetry. This will be changing soon!\n");
+        }
+        auto nP = rowspi(0);
+        auto np = static_cast<int>(sqrt(colspi(0)));
+        if (np * np != colspi(0)) {
+            throw PSIEXCEPTION("Matrix::load: ThreeIndexLowerTriangle columns must be indexed by pairs of the same vector.\n");
+        }
+        auto ntri = np * (np + 1) / 2;
+        std::vector<double> temp(nP * ntri, 0);
+        auto data = temp.data();
+        if (nP * ntri > 0) {
+            psio->read_entry(fileno, name_.c_str(), (char *)data, sizeof(double) * temp.size());
+            for (int aux = 0; aux < nP; aux++) {
+                for (int i = 0; i < np; i++) {
+                    for (int j = 0; j <= i; j++) {
+                        matrix_[0][aux][i * np + j] = *data;
+                        matrix_[0][aux][j * np + i] = *data;
+                        data++;
+                    }
+                }
+            }
+        }
     } else {
         throw PSIEXCEPTION("Matrix::load: Unknown SaveType\n");
     }
