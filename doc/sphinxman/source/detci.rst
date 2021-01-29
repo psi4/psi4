@@ -119,8 +119,13 @@ For single-reference CI computations, the easiest way to invoke a CI
 computation with DETCI is simply to call :py:func:`~psi4.energy`, :py:func:`~psi4.optimize`, *etc.*,
 with the common name for that CI wavefunction, like ``energy('cisd')`` 
 for a CISD single-point energy.  The Python driver
-recognizes ``cisd``, ``cisdt``, and ``cisdtq``.  Higher order
-single-reference CI wavefunctions, like those including singles through
+recognizes ``cisd``, ``cisdt``, and ``cisdtq``.  As mentioned above, codes
+written specifically for CISD will be more efficient than DETCI for a 
+CISD computation, and ``energy('cisd')`` by default will call other,
+more efficient modules.  To force a CISD computation with DETCI,
+set |globals__qc_module| = DETCI.  
+
+Higher order single-reference CI wavefunctions, like those including singles through
 6-fold excitations, can be invoked using numbers, like ``ci6``.  A full
 CI can be specified by ``fci``.  More complicated CI computations, like
 RASCI, can be performed by setting the appropriate keywords and calling the
@@ -192,6 +197,32 @@ Basic DETCI Keywords
 
 For larger computations, additional keywords may be required, as
 described in the DETCI section of the Appendix :ref:`apdx:detci`.
+
+.. index:: 
+   pair: CI; spin multiplicities of higher roots
+
+Spin Multiplicities of Higher Roots
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As mentioned above, DETCI works in a basis of Slater determinants, rather than
+configuration state functions.  The correct value of :math:`M_s` is easily enforced
+by fixing the number of alpha and beta electrons to be constant across all determinants 
+selected for the CI computation.  However, determinant-based codes like DETCI do
+not necessarily enforce the correct spin :math:`S`.  For example, diagonalizing the
+Hamiltonian in a space spanned by determinants with :math:`M_s = 0` can yield 
+both singlet and triplet solutions, because triplets (:math:`S = 1`) also have an
+:math:`M_s = 0` component.  (Indeed, even higher spin multiplicities may be encountered
+if the excitation level is high enough).  For closed-shell references with :math:`M_s = 0`,
+the program will assume by default that a singlet (:math:`S = 0`) computation is desired,
+and will utilize alpha/beta interchange symmetries to speed up the computation 
+(this is controlled by the advanced keyword |detci__ms0|, which defaults to ``TRUE``).
+Thus, if a user requests multiple roots (|detci__num_roots| = :math:`n`), the program
+will typically return singlets and not triplets.  However, if enough roots are sought,
+higher-multiplicities may enter in.  This can be avoided by ensuring that all the guess
+vectors have the correct spin multiplicity, by setting |detci__calc_s_squared| to ``TRUE``).
+For open-shell systems, the |detci__ms0| keyword is typically not relevant, and there
+is no control over spin multiplicities of higher roots unless|detci__calc_s_squared| is
+used.
 
 .. index:: 
    pair: CI; arbitrary-order perturbation theory
