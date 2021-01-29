@@ -3406,13 +3406,11 @@ SharedMatrix doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, 
     return std::make_shared<Matrix>(std::move(doublet(*A, *B, transA, transB)));
 }
 
-SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA, bool transB,
-                     bool transC) {
+Matrix triplet(const Matrix &A, const Matrix &B, const Matrix &C, bool transA, bool transB, bool transC) {
+    bool same_symmetry = (A.symmetry() == B.symmetry() && A.symmetry() == C.symmetry());
 
-    bool same_symmetry = (A->symmetry() == B->symmetry() && A->symmetry() == C->symmetry());
-
-    SharedMatrix T;
-    SharedMatrix S;
+    Matrix T;
+    Matrix S;
 
     if (!same_symmetry) {
         T = doublet(A, B, transA, transB);
@@ -3425,14 +3423,14 @@ SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedM
     int cost1 = 0;
     int cost2 = 0;
 
-    for (int h = 0; h < A->nirrep(); h++) {
+    for (int h = 0; h < A.nirrep(); h++) {
 
-        int dim1 = transA ? A->colspi(h) : A->rowspi(h);
-        int dim2 = transA ? A->rowspi(h) : A->colspi(h);
-        int dim3 = transB ? B->colspi(h) : B->rowspi(h);
-        int dim4 = transB ? B->rowspi(h) : B->colspi(h);
-        int dim5 = transC ? C->colspi(h) : C->rowspi(h);
-        int dim6 = transC ? C->rowspi(h) : C->colspi(h);
+        int dim1 = transA ? A.colspi(h) : A.rowspi(h);
+        int dim2 = transA ? A.rowspi(h) : A.colspi(h);
+        int dim3 = transB ? B.colspi(h) : B.rowspi(h);
+        int dim4 = transB ? B.rowspi(h) : B.colspi(h);
+        int dim5 = transC ? C.colspi(h) : C.rowspi(h);
+        int dim6 = transC ? C.rowspi(h) : C.colspi(h);
         // Checks validity of Matrix Multiply, don't want calculation to suddenly fail halfway through
         if (dim2 != dim3 || dim4 != dim5) {
             throw PsiException("Input matrices are of invalid size", __FILE__, __LINE__);
@@ -3456,6 +3454,11 @@ SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedM
     }
 
     return S;
+}
+
+SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA, bool transB,
+                     bool transC) {
+    return std::make_shared<Matrix>(std::move(triplet(*A, *B, *C, transA, transB, transC)));
 }
 
 namespace detail {

@@ -643,10 +643,11 @@ void export_mints(py::module& m) {
 
     // Free functions
     typedef Matrix (*doublet_shared)(const Matrix&, const Matrix&, bool, bool);
+    typedef Matrix (*triplet_shared)(const Matrix&, const Matrix&, const Matrix&, bool, bool, bool);
     m.def("doublet", doublet_shared(&linalg::doublet),
           "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a, "B"_a,
           "transA"_a = false, "transB"_a = false);
-    m.def("triplet", &linalg::triplet,
+    m.def("triplet", triplet_shared(&linalg::triplet),
           "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand", "A"_a,
           "B"_a, "C"_a, "transA"_a = false, "transB"_a = false, "transC"_a = false);
 

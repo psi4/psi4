@@ -91,6 +91,8 @@ PSI_API
 SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C, bool transA = false,
                      bool transB = false, bool transC = false);
 
+Matrix triplet(const Matrix&A, const Matrix& B, const Matrix& C, bool transA = false, bool transB = false, bool transC = false);
+
 namespace detail {
 /*!
  * allocate a block matrix -- analogous to libciomr's block_matrix
