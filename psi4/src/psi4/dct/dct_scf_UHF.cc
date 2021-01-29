@@ -282,24 +282,24 @@ double DCTSolver::compute_scf_error_vector() {
 
     size_t nElements = 0;
     double sumOfSquares = 0.0;
-    auto tmp1 = std::make_shared<Matrix>("tmp1", nirrep_, nsopi_, nsopi_);
-    auto tmp2 = std::make_shared<Matrix>("tmp2", nirrep_, nsopi_, nsopi_);
+    auto tmp1 = Matrix("tmp1", nirrep_, nsopi_, nsopi_);
+    auto tmp2 = Matrix("tmp2", nirrep_, nsopi_, nsopi_);
     // form FDS
-    tmp1->gemm(false, false, 1.0, kappa_so_a_, ao_s_, 0.0);
+    tmp1.gemm(false, false, 1.0, kappa_so_a_, ao_s_, 0.0);
     scf_error_a_->gemm(false, false, 1.0, Fa_, tmp1, 0.0);
     // form SDF
-    tmp1->gemm(false, false, 1.0, kappa_so_a_, Fa_, 0.0);
-    tmp2->gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
+    tmp1.gemm(false, false, 1.0, kappa_so_a_, Fa_, 0.0);
+    tmp2.gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
     scf_error_a_->subtract(tmp2);
     // Orthogonalize
     scf_error_a_->transform(s_half_inv_);
 
     // form FDS
-    tmp1->gemm(false, false, 1.0, kappa_so_b_, ao_s_, 0.0);
+    tmp1.gemm(false, false, 1.0, kappa_so_b_, ao_s_, 0.0);
     scf_error_b_->gemm(false, false, 1.0, Fb_, tmp1, 0.0);
     // form SDF
-    tmp1->gemm(false, false, 1.0, kappa_so_b_, Fb_, 0.0);
-    tmp2->gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
+    tmp1.gemm(false, false, 1.0, kappa_so_b_, Fb_, 0.0);
+    tmp2.gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
     scf_error_b_->subtract(tmp2);
     // Orthogonalize
     scf_error_b_->transform(s_half_inv_);

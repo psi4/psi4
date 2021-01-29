@@ -210,6 +210,7 @@ class DCTSolver : public Wavefunction {
     void rotate_orbitals();
     void compute_oe_properties();
     void write_molden_file();
+    Matrix construct_oo_density(const Matrix& occtau, const Matrix& virtau, const Matrix& kappa, const Matrix& C);
     // Three-particle cumulant contributions
     double compute_three_particle_energy();
     void dct_semicanonicalize();

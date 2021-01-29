@@ -90,9 +90,9 @@ void DCTSolver::run_simult_dct_oo_RHF() {
         if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
             build_DF_tensors_RHF();
 
-            auto mo_h = std::make_shared<Matrix>("MO-based H", nirrep_, nmopi_, nmopi_);
-            mo_h->copy(so_h_);
-            mo_h->transform(Ca_);
+            auto mo_h = Matrix("MO-based H", nirrep_, nmopi_, nmopi_);
+            mo_h.copy(so_h_);
+            mo_h.transform(Ca_);
 
             moFa_->copy(mo_h);
             moFa_->add(mo_gbarGamma_A_);

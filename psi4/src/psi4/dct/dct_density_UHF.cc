@@ -1165,50 +1165,33 @@ void DCTSolver::compute_unrelaxed_separable_density_VVVV() {
     global_dpd_->buf4_close(&Gbb);
 }
 
+Matrix DCTSolver::construct_oo_density(const Matrix& occtau, const Matrix& virtau, const Matrix& kappa, const Matrix& C) {
+    auto opdm = Matrix("MO basis OPDM", nirrep_, nmopi_, nmopi_);
+
+    auto occdim = occtau.rowspi();
+    auto virdim = virtau.rowspi();
+
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < occdim[h]; ++i) {
+            for (int j = 0; j <= i; ++j) {
+                opdm.set(h, i, j, occtau.get(h, i, j) + kappa.get(h, i, j));
+                if (i != j) opdm.set(h, j, i, occtau.get(h, i, j) + kappa.get(h, i, j));
+            }
+        }
+        for (int a = 0; a < virdim[h]; ++a) {
+            for (int b = 0; b <= a; ++b) {
+                opdm.set(h, a + occdim[h], b + occdim[h], virtau.get(h, a, b));
+                if (a != b) opdm.set(h, b + occdim[h], a + occdim[h], virtau.get(h, a, b));
+            }
+        }
+    }
+
+    return linalg::triplet(C, opdm, C, false, false, true);
+}
+
 void DCTSolver::construct_oo_density_UHF() {
-    // Form one-particle density matrix
-    auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
-    auto b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);
-
-    // Alpha spin
-    for (int h = 0; h < nirrep_; ++h) {
-        // O-O
-        for (int i = 0; i < naoccpi_[h]; ++i) {
-            for (int j = 0; j <= i; ++j) {
-                a_opdm->set(h, i, j, (aocc_tau_.get(h, i, j) + kappa_mo_a_->get(h, i, j)));
-                if (i != j) a_opdm->set(h, j, i, (aocc_tau_.get(h, i, j) + kappa_mo_a_->get(h, i, j)));
-            }
-        }
-        // V-V
-        for (int a = 0; a < navirpi_[h]; ++a) {
-            for (int b = 0; b <= a; ++b) {
-                a_opdm->set(h, a + naoccpi_[h], b + naoccpi_[h], avir_tau_.get(h, a, b));
-                if (a != b) a_opdm->set(h, b + naoccpi_[h], a + naoccpi_[h], avir_tau_.get(h, a, b));
-            }
-        }
-    }
-
-    // Beta spin
-    for (int h = 0; h < nirrep_; ++h) {
-        // O-O
-        for (int i = 0; i < nboccpi_[h]; ++i) {
-            for (int j = 0; j <= i; ++j) {
-                b_opdm->set(h, i, j, (bocc_tau_.get(h, i, j) + kappa_mo_b_->get(h, i, j)));
-                if (i != j) b_opdm->set(h, j, i, (bocc_tau_.get(h, i, j) + kappa_mo_b_->get(h, i, j)));
-            }
-        }
-        // V-V
-        for (int a = 0; a < nbvirpi_[h]; ++a) {
-            for (int b = 0; b <= a; ++b) {
-                b_opdm->set(h, a + nboccpi_[h], b + nboccpi_[h], bvir_tau_.get(h, a, b));
-                if (a != b) b_opdm->set(h, b + nboccpi_[h], a + nboccpi_[h], bvir_tau_.get(h, a, b));
-            }
-        }
-    }
-
-    // With the OPDMs constructed, let's set them on the wavefunction.
-    Da_ = linalg::triplet(Ca_, a_opdm, Ca_, false, false, true);
-    Db_ = linalg::triplet(Cb_, b_opdm, Cb_, false, false, true);
+    Da_ = std::make_shared<Matrix>(std::move(construct_oo_density(aocc_tau_, avir_tau_, *kappa_mo_a_, *Ca_))); 
+    Db_ = std::make_shared<Matrix>(std::move(construct_oo_density(bocc_tau_, bvir_tau_, *kappa_mo_b_, *Cb_))); 
 }
 
 void DCTSolver::compute_oe_properties() {

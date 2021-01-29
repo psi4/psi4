@@ -376,29 +376,7 @@ void DCTSolver::compute_unrelaxed_separable_density_VVVV_RHF() {
 }
 
 void DCTSolver::construct_oo_density_RHF() {
-    // Form one-particle density matrix
-    auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
-
-    // Alpha spin
-    for (int h = 0; h < nirrep_; ++h) {
-        // O-O
-        for (int i = 0; i < naoccpi_[h]; ++i) {
-            for (int j = 0; j <= i; ++j) {
-                a_opdm->set(h, i, j, (aocc_tau_.get(h, i, j) + kappa_mo_a_->get(h, i, j)));
-                if (i != j) a_opdm->set(h, j, i, (aocc_tau_.get(h, i, j) + kappa_mo_a_->get(h, i, j)));
-            }
-        }
-        // V-V
-        for (int a = 0; a < navirpi_[h]; ++a) {
-            for (int b = 0; b <= a; ++b) {
-                a_opdm->set(h, a + naoccpi_[h], b + naoccpi_[h], avir_tau_.get(h, a, b));
-                if (a != b) a_opdm->set(h, b + naoccpi_[h], a + naoccpi_[h], avir_tau_.get(h, a, b));
-            }
-        }
-    }
-
-    // With the OPDMs constructed, let's set them on the wavefunction.
-    Da_ = linalg::triplet(Ca_, a_opdm, Ca_, false, false, true);
+    Da_ = std::make_shared<Matrix>(std::move(construct_oo_density(aocc_tau_, avir_tau_, *kappa_mo_a_, *Ca_))); 
     Db_ = Da_->clone();
 }
 
