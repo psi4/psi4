@@ -1995,51 +1995,49 @@ void DCTSolver::three_idx_cumulant_density() {
     // 1. From IJKL
     // TODO: If we can fit all needed intermediates in-core, we generate Gamma (OO|OO) in-core, write it to disk, then
     // read it from disk to get it back in core. That's just wasteful.
-    // TODO: There's probably a bad scaling factor, from how the I intermediate is defined. Check it.
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[O,O]"), ID("[O>O]-"), ID("[O>O]-"), 0, "I <OO|OO>");
-    global_dpd_->buf4_sort(&G, PSIF_DCT_DPD, prqs, ID("[O,O]"), ID("[O,O]"), "Lambda (OO|OO)");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O>O]-"), ID("[O>O]-"), 0, "Lambda <OO|OO>");
+    global_dpd_->buf4_sort(&G, PSIF_DCT_DENSITY, prqs, ID("[O,O]"), ID("[O,O]"), "Lambda (OO|OO)");
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0, "Lambda (OO|OO)");
-    // The memory will be automatically freed when we re-assign result.
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0, "Lambda (OO|OO)");
     auto result = Matrix("3-Center PDM B: IJ", bQijA_mo_.rowspi(), bQijA_mo_.colspi());
     // gIJ = b(Q|KL) L^IK_JL
-    contract343(bQijA_mo_, G, result, false, 1.0, 0.0);
+    contract343(bQijA_mo_, G, result, false, 4.0, 0.0);
     global_dpd_->buf4_close(&G);
-
     // 2. From IjKl
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), 0, "I <Oo|Oo>");
-    global_dpd_->buf4_sort(&G, PSIF_DCT_DPD, qspr, ID("[o,o]"), ID("[O,O]"), "Lambda (oo|OO)");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), ID("[O,o]"), 0, "Lambda <Oo|Oo>");
+    global_dpd_->buf4_sort(&G, PSIF_DCT_DENSITY, qspr, ID("[o,o]"), ID("[O,O]"), "Lambda (oo|OO)");
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[O,O]"), ID("[o,o]"), ID("[O,O]"), 0, "Lambda (oo|OO)");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[O,O]"), ID("[o,o]"), ID("[O,O]"), 0, "Lambda (oo|OO)");
     // gIJ += b(Q|ij) L^iI_jJ
-    contract343(bQijB_mo_, G, result, false, 1.0, 1.0);
+    contract343(bQijB_mo_, G, result, false, 4.0, 1.0);
     result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
     result = Matrix("3-Center PDM B: ij", bQijB_mo_.rowspi(), bQijB_mo_.colspi());
     // gij = b(Q|IJ) L^Ii_Jj
-    contract343(bQijA_mo_, G, result, true, 1.0, 0.0);
+    contract343(bQijA_mo_, G, result, true, 4.0, 0.0);
     global_dpd_->buf4_close(&G);
 
     // 3. From ijkl
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[o,o]"), ID("[o>o]-"), ID("[o>o]-"), 0, "I <oo|oo>");
-    global_dpd_->buf4_sort(&G, PSIF_DCT_DPD, prqs, ID("[o,o]"), ID("[o,o]"), "Lambda (oo|oo)");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[o,o]"), ID("[o>o]-"), ID("[o>o]-"), 0, "Lambda <oo|oo>");
+    global_dpd_->buf4_sort(&G, PSIF_DCT_DENSITY, prqs, ID("[o,o]"), ID("[o,o]"), "Lambda (oo|oo)");
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[o,o]"), ID("[o,o]"), ID("[o,o]"), 0, "Lambda (oo|oo)");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[o,o]"), ID("[o,o]"), ID("[o,o]"), ID("[o,o]"), 0, "Lambda (oo|oo)");
     // gij += b(Q|kl) L^ki_lj
-    contract343(bQijB_mo_, G, result, false, 1.0, 1.0);
+    contract343(bQijB_mo_, G, result, false, 4.0, 1.0);
     result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
     global_dpd_->buf4_close(&G);
 
     //// OVOV Spin-Blocks
     // 4. From IAJB
-    // -L^IA_JB = K (IJ|AB)
+    // -L^IA_JB = K (IJ|AB)... We COULD just grab Lambda, but this way, no resorting needed
     global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "K (OO|VV)");
     result = Matrix("3-Center PDM B: AB", bQabA_mo_.rowspi(), bQabA_mo_.colspi());
     // gAB = b(Q|IJ) L^IA_JB
     contract343(bQijA_mo_, G, result, false, -1.0, 0.0);
     result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    
     result = Matrix("3-Center PDM B: IJ", bQijA_mo_.rowspi(), bQijA_mo_.colspi());
     result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks); 
     // gIJ += b(Q|AB) L^AI_BJ
@@ -2105,9 +2103,9 @@ void DCTSolver::three_idx_cumulant_density() {
     result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
     global_dpd_->buf4_close(&G);
 
-    // 8. From IaBj (Hermiticity-equivalent to iAbJ case)
+    // 8. From IaBj (Hermiticity-equivalent to iAbJ case - we account for this with the IA transpose later)
     // L^Ia_Ai = -L^Ia_iA = K (IA|ia)
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0, "K (OV|ov");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0, "K (OV|ov)");
     result = Matrix("3-Center PDM B: ia", bQiaB_mo_.rowspi(), bQiaB_mo_.colspi());
     result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
     // gia += b(Q|AI) L^Ia_Ai = b(Q|AI) K(IA|ia) = b(Q|IA) K(IA|ia)
@@ -2119,15 +2117,16 @@ void DCTSolver::three_idx_cumulant_density() {
     contract343(bQiaB_mo_, G, result, true, 1.0, 1.0);
     global_dpd_->buf4_close(&G);
 
-    // OOVV Spin-Blocks
+    // OOVV Spin-Blocks (VVOO again treated with the transpose)
     // 9. From IJAB
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "Lambda (OV|OV)");
+    // WARNING! For efficiency, we can use the amplitudes for the ODC-06, and ODC-12 cases. This will fail for ODC-13.
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "Amplitude (OV|OV)");
     // gIA += b(Q|jb) L^IJ_AB
     contract343(bQiaA_mo_, G, result, false, 1.0, 1.0);
     global_dpd_->buf4_close(&G);
 
     // 10. From IjAb
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0, "Lambda (OV|ov)");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[o,v]"), ID("[O,V]"), ID("[o,v]"), 0, "Amplitude (OV|ov)");
     // gIA += b(Q|jb) L^Ij_Ab
     contract343(bQiaB_mo_, G, result, true, 1, 1);
     result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
@@ -2138,10 +2137,11 @@ void DCTSolver::three_idx_cumulant_density() {
     global_dpd_->buf4_close(&G);
     
     // 11. From ijab
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0, "Lambda (ov|ov)");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), ID("[o,v]"), 0, "Amplitude (ov|ov)");
     // gia += b(Q|jb) L^ij_ab
     contract343(bQiaB_mo_, G, result, false, 1.0, 1.0);
     global_dpd_->buf4_close(&G);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
 
     // VVVV Spin-Blocks
     // AS A FIRST CODE, assume nvir^4 fits in memory. This is a dangerous assumption, so we'll add an nvir^3
@@ -2150,7 +2150,43 @@ void DCTSolver::three_idx_cumulant_density() {
     // which is only nvir^3 memory, then construct its contribution to gAB and gab..
     // This is a potentially large intermediate.
     // 12. From ABCD
-    // TODO: Add this.
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V>V]-"), ID("[V>V]-"), 0, "Lambda <VV|VV>");
+    global_dpd_->buf4_sort(&G, PSIF_DCT_DENSITY, prqs, ID("[V,V]"), ID("[V,V]"), "Lambda (VV|VV)");
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0, "Lambda (VV|VV)");
+    result = Matrix("3-Center PDM B: AB", bQabA_mo_.rowspi(), bQabA_mo_.colspi());
+    result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    // gAB += b(Q|CD) L^AC_BD
+    contract343(bQabA_mo_, G, result, false, 4.0, 1.0);
+    global_dpd_->buf4_close(&G);
+    // 13. From AbCd
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,v]"), ID("[V,v]"), ID("[V,v]"), ID("[V,v]"), 0, "Lambda <Vv|Vv>");
+    global_dpd_->buf4_sort(&G, PSIF_DCT_DENSITY, qspr, ID("[v,v]"), ID("[V,V]"), "Lambda (vv|VV)");
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[v,v]"), ID("[V,V]"), ID("[v,v]"), ID("[V,V]"), 0, "Lambda (vv|VV)");
+    // gAB += b(Q|ab) L^aA_bB
+    contract343(bQabB_mo_, G, result, false, 4.0, 1.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    result = Matrix("3-Center PDM B: ab", bQabB_mo_.rowspi(), bQabB_mo_.colspi());
+    result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    // gab = b(Q|AB) L^Aa_Bb
+    contract343(bQabA_mo_, G, result, true, 4.0, 1.0);
+    global_dpd_->buf4_close(&G);
+   
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[v,v]"), ID("[v,v]"), ID("[v>v]-"), ID("[v>v]-"), 0, "Lambda <vv|vv>");
+    global_dpd_->buf4_sort(&G, PSIF_DCT_DENSITY, prqs, ID("[v,v]"), ID("[v,v]"), "Lambda (vv|vv)");
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[v,v]"), ID("[v,v]"), ID("[v,v]"), ID("[v,v]"), 0, "Lambda (vv|vv)");
+    // gab += b(Q|cd) L^ac_bd
+    contract343(bQabB_mo_, G, result, false, 4.0, 1.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    global_dpd_->buf4_close(&G);
+
+    // TODO: result could be large. When going through the "intensely monitoring memory costs" pass, ensure this is destroyed ASAP.
+    // Probably, the best answer is to put all this computaiton into its own function and let end-of-scope garbage collection get it.
 
     auto J = Matrix("J^-1/2 Correlation", nQ_, nQ_);
     J.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::LowerTriangle);
@@ -2160,8 +2196,15 @@ void DCTSolver::three_idx_cumulant_density() {
     auto CaV = *Ca_subset("SO", "VIR");
     auto CbV = *Cb_subset("SO", "VIR");
 
-    auto temp = Matrix("3-Center PDM B: IJ", bQijA_mo_.rowspi(), bQijA_mo_.colspi());
-    auto SO_matrix = three_idx_cumulant_helper(temp, J, CaO, CaO);
+    auto temp = Matrix("3-Center PDM B: IA", bQiaA_mo_.rowspi(), bQiaA_mo_.colspi());
+    auto SO_matrix = three_idx_cumulant_helper(temp, J, CaO, CaV);
+
+    temp = Matrix("3-Center PDM B: ia", bQiaB_mo_.rowspi(), bQiaB_mo_.colspi());
+    SO_matrix.add(three_idx_cumulant_helper(temp, J, CbO, CbV));
+    add_3idx_transpose_inplace(SO_matrix); // Compensate for neglecting AI and ai.
+
+    temp = Matrix("3-Center PDM B: IJ", bQijA_mo_.rowspi(), bQijA_mo_.colspi());
+    SO_matrix.add(three_idx_cumulant_helper(temp, J, CaO, CaO));
 
     temp = Matrix("3-Center PDM B: ij", bQijB_mo_.rowspi(), bQijB_mo_.colspi());
     SO_matrix.add(three_idx_cumulant_helper(temp, J, CbO, CbO));
@@ -2171,18 +2214,12 @@ void DCTSolver::three_idx_cumulant_density() {
 
     temp = Matrix("3-Center PDM B: ab", bQabB_mo_.rowspi(), bQabB_mo_.colspi());
     SO_matrix.add(three_idx_cumulant_helper(temp, J, CbV, CbV));
-    
-    temp = Matrix("3-Center PDM B: IA", bQiaA_mo_.rowspi(), bQiaA_mo_.colspi());
-    SO_matrix.add(three_idx_cumulant_helper(temp, J, CaO, CaV));
-
-    temp = Matrix("3-Center PDM B: ia", bQiaB_mo_.rowspi(), bQiaB_mo_.colspi());
-    SO_matrix.add(three_idx_cumulant_helper(temp, J, CbO, CbV));
 
     // Now transform from SO back to AO
     auto AO_matrix = transform_b_so2ao(SO_matrix);
     AO_matrix.set_name("3-Center Correlation Density");
-    AO_matrix.save(psio_, PSIF_AO_TPDM, Matrix::SaveType::Full);
-
+    AO_matrix.save(psio_, PSIF_AO_TPDM, Matrix::SaveType::ThreeIndexLowerTriangle);
+    AO_matrix.print_out();
     psio_->close(PSIF_DCT_DENSITY, 1);
 }
 
@@ -2209,6 +2246,9 @@ void DCTSolver::contract343(const Matrix& b, dpdbuf4 &G, Matrix& result, bool tr
         K = G.params->rowtot;
     }
     for (int h = 0; h < nirrep_; ++h) {
+        if (b.colspi(h) != K[h]) {
+            throw PSIEXCEPTION("contract343: Left and right operands do not agree about the dimension of the inner index.");
+        }
         if (b.colspi(h) > 0 && result.colspi(h) > 0) {
             global_dpd_->buf4_mat_irrep_init(&G, h);
             global_dpd_->buf4_mat_irrep_rd(&G, h);
@@ -2311,6 +2351,23 @@ Matrix DCTSolver::contract123(const Matrix& Q, const Matrix& G) const {
     }
 
     return result;
+}
+
+void DCTSolver::add_3idx_transpose_inplace(Matrix& M) const {
+    for (int h = 0; h < M.nirrep(); h++) {
+        auto nv = static_cast<int>(sqrt(M.colspi(h)));
+        if (nv * nv != M.colspi(h)) {
+            throw PSIEXCEPTION("DCTSolver::add_3idx_transpose_inplace: Each column must be a square matrx");
+        }
+        auto Mp = M.pointer(h);
+        for (int p = 0; p < M.rowspi(h); p++) {
+            for (int m = 0; m < nv; m++) {
+                for (int n = 0; n <= m; n++) {
+                    Mp[p][m * nv + n] = Mp[p][n * nv + m] = Mp[p][m * nv + n] + Mp[p][n * nv + m];
+                }
+            }
+        }
+    }
 }
 
 }  // namespace dct
