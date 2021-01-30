@@ -1452,9 +1452,9 @@ void DCTSolver::compute_TPDM_trace(bool cumulant_only) {
         // Add the partial trace of the antisymmetrized product of 1RDMs.
         tpdm_trace += opdm_trace * opdm_trace;
         auto alpha = linalg::doublet(mo_gammaA_, mo_gammaA_, false, false);
-        tpdm_trace += alpha.trace();
+        tpdm_trace -= alpha.trace();
         auto beta = linalg::doublet(mo_gammaB_, mo_gammaB_, false, false);
-        tpdm_trace += beta.trace();
+        tpdm_trace -= beta.trace();
     }
 
     // Compute deviations from N-representability
