@@ -424,7 +424,7 @@ void DCTSolver::three_idx_primary_transform_gemm(const Matrix& three_idx, const 
                 const auto rightP = right.pointer(hR);
                 auto tmp = Matrix("Half-Transformed", nQ, left.rowspi(hL) * right.colspi(hR));
                 auto tmpp = tmp.pointer();
-//#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
                 for (int Q = 0; Q < nQ; ++Q) {
                     // First-half transformation
                     C_DGEMM('N', 'N', left.rowspi(hL), right.colspi(hR), right.rowspi(hR), 1.0, three_idx_p[Q] + offset_so[h],
@@ -457,27 +457,39 @@ Matrix DCTSolver::transform_b_so2ao(const Matrix& bQmn_so) const {
     auto bQmn_ao = Matrix("AO basis quantity", nQ, bQmn_so.ncol());
     auto bQmn_ao_p = bQmn_ao.pointer();
 
-    std::vector<int> offset(nirrep_, 0);
-
     for (int h = 0; h < nirrep_; ++h) {
+        int offset = 0;
+        if (bQmn_so.rowspi(h) != nQ) {
+            throw PSIEXCEPTION("transform_b_so2ao: Matrix must have constant number of rows per irrep");
+        }
         auto bQmn_so_p = bQmn_so.pointer(h);
-        for (int hm = 0; h < nirrep_; ++h) {
+        for (int hm = 0; hm < nirrep_; ++hm) {
             int hn = h ^ hm;
             auto morbs = aotoso()->colspi(hm);
             auto norbs = aotoso()->colspi(hn);
+            if (morbs != nsopi_[hm]) {
+                throw PSIEXCEPTION("Irrep M pathology");
+            }
+            if (norbs != nsopi_[hn]) {
+                throw PSIEXCEPTION("Irrep N pathology");
+            }
             if (morbs > 0 && norbs > 0) {
                 auto m_p = aotoso()->pointer(hm);
                 auto n_p = aotoso()->pointer(hn);
                 auto tmp = Matrix("Half-transformed Matrix", nQ, morbs * nso_);
                 auto tmpp = tmp.pointer();
-                // First transformation
-                C_DGEMM('N', 'T', nQ * morbs, nso_, norbs, 1.0, bQmn_so_p[0] + offset[h], norbs, n_p[0], nsopi_[hn], 0.0, tmpp[0], nso_);
-                // Second transformation
+#pragma omp parallel for schedule(dynamic) num_threads(nthreads)
                 for (int Q = 0; Q < nQ; ++Q) {
+                    // First transformation
+                    C_DGEMM('N', 'T', morbs, nso_, norbs, 1.0, bQmn_so_p[Q] + offset, norbs, n_p[0], nsopi_[hn], 0.0, tmpp[Q], nso_);
+                    // Second transformation
                     C_DGEMM('N', 'N', nso_, nso_, morbs, 1.0, m_p[0], nsopi_[hm], tmpp[Q], nso_, 1.0, bQmn_ao_p[Q], nso_);
                 }
             }
-            offset[h] += morbs * norbs;
+            offset += morbs * norbs;
+        }
+        if (bQmn_so.colspi(h) != offset) {
+            throw PSIEXCEPTION("transform_b_so2ao: Matrix's columns must be pairs of orbitals.");
         }
     }
 
@@ -2201,7 +2213,7 @@ void DCTSolver::three_idx_cumulant_density() {
 
     temp = Matrix("3-Center PDM B: ia", bQiaB_mo_.rowspi(), bQiaB_mo_.colspi());
     SO_matrix.add(three_idx_cumulant_helper(temp, J, CbO, CbV));
-    add_3idx_transpose_inplace(SO_matrix); // Compensate for neglecting AI and ai.
+    add_3idx_transpose_inplace(SO_matrix, nsopi_); // Compensate for neglecting AI and ai.
 
     temp = Matrix("3-Center PDM B: IJ", bQijA_mo_.rowspi(), bQijA_mo_.colspi());
     SO_matrix.add(three_idx_cumulant_helper(temp, J, CaO, CaO));
@@ -2219,7 +2231,6 @@ void DCTSolver::three_idx_cumulant_density() {
     auto AO_matrix = transform_b_so2ao(SO_matrix);
     AO_matrix.set_name("3-Center Correlation Density");
     AO_matrix.save(psio_, PSIF_AO_TPDM, Matrix::SaveType::ThreeIndexLowerTriangle);
-    AO_matrix.print_out();
     psio_->close(PSIF_DCT_DENSITY, 1);
 }
 
@@ -2353,20 +2364,60 @@ Matrix DCTSolver::contract123(const Matrix& Q, const Matrix& G) const {
     return result;
 }
 
-void DCTSolver::add_3idx_transpose_inplace(Matrix& M) const {
-    for (int h = 0; h < M.nirrep(); h++) {
-        auto nv = static_cast<int>(sqrt(M.colspi(h)));
-        if (nv * nv != M.colspi(h)) {
-            throw PSIEXCEPTION("DCTSolver::add_3idx_transpose_inplace: Each column must be a square matrx");
-        }
-        auto Mp = M.pointer(h);
-        for (int p = 0; p < M.rowspi(h); p++) {
-            for (int m = 0; m < nv; m++) {
+void DCTSolver::add_3idx_transpose_inplace(Matrix& M, const Dimension& dim) const {
+    if (M.nirrep() != dim.n()) {
+        throw PSIEXCEPTION("add_3idx_transpose_inplace; Arguments must agree about number of irreps.");
+    }
+    if (M.symmetry()) {
+        throw PSIEXCEPTION("add_3idx_transpose_inplace: Matrix to transpose must be totally symmetric.");
+        // In theory, ths isn't necessary, but I don't need that case.
+    }
+    // Start with the totally symmetric irrep. The orbitals of each pair are of the same symmetry,
+    // so treating (p, q) and (q, p) at once means we treat half the pairs within an irrep.
+    int offset = 0;
+    auto Mp = M.pointer(0);
+    for (int h = 0; h < M.nirrep(); h++) { // h = Irrep of first elt. in pair
+        auto nh = dim[h];
+        for (int p = 0; p < M.rowspi(0); p++) {
+            for (int m = 0; m < nh; m++) {
                 for (int n = 0; n <= m; n++) {
-                    Mp[p][m * nv + n] = Mp[p][n * nv + m] = Mp[p][m * nv + n] + Mp[p][n * nv + m];
+                    Mp[p][offset + m * nh + n] = Mp[p][offset + n * nh + m] = Mp[p][offset + m * nh + n] + Mp[p][offset + n * nh + m];
                 }
             }
         }
+        offset += nh * nh;
+    }
+    if (M.colspi(0) != offset) {
+        throw PSIEXCEPTION("add_3idx_transpose_inplace: Irrep 0 of Matrix isn't pairs of orbitals of appropriate symmetry from dim..");
+    }
+    if (M.nirrep() == 1) {return;}
+    // Proceed to non-totally symmetric. The orbitals of each pair are of differnet symmetires, so
+    // treating (p, q) and (q, p) at once means we iterate over half the irrep pairs.
+    for (int h = 1; h < M.nirrep(); h++) { // h = Irrep of pair
+        Mp = M.pointer(h);
+        Dimension offsets(M.nirrep());
+        int offset = 0;
+        for (int i = 0; i < M.nirrep(); i++) {
+            int j = h ^ i;
+            offsets[i] = offset;
+            offset += dim[i] * dim[j];
+        }
+        for (int i = 0; i < M.nirrep(); i++) { // i = Irrep of first elt. in pair
+            int j = h ^ i; // j = Irrep of second elt. in pair
+            if (j < i) {continue;} // We already processed this pair.
+            for (int p = 0; p < M.rowspi(h); p++) {
+                for (int m = 0; m < dim[i]; m++) {
+                    for (int n = 0; n < dim[j]; n++) {
+                        Mp[p][offsets[i] + m * dim[j] + n] = Mp[p][offsets[j] + n * dim[i] + m] =
+                            Mp[p][offsets[i] + m * dim[j] + n] + Mp[p][offsets[j] + n * dim[i] + m];
+                    }
+                }
+            }
+        }
+        if (M.colspi(h) != offset) {
+            throw PSIEXCEPTION("add_3idx_transpose_inplace: Matrix isn't pairs of orbitals of appropriate symmetry from dim.");
+        }
+
     }
 }
 

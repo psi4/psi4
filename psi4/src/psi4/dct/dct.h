@@ -548,7 +548,7 @@ class DCTSolver : public Wavefunction {
     void contract343(const Matrix& b, dpdbuf4& G, Matrix& result, bool transpose, double alpha, double beta) const; 
     Matrix contract123(const Matrix& Q, const Matrix& G) const;
     Matrix contract233(const Matrix& J, const Matrix& B) const;
-    void add_3idx_transpose_inplace(Matrix& M) const;
+    void add_3idx_transpose_inplace(Matrix& M, const Dimension& dim) const;
 
     /// Form density-fitted MO-basis TEI g(OV|OV) in chemists' notation
     void form_df_g_ovov();
