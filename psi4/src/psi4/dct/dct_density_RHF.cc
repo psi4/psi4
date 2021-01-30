@@ -212,7 +212,7 @@ void DCTSolver::compute_unrelaxed_density_OVOV_RHF(bool cumulant_only) {
     // Г<IajB> spin case:
 
     global_dpd_->buf4_init(&Tab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Temp (OV|OV)");  // Temp (OV|ov)
+                           "-SF (OV|OV)");  // Temp (OV|ov)
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "Amplitude SF (OV|OV):(OV|ov)");  // Amplitude (OV|ov)
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
@@ -225,7 +225,7 @@ void DCTSolver::compute_unrelaxed_density_OVOV_RHF(bool cumulant_only) {
     global_dpd_->buf4_close(&LLaa);
     global_dpd_->buf4_close(&Tab);
     global_dpd_->buf4_init(&Tab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Temp (OV|OV)");  // Temp (OV|ov)
+                           "-SF (OV|OV)");  // Temp (OV|ov)
     global_dpd_->buf4_sort(&Tab, PSIF_DCT_DENSITY, psrq, ID("[O,V]"), ID("[O,V]"),
                            varname("SF <OV|OV>:<Ov|oV>"));  // Gamma <Ov|oV>
     global_dpd_->buf4_close(&Tab);

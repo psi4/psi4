@@ -2239,7 +2239,126 @@ void DCTSolver::three_idx_cumulant_density_RHF() {
 
     psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
 
-    auto AO_matrix = Matrix("temp", nQ_, nso_ * nso_);
+    // OOOO Spin-Blocks
+    // 1. From IJKL
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0, "Lambda <OO|OO>");
+    global_dpd_->buf4_sort(&G, PSIF_DCT_DENSITY, prqs, ID("[O,O]"), ID("[O,O]"), "Lambda (OO|OO)");
+    global_dpd_->buf4_close(&G);
+
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0, "Lambda (OO|OO)");
+    auto result = Matrix("3-Center PDM B: IJ", bQijA_mo_.rowspi(), bQijA_mo_.colspi());
+    // gIJ = b(Q|KL) L^IK_JL
+    contract343(bQijA_mo_, G, result, false, 4.0, 0.0);
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0, "Lambda SF <OO|OO>");
+    global_dpd_->buf4_sort(&G, PSIF_DCT_DENSITY, qspr, ID("[O,O]"), ID("[O,O]"), "Lambda SF (OO|OO)");
+    global_dpd_->buf4_close(&G);
+
+    // 2. From IjKl
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0, "Lambda SF (OO|OO)");
+    // gIJ += b(Q|ij) L^Ii_Jj
+    contract343(bQijA_mo_, G, result, false, 4.0, 1.0);
+    global_dpd_->buf4_close(&G);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+
+    // OVOV spin blocks
+    // 3. From IAJB
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "Lambda (OV|OV)");
+    result = Matrix("3-Center PDM B: IA", bQiaA_mo_.rowspi(), bQiaA_mo_.colspi());
+    // gIA = b(Q|BJ) L^BI_JA = - b(Q|BJ) L^BI_AJ = - b(Q|BJ) Lambda(JB|IA) = - b(Q|JB) Lambda(JB|IA)
+    contract343(bQiaA_mo_, G, result, false, -1.0, 0.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    // The UHF code creates a lot of the sorted blocks we need. For RHF, we create them ourselves now.
+    global_dpd_->buf4_sort(&G, PSIF_DCT_DENSITY, prqs, ID("[O,O]"), ID("[V,V]"), "Lambda OVOV (OO|VV)");
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "Lambda OVOV (OO|VV)");
+    global_dpd_->buf4_print(&G, "outfile", 1);
+    result = Matrix("3-Center PDM B: AB", bQabA_mo_.rowspi(), bQabA_mo_.colspi());
+    // gAB = b(Q|IJ) L^IA_JB
+    contract343(bQijA_mo_, G, result, false, 1.0, 0.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    result = Matrix("3-Center PDM B: IJ", bQijA_mo_.rowspi(), bQijA_mo_.colspi());
+    result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    // gIJ += b(Q|AB) L^IA_JB
+    contract343(bQabA_mo_, G, result, true, 1.0, 1.0);
+    global_dpd_->buf4_close(&G);
+
+    // 4. IaJb / iAjB
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "Lambda SF <OV|OV>:<Ov|Ov>");
+    global_dpd_->buf4_sort(&G, PSIF_DCT_DENSITY, prqs, ID("[O,O]"), ID("[V,V]"), "Lambda OvOv (OO|VV)");
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "Lambda OvOv (OO|VV)");
+    // gIJ += b(Q|ab) L^aI_bJ
+    contract343(bQabA_mo_, G, result, true, 1.0, 1.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    result = Matrix("3-Center PDM B: AB", bQabA_mo_.rowspi(), bQabA_mo_.colspi());
+    result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    // gAB += b(Q|ij) L^iA_jB
+    contract343(bQijA_mo_, G, result, false, 1.0, 1.0); 
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    global_dpd_->buf4_close(&G);
+
+    // 5. IaAi (We account for the hermitian transpose later)
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "-SF (OV|OV)");
+    result = Matrix("3-Center PDM B: IA", bQiaA_mo_.rowspi(), bQiaA_mo_.colspi());
+    result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    // gIA += b(Q|ai) L^aI_iA = b(Q|ia) L^aI_iA = - b(Q|ia) -SF(ia|IA);
+    contract343(bQiaA_mo_, G, result, false, -1.0, 1.0);
+    global_dpd_->buf4_close(&G);
+
+    // 6. IJAB
+    // Warning! For efficiency reasons, we use the amplitudes here. This must be changed for methods where there are other
+    // contributions to the OO|VV block of the cumulant.
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "Amplitude (OV|OV)");
+    // gIA += b(Q|JB) L^JI_BA
+    contract343(bQiaA_mo_, G, result, false, 1.0, 1.0);
+    global_dpd_->buf4_close(&G);
+    // 7. IjAb
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, "Amplitude SF (OV|OV):(OV|ov)");
+    // gIA += b(Q|ia) L^iI_jJ
+    contract343(bQiaA_mo_, G, result, false, 1.0, 1.0);
+    global_dpd_->buf4_close(&G);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+
+    // 8. ABCD
+    // This is V^4 in memory. That's bad. At a later date, implement an algorithm with lower memory requirements.
+    // I've included more detail in the UHF section, but the obvious solution is to construct the VVVV block of the
+    // TPDM in three-index chunks.
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0, "Lambda <VV|VV>");
+    global_dpd_->buf4_sort(&G, PSIF_DCT_DENSITY, prqs, ID("[V,V]"), ID("[V,V]"), "Lambda (VV|VV)");
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0, "Lambda (VV|VV)");
+    result = Matrix("3-Center PDM B: AB", bQabA_mo_.rowspi(), bQabA_mo_.colspi());
+    result.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    // gAB += b(Q|CD) L^CA_DB
+    contract343(bQabA_mo_, G, result, false, 4.0, 1.0);
+    global_dpd_->buf4_close(&G);
+    // 9. AaBb
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0, "Lambda SF <VV|VV>");
+    global_dpd_->buf4_sort(&G, PSIF_DCT_DENSITY, prqs, ID("[V,V]"), ID("[V,V]"), "Lambda SF (VV|VV)");
+    global_dpd_->buf4_close(&G);
+    global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0, "Lambda SF (VV|VV)");
+    contract343(bQabA_mo_, G, result, false, 4.0, 1.0);
+    result.save(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+
+    auto J = Matrix("J^-1/2 Correlation", nQ_, nQ_);
+    J.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::LowerTriangle);
+
+    auto CaO = *Ca_subset("SO", "OCC");
+    auto CaV = *Ca_subset("SO", "VIR");
+
+    auto temp = Matrix("3-Center PDM B: IA", bQiaA_mo_.rowspi(), bQiaA_mo_.colspi());
+    auto SO_matrix = three_idx_cumulant_helper(temp, J, CaO, CaV);
+    add_3idx_transpose_inplace(SO_matrix, nsopi_); // Compensate for neglecting AI.
+
+    temp = Matrix("3-Center PDM B: IJ", bQijA_mo_.rowspi(), bQijA_mo_.colspi());
+    SO_matrix.add(three_idx_cumulant_helper(temp, J, CaO, CaO));
+
+    temp = Matrix("3-Center PDM B: AB", bQabA_mo_.rowspi(), bQabA_mo_.colspi());
+    SO_matrix.add(three_idx_cumulant_helper(temp, J, CaV, CaV));
+
+    SO_matrix.scale(2); // Equivalent to adding in the beta terms
+    auto AO_matrix = transform_b_so2ao(SO_matrix);
     AO_matrix.set_name("3-Center Correlation Density");
     AO_matrix.save(psio_, PSIF_AO_TPDM, Matrix::SaveType::ThreeIndexLowerTriangle);
     psio_->close(PSIF_DCT_DENSITY, 1);
