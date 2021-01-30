@@ -695,6 +695,8 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     void accumulate_product(const SharedMatrix&, const SharedMatrix&);
     /// Scales this matrix
     void scale(double);
+    /// Takes the square root of this matrix (element-wise)
+    void sqrt_this();
     /// Returns the sum of the squares of this
     double sum_of_squares();
     /// Returns the rms of this

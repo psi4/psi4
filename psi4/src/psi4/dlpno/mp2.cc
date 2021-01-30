@@ -333,14 +333,8 @@ void DLPNOMP2::overlap_ints() {
         DOI_iu->add(DOI_iu_temps[thread]);
     }
 
-    for(size_t i = 0; i < naocc; i++) {
-        for(size_t j = 0; j < naocc; j++) {
-            DOI_ij->set(i,j,sqrt(DOI_ij->get(i,j)));
-        }
-        for(size_t u = 0; u < nbf; u++) {
-            DOI_iu->set(i,u,sqrt(DOI_iu->get(i,u)));
-        }
-    }
+    DOI_ij->sqrt_this();
+    DOI_iu->sqrt_this();
 
 }
 

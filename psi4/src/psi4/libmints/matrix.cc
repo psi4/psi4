@@ -1182,6 +1182,16 @@ void Matrix::scale_column(int h, int n, double a) {
     C_DSCAL(rowspi_[h], a, &(matrix_[h][0][n]), colspi_[h ^ symmetry_]);
 }
 
+void Matrix::sqrt_this() {
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < rowspi_[h]; ++i) {
+            for (int j = 0; j < colspi_[h ^ symmetry_]; ++j) {
+                matrix_[h][i][j] = std::sqrt(matrix_[h][i][j]);
+            }
+        }
+    }
+}
+
 double Matrix::sum_of_squares() {
     double sum = (double)0.0;
     for (int h = 0; h < nirrep_; ++h) {
