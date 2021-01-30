@@ -542,6 +542,7 @@ class DCTSolver : public Wavefunction {
     Matrix three_idx_primary_transform(const Matrix& three_idx, const Matrix& left, const Matrix& right) const;
     void three_idx_primary_transform_gemm(const Matrix& three_idx, const Matrix& left, const Matrix& right, Matrix& result, double alpha, double beta) const;
     void three_idx_cumulant_density();
+    void three_idx_cumulant_density_RHF();
     void three_idx_separable_density();
     Matrix three_idx_cumulant_helper(Matrix& temp, const Matrix& J, const Matrix& bt1, const Matrix& bt2);
     Matrix three_idx_separable_helper(const Matrix& Q, const Matrix& J, const Matrix& RDM, const Matrix& C_subset);

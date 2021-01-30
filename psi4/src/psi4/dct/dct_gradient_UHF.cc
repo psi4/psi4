@@ -245,7 +245,7 @@ void DCTSolver::compute_gradient_odc() {
     // The obvious one is to assemble aVVV "slices" for all a in compute_lagrangian_VV, which requires V^3
     // memory. That will be slower, but may be worth it in some cases.
     compute_unrelaxed_density_VVVV(is_df);
-    if (options_.get_str("DCT_TYPE") == "DF") {
+    if (is_df) {
         three_idx_separable_density();
         three_idx_cumulant_density();
         construct_metric_density("Reference");

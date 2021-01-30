@@ -83,8 +83,17 @@ void DCTSolver::compute_gradient_odc_RHF() {
     bool is_df = options_.get_str("DCT_TYPE") == "DF";
     
     // Compute the VVVV block of the relaxed TPDM
+    // TODO: The VVVV density requires V^4 memory, which we'd rather avoid. Implement a lower memory algorithm.
+    // The obvious one is to assemble aVVV "slices" for all a in compute_lagrangian_VV, which requires V^3
+    // memory. That will be slower, but may be worth it in some cases.
     compute_unrelaxed_density_VVVV_RHF(is_df);
     outfile->Printf("\t Computing energy-weighted density matrix from one- and two-particle densities...\n");
+    if (is_df) {
+        three_idx_separable_density();
+        three_idx_cumulant_density_RHF();
+        construct_metric_density("Reference");
+        construct_metric_density("Correlation");
+    }
     // Compute the OO block of MO Lagrangian
     compute_lagrangian_OO_RHF(is_df);
     // Compute the VV block of MO Lagrangian

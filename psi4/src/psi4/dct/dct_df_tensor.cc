@@ -2234,6 +2234,17 @@ void DCTSolver::three_idx_cumulant_density() {
     psio_->close(PSIF_DCT_DENSITY, 1);
 }
 
+void DCTSolver::three_idx_cumulant_density_RHF() {
+    dpdbuf4 G;
+
+    psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
+
+    auto AO_matrix = Matrix("temp", nQ_, nso_ * nso_);
+    AO_matrix.set_name("3-Center Correlation Density");
+    AO_matrix.save(psio_, PSIF_AO_TPDM, Matrix::SaveType::ThreeIndexLowerTriangle);
+    psio_->close(PSIF_DCT_DENSITY, 1);
+}
+
 Matrix DCTSolver::three_idx_cumulant_helper(Matrix& temp, const Matrix& J, const Matrix& bt1, const Matrix& bt2) {
     temp.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
     // 10.1063/1.4896235:55 - MO basis
@@ -2276,12 +2287,21 @@ void DCTSolver::three_idx_separable_density() {
     // Load useful intermediates.
     auto Q = Matrix("b(Q|SR)gamma<R|S>", 1, nQ_scf_);
     Q.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::SubBlocks);
+    if (options_.get_str("REFERENCE") == "RHF") {
+        // In the RHF code, the sum is spin-restricted.
+        Q.scale(2);
+    }
+    Q.print_out();
 
     auto J = Matrix("J^-1/2 Reference", nQ_scf_, nQ_scf_);
     J.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::LowerTriangle);
 
     auto SO_matrix = three_idx_separable_helper(Q, J, mo_gammaA_, *Ca_);
-    SO_matrix.add(three_idx_separable_helper(Q, J, mo_gammaB_, *Cb_));
+    if (options_.get_str("REFERENCE") == "RHF") {
+        SO_matrix.scale(2);
+    } else {
+        SO_matrix.add(three_idx_separable_helper(Q, J, mo_gammaB_, *Cb_));
+    }
 
     // Now transform from SO back to AO
     auto AO_matrix = transform_b_so2ao(SO_matrix);
