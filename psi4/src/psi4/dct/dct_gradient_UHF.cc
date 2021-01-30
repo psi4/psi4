@@ -4698,6 +4698,10 @@ void DCTSolver::compute_ewdm_odc() {
             }
         }
     }
+    global_dpd_->file2_mat_close(&X_VO);
+    global_dpd_->file2_mat_close(&X_OV);
+    global_dpd_->file2_mat_close(&X_OO);
+    global_dpd_->file2_mat_close(&X_VV);
     global_dpd_->file2_close(&X_VO);
     global_dpd_->file2_close(&X_OV);
     global_dpd_->file2_close(&X_OO);
