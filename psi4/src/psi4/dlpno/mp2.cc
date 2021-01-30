@@ -29,33 +29,22 @@
 #include "mp2.h"
 #include "sparse.h"
 
-#include "psi4/psi4-dec.h"
-#include "psi4/physconst.h"
-#include "psi4/psifiles.h"
-
 #include "psi4/lib3index/3index.h"
 #include "psi4/libdiis/diismanager.h"
-#include "psi4/libfock/apps.h"
-#include "psi4/libfock/jk.h"
 #include "psi4/libfock/cubature.h"
 #include "psi4/libfock/points.h"
-#include "psi4/libfock/v.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/extern.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/local.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/mintshelper.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libmints/oeprop.h"
+#include "psi4/libmints/orthog.h"
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
-#include "psi4/libpsio/psio.h"
-#include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
-#include "psi4/libciomr/libciomr.h"
 
 #include <algorithm>
 
@@ -199,40 +188,19 @@ std::pair<SharedMatrix, SharedVector> canonicalizer(SharedMatrix C, SharedMatrix
 }
 
 
-/* Args: normalized orbitals C (ao x mo), overlap matrix S (ao x ao), fock matrix F (ao x ao)
+/* Args: overlap matrix S (mo x mo), fock matrix F (mo x mo)
  * Return: transformation matrix X (mo x mo_new) and energy vector e (mo_new)
  *
- * CX are orthonormal orbitals (i.e. S(CX) = CX) and also canonical (i.e. F(CX) = e(CX))
+ * CX are orthonormal orbitals (i.e. S_ao (CX) = CX) and also canonical (i.e. F_ao (CX) = e(CX))
  * linear dependencies are removed with keyword S_CUT, so (mo_new <= mo)
  */
 std::pair<SharedMatrix, SharedVector> DLPNOMP2::orthocanonicalizer(SharedMatrix S, SharedMatrix F) {
 
-    int nmo_initial = S->colspi(0);
-    int nmo_final = nmo_initial;
+    BasisSetOrthogonalization orthog(BasisSetOrthogonalization::PartialCholesky, S, 0.0, options_.get_double("S_CUT"), 0);
+    auto X = orthog.basis_to_orthog_basis();
 
-    SharedMatrix X = std::make_shared<Matrix>("eigenvectors", nmo_initial, nmo_initial);
-    SharedVector n = std::make_shared<Vector>("eigenvalues", nmo_initial);
-
-    S->diagonalize(X, n, descending);
-
-    for(size_t i = 0; i < nmo_initial; ++i) {
-        if (fabs(n->get(i)) < options_.get_double("S_CUT")) {
-            nmo_final -= 1;
-        }
-    }
-
-    Dimension zero = Dimension(1);
-    Dimension dim_final = Dimension(1);
-    dim_final.fill(nmo_final);
-
-    X = X->get_block({zero, X->rowspi()}, {zero, dim_final});
-    n = n->get_block({zero, dim_final});
-
-    auto S_orth = linalg::triplet(X, S, X, true, false, false);
-
-    for(size_t i = 0; i < nmo_final; ++i) {
-        X->scale_column(0, i, pow(S_orth->get(i,i), -0.5));
-    }
+    int nmo_initial = X->rowspi(0);
+    int nmo_final = X->colspi(0);
 
     SharedMatrix U = std::make_shared<Matrix>("eigenvectors", nmo_final, nmo_final);
     SharedVector e = std::make_shared<Vector>("eigenvalues", nmo_final);
