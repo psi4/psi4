@@ -519,3 +519,19 @@ Bibliography
 .. [Hesselmann:2014:094107]
    A. Hesselmann and T. Korona,
    *J. Chem. Phys.* **141**, 094107 (2014).
+
+.. [Hylleraas:1930:209]
+   E. Hylleraas
+   *Z. Phys.* **65**, 209 (1930).
+
+.. [Pulay:1986:357]
+   P. Pulay and S. Saeb\ |o_slash|\ ,
+   *Theor. Chim. Acta* **69**, 357 (1986).
+
+.. [Pinski:2015:034108]
+   P. Pinski, C. Riplinger, E. Valeev, and F. Neese,
+   *J. Chem. Phys.* **143**, 034108 (2015).
+
+.. [Liakos:2015:1525]
+   D. Liakos, M. Sparta, M. Kesharwani, J. Martin, and F. Neese,
+   *J. Chem. Theory Comput.* **11**, 1525 (2015).
