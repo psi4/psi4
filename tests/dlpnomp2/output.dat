@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {dlpno} cc7e800 dirty
+                         Git: Rev {dlpno} 9da9eea dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,11 +30,11 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 25 January 2021 06:49PM
+    Psi4 started on: Saturday, 30 January 2021 10:33PM
 
-    Process ID: 31715
+    Process ID: 14089
     Host:       ds10
-    PSIDATADIR: /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4
+    PSIDATADIR: /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -88,13 +88,12 @@ compare_values(ref_dlpnomp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')      
 compare_values(ref_dlpnomp2_tot, val, 7, 'mp2 return')                                     #TEST
 clean()
 
-set T_CUT_PNO 1e-10 
+set pno_convergence tight
 
 print('   Testing DLPNO-MP2 w/ tight settings ...')
 val = energy('dlpno-mp2')
 
 # DLPNO-MP2 matches DF-MP2 if the thresholds are tightened enough
-# Although there are many DLPNO thresholds, T_CUT_PNO is the most important
 compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'mp2 ref')                        #TEST
 compare_values(ref_dfmp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')          #TEST
 compare_values(ref_dfmp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')                  #TEST
@@ -108,15 +107,15 @@ clean()
 Scratch directory: /scratch/glick/
 
 *** tstart() called on ds10
-*** at Mon Jan 25 18:49:23 2021
+*** at Sat Jan 30 22:33:54 2021
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   198 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
-    atoms 2-3 entry H          line    22 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1   entry O          line   198 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
@@ -178,8 +177,8 @@ Scratch directory: /scratch/glick/
     Name: (CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   221 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    51 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   221 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -294,18 +293,18 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:     0.0000      Z:     2.0567     Total:     2.0567
 
 
-*** tstop() called on ds10 at Mon Jan 25 18:49:23 2021
+*** tstop() called on ds10 at Sat Jan 30 22:33:54 2021
 Module time:
 	user time   =       0.36 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =       0.36 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on ds10
-*** at Mon Jan 25 18:49:23 2021
+*** at Sat Jan 30 22:33:54 2021
 
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -317,8 +316,8 @@ Total time:
     Name: (CC-PVDZ AUX)
     Role: RIFIT
     Keyword: DF_BASIS_MP2
-    atoms 1   entry O          line   235 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
-    atoms 2-3 entry H          line    19 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 1   entry O          line   235 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    19 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -367,15 +366,15 @@ Total time:
 	-----------------------------------------------------------
 
 
-*** tstop() called on ds10 at Mon Jan 25 18:49:23 2021
+*** tstop() called on ds10 at Sat Jan 30 22:33:55 2021
 Module time:
-	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.41 seconds =       0.01 minutes
+	user time   =       0.42 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
     mp2 ref...............................................................................PASSED
     mp2 corl..............................................................................PASSED
     mp2 tot...............................................................................PASSED
@@ -387,15 +386,15 @@ Total time:
 Scratch directory: /scratch/glick/
 
 *** tstart() called on ds10
-*** at Mon Jan 25 18:49:23 2021
+*** at Sat Jan 30 22:33:55 2021
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   198 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
-    atoms 2-3 entry H          line    22 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1   entry O          line   198 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
@@ -457,8 +456,8 @@ Scratch directory: /scratch/glick/
     Name: (CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   221 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    51 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   221 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -573,18 +572,18 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:    -0.0000      Z:     2.0567     Total:     2.0567
 
 
-*** tstop() called on ds10 at Mon Jan 25 18:49:24 2021
+*** tstop() called on ds10 at Sat Jan 30 22:33:55 2021
 Module time:
-	user time   =       0.30 seconds =       0.00 minutes
+	user time   =       0.29 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =       0.72 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on ds10
-*** at Mon Jan 25 18:49:24 2021
+*** at Sat Jan 30 22:33:55 2021
 
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -596,24 +595,26 @@ Total time:
     Name: (CC-PVDZ AUX)
     Role: RIFIT
     Keyword: DF_BASIS_MP2
-    atoms 1   entry O          line   235 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
-    atoms 2-3 entry H          line    19 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 1   entry O          line   235 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    19 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-ri.gbs 
 
    --------------------------------------------
                      DLPNO-MP2                 
                    by Zach Glick               
    --------------------------------------------
 
-  DLPNO thresholds and cutoffs:
+  DLPNO convergence set to NORMAL.
+
+  Detailed DLPNO thresholds and cutoffs:
+    T_CUT_DO     = 1.000e-02 
+    T_CUT_PNO    = 1.000e-08 
     T_CUT_DO_ij  = 1.000e-05 
     T_CUT_PRE    = 1.000e-06 
     T_CUT_DO_PRE = 3.000e-02 
-    T_CUT_DO     = 1.000e-02 
     T_CUT_MKN    = 1.000e-03 
     T_CUT_CLMO   = 1.000e-02 
     T_CUT_CPAO   = 1.000e-03 
     S_CUT        = 1.000e-08 
-    T_CUT_PNO    = 1.000e-08 
     F_CUT        = 1.000e-05 
 
   ==> Boys Localizer <==
@@ -706,14 +707,14 @@ Total time:
   @LMP2 iter   2:  -0.201570573486 -8.958e-05  6.919e-05
   @LMP2 iter   3:  -0.201577496452 -6.923e-06  1.342e-05
   @LMP2 iter   4:  -0.201577741797 -2.453e-07  1.572e-06
-  @LMP2 iter   5:  -0.201577745816 -4.018e-09  2.833e-07
+  @LMP2 iter   5:  -0.201577745815 -4.018e-09  2.833e-07
   
   Total DLPNO-MP2 Correlation Energy:  -0.201577801983 
-    MP2 Correlation Energy:            -0.201577745816 
+    MP2 Correlation Energy:            -0.201577745815 
     LMO Truncation Correction:          0.000000000000 
     PNO Truncation Correction:         -0.000000056167 
 
-*** tstop() called on ds10 at Mon Jan 25 18:49:24 2021
+*** tstop() called on ds10 at Sat Jan 30 22:33:55 2021
 Module time:
 	user time   =       0.10 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
@@ -733,15 +734,15 @@ Total time:
 Scratch directory: /scratch/glick/
 
 *** tstart() called on ds10
-*** at Mon Jan 25 18:49:24 2021
+*** at Sat Jan 30 22:33:55 2021
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   198 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
-    atoms 2-3 entry H          line    22 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1   entry O          line   198 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
@@ -803,8 +804,8 @@ Scratch directory: /scratch/glick/
     Name: (CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   221 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    51 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   221 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -919,18 +920,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0567     Total:     2.0567
 
 
-*** tstop() called on ds10 at Mon Jan 25 18:49:24 2021
+*** tstop() called on ds10 at Sat Jan 30 22:33:55 2021
 Module time:
-	user time   =       0.25 seconds =       0.00 minutes
+	user time   =       0.23 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.08 seconds =       0.02 minutes
+	user time   =       1.06 seconds =       0.02 minutes
 	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on ds10
-*** at Mon Jan 25 18:49:24 2021
+*** at Sat Jan 30 22:33:55 2021
 
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -942,24 +943,26 @@ Total time:
     Name: (CC-PVDZ AUX)
     Role: RIFIT
     Keyword: DF_BASIS_MP2
-    atoms 1   entry O          line   235 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
-    atoms 2-3 entry H          line    19 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 1   entry O          line   235 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    19 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-ri.gbs 
 
    --------------------------------------------
                      DLPNO-MP2                 
                    by Zach Glick               
    --------------------------------------------
 
-  DLPNO thresholds and cutoffs:
+  DLPNO convergence set to TIGHT.
+
+  Detailed DLPNO thresholds and cutoffs:
+    T_CUT_DO     = 5.000e-03 
+    T_CUT_PNO    = 1.000e-09 
     T_CUT_DO_ij  = 1.000e-05 
     T_CUT_PRE    = 1.000e-06 
     T_CUT_DO_PRE = 3.000e-02 
-    T_CUT_DO     = 1.000e-02 
     T_CUT_MKN    = 1.000e-03 
     T_CUT_CLMO   = 1.000e-02 
     T_CUT_CPAO   = 1.000e-03 
     S_CUT        = 1.000e-08 
-    T_CUT_PNO    = 1.000e-10 
     F_CUT        = 1.000e-05 
 
   ==> Boys Localizer <==
@@ -1039,7 +1042,7 @@ Total time:
       Min:  19 NOs 
       Max:  19 NOs 
   
-    PNO truncation energy = -0.000000000000
+    PNO truncation energy = 0.000000000000
 
   ==> Local MP2 <==
 
@@ -1057,15 +1060,15 @@ Total time:
   Total DLPNO-MP2 Correlation Energy:  -0.201579126405 
     MP2 Correlation Energy:            -0.201579126405 
     LMO Truncation Correction:          0.000000000000 
-    PNO Truncation Correction:         -0.000000000000 
+    PNO Truncation Correction:          0.000000000000 
 
-*** tstop() called on ds10 at Mon Jan 25 18:49:24 2021
+*** tstop() called on ds10 at Sat Jan 30 22:33:55 2021
 Module time:
 	user time   =       0.10 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.18 seconds =       0.02 minutes
+	user time   =       1.17 seconds =       0.02 minutes
 	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
     mp2 ref...............................................................................PASSED
@@ -1076,7 +1079,7 @@ Total time:
     mp2 tot...............................................................................PASSED
     mp2 return............................................................................PASSED
 
-    Psi4 stopped on: Monday, 25 January 2021 06:49PM
-    Psi4 wall time for execution: 0:00:01.36
+    Psi4 stopped on: Saturday, 30 January 2021 10:33PM
+    Psi4 wall time for execution: 0:00:01.34
 
 *** Psi4 exiting successfully. Buy a developer a beer!

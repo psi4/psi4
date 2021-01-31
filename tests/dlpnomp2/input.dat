@@ -45,13 +45,12 @@ compare_values(ref_dlpnomp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')      
 compare_values(ref_dlpnomp2_tot, val, 7, 'mp2 return')                                     #TEST
 clean()
 
-set T_CUT_PNO 1e-10 
+set pno_convergence tight
 
 print('   Testing DLPNO-MP2 w/ tight settings ...')
 val = energy('dlpno-mp2')
 
 # DLPNO-MP2 matches DF-MP2 if the thresholds are tightened enough
-# Although there are many DLPNO thresholds, T_CUT_PNO is the most important
 compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'mp2 ref')                        #TEST
 compare_values(ref_dfmp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')          #TEST
 compare_values(ref_dfmp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')                  #TEST
