@@ -88,7 +88,7 @@ void CCEnergyWavefunction::get_params(Options &options) {
     // Allow user to force semicanonical
     if (options["SEMICANONICAL"].has_changed()) {
         params_.semicanonical = options.get_bool("SEMICANONICAL");
-        params_.ref = 2;
+        if (params_.semicanonical) params_.ref = 2;
     }
 
     params_.analyze = options.get_bool("ANALYZE");
