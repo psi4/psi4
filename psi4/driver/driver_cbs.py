@@ -385,10 +385,18 @@ def return_energy_components():
                              'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                           'olccd': 'OLCCD TOTAL ENERGY'}
+    VARH['oremp'] = {
+                             'hf': 'HF TOTAL ENERGY',
+                            'mp2': 'MP2 TOTAL ENERGY',
+                          'oremp': 'OREMP TOTAL ENERGY'}
     VARH['lccd'] = {
                              'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
                            'lccd': 'LCCD TOTAL ENERGY'}
+    VARH['remp'] = {
+                             'hf': 'HF TOTAL ENERGY',
+                            'mp2': 'MP2 TOTAL ENERGY',
+                           'remp': 'REMP TOTAL ENERGY'}
     VARH['lccsd'] = {
                              'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY',
