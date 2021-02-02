@@ -107,9 +107,9 @@ double DCTSolver::compute_energy_UHF() {
     outfile->Printf("\t*%3s%5s Total Energy                               = %23.15f\n", prefix.c_str(),
                     options_.get_str("DCT_FUNCTIONAL").c_str(), new_total_energy_);
 
-    Process::environment.globals["DCT SCF ENERGY"] = scf_energy_;
-    Process::environment.globals["DCT LAMBDA ENERGY"] = lambda_energy_;
-    Process::environment.globals["DCT TOTAL ENERGY"] = new_total_energy_;
+    variables_["DCT SCF ENERGY"] = scf_energy_;
+    variables_["DCT LAMBDA ENERGY"] = lambda_energy_;
+    variables_["DCT TOTAL ENERGY"] = new_total_energy_;
 
     // Compute three-particle contribution to the DCT energy
     if (options_.get_str("THREE_PARTICLE") == "PERTURBATIVE") {
@@ -119,10 +119,10 @@ double DCTSolver::compute_energy_UHF() {
         outfile->Printf("\t*DCT Total Energy                                 = %20.15f\n",
                         new_total_energy_ + three_particle_energy);
         // Set global variables
-        Process::environment.globals["DCT THREE-PARTICLE ENERGY"] = three_particle_energy;
-        Process::environment.globals["CURRENT ENERGY"] = new_total_energy_ + three_particle_energy;
+        variables_["DCT THREE-PARTICLE ENERGY"] = three_particle_energy;
+        variables_["CURRENT ENERGY"] = new_total_energy_ + three_particle_energy;
     } else {
-        Process::environment.globals["CURRENT ENERGY"] = new_total_energy_;
+        variables_["CURRENT ENERGY"] = new_total_energy_;
     }
 
     // Print natural occupations

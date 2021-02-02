@@ -142,8 +142,8 @@ void DCTSolver::initialize_amplitudes() {
         outfile->Printf("\t Total MP2 correlation energy     = %20.15f\n", eAA + eAB + eBB);
         outfile->Printf("\t*Total MP2 energy                 = %20.15f\n", new_total_energy_);
 
-        Process::environment.globals["MP2 TOTAL ENERGY"] = new_total_energy_;
-        Process::environment.globals["MP2 CORRELATION ENERGY"] = eAA + eAB + eBB;
+        variables_["MP2 TOTAL ENERGY"] = new_total_energy_;
+        variables_["MP2 CORRELATION ENERGY"] = eAA + eAB + eBB;
 
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     } else if (guess == "CC" || guess == "BCC") {

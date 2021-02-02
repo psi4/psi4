@@ -1683,6 +1683,9 @@ def run_dct(name, **kwargs):
         proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
         dct_wfn = core.dct(ref_wfn)
 
+    for k, v in dct_wfn.variables().items():
+        core.set_variable(k, v)
+
     return dct_wfn
 
 
@@ -1718,6 +1721,18 @@ def run_dct_property(name, **kwargs):
 
     core.set_local_option('DCT', 'OPDM', 'true');
     dct_wfn = run_dct(name, **kwargs)
+
+    # Run OEProp
+    oe = core.OEProp(dct_wfn)
+    oe.set_title("DCT")
+    for prop in kwargs.get("properties", []):
+        if prop in core.OEProp.valid_methods or "MULTIPOLE(" in prop:
+            oe.add(prop.upper())
+    oe.compute()
+    dct_wfn.oeprop = oe
+
+    for k, v in dct_wfn.variables().items():
+        core.set_variable(k, v)
 
     optstash.restore()
     return dct_wfn
