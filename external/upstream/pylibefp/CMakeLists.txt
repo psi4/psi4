@@ -36,9 +36,9 @@ if(${ENABLE_libefp})
                        -DENABLE_XHOST=${ENABLE_XHOST}
                        -DENABLE_GENERIC=${ENABLE_GENERIC}
                        #-DLIBC_INTERJECT=${LIBC_INTERJECT}
-                       -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
-                       -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
-                       -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
+                       -DPYTHON_EXECUTABLE=${Python_EXECUTABLE}
+                       -DPYTHON_INCLUDE_DIR=${Python_INCLUDE_DIRS}
+                       -DPYTHON_LIBRARY=${Python_LIBRARIES}
                        -DTargetLAPACK_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetLAPACK
                        -Dlibefp_DIR=${libefp_DIR}
                        -Dpybind11_DIR=${pybind11_DIR}

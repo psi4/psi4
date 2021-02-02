@@ -36,7 +36,7 @@ noorient_data["molecule"]["fix_com"] = True
 
 # Write expected output
 expected_return_result = -100.0194177509218
-linear_dipole = 1.948993625469663 
+linear_dipole = 0.7667930938
 
 json_ret = psi4.json_wrapper.run_json(json_data)
 

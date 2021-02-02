@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -78,7 +78,7 @@ extern void scm_C_full(double C0, dpdfile2 *CME, dpdfile2 *Cme, dpdbuf4 *CMNEF, 
                        double a);
 extern void scm_C2(dpdbuf4 *CMNEF, dpdbuf4 *Cmnef, dpdbuf4 *CMnEf, double a);
 extern void restart(double **alpha, int L, int num, int irrep, int ortho, double **alpha_old, int L_old,
-                    int use_alpha_old);
+                    bool use_alpha_old);
 extern void precondition(dpdfile2 *RIA, dpdfile2 *Ria, dpdbuf4 *RIJAB, dpdbuf4 *Rijab, dpdbuf4 *RIjAb, double eval);
 extern void precondition_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, double eval);
 void form_diagonal(int irrep);
@@ -241,14 +241,14 @@ void diag() {
                     outfile->Printf("Checking overlap of orthogonalized initial guesses\n");
                     for (i = 0; i < eom_params.cs_per_irrep[C_irr]; i++) {
                         sprintf(lbl, "%s %d", "CME", i);
-                        dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
+                        global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
                         for (j = 0; j < eom_params.cs_per_irrep[C_irr]; j++) {
                             sprintf(lbl, "%s %d", "CME", j);
-                            dpd_file2_init(&CME2, EOM_CME, C_irr, 0, 1, lbl);
-                            outfile->Printf("C[%d][%d] = %15.10lf\n", i, j, 2.0 * dpd_file2_dot(&CME, &CME2));
-                            dpd_file2_close(&CME2);
+                            global_dpd_->file2_init(&CME2, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+                            outfile->Printf("C[%d][%d] = %15.10lf\n", i, j, 2.0 * global_dpd_->file2_dot(&CME, &CME2));
+                            global_dpd_->file2_close(&CME2);
                         }
-                        dpd_file2_close(&CME);
+                        global_dpd_->file2_close(&CME);
                     }
 #endif
                 } else {
@@ -264,19 +264,19 @@ void diag() {
         /* printout initial guesses */
         for (i = 0; i < eom_params.cs_per_irrep[C_irr]; ++i) {
             sprintf(lbl, "%s %d", "CME", i);
-            dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
-            dpd_file2_print(&CME, outfile);
-            dpd_file2_close(&CME);
+            global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+            global_dpd_->file2_print(&CME, "outfile");
+            global_dpd_->file2_close(&CME);
             if (params.eom_ref == 1) {
                 sprintf(lbl, "%s %d", "Cme", i);
-                dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
-                dpd_file2_print(&Cme, outfile);
-                dpd_file2_close(&Cme);
+                global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
+                global_dpd_->file2_print(&Cme, "outfile");
+                global_dpd_->file2_close(&Cme);
             } else if (params.eom_ref == 2) {
                 sprintf(lbl, "%s %d", "Cme", i);
-                dpd_file2_init(&Cme, EOM_Cme, C_irr, 2, 3, lbl);
-                dpd_file2_print(&Cme, outfile);
-                dpd_file2_close(&Cme);
+                global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
+                global_dpd_->file2_print(&Cme, "outfile");
+                global_dpd_->file2_close(&Cme);
             }
         }
 
@@ -436,7 +436,7 @@ void diag() {
                     global_dpd_->buf4_close(&CMnfE1);
                     global_dpd_->buf4_close(&CMnEf1);
 
-                    /* dpd_file2_init(&CME, EOM_TMP, C_irr, 0, 1, "CME");*/
+                    /* global_dpd_->file2_init(&CME, PSIF_EOM_TMP, C_irr, 0, 1, "CME");*/
                     global_dpd_->buf4_init(&CMnEf, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "CMnEf");
                 } else if (params.eom_ref == 1) {
                     sprintf(lbl, "%s %d", "CME", i);
@@ -543,7 +543,7 @@ void diag() {
             timer_off("BUILD G");
 #ifdef EOM_DEBUG
             outfile->Printf("The G Matrix\n");
-            mat_print(G, L, L, outfile);
+            print_mat(G, L, L, "outfile");
 #endif
             for (i = 0; i < L; ++i) {
                 for (j = 0; j < L; ++j) G_old[i][j] = G[i][j];
@@ -719,10 +719,10 @@ void diag() {
 
 #ifdef EOM_DEBUG
                 if (params.eom_ref == 0) {
-                    dpd_buf4_sort(&RIjAb, EOM_TMP, pqsr, 0, 5, "RIjbA");
-                    dpd_buf4_init(&RIjbA, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "RIjbA");
+                    global_dpd_->buf4_sort(&RIjAb, PSIF_EOM_TMP, pqsr, 0, 5, "RIjbA");
+                    global_dpd_->buf4_init(&RIjbA, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "RIjbA");
                     norm = norm_C_rhf(&RIA, &RIjAb, &RIjbA);
-                    dpd_buf4_close(&RIjbA);
+                    global_dpd_->buf4_close(&RIjbA);
                 } else
                     norm = norm_C(&RIA, &Ria, &RIJAB, &Rijab, &RIjAb);
                 outfile->Printf("Norm of residual vector %d  before precondition %18.13lf\n", k, norm);
@@ -822,10 +822,10 @@ void diag() {
             /* restart with new B vectors if there are too many */
             if (L >= vectors_per_root * eom_params.cs_per_irrep[C_irr]) {
                 if ((params.wfn == "EOM_CC3") && (cc3_stage > 0)) {
-                    restart(alpha, L, cc3_index + 1, C_irr, 1, alpha_old, L_old, eom_params.collapse_with_last);
+                    restart(alpha, L, cc3_index + 1, C_irr, 1, alpha_old, L_old, eom_params.collapse_with_last_cc3);
                     L_old = L;
                     L = cc3_index + 1;
-                    if (eom_params.collapse_with_last) L *= 2;
+                    if (eom_params.collapse_with_last_cc3) L *= 2;
                     outfile->Printf("Collapsing to %d vector(s).\n", L);
                     already_sigma = 0;
                     ignore_G_old = 1;

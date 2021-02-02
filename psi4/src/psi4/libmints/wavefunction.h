@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -447,8 +447,6 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     SharedVector epsilon_a() const;
     /// Returns the beta orbital energies
     SharedVector epsilon_b() const;
-    /// Returns the SO basis Lagrangian
-    SharedMatrix Lagrangian() const;
 
     SharedMatrix aotoso() const { return AO2SO_; }
 
@@ -574,8 +572,20 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     SharedMatrix basis_projection(SharedMatrix Cold, Dimension noccpi, std::shared_ptr<BasisSet> old_basis,
                                   std::shared_ptr<BasisSet> new_basis);
 
-    /// Returns the Lagrangian in SO basis for the wavefunction
-    SharedMatrix X() const;
+    /// Returns the SO basis Lagrangian
+    SharedMatrix lagrangian() const;
+    /// Set Lagrangian matrix in SO basis
+    void set_lagrangian(SharedMatrix X);
+    /// Returns the SO basis Lagrangian
+    PSI_DEPRECATED(
+        "Using `Wavefunction.Lagrangian` instead of `Wavefunction.lagrangian` is deprecated,"
+        " and in 1.5 it will stop working")
+    SharedMatrix Lagrangian() const { return lagrangian(); }
+    /// Returns the SO basis Lagrangian (duplicated one)
+    PSI_DEPRECATED(
+        "Using `Wavefunction.X` instead of `Wavefunction.lagrangian` is deprecated,"
+        " and in 1.5 it will stop working")
+    SharedMatrix X() const { return lagrangian(); }
 
     /// Returns the gradient
     SharedMatrix gradient() const;

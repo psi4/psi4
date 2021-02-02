@@ -1,0 +1,19 @@
+#! OLCCD cc-pVDZ freqs for C2H2
+
+molecule {
+0 1
+C            0.000000000000     0.000000000000     0.613925250708
+C            0.000000000000    -0.000000000000    -0.613925250708
+H            0.000000000000    -0.000000000000     1.692424754459
+H            0.000000000000    -0.000000000000    -1.692424754459
+}
+
+set {
+  basis cc-pvdz
+  guess sad
+  mo_maxiter 200
+}
+
+
+
+cepa_e, cepa_wfn = frequencies('olccd', dertype=0, return_wfn=True)

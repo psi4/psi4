@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -46,7 +46,7 @@
 namespace psi {
 namespace cceom {
 
-void restart(double **alpha, int L, int num, int C_irr, int ortho, double **alpha_old, int L_old, int use_alpha_old) {
+void restart(double **alpha, int L, int num, int C_irr, int ortho, double **alpha_old, int L_old, bool use_alpha_old) {
     int i, I, j, h, A_OCC, B_OCC, A_VIR, B_VIR, cnt, L_tot;
     int AA_OCC, AA_VIR, BB_OCC, BB_VIR, AB_OCC, AB_VIR;
     char lbl[20];
@@ -98,14 +98,14 @@ void restart(double **alpha, int L, int num, int C_irr, int ortho, double **alph
         for (i = 0; i < L; ++i)
             for (j = 0; j < L; ++j) alpha_tot[i][j] = alpha[i][j];
     }
-    /*
+#ifdef EOM_DEBUG
     outfile->Printf("alpha\n");
-    print_mat(alpha,L,L,outfile);
+    print_mat(alpha,L,L,"outfile");
     outfile->Printf("alpha_old\n");
-    print_mat(alpha_old,L_old,L_old,outfile);
+    print_mat(alpha_old,L_old,L_old,"outfile");
     outfile->Printf("alpha_tot\n");
-    print_mat(alpha_tot,L,L_tot,outfile);
-    */
+    print_mat(alpha_tot,L,L_tot,"outfile");
+#endif
 
     /* Orthonormalize alpha[1] through alpha[num] */
     if ((ortho) || (use_alpha_old)) {

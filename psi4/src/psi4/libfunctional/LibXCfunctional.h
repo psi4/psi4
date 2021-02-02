@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -66,7 +66,8 @@ class LibXCFunctional : public Functional {
     double density_cutoff_;
 
     // User defined tweakers
-    std::vector<double> user_tweakers_;
+    // * Libxc needs all set at once as list c. v5.1.0, but store as richer map anyways
+    std::map<std::string, double> user_tweakers_;
 
    public:
     LibXCFunctional(std::string xc_name, bool unpolarized);
@@ -81,7 +82,8 @@ class LibXCFunctional : public Functional {
     // Setters and getters
     void set_density_cutoff(double cut) override;
     void set_omega(double omega);
-    void set_tweak(std::vector<double> values);
+    void set_tweak(std::map<std::string, double>, bool);
+    void set_tweak(std::vector<double>, bool);
     std::vector<std::tuple<std::string, int, double>> get_mix_data();
 
     // Make queries to libxc

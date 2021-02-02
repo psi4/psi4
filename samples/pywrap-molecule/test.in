@@ -90,7 +90,7 @@ def test_qcdb():  #TEST
     compare_values(ans[1], frag.nuclear_repulsion_energy(), 6, "QCDB %s: NRE" % ans[0])  #TEST
     compare_integers(ans[2], frag.molecular_charge(), "QCDB %s: charge" % ans[0])  #TEST
     compare_integers(ans[3], frag.multiplicity(), "QCDB %s: multiplicity" % ans[0])  #TEST
-    qcdb.compare_matrices(gorig, gnew, 5, "QCDB %s: string recreates geometry" % ans[0])  #TEST
+    qcdb.compare_arrays(gorig, gnew, 5, "QCDB %s: string recreates geometry" % ans[0])  #TEST
 
 def test_libmints():  #TEST
     print_out("%s\n" % ans[0])  #TEST

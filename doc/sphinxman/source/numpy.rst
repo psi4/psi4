@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2019 The Psi4 Developers.
+.. # Copyright (c) 2007-2021 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -47,9 +47,9 @@ Basics
 Converting between the |PSIfour| Data classes and a NumPy array is easy through
 various helper functions as detailed in this section.  A quick overview NumPy
 functionality can be found `here
-<https://docs.scipy.org/doc/numpy-dev/user/quickstart.html>`_.  In addition,
+<https://numpy.org/doc/stable/user/quickstart.html>`_.  In addition,
 numerous example of hybrid NumPy and Psi4 can be found at the `Psi4Numpy
-project <https://github.com/dgasmith/psi4numpy>`_.  Currently only the Matrix
+project <https://github.com/psi4/psi4numpy>`_.  Currently only the Matrix
 and Vector objects support NumPy interfacing. Let us begin with a simple
 conversion from these objects to a NumPy array::
 
@@ -57,8 +57,8 @@ conversion from these objects to a NumPy array::
     >>> import numpy as np
 
     # Build the Psi4 data objects
-    >>> mat = psi4.Matrix(3, 3) 
-    >>> vec = psi4.Vector(3)
+    >>> mat = psi4.core.Matrix(3, 3) 
+    >>> vec = psi4.core.Vector(3)
 
     # Convert to a NumPy array
     >>> numpy_mat = np.array(mat)
@@ -67,8 +67,8 @@ conversion from these objects to a NumPy array::
 Here the data is copied into new NumPy arrays. NumPy arrays can be converted
 back to |PSIfour| objects using the ``from_array`` interface::
 
-    >>> new_mat = psi4.Matrix.from_array(mat)
-    >>> new_vec = psi4.Vector.from_array(vec)
+    >>> new_mat = psi4.core.Matrix.from_array(mat)
+    >>> new_vec = psi4.core.Vector.from_array(vec)
 
 
 NumPy Views
@@ -101,13 +101,14 @@ this operation is identical to the above.
 |PSIfour| Data Objects with Irreps
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-|PSIfour| data objects natively support multiple irreducible representations
+|PSIfour| data objects natively support multiple :ref:`irreducible representations
+<sec:symmetry>`
 which is quite useful for Quantum Chemistry. However, this is not fundamental
 to NumPy and some work around are required to natively support these
 operations. Take the following irreped Matrix::
 
-    >>> dim = psi4.Dimension.from_list([1, 2, 3])
-    >>> irreped_mat = psi4.Matrix("New Matrix", dim, dim)
+    >>> dim = psi4.core.Dimension.from_list([1, 2, 3])
+    >>> irreped_mat = psi4.core.Matrix("New Matrix", dim, dim)
 
     # Create a list of Psi4 arrays
     >>> list_of_arrays = irreped_mat.to_array()
@@ -130,6 +131,5 @@ Matrix to Array
 A general function that converts NumPy arrays to |PSIfour| data objects.
 
 .. autofunction:: psi4.driver.p4util.numpy_helper._to_array
-
 
 

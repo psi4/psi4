@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -260,7 +260,7 @@ class Libint2TwoElectronInt : public TwoBodyAOInt {
     size_t compute_shell(const AOShellCombinationsIterator& shellIter) override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
-    size_t compute_shell_for_sieve(const std::shared_ptr<BasisSet> bs, int s1, int s2, int s3, int s4, bool is_bra);
+    size_t compute_shell_for_sieve(const std::shared_ptr<BasisSet> bs, int s1, int s2, int s3, int s4, bool is_bra) override;
 
     /// Compute ERIs between 4 shells. Result is stored in buffer.
     size_t compute_shell(int s1, int s2, int s3, int s4) override;

@@ -1,8 +1,9 @@
-#! OMP2 cc-pVDZ energy for the H2O molecule.
+#! OMP2.5 cc-pVDZ energy for the H2O molecule.
+# OMP2.5 energy from Jonathon's Psi4Numpy code, run 03/20, residual convergence 12. # TEST
 refnuc      =  25.59060766929188 #TEST
 refscf      = -129.25245637508348 #TEST
 refmp3      = -129.58077576726413 #TEST
-refomp3     = -129.58887635080728 #TEST
+refomp3     = -129.58890164511720 #TEST
 
 molecule {
 0 2

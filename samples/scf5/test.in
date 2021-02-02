@@ -55,9 +55,13 @@ set scf_type out_of_core
 E = energy('scf')
 compare_values(Eref_sing_can, E, 6, 'Singlet Disk RHF energy') #TEST
 
-set scf_type df
+set scf_type disk_df
 E = energy('scf')
-compare_values(Eref_sing_df, E, 6, 'Singlet DF RHF energy') #TEST
+compare_values(Eref_sing_df, E, 6, 'Singlet DiskDF RHF energy') #TEST
+
+set scf_type mem_df
+E = energy('scf')
+compare_values(Eref_sing_df, E, 6, 'Singlet MemDF RHF energy') #TEST
 
 print('    -Singlet UHF:') #TEST
 set scf reference uhf
@@ -74,9 +78,13 @@ set scf_type out_of_core
 E = energy('scf')
 compare_values(Eref_sing_can, E, 6, 'Singlet Disk UHF energy') #TEST
 
-set scf_type df
+set scf_type disk_df
 E = energy('scf')
-compare_values(Eref_sing_df, E, 6, 'Singlet DF UHF energy') #TEST
+compare_values(Eref_sing_df, E, 6, 'Singlet DiskDF UHF energy') #TEST
+
+set scf_type mem_df
+E = energy('scf')
+compare_values(Eref_sing_df, E, 6, 'Singlet MemDF UHF energy') #TEST
 
 print('    -Singlet CUHF:') #TEST
 set scf reference cuhf
@@ -93,9 +101,13 @@ set scf_type out_of_core
 E = energy('scf')
 compare_values(Eref_sing_can, E, 6, 'Singlet Disk CUHF energy') #TEST
 
-set scf_type df
+set scf_type disk_df
 E = energy('scf')
-compare_values(Eref_sing_df, E, 6, 'Singlet DF CUHF energy') #TEST
+compare_values(Eref_sing_df, E, 6, 'Singlet DiskDF CUHF energy') #TEST
+
+set scf_type mem_df
+E = energy('scf')
+compare_values(Eref_sing_df, E, 6, 'Singlet MemDF CUHF energy') #TEST
 
 activate(triplet_o2)
 set {
@@ -120,9 +132,13 @@ set scf_type out_of_core
 E = energy('scf')
 compare_values(Eref_uhf_can, E, 6, 'Triplet Disk UHF energy') #TEST
 
-set scf_type df
+set scf_type disk_df
 E = energy('scf')
-compare_values(Eref_uhf_df, E, 6, 'Triplet DF UHF energy') #TEST
+compare_values(Eref_uhf_df, E, 6, 'Triplet DiskDF UHF energy') #TEST
+
+set scf_type mem_df
+E = energy('scf')
+compare_values(Eref_uhf_df, E, 6, 'Triplet MemDF UHF energy') #TEST
 
 clean()
 
@@ -144,9 +160,13 @@ E = energy('scf')
 compare_values(Eref_rohf_can, E, 6, 'Triplet Disk ROHF energy') #TEST
 clean()
 
-set scf_type df
+set scf_type disk_df
 E = energy('scf')
-compare_values(Eref_rohf_df, E, 6, 'Triplet DF ROHF energy') #TEST
+compare_values(Eref_rohf_df, E, 6, 'Triplet DiskDF ROHF energy') #TEST
+
+set scf_type mem_df
+E = energy('scf')
+compare_values(Eref_rohf_df, E, 6, 'Triplet MemDF ROHF energy') #TEST
 
 clean()
 
@@ -168,6 +188,10 @@ E = energy('scf')
 compare_values(Eref_rohf_can, E, 6, 'Triplet Disk CUHF energy') #TEST
 clean()
 
-set scf_type df
+set scf_type disk_df
 E = energy('scf')
-compare_values(Eref_rohf_df, E, 6, 'Triplet DF CUHF energy') #TEST
+compare_values(Eref_rohf_df, E, 6, 'Triplet DiskDF CUHF energy') #TEST
+
+set scf_type mem_df
+E = energy('scf')
+compare_values(Eref_rohf_df, E, 6, 'Triplet MemDF CUHF energy') #TEST

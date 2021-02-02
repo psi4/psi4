@@ -1,5 +1,7 @@
 #! UFH and B3LYP cc-pVQZ properties for the CH2 molecule.
 
+
+
 molecule ch2 {
     0 3
     c
@@ -30,5 +32,11 @@ props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
 properties('scf', properties=props)
 
 
+
+# prefer array dipole/quadrupole over deprecated scalar variables in section above
+
 properties('B3LYP', properties=props)
 
+
+
+# prefer array dipole/quadrupole over deprecated scalar variables in section above

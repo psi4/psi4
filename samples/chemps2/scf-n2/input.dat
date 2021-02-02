@@ -34,6 +34,6 @@ set dmrg_scf_state_avg     false
 set dmrg_scf_active_space  NO  # INPUT; NO; LOC
 set dmrg_local_init        false
 
-energy("dmrg-scf")
+ene = energy("dmrg-scf")
 
 

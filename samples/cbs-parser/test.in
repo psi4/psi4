@@ -20,7 +20,7 @@ ne2.update_geometry()
 
 sapt_global = energy("sapt2+(3)", molecule=ne2)
 
-sapt_explicit, wfn = energy("sapt2+(3)/cc-pvdz", molecule=ne2, return_wfn = True)
+sapt_explicit, wfn = energy("sapt2+(3)/cc-pvdz", molecule=ne2, return_wfn=True)
 
 compare_values(sapt_global, sapt_explicit, 9, "SAPT2+(3)/cc-pVDZ in method/basis vs global syntax")          #TEST
 

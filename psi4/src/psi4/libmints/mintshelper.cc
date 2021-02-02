@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -2296,7 +2296,7 @@ SharedMatrix MintsHelper::core_hamiltonian_grad(SharedMatrix D) {
 
 std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::string, SharedMatrix>& D, const std::string& aux_name) {
     // Construct integral factory.
-    auto auxiliary = basissets_[aux_name];
+    auto auxiliary = get_basisset(aux_name);
     auto rifactory = std::make_shared<IntegralFactory>(auxiliary, BasisSet::zero_ao_basis_set(), auxiliary, BasisSet::zero_ao_basis_set());
     std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
     for (int t = 0; t < nthread_; t++) {
@@ -2314,7 +2314,7 @@ std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::strin
         }
     }
 
-    // Construct pairs of aux AOs
+    // Construct pairs of aux AO shells
     std::vector<std::pair<int, int>> PQ_pairs;
     for (int P = 0; P < auxiliary->nshell(); P++) {
         for (auto Q = 0; Q <= P; Q++) {
@@ -2395,6 +2395,173 @@ std::map<std::string, SharedMatrix> MintsHelper::metric_grad(std::map<std::strin
         gradient_contributions[kv.first] = gradient_contribution;
     }
     return gradient_contributions;
+}
+
+// TODO: DFMP2 might be able to use this, if we resolve the following:
+//  1. Should we move density back transform into this loop?
+//  2. Should we explicitly hermitivitize during contraction against derivative integral?
+//  3. Can we force a relation between intermed_name and gradient_name, to simplify the argument list?
+SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name, const std::string& intermed_name, const std::string& gradient_name) {
+    // Construct integral factory.
+    auto primary = get_basisset("ORBITAL");
+    auto auxiliary = get_basisset(aux_name);
+    auto rifactory = std::make_shared<IntegralFactory>(auxiliary, BasisSet::zero_ao_basis_set(), primary, primary);
+    std::vector<std::shared_ptr<TwoBodyAOInt> > Jint;
+    for (int t = 0; t < nthread_; t++) {
+        Jint.push_back(std::shared_ptr<TwoBodyAOInt>(rifactory->eri(1)));
+    }
+
+    const auto &shell_pairs = Jint[0]->shell_pairs();
+    int npairs = shell_pairs.size(); // Number of pairs of primary orbital shells
+
+    // => Memory Constraints <= //
+    const auto nprim = primary->nbf();
+    const auto naux = auxiliary->nbf();
+    const auto ntri = (nprim * (nprim + 1)) / 2;
+    auto row_cost = sizeof(double) * (nprim * nprim + ntri);
+    // Assume we can devote 80% of Psi's memory to this. 80% was pulled from a hat.
+    auto max_rows = 0.8 * Process::environment.get_memory() / row_cost;
+
+    // => Block Sizing <= //
+    std::vector<int> Pstarts;
+    int counter = 0;
+    Pstarts.push_back(0);
+    for (int P = 0; P < auxiliary->nshell(); P++) {
+        int nP = auxiliary->shell(P).nfunction();
+        if (counter + nP > max_rows) {
+            counter = 0;
+            Pstarts.push_back(P);
+        }
+        counter += nP;
+    }
+    Pstarts.push_back(auxiliary->nshell());
+
+    // Construct temporary matrices for each thread
+    int natom = basisset_->molecule()->natom();
+    std::vector<SharedMatrix> temps;
+    for (int j = 0; j < nthread_; j++) {
+        temps.push_back(std::make_shared<Matrix>("temp", natom, 3));
+    }
+
+    psio_address next_Pmn = PSIO_ZERO;
+    // Individual block reads may very well not use all of this memory.
+    auto temp = std::vector<double>(static_cast<size_t>(max_rows) * ntri);
+    auto data = temp.data();
+
+    // Perform threaded contraction of "densities" against 3-index derivative integrals.
+    // Loop over blocks. Each block is all (P|mn) belonging to certain aux. orbital shells.
+    // Large aux. basis sets may require multiple blocks.
+    for (int block = 0; block < Pstarts.size() - 1; block++) {
+        int Pstart = Pstarts[block];
+        int Pstop = Pstarts[block + 1];
+        int NP = Pstop - Pstart;
+
+        int pstart = auxiliary->shell(Pstart).function_index();
+        int pstop = (Pstop == auxiliary->nshell() ? naux : auxiliary->shell(Pstop).function_index());
+        int np = pstop - pstart;
+
+        // Read values from disk. We assume that only the "lower triangle" of (P|mn) is stored.
+        psio_->read(PSIF_AO_TPDM, intermed_name.c_str(), (char*)temp.data(), sizeof(double) * np * ntri, next_Pmn, &next_Pmn);
+
+        // Now get them into a matrix, not just the lower triangle.
+        // This is the price of only storing the lower triangle on disk.
+        auto idx3_matrix = std::make_shared<Matrix>(np, nprim * nprim);
+        auto idx3p = idx3_matrix->pointer();
+#pragma omp parallel for
+        for (int aux = 0; aux < np; aux++) {
+            for (int p = 0; p < nprim; p++) {
+                for (int q = 0; q <= p; q++) {
+                    idx3p[aux][p * nprim + q] = *data;
+                    idx3p[aux][q * nprim + p] = *data;
+                    data++;
+                }
+            }
+        }
+
+        // For each block, loop over aux. shell, then primary shell pairs
+#pragma omp parallel for schedule(dynamic) num_threads(nthread_)
+        for (long int PMN = 0L; PMN < static_cast<long int>(NP) * npairs; PMN++) {
+            int thread = 0;
+#ifdef _OPENMP
+            thread = omp_get_thread_num();
+#endif
+
+            int P = PMN / npairs + Pstart;
+            int MN = PMN % npairs;
+            int M = shell_pairs[MN].first;
+            int N = shell_pairs[MN].second;
+
+            Jint[thread]->compute_shell_deriv1(P, 0, M, N);
+
+            const auto& buffers = Jint[thread]->buffers();
+
+            int nP = auxiliary->shell(P).nfunction();
+            int cP = auxiliary->shell(P).ncartesian();
+            int aP = auxiliary->shell(P).ncenter();
+            int oP = auxiliary->shell(P).function_index() - pstart;
+
+            int nM = primary->shell(M).nfunction();
+            int cM = primary->shell(M).ncartesian();
+            int aM = primary->shell(M).ncenter();
+            int oM = primary->shell(M).function_index();
+
+            int nN = primary->shell(N).nfunction();
+            int cN = primary->shell(N).ncartesian();
+            int aN = primary->shell(N).ncenter();
+            int oN = primary->shell(N).function_index();
+
+            int ncart = cP * cM * cN;
+            const double *Px = buffers[0];
+            const double *Py = buffers[1];
+            const double *Pz = buffers[2];
+            const double *Mx = buffers[3];
+            const double *My = buffers[4];
+            const double *Mz = buffers[5];
+            const double *Nx = buffers[6];
+            const double *Ny = buffers[7];
+            const double *Nz = buffers[8];
+
+            double perm = (M == N ? 1.0 : 2.0);
+
+            auto grad_Jp = temps[thread]->pointer();
+
+            // Within each of those, then loop over each function in the shell. 
+            for (int p = 0; p < nP; p++) {
+                for (int m = 0; m < nM; m++) {
+                    for (int n = 0; n < nN; n++) {
+                        double Ival = 1.0 * perm * idx3p[p + oP][(m + oM) * nprim + (n + oN)];
+                        grad_Jp[aP][0] += Ival * (*Px);
+                        grad_Jp[aP][1] += Ival * (*Py);
+                        grad_Jp[aP][2] += Ival * (*Pz);
+                        grad_Jp[aM][0] += Ival * (*Mx);
+                        grad_Jp[aM][1] += Ival * (*My);
+                        grad_Jp[aM][2] += Ival * (*Mz);
+                        grad_Jp[aN][0] += Ival * (*Nx);
+                        grad_Jp[aN][1] += Ival * (*Ny);
+                        grad_Jp[aN][2] += Ival * (*Nz);
+
+                        Px++;
+                        Py++;
+                        Pz++;
+                        Mx++;
+                        My++;
+                        Mz++;
+                        Nx++;
+                        Ny++;
+                        Nz++;
+                    }
+                }
+            }
+        }
+    }
+
+    // Sum results across the various threads
+    auto idx3_grad = std::make_shared<Matrix>(intermed_name + " Gradient", natom, 3);
+    for (const auto& thread_contribution : temps) {
+        idx3_grad->add(thread_contribution);
+    }
+
+    return idx3_grad;
 }
 
 void MintsHelper::play() {}
@@ -3188,6 +3355,199 @@ std::vector<SharedMatrix> MintsHelper::ao_tei_deriv1(int atom, double omega,
 
     // Build numpy and final matrix shape
     std::vector<int> nshape{nbf1, nbf2, nbf3, nbf4};
+    for (int p = 0; p < 3; p++) grad[p]->set_numpy_shape(nshape);
+
+    return grad;
+}
+
+/* 1st and 2nd derivatives of metric in AO basis  */
+
+std::vector<SharedMatrix> MintsHelper::ao_metric_deriv1(int atom, const std::string& aux_name) {
+    std::array<std::string, 3> cartcomp{ {"X", "Y", "Z"} };
+
+    auto aux = get_basisset(aux_name);
+    auto factory = std::make_shared<IntegralFactory>(aux, BasisSet::zero_ao_basis_set(), aux, BasisSet::zero_ao_basis_set());
+
+    auto ints = std::shared_ptr<TwoBodyAOInt>(factory->eri(1));
+    auto naux = aux->nbf();
+    int natom = basisset_->molecule()->natom();
+
+    std::vector<SharedMatrix> grad;
+    for (int p = 0; p < 3; p++) {
+        std::stringstream sstream;
+        sstream << "ao_metric_deriv1_" << atom << cartcomp[p];
+        grad.push_back(std::make_shared<Matrix>(sstream.str(), naux, naux));
+    }
+
+
+    const auto &buffers = ints->buffers();
+    for (int P = 0; P < aux->nshell(); P++) {
+        for (int Q = 0; Q < aux->nshell(); Q++) {
+            int Psize = aux->shell(P).nfunction();
+            int Qsize = aux->shell(Q).nfunction();
+
+            int Poff = aux->shell(P).function_index();
+            int Qoff = aux->shell(Q).function_index();
+
+            int Pcenter = aux->shell(P).ncenter();
+            int Qcenter = aux->shell(Q).ncenter();
+
+            size_t delta;
+
+            delta = 0L;
+
+            if (Pcenter != atom && Qcenter != atom) continue;
+
+            if (Pcenter == atom && Qcenter == atom) continue;
+
+            ints->compute_shell_deriv1(P, 0, Q, 0);
+
+            double Ax, Ay, Az;
+            double Bx, By, Bz;
+            double X = 0, Y = 0, Z = 0;
+
+            for (int p = 0; p < Psize; p++) {
+                for (int q = 0; q < Qsize; q++) {
+                    int i = p + Poff;
+                    int j = q + Qoff;
+
+                    Ax = buffers[0][delta];
+                    Ay = buffers[1][delta];
+                    Az = buffers[2][delta];
+                    Bx = buffers[3][delta];
+                    By = buffers[4][delta];
+                    Bz = buffers[5][delta];
+
+                    if (Pcenter == atom) {
+                        X += Ax;
+                        Y += Ay;
+                        Z += Az;
+                    }
+
+                    if (Qcenter == atom) {
+                        X += Bx;
+                        Y += By;
+                        Z += Bz;
+                    }
+
+                    grad[0]->set(i, j, X);
+                    grad[1]->set(i, j, Y);
+                    grad[2]->set(i, j, Z);
+
+                    X = 0, Y = 0, Z = 0;
+                    delta++;
+                }
+            }
+        }
+    }
+
+    return grad;
+}
+
+/* 1st and 2nd derivatives of TEI in AO basis  */
+
+std::vector<SharedMatrix> MintsHelper::ao_3center_deriv1(int atom, const std::string& aux_name) {
+    std::array<std::string, 3> cartcomp{ {"X", "Y", "Z"} };
+
+    auto aux = get_basisset(aux_name);
+    auto factory = std::make_shared<IntegralFactory>(aux, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
+
+    auto ints = std::shared_ptr<TwoBodyAOInt>(factory->eri(1));
+    auto naux = aux->nbf();
+    int natom = basisset_->molecule()->natom();
+
+    std::vector<SharedMatrix> grad;
+    for (int p = 0; p < 3; p++) {
+        std::stringstream sstream;
+        sstream << "ao_3center_deriv1_" << atom << cartcomp[p];
+        grad.push_back(std::make_shared<Matrix>(sstream.str(), naux, nbf() * nbf()));
+    }
+
+
+    const auto &buffers = ints->buffers();
+    for (int P = 0; P < aux->nshell(); P++) {
+        for (int Q = 0; Q < basisset_->nshell(); Q++) {
+            for (int R = 0; R < basisset_->nshell(); R++) {
+                int Psize = aux->shell(P).nfunction();
+                int Qsize = basisset_->shell(Q).nfunction();
+                int Rsize = basisset_->shell(R).nfunction();
+
+                int Pncart = aux->shell(P).ncartesian();
+                int Qncart = basisset_->shell(Q).ncartesian();
+                int Rncart = basisset_->shell(R).ncartesian();
+
+                int Poff = aux->shell(P).function_index();
+                int Qoff = basisset_->shell(Q).function_index();
+                int Roff = basisset_->shell(R).function_index();
+
+                int Pcenter = aux->shell(P).ncenter();
+                int Qcenter = basisset_->shell(Q).ncenter();
+                int Rcenter = basisset_->shell(R).ncenter();
+
+                size_t delta;
+
+                delta = 0L;
+
+                if (Pcenter != atom && Qcenter != atom && Rcenter != atom) continue;
+
+                if (Pcenter == atom && Qcenter == atom && Rcenter == atom) continue;
+
+                ints->compute_shell_deriv1(P, 0, Q, R);
+
+                double Ax, Ay, Az;
+                double Bx, By, Bz;
+                double Cx, Cy, Cz;
+                double X = 0, Y = 0, Z = 0;
+
+                for (int p = 0; p < Psize; p++) {
+                    for (int q = 0; q < Qsize; q++) {
+                        for (int r = 0; r < Rsize; r++) {
+                            int i = Poff + p;
+                            int j = (Qoff + q) * nbf() + Roff + r;
+
+                            Ax = buffers[0][delta];
+                            Ay = buffers[1][delta];
+                            Az = buffers[2][delta];
+                            Bx = buffers[3][delta];
+                            By = buffers[4][delta];
+                            Bz = buffers[5][delta];
+                            Cx = buffers[6][delta];
+                            Cy = buffers[7][delta];
+                            Cz = buffers[8][delta];
+
+                            if (Pcenter == atom) {
+                                X += Ax;
+                                Y += Ay;
+                                Z += Az;
+                            }
+
+                            if (Qcenter == atom) {
+                                X += Bx;
+                                Y += By;
+                                Z += Bz;
+                            }
+
+                            if (Rcenter == atom) {
+                                X += Cx;
+                                Y += Cy;
+                                Z += Cz;
+                            }
+
+                            grad[0]->set(i, j, X);
+                            grad[1]->set(i, j, Y);
+                            grad[2]->set(i, j, Z);
+
+                            X = 0, Y = 0, Z = 0;
+                            delta++;
+                    }
+                    }
+                }
+            }
+        }
+    }
+
+    // Build numpy and final matrix shape
+    std::vector<int> nshape{naux, nbf(), nbf()};
     for (int p = 0; p < 3; p++) grad[p]->set_numpy_shape(nshape);
 
     return grad;

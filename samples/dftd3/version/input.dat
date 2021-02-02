@@ -1,4 +1,5 @@
 #! Exercises the various DFT-D corrections, both through python directly and through c++
+#! all dft values updated to new BraggSlater radii
 
 # S22-9, B3LYP
 
@@ -116,6 +117,7 @@ for dlvl in levels:
 
 # <<<  Part 4  >>>
 
+set freeze_core false
 if hasD3M:
     for fl in ['blyp', 'b3lyp', 'b2plyp', 'bp86', 'pbe', 'pbe0', 'b97', 'wpbe']:
         energy(fl + '-d3mbj', molecule=mBuncp)

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2019 The Psi4 Developers.
+# Copyright (c) 2007-2021 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -35,9 +35,8 @@ funcs = []
 funcs.append({"name": "TETER93"        , "xc_functionals": {"LDA_XC_TETER93"            : {}}})
 funcs.append({"name": "ZLP"            , "xc_functionals": {"LDA_XC_ZLP"                : {}}})
 funcs.append({"name": "KSDT"           , "xc_functionals": {"LDA_XC_KSDT"               : {}}})
-# LDA0 and CAM-LDA0 are not yet in any stable release of libxc (2019-05-16)
-#funcs.append({"name": "LDA0"           , "xc_functionals": {"HYB_LDA_XC_LDA0"           : {}}})
-#funcs.append({"name": "CAM-LDA0"       , "xc_functionals": {"HYB_LDA_XC_CAM_LDA0"       : {}}})
+funcs.append({"name": "LDA0"           , "xc_functionals": {"HYB_LDA_XC_LDA0"           : {}}})
+funcs.append({"name": "CAM-LDA0"       , "xc_functionals": {"HYB_LDA_XC_CAM_LDA0"       : {}}})
 funcs.append({"name": "OPBE-D"         , "xc_functionals": {"GGA_XC_OPBE_D"             : {}}, "dispersion": {"type": "d2", "params": {'s6': 1.0,  'alpha6': 20.0, 'sr6': 1.15}, "citation": '    L. Goerigk, S. Grimme, J. Chem. Theory. Comput. 6, 107-126, 2010\n'}, 'alias': ['OPBE-D2']})
 funcs.append({"name": "OPWLYP-D"       , "xc_functionals": {"GGA_XC_OPWLYP_D"           : {}}, "dispersion": {"type": "d2", "params": {'s6': 1.0,  'alpha6': 20.0, 'sr6': 1.15}, "citation": '    L. Goerigk, S. Grimme, J. Chem. Theory. Comput. 6, 107-126, 2010\n'}, 'alias': ['OPWLYP-D2']})
 funcs.append({"name": "OBLYP-D"        , "xc_functionals": {"GGA_XC_OBLYP_D"            : {}}, "dispersion": {"type": "d2", "params": {'s6': 1.0,  'alpha6': 20.0, 'sr6': 1.15}, "citation": '    L. Goerigk, S. Grimme, J. Chem. Theory. Comput. 6, 107-126, 2010\n'}, 'alias': ['OBLYP-D2']})
@@ -130,7 +129,7 @@ funcs.append({"name": "mPW1B95"        , "xc_functionals": {"HYB_MGGA_XC_MPW1B95
 funcs.append({"name": "mPWB1K"         , "xc_functionals": {"HYB_MGGA_XC_MPWB1K"        : {}}})
 funcs.append({"name": "X1B95"          , "xc_functionals": {"HYB_MGGA_XC_X1B95"         : {}}})
 funcs.append({"name": "XB1K"           , "xc_functionals": {"HYB_MGGA_XC_XB1K"          : {}}})
-funcs.append({"name": "PW6B95"         , "xc_functionals": {"HYB_MGGA_XC_PW6B95"        : {}}})
+#funcs.append({"name": "PW6B95"         , "xc_functionals": {"HYB_MGGA_XC_PW6B95"        : {}}})  # duplicate of dict-based in hyb_functionals.py
 funcs.append({"name": "PWB6K"          , "xc_functionals": {"HYB_MGGA_XC_PWB6K"         : {}}})
 funcs.append({"name": "TPSSh"          , "xc_functionals": {"HYB_MGGA_XC_TPSSH"         : {}}, "alias": ["TPSS0"]})
 funcs.append({"name": "revTPSSh"       , "xc_functionals": {"HYB_MGGA_XC_REVTPSSH"      : {}}})
@@ -140,6 +139,7 @@ funcs.append({"name": "OTPSS-D"        , "xc_functionals": {"MGGA_XC_OTPSS_D"   
 funcs.append({"name": "TPSSLYP1W"      , "xc_functionals": {"MGGA_XC_TPSSLYP1W"         : {}}})
 funcs.append({"name": "B97M-V"         , "xc_functionals": {"MGGA_XC_B97M_V"            : {}}})
 funcs.append({"name": "B5050LYP"       , "xc_functionals": {"HYB_GGA_XC_B5050LYP"       : {}}})
+funcs.append({"name": "LC-BOP"         , "xc_functionals": {"HYB_GGA_XC_LC_BOP"         : {}}, "alias": ["LRC-BOP"]})
 # yapf: enable
 
 functional_list = {}

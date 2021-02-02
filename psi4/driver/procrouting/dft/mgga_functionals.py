@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2019 The Psi4 Developers.
+# Copyright (c) 2007-2021 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -211,12 +211,13 @@ funcs.append({
             'a1': -0.0780,
             'a2': 5.59460
         },
-    "citation": '    A. Najib, L. Goerigk J. Comput. Theory Chem., 14, 5725, 2018\n',
+        "citation": '    A. Najib, L. Goerigk J. Comput. Theory Chem., 14, 5725, 2018\n',
     },
-    "description": '    B97M-V with D3(BJ) instead of VV10 dispersion \n',
-    "citation": '    A. Najib, L. Goerigk J. Comput. Theory Chem., 14, 5725, 2018\n'+
-                '    N. Mardirossian, M. Head-Gordon J. Chem. Phys. 142, 074111 (2015)\n',
-
+    "description":
+    '    B97M-V with D3(BJ) instead of VV10 dispersion \n',
+    "citation":
+    '    A. Najib, L. Goerigk J. Comput. Theory Chem., 14, 5725, 2018\n' +
+    '    N. Mardirossian, M. Head-Gordon J. Chem. Phys. 142, 074111 (2015)\n',
 })
 
 funcs.append({
@@ -243,6 +244,18 @@ funcs.append({
     "description": '    Revised SCAN Meta-GGA XC Functional\n',
     "citation": '    P. D. Mezei, G. I. Csonka, M. Kallay J. Chem. Theory Comput. 14, 2469, 2018\n',
     "doi": "10.1021/acs.jctc.8b00072",
+})
+
+funcs.append({
+    "name": "t-HCTH",
+    "alias": ["tHCTH", "tau-HCTH"],
+    "x_functionals": {
+        "MGGA_X_TAU_HCTH": {}
+    },
+    "c_functionals": {
+        "GGA_C_TAU_HCTH": {}
+    },
+    "description": '    Tau HCTH Meta-GGA XC Functional\n',
 })
 
 functional_list = {}

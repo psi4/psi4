@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -183,11 +183,11 @@ void rzero(int C_irr, int *converged) {
         /*
         if (rzero < 0.0) {
           rzero *= -1.0;
-          dpd_file2_scm(&RIA,-1.0);
-          dpd_file2_scm(&Ria,-1.0);
-          dpd_buf4_scm(&fRIJAB,-1.0);
-          dpd_buf4_scm(&fRijab,-1.0);
-          dpd_buf4_scm(&fRIjAb,-1.0);
+          global_dpd_->file2_scm(&RIA,-1.0);
+          global_dpd_->file2_scm(&Ria,-1.0);
+          global_dpd_->buf4_scm(&fRIJAB,-1.0);
+          global_dpd_->buf4_scm(&fRijab,-1.0);
+          global_dpd_->buf4_scm(&fRIjAb,-1.0);
         }
         */
 
@@ -207,11 +207,11 @@ void rzero(int C_irr, int *converged) {
 
         /* just debugging with converged solutions - also my need a sort_C() */
         /*
-        dpd_file2_copy(&RIA, EOM_CME, "CME 0");
-        dpd_file2_copy(&Ria, EOM_Cme, "Cme 0");
-        dpd_buf4_copy(&fRIJAB, EOM_CMNEF, "CMNEF 0");
-        dpd_buf4_copy(&fRijab, EOM_Cmnef, "Cmnef 0");
-        dpd_buf4_copy(&fRIjAb, EOM_CMnEf, "CMnEf 0");
+        global_dpd_->file2_copy(&RIA, PSIF_EOM_CME, "CME 0");
+        global_dpd_->file2_copy(&Ria, PSIF_EOM_Cme, "Cme 0");
+        global_dpd_->buf4_copy(&fRIJAB, PSIF_EOM_CMNEF, "CMNEF 0");
+        global_dpd_->buf4_copy(&fRijab, PSIF_EOM_Cmnef, "Cmnef 0");
+        global_dpd_->buf4_copy(&fRIjAb, PSIF_EOM_CMnEf, "CMnEf 0");
         */
         /* end debugging stuff */
 
@@ -379,9 +379,9 @@ void rzero_rhf(int C_irr, int *converged) {
         /*
         if (rzero < 0.0) {
           rzero *= -1.0;
-          dpd_file2_scm(&RIA,-1.0);
-          dpd_buf4_scm(&RIjAb,-1.0);
-          dpd_buf4_scm(&RIjbA,-1.0);
+          global_dpd_->file2_scm(&RIA,-1.0);
+          global_dpd_->buf4_scm(&RIjAb,-1.0);
+          global_dpd_->buf4_scm(&RIjbA,-1.0);
         }
         */
 
@@ -396,8 +396,8 @@ void rzero_rhf(int C_irr, int *converged) {
 
         /* just for debugging cc3 put normalized vector back into C as well */
         /*
-        dpd_file2_copy(&RIA, EOM_CME, "CME 0");
-        dpd_buf4_copy(&RIjAb, EOM_CMnEf, "CMnEf 0");
+        global_dpd_->file2_copy(&RIA, PSIF_EOM_CME, "CME 0");
+        global_dpd_->buf4_copy(&RIjAb, PSIF_EOM_CMnEf, "CMnEf 0");
         */
         /* end debugging stuff */
 
@@ -463,9 +463,9 @@ void rzero_rhf(int C_irr, int *converged) {
 
 #ifdef EOM_DEBUG
         outfile->Printf("Norm with produced ROHF-like quantities = %15.10lf\n", norm);
-        dpd_file2_init(&RIA, CC_RAMPS, C_irr, 0, 1, R1A_lbl);
-        dpd_file2_print(&RIA, outfile);
-        dpd_file2_close(&RIA);
+        global_dpd_->file2_init(&RIA, PSIF_CC_RAMPS, C_irr, 0, 1, R1A_lbl);
+        global_dpd_->file2_print(&RIA, "outfile");
+        global_dpd_->file2_close(&RIA);
 #endif
 
         /* check orthogonality with L */

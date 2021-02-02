@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -830,4 +830,4 @@ void BasisFunctions::print(std::string out, int print) const {
     printer->Printf("\n\n");
 }
 
-}  // Namespace psi
+}  // namespace psi

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -230,7 +230,7 @@ void WmbejDD(int i, int C_irr) {
         global_dpd_->buf4_close(&S2);
         /* C2(Ib,mE) * W(mE,jA) --> S2(Ib,jA) */
         global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 10, 10, 10, 10, 0, "SIbjA");
-        /* dpd_buf4_init(&CMnEf, EOM_TMP, C_irr, 10, 10, 10, 10, 0, "CMenF"); */
+        /* dpd_buf4_init(&CMnEf, PSIF_EOM_TMP, C_irr, 10, 10, 10, 10, 0, "CMenF"); */
         global_dpd_->buf4_init(&CMnEf, PSIF_EOM_TMP, C_irr, 10, 10, 10, 10, 0, "CMfnE");
         global_dpd_->buf4_init(&W, PSIF_CC_HBAR, H_IRR, 10, 10, 10, 10, 0, "WmBEj");
         global_dpd_->contract444(&CMnEf, &W, &S2, 0, 1, 1, 0);
@@ -383,7 +383,7 @@ void WmbejDD(int i, int C_irr) {
         global_dpd_->buf4_close(&S2);
         /* C2(Ib,mE) * W(mE,jA) --> S2(Ib,jA) */
         global_dpd_->buf4_init(&S2, PSIF_EOM_TMP, C_irr, 24, 27, 24, 27, 0, "SIbjA");
-        /* dpd_buf4_init(&CMnEf, EOM_TMP, C_irr, 10, 10, 10, 10, 0, "CMenF"); */
+        /* dpd_buf4_init(&CMnEf, PSIF_EOM_TMP, C_irr, 10, 10, 10, 10, 0, "CMenF"); */
         global_dpd_->buf4_init(&CMnEf, PSIF_EOM_TMP, C_irr, 24, 27, 24, 27, 0, "CMfnE");
         global_dpd_->buf4_init(&W, PSIF_CC_HBAR, H_IRR, 27, 27, 27, 27, 0, "WmBEj");
         global_dpd_->contract444(&CMnEf, &W, &S2, 0, 1, 1, 0);

@@ -1,5 +1,6 @@
 #! CI/MCSCF cc-pvDZ properties for Potassium nitrate (rocket fuel!)
 
+
 molecule no3 {
   -1 3
    O            0.000000000000     0.000000000000     1.352965563729
@@ -41,3 +42,4 @@ fci_energy = prop('FCI', properties=props)
 
 
 set DETCI NAT_ORBS true
+

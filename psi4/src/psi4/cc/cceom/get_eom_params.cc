@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -150,6 +150,7 @@ void get_eom_params(SharedWavefunction ref_wfn, Options &options) {
     if (eom_params.vectors_cc3 > eom_params.vectors_per_root) eom_params.vectors_cc3 = eom_params.vectors_per_root;
 
     eom_params.collapse_with_last = options.get_bool("COLLAPSE_WITH_LAST");
+    eom_params.collapse_with_last_cc3 = options.get_bool("COLLAPSE_WITH_LAST_CC3");
     eom_params.complex_tol = options.get_double("COMPLEX_TOLERANCE");
     eom_params.residual_tol = options.get_double("R_CONVERGENCE");
     eom_params.residual_tol_SS = options.get_double("SS_R_CONVERGENCE");

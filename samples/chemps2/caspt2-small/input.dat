@@ -39,6 +39,6 @@ set dmrg_caspt2_orbs          pseudocanonical
 set dmrg_caspt2_ipea          0.0
 set dmrg_caspt2_imag          0.0
 
-energy("dmrg-caspt2")
+ene = energy("dmrg-caspt2")
 
 

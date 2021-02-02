@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -37,7 +37,7 @@ struct MinimalInterface {
     void GetJ(std::vector<SharedMatrix>&) {}
     void GetK(std::vector<SharedMatrix>&) {}
 };
-}
+}  // namespace psi
 #endif
 
 #ifdef ENABLE_GTFOCK
@@ -54,5 +54,5 @@ void GTFockJK::compute_JK() {
     Impl_->GetK(K_ao_);
     Impl_->destroy_gtfock();
 }
-}
+}  // namespace psi
 #endif

@@ -8,12 +8,9 @@ pte_totalenergy = -199.517582001311979  #TEST was -199.517575925979429
 
 molecule Mg
 {
-  symmetry c1
   Mg 0.00000 0.00000 0.00000
   2 1
   units bohr
-  no_reorient
-  no_com
 }
 
 set

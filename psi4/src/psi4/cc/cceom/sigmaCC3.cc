@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -110,13 +110,13 @@ void sigmaCC3(int i, int C_irr, double omega) {
         global_dpd_->buf4_close(&WMnIe);
 
 #ifdef EOM_DEBUG
-        dpd_file2_close(&SIA);
-        dpd_buf4_close(&SIjAb);
+        global_dpd_->file2_close(&SIA);
+        global_dpd_->buf4_close(&SIjAb);
         check_sum("<Psi|Hhat<T|(Uhat C2)c|0>|T>/(w-wt)", i, C_irr);
         sprintf(lbl, "%s %d", "SIA", i);
-        dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+        global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
         sprintf(lbl, "%s %d", "SIjAb", i);
-        dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+        global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
 #endif
 
         /* do alpha-alpha-beta term 2 */
@@ -150,13 +150,13 @@ void sigmaCC3(int i, int C_irr, double omega) {
         global_dpd_->buf4_close(&WMnIe);
 
 #ifdef EOM_DEBUG
-        dpd_file2_close(&SIA);
-        dpd_buf4_close(&SIjAb);
+        global_dpd_->file2_close(&SIA);
+        global_dpd_->buf4_close(&SIjAb);
         check_sum("<Psi|Hhat<T|(Utilde T2)c|0>|T>/(w-wt)", i, C_irr);
         sprintf(lbl, "%s %d", "SIA", i);
-        dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+        global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
         sprintf(lbl, "%s %d", "SIjAb", i);
-        dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+        global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
 #endif
 
         /* alpha-alpha-beta term 3 */
@@ -187,13 +187,13 @@ void sigmaCC3(int i, int C_irr, double omega) {
         global_dpd_->buf4_close(&WMnIe);
 
 #ifdef EOM_DEBUG
-        dpd_file2_close(&SIA);
-        dpd_buf4_close(&SIjAb);
+        global_dpd_->file2_close(&SIA);
+        global_dpd_->buf4_close(&SIjAb);
         check_sum("<Psi|H'<T|(Uhat T2)c|0>|T>/(w-wt)", i, C_irr);
         sprintf(lbl, "%s %d", "SIA", i);
-        dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+        global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
         sprintf(lbl, "%s %d", "SIjAb", i);
-        dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
+        global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, lbl);
 #endif
 
         global_dpd_->file2_close(&SIA);
@@ -377,22 +377,22 @@ void sigmaCC3(int i, int C_irr, double omega) {
         global_dpd_->buf4_close(&WmNiE);
 
 #ifdef EOM_DEBUG
-        dpd_file2_close(&SIA);
-        dpd_file2_close(&Sia);
-        dpd_buf4_close(&SIJAB);
-        dpd_buf4_close(&Sijab);
-        dpd_buf4_close(&SIjAb);
+        global_dpd_->file2_close(&SIA);
+        global_dpd_->file2_close(&Sia);
+        global_dpd_->buf4_close(&SIJAB);
+        global_dpd_->buf4_close(&Sijab);
+        global_dpd_->buf4_close(&SIjAb);
         check_sum("<Psi|Hhat<T|(Uhat C2)c|0>|T>/(w-wt)", i, C_irr);
         sprintf(lbl, "%s %d", "SIA", i);
-        dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+        global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
         sprintf(lbl, "%s %d", "Sia", i);
-        dpd_file2_init(&Sia, EOM_Sia, C_irr, 2, 3, lbl);
+        global_dpd_->file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
         sprintf(lbl, "%s %d", "SIJAB", i);
-        dpd_buf4_init(&SIJAB, EOM_SIJAB, C_irr, 0, 5, 2, 7, 0, lbl);
+        global_dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 0, 5, 2, 7, 0, lbl);
         sprintf(lbl, "%s %d", "Sijab", i);
-        dpd_buf4_init(&Sijab, EOM_Sijab, C_irr, 10, 15, 12, 17, 0, lbl);
+        global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 10, 15, 12, 17, 0, lbl);
         sprintf(lbl, "%s %d", "SIjAb", i);
-        dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, lbl);
+        global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, lbl);
 #endif
 
         /*** alpha-alpha-alpha term 2 */
@@ -554,22 +554,22 @@ void sigmaCC3(int i, int C_irr, double omega) {
         global_dpd_->buf4_close(&WmNiE);
 
 #ifdef EOM_DEBUG
-        dpd_file2_close(&SIA);
-        dpd_file2_close(&Sia);
-        dpd_buf4_close(&SIJAB);
-        dpd_buf4_close(&Sijab);
-        dpd_buf4_close(&SIjAb);
+        global_dpd_->file2_close(&SIA);
+        global_dpd_->file2_close(&Sia);
+        global_dpd_->buf4_close(&SIJAB);
+        global_dpd_->buf4_close(&Sijab);
+        global_dpd_->buf4_close(&SIjAb);
         check_sum("<Psi|Hhat<T|(Utilde T2)c|0>|T>/(w-wt)", i, C_irr);
         sprintf(lbl, "%s %d", "SIA", i);
-        dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+        global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
         sprintf(lbl, "%s %d", "Sia", i);
-        dpd_file2_init(&Sia, EOM_Sia, C_irr, 2, 3, lbl);
+        global_dpd_->file2_init(&Sia, PSIF_EOM_Sia, C_irr, 2, 3, lbl);
         sprintf(lbl, "%s %d", "SIJAB", i);
-        dpd_buf4_init(&SIJAB, EOM_SIJAB, C_irr, 0, 5, 2, 7, 0, lbl);
+        global_dpd_->buf4_init(&SIJAB, PSIF_EOM_SIJAB, C_irr, 0, 5, 2, 7, 0, lbl);
         sprintf(lbl, "%s %d", "Sijab", i);
-        dpd_buf4_init(&Sijab, EOM_Sijab, C_irr, 10, 15, 12, 17, 0, lbl);
+        global_dpd_->buf4_init(&Sijab, PSIF_EOM_Sijab, C_irr, 10, 15, 12, 17, 0, lbl);
         sprintf(lbl, "%s %d", "SIjAb", i);
-        dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, lbl);
+        global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, lbl);
 #endif
 
         /*** alpha-alpha-alpha term 3 */

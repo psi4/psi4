@@ -13,7 +13,7 @@ else()
     message(STATUS "Suitable gau2grid could not be located, ${Magenta}Building gau2grid${ColourReset} instead.")
     ExternalProject_Add(gau2grid_external
         DEPENDS pybind11_external
-        URL https://github.com/dgasmith/gau2grid/archive/v2.0.4.tar.gz
+        URL https://github.com/dgasmith/gau2grid/archive/v2.0.7.tar.gz
         UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -26,7 +26,12 @@ else()
                    -DBUILD_FPIC=${BUILD_FPIC}
                    -DMAX_AM=${MAX_AM_ERI}
                    -DENABLE_GENERIC=${ENABLE_GENERIC}
-                   -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
+                   -DPYTHON_EXECUTABLE=${Python_EXECUTABLE}
+                   -DPYTHON_INCLUDE_DIR=${Python_INCLUDE_DIRS}
+                   -DPYTHON_LIBRARY=${Python_LIBRARIES}
+                   -DPython_EXECUTABLE=${Python_EXECUTABLE}
+                   -DPython_INCLUDE_DIR=${Python_INCLUDE_DIRS}
+                   -DPython_LIBRARY=${Python_LIBRARIES}
         CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS})
 
     set(gau2grid_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/gau2grid CACHE PATH "path to internally built gau2gridConfig.cmake" FORCE)

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -291,7 +291,7 @@ void HC1_Wmnie(int i, int C_irr) {
         global_dpd_->file2_close(&CME);
         global_dpd_->buf4_close(&D);
         /* W(Mn,Ie) --> W(Mn,eI) */
-        /* dpd_buf4_sort(&WMnIe, CC3_HC1, pqsr, 0, 11, "HC1 WMnIe (Mn,eI)"); */
+        /* global_dpd_->buf4_sort(&WMnIe, CC3_HC1, pqsr, 0, 11, "HC1 WMnIe (Mn,eI)"); */
         global_dpd_->buf4_close(&WMnIe);
     }
 
@@ -1036,15 +1036,15 @@ void HC1_Wabei(int i, int C_irr) {
 
         /* Z1(Ab,Ei) <-- <Ab|Ef> * C(i,f) */
         /*
-            dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, CME_lbl);
-            dpd_buf4_init(&Z1, CC_TMP0, C_irr, 5, 11, 5, 11, 0, "CC3 Z(Ab,Ei)");
-            dpd_buf4_init(&Z2, CC_TMP0, C_irr, 11, 5, 11, 5, 0, "CC3 Z(Ei,Ab)");
-            dpd_buf4_init(&B, CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
+            global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl);
+            global_dpd_->buf4_init(&Z1, CC_TMP0, C_irr, 5, 11, 5, 11, 0, "CC3 Z(Ab,Ei)");
+            global_dpd_->buf4_init(&Z2, CC_TMP0, C_irr, 11, 5, 11, 5, 0, "CC3 Z(Ei,Ab)");
+            global_dpd_->buf4_init(&B, CC_BINTS, 0, 5, 5, 5, 5, 0, "B <ab|cd>");
             dpd_contract424(&B, &CME, &Z1, 3, 1, 0, 1, 0);
-            dpd_buf4_close(&B);
-            dpd_buf4_close(&Z1);
-            dpd_buf4_close(&Z2);
-            dpd_file2_close(&CME);
+            global_dpd_->buf4_close(&B);
+            global_dpd_->buf4_close(&Z1);
+            global_dpd_->buf4_close(&Z2);
+            global_dpd_->file2_close(&CME);
         */
 
         // Added new B(+)/B(-) code from cchbar 12/29/09, -TDC
@@ -1320,7 +1320,7 @@ void HC1_Wabei(int i, int C_irr) {
         global_dpd_->buf4_close(&B);
         /** Z(Ie,Ba) --> W'(aB,eI) **/
         /* srqp seems to have a bug
-         dpd_buf4_sort(&Z, CC_TMP0, srqp, 29, 25, "WaBeI (aB,eI)");
+         global_dpd_->buf4_sort(&Z, CC_TMP0, srqp, 29, 25, "WaBeI (aB,eI)");
         */
         global_dpd_->buf4_sort(&Z, PSIF_CC_TMP0, rspq, 28, 24, "WaBeI (Ba,Ie) 1");
         global_dpd_->buf4_close(&Z);

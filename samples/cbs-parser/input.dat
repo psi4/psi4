@@ -20,7 +20,7 @@ ne2.update_geometry()
 
 sapt_global = energy("sapt2+(3)", molecule=ne2)
 
-sapt_explicit, wfn = energy("sapt2+(3)/cc-pvdz", molecule=ne2, return_wfn = True)
+sapt_explicit, wfn = energy("sapt2+(3)/cc-pvdz", molecule=ne2, return_wfn=True)
 
 
 cbs_string = energy("mp2/6-311++G** + D:ccsd/6-311+G")

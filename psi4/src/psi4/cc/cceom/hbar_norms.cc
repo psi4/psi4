@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -127,26 +127,26 @@ void hbar_norms() {
         outfile->Printf("WmBeJ and WMbEj dots %15.10lf\n", tval);
 
         /*
-        dpd_file2_init(&FME, CC_OEI, H_IRR, 0, 1, "FME");
-        dpd_file2_init(&Fme, CC_OEI, H_IRR, 0, 1, "Fme");
-        dpd_buf4_init(&W, CC_HBAR, H_IRR, 2, 21, 2, 21, 0, "WMNIE");
-        tval = 2.0 * dpd_buf4_dot_self(&W);
-        dpd_buf4_close(&W);
+        global_dpd_->file2_init(&FME, CC_OEI, H_IRR, 0, 1, "FME");
+        global_dpd_->file2_init(&Fme, CC_OEI, H_IRR, 0, 1, "Fme");
+        global_dpd_->buf4_init(&W, CC_HBAR, H_IRR, 2, 21, 2, 21, 0, "WMNIE");
+        tval = 2.0 * global_dpd_->buf4_dot_self(&W);
+        global_dpd_->buf4_close(&W);
         outfile->Printf("WMNIE dot WMNIE total %15.10lf\n", tval);
 
-        dpd_buf4_init(&W, CC_HBAR, H_IRR, 12, 31, 12, 31, 0, "Wmnie");
-        tval += 2.0 * dpd_buf4_dot_self(&W);
-        dpd_buf4_close(&W);
+        global_dpd_->buf4_init(&W, CC_HBAR, H_IRR, 12, 31, 12, 31, 0, "Wmnie");
+        tval += 2.0 * global_dpd_->buf4_dot_self(&W);
+        global_dpd_->buf4_close(&W);
         outfile->Printf("Wmnie dot Wmnie total %15.10lf\n", tval);
 
-        dpd_buf4_init(&W, CC_HBAR, H_IRR, 22, 25, 22, 25, 0, "WMnIe");
-        tval += dpd_buf4_dot_self(&W);
-        dpd_buf4_close(&W);
+        global_dpd_->buf4_init(&W, CC_HBAR, H_IRR, 22, 25, 22, 25, 0, "WMnIe");
+        tval += global_dpd_->buf4_dot_self(&W);
+        global_dpd_->buf4_close(&W);
         outfile->Printf("WMnIe dot WMnIe total %15.10lf\n", tval);
 
-        dpd_buf4_init(&W, CC_HBAR, H_IRR, 23, 26, 23, 26, 0, "WmNiE");
-        tval += dpd_buf4_dot_self(&W);
-        dpd_buf4_close(&W);
+        global_dpd_->buf4_init(&W, CC_HBAR, H_IRR, 23, 26, 23, 26, 0, "WmNiE");
+        tval += global_dpd_->buf4_dot_self(&W);
+        global_dpd_->buf4_close(&W);
         outfile->Printf("WmNiE dot WmNiE total %15.10lf\n", tval);
         */
     }

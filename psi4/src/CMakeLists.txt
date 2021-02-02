@@ -1,6 +1,6 @@
 ### >> Create core target, so we may link modules to it directly <<
 ### >> This allow to propagate dependencies upwards sanely
-pybind11_add_module(core SHARED NO_EXTRAS core.cc)
+pybind11_add_module(core MODULE core.cc)
 
 ### >> Go into psi4 subdirectory to compile libraries and modules <<
 add_subdirectory(psi4)
@@ -32,12 +32,14 @@ target_sources(core
     python_data_type.cc
   )
 
-set_target_properties(core
-  PROPERTIES
-    CXX_VISIBILITY_PRESET hidden
-    POSITION_INDEPENDENT_CODE 1
-    VISIBILITY_INLINES_HIDDEN 1
-  )
+# set_target_properties(core
+   # PROPERTIES
+     # implicit in pybind11_add_module
+     # CXX_VISIBILITY_PRESET hidden
+     # implicit in add_library MODULE called by pybind11_add_module
+     # POSITION_INDEPENDENT_CODE 1
+     # VISIBILITY_INLINES_HIDDEN 1
+   # )
 
 get_property(psi4_binmodules GLOBAL PROPERTY LINKBINLIST)
 get_property(psi4_libmodules GLOBAL PROPERTY LINKLIBLIST)
@@ -76,9 +78,10 @@ if(Fortran_ENABLED AND CMAKE_Fortran_COMPILER_ID MATCHES Intel)
 endif()
 
 if(MSVC)
+  # gethostname
   target_link_libraries(core PRIVATE Ws2_32)
-  # Increase the number of addressable sections
-  target_compile_options(core PRIVATE "/bigobj")
+  # Increase the number of addressable sections. Now covered by pybind11_add_module linking with pybind11::windows_extras
+  # target_compile_options(core PRIVATE "/bigobj")
 endif()
 
 target_include_directories(core
@@ -144,9 +147,11 @@ endforeach()
 list(REMOVE_DUPLICATES psi4_RPATH)
 message(STATUS "Psi4 rpath: ${psi4_RPATH}")
 
-set_target_properties(core PROPERTIES PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
+set_target_properties(core PROPERTIES
                            OUTPUT_NAME core
                            EXPORT_NAME core
-                           SUFFIX "${PYTHON_MODULE_EXTENSION}" # for python module
+                           # PREFIX/SUFFIX covered by pybind11_extension in pybind11_add_module
+                           # PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
+                           # SUFFIX "${PYTHON_MODULE_EXTENSION}" # for python module
                            INSTALL_RPATH "${psi4_RPATH}"
                            BUILD_WITH_INSTALL_RPATH ON)

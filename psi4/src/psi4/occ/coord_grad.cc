@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -877,6 +877,10 @@ void OCCWave::effective_pdms() {
             g1symm->add(h, i, a + occpiA[h], 2.0 * zvectorA->get(x));
         }
 
+        Da_ = linalg::triplet(Ca_, g1symm, Ca_, false, false, true);
+        Da_->scale(0.5);
+        Db_->copy(Da_);
+
         // Form VOOO-block TPDM
         dpdbuf4 G, G2;
         psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
@@ -942,6 +946,8 @@ void OCCWave::effective_pdms() {
             g1symmA->add(h, i, a + occpiA[h], zvectorA->get(x));
         }
 
+        Da_ = linalg::triplet(Ca_, g1symmA, Ca_, false, false, true);
+
         // vo and ov Blocks
         for (int x = 0; x < nidpB; x++) {
             int a = idprowB[x];
@@ -950,6 +956,8 @@ void OCCWave::effective_pdms() {
             g1symmB->add(h, a + occpiB[h], i, zvectorB->get(x));
             g1symmB->add(h, i, a + occpiB[h], zvectorB->get(x));
         }
+
+        Db_ = linalg::triplet(Cb_, g1symmB, Cb_, false, false, true);
 
         // Form VOOO-block TPDM
         dpdbuf4 G, G2;
@@ -1881,34 +1889,15 @@ void OCCWave::effective_gfock() {
 void OCCWave::oeprop() {
     outfile->Printf("\tComputing one-electron properties...\n");
 
-    // auto Da_ = std::make_shared<Matrix>("MO-basis alpha OPDM", nmo_, nmo_);
-    // auto Db_ = std::make_shared<Matrix>("MO-basis beta OPDM", nmo_, nmo_);
-    auto Da_ = std::make_shared<Matrix>("MO-basis alpha OPDM", nirrep_, nmopi_, nmopi_);
-    auto Db_ = std::make_shared<Matrix>("MO-basis beta OPDM", nirrep_, nmopi_, nmopi_);
-    if (reference_ == "RESTRICTED") {
-        Da_->copy(g1symm);
-        Da_->scale(0.5);
-        Db_->copy(Da_);
-    }
-
-    else if (reference_ == "UNRESTRICTED") {
-        Da_->copy(g1symmA);
-        Db_->copy(g1symmB);
-    }
-
     // Compute oeprop
     auto oe = std::make_shared<OEProp>(shared_from_this());
-    oe->set_Da_mo(Da_);
-    if (reference_ == "UNRESTRICTED") oe->set_Db_mo(Db_);
     oe->add("DIPOLE");
     oe->add("QUADRUPOLE");
     oe->add("MULLIKEN_CHARGES");
     oe->add("NO_OCCUPATIONS");
     oe->set_title("DF-OMP2");
     oe->compute();
-    Da_.reset();
-    Db_.reset();
 
 }  // end oeprop
-}
-}  // End Namespaces
+}  // namespace occwave
+}  // namespace psi

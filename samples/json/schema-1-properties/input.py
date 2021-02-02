@@ -45,21 +45,26 @@ json_data = {
                "mp2_type": "df",
                "e_convergence": 9}
 }
+import copy
+json_data_copy = copy.deepcopy(json_data)
 
-# Write expected output
+# Write expected output (dipole & quadrupole in au)
 expected_return_result = {
   "dipole": [
     0.0,
     0.0,
-    2.6443634497158492
+    1.04037263345
   ],
   "quadrupole": [
-    -7.300687696691922,
+    -5.42788218076,
     0.0,
     0.0,
-    -4.136264661490291,
     0.0,
-    -5.872491231624151
+    -3.07521129293,
+    0.0,
+    0.0,
+    0.0,
+    -4.36605314966
   ],
   "mulliken_charges": [
     -0.7967275695997689,
@@ -109,9 +114,31 @@ expected_properties = {
 }
 
 
+## with deprecated `run_json`
+
 json_ret = psi4.json_wrapper.run_json(json_data)
 
 
 
+
+
+## with current `run_qcschema`
+
+# first, modernize input and output models
+json_data = json_data_copy
+json_data["schema_name"] = "qcschema_input"
+json_data["molecule"]["fix_com"] = True
+json_data["molecule"]["fix_orientation"] = True
+json_data["molecule"].pop("no_com")
+json_data["molecule"].pop("no_reorient")
+expected_return_result = copy.deepcopy(expected_return_result)
+expected_return_result["dipole"] = np.array(expected_return_result["dipole"]).reshape((3,))
+expected_return_result["quadrupole"] = np.array(expected_return_result["quadrupole"]).reshape((3, 3))
+expected_return_result["wiberg_lowdin_indices"] = np.array(expected_return_result["wiberg_lowdin_indices"]).reshape((3, 3))
+expected_return_result["mayer_indices"] = np.array(expected_return_result["mayer_indices"]).reshape((3, 3))
+
+json_ret = psi4.json_wrapper.run_qcschema(json_data).dict()
+
+# can't write msgpack arrays to json
 
 

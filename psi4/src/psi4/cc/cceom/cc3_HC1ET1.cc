@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -45,7 +45,7 @@ namespace cceom {
  *
  * [H,eT^1] matrix elements are in CC3_HET1
  *
- * C1 has symmetry C_irr and is read from EOM_CME with name "CME i"
+ * C1 has symmetry C_irr and is read from PSIF_EOM_CME with name "CME i"
  *
  * illustrative code that computes [H,C1] is in cc3_HC1.c
  *

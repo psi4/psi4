@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -85,14 +85,14 @@ void cc2_sigma(int i, int C_irr) {
 
         /*
         sprintf(lbl, "%s %d", "SIA", i);
-        dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, lbl);
+        global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
         sprintf(lbl, "%s %d", "CMnEf", i);
-        dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
-        dpd_buf4_init(&WAmEf, CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WAmEf 2(Am,Ef) - (Am,fE)");
+        global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
+        global_dpd_->buf4_init(&WAmEf, CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WAmEf 2(Am,Ef) - (Am,fE)");
         dpd_contract442(&CMnEf, &WAmEf, &SIA, 0, 0, 1.0, 1.0);
-        dpd_buf4_close(&WAmEf);
-        dpd_buf4_close(&CMnEf);
-        dpd_file2_close(&SIA);
+        global_dpd_->buf4_close(&WAmEf);
+        global_dpd_->buf4_close(&CMnEf);
+        global_dpd_->file2_close(&SIA);
         */
 
         global_dpd_->buf4_init(&C, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "2CMnEf - CMnfE");
@@ -214,14 +214,14 @@ void cc2_sigma(int i, int C_irr) {
         global_dpd_->buf4_close(&W);
 
         /*
-        dpd_buf4_sort(&Z, EOM_TMP, qpsr, 0, 5, "WabejDS Z(jI,bA)");
-        dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
-        dpd_buf4_axpy(&Z, &SIjAb, 1.0);
-        dpd_buf4_close(&Z);
-        dpd_buf4_init(&Z, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "WabejDS Z(jI,bA)");
-        dpd_buf4_axpy(&Z, &SIjAb, 1.0);
-        dpd_buf4_close(&Z);
-        dpd_buf4_close(&SIjAb);
+        global_dpd_->buf4_sort(&Z, PSIF_EOM_TMP, qpsr, 0, 5, "WabejDS Z(jI,bA)");
+        global_dpd_->buf4_init(&SIjAb, PSIF_EOM_SIjAb, C_irr, 0, 5, 0, 5, 0, SIjAb_lbl);
+        global_dpd_->buf4_axpy(&Z, &SIjAb, 1.0);
+        global_dpd_->buf4_close(&Z);
+        global_dpd_->buf4_init(&Z, PSIF_EOM_TMP, C_irr, 0, 5, 0, 5, 0, "WabejDS Z(jI,bA)");
+        global_dpd_->buf4_axpy(&Z, &SIjAb, 1.0);
+        global_dpd_->buf4_close(&Z);
+        global_dpd_->buf4_close(&SIjAb);
         */
 
         global_dpd_->buf4_sort_axpy(&Z, PSIF_EOM_SIjAb, qpsr, 0, 5, SIjAb_lbl, 1);

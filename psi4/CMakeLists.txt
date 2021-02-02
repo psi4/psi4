@@ -1,4 +1,9 @@
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+if(DEFINED ENV{LGTM_SRC})
+    cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+else()
+    cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+    cmake_policy(SET CMP0094 NEW)
+endif()
 project(psi4-core
         LANGUAGES C CXX)
 # no Fortran in psi4-core proper, but language needs to be declared
@@ -52,14 +57,14 @@ else()
 endif()
 
 #  <<  Pybind11 & Python  >>
-if(MSVC)
-  set(PYBIND11_CPP_STANDARD "/std:c++${CMAKE_CXX_STANDARD}")
+if(DEFINED ENV{LGTM_SRC})
+    find_package(Python 3.6 COMPONENTS Interpreter Development REQUIRED)
 else()
-  set(PYBIND11_CPP_STANDARD "-std=c++${CMAKE_CXX_STANDARD}")
+    find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
 endif()
-find_package(pybind11 2.4.3 CONFIG REQUIRED)
-message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${PYTHON_VERSION_STRING} and ${PYBIND11_CPP_STANDARD})")
-message(STATUS "${Cyan}Using Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE}")
+find_package(pybind11 2.6.1 CONFIG REQUIRED)
+message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${Python_VERSION} and ${CMAKE_CXX_STANDARD})")
+message(STATUS "${Cyan}Using Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE}")
 
 find_package(DL)
 
@@ -196,7 +201,7 @@ else()
     message(STATUS "Disabled BrianQC")
 endif()
 
-find_package(Libxc 4.3.0 CONFIG REQUIRED)
+find_package(Libxc 5.1.0 CONFIG REQUIRED COMPONENTS C)
 get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libxc${ColourReset}: ${_loc} (version ${Libxc_VERSION})")
@@ -229,7 +234,7 @@ endif()
 # * calls cmake to run write_basic_package_version_file
 
 add_custom_target(update_version ALL
-                  COMMAND ${PYTHON_EXECUTABLE} versioner.py --metaout ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
+                  COMMAND ${Python_EXECUTABLE} versioner.py --metaout ${CMAKE_CURRENT_BINARY_DIR}/metadata.py
                                                             --cmakeout ${CMAKE_CURRENT_BINARY_DIR}/metadata.cmake
                   COMMAND ${CMAKE_COMMAND} -DWTO="${CMAKE_CURRENT_BINARY_DIR}/${CMAKECONFIG_INSTALL_DIR}"
                                            -DPN="psi4"
@@ -274,6 +279,7 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/addons.py
               ../tests/pytests/utils.py
               ../tests/pytests/test_psi4.py
+              ../tests/pytests/test_option.py
               ../tests/pytests/test_addons.py
               ../tests/pytests/test_qcel_molparse_to_string.py
               ../tests/pytests/test_matrix.py
@@ -308,6 +314,12 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/test_weird_basis.py
               ../tests/pytests/test_ccresponse.py
               ../tests/pytests/test_fchk_writer.py
+              ../tests/pytests/test_psi4_qcschema.py
+              ../tests/pytests/test_addons_qcschema.py
+              ../tests/pytests/test_triplet.py
+              ../tests/pytests/test_raises.py
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
+install(DIRECTORY ../tests/pytests/test_fchk_writer
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 
     # <<<  install psi4 share/ & include/  >>>

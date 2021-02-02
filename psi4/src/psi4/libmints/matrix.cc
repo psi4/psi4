@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -481,23 +481,22 @@ void Matrix::set(const double *const *const sq) {
         throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
     }
 
-    int h, i, j, ii, jj;
-    int offset;
-
     if (sq == nullptr) {
         throw PSIEXCEPTION("Matrix::set: Set call with a nullptr double** matrix");
     }
-    offset = 0;
-    for (h = 0; h < nirrep_; ++h) {
-        for (i = 0; i < rowspi_[h]; ++i) {
-            ii = i + offset;
-            for (j = 0; j <= i; ++j) {
-                jj = j + offset;
+
+    int row_offset = 0;
+    int col_offset = 0;
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < rowspi_[h]; ++i) {
+            int ii = i + row_offset;
+            for (int j = 0; j < colspi_[h]; ++j) {
+                int jj = j + col_offset;
                 matrix_[h][i][j] = sq[ii][jj];
-                matrix_[h][j][i] = sq[jj][ii];
             }
         }
-        offset += rowspi_[h];
+        row_offset += rowspi_[h];
+        col_offset += colspi_[h];
     }
 }
 
@@ -3037,7 +3036,7 @@ void Matrix::load(psi::PSIO *const psio, size_t fileno, SaveType st) {
             psio->read_entry(fileno, name_.c_str(), (char *)fullblock[0], sizeof(double) * sizer * sizec);
 
         set(fullblock);
-        linalg::detail::free(fullblock);
+        free_block(fullblock);
     } else if (st == LowerTriangle) {
         double *lower = to_lower_triangle();
 
@@ -3403,8 +3402,53 @@ SharedMatrix doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, 
 
 SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA, bool transB,
                      bool transC) {
-    SharedMatrix T = doublet(A, B, transA, transB);
-    SharedMatrix S = doublet(T, C, false, transC);
+
+    bool same_symmetry = (A->symmetry() == B->symmetry() && A->symmetry() == C->symmetry());
+
+    SharedMatrix T;
+    SharedMatrix S;
+
+    if (!same_symmetry) {
+        T = doublet(A, B, transA, transB);
+        S = doublet(T, C, false, transC);
+        return S;
+    }
+
+    // cost1 = cost of (AB)C
+    // cost2 = cost of A(BC)
+    int cost1 = 0;
+    int cost2 = 0;
+
+    for (int h = 0; h < A->nirrep(); h++) {
+
+        int dim1 = transA ? A->colspi(h) : A->rowspi(h);
+        int dim2 = transA ? A->rowspi(h) : A->colspi(h);
+        int dim3 = transB ? B->colspi(h) : B->rowspi(h);
+        int dim4 = transB ? B->rowspi(h) : B->colspi(h);
+        int dim5 = transC ? C->colspi(h) : C->rowspi(h);
+        int dim6 = transC ? C->rowspi(h) : C->colspi(h);
+        // Checks validity of Matrix Multiply, don't want calculation to suddenly fail halfway through
+        if (dim2 != dim3 || dim4 != dim5) {
+            throw PsiException("Input matrices are of invalid size", __FILE__, __LINE__);
+        }
+
+        // Cost of (AB)C compared to A(BC) per irrep
+        // A = dim1 * dim2, B = dim3 * dim4, C = dim5 * dim6
+        // (AB)C cost = dim1 * (dim2 == dim3) * dim4 + dim1 * (dim4 == dim5) * dim6
+        // A(BC) cost = (dim3 == dim2) * (dim4 == dim5) * dim6 + dim1 * (dim2 == dim3) * dim6
+        cost1 += dim1 * dim4 * (dim2 + dim6);
+        cost2 += dim2 * dim6 * (dim1 + dim4);
+
+    }
+
+    if (cost1 <= cost2) {
+        T = doublet(A, B, transA, transB);
+        S = doublet(T, C, false, transC);
+    } else {
+        T = doublet(B, C, transB, transC);
+        S = doublet(A, T, transA, false);
+    }
+
     return S;
 }
 

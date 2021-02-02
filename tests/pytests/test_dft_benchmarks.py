@@ -2,7 +2,7 @@ import numpy as np
 
 import pytest
 from .utils import *
-from .addons import using_dftd3
+from .addons import using
 
 import psi4
 
@@ -70,7 +70,7 @@ def name_dft_test(val):
     pytest.param(          'B97-2', 0.4562077948, '6-31G'),  # Q-Chem
     pytest.param(          'B97-3', 0.4573836831, '6-31G'),  # Q-Chem
     pytest.param(          'B97-D', 0.4562801577, '6-31G'),  # Q-Chem
-    pytest.param(         'B97-D3', 0.4562801577, '6-31G', marks=using_dftd3),  # Q-Chem
+    pytest.param(         'B97-D3', 0.4562801577, '6-31G', marks=using("dftd3")),  # Q-Chem
     pytest.param(          'B97-K', 0.4498949296, '6-31G'),  # Q-Chem
     pytest.param(         'B97M-V', 0.4561660762, '6-31G'),  # Q-Chem
     pytest.param(           'BB1K', 0.4523318654, '6-31G'),  # Q-Chem
@@ -83,9 +83,9 @@ def name_dft_test(val):
     pytest.param(      'CAM-B3LYP', 0.4568003604, '6-31G'),  # Q-Chem
     pytest.param(       'CAM-LDA0', 0.4688834734, '6-31G'),  # ERKALE
     pytest.param(           'dlDF', 0.4620507089, '6-31G'),  # Q-Chem
-    pytest.param('DSD-PBEB95-D3BJ', 0.44615418,   '6-31G', marks=using_dftd3),  # Q-Chem
-    pytest.param('DSD-PBEP86-D3BJ', 0.44599836,   '6-31G', marks=using_dftd3),  # Q-Chem
-    pytest.param('DSD-PBEPBE-D3BJ', 0.44608512,   '6-31G', marks=[using_dftd3, pytest.mark.quick]),  # Q-Chem
+    pytest.param('DSD-PBEB95-D3BJ', 0.44615418,   '6-31G', marks=using("dftd3")),  # Q-Chem
+    pytest.param('DSD-PBEP86-D3BJ', 0.44599836,   '6-31G', marks=using("dftd3")),  # Q-Chem
+    pytest.param('DSD-PBEPBE-D3BJ', 0.44608512,   '6-31G', marks=[using("dftd3"), pytest.mark.quick]),  # Q-Chem
     pytest.param(           'EDF1', 0.4557270241, '6-31G'),  # Q-Chem
     pytest.param(           'EDF2', 0.457161542,  '6-31G'),  # Q-Chem
     pytest.param(            'GAM', 0.4509109774, '6-31G'),  # Q-Chem
@@ -154,10 +154,10 @@ def name_dft_test(val):
     pytest.param(        'wB97M-V', 0.4544676075, '6-31G'),  # Q-Chem
     pytest.param(          'wB97X', 0.4564711283, '6-31G'),  # Q-Chem
     pytest.param(        'wB97X-D', 0.4575912358, '6-31G', marks=pytest.mark.quick),  # Q-Chem
-    pytest.param(       'wB97X-D3', 0.4570744381, '6-31G', marks=[using_dftd3, pytest.mark.xfail]),  # Q-Chem  # needs tweaks in LibXC
+    pytest.param(       'wB97X-D3', 0.4570744381, '6-31G', marks=[using("dftd3"), pytest.mark.xfail]),  # Q-Chem  # needs tweaks in LibXC
     pytest.param(        'wB97X-V', 0.455302602,  '6-31G'),  # Q-Chem
-    pytest.param(         'wM05-D', 0.4560790902, '6-31G'),  # Q-Chem
-    pytest.param(        'wM06-D3', 0.4563459267, '6-31G', marks=using_dftd3),
+    pytest.param(         'wM05-D', 0.4560790902, '6-31G'),  # Q-Chem  # https://gitlab.com/libxc/libxc/-/issues/180
+    pytest.param(        'wM06-D3', 0.4563459267, '6-31G', marks=using("dftd3")),  # https://gitlab.com/libxc/libxc/-/issues/180
     pytest.param(          'X3LYP', 0.4549534082, '6-31G'),  # Q-Chem
 ], ids=name_dft_test)
 
@@ -169,7 +169,7 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
         cation  = psi4.energy(func, molecule=mols['h2o_plus'])
         psi4.set_options({'reference': 'rks'})
         neutral = psi4.energy(func, molecule=mols['h2o'])
-        assert compare_values(expected, cation - neutral, 4, request.node.name)
+        assert compare_values(expected, cation - neutral, 4, request.node.name), (cation - neutral - expected)
     else:
         pytest.skip("{0:s} not in Psi4.".format(func))
 
@@ -193,9 +193,9 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
     pytest.param(     'B97-2', -0.0132026212,  '6-31G'),  #   Q-Chem
     pytest.param(     'B97-3', -0.0131076955,  '6-31G'),  #   Q-Chem
     pytest.param(     'B97-D', -0.0140422551,  '6-31G'),  #   Q-Chem
-    pytest.param(    'B97-D3', -0.0144570179,  '6-31G', marks=using_dftd3), #   Q-Chem
+    pytest.param(    'B97-D3', -0.0144570179,  '6-31G', marks=using("dftd3")), #   Q-Chem
     pytest.param(     'B97-K', -0.0143346234,  '6-31G'),  #   Q-Chem
-    pytest.param( 'B97M-D3BJ', -0.01242543212, 'cc-pVDZ', marks=using_dftd3), #   Orca
+    pytest.param( 'B97M-D3BJ', -0.01242543212, 'cc-pVDZ', marks=using("dftd3")), #   Orca
     pytest.param(    'B97M-V', -0.0140939544,  '6-31G'),  #   Q-Chem
     pytest.param(      'BB1K', -0.0134816841,  '6-31G'),  #   Q-Chem
     pytest.param(    'BHHLYP', -0.0148261610,  '6-31G'),  #   Q-Chem
@@ -272,15 +272,15 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
     pytest.param(      'VSXC', -0.0138314231,  '6-31G'),  #   Q-Chem
     pytest.param(      'VV10', -0.0160812898,  '6-31G'),  #   Q-Chem
     pytest.param(      'wB97', -0.0160148410,  '6-31G'),  #   Q-Chem
-    pytest.param('wB97M-D3BJ', -0.01351626999, 'cc-pVDZ', marks=using_dftd3), #   Orca
+    pytest.param('wB97M-D3BJ', -0.01351626999, 'cc-pVDZ', marks=using("dftd3")), #   Orca
     pytest.param(   'wB97M-V', -0.0152233456,  '6-31G'),  #   Q-Chem
     pytest.param(     'wB97X', -0.0156289024,  '6-31G'),  #   Q-Chem
     pytest.param(   'wB97X-D', -0.0146246032,  '6-31G'),  #   Q-Chem
-    pytest.param(  'wB97X-D3', -0.0148666307,  '6-31G', marks=[using_dftd3, pytest.mark.xfail]), #  Q-Chem
-    pytest.param('wB97X-D3BJ', -0.01295664452, 'cc-pVDZ', marks=using_dftd3), #   Orca
+    pytest.param(  'wB97X-D3', -0.0148666307,  '6-31G', marks=[using("dftd3"), pytest.mark.xfail]), #  Q-Chem
+    pytest.param('wB97X-D3BJ', -0.01295664452, 'cc-pVDZ', marks=using("dftd3")), #   Orca
     pytest.param(   'wB97X-V', -0.0151102751,  '6-31G'),  #   Q-Chem
-    pytest.param(    'wM05-D', -0.0147496512,  '6-31G'),  #   Q-Chem
-    pytest.param(   'wM06-D3', -0.0151611219,  '6-31G'),  #   Q-Chem
+    pytest.param(    'wM05-D', -0.0147496512,  '6-31G'),  #   Q-Chem  # https://gitlab.com/libxc/libxc/-/issues/180
+    pytest.param(   'wM06-D3', -0.0151611219,  '6-31G'),  #   Q-Chem  # https://gitlab.com/libxc/libxc/-/issues/180
     pytest.param(     'X3LYP', -0.0151870467,  '6-31G'),  #   Q-Chem
 ], ids=name_dft_test)
 
@@ -290,7 +290,7 @@ def test_dft_bench_interaction(func, expected, basis, dft_bench_systems, request
         mols = dft_bench_systems
         psi4.set_options({'basis': basis})
         psi4_ie = psi4.energy(func, molecule=mols['h2o_dimer'], bsse_type='nocp')
-        assert compare_values(expected, psi4_ie, 4, request.node.name)
+        assert compare_values(expected, psi4_ie, 4, request.node.name), (psi4_ie - expected)
     else:
         pytest.skip("{0:s} not in Psi4.".format(func))
 

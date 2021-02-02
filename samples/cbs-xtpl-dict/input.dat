@@ -2,6 +2,7 @@
 import numpy as np
 
 
+
 molecule h2o {
     O
     H 1 1.0
@@ -50,6 +51,16 @@ ae_dtz = energy(cbs, cbs_metadata = [{"wfn": "hf", "basis": "cc-pvtz"},
                                        "options": {"freeze_core": "False"}}])
                                        
 
+# Basis_lo check
 b_lo  = energy(cbs, cbs_metadata = [{"wfn": "mp2", "basis": "cc-pvtz", "stage": "corr"},
                                     {"wfn": "mp2", "wfn_lo": "mp2", 
                                      "basis": "aug-cc-pvdz", "basis_lo": "cc-pvdz", "stage": "diff"}])
+
+# Options check (FC-CCSD - FC-MP2) as a last stage in an otherwise AE calculation
+set freeze_core False
+fc_dtz = energy(cbs, cbs_metadata = [{"wfn": "hf", "basis": "cc-pvtz"},
+                                     {"wfn": "mp2", "basis": "cc-pv[dt]z"},
+                                     {"wfn": "ccsd", "basis": "cc-pvdz",
+                                      "options": {"freeze_core": "True"},
+                                      "wfn_lo": "mp2", "basis_lo": "cc-pvdz",
+                                      "options_lo": {"freeze_core": "True"}}])

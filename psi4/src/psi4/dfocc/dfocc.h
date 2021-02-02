@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -55,7 +55,6 @@ class DFOCC : public Wavefunction {
     void mem_release();
     void get_moinfo();
     void title();
-    void title_grad();
     void lambda_title();
     void pt_title();
     void pat_title();
@@ -76,11 +75,7 @@ class DFOCC : public Wavefunction {
     // void combine_ref_sep_tpdm();
     void tpdm_tilde();
     void back_trans();
-    void tpdm_tilde_cc();
-    void back_trans_cc();
     void dfgrad();
-    void oei_grad();
-    void tei_grad(std::string aux_type);
     void gfock_oo();
     void gfock_vo();
     void gfock_ov();
@@ -594,10 +589,6 @@ class DFOCC : public Wavefunction {
     std::shared_ptr<DIISManager> ccsdDiisManagerBB;
     std::shared_ptr<DIISManager> ccsdDiisManagerAB;
     std::shared_ptr<DIISManager> ccsdlDiisManager;
-
-    // Gradients
-    std::map<std::string, SharedMatrix> gradients;
-    std::vector<std::string> gradient_terms;
 
     int natom;
     int nmo;      // Number of MOs

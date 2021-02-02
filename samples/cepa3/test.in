@@ -20,19 +20,19 @@ set qc_module fnocc
 energy('cisd')
 
 corr1 = variable("CISD CORRELATION ENERGY")
-dipz1 = variable("CISD DIPOLE Z")
-qzz1  = variable("CISD QUADRUPOLE ZZ")
+dipz1 = variable("CISD DIPOLE")
+qzz1  = variable("CISD QUADRUPOLE")
 
 set qc_module detci
 properties("cisd")
 
 corr2 = variable("CI CORRELATION ENERGY")
-dipz2 = variable("CI DIPOLE Z")
-qzz2  = variable("CI QUADRUPOLE ZZ")
+dipz2 = variable("CI DIPOLE")
+qzz2  = variable("CI QUADRUPOLE")
 
 print_variables()
 compare_values(corr1,corr2, 9, "DETCI vs coupled-pair CISD correlation energy")   #TEST
-compare_values(dipz1,dipz2, 5, "DETCI vs coupled-pair CISD Z component of dipole")   #TEST
-compare_values(qzz1,qzz2,   5, "DETCI vs coupled-pair CISD ZZ component of quadrupole")   #TEST
+compare_values(dipz1,dipz2, 5, "DETCI vs coupled-pair CISD dipole")   #TEST
+compare_values(qzz1,qzz2,   5, "DETCI vs coupled-pair CISD quadrupole")   #TEST
 
 clean()

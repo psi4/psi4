@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -72,11 +72,11 @@ void PSIO::read(size_t unit, const char *key, char *buffer, size_t size, psio_ad
 
         /* Make sure the block starts and ends within the entry */
         if (start_data.page > this_entry->eadd.page) {
-            fprintf(stderr, "PSIO_ERROR: Start page %ld > this entry end page %ld\n", start_data.page,
+            fprintf(stderr, "PSIO_ERROR: Start page %zu > this entry end page %zu\n", start_data.page,
                     this_entry->eadd.page);
             psio_error(unit, PSIO_ERROR_BLKSTART);
         } else if ((start_data.page == this_entry->eadd.page) && (start_data.offset > this_entry->eadd.offset)) {
-            fprintf(stderr, "PSIO_ERROR: Start data offset %ld > this entry end address offset %ld\n",
+            fprintf(stderr, "PSIO_ERROR: Start data offset %zu > this entry end address offset %zu\n",
                     start_data.offset, this_entry->eadd.offset);
             psio_error(unit, PSIO_ERROR_BLKSTART);
         }

@@ -18,7 +18,5 @@ set {
 thisenergy = energy('cisd')
 
 
-compare_values(2.68224970371, variable("CISD DIPOLE Z"), 3, "CISD Z Dipole")
-compare_values(2.79760370969, variable("SCF DIPOLE Z"), 3, "SCF Z Dipole")
 
 

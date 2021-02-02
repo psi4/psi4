@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -32,7 +32,7 @@
 */
 /*
  restart_with_root: copies C's from position prop_root to position 0
- in EOM_Cxxx files
+ in PSIF_EOM_Cxxx files
 
  also put copy in CC3_MISC for root_following
 */
@@ -53,7 +53,7 @@ void restart_with_root(int prop_root, int C_irr) {
     dpdbuf4 CMNEF, Cmnef, CMnEf;
     char lbl[32];
 
-    outfile->Printf("Copying root %d to start of EOM_Cxxx files.\n", prop_root + 1);
+    outfile->Printf("Copying root %d to start of PSIF_EOM_Cxxx files.\n", prop_root + 1);
 
     if (params.eom_ref == 0) {
         sprintf(lbl, "CME %d", prop_root);

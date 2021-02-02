@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2019 The Psi4 Developers.
+# Copyright (c) 2007-2021 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -36,6 +36,7 @@ from psi4 import core
 from psi4.driver.p4util.exceptions import ValidationError
 from . import dft_builder
 
+
 def build_superfunctional(name, restricted, npoints=None, deriv=1):
     if npoints is None:
         npoints = core.get_option("SCF", "DFT_BLOCK_MAX_POINTS")
@@ -66,8 +67,8 @@ def build_superfunctional(name, restricted, npoints=None, deriv=1):
         sup = dft_builder.build_superfunctional_from_dictionary(name, npoints, deriv, restricted)
     # Check for pre-defined dict-based functionals
     elif name.lower() in dft_builder.functionals:
-        sup = dft_builder.build_superfunctional_from_dictionary(dft_builder.functionals[name.lower()],
-                                                                 npoints, deriv, restricted)
+        sup = dft_builder.build_superfunctional_from_dictionary(dft_builder.functionals[name.lower()], npoints, deriv,
+                                                                restricted)
     else:
         raise ValidationError("SCF: Functional (%s) not found!" % name)
 
@@ -131,9 +132,11 @@ def build_superfunctional(name, restricted, npoints=None, deriv=1):
         raise ValidationError("SCF: Decide between NL_DISPERSION_PARAMETERS and DFT_VV10_B !!")
 
     # Check SCF_TYPE
-    if sup[0].is_x_lrc() and (core.get_global_option("SCF_TYPE") not in ["DISK_DF", "MEM_DF" ,"DIRECT", "DF", "OUT_OF_CORE", "PK"]):
+    if sup[0].is_x_lrc() and (core.get_global_option("SCF_TYPE")
+                              not in ["DISK_DF", "MEM_DF", "DIRECT", "DF", "OUT_OF_CORE", "PK"]):
         raise ValidationError(
-            "SCF: SCF_TYPE (%s) not supported for range-separated functionals, plese use SCF_TYPE = 'DF' to automatically select the correct JK build." % core.get_global_option("SCF_TYPE"))
+            "SCF: SCF_TYPE (%s) not supported for range-separated functionals, plese use SCF_TYPE = 'DF' to automatically select the correct JK build."
+            % core.get_global_option("SCF_TYPE"))
 
     if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (sup[0].is_x_lrc()):
         raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with LRC DFT functionals, so stopping.')
@@ -271,8 +274,8 @@ def test_ccl_functional(functional, ccl_functional):
                 passed = 'FAILED'
                 check = False
 
-            core.print_out('\t%-15s %24.16E %24.16E %24.16E %24.16E %6s\n' % (task, v_ref, v_obs, delta, epsilon,
-                                                                              passed))
+            core.print_out('\t%-15s %24.16E %24.16E %24.16E %24.16E %6s\n' %
+                           (task, v_ref, v_obs, delta, epsilon, passed))
 
         index = index + 1
 

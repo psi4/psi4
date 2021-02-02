@@ -22,7 +22,8 @@
         endif()
 
         ExternalProject_Add(pcmsolver_external
-            URL https://github.com/PCMSolver/pcmsolver/archive/v1.2.1.tar.gz
+            #URL https://github.com/PCMSolver/pcmsolver/archive/v1.3.1.tar.gz
+            URL https://github.com/loriab/pcmsolver/archive/v1211.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -34,7 +35,7 @@
                        -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_DATADIR=${CMAKE_INSTALL_DATADIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
-                       -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
+                       -DPYTHON_INTERPRETER=${Python_EXECUTABLE}
                        -DSTATIC_LIBRARY_ONLY=${_a_only}
                        -DSHARED_LIBRARY_ONLY=${_so_only}
                        -DENABLE_OPENMP=OFF

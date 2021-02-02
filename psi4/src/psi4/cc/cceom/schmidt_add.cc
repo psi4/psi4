@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -191,15 +191,15 @@ void schmidt_add_RHF(dpdfile2 *RIA, dpdbuf4 *RIjAb, int *numCs, int irrep) {
         global_dpd_->buf4_scm(RIjAb, 1.0 / norm);
 
 #ifdef EOM_DEBUG
-        dpd_buf4_sort(RIjAb, EOM_TMP, pqsr, 0, 5, "RIjbA");
-        dpd_buf4_init(&R2b, EOM_TMP, irrep, 0, 5, 0, 5, 0, "RIjbA");
-        norm = 2.0 * dpd_file2_dot_self(RIA);
-        norm += 2.0 * dpd_buf4_dot_self(RIjAb);
-        norm -= dpd_buf4_dot(RIjAb, &R2b);
+        global_dpd_->buf4_sort(RIjAb, PSIF_EOM_TMP, pqsr, 0, 5, "RIjbA");
+        global_dpd_->buf4_init(&R2b, PSIF_EOM_TMP, irrep, 0, 5, 0, 5, 0, "RIjbA");
+        norm = 2.0 * global_dpd_->file2_dot_self(RIA);
+        norm += 2.0 * global_dpd_->buf4_dot_self(RIjAb);
+        norm -= global_dpd_->buf4_dot(RIjAb, &R2b);
         if (params.full_matrix) norm += R0 * R0;
         norm = sqrt(norm);
         outfile->Printf("Norm of final new C in schmidt_add(): %20.15lf\n", norm);
-        dpd_buf4_close(&R2b);
+        global_dpd_->buf4_close(&R2b);
 #endif
 
         sprintf(CME_lbl, "%s %d", "CME", *numCs);

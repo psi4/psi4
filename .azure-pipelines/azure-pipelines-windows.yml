@@ -10,7 +10,9 @@ jobs:
       llvm.version: '11.0.0'
       mkl.version: '2019.1'
       cmake.build_type: 'Release'
+      conda.build: false
       MKL_CBWR: AVX
+      PYTHON_VERSION: '3.8'
     steps:
 
       # Check Python
@@ -20,8 +22,10 @@ jobs:
           set VALID=false
           if "%PYTHON_VERSION%"=="3.6" set VALID=true
           if "%PYTHON_VERSION%"=="3.7" set VALID=true
+          if "%PYTHON_VERSION%"=="3.8" set VALID=true
+          if "%PYTHON_VERSION%"=="3.9" set VALID=true
           if "!VALID!"=="false" (
-            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.6" and "3.7".
+            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.6" through "3.9".
             exit 1
           )
         displayName: "Check Python version: $(python.version)"
@@ -97,9 +101,9 @@ jobs:
         displayName: "Install Miniconda"
 
       # Configure Miniconda
+      #    conda config --append channels conda-forge
       - script: |
           conda config --set always_yes yes
-          conda config --append channels conda-forge
           conda info
         displayName: "Configure Miniconda"
 
@@ -122,7 +126,9 @@ jobs:
                         pytest ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
+                        conda-forge::gau2grid ^
                         psi4/label/dev::libint2 ^
+                        conda-forge::libxc ^
                         conda-forge::mpfr ^
                         conda-forge::mpmath ^
                         conda-forge::qcelemental ^
@@ -165,9 +171,14 @@ jobs:
                 -DCMAKE_CXX_COMPILER=clang-cl ^
                 -DENABLE_XHOST=!ENABLE_XHOST! ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
+                -DPython_EXECUTABLE="C:/tools/miniconda3/python.exe" ^
                 -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
                 -DEigen_ROOT="C:/tools/miniconda3/Library" ^
                 -DBUILD_Libint2_GENERATOR=OFF ^
+                -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
+                -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
+                -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON ^
+                -DBUILD_SHARED_LIBS=OFF ^
                 $(Build.SourcesDirectory)
         displayName: "Configure Psi4"
         workingDirectory: $(Build.BinariesDirectory)
@@ -229,6 +240,8 @@ jobs:
       # Build package
       - script: |
           set INSTALL_DIR=$(Build.BinariesDirectory)\install
+          conda config --append channels conda-forge
+          conda config --append channels psi4/label/dev
           conda build --python %PYTHON_VERSION% ^
                       conda\win
           copy /y C:\tools\miniconda3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)

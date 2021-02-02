@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -50,9 +50,9 @@ namespace cceom {
 #define EXTERN
 #endif
 
-EXTERN void check_sum(char *term_lbl, int index, int irrep);
+EXTERN void check_sum(const char *term_lbl, int index, int irrep);
 
-// #define EOM_DEBUG (0)
+//#define EOM_DEBUG (0)
 
 #define H_IRR (0)
 #define MAX(I, J) ((I > J) ? I : J)

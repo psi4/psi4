@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -185,7 +185,7 @@ void WnmjeDS(int i, int C_irr) {
         global_dpd_->buf4_close(&WMnIe);
         global_dpd_->file2_close(&Cme);
         /*
-            tval = dpd_file2_dot_self(&XNJ);
+            tval = global_dpd_->file2_dot_self(&XNJ);
             outfile->Printf("XNJ self dot %15.10lf\n",tval);
         */
         global_dpd_->file2_close(&XNJ);
@@ -205,7 +205,7 @@ void WnmjeDS(int i, int C_irr) {
         global_dpd_->file2_close(&CME);
 
         /*
-            tval = dpd_file2_dot_self(&Xnj);
+            tval = global_dpd_->file2_dot_self(&Xnj);
             outfile->Printf("Xnj self dot %15.10lf\n",tval);
         */
         global_dpd_->file2_close(&Xnj);

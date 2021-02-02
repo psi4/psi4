@@ -19,12 +19,12 @@ if(${ENABLE_snsmp2})
         ExternalProject_Add(snsmp2_external
             DEPENDS qcelemental_external
             BUILD_ALWAYS 1
-            URL https://github.com/DEShawResearch/sns-mp2/archive/fcce1d0.tar.gz  # v1.0 + 24
+            URL https://github.com/DEShawResearch/sns-mp2/archive/12462c6.tar.gz  # v1.0 + 26
             CONFIGURE_COMMAND ""
             UPDATE_COMMAND ""
-            BUILD_COMMAND ${PYTHON_EXECUTABLE} setup.py build
+            BUILD_COMMAND ${Python_EXECUTABLE} setup.py build
             BUILD_IN_SOURCE 1
-            INSTALL_COMMAND ${PYTHON_EXECUTABLE} setup.py install
+            INSTALL_COMMAND ${Python_EXECUTABLE} setup.py install
                                                           --record=record.txt
                                                           --single-version-externally-managed
                                                           --install-lib=${STAGED_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR})

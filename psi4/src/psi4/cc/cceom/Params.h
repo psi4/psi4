@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -81,7 +81,8 @@ struct Eom_params {
     int rhf_triplets;
     int mult;
     bool follow_root;
-    int collapse_with_last;
+    bool collapse_with_last;
+    bool collapse_with_last_cc3 ;
     int skip_diagSS;
     int vectors_cc3;
     int restart_eom_cc3;

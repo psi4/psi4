@@ -24,6 +24,9 @@ energy('scf')
 set guess sad
 energy('scf')
 
+set guess sadno
+energy('scf')
+
 set guess huckel
 energy('scf')
 
@@ -50,6 +53,9 @@ energy('scf')
 set guess sad
 energy('scf')
 
+set guess sadno
+energy('scf')
+
 set guess huckel
 energy('scf')
 
@@ -67,6 +73,31 @@ set guess gwh
 energy('scf')
 
 set guess sad
+energy('scf')
+
+set guess sadno
+energy('scf')
+
+set guess huckel
+energy('scf')
+
+set guess sap
+energy('scf')
+
+
+set {
+  reference cuhf
+  guess core
+}
+energy('scf')
+
+set guess gwh
+energy('scf')
+
+set guess sad
+energy('scf')
+
+set guess sadno
 energy('scf')
 
 set guess huckel

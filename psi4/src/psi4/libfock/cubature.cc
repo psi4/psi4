@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -105,7 +105,7 @@ bool brianBuildingNLCGrid = false;
 
 using namespace psi;
 
-namespace {
+namespace psi {
 
 // clang-format off
 double GetBSRadius(unsigned Z) {
@@ -2549,7 +2549,7 @@ void StandardGridMgr::makeCubatureGridFromPruneSpec(PruneSpec const &spec, int r
         int groupCount = 0;
         for (groupCount = 0; spec.group[groupCount].npts != 0; groupCount++) {
         }
-        
+
         brianStoreGridDataInto->resize(groupCount);
     }
 #endif
@@ -2565,7 +2565,7 @@ void StandardGridMgr::makeCubatureGridFromPruneSpec(PruneSpec const &spec, int r
             for (int i_rep = 0; i_rep < spec.group[i_grp].nreps; i_rep++) {
                 (*brianStoreGridDataInto)[i_grp].radialPoints[i_rep] = {r[k_rad + i_rep], wr[k_rad + i_rep]};
             }
-            
+
             (*brianStoreGridDataInto)[i_grp].angularPoints.resize(numAngPoints);
             for (int i_ang = 0; i_ang < numAngPoints; i_ang++) {
                 // we compensate for an extra factor of 4*pi in Psi4's angular grid generation
@@ -3582,7 +3582,7 @@ OrientationMgr::OrientationMgr(std::shared_ptr<Molecule> mol) {
     rotation_ = Q;
 }
 
-}  // namespace
+}  // namespace psi
 
 namespace psi {
 
@@ -3665,7 +3665,7 @@ int RadialPruneMgr::TreutlerShellPruning(int ri, int Z, int radial_pts) {
     // H, He always 1 smaller
     if (Z <= 2) {
         pruned_order = nominal_order_ - 1;
-    }; 
+    };
 
     int region1 = 7;  // 5, as in the paper, is too small. 7 appears to favored also by other programs.
     int region2 = 11;
@@ -3696,7 +3696,7 @@ int RadialPruneMgr::ShellPruning(int ri, int Z, int radial_pts) {
     // H, He always reduced by 1
     if (Z <= 2) {
         pruned_order = nominal_order_ - 1;
-    };  
+    };
 
     // dvide BS shell into 4 equal regions
     double nr = (double)radial_pts / 4.0;
@@ -3737,18 +3737,28 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         radial_grids_.resize(molecule_->natom());
         spherical_grids_.resize(molecule_->natom());
     }
-    
+
 #ifdef USING_BrianQC
     std::vector<std::vector<double>> atomRotations(molecule_->natom());
     std::vector<std::vector<BrianBlock>> atomBlocks(molecule_->natom());
 #endif
+
+    // Check grid per-atom first so throws happen outside threaded block
+    for (int A = 0; A < molecule_->natom(); A++) {
+        int Z = molecule_->true_atomic_number(A);
+
+        if (opt.namedGrid != -1) {  // Using a named grid
+            assert(opt.namedGrid == 0 || opt.namedGrid == 1);
+            int npts = (opt.namedGrid == 0) ? StandardGridMgr::GetSG0size(Z) : StandardGridMgr::GetSG1size(Z);
+        }
+    }
 
 // Iterate over atoms
 #pragma omp parallel for schedule(static)
     for (int A = 0; A < molecule_->natom(); A++) {
         int Z = molecule_->true_atomic_number(A);
         double stratmannCutoff = nuc.GetStratmannCutoff(A);
-        
+
 #ifdef USING_BrianQC
         if (brianEnable and brianEnableDFT) {
             std::shared_ptr<Matrix> rotationMatrix = orientation_->transpose();
@@ -3766,7 +3776,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             radial_grids_[A] = RadialGrid::build("Unknown", opt.nradpts, r.data(), wr.data(), alpha, Z);
             std::vector<std::shared_ptr<SphericalGrid>> spheres;
             spherical_grids_[A] = spheres;
-            
+
             int currentBlockIndex = -1;
             for (int i = 0; i < opt.nradpts; i++) {
                 int numAngPts = 0;
@@ -3781,19 +3791,19 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                 }
                 assert(numAngPts > 0);
                 const MassPoint *anggrid = LebedevGridMgr::findGridByNPoints(numAngPts);
-                
+
 #ifdef USING_BrianQC
                 if (brianEnable and brianEnableDFT) {
                     if (currentBlockIndex == -1 or atomBlocks[A][currentBlockIndex].angularPoints.size() != numAngPts) {
                         atomBlocks[A].push_back(BrianBlock());
                         currentBlockIndex++;
-                        
+
                         for (int j = 0; j < numAngPts; j++) {
                             // we compensate for an extra factor of 4*pi in Psi4's angular grid generation
                             atomBlocks[A][currentBlockIndex].angularPoints.push_back({anggrid[j].x, anggrid[j].y, anggrid[j].z, anggrid[j].w / (4.0 * M_PI)});
                         }
                     }
-                    
+
                     atomBlocks[A][currentBlockIndex].radialPoints.push_back({r[i], wr[i]});
                 }
 #endif
@@ -3831,7 +3841,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
             }
         }
     }
-    
+
 #ifdef USING_BrianQC
     // TODO: do the same for the other version of buildGridFromOptions below
     if (brianEnable and brianEnableDFT) {
@@ -3839,14 +3849,14 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
         brianInt atomBlockOffset = 0;
         brianInt radialOffset = 0;
         brianInt angularOffset = 0;
-        
+
         for (int A = 0; A < molecule_->natom(); A++) {
             brianGrid.atomRotationMatrices.insert(brianGrid.atomRotationMatrices.end(), atomRotations[A].begin(), atomRotations[A].end());
-            
+
             brianGrid.atomBlockCounts.push_back(atomBlocks[A].size());
             brianGrid.atomBlockOffsets.push_back(atomBlockOffset);
             for (int blockIndex = 0; blockIndex < atomBlocks[A].size(); blockIndex++) {
-                
+
                 brianGrid.blockRadialCounts.push_back(atomBlocks[A][blockIndex].radialPoints.size());
                 brianGrid.blockRadialOffsets.push_back(radialOffset);
                 for (int radialIndex = 0; radialIndex < atomBlocks[A][blockIndex].radialPoints.size(); radialIndex++)
@@ -3855,7 +3865,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                     brianGrid.radialWeights.push_back(atomBlocks[A][blockIndex].radialPoints[radialIndex].w);
                 }
                 radialOffset += atomBlocks[A][blockIndex].radialPoints.size();
-                
+
                 brianGrid.blockAngularCounts.push_back(atomBlocks[A][blockIndex].angularPoints.size());
                 brianGrid.blockAngularOffsets.push_back(angularOffset);
                 for (int angularIndex = 0; angularIndex < atomBlocks[A][blockIndex].angularPoints.size(); angularIndex++)
@@ -3867,10 +3877,10 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
                 }
                 angularOffset += atomBlocks[A][blockIndex].angularPoints.size();
             }
-            
+
             atomBlockOffset += atomBlocks[A].size();
         }
-        
+
         if (brianBuildingNLCGrid) {
             brianCOMSetNLCGrid(&brianCookie,
                 brianGrid.atomBlockCounts.data(),
@@ -4565,7 +4575,7 @@ void NaiveGridBlocker::block() {
 
     ::memcpy((void *)x_, (void *)x_ref_, sizeof(double) * npoints_);
     ::memcpy((void *)y_, (void *)y_ref_, sizeof(double) * npoints_);
-    ::memcpy((void *)z_, (void *)z_ref_, sizeof(double) * npoints_); 
+    ::memcpy((void *)z_, (void *)z_ref_, sizeof(double) * npoints_);
     ::memcpy((void *)w_, (void *)w_ref_, sizeof(double) * npoints_);
     ::memcpy((void *)index_, (void *)index_ref_, sizeof(int) * npoints_);
 
@@ -4857,7 +4867,7 @@ std::shared_ptr<RadialGrid> RadialGrid::build(const std::string &scheme, int npo
     if (scheme == "BECKE") {
         return RadialGrid::build_becke(npoints, alpha, Z);
     } else if (scheme == "TREUTLER") {
-        return RadialGrid::build_becke(npoints, alpha, Z);
+        return RadialGrid::build_treutler(npoints, alpha, Z);
     } else {
         throw PSIEXCEPTION("RadialGrid::build: Unrecognized radial grid.");
     }
@@ -4904,15 +4914,15 @@ std::shared_ptr<RadialGrid> RadialGrid::build_treutler(int npoints, double alpha
     // // Treutler/Ahlrichs 1995 mapping parameters
     // clang-format off
     static const std::vector<double> TreutlerEta =  { 1.0,
-      0.800, 0.900,                                                                
-      1.800, 1.400,                      1.300, 1.100, 0.900, 0.900, 0.900, 0.900, 
-      1.400, 1.300,                      1.300, 1.200, 1.100, 1.000, 1.000, 1.000, 
-      1.500, 1.400,1.300, 1.200, 1.200, 1.200, 1.200, 1.200, 1.200, 1.100, 1.100, 1.100,1.100, 1.000, 0.900, 0.900, 0.900, 0.900,     
-      2.000, 1.700,1.500, 1.500, 1.350, 1.350, 1.250, 1.200, 1.250, 1.300, 1.500, 1.500, 1.300, 1.200, 1.200, 1.150, 1.150, 1.150,     
-      2.500, 2.200,                                                                
-             2.500, 1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,                                                                             
-      1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 
-      2.500, 2.100,                                                                
+      0.800, 0.900,
+      1.800, 1.400,                                                                       1.300, 1.100, 0.900, 0.900, 0.900, 0.900,
+      1.400, 1.300,                                                                       1.300, 1.200, 1.100, 1.000, 1.000, 1.000,
+      1.500, 1.400, 1.300, 1.200, 1.200, 1.200, 1.200, 1.200, 1.200, 1.100, 1.100, 1.100, 1.100, 1.000, 0.900, 0.900, 0.900, 0.900,
+      2.000, 1.700, 1.500, 1.500, 1.350, 1.350, 1.250, 1.200, 1.250, 1.300, 1.500, 1.500, 1.300, 1.200, 1.200, 1.150, 1.150, 1.150,
+      2.500, 2.200,
+             2.500, 1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,
+             1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500, 1.500,
+      2.500, 2.100,
              3.685,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,1.500,
     };
 

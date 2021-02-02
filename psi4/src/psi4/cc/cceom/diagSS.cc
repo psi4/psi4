@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -254,15 +254,15 @@ void diagSS(int C_irr) {
     /*
     for (i=0; i<C_index ;++i) {
       sprintf(lbl, "%s %d", "CME", i);
-      dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);
-      dpd_file2_print(&CME, outfile);
-      dpd_file2_close(&CME);
+      global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
+      global_dpd_->file2_print(&CME, "outfile");
+      global_dpd_->file2_close(&CME);
       if (params.eom_ref > 0) {
         sprintf(lbl, "%s %d", "Cme", i);
-        if (params.eom_ref == 1) dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
-        else if (params.eom_ref == 2) dpd_file2_init(&Cme, EOM_Cme, C_irr, 2, 3, lbl);
-        dpd_file2_print(&Cme, outfile);
-        dpd_file2_close(&Cme);
+        if (params.eom_ref == 1) global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 0, 1, lbl);
+        else if (params.eom_ref == 2) global_dpd_->file2_init(&Cme, PSIF_EOM_Cme, C_irr, 2, 3, lbl);
+        global_dpd_->file2_print(&Cme, "outfile");
+        global_dpd_->file2_close(&Cme);
       }
     }
     */

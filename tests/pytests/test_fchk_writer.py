@@ -44,14 +44,19 @@ def calcD(wfn):
 def test_uhf_fchk(inp2, datadir):
     """  FCHK UHF """
     mol = psi4.geometry("""
-  0 3
-  O 0.0 0.0 0.0
-  O 0.0 0.0 1.1
+  no_reorient
+  0 2
+  O
+  O 1 1.46
+  H 2 0.97 1 104.6
   """)
     psi4.set_options({
         "BASIS": "pcseg-0",
         'reference': 'uhf',
+        'e_convergence': 1e-12,
         'd_convergence': 1e-12,
+        'r_convergence': 1e-10,
+        'pcg_convergence': 1e-10,
     })
     FCHK_file = f"uhf-{inp2['name']}.fchk"
     reference_file = datadir.join(f"uhf-{inp2['name']}.ref")
@@ -59,7 +64,7 @@ def test_uhf_fchk(inp2, datadir):
     e, wfn = psi4.gradient(inp2['name'], return_wfn=True, molecule=mol)
     ret = psi4.driver.fchk(wfn, FCHK_file, debug=True)
     assert psi4.compare_arrays(ret["Total SCF Density"], calcD(wfn), 9, "FCHK UHF Density")
-    assert psi4.compare_fchkfiles(reference_file, FCHK_file, f" File comparison: {FCHK_file}")
+    assert psi4.compare_fchkfiles(reference_file, FCHK_file, 1.e-8, f" File comparison: {FCHK_file}")
 
 @pytest.mark.parametrize('inp', [
     pytest.param({'name': 'hf', 'options': {'scf_type': 'df'} }, id='df-rhf)'),
@@ -74,15 +79,18 @@ def test_uhf_fchk(inp2, datadir):
 def test_rhf_fchk(inp, datadir):
     """  FCHK RHF """
     mol = psi4.geometry("""
+  no_reorient
   0 1
   O
-  H 1 1.0
+  H 1 1.01
   H 1 1.0 2 104.5
-  # symmetry c1
   """)
     psi4.set_options({
         "BASIS": "pcseg-0",
+        'e_convergence': 1e-12,
         'd_convergence': 1e-12,
+        'r_convergence': 1e-10,
+        'pcg_convergence': 1e-10,
     })
     FCHK_file = f"rhf-{inp['name']}.fchk"
     reference_file = datadir.join(f"rhf-{inp['name']}.ref")
@@ -95,5 +103,5 @@ def test_rhf_fchk(inp, datadir):
     else:
         expected = calcD(wfn)
     assert psi4.compare_arrays(ret["Total SCF Density"], expected, 9, "FCHK RHF Density")
-    assert psi4.compare_fchkfiles(reference_file, FCHK_file, f" File comparison: {FCHK_file}")
+    assert psi4.compare_fchkfiles(reference_file, FCHK_file, 1.e-8, f" File comparison: {FCHK_file}")
 

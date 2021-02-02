@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -851,6 +851,26 @@ bool py_psi_option_exists_in_module(std::string const& module, std::string const
     return in_module;
 }
 
+py::dict py_psi_options_to_python(std::string const& module) {
+    Process::environment.options.set_current_module(module);
+    py_psi_prepare_options_for_module(module);
+    std::vector<std::string> all_options = Process::environment.options.list_globals();
+
+    auto mopt = py::dict();
+    for (size_t i = 0; i < all_options.size(); i++) {
+        std::string nonconst_key = all_options[i];
+        bool in_module = Process::environment.options.exists_in_active(nonconst_key);
+        if (in_module) {
+            Data& ldata = Process::environment.options.get_local(nonconst_key);
+            bool lhoc = ldata.has_changed();
+            Data& odata = Process::environment.options.use_local(nonconst_key);
+            bool ohoc = odata.has_changed();
+            mopt[py::str(nonconst_key)] = py::make_tuple(lhoc, ohoc);
+        }
+    }
+    return mopt;
+}
+
 void py_psi_revoke_global_option_changed(std::string const& key) {
     std::string nonconst_key = to_upper(key);
     Data& data = Process::environment.options.get_global(nonconst_key);
@@ -1268,6 +1288,9 @@ PYBIND11_MODULE(core, core) {
     core.def("option_exists_in_module", py_psi_option_exists_in_module,
              "Given a string of a keyword name *arg1* and a particular module *arg0*, returns whether *arg1* is a "
              "valid option for *arg0*.");
+
+    core.def("options_to_python", py_psi_options_to_python,
+             "Get dictionary of whether options of module have changed.");
 
     // These return/set/print PSI variables found in Process::environment.globals
     core.def("has_scalar_variable",

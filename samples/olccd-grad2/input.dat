@@ -1,0 +1,19 @@
+#! OLCCD cc-pVDZ gradient for the NO radical
+
+
+molecule no {
+0 2
+n
+o 1 1.158
+}
+
+set {
+  basis cc-pvdz
+  reference rohf
+  guess gwh
+  e_convergence 7
+}
+
+grad = gradient('olccd')
+
+

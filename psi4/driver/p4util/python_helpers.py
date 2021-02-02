@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2019 The Psi4 Developers.
+# Copyright (c) 2007-2021 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -33,6 +33,7 @@ import uuid
 import warnings
 from collections import Counter
 from itertools import product
+from tempfile import NamedTemporaryFile
 
 import numpy as np
 
@@ -257,7 +258,7 @@ def _core_wavefunction_to_file(wfn, filename=None):
             'Fb':       wfn.Fb().to_array()       if wfn.Fb()       else None,
             'H':        wfn.H().to_array()        if wfn.H()        else None,
             'S':        wfn.S().to_array()        if wfn.S()        else None,
-            'X':        wfn.X().to_array()        if wfn.X()        else None,
+            'X':        wfn.lagrangian().to_array() if wfn.lagrangian() else None,
             'aotoso':   wfn.aotoso().to_array()   if wfn.aotoso()   else None,
             'gradient': wfn.gradient().to_array() if wfn.gradient() else None,
             'hessian':  wfn.hessian().to_array()  if wfn.hessian()  else None
@@ -442,7 +443,8 @@ def set_options(options_dict, verbose=1):
     rejected = {}
 
     for k, v, in options_dict.items():
-        mobj = optionre.match(k)
+
+        mobj = optionre.match(k.strip())
         module = mobj.group('module').upper()[:-2] if mobj.group('module') else None
         option = mobj.group('option').upper()
 
@@ -492,18 +494,16 @@ def pcm_helper(block):
     ----------
     block: multiline string with PCM input in PCMSolver syntax.
     """
-
-    suffix = str(os.getpid()) + '.' + str(uuid.uuid4())[:8]
-    pcmsolver_fname = 'pcmsolver.' + suffix + '.inp'
-    with open(pcmsolver_fname, 'w') as handle:
-        handle.write(block)
     import pcmsolver
-    parsed_pcm = pcmsolver.parse_pcm_input(pcmsolver_fname)
-    os.remove(pcmsolver_fname)
-    pcmsolver_parsed_fname = '@pcmsolver.' + suffix
-    with open(pcmsolver_parsed_fname, 'w') as tmp:
-        tmp.write(parsed_pcm)
-    core.set_local_option('PCM', 'PCMSOLVER_PARSED_FNAME', '{}'.format(pcmsolver_parsed_fname))
+
+    with NamedTemporaryFile(mode="w+t", delete=True) as fl:
+        fl.write(block)
+        fl.flush()
+        parsed_pcm = pcmsolver.parse_pcm_input(fl.name)
+
+    with NamedTemporaryFile(mode="w+t", delete=False) as fl:
+        fl.write(parsed_pcm)
+        core.set_local_option("PCM", "PCMSOLVER_PARSED_FNAME", fl.name)
 
 
 def basname(name):
@@ -751,7 +751,7 @@ def _multipole_plumper(compressed, order):
     -------
     complete : ndarray
         Multipole array, order-dimensional Cartesian array expanded to complete components.
-        
+
     """
     shape = tuple([3] * order)
     complete = np.zeros(shape)
@@ -986,6 +986,17 @@ def _core_wavefunction_set_frequencies(cls, val):
 core.Wavefunction.frequencies = _core_wavefunction_frequencies
 core.Wavefunction.legacy_frequencies = _core_wavefunction_legacy_frequencies
 core.Wavefunction.set_frequencies = _core_wavefunction_set_frequencies
+
+
+def _core_wavefunction_X(cls):
+    warnings.warn(
+        "Using `psi4.core.Wavefunction.X` instead of `psi4.core.Wavefunction.lagrangian` is deprecated, and in 1.5 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
+    return cls.lagrangian()
+
+
+core.Wavefunction.X = _core_wavefunction_X
 
 ## Psi4 v1.3 Export Deprecations
 

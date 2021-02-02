@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2019 The Psi4 Developers.
+ * Copyright (c) 2007-2021 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -62,13 +62,13 @@ void WbmfeDS(int i, int C_irr) {
         sprintf(SIjAb_lbl, "%s %d", "SIjAb", i);
 
         /* Form Xbf intermediates */
-        /*     dpd_file2_init(&XBF, EOM_TMP, C_irr, 1, 1, "XBF"); */
-        /*     dpd_file2_scm(&XBF, 0.0); */
-        /*     dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, CME_lbl); */
-        /*     dpd_buf4_init(&W, CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WAmEf 2(Am,Ef) - (Am,fE)"); */
+        /*     global_dpd_->file2_init(&XBF, PSIF_EOM_TMP, C_irr, 1, 1, "XBF"); */
+        /*     global_dpd_->file2_scm(&XBF, 0.0); */
+        /*     global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, CME_lbl); */
+        /*     global_dpd_->buf4_init(&W, CC_HBAR, H_IRR, 11, 5, 11, 5, 0, "WAmEf 2(Am,Ef) - (Am,fE)"); */
         /*     dpd_dot24(&CME, &W, &XBF, 0, 0, 1.0, 1.0); */
-        /*     dpd_buf4_close(&W); */
-        /*     dpd_file2_close(&CME); */
+        /*     global_dpd_->buf4_close(&W); */
+        /*     global_dpd_->file2_close(&CME); */
 
         /* OOC code below added 7/27/05, -TDC */
         /* X(b,f) = [ 2 Wbmfe - Wbmef ] * C(m,e) */
@@ -237,7 +237,7 @@ void WbmfeDS(int i, int C_irr) {
         global_dpd_->buf4_close(&WAmEf);
         global_dpd_->file2_close(&Cme);
         /*
-        outfile->Printf("XBF self dot %15.10lf\n", dpd_file2_dot_self(&XBF));
+        outfile->Printf("XBF self dot %15.10lf\n", global_dpd_->file2_dot_self(&XBF));
         */
         global_dpd_->file2_close(&XBF);
 
@@ -255,7 +255,7 @@ void WbmfeDS(int i, int C_irr) {
         global_dpd_->buf4_close(&WaMeF);
         global_dpd_->file2_close(&CME);
         /*
-        outfile->Printf("Xbf self dot %15.10lf\n", dpd_file2_dot_self(&Xbf));
+        outfile->Printf("Xbf self dot %15.10lf\n", global_dpd_->file2_dot_self(&Xbf));
         */
         global_dpd_->file2_close(&Xbf);
 
