@@ -42,18 +42,7 @@
 namespace psi {
 namespace dct {
 
-void DCTSolver::compute_gradient_UHF() {
-    // Transform the one and two-electron integrals to the MO basis and write them into the DPD file
-    gradient_init();
-
-    if (!orbital_optimized_) {
-        compute_gradient_dc();
-    } else {
-        compute_gradient_odc();
-    }
-}
-
-void DCTSolver::compute_gradient_dc() {
+void DCTSolver::dc06_response() {
     bool responseDone = false;
 
     // Copy the current density cumulant and tau as a guess for cumulant response and perturbed tau
@@ -227,24 +216,20 @@ void DCTSolver::compute_gradient_dc() {
         outfile->Printf("\n\t   DCT response equations converged.\n");
     else
         throw PSIEXCEPTION("DCT response equations did not converge");
-
-    // Compute the VVVV block of the relaxed TPDM
-    compute_relaxed_density_VVVV();
-    // Compute the OO block of MO Lagrangian
-    compute_lagrangian_OO(false);
-    // Compute the VV block of MO Lagrangian
-    compute_lagrangian_VV(false);
-    // Compute the energy-weighted density matrix
-    compute_ewdm_dc();
 }
 
-void DCTSolver::compute_gradient_odc() {
+void DCTSolver::compute_gradient_UHF() {
     bool is_df = options_.get_str("DCT_TYPE") == "DF";
     // Compute the VVVV block of the relaxed TPDM
     // TODO: The VVVV density requires V^4 memory, which we'd rather avoid. Implement a lower memory algorithm.
     // The obvious one is to assemble aVVV "slices" for all a in compute_lagrangian_VV, which requires V^3
     // memory. That will be slower, but may be worth it in some cases.
-    compute_unrelaxed_density_VVVV(is_df);
+    if (orbital_optimized_) {
+        compute_unrelaxed_density_VVVV(is_df);
+    } else {
+        // In DC-06 case
+        compute_relaxed_density_VVVV();
+    }
     if (is_df) {
         three_idx_separable_density();
         three_idx_cumulant_density();
@@ -257,37 +242,32 @@ void DCTSolver::compute_gradient_odc() {
     // Compute the VV block of MO Lagrangian
     compute_lagrangian_VV(is_df);
     // Compute the energy-weighted density matrix
-    compute_ewdm_odc();
+    if (orbital_optimized_) {
+        compute_ewdm_odc();
+    } else {
+        compute_ewdm_dc();
+    }
 }
 
-void DCTSolver::gradient_init() {
+void DCTSolver::dc06_response_init() {
     // Allocate memory for the global objects
     aocc_ptau_ = Matrix("MO basis Perturbed Tau (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
     bocc_ptau_ = Matrix("MO basis Perturbed Tau (Beta Occupied)", nirrep_, nboccpi_, nboccpi_);
     avir_ptau_ = Matrix("MO basis Perturbed Tau (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
     bvir_ptau_ = Matrix("MO basis Perturbed Tau (Beta Virtual)", nirrep_, nbvirpi_, nbvirpi_);
 
-    dpdbuf4 I;
-
     // Transform the two-electron integrals to the (VO|OO) and (OV|VV) subspaces in chemists' notation
 
-    if ((options_.get_str("DCT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") != "QC") ||
-        (options_.get_str("DCT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") == "QC" &&
+    if ((options_.get_str("ALGORITHM") != "QC") || (options_.get_str("ALGORITHM") == "QC" &&
          (!options_.get_bool("QC_COUPLING") || options_.get_str("QC_TYPE") != "SIMULTANEOUS"))) {
         _ints->transform_tei(MOSpace::vir, MOSpace::occ, MOSpace::occ, MOSpace::occ);
         _ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::occ);
         _ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::vir, MOSpace::vir);
         _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::vir);
     }
-
-    // If the <VV|VV> integrals were not used for the energy computation (AO_BASIS = DISK) -> compute them for the
-    // gradients
-    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCT_TYPE") == "CONV")
+    if (options_.get_str("AO_BASIS") == "DISK") {
+        // If the <VV|VV> integrals were not used for the energy computation, compute them for the gradients
         _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
-    else if (options_.get_str("DCT_TYPE") == "DF") {
-        psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-        form_df_g_vvvv();
-        psio_->close(PSIF_LIBTRANS_DPD, 1);
     }
 
     /*
@@ -295,6 +275,8 @@ void DCTSolver::gradient_init() {
      * (pq|rs) = <pr|qs>
      */
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+    dpdbuf4 I;
 
     if ((options_.get_str("DCT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") != "QC") ||
         (options_.get_str("DCT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") == "QC" &&
@@ -322,13 +304,36 @@ void DCTSolver::gradient_init() {
     }
 
     // Hack for now. TODO: Implement AO_BASIS=DISK algorithm for gradients
-    // (VV|VV)
-    if (options_.get_str("AO_BASIS") == "DISK" || options_.get_str("DCT_TYPE") == "DF") sort_VVVV_integrals();
+    if (options_.get_str("AO_BASIS") == "DISK") {
+        sort_VVVV_integrals();
+    }
 
     // Transform one-electron integrals to the MO basis and store them in the DPD file
+    transform_core_integrals();
 
-    if (!orbital_optimized_) transform_core_integrals();
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
+}
 
+void DCTSolver::oo_gradient_init() {
+    // If the <VV|VV> integrals were not used for the energy computation (AO_BASIS = DISK) -> compute them for the
+    // gradients
+    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCT_TYPE") == "CONV") {
+        _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
+     } else if (options_.get_str("DCT_TYPE") == "DF") {
+        psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+        form_df_g_vvvv();
+        psio_->close(PSIF_LIBTRANS_DPD, 1);
+    } else {
+        return;
+    }
+    // Hack for now. TODO: Implement AO_BASIS=DISK algorithm for gradients
+    // (VV|VV)
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+    if (same_a_b_orbs_) {
+        sort_VVVV_integrals_RHF();
+    } else {
+        sort_VVVV_integrals();
+    }
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
 
@@ -2161,38 +2166,10 @@ void DCTSolver::build_perturbed_tau() {
     global_dpd_->file2_init(&pT_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "pTau <V|V>");
     global_dpd_->file2_init(&pT_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "pTau <v|v>");
 
-    global_dpd_->file2_mat_init(&pT_OO);
-    global_dpd_->file2_mat_init(&pT_oo);
-    global_dpd_->file2_mat_init(&pT_VV);
-    global_dpd_->file2_mat_init(&pT_vv);
-
-    global_dpd_->file2_mat_rd(&pT_OO);
-    global_dpd_->file2_mat_rd(&pT_oo);
-    global_dpd_->file2_mat_rd(&pT_VV);
-    global_dpd_->file2_mat_rd(&pT_vv);
-
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < naoccpi_[h]; ++i) {
-            for (int j = 0; j < naoccpi_[h]; ++j) {
-                aocc_ptau_.set(h, i, j, pT_OO.matrix[h][i][j]);
-            }
-        }
-        for (int a = 0; a < navirpi_[h]; ++a) {
-            for (int b = 0; b < navirpi_[h]; ++b) {
-                avir_ptau_.set(h, a, b, pT_VV.matrix[h][a][b]);
-            }
-        }
-        for (int i = 0; i < nboccpi_[h]; ++i) {
-            for (int j = 0; j < nboccpi_[h]; ++j) {
-                bocc_ptau_.set(h, i, j, pT_oo.matrix[h][i][j]);
-            }
-        }
-        for (int a = 0; a < nbvirpi_[h]; ++a) {
-            for (int b = 0; b < nbvirpi_[h]; ++b) {
-                bvir_ptau_.set(h, a, b, pT_vv.matrix[h][a][b]);
-            }
-        }
-    }
+    aocc_ptau_ = Matrix(&pT_OO);
+    avir_ptau_ = Matrix(&pT_VV);
+    bocc_ptau_ = Matrix(&pT_oo);
+    bvir_ptau_ = Matrix(&pT_vv);
 
     global_dpd_->file2_close(&pT_OO);
     global_dpd_->file2_close(&pT_oo);
@@ -3606,15 +3583,10 @@ void DCTSolver::compute_lagrangian_VV(bool separate_gbargamma) {
 }
 
 void DCTSolver::compute_ewdm_dc() {
-    dpdfile2 zI_OV, zI_VO, X_OV, X_VO, zI_OO, zI_VV, X_OO, X_VV, z_OV;
+    dpdfile2 zI_OV, zI_VO, X_OV, X_VO, zI_OO, zI_VV, X_OO, X_VV;
 
     Matrix aW("Energy-weighted density matrix (Alpha)", nirrep_, nmopi_, nmopi_);
     Matrix bW("Energy-weighted density matrix (Beta)", nirrep_, nmopi_, nmopi_);
-
-    auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
-    auto b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);
-    auto a_zia = std::make_shared<Matrix>("MO basis Orbital Response (Alpha)", nirrep_, nmopi_, nmopi_);
-    auto b_zia = std::make_shared<Matrix>("MO basis Orbital Response (Beta)", nirrep_, nmopi_, nmopi_);
 
     const int *alpha_corr_to_pitzer = _ints->alpha_corr_to_pitzer();
     auto *alpha_pitzer_to_corr = new int[nmo_];
@@ -3632,6 +3604,11 @@ void DCTSolver::compute_ewdm_dc() {
         beta_pitzer_to_corr[beta_corr_to_pitzer[n]] = n;
     }
 
+    auto a_opdm = Da_subset("MO");
+    auto b_opdm = Db_subset("MO");
+    auto z_OV = a_opdm->get_block(Slice(Dimension(nirrep_), naoccpi_), Slice(naoccpi_, nmopi_));
+    auto z_ov = b_opdm->get_block(Slice(Dimension(nirrep_), nboccpi_), Slice(nboccpi_, nmopi_));
+
     // Alpha spin
     global_dpd_->file2_init(&zI_OV, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "zI <O|V>");
     global_dpd_->file2_init(&zI_VO, PSIF_DCT_DPD, 0, ID('V'), ID('O'), "zI <V|O>");
@@ -3641,7 +3618,6 @@ void DCTSolver::compute_ewdm_dc() {
     global_dpd_->file2_init(&zI_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "zI <V|V> sym");
     global_dpd_->file2_init(&X_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "X <O|O>");
     global_dpd_->file2_init(&X_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "X <V|V>");
-    global_dpd_->file2_init(&z_OV, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
 
     global_dpd_->file2_mat_init(&zI_VO);
     global_dpd_->file2_mat_init(&zI_OV);
@@ -3651,7 +3627,6 @@ void DCTSolver::compute_ewdm_dc() {
     global_dpd_->file2_mat_init(&zI_VV);
     global_dpd_->file2_mat_init(&X_OO);
     global_dpd_->file2_mat_init(&X_VV);
-    global_dpd_->file2_mat_init(&z_OV);
 
     global_dpd_->file2_mat_rd(&zI_VO);
     global_dpd_->file2_mat_rd(&zI_OV);
@@ -3661,7 +3636,6 @@ void DCTSolver::compute_ewdm_dc() {
     global_dpd_->file2_mat_rd(&zI_VV);
     global_dpd_->file2_mat_rd(&X_OO);
     global_dpd_->file2_mat_rd(&X_VV);
-    global_dpd_->file2_mat_rd(&z_OV);
 
     for (int h = 0; h < nirrep_; ++h) {
 // O-V and V-O
@@ -3672,16 +3646,15 @@ void DCTSolver::compute_ewdm_dc() {
                 for (int j = 0; j < naoccpi_[h]; ++j) {
                     value -= 0.25 * (zI_VO.matrix[h][a][j] + zI_OV.matrix[h][j][a]) *
                              (aocc_tau_.get(h, i, j) + kappa_mo_a_->get(h, i, j));
-                    value -= 0.25 * z_OV.matrix[h][j][a] * moFa_->get(h, j, i);
+                    value -= 0.25 * z_OV->get(h, j, a) * moFa_->get(h, j, i);
                 }
                 for (int b = 0; b < navirpi_[h]; ++b) {
                     value -= 0.25 * (zI_VO.matrix[h][b][i] + zI_OV.matrix[h][i][b]) * (avir_tau_.get(h, a, b));
-                    value -= 0.25 * z_OV.matrix[h][i][b] * moFa_->get(h, b + naoccpi_[h], a + naoccpi_[h]);
+                    value -= 0.25 * z_OV->get(h, i, b) * moFa_->get(h, b + naoccpi_[h], a + naoccpi_[h]);
                 }
                 value -= 0.5 * (X_OV.matrix[h][i][a] + X_VO.matrix[h][a][i]);
                 aW.set(h, i, a + naoccpi_[h], value);
                 aW.set(h, a + naoccpi_[h], i, value);
-                a_zia->set(h, i, a + naoccpi_[h], z_OV.matrix[h][i][a]);
             }
         }
 // O-O
@@ -3696,8 +3669,6 @@ void DCTSolver::compute_ewdm_dc() {
                 value -= 0.5 * (X_OO.matrix[h][i][j] + X_OO.matrix[h][j][i]);
                 aW.set(h, i, j, value);
                 aW.set(h, j, i, value);
-                a_opdm->set(h, i, j, (aocc_ptau_.get(h, i, j) + kappa_mo_a_->get(h, i, j)));
-                if (i != j) a_opdm->set(h, j, i, (aocc_ptau_.get(h, i, j) + kappa_mo_a_->get(h, i, j)));
             }
         }
 // V-V
@@ -3712,8 +3683,6 @@ void DCTSolver::compute_ewdm_dc() {
                 value -= 0.5 * (X_VV.matrix[h][a][b] + X_VV.matrix[h][b][a]);
                 aW.set(h, a + naoccpi_[h], b + naoccpi_[h], value);
                 aW.set(h, b + naoccpi_[h], a + naoccpi_[h], value);
-                a_opdm->set(h, a + naoccpi_[h], b + naoccpi_[h], avir_ptau_.get(h, a, b));
-                if (a != b) a_opdm->set(h, b + naoccpi_[h], a + naoccpi_[h], avir_ptau_.get(h, a, b));
             }
         }
     }
@@ -3725,7 +3694,6 @@ void DCTSolver::compute_ewdm_dc() {
     global_dpd_->file2_close(&X_VV);
     global_dpd_->file2_close(&zI_OO);
     global_dpd_->file2_close(&zI_VV);
-    global_dpd_->file2_close(&z_OV);
 
     // Beta spin
     global_dpd_->file2_init(&zI_OV, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "zI <o|v>");
@@ -3736,7 +3704,6 @@ void DCTSolver::compute_ewdm_dc() {
     global_dpd_->file2_init(&zI_VV, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "zI <v|v> sym");
     global_dpd_->file2_init(&X_OO, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "X <o|o>");
     global_dpd_->file2_init(&X_VV, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "X <v|v>");
-    global_dpd_->file2_init(&z_OV, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
 
     global_dpd_->file2_mat_init(&zI_VO);
     global_dpd_->file2_mat_init(&zI_OV);
@@ -3746,7 +3713,6 @@ void DCTSolver::compute_ewdm_dc() {
     global_dpd_->file2_mat_init(&zI_VV);
     global_dpd_->file2_mat_init(&X_OO);
     global_dpd_->file2_mat_init(&X_VV);
-    global_dpd_->file2_mat_init(&z_OV);
 
     global_dpd_->file2_mat_rd(&zI_VO);
     global_dpd_->file2_mat_rd(&zI_OV);
@@ -3756,7 +3722,6 @@ void DCTSolver::compute_ewdm_dc() {
     global_dpd_->file2_mat_rd(&zI_VV);
     global_dpd_->file2_mat_rd(&X_OO);
     global_dpd_->file2_mat_rd(&X_VV);
-    global_dpd_->file2_mat_rd(&z_OV);
 
     for (int h = 0; h < nirrep_; ++h) {
 // O-V and V-O
@@ -3767,17 +3732,15 @@ void DCTSolver::compute_ewdm_dc() {
                 for (int j = 0; j < nboccpi_[h]; ++j) {
                     value -= 0.25 * (zI_VO.matrix[h][a][j] + zI_OV.matrix[h][j][a]) *
                              (bocc_tau_.get(h, i, j) + kappa_mo_b_->get(h, i, j));
-                    value -= 0.25 * z_OV.matrix[h][j][a] * moFb_->get(h, j, i);
+                    value -= 0.25 * z_ov->get(h, j, a) * moFb_->get(h, j, i);
                 }
                 for (int b = 0; b < nbvirpi_[h]; ++b) {
                     value -= 0.25 * (zI_VO.matrix[h][b][i] + zI_OV.matrix[h][i][b]) * (bvir_tau_.get(h, a, b));
-                    value -= 0.25 * z_OV.matrix[h][i][b] * moFb_->get(h, b + nboccpi_[h], a + nboccpi_[h]);
+                    value -= 0.25 * z_ov->get(h, i, b) * moFb_->get(h, b + nboccpi_[h], a + nboccpi_[h]);
                 }
                 value -= 0.5 * (X_OV.matrix[h][i][a] + X_VO.matrix[h][a][i]);
-                b_zia->set(h, i, a + nboccpi_[h], z_OV.matrix[h][i][a]);
                 bW.set(h, i, a + nboccpi_[h], value);
                 bW.set(h, a + nboccpi_[h], i, value);
-                b_zia->set(h, i, a + nboccpi_[h], z_OV.matrix[h][i][a]);
             }
         }
 // O-O
@@ -3792,8 +3755,6 @@ void DCTSolver::compute_ewdm_dc() {
                 value -= 0.5 * (X_OO.matrix[h][i][j] + X_OO.matrix[h][j][i]);
                 bW.set(h, i, j, value);
                 bW.set(h, j, i, value);
-                b_opdm->set(h, i, j, (bocc_ptau_.get(h, i, j) + kappa_mo_b_->get(h, i, j)));
-                if (i != j) b_opdm->set(h, j, i, (bocc_ptau_.get(h, i, j) + kappa_mo_b_->get(h, i, j)));
             }
         }
 // V-V
@@ -3808,8 +3769,6 @@ void DCTSolver::compute_ewdm_dc() {
                 value -= 0.5 * (X_VV.matrix[h][a][b] + X_VV.matrix[h][b][a]);
                 bW.set(h, a + nboccpi_[h], b + nboccpi_[h], value);
                 bW.set(h, b + nboccpi_[h], a + nboccpi_[h], value);
-                b_opdm->set(h, a + nboccpi_[h], b + nboccpi_[h], bvir_ptau_.get(h, a, b));
-                if (a != b) b_opdm->set(h, b + nboccpi_[h], a + nboccpi_[h], bvir_ptau_.get(h, a, b));
             }
         }
     }
@@ -3821,14 +3780,6 @@ void DCTSolver::compute_ewdm_dc() {
     global_dpd_->file2_close(&X_VV);
     global_dpd_->file2_close(&zI_OO);
     global_dpd_->file2_close(&zI_VV);
-    global_dpd_->file2_close(&z_OV);
-
-    a_opdm->add(a_zia);
-    b_opdm->add(b_zia);
-
-    // With the OPDMs constructed, let's set them on the wavefunction.
-    Da_ = linalg::triplet(Ca_, a_opdm, Ca_, false, false, true);
-    Db_ = linalg::triplet(Cb_, b_opdm, Cb_, false, false, true);
 
     // Scale the energy-weighted density matrix by -2.0 to make it the same form as in the coupled-cluster code
     aW.scale(-2.0);
@@ -3961,10 +3912,10 @@ void DCTSolver::compute_ewdm_dc() {
                 a -= G.params->soff[Ga];
                 if (Gi == Gk && Gj == Ga)
                     G.matrix[h][ij][ka] = 0.5 * (kappa_mo_a_->get(Gi, i, k) + aocc_tau_.get(Gi, i, k)) *
-                                          a_zia->get(Gj, j, a + naoccpi_[Gj]);
+                                          a_opdm->get(Gj, j, a + naoccpi_[Gj]);
                 if (Gj == Gk && Gi == Ga)
                     G.matrix[h][ij][ka] -= 0.5 * (kappa_mo_a_->get(Gj, j, k) + aocc_tau_.get(Gj, j, k)) *
-                                           a_zia->get(Gi, i, a + naoccpi_[Gi]);
+                                           a_opdm->get(Gi, i, a + naoccpi_[Gi]);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&G, h);
@@ -3993,7 +3944,7 @@ void DCTSolver::compute_ewdm_dc() {
                 a -= G.params->soff[Ga];
                 if (Gi == Gk && Gj == Ga)
                     G.matrix[h][ij][ka] = 0.5 * (kappa_mo_a_->get(Gi, i, k) + aocc_tau_.get(Gi, i, k)) *
-                                          b_zia->get(Gj, j, a + nboccpi_[Gj]);
+                                          b_opdm->get(Gj, j, a + nboccpi_[Gj]);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&G, h);
@@ -4022,7 +3973,7 @@ void DCTSolver::compute_ewdm_dc() {
                 a -= G.params->soff[Ga];
                 if (Gi == Gk && Gj == Ga)
                     G.matrix[h][ij][ka] = 0.5 * (kappa_mo_b_->get(Gi, i, k) + bocc_tau_.get(Gi, i, k)) *
-                                          a_zia->get(Gj, j, a + naoccpi_[Gj]);
+                                          a_opdm->get(Gj, j, a + naoccpi_[Gj]);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&G, h);
@@ -4051,10 +4002,10 @@ void DCTSolver::compute_ewdm_dc() {
                 a -= G.params->soff[Ga];
                 if (Gi == Gk && Gj == Ga)
                     G.matrix[h][ij][ka] = 0.5 * (kappa_mo_b_->get(Gi, i, k) + bocc_tau_.get(Gi, i, k)) *
-                                          b_zia->get(Gj, j, a + nboccpi_[Gj]);
+                                          b_opdm->get(Gj, j, a + nboccpi_[Gj]);
                 if (Gj == Gk && Gi == Ga)
                     G.matrix[h][ij][ka] -= 0.5 * (kappa_mo_b_->get(Gj, j, k) + bocc_tau_.get(Gj, j, k)) *
-                                           b_zia->get(Gi, i, a + nboccpi_[Gi]);
+                                           b_opdm->get(Gi, i, a + nboccpi_[Gi]);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&G, h);
@@ -4083,9 +4034,9 @@ void DCTSolver::compute_ewdm_dc() {
                 int Gc = G.params->ssym[c];
                 c -= G.params->soff[Gc];
                 if (Gi == Gb && Ga == Gc)
-                    G.matrix[h][ia][bc] = 0.5 * avir_tau_.get(Ga, a, c) * a_zia->get(Gi, i, b + naoccpi_[Gi]);
+                    G.matrix[h][ia][bc] = 0.5 * avir_tau_.get(Ga, a, c) * a_opdm->get(Gi, i, b + naoccpi_[Gi]);
                 if (Gi == Gc && Ga == Gb)
-                    G.matrix[h][ia][bc] -= 0.5 * avir_tau_.get(Ga, a, b) * a_zia->get(Gi, i, c + naoccpi_[Gi]);
+                    G.matrix[h][ia][bc] -= 0.5 * avir_tau_.get(Ga, a, b) * a_opdm->get(Gi, i, c + naoccpi_[Gi]);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&G, h);
@@ -4113,7 +4064,7 @@ void DCTSolver::compute_ewdm_dc() {
                 int Gc = G.params->ssym[c];
                 c -= G.params->soff[Gc];
                 if (Gi == Gb && Ga == Gc)
-                    G.matrix[h][ia][bc] = 0.5 * bvir_tau_.get(Ga, a, c) * a_zia->get(Gi, i, b + naoccpi_[Gi]);
+                    G.matrix[h][ia][bc] = 0.5 * bvir_tau_.get(Ga, a, c) * a_opdm->get(Gi, i, b + naoccpi_[Gi]);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&G, h);
@@ -4141,7 +4092,7 @@ void DCTSolver::compute_ewdm_dc() {
                 int Gc = G.params->ssym[c];
                 c -= G.params->soff[Gc];
                 if (Gi == Gb && Ga == Gc)
-                    G.matrix[h][ia][bc] = 0.5 * avir_tau_.get(Ga, a, c) * b_zia->get(Gi, i, b + nboccpi_[Gi]);
+                    G.matrix[h][ia][bc] = 0.5 * avir_tau_.get(Ga, a, c) * b_opdm->get(Gi, i, b + nboccpi_[Gi]);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&G, h);
@@ -4169,9 +4120,9 @@ void DCTSolver::compute_ewdm_dc() {
                 int Gc = G.params->ssym[c];
                 c -= G.params->soff[Gc];
                 if (Gi == Gb && Ga == Gc)
-                    G.matrix[h][ia][bc] = 0.5 * bvir_tau_.get(Ga, a, c) * b_zia->get(Gi, i, b + nboccpi_[Gi]);
+                    G.matrix[h][ia][bc] = 0.5 * bvir_tau_.get(Ga, a, c) * b_opdm->get(Gi, i, b + nboccpi_[Gi]);
                 if (Gi == Gc && Ga == Gb)
-                    G.matrix[h][ia][bc] -= 0.5 * bvir_tau_.get(Ga, a, b) * b_zia->get(Gi, i, c + nboccpi_[Gi]);
+                    G.matrix[h][ia][bc] -= 0.5 * bvir_tau_.get(Ga, a, b) * b_opdm->get(Gi, i, c + nboccpi_[Gi]);
             }
         }
         global_dpd_->buf4_mat_irrep_wrt(&G, h);

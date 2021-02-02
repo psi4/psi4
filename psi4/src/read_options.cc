@@ -1234,11 +1234,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("DCT_FUNCTIONAL", "ODC-12", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
         /*- Whether to compute three-particle energy correction or not -*/
         options.add_str("THREE_PARTICLE", "NONE", "NONE PERTURBATIVE");
-        /*- Do write a MOLDEN output file?  If so, the filename will end in
-        .molden, and the prefix is determined by |globals__writer_file_label|
-        (if set), or else by the name of the output file plus the name of
-        the current molecule. -*/
-        options.add_bool("MOLDEN_WRITE", false);
         /*- Level shift applied to the diagonal of the density-weighted Fock operator. While this shift can improve
            convergence, it does change the DCT energy. !expert-*/
         options.add_double("ENERGY_LEVEL_SHIFT", 0.0);
@@ -1247,6 +1242,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Auxiliary basis set for DCT density fitting computations.
         :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
         options.add_str("DF_BASIS_DCT", "");
+        /*- Compute a (relaxed) one-particle density matrix? Can be set manually. Set internally for
+         property and gradient computations. -*/
+        options.add_bool("OPDM", false);
     }
     if (name == "GDMA" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs distributed multipole analysis (DMA), using

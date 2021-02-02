@@ -2410,7 +2410,6 @@ void DCTSolver::three_idx_separable_density() {
         // In the RHF code, the sum is spin-restricted.
         Q.scale(2);
     }
-    Q.print_out();
 
     auto J = Matrix("J^-1/2 Reference", nQ_scf_, nQ_scf_);
     J.load(psio_, PSIF_DCT_DENSITY, Matrix::SaveType::LowerTriangle);

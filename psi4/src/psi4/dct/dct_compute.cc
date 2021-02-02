@@ -33,7 +33,6 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libtrans/integraltransform.h"
-#include "psi4/libdiis/diismanager.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
 
@@ -60,27 +59,7 @@ double DCTSolver::compute_energy() {
         psio_->open(PSIF_DCT_DPD, PSIO_OPEN_OLD);
     }
 
-    if ((options_.get_str("SCF_TYPE").find("DF") != std::string::npos) || options_.get_str("SCF_TYPE") == "CD" ||
-        options_.get_str("SCF_TYPE") == "DIRECT") {
-        if (!options_["DCT_TYPE"].has_changed())
-            options_.set_global_str("DCT_TYPE", "DF");
-        else if (options_.get_str("DCT_TYPE") == "CONV")
-            throw PSIEXCEPTION("Please set SCF_TYPE to PK or OUT_OF_CORE in order to use DCT_TYPE=CONV.");
-    }
-
-    if (options_.get_str("DCT_TYPE") == "DF") {
-        if (!options_["AO_BASIS"].has_changed())
-            options_.set_str("DCT", "AO_BASIS", "NONE");
-        else if (options_.get_str("AO_BASIS") == "DISK") {
-            outfile->Printf(
-                "\n\n\t**** Warning: AO_BASIS=DISK not implemented in density-fitted DCT. Switch to AO_BASIS=NONE "
-                "****\n");
-            options_.set_str("DCT", "AO_BASIS", "NONE");
-        }
-    }
-
-    if (options_.get_str("DCT_FUNCTIONAL") == "CEPA0")
-        throw PSIEXCEPTION("CEPA0 was removed from the DCT module in 1.4. Please use the lccd method in OCC, DFOCC, or FNOCC.");
+    validate_energy();
 
     if (same_a_b_orbs_ == true)
         total_energy = compute_energy_RHF();
@@ -90,17 +69,19 @@ double DCTSolver::compute_energy() {
         total_energy = compute_energy_UHF();
     }
 
+    // If we have a variational method, the density is free.
+    if (options_.get_bool("OPDM") == true || (orbital_optimized_ && options_.get_str("THREE_PARTICLE") == "NONE")) {
+        tstop();
+        tstart();
+        compute_relaxed_opdm();
+    }
+
     // Compute the analytic gradients, if requested
     if (options_.get_str("DERTYPE") == "FIRST") {
         // Shut down the timers
         tstop();
         // Start the timers
         tstart();
-        if (options_.get_str("DCT_TYPE") == "DF") {
-            outfile->Printf(
-                "\n\n\t**** Warning: Density-fitted DCT analytic gradients are only approximate.\n"
-                "\t     Errors on the order of 10^-5 are expected. ****\n");
-        }
         // Solve the response equations, compute relaxed OPDM and TPDM and dump them to disk
         compute_gradient();
         if (options_.get_str("REFERENCE") != "RHF") {
@@ -113,6 +94,25 @@ double DCTSolver::compute_energy() {
     finalize();
 
     return (total_energy);
+}
+
+void DCTSolver::compute_relaxed_opdm() {
+    validate_opdm();
+    if (orbital_optimized_ && options_.get_str("THREE_PARTICLE") == "NONE") {
+        // Our energy functional variationally minimizes the orbitals and amplitudes.
+        // No relaxation terms to compute.
+        Da_ = std::make_shared<Matrix>(std::move(construct_oo_density(aocc_tau_, avir_tau_, *kappa_mo_a_, *Ca_)));
+        if (same_a_b_orbs_) {
+            Db_ = Da_;
+        } else {
+            Db_ = std::make_shared<Matrix>(std::move(construct_oo_density(bocc_tau_, bvir_tau_, *kappa_mo_b_, *Cb_)));
+        }
+        return;
+    }
+    // We must be in the DC-06 case.
+    dc06_response_init();
+    dc06_response();
+    dc06_compute_relaxed_density_1PDM();
 }
 
 }  // namespace dct

@@ -74,6 +74,7 @@ class DCTSolver : public Wavefunction {
    protected:
     std::unique_ptr<IntegralTransform> _ints;
 
+    void compute_relaxed_opdm();
     void initialize_amplitudes();
     void initialize_orbitals_from_reference_U();
     void initialize_orbitals_from_reference_R();
@@ -130,10 +131,11 @@ class DCTSolver : public Wavefunction {
     void run_simult_dct_oo();
     // DCT analytic gradient subroutines
     SharedMatrix compute_gradient() override;
-    void compute_gradient_dc();
-    void compute_gradient_odc();
+    void dc06_response_init();
     void response_guess();
-    void gradient_init();
+    void dc06_response();
+    void dc06_compute_relaxed_density_1PDM();
+    void oo_gradient_init();
     void compute_lagrangian_OV();
     void compute_lagrangian_VO();
     void iterate_orbital_response();
@@ -208,8 +210,6 @@ class DCTSolver : public Wavefunction {
     void compute_orbital_gradient_VO(bool separate_gbargamma);
     void compute_orbital_rotation_jacobi();
     void rotate_orbitals();
-    void compute_oe_properties();
-    void write_molden_file();
     Matrix construct_oo_density(const Matrix& occtau, const Matrix& virtau, const Matrix& kappa, const Matrix& C);
     // Three-particle cumulant contributions
     double compute_three_particle_energy();
@@ -262,7 +262,6 @@ class DCTSolver : public Wavefunction {
     void compute_unrelaxed_separable_density_OOOO_RHF();
     void compute_gradient_RHF();
     void gradient_init_RHF();
-    void compute_gradient_odc_RHF();
     void compute_lagrangian_OO_RHF(bool separate_gbargamma);
     void compute_lagrangian_VV_RHF(bool separate_gbargamma);
     void compute_ewdm_odc_RHF();
@@ -275,7 +274,11 @@ class DCTSolver : public Wavefunction {
     // UHF-reference DCT
     void compute_gradient_UHF();
     double compute_energy_UHF();
-    void construct_oo_density_UHF();
+
+    // Validation
+    void validate_energy();
+    void validate_opdm();
+    void validate_gradient();
 
     bool augment_b(double *vec, double tol);
     /// Controls convergence of the orbital updates

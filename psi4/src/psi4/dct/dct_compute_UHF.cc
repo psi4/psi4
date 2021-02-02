@@ -75,26 +75,6 @@ double DCTSolver::compute_energy_UHF() {
         outfile->Printf("\n\tUsing level shift of %5.3f a.u.            ", energy_level_shift_);
     }
 
-    // Things that are not implemented yet...
-    if (options_.get_str("DERTYPE") == "FIRST" && (options_.get_str("DCT_FUNCTIONAL") == "DC-12"))
-        throw FeatureNotImplemented("DC-12 functional", "Analytic gradients", __FILE__, __LINE__);
-    if (!(options_.get_str("DCT_FUNCTIONAL") == "ODC-06" || options_.get_str("DCT_FUNCTIONAL") == "ODC-12" ||
-          options_.get_str("DCT_FUNCTIONAL") == "DC-06" || options_.get_str("DCT_FUNCTIONAL") == "DC-12") &&
-        options_.get_str("DCT_TYPE") == "DF")
-        throw FeatureNotImplemented("ODC-13", "Density Fitting", __FILE__, __LINE__);
-    if (options_.get_str("THREE_PARTICLE") == "PERTURBATIVE" && options_.get_str("DCT_TYPE") == "DF")
-        throw FeatureNotImplemented("Three-particle energy correction", "Density Fitting", __FILE__, __LINE__);
-    if (options_.get_str("ALGORITHM") == "QC") {
-        if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("QC_TYPE") == "SIMULTANEOUS")
-            throw FeatureNotImplemented("Simultaneous QC", "AO_BASIS = DISK", __FILE__, __LINE__);
-        if (options_.get_str("DCT_TYPE") == "DF")
-            throw FeatureNotImplemented("QC algorithm", "Density Fitting", __FILE__, __LINE__);
-        if (options_.get_str("DCT_FUNCTIONAL") != "DC-06")
-            outfile->Printf(
-                "\n\n\t**** Warning: Using DC-06 hessian, as others not implemented. Quadratic convergence is not "
-                "guaranteed. ****\n");
-    }
-
     // Orbital-optimized stuff
     if (options_.get_str("ALGORITHM") == "TWOSTEP" && orbital_optimized_)
         throw PSIEXCEPTION("Two-step algorithm cannot be run for the orbital-optimized DCT methods");
@@ -133,10 +113,6 @@ double DCTSolver::compute_energy_UHF() {
 
     // Compute three-particle contribution to the DCT energy
     if (options_.get_str("THREE_PARTICLE") == "PERTURBATIVE") {
-        // Check options
-        if (options_.get_str("DERTYPE") == "FIRST")
-            throw FeatureNotImplemented("DCT three-particle energy correction", "Analytic gradients", __FILE__,
-                                        __LINE__);
         // Compute the three-particle energy
         double three_particle_energy = compute_three_particle_energy();
         outfile->Printf("\t*DCT Three-particle Energy                        = %20.15f\n", three_particle_energy);
@@ -151,12 +127,6 @@ double DCTSolver::compute_energy_UHF() {
 
     // Print natural occupations
     print_opdm();
-
-    if (orbital_optimized_) {
-        construct_oo_density_UHF();
-        compute_oe_properties();
-        if (options_.get_bool("MOLDEN_WRITE")) write_molden_file();
-    }
 
     return (new_total_energy_);
 }

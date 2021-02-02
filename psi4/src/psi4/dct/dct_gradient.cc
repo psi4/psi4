@@ -47,6 +47,11 @@ SharedMatrix DCTSolver::compute_gradient() {
     outfile->Printf("\t*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *\n");
     outfile->Printf("\t***********************************************************************************\n\n");
 
+    validate_energy();
+    validate_opdm();
+    validate_gradient();
+    if (orbital_optimized_) oo_gradient_init();
+    
     // If the system is closed-shell, then ...
     if (options_.get_str("REFERENCE") == "RHF") {
         compute_gradient_RHF();

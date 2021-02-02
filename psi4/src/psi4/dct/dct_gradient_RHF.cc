@@ -41,45 +41,6 @@ namespace psi {
 namespace dct {
 
 void DCTSolver::compute_gradient_RHF() {
-    // Transform the one and two-electron integrals to the MO basis and write them into the DPD file
-    gradient_init_RHF();
-
-    if (!orbital_optimized_) {
-        throw PSIEXCEPTION("RHF-reference analytic gradient is only available for orbital-optimized methods.");
-    } else {
-        compute_gradient_odc_RHF();
-    }
-}
-
-void DCTSolver::gradient_init_RHF() {
-    // Transform the two-electron integrals to the (VO|OO) and (OV|VV) subspaces in chemists' notation
-
-    if ((options_.get_str("DCT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") != "QC") ||
-        (options_.get_str("DCT_FUNCTIONAL") == "DC-06" && options_.get_str("ALGORITHM") == "QC" &&
-         (!options_.get_bool("QC_COUPLING") || options_.get_str("QC_TYPE") != "SIMULTANEOUS"))) {
-        throw FeatureNotImplemented("DC-06 analytic gradients w/o QC algorithm", "RHF reference", __FILE__, __LINE__);
-    }
-
-    // If the <VV|VV> integrals were not used for the energy computation (AO_BASIS = DISK) -> compute them for the
-    // gradients
-    dct_timer_on("DCTSolver::Transform_VVVV");
-    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCT_TYPE") == "CONV")
-        _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
-    else if (options_.get_str("DCT_TYPE") == "DF") {
-        psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-        form_df_g_vvvv();
-        psio_->close(PSIF_LIBTRANS_DPD, 1);
-    }
-    dct_timer_off("DCTSolver::Transform_VVVV");
-
-    // (VV|VV)
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-    if (options_.get_str("AO_BASIS") == "DISK" || options_.get_str("DCT_TYPE") == "DF") sort_VVVV_integrals_RHF();
-
-    psio_->close(PSIF_LIBTRANS_DPD, 1);
-}
-
-void DCTSolver::compute_gradient_odc_RHF() {
     bool is_df = options_.get_str("DCT_TYPE") == "DF";
     
     // Compute the VVVV block of the relaxed TPDM

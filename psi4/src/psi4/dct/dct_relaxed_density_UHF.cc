@@ -746,5 +746,85 @@ void DCTSolver::compute_relaxed_density_VVVV() {
     psio_->close(PSIF_DCT_DENSITY, 1);
 }
 
+void DCTSolver::dc06_compute_relaxed_density_1PDM() {
+    auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);
+    auto a_zia = std::make_shared<Matrix>("MO basis Orbital Response (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto b_zia = std::make_shared<Matrix>("MO basis Orbital Response (Beta)", nirrep_, nmopi_, nmopi_);
+
+    dpdfile2 z_OV;
+
+    // Alpha spin
+    global_dpd_->file2_init(&z_OV, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
+    global_dpd_->file2_mat_init(&z_OV);
+    global_dpd_->file2_mat_rd(&z_OV);
+
+    for (int h = 0; h < nirrep_; ++h) {
+// O-V and V-O
+#pragma omp parallel for
+        for (int i = 0; i < naoccpi_[h]; ++i) {
+            for (int a = 0; a < navirpi_[h]; ++a) {
+                a_zia->set(h, i, a + naoccpi_[h], z_OV.matrix[h][i][a]);
+            }
+        }
+// O-O
+#pragma omp parallel for
+        for (int i = 0; i < naoccpi_[h]; ++i) {
+            for (int j = 0; j <= i; ++j) {
+                a_opdm->set(h, i, j, (aocc_ptau_.get(h, i, j) + kappa_mo_a_->get(h, i, j)));
+                if (i != j) a_opdm->set(h, j, i, (aocc_ptau_.get(h, i, j) + kappa_mo_a_->get(h, i, j)));
+            }
+        }
+// V-V
+#pragma omp parallel for
+        for (int a = 0; a < navirpi_[h]; ++a) {
+            for (int b = 0; b <= a; ++b) {
+                a_opdm->set(h, a + naoccpi_[h], b + naoccpi_[h], avir_ptau_.get(h, a, b));
+                if (a != b) a_opdm->set(h, b + naoccpi_[h], a + naoccpi_[h], avir_ptau_.get(h, a, b));
+            }
+        }
+    }
+    global_dpd_->file2_close(&z_OV);
+
+    // Beta spin
+    global_dpd_->file2_init(&z_OV, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
+    global_dpd_->file2_mat_init(&z_OV);
+    global_dpd_->file2_mat_rd(&z_OV);
+
+    for (int h = 0; h < nirrep_; ++h) {
+// O-V and V-O
+#pragma omp parallel for
+        for (int i = 0; i < nboccpi_[h]; ++i) {
+            for (int a = 0; a < nbvirpi_[h]; ++a) {
+                b_zia->set(h, i, a + nboccpi_[h], z_OV.matrix[h][i][a]);
+            }
+        }
+// O-O
+#pragma omp parallel for
+        for (int i = 0; i < nboccpi_[h]; ++i) {
+            for (int j = 0; j <= i; ++j) {
+                b_opdm->set(h, i, j, (bocc_ptau_.get(h, i, j) + kappa_mo_b_->get(h, i, j)));
+                if (i != j) b_opdm->set(h, j, i, (bocc_ptau_.get(h, i, j) + kappa_mo_b_->get(h, i, j)));
+            }
+        }
+// V-V
+#pragma omp parallel for
+        for (int a = 0; a < nbvirpi_[h]; ++a) {
+            for (int b = 0; b <= a; ++b) {
+                b_opdm->set(h, a + nboccpi_[h], b + nboccpi_[h], bvir_ptau_.get(h, a, b));
+                if (a != b) b_opdm->set(h, b + nboccpi_[h], a + nboccpi_[h], bvir_ptau_.get(h, a, b));
+            }
+        }
+    }
+    global_dpd_->file2_close(&z_OV);
+
+    a_opdm->add(a_zia);
+    b_opdm->add(b_zia);
+
+    // With the OPDMs constructed, let's set them on the wavefunction.
+    Da_ = linalg::triplet(Ca_, a_opdm, Ca_, false, false, true);
+    Db_ = linalg::triplet(Cb_, b_opdm, Cb_, false, false, true);
+}
+
 } // namespace dct
 } // namespace psi

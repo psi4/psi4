@@ -1696,7 +1696,7 @@ def run_dct_gradient(name, **kwargs):
 
 
     core.set_global_option('DERTYPE', 'FIRST')
-    dct_wfn = run_dct(name, **kwargs)
+    dct_wfn = run_dct_property(name, **kwargs)
 
     derivobj = core.Deriv(dct_wfn)
     derivobj.set_tpdm_presorted(True)
@@ -1707,6 +1707,20 @@ def run_dct_gradient(name, **kwargs):
     optstash.restore()
     return dct_wfn
 
+
+def run_dct_property(name, **kwargs):
+    """ FUnction encoding sequence of PSI module aclls for
+    DCT property calculation.
+
+    """
+    optstash = p4util.OptionsState(
+        ['DCT', 'OPDM'])
+
+    core.set_local_option('DCT', 'OPDM', 'true');
+    dct_wfn = run_dct(name, **kwargs)
+
+    optstash.restore()
+    return dct_wfn
 
 def run_dfocc(name, **kwargs):
     """Function encoding sequence of PSI module calls for

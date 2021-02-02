@@ -78,19 +78,6 @@ double DCTSolver::compute_energy_RHF() {
         outfile->Printf("\n\tUsing level shift of %5.3f a.u.            ", energy_level_shift_);
     }
 
-    // Things that are not implemented yet...
-    if (options_.get_str("DERTYPE") == "FIRST" && (options_.get_str("DCT_FUNCTIONAL") == "DC-12"))
-        throw FeatureNotImplemented("DC-12 functional", "Analytic gradients", __FILE__, __LINE__);
-    if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("ALGORITHM") == "QC" &&
-        options_.get_str("QC_TYPE") == "SIMULTANEOUS")
-        throw FeatureNotImplemented("Simultaneous QC", "AO_BASIS = DISK", __FILE__, __LINE__);
-    if (options_.get_str("ALGORITHM") == "QC" || options_.get_str("ALGORITHM") == "TWOSTEP")
-        throw FeatureNotImplemented("RHF-reference DCT", "ALGORITHM = QC/TWOSTEP", __FILE__, __LINE__);
-    if (options_.get_str("DCT_FUNCTIONAL") == "ODC-13")
-        throw FeatureNotImplemented("RHF-reference DCT", "DCT_FUNCTIONAL = ODC-13", __FILE__, __LINE__);
-    if (options_.get_str("THREE_PARTICLE") == "PERTURBATIVE")
-        throw FeatureNotImplemented("RHF-reference DCT", "Three-particle energy correction", __FILE__, __LINE__);
-
     // Orbital-optimized stuff
     if (options_.get_str("ALGORITHM") == "TWOSTEP" && orbital_optimized_)
         throw PSIEXCEPTION("Two-step algorithm cannot be run for orbital-optimized DCT methods");
