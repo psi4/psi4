@@ -113,7 +113,8 @@ endif()
 # project which has already built this as a subproject
 #-----------------------------------------------------------------------------
 if(NOT TARGET ${PN}::core)
-    include("${CMAKE_CURRENT_LIST_DIR}/${PN}Targets.cmake")
+    #include("${CMAKE_CURRENT_LIST_DIR}/${PN}Targets.cmake")
+    include("${CMAKE_CURRENT_LIST_DIR}/${PN}Targets-plugin.cmake")
     set(CMAKE_CXX_STANDARD @CMAKE_CXX_STANDARD@)
     if (${CMAKE_MINIMUM_REQUIRED_VERSION} VERSION_LESS 3.15)
         message(WARNING "Calling program/plugin using old Python detection because cmake_minimum_required (${CMAKE_MINIMUM_REQUIRED_VERSION}) is <3.15. Contact the program/plugin developer to update.")
@@ -138,7 +139,7 @@ function(add_psi4_plugin TARGET SOURCES)
     include(custom_cxxstandard)
 
     add_library(${TARGET} MODULE ${ARGV})
-    target_link_libraries(${TARGET} PRIVATE psi4::core)
+    target_link_libraries(${TARGET} PRIVATE psi4::link)
     target_link_libraries(${TARGET} PRIVATE tgt::MathOpenMP)
     target_include_directories(${TARGET} PRIVATE "${Python_INCLUDE_DIRS}")
     target_include_directories(${TARGET} PRIVATE "${PYTHON_INCLUDE_DIRS}")

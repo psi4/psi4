@@ -32,18 +32,37 @@ target_sources(core
     python_data_type.cc
   )
 
+
+add_library(link SHARED
+    link.cc
+    define_plugins.cc
+    create_new_plugin.cc
+    read_options.cc
+  )
+
 # set_target_properties(core
-   # PROPERTIES
+set_target_properties(link
+   PROPERTIES
      # implicit in pybind11_add_module
-     # CXX_VISIBILITY_PRESET hidden
+     CXX_VISIBILITY_PRESET hidden
      # implicit in add_library MODULE called by pybind11_add_module
      # POSITION_INDEPENDENT_CODE 1
-     # VISIBILITY_INLINES_HIDDEN 1
-   # )
+     VISIBILITY_INLINES_HIDDEN 1
+  )
 
 get_property(psi4_binmodules GLOBAL PROPERTY LINKBINLIST)
 get_property(psi4_libmodules GLOBAL PROPERTY LINKLIBLIST)
 target_link_libraries(core
+  PRIVATE
+    ${psi4_binmodules}
+    ${PRE_LIBRARY_OPTION}
+    ${psi4_libmodules}
+    ${POST_LIBRARY_OPTION}
+    ${LIBC_INTERJECT}
+    tgt::lapack # OpenMP flags to core.cc
+  )
+
+target_link_libraries(link
   PRIVATE
     ${psi4_binmodules}
     ${PRE_LIBRARY_OPTION}
@@ -80,6 +99,7 @@ endif()
 if(MSVC)
   # gethostname
   target_link_libraries(core PRIVATE Ws2_32)
+  target_link_libraries(link PRIVATE Ws2_32)
   # Increase the number of addressable sections. Now covered by pybind11_add_module linking with pybind11::windows_extras
   # target_compile_options(core PRIVATE "/bigobj")
 endif()
@@ -90,13 +110,31 @@ target_include_directories(core
     $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
   )
 
+target_include_directories(link
+  INTERFACE
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
+  )
+
 install(TARGETS core
-        EXPORT "psi4Targets"
+        #EXPORT "psi4Targets"
+        EXPORT py_interface
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
         RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
-install(EXPORT "psi4Targets"
+install(TARGETS link
+        EXPORT plugin_interface
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR})
+#install(EXPORT "psi4Targets"
+install(EXPORT py_interface
         NAMESPACE "psi4::"
+        FILE "psi4Targets.cmake"
+        DESTINATION ${CMAKECONFIG_INSTALL_DIR})
+install(EXPORT plugin_interface
+        NAMESPACE "psi4::"
+        FILE "psi4Targets-plugin.cmake"
         DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 
 # <<<  RPATH  >>>
@@ -155,3 +193,12 @@ set_target_properties(core PROPERTIES
                            # SUFFIX "${PYTHON_MODULE_EXTENSION}" # for python module
                            INSTALL_RPATH "${psi4_RPATH}"
                            BUILD_WITH_INSTALL_RPATH ON)
+set_target_properties(link
+  PROPERTIES
+    OUTPUT_NAME link
+    EXPORT_NAME link
+                           # PREFIX/SUFFIX covered by pybind11_extension in pybind11_add_module
+                           # PREFIX "${PYTHON_MODULE_PREFIX}"  # for python module
+                           # SUFFIX "${PYTHON_MODULE_EXTENSION}" # for python module
+    INSTALL_RPATH "${psi4_RPATH}"
+    BUILD_WITH_INSTALL_RPATH ON)
