@@ -379,8 +379,7 @@ void DCTSolver::build_denominators_RHF() {
         global_dpd_->file2_close(&F);
     }
 
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
-                           "D <OO|VV>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0, "D <OO|VV>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&D, h);
         for (int row = 0; row < D.params->rowtot[h]; ++row) {

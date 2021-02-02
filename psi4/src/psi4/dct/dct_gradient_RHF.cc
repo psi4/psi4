@@ -42,7 +42,7 @@ namespace dct {
 
 void DCTSolver::compute_gradient_RHF() {
     bool is_df = options_.get_str("DCT_TYPE") == "DF";
-    
+
     // Compute the VVVV block of the relaxed TPDM
     // TODO: The VVVV density requires V^4 memory, which we'd rather avoid. Implement a lower memory algorithm.
     // The obvious one is to assemble aVVV "slices" for all a in compute_lagrangian_VV, which requires V^3
@@ -102,7 +102,7 @@ void DCTSolver::compute_lagrangian_OO_RHF(bool separate_gbargamma) {
     global_dpd_->file2_close(&X);
 
     // X_OO: Two-electron contributions
-    
+
     // If we have gbar_gamma separate, just like when computing the OO gradient, we compute these terms special.
     if (separate_gbargamma) {
         auto zero = Dimension(nirrep_);
@@ -116,10 +116,10 @@ void DCTSolver::compute_lagrangian_OO_RHF(bool separate_gbargamma) {
         global_dpd_->file2_axpy(&H, &X, 1.0, 0);
         global_dpd_->file2_close(&X);
         global_dpd_->file2_close(&H);
-    } 
-    
+    }
+
     const std::string density_variable = separate_gbargamma ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string &x) { return (density_variable + x); };
 
     //
     // 2 * <OO||OO> Г_OOOO
@@ -257,7 +257,7 @@ void DCTSolver::compute_lagrangian_VV_RHF(bool separate_gbargamma) {
     }
 
     const std::string density_variable = separate_gbargamma ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string &x) { return (density_variable + x); };
 
     //
     // 2 * <VV||VV> Г_VVVV
@@ -447,12 +447,14 @@ void DCTSolver::compute_ewdm_odc_RHF() {
      */
     Lagrangian_ = std::make_shared<Matrix>("Lagrangian matrix", nirrep_, nsopi_, nsopi_);
     Lagrangian_->back_transform(aW, *Ca_);
-    Lagrangian_->scale(-2.0); // Doubling is equivalent to adding beta spin case
+    Lagrangian_->scale(-2.0);  // Doubling is equivalent to adding beta spin case
 
     // Scale the energy-weighted density matrix by -2.0 to make it the same form as in the coupled-cluster code
     aW.scale(-4.0);  // scale by -4.0 because Lagragian_beta = Lagragian_alpha
 
-    if (options_.get_str("DCT_TYPE") == "DF") {return;}
+    if (options_.get_str("DCT_TYPE") == "DF") {
+        return;
+    }
 
     // Reorder the energy-weighted density matrix to the QT order
     double **a_qt = block_matrix(nmo_, nmo_);
@@ -495,7 +497,7 @@ void DCTSolver::compute_ewdm_odc_RHF() {
     psio_->open(PSIF_MO_OPDM, PSIO_OPEN_OLD);
     psio_->write_entry(PSIF_MO_OPDM, "MO-basis OPDM", (char *)a_qt[0], sizeof(double) * nmo_ * nmo_);
     psio_->close(PSIF_MO_OPDM, 1);
-    free_block(a_qt); 
+    free_block(a_qt);
 
     auto *aocc_qt = new int[nalpha_];
     auto *bocc_qt = new int[nbeta_];

@@ -228,7 +228,7 @@ double DCTSolver::compute_orbital_residual_RHF() {
     double maxGradient = 0.0;
     // Alpha spin
     for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for reduction(max:maxGradient)
+#pragma omp parallel for reduction(max : maxGradient)
         for (int i = 0; i < naoccpi_[h]; ++i) {
             for (int a = 0; a < navirpi_[h]; ++a) {
                 double value = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
@@ -375,7 +375,7 @@ void DCTSolver::compute_orbital_gradient_OV_RHF(bool separate_gbargamma) {
     //
 
     std::string density_variable = separate_gbargamma ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string& x) { return (density_variable + x); };
 
     // X_IA += <BI||JK> Г_BAJK
     dct_timer_on("DCTSolver::g_BiJk Gamma_BaJk");
@@ -514,9 +514,9 @@ void DCTSolver::compute_orbital_gradient_VO_RHF(bool separate_gbargamma) {
     //
     // 2 * <VO||OO> Г_OOOO
     //
- 
+
     std::string density_variable = separate_gbargamma ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string& x) { return (density_variable + x); };
 
     // X_AI += 2 * <AJ||KL> Г_IJKL
     dct_timer_on("DCTSolver::2 * g_AjKl Gamma_IjKl");

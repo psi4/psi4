@@ -56,7 +56,7 @@ double DCTSolver::compute_cumulant_residual_RHF() {
 
     // R_IjAb = G_IjAb
     global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "G <OO|VV>");                        // G <Oo|Vv>
+                           "G <OO|VV>");                       // G <Oo|Vv>
     global_dpd_->buf4_copy(&G, PSIF_DCT_DPD, "R SF <OO|VV>");  // R <Oo|Vv>
     global_dpd_->buf4_close(&G);
     global_dpd_->buf4_init(&R, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,

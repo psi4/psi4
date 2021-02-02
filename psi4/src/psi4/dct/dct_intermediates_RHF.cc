@@ -51,7 +51,7 @@ void DCTSolver::build_cumulant_intermediates_RHF() {
      */
     dct_timer_on("DCTSolver::copy <Ij|Ab>");
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "MO Ints <OO|VV>");               // MO Ints <Oo|Vv>
+                           "MO Ints <OO|VV>");              // MO Ints <Oo|Vv>
     global_dpd_->buf4_copy(&I, PSIF_DCT_DPD, "G <OO|VV>");  // G <Oo|Vv>
     global_dpd_->buf4_close(&I);
     dct_timer_off("DCTSolver::copy <Ij|Ab>");

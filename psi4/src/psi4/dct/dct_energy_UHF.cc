@@ -51,8 +51,7 @@ void DCTSolver::compute_dct_energy() {
     // E += 1/4 L_IJAB G_IJAB
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "Amplitude <OO|VV>");
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "G <OO|VV>");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0, "G <OO|VV>");
     eGaa = global_dpd_->buf4_dot(&G, &L);
     global_dpd_->buf4_close(&G);
     global_dpd_->buf4_close(&L);
@@ -111,8 +110,7 @@ void DCTSolver::compute_dct_energy() {
     // E += 1/4 L_ijab G_ijab
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Amplitude <oo|vv>");
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "G <oo|vv>");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0, "G <oo|vv>");
     eGbb = global_dpd_->buf4_dot(&G, &L);
     global_dpd_->buf4_close(&G);
     global_dpd_->buf4_close(&L);

@@ -143,14 +143,14 @@ void DCTSolver::dc06_response() {
                     // Store the DIIS vectors
                     global_dpd_->buf4_init(&Raa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"),
                                            ID("[V>V]-"), 0, "R <OO|VV>");
-                    global_dpd_->buf4_init(&Rab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"),
-                                           0, "R <Oo|Vv>");
+                    global_dpd_->buf4_init(&Rab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+                                           "R <Oo|Vv>");
                     global_dpd_->buf4_init(&Rbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"),
                                            ID("[v>v]-"), 0, "R <oo|vv>");
                     global_dpd_->buf4_init(&Zaa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"),
                                            ID("[V>V]-"), 0, "Z <OO|VV>");
-                    global_dpd_->buf4_init(&Zab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"),
-                                           0, "Z <Oo|Vv>");
+                    global_dpd_->buf4_init(&Zab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
+                                           "Z <Oo|Vv>");
                     global_dpd_->buf4_init(&Zbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"),
                                            ID("[v>v]-"), 0, "Z <oo|vv>");
                     global_dpd_->file2_init(&raa, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "r <O|V>");
@@ -258,7 +258,8 @@ void DCTSolver::dc06_response_init() {
 
     // Transform the two-electron integrals to the (VO|OO) and (OV|VV) subspaces in chemists' notation
 
-    if ((options_.get_str("ALGORITHM") != "QC") || (options_.get_str("ALGORITHM") == "QC" &&
+    if ((options_.get_str("ALGORITHM") != "QC") ||
+        (options_.get_str("ALGORITHM") == "QC" &&
          (!options_.get_bool("QC_COUPLING") || options_.get_str("QC_TYPE") != "SIMULTANEOUS"))) {
         _ints->transform_tei(MOSpace::vir, MOSpace::occ, MOSpace::occ, MOSpace::occ);
         _ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::occ);
@@ -319,7 +320,7 @@ void DCTSolver::oo_gradient_init() {
     // gradients
     if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("DCT_TYPE") == "CONV") {
         _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
-     } else if (options_.get_str("DCT_TYPE") == "DF") {
+    } else if (options_.get_str("DCT_TYPE") == "DF") {
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
         form_df_g_vvvv();
         psio_->close(PSIF_LIBTRANS_DPD, 1);
@@ -1762,8 +1763,7 @@ double DCTSolver::compute_response_coupling() {
 
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "Amplitude <Oo|Vv>");
-    global_dpd_->buf4_init(&C, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "C <Oo|Vv> new");
+    global_dpd_->buf4_init(&C, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "C <Oo|Vv> new");
     global_dpd_->file2_init(&zIsym, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "zI <V|V> sym");
     // C_IjAb = zIsym_AC * lambda_IjCb
     global_dpd_->contract244(&zIsym, &L, &C, 1, 2, 1, 1.0, 0.0);
@@ -1859,8 +1859,7 @@ double DCTSolver::compute_response_coupling() {
     global_dpd_->buf4_close(&T);
 
     // dC <Oo|Vv>
-    global_dpd_->buf4_init(&C, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "C <Oo|Vv> new");
+    global_dpd_->buf4_init(&C, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "C <Oo|Vv> new");
     global_dpd_->buf4_copy(&C, PSIF_DCT_DPD, "C <Oo|Vv> new - old");
     global_dpd_->buf4_close(&C);
 
@@ -1910,8 +1909,7 @@ void DCTSolver::iterate_cumulant_response() {
     dpdbuf4 Zaa, Zab, Zbb, Raa, Rab, Rbb;
     global_dpd_->buf4_init(&Zaa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "Z <OO|VV>");
-    global_dpd_->buf4_init(&Zab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Z <Oo|Vv>");
+    global_dpd_->buf4_init(&Zab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
     global_dpd_->buf4_init(&Zbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Z <oo|vv>");
     DIISManager ZDiisManager(maxdiis_, "DCT DIIS Z", DIISManager::LargestError, DIISManager::InCore);
@@ -1996,8 +1994,7 @@ void DCTSolver::cumulant_response_guess() {
      */
 
     // Z_IJAB += dC_IJAB / D_IJAB
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
-                           "D <OO|VV>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0, "D <OO|VV>");
     global_dpd_->buf4_init(&dC, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "C <OO|VV> new - old");
     global_dpd_->buf4_dirprd(&D, &dC);
@@ -2008,8 +2005,7 @@ void DCTSolver::cumulant_response_guess() {
     global_dpd_->buf4_close(&Z);
 
     // Z_IjAb += dC_IjAb / D_IjAb
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "D <Oo|Vv>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "D <Oo|Vv>");
     global_dpd_->buf4_init(&dC, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                            "C <Oo|Vv> new - old");
     global_dpd_->buf4_dirprd(&D, &dC);
@@ -2020,8 +2016,7 @@ void DCTSolver::cumulant_response_guess() {
     global_dpd_->buf4_close(&Z);
 
     // Z_ijab += dC_ijab / D_ijab
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
-                           "D <oo|vv>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0, "D <oo|vv>");
     global_dpd_->buf4_init(&dC, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "C <oo|vv> new - old");
     global_dpd_->buf4_dirprd(&D, &dC);
@@ -2250,10 +2245,8 @@ void DCTSolver::compute_cumulant_response_intermediates() {
     // G_IJAB += 1/2 Sum_CD gbar_CDAB Z_IJCD
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V>V]-"), ID("[V>V]-"), ID("[V,V]"), ID("[V,V]"), 1,
                            "MO Ints <VV|VV>");
-    global_dpd_->buf4_init(&Z, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Z <OO|VV>");
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "G <OO|VV>");
+    global_dpd_->buf4_init(&Z, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0, "Z <OO|VV>");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0, "G <OO|VV>");
     global_dpd_->contract444(&Z, &I, &G, 0, 0, 1.0, 1.0);
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&Z);
@@ -2272,10 +2265,8 @@ void DCTSolver::compute_cumulant_response_intermediates() {
     // G_ijab += 1/2 Sum_cd gbar_cdab Z_ijcd
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v>v]-"), ID("[v>v]-"), ID("[v,v]"), ID("[v,v]"), 1,
                            "MO Ints <vv|vv>");
-    global_dpd_->buf4_init(&Z, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Z <oo|vv>");
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "G <oo|vv>");
+    global_dpd_->buf4_init(&Z, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0, "Z <oo|vv>");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0, "G <oo|vv>");
     global_dpd_->contract444(&Z, &I, &G, 0, 0, 1.0, 1.0);
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&Z);
@@ -2287,10 +2278,8 @@ void DCTSolver::compute_cumulant_response_intermediates() {
     // G_IJAB += 1/2 Sum_KL gbar_IJKL Z_KLAB
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O>O]-"), ID("[O>O]-"), ID("[O,O]"), ID("[O,O]"), 1,
                            "MO Ints <OO|OO>");
-    global_dpd_->buf4_init(&Z, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Z <OO|VV>");
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "G <OO|VV>");
+    global_dpd_->buf4_init(&Z, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0, "Z <OO|VV>");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0, "G <OO|VV>");
     global_dpd_->contract444(&I, &Z, &G, 0, 1, 1.0, 1.0);
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&Z);
@@ -2309,10 +2298,8 @@ void DCTSolver::compute_cumulant_response_intermediates() {
     // G_ijab += 1/2 Sum_kl gbar_ijkl Z_klab
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o>o]-"), ID("[o>o]-"), ID("[o,o]"), ID("[o,o]"), 1,
                            "MO Ints <oo|oo>");
-    global_dpd_->buf4_init(&Z, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Z <oo|vv>");
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "G <oo|vv>");
+    global_dpd_->buf4_init(&Z, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0, "Z <oo|vv>");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0, "G <oo|vv>");
     global_dpd_->contract444(&I, &Z, &G, 0, 1, 1.0, 1.0);
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_close(&Z);
@@ -2321,15 +2308,13 @@ void DCTSolver::compute_cumulant_response_intermediates() {
     /*
      * G_ijab -= P(ij)P(ab) Sum_kc gbar_jckb Z_ikac
      */
-    global_dpd_->buf4_init(&Zaa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Z <OO|VV>");
+    global_dpd_->buf4_init(&Zaa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0, "Z <OO|VV>");
     global_dpd_->buf4_sort(&Zaa, PSIF_DCT_DPD, prqs, ID("[O,V]"), ID("[O,V]"), "Z (OV|OV)");
     global_dpd_->buf4_close(&Zaa);
     global_dpd_->buf4_init(&Zab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
     global_dpd_->buf4_sort(&Zab, PSIF_DCT_DPD, psqr, ID("[O,v]"), ID("[o,V]"), "Z (Ov|oV)");
     global_dpd_->buf4_close(&Zab);
-    global_dpd_->buf4_init(&Zbb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Z <oo|vv>");
+    global_dpd_->buf4_init(&Zbb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0, "Z <oo|vv>");
     global_dpd_->buf4_sort(&Zbb, PSIF_DCT_DPD, prqs, ID("[o,v]"), ID("[o,v]"), "Z (ov|ov)");
     global_dpd_->buf4_close(&Zbb);
 
@@ -2538,8 +2523,7 @@ void DCTSolver::compute_cumulant_response_intermediates() {
      * F_ijab += P(ab) F_ca Z_ijcb - P(ij) F_ki Z_kjab
      */
     global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
-    global_dpd_->buf4_init(&Zaa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Z <OO|VV>");
+    global_dpd_->buf4_init(&Zaa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0, "Z <OO|VV>");
     // Temp_IJAB = Z_IJCB F_AC
     global_dpd_->file2_init(&F_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "F <V|V>");
     global_dpd_->contract244(&F_VV, &Zaa, &T, 1, 2, 1, 1.0, 0.0);
@@ -2561,8 +2545,7 @@ void DCTSolver::compute_cumulant_response_intermediates() {
     dpd_buf4_add(&F, &T, -1.0);
     global_dpd_->buf4_close(&T);
     global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
-    global_dpd_->buf4_init(&Zaa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Z <OO|VV>");
+    global_dpd_->buf4_init(&Zaa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0, "Z <OO|VV>");
     // Temp_IJAB = -Z_KJAB F_IK
     global_dpd_->file2_init(&F_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "F <O|O>");
     global_dpd_->contract244(&F_OO, &Zaa, &T, 1, 0, 0, -1.0, 0.0);
@@ -2602,8 +2585,7 @@ void DCTSolver::compute_cumulant_response_intermediates() {
     global_dpd_->buf4_close(&F);
 
     global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
-    global_dpd_->buf4_init(&Zbb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Z <oo|vv>");
+    global_dpd_->buf4_init(&Zbb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0, "Z <oo|vv>");
     // Temp_ijab = Z_ijcb F_ac
     global_dpd_->file2_init(&F_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "F <v|v>");
     global_dpd_->contract244(&F_vv, &Zbb, &T, 1, 2, 1, 1.0, 0.0);
@@ -2625,8 +2607,7 @@ void DCTSolver::compute_cumulant_response_intermediates() {
     dpd_buf4_add(&F, &T, -1.0);
     global_dpd_->buf4_close(&T);
     global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
-    global_dpd_->buf4_init(&Zbb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Z <oo|vv>");
+    global_dpd_->buf4_init(&Zbb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0, "Z <oo|vv>");
     // Temp_ijab = -Z_kjab X_ik
     global_dpd_->file2_init(&F_oo, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "F <o|o>");
     global_dpd_->contract244(&F_oo, &Zbb, &T, 1, 0, 0, -1.0, 0.0);
@@ -2820,8 +2801,7 @@ void DCTSolver::compute_cumulant_response_intermediates() {
     global_dpd_->buf4_sort(&T, PSIF_DCT_DPD, pqsr, ID("[O,O]"), ID("[V,V]"), "P(Temp) <OO|VV>");
     global_dpd_->buf4_close(&T);
     // T_IJAB -= Temp_IJBA
-    global_dpd_->buf4_init(&Taa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "T <OO|VV>");
+    global_dpd_->buf4_init(&Taa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0, "T <OO|VV>");
     global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "P(Temp) <OO|VV>");
     dpd_buf4_add(&Taa, &T, -1.0);
@@ -2888,8 +2868,7 @@ void DCTSolver::compute_cumulant_response_intermediates() {
     global_dpd_->buf4_close(&T);
 
     // T_ijab -= Temp_ijba
-    global_dpd_->buf4_init(&Tbb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "T <oo|vv>");
+    global_dpd_->buf4_init(&Tbb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0, "T <oo|vv>");
     global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                            "P(Temp) <oo|vv>");
     dpd_buf4_add(&Tbb, &T, -1.0);
@@ -2928,22 +2907,18 @@ double DCTSolver::compute_cumulant_response_residual() {
      */
 
     // R_IJAB = G_IJAB
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "G <OO|VV>");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0, "G <OO|VV>");
     global_dpd_->buf4_copy(&G, PSIF_DCT_DPD, "R <OO|VV>");
     global_dpd_->buf4_close(&G);
-    global_dpd_->buf4_init(&R, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "R <OO|VV>");
+    global_dpd_->buf4_init(&R, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
 
     // R_IJAB += F_IJAB
-    global_dpd_->buf4_init(&F, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "F <OO|VV>");
+    global_dpd_->buf4_init(&F, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0, "F <OO|VV>");
     dpd_buf4_add(&R, &F, 1.0);
     global_dpd_->buf4_close(&F);
 
     // R_IJAB += T_IJAB
-    global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "T <OO|VV>");
+    global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0, "T <OO|VV>");
     dpd_buf4_add(&R, &T, 1.0);
     global_dpd_->buf4_close(&T);
 
@@ -2975,8 +2950,7 @@ double DCTSolver::compute_cumulant_response_residual() {
     global_dpd_->buf4_close(&T);
 
     // R_IjAb += C_IjAb
-    global_dpd_->buf4_init(&C, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "C <Oo|Vv> new");
+    global_dpd_->buf4_init(&C, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "C <Oo|Vv> new");
     dpd_buf4_add(&R, &C, 1.0);
     global_dpd_->buf4_close(&C);
 
@@ -2986,22 +2960,18 @@ double DCTSolver::compute_cumulant_response_residual() {
     global_dpd_->buf4_close(&R);
 
     // R_ijab = G_ijab
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "G <oo|vv>");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0, "G <oo|vv>");
     global_dpd_->buf4_copy(&G, PSIF_DCT_DPD, "R <oo|vv>");
     global_dpd_->buf4_close(&G);
-    global_dpd_->buf4_init(&R, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "R <oo|vv>");
+    global_dpd_->buf4_init(&R, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
 
     // R_ijab += F_ijab
-    global_dpd_->buf4_init(&F, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "F <oo|vv>");
+    global_dpd_->buf4_init(&F, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0, "F <oo|vv>");
     dpd_buf4_add(&R, &F, 1.0);
     global_dpd_->buf4_close(&F);
 
     // R_ijab += T_ijab
-    global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "T <oo|vv>");
+    global_dpd_->buf4_init(&T, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0, "T <oo|vv>");
     dpd_buf4_add(&R, &T, 1.0);
     global_dpd_->buf4_close(&T);
 
@@ -3027,8 +2997,7 @@ void DCTSolver::update_cumulant_response() {
      */
 
     // Z_IJAB += R_IJAB / D_IJAB
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
-                           "D <OO|VV>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0, "D <OO|VV>");
     global_dpd_->buf4_init(&R, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
     global_dpd_->buf4_dirprd(&D, &R);
     global_dpd_->buf4_close(&D);
@@ -3038,8 +3007,7 @@ void DCTSolver::update_cumulant_response() {
     global_dpd_->buf4_close(&Z);
 
     // Z_IjAb += R_IjAb / D_IjAb
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "D <Oo|Vv>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "D <Oo|Vv>");
     global_dpd_->buf4_init(&R, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
     global_dpd_->buf4_dirprd(&D, &R);
     global_dpd_->buf4_close(&D);
@@ -3049,8 +3017,7 @@ void DCTSolver::update_cumulant_response() {
     global_dpd_->buf4_close(&Z);
 
     // Z_ijab += R_ijab / D_ijab
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
-                           "D <oo|vv>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0, "D <oo|vv>");
     global_dpd_->buf4_init(&R, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
     global_dpd_->buf4_dirprd(&D, &R);
     global_dpd_->buf4_close(&D);
@@ -3148,10 +3115,10 @@ void DCTSolver::compute_lagrangian_OO(bool separate_gbargamma) {
         global_dpd_->file2_axpy(&H, &X, 1.0, 0);
         global_dpd_->file2_close(&X);
         global_dpd_->file2_close(&H);
-    } 
+    }
 
     const std::string density_variable = separate_gbargamma ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string &x) { return (density_variable + x); };
 
     //
     // 2 * <OO||OO> Г_OOOO
@@ -3369,7 +3336,7 @@ void DCTSolver::compute_lagrangian_VV(bool separate_gbargamma) {
     global_dpd_->file2_close(&X);
 
     // X_OV: Two-electron contributions
-    
+
     // If we have gbar_gamma separate, just like when computing the OO gradient, we compute these terms special.
     if (separate_gbargamma) {
         auto zero = Dimension(nirrep_);
@@ -3396,7 +3363,7 @@ void DCTSolver::compute_lagrangian_VV(bool separate_gbargamma) {
     }
 
     const std::string density_variable = separate_gbargamma ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string &x) { return (density_variable + x); };
 
     //
     // 2 * <VV||VV> Г_VVVV
@@ -4672,7 +4639,9 @@ void DCTSolver::compute_ewdm_odc() {
     aW.scale(-2.0);
     bW.scale(-2.0);
 
-    if (options_.get_str("DCT_TYPE") == "DF") {return;}
+    if (options_.get_str("DCT_TYPE") == "DF") {
+        return;
+    }
 
     // Reorder the energy-weighted density matrix to the QT order
     double **a_qt = block_matrix(nmo_, nmo_);

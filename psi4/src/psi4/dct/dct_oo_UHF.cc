@@ -251,7 +251,7 @@ double DCTSolver::compute_orbital_residual() {
     double maxGradient = 0.0;
     // Alpha spin
     for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for reduction(max:maxGradient)
+#pragma omp parallel for reduction(max : maxGradient)
         for (int i = 0; i < naoccpi_[h]; ++i) {
             for (int a = 0; a < navirpi_[h]; ++a) {
                 double value = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
@@ -274,7 +274,7 @@ double DCTSolver::compute_orbital_residual() {
 
     // Beta spin
     for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for reduction(max:maxGradient)
+#pragma omp parallel for reduction(max : maxGradient)
         for (int i = 0; i < nboccpi_[h]; ++i) {
             for (int a = 0; a < nbvirpi_[h]; ++a) {
                 double value = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
@@ -513,7 +513,7 @@ void DCTSolver::compute_orbital_gradient_OV(bool separate_gbargamma) {
     //
 
     std::string density_variable = separate_gbargamma ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string& x) { return (density_variable + x); };
 
     // X_IA += <BI||JK> Г_BAJK
     global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
@@ -744,7 +744,7 @@ void DCTSolver::compute_orbital_gradient_VO(bool separate_gbargamma) {
     //
 
     std::string density_variable = separate_gbargamma ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string& x) { return (density_variable + x); };
 
     // X_AI += 2 * <AJ||KL> Г_IJKL
     global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('V'), ID('O'), "X <V|O>");
@@ -990,7 +990,7 @@ void DCTSolver::rotate_orbitals() {
     int rowA = U_a.nrow();
     int colA = U_a.ncol();
 
-    double **U_a_block = block_matrix(rowA, colA);
+    double** U_a_block = block_matrix(rowA, colA);
     memset(U_a_block[0], 0, sizeof(double) * rowA * colA);
     U_a_block = U_a.to_block_matrix();
     schmidt(U_a_block, rowA, colA, "outfile");
@@ -1000,7 +1000,7 @@ void DCTSolver::rotate_orbitals() {
     int rowB = U_b.nrow();
     int colB = U_b.ncol();
 
-    double **U_b_block = block_matrix(rowB, colB);
+    double** U_b_block = block_matrix(rowB, colB);
     memset(U_b_block[0], 0, sizeof(double) * rowB * colB);
     U_b_block = U_b.to_block_matrix();
     schmidt(U_b_block, rowB, colB, "outfile");

@@ -113,7 +113,9 @@ double DCTSolver::compute_energy_RHF() {
 
     print_opdm_RHF();
 
-    if (orbital_optimized_) { construct_oo_density_RHF(); }
+    if (orbital_optimized_) {
+        construct_oo_density_RHF();
+    }
 
     return new_total_energy_;
 }

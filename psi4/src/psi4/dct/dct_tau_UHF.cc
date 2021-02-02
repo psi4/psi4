@@ -775,8 +775,8 @@ void DCTSolver::build_tau_U() {
     if ((nalpha_ + nbeta_) > 1) {
         diisManager.set_error_vector_size(4, DIISEntry::Matrix, &aocc_tau_, DIISEntry::Matrix, &bocc_tau_,
                                           DIISEntry::Matrix, &avir_tau_, DIISEntry::Matrix, &bvir_tau_);
-        diisManager.set_vector_size(4, DIISEntry::Matrix, &aocc_tau_, DIISEntry::Matrix, &bocc_tau_,
-                                    DIISEntry::Matrix, &avir_tau_, DIISEntry::Matrix, &bvir_tau_);
+        diisManager.set_vector_size(4, DIISEntry::Matrix, &aocc_tau_, DIISEntry::Matrix, &bocc_tau_, DIISEntry::Matrix,
+                                    &avir_tau_, DIISEntry::Matrix, &bvir_tau_);
     }
 
     auto aocc_r = std::make_shared<Matrix>("Residual (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
@@ -830,8 +830,8 @@ void DCTSolver::build_tau_U() {
 
         if (rms < diis_start_thresh_) {
             // Store the DIIS vectors
-            if (diisManager.add_entry(8, aocc_r.get(), bocc_r.get(), avir_r.get(), bvir_r.get(), &aocc_tau_,
-                                      &bocc_tau_, &avir_tau_, &bvir_tau_)) {
+            if (diisManager.add_entry(8, aocc_r.get(), bocc_r.get(), avir_r.get(), bvir_r.get(), &aocc_tau_, &bocc_tau_,
+                                      &avir_tau_, &bvir_tau_)) {
                 diisString += "S";
             }
             if (diisManager.subspace_size() > mindiisvecs_) {

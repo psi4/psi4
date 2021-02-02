@@ -66,7 +66,7 @@ namespace dct {
 
 class DCTSolver : public Wavefunction {
    public:
-    DCTSolver(SharedWavefunction ref_wfn, Options &options);
+    DCTSolver(SharedWavefunction ref_wfn, Options& options);
     ~DCTSolver() override;
 
     double compute_energy() override;
@@ -112,12 +112,12 @@ class DCTSolver : public Wavefunction {
     void build_denominators();
     void update_fock();
     void dump_density();
-    void dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha);
-    void half_transform(dpdbuf4 *A, dpdbuf4 *B, SharedMatrix &C1, SharedMatrix &C2, int *mospi_left, int *mospi_right,
-                        int **so_row, int **mo_row, bool backwards, double alpha, double beta);
-    void file2_transform(dpdfile2 *A, dpdfile2 *B, SharedMatrix C, bool backwards);
-    void AO_contribute(dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO, int p, int q, int r, int s, double value,
-                       dpdfile2 * = nullptr, dpdfile2 * = nullptr, dpdfile2 * = nullptr);
+    void dpd_buf4_add(dpdbuf4* A, dpdbuf4* B, double alpha);
+    void half_transform(dpdbuf4* A, dpdbuf4* B, SharedMatrix& C1, SharedMatrix& C2, int* mospi_left, int* mospi_right,
+                        int** so_row, int** mo_row, bool backwards, double alpha, double beta);
+    void file2_transform(dpdfile2* A, dpdfile2* B, SharedMatrix C, bool backwards);
+    void AO_contribute(dpdbuf4* tau1_AO, dpdbuf4* tau2_AO, int p, int q, int r, int s, double value,
+                       dpdfile2* = nullptr, dpdfile2* = nullptr, dpdfile2* = nullptr);
     // void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
     //        int r, int s, double value);
     bool correct_mo_phases(bool dieOnError = true);
@@ -280,7 +280,7 @@ class DCTSolver : public Wavefunction {
     void validate_opdm();
     void validate_gradient();
 
-    bool augment_b(double *vec, double tol);
+    bool augment_b(double* vec, double tol);
     /// Controls convergence of the orbital updates
     bool orbitalsDone_;
     /// Controls convergence of the density cumulant updates
@@ -338,9 +338,9 @@ class DCTSolver : public Wavefunction {
     /// The maximum number of IDPs possible for cumulant updates
     int dim_cumulant_;
     /// The lookup array that determines which compound indices belong to orbital IDPs and which don't
-    int *lookup_orbitals_;
+    int* lookup_orbitals_;
     /// The lookup array that determines which compound indices belong to cumulant IDPs and which don't
-    int *lookup_cumulant_;
+    int* lookup_cumulant_;
     /// The number of the guess subspace vectors for the Davidson diagonalization
     int nguess_;
     /// The dimension of the subspace in the Davidson diagonalization
@@ -362,13 +362,13 @@ class DCTSolver : public Wavefunction {
     /// The number of virtual beta orbitals per irrep
     Dimension nbvirpi_;
     /// Alpha occupied MO offset
-    int *aocc_off_;
+    int* aocc_off_;
     /// Alpha virtual MO offset
-    int *avir_off_;
+    int* avir_off_;
     /// Beta occupied MO offset
-    int *bocc_off_;
+    int* bocc_off_;
     /// Beta virtual MO offset
-    int *bvir_off_;
+    int* bvir_off_;
     /// The nuclear repulsion energy in Hartree
     double enuc_;
     /// The cutoff below which and integral is assumed to be zero
@@ -533,7 +533,7 @@ class DCTSolver : public Wavefunction {
     Matrix formJm12(std::shared_ptr<BasisSet> auxiliary, const std::string& name);
     /// Form AO basis b(Q|mu,nu)
     Matrix formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
-                  std::shared_ptr<BasisSet> zero, const Matrix& Jm12, const std::string& name);
+                    std::shared_ptr<BasisSet> zero, const Matrix& Jm12, const std::string& name);
     /// Transform AO-basis b(Q, mn) to MO-basis b(Q, pq)
     void transform_b();
     /// Transform b(Q|mu,nu) from AO basis to SO basis
@@ -543,13 +543,14 @@ class DCTSolver : public Wavefunction {
     void construct_metric_density(const std::string& basis_type);
     /// Transform b(Q|mu,nu) from SO basis to another basis with symmetry
     Matrix three_idx_primary_transform(const Matrix& three_idx, const Matrix& left, const Matrix& right) const;
-    void three_idx_primary_transform_gemm(const Matrix& three_idx, const Matrix& left, const Matrix& right, Matrix& result, double alpha, double beta) const;
+    void three_idx_primary_transform_gemm(const Matrix& three_idx, const Matrix& left, const Matrix& right,
+                                          Matrix& result, double alpha, double beta) const;
     void three_idx_cumulant_density();
     void three_idx_cumulant_density_RHF();
     void three_idx_separable_density();
     Matrix three_idx_cumulant_helper(Matrix& temp, const Matrix& J, const Matrix& bt1, const Matrix& bt2);
     Matrix three_idx_separable_helper(const Matrix& Q, const Matrix& J, const Matrix& RDM, const Matrix& C_subset);
-    void contract343(const Matrix& b, dpdbuf4& G, Matrix& result, bool transpose, double alpha, double beta) const; 
+    void contract343(const Matrix& b, dpdbuf4& G, Matrix& result, bool transpose, double alpha, double beta) const;
     Matrix contract123(const Matrix& Q, const Matrix& G) const;
     Matrix contract233(const Matrix& J, const Matrix& B) const;
     void add_3idx_transpose_inplace(Matrix& M, const Dimension& dim) const;

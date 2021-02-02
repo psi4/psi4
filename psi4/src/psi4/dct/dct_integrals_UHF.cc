@@ -49,7 +49,7 @@ void DCTSolver::initialize_integraltransform() {
         type_string = "unrestricted";
     }
 
-    std::vector<std::shared_ptr<MOSpace>> spaces {MOSpace::occ, MOSpace::vir, MOSpace::all};
+    std::vector<std::shared_ptr<MOSpace>> spaces{MOSpace::occ, MOSpace::vir, MOSpace::all};
     _ints = std::make_unique<IntegralTransform>(shared_from_this(), spaces, transtype);
     _ints->set_keep_iwl_so_ints(true);
     _ints->set_keep_dpd_so_ints(true);
@@ -756,8 +756,7 @@ void DCTSolver::build_denominators() {
     ///////////////////////////////
     // The alpha-alpha spin case //
     ///////////////////////////////
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
-                           "D <OO|VV>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0, "D <OO|VV>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&D, h);
         for (int row = 0; row < D.params->rowtot[h]; ++row) {
@@ -778,8 +777,7 @@ void DCTSolver::build_denominators() {
     //////////////////////////////
     // The alpha-beta spin case //
     //////////////////////////////
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "D <Oo|Vv>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "D <Oo|Vv>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&D, h);
         for (int row = 0; row < D.params->rowtot[h]; ++row) {
@@ -800,8 +798,7 @@ void DCTSolver::build_denominators() {
     /////////////////////////////
     // The beta-beta spin case //
     /////////////////////////////
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
-                           "D <oo|vv>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0, "D <oo|vv>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&D, h);
         for (int row = 0; row < D.params->rowtot[h]; ++row) {

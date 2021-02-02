@@ -43,7 +43,7 @@ void DCTSolver::compute_unrelaxed_density_OOOO_RHF(bool cumulant_only) {
     dpdbuf4 LLab, Lab, Gab;
 
     const std::string density_variable = cumulant_only ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string& x) { return (density_variable + x); };
 
     // Compute the N^6 terms for Gamma OOOO
 
@@ -59,7 +59,9 @@ void DCTSolver::compute_unrelaxed_density_OOOO_RHF(bool cumulant_only) {
     global_dpd_->buf4_close(&LLab);
     global_dpd_->buf4_close(&Lab);
 
-    if (!cumulant_only) { compute_unrelaxed_separable_density_OOOO_RHF();};
+    if (!cumulant_only) {
+        compute_unrelaxed_separable_density_OOOO_RHF();
+    };
 
     // Form Alpha-Alpha Gamma_OOOO case for later use
     // Gamma_IJKL = Gamma_IjKl - Gamma_JiKl
@@ -118,14 +120,14 @@ void DCTSolver::compute_unrelaxed_density_OOVV_RHF(bool cumulant_only) {
     dpdbuf4 Lab, Gab;
 
     const std::string density_variable = cumulant_only ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string& x) { return (density_variable + x); };
 
     /*
      * The OOVV and VVOO blocks
      */
 
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Amplitude SF <OO|VV>");                          // Amplitude <Oo|Vv>
+                           "Amplitude SF <OO|VV>");                         // Amplitude <Oo|Vv>
     global_dpd_->buf4_copy(&Lab, PSIF_DCT_DENSITY, varname("SF <OO|VV>"));  // Gamma <Oo|Vv>
     global_dpd_->buf4_sort(&Lab, PSIF_DCT_DENSITY, rspq, ID("[V,V]"), ID("[O,O]"),
                            varname("SF <VV|OO>"));  // Gamma <Vv|Oo>
@@ -159,7 +161,7 @@ void DCTSolver::compute_unrelaxed_density_OVOV_RHF(bool cumulant_only) {
     dpdbuf4 LLaa, LLab, LLbb, Laa, Lab, Lbb, Gaa, Gab, Gba, Gbb, Tab;
 
     const std::string density_variable = cumulant_only ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string& x) { return (density_variable + x); };
 
     /*
      * The OVOV block
@@ -231,7 +233,9 @@ void DCTSolver::compute_unrelaxed_density_OVOV_RHF(bool cumulant_only) {
     global_dpd_->buf4_close(&Tab);
     global_dpd_->buf4_close(&Lab);
 
-    if (!cumulant_only) { compute_unrelaxed_separable_density_OVOV_RHF(); };
+    if (!cumulant_only) {
+        compute_unrelaxed_separable_density_OVOV_RHF();
+    };
 
     psio_->close(PSIF_DCT_DENSITY, 1);
 }
@@ -304,7 +308,6 @@ void DCTSolver::compute_unrelaxed_separable_density_OVOV_RHF() {
     }
 
     global_dpd_->buf4_close(&Gab);
-
 }
 
 void DCTSolver::compute_unrelaxed_density_VVVV_RHF(bool cumulant_only) {
@@ -317,7 +320,7 @@ void DCTSolver::compute_unrelaxed_density_VVVV_RHF(bool cumulant_only) {
      */
 
     const std::string density_variable = cumulant_only ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string& x) { return (density_variable + x); };
 
     // Gamma_abcd = 1/16 (Amplitude_ijab * Amplitude_ijcd + Amplitude_ijab * Amplitude_ijcd)
     global_dpd_->buf4_init(&Gaa, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0,
@@ -331,7 +334,9 @@ void DCTSolver::compute_unrelaxed_density_VVVV_RHF(bool cumulant_only) {
     global_dpd_->buf4_close(&Gaa);
     global_dpd_->buf4_close(&Laa);
 
-    if (!cumulant_only) { compute_unrelaxed_separable_density_VVVV_RHF(); };
+    if (!cumulant_only) {
+        compute_unrelaxed_separable_density_VVVV_RHF();
+    };
 
     // Gamma <AB|CD> = Gamma<Ab|Cd> - Gamma<Ab|Dc>
     global_dpd_->buf4_init(&Gab, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 1,
@@ -379,7 +384,7 @@ void DCTSolver::compute_unrelaxed_separable_density_VVVV_RHF() {
 }
 
 void DCTSolver::construct_oo_density_RHF() {
-    Da_ = std::make_shared<Matrix>(std::move(construct_oo_density(aocc_tau_, avir_tau_, *kappa_mo_a_, *Ca_))); 
+    Da_ = std::make_shared<Matrix>(std::move(construct_oo_density(aocc_tau_, avir_tau_, *kappa_mo_a_, *Ca_)));
     Db_ = Da_->clone();
 }
 

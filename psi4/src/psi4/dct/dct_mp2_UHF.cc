@@ -83,8 +83,7 @@ void DCTSolver::initialize_amplitudes() {
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_init(&I, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "Amplitude <Oo|Vv>");
-        global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               "D <Oo|Vv>");
+        global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "D <Oo|Vv>");
         global_dpd_->buf4_dirprd(&D, &I);
         global_dpd_->buf4_close(&I);
         global_dpd_->buf4_close(&D);

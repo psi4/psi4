@@ -68,10 +68,10 @@ void DCTSolver::build_d_R() {
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
 
-    global_dpd_->buf4_init(&L1, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"),
-                           ID("[V,V]"), 0, "Amplitude <OO|VV>");
-    global_dpd_->buf4_init(&L2, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"),
-                           ID("[V,V]"), 0, "Amplitude <OO|VV>");
+    global_dpd_->buf4_init(&L1, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                           "Amplitude <OO|VV>");
+    global_dpd_->buf4_init(&L2, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                           "Amplitude <OO|VV>");
 
     /*
      * d_IJ = -1/2 Amplitude_IKAB Amplitude_JKAB
@@ -275,7 +275,7 @@ void DCTSolver::transform_tau_R() {
 
     global_dpd_->file2_mat_close(&T_OO);
     global_dpd_->file2_mat_close(&T_VV);
-    
+
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
 

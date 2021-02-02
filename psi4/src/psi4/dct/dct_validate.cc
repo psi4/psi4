@@ -90,7 +90,8 @@ void DCTSolver::validate_energy() {
     }
 
     if (options_.get_str("DCT_FUNCTIONAL") == "CEPA0")
-        throw PSIEXCEPTION("CEPA0 was removed from the DCT module in 1.4. Please use the lccd method in OCC, DFOCC, or FNOCC.");
+        throw PSIEXCEPTION(
+            "CEPA0 was removed from the DCT module in 1.4. Please use the lccd method in OCC, DFOCC, or FNOCC.");
 }
 
 void DCTSolver::validate_opdm() {
@@ -105,9 +106,7 @@ void DCTSolver::validate_opdm() {
 }
 
 // At present, no special validation tasks needed.
-void DCTSolver::validate_gradient() {
-}
+void DCTSolver::validate_gradient() {}
 
-} // namespace dct
-} // namespace psi
-
+}  // namespace dct
+}  // namespace psi

@@ -61,17 +61,14 @@ double DCTSolver::compute_cumulant_residual() {
     // OOVV
 
     // R_IJAB = G_IJAB
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "G <OO|VV>");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0, "G <OO|VV>");
     global_dpd_->buf4_copy(&G, PSIF_DCT_DPD, "R <OO|VV>");
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->buf4_init(&R, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "R <OO|VV>");
+    global_dpd_->buf4_init(&R, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
 
     // R_IJAB += F_IJAB
-    global_dpd_->buf4_init(&F, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "F <OO|VV>");
+    global_dpd_->buf4_init(&F, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0, "F <OO|VV>");
     dpd_buf4_add(&R, &F, 1.0);
     global_dpd_->buf4_close(&F);
 
@@ -124,14 +121,12 @@ double DCTSolver::compute_cumulant_residual() {
     // Add third-order N-representability terms if needed
     if (options_.get_str("DCT_FUNCTIONAL") == "ODC-13") {
         // R_IjAb += V_IjAb
-        global_dpd_->buf4_init(&V, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               "V <Oo|Vv>");
+        global_dpd_->buf4_init(&V, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "V <Oo|Vv>");
         dpd_buf4_add(&R, &V, 1.0);
         global_dpd_->buf4_close(&V);
 
         // R_IJAB += W_IJAB
-        global_dpd_->buf4_init(&W, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               "W <Oo|Vv>");
+        global_dpd_->buf4_init(&W, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "W <Oo|Vv>");
         dpd_buf4_add(&R, &W, 1.0);
         global_dpd_->buf4_close(&W);
     }
@@ -144,17 +139,14 @@ double DCTSolver::compute_cumulant_residual() {
     // oovv
 
     // R_ijab = G_ijab
-    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "G <oo|vv>");
+    global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0, "G <oo|vv>");
     global_dpd_->buf4_copy(&G, PSIF_DCT_DPD, "R <oo|vv>");
     global_dpd_->buf4_close(&G);
 
-    global_dpd_->buf4_init(&R, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "R <oo|vv>");
+    global_dpd_->buf4_init(&R, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
 
     // R_ijab += F_ijab
-    global_dpd_->buf4_init(&F, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "F <oo|vv>");
+    global_dpd_->buf4_init(&F, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0, "F <oo|vv>");
     dpd_buf4_add(&R, &F, 1.0);
     global_dpd_->buf4_close(&F);
 
@@ -207,8 +199,7 @@ void DCTSolver::update_cumulant_jacobi() {
      */
 
     // L_IJAB += R_IJAB / D_IJAB
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
-                           "D <OO|VV>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0, "D <OO|VV>");
     global_dpd_->buf4_init(&R, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0, "R <OO|VV>");
     global_dpd_->buf4_dirprd(&D, &R);
     global_dpd_->buf4_close(&D);
@@ -219,8 +210,7 @@ void DCTSolver::update_cumulant_jacobi() {
     global_dpd_->buf4_close(&L);
 
     // L_IjAb += R_IjAb / D_IjAb
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "D <Oo|Vv>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "D <Oo|Vv>");
     global_dpd_->buf4_init(&R, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
     global_dpd_->buf4_dirprd(&D, &R);
     global_dpd_->buf4_close(&D);
@@ -231,8 +221,7 @@ void DCTSolver::update_cumulant_jacobi() {
     global_dpd_->buf4_close(&L);
 
     // L_IJAB += R_ijab / D_ijab
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
-                           "D <oo|vv>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0, "D <oo|vv>");
     global_dpd_->buf4_init(&R, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0, "R <oo|vv>");
     global_dpd_->buf4_dirprd(&D, &R);
     global_dpd_->buf4_close(&D);

@@ -51,7 +51,7 @@ SharedMatrix DCTSolver::compute_gradient() {
     validate_opdm();
     validate_gradient();
     if (orbital_optimized_) oo_gradient_init();
-    
+
     // If the system is closed-shell, then ...
     if (options_.get_str("REFERENCE") == "RHF") {
         compute_gradient_RHF();

@@ -310,8 +310,7 @@ void DCTSolver::compute_relaxed_density_OVOV() {
 
     // TEMPORARY: Sort the cumulant Z-vector elements to chemist's notation.
     // MOVE THIS TO THE Z-VECTOR UPDATES WHEN NEEDED!!!
-    global_dpd_->buf4_init(&Zaa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Z <OO|VV>");
+    global_dpd_->buf4_init(&Zaa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0, "Z <OO|VV>");
     global_dpd_->buf4_sort(&Zaa, PSIF_DCT_DPD, prqs, ID("[O,V]"), ID("[O,V]"), "Z (OV|OV)");
     global_dpd_->buf4_close(&Zaa);
 
@@ -319,8 +318,7 @@ void DCTSolver::compute_relaxed_density_OVOV() {
     global_dpd_->buf4_sort(&Zab, PSIF_DCT_DPD, psqr, ID("[O,v]"), ID("[o,V]"), "Z (Ov|oV)");
     global_dpd_->buf4_close(&Zab);
 
-    global_dpd_->buf4_init(&Zbb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Z <oo|vv>");
+    global_dpd_->buf4_init(&Zbb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0, "Z <oo|vv>");
     global_dpd_->buf4_sort(&Zbb, PSIF_DCT_DPD, prqs, ID("[o,v]"), ID("[o,v]"), "Z (ov|ov)");
     global_dpd_->buf4_close(&Zbb);
 
@@ -826,5 +824,5 @@ void DCTSolver::dc06_compute_relaxed_density_1PDM() {
     Db_ = linalg::triplet(Cb_, b_opdm, Cb_, false, false, true);
 }
 
-} // namespace dct
-} // namespace psi
+}  // namespace dct
+}  // namespace psi

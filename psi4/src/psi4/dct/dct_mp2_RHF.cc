@@ -65,7 +65,7 @@ void DCTSolver::initialize_amplitudes_RHF() {
     // L_IjAb = <Ij|Ab> / D_IjAb
     dct_timer_on("DCTSolver::g_IJAB / D_IJAB");
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "MO Ints <OO|VV>");                       // MO Ints <Oo|Vv>
+                           "MO Ints <OO|VV>");                         // MO Ints <Oo|Vv>
     global_dpd_->buf4_copy(&I, PSIF_DCT_DPD, "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
     global_dpd_->buf4_close(&I);
 

@@ -55,7 +55,7 @@ void DCTSolver::compute_unrelaxed_density_OOOO(bool cumulant_only) {
     }
 
     const std::string density_variable = cumulant_only ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string& x) { return (density_variable + x); };
 
     psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
 
@@ -231,7 +231,7 @@ void DCTSolver::compute_unrelaxed_density_OOVV(bool cumulant_only) {
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
 
     const std::string density_variable = cumulant_only ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string& x) { return (density_variable + x); };
 
     /*
      * The OOVV and VVOO blocks
@@ -799,7 +799,7 @@ void DCTSolver::compute_unrelaxed_density_OVOV(bool cumulant_only) {
     psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
 
     const std::string density_variable = cumulant_only ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string& x) { return (density_variable + x); };
 
     // There are five unique spin cases: Г<IAJB>, Г<iajb>, Г<IaJb>, Г<iAjB>, Г<IajB>
 
@@ -867,7 +867,9 @@ void DCTSolver::compute_unrelaxed_density_OVOV(bool cumulant_only) {
     global_dpd_->buf4_scm(&Gbb, -1.0);
     global_dpd_->buf4_close(&Gbb);
 
-    if (!cumulant_only) {compute_unrelaxed_separable_density_OVOV();};
+    if (!cumulant_only) {
+        compute_unrelaxed_separable_density_OVOV();
+    };
 
     psio_->close(PSIF_DCT_DENSITY, 1);
 }
@@ -1015,7 +1017,7 @@ void DCTSolver::compute_unrelaxed_density_VVVV(bool cumulant_only) {
     dpdbuf4 LLaa, LLab, LLbb, Laa, Lab, Lbb, Gaa, Gab, Gbb;
 
     const std::string density_variable = cumulant_only ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string& x) { return (density_variable + x); };
 
     /*
      * The VVVV block
@@ -1165,7 +1167,8 @@ void DCTSolver::compute_unrelaxed_separable_density_VVVV() {
     global_dpd_->buf4_close(&Gbb);
 }
 
-Matrix DCTSolver::construct_oo_density(const Matrix& occtau, const Matrix& virtau, const Matrix& kappa, const Matrix& C) {
+Matrix DCTSolver::construct_oo_density(const Matrix& occtau, const Matrix& virtau, const Matrix& kappa,
+                                       const Matrix& C) {
     auto opdm = Matrix("MO basis OPDM", nirrep_, nmopi_, nmopi_);
 
     auto occdim = occtau.rowspi();
@@ -1194,7 +1197,7 @@ void DCTSolver::compute_TPDM_trace(bool cumulant_only) {
 
     // If we only have the cumulant saved, we'll need to figure out the rest of the trace from the 1RDM.
     const std::string density_variable = cumulant_only ? "Lambda " : "Gamma ";
-    auto varname = [&density_variable](const std::string& x) {return (density_variable + x);};
+    auto varname = [&density_variable](const std::string& x) { return (density_variable + x); };
 
     psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
 
