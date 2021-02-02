@@ -2303,7 +2303,6 @@ void DCTSolver::three_idx_cumulant_density_RHF() {
     global_dpd_->buf4_close(&G);
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "Lambda OVOV (OO|VV)");
-    global_dpd_->buf4_print(&G, "outfile", 1);
     result = Matrix("3-Center PDM B: AB", bQabA_mo_.rowspi(), bQabA_mo_.colspi());
     // gAB = b(Q|IJ) L^IA_JB
     contract343(bQijA_mo_, G, result, false, 1.0, 0.0);
