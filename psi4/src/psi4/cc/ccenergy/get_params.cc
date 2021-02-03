@@ -138,6 +138,7 @@ void CCEnergyWavefunction::get_params(Options &options) {
     local_.cutoff = options.get_double("LOCAL_CUTOFF");
     local_.method = options.get_str("LOCAL_METHOD");
     local_.weakp = options.get_str("LOCAL_WEAKP");
+    local_.pert = options.get_str("LOCAL_PERT");
 
     local_.filter_singles = options.get_bool("LOCAL_FILTER_SINGLES");
     // if(params.dertype == 3) local.filter_singles = 0;
@@ -151,6 +152,21 @@ void CCEnergyWavefunction::get_params(Options &options) {
         local_.pairdef = "RESPONSE";
     else if (params_.local)
         local_.pairdef = "BP";*/
+
+    if (!local_.pert.empty()) {
+    // grab the field freqs from input -- a few units are converted to E_h
+    int count = options["OMEGA"].size();
+    if (count == 0) {  // Assume 0.0 E_h for field energy
+        params_.nomega = 1;
+        params_.omega = 0.0;
+    } else if (count == 1) {  // Assume E_h for field energy and read value
+        params_.nomega = 1;
+        params_.omega = options["OMEGA"][0].to_double();
+    } else if (count >= 2) {
+        throw PsiException("Error: PNO++ cannot take multiple field frequencies", __FILE__,
+                                   __LINE__);
+        }
+    }
 
     params_.num_amps = options.get_int("NUM_AMPS_PRINT");
     params_.bconv = options.get_double("BRUECKNER_ORBS_R_CONVERGENCE");
@@ -229,6 +245,10 @@ void CCEnergyWavefunction::get_params(Options &options) {
         outfile->Printf("    Filter singles    =     %s\n", local_.filter_singles ? "Yes" : "No");
         outfile->Printf("    Local pairs       =     %s\n", local_.pairdef.c_str());
         outfile->Printf("    Local CPHF cutoff =     %3.1e\n", local_.cphf_cutoff);
+    }
+    if (!local_.pert.empty()) {
+        outfile->Printf("    Local Pert       =     %s\n", local_.pert);
+        outfile->Printf("    Omega            =     %1.6f", params_.omega);
     }
     outfile->Printf("    SCS-MP2         =     %s\n", (params_.scs == 1) ? "True" : "False");
     outfile->Printf("    SCSN-MP2        =     %s\n", (params_.scsn == 1) ? "True" : "False");

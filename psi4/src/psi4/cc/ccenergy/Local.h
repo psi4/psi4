@@ -37,6 +37,10 @@
 #include <string>
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libdpd/dpd.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/local.h"
+#include "psi4/libmints/basisset.h"
 
 namespace psi {
 
@@ -45,6 +49,8 @@ class Local_cc {
         Local_cc();
         ~Local_cc();
         void local_init();
+        void init_pno();
+        void init_pnopp(const double omega);
         void init_filter_T2();
         void local_filter_T1(dpdfile2 *T1);
         void local_filter_T2(dpdbuf4 *T2);
@@ -53,6 +59,7 @@ class Local_cc {
         std::string method;
         std::string weakp;
         std::string pairdef;
+        std::string pert;
         int filter_singles;
         int nocc;
         int nvir;
@@ -61,9 +68,9 @@ class Local_cc {
         double cphf_cutoff;
 
     private:
-        void init_pno();
         void get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec);
         void get_semicanonical_transforms(std::vector<SharedMatrix> Q);
+        std::vector<SharedMatrix> build_PNO_lists(double cutoff, std::vector<SharedMatrix> D);
         void mp2_pair_energy();
         
         int npairs;

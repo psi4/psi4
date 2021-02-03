@@ -83,6 +83,8 @@ struct Params {
     double local_cc_cutoff;
     int local_cc_weakp;
     int local_cc_filter_singles;
+    double omega;
+    int nomega;
     
 };
 

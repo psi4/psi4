@@ -43,6 +43,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libmints/mintshelper.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -185,7 +186,62 @@ double CCEnergyWavefunction::compute_energy() {
     if (params_.local) {
         local_.nocc = moinfo_.occpi[0];
         local_.nvir = moinfo_.virtpi[0];
-        local_.local_init();
+        if (local_.method == "PNO") {
+            local_.init_pno();
+        }
+        else if (local_.method == "PNO++") {
+            // Prepare the perturbation
+            MintsHelper mints(reference_wavefunction_->basisset(), Process::environment.options, 0);
+            int nmo = moinfo_.nmo;
+            int nso = moinfo_.nso;
+            std::vector<char*> cart_list = {strdup("x"),strdup("y"),strdup("z")};
+            char lbl[32];
+            dpdfile2 f;
+            std::vector<SharedMatrix> ao_pert;
+            if (local_.pert == "DIPOLE") {
+                ao_pert = mints.so_dipole();
+            }
+            else {
+                ao_pert = mints.so_dipole();
+            }
+            for (int n=0; n < 3; n++) {
+                double **TMP1 = ao_pert[n]->to_block_matrix();
+                double **TMP2 = block_matrix(nso, nso);
+                double **TMP3 = block_matrix(nmo, nmo);
+                C_DGEMM('n', 'n', nso, nmo, nso, 1, TMP1[0], nso, moinfo_.scf[0], nmo, 0, TMP2[0], nso);
+                C_DGEMM('t', 'n', nmo, nmo, nso, 1, moinfo_.scf[0], nmo, TMP2[0], nso, 0, TMP3[0], nmo);
+
+                // Write the perturbation to file
+                sprintf(lbl, "PertAE_%s", cart_list[n]);
+                global_dpd_->file2_init(&f, PSIF_CC_OEI, 0, 1, 1, lbl);
+                global_dpd_->file2_mat_init(&f);
+                for (int a=0; a < local_.nvir; a++) {
+                    for (int e=0; e < local_.nvir; e++) {
+                        f.matrix[0][a][e] = TMP3[local_.nocc+a][local_.nocc+e];
+                    }
+                }
+                global_dpd_->file2_mat_wrt(&f);
+                global_dpd_->file2_mat_close(&f);
+                global_dpd_->file2_close(&f);
+
+                sprintf(lbl, "PertMI_%s", cart_list[n]);
+                global_dpd_->file2_init(&f, PSIF_CC_OEI, 0, 0, 0, lbl);
+                global_dpd_->file2_mat_init(&f);
+                for (int i=0; i < local_.nocc; i++) {
+                    for (int j=0; j < local_.nocc; j++) {
+                        f.matrix[0][i][j] = TMP3[i][j];
+                    }
+                }
+                global_dpd_->file2_mat_wrt(&f);
+                global_dpd_->file2_mat_close(&f);
+                global_dpd_->file2_close(&f);
+
+            }
+            local_.init_pnopp(params_.omega);
+        }
+        else {
+            outfile->Printf("Local CC method not recognized.\n");
+        }
         local_.init_filter_T2();
         //if (local_.weakp == "MP2") lmp2();
     }

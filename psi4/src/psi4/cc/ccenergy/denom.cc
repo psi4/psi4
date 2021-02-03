@@ -52,7 +52,7 @@ void CCEnergyWavefunction::denom() {
         global_dpd_->file2_close(&newtIA);
 
         global_dpd_->file2_init(&newtIA, PSIF_CC_OEI, 0, 0, 1, "New tIA Increment");
-        if (params_.local && local_.filter_singles) {
+        if (params_.local) {
             local_.local_filter_T1(&newtIA);
         } else {
             global_dpd_->file2_init(&dIA, PSIF_CC_OEI, 0, 0, 1, "dIA");

@@ -1871,6 +1871,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         ``PNO++`` selects the Perturbed Pair Natural Orbital method
         developed by Crawford and co-workers. -*/
         options.add_str("LOCAL_METHOD", "WERNER", "WERNER PNO PNO++");
+        /*- Type of perturbation to use for PNO++ method. -*/
+        options.add_str("LOCAL_PERT", "DIPOLE", "DIPOLE NABLA");
         /*- Do apply local filtering to single de-excitation ($\lambda 1$ amplitudes? -*/
         options.add_bool("LOCAL_FILTER_SINGLES", true);
         /*- Cutoff value for local-coupled-perturbed-Hartree-Fock -*/
@@ -2128,6 +2130,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Type of local-CCSD scheme to be simulated. ``WERNER`` (unique available option) selects the method
         developed by H.-J. Werner and co-workers. -*/
         options.add_str("LOCAL_METHOD", "WERNER PNO PNO++");
+        /*- Type of perturbation to use for PNO++ method. -*/
+        options.add_str("LOCAL_PERT", "DIPOLE", "DIPOLE NABLA");
         /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE`` (unique available option)
         treats weak pairs in the same manner as strong pairs. -*/
         options.add_str("LOCAL_WEAKP", "NONE");
@@ -2319,6 +2323,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
         /*- Definition of local pair domains, default is BP, Boughton-Pulay. -*/
         options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
+        /*- Array that specifies the desired frequencies of the incident
+        radiation field in CCLR calculations.  If only one element is
+        given, the units will be assumed to be atomic units.  If more
+        than one element is given, then the units must be specified as the final
+        element of the array.  Acceptable units are ``HZ``, ``NM``, ``EV``, and ``AU``. -*/
+        options.add("OMEGA", new ArrayType());
         /*- Number of important $t@@1$ and $t@@2$ amplitudes to print -*/
         options.add_int("NUM_AMPS_PRINT", 10);
         /*- Convergence criterion for Brueckner orbitals. The convergence is

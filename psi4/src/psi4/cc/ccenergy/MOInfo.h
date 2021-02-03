@@ -118,6 +118,7 @@ struct MOInfo {
     double ***Co;      /* Occupied orbital transformation matrix (for AO-basis B terms) */
     double ***Cao;     /* UHF alpha occupied orbital transformation matrix (for AO-basis B terms) */
     double ***Cbo;     /* UHF beta occupied orbital transformation matrix (for AO-basis B terms) */
+    double **scf;     /* RHF transformation matrix (for local correlation) */
 };
 
 }  // namespace ccenergy

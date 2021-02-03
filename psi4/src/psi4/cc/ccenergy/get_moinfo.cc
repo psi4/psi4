@@ -211,6 +211,7 @@ void CCEnergyWavefunction::get_moinfo() {
             }
         }
         moinfo_.Cv = Cv;
+        moinfo_.scf = reference_wavefunction_->Ca()->to_block_matrix();
     } else if (params_.ref == 2) { /** UHF **/
 
         Ca = (double ***)malloc(nirreps * sizeof(double **));
