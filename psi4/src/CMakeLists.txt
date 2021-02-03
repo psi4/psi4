@@ -1,6 +1,12 @@
 ### >> Create core target, so we may link modules to it directly <<
 ### >> This allow to propagate dependencies upwards sanely
-pybind11_add_module(core MODULE core.cc)
+if (ENABLE_PLUGINS)
+    message(STATUS "Building plugin-capable SHARED Psi4 library")
+    pybind11_add_module(core SHARED core.cc)
+else()
+    message(STATUS "Building importable-only MODULE Psi4 library")
+    pybind11_add_module(core MODULE core.cc)
+endif()
 
 ### >> Go into psi4 subdirectory to compile libraries and modules <<
 add_subdirectory(psi4)

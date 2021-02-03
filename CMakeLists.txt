@@ -139,6 +139,7 @@ option_with_print(BUILD_SHARED_LIBS "Build internally built Psi4 add-on librarie
 option_with_print(ENABLE_OPENMP "Enables OpenMP parallelization" ON)
 option_with_print(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
 option_with_print(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
+option_with_print(ENABLE_PLUGINS "Enables plugin linking to main Psi4 library. Necessitates care to exactly match build/run Python versions" OFF)
 option_with_print(ENABLE_PLUGIN_TESTING "Test the plugin templates build and run" OFF)
 option_with_print(ENABLE_CYTHONIZE "Compile each python file rather than plaintext (requires cython) !experimental!" OFF)
 if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
@@ -271,6 +272,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_PCMSolver=${ENABLE_PCMSolver}
               -DENABLE_mdi=${ENABLE_mdi}
               -DENABLE_BrianQC=${ENABLE_BrianQC}
+              -DENABLE_PLUGINS=${ENABLE_PLUGINS}
               -DENABLE_OPENMP=${ENABLE_OPENMP}
               -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
               -DTargetHDF5_DIR=${TargetHDF5_DIR}
