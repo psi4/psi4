@@ -279,9 +279,6 @@ endif()
 
 # plugin regime
 if(ENABLE_PLUGIN_TESTING)
-    if (NOT ENABLE_PLUGINS)
-        message(FATAL "Please `-DENABLE_PLUGINS=ON` to test plugins.")
-    endif()
     add_subdirectory(plugins)
     message(STATUS "Adding test cases: Psi4 plugins")
 endif()
