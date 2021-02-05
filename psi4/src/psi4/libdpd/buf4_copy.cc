@@ -42,7 +42,7 @@ namespace psi {
 ** Arguments:
 **   dpdbuf4 *InBuf: A pointer to the given dpd buffer.
 **   int outfilenum: The PSI unit number for the new buffer.
-**   char *label: A string labelling for this buffer.
+**   std::string &label: A string labelling for this buffer.
 **
 ** NB: The buffer and file pq/rs parameters are assumed to be
 ** identical for the copy, obviously.  Hence, anti flag must be off.
@@ -51,7 +51,8 @@ namespace psi {
 ** TDC, September 1999
 */
 
-int DPD::buf4_copy(dpdbuf4 *InBuf, int outfilenum, const char *label) {
+int DPD::buf4_copy(dpdbuf4 *InBuf, int outfilenum, const std::string& label) {
+    auto label_ptr = label.c_str();
     int h, row, col, my_irrep;
     long int rowtot, coltot;
     int nbuckets, incore, n;
@@ -142,10 +143,6 @@ int DPD::buf4_copy(dpdbuf4 *InBuf, int outfilenum, const char *label) {
     buf4_close(&OutBuf);
 
     return 0;
-}
-
-int DPD::buf4_copy(dpdbuf4 *InBuf, int outfilenum, const std::string& label) {
-    return buf4_copy(InBuf, outfilenum, label.c_str());
 }
 
 }  // namespace psi
