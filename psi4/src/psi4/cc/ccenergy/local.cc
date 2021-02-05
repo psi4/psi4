@@ -127,13 +127,6 @@ void Local_cc::init_pno() {
         Dij.push_back(temp->clone());
     }
 
-    // Print checking
-    /*outfile->Printf("\t***** Dij Matrix *****\n");
-    for(int ij=0; ij < nocc*nocc; ++ij) {
-        outfile->Printf("ij = %2d\n", ij);
-        Dij[ij]->print();
-    }*/
-
     // Diagonalize density
     Q = build_PNO_lists(cutoff, Dij);
 
@@ -142,15 +135,6 @@ void Local_cc::init_pno() {
 
     // Check if they can be read back in
     /*eps_pno.clear();
-    next = PSIO_ZERO;
-    for (int ij = 0; ij < npairs; ++ij) {
-        int npno = survivor_list[ij];
-        //auto eps_pno_temp = std::make_shared<Vector>(npno);
-        SharedVector eps_pno_temp(new Vector(npno));
-        psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *) eps_pno_temp->pointer(),
-                  npno * sizeof(double), next, &next);
-        eps_pno.push_back(eps_pno_temp);
-    }
     outfile->Printf("Testing read-in of virtual orbital energies\n");
     for(int ij=0; ij < npairs; ++ij) {
         outfile->Printf("\nPair %d ", ij);
@@ -230,6 +214,8 @@ void Local_cc::init_pnopp(const double omega) {
     dpdfile2 FAE;
     dpdfile2 Fab;
     global_dpd_->file2_init(&Fab, PSIF_CC_OEI, 0, 1, 1, "fAB");
+    global_dpd_->file2_mat_init(&Fab);
+    global_dpd_->file2_mat_rd(&Fab);
     global_dpd_->file2_copy(&Fab, PSIF_CC_OEI, "FAE");
     global_dpd_->file2_close(&Fab);
 
@@ -254,21 +240,16 @@ void Local_cc::init_pnopp(const double omega) {
 
     // Build the similarity-transformed perturbation
     outfile->Printf("Building Abar...\n");
-
-    std::vector<SharedMatrix> A;
-    A.resize(3);
-
-    // Do the AO-MO transformation of the perturbation
-    char lbl[32];
     std::vector<char*> cart_list = {strdup("x"),strdup("y"),strdup("z")};
 
     // Do the similarity transformation with MP2 T2s
-    dpdbuf4 fbar;
-    for (int n=0; n < 3; n++) {
+    for (int n=0; n < 3; ++n) {
+        dpdbuf4 fbar;
         dpdfile2 AAE;
         dpdfile2 AMI;
-        sprintf(lbl, "Pertbar_%s", cart_list[n]);
-        global_dpd_->buf4_init(&fbar, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, lbl);
+        char lbl[32];
+        sprintf(lbl, "Pbar_%s", cart_list[n]);
+        global_dpd_->buf4_init(&fbar, PSIF_CC_INFO, 0, 0, 5, 0, 5, 0, lbl);
         sprintf(lbl, "PertAE_%s", cart_list[n]);
         global_dpd_->file2_init(&AAE, PSIF_CC_OEI, 0, 1, 1, lbl);
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
@@ -294,15 +275,17 @@ void Local_cc::init_pnopp(const double omega) {
     outfile->Printf("Building X_ij...\n");
     dpdbuf4 Xijab;
     std::vector<SharedMatrix> Dij;
+    std::vector<SharedMatrix> Dtemp;
     SharedMatrix temp(new Matrix(nvir, nvir));
     for (int ij=0; ij < npairs; ij++) {
         auto mat = std::make_shared<Matrix>(nvir, nvir);
         Dij.push_back(mat->clone());
     }
-    outfile->Printf("Initialized density\n");
     for (int n=0; n < 3; n++) {
-        sprintf(lbl, "Pertbar_%s", cart_list[n]);
-        global_dpd_->buf4_init(&fbar, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, lbl);
+        dpdbuf4 fbar;
+        char lbl[32];
+        sprintf(lbl, "Pbar_%s", cart_list[n]);
+        global_dpd_->buf4_init(&fbar, PSIF_CC_INFO, 0, 0, 5, 0, 5, 0, lbl);
         sprintf(lbl, "Xijab_%s", cart_list[n]);
         global_dpd_->buf4_init(&Xijab, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, lbl);
         global_dpd_->buf4_mat_irrep_init(&Xijab, 0);
@@ -314,18 +297,16 @@ void Local_cc::init_pnopp(const double omega) {
             for(int ab=0; ab < nvir*nvir; ++ab) {
                 int a =  ab/(nvir);
                 int b = ab%(nvir);
-                outfile->Printf("Fbar before dividing: %10.10f \n Omega: %10.10f \n", fbar.matrix[0][ij][ab], omega);
                 Xijab.matrix[0][ij][ab] = fbar.matrix[0][ij][ab] / (h_oo_array[i] + h_oo_array[j] - h_vv_array[a] - h_vv_array[b] + omega);
-                outfile->Printf("X after dividing: %10.10f \n", Xijab.matrix[0][ij][ab]);
             }
         }
         global_dpd_->buf4_close(&fbar);
         global_dpd_->buf4_mat_irrep_wrt(&Xijab, 0);
         global_dpd_->buf4_close(&Xijab);
-        outfile->Printf("Divided by denom\n");
 
         sprintf(lbl, "Xijab_%s", cart_list[n]);
         global_dpd_->buf4_init(&Xijab, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, lbl);
+        Xij.clear();
         get_matvec(&Xijab, &Xij);
 
         /*outfile->Printf("*** IJ Matrices ***\n");
@@ -338,12 +319,12 @@ void Local_cc::init_pnopp(const double omega) {
         global_dpd_->buf4_close(&Xijab);
 
         global_dpd_->buf4_init(&Xijab, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, lbl);
+        Xtij.clear();
         get_matvec(&Xijab, &Xtij);
         global_dpd_->buf4_close(&Xijab);
-        outfile->Printf("Got X_ij\n");
 
         // Create density
-        std::vector<SharedMatrix> Dtemp;
+        Dtemp.clear();
         for(int ij=0; ij < npairs; ++ij) {
             int i = ij/nocc;
             int j = ij%nocc;
@@ -356,12 +337,12 @@ void Local_cc::init_pnopp(const double omega) {
         }
 
         for(int ij=0; ij < npairs; ++ij) {
-            Dij[ij]->add(Dtemp[ij]);
+            Dij[ij]->add(Dtemp[ij]->clone());
         }
     }
     outfile->Printf("...done\n");
     for(int ij=0; ij < npairs; ++ij) {
-        Dij[ij]->scale(1.0/3.0);
+        Dij[ij]->scale(1.0/3);
     }
     // Diagonalize density
     Q = build_PNO_lists(cutoff, Dij);
@@ -384,7 +365,6 @@ void Local_cc::get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec) {
         for(int ab=0; ab < nvir*nvir; ++ab) {
             int a =  ab/(nvir);
             int b = ab%(nvir);
-            // outfile->Printf("ij: %d, ab: %d a: %d b: %d \nT2 val(ij,ab): %f \n", ij, ab, a, b, buf_obj->matrix[0][ij][ab]);
             mat->set(a, b, buf_obj->matrix[0][ij][ab]);
         }
         matvec->push_back(mat->clone());
@@ -410,6 +390,7 @@ void Local_cc::get_semicanonical_transforms(std::vector<SharedMatrix> Q) {
         }
     }
     global_dpd_->file2_close(&Fab);
+    outfile->Printf("Here\n");
 
     // Transform F_vir to PNO basis
     for(int ij=0; ij < npairs; ++ij) {
@@ -527,7 +508,6 @@ std::vector<SharedMatrix> Local_cc::build_PNO_lists(double cutoff, std::vector<S
         psio_write(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *) Q[ij]->pointer()[0],
                 nvir * npno * sizeof(double), next, &next);
     }
-    outfile->Printf("Wrote PNOs to file\n");
     
     delete[] survivors_list;
     return Q;

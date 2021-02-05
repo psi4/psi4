@@ -247,8 +247,8 @@ void CCEnergyWavefunction::get_params(Options &options) {
         outfile->Printf("    Local CPHF cutoff =     %3.1e\n", local_.cphf_cutoff);
     }
     if (!local_.pert.empty()) {
-        outfile->Printf("    Local Pert       =     %s\n", local_.pert);
-        outfile->Printf("    Omega            =     %1.6f", params_.omega);
+        outfile->Printf("    Local Pert       =     %s\n", local_.pert.c_str());
+        outfile->Printf("    Omega (E_h)      =     %1.6f\n", params_.omega);
     }
     outfile->Printf("    SCS-MP2         =     %s\n", (params_.scs == 1) ? "True" : "False");
     outfile->Printf("    SCSN-MP2        =     %s\n", (params_.scsn == 1) ? "True" : "False");
