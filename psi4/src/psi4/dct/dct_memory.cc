@@ -159,10 +159,8 @@ void DCTSolver::init() {
         dim_cumulant_ += (nbeta_ * (nbeta_ - 1) / 2) * (nbvir_ * (nbvir_ - 1) / 2);
         dim_ = dim_orbitals_ + dim_cumulant_;
 
-        lookup_orbitals_ = new int[dim_orbitals_];
-        ::memset(lookup_orbitals_, '\0', sizeof(int) * dim_orbitals_);
-        lookup_cumulant_ = new int[dim_cumulant_];
-        ::memset(lookup_cumulant_, '\0', sizeof(int) * dim_cumulant_);
+        lookup_orbitals_ = std::vector<bool>(dim_orbitals_, false);
+        lookup_cumulant_ = std::vector<bool>(dim_cumulant_, false);
     }
 
     // Fill up Kappa array

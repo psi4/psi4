@@ -106,10 +106,10 @@ double DCTSolver::compute_energy_RHF() {
     outfile->Printf("\t*%3s%5s Total Energy                               = %23.15f\n", prefix.c_str(),
                     options_.get_str("DCT_FUNCTIONAL").c_str(), new_total_energy_);
 
-    variables_["CURRENT ENERGY"] = new_total_energy_;
-    variables_["DCT TOTAL ENERGY"] = new_total_energy_;
-    variables_["DCT SCF ENERGY"] = scf_energy_;
-    variables_["DCT LAMBDA ENERGY"] = lambda_energy_;
+    set_scalar_variable("CURRENT ENERGY", new_total_energy_);
+    set_scalar_variable("DCT TOTAL ENERGY", new_total_energy_);
+    set_scalar_variable("DCT SCF ENERGY", scf_energy_);
+    set_scalar_variable("DCT LAMBDA ENERGY", lambda_energy_);
 
     print_opdm_RHF();
 

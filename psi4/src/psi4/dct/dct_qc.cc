@@ -323,7 +323,7 @@ void DCTSolver::form_idps() {
     cumulant_idp_ = 0;
 
     // Zero the lookup array
-    ::memset(lookup_orbitals_, '\0', sizeof(int) * dim_orbitals_);
+    std::fill(lookup_orbitals_.begin(), lookup_orbitals_.end(), false);
 
     // Temporary vectors containing gradient value and diagonal part of the Hessian for each IDP
     auto *grad = new double[dim_];
@@ -336,7 +336,7 @@ void DCTSolver::form_idps() {
         for (int i = 0; i < naoccpi_[h]; ++i) {
             for (int a = 0; a < navirpi_[h]; ++a) {
                 if (std::fabs(orbital_gradient_a_->get(h, i, a + naoccpi_[h])) > cutoff) {
-                    lookup_orbitals_[orbital_address] = 1;
+                    lookup_orbitals_[orbital_address] = true;
                     grad[orbital_idp_a_] = (-1.0) * orbital_gradient_a_->get(h, i, a + naoccpi_[h]);
                     Hd[orbital_idp_a_] = 2.0 * (moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) - moFa_->get(h, i, i));
                     orbital_idp_a_++;
@@ -351,7 +351,7 @@ void DCTSolver::form_idps() {
         for (int i = 0; i < nboccpi_[h]; ++i) {
             for (int a = 0; a < nbvirpi_[h]; ++a) {
                 if (std::fabs(orbital_gradient_b_->get(h, i, a + nboccpi_[h])) > cutoff) {
-                    lookup_orbitals_[orbital_address] = 1;
+                    lookup_orbitals_[orbital_address] = true;
                     int index = orbital_idp_a_ + orbital_idp_b_;
                     grad[index] = (-1.0) * orbital_gradient_b_->get(h, i, a + nboccpi_[h]);
                     Hd[index] = 2.0 * (moFb_->get(h, a + nboccpi_[h], a + nboccpi_[h]) - moFb_->get(h, i, i));
@@ -368,7 +368,7 @@ void DCTSolver::form_idps() {
         // Count the number of IDPs for cumulant updates
         dpdbuf4 R;
 
-        ::memset(lookup_cumulant_, '\0', sizeof(int) * dim_cumulant_);
+        std::fill(lookup_cumulant_.begin(), lookup_cumulant_.end(), false);
 
         int cumulant_address = 0;
 
@@ -394,7 +394,7 @@ void DCTSolver::form_idps() {
                     int bsym = R.params->ssym[b];
                     b -= R.params->soff[bsym];
                     if (std::fabs(R.matrix[h][ij][ab]) > cutoff) {
-                        lookup_cumulant_[cumulant_address] = 1;
+                        lookup_cumulant_[cumulant_address] = true;
                         int index = orbital_idp_ + cumulant_idp_aa_;
                         grad[index] = -0.25 * R.matrix[h][ij][ab];
                         double value = moFa_->get(asym, a + naoccpi_[asym], a + naoccpi_[asym]) +
@@ -431,7 +431,7 @@ void DCTSolver::form_idps() {
                     int bsym = R.params->ssym[b];
                     b -= R.params->soff[bsym];
                     if (std::fabs(R.matrix[h][ij][ab]) > cutoff) {
-                        lookup_cumulant_[cumulant_address] = 1;
+                        lookup_cumulant_[cumulant_address] = true;
                         int index = orbital_idp_ + cumulant_idp_aa_ + cumulant_idp_ab_;
                         grad[index] = -0.25 * R.matrix[h][ij][ab];
                         double value = moFa_->get(asym, a + naoccpi_[asym], a + naoccpi_[asym]) +
@@ -469,7 +469,7 @@ void DCTSolver::form_idps() {
                     int bsym = R.params->ssym[b];
                     b -= R.params->soff[bsym];
                     if (std::fabs(R.matrix[h][ij][ab]) > cutoff) {
-                        lookup_cumulant_[cumulant_address] = 1;
+                        lookup_cumulant_[cumulant_address] = true;
                         int index = orbital_idp_ + cumulant_idp_aa_ + cumulant_idp_ab_ + cumulant_idp_bb_;
                         grad[index] = -0.25 * R.matrix[h][ij][ab];
                         double value = moFb_->get(asym, a + nboccpi_[asym], a + nboccpi_[asym]) +

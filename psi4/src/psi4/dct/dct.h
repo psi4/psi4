@@ -338,9 +338,9 @@ class DCTSolver : public Wavefunction {
     /// The maximum number of IDPs possible for cumulant updates
     int dim_cumulant_;
     /// The lookup array that determines which compound indices belong to orbital IDPs and which don't
-    int* lookup_orbitals_;
+    std::vector<bool> lookup_orbitals_;
     /// The lookup array that determines which compound indices belong to cumulant IDPs and which don't
-    int* lookup_cumulant_;
+    std::vector<bool> lookup_cumulant_;
     /// The number of the guess subspace vectors for the Davidson diagonalization
     int nguess_;
     /// The dimension of the subspace in the Davidson diagonalization

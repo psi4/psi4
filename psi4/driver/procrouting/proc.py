@@ -1703,7 +1703,10 @@ def run_dct_gradient(name, **kwargs):
 
     derivobj = core.Deriv(dct_wfn)
     derivobj.set_tpdm_presorted(True)
-    grad = derivobj.compute() if core.get_option('DCT', 'DCT_TYPE') == 'CONV' else derivobj.compute_df("DF_BASIS_SCF", "DF_BASIS_DCT")
+    if core.get_option('DCT', 'DCT_TYPE') == 'CONV':
+        grad = derivobj.compute()
+    else:
+        grad = derivobj.compute_df('DF_BASIS_SCF', 'DF_BASIS_DCT')
 
     dct_wfn.set_gradient(grad)
 
