@@ -1715,7 +1715,7 @@ def run_dct_gradient(name, **kwargs):
 
 
 def run_dct_property(name, **kwargs):
-    """ FUnction encoding sequence of PSI module aclls for
+    """ Function encoding sequence of PSI module calls for
     DCT property calculation.
 
     """

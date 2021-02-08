@@ -797,6 +797,9 @@ def properties(*args, **kwargs):
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | ccsd               | Coupled cluster singles and doubles (CCSD)    | RHF            | dipole, quadrupole, polarizability, rotation, roa_tensor      |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
+    | dct                | density cumulant (functional) theory          | RHF/UHF        | Listed :ref:`here <sec:oeprop>`                               |
+    |                    | :ref:`[manual] <sec:dct>`                     |                |                                                               |
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | omp2               | orbital-optimized second-order                | RHF/UHF        | Listed :ref:`here <sec:oeprop>`                               |
     |                    | MP perturbation theory                        |                | Density fitted only                                           |
     |                    | :ref:`[manual] <sec:occ_oo>`                  |                |                                                               |
