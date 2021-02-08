@@ -1021,7 +1021,11 @@ void py_psi_set_n_threads(size_t nthread, bool quiet) {
 
 int py_psi_get_n_threads() { return Process::environment.get_n_threads(); }
 
+PSI_DEPRECATED("Using core.legacy_wavefunction rather than setting return_wfn=True for a computation is deprecated, "
+        "and in 1.5, it will stop working.")
 std::shared_ptr<Wavefunction> py_psi_legacy_wavefunction() { return Process::environment.legacy_wavefunction(); }
+PSI_DEPRECATED("Using core.set_legacy_wavefunction rather than passing a wavefunction into a computation is deprecated, "
+        "and in 1.5, it will stop working.")
 void py_psi_set_legacy_wavefunction(SharedWavefunction wfn) { Process::environment.set_legacy_wavefunction(wfn); }
 
 void py_psi_print_variable_map() {
