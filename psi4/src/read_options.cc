@@ -2131,7 +2131,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         developed by H.-J. Werner and co-workers. -*/
         options.add_str("LOCAL_METHOD", "WERNER PNO PNO++");
         /*- Type of perturbation to use for PNO++ method. -*/
-        options.add_str("LOCAL_PERT", "DIPOLE", "DIPOLE NABLA");
+        options.add_str("LOCAL_PERT", "NONE", "DIPOLE NABLA");
         /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE`` (unique available option)
         treats weak pairs in the same manner as strong pairs. -*/
         options.add_str("LOCAL_WEAKP", "NONE");

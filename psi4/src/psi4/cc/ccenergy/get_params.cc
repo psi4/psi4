@@ -153,7 +153,7 @@ void CCEnergyWavefunction::get_params(Options &options) {
     else if (params_.local)
         local_.pairdef = "BP";*/
 
-    if (!local_.pert.empty()) {
+    if (params_.local && local_.pert!="NONE") {
     // grab the field freqs from input -- a few units are converted to E_h
     int count = options["OMEGA"].size();
     if (count == 0) {  // Assume 0.0 E_h for field energy
@@ -246,7 +246,7 @@ void CCEnergyWavefunction::get_params(Options &options) {
         outfile->Printf("    Local pairs       =     %s\n", local_.pairdef.c_str());
         outfile->Printf("    Local CPHF cutoff =     %3.1e\n", local_.cphf_cutoff);
     }
-    if (!local_.pert.empty()) {
+    if (params_.local && local_.pert!="NONE") {
         outfile->Printf("    Local Pert       =     %s\n", local_.pert.c_str());
         outfile->Printf("    Omega (E_h)      =     %1.6f\n", params_.omega);
     }
