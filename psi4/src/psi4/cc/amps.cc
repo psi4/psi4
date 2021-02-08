@@ -32,35 +32,39 @@
 #include "psi4/libmints/dimension.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libpsi4util/process.h"
+#include "psi4/libmints/molecule.h"
 #include <memory>
 namespace psi {
 namespace ccenergy {
+
 std::map<std::string, SharedMatrix> CCEnergyWavefunction::get_amplitudes() {
     // re-init dpd
     int** cachelist;
     auto cachefiles = std::vector<int>(PSIO_MAXUNIT);
+
     auto ref = options_.get_str("REFERENCE");
-    if (ref == "ROHF" && options_.get_bool("SEMICANONICAL")){
-      ref = "UHF";
-    }
+    if (ref == "ROHF" && options_.get_bool("SEMICANONICAL")) ref = "UHF";
+
+    const std::string pg = molecule_->sym_label();
+    if (nirrep_ > 1) throw InputException("Point-group symmetry must be c1", "symmetry", pg, __FILE__, __LINE__);
+
     std::vector<DPDMOSpace> spaces;
-    std::map<std::string, SharedMatrix> amps;
     if (dpd_list[0] == nullptr) {
         if (ref == "RHF") {
-            Dimension occpi_ = nalphapi_;
+            Dimension occpi_ = nalphapi_ - frzcpi_;
             Dimension virtpi_ = nmopi_ - nalphapi_;
             cachelist = cacheprep_rhf(options_.get_int("CACHELEVEL"), cachefiles.data());
             spaces = {DPDMOSpace{'o', "ijkl", occpi_}, DPDMOSpace{'v', "abcd", virtpi_}};
         } else if (ref == "ROHF") {
-            Dimension doccpi_ = nalphapi_;
-            Dimension soccpi_ = nbetapi_ - nalphapi_;
+            Dimension doccpi_ = nbetapi_ - frzcpi_;
+            Dimension soccpi_ = nalphapi_ - nbetapi_;
             Dimension occpi_ = doccpi_ + soccpi_;
-            Dimension virtpi_ = (nmopi_ - doccpi_) + soccpi_;
+            Dimension virtpi_ = nmopi_ - (occpi_ + frzcpi_);
             cachelist = cacheprep_rhf(options_.get_int("CACHELEVEL"), cachefiles.data());
             spaces = {DPDMOSpace{'o', "ijkl", occpi_}, DPDMOSpace{'v', "abcd", virtpi_}};
         } else /*UHF*/{
-            Dimension aoccpi_ = nalphapi_;
-            Dimension boccpi_ = nbetapi_;
+            Dimension aoccpi_ = nalphapi_ - frzcpi_;
+            Dimension boccpi_ = nbetapi_ - frzcpi_;
             Dimension avirtpi_ = nmopi_ - nalphapi_;
             Dimension bvirtpi_ = nmopi_ - nbetapi_;
             cachelist = cacheprep_uhf(options_.get_int("CACHELEVEL"), cachefiles.data());
@@ -81,7 +85,8 @@ std::map<std::string, SharedMatrix> CCEnergyWavefunction::get_amplitudes() {
         psio_open(PSIF_CC_TAMPS, PSIO_OPEN_OLD);
     }
 
-    // grab T1
+    // Grab T1 and T2 amplitudes
+    std::map<std::string, SharedMatrix> amps;
     dpdfile2 T1;
     dpdbuf4 T2;
     if (ref == "RHF") {
