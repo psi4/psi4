@@ -133,14 +133,14 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
             
             double max_dens = 0.0;
 
-	    for (int i = 0; i < D.size(); i++) {
+	        for (int i = 0; i < D.size(); i++) {
                 for (int m = m_start; m < m_start + num_m; m++) {
                     for (int n = n_start; n < n_start + num_n; n++) {
                         double val = std::abs(D[i]->get(m, n));
                         if (val > max_dens) max_dens = val;
                     }
                 }
-	    }
+	        }
             max_dens_shell_pair_[M][N] = max_dens;
         }
     }
@@ -186,7 +186,7 @@ double TwoBodyAOInt::pair_screen_linK(int M, int N) {
 
     for (int S = 0; S < nshell_; S++) {
         if (shell_pair_values_[M * nshell_ + S] > Q_M_sq_max) Q_M_sq_max = shell_pair_values_[M * nshell_ + S];
-	if (shell_pair_values_[N * nshell_ + S] > Q_N_sq_max) Q_N_sq_max = shell_pair_values_[N * nshell_ + S];
+	    if (shell_pair_values_[N * nshell_ + S] > Q_N_sq_max) Q_N_sq_max = shell_pair_values_[N * nshell_ + S];
     }
 
     return max_dens_shell_pair_[M][N] * sqrt(Q_M_sq_max * Q_N_sq_max);  
@@ -196,7 +196,7 @@ double TwoBodyAOInt::pair_screen_linK(int M, int N) {
 // Quartet Screening Used in LinK procedure
 double TwoBodyAOInt::quart_screen_linK(int M, int N, int R, int S) {
 
-    return max_dens_shell_pair_[M][N] * sqrt(shell_pair_values_[M * nshell_ + R] * shell_pair_values_[N * nshell_ + S]);
+    return max_dens_shell_pair_[M][R] * sqrt(shell_pair_values_[M * nshell_ + N] * shell_pair_values_[R * nshell_ + S]);
 
 }
 
