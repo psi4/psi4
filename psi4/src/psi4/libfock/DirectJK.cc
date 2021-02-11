@@ -683,7 +683,6 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
         bool touched = false;
         for (int P2 = P2start; P2 < P2start + nPtask; P2++) {
             for (int Q2 = Q2start; Q2 < Q2start + nQtask; Q2++) {
-                
                 if (Q2 > P2) continue;
                 int P = task_shells[P2];
                 int Q = task_shells[Q2];
