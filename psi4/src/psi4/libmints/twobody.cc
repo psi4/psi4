@@ -181,22 +181,22 @@ bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
 double TwoBodyAOInt::pair_screen_linK(int M, int N) {
     // (m_max|m_man) and (n_max|n_max) in Equation 3
     // Note that this is not square_rooted
-    int Q_M_sq_max = 0.0;
-    int Q_N_sq_max = 0.0;
+    double Q_M_sq_max = 0.0;
+    double Q_N_sq_max = 0.0;
 
     for (int S = 0; S < nshell_; S++) {
         if (shell_pair_values_[M * nshell_ + S] > Q_M_sq_max) Q_M_sq_max = shell_pair_values_[M * nshell_ + S];
 	    if (shell_pair_values_[N * nshell_ + S] > Q_N_sq_max) Q_N_sq_max = shell_pair_values_[N * nshell_ + S];
     }
 
-    return max_dens_shell_pair_[M][N] * sqrt(Q_M_sq_max * Q_N_sq_max);  
+    return max_dens_shell_pair_[M][N] * std::sqrt(Q_M_sq_max * Q_N_sq_max);  
 
 }
 
 // Quartet Screening Used in LinK procedure
 double TwoBodyAOInt::quart_screen_linK(int M, int N, int R, int S) {
 
-    return max_dens_shell_pair_[M][R] * sqrt(shell_pair_values_[M * nshell_ + N] * shell_pair_values_[R * nshell_ + S]);
+    return max_dens_shell_pair_[M][R] * std::sqrt(shell_pair_values_[M * nshell_ + N] * shell_pair_values_[R * nshell_ + S]);
 
 }
 

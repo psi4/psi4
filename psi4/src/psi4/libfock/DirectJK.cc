@@ -362,6 +362,8 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
     Options& options = Process::environment.options;
     bool do_linK = options.get_bool("SCF_DO_LINK");
     double linK_thresh = options.get_double("LINK_THRESHOLD");
+    
+    outfile->Printf("\tLinK Threshold: %.16f\n", linK_thresh);
 
     // => Zeroing <= //
     for (size_t ind = 0; ind < J.size(); ind++) {
