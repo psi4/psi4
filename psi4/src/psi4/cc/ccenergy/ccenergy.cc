@@ -194,8 +194,7 @@ double CCEnergyWavefunction::compute_energy() {
             MintsHelper mints(reference_wavefunction_->basisset(), Process::environment.options, 0);
             int nmo = moinfo_.nmo;
             int nso = moinfo_.nso;
-            std::vector<char*> cart_list = {strdup("x"),strdup("y"),strdup("z")};
-            char lbl[32];
+            std::vector<std::string> cart_list = {"x","y","z"};
             dpdfile2 f;
             std::vector<SharedMatrix> ao_pert;
             if (local_.pert == "DIPOLE") {
@@ -212,8 +211,8 @@ double CCEnergyWavefunction::compute_energy() {
                 C_DGEMM('t', 'n', nmo, nmo, nso, 1, moinfo_.scf[0], nmo, TMP2[0], nso, 0, TMP3[0], nmo);
 
                 // Write the perturbation to file
-                sprintf(lbl, "PertAE_%s", cart_list[n]);
-                global_dpd_->file2_init(&f, PSIF_CC_OEI, 0, 1, 1, lbl);
+                std::string lbl1 = "PertAE_"+cart_list[n];
+                global_dpd_->file2_init(&f, PSIF_CC_OEI, 0, 1, 1, lbl1.c_str());
                 global_dpd_->file2_mat_init(&f);
                 for (int a=0; a < local_.nvir; a++) {
                     for (int e=0; e < local_.nvir; e++) {
@@ -224,8 +223,8 @@ double CCEnergyWavefunction::compute_energy() {
                 global_dpd_->file2_mat_close(&f);
                 global_dpd_->file2_close(&f);
 
-                sprintf(lbl, "PertMI_%s", cart_list[n]);
-                global_dpd_->file2_init(&f, PSIF_CC_OEI, 0, 0, 0, lbl);
+                std::string lbl2 = "PertMI_"+cart_list[n];
+                global_dpd_->file2_init(&f, PSIF_CC_OEI, 0, 0, 0, lbl2.c_str());
                 global_dpd_->file2_mat_init(&f);
                 for (int i=0; i < local_.nocc; i++) {
                     for (int j=0; j < local_.nocc; j++) {

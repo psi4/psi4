@@ -153,7 +153,7 @@ void CCEnergyWavefunction::get_params(Options &options) {
     else if (params_.local)
         local_.pairdef = "BP";*/
 
-    if (params_.local && local_.pert!="NONE") {
+    if (params_.local && local_.method=="PNO++") {
     // grab the field freqs from input -- a few units are converted to E_h
     int count = options["OMEGA"].size();
     if (count == 0) {  // Assume 0.0 E_h for field energy

@@ -240,26 +240,25 @@ void Local_cc::init_pnopp(const double omega) {
 
     // Build the similarity-transformed perturbation
     outfile->Printf("Building Abar...\n");
-    std::vector<char*> cart_list = {strdup("x"),strdup("y"),strdup("z")};
+    std::vector<std::string> cart_list = {"x","y","z"};
 
     // Do the similarity transformation with MP2 T2s
     for (int n=0; n < 3; ++n) {
         dpdbuf4 fbar;
         dpdfile2 AAE;
         dpdfile2 AMI;
-        char lbl[32];
-        sprintf(lbl, "Pbar_%s", cart_list[n]);
-        global_dpd_->buf4_init(&fbar, PSIF_CC_INFO, 0, 0, 5, 0, 5, 0, lbl);
-        sprintf(lbl, "PertAE_%s", cart_list[n]);
-        global_dpd_->file2_init(&AAE, PSIF_CC_OEI, 0, 1, 1, lbl);
+        std::string lbl1 = "Pbar_"+cart_list[n];
+        global_dpd_->buf4_init(&fbar, PSIF_CC_INFO, 0, 0, 5, 0, 5, 0, lbl1.c_str());
+        std::string lbl2 = "PertAE_"+cart_list[n];
+        global_dpd_->file2_init(&AAE, PSIF_CC_OEI, 0, 1, 1, lbl2.c_str());
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
         global_dpd_->contract424(&T2, &AAE, &fbar, 3, 1, 0, 1, 0); 
         global_dpd_->contract244(&AAE, &T2, &fbar, 1, 2, 1, 1, 1); 
         global_dpd_->buf4_close(&T2);
         global_dpd_->file2_close(&AAE);
 
-        sprintf(lbl, "PertMI_%s", cart_list[n]);
-        global_dpd_->file2_init(&AMI, PSIF_CC_OEI, 0, 0, 0, lbl);
+        std::string lbl3 = "PertMI_"+cart_list[n];
+        global_dpd_->file2_init(&AMI, PSIF_CC_OEI, 0, 0, 0, lbl3.c_str());
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
         global_dpd_->contract424(&T2, &AMI, &fbar, 1, 0, 1, -1, 1); 
         global_dpd_->contract244(&AMI, &T2, &fbar, 0, 0, 0, -1, 1); 
@@ -283,11 +282,10 @@ void Local_cc::init_pnopp(const double omega) {
     }
     for (int n=0; n < 3; n++) {
         dpdbuf4 fbar;
-        char lbl[32];
-        sprintf(lbl, "Pbar_%s", cart_list[n]);
-        global_dpd_->buf4_init(&fbar, PSIF_CC_INFO, 0, 0, 5, 0, 5, 0, lbl);
-        sprintf(lbl, "Xijab_%s", cart_list[n]);
-        global_dpd_->buf4_init(&Xijab, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, lbl);
+        std::string lbl1 = "Pbar_"+cart_list[n];
+        global_dpd_->buf4_init(&fbar, PSIF_CC_INFO, 0, 0, 5, 0, 5, 0, lbl1.c_str());
+        std::string lbl2 = "Xijab_"+cart_list[n];
+        global_dpd_->buf4_init(&Xijab, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, lbl2.c_str());
         global_dpd_->buf4_mat_irrep_init(&Xijab, 0);
         global_dpd_->buf4_mat_irrep_init(&fbar, 0);
         global_dpd_->buf4_mat_irrep_rd(&fbar, 0);
@@ -304,8 +302,7 @@ void Local_cc::init_pnopp(const double omega) {
         global_dpd_->buf4_mat_irrep_wrt(&Xijab, 0);
         global_dpd_->buf4_close(&Xijab);
 
-        sprintf(lbl, "Xijab_%s", cart_list[n]);
-        global_dpd_->buf4_init(&Xijab, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, lbl);
+        global_dpd_->buf4_init(&Xijab, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, lbl2.c_str());
         Xij.clear();
         get_matvec(&Xijab, &Xij);
 
@@ -313,12 +310,12 @@ void Local_cc::init_pnopp(const double omega) {
         for(int ij=0; ij<Xij.size(); ++ij) {
             Xij.at(ij)->print();   }*/
 
-        sprintf(lbl, "Xtijab_%s", cart_list[n]);
-        global_dpd_->buf4_scmcopy(&Xijab, PSIF_CC_TMP0, lbl, 2);
-        global_dpd_->buf4_sort_axpy(&Xijab, PSIF_CC_TMP0, pqsr, 0, 5, lbl, -1);
+        std::string lbl3 = "Xtijab_"+cart_list[n];
+        global_dpd_->buf4_scmcopy(&Xijab, PSIF_CC_TMP0, lbl3.c_str(), 2);
+        global_dpd_->buf4_sort_axpy(&Xijab, PSIF_CC_TMP0, pqsr, 0, 5, lbl3.c_str(), -1);
         global_dpd_->buf4_close(&Xijab);
 
-        global_dpd_->buf4_init(&Xijab, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, lbl);
+        global_dpd_->buf4_init(&Xijab, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, lbl3.c_str());
         Xtij.clear();
         get_matvec(&Xijab, &Xtij);
         global_dpd_->buf4_close(&Xijab);
@@ -390,7 +387,6 @@ void Local_cc::get_semicanonical_transforms(std::vector<SharedMatrix> Q) {
         }
     }
     global_dpd_->file2_close(&Fab);
-    outfile->Printf("Here\n");
 
     // Transform F_vir to PNO basis
     for(int ij=0; ij < npairs; ++ij) {
@@ -413,14 +409,24 @@ void Local_cc::get_semicanonical_transforms(std::vector<SharedMatrix> Q) {
     next = PSIO_ZERO;
     for(int ij=0; ij < npairs; ++ij) {
         int npno = Q[ij]->colspi(0);
-        psio_write(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *) L[ij]->pointer()[0],
+        if (npno == 0) {
+            continue;
+        }
+        else {
+            psio_write(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *) L[ij]->pointer()[0],
                 npno * npno * sizeof(double), next, &next);
+        }
     }
     next = PSIO_ZERO;
     for(int ij=0; ij < npairs; ++ij) {
         int npno = Q[ij]->colspi(0);
+        if (npno == 0) {
+            continue;
+        }
+        else {
         psio_write(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *) eps_pno[ij]->pointer(),
                 npno * sizeof(double), next, &next);
+        }
     }
 
 }
@@ -505,8 +511,13 @@ std::vector<SharedMatrix> Local_cc::build_PNO_lists(double cutoff, std::vector<S
     next = PSIO_ZERO;
     for(int ij=0; ij < npairs; ++ij) {
         int npno = survivor_list[ij];
-        psio_write(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *) Q[ij]->pointer()[0],
+        if(npno == 0) {
+             continue;
+        }
+        else {
+            psio_write(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *) Q[ij]->pointer()[0],
                 nvir * npno * sizeof(double), next, &next);
+        }
     }
     
     delete[] survivors_list;
@@ -519,6 +530,7 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
     int ii;
     psio_address next;
     npairs = nocc*nocc;
+    outfile->Printf("Entered local filter T1\n");
 
     // Switching to cleaner std::vector for memory allocation
     std::vector<SharedMatrix> Q;
@@ -543,30 +555,51 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
     for (int ij = 0; ij < npairs; ++ij) {
         int npno = survivors_list[ij];
         auto eps_pno_temp = std::make_shared<Vector>(npno);
-        psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *)eps_pno_temp->pointer(),
-                  npno * sizeof(double), next, &next);
-        eps_pno.push_back(eps_pno_temp);
+        if (npno == 0) {
+            eps_pno.push_back(eps_pno_temp);
+        }
+        else {
+            psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *)eps_pno_temp->pointer(),
+                      npno * sizeof(double), next, &next);
+            eps_pno.push_back(eps_pno_temp);
+        }
     }
+    outfile->Printf("Read eps_pno\n");
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ++ij) {
         int npno = survivors_list[ij];
         auto qtemp = std::make_shared<Matrix>(nvir, npno);
-        psio_read(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *)qtemp->pointer()[0],
-                  sizeof(double) * nvir * npno, next, &next);
-        Q.push_back(qtemp->clone());
+        if (npno == 0) {
+            qtemp = nullptr;
+            Q.push_back(qtemp);
+        }
+        else {
+            psio_read(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *)qtemp->pointer()[0],
+                      sizeof(double) * nvir * npno, next, &next);
+            Q.push_back(qtemp->clone());
+        }
     }
+    outfile->Printf("Read Q\n");
     /*outfile->Printf("Testing read-in of Q\n");
     for (auto &qel : Q) {
         qel->print();
     }*/
     next = PSIO_ZERO;
-    for (int ij = 0; ij < nocc * nocc; ij++) {
+    for (int ij = 0; ij < npairs; ij++) {
         int npno = survivors_list[ij];
         auto ltemp = std::make_shared<Matrix>(npno, npno);
-        psio_read(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *)ltemp->pointer()[0],
-                  sizeof(double) * npno * npno, next, &next);
-        L.push_back(ltemp->clone());
+        if (npno == 0) {
+            ltemp = nullptr;
+            L.push_back(ltemp);
+        }
+        else {
+            psio_read(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *)ltemp->pointer()[0],
+                      sizeof(double) * npno * npno, next, &next);
+            L.push_back(ltemp->clone());
+        }
     }
+
+    outfile->Printf("Read L\n");
 
     global_dpd_->file2_mat_init(T1);
     global_dpd_->file2_mat_rd(T1);
@@ -578,6 +611,14 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
         ii = i * nocc + i; /* diagonal element of pair matrices */
         int npno = survivors_list[ii];
 
+        // If Q is nullptr, set T to 0
+        // and skip the iteration
+        if (npno == 0) { 
+            for(int a=0; a < nvir; ++a) {
+                T1->matrix[0][i][a] = 0.0;
+            }
+            continue; 
+        }
         // Print checking
         /*Vector T1vec(nvir);
         for(int a=0; a < nvir; ++a) {
@@ -618,10 +659,12 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
     global_dpd_->file2_mat_wrt(T1);
     global_dpd_->file2_mat_close(T1);
 
+    outfile->Printf("Exited local filter T1\n");
     delete[] survivors_list;
     delete[] occ_eps;
     free(T1tilde);
     free(T1bar);
+    outfile->Printf("Freed memory T1\n");
 }
 
 void Local_cc::local_filter_T2(dpdbuf4 *T2) {
@@ -651,9 +694,14 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
     for (int ij = 0; ij < npairs; ++ij) {
         int npno = survivors_list[ij];
         auto eps_pno_temp = std::make_shared<Vector>(npno);
-        psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *)eps_pno_temp->pointer(),
-                  npno * sizeof(double), next, &next);
-        eps_pno.push_back(eps_pno_temp);
+        if (npno == 0) {
+            eps_pno.push_back(eps_pno_temp);
+        }
+        else {
+            psio_read(PSIF_CC_INFO, "Local Virtual Orbital Energies", (char *)eps_pno_temp->pointer(),
+                      npno * sizeof(double), next, &next);
+            eps_pno.push_back(eps_pno_temp);
+        }
     }
     /*outfile->Printf("Testing read-in of virtual orbital energies\n");
     for(int ij=0; ij < npairs; ++ij) {
@@ -667,17 +715,29 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
     for (int ij = 0; ij < npairs; ij++) {
         int npno = survivors_list[ij];
         auto qtemp = std::make_shared<Matrix>(nvir, npno);
-        psio_read(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *)qtemp->pointer()[0],
-                  sizeof(double) * nvir * npno, next, &next);
-        Q.push_back(qtemp->clone());
+        if (npno == 0) {
+            qtemp = nullptr;
+            Q.push_back(qtemp);
+        }
+        else {
+            psio_read(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *)qtemp->pointer()[0],
+                      sizeof(double) * nvir * npno, next, &next);
+            Q.push_back(qtemp->clone());
+        }
     }
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ij++) {
         int npno = survivors_list[ij];
         auto ltemp = std::make_shared<Matrix>(npno, npno);
-        psio_read(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *)ltemp->pointer()[0],
-                  sizeof(double) * npno * npno, next, &next);
-        L.push_back(ltemp->clone());
+        if (npno == 0) {
+            ltemp = nullptr;
+            L.push_back(ltemp);
+        }
+        else {
+            psio_read(PSIF_CC_INFO, "Semicanonical Transformation Matrix L", (char *)ltemp->pointer()[0],
+                      sizeof(double) * npno * npno, next, &next);
+            L.push_back(ltemp->clone());
+        }
     }
     /*outfile->Printf("Testing read-in of L\n");
     for (auto &qel : L) {
@@ -694,6 +754,17 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
         auto atemp = std::make_shared<Matrix>(nvir, npno);
         auto btemp = std::make_shared<Matrix>(npno, npno);
         auto T2bar = std::make_shared<Matrix>(npno, npno);
+
+        // If Q is nullptr, set T to 0
+        // and skip the iteration
+        if (npno == 0) { 
+            for(int ab=0; ab < nvir*nvir; ++ab) {
+                int a = ab / nvir;
+                int b = ab % nvir;
+                T2->matrix[0][ij][ab] = 0.0;
+            }
+            continue; 
+        }
 
         for(int ab=0; ab < nvir*nvir; ++ab) {
             int a = ab / nvir;
