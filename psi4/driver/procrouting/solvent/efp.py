@@ -26,8 +26,6 @@
 # @END LICENSE
 #
 
-from __future__ import division
-
 import numpy as np
 
 from psi4 import core
@@ -165,23 +163,6 @@ def modify_Fock_induced(efpobj, mints, verbose=1):
     val_id = (val_id + val_idt) * 0.5
 
     # EFP induced dipole contribution to the Fock Matrix
-    nbf = mints.basisset().nbf()
-    V2 = np.zeros((nbf, nbf))
-
-    # Cartesian basis one-electron EFP perturbation
-    field_ints = np.zeros((3, nbf, nbf))
-
-    for iid in range(nid):
-        origin = xyz_id[iid]
-
-        # get electric field integrals from Psi4
-        p4_field_ints = mints.electric_field(origin=origin)
-        for pole in range(3):
-            field_ints[pole] = np.asarray(p4_field_ints[pole])
-
-        # scale field integrals by induced dipole magnitudes. result goes into V
-        for pole in range(3):
-            field_ints[pole] *= -val_id[iid, pole]
-            V2 += field_ints[pole]
-
-    return V2
+    coords = core.Matrix.from_array(xyz_id)
+    V_ind = mints.induction_operator(coords, core.Matrix.from_array(val_id)).np
+    return V_ind

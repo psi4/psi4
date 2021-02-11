@@ -25,6 +25,7 @@ else()
                    -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                    -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
                    -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
+                   -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
                    -DNAMESPACE_INSTALL_INCLUDEDIR=/
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                    # OpenMP irrelevant

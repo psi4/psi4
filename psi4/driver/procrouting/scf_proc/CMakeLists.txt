@@ -1,6 +1,5 @@
 
 list(APPEND sources
-  efp
   scf_iterator
 )
 
