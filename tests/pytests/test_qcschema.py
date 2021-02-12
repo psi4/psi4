@@ -149,10 +149,6 @@ def test_qcschema_wavefunction_scf_occupations_gs(result_data_fixture):
 
     ref_occupations_a = np.array([1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,])
     ref_occupied_energies_a = np.array([-20.55785069,  -1.31618596,  -0.6770761,  -0.55872283,  -0.49037545])
-    print(ref_occupations_a)
-    print(ret.wavefunction.scf_occupations_a)
-    print(ref_occupied_energies_a)
-    print(wfn.scf_eigenvalues_a[wfn.scf_occupations_a == 1])
 
     assert compare_arrays(ref_occupations_a, wfn.scf_occupations_a, 6, "Orbital Occupations")
     assert compare_arrays(ref_occupied_energies_a, wfn.scf_eigenvalues_a[wfn.scf_occupations_a == 1], 6, "Occupied Orbital Energies")
@@ -165,10 +161,6 @@ def test_qcschema_wavefunction_scf_occupations_es(result_data_fixture):
 
     ref_occupations_a = np.array([1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,])
     ref_occupied_energies_a = np.array([-20.86710716,  -1.38875044,  -0.77442913,  -0.6598582,    1.10374473])
-    print(ref_occupations_a)
-    print(ret.wavefunction.scf_occupations_a)
-    print(ref_occupied_energies_a)
-    print(wfn.scf_eigenvalues_a[wfn.scf_occupations_a == 1])
 
     assert compare_arrays(ref_occupations_a, ret.wavefunction.scf_occupations_a, 6, "Orbital Occupations")
     assert compare_arrays(ref_occupied_energies_a, wfn.scf_eigenvalues_a[wfn.scf_occupations_a == 1], 6, "Occupied Orbital Energies")
