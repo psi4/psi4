@@ -203,10 +203,10 @@ double CCEnergyWavefunction::compute_energy() {
             else {
                 ao_pert = mints.so_dipole();
             }
+            double **TMP2 = block_matrix(nso, nso);
+            double **TMP3 = block_matrix(nmo, nmo);
             for (int n=0; n < 3; n++) {
                 double **TMP1 = ao_pert[n]->to_block_matrix();
-                double **TMP2 = block_matrix(nso, nso);
-                double **TMP3 = block_matrix(nmo, nmo);
                 C_DGEMM('n', 'n', nso, nmo, nso, 1, TMP1[0], nso, moinfo_.scf[0], nmo, 0, TMP2[0], nso);
                 C_DGEMM('t', 'n', nmo, nmo, nso, 1, moinfo_.scf[0], nmo, TMP2[0], nso, 0, TMP3[0], nmo);
 
@@ -236,6 +236,8 @@ double CCEnergyWavefunction::compute_energy() {
                 global_dpd_->file2_close(&f);
 
             }
+            free_block(TMP2);
+            free_block(TMP3);
             local_.init_pnopp(params_.omega);
         }
         else {

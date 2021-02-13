@@ -181,6 +181,8 @@ void Local_cc::init_pnopp(const double omega) {
     }
     psio_write_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) temp_occ_array,
             nocc * sizeof(double));
+    global_dpd_->file2_mat_close(&Fij);
+    global_dpd_->file2_close(&Fij);
 
     // Build the denominator of Hbar elements
     // d_ia = H_ii - H_aa
@@ -191,6 +193,7 @@ void Local_cc::init_pnopp(const double omega) {
     dpdbuf4 D;
     dpdbuf4 T2;
     double *h_oo_array = new double[nocc];
+    global_dpd_->file2_init(&Fij, PSIF_CC_OEI, 0, 0, 0, "fIJ");
     global_dpd_->file2_copy(&Fij, PSIF_CC_OEI, "FMI");
     global_dpd_->file2_close(&Fij);
 
@@ -210,7 +213,7 @@ void Local_cc::init_pnopp(const double omega) {
     }
     global_dpd_->file2_close(&FMI);
     
-    double *h_vv_array = new double[nocc];
+    double *h_vv_array = new double[nvir];
     dpdfile2 FAE;
     dpdfile2 Fab;
     global_dpd_->file2_init(&Fab, PSIF_CC_OEI, 0, 1, 1, "fAB");
@@ -243,36 +246,33 @@ void Local_cc::init_pnopp(const double omega) {
     std::vector<std::string> cart_list = {"x","y","z"};
 
     // Do the similarity transformation with MP2 T2s
-    for (int n=0; n < 3; ++n) {
-        dpdbuf4 fbar;
-        dpdfile2 AAE;
-        dpdfile2 AMI;
-        std::string lbl1 = "Pbar_"+cart_list[n];
-        global_dpd_->buf4_init(&fbar, PSIF_CC_INFO, 0, 0, 5, 0, 5, 0, lbl1.c_str());
+    dpdbuf4 pbar;
+    dpdfile2 AAE;
+    dpdfile2 AMI;
+    for (int n=0; n < 3; n++) {
+        std::string lbl1 = "Pertbar_"+cart_list[n];
+        global_dpd_->buf4_init(&pbar, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, lbl1.c_str());
         std::string lbl2 = "PertAE_"+cart_list[n];
         global_dpd_->file2_init(&AAE, PSIF_CC_OEI, 0, 1, 1, lbl2.c_str());
         global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-        global_dpd_->contract424(&T2, &AAE, &fbar, 3, 1, 0, 1, 0); 
-        global_dpd_->contract244(&AAE, &T2, &fbar, 1, 2, 1, 1, 1); 
-        global_dpd_->buf4_close(&T2);
+        global_dpd_->contract424(&T2, &AAE, &pbar, 3, 1, 0, 1, 0); 
+        global_dpd_->contract244(&AAE, &T2, &pbar, 1, 2, 1, 1, 1); 
         global_dpd_->file2_close(&AAE);
 
         std::string lbl3 = "PertMI_"+cart_list[n];
         global_dpd_->file2_init(&AMI, PSIF_CC_OEI, 0, 0, 0, lbl3.c_str());
-        global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-        global_dpd_->contract424(&T2, &AMI, &fbar, 1, 0, 1, -1, 1); 
-        global_dpd_->contract244(&AMI, &T2, &fbar, 0, 0, 0, -1, 1); 
+        global_dpd_->contract424(&T2, &AMI, &pbar, 1, 0, 1, -1, 1); 
+        global_dpd_->contract244(&AMI, &T2, &pbar, 0, 0, 0, -1, 1); 
         global_dpd_->buf4_close(&T2);
         global_dpd_->file2_close(&AMI);
 
-        global_dpd_->buf4_close(&fbar);
+        global_dpd_->buf4_close(&pbar);
 
     }
     outfile->Printf("...done\n");
 
     // Build X_ij as Abar/denom
     outfile->Printf("Building X_ij...\n");
-    dpdbuf4 Xijab;
     std::vector<SharedMatrix> Dij;
     std::vector<SharedMatrix> Dtemp;
     SharedMatrix temp(new Matrix(nvir, nvir));
@@ -281,9 +281,10 @@ void Local_cc::init_pnopp(const double omega) {
         Dij.push_back(mat->clone());
     }
     for (int n=0; n < 3; n++) {
+        dpdbuf4 Xijab;
         dpdbuf4 fbar;
-        std::string lbl1 = "Pbar_"+cart_list[n];
-        global_dpd_->buf4_init(&fbar, PSIF_CC_INFO, 0, 0, 5, 0, 5, 0, lbl1.c_str());
+        std::string lbl1 = "Pertbar_"+cart_list[n];
+        global_dpd_->buf4_init(&fbar, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, lbl1.c_str());
         std::string lbl2 = "Xijab_"+cart_list[n];
         global_dpd_->buf4_init(&Xijab, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, lbl2.c_str());
         global_dpd_->buf4_mat_irrep_init(&Xijab, 0);
@@ -349,6 +350,8 @@ void Local_cc::init_pnopp(const double omega) {
     get_semicanonical_transforms(Q);
 
     // Assuming this memory needs to be freed
+    delete[] h_oo_array;
+    delete[] h_vv_array;
     delete[] temp_occ_array;
 }
 void Local_cc::get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec) {
@@ -530,7 +533,6 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
     int ii;
     psio_address next;
     npairs = nocc*nocc;
-    outfile->Printf("Entered local filter T1\n");
 
     // Switching to cleaner std::vector for memory allocation
     std::vector<SharedMatrix> Q;
@@ -564,7 +566,6 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
             eps_pno.push_back(eps_pno_temp);
         }
     }
-    outfile->Printf("Read eps_pno\n");
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ++ij) {
         int npno = survivors_list[ij];
@@ -579,7 +580,6 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
             Q.push_back(qtemp->clone());
         }
     }
-    outfile->Printf("Read Q\n");
     /*outfile->Printf("Testing read-in of Q\n");
     for (auto &qel : Q) {
         qel->print();
@@ -598,8 +598,6 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
             L.push_back(ltemp->clone());
         }
     }
-
-    outfile->Printf("Read L\n");
 
     global_dpd_->file2_mat_init(T1);
     global_dpd_->file2_mat_rd(T1);
@@ -659,12 +657,10 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
     global_dpd_->file2_mat_wrt(T1);
     global_dpd_->file2_mat_close(T1);
 
-    outfile->Printf("Exited local filter T1\n");
     delete[] survivors_list;
     delete[] occ_eps;
     free(T1tilde);
     free(T1bar);
-    outfile->Printf("Freed memory T1\n");
 }
 
 void Local_cc::local_filter_T2(dpdbuf4 *T2) {
