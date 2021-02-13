@@ -44,7 +44,6 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
 
-// #include <template>
 #include <algorithm>
 #include <limits>
 #include <sstream>
@@ -328,11 +327,13 @@ void DirectJK::compute_JK() {
                 for (size_t i = 0; i < D_ao_.size(); i++) {
                     temp.push_back(std::make_shared<Matrix>("temp", primary_->nbf(), primary_->nbf()));
                 }
+                do_J_ = false;
                 build_JK(ints, D_ao_, temp, K_ao_);
-                options.set_global_bool("SCF_DO_LINK", false);
+                do_J_ = true;
+                do_K_ = false;
                 build_JK(ints, D_ao_, J_ao_, temp);
-                options.set_global_bool("SCF_DO_LINK", true);
-                outfile->Printf("\tLIVIE IS SO COOL!!!\n");
+                do_K_ = true;
+                // outfile->Printf("\tLIVIE IS SO COOL!!!\n");
             }
         } else if (do_J_) {
             std::vector<std::shared_ptr<Matrix>> temp;
@@ -363,7 +364,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
     bool do_linK = options.get_bool("SCF_DO_LINK");
     double linK_thresh = options.get_double("LINK_THRESHOLD");
     
-    outfile->Printf("\tLinK Threshold: %.16f\n", linK_thresh);
+    // outfile->Printf("\tLinK Threshold: %.16f\n", linK_thresh);
 
     // => Zeroing <= //
     for (size_t ind = 0; ind < J.size(); ind++) {
@@ -456,32 +457,26 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
 
     // => linK Significant Task BraKets (P*|R*)
     
-    std::map<int, std::vector<int>> linK_braket_map;
+    std::vector<std::vector<int>> linK_sig_braket(nshell, std::vector<int>(0));
     
-    if (do_linK) {
-        outfile->Printf("\tI like sign extension!!!\n");
+    if (do_K_ && do_linK) {
         for (int P = 0; P < nshell; P++) {
             // List of every R that is significant for a given P
-            std::vector<std::tuple<double, int>> Rsig;
+            std::vector<std::tuple<double, int>> P_sig_R;
             for (int R = 0; R < nshell; R++) {
                 double pair_val = ints[0]->pair_screen_linK(P, R);
-                // outfile->Printf("\tTEST P Shell: %d, R Shell: %d, Value: %8.8f\n", P, R, pair_val);
                 if (pair_val > linK_thresh) {
-                    Rsig.push_back(std::tuple<double, int>(pair_val, R));
+                    P_sig_R.push_back(std::tuple<double, int>(pair_val, R));
                 }
             }
             
-            if (Rsig.size() > 0) {
-                std::sort(&(Rsig[0]), &(Rsig[0]) + Rsig.size(), linK_sort_helper);
+            if (P_sig_R.size() > 0) {
+                std::sort(&(P_sig_R[0]), &(P_sig_R[0]) + P_sig_R.size(), linK_sort_helper);
             }
-            std::vector<int> Rlist;
             
-            for (int n = 0; n < Rsig.size(); n++) {
-                // outfile->Printf("\tP Shell: %d, R Shell: %d, Value: %8.8f\n", P, std::get<1>(Rsig[n]), std::get<0>(Rsig[n]));
-                Rlist.push_back(std::get<1>(Rsig[n]));
+            for (int n = 0; n < P_sig_R.size(); n++) {
+                linK_sig_braket[P].push_back(std::get<1>(P_sig_R[n]));
             }
-        
-            linK_braket_map.insert(std::pair<int, std::vector<int>>(P, Rlist));
         }
     }
 
@@ -550,34 +545,44 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                 int P = task_shells[P2];
                 int Q = task_shells[Q2];
                 if (!ints[0]->shell_pair_significant(P, Q)) continue;
+                
+                std::vector<bool> PQ_sig_R(nshell, false);
+                std::vector<bool> PQ_sig_S(nshell, false);
+                std::vector<std::vector<bool>> PQ_sig_RS(nshell, std::vector<bool>(nshell, false));
 
-                std::set<std::pair<int, int>> PQ_sig_ket;
-
-                if (do_linK) {
-                    for (int R2 = 0; R2 < linK_braket_map[P].size(); R2++) {
-                        int R = linK_braket_map[P][R2];
+                if (do_K_ && do_linK) {
+                    for (int R2 = 0; R2 < linK_sig_braket[P].size(); R2++) {
+                        int R = linK_sig_braket[P][R2];
+                        if (R < task_shells[R2start] || R >= task_shells[R2start + nRtask]) continue;
                         int count = 0;
-                        for (int S2 = 0; S2 < linK_braket_map[P].size(); S2++) {
-                            int S = linK_braket_map[P][S2];
+                        for (int S2 = 0; S2 < linK_sig_braket[P].size(); S2++) {
+                            int S = linK_sig_braket[P][S2];
+                            if (S < task_shells[S2start] || S >= task_shells[S2start + nStask]) continue;
+                            if (!ints[0]->shell_pair_significant(R, S)) continue;
                             double quart_val = ints[0]->quart_screen_linK(P, Q, R, S);
                             if (quart_val > linK_thresh) {
-                                if (S <= R) PQ_sig_ket.insert(std::pair<int, int>(R, S));
+                                PQ_sig_R[R] = true;
+                                PQ_sig_S[S] = true;
+                                PQ_sig_RS[R][S] = true;
                                 count++;
                             }
                         }
                         if (count == 0) break;
                     }
 
-                    for (int R2 = 0; R2 < linK_braket_map[Q].size(); R2++) {
-                        int R = linK_braket_map[Q][R2];
+                    for (int R2 = 0; R2 < linK_sig_braket[Q].size(); R2++) {
+                        int R = linK_sig_braket[Q][R2];
+                        if (R < task_shells[R2start] || R >= task_shells[R2start + nRtask]) continue;
                         int count = 0;
-                        for (int S2 = 0; S2 < linK_braket_map[Q].size(); S2++) {
-                            int S = linK_braket_map[Q][S2];
+                        for (int S2 = 0; S2 < linK_sig_braket[Q].size(); S2++) {
+                            int S = linK_sig_braket[Q][S2];
+                            if (S < task_shells[S2start] || S >= task_shells[S2start + nStask]) continue;
+                            if (!ints[0]->shell_pair_significant(R, S)) continue;
                             double quart_val = ints[0]->quart_screen_linK(P, Q, R, S);
                             if (quart_val > linK_thresh) {
-                                if (PQ_sig_ket.count(std::pair<int, int>(R, S)) == 0 && S <= R) {
-                                    PQ_sig_ket.insert(std::pair<int, int>(R, S));
-                                }
+                                PQ_sig_R[R] = true;
+                                PQ_sig_S[S] = true;
+                                PQ_sig_RS[R][S] = true;
                                 count++;
                             }
                         }
@@ -586,20 +591,16 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                 }
 
                 for (int R2 = R2start; R2 < R2start + nRtask; R2++) {
+                    int R = task_shells[R2];
+                    if (do_K_ && do_linK && !PQ_sig_R[R]) continue;
                     for (int S2 = S2start; S2 < S2start + nStask; S2++) {
                         if (S2 > R2) continue;
-                        int R = task_shells[R2];
                         int S = task_shells[S2];
+                        if (do_K_ && do_linK && !PQ_sig_S[S]) continue;
                         if (R2 * nshell + S2 > P2 * nshell + Q2) continue;
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
+                        if (do_K_ && do_linK && !PQ_sig_RS[R][S]) continue;
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
-                        
-                        if (PQ_sig_ket.count(std::pair<int, int>(R, S)) > 0) {
-                            outfile->Printf("\tCS 2110 is evil!!!\n");
-                            outfile->Printf("\tR: %d, S: %d\n", R, S);
-                        }
-                        
-                        if (do_linK && PQ_sig_ket.count(std::pair<int, int>(R, S)) == 0) continue;
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
                         // timer_on("compute_shell(P, Q, R, S)");
@@ -674,29 +675,34 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                                 for (int q = 0; q < Qsize; q++) {
                                     for (int r = 0; r < Rsize; r++) {
                                         for (int s = 0; s < Ssize; s++) {
-                                            J1p[(p + Poff2) * dQsize + q + Qoff2] +=
-                                                prefactor * (Dp[r + Roff][s + Soff] + Dp[s + Soff][r + Roff]) *
-                                                (*buffer2);
-                                            J2p[(r + Roff2) * dSsize + s + Soff2] +=
-                                                prefactor * (Dp[p + Poff][q + Qoff] + Dp[q + Qoff][p + Poff]) *
-                                                (*buffer2);
-                                            K1p[(p + Poff2) * dRsize + r + Roff2] +=
-                                                prefactor * (Dp[q + Qoff][s + Soff]) * (*buffer2);
-                                            K2p[(p + Poff2) * dSsize + s + Soff2] +=
-                                                prefactor * (Dp[q + Qoff][r + Roff]) * (*buffer2);
-                                            K3p[(q + Qoff2) * dRsize + r + Roff2] +=
-                                                prefactor * (Dp[p + Poff][s + Soff]) * (*buffer2);
-                                            K4p[(q + Qoff2) * dSsize + s + Soff2] +=
-                                                prefactor * (Dp[p + Poff][r + Roff]) * (*buffer2);
-                                            if (!lr_symmetric_) {
-                                                K5p[(r + Roff2) * dPsize + p + Poff2] +=
-                                                    prefactor * (Dp[s + Soff][q + Qoff]) * (*buffer2);
-                                                K6p[(s + Soff2) * dPsize + p + Poff2] +=
-                                                    prefactor * (Dp[r + Roff][q + Qoff]) * (*buffer2);
-                                                K7p[(r + Roff2) * dQsize + q + Qoff2] +=
-                                                    prefactor * (Dp[s + Soff][p + Poff]) * (*buffer2);
-                                                K8p[(s + Soff2) * dQsize + q + Qoff2] +=
-                                                    prefactor * (Dp[r + Roff][p + Poff]) * (*buffer2);
+                                            if (do_J_) {
+                                                J1p[(p + Poff2) * dQsize + q + Qoff2] +=
+                                                    prefactor * (Dp[r + Roff][s + Soff] + Dp[s + Soff][r + Roff]) *
+                                                    (*buffer2);
+                                                J2p[(r + Roff2) * dSsize + s + Soff2] +=
+                                                    prefactor * (Dp[p + Poff][q + Qoff] + Dp[q + Qoff][p + Poff]) *
+                                                    (*buffer2);
+                                            }
+                                            
+                                            if (do_K_) {
+                                                K1p[(p + Poff2) * dRsize + r + Roff2] +=
+                                                    prefactor * (Dp[q + Qoff][s + Soff]) * (*buffer2);
+                                                K2p[(p + Poff2) * dSsize + s + Soff2] +=
+                                                    prefactor * (Dp[q + Qoff][r + Roff]) * (*buffer2);
+                                                K3p[(q + Qoff2) * dRsize + r + Roff2] +=
+                                                    prefactor * (Dp[p + Poff][s + Soff]) * (*buffer2);
+                                                K4p[(q + Qoff2) * dSsize + s + Soff2] +=
+                                                    prefactor * (Dp[p + Poff][r + Roff]) * (*buffer2);
+                                                if (!lr_symmetric_) {
+                                                    K5p[(r + Roff2) * dPsize + p + Poff2] +=
+                                                        prefactor * (Dp[s + Soff][q + Qoff]) * (*buffer2);
+                                                    K6p[(s + Soff2) * dPsize + p + Poff2] +=
+                                                        prefactor * (Dp[r + Roff][q + Qoff]) * (*buffer2);
+                                                    K7p[(r + Roff2) * dQsize + q + Qoff2] +=
+                                                        prefactor * (Dp[s + Soff][p + Poff]) * (*buffer2);
+                                                    K8p[(s + Soff2) * dQsize + q + Qoff2] +=
+                                                        prefactor * (Dp[r + Roff][p + Poff]) * (*buffer2);
+                                                }
                                             }
                                             buffer2++;
                                         }
@@ -737,147 +743,155 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                 K7p = JKTp[8L * max_task];
                 K8p = JKTp[9L * max_task];
             }
+            
+            if (do_J_) {
+                
+                // > J_PQ < //
+                
+                for (int P2 = 0; P2 < nPtask; P2++) {
+                    for (int Q2 = 0; Q2 < nQtask; Q2++) {
+                        int P = task_shells[P2start + P2];
+                        int Q = task_shells[Q2start + Q2];
+                        int Psize = primary_->shell(P).nfunction();
+                        int Qsize = primary_->shell(Q).nfunction();
+                        int Poff = primary_->shell(P).function_index();
+                        int Qoff = primary_->shell(Q).function_index();
+                        int Poff2 = task_offsets[P2 + P2start] - task_offsets[P2start];
+                        int Qoff2 = task_offsets[Q2 + Q2start] - task_offsets[Q2start];
+                        for (int p = 0; p < Psize; p++) {
+                            for (int q = 0; q < Qsize; q++) {
+#pragma omp atomic
+                                Jp[p + Poff][q + Qoff] += J1p[(p + Poff2) * dQsize + q + Qoff2];
+                            }
+                        }
+                    }
+                }
 
-            // > J_PQ < //
+                // > J_RS < //
 
-            for (int P2 = 0; P2 < nPtask; P2++) {
+                for (int R2 = 0; R2 < nRtask; R2++) {
+                    for (int S2 = 0; S2 < nStask; S2++) {
+                        int R = task_shells[R2start + R2];
+                        int S = task_shells[S2start + S2];
+                        int Rsize = primary_->shell(R).nfunction();
+                        int Ssize = primary_->shell(S).nfunction();
+                        int Roff = primary_->shell(R).function_index();
+                        int Soff = primary_->shell(S).function_index();
+                        int Roff2 = task_offsets[R2 + R2start] - task_offsets[R2start];
+                        int Soff2 = task_offsets[S2 + S2start] - task_offsets[S2start];
+                        for (int r = 0; r < Rsize; r++) {
+                            for (int s = 0; s < Ssize; s++) {
+#pragma omp atomic
+                                Jp[r + Roff][s + Soff] += J2p[(r + Roff2) * dSsize + s + Soff2];
+                            }
+                        }
+                    }
+                }
+                
+            }
+            
+            if (do_K_) {
+
+                // > K_PR < //
+
+                for (int P2 = 0; P2 < nPtask; P2++) {
+                    for (int R2 = 0; R2 < nRtask; R2++) {
+                        int P = task_shells[P2start + P2];
+                        int R = task_shells[R2start + R2];
+                        int Psize = primary_->shell(P).nfunction();
+                        int Rsize = primary_->shell(R).nfunction();
+                        int Poff = primary_->shell(P).function_index();
+                        int Roff = primary_->shell(R).function_index();
+                        int Poff2 = task_offsets[P2 + P2start] - task_offsets[P2start];
+                        int Roff2 = task_offsets[R2 + R2start] - task_offsets[R2start];
+                        for (int p = 0; p < Psize; p++) {
+                            for (int r = 0; r < Rsize; r++) {
+#pragma omp atomic
+                                Kp[p + Poff][r + Roff] += K1p[(p + Poff2) * dRsize + r + Roff2];
+                                if (!lr_symmetric_) {
+#pragma omp atomic
+                                    Kp[r + Roff][p + Poff] += K5p[(r + Roff2) * dPsize + p + Poff2];
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // > K_PS < //
+
+                for (int P2 = 0; P2 < nPtask; P2++) {
+                    for (int S2 = 0; S2 < nStask; S2++) {
+                        int P = task_shells[P2start + P2];
+                        int S = task_shells[S2start + S2];
+                        int Psize = primary_->shell(P).nfunction();
+                        int Ssize = primary_->shell(S).nfunction();
+                        int Poff = primary_->shell(P).function_index();
+                        int Soff = primary_->shell(S).function_index();
+                        int Poff2 = task_offsets[P2 + P2start] - task_offsets[P2start];
+                        int Soff2 = task_offsets[S2 + S2start] - task_offsets[S2start];
+                        for (int p = 0; p < Psize; p++) {
+                            for (int s = 0; s < Ssize; s++) {
+#pragma omp atomic
+                                Kp[p + Poff][s + Soff] += K2p[(p + Poff2) * dSsize + s + Soff2];
+                                if (!lr_symmetric_) {
+#pragma omp atomic
+                                    Kp[s + Soff][p + Poff] += K6p[(s + Soff2) * dPsize + p + Poff2];
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // > K_QR < //
+
                 for (int Q2 = 0; Q2 < nQtask; Q2++) {
-                    int P = task_shells[P2start + P2];
-                    int Q = task_shells[Q2start + Q2];
-                    int Psize = primary_->shell(P).nfunction();
-                    int Qsize = primary_->shell(Q).nfunction();
-                    int Poff = primary_->shell(P).function_index();
-                    int Qoff = primary_->shell(Q).function_index();
-                    int Poff2 = task_offsets[P2 + P2start] - task_offsets[P2start];
-                    int Qoff2 = task_offsets[Q2 + Q2start] - task_offsets[Q2start];
-                    for (int p = 0; p < Psize; p++) {
+                    for (int R2 = 0; R2 < nRtask; R2++) {
+                        int Q = task_shells[Q2start + Q2];
+                        int R = task_shells[R2start + R2];
+                        int Qsize = primary_->shell(Q).nfunction();
+                        int Rsize = primary_->shell(R).nfunction();
+                        int Qoff = primary_->shell(Q).function_index();
+                        int Roff = primary_->shell(R).function_index();
+                        int Qoff2 = task_offsets[Q2 + Q2start] - task_offsets[Q2start];
+                        int Roff2 = task_offsets[R2 + R2start] - task_offsets[R2start];
                         for (int q = 0; q < Qsize; q++) {
+                            for (int r = 0; r < Rsize; r++) {
 #pragma omp atomic
-                            Jp[p + Poff][q + Qoff] += J1p[(p + Poff2) * dQsize + q + Qoff2];
-                        }
-                    }
-                }
-            }
-
-            // > J_RS < //
-
-            for (int R2 = 0; R2 < nRtask; R2++) {
-                for (int S2 = 0; S2 < nStask; S2++) {
-                    int R = task_shells[R2start + R2];
-                    int S = task_shells[S2start + S2];
-                    int Rsize = primary_->shell(R).nfunction();
-                    int Ssize = primary_->shell(S).nfunction();
-                    int Roff = primary_->shell(R).function_index();
-                    int Soff = primary_->shell(S).function_index();
-                    int Roff2 = task_offsets[R2 + R2start] - task_offsets[R2start];
-                    int Soff2 = task_offsets[S2 + S2start] - task_offsets[S2start];
-                    for (int r = 0; r < Rsize; r++) {
-                        for (int s = 0; s < Ssize; s++) {
+                                Kp[q + Qoff][r + Roff] += K3p[(q + Qoff2) * dRsize + r + Roff2];
+                                if (!lr_symmetric_) {
 #pragma omp atomic
-                            Jp[r + Roff][s + Soff] += J2p[(r + Roff2) * dSsize + s + Soff2];
-                        }
-                    }
-                }
-            }
-
-            // > K_PR < //
-
-            for (int P2 = 0; P2 < nPtask; P2++) {
-                for (int R2 = 0; R2 < nRtask; R2++) {
-                    int P = task_shells[P2start + P2];
-                    int R = task_shells[R2start + R2];
-                    int Psize = primary_->shell(P).nfunction();
-                    int Rsize = primary_->shell(R).nfunction();
-                    int Poff = primary_->shell(P).function_index();
-                    int Roff = primary_->shell(R).function_index();
-                    int Poff2 = task_offsets[P2 + P2start] - task_offsets[P2start];
-                    int Roff2 = task_offsets[R2 + R2start] - task_offsets[R2start];
-                    for (int p = 0; p < Psize; p++) {
-                        for (int r = 0; r < Rsize; r++) {
-#pragma omp atomic
-                            Kp[p + Poff][r + Roff] += K1p[(p + Poff2) * dRsize + r + Roff2];
-                            if (!lr_symmetric_) {
-#pragma omp atomic
-                                Kp[r + Roff][p + Poff] += K5p[(r + Roff2) * dPsize + p + Poff2];
+                                    Kp[r + Roff][q + Qoff] += K7p[(r + Roff2) * dQsize + q + Qoff2];
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            // > K_PS < //
+                // > K_QS < //
 
-            for (int P2 = 0; P2 < nPtask; P2++) {
-                for (int S2 = 0; S2 < nStask; S2++) {
-                    int P = task_shells[P2start + P2];
-                    int S = task_shells[S2start + S2];
-                    int Psize = primary_->shell(P).nfunction();
-                    int Ssize = primary_->shell(S).nfunction();
-                    int Poff = primary_->shell(P).function_index();
-                    int Soff = primary_->shell(S).function_index();
-                    int Poff2 = task_offsets[P2 + P2start] - task_offsets[P2start];
-                    int Soff2 = task_offsets[S2 + S2start] - task_offsets[S2start];
-                    for (int p = 0; p < Psize; p++) {
-                        for (int s = 0; s < Ssize; s++) {
+                for (int Q2 = 0; Q2 < nQtask; Q2++) {
+                    for (int S2 = 0; S2 < nStask; S2++) {
+                        int Q = task_shells[Q2start + Q2];
+                        int S = task_shells[S2start + S2];
+                        int Qsize = primary_->shell(Q).nfunction();
+                        int Ssize = primary_->shell(S).nfunction();
+                        int Qoff = primary_->shell(Q).function_index();
+                        int Soff = primary_->shell(S).function_index();
+                        int Qoff2 = task_offsets[Q2 + Q2start] - task_offsets[Q2start];
+                        int Soff2 = task_offsets[S2 + S2start] - task_offsets[S2start];
+                        for (int q = 0; q < Qsize; q++) {
+                            for (int s = 0; s < Ssize; s++) {
 #pragma omp atomic
-                            Kp[p + Poff][s + Soff] += K2p[(p + Poff2) * dSsize + s + Soff2];
-                            if (!lr_symmetric_) {
+                                Kp[q + Qoff][s + Soff] += K4p[(q + Qoff2) * dSsize + s + Soff2];
+                                if (!lr_symmetric_) {
 #pragma omp atomic
-                                Kp[s + Soff][p + Poff] += K6p[(s + Soff2) * dPsize + p + Poff2];
+                                    Kp[s + Soff][q + Qoff] += K8p[(s + Soff2) * dQsize + q + Qoff2];
+                                }
                             }
                         }
                     }
                 }
-            }
-
-            // > K_QR < //
-
-            for (int Q2 = 0; Q2 < nQtask; Q2++) {
-                for (int R2 = 0; R2 < nRtask; R2++) {
-                    int Q = task_shells[Q2start + Q2];
-                    int R = task_shells[R2start + R2];
-                    int Qsize = primary_->shell(Q).nfunction();
-                    int Rsize = primary_->shell(R).nfunction();
-                    int Qoff = primary_->shell(Q).function_index();
-                    int Roff = primary_->shell(R).function_index();
-                    int Qoff2 = task_offsets[Q2 + Q2start] - task_offsets[Q2start];
-                    int Roff2 = task_offsets[R2 + R2start] - task_offsets[R2start];
-                    for (int q = 0; q < Qsize; q++) {
-                        for (int r = 0; r < Rsize; r++) {
-#pragma omp atomic
-                            Kp[q + Qoff][r + Roff] += K3p[(q + Qoff2) * dRsize + r + Roff2];
-                            if (!lr_symmetric_) {
-#pragma omp atomic
-                                Kp[r + Roff][q + Qoff] += K7p[(r + Roff2) * dQsize + q + Qoff2];
-                            }
-                        }
-                    }
-                }
-            }
-
-            // > K_QS < //
-
-            for (int Q2 = 0; Q2 < nQtask; Q2++) {
-                for (int S2 = 0; S2 < nStask; S2++) {
-                    int Q = task_shells[Q2start + Q2];
-                    int S = task_shells[S2start + S2];
-                    int Qsize = primary_->shell(Q).nfunction();
-                    int Ssize = primary_->shell(S).nfunction();
-                    int Qoff = primary_->shell(Q).function_index();
-                    int Soff = primary_->shell(S).function_index();
-                    int Qoff2 = task_offsets[Q2 + Q2start] - task_offsets[Q2start];
-                    int Soff2 = task_offsets[S2 + S2start] - task_offsets[S2start];
-                    for (int q = 0; q < Qsize; q++) {
-                        for (int s = 0; s < Ssize; s++) {
-#pragma omp atomic
-                            Kp[q + Qoff][s + Soff] += K4p[(q + Qoff2) * dSsize + s + Soff2];
-                            if (!lr_symmetric_) {
-#pragma omp atomic
-                                Kp[s + Soff][q + Qoff] += K8p[(s + Soff2) * dQsize + q + Qoff2];
-                            }
-                        }
-                    }
-                }
+                
             }
 
         }  // End stripe out
