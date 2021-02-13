@@ -349,6 +349,9 @@ void DirectJK::compute_JK() {
             build_JK(ints, D_ref, temp, K_ao_);
         }
     }
+    
+    iteration_ += 1;
+    
 }
 void DirectJK::postiterations() {}
 
@@ -459,7 +462,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
     
     std::vector<std::vector<int>> linK_sig_braket(nshell, std::vector<int>(0));
     
-    if (do_K_ && do_linK) {
+    if (iteration_ >= 1 && do_K_ && do_linK) {
         for (int P = 0; P < nshell; P++) {
             // List of every R that is significant for a given P
             std::vector<std::tuple<double, int>> P_sig_R;
@@ -550,7 +553,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                 std::vector<bool> PQ_sig_S(nshell, false);
                 std::vector<std::vector<bool>> PQ_sig_RS(nshell, std::vector<bool>(nshell, false));
 
-                if (do_K_ && do_linK) {
+                if (iteration_ >= 1 && do_K_ && do_linK) {
                     for (int R2 = 0; R2 < linK_sig_braket[P].size(); R2++) {
                         int R = linK_sig_braket[P][R2];
                         if (R < task_shells[R2start] || R >= task_shells[R2start + nRtask]) continue;
@@ -592,14 +595,14 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
 
                 for (int R2 = R2start; R2 < R2start + nRtask; R2++) {
                     int R = task_shells[R2];
-                    if (do_K_ && do_linK && !PQ_sig_R[R]) continue;
+                    if (iteration_ >= 1 && do_K_ && do_linK && !PQ_sig_R[R]) continue;
                     for (int S2 = S2start; S2 < S2start + nStask; S2++) {
                         if (S2 > R2) continue;
                         int S = task_shells[S2];
-                        if (do_K_ && do_linK && !PQ_sig_S[S]) continue;
+                        if (iteration_ >= 1 && do_K_ && do_linK && !PQ_sig_S[S]) continue;
                         if (R2 * nshell + S2 > P2 * nshell + Q2) continue;
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
-                        if (do_K_ && do_linK && !PQ_sig_RS[R][S]) continue;
+                        if (iteration_ >= 1 && do_K_ && do_linK && !PQ_sig_RS[R][S]) continue;
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
