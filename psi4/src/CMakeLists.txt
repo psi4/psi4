@@ -2,10 +2,17 @@
 ### >> This allow to propagate dependencies upwards sanely
 add_library(core SHARED core.cc)
 
-target_link_libraries(core
-  PRIVATE
-    Python::Module
-)
+if(DEFINED ENV{LGTM_SRC})
+    target_include_directories(core
+      PRIVATE
+        ${Python_INCLUDE_DIRS}
+    )
+else()
+    target_link_libraries(core
+      PRIVATE
+        Python::Module
+    )
+endif()
 target_link_libraries(core
   PRIVATE
     pybind11::module
