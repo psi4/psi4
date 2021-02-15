@@ -1,5 +1,6 @@
 
 list(APPEND sources
+  efp
   pol_embed
 )
 

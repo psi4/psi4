@@ -36,7 +36,7 @@ from psi4.driver import constants
 from psi4.driver.p4util.exceptions import SCFConvergenceError, ValidationError
 from psi4 import core
 
-from .efp import get_qm_atoms_opts, modify_Fock_permanent, modify_Fock_induced
+from ..solvent.efp import get_qm_atoms_opts, modify_Fock_permanent, modify_Fock_induced
 
 #import logging
 #logger = logging.getLogger("scf.scf_iterator")
@@ -184,7 +184,7 @@ def scf_initialize(self):
         efpobj.set_point_charges(efpptc, efpcoords)
         efpobj.set_opts(efpopts, label='psi', append='psi')
 
-        efpobj.set_electron_density_field_fn(field_fn)
+        efpobj.set_electron_density_field_fn(efp_field_fn)
 
     # Initilize all integratals and perform the first guess
     if self.attempt_number_ == 1:
@@ -921,7 +921,7 @@ def _validate_soscf():
     return enabled
 
 
-def field_fn(xyz):
+def efp_field_fn(xyz):
     """Callback function for PylibEFP to compute electric field from electrons
     in ab initio part for libefp polarization calculation.
 
@@ -942,25 +942,6 @@ def field_fn(xyz):
     matrix `efp_Dt_psi4_yo` from global namespace.
 
     """
-    points = np.array(xyz).reshape(-1, 3)
-    npt = len(points)
-
-    # Cartesian basis one-electron EFP perturbation
-    nbf = mints_psi4_yo.basisset().nbf()
-
-    # Electric field at points
-    field = np.zeros((npt, 3))
-
-    for ipt in range(npt):
-        # get electric field integrals from Psi4
-        p4_field_ints = mints_psi4_yo.electric_field(origin=points[ipt])
-
-        field[ipt] = [
-            np.vdot(efp_Dt_psi4_yo, np.asarray(p4_field_ints[0])),  # Ex
-            np.vdot(efp_Dt_psi4_yo, np.asarray(p4_field_ints[1])),  # Ey
-            np.vdot(efp_Dt_psi4_yo, np.asarray(p4_field_ints[2]))   # Ez
-        ]
-
-    field = np.reshape(field, 3 * npt)
-
+    points = core.Matrix.from_array(np.array(xyz).reshape(-1, 3))
+    field = mints_psi4_yo.electric_field_value(points, efp_Dt_psi4_yo).np.flatten()
     return field
