@@ -323,13 +323,12 @@ void DirectJK::compute_JK() {
             if (!do_linK) {
                 build_JK(ints, D_ao_, J_ao_, K_ao_);
             } else {
-                
                 if (iteration_ == 0) {
                     build_JK(ints, D_ao_, J_ao_, K_ao_);
                 } else {
                     build_J(ints, D_ao_, J_ao_);
                     build_K(ints, D_ao_, K_ao_);
-                    outfile->Printf("\tLIVIE IS SO COOL!!!\n");
+                    // outfile->Printf("\tLIVIE IS SO COOL!!!\n");
                 }
             }
         } else if (do_J_) {
@@ -359,6 +358,9 @@ bool linK_sort_helper(const std::tuple<double, int>& t1, const std::tuple<double
 void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<std::shared_ptr<Matrix>>& D,
                         std::vector<std::shared_ptr<Matrix>>& J, std::vector<std::shared_ptr<Matrix>>& K) {
     timer_on("build_JK()");
+    
+    Options& options = Process::environment.options;
+    bool dens_screen = options.get_bool("SCF_DENSITY_SCREENING");
 
     // => Zeroing <= //
     for (size_t ind = 0; ind < J.size(); ind++) {
@@ -525,6 +527,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                         int S = task_shells[S2];
                         
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
+                        if (dens_screen && !ints[0]->shell_significant_density(P, Q, R, S)) continue;
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
@@ -834,7 +837,12 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
     
 void DirectJK::build_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
                   std::vector<std::shared_ptr<Matrix> >& J) {
-
+    
+    timer_on("build_J()");
+    
+    // Options& options = Process::environment.options;
+    // bool dens_screen = options.get_bool("SCF_DENSITY_SCREENING");
+    
     // => Zeroing <= //
     for (size_t ind = 0; ind < J.size(); ind++) {
         J[ind]->zero();
@@ -1001,6 +1009,7 @@ void DirectJK::build_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::v
                         int S = task_shells[S2];
                         
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
+                        if (!ints[0]->shell_significant_density_J(P, Q, R, S)) continue;
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
@@ -1145,11 +1154,13 @@ void DirectJK::build_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::v
         printer->Printf("Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
                         possible_shells, computed_shells / (double)possible_shells);
     }
+    timer_off("build_J()");
 }
     
 void DirectJK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
                   std::vector<std::shared_ptr<Matrix> >& K) {
     
+    timer_on("build_K()");
     Options& options = Process::environment.options;
     bool do_linK = options.get_bool("SCF_DO_LINK");
     double linK_thresh = options.get_double("LINK_THRESHOLD");
@@ -1239,30 +1250,47 @@ void DirectJK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::v
     size_t ntask_pair = task_pairs.size();
     size_t ntask_pair2 = ntask_pair * ntask_pair;
 
-    // => linK Significant Task BraKets (P*|R*)
+    // => linK Significant Task BraKet pairs (P*|R*)-style <= //
     
-    std::vector<std::vector<int>> linK_sig_braket(nshell, std::vector<int>(0));
+    std::vector<std::vector<std::vector<int>> > linK_task_braket(ntask * ntask);
+    
+    // outfile->Printf("\tMr. Blue Sky!!!\n");
     
     if (do_linK) {
-        for (int P = 0; P < nshell; P++) {
-            // List of every R that is significant for a given P
-            std::vector<std::tuple<double, int>> P_sig_R;
-            for (int R = 0; R < nshell; R++) {
-                double pair_val = ints[0]->pair_screen_linK(P, R);
-                if (pair_val > linK_thresh) {
-                    P_sig_R.push_back(std::tuple<double, int>(pair_val, R));
+        for (size_t Ptask = 0; Ptask < ntask; Ptask++) {
+            for (size_t Rtask = 0; Rtask < ntask; Rtask++) {
+                size_t PR_task_ind = Ptask * ntask + Rtask;
+                int Pstart = task_shells[task_starts[Ptask]];
+                int Rstart = task_shells[task_starts[Rtask]];
+                std::vector<std::vector<int> > temp;
+                linK_task_braket[PR_task_ind].resize(task_starts[Ptask + 1] - task_starts[Ptask], std::vector<int>(0));
+                for (int P2 = task_starts[Ptask]; P2 < task_starts[Ptask + 1]; P2++) {
+                    int P = task_shells[P2];
+                    // List of every R that is significant for a given P in a given task pair
+                    std::vector<std::tuple<double, int>> P_sig_R;
+                    for (int R2 = task_starts[Rtask]; R2 < task_starts[Rtask + 1]; R2++) {
+                        int R = task_shells[R2];
+                        double pair_val = ints[0]->pair_screen_linK(P, R);
+                        if (pair_val > linK_thresh) {
+                            P_sig_R.push_back(std::tuple<double, int>(pair_val, R));
+                        }
+                    }
+            
+                    if (P_sig_R.size() > 0) {
+                        std::sort(&(P_sig_R[0]), &(P_sig_R[0]) + P_sig_R.size(), linK_sort_helper);
+                    }
+            
+                    for (int n = 0; n < P_sig_R.size(); n++) {
+                        int Rtemp = std::get<1>(P_sig_R[n]);
+                        linK_task_braket[PR_task_ind][P - Pstart].push_back(Rtemp);
+                    }
+                    
                 }
-            }
-            
-            if (P_sig_R.size() > 0) {
-                std::sort(&(P_sig_R[0]), &(P_sig_R[0]) + P_sig_R.size(), linK_sort_helper);
-            }
-            
-            for (int n = 0; n < P_sig_R.size(); n++) {
-                linK_sig_braket[P].push_back(std::get<1>(P_sig_R[n]));
             }
         }
     }
+    
+    // outfile->Printf("\tPlease tell us why\n");
 
     // => Intermediate Buffers <= //
 
@@ -1309,6 +1337,11 @@ void DirectJK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::v
         int Q2start = task_starts[Qtask];
         int R2start = task_starts[Rtask];
         int S2start = task_starts[Stask];
+        
+        int Pstart = task_shells[P2start];
+        int Qstart = task_shells[Q2start];
+        int Rstart = task_shells[R2start];
+        int Sstart = task_shells[S2start];
 
         int dPsize = task_offsets[P2start + nPtask] - task_offsets[P2start];
         int dQsize = task_offsets[Q2start + nQtask] - task_offsets[Q2start];
@@ -1319,71 +1352,96 @@ void DirectJK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::v
 #ifdef _OPENMP
         thread = omp_get_thread_num();
 #endif
-
+        
+        auto const& linK_task_PR = linK_task_braket[Ptask * ntask + Rtask];
+        auto const& linK_task_PS = linK_task_braket[Ptask * ntask + Stask];
+        auto const& linK_task_QR = linK_task_braket[Qtask * ntask + Rtask];
+        auto const& linK_task_QS = linK_task_braket[Qtask * ntask + Stask];
+        
         // => Master shell quartet loops <= //
 
         bool touched = false;
         for (int P2 = P2start; P2 < P2start + nPtask; P2++) {
             for (int Q2 = Q2start; Q2 < Q2start + nQtask; Q2++) {
+                
                 if (Q2 > P2) continue;
                 int P = task_shells[P2];
                 int Q = task_shells[Q2];
                 if (!ints[0]->shell_pair_significant(P, Q)) continue;
                 
-                std::vector<bool> PQ_sig_R(nshell, false);
-                std::vector<bool> PQ_sig_S(nshell, false);
-                std::vector<std::vector<bool>> PQ_sig_RS(nshell, std::vector<bool>(nshell, false));
+                int dP = P - Pstart;
+                int dQ = Q - Qstart;
+                
+                std::vector<bool> PQ_sig_R(nRtask, false);
+                std::vector<bool> PQ_sig_S(nStask, false);
+                std::vector<std::vector<bool>> PQ_sig_RS(nRtask, std::vector<bool>(nStask, false));
 
                 if (do_linK) {
-                    for (int R2 = 0; R2 < linK_sig_braket[P].size(); R2++) {
-                        int R = linK_sig_braket[P][R2];
-                        if (R < task_shells[R2start] || R >= task_shells[R2start + nRtask]) continue;
+                    for (int R2 = 0; R2 < linK_task_PR[dP].size(); R2++) {
+                        int R = linK_task_PR[dP][R2];
+                        int dR = R - Rstart;
                         int count = 0;
-                        for (int S2 = 0; S2 < linK_sig_braket[P].size(); S2++) {
-                            int S = linK_sig_braket[P][S2];
-                            if (S < task_shells[S2start] || S >= task_shells[S2start + nStask]) continue;
+                        for (int S2 = 0; S2 < linK_task_PS[dP].size(); S2++) {
+                            int S = linK_task_PS[dP][S2];
+                            if (S > R) continue;
+                            int dS = S - Sstart;
                             if (!ints[0]->shell_pair_significant(R, S)) continue;
                             double quart_val = ints[0]->quart_screen_linK(P, Q, R, S);
                             if (quart_val > linK_thresh) {
-                                PQ_sig_R[R] = true;
-                                PQ_sig_S[S] = true;
-                                PQ_sig_RS[R][S] = true;
+                                PQ_sig_R[dR] = true;
+                                PQ_sig_S[dS] = true;
+                                PQ_sig_RS[dR][dS] = true;
                                 count++;
                             }
                         }
                         if (count == 0) break;
                     }
 
-                    for (int R2 = 0; R2 < linK_sig_braket[Q].size(); R2++) {
-                        int R = linK_sig_braket[Q][R2];
-                        if (R < task_shells[R2start] || R >= task_shells[R2start + nRtask]) continue;
+                    for (int R2 = 0; R2 < linK_task_QR[dQ].size(); R2++) {
+                        int R = linK_task_QR[dQ][R2];
+                        int dR = R - Rstart;
                         int count = 0;
-                        for (int S2 = 0; S2 < linK_sig_braket[Q].size(); S2++) {
-                            int S = linK_sig_braket[Q][S2];
-                            if (S < task_shells[S2start] || S >= task_shells[S2start + nStask]) continue;
+                        for (int S2 = 0; S2 < linK_task_QS[dQ].size(); S2++) {
+                            int S = linK_task_QS[dQ][S2];
+                            if (S > R) continue;
+                            int dS = S - Sstart;
                             if (!ints[0]->shell_pair_significant(R, S)) continue;
                             double quart_val = ints[0]->quart_screen_linK(P, Q, R, S);
                             if (quart_val > linK_thresh) {
-                                PQ_sig_R[R] = true;
-                                PQ_sig_S[S] = true;
-                                PQ_sig_RS[R][S] = true;
+                                PQ_sig_R[dR] = true;
+                                PQ_sig_S[dS] = true;
+                                PQ_sig_RS[dR][dS] = true;
                                 count++;
                             }
                         }
                         if (count == 0) break;
                     }
                 }
-
-                for (int R2 = R2start; R2 < R2start + nRtask; R2++) {
-                    int R = task_shells[R2];
-                    if (do_linK && !PQ_sig_R[R]) continue;
-                    for (int S2 = S2start; S2 < S2start + nStask; S2++) {
-                        if (S2 > R2) continue;
-                        int S = task_shells[S2];
-                        if (do_linK && !PQ_sig_S[S]) continue;
-                        if (R2 * nshell + S2 > P2 * nshell + Q2) continue;
+                
+                std::vector<std::pair<int, int> > linK_RS_pairs;
+                
+                for (int dR = 0; dR < nRtask; dR++) {
+                    for (int dS = 0; dS < nStask; dS++) {
+                        if (dS + Sstart > dR + Rstart) continue;
+                        if (PQ_sig_RS[dR][dS]) {
+                            linK_RS_pairs.push_back(std::pair<int, int>(dR + Rstart, dS + Sstart));
+                        }
+                    }
+                }
+                
+                for (int RS = 0; RS < linK_RS_pairs.size(); RS++) {
+                    
+                    {
+                        int R = linK_RS_pairs[RS].first;
+                        int S = linK_RS_pairs[RS].second;
+                        int R2 = R;
+                        int S2 = S;
+                        
+                        if (S > R) continue;
+                        if (R * nshell + S > P * nshell + Q) continue;
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
-                        if (do_linK && !PQ_sig_RS[R][S]) continue;
+                        
+                        if (!ints[0]->shell_significant_density_K(P, Q, R, S)) continue;
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
@@ -1632,6 +1690,7 @@ void DirectJK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::v
         printer->Printf("Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
                         possible_shells, computed_shells / (double)possible_shells);
     }
+    timer_off("build_K()");
 }
 
 }  // namespace psi

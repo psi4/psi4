@@ -154,9 +154,8 @@ class PSI_API TwoBodyAOInt {
 
     void setup_sieve();
     void create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, PairList &shell_pairs, bool is_bra);
-
-    /// Density Screening of a shell quartet (Haser 1989)
-    bool shell_significant_density(int M, int N, int R, int S);
+    
+    
     /// Implements CSAM screening of a shell quartet
     bool shell_significant_csam(int M, int N, int R, int S);
     /// Implements Schwarz inequality screening of a shell quartet
@@ -214,7 +213,14 @@ class PSI_API TwoBodyAOInt {
     double pair_screen_linK(int M, int N);
     /// Quartet Screening used in the linK algorithm
     double quart_screen_linK(int M, int N, int R, int S);
-
+    
+    /// Density Screening of a shell quartet (Haser 1989)
+    bool shell_significant_density(int M, int N, int R, int S);
+    
+    /// Separate J and K density screening
+    bool shell_significant_density_J(int M, int N, int R, int S);
+    bool shell_significant_density_K(int M, int N, int R, int S);
+    
     /// Ask the built in sieve whether this quartet contributes
     bool shell_significant(int M, int N, int R, int S) const { return sieve_impl_(M, N, R, S); };
     /// Are any of the quartets within a given shellpair list significant
