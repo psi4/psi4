@@ -379,6 +379,7 @@ void DirectJK::compute_JK() {
     double Dnorm = Process::environment.globals["SCF RMS D"];
 
     Options& options = Process::environment.options;
+    
     double Dconv = options.get_double("D_CONVERGENCE");
     double ifb_d_conv = options.get_double("IFB_D_CONVERGENCE");
     bool linK = options.get_bool("SCF_DO_LINK");
