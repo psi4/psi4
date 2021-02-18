@@ -211,7 +211,7 @@ void JK::common_init() {
         std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     auto pet = std::make_shared<PetiteList>(primary_, integral);
     AO2USO_ = SharedMatrix(pet->aotoso());
-
+    
     incr_fock_ = (Process::environment.options).get_bool("INCR_FOCK_BUILD");
 }
 size_t JK::memory_overhead() const {
@@ -271,15 +271,15 @@ void JK::compute_D() {
                                                   C_right_[N]->rowspi(),
                                                   C_left_[N]->symmetry() ^ C_right_[N]->symmetry()));
         }
-
-        for (size_t N = 0; N < C_left_.size(); ++N) {
+        
+	for (size_t N = 0; N < C_left_.size(); ++N) {
              std::stringstream s;
              s << "D prev" << N << " (SO)";
              D_prev_.push_back(std::make_shared<Matrix>(s.str(), C_left_[N]->nirrep(), C_left_[N]->rowspi(),
                                                    C_right_[N]->rowspi(),
                                                    C_left_[N]->symmetry() ^ C_right_[N]->symmetry()));
          }
-
+    
     } else {
         for (size_t N = 0; N < D_.size(); N++) {
             D_prev_[N] = D_[N]->clone();

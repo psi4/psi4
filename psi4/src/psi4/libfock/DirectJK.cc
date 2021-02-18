@@ -281,6 +281,18 @@ void DirectJK::compute_JK() {
     Options& options = Process::environment.options;
     bool dens_screen = options.get_bool("SCF_DENSITY_SCREENING");
     bool do_linK = options.get_bool("SCF_DO_LINK");
+    
+    std::vector<SharedMatrix> del_D;
+    del_D.resize(D_ao_.size());
+
+    if (incr_fock_) {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            del_D[N] = D_ao_[N]->clone();
+            del_D[N]->subtract(D_ao_prev_[N]);
+        }
+    }
+
+    std::vector<SharedMatrix>& D_ref = (incr_fock_ ? del_D : D_ao_);
 
     if (incr_fock_) {
         for (size_t N = 0; N < D_ao_.size(); N++) {
@@ -295,7 +307,7 @@ void DirectJK::compute_JK() {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         for (int thread = 0; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
-            if (dens_screen) ints[thread]->update_density(D_ao_);
+            if (dens_screen) ints[thread]->update_density(D_ref);
         }
         // if (dens_screen) ints[0]->update_density(D_ao_[0]);
         // TODO: Fast K algorithm
@@ -313,21 +325,21 @@ void DirectJK::compute_JK() {
     if (do_J_ || do_K_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
-        if (dens_screen) ints[0]->update_density(D_ao_);
+        if (dens_screen) ints[0]->update_density(D_ref);
         for (int thread = 1; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
-            if (dens_screen) ints[thread]->update_density(D_ao_);
+            if (dens_screen) ints[thread]->update_density(D_ref);
         }
         // if (dens_screen) ints[0]->update_density(D_ao_[0]);
         if (do_J_ && do_K_) {
             if (!do_linK) {
-                build_JK(ints, D_ao_, J_ao_, K_ao_);
+                build_JK(ints, D_ref, J_ao_, K_ao_);
             } else {
                 if (iteration_ == 0) {
-                    build_JK(ints, D_ao_, J_ao_, K_ao_);
+                    build_JK(ints, D_ref, J_ao_, K_ao_);
                 } else {
-                    build_J(ints, D_ao_, J_ao_);
-                    build_K(ints, D_ao_, K_ao_);
+                    build_J(ints, D_ref, J_ao_);
+                    build_K(ints, D_ref, K_ao_);
                     // outfile->Printf("\tLIVIE IS SO COOL!!!\n");
                 }
             }
