@@ -110,12 +110,12 @@ jobs:
       # Create conda enviroment
       # Note: conda activate doesn't work here, because it creates a new shell!
       # Note: c-f eigen has Config.cmake file
+                        #intel-openmp=%MKL_VERSION% ^
       - script: |
           conda install cmake ^
                         conda-build ^
                         conda-forge::eigen ^
                         conda-verify ^
-                        intel-openmp=%MKL_VERSION% ^
                         conda-forge::llvm-openmp ^
                         mkl-devel=%MKL_VERSION% ^
                         networkx ^
