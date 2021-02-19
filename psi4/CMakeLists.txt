@@ -62,7 +62,7 @@ if(DEFINED ENV{LGTM_SRC})
 else()
     find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
 endif()
-find_package(pybind11 2.6.1 CONFIG REQUIRED)
+find_package(pybind11 2.6.2 CONFIG REQUIRED)
 message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${Python_VERSION} and ${CMAKE_CXX_STANDARD})")
 message(STATUS "${Cyan}Using Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE}")
 
