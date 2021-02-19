@@ -110,13 +110,12 @@ jobs:
       # Create conda enviroment
       # Note: conda activate doesn't work here, because it creates a new shell!
       # Note: c-f eigen has Config.cmake file
-                        #intel-openmp=%MKL_VERSION% ^
       - script: |
           conda install cmake ^
                         conda-build ^
                         conda-forge::eigen ^
                         conda-verify ^
-                        conda-forge::llvm-openmp ^
+                        intel-openmp=%MKL_VERSION% ^
                         mkl-devel=%MKL_VERSION% ^
                         networkx ^
                         ninja ^
@@ -147,12 +146,15 @@ jobs:
           clang-cl --version
         displayName: "Install LLVM"
 
-#      # Install Intel OpenMP import library
-#      # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
-#      - script: |
-#          set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
-#          echo '##vso[task.setvariable variable=LIB]%LIB%'
-#        displayName: "Install Intel OpenMP import library"
+      # Install Intel OpenMP import library
+      # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
+      #set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
+      - script: |
+           cd
+           git clone https://github.com/psi4/iomp5md.git
+          set LIB=%cd%\iomp5md\conda\win\$(mkl.version);%LIB%
+          echo '##vso[task.setvariable variable=LIB]%LIB%'
+        displayName: "Install Intel OpenMP import library"
 
       # Configure
       - script: |
