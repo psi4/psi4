@@ -306,13 +306,6 @@ def _convert_wavefunction(wfn, context=None):
                 arr = arr[ao_map[:, None]]
         return arr
 
-    def re1d(mat):
-        arr = np.array(mat)
-        if reorder:
-            arr = arr[ao_map]
-
-        return arr
-
     # get occupations in orbital-energy ordering
     def sort_occs(noccpi, epsilon):
         occs = []
@@ -349,10 +342,10 @@ def _convert_wavefunction(wfn, context=None):
         "scf_density_b": re2d(wfn.Db_subset("AO")),
         "scf_fock_a": re2d(wfn.Fa_subset("AO")),
         "scf_fock_b": re2d(wfn.Fa_subset("AO")),
-        "scf_eigenvalues_a": re1d(wfn.epsilon_a_subset("AO", "ALL")),
-        "scf_eigenvalues_b": re1d(wfn.epsilon_b_subset("AO", "ALL")),
-        "scf_occupations_a": re1d(sort_occs((wfn.doccpi() + wfn.soccpi()).to_tuple(), wfn.epsilon_a().nph)),
-        "scf_occupations_b": re1d(sort_occs(wfn.doccpi().to_tuple(), wfn.epsilon_b().nph)),
+        "scf_eigenvalues_a": wfn.epsilon_a_subset("AO", "ALL"),
+        "scf_eigenvalues_b": wfn.epsilon_b_subset("AO", "ALL"),
+        "scf_occupations_a": sort_occs((wfn.doccpi() + wfn.soccpi()).to_tuple(), wfn.epsilon_a().nph),
+        "scf_occupations_b": sort_occs(wfn.doccpi().to_tuple(), wfn.epsilon_b().nph),
     }
 
     return ret

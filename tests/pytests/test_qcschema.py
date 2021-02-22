@@ -147,11 +147,26 @@ def test_qcschema_wavefunction_scf_occupations_gs(result_data_fixture):
     ret = psi4.schema_wrapper.run_qcschema(result_data_fixture)
     wfn = ret.wavefunction
 
+    # correctness check
+
     ref_occupations_a = np.array([1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,])
-    ref_occupied_energies_a = np.array([-20.55785069,  -1.31618596,  -0.6770761,  -0.49037545,  -0.55872283])
+    ref_occupied_energies_a = np.array([-20.55785069,  -1.31618596,  -0.6770761,  -0.55872283,  -0.49037545])
 
     assert compare_arrays(ref_occupations_a, wfn.scf_occupations_a, 6, "Orbital Occupations")
     assert compare_arrays(ref_occupied_energies_a, wfn.scf_eigenvalues_a[wfn.scf_occupations_a == 1], 6, "Occupied Orbital Energies")
+
+    # consistency check
+
+    Ca = ret.wavefunction.scf_orbitals_a
+    Fa = ret.wavefunction.scf_fock_a
+    Da = ret.wavefunction.scf_density_a
+    ea = ret.wavefunction.scf_eigenvalues_a
+    na = ret.wavefunction.scf_occupations_a
+    Ca_occ = Ca[:, na == 1]
+
+    assert compare_arrays(ea, (Ca.T @ Fa @ Ca).diagonal(), 10, "Orbital Consistency")
+    assert compare_arrays(Da, Ca_occ @ Ca_occ.T, 10, "Occupied Orbital Consistency")
+
 
 def test_qcschema_wavefunction_scf_occupations_es(result_data_fixture):
     result_data_fixture["protocols"] = {"wavefunction": "all"}
@@ -159,9 +174,23 @@ def test_qcschema_wavefunction_scf_occupations_es(result_data_fixture):
     ret = psi4.schema_wrapper.run_qcschema(result_data_fixture)
     wfn = ret.wavefunction
 
-    ref_occupations_a = np.array([1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,])
+    # correctness check
+
+    ref_occupations_a = np.array([1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,])
     ref_occupied_energies_a = np.array([-20.86710716,  -1.38875044,  -0.77442913,  -0.6598582,    1.10374473])
 
     assert compare_arrays(ref_occupations_a, ret.wavefunction.scf_occupations_a, 6, "Orbital Occupations")
     assert compare_arrays(ref_occupied_energies_a, wfn.scf_eigenvalues_a[wfn.scf_occupations_a == 1], 6, "Occupied Orbital Energies")
+
+    # consistency check
+
+    Ca = ret.wavefunction.scf_orbitals_a
+    Fa = ret.wavefunction.scf_fock_a
+    Da = ret.wavefunction.scf_density_a
+    ea = ret.wavefunction.scf_eigenvalues_a
+    na = ret.wavefunction.scf_occupations_a
+    Ca_occ = Ca[:, na == 1]
+
+    assert compare_arrays(ea, (Ca.T @ Fa @ Ca).diagonal(), 10, "Orbital Consistency")
+    assert compare_arrays(Da, Ca_occ @ Ca_occ.T, 10, "Occupied Orbital Consistency")
 
