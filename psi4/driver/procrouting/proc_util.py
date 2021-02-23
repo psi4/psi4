@@ -311,19 +311,21 @@ def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
     ## Print Energy Summary
     units = (1000.0, constants.hartree2kcalmol, constants.hartree2kJmol)
     core.print_out(f"    => {saptd_name +'-D'} Energy Summary <=\n")
-    dash = "-" * 92
-    core.print_out("    %s\n" % dash)
-    core.print_out("    Electrostatics: %16.8f [mEh] %16.8f [kcal/mol] %16.8f [kJ/mol]\n" %
-                   (saptd_en['ELST'] * units[0], saptd_en['ELST'] * units[1], saptd_en['ELST'] * units[2]))
-    core.print_out("    Exchange:       %16.8f [mEh] %16.8f [kcal/mol] %16.8f [kJ/mol]\n" %
-                   (saptd_en['EXCH'] * units[0], saptd_en['EXCH'] * units[1], saptd_en['EXCH'] * units[2]))
-    core.print_out("    Induction:      %16.8f [mEh] %16.8f [kcal/mol] %16.8f [kJ/mol]\n" %
-                   (saptd_en['IND'] * units[0], saptd_en['IND'] * units[1], saptd_en['IND'] * units[2]))
-    core.print_out("    Dispersion:     %16.8f [mEh] %16.8f [kcal/mol] %16.8f [kJ/mol]\n\n" %
-                   (saptd_en['DISP'] * units[0], saptd_en['DISP'] * units[1], saptd_en['DISP'] * units[2]))
-    core.print_out("    Total:          %16.8f [mEh] %16.8f [kcal/mol] %16.8f [kJ/mol]\n" %
-                   (total * units[0], total * units[1], total * units[2]))
-    core.print_out("    %s\n" % dash)
+
+    core.print_out("  " + "-" * 104 + "\n")
+    core.print_out(
+        "    %-25s % 16.8f [mEh] % 16.8f [kcal/mol] % 16.8f [kJ/mol]\n" %
+        ("Electrostatics", saptd_en['ELST'] * units[0], saptd_en['ELST'] * units[1], saptd_en['ELST'] * units[2]))
+    core.print_out("    %-25s % 16.8f [mEh] % 16.8f [kcal/mol] % 16.8f [kJ/mol]\n" %
+                   ("Exchange", saptd_en['EXCH'] * units[0], saptd_en['EXCH'] * units[1], saptd_en['EXCH'] * units[2]))
+    core.print_out("    %-25s % 16.8f [mEh] % 16.8f [kcal/mol] % 16.8f [kJ/mol]\n" %
+                   ("Induction", saptd_en['IND'] * units[0], saptd_en['IND'] * units[1], saptd_en['IND'] * units[2]))
+    core.print_out(
+        "    %-25s % 16.8f [mEh] % 16.8f [kcal/mol] % 16.8f [kJ/mol]\n" %
+        ("Dispersion", saptd_en['DISP'] * units[0], saptd_en['DISP'] * units[1], saptd_en['DISP'] * units[2]))
+    core.print_out("  %-27s % 16.8f [mEh] % 16.8f [kcal/mol] % 16.8f [kJ/mol]\n" %
+                   ("Total " + saptd_name + "-D", total * units[0], total * units[1], total * units[2]))
+    core.print_out("  " + "-" * 104 + "\n")
 
     if saptd_name == "FISAPT0":
         pw_disp = dimer_wfn.variable("PAIRWISE DISPERSION CORRECTION ANALYSIS")

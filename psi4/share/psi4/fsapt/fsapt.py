@@ -706,7 +706,7 @@ def print_order2(order2, fragkeys, saptkeys=saptkeys_):
         for keyB in fragkeys['B']:
             print('%-9s %-9s ' % (keyA, keyB), end='')
             for saptkey in saptkeys:
-                if saptkey is "EDisp" and ('Link' in keyA or 'Link' in keyB):
+                if saptkey == "EDisp" and ('Link' in keyA or 'Link' in keyB):
                     print('%8.3f' % 0.0, end='')
                 else:
                     try:

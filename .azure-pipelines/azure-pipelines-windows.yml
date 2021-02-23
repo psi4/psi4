@@ -126,6 +126,7 @@ jobs:
                         pytest ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
+                        psi4/label/dev::dftd3 ^
                         conda-forge::gau2grid ^
                         psi4/label/dev::libint2 ^
                         conda-forge::libxc ^
