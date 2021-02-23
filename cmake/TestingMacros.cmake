@@ -67,6 +67,9 @@ macro(add_regression_test _name _labels)
       WORKING_DIRECTORY "${TEST_RUN_DIR}"
       COMMAND "${Python_EXECUTABLE}" "${TESTEXE}" "${INPUTFILE}" "${LOGFILE}" "${AUTOTEST}" "${psi4_SOURCE_DIR}" "${SOWREAP}" "${OUTFILE}" "${PSIEXE}" "${PSIDATADIR}" "${PSILIB}"
     )
+    set_tests_properties("${_name}"
+      PROPERTIES
+        ENVIRONMENT PYTHONPATH=${PSILIB})
 
     if(labels)
         set_tests_properties(${_name} PROPERTIES LABELS "${labels}")
