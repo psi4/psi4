@@ -158,6 +158,7 @@ jobs:
       cd build
       source activate p4env
       ../devtools/scripts/ci_build.sh
+      readelf -d ./stage/lib/psi4/core*.so
     displayName: 'Build Psi4'
 
   - bash: |

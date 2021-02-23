@@ -25,7 +25,7 @@ def test_triplet_speedup():
     S = psi4.core.doublet(S, C, False, False)
     time2 = time.time() - start
 
-    if int(os.environ["PYTEST_XDIST_WORKER_COUNT"]) == 1:
+    if int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", 1)) == 1:
         assert time1 < time2
     assert psi4.compare_matrices(R, S, 8, "linalg::triplet speedup test")
 
@@ -63,7 +63,7 @@ def test_triplet_with_irreps():
     S = psi4.core.doublet(S, C, False, False)
     time2 = time.time() - start
 
-    if int(os.environ["PYTEST_XDIST_WORKER_COUNT"]) == 1:
+    if int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", 1)) == 1:
         assert time1 < time2
     assert psi4.compare_matrices(R, S, 8, "linalg::triplet irrep test")
 
@@ -83,6 +83,6 @@ def test_triplet_with_transpose():
     S = psi4.core.doublet(S, C, False, False)
     time2 = time.time() - start
 
-    if int(os.environ["PYTEST_XDIST_WORKER_COUNT"]) == 1:
+    if int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", 1)) == 1:
         assert time1 < time2
     assert psi4.compare_matrices(R, S, 8, "linalg::triplet transpose test")

@@ -10,7 +10,7 @@ jobs:
       llvm.version: '11.0.0'
       mkl.version: '2019.1'
       cmake.build_type: 'Release'
-      conda.build: false
+      conda.build: true
       MKL_CBWR: AVX
       PYTHON_VERSION: '3.8'
     steps:
@@ -149,8 +149,11 @@ jobs:
 
       # Install Intel OpenMP import library
       # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
+      #set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
       - script: |
-          set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
+          cd
+          git clone https://github.com/psi4/iomp5md.git
+          set LIB=%cd%\iomp5md\conda\win\$(mkl.version);%LIB%
           echo '##vso[task.setvariable variable=LIB]%LIB%'
         displayName: "Install Intel OpenMP import library"
 
