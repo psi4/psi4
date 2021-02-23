@@ -1850,6 +1850,7 @@ void OEProp::compute_mbis_multipoles() {
     wfn_->set_array_variable("MBIS DIPOLES", dpole);
     wfn_->set_array_variable("MBIS QUADRUPOLES", qpole);
     wfn_->set_array_variable("MBIS OCTUPOLES", opole);
+
 }
 
 /// Helper Methods for MBIS (JCTC, 2016, p. 3894–3912, Verstraelen et al.)
@@ -1997,6 +1998,55 @@ std::tuple<double, double> get_mbis_params(int atomic_num, int shell_num) {
     return params[atomic_num][shell_num];
 }
 
+// A Helper Method That Calculates Radial Moments using Atomic Electron Densities derived from Charge Partitioning
+std::vector<SharedMatrix> compute_radial_moments(const std::shared_ptr<DFTGrid>& grid, const std::vector<double>& rho_a_points, const std::vector<double>& distances, int num_atoms) {
+
+    Options& options = Process::environment.options;    
+    const int max_power = std::max(4, options.get_int("MAX_RADIAL_MOMENT"));
+
+    std::vector<SharedMatrix> rmoms;
+
+    for (int n = 2; n <= max_power; n++) {
+        
+	std::stringstream sstream;
+        sstream << "ATOMIC RADIAL MOMENTS <R^" << n << ">";
+        auto mat_name = sstream.str();
+	
+	rmoms.push_back(std::make_shared<Matrix>(mat_name, num_atoms, 1));
+    
+    }
+
+    auto blocks = grid->blocks();
+    size_t total_points = grid->npoints();
+
+#pragma omp parallel for
+    for (int a = 0; a < num_atoms; a++) {
+	for (int n = 2; n <= max_power; n++) {
+            size_t running_points = 0;
+            double val = 0;
+            for (int b = 0; b < blocks.size(); b++) {
+                auto block = blocks[b];
+                SharedVector rho_block;
+                size_t num_points = block->npoints();
+
+                double* x = block->x();
+                double* y = block->y();
+                double* z = block->z();
+                double* w = block->w();
+
+                for (size_t p = running_points; p < running_points + num_points; p++) {
+                    auto ap = a * total_points + p;
+                    val += w[p - running_points] * rho_a_points[ap] * pow(distances[ap], n);
+                }
+                running_points += num_points;
+            }
+            rmoms[n - 2]->set(a, 0, val);
+	}
+    }
+
+    return rmoms;
+}
+
 // Minimal Basis Iterative Stockhplder (JCTC, 2016, p. 3894–3912, Verstraelen et al.)
 std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix>
 PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
@@ -2020,7 +2070,8 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     mbis_grid_options_int["DFT_SPHERICAL_POINTS"] = options.get_int("MBIS_SPHERICAL_POINTS");
     mbis_grid_options_str["DFT_PRUNING_SCHEME"] = options.get_str("MBIS_PRUNING_SCHEME");
 
-    std::shared_ptr<DFTGrid> grid = std::make_shared<DFTGrid>(mol, basisset_, mbis_grid_options_int, mbis_grid_options_str, options);
+    auto grid = std::make_shared<DFTGrid>(mol, basisset_, mbis_grid_options_int, mbis_grid_options_str, options);
+    
 
     if (print_output && debug >= 1) grid->print();
 
@@ -2266,12 +2317,13 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     // => Post-Processing <= //
  
-    // Atomic density, as defined in Equation 5 of Verstraelen et al. (Negative to account for negative charge of electron)
+    // Atomic density, as defined in Equation 5 of Verstraelen et al.
     std::vector<double> rho_a(num_atoms * total_points, 0.0);
+
 #pragma omp parallel for
     for (int atom = 0; atom < num_atoms; atom++) {
         for (size_t point = 0; point < total_points; point++) {
-            rho_a[atom * total_points + point] = -rho[point] * rho_a_0_points[atom * total_points + point] / rho_0_points[point];
+            rho_a[atom * total_points + point] = rho[point] * rho_a_0_points[atom * total_points + point] / rho_0_points[point];
         }
     }
 
@@ -2307,7 +2359,6 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     auto opole = std::make_shared<Matrix>("MBIS Octupoles: (a.u.)", num_atoms, 10);
     //auto qpole_stone = std::make_shared<Matrix>("MBIS Quadrupoles: (a.u.)", num_atoms, 6);
     //auto opole_stone = std::make_shared<Matrix>("MBIS Octupoles: (a.u.)", num_atoms, 10);
-
     // Calculate atomic multipoles
 #pragma omp parallel for
     for (int a = 0; a < num_atoms; a++) {
@@ -2317,24 +2368,24 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
             auto ap = a * total_points + p;
 
             // Atomic monopole
-            mpole->add(a, 0, weights[p] * rho_a[ap]);
+            mpole->add(a, 0, weights[p] * -rho_a[ap]);
 
             // Atomic dipole
             for (int i = 0; i < 3; i++) {
-                dpole->add(a, i, weights[p] * rho_a[ap] * disps[i][ap]);
+                dpole->add(a, i, weights[p] * -rho_a[ap] * disps[i][ap]);
             }
 
             // Atomic quadrupole
             for (int q = 0; q < 6; q++) {
                 int i = qpole_inds[q][0], j = qpole_inds[q][1];
-                qpole->add(a, q, weights[p] * rho_a[ap] * (disps[i][ap] * disps[j][ap]));
+                qpole->add(a, q, weights[p] * -rho_a[ap] * (disps[i][ap] * disps[j][ap]));
                 //qpole_stone->add(a, q, weights[p] * rho_a[ap] * (1.5 * disps[i][ap] * disps[j][ap] - 0.5 * pow(distances[ap], 2) * k_delta[i][j]));
             }
 
             // Atomic octupole
             for (int o = 0; o < 10; o++) {
                 int i = opole_inds[o][0], j = opole_inds[o][1], k = opole_inds[o][2];
-                opole->add(a, o, weights[p] * rho_a[ap] * (disps[i][ap] * disps[j][ap] * disps[k][ap]));
+                opole->add(a, o, weights[p] * -rho_a[ap] * (disps[i][ap] * disps[j][ap] * disps[k][ap]));
                 //opole_stone->add(a, o, weights[p] * rho_a[ap] 
                 //    * (2.5 * disps[i][ap] * disps[j][ap] * disps[k][ap] - 0.5 * pow(distances[ap], 2) 
                 //        * (k_delta[j][k] * disps[i][ap] + k_delta[i][k] * disps[j][ap] + k_delta[i][j] * disps[k][ap])));
@@ -2377,6 +2428,44 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
                     a+1, mol->label(a).c_str(), (int)mol->Z(a), opole->get(a, 0), opole->get(a, 1), opole->get(a, 2), 
                     opole->get(a, 3), opole->get(a, 4), opole->get(a, 5), opole->get(a, 6), opole->get(a, 7), 
                     opole->get(a, 8), opole->get(a, 9));
+        }
+
+    }
+
+    const int max_power = options.get_int("MAX_RADIAL_MOMENT");
+    auto rmoms = compute_radial_moments(grid, rho_a, distances, num_atoms);
+    
+    for (int n = 2; n <= max_power; n++) {
+	std::stringstream sstream;
+        sstream << "MBIS RADIAL MOMENTS <R^" << n << ">";
+
+        auto var_name = sstream.str();
+        wfn_->set_array_variable(var_name, rmoms[n-2]);
+    }
+
+    auto valence_widths = std::make_shared<Matrix>("MBIS Valence Widths", num_atoms, 1);
+    for (int atom = 0; atom < num_atoms; atom++) {
+        valence_widths->set(atom, 0, Sai[atom][mA[atom]-1]);
+    }
+    wfn_->set_array_variable("MBIS VALENCE WIDTHS", valence_widths);
+
+    if (print_output) {
+        for (int n = 2; n <= max_power; n++) {
+	    outfile->Printf("\n  MBIS Radial Moments: [a0^%d]\n", n);
+            outfile->Printf("   Center  Symbol  Z     Rad Mo\n");
+
+            for (int a = 0; a < num_atoms; a++) {
+                outfile->Printf("  %5d      %2s %4d   %9.6f\n", a+1, mol->label(a).c_str(), 
+                (int)mol->Z(a), rmoms[n-2]->get(a, 0));
+	    }
+        }
+
+	outfile->Printf("\n  MBIS Valence Widths: [a0]\n");
+        outfile->Printf("   Center  Symbol  Z     Width\n");
+
+        for (int a = 0; a < num_atoms; a++) {
+            outfile->Printf("  %5d      %2s %4d   %9.6f\n", a+1, mol->label(a).c_str(),
+            (int)mol->Z(a), valence_widths->get(a, 0));
         }
 
     }

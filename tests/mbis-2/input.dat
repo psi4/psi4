@@ -44,6 +44,22 @@ octupoles_ref = np.array([ #TEST
    [ 1.36648390e-15, -2.03066382e-03, -2.26265081e-15],     #TEST
    [-3.72923390e-15, -2.26265081e-15, -2.30415328e-03]]]])  #TEST
 
+# Reference Atomic Volumes From Horton
+# O 30.849393460032005
+# H 3.3386752960558264
+
+avols_ref = np.array([  #TEST
+ [30.84869384],         #TEST
+ [ 3.33859744]])        #TEST
+
+# Reference Valence Widths from Horton
+# O 0.41993958672777343
+# H 0.41407672804054413
+
+vwidths_ref = np.array([  #TEST
+ [0.4199382],             #TEST
+ [0.4140744]])            #TEST
+
 molecule mol {
   -1 1
   O 0.0 0.0 0.0
@@ -59,6 +75,7 @@ set {
   e_convergence 10
   mbis_radial_points 99
   mbis_spherical_points 350
+  max_radial_moment 4
 }
 
 e, wfn = energy('hf/cc-pvdz', return_wfn=True)
@@ -69,8 +86,12 @@ charges = wfn.variable("MBIS CHARGES")
 dipoles = wfn.variable("MBIS DIPOLES")
 quadrupoles = wfn.variable("MBIS QUADRUPOLES")
 octupoles = wfn.variable("MBIS OCTUPOLES")
+avols = wfn.variable("MBIS RADIAL MOMENTS <R^3>")
+vwidths = wfn.variable("MBIS VALENCE WIDTHS")
 
 compare_values(charges_ref, charges, "MBIS Charges", atol=1.e-5)             #TEST
 compare_values(dipoles_ref, dipoles, "MBIS Dipoles", atol=1.e-5)             #TEST
 compare_values(quadrupoles_ref, quadrupoles, "MBIS Quadrupoles", atol=1.e-5) #TEST
 compare_values(octupoles_ref, octupoles, "MBIS Octupoles", atol=1.e-5)       #TEST
+compare_values(avols_ref, avols, "MBIS Radial Moments <r^3>", atol=1.e-5)    #TEST
+compare_values(vwidths_ref, vwidths, "MBIS Valence Widths", atol=1.e-5)      #TEST
