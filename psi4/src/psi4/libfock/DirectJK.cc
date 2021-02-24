@@ -359,7 +359,7 @@ void DirectJK::compute_JK() {
     }
     
     iteration_ += 1;
-    
+
 }
 void DirectJK::postiterations() {}
 
@@ -369,6 +369,7 @@ bool linK_sort_helper(const std::tuple<double, int>& t1, const std::tuple<double
 
 void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<std::shared_ptr<Matrix>>& D,
                         std::vector<std::shared_ptr<Matrix>>& J, std::vector<std::shared_ptr<Matrix>>& K) {
+    
     timer_on("build_JK()");
     
     Options& options = Process::environment.options;
