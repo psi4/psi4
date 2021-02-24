@@ -291,7 +291,7 @@ void DirectJK::compute_JK() {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         for (int thread = 0; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
-            if (dens_screen) ints[thread]->update_density(D_ref[0]);
+            if (dens_screen) ints[thread]->update_density(D_ref);
         }
         // if (dens_screen) ints[0]->update_density(D_ao_[0]);
         // TODO: Fast K algorithm
@@ -309,10 +309,10 @@ void DirectJK::compute_JK() {
     if (do_J_ || do_K_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
-        if (dens_screen) ints[0]->update_density(D_ref[0]);
+        if (dens_screen) ints[0]->update_density(D_ref);
         for (int thread = 1; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
-            if (dens_screen) ints[thread]->update_density(D_ref[0]);
+            if (dens_screen) ints[thread]->update_density(D_ref);
         }
         // if (dens_screen) ints[0]->update_density(D_ao_[0]);
         if (do_J_ && do_K_) {
@@ -331,11 +331,14 @@ void DirectJK::compute_JK() {
             build_JK(ints, D_ref, temp, K_ao_);
         }
     }
+    
+    iteration_ += 1;
 }
 void DirectJK::postiterations() {}
 
 void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<std::shared_ptr<Matrix>>& D,
                         std::vector<std::shared_ptr<Matrix>>& J, std::vector<std::shared_ptr<Matrix>>& K) {
+    
     timer_on("build_JK()");
 
     // => Zeroing <= //

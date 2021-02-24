@@ -208,7 +208,7 @@ class PSI_API TwoBodyAOInt {
      * Sieve information
      */
     /// Update the Max Density Per Shell Pair given an updated Density Matrix (Haser 1989)
-    void update_density(const SharedMatrix &D);
+    void update_density(const std::vector<SharedMatrix>& D);
     /// Ask the built in sieve whether this quartet contributes
     bool shell_significant(int M, int N, int R, int S) const { return sieve_impl_(M, N, R, S); };
     /// Are any of the quartets within a given shellpair list significant

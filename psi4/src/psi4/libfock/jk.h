@@ -244,6 +244,9 @@ class PSI_API JK {
     double do_csam_;
     /// Whether to all desymmetrization, for cases when it's already been performed elsewhere
     std::vector<bool> input_symmetry_cast_map_;
+    
+    /// Current SCF Iteration number
+    int iteration_ = 0;
 
     // => Tasks <= //
 
