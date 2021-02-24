@@ -169,7 +169,6 @@ bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) const {
     max_dens_factor = std::max(max_dens_factor, 0.25 * max_dens_shell_pair_[N][S]);
 
     // Squared to account for the fact that Q_MN is given as its square
-<<<<<<< HEAD
     max_dens_factor *= max_dens_factor;
     density_threshold *= density_threshold;
 
