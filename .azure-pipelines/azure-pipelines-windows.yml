@@ -112,6 +112,7 @@ jobs:
       # Note: c-f eigen has Config.cmake file
       - script: |
           conda install cmake ^
+                        anaconda-client ^
                         conda-build ^
                         conda-forge::eigen ^
                         conda-verify ^
@@ -127,6 +128,7 @@ jobs:
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
                         psi4/label/dev::dftd3 ^
+                        psi4/label/dev::gcp ^
                         conda-forge::gau2grid ^
                         psi4/label/dev::libint2 ^
                         conda-forge::libxc ^
