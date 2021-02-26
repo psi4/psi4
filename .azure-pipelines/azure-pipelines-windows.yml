@@ -258,3 +258,13 @@ jobs:
           artifactName: conda
         condition: and(succeeded(), eq(variables['conda.build'], 'true'))
         displayName: "Publish Psi4 package"
+
+      # Upload package
+      - script: |
+          dir C:\tools\miniconda3\conda-bld\win-64\*.tar.bz2
+          anaconda upload --label gha --skip C:\tools\miniconda3\conda-bld\win-64\*.tar.bz2
+        env:
+            ANACONDA_API_TOKEN: $(CONDA_ANACONDA_ORG_TOKEN)
+        condition: and(succeeded(), eq(variables['conda.build'], 'true'))
+        displayName: "Upload Psi4 package to anaconda.org/psi4/psi4"
+
