@@ -266,12 +266,13 @@ jobs:
           set -e
           ls -l /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
           anaconda \
+            --token $ANACONDA_API_TOKEN \
+            --verbose \
+           upload \
             --label gha \
             --skip \
-            --token $ANACONDA_API_TOKEN \
             --user psi4 \
-            --verbose \
-            upload /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
+            /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
         env:
           ANACONDA_API_TOKEN: $(CONDA_ANACONDA_ORG_TOKEN)
         condition: and(succeeded(), eq(variables['conda.build'], 'true'))
