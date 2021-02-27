@@ -264,8 +264,14 @@ jobs:
       # Upload package
       - bash: |
           set -e
-          ls -l C:\tools\miniconda3\conda-bld\win-64\*.tar.bz2
-          anaconda --verbose -t $ANACONDA_API_TOKEN upload --label gha --skip -u psi4 C:\tools\miniconda3\conda-bld\win-64\*.tar.bz2
+          ls -l /mnt/c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
+          anaconda \
+            --label gha \
+            --skip \
+            --token $ANACONDA_API_TOKEN \
+            --user psi4 \
+            --verbose \
+            upload /mnt/c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
         env:
           ANACONDA_API_TOKEN: $(CONDA_ANACONDA_ORG_TOKEN)
         condition: and(succeeded(), eq(variables['conda.build'], 'true'))
