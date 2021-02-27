@@ -262,11 +262,12 @@ jobs:
         displayName: "Publish Psi4 package"
 
       # Upload package
-      - script: |
-          dir C:\tools\miniconda3\conda-bld\win-64\*.tar.bz2
-          anaconda upload --label gha --skip C:\tools\miniconda3\conda-bld\win-64\*.tar.bz2
+      - bash: |
+          set -e
+          ls -l C:\tools\miniconda3\conda-bld\win-64\*.tar.bz2
+          anaconda --verbose -t $ANACONDA_API_TOKEN upload --label gha --skip -u psi4 C:\tools\miniconda3\conda-bld\win-64\*.tar.bz2
         env:
-            ANACONDA_API_TOKEN: $(CONDA_ANACONDA_ORG_TOKEN)
+          ANACONDA_API_TOKEN: $(CONDA_ANACONDA_ORG_TOKEN)
         condition: and(succeeded(), eq(variables['conda.build'], 'true'))
         displayName: "Upload Psi4 package to anaconda.org/psi4/psi4"
 
