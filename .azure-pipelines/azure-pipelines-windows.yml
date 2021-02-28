@@ -112,7 +112,6 @@ jobs:
       # Note: c-f eigen has Config.cmake file
       - script: |
           conda install cmake ^
-                        anaconda-client ^
                         conda-build ^
                         conda-forge::eigen ^
                         conda-verify ^
@@ -137,6 +136,8 @@ jobs:
                         conda-forge::qcelemental ^
                         conda-forge::qcengine
           pip install git+https://github.com/i-pi/i-pi.git@master-py3
+          conda install --only-deps anaconda-client
+          pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent
           conda list
         displayName: "Install conda packages"
 
@@ -261,9 +262,9 @@ jobs:
         condition: and(succeeded(), eq(variables['conda.build'], 'true'))
         displayName: "Publish Psi4 package"
 
+      #    set -e
       # Upload package
       - bash: |
-          set -e
           ls -l /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
           anaconda \
             --token $ANACONDA_API_TOKEN \
@@ -273,6 +274,7 @@ jobs:
             --skip \
             --user psi4 \
             /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
+          echo $?
         env:
           ANACONDA_API_TOKEN: $(CONDA_ANACONDA_ORG_TOKEN)
         condition: and(succeeded(), eq(variables['conda.build'], 'true'))
