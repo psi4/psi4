@@ -112,6 +112,7 @@ jobs:
       # Note: c-f eigen has Config.cmake file
       - script: |
           conda install cmake ^
+                        anaconda-project ^
                         conda-build ^
                         conda-forge::eigen ^
                         conda-verify ^
@@ -138,6 +139,7 @@ jobs:
           pip install git+https://github.com/i-pi/i-pi.git@master-py3
           conda install --only-deps anaconda-client
           pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent
+          which anaconda
           conda list
         displayName: "Install conda packages"
 
