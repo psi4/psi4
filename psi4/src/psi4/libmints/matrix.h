@@ -115,9 +115,9 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     double*** matrix_;
     /// Number of irreps
     int nirrep_;
-    /// Rows per irrep array
+    /// Rows per irrep array. Element "h" is associated with matrix block h.
     Dimension rowspi_;
-    /// Columns per irrep array
+    /// Columns per irrep array. Element "h" is associated with matrix block h ^ symmetry_.
     Dimension colspi_;
     /// Name of the matrix
     std::string name_;
