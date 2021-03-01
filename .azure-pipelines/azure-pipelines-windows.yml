@@ -265,11 +265,11 @@ jobs:
         displayName: "Publish Psi4 package"
 
       #    set -e
+      #      --token $ANACONDA_API_TOKEN \
       # Upload package
       - bash: |
           ls -l /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
           anaconda \
-            --token $ANACONDA_API_TOKEN \
             --verbose \
            upload \
             --label gha \
