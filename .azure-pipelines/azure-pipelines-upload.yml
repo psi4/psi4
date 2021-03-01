@@ -271,11 +271,7 @@ jobs:
       # Upload package
       - bash: |
           pwd
-          ls -l
-          echo $(Build.SourcesDirectory)
-          ls -l $(Build.SourcesDirectory)
-          echo $(Build.BinariesDirectory)
-          ls -l $(Build.BinariesDirectory)
+          ls -l conda/
           echo "Using the mapped env var for this task works and is recommended: $ANACONDA_API_TOKEN"
           anaconda \
             --verbose \
@@ -283,7 +279,7 @@ jobs:
             --label gha \
             --skip \
             --user psi4 \
-            /d/a/1/s/psi4/conda/*.tar.bz2
+            conda/*.tar.bz2
           echo $?
         env:
           ANACONDA_API_TOKEN: $(CONDA_ANACONDA_ORG_TOKEN)
