@@ -1,0 +1,348 @@
+jobs:
+
+  # Configure, build, install, and test job
+  - job: 'windows_upload'
+    displayName: 'Windows VS2017 Upload'
+    pool:
+      vmImage: 'vs2017-win2016'
+    timeoutInMinutes: 360
+    variables:
+      llvm.version: '11.0.0'
+      mkl.version: '2019.1'
+      cmake.build_type: 'Release'
+      conda.build: true
+      MKL_CBWR: AVX
+      PYTHON_VERSION: '3.8'
+    steps:
+
+      # Check Python
+      - script: |
+          setlocal EnableDelayedExpansion
+          echo python.version: %PYTHON_VERSION%
+          set VALID=false
+          if "%PYTHON_VERSION%"=="3.6" set VALID=true
+          if "%PYTHON_VERSION%"=="3.7" set VALID=true
+          if "%PYTHON_VERSION%"=="3.8" set VALID=true
+          if "%PYTHON_VERSION%"=="3.9" set VALID=true
+          if "!VALID!"=="false" (
+            echo ERROR: Invalid "python.version" value: "%PYTHON_VERSION%". Valid values: "3.6" through "3.9".
+            exit 1
+          )
+        displayName: "Check Python version: $(python.version)"
+
+      # Check cmake configuration
+      - script: |
+          setlocal EnableDelayedExpansion
+          echo cmake.build_type: %CMAKE_BUILD_TYPE%
+          set VALID=false
+          if "%CMAKE_BUILD_TYPE%"=="Debug" set VALID=true
+          if "%CMAKE_BUILD_TYPE%"=="Release" set VALID=true
+          if "!VALID!"=="false" (
+            echo ERROR: Invalid "cmake.build_type" value: "%CMAKE_BUILD_TYPE%". Valid values: "Debug" and "Release".
+            exit 1
+          )
+        displayName: "Check cmake configuration"
+
+      # Check ctest configuration
+      - script: |
+          setlocal EnableDelayedExpansion
+          echo ctest.type: %CTEST_TYPE%
+          set VALID=false
+          if "%CTEST_TYPE%"=="quick" set VALID=true
+          if "%CTEST_TYPE%"=="full" set VALID=true
+          if "!VALID!"=="false" (
+            echo ERROR: Invalid "ctest.type" value: "%CTEST_TYPE%". Valid values: "quick" and "full".
+            exit 1
+          )
+        displayName: "Check ctest configuration"
+
+      # Check pytest configuration
+      - script: |
+          setlocal EnableDelayedExpansion
+          echo pytest.type: %PYTEST_TYPE%
+          set VALID=false
+          if "%PYTEST_TYPE%"=="quick" set VALID=true
+          if "%PYTEST_TYPE%"=="full" set VALID=true
+          if "!VALID!"=="false" (
+            echo ERROR: Invalid "pytest.type" value: "%PYTEST_TYPE%". Valid values: "quick" and "full".
+            exit 1
+          )
+        displayName: "Check pytest configuration"
+
+      # Check conda configuration
+      - script: |
+          setlocal EnableDelayedExpansion
+          echo conda.build: %CONDA_BUILD%
+          set VALID=false
+          if "%CONDA_BUILD%"=="true" set VALID=true
+          if "%CONDA_BUILD%"=="false" set VALID=true
+          if "!VALID!"=="false" (
+            echo ERROR: Invalid "conda.build" value: "%CONDA_BUILD%". Valid values: "true" and "false".
+            exit 1
+          )
+        displayName: "Check conda configuration"
+
+      # Install Chocolatey (https://chocolatey.org/install#install-with-powershellexe)
+#      - powershell: |
+#          Set-ExecutionPolicy Bypass -Scope Process -Force
+#          iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+#          Write-Host "##vso[task.setvariable variable=PATH]$env:PATH"
+#          choco --version
+#        displayName: "Install Chocolatey"
+
+      # Install Miniconda
+      - script: |
+          choco install miniconda3 --yes
+          set PATH=C:\tools\miniconda3\Scripts;C:\tools\miniconda3;C:\tools\miniconda3\Library\bin;%PATH%
+          echo '##vso[task.setvariable variable=PATH]%PATH%'
+          set LIB=C:\tools\miniconda3\Library\lib;%LIB%
+          echo '##vso[task.setvariable variable=LIB]%LIB%'
+          conda --version
+        displayName: "Install Miniconda"
+
+      # Configure Miniconda
+      #    conda config --append channels conda-forge
+      - script: |
+          conda config --set always_yes yes
+          conda info
+        displayName: "Configure Miniconda"
+
+      # Create conda enviroment
+      # Note: conda activate doesn't work here, because it creates a new shell!
+      # Note: c-f eigen has Config.cmake file
+      - script: |
+          conda install cmake ^
+                        anaconda-project ^
+                        conda-build ^
+                        conda-forge::eigen ^
+                        conda-verify ^
+                        intel-openmp=%MKL_VERSION% ^
+                        mkl-devel=%MKL_VERSION% ^
+                        networkx ^
+                        ninja ^
+                        numpy ^
+                        pint ^
+                        pybind11 ^
+                        pymdi ^
+                        pytest ^
+                        pytest-xdist ^
+                        python=%PYTHON_VERSION% ^
+                        psi4/label/dev::dftd3 ^
+                        psi4/label/dev::gcp ^
+                        conda-forge::gau2grid ^
+                        psi4/label/dev::libint2 ^
+                        conda-forge::libxc ^
+                        conda-forge::mpfr ^
+                        conda-forge::mpmath ^
+                        conda-forge::qcelemental ^
+                        conda-forge::qcengine
+          pip install git+https://github.com/i-pi/i-pi.git@master-py3
+          conda install --only-deps anaconda-client
+          pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent
+          which anaconda
+          conda list
+        displayName: "Install conda packages"
+
+#      # Install LLVM
+#      # Note: LLVM distributed by conda is too old
+#      - script: |
+#          choco install llvm --version %LLVM_VERSION% --yes
+#          set PATH=C:\Program Files\LLVM\bin;%PATH%
+#          echo '##vso[task.setvariable variable=PATH]%PATH%'
+#          clang-cl --version
+#        displayName: "Install LLVM"
+#
+#      # Install Intel OpenMP import library
+#      # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
+#      #set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
+#      - script: |
+#          cd
+#          git clone https://github.com/psi4/iomp5md.git
+#          set LIB=%cd%\iomp5md\conda\win\$(mkl.version);%LIB%
+#          echo '##vso[task.setvariable variable=LIB]%LIB%'
+#        displayName: "Install Intel OpenMP import library"
+#
+#      # Configure
+#      - script: |
+#          setlocal EnableDelayedExpansion
+#          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+#          mkdir build & cd build
+#          if "%CMAKE_BUILD_TYPE%"=="Debug" set MAX_AM_ERI=4
+#          if "%CMAKE_BUILD_TYPE%"=="Release" set MAX_AM_ERI=5
+#          if not defined MAX_AM_ERI exit 1
+#          if "%CMAKE_BUILD_TYPE%"=="Debug" set ENABLE_XHOST=OFF
+#          if "%CMAKE_BUILD_TYPE%"=="Release" set ENABLE_XHOST=ON
+#          if not defined ENABLE_XHOST exit 1
+#          cmake -G Ninja ^
+#                -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% ^
+#                -DCMAKE_INSTALL_PREFIX=../install ^
+#                -DCMAKE_C_COMPILER=clang-cl ^
+#                -DCMAKE_CXX_COMPILER=clang-cl ^
+#                -DENABLE_XHOST=!ENABLE_XHOST! ^
+#                -DMAX_AM_ERI=!MAX_AM_ERI! ^
+#                -DPython_EXECUTABLE="C:/tools/miniconda3/python.exe" ^
+#                -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
+#                -DEigen_ROOT="C:/tools/miniconda3/Library" ^
+#                -DBUILD_Libint2_GENERATOR=OFF ^
+#                -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
+#                -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
+#                -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON ^
+#                -DBUILD_SHARED_LIBS=OFF ^
+#                $(Build.SourcesDirectory)
+#        displayName: "Configure Psi4"
+#        workingDirectory: $(Build.BinariesDirectory)
+#
+#      # Build
+#      - script: |
+#          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+#          cmake --build . ^
+#                --config %CMAKE_BUILD_TYPE% ^
+#                -- -j %NUMBER_OF_PROCESSORS%
+#        displayName: "Build Psi4"
+#        workingDirectory: $(Build.BinariesDirectory)/build
+#
+#      # Install
+#      - script: |
+#          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+#          cmake --build . ^
+#                --config %CMAKE_BUILD_TYPE% ^
+#                --target install ^
+#                -- -j %NUMBER_OF_PROCESSORS%
+#        displayName: "Install Psi4"
+#        workingDirectory: $(Build.BinariesDirectory)/build
+#
+#      # Test (OpenMP)
+#      # Check if OpenMP configuration had not failed silently
+#      - script: |
+#          python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
+#        displayName: "Test Psi4 (OpenMP)"
+#        workingDirectory: $(Build.BinariesDirectory)/install/lib
+#
+#      # Spot Test
+#      - script: |
+#          setlocal EnableDelayedExpansion
+#          set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
+#          psi4 $(Build.SourcesDirectory)\tests\tu1-h2o-energy\input.dat
+#        displayName: 'Run, Run, Spot, Run Test'
+#        workingDirectory: $(Build.BinariesDirectory)/build
+#
+#      # Test (ctest)
+#      - script: |
+#          setlocal EnableDelayedExpansion
+#          if "%CTEST_TYPE%"=="full" set CTEST_TYPE=".*"
+#          ctest --build-config %CMAKE_BUILD_TYPE% ^
+#                --label-regex !CTEST_TYPE! ^
+#                --output-on-failure ^
+#                --parallel %NUMBER_OF_PROCESSORS% ^
+#                --timeout 3000
+#        displayName: "Test Psi4 (ctest $(ctest.type))"
+#        workingDirectory: $(Build.BinariesDirectory)/build
+#
+#      # Test (pytest)
+#      - script: |
+#          set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
+#          set PYTHONPATH=$(Build.BinariesDirectory)\install\lib;%PYTHONPATH%
+#          psi4 --test %PYTEST_TYPE% -n %NUMBER_OF_PROCESSORS%
+#        displayName: "Test Psi4 (pytest $(pytest.type))"
+#        workingDirectory: $(Build.BinariesDirectory)
+#
+#      # Build package
+#      - script: |
+#          set INSTALL_DIR=$(Build.BinariesDirectory)\install
+#          conda config --append channels conda-forge
+#          conda config --append channels psi4/label/dev
+#          conda build --python %PYTHON_VERSION% ^
+#                      conda\win
+#          copy /y C:\tools\miniconda3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)
+#        condition: and(succeeded(), eq(variables['conda.build'], 'true'))
+#        displayName: "Build Psi4 package"
+#
+#      # Publish package
+#      - task: PublishBuildArtifacts@1
+#        inputs:
+#          artifactName: conda
+#        condition: and(succeeded(), eq(variables['conda.build'], 'true'))
+#        displayName: "Publish Psi4 package"
+
+      #    set -e
+      #    ls -l /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
+      #      --token $ANACONDA_API_TOKEN \
+      # Upload package
+      - bash: |
+          ls -l $(Build.SourcesDirectory)/conda/*.tar.bz2
+          echo "Using the mapped env var for this task works and is recommended: $ANACONDA_API_TOKEN"
+          anaconda \
+            --verbose \
+           upload \
+            --label gha \
+            --skip \
+            --user psi4 \
+            $(Build.SourcesDirectory)/conda/*.tar.bz2
+          echo $?
+        env:
+          ANACONDA_API_TOKEN: $(CONDA_ANACONDA_ORG_TOKEN)
+        condition: and(succeeded(), eq(variables['conda.build'], 'true'))
+        displayName: "Upload Psi4 package to anaconda.org (only if secret token is retrieved)"
+
+
+####
+#      - bash: |
+#          set -e
+#          TOKEN="$CONDA_ANACONDA_ORG_TOKEN"
+#          echo "##vso[task.setvariable variable=TOKEN]$TOKEN"
+#        displayName: "Retrieve secret upload token"
+#        condition: and(succeeded(), variables['SCIKIT_LEARN_NIGHTLY_UPLOAD_TOKEN'], variables['SCIKIT_LEARN_STAGING_UPLOAD_TOKEN'])
+#          # Secret variables need to mapped to env variables explicitly:
+#          SCIKIT_LEARN_NIGHTLY_UPLOAD_TOKEN: $(SCIKIT_LEARN_NIGHTLY_UPLOAD_TOKEN)
+#          SCIKIT_LEARN_STAGING_UPLOAD_TOKEN: $(SCIKIT_LEARN_STAGING_UPLOAD_TOKEN)
+#          CONDA_ANACONDA_ORG_TOKEN: $(CONDA_ANACONDA_ORG_TOKEN)
+
+#        condition: and(succeeded(), eq(variables['SKIP_BUILD'], 'false'), ne(variables['Build.Reason'], 'PullRequest'), variables['TOKEN'])
+
+#          set -e
+#          if [ "$BUILD_REASON" == "Schedule" ]; then
+#            TOKEN="$SCIKIT_LEARN_NIGHTLY_UPLOAD_TOKEN"
+#          else
+#            TOKEN="$SCIKIT_LEARN_STAGING_UPLOAD_TOKEN"
+#          fi
+#          echo "##vso[task.setvariable variable=TOKEN]$TOKEN"
+
+####
+#- script: echo %MYSECRET%
+#  env:
+#    MySecret: $(Foo)
+#
+#variables:
+# ANACONDA_TOKEN: $(     CONDA_AN
+# GLOBAL_MYSECRET: $(mySecret) # this will not work because the secret variable needs to be mapped as env
+# GLOBAL_MY_MAPPED_ENV_VAR: $(nonSecretVariable) # this works because it's not a secret.
+#
+#steps:
+#
+#- powershell: |
+#    Write-Host "Using an input-macro works: $(mySecret)"
+#    Write-Host "Using the env var directly does not work: $env:MYSECRET"
+#    Write-Host "Using a global secret var mapped in the pipeline does not work either: $env:GLOBAL_MYSECRET"
+#    Write-Host "Using a global non-secret var mapped in the pipeline works: $env:GLOBAL_MY_MAPPED_ENV_VAR" 
+#    Write-Host "Using the mapped env var for this task works and is recommended: $env:MY_MAPPED_ENV_VAR"
+#  env:
+#    MY_MAPPED_ENV_VAR: $(mySecret) # the recommended way to map to an env variable
+#
+#- bash: |
+#    echo "Using an input-macro works: $(mySecret)"
+#    echo "Using the env var directly does not work: $MYSECRET"
+#    echo "Using a global secret var mapped in the pipeline does not work either: $GLOBAL_MYSECRET"
+#    echo "Using a global non-secret var mapped in the pipeline works: $GLOBAL_MY_MAPPED_ENV_VAR" 
+#    echo "Using the mapped env var for this task works and is recommended: $MY_MAPPED_ENV_VAR"
+#  env:
+#    MY_MAPPED_ENV_VAR: $(mySecret) # the recommended way to map to an env variable
+#
+#    - name: Conda-Build for Windows
+#      env:
+#        # generate token at anaconda.org, then at GH Settings Secrets, save as repository secret with name ANACONDA_TOKEN
+#        ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+#      run: |
+#        conda build conda/recipe -c defaults --output-folder .
+#        ls -l win-64/
+#        anaconda upload --label gha --skip win-64/*.tar.bz2
+#
