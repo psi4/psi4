@@ -268,21 +268,25 @@ jobs:
       #    ls -l /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
       #      --token $ANACONDA_API_TOKEN \
       #    ls -l /d/a/1/s/psi4/conda/*.tar.bz2
+      #    ANACONDA_API_TOKEN: $(CONDA_ANACONDA_ORG_TOKEN)
+      #      --user psi4 \
       # Upload package
       - bash: |
           pwd
           ls -l conda/
-          echo "Using the mapped env var for this task works and is recommended: $ANACONDA_API_TOKEN"
+          echo "Using the mapped env var for this task works and is recommended: $(conda.anaconda_org_token)"
+          echo "Using the mapped env var for this task works and is recommended: $(CONDA_ANACONDA_ORG_TOKEN)"
+          echo "Using the mapped env var for this task works and is recommended: $(ANACONDA_API_TOKEN)"
+          anaconda whoami
           anaconda \
             --verbose \
            upload \
             --label gha \
             --skip \
-            --user psi4 \
             conda/*.tar.bz2
           echo $?
         env:
-          ANACONDA_API_TOKEN: $(CONDA_ANACONDA_ORG_TOKEN)
+          ANACONDA_API_TOKEN: $(conda.anaconda_org_token)
         condition: and(succeeded(), eq(variables['conda.build'], 'true'))
         displayName: "Upload Psi4 package to anaconda.org (only if secret token is retrieved)"
 
