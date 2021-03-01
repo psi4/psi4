@@ -267,9 +267,15 @@ jobs:
       #    set -e
       #    ls -l /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
       #      --token $ANACONDA_API_TOKEN \
+      #    ls -l /d/a/1/s/psi4/conda/*.tar.bz2
       # Upload package
       - bash: |
-          ls -l /d/a/1/s/psi4/conda/*.tar.bz2
+          pwd
+          ls -l
+          echo $(Build.SourcesDirectory)
+          ls -l $(Build.SourcesDirectory)
+          echo $(Build.BinariesDirectory)
+          ls -l $(Build.BinariesDirectory)
           echo "Using the mapped env var for this task works and is recommended: $ANACONDA_API_TOKEN"
           anaconda \
             --verbose \
