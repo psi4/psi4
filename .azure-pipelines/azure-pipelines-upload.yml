@@ -269,7 +269,7 @@ jobs:
       #      --token $ANACONDA_API_TOKEN \
       # Upload package
       - bash: |
-          ls -l /d/a/1/b/psi4/conda/*.tar.bz2
+          ls -l /d/a/1/s/psi4/conda/*.tar.bz2
           echo "Using the mapped env var for this task works and is recommended: $ANACONDA_API_TOKEN"
           anaconda \
             --verbose \
@@ -277,7 +277,7 @@ jobs:
             --label gha \
             --skip \
             --user psi4 \
-            /d/a/1/b/psi4/conda/*.tar.bz2
+            /d/a/1/s/psi4/conda/*.tar.bz2
           echo $?
         env:
           ANACONDA_API_TOKEN: $(CONDA_ANACONDA_ORG_TOKEN)
