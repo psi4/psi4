@@ -272,11 +272,8 @@ jobs:
       #      --user psi4 \
       # Upload package
       - bash: |
-          pwd
-          ls -l conda/
+          set -e
           echo "Using the mapped env var for this task works and is recommended: $(conda.anaconda_org_token)"
-          echo "Using the mapped env var for this task works and is recommended: $(CONDA_ANACONDA_ORG_TOKEN)"
-          echo "Using the mapped env var for this task works and is recommended: $(ANACONDA_API_TOKEN)"
           anaconda whoami
           anaconda \
             --verbose \

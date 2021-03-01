@@ -166,12 +166,6 @@ jobs:
       - script: |
           setlocal EnableDelayedExpansion
           call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
-          pwd
-          ls -l
-          echo $(Build.SourcesDirectory)
-          ls -l $(Build.SourcesDirectory)
-          echo $(Build.BinariesDirectory)
-          ls -l $(Build.BinariesDirectory)
           mkdir build & cd build
           if "%CMAKE_BUILD_TYPE%"=="Debug" set MAX_AM_ERI=4
           if "%CMAKE_BUILD_TYPE%"=="Release" set MAX_AM_ERI=5
@@ -270,21 +264,21 @@ jobs:
         condition: and(succeeded(), eq(variables['conda.build'], 'true'))
         displayName: "Publish Psi4 package"
 
-      #    set -e
-      #      --token $ANACONDA_API_TOKEN \
       # Upload package
       - bash: |
+          set -e
           ls -l /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
+          echo "Using the mapped env var for this task works and is recommended: $(conda.anaconda_org_token)"
+          anaconda whoami
           anaconda \
             --verbose \
            upload \
             --label gha \
             --skip \
-            --user psi4 \
             /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
           echo $?
         env:
-          ANACONDA_API_TOKEN: $(CONDA_ANACONDA_ORG_TOKEN)
+          ANACONDA_API_TOKEN: $(conda.anaconda_org_token)
         condition: and(succeeded(), eq(variables['conda.build'], 'true'))
-        displayName: "Upload Psi4 package to anaconda.org/psi4/psi4"
+        displayName: "Upload Psi4 package to anaconda.org"
 
