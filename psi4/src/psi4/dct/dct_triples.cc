@@ -604,131 +604,131 @@ void DCTSolver::semicanonicalize_dc() {
     global_dpd_->file2_init(&U_oo, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "U <o|o>");
 
     //
-    // Lambda_OOVV
+    // Amplitude_OOVV
     //
 
-    // Lambda <IJ|AB> * U_BB' -> Lambda <IJ|AB'>
+    // Amplitude <IJ|AB> * U_BB' -> Amplitude <IJ|AB'>
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&Lt, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <OO|VV'>");
+                           "Amplitude <OO|VV'>");
     global_dpd_->contract424(&L, &U_VV, &Lt, 3, 0, 0, 1.0, 0.0);
     global_dpd_->buf4_close(&Lt);
     global_dpd_->buf4_close(&L);
 
-    // Lambda <IJ|AB'> * U_AA' -> Lambda <IJ|A'B'>
+    // Amplitude <IJ|AB'> * U_AA' -> Amplitude <IJ|A'B'>
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <OO|VV'>");
+                           "Amplitude <OO|VV'>");
     global_dpd_->buf4_init(&Lt, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <OO|V'V'>");
+                           "Amplitude <OO|V'V'>");
     global_dpd_->contract244(&U_VV, &L, &Lt, 0, 2, 1, 1.0, 0.0);
     global_dpd_->buf4_close(&Lt);
     global_dpd_->buf4_close(&L);
 
-    // Lambda <IJ|A'B'> * U_JJ' -> Lambda <IJ'|A'B'>
+    // Amplitude <IJ|A'B'> * U_JJ' -> Amplitude <IJ'|A'B'>
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <OO|V'V'>");
+                           "Amplitude <OO|V'V'>");
     global_dpd_->buf4_init(&Lt, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <OO'|V'V'>");
+                           "Amplitude <OO'|V'V'>");
     global_dpd_->contract424(&L, &U_OO, &Lt, 1, 0, 1, 1.0, 0.0);
     global_dpd_->buf4_close(&Lt);
     global_dpd_->buf4_close(&L);
 
-    // Lambda <IJ'|A'B'> * U_II' -> Lambda <I'J'|A'B'>
+    // Amplitude <IJ'|A'B'> * U_II' -> Amplitude <I'J'|A'B'>
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <OO'|V'V'>");
+                           "Amplitude <OO'|V'V'>");
     global_dpd_->buf4_init(&Lt, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <O'O'|V'V'>");
+                           "Amplitude <O'O'|V'V'>");
     global_dpd_->contract244(&U_OO, &L, &Lt, 0, 0, 0, 1.0, 0.0);
     global_dpd_->buf4_close(&Lt);
     global_dpd_->buf4_close(&L);
 
     //
-    // Lambda_OoVv & Lambda_oOvV
+    // Amplitude_OoVv & Amplitude_oOvV
     //
 
-    // Lambda <Ij|Ab> * U_bb' -> Lambda <Ij|Ab'>
+    // Amplitude <Ij|Ab> * U_bb' -> Amplitude <Ij|Ab'>
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Lt, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv'>");
+                           "Amplitude <Oo|Vv'>");
     global_dpd_->contract424(&L, &U_vv, &Lt, 3, 0, 0, 1.0, 0.0);
     global_dpd_->buf4_close(&Lt);
     global_dpd_->buf4_close(&L);
 
-    // Lambda <Ij|Ab'> * U_AA' -> Lambda <Ij|A'b'>
+    // Amplitude <Ij|Ab'> * U_AA' -> Amplitude <Ij|A'b'>
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv'>");
+                           "Amplitude <Oo|Vv'>");
     global_dpd_->buf4_init(&Lt, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|V'v'>");
+                           "Amplitude <Oo|V'v'>");
     global_dpd_->contract244(&U_VV, &L, &Lt, 0, 2, 1, 1.0, 0.0);
     global_dpd_->buf4_close(&Lt);
     global_dpd_->buf4_close(&L);
 
-    // Lambda <Ij|A'b'> * U_jj' -> Lambda <Ij'|A'b'>
+    // Amplitude <Ij|A'b'> * U_jj' -> Amplitude <Ij'|A'b'>
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|V'v'>");
+                           "Amplitude <Oo|V'v'>");
     global_dpd_->buf4_init(&Lt, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo'|V'v'>");
+                           "Amplitude <Oo'|V'v'>");
     global_dpd_->contract424(&L, &U_oo, &Lt, 1, 0, 1, 1.0, 0.0);
     global_dpd_->buf4_close(&Lt);
     global_dpd_->buf4_close(&L);
 
-    // Lambda <Ij'|A'b'> * U_II' -> Lambda <I'j'|A'b'>
+    // Amplitude <Ij'|A'b'> * U_II' -> Amplitude <I'j'|A'b'>
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo'|V'v'>");
+                           "Amplitude <Oo'|V'v'>");
     global_dpd_->buf4_init(&Lt, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <O'o'|V'v'>");
+                           "Amplitude <O'o'|V'v'>");
     global_dpd_->contract244(&U_OO, &L, &Lt, 0, 0, 0, 1.0, 0.0);
     global_dpd_->buf4_close(&Lt);
     global_dpd_->buf4_close(&L);
 
-    // Lambda <I'j'|A'b'> -> Lambda <j'I'|b'A'>
+    // Amplitude <I'j'|A'b'> -> Amplitude <j'I'|b'A'>
     global_dpd_->buf4_init(&Lt, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <O'o'|V'v'>");
-    global_dpd_->buf4_sort(&Lt, PSIF_DCT_DPD, qpsr, ID("[o,O]"), ID("[v,V]"), "Lambda <o'O'|v'V'>");
+                           "Amplitude <O'o'|V'v'>");
+    global_dpd_->buf4_sort(&Lt, PSIF_DCT_DPD, qpsr, ID("[o,O]"), ID("[v,V]"), "Amplitude <o'O'|v'V'>");
     global_dpd_->buf4_close(&Lt);
 
     global_dpd_->buf4_init(&Lt, PSIF_DCT_DPD, 0, ID("[o,O]"), ID("[v,V]"), ID("[o,O]"), ID("[v,V]"), 0,
-                           "Lambda <o'O'|v'V'>");
+                           "Amplitude <o'O'|v'V'>");
     global_dpd_->buf4_close(&Lt);
 
     //
-    // Lambda_oovv
+    // Amplitude_oovv
     //
 
-    // Lambda <ij|ab> * U_bb' -> Lambda <ij|ab'>
+    // Amplitude <ij|ab> * U_bb' -> Amplitude <ij|ab'>
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->buf4_init(&Lt, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
-                           "Lambda <oo|vv'>");
+                           "Amplitude <oo|vv'>");
     global_dpd_->contract424(&L, &U_vv, &Lt, 3, 0, 0, 1.0, 0.0);
     global_dpd_->buf4_close(&Lt);
     global_dpd_->buf4_close(&L);
 
-    // Lambda <ij|ab'> * U_aa' -> Lambda <ij|a'b'>
+    // Amplitude <ij|ab'> * U_aa' -> Amplitude <ij|a'b'>
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
-                           "Lambda <oo|vv'>");
+                           "Amplitude <oo|vv'>");
     global_dpd_->buf4_init(&Lt, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
-                           "Lambda <oo|v'v'>");
+                           "Amplitude <oo|v'v'>");
     global_dpd_->contract244(&U_vv, &L, &Lt, 0, 2, 1, 1.0, 0.0);
     global_dpd_->buf4_close(&Lt);
     global_dpd_->buf4_close(&L);
 
-    // Lambda <ij|a'b'> * U_jj' -> Lambda <ij'|a'b'>
+    // Amplitude <ij|a'b'> * U_jj' -> Amplitude <ij'|a'b'>
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
-                           "Lambda <oo|v'v'>");
+                           "Amplitude <oo|v'v'>");
     global_dpd_->buf4_init(&Lt, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
-                           "Lambda <oo'|v'v'>");
+                           "Amplitude <oo'|v'v'>");
     global_dpd_->contract424(&L, &U_oo, &Lt, 1, 0, 1, 1.0, 0.0);
     global_dpd_->buf4_close(&Lt);
     global_dpd_->buf4_close(&L);
 
-    // Lambda <ij'|a'b'> * U_ii' -> Lambda <i'j'|a'b'>
+    // Amplitude <ij'|a'b'> * U_ii' -> Amplitude <i'j'|a'b'>
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
-                           "Lambda <oo'|v'v'>");
+                           "Amplitude <oo'|v'v'>");
     global_dpd_->buf4_init(&Lt, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
-                           "Lambda <o'o'|v'v'>");
+                           "Amplitude <o'o'|v'v'>");
     global_dpd_->contract244(&U_oo, &L, &Lt, 0, 0, 0, 1.0, 0.0);
     global_dpd_->buf4_close(&Lt);
     global_dpd_->buf4_close(&L);
@@ -764,7 +764,7 @@ double DCTSolver::compute_triples_aaa() {
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <O'O'|V'V'>");
+                           "Amplitude <O'O'|V'V'>");
     global_dpd_->buf4_init(&I_OVVV, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0,
                            "MO Ints <O'V'||V'V'>");
     global_dpd_->buf4_init(&I_OOOV, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), 0,
@@ -1301,11 +1301,11 @@ double DCTSolver::compute_triples_aab() {
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     global_dpd_->buf4_init(&L_AA, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <O'O'|V'V'>");
+                           "Amplitude <O'O'|V'V'>");
     global_dpd_->buf4_init(&L_AB, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <O'o'|V'v'>");
+                           "Amplitude <O'o'|V'v'>");
     global_dpd_->buf4_init(&L_BA, PSIF_DCT_DPD, 0, ID("[o,O]"), ID("[v,V]"), ID("[o,O]"), ID("[v,V]"), 0,
-                           "Lambda <o'O'|v'V'>");
+                           "Amplitude <o'O'|v'V'>");
 
     global_dpd_->buf4_init(&I_OVVV, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0,
                            "MO Ints <O'V'||V'V'>");
@@ -1880,11 +1880,11 @@ double DCTSolver::compute_triples_abb() {
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     global_dpd_->buf4_init(&L_BB, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
-                           "Lambda <o'o'|v'v'>");
+                           "Amplitude <o'o'|v'v'>");
     global_dpd_->buf4_init(&L_AB, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <O'o'|V'v'>");
+                           "Amplitude <O'o'|V'v'>");
     global_dpd_->buf4_init(&L_BA, PSIF_DCT_DPD, 0, ID("[o,O]"), ID("[v,V]"), ID("[o,O]"), ID("[v,V]"), 0,
-                           "Lambda <o'O'|v'V'>");
+                           "Amplitude <o'O'|v'V'>");
 
     global_dpd_->buf4_init(&I_ovvv, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"), ID("[o,v]"), ID("[v,v]"), 0,
                            "MO Ints <o'v'||v'v'>");
@@ -2453,7 +2453,7 @@ double DCTSolver::compute_triples_bbb() {
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
-                           "Lambda <o'o'|v'v'>");
+                           "Amplitude <o'o'|v'v'>");
     global_dpd_->buf4_init(&I_ovvv, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"), ID("[o,v]"), ID("[v,v]"), 0,
                            "MO Ints <o'v'||v'v'>");
     global_dpd_->buf4_init(&I_ooov, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,v]"), ID("[o,o]"), ID("[o,v]"), 0,

@@ -46,7 +46,7 @@ IntegralTransform::IntegralTransform(std::shared_ptr<Wavefunction> wfn, SpaceVec
                                      MOOrdering moOrdering, FrozenOrbitals frozenOrbitals, bool init)
     : initialized_(false),
       psio_(_default_psio_lib_),
-      wfn_(wfn),
+      sobasis_(wfn->sobasisset()),
       transformationType_(transformationType),
       uniqueSpaces_(spaces),
       moOrdering_(moOrdering),
@@ -281,8 +281,6 @@ void IntegralTransform::initialize() {
     if (transformationType_ == TransformationType::SemiCanonical) {
         throw PSIEXCEPTION(
             "Semicanonical is deprecated in Libtrans. Please pre-semicanonicalize before passing to libtrans.");
-        // wfn_->semicanonicalize();
-        Cb_ = wfn_->Cb();
     }
     process_eigenvectors();
 

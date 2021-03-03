@@ -38,6 +38,32 @@
 namespace psi {
 namespace dct {
 
+void DCTSolver::initialize_integraltransform() {
+    IntegralTransform::TransformationType transtype;
+    std::string type_string;
+    if (same_a_b_orbs_ == true) {
+        transtype = IntegralTransform::TransformationType::Restricted;
+        type_string = "restricted";
+    } else {
+        transtype = IntegralTransform::TransformationType::Unrestricted;
+        type_string = "unrestricted";
+    }
+
+    std::vector<std::shared_ptr<MOSpace>> spaces{MOSpace::occ, MOSpace::vir, MOSpace::all};
+    _ints = std::make_unique<IntegralTransform>(shared_from_this(), spaces, transtype);
+    _ints->set_keep_iwl_so_ints(true);
+    _ints->set_keep_dpd_so_ints(true);
+    dpd_set_default(_ints->get_dpd_id());
+
+    outfile->Printf("\n\n\tTransforming two-electron integrals (transformation type: %s)...\n", type_string.c_str());
+
+    if (same_a_b_orbs_ == true) {
+        transform_integrals_RHF();
+    } else {
+        transform_integrals();
+    }
+}
+
 /**
  * Updates the MO coefficients, transforms the integrals into both chemists'
  * and physcists' notation.
@@ -45,6 +71,7 @@ namespace dct {
 void DCTSolver::transform_integrals() {
     dct_timer_on("DCTSolver::transform_integrals()");
 
+    _ints->update_orbitals();
     if (options_.get_str("DCT_TYPE") == "DF") {
         // Transform b(Q|mn) to b(Q|pq) in MO basis
         transform_b();
@@ -64,10 +91,7 @@ void DCTSolver::transform_integrals() {
         }
 
         psio_->close(PSIF_LIBTRANS_DPD, 1);
-
-        _ints->update_orbitals();
     } else {
-        _ints->update_orbitals();
         if (print_ > 1) {
             outfile->Printf("\tTransforming integrals...\n");
         }
@@ -732,8 +756,7 @@ void DCTSolver::build_denominators() {
     ///////////////////////////////
     // The alpha-alpha spin case //
     ///////////////////////////////
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
-                           "D <OO|VV>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0, "D <OO|VV>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&D, h);
         for (int row = 0; row < D.params->rowtot[h]; ++row) {
@@ -754,8 +777,7 @@ void DCTSolver::build_denominators() {
     //////////////////////////////
     // The alpha-beta spin case //
     //////////////////////////////
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "D <Oo|Vv>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "D <Oo|Vv>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&D, h);
         for (int row = 0; row < D.params->rowtot[h]; ++row) {
@@ -776,8 +798,7 @@ void DCTSolver::build_denominators() {
     /////////////////////////////
     // The beta-beta spin case //
     /////////////////////////////
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
-                           "D <oo|vv>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0, "D <oo|vv>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&D, h);
         for (int row = 0; row < D.params->rowtot[h]; ++row) {

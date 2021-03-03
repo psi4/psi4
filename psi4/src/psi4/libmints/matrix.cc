@@ -1022,7 +1022,7 @@ double Matrix::trace() {
     return val;
 }
 
-SharedMatrix Matrix::transpose() {
+SharedMatrix Matrix::transpose() const {
     auto temp = std::make_shared<Matrix>(name_, nirrep_, colspi_, rowspi_, symmetry_);
 
     if (symmetry_) {
@@ -1143,6 +1143,8 @@ void Matrix::subtract(const Matrix *const plus) {
 }
 
 void Matrix::subtract(const SharedMatrix &sub) { subtract(sub.get()); }
+
+void Matrix::subtract(const Matrix &sub) { subtract(&sub); }
 
 void Matrix::apply_denominator(const Matrix *const plus) {
     double *lhs, *rhs;
@@ -2971,6 +2973,29 @@ void Matrix::save(psi::PSIO *const psio, size_t fileno, SaveType st) {
         if (sizer > 0)
             psio->write_entry(fileno, const_cast<char *>(name_.c_str()), (char *)lower, sizeof(double) * ioff[sizer]);
         delete[] lower;
+    } else if (st == ThreeIndexLowerTriangle) {
+        if (nirrep_ != 1) {
+            throw PSIEXCEPTION("Matrix::save: ThreeIndexLowerTriangle only applies to matrices without symmetry. This will be changing soon!\n");
+        }
+        auto nP = rowspi(0);
+        auto np = static_cast<int>(sqrt(colspi(0)));
+        if (np * np != colspi(0)) {
+            throw PSIEXCEPTION("Matrix::save: ThreeIndexLowerTriangle columns must be indexed by pairs of the same vector.\n");
+        }
+        auto ntri = np * (np + 1) / 2;
+        std::vector<double> temp(nP * ntri, 0);
+        auto data = temp.data();
+        int count = 0;
+        if (nP > 0 && ntri > 0) {
+            for (int aux = 0; aux < nP; ++aux) {
+                for (int i = 0; i < np; ++i) {
+                    for (int j = 0; j <= i; ++j, ++count) {
+                        temp[count] = matrix_[0][aux][i * np + j];
+                    }
+                }
+            }
+            psio->write_entry(fileno, const_cast<char *>(name_.c_str()), (char *)data, sizeof(double) * temp.size());
+        }
     } else {
         throw PSIEXCEPTION("Matrix::save: Unknown SaveType\n");
     }
@@ -3044,6 +3069,30 @@ void Matrix::load(psi::PSIO *const psio, size_t fileno, SaveType st) {
 
         set(lower);
         delete[] lower;
+    } else if (st == ThreeIndexLowerTriangle) {
+        if (nirrep_ != 1) {
+            throw PSIEXCEPTION("Matrix::load: ThreeIndexLowerTriangle only applies to matrices without symmetry. This will be changing soon!\n");
+        }
+        auto nP = rowspi(0);
+        auto np = static_cast<int>(sqrt(colspi(0)));
+        if (np * np != colspi(0)) {
+            throw PSIEXCEPTION("Matrix::load: ThreeIndexLowerTriangle columns must be indexed by pairs of the same vector.\n");
+        }
+        auto ntri = np * (np + 1) / 2;
+        std::vector<double> temp(nP * ntri, 0);
+        auto data = temp.data();
+        if (nP * ntri > 0) {
+            psio->read_entry(fileno, name_.c_str(), (char *)data, sizeof(double) * temp.size());
+            for (int aux = 0; aux < nP; aux++) {
+                for (int i = 0; i < np; i++) {
+                    for (int j = 0; j <= i; j++) {
+                        matrix_[0][aux][i * np + j] = *data;
+                        matrix_[0][aux][j * np + i] = *data;
+                        data++;
+                    }
+                }
+            }
+        }
     } else {
         throw PSIEXCEPTION("Matrix::load: Unknown SaveType\n");
     }
@@ -3390,23 +3439,25 @@ SharedMatrix vertcat(const std::vector<SharedMatrix> &mats) {
     return cat;
 }
 
-SharedMatrix doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, bool transB) {
-    Dimension m = (transA ? A->colspi() : A->rowspi());
-    Dimension n = (transB ? B->rowspi() : B->colspi());
+Matrix doublet(const Matrix& A, const Matrix& B, bool transA, bool transB) {
+    Dimension m = (transA ? A.colspi() : A.rowspi());
+    Dimension n = (transB ? B.rowspi() : B.colspi());
 
-    auto T = std::make_shared<Matrix>("T", m, n, A->symmetry() ^ B->symmetry());
-    T->gemm(transA, transB, 1.0, A, B, 0.0);
+    auto T = Matrix("T", m, n, A.symmetry() ^ B.symmetry());
+    T.gemm(transA, transB, 1.0, A, B, 0.0);
 
     return T;
 }
 
-SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA, bool transB,
-                     bool transC) {
+SharedMatrix doublet(const SharedMatrix &A, const SharedMatrix &B, bool transA, bool transB) {
+    return std::make_shared<Matrix>(std::move(doublet(*A, *B, transA, transB)));
+}
 
-    bool same_symmetry = (A->symmetry() == B->symmetry() && A->symmetry() == C->symmetry());
+Matrix triplet(const Matrix &A, const Matrix &B, const Matrix &C, bool transA, bool transB, bool transC) {
+    bool same_symmetry = (A.symmetry() == B.symmetry() && A.symmetry() == C.symmetry());
 
-    SharedMatrix T;
-    SharedMatrix S;
+    Matrix T;
+    Matrix S;
 
     if (!same_symmetry) {
         T = doublet(A, B, transA, transB);
@@ -3419,14 +3470,14 @@ SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedM
     int cost1 = 0;
     int cost2 = 0;
 
-    for (int h = 0; h < A->nirrep(); h++) {
+    for (int h = 0; h < A.nirrep(); h++) {
 
-        int dim1 = transA ? A->colspi(h) : A->rowspi(h);
-        int dim2 = transA ? A->rowspi(h) : A->colspi(h);
-        int dim3 = transB ? B->colspi(h) : B->rowspi(h);
-        int dim4 = transB ? B->rowspi(h) : B->colspi(h);
-        int dim5 = transC ? C->colspi(h) : C->rowspi(h);
-        int dim6 = transC ? C->rowspi(h) : C->colspi(h);
+        int dim1 = transA ? A.colspi(h) : A.rowspi(h);
+        int dim2 = transA ? A.rowspi(h) : A.colspi(h);
+        int dim3 = transB ? B.colspi(h) : B.rowspi(h);
+        int dim4 = transB ? B.rowspi(h) : B.colspi(h);
+        int dim5 = transC ? C.colspi(h) : C.rowspi(h);
+        int dim6 = transC ? C.rowspi(h) : C.colspi(h);
         // Checks validity of Matrix Multiply, don't want calculation to suddenly fail halfway through
         if (dim2 != dim3 || dim4 != dim5) {
             throw PsiException("Input matrices are of invalid size", __FILE__, __LINE__);
@@ -3450,6 +3501,11 @@ SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedM
     }
 
     return S;
+}
+
+SharedMatrix triplet(const SharedMatrix &A, const SharedMatrix &B, const SharedMatrix &C, bool transA, bool transB,
+                     bool transC) {
+    return std::make_shared<Matrix>(std::move(triplet(*A, *B, *C, transA, transB, transC)));
 }
 
 namespace detail {

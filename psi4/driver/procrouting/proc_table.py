@@ -202,6 +202,7 @@ procedures = {
         'ccsd'         : proc.run_cc_property,
         'eom-cc2'      : proc.run_cc_property,
         'eom-ccsd'     : proc.run_cc_property,
+        'dct'          : proc.run_dct_property,
         'detci'        : proc.run_detci_property,  # full control over detci
         'cisd'         : proc.run_detci_property,
         'cisdt'        : proc.run_detci_property,

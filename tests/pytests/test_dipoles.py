@@ -17,7 +17,9 @@ perturbation_strength = 0.001
     pytest.param({'name': 'omp2.5', 'options': {'mp_type': 'df', 'max_mograd_convergence': 6}, 'varname': 'DF-OMP2.5'}, id='df-omp2.5 ae'),
     pytest.param({'name': 'omp2.5', 'options': {'mp_type': 'df', 'freeze_core': 'true', 'max_mograd_convergence': 6}, 'varname': 'DF-OMP2.5'}, id='df-omp2.5 fc'),
     pytest.param({'name': 'olccd', 'options': {'cc_type': 'df', 'max_mograd_convergence': 6}, 'varname': 'DF-OLCCD'}, id='df-olccd ae'),
-    pytest.param({'name': 'olccd', 'options': {'cc_type': 'df', 'freeze_core': 'true', 'max_mograd_convergence': 6}, 'varname': 'DF-OLCCD'}, id='df-olccd fc')
+    pytest.param({'name': 'olccd', 'options': {'cc_type': 'df', 'freeze_core': 'true', 'max_mograd_convergence': 6}, 'varname': 'DF-OLCCD'}, id='df-olccd fc'),
+    pytest.param({'name': 'dct', 'options': {'dct_type': 'df'}, 'varname': 'DCT'}, id='df-rdct'),
+    pytest.param({'name': 'dct', 'options': {'dct_type': 'df', 'reference': 'uhf'}, 'varname': 'DCT'}, id='df-udct')
     ]
 )
 def test_dipole(inp):

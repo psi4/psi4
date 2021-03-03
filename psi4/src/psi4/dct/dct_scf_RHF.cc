@@ -50,13 +50,8 @@ namespace dct {
  * and reads the one-electron integrals from PSIO.
  * for RHF reference.
  */
-void DCTSolver::scf_guess_RHF() {
+void DCTSolver::initialize_orbitals_from_reference_R() {
     dct_timer_on("DCTSolver::rhf_guess");
-    auto T = mintshelper()->so_kinetic()->clone();
-    auto V = mintshelper()->so_potential()->clone();
-
-    so_h_->add(T);
-    so_h_->add(V);
 
     epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
     epsilon_b_->copy(epsilon_a_.get());
@@ -169,7 +164,7 @@ void DCTSolver::process_so_ints_RHF() {
 
         /********** AB ***********/
         global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                               "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
         global_dpd_->buf4_init(&tau1_AO_ab, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[n,n]"), ID("[O,O]"), ID("[n,n]"), 0,
                                "tau1AO <OO|nn>");  // tau1AO <Oo|nn>
         global_dpd_->buf4_scm(&tau1_AO_ab, 0.0);
@@ -470,6 +465,8 @@ void DCTSolver::process_so_ints_RHF() {
 
 /**
  * Computes the SCF energy from the latest Fock and density matrices.
+ * WARNING! This quantity is a misnomer from earlier days of the theory.
+ * "SCF" here means "excluding 2RDM cumulant, including 1RDM and 1RDM products."
  */
 void DCTSolver::compute_scf_energy_RHF() {
     dct_timer_on("DCTSolver::compute_scf_energy");
@@ -480,9 +477,7 @@ void DCTSolver::compute_scf_energy_RHF() {
     scf_energy_ += tau_so_a_->vector_dot(so_h_);
 
     if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
-        mo_gammaA_->add(kappa_mo_a_);
-
-        scf_energy_ += mo_gammaA_->vector_dot(moFa_);
+        scf_energy_ += mo_gammaA_.vector_dot(moFa_);
     } else {
         scf_energy_ += kappa_so_a_->vector_dot(Fa_);
         scf_energy_ += tau_so_a_->vector_dot(Fa_);
@@ -496,14 +491,14 @@ double DCTSolver::compute_scf_error_vector_RHF() {
 
     size_t nElements = 0;
     double sumOfSquares = 0.0;
-    auto tmp1 = std::make_shared<Matrix>("tmp1", nirrep_, nsopi_, nsopi_);
-    auto tmp2 = std::make_shared<Matrix>("tmp2", nirrep_, nsopi_, nsopi_);
+    auto tmp1 = Matrix("tmp1", nirrep_, nsopi_, nsopi_);
+    auto tmp2 = Matrix("tmp2", nirrep_, nsopi_, nsopi_);
     // form FDS
-    tmp1->gemm(false, false, 1.0, kappa_so_a_, ao_s_, 0.0);
+    tmp1.gemm(false, false, 1.0, kappa_so_a_, ao_s_, 0.0);
     scf_error_a_->gemm(false, false, 1.0, Fa_, tmp1, 0.0);
     // form SDF
-    tmp1->gemm(false, false, 1.0, kappa_so_a_, Fa_, 0.0);
-    tmp2->gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
+    tmp1.gemm(false, false, 1.0, kappa_so_a_, Fa_, 0.0);
+    tmp2.gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
     scf_error_a_->subtract(tmp2);
     // Orthogonalize
     scf_error_a_->transform(s_half_inv_);

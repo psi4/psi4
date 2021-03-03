@@ -222,88 +222,14 @@ for (int h = 0; h < nirrep_; ++h) {
 #endif
     dct_timer_off("DCTSolver::correct_mo_phases()");
     return true;
-}  // namespace dct
-
-/**
- * Figures out the orbital symmetries and prints them, ordered by energy and type
- */
-void DCTSolver::print_orbital_energies() {
-    std::vector<std::pair<double, int> > aPairs;
-    std::vector<std::pair<double, int> > bPairs;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nsopi_[h]; ++i) {
-            aPairs.push_back(std::make_pair(epsilon_a_->get(h, i), h));
-            bPairs.push_back(std::make_pair(epsilon_b_->get(h, i), h));
-        }
-    }
-    std::sort(aPairs.begin(), aPairs.end());
-    std::sort(bPairs.begin(), bPairs.end());
-
-    auto aIrrepCount = std::vector<int>(nirrep_, 0);
-    auto bIrrepCount = std::vector<int>(nirrep_, 0);
-    std::vector<std::string> irrepLabels = molecule_->irrep_labels();
-
-    outfile->Printf("\n\tOrbital energies (a.u.):\n\t\tAlpha occupied orbitals\n\t\t");
-    for (int i = 0, count = 0; i < nalpha_; ++i, ++count) {
-        int irrep = aPairs[i].second;
-        outfile->Printf("%4d%-4s%11.6f  ", ++aIrrepCount[irrep], irrepLabels[irrep].c_str(), aPairs[i].first);
-        if (count % 4 == 3 && i != nalpha_) outfile->Printf("\n\t\t");
-    }
-    outfile->Printf("\n\n\t\tBeta occupied orbitals\n\t\t");
-    for (int i = 0, count = 0; i < nbeta_; ++i, ++count) {
-        int irrep = bPairs[i].second;
-        outfile->Printf("%4d%-4s%11.6f  ", ++bIrrepCount[irrep], irrepLabels[irrep].c_str(), bPairs[i].first);
-        if (count % 4 == 3 && i != nbeta_) outfile->Printf("\n\t\t");
-    }
-    outfile->Printf("\n\n\t\tAlpha virtual orbitals\n\t\t");
-    for (int i = nalpha_, count = 0; i < nmo_; ++i, ++count) {
-        int irrep = aPairs[i].second;
-        outfile->Printf("%4d%-4s%11.6f  ", ++aIrrepCount[irrep], irrepLabels[irrep].c_str(), aPairs[i].first);
-        if (count % 4 == 3 && i != nmo_) outfile->Printf("\n\t\t");
-    }
-    outfile->Printf("\n\n\t\tBeta virtual orbitals\n\t\t");
-    for (int i = nbeta_, count = 0; i < nmo_; ++i, ++count) {
-        int irrep = bPairs[i].second;
-        outfile->Printf("%4d%-4s%11.6f  ", ++bIrrepCount[irrep], irrepLabels[irrep].c_str(), bPairs[i].first);
-        if (count % 4 == 3 && i != nmo_) outfile->Printf("\n\t\t");
-    }
-    outfile->Printf("\n\n");
-
-    outfile->Printf("\n\tIrrep              ");
-    for (int h = 0; h < nirrep_; ++h) outfile->Printf("%4s ", irrepLabels[h].c_str());
-    outfile->Printf("\n\t-------------------");
-    for (int h = 0; h < nirrep_; ++h) outfile->Printf("-----");
-    outfile->Printf("\n\t#Symmetry Orbitals ");
-    for (int h = 0; h < nirrep_; ++h) outfile->Printf("%4d ", nsopi_[h]);
-    outfile->Printf("\n\t#Alpha Occupied    ");
-    for (int h = 0; h < nirrep_; ++h) outfile->Printf("%4d ", naoccpi_[h]);
-    outfile->Printf("\n\t#Beta Occupied     ");
-    for (int h = 0; h < nirrep_; ++h) outfile->Printf("%4d ", nboccpi_[h]);
-    outfile->Printf("\n\t#Alpha Virtual     ");
-    for (int h = 0; h < nirrep_; ++h) outfile->Printf("%4d ", navirpi_[h]);
-    outfile->Printf("\n\t#Beta Virtual      ");
-    for (int h = 0; h < nirrep_; ++h) outfile->Printf("%4d ", nbvirpi_[h]);
-    outfile->Printf("\n\t-------------------");
-    for (int h = 0; h < nirrep_; ++h) outfile->Printf("-----");
-    outfile->Printf("\n\n");
-
-    if (print_ > 2) {
-        Ca_->print();
-        Cb_->print();
-    }
 }
 
 /**
  * Reads the orbitals and related quantities from the reference wavefunction
  * and reads the one-electron integrals from PSIO.
  */
-void DCTSolver::scf_guess() {
+void DCTSolver::initialize_orbitals_from_reference_U() {
     dct_timer_on("DCTSolver::scf_guess");
-    auto T = mintshelper()->so_kinetic()->clone();
-    auto V = mintshelper()->so_potential()->clone();
-
-    so_h_->add(T);
-    so_h_->add(V);
 
     epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
     epsilon_b_->copy(reference_wavefunction_->epsilon_b().get());
@@ -320,6 +246,8 @@ void DCTSolver::scf_guess() {
 
 /**
  * Computes the SCF energy from the latest Fock and density matrices.
+ * WARNING! This quantity is a misnomer from earlier days of the theory.
+ * "SCF" here means "excluding 2RDM cumulant, including 1RDM and 1RDM products."
  */
 void DCTSolver::compute_scf_energy() {
     dct_timer_on("DCTSolver::compute_scf_energy");
@@ -332,11 +260,8 @@ void DCTSolver::compute_scf_energy() {
     scf_energy_ += 0.5 * tau_so_b_->vector_dot(so_h_);
 
     if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
-        mo_gammaA_->add(kappa_mo_a_);
-        mo_gammaB_->add(kappa_mo_b_);
-
-        scf_energy_ += 0.5 * mo_gammaA_->vector_dot(moFa_);
-        scf_energy_ += 0.5 * mo_gammaB_->vector_dot(moFb_);
+        scf_energy_ += 0.5 * mo_gammaA_.vector_dot(moFa_);
+        scf_energy_ += 0.5 * mo_gammaB_.vector_dot(moFb_);
     } else {
         scf_energy_ += 0.5 * kappa_so_a_->vector_dot(Fa_);
         scf_energy_ += 0.5 * kappa_so_b_->vector_dot(Fb_);
@@ -357,24 +282,24 @@ double DCTSolver::compute_scf_error_vector() {
 
     size_t nElements = 0;
     double sumOfSquares = 0.0;
-    auto tmp1 = std::make_shared<Matrix>("tmp1", nirrep_, nsopi_, nsopi_);
-    auto tmp2 = std::make_shared<Matrix>("tmp2", nirrep_, nsopi_, nsopi_);
+    auto tmp1 = Matrix("tmp1", nirrep_, nsopi_, nsopi_);
+    auto tmp2 = Matrix("tmp2", nirrep_, nsopi_, nsopi_);
     // form FDS
-    tmp1->gemm(false, false, 1.0, kappa_so_a_, ao_s_, 0.0);
+    tmp1.gemm(false, false, 1.0, kappa_so_a_, ao_s_, 0.0);
     scf_error_a_->gemm(false, false, 1.0, Fa_, tmp1, 0.0);
     // form SDF
-    tmp1->gemm(false, false, 1.0, kappa_so_a_, Fa_, 0.0);
-    tmp2->gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
+    tmp1.gemm(false, false, 1.0, kappa_so_a_, Fa_, 0.0);
+    tmp2.gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
     scf_error_a_->subtract(tmp2);
     // Orthogonalize
     scf_error_a_->transform(s_half_inv_);
 
     // form FDS
-    tmp1->gemm(false, false, 1.0, kappa_so_b_, ao_s_, 0.0);
+    tmp1.gemm(false, false, 1.0, kappa_so_b_, ao_s_, 0.0);
     scf_error_b_->gemm(false, false, 1.0, Fb_, tmp1, 0.0);
     // form SDF
-    tmp1->gemm(false, false, 1.0, kappa_so_b_, Fb_, 0.0);
-    tmp2->gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
+    tmp1.gemm(false, false, 1.0, kappa_so_b_, Fb_, 0.0);
+    tmp2.gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
     scf_error_b_->subtract(tmp2);
     // Orthogonalize
     scf_error_b_->transform(s_half_inv_);
@@ -520,7 +445,7 @@ void DCTSolver::process_so_ints() {
 
         /********** AA ***********/
         global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               "Lambda <OO|VV>");
+                               "Amplitude <OO|VV>");
         global_dpd_->buf4_init(&tau1_AO_aa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[n,n]"), ID("[O,O]"), ID("[n,n]"), 0,
                                "tau1AO <OO|nn>");
         global_dpd_->buf4_scm(&tau1_AO_aa, 0.0);
@@ -545,7 +470,7 @@ void DCTSolver::process_so_ints() {
 
         /********** BB ***********/
         global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               "Lambda <oo|vv>");
+                               "Amplitude <oo|vv>");
         global_dpd_->buf4_init(&tau1_AO_bb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[n,n]"), ID("[o,o]"), ID("[n,n]"), 0,
                                "tau1AO <oo|nn>");
         global_dpd_->buf4_scm(&tau1_AO_bb, 0.0);
@@ -569,7 +494,7 @@ void DCTSolver::process_so_ints() {
 
         /********** AB ***********/
         global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               "Lambda <Oo|Vv>");
+                               "Amplitude <Oo|Vv>");
         global_dpd_->buf4_init(&tau1_AO_ab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[n,n]"), ID("[O,o]"), ID("[n,n]"), 0,
                                "tau1AO <Oo|nn>");
         global_dpd_->buf4_scm(&tau1_AO_ab, 0.0);
@@ -1134,7 +1059,7 @@ void DCTSolver::build_AO_tensors() {
 
     /********** AA ***********/
     global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&tau1_AO_aa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[n,n]"), ID("[O,O]"), ID("[n,n]"), 0,
                            "tau1AO <OO|nn>");
     global_dpd_->buf4_scm(&tau1_AO_aa, 0.0);
@@ -1159,7 +1084,7 @@ void DCTSolver::build_AO_tensors() {
 
     /********** BB ***********/
     global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->buf4_init(&tau1_AO_bb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[n,n]"), ID("[o,o]"), ID("[n,n]"), 0,
                            "tau1AO <oo|nn>");
     global_dpd_->buf4_scm(&tau1_AO_bb, 0.0);
@@ -1183,7 +1108,7 @@ void DCTSolver::build_AO_tensors() {
 
     /********** AB ***********/
     global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&tau1_AO_ab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[n,n]"), ID("[O,o]"), ID("[n,n]"), 0,
                            "tau1AO <Oo|nn>");
     global_dpd_->buf4_scm(&tau1_AO_ab, 0.0);

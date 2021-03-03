@@ -73,8 +73,11 @@ SharedMatrix vertcat(const std::vector<SharedMatrix>& mats);
  * \param transA Transpose the first matrix
  * \param transB Transpose the second matrix
  */
+
 PSI_API
 SharedMatrix doublet(const SharedMatrix& A, const SharedMatrix& B, bool transA = false, bool transB = false);
+
+Matrix doublet(const Matrix& A, const Matrix& B, bool transA = false, bool transB = false);
 
 /** Simple triplet GEMM with on-the-fly allocation
  * \param A The first matrix
@@ -87,6 +90,8 @@ SharedMatrix doublet(const SharedMatrix& A, const SharedMatrix& B, bool transA =
 PSI_API
 SharedMatrix triplet(const SharedMatrix& A, const SharedMatrix& B, const SharedMatrix& C, bool transA = false,
                      bool transB = false, bool transC = false);
+
+Matrix triplet(const Matrix&A, const Matrix& B, const Matrix& C, bool transA = false, bool transB = false, bool transC = false);
 
 namespace detail {
 /*!
@@ -285,7 +290,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     PSI_DEPRECATED(
         "Using `Matrix::SaveType::Full` instead of `Matrix::SaveType::SubBlocks` is deprecated, "
         "and in 1.5 it will stop working"),
-    SubBlocks, LowerTriangle };
+    SubBlocks, LowerTriangle, ThreeIndexLowerTriangle };
 
     /**
      * @{
@@ -678,7 +683,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     /// Returns the trace of this
     double trace();
     /// Creates a new matrix which is the transpose of this
-    SharedMatrix transpose();
+    SharedMatrix transpose() const;
 
     /// In place transposition
     void transpose_this();
@@ -694,6 +699,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     void subtract(const Matrix* const);
     /// Subtracts a matrix from this
     void subtract(const SharedMatrix&);
+    void subtract(const Matrix&);
     /// Multiplies the two arguments and adds their result to this
     void accumulate_product(const Matrix* const, const Matrix* const);
     void accumulate_product(const SharedMatrix&, const SharedMatrix&);

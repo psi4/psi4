@@ -1683,6 +1683,9 @@ def run_dct(name, **kwargs):
         proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
         dct_wfn = core.dct(ref_wfn)
 
+    for k, v in dct_wfn.variables().items():
+        core.set_variable(k, v)
+
     return dct_wfn
 
 
@@ -1696,17 +1699,47 @@ def run_dct_gradient(name, **kwargs):
 
 
     core.set_global_option('DERTYPE', 'FIRST')
-    dct_wfn = run_dct(name, **kwargs)
+    dct_wfn = run_dct_property(name, **kwargs)
 
     derivobj = core.Deriv(dct_wfn)
     derivobj.set_tpdm_presorted(True)
-    grad = derivobj.compute()
+    if core.get_option('DCT', 'DCT_TYPE') == 'CONV':
+        grad = derivobj.compute()
+    else:
+        grad = derivobj.compute_df('DF_BASIS_SCF', 'DF_BASIS_DCT')
 
     dct_wfn.set_gradient(grad)
 
     optstash.restore()
     return dct_wfn
 
+
+def run_dct_property(name, **kwargs):
+    """ Function encoding sequence of PSI module calls for
+    DCT property calculation.
+
+    """
+    optstash = p4util.OptionsState(
+        ['DCT', 'OPDM'])
+
+    core.set_local_option('DCT', 'OPDM', 'true');
+    dct_wfn = run_dct(name, **kwargs)
+
+    # Run OEProp
+    oe = core.OEProp(dct_wfn)
+    oe.set_title("DCT")
+    for prop in kwargs.get("properties", []):
+        prop = prop.upper()
+        if prop in core.OEProp.valid_methods or "MULTIPOLE(" in prop:
+            oe.add(prop)
+    oe.compute()
+    dct_wfn.oeprop = oe
+
+    for k, v in dct_wfn.variables().items():
+        core.set_variable(k, v)
+
+    optstash.restore()
+    return dct_wfn
 
 def run_dfocc(name, **kwargs):
     """Function encoding sequence of PSI module calls for
