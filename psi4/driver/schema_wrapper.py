@@ -67,7 +67,8 @@ methods_dict_ = {
     'frequency': driver.frequency,
 }
 can_do_properties_ = {
-    "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices"
+    "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices",
+    "polarizability", "rotation", "roa_tensor"
 }
 
 ## QCSchema translation blocks
