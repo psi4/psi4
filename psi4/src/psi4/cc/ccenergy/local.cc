@@ -95,7 +95,6 @@ void Local_cc::init_pno() {
             nocc * sizeof(double));
 
     // "Vectorize" T2
-    psio_tocprint(PSIF_CC_TAMPS);
     global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS,  0, 0, 5, 0, 5, 0, "tIjAb");
     // Create T2~
     get_matvec(&T2, &Tij);
@@ -158,8 +157,10 @@ void Local_cc::init_pno() {
     delete[] temp_occ_array;
 }
 
-void Local_cc::init_pnopp(const double omega) {
-    outfile->Printf(" Local correlation using Perturbed Pair Natural Orbitals\nCutoff value: %e\n", cutoff);
+void Local_cc::init_pnopp(const double omega, bool combined) {
+    if (combined == false) {
+        outfile->Printf(" Local correlation using Perturbed Pair Natural Orbitals\nCutoff value: %e\n", cutoff);
+    }
     // TODO weak pairs here
     npairs = nocc*nocc;
 
@@ -343,8 +344,12 @@ void Local_cc::init_pnopp(const double omega) {
         Dij[ij]->scale(1.0/3);
     }
     // Diagonalize density
-    Q = build_PNO_lists(cutoff, Dij);
-    outfile->Printf("Density diagonalized successfully.\n");
+    if (combined==true) {
+        Q = build_cPNO_lists(cutoff, Dij);
+    }
+    else {
+        Q = build_PNO_lists(cutoff, Dij);
+    }
 
     // Get semicanonical transforms
     get_semicanonical_transforms(Q);
@@ -353,6 +358,12 @@ void Local_cc::init_pnopp(const double omega) {
     delete[] h_oo_array;
     delete[] h_vv_array;
     delete[] temp_occ_array;
+}
+
+void Local_cc::init_cpnopp(const double omega) {
+    outfile->Printf("Local correlation using combined Perturbed Pair Natural Orbitals\nCutoff value: %e\n", cutoff);
+    bool combined = true;
+    init_pnopp(omega, combined);
 }
 void Local_cc::get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec) {
     
@@ -484,8 +495,6 @@ std::vector<SharedMatrix> Local_cc::build_PNO_lists(double cutoff, std::vector<S
     outfile->Printf("T2 ratio: %10.10lf \n", t2_ratio);
 
     // Truncate Q
-    // If I understood Slices I wouldn't need to use
-    // for loops to set individual matrix elements
     for(int ij=0; ij < npairs; ++ij) {
         int npno = survivor_list[ij];
         auto qtemp = std::make_shared<Matrix>(nvir, npno);
@@ -525,6 +534,214 @@ std::vector<SharedMatrix> Local_cc::build_PNO_lists(double cutoff, std::vector<S
     
     delete[] survivors_list;
     return Q;
+}
+
+std::vector<SharedMatrix> Local_cc::build_cPNO_lists(double cutoff, std::vector<SharedMatrix> Dij) {
+    std::vector<SharedMatrix> Q_full(npairs);
+    std::vector<SharedVector> occ_num(npairs);
+    std::vector<SharedMatrix> Q;
+    std::vector<int> survivor_list;
+    std::vector<SharedMatrix> Q_unpert;
+    std::vector<int> survivor_list_unpert;
+
+    for(int ij=0; ij < npairs; ++ij) {
+        occ_num[ij] = std::make_shared<Vector>(nvir);
+        Q_full[ij]   = std::make_shared<Matrix>(nvir, nvir);
+    }
+
+    // Diagonalize D
+    for(int ij=0; ij < npairs; ++ij) {
+        Dij[ij]->diagonalize(Q_full[ij], occ_num[ij], descending);
+    }
+
+    // Identify survivors
+    double abs_occ;
+    int survivors;
+    for(int ij=0; ij < npairs; ++ij) {
+        survivors = 0;
+        for(int a=0; a < nvir; ++a) {
+            abs_occ = fabs(occ_num[ij]->get(a));
+            if( abs_occ >= cutoff) {
+                survivors += 1;
+            }
+        }
+        //outfile->Printf("Survivors: %i \t", survivors);
+        survivor_list.push_back(survivors);
+    }
+
+    // Truncate Q
+    for(int ij=0; ij < npairs; ++ij) {
+        int npno = survivor_list[ij];
+        auto qtemp = std::make_shared<Matrix>(nvir, npno);
+        for(int a=0; a < nvir; ++a) {
+            for(int aij=0; aij < npno; ++aij) {
+                qtemp->set(a, aij, Q_full[ij]->get(a, aij));
+            }
+        }
+        Q.push_back(qtemp->clone());
+    }
+
+    // Create D_unpert
+    dpdbuf4 T2;
+    dpdbuf4 T2tilde;
+    std::vector<SharedMatrix> Tij;
+    std::vector<SharedMatrix> Ttij;
+    SharedMatrix temp(new Matrix(nvir, nvir));
+    
+    // "Vectorize" T2
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS,  0, 0, 5, 0, 5, 0, "tIjAb");
+    // Create T2~
+    get_matvec(&T2, &Tij);
+    global_dpd_->buf4_scmcopy(&T2, PSIF_CC_TMP0, "tIjAb ~", 2);
+    global_dpd_->buf4_sort_axpy(&T2, PSIF_CC_TMP0, pqsr, 0, 5, "tIjAb ~", -1);
+    global_dpd_->buf4_close(&T2);
+
+    // "Vectorize" T2~
+    global_dpd_->buf4_init(&T2tilde, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "tIjAb ~");
+    get_matvec(&T2tilde, &Ttij);
+    global_dpd_->buf4_close(&T2tilde);
+
+    // Print check
+    /* outfile->Printf("*** IJ Matrices ***\n");
+    for(int ij=0; ij<Ttij.size(); ++ij)
+        Ttij.at(ij)->print(); */
+
+    // Create Density
+    std::vector<SharedMatrix> Dij_unpert;
+    for(int ij=0; ij < npairs; ++ij) {
+        temp->zero();
+        int i = ij/nocc;
+        int j = ij%nocc;
+        temp->gemm(0, 1, 1, Tij[ij], Ttij[ij], 0);
+        temp->gemm(1, 0, 1, Tij[ij], Ttij[ij], 1);
+        temp->scale(2.0 * 1/(1+(i==j)));
+        temp->axpy(1.0, temp->transpose());
+        temp->scale(0.5);
+        Dij_unpert.push_back(temp->clone());
+    }
+
+    // Create and truncate Q_unpert
+    // Diagonalize D_unpert
+    for(int ij=0; ij < npairs; ++ij) {
+        Dij_unpert[ij]->diagonalize(Q_full[ij], occ_num[ij], descending);
+    }
+
+    // Identify survivors
+    for(int ij=0; ij < npairs; ++ij) {
+        int survivors = 0;
+        for(int a=0; a < nvir; ++a) {
+            abs_occ = fabs(occ_num[ij]->get(a));
+            if( abs_occ >= unpert_cutoff) {
+                survivors += 1;
+            }
+        }
+        //outfile->Printf("Survivors: %i \t", survivors);
+        survivor_list_unpert.push_back(survivors);
+    }
+
+    // Truncate Q_unpert
+    for(int ij=0; ij < npairs; ++ij) {
+        int npno = survivor_list_unpert[ij];
+        auto qtemp = std::make_shared<Matrix>(nvir, npno);
+        for(int a=0; a < nvir; ++a) {
+            for(int aij=0; aij < npno; ++aij) {
+                qtemp->set(a, aij, Q_full[ij]->get(a, aij));
+            }
+        }
+        Q_unpert.push_back(qtemp->clone());
+    }
+
+    // Combine and orthogonalize the combined space
+    std::vector<SharedMatrix> Q_combined;
+    for(int ij=0; ij < npairs; ++ij) {
+        std::vector<SharedMatrix> qs_to_combine {Q[ij], Q_unpert[ij]};
+        int npno = survivor_list[ij] + survivor_list_unpert[ij];
+        auto qtemp = std::make_shared<Matrix>(nvir, npno);
+        qtemp = linalg::horzcat(qs_to_combine);
+        Q_combined.push_back(qtemp);
+    }
+    outfile->Printf("**** Q_combined ****\n");
+    for (auto &qel : Q_combined) {
+        qel->print();
+    }
+
+    std::vector<SharedMatrix> Q_new;
+    std::vector<int> survivor_list_new;
+    for(int ij=0; ij < npairs; ij++) {
+        int npno = survivor_list[ij] + survivor_list_unpert[ij];
+        auto qtemp = Q_combined[ij]->transpose();
+        schmidt(qtemp->pointer(), npno, nvir);
+        Q_new.push_back(qtemp->transpose());
+        survivor_list_new.push_back(npno);
+    }
+    // Print check Q
+    /*outfile->Printf("**** Truncated Q ****\n");
+    for (auto &qel : Q) {
+        qel->print();
+    }
+    outfile->Printf("**** Truncated Q_unpert ****\n");
+    for (auto &qel : Q_unpert) {
+        qel->print();
+    }*/
+    outfile->Printf("**** Q_new ****\n");
+    for (auto &qel : Q_new) {
+        qel->print();
+    }
+
+    // Compute stats
+    int total_pno = 0;
+    double t2_ratio = 0.0;
+    outfile->Printf("\nSurvivor list: "); 
+    for(int ij=0; ij < npairs; ++ij) {
+        outfile->Printf("%d\t", survivor_list_new[ij]);
+        total_pno += survivor_list_new[ij];
+        t2_ratio += pow(survivor_list_new[ij],2);
+    }
+    outfile->Printf("\nT2 ratio: %10.10lf \n", t2_ratio);
+    double avg_pno = static_cast<float>(total_pno) / static_cast<float>(npairs);
+    t2_ratio /= (nocc*nocc*nvir*nvir);
+
+    // Print stats
+    outfile->Printf("Total number of PNOs: %i \n", total_pno);
+    outfile->Printf("Average number of PNOs: %10.10lf \n", avg_pno);
+    outfile->Printf("T2 ratio: %10.10lf \n", t2_ratio);
+
+    // Write PNO dimensions, Q to file
+    int *survivors_list = new int[npairs];
+    for (int ij=0; ij < npairs; ij++) {
+        survivors_list[ij] = survivor_list_new[ij];
+    }
+    psio_write_entry(PSIF_CC_INFO, "PNO dimensions", (char *) survivors_list, npairs * sizeof(int));
+    psio_address next;
+    next = PSIO_ZERO;
+    for(int ij=0; ij < npairs; ++ij) {
+        int npno = survivor_list_new[ij];
+        if(npno == 0) {
+             continue;
+        }
+        else {
+            psio_write(PSIF_CC_INFO, "Local Transformation Matrix Q", (char *) Q_new[ij]->pointer()[0],
+                nvir * npno * sizeof(double), next, &next);
+        }
+    }
+    
+    delete[] survivors_list;
+    return Q_new;
+}
+    
+void Local_cc::schmidt(double **A, int rows, int cols) {
+    double RValue;
+    for (int i = 0; i < rows; ++i) {
+        RValue = C_DDOT(cols, A[i], 1, A[i], 1);
+        RValue = sqrt(RValue);
+        for (int I = 0; I < cols; ++I) {
+            A[i][I] /= RValue;
+        }
+        for (int j = i + 1; j < rows; ++j) {
+            RValue = C_DDOT(cols, A[i], 1, A[j], 1);
+            for (int I = 0; I < cols; ++I) A[j][I] -= RValue * A[i][I];
+        }
+    }
 }
 
 void Local_cc::local_done() { outfile->Printf("    Local parameters free.\n"); }

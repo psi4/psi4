@@ -179,7 +179,7 @@ void get_params(std::shared_ptr<Wavefunction> wfn, Options &options) {
     if (options["LOCAL_METHOD"].has_changed()) {
         local_.method = options.get_str("LOCAL_METHOD");
         if (local_.method != "AOBASIS" && local_.method != "WERNER") {
-            if(local_.method != "PNO" && local_.method != "PNO++") {
+            if(local_.method != "PNO" && local_.method != "PNO++" && local_.method != "CPNO++") {
                 throw PsiException("Invalid local correlation method", __FILE__, __LINE__);
             }
         }

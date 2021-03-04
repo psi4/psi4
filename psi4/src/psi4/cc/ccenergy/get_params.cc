@@ -153,21 +153,26 @@ void CCEnergyWavefunction::get_params(Options &options) {
     else if (params_.local)
         local_.pairdef = "BP";*/
 
-    if (params_.local && local_.method=="PNO++") {
-    // grab the field freqs from input -- a few units are converted to E_h
-    int count = options["OMEGA"].size();
-    if (count == 0) {  // Assume 0.0 E_h for field energy
-        params_.nomega = 1;
-        params_.omega = 0.0;
-    } else if (count == 1) {  // Assume E_h for field energy and read value
-        params_.nomega = 1;
-        params_.omega = options["OMEGA"][0].to_double();
-    } else if (count >= 2) {
-        throw PsiException("Error: PNO++ cannot take multiple field frequencies", __FILE__,
-                                   __LINE__);
+    if (params_.local) {
+        if (local_.method=="PNO++" || local_.method=="CPNO++") {
+            // grab the field freqs from input -- a few units are converted to E_h
+            int count = options["OMEGA"].size();
+            if (count == 0) {  // Assume 0.0 E_h for field energy
+                params_.nomega = 1;
+                params_.omega = 0.0;
+            } else if (count == 1) {  // Assume E_h for field energy and read value
+                params_.nomega = 1;
+                params_.omega = options["OMEGA"][0].to_double();
+            } else if (count >= 2) {
+                throw PsiException("Error: PNO++ cannot take multiple field frequencies", __FILE__,
+                                           __LINE__);
+            }
         }
     }
 
+    if (params_.local && local_.method=="CPNO++") {
+        local_.unpert_cutoff = options.get_double("UNPERT_CUTOFF");
+    }
     params_.num_amps = options.get_int("NUM_AMPS_PRINT");
     params_.bconv = options.get_double("BRUECKNER_ORBS_R_CONVERGENCE");
 
@@ -239,7 +244,7 @@ void CCEnergyWavefunction::get_params(Options &options) {
         outfile->Printf("    T3 Ws incore    =     %s\n", params_.t3_Ws_incore ? "Yes" : "No");
 
     if (params_.local) {
-        outfile->Printf("    Local Cutoff       =     %3.1e\n", local_.cutoff);
+        outfile->Printf("    Local Cutoff      =     %3.1e\n", local_.cutoff);
         outfile->Printf("    Local Method      =     %s\n", local_.method.c_str());
         outfile->Printf("    Weak pairs        =     %s\n", local_.weakp.c_str());
         outfile->Printf("    Filter singles    =     %s\n", local_.filter_singles ? "Yes" : "No");
@@ -247,8 +252,11 @@ void CCEnergyWavefunction::get_params(Options &options) {
         outfile->Printf("    Local CPHF cutoff =     %3.1e\n", local_.cphf_cutoff);
     }
     if (params_.local && local_.pert!="NONE") {
-        outfile->Printf("    Local Pert       =     %s\n", local_.pert.c_str());
-        outfile->Printf("    Omega (E_h)      =     %1.6f\n", params_.omega);
+        outfile->Printf("    Local Pert        =     %s\n", local_.pert.c_str());
+        outfile->Printf("    Omega (E_h)       =     %1.6f\n", params_.omega);
+    }
+    if (params_.local && local_.method=="CPNO++") {
+        outfile->Printf("    Local Unpert Cutoff =     %3.1e\n", local_.unpert_cutoff);
     }
     outfile->Printf("    SCS-MP2         =     %s\n", (params_.scs == 1) ? "True" : "False");
     outfile->Printf("    SCSN-MP2        =     %s\n", (params_.scsn == 1) ? "True" : "False");

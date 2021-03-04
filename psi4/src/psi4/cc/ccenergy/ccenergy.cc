@@ -189,7 +189,7 @@ double CCEnergyWavefunction::compute_energy() {
         if (local_.method == "PNO") {
             local_.init_pno();
         }
-        else if (local_.method == "PNO++") {
+        else if (local_.method == "PNO++" || local_.method == "CPNO++") {
             // Prepare the perturbation
             MintsHelper mints(reference_wavefunction_->basisset(), Process::environment.options, 0);
             int nmo = moinfo_.nmo;
@@ -238,7 +238,12 @@ double CCEnergyWavefunction::compute_energy() {
             }
             free_block(TMP2);
             free_block(TMP3);
-            local_.init_pnopp(params_.omega);
+            if (local_.method == "CPNO++") {
+                local_.init_cpnopp(params_.omega);
+            }
+            else {
+                local_.init_pnopp(params_.omega);
+            }
         }
         else {
             outfile->Printf("Local CC method not recognized.\n");
