@@ -64,9 +64,10 @@ def free_atom_volumes(wfn, **kwargs):
     # and the same basis set as the molecular computation
     volumes = {}
 
-    # the parent molecule
+    # the parent molecule and reference type
     mol = wfn.molecule()
     basis = mol.basis_on_atom(0)
+    user_ref = core.get_global_option('REFERENCE')
 
     # Get unique atoms by input symbol
     symbols = {}
@@ -86,7 +87,9 @@ symmetry c1
     
         # make sure we do UHF/UKS if we're not a singlet
         if reference_S[a_z] != 0:
-            psi4.set_options({"reference":"UHF"}) 
+            core.set_global_option("REFERENCE", "UHF") 
+        else:
+            core.set_global_option("REFERENCE", "RHF") 
 
         # Set the molecule, here just an atom
         molrec = qcel.molparse.from_string(geom, enable_qm=True, 
@@ -109,7 +112,8 @@ symmetry c1
         wfn.set_variable("MBIS FREE ATOM " + a_sym + " VOLUME", vw)
 
 
-    # reset mol to original
+    # reset mol and reference to original
+    core.set_global_option("REFERENCE",user_ref)
     mol.update_geometry()
 
     
