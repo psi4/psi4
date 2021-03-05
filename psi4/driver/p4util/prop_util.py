@@ -27,7 +27,6 @@
 #
 """Module with property-related helper functions."""
 
-import numpy as np
 import qcelemental as qcel
 
 import psi4
@@ -59,14 +58,6 @@ def free_atom_volumes(wfn, **kwargs):
                     1, 0,                                           1, 2, 5, 6, 5, 4, 3, 0, 1, 0, 1, 2, 3, 2, 1, 0,
                     1, 0, 1, 0, 3, 4, 5, 6, 7, 8, 5, 4, 3, 2, 1, 0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0, 1, 2, 3, 2, 1, 0 ]
 
-
-
-
-
-    # A dictionary to map elements to volumes
-    # Volumes computed using MBIS with UHF 
-    # and the same basis set as the molecular computation
-    volumes = {}
 
     # the parent molecule and reference type
     mol = wfn.molecule()
