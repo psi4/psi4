@@ -2449,23 +2449,48 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     }
     wfn_->set_array_variable("MBIS VALENCE WIDTHS", valence_widths);
 
-    if (print_output) {
-        for (int n = 2; n <= max_power; n++) {
-            outfile->Printf("\n  MBIS Radial Moments: [a0^%d]\n", n);
-            outfile->Printf("   Center  Symbol  Z     Rad Mo\n");
-
-            for (int a = 0; a < num_atoms; a++) {
-                outfile->Printf("  %5d      %2s %4d   %9.6f\n", a+1, mol->label(a).c_str(), 
-                (int)mol->Z(a), rmoms[n-2]->get(a, 0));
-            }
+    // Compute the volume widths, only for molecules
+    bool free_atom = (num_atoms == 1); 
+    auto volume_ratios = valence_widths->clone();
+    volume_ratios->zero();
+    if (free_atom == false){
+        for (int a = 0; a < num_atoms; ++a){
+            double free_atom = wfn_->scalar_variable("MBIS FREE ATOM " + mol->label(a) + " VOLUME");
+            double vr = rmoms[1]->get(a,0) / free_atom;
+            volume_ratios->set(a,0,vr);
         }
+        wfn_->set_array_variable("MBIS VOLUME RATIOS", volume_ratios);
+    }
+    
 
-        outfile->Printf("\n  MBIS Valence Widths: [a0]\n");
+    if (print_output) {
+        outfile->Printf("\n  MBIS Radial Moments:");
+        outfile->Printf("\n   Center  Symbol  Z      ");
+        for (int n = 2; n <= max_power; n++) { 
+            outfile->Printf("[a0^%d]      ", n);
+        }
+        for (int a = 0; a < num_atoms; a++) {
+            outfile->Printf("\n  %5d      %2s %4d", a+1, mol->label(a).c_str(),(int)mol->Z(a));
+            for (int n = 2; n <= max_power; n++) { 
+                outfile->Printf("   %9.6f", rmoms[n-2]->get(a, 0));
+            }
+        }   
+
+	    outfile->Printf("\n\n  MBIS Valence Widths: [a0]\n");
         outfile->Printf("   Center  Symbol  Z     Width\n");
 
         for (int a = 0; a < num_atoms; a++) {
             outfile->Printf("  %5d      %2s %4d   %9.6f\n", a+1, mol->label(a).c_str(),
             (int)mol->Z(a), valence_widths->get(a, 0));
+        }
+
+        if (free_atom == false) {
+	        outfile->Printf("\n\n  MBIS Volume Ratios: \n");
+            outfile->Printf("   Center  Symbol  Z     \n");
+            for (int a = 0; a < num_atoms; a++) {
+                outfile->Printf("  %5d      %2s %4d   %9.6f\n", a+1, mol->label(a).c_str(),
+                (int)mol->Z(a), volume_ratios->get(a, 0));
+            }
         }
     }
 

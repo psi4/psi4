@@ -35,6 +35,7 @@ import warnings
 from psi4 import core
 from psi4.driver.procrouting import *
 from .exceptions import ValidationError
+from .prop_util import *
 
 def oeprop(wfn, *args, **kwargs):
     """Evaluate one-electron properties.
@@ -61,6 +62,16 @@ def oeprop(wfn, *args, **kwargs):
         oe.set_title(kwargs['title'])
     for prop in args:
         oe.add(prop)
+            
+        # If we're doing MBIS, we want the free-atom volumes
+        # in order to compute volume ratios,
+        # but only if we're calling oeprop as the whole molecule
+        free_atom = False
+        if 'free_atom' in kwargs:
+            free_atom = kwargs['free_atom']
+        if "MBIS" in prop.upper() and not free_atom:
+            free_atom_volumes(wfn)    
+
     oe.compute()
 
 
