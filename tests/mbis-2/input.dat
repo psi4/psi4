@@ -60,6 +60,10 @@ vwidths_ref = np.array([  #TEST
  [0.4199382],             #TEST
  [0.4140744]])            #TEST
 
+vratios_ref = np.array([
+[1.568969],
+[0.457094]])
+
 molecule mol {
   -1 1
   O 0.0 0.0 0.0
@@ -88,6 +92,7 @@ quadrupoles = wfn.variable("MBIS QUADRUPOLES")
 octupoles = wfn.variable("MBIS OCTUPOLES")
 avols = wfn.variable("MBIS RADIAL MOMENTS <R^3>")
 vwidths = wfn.variable("MBIS VALENCE WIDTHS")
+vratios = wfn.variable("MBIS VOLUME RATIOS")
 
 compare_values(charges_ref, charges, "MBIS Charges", atol=1.e-5)             #TEST
 compare_values(dipoles_ref, dipoles, "MBIS Dipoles", atol=1.e-5)             #TEST
@@ -95,3 +100,4 @@ compare_values(quadrupoles_ref, quadrupoles, "MBIS Quadrupoles", atol=1.e-5) #TE
 compare_values(octupoles_ref, octupoles, "MBIS Octupoles", atol=1.e-5)       #TEST
 compare_values(avols_ref, avols, "MBIS Radial Moments <r^3>", atol=1.e-5)    #TEST
 compare_values(vwidths_ref, vwidths, "MBIS Valence Widths", atol=1.e-5)      #TEST
+compare_values(vratios_ref, vratios, "MBIS Volume Ratios", atol=1.e-5)      #TEST
