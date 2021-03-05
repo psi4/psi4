@@ -40,6 +40,7 @@ from . import sapt_jk_terms
 from .sapt_util import print_sapt_var, print_sapt_hf_summary, print_sapt_dft_summary
 from . import sapt_mp2_terms
 from . import sapt_sf_terms
+from . import sapt_grac_shift
 
 # Only export the run_ scripts
 __all__ = ['run_sapt_dft', 'sapt_dft', 'run_sf_sapt']
@@ -65,9 +66,16 @@ def run_sapt_dft(name, **kwargs):
 
     sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(sapt_dimer, "dimer")
 
+    # Compute GRAC shift
+    compute_grac_shift = core.get_option("SAPT", "SAPT_DFT_COMPUTE_GRAC_SHIFT")
+    if compute_grac_shift:
+        mon_a_shift = sapt_grac_shift.compute_shift(monomerA)
+        mon_b_shift = sapt_grac_shift.compute_shift(monomerB)
+    else:
+        mon_a_shift = core.get_option("SAPT", "SAPT_DFT_GRAC_SHIFT_A")
+        mon_b_shift = core.get_option("SAPT", "SAPT_DFT_GRAC_SHIFT_B")
+
     # Grab overall settings
-    mon_a_shift = core.get_option("SAPT", "SAPT_DFT_GRAC_SHIFT_A")
-    mon_b_shift = core.get_option("SAPT", "SAPT_DFT_GRAC_SHIFT_B")
     do_delta_hf = core.get_option("SAPT", "SAPT_DFT_DO_DHF")
     sapt_dft_functional = core.get_option("SAPT", "SAPT_DFT_FUNCTIONAL")
 

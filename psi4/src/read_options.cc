@@ -1041,6 +1041,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION SAPT(DFT) -*/
 
+        /*- Compute GRAC shift automatically? -*/
+        options.add_bool("SAPT_DFT_COMPUTE_GRAC_SHIFT", false)
         /*- Monomer A GRAC shift in Hartree -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_A", 0.0);
         /*- Monomer B GRAC shift in Hartree -*/
