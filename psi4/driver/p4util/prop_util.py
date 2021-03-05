@@ -41,6 +41,10 @@ def free_atom_volumes(wfn, **kwargs):
 
     # the level of theory
     module = wfn.module()
+
+    # print level
+    print_level = core.get_global_option("PRINT")
+
     # if we're doing dft, grab the functional
     if module.lower() == 'scf':
         module = wfn.functional().name()
@@ -100,11 +104,20 @@ symmetry c1
 
         method = module+"/"+basis
 
+
+        # Supress printing
+        if print_level <= 1:
+            core.be_quiet()
+
         # Get the atomic wfn
         at_e, at_wfn = psi4.energy(method, return_wfn=True)
 
         # Now, re-run mbis for the atomic density, grabbing only the volume 
         psi4.oeprop(at_wfn, 'MBIS_CHARGES', title=a_sym + " " + method , free_atom=True) 
+
+        if print_level <= 1:
+            core.reopen_outfile()
+
         vw = at_wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
         vw = vw.get(0,0) 
 
