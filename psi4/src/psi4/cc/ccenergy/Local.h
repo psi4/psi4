@@ -67,12 +67,10 @@ class Local_cc {
         double cutoff;
         double unpert_cutoff;
         double weak_pair_energy;
-        double cphf_cutoff;
 
     private:
         void get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec);
         void get_semicanonical_transforms(std::vector<SharedMatrix> Q);
-        void schmidt(double **A, int rows, int cols);
         std::vector<SharedMatrix> build_PNO_lists(double cutoff, std::vector<SharedMatrix> D);
         std::vector<SharedMatrix> build_cPNO_lists(double cutoff, std::vector<SharedMatrix> D);
         void mp2_pair_energy();

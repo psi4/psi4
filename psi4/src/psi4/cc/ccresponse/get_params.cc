@@ -171,33 +171,21 @@ void get_params(std::shared_ptr<Wavefunction> wfn, Options &options) {
 
     params.restart = options.get_bool("RESTART");
 
+    // Get local simulation parameters
     params.local = options.get_bool("LOCAL");
     // Local params not needed in ccresponse code
-    Local_cc local_; 
-    local_.cutoff = options.get_double("LOCAL_CUTOFF");
-
-    if (options["LOCAL_METHOD"].has_changed()) {
+    // Getting to print info
+    /*if (params.local) {
+        Local_cc local_; 
+        local_.cutoff = options.get_double("LOCAL_CUTOFF");
         local_.method = options.get_str("LOCAL_METHOD");
-        if (local_.method != "AOBASIS" && local_.method != "WERNER") {
-            if(local_.method != "PNO" && local_.method != "PNO++" && local_.method != "CPNO++") {
-                throw PsiException("Invalid local correlation method", __FILE__, __LINE__);
-            }
+        local_.pert = options.get_str("LOCAL_PERT");
+        local_.weakp = options.get_str("LOCAL_WEAKP");
+        local_.filter_singles = options.get_bool("LOCAL_FILTER_SINGLES");
+        if (params.local && local_.method=="CPNO++") {
+            local_.unpert_cutoff = options.get_double("UNPERT_CUTOFF");
         }
     }
-
-    local_.weakp = options.get_str("LOCAL_WEAKP");
-    if (local_.weakp != "MP2" && local_.weakp != "NEGLECT" && local_.weakp != "NONE") {
-        throw PsiException("Invalid method for treating local pairs", __FILE__, __LINE__);
-    }
-
-    if (params.dertype == 3)
-        local_.filter_singles = 0;
-    else
-        local_.filter_singles = 1;
-    local_.filter_singles = options.get_bool("LOCAL_FILTER_SINGLES");
-
-    local_.cphf_cutoff = options.get_double("LOCAL_CPHF_CUTOFF");
-    //local_.freeze_core = options.get_str("FREEZE_CORE");
 
     if (options["LOCAL_PAIRDEF"].has_changed()) {
         local_.pairdef = options.get_str("LOCAL_PAIRDEF");
@@ -208,6 +196,7 @@ void get_params(std::shared_ptr<Wavefunction> wfn, Options &options) {
         local_.pairdef = strdup("RESPONSE");
     else if (params.local)
         local_.pairdef = strdup("BP");
+    */
 
     params.analyze = options.get_bool("ANALYZE");
     params.num_amps = options.get_int("NUM_AMPS_PRINT");
@@ -255,14 +244,20 @@ void get_params(std::shared_ptr<Wavefunction> wfn, Options &options) {
     }
     outfile->Printf("\tAnalyze X2 Amps  =    %s\n", params.analyze ? "Yes" : "No");
     outfile->Printf("\tLocal CC         =    %s\n", params.local ? "Yes" : "No");
-    if (params.local) {
-        outfile->Printf("\tLocal Cutoff      =    %3.1e\n", local_.cutoff);
-        outfile->Printf("\tLocal Method      =    %s\n", local_.method.c_str());
-        outfile->Printf("\tWeak pairs        =    %s\n", local_.weakp.c_str());
-        outfile->Printf("\tFilter singles    =    %s\n", local_.filter_singles ? "Yes" : "No");
-        outfile->Printf("\tLocal pairs       =    %s\n", local_.pairdef.c_str());
-        outfile->Printf("\tLocal CPHF cutoff =    %3.1e\n", local_.cphf_cutoff);
+    /*if (params.local) {
+        outfile->Printf("\tLocal Cutoff      =     %3.1e\n", local_.cutoff);
+        outfile->Printf("\tLocal Method      =     %s\n", local_.method.c_str());
+        outfile->Printf("\tWeak pairs        =     %s\n", local_.weakp.c_str());
+        outfile->Printf("\tFilter singles    =     %s\n", local_.filter_singles ? "Yes" : "No");
+        outfile->Printf("\tLocal pairs       =     %s\n", local_.pairdef.c_str());
     }
+    if (params.local && local_.pert!="NONE") {
+        outfile->Printf("\tLocal Pert        =     %s\n", local_.pert.c_str());
+        outfile->Printf("\tOmega (E_h)       =     %1.6f\n", params.omega);
+    }
+    if (params.local && local_.method=="CPNO++") {
+        outfile->Printf("\tUnpert Cutoff     =     %3.1e\n", local_.unpert_cutoff);
+    }*/
     outfile->Printf("\n");
 }
 

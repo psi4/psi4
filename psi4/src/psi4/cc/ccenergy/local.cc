@@ -660,33 +660,35 @@ std::vector<SharedMatrix> Local_cc::build_cPNO_lists(double cutoff, std::vector<
         qtemp = linalg::horzcat(qs_to_combine);
         Q_combined.push_back(qtemp);
     }
-    outfile->Printf("**** Q_combined ****\n");
+    /*outfile->Printf("**** Q_combined ****\n");
     for (auto &qel : Q_combined) {
         qel->print();
-    }
+    }*/
 
     std::vector<SharedMatrix> Q_new;
     std::vector<int> survivor_list_new;
     for(int ij=0; ij < npairs; ij++) {
         int npno = survivor_list[ij] + survivor_list_unpert[ij];
         auto qtemp = Q_combined[ij]->transpose();
-        schmidt(qtemp->pointer(), npno, nvir);
-        Q_new.push_back(qtemp->transpose());
-        survivor_list_new.push_back(npno);
+        auto qtemp_new = std::make_shared<Matrix>(npno, nvir);
+        qtemp_new->set_row(0, 0, qtemp->get_row(0,0));
+        int new_npno = npno;
+        for (int row=1; row < npno; row++) {
+            bool check = qtemp_new->schmidt_add_row(0, row, qtemp->pointer()[row]);
+            if (!check) {new_npno -= 1; }
+        }
+        auto qtemp2 = std::make_shared<Matrix>(new_npno, nvir);
+        for (int row=0; row < new_npno; row++) {
+            qtemp2->set_row(0, row, qtemp_new->get_row(0,row));
+        }
+        Q_new.push_back(qtemp2->transpose());
+        survivor_list_new.push_back(new_npno);
     }
     // Print check Q
-    /*outfile->Printf("**** Truncated Q ****\n");
-    for (auto &qel : Q) {
-        qel->print();
-    }
-    outfile->Printf("**** Truncated Q_unpert ****\n");
-    for (auto &qel : Q_unpert) {
-        qel->print();
-    }*/
-    outfile->Printf("**** Q_new ****\n");
+    /*outfile->Printf("**** Q_new ****\n");
     for (auto &qel : Q_new) {
         qel->print();
-    }
+    }*/
 
     // Compute stats
     int total_pno = 0;
@@ -729,21 +731,6 @@ std::vector<SharedMatrix> Local_cc::build_cPNO_lists(double cutoff, std::vector<
     return Q_new;
 }
     
-void Local_cc::schmidt(double **A, int rows, int cols) {
-    double RValue;
-    for (int i = 0; i < rows; ++i) {
-        RValue = C_DDOT(cols, A[i], 1, A[i], 1);
-        RValue = sqrt(RValue);
-        for (int I = 0; I < cols; ++I) {
-            A[i][I] /= RValue;
-        }
-        for (int j = i + 1; j < rows; ++j) {
-            RValue = C_DDOT(cols, A[i], 1, A[j], 1);
-            for (int I = 0; I < cols; ++I) A[j][I] -= RValue * A[i][I];
-        }
-    }
-}
-
 void Local_cc::local_done() { outfile->Printf("    Local parameters free.\n"); }
 
 void Local_cc::local_filter_T1(dpdfile2 *T1) {

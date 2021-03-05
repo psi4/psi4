@@ -109,12 +109,6 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
     }
 
-    /*if (params.local) {
-        Local_cc local_;
-        local_.nocc = moinfo.occpi[0];
-        local_.nvir = moinfo.virtpi[0];
-    }*/
-
     if (params.wfn == "CC2") {
         cc2_hbar_extra();
     } else {
@@ -129,8 +123,6 @@ PsiReturnType ccresponse(std::shared_ptr<Wavefunction> ref_wfn, Options &options
     if (params.prop == "POLARIZABILITY") polar(ref_wfn);
     if (params.prop == "ROTATION") optrot(ref_wfn);
     if (params.prop == "ROA_TENSOR") roa(ref_wfn);
-
-    //if (params.local) local_.local_done();
 
     dpd_close(0);
 
