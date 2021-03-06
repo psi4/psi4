@@ -1940,8 +1940,9 @@ void DFHelper::transform() {
                 // to completion per transformation
                 for (size_t k = 0; k < strides_[i]; k++) {
                     // get transformation info
-                    std::string left = std::get<0>(transf_[order_[count + k]]);
-                    std::string right = std::get<1>(transf_[order_[count + k]]);
+                    std::string transf_name = transf_[order_[count + k]];
+                    std::string left = std::get<0>(transf_name);
+                    std::string right = std::get<1>(transf_name);
                     bool bleft = (bspace.compare(left) == 0 ? true : false);
 
                     // get worst space
@@ -1988,13 +1989,13 @@ void DFHelper::transform() {
                     timer_off("DFH: Total Workflow");
 
                     // put the transformations away
-                    timer_on("DFH: MO to disk");
+                    timer_on("DFH: MO to disk, " + transf_name);
                     if (direct_iaQ_) {
                         put_transformations_Qpq(begin, end, wsize, bsize, Fp, count + k, bleft);
                     } else {
                         put_transformations_pQq(begin, end, block_size, bcount, wsize, bsize, Np, Fp, count + k, bleft);
                     }
-                    timer_off("DFH: MO to disk");
+                    timer_off("DFH: MO to disk, " + transf_name);
                 }
             }
         }
