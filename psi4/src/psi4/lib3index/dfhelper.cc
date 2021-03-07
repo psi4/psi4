@@ -1940,7 +1940,7 @@ void DFHelper::transform() {
                 // to completion per transformation
                 for (size_t k = 0; k < strides_[i]; k++) {
                     // get transformation info
-                    std::string transf_name = transf_[order_[count + k]];
+                    auto transf_name = order_[count + k];
                     std::string left = std::get<0>(transf_name);
                     std::string right = std::get<1>(transf_name);
                     bool bleft = (bspace.compare(left) == 0 ? true : false);
