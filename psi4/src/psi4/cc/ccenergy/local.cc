@@ -669,20 +669,28 @@ std::vector<SharedMatrix> Local_cc::build_cPNO_lists(double cutoff, std::vector<
     std::vector<int> survivor_list_new;
     for(int ij=0; ij < npairs; ij++) {
         int npno = survivor_list[ij] + survivor_list_unpert[ij];
-        auto qtemp = Q_combined[ij]->transpose();
-        auto qtemp_new = std::make_shared<Matrix>(npno, nvir);
-        qtemp_new->set_row(0, 0, qtemp->get_row(0,0));
-        int new_npno = npno;
-        for (int row=1; row < npno; row++) {
-            bool check = qtemp_new->schmidt_add_row(0, row, qtemp->pointer()[row]);
-            if (!check) {new_npno -= 1; }
+        if (npno != 0) {
+            auto qtemp = Q_combined[ij]->transpose();
+            auto qtemp_new = std::make_shared<Matrix>(npno, nvir);
+            qtemp_new->set_row(0, 0, qtemp->get_row(0,0));
+            int new_npno = npno;
+            for (int row=1; row < npno; row++) {
+                outfile->Printf("Row: %d new_npno: %d \n", row, new_npno);
+                bool check = qtemp_new->schmidt_add_row(0, row, qtemp->pointer()[row]);
+                if (!check) {new_npno -= 1; }
+            }
+            outfile->Printf("Schmidt done.\n");
+            auto qtemp2 = std::make_shared<Matrix>(new_npno, nvir);
+            for (int row=0; row < new_npno; row++) {
+                qtemp2->set_row(0, row, qtemp_new->get_row(0,row));
+            }
+            Q_new.push_back(qtemp2->transpose());
+            survivor_list_new.push_back(new_npno);
         }
-        auto qtemp2 = std::make_shared<Matrix>(new_npno, nvir);
-        for (int row=0; row < new_npno; row++) {
-            qtemp2->set_row(0, row, qtemp_new->get_row(0,row));
+        else {
+            Q_new.push_back(Q_combined[ij]);
+            survivor_list_new.push_back(npno);
         }
-        Q_new.push_back(qtemp2->transpose());
-        survivor_list_new.push_back(new_npno);
     }
     // Print check Q
     /*outfile->Printf("**** Q_new ****\n");
