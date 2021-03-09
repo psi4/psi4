@@ -37,7 +37,6 @@ from psi4 import core
 from psi4.driver import p4util
 from psi4.driver import driver_findif
 from psi4.driver.p4util.exceptions import ValidationError
-from psi4.driver.qcdb import interface_gcp as gcp
 
 _engine_can_do = collections.OrderedDict([('libdisp', ['d1', 'd2', 'chg', 'das2009', 'das2010']),
                                           ('dftd3', ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']),
@@ -229,7 +228,12 @@ class EmpiricalDispersion(object):
                                      jobrec.extras['qcvars']["PAIRWISE DISPERSION CORRECTION ANALYSIS"])
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
-                gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=0)
+                jobrec = qcng.compute(
+                    resi,
+                    "gcp",
+                    raise_error=True,
+                    local_options={"scratch_directory": core.IOManager.shared_object().get_default_path()})
+                gcp_part = jobrec.return_result
                 dashd_part += gcp_part
 
             return dashd_part
@@ -290,7 +294,12 @@ class EmpiricalDispersion(object):
                         wfn.set_variable(k, p4util.plump_qcvar(qca, k))
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
-                gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=1)
+                jobrec = qcng.compute(
+                    resi,
+                    "gcp",
+                    raise_error=True,
+                    local_options={"scratch_directory": core.IOManager.shared_object().get_default_path()})
+                gcp_part = core.Matrix.from_array(np.array(jobrec.return_result).reshape(-1, 3))
                 dashd_part.add(gcp_part)
 
             return dashd_part
