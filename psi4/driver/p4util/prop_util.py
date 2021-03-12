@@ -31,6 +31,7 @@ import qcelemental as qcel
 
 import psi4
 from psi4 import core
+from . import optproc
 
 
 def free_atom_volumes(wfn, **kwargs):
@@ -61,25 +62,41 @@ def free_atom_volumes(wfn, **kwargs):
 
     # the parent molecule and reference type
     mol = wfn.molecule()
-    basis = mol.basis_on_atom(0)
     user_ref = core.get_global_option('REFERENCE')
 
-    # Get unique atoms by input symbol
-    symbols = {}
-    natom = mol.natom()
-    for atom in range(natom):
-        symbols[mol.symbol(atom)] = int(round(mol.Z(atom)))
+    # Get unique atoms by input symbol,
+    # Be to handle different basis sets
+    atom_ids = {}
+    for atom in range(mol.natom()):
+        symbol = mol.symbol(atom)
+        Z = int(mol.Z(atom))
+        basis = mol.basis_on_atom(atom)
+    
+        for a, info in atom_ids.items():
+            if a == atom:
+                continue
+            if info['symbol'] == symbol:
+                continue
+            if info['basis'] == basis:
+                continue
+        atom_ids[atom] = {'symbol':symbol,'Z':Z,'basis':basis}
 
-    core.print_out(f"  Running {len(symbols)} free-atom UHF computations")
+    core.print_out(f"  Running {len(atom_ids)} free-atom UHF computations")
 
-    for a_sym, a_z in symbols.items():
+    for label, info  in atom_ids.items():
+
+        a_z = info['Z']
+        basis = info['basis']
+        a_sym = info['symbol']
 
         geom = f"""
 0 {int(1+reference_S[a_z])} 
 {a_sym} 0.0 0.0 0.0
 symmetry c1
 """
-    
+        
+        optstash = optproc.OptionsState(['REFERENCE'])
+
         # make sure we do UHF/UKS if we're not a singlet
         if reference_S[a_z] != 0:
             core.set_global_option("REFERENCE", "UHF") 
@@ -88,13 +105,12 @@ symmetry c1
 
         # Set the molecule, here just an atom
         molrec = qcel.molparse.from_string(geom, enable_qm=True, 
-        missing_enabled_return_qm='minimal', enable_efp=True, missing_enabled_return_efp='none')
+            missing_enabled_return_qm='minimal', enable_efp=True, missing_enabled_return_efp='none')
         a_mol = core.Molecule.from_dict(molrec['qm'])
         a_mol.update_geometry() 
         psi4.molutil.activate(a_mol)
 
         method = module+"/"+basis
-
 
         # Supress printing
         if print_level <= 1:
@@ -118,7 +134,7 @@ symmetry c1
 
     # reset mol and reference to original
     core.set_global_option("REFERENCE",user_ref)
-    mol.update_geometry()
 
-    
+    optstash.restore()
+    mol.update_geometry()
 
