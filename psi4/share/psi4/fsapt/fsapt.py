@@ -466,7 +466,11 @@ def extract_order2_fsapt(osapt, wsA, wsB, frags):
                 valueA = np.asarray(valueA)
                 for keyB, valueB in wsB.items():
                     valueB = np.asarray(valueB)
-                    val = np.einsum('i,ij,j', valueA, value, valueB)
+                    val = 0.0
+                    for k in range(len(valueA)):
+                        for l in range(len(valueB)):
+                            val += valueA[k] * valueB[l] * value[k][l]
+
                     vals[key][keyA][keyB] = val
 
     return vals
@@ -803,8 +807,6 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
 
     osapt = extract_osapt_data(dirname)
 
-    order2  = extract_order2_fsapt(osapt, total_ws['A'], total_ws['B'], frags)
-
     # Add external potential data for A
     if os.path.exists("%s/Extern_A.xyz" %dirname):
         fragkeys['A'].append("Extern-A")
@@ -839,8 +841,8 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
         for c in geom_extern_C:
             geom.append(c)
 
-    order2  = extractOrder2Fsapt(osapt, total_ws['A'], total_ws['B'])
-    order2r = collapseLinks(order2, frags, Qs, orbital_ws, links5050)
+    order2  = extract_order2_fsapt(osapt, total_ws['A'], total_ws['B'], frags)
+    order2r = collapse_links(order2, frags, Qs, orbital_ws, links5050)
 
     stuff = {}
     stuff['order2'] = order2
