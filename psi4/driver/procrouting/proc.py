@@ -4471,11 +4471,6 @@ def run_fisapt(name, **kwargs):
         ref_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
         core.timer_off("FISAPT: Dimer SCF")
 
-#    print("pots?", ref_wfn.external_pot(), ref_wfn.external_pot_a(), ref_wfn.external_pot_b(), ref_wfn.external_pot_c())
-#    if ref_wfn.external_pot():
-#        print("clearing pot")
-#        ref_wfn.external_pot().clear()
-
     core.print_out("  Constructing Basis Sets for FISAPT...\n\n")
     scf_aux_basis = core.BasisSet.build(ref_wfn.molecule(),
                                         "DF_BASIS_SCF",
