@@ -845,8 +845,7 @@ void OEProp::compute_multipoles(int order, bool transition) {
 
         std::stringstream sstream;
         sstream << title_;
-        if (title_ != "")
-            sstream << " ";
+        if (title_ != "") sstream << " ";
         if (l == 1) {
             sstream << "DIPOLE";
         } else if (l == 2) {
@@ -1181,8 +1180,7 @@ SharedMatrix ESPPropCalc::compute_field_over_grid_in_memory(SharedMatrix input_g
     // Scale the coordinates if needed
     auto coords = input_grid;
 
-    if (mol->units() == Molecule::Angstrom)
-    {
+    if (mol->units() == Molecule::Angstrom) {
         coords = input_grid->clone();
         coords->scale(1.0 / pc_bohr2angstroms);
     }
@@ -1550,7 +1548,6 @@ void OEProp::compute_mo_extents() {
 }
 
 std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_output) {
-
     SharedMatrix Ca = Ca_ao();
 
     std::vector<SharedVector> mo_es;
@@ -1582,7 +1579,6 @@ std::vector<SharedVector> MultipolePropCalc::compute_mo_extents(bool print_outpu
     quadrupole.push_back(std::make_shared<Vector>("Orbital Quadrupole ZZ", Ca->ncol()));
 
     if (same_orbs_) {
-
         // Quadrupoles
         for (int i = 0; i < Ca->ncol(); ++i) {
             double sumx = 0.0, sumy = 0.0, sumz = 0.0;
@@ -1842,7 +1838,6 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
 
 // See PopulationAnalysisCalc::compute_mbis_multipoles
 void OEProp::compute_mbis_multipoles() {
-
     SharedMatrix mpole, dpole, qpole, opole;
     std::tie(mpole, dpole, qpole, opole) = pac_.compute_mbis_multipoles(true);
 
@@ -1850,18 +1845,18 @@ void OEProp::compute_mbis_multipoles() {
     wfn_->set_array_variable("MBIS DIPOLES", dpole);
     wfn_->set_array_variable("MBIS QUADRUPOLES", qpole);
     wfn_->set_array_variable("MBIS OCTUPOLES", opole);
-
 }
 
 /// Helper Methods for MBIS (JCTC, 2016, p. 3894–3912, Verstraelen et al.)
-    
+
 // Proatomic density of a specific shell of an atom  (Equation 7 in Verstraelen et al.)
 double rho_ai_0(double n, double sigma, double distance) {
     return n * exp(-distance / sigma) / (pow(sigma, 3) * 8 * M_PI);
 }
 
-/* Updated parameters for initial MBIS params Nai and 1/Sai 
-   (from https://github.com/theochem/denspart/blob/740449c375f7e1c7b14cc8a978a8d0b1ed4617e3/denspart/mbis.py#L82 by Toon Verstraelen) */
+/* Updated parameters for initial MBIS params Nai and 1/Sai
+   (from https://github.com/theochem/denspart/blob/740449c375f7e1c7b14cc8a978a8d0b1ed4617e3/denspart/mbis.py#L82 by Toon
+   Verstraelen) */
 // Attention: MBIS is not supported for elements with atomic number greater than 36
 std::tuple<double, double> get_mbis_params(int atomic_num, int shell_num) {
     std::map<int, std::vector<std::tuple<double, double>>> params;
@@ -1877,143 +1872,78 @@ std::tuple<double, double> get_mbis_params(int atomic_num, int shell_num) {
     params[9] = {std::make_tuple(1.64171, 19.78991), std::make_tuple(7.35829, 2.88601)};
     params[10] = {std::make_tuple(1.62380, 22.11938), std::make_tuple(8.37620, 3.22746)};
 
-    params[11] = {std::make_tuple(1.48140, 25.82522), std::make_tuple(8.28761, 4.02120), std::make_tuple(1.23098, 0.80897)};
-    params[12] = {std::make_tuple(1.39674, 29.19802), std::make_tuple(8.10904, 4.76791), std::make_tuple(2.49422, 1.08302)};
-    params[13] = {std::make_tuple(1.34503, 32.33363), std::make_tuple(8.12124, 5.42812), std::make_tuple(3.53372, 1.15994)};
-    params[14] = {std::make_tuple(1.28865, 35.65432), std::make_tuple(7.98931, 6.17545), std::make_tuple(4.72204, 1.33797)};
-    params[15] = {std::make_tuple(1.23890, 39.00531), std::make_tuple(7.83125, 6.95265), std::make_tuple(5.92985, 1.52690)};
-    params[16] = {std::make_tuple(1.19478, 42.38177), std::make_tuple(7.66565, 7.75584), std::make_tuple(7.13957, 1.71687)};
-    params[17] = {std::make_tuple(1.15482, 45.79189), std::make_tuple(7.50031, 8.58542), std::make_tuple(8.34487, 1.90546)};
-    params[18] = {std::make_tuple(1.11803, 49.24317), std::make_tuple(7.33917, 9.44200), std::make_tuple(9.54280, 2.09210)};
-    
-    params[19] = {
-        std::make_tuple(1.09120, 52.59376),
-        std::make_tuple(7.15086, 10.29851),
-        std::make_tuple(9.57061, 2.42121),
-        std::make_tuple(1.18733, 0.67314)
-    };
-    params[20] = {
-        std::make_tuple(1.07196, 55.86008),
-        std::make_tuple(7.01185, 11.11887),
-        std::make_tuple(9.29555, 2.76621),
-        std::make_tuple(2.62063, 0.88692)
-    };
-    params[21] = {
-        std::make_tuple(1.05870, 59.04659),
-        std::make_tuple(6.96404, 11.86718),
-        std::make_tuple(9.97866, 2.93024),
-        std::make_tuple(2.99860, 0.98040)
-    };
-    params[22] = {
-        std::make_tuple(1.04755, 62.22091),
-        std::make_tuple(6.90438, 12.62229),
-        std::make_tuple(10.84355, 3.08264),
-        std::make_tuple(3.20452, 1.05403)
-    };
-    params[23] = {
-        std::make_tuple(1.03828, 65.38117),
-        std::make_tuple(6.83516, 13.38417),
-        std::make_tuple(11.79532, 3.23508),
-        std::make_tuple(3.33124, 1.11609)
-    };
-    params[24] = {
-        std::make_tuple(1.03069, 68.52633),
-        std::make_tuple(6.75998, 14.15132),
-        std::make_tuple(12.79256, 3.38991),
-        std::make_tuple(3.41677, 1.17116)
-    };
-    params[25] = {
-        std::make_tuple(1.02450, 71.65908),
-        std::make_tuple(6.68141, 14.92337),
-        std::make_tuple(13.81149, 3.54730),
-        std::make_tuple(3.48260, 1.22220)
-    };
-    params[26] = {
-        std::make_tuple(1.01960, 74.77846),
-        std::make_tuple(6.60101, 15.69935),
-        std::make_tuple(14.84330, 3.70685),
-        std::make_tuple(3.53609, 1.27026)
-    };
-    params[27] = {
-        std::make_tuple(1.01575, 77.88779),
-        std::make_tuple(6.51976, 16.47941),
-        std::make_tuple(15.88061, 3.86829),
-        std::make_tuple(3.58388, 1.31647)
-    };
-    params[28] = {
-        std::make_tuple(1.01282, 80.98814),
-        std::make_tuple(6.43837, 17.26336),
-        std::make_tuple(16.92012, 4.03115),
-        std::make_tuple(3.62869, 1.36133)
-    };
-    params[29] = {
-        std::make_tuple(1.01839, 83.81831),
-        std::make_tuple(6.47823, 17.85149),
-        std::make_tuple(18.65720, 4.05312),
-        std::make_tuple(2.84618, 1.37570)
-    };
-    params[30] = {
-        std::make_tuple(1.00931, 87.16777),
-        std::make_tuple(6.27682, 18.84319),
-        std::make_tuple(18.99747, 4.35989),
-        std::make_tuple(3.71640, 1.44857)
-    };
-    params[31] = {
-        std::make_tuple(1.00600, 90.34057),
-        std::make_tuple(6.16315, 19.71091),
-        std::make_tuple(19.81836, 4.57852),
-        std::make_tuple(4.01249, 1.29122)
-    };
-    params[32] = {
-        std::make_tuple(0.99467, 93.80965),
-        std::make_tuple(5.91408, 20.85993),
-        std::make_tuple(19.89501, 4.95158),
-        std::make_tuple(5.19624, 1.39361)
-    };
-    params[33] = {
-        std::make_tuple(0.98548, 97.22822),
-        std::make_tuple(5.68319, 22.01684),
-        std::make_tuple(19.83497, 5.33969),
-        std::make_tuple(6.49637, 1.51963)
-    };
-    params[34] = {
-        std::make_tuple(0.97822, 100.60094),
-        std::make_tuple(5.47209, 23.17528),
-        std::make_tuple(19.68845, 5.73803),
-        std::make_tuple(7.86124, 1.65366)
-    };
-    params[35] = {
-        std::make_tuple(0.97231, 103.94730),
-        std::make_tuple(5.27765, 24.33975),
-        std::make_tuple(19.48822, 6.14586),
-        std::make_tuple(9.26182, 1.78869)
-    };
-    params[36] = {
-        std::make_tuple(0.96735, 107.28121),
-        std::make_tuple(5.09646, 25.51581),
-        std::make_tuple(19.25332, 6.56380),
-        std::make_tuple(10.68288, 1.92256)
-    };
+    params[11] = {std::make_tuple(1.48140, 25.82522), std::make_tuple(8.28761, 4.02120),
+                  std::make_tuple(1.23098, 0.80897)};
+    params[12] = {std::make_tuple(1.39674, 29.19802), std::make_tuple(8.10904, 4.76791),
+                  std::make_tuple(2.49422, 1.08302)};
+    params[13] = {std::make_tuple(1.34503, 32.33363), std::make_tuple(8.12124, 5.42812),
+                  std::make_tuple(3.53372, 1.15994)};
+    params[14] = {std::make_tuple(1.28865, 35.65432), std::make_tuple(7.98931, 6.17545),
+                  std::make_tuple(4.72204, 1.33797)};
+    params[15] = {std::make_tuple(1.23890, 39.00531), std::make_tuple(7.83125, 6.95265),
+                  std::make_tuple(5.92985, 1.52690)};
+    params[16] = {std::make_tuple(1.19478, 42.38177), std::make_tuple(7.66565, 7.75584),
+                  std::make_tuple(7.13957, 1.71687)};
+    params[17] = {std::make_tuple(1.15482, 45.79189), std::make_tuple(7.50031, 8.58542),
+                  std::make_tuple(8.34487, 1.90546)};
+    params[18] = {std::make_tuple(1.11803, 49.24317), std::make_tuple(7.33917, 9.44200),
+                  std::make_tuple(9.54280, 2.09210)};
+
+    params[19] = {std::make_tuple(1.09120, 52.59376), std::make_tuple(7.15086, 10.29851),
+                  std::make_tuple(9.57061, 2.42121), std::make_tuple(1.18733, 0.67314)};
+    params[20] = {std::make_tuple(1.07196, 55.86008), std::make_tuple(7.01185, 11.11887),
+                  std::make_tuple(9.29555, 2.76621), std::make_tuple(2.62063, 0.88692)};
+    params[21] = {std::make_tuple(1.05870, 59.04659), std::make_tuple(6.96404, 11.86718),
+                  std::make_tuple(9.97866, 2.93024), std::make_tuple(2.99860, 0.98040)};
+    params[22] = {std::make_tuple(1.04755, 62.22091), std::make_tuple(6.90438, 12.62229),
+                  std::make_tuple(10.84355, 3.08264), std::make_tuple(3.20452, 1.05403)};
+    params[23] = {std::make_tuple(1.03828, 65.38117), std::make_tuple(6.83516, 13.38417),
+                  std::make_tuple(11.79532, 3.23508), std::make_tuple(3.33124, 1.11609)};
+    params[24] = {std::make_tuple(1.03069, 68.52633), std::make_tuple(6.75998, 14.15132),
+                  std::make_tuple(12.79256, 3.38991), std::make_tuple(3.41677, 1.17116)};
+    params[25] = {std::make_tuple(1.02450, 71.65908), std::make_tuple(6.68141, 14.92337),
+                  std::make_tuple(13.81149, 3.54730), std::make_tuple(3.48260, 1.22220)};
+    params[26] = {std::make_tuple(1.01960, 74.77846), std::make_tuple(6.60101, 15.69935),
+                  std::make_tuple(14.84330, 3.70685), std::make_tuple(3.53609, 1.27026)};
+    params[27] = {std::make_tuple(1.01575, 77.88779), std::make_tuple(6.51976, 16.47941),
+                  std::make_tuple(15.88061, 3.86829), std::make_tuple(3.58388, 1.31647)};
+    params[28] = {std::make_tuple(1.01282, 80.98814), std::make_tuple(6.43837, 17.26336),
+                  std::make_tuple(16.92012, 4.03115), std::make_tuple(3.62869, 1.36133)};
+    params[29] = {std::make_tuple(1.01839, 83.81831), std::make_tuple(6.47823, 17.85149),
+                  std::make_tuple(18.65720, 4.05312), std::make_tuple(2.84618, 1.37570)};
+    params[30] = {std::make_tuple(1.00931, 87.16777), std::make_tuple(6.27682, 18.84319),
+                  std::make_tuple(18.99747, 4.35989), std::make_tuple(3.71640, 1.44857)};
+    params[31] = {std::make_tuple(1.00600, 90.34057), std::make_tuple(6.16315, 19.71091),
+                  std::make_tuple(19.81836, 4.57852), std::make_tuple(4.01249, 1.29122)};
+    params[32] = {std::make_tuple(0.99467, 93.80965), std::make_tuple(5.91408, 20.85993),
+                  std::make_tuple(19.89501, 4.95158), std::make_tuple(5.19624, 1.39361)};
+    params[33] = {std::make_tuple(0.98548, 97.22822), std::make_tuple(5.68319, 22.01684),
+                  std::make_tuple(19.83497, 5.33969), std::make_tuple(6.49637, 1.51963)};
+    params[34] = {std::make_tuple(0.97822, 100.60094), std::make_tuple(5.47209, 23.17528),
+                  std::make_tuple(19.68845, 5.73803), std::make_tuple(7.86124, 1.65366)};
+    params[35] = {std::make_tuple(0.97231, 103.94730), std::make_tuple(5.27765, 24.33975),
+                  std::make_tuple(19.48822, 6.14586), std::make_tuple(9.26182, 1.78869)};
+    params[36] = {std::make_tuple(0.96735, 107.28121), std::make_tuple(5.09646, 25.51581),
+                  std::make_tuple(19.25332, 6.56380), std::make_tuple(10.68288, 1.92256)};
 
     return params[atomic_num][shell_num];
 }
 
 // A Helper Method That Calculates Radial Moments using Atomic Electron Densities derived from Charge Partitioning
-std::vector<SharedMatrix> compute_radial_moments(const std::shared_ptr<DFTGrid>& grid, const std::vector<double>& rho_a_points, const std::vector<double>& distances, int num_atoms) {
-
-    Options& options = Process::environment.options;    
+std::vector<SharedMatrix> compute_radial_moments(const std::shared_ptr<DFTGrid>& grid,
+                                                 const std::vector<double>& rho_a_points,
+                                                 const std::vector<double>& distances, int num_atoms) {
+    Options& options = Process::environment.options;
     const int max_power = std::max(4, options.get_int("MAX_RADIAL_MOMENT"));
 
     std::vector<SharedMatrix> rmoms;
 
     for (int n = 2; n <= max_power; n++) {
-        
-    std::stringstream sstream;
+        std::stringstream sstream;
         sstream << "ATOMIC RADIAL MOMENTS <R^" << n << ">";
         auto mat_name = sstream.str();
 
-    rmoms.push_back(std::make_shared<Matrix>(mat_name, num_atoms, 1));
-    
+        rmoms.push_back(std::make_shared<Matrix>(mat_name, num_atoms, 1));
     }
 
     auto blocks = grid->blocks();
@@ -2021,7 +1951,7 @@ std::vector<SharedMatrix> compute_radial_moments(const std::shared_ptr<DFTGrid>&
 
 #pragma omp parallel for
     for (int a = 0; a < num_atoms; a++) {
-    for (int n = 2; n <= max_power; n++) {
+        for (int n = 2; n <= max_power; n++) {
             size_t running_points = 0;
             double val = 0;
             for (int b = 0; b < blocks.size(); b++) {
@@ -2041,19 +1971,18 @@ std::vector<SharedMatrix> compute_radial_moments(const std::shared_ptr<DFTGrid>&
                 running_points += num_points;
             }
             rmoms[n - 2]->set(a, 0, val);
-    }
+        }
     }
 
     return rmoms;
 }
 
 // Minimal Basis Iterative Stockhplder (JCTC, 2016, p. 3894–3912, Verstraelen et al.)
-std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix>
-PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
-
+std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAnalysisCalc::compute_mbis_multipoles(
+    bool print_output) {
     if (print_output) outfile->Printf("  ==> Computing MBIS Charges <==\n\n");
     timer_on("MBIS");
-    
+
     // => Setup 1RDM on DFTGrid <= //
 
     Options& options = Process::environment.options;
@@ -2071,7 +2000,6 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     mbis_grid_options_str["DFT_PRUNING_SCHEME"] = options.get_str("MBIS_PRUNING_SCHEME");
 
     auto grid = std::make_shared<DFTGrid>(mol, basisset_, mbis_grid_options_int, mbis_grid_options_str, options);
-    
 
     if (print_output && debug >= 1) grid->print();
 
@@ -2081,14 +2009,14 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     SharedMatrix Da = wfn_->Da_subset("AO");
     SharedMatrix Db;
-    auto point_func = (std::shared_ptr<PointFunctions>) (std::make_shared<RKSFunctions>(basisset_, total_points, nbf));
+    auto point_func = (std::shared_ptr<PointFunctions>)(std::make_shared<RKSFunctions>(basisset_, total_points, nbf));
 
     if (same_dens_) {
         Db = Da->clone();
         point_func->set_pointers(Da);
     } else {
         Db = wfn_->Db_subset("AO");
-        point_func = (std::shared_ptr<PointFunctions>) (std::make_shared<UKSFunctions>(basisset_, total_points, nbf));
+        point_func = (std::shared_ptr<PointFunctions>)(std::make_shared<UKSFunctions>(basisset_, total_points, nbf));
         point_func->set_pointers(Da, Db);
     }
 
@@ -2146,15 +2074,24 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     double electron_diff = grid_electrons - mol_electrons;
 
-    if (print_output) outfile->Printf("  Electron Count from Grid (Expected Number): %8.5f (%8.5f)\n", grid_electrons, mol_electrons);
+    if (print_output)
+        outfile->Printf("  Electron Count from Grid (Expected Number): %8.5f (%8.5f)\n", grid_electrons, mol_electrons);
     if (print_output) outfile->Printf("  Difference: %8.5f\n\n", electron_diff);
 
     if (fabs(electron_diff) > 0.1) {
-        throw PsiException("Number of electrons calculated using the grid (" + std::to_string(round(100000.0 * grid_electrons) / 100000.0) + ") does not match the number of electrons in the molecule. "
-                "Try increasing the number of radial or spherical points (mbis_radial_points and mbis_spherical_points options).", __FILE__, __LINE__);
+        throw PsiException("Number of electrons calculated using the grid (" +
+                               std::to_string(round(100000.0 * grid_electrons) / 100000.0) +
+                               ") does not match the number of electrons in the molecule. "
+                               "Try increasing the number of radial or spherical points (mbis_radial_points and "
+                               "mbis_spherical_points options).",
+                           __FILE__, __LINE__);
     } else if (fabs(electron_diff) > 0.001) {
-        outfile->Printf("WARNING: The number of electrons calculated using the grid (%8.5f) differs from the number of electrons in the molecule by more than 0.001. "
-                "Try increasing the number of radial or spherical points (mbis_radial_points and mbis_spherical_points options).\n\n", grid_electrons);
+        outfile->Printf(
+            "WARNING: The number of electrons calculated using the grid (%8.5f) differs from the number of electrons "
+            "in the molecule by more than 0.001. "
+            "Try increasing the number of radial or spherical points (mbis_radial_points and mbis_spherical_points "
+            "options).\n\n",
+            grid_electrons);
     }
 
     // Distances and displacements between grid points and nuclei
@@ -2177,7 +2114,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     // mA is the number of shells in an isolated atom
     std::vector<int> mA(num_atoms);
     for (int atom = 0; atom < num_atoms; atom++) {
-        int atomic_num = (int) mol->Z(atom);
+        int atomic_num = static_cast<int>(mol->Z(atom));
         if (atomic_num <= 2) {
             mA[atom] = 1;
         } else if (atomic_num <= 10) {
@@ -2187,11 +2124,13 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
         } else if (atomic_num <= 36) {
             mA[atom] = 4;
         } else {
-            throw PsiException("Atomic Number " + std::to_string(atomic_num) + " unsupported by MBIS", __FILE__, __LINE__);
+            throw PsiException("Atomic Number " + std::to_string(atomic_num) + " unsupported by MBIS", __FILE__,
+                               __LINE__);
         }
     }
-    
-    // Atomic shell populations (N) and widths (S) (up to 4 shells per atom), from equations 18 and 19 in Verstraelen et al.
+
+    // Atomic shell populations (N) and widths (S) (up to 4 shells per atom), from equations 18 and 19 in Verstraelen et
+    // al.
     std::vector<std::vector<double>> Nai(num_atoms, std::vector<double>(4, 0.0));
     std::vector<std::vector<double>> Sai(num_atoms, std::vector<double>(4, 0.0));
 
@@ -2201,16 +2140,17 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     // Population and width guesses, from get_mbis_params function
     for (int atom = 0; atom < num_atoms; atom++) {
-        int atomic_num = (int) mol->Z(atom);        
+        int atomic_num = static_cast<int>(mol->Z(atom));
 
         for (int m = 0; m < mA[atom]; m++) {
             std::tie(Nai[atom][m], Sai[atom][m]) = get_mbis_params(atomic_num, m);
-            Sai[atom][m] = 1.0/Sai[atom][m];
-            
+            Sai[atom][m] = 1.0 / Sai[atom][m];
+
             if (print_output && debug >= 1) {
-                outfile->Printf("  INITIAL ATOM %d, SHELL %d, POP %8.5f, WIDTH %8.5f\n", atom+1, m+1, Nai[atom][m], Sai[atom][m]);
+                outfile->Printf("  INITIAL ATOM %d, SHELL %d, POP %8.5f, WIDTH %8.5f\n", atom + 1, m + 1, Nai[atom][m],
+                                Sai[atom][m]);
             }
-            
+
             Nai_next[atom][m] = Nai[atom][m];
             Sai_next[atom][m] = Sai[atom][m];
         }
@@ -2224,16 +2164,17 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     std::vector<double> rho_0_points_next(total_points, 0.0);
     std::vector<double> rho_a_0_points_next(num_atoms * total_points, 0.0);
 
-    // Calculate initial proatom and promolecule density at all points
+// Calculate initial proatom and promolecule density at all points
 #pragma omp parallel for
     for (size_t point = 0; point < total_points; point++) {
         rho_0_points[point] = 0.0;
         for (int atom = 0; atom < num_atoms; atom++) {
             rho_a_0_points[atom * total_points + point] = 0.0;
-             for (int m = 0; m < mA[atom]; m++) {
-                 rho_a_0_points[atom * total_points + point] += rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom * total_points + point]);
-             }
-             rho_0_points[point] += rho_a_0_points[atom * total_points + point];
+            for (int m = 0; m < mA[atom]; m++) {
+                rho_a_0_points[atom * total_points + point] +=
+                    rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom * total_points + point]);
+            }
+            rho_0_points[point] += rho_a_0_points[atom * total_points + point];
         }
     }
 
@@ -2245,19 +2186,19 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     if (print_output && debug >= 1) outfile->Printf("                     Delta D\n");
     while (iter < max_iter) {
-
-        // Self-consistent update of population and density
+// Self-consistent update of population and density
 #pragma omp parallel for
         for (int atom = 0; atom < num_atoms; atom++) {
             for (int m = 0; m < mA[atom]; m++) {
-
                 double sum_n = 0.0;
                 double sum_s = 0.0;
 
                 for (int point = 0; point < total_points; point++) {
-                    double rho_ai_0_point = rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom * total_points + point]);
+                    double rho_ai_0_point =
+                        rho_ai_0(Nai[atom][m], Sai[atom][m], distances[atom * total_points + point]);
                     sum_n += weights[point] * rho[point] * rho_ai_0_point / rho_0_points[point];
-                    sum_s += weights[point] * distances[atom * total_points + point] * rho[point] * rho_ai_0_point / rho_0_points[point];
+                    sum_s += weights[point] * distances[atom * total_points + point] * rho[point] * rho_ai_0_point /
+                             rho_0_points[point];
                 }
 
                 Nai_next[atom][m] = sum_n;
@@ -2272,7 +2213,8 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
         for (size_t point = 0; point < total_points; point++) {
             for (int atom = 0; atom < num_atoms; atom++) {
                 for (int m = 0; m < mA[atom]; m++) {
-                    rho_a_0_points_next[atom * total_points + point] += rho_ai_0(Nai_next[atom][m], Sai_next[atom][m], distances[atom * total_points + point]);
+                    rho_a_0_points_next[atom * total_points + point] +=
+                        rho_ai_0(Nai_next[atom][m], Sai_next[atom][m], distances[atom * total_points + point]);
                 }
                 rho_0_points_next[point] += rho_a_0_points_next[atom * total_points + point];
             }
@@ -2293,7 +2235,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
         delta_rho_max_0 = 0.0;
         for (int atom = 0; atom < num_atoms; atom++) {
-            if (delta_rho_atoms_0[atom] > delta_rho_max_0) delta_rho_max_0 = delta_rho_atoms_0[atom]; 
+            if (delta_rho_atoms_0[atom] > delta_rho_max_0) delta_rho_max_0 = delta_rho_atoms_0[atom];
         }
 
         // Update populations, widths, and densities
@@ -2316,14 +2258,15 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     if (!is_converged) throw ConvergenceError<int>("MBIS", max_iter, conv, delta_rho_max_0, __FILE__, __LINE__);
 
     // => Post-Processing <= //
- 
+
     // Atomic density, as defined in Equation 5 of Verstraelen et al.
     std::vector<double> rho_a(num_atoms * total_points, 0.0);
 
 #pragma omp parallel for
     for (int atom = 0; atom < num_atoms; atom++) {
         for (size_t point = 0; point < total_points; point++) {
-            rho_a[atom * total_points + point] = rho[point] * rho_a_0_points[atom * total_points + point] / rho_0_points[point];
+            rho_a[atom * total_points + point] =
+                rho[point] * rho_a_0_points[atom * total_points + point] / rho_0_points[point];
         }
     }
 
@@ -2331,40 +2274,26 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     std::vector<std::vector<double>> k_delta = {{1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0}};
 
     // Non-redundant cartesian quadrupole components
-    std::vector<std::vector<int>> qpole_inds = {{0, 0},
-                                                {0, 1},
-                                                {0, 2}, 
-                                                {1, 1}, 
-                                                {1, 2},
-                                                {2, 2}};
+    std::vector<std::vector<int>> qpole_inds = {{0, 0}, {0, 1}, {0, 2}, {1, 1}, {1, 2}, {2, 2}};
 
     // Non-redundant cartesian octupole components
-    std::vector<std::vector<int>> opole_inds = {{0, 0, 0},
-                                                {0, 0, 1},
-                                                {0, 0, 2}, 
-                                                {0, 1, 1}, 
-                                                {0, 1, 2}, 
-                                                {0, 2, 2}, 
-                                                {1, 1, 1}, 
-                                                {1, 1, 2}, 
-                                                {1, 2, 2}, 
-                                                {2, 2, 2}};
+    std::vector<std::vector<int>> opole_inds = {{0, 0, 0}, {0, 0, 1}, {0, 0, 2}, {0, 1, 1}, {0, 1, 2},
+                                                {0, 2, 2}, {1, 1, 1}, {1, 1, 2}, {1, 2, 2}, {2, 2, 2}};
 
     // Non-redundant cartesian multipoles, as given in the convention in the HORTON software
-    /* Commented out lines ending in _stone represent multipole conventions given in 
+    /* Commented out lines ending in _stone represent multipole conventions given in
        "The Theory of Intermolecular Forces (2nd Edition)" by Anthony Stone (A possible future addition) */
     auto mpole = std::make_shared<Matrix>("MBIS Charges: (a.u.)", num_atoms, 1);
     auto dpole = std::make_shared<Matrix>("MBIS Dipoles: (a.u.)", num_atoms, 3);
     auto qpole = std::make_shared<Matrix>("MBIS Quadrupoles: (a.u.)", num_atoms, 6);
     auto opole = std::make_shared<Matrix>("MBIS Octupoles: (a.u.)", num_atoms, 10);
-    //auto qpole_stone = std::make_shared<Matrix>("MBIS Quadrupoles: (a.u.)", num_atoms, 6);
-    //auto opole_stone = std::make_shared<Matrix>("MBIS Octupoles: (a.u.)", num_atoms, 10);
-    // Calculate atomic multipoles
+// auto qpole_stone = std::make_shared<Matrix>("MBIS Quadrupoles: (a.u.)", num_atoms, 6);
+// auto opole_stone = std::make_shared<Matrix>("MBIS Octupoles: (a.u.)", num_atoms, 10);
+// Calculate atomic multipoles
 #pragma omp parallel for
     for (int a = 0; a < num_atoms; a++) {
         mpole->add(a, 0, mol->Z(a));
         for (size_t p = 0; p < total_points; p++) {
-
             auto ap = a * total_points + p;
 
             // Atomic monopole
@@ -2379,117 +2308,119 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
             for (int q = 0; q < 6; q++) {
                 int i = qpole_inds[q][0], j = qpole_inds[q][1];
                 qpole->add(a, q, weights[p] * -rho_a[ap] * (disps[i][ap] * disps[j][ap]));
-                //qpole_stone->add(a, q, weights[p] * rho_a[ap] * (1.5 * disps[i][ap] * disps[j][ap] - 0.5 * pow(distances[ap], 2) * k_delta[i][j]));
+                // qpole_stone->add(a, q, weights[p] * rho_a[ap] * (1.5 * disps[i][ap] * disps[j][ap] - 0.5 *
+                // pow(distances[ap], 2) * k_delta[i][j]));
             }
 
             // Atomic octupole
             for (int o = 0; o < 10; o++) {
                 int i = opole_inds[o][0], j = opole_inds[o][1], k = opole_inds[o][2];
                 opole->add(a, o, weights[p] * -rho_a[ap] * (disps[i][ap] * disps[j][ap] * disps[k][ap]));
-                //opole_stone->add(a, o, weights[p] * rho_a[ap] 
-                //    * (2.5 * disps[i][ap] * disps[j][ap] * disps[k][ap] - 0.5 * pow(distances[ap], 2) 
-                //        * (k_delta[j][k] * disps[i][ap] + k_delta[i][k] * disps[j][ap] + k_delta[i][j] * disps[k][ap])));
+                // opole_stone->add(a, o, weights[p] * rho_a[ap]
+                //    * (2.5 * disps[i][ap] * disps[j][ap] * disps[k][ap] - 0.5 * pow(distances[ap], 2)
+                //        * (k_delta[j][k] * disps[i][ap] + k_delta[i][k] * disps[j][ap] + k_delta[i][j] *
+                //        disps[k][ap])));
             }
         }
     }
 
     if (print_output) {
-
         outfile->Printf("  MBIS Charges: (a.u.)\n");
         outfile->Printf("   Center  Symbol  Z      Pop.       Charge\n");
 
         for (int a = 0; a < num_atoms; a++) {
-            outfile->Printf("  %5d      %2s %4d   %9.6f   %9.6f\n", a+1, mol->label(a).c_str(), 
-                    (int)mol->Z(a), mol->Z(a) - mpole->get(a, 0), mpole->get(a, 0));
+            outfile->Printf("  %5d      %2s %4d   %9.6f   %9.6f\n", a + 1, mol->label(a).c_str(),
+                            static_cast<int>(mol->Z(a)), mol->Z(a) - mpole->get(a, 0), mpole->get(a, 0));
         }
 
         outfile->Printf("\n  MBIS Dipoles: [e a0]\n");
         outfile->Printf("   Center  Symbol  Z        X           Y           Z\n");
 
         for (int a = 0; a < num_atoms; a++) {
-            outfile->Printf("  %5d      %2s %4d   %9.6f   %9.6f   %9.6f\n", a+1, mol->label(a).c_str(), 
-                    (int)mol->Z(a), dpole->get(a, 0), dpole->get(a, 1), dpole->get(a, 2));
+            outfile->Printf("  %5d      %2s %4d   %9.6f   %9.6f   %9.6f\n", a + 1, mol->label(a).c_str(),
+                            static_cast<int>(mol->Z(a)), dpole->get(a, 0), dpole->get(a, 1), dpole->get(a, 2));
         }
 
         outfile->Printf("\n  MBIS Quadrupoles: [e a0^2]\n");
         outfile->Printf("   Center  Symbol  Z      XX        XY        XZ        YY        YZ        ZZ\n");
 
         for (int a = 0; a < num_atoms; a++) {
-            outfile->Printf("  %5d      %2s %4d   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f\n", a+1, mol->label(a).c_str(),
-                    (int)mol->Z(a), qpole->get(a, 0), qpole->get(a, 1), qpole->get(a, 2), qpole->get(a, 3), 
-                    qpole->get(a, 4), qpole->get(a, 5));
+            outfile->Printf("  %5d      %2s %4d   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f\n", a + 1,
+                            mol->label(a).c_str(), static_cast<int>(mol->Z(a)), qpole->get(a, 0), qpole->get(a, 1),
+                            qpole->get(a, 2), qpole->get(a, 3), qpole->get(a, 4), qpole->get(a, 5));
         }
 
         outfile->Printf("\n  MBIS Octupoles: [e a0^3]\n");
-        outfile->Printf("   Center  Symbol  Z      XXX       XXY       XXZ       XYY       XYZ       XZZ       YYY       YYZ       YZZ       ZZZ\n");
+        outfile->Printf(
+            "   Center  Symbol  Z      XXX       XXY       XXZ       XYY       XYZ       XZZ       YYY       YYZ       "
+            "YZZ       ZZZ\n");
 
         for (int a = 0; a < num_atoms; a++) {
-            outfile->Printf("  %5d      %2s %4d   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f\n", 
-                    a+1, mol->label(a).c_str(), (int)mol->Z(a), opole->get(a, 0), opole->get(a, 1), opole->get(a, 2), 
-                    opole->get(a, 3), opole->get(a, 4), opole->get(a, 5), opole->get(a, 6), opole->get(a, 7), 
-                    opole->get(a, 8), opole->get(a, 9));
+            outfile->Printf(
+                "  %5d      %2s %4d   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f   %7.4f\n",
+                a + 1, mol->label(a).c_str(), static_cast<int>(mol->Z(a)), opole->get(a, 0), opole->get(a, 1),
+                opole->get(a, 2), opole->get(a, 3), opole->get(a, 4), opole->get(a, 5), opole->get(a, 6),
+                opole->get(a, 7), opole->get(a, 8), opole->get(a, 9));
         }
-
     }
 
     const int max_power = options.get_int("MAX_RADIAL_MOMENT");
     auto rmoms = compute_radial_moments(grid, rho_a, distances, num_atoms);
-    
+
     for (int n = 2; n <= max_power; n++) {
-    std::stringstream sstream;
+        std::stringstream sstream;
         sstream << "MBIS RADIAL MOMENTS <R^" << n << ">";
 
         auto var_name = sstream.str();
-        wfn_->set_array_variable(var_name, rmoms[n-2]);
+        wfn_->set_array_variable(var_name, rmoms[n - 2]);
     }
 
     auto valence_widths = std::make_shared<Matrix>("MBIS Valence Widths", num_atoms, 1);
     for (int atom = 0; atom < num_atoms; atom++) {
-        valence_widths->set(atom, 0, Sai[atom][mA[atom]-1]);
+        valence_widths->set(atom, 0, Sai[atom][mA[atom] - 1]);
     }
     wfn_->set_array_variable("MBIS VALENCE WIDTHS", valence_widths);
 
     // Compute the volume widths, only for molecules
-    bool free_atom = (num_atoms == 1); 
+    bool free_atom = (num_atoms == 1);
     auto volume_ratios = valence_widths->clone();
     volume_ratios->zero();
-    if (free_atom == false){
-        for (int a = 0; a < num_atoms; ++a){
+    if (free_atom == false) {
+        for (int a = 0; a < num_atoms; ++a) {
             double free_atom = wfn_->scalar_variable("MBIS FREE ATOM " + mol->label(a) + " VOLUME");
-            double vr = rmoms[1]->get(a,0) / free_atom;
-            volume_ratios->set(a,0,vr);
+            double vr = rmoms[1]->get(a, 0) / free_atom;
+            volume_ratios->set(a, 0, vr);
         }
         wfn_->set_array_variable("MBIS VOLUME RATIOS", volume_ratios);
     }
-    
 
     if (print_output) {
         outfile->Printf("\n  MBIS Radial Moments:");
         outfile->Printf("\n   Center  Symbol  Z      ");
-        for (int n = 2; n <= max_power; n++) { 
+        for (int n = 2; n <= max_power; n++) {
             outfile->Printf("[a0^%d]      ", n);
         }
         for (int a = 0; a < num_atoms; a++) {
-            outfile->Printf("\n  %5d      %2s %4d", a+1, mol->label(a).c_str(),(int)mol->Z(a));
-            for (int n = 2; n <= max_power; n++) { 
-                outfile->Printf("   %9.6f", rmoms[n-2]->get(a, 0));
+            outfile->Printf("\n  %5d      %2s %4d", a + 1, mol->label(a).c_str(), static_cast<int>(mol->Z(a)));
+            for (int n = 2; n <= max_power; n++) {
+                outfile->Printf("   %9.6f", rmoms[n - 2]->get(a, 0));
             }
-        }   
+        }
 
-	    outfile->Printf("\n\n  MBIS Valence Widths: [a0]\n");
+        outfile->Printf("\n\n  MBIS Valence Widths: [a0]\n");
         outfile->Printf("   Center  Symbol  Z     Width\n");
 
         for (int a = 0; a < num_atoms; a++) {
-            outfile->Printf("  %5d      %2s %4d   %9.6f\n", a+1, mol->label(a).c_str(),
-            (int)mol->Z(a), valence_widths->get(a, 0));
+            outfile->Printf("  %5d      %2s %4d   %9.6f\n", a + 1, mol->label(a).c_str(), static_cast<int>(mol->Z(a)),
+                            valence_widths->get(a, 0));
         }
 
         if (free_atom == false) {
-	        outfile->Printf("\n\n  MBIS Volume Ratios: \n");
+            outfile->Printf("\n\n  MBIS Volume Ratios: \n");
             outfile->Printf("   Center  Symbol  Z     \n");
             for (int a = 0; a < num_atoms; a++) {
-                outfile->Printf("  %5d      %2s %4d   %9.6f\n", a+1, mol->label(a).c_str(),
-                (int)mol->Z(a), volume_ratios->get(a, 0));
+                outfile->Printf("  %5d      %2s %4d   %9.6f\n", a + 1, mol->label(a).c_str(),
+                                static_cast<int>(mol->Z(a)), volume_ratios->get(a, 0));
             }
         }
     }
