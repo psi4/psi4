@@ -466,11 +466,8 @@ def extract_order2_fsapt(osapt, wsA, wsB, frags):
                 valueA = np.asarray(valueA)
                 for keyB, valueB in wsB.items():
                     valueB = np.asarray(valueB)
-                    val = 0.0
-                    for k in range(len(valueA)):
-                        for l in range(len(valueB)):
-                            val += valueA[k] * valueB[l] * value[k][l]
-
+                    # The last row and columns in value are for the external potential
+                    val = np.einsum('i,ij,j', valueA, value[:-1, :-1], valueB)
                     vals[key][keyA][keyB] = val
 
     return vals
@@ -807,6 +804,8 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
 
     osapt = extract_osapt_data(dirname)
 
+    # Now process the external potential data for the interacting fragments A and B
+    # We need to analyze the interaction between the point charges in one fragment and the other fragment
     # Add external potential data for A
     if os.path.exists("%s/Extern_A.xyz" %dirname):
         fragkeys['A'].append("Extern-A")
@@ -836,6 +835,7 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
             frags['B']['Extern-B'] = list(range(len(Zs['B']), len(Zs['B']) + len(geom_extern_B)))
 
     # Add external potential data for C
+    # The point charges in C do not explicitly enter the SAPT0 interaction energy
     if os.path.exists("%s/Extern_C.xyz" %dirname):
         geom_extern_C = readXYZ('%s/Extern_C.xyz' % dirname)
         for c in geom_extern_C:

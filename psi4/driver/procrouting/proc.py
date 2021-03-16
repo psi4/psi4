@@ -1228,34 +1228,31 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
             wfn.set_sad_fitting_basissets(sad_fitting_list)
             optstash.restore()
 
+    if hasattr(core, "EXTERN") and 'external_potentials' in kwargs: 
+        core.print_out("\n  Warning! Both an external potential EXTERN object and the external_potential" +
+                       " keyword argument are specified. The external_potential keyword argument will be ignored.\n")
+
     # If EXTERN is set, then place that potential on the wfn
-    # For FSAPT, we can take a dictionary of external potentials, e.g.,
-    # external_potentials={'A': potA, 'B': potB, 'C': potC} (any optional)
-    extern_set = False
     if hasattr(core, "EXTERN"):
-        wfn.set_external_potential_c(core.EXTERN)
+        wfn.set_external_potential_c(core.EXTERN) # This is for the FSAPT procedure
         wfn.set_external_potential(core.EXTERN)
-        extern_set = True
 
     elif 'external_potentials' in kwargs:
+        # For FSAPT, we can take a dictionary of external potentials, e.g.,
+        # external_potentials={'A': potA, 'B': potB, 'C': potC} (any optional)
+        # For the dimer SAPT calculation, we need to account for the external potential
+        # in all of the subsystems A, B, C. So we add them all in total_external_potential
+        # and set the external potential to the dimer wave function
         total_external_potential = core.ExternalPotential()
 
-        if "A" in kwargs['external_potentials']:
-            wfn.set_external_potential_a(kwargs['external_potentials']['A'].extern)
-            total_external_potential.appendCharges(kwargs['external_potentials']['A'].extern.getCharges())
-            total_external_potential.appendBases(kwargs['external_potentials']['A'].extern.getBases())
+        ext_pot_type = [wfn.set_external_potential_a, wfn.set_external_potential_b, wfn.set_external_potential_c]
+        for i, frag in enumerate(["A", "B", "C"]):
+            if frag in kwargs['external_potentials']:
+                ext_pot_type[i](kwargs['external_potentials'][frag].extern)
+                total_external_potential.appendCharges(kwargs['external_potentials'][frag].extern.getCharges())
+                total_external_potential.appendBases(kwargs['external_potentials'][frag].extern.getBases())
 
-        if "B" in kwargs['external_potentials']:
-            wfn.set_external_potential_b(kwargs['external_potentials']['B'].extern)
-            total_external_potential.appendCharges(kwargs['external_potentials']['B'].extern.getCharges())
-            total_external_potential.appendBases(kwargs['external_potentials']['B'].extern.getBases())
-
-        if "C" in kwargs['external_potentials']:
-            wfn.set_external_potential_c(kwargs['external_potentials']['C'].extern)
-            total_external_potential.appendCharges(kwargs['external_potentials']['C'].extern.getCharges())
-            total_external_potential.appendBases(kwargs['external_potentials']['C'].extern.getBases())
-
-        wfn.set_external_potential(total_external_potential)  # for the SCF
+        wfn.set_external_potential(total_external_potential)
 
     return wfn
 
