@@ -40,7 +40,7 @@ from psi4.driver import driver_util
 from psi4.driver import psifiles as psif
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.procrouting.interface_cfour import cfour_psivar_list
-from psi4.driver.procrouting.dft import functionals
+from psi4.driver.procrouting.dft import functionals, build_superfunctional_from_dictionary
 
 zeta_values = 'dtq5678'
 _zeta_val2sym = {k + 2: v for k, v in enumerate(zeta_values)}
@@ -171,6 +171,7 @@ def _contract_bracketed_basis(basisarray: List):
         basisstring = pre + '[' + ''.join(ZSET) + ']' + post
         return basisstring
 
+### GENERIC FUNCTIONS
 
 def xtpl_highest_1(functionname: str, zHI: int, valueHI: float, verbose: bool = True, **kwargs):
     r"""Scheme for total or correlation energies with a single basis or the highest
@@ -215,8 +216,7 @@ def xtpl_highest_1(functionname: str, zHI: int, valueHI: float, verbose: bool = 
 
         return valueHI
 
-
-def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, valueHI: float, verbose: bool = True, alpha: float = None):
+def xtpl_exponential_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme using exponential form for reference energies with two adjacent
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
@@ -232,8 +232,8 @@ def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, v
         Higher zeta level. Should be equal to zLO + 1.
     valueHI
         Higher value used for extrapolation.
-    alpha
-        Overrides the default :math:`\alpha = 1.63`
+    alpha : float
+        Extrapolation parameter :math:`\alpha`.
 
     Returns
     -------
@@ -242,23 +242,17 @@ def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, v
 
     Notes
     -----
-    The extrapolation is calculated according to [1]_:
-    :math:`E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 1.63`
-
-    References
-    ----------
-
-    .. [1] Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
-       DOI: 10.1016/S0009-2614(99)00179-7
-
+    The extrapolation is calculated according to:
+    :math:`E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}`
+    
     """
-
     if type(valueLO) != type(valueHI):
         raise ValidationError(
-            "scf_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)" % (type(valueLO), type(valueHI)))
+            "xtpl_exponential_2: Inputs must be of the same datatype! (%s, %s)" % (type(valueLO), type(valueHI)))
 
     if alpha is None:
-        alpha = 1.63
+        raise ValidationError(
+            "xtpl_exponential_2: alpha must be provided.")
 
     beta_division = 1 / (math.exp(-1 * alpha * zLO) * (math.exp(-1 * alpha) - 1))
     beta_mult = math.exp(-1 * alpha * zHI)
@@ -270,7 +264,7 @@ def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, v
         if verbose:
             # Output string with extrapolation parameters
             cbsscheme = ''
-            cbsscheme += """\n   ==> Helgaker 2-point exponential SCF extrapolation for method: %s <==\n\n""" % (
+            cbsscheme += """\n   ==> 2-point exponential extrapolation for method: %s <==\n\n""" % (
                 functionname.upper())
             cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
             cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
@@ -288,17 +282,17 @@ def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, v
 
     elif isinstance(valueLO, (core.Matrix, core.Vector)):
         beta = valueHI.clone()
-        beta.name = 'Helgaker SCF (%s, %s) beta' % (zLO, zHI)
+        beta.name = 'Exponential extrapolation (%s, %s) beta' % (zLO, zHI)
         beta.subtract(valueLO)
         beta.scale(beta_division)
         beta.scale(beta_mult)
 
         value = valueHI.clone()
         value.subtract(beta)
-        value.name = 'Helgaker SCF (%s, %s) data' % (zLO, zHI)
+        value.name = 'Exponential extrapolation (%s, %s) data' % (zLO, zHI)
 
         if verbose > 2:
-            core.print_out("""\n   ==> Helgaker 2-point exponential SCF extrapolation for method: %s <==\n\n""" %
+            core.print_out("""\n   ==> 2-point exponential extrapolation for method: %s <==\n\n""" %
                            (functionname.upper()))
             core.print_out("""   LO-zeta (%s)""" % str(zLO))
             core.print_out("""   LO-zeta Data""")
@@ -315,10 +309,9 @@ def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, v
         return value
 
     else:
-        raise ValidationError("scf_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
+        raise ValidationError("xtpl_exponential_2: datatype is not recognized '%s'." % type(valueLO))
 
-
-def scf_xtpl_truhlar_2(functionname: str, zLO: int, valueLO: float, zHI: int, valueHI: float, verbose: bool = True, alpha: float = None):
+def xtpl_power_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme using power form for reference energies with two adjacent
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
@@ -334,8 +327,8 @@ def scf_xtpl_truhlar_2(functionname: str, zLO: int, valueLO: float, zHI: int, va
         Higher zeta level. Should be equal to zLO + 1.
     valueHI
         Higher value used for extrapolation.
-    alpha
-        Overrides the default :math:`\alpha = 3.4`
+    alpha : float
+        Extrapolation parameter :math:`\alpha`.
 
     Returns
     -------
@@ -344,23 +337,17 @@ def scf_xtpl_truhlar_2(functionname: str, zLO: int, valueLO: float, zHI: int, va
 
     Notes
     -----
-    The extrapolation is calculated according to [2]_:
-    :math:`E_{total}^X = E_{total}^{\infty} + \beta X^{-\alpha}, \alpha = 3.4`
-
-    References
-    ----------
-
-    .. [2] Truhlar, Chem. Phys. Lett. 294 (1998) 45-48,
-       DOI: 10.1016/S0009-2614(98)00866-5
+    The extrapolation is calculated according to:
+    :math:`E_{total}^X = E_{total}^{\infty} + \beta X^{-\alpha}`
 
     """
-
     if type(valueLO) != type(valueHI):
         raise ValidationError(
-            "scf_xtpl_truhlar_2: Inputs must be of the same datatype! (%s, %s)" % (type(valueLO), type(valueHI)))
+            "xtpl_power_2: Inputs must be of the same datatype! (%s, %s)" % (type(valueLO), type(valueHI)))
 
     if alpha is None:
-        alpha = 3.40
+        raise ValidationError(
+            "xtpl_power_2: alpha must be provided.")
 
     beta_division = 1 / (zHI**(-1 * alpha) - zLO**(-1 * alpha))
     beta_mult = zHI**(-1 * alpha)
@@ -372,7 +359,7 @@ def scf_xtpl_truhlar_2(functionname: str, zLO: int, valueLO: float, zHI: int, va
         if verbose:
             # Output string with extrapolation parameters
             cbsscheme = ''
-            cbsscheme += """\n   ==> Truhlar 2-point power form SCF extrapolation for method: %s <==\n\n""" % (
+            cbsscheme += """\n   ==> 2-point power form extrapolation for method: %s <==\n\n""" % (
                 functionname.upper())
             cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
             cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
@@ -390,17 +377,17 @@ def scf_xtpl_truhlar_2(functionname: str, zLO: int, valueLO: float, zHI: int, va
 
     elif isinstance(valueLO, (core.Matrix, core.Vector)):
         beta = valueHI.clone()
-        beta.name = 'Truhlar SCF (%s, %s) beta' % (zLO, zHI)
+        beta.name = 'Power extrapolation (%s, %s) beta' % (zLO, zHI)
         beta.subtract(valueLO)
         beta.scale(beta_division)
         beta.scale(beta_mult)
 
         value = valueHI.clone()
         value.subtract(beta)
-        value.name = 'Truhlar SCF (%s, %s) data' % (zLO, zHI)
+        value.name = 'Power extrapolation (%s, %s) data' % (zLO, zHI)
 
         if verbose > 2:
-            core.print_out("""\n   ==> Truhlar 2-point power from SCF extrapolation for method: %s <==\n\n""" %
+            core.print_out("""\n   ==> 2-point power from SCF extrapolation for method: %s <==\n\n""" %
                            (functionname.upper()))
             core.print_out("""   LO-zeta (%s)""" % str(zLO))
             core.print_out("""   LO-zeta Data""")
@@ -417,11 +404,10 @@ def scf_xtpl_truhlar_2(functionname: str, zLO: int, valueLO: float, zHI: int, va
         return value
 
     else:
-        raise ValidationError("scf_xtpl_truhlar_2: datatype is not recognized '%s'." % type(valueLO))
+        raise ValidationError("xtpl_power_2: datatype is not recognized '%s'." % type(valueLO))
 
-
-def scf_xtpl_karton_2(functionname: str, zLO: int, valueLO: float, zHI: int, valueHI: float, verbose: bool = True, alpha: float = None):
-    r"""Extrapolation scheme using root-power form for reference energies with two adjacent
+def xtpl_expsqrt_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+    r"""Extrapolation scheme using square root-exponential form for reference energies with two adjacent
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
     Parameters
@@ -436,8 +422,8 @@ def scf_xtpl_karton_2(functionname: str, zLO: int, valueLO: float, zHI: int, val
         Higher zeta level. Should be equal to zLO + 1.
     valueHI
         Higher value used for extrapolation.
-    alpha
-        Overrides the default :math:`\alpha = 6.3`
+    alpha : float
+        Extrapolation parameter :math:`\alpha`.
 
     Returns
     -------
@@ -447,22 +433,17 @@ def scf_xtpl_karton_2(functionname: str, zLO: int, valueLO: float, zHI: int, val
     Notes
     -----
     The extrapolation is calculated according to [3]_:
-    :math:`E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha\sqrt{X}}, \alpha = 6.3`
-
-    References
-    ----------
-
-    .. [3] Karton, Martin, Theor. Chem. Acc. 115 (2006) 330-333,
-       DOI: 10.1007/s00214-005-0028-6
+    :math:`E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha\sqrt{X}}`
 
     """
 
     if type(valueLO) != type(valueHI):
         raise ValidationError(
-            "scf_xtpl_karton_2: Inputs must be of the same datatype! (%s, %s)" % (type(valueLO), type(valueHI)))
+            "xtpl_expsqrt_2: Inputs must be of the same datatype! (%s, %s)" % (type(valueLO), type(valueHI)))
 
     if alpha is None:
-        alpha = 6.30
+        raise ValidationError(
+            "xtpl_expsqrt_2: alpha must be provided.")
 
     beta_division = 1 / (math.exp(-1 * alpha) * (math.exp(math.sqrt(zHI)) - math.exp(math.sqrt(zLO))))
     beta_mult = math.exp(-1 * alpha * math.sqrt(zHI))
@@ -474,7 +455,7 @@ def scf_xtpl_karton_2(functionname: str, zLO: int, valueLO: float, zHI: int, val
         if verbose:
             # Output string with extrapolation parameters
             cbsscheme = ''
-            cbsscheme += """\n   ==> Karton 2-point power form SCF extrapolation for method: %s <==\n\n""" % (
+            cbsscheme += """\n   ==> 2-point exp.-sqrt. form SCF extrapolation for method: %s <==\n\n""" % (
                 functionname.upper())
             cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
             cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
@@ -492,17 +473,17 @@ def scf_xtpl_karton_2(functionname: str, zLO: int, valueLO: float, zHI: int, val
 
     elif isinstance(valueLO, (core.Matrix, core.Vector)):
         beta = valueHI.clone()
-        beta.name = 'Karton SCF (%s, %s) beta' % (zLO, zHI)
+        beta.name = 'Expsqrt extrapolation (%s, %s) beta' % (zLO, zHI)
         beta.subtract(valueLO)
         beta.scale(beta_division)
         beta.scale(beta_mult)
 
         value = valueHI.clone()
         value.subtract(beta)
-        value.name = 'Karton SCF (%s, %s) data' % (zLO, zHI)
+        value.name = 'Expsqrt extrapolation (%s, %s) data' % (zLO, zHI)
 
         if verbose > 2:
-            core.print_out("""\n   ==> Karton 2-point power from SCF extrapolation for method: %s <==\n\n""" %
+            core.print_out("""\n   ==> 2-point exp.-sqrt. from SCF extrapolation for method: %s <==\n\n""" %
                            (functionname.upper()))
             core.print_out("""   LO-zeta (%s)""" % str(zLO))
             core.print_out("""   LO-zeta Data""")
@@ -519,10 +500,9 @@ def scf_xtpl_karton_2(functionname: str, zLO: int, valueLO: float, zHI: int, val
         return value
 
     else:
-        raise ValidationError("scf_xtpl_Karton_2: datatype is not recognized '%s'." % type(valueLO))
+        raise ValidationError("xtpl_expsqrt_2: datatype is not recognized '%s'." % type(valueLO))
 
-
-def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: float, zMD: int, valueMD: float, zHI: int, valueHI: float, verbose: bool = True, alpha: float = None):
+def xtpl_exponential_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True, alpha=None):
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
 
@@ -542,7 +522,7 @@ def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: float, zMD: int, v
         Higher zeta level. Should be equal to zLO + 2.
     valueHI
         Higher value used for extrapolation.
-    alpha
+    alpha : float
         Not used.
 
     Returns
@@ -553,18 +533,12 @@ def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: float, zMD: int, v
     Notes
     -----
     The extrapolation is calculated according to [4]_:
-    :math:`E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 3.0`
-
-    References
-    ----------
-
-    .. [4] Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
-       DOI: 10.1016/S0009-2614(99)00179-7
+    :math:`E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}`
 
     """
 
     if (type(valueLO) != type(valueMD)) or (type(valueMD) != type(valueHI)):
-        raise ValidationError("scf_xtpl_helgaker_3: Inputs must be of the same datatype! (%s, %s, %s)" %
+        raise ValidationError("xtpl_exponential_3: Inputs must be of the same datatype! (%s, %s, %s)" %
                               (type(valueLO), type(valueMD), type(valueHI)))
 
     if isinstance(valueLO, float):
@@ -577,7 +551,7 @@ def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: float, zMD: int, v
         if verbose:
             # Output string with extrapolation parameters
             cbsscheme = ''
-            cbsscheme += """\n   ==> Helgaker 3-point SCF extrapolation for method: %s <==\n\n""" % (
+            cbsscheme += """\n   ==> 3-point exponential extrapolation for method: %s <==\n\n""" % (
                 functionname.upper())
             cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
             cbsscheme += """   MD-zeta (%s) Energy:               % 16.12f\n""" % (str(zMD), valueMD)
@@ -618,13 +592,104 @@ def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: float, zMD: int, v
         return value
 
     else:
-        raise ValidationError("scf_xtpl_helgaker_3: datatype is not recognized '%s'." % type(valueLO))
+        raise ValidationError("xtpl_exponential_3: datatype is not recognized '%s'." % type(valueLO))
 
+### NAMED FUNCTION ALIASES
+def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+    r"""Alias for the exponential form of the extrapolation scheme for reference energies with two adjacent
+    zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
-#def corl_xtpl_helgaker_2(functionname, valueSCF, zLO, valueLO, zHI, valueHI, verbose=True):
-def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, valueHI: float, verbose: bool = True, alpha: float = None):
-    r"""Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
-    Used by :py:func:`~psi4.cbs`.
+    Parameters
+    ----------
+    functionname : string
+        Name of the CBS component.
+    zLO : int
+        Lower zeta level.
+    valueLO : float
+        Lower value used for extrapolation.
+    zHI : int
+        Higher zeta level. Should be equal to zLO + 1.
+    valueHI : float
+        Higher value used for extrapolation.
+    alpha : float, optional
+        Overrides the default :math:`\alpha = 1.63`
+
+    Returns
+    -------
+    float
+        Returns :math:`E_{total}^{\infty}`, see below.
+
+    Notes
+    -----
+    The extrapolation is calculated according to [1]_:
+    :math:`E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 1.63`
+
+    References
+    ----------
+
+    .. [1] Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
+       DOI: 10.1016/S0009-2614(99)00179-7
+
+    """
+
+    if type(valueLO) != type(valueHI):
+        raise ValidationError(
+            "scf_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)" % (type(valueLO), type(valueHI)))
+
+    if alpha is None:
+        alpha = 1.63
+
+    return xtpl_exponential_2(functionname, zLO, valueLO, zHI, valueHI, verbose=verbose, alpha=alpha)
+
+def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+    r"""Alias for the power form of the extrapolation scheme for reference energies with two adjacent
+    zeta-level bases. Used by :py:func:`~psi4.cbs`.
+
+    Parameters
+    ----------
+    functionname : string
+        Name of the CBS component.
+    zLO : int
+        Lower zeta level.
+    valueLO : float
+        Lower value used for extrapolation.
+    zHI : int
+        Higher zeta level. Should be equal to zLO + 1.
+    valueHI : float
+        Higher value used for extrapolation.
+    alpha : float, optional
+        Overrides the default :math:`\alpha = 3.4`
+
+    Returns
+    -------
+    float
+        Returns :math:`E_{total}^{\infty}`, see below.
+
+    Notes
+    -----
+    The extrapolation is calculated according to [2]_:
+    :math:`E_{total}^X = E_{total}^{\infty} + \beta X^{-\alpha}, \alpha = 3.4`
+
+    References
+    ----------
+
+    .. [2] Truhlar, Chem. Phys. Lett. 294 (1998) 45-48,
+       DOI: 10.1016/S0009-2614(98)00866-5
+
+    """
+
+    if type(valueLO) != type(valueHI):
+        raise ValidationError(
+            "scf_xtpl_truhlar_2: Inputs must be of the same datatype! (%s, %s)" % (type(valueLO), type(valueHI)))
+
+    if alpha is None:
+        alpha = 3.40
+
+    return xtpl_power_2(functionname, zLO, valueLO, zHI, valueHI, verbose=verbose, alpha=alpha)
+
+def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+    r"""Alias for the exponential-square root of the extrapolation scheme for reference energies with two adjacent
+    zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
@@ -638,7 +703,97 @@ def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, 
         Higher zeta level. Should be equal to zLO + 1.
     valueHI
         Higher value used for extrapolation.
-    alpha
+    alpha : float, optional
+        Overrides the default :math:`\alpha = 6.3`
+
+    Returns
+    -------
+    float
+        Returns :math:`E_{total}^{\infty}`, see below.
+
+    Notes
+    -----
+    The extrapolation is calculated according to [3]_:
+    :math:`E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha\sqrt{X}}, \alpha = 6.3`
+
+    References
+    ----------
+
+    .. [3] Karton, Martin, Theor. Chem. Acc. 115 (2006) 330-333,
+       DOI: 10.1007/s00214-005-0028-6
+
+    """
+
+    if type(valueLO) != type(valueHI):
+        raise ValidationError(
+            "scf_xtpl_karton_2: Inputs must be of the same datatype! (%s, %s)" % (type(valueLO), type(valueHI)))
+
+    if alpha is None:
+        alpha = 6.30
+
+    return xtpl_expsqrt_2(functionname, zLO, valueLO, zHI, valueHI, verbose=verbose, alpha=alpha)
+
+def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True, alpha=None):
+    r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
+    Used by :py:func:`~psi4.cbs`.
+
+    Parameters
+    ----------
+    functionname : str
+        Name of the CBS component.
+    zLO : int
+        Lower zeta level.
+    valueLO : float
+        Lower value used for extrapolation.
+    zMD : int
+        Intermediate zeta level. Should be equal to zLO + 1.
+    valueMD : float
+        Intermediate value used for extrapolation.
+    zHI : int
+        Higher zeta level. Should be equal to zLO + 2.
+    valueHI : float
+        Higher value used for extrapolation.
+    alpha : float, optional
+        Not used.
+
+    Returns
+    -------
+    float
+        Returns :math:`E_{total}^{\infty}`, see below.
+
+    Notes
+    -----
+    The extrapolation is calculated according to [4]_:
+    :math:`E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}`
+    with :math:`\alpha` fitted to data.
+
+    References
+    ----------
+
+    .. [4] Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
+       DOI: 10.1016/S0009-2614(99)00179-7
+
+    """
+
+    return xtpl_exponential_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=verbose, alpha=alpha)
+    
+def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+    r"""Alias for the cubic power extrapolation scheme for correlation energies with two adjacent zeta-level bases.
+    Used by :py:func:`~psi4.cbs`.
+
+    Parameters
+    ----------
+    functionname : str
+        Name of the CBS component.
+    zLO : int
+        Lower zeta level.
+    valueLO : float
+        Lower value used for extrapolation.
+    zHI : int
+        Higher zeta level. Should be equal to zLO + 1.
+    valueHI : float
+        Higher value used for extrapolation.
+    alpha : float, optional
         Overrides the default :math:`\alpha = 3.0`
 
     Returns
@@ -666,71 +821,8 @@ def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, 
     if alpha is None:
         alpha = 3.0
 
-    if isinstance(valueLO, float):
-        value = (valueHI * zHI**alpha - valueLO * zLO**alpha) / (zHI**alpha - zLO**alpha)
-        beta = (valueHI - valueLO) / (zHI**(-alpha) - zLO**(-alpha))
+    return xtpl_power_2(functionname, zLO, valueLO, zHI, valueHI, verbose=verbose, alpha=alpha)
 
-        #        final = valueSCF + value
-        final = value
-        if verbose:
-            # Output string with extrapolation parameters
-            cbsscheme = """\n\n   ==> Helgaker 2-point correlated extrapolation for method: %s <==\n\n""" % (
-                functionname.upper())
-            #            cbsscheme += """   HI-zeta (%1s) SCF Energy:           % 16.12f\n""" % (str(zHI), valueSCF)
-            cbsscheme += """   LO-zeta (%s) Energy:               % 16.12f\n""" % (str(zLO), valueLO)
-            cbsscheme += """   HI-zeta (%s) Energy:               % 16.12f\n""" % (str(zHI), valueHI)
-            cbsscheme += """   Alpha (exponent) Value:           % 16.12f\n""" % alpha
-            cbsscheme += """   Extrapolated Energy:              % 16.12f\n\n""" % value
-            #cbsscheme += """   LO-zeta (%s) Correlation Energy:   % 16.12f\n""" % (str(zLO), valueLO)
-            #cbsscheme += """   HI-zeta (%s) Correlation Energy:   % 16.12f\n""" % (str(zHI), valueHI)
-            #cbsscheme += """   Beta (coefficient) Value:         % 16.12f\n""" % beta
-            #cbsscheme += """   Extrapolated Correlation Energy:  % 16.12f\n\n""" % value
-
-            name_str = "%s/(%s,%s)" % (functionname.upper(), _zeta_val2sym[zLO].upper(), _zeta_val2sym[zHI].upper())
-            cbsscheme += """   @Extrapolated """
-            cbsscheme += name_str + ':'
-            cbsscheme += " " * (19 - len(name_str))
-            cbsscheme += """% 16.12f\n\n""" % final
-            core.print_out(cbsscheme)
-
-        return final
-
-    elif isinstance(valueLO, (core.Matrix, core.Vector)):
-
-        beta = valueHI.clone()
-        beta.subtract(valueLO)
-        beta.scale(1 / (zHI**(-alpha) - zLO**(-alpha)))
-        beta.name = 'Helgaker Corl (%s, %s) beta' % (zLO, zHI)
-
-        value = valueHI.clone()
-        value.scale(zHI**alpha)
-
-        tmp = valueLO.clone()
-        tmp.scale(zLO**alpha)
-        value.subtract(tmp)
-
-        value.scale(1 / (zHI**alpha - zLO**alpha))
-        value.name = 'Helgaker Corr (%s, %s) data' % (zLO, zHI)
-
-        if verbose > 2:
-            core.print_out("""\n   ==> Helgaker 2-point correlated extrapolation for """
-                           """method: %s <==\n\n""" % (functionname.upper()))
-            core.print_out("""   LO-zeta (%s) Data\n""" % (str(zLO)))
-            valueLO.print_out()
-            core.print_out("""   HI-zeta (%s) Data\n""" % (str(zHI)))
-            valueHI.print_out()
-            core.print_out("""   Extrapolated Data:\n""")
-            value.print_out()
-            core.print_out("""   Alpha (exponent) Value:          %16.8f\n""" % alpha)
-            core.print_out("""   Beta Data:\n""")
-            beta.print_out()
-
-
-#        value.add(valueSCF)
-        return value
-
-    else:
-        raise ValidationError("corl_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
 
 def return_energy_components():
     """Define some quantum chemical knowledge, namely what methods are subsumed in others."""
@@ -950,10 +1042,9 @@ def _get_default_xtpl(nbasis: int, xtpl_type: str) -> Callable:
     ----------
     nbasis
         Number of basis sets
-    xtpl_type
-        {'scf', 'corl'}
-        Extrapolation type: 'scf' for the total energy, 'corl' for just the
-        correlation component.
+    xtpl_type : {'scf', 'corl', 'fctl', 'dh', None}
+        Extrapolation type: 'scf' and 'fctl' for the total energy, 'corl' and 'dh'
+        for just the correlation component, None if no extrapolation requested.
 
     Returns
     -------
@@ -961,23 +1052,149 @@ def _get_default_xtpl(nbasis: int, xtpl_type: str) -> Callable:
         Extrapolation function to be used.
     """
 
-    if nbasis == 1 and xtpl_type in ["scf", "corl"]:
-        return xtpl_highest_1
-    elif xtpl_type == "scf":
-        if nbasis == 2:
-            return scf_xtpl_helgaker_2
-        elif nbasis == 3:
-            return scf_xtpl_helgaker_3
+    if nbasis == 1:
+        if xtpl_type in ["scf", "corl", "fctl", "dh", None]:
+            return xtpl_highest_1
         else:
-            raise ValidationError(f"Wrong number of basis sets supplied to scf_xtpl: {nbasis}")
-    elif xtpl_type == "corl":
-        if nbasis == 2:
-            return corl_xtpl_helgaker_2
+            raise ValidationError(f"Stage treatment must be one of ['scf','corl','fctl','dh',None], not '{xtpl_type}'")
+    elif nbasis == 2 and xtpl_type in ["scf", "corl", "fctl", "dh"]:
+        if xtpl_type == "scf":
+            return xtpl_exponential_2
+        elif xtpl_type == "corl":
+            return xtpl_power_2
+        elif xtpl_type == "fctl":
+            return xtpl_expsqrt_2
+        elif xtpl_type == "dh":
+            return xtpl_power_2
         else:
-            raise ValidationError(f"Wrong number of basis sets supplied to corl_xtpl: {nbasis}")
+            raise ValidationError(f"Stage treatment must be one of ['scf','corl','fctl','dh'], not '{xtpl_type}'")
+    elif nbasis == 3:
+        if xtpl_type == "scf":
+            return xtpl_exponential_3
+        elif xtpl_type == "fctl":
+            return xtpl_expsqrt_3
+        else:
+            raise ValidationError(f"Stage treatment must be one of ['scf','fctl'], not '{xtpl_type}'")
     else:
-        raise ValidationError(f"Stage treatment must be 'corl' or 'scf', not '{xtpl_type}'")
+        raise ValidationError(f"Wrong number of basis sets supplied to scf_xtpl: {nbasis}")
 
+def _get_dfa_alpha(xtpl_type, bdata, funcname):
+    """ A helper function to determine default extrapolation alpha.
+
+    Parameters
+    ----------
+    xtpl_type : {'fctl', 'dh'}
+        Extrapolation type: 'fctl' for the functional energy,
+        'dh' for the double-hybrid correlation component.
+    bnames : string
+        Names of the basis sets to extrapolate from.
+    funcname : string
+        Name of the functional.
+
+    Returns
+    -------
+    float
+        Extrapolation alpha to be used.
+    """
+    bnames, bzetas = bdata
+    if funcname not in functionals:
+        raise ValidationError(f"Functional name {funcname} is undefined.")
+    elif xtpl_type == "fctl":
+        if len(set(["cc-pvdz","cc-pvtz","cc-pvqz",
+                    "cc-pv5z","cc-pv6z"]).intersection(bnames)) >= 2:
+            alphadata = [3.622, 1.511, 0.005]
+        elif len(set(["cc-pwcvdz","cc-pwcvtz",
+                      "cc-pwcvqz","cc-pwcv5z"]).intersection(bnames)) >= 2:
+            alphadata = [4.157, 1.192, -0.048]
+        elif len(set(["aug-cc-pvdz","aug-cc-pvtz","aug-cc-pvqz",
+                      "aug-cc-pv5z","aug-cc-pv6z"]).intersection(bnames)) >= 2:
+            alphadata = [3.676, 1.887, 0.139]
+        elif len(set(["aug-cc-pwcvdz","aug-cc-pwcvtz","aug-cc-pwcvqz",
+                      "aug-cc-pwcv5z"]).intersection(bnames)) >= 2:
+            alphadata = [4.485, 1.445, 0.085]
+        elif len(set(["def2-svp","def2-tzvp",
+                      "def2-qzvp"]).intersection(bnames)) >= 2:
+            alphadata = [7.406, 1.266, -0.046]
+        elif len(set(["def2-svp","def2-tzvpp",
+                      "def2-qzvpp"]).intersection(bnames)) >= 2:
+            alphadata = [7.408, 1.267, -0.046]
+        elif len(set(["def2-svpd","def2-tzvpd",
+                      "def2-qzvpd"]).intersection(bnames)) >= 2:
+            alphadata = [7.925, 1.370, 0.101]
+        elif len(set(["def2-svpd","def2-tzvppd",
+                      "def2-qzvppd"]).intersection(bnames)) >= 2:
+            alphadata = [7.927, 1.371, 0.101]
+        elif len(set(["pc-0","pc-1","pc-2",
+                      "pc-3","pc-4"]).intersection(bnames)) >= 2:
+            alphadata = [6.172, -1.623, 0.183]
+        elif len(set(["pcseg-0","pcseg-1","pcseg-2",
+                      "pcseg-3","pcseg-4"]).intersection(bnames)) >= 2:
+            alphadata = [5.883, -1.825, 0.227]
+        elif len(set(["aug-pc-0","aug-pc-1","aug-pc-2",
+                      "aug-pc-3","aug-pc-4"]).intersection(bnames)) >= 2:
+            alphadata = [6.390, -1.874, 0.260]
+        elif len(set(["aug-pcseg-0","aug-pcseg-1","aug-pcseg-2",
+                  "aug-pcseg-3","aug-pcseg-4"]).intersection(bnames)) >= 2:
+            alphadata =  [6.166, -2.137, 0.296]
+        elif len(set(["jorge-dzp","jorge-tzp","jorge-qzp",
+                  "jorge-5zp","jorge-6zp"]).intersection(bnames)) >= 2:
+            alphadata = [3.531, 0.338, -0.011]
+        elif len(set(["jorge-adzp","jorge-atzp","jorge-aqzp",
+                      "jorge-a5zp"]).intersection(bnames)) >= 2:
+            alphadata = [3.386, 0.245, 0.033]
+        elif len(set(["2zapa-nr","3zapa-nr","4zapa-nr",
+                  "5zapa-nr","6zapa-nr"]).intersection(bnames)) >= 2:
+            alphadata = [3.306, 2.525, -0.040]
+        elif len(set(["2zapa-nr-cv","3zapa-nr-cv","4zapa-nr-cv",
+                      "5zapa-nr-cv","6zapa-nr-cv"]).intersection(bnames)) >= 2:
+            alphadata = [5.618, 0.490, -0.016]
+        else:
+            raise ValidationError(f"DFT fctl extrapolation alpha for basis sets {bnames} undefined.")
+        sup = build_superfunctional_from_dictionary(functionals[funcname], 1, 1, True)[0]
+        alpha = alphadata[0] + alphadata[1]*sup.x_alpha() + alphadata[2]*sup.c_alpha()
+        return alpha
+    elif xtpl_type == "dh":
+        if bzetas == [2,3]:
+            return 2.4
+        elif bzetas == [3,4]:
+            return 3.0
+        else:
+            raise ValidationError(f"DFT dh extrapolation alpha for basis sets {bnames} undefined.")
+            
+def _get_default_alpha(xtpl_type, bdata, funcname=None):
+    """ A helper function to determine default extrapolation alpha.
+
+    Parameters
+    ----------
+    nbasis : int
+        Number of basis sets
+    xtpl_type : {'scf', 'corl', 'fctl', 'dh', None}
+        Extrapolation type: 'scf' and 'fctl' for the total energy, 'corl' and 'dh'
+        for just the correlation component, None if no extrapolation requested.
+    bname : string, optional
+        Basis set name for DFT extrapolation.
+    funcname : string, optional
+        Functional name for DFT extrapolation.
+
+    Returns
+    -------
+    float, None
+        Extrapolation alpha to be used.
+    """
+    nbasis = len(bdata[0])
+    if nbasis == 1:
+        return None
+    elif nbasis == 2:
+        if xtpl_type == "scf":
+            return 1.63 # scf_xtpl_helgaker_2
+        elif xtpl_type == "corl":
+            return 3.00 # corl_xtpl_helgaker_2
+        elif xtpl_type in ["fctl", "dh"]:
+            return _get_dfa_alpha(xtpl_type, bdata, funcname)
+        else:
+            raise ValidationError(f"Stage treatment must be one of ['scf','corl','fctl','dh'], not '{xtpl_type}'")
+    elif nbasis == 3:
+        return None     # we don't need alpha for _3 methods
 
 def _validate_cbs_inputs(cbs_metadata, molecule):
     """ A helper function which validates the ``cbs_metadata`` format,
@@ -1013,40 +1230,56 @@ def _validate_cbs_inputs(cbs_metadata, molecule):
         if stage["wfn"] in functionals and stage["wfn"] not in ["hf", "scf"]:
             # 2ai) first stage - split into components, unless "component" == "dft"
             if len(metadata) == 0:
-                fctl = {"wfn": stage["wfn"], "basis": stage["basis"], 
-                        "component": f'{stage["wfn"]}-{item.get("component", "fctl")}',
-                        "stage": item.get("stage", "fctl"),
-                        "isdelta": False,
-                        "scheme": _get_default_xtpl(len(stage["basis"][1]), "scf"),
-                        "options": item.get("options", False),
-                        "alpha": item.get("alpha", None)}
+                fctl = {
+                    "wfn": stage["wfn"],
+                    "basis": stage["basis"],
+                    "component": f'{stage["wfn"]}-{item.get("component", "fctl")}',
+                    "stage": item.get("stage", "fctl"),
+                    "isdelta": False,
+                    "scheme": _get_default_xtpl(len(stage["basis"][1]), "fctl"),
+                    "options": item.get("options", False),
+                    "alpha": item.get("alpha", _get_default_alpha("fctl",
+                                                                  stage["basis"],
+                                                                  stage["wfn"]))
+                }
                 metadata.append(fctl)
                 if f'{stage["wfn"]}-dh' in VARH[stage["wfn"]] and item.get("component", "fctl") != "dft":
-                    dh = {"wfn": stage["wfn"], "basis": stage["basis"],
-                          "component": f'{stage["wfn"]}-dh',
-                          "stage": 'dh', 
-                          "isdelta": False, 
-                          "scheme": _get_default_xtpl(len(stage["basis"][1]), "corl"),
-                          "options": item.get("options", False),
-                          "alpha": item.get("alpha", None)}
+                    dh = {
+                    "wfn": stage["wfn"],
+                    "basis": stage["basis"],
+                    "component": f'{stage["wfn"]}-dh',
+                    "stage": 'dh',
+                    "isdelta": False,
+                    "scheme": _get_default_xtpl(len(stage["basis"][1]), "dh"),
+                    "options": item.get("options", False),
+                    "alpha": item.get("alpha", _get_default_alpha("dh",
+                                                                  stage["basis"],
+                                                                  stage["wfn"]))
+                    }
                     metadata.append(dh)
                 if f'{stage["wfn"]}-nl' in VARH[stage["wfn"]] and item.get("component", "fctl") != "dft":
-                    nl = {"wfn": stage["wfn"], "basis": stage["basis"],
-                          "component": f'{stage["wfn"]}-nl', 
-                          "stage": 'nl', 
-                          "isdelta": False, 
-                          "scheme": _get_default_xtpl(len(stage["basis"][1]), "corl"),
-                          "options": item.get("options", False),
-                          "alpha": item.get("alpha", None)}
+                    nl = {
+                        "wfn": stage["wfn"],
+                        "basis": ([stage["basis"][0][-1]], [stage["basis"][1][-1]]),
+                        "component": f'{stage["wfn"]}-nl',
+                        "stage": 'nl',
+                        "isdelta": False,
+                        "scheme": _get_default_xtpl(1, None),
+                        "options": item.get("options", False),
+                        "alpha": item.get("alpha", None)
+                    }
                     metadata.append(nl)
                 if f'{stage["wfn"]}-disp' in VARH[stage["wfn"]] and item.get("component", "fctl") != "dft":
-                    di = {"wfn": stage["wfn"], "basis": ([stage["basis"][0][-1]], [stage["basis"][1][-1]]),
-                          "component": f'{stage["wfn"]}-disp',
-                          "stage": 'disp', 
-                          "isdelta": False, 
-                          "scheme": _get_default_xtpl(1, "scf"),
-                          "options": item.get("options", False),
-                          "alpha": item.get("alpha", None)}
+                    di = {
+                        "wfn": stage["wfn"],
+                        "basis": ([stage["basis"][0][-1]], [stage["basis"][1][-1]]),
+                        "component": f'{stage["wfn"]}-disp',
+                        "stage": 'disp',
+                        "isdelta": False,
+                        "scheme": _get_default_xtpl(1, None),
+                        "options": item.get("options", False),
+                        "alpha": item.get("alpha", None)
+                        }
                     metadata.append(di)
             # 2aii) further stages - treat as delta stages
             else:
@@ -1095,7 +1328,6 @@ def _validate_cbs_inputs(cbs_metadata, molecule):
                     stage["stage"] = "corl"
                 else:
                     stage["stage"] = f"delta{len(metadata) - 1}"
-            stage["scheme"] = item.get("scheme", _get_default_xtpl(len(stage["basis"][1]), item.get("treatment", "scf" if len(metadata) == 0 else "corl")))
             if len(metadata) > 0:
                 stage["isdelta"] = True
                 stage["wfn_lo"] = item.get("wfn_lo", metadata[-1].get("wfn")).lower()
@@ -1105,12 +1337,17 @@ def _validate_cbs_inputs(cbs_metadata, molecule):
                     raise ValidationError("""Number of basis sets inconsistent
                                                 between high ({}) and low ({}) levels.""".format(
                         len(stage["basis"][0]), len(stage["basis_lo"][0])))
+            stage["scheme"] = item.get("scheme", None)
             stage["alpha"] = item.get("alpha", None)
+            if stage["scheme"] == None:
+                stage["scheme"] = _get_default_xtpl(len(stage["basis"][1]), item.get("treatment", "scf" if len(metadata) == 0 else "corl"))
+                if stage["alpha"] == None:
+                    stage["alpha"] =  _get_default_alpha(item.get("treatment", "scf" if len(metadata) == 0 else "corl"),
+                                                                  stage["basis"], stage["wfn"])
             stage["options"] = item.get("options", False)
             stage["options_lo"] = item.get("options_lo", False)
             metadata.append(stage)
     return (metadata)
-
 
 def _process_cbs_kwargs(kwargs):
     """ A helper function which translates supplied kwargs into the
@@ -1417,7 +1654,7 @@ def cbs(func, label, **kwargs):
            * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_karton_2`
 
     :type corl_alpha: float
-    :param corl_alpha: |dl| ``3.00`` |dr| 
+    :param corl_alpha: |dl| ``3.00`` |dr|
 
         Overrides the default \alpha parameter used in the listed :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` correlation
         extrapolation to the corl stage. The supplied \alpha does not impact delta or any further stages.
@@ -1428,7 +1665,7 @@ def cbs(func, label, **kwargs):
            * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
 
     :type delta_alpha: float
-    :param delta_alpha: |dl| ``3.00`` |dr| 
+    :param delta_alpha: |dl| ``3.00`` |dr|
 
         Overrides the default \alpha parameter used in the listed
         :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` correlation extrapolation for the delta correction. Useful when
@@ -1441,8 +1678,8 @@ def cbs(func, label, **kwargs):
            * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
 
     * Combined interface
-    
-    :type cbs_metadata: List[Dict]
+
+    :type cbs_metadata: list of dicts
     :param cbs_metadata: |dl| autogenerated from above keywords |dr| || ``[{"wfn": "hf", "basis": "cc-pv[TQ5]z"}]`` || etc.
 
         This is the interface to which all of the above calls are internally translated. The first item in
@@ -1515,6 +1752,10 @@ def cbs(func, label, **kwargs):
     if ptype not in ['energy', 'gradient', 'hessian']:
         raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling
                                  function '%s' instead of 'energy', 'gradient' or 'hessian'.""" % ptype)
+    # Abort here for dft extrapolations, as gradient components not yet implemented.
+    elif ptype in ['gradient', 'hessian'] and metadata[0]["wfn"] in functionals and metadata[0]["wfn"] not in ["hf", "scf"]:
+        raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling
+                                 function '%s' instead of 'energy'. Try with 'dertype=0' """ % ptype)
 
     optstash = p4util.OptionsState(['BASIS'], ['WFN'], ['WRITER_FILE_LABEL'])
 
@@ -1556,7 +1797,7 @@ def cbs(func, label, **kwargs):
     MODELCHEM = []
 
     for stage in metadata:
-        
+
         NEED = _expand_scheme_orders(stage["scheme"], stage["basis"][0], stage["basis"][1], stage["wfn"],
                                      stage["options"], stage["alpha"], natom)
         GRAND_NEED.append(
@@ -1613,13 +1854,13 @@ def cbs(func, label, **kwargs):
                        (job['f_options'] == False) and \
                        (job['f_options'] == mc['f_options']):
                         if (job['f_component'] == component) and \
-                           (job['f_wfn'] != mc['f_wfn']): 
+                           (job['f_wfn'] != mc['f_wfn']):
                             del JOBS[indx_job]
                         elif (job['f_component'].endswith(("dh", "disp", "nl"))) and \
                              (job['f_component'] != job['f_wfn']) and \
                              (job['f_wfn'] == mc['f_wfn']):
                             del JOBS[indx_job]
-                            
+
     instructions += """\n    Enlightened listing of computations required.\n"""
     for mc in JOBS:
         instructions += """   %12s / %-24s for  %s%s\n""" % \
@@ -1682,7 +1923,10 @@ def cbs(func, label, **kwargs):
         # Make energy(), etc. call
         response = func(molecule=molecule, **kwargs)
         if ptype == 'energy':
+            # need to hack around -nl being included in -fctl here:
             mc['f_energy'] = core.variable(VARH[mc['f_wfn']][mc['f_component']])
+            if mc['f_component'].endswith('-fctl'):
+                mc['f_energy'] -= core.variable("DFT VV10 ENERGY")
         elif ptype == 'gradient':
             mc['f_gradient'] = response
             mc['f_energy'] = core.variable('CURRENT ENERGY')
@@ -2090,8 +2334,8 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         stage['basis'] = basis_list[0]
         if 'scf_scheme' in kwargs:
             stage['scheme'] = kwargs.pop('scf_scheme')
-        stage['stage'] = "scf"
-        stage['treatment'] = "scf"
+        #stage['stage'] = "scf"
+        #stage['treatment'] = "scf"
     else:
         # _validate_cbs_inputs will produce scf stage automatically
         stage = {}
@@ -2099,8 +2343,8 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         stage['basis'] = basis_list[0]
         if 'corl_scheme' in kwargs:
             stage['scheme'] = kwargs.pop('corl_scheme')
-        stage['stage'] = "corl"
-        stage['treatment'] = "corl"
+        #stage['stage'] = "corl"
+        #stage['treatment'] = "corl"
     metadata.append(stage)
 
     # "method/basis" syntax only allows for one delta correction
@@ -2111,10 +2355,10 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         stage['basis'] = basis_list[1]
         if 'delta_scheme' in kwargs:
             stage['scheme'] = kwargs.pop('delta_scheme')
-        stage['stage'] = "delta1"
-        stage['treatment'] = "corl"
+        #stage['stage'] = "delta_1"
+        #stage['treatment'] = "corl"
         metadata.append(stage)
-        
+
     cbs_kwargs["cbs_metadata"] = metadata
     ptype_value, wfn = cbs(func, label, **cbs_kwargs)
 
