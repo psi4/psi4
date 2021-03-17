@@ -1339,9 +1339,9 @@ def _validate_cbs_inputs(cbs_metadata, molecule):
                         len(stage["basis"][0]), len(stage["basis_lo"][0])))
             stage["scheme"] = item.get("scheme", None)
             stage["alpha"] = item.get("alpha", None)
-            if stage["scheme"] == None:
+            if stage["scheme"] is None:
                 stage["scheme"] = _get_default_xtpl(len(stage["basis"][1]), item.get("treatment", "scf" if len(metadata) == 0 else "corl"))
-                if stage["alpha"] == None:
+                if stage["alpha"] is None:
                     stage["alpha"] =  _get_default_alpha(item.get("treatment", "scf" if len(metadata) == 0 else "corl"),
                                                                   stage["basis"], stage["wfn"])
             stage["options"] = item.get("options", False)
