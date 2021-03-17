@@ -1250,7 +1250,6 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
             if frag in kwargs['external_potentials']:
                 ext_pot_type[i](kwargs['external_potentials'][frag].extern)
                 total_external_potential.appendCharges(kwargs['external_potentials'][frag].extern.getCharges())
-                total_external_potential.appendBases(kwargs['external_potentials'][frag].extern.getBases())
 
         wfn.set_external_potential(total_external_potential)
 

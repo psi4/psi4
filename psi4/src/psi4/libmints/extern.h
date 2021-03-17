@@ -87,16 +87,6 @@ class PSI_API ExternalPotential {
     /// Add a basis of S auxiliary functions with DF coefficients
     void addBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs);
 
-    /// get the vector of basis
-    std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector> > getBases() const {
-        return bases_;
-    }
-
-    /// Append some bases
-    void appendBases(std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector> > new_bases) {
-        bases_.insert(bases_.end(), new_bases.begin(), new_bases.end());
-    }
-
     /// Reset the field to zero (eliminates all entries)
     void clear();
 

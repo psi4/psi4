@@ -105,19 +105,6 @@ std::string ExternalPotential::get_xyz() {
         }
     }
 
-    // Bases
-    if (bases_.size()) {
-        for (size_t i = 0; i < bases_.size(); i++) {
-            auto mol = bases_[i].first->molecule();
-            for (int i = 0; i < mol->nallatom(); i++) {
-                double c = pc_bohr2angstroms;
-                xyz += mol->symbol(i) + " " + std::to_string(mol->x(i)*c) + " " + std::to_string(mol->y(i)*c) + " " +
-                       std::to_string(mol->z(i)*c) + "\n";
-                n_atoms += 1;
-            }
-        }
-    }
-
     xyz = std::to_string(n_atoms) + "\n\n" + xyz;
 
     return xyz;
@@ -467,103 +454,6 @@ double ExternalPotential::computeExternExternInteraction(std::shared_ptr<Externa
             double R = sqrt(dx * dx + dy * dy + dz * dz);
 
             E += ZA * ZB / R;
-        }
-    }
-
-    // charge-diffuse interaction
-    if (bases_.size()) {
-        auto Zxyz = std::make_shared<Matrix>("Charges (Z,x,y,z)", other_extern->charges_.size(), 4);
-        double **Zxyzp = Zxyz->pointer();
-        for (int A = 0; A < other_extern->charges_.size(); A++) {
-            auto other_charge = other_extern->charges_[A];
-            Zxyzp[A][0] = std::get<0>(other_charge);
-            Zxyzp[A][1] = convfac * std::get<1>(other_charge);
-            Zxyzp[A][2] = convfac * std::get<2>(other_charge);
-            Zxyzp[A][3] = convfac * std::get<3>(other_charge);
-        }
-
-        for (size_t ind = 0; ind < bases_.size(); ind++) {
-            std::shared_ptr<BasisSet> aux = bases_[ind].first;
-            SharedVector d = bases_[ind].second;
-
-            auto V = std::make_shared<Matrix>("(Q|Z|0) Integrals", aux->nbf(), 1);
-
-            std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-            auto fact = std::make_shared<IntegralFactory>(aux, zero, zero, zero);
-            std::shared_ptr<PotentialInt> pot(static_cast<PotentialInt *>(fact->ao_potential()));
-            pot->set_charge_field(Zxyz);
-            pot->compute(V);
-
-            E += C_DDOT(aux->nbf(), d->pointer(), 1, V->pointer()[0], 1);
-        }
-    }
-
-    // diffuse-charge interaction
-    if (other_extern->bases_.size()) {
-        auto Zxyz = std::make_shared<Matrix>("Charges (Z,x,y,z)", charges_.size(), 4);
-        double **Zxyzp = Zxyz->pointer();
-        for (int A = 0; A < charges_.size(); A++) {
-            auto self_charge = charges_[A];
-            Zxyzp[A][0] = std::get<0>(self_charge);
-            Zxyzp[A][1] = convfac * std::get<1>(self_charge);
-            Zxyzp[A][2] = convfac * std::get<2>(self_charge);
-            Zxyzp[A][3] = convfac * std::get<3>(self_charge);
-        }
-
-        for (size_t ind = 0; ind < other_extern->bases_.size(); ind++) {
-            std::shared_ptr<BasisSet> aux = other_extern->bases_[ind].first;
-            SharedVector d = other_extern->bases_[ind].second;
-
-            auto V = std::make_shared<Matrix>("(Q|Z|0) Integrals", aux->nbf(), 1);
-
-            std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-            auto fact = std::make_shared<IntegralFactory>(aux, zero, zero, zero);
-            std::shared_ptr<PotentialInt> pot(static_cast<PotentialInt *>(fact->ao_potential()));
-            pot->set_charge_field(Zxyz);
-            pot->compute(V);
-
-            E += C_DDOT(aux->nbf(), d->pointer(), 1, V->pointer()[0], 1);
-        }
-    }
-
-
-    // diffuse-diffuse interaction
-    if (bases_.size() && other_extern->bases_.size()) {
-
-        // Diffuse Bases
-        for (size_t ind = 0; ind < bases_.size(); ind++) {
-            std::shared_ptr<BasisSet> aux = bases_[ind].first;
-            SharedVector d = bases_[ind].second;
-            double *dp = d->pointer();
-
-            for (size_t ind2 = 0; ind2 < other_extern->bases_.size(); ind2++) {
-                std::shared_ptr<BasisSet> other_aux = other_extern->bases_[ind].first;
-                SharedVector other_d = other_extern->bases_[ind].second;
-                double *other_dp = other_d->pointer();
-
-                auto fact2 = std::make_shared<IntegralFactory>(aux, BasisSet::zero_ao_basis_set(),
-                                                               other_aux, BasisSet::zero_ao_basis_set());
-                std::shared_ptr<TwoBodyAOInt> eri(fact2->eri());
-
-                const double *buffer = eri->buffer();
-
-                for (int Q = 0; Q < aux->nshell(); Q++) {
-                    for (int M = 0; M < other_aux->nshell(); M++) {
-                        int numQ = aux->shell(Q).nfunction();
-                        int numM = other_aux->shell(M).nfunction();
-                        int Qstart = aux->shell(Q).function_index();
-                        int Mstart = other_aux->shell(M).function_index();
-
-                        eri->compute_shell(Q, 0, M, 0);
-
-                        for (int oq = 0, index = 0; oq < numQ; oq++) {
-                            for (int om = 0; om < numM; om++) {
-                                E += dp[oq + Qstart] * other_dp[om + Mstart] * buffer[index];
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 
