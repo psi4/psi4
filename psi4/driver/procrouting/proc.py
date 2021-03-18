@@ -1230,7 +1230,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
 
     if hasattr(core, "EXTERN") and 'external_potentials' in kwargs: 
         core.print_out("\n  Warning! Both an external potential EXTERN object and the external_potential" +
-                       " keyword argument are specified. The external_potential keyword argument will be ignored.\n")
+                       " keyword argument are specified. The external_potentials keyword argument will be ignored.\n")
 
     # If EXTERN is set, then place that potential on the wfn
     if hasattr(core, "EXTERN"):
@@ -1246,7 +1246,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
         total_external_potential = core.ExternalPotential()
 
         for frag in kwargs['external_potentials']:
-            if frag.upper() in ["A", "B", "C"]:
+            if frag.upper() in "ABC":
                 wfn.set_potential_variable(frag.upper(), kwargs['external_potentials'][frag].extern)
                 total_external_potential.appendCharges(kwargs['external_potentials'][frag].extern.getCharges())
 
