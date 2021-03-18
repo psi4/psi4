@@ -683,18 +683,23 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Get and set variables, arrays, and potentials dictionaries
     bool has_scalar_variable(const std::string& key);
     bool has_array_variable(const std::string& key);
+    // The function below is provisional and might be removed in the future
     bool has_potential_variable(const std::string& key);
     double scalar_variable(const std::string& key);
     SharedMatrix array_variable(const std::string& key);
+    // The function below is provisional and might be removed in the future
     std::shared_ptr<ExternalPotential> potential_variable(const std::string& key);
     void set_scalar_variable(const std::string& key, double value);
     void set_array_variable(const std::string& key, SharedMatrix value);
+    // The function below is provisional and might be removed in the future
     void set_potential_variable(const std::string& key, std::shared_ptr<ExternalPotential> value);
     int del_scalar_variable(const std::string& key);
     int del_array_variable(const std::string& key);
+    // The function below is provisional and might be removed in the future
     int del_potential_variable(const std::string& key);
     std::map<std::string, double> scalar_variables();
     std::map<std::string, SharedMatrix> array_variables();
+    // The function below is provisional and might be removed in the future
     std::map<std::string, std::shared_ptr<ExternalPotential>> potential_variables();
 
     PSI_DEPRECATED(

@@ -230,13 +230,15 @@ void export_wavefunction(py::module& m) {
         .def("has_array_variable", &Wavefunction::has_array_variable,
              "Is the Matrix QC variable (case-insensitive) set?")
         .def("has_potential_variable", &Wavefunction::has_potential_variable,
-             "Is the ExternalPotential QC variable (case-insensitive) set?")
+             "Is the ExternalPotential QC variable (case-insensitive) set? "
+             "(This function is provisional and might be removed in the future.)")
         .def("scalar_variable", &Wavefunction::scalar_variable,
              "Returns the requested (case-insensitive) double QC variable.")
         .def("array_variable", &Wavefunction::array_variable,
              "Returns copy of the requested (case-insensitive) Matrix QC variable.")
         .def("potential_variable", &Wavefunction::potential_variable,
-             "Returns copy of the requested (case-insensitive) ExternalPotential QC variable.")
+             "Returns copy of the requested (case-insensitive) ExternalPotential QC variable. "
+             "(This function is provisional and might be removed in the future.)")
         .def("set_scalar_variable", &Wavefunction::set_scalar_variable,
              "Sets the requested (case-insensitive) double QC variable. Syncs with ``Wavefunction.energy_`` if CURRENT "
              "ENERGY.")
@@ -244,16 +246,19 @@ void export_wavefunction(py::module& m) {
              "Sets the requested (case-insensitive) Matrix QC variable. Syncs with ``Wavefunction.gradient_`` or "
              "``hessian_`` if CURRENT GRADIENT or HESSIAN.")
         .def("set_potential_variable", &Wavefunction::set_potential_variable,
-             "Sets the requested (case-insensitive) ExternalPotential QC variable.")
+             "Sets the requested (case-insensitive) ExternalPotential QC variable. "
+             "(This function is provisional and might be removed in the future.)")
         .def("del_scalar_variable", &Wavefunction::del_scalar_variable,
              "Removes the requested (case-insensitive) double QC variable.")
         .def("del_array_variable", &Wavefunction::del_array_variable,
              "Removes the requested (case-insensitive) Matrix QC variable.")
         .def("del_potential_variable", &Wavefunction::del_potential_variable,
-             "Removes the requested (case-insensitive) ExternalPotential QC variable.")
+             "Removes the requested (case-insensitive) ExternalPotential QC variable. "
+             "(This function is provisional and might be removed in the future.)")
         .def("scalar_variables", &Wavefunction::scalar_variables, "Returns the dictionary of all double QC variables.")
         .def("array_variables", &Wavefunction::array_variables, "Returns the dictionary of all Matrix QC variables.")
-        .def("potential_variables", &Wavefunction::potential_variables, "Returns the dictionary of all ExternalPotential QC variables.")
+        .def("potential_variables", &Wavefunction::potential_variables, "Returns the dictionary of all ExternalPotential QC variables. "
+             "(This function is provisional and might be removed in the future.)")
 
 #ifdef USING_PCMSolver
         .def("set_PCM", &Wavefunction::set_PCM, "Set the PCM object")
