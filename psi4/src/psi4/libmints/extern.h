@@ -75,7 +75,7 @@ class PSI_API ExternalPotential {
     void addCharge(double Z, double x, double y, double z);
 
     /// get the vector of charges
-    std::vector<std::tuple<double, double, double, double>> getCharges() const {
+    const std::vector<std::tuple<double, double, double, double>> getCharges() const {
         return charges_;
     }
 
@@ -111,8 +111,8 @@ class PSI_API ExternalPotential {
     /// Debug flag
     void set_debug(int debug) { debug_ = debug; }
 
-    /// Get the centers of the external potential in xyz format
-    std::string get_xyz();
+    /// Get the centers of the external charges in xyz format
+    std::string get_charges_xyz();
 };
 
 }  // namespace psi

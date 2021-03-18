@@ -143,8 +143,9 @@ def fisapt_fdrop(self, external_potentials=None):
     # write external potential geometries
     if external_potentials is not None:
         for frag in ["A", "B", "C"]:
-            if external_potentials.get(frag, None) is not None:
-                xyz = external_potentials[frag].extern.get_xyz()
+            potential = external_potentials.get(frag, None)
+            if potential is not None:
+                xyz = potential.extern.get_charges_xyz()
                 with open(filepath + os.sep + "Extern_%s.xyz" %frag, "w") as fh:
                     fh.write(xyz)
 

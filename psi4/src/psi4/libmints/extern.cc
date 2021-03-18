@@ -92,20 +92,15 @@ void ExternalPotential::print(std::string out) const {
     }
 }
 
-std::string ExternalPotential::get_xyz() {
+std::string ExternalPotential::get_charges_xyz() {
 
     std::string xyz = "";
-    size_t n_atoms = 0;
+    xyz += std::to_string(charges_.size()); + "\n\n";
     // Charges
-    if (charges_.size()) {
-        for (size_t i = 0; i < charges_.size(); i++) {
-            xyz += "Ch "  + std::to_string(std::get<1>(charges_[i])) + " " +
-                   std::to_string(std::get<2>(charges_[i])) + " "  + std::to_string(std::get<3>(charges_[i])) + "\n";
-            n_atoms += 1;
-        }
+    for (auto charge: charges_) {
+        xyz += "Ch "  + std::to_string(std::get<1>(charge)) + " " +
+               std::to_string(std::get<2>(charge)) + " "  + std::to_string(std::get<3>(charge)) + "\n";
     }
-
-    xyz = std::to_string(n_atoms) + "\n\n" + xyz;
 
     return xyz;
 }
