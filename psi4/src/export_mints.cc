@@ -1538,8 +1538,7 @@ void export_mints(py::module& m) {
              "Compute the contribution to the nuclear repulsion energy for the given molecule")
         .def("computeExternExternInteraction", &ExternalPotential::computeExternExternInteraction,
              "Compute the interaction between this potential and other external potential")
-        .def("print_out", &ExternalPotential::py_print, "Print python print helper to the outfile")
-        .def("get_charges_xyz", &ExternalPotential::get_charges_xyz, "Get the centers of the external charges in xyz format");
+        .def("print_out", &ExternalPotential::py_print, "Print python print helper to the outfile");
 
     typedef std::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, std::shared_ptr<BasisSet>,
                                                               std::shared_ptr<Matrix>);

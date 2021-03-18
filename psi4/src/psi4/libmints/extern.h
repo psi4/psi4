@@ -110,9 +110,6 @@ class PSI_API ExternalPotential {
     void set_print(int print) { print_ = print; }
     /// Debug flag
     void set_debug(int debug) { debug_ = debug; }
-
-    /// Get the centers of the external charges in xyz format
-    std::string get_charges_xyz();
 };
 
 }  // namespace psi

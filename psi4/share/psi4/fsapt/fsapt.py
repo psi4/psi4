@@ -482,7 +482,7 @@ def extract_order2_fsapt(osapt, wsA, wsB, frags):
                 for keyB, valueB in wsB.items():
                     valueB = np.asarray(valueB)
                     # The last row and columns in value are for the external potential
-                    val = np.einsum('i,ij,j', valueA, value[:-1, :-1], valueB)
+                    val = np.einsum('i,ij,j', valueA, value, valueB)
                     vals[key][keyA][keyB] = val
 
     return vals
@@ -829,13 +829,21 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
     # Now process the point charge data for the interacting fragments A and B
     # We need to analyze the interaction between the point charges in one fragment and the other fragment
     # Add external potential data for A
+
+    # We add zero entry for all the fragments that are not associated with the external potential
+    for val in total_ws['A'].values():
+        val.append(0.0)
+
+    for val in total_ws['B'].values():
+        val.append(0.0)
+
     if os.path.exists("%s/Extern_A.xyz" %dirname):
         fragkeys['A'].append("Extern-A")
         fragkeysr['A'].append("Extern-A")
         orbital_ws['A']['Extern-A'] = [0.0 for i in range(len(Qs['A']))]
         total_ws['A']['Extern-A'] = [0.0 for i in range(len(osapt['Elst']))]
         total_ws['A']['Extern-A'][-1] = 1.0
-        geom_extern_A = readXYZ('%s/Extern_A.xyz' % dirname)
+        geom_extern_A = read_xyz('%s/Extern_A.xyz' % dirname)
         for a in geom_extern_A:
             geom.append(a)
         frags['A']['Extern-A'] = list(range(len(Zs['A']), len(Zs['A']) + len(geom_extern_A)))
@@ -847,7 +855,7 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
         orbital_ws['B']['Extern-B'] = [0.0 for i in range(len(Qs['B']))]
         total_ws['B']['Extern-B'] = [0.0 for i in range(len(osapt['Elst'][0]))]
         total_ws['B']['Extern-B'][-1] = 1.0
-        geom_extern_B = readXYZ('%s/Extern_B.xyz' % dirname)
+        geom_extern_B = read_xyz('%s/Extern_B.xyz' % dirname)
         for b in geom_extern_B:
             geom.append(b)
         if os.path.exists("%s/Extern_A.xyz" %dirname):
@@ -859,7 +867,7 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
     # Add external potential data for C
     # The point charges in C do not explicitly enter the SAPT0 interaction energy
     if os.path.exists("%s/Extern_C.xyz" %dirname):
-        geom_extern_C = readXYZ('%s/Extern_C.xyz' % dirname)
+        geom_extern_C = read_xyz('%s/Extern_C.xyz' % dirname)
         for c in geom_extern_C:
             geom.append(c)
 

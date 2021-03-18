@@ -92,20 +92,6 @@ void ExternalPotential::print(std::string out) const {
     }
 }
 
-std::string ExternalPotential::get_charges_xyz() {
-
-    std::string xyz = "";
-    xyz += std::to_string(charges_.size()); + "\n\n";
-    // Charges
-    for (auto charge: charges_) {
-        xyz += "Ch "  + std::to_string(std::get<1>(charge)) + " " +
-               std::to_string(std::get<2>(charge)) + " "  + std::to_string(std::get<3>(charge)) + "\n";
-    }
-
-    return xyz;
-}
-
-
 SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet> basis) {
     int n = basis->nbf();
     auto V = std::make_shared<Matrix>("External Potential", n, n);
