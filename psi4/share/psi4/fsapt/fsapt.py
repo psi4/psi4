@@ -452,6 +452,21 @@ def fragment_d3_disp(d3disp: np.ndarray, frags: Dict[str, Dict[str, List[str]]])
     return D3frags
 
 def extract_order2_fsapt(osapt, wsA, wsB, frags):
+    """Calculate the order 2 F-SAPT analysis
+    ---------
+    osapt : Dict
+        Dictionary of the decompositions of the SAPT0 components to nuclear, orbital, and point charge contributions
+    wsA : Dict
+        Dictionary containing the weight (0 or 1) for each atom in the defined fragments for subsystem A
+    wsB : Dict
+        Dictionary containing the weight (0 or 1) for each atom in the defined fragments for subsystem B
+    frags : Dict
+        Dictionary containing the indices of the atoms in each user-defined functional group
+    Returns
+    -------
+    vals : Dict
+        Dictionary containing the F-SAPT0 order 2 analysis for the SAPT components
+    """
 
     vals = {}
     for key, value in osapt.items():

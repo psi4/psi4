@@ -248,9 +248,6 @@ void Wavefunction::shallow_copy(const Wavefunction *other) {
     gradient_ = other->gradient_;
     hessian_ = other->hessian_;
     external_pot_ = other->external_pot_;
-    external_pot_a_ = other->external_pot_a_;
-    external_pot_b_ = other->external_pot_b_;
-    external_pot_c_ = other->external_pot_c_;
 
     variables_ = other->variables_;
     arrays_ = other->arrays_;
@@ -337,9 +334,6 @@ void Wavefunction::deep_copy(const Wavefunction *other) {
 
     // Not sure...
     external_pot_ = other->external_pot_;
-    external_pot_a_ = other->external_pot_a_;
-    external_pot_b_ = other->external_pot_b_;
-    external_pot_c_ = other->external_pot_c_;
 
     // Copy assignment
     variables_ = other->variables_;
@@ -453,9 +447,6 @@ std::shared_ptr<Wavefunction> Wavefunction::c1_deep_copy(std::shared_ptr<BasisSe
     wfn->variables_ = variables_;
     // ok for deep copy?
     wfn->external_pot_ = external_pot_;
-    wfn->external_pot_a_ = external_pot_a_;
-    wfn->external_pot_b_ = external_pot_b_;
-    wfn->external_pot_c_ = external_pot_c_;
 
     // Need to explicitly call copy
     for (auto const &kv : arrays_) {
@@ -1273,9 +1264,6 @@ void Wavefunction::set_frequencies(std::shared_ptr<Vector> freqs) { frequencies_
 void Wavefunction::save() const {}
 
 std::shared_ptr<ExternalPotential> Wavefunction::external_pot() const { return external_pot_; }
-std::shared_ptr<ExternalPotential> Wavefunction::external_pot_a() const { return external_pot_a_; }
-std::shared_ptr<ExternalPotential> Wavefunction::external_pot_b() const { return external_pot_b_; }
-std::shared_ptr<ExternalPotential> Wavefunction::external_pot_c() const { return external_pot_c_; }
 
 std::shared_ptr<Vector> Wavefunction::get_esp_at_nuclei() const {
     std::shared_ptr<std::vector<double>> v = esp_at_nuclei();
@@ -1335,6 +1323,8 @@ bool Wavefunction::has_scalar_variable(const std::string &key) { return variable
 
 bool Wavefunction::has_array_variable(const std::string &key) { return arrays_.count(to_upper_copy(key)); }
 
+bool Wavefunction::has_potential_variable(const std::string &key) { return potentials_.count(to_upper_copy(key)); }
+
 double Wavefunction::scalar_variable(const std::string &key) {
     std::string uc_key = to_upper_copy(key);
 
@@ -1357,6 +1347,17 @@ SharedMatrix Wavefunction::array_variable(const std::string &key) {
     }
 }
 
+std::shared_ptr<ExternalPotential> Wavefunction::potential_variable(const std::string &key) {
+    std::string uc_key = to_upper_copy(key);
+
+    auto search = potentials_.find(uc_key);
+    if (search != potentials_.end()) {
+        return search->second;
+    } else {
+        throw PSIEXCEPTION("Wavefunction::potential_variable: Requested variable " + uc_key + " was not set!\n");
+    }
+}
+
 void Wavefunction::set_scalar_variable(const std::string &key, double val) {
     variables_[to_upper_copy(key)] = val;
 
@@ -1370,13 +1371,21 @@ void Wavefunction::set_array_variable(const std::string &key, SharedMatrix val) 
     if (to_upper_copy(key) == "CURRENT HESSIAN") hessian_ = val->clone();
 }
 
+void Wavefunction::set_potential_variable(const std::string &key, std::shared_ptr<ExternalPotential> val) {
+    potentials_[to_upper_copy(key)] = val;
+}
+
 int Wavefunction::del_scalar_variable(const std::string &key) { return variables_.erase(to_upper_copy(key)); }
 
 int Wavefunction::del_array_variable(const std::string &key) { return arrays_.erase(to_upper_copy(key)); }
 
+int Wavefunction::del_potential_variable(const std::string &key) { return potentials_.erase(to_upper_copy(key)); }
+
 std::map<std::string, double> Wavefunction::scalar_variables() { return variables_; }
 
 std::map<std::string, SharedMatrix> Wavefunction::array_variables() { return arrays_; }
+
+std::map<std::string, std::shared_ptr<ExternalPotential>> Wavefunction::potential_variables() { return potentials_; }
 
 double Wavefunction::get_variable(const std::string &key) { return scalar_variable(key); }
 SharedMatrix Wavefunction::get_array(const std::string &key) { return array_variable(key); }

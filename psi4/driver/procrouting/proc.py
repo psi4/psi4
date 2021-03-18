@@ -1234,7 +1234,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
 
     # If EXTERN is set, then place that potential on the wfn
     if hasattr(core, "EXTERN"):
-        wfn.set_external_potential_c(core.EXTERN) # This is for the FSAPT procedure
+        wfn.set_potential_variable("C", core.EXTERN) # This is for the FSAPT procedure
         wfn.set_external_potential(core.EXTERN)
 
     elif 'external_potentials' in kwargs:
@@ -1245,11 +1245,13 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
         # and set the external potential to the dimer wave function
         total_external_potential = core.ExternalPotential()
 
-        ext_pot_type = [wfn.set_external_potential_a, wfn.set_external_potential_b, wfn.set_external_potential_c]
-        for i, frag in enumerate(["A", "B", "C"]):
-            if frag in kwargs['external_potentials']:
-                ext_pot_type[i](kwargs['external_potentials'][frag].extern)
+        for frag in kwargs['external_potentials']:
+            if frag.upper() in ["A", "B", "C"]:
+                wfn.set_potential_variable(frag.upper(), kwargs['external_potentials'][frag].extern)
                 total_external_potential.appendCharges(kwargs['external_potentials'][frag].extern.getCharges())
+
+            else:
+                core.print_out("\n  Warning! Unknown key for the external_potentials argument: %s" %frag)
 
         wfn.set_external_potential(total_external_potential)
 

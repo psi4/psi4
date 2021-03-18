@@ -237,12 +237,8 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     bool same_a_b_dens_;
     bool same_a_b_orbs_;
 
-    // The external potential
+    // The external potential for the current wave function
     std::shared_ptr<ExternalPotential> external_pot_;
-    // Temporary stashing for FISAPT external potentials
-    std::shared_ptr<ExternalPotential> external_pot_a_;
-    std::shared_ptr<ExternalPotential> external_pot_b_;
-    std::shared_ptr<ExternalPotential> external_pot_c_;
 
     // Collection of scalar variables
     std::map<std::string, double> variables_;
@@ -252,6 +248,15 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     // * any '<mtd> DIPOLE GRADIENT' is a dipole derivative w.r.t. nuclear perturbations (a.u.) as a degree-of-freedom
     //   by dipole component (3 * nat, 3) Matrix
     std::map<std::string, SharedMatrix> arrays_;
+
+    // Collection of external potentials
+    // This member variable is currently used for passing ExternalPotential objects to the F/I-SAPT code
+    // The above defined external_pot_ member variable contains the total external potential defined for the current
+    // wave function. For F/I-SAPT, we need a set of external potential that can be assigned to either the interacting
+    // fragments or to the environment
+    // For F/I-SAPT the keys can be A, B, or C (all optionals), where A and B signify the interacting subsystem
+    // and C signify the envirnoment
+    std::map<std::string, std::shared_ptr<ExternalPotential>> potentials_;
 
     // Polarizable continuum model
     bool PCM_enabled_;
@@ -671,27 +676,26 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
 
     // Get the external potential
     std::shared_ptr<ExternalPotential> external_pot() const;
-    std::shared_ptr<ExternalPotential> external_pot_a() const;
-    std::shared_ptr<ExternalPotential> external_pot_b() const;
-    std::shared_ptr<ExternalPotential> external_pot_c() const;
 
     // Set the external potential
     void set_external_potential(std::shared_ptr<ExternalPotential> external) { external_pot_ = external; }
-    void set_external_potential_a(std::shared_ptr<ExternalPotential> external) { external_pot_a_ = external; }
-    void set_external_potential_b(std::shared_ptr<ExternalPotential> external) { external_pot_b_ = external; }
-    void set_external_potential_c(std::shared_ptr<ExternalPotential> external) { external_pot_c_ = external; }
 
-    /// Get and set variables and arrays dictionaries
+    /// Get and set variables, arrays, and potentials dictionaries
     bool has_scalar_variable(const std::string& key);
     bool has_array_variable(const std::string& key);
+    bool has_potential_variable(const std::string& key);
     double scalar_variable(const std::string& key);
     SharedMatrix array_variable(const std::string& key);
+    std::shared_ptr<ExternalPotential> potential_variable(const std::string& key);
     void set_scalar_variable(const std::string& key, double value);
     void set_array_variable(const std::string& key, SharedMatrix value);
+    void set_potential_variable(const std::string& key, std::shared_ptr<ExternalPotential> value);
     int del_scalar_variable(const std::string& key);
     int del_array_variable(const std::string& key);
+    int del_potential_variable(const std::string& key);
     std::map<std::string, double> scalar_variables();
     std::map<std::string, SharedMatrix> array_variables();
+    std::map<std::string, std::shared_ptr<ExternalPotential>> potential_variables();
 
     PSI_DEPRECATED(
         "Using `Wavefunction.get_variable` instead of `Wavefunction.scalar_variable` is deprecated, and in 1.4 it will "

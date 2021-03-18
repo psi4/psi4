@@ -609,15 +609,16 @@ void FISAPT::nuclear() {
     std::vector<std::shared_ptr<ExternalPotential>> pot_list;
     std::vector<int> pot_ids;
 
-    if (reference_->external_pot_c()) { // this is where any "external potential C" goes... any common potential felt by all subsystems
+    // this is where any "external potential C" goes... any common potential felt by all subsystems
+    if (reference_->has_potential_variable("C")) {
         
-        pot_list.push_back(reference_->external_pot_c());
+        pot_list.push_back(reference_->potential_variable("C"));
         pot_ids.push_back(2); // code 2 == C
 
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
             throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
 
-        std::shared_ptr<Matrix> V_extern = reference_->external_pot_c()->computePotentialMatrix(primary_);
+        std::shared_ptr<Matrix> V_extern = reference_->potential_variable("C")->computePotentialMatrix(primary_);
 
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
             // Attempt to apply symmetry. No error checking is performed.
@@ -627,9 +628,9 @@ void FISAPT::nuclear() {
         }
 
         if (reference_->get_print()) {
-            reference_->external_pot_c()->set_print(reference_->get_print());
+            reference_->potential_variable("C")->set_print(reference_->get_print());
             outfile->Printf("  External Potential C:\n");
-            reference_->external_pot_c()->print();
+            reference_->potential_variable("C")->print();
         }
 
         if (reference_->get_print() > 3) V_extern->print();
@@ -640,15 +641,15 @@ void FISAPT::nuclear() {
 
     }
 
-    if (reference_->external_pot_a()) {
+    if (reference_->has_potential_variable("A")) {
         
-        pot_list.push_back(reference_->external_pot_a());
+        pot_list.push_back(reference_->potential_variable("A"));
         pot_ids.push_back(0); // code 0 == A
 
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
             throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
 
-        std::shared_ptr<Matrix> VA_extern = reference_->external_pot_a()->computePotentialMatrix(primary_);
+        std::shared_ptr<Matrix> VA_extern = reference_->potential_variable("A")->computePotentialMatrix(primary_);
 
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
             // Attempt to apply symmetry. No error checking is performed.
@@ -658,9 +659,9 @@ void FISAPT::nuclear() {
         }
 
         if (reference_->get_print()) {
-            reference_->external_pot_a()->set_print(reference_->get_print());
+            reference_->potential_variable("A")->set_print(reference_->get_print());
             outfile->Printf("  External Potential A:\n");
-            reference_->external_pot_a()->print();
+            reference_->potential_variable("A")->print();
         }
         if (reference_->get_print() > 3) VA_extern->print();
 
@@ -668,15 +669,15 @@ void FISAPT::nuclear() {
         matrices_["VA_extern"] = VA_extern;
     }
 
-    if (reference_->external_pot_b()) {
+    if (reference_->has_potential_variable("B")) {
         
-        pot_list.push_back(reference_->external_pot_b());
+        pot_list.push_back(reference_->potential_variable("B"));
         pot_ids.push_back(1); // code 1 == B
 
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
             throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
 
-        std::shared_ptr<Matrix> VB_extern = reference_->external_pot_b()->computePotentialMatrix(primary_);
+        std::shared_ptr<Matrix> VB_extern = reference_->potential_variable("B")->computePotentialMatrix(primary_);
 
         if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
             // Attempt to apply symmetry. No error checking is performed.
@@ -686,9 +687,9 @@ void FISAPT::nuclear() {
         }
 
         if (reference_->get_print()) {
-            reference_->external_pot_b()->set_print(reference_->get_print());
+            reference_->potential_variable("B")->set_print(reference_->get_print());
             outfile->Printf("  External Potential B:\n");
-            reference_->external_pot_b()->print();
+            reference_->potential_variable("B")->print();
         }
         if (reference_->get_print() > 3) VB_extern->print();
 
@@ -856,7 +857,7 @@ void FISAPT::scf() {
     outfile->Printf("  ==> SCF A: <==\n\n");
     std::shared_ptr<Matrix> VA_SCF(matrices_["VA"]->clone());
     VA_SCF->copy(matrices_["VA"]);
-    if (reference_->external_pot_c()) VA_SCF->add(matrices_["VE"]);
+    if (reference_->has_potential_variable("C")) VA_SCF->add(matrices_["VE"]);
     std::shared_ptr<FISAPTSCF> scfA =
         std::make_shared<FISAPTSCF>(jk_, matrices_["E NUC"]->get(0, 0), matrices_["S"], matrices_["XC"], matrices_["T"],
                                     VA_SCF, matrices_["WC"], matrices_["LoccA"], options_);
@@ -875,7 +876,7 @@ void FISAPT::scf() {
     outfile->Printf("  ==> SCF B: <==\n\n");
     std::shared_ptr<Matrix> VB_SCF(matrices_["VB"]->clone());
     VB_SCF->copy(matrices_["VB"]);
-    if (reference_->external_pot_c()) VB_SCF->add(matrices_["VE"]);
+    if (reference_->has_potential_variable("C")) VB_SCF->add(matrices_["VE"]);
     std::shared_ptr<FISAPTSCF> scfB =
         std::make_shared<FISAPTSCF>(jk_, matrices_["E NUC"]->get(1, 1), matrices_["S"], matrices_["XC"], matrices_["T"],
                                     VB_SCF, matrices_["WC"], matrices_["LoccB"], options_);
@@ -1087,7 +1088,7 @@ void FISAPT::dHF() {
     H_AC->copy(T);
     H_AC->add(V_A);
     H_AC->add(V_C);
-    if (reference_->external_pot_c()) H_AC->add(matrices_["VE"]);
+    if (reference_->has_potential_variable("C")) H_AC->add(matrices_["VE"]);
 
     std::shared_ptr<Matrix> F_AC(D_A->clone());
     F_AC->copy(H_AC);
@@ -1120,7 +1121,7 @@ void FISAPT::dHF() {
     H_BC->copy(T);
     H_BC->add(V_B);
     H_BC->add(V_C);
-    if (reference_->external_pot_c()) H_BC->add(matrices_["VE"]);
+    if (reference_->has_potential_variable("C")) H_BC->add(matrices_["VE"]);
 
     std::shared_ptr<Matrix> F_BC(D_B->clone());
     F_BC->copy(H_BC);
@@ -1152,7 +1153,7 @@ void FISAPT::dHF() {
     std::shared_ptr<Matrix> H_A(D_A->clone());
     H_A->copy(T);
     H_A->add(V_A);
-    if (reference_->external_pot_c()) H_A->add(matrices_["VE"]);
+    if (reference_->has_potential_variable("C")) H_A->add(matrices_["VE"]);
 
     std::shared_ptr<Matrix> F_A(D_A->clone());
     F_A->copy(H_A);
@@ -1170,7 +1171,7 @@ void FISAPT::dHF() {
     std::shared_ptr<Matrix> H_B(D_B->clone());
     H_B->copy(T);
     H_B->add(V_B);
-    if (reference_->external_pot_c()) H_B->add(matrices_["VE"]);
+    if (reference_->has_potential_variable("C")) H_B->add(matrices_["VE"]);
 
     std::shared_ptr<Matrix> F_B(D_B->clone());
     F_B->copy(H_B);
@@ -1188,7 +1189,7 @@ void FISAPT::dHF() {
     std::shared_ptr<Matrix> H_C(D_C->clone());
     H_C->copy(T);
     H_C->add(V_C);
-    if (reference_->external_pot_c()) H_C->add(matrices_["VE"]);
+    if (reference_->has_potential_variable("C")) H_C->add(matrices_["VE"]);
 
     std::shared_ptr<Matrix> F_C(D_C->clone());
     F_C->copy(H_C);
@@ -1239,7 +1240,7 @@ void FISAPT::dHF() {
     std::shared_ptr<Matrix> LH_A(T->clone());
     LH_A->copy(T);
     LH_A->add(V_A);
-    if (reference_->external_pot_c()) LH_A->add(matrices_["VE"]);
+    if (reference_->has_potential_variable("C")) LH_A->add(matrices_["VE"]);
     std::shared_ptr<Matrix> LF_A(LH_A->clone());
     LF_A->copy(LH_A);
     LF_A->add(LJ_A);
@@ -1255,7 +1256,7 @@ void FISAPT::dHF() {
     std::shared_ptr<Matrix> LH_B(T->clone());
     LH_B->copy(T);
     LH_B->add(V_B);
-    if (reference_->external_pot_c()) LH_B->add(matrices_["VE"]);
+    if (reference_->has_potential_variable("C")) LH_B->add(matrices_["VE"]);
     std::shared_ptr<Matrix> LF_B(LH_B->clone());
     LF_B->copy(LH_B);
     LF_B->add(LJ_B);
@@ -1276,7 +1277,7 @@ void FISAPT::dHF() {
     LH_AC->copy(T);
     LH_AC->add(V_A);
     LH_AC->add(V_C);
-    if (reference_->external_pot_c()) LH_AC->add(matrices_["VE"]);
+    if (reference_->has_potential_variable("C")) LH_AC->add(matrices_["VE"]);
     std::shared_ptr<Matrix> LF_AC(LH_AC->clone());
     LF_AC->copy(LH_AC);
     LF_AC->add(J_C);
@@ -1305,7 +1306,7 @@ void FISAPT::dHF() {
     LH_BC->copy(T);
     LH_BC->add(V_B);
     LH_BC->add(V_C);
-    if (reference_->external_pot_c()) LH_BC->add(matrices_["VE"]);
+    if (reference_->has_potential_variable("C")) LH_BC->add(matrices_["VE"]);
     std::shared_ptr<Matrix> LF_BC(LH_BC->clone());
     LF_BC->copy(LH_BC);
     LF_BC->add(J_C);
@@ -1334,7 +1335,7 @@ void FISAPT::dHF() {
     LH_BA->copy(T);
     LH_BA->add(V_B);
     LH_BA->add(V_A);
-    if (reference_->external_pot_c()) LH_BA->add(matrices_["VE"]);
+    if (reference_->has_potential_variable("C")) LH_BA->add(matrices_["VE"]);
     std::shared_ptr<Matrix> LF_BA(LH_BA->clone());
     LF_BA->copy(LH_BA);
     LF_BA->add(LJ_A);
@@ -1417,7 +1418,7 @@ void FISAPT::elst() {
     outfile->Printf("    Elst10,r            = %18.12lf [Eh]\n", Elst10);
 
     // External potential interactions
-    if (reference_->external_pot_a() && reference_->external_pot_b()) {
+    if (reference_->has_potential_variable("A") && reference_->has_potential_variable("B")) {
         // Add the interaction between the external potenitals in A and B
         // Multiply by 2 to get the full A-B + B-A interaction energy
         scalars_["Extern-Extern"] = matrices_["extern_extern_IE"]->get(0, 1)*2.0; 
@@ -2916,7 +2917,7 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
 
 void FISAPT::print_trailer() {
     scalars_["Electrostatics"] = scalars_["Elst10,r"];
-    if (reference_->external_pot_a() && reference_->external_pot_b()) {
+    if (reference_->has_potential_variable("A") && reference_->has_potential_variable("A")) {
         scalars_["Electrostatics"] += scalars_["Extern-Extern"];
     }
     scalars_["Exchange"] = scalars_["Exch10"];
@@ -2946,7 +2947,7 @@ void FISAPT::print_trailer() {
                     scalars_["Elst10,r"] * 1000.0, scalars_["Elst10,r"] * pc_hartree2kcalmol,
                     scalars_["Elst10,r"] * pc_hartree2kJmol);
 
-    if (reference_->external_pot_a() && reference_->external_pot_b()) {
+    if (reference_->has_potential_variable("A") && reference_->has_potential_variable("B")) {
         outfile->Printf("      Extern-Extern           %16.8lf [mEh] %16.8lf [kcal/mol] %16.8lf [kJ/mol]\n",
                         scalars_["Extern-Extern"] * 1000.0, scalars_["Extern-Extern"] * pc_hartree2kcalmol,
                         scalars_["Extern-Extern"] * pc_hartree2kJmol);
@@ -3012,7 +3013,7 @@ void FISAPT::print_trailer() {
 
     Process::environment.globals["SAPT ELST ENERGY"] = scalars_["Electrostatics"];
     Process::environment.globals["SAPT ELST10,R ENERGY"] = scalars_["Elst10,r"];
-    if (reference_->external_pot_a() && reference_->external_pot_b()) {
+    if (reference_->has_potential_variable("A") && reference_->has_potential_variable("B")) {
         Process::environment.globals["SAPT ELST EXTERN-EXTERN ENERGY"] = scalars_["Extern-Extern"];
     }
 
@@ -3294,7 +3295,7 @@ void FISAPT::felst() {
 
     // Extern A-atom B interaction
     // Compute the interaction between the external potenrial and each atom in the fragment
-    if (reference_->external_pot_a()) {
+    if (reference_->has_potential_variable("A")) {
         double conv = 1;
         if (mol->units() == Molecule::Angstrom) {
             conv *= pc_bohr2angstroms;
@@ -3303,7 +3304,7 @@ void FISAPT::felst() {
         for (int B = 0; B < nB; B++) {
             auto atom = std::make_shared<Molecule>();
             atom->add_atom(ZBp[B], mol->x(B)*conv, mol->y(B)*conv, mol->z(B)*conv);
-            double interaction = reference_->external_pot_a()->computeNuclearEnergy(atom);
+            double interaction = reference_->potential_variable("A")->computeNuclearEnergy(atom);
             Ep[nA + na][B] = interaction;
             E += interaction;
         }
@@ -3312,7 +3313,7 @@ void FISAPT::felst() {
 
     // Extern B-atom A interaction
     // Compute the interaction between the external potenrial and each atom in the fragment
-    if (reference_->external_pot_b()) {
+    if (reference_->has_potential_variable("B")) {
         double conv = 1;
         if (mol->units() == Molecule::Angstrom) {
             conv *= pc_bohr2angstroms;
@@ -3321,7 +3322,7 @@ void FISAPT::felst() {
         for (int A = 0; A < nA; A++) {
             auto atom = std::make_shared<Molecule>();
             atom->add_atom(ZAp[A], mol->x(A)*conv, mol->y(A)*conv, mol->z(A)*conv);
-            double interaction = reference_->external_pot_b()->computeNuclearEnergy(atom);
+            double interaction = reference_->potential_variable("B")->computeNuclearEnergy(atom);
             Ep[A][nB + nb] = interaction;
             E += interaction;
         }
@@ -3407,7 +3408,7 @@ void FISAPT::felst() {
     }
 
     // Add Extern-A - Orbital b interaction
-    if (reference_->external_pot_a()) {
+    if (reference_->has_potential_variable("A")) {
         std::shared_ptr<Matrix> Vbb =
             linalg::triplet(matrices_["Locc0B"], matrices_["VA_extern"], matrices_["Locc0B"], true, false, false);
         double** Vbbp = Vbb->pointer();
@@ -3439,7 +3440,7 @@ void FISAPT::felst() {
     }
 
     // Add Extern-B - Orbital a interaction
-    if (reference_->external_pot_b()) {
+    if (reference_->has_potential_variable("B")) {
         std::shared_ptr<Matrix> Vaa =
             linalg::triplet(matrices_["Locc0A"], matrices_["VB_extern"], matrices_["Locc0A"], true, false, false);
         double** Vaap = Vaa->pointer();
@@ -3466,7 +3467,7 @@ void FISAPT::felst() {
     outfile->Printf("    Elst10,r            = %18.12lf [Eh]\n", Elst10);
 
     // Add extern-extern contribution
-    if (reference_->external_pot_a() && reference_->external_pot_b()) {
+    if (reference_->has_potential_variable("A") && reference_->has_potential_variable("B")) {
         // Add the interaction between the external potenitals in A and B
         // Multiply by 2 to get the full A-B + B-A interaction energy
         double ext = matrices_["extern_extern_IE"]->get(0, 1)*2.0; 
@@ -3954,7 +3955,7 @@ void FISAPT::find() {
     // ==> A <- B Uncoupled <== //
 
     // Add the external potential
-    if (reference_->external_pot_b()) {
+    if (reference_->has_potential_variable("B")) {
         std::shared_ptr<Matrix> Var = linalg::triplet(Cocc_A, matrices_["VB_extern"], Cvir_A, true, false, false);
         dfh_->write_disk_tensor("WBar", Var, {(size_t) nB + nb, (size_t) nB + nb + 1});
     }
@@ -4003,7 +4004,7 @@ void FISAPT::find() {
     // ==> B <- A Uncoupled <== //
 
     // Add the external potential
-    if (reference_->external_pot_a()) {
+    if (reference_->has_potential_variable("A")) {
         std::shared_ptr<Matrix> Vbs = linalg::triplet(Cocc_B, matrices_["VA_extern"], Cvir_B, true, false, false);
         dfh_->write_disk_tensor("WAbs", Vbs, {(size_t) nA + na, (size_t) nA + na + 1});
     }
