@@ -39,15 +39,23 @@ def free_atom_volumes(wfn, **kwargs):
 
     """
 
-    # the level of theory
-    module = wfn.module()
-
     # print level
     print_level = core.get_global_option("PRINT")
 
-    # if we're doing dft, grab the functional
-    if module.lower() == 'scf':
-        module = wfn.functional().name()
+    # the level of theory
+    current_en = wfn.scalar_variable('CURRENT ENERGY')
+    test = [k for k,v in wfn.scalar_variables().items() if abs(v-current_en) <= 1e-12]     
+    theory = ""
+    for var in test:
+        if 'TOTAL ENERGY' in var:
+            var = var.split()
+            if var[0] == 'SCF':
+                continue
+            elif var[0] == 'DFT':
+                theory =  wfn.functional().name()
+            else:
+                theory = var[0]
+
     # list of reference number of unpaired electrons.
     # Note that this is not the same as the 
     # total spin of the ground state atom
@@ -62,32 +70,20 @@ def free_atom_volumes(wfn, **kwargs):
 
     # the parent molecule and reference type
     mol = wfn.molecule()
-    user_ref = core.get_global_option('REFERENCE')
 
     # Get unique atoms by input symbol,
     # Be to handle different basis sets
-    atom_ids = {}
+    unq_atoms = set()
     for atom in range(mol.natom()):
         symbol = mol.symbol(atom)
         Z = int(mol.Z(atom))
         basis = mol.basis_on_atom(atom)
-    
-        for a, info in atom_ids.items():
-            if a == atom:
-                continue
-            if info['symbol'] == symbol:
-                continue
-            if info['basis'] == basis:
-                continue
-        atom_ids[atom] = {'symbol':symbol,'Z':Z,'basis':basis}
+        unq_atoms.add((symbol,Z,basis))
 
-    core.print_out(f"  Running {len(atom_ids)} free-atom UHF computations")
+    core.print_out(f"  Running {len(unq_atoms)} free-atom UHF computations")
 
-    for label, info  in atom_ids.items():
-
-        a_z = info['Z']
-        basis = info['basis']
-        a_sym = info['symbol']
+    optstash = optproc.OptionsState(['REFERENCE'])
+    for a_sym, a_z, basis in unq_atoms:
 
         geom = f"""
 0 {int(1+reference_S[a_z])} 
@@ -95,8 +91,6 @@ def free_atom_volumes(wfn, **kwargs):
 symmetry c1
 """
         
-        optstash = optproc.OptionsState(['REFERENCE'])
-
         # make sure we do UHF/UKS if we're not a singlet
         if reference_S[a_z] != 0:
             core.set_global_option("REFERENCE", "UHF") 
@@ -104,13 +98,12 @@ symmetry c1
             core.set_global_option("REFERENCE", "RHF") 
 
         # Set the molecule, here just an atom
-        molrec = qcel.molparse.from_string(geom, enable_qm=True, 
-            missing_enabled_return_qm='minimal', enable_efp=True, missing_enabled_return_efp='none')
-        a_mol = core.Molecule.from_dict(molrec['qm'])
+        a_mol = core.Molecule.from_arrays(geom=[0,0,0], elem=[a_sym], molecular_charge=0, 
+                                          molecular_multiplicity=int(1+reference_S[a_z]))
         a_mol.update_geometry() 
         psi4.molutil.activate(a_mol)
 
-        method = module+"/"+basis
+        method = theory + "/" + basis
 
         # Supress printing
         if print_level <= 1:
@@ -129,12 +122,11 @@ symmetry c1
         vw = vw.get(0,0) 
 
         # set the atomic widths as wfn variables
-        wfn.set_variable("MBIS FREE ATOM " + a_sym + " VOLUME", vw)
+        wfn.set_variable("MBIS FREE ATOM " + a_sym.upper() + " VOLUME", vw)
 
 
     # reset mol and reference to original
-    core.set_global_option("REFERENCE",user_ref)
-
     optstash.restore()
     mol.update_geometry()
+    psi4.molutil.activate(mol) 
 

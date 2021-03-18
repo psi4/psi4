@@ -66,9 +66,7 @@ def oeprop(wfn, *args, **kwargs):
         # If we're doing MBIS, we want the free-atom volumes
         # in order to compute volume ratios,
         # but only if we're calling oeprop as the whole molecule
-        free_atom = False
-        if 'free_atom' in kwargs:
-            free_atom = kwargs['free_atom']
+        free_atom = kwargs.get('free_atom',False)
         if "MBIS" in prop.upper() and not free_atom:
             free_atom_volumes(wfn)    
 
