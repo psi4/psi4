@@ -38,8 +38,8 @@
         (Flores06) R. Flores-Moreno et al., J. Comput. Chem. 27 (2006), 1009-1019
 */
 
-#ifndef GC_QUAD_HEAD
-#define GC_QUAD_HEAD
+#ifndef LIBMINTS_GC_QUAD_HEAD
+#define LIBMINTS_GC_QUAD_HEAD
 
 #include <vector>
 #include <functional>

@@ -37,8 +37,8 @@
         L.E. McMurchie, E. Davidson, J. Comp. Phys. 44 (1981), 289
 */
 
-#ifndef BESSEL_FUNCTION_HEAD
-#define BESSEL_FUNCTION_HEAD
+#ifndef LIBMINTS_BESSEL_FUNCTION_HEAD
+#define LIBMINTS_BESSEL_FUNCTION_HEAD
 
 #include <vector>
 

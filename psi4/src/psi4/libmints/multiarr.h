@@ -33,8 +33,8 @@
  * Robert A Shaw 2016
  */
 
-#ifndef MULTIARR_HEAD
-#define MULTIARR_HEAD
+#ifndef LIBMINTS_MULTIARR_HEAD
+#define LIBMINTS_MULTIARR_HEAD
 
 #include <vector>
 

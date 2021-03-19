@@ -38,9 +38,10 @@
         (MM81) L. E. McMurchie and E. R. Davidson, J. Comp. Phys. 44 (1981), 289 - 301
 */
 
-#ifndef ECPINT_HEAD
-#define ECPINT_HEAD
+#ifndef LIBMINTS_ECPINT_H
+#define LIBMINTS_ECPINT_H
 
+#include <map>
 #include <vector>
 
 #include "psi4/pragma.h"
@@ -50,6 +51,8 @@
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/bessel.h"
+
+#include "libecpint/ecpint.hpp"
 
 namespace psi {
 
@@ -325,6 +328,16 @@ class RadialIntegral {
  */
 class ECPInt : public OneBodyAOInt {
    private:
+    /// The LibECP instance that will do all the heavy lifting
+    libecpint::ECPIntegral engine_;
+
+    /// Integrals are requested using Psi4 GaussianShell objects, but we need the corresponding LibECP
+    /// object to actually compute them.  This structure maps the two, via the Psi4 GaussianShell's
+    /// first() function, which provides the index of the first basis function the shell involves.
+    std::map<int, int> libecp_shell_lookup_;
+    std::vector<libecpint::GaussianShell> libecp_shells_;
+    std::vector<libecpint::ECP> libecp_ecps_;
+
     /// The interface to the radial integral calculation
     RadialIntegral radInts;
     /// The angular integrals, which can be reused over all ECP centers
