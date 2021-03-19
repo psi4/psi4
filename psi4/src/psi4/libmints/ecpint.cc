@@ -473,7 +473,7 @@ void RadialIntegral::type1(int maxL, int N, int offset, const GaussianShell &U, 
             for (int i = 0; i < gridSize; i++) {
                 for (int l = offset; l <= maxL; l += 2) {
                     intValues(l, i) = Utab[i] * besselValues(l, i);
-                    tooSmall = intValues(l, i) < tolerance;
+                    tooSmall = tooSmall || ( intValues(l, i) < tolerance );
                 }
                 if (!tooSmall && !foundStart) {
                     foundStart = true;
@@ -657,6 +657,7 @@ ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs
     if (bs1 != bs2)
         throw PSIEXCEPTION("Mixed basis sets are not supported for ECP integrals yet.");
 
+    // Make LibECP Gaussian basis set objects
     for (int shell = 0; shell < bs1->nshell(); ++shell){
         const GaussianShell &psi_shell = bs1->shell(shell);
         const double *center = psi_shell.center();
@@ -669,15 +670,17 @@ ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs
         libecp_shell_lookup_[psi_shell.start()] = libecp_shells_.size();
         libecp_shells_.push_back(newshell);
     }
+
+    // Make LibECP ECP objects
     for (int ecp_shell = 0; ecp_shell < bs1->n_ecp_shell(); ++ecp_shell){
         const GaussianShell &psi_ecp_shell = bs1->ecp_shell(ecp_shell);
         libecpint::ECP ecp(psi_ecp_shell.center());
-        for (int prim = 0; prim < psi_ecp_shell.nprimitive(); ++prim){
-            ecp.addPrimitive(psi_ecp_shell.nval(prim)+2, psi_ecp_shell.am(), psi_ecp_shell.exp(prim), psi_ecp_shell.coef(prim), true);
+        int nprim = psi_ecp_shell.nprimitive();
+        for (int prim = 0; prim < nprim; ++prim) {
+            ecp.addPrimitive(psi_ecp_shell.nval(prim)+2, psi_ecp_shell.am(), psi_ecp_shell.exp(prim), psi_ecp_shell.coef(prim), prim==nprim-1);
         }
         libecp_ecps_.push_back(ecp);
     }
-
 
     int maxnao1 = INT_NCART(maxam1);
     int maxnao2 = INT_NCART(maxam2);
@@ -947,20 +950,64 @@ void ECPInt::compute_shell_pair(const GaussianShell &U, const libint2::Shell &sh
 }
 
 void ECPInt::compute_pair(const libint2::Shell &shellA, const libint2::Shell &shellB) {
-    memset(buffer_, 0, shellA.cartesian_size() * shellB.cartesian_size() * sizeof(double));
+    // Start by finding the LibECP shells, using the lookup table
+    memset(buffer_, 0, shellA.ncartesian() * shellB.ncartesian() * sizeof(double));
+    //int idxA = libecp_shell_lookup_[shellA.start()];
+    //int idxB = libecp_shell_lookup_[shellB.start()];
+    int idxA = 0;
+    int idxB = 0;
+    const libecpint::GaussianShell &LibECPShellA = libecp_shells_[idxA];
+    const libecpint::GaussianShell &LibECPShellB = libecp_shells_[idxB];
+    printf("\n");
+    printf("libecp Shell A center %8.4f %8.4f %8.4f\n", LibECPShellA.center()[0], LibECPShellA.center()[1], LibECPShellA.center()[2]);
+    printf("native Shell A center %8.4f %8.4f %8.4f\n", shellA.center()[0], shellA.center()[1], shellA.center()[2]);
+    printf("libecp Shell B center %8.4f %8.4f %8.4f\n", LibECPShellB.center()[0], LibECPShellB.center()[1], LibECPShellB.center()[2]);
+    printf("native Shell B center %8.4f %8.4f %8.4f\n", shellB.center()[0], shellB.center()[1], shellB.center()[2]);
+    for (const auto &ecp : libecp_ecps_){
+        libecpint::TwoIndex<double> results;
+        engine_.compute_shell_pair(ecp, LibECPShellA, LibECPShellB, results);
+        // DEBUGDEBUGDEBUG
+        printf("\tintermediate L=%d Center %16.10f %16.10f %16.10f\n",ecp.L, ecp.center_[0], ecp.center_[1], ecp.center_[2]);
+        printf("\t\t");
+        for(int prim = 0; prim < ecp.getN(); ++prim){
+            const auto &g = ecp.getGaussian(prim);
+            printf(" n^%d", g.n);
+        }
+        printf("\n");
+        for (int a = 0; a < shellA.ncartesian(); a++) {
+            for (int b = 0; b < shellB.ncartesian(); b++) {
+                printf("%16.10f ", results(a,b));
+            }
+        }
+        printf("\n");
+        // Accumulate the results into buffer_
+        std::transform (results.data.begin(), results.data.end(), buffer_, buffer_, std::plus<double>());
+    }
+    // DEBUGDEBUGDEBUG
+    int ao12 = 0;
+    printf("libecp ");
+    for (int a = 0; a < shellA.ncartesian(); a++) {
+        for (int b = 0; b < shellB.ncartesian(); b++) {
+            printf("%16.10f ", buffer_[ao12++]);
+        }
+    }
+    printf("\n");
+
+    // OLD CODE TO BE NUKED
+    memset(buffer_, 0, shellA.ncartesian() * shellB.ncartesian() * sizeof(double));
     TwoIndex<double> tempValues;
-    int ao12;
     for (int i = 0; i < bs1_->n_ecp_shell(); i++) {
         const GaussianShell &ecpshell = bs1_->ecp_shell(i);
         compute_shell_pair(ecpshell, shellA, shellB, tempValues);
         ao12 = 0;
-        for (int a = 0; a < shellA.cartesian_size(); a++) {
-            for (int b = 0; b < shellB.cartesian_size(); b++) {
+        for (int a = 0; a < shellA.ncartesian(); a++) {
+            for (int b = 0; b < shellB.ncartesian(); b++) {
                 buffer_[ao12++] += tempValues(a, b);
             }
         }
         // DEBUGDEBUGDEBUG
-        printf("\tintermediate L=%d\n", ecpshell.am());
+        printf("\tintermediate L=%d Center %16.10f %16.10f %16.10f\n",ecpshell.am(), ecpshell.center()[0], ecpshell.center()[1], ecpshell.center()[2]);
+        printf("\t\t");
         for(int prim = 0; prim < ecpshell.nprimitive(); ++prim){
             printf(" n^%d", ecpshell.nval(prim));
         }
@@ -975,40 +1022,6 @@ void ECPInt::compute_pair(const libint2::Shell &shellA, const libint2::Shell &sh
     // DEBUGDEBUGDEBUG
     ao12 = 0;
     printf("native ");
-    for (int a = 0; a < shellA.ncartesian(); a++) {
-        for (int b = 0; b < shellB.ncartesian(); b++) {
-            printf("%16.10f ", buffer_[ao12++]);
-        }
-    }
-    printf("\n");
-
-    // Start by finding the LibECP shells, using the lookup table
-    memset(buffer_, 0, shellA.ncartesian() * shellB.ncartesian() * sizeof(double));
-    int idxA = libecp_shell_lookup_[shellA.start()];
-    int idxB = libecp_shell_lookup_[shellB.start()];
-    const libecpint::GaussianShell &LibECPShellA = libecp_shells_[idxA];
-    const libecpint::GaussianShell &LibECPShellB = libecp_shells_[idxB];
-    for (const auto &ecp : libecp_ecps_){
-        libecpint::TwoIndex<double> results;
-        engine_.compute_shell_pair(ecp, LibECPShellA, LibECPShellB, results);
-        // DEBUGDEBUGDEBUG
-        printf("\tintermediate L=%d \n",ecp.L);
-        for(int prim = 0; prim < ecp.getN(); ++prim){
-            printf(" n^%d", ecp.getGaussian(prim).n);
-        }
-        printf("\n");
-        for (int a = 0; a < shellA.ncartesian(); a++) {
-            for (int b = 0; b < shellB.ncartesian(); b++) {
-                printf("%16.10f ", results(a,b));
-            }
-        }
-        printf("\n");
-        // Accumulate the results into buffer_
-        std::transform (results.data.begin(), results.data.end(), buffer_, buffer_, std::plus<double>());
-    }
-    // DEBUGDEBUGDEBUG
-    ao12 = 0;
-    printf("libecp ");
     for (int a = 0; a < shellA.ncartesian(); a++) {
         for (int b = 0; b < shellB.ncartesian(); b++) {
             printf("%16.10f ", buffer_[ao12++]);
