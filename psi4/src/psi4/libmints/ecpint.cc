@@ -677,7 +677,7 @@ ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs
         libecpint::ECP ecp(psi_ecp_shell.center());
         int nprim = psi_ecp_shell.nprimitive();
         for (int prim = 0; prim < nprim; ++prim) {
-            ecp.addPrimitive(psi_ecp_shell.nval(prim)+2, psi_ecp_shell.am(), psi_ecp_shell.exp(prim), psi_ecp_shell.coef(prim), prim==nprim-1);
+            ecp.addPrimitive(psi_ecp_shell.nval(prim), psi_ecp_shell.am()+2, psi_ecp_shell.exp(prim), psi_ecp_shell.coef(prim), prim==nprim-1);
         }
         libecp_ecps_.push_back(ecp);
     }
@@ -959,21 +959,11 @@ void ECPInt::compute_pair(const libint2::Shell &shellA, const libint2::Shell &sh
     const libecpint::GaussianShell &LibECPShellA = libecp_shells_[idxA];
     const libecpint::GaussianShell &LibECPShellB = libecp_shells_[idxB];
     printf("\n");
-    printf("libecp Shell A center %8.4f %8.4f %8.4f\n", LibECPShellA.center()[0], LibECPShellA.center()[1], LibECPShellA.center()[2]);
-    printf("native Shell A center %8.4f %8.4f %8.4f\n", shellA.center()[0], shellA.center()[1], shellA.center()[2]);
-    printf("libecp Shell B center %8.4f %8.4f %8.4f\n", LibECPShellB.center()[0], LibECPShellB.center()[1], LibECPShellB.center()[2]);
-    printf("native Shell B center %8.4f %8.4f %8.4f\n", shellB.center()[0], shellB.center()[1], shellB.center()[2]);
     for (const auto &ecp : libecp_ecps_){
         libecpint::TwoIndex<double> results;
         engine_.compute_shell_pair(ecp, LibECPShellA, LibECPShellB, results);
         // DEBUGDEBUGDEBUG
-        printf("\tintermediate L=%d Center %16.10f %16.10f %16.10f\n",ecp.L, ecp.center_[0], ecp.center_[1], ecp.center_[2]);
-        printf("\t\t");
-        for(int prim = 0; prim < ecp.getN(); ++prim){
-            const auto &g = ecp.getGaussian(prim);
-            printf(" n^%d", g.n);
-        }
-        printf("\n");
+        printf("\tintermediate L=%d\n",ecp.L);
         for (int a = 0; a < shellA.ncartesian(); a++) {
             for (int b = 0; b < shellB.ncartesian(); b++) {
                 printf("%16.10f ", results(a,b));
@@ -994,7 +984,7 @@ void ECPInt::compute_pair(const libint2::Shell &shellA, const libint2::Shell &sh
     printf("\n");
 
     // OLD CODE TO BE NUKED
-    memset(buffer_, 0, shellA.ncartesian() * shellB.ncartesian() * sizeof(double));
+//    memset(buffer_, 0, shellA.ncartesian() * shellB.ncartesian() * sizeof(double));
     TwoIndex<double> tempValues;
     for (int i = 0; i < bs1_->n_ecp_shell(); i++) {
         const GaussianShell &ecpshell = bs1_->ecp_shell(i);
@@ -1002,16 +992,11 @@ void ECPInt::compute_pair(const libint2::Shell &shellA, const libint2::Shell &sh
         ao12 = 0;
         for (int a = 0; a < shellA.ncartesian(); a++) {
             for (int b = 0; b < shellB.ncartesian(); b++) {
-                buffer_[ao12++] += tempValues(a, b);
+//                buffer_[ao12++] += tempValues(a, b);
             }
         }
         // DEBUGDEBUGDEBUG
-        printf("\tintermediate L=%d Center %16.10f %16.10f %16.10f\n",ecpshell.am(), ecpshell.center()[0], ecpshell.center()[1], ecpshell.center()[2]);
-        printf("\t\t");
-        for(int prim = 0; prim < ecpshell.nprimitive(); ++prim){
-            printf(" n^%d", ecpshell.nval(prim));
-        }
-        printf("\n");
+        printf("\tintermediate L=%d\n",ecpshell.am());
         for (int a = 0; a < shellA.ncartesian(); a++) {
             for (int b = 0; b < shellB.ncartesian(); b++) {
                 printf("%16.10f ", tempValues(a,b));
