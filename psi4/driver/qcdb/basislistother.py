@@ -720,5 +720,6 @@ def load_basfam_other():
 
     # Point fix for dzvp basis set ; default def2-qzvpp-jkfit
     # was not giving correct result for iodine-containing molecules.
+    basis_dzvp.add_jfit('dgauss-dzvp-autoabs')
     basis_dzvp.add_jkfit('dgauss-dzvp-mix')
     basis_dzvp.add_rifit('dgauss-dzvp-autoaux')    
