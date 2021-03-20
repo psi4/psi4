@@ -314,7 +314,7 @@ double CCEnergyWavefunction::compute_energy() {
     if (!done) {
         outfile->Printf("     ** Wave function not converged to %2.1e ** \n", params_.convergence);
 
-        if (params_.aobasis != "NONE") dpd_close(1);
+        if (params_.aobasis != "NONE" || params_.df) dpd_close(1);
         dpd_close(0);
         cleanup();
         timer_off("ccenergy");
@@ -481,7 +481,7 @@ double CCEnergyWavefunction::compute_energy() {
 
     if (params_.brueckner) Process::environment.globals["BRUECKNER CONVERGED"] = rotate();
 
-    if (params_.aobasis != "NONE") dpd_close(1);
+    if (params_.aobasis != "NONE" || params_.df) dpd_close(1);
     dpd_close(0);
 
     if (params_.ref == 2)
