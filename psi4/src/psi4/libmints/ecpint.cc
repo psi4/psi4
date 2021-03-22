@@ -96,7 +96,7 @@ ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs
             oldCx = Cx;
             oldCy = Cy;
             oldCz = Cz;
-            libecp_ecps_.push_back(ecp);
+            centers_and_libecp_ecps_.push_back(std::make_pair(psi_ecp_shell.ncenter(),ecp));
             ecp = libecpint::ECP(center);
         }
         int nprim = psi_ecp_shell.nprimitive();
@@ -105,12 +105,25 @@ ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs
         }
         if (ecp_shell == bs1->n_ecp_shell()-1){
             // Make sure the last one gets pushed back in!
-            libecp_ecps_.push_back(ecp);
+            centers_and_libecp_ecps_.push_back(std::make_pair(psi_ecp_shell.ncenter(),ecp));
         }
     }
 
     int maxnao1 = INT_NCART(maxam1);
     int maxnao2 = INT_NCART(maxam2);
+
+    if (deriv == 1) {
+        // We set chunk count for normalize_am and pure_transform
+        // We can't use the trick of using less memory that I implemented in overlap & kinetic
+        // since potential integral derivatives also have a contribution to center c...which is
+        // over all atoms.
+        set_chunks(3 * natom_);
+
+        maxnao1 *= 3 * natom_;
+    } else if (deriv == 2) {
+        set_chunks(27 * natom_);
+        maxnao1 *= 27 * natom_;
+    }
 
     buffer_ = new double[maxnao1 * maxnao2];
     buffers_.resize(1);
@@ -119,23 +132,48 @@ ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs
 
 ECPInt::~ECPInt() { delete[] buffer_; }
 
-
 void ECPInt::compute_pair(const libint2::Shell &shellA, const libint2::Shell &shellB) {
     // Start by finding the LibECP shells, using the lookup table
-    memset(buffer_, 0, shellA.cartesian_size() * shellB.cartesian_size() * sizeof(double));
-    //int idxA = libecp_shell_lookup_[shellA.start()];
-    //int idxB = libecp_shell_lookup_[shellB.start()];
-    int idxA = 0;
-    int idxB = 0;
-    const libecpint::GaussianShell &LibECPShellA = libecp_shells_[idxA];
-    const libecpint::GaussianShell &LibECPShellB = libecp_shells_[idxB];
-    for (const auto &ecp : libecp_ecps_){
+    const size_t size = s1.ncartesian() * s2.ncartesian();
+    memset(buffer_, 0, size * sizeof(double));
+    //int idx1 = libecp_shell_lookup_[s1.start()];
+    //int idx2 = libecp_shell_lookup_[s2.start()];
+    int idx1 = 0;
+    int idx2 = 0;
+    const libecpint::GaussianShell &LibECPShell1 = libecp_shells_[idx1];
+    const libecpint::GaussianShell &LibECPShell2 = libecp_shells_[idx2];
+    for (const auto &center_and_ecp : centers_and_libecp_ecps_){
         libecpint::TwoIndex<double> results;
-        engine_.compute_shell_pair(ecp, LibECPShellA, LibECPShellB, results);
+        engine_.compute_shell_pair(center_and_ecp.second, LibECPShell1, LibECPShell2, results);
         // Accumulate the results into buffer_
         std::transform (results.data.begin(), results.data.end(), buffer_, buffer_, std::plus<double>());
     }
 }
+
+void ECPInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell &s2) {
+    const size_t size = s1.ncartesian() * s2.ncartesian();
+    memset(buffer_, 0, 3 * natom_ * size * sizeof(double));
+    int idx1 = libecp_shell_lookup_[s1.start()];
+    int idx2 = libecp_shell_lookup_[s2.start()];
+    const libecpint::GaussianShell &LibECPShell1 = libecp_shells_[idx1];
+    const libecpint::GaussianShell &LibECPShell2 = libecp_shells_[idx2];
+    int center1 = s1.ncenter();
+    int center2 = s2.ncenter();
+    for (const auto &center_and_ecp : centers_and_libecp_ecps_){
+        int center3 = center_and_ecp.first;
+        std::array<libecpint::TwoIndex<double>, 9> results;
+        engine_.compute_shell_pair_derivative(center_and_ecp.second, LibECPShell1, LibECPShell2, results);
+        // Accumulate the results into buffer_
+        const size_t offsets[9] = { center1*3*size + 0*size, center1 * 3*size + 1*size, center1 * 3*size + 2*size,
+                                    center2*3*size + 0*size, center2 * 3*size + 1*size, center2 * 3*size + 2*size,
+                                    center3*3*size + 0*size, center3 * 3*size + 1*size, center3 * 3*size + 2*size };
+        for (int i = 0; i < 9; ++i){
+            const size_t offset = offsets[i];
+            std::transform (results[i].data.begin(), results[i].data.end(), buffer_ + offset, buffer_ + offset, std::plus<double>());
+        }
+    }
+}
+
 
 ECPSOInt::ECPSOInt(const std::shared_ptr<OneBodyAOInt> &aoint, const std::shared_ptr<IntegralFactory> &fact)
     : OneBodySOInt(aoint, fact) {

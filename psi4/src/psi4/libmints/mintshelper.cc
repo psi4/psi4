@@ -55,6 +55,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <set>
 #include <sstream>
 #include <unordered_map>
 #include <utility>
@@ -2085,6 +2086,85 @@ SharedMatrix MintsHelper::perturb_grad(SharedMatrix D) {
     return perturbation_gradient;
 }
 
+SharedMatrix MintsHelper::effective_core_potential_grad(SharedMatrix D) {
+    int natom = basisset_->molecule()->natom();
+    auto grad = std::make_shared<Matrix>("Effective Core Potential Gradient", natom, 3);
+
+    // Build temps
+    std::vector<std::shared_ptr<OneBodyAOInt>> ecp_ints_vec;
+    std::vector<SharedMatrix> gradtemps;
+    for (size_t i = 0; i < nthread_; i++) {
+        gradtemps.push_back(grad->clone());
+        ecp_ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_ecp(1)));
+    }
+
+    // Lower Triangle
+    std::vector<std::pair<int, int>> PQ_pairs;
+    for (int P = 0; P < basisset_->nshell(); P++) {
+        for (int Q = 0; Q <= P; Q++) {
+            PQ_pairs.push_back(std::pair<int, int>(P, Q));
+        }
+    }
+
+
+    double **Dp = D->pointer();
+
+#pragma omp parallel for schedule(dynamic) num_threads(nthread_)
+    for (size_t PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
+        size_t P = PQ_pairs[PQ].first;
+        size_t Q = PQ_pairs[PQ].second;
+
+        size_t rank = 0;
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+
+        ecp_ints_vec[rank]->compute_shell_deriv1(P, Q);
+        const double *buffer = ecp_ints_vec[rank]->buffer();
+
+        size_t nP = basisset_->shell(P).nfunction();
+        size_t oP = basisset_->shell(P).function_index();
+        size_t aP = basisset_->shell(P).ncenter();
+
+        size_t nQ = basisset_->shell(Q).nfunction();
+        size_t oQ = basisset_->shell(Q).function_index();
+        size_t aQ = basisset_->shell(Q).ncenter();
+
+        // Make a list of all ECP centers and the current basis function pair
+        std::set<int> all_centers;
+        for (int ecp_shell = 0; ecp_shell < basisset_->n_ecp_shell(); ++ecp_shell){
+            const GaussianShell &ecp = basisset_->ecp_shell(ecp_shell);
+            all_centers.insert(ecp.ncenter());
+        }
+        all_centers.insert(aP);
+        all_centers.insert(aQ);
+
+        double perm = (P == Q ? 1.0 : 2.0);
+
+        double **Vp = gradtemps[rank]->pointer();
+
+        for (const int center : all_centers) {
+            const double *ref0 = &buffer[3 * center * nP * nQ + 0 * nP * nQ];
+            const double *ref1 = &buffer[3 * center * nP * nQ + 1 * nP * nQ];
+            const double *ref2 = &buffer[3 * center * nP * nQ + 2 * nP * nQ];
+            for (size_t p = 0; p < nP; p++) {
+                for (size_t q = 0; q < nQ; q++) {
+                    double Vval = perm * Dp[p + oP][q + oQ];
+                    Vp[center][0] += Vval * (*ref0++);
+                    Vp[center][1] += Vval * (*ref1++);
+                    Vp[center][2] += Vval * (*ref2++);
+                }
+            }
+        }
+    }
+
+    // Sum it up
+    for (size_t t = 0; t < nthread_; t++) {
+        grad->axpy(1.0, gradtemps[t]);
+    }
+    return grad;
+}
+
 SharedMatrix MintsHelper::multipole_grad(SharedMatrix D, int order, const std::vector<double> &origin) {
     if (origin.size() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
     // Computes skeleton (Hellman-Feynman like) multipole derivatives for each perturbation
@@ -2156,6 +2236,9 @@ SharedMatrix MintsHelper::core_hamiltonian_grad(SharedMatrix D) {
 
     if (options_.get_bool("PERTURB_H")) {
         ret->add(perturb_grad(D));
+    }
+    if (basisset_->n_ecp_shell()) {
+        ret->add(effective_core_potential_grad(D));
     }
     return ret;
 }

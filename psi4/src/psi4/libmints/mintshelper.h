@@ -355,11 +355,17 @@ class PSI_API MintsHelper {
     SharedMatrix three_idx_grad(const std::string& aux_name, const std::string& intermed_name,
                                 const std::string& gradient_name);
 
+    // Computes the gradient due to the kinetic energy term of the core Hamiltonian
     SharedMatrix kinetic_grad(SharedMatrix D);
+    // Computes the gradient due to the potential energy term of the core Hamiltonian
     SharedMatrix potential_grad(SharedMatrix D);
+    // Computes the electric dipole derivatives
     SharedMatrix dipole_grad(SharedMatrix D);
     SharedMatrix multipole_grad(SharedMatrix D, int order, const std::vector<double>& origin = {0.0, 0.0, 0.0});
+    // Computes the gradient due to external dipole perturbation
     SharedMatrix perturb_grad(SharedMatrix D);
+    // Computes the gradient due to ECPs in the basis set
+    SharedMatrix effective_core_potential_grad(SharedMatrix D);
 
     /// Play function
     void play();
