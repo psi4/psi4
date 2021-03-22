@@ -178,8 +178,6 @@ Libint2ERI::Libint2ERI(const IntegralFactory *integral, double screening_thresho
     int max_nprim = std::max(std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive()),
                              std::max(basis3()->max_nprimitive(), basis4()->max_nprimitive()));
     const auto max_precision = 0.;  // equivalent in accuracy and timings is `std::numeric_limits<double>::epsilon() * 1e-30;`
-    const auto basis_precision = std::numeric_limits<double>::epsilon() * std::pow((double)max_nprim, -4.0) * 1.e-2;
-    const auto engine_precision = screening_threshold == 0.0 ? max_precision : basis_precision;
 
     bool dummy1 = basis1()->l2_shell(0) == libint2::Shell::unit();
     bool dummy2 = basis2()->l2_shell(0) == libint2::Shell::unit();
@@ -200,7 +198,7 @@ Libint2ERI::Libint2ERI(const IntegralFactory *integral, double screening_thresho
 
     for (int der = 0; der <= deriv; ++der) {
         // set braket upon engine construction so particular LIBINT2_MAX_AM_eri[|2|3] limit governs validity
-        engines_.emplace_back(libint2::Operator::coulomb, max_nprim, max_am, der, engine_precision, libint2::operator_traits<libint2::Operator::coulomb>::default_params(), braket_);
+        engines_.emplace_back(libint2::Operator::coulomb, max_nprim, max_am, der, max_precision, libint2::operator_traits<libint2::Operator::coulomb>::default_params(), braket_);
     }
     // set max_am for primary basis to be sieved, not all basis1234
     max_am = bra_same_ ? basis1()->max_am() : ket_same_ ? basis3()->max_am() : 0;
@@ -280,8 +278,6 @@ Libint2ErfERI::Libint2ErfERI(double omega, const IntegralFactory *integral, doub
     int max_nprim = std::max(std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive()),
                              std::max(basis3()->max_nprimitive(), basis4()->max_nprimitive()));
     const auto max_precision = 0.;
-    const auto basis_precision = std::numeric_limits<double>::epsilon() * std::pow((double)max_nprim, -4.0) * 1.e-2;
-    const auto engine_precision = screening_threshold == 0.0 ? max_precision : basis_precision;
 
     bool dummy1 = basis1()->l2_shell(0) == libint2::Shell::unit();
     bool dummy2 = basis2()->l2_shell(0) == libint2::Shell::unit();
@@ -301,7 +297,7 @@ Libint2ErfERI::Libint2ErfERI(double omega, const IntegralFactory *integral, doub
     }
 
     for (int der = 0; der <= deriv; ++der) {
-        engines_.emplace_back(libint2::Operator::erf_coulomb, max_nprim, max_am, der, engine_precision, omega, braket_);
+        engines_.emplace_back(libint2::Operator::erf_coulomb, max_nprim, max_am, der, max_precision, omega, braket_);
     }
     max_am = bra_same_ ? basis1()->max_am() : ket_same_ ? basis3()->max_am() : 0;
     schwarz_engine_ = libint2::Engine(libint2::Operator::erf_coulomb, max_nprim, max_am, 0, max_precision, omega, libint2::BraKet::xx_xx);
@@ -379,8 +375,6 @@ Libint2ErfComplementERI::Libint2ErfComplementERI(double omega, const IntegralFac
     int max_nprim = std::max(std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive()),
                              std::max(basis3()->max_nprimitive(), basis4()->max_nprimitive()));
     const auto max_precision = 0.;
-    const auto basis_precision = std::numeric_limits<double>::epsilon() * std::pow((double)max_nprim, -4.0) * 1.e-2;
-    const auto engine_precision = screening_threshold == 0.0 ? max_precision : basis_precision;
 
     bool dummy1 = basis1()->l2_shell(0) == libint2::Shell::unit();
     bool dummy2 = basis2()->l2_shell(0) == libint2::Shell::unit();
@@ -400,7 +394,7 @@ Libint2ErfComplementERI::Libint2ErfComplementERI(double omega, const IntegralFac
     }
 
     for (int der = 0; der <= deriv; ++der) {
-        engines_.emplace_back(libint2::Operator::erfc_coulomb, max_nprim, max_am, der, engine_precision, omega, braket_);
+        engines_.emplace_back(libint2::Operator::erfc_coulomb, max_nprim, max_am, der, max_precision, omega, braket_);
     }
     max_am = bra_same_ ? basis1()->max_am() : ket_same_ ? basis3()->max_am() : 0;
     schwarz_engine_ = libint2::Engine(libint2::Operator::erfc_coulomb, max_nprim, max_am, 0, max_precision, omega, libint2::BraKet::xx_xx);
