@@ -671,15 +671,38 @@ ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs
         libecp_shells_.push_back(newshell);
     }
 
-    // Make LibECP ECP objects
+    double oldCx, oldCy, oldCz;
+    libecpint::ECP ecp;
+    // Make LibECP ECP objects, grouping all functions on a given center into a single ECP object
     for (int ecp_shell = 0; ecp_shell < bs1->n_ecp_shell(); ++ecp_shell){
         const GaussianShell &psi_ecp_shell = bs1->ecp_shell(ecp_shell);
-        libecpint::ECP ecp(psi_ecp_shell.center());
+        const double *center = psi_ecp_shell.center();
+        double Cx = center[0];
+        double Cy = center[1];
+        double Cz = center[2];
+        if (ecp_shell == 0) {
+            // Initialize the first ECP object
+            oldCx = Cx;
+            oldCy = Cy;
+            oldCz = Cz;
+            ecp = libecpint::ECP(psi_ecp_shell.center());
+        }
+        if (oldCx != Cx && oldCy != Cy && oldCz != Cz) {
+            // We're on a different center now; add the current ECP and make a new one
+            oldCx = Cx;
+            oldCy = Cy;
+            oldCz = Cz;
+            libecp_ecps_.push_back(ecp);
+            ecp = libecpint::ECP(center);
+        }
         int nprim = psi_ecp_shell.nprimitive();
         for (int prim = 0; prim < nprim; ++prim) {
-            ecp.addPrimitive(psi_ecp_shell.nval(prim), psi_ecp_shell.am()+2, psi_ecp_shell.exp(prim), psi_ecp_shell.coef(prim), prim==nprim-1);
+            ecp.addPrimitive(psi_ecp_shell.nval(prim), psi_ecp_shell.am(), psi_ecp_shell.exp(prim), psi_ecp_shell.coef(prim), prim==nprim-1);
         }
-        libecp_ecps_.push_back(ecp);
+        if (ecp_shell == bs1->n_ecp_shell()-1){
+            // Make sure the last one gets pushed back in!
+            libecp_ecps_.push_back(ecp);
+        }
     }
 
     int maxnao1 = INT_NCART(maxam1);
@@ -958,64 +981,12 @@ void ECPInt::compute_pair(const libint2::Shell &shellA, const libint2::Shell &sh
     int idxB = 0;
     const libecpint::GaussianShell &LibECPShellA = libecp_shells_[idxA];
     const libecpint::GaussianShell &LibECPShellB = libecp_shells_[idxB];
-    printf("\n");
     for (const auto &ecp : libecp_ecps_){
         libecpint::TwoIndex<double> results;
         engine_.compute_shell_pair(ecp, LibECPShellA, LibECPShellB, results);
-        // DEBUGDEBUGDEBUG
-        printf("\tintermediate L=%d\n",ecp.L);
-        for (int a = 0; a < shellA.ncartesian(); a++) {
-            for (int b = 0; b < shellB.ncartesian(); b++) {
-                printf("%16.10f ", results(a,b));
-            }
-        }
-        printf("\n");
         // Accumulate the results into buffer_
         std::transform (results.data.begin(), results.data.end(), buffer_, buffer_, std::plus<double>());
     }
-    // DEBUGDEBUGDEBUG
-    int ao12 = 0;
-    printf("libecp ");
-    for (int a = 0; a < shellA.ncartesian(); a++) {
-        for (int b = 0; b < shellB.ncartesian(); b++) {
-            printf("%16.10f ", buffer_[ao12++]);
-        }
-    }
-    printf("\n");
-
-    // OLD CODE TO BE NUKED
-//    memset(buffer_, 0, shellA.ncartesian() * shellB.ncartesian() * sizeof(double));
-    TwoIndex<double> tempValues;
-    for (int i = 0; i < bs1_->n_ecp_shell(); i++) {
-        const GaussianShell &ecpshell = bs1_->ecp_shell(i);
-        compute_shell_pair(ecpshell, shellA, shellB, tempValues);
-        ao12 = 0;
-        for (int a = 0; a < shellA.ncartesian(); a++) {
-            for (int b = 0; b < shellB.ncartesian(); b++) {
-//                buffer_[ao12++] += tempValues(a, b);
-            }
-        }
-        // DEBUGDEBUGDEBUG
-        printf("\tintermediate L=%d\n",ecpshell.am());
-        for (int a = 0; a < shellA.ncartesian(); a++) {
-            for (int b = 0; b < shellB.ncartesian(); b++) {
-                printf("%16.10f ", tempValues(a,b));
-            }
-        }
-        printf("\n");
-    }
-    // DEBUGDEBUGDEBUG
-    ao12 = 0;
-    printf("native ");
-    for (int a = 0; a < shellA.ncartesian(); a++) {
-        for (int b = 0; b < shellB.ncartesian(); b++) {
-            printf("%16.10f ", buffer_[ao12++]);
-        }
-    }
-
-    pure_transform(shellA, shellB);
-    printf("\n");
-    printf("\n");
 }
 
 ECPSOInt::ECPSOInt(const std::shared_ptr<OneBodyAOInt> &aoint, const std::shared_ptr<IntegralFactory> &fact)
