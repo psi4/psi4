@@ -1738,7 +1738,7 @@ def cbs(func, label, **kwargs):
                 GRAND_NEED[dc]['d_stage'], GRAND_NEED[dc]['d_wfn'] + ' - ' + GRAND_NEED[dc + 1]['d_wfn'], '/',
                 GRAND_NEED[dc]['d_basis'], '', deltaE_total,
                 GRAND_NEED[dc]['d_scheme'].__name__)
-            core.set_variable(f"{GRAND_NEED[dc]['d_stage'].upper()} TOTAL ENERGY", deltaE_total)
+            core.set_variable(f"CBS {GRAND_NEED[dc]['d_stage'].upper()} TOTAL ENERGY", deltaE_total)
             dc += 2
 
     tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % ('total', 'CBS', '', '', '', finalenergy, '')
