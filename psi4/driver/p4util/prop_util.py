@@ -92,12 +92,6 @@ def free_atom_volumes(wfn, **kwargs):
     optstash = optproc.OptionsState(['REFERENCE'])
     for a_sym, a_z, basis in unq_atoms:
 
-#        geom = f"""
-#0 {int(1+reference_S[a_z])} 
-#{a_sym} 0.0 0.0 0.0
-#symmetry c1
-#"""
-
         # make sure we do UHF/UKS if we're not a singlet
         if reference_S[a_z] != 0:
             core.set_global_option("REFERENCE", "UHF")
