@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(mbis-1 "psi;properties;quicktests")
+add_regression_test(mbis-6 "psi;properties;quicktests")
