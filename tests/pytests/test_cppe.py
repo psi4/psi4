@@ -8,9 +8,9 @@ from .addons import using
 
 pytestmark = pytest.mark.quick
 
-
 __potentials = {
-    'pna_6w': """
+    'pna_6w':
+    """
 @COORDINATES
 18
 AA
@@ -135,7 +135,8 @@ EXCLISTS
 17   16  18
 18   16  17
     """,
-    'h2o_spillout': """
+    'h2o_spillout':
+    """
 @COORDINATES
 4
 AA
@@ -176,7 +177,8 @@ EXCLISTS
 3       1    2    4
 4       1    2    3
     """,
-    'h2s_spillout': """
+    'h2s_spillout':
+    """
 @COORDINATES
 4
 AA
@@ -219,9 +221,9 @@ EXCLISTS
     """,
 }
 
-
 __geoms = {
-    'pna': """
+    'pna':
+    """
     C          8.64800        1.07500       -1.71100
     C          9.48200        0.43000       -0.80800
     C          9.39600        0.75000        0.53800
@@ -239,13 +241,15 @@ __geoms = {
     H          7.74900        2.71100        2.65200
     H          8.99100        1.57500        2.99500
     """,
-    'nh2': """
+    'nh2':
+    """
     0 2
     N  0.000000000000     0.000000000000    -0.079859033927
     H  0.000000000000    -0.803611003426     0.554794694632
     H  0.000000000000     0.803611003426     0.554794694632
     """,
-    'fa': """
+    'fa':
+    """
     O     22.931000    21.390000    23.466000
     C     22.287000    21.712000    22.485000
     N     22.832000    22.453000    21.486000
@@ -266,7 +270,7 @@ def _dump_potential(potname):
 @using('cppe')
 def test_cppe_scf_alpha():
     """Tests the PE-SCF ground state energies and static dipole polarizability"""
-    alpha_diag = [36.14995,  35.10354, 78.45963] 
+    alpha_diag = [36.14995, 35.10354, 78.45963]
     ref_pe_energy = -0.03424830892844
     ref_scf_energy = -482.9411084900
 
@@ -330,16 +334,13 @@ def test_cppe_tdscf_uhf():
     """Tests PE-TDSCF excited states (unrestricted)"""
     ref_pe_energy = -0.0205612607760474
     ref_scf_energy = -54.8574855299258388
-    exc_energies = [0.10127093659047763,
-                    0.36026243740116887,
-                    0.4991013815039879,
-                    0.5097654655683802,
-                    0.5542193540734713]
-    osc_strengths = [0.005726019396442727, 
-                     1.1052876769210551e-08,
-                     4.1341553724988216e-06,
-                     0.0015188940376984871, 
-                     0.0006496149064569229]
+    exc_energies = [
+        0.10127093659047763, 0.36026243740116887, 0.4991013815039879, 0.5097654655683802, 0.5542193540734713
+    ]
+    osc_strengths = [
+        0.005726019396442727, 1.1052876769210551e-08, 4.1341553724988216e-06, 0.0015188940376984871,
+        0.0006496149064569229
+    ]
 
     mol = psi4.geometry(__geoms['nh2'])
     potfile = _dump_potential('pna_6w')
@@ -359,8 +360,14 @@ def test_cppe_tdscf_uhf():
 
 
 @pytest.mark.parametrize("inp", [
-    pytest.param({'potname': 'h2o_spillout', "ref": -169.106418687201}, id='h2o', marks=using('cppe')),
-    pytest.param({'potname': 'h2s_spillout', "ref": -169.104593047406}, id='h2s', marks=using('cppe')),
+    pytest.param({
+        'potname': 'h2o_spillout',
+        "ref": -169.106418687201
+    }, id='h2o', marks=using('cppe')),
+    pytest.param({
+        'potname': 'h2s_spillout',
+        "ref": -169.104593047406
+    }, id='h2s', marks=using('cppe')),
 ])
 def test_cppe_pe_ecp(inp):
     mol = psi4.geometry(__geoms['fa'])
@@ -376,4 +383,3 @@ def test_cppe_pe_ecp(inp):
     })
     scf_energy, wfn = psi4.energy('scf', return_wfn=True, molecule=mol)
     assert compare_values(inp["ref"], scf_energy, 9, "Total PE-SCF Energy with PE(ECP)")
-    
