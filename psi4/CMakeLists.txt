@@ -290,6 +290,7 @@ install(FILES ../tests/pytests/__init__.py
               ../tests/pytests/test_dftd3.py
               ../tests/pytests/test_erisieve.py
               ../tests/pytests/test_elec_fields.py
+              ../tests/pytests/test_cppe.py
               ../tests/pytests/test_fcidump_energy.py
               ../tests/pytests/test_solvers.py
               ../tests/pytests/test_tdscf_products.py

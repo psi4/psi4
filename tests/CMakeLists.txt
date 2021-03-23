@@ -146,13 +146,6 @@ if(ENABLE_CheMPS2)
     message(STATUS "Adding test cases: Psi4 + CheMPS2")
 endif()
 
-# <<<  CPPE  >>>
-
-if(ENABLE_cppe)
-    add_subdirectory(cppe)
-    message(STATUS "Adding test cases: Psi4 + CPPE")
-endif()
-
 # <<<  DFTD3  >>>
 
 find_program(DFTD3_EXECUTABLE
