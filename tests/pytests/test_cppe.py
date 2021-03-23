@@ -282,23 +282,23 @@ def test_cppe_scf_alpha():
         'pe__potfile': potfile,
     })
     scf_energy, wfn = psi4.properties("SCF", properties=["DIPOLE_POLARIZABILITIES"], return_wfn=True)
-    compare_values(ref_pe_energy, wfn.variable("PE ENERGY"), 6, "PE Energy contribution")
-    compare_values(ref_scf_energy, scf_energy, 6, "Total PE-SCF Energy")
+    assert compare_values(ref_pe_energy, wfn.variable("PE ENERGY"), 6, "PE Energy contribution")
+    assert compare_values(ref_scf_energy, scf_energy, 6, "Total PE-SCF Energy")
     alpha_ref = [psi4.core.variable(f'DIPOLE POLARIZABILITY {cc}') for cc in ['XX', 'YY', 'ZZ']]
-    compare_arrays(alpha_diag, alpha_ref, 4, 'PE DIPOLE POLARIZABILITY')
+    assert compare_arrays(alpha_diag, alpha_ref, 4, 'PE DIPOLE POLARIZABILITY')
 
 
 def _base_tdscf_test(molecule, ref_scf_energy, ref_pe_energy, exc_energies, osc_strengths):
     scf_energy, wfn = psi4.energy("TD-SCF", return_wfn=True, molecule=molecule)
-    compare_values(ref_pe_energy, wfn.variable("PE ENERGY"), 6, "PE Energy contribution")
-    compare_values(ref_scf_energy, scf_energy, 6, "Total PE-SCF Energy")
+    assert compare_values(ref_pe_energy, wfn.variable("PE ENERGY"), 6, "PE Energy contribution")
+    assert compare_values(ref_scf_energy, scf_energy, 6, "Total PE-SCF Energy")
     e_calc = []
     r_calc = []
     for i in range(len(exc_energies)):
         e_calc.append(wfn.variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A SYMMETRY'))
         r_calc.append(wfn.variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A SYMMETRY'))
-    compare_arrays(exc_energies, e_calc, 4, f'PE EXCITATION ENERGY')
-    compare_arrays(osc_strengths, r_calc, 4, f'PE OSCILLATOR STRENGTH')
+    assert compare_arrays(exc_energies, e_calc, 4, f'PE EXCITATION ENERGY')
+    assert compare_arrays(osc_strengths, r_calc, 4, f'PE OSCILLATOR STRENGTH')
 
 
 @using('cppe')
@@ -375,5 +375,5 @@ def test_cppe_pe_ecp(inp):
         'pe__pe_ecp': True,
     })
     scf_energy, wfn = psi4.energy('scf', return_wfn=True, molecule=mol)
-    compare_values(inp["ref"], scf_energy, 9, "Total PE-SCF Energy with PE(ECP)")
+    assert compare_values(inp["ref"], scf_energy, 9, "Total PE-SCF Energy with PE(ECP)")
     
