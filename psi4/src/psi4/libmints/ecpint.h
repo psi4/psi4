@@ -70,17 +70,35 @@ class ECPInt : public OneBodyAOInt {
    private:
     /// The LibECP instance that will do all the heavy lifting
     libecpint::ECPIntegral engine_;
+    int current_ecp_number_;
 
     /// Integrals are requested using Psi4 GaussianShell objects, but we need the corresponding LibECP
     /// object to actually compute them.  This structure maps the two, via the Psi4 GaussianShell's
     /// first() function, which provides the index of the first basis function the shell involves.
     std::map<int, int> libecp_shell_lookup_;
+    /// A list of all of the orbital basis sets, converted to LibECP format.
     std::vector<libecpint::GaussianShell> libecp_shells_;
+    /// A list of the centers with ECPs, and the corresponding LibECP data structure.
     std::vector<std::pair<int,libecpint::ECP>> centers_and_libecp_ecps_;
-
+    /// Tracks the iterations over ECP-bearing centers in Hessian integral calculations.
+    size_t current_ecp_iterator_ = 0;
    public:
     ECPInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
     ~ECPInt() override;
+
+    /// Initialize the iterator over ECPs for Hessian integral calculations (to save memory).  Call this first
+    /// and then loop over ECP centers by calling `next_hessian()` in a while loop before calling the
+    /// `compute_pair_deriv1(s1,s2)` function.
+    void setup_hessian_iterations() { current_ecp_iterator_ = 0; }
+    /// Advances to the next ECP center in Hessian integral calculations; this is designed to be used in a while
+    /// loop and will return false when the iteration is finished.  Make sure that `setup_hessian_iterations()`
+    /// is called before the while loop that calls this function.
+    bool next_hessian_ecp() { return ++current_ecp_iterator_ != centers_and_libecp_ecps_.size(); }
+    /// When looping over ECPs for Hessian integral calculations, call this function to find out which
+    /// center hold the ECP corresponding to the current perturbation in the iterator.
+    int current_ecp_center() const { return centers_and_libecp_ecps_[current_ecp_iterator_].first; }
+
+    /// Overridden shell-pair integral calculation over all ECP centers
     void compute_pair(const libint2::Shell &shellA, const libint2::Shell &shellB) override;
     void compute_pair_deriv1(const libint2::Shell &shellA, const libint2::Shell &shellB) override;
 };

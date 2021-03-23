@@ -121,8 +121,8 @@ ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs
 
         maxnao1 *= 3 * natom_;
     } else if (deriv == 2) {
-        set_chunks(27 * natom_);
-        maxnao1 *= 27 * natom_;
+        set_chunks(45);
+        maxnao1 *= 45;
     }
 
     buffer_ = new double[maxnao1 * maxnao2];
@@ -174,6 +174,36 @@ void ECPInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell &s
     }
 }
 
+void ECPInt::compute_pair_deriv2(const GaussianShell &s1, const GaussianShell &s2) {
+    // The derivative ordering in the LibECPInt buffers
+    //    0     1     2     3     4     5
+    //  AxAx, AxAy, AxAz, AyAy, AyAz, AzAz,
+    //    6     7     8     9    10    11    12    13    14
+    //  AxBx, AxBy, AxBz, AyBx, AyBy, AyBz, AzBx, AzBy, AzBz,
+    //   15    16    17    18    19    20    21    22    23
+    //  AxCx, AxCy, AxCz, AyCx, AyCy, AyCz, AzCx, AzCy, AzCz,
+    //   24    25    26    27    28    29
+    //  BxBx, BxBy, BxBz, ByBy, ByBz, BzBz,
+    //   30    31    32    33    34    35    36    37    38
+    //  BxCx, BxCy, BxCz, ByCx, ByCy, ByCz, BzCx, BzCy, BzCz,
+    //   39    40    41    42    43    44
+    //  CxCx, CxCy, CxCz, CyCy, CyCz, CzCz
+    const size_t size = s1.ncartesian() * s2.ncartesian();
+    memset(buffer_, 0, 45 * size * sizeof(double));
+    int idx1 = libecp_shell_lookup_[s1.start()];
+    int idx2 = libecp_shell_lookup_[s2.start()];
+    const libecpint::GaussianShell &LibECPShell1 = libecp_shells_[idx1];
+    const libecpint::GaussianShell &LibECPShell2 = libecp_shells_[idx2];
+    for (const auto &center_and_ecp : centers_and_libecp_ecps_){
+        std::array<libecpint::TwoIndex<double>, 9> results;
+        engine_.compute_shell_pair_derivative(center_and_ecp.second, LibECPShell1, LibECPShell2, results);
+        // Accumulate the results into buffer_
+        for (int i = 0; i < 45; ++i){
+            const size_t offset = i * size;
+            std::transform (results[i].data.begin(), results[i].data.end(), buffer_ + offset, buffer_ + offset, std::plus<double>());
+        }
+    }
+}
 
 ECPSOInt::ECPSOInt(const std::shared_ptr<OneBodyAOInt> &aoint, const std::shared_ptr<IntegralFactory> &fact)
     : OneBodySOInt(aoint, fact) {
