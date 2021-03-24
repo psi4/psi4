@@ -66,6 +66,7 @@ def free_atom_volumes(wfn, **kwargs):
             else:
                 theory = var[0]
 
+    core.print_out(f"Level of theory:{theory}\n") 
     # list of reference number of unpaired electrons.
     # Note that this is not the same as the
     # total spin of the ground state atom
