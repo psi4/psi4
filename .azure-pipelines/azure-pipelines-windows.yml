@@ -222,8 +222,7 @@ jobs:
       - script: |
           setlocal EnableDelayedExpansion
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
-          psi4 $(Build.SourcesDirectory)\tests\mbis-1\input.dat
-          cat $(Build.SourcesDirectory)\tests\mbis-1\output.dat
+          psi4 $(Build.SourcesDirectory)\tests\mbis-1\input.dat -o stdout
         displayName: 'Run, Run, Spot, Run Test'
         workingDirectory: $(Build.BinariesDirectory)/build
 
