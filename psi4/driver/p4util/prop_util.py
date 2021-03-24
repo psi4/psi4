@@ -85,9 +85,11 @@ def free_atom_volumes(wfn, **kwargs):
         symbol = mol.symbol(atom)
         Z = int(mol.Z(atom))
         basis = mol.basis_on_atom(atom)
-        core.print_out(f"{symbol}  {Z}  {basis}\n")
         unq_atoms.add((symbol, Z, basis))
     core.print_out(f"Level of theory:{theory}\n") 
+
+    for a_sym, a_z, basis in unq_atoms:
+        core.print_out(f"{a_sym} {a_z} {basis}\n")
 
     core.print_out(f"  Running {len(unq_atoms)} free-atom UHF computations")
 
