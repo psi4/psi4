@@ -77,18 +77,17 @@ def free_atom_volumes(wfn, **kwargs):
 
     # the parent molecule and reference type
     mol = wfn.molecule()
-    core.print_out(f"Level of theory:{theory}\n") 
 
     # Get unique atoms by input symbol,
     # Be to handle different basis sets
     unq_atoms = set()
-    core.print_out(f"Number of atoms:{mol.natom()}\n")
     for atom in range(mol.natom()):
         symbol = mol.symbol(atom)
         Z = int(mol.Z(atom))
         basis = mol.basis_on_atom(atom)
         core.print_out(f"{symbol}  {Z}  {basis}\n")
         unq_atoms.add((symbol, Z, basis))
+    core.print_out(f"Level of theory:{theory}\n") 
 
     core.print_out(f"  Running {len(unq_atoms)} free-atom UHF computations")
 
