@@ -86,12 +86,8 @@ def free_atom_volumes(wfn, **kwargs):
         Z = int(mol.Z(atom))
         basis = mol.basis_on_atom(atom)
         unq_atoms.add((symbol, Z, basis))
-    core.print_out(f"Level of theory:{theory}\n") 
 
-    n_uatom = len(unq_atoms)
-    for a_sym, a_z, basis in unq_atoms:
-        core.print_out(f"{a_sym} {a_z} {basis}\n")
-    core.print_out(f"  Running {n_uatom} free-atom UHF computations")
+    core.print_out(f"  Running {len(unq_atoms)} free-atom UHF computations")
 
     optstash = optproc.OptionsState(['REFERENCE'])
     for a_sym, a_z, basis in unq_atoms:
@@ -113,8 +109,8 @@ def free_atom_volumes(wfn, **kwargs):
         method = theory + "/" + basis
 
         # Supress printing
-#        if print_level <= 1:
-#            core.be_quiet()
+        if print_level <= 1:
+            core.be_quiet()
 
         # Get the atomic wfn
         at_e, at_wfn = psi4.energy(method, return_wfn=True)
@@ -122,8 +118,8 @@ def free_atom_volumes(wfn, **kwargs):
         # Now, re-run mbis for the atomic density, grabbing only the volume
         psi4.oeprop(at_wfn, 'MBIS_CHARGES', title=a_sym + " " + method, free_atom=True)
 
-#        if print_level <= 1:
-#            core.reopen_outfile()
+        if print_level <= 1:
+            core.reopen_outfile()
 
         vw = at_wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
         vw = vw.get(0, 0)
