@@ -62,7 +62,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   fcidump
                   fd-freq-energy fd-freq-energy-large fd-freq-gradient
                   fd-freq-gradient-large fd-gradient freq-isotope1 freq-isotope2 fnocc1 fnocc2
-                  fnocc3 fnocc4 fnocc5 frac frac-ip-fitting frac-traverse ghosts gibbs
+                  fnocc3 fnocc4 fnocc5 fnocc6 frac frac-ip-fitting frac-traverse ghosts gibbs
                   lccd-grad1 lccd-grad2 matrix1 mbis-1 mbis-2 mbis-3 mbis-4 mbis-5 mcscf1 mcscf2 mcscf3
                   mints1 mints2 mints3 mints4 mints5 mints6 mints8 mints-benchmark mints-helper
                   mints9 mints10 mints15 molden1 molden2 mom mp2-1  mp2-def2 mp2-grad1 mp2-grad2 mp2-h
@@ -95,7 +95,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   options1 cubeprop-esp dft-smoke scf-hess1 scf-hess2 scf-hess3 scf-hess4 scf-hess5 scf-freq1 dft-jk scf-coverage
                   dft-custom-dhdf dft-custom-hybrid dft-custom-mgga dft-custom-gga
                   pywrap-bfs pywrap-align pywrap-align-chiral mints12 cc-module
-                  tdscf-1 tdscf-2 tdscf-3 tdscf-4
+                  tdscf-1 tdscf-2 tdscf-3 tdscf-4 tdscf-5
                   basis-ecp dft-pruning freq-masses sapt9 sapt10
 )
     add_subdirectory(${test_name})

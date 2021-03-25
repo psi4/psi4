@@ -1958,8 +1958,8 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
         optstash = p4util.OptionsState(['BASIS'])
         core.set_global_option('BASIS', basis)
         ptype_value, wfn = func(method_name, return_wfn=True, molecule=molecule, **kwargs)
-        core.clean()
-
+        if core.get_option("SCF", "DF_INTS_IO") != "SAVE":
+            core.clean()
         optstash.restore()
 
         if return_wfn:
