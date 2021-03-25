@@ -128,6 +128,9 @@ def free_atom_volumes(wfn, **kwargs):
         wfn.set_variable("MBIS FREE ATOM " + a_sym.upper() + " VOLUME", vw)
         
         psi4.core.clean()
+        psi4.core.clean_timers()
+        psi4.core.clean_variables()
+        #psi4.core.clean_options()
 
     # reset mol and reference to original
     optstash.restore()
