@@ -2145,10 +2145,11 @@ SharedMatrix MintsHelper::effective_core_potential_grad(SharedMatrix D) {
 
         double **Vp = gradtemps[rank]->pointer();
 
+        size_t size = nP * nQ;
         for (const int center : all_centers) {
-            const double *ref0 = &buffer[3 * center * nP * nQ + 0 * nP * nQ];
-            const double *ref1 = &buffer[3 * center * nP * nQ + 1 * nP * nQ];
-            const double *ref2 = &buffer[3 * center * nP * nQ + 2 * nP * nQ];
+            const double *ref0 = &buffer[3 * center * size + 0 * size];
+            const double *ref1 = &buffer[3 * center * size + 1 * size];
+            const double *ref2 = &buffer[3 * center * size + 2 * size];
             for (size_t p = 0; p < nP; p++) {
                 for (size_t q = 0; q < nQ; q++) {
                     double Vval = perm * Dp[p + oP][q + oQ];

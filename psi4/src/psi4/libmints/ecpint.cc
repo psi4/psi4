@@ -76,7 +76,7 @@ ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs
     }
 
     double oldCx, oldCy, oldCz;
-    libecpint::ECP ecp;
+    std::pair<int,libecpint::ECP> ecp;
     // Make LibECP ECP objects, grouping all functions on a given center into a single ECP object
     for (int ecp_shell = 0; ecp_shell < bs1->n_ecp_shell(); ++ecp_shell){
         const GaussianShell &psi_ecp_shell = bs1->ecp_shell(ecp_shell);
@@ -89,23 +89,23 @@ ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs
             oldCx = Cx;
             oldCy = Cy;
             oldCz = Cz;
-            ecp = libecpint::ECP(psi_ecp_shell.center());
+            ecp = std::make_pair(psi_ecp_shell.ncenter(), libecpint::ECP(psi_ecp_shell.center()));
         }
-        if (oldCx != Cx && oldCy != Cy && oldCz != Cz) {
+        if (oldCx != Cx || oldCy != Cy || oldCz != Cz) {
             // We're on a different center now; add the current ECP and make a new one
             oldCx = Cx;
             oldCy = Cy;
             oldCz = Cz;
-            centers_and_libecp_ecps_.push_back(std::make_pair(psi_ecp_shell.ncenter(),ecp));
-            ecp = libecpint::ECP(center);
+            centers_and_libecp_ecps_.push_back(ecp);
+            ecp = std::make_pair(psi_ecp_shell.ncenter(), libecpint::ECP(psi_ecp_shell.center()));
         }
         int nprim = psi_ecp_shell.nprimitive();
         for (int prim = 0; prim < nprim; ++prim) {
-            ecp.addPrimitive(psi_ecp_shell.nval(prim), psi_ecp_shell.am(), psi_ecp_shell.exp(prim), psi_ecp_shell.coef(prim), prim==nprim-1);
+            ecp.second.addPrimitive(psi_ecp_shell.nval(prim), psi_ecp_shell.am(), psi_ecp_shell.exp(prim), psi_ecp_shell.coef(prim), prim==nprim-1);
         }
         if (ecp_shell == bs1->n_ecp_shell()-1){
             // Make sure the last one gets pushed back in!
-            centers_and_libecp_ecps_.push_back(std::make_pair(psi_ecp_shell.ncenter(),ecp));
+            centers_and_libecp_ecps_.push_back(ecp);
         }
     }
 
@@ -169,7 +169,7 @@ void ECPInt::compute_pair_deriv1(const GaussianShell &s1, const GaussianShell &s
                                     center3*3*size + 0*size, center3 * 3*size + 1*size, center3 * 3*size + 2*size };
         for (int i = 0; i < 9; ++i){
             const size_t offset = offsets[i];
-            std::transform (results[i].data.begin(), results[i].data.end(), buffer_ + offset, buffer_ + offset, std::plus<double>());
+            std::transform(results[i].data.begin(), results[i].data.end(), buffer_ + offset, buffer_ + offset, std::plus<double>());
         }
     }
 }
@@ -195,8 +195,8 @@ void ECPInt::compute_pair_deriv2(const GaussianShell &s1, const GaussianShell &s
     const libecpint::GaussianShell &LibECPShell1 = libecp_shells_[idx1];
     const libecpint::GaussianShell &LibECPShell2 = libecp_shells_[idx2];
     for (const auto &center_and_ecp : centers_and_libecp_ecps_){
-        std::array<libecpint::TwoIndex<double>, 9> results;
-        engine_.compute_shell_pair_derivative(center_and_ecp.second, LibECPShell1, LibECPShell2, results);
+        std::array<libecpint::TwoIndex<double>, 45> results;
+        engine_.compute_shell_pair_second_derivative(center_and_ecp.second, LibECPShell1, LibECPShell2, results);
         // Accumulate the results into buffer_
         for (int i = 0; i < 45; ++i){
             const size_t offset = i * size;

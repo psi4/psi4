@@ -81,7 +81,7 @@ class ECPInt : public OneBodyAOInt {
     /// A list of the centers with ECPs, and the corresponding LibECP data structure.
     std::vector<std::pair<int,libecpint::ECP>> centers_and_libecp_ecps_;
     /// Tracks the iterations over ECP-bearing centers in Hessian integral calculations.
-    size_t current_ecp_iterator_ = 0;
+    int current_ecp_iterator_ = -1;
    public:
     ECPInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
     ~ECPInt() override;
@@ -89,11 +89,11 @@ class ECPInt : public OneBodyAOInt {
     /// Initialize the iterator over ECPs for Hessian integral calculations (to save memory).  Call this first
     /// and then loop over ECP centers by calling `next_hessian()` in a while loop before calling the
     /// `compute_pair_deriv1(s1,s2)` function.
-    void setup_hessian_iterations() { current_ecp_iterator_ = 0; }
+    void setup_hessian_iterations() { current_ecp_iterator_ = -1; }
     /// Advances to the next ECP center in Hessian integral calculations; this is designed to be used in a while
     /// loop and will return false when the iteration is finished.  Make sure that `setup_hessian_iterations()`
     /// is called before the while loop that calls this function.
-    bool next_hessian_ecp() { return ++current_ecp_iterator_ != centers_and_libecp_ecps_.size(); }
+    bool next_hessian_ecp() { return (++current_ecp_iterator_) != centers_and_libecp_ecps_.size(); }
     /// When looping over ECPs for Hessian integral calculations, call this function to find out which
     /// center hold the ECP corresponding to the current perturbation in the iterator.
     int current_ecp_center() const { return centers_and_libecp_ecps_[current_ecp_iterator_].first; }
