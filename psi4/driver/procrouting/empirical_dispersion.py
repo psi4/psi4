@@ -42,6 +42,7 @@ _engine_can_do = collections.OrderedDict([('libdisp', ['d1', 'd2', 'chg', 'das20
                                           ('dftd3', ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']),
                                           ('nl', ['nl']),
                                           ('mp2d', ['dmp2']),
+                                          ("dftd4", ["d4bj"]),
                                         ]) # yapf: disable
 
 _capable_engines_for_disp = collections.defaultdict(list)
@@ -56,7 +57,7 @@ class EmpiricalDispersion(object):
     Attributes
     ----------
     dashlevel : str
-        {'d1', 'd2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj', 'chg', 'das2009', 'das2010', 'nl', 'dmp2'}
+        {'d1', 'd2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj', 'chg', 'das2009', 'das2010', 'nl', 'dmp2', "d4bj"}
         Name of dispersion correction to be applied. Resolved
         from `name_hint` and/or `level_hint` into a key of
         `empirical_dispersion_resources.dashcoeff`.
@@ -87,7 +88,7 @@ class EmpiricalDispersion(object):
         `qcengine.programs.empirical_dispersion_resources.dashcoeff` itself for purposes of
         validating :py:attr:`fctldash`.
     engine : str
-        {'libdisp', 'dftd3', 'nl', 'mp2d'}
+        {'libdisp', 'dftd3', 'nl', 'mp2d', "dftd4"}
         Compute engine for dispersion. One of Psi4's internal libdisp
         library, Grimme's DFTD3 executable, or nl.
     disp : Dispersion
@@ -190,7 +191,7 @@ class EmpiricalDispersion(object):
             Set if :py:attr:`fctldash` nonempty.
 
         """
-        if self.engine in ['dftd3', 'mp2d']:
+        if self.engine in ['dftd3', 'mp2d', "dftd4"]:
             resi = AtomicInput(
                 **{
                     'driver': 'energy',
@@ -261,7 +262,7 @@ class EmpiricalDispersion(object):
             (nat, 3) dispersion gradient [Eh/a0].
 
         """
-        if self.engine in ['dftd3', 'mp2d']:
+        if self.engine in ['dftd3', 'mp2d', "dftd4"]:
             resi = AtomicInput(
                 **{
                     'driver': 'gradient',
