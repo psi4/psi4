@@ -536,3 +536,10 @@ Bibliography
 .. [Schriber:2021:234107]
     J. B. Schriber, D. A. Sirianni, D. G. A. Smith, L. A. Burns, D. Sitkoff, D. L. Cheney, C. D. Sherrill
     *J. Chem. Phys.* **154**, 234107 (2021).
+
+.. [Caldeweyher:2019:154122]
+   "A generally applicable atomic-charge dependent London dispersion correction",
+   E. Caldeweyher,  S. Ehlert,  A. Hansen, H. Neugebauer, S. Spicher, C. Bannwarth, and S. Grimme,
+   *J. Chem. Phys.* **150**, 154122 (2019).
+   https://doi.org/10.1063/1.5090222
+
