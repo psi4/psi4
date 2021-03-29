@@ -1,0 +1,51 @@
+name: test
+channels:
+  - conda-forge
+dependencies:
+  - blas=*=mkl  # not needed but an example of disuading solver from openblas and old psi
+  - intel-openmp!=2019.5
+
+    # build
+  - cmake >=3.15
+  - gxx_linux-64              # gcov, too
+  - ninja
+    # core
+  - eigen
+  - mpfr
+  - networkx
+  - psi4/label/dev::pybind11-headers
+  - python
+    # qc
+  - psi4/label/dev::gau2grid
+  - psi4/label/dev::libint2
+  - psi4/label/dev::libxc
+  - qcengine
+    # docs
+  - ipykernel
+  - jupyter_client
+  - nbsphinx
+  - python-graphviz
+  - sphinx >=1.5,<2.0
+  - sphinx-automodapi
+  - psi4/label/dev::sphinx-psi-theme
+
+#  - intel::fortran_rt
+#  - intel::mkl-devel
+#  - mkl-devel {{ mkl }}
+
+        # run: for build-time testing or docs
+        #- dftd3 {{ dftd3 }}
+        #- gcp {{ gcp }}
+        #- numpy >=1.12.0
+        #- pylibefp {{ pylibefp }}              # for efp fragment autodoc
+        # cov
+        #- codecov
+        #- coverage
+
+#outputs:
+#    - name: psi4-docs
+#      files:
+#          - share/doc/psi4
+#      test:
+#          commands:
+#              - test -f $PREFIX/share/doc/psi4/html/index.html
