@@ -6,14 +6,13 @@ dependencies:
   - intel-openmp!=2019.5
     # build
   - cmake >=3.15
-  - gxx_linux-64              # gcov, too
-  - ninja
+  - gxx_linux-64
     # core
   - eigen
   - mpfr
   - networkx
   - psi4/label/dev::pybind11-headers
-  - python
+  - python 3.8.*
     # qc
   - psi4/label/dev::gau2grid
   - psi4/label/dev::libint2
@@ -24,13 +23,14 @@ dependencies:
   - jupyter_client
   - nbsphinx
   - python-graphviz
-  - sphinx >=1.5,<2.0
+  - sphinx
   - sphinx-automodapi
   - psi4/label/dev::sphinx-psi-theme
 
 #  - intel::fortran_rt
 #  - intel::mkl-devel
 #  - mkl-devel {{ mkl }}
+#  - sphinx >=1.5,<2.0
 
         # run: for build-time testing or docs
         #- dftd3 {{ dftd3 }}
