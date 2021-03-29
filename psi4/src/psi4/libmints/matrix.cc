@@ -1591,7 +1591,7 @@ bool Matrix::schmidt_add_row(int h, int rows, double *v) noexcept {
     normval = C_DDOT(coldim(h), v, 1, v, 1);
     normval = sqrt(normval);
 
-    if (normval > 1.0e-5) {
+    if (normval > 1.0e-12) {
         for (I = 0; I < coldim(h); ++I) matrix_[h][rows][I] = v[I] / normval;
 
         //        for (i=0; i<coldim(h); ++i)

@@ -213,7 +213,7 @@ void get_params(std::shared_ptr<Wavefunction> wfn, Options &options) {
     outfile->Printf("\tMemory (Mbytes)  =    %5.1f\n", params.memory / 1e6);
     outfile->Printf("\tCache Level      =    %d\n", params.cachelev);
     outfile->Printf("\tPrint Level      =    %d\n", params.print);
-    outfile->Printf("\tMaxiter          =    %d\n", params.maxiter);
+    outfile->Printf("\tMaxiter          =    %4d\n", params.maxiter);
     outfile->Printf("\tConvergence      =    %3.1e\n", params.convergence);
     outfile->Printf("\tRestart          =    %s\n", params.restart ? "Allowed" : "Not Allowed");
     outfile->Printf("\tDIIS             =    %s\n", params.diis ? "Yes" : "No");
