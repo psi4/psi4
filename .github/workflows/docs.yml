@@ -90,6 +90,7 @@ jobs:
 #    - name: Conda-Build for Linux
 #      run: conda build conda/recipe -c defaults -c psi4/label/dev --output-folder . --error-overlinking --error-overdepending
 
+    # docs are not Ninja ready
     - name: Configure with CMake (Intel + MKL)
       run: |
         cmake \
