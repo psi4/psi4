@@ -76,14 +76,7 @@ jobs:
         which conda python cmake $CXX
 
     - name: Patch Sphinx for Pybind11
-      run: |
-        printenv
-        which sphinx-build
-        ls -l /usr/share/miniconda/envs/test/lib/python3.8/site-packages/sphinx/util/docstrings.py
-        grep "expandtabs" /usr/share/miniconda/envs/test/lib/python3.8/site-packages/sphinx/util/docstrings.py
-        sed -i "s/lines = s\.expandtabs/lines = str(s).expandtabs/g" /usr/share/miniconda/envs/test/lib/python3.8/site-packages/sphinx/util/docstrings.py
-        grep "expandtabs" /usr/share/miniconda/envs/test/lib/python3.8/site-packages/sphinx/util/docstrings.py
-        echo ${CONDA_PREFIX}
+      run: sed -i "s/lines = s\.expandtabs/lines = str(s).expandtabs/g" ${CONDA_PREFIX}/lib/python3.8/site-packages/sphinx/util/docstrings.py
 
 #      # Source Compilers is for reference. happens for real w/i conda recipe
 #    - name: Source Compilers
