@@ -173,6 +173,8 @@ show_authors = True
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
+highlight_language = "python"
+
 # A list of ignored prefixes for module index sorting.
 #modindex_common_prefix = []
 
@@ -379,10 +381,10 @@ rst_epilog = """
 #
 #.. |PSIfour| replace:: :sc:`Psi4`
 
-rst_prolog = """
-.. highlight:: python
-   :linenothreshold: 1
-"""
+#rst_prolog = """
+#.. highlight:: python
+#   :linenothreshold: 1
+#"""
 # Logo at top of page
 #.. image:: /psi4banner.png
 #   :width: 100 %
@@ -394,11 +396,11 @@ extlinks = {'source':    ('https://github.com/psi4/psi4/blob/master/%s', 'psi4/'
             'srcbasis':  ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/basis/%s.gbs', ''),
             'srcplugin': ('https://github.com/psi4/psi4/blob/master/plugins/%s', ''),
             'srcefpfrag':('https://github.com/ilyak/libefp/blob/master/fraglib/%s.efp', ''),
-            'psicode':   ('https://admiring-tesla-08529a.netlify.com/%s', 'psicode.org/'),
+            'psicode':   ('https://psicode.netlify.app/%s', 'psicode.org/'),
             'srcdb':     ('https://github.com/psi4/psi4/blob/master/psi4/share/psi4/databases/%s.py', '') }
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'python': ('https://docs.python.org/3.7', None),
+intersphinx_mapping = {'python': ('https://docs.python.org/3.9', None),
                        'numpy': ('https://docs.scipy.org/doc/numpy/', None),
                        'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
                        'matplotlib': ('https://matplotlib.org/', None),

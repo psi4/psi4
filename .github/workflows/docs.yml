@@ -21,43 +21,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-#    - name: "OneAPI: setup apt repo"
-#      run: devtools/oneapi-ci/setup_apt_repo_linux.sh
-#
-#    - name: "OneAPI F: collect versioned dependencies of apt packages"
-#      run: devtools/oneapi-ci/apt_depends.sh $LINUX_FORTRAN_COMPONENTS | tee depends_f.txt
-#
-#    - name: "OneAPI C: collect versioned dependencies of apt packages"
-#      run: devtools/oneapi-ci/apt_depends.sh $LINUX_CPP_COMPONENTS | tee depends_c.txt
-#
-#    - name: "OneAPI F: cache install"
-#      id: cache-install-f
-#      uses: actions/cache@v2
-#      with:
-#        path: |
-#          /opt/intel/oneapi/compiler
-#        key: install-${{ env.LINUX_FORTRAN_COMPONENTS }}-${{ hashFiles('**/depends_f.txt') }}-compiler-${{ hashFiles('**/devtools/oneapi-ci/cache_exclude_linux.sh') }}
-#
-#    - name: "OneAPI C: cache install"
-#      id: cache-install-c
-#      uses: actions/cache@v2
-#      with:
-#        path: |
-#          /opt/intel/oneapi/compiler
-#        key: install-${{ env.LINUX_CPP_COMPONENTS }}-${{ hashFiles('**/depends_c.txt') }}-compiler-${{ hashFiles('**/devtools/oneapi-ci/cache_exclude_linux.sh') }}
-#
-#    - name: "OneAPI F: install"
-#      if: steps.cache-install-f.outputs.cache-hit != 'true'
-#      run: devtools/oneapi-ci/install_linux_apt.sh $LINUX_FORTRAN_COMPONENTS
-#
-#    - name: "OneAPI C: install"
-#      if: steps.cache-install-c.outputs.cache-hit != 'true'
-#      run: devtools/oneapi-ci/install_linux_apt.sh $LINUX_CPP_COMPONENTS
-#
-#    - name: "OneAPI: exclude unused files from cache"
-#      if: (steps.cache-install.outputs.cache-hit != 'true') || (steps.cache-install-c.outputs.cache-hit != 'true')
-#      run: devtools/oneapi-ci/cache_exclude_linux.sh
-
     - name: Create Conda Environment
       uses: conda-incubator/setup-miniconda@v2
       with:
@@ -68,7 +31,6 @@ jobs:
         environment-file: devtools/conda-envs/docs-cf.yaml
         show-channel-urls: true
 
-#conda install anaconda-client
     - name: Environment Information
       run: |
         conda info
@@ -93,7 +55,7 @@ jobs:
 #      run: conda build conda/recipe -c defaults -c psi4/label/dev --output-folder . --error-overlinking --error-overdepending
 
     # docs are not Ninja ready
-    - name: Configure with CMake (Intel + MKL)
+    - name: Configure with CMake (Conda Gnu + MKL)
       run: |
         cmake \
           -S. \
@@ -112,9 +74,6 @@ jobs:
           -DCMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
           -DSPHINX_ROOT=${CONDA_PREFIX}
 
-
-# selectors in meta.yaml constrain to Linux, Py3 only
-
 # link against conda MKL & GCC
 # * since libefp uses mkl, makes sense to do so here, too
 #LAPACK_INTERJECT="${PREFIX}/lib/libmkl_rt.so"
@@ -132,31 +91,24 @@ jobs:
     #-DLAPACK_LIBRARIES="${LAPACK_INTERJECT}" \
     #-DLAPACK_INCLUDE_DIRS="${PREFIX}/include" \
 
-## build
-#cd build
-#make -j${CPU_COUNT}
-#
-## install psi4
-#make install
-#
-## can't use full PREFIX or workaround b/c tests and make/install intertwined so use shorter prefix
-#
-## test
-#stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
-#
-## docs build
-#make ghfeed
-#make doxyman
-#make sphinxman -j${CPU_COUNT}
-#
 ## install docs
 #make install
 
     - name: Compile Psi4
-      run: cmake --build objdir --verbose
+      run: |
+        cmake --build objdir
+        ctest -L smoke
 
     - name: Compile Docs
       run: cmake --build objdir --target sphinxman --verbose
+
+    - name: Tarball Docs
+      run: |
+        cd objdir/doc/sphinxman
+        tar -zcf sphinxman.tar.gz html/
+
+    - name: Compile Doxygen
+      run: cmake --build objdir --target doxyman --verbose
 
 #    - name: Smoke Test Binary
 #      run: |
@@ -172,15 +124,15 @@ jobs:
 #    - name: Meson Log
 #      if: ${{ failure() }}
 #      run: cat /usr/local/miniconda/conda-bld/dftd4_*/work/_build/meson-logs/meson-log.txt
-#
-#    - name: Archive Conda Package
-#      uses: actions/upload-artifact@v2
-#      with:
-#        name: linux-dftd4-conda-package
-#        path: |
-#          linux-64/*.tar.bz2
-#        retention-days: 1
-#
+
+    - name: Archive Docs Tarball
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux-html-docs
+        path: |
+          objdir/doc/sphinxman/sphinxman.tar.gz
+        retention-days: 1
+
 #      # continue-on-error allows the whole job not to fail just b/c storage limits at anaconda.org hit
 #    - name: Upload Conda Package
 #      continue-on-error: true

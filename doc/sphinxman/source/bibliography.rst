@@ -176,7 +176,8 @@ Bibliography
    M. Saitow and Y. Mochizuki,
    *Chem. Phys. Lett.* **X**, XX (2012).
 
-.. [Evangelista:2010:4728]
+..
+   [Evangelista:2010:4728]
    F. A. Evangelista, E. Prochnow, J. Gauss, and H. F. Schaefer,
    *J. Chem. Phys.* **132**, (2010).
 
@@ -232,7 +233,8 @@ Bibliography
    P.-A. Malmqvist, A. Rendell, and B. O. Roos,
    *J. Phys. Chem.* **94**, 5477-5482 (1990).
 
-.. [Docken:1972:4928]
+..
+   [Docken:1972:4928]
    K. K. Docken and J. Hinze,
    *J. Chem. Phys.* **57**, 4928-4936 (1972).
 
@@ -371,7 +373,7 @@ Bibliography
    R. Sure and S. Grimme,
    *J. Comput. Chem.* **15**, 1672 (2013).
 
-.. [Kallay:2008p144101]
+.. [Kallay:2008:144101]
    M. Kallay and J. Gauss,
    *J. Chem. Phys.* **129**, 144101 (2008).
 
@@ -512,10 +514,11 @@ Bibliography
    A. J. Misquitta and R. Podeszwa,
    *J. Chem. Phys.* **123**, 214103 (2005).
 
-.. [Hesselmann:2005:014103]
+..
+   [Hesselmann:2005:014103]
    A. Hesselmann and G. Jansen,
    *J. Chem. Phys.* **122**, 014103 (2005).
-    
+
 .. [Hesselmann:2014:094107]
    A. Hesselmann and T. Korona,
    *J. Chem. Phys.* **141**, 094107 (2014).

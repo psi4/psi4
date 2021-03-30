@@ -762,8 +762,8 @@ void export_mints(py::module& m) {
         .export_values();
 
     py::enum_<GaussianType>(m, "GaussianType", "0 if Cartesian, 1 if Pure")
-        .value("Cartesian", Cartesian)
-        .value("Pure", Pure)
+        .value("Cartesian", Cartesian, "(n+1)(n+2)/2 functions")
+        .value("Pure", Pure, "2n+1 functions")
         .export_values();
 
     py::class_<ShellInfo, std::shared_ptr<ShellInfo>>(m, "ShellInfo")

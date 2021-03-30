@@ -128,7 +128,9 @@ Then the following are examples of various types of calculations that can be com
    set intrafrag_step_limit 0.1
    optimize('scf')
 
-* Optimize while always limiting the step size to 0.1 au::
+* Optimize while always limiting the step size to 0.1 au:
+
+.. code-block: none
 
    set {
      intrafrag_step_limit     0.1
@@ -138,7 +140,9 @@ Then the following are examples of various types of calculations that can be com
 
    optimize('scf')
 
-* Optimize while calculating the Hessian at every step::
+* Optimize while calculating the Hessian at every step:
+
+.. code-block: none
 
    set full_hess_every 1
    optimize('scf')

@@ -153,6 +153,30 @@ foreach my $Module (@PSIMODULES) {
                                 push(@EnvArrays, $ltemp[1]);
                             }
                         }
+                        if ($line =~ /\Qvariables_\E/) {
+                            my @ltemp = split( /"/, $line);
+                            if ($ltemp[0] =~ /\Qvariables_\E/) {
+                                push(@EnvVariables, $ltemp[1]);
+                            }
+                        }
+                        if ($line =~ /\Qarrays_\E/) {
+                            my @ltemp = split( /"/, $line);
+                            if ($ltemp[0] =~ /\Qarrays_\E/) {
+                                push(@EnvArrays, $ltemp[1]);
+                            }
+                        }
+                        if ($line =~ /\Qset_variable\E/) {
+                            my @ltemp = split( /"/, $line);
+                            if ($ltemp[0] =~ /\Qset_variable\E/) {
+                                push(@EnvVariables, $ltemp[1]);
+                            }
+                        }
+                        if ($line =~ /\Qset_array\E/) {
+                            my @ltemp = split( /"/, $line);
+                            if ($ltemp[0] =~ /\Qset_array\E/) {
+                                push(@EnvArrays, $ltemp[1]);
+                            }
+                        }
                     }
                     close(CODE);
                 }

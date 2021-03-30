@@ -1643,7 +1643,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Run with Tamm-Dancoff approximation (TDA), uses random-phase approximation (RPA) when false -*/
         options.add_bool("TDSCF_TDA", false);
         /*- Convergence threshold for the norm of the residual vector. If unset,
-        default based on |globals__d_convergence|. -*/
+        default based on |scf__d_convergence|. -*/
         options.add_double("TDSCF_R_CONVERGENCE", 1E-4);
         /*- Guess type, only 'denominators' currently supported -*/
         options.add_str("TDSCF_GUESS", "DENOMINATORS");
