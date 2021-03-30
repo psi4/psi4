@@ -73,7 +73,7 @@ jobs:
       run: |
         conda info
         conda list
-        which conda python cmake ninja $CXX
+        which conda python cmake $CXX
 
     - name: Patch Sphinx for Pybind11
       run: |
