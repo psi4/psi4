@@ -50,7 +50,7 @@ for key in functionals:
     #else:
     funcdict[sfname] = {
         'name'                   : sfunc.name(),
-        'description'            : sfunc.description().strip(),
+        'description'            : sfunc.description().strip().split('\n')[0],
         'citation'               : sfunc.citation().strip(),
         'ansatz'                 : sfunc.ansatz(),
         'max_points'             : sfunc.max_points(),

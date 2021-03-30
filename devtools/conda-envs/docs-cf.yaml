@@ -12,7 +12,7 @@ dependencies:
   - mpfr
   - networkx
   - psi4/label/dev::pybind11-headers
-  - python 3.8.*
+  - python=3.8.*
     # qc
   - psi4/label/dev::gau2grid
   - psi4/label/dev::libint2
@@ -23,7 +23,7 @@ dependencies:
   - jupyter_client
   - nbsphinx
   - python-graphviz
-  - sphinx
+  - sphinx >=3.5
   - sphinx-automodapi
   - psi4/label/dev::sphinx-psi-theme
 

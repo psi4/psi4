@@ -52,6 +52,7 @@ A very simple loop that does not use permutational symmetry might look
 something like this in the old scheme:
 
 .. code-block:: cpp
+
     auto sieve = std::make_shared<ERISieve>(basisset, cutoff);
     auto factory= std::make_shared<IntegralFactory>(basisset);
     int deriv_level = 0;

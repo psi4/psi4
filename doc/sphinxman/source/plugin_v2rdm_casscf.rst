@@ -29,7 +29,7 @@
 .. include:: autodoc_abbr_options_c.rst
 
 .. index::
-   :pair: plugin; v2rdm_casscf
+   pair: plugin; v2rdm_casscf
 
 .. _`sec:v2rdm_casscf`:
 

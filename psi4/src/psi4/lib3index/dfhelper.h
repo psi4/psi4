@@ -115,7 +115,7 @@ class PSI_API DFHelper {
     double get_schwarz_cutoff() { return cutoff_; }
 
     /// fitting metric power (defaults to -0.5) to use in
-	/// K_{m n} = C_{l a}(m l|Q)(Q|R)^{-1/2}(R|P)^{-1/2}(P|n s)C_{s a}
+    /// K_{m n} = C_{l a}(m l|Q)(Q|R)^{-1/2}(R|P)^{-1/2}(P|n s)C_{s a}
     void set_metric_pow(double m_pow) { mpower_ = m_pow; }
     double get_metric_pow() { return mpower_; }
 

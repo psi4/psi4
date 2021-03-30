@@ -74,6 +74,7 @@ jobs:
         conda info
         conda list
         which conda python cmake ninja $CXX
+        sed -i "s/lines = s\.expandtabs/lines = str(s).expandtabs/g" ${CONDA_PREFIX}/lib/python3.8/site-packages/sphinx/util/docstrings.py
 
 #      # Source Compilers is for reference. happens for real w/i conda recipe
 #    - name: Source Compilers
