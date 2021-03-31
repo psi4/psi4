@@ -41,7 +41,7 @@ jobs:
         add-pip-as-python-dependency: true
         auto-activate-base: false
         channels: conda-forge
-        environment-file: devtools/conda-envs/docs-cf.yaml
+        environment-file: code/devtools/conda-envs/docs-cf.yaml
         show-channel-urls: true
 
     - name: Environment Information
@@ -142,7 +142,7 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add -A
-        git commit -m "auto-generated from QCElemental"
+        git commit -m "auto-generated from Psi4"
 
     - name: Push Changes
       uses: ad-m/github-push-action@master
