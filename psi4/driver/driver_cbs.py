@@ -1079,7 +1079,12 @@ def _get_default_xtpl(nbasis: int, xtpl_type: str) -> Callable:
         raise ValidationError(f"Wrong number of basis sets supplied to scf_xtpl: {nbasis}")
 
 def _get_dfa_alpha(xtpl_type, bdata, funcname):
-    """ A helper function to determine default extrapolation alpha.
+    """ A helper function to determine default extrapolation alpha for DFT. The
+    parameters for the 'fctl' component are based on a fit using numerical results
+    of 30 singlet diatomics with PBE-like functionals with varying amount of HF
+    exchange and MP2 correlation. The 'dh' values are based on the standard
+    correlation alpha of 3.0 for [3,4] extrapolation, and Truhlar's MP2 alpha of
+    2.4 for [2,3] extrapolation.
 
     Parameters
     ----------
@@ -1753,7 +1758,7 @@ def cbs(func, label, **kwargs):
         raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling
                                  function '%s' instead of 'energy', 'gradient' or 'hessian'.""" % ptype)
     # Abort here for dft extrapolations, as gradient components not yet implemented.
-    elif ptype in ['gradient', 'hessian'] and metadata[0]["wfn"] in functionals and metadata[0]["wfn"] not in ["hf", "scf"]:
+    elif ptype in ['hessian'] and metadata[0]["wfn"] in functionals and metadata[0]["wfn"] not in ["hf", "scf"]:
         raise ValidationError("""Wrapper complete_basis_set is unhappy to be calling
                                  function '%s' instead of 'energy'. Try with 'dertype=0' """ % ptype)
 
@@ -1845,20 +1850,19 @@ def cbs(func, label, **kwargs):
                 if dups >= 1:
                     del JOBS[indx_job]
 
-    #     Remove chemically subsumed modelchem portion listings
-    if ptype == 'energy':
-        for mc in MODELCHEM:
+    #     Remove chemically subsumed modelchem portion listings for energies and DFT
+        if ptype == "energy" or mc['f_wfn'] in functionals and mc['f_wfn'] not in ["scf", "hf"]:
             for component in VARH[mc['f_wfn']]:
                 for indx_job, job in enumerate(JOBS):
                     if (job['f_basis'] == mc['f_basis']) and \
-                       (job['f_options'] == False) and \
-                       (job['f_options'] == mc['f_options']):
+                        (job['f_options'] == False) and \
+                        (job['f_options'] == mc['f_options']):
                         if (job['f_component'] == component) and \
-                           (job['f_wfn'] != mc['f_wfn']):
+                            (job['f_wfn'] != mc['f_wfn']):
                             del JOBS[indx_job]
                         elif (job['f_component'].endswith(("dh", "disp", "nl"))) and \
-                             (job['f_component'] != job['f_wfn']) and \
-                             (job['f_wfn'] == mc['f_wfn']):
+                                (job['f_component'] != job['f_wfn']) and \
+                                (job['f_wfn'] == mc['f_wfn']):
                             del JOBS[indx_job]
 
     instructions += """\n    Enlightened listing of computations required.\n"""
@@ -1923,13 +1927,19 @@ def cbs(func, label, **kwargs):
         # Make energy(), etc. call
         response = func(molecule=molecule, **kwargs)
         if ptype == 'energy':
-            # need to hack around -nl being included in -fctl here:
             mc['f_energy'] = core.variable(VARH[mc['f_wfn']][mc['f_component']])
-            if mc['f_component'].endswith('-fctl'):
-                mc['f_energy'] -= core.variable("DFT VV10 ENERGY")
         elif ptype == 'gradient':
-            mc['f_gradient'] = response
-            mc['f_energy'] = core.variable('CURRENT ENERGY')
+            # For DFT gradients, we only care about the fctl gradient here.
+            # Other components ("disp", "nl", "dh") are handled below.
+            if mc['f_component'].endswith('fctl'):
+                mc['f_gradient'] = core.variable("DFT TOTAL GRADIENT")
+                mc['f_energy'] = core.variable("DFT FUNCTIONAL TOTAL ENERGY")
+            #elif mc['f_component'].endswith('disp'):
+            #    mc['f_gradient'] = core.variable("DISPERSION CORRECTION GRADIENT")
+            #    mc['f_energy'] = core.variable("DISPERSION CORRECTION ENERGY")
+            else:
+                mc['f_gradient'] = response
+                mc['f_energy'] = core.variable('CURRENT ENERGY')
             if verbose > 1:
                 mc['f_gradient'].print_out()
         elif ptype == 'hessian':
@@ -1952,6 +1962,17 @@ def cbs(func, label, **kwargs):
                     if (mc['f_wfn'] == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
                        (component == job['f_component']) and (mc['f_options'] == job['f_options']):
                         job['f_energy'] = core.variable(VARH[mc['f_wfn']][component])
+        # For DFT, we have deleted duplicate gradient calls but the gradient components
+        # are available as variables. So if they are required, let us fill them.
+        # At the moment, only "disp" gradients are possible ("nl" and "dh" not yet implemented):
+        elif ptype == 'gradient':
+            for component in VARH[mc['f_wfn']]:
+                if component.endswith("disp"):
+                    for job in JOBS_EXT:
+                        if (mc['f_wfn'] == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
+                        (component == job['f_component']) and (mc['f_options'] == job['f_options']):
+                            job['f_energy'] = core.variable(VARH[mc['f_wfn']][component])
+                            job['f_gradient'] = core.variable(VARH[mc['f_wfn']][component].replace("ENERGY", "GRADIENT"))
 
         if verbose > 1:
             core.print_variables()
@@ -2066,9 +2087,10 @@ def cbs(func, label, **kwargs):
     if len(metadata) > 2:
         for delta in metadata[2:]:
             if GRAND_NEED[dc]['d_isdelta']:
+                deltaE_total = GRAND_NEED[dc]['d_energy'] - GRAND_NEED[dc + 1]['d_energy']
                 tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
                     GRAND_NEED[dc]['d_stage'], GRAND_NEED[dc]['d_wfn'] + ' - ' + GRAND_NEED[dc + 1]['d_wfn'], '/',
-                    GRAND_NEED[dc]['d_basis'], '', GRAND_NEED[dc]['d_energy'] - GRAND_NEED[dc + 1]['d_energy'],
+                    GRAND_NEED[dc]['d_basis'], '', deltaE_total,
                     GRAND_NEED[dc]['d_scheme'].__name__)
                 core.set_variable(f"CBS {GRAND_NEED[dc]['d_stage'].upper()} TOTAL ENERGY", deltaE_total)
                 dc += 2
@@ -2077,7 +2099,7 @@ def cbs(func, label, **kwargs):
                     GRAND_NEED[dc]['d_stage'], GRAND_NEED[dc]['d_wfn'], '/',
                     GRAND_NEED[dc]['d_basis'], '', GRAND_NEED[dc]['d_energy'],
                     GRAND_NEED[dc]['d_scheme'].__name__)
-                core.set_variable(f"CBS {GRAND_NEED[dc]['d_stage'].upper()} TOTAL ENERGY", deltaE_total)
+                core.set_variable(f"CBS {GRAND_NEED[dc]['d_stage'].upper()} TOTAL ENERGY", GRAND_NEED[dc]['d_energy'])
                 dc += 1
 
     tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % ('total', 'CBS', '', '', '', finalenergy, '')

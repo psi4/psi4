@@ -1,0 +1,35 @@
+molecule {
+0 1
+O 0 0 0
+H 0 0 1
+H 0 1 0
+}
+
+# Values converged to 1e-9
+ref_blyp_dt     = -76.434228968884
+ref_blyp_d3_dt  = -76.434235158884
+ref_b2plyp_d3_dt= -76.416397987029
+ref_b2plyp_naive= -76.402475256624
+ref_blyp_b2plyp = -76.387774735844
+ref_blyp_d3_dt_grad = psi4.core.Matrix.from_list(
+                      [[0.00000000000000,     0.00000000000000,    -0.05020298034281],
+                       [0.00000000000000,     0.00343955900764,     0.02510474695784],
+                       [0.00000000000000,    -0.00343955900764,     0.02510474695784]])
+  
+
+compare_values(ref_blyp_dt, energy('blyp/cc-pv[dt]z'), 7,           "BLYP/cc-[DT]")
+compare_values(ref_blyp_d3_dt, energy('blyp-d3/cc-pv[dt]z'), 7,     "BLYP-D3/cc-[DT]")
+compare_values(ref_b2plyp_d3_dt, energy('b2plyp-d3/cc-pv[dt]z'), 7, "B2PLYP-D3/cc-[DT]")
+
+E = energy(cbs, cbs_metadata=[{'wfn': "b2plyp-d3", 'basis': "cc-pv[dt]z", 'component': "dft"}])
+compare_values(ref_b2plyp_naive, E, 7, "B2PLYP-D3/cc-[DT] total DFA energy xtpl")
+
+E = energy(cbs, cbs_metadata=[{'wfn': "blyp-d3", 'basis': "cc-pv[dt]z"},
+                              {'wfn': "b2plyp-d3", 'basis': "cc-pvdz"}])
+compare_values(ref_blyp_b2plyp, E, 7, "BLYP-D3/cc-[DT]+D:B2PLYP-D3/cc-pvdz with cbs_metadata")
+
+E = energy('blyp-d3/cc-pv[dt]z+D:b2plyp-d3/cc-pvdz')
+compare_values(ref_blyp_b2plyp, E, 7, "BLYP-D3/cc-[DT]+D:B2PLYP-D3/cc-pvdz as string")
+
+G = gradient('blyp-d3/cc-pv[dt]z', dertype=1)
+compare_matrices(ref_blyp_d3_dt_grad, G, 6, "BLYP-D3/cc-pv[dt]z analytic gradient")
