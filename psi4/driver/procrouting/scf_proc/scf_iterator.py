@@ -709,15 +709,17 @@ def scf_print_energies(self):
     self.set_variable("ONE-ELECTRON ENERGY", e1)  # P::e SCF
     self.set_variable("TWO-ELECTRON ENERGY", e2)  # P::e SCF
     if self.functional().needs_xc():
-        self.set_variable("DFT XC ENERGY", exc)  # P::e SCF
-        self.set_variable("DFT VV10 ENERGY", evv10)  # P::e SCF
-        self.set_variable("DFT FUNCTIONAL TOTAL ENERGY", hf_energy + exc + evv10)  # P::e SCF
+        self.set_variable('DFT XC ENERGY', exc)
+        self.set_variable('DFT VV10 ENERGY', evv10)
+        self.set_variable('DFT FUNCTIONAL TOTAL ENERGY', hf_energy + exc)
         #self.set_variable(self.functional().name() + ' FUNCTIONAL TOTAL ENERGY', hf_energy + exc + evv10)
         self.set_variable("DFT TOTAL ENERGY", dft_energy)  # overwritten later for DH  # P::e SCF
     else:
         self.set_variable("HF TOTAL ENERGY", hf_energy)  # P::e SCF
     if hasattr(self, "_disp_functor"):
-        self.set_variable("DISPERSION CORRECTION ENERGY", ed)  # P::e SCF
+        self.set_variable('DISPERSION CORRECTION ENERGY', ed)
+    else:
+        self.set_variable('DISPERSION CORRECTION ENERGY', 0.0)
     #if abs(ed) > 1.0e-14:
     #    for pv, pvv in self.variables().items():
     #        if abs(pvv - ed) < 1.0e-14:
