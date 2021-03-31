@@ -97,7 +97,8 @@ Bibliography
    E. Papajak and D. G. Truhlar,
    *J. Chem. Theory Comput.* **7**, 10-18 (2011).
 
-.. [Cohen:GreenBook:2008]
+..
+   [Cohen:GreenBook:2008]
    E. R. Cohen, T. Cvitas, J. G. Frey, B. Holmstr\ |o_dots|\ om,
    K. Kuchitsu, R. Marquardt, I. Mills, F. Pavese, M. Quack,
    J. Stohner, H. L. Strauss, M. Takami, and A. J. Thor,
@@ -238,7 +239,8 @@ Bibliography
    K. K. Docken and J. Hinze,
    *J. Chem. Phys.* **57**, 4928-4936 (1972).
 
-.. [Ruedenberg:1979:1069]
+..
+   [Ruedenberg:1979:1069]
    K. Ruedenberg, L. M. Cheung, and S. T. Elbert,
    *Int. J. Quantum Chem.* **16**, 1069-1101 (1979).
 
@@ -286,7 +288,8 @@ Bibliography
    T. B. Pedersen, H. Koch, and C. Hattig,
    *J. Chem. Phys.* **110**, 8318 (1999).
 
-.. [Pedersen:2001:od]
+..
+   [Pedersen:2001:od]
    T. B. Pedersen, B. Fernandez, and H. Koch,
    *J. Chem. Phys.* **114**, 6983 (2001).
 
@@ -510,7 +513,8 @@ Bibliography
 .. [Verstraelen:2016]
    T. Verstraelen et al. "Minimal Basis Iterative Stockholder: Atoms in Molecules for Force-Field Development". *J. Chem. Theory and Comput.* doi: 10.1021/acs.jctc.6b00456.
 
-.. [Misquitta:2005:214103]
+..
+   [Misquitta:2005:214103]
    A. J. Misquitta and R. Podeszwa,
    *J. Chem. Phys.* **123**, 214103 (2005).
 

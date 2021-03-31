@@ -19,7 +19,20 @@ jobs:
         shell: bash -l {0}
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        path: code
+
+    - name: Checkout website repo
+      uses: actions/checkout@v2
+      with:
+        repository: psi4/psi4docs
+        path: docs
+        ref: master
+        persist-credentials: true
+        fetch-depth: 0
+        token: ${{ secrets.psi4docs_from_psi4 }}
 
     - name: Create Conda Environment
       uses: conda-incubator/setup-miniconda@v2
@@ -56,6 +69,7 @@ jobs:
 
     # docs are not Ninja ready
     - name: Configure with CMake (Conda Gnu + MKL)
+      working-directory: ./code
       run: |
         cmake \
           -S. \
@@ -91,47 +105,53 @@ jobs:
     #-DLAPACK_LIBRARIES="${LAPACK_INTERJECT}" \
     #-DLAPACK_INCLUDE_DIRS="${PREFIX}/include" \
 
-## install docs
-#make install
-
     - name: Compile Psi4
+      working-directory: ./code
       run: |
         cmake --build objdir
         ctest -L smoke
 
-    - name: Compile Docs
-      run: cmake --build objdir --target sphinxman --verbose
-
-    - name: Tarball Docs
+    - name: Compile & Pack Docs
+      working-directory: ./code
       run: |
+        cmake --build objdir --target sphinxman --verbose
         cd objdir/doc/sphinxman
         tar -zcf sphinxman.tar.gz html/
-
-    - name: Compile Doxygen
-      run: cmake --build objdir --target doxyman --verbose
-
-#    - name: Smoke Test Binary
-#      run: |
-#        eval "$(conda shell.bash hook)" && conda activate
-#        source /opt/intel/oneapi/setvars.sh intel64
-#        ./objdir/dftd3 -version
-#        ./objdir/dftd3 -h
-#        ldd ./objdir/dftd3
-
-
-
-#
-#    - name: Meson Log
-#      if: ${{ failure() }}
-#      run: cat /usr/local/miniconda/conda-bld/dftd4_*/work/_build/meson-logs/meson-log.txt
 
     - name: Archive Docs Tarball
       uses: actions/upload-artifact@v2
       with:
         name: linux-html-docs
         path: |
-          objdir/doc/sphinxman/sphinxman.tar.gz
+          code/objdir/doc/sphinxman/sphinxman.tar.gz
         retention-days: 1
+
+    - name: Compile & Pack Doxygen
+      working-directory: ./code
+      run: |
+        cmake --build objdir --target doxyman --verbose
+        cd objdir/doc/doxygen
+        tar -zcf doxyman.tar.gz html/
+
+    - name: Transfer Docs Directory
+      working-directory: ./docs
+      run: |
+        cp -pR ../code/objdir/doc/sphinxman/html .
+        git status
+        git remote -v
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add -A
+        git commit -m "auto-generated from QCElemental"
+
+    - name: Push Changes
+      uses: ad-m/github-push-action@master
+      with:
+        directory: ./docs
+        repository: psi4/psi4docs
+        #branch: ${{ env.prbranch }}
+        github_token: ${{ secrets.psi4docs_from_psi4 }}
+        force: true
 
 #      # continue-on-error allows the whole job not to fail just b/c storage limits at anaconda.org hit
 #    - name: Upload Conda Package

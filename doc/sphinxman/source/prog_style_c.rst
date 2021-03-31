@@ -56,7 +56,9 @@ Prefer ``std::make_shared`` to direct use of ``new``
 
 Using ``std::make_shared``:
 
-1. Reduces code verbosity, especially when coupled with ``auto``::
+1. Reduces code verbosity, especially when coupled with ``auto``:
+
+.. code-block:: cpp
 
     // Type information given 3 TIMES!!!
     std::shared_ptr<Matrix> F = std::shared_ptr<Matrix>(new Matrix("Fock matrix", nso, nso));
@@ -69,7 +71,9 @@ Using ``std::make_shared``:
 
 2. Ensures exception safety and prevents resource leaks. ::
 
-3. Improves efficiency::
+3. Improves efficiency:
+
+.. code-block:: cpp
 
     // Performs TWO allocations
     std::shared_ptr<Matrix> F = std::shared_ptr<Matrix>(new Matrix("Fock matrix", nso, nso));
@@ -87,21 +91,27 @@ Prefer ``auto`` to explicit type declarations
 
 Using ``auto`` reduces and/or avoids:
 
-1. Verbosity in variable declarations::
+1. Verbosity in variable declarations:
+
+.. code-block:: cpp
 
     std::shared_ptr<Matrix> F = std::make_shared<Matrix>("Fock matrix", nso, nso);  // So much typing...
     auto F = std::make_shared<Matrix>("Fock matrix", nso, nso);  // Much better!
 
 2. Problems with uninitialized variables. auto works like template type
    deduction, hence the right-hand side of the declaration needs to have an
-   initializer::
+   initializer:
+
+.. code-block:: cpp
 
     int x1;  // fine, but uninitialized :(
     auto x2;  // WON'T COMPILE!!!
     auto x3 = 1;  // fine and initialized
 
 3. Problems with unintended type casts and type mismatches that are hard
-   to impossible to catch::
+   to impossible to catch:
+
+.. code-block:: cpp
 
     std::vector<int> v;
     // !!! The size of a vector is of type std::vector<int>::size_type and is compiler- AND architecture-DEPENDENT

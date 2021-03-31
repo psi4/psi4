@@ -49,7 +49,7 @@ formatting of the code can be accomplished, in decreasing order of automation:
 2. By installing Git hooks to run the formatters when committing.
 3. By running the formatters manually on the modified files.
 
-.. _`faq:editor_code_style`:
+.. _`faq:editorcodestyle`:
 
 How to impose code style through your editor
 --------------------------------------------
@@ -58,7 +58,7 @@ Both ``clang-format`` and ``yapf`` can be integrated into widely used editors.
 The `Neoformat <https://github.com/sbdchd/neoformat>`_ plugin can be configured
 to format files when saving them to disk.
 
-.. _`faq:githooks_code_style`:
+.. _`faq:githookscodestyle`:
 
 How to impose code style through Git hooks
 ------------------------------------------
@@ -91,7 +91,7 @@ Hooks are powerful, but integrating the formatter into your editor will prove
 to be better. Hooks need to be installed anew for every fresh clone of the
 repository you are working on.
 
-.. _`faq:manual_code_style`:
+.. _`faq:manualcodestyle`:
 
 How to run code-style tools `clang-format` and `yapf` manually
 --------------------------------------------------------------

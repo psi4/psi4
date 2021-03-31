@@ -6,6 +6,7 @@ dependencies:
   - intel-openmp!=2019.5
     # build
   - cmake >=3.15
+  - doxygen
   - gxx_linux-64
     # core
   - eigen
