@@ -130,7 +130,16 @@ foreach my $Module (@PSIMODULES) {
     #     Assign stray variables as for OEPROP below
     my @RelevantDirs = ($SrcFolder . lc($Module), $SrcFolder . "lib" . lc($Module) . "_solver");
     if ($Module eq "OEPROP") { push(@RelevantDirs, $SrcFolder . "libmints"); }
-    if ($Module eq "GDMA") { push(@RelevantDirs, $SrcFolder . "libgdma"); }
+    if ($Module eq "GDMA") { push(@RelevantDirs, $SrcFolder . "gdma_interface"); }
+    if ($Module eq "CCENERGY") { push(@RelevantDirs, (
+            $SrcFolder . "cc/ccenergy",
+            $SrcFolder . "cc/ccdensity",
+            $SrcFolder . "cc/cceom",
+            $SrcFolder . "cc/cchbar",
+            $SrcFolder . "cc/cclambda",
+            $SrcFolder . "cc/ccresponse",
+            $SrcFolder . "cc/cctriples",
+    )); }
     my @EnvVariables = ();
     my @EnvArrays = ();
     printf TEXOUT "\n\\subsection{%s}\n",$Module;
@@ -165,15 +174,15 @@ foreach my $Module (@PSIMODULES) {
                                 push(@EnvArrays, $ltemp[1]);
                             }
                         }
-                        if ($line =~ /\Qset_variable\E/) {
+                        if ($line =~ /\Qset_scalar_variable\E/) {
                             my @ltemp = split( /"/, $line);
-                            if ($ltemp[0] =~ /\Qset_variable\E/) {
+                            if ($ltemp[0] =~ /\Qset_scalar_variable\E/) {
                                 push(@EnvVariables, $ltemp[1]);
                             }
                         }
-                        if ($line =~ /\Qset_array\E/) {
+                        if ($line =~ /\Qset_array_variable\E/) {
                             my @ltemp = split( /"/, $line);
-                            if ($ltemp[0] =~ /\Qset_array\E/) {
+                            if ($ltemp[0] =~ /\Qset_array_variable\E/) {
                                 push(@EnvArrays, $ltemp[1]);
                             }
                         }

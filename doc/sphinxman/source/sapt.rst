@@ -923,5 +923,8 @@ settings::
 These calculations are performed with the atomic orbital and 
 density-fitting scheme of [J. M. Waldrop et al., to be published].
 
+S^inf Keywords
+~~~~~~~~~~~~~~
+
 .. include:: autodir_options_c/sapt__do_ind_exch_sinf.rst
 .. include:: autodir_options_c/sapt__do_disp_exch_sinf.rst

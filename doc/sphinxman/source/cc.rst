@@ -40,15 +40,17 @@ CC: Coupled Cluster Theory
 .. codeauthor:: T. Daniel Crawford
 .. sectionauthor:: T. Daniel Crawford
 
-*Module:* :ref:`Keywords <apdx:ccenergy>`, :ref:`PSI Variables <apdx:ccenergy_psivar>`, :source:`CCENERGY <psi4/src/psi4/ccenergy>`
+*Module:* :ref:`PSI Variables <apdx:ccenergy_psivar>`
 
-*Module:* :ref:`Keywords <apdx:cceom>`, :ref:`PSI Variables <apdx:cceom_psivar>`, :source:`CCEOM <psi4/src/psi4/cceom>`
+*Module:* :ref:`Keywords <apdx:ccenergy>`, :source:`CCENERGY <psi4/src/psi4/ccenergy>`
 
-*Module:* :ref:`Keywords <apdx:ccresponse>`, :ref:`PSI Variables <apdx:ccresponse_psivar>`, :source:`CCRESPONSE <psi4/src/psi4/ccresponse>`
+*Module:* :ref:`Keywords <apdx:cceom>`, :source:`CCEOM <psi4/src/psi4/cceom>`
 
-*Module:* :ref:`Keywords <apdx:cctriples>`, :ref:`PSI Variables <apdx:cctriples_psivar>`, :source:`CCTRIPLES <psi4/src/psi4/cctriples>`
+*Module:* :ref:`Keywords <apdx:ccresponse>`, :source:`CCRESPONSE <psi4/src/psi4/ccresponse>`
 
-*Module:* :ref:`Keywords <apdx:ccdensity>`, :ref:`PSI Variables <apdx:ccdensity_psivar>`, :source:`CCDENSITY <psi4/src/psi4/ccdensity>`
+*Module:* :ref:`Keywords <apdx:cctriples>`, :source:`CCTRIPLES <psi4/src/psi4/cctriples>`
+
+*Module:* :ref:`Keywords <apdx:ccdensity>`, :source:`CCDENSITY <psi4/src/psi4/ccdensity>`
 
 *Module:* :ref:`Keywords <apdx:cchbar>`, :source:`CCHBAR <psi4/src/psi4/cchbar>`
 

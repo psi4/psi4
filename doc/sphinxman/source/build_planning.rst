@@ -210,7 +210,7 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 The following are also required for |PSIfour|, but if not detected, the
 build system will automatically download and build.
 
-* :ref:`gau2grid <cmake:gau2grid` |w---w| :ref:`[what is gau2grid?] <sec:gau2grid>` `[gau2grid min version] <https://github.com/psi4/psi4/blob/master/external/upstream/gau2grid/CMakeLists.txt#L1>`_
+* :ref:`gau2grid <cmake:gau2grid>` |w---w| :ref:`[what is gau2grid?] <sec:gau2grid>` `[gau2grid min version] <https://github.com/psi4/psi4/blob/master/external/upstream/gau2grid/CMakeLists.txt#L1>`_
 
 * :ref:`Libint <cmake:libint>` |w---w| :ref:`[what is Libint?] <sec:libint>` `[Libint min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libint/CMakeLists.txt#L1>`_
 
@@ -317,7 +317,7 @@ Additionally, there are runtime-loaded capabilities:
 How to configure code to use high angular momentum basis sets
 -------------------------------------------------------------
 
-The :ref:`Libint <addon:libint>` integral code handles arbitrary order
+The :ref:`Libint <sec:libint>` integral code handles arbitrary order
 angular momentum, but compiling that is prohibitive. The default of ``5``
 is generally good. ``7`` has met all of a research group's needs for
 years. ``4`` is handy for quickly testing other parts of the build.
