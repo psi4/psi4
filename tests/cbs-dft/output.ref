@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.4rc2.dev30 
+                               Psi4 1.4rc2.dev32 
 
-                         Git: Rev {pbe_xtpl} 3fcedd3 dirty
+                         Git: Rev {pbe_xtpl} 6b3c892 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,13 +30,13 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 31 March 2021 01:34PM
+    Psi4 started on: Thursday, 01 April 2021 02:43PM
 
-    Process ID: 32023
+    Process ID: 22449
     Host:       dorje
     PSIDATADIR: /home/kraus/Applications/psi4-pbe_xtpl/share/psi4
     Memory:     500.0 MiB
-    Threads:    4
+    Threads:    1
     
   ==> Input File <==
 
@@ -55,10 +55,9 @@ ref_b2plyp_d3_dt= -76.416397987029
 ref_b2plyp_naive= -76.402475256624
 ref_blyp_b2plyp = -76.387774735844
 ref_blyp_d3_dt_grad = psi4.core.Matrix.from_list(
-                      [[0.00000000000000,     0.00000000000000,    -0.05020298034281],
-                       [0.00000000000000,     0.00343955900764,     0.02510474695784],
-                       [0.00000000000000,    -0.00343955900764,     0.02510474695784]])
-  
+                      [[0.00000000000000,     0.00000000000000,    -0.05020298033034],
+                       [0.00000000000000,     0.00343955901157,     0.02510474695159],
+                       [0.00000000000000,    -0.00343955901157,     0.02510474695159]])
 
 compare_values(ref_blyp_dt, energy('blyp/cc-pv[dt]z'), 7,           "BLYP/cc-[DT]")
 compare_values(ref_blyp_d3_dt, energy('blyp-d3/cc-pv[dt]z'), 7,     "BLYP-D3/cc-[DT]")
@@ -110,7 +109,7 @@ Scratch directory: /tmp/
 Scratch directory: /tmp/
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:44 2021
+*** at Thu Apr  1 14:43:08 2021
 
    => Loading Basis Set <=
 
@@ -126,7 +125,7 @@ Scratch directory: /tmp/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -238,7 +237,7 @@ Scratch directory: /tmp/
     J tasked:                   Yes
     K tasked:                    No
     wK tasked:                   No
-    OpenMP threads:               4
+    OpenMP threads:               1
     Memory [MiB]:               327
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -280,14 +279,14 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -76.11737821378118   -7.61174e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.21426884776078   -9.68906e-02   5.06156e-02 DIIS
-   @DF-RKS iter   2:   -75.73171366251694    4.82555e-01   9.11887e-02 DIIS
-   @DF-RKS iter   3:   -76.39377004505857   -6.62056e-01   3.59128e-03 DIIS
-   @DF-RKS iter   4:   -76.39500197554804   -1.23193e-03   6.77977e-04 DIIS
-   @DF-RKS iter   5:   -76.39504041149569   -3.84359e-05   9.18864e-05 DIIS
-   @DF-RKS iter   6:   -76.39504099939155   -5.87896e-07   5.46410e-06 DIIS
-   @DF-RKS iter   7:   -76.39504100297486   -3.58331e-09   3.33323e-07 DIIS
+   @DF-RKS iter SAD:   -76.11737821378206   -7.61174e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.21426884776137   -9.68906e-02   5.06156e-02 DIIS
+   @DF-RKS iter   2:   -75.73171366251709    4.82555e-01   9.11887e-02 DIIS
+   @DF-RKS iter   3:   -76.39377004505930   -6.62056e-01   3.59128e-03 DIIS
+   @DF-RKS iter   4:   -76.39500197554882   -1.23193e-03   6.77977e-04 DIIS
+   @DF-RKS iter   5:   -76.39504041149642   -3.84359e-05   9.18864e-05 DIIS
+   @DF-RKS iter   6:   -76.39504099939235   -5.87896e-07   5.46410e-06 DIIS
+   @DF-RKS iter   7:   -76.39504100297559   -3.58324e-09   3.33323e-07 DIIS
   Energy and wave function converged.
 
 
@@ -318,17 +317,17 @@ Scratch directory: /tmp/
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.39504100297486
+  @DF-RKS Final Energy:   -76.39504100297559
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201648341395
-    One-Electron Energy =                -122.5194372241408871
-    Two-Electron Energy =                  46.5937365591459951
-    DFT Exchange-Correlation Energy =      -9.3103605028141079
+    One-Electron Energy =                -122.5194372241415408
+    Two-Electron Energy =                  46.5937365591460164
+    DFT Exchange-Correlation Energy =      -9.3103605028141967
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.3950410029748639
+    Total Energy =                        -76.3950410029755886
 
 Computation Completed
 
@@ -350,14 +349,14 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0166     Total:     2.0166
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:45 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:09 2021
 Module time:
-	user time   =       1.78 seconds =       0.03 minutes
-	system time =       0.11 seconds =       0.00 minutes
+	user time   =       0.81 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.78 seconds =       0.03 minutes
-	system time =       0.11 seconds =       0.00 minutes
+	user time   =       0.81 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -368,7 +367,7 @@ Total time:
 Scratch directory: /tmp/
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:45 2021
+*** at Thu Apr  1 14:43:09 2021
 
    => Loading Basis Set <=
 
@@ -384,7 +383,7 @@ Scratch directory: /tmp/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -496,7 +495,7 @@ Scratch directory: /tmp/
     J tasked:                   Yes
     K tasked:                    No
     wK tasked:                   No
-    OpenMP threads:               4
+    OpenMP threads:               1
     Memory [MiB]:               263
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -538,14 +537,14 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -76.11842533299229   -7.61184e+01   0.00000e+00 
+   @DF-RKS iter SAD:   -76.11842533299222   -7.61184e+01   0.00000e+00 
    @DF-RKS iter   1:   -76.22280892292764   -1.04384e-01   2.52718e-02 DIIS
-   @DF-RKS iter   2:   -75.48348729760123    7.39322e-01   4.84990e-02 DIIS
-   @DF-RKS iter   3:   -76.43219623041358   -9.48709e-01   2.93740e-03 DIIS
-   @DF-RKS iter   4:   -76.43598215221378   -3.78592e-03   5.55997e-04 DIIS
-   @DF-RKS iter   5:   -76.43611018488210   -1.28033e-04   6.53992e-05 DIIS
-   @DF-RKS iter   6:   -76.43611161031139   -1.42543e-06   5.60768e-06 DIIS
-   @DF-RKS iter   7:   -76.43611162378116   -1.34698e-08   4.75215e-07 DIIS
+   @DF-RKS iter   2:   -75.48348729760149    7.39322e-01   4.84990e-02 DIIS
+   @DF-RKS iter   3:   -76.43219623041340   -9.48709e-01   2.93740e-03 DIIS
+   @DF-RKS iter   4:   -76.43598215221373   -3.78592e-03   5.55997e-04 DIIS
+   @DF-RKS iter   5:   -76.43611018488212   -1.28033e-04   6.53992e-05 DIIS
+   @DF-RKS iter   6:   -76.43611161031136   -1.42543e-06   5.60768e-06 DIIS
+   @DF-RKS iter   7:   -76.43611162378122   -1.34699e-08   4.75215e-07 DIIS
   Energy and wave function converged.
 
 
@@ -587,17 +586,17 @@ Scratch directory: /tmp/
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.43611162378116
+  @DF-RKS Final Energy:   -76.43611162378122
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201648341395
-    One-Electron Energy =                -122.4654697548775459
-    Two-Electron Energy =                  46.4798423816077246
-    DFT Exchange-Correlation Energy =      -9.2915044153454769
+    One-Electron Energy =                -122.4654697548774038
+    Two-Electron Energy =                  46.4798423816074262
+    DFT Exchange-Correlation Energy =      -9.2915044153453668
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.4361116237811586
+    Total Energy =                        -76.4361116237812155
 
 Computation Completed
 
@@ -619,14 +618,14 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0642     Total:     2.0642
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:46 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:10 2021
 Module time:
-	user time   =       3.12 seconds =       0.05 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       1.96 seconds =       0.03 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.93 seconds =       0.08 minutes
-	system time =       0.21 seconds =       0.00 minutes
+	user time   =       2.78 seconds =       0.05 minutes
+	system time =       0.08 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -636,10 +635,10 @@ Total time:
 
    ==> 2-point exp.-sqrt. form SCF extrapolation for method: BLYP <==
 
-   LO-zeta (2) Energy:               -76.395041002975
+   LO-zeta (2) Energy:               -76.395041002976
    HI-zeta (3) Energy:               -76.436111623781
    Alpha (exponent) Value:             3.622000000000
-   Beta (coefficient) Value:          -0.998417018411
+   Beta (coefficient) Value:          -0.998417018394
 
    @Extrapolated BLYP/(D,T):        -76.434228968775
 
@@ -716,7 +715,7 @@ Scratch directory: /tmp/
 Scratch directory: /tmp/
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:46 2021
+*** at Thu Apr  1 14:43:11 2021
 
    => Loading Basis Set <=
 
@@ -743,7 +742,7 @@ Scratch directory: /tmp/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -855,7 +854,7 @@ Scratch directory: /tmp/
     J tasked:                   Yes
     K tasked:                    No
     wK tasked:                   No
-    OpenMP threads:               4
+    OpenMP threads:               1
     Memory [MiB]:               327
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -897,14 +896,14 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -76.11738440378120   -7.61174e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.21427503776076   -9.68906e-02   5.06156e-02 DIIS
-   @DF-RKS iter   2:   -75.73171985251692    4.82555e-01   9.11887e-02 DIIS
-   @DF-RKS iter   3:   -76.39377623505847   -6.62056e-01   3.59128e-03 DIIS
-   @DF-RKS iter   4:   -76.39500816554801   -1.23193e-03   6.77977e-04 DIIS
-   @DF-RKS iter   5:   -76.39504660149561   -3.84359e-05   9.18864e-05 DIIS
-   @DF-RKS iter   6:   -76.39504718939153   -5.87896e-07   5.46410e-06 DIIS
-   @DF-RKS iter   7:   -76.39504719297484   -3.58331e-09   3.33323e-07 DIIS
+   @DF-RKS iter SAD:   -76.11738440378205   -7.61174e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.21427503776137   -9.68906e-02   5.06156e-02 DIIS
+   @DF-RKS iter   2:   -75.73171985251709    4.82555e-01   9.11887e-02 DIIS
+   @DF-RKS iter   3:   -76.39377623505929   -6.62056e-01   3.59128e-03 DIIS
+   @DF-RKS iter   4:   -76.39500816554882   -1.23193e-03   6.77977e-04 DIIS
+   @DF-RKS iter   5:   -76.39504660149642   -3.84359e-05   9.18864e-05 DIIS
+   @DF-RKS iter   6:   -76.39504718939234   -5.87896e-07   5.46410e-06 DIIS
+   @DF-RKS iter   7:   -76.39504719297558   -3.58324e-09   3.33323e-07 DIIS
   Energy and wave function converged.
 
 
@@ -935,17 +934,17 @@ Scratch directory: /tmp/
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.39504719297484
+  @DF-RKS Final Energy:   -76.39504719297558
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201648341395
-    One-Electron Energy =                -122.5194372241408729
-    Two-Electron Energy =                  46.5937365591459951
-    DFT Exchange-Correlation Energy =      -9.3103605028141097
+    One-Electron Energy =                -122.5194372241415408
+    Two-Electron Energy =                  46.5937365591460164
+    DFT Exchange-Correlation Energy =      -9.3103605028141967
     Empirical Dispersion Energy =          -0.0000061900000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.3950471929748431
+    Total Energy =                        -76.3950471929755821
 
 Computation Completed
 
@@ -967,15 +966,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0166     Total:     2.0166
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:48 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:13 2021
 Module time:
-	user time   =       2.20 seconds =       0.04 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       1.21 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       7.73 seconds =       0.13 minutes
-	system time =       0.36 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       4.13 seconds =       0.07 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   // CBS Computation: BLYP-D3 / CC-PVTZ //
@@ -985,7 +984,7 @@ Total time:
 Scratch directory: /tmp/
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:48 2021
+*** at Thu Apr  1 14:43:13 2021
 
    => Loading Basis Set <=
 
@@ -1012,7 +1011,7 @@ Scratch directory: /tmp/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1124,7 +1123,7 @@ Scratch directory: /tmp/
     J tasked:                   Yes
     K tasked:                    No
     wK tasked:                   No
-    OpenMP threads:               4
+    OpenMP threads:               1
     Memory [MiB]:               263
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -1166,14 +1165,14 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -76.11843152299231   -7.61184e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.22281511292761   -1.04384e-01   2.52718e-02 DIIS
-   @DF-RKS iter   2:   -75.48349348760124    7.39322e-01   4.84990e-02 DIIS
-   @DF-RKS iter   3:   -76.43220242041353   -9.48709e-01   2.93740e-03 DIIS
-   @DF-RKS iter   4:   -76.43598834221379   -3.78592e-03   5.55997e-04 DIIS
-   @DF-RKS iter   5:   -76.43611637488206   -1.28033e-04   6.53992e-05 DIIS
-   @DF-RKS iter   6:   -76.43611780031145   -1.42543e-06   5.60768e-06 DIIS
-   @DF-RKS iter   7:   -76.43611781378118   -1.34697e-08   4.75215e-07 DIIS
+   @DF-RKS iter SAD:   -76.11843152299221   -7.61184e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.22281511292763   -1.04384e-01   2.52718e-02 DIIS
+   @DF-RKS iter   2:   -75.48349348760148    7.39322e-01   4.84990e-02 DIIS
+   @DF-RKS iter   3:   -76.43220242041339   -9.48709e-01   2.93740e-03 DIIS
+   @DF-RKS iter   4:   -76.43598834221372   -3.78592e-03   5.55997e-04 DIIS
+   @DF-RKS iter   5:   -76.43611637488212   -1.28033e-04   6.53992e-05 DIIS
+   @DF-RKS iter   6:   -76.43611780031135   -1.42543e-06   5.60768e-06 DIIS
+   @DF-RKS iter   7:   -76.43611781378121   -1.34699e-08   4.75215e-07 DIIS
   Energy and wave function converged.
 
 
@@ -1215,17 +1214,17 @@ Scratch directory: /tmp/
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.43611781378118
+  @DF-RKS Final Energy:   -76.43611781378121
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201648341395
-    One-Electron Energy =                -122.4654697548774749
-    Two-Electron Energy =                  46.4798423816076181
-    DFT Exchange-Correlation Energy =      -9.2915044153454609
+    One-Electron Energy =                -122.4654697548774038
+    Two-Electron Energy =                  46.4798423816074262
+    DFT Exchange-Correlation Energy =      -9.2915044153453668
     Empirical Dispersion Energy =          -0.0000061900000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.4361178137811805
+    Total Energy =                        -76.4361178137812090
 
 Computation Completed
 
@@ -1247,15 +1246,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0642     Total:     2.0642
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:49 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:15 2021
 Module time:
-	user time   =       3.10 seconds =       0.05 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       2.13 seconds =       0.04 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      10.86 seconds =       0.18 minutes
-	system time =       0.47 seconds =       0.01 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       6.28 seconds =       0.10 minutes
+	system time =       0.19 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   CBS Results:blyp-d3/cc-pv[dt]z  //
@@ -1264,10 +1263,10 @@ Total time:
 
    ==> 2-point exp.-sqrt. form SCF extrapolation for method: BLYP-D3 <==
 
-   LO-zeta (2) Energy:               -76.395041002975
+   LO-zeta (2) Energy:               -76.395041002976
    HI-zeta (3) Energy:               -76.436111623781
    Alpha (exponent) Value:             3.622000000000
-   Beta (coefficient) Value:          -0.998417018412
+   Beta (coefficient) Value:          -0.998417018394
 
    @Extrapolated BLYP-D3/(D,T):     -76.434228968775
 
@@ -1356,7 +1355,7 @@ Scratch directory: /tmp/
 Scratch directory: /tmp/
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:49 2021
+*** at Thu Apr  1 14:43:15 2021
 
    => Loading Basis Set <=
 
@@ -1384,7 +1383,7 @@ Scratch directory: /tmp/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1503,7 +1502,7 @@ Scratch directory: /tmp/
     J tasked:                   Yes
     K tasked:                   Yes
     wK tasked:                   No
-    OpenMP threads:               4
+    OpenMP threads:               1
     Memory [MiB]:               327
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -1545,14 +1544,14 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -75.86075298858893   -7.58608e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.17420864237997   -3.13456e-01   3.77033e-02 DIIS
-   @DF-RKS iter   2:   -76.17227853032949    1.93011e-03   3.98307e-02 DIIS
-   @DF-RKS iter   3:   -76.28114184128214   -1.08863e-01   8.93462e-04 DIIS
-   @DF-RKS iter   4:   -76.28122400583264   -8.21646e-05   2.61565e-04 DIIS
-   @DF-RKS iter   5:   -76.28122976708211   -5.76125e-06   3.69126e-05 DIIS
-   @DF-RKS iter   6:   -76.28122990928441   -1.42202e-07   2.72252e-06 DIIS
-   @DF-RKS iter   7:   -76.28122991053121   -1.24680e-09   3.00417e-07 DIIS
+   @DF-RKS iter SAD:   -75.86075298858967   -7.58608e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.17420864238063   -3.13456e-01   3.77033e-02 DIIS
+   @DF-RKS iter   2:   -76.17227853033012    1.93011e-03   3.98307e-02 DIIS
+   @DF-RKS iter   3:   -76.28114184128283   -1.08863e-01   8.93462e-04 DIIS
+   @DF-RKS iter   4:   -76.28122400583339   -8.21646e-05   2.61565e-04 DIIS
+   @DF-RKS iter   5:   -76.28122976708289   -5.76125e-06   3.69126e-05 DIIS
+   @DF-RKS iter   6:   -76.28122990928520   -1.42202e-07   2.72252e-06 DIIS
+   @DF-RKS iter   7:   -76.28122991053198   -1.24678e-09   3.00417e-07 DIIS
   Energy and wave function converged.
 
 
@@ -1583,17 +1582,17 @@ Scratch directory: /tmp/
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.28122991053121
+  @DF-RKS Final Energy:   -76.28122991053198
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201648341395
-    One-Electron Energy =                -122.5194647330728799
-    Two-Electron Energy =                  41.8609046982383290
-    DFT Exchange-Correlation Energy =      -4.4636869505307857
+    One-Electron Energy =                -122.5194647330737041
+    Two-Electron Energy =                  41.8609046982384285
+    DFT Exchange-Correlation Energy =      -4.4636869505308345
     Empirical Dispersion Energy =          -0.0000030900000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.2812299105312093
+    Total Energy =                        -76.2812299105319767
 
 Computation Completed
 
@@ -1615,18 +1614,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.1937     Total:     2.1937
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:49 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:16 2021
 Module time:
-	user time   =       1.87 seconds =       0.03 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.87 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      13.34 seconds =       0.22 minutes
-	system time =       0.59 seconds =       0.01 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       7.28 seconds =       0.12 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:49 2021
+*** at Thu Apr  1 14:43:16 2021
 
    => Loading Basis Set <=
 
@@ -1639,7 +1638,7 @@ Total time:
 	 --------------------------------------------------------
 	                          DF-MP2                         
 	      2nd-Order Density-Fitted Moller-Plesset Theory     
-	              RMP2 Wavefunction,   4 Threads             
+	              RMP2 Wavefunction,   1 Threads             
 	                                                         
 	        Rob Parrish, Justin Turney, Andy Simmonett,      
 	           Ed Hohenstein, and C. David Sherrill          
@@ -1665,41 +1664,41 @@ Total time:
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.2812299105312093 [Eh]
+	 Reference Energy          =     -76.2812299105319767 [Eh]
 	 Singles Energy            =      -0.0000000000000000 [Eh]
-	 Same-Spin Energy          =      -0.0626731465124437 [Eh]
-	 Opposite-Spin Energy      =      -0.1867967189161976 [Eh]
-	 Correlation Energy        =      -0.2494698654286413 [Eh]
-	 Total Energy              =     -76.5306997759598460 [Eh]
+	 Same-Spin Energy          =      -0.0626731465124488 [Eh]
+	 Opposite-Spin Energy      =      -0.1867967189162065 [Eh]
+	 Correlation Energy        =      -0.2494698654286553 [Eh]
+	 Total Energy              =     -76.5306997759606276 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0208910488374812 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.2241560626994371 [Eh]
-	 SCS Correlation Energy    =      -0.2450471115369183 [Eh]
-	 SCS Total Energy          =     -76.5262770220681290 [Eh]
+	 SCS Same-Spin Energy      =      -0.0208910488374829 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.2241560626994478 [Eh]
+	 SCS Correlation Energy    =      -0.2450471115369307 [Eh]
+	 SCS Total Energy          =     -76.5262770220689106 [Eh]
 	-----------------------------------------------------------
 
 
 
     B2PLYP-D3 Energy Summary
     ------------------------
-    DFT Reference Energy                  =   -76.2812299105312093
-    Scaled MP2 Correlation                =    -0.0673568636657332
-    @Final double-hybrid DFT total energy =   -76.3485867741969457
+    DFT Reference Energy                  =   -76.2812299105319767
+    Scaled MP2 Correlation                =    -0.0673568636657370
+    @Final double-hybrid DFT total energy =   -76.3485867741977131
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:49 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:16 2021
 Module time:
-	user time   =       0.18 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      13.53 seconds =       0.23 minutes
-	system time =       0.62 seconds =       0.01 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       7.31 seconds =       0.12 minutes
+	system time =       0.22 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   // CBS Computation: B2PLYP-D3 / CC-PVTZ //
@@ -1709,7 +1708,7 @@ Total time:
 Scratch directory: /tmp/
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:49 2021
+*** at Thu Apr  1 14:43:16 2021
 
    => Loading Basis Set <=
 
@@ -1737,7 +1736,7 @@ Scratch directory: /tmp/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1856,7 +1855,7 @@ Scratch directory: /tmp/
     J tasked:                   Yes
     K tasked:                   Yes
     wK tasked:                   No
-    OpenMP threads:               4
+    OpenMP threads:               1
     Memory [MiB]:               263
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -1898,14 +1897,14 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -75.85872400165705   -7.58587e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.19485872234952   -3.36135e-01   1.82355e-02 DIIS
-   @DF-RKS iter   2:   -76.16281355954500    3.20452e-02   2.11999e-02 DIIS
+   @DF-RKS iter SAD:   -75.85872400165694   -7.58587e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.19485872234944   -3.36135e-01   1.82355e-02 DIIS
+   @DF-RKS iter   2:   -76.16281355954484    3.20452e-02   2.11999e-02 DIIS
    @DF-RKS iter   3:   -76.31444309084570   -1.51630e-01   3.46745e-04 DIIS
-   @DF-RKS iter   4:   -76.31452431448528   -8.12236e-05   1.20122e-04 DIIS
-   @DF-RKS iter   5:   -76.31453050669799   -6.19221e-06   2.03136e-05 DIIS
-   @DF-RKS iter   6:   -76.31453075685066   -2.50153e-07   2.73137e-06 DIIS
-   @DF-RKS iter   7:   -76.31453076250060   -5.64994e-09   2.93385e-07 DIIS
+   @DF-RKS iter   4:   -76.31452431448523   -8.12236e-05   1.20122e-04 DIIS
+   @DF-RKS iter   5:   -76.31453050669788   -6.19221e-06   2.03136e-05 DIIS
+   @DF-RKS iter   6:   -76.31453075685049   -2.50153e-07   2.73137e-06 DIIS
+   @DF-RKS iter   7:   -76.31453076250062   -5.65014e-09   2.93385e-07 DIIS
   Energy and wave function converged.
 
 
@@ -1947,17 +1946,17 @@ Scratch directory: /tmp/
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.31453076250060
+  @DF-RKS Final Energy:   -76.31453076250062
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201648341395
-    One-Electron Energy =                -122.4807474500067315
-    Two-Electron Energy =                  41.7821167243856024
-    DFT Exchange-Correlation Energy =      -4.4569171117136079
+    One-Electron Energy =                -122.4807474500065325
+    Two-Electron Energy =                  41.7821167243853466
+    DFT Exchange-Correlation Energy =      -4.4569171117135582
     Empirical Dispersion Energy =          -0.0000030900000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.3145307625006097
+    Total Energy =                        -76.3145307625006240
 
 Computation Completed
 
@@ -1979,18 +1978,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.2008     Total:     2.2008
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:50 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:18 2021
 Module time:
-	user time   =       3.08 seconds =       0.05 minutes
-	system time =       0.14 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.79 seconds =       0.03 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      16.64 seconds =       0.28 minutes
-	system time =       0.76 seconds =       0.01 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       9.11 seconds =       0.15 minutes
+	system time =       0.27 seconds =       0.00 minutes
+	total time  =         10 seconds =       0.17 minutes
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:50 2021
+*** at Thu Apr  1 14:43:18 2021
 
    => Loading Basis Set <=
 
@@ -2003,7 +2002,7 @@ Total time:
 	 --------------------------------------------------------
 	                          DF-MP2                         
 	      2nd-Order Density-Fitted Moller-Plesset Theory     
-	              RMP2 Wavefunction,   4 Threads             
+	              RMP2 Wavefunction,   1 Threads             
 	                                                         
 	        Rob Parrish, Justin Turney, Andy Simmonett,      
 	           Ed Hohenstein, and C. David Sherrill          
@@ -2029,41 +2028,41 @@ Total time:
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.3145307625005955 [Eh]
+	 Reference Energy          =     -76.3145307625006240 [Eh]
 	 Singles Energy            =      -0.0000000000000000 [Eh]
-	 Same-Spin Energy          =      -0.0807966461030434 [Eh]
-	 Opposite-Spin Energy      =      -0.2501422518807391 [Eh]
-	 Correlation Energy        =      -0.3309388979837825 [Eh]
-	 Total Energy              =     -76.6454696604843804 [Eh]
+	 Same-Spin Energy          =      -0.0807966461030442 [Eh]
+	 Opposite-Spin Energy      =      -0.2501422518807468 [Eh]
+	 Correlation Energy        =      -0.3309388979837909 [Eh]
+	 Total Energy              =     -76.6454696604844088 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0269322153676811 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.3001707022568870 [Eh]
-	 SCS Correlation Energy    =      -0.3271029176245681 [Eh]
-	 SCS Total Energy          =     -76.6416336801251674 [Eh]
+	 SCS Same-Spin Energy      =      -0.0269322153676814 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.3001707022568961 [Eh]
+	 SCS Correlation Energy    =      -0.3271029176245775 [Eh]
+	 SCS Total Energy          =     -76.6416336801251958 [Eh]
 	-----------------------------------------------------------
 
 
 
     B2PLYP-D3 Energy Summary
     ------------------------
-    DFT Reference Energy                  =   -76.3145307625005955
-    Scaled MP2 Correlation                =    -0.0893535024556213
-    @Final double-hybrid DFT total energy =   -76.4038842649562184
+    DFT Reference Energy                  =   -76.3145307625006240
+    Scaled MP2 Correlation                =    -0.0893535024556236
+    @Final double-hybrid DFT total energy =   -76.4038842649562469
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:50 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:18 2021
 Module time:
-	user time   =       0.26 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      16.90 seconds =       0.28 minutes
-	system time =       0.79 seconds =       0.01 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       9.28 seconds =       0.15 minutes
+	system time =       0.27 seconds =       0.00 minutes
+	total time  =         10 seconds =       0.17 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //  CBS Results:b2plyp-d3/cc-pv[dt]z //
@@ -2072,10 +2071,10 @@ Total time:
 
    ==> 2-point exp.-sqrt. form SCF extrapolation for method: B2PLYP-D3 <==
 
-   LO-zeta (2) Energy:               -76.281226820531
+   LO-zeta (2) Energy:               -76.281226820532
    HI-zeta (3) Energy:               -76.314527672501
    Alpha (exponent) Value:             4.424180000000
-   Beta (coefficient) Value:          -1.805586919039
+   Beta (coefficient) Value:          -1.805586918999
 
    @Extrapolated B2PLYP-D3/(D,T):   -76.313679154145
 
@@ -2175,7 +2174,7 @@ Scratch directory: /tmp/
 Scratch directory: /tmp/
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:51 2021
+*** at Thu Apr  1 14:43:19 2021
 
    => Loading Basis Set <=
 
@@ -2203,7 +2202,7 @@ Scratch directory: /tmp/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2322,7 +2321,7 @@ Scratch directory: /tmp/
     J tasked:                   Yes
     K tasked:                   Yes
     wK tasked:                   No
-    OpenMP threads:               4
+    OpenMP threads:               1
     Memory [MiB]:               327
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -2364,14 +2363,14 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -75.86075298858891   -7.58608e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.17420864238001   -3.13456e-01   3.77033e-02 DIIS
-   @DF-RKS iter   2:   -76.17227853032945    1.93011e-03   3.98307e-02 DIIS
-   @DF-RKS iter   3:   -76.28114184128208   -1.08863e-01   8.93462e-04 DIIS
-   @DF-RKS iter   4:   -76.28122400583271   -8.21646e-05   2.61565e-04 DIIS
-   @DF-RKS iter   5:   -76.28122976708214   -5.76125e-06   3.69126e-05 DIIS
-   @DF-RKS iter   6:   -76.28122990928443   -1.42202e-07   2.72252e-06 DIIS
-   @DF-RKS iter   7:   -76.28122991053121   -1.24678e-09   3.00417e-07 DIIS
+   @DF-RKS iter SAD:   -75.86075298858967   -7.58608e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.17420864238063   -3.13456e-01   3.77033e-02 DIIS
+   @DF-RKS iter   2:   -76.17227853033012    1.93011e-03   3.98307e-02 DIIS
+   @DF-RKS iter   3:   -76.28114184128283   -1.08863e-01   8.93462e-04 DIIS
+   @DF-RKS iter   4:   -76.28122400583339   -8.21646e-05   2.61565e-04 DIIS
+   @DF-RKS iter   5:   -76.28122976708289   -5.76125e-06   3.69126e-05 DIIS
+   @DF-RKS iter   6:   -76.28122990928520   -1.42202e-07   2.72252e-06 DIIS
+   @DF-RKS iter   7:   -76.28122991053198   -1.24678e-09   3.00417e-07 DIIS
   Energy and wave function converged.
 
 
@@ -2402,17 +2401,17 @@ Scratch directory: /tmp/
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.28122991053121
+  @DF-RKS Final Energy:   -76.28122991053198
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201648341395
-    One-Electron Energy =                -122.5194647330728657
-    Two-Electron Energy =                  41.8609046982383219
-    DFT Exchange-Correlation Energy =      -4.4636869505307848
+    One-Electron Energy =                -122.5194647330737041
+    Two-Electron Energy =                  41.8609046982384285
+    DFT Exchange-Correlation Energy =      -4.4636869505308345
     Empirical Dispersion Energy =          -0.0000030900000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.2812299105312093
+    Total Energy =                        -76.2812299105319767
 
 Computation Completed
 
@@ -2434,18 +2433,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.1937     Total:     2.1937
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:51 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:20 2021
 Module time:
-	user time   =       2.39 seconds =       0.04 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       1.06 seconds =       0.02 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      19.88 seconds =       0.33 minutes
-	system time =       0.91 seconds =       0.02 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =      11.21 seconds =       0.19 minutes
+	system time =       0.33 seconds =       0.01 minutes
+	total time  =         12 seconds =       0.20 minutes
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:51 2021
+*** at Thu Apr  1 14:43:20 2021
 
    => Loading Basis Set <=
 
@@ -2458,7 +2457,7 @@ Total time:
 	 --------------------------------------------------------
 	                          DF-MP2                         
 	      2nd-Order Density-Fitted Moller-Plesset Theory     
-	              RMP2 Wavefunction,   4 Threads             
+	              RMP2 Wavefunction,   1 Threads             
 	                                                         
 	        Rob Parrish, Justin Turney, Andy Simmonett,      
 	           Ed Hohenstein, and C. David Sherrill          
@@ -2484,41 +2483,41 @@ Total time:
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.2812299105312093 [Eh]
+	 Reference Energy          =     -76.2812299105319767 [Eh]
 	 Singles Energy            =      -0.0000000000000000 [Eh]
-	 Same-Spin Energy          =      -0.0626731465124434 [Eh]
-	 Opposite-Spin Energy      =      -0.1867967189161971 [Eh]
-	 Correlation Energy        =      -0.2494698654286406 [Eh]
-	 Total Energy              =     -76.5306997759598460 [Eh]
+	 Same-Spin Energy          =      -0.0626731465124488 [Eh]
+	 Opposite-Spin Energy      =      -0.1867967189162065 [Eh]
+	 Correlation Energy        =      -0.2494698654286553 [Eh]
+	 Total Energy              =     -76.5306997759606276 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0208910488374811 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.2241560626994366 [Eh]
-	 SCS Correlation Energy    =      -0.2450471115369177 [Eh]
-	 SCS Total Energy          =     -76.5262770220681290 [Eh]
+	 SCS Same-Spin Energy      =      -0.0208910488374829 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.2241560626994478 [Eh]
+	 SCS Correlation Energy    =      -0.2450471115369307 [Eh]
+	 SCS Total Energy          =     -76.5262770220689106 [Eh]
 	-----------------------------------------------------------
 
 
 
     B2PLYP-D3 Energy Summary
     ------------------------
-    DFT Reference Energy                  =   -76.2812299105312093
-    Scaled MP2 Correlation                =    -0.0673568636657330
-    @Final double-hybrid DFT total energy =   -76.3485867741969457
+    DFT Reference Energy                  =   -76.2812299105319767
+    Scaled MP2 Correlation                =    -0.0673568636657370
+    @Final double-hybrid DFT total energy =   -76.3485867741977131
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:51 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:20 2021
 Module time:
-	user time   =       0.26 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      20.14 seconds =       0.34 minutes
-	system time =       0.93 seconds =       0.02 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =      11.25 seconds =       0.19 minutes
+	system time =       0.33 seconds =       0.01 minutes
+	total time  =         12 seconds =       0.20 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   // CBS Computation: B2PLYP-D3 / CC-PVTZ //
@@ -2528,7 +2527,7 @@ Total time:
 Scratch directory: /tmp/
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:51 2021
+*** at Thu Apr  1 14:43:20 2021
 
    => Loading Basis Set <=
 
@@ -2556,7 +2555,7 @@ Scratch directory: /tmp/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2675,7 +2674,7 @@ Scratch directory: /tmp/
     J tasked:                   Yes
     K tasked:                   Yes
     wK tasked:                   No
-    OpenMP threads:               4
+    OpenMP threads:               1
     Memory [MiB]:               263
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -2717,14 +2716,14 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -75.85872400165700   -7.58587e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.19485872234962   -3.36135e-01   1.82355e-02 DIIS
-   @DF-RKS iter   2:   -76.16281355954487    3.20452e-02   2.11999e-02 DIIS
-   @DF-RKS iter   3:   -76.31444309084578   -1.51630e-01   3.46745e-04 DIIS
-   @DF-RKS iter   4:   -76.31452431448524   -8.12236e-05   1.20122e-04 DIIS
-   @DF-RKS iter   5:   -76.31453050669799   -6.19221e-06   2.03136e-05 DIIS
-   @DF-RKS iter   6:   -76.31453075685067   -2.50153e-07   2.73137e-06 DIIS
-   @DF-RKS iter   7:   -76.31453076250057   -5.64989e-09   2.93385e-07 DIIS
+   @DF-RKS iter SAD:   -75.85872400165694   -7.58587e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.19485872234944   -3.36135e-01   1.82355e-02 DIIS
+   @DF-RKS iter   2:   -76.16281355954484    3.20452e-02   2.11999e-02 DIIS
+   @DF-RKS iter   3:   -76.31444309084570   -1.51630e-01   3.46745e-04 DIIS
+   @DF-RKS iter   4:   -76.31452431448523   -8.12236e-05   1.20122e-04 DIIS
+   @DF-RKS iter   5:   -76.31453050669788   -6.19221e-06   2.03136e-05 DIIS
+   @DF-RKS iter   6:   -76.31453075685049   -2.50153e-07   2.73137e-06 DIIS
+   @DF-RKS iter   7:   -76.31453076250062   -5.65014e-09   2.93385e-07 DIIS
   Energy and wave function converged.
 
 
@@ -2766,17 +2765,17 @@ Scratch directory: /tmp/
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.31453076250057
+  @DF-RKS Final Energy:   -76.31453076250062
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201648341395
-    One-Electron Energy =                -122.4807474500066888
-    Two-Electron Energy =                  41.7821167243855882
-    DFT Exchange-Correlation Energy =      -4.4569171117136115
+    One-Electron Energy =                -122.4807474500065325
+    Two-Electron Energy =                  41.7821167243853466
+    DFT Exchange-Correlation Energy =      -4.4569171117135582
     Empirical Dispersion Energy =          -0.0000030900000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.3145307625005813
+    Total Energy =                        -76.3145307625006240
 
 Computation Completed
 
@@ -2798,18 +2797,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.2008     Total:     2.2008
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:52 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:23 2021
 Module time:
-	user time   =       3.09 seconds =       0.05 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       2.15 seconds =       0.04 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      23.27 seconds =       0.39 minutes
-	system time =       1.06 seconds =       0.02 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =      13.41 seconds =       0.22 minutes
+	system time =       0.39 seconds =       0.01 minutes
+	total time  =         15 seconds =       0.25 minutes
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:52 2021
+*** at Thu Apr  1 14:43:23 2021
 
    => Loading Basis Set <=
 
@@ -2822,7 +2821,7 @@ Total time:
 	 --------------------------------------------------------
 	                          DF-MP2                         
 	      2nd-Order Density-Fitted Moller-Plesset Theory     
-	              RMP2 Wavefunction,   4 Threads             
+	              RMP2 Wavefunction,   1 Threads             
 	                                                         
 	        Rob Parrish, Justin Turney, Andy Simmonett,      
 	           Ed Hohenstein, and C. David Sherrill          
@@ -2848,41 +2847,41 @@ Total time:
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.3145307625005671 [Eh]
+	 Reference Energy          =     -76.3145307625006240 [Eh]
 	 Singles Energy            =      -0.0000000000000000 [Eh]
-	 Same-Spin Energy          =      -0.0807966461030430 [Eh]
-	 Opposite-Spin Energy      =      -0.2501422518807384 [Eh]
-	 Correlation Energy        =      -0.3309388979837814 [Eh]
-	 Total Energy              =     -76.6454696604843519 [Eh]
+	 Same-Spin Energy          =      -0.0807966461030442 [Eh]
+	 Opposite-Spin Energy      =      -0.2501422518807468 [Eh]
+	 Correlation Energy        =      -0.3309388979837909 [Eh]
+	 Total Energy              =     -76.6454696604844088 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0269322153676810 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.3001707022568860 [Eh]
-	 SCS Correlation Energy    =      -0.3271029176245670 [Eh]
-	 SCS Total Energy          =     -76.6416336801251390 [Eh]
+	 SCS Same-Spin Energy      =      -0.0269322153676814 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.3001707022568961 [Eh]
+	 SCS Correlation Energy    =      -0.3271029176245775 [Eh]
+	 SCS Total Energy          =     -76.6416336801251958 [Eh]
 	-----------------------------------------------------------
 
 
 
     B2PLYP-D3 Energy Summary
     ------------------------
-    DFT Reference Energy                  =   -76.3145307625005671
-    Scaled MP2 Correlation                =    -0.0893535024556210
-    @Final double-hybrid DFT total energy =   -76.4038842649561900
+    DFT Reference Energy                  =   -76.3145307625006240
+    Scaled MP2 Correlation                =    -0.0893535024556236
+    @Final double-hybrid DFT total energy =   -76.4038842649562469
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:52 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:23 2021
 Module time:
-	user time   =       0.26 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      23.53 seconds =       0.39 minutes
-	system time =       1.08 seconds =       0.02 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =      13.58 seconds =       0.23 minutes
+	system time =       0.39 seconds =       0.01 minutes
+	total time  =         15 seconds =       0.25 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    CBS Results:custom function    //
@@ -2891,10 +2890,10 @@ Total time:
 
    ==> 2-point exp.-sqrt. form SCF extrapolation for method: B2PLYP-D3 <==
 
-   LO-zeta (2) Energy:               -76.348586774197
+   LO-zeta (2) Energy:               -76.348586774198
    HI-zeta (3) Energy:               -76.403884264956
    Alpha (exponent) Value:             4.424180000000
-   Beta (coefficient) Value:          -2.998254400889
+   Beta (coefficient) Value:          -2.998254400850
 
    @Extrapolated B2PLYP-D3/(D,T):   -76.402475263889
 
@@ -2983,7 +2982,7 @@ Scratch directory: /tmp/
 Scratch directory: /tmp/
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:52 2021
+*** at Thu Apr  1 14:43:23 2021
 
    => Loading Basis Set <=
 
@@ -3010,7 +3009,7 @@ Scratch directory: /tmp/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3122,7 +3121,7 @@ Scratch directory: /tmp/
     J tasked:                   Yes
     K tasked:                    No
     wK tasked:                   No
-    OpenMP threads:               4
+    OpenMP threads:               1
     Memory [MiB]:               327
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -3164,14 +3163,14 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -76.11738440378123   -7.61174e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.21427503776079   -9.68906e-02   5.06156e-02 DIIS
-   @DF-RKS iter   2:   -75.73171985251693    4.82555e-01   9.11887e-02 DIIS
-   @DF-RKS iter   3:   -76.39377623505847   -6.62056e-01   3.59128e-03 DIIS
-   @DF-RKS iter   4:   -76.39500816554805   -1.23193e-03   6.77977e-04 DIIS
-   @DF-RKS iter   5:   -76.39504660149564   -3.84359e-05   9.18864e-05 DIIS
-   @DF-RKS iter   6:   -76.39504718939158   -5.87896e-07   5.46410e-06 DIIS
-   @DF-RKS iter   7:   -76.39504719297484   -3.58327e-09   3.33323e-07 DIIS
+   @DF-RKS iter SAD:   -76.11738440378205   -7.61174e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.21427503776137   -9.68906e-02   5.06156e-02 DIIS
+   @DF-RKS iter   2:   -75.73171985251709    4.82555e-01   9.11887e-02 DIIS
+   @DF-RKS iter   3:   -76.39377623505929   -6.62056e-01   3.59128e-03 DIIS
+   @DF-RKS iter   4:   -76.39500816554882   -1.23193e-03   6.77977e-04 DIIS
+   @DF-RKS iter   5:   -76.39504660149642   -3.84359e-05   9.18864e-05 DIIS
+   @DF-RKS iter   6:   -76.39504718939234   -5.87896e-07   5.46410e-06 DIIS
+   @DF-RKS iter   7:   -76.39504719297558   -3.58324e-09   3.33323e-07 DIIS
   Energy and wave function converged.
 
 
@@ -3202,17 +3201,17 @@ Scratch directory: /tmp/
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.39504719297484
+  @DF-RKS Final Energy:   -76.39504719297558
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201648341395
-    One-Electron Energy =                -122.5194372241408445
-    Two-Electron Energy =                  46.5937365591459738
-    DFT Exchange-Correlation Energy =      -9.3103605028141097
+    One-Electron Energy =                -122.5194372241415408
+    Two-Electron Energy =                  46.5937365591460164
+    DFT Exchange-Correlation Energy =      -9.3103605028141967
     Empirical Dispersion Energy =          -0.0000061900000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.3950471929748431
+    Total Energy =                        -76.3950471929755821
 
 Computation Completed
 
@@ -3234,15 +3233,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0166     Total:     2.0166
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:53 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:25 2021
 Module time:
-	user time   =       1.85 seconds =       0.03 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.10 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      26.18 seconds =       0.44 minutes
-	system time =       1.18 seconds =       0.02 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =      15.21 seconds =       0.25 minutes
+	system time =       0.41 seconds =       0.01 minutes
+	total time  =         17 seconds =       0.28 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   // CBS Computation: BLYP-D3 / CC-PVTZ //
@@ -3252,7 +3251,7 @@ Total time:
 Scratch directory: /tmp/
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:53 2021
+*** at Thu Apr  1 14:43:25 2021
 
    => Loading Basis Set <=
 
@@ -3279,7 +3278,7 @@ Scratch directory: /tmp/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3391,7 +3390,7 @@ Scratch directory: /tmp/
     J tasked:                   Yes
     K tasked:                    No
     wK tasked:                   No
-    OpenMP threads:               4
+    OpenMP threads:               1
     Memory [MiB]:               263
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -3433,14 +3432,14 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -76.11843152299231   -7.61184e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.22281511292769   -1.04384e-01   2.52718e-02 DIIS
-   @DF-RKS iter   2:   -75.48349348760122    7.39322e-01   4.84990e-02 DIIS
-   @DF-RKS iter   3:   -76.43220242041355   -9.48709e-01   2.93740e-03 DIIS
-   @DF-RKS iter   4:   -76.43598834221378   -3.78592e-03   5.55997e-04 DIIS
-   @DF-RKS iter   5:   -76.43611637488216   -1.28033e-04   6.53992e-05 DIIS
-   @DF-RKS iter   6:   -76.43611780031152   -1.42543e-06   5.60768e-06 DIIS
-   @DF-RKS iter   7:   -76.43611781378125   -1.34697e-08   4.75215e-07 DIIS
+   @DF-RKS iter SAD:   -76.11843152299221   -7.61184e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.22281511292763   -1.04384e-01   2.52718e-02 DIIS
+   @DF-RKS iter   2:   -75.48349348760148    7.39322e-01   4.84990e-02 DIIS
+   @DF-RKS iter   3:   -76.43220242041339   -9.48709e-01   2.93740e-03 DIIS
+   @DF-RKS iter   4:   -76.43598834221372   -3.78592e-03   5.55997e-04 DIIS
+   @DF-RKS iter   5:   -76.43611637488212   -1.28033e-04   6.53992e-05 DIIS
+   @DF-RKS iter   6:   -76.43611780031135   -1.42543e-06   5.60768e-06 DIIS
+   @DF-RKS iter   7:   -76.43611781378121   -1.34699e-08   4.75215e-07 DIIS
   Energy and wave function converged.
 
 
@@ -3482,17 +3481,17 @@ Scratch directory: /tmp/
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.43611781378125
+  @DF-RKS Final Energy:   -76.43611781378121
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201648341395
-    One-Electron Energy =                -122.4654697548776596
-    Two-Electron Energy =                  46.4798423816077531
-    DFT Exchange-Correlation Energy =      -9.2915044153454822
+    One-Electron Energy =                -122.4654697548774038
+    Two-Electron Energy =                  46.4798423816074262
+    DFT Exchange-Correlation Energy =      -9.2915044153453668
     Empirical Dispersion Energy =          -0.0000061900000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.4361178137812516
+    Total Energy =                        -76.4361178137812090
 
 Computation Completed
 
@@ -3514,15 +3513,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0642     Total:     2.0642
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:54 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:27 2021
 Module time:
-	user time   =       3.48 seconds =       0.06 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       2.39 seconds =       0.04 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      29.71 seconds =       0.50 minutes
-	system time =       1.31 seconds =       0.02 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =      17.61 seconds =       0.29 minutes
+	system time =       0.48 seconds =       0.01 minutes
+	total time  =         19 seconds =       0.32 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   // CBS Computation: B2PLYP-D3 / CC-PVDZ //
@@ -3532,7 +3531,7 @@ Total time:
 Scratch directory: /tmp/
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:54 2021
+*** at Thu Apr  1 14:43:27 2021
 
    => Loading Basis Set <=
 
@@ -3560,7 +3559,7 @@ Scratch directory: /tmp/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3679,7 +3678,7 @@ Scratch directory: /tmp/
     J tasked:                   Yes
     K tasked:                   Yes
     wK tasked:                   No
-    OpenMP threads:               4
+    OpenMP threads:               1
     Memory [MiB]:               327
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -3721,14 +3720,14 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -75.86075298858896   -7.58608e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.17420864237998   -3.13456e-01   3.77033e-02 DIIS
-   @DF-RKS iter   2:   -76.17227853032951    1.93011e-03   3.98307e-02 DIIS
-   @DF-RKS iter   3:   -76.28114184128205   -1.08863e-01   8.93462e-04 DIIS
-   @DF-RKS iter   4:   -76.28122400583266   -8.21646e-05   2.61565e-04 DIIS
-   @DF-RKS iter   5:   -76.28122976708212   -5.76125e-06   3.69126e-05 DIIS
-   @DF-RKS iter   6:   -76.28122990928442   -1.42202e-07   2.72252e-06 DIIS
-   @DF-RKS iter   7:   -76.28122991053121   -1.24679e-09   3.00417e-07 DIIS
+   @DF-RKS iter SAD:   -75.86075298858967   -7.58608e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.17420864238063   -3.13456e-01   3.77033e-02 DIIS
+   @DF-RKS iter   2:   -76.17227853033012    1.93011e-03   3.98307e-02 DIIS
+   @DF-RKS iter   3:   -76.28114184128283   -1.08863e-01   8.93462e-04 DIIS
+   @DF-RKS iter   4:   -76.28122400583339   -8.21646e-05   2.61565e-04 DIIS
+   @DF-RKS iter   5:   -76.28122976708289   -5.76125e-06   3.69126e-05 DIIS
+   @DF-RKS iter   6:   -76.28122990928520   -1.42202e-07   2.72252e-06 DIIS
+   @DF-RKS iter   7:   -76.28122991053198   -1.24678e-09   3.00417e-07 DIIS
   Energy and wave function converged.
 
 
@@ -3759,17 +3758,17 @@ Scratch directory: /tmp/
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.28122991053121
+  @DF-RKS Final Energy:   -76.28122991053198
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201648341395
-    One-Electron Energy =                -122.5194647330728799
-    Two-Electron Energy =                  41.8609046982383362
-    DFT Exchange-Correlation Energy =      -4.4636869505307875
+    One-Electron Energy =                -122.5194647330737041
+    Two-Electron Energy =                  41.8609046982384285
+    DFT Exchange-Correlation Energy =      -4.4636869505308345
     Empirical Dispersion Energy =          -0.0000030900000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.2812299105312093
+    Total Energy =                        -76.2812299105319767
 
 Computation Completed
 
@@ -3791,18 +3790,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.1937     Total:     2.1937
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:55 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:28 2021
 Module time:
-	user time   =       2.67 seconds =       0.04 minutes
-	system time =       0.11 seconds =       0.00 minutes
+	user time   =       1.07 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      32.43 seconds =       0.54 minutes
-	system time =       1.43 seconds =       0.02 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =      18.69 seconds =       0.31 minutes
+	system time =       0.52 seconds =       0.01 minutes
+	total time  =         20 seconds =       0.33 minutes
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:55 2021
+*** at Thu Apr  1 14:43:28 2021
 
    => Loading Basis Set <=
 
@@ -3815,7 +3814,7 @@ Total time:
 	 --------------------------------------------------------
 	                          DF-MP2                         
 	      2nd-Order Density-Fitted Moller-Plesset Theory     
-	              RMP2 Wavefunction,   4 Threads             
+	              RMP2 Wavefunction,   1 Threads             
 	                                                         
 	        Rob Parrish, Justin Turney, Andy Simmonett,      
 	           Ed Hohenstein, and C. David Sherrill          
@@ -3841,41 +3840,41 @@ Total time:
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.2812299105312093 [Eh]
+	 Reference Energy          =     -76.2812299105319767 [Eh]
 	 Singles Energy            =      -0.0000000000000000 [Eh]
-	 Same-Spin Energy          =      -0.0626731465124433 [Eh]
-	 Opposite-Spin Energy      =      -0.1867967189161972 [Eh]
-	 Correlation Energy        =      -0.2494698654286405 [Eh]
-	 Total Energy              =     -76.5306997759598460 [Eh]
+	 Same-Spin Energy          =      -0.0626731465124488 [Eh]
+	 Opposite-Spin Energy      =      -0.1867967189162065 [Eh]
+	 Correlation Energy        =      -0.2494698654286553 [Eh]
+	 Total Energy              =     -76.5306997759606276 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0208910488374811 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.2241560626994366 [Eh]
-	 SCS Correlation Energy    =      -0.2450471115369177 [Eh]
-	 SCS Total Energy          =     -76.5262770220681290 [Eh]
+	 SCS Same-Spin Energy      =      -0.0208910488374829 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.2241560626994478 [Eh]
+	 SCS Correlation Energy    =      -0.2450471115369307 [Eh]
+	 SCS Total Energy          =     -76.5262770220689106 [Eh]
 	-----------------------------------------------------------
 
 
 
     B2PLYP-D3 Energy Summary
     ------------------------
-    DFT Reference Energy                  =   -76.2812299105312093
-    Scaled MP2 Correlation                =    -0.0673568636657329
-    @Final double-hybrid DFT total energy =   -76.3485867741969457
+    DFT Reference Energy                  =   -76.2812299105319767
+    Scaled MP2 Correlation                =    -0.0673568636657370
+    @Final double-hybrid DFT total energy =   -76.3485867741977131
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:55 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:28 2021
 Module time:
-	user time   =       0.24 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      32.67 seconds =       0.54 minutes
-	system time =       1.46 seconds =       0.02 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =      18.73 seconds =       0.31 minutes
+	system time =       0.52 seconds =       0.01 minutes
+	total time  =         20 seconds =       0.33 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    CBS Results:custom function    //
@@ -3884,10 +3883,10 @@ Total time:
 
    ==> 2-point exp.-sqrt. form SCF extrapolation for method: BLYP-D3 <==
 
-   LO-zeta (2) Energy:               -76.395041002975
+   LO-zeta (2) Energy:               -76.395041002976
    HI-zeta (3) Energy:               -76.436111623781
    Alpha (exponent) Value:             3.622000000000
-   Beta (coefficient) Value:          -0.998417018413
+   Beta (coefficient) Value:          -0.998417018394
 
    @Extrapolated BLYP-D3/(D,T):     -76.434228968775
 
@@ -3898,11 +3897,11 @@ Total time:
 
    ==> B2PLYP-D3 <==
 
-   HI-zeta (0) Energy:               -76.348586774197
+   HI-zeta (0) Energy:               -76.348586774198
 
    ==> BLYP-D3 <==
 
-   HI-zeta (0) Energy:               -76.395047192975
+   HI-zeta (0) Energy:               -76.395047192976
 
    ==> Components <==
 
@@ -3996,7 +3995,7 @@ Scratch directory: /tmp/
 Scratch directory: /tmp/
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:55 2021
+*** at Thu Apr  1 14:43:28 2021
 
    => Loading Basis Set <=
 
@@ -4023,7 +4022,7 @@ Scratch directory: /tmp/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -4135,7 +4134,7 @@ Scratch directory: /tmp/
     J tasked:                   Yes
     K tasked:                    No
     wK tasked:                   No
-    OpenMP threads:               4
+    OpenMP threads:               1
     Memory [MiB]:               327
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -4177,14 +4176,14 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -76.11738440378126   -7.61174e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.21427503776074   -9.68906e-02   5.06156e-02 DIIS
-   @DF-RKS iter   2:   -75.73171985251699    4.82555e-01   9.11887e-02 DIIS
-   @DF-RKS iter   3:   -76.39377623505852   -6.62056e-01   3.59128e-03 DIIS
-   @DF-RKS iter   4:   -76.39500816554796   -1.23193e-03   6.77977e-04 DIIS
-   @DF-RKS iter   5:   -76.39504660149566   -3.84359e-05   9.18864e-05 DIIS
-   @DF-RKS iter   6:   -76.39504718939151   -5.87896e-07   5.46410e-06 DIIS
-   @DF-RKS iter   7:   -76.39504719297483   -3.58332e-09   3.33323e-07 DIIS
+   @DF-RKS iter SAD:   -76.11738440378205   -7.61174e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.21427503776137   -9.68906e-02   5.06156e-02 DIIS
+   @DF-RKS iter   2:   -75.73171985251709    4.82555e-01   9.11887e-02 DIIS
+   @DF-RKS iter   3:   -76.39377623505929   -6.62056e-01   3.59128e-03 DIIS
+   @DF-RKS iter   4:   -76.39500816554882   -1.23193e-03   6.77977e-04 DIIS
+   @DF-RKS iter   5:   -76.39504660149642   -3.84359e-05   9.18864e-05 DIIS
+   @DF-RKS iter   6:   -76.39504718939234   -5.87896e-07   5.46410e-06 DIIS
+   @DF-RKS iter   7:   -76.39504719297558   -3.58324e-09   3.33323e-07 DIIS
   Energy and wave function converged.
 
 
@@ -4215,17 +4214,17 @@ Scratch directory: /tmp/
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.39504719297483
+  @DF-RKS Final Energy:   -76.39504719297558
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201648341395
-    One-Electron Energy =                -122.5194372241408587
-    Two-Electron Energy =                  46.5937365591459951
-    DFT Exchange-Correlation Energy =      -9.3103605028141097
+    One-Electron Energy =                -122.5194372241415408
+    Two-Electron Energy =                  46.5937365591460164
+    DFT Exchange-Correlation Energy =      -9.3103605028141967
     Empirical Dispersion Energy =          -0.0000061900000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.3950471929748289
+    Total Energy =                        -76.3950471929755821
 
 Computation Completed
 
@@ -4247,15 +4246,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0166     Total:     2.0166
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:56 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:30 2021
 Module time:
-	user time   =       2.36 seconds =       0.04 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.16 seconds =       0.02 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      35.89 seconds =       0.60 minutes
-	system time =       1.60 seconds =       0.03 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =      20.14 seconds =       0.34 minutes
+	system time =       0.55 seconds =       0.01 minutes
+	total time  =         22 seconds =       0.37 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   // CBS Computation: BLYP-D3 / CC-PVTZ //
@@ -4265,7 +4264,7 @@ Total time:
 Scratch directory: /tmp/
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:56 2021
+*** at Thu Apr  1 14:43:30 2021
 
    => Loading Basis Set <=
 
@@ -4292,7 +4291,7 @@ Scratch directory: /tmp/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -4404,7 +4403,7 @@ Scratch directory: /tmp/
     J tasked:                   Yes
     K tasked:                    No
     wK tasked:                   No
-    OpenMP threads:               4
+    OpenMP threads:               1
     Memory [MiB]:               263
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -4446,14 +4445,14 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -76.11843152299234   -7.61184e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.22281511292758   -1.04384e-01   2.52718e-02 DIIS
-   @DF-RKS iter   2:   -75.48349348760124    7.39322e-01   4.84990e-02 DIIS
-   @DF-RKS iter   3:   -76.43220242041366   -9.48709e-01   2.93740e-03 DIIS
-   @DF-RKS iter   4:   -76.43598834221373   -3.78592e-03   5.55997e-04 DIIS
-   @DF-RKS iter   5:   -76.43611637488215   -1.28033e-04   6.53992e-05 DIIS
-   @DF-RKS iter   6:   -76.43611780031144   -1.42543e-06   5.60768e-06 DIIS
-   @DF-RKS iter   7:   -76.43611781378125   -1.34698e-08   4.75215e-07 DIIS
+   @DF-RKS iter SAD:   -76.11843152299221   -7.61184e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.22281511292763   -1.04384e-01   2.52718e-02 DIIS
+   @DF-RKS iter   2:   -75.48349348760148    7.39322e-01   4.84990e-02 DIIS
+   @DF-RKS iter   3:   -76.43220242041339   -9.48709e-01   2.93740e-03 DIIS
+   @DF-RKS iter   4:   -76.43598834221372   -3.78592e-03   5.55997e-04 DIIS
+   @DF-RKS iter   5:   -76.43611637488212   -1.28033e-04   6.53992e-05 DIIS
+   @DF-RKS iter   6:   -76.43611780031135   -1.42543e-06   5.60768e-06 DIIS
+   @DF-RKS iter   7:   -76.43611781378121   -1.34699e-08   4.75215e-07 DIIS
   Energy and wave function converged.
 
 
@@ -4495,17 +4494,17 @@ Scratch directory: /tmp/
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.43611781378125
+  @DF-RKS Final Energy:   -76.43611781378121
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201648341395
-    One-Electron Energy =                -122.4654697548776738
-    Two-Electron Energy =                  46.4798423816077673
-    DFT Exchange-Correlation Energy =      -9.2915044153454858
+    One-Electron Energy =                -122.4654697548774038
+    Two-Electron Energy =                  46.4798423816074262
+    DFT Exchange-Correlation Energy =      -9.2915044153453668
     Empirical Dispersion Energy =          -0.0000061900000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.4361178137812516
+    Total Energy =                        -76.4361178137812090
 
 Computation Completed
 
@@ -4527,15 +4526,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0642     Total:     2.0642
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:57 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:32 2021
 Module time:
-	user time   =       4.28 seconds =       0.07 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.72 seconds =       0.03 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =      40.21 seconds =       0.67 minutes
-	system time =       1.73 seconds =       0.03 minutes
-	total time  =         13 seconds =       0.22 minutes
+	user time   =      21.87 seconds =       0.36 minutes
+	system time =       0.62 seconds =       0.01 minutes
+	total time  =         24 seconds =       0.40 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   // CBS Computation: B2PLYP-D3 / CC-PVDZ //
@@ -4545,7 +4544,7 @@ Total time:
 Scratch directory: /tmp/
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:57 2021
+*** at Thu Apr  1 14:43:32 2021
 
    => Loading Basis Set <=
 
@@ -4573,7 +4572,7 @@ Scratch directory: /tmp/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -4692,7 +4691,7 @@ Scratch directory: /tmp/
     J tasked:                   Yes
     K tasked:                   Yes
     wK tasked:                   No
-    OpenMP threads:               4
+    OpenMP threads:               1
     Memory [MiB]:               327
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -4734,14 +4733,14 @@ Scratch directory: /tmp/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -75.86075298858891   -7.58608e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.17420864237997   -3.13456e-01   3.77033e-02 DIIS
-   @DF-RKS iter   2:   -76.17227853032952    1.93011e-03   3.98307e-02 DIIS
-   @DF-RKS iter   3:   -76.28114184128211   -1.08863e-01   8.93462e-04 DIIS
-   @DF-RKS iter   4:   -76.28122400583271   -8.21646e-05   2.61565e-04 DIIS
-   @DF-RKS iter   5:   -76.28122976708214   -5.76125e-06   3.69126e-05 DIIS
-   @DF-RKS iter   6:   -76.28122990928449   -1.42202e-07   2.72252e-06 DIIS
-   @DF-RKS iter   7:   -76.28122991053121   -1.24672e-09   3.00417e-07 DIIS
+   @DF-RKS iter SAD:   -75.86075298858967   -7.58608e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.17420864238063   -3.13456e-01   3.77033e-02 DIIS
+   @DF-RKS iter   2:   -76.17227853033012    1.93011e-03   3.98307e-02 DIIS
+   @DF-RKS iter   3:   -76.28114184128283   -1.08863e-01   8.93462e-04 DIIS
+   @DF-RKS iter   4:   -76.28122400583339   -8.21646e-05   2.61565e-04 DIIS
+   @DF-RKS iter   5:   -76.28122976708289   -5.76125e-06   3.69126e-05 DIIS
+   @DF-RKS iter   6:   -76.28122990928520   -1.42202e-07   2.72252e-06 DIIS
+   @DF-RKS iter   7:   -76.28122991053198   -1.24678e-09   3.00417e-07 DIIS
   Energy and wave function converged.
 
 
@@ -4772,17 +4771,17 @@ Scratch directory: /tmp/
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.28122991053121
+  @DF-RKS Final Energy:   -76.28122991053198
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201648341395
-    One-Electron Energy =                -122.5194647330728230
-    Two-Electron Energy =                  41.8609046982382793
-    DFT Exchange-Correlation Energy =      -4.4636869505307821
+    One-Electron Energy =                -122.5194647330737041
+    Two-Electron Energy =                  41.8609046982384285
+    DFT Exchange-Correlation Energy =      -4.4636869505308345
     Empirical Dispersion Energy =          -0.0000030900000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.2812299105312093
+    Total Energy =                        -76.2812299105319767
 
 Computation Completed
 
@@ -4804,18 +4803,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.1937     Total:     2.1937
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:58 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:33 2021
 Module time:
-	user time   =       2.39 seconds =       0.04 minutes
-	system time =       0.13 seconds =       0.00 minutes
+	user time   =       1.09 seconds =       0.02 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      42.65 seconds =       0.71 minutes
-	system time =       1.86 seconds =       0.03 minutes
-	total time  =         14 seconds =       0.23 minutes
+	user time   =      22.97 seconds =       0.38 minutes
+	system time =       0.68 seconds =       0.01 minutes
+	total time  =         25 seconds =       0.42 minutes
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:58 2021
+*** at Thu Apr  1 14:43:33 2021
 
    => Loading Basis Set <=
 
@@ -4828,7 +4827,7 @@ Total time:
 	 --------------------------------------------------------
 	                          DF-MP2                         
 	      2nd-Order Density-Fitted Moller-Plesset Theory     
-	              RMP2 Wavefunction,   4 Threads             
+	              RMP2 Wavefunction,   1 Threads             
 	                                                         
 	        Rob Parrish, Justin Turney, Andy Simmonett,      
 	           Ed Hohenstein, and C. David Sherrill          
@@ -4854,41 +4853,41 @@ Total time:
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.2812299105312093 [Eh]
+	 Reference Energy          =     -76.2812299105319767 [Eh]
 	 Singles Energy            =      -0.0000000000000000 [Eh]
-	 Same-Spin Energy          =      -0.0626731465124438 [Eh]
-	 Opposite-Spin Energy      =      -0.1867967189161976 [Eh]
-	 Correlation Energy        =      -0.2494698654286414 [Eh]
-	 Total Energy              =     -76.5306997759598460 [Eh]
+	 Same-Spin Energy          =      -0.0626731465124488 [Eh]
+	 Opposite-Spin Energy      =      -0.1867967189162065 [Eh]
+	 Correlation Energy        =      -0.2494698654286553 [Eh]
+	 Total Energy              =     -76.5306997759606276 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
-	 SCS Same-Spin Energy      =      -0.0208910488374813 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.2241560626994372 [Eh]
-	 SCS Correlation Energy    =      -0.2450471115369184 [Eh]
-	 SCS Total Energy          =     -76.5262770220681290 [Eh]
+	 SCS Same-Spin Energy      =      -0.0208910488374829 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.2241560626994478 [Eh]
+	 SCS Correlation Energy    =      -0.2450471115369307 [Eh]
+	 SCS Total Energy          =     -76.5262770220689106 [Eh]
 	-----------------------------------------------------------
 
 
 
     B2PLYP-D3 Energy Summary
     ------------------------
-    DFT Reference Energy                  =   -76.2812299105312093
-    Scaled MP2 Correlation                =    -0.0673568636657332
-    @Final double-hybrid DFT total energy =   -76.3485867741969457
+    DFT Reference Energy                  =   -76.2812299105319767
+    Scaled MP2 Correlation                =    -0.0673568636657370
+    @Final double-hybrid DFT total energy =   -76.3485867741977131
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:58 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:33 2021
 Module time:
-	user time   =       0.33 seconds =       0.01 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.05 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      42.98 seconds =       0.72 minutes
-	system time =       1.89 seconds =       0.03 minutes
-	total time  =         14 seconds =       0.23 minutes
+	user time   =      23.02 seconds =       0.38 minutes
+	system time =       0.68 seconds =       0.01 minutes
+	total time  =         25 seconds =       0.42 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   // CBS Results:blyp-d3/cc-pv[dt]z+D:b2plyp-d3/cc-pvdz //
@@ -4897,10 +4896,10 @@ Total time:
 
    ==> 2-point exp.-sqrt. form SCF extrapolation for method: BLYP-D3 <==
 
-   LO-zeta (2) Energy:               -76.395041002975
+   LO-zeta (2) Energy:               -76.395041002976
    HI-zeta (3) Energy:               -76.436111623781
    Alpha (exponent) Value:             3.622000000000
-   Beta (coefficient) Value:          -0.998417018414
+   Beta (coefficient) Value:          -0.998417018394
 
    @Extrapolated BLYP-D3/(D,T):     -76.434228968775
 
@@ -4911,11 +4910,11 @@ Total time:
 
    ==> B2PLYP-D3 <==
 
-   HI-zeta (0) Energy:               -76.348586774197
+   HI-zeta (0) Energy:               -76.348586774198
 
    ==> BLYP-D3 <==
 
-   HI-zeta (0) Energy:               -76.395047192975
+   HI-zeta (0) Energy:               -76.395047192976
 
    ==> Components <==
 
@@ -5002,7 +5001,7 @@ Scratch directory: /tmp/
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:58 2021
+*** at Thu Apr  1 14:43:33 2021
 
    => Loading Basis Set <=
 
@@ -5029,7 +5028,7 @@ gradient() will perform analytic gradient computation.
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -5141,7 +5140,7 @@ gradient() will perform analytic gradient computation.
     J tasked:                   Yes
     K tasked:                    No
     wK tasked:                   No
-    OpenMP threads:               4
+    OpenMP threads:               1
     Memory [MiB]:               327
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -5183,16 +5182,16 @@ gradient() will perform analytic gradient computation.
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -76.11738440378123   -7.61174e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.21427503776074   -9.68906e-02   5.06156e-02 DIIS
-   @DF-RKS iter   2:   -75.73171985251693    4.82555e-01   9.11887e-02 DIIS
-   @DF-RKS iter   3:   -76.39377623505851   -6.62056e-01   3.59128e-03 DIIS
-   @DF-RKS iter   4:   -76.39500816554801   -1.23193e-03   6.77977e-04 DIIS
-   @DF-RKS iter   5:   -76.39504660149565   -3.84359e-05   9.18864e-05 DIIS
-   @DF-RKS iter   6:   -76.39504718939153   -5.87896e-07   5.46410e-06 DIIS
-   @DF-RKS iter   7:   -76.39504719297484   -3.58331e-09   3.33323e-07 DIIS
-   @DF-RKS iter   8:   -76.39504719298296   -8.11440e-12   3.14528e-08 DIIS
-   @DF-RKS iter   9:   -76.39504719298301   -5.68434e-14   1.95353e-09 DIIS
+   @DF-RKS iter SAD:   -76.11738440378205   -7.61174e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.21427503776137   -9.68906e-02   5.06156e-02 DIIS
+   @DF-RKS iter   2:   -75.73171985251709    4.82555e-01   9.11887e-02 DIIS
+   @DF-RKS iter   3:   -76.39377623505929   -6.62056e-01   3.59128e-03 DIIS
+   @DF-RKS iter   4:   -76.39500816554882   -1.23193e-03   6.77977e-04 DIIS
+   @DF-RKS iter   5:   -76.39504660149642   -3.84359e-05   9.18864e-05 DIIS
+   @DF-RKS iter   6:   -76.39504718939234   -5.87896e-07   5.46410e-06 DIIS
+   @DF-RKS iter   7:   -76.39504719297558   -3.58324e-09   3.33323e-07 DIIS
+   @DF-RKS iter   8:   -76.39504719298375   -8.17124e-12   3.14528e-08 DIIS
+   @DF-RKS iter   9:   -76.39504719298387   -1.13687e-13   1.95353e-09 DIIS
   Energy and wave function converged.
 
 
@@ -5223,17 +5222,17 @@ gradient() will perform analytic gradient computation.
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.39504719298301
+  @DF-RKS Final Energy:   -76.39504719298387
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201648341395
-    One-Electron Energy =                -122.5194480286599941
-    Two-Electron Energy =                  46.5937485099656215
-    DFT Exchange-Correlation Energy =      -9.3103616491227825
+    One-Electron Energy =                -122.5194480286608893
+    Two-Electron Energy =                  46.5937485099657707
+    DFT Exchange-Correlation Energy =      -9.3103616491228838
     Empirical Dispersion Energy =          -0.0000061900000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.3950471929830144
+    Total Energy =                        -76.3950471929838670
 
 Computation Completed
 
@@ -5255,18 +5254,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0166     Total:     2.0166
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:59 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:34 2021
 Module time:
-	user time   =       2.31 seconds =       0.04 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       1.30 seconds =       0.02 minutes
+	system time =       0.08 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      46.06 seconds =       0.77 minutes
-	system time =       2.01 seconds =       0.03 minutes
-	total time  =         15 seconds =       0.25 minutes
+	user time   =      24.47 seconds =       0.41 minutes
+	system time =       0.76 seconds =       0.01 minutes
+	total time  =         26 seconds =       0.43 minutes
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:59 2021
+*** at Thu Apr  1 14:43:34 2021
 
 
          ------------------------------------------------------------
@@ -5306,8 +5305,8 @@ Total time:
     J tasked:                  Yes
     K tasked:                   No
     wK tasked:                  No
-    OpenMP threads:              4
-    Integrals threads:           4
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory [MiB]:              375
     Schwarz Cutoff:          1E-12
     Fitting Condition:       1E-10
@@ -5372,20 +5371,20 @@ Total time:
   -Total Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -0.039078325962
-       2       -0.000000000000     0.006447953964     0.019541960136
-       3        0.000000000000    -0.006447953964     0.019541960136
+       1        0.000000000000     0.000000000000    -0.039082505804
+       2       -0.000000000000     0.006431410108     0.019544050057
+       3        0.000000000000    -0.006431410108     0.019544050057
 
 
-*** tstop() called on dorje at Wed Mar 31 13:34:59 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:35 2021
 Module time:
-	user time   =       0.60 seconds =       0.01 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.25 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      46.75 seconds =       0.78 minutes
-	system time =       2.07 seconds =       0.03 minutes
-	total time  =         15 seconds =       0.25 minutes
+	user time   =      24.72 seconds =       0.41 minutes
+	system time =       0.76 seconds =       0.01 minutes
+	total time  =         27 seconds =       0.45 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   // CBS Computation: BLYP-D3 / CC-PVTZ, GRADIENT //
@@ -5396,7 +5395,7 @@ Scratch directory: /tmp/
 gradient() will perform analytic gradient computation.
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:34:59 2021
+*** at Thu Apr  1 14:43:35 2021
 
    => Loading Basis Set <=
 
@@ -5423,7 +5422,7 @@ gradient() will perform analytic gradient computation.
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        4 Threads,    500 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -5535,7 +5534,7 @@ gradient() will perform analytic gradient computation.
     J tasked:                   Yes
     K tasked:                    No
     wK tasked:                   No
-    OpenMP threads:               4
+    OpenMP threads:               1
     Memory [MiB]:               263
     Algorithm:                 Core
     Schwarz Cutoff:           1E-12
@@ -5577,16 +5576,16 @@ gradient() will perform analytic gradient computation.
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:   -76.11843152299228   -7.61184e+01   0.00000e+00 
-   @DF-RKS iter   1:   -76.22281511292759   -1.04384e-01   2.52718e-02 DIIS
-   @DF-RKS iter   2:   -75.48349348760112    7.39322e-01   4.84990e-02 DIIS
-   @DF-RKS iter   3:   -76.43220242041362   -9.48709e-01   2.93740e-03 DIIS
-   @DF-RKS iter   4:   -76.43598834221378   -3.78592e-03   5.55997e-04 DIIS
-   @DF-RKS iter   5:   -76.43611637488215   -1.28033e-04   6.53992e-05 DIIS
-   @DF-RKS iter   6:   -76.43611780031146   -1.42543e-06   5.60768e-06 DIIS
-   @DF-RKS iter   7:   -76.43611781378125   -1.34698e-08   4.75215e-07 DIIS
-   @DF-RKS iter   8:   -76.43611781389532   -1.14071e-10   3.54685e-08 DIIS
-   @DF-RKS iter   9:   -76.43611781389583   -5.11591e-13   2.56975e-09 DIIS
+   @DF-RKS iter SAD:   -76.11843152299221   -7.61184e+01   0.00000e+00 
+   @DF-RKS iter   1:   -76.22281511292763   -1.04384e-01   2.52718e-02 DIIS
+   @DF-RKS iter   2:   -75.48349348760148    7.39322e-01   4.84990e-02 DIIS
+   @DF-RKS iter   3:   -76.43220242041339   -9.48709e-01   2.93740e-03 DIIS
+   @DF-RKS iter   4:   -76.43598834221372   -3.78592e-03   5.55997e-04 DIIS
+   @DF-RKS iter   5:   -76.43611637488212   -1.28033e-04   6.53992e-05 DIIS
+   @DF-RKS iter   6:   -76.43611780031135   -1.42543e-06   5.60768e-06 DIIS
+   @DF-RKS iter   7:   -76.43611781378121   -1.34699e-08   4.75215e-07 DIIS
+   @DF-RKS iter   8:   -76.43611781389504   -1.13829e-10   3.54685e-08 DIIS
+   @DF-RKS iter   9:   -76.43611781389578   -7.38964e-13   2.56975e-09 DIIS
   Energy and wave function converged.
 
 
@@ -5628,17 +5627,17 @@ gradient() will perform analytic gradient computation.
              A1    A2    B1    B2 
     DOCC [     3,    0,    1,    1 ]
 
-  @DF-RKS Final Energy:   -76.43611781389583
+  @DF-RKS Final Energy:   -76.43611781389578
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              8.8410201648341395
-    One-Electron Energy =                -122.4654329269933157
-    Two-Electron Energy =                  46.4797986859816916
-    DFT Exchange-Correlation Energy =      -9.2914975477183486
+    One-Electron Energy =                -122.4654329269930741
+    Two-Electron Energy =                  46.4797986859813861
+    DFT Exchange-Correlation Energy =      -9.2914975477182260
     Empirical Dispersion Energy =          -0.0000061900000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                        -76.4361178138958337
+    Total Energy =                        -76.4361178138957769
 
 Computation Completed
 
@@ -5660,18 +5659,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0642     Total:     2.0642
 
 
-*** tstop() called on dorje at Wed Mar 31 13:35:00 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:38 2021
 Module time:
-	user time   =       3.87 seconds =       0.06 minutes
+	user time   =       3.20 seconds =       0.05 minutes
 	system time =       0.08 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =      50.66 seconds =       0.84 minutes
-	system time =       2.15 seconds =       0.04 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =      27.94 seconds =       0.47 minutes
+	system time =       0.85 seconds =       0.01 minutes
+	total time  =         30 seconds =       0.50 minutes
 
 *** tstart() called on dorje
-*** at Wed Mar 31 13:35:00 2021
+*** at Thu Apr  1 14:43:38 2021
 
 
          ------------------------------------------------------------
@@ -5711,8 +5710,8 @@ Total time:
     J tasked:                  Yes
     K tasked:                   No
     wK tasked:                  No
-    OpenMP threads:              4
-    Integrals threads:           4
+    OpenMP threads:              1
+    Integrals threads:           1
     Memory [MiB]:              375
     Schwarz Cutoff:          1E-12
     Fitting Condition:       1E-10
@@ -5777,20 +5776,20 @@ Total time:
   -Total Gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -0.050741807431
-       2       -0.000000000000     0.003277692224     0.025374182583
-       3        0.000000000000    -0.003277692224     0.025374182583
+       1       -0.000000000000     0.000000000000    -0.050745987255
+       2       -0.000000000000     0.003261148375     0.025376272496
+       3        0.000000000000    -0.003261148375     0.025376272496
 
 
-*** tstop() called on dorje at Wed Mar 31 13:35:00 2021
+*** tstop() called on dorje at Thu Apr  1 14:43:39 2021
 Module time:
-	user time   =       1.72 seconds =       0.03 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.63 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      52.47 seconds =       0.87 minutes
-	system time =       2.26 seconds =       0.04 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =      28.57 seconds =       0.48 minutes
+	system time =       0.85 seconds =       0.01 minutes
+	total time  =         31 seconds =       0.52 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   CBS Results:blyp-d3/cc-pv[dt]z  //
@@ -5799,12 +5798,12 @@ Total time:
 
    ==> 2-point exp.-sqrt. form SCF extrapolation for method: BLYP-D3 <==
 
-   LO-zeta (2) Energy:               -76.395041002983
-   HI-zeta (3) Energy:               -76.436111623896
+   LO-zeta (2) Energy:               -76.395047192984
+   HI-zeta (3) Energy:               -76.436117813896
    Alpha (exponent) Value:             3.622000000000
-   Beta (coefficient) Value:          -0.998417021000
+   Beta (coefficient) Value:          -0.998417020978
 
-   @Extrapolated BLYP-D3/(D,T):     -76.434228968884
+   @Extrapolated BLYP-D3/(D,T):     -76.434235158884
 
 
    ==> BLYP-D3 <==
@@ -5818,11 +5817,11 @@ Total time:
   ---------------------------------------------------------------------------------------------------------
                          blyp-d3 / cc-pvdz                              0.00000000   DFT TOTAL ENERGY
                          blyp-d3 / cc-pvdz                              0.00000000   DFT TOTAL ENERGY
-                         blyp-d3 / cc-pvdz                      *     -76.39504100   DFT FUNCTIONAL TOTAL ENERGY
+                         blyp-d3 / cc-pvdz                      *     -76.39504719   DFT FUNCTIONAL TOTAL ENERGY
                          blyp-d3 / cc-pvdz                             -0.00000619   DISPERSION CORRECTION ENERGY
                          blyp-d3 / cc-pvtz                              0.00000000   DFT TOTAL ENERGY
                          blyp-d3 / cc-pvtz                              0.00000000   DFT TOTAL ENERGY
-                         blyp-d3 / cc-pvtz                      *     -76.43611162   DFT FUNCTIONAL TOTAL ENERGY
+                         blyp-d3 / cc-pvtz                      *     -76.43611781   DFT FUNCTIONAL TOTAL ENERGY
                          blyp-d3 / cc-pvtz                      *      -0.00000619   DISPERSION CORRECTION ENERGY
   ---------------------------------------------------------------------------------------------------------
 
@@ -5831,7 +5830,7 @@ Total time:
   ---------------------------------------------------------------------------------------------------------
       Stage               Method / Basis                       Wt      Energy [Eh]   Scheme
   ---------------------------------------------------------------------------------------------------------
-       fctl              blyp-d3 / cc-pv[dt]z                   1     -76.43422897   xtpl_expsqrt_2
+       fctl              blyp-d3 / cc-pv[dt]z                   1     -76.43423516   xtpl_expsqrt_2
        disp              blyp-d3 / cc-pvtz                      1      -0.00000619   xtpl_highest_1
   ---------------------------------------------------------------------------------------------------------
 
@@ -5840,9 +5839,9 @@ Total time:
   ---------------------------------------------------------------------------------------------------------
       Stage               Method / Basis                               Energy [Eh]   Scheme
   ---------------------------------------------------------------------------------------------------------
-       fctl              blyp-d3 / cc-pv[dt]z                         -76.43422897   xtpl_expsqrt_2
+       fctl              blyp-d3 / cc-pv[dt]z                         -76.43423516   xtpl_expsqrt_2
        disp              blyp-d3 / cc-pvtz                             -0.00000619   xtpl_highest_1
-      total                  CBS                                      -76.43423516   
+      total                  CBS                                      -76.43424135   
   ---------------------------------------------------------------------------------------------------------
    => Loading Basis Set <=
 
@@ -5856,16 +5855,16 @@ CURRENT GRADIENT  Irrep: 1 Size: 3 x 3
 
                  1                   2                   3
 
-    1     0.00000000000000     0.00000000000000    -0.05020297996123
-    2    -0.00000000000000     0.00343955914458     0.02510474676703
-    3     0.00000000000000    -0.00343955914458     0.02510474676703
+    1    -0.00000000000000     0.00000000000000    -0.05020297998894
+    2    -0.00000000000000     0.00343955913449     0.02510474678093
+    3     0.00000000000000    -0.00343955913449     0.02510474678093
 
 
 
     BLYP-D3/cc-pv[dt]z analytic gradient..................................................PASSED
     BLYP-D3/cc-pv[dt]z analytic gradient - 2 steps only...................................PASSED
 
-    Psi4 stopped on: Wednesday, 31 March 2021 01:35PM
-    Psi4 wall time for execution: 0:00:16.21
+    Psi4 stopped on: Thursday, 01 April 2021 02:43PM
+    Psi4 wall time for execution: 0:00:31.10
 
 *** Psi4 exiting successfully. Buy a developer a beer!

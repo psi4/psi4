@@ -1929,17 +1929,9 @@ def cbs(func, label, **kwargs):
         if ptype == 'energy':
             mc['f_energy'] = core.variable(VARH[mc['f_wfn']][mc['f_component']])
         elif ptype == 'gradient':
-            # For DFT gradients, we only care about the fctl gradient here.
-            # Other components ("disp", "nl", "dh") are handled below.
-            if mc['f_component'].endswith('fctl'):
-                mc['f_gradient'] = core.variable("DFT TOTAL GRADIENT")
-                mc['f_energy'] = core.variable("DFT FUNCTIONAL TOTAL ENERGY")
-            #elif mc['f_component'].endswith('disp'):
-            #    mc['f_gradient'] = core.variable("DISPERSION CORRECTION GRADIENT")
-            #    mc['f_energy'] = core.variable("DISPERSION CORRECTION ENERGY")
-            else:
-                mc['f_gradient'] = response
-                mc['f_energy'] = core.variable('CURRENT ENERGY')
+            # For DFT gradients, we handle all functional components below.
+            mc['f_gradient'] = response
+            mc['f_energy'] = core.variable('CURRENT ENERGY')
             if verbose > 1:
                 mc['f_gradient'].print_out()
         elif ptype == 'hessian':
@@ -1963,11 +1955,11 @@ def cbs(func, label, **kwargs):
                        (component == job['f_component']) and (mc['f_options'] == job['f_options']):
                         job['f_energy'] = core.variable(VARH[mc['f_wfn']][component])
         # For DFT, we have deleted duplicate gradient calls but the gradient components
-        # are available as variables. So if they are required, let us fill them.
+        # are available as variables, with ENERGY-> GRADIENT. So if they are required, let us fill them.
         # At the moment, only "disp" gradients are possible ("nl" and "dh" not yet implemented):
         elif ptype == 'gradient':
             for component in VARH[mc['f_wfn']]:
-                if component.endswith("disp"):
+                if component.endswith("disp") or component.endswith("fctl"):
                     for job in JOBS_EXT:
                         if (mc['f_wfn'] == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
                         (component == job['f_component']) and (mc['f_options'] == job['f_options']):

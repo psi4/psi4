@@ -2487,11 +2487,7 @@ def run_scf_gradient(name, **kwargs):
     if core.get_option('SCF', 'REFERENCE') in ['ROHF', 'CUHF']:
         ref_wfn.semicanonicalize()
 
-    if hasattr(ref_wfn, "_disp_functor"):
-        disp_grad = ref_wfn._disp_functor.compute_gradient(ref_wfn.molecule(), ref_wfn)
-        ref_wfn.set_variable("-D Gradient", disp_grad)
-
-    grad = core.scfgrad(ref_wfn)
+    fctl_grad = core.scfgrad(ref_wfn)
 
     if ref_wfn.basisset().has_ECP():
         core.print_out("\n\n  ==> Adding ECP gradient terms (computed numerically) <==\n")
@@ -2528,17 +2524,24 @@ def run_scf_gradient(name, **kwargs):
                 ecpgrad[atom, xyz] = (Em2 + 8*Ep1 - 8*Em1 - Ep2) / (12*delta)
         ecpgradmat.symmetrize_gradient(ref_wfn.molecule())
         ecpgradmat.print_atom_vector()
-        grad.add(ecpgradmat)
-        grad.print_atom_vector()
+        fctl_grad.add(ecpgradmat)
+        fctl_grad.print_atom_vector()
         ref_wfn.set_print(old_print)
 
-    ref_wfn.set_gradient(grad)
+    tot_grad = fctl_grad.clone()
+    if hasattr(ref_wfn, "_disp_functor"):
+        disp_grad = ref_wfn._disp_functor.compute_gradient(ref_wfn.molecule(), ref_wfn)
+        ref_wfn.set_variable("-D Gradient", disp_grad)
+        tot_grad.add(disp_grad)
+    
+    ref_wfn.set_gradient(tot_grad)
 
-    ref_wfn.set_variable("SCF TOTAL GRADIENT", grad)  # P::e SCF
+    ref_wfn.set_variable("SCF TOTAL GRADIENT", tot_grad)
     if ref_wfn.functional().needs_xc():
-        ref_wfn.set_variable("DFT TOTAL GRADIENT", grad)  # overwritten later for DH -- TODO when DH gradients  # P::e SCF
+        ref_wfn.set_variable("DFT TOTAL GRADIENT", tot_grad)  # overwritten later for DH -- TODO when DH gradients
+        ref_wfn.set_variable("DFT FUNCTIONAL TOTAL GRADIENT", fctl_grad)
     else:
-        ref_wfn.set_variable("HF TOTAL GRADIENT", grad)  # P::e SCF
+        ref_wfn.set_variable("HF TOTAL GRADIENT", tot_grad)
 
     # Shove variables into global space
     for k, v in ref_wfn.variables().items():
