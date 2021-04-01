@@ -33,3 +33,5 @@ compare_values(ref_blyp_b2plyp, E, 7, "BLYP-D3/cc-[DT]+D:B2PLYP-D3/cc-pvdz as st
 
 G = gradient('blyp-d3/cc-pv[dt]z', dertype=1)
 compare_matrices(ref_blyp_d3_dt_grad, G, 6, "BLYP-D3/cc-pv[dt]z analytic gradient")
+compare_values(2, variable("CBS NUMBER"), "BLYP-D3/cc-pv[dt]z analytic gradient - 2 steps only")
+

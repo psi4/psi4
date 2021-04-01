@@ -2085,7 +2085,8 @@ def cbs(func, label, **kwargs):
                 GRAND_NEED[1]['d_energy'], GRAND_NEED[1]['d_scheme'].__name__)
             dc = 2
     if len(metadata) > 2:
-        for delta in metadata[2:]:
+        #for delta in metadata[2:]:
+        while dc < len(GRAND_NEED):
             if GRAND_NEED[dc]['d_isdelta']:
                 deltaE_total = GRAND_NEED[dc]['d_energy'] - GRAND_NEED[dc + 1]['d_energy']
                 tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (
