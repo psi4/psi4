@@ -53,6 +53,7 @@ platform capabilities, *etc*.
    libefp
    erd
    fchk
+   plugin_psi4fockci
    gau2grid
    gcp
    gdma

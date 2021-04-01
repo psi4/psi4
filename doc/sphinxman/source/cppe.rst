@@ -79,7 +79,7 @@ Installation
   and rebuild |PSIfour| to detect CPPE and activate dependent code.
 
 * Previous bullet had details. To build |PSIfour| from source and use
-  cppe from conda without thinking, consult :ref:`sec:condapsi4dev`.
+  cppe from conda without thinking, consult.
 
 * To remove a conda installation, ``conda remove cppe``.
 
@@ -163,13 +163,12 @@ The corresponding potential file `pna_6w.pot` can be downloaded
 `here <https://raw.githubusercontent.com/maxscheurer/cppe/master/tests/potfiles/pna_6w.pot>`_.
 
 Keywords for CPPE
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 .. include:: autodir_options_c/globals__pe.rst
 .. include:: autodir_options_c/pe__potfile.rst
 .. include:: autodir_options_c/pe__isotropic_pol.rst
-.. include:: autodir_options_c/pe__convergence_induced.rst
-.. include:: autodir_options_c/pe__diis.rst
+.. include:: autodir_options_c/pe__induced_convergence.rst
 .. include:: autodir_options_c/pe__maxiter.rst
 .. include:: autodir_options_c/pe__border.rst
 .. include:: autodir_options_c/pe__border_type.rst
@@ -183,7 +182,7 @@ Keywords for CPPE
 .. _`cmake:cppe`:
 
 How to configure CPPE for building Psi4
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Role and Dependencies**
 

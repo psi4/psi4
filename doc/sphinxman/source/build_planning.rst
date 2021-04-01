@@ -84,7 +84,9 @@ How to build and install Psi4, the compact version
 
 This section outlines the main steps of configuring, compiling, and
 installing |PSIfour|. More detail is given :ref:`here
-<faq:builddetailed>`. ::
+<faq:builddetailed>`.
+
+.. code-block:: console
 
     >>> cd {top-level-psi4-dir}
     >>> cmake -H. -Bobjdir [your configuration options]
@@ -145,7 +147,7 @@ How to build, test, and install Psi4, in detail
 
    Compile the code (optional ``-j`` triggers parallel compilation).
 
-   ::
+.. code-block:: console
 
     >>> cd {objdir}
     >>> make -j`getconf _NPROCESSORS_ONLN`
@@ -159,7 +161,7 @@ How to build, test, and install Psi4, in detail
    * :ref:`faq:testsoutput`
    * :ref:`faq:pytest`
 
-   ::
+.. code-block:: console
 
    >>> ctest -j`getconf _NPROCESSORS_ONLN`
 
@@ -208,17 +210,17 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 The following are also required for |PSIfour|, but if not detected, the
 build system will automatically download and build.
 
-* :ref:`gau2grid <cmake:gau2grid` |w---w| :ref:`[what is this?] <sec:gau2grid>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/gau2grid/CMakeLists.txt#L1>`_
+* :ref:`gau2grid <cmake:gau2grid` |w---w| :ref:`[what is gau2grid?] <sec:gau2grid>` `[gau2grid min version] <https://github.com/psi4/psi4/blob/master/external/upstream/gau2grid/CMakeLists.txt#L1>`_
 
-* :ref:`Libint <cmake:libint>` |w---w| :ref:`[what is this?] <sec:libint>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libint/CMakeLists.txt#L1>`_
+* :ref:`Libint <cmake:libint>` |w---w| :ref:`[what is Libint?] <sec:libint>` `[Libint min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libint/CMakeLists.txt#L1>`_
 
-* :ref:`Libxc <cmake:libxc>` |w---w| :ref:`[what is this?] <sec:libxc>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libxc.txt#L1>`_
+* :ref:`Libxc <cmake:libxc>` |w---w| :ref:`[what is Libxc?] <sec:libxc>` `[Libxc min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libxc.txt#L1>`_
 
-* pybind11 |w---w| `[what is this?] <https://pybind11.readthedocs.io/en/master/>`_ `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/pybind11/CMakeLists.txt#L1>`_
+* pybind11 |w---w| `[what is Pybind11?] <https://pybind11.readthedocs.io/en/master/>`_ `[Pybind11 min version] <https://github.com/psi4/psi4/blob/master/external/upstream/pybind11/CMakeLists.txt#L1>`_
 
-* QCElemental |w---w| `[what is this?] <https://qcelemental.readthedocs.io/en/latest/>`_
+* QCElemental |w---w| `[what is QCElemental?] <https://qcelemental.readthedocs.io/en/latest/>`_
 
-* QCEngine |w---w| `[what is this?] <https://qcengine.readthedocs.io/en/latest/>`_ (March 2019; added by v1.4)
+* QCEngine |w---w| `[what is QCEngine?] <https://qcengine.readthedocs.io/en/latest/>`_ (March 2019; added by v1.4)
 
 Additionally, there are runtime-only dependencies:
 
@@ -263,7 +265,7 @@ are available pre-built from conda.
   * sphinx-psi-theme https://github.com/psi4/sphinx-psi-theme
   * See `["message" lines] <https://github.com/psi4/psi4/blob/master/doc/sphinxman/CMakeLists.txt>`_ for advice on obtaining docs dependencies
 
-* :ref:`CheMPS2 <cmake:chemps2>` |w---w| :ref:`[what is this?] <sec:chemps2>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/chemps2/CMakeLists.txt#L2>`_
+* :ref:`CheMPS2 <cmake:chemps2>` |w---w| :ref:`[what is CheMPS2?] <sec:chemps2>` `[CheMPS2 min version] <https://github.com/psi4/psi4/blob/master/external/upstream/chemps2/CMakeLists.txt#L2>`_
 
   * HDF5 https://support.hdfgroup.org/HDF5/
   * zlib http://www.zlib.net/
@@ -272,34 +274,34 @@ are available pre-built from conda.
 
   * :ref:`Fortran Compiler <cmake:fortran>`
 
-* :ref:`dkh <cmake:dkh>` |w---w| :ref:`[what is this?] <sec:dkh>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/dkh/CMakeLists.txt#L2>`_
+* :ref:`dkh <cmake:dkh>` |w---w| :ref:`[what is dkh?] <sec:dkh>` `[dkh min version] <https://github.com/psi4/psi4/blob/master/external/upstream/dkh/CMakeLists.txt#L2>`_
 
   * :ref:`Fortran Compiler <cmake:fortran>`
 
-* :ref:`gdma <cmake:gdma>` |w---w| :ref:`[what is this?] <sec:gdma>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/gdma/CMakeLists.txt#L2>`_
+* :ref:`gdma <cmake:gdma>` |w---w| :ref:`[what is gdma?] <sec:gdma>` `[gdma min version] <https://github.com/psi4/psi4/blob/master/external/upstream/gdma/CMakeLists.txt#L2>`_
 
   * :ref:`Fortran Compiler <cmake:fortran>`
 
-* :ref:`PCMSolver <cmake:pcmsolver>` |w---w| :ref:`[what is this?] <sec:pcmsolver>`
+* :ref:`PCMSolver <cmake:pcmsolver>` |w---w| :ref:`[what is PCMSolver?] <sec:pcmsolver>`
 
   * :ref:`Fortran Compiler <cmake:fortran>`
   * zlib http://www.zlib.net/
 
-* :ref:`simint <cmake:simint>` |w---w| :ref:`[what is this?] <sec:simint>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/simint/CMakeLists.txt#L2>`_
+* :ref:`simint <cmake:simint>` |w---w| :ref:`[what is simint?] <sec:simint>` `[simint min version] <https://github.com/psi4/psi4/blob/master/external/upstream/simint/CMakeLists.txt#L2>`_
 
 Additionally, there are runtime-loaded capabilities:
 
-* :ref:`PylibEFP & libefp <cmake:libefp>` |w---w| :ref:`[what is this?] <sec:libefp>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libefp/CMakeLists.txt#L1>`_
+* :ref:`PylibEFP & libefp <cmake:libefp>` |w---w| :ref:`[what is LibEFP?] <sec:libefp>` `[LibEFP min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libefp/CMakeLists.txt#L1>`_
 
-* cfour |w---w| :ref:`[what is this?] <sec:cfour>`
+* cfour |w---w| :ref:`[what is CFOUR?] <sec:cfour>`
 
-* dftd3 |w---w| :ref:`[what is this?] <sec:dftd3>`
+* dftd3 |w---w| :ref:`[what is DFTD3?] <sec:dftd3>`
 
-* gcp |w---w| :ref:`[what is this?] <sec:gcp>`
+* gcp |w---w| :ref:`[what is gCP?] <sec:gcp>`
 
-* mrcc |w---w| :ref:`[what is this?] <sec:mrcc>`
+* mrcc |w---w| :ref:`[what is MPCC?] <sec:mrcc>`
 
-* v2rdm_casscf |w---w| :ref:`[what is this?] <sec:v2rdm_casscf>`
+* v2rdm_casscf |w---w| :ref:`[what is v2rdm_casscf?] <sec:v2rdm_casscf>`
 
 * snsmp2 |w---w| https://github.com/DEShawResearch/sns-mp2/commits/master
 
@@ -391,6 +393,7 @@ the main CMakeLists.txt is a passable summary:
 
 .. literalinclude:: @SFNX_INCLUDE@CMakeLists.txt
    :lines: 14-142
+   :language: none
 
 Note that external projects will have their own sets of build
 configuration options. Only the most-common user knobs of those are
@@ -1528,7 +1531,9 @@ How to run a minute's worth of tests
 ------------------------------------
 
 When you want to do a very minimal test of the build and have
-CTest installed, the following command can be useful. ::
+CTest installed, the following command can be useful.
+
+.. code-block:: console
 
     >>> ctest -L smoke -j`getconf _NPROCESSORS_ONLN`
 
@@ -1606,8 +1611,7 @@ run via pytest.
 
      python -c "import psi4; psi4.test()"
 
-  * From pytest directly. If package ``pytest-xdist`` is installed,
-  can run in parallel.
+  * From pytest directly. If package ``pytest-xdist`` is installed, can run in parallel.
 
     .. code-block:: bash
 

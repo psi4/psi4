@@ -81,13 +81,14 @@ Installation
   and rebuild |PSIfour| to detect simint and activate dependent code.
 
 * Previous bullet had details. To build |PSIfour| from source and use 
-  simint from conda without thinking, consult :ref:`sec:condapsi4dev`.
+  simint from conda without thinking, consult.
 
 * To remove a conda installation, ``conda remove simint``.
 
 **Source**
 
 * .. image:: https://img.shields.io/github/tag/psi4/simint.svg?maxAge=2592000
+
 ..     :target: https://github.com/psi4/simint TODO BPP
 
 * If using |PSIfour| built from source and you want simint built from

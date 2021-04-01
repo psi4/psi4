@@ -526,3 +526,10 @@ Bibliography
 .. [Hesselmann:2014:094107]
    A. Hesselmann and T. Korona,
    *J. Chem. Phys.* **141**, 094107 (2014).
+
+.. [Smith:2018:3504]
+    10.1021/acs.jctc.8b00286,
+    "PSI4NUMPY: An Interactive Quantum Chemistry Programming Environment for Reference Implementations and Rapid Development",
+    D. G. A. Smith, L. A. Burns, D. A. Sirianni, D. R. Nascimento, A. Kumar, A. M. James, J. B. Schriber, T. Zhang, B. Zhang, A. S. Abbott, E. J. Berquist, M. H. Lechner, L. A. Cunha, A. G. Heide, J. M. Waldrop, T. Y. Takeshita, A. Alenaizan, D. Neuhauser, R. A. King, A. C. Simmonett, J. M. Turney, H. F. Schaefer, F. A. Evangelista, A. E. DePrince, T. D. Crawford, K. Patkowski, and C. D. Sherrill
+    *J. Chem. Theory Comput.* **14**, 3504-3511 (2018).
+

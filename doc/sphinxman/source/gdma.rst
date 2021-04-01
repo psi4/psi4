@@ -73,7 +73,7 @@ Installation
   and rebuild |PSIfour| to detect gdma and activate dependent code.
 
 * Previous bullet had details. To build |PSIfour| from source and use
-  gdma from conda without thinking, consult :ref:`sec:condapsi4dev`.
+  gdma from conda without thinking, consult.
 
 * To remove a conda installation, ``conda remove gdma``.
 

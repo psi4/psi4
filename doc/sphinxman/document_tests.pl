@@ -121,13 +121,13 @@ open(RSTSUMMARY,">$RstSummary") or die "I can't write to $RstSummary\n";
 print "Auto-documenting samples/" . $exe . " directory inputs\n";
 if ($ExeFolder{$exe} ne "corepsi4") {
    print RSTSUMMARY "\n.. _`apdx:testSuite$ExeFolder{$exe}`:\n";
-   print RSTSUMMARY "\n=============================================\n";
+   print RSTSUMMARY "\n=======================================================\n";
    print RSTSUMMARY   uc($ExeFolder{$exe});
-   print RSTSUMMARY "\n=============================================\n";
+   print RSTSUMMARY "\n=======================================================\n";
 }
-print RSTSUMMARY "\n=============================================   ============\n";
-print RSTSUMMARY   "Input File                                      Description \n";
-print RSTSUMMARY   "=============================================   ============\n";
+print RSTSUMMARY "\n=======================================================   ============\n";
+print RSTSUMMARY   "Input File                                                Description \n";
+print RSTSUMMARY   "=======================================================   ============\n";
 
 my @pytestdirs = qw( python/ json/ psi4numpy/ );
 my $iext;
@@ -206,14 +206,14 @@ foreach my $Dir(readdir TESTS){
             } else {
                 $srcfilename = ":srcsample:`" . $exe . $Dir_tex . "`";
             }
-            printf RSTSUMMARY "%-45s  %s\n", $srcfilename, $Description_rst;
+            printf RSTSUMMARY "%-55s  %s\n", $srcfilename, $Description_rst;
             printf SUMMARY "%-12s %s\n\n\n", $Dir.":", $Description;
         }
     }else{
         warn "Warning!!! Undocumented input: $Input\n";
     }
 }
-print RSTSUMMARY "=============================================   ============\n\n";
+print RSTSUMMARY "=======================================================   ============\n\n";
 close TEXSUMMARY ;
 unlink("tests_descriptions_" . $ExeFolder{$exe} . ".tex");
 close RSTSUMMARY;

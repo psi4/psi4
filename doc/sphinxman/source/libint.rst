@@ -74,7 +74,7 @@ Installation
   and rebuild |PSIfour| to detect Libint and activate dependent code.
 
 * Previous bullet had details. To build |PSIfour| from source and use 
-  Libint from conda without thinking, consult :ref:`sec:condapsi4dev`.
+  Libint from conda without thinking, consult.
 
 * To remove a conda installation, ``conda remove libint``.
 

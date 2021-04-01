@@ -237,14 +237,18 @@ Transition States, Reaction Paths, and Constrained Optimizations
 
 For bends, the corresponding keyword is "frozen_bend".
 
-* To freeze the cartesian coordinates of atom 2 ::
+* To freeze the cartesian coordinates of atom 2
+
+.. code-block:: none
 
    freeze_list = """
      2 xyz
    """
    set optking frozen_cartesian $freeze_list
 
-* To freeze only the y coordinates of atoms 2 and 3 ::
+* To freeze only the y coordinates of atoms 2 and 3
+
+.. code-block:: none
 
    freeze_list = """
      2 y
@@ -253,7 +257,9 @@ For bends, the corresponding keyword is "frozen_bend".
    set optking frozen_cartesian $freeze_list
 
 * To optimize toward a value of 0.95 Angstroms for the distance between 
-  atoms 1 and 3, as well as that between 2 and 4 ::
+  atoms 1 and 3, as well as that between 2 and 4
+
+.. code-block:: none
 
    set optking {
      fixed_distance = ("
@@ -266,7 +272,9 @@ Note that the effect of the frozen and fixed keywords is independent of
 how the geometry of the molecule was input (whether Z-matrix or cartesian, etc.)..
 
 * To scan the potential energy surface by optimizing at several fixed values
-  of the dihedral angle of HOOH. ::
+  of the dihedral angle of HOOH.
+
+.. code-block:: none
 
    molecule hooh {
     0 1

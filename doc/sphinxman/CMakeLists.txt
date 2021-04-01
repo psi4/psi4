@@ -61,11 +61,8 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     libxc.rst gau2grid.rst prog_conduct.rst prog_intro.rst prog_newcode.rst
     prog_setup.rst prog_welcome.rst prog_ways_to_add.rst
     prog_full_integration.rst prog_style_py.rst prog_help.rst
-    prog_code_intro.rst prog_debug_profile.rst manage_release.rst
-    plugin_psi4fockci.rst brianqc.rst
-    tdscf.rst prog_integrals.rst
-    prog_tour.rst prog_ways_to_add.rst
-    prog_code_intro.rst prog_debug_profile.rst mcscf.rst
+    prog_debug_profile.rst manage_release.rst plugin_psi4fockci.rst
+    brianqc.rst tdscf.rst prog_integrals.rst prog_tour.rst mcscf.rst
     )
 
     # * compute relative path btwn top_srcdir and objdir/doc/sphinxman

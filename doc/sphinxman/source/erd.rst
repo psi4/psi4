@@ -87,7 +87,7 @@ Installation
   and rebuild |PSIfour| to detect erd and activate dependent code.
 
 * Previous bullet had details. To build |PSIfour| from source and use
-  erd from conda without thinking, consult :ref:`sec:condapsi4dev`.
+  erd from conda without thinking, consult.
 
 * To remove a conda installation, ``conda remove erd``.
 

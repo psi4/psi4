@@ -76,7 +76,7 @@ Installation
   and rebuild |PSIfour| to detect PCMSolver and activate dependent code.
 
 * Previous bullet had details. To build |PSIfour| from source and use
-  pcmsolver from conda without thinking, consult :ref:`sec:condapsi4dev`.
+  pcmsolver from conda without thinking, consult.
 
 * To remove a conda installation, ``conda remove pcmsolver``.
 
@@ -99,7 +99,7 @@ Using the polarizable continuum model
 
 The inclusion of a PCM description of the solvent into your calculation
 is achieved by setting |globals__pcm| ``true`` in your input file.
-|Psifour| understands the additional option |globals__pcm_scf_type| with possible values ``total``
+|Psifour| understands the additional option |pcm__pcm_scf_type| with possible values ``total``
 (the default) or ``separate``.
 The latter forces the separate handling of nuclear and electronic electrostatic potentials and
 polarization charges. It is mainly useful for debugging.
@@ -179,8 +179,8 @@ Keywords for PCMSolver
 ~~~~~~~~~~~~~~~~~~~~~~
 
 .. include:: autodir_options_c/globals__pcm.rst
-.. include:: autodir_options_c/globals__pcm_scf_type.rst
-.. include:: autodir_options_c/globals__pcm_cc_type.rst
+.. include:: autodir_options_c/pcm__pcm_scf_type.rst
+.. include:: autodir_options_c/pcm__pcm_cc_type.rst
 
 .. _`cmake:pcmsolver`:
 

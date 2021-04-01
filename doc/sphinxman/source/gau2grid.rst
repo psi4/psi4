@@ -74,7 +74,7 @@ Installation
   and rebuild |PSIfour| to detect gau2grid and activate dependent code.
 
 * Previous bullet had details. To build |PSIfour| from source and use
-  gau2grid from conda without thinking, consult :ref:`sec:condapsi4dev`.
+  gau2grid from conda without thinking, consult.
 
 * To remove a conda installation, ``conda remove gau2grid``.
 

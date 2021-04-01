@@ -276,7 +276,7 @@ A few practical examples:
 
 If only dispersion corrections (rather than total energies) are of
 interest, the ``dftd3`` program can be run independently of the scf
-through the python function :py:func:`~qcdb.interface_dftd3.run_dftd3`. (This function
+through the python function :py:func:`~qcdb.Molecule.run_dftd3`. (This function
 is the same |PSIfour|/``dftd3`` interface that is called during an scf job.)
 This route is much faster than running a DFT-D energy.
 
@@ -306,7 +306,7 @@ This route is much faster than running a DFT-D energy.
    >>> print E
    -0.00024762
 
-.. autofunction:: qcdb.interface_dftd3.run_dftd3
+.. autofunction:: qcdb.Molecule.run_dftd3
 
 
 .. comment print_stdout('  -D correction from Py-side')

@@ -271,6 +271,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
     /*- PCM boolean for pcmsolver module -*/
     options.add_bool("PCM", false);
+    /*- PE boolean for polarizable embedding module -*/
+    options.add_bool("PE", false);
+
     if (name == "PCM" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs polarizable continuum model (PCM) computations. -*/
 
@@ -282,8 +285,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("PCM_CC_TYPE", "PTE", "PTE");
     }
 
-    /*- PE boolean for polarizable embedding module -*/
-    options.add_bool("PE", false);
     if (name == "PE" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs polarizable embedding model (PE) computations. -*/
 
@@ -1311,7 +1312,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("CHOLESKY_TOLERANCE", 1e-4);
         /*- Do a density fitting SCF calculation to converge the
             orbitals before switching to the use of exact integrals in
-            a |scf__scf_type| ``DIRECT`` calculation -*/
+            a |globals__scf_type| ``DIRECT`` calculation -*/
         options.add_bool("DF_SCF_GUESS", true);
         /*- Keep JK object for later use? -*/
         options.add_bool("SAVE_JK", false);

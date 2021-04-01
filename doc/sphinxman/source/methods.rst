@@ -45,6 +45,7 @@ A complete list of standard keywords is provided in Appendix
    notes_c
    scf
    dft
+   dftnl
    dct
    dfmp2
    cc

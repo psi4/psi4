@@ -98,7 +98,7 @@ With the spin-flip modification few-reference ground states can
 be tackled starting from a triplet reference by simultaneously
 exciting an electron and flipping its spin.
 A more detailed overview of such modifications gives [Dreuw:2014:82]_
-and the `adcc documentation <https://adc-connect.org/latest/theory.html>`_.
+and the `adcc theory documentation <https://adc-connect.org/latest/theory.html>`_.
 
 Available ADC methods
 ---------------------
@@ -288,7 +288,7 @@ The following attribute is set on returned wavefunctions:
   in the format used by adcc.
   Provides direct access to analysis and plotting capabilities from adcc.
   For example ``adcc_state.plot_spectrum()`` plots a broadened excited states spectrum
-  in matplotlib. See the `adcc documentation <https://adc-connect.org/latest/calculations.html>`_
+  in matplotlib. See the `adcc calculations documentation <https://adc-connect.org/latest/calculations.html>`_
   for details.
 
 **Tips for convergence issues.**

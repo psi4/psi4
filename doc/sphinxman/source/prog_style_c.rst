@@ -69,7 +69,7 @@ Using ``std::make_shared``:
     // Much better!!!!
     auto F = std::make_shared<Matrix>("Fock matrix", nso, nso);
 
-2. Ensures exception safety and prevents resource leaks. ::
+2. Ensures exception safety and prevents resource leaks.
 
 3. Improves efficiency:
 

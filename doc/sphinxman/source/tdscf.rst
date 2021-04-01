@@ -207,6 +207,7 @@ to the form:
   (\mathbf{A} - \mathbf{B})(\mathbf{A} + \mathbf{B})| \mathbf{X}_{n} + \mathbf{Y}_{n}\rangle
   =
   \omega^{2}_{n} | \mathbf{X}_{n} + \mathbf{Y}_{n}\rangle,
+
 and further to the Hermitian form:
 
 .. math::

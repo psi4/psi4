@@ -1545,7 +1545,7 @@ class Molecule(LibmintsMolecule):
                 # TODO real back to type Ghost?
 
         # apparently py- and c- sides settled on a diff convention of 2nd of pair in fragments_
-        fragment_separators = np.array(molrec['fragment_separators'], dtype=np.int)
+        fragment_separators = np.array(molrec['fragment_separators'], dtype=int)
         fragment_separators = np.insert(fragment_separators, 0, 0)
         fragment_separators = np.append(fragment_separators, nat)
         fragments = [[fragment_separators[ifr], fr - 1] for ifr, fr in enumerate(fragment_separators[1:])]
@@ -1615,16 +1615,15 @@ class Molecule(LibmintsMolecule):
             Only provided if `return_molecule` is True.
             Returned is of same type as `self`.
 
-        Notes
-        -----
-        Relies upon van der Waals radii and so faulty for close (especially
-            hydrogen-bonded) fragments. See `seed_atoms`.
-        Any existing fragmentation info/chgmult encoded in `self` is lost.
-
         Authors
         -------
         Original code from Michael S. Marshall, linear-scaling algorithm from
         Trent M. Parker, revamped by Lori A. Burns
+
+        Notes
+        -----
+        Relies upon van der Waals radii and so faulty for close (especially hydrogen-bonded) fragments. See` `seed_atoms``.
+        Any existing fragmentation info/chgmult encoded in ``self`` is lost.
 
         """
         self.update_geometry()
