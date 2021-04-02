@@ -63,7 +63,7 @@ void set_params(void)
 
 // optimization type
     s = options.get_str("OPT_TYPE");
-    if(s == "MIN")  Opt_params.opt_type = OPT_PARAMS::MIN;
+    if (s == "MIN")  Opt_params.opt_type = OPT_PARAMS::MIN;
     else if (s == "TS")  Opt_params.opt_type = OPT_PARAMS::TS;
     else if (s == "IRC")  Opt_params.opt_type = OPT_PARAMS::IRC;
 
@@ -940,30 +940,14 @@ void print_params_out() {
       }
   }
 
-  if (Opt_params.intcos_generate_exit)
-    oprintf_out( "intcos_generate_exit   = %18s\n", "true");
-  else
-    oprintf_out( "intcos_generate_exit   = %18s\n", "false");
-
-  //if (Opt_params.print_params)
-  //oprintf_out( "print_params           = %18s\n", "true");
-  //else
-  //oprintf_out( "print_params           = %18s\n", "false");
+  oprintf_out( "intcos_generate_exit   = %18s\n", Opt_params.intcos_generate_exit ? "true" : "false");
 
   oprintf_out( "print_params           = %18s\n", Opt_params.print_params ? "true" : "false");
+  oprintf_out( "print_lvl              = %18d\n", Opt_params.print_lvl);
 
-  oprintf_out( "print_lvl              = %d\n", Opt_params.print_lvl);
+  oprintf_out( "ensure_bt_convergence  = %18s\n", Opt_params.ensure_bt_convergence ? "true" : "false");
 
-  if (Opt_params.ensure_bt_convergence)
-    oprintf_out("ensure_bt_convergence = %17s\n", "true");
-  else
-    oprintf_out("ensure_bt_convergence = %17s\n", "false");
-
-  if (Opt_params.rfo_follow_root)
-  oprintf_out( "rfo_follow_root        = %18s\n", "true");
-  else
-  oprintf_out( "rfo_follow_root        = %18s\n", "false");
-
+  oprintf_out( "rfo_follow_root        = %18s\n", Opt_params.rfo_follow_root ? "true" : "false");
   oprintf_out( "rfo_root               = %18d\n", Opt_params.rfo_root);
 
   oprintf_out( "rfo_normalization_max  = %18.2e\n", Opt_params.rfo_normalization_max);
@@ -1024,62 +1008,33 @@ void print_params_out() {
 
   oprintf_out( "H_update_use_last      = %18d\n", Opt_params.H_update_use_last);
 
-  if (Opt_params.freeze_intrafragment)
-  oprintf_out( "freeze_intrafragment   = %18s\n", "true");
-  else
-  oprintf_out( "freeze_intrafragment   = %18s\n", "false");
+  oprintf_out( "freeze_intrafragment   = %18s\n", Opt_params.freeze_intrafragment ? "true" : "false");
 
   oprintf_out( "intrafragment_step_limit=%18.2e\n", Opt_params.intrafragment_step_limit);
 
-  oprintf_out( "interfragment_step_limit=%18.2e\n", Opt_params.interfragment_step_limit);
+  oprintf_out( "add_auxiliary_bonds    = %18s\n", Opt_params.add_auxiliary_bonds ? "true" : "false");
 
-  if (Opt_params.add_auxiliary_bonds)
-    oprintf_out( "add_auxiliary_bonds   = %18s\n", "true");
-  else
-    oprintf_out( "add_auxiliary_bonds   = %18s\n", "false");
+  oprintf_out( "H_guess_every          = %18s\n", Opt_params.H_guess_every ? "true" :"false");
 
-  if (Opt_params.H_guess_every)
-    oprintf_out( "H_guess_every         = %18s\n", "true");
-  else
-    oprintf_out( "H_guess_every         = %18s\n", "false");
+  oprintf_out( "auxiliary_bond_factor  = %18.2e\n", Opt_params.auxiliary_bond_factor);
 
-  oprintf_out( "auxiliary_bond_factor =%18.2e\n", Opt_params.auxiliary_bond_factor);
-
-  if (Opt_params.H_update_limit)
-    oprintf_out( "H_update_limit         = %18s\n", "true");
-  else
-    oprintf_out( "H_update_limit         = %18s\n", "false");
+  oprintf_out( "H_update_limit         = %18s\n", Opt_params.H_update_limit ? "true" : "false");
 
   oprintf_out( "H_update_limit_scale   = %18.2e\n", Opt_params.H_update_limit_scale);
   oprintf_out( "H_update_limit_max     = %18.2e\n", Opt_params.H_update_limit_max);
   oprintf_out( "H_update_den_tol       = %18.2e\n", Opt_params.H_update_den_tol);
 
-  if (Opt_params.interfragment_distance_inverse)
-  oprintf_out( "interfragment_distance_inverse=%12s\n", "true");
-  else
-  oprintf_out( "interfragment_distance_inverse=%12s\n", "false");
+  oprintf_out( "interfragment_distance_inverse= %11s\n", Opt_params.interfragment_distance_inverse ? "true" : "false");
 
-  if (Opt_params.write_final_step_geometry)
-  oprintf_out( "write_final_step_geometry= %16s\n", "true");
-  else
-  oprintf_out( "write_final_step_geometry= %16s\n", "false");
+  oprintf_out( "write_final_step_geometry= %16s\n", Opt_params.write_final_step_geometry ? "true" : "false");
 
   oprintf_out( "maximum_H_bond_distance= %18.2e\n", Opt_params.maximum_H_bond_distance);
 
-  if (Opt_params.read_cartesian_H)
-  oprintf_out( "read_cartesian_H       = %18s\n", "true");
-  else
-  oprintf_out( "read_cartesian_H       = %18s\n", "false");
+  oprintf_out( "read_cartesian_H       = %18s\n", Opt_params.read_cartesian_H ? "true" : "false");
 
-  if (Opt_params.fb_fragments)
-  oprintf_out( "fb_fragments          = %18s\n", "true");
-  else
-  oprintf_out( "fb_fragments          = %18s\n", "false");
+  oprintf_out( "fb_fragments           = %18s\n", Opt_params.fb_fragments ? "true" : "false");
 
-  if (Opt_params.fb_fragments_only)
-  oprintf_out( "fb_fragments_only     = %18s\n", "true");
-  else
-  oprintf_out( "fb_fragments_only     = %18s\n", "false");
+  oprintf_out( "fb_fragments_only      = %18s\n", Opt_params.fb_fragments_only ? "true" : "false");
 
   oprintf_out( "frozen_distance: \n");
   if (!Opt_params.frozen_distance_str.empty())
@@ -1109,10 +1064,8 @@ void print_params_out() {
   if (!Opt_params.fixed_dihedral_str.empty())
     oprintf_out( "%s\n", Opt_params.fixed_dihedral_str.c_str());
 
-  if (Opt_params.print_trajectory_xyz_file)
-    oprintf_out("print_trajectory_xyz_file = %18s\n", "true");
-  else
-    oprintf_out("print_trajectory_xyz_file = %18s\n", "false");
+  oprintf_out( "print_trajectory_xyz_file = %15s\n", Opt_params.print_trajectory_xyz_file ? "true" : "false");
+
 }
 
 }
