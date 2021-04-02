@@ -37,7 +37,7 @@ TDSCF: Time-dependent Hartree--Fock and density-functional theory
 .. codeauthor:: Andrew M. James, Daniel G. A. Smith, Ruhee Dcuhna, Roberto Di Remigio and Jeff Schriber
 .. sectionauthor:: Roberto Di Remigio
 
-*Module:* :ref:`Keywords <apdx:tdscf>`, :ref:`PSI Variables <apdx:tdscf_psivar>`, :source:`LIBSCF_SOLVER <psi4/src/psi4/libscf_solver>`
+*Module:* :ref:`Keywords <apdx:scftdscf>`, :ref:`PSI Variables <apdx:scf_psivar>`, :source:`LIBSCF_SOLVER <psi4/src/psi4/libscf_solver>`
 
 .. _`sec:tdscfintro`:
 

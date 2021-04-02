@@ -37,7 +37,7 @@ Interface to DKH by A. Wolf, M. Reiher, and B. A. Hess
 .. codeauthor:: Justin M. Turney
 .. sectionauthor:: Justin M. Turney
 
-*Module:* :ref:`Keywords <apdx:dkh>`, :ref:`Samples <apdx:testSuitedkh>`
+*Module:* :ref:`Keywords <sec:dkhkeywords>`, :ref:`Samples <apdx:testSuitedkh>`
 
 .. image:: https://img.shields.io/badge/home-dkh-5077AB.svg
    :target: https://github.com/psi4/dkh
@@ -107,6 +107,8 @@ Minimal input for DKH single-point computation looks like this::
 By default a 2nd-order DKH calculation is performed. To change the default
 order use the |globals__dkh_order| option. The version of the code found in
 |Psifour| is capable of up to 4th-order DKH calculations.
+
+.. _`sec:dkhkeywords`:
 
 Keywords
 ~~~~~~~~

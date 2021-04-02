@@ -1,4 +1,4 @@
-name: Conda
+name: Latest Docs
 
 on: [push, pull_request]
 #on:
@@ -19,6 +19,8 @@ jobs:
         shell: bash -l {0}
 
     steps:
+
+    # fetch-depth: 0 gets git history so Psi4 version computable
     - name: Checkout
       uses: actions/checkout@v2
       with:
@@ -53,20 +55,6 @@ jobs:
     - name: Patch Sphinx for Pybind11
       run: sed -i "s/lines = s\.expandtabs/lines = str(s).expandtabs/g" ${CONDA_PREFIX}/lib/python3.8/site-packages/sphinx/util/docstrings.py
 
-#      # Source Compilers is for reference. happens for real w/i conda recipe
-#    - name: Source Compilers
-#      run: |
-#        LATEST_VERSION=$(ls -1 /opt/intel/oneapi/compiler/ | grep -v latest | sort | tail -1)
-#        source /opt/intel/oneapi/compiler/"$LATEST_VERSION"/env/vars.sh
-#        which conda conda-build python ifort icc icpc
-#        ifort --version
-#        icc --version
-#        icpc --version
-#
-#      # `-c defaults -c psi4/label/dev` -or- `-c conda-forge` for QCElemental dep
-#    - name: Conda-Build for Linux
-#      run: conda build conda/recipe -c defaults -c psi4/label/dev --output-folder . --error-overlinking --error-overdepending
-
     # docs are not Ninja ready
     - name: Configure with CMake (Conda Gnu + MKL)
       working-directory: ./code
@@ -88,23 +76,6 @@ jobs:
           -DCMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
           -DSPHINX_ROOT=${CONDA_PREFIX}
 
-# link against conda MKL & GCC
-# * since libefp uses mkl, makes sense to do so here, too
-#LAPACK_INTERJECT="${PREFIX}/lib/libmkl_rt.so"
-
-# configure
-    #-DCMAKE_INSTALL_PREFIX=${PREFIX} \
-    #-DCMAKE_CXX_FLAGS="--coverage" \
-    #-DCMAKE_INSTALL_LIBDIR=lib \
-    #-DPYMOD_INSTALL_LIBDIR="/python${PY_VER}/site-packages" \
-    #-DENABLE_libefp=ON \
-    #-DCMAKE_INSIST_FIND_PACKAGE_libefp=ON \
-    #-DENABLE_OPENMP=ON \
-    #-DENABLE_XHOST=OFF \
-    #-DENABLE_GENERIC=OFF \
-    #-DLAPACK_LIBRARIES="${LAPACK_INTERJECT}" \
-    #-DLAPACK_INCLUDE_DIRS="${PREFIX}/include" \
-
     - name: Compile Psi4
       working-directory: ./code
       run: |
@@ -121,7 +92,7 @@ jobs:
     - name: Archive Docs Tarball
       uses: actions/upload-artifact@v2
       with:
-        name: linux-html-docs
+        name: sphinxman-html
         path: |
           code/objdir/doc/sphinxman/sphinxman.tar.gz
         retention-days: 1
@@ -133,19 +104,17 @@ jobs:
         cd objdir/doc/doxygen
         tar -zcf doxyman.tar.gz html/
 
-    - name: Transfer Docs Directory
+    - name: Diff Docs Directory vs psi4/psi4docs
       working-directory: ./docs
       run: |
         cp -pR ../code/objdir/doc/sphinxman/html .
-        git status
         git diff --color-words
-        git remote -v
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add -A
-        git commit -m "auto-generated from Psi4"
+        git commit -m "auto-generated from Psi4 master"
 
-    - name: Push Changes
+    - name: Push Changes to psi4/psi4docs
       uses: ad-m/github-push-action@master
       with:
         directory: ./docs
@@ -154,9 +123,3 @@ jobs:
         github_token: ${{ secrets.psi4docs_from_psi4 }}
         force: true
 
-#      # continue-on-error allows the whole job not to fail just b/c storage limits at anaconda.org hit
-#    - name: Upload Conda Package
-#      continue-on-error: true
-#      env:
-#        ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
-#      run: anaconda upload --label gha --skip linux-64/*.tar.bz2

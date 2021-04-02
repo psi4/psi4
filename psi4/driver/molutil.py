@@ -61,7 +61,7 @@ def molecule_get_attr(self, name):
 
 
 @classmethod
-def molecule_from_string(cls,
+def _molecule_from_string(cls,
                          molstr,
                          dtype=None,
                          name=None,
@@ -94,7 +94,7 @@ def molecule_from_string(cls,
 
 
 @classmethod
-def molecule_from_arrays(cls,
+def _molecule_from_arrays(cls,
                          geom=None,
                          elea=None,
                          elez=None,
@@ -175,7 +175,7 @@ def molecule_from_arrays(cls,
 
 
 @classmethod
-def molecule_from_schema(cls, molschema, return_dict=False, nonphysical=False, verbose=1):
+def _molecule_from_schema(cls, molschema, return_dict=False, nonphysical=False, verbose=1):
     """Construct Molecule from non-Psi4 schema.
 
     Light wrapper around :py:func:`~psi4.core.Molecule.from_arrays`.
@@ -224,10 +224,10 @@ def dynamic_variable_bind(cls):
     cls.BFS = qcdb.Molecule.BFS
     cls.B787 = qcdb.Molecule.B787
     cls.scramble = qcdb.Molecule.scramble
-    cls.from_arrays = molecule_from_arrays
-    cls.from_string = molecule_from_string
+    cls.from_arrays = _molecule_from_arrays
+    cls.from_string = _molecule_from_string
     cls.to_string = qcdb.Molecule.to_string
-    cls.from_schema = molecule_from_schema
+    cls.from_schema = _molecule_from_schema
     cls.to_schema = qcdb.Molecule.to_schema
     cls.run_dftd3 = qcdb.Molecule.run_dftd3
     cls.format_molecule_for_mol = qcdb.Molecule.format_molecule_for_mol

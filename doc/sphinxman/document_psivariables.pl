@@ -133,8 +133,10 @@ foreach my $Module (@PSIMODULES) {
     my @RelevantDirs = (
         $SrcFolder . lc($Module),
         $SrcFolder . "lib" . lc($Module) . "_solver",
+        $SrcFolder . "../../driver",
         $SrcFolder . "../../driver/procrouting",
         $SrcFolder . "../../driver/procrouting/scf_proc",
+        $SrcFolder . "../../driver/procrouting/response",
     );
     if ($Module eq "OEPROP") { push(@RelevantDirs, $SrcFolder . "libmints"); }
     if ($Module eq "GDMA") { push(@RelevantDirs, $SrcFolder . "gdma_interface"); }

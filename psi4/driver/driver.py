@@ -1834,15 +1834,15 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
             E0=core.variable('CURRENT ENERGY'))  # someday, wfn.energy()
         vibrec.update({k: qca.json() for k, qca in therminfo.items()})
 
-        core.set_variable("ZPVE", therminfo['ZPE_corr'].data)
-        core.set_variable("THERMAL ENERGY CORRECTION", therminfo['E_corr'].data)
-        core.set_variable("ENTHALPY CORRECTION", therminfo['H_corr'].data)
-        core.set_variable("GIBBS FREE ENERGY CORRECTION", therminfo['G_corr'].data)
+        core.set_variable("ZPVE", therminfo['ZPE_corr'].data)  # P::e THERMO
+        core.set_variable("THERMAL ENERGY CORRECTION", therminfo['E_corr'].data)  # P::e THERMO
+        core.set_variable("ENTHALPY CORRECTION", therminfo['H_corr'].data)  # P::e THERMO
+        core.set_variable("GIBBS FREE ENERGY CORRECTION", therminfo['G_corr'].data)  # P::e THERMO
 
-        core.set_variable("ZERO K ENTHALPY", therminfo['ZPE_tot'].data)
-        core.set_variable("THERMAL ENERGY", therminfo['E_tot'].data)
-        core.set_variable("ENTHALPY", therminfo['H_tot'].data)
-        core.set_variable("GIBBS FREE ENERGY", therminfo['G_tot'].data)
+        core.set_variable("ZERO K ENTHALPY", therminfo['ZPE_tot'].data)  # P::e THERMO
+        core.set_variable("THERMAL ENERGY", therminfo['E_tot'].data)  # P::e THERMO
+        core.set_variable("ENTHALPY", therminfo['H_tot'].data)  # P::e THERMO
+        core.set_variable("GIBBS FREE ENERGY", therminfo['G_tot'].data)  # P::e THERMO
 
         core.print_out(thermtext)
     else:

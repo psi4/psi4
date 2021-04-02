@@ -640,6 +640,12 @@ def tdscf_excitations(wfn,
 
         # stash in psivars/wfnvars
         ssuper_name = wfn.functional().name()
+        # wfn.set_variable("TD-fctl ROOT n TOTAL ENERGY - h SYMMETRY")  # P::e SCF
+        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY")  # P::e SCF
+        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN) - h SYMMETRY")  # P::e SCF
+        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL) - h SYMMETRY")  # P::e SCF
+        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (LEN) - h SYMMETRY")  # P::e SCF
+        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL) - h SYMMETRY")  # P::e SCF
         wfn.set_variable(f"TD-{ssuper_name} ROOT {i+1} TOTAL ENERGY - {x.irrep_ES} SYMMETRY", E_tot_au)
         wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - {x.irrep_ES} SYMMETRY", x.E_ex_au)
         wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - {x.irrep_ES} SYMMETRY",
