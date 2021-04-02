@@ -66,6 +66,7 @@ Programmers' Manual
    add_tests
    prog_debug_profile
    documentation
+   code_style
    psipep
    manage_index
    psi4api

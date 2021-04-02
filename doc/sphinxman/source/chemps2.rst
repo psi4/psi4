@@ -37,7 +37,7 @@ Interface to CheMPS2 by S. Wouters
 .. codeauthor:: Sebastian Wouters
 .. sectionauthor:: Lori A. Burns
 
-*Module:* :ref:`Keywords <apdx:dmrg>`, :ref:`PSI Variables <apdx:dmrg_psivar>`, :ref:`Samples <apdx:testSuitedmrg>`
+*Module:* :ref:`Keywords <apdx:dmrg>`, :ref:`PSI Variables <apdx:dmrg_psivar>`, :ref:`Samples <apdx:testSuitechemps2>`
 
 .. comment|PSIfour| contains code to interface to the CheMPS2
 .. library of S. Wouters, which is based at `GitHub

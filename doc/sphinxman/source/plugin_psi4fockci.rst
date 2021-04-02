@@ -55,7 +55,7 @@ approaches.
 
 The Psi4FockCI plugin allows one to perform spin-flip (SF), ionization 
 potential (IP), and electron affinity (EA) calculations, as well as 
-combined RAS-SF-IP/EA calculations, through the DETCI (:ref:`CI`) module. 
+combined RAS-SF-IP/EA calculations, through the DETCI (:ref:`sec:ci`) module.
 
 Installation
 ~~~~~~~~~~~~

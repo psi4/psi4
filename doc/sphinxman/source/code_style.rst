@@ -35,7 +35,7 @@ Code style conventions
 
 It is important to keep a consistent formatting of the C++ and Python code
 to avoid hard-to-read diffs and merge conflicts.
-``clang-format``_ and ``yapf``_ can be used to format C++ and Python code,
+`clang-format <https://clang.llvm.org/docs/ClangFormat.html>`_ and `yapf <https://github.com/google/yapf>`_ can be used to format C++ and Python code,
 respectively, according to a predefined style file.
 |PSIfour| provides the :source:`.clang-format` and :source:`.style.yapf` files in the root
 folder of the project.
@@ -68,7 +68,7 @@ In this particular case, we want to make sure that all files that have been
 added to the staging area with ``git add`` are formatted according to the style
 *before* they committing them with ``git commit``.
 The hook to be modified is then the *pre-commit* hook.
-|PSIfour| uses the `pre-commit`_ framework, with configuration file :source:`.pre-commit-config.yaml`.
+|PSIfour| uses the `pre-commit <https://pre-commit.com/>`_ framework, with configuration file :source:`.pre-commit-config.yaml`.
 To take advantage of pre-commit hooks, you will need to install the ``pre-commit`` utility:
 
 ::
@@ -109,14 +109,3 @@ How and when to *not* apply code styling to your contributions
 
 TODO
 
-.. _``clang-format``: https://clang.llvm.org/docs/ClangFormat.html
-
-.. _``yapf``: https://github.com/google/yapf
-
-.. _``.clang-format``: https://github.com/psi4/psi4/blob/master/.clang-format
-
-.. _``.style.yapf``: https://github.com/psi4/psi4/blob/master/.style.yapf
-
-.. _pre-commit: https://pre-commit.com/
-
-.. _``.pre-commit-config.yaml``: https://github.com/psi4/psi4/blob/master/.pre-commit-config.yaml

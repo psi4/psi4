@@ -629,23 +629,24 @@ Troubleshooting
     * fundamental libraries like libc, ld-linux, pthreads found system libraries to link against
     * libpython linked against conda python *not* system python
     * libm is linked against conda *or* system
-    * blas, c++, and gcc libraries are absent because statically linked ::
+    * blas, c++, and gcc libraries are absent because statically linked
 
+.. code-block:: console
 
-    >>> conda install conda-build  # needed for next command
-    >>> conda inspect linkages psi4
-    python-2.7.9-2:
-      libpython2.7.so.1.0 (lib/libpython2.7.so.1.0)
-    system-5.8-1:
-      libm.so.6 (lib/libm.so.6)
-    system:
-      libc.so.6 (/lib64/libc.so.6)
-      libdl.so.2 (/lib64/libdl.so.2)
-      libpthread.so.0 (/lib64/libpthread.so.0)
-      librt.so.1 (/lib64/librt.so.1)
-      libutil.so.1 (/lib64/libutil.so.1)
-      linux-vdso.so.1 ()
-    not found:
+      >>> conda install conda-build  # needed for next command
+      >>> conda inspect linkages psi4
+      python-2.7.9-2:
+        libpython2.7.so.1.0 (lib/libpython2.7.so.1.0)
+      system-5.8-1:
+        libm.so.6 (lib/libm.so.6)
+      system:
+        libc.so.6 (/lib64/libc.so.6)
+        libdl.so.2 (/lib64/libdl.so.2)
+        libpthread.so.0 (/lib64/libpthread.so.0)
+        librt.so.1 (/lib64/librt.so.1)
+        libutil.so.1 (/lib64/libutil.so.1)
+        linux-vdso.so.1 ()
+      not found:
 
 
 .. comment find out about the current environment.

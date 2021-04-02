@@ -38,7 +38,7 @@ Interface to CPPE by M. Scheurer
 .. codeauthor:: Maximilian Scheurer
 .. sectionauthor:: Maximilian Scheurer
 
-*Module:* :ref:`Keywords <apdx:cppe>`, :ref:`PSI Variables <apdx:cppe_psivar>`
+*Module:* :ref:`Keywords <apdx:pe>`, :ref:`PSI Variables <apdx:pe_psivar>`
 
 .. image:: https://img.shields.io/badge/home-cppe-informational.svg
    :target: https://github.com/maxscheurer/cppe

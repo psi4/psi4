@@ -153,12 +153,12 @@ of the cbs procedure. The stage energies of this section sum outright to the tot
      total            CBS                         -1.16281105
     ----------------------------------------------------------------------------------
 
-.. _`sec:cbs_xtpl`:
-
 .. index::
    single: cbs(); extrapolation schemes
    single: extrapolation schemes
    single: basis set; extrapolation
+
+.. _`sec:cbs_xtpl`:
 
 Extrapolation Schemes
 ^^^^^^^^^^^^^^^^^^^^^

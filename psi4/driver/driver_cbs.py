@@ -1124,7 +1124,7 @@ def cbs(func, label, **kwargs):
     stage_wfn keyword, or as a field in the ```cbs_metadata``` list, and is only
     allowed if all preceding stages are active.
 
-    .. include:: ../cbs_eqn.rst
+    .. include:: /cbs_eqn.rst
 
     * Energy Methods
         The presence of a stage_wfn keyword is the indicator to incorporate

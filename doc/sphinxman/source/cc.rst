@@ -42,21 +42,19 @@ CC: Coupled Cluster Theory
 
 *Module:* :ref:`PSI Variables <apdx:ccenergy_psivar>`
 
-*Module:* :ref:`Keywords <apdx:ccenergy>`, :source:`CCENERGY <psi4/src/psi4/ccenergy>`
+*Module:* :ref:`Keywords <apdx:ccenergy>`, :source:`CCENERGY <psi4/src/psi4/cc/ccenergy>`
 
-*Module:* :ref:`Keywords <apdx:cceom>`, :source:`CCEOM <psi4/src/psi4/cceom>`
+*Module:* :ref:`Keywords <apdx:cceom>`, :source:`CCEOM <psi4/src/psi4/cc/cceom>`
 
-*Module:* :ref:`Keywords <apdx:ccresponse>`, :source:`CCRESPONSE <psi4/src/psi4/ccresponse>`
+*Module:* :ref:`Keywords <apdx:ccresponse>`, :source:`CCRESPONSE <psi4/src/psi4/cc/ccresponse>`
 
-*Module:* :ref:`Keywords <apdx:cctriples>`, :source:`CCTRIPLES <psi4/src/psi4/cctriples>`
+*Module:* :ref:`Keywords <apdx:cctriples>`, :source:`CCTRIPLES <psi4/src/psi4/cc/cctriples>`
 
-*Module:* :ref:`Keywords <apdx:ccdensity>`, :source:`CCDENSITY <psi4/src/psi4/ccdensity>`
+*Module:* :ref:`Keywords <apdx:ccdensity>`, :source:`CCDENSITY <psi4/src/psi4/cc/ccdensity>`
 
-*Module:* :ref:`Keywords <apdx:cchbar>`, :source:`CCHBAR <psi4/src/psi4/cchbar>`
+*Module:* :ref:`Keywords <apdx:cchbar>`, :source:`CCHBAR <psi4/src/psi4/cc/cchbar>`
 
-*Module:* :ref:`Keywords <apdx:cclambda>`, :source:`CCLAMBDA <psi4/src/psi4/cclambda>`
-
-*Module:* :ref:`Keywords <apdx:ccsort>`, :source:`CCSORT <psi4/src/psi4//ccsort>`
+*Module:* :ref:`Keywords <apdx:cclambda>`, :source:`CCLAMBDA <psi4/src/psi4/cc/cclambda>`
 
 The coupled cluster approach is one of the most accurate and reliable quantum
 chemical techniques for including the effects of electron correlation.

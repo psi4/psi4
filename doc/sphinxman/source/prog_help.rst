@@ -28,7 +28,7 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. _`sec:prog_setup`:
+.. _`sec:prog_help`:
 
 =================
 Where to Get Help

@@ -300,7 +300,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             upcm, Vpcm = self.get_PCM().compute_PCM_terms(Dt, calc_type)
             SCFE += upcm
             self.push_back_external_potential(Vpcm)
-        self.set_variable("PCM POLARIZATION ENERGY", upcm)
+        self.set_variable("PCM POLARIZATION ENERGY", upcm)  # P::e PCM
         self.set_energies("PCM Polarization", upcm)
 
         upe = 0.0
@@ -312,7 +312,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             )
             SCFE += upe
             self.push_back_external_potential(Vpe)
-        self.set_variable("PE ENERGY", upe)
+        self.set_variable("PE ENERGY", upe)  # P::e PE
         self.set_energies("PE Energy", upe)
 
         core.timer_on("HF: Form F")
@@ -338,7 +338,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             SCFE += self.molecule().EFP.get_wavefunction_dependent_energy()
 
         self.set_energies("Total Energy", SCFE)
-        core.set_variable("SCF ITERATION ENERGY", SCFE)
+        core.set_variable("SCF ITERATION ENERGY", SCFE)  # P::e SCF
         Ediff = SCFE - SCFE_old
         SCFE_old = SCFE
 
@@ -429,7 +429,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.form_D()
         core.timer_off("HF: Form D")
 
-        self.set_variable("SCF ITERATION ENERGY", SCFE)
+        self.set_variable("SCF ITERATION ENERGY", SCFE)  # P::e SCF
 
         # After we've built the new D, damp the update
         if (damping_enabled and self.iteration_ > 1 and Dnorm > core.get_option('SCF', 'DAMPING_CONVERGENCE')):
@@ -550,14 +550,12 @@ def scf_finalize_energy(self):
         self.set_energies("Total Energy", SCFE)
         core.print_out(efpobj.energy_summary(scfefp=SCFE, label='psi'))
 
-        self.set_variable(
-            'EFP ELST ENERGY',
-            efpene['electrostatic'] + efpene['charge_penetration'] + efpene['electrostatic_point_charges'])
-        self.set_variable('EFP IND ENERGY', efpene['polarization'])
-        self.set_variable('EFP DISP ENERGY', efpene['dispersion'])
-        self.set_variable('EFP EXCH ENERGY', efpene['exchange_repulsion'])
-        self.set_variable('EFP TOTAL ENERGY', efpene['total'])
-        self.set_variable('CURRENT ENERGY', efpene['total'])
+        self.set_variable("EFP ELST ENERGY", efpene['electrostatic'] + efpene['charge_penetration'] + efpene['electrostatic_point_charges'])  # P::e EFP
+        self.set_variable("EFP IND ENERGY", efpene['polarization'])  # P::e EFP
+        self.set_variable("EFP DISP ENERGY", efpene['dispersion'])  # P::e EFP
+        self.set_variable("EFP EXCH ENERGY", efpene['exchange_repulsion'])  # P::e EFP
+        self.set_variable("EFP TOTAL ENERGY", efpene['total'])  # P::e EFP
+        self.set_variable("CURRENT ENERGY", efpene['total'])  # P::e EFP
 
     core.print_out("\n  ==> Post-Iterations <==\n\n")
 
@@ -566,9 +564,9 @@ def scf_finalize_energy(self):
         rho_a = quad['RHO_A']/2 if self.same_a_b_dens() else quad['RHO_A']
         rho_b = quad['RHO_B']/2 if self.same_a_b_dens() else quad['RHO_B']
         rho_ab = (rho_a + rho_b)
-        self.set_variable("GRID ELECTRONS TOTAL",rho_ab)
-        self.set_variable("GRID ELECTRONS ALPHA",rho_a)
-        self.set_variable("GRID ELECTRONS BETA",rho_b)
+        self.set_variable("GRID ELECTRONS TOTAL",rho_ab)  # P::e SCF
+        self.set_variable("GRID ELECTRONS ALPHA",rho_a)  # P::e SCF
+        self.set_variable("GRID ELECTRONS BETA",rho_b)  # P::e SCF
         dev_a = rho_a - self.nalpha()
         dev_b = rho_b - self.nbeta()
         core.print_out(f"   Electrons on quadrature grid:\n")
@@ -696,19 +694,19 @@ def scf_print_energies(self):
     if core.get_option('SCF', 'PE'):
         core.print_out(self.pe_state.cppe_state.summary_string)
 
-    self.set_variable('NUCLEAR REPULSION ENERGY', enuc)
-    self.set_variable('ONE-ELECTRON ENERGY', e1)
-    self.set_variable('TWO-ELECTRON ENERGY', e2)
+    self.set_variable("NUCLEAR REPULSION ENERGY", enuc)  # P::e SCF
+    self.set_variable("ONE-ELECTRON ENERGY", e1)  # P::e SCF
+    self.set_variable("TWO-ELECTRON ENERGY", e2)  # P::e SCF
     if self.functional().needs_xc():
-        self.set_variable('DFT XC ENERGY', exc)
-        self.set_variable('DFT VV10 ENERGY', evv10)
-        self.set_variable('DFT FUNCTIONAL TOTAL ENERGY', hf_energy + exc + evv10)
+        self.set_variable("DFT XC ENERGY", exc)  # P::e SCF
+        self.set_variable("DFT VV10 ENERGY", evv10)  # P::e SCF
+        self.set_variable("DFT FUNCTIONAL TOTAL ENERGY", hf_energy + exc + evv10)  # P::e SCF
         #self.set_variable(self.functional().name() + ' FUNCTIONAL TOTAL ENERGY', hf_energy + exc + evv10)
-        self.set_variable('DFT TOTAL ENERGY', dft_energy)  # overwritten later for DH
+        self.set_variable("DFT TOTAL ENERGY", dft_energy)  # overwritten later for DH  # P::e SCF
     else:
-        self.set_variable('HF TOTAL ENERGY', hf_energy)
+        self.set_variable("HF TOTAL ENERGY", hf_energy)  # P::e SCF
     if hasattr(self, "_disp_functor"):
-        self.set_variable('DISPERSION CORRECTION ENERGY', ed)
+        self.set_variable("DISPERSION CORRECTION ENERGY", ed)  # P::e SCF
     #if abs(ed) > 1.0e-14:
     #    for pv, pvv in self.variables().items():
     #        if abs(pvv - ed) < 1.0e-14:
@@ -718,7 +716,7 @@ def scf_print_energies(self):
     #else:
     #    self.set_variable(self.functional().name() + ' TOTAL ENERGY', dft_energy)  # overwritten later for DH
 
-    self.set_variable('SCF ITERATIONS', self.iteration_)
+    self.set_variable("SCF ITERATIONS", self.iteration_)  # P::e SCF
 
 
 def scf_print_preiterations(self,small=False):
