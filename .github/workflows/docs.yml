@@ -1,13 +1,10 @@
 name: Latest Docs
 
-on: [push, pull_request]
-#on:
-#  push:
-#    paths:
-#      - doc/sphinxman/
-#  pull_request:
-#    paths:
-#      - doc/sphinxman/
+on:
+  push:
+    branches:
+      - master
+      - gha-docs
 
 jobs:
 
@@ -74,6 +71,7 @@ jobs:
           -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -DCMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
           -DCMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -DSPHINXMAN_STRICT=ON \
           -DSPHINX_ROOT=${CONDA_PREFIX}
 
     - name: Compile Psi4

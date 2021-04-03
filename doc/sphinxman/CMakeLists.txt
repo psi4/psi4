@@ -31,6 +31,12 @@ else()
     set(SPHINX_STUFF_FOUND "ON")
 endif()
 
+if(SPHINXMAN_STRICT)
+    #set(SPHINX_EXTRAS "-n -W --keep-going")
+    set(SPHINX_EXTRAS "-W;--keep-going")
+else()
+    set(SPHINX_EXTRAS "")
+endif()
 
 # Setup and build Sphinx documentation
 if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
@@ -200,6 +206,14 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
         COMMENT "Autodoc test cases")
 
 
+    # Autodoc stubs
+    add_custom_command(
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_stubs.py ${CCSD}
+        OUTPUT  ${CCBD}/source/api/psi4.core.set_variable.rst
+        DEPENDS ${CCSD}/document_stubs.py
+        COMMENT "Autodoc stubs")
+
+
 #    # Autodoc driver
 #    add_custom_command(
 #        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_driver.py ${CCSD}
@@ -338,6 +352,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
                 ${CCBD}/source/autodoc_available_databases.rst
                 ${CCBD}/source/autodoc_testsuite_corepsi4.rst
                 ${CCBD}/source/autodoc_testsuite_dftd3.rst
+                ${CCBD}/source/api/psi4.core.set_variable.rst
                 ${CCBD}/source/autodoc_dft_energy.rst
                 ${CCBD}/source/autodoc_dft_opt.rst
                 ${CCBD}/source/autodoc_dft_all.rst
@@ -395,6 +410,10 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
             # -Q  # Enable for even more quiet mode
             # -E  # don't use a saved environment, always read all file
             # -a  # write all files; default is to only write new and changed files
+            # -n                  # nit-picky mode, warn about all missing references
+            # -W                  # turn warnings into errors
+            # --keep-going        # with -W, keep going when getting warnings
+            ${SPHINX_EXTRAS}
             -b html               # builder
             -d ${CCBD}/_doctrees  # cache w/ pickled reST
             -c ${CCBD}/source     # whereabouts of conf.py

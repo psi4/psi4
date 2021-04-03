@@ -284,7 +284,7 @@ def fcidump_from_file(fname):
 
     # Get dimensions and indices
     nbf = intdump['norb']
-    idxs = raw_ints[:, 1:].astype(np.int) - 1
+    idxs = raw_ints[:, 1:].astype(int) - 1
 
     # Slices
     sl = slice(ints.shape[0] - nbf, ints.shape[0])

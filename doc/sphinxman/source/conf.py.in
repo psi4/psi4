@@ -81,7 +81,7 @@ extensions = [
     # from Astropy
     'sphinx_automodapi.automodapi',
     'sphinx_automodapi.automodsumm',
-    #'sphinx_automodapi.smart_resolver',
+    'sphinx_automodapi.smart_resolver',
 ]
 if '@SPHINX_THEME@' == 'sphinx_psi_theme':
     extensions.extend([
@@ -97,6 +97,7 @@ autodoc_default_flags = ['members',
                          'show-inheritance',
                         ]
 automodapi_toctreedirnm = 'api'
+automodsumm_inherited_members = True
 autodoc_typehints = "signature"  # Automatically document param types (less noise in class signature)
 
 # Add any paths that contain templates here, relative to this directory.
@@ -153,7 +154,9 @@ exclude_patterns = ['template_index.rst',          'template_appendices.rst',
                     'autodoc_index_latexprog.rst', 'autodoc_appendices_latexprog.rst',
                     'abbr_accents.rst',
                     'autodoc_abbr_options_c.rst',
-                    'autodoc_abbr_options_plugins.rst']
+                    'autodoc_abbr_options_plugins.rst',
+                    "contents.rst",
+                   ]
 
 
 # The reST default role (used for this markup: `text`) to use for all documents.

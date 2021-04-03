@@ -306,16 +306,6 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
 }
 
 void export_mints(py::module& m) {
-    // This is needed to wrap an STL vector into Boost.Python. Since the vector
-    // is going to contain std::shared_ptr's we MUST set the no_proxy flag to true
-    // (as it is) to tell Boost.Python to not create a proxy class to handle
-    // the vector's data type.
-    py::bind_vector<std::vector<std::shared_ptr<Matrix>>>(m, "VectorMatrix");
-
-    // Other vector types
-    // py::class_<std::vector<double> >(m, "vector_of_doubles", "docstring").
-    //        def(vector_indexing_suite<std::vector<double>, true >());
-    //    py::bind_vector<double>(m, "VectorDouble");
 
     typedef void (Vector::*vector_setitem_1)(int, double);
     typedef void (Vector::*vector_setitem_2)(int, int, double);

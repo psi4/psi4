@@ -184,7 +184,6 @@ sub print_hash
              $SubAbbr =~ s/\.//g;
              $SubAbbr =~ s/\-//g;
              $SubAbbr =~ s/\///g;
-             print "|||$Subsection| -> |$SubAbbr|||\n";
              if ($print_description) { 
                  my $Secdivider = "_" x (length($Subsection)-1);
                  print OUT "\\subsubsection{$Subsection}\n";
