@@ -32,7 +32,7 @@ else()
 endif()
 
 if(SPHINXMAN_STRICT)
-    #set(SPHINX_EXTRAS "-n -W --keep-going")
+    #set(SPHINX_EXTRAS "-n;-W;--keep-going")
     set(SPHINX_EXTRAS "-W;--keep-going")
 else()
     set(SPHINX_EXTRAS "")

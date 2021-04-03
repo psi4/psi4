@@ -80,8 +80,8 @@ Installation
   hint its location with :makevar:`CMAKE_PREFIX_PATH`,
   and rebuild |PSIfour| to detect simint and activate dependent code.
 
-* Previous bullet had details. To build |PSIfour| from source and use 
-  simint from conda without thinking, consult.
+.. * Previous bullet had details. To build |PSIfour| from source and use 
+..   simint from conda without thinking, consult.
 
 * To remove a conda installation, ``conda remove simint``.
 

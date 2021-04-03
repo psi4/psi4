@@ -78,8 +78,8 @@ Installation
   hint its location with :makevar:`cppe_DIR`,
   and rebuild |PSIfour| to detect CPPE and activate dependent code.
 
-* Previous bullet had details. To build |PSIfour| from source and use
-  cppe from conda without thinking, consult.
+.. * Previous bullet had details. To build |PSIfour| from source and use
+..   cppe from conda without thinking, consult.
 
 * To remove a conda installation, ``conda remove cppe``.
 

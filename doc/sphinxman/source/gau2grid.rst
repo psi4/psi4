@@ -73,8 +73,8 @@ Installation
   Then, hint its location with :makevar:`CMAKE_PREFIX_PATH`,
   and rebuild |PSIfour| to detect gau2grid and activate dependent code.
 
-* Previous bullet had details. To build |PSIfour| from source and use
-  gau2grid from conda without thinking, consult.
+.. * Previous bullet had details. To build |PSIfour| from source and use
+..   gau2grid from conda without thinking, consult.
 
 * To remove a conda installation, ``conda remove gau2grid``.
 
