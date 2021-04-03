@@ -1051,6 +1051,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      */
     bool schmidt_add_row(int h, int rows, Vector& v);
     bool schmidt_add_row(int h, int rows, double* v) noexcept;
+    bool schmidt_add_row(int h, int rows, double *v, double norm_cutoff) noexcept;
     /// @}
 
     /*! Calls libqt schmidt function */
