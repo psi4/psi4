@@ -675,7 +675,7 @@ std::vector<SharedMatrix> Local_cc::build_cPNO_lists(double cutoff, std::vector<
             qtemp_new->set_row(0, 0, qtemp->get_row(0,0));
             int new_npno = npno;
             for (int row=1; row < npno; row++) {
-                bool check = qtemp_new->schmidt_add_row(0, row, qtemp->pointer()[row]);
+                bool check = qtemp_new->schmidt_add_row(0, row, qtemp->pointer()[row], 1e-12);
                 if (!check) {new_npno -= 1; }
             }
             auto qtemp2 = std::make_shared<Matrix>(new_npno, nvir);
