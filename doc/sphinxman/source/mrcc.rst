@@ -42,7 +42,7 @@ Interface to MRCC by M. K\ |a_acute|\ llay
 
 |PSIfour| contains code to interface to the MRCC program of M. K\ |a_acute|\ llay
 and J. Gauss.  The license and source code of the MRCC program must be
-obtained from Mih\ |a_acute|\ ly K\ |a_acute|\ llay (`http://www.mrcc.hu/ <http://www.mrcc.hu/>`_).
+obtained from Mih\ |a_acute|\ ly K\ |a_acute|\ llay (`https://www.mrcc.hu/ <https://www.mrcc.hu/>`_).
 
 Installation
 ~~~~~~~~~~~~

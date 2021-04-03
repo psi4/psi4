@@ -39,8 +39,8 @@ Conda Binary Distribution
 
 |PSIfour| is available as a pre-compiled binary for Mac and Linux (and
 Windows, through the Ubuntu shell) architectures
-through `Continuum Analytics
-<https://store.continuum.io/cshop/anaconda/>`_, the company that produces
+through `Anaconda (formerly Continuum Analytics
+<https://www.anaconda.com/products/individual>`_, the company that produces
 `Anaconda Python <http://docs.continuum.io/anaconda/index.html>`_ (a
 full-fledged scientific python environment with package manager `conda
 <http://conda.pydata.org/index.html>`_) and, more particularly, `Miniconda
