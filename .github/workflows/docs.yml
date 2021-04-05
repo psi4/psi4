@@ -10,7 +10,7 @@ jobs:
 
   docs:
     runs-on: ubuntu-latest
-    name: Linux Docs
+    name: Latest Docs
     defaults:
       run:
         shell: bash -l {0}

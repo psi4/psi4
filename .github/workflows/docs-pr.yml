@@ -10,7 +10,7 @@ jobs:
 
   docs:
     runs-on: ubuntu-latest
-    name: Docs Test
+    name: Propose Docs
     defaults:
       run:
         shell: bash -l {0}
@@ -156,20 +156,44 @@ jobs:
           echo "   sha                 : ${{ env.GITHUB_SHA_SHORT }}"
           echo "   pull request sha    : ${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}"
 
+#   Partial variables
+#      repository owner    : psi4
+#      repository name     : psi4
+#   Slug variables
+#      repository          : psi4-psi4
+#      repository owner    : psi4
+#      repository name     : psi4
+#      ref                 : 2146-merge
+#      head ref            : ghadocs3
+#      base ref            : master
+#      event ref           : 
+#   Slug URL variables
+#      repository          : psi4-psi4
+#      repository owner    : psi4
+#      repository name     : psi4
+#      ref                 : 2146-merge
+#      head ref            : ghadocs3
+#      base ref            : master
+#      event ref           : 
+#   Short SHA variables
+#      sha                 : 37565a13
+#      pull request sha    : 3d743e42
+
 #steps:
 #  - name: Get the current branch name
 #    shell: bash
 #        echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
 #    id: myref
 
+#        pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+#        echo "::set-env name=prnumber::${pull_number}"
+#        repo_name=$(jq --raw-output .pull_request.repo.name "$GITHUB_EVENT_PATH")
+#        echo "::set-env name=prrepo::${repo_name}"
+
     - name: Diff Psi4 Repo for Generated Files
       working-directory: ./code
       run: |
         git diff --color-words
-        pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-        echo "::set-env name=prnumber::${pull_number}"
-        repo_name=$(jq --raw-output .pull_request.repo.name "$GITHUB_EVENT_PATH")
-        echo "::set-env name=prrepo::${repo_name}"
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add -A
@@ -184,4 +208,13 @@ jobs:
 #        github_token: ${{ secrets.psi4docs_from_psi4 }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
         force: false
+
+    - name: 'Comment PR'
+      uses: actions/github-script@0.3.0
+      if: github.event_name == 'pull_request'
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+          github.issues.createComment({ issue_number, owner, repo, body: 'Hello world ! 👋' });
 
