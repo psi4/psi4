@@ -1,0 +1,231 @@
+name: Propose Docs
+
+# <<<  Goals  >>>
+# * check PR doesn't break docs build with syntax or references
+# * check Psi4 builds with conda-forge-based tools
+
+on: pull_request_target
+
+jobs:
+
+  docs:
+    runs-on: ubuntu-latest
+    name: Propose Docs
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+
+    # fetch-depth: 0 gets git history so Psi4 version computable
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        path: code
+        ref: ${{github.event.pull_request.head.ref}}
+        repository: ${{github.event.pull_request.head.repo.full_name}}
+
+#    - name: Checkout website repo
+#      uses: actions/checkout@v2
+#      with:
+#        repository: psi4/psi4docs
+#        path: docs
+#        ref: master
+#        persist-credentials: true
+#        token: ${{ secrets.psi4docs_from_psi4 }}
+
+    - name: Create Conda Environment
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        activate-environment: test
+        add-pip-as-python-dependency: true
+        auto-activate-base: false
+        channels: conda-forge
+        environment-file: code/devtools/conda-envs/docs-cf.yaml
+        show-channel-urls: true
+
+    - name: Environment Information
+      run: |
+        conda info
+        conda list
+        which conda python cmake $CXX
+
+    - name: Patch Sphinx for Pybind11
+      run: sed -i "s/lines = s\.expandtabs/lines = str(s).expandtabs/g" ${CONDA_PREFIX}/lib/python3.8/site-packages/sphinx/util/docstrings.py
+
+
+    - name: 'Comment PR'
+      uses: actions/github-script@0.3.0
+      if: github.event_name == 'pull_request'
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+          github.issues.createComment({ issue_number, owner, repo, body: 'Hello world ! 👋' });
+
+    # docs are not Ninja ready
+    - name: Configure with CMake (Conda Gnu + MKL)
+      working-directory: ./code
+      run: |
+        cmake \
+          -S. \
+          -Bobjdir \
+          -G"Unix Makefiles" \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_C_COMPILER=${CC} \
+          -DCMAKE_CXX_COMPILER=${CXX} \
+          -DCMAKE_CXX_FLAGS="-O0" \
+          -DCMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
+          -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_Libint=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -DSPHINXMAN_STRICT=ON \
+          -DSPHINX_ROOT=${CONDA_PREFIX}
+
+    - name: Compile Psi4
+      working-directory: ./code
+      run: |
+        cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
+
+    - name: Compile & Pack Docs
+      working-directory: ./code
+      run: |
+        cmake --build objdir --target sphinxman -j`getconf _NPROCESSORS_ONLN`
+        cd objdir/doc/sphinxman
+        tar -zcf sphinxman.tar.gz html/
+
+#    - name: Archive Docs Tarball
+#      uses: actions/upload-artifact@v2
+#      with:
+#        name: sphinxman-html
+#        path: |
+#          code/objdir/doc/sphinxman/sphinxman.tar.gz
+#        retention-days: 1
+#
+#    - name: Diff Docs Directory vs psi4/psi4docs
+#      working-directory: ./docs
+#      run: |
+#        cp -pR ../code/objdir/doc/sphinxman/html .
+#        git diff --color-words
+#        git config --local user.email "action@github.com"
+#        git config --local user.name "GitHub Action"
+#        git add -A
+#        git commit -m "auto-generated from Psi4 master"
+#
+#    - name: Push Changes to psi4/psi4docs
+#      uses: ad-m/github-push-action@master
+#      with:
+#        directory: ./docs
+#        repository: psi4/psi4docs
+#        #branch: ${{ env.prbranch }}
+#        github_token: ${{ secrets.psi4docs_from_psi4 }}
+#        force: true
+
+#    - name: Compare Schemas (generated vs. community)
+#      shell: bash
+#      working-directory: ./qcsk
+#      run: |
+#        git diff --color-words
+#        pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+#        branch=qcel-${pull_number}
+#        git checkout -b ${branch}
+#        git remote -v
+#        git config --local user.email "action@github.com"
+#        git config --local user.name "GitHub Action"
+#        git add -A
+#        git commit -m "auto-generated from QCElemental"
+#        echo "::set-env name=prbranch::${branch}"
+
+    - uses: rlespinasse/github-slug-action@v3.x
+
+    - name: Output
+      run: |
+          echo "Partial variables"
+          echo "   repository owner    : ${{ env.GITHUB_REPOSITORY_OWNER_PART }}"
+          echo "   repository name     : ${{ env.GITHUB_REPOSITORY_NAME_PART }}"
+          echo "Slug variables"
+          echo "   repository          : ${{ env.GITHUB_REPOSITORY_SLUG }}"
+          echo "   repository owner    : ${{ env.GITHUB_REPOSITORY_OWNER_PART_SLUG }}"
+          echo "   repository name     : ${{ env.GITHUB_REPOSITORY_NAME_PART_SLUG }}"
+          echo "   ref                 : ${{ env.GITHUB_REF_SLUG }}"
+          echo "   head ref            : ${{ env.GITHUB_HEAD_REF_SLUG }}"
+          echo "   base ref            : ${{ env.GITHUB_BASE_REF_SLUG }}"
+          echo "   event ref           : ${{ env.GITHUB_EVENT_REF_SLUG }}"
+          echo "Slug URL variables"
+          echo "   repository          : ${{ env.GITHUB_REPOSITORY_SLUG_URL }}"
+          echo "   repository owner    : ${{ env.GITHUB_REPOSITORY_OWNER_PART_SLUG_URL }}"
+          echo "   repository name     : ${{ env.GITHUB_REPOSITORY_NAME_PART_SLUG_URL }}"
+          echo "   ref                 : ${{ env.GITHUB_REF_SLUG_URL }}"
+          echo "   head ref            : ${{ env.GITHUB_HEAD_REF_SLUG_URL }}"
+          echo "   base ref            : ${{ env.GITHUB_BASE_REF_SLUG_URL }}"
+          echo "   event ref           : ${{ env.GITHUB_EVENT_REF_SLUG_URL }}"
+          echo "Short SHA variables"
+          echo "   sha                 : ${{ env.GITHUB_SHA_SHORT }}"
+          echo "   pull request sha    : ${{ env.GITHUB_EVENT_PULL_REQUEST_HEAD_SHA_SHORT }}"
+
+#   Partial variables
+#      repository owner    : psi4
+#      repository name     : psi4
+#   Slug variables
+#      repository          : psi4-psi4
+#      repository owner    : psi4
+#      repository name     : psi4
+#      ref                 : 2146-merge
+#      head ref            : ghadocs3
+#      base ref            : master
+#      event ref           : 
+#   Slug URL variables
+#      repository          : psi4-psi4
+#      repository owner    : psi4
+#      repository name     : psi4
+#      ref                 : 2146-merge
+#      head ref            : ghadocs3
+#      base ref            : master
+#      event ref           : 
+#   Short SHA variables
+#      sha                 : 37565a13
+#      pull request sha    : 3d743e42
+
+#steps:
+#  - name: Get the current branch name
+#    shell: bash
+#        echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
+#    id: myref
+
+#        pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+#        echo "::set-env name=prnumber::${pull_number}"
+#        repo_name=$(jq --raw-output .pull_request.repo.name "$GITHUB_EVENT_PATH")
+#        echo "::set-env name=prrepo::${repo_name}"
+
+    - name: Diff Psi4 Repo for Generated Files
+      working-directory: ./code
+      run: |
+        git diff --color-words
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add -A
+        git commit -m "auto-generated from docs build"
+
+    - name: Push Changes to PR-author/psi4:PR-branch
+      uses: ad-m/github-push-action@master
+      with:
+        directory: ./code
+#        repository: ${{ env.prrepo }}
+        repository: loriab/psi4
+        branch: ${{ env.GITHUB_HEAD_REF_SLUG }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        force: false
+
+    - name: 'Comment PR'
+      uses: actions/github-script@0.3.0
+      if: github.event_name == 'pull_request'
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+          github.issues.createComment({ issue_number, owner, repo, body: 'Hello world ! 👋' });
+
