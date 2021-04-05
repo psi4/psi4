@@ -67,8 +67,7 @@ distribution with same package manager `conda
 The |PSIfour| binary repository is at `Anaconda (formerly Binstar) <https://anaconda.org/psi4>`_.
 
 For commands to get a default installation, go to :ref:`sec:psi4conda`
-or the `psicode downloads page <http://psicode.org/downloads.html>`_
-(`pre-release downloads page <http://psicode.org/develdownloads.html>`_).
+or the `psicode downloads page <https://psicode.org/installs/latest/>`_.
 Users proficient with conda may prefer to consult :ref:`sec:condadetails`.
 For more flexibility and a detailed explanation, go to
 :ref:`sec:slowconda` and :ref:`sec:slowpsi4`.
@@ -434,7 +433,7 @@ Detailed Installation of Miniconda
 Detailed Installation of |PSIfour|
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-5. Subscribe to |PSIfour|. Subscribe to our channel at http://anaconda.org/psi4 that contains the |PSIfour| package and several dependency packages. Make sure this shows up in your ``~/.condarc`` file.
+5. Subscribe to |PSIfour|. Subscribe to our channel at https://anaconda.org/psi4 that contains the |PSIfour| package and several dependency packages. Make sure this shows up in your ``~/.condarc`` file.
 
 .. code-block:: bash
 

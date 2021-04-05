@@ -90,7 +90,7 @@ below.
 
     According to your responses in to questions in the ixyz2database.py script,
     several bullets will be printed of edits you necessarily or optionally
-    should make. Copy your new database into :source:`share/databases`.
+    should make. Copy your new database into :source:`share/psi4/databases`.
     Alternately, append the directory containing your new database into
     :envvar:`PSIPATH`.
 

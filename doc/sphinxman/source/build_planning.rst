@@ -201,9 +201,9 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 
 * :ref:`Python interpreter and headers <cmake:python>` (3.6 or 3.7) https://www.python.org/
 
-* CMake (3.8+) http://www.cmake.org/download/
+* CMake (3.8+) https://cmake.org/download/
 
-* NumPy (needed at runtime *and* buildtime) http://www.numpy.org/
+* NumPy (needed at runtime *and* buildtime) https://numpy.org/
 
 * System utilities: GNU make, GNU install, POSIX threads (Pthreads) library
 
@@ -224,7 +224,7 @@ build system will automatically download and build.
 
 Additionally, there are runtime-only dependencies:
 
-* NumPy http://www.numpy.org/
+* NumPy https://numpy.org/
 
 * networkx https://github.com/networkx/networkx (transitive dependency of QCElemental; optional for QCElemental but required for |PSIfour|)
 
@@ -253,14 +253,14 @@ are available pre-built from conda.
 
 * |PSIfour| Testing
 
-  * CTest http://www.cmake.org/download/
-  * Perl (for some coupled-cluster CTest tests) http://perl.org
+  * CTest https://cmake.org/download/
+  * Perl (for some coupled-cluster CTest tests) https://www.perl.org/
   * pytest (for installed testing) http://doc.pytest.org/en/latest/
 
-* |PSIfour| Documentation (available pre-built at http://www.psicode.org/psi4manual/master/index.html)
+* |PSIfour| Documentation (available pre-built at :psicode:`psi4manual/master/index.html`)
 
   * Sphinx (1.5+) http://sphinx-doc.org
-  * Perl (for some auto-documentation scripts) http://perl.org
+  * Perl (for some auto-documentation scripts) https://www.perl.org/
   * nbsphinx (for converting Jupyter notebooks) http://nbsphinx.readthedocs.io/en/jupyter-theme/
   * sphinx-psi-theme https://github.com/psi4/sphinx-psi-theme
   * See `["message" lines] <https://github.com/psi4/psi4/blob/master/doc/sphinxman/CMakeLists.txt>`_ for advice on obtaining docs dependencies
@@ -972,7 +972,7 @@ How to obtain C and C++ compilers for Mac without Fink, MacPorts, or Homebrew
 
 The easiest compiler to obtain is ``clang`` which is a drop-in replacement
 for ``gcc`` and ``g++``. Just install `XCode
-<https://itunes.apple.com/us/app/xcode/id497799835>`_.  Some old versions
+<https://apps.apple.com/us/app/xcode/id497799835>`_. Some old versions
 of XCode can't handle some of the advanced C++ language features, but this
 is a *software* not *hardware* limitation. Checks for version compliance
 performed at build-time. Note that this "AppleClang" will not be compatible

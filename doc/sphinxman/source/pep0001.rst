@@ -56,7 +56,7 @@ PEP1: Proposing PsiPEP for |PSIfour|
 
 This document proposes using a (much more informal) version of Python's
 PEP (Python Enhancement Proposal `PEP1
-<http://www.python.org/dev/peps/pep-0001/>`_) protocol to organize
+<https://www.python.org/dev/peps/pep-0001/>`_) protocol to organize
 |PSIfour|. Presently, topics are brought up on e-mail threads (where
 discussion is very temporally localized and not everyone is aware of it
 unless cc'd), are brought up at workshops (where people may be absent, no

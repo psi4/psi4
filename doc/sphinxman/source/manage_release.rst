@@ -135,8 +135,7 @@ Anticipate next release
 -----------------------
 
 * Bump version in ``codemeta.json``, https://github.com/psi4/psi4/blob/master/codemeta.json#L9
-* Add to branch list in ``.travis.yml``, https://github.com/psi4/psi4/blob/master/.travis.yml#L179
-* Add to branch list in ``azure-pipelines.yml``, https://github.com/psi4/psi4/blob/master/azure-pipelines.yml#L4
+* Add to branch list in ``azure-pipelines.yml``, :source:`azure-pipelines.yml`
 
 
 Build Conda ecosystem stack

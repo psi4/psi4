@@ -413,6 +413,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
             # -n                  # nit-picky mode, warn about all missing references
             # -W                  # turn warnings into errors
             # --keep-going        # with -W, keep going when getting warnings
+            # -b linkcheck        # checks external links
             ${SPHINX_EXTRAS}
             -b html               # builder
             -d ${CCBD}/_doctrees  # cache w/ pickled reST
