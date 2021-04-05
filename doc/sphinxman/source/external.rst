@@ -302,7 +302,9 @@ PBS job file
 
 To run a |PSIfour| job on a PBS queueing system, you need to properly set up
 all necessary variables in the PBS job file. Below is a minimal example of
-a PBS job file for a threaded job, and a short explanation for each section. ::
+a PBS job file for a threaded job, and a short explanation for each section.
+
+.. code-block:: bash
 
     #!/bin/tcsh
     #PBS -j oe
@@ -354,7 +356,9 @@ in the input file (see :ref:`memory setting <sec:memory>`).
 
 Then, we move to the working directory using PBS variable ``$PBS_O_WORKDIR`` and 
 we create scratch directories on every node, using the ``$PBS_NODEFILE`` which 
-points to a file containing a list of the nodes attributed to the job. ::
+points to a file containing a list of the nodes attributed to the job.
+
+.. code-block:: bash
 
     cd $PBS_O_WORKDIR
     setenv myscratch /scratch/user/psi4.$PBS_JOBID
@@ -366,7 +370,9 @@ points to a file containing a list of the nodes attributed to the job. ::
     end
 
 The next section is *very important* as it sets the environment variables needed
-by |PSIfour|: ::
+by |PSIfour|:
+
+.. code-block:: bash
 
     unsetenv PSIDATADIR
     setenv PSI_SCRATCH $myscratch
@@ -386,7 +392,9 @@ The next step is then to actually run the computation: ::
 
     /psi/install/directory/bin/psi4 -i input.in -o input.out -n 4
 
-And then to clean up the scratch directories previously created: ::
+And then to clean up the scratch directories previously created:
+
+.. code-block:: bash
 
     foreach i (`sort $PBS_NODEFILE | uniq`)
         echo "Removing scratch directory " $myscratch " on " $i

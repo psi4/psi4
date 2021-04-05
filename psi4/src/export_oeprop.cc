@@ -67,9 +67,8 @@ void export_oeprop(py::module &m) {
         def(py::init<std::shared_ptr<Wavefunction> >())
         .def("add", &OEProp::oepy_add, "docstring")
         .def("compute", &OEProp::oepy_compute, "docstring")
-        .
         //        def("set_title", &OEProp::set_title, "docstring").
-        def("clear", &OEProp::clear, "docstring")
+        .def("clear", &OEProp::clear, "docstring")
         .def("set_Da_ao", &OEProp::set_Da_ao, "docstring", "Da"_a, "symmetry"_a = 0)
         .def("set_Db_ao", &OEProp::set_Db_ao, "docstring", "Db"_a, "symmetry"_a = 0)
         .def("set_Da_so", &OEProp::set_Da_so, "docstring")

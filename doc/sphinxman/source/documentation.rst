@@ -51,7 +51,7 @@ documentation targets to be available.
 
 * Binary: ``conda install sphinx``
 * Binary: ``pip install -U Sphinx``
-* Source: https://pypi.python.org/pypi/Sphinx
+* Source: https://pypi.org/project/Sphinx/
 
 * Check:
 
@@ -92,7 +92,17 @@ this covers:
 * Basis Sets: \*.gbs files in :source:`psi4/share/psi4/basis`
 * C++ Keywords: :source:`psi4/src/read_options.cc`
 * Sample Inputs: input.dat files in :source:`samples`
-* PSI Variables: ``Process::environment.globals`` lines and comments in the C++ code
+* PSI Variables: variables and associated modules extracted from code and comments in the Python and C++ source
+  * Modules scraped are the sections of :source:`psi4/src/read_options.cc`
+  * Variables should be all-caps, except where representing substitutions, e.g., ``ROOT n -> ROOT m`` and double-quote ``"`` delimited, even in Python
+  * Scraper looks for ``Process::environment.globals``, ``set_array_variable``, ``variables_``, etc. lines and comments in the C++ code
+  * C-side, the module for the variable is determined by the directory where it's found.
+  * Scraper looks for ``set_variable`` together with ``# P::e MODULE`` lines and comments in the Python code
+  * Py-side, the module for the variable is specified by ``MODULE`` in the comment
+  * When a variable is set by code in either language, e.g., ``variables_[varname.str()]`` rather than plain string, ``variables_["FCI TOTAL ENERGY"]``, add a plain string line as a single-line comment, so the scraper can find it.
+  * Add new places to scrape for variables to :source:`doc/sphinxman/document_psivariables.pl`
+  * For now, we're scraping both global and Wfn variables
+  * All of these show up in referenceable appendices like ``apdx:detci_psivar``
 * Plugins: ``doc.rst`` text, \*.py modules, and C++ keywords in ``psi4/tests/plugin_*`` plugin directories (disabled at the moment)
 * PSI Files: scratch file names and numbers in :source:`psi4/include/psi4/psifiles.h`
 

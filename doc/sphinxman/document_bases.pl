@@ -448,7 +448,7 @@ sub print_rst_topfile {
    print RST_OUT ".. role:: pbg\n";
    print RST_OUT ".. raw:: html\n";
    print RST_OUT "\n";
-   print RST_OUT "   <script type=\"text/javascript\" src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\"></script>\n";
+   print RST_OUT "   <script type=\"text/javascript\" src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\"></script>\n";
    print RST_OUT "   <script>\n";
    print RST_OUT "     \$(document).ready(function() {\n";
    print RST_OUT "       \$(\".pbg\").parent().addClass(\"pbg-parent\");\n";
@@ -461,7 +461,7 @@ sub print_rst_topfile {
    print RST_OUT ".. role:: gbg\n";
    print RST_OUT ".. raw:: html\n";
    print RST_OUT "\n";
-   print RST_OUT "   <script type=\"text/javascript\" src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\"></script>\n";
+   print RST_OUT "   <script type=\"text/javascript\" src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\"></script>\n";
    print RST_OUT "   <script>\n";
    print RST_OUT "     \$(document).ready(function() {\n";
    print RST_OUT "       \$(\".gbg\").parent().addClass(\"gbg-parent\");\n";
@@ -474,7 +474,7 @@ sub print_rst_topfile {
    print RST_OUT ".. role:: bbg\n";
    print RST_OUT ".. raw:: html\n";
    print RST_OUT "\n";
-   print RST_OUT "   <script type=\"text/javascript\" src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\"></script>\n";
+   print RST_OUT "   <script type=\"text/javascript\" src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\"></script>\n";
    print RST_OUT "   <script>\n";
    print RST_OUT "     \$(document).ready(function() {\n";
    print RST_OUT "       \$(\".bbg\").parent().addClass(\"bbg-parent\");\n";
@@ -487,7 +487,7 @@ sub print_rst_topfile {
    print RST_OUT ".. role:: lbg\n";
    print RST_OUT ".. raw:: html\n";
    print RST_OUT "\n";
-   print RST_OUT "   <script type=\"text/javascript\" src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\"></script>\n";
+   print RST_OUT "   <script type=\"text/javascript\" src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\"></script>\n";
    print RST_OUT "   <script>\n";
    print RST_OUT "     \$(document).ready(function() {\n";
    print RST_OUT "       \$(\".lbg\").parent().addClass(\"lbg-parent\");\n";
@@ -500,7 +500,7 @@ sub print_rst_topfile {
    print RST_OUT ".. role:: xbg\n";
    print RST_OUT ".. raw:: html\n";
    print RST_OUT "\n";
-   print RST_OUT "   <script type=\"text/javascript\" src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\"></script>\n";
+   print RST_OUT "   <script type=\"text/javascript\" src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\"></script>\n";
    print RST_OUT "   <script>\n";
    print RST_OUT "     \$(document).ready(function() {\n";
    print RST_OUT "       \$(\".xbg\").parent().addClass(\"xbg-parent\");\n";
@@ -513,7 +513,7 @@ sub print_rst_topfile {
    print RST_OUT ".. role:: ybg\n";
    print RST_OUT ".. raw:: html\n";
    print RST_OUT "\n";
-   print RST_OUT "   <script type=\"text/javascript\" src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\"></script>\n";
+   print RST_OUT "   <script type=\"text/javascript\" src=\"https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\"></script>\n";
    print RST_OUT "   <script>\n";
    print RST_OUT "     \$(document).ready(function() {\n";
    print RST_OUT "       \$(\".ybg\").parent().addClass(\"ybg-parent\");\n";

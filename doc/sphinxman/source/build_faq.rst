@@ -41,8 +41,9 @@ Obtaining and Updating |PSIfour|
 #. :ref:`faq:clonepsi4public`
 #. :ref:`faq:forkpsi4public`
 #. :ref:`faq:tarballpsi4public`
-#. :ref:`faq:psi3sourceforge`
 #. :ref:`faq:recompile`
+
+.. #. :ref:`faq:psi3sourceforge`
 
 Configuring and Installing |PSIfour| via Binary
 -----------------------------------------------

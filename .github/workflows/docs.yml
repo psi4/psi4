@@ -1,0 +1,123 @@
+name: Latest Docs
+
+on:
+  push:
+    branches:
+      - master
+      - gha-docs
+
+jobs:
+
+  docs:
+    runs-on: ubuntu-latest
+    name: Linux Docs
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+
+    # fetch-depth: 0 gets git history so Psi4 version computable
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        path: code
+
+    - name: Checkout website repo
+      uses: actions/checkout@v2
+      with:
+        repository: psi4/psi4docs
+        path: docs
+        ref: master
+        persist-credentials: true
+        token: ${{ secrets.psi4docs_from_psi4 }}
+
+    - name: Create Conda Environment
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        activate-environment: test
+        add-pip-as-python-dependency: true
+        auto-activate-base: false
+        channels: conda-forge
+        environment-file: code/devtools/conda-envs/docs-cf.yaml
+        show-channel-urls: true
+
+    - name: Environment Information
+      run: |
+        conda info
+        conda list
+        which conda python cmake $CXX
+
+    - name: Patch Sphinx for Pybind11
+      run: sed -i "s/lines = s\.expandtabs/lines = str(s).expandtabs/g" ${CONDA_PREFIX}/lib/python3.8/site-packages/sphinx/util/docstrings.py
+
+    # docs are not Ninja ready
+    - name: Configure with CMake (Conda Gnu + MKL)
+      working-directory: ./code
+      run: |
+        cmake \
+          -S. \
+          -Bobjdir \
+          -G"Unix Makefiles" \
+          -DCMAKE_BUILD_TYPE=Debug \
+          -DCMAKE_C_COMPILER=${CC} \
+          -DCMAKE_CXX_COMPILER=${CXX} \
+          -DCMAKE_CXX_FLAGS="-O0" \
+          -DCMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
+          -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_Libint=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
+          -DCMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -DSPHINXMAN_STRICT=ON \
+          -DSPHINX_ROOT=${CONDA_PREFIX}
+
+    - name: Compile Psi4
+      working-directory: ./code
+      run: |
+        cmake --build objdir
+        ctest -L smoke
+
+    - name: Compile & Pack Docs
+      working-directory: ./code
+      run: |
+        cmake --build objdir --target sphinxman --verbose
+        cd objdir/doc/sphinxman
+        tar -zcf sphinxman.tar.gz html/
+
+    - name: Archive Docs Tarball
+      uses: actions/upload-artifact@v2
+      with:
+        name: sphinxman-html
+        path: |
+          code/objdir/doc/sphinxman/sphinxman.tar.gz
+        retention-days: 1
+
+    - name: Compile & Pack Doxygen
+      working-directory: ./code
+      run: |
+        cmake --build objdir --target doxyman --verbose
+        cd objdir/doc/doxygen
+        tar -zcf doxyman.tar.gz html/
+
+    - name: Diff Docs Directory vs psi4/psi4docs
+      working-directory: ./docs
+      run: |
+        cp -pR ../code/objdir/doc/sphinxman/html .
+        git diff --color-words
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add -A
+        git commit -m "auto-generated from Psi4 master"
+
+    - name: Push Changes to psi4/psi4docs
+      uses: ad-m/github-push-action@master
+      with:
+        directory: ./docs
+        repository: psi4/psi4docs
+        #branch: ${{ env.prbranch }}
+        github_token: ${{ secrets.psi4docs_from_psi4 }}
+        force: true
+

@@ -1124,7 +1124,7 @@ def cbs(func, label, **kwargs):
     stage_wfn keyword, or as a field in the ```cbs_metadata``` list, and is only
     allowed if all preceding stages are active.
 
-    .. include:: ../cbs_eqn.rst
+    .. include:: /cbs_eqn.rst
 
     * Energy Methods
         The presence of a stage_wfn keyword is the indicator to incorporate
@@ -1376,9 +1376,7 @@ def cbs(func, label, **kwargs):
         * ```treatment```: treat extrapolation stage as ```scf``` or ```corl```, by default only the first stage is ```scf``` and every later one is ```corl```.
         * ```stage```: tag for the stage used in tables.
 
-        |  The next items in the ```cbs_metadata``` array extrapolate correlation. All of the above parameters
-        are available, with only the ```wfn``` and ```basis``` keywords required. Other supported parameters
-        are:
+        |  The next items in the ```cbs_metadata``` array extrapolate correlation. All of the above parameters are available, with only the ```wfn``` and ```basis``` keywords required. Other supported parameters are:
 
         * ```wfn_lo```: the lower method from which the delta correction is to be calculated. By default, it is set to ```wfn``` from the previous field in the ```cbs_metadata``` array.
         * ```basis_lo```: basis set to be used for the delta correction. By default, it is the same as the ```basis``` specified above.

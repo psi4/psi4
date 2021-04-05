@@ -153,7 +153,9 @@ QCI and CC methods are closely related to perturbation theory, and the
 MP2, MP3, and MP4(SDQ) correlation energies can be obtained as a free
 by-product of a CCSD or QCISD computation.  The following is an 
 example of the results for a computation run with the call
-``energy('fno-qcisd')`` to :py:func:`~psi4.energy`::
+``energy('fno-qcisd')`` to :py:func:`~psi4.energy`:
+
+.. code-block:: none
 
   QCISD iterations converged!
 

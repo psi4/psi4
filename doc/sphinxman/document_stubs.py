@@ -32,6 +32,7 @@ import sys
 import os
 import glob
 import re
+from pathlib import Path
 
 
 DriverPath = ''
@@ -43,24 +44,30 @@ if (len(sys.argv) == 2):
 def pts(category, pyfile):
     print('Auto-documenting %s file %s' % (category, pyfile))
 
+Path("source/api/").mkdir(parents=True, exist_ok=True)
 
-# Available databases in psi4/share/psi4/databases
-fdriver = open('source/autodoc_available_databases.rst', 'w')
-fdriver.write('\n\n')
-
-for pyfile in glob.glob(DriverPath + '../../psi4/share/psi4/databases/*.py'):
-    filename = os.path.split(pyfile)[1]
-    basename = os.path.splitext(filename)[0]
+for stub in ["psi4.core.del_variable",
+             "psi4.core.get_array_variable",
+             "psi4.core.get_array_variables",
+             "psi4.core.get_gradient",
+             "psi4.core.get_variable",
+             "psi4.core.get_variables",
+             "psi4.core.has_variable",
+             "psi4.core.set_global_option_python",
+             "psi4.core.set_gradient",
+             "psi4.core.set_variable",
+             "psi4.core.variable",
+             "psi4.core.variables",
+    ]:
+    curmod = ".".join(stub.split(".")[:-1])
+    basename = stub.split(".")[-1]
     div = '=' * len(basename)
 
-    if basename not in ['input']:
+    pts('stub', basename)
 
-        pts('database', basename)
+    with open(f"source/api/{stub}.rst", "w") as fp:
+        fp.write(basename + "\n")
+        fp.write(div + "\n\n")
+        fp.write('.. currentmodule:: %s\n\n' % (curmod))
+        fp.write('.. autofunction:: %s\n\n' % (basename))
 
-        fdriver.write(':srcdb:`%s`\n%s\n\n' % (basename, '"' * (9 + len(basename))))
-        fdriver.write('.. automodule:: %s\n' % (basename))
-        fdriver.write('   :noindex:\n\n')
-        fdriver.write('----\n')
-
-    fdriver.write('\n')
-fdriver.close()

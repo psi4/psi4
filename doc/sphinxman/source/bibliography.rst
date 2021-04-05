@@ -97,7 +97,8 @@ Bibliography
    E. Papajak and D. G. Truhlar,
    *J. Chem. Theory Comput.* **7**, 10-18 (2011).
 
-.. [Cohen:GreenBook:2008]
+..
+   [Cohen:GreenBook:2008]
    E. R. Cohen, T. Cvitas, J. G. Frey, B. Holmstr\ |o_dots|\ om,
    K. Kuchitsu, R. Marquardt, I. Mills, F. Pavese, M. Quack,
    J. Stohner, H. L. Strauss, M. Takami, and A. J. Thor,
@@ -176,7 +177,8 @@ Bibliography
    M. Saitow and Y. Mochizuki,
    *Chem. Phys. Lett.* **X**, XX (2012).
 
-.. [Evangelista:2010:4728]
+..
+   [Evangelista:2010:4728]
    F. A. Evangelista, E. Prochnow, J. Gauss, and H. F. Schaefer,
    *J. Chem. Phys.* **132**, (2010).
 
@@ -232,11 +234,13 @@ Bibliography
    P.-A. Malmqvist, A. Rendell, and B. O. Roos,
    *J. Phys. Chem.* **94**, 5477-5482 (1990).
 
-.. [Docken:1972:4928]
+..
+   [Docken:1972:4928]
    K. K. Docken and J. Hinze,
    *J. Chem. Phys.* **57**, 4928-4936 (1972).
 
-.. [Ruedenberg:1979:1069]
+..
+   [Ruedenberg:1979:1069]
    K. Ruedenberg, L. M. Cheung, and S. T. Elbert,
    *Int. J. Quantum Chem.* **16**, 1069-1101 (1979).
 
@@ -284,7 +288,8 @@ Bibliography
    T. B. Pedersen, H. Koch, and C. Hattig,
    *J. Chem. Phys.* **110**, 8318 (1999).
 
-.. [Pedersen:2001:od]
+..
+   [Pedersen:2001:od]
    T. B. Pedersen, B. Fernandez, and H. Koch,
    *J. Chem. Phys.* **114**, 6983 (2001).
 
@@ -371,7 +376,7 @@ Bibliography
    R. Sure and S. Grimme,
    *J. Comput. Chem.* **15**, 1672 (2013).
 
-.. [Kallay:2008p144101]
+.. [Kallay:2008:144101]
    M. Kallay and J. Gauss,
    *J. Chem. Phys.* **129**, 144101 (2008).
 
@@ -508,14 +513,23 @@ Bibliography
 .. [Verstraelen:2016]
    T. Verstraelen et al. "Minimal Basis Iterative Stockholder: Atoms in Molecules for Force-Field Development". *J. Chem. Theory and Comput.* doi: 10.1021/acs.jctc.6b00456.
 
-.. [Misquitta:2005:214103]
+..
+   [Misquitta:2005:214103]
    A. J. Misquitta and R. Podeszwa,
    *J. Chem. Phys.* **123**, 214103 (2005).
 
-.. [Hesselmann:2005:014103]
+..
+   [Hesselmann:2005:014103]
    A. Hesselmann and G. Jansen,
    *J. Chem. Phys.* **122**, 014103 (2005).
-    
+
 .. [Hesselmann:2014:094107]
    A. Hesselmann and T. Korona,
    *J. Chem. Phys.* **141**, 094107 (2014).
+
+.. [Smith:2018:3504]
+    10.1021/acs.jctc.8b00286,
+    "PSI4NUMPY: An Interactive Quantum Chemistry Programming Environment for Reference Implementations and Rapid Development",
+    D. G. A. Smith, L. A. Burns, D. A. Sirianni, D. R. Nascimento, A. Kumar, A. M. James, J. B. Schriber, T. Zhang, B. Zhang, A. S. Abbott, E. J. Berquist, M. H. Lechner, L. A. Cunha, A. G. Heide, J. M. Waldrop, T. Y. Takeshita, A. Alenaizan, D. Neuhauser, R. A. King, A. C. Simmonett, J. M. Turney, H. F. Schaefer, F. A. Evangelista, A. E. DePrince, T. D. Crawford, K. Patkowski, and C. D. Sherrill
+    *J. Chem. Theory Comput.* **14**, 3504-3511 (2018).
+

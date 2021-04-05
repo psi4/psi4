@@ -256,7 +256,7 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | pbeh3c                  | PBEh with dispersion, BSSE, and basis set corrections :ref:`[manual] <sec:gcp>`                               |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | dct                     | density cumulant (functional) theory :ref:`[manual] <sec:dct>`                                                 |
+    | dct                     | density cumulant (functional) theory :ref:`[manual] <sec:dct>`                                                |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order |MollerPlesset| perturbation theory (MP2) :ref:`[manual] <sec:dfmp2>` :ref:`[details] <tlmp2>`      |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
@@ -452,11 +452,11 @@ def energy(name, **kwargs):
     .. comment mrcc --- this is handled in its own table
     .. comment psimrcc_scf --- convenience fn
 
-    .. include:: ../autodoc_dft_energy.rst
+    .. include:: /autodoc_dft_energy.rst
 
-    .. include:: ../mrcc_table_energy.rst
+    .. include:: /mrcc_table_energy.rst
 
-    .. include:: ../cfour_table_energy.rst
+    .. include:: /cfour_table_energy.rst
 
     :examples:
 
@@ -1084,7 +1084,7 @@ def optimize(name, **kwargs):
 
     :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and wavefunction when **return_wfn** specified.
 
-    :raises: psi4.OptimizationConvergenceError if |optking__geom_maxiter| exceeded without reaching geometry convergence.
+    :raises: psi4.OptimizationConvergenceError if :term:`GEOM_MAXITER <GEOM_MAXITER (OPTKING)>` exceeded without reaching geometry convergence.
 
     :PSI variables:
 
@@ -1168,7 +1168,7 @@ def optimize(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | hf                      | HF self consistent field (SCF) :ref:`[manual] <sec:scf>`                                                      |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | dct                     | density cumulant (functional) theory :ref:`[manual] <sec:dct>`                                                 |
+    | dct                     | density cumulant (functional) theory :ref:`[manual] <sec:dct>`                                                |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order |MollerPlesset| perturbation theory (MP2) :ref:`[manual] <sec:dfmp2>` :ref:`[details] <tlmp2>`      |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
@@ -1198,9 +1198,9 @@ def optimize(name, **kwargs):
     .. _`table:grad_scf`:
 
 
-    .. include:: ../autodoc_dft_opt.rst
+    .. include:: /autodoc_dft_opt.rst
 
-    .. include:: ../cfour_table_grad.rst
+    .. include:: /cfour_table_grad.rst
 
 
     :examples:
@@ -1834,15 +1834,15 @@ def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, p
             E0=core.variable('CURRENT ENERGY'))  # someday, wfn.energy()
         vibrec.update({k: qca.json() for k, qca in therminfo.items()})
 
-        core.set_variable("ZPVE", therminfo['ZPE_corr'].data)
-        core.set_variable("THERMAL ENERGY CORRECTION", therminfo['E_corr'].data)
-        core.set_variable("ENTHALPY CORRECTION", therminfo['H_corr'].data)
-        core.set_variable("GIBBS FREE ENERGY CORRECTION", therminfo['G_corr'].data)
+        core.set_variable("ZPVE", therminfo['ZPE_corr'].data)  # P::e THERMO
+        core.set_variable("THERMAL ENERGY CORRECTION", therminfo['E_corr'].data)  # P::e THERMO
+        core.set_variable("ENTHALPY CORRECTION", therminfo['H_corr'].data)  # P::e THERMO
+        core.set_variable("GIBBS FREE ENERGY CORRECTION", therminfo['G_corr'].data)  # P::e THERMO
 
-        core.set_variable("ZERO K ENTHALPY", therminfo['ZPE_tot'].data)
-        core.set_variable("THERMAL ENERGY", therminfo['E_tot'].data)
-        core.set_variable("ENTHALPY", therminfo['H_tot'].data)
-        core.set_variable("GIBBS FREE ENERGY", therminfo['G_tot'].data)
+        core.set_variable("ZERO K ENTHALPY", therminfo['ZPE_tot'].data)  # P::e THERMO
+        core.set_variable("THERMAL ENERGY", therminfo['E_tot'].data)  # P::e THERMO
+        core.set_variable("ENTHALPY", therminfo['H_tot'].data)  # P::e THERMO
+        core.set_variable("GIBBS FREE ENERGY", therminfo['G_tot'].data)  # P::e THERMO
 
         core.print_out(thermtext)
     else:
@@ -1872,8 +1872,6 @@ def gdma(wfn, datafile=""):
     """Function to use wavefunction information in *wfn* and, if specified,
     additional commands in *filename* to run GDMA analysis.
 
-    .. include:: ../autodoc_abbr_options_c.rst
-
     .. versionadded:: 0.6
 
     :returns: None
@@ -1884,7 +1882,7 @@ def gdma(wfn, datafile=""):
     :type datafile: string
     :param datafile: optional control file (see GDMA manual) to peform more complicated DMA
                      analyses.  If this option is used, the File keyword must be set to read
-                     a filename.fchk, where filename is provided by |globals__writer_file_label| .
+                     a filename.fchk, where filename is provided by :term:`WRITER_FILE_LABEL <WRITER_FILE_LABEL (GLOBALS)>` .
 
     :examples:
 

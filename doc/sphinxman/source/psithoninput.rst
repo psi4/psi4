@@ -367,7 +367,9 @@ Loops
 
 Python provides many control structures, any of which can be used within |PSIfour|
 input files. For example, to loop over three basis sets, the following code can
-be used::
+be used:
+
+.. code-block:: none
 
     basis_sets = ["cc-pVDZ", "cc-pVTZ", "cc-pVQZ"]
     for basis_set in basis_sets:

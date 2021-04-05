@@ -582,7 +582,7 @@ Architectures
     The package is available as a binary (:ref:`Installing from Binary
     <sec:conda>`) for Linux, macOS, or Windows (via Windows Subsystem for
     Linux aka `Bash on Ubuntu on Windows
-    <https://msdn.microsoft.com/commandline/wsl/about>`_)
+    <https://docs.microsoft.com/en-us/windows/wsl/about>`_)
     or as source code (git repository or zipped archive from
     `https://github.com/psi4/psi4 <http://www.github.com/psi4/psi4>`_).
 Compilers

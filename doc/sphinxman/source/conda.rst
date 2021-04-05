@@ -39,8 +39,8 @@ Conda Binary Distribution
 
 |PSIfour| is available as a pre-compiled binary for Mac and Linux (and
 Windows, through the Ubuntu shell) architectures
-through `Continuum Analytics
-<https://store.continuum.io/cshop/anaconda/>`_, the company that produces
+through `Anaconda (formerly Continuum Analytics
+<https://www.anaconda.com/products/individual>`_, the company that produces
 `Anaconda Python <http://docs.continuum.io/anaconda/index.html>`_ (a
 full-fledged scientific python environment with package manager `conda
 <http://conda.pydata.org/index.html>`_) and, more particularly, `Miniconda
@@ -225,7 +225,7 @@ additional channels or subchannels needed to locate all dependencies.
 How to use conda to compile Psi4 faster and easier
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: bash
+.. code-block:: console
 
     # Linux # c. v1.2rc1  ###or Mac or Windows
     # substitute x.x by 3.5|3.6|3.7 for alternate python versions
@@ -539,53 +539,75 @@ Suitable values for these variables have been printed to screen during installat
 Useful Commands
 ^^^^^^^^^^^^^^^
 
-* (A) Initially install |PSIfour| stable release ::
+* (A) Initially install |PSIfour| stable release
+
+.. code-block:: console
 
    # equivalent
    >>> conda install psi4 -c psi4
    >>> conda install psi4 --channel psi4
 
-* (B) Initially install |PSIfour| stable release with non-current python ::
+* (B) Initially install |PSIfour| stable release with non-current python
+
+.. code-block:: console
 
    >>> conda install psi4 python=3.6 -c psi4
 
-* (C) Update to latest |PSIfour| stable release ::
+* (C) Update to latest |PSIfour| stable release
+
+.. code-block:: console
 
     >>> conda update psi4 -c psi4
 
-* (D) Initially install stable release into a conda environment "p4env" instead of "root". This creates a sandbox with |PSIfour| and python (loaded as dependency). ::
+* (D) Initially install stable release into a conda environment "p4env" instead of "root". This creates a sandbox with |PSIfour| and python (loaded as dependency).
+
+.. code-block:: console
 
     >>> conda create -y -n p4env psi4 -c psi4
     >>> conda activate p4env
 
-* (E) Install a particular |PSIfour| version ::
+* (E) Install a particular |PSIfour| version
+
+.. code-block:: console
 
     >>> conda install psi4=0.1.12 -c psi4
 
-* (F) Uninstall |PSIfour| from current environment ::
+* (F) Uninstall |PSIfour| from current environment
+
+.. code-block:: console
 
     >>> conda remove psi4
 
-* (G) Initially install |PSIfour| nightly build ::
+* (G) Initially install |PSIfour| nightly build
+
+.. code-block:: console
 
    # equivalent
    >>> conda install psi4 -c psi4/label/dev
    >>> conda install psi4 --channel psi4/label/dev
 
-* (H) Initially install |PSIfour| nightly build with non-current python ::
+* (H) Initially install |PSIfour| nightly build with non-current python
+
+.. code-block:: console
 
    >>> conda install psi4 python=3.6 -c psi4/label/dev
 
-* (I) Update to latest |PSIfour| nightly build ::
+* (I) Update to latest |PSIfour| nightly build
+
+.. code-block:: console
 
     >>> conda update psi4 -c psi4/label/dev
 
-* (J) Initially install nightly build into a conda environment "p4env" instead of "root". This creates a sandbox with |PSIfour| and python (loaded as dependency). ::
+* (J) Initially install nightly build into a conda environment "p4env" instead of "root". This creates a sandbox with |PSIfour| and python (loaded as dependency).
+
+.. code-block:: console
 
     >>> conda create -y -n p4env psi4 -c psi4/label/dev
     >>> conda activate p4env
 
-* (K) Install a particular |PSIfour| version ::
+* (K) Install a particular |PSIfour| version
+
+.. code-block:: console
 
     >>> conda install psi4=0.1.12 -c psi4/label/dev
 
@@ -607,23 +629,24 @@ Troubleshooting
     * fundamental libraries like libc, ld-linux, pthreads found system libraries to link against
     * libpython linked against conda python *not* system python
     * libm is linked against conda *or* system
-    * blas, c++, and gcc libraries are absent because statically linked ::
+    * blas, c++, and gcc libraries are absent because statically linked
 
+.. code-block:: console
 
-    >>> conda install conda-build  # needed for next command
-    >>> conda inspect linkages psi4
-    python-2.7.9-2:
-      libpython2.7.so.1.0 (lib/libpython2.7.so.1.0)
-    system-5.8-1:
-      libm.so.6 (lib/libm.so.6)
-    system:
-      libc.so.6 (/lib64/libc.so.6)
-      libdl.so.2 (/lib64/libdl.so.2)
-      libpthread.so.0 (/lib64/libpthread.so.0)
-      librt.so.1 (/lib64/librt.so.1)
-      libutil.so.1 (/lib64/libutil.so.1)
-      linux-vdso.so.1 ()
-    not found:
+      >>> conda install conda-build  # needed for next command
+      >>> conda inspect linkages psi4
+      python-2.7.9-2:
+        libpython2.7.so.1.0 (lib/libpython2.7.so.1.0)
+      system-5.8-1:
+        libm.so.6 (lib/libm.so.6)
+      system:
+        libc.so.6 (/lib64/libc.so.6)
+        libdl.so.2 (/lib64/libdl.so.2)
+        libpthread.so.0 (/lib64/libpthread.so.0)
+        librt.so.1 (/lib64/librt.so.1)
+        libutil.so.1 (/lib64/libutil.so.1)
+        linux-vdso.so.1 ()
+      not found:
 
 
 .. comment find out about the current environment.

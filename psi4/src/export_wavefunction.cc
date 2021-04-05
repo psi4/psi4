@@ -530,21 +530,20 @@ void export_wavefunction(py::module& m) {
                UHF: tIA, tia, tIjAb, tIJAB, tijab
                ROHF: tIA, tia, tIjAb, tIJAB, tijab
 
-              Examples
-              --------
-              RHF T1 diagnostic = sqrt(sum_ia (T_ia * T_ia)/nelec)
-              >>> mol = """
-              ... 0 1
-              ... Ne 0.0 0.0 0.0
-              ... symmetry c1"""
-              >>> e, wfn = psi4.energy("CCSD/cc-pvdz", return_wfn=True)
-              >>> t1 = wfn.get_amplitudes()['tia'].to_array()
-              >>> t1_diagnostic = np.sqrt(np.dot(t1.ravel(),t1.ravel())/ (2 * wfn.nalpha())
-              >>> t1_diagnostic == psi4.variable("CC T1 DIAGNOSTIC")
-              True
-
+               Examples
+               --------
+               RHF T1 diagnostic = sqrt(sum_ia (T_ia * T_ia)/nelec)
+               >>> mol = """
+               ... 0 1
+               ... Ne 0.0 0.0 0.0
+               ... symmetry c1"""
+               >>> e, wfn = psi4.energy("CCSD/cc-pvdz", return_wfn=True)
+               >>> t1 = wfn.get_amplitudes()['tia'].to_array()
+               >>> t1_diagnostic = np.sqrt(np.dot(t1.ravel(),t1.ravel())/ (2 * wfn.nalpha())
+               >>> t1_diagnostic == psi4.variable("CC T1 DIAGNOSTIC")
+               True
 
                .. warning:: Symmetry free calculations only (nirreps > 1 will cause error)
                .. warning:: No checks that the amplitudes will fit in core. Do not use for proteins
-            )docstring");
+        )docstring");
 }

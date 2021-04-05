@@ -81,7 +81,7 @@ class EmpiricalDispersion(object):
     dashcoeff_supplement : dict
         See description in `qcengine.programs.empirical_dispersion_resources.from_arrays`. Used
         here to "bless" the dispersion definitions attached to
-        the procedures/dft/*_functionals-defined dictionaries
+        the procedures/dft/<rung>_functionals-defined dictionaries
         as legit, non-custom, and of equal validity to
         `qcengine.programs.empirical_dispersion_resources.dashcoeff` itself for purposes of
         validating `fctldash`.
@@ -101,8 +101,8 @@ class EmpiricalDispersion(object):
         Name of functional (func only, func & disp, or disp only) for
         which to compute dispersion (e.g., blyp, BLYP-D2, blyp-d3bj,
         blyp-d3(bj), hf+d). Any or all parameters initialized from
-        `dashcoeff[dashlevel][functional-without-dashlevel]` or
-        `dashcoeff_supplement[dashlevel][functional-with-dashlevel]
+        ``dashcoeff[dashlevel][functional-without-dashlevel]`` or
+        ``dashcoeff_supplement[dashlevel][functional-with-dashlevel]``
         can be overwritten via `param_tweaks`.
     level_hint : str, optional
         Name of dispersion correction to be applied (e.g., d, D2,

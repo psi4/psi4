@@ -238,6 +238,8 @@ enthalpy (H), entropy (S), and Gibbs free energy (G).  Similarly, the
 molecular geometry is used to obtain rotational constants, which are
 then used to obtain rotational contributions to H, S, and G.
 
+.. _`sec:tutorial_tu5`:
+
 Analysis of Intermolecular Interactions
 =======================================
 

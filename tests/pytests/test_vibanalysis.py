@@ -816,14 +816,14 @@ ne_fcm = """
 
 ref_ne_vibonly = {
 
-    'omega': qcel.Datum('', '', np.array([], dtype=np.float64)),
-    'gamma': qcel.Datum('', '', np.array([], dtype=np.object), numeric=False),
-    'IR_intensity': qcel.Datum('', '', np.array([], dtype=np.float64)),
-    'mu': qcel.Datum('', '', np.array([], dtype=np.float64)),
-    'k': qcel.Datum('', '', np.array([], dtype=np.float64)),
-    'Qtp0': qcel.Datum('', '', np.array([], dtype=np.float64)),
-    'DQ0': qcel.Datum('', '', np.array([], dtype=np.float64)),
-    'q': qcel.Datum('', '', np.array([], dtype=np.float64).reshape((3, 0))),
+    'omega': qcel.Datum('', '', np.array([], dtype=float)),
+    'gamma': qcel.Datum('', '', np.array([], dtype=object), numeric=False),
+    'IR_intensity': qcel.Datum('', '', np.array([], dtype=float)),
+    'mu': qcel.Datum('', '', np.array([], dtype=float)),
+    'k': qcel.Datum('', '', np.array([], dtype=float)),
+    'Qtp0': qcel.Datum('', '', np.array([], dtype=float)),
+    'DQ0': qcel.Datum('', '', np.array([], dtype=float)),
+    'q': qcel.Datum('', '', np.array([], dtype=float).reshape((3, 0))),
 }
 
 

@@ -2008,11 +2008,11 @@ std::vector<SharedMatrix> compute_radial_moments(const std::shared_ptr<DFTGrid>&
 
     for (int n = 2; n <= max_power; n++) {
         
-	std::stringstream sstream;
+    std::stringstream sstream;
         sstream << "ATOMIC RADIAL MOMENTS <R^" << n << ">";
         auto mat_name = sstream.str();
-	
-	rmoms.push_back(std::make_shared<Matrix>(mat_name, num_atoms, 1));
+
+    rmoms.push_back(std::make_shared<Matrix>(mat_name, num_atoms, 1));
     
     }
 
@@ -2021,7 +2021,7 @@ std::vector<SharedMatrix> compute_radial_moments(const std::shared_ptr<DFTGrid>&
 
 #pragma omp parallel for
     for (int a = 0; a < num_atoms; a++) {
-	for (int n = 2; n <= max_power; n++) {
+    for (int n = 2; n <= max_power; n++) {
             size_t running_points = 0;
             double val = 0;
             for (int b = 0; b < blocks.size(); b++) {
@@ -2041,7 +2041,7 @@ std::vector<SharedMatrix> compute_radial_moments(const std::shared_ptr<DFTGrid>&
                 running_points += num_points;
             }
             rmoms[n - 2]->set(a, 0, val);
-	}
+    }
     }
 
     return rmoms;
@@ -2436,7 +2436,7 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
     auto rmoms = compute_radial_moments(grid, rho_a, distances, num_atoms);
     
     for (int n = 2; n <= max_power; n++) {
-	std::stringstream sstream;
+    std::stringstream sstream;
         sstream << "MBIS RADIAL MOMENTS <R^" << n << ">";
 
         auto var_name = sstream.str();
@@ -2451,23 +2451,22 @@ PopulationAnalysisCalc::compute_mbis_multipoles(bool print_output) {
 
     if (print_output) {
         for (int n = 2; n <= max_power; n++) {
-	    outfile->Printf("\n  MBIS Radial Moments: [a0^%d]\n", n);
+            outfile->Printf("\n  MBIS Radial Moments: [a0^%d]\n", n);
             outfile->Printf("   Center  Symbol  Z     Rad Mo\n");
 
             for (int a = 0; a < num_atoms; a++) {
                 outfile->Printf("  %5d      %2s %4d   %9.6f\n", a+1, mol->label(a).c_str(), 
                 (int)mol->Z(a), rmoms[n-2]->get(a, 0));
-	    }
+            }
         }
 
-	outfile->Printf("\n  MBIS Valence Widths: [a0]\n");
+        outfile->Printf("\n  MBIS Valence Widths: [a0]\n");
         outfile->Printf("   Center  Symbol  Z     Width\n");
 
         for (int a = 0; a < num_atoms; a++) {
             outfile->Printf("  %5d      %2s %4d   %9.6f\n", a+1, mol->label(a).c_str(),
             (int)mol->Z(a), valence_widths->get(a, 0));
         }
-
     }
 
     timer_off("MBIS");
