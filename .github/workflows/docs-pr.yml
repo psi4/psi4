@@ -77,13 +77,12 @@ jobs:
     - name: Compile Psi4
       working-directory: ./code
       run: |
-        cmake --build objdir
-        ctest -L smoke
+        cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
 
     - name: Compile & Pack Docs
       working-directory: ./code
       run: |
-        cmake --build objdir --target sphinxman --verbose
+        cmake --build objdir --target sphinxman --verbose -j`getconf _NPROCESSORS_ONLN`
         cd objdir/doc/sphinxman
         tar -zcf sphinxman.tar.gz html/
 
@@ -204,8 +203,8 @@ jobs:
       with:
         directory: ./code
 #        repository: ${{ env.prrepo }}
-#        #branch: ${{ env.prbranch }}
-#        github_token: ${{ secrets.psi4docs_from_psi4 }}
+        repository: psi4/loriab
+        branch: ${{ env.GITHUB_HEAD_REF_SLUG }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
         force: false
 
