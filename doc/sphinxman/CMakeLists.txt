@@ -373,6 +373,20 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DOCDIR}
         OPTIONAL)
 
+    add_custom_target(linkcheck
+        DEPENDS sphinxman
+        COMMENT "Preparing Sphinx linkcheck documentation build")
+
+    add_custom_command(
+        TARGET linkcheck POST_BUILD
+        COMMAND ${SPHINX_EXECUTABLE}
+            -b linkcheck          # builder
+            -d ${CCBD}/_doctrees  # cache w/ pickled reST
+            -c ${CCBD}/source     # whereabouts of conf.py
+            ${CCBD}/source        # build from
+            ${CCBD}/latex         # build to
+        COMMENT "Building linkcheck documentation ...")
+
     # * full, proper build with LaTeX
     if (LATEX_COMPILER AND PDFLATEX_COMPILER)
         add_custom_target(sphinxpdf

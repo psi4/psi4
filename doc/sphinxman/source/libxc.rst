@@ -48,7 +48,7 @@ Interface to Libxc by M. A. L. Marques
    <br>
 
 .. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
-   :target: https://gitlab.com/libxc/libxc/wikis/Manual-4.0
+   :target: https://www.tddft.org/programs/libxc/manual/
 
 |PSIfour|, relies upon the Libxc library for density functionals. Libxc
 requires no

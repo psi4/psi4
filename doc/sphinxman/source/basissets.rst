@@ -181,7 +181,7 @@ input.
 Should needed elements be missing from the best
 auxiliary basis or should the orbital basis be unknown to |PSIfour|,
 the auxiliary basis will fall back on `def2 quad-zeta fitting bases
-<https://github.com/psi4/psi4/blob/master/psi4/driver/qcdb/libmintsbasisset.py#L690-L691>`_.
+<https://github.com/psi4/psi4/blob/master/psi4/driver/qcdb/libmintsbasisset.py#L762>`_.
 Note that if |mints__basis| is known to be larger than quad-zeta,
 |PSIfour| *will not* attempt to fall back on the def2 fitting bases.
 

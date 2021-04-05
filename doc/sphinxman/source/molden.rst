@@ -44,8 +44,8 @@ Interface to Molden |w---w| :py:func:`~psi4.molden`
 |PSIfour| contains an interface to the Molden program.  Molden is a 
 visualization program for electronic structure developed by Gijs Schaftenaar
 at the University of of Nijmegen, Netherlands.  It is available at 
-`http://www.cmbi.ru.nl/molden/ <http://www.cmbi.ru.nl/molden/>`_.  Molden can
-plot atomic orbitals, densities, electrostatic potentials (ESP's), etc.  
+https://www3.cmbi.umcn.nl/molden/ . Molden can
+plot atomic orbitals, densities, electrostatic potentials (ESPs), etc.
 |PSIfour| can create a file containing
 atomic coordinates, basis set, and SCF orbital coefficients in the 
 so-called Molden format.  This file is

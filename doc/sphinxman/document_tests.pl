@@ -204,7 +204,11 @@ foreach my $Dir(readdir TESTS){
             if ($ExeFolder{$exe} eq "corepsi4") {
                 $srcfilename = ":srcsample:`" . $Dir_tex . "`";
             } else {
-                $srcfilename = ":srcsample:`" . $exe . $Dir_tex . "`";
+                if ( grep( /^$exe$/, @pytestdirs ) ) {
+                    $srcfilename = ":srcsamplepy:`" . $exe . $Dir_tex . "`";
+                } else {
+                    $srcfilename = ":srcsample:`" . $exe . $Dir_tex . "`";
+                }
             }
             printf RSTSUMMARY "%-55s  %s\n", $srcfilename, $Description_rst;
             printf SUMMARY "%-12s %s\n\n\n", $Dir.":", $Description;

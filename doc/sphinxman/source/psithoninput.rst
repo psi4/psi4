@@ -62,7 +62,7 @@ in the |psirc| file ::
 which would make the variable ``UGC`` available in all |PSIfour| input files.
 For convenience, the physical constants used within the |PSIfour| code (which
 are obtained from `NIST CODATA 2014
-<https://catalog.data.gov/dataset/nist-codata-fundamental-physical-constants-srd-121>`_
+<https://physics.nist.gov/cuu/Constants/archive2014.html>`_
 are also automatically loaded as Psithon
 variables (before |psirc| is loaded, so that the user's |psirc| values can
 override the builtins (in the input file, not in the C++ code).

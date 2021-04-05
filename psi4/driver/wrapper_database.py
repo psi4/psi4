@@ -70,7 +70,7 @@ def database(name, db_name, **kwargs):
        * Python dictionaries of results accessible as ``DB_RGT`` and ``DB_RXN``.
 
     .. note:: It is very easy to make a database from a collection of xyz files
-        using the script :source:`share/scripts/ixyz2database.py`.
+        using the script :source:`psi4/share/psi4/scripts/ixyz2database.py`.
         See :ref:`sec:createDatabase` for details.
 
     .. caution:: Some features are not yet implemented. Buy a developer some coffee.

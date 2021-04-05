@@ -127,19 +127,19 @@ How to integrate an Add-On into build, testing, and docs
     or simint with respect to libmints. Again, conditionalize as in
     preceding bullet.
 
-* :source:`psi4/external/upstream/`
+* :source:`external/upstream/`
 
   * Add a CMakeLists.txt that imitates another AddOn of similar
     language and dependencies. Try to keep the format, messaging,
     and variables passed as similar as possible so that differences
     mean something. If BLAS/LAPACK or other common dependencies in
-    :source:`psi4/common/` are needed, be sure to add them to the
+    :source:`external/common` are needed, be sure to add them to the
     ``DEPENDS`` argument.
 
   * The usual practice to to get everything cohesive between
     the CMake for the AddOn repository and |PSIfour| and then as a
     last step, mint a tag in the former and add it to two places in
-    :samp:`psi4/external/upstream/{addon_name}/CMakeLists.txt` and one
+    :samp:`external/upstream/{addon_name}/CMakeLists.txt` and one
     place in :source:`psi4/CMakeLists.txt` so that only that version
     and later are acceptable to |PSIfour| for detecting pre-built.
 

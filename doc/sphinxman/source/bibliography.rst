@@ -110,7 +110,7 @@ Bibliography
    Integrated Platform of Small Molecules and Biological Activities,
    Chapter 12 in *Annual Reports in Computational Chemistry*, Volume
    4 (American Chemical Society: Washington, DC, 2008).
-   See `pubchem.ncbi.nlm.nih.gov <http://pubchem.ncbi.nlm.nih.gov/>`_.
+   See https://pubchem.ncbi.nlm.nih.gov/.
 
 .. [Sherrill:1999:CI]
    C. D. Sherrill and H. F. Schaefer,

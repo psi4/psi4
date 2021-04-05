@@ -584,7 +584,7 @@ Architectures
     Linux aka `Bash on Ubuntu on Windows
     <https://docs.microsoft.com/en-us/windows/wsl/about>`_)
     or as source code (git repository or zipped archive from
-    `https://github.com/psi4/psi4 <http://www.github.com/psi4/psi4>`_).
+    https://github.com/psi4/psi4.
 Compilers
     |PSIfour| has been successfully compiled using Intel, GCC, and Clang
     compilers. :ref:`Compiler requirements <faq:approvedcxx>` are primarily

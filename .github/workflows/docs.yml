@@ -10,7 +10,7 @@ jobs:
 
   docs:
     runs-on: ubuntu-latest
-    name: Linux Docs
+    name: Latest Docs
     defaults:
       run:
         shell: bash -l {0}
@@ -83,15 +83,13 @@ jobs:
     - name: Compile Psi4
       if: github.repository == "psi4/psi4"
       working-directory: ./code
-      run: |
-        cmake --build objdir
-        ctest -L smoke
+      run: cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
 
     - name: Compile & Pack Docs
       if: github.repository == "psi4/psi4"
       working-directory: ./code
       run: |
-        cmake --build objdir --target sphinxman --verbose
+        cmake --build objdir --target sphinxman -j`getconf _NPROCESSORS_ONLN`
         cd objdir/doc/sphinxman
         tar -zcf sphinxman.tar.gz html/
 
@@ -108,16 +106,19 @@ jobs:
       if: github.repository == "psi4/psi4"
       working-directory: ./code
       run: |
-        cmake --build objdir --target doxyman --verbose
+        cmake --build objdir --target doxyman
         cd objdir/doc/doxygen
         tar -zcf doxyman.tar.gz html/
 
-    - name: Diff Docs Directory vs psi4/psi4docs
+    - name: Compare Docs (generated vs psi4/psi4docs)
       if: github.repository == "psi4/psi4"
       working-directory: ./docs
+      id: compare-psi4docs
       run: |
         cp -pR ../code/objdir/doc/sphinxman/html .
-        git diff --color-words
+        echo "::group::Selective Git Diff"
+        git diff --color-words -I"Last updated on" -I"psi4/tree"
+        echo "::endgroup::"
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add -A
@@ -129,7 +130,6 @@ jobs:
       with:
         directory: ./docs
         repository: psi4/psi4docs
-        #branch: ${{ env.prbranch }}
         github_token: ${{ secrets.psi4docs_from_psi4 }}
         force: true
 

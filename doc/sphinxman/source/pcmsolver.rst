@@ -38,7 +38,7 @@ Interface to PCMSolver by R. Di Remigio
 .. codeauthor:: Roberto Di Remigio, T. Daniel Crawford, Andrew C. Simmonett
 .. sectionauthor:: Roberto Di Remigio
 
-*Module:* :ref:`Keywords <apdx:pcm>`, :ref:`PSI Variables <apdx:pcm_psivar>`, :source:`PCMSolver <src/lib/libpsipcm>`
+*Module:* :ref:`Keywords <apdx:pcm>`, :ref:`PSI Variables <apdx:pcm_psivar>`, :source:`PCMSolver <psi4/src/psi4/libpsipcm/>`
 
 .. image:: https://img.shields.io/badge/home-PCMSolver-5077AB.svg
    :target: https://github.com/PCMSolver/pcmsolver
