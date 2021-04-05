@@ -83,15 +83,13 @@ jobs:
     - name: Compile Psi4
       if: github.repository == "psi4/psi4"
       working-directory: ./code
-      run: |
-        cmake --build objdir
-        ctest -L smoke
+      run: cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
 
     - name: Compile & Pack Docs
       if: github.repository == "psi4/psi4"
       working-directory: ./code
       run: |
-        cmake --build objdir --target sphinxman --verbose
+        cmake --build objdir --target sphinxman -j`getconf _NPROCESSORS_ONLN`
         cd objdir/doc/sphinxman
         tar -zcf sphinxman.tar.gz html/
 
@@ -108,7 +106,7 @@ jobs:
       if: github.repository == "psi4/psi4"
       working-directory: ./code
       run: |
-        cmake --build objdir --target doxyman --verbose
+        cmake --build objdir --target doxyman
         cd objdir/doc/doxygen
         tar -zcf doxyman.tar.gz html/
 
