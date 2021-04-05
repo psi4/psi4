@@ -52,6 +52,16 @@ jobs:
     - name: Patch Sphinx for Pybind11
       run: sed -i "s/lines = s\.expandtabs/lines = str(s).expandtabs/g" ${CONDA_PREFIX}/lib/python3.8/site-packages/sphinx/util/docstrings.py
 
+
+    - name: 'Comment PR'
+      uses: actions/github-script@0.3.0
+      if: github.event_name == 'pull_request'
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+          github.issues.createComment({ issue_number, owner, repo, body: 'Hello world ! 👋' });
+
     # docs are not Ninja ready
     - name: Configure with CMake (Conda Gnu + MKL)
       working-directory: ./code
@@ -82,7 +92,7 @@ jobs:
     - name: Compile & Pack Docs
       working-directory: ./code
       run: |
-        cmake --build objdir --target sphinxman --verbose -j`getconf _NPROCESSORS_ONLN`
+        cmake --build objdir --target sphinxman -j`getconf _NPROCESSORS_ONLN`
         cd objdir/doc/sphinxman
         tar -zcf sphinxman.tar.gz html/
 
@@ -203,7 +213,7 @@ jobs:
       with:
         directory: ./code
 #        repository: ${{ env.prrepo }}
-        repository: psi4/loriab
+        repository: loriab/psi4
         branch: ${{ env.GITHUB_HEAD_REF_SLUG }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
         force: false

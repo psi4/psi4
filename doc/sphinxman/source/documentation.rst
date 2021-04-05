@@ -108,8 +108,8 @@ this covers:
 
 Some documentation is even extracted from |PSIfour| objects at runtime.
 
-* psi4: docstrings for the psi4 built-in module constructed in :source:`psi4/src/psi4`
-* DFT: functional availability and characteristics as encoded in :source:`psi4/driver/procedures/dft_functional.py`
+* psi4: docstrings for the C++ submodule ``psi4.core`` and the Python submodule ``psi4.driver`` that comprise |PSIfour|. C++ docstrings from "core" and "export_" files in :source:`psi4/src/`, and Py docstrings from :source:`psi4/driver/`.
+* DFT: functional availability and characteristics as encoded in :source:`psi4/driver/procrouting/dft`
 * BasisFamily: fitting basis sets for each orbital basis as encoded in :source:`psi4/driver/qcdb/basislistdunning.py` and :source:`psi4/driver/qcdb/basislistother.py`
 
 Building all the documentation takes ~15 minutes. There is now good
