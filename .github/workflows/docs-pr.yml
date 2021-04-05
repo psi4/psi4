@@ -4,7 +4,7 @@ name: Propose Docs
 # * check PR doesn't break docs build with syntax or references
 # * check Psi4 builds with conda-forge-based tools
 
-on: pull_request
+on: pull_request_target
 
 jobs:
 
@@ -23,6 +23,8 @@ jobs:
       with:
         fetch-depth: 0
         path: code
+        ref: ${{github.event.pull_request.head.ref}}
+        repository: ${{github.event.pull_request.head.repo.full_name}}
 
 #    - name: Checkout website repo
 #      uses: actions/checkout@v2
