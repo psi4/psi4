@@ -26,14 +26,22 @@ jobs:
         ref: ${{github.event.pull_request.head.ref}}
         repository: ${{github.event.pull_request.head.repo.full_name}}
 
-#    - name: Checkout website repo
-#      uses: actions/checkout@v2
-#      with:
-#        repository: psi4/psi4docs
-#        path: docs
-#        ref: master
-#        persist-credentials: true
-#        token: ${{ secrets.psi4docs_from_psi4 }}
+    - name: Checkout website repo
+      uses: actions/checkout@v2
+      with:
+        repository: psi4/psi4docs
+        path: docs
+        ref: master
+        persist-credentials: true
+        token: ${{ secrets.psi4docs_from_psi4 }}
+
+    - name: test
+      run: |
+        echo github.event.pull_request.head.repo.full_name
+        echo github.repository
+        echo github.event.pull_request.actor
+        echo github.event.pull_request.actor.id
+        echo github.event.pull_request.actor.login
 
     - name: Create Conda Environment
       uses: conda-incubator/setup-miniconda@v2
@@ -54,15 +62,6 @@ jobs:
     - name: Patch Sphinx for Pybind11
       run: sed -i "s/lines = s\.expandtabs/lines = str(s).expandtabs/g" ${CONDA_PREFIX}/lib/python3.8/site-packages/sphinx/util/docstrings.py
 
-
-    - name: 'Comment PR'
-      uses: actions/github-script@0.3.0
-      #if: github.event_name == 'pull_request'
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
-          github.issues.createComment({ issue_number, owner, repo, body: 'Hello world ! 👋' });
 
     # docs are not Ninja ready
     - name: Configure with CMake (Conda Gnu + MKL)
@@ -222,10 +221,10 @@ jobs:
 
     - name: 'Comment PR'
       uses: actions/github-script@0.3.0
-      if: github.event_name == 'pull_request'
+      #if: github.event_name == 'pull_request'
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
-          github.issues.createComment({ issue_number, owner, repo, body: 'Hello world ! 👋' });
+          github.issues.createComment({ issue_number, owner, repo, body: 'An automated commit has been issued to your PR branch updating `samples/`. Be sure to `git pull --rebase origin <pr-branch>` locally. 👋' });
 
