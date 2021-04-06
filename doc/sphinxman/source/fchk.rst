@@ -41,7 +41,7 @@ Interface to programs through FCHK files |w---w| :py:func:`~psi4.fchk()`
 .. sectionauthor:: Andrew C. Simmonett
 
 Many post-processing tools can read information from `Gaussian's formatted
-checkpoint (FCHK) files <http://www.gaussian.com/g_tech/g_ur/f_formchk.htm>`_.
+checkpoint (FCHK) files <https://gaussian.com/formchk/>`_.
 To allow interoperability with such tools, |PSIfour| includes a utility to
 generate FCHK files.  Wavefunction information, such as orbitals, densities,
 orbital energies and basis set information is currently supported, but geometry

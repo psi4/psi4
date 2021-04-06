@@ -55,7 +55,7 @@ Declaring Options
 Each module needs to make itself known to the Options object, via a
 read_options function. For plugins, this routine is provided by the user
 in the plugin code. For native |PSIfour| modules, the entries need to
-be appended to the read_options code in :source:`src/bin/psi4/read_options.cc`.
+be appended to the read_options code in :source:`psi4/src/read_options.cc`.
 An example of such a routine is
 
 .. code-block:: cpp

@@ -43,10 +43,10 @@ through `Anaconda (formerly Continuum Analytics
 <https://www.anaconda.com/products/individual>`_, the company that produces
 `Anaconda Python <http://docs.continuum.io/anaconda/index.html>`_ (a
 full-fledged scientific python environment with package manager `conda
-<http://conda.pydata.org/index.html>`_) and, more particularly, `Miniconda
-<http://conda.pydata.org/miniconda.html>`_ (a lightweight python
+<https://conda.io/projects/conda/en/latest/user-guide/getting-started.html>`_) and, more particularly, `Miniconda
+<https://docs.conda.io/en/latest/miniconda.html>`_ (a lightweight Python
 distribution with same package manager `conda
-<http://conda.pydata.org/index.html>`_). Some nice features for us:
+<https://conda.io/projects/conda/en/latest/user-guide/getting-started.html>`_). Some nice features for us:
 
 * cross-platform
 
@@ -453,7 +453,7 @@ Detailed Installation of |PSIfour|
     >>> which psi4
     /path/to/miniconda/bin/psi4
 
-Or, you can install into a `conda environment <http://conda.pydata.org/docs/faq.html#environments>`_ that places |PSIfour| and its dependencies (including python) into a sandbox unaffected by any other software installed in Ana/Miniconda. This is recommended for developers to avoid interference between multiple versions (including github/conda versions) or to test python versions, *etc.*. In practical terms, installing into a conda environment means you can turn |PSIfours| availability on/off by switching conda environments without turning on/off the whole Ana/Miniconda installation. Below, |PSIfour| is installed into an environment called ``p4env``. Then the environment is activated, removing the main Ana/Miniconda ``bin`` and adding ``envs/p4env/bin`` to :envvar:`PATH`. The ``conda activate`` command (conda >=4.4; December 2017) works in all shells, but if you're using old ``source activate`` that only works for ``bash``; adjust as needed for ``csh``/``tcsh``.
+Or, you can install into a `conda environment <https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#>`_ that places |PSIfour| and its dependencies (including python) into a sandbox unaffected by any other software installed in Ana/Miniconda. This is recommended for developers to avoid interference between multiple versions (including github/conda versions) or to test python versions, *etc.*. In practical terms, installing into a conda environment means you can turn |PSIfours| availability on/off by switching conda environments without turning on/off the whole Ana/Miniconda installation. Below, |PSIfour| is installed into an environment called ``p4env``. Then the environment is activated, removing the main Ana/Miniconda ``bin`` and adding ``envs/p4env/bin`` to :envvar:`PATH`. The ``conda activate`` command (conda >=4.4; December 2017) works in all shells, but if you're using old ``source activate`` that only works for ``bash``; adjust as needed for ``csh``/``tcsh``.
 
 .. code-block:: bash
 

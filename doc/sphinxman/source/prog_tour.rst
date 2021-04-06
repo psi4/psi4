@@ -60,7 +60,7 @@ Wavefunction should be called::
     set_variable("Variable Name", variable_value);
 
 The new variable should also be documented in
-:source:`psi4/doc/sphinxman/source/glossary_psivariables.rst`.  There are a
+:source:`doc/sphinxman/source/glossary_psivariables.rst`.  There are a
 number of different helpers to export various quantities from the wavefunction
 to external formats such as FCHK and MOLDEN.  Because the Wavefunction makes
 its members available to the Python layer, any other similar export functions
