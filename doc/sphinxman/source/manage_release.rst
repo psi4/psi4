@@ -143,7 +143,7 @@ Build Conda ecosystem stack
 
 By "ecosystem stack", mean packages that are upstream, downstream, required, and optional for a fully featured Psi4 build and which we can't get from "defaults" or "conda-forge" channels.
 
-* Main directions are in [cbcy](https://github.com/psi4/psi4meta/blob/master/conda-recipes/conda_build_config.yaml) and [poodle](https://github.com/psi4/psi4meta/blob/master/psinet-nightly/kitandkapoodle.py#L357-L411)
+* Main directions are in [cbcy](https://github.com/psi4/psi4meta/blob/master/conda-recipes/conda_build_config.yaml) and [poodle](https://github.com/psi4/psi4meta/blob/master/psinet-nightly/kitandkapoodle.py)
 * A couple weeks before the first "rc" is planned, start going through L/LT in poodle, checking with upstream to see if new versions have been released. If good changes present, rebuild the packages, changing the version numbers in the respective recipes
 * When L/LT all built and passed, edit the individual package version numbers in cbcy and increment to a new ``ltrtver`` with updated version numbers and/or build numbers (only if code changes)
 * Build L/PSI4. If any trouble, edit psi4 code. Iterate until builds and passes. This stage is the only full ctest & pytest on Psi4+upstream

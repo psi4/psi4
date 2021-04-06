@@ -39,7 +39,7 @@ Vibrational and Thermochemical Analysis
 .. codeauthor:: Rollin A. King and Lori A. Burns
 .. sectionauthor:: Lori A. Burns
 
-*Module:* :ref:`Keywords <apdx:thermo>`, :ref:`PSI Variables <apdx:thermo_psivar>`, :source:`THERMO <psi4/src/psi4/thermo>`
+*Module:* :ref:`Keywords <apdx:thermo>`, :ref:`PSI Variables <apdx:thermo_psivar>`, :source:`THERMO <psi4/driver/qcdb/vib.py>`
 
 
 .. caution:: It is important to know that |PSIfour|, like any other
