@@ -35,14 +35,6 @@ jobs:
         persist-credentials: true
         token: ${{ secrets.psi4docs_from_psi4 }}
 
-    - name: test
-      run: |
-        echo ${{ github.event.pull_request.head.repo.full_name }}
-        echo ${{ github.repository }}
-        echo ${{ github.event.pull_request.actor }}
-        echo ${{ github.event.pull_request.actor.id }}
-        echo ${{ github.event.pull_request.actor.login }}
-
     - name: Create Conda Environment
       uses: conda-incubator/setup-miniconda@v2
       with:
@@ -214,7 +206,7 @@ jobs:
       with:
         directory: ./code
 #        repository: ${{ env.prrepo }}
-        repository: loriab/psi4
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
         branch: ${{ env.GITHUB_HEAD_REF_SLUG }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
         force: false
