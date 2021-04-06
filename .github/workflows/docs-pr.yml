@@ -37,11 +37,11 @@ jobs:
 
     - name: test
       run: |
-        echo github.event.pull_request.head.repo.full_name
-        echo github.repository
-        echo github.event.pull_request.actor
-        echo github.event.pull_request.actor.id
-        echo github.event.pull_request.actor.login
+        echo ${{ github.event.pull_request.head.repo.full_name }}
+        echo ${{ github.repository }}
+        echo ${{ github.event.pull_request.actor }}
+        echo ${{ github.event.pull_request.actor.id }}
+        echo ${{ github.event.pull_request.actor.login }}
 
     - name: Create Conda Environment
       uses: conda-incubator/setup-miniconda@v2
