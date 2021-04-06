@@ -216,7 +216,7 @@ build system will automatically download and build.
 
 * :ref:`Libxc <cmake:libxc>` |w---w| :ref:`[what is Libxc?] <sec:libxc>` `[Libxc min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libxc/CMakeLists.txt#L1>`_
 
-* pybind11 |w---w| `[what is Pybind11?] <https://pybind11.readthedocs.io/en/master/>`_ `[Pybind11 min version] <https://github.com/psi4/psi4/blob/master/external/upstream/pybind11/CMakeLists.txt#L1>`_
+* pybind11 |w---w| `[what is Pybind11?] <https://pybind11.readthedocs.io/en/stable/>`_ `[Pybind11 min version] <https://github.com/psi4/psi4/blob/master/external/upstream/pybind11/CMakeLists.txt#L1>`_
 
 * QCElemental |w---w| `[what is QCElemental?] <https://qcelemental.readthedocs.io/en/latest/>`_
 
