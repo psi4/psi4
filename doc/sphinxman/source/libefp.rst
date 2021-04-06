@@ -38,17 +38,17 @@ Interface to LIBEFP by I. Kaliman
 .. codeauthor:: Andrew C. Simmonett, A. Eugene DePrince III, Rollin A. King, and Lori A. Burns
 .. sectionauthor:: Lori A. Burns
 
-*Module:* :ref:`Keywords <apdx:efp>`, :ref:`PSI Variables <apdx:efp_psivar>`, :source:`LIBEFP <src/lib/libefp_solver>`
+*Module:* :ref:`Keywords <apdx:efp>`, :ref:`PSI Variables <apdx:efp_psivar>`, :source:`LIBEFP <psi4/driver/procrouting/solvent/efp.py>`
 
 .. image:: https://img.shields.io/badge/home-libefp-5077AB.svg
-   :target: https://github.com/ilyak/libefp
+   :target: https://github.com/libefp2/libefp
 
 .. raw:: html
 
    <br>
 
 .. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
-   :target: http://www.libefp.org/
+   :target: https://github.com/libefp2/libefp
 
 |PSIfour| contains code to interface to the LIBEFP library developed
 in L. Slipchenko's group by I. Kaliman. LIBEFP
