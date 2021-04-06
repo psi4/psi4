@@ -50,6 +50,7 @@ The sphinx executable should be in your path at CMake configure time for
 documentation targets to be available.
 
 * Binary: ``conda install sphinx``
+* Binary: ``conda env create -f devtools/conda-envs/docs-cf.yaml``
 * Binary: ``pip install -U Sphinx``
 * Source: https://pypi.org/project/Sphinx/
 
@@ -57,8 +58,8 @@ documentation targets to be available.
 
    >>> which sphinx-build
    //anaconda/bin/sphinx-build
-   >>> sphinx-build --version  # needs >= 1.4
-   Sphinx (sphinx-build) 1.4.1
+   >>> sphinx-build --version  # needs >= 3.5
+   Sphinx (sphinx-build) 3.5.3
    >>> cmake
    ...
     -- Documentation targets available: sphinxman (html), sphinxmini (quick html), sphinxpdf (LaTeX --> PDF)
@@ -75,9 +76,13 @@ documentation is a unified document covering information for both users
 and programmers in separate sections. From the top-level object directory,
 build the following target (note that a working version of the |PSIfour|
 executable is a requirement for building the
-documentation).::
+documentation). Only GNU Makefiles, not Ninja, works for the docs:
+
+.. code-block:: console
 
     >>> make sphinxman
+    # -OR-
+    >>> cmake --build . --target sphinxman
 
 This will build a full set of documentation in the ``html`` directory that can be viewed offline through any browser. ::
 
@@ -108,11 +113,11 @@ this covers:
 
 Some documentation is even extracted from |PSIfour| objects at runtime.
 
-* psi4: docstrings for the C++ submodule ``psi4.core`` and the Python submodule ``psi4.driver`` that comprise |PSIfour|. C++ docstrings from "core" and "export_" files in :source:`psi4/src/`, and Py docstrings from :source:`psi4/driver/`.
+* psi4: docstrings for the C++ submodule ``psi4.core`` and the Python submodule ``psi4.driver`` that comprise |PSIfour|. C++ docstrings from "core" and "export" files in :source:`psi4/src/`, and Py docstrings from :source:`psi4/driver/`.
 * DFT: functional availability and characteristics as encoded in :source:`psi4/driver/procrouting/dft`
 * BasisFamily: fitting basis sets for each orbital basis as encoded in :source:`psi4/driver/qcdb/basislistdunning.py` and :source:`psi4/driver/qcdb/basislistother.py`
 
-Building all the documentation takes ~15 minutes. There is now good
+Building all the documentation takes ~10 minutes. There is now good
 dependency structure built into the :source:`doc/sphinxman/CMakeLists.txt`
 , so very long builds should be infrequent (unless you're touching
 :source:`psi4/src/read_options.cc` or the driver. Note that not all dependencies are
@@ -120,7 +125,7 @@ encoded (PSI variables, for instance, depend on every .cc file in the
 source tree), so for a definitive doc build, remove (in the object
 directory) ``doc/sphinxman`` and start from scratch.
 
-Even ~15 minutes of build time can be annoying when developing
+Even ~10 minutes of build time can be annoying when developing
 documentation and testing ``rst`` files. In that situation, use the target
 below which builds only the written docs (not autodocs) in
 ``psi4/doc/sphinxman/source`` quickly, though with a lot of warnings for
