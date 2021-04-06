@@ -150,7 +150,7 @@ keyword |globals__qc_module| and a set of type keywords analogous to
 shared among modules rather than (or in addition to) being used internally
 by the module). We're sticking with |globals__scf_type| and
 |globals__mp2_type| defaulting to ``DF``, while everything higher defaults
-to ``CONV``. In :source:`share/python/driver.py`, a managed method calls a
+to ``CONV``. In :source:`psi4/driver/driver.py`, a managed method calls a
 "select" function rather than a "run" function. ::
 
     procedures = {
@@ -159,7 +159,7 @@ to ``CONV``. In :source:`share/python/driver.py`, a managed method calls a
             'mp3'           : select_mp3,
             'dct'           : run_dct,
 
-Then in :source:`share/python/proc.py`, the select function runs through
+Then in :source:`psi4/driver/procrouting/proc.py`, the select function runs through
 reference (always outer loop) and type (inner loop) to specify the proc
 function to call for any able, non-default module (*e.g.*, ``mtd_type ==
 'DETCI'`` ) or able, default module (*e.g.*, ``mtd_typd == ['', 'FNOCC']`` ).

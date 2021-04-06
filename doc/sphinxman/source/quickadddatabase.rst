@@ -76,11 +76,10 @@ below.
 
     - The third and subsequent lines have four fields: the element symbol and the three cartesian coordinates in angstroms. The atom lines should not contain any dummy atoms (what's the use in cartesian form).  For dimer systems, an algorithm is used to apportion the atoms into two fragments; thus the atoms need not be arranged with all fragmentA atoms before all fragmentB atoms. The algorithm will fail for very closely arranged fragments. For dimers, any charge and multiplicity from the second line will be applied to fragmentA (python); charge and multiplicity may need to be redistributed later in the editing step.
 
-* Run script :source:`share/scripts/ixyz2database.py`
+* Run script :source:`psi4/share/psi4/scripts/ixyz2database.py`
 
     Move into the directory where all your xyz files are located. Run the
-    script, probably as ``$PSIDATADIR/scripts/ixyz2database.py``. (If you
-    run it in place, there won't be any path problems. It will ask a number of
+    script. It will ask a number of
     questions about your intended database and generate a python file
     named for your database. Uppercase is preferable for database names
     (according to Sherrill lab convention). Note your choice for the route
@@ -90,7 +89,7 @@ below.
 
     According to your responses in to questions in the ixyz2database.py script,
     several bullets will be printed of edits you necessarily or optionally
-    should make. Copy your new database into :source:`share/psi4/databases`.
+    should make. Copy your new database into :source:`psi4/share/psi4/databases`.
     Alternately, append the directory containing your new database into
     :envvar:`PSIPATH`.
 

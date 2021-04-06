@@ -1550,7 +1550,7 @@ CTest allows flexibly partitioned running of the test suite. In
 the examples below, *testname* are regex of :source:`test names <tests>`,
 and *testlabel* are regex of labels (*e.g.*, ``cc``, ``mints``,
 ``libefp`` defined `[here, for example]
-<https://github.com/psi4/psi4/blob/master/tests/ci-property/CMakeLists.txt#L3)>`_.
+<https://github.com/psi4/psi4/blob/master/tests/ci-property/CMakeLists.txt#L3>`_.
 
 * Run tests in parallel with ``-j`` flag. For maximum parallelism: :samp:`ctest -j\`getconf _NPROCESSORS_ONLN\`\ `
 * Run full test suite: ``ctest``
