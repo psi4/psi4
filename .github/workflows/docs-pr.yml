@@ -54,7 +54,6 @@ jobs:
     - name: Patch Sphinx for Pybind11
       run: sed -i "s/lines = s\.expandtabs/lines = str(s).expandtabs/g" ${CONDA_PREFIX}/lib/python3.8/site-packages/sphinx/util/docstrings.py
 
-
     # docs are not Ninja ready
     - name: Configure with CMake (Conda Gnu + MKL)
       working-directory: ./code
@@ -79,8 +78,7 @@ jobs:
 
     - name: Compile Psi4
       working-directory: ./code
-      run: |
-        cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
+      run: cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
 
     - name: Compile & Pack Docs
       working-directory: ./code
@@ -89,24 +87,27 @@ jobs:
         cd objdir/doc/sphinxman
         tar -zcf sphinxman.tar.gz html/
 
-#    - name: Archive Docs Tarball
-#      uses: actions/upload-artifact@v2
-#      with:
-#        name: sphinxman-html
-#        path: |
-#          code/objdir/doc/sphinxman/sphinxman.tar.gz
-#        retention-days: 1
-#
-#    - name: Diff Docs Directory vs psi4/psi4docs
-#      working-directory: ./docs
-#      run: |
-#        cp -pR ../code/objdir/doc/sphinxman/html .
-#        git diff --color-words
-#        git config --local user.email "action@github.com"
-#        git config --local user.name "GitHub Action"
-#        git add -A
-#        git commit -m "auto-generated from Psi4 master"
-#
+    - name: Archive Docs Tarball
+      uses: actions/upload-artifact@v2
+      with:
+        name: sphinxman-html
+        path: |
+          code/objdir/doc/sphinxman/sphinxman.tar.gz
+        retention-days: 1
+
+    - name: Diff Docs Directory vs psi4/psi4docs
+      working-directory: ./docs
+      run: |
+        cp -pR ../code/objdir/doc/sphinxman/html .
+        git diff --color-words
+        pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+        branch=p4-${pull_number}
+        git checkout -b ${branch}
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add -A
+        git commit -m "auto-generated from psi4/#${pull_number}"
+
 #    - name: Push Changes to psi4/psi4docs
 #      uses: ad-m/github-push-action@master
 #      with:
