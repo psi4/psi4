@@ -111,7 +111,7 @@ jobs:
         git add -A
         git commit -m "auto-generated sphinxman from psi4/psi4#${pull_number}"
         echo ::set-output name=branch::${branch}
-        
+
 #              - name: Set output variables
 #        id: vars
 #        run: |
@@ -140,10 +140,10 @@ jobs:
 
 
 
-      - name: Create PR to psi4/psi4docs
-        id: cpr
-        uses: peter-evans/create-pull-request@v3
-        with:
+    - name: Create PR to psi4/psi4docs
+      id: cpr
+      uses: peter-evans/create-pull-request@v3
+      with:
           path: ./docs
           token: ${{ secrets.psi4docs_from_psi4 }}
           commit-message: Update report
@@ -169,8 +169,8 @@ jobs:
           #milestone: 1
           #draft: false
 
-      - name: Check outputs
-        run: |
+    - name: Check outputs
+      run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
     
