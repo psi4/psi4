@@ -15,3 +15,4 @@ set reference uhf
 energy ('scf')
 
 compare_values(-38.9253346245799605, variable('scf total energy'), 6, 'SCF energy')  #TEST
+# stuff
