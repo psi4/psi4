@@ -69,9 +69,9 @@ code).
 Path of a PsiPEP
 ----------------
 
-* Someone creates a file ``psi4/doc/sphinxman/source/pepXXXX.rst`` modeled
+* Someone creates a file ``doc/sphinxman/source/pepXXXX.rst`` modeled
   on :source:`doc/sphinxman/source/pep0000model.rst` and adds
-  it to ``STATICDOC`` in :source:`doc/sphinxman/Makefile.in`. The file
+  it to ``STATICDOC`` in :source:`doc/sphinxman/CMakeLists.txt`. The file
   should have header fields modeled on another PsiPEP and a discussion of
   the proposed change or practice.
 
