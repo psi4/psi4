@@ -104,13 +104,15 @@ jobs:
         git diff --color-words -I"Last updated on" -I"psi4/tree"
         echo "::endgroup::"
         pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-        branch=p4-${pull_number}
-        git checkout -b ${branch}
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add -A
-        git commit -m "auto-generated sphinxman from psi4/psi4#${pull_number}"
-        echo ::set-output name=branch::${branch}
+        echo ::set-output name=pull_number::${pull_number}
+        
+        #branch=p4-${pull_number}
+        #git checkout -b ${branch}
+        #git config --local user.email "action@github.com"
+        #git config --local user.name "GitHub Action"
+        #git add -A
+        #git commit -m "auto-generated sphinxman from psi4/psi4#${pull_number}"
+        #echo ::set-output name=branch::${branch}
 
 #              - name: Set output variables
 #        id: vars
@@ -146,11 +148,11 @@ jobs:
       with:
           path: ./docs
           token: ${{ secrets.psi4docs_from_psi4 }}
-          commit-message: Update report
+          commit-message: auto-generated sphinxman from psi4/psi4#${{ steps.compare-psi4docs.outputs.pull_number }}
           committer: GitHub <noreply@github.com>
           author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
           signoff: false
-          branch: ${{ steps.compare-psi4docs.outputs.branch }}
+          branch: p4-${{ steps.compare-psi4docs.outputs.pull_number }}
           delete-branch: true
           title: '[Example] Update report'
           body: |
@@ -175,11 +177,7 @@ jobs:
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
     
 
-      #- name: Set selected color
-      #  run: echo '::set-output name=SELECTED_COLOR::green'
-      #  id: random-color-generator
-      #- name: Get color
-      #  run: echo "The selected color is ${{ steps.random-color-generator.outputs.SELECTED_COLOR }}"
+
 
     - uses: rlespinasse/github-slug-action@v3.x
 
@@ -242,7 +240,7 @@ jobs:
 #        repo_name=$(jq --raw-output .pull_request.repo.name "$GITHUB_EVENT_PATH")
 #        echo "::set-env name=prrepo::${repo_name}"
 
-    - name: Diff Psi4 Repo for Generated Files
+    - name: Compare Samples (PR generated vs. psi4/psi4:master)
       working-directory: ./code
       run: |
         echo "::group::Git Diff"
@@ -257,7 +255,6 @@ jobs:
       uses: ad-m/github-push-action@master
       with:
         directory: ./code
-#        repository: ${{ env.prrepo }}
         repository: ${{ github.event.pull_request.head.repo.full_name }}
         branch: ${{ env.GITHUB_HEAD_REF_SLUG }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
