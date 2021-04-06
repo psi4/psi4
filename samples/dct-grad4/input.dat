@@ -1,8 +1,8 @@
 #! Unrestricted DF-DCT ODC-12 gradient for O2 with cc-pVTZ/cc-pVTZ-RI standard/auxiliary basis set
 
 ref = psi4.Matrix.from_list([
-          [ 0.000000000000,     0.000000000000,    -0.037277060707],
-          [ 0.000000000000,     0.000000000000,     0.037277060707]
+          [ 0.000000000000,     0.000000000000,    -0.037184030838],
+          [ 0.000000000000,     0.000000000000,     0.037184030838]
           ])
 
 molecule O2 {

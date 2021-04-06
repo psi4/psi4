@@ -7,6 +7,8 @@
 
 alpha_diag = [0.99108595,  1.4563089, 1.4456338] 
 
+# fix orientation to match reference data
+
 molecule bh {
 unit bohr
   O     0.00000   0.00000   0.00000

@@ -14,6 +14,18 @@
  [ 2.77280153e-16,  1.04989006e-02,  8.86795891e-04,  1.96061810e-17,
    3.67553844e-17,  7.58633642e-17,  3.24182338e-02, -1.86102449e-03,
 
+# Reference Atomic Volumes From Horton
+# O 26.33864405917908
+# H 1.5096257589296491
+# H 1.5094431403157609
+
+
+# Reference Valence Widths From Horton
+# O 0.40355537630901217
+# H 0.35780574579137503
+# H 0.3577956925992588
+
+
 molecule mol {
   0 1
   O
@@ -30,6 +42,7 @@ set {
   e_convergence 10
   mbis_radial_points 99
   mbis_spherical_points 350
+  max_radial_moment 4
 }
 
 e, wfn = energy('hf/cc-pvdz', return_wfn=True)
@@ -40,4 +53,6 @@ charges = wfn.array_variable('MBIS CHARGES')
 dipoles = wfn.array_variable('MBIS DIPOLES')
 quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
+avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
+vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
 
