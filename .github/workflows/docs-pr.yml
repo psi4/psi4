@@ -95,42 +95,35 @@ jobs:
           code/objdir/doc/sphinxman/sphinxman.tar.gz
         retention-days: 1
 
-    - name: Diff Docs Directory vs psi4/psi4docs
+    - name: Compare Docs (PR generated vs psi4/psi4docs)
       working-directory: ./docs
+      id: compare-psi4docs
       run: |
         cp -pR ../code/objdir/doc/sphinxman/html .
-        git diff --color-words
+        git diff --color-words -I"Last updated on" -I"psi4/tree"
         pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
         branch=p4-${pull_number}
         git checkout -b ${branch}
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add -A
-        git commit -m "auto-generated from psi4/#${pull_number}"
+        git commit -m "auto-generated sphinxman from psi4/psi4#${pull_number}"
+        echo '::set-output name=branch::${branch}'
 
-#    - name: Push Changes to psi4/psi4docs
-#      uses: ad-m/github-push-action@master
-#      with:
-#        directory: ./docs
-#        repository: psi4/psi4docs
-#        #branch: ${{ env.prbranch }}
-#        github_token: ${{ secrets.psi4docs_from_psi4 }}
-#        force: true
+    - name: Push Changes to psi4/psi4docs
+      uses: ad-m/github-push-action@master
+      with:
+        directory: ./docs
+        repository: psi4/psi4docs
+        branch: ${{ steps.compare-psi4docs.outputs.branch }}
+        github_token: ${{ secrets.psi4docs_from_psi4 }}
+        force: true
 
-#    - name: Compare Schemas (generated vs. community)
-#      shell: bash
-#      working-directory: ./qcsk
-#      run: |
-#        git diff --color-words
-#        pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-#        branch=qcel-${pull_number}
-#        git checkout -b ${branch}
-#        git remote -v
-#        git config --local user.email "action@github.com"
-#        git config --local user.name "GitHub Action"
-#        git add -A
-#        git commit -m "auto-generated from QCElemental"
-#        echo "::set-env name=prbranch::${branch}"
+      #- name: Set selected color
+      #  run: echo '::set-output name=SELECTED_COLOR::green'
+      #  id: random-color-generator
+      #- name: Get color
+      #  run: echo "The selected color is ${{ steps.random-color-generator.outputs.SELECTED_COLOR }}"
 
     - uses: rlespinasse/github-slug-action@v3.x
 
@@ -200,7 +193,7 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add -A
-        git commit -m "auto-generated from docs build"
+        git commit -m "auto-generated samples from docs build"
 
     - name: Push Changes to PR-author/psi4:PR-branch
       uses: ad-m/github-push-action@master
