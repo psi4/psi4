@@ -185,7 +185,7 @@ Do final pass before release tag
 --------------------------------
 
 * Check that :source:`external/` repos and commits have been updated to match conda recipes sources. Also check versions with ``conda_build_config.yaml``
-* Check :source:`docs/sphinxman/source/introduction.rst` for any compiler and Python minimum requirements to edit.
+* Check :source:`doc/sphinxman/source/introduction.rst` for any compiler and Python minimum requirements to edit.
 
 
 Tag (pre)release

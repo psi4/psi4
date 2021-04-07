@@ -51,7 +51,7 @@ Planning: how to configure Psi4 and invoke CMake
 
 |PSIfour| is built through CMake. An abbreviated build guide can be found
 `within the source itself
-<https://github.com/psi4/psi4/blob/master/CMakeLists.txt#L14-L142>`_.
+<https://github.com/psi4/psi4/blob/master/CMakeLists.txt#L22>`_.
 
 CMake does a good job scanning your computer to locate libraries, header
 files, and executables needed for compilation. So it's very possible that

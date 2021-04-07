@@ -100,7 +100,7 @@ EFP Fragments
 
 LIBEFP comes with a couple dozen ready-to-use fragments (water, benzene,
 common solvents, etc.) listed :ref:`here <sec:availableEFPFragments>`
-with source :source:`psi4/share/psi4/efpfrag`.  Any of these may be used directly in
+with source https://github.com/libefp2/libefp/tree/master/fraglib.  Any of these may be used directly in
 a |PSIfour| input file as described :ref:`here <sec:usingEFPFragments>`.
 
 .. comment .. note:: The built-in fragment library distributed with Q-Chem (as of version 4.0.1) is *not*
@@ -113,9 +113,9 @@ a |PSIfour| input file as described :ref:`here <sec:usingEFPFragments>`.
 .. comment    EFP input files.
 
 Creating new efp fragments requires the `GAMESS
-<http://www.msg.ameslab.gov/gamess/>`_ quantum chemistry package.
+<https://www.msg.chem.iastate.edu/gamess/index.html>`_ quantum chemistry package.
 Instructions on building new fragments are `here
-<https://github.com/libefp/libefp#how-to-create-custom-efp-fragment-types>`_.
+<https://github.com/libefp2/libefp#how-to-create-custom-efp-fragment-types>`_.
 Once your new fragment is ready, make it accessible to |PSIfour| by
 including the directory in which the ``.efp`` file is located to the colon
 separated environment variable :envvar:`PSIPATH`. Fragments are searched

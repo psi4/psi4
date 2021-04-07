@@ -335,6 +335,15 @@ texinfo_documents = [
    'Miscellaneous'),
 ]
 
+linkcheck_anchors = True
+linkcheck_ignore = [
+    "http://t1.chem.umn.edu/misc/database_group/database_therm_bh/non_H.htm",  # broken link on Truhlar site. can't find replacement
+    "http://t1.chem.umn.edu/misc/database_group/database_therm_bh/raw_geom.cgi",  # ditto
+    "https://smartech.gatech.edu/handle/1853/53850",  # certificate problem but works fine IRL
+    "https://www.msg.chem.iastate.edu/gamess/index.html",  # certificate problem but works fine IRL
+    "https://github.com/libefp2/libefp#",  # anchor fine in IRL but linkcheck protests
+]
+
 # Documents to append as an appendix to all manuals.
 #texinfo_appendices = []
 
