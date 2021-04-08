@@ -53,7 +53,7 @@ Declaring Options
 -----------------
 
 Each module needs to make itself known to the Options object, via a
-read_options function. For plugins, this routine is provided by the user
+read_options section. For plugins, this routine is provided by the user
 in the plugin code. For native |PSIfour| modules, the entries need to
 be appended to the read_options code in :source:`psi4/src/read_options.cc`.
 An example of such a routine is
@@ -73,7 +73,7 @@ An example of such a routine is
         obtain an approximation to the fundamental vibrational frequencies -*/
         options.add_double("FREQUENCY_SCALE_FACTOR", 1.0);
         /*- The filename to which data is dumped. !expert -*/
-        options.add_str("DATA_FILE", "data.dat");
+        options.add_str_i("DATA_FILE", "data.dat");
         /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
         options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     }
@@ -84,14 +84,15 @@ In the above example, the following options are declared (in order):
 - A boolean called ``SAVE_INFO`` with a default of true.
 - An array called ``DOCC``, no default is possible for this type.
 - A double called ``FREQUENCY_SCALE_FACTOR`` with a default of 1.0.
-- A string called ``DATA_FILE``, with a default of "data.dat" and any possible value.
+- A case-sensitive string called ``DATA_FILE``, with a default of "data.dat" and any possible value.
 - A string called ``AO_BASIS`` with a default of "NONE", and possible values of "NONE", "DISK", or "DIRECT".
 
 The purpose of the "if" statement in the above read_options function is
 the following. Suppose in an input file the user sets an option through
 the construct ``set mymodule print 1`` or through a ``set mymodule {...}``
 block. The first thing to happen is a call to read_options with name set
-to "MYMODULE". (Note that all user input is converted to upper case.) This
+to "MYMODULE". (Note that all user input is converted to upper case unless a
+``add_str_i`` which should be used sparingly for files.) This
 call to read_options should tell the Options object only about those
 options expected by the module called "mymodule"; this prevents overlap of
 options between different modules.
@@ -137,8 +138,8 @@ The above items notwithstanding, psi4 code should be written so that
 *has_changed* DOES effectively mean, "Has option been changed by the
 user?". The way to do this is to isolate and nullify any changes to
 options made by the code, the difference between [a] and [c]. C-side,
-there is no concern since options are read but essentially never
-written-to within the modules.
+there is no concern since options are essentially read-only
+within the modules.
 
 Py-side is another matter since the driver's role is to take terse
 instructions from the user and translate those into instructions to the
@@ -202,25 +203,25 @@ Options from the c-side Options object are accessible in the Python driver throu
 
 - get 
 
-  - :py:func:`~psi4.core.get_global_option()`
-  - :py:func:`~psi4.core.get_local_option()`
-  - :py:func:`~psi4.core.get_option()`
+  - :py:func:`psi4.core.get_global_option()`
+  - :py:func:`psi4.core.get_local_option()`
+  - :py:func:`psi4.core.get_option()`
 
 - set 
 
-  - :py:func:`~psi4.core.set_global_option()`
-  - :py:func:`~psi4.core.set_local_option()`
+  - :py:func:`psi4.core.set_global_option()`
+  - :py:func:`psi4.core.set_local_option()`
 
 - has_changed 
 
-  - :py:func:`~psi4.core.has_global_option_changed()`
-  - :py:func:`~psi4.core.has_local_option_changed()`
-  - :py:func:`~psi4.core.has_option_changed()`
+  - :py:func:`psi4.core.has_global_option_changed()`
+  - :py:func:`psi4.core.has_local_option_changed()`
+  - :py:func:`psi4.core.has_option_changed()`
 
 - revoke_changed 
 
-  - :py:func:`~psi4.core.revoke_global_option_changed()`
-  - :py:func:`~psi4.core.revoke_local_option_changed()`
+  - :py:func:`psi4.core.revoke_global_option_changed()`
+  - :py:func:`psi4.core.revoke_local_option_changed()`
 
 There's a pattern here. Setting something, either a value (set) or a
 negative changed status (revoke_changed), can only be done for a specific
@@ -230,7 +231,7 @@ scope, in a specified local scope, or in the context of "What will the
 specified module use?".
 
 .. note:: "Global" in the sense of the discussion has *nothing*
-   to do with the globals section at the top of read_options.cc .  That
+   to do with the globals section at the top of :source:`psi4/src/read_options.cc`. That
    section is just a convenient place for options and associated values
    that are used by most, if not all, modules.
 
@@ -251,41 +252,45 @@ There are two primary purposes for interacting with options in the python driver
   has_changed values, then restoring them at the end.  Below is an example
   of this procedure; don't actually do this. ::
 
-    g_user_scftype = psi4.get_global_option('SCF_TYPE')
-    l_user_scftype_scf = psi4.get_local_option('SCF', 'SCF_TYPE')
-    bg_user_scftype = psi4.has_global_option_changed('SCF_TYPE')
-    bl_user_scftype_scf = psi4.has_local_option_changed('SCF', 'SCF_TYPE')
+    from psi4 import core
 
-    g_user_wfn = psi4.get_global_option('WFN')
-    l_user_wfn = psi4.get_local_option('MP2', 'WFN')
-    bg_user_wfn = psi4.has_global_option_changed('WFN')
-    bl_user_wfn = psi4.has_local_option_changed('MP2', 'WFN')
+    g_user_scftype = core.get_global_option('SCF_TYPE')
+    l_user_scftype_scf = core.get_local_option('SCF', 'SCF_TYPE')
+    bg_user_scftype = core.has_global_option_changed('SCF_TYPE')
+    bl_user_scftype_scf = core.has_local_option_changed('SCF', 'SCF_TYPE')
+
+    g_user_wfn = core.get_global_option('WFN')
+    l_user_wfn = core.get_local_option('MP2', 'WFN')
+    bg_user_wfn = core.has_global_option_changed('WFN')
+    bl_user_wfn = core.has_local_option_changed('MP2', 'WFN')
 
     # body of function
     # scf_type and wfn are freely changed, LOCALLY
-    # psi4.scf() and psi4.mp2() are run
+    # core.scf() and core.mp2() are run
 
-    psi4.set_global_option('SCF_TYPE', g_user_scftype)
+    core.set_global_option('SCF_TYPE', g_user_scftype)
     if not bg_user_scftype:
-        psi4.revoke_global_option_changed('SCF_TYPE')
-    psi4.set_local_option('SCF', 'SCF_TYPE', l_user_scftype_scf)
+        core.revoke_global_option_changed('SCF_TYPE')
+    core.set_local_option('SCF', 'SCF_TYPE', l_user_scftype_scf)
     if not bl_user_scftype_scf:
-        psi4.revoke_local_option_changed('SCF', 'SCF_TYPE')
+        core.revoke_local_option_changed('SCF', 'SCF_TYPE')
 
-    psi4.set_global_option('WFN', g_user_wfn)
+    core.set_global_option('WFN', g_user_wfn)
     if not bg_user_wfn:
-        psi4.revoke_global_option_changed('WFN')
-    psi4.set_local_option('MP2', 'WFN', l_user_wfn_scf)
+        core.revoke_global_option_changed('WFN')
+    core.set_local_option('MP2', 'WFN', l_user_wfn_scf)
     if not bl_user_wfn_scf:
-        psi4.revoke_local_option_changed('MP2', 'WFN')
+        core.revoke_local_option_changed('MP2', 'WFN')
 
   Instead of cluttering the driver with the above boilerplate, use an
-  :py:class:`~optproc.OptionsState` object that stores values and
+  :py:class:`~psi4.driver.p4util.OptionsState` object that stores values and
   has_changed values for each keyword and module pair given to it as
   arguments. At the end of the python function, these stored user settings
   can be restored. ::
 
-    optstash = OptionsState(
+    from psi4.driver import p4util
+
+    optstash = p4util.OptionsState(
         ['SCF', 'SCF_TYPE'],
         ['MP2', 'WFN'],
         ['DF_BASIS_SCF'])
@@ -293,7 +298,7 @@ There are two primary purposes for interacting with options in the python driver
     # body of function
     # scf_type and wfn are freely changed, LOCALLY
     # puream and df_basis_scf are freely changed, GLOBALLY
-    # psi4.scf() and psi4.mp2() are run
+    # core.scf() and core.mp2() are run
 
     optstash.restore()
 
@@ -309,23 +314,18 @@ There are two primary purposes for interacting with options in the python driver
   those to query what option value an upcoming c++ module is going to use
   (determined by user and defaults) and (b) those to set options to govern
   the course of a procedure. Finding out the intended option value for a
-  molecule should employ the :py:func:`~psi4.get_option` command 
-  (and :py:func:`~psi4.has_option_changed` for has_changed), which
-  (newly) requires a module for scope. *(Previously, this command used the
-  "active module", which isn't well-defined in the context of the python
-  driver, and consequently, the command gave variable results, depending
-  on whether a get_local/set_local command had been previously executed to
-  define the active module.)* ::
+  molecule should employ the :py:func:`~psi4.core.get_option` command
+  (and :py:func:`~psi4.core.has_option_changed` for has_changed), which
+  requires a module for scope. (Programmer-supplied scope is needed Py-side,
+  whereas C-side, commands use the "active module".) ::
 
-    if (psi4.get_option('SCF', 'REFERENCE') == 'RHF'):
-        psi4.set_local_option('SCF', 'REFERENCE', 'RKS')
+    if (psi4.core.get_option("SCF", "REFERENCE") == "RHF"):
+        psi4.core.set_local_option("SCF", "REFERENCE", "RKS")
 
   Setting of options in python should use the
-  :py:func:`~psi4.set_local_option` command. Using the local, rather
+  :py:func:`~psi4.core.set_local_option` command. Using the local, rather
   than global, scope will ensure that the newly set option will be used by
   the module. Otherwise, if the python procedure set in the global scope
   and the user had happened to set that option in local scope, the local
   user option will take precedence against the programmer's intent.
-  *(Anyone who has heard advice to "query local, set global" should forget
-  that and follow the new scheme outlined here.)*
 
