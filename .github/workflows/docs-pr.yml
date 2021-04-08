@@ -55,7 +55,7 @@ jobs:
       run: sed -i "s/lines = s\.expandtabs/lines = str(s).expandtabs/g" ${CONDA_PREFIX}/lib/python3.8/site-packages/sphinx/util/docstrings.py
 
     # docs are not Ninja ready
-    - name: Configure with CMake (Conda Gnu + MKL)
+    - name: Configure with CMake (conda-forge GNU)
       working-directory: ./code
       run: |
         cmake \
@@ -238,15 +238,23 @@ jobs:
           comment_body = `
           @${{ github.actor }}
           Based upon a build of the documentation target (locally, \`make sphinxman\` with Sphinx installed at CMake configuration time):
+          `;
+          comment_commit = `
           * an automated commit ${{ steps.compare-samples.outputs.commit }} has been issued to your PR branch
             * this updates ${{ steps.compare-samples.outputs.nchanged }} files in \`samples/\` based on \`tests/\`
             * if objectionable, make changes and force push your local branch, but you can't avoid the update forever
             * usually, \`git pull --rebase origin ${{ env.GITHUB_HEAD_REF_SLUG }}\` to synchronize your local branch with GH
+          `;
+          comment_pr = `
           * an automated pull request ${{ steps.cpr.outputs.pull-request-url }} has been issued to the docs website repo
             * this previews docs changes from \`<objdir>/doc/sphinxman/html\`
             * look over your docs changes at checks, deploy-preview. Edit your PR branch here as needed; no further action on auto PR required.
-            * alternately, look over your docs changes locally by downloading `sphinxman-html` zip file from Archive list in Action run
+            * alternately, look over your docs changes locally by downloading \`sphinxman-html\` zip file from Archive list in Action run
           `;
+          if (${{ steps.compare-samples.outputs.nchanged != '-1' }}) {
+            comment_body = `${comment_body}${comment_commit}`;
+          }
+          comment_body = `${comment_body}${comment_pr}`;
           const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
           github.issues.createComment({ issue_number, owner, repo, body: comment_body });
 
