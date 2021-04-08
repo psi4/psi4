@@ -110,12 +110,15 @@ jobs:
         cd objdir/doc/doxygen
         tar -zcf doxyman.tar.gz html/
 
-    - name: Diff Docs Directory vs psi4/psi4docs
+    - name: Compare Docs (generated vs psi4/psi4docs)
       if: github.repository == "psi4/psi4"
       working-directory: ./docs
+      id: compare-psi4docs
       run: |
         cp -pR ../code/objdir/doc/sphinxman/html .
-        git diff --color-words
+        echo "::group::Selective Git Diff"
+        git diff --color-words -I"Last updated on" -I"psi4/tree"
+        echo "::endgroup::"
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         git add -A
@@ -127,7 +130,6 @@ jobs:
       with:
         directory: ./docs
         repository: psi4/psi4docs
-        #branch: ${{ env.prbranch }}
         github_token: ${{ secrets.psi4docs_from_psi4 }}
         force: true
 
