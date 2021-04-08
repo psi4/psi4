@@ -105,35 +105,6 @@ jobs:
         echo "::endgroup::"
         pull_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
         echo ::set-output name=pull_number::${pull_number}
-      
-
-#              - name: Set output variables
-#        id: vars
-#        run: |
-#          echo ::set-output name=pr_title::"[Test] Add report file $(date +%d-%m-%Y)"
-#          echo ::set-output name=pr_body::"This PR was auto-generated on $(date +%d-%m-%Y) \
-#            by [create-pull-request](https://github.com/peter-evans/create-pull-request)."
-#      - name: Create Pull Request
-#        uses: peter-evans/create-pull-request@v2
-#        with:
-#          title: ${{ steps.vars.outputs.pr_title }}
-#          body: ${{ steps.vars.outputs.pr_body }}
-          
-          
-          
-
-    #- name: Push Changes to psi4/psi4docs
-    #  uses: ad-m/github-push-action@master
-    #  with:
-    #    directory: ./docs
-    #    repository: psi4/psi4docs
-    #    branch: ${{ steps.compare-psi4docs.outputs.branch }}
-    #    github_token: ${{ secrets.psi4docs_from_psi4 }}
-    #    force: true
-
-
-
-
 
     - name: Create PR to psi4/psi4docs
       id: cpr
@@ -155,14 +126,14 @@ jobs:
           labels: |
             automated pr
           draft: true
-          
-          
+
+
 
     - name: Check outputs
       run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
-    
+
 
     - uses: rlespinasse/github-slug-action@v3.x
 
@@ -201,7 +172,7 @@ jobs:
 #      ref                 : 2146-merge
 #      head ref            : ghadocs3
 #      base ref            : master
-#      event ref           : 
+#      event ref           :
 #   Slug URL variables
 #      repository          : psi4-psi4
 #      repository owner    : psi4
@@ -209,7 +180,7 @@ jobs:
 #      ref                 : 2146-merge
 #      head ref            : ghadocs3
 #      base ref            : master
-#      event ref           : 
+#      event ref           :
 #   Short SHA variables
 #      sha                 : 37565a13
 #      pull request sha    : 3d743e42
@@ -225,8 +196,10 @@ jobs:
 #        repo_name=$(jq --raw-output .pull_request.repo.name "$GITHUB_EVENT_PATH")
 #        echo "::set-env name=prrepo::${repo_name}"
 
+    # for security, only commit files the docs build should generate
     - name: Compare Samples (PR generated vs. psi4/psi4:master)
       working-directory: ./code
+      id: compare-samples
       run: |
         echo "::group::Git Diff"
         git diff --color-words
@@ -237,12 +210,19 @@ jobs:
         git add -A samples/
         sha=$(git rev-parse --short HEAD)
         git diff-index --quiet HEAD || git commit -m "auto-generated samples from docs build"
+        nchanged=$(expr $(git log --oneline --name-status $sha..HEAD | wc -l) - 1)
+        sha=$(git rev-parse --short HEAD)
+        echo ::set-output name=nchanged::${nchanged}
+        echo ::set-output name=commit::${sha}
 
-        nfiles=$(expr $(git log --oneline --name-status $sha..HEAD | wc -l) - 1)
-
+    - name: Check outputs
+      run: |
+          echo "Commit N Files - ${{ steps.compare-samples.outputs.nchanged }}"
+          echo "Commit hash - ${{ steps.compare-samples.outputs.commit }}"
 
     - name: Push Changes to PR-author/psi4:PR-branch
       uses: ad-m/github-push-action@master
+      if: ${{ steps.compare-samples.outputs.nchanged != '-1' }}
       with:
         directory: ./code
         repository: ${{ github.event.pull_request.head.repo.full_name }}
@@ -252,20 +232,20 @@ jobs:
 
     - name: 'Comment PR'
       uses: actions/github-script@0.3.0
-      #if: github.event_name == 'pull_request'
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
           comment_body = `
           @${{ github.actor }}
-          Based upon a build of the documentation target (\`make sphinxman\` locally with Sphinx installed at CMake configuration time):
-          * an automated commit has been issued to your PR branch
-            * this updates \`samples/\` based on \`tests/\`
+          Based upon a build of the documentation target (locally, \`make sphinxman\` with Sphinx installed at CMake configuration time):
+          * an automated commit ${{ steps.compare-samples.outputs.commit }} has been issued to your PR branch
+            * this updates ${{ steps.compare-samples.outputs.nchanged }} files in \`samples/\` based on \`tests/\`
             * if objectionable, make changes and force push your local branch, but you can't avoid the update forever
-            * usually, \`git pull --rebase origin <prbranch>\` to synchronize your local branch with GH
-          * an automated pull request has been issued to the docs website repo previewing \`<objdir>/doc/sphinxman/html\`
-            * preview docs changes at ${{ steps.cpr.outputs.pull-request-url }}
-            * further action on auto pull request not required
+            * usually, \`git pull --rebase origin ${{ env.GITHUB_HEAD_REF_SLUG }}\` to synchronize your local branch with GH
+          * an automated pull request ${{ steps.cpr.outputs.pull-request-url }} has been issued to the docs website repo
+            * this previews docs changes from \`<objdir>/doc/sphinxman/html\`
+            * look over your docs changes at checks, deploy-preview. Edit your PR branch here as needed; no further action on auto PR required.
+            * alternately, look over your docs changes locally by downloading `sphinxman-html` zip file from Archive list in Action run
           `;
           const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
           github.issues.createComment({ issue_number, owner, repo, body: comment_body });
