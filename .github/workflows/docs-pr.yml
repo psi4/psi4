@@ -235,7 +235,11 @@ jobs:
         git config --local user.name "GitHub Action"
         git add psi4/driver/psifiles.py
         git add -A samples/
-        git commit -m "auto-generated samples from docs build"
+        sha=$(git rev-parse --short HEAD)
+        git diff-index --quiet HEAD || git commit -m "auto-generated samples from docs build"
+
+        nfiles=$(expr $(git log --oneline --name-status $sha..HEAD | wc -l) - 1)
+
 
     - name: Push Changes to PR-author/psi4:PR-branch
       uses: ad-m/github-push-action@master
