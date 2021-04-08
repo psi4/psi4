@@ -256,7 +256,6 @@ class PSI_API JK {
     bool do_K_;
     /// Do wK matrices? Defaults to false
     bool do_wK_;
-    
     /// Perform an incremental fock build?
     bool incr_fock_;
 
