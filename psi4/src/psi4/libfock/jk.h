@@ -260,7 +260,10 @@ class PSI_API JK {
     /// Perform an incremental fock build?
     bool incr_fock_;
 
-    /// Perform an incremental fock build?
+    /// Perform Density Screening for ERIs?
+    bool dens_screen_;
+
+    /// Perform Incremental Fock Build for J and K Matrices?
     bool incr_fock_;
 
     /// Combine (pq|rs) and (pq|w|rs) integrals before contracting?
