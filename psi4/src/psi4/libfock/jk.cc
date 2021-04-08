@@ -212,7 +212,10 @@ void JK::common_init() {
     auto pet = std::make_shared<PetiteList>(primary_, integral);
     AO2USO_ = SharedMatrix(pet->aotoso());
 
-    incr_fock_ = (Process::environment.options).get_bool("INCR_FOCK_BUILD");
+    Options& options = Process::environment.options;
+
+    dens_screen_ = options.get_bool("SCF_DENSITY_SCREENING");
+    incr_fock_ = options.get_bool("INCR_FOCK_BUILD");
 }
 size_t JK::memory_overhead() const {
     size_t mem = 0L;
