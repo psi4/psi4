@@ -1899,13 +1899,14 @@ void DCTSolver::compute_orbital_rotation_nr() {
     int orbitals_address = 0;
     int idpcount = 0;
     // Alpha spin
+    auto X_a = Matrix("Alpha orbital step", nirrep_, nmopi_, nmopi_);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {
             for (int a = 0; a < navirpi_[h]; ++a) {
                 if (lookup_orbitals_[orbitals_address]) {
                     double value = X_->get(idpcount);
-                    X_a_->set(h, i, a + naoccpi_[h], value);
-                    X_a_->set(h, a + naoccpi_[h], i, (-1.0) * value);
+                    X_a.set(h, i, a + naoccpi_[h], value);
+                    X_a.set(h, a + naoccpi_[h], i, (-1.0) * value);
                     idpcount++;
                 }
                 orbitals_address++;
@@ -1914,13 +1915,14 @@ void DCTSolver::compute_orbital_rotation_nr() {
     }
 
     // Beta spin
+    auto X_b = Matrix("Beta orbital step", nirrep_, nmopi_, nmopi_);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < nboccpi_[h]; ++i) {
             for (int a = 0; a < nbvirpi_[h]; ++a) {
                 if (lookup_orbitals_[orbitals_address]) {
                     double value = X_->get(idpcount);
-                    X_b_->set(h, i, a + nboccpi_[h], value);
-                    X_b_->set(h, a + nboccpi_[h], i, (-1.0) * value);
+                    X_b.set(h, i, a + nboccpi_[h], value);
+                    X_b.set(h, a + nboccpi_[h], i, (-1.0) * value);
                     idpcount++;
                 }
                 orbitals_address++;
@@ -1928,8 +1930,8 @@ void DCTSolver::compute_orbital_rotation_nr() {
         }
     }
 
-    Xtotal_a_->add(X_a_);
-    Xtotal_b_->add(X_b_);
+    Xtotal_a_->add(X_a);
+    Xtotal_b_->add(X_b);
 }
 
 void DCTSolver::update_cumulant_nr() {

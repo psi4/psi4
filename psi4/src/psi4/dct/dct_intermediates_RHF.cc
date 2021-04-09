@@ -251,41 +251,16 @@ void DCTSolver::form_density_weighted_fock_RHF() {
 
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
-    global_dpd_->file2_mat_init(&T_OO);
-    global_dpd_->file2_mat_init(&T_VV);
-    global_dpd_->file2_mat_rd(&T_OO);
-    global_dpd_->file2_mat_rd(&T_VV);
 
     // Copy Tau in MO basis from the DPD library
-    auto a_tau_mo = std::make_shared<Matrix>("Alpha Tau in the MO basis", nirrep_, nmopi_, nmopi_);
-    auto b_tau_mo = std::make_shared<Matrix>("Beta Tau in the MO basis", nirrep_, nmopi_, nmopi_);
+    auto a_tau_mo = Matrix("Alpha Tau in the MO basis", nirrep_, nmopi_, nmopi_);
+    auto b_tau_mo = Matrix("Beta Tau in the MO basis", nirrep_, nmopi_, nmopi_);
 
-    for (int h = 0; h < nirrep_; ++h) {
-        if (nsopi_[h] == 0) continue;
+    a_tau_mo.set_block(slices_.at("ACTIVE_OCC_A"), Matrix(&T_OO));
+    a_tau_mo.set_block(slices_.at("ACTIVE_VIR_A"), Matrix(&T_VV));
 
-        // Alpha occupied
-        for (int p = 0; p < naoccpi_[h]; ++p) {
-            for (int q = 0; q <= p; ++q) {
-                double value = T_OO.matrix[h][p][q];
-                a_tau_mo->set(h, p, q, value);
-                if (p != q) a_tau_mo->set(h, q, p, value);
-            }
-        }
+    b_tau_mo.copy(a_tau_mo);
 
-        // Alpha virtual
-        for (int p = 0; p < navirpi_[h]; ++p) {
-            for (int q = 0; q <= p; ++q) {
-                double value = T_VV.matrix[h][p][q];
-                a_tau_mo->set(h, p + naoccpi_[h], q + naoccpi_[h], value);
-                if (p != q) a_tau_mo->set(h, q + naoccpi_[h], p + naoccpi_[h], value);
-            }
-        }
-    }
-
-    b_tau_mo->copy(a_tau_mo);
-
-    global_dpd_->file2_mat_close(&T_OO);
-    global_dpd_->file2_mat_close(&T_VV);
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
 
@@ -293,9 +268,9 @@ void DCTSolver::form_density_weighted_fock_RHF() {
     auto a_evals = std::make_shared<Vector>("Tau Eigenvalues (Alpha)", nirrep_, nmopi_);
 
     // Diagonalize Tau
-    a_tau_mo->diagonalize(a_evecs, a_evals);
-    a_tau_mo->zero();
-    a_tau_mo->set_diagonal(a_evals);
+    a_tau_mo.diagonalize(a_evecs, a_evals);
+    a_tau_mo.zero();
+    a_tau_mo.set_diagonal(a_evals);
 
     // Transform the Fock matrix to NSO basis
     auto nso_Fa = std::make_shared<Matrix>("Alpha Fock in the NSO basis", nirrep_, nmopi_, nmopi_);

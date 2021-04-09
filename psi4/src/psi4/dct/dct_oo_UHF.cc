@@ -37,6 +37,7 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace psi {
@@ -243,47 +244,28 @@ double DCTSolver::compute_orbital_residual() {
 
     global_dpd_->file2_init(&Xia, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
     global_dpd_->file2_init(&Xai, PSIF_DCT_DPD, 0, ID('V'), ID('O'), "X <V|O>");
-    global_dpd_->file2_mat_init(&Xia);
-    global_dpd_->file2_mat_init(&Xai);
-    global_dpd_->file2_mat_rd(&Xia);
-    global_dpd_->file2_mat_rd(&Xai);
 
-    double maxGradient = 0.0;
-    // Alpha spin
-    for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for reduction(max : maxGradient)
-        for (int i = 0; i < naoccpi_[h]; ++i) {
-            for (int a = 0; a < navirpi_[h]; ++a) {
-                double value = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
-                maxGradient = (std::fabs(value) > maxGradient) ? std::fabs(value) : maxGradient;
-                orbital_gradient_a_->set(h, i, a + naoccpi_[h], value);
-                orbital_gradient_a_->set(h, a + naoccpi_[h], i, (-1.0) * value);
-            }
-        }
-    }
+    auto temp = Matrix(&Xia);
+    temp.subtract(Matrix(&Xai).transpose());
+    temp.scale(2);
+    double maxGradient = temp.absmax();
+    orbital_gradient_a_->set_block(slices_.at("ACTIVE_OCC_A"), slices_.at("ACTIVE_VIR_A"), temp);
+    temp.scale(-1);
+    orbital_gradient_a_->set_block(slices_.at("ACTIVE_VIR_A"), slices_.at("ACTIVE_OCC_A"), temp.transpose());
 
     global_dpd_->file2_close(&Xai);
     global_dpd_->file2_close(&Xia);
 
     global_dpd_->file2_init(&Xia, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
     global_dpd_->file2_init(&Xai, PSIF_DCT_DPD, 0, ID('v'), ID('o'), "X <v|o>");
-    global_dpd_->file2_mat_init(&Xia);
-    global_dpd_->file2_mat_init(&Xai);
-    global_dpd_->file2_mat_rd(&Xia);
-    global_dpd_->file2_mat_rd(&Xai);
 
-    // Beta spin
-    for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for reduction(max : maxGradient)
-        for (int i = 0; i < nboccpi_[h]; ++i) {
-            for (int a = 0; a < nbvirpi_[h]; ++a) {
-                double value = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
-                maxGradient = (std::fabs(value) > maxGradient) ? std::fabs(value) : maxGradient;
-                orbital_gradient_b_->set(h, i, a + nboccpi_[h], value);
-                orbital_gradient_b_->set(h, a + nboccpi_[h], i, (-1.0) * value);
-            }
-        }
-    }
+    temp = Matrix(&Xia);
+    temp.subtract(Matrix(&Xai).transpose());
+    temp.scale(2);
+    maxGradient = std::max(maxGradient, temp.absmax());
+    orbital_gradient_b_->set_block(slices_.at("ACTIVE_OCC_B"), slices_.at("ACTIVE_VIR_B"), temp);
+    temp.scale(-1);
+    orbital_gradient_b_->set_block(slices_.at("ACTIVE_VIR_B"), slices_.at("ACTIVE_OCC_B"), temp.transpose());
 
     global_dpd_->file2_close(&Xai);
     global_dpd_->file2_close(&Xia);
@@ -396,10 +378,11 @@ void DCTSolver::compute_orbital_gradient_OV(bool separate_gbargamma) {
         // and not the full gamma for the other 2RDM terms.
         // All we need is (gbargamma)^i_p gamma^p_a.
         auto zero = Dimension(nirrep_);
-        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(zero, soccpi_ + doccpi_), Slice(zero, nsopi_));
-        auto gbar_beta_block = mo_gbarGamma_B_.get_block(Slice(zero, doccpi_), Slice(zero, nsopi_));
-        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), Slice(soccpi_ + doccpi_, nsopi_));
-        auto gamma_beta_block = mo_gammaB_.get_block(Slice(zero, nsopi_), Slice(doccpi_, nsopi_));
+        const auto& SO = slices_.at("SO");
+        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(zero, soccpi_ + doccpi_), SO);
+        auto gbar_beta_block = mo_gbarGamma_B_.get_block(Slice(zero, doccpi_), SO);
+        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), SO);
+        auto gamma_beta_block = mo_gammaB_.get_block(Slice(zero, nsopi_), SO);
         auto alpha_jk = linalg::doublet(gbar_alpha_block, gamma_alpha_block, false, false);
         auto beta_jk = linalg::doublet(gbar_beta_block, gamma_beta_block, false, false);
 
@@ -935,81 +918,49 @@ void DCTSolver::compute_orbital_rotation_jacobi() {
 
     // Determine the orbital rotation step
     // Alpha spin
+    auto X_a = Matrix("Alpha orbital step", nirrep_, nmopi_, nmopi_);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {
             for (int a = naoccpi_[h]; a < nmopi_[h]; ++a) {
                 double value = orbital_gradient_a_->get(h, i, a) /
                                (2.0 * (moFa_->get(h, i, i) - moFa_->get(h, a, a)) + orbital_level_shift_);
-                X_a_->set(h, i, a, value);
-                X_a_->set(h, a, i, (-1.0) * value);
+                X_a.set(h, i, a, value);
+                X_a.set(h, a, i, (-1.0) * value);
             }
         }
     }
 
     // Beta spin
+    auto X_b = Matrix("Beta orbital step", nirrep_, nmopi_, nmopi_);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < nboccpi_[h]; ++i) {
             for (int a = nboccpi_[h]; a < nmopi_[h]; ++a) {
                 double value = orbital_gradient_b_->get(h, i, a) /
                                (2.0 * (moFb_->get(h, i, i) - moFb_->get(h, a, a)) + orbital_level_shift_);
-                X_b_->set(h, i, a, value);
-                X_b_->set(h, a, i, (-1.0) * value);
+                X_b.set(h, i, a, value);
+                X_b.set(h, a, i, (-1.0) * value);
             }
         }
     }
 
     // Determine the rotation generator with respect to the reference orbitals
-    Xtotal_a_->add(X_a_);
-    Xtotal_b_->add(X_b_);
+    Xtotal_a_->add(X_a);
+    Xtotal_b_->add(X_b);
 
     dct_timer_off("DCTSolver::compute_orbital_rotation_jacobi()");
+}
+
+void DCTSolver::rotate_matrix(const Matrix& X, const Matrix& old, Matrix& target) {
+    auto U = *X.clone();
+    U.expm(4, true);
+    target.gemm(false, false, 1.0, old, U, 0.0);
 }
 
 void DCTSolver::rotate_orbitals() {
     dct_timer_on("DCTSolver::rotate_orbitals()");
 
-    // Initialize the orbital rotation matrix
-    auto U_a = Matrix("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_);
-    auto U_b = Matrix("Orbital rotation matrix (Beta)", nirrep_, nmopi_, nmopi_);
-
-    // Compute the orbital rotation matrix and rotate the orbitals
-
-    // U = I
-    U_a.identity();
-    U_b.identity();
-
-    // U += X
-    U_a.add(Xtotal_a_);
-    U_b.add(Xtotal_b_);
-
-    // U += 0.5 * X * X
-    U_a.gemm(false, false, 0.5, Xtotal_a_, Xtotal_a_, 1.0);
-    U_b.gemm(false, false, 0.5, Xtotal_b_, Xtotal_b_, 1.0);
-
-    // Orthogonalize the U vectors
-    int rowA = U_a.nrow();
-    int colA = U_a.ncol();
-
-    double** U_a_block = block_matrix(rowA, colA);
-    memset(U_a_block[0], 0, sizeof(double) * rowA * colA);
-    U_a_block = U_a.to_block_matrix();
-    schmidt(U_a_block, rowA, colA, "outfile");
-    U_a.set(U_a_block);
-    free_block(U_a_block);
-
-    int rowB = U_b.nrow();
-    int colB = U_b.ncol();
-
-    double** U_b_block = block_matrix(rowB, colB);
-    memset(U_b_block[0], 0, sizeof(double) * rowB * colB);
-    U_b_block = U_b.to_block_matrix();
-    schmidt(U_b_block, rowB, colB, "outfile");
-    U_b.set(U_b_block);
-    free_block(U_b_block);
-
-    // Rotate the orbitals
-    Ca_->gemm(false, false, 1.0, *old_ca_, U_a, 0.0);
-    Cb_->gemm(false, false, 1.0, *old_cb_, U_b, 0.0);
+    rotate_matrix(*Xtotal_a_, *old_ca_, *Ca_);
+    rotate_matrix(*Xtotal_b_, *old_cb_, *Cb_);
 
     dct_timer_off("DCTSolver::rotate_orbitals()");
 }

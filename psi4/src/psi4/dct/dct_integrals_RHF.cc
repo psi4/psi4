@@ -243,47 +243,23 @@ void DCTSolver::transform_core_integrals_RHF() {
     // Transform one-electron integrals to the MO basis and store them in the DPD file
     dpdfile2 H;
     Matrix aH(so_h_);
-    Matrix bH(so_h_);
     aH.transform(Ca_);
-    bH.transform(Cb_);
 
     global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "H <O|O>");
-    global_dpd_->file2_mat_init(&H);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < naoccpi_[h]; ++i) {
-            for (int j = 0; j < naoccpi_[h]; ++j) {
-                H.matrix[h][i][j] = aH.get(h, i, j);
-            }
-        }
-    }
-    global_dpd_->file2_mat_wrt(&H);
-    global_dpd_->file2_mat_close(&H);
+    const auto& O_slice = slices_.at("ACTIVE_OCC_A");
+    auto temp = *aH.get_block(O_slice);
+    temp.write_to_dpdfile2(&H);
     global_dpd_->file2_close(&H);
 
     global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "H <V|V>");
-    global_dpd_->file2_mat_init(&H);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int a = 0; a < navirpi_[h]; ++a) {
-            for (int b = 0; b < navirpi_[h]; ++b) {
-                H.matrix[h][a][b] = aH.get(h, naoccpi_[h] + a, naoccpi_[h] + b);
-            }
-        }
-    }
-    global_dpd_->file2_mat_wrt(&H);
-    global_dpd_->file2_mat_close(&H);
+    const auto &V_slice = slices_.at("ACTIVE_VIR_A");
+    temp = *aH.get_block(V_slice);
+    temp.write_to_dpdfile2(&H);
     global_dpd_->file2_close(&H);
 
     global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "H <O|V>");
-    global_dpd_->file2_mat_init(&H);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < naoccpi_[h]; ++i) {
-            for (int j = 0; j < navirpi_[h]; ++j) {
-                H.matrix[h][i][j] = aH.get(h, i, naoccpi_[h] + j);
-            }
-        }
-    }
-    global_dpd_->file2_mat_wrt(&H);
-    global_dpd_->file2_mat_close(&H);
+    temp = *aH.get_block(O_slice, V_slice);
+    temp.write_to_dpdfile2(&H);
     global_dpd_->file2_close(&H);
 }
 
@@ -298,10 +274,8 @@ void DCTSolver::build_denominators_RHF() {
     dpdbuf4 D;
     dpdfile2 F;
 
-    auto *aOccEvals = new double[nalpha_];
-    auto *bOccEvals = new double[nbeta_];
-    auto *aVirEvals = new double[navir_];
-    auto *bVirEvals = new double[nbvir_];
+    auto aOccEvals = std::vector<double>(nalpha_);
+    auto aVirEvals = std::vector<double>(navir_);
     // Pick out the diagonal elements of the Fock matrix, making sure that they are in the order
     // used by the DPD library, i.e. starting from zero for each space and ordering by irrep
     int aOccCount = 0, aVirCount = 0;
@@ -316,6 +290,8 @@ void DCTSolver::build_denominators_RHF() {
 
     // Diagonal elements of the Fock matrix
     // Alpha spin
+    aocc_c_ = Ca_->get_block(slices_.at("SO"), slices_.at("ACTIVE_OCC_A"));
+    avir_c_ = Ca_->get_block(slices_.at("SO"), slices_.at("ACTIVE_VIR_A"));
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {
             if (!exact_tau_) {
@@ -323,7 +299,6 @@ void DCTSolver::build_denominators_RHF() {
             } else {
                 aOccEvals[aOccCount++] = moFa_->get(h, i, i) / (1.0 + 2.0 * T_OO.matrix[h][i][i]);
             }
-            for (int mu = 0; mu < nsopi_[h]; ++mu) aocc_c_->set(h, mu, i, Ca_->get(h, mu, i));
         }
 
         for (int a = 0; a < navirpi_[h]; ++a) {
@@ -333,7 +308,6 @@ void DCTSolver::build_denominators_RHF() {
                 aVirEvals[aVirCount++] =
                     moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) / (1.0 - 2.0 * T_VV.matrix[h][a][a]);
             }
-            for (int mu = 0; mu < nsopi_[h]; ++mu) avir_c_->set(h, mu, a, Ca_->get(h, mu, naoccpi_[h] + a));
         }
     }
 
@@ -347,15 +321,12 @@ void DCTSolver::build_denominators_RHF() {
         // Alpha occupied
         global_dpd_->file2_init(&F, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "F <O|O>");
         global_dpd_->file2_mat_init(&F);
-        int offset = 0;
         for (int h = 0; h < nirrep_; ++h) {
-            offset += frzcpi_[h];
             for (int i = 0; i < naoccpi_[h]; ++i) {
                 for (int j = 0; j < naoccpi_[h]; ++j) {
                     F.matrix[h][i][j] = moFa_->get(h, i, j);
                 }
             }
-            offset += nmopi_[h];
         }
         global_dpd_->file2_mat_wrt(&F);
         global_dpd_->file2_mat_close(&F);
@@ -364,15 +335,12 @@ void DCTSolver::build_denominators_RHF() {
         // Alpha Virtual
         global_dpd_->file2_init(&F, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "F <V|V>");
         global_dpd_->file2_mat_init(&F);
-        offset = 0;
         for (int h = 0; h < nirrep_; ++h) {
-            offset += naoccpi_[h];
             for (int i = 0; i < navirpi_[h]; ++i) {
                 for (int j = 0; j < navirpi_[h]; ++j) {
                     F.matrix[h][i][j] = moFa_->get(h, i + naoccpi_[h], j + naoccpi_[h]);
                 }
             }
-            offset += nmopi_[h] - naoccpi_[h];
         }
         global_dpd_->file2_mat_wrt(&F);
         global_dpd_->file2_mat_close(&F);
@@ -396,11 +364,6 @@ void DCTSolver::build_denominators_RHF() {
         global_dpd_->buf4_mat_irrep_close(&D, h);
     }
     global_dpd_->buf4_close(&D);
-
-    delete[] aOccEvals;
-    delete[] bOccEvals;
-    delete[] aVirEvals;
-    delete[] bVirEvals;
 
     dct_timer_off("DCTSolver::build_denominators()");
 }

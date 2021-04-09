@@ -70,6 +70,16 @@ void DCTSolver::init() {
     navir_ = navirpi_.sum();
     nbvir_ = nbvirpi_.sum();
 
+    auto zero = Dimension(nirrep_);
+    slices_ = {
+        {"SO",  Slice(zero, nsopi_)},
+        {"MO",  Slice(zero, nmopi_)},
+        {"ACTIVE_OCC_A",  Slice(frzcpi_, nalphapi_)},
+        {"ACTIVE_OCC_B",  Slice(frzcpi_, nbetapi_)},
+        {"ACTIVE_VIR_A",  Slice(nalphapi_, nalphapi_ + navirpi_)},
+        {"ACTIVE_VIR_B",  Slice(nbetapi_, nbetapi_ + nbvirpi_)}
+    };
+
     aocc_c_ = std::make_shared<Matrix>("Alpha Occupied MO Coefficients", nirrep_, nsopi_, naoccpi_);
     bocc_c_ = std::make_shared<Matrix>("Beta Occupied MO Coefficients", nirrep_, nsopi_, nboccpi_);
     avir_c_ = std::make_shared<Matrix>("Alpha Virtual MO Coefficients", nirrep_, nsopi_, navirpi_);
@@ -92,8 +102,6 @@ void DCTSolver::init() {
     kappa_so_b_ = std::make_shared<Matrix>("Beta Kappa Matrix", nirrep_, nsopi_, nsopi_);
     g_tau_a_ = std::make_shared<Matrix>("Alpha External Potential Matrix", nirrep_, nsopi_, nsopi_);
     g_tau_b_ = std::make_shared<Matrix>("Beta External Potential Matrix", nirrep_, nsopi_, nsopi_);
-    moG_tau_a_ = std::make_shared<Matrix>("GTau in the MO basis (Alpha)", nirrep_, nmopi_, nmopi_);
-    moG_tau_b_ = std::make_shared<Matrix>("GTau in the MO basis (Beta)", nirrep_, nmopi_, nmopi_);
     ao_s_ = std::make_shared<Matrix>("SO Basis Overlap Integrals", nirrep_, nsopi_, nsopi_);
     so_h_ = Matrix("SO basis one-electron integrals", nirrep_, nsopi_, nsopi_);
     s_half_inv_ = std::make_shared<Matrix>("SO Basis Inverse Square Root Overlap Matrix", nirrep_, nsopi_, nsopi_);
@@ -139,10 +147,6 @@ void DCTSolver::init() {
     if (options_.get_str("ALGORITHM") == "QC" || orbital_optimized_) {
         orbital_gradient_a_ = std::make_shared<Matrix>("MO basis Orbital Gradient (Alpha)", nirrep_, nmopi_, nmopi_);
         orbital_gradient_b_ = std::make_shared<Matrix>("MO basis Orbital Gradient (Beta)", nirrep_, nmopi_, nmopi_);
-        X_a_ = std::make_shared<Matrix>("Generator of the orbital rotations w.r.t. previous orbitals (Alpha)", nirrep_,
-                                        nmopi_, nmopi_);
-        X_b_ = std::make_shared<Matrix>("Generator of the orbital rotations w.r.t. previous orbitals (Beta)", nirrep_,
-                                        nmopi_, nmopi_);
         Xtotal_a_ = std::make_shared<Matrix>("Generator of the orbital rotations w.r.t. reference orbitals (Alpha)",
                                              nirrep_, nmopi_, nmopi_);
         Xtotal_b_ = std::make_shared<Matrix>("Generator of the orbital rotations w.r.t. reference orbitals (Beta)",
