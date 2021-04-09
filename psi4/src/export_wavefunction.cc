@@ -113,9 +113,11 @@ void export_wavefunction(py::module& m) {
 
               Parameters
               ----------
-              basis : {'SO', AO'}
+              basis : str
+                  {'SO', AO'}
                   Should the subset be of symmetry orbitals or atomic orbitals?
-              subset : {'ALL', 'ACTIVE', 'FROZEN', 'OCC', 'VIR', 'FROZEN_OCC', 'ACTIVE_OCC', 'ACTIVE_VIR', 'FROZEN_VIR'}
+              subset : str
+                  {'ALL', 'ACTIVE', 'FROZEN', 'OCC', 'VIR', 'FROZEN_OCC', 'ACTIVE_OCC', 'ACTIVE_VIR', 'FROZEN_VIR'}
                   Which subspace of orbitals should be returned?
 
               Returns
@@ -129,9 +131,11 @@ void export_wavefunction(py::module& m) {
 
               Parameters
               ----------
-              basis : {'SO', 'AO'}
+              basis : str
+                  {'SO', 'AO'}
                   Should the subset be of symmetry orbitals or atomic orbitals?
-              subset : {'ALL', 'ACTIVE', 'FROZEN', 'OCC', 'VIR', 'FROZEN_OCC', 'ACTIVE_OCC', 'ACTIVE_VIR', 'FROZEN_VIR'}
+              subset : str
+                  {'ALL', 'ACTIVE', 'FROZEN', 'OCC', 'VIR', 'FROZEN_OCC', 'ACTIVE_OCC', 'ACTIVE_VIR', 'FROZEN_VIR'}
                   Which subspace of orbitals should be returned?
 
               Returns
@@ -420,87 +424,6 @@ void export_wavefunction(py::module& m) {
         .def("print_trailer", &fisapt::FISAPT::print_trailer, "Print SAPT results.");
 
     /// CIWavefunction functions
-    void (detci::CIWavefunction::*py_ci_sigma)(std::shared_ptr<psi::detci::CIvect>, std::shared_ptr<psi::detci::CIvect>,
-                                               int, int) = &detci::CIWavefunction::sigma;
-    void (detci::CIWavefunction::*py_ci_int_sigma)(std::shared_ptr<psi::detci::CIvect>,
-                                                   std::shared_ptr<psi::detci::CIvect>, int, int, SharedVector,
-                                                   SharedVector) = &detci::CIWavefunction::sigma;
-
-    typedef std::vector<SharedMatrix> (detci::CIWavefunction::*form_density_sig)(
-        std::shared_ptr<psi::detci::CIvect>, std::shared_ptr<psi::detci::CIvect>, int, int);
-
-    py::class_<detci::CIWavefunction, std::shared_ptr<detci::CIWavefunction>, Wavefunction>(m, "CIWavefunction",
-                                                                                            "docstring")
-        .def(py::init<std::shared_ptr<Wavefunction>>())
-        .def("get_dimension", &detci::CIWavefunction::get_dimension, "docstring")
-        .def("diag_h", &detci::CIWavefunction::diag_h, "docstring")
-        .def("ndet", &detci::CIWavefunction::ndet, "docstring")
-        .def("transform_ci_integrals", &detci::CIWavefunction::transform_ci_integrals, "docstring")
-        .def("transform_mcscf_integrals", &detci::CIWavefunction::transform_mcscf_integrals, "docstring")
-        .def("rotate_mcscf_integrals", &detci::CIWavefunction::rotate_mcscf_integrals, "docstring")
-        .def("pitzer_to_ci_order_onel", &detci::CIWavefunction::pitzer_to_ci_order_onel, "docstring")
-        .def("pitzer_to_ci_order_twoel", &detci::CIWavefunction::pitzer_to_ci_order_twoel, "docstring")
-        .def("get_orbitals", &detci::CIWavefunction::get_orbitals, "docstring")
-        .def("set_orbitals", &detci::CIWavefunction::set_orbitals, "docstring")
-        .def("form_opdm", &detci::CIWavefunction::form_opdm, "docstring")
-        .def("form_tpdm", &detci::CIWavefunction::form_tpdm, "docstring")
-        .def("get_opdm", &detci::CIWavefunction::get_opdm, R"pbdoc(
-              Returns the one-particle density or transition matrix.
-
-              Parameters
-              ----------
-              Iroot : int
-                  The index of the root in the bra. If Iroot and Jroot are -1, return the density matrix of root 0.
-                  Always use -1 for single-state calculations.
-              Jroot : int
-                  The index of the root in the ket. Select -1 for the same as Iroot.
-                  Always use -1 for single-state calculations.
-              spin : {'A', 'B', 'SUM'}
-                  Return the alpha density matrix, the beta density matrix, or their sum?
-              full_space : bool
-                  Return a density matrix in the space of all orbitals (true) or the active orbitals (false)?
-
-              Returns
-              -------
-              Matrix
-                  The selected one-particle density/transition matrix with Pitzer-ordered orbitals.
-                  Irrep h of the matrix corresponds to orbitals of irrep h.
-                  Element pq is <ψ|a^p a_q|ψ>.
-         )pbdoc")
-        .def("get_tpdm", &detci::CIWavefunction::get_tpdm, R"pbdoc(
-              Returns the two-particle density matrix.
-
-              Parameters
-              ----------
-              spin : {'AA', 'AB', 'BB', 'SUM'}
-                  Which spin-block of the TPDM should be returned? SUM sums over all possible spin cases.
-              symmetrize : bool
-                  Return a genuine TPDM element (false) or an "average" of TPDM elements that contract with the same integral (true)?
-
-              Returns
-              -------
-              np.ndarray
-                  The two-particle density matrix with Pitzer-ordered orbitals, restricted to the active space.
-                  If symmetrize is false, element pqrs is <ψ|a^p a^r a_s a_q|ψ>.
-                  If symmetrize is true, element pqrs is obtained by summing over all "flips" of p/s, q/r, and multiplying by 0.5.
-         )pbdoc")
-        .def("opdm", form_density_sig(&detci::CIWavefunction::opdm), "docstring")
-        .def("tpdm", form_density_sig(&detci::CIWavefunction::tpdm), "docstring")
-        .def("ci_nat_orbs", &detci::CIWavefunction::ci_nat_orbs, "docstring")
-        .def("semicanonical_orbs", &detci::CIWavefunction::semicanonical_orbs, "docstring")
-        .def("hamiltonian", &detci::CIWavefunction::hamiltonian, "docstring")
-        .def("new_civector", &detci::CIWavefunction::new_civector, "docstring")
-        .def("print_vector", &detci::CIWavefunction::print_vector, "docstring")
-        .def("Hd_vector", &detci::CIWavefunction::Hd_vector, "docstring")
-        .def("D_vector", &detci::CIWavefunction::D_vector, "docstring")
-        .def("mcscf_object", &detci::CIWavefunction::mcscf_object, "docstring")
-        .def("compute_state_transfer", &detci::CIWavefunction::compute_state_transfer, "docstring")
-        .def("sigma", py_ci_sigma, "docstring")
-        .def("sigma", py_ci_int_sigma, "docstring")
-        .def("cleanup_ci", &detci::CIWavefunction::cleanup_ci, "docstring")
-        .def("cleanup_dpd", &detci::CIWavefunction::cleanup_dpd, "docstring")
-        .def("set_ci_guess", &detci::CIWavefunction::set_ci_guess, "docstring");
-
     void (detci::CIvect::*py_civ_copy)(std::shared_ptr<psi::detci::CIvect>, int, int) = &detci::CIvect::copy;
     void (detci::CIvect::*py_civ_scale)(double, int) = &detci::CIvect::scale;
 
@@ -523,10 +446,105 @@ void export_wavefunction(py::module& m) {
         .def("set_nvec", &detci::CIvect::set_nvect, "docstring")
         .def_buffer([](detci::CIvect& vec) { return vec.array_interface(); });
 
+    void (detci::CIWavefunction::*py_ci_sigma)(std::shared_ptr<psi::detci::CIvect>, std::shared_ptr<psi::detci::CIvect>,
+                                               int, int) = &detci::CIWavefunction::sigma;
+    void (detci::CIWavefunction::*py_ci_int_sigma)(std::shared_ptr<psi::detci::CIvect>,
+                                                   std::shared_ptr<psi::detci::CIvect>, int, int, SharedVector,
+                                                   SharedVector) = &detci::CIWavefunction::sigma;
+
+    typedef std::vector<SharedMatrix> (detci::CIWavefunction::*form_density_sig)(
+        std::shared_ptr<psi::detci::CIvect>, std::shared_ptr<psi::detci::CIvect>, int, int);
+
+    py::class_<detci::CIWavefunction, std::shared_ptr<detci::CIWavefunction>, Wavefunction>(m, "CIWavefunction",
+                                                                                            "docstring")
+        .def(py::init<std::shared_ptr<Wavefunction>>())
+        .def("get_dimension", &detci::CIWavefunction::get_dimension, R"pbdoc(
+              Returns the dimension of requested orbital subspace.
+
+              Parameters
+              ----------
+              orbital_name : str
+                  {'FZC', 'DRC', 'DOCC', 'ACT', 'RAS1', 'RAS2', 'RAS3', 'RAS4', 'POP', 'VIR', 'FZV', 'DRV', 'ALL'}
+                  Which subspace of orbitals should be returned?
+         )pbdoc")
+        .def("diag_h", &detci::CIWavefunction::diag_h, "docstring")
+        .def("ndet", &detci::CIWavefunction::ndet, "docstring")
+        .def("transform_ci_integrals", &detci::CIWavefunction::transform_ci_integrals,
+            "Transforms the one- and two-electron integrals for a CI computation.")
+        .def("transform_mcscf_integrals", &detci::CIWavefunction::transform_mcscf_integrals, "docstring")
+        .def("rotate_mcscf_integrals", &detci::CIWavefunction::rotate_mcscf_integrals, "docstring")
+        .def("pitzer_to_ci_order_onel", &detci::CIWavefunction::pitzer_to_ci_order_onel, "docstring")
+        .def("pitzer_to_ci_order_twoel", &detci::CIWavefunction::pitzer_to_ci_order_twoel, "docstring")
+        .def("get_orbitals", &detci::CIWavefunction::get_orbitals, "docstring")
+        .def("set_orbitals", &detci::CIWavefunction::set_orbitals, "docstring")
+        .def("form_opdm", &detci::CIWavefunction::form_opdm, "docstring")
+        .def("form_tpdm", &detci::CIWavefunction::form_tpdm, "docstring")
+        .def("get_opdm", &detci::CIWavefunction::get_opdm,
+             "Iroot"_a, "Jroot"_a, "spin"_a, "full_space"_a, R"pbdoc(
+              Returns the one-particle density or transition matrix.
+
+              Parameters
+              ----------
+              Iroot : int
+                  The index of the root in the bra. If Iroot and Jroot are -1, return the density matrix of root 0.
+                  Always use -1 for single-state calculations.
+              Jroot : int
+                  The index of the root in the ket. Select -1 for the same as Iroot.
+                  Always use -1 for single-state calculations.
+              spin : str
+                  {'A', 'B', 'SUM'}
+                  Return the alpha density matrix, the beta density matrix, or their sum?
+              full_space : bool
+                  Return a density matrix in the space of all orbitals (true) or the active orbitals (false)?
+
+              Returns
+              -------
+              Matrix
+                  The selected one-particle density/transition matrix with Pitzer-ordered orbitals.
+                  Irrep h of the matrix corresponds to orbitals of irrep h.
+                  Element pq is <ψ|a^p a_q|ψ>.
+              )pbdoc")
+        .def("get_tpdm", &detci::CIWavefunction::get_tpdm,
+             "spin"_a, "symmetrize"_a, R"pbdoc(
+              Returns the two-particle density matrix.
+
+              Parameters
+              ----------
+              spin : str
+                  {"AA", "AB", "BB", "SUM"}
+                  Which spin-block of the TPDM should be returned? SUM sums over all possible spin cases.
+              symmetrize : bool
+                  Return a genuine TPDM element (false) or an "average" of TPDM elements that contract with the same integral (true)?
+                  Only working for SUM.
+
+              Returns
+              -------
+              Matrix
+                  The two-particle density matrix with Pitzer-ordered orbitals, restricted to the active space.
+                  If symmetrize is false, element pqrs is <ψ|a^p a^r a_s a_q|ψ>.
+                  If symmetrize is true, element pqrs is obtained by summing over all "flips" of p/s, q/r, and multiplying by 0.5.
+         )pbdoc")
+        .def("opdm", form_density_sig(&detci::CIWavefunction::opdm), "docstring")
+        .def("tpdm", form_density_sig(&detci::CIWavefunction::tpdm), "docstring")
+        .def("ci_nat_orbs", &detci::CIWavefunction::ci_nat_orbs, "docstring")
+        .def("semicanonical_orbs", &detci::CIWavefunction::semicanonical_orbs, "docstring")
+        .def("hamiltonian", &detci::CIWavefunction::hamiltonian, "docstring")
+        .def("new_civector", &detci::CIWavefunction::new_civector, "docstring")
+        .def("print_vector", &detci::CIWavefunction::print_vector, "docstring")
+        .def("Hd_vector", &detci::CIWavefunction::Hd_vector, "docstring")
+        .def("D_vector", &detci::CIWavefunction::D_vector, "docstring")
+        .def("mcscf_object", &detci::CIWavefunction::mcscf_object, "docstring")
+        .def("compute_state_transfer", &detci::CIWavefunction::compute_state_transfer, "docstring")
+        .def("sigma", py_ci_sigma, "docstring")
+        .def("sigma", py_ci_int_sigma, "docstring")
+        .def("cleanup_ci", &detci::CIWavefunction::cleanup_ci, "docstring")
+        .def("cleanup_dpd", &detci::CIWavefunction::cleanup_dpd, "docstring")
+        .def("set_ci_guess", &detci::CIWavefunction::set_ci_guess, "docstring");
+
     py::class_<ccenergy::CCEnergyWavefunction, std::shared_ptr<ccenergy::CCEnergyWavefunction>, Wavefunction>(
         m, "CCWavefunction", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, Options&>())
-        .def("get_amplitudes", &ccenergy::CCEnergyWavefunction::get_amplitudes, R"docstring(
+        .def("get_amplitudes", &ccenergy::CCEnergyWavefunction::get_amplitudes, R"pbdoc(
                Get dict of converged T amplitudes
 
                Returns
@@ -560,5 +578,5 @@ void export_wavefunction(py::module& m) {
 
                .. warning:: Symmetry free calculations only (nirreps > 1 will cause error)
                .. warning:: No checks that the amplitudes will fit in core. Do not use for proteins
-        )docstring");
+        )pbdoc");
 }

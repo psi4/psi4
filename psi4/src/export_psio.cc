@@ -35,6 +35,9 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 void export_psio(py::module &m) {
+
+    py::class_<psio_entry, std::shared_ptr<psio_entry>>(m, "psio_entry", "docstring");
+
     py::class_<PSIO, std::shared_ptr<PSIO> >(m, "IO", "docstring")
         .def("state", &PSIO::state, "Return 1 if PSIO library is activated")
         .def("open", &PSIO::open,

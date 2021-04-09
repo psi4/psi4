@@ -1174,6 +1174,17 @@ PYBIND11_MODULE(core, core) {
     // BLAS/LAPACK Static Wrappers
     export_blas_lapack(core);
 
+    // Define library classes
+    export_psio(core);
+    export_diis(core);
+    export_mints(core);
+    export_misc(core);
+    export_fock(core);
+    export_functional(core);
+    export_trans(core);
+    export_wavefunction(core);
+    export_options(core);
+
     // Plugins
     export_plugins(core);
 
@@ -1389,17 +1400,6 @@ PYBIND11_MODULE(core, core) {
     core.def("get_output_file", []() { return outfile_name; });
     //    core.def("print_version", [](){ print_version("stdout"); });
     core.def("set_psi_file_prefix", [](std::string fprefix) { psi_file_prefix = strdup(fprefix.c_str()); });
-
-    // Define library classes
-    export_psio(core);
-    export_diis(core);
-    export_mints(core);
-    export_functional(core);
-    export_misc(core);
-    export_fock(core);
-    export_trans(core);
-    export_wavefunction(core);
-    export_options(core);
 
     // ??
     // py::class_<Process::Environment>(core, "Environment")
