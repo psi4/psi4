@@ -28,8 +28,9 @@
 """Module with property-related helper functions."""
 
 import psi4
-from psi4 import core
 from . import optproc
+
+__all__ = ['free_atom_volumes']
 
 
 def free_atom_volumes(wfn, **kwargs):
@@ -48,9 +49,6 @@ def free_atom_volumes(wfn, **kwargs):
         The wave function associated with the molecule, method, and basis for 
         atomic computations
     """
-
-    # print level
-    print_level = core.get_global_option("PRINT")
 
     # the level of theory
     current_en = wfn.scalar_variable('CURRENT ENERGY')
@@ -87,19 +85,19 @@ def free_atom_volumes(wfn, **kwargs):
         basis = mol.basis_on_atom(atom)
         unq_atoms.add((symbol, Z, basis))
 
-    core.print_out(f"  Running {len(unq_atoms)} free-atom UHF computations")
+    psi4.core.print_out(f"  Running {len(unq_atoms)} free-atom UHF computations")
 
     optstash = optproc.OptionsState(['REFERENCE'])
     for a_sym, a_z, basis in unq_atoms:
 
         # make sure we do UHF/UKS if we're not a singlet
         if reference_S[a_z] != 0:
-            core.set_global_option("REFERENCE", "UHF")
+            psi4.core.set_global_option("REFERENCE", "UHF")
         else:
-            core.set_global_option("REFERENCE", "RHF")
+            psi4.core.set_global_option("REFERENCE", "RHF")
 
         # Set the molecule, here just an atom
-        a_mol = core.Molecule.from_arrays(geom=[0, 0, 0],
+        a_mol = psi4.core.Molecule.from_arrays(geom=[0, 0, 0],
                                           elem=[a_sym],
                                           molecular_charge=0,
                                           molecular_multiplicity=int(1 + reference_S[a_z]))
