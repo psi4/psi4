@@ -317,9 +317,8 @@ double CCEnergyWavefunction::compute_energy() {
         if (params_.aobasis != "NONE" || params_.df) dpd_close(1);
         dpd_close(0);
         cleanup();
-        timer_off("ccenergy");
         exit_io();
-        return Failure;
+        throw PSIEXCEPTION("Coupled Cluster wave function not converged.");
     }
 
     outfile->Printf("    SCF energy       (wfn)                    = %20.15f\n", moinfo_.escf);
