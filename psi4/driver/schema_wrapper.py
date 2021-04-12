@@ -66,9 +66,8 @@ methods_dict_ = {
     'hessian': driver.hessian,
     'frequency': driver.frequency,
 }
-can_do_properties_ = {
-    "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices",
-    "polarizability", "rotation", "roa_tensor"
+default_properties_ = {
+    "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices"
 }
 
 ## QCSchema translation blocks
@@ -542,14 +541,8 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
 
     # Handle special properties case
     if json_data["driver"] == "properties":
-        if "properties" in json_data["model"]:
-            kwargs["properties"] = [x.lower() for x in json_data["model"]["properties"]]
-
-            extra = set(kwargs["properties"]) - can_do_properties_
-            if len(extra):
-                raise KeyError("Did not understand property key %s." % kwargs["properties"])
-        else:
-            kwargs["properties"] = list(can_do_properties_)
+        if not "properties" in kwargs:
+            kwargs["properties"] = list(default_properties_)
 
     # Actual driver run
     val, wfn = methods_dict_[json_data["driver"]](method, **kwargs)
