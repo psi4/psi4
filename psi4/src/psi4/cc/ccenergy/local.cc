@@ -67,7 +67,7 @@ void Local_cc::local_init() {
 }
 
 void Local_cc::init_pno() {
-    outfile->Printf(" Local correlation using Pair Natural Orbitals\nCutoff value: %e \n", cutoff);
+    outfile->Printf("\n\tLocal correlation using Pair Natural Orbitals\n\tCutoff value: %e \n", cutoff);
     // TODO weak pairs here
     npairs = nocc*nocc;
 
@@ -106,11 +106,6 @@ void Local_cc::init_pno() {
     global_dpd_->buf4_init(&T2tilde, PSIF_CC_TMP0, 0, 0, 5, 0, 5, 0, "tIjAb ~");
     get_matvec(&T2tilde, &Ttij);
     global_dpd_->buf4_close(&T2tilde);
-
-    // Print check
-    /* outfile->Printf("*** IJ Matrices ***\n");
-    for(int ij=0; ij<Ttij.size(); ++ij)
-        Ttij.at(ij)->print(); */
 
     // Create Density
     std::vector<SharedMatrix> Dij;
@@ -159,7 +154,7 @@ void Local_cc::init_pno() {
 
 void Local_cc::init_pnopp(const double omega, bool combined) {
     if (combined == false) {
-        outfile->Printf(" Local correlation using Perturbed Pair Natural Orbitals\nCutoff value: %e\n", cutoff);
+        outfile->Printf("\n\tLocal correlation using Perturbed Pair Natural Orbitals\n\tCutoff value: %e\n", cutoff);
     }
     // TODO weak pairs here
     npairs = nocc*nocc;
@@ -189,7 +184,6 @@ void Local_cc::init_pnopp(const double omega, bool combined) {
     // d_ia = H_ii - H_aa
     //d_ijab = H_ii + H_jj - H_aa - H_bb
 
-    outfile->Printf("Building denoms...\n");
     dpdfile2 FMI;
     dpdbuf4 D;
     dpdbuf4 T2;
@@ -240,10 +234,7 @@ void Local_cc::init_pnopp(const double omega, bool combined) {
     }
     global_dpd_->file2_close(&FAE);
 
-    outfile->Printf("...done\n");
-
     // Build the similarity-transformed perturbation
-    outfile->Printf("Building Abar...\n");
     std::vector<std::string> cart_list = {"x","y","z"};
 
     // Do the similarity transformation with MP2 T2s
@@ -270,10 +261,8 @@ void Local_cc::init_pnopp(const double omega, bool combined) {
         global_dpd_->buf4_close(&pbar);
 
     }
-    outfile->Printf("...done\n");
 
     // Build X_ij as Abar/denom
-    outfile->Printf("Building X_ij...\n");
     std::vector<SharedMatrix> Dij;
     std::vector<SharedMatrix> Dtemp;
     SharedMatrix temp(new Matrix(nvir, nvir));
@@ -339,7 +328,6 @@ void Local_cc::init_pnopp(const double omega, bool combined) {
             Dij[ij]->add(Dtemp[ij]->clone());
         }
     }
-    outfile->Printf("...done\n");
     for(int ij=0; ij < npairs; ++ij) {
         Dij[ij]->scale(1.0/3);
     }
@@ -361,7 +349,7 @@ void Local_cc::init_pnopp(const double omega, bool combined) {
 }
 
 void Local_cc::init_cpnopp(const double omega) {
-    outfile->Printf("Local correlation using combined Perturbed Pair Natural Orbitals\nCutoff value: %e\n", cutoff);
+    outfile->Printf("\n\tLocal correlation using combined Perturbed Pair Natural Orbitals\n\tCutoff value: %e\n", cutoff);
     bool combined = true;
     init_pnopp(omega, combined);
 }
@@ -479,20 +467,23 @@ std::vector<SharedMatrix> Local_cc::build_PNO_lists(double cutoff, std::vector<S
     // Compute stats
     int total_pno = 0;
     double t2_ratio = 0.0;
-    outfile->Printf("\nSurvivor list: "); 
+    outfile->Printf("\n\t Survivor list: "); 
     for(int ij=0; ij < npairs; ++ij) {
-        outfile->Printf("%d\t", survivor_list[ij]);
+        if (ij % 10 == 0) {
+            outfile->Printf("\n\t");
+        }
+        outfile->Printf("%d ", survivor_list[ij]);
         total_pno += survivor_list[ij];
         t2_ratio += pow(survivor_list[ij],2);
     }
-    outfile->Printf("\nT2 ratio: %10.10lf \n", t2_ratio);
+    outfile->Printf("\n\tT2 ratio: %10.10lf \n", t2_ratio);
     double avg_pno = static_cast<float>(total_pno) / static_cast<float>(npairs);
     t2_ratio /= (nocc*nocc*nvir*nvir);
 
     // Print stats
-    outfile->Printf("Total number of PNOs: %i \n", total_pno);
-    outfile->Printf("Average number of PNOs: %10.10lf \n", avg_pno);
-    outfile->Printf("T2 ratio: %10.10lf \n", t2_ratio);
+    outfile->Printf("\tTotal number of PNOs: %i \n", total_pno);
+    outfile->Printf("\tAverage number of PNOs: %10.10lf \n", avg_pno);
+    outfile->Printf("\tT2 ratio: %10.10lf \n", t2_ratio);
 
     // Truncate Q
     for(int ij=0; ij < npairs; ++ij) {
