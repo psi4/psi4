@@ -276,36 +276,44 @@ void DirectJK::compute_JK() {
     static std::vector<SharedMatrix> J_temp;
     static std::vector<SharedMatrix> K_temp;
 
-    std::vector<SharedMatrix> del_D;
-    std::vector<SharedMatrix> del_J;
-    std::vector<SharedMatrix> del_K;
+    static std::vector<SharedMatrix> del_D;
+    static std::vector<SharedMatrix> del_J;
+    static std::vector<SharedMatrix> del_K;
+
+    double Dnorm = Process::environment.globals["SCF RMS D"];
+
+    bool do_incr_fock = (iteration_ >= 1) && (Dnorm > 1.0e-5) && incr_fock_;
 
     if (incr_fock_) {
-        del_D.resize(D_ao_.size());
-        del_J.resize(J_ao_.size());
-        del_K.resize(K_ao_.size());
 
         if (iteration_ == 0) {
             J_temp.resize(J_ao_.size());
             K_temp.resize(K_ao_.size());
+
+            del_D.resize(D_ao_.size());
+            del_J.resize(J_ao_.size());
+            del_K.resize(K_ao_.size());
         }
+
         for (size_t N = 0; N < D_ao_.size(); N++) {
-            del_D[N] = std::make_shared<Matrix>(D_ao_[N]);
-            del_D[N]->subtract(D_ao_prev_[N]);
-
-            del_J[N] = std::make_shared<Matrix>("Delta J", primary_->nbf(), primary_->nbf());
-            del_K[N] = std::make_shared<Matrix>("Delta K", primary_->nbf(), primary_->nbf());
-
             if (iteration_ == 0) {
+                del_D[N] = std::make_shared<Matrix>(D_ao_[N]);
+                del_D[N]->subtract(D_ao_prev_[N]);
+
+                del_J[N] = std::make_shared<Matrix>("Delta J", primary_->nbf(), primary_->nbf());
+                del_K[N] = std::make_shared<Matrix>("Delta K", primary_->nbf(), primary_->nbf());
                 J_temp[N] = std::make_shared<Matrix>("J Temp", primary_->nbf(), primary_->nbf());
                 K_temp[N] = std::make_shared<Matrix>("K Temp", primary_->nbf(), primary_->nbf());
+            } else {
+                del_D[N]->copy(D_ao_[N]);
+                del_D[N]->subtract(D_ao_prev_[N]);
             }
         }
     }
     
-    std::vector<SharedMatrix>& D_ref = (incr_fock_ ? del_D : D_ao_);
-    std::vector<SharedMatrix>& J_ref = (incr_fock_ ? del_J : J_ao_);
-    std::vector<SharedMatrix>& K_ref = (incr_fock_ ? del_K : K_ao_);
+    std::vector<SharedMatrix>& D_ref = (do_incr_fock ? del_D : D_ao_);
+    std::vector<SharedMatrix>& J_ref = (do_incr_fock ? del_J : J_ao_);
+    std::vector<SharedMatrix>& K_ref = (do_incr_fock ? del_K : K_ao_);
  
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
@@ -353,45 +361,41 @@ void DirectJK::compute_JK() {
     // Incremental Fock Build Code
     if (!do_wK_ && incr_fock_ && (do_J_ || do_K_)) {
         if (do_J_ && do_K_) {
-            if (iteration_ == 0) {
-                outfile->Printf("\tGET DOWN, WE WON'T LET YOU GO!!!\n");
-                for (size_t N = 0; N < D_ao_.size(); N++) {
-                    J_temp[N]->copy(del_J[N]);
-                    K_temp[N]->copy(del_K[N]);
-                    J_ao_[N]->copy(J_temp[N]);
-                    K_ao_[N]->copy(K_temp[N]);
-                }
-            } else {
-                outfile->Printf("\tTHIS TIME, YOU CAN'T BRING US DOWN!!!\n");
+            if (do_incr_fock) { // RMS D greater than 1.0e-5
+                outfile->Printf("But I guess you already know me, sort of.\n");
                 for (size_t N = 0; N < D_ao_.size(); N++) {
                     J_temp[N]->add(del_J[N]);
                     K_temp[N]->add(del_K[N]);
                     J_ao_[N]->copy(J_temp[N]);
                     K_ao_[N]->copy(K_temp[N]);
+                }
+            } else { // RMS D less than 1.0e-5
+                outfile->Printf("Hello, Zuko here.\n");
+                for (size_t N = 0; N < D_ao_.size(); N++) {
+                    J_temp[N]->copy(J_ao_[N]);
+                    K_temp[N]->copy(K_ao_[N]);
                 }
             }
         } else if (do_J_) {
-            if (iteration_ == 0) {
-                for (size_t N = 0; N < D_ao_.size(); N++) {
-                    J_temp[N]->copy(del_J[N]);
-                    J_ao_[N]->copy(J_temp[N]);
-                }
-            } else {
+            if (do_incr_fock) {
                 for (size_t N = 0; N < D_ao_.size(); N++) {
                     J_temp[N]->add(del_J[N]);
                     J_ao_[N]->copy(J_temp[N]);
                 }
+            } else {
+                for (size_t N = 0; N < D_ao_.size(); N++) {
+                    J_temp[N]->copy(J_ao_[N]);
+                }
             }
         } else {
-            if (iteration_ == 0) {
+            if (do_incr_fock) {
                 for (size_t N = 0; N < D_ao_.size(); N++) {
-                    K_temp[N]->copy(del_K[N]);
+                    K_temp[N]->add(del_K[N]);
                     K_ao_[N]->copy(K_temp[N]);
                 }
             } else {
                 for (size_t N = 0; N < D_ao_.size(); N++) {
-                    K_temp[N]->add(del_K[N]);
-                    K_ao_[N]->copy(K_temp[N]);
+                    K_temp[N]->copy(K_ao_[N]);
                 }
             }
         }
