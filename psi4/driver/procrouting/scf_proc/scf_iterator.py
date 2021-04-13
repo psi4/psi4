@@ -443,6 +443,11 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.Da().print_out()
             self.Db().print_out()
 
+        # Set the current energy and density convergence values
+        core.set_variable("SCF Delta E", Ediff)
+        core.set_variable("SCF RMS D", Dnorm)
+
+
         # Print out the iteration
         core.print_out(
             "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
