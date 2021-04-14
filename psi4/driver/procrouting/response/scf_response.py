@@ -434,7 +434,8 @@ def tdscf_excitations(wfn,
                       r_convergence: float = 1.0e-4,
                       maxiter: int = 60,
                       guess: str = "DENOMINATORS",
-                      verbose: int = 1):
+                      verbose: int = 1,
+                      coeff_cutoff: float = 0.1):
     """Compute excitations from a SCF(HF/KS) wavefunction
 
     Parameters
@@ -492,6 +493,9 @@ def tdscf_excitations(wfn,
     verbose : int, optional.
        How verbose should the solver be?
        Default: 1
+    coeff_cutoff : float, optional.
+       Cutoff for printing out excitation and deexcitation coefficients.
+       Default: 0.1
 
     Notes
     -----
@@ -679,6 +683,102 @@ def tdscf_excitations(wfn,
             f"    {i+1:^4} {sym_descr:^20} {x.E_ex_au:< 15.5f} {E_ex_ev:< 15.5f} {E_tot_au:< 15.5f} {x.f_length:< 15.4f} {x.f_velocity:< 15.4f} {x.R_length:< 15.4f} {x.R_velocity:< 15.4f}\n"
         )
 
+    core.print_out("\n")
+
+# Print out TDM vectors just length representation for now: other forms could be added)
+    core.print_out("Electric Transition Dipole Moments (Length) (AU):\nState       X          Y          Z\n")
+    for i, x in enumerate(_results):
+        core.print_out(f" {i+1: 4} {x.edtm_length[0]:< 10.6f} {x.edtm_length[1]:< 10.6f} {x.edtm_length[2]:< 10.6f}\n")
+
+# Print contributing transitions...
+    core.print_out(f"\n\nContributing excitations{'' if tda else ' and deexcitations'}")
+#...only currently for C1 symmetry
+    if wfn.molecule().point_group().symbol() != 'c1':
+        core.print_out("...only curently available with C1 symmetry\n")
+    else:
+        core.print_out(f"\nOnly contributions with coefficients >{coeff_cutoff: .2e} will be printed:\n")
+        for i, x in enumerate(_results):
+            E_ex_nm = 1e9 / (constants.conversion_factor('hartree', 'm^-1') * x.E_ex_au)
+            core.print_out(f"\nExcited State {i+1:4} ({1 if x.spin_mult== 'singlet' else 3} {x.irrep_ES}):")
+            core.print_out(f"{x.E_ex_au:> 10.5f} Ha   {E_ex_nm: >.2f} nm f = {x.f_length: >.4f}\n")
+
+            if not restricted:
+                core.print_out("Alpha orbitals:\n")
+# Extract contributing transitions from left and right eigenvectors from solver
+            if tda:
+                X = x.L_eigvec if restricted else x.L_eigvec[0]
+                Xssq = X.sum_of_squares()
+                core.print_out(f"  Sums of squares: Xssq = {Xssq: .6e}\n")
+            else:
+                L = x.L_eigvec if restricted else x.L_eigvec[0]
+                R = x.R_eigvec if restricted else x.R_eigvec[0]
+                X = L.clone()
+                X.add(R)
+                X.scale(0.5)
+                Y = R.clone()
+                Y.subtract(L)
+                Y.scale(0.5)
+                Xssq = X.sum_of_squares()
+                Yssq = Y.sum_of_squares()
+
+                core.print_out(f"  Sums of squares: Xssq = {Xssq: .6e}; Yssq = {Yssq: .6e}; Xssq - Yssq = {Xssq-Yssq: .6e}\n")
+
+            nocc = X.rows()
+            nvirt = X.cols()
+# Ignore any scaling for now
+            div = 1
+# Excitations
+            for row in range(nocc):
+                for col in range(nvirt):
+                    coef = X.get(row,col)/div
+                    if abs(coef) > coeff_cutoff:
+                        perc = 100 * coef**2
+                        core.print_out(f"   {row+1: 3} ->{col+1+nocc: 3}  {coef: 10.6f} ({perc: >6.3f}%)\n")
+# Deexcitations if not using TDA
+            if not tda:
+                for row in range(nocc):
+                    for col in range(nvirt):
+                        coef = Y.get(row,col)/div
+                        if abs(coef) > coeff_cutoff:
+                            perc = 100 * coef**2
+                            core.print_out(f"   {row+1: 3} <-{col+1+nocc: 3}  {coef: 10.6f} ({perc: >6.3f}%)\n")
+# Now treat beta orbitals if needed
+            if not restricted:
+                core.print_out("Beta orbitals:\n")
+                if tda:
+                    X = x.L_eigvec if restricted else x.L_eigvec[1]
+                    Xssq = X.sum_of_squares()
+                    core.print_out(f"  Sums of squares: Xssq = {Xssq: .6e}\n")
+                else:
+                    L = x.L_eigvec if restricted else x.L_eigvec[1]
+                    R = x.R_eigvec if restricted else x.R_eigvec[1]
+                    X = L.clone()
+                    X.add(R)
+                    X.scale(0.5)
+                    Y = R.clone()
+                    Y.subtract(L)
+                    Y.scale(0.5)
+                    nocc = X.rows()
+                    nvirt = X.cols()
+                    Xssq = X.sum_of_squares()
+                    Yssq = Y.sum_of_squares()
+
+                    core.print_out(f"  Sums of squares: Xssq = {Xssq: .6e}; Yssq = {Yssq: .6e}; Xssq - Yssq = {Xssq-Yssq: .6e}\n")
+# Excitations
+                for row in range(nocc):
+                    for col in range(nvirt):
+                        coef = X.get(row,col)/div
+                        if abs(coef) > coeff_cutoff:
+                            perc = 100 * coef**2
+                            core.print_out(f"   {row+1: 3}B->{col+1+nocc: 3}B {coef: 10.6f} ({perc: >6.3f}%)\n")
+# Deexcitations if not using TDA:
+                if not tda:
+                    for row in range(nocc):
+                        for col in range(nvirt):
+                            coef = Y.get(row,col)/div
+                            if abs(coef) > coeff_cutoff:
+                                perc = 100 * coef**2
+                                core.print_out(f"   {row+1: 3}B<-{col+1+nocc: 3}B {coef: 10.6f} ({perc: >6.3f}%)\n")
     core.print_out("\n")
 
     return solver_results

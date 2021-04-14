@@ -1652,6 +1652,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("TDSCF_MAXITER", 60);
         /*- Verbosity level in TDSCF -*/
         options.add_int("TDSCF_PRINT", 1);
+        /*- Cutoff for printing excitations and deexcitations icontributing to each excited state -*/
+        options.add_double("TDSCF_COEFF_CUTOFF", 0.1);
 
         /*- combine omega exchange and Hartree--Fock exchange into
               one matrix for efficiency?
