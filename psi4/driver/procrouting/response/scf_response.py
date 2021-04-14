@@ -758,12 +758,13 @@ def tdscf_excitations(wfn,
                     Y = R.clone()
                     Y.subtract(L)
                     Y.scale(0.5)
-                    nocc = X.rows()
-                    nvirt = X.cols()
                     Xssq = X.sum_of_squares()
                     Yssq = Y.sum_of_squares()
 
                     core.print_out(f"  Sums of squares: Xssq = {Xssq: .6e}; Yssq = {Yssq: .6e}; Xssq - Yssq = {Xssq-Yssq: .6e}\n")
+
+                nocc = X.rows()
+                nvirt = X.cols()
 # Excitations
                 for row in range(nocc):
                     for col in range(nvirt):
