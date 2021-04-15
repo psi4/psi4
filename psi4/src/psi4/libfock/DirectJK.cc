@@ -362,7 +362,6 @@ void DirectJK::compute_JK() {
     if (!do_wK_ && incr_fock_ && (do_J_ || do_K_)) {
         if (do_J_ && do_K_) {
             if (do_incr_fock) { // RMS D greater than 1.0e-5
-                outfile->Printf("But I guess you already know me, sort of.\n");
                 for (size_t N = 0; N < D_ao_.size(); N++) {
                     J_temp[N]->add(del_J[N]);
                     K_temp[N]->add(del_K[N]);
@@ -370,7 +369,6 @@ void DirectJK::compute_JK() {
                     K_ao_[N]->copy(K_temp[N]);
                 }
             } else { // RMS D less than 1.0e-5
-                outfile->Printf("Hello, Zuko here.\n");
                 for (size_t N = 0; N < D_ao_.size(); N++) {
                     J_temp[N]->copy(J_ao_[N]);
                     K_temp[N]->copy(K_ao_[N]);
