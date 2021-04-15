@@ -535,4 +535,4 @@ Bibliography
 
 .. [Haser:1989:104]
    M. Haser and R. Ahlrichs,
-   *J. Comp. Chem.* **10(1)**, 104 (1989). 
+   *J. Comp. Chem.* **10(1)**, 104 (1989).
