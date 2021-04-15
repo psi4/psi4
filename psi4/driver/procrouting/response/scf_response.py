@@ -556,7 +556,7 @@ def tdscf_excitations(wfn,
                       guess: str = "DENOMINATORS",
                       verbose: int = 1,
                       coeff_cutoff: float = 0.1,
-                      tdm_print: List[str]):
+                      tdm_print: List[str] = []):
     """Compute excitations from a SCF(HF/KS) wavefunction
 
     Parameters
