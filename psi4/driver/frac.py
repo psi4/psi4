@@ -37,7 +37,7 @@ def frac_traverse(name, **kwargs):
 
     Parameters
     ----------
-    name : string or function
+    name : str or function
         DFT functional string name or function defining functional
         whose omega is to be optimized.
     molecule : :ref:`molecule <op_py_molecule>`, optional
@@ -473,7 +473,7 @@ def frac_nuke(name, **kwargs):
     return E
 
 
-def ip_fitting(name, omega_l=0.05, omega_r=2.5, omega_convergence=1.0e-3, maxiter=20, **kwargs):
+def ip_fitting(name, omega_l: float = 0.05, omega_r: float = 2.5, omega_convergence: float = 1.0e-3, maxiter: int = 20, **kwargs):
     """Optimize DFT omega parameter for molecular system.
 
     Parameters
@@ -481,15 +481,15 @@ def ip_fitting(name, omega_l=0.05, omega_r=2.5, omega_convergence=1.0e-3, maxite
     name : string or function
         DFT functional string name or function defining functional
         whose omega is to be optimized.
-    omega_l : float, optional
+    omega_l
         Minimum omega to be considered during fitting.
-    omega_r : float, optional
+    omega_r
         Maximum omega to be considered during fitting.
     molecule : :ref:`molecule <op_py_molecule>`, optional
         Target molecule (neutral) for which omega is to be tuned, if not last defined.
-    omega_convergence : float, optional
+    omega_convergence
         Threshold below which to consider omega converged. (formerly omega_tolerance)
-    maxiter : int, optional
+    maxiter
         Maximum number of iterations towards omega convergence.
 
     Returns

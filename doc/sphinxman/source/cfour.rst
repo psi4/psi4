@@ -353,7 +353,7 @@ conventional single-point and optimization procedures at the heart of all
 quantum chemistry codes. Three core "wrappers" available in |PSIfour| are
 :py:func:`~driver_nbody.nbody_gufunc`,
 :py:func:`~wrapper_database.database`, and
-:py:func:`~driver_cbs.complete_basis_set`; read their respective sections
+:py:func:`~psi4.driver.cbs`; read their respective sections
 for details, but an overview is provided here. :py:func:`~driver_nbody.nbody_gufunc`
 computes the interaction energy of a bimolecular complex (counterpoise-corrected,
 not, or both). ::
@@ -434,7 +434,7 @@ along the dissociation curve of methane dimer, which is a member of the
                 RMS Dev                         0.4676
    ----------------------------------------------------------------------------------------------
 
-Thirdly, the :py:func:`~driver_cbs.complete_basis_set` wrapper allows any
+Thirdly, the :py:func:`~psi4.driver.cbs` wrapper allows any
 compound computational method that can be expressed through :ref:`CBS
 <eq:cbs>` to be applied to a molecule while employing the minimum number
 of calculations. For example, the job below computes a
@@ -467,7 +467,7 @@ This yields::
        total                  CBS                                       -1.10300098
    ---------------------------------------------------------------------------------------------------------
 
-Note that especially for :py:func:`~driver_cbs.complete_basis_set`, the
+Note that especially for :py:func:`~psi4.driver.cbs`, the
 basis set needs to be specified through |mints__basis|, not
 |cfour__cfour_basis|.  Many of the wrappers can be used in combination to,
 for example, apply a compound method to every molecule in a database or to
@@ -504,7 +504,7 @@ Output
 The output of :program:`xcfour` invoked from a |PSIfour| input file is
 written to the |PSIfour| output file as the computation progresses.  If a
 Cfour module terminates with a non-zero error code, the value will show up
-in :psivar:`CFOUR ERROR CODE <CFOURERRORCODE>`.
+in :psivar:`CFOUR ERROR CODE`.
 
 .. rubric:: Energies & Scalars
 
@@ -547,7 +547,7 @@ following could be used. ::
 
 .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
-   - No PSI Variables for properties: *e.g.*, :psivar:`SCF DIPOLE X<SCFDIPOLEX>`
+   - No PSI Variables for properties: *e.g.*, :psivar:`SCF DIPOLE X`
 
    - No PSI Variables for excited state energies
 
@@ -598,7 +598,7 @@ is printed below and passed on to Optking. ::
 
 The gradient can also be accessed from the input file as a
 :py:class:`~psi4.core.Matrix` object through
-:py:func:`psi4.get_gradient`.
+:py:func:`psi4.core.get_gradient`.
 
 .. rubric:: Cfour Files
 
@@ -666,7 +666,7 @@ into |PSIfour| data objects.
   single input, with summarization of results. Examples:
   :srcsample:`cfour/pywrap-db1` and :srcsample:`cfour/psi-a24-grad`.
 
-* :py:func:`~driver_cbs.complete_basis_set` for computation of compound methods involving
+* :py:func:`~psi4.driver.cbs` for computation of compound methods involving
   basis set extrapolations and/or delta corrections with any combination
   of |PSIfour| and Cfour computational methods and |PSIfour| basis sets.
   Example: :srcsample:`cfour/pywrap-cbs1`.
@@ -928,7 +928,7 @@ Naturally, in |PSIfour| multiple jobs can be run in succession from the input fi
 Control optimizations with optking keywords HERE. Cfour ``GRD`` file is
 written to |PSIfour| output file. Gradient transformed back into the frame
 in which it was shipped off to Cfour is also written to the |PSIfour|
-output file and is available from input as :py:func:`~psi4.get_gradient`.
+output file and is available from input as :py:func:`~psi4.core.get_gradient`.
 
 sandwich mode := molecule and cfour list within
 Naturally, additional jobs can follow in the input file.

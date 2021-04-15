@@ -3049,7 +3049,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- If more than one root is requested and calc=1, LR-CC (EOM-CC)
             calculation is performed automatically for the excited states.
             This overrides all automatic determination of method
-            and will only work with :py:func:`~driver.energy`.
+            and will only work with :py:func:`~psi4.energy`.
             This becomes ``CC/CI`` (option \#5) in fort.56.
             See Table :ref:`MRCC_METHOD <table:mrcc__mrcc_method>` for details.
             !expert -*/
@@ -3486,8 +3486,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         it is automatically set if the appropriate other options in the
         CFOUR namelist are turned on.
         **Psi4 Interface:** Keyword set from type of computation command:
-        ZERO if :py:func:`~driver.energy`, FIRST if
-        :py:func:`~driver.gradient` or :py:func:`~driver.optimization`,
+        ZERO if :py:func:`~psi4.energy`, FIRST if
+        :py:func:`~psi4.gradient` or :py:func:`~psi4.optimize`,
         *etc.* -*/
         options.add_str("CFOUR_DERIV_LEVEL", "ZERO", "ZERO FIRST SECOND");
 

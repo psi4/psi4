@@ -36,6 +36,7 @@ import os
 import re
 import shutil
 import sys
+from typing import Union
 
 import numpy as np
 
@@ -215,11 +216,11 @@ def energy(name, **kwargs):
     .. hlist::
        :columns: 1
 
-       * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
-       * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>`
-       * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>`
+       * :psivar:`CURRENT ENERGY`
+       * :psivar:`CURRENT REFERENCE ENERGY`
+       * :psivar:`CURRENT CORRELATION ENERGY`
 
-    :type name: string
+    :type name: str
     :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
 
         First argument, usually unlabeled. Indicates the computational method
@@ -236,7 +237,7 @@ def energy(name, **kwargs):
         Indicate to additionally return the :py:class:`~psi4.core.Wavefunction`
         calculation result as the second element (after *float* energy) of a tuple.
 
-    :type restart_file: string
+    :type restart_file: str
     :param restart_file: ``['file.1, file.32]`` || ``./file`` || etc.
 
         Binary data files to be renamed for calculation restart.
@@ -831,13 +832,13 @@ def properties(*args, **kwargs):
     | cvs-adc(3)         |                                               |                |                                                               |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
 
-    :type name: string
+    :type name: str
     :param name: ``'ccsd'`` || etc.
 
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the system.
 
-    :type properties: array of strings
+    :type properties: List[str]
     :param properties: |dl| ``[]`` |dr| || ``['rotation', 'polarizability', 'oscillator_strength', 'roa']`` || etc.
 
         Indicates which properties should be computed. Defaults to dipole and quadrupole.
@@ -1091,14 +1092,14 @@ def optimize(name, **kwargs):
     .. hlist::
        :columns: 1
 
-       * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
+       * :psivar:`CURRENT ENERGY`
 
-    :type name: string
+    :type name: str
     :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
 
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the database. May be any valid argument to
-        :py:func:`~driver.energy`.
+        :py:func:`psi4.energy`.
 
     :type molecule: :ref:`molecule <op_py_molecule>`
     :param molecule: ``h2o`` || etc.
@@ -1117,7 +1118,7 @@ def optimize(name, **kwargs):
         Indicate to additionally return dictionary of lists of geometries,
         energies, and gradients at each step in the optimization.
 
-    :type engine: string
+    :type engine: str
     :param engine: |dl| ``'optking'`` |dr| || ``'geometric'``
 
         Indicates the optimization engine to use, which can be either Psi4's
@@ -1144,7 +1145,7 @@ def optimize(name, **kwargs):
         Indicates whether analytic (if available) or finite difference
         optimization is to be performed.
 
-    :type hessian_with: string
+    :type hessian_with: str
     :param hessian_with: ``'scf'`` || ``'mp2'`` || etc.
 
         Indicates the computational method with which to perform a hessian
@@ -1642,7 +1643,7 @@ def frequency(name, **kwargs):
 
     :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and wavefunction when **return_wfn** specified.
 
-    :type name: string
+    :type name: str
     :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
 
         First argument, usually unlabeled. Indicates the computational method
@@ -1676,7 +1677,7 @@ def frequency(name, **kwargs):
         difference of gradients (if available) or finite difference of
         energies is to be performed.
 
-    :type irrep: int or string
+    :type irrep: int or str
     :param irrep: |dl| ``-1`` |dr| || ``1`` || ``'b2'`` || ``'App'`` || etc.
 
         Indicates which symmetry block (:ref:`Cotton <table:irrepOrdering>` ordering) of vibrational
@@ -1746,27 +1747,27 @@ def frequency(name, **kwargs):
         return core.variable('CURRENT ENERGY')
 
 
-def vibanal_wfn(wfn, hess=None, irrep=None, molecule=None, project_trans=True, project_rot=True):
+def vibanal_wfn(wfn: core.Wavefunction, hess: np.ndarray = None, irrep: Union[int, str] = None, molecule=None, project_trans: bool = True, project_rot: bool = True):
     """Function to perform analysis of a hessian or hessian block, specifically...
     calling for and printing vibrational and thermochemical analysis, setting thermochemical variables,
     and writing the vibrec and normal mode files.
 
     Parameters
     ----------
-    wfn : :py:class:`~psi4.core.Wavefunction`
+    wfn
         The wavefunction which had its Hessian computed.
-    hess : ndarray of float, optional
+    hess
         Hessian to analyze, if not the hessian in wfn.
         (3*nat, 3*nat) non-mass-weighted Hessian in atomic units, [Eh/a0/a0].
-    irrep : int or string
+    irrep
         The irrep for which frequencies are calculated. Thermochemical analysis is skipped if this is given,
         as only one symmetry block of the hessian has been computed.
     molecule : :py:class:`~psi4.core.Molecule` or qcdb.Molecule, optional
         The molecule to pull information from, if not the molecule in wfn. Must at least have similar
         geometry to the molecule in wfn.
-    project_trans : boolean
+    project_trans
         Should translations be projected in the harmonic analysis?
-    project_rot : boolean
+    project_rot
         Should rotations be projected in the harmonic analysis?
 
     Returns
@@ -1879,7 +1880,7 @@ def gdma(wfn, datafile=""):
     :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, basis, orbitals from which to generate DMA analysis
 
-    :type datafile: string
+    :type datafile: str
     :param datafile: optional control file (see GDMA manual) to peform more complicated DMA
                      analyses.  If this option is used, the File keyword must be set to read
                      a filename.fchk, where filename is provided by :term:`WRITER_FILE_LABEL <WRITER_FILE_LABEL (GLOBALS)>` .
@@ -1931,7 +1932,7 @@ def gdma(wfn, datafile=""):
     if not datafile:
         os.remove(commands)
 
-def fchk(wfn, filename, *, debug=False, strict_label=True):
+def fchk(wfn: core.Wavefunction, filename: str, *, debug: bool = False, strict_label: bool = True):
     """Function to write wavefunction information in *wfn* to *filename* in
     Gaussian FCHK format.
 
@@ -1939,16 +1940,12 @@ def fchk(wfn, filename, *, debug=False, strict_label=True):
 
     :returns: None
 
-    :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, basis, orbitals from which to generate fchk file
 
-    :type filename: string
     :param filename: destination file name for FCHK file
 
-    :type debug: boolean
     :param debug: returns a dictionary to aid with debugging
 
-    :type strict_label: boolean
     :param strict_label: If true set a density label compliant with what Gaussian would write. A warning will be printed if this is not possible.
                          Otherwise set the density label according to the method name.
 
@@ -2078,7 +2075,7 @@ def molden(wfn, filename=None, density_a=None, density_b=None, dovirtual=None):
     :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, basis, orbitals from which to generate cube files
 
-    :type filename: string
+    :type filename: str
     :param filename: destination file name for MOLDEN file (optional)
 
     :type density_a: :py:class:`~psi4.core.Matrix`

@@ -163,7 +163,7 @@ constructing a sieve object, the integral object should be queried directly
 using the exact same syntax.  Requests for whether a shell is significant or a
 shell block is significant are both supported.  A sieve object is created if
 matching basis sets are found in either the bra or the ket.  For a density
-fitting integral (PQ|0A) where 0 is the null basis set and A is an auxilliary
+fitting integral (PQ|0A) where 0 is the null basis set and A is an auxiliary
 basis set the (PQ| pair will be used to construct all of the sieving data.
 
 Buffer address

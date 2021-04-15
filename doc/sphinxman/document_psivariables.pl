@@ -245,9 +245,10 @@ foreach my $Module (@PSIMODULES) {
            my $squashedVar = $Var;
            $squashedVar =~ s/ //g;
            if ($EnvHash{$Var} == 2) {
-               printf VVOUT "   * :psivar:`%s <%s>` (array)\n\n", $Var, $squashedVar;
+               printf VVOUT "   * :psivar:`%s` (array)\n\n", $Var;
            } else {
-               printf VVOUT "   * :psivar:`%s <%s>`\n\n", $Var, $squashedVar;
+               printf VVOUT "   * :psivar:`%s`\n\n", $Var;
+               #printf VVOUT "   * :psivar:`%s <%s>`\n\n", $Var, $squashedVar;  # pre Sphinx 3 ?
            }
        }
        print VVOUT "\n";

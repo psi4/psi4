@@ -147,14 +147,17 @@ messy) flag will prevent files being deleted at the end of the run::
 |psirc| File
 ============
 
-.. caution:: It is very easy to forget about the |psirc| file you once
+.. caution:: The |psirc| file is only read for Psithon input, not PsiAPI.
+   It does nothing that can't be done in other more transparent ways.
+   It should be avoided.
+   It is very easy to forget about the |psirc| file you once
    created, leading to great confusion over why all your jobs are using
    the wrong memory or are suddenly not density-fit. Also be aware that
    |psirc| contents count as part of your input file (invoked after
    e.g. ``from psi4 import *`` and before your Psithon-->Python parsed
    input commands), so these settings take priority over command-line
    arguments to the ``psi4`` executable.
-   Please use the |psirc| file conscientiously.
+   Please use the |psirc| file sparingly.
 
 If using the environment variable :envvar:`PSI_SCRATCH` is inconvenient,
 or if some ``psi4_io`` commands must be present in all input files,
@@ -255,7 +258,7 @@ which will run on four threads. Note that is is not available for PsiAPI mode of
 
 For more explicit control, the Process::environment class in |PSIfour| can
 override the number of threads set by environment variables. This functionality
-is accessed via the :py:func:`psi4.set_num_threads` function, which controls
+is accessed via the :py:func:`~psi4.core.set_num_threads` function, which controls
 both MKL and OpenMP thread numbers. The number of threads may be changed
 multiple times in a |PSIfour| input file. An example input for this feature is::
 
@@ -266,16 +269,11 @@ multiple times in a |PSIfour| input file. An example input for this feature is::
     H 1 1.0
     H 1 1.0 2 90.0
     }
-    
-    set scf {
-    basis cc-pvdz
-    scf_type df
-    }
 
     # Run from 1 to 4 threads, for instance, to record timings
-    for nthread in range(1,5):
+    for nthread in range(1, 5):
         set_num_threads(nthread)
-        energy('scf')
+        energy("scf/cc-pvdz")
 
 In PsiAPI mode of operation, this syntax, ``psi4.set_num_threads(nthread)``, is
 the primary way to control threading.
@@ -292,7 +290,7 @@ these integrals. For general DF algorithms, the user may specify::
 
 to explicitly control the number of threads used for integral formation. Setting
 this variable to 0 (the default) uses the number of threads specified by the
-:py:func:`~p4util.util.set_num_threads` Psithon method or the default environmental variables.
+:py:func:`~psi4.core.set_num_threads` Psithon method or the default environmental variables.
 
 .. index:: PBS queueing system, threading
 .. _`sec:PBS`:
@@ -311,23 +309,23 @@ a PBS job file for a threaded job, and a short explanation for each section.
     #PBS -l pmem=2120mb
     #PBS -N jobname
     #PBS -V
-    
+
     cd $PBS_O_WORKDIR
     setenv myscratch /scratch/user/psi4.$PBS_JOBID
-    
+
     foreach i (`sort $PBS_NODEFILE | uniq`)
         echo "Creating scratch directory " $myscratch " on " $i
         ssh $i rm -rf $myscratch
         ssh $i mkdir -p $myscratch
     end
-    
+
     unsetenv PSIDATADIR
     setenv PSI_SCRATCH $myscratch
     if ! ( $?PSIPATH ) setenv PSIPATH ""
     setenv PSIPATH /path/to/external/modules:${PSIPATH}
     setenv PSIPATH /path/to/python/modules:${PSIPATH}
     /psi/install/directory/bin/psi4 -i input.in -o input.out -n 4
-    
+
     foreach i (`sort $PBS_NODEFILE | uniq`)
         echo "Removing scratch directory " $myscratch " on " $i
         ssh $i rm -rf $myscratch
@@ -411,13 +409,15 @@ Command Line Options
 
 |PSIfour| can be invoked with no command line arguments, as it takes as input
 by default the file "input.dat" and directs output by default to "output.dat".
-The set of three commands below are completely equivalent, while the fourth is,
-perhaps, the most common usage. ::
+Each set of three commands below is completely equivalent, while the second set,
+perhaps, is the most common usage. ::
 
    >>> psi4
    >>> psi4 -i input.dat -o output.dat
    >>> psi4 input.dat output.dat
 
+   >>> psi4 descriptive_filename.in
+   >>> psi4 -i descriptive_filename.in -o descriptive_filename.out
    >>> psi4 descriptive_filename.in descriptive_filename.out
 
 Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help`.
@@ -436,43 +436,61 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
    Input file name. Default: input.dat
 
+.. option:: --inplace
+
+   Runs |PSIfour| with compiled code from <objdir> but driver code from source,
+   so no need to ``make`` between Python edits. Expert mode.
+
 .. option:: -k, --skip-preprocessor
 
    Skips input preprocessing. Expert mode.
 
 .. option:: -l <name>, --psidatadir <name>
 
-   Mainly for use by developers, this overrides the value of
+   Overrides the value of
    :envvar:`PSIDATADIR` and specifies the path to the Psi data
-   library (ends in ``share/psi4``)
+   library (ends in ``share/psi4``). Expert mode.
 
 .. option:: -m, --messy
 
    Leave temporary files after the run is completed.
 
-.. option:: -n <threads>, --nthread <threads>
+.. option:: --memory <memory>
 
-   Number of threads to use (overrides :envvar:`OMP_NUM_THREADS`)
+   The amount of memory to use. Can be specified with units (e.g., '10MB') otherwise bytes is assumed.
+
+ .. option:: -n <threads>, --nthread <threads>
+
+   Number of threads to use (overrides :envvar:`OMP_NUM_THREADS`).
+   Also controls the testing parallelism with pytest.
 
 .. option:: -o <filename>, --output <filename>
 
-   Output file name. Use ``stdout`` as <filename> to redirect 
+   Output file name. Use ``stdout`` as <filename> to redirect
    to the screen. Default: when the input filename is "input.dat",
    then the output filename defaults to "output.dat".  Otherwise, the
-   output filename defaults to the the input filename with any
-   any ".in" or ".dat" extension replaced by ".out"
+   output filename defaults to the the input filename with
+   ".out" extension.
 
-.. option:: -p <prefix>, --prefix <prefix>
+.. option:: --psiapi-path
 
-   Prefix for psi files. Default: psi
+   Generates a bash command to source correct Python interpreter and path for ``python -c "import psi4"``
+
+.. option:: --qcschema
+
+   Runs input files as QCSchema. Can either be JSON or MessagePack input.
 
 .. option:: -s <name>, --scratch <name>
 
    This overrides the value of :envvar:`PSI_SCRATCH` and provides
    a path to the location of scratch files
 
+.. option:: -t <subset>, --test <subset>
+
+   Runs pytest tests. If ``pytest-xdist`` installed, parallel with :option:`-n`.
+
 .. .. option:: --new-plugin <name>
-.. 
+..
 ..    Creates a new directory <name> with files for writing a
 ..    new plugin. An additional argument specifies a template
 ..    to use, for example: ``--new-plugin name +mointegrals``.
@@ -480,17 +498,22 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 
 .. option:: -v, --verbose
 
-   Print a lot of information, including the Psithon translation of the input file
+   Print the Psithon to Python translation of the input file
 
 .. option:: -V, --version
 
    Print version information. ::
 
+     # stable release
      >>> psi4 --version
-     0.4.262
+     1.3.2
+
+     # development snapshot between 1.3 and 1.4
+     >>> psi4 --version
+     1.4a2.dev525
 
 .. .. option:: -w, --wipe
-.. 
+
 ..    Clean out scratch area.
 
 
@@ -500,6 +523,12 @@ Environment Variables
 =====================
 
 These environment variables will influence |PSIfours| behavior.
+
+.. envvar:: CONDA_PREFIX
+
+   Set when a conda environment is activated. Note that if |PSIfour| has been
+   built against any library in CONDA_PREFIX, the path has been baked into the
+   program, so any available dependencies are liable to been loaded from the environment.
 
 .. envvar:: MKL_NUM_THREADS
 
@@ -524,10 +553,11 @@ These environment variables will influence |PSIfours| behavior.
 
 .. envvar:: PATH
 
-   Path for interfaced executables. 
+   Path for interfaced executables.
 
-   .. note:: Configuring |PSIfour| through :envvar:`PSIPATH` is preferred
-      to modifying this environment variable.
+   .. note:: While once configuring |PSIfour| through :envvar:`PSIPATH` was preferred
+      to modifying this environment variable, now `PATH` is preferred for
+      executables to accommodate QCEngine.
 
    To run K\ |a_acute|\ llay's MRCC program 
    (see :ref:`MRCC <sec:mrcc>`), the ``dmrcc`` executable must be in :envvar:`PATH`.
@@ -594,8 +624,9 @@ These environment variables will influence |PSIfours| behavior.
    Path in which the Python interpreter looks for modules to import. For 
    |PSIfour|, these are generally :ref:`plugins <sec:plugins>` or databases.
 
-   .. note:: Configuring |PSIfour| through :envvar:`PSIPATH` is preferred
-      to modifying this environment variable.
+   .. note:: While once configuring |PSIfour| through :envvar:`PSIPATH` was preferred
+      to modifying this environment variable, now `PYTHONPATH` is preferred for
+      Python moduels to accommodate QCEngine.
 
    Modification of :envvar:`PYTHONPATH` can be done in three ways, equivalently.
 

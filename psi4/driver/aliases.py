@@ -56,7 +56,7 @@ def fake_file11(wfn, filename='fake_file11.dat', **kwargs):
 
     :returns: None
 
-    :type filename: string
+    :type filename: str
     :param filename: destination file name for file11 file
 
     :type wfn: :py:class:`~psi4.core.Wavefunction`
@@ -87,9 +87,9 @@ def fake_file11(wfn, filename='fake_file11.dat', **kwargs):
 
 def sherrill_gold_standard(func, label, **kwargs):
     r"""Function to call the quantum chemical method known as 'Gold Standard'
-    in the Sherrill group. Uses :py:func:`~driver_cbs.complete_basis_set` to evaluate
+    in the Sherrill group. Uses :py:func:`~psi4.driver.cbs` to evaluate
     the following expression. Two-point extrapolation of the correlation energy
-    performed according to :py:func:`~driver_cbs.corl_xtpl_helgaker_2`.
+    performed according to :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`.
 
     .. math:: E_{total}^{\text{Au\_std}} = E_{total,\; \text{SCF}}^{\text{aug-cc-pVQZ}} \; + E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[TQ]Z}} \; + \delta_{\text{MP2}}^{\text{CCSD(T)}}\big\vert_{\text{aug-cc-pVTZ}}
 
@@ -123,11 +123,11 @@ def sherrill_gold_standard(func, label, **kwargs):
 def allen_focal_point(func, label, **kwargs):
     r"""Function to call Wes Allen-style Focal
     Point Analysis. JCP 127 014306.  Uses
-    :py:func:`~driver_cbs.complete_basis_set` to evaluate the following
+    :py:func:`~psi4.driver.cbs` to evaluate the following
     expression. SCF employs a three-point extrapolation according
-    to :py:func:`~driver_cbs.scf_xtpl_helgaker_3`. MP2, CCSD, and
+    to :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_3`. MP2, CCSD, and
     CCSD(T) employ two-point extrapolation performed according to
-    :py:func:`~driver_cbs.corl_xtpl_helgaker_2`.  CCSDT and CCSDT(Q)
+    :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`.  CCSDT and CCSDT(Q)
     are plain deltas. This wrapper requires :ref:`Kallay's MRCC code <sec:mrcc>`.
 
     .. math:: E_{total}^{\text{FPA}} = E_{total,\; \text{SCF}}^{\text{cc-pV[Q56]Z}} \; + E_{corl,\; \text{MP2}}^{\text{cc-pV[56]Z}} \; + \delta_{\text{MP2}}^{\text{CCSD}}\big\vert_{\text{cc-pV[56]Z}} \; + \delta_{\text{CCSD}}^{\text{CCSD(T)}}\big\vert_{\text{cc-pV[56]Z}} \; + \delta_{\text{CCSD(T)}}^{\text{CCSDT}}\big\vert_{\text{cc-pVTZ}} \; + \delta_{\text{CCSDT}}^{\text{CCSDT(Q)}}\big\vert_{\text{cc-pVDZ}}

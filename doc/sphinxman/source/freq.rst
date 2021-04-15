@@ -64,7 +64,7 @@ info through ``psi4.core.Wavefunction.frequency_analysis``
 (note no parentheses). Examples of using this data
 structure can be found :srcsample:`fd-freq-gradient` and
 :source:`tests/pytests/test_vibanalysis.py`. Formatted printing of vibrational
-results is available through :py:func:`qcdb.vib.print_vibs`.
+results is available through :py:func:`psi4.driver.qcdb.vib.print_vibs`.
 
 .. _`table:frequency_analysis`:
 
@@ -73,7 +73,7 @@ results is available through :py:func:`qcdb.vib.print_vibs`.
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
     | key           | description (lbl & comment)                | units     | data (real/imaginary modes)                          |
     +===============+============================================+===========+======================================================+
-    | omega         | frequency                                  | cm^-1     | nd.array(ndof) complex (real/imag)                   |
+    | omega         | frequency                                  | cm^-1     | ndarray(ndof) complex (real/imag)                    |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
     | q             | normal mode, normalized mass-weighted      | a0 u^1/2  | ndarray(ndof, ndof) float                            |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
@@ -119,3 +119,7 @@ Molden Interface Keywords
 .. include:: autodir_options_c/findif__normal_modes_write.rst
 
 .. include:: autodir_options_c/globals__writer_file_label.rst
+
+
+.. automodapi:: psi4.driver.qcdb.vib
+

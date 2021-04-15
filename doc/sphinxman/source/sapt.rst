@@ -905,6 +905,7 @@ splittings. This method can be invoked with `energy("SF-SAPT")` and
 publications resulting from the use of the SF-SAPT code should cite the
 following publications: [Patkowski:2018:164110]_
 
+.. _`sec:saptinf`:
 
 Second-Order Exchange Terms without Single-Exchange Approximation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

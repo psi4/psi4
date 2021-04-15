@@ -64,9 +64,9 @@ def database(name, db_name, **kwargs):
     .. hlist::
        :columns: 1
 
-       * :psivar:`db_name DATABASE MEAN SIGNED DEVIATION <db_nameDATABASEMEANSIGNEDDEVIATION>`
-       * :psivar:`db_name DATABASE MEAN ABSOLUTE DEVIATION <db_nameDATABASEMEANABSOLUTEDEVIATION>`
-       * :psivar:`db_name DATABASE ROOT-MEAN-SQUARE DEVIATION <db_nameDATABASEROOT-MEAN-SQUARESIGNEDDEVIATION>`
+       * :psivar:`db_name DATABASE MEAN SIGNED DEVIATION`
+       * :psivar:`db_name DATABASE MEAN ABSOLUTE DEVIATION`
+       * :psivar:`db_name DATABASE ROOT-MEAN-SQUARE DEVIATION`
        * Python dictionaries of results accessible as ``DB_RGT`` and ``DB_RXN``.
 
     .. note:: It is very easy to make a database from a collection of xyz files
@@ -81,14 +81,14 @@ def database(name, db_name, **kwargs):
         distribution, add the path to the directory containing the database
         to the environment variable :envvar:`PYTHONPATH`.
 
-    :type name: string
+    :type name: str
     :param name: ``'scf'`` || ``'sapt0'`` || ``'ccsd(t)'`` || etc.
 
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the database. May be any valid argument to
-        :py:func:`~driver.energy`.
+        :py:func:`psi4.energy`.
 
-    :type db_name: string
+    :type db_name: str
     :param db_name: ``'BASIC'`` || ``'S22'`` || ``'HTBH'`` || etc.
 
         Second argument, usually unlabeled. Indicates the requested database
@@ -106,7 +106,7 @@ def database(name, db_name, **kwargs):
         of python functions is intended (see :ref:`sec:intercalls`), use
         keyword ``db_func`` instead of ``func``.
 
-    :type mode: string
+    :type mode: str
     :param mode: |dl| ``'continuous'`` |dr| || ``'sow'`` || ``'reap'``
 
         Indicates whether the calculations required to complete the
@@ -119,7 +119,7 @@ def database(name, db_name, **kwargs):
     :param cp: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether counterpoise correction is employed in computing
-        interaction energies. Use this option and NOT the :py:func:`~wrappers.cp`
+        interaction energies. Use this option and NOT the ``bsse_type="cp"``
         function for BSSE correction in database().  Option available
         (See :ref:`sec:availableDatabases`) only for databases of bimolecular complexes.
 
@@ -146,20 +146,20 @@ def database(name, db_name, **kwargs):
         single-point energy values. Option valid only for certain
         thermochemical databases. Disabled until Hessians ready.
 
-    :type benchmark: string
+    :type benchmark: str
     :param benchmark: |dl| ``'default'`` |dr| || ``'S22A'`` || etc.
 
         Indicates whether a non-default set of reference energies, if
         available (See :ref:`sec:availableDatabases`), are employed for the
         calculation of error statistics.
 
-    :type tabulate: array of strings
+    :type tabulate: List[str]
     :param tabulate: |dl| ``[]`` |dr| || ``['scf total energy', 'natom']`` || etc.
 
         Indicates whether to form tables of variables other than the
         primary requested energy.  Available for any PSI variable.
 
-    :type subset: string or array of strings
+    :type subset: Union[str, List[str]]
     :param subset:
 
         Indicates a subset of the full database to run. This is a very

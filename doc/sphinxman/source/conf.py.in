@@ -82,6 +82,8 @@ extensions = [
     'sphinx_automodapi.automodapi',
     'sphinx_automodapi.automodsumm',
     'sphinx_automodapi.smart_resolver',
+    #
+    "sphinx_autodoc_typehints",
 ]
 if '@SPHINX_THEME@' == 'sphinx_psi_theme':
     extensions.extend([

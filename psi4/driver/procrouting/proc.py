@@ -3118,9 +3118,11 @@ def run_cc_property(name, **kwargs):
                     core.set_variable("CC ROOT 0 QUADRUPOLE YZ", core.variable("CC QUADRUPOLE YZ"))
                     core.set_variable("CC ROOT 0 QUADRUPOLE ZZ", core.variable("CC QUADRUPOLE ZZ"))
             if 'dipole' in one:
-                core.set_variable("CC ROOT 0 DIPOLE", core.variable("CC DIPOLE"))  # P::e CCENERGY
+                core.set_variable("CC ROOT 0 DIPOLE", core.variable("CC DIPOLE"))
+                # core.set_variable("CC ROOT n DIPOLE", core.variable("CC DIPOLE"))  # P::e CCENERGY
             if 'quadrupole' in one:
-                core.set_variable("CC ROOT 0 QUADRUPOLE", core.variable("CC QUADRUPOLE"))  # P::e CCENERGY
+                core.set_variable("CC ROOT 0 QUADRUPOLE", core.variable("CC QUADRUPOLE"))
+                # core.set_variable("CC ROOT n QUADRUPOLE", core.variable("CC QUADRUPOLE"))  # P::e CCENERGY
 
             n_root = sum(core.get_global_option("ROOTS_PER_IRREP"))
             for rn in range(n_root):

@@ -30,6 +30,7 @@ import re
 import sys
 import copy
 import math
+from typing import Callable, List
 
 import numpy as np
 
@@ -54,12 +55,12 @@ _lmh_labels = {
 }
 
 
-def _expand_bracketed_basis(basisstring, molecule=None):
+def _expand_bracketed_basis(basisstring: str, molecule=None):
     """Function to transform and validate basis series specification for cbs().
 
     Parameters
     ----------
-    basisstring : string
+    basisstring
         A string containing the basis sets to be expanded.
         A basis set with no paired square brackets is passed through
         with zeta level 0 (e.g., ``'6-31+G(d,p)'`` is returned as
@@ -141,14 +142,14 @@ def _expand_bracketed_basis(basisstring, molecule=None):
     return (BSET, ZSET)
 
 
-def _contract_bracketed_basis(basisarray):
+def _contract_bracketed_basis(basisarray: List):
     """Function to reform a bracketed basis set string from a sequential series
     of basis sets. Essentially the inverse of _expand_bracketed_basis(). Used to
     print a nicely formatted basis set string in the results table.
 
     Parameters
     ----------
-    basisarray : list
+    basisarray
         Basis set names, differing by zeta level, e.g. ``["cc-pvqz", "cc-pv5z"]``.
 
     Returns
@@ -171,17 +172,17 @@ def _contract_bracketed_basis(basisarray):
         return basisstring
 
 
-def xtpl_highest_1(functionname, zHI, valueHI, verbose=True, **kwargs):
+def xtpl_highest_1(functionname: str, zHI: int, valueHI: float, verbose: bool = True, **kwargs):
     r"""Scheme for total or correlation energies with a single basis or the highest
     zeta-level among an array of bases. Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
-    functionname : string
+    functionname
         Name of the CBS component.
-    zHI : int
+    zHI
         Zeta-level, only used for printing.
-    valueHI : float
+    valueHI
         Value of the CBS component.
 
     Returns
@@ -215,23 +216,23 @@ def xtpl_highest_1(functionname, zHI, valueHI, verbose=True, **kwargs):
         return valueHI
 
 
-def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+def scf_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, valueHI: float, verbose: bool = True, alpha: float = None):
     r"""Extrapolation scheme using exponential form for reference energies with two adjacent
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
-    functionname : string
+    functionname
         Name of the CBS component.
-    zLO : int
+    zLO
         Lower zeta level.
-    valueLO : float
+    valueLO
         Lower value used for extrapolation.
-    zHI : int
+    zHI
         Higher zeta level. Should be equal to zLO + 1.
-    valueHI : float
+    valueHI
         Higher value used for extrapolation.
-    alpha : float, optional
+    alpha
         Overrides the default :math:`\alpha = 1.63`
 
     Returns
@@ -317,23 +318,23 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
         raise ValidationError("scf_xtpl_helgaker_2: datatype is not recognized '%s'." % type(valueLO))
 
 
-def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+def scf_xtpl_truhlar_2(functionname: str, zLO: int, valueLO: float, zHI: int, valueHI: float, verbose: bool = True, alpha: float = None):
     r"""Extrapolation scheme using power form for reference energies with two adjacent
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
-    functionname : string
+    functionname
         Name of the CBS component.
-    zLO : int
+    zLO
         Lower zeta level.
-    valueLO : float
+    valueLO
         Lower value used for extrapolation.
-    zHI : int
+    zHI
         Higher zeta level. Should be equal to zLO + 1.
-    valueHI : float
+    valueHI
         Higher value used for extrapolation.
-    alpha : float, optional
+    alpha
         Overrides the default :math:`\alpha = 3.4`
 
     Returns
@@ -419,23 +420,23 @@ def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, a
         raise ValidationError("scf_xtpl_truhlar_2: datatype is not recognized '%s'." % type(valueLO))
 
 
-def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+def scf_xtpl_karton_2(functionname: str, zLO: int, valueLO: float, zHI: int, valueHI: float, verbose: bool = True, alpha: float = None):
     r"""Extrapolation scheme using root-power form for reference energies with two adjacent
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
-    functionname : str
+    functionname
         Name of the CBS component.
-    zLO : int
+    zLO
         Lower zeta level.
-    valueLO : float
+    valueLO
         Lower value used for extrapolation.
-    zHI : int
+    zHI
         Higher zeta level. Should be equal to zLO + 1.
-    valueHI : float
+    valueHI
         Higher value used for extrapolation.
-    alpha : float, optional
+    alpha
         Overrides the default :math:`\alpha = 6.3`
 
     Returns
@@ -521,27 +522,27 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, al
         raise ValidationError("scf_xtpl_Karton_2: datatype is not recognized '%s'." % type(valueLO))
 
 
-def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True, alpha=None):
+def scf_xtpl_helgaker_3(functionname: str, zLO: int, valueLO: float, zMD: int, valueMD: float, zHI: int, valueHI: float, verbose: bool = True, alpha: float = None):
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
-    functionname : str
+    functionname
         Name of the CBS component.
-    zLO : int
+    zLO
         Lower zeta level.
-    valueLO : float
+    valueLO
         Lower value used for extrapolation.
-    zMD : int
+    zMD
         Intermediate zeta level. Should be equal to zLO + 1.
-    valueMD : float
+    valueMD
         Intermediate value used for extrapolation.
-    zHI : int
+    zHI
         Higher zeta level. Should be equal to zLO + 2.
-    valueHI : float
+    valueHI
         Higher value used for extrapolation.
-    alpha : float, optional
+    alpha
         Not used.
 
     Returns
@@ -621,23 +622,23 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
 
 
 #def corl_xtpl_helgaker_2(functionname, valueSCF, zLO, valueLO, zHI, valueHI, verbose=True):
-def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+def corl_xtpl_helgaker_2(functionname: str, zLO: int, valueLO: float, zHI: int, valueHI: float, verbose: bool = True, alpha: float = None):
     r"""Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
-    functionname : str
+    functionname
         Name of the CBS component.
-    zLO : int
+    zLO
         Lower zeta level.
-    valueLO : float
+    valueLO
         Lower value used for extrapolation.
-    zHI : int
+    zHI
         Higher zeta level. Should be equal to zLO + 1.
-    valueHI : float
+    valueHI
         Higher value used for extrapolation.
-    alpha : float, optional
+    alpha
         Overrides the default :math:`\alpha = 3.0`
 
     Returns
@@ -922,20 +923,21 @@ def return_energy_components():
 VARH = return_energy_components()
 
 
-def _get_default_xtpl(nbasis, xtpl_type):
+def _get_default_xtpl(nbasis: int, xtpl_type: str) -> Callable:
     """ A helper function to determine default extrapolation type.
 
     Parameters
     ----------
     nbasis : int
         Number of basis sets
-    xtpl_type : {'scf', 'corl'}
+    xtpl_type : str
+        {'scf', 'corl'}
         Extrapolation type: 'scf' for the total energy, 'corl' for just the
         correlation component.
 
     Returns
     -------
-    function
+    Callable
         Extrapolation function to be used.
     """
 
@@ -1104,12 +1106,12 @@ def cbs(func, label, **kwargs):
     .. hlist::
        :columns: 1
 
-       * :psivar:`CBS TOTAL ENERGY <CBSTOTALENERGY>`
-       * :psivar:`CBS REFERENCE ENERGY <CBSREFERENCEENERGY>`
-       * :psivar:`CBS CORRELATION ENERGY <CBSCORRELATIONENERGY>`
-       * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
-       * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>`
-       * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>`
+       * :psivar:`CBS TOTAL ENERGY`
+       * :psivar:`CBS REFERENCE ENERGY`
+       * :psivar:`CBS CORRELATION ENERGY`
+       * :psivar:`CURRENT ENERGY`
+       * :psivar:`CURRENT REFERENCE ENERGY`
+       * :psivar:`CURRENT CORRELATION ENERGY`
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
@@ -1260,104 +1262,104 @@ def cbs(func, label, **kwargs):
         An exception is the default, ``'xtpl_highest_1'``, which uses the best basis
         set available. See :ref:`sec:cbs_xtpl` for all available schemes.
 
-    :type scf_scheme: function
+    :type scf_scheme: Callable
     :param scf_scheme: |dl| ``xtpl_highest_1`` |dr| || ``scf_xtpl_helgaker_3`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the reference energy.
-        Defaults to :py:func:`~scf_xtpl_helgaker_3` if three valid basis sets
-        present in ``scf_basis``, :py:func:`~scf_xtpl_helgaker_2` if two valid basis
-        sets present in ``scf_basis``, and :py:func:`~xtpl_highest_1` otherwise.
+        Defaults to :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_3` if three valid basis sets
+        present in ``psi4.driver.driver_cbs.scf_basis``, :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_2` if two valid basis
+        sets present in ``scf_basis``, and :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` otherwise.
 
         .. hlist::
            :columns: 1
 
-           * xtpl_highest_1
-           * scf_xtpl_helgaker_3
-           * scf_xtpl_helgaker_2
-           * scf_xtpl_truhlar_2
-           * scf_xtpl_karton_2
+           * :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1`
+           * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_3`
+           * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_2`
+           * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_truhlar_2`
+           * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_karton_2`
 
-    :type corl_scheme: function
+    :type corl_scheme: Callable
     :param corl_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the correlation energy.
-        Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``corl_basis`` and :py:func:`~xtpl_highest_1` otherwise.
+        Defaults to :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``corl_basis`` and :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` otherwise.
 
         .. hlist::
            :columns: 1
 
-           * xtpl_highest_1
-           * corl_xtpl_helgaker_2
+           * :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1`
+           * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
 
-    :type delta_scheme: function
+    :type delta_scheme: Callable
     :param delta_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the delta correction
         to the correlation energy.
-        Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta_basis`` and :py:func:`~xtpl_highest_1` otherwise.
+        Defaults to :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``delta_basis`` and :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` otherwise.
 
         .. hlist::
            :columns: 1
 
-           * xtpl_highest_1
-           * corl_xtpl_helgaker_2
+           * :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1`
+           * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
 
-    :type delta2_scheme: function
+    :type delta2_scheme: Callable
     :param delta2_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
         Indicates the basis set extrapolation scheme to be applied to the second delta correction
         to the correlation energy.
-        Defaults to :py:func:`~corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta2_basis`` and :py:func:`~xtpl_highest_1` otherwise.
+        Defaults to :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` if two valid basis sets
+        present in ``delta2_basis`` and :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` otherwise.
 
         .. hlist::
            :columns: 1
 
-           * xtpl_highest_1
-           * corl_xtpl_helgaker_2
+           * :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1`
+           * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
 
     :type scf_alpha: float
     :param scf_alpha: |dl| ``1.63`` |dr|
 
         Overrides the default \alpha parameter used in the listed SCF extrapolation procedures.
-        Has no effect on others, including :py:func:`~xtpl_highest_1` and :py:func:`~scf_xtpl_helgaker_3`.
+        Has no effect on others, including :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` and :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_3`.
 
         .. hlist::
            :columns: 1
 
-           * :py:func:`scf_xtpl_helgaker_2`
-           * :py:func:`scf_xtpl_truhlar_2`
-           * :py:func:`scf_xtpl_karton_2`
+           * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_2`
+           * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_truhlar_2`
+           * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_karton_2`
 
     :type corl_alpha: float
     :param corl_alpha: |dl| ``3.00`` |dr| 
 
-        Overrides the default \alpha parameter used in the listed :py:func:`corl_xtpl_helgaker_2` correlation
+        Overrides the default \alpha parameter used in the listed :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` correlation
         extrapolation to the corl stage. The supplied \alpha does not impact delta or any further stages.
 
         .. hlist::
            :columns: 1
 
-           * :py:func:`corl_xtpl_helgaker_2`
+           * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
 
     :type delta_alpha: float
     :param delta_alpha: |dl| ``3.00`` |dr| 
 
         Overrides the default \alpha parameter used in the listed
-        :py:func:`corl_xtpl_helgaker_2` correlation extrapolation for the delta correction. Useful when
+        :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` correlation extrapolation for the delta correction. Useful when
         delta correction is performed using smaller basis sets for which a different \alpha might
         be more appropriate.
 
         .. hlist::
            :columns: 1
 
-           * :py:func:`corl_xtpl_helgaker_2`
+           * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
 
     * Combined interface
     
-    :type cbs_metadata: list of dicts
+    :type cbs_metadata: List[Dict]
     :param cbs_metadata: |dl| autogenerated from above keywords |dr| || ``[{"wfn": "hf", "basis": "cc-pv[TQ5]z"}]`` || etc.
 
         This is the interface to which all of the above calls are internally translated. The first item in

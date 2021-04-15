@@ -34,6 +34,7 @@ import warnings
 from collections import Counter
 from itertools import product
 from tempfile import NamedTemporaryFile
+from typing import Dict
 
 import numpy as np
 
@@ -225,14 +226,14 @@ def _core_wavefunction_from_file(wfn_data):
 core.Wavefunction.from_file = _core_wavefunction_from_file
 
 
-def _core_wavefunction_to_file(wfn, filename=None):
+def _core_wavefunction_to_file(wfn: core.Wavefunction, filename: str = None) -> Dict:
     """Converts a Wavefunction object to a base class
 
     Parameters
     ----------
-    wfn : Wavefunction
+    wfn
         A Wavefunction or inherited class
-    filename : None, optional
+    filename
         An optional filename to write the data to
 
     Returns
@@ -323,25 +324,25 @@ core.Wavefunction.to_file = _core_wavefunction_to_file
 
 
 @staticmethod
-def _core_jk_build(orbital_basis, aux=None, jk_type=None, do_wK=None, memory=None):
+def _core_jk_build(orbital_basis: core.BasisSet, aux: core.BasisSet = None, jk_type: str = None, do_wK: bool = None, memory: int = None) -> core.JK:
     """
     Constructs a Psi4 JK object from an input basis.
 
     Parameters
     ----------
-    orbital_basis : :py:class:`~psi4.core.BasisSet`
+    orbital_basis
         Orbital basis to use in the JK object.
-    aux : :py:class:`~psi4.core.BasisSet`, optional
+    aux
         Optional auxiliary basis set for density-fitted tensors. Defaults
         to the DF_BASIS_SCF if set, otherwise the correspond JKFIT basis
         to the passed in `orbital_basis`.
-    jk_type : str, optional
+    jk_type
         Type of JK object to build (DF, Direct, PK, etc). Defaults to the
         current global SCF_TYPE option.
 
     Returns
     -------
-    :py:class:`~psi4.core.JK`
+    JK
         Uninitialized JK object.
 
     Example
@@ -421,22 +422,18 @@ core.VBase.get_np_xyzw = _core_vbase_get_np_xyzw
 ## Python other helps
 
 
-def set_options(options_dict, verbose=1):
+def set_options(options_dict: Dict, verbose: int = 1) -> None:
     """Sets Psi4 options from an input dictionary.
 
     Parameters
     ----------
-    options_dict : dict
+    options_dict
         Dictionary where keys are "option_name" for global options or
         "module_name__option_name" (double underscore separation) for
         option local to "module_name". Values are the option value. All
         are case insensitive.
-    verbose : int, optional
+    verbose
         Control print volume.
-
-    Returns
-    -------
-    None
 
     """
     optionre = re.compile(r'\A(?P<module>\w+__)?(?P<option>\w+)\Z', re.IGNORECASE)
@@ -486,13 +483,14 @@ def set_module_options(module, options_dict):
 ## OEProp helpers
 
 
-def pcm_helper(block):
+def pcm_helper(block: str):
     """
     Passes multiline string *block* to PCMSolver parser.
 
     Parameters
     ----------
-    block: multiline string with PCM input in PCMSolver syntax.
+    block
+        multiline string with PCM input in PCMSolver syntax.
     """
     import pcmsolver
 

@@ -29,7 +29,7 @@
 import os
 import atexit
 import datetime
-from typing import Union
+from typing import Optional, Union
 
 from qcelemental.util import which, which_import
 
@@ -53,15 +53,15 @@ def clean_numpy_files():
 atexit.register(clean_numpy_files)
 
 
-def exit_printing(start_time=None, success=None):
+def exit_printing(start_time: datetime.datetime = None, success: bool = None) -> None:
     """Prints the exit time and status.
 
     Parameters
     ----------
-    start_time : datetime.datetime, optional
-        starting time from which the elapsed time is computed.
-    success : bool
-        Provides a success flag, otherwise uses the _success_flag_ global variable
+    start_time
+         starting time from which the elapsed time is computed.
+    success
+        Provides a success flag, otherwise uses the ``_success_flag_`` global variable
 
     Returns
     -------

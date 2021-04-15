@@ -27,6 +27,7 @@
 #
 
 import sys
+from typing import List, Tuple, Union
 
 import numpy as np
 
@@ -65,27 +66,27 @@ def _find_dim(arr, ndim):
         raise ValidationError("Input array does not have a valid shape.")
 
 
-def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
+def array_to_matrix(self, arr: Union[np.ndarray, List[np.ndarray]], name: str = "New Matrix", dim1: Union[List, Tuple, core.Dimension] = None, dim2: core.Dimension = None) -> Union[core.Matrix, core.Vector]:
     """
     Converts a numpy array or list of numpy arrays into a Psi4 Matrix (irreped if list).
 
     Parameters
     ----------
-    arr : array or list of arrays
+    arr
         Numpy array or list of arrays to use as the data for a new core.Matrix
-    name : str
+    name
         Name to give the new core.Matrix
-    dim1 : list, tuple, or core.Dimension (optional)
+    dim1
         If a single dense numpy array is given, a dimension can be supplied to
         apply irreps to this array. Note that this discards all extra information
         given in the matrix besides the diagonal blocks determined by the passed
         dimension.
-    dim2 :
+    dim2
         Same as dim1 only if using a psi4.core.Dimension object.
 
     Returns
     -------
-    matrix : :py:class:`~psi4.core.Matrix` or :py:class:`~psi4.core.Vector`
+    Matrix or Vector
        Returns the given Psi4 object
 
     Notes
@@ -210,23 +211,23 @@ def array_to_matrix(self, arr, name="New Matrix", dim1=None, dim2=None):
             raise ValidationError("Array_to_Matrix: type '%s' is not recognized." % str(arr_type))
 
 
-def _to_array(matrix, copy=True, dense=False):
+def _to_array(matrix: Union[core.Matrix, core.Vector], copy: bool = True, dense: bool = False) -> Union[np.ndarray, List[np.ndarray]]:
     """
-    Converts a Psi4 Matrix or Vector to a numpy array. Either copies the data or simply
+    Converts a Psi4 Matrix or Vector to a NumPy array. Either copies the data or simply
     constructs a view.
 
     Parameters
     ----------
-    matrix : :py:class:`~psi4.core.Matrix` or :py:class:`~psi4.core.Vector`
+    matrix
         Pointers to which Psi4 core class should be used in the construction.
-    copy : bool, optional
+    copy
         Copy the data if `True`, return a view otherwise
-    dense : bool, optional
+    dense
         Converts irreped Psi4 objects to diagonally blocked dense arrays if `True`. Returns a list of arrays otherwise.
 
     Returns
     -------
-    array : ndarray or list of ndarray
+    numpy.ndarray
        Returns either a list of np.array's or the base array depending on options.
 
     Notes
@@ -303,7 +304,7 @@ def _to_array(matrix, copy=True, dense=False):
 @property
 def _np_shape(self):
     """
-    Shape of the Psi4 data object
+    Shape of the Psi4 data object.
     """
     view_data = _get_raw_views(self)
     if self.nirrep() > 1:
@@ -315,7 +316,7 @@ def _np_shape(self):
 @property
 def _np_view(self):
     """
-    View without only one irrep
+    View with single irrep.
     """
     if self.nirrep() > 1:
         raise ValidationError("Attempted to call .np on a Psi4 data object with multiple irreps."

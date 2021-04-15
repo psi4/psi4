@@ -27,6 +27,7 @@
 #
 
 import collections
+from typing import Dict, List, Union
 
 import numpy as np
 from qcelemental.models import AtomicInput
@@ -55,27 +56,28 @@ class EmpiricalDispersion(object):
 
     Attributes
     ----------
-    dashlevel: {'d1', 'd2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj', 'chg', 'das2009', 'das2010', 'nl', 'dmp2'}
+    dashlevel : str
+        {'d1', 'd2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj', 'chg', 'das2009', 'das2010', 'nl', 'dmp2'}
         Name of dispersion correction to be applied. Resolved
         from `name_hint` and/or `level_hint` into a key of
         `empirical_dispersion_resources.dashcoeff`.
     dashparams : dict
-        Complete (number and parameter names vary by `dashlevel`)
-        set of parameter values defining the flexible parts
-        of `dashlevel`. Resolved into a complete set (keys of
+        Complete set of parameter values defining the flexible parts
+        of :py:attr:`dashlevel`. Number and parameter names vary by
+        :py:attr:`dashlevel`. Resolved into a complete set (keys of
         dashcoeff[dashlevel]['default']) from `name_hint` and/or
         `dashcoeff_supplement` and/or user `param_tweaks`.
     fctldash : str
-        If `dashparams` for `dashlevel` corresponds to a defined,
+        If :py:attr:`dashparams` for :py:attr:`dashlevel` corresponds to a defined,
         named, untweaked "functional-dashlevel" set, then that
         functional. Otherwise, empty string.
     description : str
-        Tagline for dispersion `dashlevel`.
+        Tagline for dispersion :py:attr:`dashlevel`.
     dashlevel_citation : str
-        Literature reference for dispersion `dashlevel` in general,
-        *not necessarily* for `dashparams`.
+        Literature reference for dispersion :py:attr:`dashlevel` in general,
+        *not necessarily* for :py:attr:`dashparams`.
     dashparams_citation : str
-        Literature reference for dispersion parameters, if `dashparams`
+        Literature reference for dispersion parameters, if :py:attr:`dashparams`
         corresponds to a defined, named, untweaked "functional-dashlevel"
         set with a citation. Otherwise, empty string.
     dashcoeff_supplement : dict
@@ -84,41 +86,42 @@ class EmpiricalDispersion(object):
         the procedures/dft/<rung>_functionals-defined dictionaries
         as legit, non-custom, and of equal validity to
         `qcengine.programs.empirical_dispersion_resources.dashcoeff` itself for purposes of
-        validating `fctldash`.
-    engine : {'libdisp', 'dftd3', 'nl', 'mp2d'}
+        validating :py:attr:`fctldash`.
+    engine : str
+        {'libdisp', 'dftd3', 'nl', 'mp2d'}
         Compute engine for dispersion. One of Psi4's internal libdisp
         library, Grimme's DFTD3 executable, or nl.
-    disp : psi4.core.Dispersion
-        Only present for `engine=libdisp`. Psi4 class instance prepared
+    disp : Dispersion
+        Only present for :py:attr:`engine` `=libdisp`. Psi4 class instance prepared
         to compute dispersion.
     ordered_params : list
-        Fixed-order list of relevant parameters for `dashlevel`. Matches
-        DFT_DISPERSION_PARAMETERS ordering. Used for printing.
+        Fixed-order list of relevant parameters for :py:attr:`dashlevel`. Matches
+        :rst:psivar:`DISPERSION CORRECTION ENERGY` ordering. Used for printing.
 
     Parameters
     ----------
-    name_hint : str, optional
+    name_hint
         Name of functional (func only, func & disp, or disp only) for
         which to compute dispersion (e.g., blyp, BLYP-D2, blyp-d3bj,
         blyp-d3(bj), hf+d). Any or all parameters initialized from
         ``dashcoeff[dashlevel][functional-without-dashlevel]`` or
         ``dashcoeff_supplement[dashlevel][functional-with-dashlevel]``
         can be overwritten via `param_tweaks`.
-    level_hint : str, optional
+    level_hint
         Name of dispersion correction to be applied (e.g., d, D2,
         d3(bj), das2010). Must be key in `dashcoeff` or "alias" or
         "formal" to one.
-    param_tweaks : list or dict, optional
+    param_tweaks
         Values for the same keys as `dashcoeff[dashlevel]['default']`
         (and same order if list) used to override any or all values
         initialized by `name_hint`.  Extra parameters will error.
-    engine : str, optional
+    engine
         Override which code computes dispersion. See above for allowed
         values. Really only relevant for -D2, which can be computed by
         libdisp or dftd3.
 
     """
-    def __init__(self, name_hint=None, level_hint=None, param_tweaks=None, save_pairwise_disp=False, **kwargs):
+    def __init__(self, *, name_hint: str = None, level_hint: str = None, param_tweaks: Union[Dict, List] = None, engine: str = None, save_pairwise_disp=False):
         from .dft import dashcoeff_supplement
         self.dashcoeff_supplement = dashcoeff_supplement
         self.save_pairwise_disp = save_pairwise_disp
@@ -136,7 +139,6 @@ class EmpiricalDispersion(object):
         self.dashlevel_citation = qcng.programs.empirical_dispersion_resources.dashcoeff[self.dashlevel]['citation']
         self.dashparams_citation = resolved['dashparams_citation']
 
-        engine = kwargs.pop('engine', None)
         if engine is None:
             self.engine = _capable_engines_for_disp[self.dashlevel][0]
         else:
@@ -166,14 +168,14 @@ class EmpiricalDispersion(object):
 
         core.print_out('\n'.join(text))
 
-    def compute_energy(self, molecule: 'psi4.core.Molecule', wfn: 'psi4.core.Wavefunction' = None) -> float:
+    def compute_energy(self, molecule: psi4.core.Molecule, wfn: psi4.core.Wavefunction = None) -> float:
         """Compute dispersion energy based on engine, dispersion level, and parameters in `self`.
 
         Parameters
         ----------
-        molecule : psi4.core.Molecule
+        molecule
             System for which to compute empirical dispersion correction.
-        wfn :
+        wfn
             Location to set QCVariables
 
         Returns
@@ -183,10 +185,10 @@ class EmpiricalDispersion(object):
 
         Notes
         -----
-        DISPERSION CORRECTION ENERGY
+        :psivar:`DISPERSION CORRECTION ENERGY`
             Disp always set. Overridden in SCF finalization, but that only changes for "-3C" methods.
-        self.fctldash + DISPERSION CORRECTION ENERGY
-            Set if `fctldash` nonempty.
+        :psivar:`fctl DISPERSION CORRECTION ENERGY`
+            Set if :py:attr:`fctldash` nonempty.
 
         """
         if self.engine in ['dftd3', 'mp2d']:
@@ -236,24 +238,24 @@ class EmpiricalDispersion(object):
             ene = self.disp.compute_energy(molecule)
             core.set_variable('DISPERSION CORRECTION ENERGY', ene)
             if self.fctldash:
-                core.set_variable('{} DISPERSION CORRECTION ENERGY'.format(self.fctldash), ene)
+                core.set_variable(f"{self.fctldash} DISPERSION CORRECTION ENERGY", ene)
             return ene
 
     def compute_gradient(self,
-                         molecule: 'psi4.core.Molecule',
-                         wfn: 'psi4.core.Wavefunction' = None) -> 'psi4.core.Matrix':
+                         molecule: psi4.core.Molecule,
+                         wfn: psi4.core.Wavefunction = None) -> psi4.core.Matrix:
         """Compute dispersion gradient based on engine, dispersion level, and parameters in `self`.
 
         Parameters
         ----------
-        molecule : psi4.core.Molecule
+        molecule
             System for which to compute empirical dispersion correction.
-        wfn :
+        wfn
             Location to set QCVariables
 
         Returns
         -------
-        psi4.core.Matrix
+        Matrix
             (nat, 3) dispersion gradient [Eh/a0].
 
         """
@@ -296,21 +298,21 @@ class EmpiricalDispersion(object):
             return self.disp.compute_gradient(molecule)
 
     def compute_hessian(self,
-                        molecule: 'psi4.core.Molecule',
-                        wfn: 'psi4.core.Wavefunction' = None) -> 'psi4.core.Matrix':
+                        molecule: psi4.core.Molecule,
+                        wfn: psi4.core.Wavefunction = None) -> psi4.core.Matrix:
         """Compute dispersion Hessian based on engine, dispersion level, and parameters in `self`.
         Uses finite difference, as no dispersion engine has analytic second derivatives.
 
         Parameters
         ----------
-        molecule : psi4.core.Molecule
+        molecule
             System for which to compute empirical dispersion correction.
-        wfn :
+        wfn
             Location to set QCVariables
 
         Returns
         -------
-        psi4.core.Matrix
+        Matrix
             (3*nat, 3*nat) dispersion Hessian [Eh/a0/a0].
 
         """

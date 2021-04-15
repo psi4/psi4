@@ -60,7 +60,7 @@ def BFS(geom, elem, seed_atoms=None, bond_threshold=1.20):
     Notes
     -----
     Relies upon van der Waals radii and so faulty for close (especially
-        hydrogen-bonded) fragments. `seed_atoms` can help.
+    hydrogen-bonded) fragments. `seed_atoms` can help.
 
     Authors
     -------

@@ -17,6 +17,7 @@ units bohr
 
 
 set cc_type df
+set df_basis_mp2 def2-qzvpp-ri  # not a recommendation. present to compensate for change in default
 
 # Compute 1-body contribution with ccsd(t) and 2-body contribution with mp2
 levels = {1: 'mp2/sto-3g', 2: 'scf/sto-3g'}

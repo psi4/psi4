@@ -30,6 +30,7 @@
 import os
 import re
 import sys
+from typing import Union
 import warnings
 
 from psi4 import core
@@ -37,17 +38,16 @@ from psi4.driver.procrouting import *
 from .exceptions import ValidationError
 from .prop_util import *
 
-def oeprop(wfn, *args, **kwargs):
+def oeprop(wfn: core.Wavefunction, *args, **kwargs):
     """Evaluate one-electron properties.
 
     :returns: None
 
-    :type wfn: :py:class:`~psi4.core.Wavefunction`
     :param wfn: set of molecule, basis, orbitals from which to compute properties
 
     How to specify args, which are actually the most important
 
-    :type title: string
+    :type title: str
     :param title: label prepended to all psivars computed
 
     :examples:
@@ -110,7 +110,7 @@ def cubeprop(wfn, **kwargs):
     cp.compute_properties()
 
 
-def set_memory(inputval, execute=True, quiet=False):
+def set_memory(inputval: Union[int, float, str], execute: bool = True, quiet: bool = False) -> float:
     """Function to reset the total memory allocation. Takes memory value
     *inputval* as type int, float, or str; int and float are taken literally
     as bytes to be set, string taken as a unit-containing value (e.g., 30 mb)
