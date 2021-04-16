@@ -25,7 +25,6 @@
 #
 # @END LICENSE
 #
-
 """
 | Database (O24) of interaction energies for small open-shell high-spin bimolecular complexes.
 | Geometries taken from https://gitlab.com/piotr.zuchowski/o24x5/-/tree/4ec3cae0546b6ae4f4f2cf28482cd164c8323cc6.
@@ -67,8 +66,9 @@
 
 """
 
-import re
 import qcdb
+
+from psi4.driver import constants
 
 # <<< O24by5 Database Module >>>
 dbse = "O24by5mb"
@@ -82,7 +82,6 @@ HRXN = [str(rxn) + d for rxn in range(1, 25) for d in DIST]
 HRXN_DD = [str(rxn) + d for rxn in [1, 2, 3, 4, 5, 6, 7, 8, 9] for d in DIST]
 HRXN_ED = [str(rxn) + d for rxn in [10, 11, 12, 13, 14, 15] for d in DIST]
 HRXN_MX = [str(rxn) + d for rxn in [16, 17, 18, 19, 20, 21, 22, 23, 24] for d in DIST]
-
 
 # <<< Chemical Systems Involved >>>
 RXNM = {}  # reaction matrix of reagent contributions per reaction
@@ -259,9 +258,8 @@ BIND["%s-%s" % (dbse, "24-1.5")] = -3703.01
 BIND["%s-%s" % (dbse, "24-2.0")] = -1641.58
 
 # scale back to kcal/mol
-KCALMOL2WAVENUMBERS = 349.7551
 for key, value in BIND.items():
-    BIND[key] = value / KCALMOL2WAVENUMBERS
+    BIND[key] = value / constants.kcalmol2wavenumbers
 
 # <<< Comment Lines >>>
 TAGL = {}
@@ -749,8 +747,7 @@ TAGL["%s-%s-monoB-CP" % (dbse, "24-2.0")] = """Monomer B HF - CO+"""
 # <<< Geometry Specification Strins >>>
 GEOS = {}
 
-GEOS["%s-%s-dimer" % (dbse, "1-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "1-0.9")] = qcdb.Molecule("""
 0   2
 C        -0.664078525     0.000000000     1.259898914
 N         0.292558536     0.000000000     1.928630081
@@ -762,11 +759,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "1-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "1-1.0")] = qcdb.Molecule("""
 0   2
 C        -0.680641237     0.000000000     1.439889616
 N         0.275995824     0.000000000     2.108620783
@@ -778,11 +773,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "1-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "1-1.2")] = qcdb.Molecule("""
 0   2
 C        -0.713766661     0.000000000     1.799871020
 N         0.242870401     0.000000000     2.468602187
@@ -794,11 +787,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "1-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "1-1.5")] = qcdb.Molecule("""
 0   2
 C        -0.763454796     0.000000000     2.339843127
 N         0.193182265     0.000000000     3.008574293
@@ -810,11 +801,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "1-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "1-2.0")] = qcdb.Molecule("""
 0   2
 C        -0.846268356     0.000000000     3.239796637
 N         0.110368706     0.000000000     3.908527804
@@ -826,11 +815,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "2-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "2-0.9")] = qcdb.Molecule("""
 0   3
 N         0.000000000    -1.324613470    -0.800832434
 H         0.000000000    -1.324613470     0.235137867
@@ -842,11 +829,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "2-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "2-1.0")] = qcdb.Molecule("""
 0   3
 N         0.000000000    -1.471792745    -0.882086573
 H         0.000000000    -1.471792745     0.153883728
@@ -858,11 +843,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "2-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "2-1.2")] = qcdb.Molecule("""
 0   3
 N         0.000000000    -1.766151294    -1.044594851
 H         0.000000000    -1.766151294    -0.008624550
@@ -874,11 +857,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "2-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "2-1.5")] = qcdb.Molecule("""
 0   3
 N         0.000000000    -2.207689117    -1.288357268
 H         0.000000000    -2.207689117    -0.252386967
@@ -890,11 +871,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "2-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "2-2.0")] = qcdb.Molecule("""
 0   3
 N         0.000000000    -2.943585490    -1.694627962
 H         0.000000000    -2.943585490    -0.658657661
@@ -906,11 +885,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "3-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "3-0.9")] = qcdb.Molecule("""
 0   2
 H         0.905020870     1.257212446    -1.980000000
 H         0.905020870    -1.206707554    -1.980000000
@@ -930,11 +907,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "3-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "3-1.0")] = qcdb.Molecule("""
 0   2
 H         0.906742609     1.254916769    -2.200000000
 H         0.906742609    -1.209003231    -2.200000000
@@ -954,11 +929,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "3-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "3-1.2")] = qcdb.Molecule("""
 0   2
 H         0.910186087     1.250325416    -2.640000000
 H         0.910186087    -1.213594584    -2.640000000
@@ -978,11 +951,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "3-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "3-1.5")] = qcdb.Molecule("""
 0   2
 H         0.915351305     1.243438385    -3.300000000
 H         0.915351305    -1.220481615    -3.300000000
@@ -1002,11 +973,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "3-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "3-2.0")] = qcdb.Molecule("""
 0   2
 H         0.923960000     1.231960000    -4.400000000
 H         0.923960000    -1.231960000    -4.400000000
@@ -1026,11 +995,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "4-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "4-0.9")] = qcdb.Molecule("""
 0   3
 O        -0.330467500     0.000000000    -1.475595000
 O         0.871232500     0.000000000    -1.475595000
@@ -1043,11 +1010,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "4-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "4-1.0")] = qcdb.Molecule("""
 0   3
 O        -0.300425000     0.000000000    -1.639550000
 O         0.901275000     0.000000000    -1.639550000
@@ -1060,11 +1025,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "4-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "4-1.2")] = qcdb.Molecule("""
 0   3
 O        -0.240340000     0.000000000    -1.967460000
 O         0.961360000     0.000000000    -1.967460000
@@ -1077,11 +1040,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "4-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "4-1.5")] = qcdb.Molecule("""
 0   3
 O        -0.150212500     0.000000000    -2.459325000
 O         1.051487500     0.000000000    -2.459325000
@@ -1094,11 +1055,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "4-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "4-2.0")] = qcdb.Molecule("""
 0   3
 O         0.000000000     0.000000000    -3.279100000
 O         1.201700000     0.000000000    -3.279100000
@@ -1111,11 +1070,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "5-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "5-0.9")] = qcdb.Molecule("""
 0   3
 N        -0.056490403     0.000000000     1.724989690
 H         0.854426530     0.000000000     1.228991525
@@ -1127,11 +1084,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "5-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "5-1.0")] = qcdb.Molecule("""
 0   3
 N        -0.055972638     0.000000000     1.912955590
 H         0.854944296     0.000000000     1.416957424
@@ -1143,11 +1098,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "5-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "5-1.2")] = qcdb.Molecule("""
 0   3
 N        -0.054937107     0.000000000     2.288887388
 H         0.855979826     0.000000000     1.792889223
@@ -1159,11 +1112,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "5-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "5-1.5")] = qcdb.Molecule("""
 0   3
 N        -0.053383811     0.000000000     2.852785087
 H         0.857533122     0.000000000     2.356786921
@@ -1175,11 +1126,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "5-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "5-2.0")] = qcdb.Molecule("""
 0   3
 N        -0.050794984     0.000000000     3.792614584
 H         0.860121949     0.000000000     3.296616418
@@ -1191,12 +1140,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-
-GEOS["%s-%s-dimer" % (dbse, "6-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "6-0.9")] = qcdb.Molecule("""
 0   2
 C        -0.427112733     0.000000000     2.134178904
 N         0.427713476     0.000000000     1.339428634
@@ -1208,11 +1154,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "6-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "6-1.0")] = qcdb.Molecule("""
 0   2
 C        -0.423436000     0.000000000     2.323769791
 N         0.431390210     0.000000000     1.529019521
@@ -1224,11 +1168,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "6-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "6-1.2")] = qcdb.Molecule("""
 0   2
 C        -0.416082533     0.000000000     2.702951566
 N         0.438743677     0.000000000     1.908201296
@@ -1240,11 +1182,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "6-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "6-1.5")] = qcdb.Molecule("""
 0   2
 C        -0.405052332     0.000000000     3.271724229
 N         0.449773878     0.000000000     2.476973959
@@ -1256,11 +1196,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "6-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "6-2.0")] = qcdb.Molecule("""
 0   2
 C        -0.386668664     0.000000000     4.219678666
 N         0.468157545     0.000000000     3.424928396
@@ -1272,11 +1210,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "7-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "7-0.9")] = qcdb.Molecule("""
 0   3
 O        -0.600850000     0.000000000    -1.548000000
 O         0.600850000     0.000000000    -1.548000000
@@ -1289,11 +1225,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "7-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "7-1.0")] = qcdb.Molecule("""
 0   3
 O        -0.600850000     0.000000000    -1.720000000
 O         0.600850000     0.000000000    -1.720000000
@@ -1306,11 +1240,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "7-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "7-1.2")] = qcdb.Molecule("""
 0   3
 O        -0.600850000     0.000000000    -2.064000000
 O         0.600850000     0.000000000    -2.064000000
@@ -1323,11 +1255,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "7-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "7-1.5")] = qcdb.Molecule("""
 0   3
 O        -0.600850000     0.000000000    -2.580000000
 O         0.600850000     0.000000000    -2.580000000
@@ -1340,11 +1270,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "7-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "7-2.0")] = qcdb.Molecule("""
 0   3
 O        -0.600850000     0.000000000    -3.440000000
 O         0.600850000     0.000000000    -3.440000000
@@ -1357,11 +1285,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "8-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "8-0.9")] = qcdb.Molecule("""
 0   1
 O        -1.602354754    -0.131587291     0.000000000
 H        -0.911985371     0.483604683     0.000000000
@@ -1375,11 +1301,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "8-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "8-1.0")] = qcdb.Molecule("""
 0   1
 O        -1.771586854    -0.146687705     0.000000000
 H        -1.081217471     0.468504269     0.000000000
@@ -1393,11 +1317,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "8-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "8-1.2")] = qcdb.Molecule("""
 0   1
 O        -2.110051054    -0.176888534     0.000000000
 H        -1.419681671     0.438303440     0.000000000
@@ -1411,11 +1333,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "8-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "8-1.5")] = qcdb.Molecule("""
 0   1
 O        -2.617747353    -0.222189777     0.000000000
 H        -1.927377970     0.393002197     0.000000000
@@ -1429,11 +1349,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "8-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "8-2.0")] = qcdb.Molecule("""
 0   1
 O        -3.463907853    -0.297691848     0.000000000
 H        -2.773538470     0.317500126     0.000000000
@@ -1447,11 +1365,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "9-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "9-0.9")] = qcdb.Molecule("""
 0   3
 O         0.601000000    -1.485000000     0.000000000
 O        -0.601000000    -1.485000000     0.000000000
@@ -1464,11 +1380,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "9-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "9-1.0")] = qcdb.Molecule("""
 0   3
 O         0.601000000    -1.650000000     0.000000000
 O        -0.601000000    -1.650000000     0.000000000
@@ -1481,11 +1395,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "9-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "9-1.2")] = qcdb.Molecule("""
 0   3
 O         0.601000000    -1.980000000     0.000000000
 O        -0.601000000    -1.980000000     0.000000000
@@ -1498,11 +1410,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "9-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "9-1.5")] = qcdb.Molecule("""
 0   3
 O         0.601000000    -2.475000000     0.000000000
 O        -0.601000000    -2.475000000     0.000000000
@@ -1515,11 +1425,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "9-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "9-2.0")] = qcdb.Molecule("""
 0   3
 O         0.601000000    -3.300000000     0.000000000
 O        -0.601000000    -3.300000000     0.000000000
@@ -1532,12 +1440,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-
-GEOS["%s-%s-dimer" % (dbse, "10-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "10-0.9")] = qcdb.Molecule("""
 0   3
 N        -1.644614308     0.000000000     0.000000000
 H        -0.607614308     0.000000000     0.000000000
@@ -1550,11 +1455,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "10-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "10-1.0")] = qcdb.Molecule("""
 0   3
 N        -1.819614308     0.000000000     0.000000000
 H        -0.782614308     0.000000000     0.000000000
@@ -1567,11 +1470,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "10-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "10-1.2")] = qcdb.Molecule("""
 0   3
 N        -2.169614308     0.000000000     0.000000000
 H        -1.132614308     0.000000000     0.000000000
@@ -1584,11 +1485,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "10-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "10-1.5")] = qcdb.Molecule("""
 0   3
 N        -2.694614308     0.000000000     0.000000000
 H        -1.657614308     0.000000000     0.000000000
@@ -1601,11 +1500,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "10-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "10-2.0")] = qcdb.Molecule("""
 0   3
 N        -3.569614308     0.000000000     0.000000000
 H        -2.532614308     0.000000000     0.000000000
@@ -1618,12 +1515,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-
-GEOS["%s-%s-dimer" % (dbse, "11-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "11-0.9")] = qcdb.Molecule("""
 0   1
 C        -0.101334404     1.309903834     0.000000000
 H         0.475160596     1.401144834     0.932814000
@@ -1639,11 +1533,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "11-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "11-1.0")] = qcdb.Molecule("""
 0   1
 C        -0.178952268     1.445241696     0.000000000
 H         0.397542732     1.536482696     0.932814000
@@ -1659,11 +1551,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "11-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "11-1.2")] = qcdb.Molecule("""
 0   1
 C        -0.334187997     1.715917421     0.000000000
 H         0.242307003     1.807158421     0.932814000
@@ -1679,11 +1569,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "11-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "11-1.5")] = qcdb.Molecule("""
 0   1
 C        -0.567041589     2.121931008     0.000000000
 H         0.009453411     2.213172008     0.932814000
@@ -1699,11 +1587,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "11-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "11-2.0")] = qcdb.Molecule("""
 0   1
 C        -0.955130911     2.798620321     0.000000000
 H        -0.378635911     2.889861321     0.932814000
@@ -1719,12 +1605,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-
-GEOS["%s-%s-dimer" % (dbse, "12-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "12-0.9")] = qcdb.Molecule("""
 0   2
 Na        0.000008510     0.000000000    -1.099330219
 --
@@ -1737,11 +1620,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "12-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "12-1.0")] = qcdb.Molecule("""
 0   2
 Na        0.000009456     0.000000000    -1.221478021
 --
@@ -1754,11 +1635,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "12-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "12-1.2")] = qcdb.Molecule("""
 0   2
 Na        0.000011347     0.000000000    -1.465773625
 --
@@ -1771,11 +1650,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "12-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "12-1.5")] = qcdb.Molecule("""
 0   2
 Na        0.000014184     0.000000000    -1.832217032
 --
@@ -1788,11 +1665,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "12-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "12-2.0")] = qcdb.Molecule("""
 0   2
 Na        0.000018912     0.000000000    -2.442956042
 --
@@ -1805,11 +1680,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "13-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "13-0.9")] = qcdb.Molecule("""
 0   1
 O         0.000000000     0.040866260     1.250060902
 H         0.758711083    -0.281411037     1.745206735
@@ -1823,11 +1696,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "13-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "13-1.0")] = qcdb.Molecule("""
 0   1
 O         0.000000000     0.041400034     1.395112780
 H         0.758711083    -0.280877264     1.890258613
@@ -1841,11 +1712,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "13-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "13-1.2")] = qcdb.Molecule("""
 0   1
 O         0.000000000     0.042467581     1.685216535
 H         0.758711083    -0.279809716     2.180362369
@@ -1859,11 +1728,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "13-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "13-1.5")] = qcdb.Molecule("""
 0   1
 O         0.000000000     0.044068902     2.120372169
 H         0.758711083    -0.278208395     2.615518002
@@ -1877,11 +1744,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "13-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "13-2.0")] = qcdb.Molecule("""
 0   1
 O         0.000000000     0.046737771     2.845631558
 H         0.758711083    -0.275539526     3.340777391
@@ -1895,11 +1760,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "14-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "14-0.9")] = qcdb.Molecule("""
 0   1
 O         0.009168889    -0.062647918    -1.355472454
 H         0.035272725    -0.935983853    -1.711786553
@@ -1914,11 +1777,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "14-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "14-1.0")] = qcdb.Molecule("""
 0   1
 O         0.009206439    -0.071412233    -1.512762672
 H         0.035310275    -0.944748168    -1.869076771
@@ -1933,11 +1794,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "14-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "14-1.2")] = qcdb.Molecule("""
 0   1
 O         0.009281538    -0.088940863    -1.827343108
 H         0.035385374    -0.962276797    -2.183657207
@@ -1952,11 +1811,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "14-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "14-1.5")] = qcdb.Molecule("""
 0   1
 O         0.009394188    -0.115233807    -2.299213762
 H         0.035498024    -0.988569742    -2.655527861
@@ -1971,11 +1828,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "14-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "14-2.0")] = qcdb.Molecule("""
 0   1
 O         0.009581937    -0.159055382    -3.085664852
 H         0.035685773    -1.032391316    -3.441978951
@@ -1990,12 +1845,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-
-GEOS["%s-%s-dimer" % (dbse, "15-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "15-0.9")] = qcdb.Molecule("""
 0   1
 N         0.000000000     0.000000000     0.863512817
 H         0.937314431     0.000000000     1.245069906
@@ -2009,11 +1861,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "15-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "15-1.0")] = qcdb.Molecule("""
 0   1
 N         0.000000000     0.000000000     0.966986086
 H         0.937314431     0.000000000     1.348543175
@@ -2027,11 +1877,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "15-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "15-1.2")] = qcdb.Molecule("""
 0   1
 N         0.000000000     0.000000000     1.173932625
 H         0.937314431     0.000000000     1.555489714
@@ -2045,11 +1893,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "15-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "15-1.5")] = qcdb.Molecule("""
 0   1
 N         0.000000000     0.000000000     1.484352433
 H         0.937314431     0.000000000     1.865909522
@@ -2063,11 +1909,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "15-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "15-2.0")] = qcdb.Molecule("""
 0   1
 N         0.000000000     0.000000000     2.001718780
 H         0.937314431     0.000000000     2.383275869
@@ -2081,12 +1925,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-
-GEOS["%s-%s-dimer" % (dbse, "16-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "16-0.9")] = qcdb.Molecule("""
 0   3
 O         0.000000000     0.603367899    -2.143167858
 O         0.000000000    -0.603367899    -2.143167858
@@ -2098,11 +1939,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "16-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "16-1.0")] = qcdb.Molecule("""
 0   3
 O         0.000000000     0.603367899    -2.381297620
 O         0.000000000    -0.603367899    -2.381297620
@@ -2114,11 +1953,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "16-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "16-1.2")] = qcdb.Molecule("""
 0   3
 O         0.000000000     0.603367899    -2.857557145
 O         0.000000000    -0.603367899    -2.857557145
@@ -2130,11 +1967,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "16-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "16-1.5")] = qcdb.Molecule("""
 0   3
 O         0.000000000     0.603367899    -3.571946431
 O         0.000000000    -0.603367899    -3.571946431
@@ -2146,11 +1981,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "16-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "16-2.0")] = qcdb.Molecule("""
 0   3
 O         0.000000000     0.603367899    -4.762595241
 O         0.000000000    -0.603367899    -4.762595241
@@ -2162,11 +1995,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "17-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "17-0.9")] = qcdb.Molecule("""
 0   2
 C        -1.595250000    -0.609996639     0.000000000
 N        -1.595250000     0.560603361     0.000000000
@@ -2179,11 +2010,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "17-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "17-1.0")] = qcdb.Molecule("""
 0   2
 C        -1.772500000    -0.607751490     0.000000000
 N        -1.772500000     0.562848510     0.000000000
@@ -2196,11 +2025,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "17-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "17-1.2")] = qcdb.Molecule("""
 0   2
 C        -2.127000000    -0.603261192     0.000000000
 N        -2.127000000     0.567338808     0.000000000
@@ -2213,11 +2040,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "17-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "17-1.5")] = qcdb.Molecule("""
 0   2
 C        -2.658750000    -0.596525745     0.000000000
 N        -2.658750000     0.574074255     0.000000000
@@ -2230,11 +2055,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "17-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "17-2.0")] = qcdb.Molecule("""
 0   2
 C        -3.545000000    -0.585300000     0.000000000
 N        -3.545000000     0.585300000     0.000000000
@@ -2247,11 +2070,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "18-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "18-0.9")] = qcdb.Molecule("""
 0   1
 N         0.000000000     0.000000000    -1.994044328
 H         0.937314431     0.000000000    -1.612487239
@@ -2265,11 +2086,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "18-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "18-1.0")] = qcdb.Molecule("""
 0   1
 N         0.000000000     0.000000000    -2.208077408
 H         0.937314431     0.000000000    -1.826520319
@@ -2283,11 +2102,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "18-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "18-1.2")] = qcdb.Molecule("""
 0   1
 N         0.000000000     0.000000000    -2.636143568
 H         0.937314431     0.000000000    -2.254586479
@@ -2301,11 +2118,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "18-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "18-1.5")] = qcdb.Molecule("""
 0   1
 N         0.000000000     0.000000000    -3.278242808
 H         0.937314431     0.000000000    -2.896685719
@@ -2319,11 +2134,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "18-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "18-2.0")] = qcdb.Molecule("""
 0   1
 N         0.000000000     0.000000000    -4.348408208
 H         0.937314431     0.000000000    -3.966851119
@@ -2337,12 +2150,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-
-GEOS["%s-%s-dimer" % (dbse, "19-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "19-0.9")] = qcdb.Molecule("""
 0   1
 H        -2.342136430     0.069282299     0.000000000
 O        -1.395456186    -0.083638660     0.000000000
@@ -2356,11 +2166,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "19-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "19-1.0")] = qcdb.Molecule("""
 0   1
 H        -2.500678256     0.066400954     0.000000000
 O        -1.553998012    -0.086520005     0.000000000
@@ -2374,11 +2182,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "19-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "19-1.2")] = qcdb.Molecule("""
 0   1
 H        -2.817761909     0.060638264     0.000000000
 O        -1.871081665    -0.092282694     0.000000000
@@ -2392,11 +2198,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "19-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "19-1.5")] = qcdb.Molecule("""
 0   1
 H        -3.293387389     0.051994230     0.000000000
 O        -2.346707145    -0.100926729     0.000000000
@@ -2410,11 +2214,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "19-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "19-2.0")] = qcdb.Molecule("""
 0   1
 H        -4.086096522     0.037587505     0.000000000
 O        -3.139416278    -0.115333454     0.000000000
@@ -2428,11 +2230,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "20-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "20-0.9")] = qcdb.Molecule("""
 0   2
 Na       -2.124000000     0.000000000     0.000000000
 --
@@ -2443,11 +2243,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "20-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "20-1.0")] = qcdb.Molecule("""
 0   2
 Na       -2.360000000     0.000000000     0.000000000
 --
@@ -2458,11 +2256,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "20-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "20-1.2")] = qcdb.Molecule("""
 0   2
 Na       -2.832000000     0.000000000     0.000000000
 --
@@ -2473,11 +2269,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "20-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "20-1.5")] = qcdb.Molecule("""
 0   2
 Na       -3.540000000     0.000000000     0.000000000
 --
@@ -2488,11 +2282,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "20-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "20-2.0")] = qcdb.Molecule("""
 0   2
 Na       -4.720000000     0.000000000     0.000000000
 --
@@ -2503,11 +2295,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "21-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "21-0.9")] = qcdb.Molecule("""
 0   1
 C        -1.523106993     0.306968024     0.000000000
 O        -1.523106993     1.466968024     0.000000000
@@ -2521,11 +2311,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "21-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "21-1.0")] = qcdb.Molecule("""
 0   1
 C        -1.692341104     0.341075582     0.000000000
 O        -1.692341104     1.501075582     0.000000000
@@ -2539,11 +2327,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "21-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "21-1.2")] = qcdb.Molecule("""
 0   1
 C        -2.030809325     0.409290699     0.000000000
 O        -2.030809325     1.569290699     0.000000000
@@ -2557,11 +2343,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "21-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "21-1.5")] = qcdb.Molecule("""
 0   1
 C        -2.538511656     0.511613373     0.000000000
 O        -2.538511656     1.671613373     0.000000000
@@ -2575,11 +2359,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "21-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "21-2.0")] = qcdb.Molecule("""
 0   1
 C        -3.384682208     0.682151165     0.000000000
 O        -3.384682208     1.842151164     0.000000000
@@ -2593,12 +2375,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-
-GEOS["%s-%s-dimer" % (dbse, "22-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "22-0.9")] = qcdb.Molecule("""
 0   2
 C        -1.221104626    -0.694508536    -0.323156022
 C        -1.684033576     0.465731104     0.078533898
@@ -2615,11 +2394,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "22-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "22-1.0")] = qcdb.Molecule("""
 0   2
 C        -1.386232505    -0.704989974    -0.333975938
 C        -1.849161455     0.455249666     0.067713982
@@ -2636,11 +2413,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "22-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "22-1.2")] = qcdb.Molecule("""
 0   2
 C        -1.716488264    -0.725952849    -0.355615769
 C        -2.179417214     0.434286791     0.046074151
@@ -2657,11 +2432,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "22-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "22-1.5")] = qcdb.Molecule("""
 0   2
 C        -2.211871902    -0.757397162    -0.388075516
 C        -2.674800852     0.402842478     0.013614404
@@ -2678,11 +2451,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "22-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "22-2.0")] = qcdb.Molecule("""
 0   2
 C        -3.037511299    -0.809804349    -0.442175095
 C        -3.500440249     0.350435291    -0.040485175
@@ -2699,11 +2470,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "23-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "23-0.9")] = qcdb.Molecule("""
 0   3
 He       -1.738350000     0.000000000     0.000000000
 --
@@ -2714,11 +2483,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "23-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "23-1.0")] = qcdb.Molecule("""
 0   3
 He       -1.931500000     0.000000000     0.000000000
 --
@@ -2729,11 +2496,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "23-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "23-1.2")] = qcdb.Molecule("""
 0   3
 He       -2.317800000     0.000000000     0.000000000
 --
@@ -2744,11 +2509,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "23-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "23-1.5")] = qcdb.Molecule("""
 0   3
 He       -2.897250000     0.000000000     0.000000000
 --
@@ -2759,11 +2522,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "23-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "23-2.0")] = qcdb.Molecule("""
 0   3
 He       -3.863000000     0.000000000     0.000000000
 --
@@ -2774,11 +2535,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "24-0.9")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "24-0.9")] = qcdb.Molecule("""
 1   2
 C         0.000000000    -0.436434806     0.497570949
 O         0.000000000     0.196238679     1.420138459
@@ -2791,11 +2550,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "24-1.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "24-1.0")] = qcdb.Molecule("""
 1   2
 C         0.000000000    -0.444773807     0.611409007
 O         0.000000000     0.187899678     1.533976518
@@ -2808,11 +2565,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "24-1.2")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "24-1.2")] = qcdb.Molecule("""
 1   2
 C         0.000000000    -0.461451810     0.839085125
 O         0.000000000     0.171221675     1.761652635
@@ -2825,11 +2580,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "24-1.5")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "24-1.5")] = qcdb.Molecule("""
 1   2
 C         0.000000000    -0.486468814     1.180599300
 O         0.000000000     0.146204671     2.103166811
@@ -2842,11 +2595,9 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
-GEOS["%s-%s-dimer" % (dbse, "24-2.0")] = qcdb.Molecule(
-    """
+GEOS["%s-%s-dimer" % (dbse, "24-2.0")] = qcdb.Molecule("""
 1   2
 C         0.000000000    -0.528163822     1.749789594
 O         0.000000000     0.104509663     2.672357104
@@ -2859,22 +2610,17 @@ units angstrom
 no_reorient
 no_com
 symmetry c1
-"""
-)
+""")
 
 # <<< Derived Geometry Strings >>>
 for rxn in HRXN:
-    GEOS["%s-%s-monoA-CP" % (dbse, rxn)] = GEOS[
-        "%s-%s-dimer" % (dbse, rxn)
-    ].extract_fragments(
+    GEOS["%s-%s-monoA-CP" % (dbse, rxn)] = GEOS["%s-%s-dimer" % (dbse, rxn)].extract_fragments(
         1,
         [
             2,
         ],
     )
-    GEOS["%s-%s-monoB-CP" % (dbse, rxn)] = GEOS[
-        "%s-%s-dimer" % (dbse, rxn)
-    ].extract_fragments(
+    GEOS["%s-%s-monoB-CP" % (dbse, rxn)] = GEOS["%s-%s-dimer" % (dbse, rxn)].extract_fragments(
         2,
         [
             1,
