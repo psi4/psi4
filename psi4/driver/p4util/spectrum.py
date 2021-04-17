@@ -34,6 +34,7 @@ import numpy as np
 
 from psi4.driver import constants
 
+__all__ = ["Gaussian", "Lorentzian", "Lineshape", "prefactor_ecd", "prefactor_opa", "spectrum"]
 
 @dataclass
 class Lineshape:

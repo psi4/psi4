@@ -33,6 +33,7 @@ import numpy as np
 from qcelemental.models import AtomicInput
 import qcengine as qcng
 
+import psi4  # for typing
 from psi4 import core
 from psi4.driver import p4util
 from psi4.driver import driver_findif

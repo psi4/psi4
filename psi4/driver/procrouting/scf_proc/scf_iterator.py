@@ -31,11 +31,10 @@ The SCF iteration functions
 
 import numpy as np
 
-from psi4.driver import p4util
-from psi4.driver import constants
-from psi4.driver.p4util.exceptions import SCFConvergenceError, ValidationError
 from psi4 import core
-
+from psi4.driver import constants
+from ...p4util.exceptions import SCFConvergenceError, ValidationError
+from ... import p4util
 from ..solvent.efp import get_qm_atoms_opts, modify_Fock_permanent, modify_Fock_induced
 
 #import logging

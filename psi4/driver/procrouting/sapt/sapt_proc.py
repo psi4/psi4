@@ -30,12 +30,10 @@ import numpy as np
 
 from psi4 import core
 from psi4.driver import constants
-from psi4.driver import p4util
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.molutil import *
-from psi4.driver.procrouting.proc import scf_helper
-from psi4.driver.procrouting import proc_util
-
+from ...p4util.exceptions import ValidationError
+from ... import p4util
+from .. import proc_util
+from ..proc import scf_helper
 from . import sapt_jk_terms
 from .sapt_util import print_sapt_var, print_sapt_hf_summary, print_sapt_dft_summary
 from . import sapt_mp2_terms

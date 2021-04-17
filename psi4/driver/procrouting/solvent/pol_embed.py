@@ -34,9 +34,10 @@ from qcelemental import constants
 from pkg_resources import parse_version
 
 from psi4 import core
-from psi4.driver.qcdb import libmintsbasisset
-from psi4.driver.p4util.exceptions import ValidationError
+from ... import qcdb
+from ...p4util.exceptions import ValidationError
 
+__all__ = ["CppeInterface", "get_pe_options"]
 
 def get_pe_options():
     if core.get_option('SCF', 'PCM'):
@@ -152,7 +153,7 @@ class CppeInterface:
                 mol.set_basis_by_number(i, "pe_ecp", role=role)
             return {}
 
-        libmintsbasisset.basishorde["PE_ECP_BASIS"] = __basisspec_pe_ecp
+        qcdb.libmintsbasisset.basishorde["PE_ECP_BASIS"] = __basisspec_pe_ecp
         self.pe_ecp_basis = core.BasisSet.build(qmmm_mol, "BASIS", "PE_ECP_BASIS")
         ecp_mints = core.MintsHelper(self.pe_ecp_basis)
         self.V_pe_ecp = ecp_mints.ao_ecp().np

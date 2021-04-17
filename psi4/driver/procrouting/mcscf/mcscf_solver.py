@@ -31,11 +31,10 @@ import os
 import numpy as np
 
 from psi4 import core
-from psi4.driver import p4util
-from psi4.driver import qcdb
-from psi4.driver.p4util import solvers
-from .augmented_hessian import ah_iteration
+from ...p4util.exceptions import PsiException
+from ... import p4util
 from .. import proc_util
+from .augmented_hessian import ah_iteration
 
 
 def print_iteration(mtype, niter, energy, de, orb_rms, ci_rms, nci, norb, stype):
@@ -97,21 +96,21 @@ def mcscf_solver(ref_wfn):
     orb_grad_rms = 1.e-3
 
     # Grab needed objects
-    diis_obj = solvers.DIIS(mcscf_diis_max_vecs)
+    diis_obj = p4util.solvers.DIIS(mcscf_diis_max_vecs)
     mcscf_obj = ciwfn.mcscf_object()
 
     # Execute the rotate command
     for rot in mcscf_rotate:
         if len(rot) != 4:
-            raise p4util.PsiException("Each element of the MCSCF rotate command requires 4 arguements (irrep, orb1, orb2, theta).")
+            raise PsiException("Each element of the MCSCF rotate command requires 4 arguements (irrep, orb1, orb2, theta).")
 
         irrep, orb1, orb2, theta = rot
         if irrep > ciwfn.Ca().nirrep():
-            raise p4util.PsiException("MCSCF_ROTATE: Expression %s irrep number is larger than the number of irreps" %
+            raise PsiException("MCSCF_ROTATE: Expression %s irrep number is larger than the number of irreps" %
                                     (str(rot)))
 
         if max(orb1, orb2) > ciwfn.Ca().coldim()[irrep]:
-            raise p4util.PsiException("MCSCF_ROTATE: Expression %s orbital number exceeds number of orbitals in irrep" %
+            raise PsiException("MCSCF_ROTATE: Expression %s orbital number exceeds number of orbitals in irrep" %
                                     (str(rot)))
 
         theta = np.deg2rad(theta)
@@ -344,7 +343,7 @@ def mcscf_solver(ref_wfn):
     # Die if we did not converge
     if (not converged):
         if core.get_global_option("DIE_IF_NOT_CONVERGED"):
-            raise p4util.PsiException("MCSCF: Iterations did not converge!")
+            raise PsiException("MCSCF: Iterations did not converge!")
         else:
             core.print_out("\nWarning! MCSCF iterations did not converge!\n\n")
 

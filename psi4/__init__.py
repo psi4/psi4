@@ -85,6 +85,7 @@ from .driver import endorsed_plugins
 core.set_num_threads(1, quiet=True)
 
 # Load driver and outfile paraphernalia
+from . import driver
 from .driver import *
 from .header import print_header
 from .metadata import __version__, version_formatter

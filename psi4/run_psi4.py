@@ -71,7 +71,7 @@ parser.add_argument("-l", "--psidatadir",
                     help="Specifies where to look for the Psi4 data directory. Overrides PSIDATADIR. !Warning! expert option.")
 parser.add_argument("-k", "--skip-preprocessor", action='store_true',
                     help="Skips input preprocessing. !Warning! expert option.")
-parser.add_argument("--qcschema", action='store_true',
+parser.add_argument("--qcschema", "--schema", action='store_true',
                     help="Runs input file as QCSchema. Can either be JSON or MessagePack input.")
 parser.add_argument("--json", action='store_true',
                     help="Runs a JSON input file. !Warning! depcrated option in 1.4, use --qcschema instead.")
@@ -198,7 +198,7 @@ if args['plugin_name']:
         args['plugin_template'] = 'basic'
 
     # This call does not return.
-    psi4.pluginutil.create_plugin(args['plugin_name'], args['plugin_template'])
+    psi4.driver.pluginutil.create_plugin(args['plugin_name'], args['plugin_template'])
 
     sys.exit()
 
@@ -304,7 +304,7 @@ with open(args["input"]) as f:
 # Preprocess
 if not args["skip_preprocessor"]:
     # PSI_SCRATCH must be set before this call!
-    content = psi4.process_input(content)
+    content = psi4.driver.process_input(content)
 
 # Handle Verbose
 if args["verbose"]:

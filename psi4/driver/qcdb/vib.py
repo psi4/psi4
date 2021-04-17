@@ -38,6 +38,7 @@ import qcelemental as qcel
 from qcelemental import Datum
 
 from .libmintsmolecule import compute_atom_map
+import psi4  # for typing
 
 LINEAR_A_TOL = 1.0E-2  # tolerance (roughly max dev) for TR space
 

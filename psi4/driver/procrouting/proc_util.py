@@ -25,16 +25,16 @@
 #
 # @END LICENSE
 #
+from typing import Tuple
 
 import numpy as np
 
-from qcelemental import constants
-
 from psi4 import core
-from psi4.driver import p4util
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.procrouting.dft import functionals, build_superfunctional_from_dictionary
-from psi4.driver.procrouting.sapt import fisapt_proc
+from psi4.driver import constants
+from .. import p4util
+from ..p4util.exceptions import ValidationError
+from .dft import functionals, build_superfunctional_from_dictionary
+from .sapt import fisapt_proc
 
 
 def scf_set_reference_local(name, is_dft=False):
@@ -74,7 +74,7 @@ def oeprop_validator(prop_list):
     oeprop_methods = core.OEProp.valid_methods
 
     if not len(prop_list):
-        raise ValidationnError("OEProp: No properties specified!")
+        raise ValidationError("OEProp: No properties specified!")
 
     for prop in prop_list:
         prop = prop.upper()
@@ -208,7 +208,7 @@ def print_ci_results(ciwfn, rname, scf_e, ci_e, print_opdm_no=False):
     dvec.close_io_files(True)
 
 
-def prepare_sapt_molecule(sapt_dimer, sapt_basis):
+def prepare_sapt_molecule(sapt_dimer: core.Molecule, sapt_basis: str) -> Tuple[core.Molecule, core.Molecule, core.Molecule]:
     """
     Prepares a dimer molecule for a SAPT computations. Returns the dimer, monomerA, and monomerB.
     """

@@ -36,9 +36,9 @@ import numpy as np
 
 from psi4 import core
 from psi4.driver import constants
-from psi4.driver.p4util import solvers
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.procrouting.response.scf_products import (TDRSCFEngine, TDUSCFEngine)
+from ...p4util.exceptions import TDSCFConvergenceError, ValidationError
+from ... import p4util
+from .scf_products import TDRSCFEngine, TDUSCFEngine
 
 dipole = {
     'name': 'Dipole polarizabilities',
@@ -556,7 +556,7 @@ def tdscf_excitations(wfn,
     max_vecs_per_root = int(-np.log10(r_convergence) * 50)
 
     def rpa_solver(e, n, g, m):
-        return solvers.hamiltonian_solver(engine=e,
+        return p4util.solvers.hamiltonian_solver(engine=e,
                                           nroot=n,
                                           guess=g,
                                           r_convergence=r_convergence,
@@ -564,7 +564,7 @@ def tdscf_excitations(wfn,
                                           verbose=verbose)
 
     def tda_solver(e, n, g, m):
-        return solvers.davidson_solver(engine=e,
+        return p4util.solvers.davidson_solver(engine=e,
                                        nroot=n,
                                        guess=g,
                                        r_convergence=r_convergence,

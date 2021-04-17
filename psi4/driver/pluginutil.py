@@ -30,9 +30,10 @@ import os
 import sys
 
 from psi4 import core
-from psi4.driver.util.filesystem import *
-from psi4.driver.util import tty
+from .util.filesystem import *
+from .util import tty
 
+__all__ = ["create_plugin"]
 
 def sanitize_name(name):
     """Function to return *name* in coded form, stripped of

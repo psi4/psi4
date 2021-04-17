@@ -35,6 +35,7 @@ import numpy as np
 
 import qcelemental as qcel
 
+import psi4
 from .util import parse_dertype
 from .libmintsmolecule import *
 from .testing import compare_values, compare_integers, compare_molrecs

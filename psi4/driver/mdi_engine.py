@@ -34,6 +34,8 @@ import psi4
 import numpy as np
 import qcelemental as qcel
 
+__all__ = ["mdi_init", "mdi_run"]
+
 _have_mdi = False
 try:
     from mdi import MDI_Init, MDI_MPI_get_world_comm, MDI_Accept_Communicator, \

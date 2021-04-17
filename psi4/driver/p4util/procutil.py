@@ -45,6 +45,27 @@ from psi4.metadata import __version__
 from .exceptions import ValidationError
 from . import p4regex
 
+__all__ = [
+"kwargs_lower",
+#"get_psifile",
+#"format_molecule_for_input",
+#"format_options_for_input",
+#"format_kwargs_for_input",
+"drop_duplicates",
+#"all_casings",
+"getattr_ignorecase",
+"import_ignorecase",
+#"extract_sowreap_from_output",
+#"reset_pe_options",
+#"prepare_options_for_modules",
+#"prepare_options_for_set_options",
+#"state_to_atomicinput",
+#"mat2arr",
+#"format_currentstate_for_input",
+"expand_psivars",
+"provenance_stamp",
+"plump_qcvar",
+]
 
 def kwargs_lower(kwargs):
     """Function to rebuild and return *kwargs* dictionary

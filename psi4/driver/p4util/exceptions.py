@@ -30,6 +30,23 @@
 from psi4 import core
 from psi4 import extras
 
+__all__ = [
+"PsiException",
+"ValidationError",
+#"ParsingError",
+#"PsiImportError",
+"TestComparisonError",
+"UpgradeHelper",
+"ConvergenceError",
+"OptimizationConvergenceError",
+"SCFConvergenceError",
+"TDSCFConvergenceError",
+#"CSXError",
+"MissingMethodError",
+"ManagedMethodError",
+#"Dftd3Error",
+#"PastureRequiredError",
+]
 
 class PsiException(Exception):
     """Error class for Psi."""

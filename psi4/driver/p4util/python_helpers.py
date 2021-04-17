@@ -40,13 +40,14 @@ import numpy as np
 
 import qcelemental as qcel
 from psi4 import core
-from psi4.driver import qcdb
 
-from . import optproc
+from .. import qcdb
+from .optproc import OptionsState
 from .exceptions import TestComparisonError, ValidationError
 
 ## Python basis helps
 
+__all__ = ["basis_helper", "pcm_helper", "set_module_options", "set_options"]
 
 @staticmethod
 def _pybuild_basis(mol,
@@ -362,7 +363,7 @@ def _core_jk_build(orbital_basis: core.BasisSet, aux: core.BasisSet = None, jk_t
 
     """
 
-    optstash = optproc.OptionsState(["SCF_TYPE"])
+    optstash = OptionsState(["SCF_TYPE"])
 
     if jk_type is not None:
         core.set_global_option("SCF_TYPE", jk_type)
@@ -475,6 +476,10 @@ def set_module_options(module, options_dict):
     """
     Sets Psi4 module options from a module specification and input dictionary.
     """
+    warnings.warn(
+        "Using `psi4.set_module_options(<module>, {keys: vals})` instead of `psi4.set_options({<module>__<keys>: <vals>})` is deprecated, and in 1.5 it will stop working\n",
+        category=FutureWarning,
+        stacklevel=2)
 
     for k, v, in options_dict.items():
         core.set_local_option(module.upper(), k.upper(), v)
@@ -507,10 +512,6 @@ def pcm_helper(block: str):
 def basname(name):
     """Imitates BasisSet.make_filename() without the gbs extension"""
     return name.lower().replace('+', 'p').replace('*', 's').replace('(', '_').replace(')', '_').replace(',', '_')
-
-
-def temp_circular_import_blocker():
-    pass
 
 
 def basis_helper(block, name='', key='BASIS', set_option=True):

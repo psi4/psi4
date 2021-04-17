@@ -30,6 +30,7 @@ import os
 import math
 from datetime import date
 
+__all__ = ["InPsight"]
 
 # yapf: disable
 class InPsight:

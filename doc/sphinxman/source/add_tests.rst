@@ -135,3 +135,74 @@ for examples. Use "quick" freely for tests that cover functionality and
 are under 15s. Use "long" sparingly to winnow out the longest examples,
 particularly those over a minute.
 
+
+.. .. _`faq:add_psiapi_tests`:
+
+Comparison Functions
+====================
+
+MolSSI-Style
+------------
+
+.. autofunction:: psi4.compare
+
+.. autofunction:: psi4.compare_values
+
+.. autofunction:: psi4.compare_recursive
+
+Psi4-Style
+----------
+
+.. autofunction:: psi4.compare_integers
+   :noindex:
+
+.. autofunction:: psi4.driver.p4util.testing.compare_strings
+   :noindex:
+
+.. autofunction:: psi4.driver.p4util.testing.compare_values
+   :noindex:
+
+.. autofunction:: psi4.driver.p4util.testing.compare_arrays
+   :noindex:
+
+.. autofunction:: psi4.driver.p4util.testing.compare_matrices
+   :noindex:
+
+.. autofunction:: psi4.compare_dicts
+   :noindex:
+
+.. autofunction:: psi4.driver.p4util.testing.compare_molrecs
+   :noindex:
+
+.. autofunction:: psi4.driver.p4util.testing.compare_wavefunctions
+   :noindex:
+
+.. autofunction:: psi4.driver.p4util.testing.compare_cubes
+   :noindex:
+
+.. autofunction:: psi4.driver.qcdb.vib.compare_vibinfos
+   :noindex:
+
+.. autofunction:: psi4.driver.p4util.fcidump.compare_fcidumps
+   :noindex:
+
+.. autofunction:: psi4.driver.p4util.fchk.compare_fchkfiles
+   :noindex:
+
+.. # ~POD
+.. compare = partial(qcel.testing.compare, return_handler=_psi4_true_raise_handler)
+.. compare_integers = partial(qcdb.testing._psi4_compare_integers, return_handler=_psi4_true_raise_handler)
+.. compare_strings = compare_integers
+.. compare_values = partial(qcdb.testing._mergedapis_compare_values, return_handler=_psi4_true_raise_handler)
+.. compare_arrays = compare_values
+.. 
+.. # Psi4-only
+.. compare_cubes = partial(_mergedapis_compare_cubes, return_handler=_psi4_true_raise_handler)
+.. compare_vectors = partial(_mergedapis_compare_vectors, return_handler=_psi4_true_raise_handler)
+.. compare_matrices = partial(_mergedapis_compare_matrices, return_handler=_psi4_true_raise_handler)
+.. compare_wavefunctions = partial(_mergedapis_compare_wavefunctions, return_handler=_psi4_true_raise_handler)
+.. 
+.. # dict-like, QCEl API only
+.. compare_recursive = partial(qcdb.testing._mergedapis_compare_recursive, return_handler=_psi4_true_raise_handler)
+.. compare_molrecs = partial(qcdb.testing._mergedapis_compare_molrecs, return_handler=_psi4_true_raise_handler)
+

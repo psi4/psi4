@@ -1352,3 +1352,17 @@ PSI Variables by Alpha
 
    Vibrational zero-point energy [Eh] at 0 [K].
 
+.. .....................
+
+.. psivar:: TDDFT ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
+   ADC ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
+   EOM-CCSD ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
+
+   The excitation energy of given method from ground state to root m in h symmetry.
+
+.. psivar:: TDDFT ROOT 0 -> ROOT m TOTAL ENERGY - h SYMMETRY
+   ADC ROOT 0 -> ROOT m TOTAL ENERGY - h SYMMETRY
+   EOM-CCSD ROOT 0 -> ROOT m TOTAL ENERGY - h SYMMETRY
+
+   The total energy of given method from ground state to root m in h symmetry.
+

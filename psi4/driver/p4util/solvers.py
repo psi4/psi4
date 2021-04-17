@@ -38,6 +38,8 @@ Generalized iterative solvers for Psi4.
 
 """
 
+__all__ = ["cg_solver", "davidson_solver", "DIIS", "hamiltonian_solver", "SolverEngine"]
+
 
 def cg_solver(rhs_vec, hx_function, preconditioner, guess=None, printer=None, printlvl=1, maxiter=20, rcond=1.e-6):
     """

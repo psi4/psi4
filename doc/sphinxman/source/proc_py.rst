@@ -65,7 +65,7 @@ case of all other py-side options (in kwargs) has already been handled by
 It's often necessary to The function often needs to set options for the
 c-side modules it calls. In order that the state of the options set by the
 user remains when control is returned to the user, an
-:py:class:`~optproc.OptionsState` object is set up. See
+:py:class:`~psi4.driver.p4util.OptionsState` object is set up. See
 :ref:`sec:handlingOptions_py` for details. *All* options set by the
 function need to be included here, and *only* options set by the function
 should be included. Most options should be associated with a particular

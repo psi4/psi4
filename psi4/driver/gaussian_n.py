@@ -27,11 +27,14 @@
 #
 
 from psi4 import core
-from psi4.driver import driver
-from psi4.driver import p4util
 from psi4.driver import constants
-from psi4.driver.p4util.exceptions import ValidationError
+from .p4util.exceptions import ValidationError
+from . import p4util
+from . import driver
+
 # never import aliases into this file
+
+__all__ = ["run_gaussian_2"]
 
 # Gn theory.
 

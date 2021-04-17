@@ -31,8 +31,7 @@ import time
 import numpy as np
 
 from psi4 import core
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.p4util import solvers
+from ... import p4util
 from .sapt_util import print_sapt_var
 
 
@@ -670,7 +669,7 @@ def _sapt_cpscf_solve(cache, jk, rhsA, rhsB, maxiter, conv, sapt_jk_B=None):
         return [valA, valB]
 
     # Compute the solver
-    vecs, resid = solvers.cg_solver([rhsA, rhsB],
+    vecs, resid = p4util.solvers.cg_solver([rhsA, rhsB],
                                     hessian_vec,
                                     apply_precon,
                                     maxiter=maxiter,

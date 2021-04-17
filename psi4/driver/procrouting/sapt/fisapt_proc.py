@@ -31,7 +31,6 @@ import os
 import numpy as np
 
 from psi4 import core
-from .. import empirical_dispersion
 
 
 def fisapt_compute_energy(self, external_potentials=None):

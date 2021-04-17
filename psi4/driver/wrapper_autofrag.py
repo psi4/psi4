@@ -28,6 +28,7 @@
 
 from psi4 import core
 
+__all__ = ["auto_fragments"]
 
 def auto_fragments(**kwargs):
     r"""Detects fragments in unfragmented molecule using BFS algorithm.
