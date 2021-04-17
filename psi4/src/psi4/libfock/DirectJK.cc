@@ -376,7 +376,7 @@ void DirectJK::compute_JK() {
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     
-    double Dnorm = Process::environment.globals["SCF RMS D"];
+    double ifb_d_conv = Process::environment.options.get_double("IFB_D_CONVERGENCE");
 
     Options& options = Process::environment.options;
     
@@ -523,7 +523,7 @@ void DirectJK::compute_JK() {
         }
     }
     
-    iteration_ += 1;
+    ncalls += 1;
 }
 void DirectJK::postiterations() {}
 
