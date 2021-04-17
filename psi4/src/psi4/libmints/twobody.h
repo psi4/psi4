@@ -146,16 +146,15 @@ class PSI_API TwoBodyAOInt {
     std::vector<std::vector<int>> function_to_function_;
     std::function<bool(int, int, int, int)> sieve_impl_;
     /// Do Density Screening?
-    bool do_dens_screen_;
-    /// Density Screening Threshold
-    double dens_screen_threshold_;
+    bool density_screening_;
+    /// Density Screening Tolerance
+    double density_screening_threshold_;
     /// Max Density per Shell Pair
     std::vector<std::vector<double>> max_dens_shell_pair_;
 
     void setup_sieve();
     void create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, PairList &shell_pairs, bool is_bra);
-    
-    
+
     /// Implements CSAM screening of a shell quartet
     bool shell_significant_csam(int M, int N, int R, int S);
     /// Implements Schwarz inequality screening of a shell quartet
