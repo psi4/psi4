@@ -214,8 +214,8 @@ void JK::common_init() {
 
     Options& options = Process::environment.options;
 
-    dens_screen_ = options.get_bool("SCF_DENSITY_SCREENING");
-    incr_fock_ = options.get_bool("INCR_FOCK_BUILD");
+    density_screening_ = options.get_bool("SCF_DENSITY_SCREENING");
+    ifb_ = options.get_bool("IFB");
 }
 size_t JK::memory_overhead() const {
     size_t mem = 0L;
@@ -266,27 +266,12 @@ void JK::compute_D() {
 
     if (!same) {
         D_.clear();
-        D_prev_.clear();
         for (size_t N = 0; N < C_left_.size(); ++N) {
             std::stringstream s;
             s << "D " << N << " (SO)";
             D_.push_back(std::make_shared<Matrix>(s.str(), C_left_[N]->nirrep(), C_left_[N]->rowspi(),
                                                   C_right_[N]->rowspi(),
                                                   C_left_[N]->symmetry() ^ C_right_[N]->symmetry()));
-        }
-
-        for (size_t N = 0; N < C_left_.size(); ++N) {
-             std::stringstream s;
-             s << "D prev" << N << " (SO)";
-             D_prev_.push_back(std::make_shared<Matrix>(s.str(), C_left_[N]->nirrep(), C_left_[N]->rowspi(),
-                                                   C_right_[N]->rowspi(),
-                                                   C_left_[N]->symmetry() ^ C_right_[N]->symmetry()));
-         }
-
-    } else {
-        for (size_t N = 0; N < D_.size(); N++) {
-            D_prev_[N] = D_[N]->clone();
-            D_ao_prev_[N] = D_ao_[N]->clone();
         }
     }
 
@@ -359,7 +344,6 @@ void JK::USO2AO() {
         C_left_ao_ = C_left_;
         C_right_ao_ = C_right_;
         D_ao_ = D_;
-        D_ao_prev_ = D_prev_;
         J_ao_ = J_;
         K_ao_ = K_;
         wK_ao_ = wK_;
@@ -391,11 +375,6 @@ void JK::USO2AO() {
             std::stringstream s;
             s << "D " << N << " (AO)";
             D_ao_.push_back(std::make_shared<Matrix>(s.str(), nao, nao));
-        }
-        for (size_t N = 0; N < D_.size(); ++N) {
-            std::stringstream s;
-            s << "D Prev" << N << " (AO)";
-            D_ao_prev_.push_back(std::make_shared<Matrix>(s.str(), nao, nao));
         }
     }
 

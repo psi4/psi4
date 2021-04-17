@@ -179,12 +179,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF MEM_DF DISK_DF PK OUT_OF_CORE CD GTFOCK");
-    /*- Perform Incremental Fock Build? -*/
-    options.add_bool("INCR_FOCK_BUILD", false); 
-    /*- Perform Density Screening for Direct SCF? [Haser:1989:104] -*/
-    options.add_bool("SCF_DENSITY_SCREENING", false);
-    /*- Threshold for SCF Density Screening -*/
-    options.add_double("DENSITY_SCREENING_THRESHOLD", 1.0e-9);
     /*- Algorithm to use for MP2 computation.
     See :ref:`Cross-module Redundancies <table:managedmethods>` for details. -*/
     options.add_str("MP2_TYPE", "DF", "DF CONV CD");
@@ -1445,6 +1439,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- When using |scf__stability_analysis| ``FOLLOW``, maximum number of orbital optimization attempts
             to make the wavefunction stable. !expert -*/
         options.add_int("MAX_ATTEMPTS", 1);
+        /*- Do Perform Incremental Fock Build? -*/
+        options.add_bool("IFB", true);
+        /*- Do Perform Density Screening for Direct SCF? [Haser:1989:104] -*/
+        options.add_bool("SCF_DENSITY_SCREENING", true);
+        /*- Threshold for SCF Density Screening -*/
+        options.add_double("DENSITY_SCREENING_TOLERANCE", 1.0e-13);
+        /*- Density Threshold to stop Incremental Fock Build -*/
+        options.add_double("IFB_D_CONVERGENCE", 1.0e-5);
 
         /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 

@@ -273,22 +273,30 @@ void DirectJK::compute_JK() {
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     
-    static std::vector<SharedMatrix> J_temp;
-    static std::vector<SharedMatrix> K_temp;
+    static int ncalls = 0;
 
-    static std::vector<SharedMatrix> del_D;
+    // Previous Iteration Matrices for Incremental Fock Build
+    static std::vector<SharedMatrix> J_prev;
+    static std::vector<SharedMatrix> K_prev;
+    static std::vector<SharedMatrix> D_prev;
+
+    // Delta Matrices for Incremental Fock Build
     static std::vector<SharedMatrix> del_J;
     static std::vector<SharedMatrix> del_K;
+    static std::vector<SharedMatrix> del_D;
 
     double Dnorm = Process::environment.globals["SCF RMS D"];
+    double ifb_d_conv = Process::environment.options.get_double("IFB_D_CONVERGENCE");
 
-    bool do_incr_fock = (iteration_ >= 1) && (Dnorm > 1.0e-5) && incr_fock_;
+    // Do IFB on this iteration?
+    bool do_ifb_iteration = (ncalls >= 1) && (Dnorm > ifb_d_conv) && ifb_;
 
-    if (incr_fock_) {
+    if (ifb_) {
 
-        if (iteration_ == 0) {
-            J_temp.resize(J_ao_.size());
-            K_temp.resize(K_ao_.size());
+        if (ncalls == 0) {
+            D_prev.resize(D_ao_.size());
+            J_prev.resize(J_ao_.size());
+            K_prev.resize(K_ao_.size());
 
             del_D.resize(D_ao_.size());
             del_J.resize(J_ao_.size());
@@ -296,30 +304,30 @@ void DirectJK::compute_JK() {
         }
 
         for (size_t N = 0; N < D_ao_.size(); N++) {
-            if (iteration_ == 0) {
-                del_D[N] = std::make_shared<Matrix>(D_ao_[N]);
-                del_D[N]->subtract(D_ao_prev_[N]);
-
+            if (ncalls == 0) {
+                del_D[N] = std::make_shared<Matrix>("Delta D", primary_->nbf(), primary_->nbf());
                 del_J[N] = std::make_shared<Matrix>("Delta J", primary_->nbf(), primary_->nbf());
                 del_K[N] = std::make_shared<Matrix>("Delta K", primary_->nbf(), primary_->nbf());
-                J_temp[N] = std::make_shared<Matrix>("J Temp", primary_->nbf(), primary_->nbf());
-                K_temp[N] = std::make_shared<Matrix>("K Temp", primary_->nbf(), primary_->nbf());
+
+                D_prev[N] = std::make_shared<Matrix>("D Prev", primary_->nbf(), primary_->nbf());
+                J_prev[N] = std::make_shared<Matrix>("J Prev", primary_->nbf(), primary_->nbf());
+                K_prev[N] = std::make_shared<Matrix>("K Prev", primary_->nbf(), primary_->nbf());
             } else {
                 del_D[N]->copy(D_ao_[N]);
-                del_D[N]->subtract(D_ao_prev_[N]);
+                del_D[N]->subtract(D_prev[N]);
             }
         }
     }
     
-    std::vector<SharedMatrix>& D_ref = (do_incr_fock ? del_D : D_ao_);
-    std::vector<SharedMatrix>& J_ref = (do_incr_fock ? del_J : J_ao_);
-    std::vector<SharedMatrix>& K_ref = (do_incr_fock ? del_K : K_ao_);
- 
+    std::vector<SharedMatrix>& D_ref = (do_ifb_iteration ? del_D : D_ao_);
+    std::vector<SharedMatrix>& J_ref = (do_ifb_iteration ? del_J : J_ao_);
+    std::vector<SharedMatrix>& K_ref = (do_ifb_iteration ? del_K : K_ao_);
+
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         for (int thread = 0; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
-            if (dens_screen_) ints[thread]->update_density(D_ref);
+            if (density_screening_) ints[thread]->update_density(D_ao_);
         }
         // TODO: Fast K algorithm
         if (do_J_) {
@@ -336,10 +344,10 @@ void DirectJK::compute_JK() {
     if (do_J_ || do_K_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
-        if (dens_screen_) ints[0]->update_density(D_ref);
+        if (density_screening_) ints[0]->update_density(D_ref);
         for (int thread = 1; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
-            if (dens_screen_) ints[thread]->update_density(D_ref);
+            if (density_screening_) ints[thread]->update_density(D_ref);
         }
         if (do_J_ && do_K_) {
             build_JK(ints, D_ref, J_ref, K_ref);
@@ -359,47 +367,53 @@ void DirectJK::compute_JK() {
     }
 
     // Incremental Fock Build Code
-    if (!do_wK_ && incr_fock_ && (do_J_ || do_K_)) {
+    if (!do_wK_ && ifb_ && (do_J_ || do_K_)) {
         if (do_J_ && do_K_) {
-            if (do_incr_fock) { // RMS D greater than 1.0e-5
+            if (do_ifb_iteration) { // RMS D greater than 1.0e-5
                 for (size_t N = 0; N < D_ao_.size(); N++) {
-                    J_temp[N]->add(del_J[N]);
-                    K_temp[N]->add(del_K[N]);
-                    J_ao_[N]->copy(J_temp[N]);
-                    K_ao_[N]->copy(K_temp[N]);
+                    J_prev[N]->add(del_J[N]);
+                    K_prev[N]->add(del_K[N]);
+                    J_ao_[N]->copy(J_prev[N]);
+                    K_ao_[N]->copy(K_prev[N]);
+                    D_prev[N]->copy(D_ao_[N]);
                 }
             } else { // RMS D less than 1.0e-5
                 for (size_t N = 0; N < D_ao_.size(); N++) {
-                    J_temp[N]->copy(J_ao_[N]);
-                    K_temp[N]->copy(K_ao_[N]);
+                    J_prev[N]->copy(J_ao_[N]);
+                    K_prev[N]->copy(K_ao_[N]);
+                    D_prev[N]->copy(D_ao_[N]);
                 }
             }
         } else if (do_J_) {
-            if (do_incr_fock) {
+            if (do_ifb_iteration) {
                 for (size_t N = 0; N < D_ao_.size(); N++) {
-                    J_temp[N]->add(del_J[N]);
-                    J_ao_[N]->copy(J_temp[N]);
+                    J_prev[N]->add(del_J[N]);
+                    J_ao_[N]->copy(J_prev[N]);
+                    D_prev[N]->copy(D_ao_[N]);
                 }
             } else {
                 for (size_t N = 0; N < D_ao_.size(); N++) {
-                    J_temp[N]->copy(J_ao_[N]);
+                    J_prev[N]->copy(J_ao_[N]);
+                    D_prev[N]->copy(D_ao_[N]);
                 }
             }
         } else {
-            if (do_incr_fock) {
+            if (do_ifb_iteration) {
                 for (size_t N = 0; N < D_ao_.size(); N++) {
-                    K_temp[N]->add(del_K[N]);
-                    K_ao_[N]->copy(K_temp[N]);
+                    K_prev[N]->add(del_K[N]);
+                    K_ao_[N]->copy(K_prev[N]);
+                    D_prev[N]->copy(D_ao_[N]);
                 }
             } else {
                 for (size_t N = 0; N < D_ao_.size(); N++) {
-                    K_temp[N]->copy(K_ao_[N]);
+                    K_prev[N]->copy(K_ao_[N]);
+                    D_prev[N]->copy(D_ao_[N]);
                 }
             }
         }
     }
     
-    iteration_ += 1;
+    ncalls += 1;
 }
 void DirectJK::postiterations() {}
 
@@ -570,6 +584,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                         if (R2 * nshell + S2 > P2 * nshell + Q2) continue;
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
+                        if (density_screening_ && !ints[0]->shell_significant_density(P, Q, R, S)) continue;
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
                         // timer_on("compute_shell(P, Q, R, S)");
