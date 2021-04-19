@@ -36,7 +36,7 @@ import qcelemental as qcel
 
 _have_mdi = False
 try:
-    from mdi import MDI_Init, MDI_Get_Intra_Code_MPI_Comm, MDI_Accept_Communicator, \
+    from mdi import MDI_Init, MDI_MPI_get_world_comm, MDI_Accept_Communicator, \
         MDI_Send, MDI_Recv, MDI_Recv_Command, MDI_INT, MDI_DOUBLE, \
         MDI_Register_Node, MDI_Register_Command
     _have_mdi = True
@@ -87,7 +87,7 @@ class MDIEngine():
 
         # Get correct intra-code MPI communicator
         if use_mpi4py:
-            self.mpi_world = MDI_Get_Intra_Code_MPI_Comm()
+            self.mpi_world = MDI_MPI_get_world_comm()
             self.world_rank = self.mpi_world.Get_rank()
 
             # Psi4 does not currently support multiple MPI ranks
@@ -433,10 +433,7 @@ def mdi_init(mdi_arguments):
     Arguments:
         mdi_arguments: MDI configuration options
     """
-    mpi_world = None
-    if use_mpi4py:
-        mpi_world = MPI.COMM_WORLD
-    MDI_Init(mdi_arguments, mpi_world)
+    MDI_Init(mdi_arguments)
 
 
 def mdi_run(scf_method, **kwargs):
