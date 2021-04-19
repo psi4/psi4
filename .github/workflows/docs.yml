@@ -19,12 +19,14 @@ jobs:
 
     # fetch-depth: 0 gets git history so Psi4 version computable
     - name: Checkout
+      if: github.repository == "psi4/psi4"
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
         path: code
 
     - name: Checkout website repo
+      if: github.repository == "psi4/psi4"
       uses: actions/checkout@v2
       with:
         repository: psi4/psi4docs
@@ -34,6 +36,7 @@ jobs:
         token: ${{ secrets.psi4docs_from_psi4 }}
 
     - name: Create Conda Environment
+      if: github.repository == "psi4/psi4"
       uses: conda-incubator/setup-miniconda@v2
       with:
         activate-environment: test
@@ -44,16 +47,19 @@ jobs:
         show-channel-urls: true
 
     - name: Environment Information
+      if: github.repository == "psi4/psi4"
       run: |
         conda info
         conda list
         which conda python cmake $CXX
 
     - name: Patch Sphinx for Pybind11
+      if: github.repository == "psi4/psi4"
       run: sed -i "s/lines = s\.expandtabs/lines = str(s).expandtabs/g" ${CONDA_PREFIX}/lib/python3.8/site-packages/sphinx/util/docstrings.py
 
     # docs are not Ninja ready
     - name: Configure with CMake (Conda Gnu + MKL)
+      if: github.repository == "psi4/psi4"
       working-directory: ./code
       run: |
         cmake \
@@ -75,12 +81,14 @@ jobs:
           -DSPHINX_ROOT=${CONDA_PREFIX}
 
     - name: Compile Psi4
+      if: github.repository == "psi4/psi4"
       working-directory: ./code
       run: |
         cmake --build objdir
         ctest -L smoke
 
     - name: Compile & Pack Docs
+      if: github.repository == "psi4/psi4"
       working-directory: ./code
       run: |
         cmake --build objdir --target sphinxman --verbose
@@ -88,6 +96,7 @@ jobs:
         tar -zcf sphinxman.tar.gz html/
 
     - name: Archive Docs Tarball
+      if: github.repository == "psi4/psi4"
       uses: actions/upload-artifact@v2
       with:
         name: sphinxman-html
@@ -96,6 +105,7 @@ jobs:
         retention-days: 1
 
     - name: Compile & Pack Doxygen
+      if: github.repository == "psi4/psi4"
       working-directory: ./code
       run: |
         cmake --build objdir --target doxyman --verbose
@@ -103,6 +113,7 @@ jobs:
         tar -zcf doxyman.tar.gz html/
 
     - name: Diff Docs Directory vs psi4/psi4docs
+      if: github.repository == "psi4/psi4"
       working-directory: ./docs
       run: |
         cp -pR ../code/objdir/doc/sphinxman/html .
@@ -113,6 +124,7 @@ jobs:
         git commit -m "auto-generated from Psi4 master"
 
     - name: Push Changes to psi4/psi4docs
+      if: github.repository == "psi4/psi4"
       uses: ad-m/github-push-action@master
       with:
         directory: ./docs
