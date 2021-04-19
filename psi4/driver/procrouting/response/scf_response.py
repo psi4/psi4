@@ -426,48 +426,57 @@ def _validate_tdscf(*, wfn, states, triplets, guess) -> None:
         raise ValidationError(f"TDSCF: Guess type {guess} is not valid")
 
 # Generate additional output from TDSCF caclulations
-def _analyze_tdscf_excitations(tdscf_results,
-                              wfn,
-                              tda,
-                              coeff_cutoff,
-                              tdm_print):
+def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
+                               tdm_print):
 
     restricted = wfn.same_a_b_orbs()
 
-    if 'E_TDM_LEN' in tdm_print:
-    # Print out ETDM vectors (length representation)
-        core.print_out("\nElectric Transition Dipole Moments (Length) (AU):\nState      X          Y          Z\n")
+    # Print out requested dipole moment vectors
+    _printable = {
+        "E_TDM_LEN": {
+            "title": "Electric Transition Dipole Moments (Length) (AU)",
+            "what": lambda x: x.edtm_length,
+        },
+        "E_TDM_VEL": {
+            "title": "Electric Transition Dipole Moments (Velocity) (AU)",
+            "what": lambda x: x.edtm_velocity,
+        },
+        "M_TDM": {
+            "title": "Magnetic Transition Dipole Moments (AU)",
+            "what": lambda x: x.mdtm,
+        },
+    }
+
+    for p in tdm_print:
+        core.print_out(
+            f"\n{_printable[p]['title']}:\nState      X          Y          Z\n"
+        )
         for i, q in enumerate(tdscf_results):
-            x, y, z = q.edtm_length
-            core.print_out(f" {i+1: 4d} {x:< 10.6f} {y:< 10.6f} {z:< 10.6f}\n")
-    if 'E_TDM_VEL' in tdm_print:
-    # Print out ETDM vectors (velocity representation)
-        core.print_out("\nElectric Transition Dipole Moments (Velocity) (AU):\nState      X          Y          Z\n")
-        for i, q in enumerate(tdscf_results):
-            x, y, z = q.edtm_velocity
-            core.print_out(f" {i+1: 4d} {x:< 10.6f} {y:< 10.6f} {z:< 10.6f}\n")
-    if 'M_TDM' in tdm_print:
-    # Print out MTDM vectors
-        core.print_out("\nMagentic Transition Dipole Moments (AU):\nState      X          Y          Z\n")
-        for i, q in enumerate(tdscf_results):
-            x, y, z = q.mdtm
+            x, y, z = _printable[p]['what'](q)
             core.print_out(f" {i+1: 4d} {x:< 10.6f} {y:< 10.6f} {z:< 10.6f}\n")
 
-# Print contributing transitions...
+    # Print contributing transitions...
     core.print_out(f"\n\nContributing excitations{'' if tda else ' and de-excitations'}")
-#...only currently for C1 symmetry
+    #...only currently for C1 symmetry
     if wfn.molecule().point_group().symbol() != 'c1':
         core.print_out("...only curently available with C1 symmetry\n")
     else:
-        core.print_out(f"\nOnly contributions with coefficients >{coeff_cutoff: .2e} will be printed:\n")
+        core.print_out(
+            f"\nOnly contributions with coefficients >{coeff_cutoff: .2e} will be printed:\n"
+        )
         for i, x in enumerate(tdscf_results):
-            E_ex_nm = 1e9 / (constants.conversion_factor('hartree', 'm^-1') * x.E_ex_au)
-            core.print_out(f"\nExcited State {i+1:4d} ({1 if x.spin_mult== 'singlet' else 3} {x.irrep_ES}):")
-            core.print_out(f"{x.E_ex_au:> 10.5f} Ha   {E_ex_nm: >.2f} nm f = {x.f_length: >.4f}\n")
+            E_ex_nm = 1e9 / (constants.conversion_factor('hartree', 'm^-1') *
+                             x.E_ex_au)
+            core.print_out(
+                f"\nExcited State {i+1:4d} ({1 if x.spin_mult== 'singlet' else 3} {x.irrep_ES}):"
+            )
+            core.print_out(
+                f"{x.E_ex_au:> 10.5f} Ha   {E_ex_nm: >.2f} nm f = {x.f_length: >.4f}\n"
+            )
 
             if not restricted:
                 core.print_out("Alpha orbitals:\n")
-# Extract contributing transitions from left and right eigenvectors from solver
+            # Extract contributing transitions from left and right eigenvectors from solver
             if tda:
                 X = x.L_eigvec if restricted else x.L_eigvec[0]
                 Xssq = X.sum_of_squares()
@@ -484,28 +493,34 @@ def _analyze_tdscf_excitations(tdscf_results,
                 Xssq = X.sum_of_squares()
                 Yssq = Y.sum_of_squares()
 
-                core.print_out(f"  Sums of squares: Xssq = {Xssq: .6e}; Yssq = {Yssq: .6e}; Xssq - Yssq = {Xssq-Yssq: .6e}\n")
+                core.print_out(
+                    f"  Sums of squares: Xssq = {Xssq: .6e}; Yssq = {Yssq: .6e}; Xssq - Yssq = {Xssq-Yssq: .6e}\n"
+                )
 
             nocc = X.rows()
             nvirt = X.cols()
-# Ignore any scaling for now
+            # Ignore any scaling for now
             div = 1
-# Excitations
+            # Excitations
             for row in range(nocc):
                 for col in range(nvirt):
-                    coef = X.get(row,col)/div
+                    coef = X.get(row, col) / div
                     if abs(coef) > coeff_cutoff:
                         perc = 100 * coef**2
-                        core.print_out(f"   {row+1: 3} ->{col+1+nocc: 3}  {coef: 10.6f} ({perc: >6.3f}%)\n")
-# De-excitations if not using TDA
+                        core.print_out(
+                            f"   {row+1: 3} ->{col+1+nocc: 3}  {coef: 10.6f} ({perc: >6.3f}%)\n"
+                        )
+            # De-excitations if not using TDA
             if not tda:
                 for row in range(nocc):
                     for col in range(nvirt):
-                        coef = Y.get(row,col)/div
+                        coef = Y.get(row, col) / div
                         if abs(coef) > coeff_cutoff:
                             perc = 100 * coef**2
-                            core.print_out(f"   {row+1: 3} <-{col+1+nocc: 3}  {coef: 10.6f} ({perc: >6.3f}%)\n")
-# Now treat beta orbitals if needed
+                            core.print_out(
+                                f"   {row+1: 3} <-{col+1+nocc: 3}  {coef: 10.6f} ({perc: >6.3f}%)\n"
+                            )
+            # Now treat beta orbitals if needed
             if not restricted:
                 core.print_out("Beta orbitals:\n")
                 if tda:
@@ -524,25 +539,31 @@ def _analyze_tdscf_excitations(tdscf_results,
                     Xssq = X.sum_of_squares()
                     Yssq = Y.sum_of_squares()
 
-                    core.print_out(f"  Sums of squares: Xssq = {Xssq: .6e}; Yssq = {Yssq: .6e}; Xssq - Yssq = {Xssq-Yssq: .6e}\n")
+                    core.print_out(
+                        f"  Sums of squares: Xssq = {Xssq: .6e}; Yssq = {Yssq: .6e}; Xssq - Yssq = {Xssq-Yssq: .6e}\n"
+                    )
 
                 nocc = X.rows()
                 nvirt = X.cols()
-# Excitations
+                # Excitations (beta orbitals)
                 for row in range(nocc):
                     for col in range(nvirt):
-                        coef = X.get(row,col)/div
+                        coef = X.get(row, col) / div
                         if abs(coef) > coeff_cutoff:
                             perc = 100 * coef**2
-                            core.print_out(f"   {row+1: 3}B->{col+1+nocc: 3}B {coef: 10.6f} ({perc: >6.3f}%)\n")
-# De-excitations if not using TDA:
+                            core.print_out(
+                                f"   {row+1: 3}B->{col+1+nocc: 3}B {coef: 10.6f} ({perc: >6.3f}%)\n"
+                            )
+                # De-excitations if not using TDA (beta orbitals):
                 if not tda:
                     for row in range(nocc):
                         for col in range(nvirt):
-                            coef = Y.get(row,col)/div
+                            coef = Y.get(row, col) / div
                             if abs(coef) > coeff_cutoff:
                                 perc = 100 * coef**2
-                                core.print_out(f"   {row+1: 3}B<-{col+1+nocc: 3}B {coef: 10.6f} ({perc: >6.3f}%)\n")
+                                core.print_out(
+                                    f"   {row+1: 3}B<-{col+1+nocc: 3}B {coef: 10.6f} ({perc: >6.3f}%)\n"
+                                )
     core.print_out("\n")
 
 
