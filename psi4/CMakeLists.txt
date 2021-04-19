@@ -13,6 +13,11 @@ if(${Fortran_ENABLED})
     enable_language(Fortran)
 endif()
 
+if (NOT MSVC)
+  set(CMAKE_C_FLAGS_DEBUG "-g -O0")
+  set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+endif()
+
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
 
 include(psi4OptionsTools)
