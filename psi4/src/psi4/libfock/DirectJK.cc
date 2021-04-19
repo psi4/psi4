@@ -285,39 +285,63 @@ void DirectJK::compute_JK() {
     static std::vector<SharedMatrix> del_K;
     static std::vector<SharedMatrix> del_D;
 
+    int curr_iter = Process::environment.globals["SCF CURRENT ITERATION"];
+    double delE = Process::environment.globals["SCF DELTA E"];
     double Dnorm = Process::environment.globals["SCF RMS D"];
-    double ifb_d_conv = Process::environment.options.get_double("IFB_D_CONVERGENCE");
+    bool converged = Process::environment.globals["SCF CONVERGED"];
+    bool df_converged = Process::environment.globals["DF GUESS CONVERGED"];
 
-    // Do IFB on this iteration?
-    bool do_ifb_iteration = (ncalls >= 1) && (Dnorm > ifb_d_conv) && ifb_;
+    bool prev_converged = converged || df_converged;
+
+    Options& options = Process::environment.options;
+
+    double Econv = options.get_double("E_CONVERGENCE");
+    double Dconv = options.get_double("D_CONVERGENCE");
+
+    double ifb_d_conv = options.get_double("IFB_D_CONVERGENCE");
 
     if (ifb_) {
+        if (prev_converged || (curr_iter <= 1) || (ncalls <= 1) || (D_prev.size() != D_ao_.size()) || (D_prev[0]->nrow() != D_ao_[0]->nrow()) || (D_prev[0]->ncol() != D_ao_[0]->ncol())) {
+            
+            D_prev.clear();
+            del_D.clear();
 
-        if (ncalls == 0) {
-            D_prev.resize(D_ao_.size());
-            J_prev.resize(J_ao_.size());
-            K_prev.resize(K_ao_.size());
+            if (do_J_) {
+                J_prev.clear();
+                del_J.clear();
+            }
 
-            del_D.resize(D_ao_.size());
-            del_J.resize(J_ao_.size());
-            del_K.resize(K_ao_.size());
+            if (do_K_) {
+                K_prev.clear();
+                del_K.clear();
+            }
+
+            for (size_t N = 0; N < D_ao_.size(); N++) {
+                D_prev.push_back(std::make_shared<Matrix>("D Prev", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+                del_D.push_back(std::make_shared<Matrix>("Delta D", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+                
+                if (do_J_) {
+                    J_prev.push_back(std::make_shared<Matrix>("J Prev", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
+                    del_J.push_back(std::make_shared<Matrix>("Delta J", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
+                }
+                if (do_K_) {
+                    K_prev.push_back(std::make_shared<Matrix>("K Prev", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
+                    del_K.push_back(std::make_shared<Matrix>("Delta K", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
+                }
+            }
+            ncalls = 0;
         }
 
-        for (size_t N = 0; N < D_ao_.size(); N++) {
-            if (ncalls == 0) {
-                del_D[N] = std::make_shared<Matrix>("Delta D", primary_->nbf(), primary_->nbf());
-                del_J[N] = std::make_shared<Matrix>("Delta J", primary_->nbf(), primary_->nbf());
-                del_K[N] = std::make_shared<Matrix>("Delta K", primary_->nbf(), primary_->nbf());
-
-                D_prev[N] = std::make_shared<Matrix>("D Prev", primary_->nbf(), primary_->nbf());
-                J_prev[N] = std::make_shared<Matrix>("J Prev", primary_->nbf(), primary_->nbf());
-                K_prev[N] = std::make_shared<Matrix>("K Prev", primary_->nbf(), primary_->nbf());
-            } else {
+        if (ncalls > 1) {
+            for (size_t N = 0; N < D_ao_.size(); N++) {
                 del_D[N]->copy(D_ao_[N]);
                 del_D[N]->subtract(D_prev[N]);
             }
         }
     }
+
+    // Do IFB on this iteration?
+    bool do_ifb_iteration = (ncalls > 1) && (Dnorm > ifb_d_conv) && ifb_;
     
     std::vector<SharedMatrix>& D_ref = (do_ifb_iteration ? del_D : D_ao_);
     std::vector<SharedMatrix>& J_ref = (do_ifb_iteration ? del_J : J_ao_);

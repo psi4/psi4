@@ -64,6 +64,7 @@ def scf_compute_energy(self):
         # speed up DIRECT algorithm (recomputes full (non-DF) integrals
         #   each iter) by first converging via fast DF iterations, then
         #   fully converging in fewer slow DIRECT iterations. aka Andy trick 2.0
+        core.set_variable("DF GUESS CONVERGED", False)
         core.print_out("  Starting with a DF guess...\n\n")
         with p4util.OptionsStateCM(['SCF_TYPE']):
             core.set_global_option('SCF_TYPE', 'DF')
@@ -73,6 +74,7 @@ def scf_compute_energy(self):
             except SCFConvergenceError:
                 self.finalize()
                 raise SCFConvergenceError("""SCF DF preiterations""", self.iteration_, self, 0, 0)
+        core.set_variable("DF GUESS CONVERGED", True)
         core.print_out("\n  DF guess converged.\n\n")
 
         # reset the DIIS & JK objects in prep for DIRECT
@@ -80,6 +82,7 @@ def scf_compute_energy(self):
             self.diis_manager().reset_subspace()
         self.initialize_jk(self.memory_jk_)
     else:
+        core.set_variable("DF GUESS CONVERGED", False)
         self.initialize()
 
     try:
@@ -93,9 +96,11 @@ def scf_compute_energy(self):
             raise e
         else:
             core.print_out("  Energy and/or wave function did not converge, but proceeding anyway.\n\n")
+            core.set_variable("SCF CONVERGED", True)
     else:
         core.print_out("  Energy and wave function converged.\n\n")
 
+    core.set_variable("SCF CONVERGED", True)
     scf_energy = self.finalize_energy()
     return scf_energy
 
@@ -241,6 +246,9 @@ def scf_initialize(self):
 
 
 def scf_iterate(self, e_conv=None, d_conv=None):
+
+    # Set initial iteration number (0)
+    core.set_variable("SCF CURRENT ITERATION", self.iteration_ + 1)
 
     is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
     verbose = core.get_option('SCF', "PRINT")
@@ -444,15 +452,19 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.Db().print_out()
 
         # Set the current energy and density convergence values
-        core.set_variable("SCF Delta E", Ediff)
+        core.set_variable("SCF DELTA E", Ediff)
         core.set_variable("SCF RMS D", Dnorm)
-
 
         # Print out the iteration
         core.print_out(
             "   @%s%s iter %3s: %20.14f   %12.5e   %-11.5e %s\n" %
             ("DF-" if is_dfjk else "", reference, "SAD" if
              ((self.iteration_ == 0) and self.sad_) else self.iteration_, SCFE, Ediff, Dnorm, '/'.join(status)))
+
+        # Set current iteration number
+        core.set_variable("SCF CURRENT ITERATION", self.iteration_ + 1)
+        # Reset convergence
+        core.set_variable("SCF CONVERGED", False)
 
         # if a an excited MOM is requested but not started, don't stop yet
         if self.MOM_excited_ and not self.MOM_performed_:
