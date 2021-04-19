@@ -36,9 +36,9 @@ import qcelemental as qcel
 
 _have_mdi = False
 try:
-    from mdi import MDI_Init, MDI_Get_Intra_Code_MPI_Comm, MDI_Accept_Communicator, \
-        MDI_Send, MDI_Recv, MDI_Recv_Command, MDI_INT, MDI_DOUBLE, \
-        MDI_Register_Node, MDI_Register_Command
+    from mdi import MDI_Init, MDI_MPI_get_world_comm, MDI_Accept_communicator, \
+        MDI_Send, MDI_Recv, MDI_Recv_command, MDI_INT, MDI_DOUBLE, \
+        MDI_Register_node, MDI_Register_command
     _have_mdi = True
 except ImportError:
     pass
@@ -87,7 +87,7 @@ class MDIEngine():
 
         # Get correct intra-code MPI communicator
         if use_mpi4py:
-            self.mpi_world = MDI_Get_Intra_Code_MPI_Comm()
+            self.mpi_world = MDI_MPI_get_world_comm()
             self.world_rank = self.mpi_world.Get_rank()
 
             # Psi4 does not currently support multiple MPI ranks
@@ -95,7 +95,7 @@ class MDIEngine():
                 MPI.COMM_WORLD.Abort()
 
         # Accept a communicator to the driver code
-        self.comm = MDI_Accept_Communicator()
+        self.comm = MDI_Accept_communicator()
 
         # Ensure that the molecule is using c1 symmetry
         self.molecule.reset_point_group('c1')
@@ -131,9 +131,9 @@ class MDIEngine():
         }
 
         # Register all the supported commands
-        MDI_Register_Node("@DEFAULT")
+        MDI_Register_node("@DEFAULT")
         for command in self.commands.keys():
-            MDI_Register_Command("@DEFAULT", command)
+            MDI_Register_command("@DEFAULT", command)
 
     def length_conversion(self):
         """ Obtain the conversion factor between the geometry specification units and bohr
@@ -408,7 +408,7 @@ class MDIEngine():
 
         while not self.stop_listening:
             if self.world_rank == 0:
-                command = MDI_Recv_Command(self.comm)
+                command = MDI_Recv_command(self.comm)
             else:
                 command = None
             if use_mpi4py:
@@ -433,10 +433,7 @@ def mdi_init(mdi_arguments):
     Arguments:
         mdi_arguments: MDI configuration options
     """
-    mpi_world = None
-    if use_mpi4py:
-        mpi_world = MPI.COMM_WORLD
-    MDI_Init(mdi_arguments, mpi_world)
+    MDI_Init(mdi_arguments)
 
 
 def mdi_run(scf_method, **kwargs):
