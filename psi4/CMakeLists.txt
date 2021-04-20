@@ -157,7 +157,7 @@ list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint2 ${Libint2_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint2_VERSION})")
 
 if(${ENABLE_mdi})
-    find_package(mdi 1.1.6 CONFIG REQUIRED)
+    find_package(mdi 1.2.3 CONFIG REQUIRED)
     get_property(_loc TARGET mdi::mdi PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using mdi${ColourReset}: ${_loc} (version ${mdi_VERSION})")
