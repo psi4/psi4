@@ -27,12 +27,14 @@
 #
 import time
 from abc import ABC, abstractmethod
+from typing import Callable, List
 
 import numpy as np
 
 from psi4 import core
 
 from .exceptions import ValidationError
+
 """
 Generalized iterative solvers for Psi4.
 
@@ -41,33 +43,33 @@ Generalized iterative solvers for Psi4.
 __all__ = ["cg_solver", "davidson_solver", "DIIS", "hamiltonian_solver", "SolverEngine"]
 
 
-def cg_solver(rhs_vec, hx_function, preconditioner, guess=None, printer=None, printlvl=1, maxiter=20, rcond=1.e-6):
+def cg_solver(rhs_vec: List[core.Matrix], hx_function: Callable, preconditioner: Callable, guess: List[core.Matrix] = None, printer: Callable = None, printlvl: int = 1, maxiter: int = 20, rcond: float = 1.e-6) -> List[core.Matrix]:
     """
     Solves the Ax = b linear equations via Conjugate Gradient. The `A` matrix must be a hermitian, positive definite matrix.
 
     Parameters
     ----------
-    rhs_vec : list of :py:class:`~psi4.core.Matrix`
+    rhs_vec
         The RHS vector in the Ax=b equation.
-    hx_function : function
+    hx_function
         Takes in a list of :py:class:`~psi4.core.Matrix` objects and a mask of active indices. Returns the Hessian-vector product.
-    preconditioner : function
+    preconditioner
         Takes in a list of :py:class:`~psi4.core.Matrix` objects and a mask of active indices. Returns the preconditioned value.
-    guess : list of :py:class:`~psi4.core.Matrix`, optional
+    guess
         Starting vectors, if None use a preconditioner(rhs) guess
-    printer : function, optional
+    printer
         Takes in a list of current x and residual vectors and provides a print function. This function can also
         return a value that represents the current residual.
-    printlvl : int, optional
+    printlvl
         The level of printing provided by this function.
-    maxiter : int, optional
+    maxiter
         The maximum number of iterations this function will take.
-    rcond : float, optional
+    rcond
         The residual norm for convergence.
 
     Returns
     -------
-    ret : tuple, list of :py:class:`~psi4.core.Matrix`
+    ret : List[Matrix]
         Returns the solved `x` vectors and `r` vectors.
 
     Notes
@@ -193,15 +195,16 @@ class DIIS:
     An object to assist in the DIIS extrpolation procedure.
     """
 
-    def __init__(self, max_vec=6, removal_policy="OLDEST"):
+    def __init__(self, max_vec: int = 6, removal_policy: str = "OLDEST"):
         """
         An object to assist in the DIIS extrpolation procedure.
 
         Parameters
         ----------
-        max_vect : int, optional
+        max_vec
             The maximum number of error and state vectors to hold. These are pruned based off the removal policy.
-        removal_policy : {"OLDEST", "LARGEST"}, optional
+        removal_policy
+            {"OLDEST", "LARGEST"}
             How the state and error vectors are removed once at the maximum. OLDEST will remove the oldest vector while
             largest will remove the residual with the largest RMS value.
 
@@ -227,18 +230,18 @@ class DIIS:
         self.error.append(error.clone())
         self.state.append(state.clone())
 
-    def extrapolate(self, out=None):
+    def extrapolate(self, out: core.Matrix = None) -> core.Matrix:
         """
         Extrapolates next state vector from the current set of state and error vectors.
 
         Parameters
         ----------
-        out : :py:class:`~psi4.core.Matrix`, optional
+        out
             A array in which to place the next state vector.
 
         Returns
         -------
-        ret : :py:class:`~psi4.core.Matrix`
+        ret : Matrix
             Returns the next state vector.
 
         """
@@ -426,7 +429,7 @@ def _gs_orth(engine, U, V, thresh=1.0e-8):
     return U
 
 
-def _best_vectors(engine, ss_vectors, basis_vectors):
+def _best_vectors(engine, ss_vectors: np.ndarray, basis_vectors: List) -> List:
     r"""Compute the best approximation of the true eigenvectors as a linear combination of basis vectors:
 
     ..math:: V_{k} = \Sum_{i} \tilde{V}_{i,k}X_{i}
@@ -438,14 +441,17 @@ def _best_vectors(engine, ss_vectors, basis_vectors):
     ----------
     engine : object
        The engine passed to the solver, required to define vector algebraic operations needed
-    ss_vectors : :py:class:`np.ndarray` {l, k}
+    ss_vectors
+       Numpy array {l, k}.
        The k eigenvectors of the subspace problem, l = dimension of the subspace basis, and k is the number of roots
-    basis_vectors : list of `vector` {l}
+    basis_vectors
+       list of `vector` {l}.
        The current basis vectors
 
     Returns
     -------
-    new_vecs : list of `vector` {k}
+    new_vecs
+       list of `vector` {k}.
        The approximations of the k true eigenvectors.
     """
     l, n = ss_vectors.shape
@@ -540,8 +546,6 @@ class SolverEngine(ABC):
         method provides the engine with a means to create `vector` like
         quantities.
 
-        Parameters
-        ----------
         The engine calls this method with no arguments. So any defined by the
         engine for its own use should be optional
 
@@ -634,22 +638,22 @@ class SolverEngine(ABC):
 
         Parameters
         ----------
-        X : single `vector`
-          The `vector` to use to compute the property.
+        X
+          The single `vector` to use to compute the property.
         so_prop_ints :
           Property integrals in SO basis for the desired transition property.
-        prefactor : float, optional
-          Scaling factor.
+        prefactor
+          Optional float scaling factor.
 
         Returns
         -------
-        residue :
+        residue : Any
           The transition property.
         """
         pass
 
 
-def davidson_solver(engine, guess, *, nroot, r_convergence=1.0E-4, max_ss_size=100, maxiter=60, verbose=1):
+def davidson_solver(engine, guess: List, *, nroot: int, r_convergence: float = 1.0E-4, max_ss_size: int = 100, maxiter: int = 60, verbose: int = 1):
     """Solves for the lowest few eigenvalues and eigenvectors of a large problem emulated through an engine.
 
 
@@ -668,28 +672,28 @@ def davidson_solver(engine, guess, *, nroot, r_convergence=1.0E-4, max_ss_size=1
     engine : object (subclass of :class:`SolverEngine`)
        The engine drive all operations involving data structures that have at
        least one "large" dimension. See :class:`SolverEngine` for requirements
-    guess : list {engine dependent}
+    guess
+       list {engine dependent}
        At least `nroot` initial expansion vectors
-    nroot : int
+    nroot
         Number of roots desired
-    r_convergence : float
+    r_convergence
         Convergence tolerance for residual vectors
-    max_ss_size: int, optional.
+    max_ss_size:
        The maximum number of trial vectors in the iterative subspace that will
        be stored before a collapse is done.
-       Default: 100
-    maxiter : int
+    maxiter
         The maximum number of iterations
-    verbose : int
+    verbose
         The amount of logging info to print (0 -> none, 1 -> some, >1 -> everything)
 
     Returns
     -------
-    best_values : np.ndarray (nroots, )
+    best_values : numpy.ndarray (nroots, )
        The best approximation of the eigenvalues of A, computed on the last iteration of the solver
     best_vectors: list of `vector` (nroots)
        The best approximation of the eigenvectors of A, computed on the last iteration of the solver
-    stats : list of `dict`
+    stats : List[Dict]
        Statistics collected on each iteration
 
        count : int, iteration number
@@ -828,7 +832,7 @@ def davidson_solver(engine, guess, *, nroot, r_convergence=1.0E-4, max_ss_size=1
     return {"eigvals": best_eigvals, "eigvecs": list(zip(best_eigvecs, best_eigvecs)), "stats": stats}
 
 
-def hamiltonian_solver(engine, guess, *, nroot, r_convergence=1.0E-4, max_ss_size=100, maxiter=60, verbose=1):
+def hamiltonian_solver(engine, guess: List, *, nroot: int, r_convergence: float = 1.0E-4, max_ss_size: int = 100, maxiter: int = 60, verbose: int = 1):
     """Finds the smallest eigenvalues and associated right and left hand
     eigenvectors of a large real Hamiltonian eigenvalue problem emulated
     through an engine.
@@ -864,24 +868,24 @@ def hamiltonian_solver(engine, guess, *, nroot, r_convergence=1.0E-4, max_ss_siz
     engine : object (subclass of :class:`SolverEngine`)
        The engine drive all operations involving data structures that have at
        least one "large" dimension. See :class:`SolverEngine` for requirements
-    guess : list {engine dependent}
+    guess
+       list {engine dependent}
        At least `nroot` initial expansion vectors
-    nroot : int
+    nroot
         Number of roots desired
-    r_convergence : float
+    r_convergence
         Convergence tolerance for residual vectors
-    max_ss_size: int, optional.
+    max_ss_size:
        The maximum number of trial vectors in the iterative subspace that will
        be stored before a collapse is done.
-       Default: 100
-    maxiter : int
+    maxiter
         The maximum number of iterations
-    verbose : int
+    verbose
         The amount of logging info to print (0 -> none, 1 -> some, >1 -> everything)
 
     Returns
     -------
-    best_values : np.ndarray (nroots, )
+    best_values : numpy.ndarray (nroots, )
        The best approximation of the eigenvalues of `w`, computed on the last iteration of the solver
     best_R: list of `vector` (nroots)
        The best approximation of the  right hand eigenvectors, `X+Y`, computed on the last iteration of the solver.

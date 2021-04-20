@@ -597,7 +597,7 @@ def energy(name, **kwargs):
 
 
 def gradient(name, **kwargs):
-    r"""Function complementary to :py:func:~driver.optimize(). Carries out one gradient pass,
+    r"""Function complementary to :py:func:`~psi4.optimize()`. Carries out one gradient pass,
     deciding analytic or finite difference.
 
     :returns: :py:class:`~psi4.core.Matrix` |w--w| Total electronic gradient in Hartrees/Bohr.
@@ -806,17 +806,17 @@ def properties(*args, **kwargs):
     | omp2               | orbital-optimized second-order                | RHF/UHF        | Listed :ref:`here <sec:oeprop>`                               |
     |                    | MP perturbation theory                        |                | Density fitted only                                           |
     |                    | :ref:`[manual] <sec:occ_oo>`                  |                |                                                               |
-    +-------------------------+-----------------------------------------------------------+---------------------------------------------------------------+
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | omp3               | orbital-optimized third-order                 | RHF/UHF        | Listed :ref:`here <sec:oeprop>`                               |
     |                    | MP perturbation theory                        |                | Density fitted only                                           |
     |                    | :ref:`[manual] <sec:occ_oo>`                  |                |                                                               |
-    +-------------------------+-----------------------------------------------------------+---------------------------------------------------------------+
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | omp2.5             | orbital-optimized MP2.5                       | RHF/UHF        | Listed :ref:`here <sec:oeprop>`                               |
     |                    | :ref:`[manual] <sec:occ_oo>`                  |                | Density fitted only                                           |
-    +-------------------------+-----------------------------------------------------------+---------------------------------------------------------------+
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | olccd              | orbital optimized LCCD                        | RHF/UHF        | Listed :ref:`here <sec:oeprop>`                               |
     |                    | :ref:`[manual] <sec:occ_oo>`                  |                | Density fitted only                                           |
-    +-------------------------+---------------------------------------------------------------------------------------------------------------------------+
+    +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | eom-cc2            | 2nd-order approximate EOM-CCSD                | RHF            | oscillator_strength, rotational_strength                      |
     +--------------------+-----------------------------------------------+----------------+---------------------------------------------------------------+
     | eom-ccsd           | Equation-of-motion CCSD (EOM-CCSD)            | RHF            | oscillator_strength, rotational_strength                      |
@@ -1087,7 +1087,7 @@ def optimize(name, **kwargs):
 
     :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| energy and wavefunction when **return_wfn** specified.
 
-    :raises: psi4.OptimizationConvergenceError if :term:`GEOM_MAXITER <GEOM_MAXITER (OPTKING)>` exceeded without reaching geometry convergence.
+    :raises: :py:class:`psi4.OptimizationConvergenceError` if :term:`GEOM_MAXITER <GEOM_MAXITER (OPTKING)>` exceeded without reaching geometry convergence.
 
     :PSI variables:
 

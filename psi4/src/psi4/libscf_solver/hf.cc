@@ -287,7 +287,8 @@ void HF::common_init() {
     }
 
     // -D is zero by default
-    set_scalar_variable("-D Energy", 0.0);
+    auto psivar = "-D Energy";
+    set_scalar_variable(psivar, 0.0);  // evade autodoc with variable name
     energies_["-D"] = 0.0;
 
     // CPHF info

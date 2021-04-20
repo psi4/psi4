@@ -29,7 +29,7 @@
 import os
 import hashlib
 import collections
-from typing import Dict, List, Union
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 
@@ -41,6 +41,7 @@ from .libmintsmolecule import *
 from .testing import compare_values, compare_integers, compare_molrecs
 from .bfs import BFS
 
+qcdbmol = "psi4.driver.qcdb.molecule.Molecule"
 
 class Molecule(LibmintsMolecule):
     """Class to store the elements, coordinates, fragmentation pattern,
@@ -1058,19 +1059,19 @@ class Molecule(LibmintsMolecule):
 
         return ar
 
-    def to_arrays(self, dummy=False, ghost_as_dummy=False):
+    def to_arrays(self, dummy: bool = False, ghost_as_dummy: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Exports coordinate info into NumPy arrays.
 
         Parameters
         ----------
-        dummy : bool, optional
+        dummy
             Whether or not to include dummy atoms in returned arrays.
-        ghost_as_dummy : bool, optional
+        ghost_as_dummy
             Whether or not to treat ghost atoms as dummies.
 
         Returns
         -------
-        geom, mass, elem, elez, uniq : ndarray, ndarray, ndarray, ndarray, ndarray
+        geom, mass, elem, elez, uniq : numpy.ndarray, numpy.ndarray, numpy.ndarray, numpy.ndarray, numpy.ndarray
             (nat, 3) geometry [a0].
             (nat,) mass [u].
             (nat,) element symbol.
@@ -1687,8 +1688,8 @@ class Molecule(LibmintsMolecule):
         outputs = tuple(outputs)
         return (frag_pattern, ) + outputs[1:]
 
-    def B787(concern_mol: Union["qcdb.Molecule", psi4.core.Molecule],
-             ref_mol: Union["qcdb.Molecule", psi4.core.Molecule],
+    def B787(concern_mol: Union[qcdbmol, psi4.core.Molecule],
+             ref_mol: Union[qcdbmol, psi4.core.Molecule],
              do_plot: bool = False,
              verbose: int = 1,
              atoms_map: bool = False,
@@ -1700,7 +1701,7 @@ class Molecule(LibmintsMolecule):
         """Finds shift, rotation, and atom reordering of `concern_mol` that best
         aligns with `ref_mol`.
 
-        Wraps :py:func:`qcel.molutil.B787` for :py:class:`qcdb.Molecule` or
+        Wraps :py:func:`qcelemental.molutil.B787` for :py:class:`psi4.driver.qcdb.Molecule` or
         :py:class:`psi4.core.Molecule`. Employs the Kabsch, Hungarian, and
         Uno algorithms to exhaustively locate the best alignment for
         non-oriented, non-ordered structures.
@@ -1801,47 +1802,47 @@ class Molecule(LibmintsMolecule):
 
         return rmsd, solution, amol
 
-    def scramble(ref_mol,
-                 do_shift=True,
-                 do_rotate=True,
-                 do_resort=True,
-                 deflection=1.0,
-                 do_mirror=False,
-                 do_plot=False,
-                 run_to_completion=False,
-                 run_resorting=False,
-                 verbose=1):
+    def scramble(ref_mol: "Molecule",
+                 do_shift: Union[bool, np.ndarray, List] = True,
+                 do_rotate: Union[bool, np.ndarray, List[List]] = True,
+                 do_resort: Union[bool, List] = True,
+                 deflection: float = 1.0,
+                 do_mirror: bool = False,
+                 do_plot: bool = False,
+                 run_to_completion: bool = False,
+                 run_resorting: bool = False,
+                 verbose: int = 1):
         """Tester for B787 by shifting, rotating, and atom shuffling `ref_mol` and
         checking that the aligner returns the opposite transformation.
 
         Parameters
         ----------
-        ref_mol : qcdb.Molecule or psi4.core.Molecule
+        ref_mol
             Molecule to perturb.
-        do_shift : bool or array-like, optional
+        do_shift
             Whether to generate a random atom shift on interval [-3, 3) in each
             dimension (`True`) or leave at current origin. To shift by a specified
             vector, supply a 3-element list.
-        do_rotate : bool or array-like, optional
+        do_rotate
             Whether to generate a random 3D rotation according to algorithm of Arvo.
             To rotate by a specified matrix, supply a 9-element list of lists.
-        do_resort : bool or array-like, optional
+        do_resort
             Whether to shuffle atoms (`True`) or leave 1st atom 1st, etc. (`False`).
             To specify shuffle, supply a nat-element list of indices.
-        deflection : float, optional
+        deflection
             If `do_rotate`, how random a rotation: 0.0 is no change, 0.1 is small
             perturbation, 1.0 is completely random.
-        do_mirror : bool, optional
+        do_mirror
             Whether to construct the mirror image structure by inverting y-axis.
-        do_plot : bool, optional
+        do_plot
             Pops up a mpl plot showing before, after, and ref geometries.
-        run_to_completion : bool, optional
+        run_to_completion
             By construction, scrambled systems are fully alignable (final RMSD=0).
             Even so, `True` turns off the mechanism to stop when RMSD reaches zero
             and instead proceed to worst possible time.
-        run_resorting : bool, optional
+        run_resorting
             Even if atoms not shuffled, test the resorting machinery.
-        verbose : int, optional
+        verbose
             Print level.
 
         Returns

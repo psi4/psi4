@@ -26,19 +26,19 @@
 # @END LICENSE
 #
 
-import sys
-import math
-import itertools
 import collections
+import itertools
+import math
+import sys
 from typing import Dict, List, Tuple, Union
 
 import numpy as np
-
 import qcelemental as qcel
 from qcelemental import Datum
 
-from .libmintsmolecule import compute_atom_map
 import psi4  # for typing
+
+from .libmintsmolecule import compute_atom_map
 
 LINEAR_A_TOL = 1.0E-2  # tolerance (roughly max dev) for TR space
 
@@ -669,9 +669,10 @@ def print_vibs(vibinfo: Dict[str, Datum], atom_lbl: List[str] = None, *, normco:
     normco
         {'q', 'w', 'x'}
         Which normal coordinate definition to print (reduced mass, etc. unaffected by this parameter). Must be
-              * `q` [a0 u^1/2], the mass-weighted normalized eigenvectors of the Hessian,
-              * `w` [a0], the un-mass-weighted (Cartesian) of q, or
-              * `x` [a0], the normalized w.
+
+          * `q` [a0 u^1/2], the mass-weighted normalized eigenvectors of the Hessian,
+          * `w` [a0], the un-mass-weighted (Cartesian) of q, or
+          * `x` [a0], the normalized w.
     shortlong
         Whether normal coordinates should be in (nat, 3) `True` or (nat * 3, 1) `False` format.
     groupby

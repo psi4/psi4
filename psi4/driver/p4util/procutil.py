@@ -26,24 +26,25 @@
 # @END LICENSE
 #
 """Module with utility functions used by several Python functions."""
-import os
 import ast
-import sys
-import math
-import pickle
-import inspect
-import warnings
-import contextlib
 import collections
+import contextlib
+import inspect
+import math
+import os
+import pickle
+import sys
+import warnings
 from typing import List, Union
 
 import numpy as np
 import qcelemental as qcel
+from psi4.metadata import __version__
 
 from psi4 import core
-from psi4.metadata import __version__
-from .exceptions import ValidationError
+
 from . import p4regex
+from .exceptions import ValidationError
 
 __all__ = [
 "kwargs_lower",
@@ -609,27 +610,24 @@ def provenance_stamp(routine):
     return {'creator': 'Psi4', 'version': __version__, 'routine': routine}
 
 
-def plump_qcvar(val: Union[float, str, List], shape_clue: str, ret='np') -> Union[float, 'np.ndarray', 'psi4.core.Matrix']:
+def plump_qcvar(val: Union[float, str, List], shape_clue: str, ret: str = 'np') -> Union[float, np.ndarray, core.Matrix]:
     """Prepare serialized QCVariable for set_variable by convert flat arrays into shaped ones and floating strings.
 
     Parameters
     ----------
     val :
         flat (?, ) list or scalar or string, probably from JSON storage.
-    shape_clue : str
+    shape_clue
         Label that includes (case insensitive) one of the following as
         a clue to the array's natural dimensions: 'gradient', 'hessian'
-    ret : {'np', 'psi4'}
+    ret
+        {'np', 'psi4'}
         Whether to return `np.ndarray` or `psi4.core.Matrix`.
 
     Returns
     -------
-    float or np.ndarray or psi4.core.Matrix
+    float or numpy.ndarray or Matrix
         Reshaped array of type `ret` with natural dimensions of `shape_clue`.
-
-    Raises
-    ------
-    TODO
 
     """
     if isinstance(val, (np.ndarray, core.Matrix)):

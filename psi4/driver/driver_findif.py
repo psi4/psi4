@@ -29,9 +29,9 @@
 import numpy as np
 
 from psi4 import core
+
+from . import p4util, qcdb
 from .p4util.exceptions import ValidationError
-from . import p4util
-from . import qcdb
 
 # CONVENTIONS:
 # n_ at the start of a variable name is short for "number of."

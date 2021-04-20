@@ -31,15 +31,15 @@ module calls that access the C++ side of Psi4.
 
 """
 
-import re
 import os
+import re
 import sys
 import uuid
 
 from psi4 import core
-from .p4util.util import set_memory
-from .p4util.exceptions import TestComparisonError, ValidationError
 
+from .p4util.exceptions import TestComparisonError, ValidationError
+from .p4util.util import set_memory
 
 # inputfile contents to be preserved from the processor
 literals = {}

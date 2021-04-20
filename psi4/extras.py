@@ -26,10 +26,10 @@
 # @END LICENSE
 #
 
-import os
 import atexit
 import datetime
-from typing import Optional, Union
+import os
+from typing import List, Optional, Union
 
 from qcelemental.util import which, which_import
 
@@ -155,7 +155,7 @@ _addons_ = {
 }
 
 
-def addons(request=None):
+def addons(request: str = None) -> Union[bool, List[str]]:
     """Returns boolean of whether Add-On *request* is available to Psi4,
     either compiled in or searchable in $PSIPATH:$PATH, as relevant. If
     *request* not passed, returns list of available Add-Ons.
@@ -167,18 +167,20 @@ def addons(request=None):
 
 
 # Testing
-def test(extent='full', extras=None):
+def test(extent: str = "full", extras: List = None) -> int:
     """Runs a test suite through pytest.
 
     Parameters
     ----------
-    extent : {'smoke', 'quick', 'full', 'long'}
+    extent
+        {'smoke', 'quick', 'full', 'long'}
         All choices are defined, but choices may be redundant in some projects.
-        _smoke_ will be minimal "is-working?" test(s).
-        _quick_ will be as much coverage as can be got quickly, approx. 1/3 tests.
-        _full_ will be the whole test suite, less some exceedingly long outliers.
-        _long_ will be the whole test suite.
-    extras : list
+
+          * _smoke_ will be minimal "is-working?" test(s).
+          * _quick_ will be as much coverage as can be got quickly, approx. 1/3 tests.
+          * _full_ will be the whole test suite, less some exceedingly long outliers.
+          * _long_ will be the whole test suite.
+    extras
         Additional arguments to pass to `pytest`.
 
     Returns

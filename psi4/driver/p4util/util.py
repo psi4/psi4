@@ -30,10 +30,11 @@
 import os
 import re
 import sys
-from typing import Union
 import warnings
+from typing import Union
 
 from psi4 import core
+
 from .exceptions import ValidationError
 from .prop_util import *
 

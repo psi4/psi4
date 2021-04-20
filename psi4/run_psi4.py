@@ -28,12 +28,13 @@
 # @END LICENSE
 #
 
-import atexit
-import sys
-import os
-import json
-import datetime
 import argparse
+import atexit
+import datetime
+import json
+import os
+import sys
+import warnings
 from argparse import RawTextHelpFormatter
 from pathlib import Path
 
@@ -176,12 +177,11 @@ if args["psidatadir"] is not None:
 def custom_formatwarning(msg, *args, **kwargs):
     return str(msg) + '\n'
 
-import warnings
 warnings.formatwarning = custom_formatwarning
 
 # Import installed psi4
 sys.path.insert(1, lib_dir)
-import psi4
+import psi4  # isort:skip
 
 if args["version"]:
     print(psi4.__version__)

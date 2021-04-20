@@ -26,18 +26,19 @@
 # @END LICENSE
 #
 
-import re
-import sys
 import copy
 import math
+import re
+import sys
 from typing import Callable, List
 
 import numpy as np
 
 from psi4 import core
-from . import qcdb
+
 from . import p4util
 from . import psifiles as psif
+from . import qcdb
 from .p4util.exceptions import ValidationError
 from .procrouting.interface_cfour import cfour_psivar_list
 

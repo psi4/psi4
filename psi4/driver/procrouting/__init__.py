@@ -28,4 +28,5 @@
 
 __all__ = ["energy_only_methods", "integrated_basis_methods", "hooks", "proc", "procedures"]
 
+from . import proc_table
 from .proc_table import *

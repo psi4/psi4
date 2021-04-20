@@ -3590,7 +3590,7 @@ def run_adcc(name, **kwargs):
     adc_wfn.set_variable("ADC ITERATIONS", state.n_iter)  # P::e ADC
     adc_wfn.set_variable(name + " excitation energies",
                          core.Matrix.from_array(state.excitation_energy.reshape(-1, 1)))
-    adc_wfn.set_variable("number of excited states", len(state.excitation_energy))  # P::e ADC
+    adc_wfn.set_variable("number of excited states", len(state.excitation_energy))
 
     core.print_out("\n\n  ==> Excited states summary <==  \n")
     core.print_out("\n" + state.describe(oscillator_strengths=False) + "\n")

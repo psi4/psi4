@@ -30,10 +30,11 @@
 import numpy as np
 
 from psi4 import core
+
 from .. import psifiles as psif
 from ..procrouting.proc_util import check_iwl_file_from_scf_type
-from .exceptions import ValidationError, TestComparisonError
-from .testing import compare_integers, compare_values, compare_recursive
+from .exceptions import TestComparisonError, ValidationError
+from .testing import compare_integers, compare_recursive, compare_values
 
 __all__ = ["compare_fcidumps", "energies_from_fcidump", "fcidump", "fcidump_from_file"]
 
@@ -322,7 +323,7 @@ def fcidump_from_file(fname):
 
 
 def compare_fcidumps(expected, computed, label):
-    """Function to compare two FCIDUMP files. Prints :py:func:`util.success`
+    """Function to compare two FCIDUMP files. Prints success
     when value *computed* matches value *expected*.
     Performs a system exit on failure. Used in input files in the test suite.
 

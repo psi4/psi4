@@ -29,9 +29,10 @@
 from typing import Dict, List
 
 import numpy as np
+from psi4.driver import constants
 
 from psi4 import core
-from psi4.driver import constants
+
 from .p4util.exceptions import ConvergenceError, ValidationError
 
 __all__ = ["anharmonicity", "least_squares_fit_polynomial"]

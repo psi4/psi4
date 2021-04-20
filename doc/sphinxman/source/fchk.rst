@@ -64,4 +64,5 @@ gradient computation, to ensure that the density is updated appropriately::
 
 
 .. autofunction:: psi4.fchk(wfn, filename)
+   :noindex:
 

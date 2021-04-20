@@ -27,10 +27,13 @@
 #
 """Module with utility functions that act on molecule objects."""
 
+from typing import Dict, Tuple, Union
+
 import numpy as np
 import qcelemental as qcel
 
 from psi4 import core
+
 from . import qcdb
 
 __all__ = ["activate", "geometry"]
@@ -174,26 +177,26 @@ def _molecule_from_arrays(cls,
 
 
 @classmethod
-def _molecule_from_schema(cls, molschema, return_dict=False, nonphysical=False, verbose=1):
+def _molecule_from_schema(cls, molschema: Dict, return_dict: bool = False, nonphysical: bool = False, verbose: int = 1) -> Union[core.Molecule, Tuple[core.Molecule, Dict]]:
     """Construct Molecule from non-Psi4 schema.
 
     Light wrapper around :py:func:`~psi4.core.Molecule.from_arrays`.
 
     Parameters
     ----------
-    molschema : dict
+    molschema
         Dictionary form of Molecule following known schema.
-    return_dict : bool, optional
+    return_dict
         Additionally return Molecule dictionary intermediate.
-    nonphysical : bool, optional
+    nonphysical
         Do allow masses outside an element's natural range to pass validation?
-    verbose : int, optional
+    verbose
         Amount of printing.
 
     Returns
     -------
     mol : :py:class:`psi4.core.Molecule`
-    molrec : dict, optional
+    molrec : dict
         Dictionary representation of instance.
         Only provided if `return_dict` is True.
 

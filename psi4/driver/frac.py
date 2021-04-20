@@ -26,10 +26,13 @@
 # @END LICENSE
 #
 
+from typing import Callable, Union
+
 from psi4 import core
-from .p4util.exceptions import ConvergenceError, ValidationError
+
 from . import p4util
 from .driver import energy
+from .p4util.exceptions import ConvergenceError, ValidationError
 
 __all__ = ["ip_fitting", "frac_nuke", "frac_traverse"]
 
@@ -38,35 +41,35 @@ def frac_traverse(name, **kwargs):
 
     Parameters
     ----------
-    name : str or function
+    name : str or Callable
         DFT functional string name or function defining functional
         whose omega is to be optimized.
     molecule : :ref:`molecule <op_py_molecule>`, optional
         Target molecule (neutral) for which omega is to be tuned, if not last defined.
-    cation_mult : int, optional
+    cation_mult : Optional[int]
         Multiplicity of cation, if not neutral multiplicity + 1.
-    anion_mult : int, optional
+    anion_mult : Optional[int]
         Multiplicity of anion, if not neutral multiplicity + 1.
-    frac_start : int, optional
+    frac_start : Optional[int]
         Iteration at which to start frac procedure when not reading previous
         guess. Defaults to 25.
-    HOMO_occs : list, optional
+    HOMO_occs : Optional[List]
         Occupations to step through for cation, by default `[1 - 0.1 * x for x in range(11)]`.
-    LUMO_occs : list, optional
+    LUMO_occs : Optional[List]
         Occupations to step through for anion, by default `[1 - 0.1 * x for x in range(11)]`.
-    HOMO : int, optional
+    HOMO : Optional[int]
         Index of HOMO.
-    LUMO : int, optional
+    LUMO : Optional[int]
         Index of LUMO.
-    frac_diis : bool, optional
+    frac_diis : Optional[bool]
         Do use DIIS for non-1.0-occupied points?
-    neutral_guess : bool, optional
+    neutral_guess : Optional[bool]
         Do use neutral orbitals as guess for the anion?
-    hf_guess: bool, optional
+    hf_guess: Optional[bool]
         Do use UHF guess before UKS?
-    continuous_guess : bool, optional
+    continuous_guess : Optional[bool]
         Do carry along guess rather than reguessing at each occupation?
-    filename : str, optional
+    filename : Optional[str]
         Result filename, if not name of molecule.
 
     Returns
@@ -474,12 +477,12 @@ def frac_nuke(name, **kwargs):
     return E
 
 
-def ip_fitting(name, omega_l: float = 0.05, omega_r: float = 2.5, omega_convergence: float = 1.0e-3, maxiter: int = 20, **kwargs):
+def ip_fitting(name: Union[str, Callable], omega_l: float = 0.05, omega_r: float = 2.5, omega_convergence: float = 1.0e-3, maxiter: int = 20, **kwargs) -> float:
     """Optimize DFT omega parameter for molecular system.
 
     Parameters
     ----------
-    name : string or function
+    name
         DFT functional string name or function defining functional
         whose omega is to be optimized.
     omega_l

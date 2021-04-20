@@ -42,8 +42,7 @@ def multi_level(func, **kwargs):
     :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| data and wavefunction with energy/gradient/hessian set appropriately when **return_wfn** specified.
 
     """
-    from psi4.driver.driver_nbody import nbody_gufunc
-    from psi4.driver.driver_nbody import _print_nbody_energy
+    from psi4.driver.driver_nbody import _print_nbody_energy, nbody_gufunc
 
     ptype = kwargs['ptype']
     return_wfn = kwargs.get('return_wfn', False)
@@ -186,8 +185,7 @@ def electrostatic_embedding(metadata, pair):
     """
     Add atom-centered point charges for fragments whose basis sets are not included in the computation.
     """
-    from psi4.driver import qmmm
-    from psi4.driver import constants
+    from psi4.driver import constants, qmmm
 
     if not metadata['return_total_data']:
         raise Exception('Cannot return interaction data when using embedding scheme.')

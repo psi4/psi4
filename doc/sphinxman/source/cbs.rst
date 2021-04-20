@@ -76,6 +76,7 @@ Many examples can be found at :srcsample:`cbs-xtpl-energy`,
 
 
 .. autofunction:: psi4.cbs(name [, scf_basis, scf_scheme, corl_wfn, corl_basis, corl_scheme, delta_wfn, delta_wfn_lesser, delta_basis, delta_scheme, delta2_wfn, delta2_wfn_lesser, delta2_basis, delta2_scheme, cbs_metadata])
+   :noindex:
 
 .. note:: As of October 2018, only two explicit ```deltaN_[wfn,basis,scheme]``` sets of options are active; if more delta functions are required, use the ```cbs_metadata``` interface. Also, temporarily extrapolations are performed on differences of target and scf total energies, rather than on correlation energies directly. This doesn't affect the extrapolated values of the particular formulas defined here (though it does affect the betas, which are commented out), but it is sloppy and temporary and could affect any user-defined corl extrapolations.
 

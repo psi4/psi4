@@ -27,8 +27,7 @@
 #
 """Module with non-generic exceptions classes."""
 
-from psi4 import core
-from psi4 import extras
+from psi4 import core, extras
 
 __all__ = [
 "PsiException",

@@ -44,11 +44,15 @@ PSI Variables by Alpha
    the variable name that vary by root number, calculation order, etc.
    See text for fuller description.
 
+.. psivar:: [T] CORRECTION ENERGY
+
+   The coupled-cluster bracket perturbative triples correction [Eh].
+
 .. psivar:: (T) CORRECTION ENERGY
 
    The coupled-cluster perturbative triples correction [Eh].
 
-.. psivar:: A-(T) CORRECTION ENERGY
+.. psivar:: (AT) CORRECTION ENERGY
 
    The coupled-cluster asymmetric perturbative triples correction [Eh].
 
@@ -235,6 +239,17 @@ PSI Variables by Alpha
    The six components of the quadrupole [Debye Ang] for the requested
    coupled cluster level of theory and root.
 
+.. psivar:: CCD TOTAL ENERGY
+   CCD CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the coupled-cluster doubles level of theory.
+
+.. psivar:: CCSD PAIR ENERGIES
+
+   The restricted-reference pair energies for coupled-cluster singles and doubles
+   level of theory. Size number of active doubly occupied orbitals, square.
+
 .. psivar:: CCSD TOTAL ENERGY
    CCSD CORRELATION ENERGY
    CCSDT TOTAL ENERGY
@@ -250,15 +265,15 @@ PSI Variables by Alpha
 
 .. psivar:: CCSD(T) TOTAL ENERGY
    CCSD(T) CORRELATION ENERGY
-   A-CCSD(T) TOTAL ENERGY
-   A-CCSD(T) CORRELATION ENERGY
+   CCSD(AT) TOTAL ENERGY
+   CCSD(AT) CORRELATION ENERGY
    CCSDT(Q) TOTAL ENERGY
    CCSDT(Q) CORRELATION ENERGY
    CC(n-1)(n) TOTAL ENERGY
    CC(n-1)(n) CORRELATION ENERGY
 
    The total electronic energy [Eh] and correlation energy component [Eh]
-   for the perturbatively corrected coupled-cluster (CCSD(T), a-CCSD(T), CCSDT(Q),
+   for the perturbatively corrected coupled-cluster (CCSD(T), CCSD(AT), CCSDT(Q),
    up to CC(\ *n*\ -1)(\ *n*\ ) level of theory.
 
 .. psivar:: CCSDT-1a TOTAL ENERGY
@@ -304,6 +319,14 @@ PSI Variables by Alpha
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the approximate coupled-cluster (CCSD(T)_L, CCSDT(Q)_L,
    up to CC(\ *n*\ -1)(\ *n*\ )L level of theory.
+
+.. psivar:: CCSDT(Q)/A TOTAL ENERGY
+   CCSDT(Q)/A CORRELATION ENERGY
+   CCSDT(Q)/B TOTAL ENERGY
+   CCSDT(Q)/B CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the modified CCSDT(Q) level of theory.
 
 .. psivar:: CCSD DIPOLE POLARIZABILITY @ xNM
 
@@ -563,6 +586,28 @@ PSI Variables by Alpha
    Depending on weights, may equal any of MP2, SCS-MP2, SCS(N)-MP2, etc. quantities.
    Contrast with :psivar:`SCS-MP2 TOTAL ENERGY`.
 
+.. psivar:: CUSTOM SCS-MP2.5 TOTAL ENERGY
+   CUSTOM SCS-MP2.5 CORRELATION ENERGY
+   CUSTOM SCS-MP3 TOTAL ENERGY
+   CUSTOM SCS-MP3 CORRELATION ENERGY
+   CUSTOM SCS-LCCD TOTAL ENERGY
+   CUSTOM SCS-LCCD CORRELATION ENERGY
+   CUSTOM SCS-OMP2 TOTAL ENERGY
+   CUSTOM SCS-OMP2 CORRELATION ENERGY
+   CUSTOM SCS-OMP2.5 TOTAL ENERGY
+   CUSTOM SCS-OMP2.5 CORRELATION ENERGY
+   CUSTOM SCS-OMP3 TOTAL ENERGY
+   CUSTOM SCS-OMP3 CORRELATION ENERGY
+   CUSTOM SCS-OLCCD TOTAL ENERGY
+   CUSTOM SCS-OLCCD CORRELATION ENERGY
+
+   Changeable quantities based on options.
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the method formed by any reweighting of the named :samp:`{method} DOUBLES ENERGY`
+   for opposite-spin and same-spin contributions, with
+   any singles carried along.
+   Contrast with :samp`SCS-{method} TOTAL ENERGY`.
+
 .. psivar:: db_name DATABASE MEAN ABSOLUTE DEVIATION
 
    The mean absolute deviation [\ |kcalpermol|\ ] of the requested method
@@ -589,6 +634,28 @@ PSI Variables by Alpha
    and nonsensical value.
 
    .. math:: \sqrt{\frac{1}{n}\sum_{rxn}^{n}{(\textsf{\textsl{name}}_{rxn}-\text{REF}_{rxn})^2}}
+
+.. psivar:: DCT LAMBDA ENERGY
+
+   Correlation energy [Eh] in density cumulant theory.
+
+.. psivar:: DCT SCF ENERGY
+
+   Reference energy [Eh] in density cumulant theory.
+
+.. psivar:: DCT THREE-PARTICLE ENERGY
+
+   The three-particle correlation energy correction [Eh] in density cumulant
+   theory, akin to :psivar:`(T) CORRECTION ENERGY` in coupled-cluster.
+
+.. psivar:: DCT TOTAL ENERGY
+
+   Total energy [Eh] in density cumulant theory. Sum of :psivar:`DCT SCF ENERGY`,
+   :psivar:`DCT LAMBDA ENERGY`, and :psivar:`DCT THREE-PARTICLE ENERGY` when present.
+
+.. psivar:: DETCI AVG DVEC NORM
+
+   A measure of configuration interaction convergence.
 
 .. psivar:: DFT FUNCTIONAL TOTAL ENERGY
 
@@ -637,6 +704,11 @@ PSI Variables by Alpha
    The functional energy contribution [Eh] to the total SCF energy (DFT only).
    Quantity :math:`E_{xc}` in Eqs. :eq:`SCFterms` and :eq:`DFTterms`.
 
+.. psivar:: DFT VV10 ENERGY
+
+   The VV10 nonlocal contribution [Eh] to the total SCF energy (DFT only).
+   Included in :psivar:`DFT FUNCTIONAL TOTAL ENERGY`.
+
 .. psivar:: DISPERSION CORRECTION ENERGY
    fctl DISPERSION CORRECTION ENERGY
 
@@ -651,6 +723,19 @@ PSI Variables by Alpha
    The scaled MP2 correlation energy correction [Eh] appended to an
    underlying functional when a DH-DFT method is requested.
    Quantity :math:`E_{\text{DH}}` in Eq. :eq:`DFTterms`.
+
+.. psivar:: DMA DISTRIBUTED MULTIPOLES
+
+   Distributed multipoles in units given by |gdma__gdma_multipole_units|
+   with the row index corresponding to the site and the column index
+   referencing the multipole component. Both indices are zero based,
+   and the Qlm components of the multipoles are ordered as Q00, Q10,
+   Q11c, Q11s, Q20, Q21c, Q21s, Q22c, Q22s, etc.
+
+.. psivar:: DMA TOTAL MULTIPOLES
+
+   Distributed multipoles as a single row, whose columns are the total
+   multipoles, translated to |gdma__gdma_origin|, and summed.
 
 .. psivar:: DMRG-SCF TOTAL ENERGY
 
@@ -685,6 +770,10 @@ PSI Variables by Alpha
 .. psivar:: ENTHALPY CORRECTION
 
    Sum of electronic, translational, rotational, and vibrational corrections [Eh] to the enthalpy at given temperature.
+
+.. psivar:: ESP AT CENTER n
+
+   Property of electrostatic potential [Eh / e] at location, usually atom center, n.
 
 .. psivar:: FCI TOTAL ENERGY
    FCI CORRELATION ENERGY
@@ -746,6 +835,10 @@ PSI Variables by Alpha
 
    The total electronic energy [Eh] for the local CCSD level of theory.
 
+.. psivar:: LOWDIN CHARGES
+
+   Property of partial atomic charges [e] by the method of L\ |o_dots|\ wdin, (nat,).
+
 .. psivar:: MBIS CHARGES
    MBIS DIPOLES
    MBIS OCTUPOLES
@@ -755,8 +848,104 @@ PSI Variables by Alpha
    resulting from partitioning the total electron density through the Minimal Basis
    Iterative Stockholder (MBIS) Charge Partitioning Scheme.
 
+.. psivar:: MAYER INDICES
+
+   Property of Mayer bond indices, (nat, nat).
+
 .. psivar:: MBIS VALENCE WIDTHS
    Per-atom valence shell widths [a0] resulting from MBIS charge partitioning scheme.
+
+.. psivar:: MCSCF TOTAL ENERGY
+
+   Multiconfigurational self-consistent-field energy [Eh] in the course of
+   a configuration interaction computation. May be single-root or state-averaged.
+
+.. psivar:: mtd DIPOLE
+
+   Dipole array [e a0] for the named method, (3,).
+
+.. psivar:: mtd DIPOLE X
+   mtd DIPOLE Y
+   mtd DIPOLE Z
+
+   The three components of the named method dipole [Debye].
+   Deprecated in favor of :psivar:`mtd DIPOLE`.
+
+.. psivar:: mtd QUADRUPOLE
+
+   Redundant quadrupole array [e a0^2] for the named method, (3, 3).
+
+.. psivar:: mtd QUADRUPOLE XX
+   mtd QUADRUPOLE XY
+   mtd QUADRUPOLE XZ
+   mtd QUADRUPOLE YY
+   mtd QUADRUPOLE YZ
+   mtd QUADRUPOLE ZZ
+
+   The six components of the named method quadrupole [Debye Ang].
+   Deprecated in favor of :psivar:`mtd QUADRUPOLE`.
+
+.. psivar:: mtd OCTUPOLE
+
+   Redundant octupole array [e a0^3] for the named method, (3, 3, 3).
+
+.. psivar:: mtd OCTUPOLE XXX
+   mtd OCTUPOLE XXY
+   mtd OCTUPOLE XXZ
+   mtd OCTUPOLE XYY
+   mtd OCTUPOLE XYZ
+   mtd OCTUPOLE XZZ
+   mtd OCTUPOLE YYY
+   mtd OCTUPOLE YYZ
+   mtd OCTUPOLE YZZ
+   mtd OCTUPOLE ZZZ
+
+   The ten components of the named method octupole [Debye Ang^2].
+   Deprecated in favor of :psivar:`mtd OCTUPOLE`.
+
+.. psivar:: mtd HEXADECAPOLE
+
+   Redundant hexadecapole array [e a0^4] for the named method, (3, 3, 3, 3).
+
+.. psivar:: mtd HEXADECAPOLE XXXX
+   mtd HEXADECAPOLE XXXY
+   mtd HEXADECAPOLE ZZZZ
+
+   The 15 components of the named method hexadecapole [Debye Ang^3].
+   Deprecated in favor of :psivar:`mtd HEXADECAPOLE`.
+
+.. psivar:: mtd 32-POLE
+
+   Redundant 32-pole array [e a0^5] for the named method, (3, 3, 3, 3, 3).
+
+.. psivar:: mtd 32-POLE XXXXX
+   mtd 32-POLE XXXXY
+   mtd 32-POLE ZZZZZ
+
+   The 21 components of the named method 32-pole [Debye Ang^4].
+   Deprecated in favor of :psivar:`mtd 32-POLE`.
+
+.. psivar:: mtd 64-POLE
+
+   Redundant 64-pole array [e a0^6] for the named method, (3, 3, 3, 3, 3, 3).
+
+.. psivar:: mtd 64-POLE XXXXXX
+   mtd 64-POLE XXXXXY
+   mtd 64-POLE ZZZZZZ
+
+   The 28 components of the named method 64-pole [Debye Ang^5].
+   Deprecated in favor of :psivar:`mtd 64-POLE`.
+
+.. psivar:: mtd 128-POLE
+
+   Redundant 128-pole array [e a0^7] for the named method, (3, 3, 3, 3, 3, 3, 3).
+
+.. psivar:: mtd 128-POLE XXXXXXX
+   mtd 128-POLE XXXXXXY
+   mtd 128-POLE ZZZZZZZ
+
+   The 36 components of the named method 128-pole [Debye Ang^6].
+   Deprecated in favor of :psivar:`mtd 128-POLE`.
 
 .. psivar:: MP2 TOTAL ENERGY
    MP2 CORRELATION ENERGY
@@ -831,8 +1020,12 @@ PSI Variables by Alpha
    CISD DOUBLES ENERGY
    QCISD DOUBLES ENERGY
    LCCD DOUBLES ENERGY
+   CCD DOUBLES ENERGY
    LCCSD DOUBLES ENERGY
    CCSD DOUBLES ENERGY
+   OMP2 DOUBLES ENERGY
+   OMP2.5 DOUBLES ENERGY
+   OMP3 DOUBLES ENERGY
    OLCCD DOUBLES ENERGY
 
    The doubles portion [Eh] of the named correlation energy
@@ -848,6 +1041,7 @@ PSI Variables by Alpha
    CISD SINGLES ENERGY
    QCISD SINGLES ENERGY
    LCCD SINGLES ENERGY
+   CCD SINGLES ENERGY
    LCCSD SINGLES ENERGY
    CCSD SINGLES ENERGY
    OLCCD SINGLES ENERGY
@@ -867,6 +1061,7 @@ PSI Variables by Alpha
    ACPF SAME-SPIN CORRELATION ENERGY
    AQCC SAME-SPIN CORRELATION ENERGY
    LCCD SAME-SPIN CORRELATION ENERGY
+   CCD SAME-SPIN CORRELATION ENERGY
    LCCSD SAME-SPIN CORRELATION ENERGY
    CCSD SAME-SPIN CORRELATION ENERGY
    OLCCD SAME-SPIN CORRELATION ENERGY
@@ -886,12 +1081,29 @@ PSI Variables by Alpha
    ACPF OPPOSITE-SPIN CORRELATION ENERGY
    AQCC OPPOSITE-SPIN CORRELATION ENERGY
    LCCD OPPOSITE-SPIN CORRELATION ENERGY
+   CCD OPPOSITE-SPIN CORRELATION ENERGY
    LCCSD OPPOSITE-SPIN CORRELATION ENERGY
    CCSD OPPOSITE-SPIN CORRELATION ENERGY
    OLCCD OPPOSITE-SPIN CORRELATION ENERGY
 
    The unscaled portion [Eh] of the named correlation energy
    from opposite-spin or singlet doubles correlations.
+
+.. psivar:: MRPT TOTAL ENERGY
+   MP2-CCSD TOTAL ENERGY
+   MRCC TOTAL ENERGY
+
+   Energies [Eh] from correlated multi-reference theories.
+
+.. psivar:: MULLIKEN CHARGES
+
+   Property of partial atomic charges [e] by the method of Mulliken, (nat,).
+
+.. psivar:: NAUX (SCF)
+   NAUX (CC)
+
+   Convenience storage of number of functions [] in the auxiliary basis
+   set for named stage of the calculation.
 
 .. psivar:: NBODY (i, j, ..., k)@(a, b, ..., c) TOTAL ENERGY
 
@@ -926,6 +1138,11 @@ PSI Variables by Alpha
    The total electronic energy [Eh] and correlation energy component [Eh]
    for the orbital-optimized linearized coupled cluster doubles level of theory.
 
+.. psivar:: OLCCD REFERENCE CORRECTION ENERGY
+
+   The additional correction to the SCF reference energy [Eh]
+   for the orbital-optimized linearized coupled cluster doubles level of theory.
+
 .. psivar:: OMP2 TOTAL ENERGY
    OMP2 CORRELATION ENERGY
 
@@ -948,6 +1165,14 @@ PSI Variables by Alpha
 
    The one-electron energy contribution [Eh] to the total SCF energy.
    Quantity :math:`E_{1e^-}` in Eq. :eq:`SCFterms`.
+
+.. psivar:: PCM POLARIZATION ENERGY
+
+   The energy contribution [Eh] from the polarizable continuum model for solvation.
+
+.. psivar:: PE ENERGY
+
+   The energy contribution [Eh] from the polarizable embedding model for solvation.
 
 .. psivar:: QCISD TOTAL ENERGY
    QCISD CORRELATION ENERGY
@@ -974,6 +1199,7 @@ PSI Variables by Alpha
    :psivar:`SAPT TOTAL ENERGY`.
 
 .. psivar:: SAPT TOTAL ENERGY
+   SAPT ENERGY
 
    The total electronic interaction energy [Eh] for the requested SAPT
    level of theory.
@@ -1102,15 +1328,32 @@ PSI Variables by Alpha
 .. psivar:: SAPT IND30,R ENERGY
    SAPT IND-DISP30 ENERGY
    SAPT EXCH-IND30,R ENERGY
-   SAPT EXCH-IND-DISP30 ENERGY
-   SAPT EXCH-DISP30 ENERGY
 
    A induction-classified SAPT term energy [Eh] implemented for SAPT2+3.
 
 .. psivar:: SAPT DISP30 ENERGY
-   SAPT EXCH-DISP20 ENERGY
+   SAPT EXCH-DISP30 ENERGY
+   SAPT EXCH-IND-DISP30 ENERGY
 
-   A dispersion-classified SAPT term energy [Eh] implemented for SAPT2+(3).
+   A dispersion-classified SAPT term energy [Eh] implemented for SAPT2+3.
+
+.. psivar:: SAPT ALPHA
+
+   SAPT exchange-scaling alpha.
+
+.. psivar:: SAPT CT ENERGY
+
+   SAPT charge-transfer energy.
+
+.. psivar:: SAPT HF TOTAL ENERGY
+
+   An induction-classified correction from HF implemented for SAPT0.
+   Value varies by SAPT level.
+
+.. psivar:: SAPT MP2 CORRELATION ENERGY
+
+   An induction-classified correction from MP2 implemented for SAPT2.
+   Value varies by SAPT level.
 
 .. psivar:: SAPT0 DISP ENERGY
    SAPT0 ELST ENERGY
@@ -1220,8 +1463,9 @@ PSI Variables by Alpha
 .. psivar:: SCF ITERATIONS
    ADC ITERATIONS
    CCSD ITERATIONS
+   OPTIMIZATION ITERATIONS
 
-   Number of iterations [] in the named iterative method.
+   Number of iterations [] in the named iterative method or optimization procedure.
 
 .. psivar:: SCF DIPOLE
 
@@ -1249,6 +1493,7 @@ PSI Variables by Alpha
    Deprecated in favor of :psivar:`SCF QUADRUPOLE`.
 
 .. psivar:: SCF TOTAL ENERGY
+   SCF TOTAL ENERGY (CHKPT)
 
    The total electronic energy [Eh] of the SCF stage of the calculation.
    The :samp:`{method} CORRELATION ENERGY` variables from subsequent stages of a
@@ -1284,6 +1529,10 @@ PSI Variables by Alpha
 
    The total electronic second derivative [Eh/a0/a0] for the SCF stage, (3 * {nat}, 3 * {nat}).
 
+.. psivar:: SCF STABILITY EIGENVALUES
+
+   Array of eigenvalues from UHF or ROHF stability analysis.
+
 .. psivar:: SCS-CCSD TOTAL ENERGY
    SCS-CCSD CORRELATION ENERGY
 
@@ -1316,6 +1565,105 @@ PSI Variables by Alpha
    by 0 opposite-spin and 1.76 same-spin contributions, with
    any singles carried along. doi: 10.1021/ct6002737
 
+.. psivar:: SCS(N)-OMP2 CORRELATION ENERGY
+   SCS(N)-OMP2 TOTAL ENERGY
+   SCSN-OMP2 CORRELATION ENERGY
+   SCSN-OMP2 TOTAL ENERGY
+
+   Two spellings of a discontinued QCVariable that may still appear
+   because the code is frozen pending an update.
+
+.. psivar:: SCS-OMP2 TOTAL ENERGY
+   SCS-OMP2 CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the OMP2-like method formed by reweighting :psivar:`OMP2 DOUBLES ENERGY`
+   by 6/5 opposite-spin and 1/3 same-spin contributions, with
+   any singles carried along.
+
+.. psivar:: SCS-MP3 TOTAL ENERGY
+   SCS-MP3 CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the MP3-like method formed by reweighting the difference between
+   :psivar:`MP3 DOUBLES ENERGY` and :psivar:`MP2 DOUBLES ENERGY`
+   by 0.25, atop the SCS-MP2 energy, with any singles carried along.
+
+.. psivar:: SCS-OMP3 TOTAL ENERGY
+   SCS-OMP3 CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the OMP3-like method formed by reweighting the difference between
+   :psivar:`OMP3 DOUBLES ENERGY` and :psivar:`OMP2 DOUBLES ENERGY`
+   by 0.25, atop the SCS-OMP2 energy, with any singles carried along.
+
+.. psivar:: SOS-MP2 TOTAL ENERGY
+   SOS-MP2 CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the MP2-like method formed by reweighting :psivar:`MP2 DOUBLES ENERGY`
+   by 1.3 opposite-spin and 0 same-spin contributions, with
+   any singles carried along.
+
+.. psivar:: SOS-OMP2 TOTAL ENERGY
+   SOS-OMP2 CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the OMP2-like method formed by reweighting :psivar:`OMP2 DOUBLES ENERGY`
+   by 1.2 opposite-spin and 0 same-spin contributions, with
+   any singles carried along.
+
+.. psivar:: SOS-OMP3 TOTAL ENERGY
+   SOS-OMP3 CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the OMP3-like method formed by reweighting the difference between
+   :psivar:`OMP3 DOUBLES ENERGY` and :psivar:`OMP2 DOUBLES ENERGY`
+   by 0.25, atop the SOS-OMP2
+   energy using non-canonical weighting, with any singles carried along.
+
+.. psivar:: SOS-PI-MP2 TOTAL ENERGY
+   SOS-PI-MP2 CORRELATION ENERGY
+
+   The total electronic energy [Eh] and correlation energy component [Eh]
+   for the MP2-like method formed by reweighting :psivar:`MP2 DOUBLES ENERGY`
+   by 1.4 opposite-spin and 0 same-spin contributions, with
+   any singles carried along.
+
+.. psivar:: TDDFT ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
+   TD-fctl ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
+   ADC ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
+   EOM-CCSD ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
+
+   The excitation energy of given method from ground state to root m
+   in h symmetry (if available). DFT functional labeled if canonical.
+
+.. psivar:: TDDFT ROOT n TOTAL ENERGY - h SYMMETRY
+   TD-fctl ROOT n TOTAL ENERGY - h SYMMETRY
+   ADC ROOT n TOTAL ENERGY - h SYMMETRY
+   EOM-CCSD ROOT n TOTAL ENERGY - h SYMMETRY
+
+   The total energy of given method from ground state to root m in h symmetry.
+
+.. psivar:: ADC ROOT 0 -> ROOT m CORRELATION ENERGY - h SYMMETRY
+   EOM-CCSD ROOT 0 -> ROOT m CORRELATION ENERGY - h SYMMETRY
+
+   The correlation energy of given method from ground state reference energy to root m in h symmetry.
+
+.. psivar:: TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN) - h SYMMETRY
+   TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL) - h SYMMETRY
+
+   The oscillator strength in length or velocity gauge of named method
+   from ground state to root m in h symmetry (if available). DFT
+   functional labeled if canonical.
+
+.. psivar:: TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (LEN) - h SYMMETRY
+   TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL) - h SYMMETRY
+
+   The rotatory strength in length or velocity gauge of named method
+   from ground state to root m in h symmetry (if available). DFT
+   functional labeled if canonical.
+
 .. psivar:: THERMAL ENERGY
 
    Total thermal energy E [Eh] at given temperature.
@@ -1337,6 +1685,10 @@ PSI Variables by Alpha
 
    .. math:: E_{\text{IE}} = E_{dimer} - \sum_{monomer}^{n}{E_{monomer}^{\text{unCP}}}
 
+.. psivar:: WIBERG LOWDIN INDICES
+
+   Property of Wiberg bond indices using orthogonal L\ |o_dots|\ wdin orbitals, (nat, nat).
+
 .. psivar:: ZAPTn TOTAL ENERGY
    ZAPTn CORRELATION ENERGY
 
@@ -1351,18 +1703,4 @@ PSI Variables by Alpha
 .. psivar:: ZPVE
 
    Vibrational zero-point energy [Eh] at 0 [K].
-
-.. .....................
-
-.. psivar:: TDDFT ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
-   ADC ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
-   EOM-CCSD ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
-
-   The excitation energy of given method from ground state to root m in h symmetry.
-
-.. psivar:: TDDFT ROOT 0 -> ROOT m TOTAL ENERGY - h SYMMETRY
-   ADC ROOT 0 -> ROOT m TOTAL ENERGY - h SYMMETRY
-   EOM-CCSD ROOT 0 -> ROOT m TOTAL ENERGY - h SYMMETRY
-
-   The total energy of given method from ground state to root m in h symmetry.
 

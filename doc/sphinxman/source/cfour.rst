@@ -111,7 +111,7 @@ Cfour for |PSIfour| Users
   are translated into their Cfour counterparts. For example, setting
   |scf__reference| will appropriately set |cfour__cfour_reference|. For a
   list of applicable keywords, see source of
-  :py:func:`qcdb.cfour.muster_psi4options`.
+  muster_psi4options.
 
 * Consult :ref:`sec:cfourFunctionality` for information on what Cfour
   functionality is accessible through |PSIfour|.
@@ -351,10 +351,10 @@ An advantage of |PSIfours| Python driver is that any number of common
 work-up procedures can be automated and wrapped around the
 conventional single-point and optimization procedures at the heart of all
 quantum chemistry codes. Three core "wrappers" available in |PSIfour| are
-:py:func:`~driver_nbody.nbody_gufunc`,
-:py:func:`~wrapper_database.database`, and
+:py:func:`~psi4.driver.driver_nbody.nbody_gufunc`,
+:py:func:`~psi4.database`, and
 :py:func:`~psi4.driver.cbs`; read their respective sections
-for details, but an overview is provided here. :py:func:`~driver_nbody.nbody_gufunc`
+for details, but an overview is provided here. :py:func:`~psi4.driver.driver_nbody.nbody_gufunc`
 computes the interaction energy of a bimolecular complex (counterpoise-corrected,
 not, or both). ::
 
@@ -379,7 +379,7 @@ yields ::
    R [A] = 3.0  IE [kcal/mol] = 0.030
    R [A] = 4.0  IE [kcal/mol] = -0.014
 
-Next, the :py:func:`~wrapper_database.database` wrapper allows any computational
+Next, the :py:func:`~psi4.driver.wrapper_database.database` wrapper allows any computational
 model chemistry to be applied a predefined collection of molecules. Thus
 an input ::
 
@@ -659,10 +659,10 @@ into |PSIfour| data objects.
   :py:func:`~psi4.optimize` for :ref:`methods <table:energy_cfour>`.
   Force with ``gradient('name', dertype=0)``, *etc.*.
 
-* :py:func:`~driver_nbody.nbody_gufunc` for computation of interaction energies with or
+* :py:func:`~psi4.driver.driver_nbody.nbody_gufunc` for computation of interaction energies with or
   without counterpoise correction. Example: :srcsample:`cfour/dfmp2-1`.
 
-* :py:func:`~wrapper_database.database` for computation of a collection of molecules in a
+* :py:func:`~psi4.database` for computation of a collection of molecules in a
   single input, with summarization of results. Examples:
   :srcsample:`cfour/pywrap-db1` and :srcsample:`cfour/psi-a24-grad`.
 
@@ -846,7 +846,7 @@ arise, here are the specifics, the governing laws.
   explicit setting of those those keywords, whether contradicting or
   concurring, takes priority (halts never generated). The following are
   some concrete examples. For the moment, click the source button at
-  :py:func:`qcdb.cfour.muster_modelchem` for details of what keywords
+  muster_modelchem for details of what keywords
   get set.
 
   * runs in vcc since that's Cfour's default for cc_program ::

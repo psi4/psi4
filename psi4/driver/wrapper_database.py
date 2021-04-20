@@ -31,17 +31,20 @@ functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`,
 :py:mod:`driver.response`, and :py:mod:`driver.frequency`.
 
 """
-import os
-import re
-import math
-import pickle
 import collections
+import math
+import os
+import pickle
+import re
 import sys
 
-from psi4 import core
 from psi4.driver import constants
+
+from psi4 import core
+
 from . import p4util
 from .driver import energy
+
 # never import aliases into this file
 
 __all__ = ["database", "db", "DB_RGT", "DB_RXN"]
@@ -168,7 +171,7 @@ def database(name, db_name, **kwargs):
         Indicates a subset of the full database to run. This is a very
         flexible option and can be used in three distinct ways, outlined
         below. Note that two take a string and the last takes an array.
-        See `Available Databases`_ for available values.
+        See :ref:`sec:availableDatabases` for available values.
 
         * ``'small'`` || ``'large'`` || ``'equilibrium'``
             Calls predefined subsets of the requested database, either

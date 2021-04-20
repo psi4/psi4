@@ -30,8 +30,9 @@ import os
 import sys
 
 from psi4 import core
-from .util.filesystem import *
+
 from .util import tty
+from .util.filesystem import *
 
 __all__ = ["create_plugin"]
 

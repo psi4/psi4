@@ -29,10 +29,10 @@
 import re
 
 from psi4 import core
-from .p4util.exceptions import ManagedMethodError, MissingMethodError, ValidationError
-from . import p4util
-from .procrouting import *
 
+from . import p4util
+from .p4util.exceptions import ManagedMethodError, MissingMethodError, ValidationError
+from .procrouting import *
 
 __all__ = ["_set_convergence_criterion", "negotiate_derivative_type", "parse_arbitrary_order", "parse_cotton_irreps"]
 

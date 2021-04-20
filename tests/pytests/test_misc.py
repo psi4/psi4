@@ -136,3 +136,21 @@ def test_deprecated_set_module_options():
 
     with pytest.warns(FutureWarning) as e:
         psi4.set_module_options('scf', {'df_basis_scf': 9})
+
+
+def test_renamed_qcvars():
+    psi4.set_variable("SCS(N)-MP2 TOTAL ENERGY", 3.3)
+
+    with pytest.warns(FutureWarning) as e:
+        ans = psi4.variable("SCSN-MP2 TOTAL ENERGY")
+
+    assert ans == 3.3
+
+
+def test_cancelled_qcvars():
+    err_substr = "no direct replacement"
+
+    with pytest.raises(psi4.UpgradeHelper) as e:
+        psi4.variable("scsn-mp2 same-spin correlation energy")
+
+    assert err_substr in str(e.value)

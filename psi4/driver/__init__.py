@@ -25,6 +25,11 @@
 #
 # @END LICENSE
 #
+"""
+Python driver for Psi4
+
+isort:skip_file
+"""
 
 from qcelemental import constants
 

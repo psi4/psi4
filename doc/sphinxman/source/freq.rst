@@ -52,8 +52,10 @@ the scenes, :py:func:`~psi4.frequency` is a light wrapper over
 thermochemical analysis.
 
 .. autofunction:: psi4.frequency(name [, molecule, return_wfn, func, mode, dertype, irrep])
+   :noindex:
 
 .. autofunction:: psi4.hessian(name [, molecule, return_wfn, func, dertype, irrep])
+   :noindex:
 
 It's handy to collect the wavefunction after a frequency
 calculation through ``e, wfn = psi4.frequency(...,
@@ -122,4 +124,5 @@ Molden Interface Keywords
 
 
 .. automodapi:: psi4.driver.qcdb.vib
+   :headings: -~
 

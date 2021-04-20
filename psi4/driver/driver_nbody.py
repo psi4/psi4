@@ -26,16 +26,17 @@
 # @END LICENSE
 #
 
-import math
 import itertools
+import math
+from typing import Callable, Union
 
 import numpy as np
+from psi4.driver import constants
 
 from psi4 import core
-from psi4.driver import constants
+
+from . import driver_nbody_helper, p4util
 from .p4util.exceptions import ValidationError
-from . import p4util
-from . import driver_nbody_helper
 
 __all__ = ["nbody_gufunc"]
 
@@ -126,7 +127,7 @@ def _print_nbody_energy(energy_body_dict, header, embedding=False):
     core.print_out("\n")
 
 
-def nbody_gufunc(func, method_string, **kwargs):
+def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     """
     Computes the nbody interaction energy, gradient, or Hessian depending on input.
     This is a generalized univeral function for computing interaction and total quantities.
@@ -135,7 +136,7 @@ def nbody_gufunc(func, method_string, **kwargs):
 
     :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| data and wavefunction with energy/gradient/hessian set appropriately when **return_wfn** specified.
 
-    :type func: function
+    :type func: Callable
     :param func: ``energy`` || etc.
 
         Python function that accepts method_string and a molecule. Returns a

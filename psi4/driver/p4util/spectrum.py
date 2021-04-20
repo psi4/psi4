@@ -26,12 +26,11 @@
 # @END LICENSE
 #
 
-from typing import Union, List, Callable, Dict
-from dataclasses import dataclass
 from abc import abstractmethod
+from dataclasses import dataclass
+from typing import Callable, Dict, List, Union
 
 import numpy as np
-
 from psi4.driver import constants
 
 __all__ = ["Gaussian", "Lorentzian", "Lineshape", "prefactor_ecd", "prefactor_opa", "spectrum"]
@@ -42,7 +41,7 @@ class Lineshape:
 
     Attributes
     ----------
-    domain : Union[np.ndarray, List[float]]
+    domain : Union[numpy.ndarray, List[float]]
         Domain of the spectral band.
     gamma : Callable[[float], float]
         A function returning the broadening factor.
@@ -50,7 +49,7 @@ class Lineshape:
     Notes
     -----
     Why do we use a callable broadening factor?
-    For plots in the _wavelength domain_, the broadening factor depends on the location of the band's maximum.
+    For plots in the *wavelength domain*, the broadening factor depends on the location of the band's maximum.
     """
     domain: Union[np.ndarray, List[float]]
     gamma: Callable[[float], float]
@@ -69,7 +68,7 @@ class Gaussian(Lineshape):
 
     Parameters
     ----------
-    domain : Union[List[float], np.ndarray]
+    domain : Union[List[float], numpy.ndarray]
         The domain of the Gaussian profile.
     gamma : float
         Broadening parameter.
@@ -90,7 +89,7 @@ class Gaussian(Lineshape):
 
         Returns
         -------
-        gauss : np.ndarray
+        gauss : numpy.ndarray
             The Gaussian profile.
         """
         prefactor = 2.0 / (self.gamma(x_0) * np.sqrt(2.0 * np.pi))
@@ -107,7 +106,7 @@ class Lorentzian(Lineshape):
 
     Parameters
     ----------
-    domain : Union[List[float], np.ndarray]
+    domain : Union[List[float], numpy.ndarray]
         The domain of the Lorentzian profile.
     gamma : float
         Broadening parameter.
@@ -119,16 +118,16 @@ class Lorentzian(Lineshape):
     """
 
     def lineshape(self, x_0: float) -> np.ndarray:
-        """Lorentzian function on `self.domain`, centered at `x_0` with broadening `self.gamma`.
+        """Lorentzian function on :py:attr:`Lineshape.domain`, centered at `x_0` with broadening :py:attr:`Lineshape.gamma`.
 
         Parameters
         ----------
-        x_0 : float
+        x_0
             Center of the Lorentzian, i.e. its maximum.
 
         Returns
         -------
-        lorentz : np.ndarray
+        lorentz : numpy.ndarray
             The Lorentzian profile.
         """
         prefactor = 1.0 / np.pi
@@ -178,7 +177,7 @@ def prefactor_opa() -> float:
 
 
 def prefactor_ecd() -> float:
-    """Prefactor for converting microscopic observable to decadic molar
+    r"""Prefactor for converting microscopic observable to decadic molar
     extinction coefficient in electronic circular dichroism.
 
     Returns
@@ -198,6 +197,7 @@ def prefactor_ecd() -> float:
     and transition dipole moments.
     The refractive index :math:`n` is, in general, frequency-dependent. We
     assume it to be constant and equal to 1.
+
     """
 
     N_A = constants.get("Avogadro constant")
@@ -250,27 +250,30 @@ def spectrum(*,
 
     Parameters
     ----------
-    poles : Union[List[float], np.ndarray]
+    poles
         Poles of the response function, i.e. the excitation energies.
         These are **expected** in atomic units of angular frequency.
-    residues : Union[List[float], np.ndarray]
+    residues
         Residues of the linear response functions, i.e. transition dipole moments (OPA) and rotatory strengths (ECD).
         These are **expected** in atomic units.
-    kind : {"opa", "ecd"}
+    kind
+        {"opa", "ecd"}
         Which kind of spectrum to generate, one-photon absorption ("opa") or electronic circular dichroism ("ecd").
         Default is `opa`.
-    lineshape : {"gaussian", "lorentzian"}
+    lineshape
+        {"gaussian", "lorentzian"}
         The lineshape function to use in the fitting. Default is `gaussian`.
-    gamma : float, optional.
+    gamma
         Full width at half maximum of the lineshape function.
         Default is 0.2 au of angular frequency.
         This value is **expected** in atomic units of angular frequency.
-    npoints : int, optional.
+    npoints
         How many points to generate for the x axis. Default is 5000.
-    out_units : str
+    out_units
         Units for the output array `x`, the x axis of the spectrum plot.
         Default is wavelengths in nanometers.
         Valid (and case-insensitive) values for the units are:
+
           - `au` atomic units of angular frequency
           - `Eh` atomic units of energy
           - `eV`
@@ -285,7 +288,8 @@ def spectrum(*,
 
         .. code-block:: python
 
-           {"convolution": {"x": np.ndarray, "y": np.ndarray}, "sticks": {"poles": np.ndarray, "residues": np.ndarray}}
+           {"convolution": {"x": np.ndarray, "y": np.ndarray},
+            "sticks": {"poles": np.ndarray, "residues": np.ndarray}}
 
     Notes
     -----
@@ -293,6 +297,7 @@ def spectrum(*,
       The lineshape functions are formulated as functions of the angular frequency :math:`\omega`.
       When converting to other physical quantities, the broadening parameter has to be modified accordingly.
       If :math:`\gamma_{\omega}` is the chosen broadening parameter then:
+
         - Wavelength: :math:`gamma_{\lambda} = \frac{\lambda_{ij}^{2}}{2\pi c}\gamma_{\omega}`
         - Frequency: :math:`gamma_{\nu} = \frac{\gamma_{\omega}}{2\pi}`
         - Energy: :math:`gamma_{E} = \gamma_{\omega}\hbar`

@@ -25,6 +25,11 @@
 #
 # @END LICENSE
 #
+"""
+Psi4: Open-Source Quantum Chemistry
+
+isort:skip_file
+"""
 
 
 # Figure out psidatadir: envvar trumps staged/installed

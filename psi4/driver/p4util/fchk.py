@@ -30,8 +30,9 @@
 import numpy as np
 
 from psi4 import core
+
 from .exceptions import ValidationError
-from .testing import compare_strings, compare_arrays, compare_values, compare_integers
+from .testing import compare_arrays, compare_integers, compare_strings, compare_values
 
 __all__ = ["compare_fchkfiles"]
 

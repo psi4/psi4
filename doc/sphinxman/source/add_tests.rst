@@ -83,7 +83,7 @@ geometry convergence criteria to very tight levels, and use these
 results for reference energies, reference geometries, reference cube
 files, *etc.*. Then, either remove or relax the convergence settings,
 if these are not a vital part of the test. In choosing the number of
-digits for :py:func:`compare_values` and other compare_* functions,
+digits for :py:func:`~psi4.compare_values` and other compare_* functions,
 select a number looser than the convergence set in the test or the
 default convergence for the calculation type (energy, gradient, *etc.*).
 
@@ -168,8 +168,8 @@ Psi4-Style
 .. autofunction:: psi4.driver.p4util.testing.compare_matrices
    :noindex:
 
-.. autofunction:: psi4.compare_dicts
-   :noindex:
+.. .. autofunction:: psi4.compare_dicts
+..    :noindex:
 
 .. autofunction:: psi4.driver.p4util.testing.compare_molrecs
    :noindex:

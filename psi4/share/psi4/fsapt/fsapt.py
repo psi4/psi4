@@ -28,11 +28,16 @@
 # @END LICENSE
 #
 
-import psi4
-import numpy as np
+import copy
+import math
+import os
+import re
+import sys
 from typing import Dict, List, Optional, Tuple
-import sys, os, re, math, copy
+
 import numpy as np
+
+import psi4
 
 # => Global Data <= #
 

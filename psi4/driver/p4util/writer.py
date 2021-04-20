@@ -27,8 +27,9 @@
 #
 """Module for writing input files to external codes."""
 
-from psi4 import core
 from psi4.driver import constants
+
+from psi4 import core
 
 __all__ = []
 

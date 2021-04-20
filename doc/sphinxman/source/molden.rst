@@ -60,6 +60,7 @@ is set to false, the unoccupied orbitals are not written to the Molden
 file.
 
 .. autofunction:: psi4.molden(wfn, filename)
+   :noindex:
 
 Options
 ~~~~~~~

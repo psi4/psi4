@@ -26,11 +26,12 @@
 # @END LICENSE
 #
 
-from psi4 import core
 from psi4.driver import constants
+
+from psi4 import core
+
+from . import driver, p4util
 from .p4util.exceptions import ValidationError
-from . import p4util
-from . import driver
 
 # never import aliases into this file
 

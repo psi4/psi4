@@ -415,7 +415,7 @@ and Cartiesian scans.
 Tables of Results
 =================
 
-The results of computations can be compactly tabulated with the :py:func:`~psi4.driver.Table` Psithon
+The results of computations can be compactly tabulated with the :py:func:`~psi4.driver.p4util.Table` Psithon
 function. For example, in the following potential energy surface scan for water ::
 
     molecule h2o {

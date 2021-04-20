@@ -37,13 +37,13 @@ from tempfile import NamedTemporaryFile
 from typing import Dict
 
 import numpy as np
-
 import qcelemental as qcel
+
 from psi4 import core
 
 from .. import qcdb
+from .exceptions import TestComparisonError, UpgradeHelper, ValidationError
 from .optproc import OptionsState
-from .exceptions import TestComparisonError, ValidationError
 
 ## Python basis helps
 
@@ -618,8 +618,30 @@ core.set_global_option_python = _core_set_global_option_python
 
 ## QCvar helps
 
+_qcvar_transitions = {
+    "SCSN-MP2 CORRELATION ENERGY": "SCS(N)-MP2 CORRELATION ENERGY",
+    "SCSN-MP2 TOTAL ENERGY": "SCS(N)-MP2 TOTAL ENERGY",
+    "MAYER_INDICES": "MAYER INDICES",
+    "WIBERG_LOWDIN_INDICES": "WIBERG LOWDIN INDICES",
+    "LOWDIN_CHARGES": "LOWDIN CHARGES",
+    "MULLIKEN_CHARGES": "MULLIKEN CHARGES",
+}
 
-def _qcvar_warnings(key):
+_qcvar_cancellations = {
+    "SCSN-MP2 SAME-SPIN CORRELATION ENERGY": ["MP2 SAME-SPIN CORRELATION ENERGY"],
+    "SCSN-MP2 OPPOSITE-SPIN CORRELATION ENERGY": ["MP2 OPPOSITE-SPIN CORRELATION ENERGY"],
+    "SCS-CCSD SAME-SPIN CORRELATION ENERGY": ["CCSD SAME-SPIN CORRELATION ENERGY"],
+    "SCS-CCSD OPPOSITE-SPIN CORRELATION ENERGY": ["CCSD OPPOSITE-SPIN CORRELATION ENERGY"],
+    "SCS-MP2 SAME-SPIN CORRELATION ENERGY": ["MP2 SAME-SPIN CORRELATION ENERGY"],
+    "SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY": ["MP2 OPPOSITE-SPIN CORRELATION ENERGY"],
+    "SCS(N)-OMP2 CORRELATION ENERGY": ["OMP2 SAME-SPIN CORRELATION ENERGY", "OMP2 OPPOSITE-SPIN CORRELATION ENERGY"],
+    "SCS(N)-OMP2 TOTAL ENERGY": ["OMP2 SAME-SPIN CORRELATION ENERGY", "OMP2 OPPOSITE-SPIN CORRELATION ENERGY"],
+    "SCSN-OMP2 CORRELATION ENERGY": ["OMP2 SAME-SPIN CORRELATION ENERGY", "OMP2 OPPOSITE-SPIN CORRELATION ENERGY"],
+    "SCSN-OMP2 TOTAL ENERGY": ["OMP2 SAME-SPIN CORRELATION ENERGY", "OMP2 OPPOSITE-SPIN CORRELATION ENERGY"],
+}
+
+
+def _qcvar_warnings(key: str) -> str:
     if any([key.upper().endswith(" DIPOLE " + cart) for cart in ["X", "Y", "Z"]]):
         warnings.warn(
             f"Using scalar QCVariable `{key.upper()}` [D] instead of array `{key.upper()[:-2]}` [e a0] is deprecated, and in 1.5 it will stop working\n",
@@ -631,6 +653,18 @@ def _qcvar_warnings(key):
             f"Using scalar QCVariable `{key.upper()}` [D A] instead of array `{key.upper()[:-3]}` [e a0^2] is deprecated, and in 1.5 it will stop working\n",
             category=FutureWarning,
             stacklevel=3)
+
+    if key.upper() in _qcvar_transitions:
+        warnings.warn(
+            f"Using QCVariable `{key.upper()}` instead of `{_qcvar_transitions[key.upper()]}` is deprecated, and in 1.5 it will stop working\n",
+            category=FutureWarning,
+            stacklevel=3)
+        return _qcvar_transitions[key.upper()]
+
+    if key.upper() in _qcvar_cancellations:
+        raise UpgradeHelper(key.upper(), "no direct replacement", 1.4, " Consult QCVariables " + ", ".join(_qcvar_cancellations[key.upper()]) + " to recompose the quantity.")
+
+    return key
 
 
 _multipole_order = ["dummy", "dummy", "QUADRUPOLE", "OCTUPOLE", "HEXADECAPOLE"]
@@ -780,7 +814,7 @@ def _core_wavefunction_has_variable(cls, key):
 
 
 def _core_variable(key):
-    _qcvar_warnings(key)
+    key = _qcvar_warnings(key)
 
     if core.has_scalar_variable(key):
         return core.scalar_variable(key)
@@ -791,7 +825,7 @@ def _core_variable(key):
 
 
 def _core_wavefunction_variable(cls, key):
-    _qcvar_warnings(key)
+    key = _qcvar_warnings(key)
 
     if cls.has_scalar_variable(key):
         return cls.scalar_variable(key)

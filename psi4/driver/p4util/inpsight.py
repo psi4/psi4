@@ -26,8 +26,8 @@
 # @END LICENSE
 #
 
-import os
 import math
+import os
 from datetime import date
 
 __all__ = ["InPsight"]

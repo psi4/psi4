@@ -530,6 +530,12 @@ These environment variables will influence |PSIfours| behavior.
    built against any library in CONDA_PREFIX, the path has been baked into the
    program, so any available dependencies are liable to been loaded from the environment.
 
+.. envvar:: HOST
+
+   Set when a conda environment with conda compilers is activated. Used
+   when compatibly building |PSIfour| from source against conda
+   dependencies.
+
 .. envvar:: MKL_NUM_THREADS
 
    Number of threads to use by operations with Intel threaded BLAS libraries.
