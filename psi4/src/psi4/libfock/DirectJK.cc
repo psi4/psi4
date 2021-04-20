@@ -273,79 +273,57 @@ void DirectJK::compute_JK() {
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     
-    static int ncalls = 0;
-
-    // Previous Iteration Matrices for Incremental Fock Build
-    static std::vector<SharedMatrix> J_prev;
-    static std::vector<SharedMatrix> K_prev;
-    static std::vector<SharedMatrix> D_prev;
-
-    // Delta Matrices for Incremental Fock Build
-    static std::vector<SharedMatrix> del_J;
-    static std::vector<SharedMatrix> del_K;
-    static std::vector<SharedMatrix> del_D;
-
-    int curr_iter = Process::environment.globals["SCF CURRENT ITERATION"];
-    double delE = Process::environment.globals["SCF DELTA E"];
     double Dnorm = Process::environment.globals["SCF RMS D"];
-    bool converged = Process::environment.globals["SCF CONVERGED"];
-    bool df_converged = Process::environment.globals["DF GUESS CONVERGED"];
-
-    bool prev_converged = converged || df_converged;
 
     Options& options = Process::environment.options;
-
-    double Econv = options.get_double("E_CONVERGENCE");
     double Dconv = options.get_double("D_CONVERGENCE");
-
     double ifb_d_conv = options.get_double("IFB_D_CONVERGENCE");
 
     if (ifb_) {
-        if (prev_converged || (curr_iter <= 1) || (ncalls <= 1) || (D_prev.size() != D_ao_.size()) || (D_prev[0]->nrow() != D_ao_[0]->nrow()) || (D_prev[0]->ncol() != D_ao_[0]->ncol())) {
-            
-            D_prev.clear();
-            del_D.clear();
+        if (iteration_ == 0 || (D_prev_.size() != D_ao_.size())) {
+
+            D_prev_.clear();
+            del_D_.clear();
 
             if (do_J_) {
-                J_prev.clear();
-                del_J.clear();
+                J_prev_.clear();
+                del_J_.clear();
             }
 
             if (do_K_) {
-                K_prev.clear();
-                del_K.clear();
+                K_prev_.clear();
+                del_K_.clear();
             }
 
             for (size_t N = 0; N < D_ao_.size(); N++) {
-                D_prev.push_back(std::make_shared<Matrix>("D Prev", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
-                del_D.push_back(std::make_shared<Matrix>("Delta D", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+                D_prev_.push_back(std::make_shared<Matrix>("D Prev", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+                del_D_.push_back(std::make_shared<Matrix>("Delta D", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
                 
                 if (do_J_) {
-                    J_prev.push_back(std::make_shared<Matrix>("J Prev", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
-                    del_J.push_back(std::make_shared<Matrix>("Delta J", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
+                    J_prev_.push_back(std::make_shared<Matrix>("J Prev", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
+                    del_J_.push_back(std::make_shared<Matrix>("Delta J", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
                 }
                 if (do_K_) {
-                    K_prev.push_back(std::make_shared<Matrix>("K Prev", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
-                    del_K.push_back(std::make_shared<Matrix>("Delta K", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
+                    K_prev_.push_back(std::make_shared<Matrix>("K Prev", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
+                    del_K_.push_back(std::make_shared<Matrix>("Delta K", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
                 }
             }
-            ncalls = 0;
         }
 
-        if (ncalls > 1) {
+        if (iteration_ >= 1) {
             for (size_t N = 0; N < D_ao_.size(); N++) {
-                del_D[N]->copy(D_ao_[N]);
-                del_D[N]->subtract(D_prev[N]);
+                del_D_[N]->copy(D_ao_[N]);
+                del_D_[N]->subtract(D_prev_[N]);
             }
         }
     }
 
     // Do IFB on this iteration?
-    bool do_ifb_iteration = (ncalls > 1) && (Dnorm > ifb_d_conv) && ifb_;
+    bool do_ifb_iteration = (iteration_ >= 1) && (Dnorm > ifb_d_conv) && ifb_;
     
-    std::vector<SharedMatrix>& D_ref = (do_ifb_iteration ? del_D : D_ao_);
-    std::vector<SharedMatrix>& J_ref = (do_ifb_iteration ? del_J : J_ao_);
-    std::vector<SharedMatrix>& K_ref = (do_ifb_iteration ? del_K : K_ao_);
+    std::vector<SharedMatrix>& D_ref = (do_ifb_iteration ? del_D_ : D_ao_);
+    std::vector<SharedMatrix>& J_ref = (do_ifb_iteration ? del_J_ : J_ao_);
+    std::vector<SharedMatrix>& K_ref = (do_ifb_iteration ? del_K_ : K_ao_);
 
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
@@ -395,49 +373,49 @@ void DirectJK::compute_JK() {
         if (do_J_ && do_K_) {
             if (do_ifb_iteration) { // RMS D greater than 1.0e-5
                 for (size_t N = 0; N < D_ao_.size(); N++) {
-                    J_prev[N]->add(del_J[N]);
-                    K_prev[N]->add(del_K[N]);
-                    J_ao_[N]->copy(J_prev[N]);
-                    K_ao_[N]->copy(K_prev[N]);
-                    D_prev[N]->copy(D_ao_[N]);
+                    J_prev_[N]->add(del_J_[N]);
+                    K_prev_[N]->add(del_K_[N]);
+                    J_ao_[N]->copy(J_prev_[N]);
+                    K_ao_[N]->copy(K_prev_[N]);
+                    D_prev_[N]->copy(D_ao_[N]);
                 }
             } else { // RMS D less than 1.0e-5
                 for (size_t N = 0; N < D_ao_.size(); N++) {
-                    J_prev[N]->copy(J_ao_[N]);
-                    K_prev[N]->copy(K_ao_[N]);
-                    D_prev[N]->copy(D_ao_[N]);
+                    J_prev_[N]->copy(J_ao_[N]);
+                    K_prev_[N]->copy(K_ao_[N]);
+                    D_prev_[N]->copy(D_ao_[N]);
                 }
             }
         } else if (do_J_) {
             if (do_ifb_iteration) {
                 for (size_t N = 0; N < D_ao_.size(); N++) {
-                    J_prev[N]->add(del_J[N]);
-                    J_ao_[N]->copy(J_prev[N]);
-                    D_prev[N]->copy(D_ao_[N]);
+                    J_prev_[N]->add(del_J_[N]);
+                    J_ao_[N]->copy(J_prev_[N]);
+                    D_prev_[N]->copy(D_ao_[N]);
                 }
             } else {
                 for (size_t N = 0; N < D_ao_.size(); N++) {
-                    J_prev[N]->copy(J_ao_[N]);
-                    D_prev[N]->copy(D_ao_[N]);
+                    J_prev_[N]->copy(J_ao_[N]);
+                    D_prev_[N]->copy(D_ao_[N]);
                 }
             }
         } else {
             if (do_ifb_iteration) {
                 for (size_t N = 0; N < D_ao_.size(); N++) {
-                    K_prev[N]->add(del_K[N]);
-                    K_ao_[N]->copy(K_prev[N]);
-                    D_prev[N]->copy(D_ao_[N]);
+                    K_prev_[N]->add(del_K_[N]);
+                    K_ao_[N]->copy(K_prev_[N]);
+                    D_prev_[N]->copy(D_ao_[N]);
                 }
             } else {
                 for (size_t N = 0; N < D_ao_.size(); N++) {
-                    K_prev[N]->copy(K_ao_[N]);
-                    D_prev[N]->copy(D_ao_[N]);
+                    K_prev_[N]->copy(K_ao_[N]);
+                    D_prev_[N]->copy(D_ao_[N]);
                 }
             }
         }
     }
     
-    ncalls += 1;
+    iteration_ += 1;
 }
 void DirectJK::postiterations() {}
 

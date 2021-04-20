@@ -714,6 +714,21 @@ class PSI_API DirectJK : public JK {
     std::string name() override { return "DirectJK"; }
     size_t memory_estimate() override;
 
+    // => Required Algorithm-Specific Variables <= //
+
+    // Previous Iteration Matrices for Incremental Fock Build
+    std::vector<SharedMatrix> J_prev_;
+    std::vector<SharedMatrix> K_prev_;
+    std::vector<SharedMatrix> D_prev_;
+
+    // Delta Matrices for Incremental Fock Build
+    std::vector<SharedMatrix> del_J_;
+    std::vector<SharedMatrix> del_K_;
+    std::vector<SharedMatrix> del_D_;
+
+    // Current Direct SCF Iteration
+    int iteration_ = 0;
+
     // => Required Algorithm-Specific Methods <= //
 
     /// Do we need to backtransform to C1 under the hood?
