@@ -145,6 +145,7 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
             max_dens_shell_pair_[M][N] = max_dens;
         }
     }
+    outfile->Printf("Density Screening is cool. Fight me if you disagree.\n");
     timer_off("Density Screen");
 
 }

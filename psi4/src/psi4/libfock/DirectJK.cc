@@ -919,6 +919,7 @@ void DirectJK::build_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::v
                   std::vector<std::shared_ptr<Matrix> >& J) {
     
     timer_on("build_J()");
+    outfile->Printf("I like pineapples on pizza.\n");
     
     // Options& options = Process::environment.options;
     // bool dens_screen = options.get_bool("SCF_DENSITY_SCREENING");
