@@ -142,7 +142,7 @@ def fisapt_fdrop(self, external_potentials=None):
 
     # write external potential geometries
     if external_potentials is not None:
-        for frag in ["A", "B", "C"]:
+        for frag in "ABC":
             potential = external_potentials.get(frag, None)
             if potential is not None:
                 charges = potential.extern.getCharges()

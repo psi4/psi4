@@ -610,6 +610,7 @@ void FISAPT::nuclear() {
     std::vector<int> pot_ids;
 
     // this is where any "external potential C" goes... any common potential felt by all subsystems
+
     if (reference_->has_potential_variable("C")) {
         
         pot_list.push_back(reference_->potential_variable("C"));
@@ -641,60 +642,37 @@ void FISAPT::nuclear() {
 
     }
 
-    if (reference_->has_potential_variable("A")) {
-        
-        pot_list.push_back(reference_->potential_variable("A"));
-        pot_ids.push_back(0); // code 0 == A
+    std::vector<std::string> subsystem_labels = {"A", "B"};
+    std::vector<int> potential_ids = {0, 1};
 
-        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
-            throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
+    for (int i=0; i<2; i++) {
+        if (reference_->has_potential_variable(subsystem_labels[i])) {
+            
+            pot_list.push_back(reference_->potential_variable(subsystem_labels[i]));
+            pot_ids.push_back(potential_ids[i]);
 
-        std::shared_ptr<Matrix> VA_extern = reference_->potential_variable("A")->computePotentialMatrix(primary_);
+            if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
+                throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
 
-        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
-            // Attempt to apply symmetry. No error checking is performed.
-            std::shared_ptr<Matrix> VA_extern_sym = reference_->matrix_factory()->create_shared_matrix("External Potential");
-            VA_extern_sym->apply_symmetry(VA_extern, reference_->aotoso());
-            VA_extern = VA_extern_sym;
+            std::shared_ptr<Matrix> V_extern = reference_->potential_variable(subsystem_labels[i])->computePotentialMatrix(primary_);
+
+            if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
+                // Attempt to apply symmetry. No error checking is performed.
+                std::shared_ptr<Matrix> V_extern_sym = reference_->matrix_factory()->create_shared_matrix("External Potential");
+                V_extern_sym->apply_symmetry(V_extern, reference_->aotoso());
+                V_extern = V_extern_sym;
+            }
+
+            if (reference_->get_print()) {
+                reference_->potential_variable(subsystem_labels[i])->set_print(reference_->get_print());
+                outfile->Printf("  External Potential " + subsystem_labels[i] + ":\n");
+                reference_->potential_variable(subsystem_labels[i])->print();
+            }
+            if (reference_->get_print() > 3) V_extern->print();
+
+            matrices_["V" + subsystem_labels[i]]->add(V_extern);
+            matrices_["V" + subsystem_labels[i] + "_extern"] = V_extern;
         }
-
-        if (reference_->get_print()) {
-            reference_->potential_variable("A")->set_print(reference_->get_print());
-            outfile->Printf("  External Potential A:\n");
-            reference_->potential_variable("A")->print();
-        }
-        if (reference_->get_print() > 3) VA_extern->print();
-
-        matrices_["VA"]->add(VA_extern);
-        matrices_["VA_extern"] = VA_extern;
-    }
-
-    if (reference_->has_potential_variable("B")) {
-        
-        pot_list.push_back(reference_->potential_variable("B"));
-        pot_ids.push_back(1); // code 1 == B
-
-        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY") == false && reference_->nirrep() != 1)
-            throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
-
-        std::shared_ptr<Matrix> VB_extern = reference_->potential_variable("B")->computePotentialMatrix(primary_);
-
-        if (options_.get_bool("EXTERNAL_POTENTIAL_SYMMETRY")) {
-            // Attempt to apply symmetry. No error checking is performed.
-            std::shared_ptr<Matrix> VB_extern_sym = reference_->matrix_factory()->create_shared_matrix("External Potential");
-            VB_extern_sym->apply_symmetry(VB_extern, reference_->aotoso());
-            VB_extern = VB_extern_sym;
-        }
-
-        if (reference_->get_print()) {
-            reference_->potential_variable("B")->set_print(reference_->get_print());
-            outfile->Printf("  External Potential B:\n");
-            reference_->potential_variable("B")->print();
-        }
-        if (reference_->get_print() > 3) VB_extern->print();
-
-        matrices_["VB"]->add(VB_extern);
-        matrices_["VB_extern"] = VB_extern;
     }
 
     // are there any external potentials? If so, we need all QM atoms to feel their effects in the nuclear 
@@ -711,7 +689,7 @@ void FISAPT::nuclear() {
         // First compute mol-extern interaction
         // a maximum of 3 external potentials and 3 fragments
         auto extern_mol_IE_mat = std::make_shared<Matrix>("extern_mol_IE", 3, 3);
-        double** extern_mol_IE_matp = extern_mol_IE_mat->pointer();
+        auto extern_mol_IE_matp = extern_mol_IE_mat->pointer();
 
         std::vector<int> none;
         std::vector<int> frag_list(1);
@@ -721,22 +699,13 @@ void FISAPT::nuclear() {
             for (int A = 0; A < mol->nfragments(); A++) {
                 frag++;
                 frag_list[0] = A;
-                std::shared_ptr<Molecule> mol_frag = mol->extract_subsets(frag_list, none);
+                auto mol_frag = mol->extract_subsets(frag_list, none);
                 Enuc_extern = pot_list[p]->computeNuclearEnergy(mol_frag);
-                // I think maybe everything is scaled by 1/2 since it appears twice, unless it is a diagonal
-                // entry, or unless it is envC, which for some reason hadn't ever been scaled in previous version
-                // of code (although code maybe didn't fully test 3-body SAPT stuff, only A-B in presence of C)
-                Etot += Enuc_extern; // I think this gets the full effect, before we scale it down
-                // C charges were considered part of A, B, and C, and so were added to AA, BB, and CC
-                if (pot_ids[p] == 2) { // C charges... do as code did before (although not tested with C QM Atoms I think)
-                    Enucsp[A][A] += Enuc_extern;
-                }
-                else {  // diagonal terms will get full effect, off-diagonal terms will get 1/2 effect
-                    Enucsp[A][pot_ids[p]] += Enuc_extern * 0.5;
-                    Enucsp[pot_ids[p]][A] += Enuc_extern * 0.5;
-                }
+                Etot += Enuc_extern;
 
-                // save the value in the matrix
+                Enucsp[A][pot_ids[p]] += Enuc_extern * 0.5;
+                Enucsp[pot_ids[p]][A] += Enuc_extern * 0.5;
+
                 extern_mol_IE_matp[pot_ids[p]][A] = Enuc_extern;
 
             } // end frag loop
@@ -745,7 +714,7 @@ void FISAPT::nuclear() {
         for (int A = 0; A < mol->nfragments(); A++) {
             outfile->Printf("       Updated Nuclear Repulsion %c: %24.16E [Eh]\n", 'A'+A, Enucsp[A][A]);
         }
-        matrices_["E NUC"] = Enucs; // not sure we really need this if we just updated pointed-to matrix
+
         outfile->Printf("\n");
 
         matrices_["extern_mol_IE"] = extern_mol_IE_mat; // save interaction energy between external potential and molecule
@@ -777,7 +746,7 @@ void FISAPT::nuclear() {
         outfile->Printf("\n");
         matrices_["extern_extern_IE"] = extern_extern_IE_mat;
 
-    } // end dealing with external potentials
+    }
 
     // => Print <= //
 
@@ -1422,7 +1391,7 @@ void FISAPT::elst() {
         // Add the interaction between the external potenitals in A and B
         // Multiply by 2 to get the full A-B + B-A interaction energy
         scalars_["Extern-Extern"] = matrices_["extern_extern_IE"]->get(0, 1)*2.0; 
-    outfile->Printf("    Extern-Extern       = %18.12lf [Eh]\n", scalars_["Extern-Extern"]);
+        outfile->Printf("    Extern-Extern       = %18.12lf [Eh]\n", scalars_["Extern-Extern"]);
     }
 
    outfile->Printf("\n");
@@ -2917,7 +2886,7 @@ void FISAPT::sinf_disp(std::map<std::string, SharedMatrix> matrix_cache, std::ma
 
 void FISAPT::print_trailer() {
     scalars_["Electrostatics"] = scalars_["Elst10,r"];
-    if (reference_->has_potential_variable("A") && reference_->has_potential_variable("A")) {
+    if (reference_->has_potential_variable("A") && reference_->has_potential_variable("B")) {
         scalars_["Electrostatics"] += scalars_["Extern-Extern"];
     }
     scalars_["Exchange"] = scalars_["Exch10"];
@@ -3276,6 +3245,14 @@ void FISAPT::felst() {
     std::vector<double> Elst10_terms;
     Elst10_terms.resize(4);
 
+    // This matrix contains the deomposition of the F-SAPT electrostatics energy to nuclear, orbital, and external
+    // potential contributions. nA and nB are the total number of atoms in subsystems A and B. na(nb) is the number
+    // of occupied oritals for subsystem A(B). One additional entry is added to include the effect of externial 
+    // point charges in A and B (if present; otherwise it will be zero columns/rows). This matrix is saved
+    // in the Elst.dat file generated after the F-SAPT analysis. The fsapt.py script reads this file and the
+    // user-defined functional group partitioning and analyzes the F-SAPT interaction energy in terms of functional
+    // group contributions.
+    // Similar matrices are used for the other SAPT components.
     matrices_["Elst_AB"] = std::make_shared<Matrix>("Elst_AB", nA + na + 1, nB + nb + 1); // Add one entry for external
                                                                                           // potentials in A and B
     double** Ep = matrices_["Elst_AB"]->pointer();

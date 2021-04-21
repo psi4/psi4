@@ -389,6 +389,19 @@ def print_fragments(geom, Z, Q, fragkeys, frags, nuclear_ws, orbital_ws, filenam
     fh.close()
 
 def extract_osapt_data(filepath):
+    """ Reads the F-SAPT component files
+
+    Arguments
+    ---------
+    filepath : str
+        Path to directory containing the F-SAPT energy component files
+
+    Returns
+    -------
+    vals : Dict[str, np.ndarray]
+        Dictionary of the F-SAPT0 components decomposed to orbital, nuclear, and external
+        potential contributions
+    """
 
     vals = {}
     vals['Elst']  = np.array(read_block('%s/Elst.dat'  % filepath, H_to_kcal_))

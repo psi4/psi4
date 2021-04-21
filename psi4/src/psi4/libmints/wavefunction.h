@@ -249,7 +249,7 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     //   by dipole component (3 * nat, 3) Matrix
     std::map<std::string, SharedMatrix> arrays_;
 
-    // Collection of external potentials
+    // Collection of external potentials; this member variable is provisional and might be removed in the future.
     // This member variable is currently used for passing ExternalPotential objects to the F/I-SAPT code
     // The above defined external_pot_ member variable contains the total external potential defined for the current
     // wave function. For F/I-SAPT, we need a set of external potential that can be assigned to either the interacting
