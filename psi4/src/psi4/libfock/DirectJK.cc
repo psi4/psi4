@@ -308,6 +308,7 @@ void DirectJK::compute_JK() {
                     del_K_.push_back(std::make_shared<Matrix>("Delta K", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
                 }
             }
+            iteration_ = 0;
         }
 
         if (iteration_ >= 1) {
@@ -319,7 +320,7 @@ void DirectJK::compute_JK() {
     }
 
     // Do IFB on this iteration?
-    bool do_ifb_iteration = (iteration_ >= 1) && (Dnorm > ifb_d_conv) && ifb_;
+    bool do_ifb_iteration = (!do_wK_) && (iteration_ >= 1) && (Dnorm > ifb_d_conv) && ifb_;
     
     std::vector<SharedMatrix>& D_ref = (do_ifb_iteration ? del_D_ : D_ao_);
     std::vector<SharedMatrix>& J_ref = (do_ifb_iteration ? del_J_ : J_ao_);
