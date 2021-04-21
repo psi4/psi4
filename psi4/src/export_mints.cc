@@ -449,6 +449,8 @@ void export_mints(py::module& m) {
     typedef bool (Matrix::*matrix_load_psio1)(std::shared_ptr<psi::PSIO>&, size_t, const std::string&, int);
     typedef void (Matrix::*matrix_load_psio2)(std::shared_ptr<psi::PSIO>&, size_t, Matrix::SaveType);
     typedef const Dimension& (Matrix::*matrix_ret_dimension)() const;
+    typedef void (Matrix::*set_block_shared)(const Slice&, const Slice&, SharedMatrix);
+    typedef SharedMatrix (Matrix::*get_block_shared)(const Slice&, const Slice&);
 
     py::enum_<Matrix::SaveType>(m, "SaveType", "The layout of the matrix for saving")
         .value("Full", Matrix::SaveType::Full)
@@ -559,14 +561,14 @@ void export_mints(py::module& m) {
         .def("get", matrix_get3(&Matrix::get), "Returns a single element of a matrix in subblock h, row m, col n",
              "h"_a, "m"_a, "n"_a)
         .def("get", matrix_get2(&Matrix::get), "Returns a single element of a matrix, row m, col n", "m"_a, "n"_a)
-        .def("get_block", &Matrix::get_block, "Get a matrix block", "rows"_a, "cols"_a)
+        .def("get_block", get_block_shared(&Matrix::get_block), "Get a matrix block", "rows"_a, "cols"_a)
         .def("set", matrix_set1(&Matrix::set), "Sets every element of a matrix to val", "val"_a)
         .def("set", matrix_set3(&Matrix::set), "Sets a single element of a matrix to val at row m, col n", "m"_a, "n"_a,
              "val"_a)
         .def("set", matrix_set4(&Matrix::set),
              "Sets a single element of a matrix, subblock h, row m, col n, with value val", "h"_a, "m"_a, "n"_a,
              "val"_a)
-        .def("set_block", &Matrix::set_block, "Set a matrix block", "rows"_a, "cols"_a, "block"_a)
+        .def("set_block", set_block_shared(&Matrix::set_block), "Set a matrix block", "rows"_a, "cols"_a, "block"_a)
         // destroyed according to matrix.h file
         //.def("project_out", &Matrix::project_out, "docstring")
         .def("save", matrix_save(&Matrix::save),

@@ -486,6 +486,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @return SharedMatrix object
      */
     SharedMatrix get_block(const Slice& rows, const Slice& cols);
+    SharedMatrix get_block(const Slice& slice);
 
     /**
      * Set a matrix block
@@ -494,7 +495,9 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * @param cols Columns slice
      * @param block the SharedMatrix object block to set
      */
+    void set_block(const Slice& rows, const Slice& cols, const Matrix& block);
     void set_block(const Slice& rows, const Slice& cols, SharedMatrix block);
+    void set_block(const Slice& slice, const Matrix& block);
 
     /**
      * Returns the double** pointer to the h-th irrep block matrix

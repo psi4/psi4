@@ -57,7 +57,6 @@ namespace dct {
 bool DCTSolver::correct_mo_phases(bool dieOnError) {
     dct_timer_on("DCTSolver::correct_mo_phases()");
 
-#if 1
     Matrix temp("temp", nirrep_, nsopi_, nsopi_);
     Matrix overlap("Old - New Overlap", nirrep_, nsopi_, nsopi_);
 
@@ -140,86 +139,6 @@ bool DCTSolver::correct_mo_phases(bool dieOnError) {
         }
         offset += nsopi_[h];
     }
-#else
-    Matrix temp("temp", nirrep_, nsopi_, nsopi_);
-    Matrix overlap("Old - New Overlap", nirrep_, nsopi_, nsopi_);
-
-    temp.gemm(true, false, 1.0, old_ca_, ao_s_, 0.0);
-    overlap.gemm(false, false, 1.0, temp, Ca_, 0.0);
-    temp.copy(Ca_);
-    int offset = 0;
-    std::vector<std::pair<double, int> > proj_orb;
-    for (int h = 0; h < nirrep_; ++h) {
-        proj_orb.clear();
-        for (int mo = 0; mo < nsopi_[h]; ++mo) {
-            double proj = 0.0;
-            for (int occ = 0; occ < nalphapi_[h]; ++occ) {
-                proj += overlap.get(h, occ, mo);
-            }
-            proj_orb.push_back(std::make_pair(proj, mo));
-        }
-        // Now we've found the MO to use, check it's not been used already then
-        // copy it over.
-        if (mosUsed[bestMO + offset]++) {
-            if (dieOnError) {
-                overlap.print();
-                old_ca_->print();
-                temp.print();
-                throw SanityCheckError("Duplicate MOs used in phase check", __FILE__, __LINE__);
-            } else {
-                // Copy Ca back from temp
-                Ca_->copy(temp);
-                dct_timer_off("DCTSolver::correct_mo_phases()");
-                return false;
-            }
-        }
-        for (int so = 0; so < nsopi_[h]; ++so) {
-            Ca_->set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
-        }
-    }
-    offset += nsopi_[h];
-}
-
-temp.gemm(true, false, 1.0, old_cb_, ao_s_, 0.0);
-overlap.gemm(false, false, 1.0, temp, Cb_, 0.0);
-temp.copy(Cb_);
-mosUsed.clear();
-offset = 0;
-for (int h = 0; h < nirrep_; ++h) {
-    for (int oldMO = 0; oldMO < nsopi_[h]; ++oldMO) {
-        int bestMO = 0;
-        double bestOverlap = 0.0;
-        double prefactor = 0.0;
-        for (int newMO = 0; newMO < nsopi_[h]; ++newMO) {
-            double val = overlap.get(h, oldMO, newMO);
-            if (std::fabs(val) > bestOverlap) {
-                bestOverlap = std::fabs(val);
-                bestMO = newMO;
-                prefactor = val < 0.0 ? -1.0 : 1.0;
-            }
-        }
-        // Now we've found the MO to use, check it's not been used already then
-        // copy it over.
-        if (mosUsed[bestMO + offset]++) {
-            if (dieOnError) {
-                overlap.print();
-                old_cb_->print();
-                temp.print();
-                throw SanityCheckError("Duplicate MOs used in phase check", __FILE__, __LINE__);
-            } else {
-                // Copy Cb back from temp
-                Cb_->copy(temp);
-                dct_timer_off("DCTSolver::correct_mo_phases()");
-                return false;
-            }
-        }
-        for (int so = 0; so < nsopi_[h]; ++so) {
-            Cb_->set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
-        }
-    }
-    offset += nsopi_[h];
-}
-#endif
     dct_timer_off("DCTSolver::correct_mo_phases()");
     return true;
 }
@@ -925,77 +844,46 @@ void DCTSolver::process_so_ints() {
 }
 
 /*
- * Updates the Fock operator every lambda iteration using new Tau
+ * Update the Fock operator, defined as h^p_q + gbar^pr_qs 1RDM^s_r
+ * This is an important intermediate in -06 DCT theories.
+ * We also construct the matrix's associated denominators. These appear in first-order update steps.
  */
 void DCTSolver::update_fock() {
     dct_timer_on("DCTSolver::update_fock");
 
     dpdfile2 Gtau;
 
+    // moF0 is the mean-field Fock matrix. We need to add the "correlation correction" to the 1RDM, tau.
     moFa_->copy(moF0a_);
     moFb_->copy(moF0b_);
 
-    // Copy MO basis GTau to the memory
+    // We already have the gbar * tau contraction computed, so let's just add it in.
+    auto moG_tau = Matrix("GTau in the MO basis", nirrep_, nmopi_, nmopi_);
 
     // Alpha occupied
     global_dpd_->file2_init(&Gtau, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "GTau <O|O>");
-    global_dpd_->file2_mat_init(&Gtau);
-    global_dpd_->file2_mat_rd(&Gtau);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < naoccpi_[h]; ++i) {
-            for (int j = 0; j < naoccpi_[h]; ++j) {
-                moG_tau_a_->set(h, frzcpi_[h] + i, frzcpi_[h] + j, Gtau.matrix[h][i][j]);
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&Gtau);
+    moG_tau.set_block(slices_.at("ACTIVE_OCC_A"), Matrix(&Gtau));
     global_dpd_->file2_close(&Gtau);
 
     // Alpha virtual
     global_dpd_->file2_init(&Gtau, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "GTau <V|V>");
-    global_dpd_->file2_mat_init(&Gtau);
-    global_dpd_->file2_mat_rd(&Gtau);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < navirpi_[h]; ++i) {
-            for (int j = 0; j < navirpi_[h]; ++j) {
-                moG_tau_a_->set(h, naoccpi_[h] + i, naoccpi_[h] + j, Gtau.matrix[h][i][j]);
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&Gtau);
+    moG_tau.set_block(slices_.at("ACTIVE_VIR_A"), Matrix(&Gtau));
     global_dpd_->file2_close(&Gtau);
 
+    moFa_->add(moG_tau);
+
     // Beta occupied
+    moG_tau.zero();
     global_dpd_->file2_init(&Gtau, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "GTau <o|o>");
-    global_dpd_->file2_mat_init(&Gtau);
-    global_dpd_->file2_mat_rd(&Gtau);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nboccpi_[h]; ++i) {
-            for (int j = 0; j < nboccpi_[h]; ++j) {
-                moG_tau_b_->set(h, frzcpi_[h] + i, frzcpi_[h] + j, Gtau.matrix[h][i][j]);
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&Gtau);
+    moG_tau.set_block(slices_.at("ACTIVE_OCC_B"), Matrix(&Gtau));
     global_dpd_->file2_close(&Gtau);
 
     // Beta virtual
     global_dpd_->file2_init(&Gtau, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "GTau <v|v>");
-    global_dpd_->file2_mat_init(&Gtau);
-    global_dpd_->file2_mat_rd(&Gtau);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nbvirpi_[h]; ++i) {
-            for (int j = 0; j < nbvirpi_[h]; ++j) {
-                moG_tau_b_->set(h, nboccpi_[h] + i, nboccpi_[h] + j, Gtau.matrix[h][i][j]);
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&Gtau);
+    moG_tau.set_block(slices_.at("ACTIVE_VIR_B"), Matrix(&Gtau));
     global_dpd_->file2_close(&Gtau);
 
-    // Add the GTau contribution to the Fock operator
-    moFa_->add(moG_tau_a_);
-    moFb_->add(moG_tau_b_);
+    moFb_->add(moG_tau);
 
     // Write the MO basis Fock operator to the DPD file and update the denominators
     build_denominators();

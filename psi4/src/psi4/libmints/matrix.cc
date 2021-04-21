@@ -630,7 +630,19 @@ SharedMatrix Matrix::get_block(const Slice &rows, const Slice &cols) {
     return block;
 }
 
+SharedMatrix Matrix::get_block(const Slice &slice) {
+    return get_block(slice, slice);
+}
+
 void Matrix::set_block(const Slice &rows, const Slice &cols, SharedMatrix block) {
+    set_block(rows, cols, *block);
+}
+
+void Matrix::set_block(const Slice &slice, const Matrix& block) {
+    set_block(slice, slice, block);
+}
+
+void Matrix::set_block(const Slice &rows, const Slice &cols, const Matrix& block) {
     // check if slices are within bounds
     for (int h = 0; h < nirrep_; h++) {
         if (rows.end()[h] > rowspi_[h]) {
@@ -644,6 +656,12 @@ void Matrix::set_block(const Slice &rows, const Slice &cols, SharedMatrix block)
             throw PSIEXCEPTION(msg);
         }
     }
+    if (rows.end() - rows.begin() != block.rowspi()) {
+        throw PSIEXCEPTION("Invalid call to Matrix::set_block() row Slice doesn't match block's rows dimension.");
+    }
+    if (cols.end() - cols.begin() != block.colspi()) {
+        throw PSIEXCEPTION("Invalid call to Matrix::set_block() column Slice doesn't match block's columns dimension.");
+    }
     const Dimension &rows_begin = rows.begin();
     const Dimension &cols_begin = cols.begin();
     Dimension block_rows = rows.end() - rows.begin();
@@ -653,7 +671,7 @@ void Matrix::set_block(const Slice &rows, const Slice &cols, SharedMatrix block)
         int max_q = block_cols[h];
         for (int p = 0; p < max_p; p++) {
             for (int q = 0; q < max_q; q++) {
-                double value = block->get(h, p, q);
+                double value = block.get(h, p, q);
                 set(h, p + rows_begin[h], q + cols_begin[h], value);
             }
         }

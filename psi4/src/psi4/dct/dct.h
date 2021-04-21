@@ -192,6 +192,7 @@ class DCTSolver : public Wavefunction {
     void compute_N_intermediate();
 
     // Orbital-optimized DCT
+    // Converge a DC-12 computation to obtain guess orbitals and double amplitudes
     void run_simult_dc_guess();
     double compute_orbital_residual();
     // Compute 2RDMs. These arise as intermediates in computing the
@@ -209,6 +210,8 @@ class DCTSolver : public Wavefunction {
     void compute_orbital_gradient_OV(bool separate_gbargamma);
     void compute_orbital_gradient_VO(bool separate_gbargamma);
     void compute_orbital_rotation_jacobi();
+    // target = old * exp(X)
+    void rotate_matrix(const Matrix& X, const Matrix& old, Matrix& target);
     void rotate_orbitals();
     Matrix construct_oo_density(const Matrix& occtau, const Matrix& virtau, const Matrix& kappa, const Matrix& C);
     // Three-particle cumulant contributions
@@ -475,10 +478,6 @@ class DCTSolver : public Wavefunction {
     SharedMatrix g_tau_a_;
     /// The beta external potential in the SO basis
     SharedMatrix g_tau_b_;
-    /// The alpha external potential in the MO basis (only needed in two-step algorithm)
-    SharedMatrix moG_tau_a_;
-    /// The beta external potential in the MO basis (only needed in two-step algorithm)
-    SharedMatrix moG_tau_b_;
     /// The alpha SCF error vector
     SharedMatrix scf_error_a_;
     /// The beta SCF error vector
@@ -507,13 +506,9 @@ class DCTSolver : public Wavefunction {
     SharedVector Q_;
     /// The subspace vector in the Davidson diagonalization procedure
     SharedMatrix b_;
-    /// Generator of the orbital rotations (Alpha) with respect to the orbitals from the previous update
-    SharedMatrix X_a_;
-    /// Generator of the orbital rotations (Beta) with respect to the orbitals from the previous update
-    SharedMatrix X_b_;
-    /// Generator of the orbital rotations (Alpha) with respect to the reference orbitals
+    /// Orbital parameters. Specifically, the generators of the orbital rotations with respect to
+    /// the reference orbitals. Dimension: nmo_ x nmo_.
     SharedMatrix Xtotal_a_;
-    /// Generator of the orbital rotations (Beta) with respect to the reference orbitals
     SharedMatrix Xtotal_b_;
 
     /// Used to align things in the output
@@ -614,6 +609,8 @@ class DCTSolver : public Wavefunction {
     /// MO-based Gamma <r|s>
     Matrix mo_gammaA_;
     Matrix mo_gammaB_;
+
+    std::map<std::string, Slice> slices_;
 };
 
 }  // namespace dct

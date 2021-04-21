@@ -627,19 +627,20 @@ void DCTSolver::compute_orbital_rotation_jacobi_RHF() {
 
     // Determine the orbital rotation step
     // Alpha spin
+    auto X_a = Matrix("Alpha orbital step", nirrep_, nmopi_, nmopi_);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {
             for (int a = naoccpi_[h]; a < nmopi_[h]; ++a) {
                 double value = orbital_gradient_a_->get(h, i, a) /
                                (2.0 * (moFa_->get(h, i, i) - moFa_->get(h, a, a)) + orbital_level_shift_);
-                X_a_->set(h, i, a, value);
-                X_a_->set(h, a, i, (-1.0) * value);
+                X_a.set(h, i, a, value);
+                X_a.set(h, a, i, (-1.0) * value);
             }
         }
     }
 
     // Determine the rotation generator with respect to the reference orbitals
-    Xtotal_a_->add(X_a_);
+    Xtotal_a_->add(X_a);
 
     // Copy alpha case to beta case
     Xtotal_b_->copy(Xtotal_a_);
@@ -650,33 +651,7 @@ void DCTSolver::compute_orbital_rotation_jacobi_RHF() {
 void DCTSolver::rotate_orbitals_RHF() {
     dct_timer_on("DCTSolver::rotate_orbitals_RHF()");
 
-    // Initialize the orbital rotation matrix
-    auto U_a = Matrix("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_);
-
-    // Compute the orbital rotation matrix and rotate the orbitals
-
-    // U = I
-    U_a.identity();
-
-    // U += X
-    U_a.add(Xtotal_a_);
-
-    // U += 0.5 * X * X
-    U_a.gemm(false, false, 0.5, Xtotal_a_, Xtotal_a_, 1.0);
-
-    // Orthogonalize the U vectors
-    int rowA = U_a.nrow();
-    int colA = U_a.ncol();
-
-    auto U_a_block = U_a.to_block_matrix();
-    schmidt(U_a_block, rowA, colA, "outfile");
-    U_a.set(U_a_block);
-    free_block(U_a_block);
-
-    // Rotate the orbitals
-    Ca_->gemm(false, false, 1.0, *old_ca_, U_a, 0.0);
-
-    // Copy alpha case to beta case
+    rotate_matrix(*Xtotal_a_, *old_ca_, *Ca_);
     Cb_->copy(Ca_);
 
     dct_timer_off("DCTSolver::rotate_orbitals_RHF()");

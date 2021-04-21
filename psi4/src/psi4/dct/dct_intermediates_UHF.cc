@@ -505,58 +505,15 @@ void DCTSolver::form_density_weighted_fock() {
     global_dpd_->file2_init(&T_oo, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
     global_dpd_->file2_init(&T_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
-    global_dpd_->file2_mat_init(&T_OO);
-    global_dpd_->file2_mat_init(&T_oo);
-    global_dpd_->file2_mat_init(&T_VV);
-    global_dpd_->file2_mat_init(&T_vv);
-    global_dpd_->file2_mat_rd(&T_OO);
-    global_dpd_->file2_mat_rd(&T_oo);
-    global_dpd_->file2_mat_rd(&T_VV);
-    global_dpd_->file2_mat_rd(&T_vv);
 
     // Copy Tau in MO basis from the DPD library
-    auto a_tau_mo = std::make_shared<Matrix>("Alpha Tau in the MO basis", nirrep_, nmopi_, nmopi_);
-    auto b_tau_mo = std::make_shared<Matrix>("Beta Tau in the MO basis", nirrep_, nmopi_, nmopi_);
+    auto a_tau_mo = Matrix("Alpha Tau in the MO basis", nirrep_, nmopi_, nmopi_);
+    auto b_tau_mo = Matrix("Beta Tau in the MO basis", nirrep_, nmopi_, nmopi_);
 
-    for (int h = 0; h < nirrep_; ++h) {
-        if (nsopi_[h] == 0) continue;
-
-        // Alpha occupied
-        for (int p = 0; p < naoccpi_[h]; ++p) {
-            for (int q = 0; q <= p; ++q) {
-                double value = T_OO.matrix[h][p][q];
-                a_tau_mo->set(h, p, q, value);
-                if (p != q) a_tau_mo->set(h, q, p, value);
-            }
-        }
-
-        // Beta occupied
-        for (int p = 0; p < nboccpi_[h]; ++p) {
-            for (int q = 0; q <= p; ++q) {
-                double value = T_oo.matrix[h][p][q];
-                b_tau_mo->set(h, p, q, value);
-                if (p != q) b_tau_mo->set(h, q, p, value);
-            }
-        }
-
-        // Alpha virtual
-        for (int p = 0; p < navirpi_[h]; ++p) {
-            for (int q = 0; q <= p; ++q) {
-                double value = T_VV.matrix[h][p][q];
-                a_tau_mo->set(h, p + naoccpi_[h], q + naoccpi_[h], value);
-                if (p != q) a_tau_mo->set(h, q + naoccpi_[h], p + naoccpi_[h], value);
-            }
-        }
-
-        // Beta virtual
-        for (int p = 0; p < nbvirpi_[h]; ++p) {
-            for (int q = 0; q <= p; ++q) {
-                double value = T_vv.matrix[h][p][q];
-                b_tau_mo->set(h, p + nboccpi_[h], q + nboccpi_[h], value);
-                if (p != q) b_tau_mo->set(h, q + nboccpi_[h], p + nboccpi_[h], value);
-            }
-        }
-    }
+    a_tau_mo.set_block(slices_.at("ACTIVE_OCC_A"), Matrix(&T_OO));
+    a_tau_mo.set_block(slices_.at("ACTIVE_VIR_A"), Matrix(&T_VV));
+    b_tau_mo.set_block(slices_.at("ACTIVE_OCC_B"), Matrix(&T_oo));
+    b_tau_mo.set_block(slices_.at("ACTIVE_VIR_B"), Matrix(&T_vv));
 
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_oo);
@@ -569,12 +526,12 @@ void DCTSolver::form_density_weighted_fock() {
     auto b_evals = std::make_shared<Vector>("Tau Eigenvalues (Beta)", nirrep_, nmopi_);
 
     // Diagonalize Tau
-    a_tau_mo->diagonalize(a_evecs, a_evals);
-    a_tau_mo->zero();
-    a_tau_mo->set_diagonal(a_evals);
-    b_tau_mo->diagonalize(b_evecs, b_evals);
-    b_tau_mo->zero();
-    b_tau_mo->set_diagonal(b_evals);
+    a_tau_mo.diagonalize(a_evecs, a_evals);
+    a_tau_mo.zero();
+    a_tau_mo.set_diagonal(a_evals);
+    b_tau_mo.diagonalize(b_evecs, b_evals);
+    b_tau_mo.zero();
+    b_tau_mo.set_diagonal(b_evals);
 
     // Transform the Fock matrix to NSO basis
     auto nso_Fa = std::make_shared<Matrix>("Alpha Fock in the NSO basis", nirrep_, nmopi_, nmopi_);
