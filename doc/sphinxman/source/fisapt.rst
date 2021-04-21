@@ -361,6 +361,8 @@ publication-quality renderings.
 
 Adding Point Charges to F/I-SAPT Computations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. Citation: Alenaizan, A; Cheney, D. L.; Sherrill, C. D. Electrostatatically embedded
+.. symmetry adapted pertubration theory. In preparation.
 
 Point charges can be added to the interacting subsystems A and B as well
 as to the ``linking`` fragment C. Briefly, the interaction between the point charges in A(B)
