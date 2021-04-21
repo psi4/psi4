@@ -87,14 +87,14 @@ def free_atom_volumes(wfn, **kwargs):
 
     psi4.core.print_out(f"  Running {len(unq_atoms)} free-atom UHF computations")
 
-    optstash = optproc.OptionsState(['REFERENCE'])
+    optstash = optproc.OptionsState(["SCF", 'REFERENCE'])
     for a_sym, a_z, basis in unq_atoms:
 
         # make sure we do UHF/UKS if we're not a singlet
         if reference_S[a_z] != 0:
-            psi4.core.set_global_option("REFERENCE", "UHF")
+            psi4.core.set_option(["SCF"], "REFERENCE", "UHF")
         else:
-            psi4.core.set_global_option("REFERENCE", "RHF")
+            psi4.core.set_option(["SCF"], "REFERENCE", "RHF")
 
         # Set the molecule, here just an atom
         a_mol = psi4.core.Molecule.from_arrays(geom=[0, 0, 0],
@@ -112,14 +112,14 @@ def free_atom_volumes(wfn, **kwargs):
         # Now, re-run mbis for the atomic density, grabbing only the volume
         psi4.oeprop(at_wfn, 'MBIS_CHARGES', title=a_sym + " " + method, free_atom=True)
 
-        vw = at_wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
+        vw = at_wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')  # P::e OEPROP
         vw = vw.get(0, 0)
 
         # set the atomic widths as wfn variables
         wfn.set_variable("MBIS FREE ATOM " + a_sym.upper() + " VOLUME", vw)
+        # set_variable("MBIS FREE ATOM n VOLUME")  # P::e OEPROP
         
         psi4.core.clean()
-        psi4.core.clean_timers()
         psi4.core.clean_variables()
 
     # reset mol and reference to original
