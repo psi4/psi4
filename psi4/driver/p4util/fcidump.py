@@ -33,7 +33,7 @@ from psi4 import core
 
 from .. import psifiles as psif
 from ..procrouting.proc_util import check_iwl_file_from_scf_type
-from .exceptions import TestComparisonError, ValidationError
+from .exceptions import ValidationError
 from .testing import compare_integers, compare_recursive, compare_values
 
 __all__ = ["compare_fcidumps", "energies_from_fcidump", "fcidump", "fcidump_from_file"]

@@ -33,7 +33,6 @@ import numpy as np
 from qcelemental.models import AtomicInput
 import qcengine as qcng
 
-import psi4  # for typing
 from psi4 import core
 from psi4.driver import p4util
 from psi4.driver import driver_findif
@@ -169,7 +168,7 @@ class EmpiricalDispersion(object):
 
         core.print_out('\n'.join(text))
 
-    def compute_energy(self, molecule: psi4.core.Molecule, wfn: psi4.core.Wavefunction = None) -> float:
+    def compute_energy(self, molecule: core.Molecule, wfn: core.Wavefunction = None) -> float:
         """Compute dispersion energy based on engine, dispersion level, and parameters in `self`.
 
         Parameters
@@ -243,8 +242,8 @@ class EmpiricalDispersion(object):
             return ene
 
     def compute_gradient(self,
-                         molecule: psi4.core.Molecule,
-                         wfn: psi4.core.Wavefunction = None) -> psi4.core.Matrix:
+                         molecule: core.Molecule,
+                         wfn: core.Wavefunction = None) -> core.Matrix:
         """Compute dispersion gradient based on engine, dispersion level, and parameters in `self`.
 
         Parameters
@@ -299,8 +298,8 @@ class EmpiricalDispersion(object):
             return self.disp.compute_gradient(molecule)
 
     def compute_hessian(self,
-                        molecule: psi4.core.Molecule,
-                        wfn: psi4.core.Wavefunction = None) -> psi4.core.Matrix:
+                        molecule: core.Molecule,
+                        wfn: core.Wavefunction = None) -> core.Matrix:
         """Compute dispersion Hessian based on engine, dispersion level, and parameters in `self`.
         Uses finite difference, as no dispersion engine has analytic second derivatives.
 

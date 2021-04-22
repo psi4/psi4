@@ -29,7 +29,7 @@
 import atexit
 import datetime
 import os
-from typing import List, Optional, Union
+from typing import List, Union
 
 from qcelemental.util import which, which_import
 

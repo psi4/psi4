@@ -83,10 +83,10 @@ _qcschema_translation = {
 
     # Properties
     "properties": {
-        "mulliken_charges": {"variables": "MULLIKEN_CHARGES", "skip_null": True},
-        "lowdin_charges": {"variables": "LOWDIN_CHARGES", "skip_null": True},
-        "wiberg_lowdin_indices": {"variables": "WIBERG_LOWDIN_INDICES", "skip_null": True},
-        "mayer_indices": {"variables": "MAYER_INDICES", "skip_null": True},
+        "mulliken_charges": {"variables": "MULLIKEN CHARGES", "skip_null": True},
+        "lowdin_charges": {"variables": "LOWDIN CHARGES", "skip_null": True},
+        "wiberg_lowdin_indices": {"variables": "WIBERG LOWDIN INDICES", "skip_null": True},
+        "mayer_indices": {"variables": "MAYER INDICES", "skip_null": True},
     },
 
     # SCF variables
@@ -559,10 +559,11 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         json_data["extras"] = {}
     json_data["extras"]["qcvars"] = {}
 
+    current_qcvars_only = json_data["extras"].get("current_qcvars_only", False)
     if json_data["extras"].get("wfn_qcvars_only", False):
-        psi_props = wfn.variables()
+        psi_props = wfn.variables(include_deprecated_keys=(not current_qcvars_only))
     else:
-        psi_props = core.variables()
+        psi_props = core.variables(include_deprecated_keys=(not current_qcvars_only))
         for k, v in psi_props.items():
             if k not in json_data["extras"]["qcvars"]:
                 json_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)

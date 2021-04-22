@@ -35,11 +35,10 @@ import json
 import os
 import sys
 import warnings
-from argparse import RawTextHelpFormatter
 from pathlib import Path
 
 # yapf: disable
-parser = argparse.ArgumentParser(description="Psi4: Open-Source Quantum Chemistry", formatter_class=RawTextHelpFormatter)
+parser = argparse.ArgumentParser(description="Psi4: Open-Source Quantum Chemistry", formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument("-i", "--input", default="input.dat",
                     help="Input file name. Default: input.dat.")
 parser.add_argument("-o", "--output", help="""\

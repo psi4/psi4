@@ -33,6 +33,8 @@ from psi4 import core
 from . import p4util, qcdb
 from .p4util.exceptions import ValidationError
 
+__all__ = ["assemble_gradient_from_energies", "assemble_hessian_from_gradients", "assemble_hessian_from_energies", "gradient_from_energies_geometries", "hessian_from_gradients_geometries", "hessian_from_energies_geometries"]
+
 # CONVENTIONS:
 # n_ at the start of a variable name is short for "number of."
 # _pi at the end of a variable name is short for "per irrep."

@@ -151,6 +151,21 @@ double SAPT0::compute_energy() {
         print_results();
     }
 
+    // communicate with Py-side procrouting/sapt
+    set_scalar_variable("E Elst10", e_elst10_);  // no-autodoc
+    set_scalar_variable("E Exch10", e_exch10_);  // no-autodoc
+    set_scalar_variable("E Exch10(S^2)", e_exch10_s2_);  // no-autodoc
+    set_scalar_variable("E Ind20", e_ind20_);  // no-autodoc
+    set_scalar_variable("E Exch-Ind20", e_exch_ind20_);  // no-autodoc
+    set_scalar_variable("E Disp20", e_disp20_);  // no-autodoc
+    set_scalar_variable("E Exch-Disp20", e_exch_disp20_);  // no-autodoc
+    set_scalar_variable("E Disp20(SS)", e_disp20_ss_);  // no-autodoc
+    set_scalar_variable("E Disp20(OS)", e_disp20_os_);  // no-autodoc
+    set_scalar_variable("E Exch-Disp20(SS)", e_exch_disp20_ss_);  // no-autodoc
+    set_scalar_variable("E Exch-Disp20(OS)", e_exch_disp20_os_);  // no-autodoc
+    set_scalar_variable("E SAPT0", e_sapt0_);  // no-autodoc
+    set_scalar_variable("E SCS-SAPT0", e_sapt0_scs_);  // no-autodoc
+
     return (e_sapt0_);
 }
 

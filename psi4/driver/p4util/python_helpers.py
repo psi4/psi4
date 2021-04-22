@@ -696,7 +696,7 @@ def _qcvar_reshape_set(key, val):
     elif any(key.upper().endswith(p) for p in _multipole_order):
         val = _multipole_compressor(val, _multipole_order.index(key.upper().split()[-1]))
         reshaper = (1, -1)
-    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES"]:
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES"]:
         reshaper = (1, -1)
 
     if reshaper:
@@ -727,7 +727,7 @@ def _qcvar_reshape_get(key, val):
         reshaper = (3, )
     elif any(key.upper().endswith(p) for p in _multipole_order):
         return _multipole_plumper(val.np.reshape((-1, )), _multipole_order.index(key.upper().split()[-1]))
-    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES"]:
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES"]:
         reshaper = (-1, )
 
     if reshaper:
@@ -892,12 +892,26 @@ def _core_wavefunction_del_variable(cls, key):
         cls.del_array_variable(key)
 
 
-def _core_variables():
-    return {**core.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in core.array_variables().items()}}
+def _core_variables(include_deprecated_keys: bool = False):
+    dicary = {**core.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in core.array_variables().items()}}
+
+    if include_deprecated_keys:
+        for old_key, current_key in _qcvar_transitions.items():
+            if current_key in dicary:
+                dicary[old_key] = dicary[current_key]
+
+    return dicary
 
 
-def _core_wavefunction_variables(cls):
-    return {**cls.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in cls.array_variables().items()}}
+def _core_wavefunction_variables(cls, include_deprecated_keys: bool = False):
+    dicary = {**cls.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in cls.array_variables().items()}}
+
+    if include_deprecated_keys:
+        for old_key, current_key in _qcvar_transitions.items():
+            if current_key in dicary:
+                dicary[old_key] = dicary[current_key]
+
+    return dicary
 
 
 core.has_variable = _core_has_variable

@@ -161,39 +161,75 @@ foreach my $Module (@PSIMODULES) {
                     foreach my $line (@text) {
                         if ($file =~ /\.cc\z/) {
                             if ($line =~ /\QProcess::environment.globals\E/) {
-                                my @ltemp = split( /"/, $line);
-                                if ($ltemp[0] =~ /\QProcess::environment.globals\E/) {
-                                    push(@EnvVariables, $ltemp[1]);
+                                if ($line =~ /\Qno-autodoc\E/) {
+                                } else {
+                                    my @ltemp = split( /"/, $line);
+                                    if ($ltemp[0] =~ /\QProcess::environment.globals\E/) {
+                                        if ($ltemp[1]) {
+                                            push(@EnvVariables, $ltemp[1]);
+                                            print "  collected for $Module from $file: $ltemp[1]\n";
+                                        }
+                                    }
                                 }
                             }
                             if ($line =~ /\QProcess::environment.arrays\E/) {
-                                my @ltemp = split( /"/, $line);
-                                if ($ltemp[0] =~ /\QProcess::environment.arrays\E/) {
-                                    push(@EnvArrays, $ltemp[1]);
+                                if ($line =~ /\Qno-autodoc\E/) {
+                                } else {
+                                    my @ltemp = split( /"/, $line);
+                                    if ($ltemp[0] =~ /\QProcess::environment.arrays\E/) {
+                                        if ($ltemp[1]) {
+                                            push(@EnvArrays, $ltemp[1]);
+                                            print "  collected for $Module from $file: $ltemp[1]\n";
+                                        }
+                                    }
                                 }
                             }
                             if ($line =~ /\Qvariables_\E/) {
-                                my @ltemp = split( /"/, $line);
-                                if ($ltemp[0] =~ /\Qvariables_\E/) {
-                                    push(@EnvVariables, $ltemp[1]);
+                                if ($line =~ /\Qno-autodoc\E/) {
+                                } else {
+                                    my @ltemp = split( /"/, $line);
+                                    if ($ltemp[0] =~ /\Qvariables_\E/) {
+                                        if ($ltemp[1]) {
+                                            push(@EnvVariables, $ltemp[1]);
+                                            print "  collected for $Module from $file: $ltemp[1]\n";
+                                        }
+                                    }
                                 }
                             }
                             if ($line =~ /\Qarrays_\E/) {
-                                my @ltemp = split( /"/, $line);
-                                if ($ltemp[0] =~ /\Qarrays_\E/) {
-                                    push(@EnvArrays, $ltemp[1]);
+                                if ($line =~ /\Qno-autodoc\E/) {
+                                } else {
+                                    my @ltemp = split( /"/, $line);
+                                    if ($ltemp[0] =~ /\Qarrays_\E/) {
+                                        if ($ltemp[1]) {
+                                            push(@EnvArrays, $ltemp[1]);
+                                            print "  collected for $Module from $file: $ltemp[1]\n";
+                                        }
+                                    }
                                 }
                             }
                             if ($line =~ /\Qset_scalar_variable\E/) {
-                                my @ltemp = split( /"/, $line);
-                                if ($ltemp[0] =~ /\Qset_scalar_variable\E/) {
-                                    push(@EnvVariables, $ltemp[1]);
+                                if ($line =~ /\Qno-autodoc\E/) {
+                                } else {
+                                    my @ltemp = split( /"/, $line);
+                                    if ($ltemp[0] =~ /\Qset_scalar_variable\E/) {
+                                        if ($ltemp[1]) {
+                                            push(@EnvVariables, $ltemp[1]);
+                                            print "  collected for $Module from $file: $ltemp[1]\n";
+                                        }
+                                    }
                                 }
                             }
                             if ($line =~ /\Qset_array_variable\E/) {
-                                my @ltemp = split( /"/, $line);
-                                if ($ltemp[0] =~ /\Qset_array_variable\E/) {
-                                    push(@EnvArrays, $ltemp[1]);
+                                if ($line =~ /\Qno-autodoc\E/) {
+                                } else {
+                                    my @ltemp = split( /"/, $line);
+                                    if ($ltemp[0] =~ /\Qset_array_variable\E/) {
+                                        if ($ltemp[1]) {
+                                            push(@EnvArrays, $ltemp[1]);
+                                            print "  collected for $Module from $file: $ltemp[1]\n";
+                                        }
+                                    }
                                 }
                             }
                         }

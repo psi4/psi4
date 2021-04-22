@@ -28,6 +28,8 @@
 
 import os
 
+__all__ = ["ancestor", "join_path"]
+
 
 def join_path(prefix, *args):
     path = str(prefix)

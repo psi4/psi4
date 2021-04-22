@@ -34,7 +34,6 @@ Place in this file quickly defined procedures such as
    - simple modifications to existing methods
 
 """
-import math
 import os
 import re
 import warnings

@@ -426,8 +426,6 @@ def harmonic_analysis(hess: np.ndarray, geom: np.ndarray, mass: np.ndarray, basi
     >>> vibonly = filter_nonvib(vibinfo)
 
     """
-    from psi4 import core
-
     if (mass.shape[0] == geom.shape[0] == (hess.shape[0] // 3) == (hess.shape[1] // 3)) and (geom.shape[1] == 3):
         pass
     else:
@@ -462,7 +460,7 @@ def harmonic_analysis(hess: np.ndarray, geom: np.ndarray, mass: np.ndarray, basi
     text.append(mat_symm_info(nmwhess, lbl='non-mass-weighted Hessian') + ' (0)')
 
     # get SALC object, possibly w/o trans & rot
-    mints = core.MintsHelper(basisset)
+    mints = psi4.core.MintsHelper(basisset)
     cdsalcs = mints.cdsalcs(0xFF, project_trans, project_rot)
 
     Uh = collections.OrderedDict()

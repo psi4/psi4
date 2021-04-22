@@ -26,7 +26,6 @@
 # @END LICENSE
 #
 
-import copy
 import math
 import re
 import sys
