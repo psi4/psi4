@@ -927,10 +927,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             !expert -*/
         options.add_bool("COUPLED_INDUCTION", true);
 
-        /*- For SAPT(DFT) computes the S^inf Exchange-Induction terms !expert -*/
+        /*- For SAPT(DFT) computes the $S^{inf}$ Exchange-Induction terms. !expert -*/
         options.add_bool("DO_IND_EXCH_SINF", false);
 
-        /*- For SAPT(DFT) computes the S^inf Exchange-Dispersion terms !expert -*/
+        /*- For SAPT(DFT) computes the $S^{inf}$ Exchange-Dispersion terms. !expert -*/
         options.add_bool("DO_DISP_EXCH_SINF", false);
 
         /*- Do use asynchronous disk I/O in the solution of the CPHF equations?

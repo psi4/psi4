@@ -93,8 +93,7 @@ void export_wavefunction(py::module& m) {
         .def("shallow_copy", take_sharedwfn(&Wavefunction::shallow_copy), "Copies the pointers to the internal data.")
         .def("deep_copy", take_sharedwfn(&Wavefunction::deep_copy), "Deep copies the internal data.")
         .def("c1_deep_copy", &Wavefunction::c1_deep_copy,
-             "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
-             "BasisSet `basis`",
+             "Returns a new wavefunction with internal data converted to :math:`C_1` symmetry, using pre-c1-constructed `basis`",
              "basis"_a)
         .def("same_a_b_orbs", &Wavefunction::same_a_b_orbs, "Returns true if the alpha and beta orbitals are the same.")
         .def("same_a_b_dens", &Wavefunction::same_a_b_dens,
@@ -195,7 +194,25 @@ void export_wavefunction(py::module& m) {
              "Sets name of the last/highest level of theory module (internal or external) touching the wavefunction.")
         .def("module", &Wavefunction::module, py::return_value_policy::copy,
              "Name of the last/highest level of theory module (internal or external) touching the wavefunction.")
-        .def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring")
+        .def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "id"_a, "basis"_a, "subset"_a, R"pbdoc(
+            Creates OrbitalSpace with information about the requested alpha orbital space.
+
+            Parameters
+            ----------
+            id
+                Unique name for the orbital space.
+            basis
+                {'SO', 'AO'}
+                Should the subspace be of symmetry orbitals or atomic orbitals?
+            subset
+                {ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR}
+                Which subspace of orbitals should be returned?
+
+            Returns
+            -------
+            OrbitalSpace
+                Information on *subset* alpha orbitals.
+            )pbdoc")
         .def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring")
         .def("molecule", &Wavefunction::molecule, "Returns the Wavefunction's molecule.")
         .def("doccpi", &Wavefunction::doccpi, py::return_value_policy::copy,
@@ -542,24 +559,24 @@ void export_wavefunction(py::module& m) {
         .def("set_ci_guess", &detci::CIWavefunction::set_ci_guess, "docstring");
 
     py::class_<ccenergy::CCEnergyWavefunction, std::shared_ptr<ccenergy::CCEnergyWavefunction>, Wavefunction>(
-        m, "CCWavefunction", "docstring")
+        m, "CCWavefunction", "Specialized Wavefunction used by the ccenergy, cceom, ccgradient, etc. modules.")
         .def(py::init<std::shared_ptr<Wavefunction>, Options&>())
         .def("get_amplitudes", &ccenergy::CCEnergyWavefunction::get_amplitudes, R"pbdoc(
-               Get dict of converged T amplitudes
+               Get dict of converged T amplitudes.
 
                Returns
                -------
                amps : dict (spacestr, SharedMatrix)
                  `spacestr` is a description of the amplitude set using the following conventions.
 
-                 I,J,K -> alpha occupied
-                 i,j,k -> beta occupied
-                 A,B,C -> alpha virtual
-                 a,b,c -> beta virtual
+                 * I,J,K -> alpha occupied
+                 * i,j,k -> beta occupied
+                 * A,B,C -> alpha virtual
+                 * a,b,c -> beta virtual
 
                The following entries are stored in the `amps`, depending on the reference type
 
-               RHF: "tIA", "tIjAb"
+               RHF: tIA, tIjAb
                UHF: tIA, tia, tIjAb, tIJAB, tijab
                ROHF: tIA, tia, tIjAb, tIJAB, tijab
 

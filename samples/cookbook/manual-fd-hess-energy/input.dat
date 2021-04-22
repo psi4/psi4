@@ -25,7 +25,7 @@ method = "scf" # Change this line to change the method you compute with.
 
 # Displace the h2o molecule to get all displacements for hessian by energies.
 # Set -1 to 1 to get A1 frequencies, to 4 for B2...
-findif_meta_dict = psi4.driver_findif.hessian_from_energies_geometries(h2o, -1)
+findif_meta_dict = psi4.driver.driver_findif.hessian_from_energies_geometries(h2o, -1)
 
 ndisp = len(findif_meta_dict["displacements"]) + 1
 
@@ -57,7 +57,7 @@ for n, displacement in enumerate(findif_meta_dict["displacements"].values(), sta
 wfn = process_displacement(method, h2o, findif_meta_dict["reference"], ndisp, ndisp)
 
 # Compute the hessian of the h2o molecule from the energies, for all symmetry blocks
-H = driver_findif.assemble_hessian_from_energies(findif_meta_dict, -1)
+H = driver.driver_findif.assemble_hessian_from_energies(findif_meta_dict, -1)
 
 wfn.set_hessian(core.Matrix.from_array(H))
 # Only project out translations and rotations if you know you're not at a stationary point!

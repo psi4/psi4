@@ -33,8 +33,9 @@ import uuid
 import warnings
 from collections import Counter
 from itertools import product
+from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import Dict
+from typing import Any, Dict, Union
 
 import numpy as np
 import qcelemental as qcel
@@ -146,19 +147,20 @@ core.Wavefunction.get_scratch_filename = _core_wavefunction_get_scratch_filename
 
 
 @staticmethod
-def _core_wavefunction_from_file(wfn_data):
-    """Summary
+def _core_wavefunction_from_file(wfn_data: Union[str, Dict, Path]) -> core.Wavefunction:
+    r"""Build Wavefunction from data.
 
     Parameters
     ----------
-    wfn_data : str or dict
-        If a str reads a Wavefunction from a disk otherwise, assumes the data
-        is passed in.
+    wfn_data
+        If a dict, use data directly. Otherwise, path-like passed to :py:func:`numpy.load`
+        to read from disk.
 
     Returns
     -------
     Wavefunction
         A deserialized Wavefunction object
+
     """
     # load the wavefunction from file
     if isinstance(wfn_data, dict):
@@ -423,7 +425,7 @@ core.VBase.get_np_xyzw = _core_vbase_get_np_xyzw
 ## Python other helps
 
 
-def set_options(options_dict: Dict, verbose: int = 1) -> None:
+def set_options(options_dict: Dict[str, Any], verbose: int = 1) -> None:
     """Sets Psi4 options from an input dictionary.
 
     Parameters
@@ -472,7 +474,7 @@ def set_options(options_dict: Dict, verbose: int = 1) -> None:
         # TODO could subclass ValidationError and append rejected so that run_json could handle remanants.
 
 
-def set_module_options(module, options_dict):
+def set_module_options(module: str, options_dict: Dict[str, Any]) -> None:
     """
     Sets Psi4 module options from a module specification and input dictionary.
     """
@@ -770,19 +772,19 @@ def _multipole_compressor(complete, order):
     return np.array(compressed)
 
 
-def _multipole_plumper(compressed, order):
+def _multipole_plumper(compressed: np.ndarray, order: int) -> np.ndarray:
     """Form multidimensional multipole array from unique components array.
 
     Parameters
     ----------
-    order : int
+    order
         Multipole order. e.g., 1 for dipole, 4 for hexadecapole.
-    compressed : ndarray
+    compressed
         Multipole array, length (order + 1) * (order + 2) / 2 compressed to unique components.
 
     Returns
     -------
-    complete : ndarray
+    complete : numpy.ndarray
         Multipole array, order-dimensional Cartesian array expanded to complete components.
 
     """
@@ -805,15 +807,42 @@ def _multipole_plumper(compressed, order):
     return complete
 
 
-def _core_has_variable(key):
+def _core_has_variable(key: str) -> bool:
+    """Whether scalar or array QCVariable *key* has been set in global memory."""
+
     return core.has_scalar_variable(key) or core.has_array_variable(key)
 
 
-def _core_wavefunction_has_variable(cls, key):
+def _core_wavefunction_has_variable(cls: core.Wavefunction, key: str) -> bool:
+    """Whether scalar or array QCVariable *key* has been set on *self* :class:`psi4.core.Wavefunction`."""
+
     return cls.has_scalar_variable(key) or cls.has_array_variable(key)
 
 
-def _core_variable(key):
+def _core_variable(key: str) -> Union[float, core.Matrix, np.ndarray]:
+    """Return copy of scalar or array QCVariable *key* from global memory.
+
+    Returns
+    -------
+    float or numpy.ndarray or Matrix
+        Scalar variables are returned as floats.
+        Array variables not naturally 2D (like multipoles) are returned as :class:`numpy.ndarray` of natural dimensionality.
+        Other array variables are returned as :py:class:`~psi4.core.Matrix` and may have an extra dimension with symmetry information.
+
+    Example
+    -------
+    >>> psi4.gradient("hf/cc-pvdz")
+    >>> psi4.variable("CURRENT ENERGY")
+    -100.00985995185668
+    >>> psi4.variable("CURRENT DIPOLE")
+    array([ 0.        ,  0.        , -0.83217802])
+    >>> psi4.variable("CURRENT GRADIENT")
+    <psi4.core.Matrix object at 0x12d884fc0>
+    >>> psi4.variable("CURRENT GRADIENT").np
+    array([[ 6.16297582e-33,  6.16297582e-33, -9.41037138e-02],
+           [-6.16297582e-33, -6.16297582e-33,  9.41037138e-02]])
+
+    """
     key = _qcvar_warnings(key)
 
     if core.has_scalar_variable(key):
@@ -824,7 +853,30 @@ def _core_variable(key):
         raise KeyError("psi4.core.variable: Requested variable " + key + " was not set!\n")
 
 
-def _core_wavefunction_variable(cls, key):
+def _core_wavefunction_variable(cls: core.Wavefunction, key: str) -> Union[float, core.Matrix, np.ndarray]:
+    """Return copy of scalar or array QCVariable *key* from *self* :class:`psi4.core.Wavefunction`.
+
+    Returns
+    -------
+    float or numpy.ndarray or Matrix
+        Scalar variables are returned as floats.
+        Array variables not naturally 2D (like multipoles) are returned as :class:`numpy.ndarray` of natural dimensionality.
+        Other array variables are returned as :py:class:`~psi4.core.Matrix` and may have an extra dimension with symmetry information.
+
+    Example
+    -------
+    >>> g, wfn = psi4.gradient("hf/cc-pvdz", return_wfn=True)
+    >>> wfn.variable("CURRENT ENERGY")
+    -100.00985995185668
+    >>> wfn.variable("CURRENT DIPOLE")
+    array([ 0.        ,  0.        , -0.83217802])
+    >>> wfn.variable("CURRENT GRADIENT")
+    <psi4.core.Matrix object at 0x12d884fc0>
+    >>> wfn.variable("CURRENT GRADIENT").np
+    array([[ 6.16297582e-33,  6.16297582e-33, -9.41037138e-02],
+           [-6.16297582e-33, -6.16297582e-33,  9.41037138e-02]])
+
+    """
     key = _qcvar_warnings(key)
 
     if cls.has_scalar_variable(key):
@@ -835,7 +887,9 @@ def _core_wavefunction_variable(cls, key):
         raise KeyError("psi4.core.Wavefunction.variable: Requested variable " + key + " was not set!\n")
 
 
-def _core_set_variable(key, val):
+def _core_set_variable(key: str, val: Union[core.Matrix, np.ndarray, float]) -> None:
+    """Sets scalar or array QCVariable *key* to *val* in global memory."""
+
     if isinstance(val, core.Matrix):
         if core.has_scalar_variable(key):
             raise ValidationError("psi4.core.set_variable: Target variable " + key + " already a scalar variable!")
@@ -855,7 +909,9 @@ def _core_set_variable(key, val):
     # TODO _qcvar_warnings(key)
 
 
-def _core_wavefunction_set_variable(cls, key, val):
+def _core_wavefunction_set_variable(cls: core.Wavefunction, key: str, val: Union[core.Matrix, np.ndarray, float]) -> None:
+    """Sets scalar or array QCVariable *key* to *val* on *cls*."""
+
     if isinstance(val, core.Matrix):
         if cls.has_scalar_variable(key):
             raise ValidationError("psi4.core.Wavefunction.set_variable: Target variable " + key +
@@ -878,21 +934,27 @@ def _core_wavefunction_set_variable(cls, key, val):
     # TODO _qcvar_warnings(key)
 
 
-def _core_del_variable(key):
+def _core_del_variable(key: str) -> None:
+    """Removes scalar or array QCVariable *key* from global memory if present."""
+
     if core.has_scalar_variable(key):
         core.del_scalar_variable(key)
     elif core.has_array_variable(key):
         core.del_array_variable(key)
 
 
-def _core_wavefunction_del_variable(cls, key):
+def _core_wavefunction_del_variable(cls: core.Wavefunction, key: str) -> None:
+    """Removes scalar or array QCVariable *key* from *cls* if present."""
+
     if cls.has_scalar_variable(key):
         cls.del_scalar_variable(key)
     elif cls.has_array_variable(key):
         cls.del_array_variable(key)
 
 
-def _core_variables(include_deprecated_keys: bool = False):
+def _core_variables(include_deprecated_keys: bool = False) -> Dict[str, Union[float, core.Matrix, np.ndarray]]:
+    """Return all scalar or array QCVariables from global memory."""
+
     dicary = {**core.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in core.array_variables().items()}}
 
     if include_deprecated_keys:
@@ -903,7 +965,9 @@ def _core_variables(include_deprecated_keys: bool = False):
     return dicary
 
 
-def _core_wavefunction_variables(cls, include_deprecated_keys: bool = False):
+def _core_wavefunction_variables(cls, include_deprecated_keys: bool = False) -> Dict[str, Union[float, core.Matrix, np.ndarray]]:
+    """Return all scalar or array QCVariables from *cls*."""
+
     dicary = {**cls.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in cls.array_variables().items()}}
 
     if include_deprecated_keys:
@@ -930,6 +994,11 @@ core.Wavefunction.variables = _core_wavefunction_variables
 
 
 def _core_get_variable(key):
+    """
+    .. deprecated:: 1.4
+       Use :py:func:`psi4.variable` instead.
+
+    """
     warnings.warn(
         "Using `psi4.core.get_variable` instead of `psi4.core.variable` (or `psi4.core.scalar_variable` for scalar variables only) is deprecated, and in 1.4 it will stop working\n",
         category=FutureWarning,
@@ -938,6 +1007,11 @@ def _core_get_variable(key):
 
 
 def _core_get_variables():
+    """
+    .. deprecated:: 1.4
+       Use :py:func:`psi4.core.variables` instead.
+
+    """
     warnings.warn(
         "Using `psi4.core.get_variables` instead of `psi4.core.variables` (or `psi4.core.scalar_variables` for scalar variables only) is deprecated, and in 1.4 it will stop working\n",
         category=FutureWarning,
@@ -946,6 +1020,11 @@ def _core_get_variables():
 
 
 def _core_get_array_variable(key):
+    """
+    .. deprecated:: 1.4
+       Use :py:func:`psi4.variable` instead.
+
+    """
     warnings.warn(
         "Using `psi4.core.get_array_variable` instead of `psi4.core.variable` (or `psi4.core.array_variable` for array variables only) is deprecated, and in 1.4 it will stop working\n",
         category=FutureWarning,
@@ -954,6 +1033,11 @@ def _core_get_array_variable(key):
 
 
 def _core_get_array_variables():
+    """
+    .. deprecated:: 1.4
+       Use :py:func:`psi4.core.variables` instead.
+
+    """
     warnings.warn(
         "Using `psi4.core.get_array_variables` instead of `psi4.core.variables` (or `psi4.core.array_variables` for array variables only) is deprecated, and in 1.4 it will stop working\n",
         category=FutureWarning,
@@ -968,6 +1052,11 @@ core.get_array_variables = _core_get_array_variables
 
 
 def _core_wavefunction_get_variable(cls, key):
+    """
+    .. deprecated:: 1.4
+       Use :py:func:`psi4.core.Wavefunction.variable` instead.
+
+    """
     warnings.warn(
         "Using `psi4.core.Wavefunction.get_variable` instead of `psi4.core.Wavefunction.variable` (or `psi4.core.Wavefunction.scalar_variable` for scalar variables only) is deprecated, and in 1.4 it will stop working\n",
         category=FutureWarning,
@@ -976,6 +1065,11 @@ def _core_wavefunction_get_variable(cls, key):
 
 
 def _core_wavefunction_get_array(cls, key):
+    """
+    .. deprecated:: 1.4
+       Use :py:func:`psi4.core.Wavefunction.variable` instead.
+
+    """
     warnings.warn(
         "Using `psi4.core.Wavefunction.get_array` instead of `psi4.core.Wavefunction.variable` (or `psi4.core.Wavefunction.array_variable` for array variables only) is deprecated, and in 1.4 it will stop working\n",
         category=FutureWarning,
@@ -984,6 +1078,11 @@ def _core_wavefunction_get_array(cls, key):
 
 
 def _core_wavefunction_set_array(cls, key, val):
+    """
+    .. deprecated:: 1.4
+       Use :py:func:`psi4.core.Wavefunction.set_variable` instead.
+
+    """
     warnings.warn(
         "Using `psi4.core.Wavefunction.set_array` instead of `psi4.core.Wavefunction.set_variable` (or `psi4.core.Wavefunction.set_array_variable` for array variables only) is deprecated, and in 1.4 it will stop working\n",
         category=FutureWarning,
@@ -992,6 +1091,11 @@ def _core_wavefunction_set_array(cls, key, val):
 
 
 def _core_wavefunction_arrays(cls):
+    """
+    .. deprecated:: 1.4
+       Use :py:func:`psi4.core.Wavefunction.variables` instead.
+
+    """
     warnings.warn(
         "Using `psi4.core.Wavefunction.arrays` instead of `psi4.core.Wavefunction.variables` (or `psi4.core.Wavefunction.array_variables` for array variables only) is deprecated, and in 1.4 it will stop working\n",
         category=FutureWarning,
@@ -1015,6 +1119,10 @@ def _core_wavefunction_frequencies(cls):
 
 
 def _core_wavefunction_legacy_frequencies(cls):
+    """
+    .. deprecated:: 1.4
+
+    """
     warnings.warn(
         "Using `psi4.core.Wavefunction.legacy_frequencies` (accessing c-side member data) is deprecated, and in 1.4 it will stop working\n",
         category=FutureWarning,
@@ -1023,6 +1131,10 @@ def _core_wavefunction_legacy_frequencies(cls):
 
 
 def _core_wavefunction_set_frequencies(cls, val):
+    """
+    .. deprecated:: 1.4
+
+    """
     warnings.warn(
         "Using `psi4.core.Wavefunction.set_frequencies` (accessing c-side member data) instead of `psi4.core.Wavefunction.frequency_analysis` (py-side member data) is deprecated, and in 1.4 it will stop working\n",
         category=FutureWarning,
@@ -1049,6 +1161,10 @@ core.Wavefunction.X = _core_wavefunction_X
 
 
 def _core_get_gradient():
+    """
+    .. deprecated:: 1.2
+
+    """
     warnings.warn(
         "Using `psi4.core.get_gradient` (only used internally for C++ optking; deprecated silently in 1.2) is deprecated, and in 1.5 (or whenever Py optking is adopted) it will stop working\n",
         category=FutureWarning,
@@ -1057,6 +1173,10 @@ def _core_get_gradient():
 
 
 def _core_set_gradient(val):
+    """
+    .. deprecated:: 1.2
+
+    """
     warnings.warn(
         "Using `psi4.core.set_gradient` (only used internally for C++ optking; deprecated silently in 1.2) is deprecated, and in 1.5 (or whenever Py optking is adopted) it will stop working\n",
         category=FutureWarning,
@@ -1069,6 +1189,12 @@ core.set_gradient = _core_set_gradient
 
 
 def _core_doublet(A, B, transA, transB):
+    """Multiply two matrices together.
+
+    .. deprecated:: 1.4
+       Use :py:func:`psi4.core.doublet` instead.
+
+    """
     warnings.warn(
         "Using `psi4.core.Matrix.doublet` instead of `psi4.core.doublet` is deprecated, and in 1.4 it will stop working\n",
         category=FutureWarning,
@@ -1077,6 +1203,12 @@ def _core_doublet(A, B, transA, transB):
 
 
 def _core_triplet(A, B, C, transA, transB, transC):
+    """Multiply three matrices together.
+
+    .. deprecated:: 1.4
+       Use :py:func:`psi4.core.triplet` instead.
+
+    """
     warnings.warn(
         "Using `psi4.core.Matrix.triplet` instead of `psi4.core.triplet` is deprecated, and in 1.4 it will stop working\n",
         category=FutureWarning,

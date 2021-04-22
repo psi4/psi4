@@ -112,16 +112,16 @@ def cubeprop(wfn, **kwargs):
     cp.compute_properties()
 
 
-def set_memory(inputval: Union[int, float, str], execute: bool = True, quiet: bool = False) -> float:
+def set_memory(inputval: Union[str, int, float], execute: bool = True, quiet: bool = False) -> int:
     """Function to reset the total memory allocation. Takes memory value
     *inputval* as type int, float, or str; int and float are taken literally
     as bytes to be set, string taken as a unit-containing value (e.g., 30 mb)
     which is case-insensitive. Set *execute* to False to interpret *inputval*
     without setting in Psi4 core.
 
-    :returns: *memory_amount* (float) Number of bytes of memory set
+    :returns: *memory_amount* Number of bytes of memory set
 
-    :raises: ValidationError when <500MiB or disallowed type or misformatted
+    :raises: :py:class:`psi4.ValidationError` when <500MiB or disallowed type or misformatted
 
     :examples:
 
