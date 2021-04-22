@@ -179,6 +179,13 @@ Script Prerequisites
 3. With ImageMagick installed, an environment variable called :envvar:`MONTAGE` needs to be created which points to the montage executable.
    This executable can be found in the /bin/ sub-directory wherever ImageMagick was installed.
 
+.. envvar:: VMDPATH
+
+   Filesystem path to the VMD executable.
+
+.. envvar:: MONTAGE
+
+   Filesystem path to the Montage executable of ImageMagick
 
 Running the Script
 ------------------

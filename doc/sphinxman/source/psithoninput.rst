@@ -309,8 +309,8 @@ are cleared at the start of each :py:func:`~psi4.energy`, etc. in an input
 file by :py:func:`~psi4.core.clean_variables()`.
 So if you run in a single input file a STO-3G FCI followed by a
 aug-cc-pVQZ SCF followed by a :py:func:`~psi4.core.print_variables` command, the
-last will include :psivar:`SCF TOTAL ENERGY <SCFTOTALENERGY>` but not 
-:psivar:`FCI TOTAL ENERGY <FCITOTALENERGY>`.
+last will include :psivar:`SCF TOTAL ENERGY` but not
+:psivar:`FCI TOTAL ENERGY`.
 The entire dictionary of PSI variables can be obtained through
 :py:func:`~psi4.core.get_variables`.
 

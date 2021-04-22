@@ -161,3 +161,21 @@ Keywords
 ~~~~~~~~
 
 .. include:: autodir_options_c/globals__brianqc_enable.rst
+
+Environment Variables
+~~~~~~~~~~~~~~~~~~~~~
+
+.. envvar:: BRIANQC_SDK_INSTALL
+
+   Toggle for type of BrianQC installation.
+   See https://s3.amazonaws.com/streamnovation-brianqc-manual/BrianQC_Manual_v1_1_0.pdf for details.
+
+.. envvar:: BRIANQC_INSTALL_PATH
+
+   Location of BrianQC installation.
+   See https://s3.amazonaws.com/streamnovation-brianqc-manual/BrianQC_Manual_v1_1_0.pdf for details.
+
+.. envvar:: BRIANQC_ENABLE
+
+   Runtime toggle of whether to use BrianQC.
+

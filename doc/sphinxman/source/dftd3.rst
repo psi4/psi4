@@ -203,7 +203,7 @@ B3LYP, a B3LYP-D2, and a B3LYP-D3 (zero-damping) energy. ::
 Consult the table :ref:`-D Functionals <table:dft_disp>` to see for each
 functional what corrections are available and what default parameters
 define them. The dispersion correction is available after a calculation in
-the PSI variable :psivar:`DISPERSION CORRECTION ENERGY <DISPERSIONCORRECTIONENERGY>`. 
+the PSI variable :psivar:`DISPERSION CORRECTION ENERGY`.
 By default, the output from the ``dftd3``
 program is suppressed; to see it in the output file, set print > 2.
 

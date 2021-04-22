@@ -866,12 +866,23 @@ void OEProp::compute_multipoles(int order, bool transition) {
             int order_mpole;
             // unpack the multipole, which is: name, nuc, elec, total, order, ignore nuc and elec:
             std::tie(name, std::ignore, std::ignore, total_mpole, order_mpole) = *it;
-            /*- Process::environment.globals["DIPOLE X"] -*/
-            /*- Process::environment.globals["DIPOLE Y"] -*/
-            /*- Process::environment.globals["title DIPOLE"] -*/
-            /*- Process::environment.globals["32-POLE XXXXX"] -*/
-            /*- Process::environment.globals["32-POLE XXXXY"] -*/
-            /*- Process::environment.globals["title 32-POLE"] -*/
+            /*- Process::environment.globals["mtd DIPOLE X"] -*/
+            /*- Process::environment.globals["mtd DIPOLE Y"] -*/
+            /*- Process::environment.globals["mtd DIPOLE Z"] -*/
+            /*- Process::environment.globals["mtd QUADRUPOLE XX"] -*/
+            /*- Process::environment.globals["mtd OCTUPOLE XXX"] -*/
+            /*- Process::environment.globals["mtd HEXADECAPOLE XXXX"] -*/
+            /*- Process::environment.globals["mtd 32-POLE XXXXX"] -*/
+            /*- Process::environment.globals["mtd 32-POLE XXXXY"] -*/
+            /*- Process::environment.globals["mtd 64-POLE XXXXXX"] -*/
+            /*- Process::environment.globals["mtd 128-POLE XXXXXXX"] -*/
+            /*- Process::environment.globals["mtd DIPOLE"] -*/
+            /*- Process::environment.globals["mtd QUADRUPOLE"] -*/
+            /*- Process::environment.globals["mtd OCTUPOLE"] -*/
+            /*- Process::environment.globals["mtd HEXADECAPOLE"] -*/
+            /*- Process::environment.globals["mtd 32-POLE"] -*/
+            /*- Process::environment.globals["mtd 64-POLE"] -*/
+            /*- Process::environment.globals["mtd 128-POLE"] -*/
 
             if (order_mpole == l) {
                 Process::environment.globals[name] = total_mpole;

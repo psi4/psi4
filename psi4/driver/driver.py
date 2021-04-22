@@ -215,9 +215,9 @@ def energy(name, **kwargs):
     .. hlist::
        :columns: 1
 
-       * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
-       * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>`
-       * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>`
+       * :psivar:`CURRENT ENERGY`
+       * :psivar:`CURRENT REFERENCE ENERGY`
+       * :psivar:`CURRENT CORRELATION ENERGY`
 
     :type name: string
     :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
@@ -1091,7 +1091,7 @@ def optimize(name, **kwargs):
     .. hlist::
        :columns: 1
 
-       * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
+       * :psivar:`CURRENT ENERGY`
 
     :type name: string
     :param name: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.

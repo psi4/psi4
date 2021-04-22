@@ -1078,10 +1078,17 @@ How to configure a Psi4 build on Cray
 Cray systems strongly prefer to build static libraries, but |PSIfour|
 needs to be dynamic to function as a Python module. Courtesy of @misha
 at the forum and various supercomputer guides, building |PSIfour| on
-Cray requires setting environment variables :envvar:`CRAYPE_LINK_TYPE`
-and :envvar:`CRAY_ADD_RPATH` before running `cmake`. ::
+Cray requires setting environment variables before running `cmake`. ::
 
     CRAYPE_LINK_TYPE=dynamic CRAY_ADD_RPATH=yes cmake ...
+
+.. envvar:: CRAYPE_LINK_TYPE
+
+   Set to allow |PSIfour| to build as shared library on Cray supercomputers.
+
+.. envvar:: CRAY_ADD_RPATH
+
+   Set to true to allow |PSIfour| to build on Cray supercomputers.
 
 
 .. _`cmake:fortran`:
@@ -1173,11 +1180,17 @@ How to configure BLAS/LAPACK for building Psi4
 
 * :makevar:`BLAS_TYPE` |w---w| CMake variable to specify which BLAS libraries to look for among ``MKL|OPENBLAS|ESSL|ATLAS|ACML|SYSTEM_NATIVE``.
 * :makevar:`LAPACK_TYPE` |w---w| CMake variable to specify which LAPACK libraries to look for among ``MKL|OPENBLAS|ESSL|ATLAS|ACML|SYSTEM_NATIVE``.
-* :envvar:`MKL_ROOT` |w---w| Environment variable set by Intel compilervars scripts. Sufficient to trigger math detection of MKL at this location.
-* :envvar:`MATH_ROOT` |w---w| Environment variable to specify root directory in which BLAS/LAPACK libraries should be detected (*e.g.*, ``${MATH_ROOT}/lib64/libblas.so`` and ``${MATH_ROOT}/lib64/liblapack.so``).
 * :makevar:`LAPACK_LIBRARIES` |w---w| CMake variable to specify BLAS/LAPACK libraries explicitly, bypassing math detection. Should be ";"-separated list of full paths.
 * :makevar:`LAPACK_INCLUDE_DIRS` |w---w| CMake variable to specify BLAS/LAPACK header location explicitly, bypassing math detection. Only needed for MKL.
 * :makevar:`OpenMP_LIBRARY_DIRS` |w---w| CMake variable to specify OpenMP library (iomp5/gomp/omp) directories explicitly. Should be ";"-separated list of full directory paths. Usually the solution to error ``Could NOT find MathOpenMP``.
+
+.. envvar:: MKL_ROOT
+
+  Environment variable set by Intel compilervars scripts. Sufficient to trigger math detection of MKL at this location.
+
+.. envvar:: MATH_ROOT
+
+   Environment variable to specify root directory in which BLAS/LAPACK libraries should be detected (*e.g.*, ``${MATH_ROOT}/lib64/libblas.so`` and ``${MATH_ROOT}/lib64/liblapack.so``).
 
 **Examples**
 

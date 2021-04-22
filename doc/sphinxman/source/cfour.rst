@@ -504,7 +504,7 @@ Output
 The output of :program:`xcfour` invoked from a |PSIfour| input file is
 written to the |PSIfour| output file as the computation progresses.  If a
 Cfour module terminates with a non-zero error code, the value will show up
-in :psivar:`CFOUR ERROR CODE <CFOURERRORCODE>`.
+in :psivar:`CFOUR ERROR CODE`.
 
 .. rubric:: Energies & Scalars
 
@@ -547,7 +547,7 @@ following could be used. ::
 
 .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
-   - No PSI Variables for properties: *e.g.*, :psivar:`SCF DIPOLE X<SCFDIPOLEX>`
+   - No PSI Variables for properties: *e.g.*, :psivar:`SCF DIPOLE X`
 
    - No PSI Variables for excited state energies
 

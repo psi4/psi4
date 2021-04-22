@@ -64,9 +64,9 @@ def database(name, db_name, **kwargs):
     .. hlist::
        :columns: 1
 
-       * :psivar:`db_name DATABASE MEAN SIGNED DEVIATION <db_nameDATABASEMEANSIGNEDDEVIATION>`
-       * :psivar:`db_name DATABASE MEAN ABSOLUTE DEVIATION <db_nameDATABASEMEANABSOLUTEDEVIATION>`
-       * :psivar:`db_name DATABASE ROOT-MEAN-SQUARE DEVIATION <db_nameDATABASEROOT-MEAN-SQUARESIGNEDDEVIATION>`
+       * :psivar:`db_name DATABASE MEAN SIGNED DEVIATION`
+       * :psivar:`db_name DATABASE MEAN ABSOLUTE DEVIATION`
+       * :psivar:`db_name DATABASE ROOT-MEAN-SQUARE DEVIATION`
        * Python dictionaries of results accessible as ``DB_RGT`` and ``DB_RXN``.
 
     .. note:: It is very easy to make a database from a collection of xyz files
