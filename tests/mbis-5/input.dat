@@ -38,6 +38,10 @@ vwidths_ref = psi4.Matrix.from_list([  #TEST
  [0.70558769],     #TEST
  [0.40965805]])    #TEST
 
+vratios_ref = psi4.Matrix.from_list([  #TEST
+[0.652824],
+[1.379211]])
+
 molecule mol {
   0 1
   Zn 0.00 0.00 0.00
@@ -66,6 +70,7 @@ quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
 avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
 vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vratios = wfn.array_variable('MBIS VOLUME RATIOS')
 
 compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
@@ -73,3 +78,4 @@ compare_matrices(quadrupoles_ref, quadrupoles, 5, "MBIS Quadrupoles") #TEST
 compare_matrices(octupoles_ref, octupoles, 5, "MBIS Octupoles")       #TEST
 compare_matrices(avols_ref, avols, 5, "MBIS Radial Moments <r^3>")    #TEST
 compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
+compare_matrices(vratios_ref, vratios, 5, "MBIS Volume Ratios")      #TEST
