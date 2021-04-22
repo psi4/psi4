@@ -237,7 +237,7 @@ void export_wavefunction(py::module& m) {
         .def("array_variable", &Wavefunction::array_variable,
              "Returns copy of the requested (case-insensitive) Matrix QC variable.")
         .def("potential_variable", &Wavefunction::potential_variable,
-             "Returns copy of the requested (case-insensitive) ExternalPotential QC variable. "
+             "key"_a, "Returns copy of the requested (case-insensitive) ExternalPotential QC variable *key*. "
              "(This function is provisional and might be removed in the future.)")
         .def("set_scalar_variable", &Wavefunction::set_scalar_variable,
              "Sets the requested (case-insensitive) double QC variable. Syncs with ``Wavefunction.energy_`` if CURRENT "
