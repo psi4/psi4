@@ -92,9 +92,9 @@ def free_atom_volumes(wfn, **kwargs):
 
         # make sure we do UHF/UKS if we're not a singlet
         if reference_S[a_z] != 0:
-            psi4.core.set_local_option(["SCF"], "REFERENCE", "UHF")
+            psi4.core.set_option("SCF", "REFERENCE", "UHF")
         else:
-            psi4.core.set_local_option(["SCF"], "REFERENCE", "RHF")
+            psi4.core.set_option("SCF", "REFERENCE", "RHF")
 
         # Set the molecule, here just an atom
         a_mol = psi4.core.Molecule.from_arrays(geom=[0, 0, 0],
