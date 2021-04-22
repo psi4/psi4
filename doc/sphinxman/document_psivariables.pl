@@ -134,7 +134,9 @@ foreach my $Module (@PSIMODULES) {
         $SrcFolder . lc($Module),
         $SrcFolder . "lib" . lc($Module) . "_solver",
         $SrcFolder . "../../driver",
+        $SrcFolder . "../../driver/p4util",
         $SrcFolder . "../../driver/procrouting",
+        $SrcFolder . "../../driver/procrouting/mcscf",
         $SrcFolder . "../../driver/procrouting/scf_proc",
         $SrcFolder . "../../driver/procrouting/response",
     );

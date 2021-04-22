@@ -839,6 +839,10 @@ PSI Variables by Alpha
 
    Property of partial atomic charges [e] by the method of L\ |o_dots|\ wdin, (nat,).
 
+.. psivar:: MAYER INDICES
+
+   Property of Mayer bond indices, (nat, nat).
+
 .. psivar:: MBIS CHARGES
    MBIS DIPOLES
    MBIS OCTUPOLES
@@ -848,12 +852,28 @@ PSI Variables by Alpha
    resulting from partitioning the total electron density through the Minimal Basis
    Iterative Stockholder (MBIS) Charge Partitioning Scheme.
 
-.. psivar:: MAYER INDICES
+.. psivar:: MBIS FREE ATOM n VOLUME
 
-   Property of Mayer bond indices, (nat, nat).
+   Free-atom volume [a0^3] for atom n, computed using the MBIS charge
+   partitioning scheme. Free atom densities are computed at the same
+   level of theory as the parent MBIS calculation, with UHF turned on
+   as needed.
+
+.. psivar:: MBIS RADIAL MOMENTS <R^3>
+
+   Per-atom expectation value of r^3 [a0^3], equivalent to the volume
+   of the MBIS-partitioned density.
 
 .. psivar:: MBIS VALENCE WIDTHS
-   Per-atom valence shell widths [a0] resulting from MBIS charge partitioning scheme.
+
+   Per-atom density width [a0] of the associated valence charge computed
+   from an MBIS partitioned density. Equivalent to the inverse of the
+   linear decay rate of the atomic density.
+
+.. psivar:: MBIS VOLUME RATIOS
+
+   Per-atom ratio between the atomic volume (<R^3>) and the free-atomic
+   volume, unitless.
 
 .. psivar:: MCSCF TOTAL ENERGY
 
@@ -1207,6 +1227,11 @@ PSI Variables by Alpha
 .. psivar:: SAPT ELST10,R ENERGY
 
    An electrostatics-classified SAPT term energy [Eh] implemented for SAPT0.
+
+.. psivar:: SAPT ELST EXTERN-EXTERN ENERGY
+
+   Electrostatic interaction [Eh] between the point charges in fragments
+   A and B in F/I-SAPT.
 
 .. psivar:: SAPT EXCH10 ENERGY
 
