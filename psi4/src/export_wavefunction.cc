@@ -552,10 +552,10 @@ void export_wavefunction(py::module& m) {
                amps : dict (spacestr, SharedMatrix)
                  `spacestr` is a description of the amplitude set using the following conventions.
 
-                 I,J,K -> alpha occupied
-                 i,j,k -> beta occupied
-                 A,B,C -> alpha virtual
-                 a,b,c -> beta virtual
+                 * I,J,K -> alpha occupied
+                 * i,j,k -> beta occupied
+                 * A,B,C -> alpha virtual
+                 * a,b,c -> beta virtual
 
                The following entries are stored in the `amps`, depending on the reference type
 

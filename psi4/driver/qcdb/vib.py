@@ -358,12 +358,15 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, dipder=None, pro
         Returns dictionary of vibration Datum objects (fields: label units data comment).
         Also returns text suitable for printing.
 
+    Notes
+    -----
+
     .. _`table:vibaspectinfo`:
 
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
     | key           | description (label & comment)              | units     | data (real/imaginary modes)                          |
     +===============+============================================+===========+======================================================+
-    | omega         | frequency                                  | cm^-1     | nd.array(ndof) complex (real/imag)                   |
+    | omega         | frequency                                  | cm^-1     | ndarray(ndof) complex (real/imag)                    |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
     | q             | normal mode, normalized mass-weighted      | a0 u^1/2  | ndarray(ndof, ndof) float                            |
     +---------------+--------------------------------------------+-----------+------------------------------------------------------+
@@ -394,10 +397,10 @@ def harmonic_analysis(hess, geom, mass, basisset, irrep_labels, dipder=None, pro
 
     Examples
     --------
-    # displacement of first atom in highest energy mode
+    >>> # displacement of first atom in highest energy mode
     >>> vibinfo['x'].data[:, -1].reshape(nat, 3)[0]
 
-    # remove translations & rotations
+    >>> # remove translations & rotations
     >>> vibonly = filter_nonvib(vibinfo)
 
     """
@@ -1073,7 +1076,7 @@ def filter_nonvib(vibinfo, remove=None):
 
     Examples
     --------
-    # after a harmonic analysis, remove first translations and rotations and then all non-A1 vibs
+    >>> # after a harmonic analysis, remove first translations and rotations and then all non-A1 vibs
     >>> allnormco = harmonic_analysis(...)
     >>> allvibs = filter_nonvib(allnormco)
     >>> a1vibs = filter_nonvib(allvibs, remove=[i for i, d in enumerate(allvibs['gamma'].data) if d != 'A1'])

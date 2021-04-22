@@ -49,7 +49,7 @@ class Lineshape:
     Notes
     -----
     Why do we use a callable broadening factor?
-    For plots in the _wavelength domain_, the broadening factor depends on the location of the band's maximum.
+    For plots in the *wavelength domain*, the broadening factor depends on the location of the band's maximum.
     """
     domain: Union[np.ndarray, List[float]]
     gamma: Callable[[float], float]
@@ -292,6 +292,7 @@ def spectrum(*,
       The lineshape functions are formulated as functions of the angular frequency :math:`\omega`.
       When converting to other physical quantities, the broadening parameter has to be modified accordingly.
       If :math:`\gamma_{\omega}` is the chosen broadening parameter then:
+
         - Wavelength: :math:`gamma_{\lambda} = \frac{\lambda_{ij}^{2}}{2\pi c}\gamma_{\omega}`
         - Frequency: :math:`gamma_{\nu} = \frac{\gamma_{\omega}}{2\pi}`
         - Energy: :math:`gamma_{E} = \gamma_{\omega}\hbar`

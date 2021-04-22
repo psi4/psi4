@@ -74,7 +74,7 @@ def oeprop_validator(prop_list):
     oeprop_methods = core.OEProp.valid_methods
 
     if not len(prop_list):
-        raise ValidationnError("OEProp: No properties specified!")
+        raise ValidationError("OEProp: No properties specified!")
 
     for prop in prop_list:
         prop = prop.upper()

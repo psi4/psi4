@@ -619,8 +619,30 @@ core.set_global_option_python = _core_set_global_option_python
 
 ## QCvar helps
 
+_qcvar_transitions = {
+    "SCSN-MP2 CORRELATION ENERGY": "SCS(N)-MP2 CORRELATION ENERGY",
+    "SCSN-MP2 TOTAL ENERGY": "SCS(N)-MP2 TOTAL ENERGY",
+    "MAYER_INDICES": "MAYER INDICES",
+    "WIBERG_LOWDIN_INDICES": "WIBERG LOWDIN INDICES",
+    "LOWDIN_CHARGES": "LOWDIN CHARGES",
+    "MULLIKEN_CHARGES": "MULLIKEN CHARGES",
+}
 
-def _qcvar_warnings(key):
+_qcvar_cancellations = {
+    "SCSN-MP2 SAME-SPIN CORRELATION ENERGY": ["MP2 SAME-SPIN CORRELATION ENERGY"],
+    "SCSN-MP2 OPPOSITE-SPIN CORRELATION ENERGY": ["MP2 OPPOSITE-SPIN CORRELATION ENERGY"],
+    "SCS-CCSD SAME-SPIN CORRELATION ENERGY": ["CCSD SAME-SPIN CORRELATION ENERGY"],
+    "SCS-CCSD OPPOSITE-SPIN CORRELATION ENERGY": ["CCSD OPPOSITE-SPIN CORRELATION ENERGY"],
+    "SCS-MP2 SAME-SPIN CORRELATION ENERGY": ["MP2 SAME-SPIN CORRELATION ENERGY"],
+    "SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY": ["MP2 OPPOSITE-SPIN CORRELATION ENERGY"],
+    "SCS(N)-OMP2 CORRELATION ENERGY": ["OMP2 SAME-SPIN CORRELATION ENERGY", "OMP2 OPPOSITE-SPIN CORRELATION ENERGY"],
+    "SCS(N)-OMP2 TOTAL ENERGY": ["OMP2 SAME-SPIN CORRELATION ENERGY", "OMP2 OPPOSITE-SPIN CORRELATION ENERGY"],
+    "SCSN-OMP2 CORRELATION ENERGY": ["OMP2 SAME-SPIN CORRELATION ENERGY", "OMP2 OPPOSITE-SPIN CORRELATION ENERGY"],
+    "SCSN-OMP2 TOTAL ENERGY": ["OMP2 SAME-SPIN CORRELATION ENERGY", "OMP2 OPPOSITE-SPIN CORRELATION ENERGY"],
+}
+
+
+def _qcvar_warnings(key: str) -> str:
     if any([key.upper().endswith(" DIPOLE " + cart) for cart in ["X", "Y", "Z"]]):
         warnings.warn(
             f"Using scalar QCVariable `{key.upper()}` [D] instead of array `{key.upper()[:-2]}` [e a0] is deprecated, and in 1.5 it will stop working\n",
@@ -632,6 +654,18 @@ def _qcvar_warnings(key):
             f"Using scalar QCVariable `{key.upper()}` [D A] instead of array `{key.upper()[:-3]}` [e a0^2] is deprecated, and in 1.5 it will stop working\n",
             category=FutureWarning,
             stacklevel=3)
+
+    if key.upper() in _qcvar_transitions:
+        warnings.warn(
+            f"Using QCVariable `{key.upper()}` instead of `{_qcvar_transitions[key.upper()]}` is deprecated, and in 1.5 it will stop working\n",
+            category=FutureWarning,
+            stacklevel=3)
+        return _qcvar_transitions[key.upper()]
+
+    if key.upper() in _qcvar_cancellations:
+        raise UpgradeHelper(key.upper(), "no direct replacement", 1.4, " Consult QCVariables " + ", ".join(_qcvar_cancellations[key.upper()]) + " to recompose the quantity.")
+
+    return key
 
 
 _multipole_order = ["dummy", "dummy", "QUADRUPOLE", "OCTUPOLE", "HEXADECAPOLE"]
@@ -663,7 +697,7 @@ def _qcvar_reshape_set(key, val):
     elif any(key.upper().endswith(p) for p in _multipole_order):
         val = _multipole_compressor(val, _multipole_order.index(key.upper().split()[-1]))
         reshaper = (1, -1)
-    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES"]:
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES"]:
         reshaper = (1, -1)
 
     if reshaper:
@@ -694,7 +728,7 @@ def _qcvar_reshape_get(key, val):
         reshaper = (3, )
     elif any(key.upper().endswith(p) for p in _multipole_order):
         return _multipole_plumper(val.np.reshape((-1, )), _multipole_order.index(key.upper().split()[-1]))
-    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES"]:
+    elif key.upper() in ["MULLIKEN_CHARGES", "LOWDIN_CHARGES", "MULLIKEN CHARGES", "LOWDIN CHARGES"]:
         reshaper = (-1, )
 
     if reshaper:
@@ -859,12 +893,30 @@ def _core_wavefunction_del_variable(cls, key):
         cls.del_array_variable(key)
 
 
-def _core_variables():
-    return {**core.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in core.array_variables().items()}}
+def _core_variables(include_deprecated_keys: bool = False) -> Dict[str, Union[float, core.Matrix, np.ndarray]]:
+    """Return all scalar or array QCVariables from global memory."""
+
+    dicary = {**core.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in core.array_variables().items()}}
+
+    if include_deprecated_keys:
+        for old_key, current_key in _qcvar_transitions.items():
+            if current_key in dicary:
+                dicary[old_key] = dicary[current_key]
+
+    return dicary
 
 
-def _core_wavefunction_variables(cls):
-    return {**cls.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in cls.array_variables().items()}}
+def _core_wavefunction_variables(cls, include_deprecated_keys: bool = False) -> Dict[str, Union[float, core.Matrix, np.ndarray]]:
+    """Return all scalar or array QCVariables from *cls*."""
+
+    dicary = {**cls.scalar_variables(), **{k: _qcvar_reshape_get(k, v) for k, v in cls.array_variables().items()}}
+
+    if include_deprecated_keys:
+        for old_key, current_key in _qcvar_transitions.items():
+            if current_key in dicary:
+                dicary[old_key] = dicary[current_key]
+
+    return dicary
 
 
 core.has_variable = _core_has_variable
