@@ -359,6 +359,24 @@ publication-quality renderings.
     :alt: ESP of monomer A
 
 
+Adding Point Charges to F/I-SAPT Computations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. Citation: Alenaizan, A; Cheney, D. L.; Sherrill, C. D. Electrostatatically embedded
+.. symmetry adapted pertubration theory. In preparation.
+
+Point charges can be added to the interacting subsystems A and B as well
+as to the ``linking`` fragment C. Briefly, the interaction between the point charges in A(B)
+and fragment B(A) enters the SAPT0 interction energy. It explicitly affects in the electrostatics
+and induction components, and implicitly affects other SAPT0 components by polarizing the orbitals.
+If point charges are present in both subsystems A and B, an additional charge-charge interaction
+term is also added to the electrostatic energy. When point charges are assigned to subsystem C, the point
+charges in C only polarize the orbitals in both fragment A and B. However, the presence of charges in C does not
+directly contribute to the SAPT0 interaction energy.
+
+Examples :srcsample:`fsapt-ext-abc` and :srcsample:`fsapt-ext-abc2`
+illustrate the use of point charges in F/I-SAPT procedure.
+
+
 F/I-SAPT Keywords
 ^^^^^^^^^^^^^^^^^
 

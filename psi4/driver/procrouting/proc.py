@@ -1228,9 +1228,32 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
             wfn.set_sad_fitting_basissets(sad_fitting_list)
             optstash.restore()
 
-    # Deal with the EXTERN issues
+    if hasattr(core, "EXTERN") and 'external_potentials' in kwargs: 
+        core.print_out("\n  Warning! Both an external potential EXTERN object and the external_potential" +
+                       " keyword argument are specified. The external_potentials keyword argument will be ignored.\n")
+
+    # If EXTERN is set, then place that potential on the wfn
     if hasattr(core, "EXTERN"):
+        wfn.set_potential_variable("C", core.EXTERN) # This is for the FSAPT procedure
         wfn.set_external_potential(core.EXTERN)
+
+    elif 'external_potentials' in kwargs:
+        # For FSAPT, we can take a dictionary of external potentials, e.g.,
+        # external_potentials={'A': potA, 'B': potB, 'C': potC} (any optional)
+        # For the dimer SAPT calculation, we need to account for the external potential
+        # in all of the subsystems A, B, C. So we add them all in total_external_potential
+        # and set the external potential to the dimer wave function
+        total_external_potential = core.ExternalPotential()
+
+        for frag in kwargs['external_potentials']:
+            if frag.upper() in "ABC":
+                wfn.set_potential_variable(frag.upper(), kwargs['external_potentials'][frag].extern)
+                total_external_potential.appendCharges(kwargs['external_potentials'][frag].extern.getCharges())
+
+            else:
+                core.print_out("\n  Warning! Unknown key for the external_potentials argument: %s" %frag)
+
+        wfn.set_external_potential(total_external_potential)
 
     return wfn
 
@@ -4469,7 +4492,7 @@ def run_fisapt(name, **kwargs):
 
     fisapt_wfn = core.FISAPT(ref_wfn)
     from .sapt import fisapt_proc
-    fisapt_wfn.compute_energy()
+    fisapt_wfn.compute_energy(external_potentials=kwargs.get("external_potentials", None))
 
     # Compute -D dispersion
     if "-d" in name.lower():

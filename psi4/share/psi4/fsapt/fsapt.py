@@ -389,6 +389,19 @@ def print_fragments(geom, Z, Q, fragkeys, frags, nuclear_ws, orbital_ws, filenam
     fh.close()
 
 def extract_osapt_data(filepath):
+    """ Reads the F-SAPT component files
+
+    Arguments
+    ---------
+    filepath : str
+        Path to directory containing the F-SAPT energy component files
+
+    Returns
+    -------
+    vals : Dict[str, np.ndarray]
+        Dictionary of the F-SAPT0 components decomposed to orbital, nuclear, and external
+        potential contributions
+    """
 
     vals = {}
     vals['Elst']  = np.array(read_block('%s/Elst.dat'  % filepath, H_to_kcal_))
@@ -452,6 +465,21 @@ def fragment_d3_disp(d3disp: np.ndarray, frags: Dict[str, Dict[str, List[str]]])
     return D3frags
 
 def extract_order2_fsapt(osapt, wsA, wsB, frags):
+    """Calculate the order 2 F-SAPT analysis
+    ---------
+    osapt : Dict
+        Dictionary of the decompositions of the SAPT0 components to nuclear, orbital, and point charge contributions
+    wsA : Dict
+        Dictionary containing the weight (0 or 1) for each atom in the defined fragments for subsystem A
+    wsB : Dict
+        Dictionary containing the weight (0 or 1) for each atom in the defined fragments for subsystem B
+    frags : Dict
+        Dictionary containing the indices of the atoms in each user-defined functional group
+    Returns
+    -------
+    vals : Dict
+        Dictionary containing the F-SAPT0 order 2 analysis for the SAPT components
+    """
 
     vals = {}
     for key, value in osapt.items():
@@ -466,6 +494,7 @@ def extract_order2_fsapt(osapt, wsA, wsB, frags):
                 valueA = np.asarray(valueA)
                 for keyB, valueB in wsB.items():
                     valueB = np.asarray(valueB)
+                    # The last row and columns in value are for the external potential
                     val = np.einsum('i,ij,j', valueA, value, valueB)
                     vals[key][keyA][keyB] = val
 
@@ -803,8 +832,59 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
 
     osapt = extract_osapt_data(dirname)
 
-    order2  = extract_order2_fsapt(osapt, total_ws['A'], total_ws['B'], frags)
+    # In F/I-SAPT, the point charges can be either in the interacting subsystems A and B or the environment C
+    # The interaction between the point charges in A and fragment B enters the SAPT0 interaction energy, especially
+    # in the electrostatics and induction components. Similarly, the interaction between the charges in B and fragment A
+    # enters the SAPT0 interaction energy. By contrast, when the point charges are assigned to subsystem C, the point
+    # charges in C polarize the orbitals in both fragment A and B. However, the presence of charges in C does not
+    # directly contribute to the SAPT0 interaction energy, which is computed between A and B only.
 
+    # Now process the point charge data for the interacting fragments A and B
+    # We need to analyze the interaction between the point charges in one fragment and the other fragment
+    # Add external potential data for A
+
+    # We add zero entry for all the fragments that are not associated with the external potential
+    for val in total_ws['A'].values():
+        val.append(0.0)
+
+    for val in total_ws['B'].values():
+        val.append(0.0)
+
+    if os.path.exists("%s/Extern_A.xyz" %dirname):
+        fragkeys['A'].append("Extern-A")
+        fragkeysr['A'].append("Extern-A")
+        orbital_ws['A']['Extern-A'] = [0.0 for i in range(len(Qs['A']))]
+        total_ws['A']['Extern-A'] = [0.0 for i in range(len(osapt['Elst']))]
+        total_ws['A']['Extern-A'][-1] = 1.0
+        geom_extern_A = read_xyz('%s/Extern_A.xyz' % dirname)
+        for a in geom_extern_A:
+            geom.append(a)
+        frags['A']['Extern-A'] = list(range(len(Zs['A']), len(Zs['A']) + len(geom_extern_A)))
+
+    # Add external potential data for B
+    if os.path.exists("%s/Extern_B.xyz" %dirname):
+        fragkeys['B'].append("Extern-B")
+        fragkeysr['B'].append("Extern-B")
+        orbital_ws['B']['Extern-B'] = [0.0 for i in range(len(Qs['B']))]
+        total_ws['B']['Extern-B'] = [0.0 for i in range(len(osapt['Elst'][0]))]
+        total_ws['B']['Extern-B'][-1] = 1.0
+        geom_extern_B = read_xyz('%s/Extern_B.xyz' % dirname)
+        for b in geom_extern_B:
+            geom.append(b)
+        if os.path.exists("%s/Extern_A.xyz" %dirname):
+            frags['B']['Extern-B'] = list(range(len(Zs['A']) + len(geom_extern_A),
+                                                len(Zs['A']) + len(geom_extern_A) + len(geom_extern_B)))
+        else:
+            frags['B']['Extern-B'] = list(range(len(Zs['B']), len(Zs['B']) + len(geom_extern_B)))
+
+    # Add external potential data for C
+    # The point charges in C do not explicitly enter the SAPT0 interaction energy
+    if os.path.exists("%s/Extern_C.xyz" %dirname):
+        geom_extern_C = read_xyz('%s/Extern_C.xyz' % dirname)
+        for c in geom_extern_C:
+            geom.append(c)
+
+    order2  = extract_order2_fsapt(osapt, total_ws['A'], total_ws['B'], frags)
     order2r = collapse_links(order2, frags, Qs, orbital_ws, links5050)
 
     stuff = {}
