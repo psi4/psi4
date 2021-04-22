@@ -3252,12 +3252,14 @@ void FISAPT::felst() {
     // in the Elst.dat file generated after the F-SAPT analysis. The fsapt.py script reads this file and the
     // user-defined functional group partitioning and analyzes the F-SAPT interaction energy in terms of functional
     // group contributions.
+    //
     // For the nuclei-nuclei interactions (entries [0:nA-1, 0:nB-1]), the total number of A-B atoms is used for the rows
     // and columns but only the entries where nuclei A interact with nuclei B are actually nonzero. Entries
     // [nA:nA+na-1, nB:nB+nb-1] represent the interactions between the local occupied orbitals in A and the local occupied
     // orbitals in B. Lastly, entry [nA, nB] represent the interaction between the external point charges in A and B. 
     // Cross terms represent the interaction between nuclei and electrons, nuclei and external point charges, 
     // and electrons and external point charges.
+    //
     // Similar matrices are used for the other SAPT components.
     matrices_["Elst_AB"] = std::make_shared<Matrix>("Elst_AB", nA + na + 1, nB + nb + 1); // Add one entry for external
                                                                                           // potentials in A and B
