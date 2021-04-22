@@ -833,7 +833,7 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
     osapt = extract_osapt_data(dirname)
 
     # In F/I-SAPT, the point charges can be either in the interacting subsystems A and B or the environment C
-    # The interaction between the point charges in A and fragment B enters the SAPT0 interction energy, especially
+    # The interaction between the point charges in A and fragment B enters the SAPT0 interaction energy, especially
     # in the electrostatics and induction components. Similarly, the interaction between the charges in B and fragment A
     # enters the SAPT0 interaction energy. By contrast, when the point charges are assigned to subsystem C, the point
     # charges in C polarize the orbitals in both fragment A and B. However, the presence of charges in C does not
