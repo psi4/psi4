@@ -426,13 +426,13 @@ def load_basfam_other():
     # Here lie practical (non-validated) fitting bases for
     # Pople orbital basis sets
 
-    basis_sto3g.add_jkfit('def2-universal-JKFIT')
-    basis_sto3g.add_rifit('def2-SVP-RIFIT')
-    basis_sto6g.add_jkfit('def2-universal-JKFIT')
-    basis_sto6g.add_rifit('def2-SVP-RIFIT')
+    basis_sto3g.add_jkfit('def2-universal-jkfit')
+    basis_sto3g.add_rifit('def2-svp-ri')
+    basis_sto6g.add_jkfit('def2-universal-jkfit')
+    basis_sto6g.add_rifit('def2-svp-ri')
     # sto3g too small for add_guess
-    basis_321g.add_jkfit('def2-universal-JKFIT')
-    basis_321g.add_rifit('def2-SVP-RIFIT')
+    basis_321g.add_jkfit('def2-universal-jkfit')
+    basis_321g.add_rifit('def2-svp-ri')
     # 321g too small for add_guess
 
     basis_631g.add_jkfit('cc-pvdz-jkfit')

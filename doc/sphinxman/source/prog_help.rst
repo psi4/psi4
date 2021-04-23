@@ -37,7 +37,7 @@ Where to Get Help
 Slack
 -----
 
-|PSIfour| has an active `Slack channel <http://psi4.slack.com>`_
+|PSIfour| has an active `Slack channel <https://psi4.slack.com/>`_
 for developers, and a friendly community willing to answer your questions.  
 
 Reporting Bugs
