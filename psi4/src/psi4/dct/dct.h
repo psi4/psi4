@@ -107,7 +107,6 @@ class DCTSolver : public Wavefunction {
     void print_opdm();
     void build_cumulant_intermediates();
     void process_so_ints();
-    void build_G();
     void build_AO_tensors();
     void build_denominators();
     void update_fock();
