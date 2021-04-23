@@ -20,6 +20,9 @@
 # H 0.355789207347543
 
 
+[1.139889],
+[0.211763]])
+
 molecule mol {
   0 2
   O 0.0 0.0 0.0
@@ -49,6 +52,7 @@ quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
 avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
 vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vratios = wfn.array_variable('MBIS VOLUME RATIOS')
 
 
 # lands on different degenerate solutions due to high-symmetry wfn, so test stable values. (happens for molecular quadrupole, too, not just mbis.)

@@ -115,6 +115,7 @@ json_data["model"] = {
 json_data["keywords"]["scf_type"] = "pk"
 json_data["keywords"]["mp2_type"] = "conv"
 json_data["return_output"] = True
+json_data["extras"] = {"current_qcvars_only": True}
 json_ret = psi4.json_wrapper.run_json(json_data)
 
 
