@@ -42,4 +42,5 @@ Single-Point Energy |w---w| :py:func:`~psi4.energy`
 * :ref:`CFOUR Interfaced Energy Methods <table:energy_cfour>`
 
 .. autofunction:: psi4.energy(name [, molecule, return_wfn, restart_file])
+   :noindex:
 

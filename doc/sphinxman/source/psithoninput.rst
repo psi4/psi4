@@ -232,8 +232,8 @@ the input file, so if the last four commands in the above example were to read :
 the commands that set the print level would be ineffective, as they would be
 processed after the CCSD computation completes.
 
-In PsiAPI mode, one can use commands :py:func:`~psi4.set_options` and
-:py:func:`~psi4.set_module_options` like below. Note that these values
+In PsiAPI mode, one can use the command :py:func:`~psi4.set_options`
+like below for general and module-specific options. Note that these values
 should be of correct type, strings for strings, floats for floats like
 convergences. The function `~psi4.core.clean_options` that reinitializes
 all options may also be useful to separate calculations in a PsiAPI
@@ -242,11 +242,8 @@ session. ::
    psi4.set_options({
        'scf_type': 'pk',
        'e_convergence': 1.e-5,
-       'soscf': True
-   })
-
-   psi4.set_module_options({
-       'geom_maxiter': 50
+       'soscf': True,
+       'optking__geom_maxiter': 50
    })
 
 Basis Sets
@@ -418,7 +415,7 @@ and Cartiesian scans.
 Tables of Results
 =================
 
-The results of computations can be compactly tabulated with the :py:func:`~psi4.driver.Table` Psithon
+The results of computations can be compactly tabulated with the :py:func:`~psi4.driver.p4util.Table` Psithon
 function. For example, in the following potential energy surface scan for water ::
 
     molecule h2o {

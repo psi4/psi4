@@ -65,7 +65,7 @@ case of all other py-side options (in kwargs) has already been handled by
 It's often necessary to The function often needs to set options for the
 c-side modules it calls. In order that the state of the options set by the
 user remains when control is returned to the user, an
-:py:class:`~optproc.OptionsState` object is set up. See
+:py:class:`~psi4.driver.p4util.OptionsState` object is set up. See
 :ref:`sec:handlingOptions_py` for details. *All* options set by the
 function need to be included here, and *only* options set by the function
 should be included. Most options should be associated with a particular
@@ -87,7 +87,7 @@ module, but a few (see below) are given without module. ::
 
 If options need to be set, set them anywhere here. Options should be set
 locally to a module, except for those without a module in
-:py:class:`~optproc.OptionsState`. ::
+:py:class:`~psi4.driver.p4util.OptionsState`. ::
 
     # include if necessary as globals
     psi4.set_global_option('BASIS', guessbasis)
@@ -99,7 +99,7 @@ locally to a module, except for those without a module in
     psi4.set_local_option('MP2', 'WFN', 'MP2')
 
 If the regular scf module is to be run, run it through
-:py:func:`~proc.scf_helper` so that cast-up can be used. Also, add
+``psi4.driver.procrouting.proc.scf_helper`` so that cast-up can be used. Also, add
 the option to pass the reference wavefunction by pre-running scf,
 then running the module with the ``ref_wfn`` kwarg.  Also, if the full
 two-electron integrals are necessary for the post-scf, compute them if
@@ -122,7 +122,7 @@ Direct any post-scf modules to be run. ::
     psi4.ccsort()
     psi4.mp2()
 
-If an :py:class:`~optproc.OptionsState` object was set up, those options
+If an :py:class:`~psi4.driver.p4util.OptionsState` object was set up, those options
 need to be returned to the original user state with the following. ::
 
     # include if optstash = OptionsState( was set up previously

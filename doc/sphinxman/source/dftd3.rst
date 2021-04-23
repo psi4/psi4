@@ -322,6 +322,7 @@ This route is much faster than running a DFT-D energy.
 
 .. autofunction:: qcdb.Molecule.run_dftd3
 
+.. autoclass:: psi4.driver.procrouting.empirical_dispersion.EmpiricalDispersion
 
 .. comment print_stdout('  -D correction from Py-side')
 .. comment eneyne.update_geometry()

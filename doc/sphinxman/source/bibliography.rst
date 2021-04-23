@@ -71,7 +71,7 @@ Bibliography
 
 .. [Hohenstein:2011:174107]
    E. G. Hohenstein, R. M. Parrish, C. D. Sherrill, J. M. Turney, and H. F.
-   Schaefer, *J. Chem. Phys.* **135**, 174107 (2011).
+   Schaefer III, *J. Chem. Phys.* **135**, 174107 (2011).
 
 .. [Hohenstein:2011:2842]
    E. G. Hohenstein, H. M. Jaeger, E. J. Carrell, G. S. Tschumper, and
@@ -113,7 +113,7 @@ Bibliography
    See https://pubchem.ncbi.nlm.nih.gov/.
 
 .. [Sherrill:1999:CI]
-   C. D. Sherrill and H. F. Schaefer,
+   C. D. Sherrill and H. F. Schaefer III,
    *Advances in Quantum Chemistry*, Vol. 34, edited by P.-O. L\ |o_dots|\ wdin
    (Academic Press, New York, 1999), pages 143-269.
 
@@ -179,19 +179,19 @@ Bibliography
 
 ..
    [Evangelista:2010:4728]
-   F. A. Evangelista, E. Prochnow, J. Gauss, and H. F. Schaefer,
+   F. A. Evangelista, E. Prochnow, J. Gauss, and H. F. Schaefer III,
    *J. Chem. Phys.* **132**, (2010).
 
 .. [Evangelista:2009:4728]
-   F. A. Evangelista, A. C. Simmonett, H. F. Schaefer, III, D. Mukherjee, and W. D. Allen,
+   F. A. Evangelista, A. C. Simmonett, H. F. Schaefer III, D. Mukherjee, and W. D. Allen,
    *Phys. Chem. Chem. Phys.* **11**, 4728 (2009).
 
 .. [Evangelista:2006:154113]
-   F. A. Evangelista, W. D. Allen, and H. F. Schaefer, III,
+   F. A. Evangelista, W. D. Allen, and H. F. Schaefer III,
    *J. Chem. Phys.* **125**, 154113 (2006).
 
 .. [Evangelista:2008:124104]
-   F. A. Evangelista, A. C. Simmonett, W. D. Allen, H. F. Schaefer, III, and J. Gauss,
+   F. A. Evangelista, A. C. Simmonett, W. D. Allen, H. F. Schaefer III, and J. Gauss,
    *J. Chem. Phys.* **128**, 124104 (2008).
 
 .. [Cheng:084114]
@@ -245,7 +245,7 @@ Bibliography
    *Int. J. Quantum Chem.* **16**, 1069-1101 (1979).
 
 .. [Evangelista:2010:074107]
-   F. A. Evangelista, E. Prochnow, J. Gauss, and H. F. Schaefer,
+   F. A. Evangelista, E. Prochnow, J. Gauss, and H. F. Schaefer III,
    *J. Chem. Phys.* **132**, 074107 (2010).
 
 .. [Wennmohs:2008:217]
@@ -269,7 +269,7 @@ Bibliography
    *Chem. Phys.* **87**, 5968 (1987).
 
 .. [Crawford:1997:instability]
-   T. D. Crawford, J. F. Stanton, W. D. Allen, and H. F. Schaefer,
+   T. D. Crawford, J. F. Stanton, W. D. Allen, and H. F. Schaefer III,
    *J. Chem. Phys.*, **107**, 10626 (1997).
 
 .. [Sherrill:1998:od]
@@ -294,7 +294,7 @@ Bibliography
    *J. Chem. Phys.* **114**, 6983 (2001).
 
 .. [Bozkaya:2011:omp2]
-   U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer, and C. D. Sherrill
+   U. Bozkaya, J. M. Turney, Y. Yamaguchi, H. F. Schaefer III, and C. D. Sherrill
    *J. Chem. Phys.* **135**, 104103 (2011).
 
 .. [Bozkaya:2013:omp2grad]
@@ -310,7 +310,7 @@ Bibliography
    *J. Chem. Theory Comput.* **9**, 1452 (2013).
 
 .. [Bozkaya:2012:odtl]
-   U. Bozkaya and H. F. Schaefer,
+   U. Bozkaya and H. F. Schaefer III,
    *J. Chem. Phys.* **136**, 204114 (2012).
 
 .. [Bozkaya:2013:ocepa]
@@ -530,6 +530,6 @@ Bibliography
 .. [Smith:2018:3504]
     10.1021/acs.jctc.8b00286,
     "PSI4NUMPY: An Interactive Quantum Chemistry Programming Environment for Reference Implementations and Rapid Development",
-    D. G. A. Smith, L. A. Burns, D. A. Sirianni, D. R. Nascimento, A. Kumar, A. M. James, J. B. Schriber, T. Zhang, B. Zhang, A. S. Abbott, E. J. Berquist, M. H. Lechner, L. A. Cunha, A. G. Heide, J. M. Waldrop, T. Y. Takeshita, A. Alenaizan, D. Neuhauser, R. A. King, A. C. Simmonett, J. M. Turney, H. F. Schaefer, F. A. Evangelista, A. E. DePrince, T. D. Crawford, K. Patkowski, and C. D. Sherrill
+    D. G. A. Smith, L. A. Burns, D. A. Sirianni, D. R. Nascimento, A. Kumar, A. M. James, J. B. Schriber, T. Zhang, B. Zhang, A. S. Abbott, E. J. Berquist, M. H. Lechner, L. A. Cunha, A. G. Heide, J. M. Waldrop, T. Y. Takeshita, A. Alenaizan, D. Neuhauser, R. A. King, A. C. Simmonett, J. M. Turney, H. F. Schaefer III, F. A. Evangelista, A. E. DePrince, T. D. Crawford, K. Patkowski, and C. D. Sherrill
     *J. Chem. Theory Comput.* **14**, 3504-3511 (2018).
 
