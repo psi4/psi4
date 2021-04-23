@@ -30,12 +30,19 @@
 #include "psi4/pybind11.h"
 
 namespace py = pybind11;
+using namespace pybind11::literals;
 
-void export_benchmarks(py::module& m) {
-    m.def("benchmark_blas1", &psi::benchmark_blas1, "docstring");
-    m.def("benchmark_blas2", &psi::benchmark_blas2, "docstring");
-    m.def("benchmark_blas3", &psi::benchmark_blas3, "docstring");
-    m.def("benchmark_disk", &psi::benchmark_disk, "docstring");
-    m.def("benchmark_math", &psi::benchmark_math, "docstring");
-    m.def("benchmark_integrals", &psi::benchmark_integrals, "docstring");
+ void export_benchmarks(py::module& m) {
+    m.def("benchmark_blas1", &psi::benchmark_blas1, "max_dim"_a, "min_time"_a,
+          "Perform benchmark traverse of BLAS 1 routines. Use up to *max_dim* with each routine run at least *min_time* [s].");
+    m.def("benchmark_blas2", &psi::benchmark_blas2, "max_dim"_a, "min_time"_a,
+          "Perform benchmark traverse of BLAS 2 routines. Use up to *max_dim* with each routine run at least *min_time* [s].");
+    m.def("benchmark_blas3", &psi::benchmark_blas3, "max_dim"_a, "min_time"_a, "nthread"_a = 1,
+          "Perform benchmark traverse of BLAS 3 routines. Use up to *max_dim* with each routine run at least *min_time* [s] on *nthread*.");
+    m.def("benchmark_disk", &psi::benchmark_disk, "max_dim"_a, "min_time"_a,
+          "Perform benchmark of PSIO disk performance. Use up to *max_dim* with each routine run at least *min_time* [s].");
+    m.def("benchmark_math", &psi::benchmark_math, "min_time"_a,
+          "Perform benchmark of common double floating point operations including most of cmath. For each routine run at least *min_time* [s].");
+    m.def("benchmark_integrals", &psi::benchmark_integrals, "max_am"_a, "min_time"_a,
+          "Perform benchmark of psi integrals (of libmints type). Benchmark integrals called from different centers. For up to *max_am* with each shell combination run at least *min_time* [s].");
 }
