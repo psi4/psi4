@@ -379,10 +379,16 @@ void DCTSolver::compute_orbital_gradient_OV(bool separate_gbargamma) {
         // All we need is (gbargamma)^i_p gamma^p_a.
         auto zero = Dimension(nirrep_);
         const auto& SO = slices_.at("SO");
-        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(zero, soccpi_ + doccpi_), SO);
-        auto gbar_beta_block = mo_gbarGamma_B_.get_block(Slice(zero, doccpi_), SO);
-        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), SO);
-        auto gamma_beta_block = mo_gammaB_.get_block(Slice(zero, nsopi_), SO);
+        const auto& MO = slices_.at("MO");
+        // TODO: These slices grab blocks from the entire MO space.
+        // When I have frozen core, mo_gammaA_ should definitely be active indices only.
+        // This means I'll need a slice that grabs occ/vir from the active subspace, not the entire MO space.
+        // I don't know what mo_gbarGamma_A_ should look like then.
+        // I'll worry about how to implement this in the near future "add frozen core" PR.  JPM 04/23/21
+        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(slices_.at("ACTIVE_OCC_A"), MO);
+        auto gbar_beta_block = mo_gbarGamma_B_.get_block(slices_.at("ACTIVE_OCC_B"), MO);
+        auto gamma_alpha_block = mo_gammaA_.get_block(MO, slices_.at("ACTIVE_VIR_A"));
+        auto gamma_beta_block = mo_gammaB_.get_block(MO, slices_.at("ACTIVE_VIR_B"));
         auto alpha_jk = linalg::doublet(gbar_alpha_block, gamma_alpha_block, false, false);
         auto beta_jk = linalg::doublet(gbar_beta_block, gamma_beta_block, false, false);
 
