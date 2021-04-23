@@ -34,23 +34,26 @@ import copy
 import datetime
 import json
 import os
+import pprint
 import sys
 import traceback
 import uuid
 import warnings
-import pprint
-pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
+from collections import defaultdict
 
 import numpy as np
 import qcelemental as qcel
 import qcengine as qcng
-from collections import defaultdict
-
-from psi4 import core
 from psi4.extras import exit_printing
 from psi4.header import print_header
 from psi4.metadata import __version__
 from psi4.driver import driver, p4util
+
+from psi4 import core
+
+pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
+
+
 
 __all__ = ["run_qcschema", "run_json"]
 

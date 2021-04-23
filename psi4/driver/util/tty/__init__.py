@@ -27,16 +27,17 @@
 #
 
 import os
-import sys
 import struct
+import sys
 import textwrap
+
+from .color import *
 
 if sys.version_info[0] == 2:
     from StringIO import StringIO
 elif sys.version_info[0] > 2:
     from io import StringIO
 
-from .color import *
 
 _debug = False
 _verbose = False

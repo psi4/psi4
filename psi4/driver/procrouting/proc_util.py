@@ -25,6 +25,7 @@
 #
 # @END LICENSE
 #
+from typing import Tuple
 
 import numpy as np
 
@@ -208,7 +209,7 @@ def print_ci_results(ciwfn, rname, scf_e, ci_e, print_opdm_no=False):
     dvec.close_io_files(True)
 
 
-def prepare_sapt_molecule(sapt_dimer, sapt_basis):
+def prepare_sapt_molecule(sapt_dimer: core.Molecule, sapt_basis: str) -> Tuple[core.Molecule, core.Molecule, core.Molecule]:
     """
     Prepares a dimer molecule for a SAPT computations. Returns the dimer, monomerA, and monomerB.
     """

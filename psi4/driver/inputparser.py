@@ -31,8 +31,8 @@ module calls that access the C++ side of Psi4.
 
 """
 
-import re
 import os
+import re
 import sys
 import uuid
 

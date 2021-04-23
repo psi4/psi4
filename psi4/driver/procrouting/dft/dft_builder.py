@@ -77,14 +77,13 @@ dict = {
     },
 }
 """
-from psi4 import core
 from psi4.driver.p4util.exceptions import ValidationError
-
 import copy
 import collections
 
-import qcengine as qcng
-from qcengine.programs.empirical_dispersion_resources import dashcoeff
+from qcengine.programs.empirical_dispersion_resources import dashcoeff, get_dispersion_aliases
+
+from psi4 import core
 
 from . import libxc_functionals
 from . import lda_functionals
@@ -111,7 +110,7 @@ def get_functional_aliases(functional_dict):
     return aliases
 
 
-_dispersion_aliases = qcng.programs.empirical_dispersion_resources.get_dispersion_aliases()
+_dispersion_aliases = get_dispersion_aliases()
 
 functionals = {}
 dashcoeff_supplement = collections.defaultdict(lambda: collections.defaultdict(dict))

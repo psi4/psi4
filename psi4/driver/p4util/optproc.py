@@ -32,6 +32,7 @@ import sys
 from contextlib import contextmanager
 
 from psi4 import core
+
 from .exceptions import ValidationError
 
 
@@ -95,7 +96,7 @@ class OptionState(object):
 
 
 class OptionsState(object):
-    """Class to contain multiple :py:func:`~optproc.OptionsState` objects.
+    """Class to contain multiple :py:func:`~psi4.driver.p4util.OptionState` objects.
     Used in python driver functions to collect several options before altering
     them, then restoring before function return. ::
 

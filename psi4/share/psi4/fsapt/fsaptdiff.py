@@ -28,7 +28,8 @@
 # @END LICENSE
 #
 
-import sys, os
+import os
+import sys
 
 import psi4
 path = psi4.core.get_datadir()

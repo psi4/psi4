@@ -26,10 +26,10 @@
 # @END LICENSE
 #
 
-import os
 import atexit
 import datetime
-from typing import Union
+import os
+from typing import List, Union
 
 from qcelemental.util import which, which_import
 
@@ -53,15 +53,15 @@ def clean_numpy_files():
 atexit.register(clean_numpy_files)
 
 
-def exit_printing(start_time=None, success=None):
+def exit_printing(start_time: datetime.datetime = None, success: bool = None) -> None:
     """Prints the exit time and status.
 
     Parameters
     ----------
-    start_time : datetime.datetime, optional
-        starting time from which the elapsed time is computed.
-    success : bool
-        Provides a success flag, otherwise uses the _success_flag_ global variable
+    start_time
+         starting time from which the elapsed time is computed.
+    success
+        Provides a success flag, otherwise uses the ``_success_flag_`` global variable
 
     Returns
     -------
@@ -155,7 +155,7 @@ _addons_ = {
 }
 
 
-def addons(request=None):
+def addons(request: str = None) -> Union[bool, List[str]]:
     """Returns boolean of whether Add-On *request* is available to Psi4,
     either compiled in or searchable in $PSIPATH:$PATH, as relevant. If
     *request* not passed, returns list of available Add-Ons.
@@ -167,12 +167,13 @@ def addons(request=None):
 
 
 # Testing
-def test(extent='full', extras=None):
+def test(extent: str = "full", extras: List = None) -> int:
     """Runs a test suite through pytest.
 
     Parameters
     ----------
-    extent : {'smoke', 'quick', 'full', 'long'}
+    extent
+        {'smoke', 'quick', 'full', 'long'}
         All choices are defined, but choices may be redundant in some projects.
 
           * _smoke_ will be minimal "is-working?" test(s).
