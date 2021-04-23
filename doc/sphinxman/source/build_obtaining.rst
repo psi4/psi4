@@ -62,8 +62,7 @@ though the below remains valid.
   developing anything to contribute back to the code base.
 
   * Provided I still get good, threaded BLAS/LAPACK, OpenMP parallelism,
-    and optimization for a variety of processor architectures (except
-    Mac, which is least common denominator), I'm willing to forgo
+    and optimization for a variety of processor architectures, I'm willing to forgo
     architecture tuning wizardry to avoid compiling it myself.
 
     * I'm on Linux or Mac or Windows with Ubuntu Bash Shell.
@@ -121,8 +120,9 @@ Binary Installer
 
 * **Get Initially**
 
-  Just go to http://www.psicode.org/downloads.html and follow the
-  instructions there.
+  Just go to http://www.psicode.org/downloads.html, select "Installer",
+  "Stable Release", and your choice of architecture and Python version,
+  and follow the instructions there.
 
 * **Build**
 
@@ -155,6 +155,14 @@ Conda Binary Package
 
      >>> conda create -n p4env psi4 -c psi4
      >>> conda activate p4env
+
+  .. code-block:: bash
+
+     >>> # nightly build
+     >>> conda create -n p4env psi4 -c psi4/label/dev
+     >>> # Windows
+     >>> conda create -n p4env psi4 -c psi4 -c conda-forge
+
 
 * **Build**
 

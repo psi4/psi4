@@ -55,11 +55,11 @@ Planning: how to configure Psi4 and invoke CMake
 
 CMake does a good job scanning your computer to locate libraries, header
 files, and executables needed for compilation. So it's very possible that
-from :samp:`{top-level-psi4-dir}` source directory, you can call :samp:`cmake -H.
+from :samp:`{top-level-psi4-dir}` source directory, you can call :samp:`cmake -S.
 -B{objdir}` without any further arguments, and it will invoke ``cmake``,
 detect some appropriate defaults, configure the build, create a build
 directory :samp:`{objdir}`, and complete, leaving you to only invoke
-``make`` in the new build directory.
+``make`` or Ninja in the new build directory.
 
 Should this happy scenario not come to pass, or if the default build
 options are not to your taste, use the links within :ref:`core
@@ -89,7 +89,7 @@ installing |PSIfour|. More detail is given :ref:`here
 .. code-block:: console
 
     >>> cd {top-level-psi4-dir}
-    >>> cmake -H. -Bobjdir [your configuration options]
+    >>> cmake -S. -Bobjdir [your configuration options]
     >>> cd objdir
     >>> make -j`getconf _NPROCESSORS_ONLN`
     >>> make install
@@ -154,7 +154,7 @@ How to build, test, and install Psi4, in detail
 
 **5. Test**
 
-   Optionally, use CTest (thorough) or pytest (cursory) to test the build.
+   Optionally, use CTest and Pytest to test the build.
 
    * :ref:`faq:minutetests`
    * :ref:`faq:subsettests`
@@ -199,13 +199,13 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 * :ref:`Optimized BLAS and LAPACK libraries <cmake:lapack>` (preferably NOT one supplied by a standard
   Linux distribution)
 
-* :ref:`Python interpreter and headers <cmake:python>` (3.6 or 3.7) https://www.python.org/
+* :ref:`Python interpreter and headers <cmake:python>` (3.6+) https://www.python.org/
 
 * CMake (3.8+) https://cmake.org/download/
 
 * NumPy (needed at runtime *and* buildtime) https://numpy.org/
 
-* System utilities: GNU make, GNU install, POSIX threads (Pthreads) library
+* System utilities: GNU make and GNU install or Ninja, POSIX threads (Pthreads) library
 
 The following are also required for |PSIfour|, but if not detected, the
 build system will automatically download and build.
@@ -213,6 +213,8 @@ build system will automatically download and build.
 * :ref:`gau2grid <cmake:gau2grid>` |w---w| :ref:`[what is gau2grid?] <sec:gau2grid>` `[gau2grid min version] <https://github.com/psi4/psi4/blob/master/external/upstream/gau2grid/CMakeLists.txt#L1>`_
 
 * :ref:`Libint <cmake:libint>` |w---w| :ref:`[what is Libint?] <sec:libint>` `[Libint min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libint/CMakeLists.txt#L1>`_
+
+  * Libint requires Eigen and MPFR
 
 * :ref:`Libxc <cmake:libxc>` |w---w| :ref:`[what is Libxc?] <sec:libxc>` `[Libxc min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libxc/CMakeLists.txt#L1>`_
 
@@ -256,10 +258,11 @@ are available pre-built from conda.
   * CTest https://cmake.org/download/
   * Perl (for some coupled-cluster CTest tests) https://www.perl.org/
   * pytest (for installed testing) http://doc.pytest.org/en/latest/
+  * pytest-xdist (for installed testing in parallel)
 
 * |PSIfour| Documentation (available pre-built at :psicode:`psi4manual/master/index.html`)
 
-  * Sphinx (1.5+) http://sphinx-doc.org
+  * Sphinx (3.5+) http://sphinx-doc.org
   * Perl (for some auto-documentation scripts) https://www.perl.org/
   * nbsphinx (for converting Jupyter notebooks) http://nbsphinx.readthedocs.io/en/jupyter-theme/
   * sphinx-psi-theme https://github.com/psi4/sphinx-psi-theme

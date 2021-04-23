@@ -44,7 +44,7 @@ from psi4 import core
 from psi4.driver import qcdb
 
 from . import optproc
-from .exceptions import TestComparisonError, ValidationError
+from .exceptions import TestComparisonError, ValidationError, UpgradeHelper
 
 ## Python basis helps
 
