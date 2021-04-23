@@ -32,10 +32,11 @@ import os
 import sys
 
 import psi4
+
 path = psi4.core.get_datadir()
 sys.path.append('%s/fsapt' % path)
+from fsapt import *  # isort:skip
 
-from fsapt import *
 
 # => Driver Code <= #
 

@@ -151,8 +151,8 @@ def terminal_size():
 
     def ioctl_GWINSZ(fd):
         try:
-            import fcntl # Not available on Windows
-            import termios # Not available on Windows
+            import fcntl  # Not available on Windows
+            import termios  # Not available on Windows
             rc = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
         except:
             return

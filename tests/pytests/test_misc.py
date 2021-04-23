@@ -111,12 +111,12 @@ def test_deprecated_dcft_calls():
 
     # The errors trapped below are C-side, so they're nameless, Py-side.
     with pytest.raises(Exception) as e:
-        psi4.set_module_options('dcft', {'e_convergence': 9})
+        psi4.set_options({'dcft__e_convergence': 9})
 
     assert err_substr in str(e.value)
 
     with pytest.raises(Exception) as e:
-        psi4.set_module_options('dct', {'dcft_functional': 'odc-06'})
+        psi4.set_options({'dct__dcft_functional': 'odc-06'})
 
     assert err_substr in str(e.value)
 
@@ -130,6 +130,13 @@ def test_deprecated_component_dipole():
         ans = psi4.variable("current dipole x")
 
     assert ans == 5
+
+def test_deprecated_set_module_options():
+    err_substr = "instead of `psi4.set_options({<module>__<keys>: <vals>})`"
+
+    with pytest.warns(FutureWarning) as e:
+        psi4.set_module_options('scf', {'df_basis_scf': 9})
+
 
 def test_renamed_qcvars():
     psi4.set_variable("SCS(N)-MP2 TOTAL ENERGY", 3.3)
