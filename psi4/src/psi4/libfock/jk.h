@@ -717,14 +717,16 @@ class PSI_API DirectJK : public JK {
     // => Required Algorithm-Specific Variables <= //
 
     // Previous Iteration Matrices for Incremental Fock Build
+    std::vector<SharedMatrix> D_prev_;
     std::vector<SharedMatrix> J_prev_;
     std::vector<SharedMatrix> K_prev_;
-    std::vector<SharedMatrix> D_prev_;
+    std::vector<SharedMatrix> wK_prev_;
 
     // Delta Matrices for Incremental Fock Build
+    std::vector<SharedMatrix> del_D_;
     std::vector<SharedMatrix> del_J_;
     std::vector<SharedMatrix> del_K_;
-    std::vector<SharedMatrix> del_D_;
+    std::vector<SharedMatrix> del_wK_;
 
     // Current Direct SCF Iteration
     int iteration_ = 0;

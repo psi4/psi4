@@ -286,6 +286,11 @@ void DirectJK::compute_JK() {
         D_prev_.clear();
         del_D_.clear();
 
+        if (do_wK_) {
+            wK_prev_.clear();
+            del_wK_.clear();
+        }
+
         if (do_J_) {
             J_prev_.clear();
             del_J_.clear();
@@ -299,6 +304,11 @@ void DirectJK::compute_JK() {
         for (size_t N = 0; N < D_ao_.size(); N++) {
             D_prev_.push_back(std::make_shared<Matrix>("D Prev", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
             del_D_.push_back(std::make_shared<Matrix>("Delta D", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+
+            if (do_wK_) {
+                wK_prev_.push_back(std::make_shared<Matrix>("wK Prev", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
+                del_wK_.push_back(std::make_shared<Matrix>("Delta wK", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
+            }
                 
             if (do_J_) {
                 J_prev_.push_back(std::make_shared<Matrix>("J Prev", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
@@ -319,11 +329,12 @@ void DirectJK::compute_JK() {
     }
 
     // Do IFB on this iteration?
-    bool do_ifb_iteration = ifb_ && (!do_wK_) && (iteration_ >= 1) && (Dnorm > ifb_d_conv);
+    bool do_ifb_iteration = ifb_ && (iteration_ >= 1) && (Dnorm > ifb_d_conv);
     
     std::vector<SharedMatrix>& D_ref = (do_ifb_iteration ? del_D_ : D_ao_);
     std::vector<SharedMatrix>& J_ref = (do_ifb_iteration ? del_J_ : J_ao_);
     std::vector<SharedMatrix>& K_ref = (do_ifb_iteration ? del_K_ : K_ao_);
+    std::vector<SharedMatrix>& wK_ref = (do_ifb_iteration ? del_wK_ : wK_ao_);
 
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
@@ -333,13 +344,13 @@ void DirectJK::compute_JK() {
         }
         // TODO: Fast K algorithm
         if (do_J_) {
-            build_JK(ints, D_ao_, J_ao_, wK_ao_);
+            build_JK(ints, D_ref, J_ref, wK_ref);
         } else {
             std::vector<std::shared_ptr<Matrix>> temp;
             for (size_t i = 0; i < D_ao_.size(); i++) {
                 temp.push_back(std::make_shared<Matrix>("temp", primary_->nbf(), primary_->nbf()));
             }
-            build_JK(ints, D_ao_, temp, wK_ao_);
+            build_JK(ints, D_ref, temp, wK_ref);
         }
     }
 
@@ -369,48 +380,33 @@ void DirectJK::compute_JK() {
     }
 
     // Incremental Fock Build Code
-    if (ifb_ && !do_wK_ && (do_J_ || do_K_)) {
-        if (do_J_ && do_K_) {
-            if (do_ifb_iteration) { // RMS D greater than 1.0e-5
-                for (size_t N = 0; N < D_ao_.size(); N++) {
-                    J_prev_[N]->add(del_J_[N]);
-                    K_prev_[N]->add(del_K_[N]);
-                    J_ao_[N]->copy(J_prev_[N]);
-                    K_ao_[N]->copy(K_prev_[N]);
-                    D_prev_[N]->copy(D_ao_[N]);
+    if (ifb_) {
+        if (do_ifb_iteration) { // RMS D greater than 1.0e-5
+            for (size_t N = 0; N < D_ao_.size(); N++) {
+
+                if (do_wK_) {
+                    wK_prev_[N]->add(del_wK_[N]);
+                    wK_ao_[N]->copy(wK_prev_[N]);
                 }
-            } else { // RMS D less than 1.0e-5
-                for (size_t N = 0; N < D_ao_.size(); N++) {
-                    J_prev_[N]->copy(J_ao_[N]);
-                    K_prev_[N]->copy(K_ao_[N]);
-                    D_prev_[N]->copy(D_ao_[N]);
-                }
-            }
-        } else if (do_J_) {
-            if (do_ifb_iteration) {
-                for (size_t N = 0; N < D_ao_.size(); N++) {
+
+                if (do_J_) {
                     J_prev_[N]->add(del_J_[N]);
                     J_ao_[N]->copy(J_prev_[N]);
-                    D_prev_[N]->copy(D_ao_[N]);
                 }
-            } else {
-                for (size_t N = 0; N < D_ao_.size(); N++) {
-                    J_prev_[N]->copy(J_ao_[N]);
-                    D_prev_[N]->copy(D_ao_[N]);
-                }
-            }
-        } else {
-            if (do_ifb_iteration) {
-                for (size_t N = 0; N < D_ao_.size(); N++) {
+
+                if (do_K_) {
                     K_prev_[N]->add(del_K_[N]);
                     K_ao_[N]->copy(K_prev_[N]);
-                    D_prev_[N]->copy(D_ao_[N]);
                 }
-            } else {
-                for (size_t N = 0; N < D_ao_.size(); N++) {
-                    K_prev_[N]->copy(K_ao_[N]);
-                    D_prev_[N]->copy(D_ao_[N]);
-                }
+
+                D_prev_[N]->copy(D_ao_[N]);
+            }
+        } else { // RMS D less than 1.0e-5
+            for (size_t N = 0; N < D_ao_.size(); N++) {
+                if (do_wK_) wK_prev_[N]->copy(wK_ao_[N]);
+                if (do_J_) J_prev_[N]->copy(J_ao_[N]);
+                if (do_K_) K_prev_[N]->copy(K_ao_[N]);
+                D_prev_[N]->copy(D_ao_[N]);
             }
         }
     }
