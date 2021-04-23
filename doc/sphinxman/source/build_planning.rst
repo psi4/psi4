@@ -338,15 +338,58 @@ Additionally, there are runtime-loaded capabilities:
 * MDI |w---w| https://github.com/MolSSI-MDI/MDI_Library
 
 
+.. _`faq:condapsi4dev`:
+
+How to use conda to get a Psi4 development environment
+------------------------------------------------------
+
+|PSIfour| has a lot of dependencies, some of which are complicated
+to build. Fortunately, conda can supply them all. A conda
+package ``psi4-dev`` is available to gather the dependencies
+and build tools needed to compiler |PSIfour| from source. Go to
+:psicode:`installs/latest`, select "source" and "nightly build" along
+with Linux/Mac and a Python version. Follow its instructions to create
+a conda environment that has a script ``psi4-path-advisor``. Running
+``psi4-path-advisor --help`` shows more options. Running the script
+without arguments gives a cmake command that supplies paths to dependency
+conda packages to CMake's cache. You can add further cmake options to
+this command when you execute it. Once the cmake command has built your
+:samp:`{objdir}`, you can build |PSIfour|. Remember to activate this
+conda environment during |PSIfour| running or development. There are a
+few extra options to ``psi4-path-advisor`` to set up using conda's GNU
+compilers (on Linux), conda's Clang compilers (on Mac; less reliably),
+or your own Intel compilers backed by conda's GNU compilers (on Linux).
+
+.. code-block:: console
+
+   >>> git clone https://github.com/psi4/psi4.git && cd psi4
+   >>> conda create -n p4dev psi4-dev python=3.8 -c psi4/label/dev
+   >>> conda activate p4dev
+   >>> `psi4-path-advisor --gcc`
+   >>> cd objdir && make -j`getconf _NPROCESSORS_ONLN`
+
+
 .. _`faq:setupmaxameri`:
 
 How to configure code to use high angular momentum basis sets
 -------------------------------------------------------------
 
-The :ref:`Libint <sec:libint>` integral code handles arbitrary order
-angular momentum, but compiling that is prohibitive. The default of ``5``
-is generally good. ``7`` has met all of a research group's needs for
-years. ``4`` is handy for quickly testing other parts of the build.
+The :ref:`Libint <sec:libint>` integral code handles
+arbitrary order angular momentum (AM), but compiling that is
+prohibitive. The build process for Libint2 takes longer than
+for Libint1, so it's recommended to :ref:`use the conda packages
+<faq:condamaxameri>`. The AM controlling keyword ``MAX_AM_ERI``
+has definition changed a little from Libint1. It is used to ensure
+that conventional energies can use at least ``MAX_AM_ERI`` zeta. See
+:source:`/external/upstream/libint2/CMakeLists.txt` for a fuller
+discussion of AM capabilities. Unless :makevar:`BUILD_Libint2_GENERATOR`
+is set to ``ON``, an internal build of Libint2 will download a
+pregenerated tarball of at least :makevar:`MAX_AM_ERI` AM. If you
+want to build completely from generator source, turn on the keyword,
+but parts can only run in serial and parts benefit from parallel, so
+it's not recommended. All the AM generation settings would need to be
+edited in the above ``CMakeLists.txt`` rather than passing them into
+the |PSIfour| build directly.
 
 * Build with Higher Angular Momentum
 
@@ -377,7 +420,7 @@ remove the result of ``make install`` (if ever invoked), remove
 ``external/upstream/libint/``. If earlier Libint was built
 internally (as opposed to detecting an external installation),
 remove ``stage/include/libint/``, ``stage/share/cmake/Libint/``,
-``stage/lib/libint.so``, ``stage/lib/libderiv.so``. Edit MAX_AM_ERI
+``stage/lib/libint2.so.2``. Edit MAX_AM_ERI
 value in ``CMakeCache.txt``. Reinvoke ``make`` and check the number
 beside ``Found Libint`` in the CMake output.
 
@@ -395,17 +438,31 @@ and point CMake toward a pre-built Libint AM8 just fine.
 How to get high angular momentum integrals from conda
 -----------------------------------------------------
 
-Since February 2019, the |PSIfour| conda package on Linux has been the
-large AM8. Likewise, this is the package you get upon ::
+Libint2 conda packages are available from conda for Linux, Mac, and Windows.
 
-    conda install libint -c psi4
+The Linux package has base ``MAX_AM_ERI=7`` and can run 7z energies
+and gradients conventional, 6z energies and gradients density-fitted,
+and qz Hessians both conventional and density fitted.
 
-There is no need for the extra ``am8`` argument previously documented here.
+The Mac and Windows packages have base ``MAX_AM_ERI=5`` and can run
+5z energies, qz gradients, and tz Hessians, both conventional and
+density-fitted.
 
-On Mac, the Libint conda package itself and the Libint compiled into
-the |PSIfour| conda package remain AM6.
+Details about angular momentum settings are available here
+https://github.com/psi4/psi4/blob/master/external/upstream/libint2/CMakeLists.txt
+.
 
-Beware this issue: https://github.com/psi4/psi4/issues/1533
+.. Since February 2019, the |PSIfour| conda package on Linux has been the
+.. large AM8. Likewise, this is the package you get upon ::
+..
+..     conda install libint -c psi4
+..
+.. There is no need for the extra ``am8`` argument previously documented here.
+..
+.. On Mac, the Libint conda package itself and the Libint compiled into
+.. the |PSIfour| conda package remain AM6.
+..
+.. Beware this issue: https://github.com/psi4/psi4/issues/1533
 
 
 .. _`faq:setuphelp`:
@@ -537,16 +594,16 @@ are detected pre-built rather than built.
 ..    cd obj-gcc
 
 
-.. _`faq:erroreriam`:
-
-How to fix error "``RuntimeError: value for ERI``"
---------------------------------------------------
-
-You will need to rebuild Libint. Reissue ``cmake`` or edit
-``CMakeCache.txt`` with larger ``MAX_AM_ERI`` and rebuild.
-
-* :ref:`faq:setupmaxameri`
-* :ref:`faq:condamaxameri`
+.. .. _`faq:erroreriam`:
+..
+.. How to fix error "``RuntimeError: value for ERI``"
+.. --------------------------------------------------
+..
+.. You will need to rebuild Libint. Reissue ``cmake`` or edit
+.. ``CMakeCache.txt`` with larger ``MAX_AM_ERI`` and rebuild.
+..
+.. * :ref:`faq:setupmaxameri`
+.. * :ref:`faq:condamaxameri`
 
 .. _`faq:chooseobjdir`:
 
@@ -556,8 +613,8 @@ How to choose the compilation directory, ``{objdir}``
 * there is no default
 * common choices are ``objdir`` or ``build`` under :samp:`{top-level-psi4-dir}`
 
-  * ``cd {top-level-psi4-dir} && cmake -H. -Bobjdir``
-  * ``cd {top-level-psi4-dir} && cmake -H. -Bbuild``
+  * ``cd {top-level-psi4-dir} && cmake -S. -Bobjdir``
+  * ``cd {top-level-psi4-dir} && cmake -S. -Bbuild``
 
 * in-source builds (``*.cc`` and ``*.o`` in same directory) are disallowed
 * builds *outside* :samp:`{top-level-psi4-dir}` are permitted
@@ -674,9 +731,6 @@ Run |PSIfour|. ::
     SCF E.............................................................PASSED
 
 
-todo how to check if current py is compatible with compilation
-
-
 .. _`faq:modulenotfounderror`:
 
 How to solve ``ModuleNotFoundError: No module named 'psi4'``
@@ -695,7 +749,7 @@ How to configure paths for PsiAPI
 
 If you know the location of the |PSIfour| executable (``bin/psi4``)
 for Psithon mode and want to know the corresponding location to add to
-:envvar:`PYTHONPATH` for PsiAPI mode, execute ``psi4 --psiapi-path``. It
+:envvar:`PYTHONPATH` for PsiAPI mode, execute ``psi4 --psiapi``. It
 will return bash commands to set :envvar:`PATH` (for correct python
 interpreter) and :envvar:`PYTHONPATH` (to find psi4 module) correctly,
 after which ``import psi4`` will work.
@@ -710,6 +764,8 @@ after which ``import psi4`` will work.
     >>> export PYTHONPATH=/path/to/dir/of/psi4/core-dot-so:$PYTHONPATH
 
     >>> python -c "import psi4"
+
+    >>> python -c "import psi4;print(psi4.__file__, psi4.__version__)"
 
 
 .. _`faq:runordinarymodule`:
@@ -987,6 +1043,8 @@ On Mac, the following work nicely.
 :source:`cmake/custom_cxxstandard.cmake`, so either consult that file or
 try a test build to ensure your compiler is approved. Note that Intel
 compilers on Linux also rely on GCC, so both ``icpc`` and ``gcc`` versions are checked.
+Intel OneAPI Classic compilers work fine. OneAPI beta compilers build but have
+been only minimally tested.
 
 * :ref:`faq:modgcc`
 
