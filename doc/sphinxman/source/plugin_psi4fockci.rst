@@ -30,6 +30,8 @@
 
 .. index:: PSI4FOCKCI
 
+.. _`sec:fockci`:
+
 Psi4FockCI: A General Fock-Space CI For Spin-Flip And IP/EA
 ===========================================================
 

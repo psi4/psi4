@@ -637,11 +637,18 @@ PSI Variables by Alpha
 
 .. psivar:: DCT LAMBDA ENERGY
 
-   Correlation energy [Eh] in density cumulant theory.
+   An energy term in density cumulant theory [Eh]. This term is the
+   2-electron cumulant’s contribution contribution to the reduced
+   density matrix energy expression. Not recommended for interpretative
+   use except by reduced density matrix specialists.
 
 .. psivar:: DCT SCF ENERGY
 
-   Reference energy [Eh] in density cumulant theory.
+   An energy term in density cumulant theory [Eh]. This term is the
+   1-electron reduced density matrix (1RDM) contribution to the reduced
+   density matrix energy expression, plus the contribution of the
+   antisymmetrized product of 1RDMs. Not recommended for interpretative
+   use except by reduced density matrix specialists.
 
 .. psivar:: DCT THREE-PARTICLE ENERGY
 

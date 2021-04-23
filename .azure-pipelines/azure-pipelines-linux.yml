@@ -105,6 +105,8 @@ jobs:
         eigen \
         mpfr \
         pytest-xdist \
+        msgpack-python \
+        memory_profiler \
         conda-forge::qcelemental \
         conda-forge::qcengine \
         conda-forge::pymdi \

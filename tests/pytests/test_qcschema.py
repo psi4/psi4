@@ -109,6 +109,8 @@ def test_qcschema_cli(input_enc, input_fn, output_enc, output_fn, result_data_fi
         as_binary.append(output_fn)
 
     success, ret = run_psi4_cli(inputs, outfiles, cmds, as_binary=as_binary)
+    if ret["stdout"] != "":
+        print(f"<<<{ret['stdout']}>>>")
     assert compare_integers(True, success, "Computation Status")
     assert compare_integers(True, ret['stdout'] == '', "Empty stdout")
 

@@ -132,8 +132,10 @@ jobs:
                         conda-forge::gau2grid ^
                         psi4/label/dev::libint2 ^
                         conda-forge::libxc ^
+                        conda-forge::memory_profiler ^
                         conda-forge::mpfr ^
                         conda-forge::mpmath ^
+                        conda-forge::msgpack-python ^
                         conda-forge::qcelemental ^
                         conda-forge::qcengine
           pip install git+https://github.com/i-pi/i-pi.git@master-py3

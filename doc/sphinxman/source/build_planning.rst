@@ -201,7 +201,7 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 
 * :ref:`Python interpreter and headers <cmake:python>` (3.6+) https://www.python.org/
 
-* CMake (3.8+) https://cmake.org/download/
+* CMake (3.15+) https://cmake.org/download/
 
 * NumPy (needed at runtime *and* buildtime) https://numpy.org/
 
@@ -212,9 +212,10 @@ build system will automatically download and build.
 
 * :ref:`gau2grid <cmake:gau2grid>` |w---w| :ref:`[what is gau2grid?] <sec:gau2grid>` `[gau2grid min version] <https://github.com/psi4/psi4/blob/master/external/upstream/gau2grid/CMakeLists.txt#L1>`_
 
-* :ref:`Libint <cmake:libint>` |w---w| :ref:`[what is Libint?] <sec:libint>` `[Libint min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libint/CMakeLists.txt#L1>`_
+* :ref:`Libint <cmake:libint>` |w---w| :ref:`[what is Libint?] <sec:libint>` `[Libint min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libint/CMakeLists.txt#L1>`_ (Libint2 as of Nov 2020; added by v1.4)
 
-  * Libint requires Eigen and MPFR
+  * Eigen https://eigen.tuxfamily.org/index.php?title=Main_Page
+  * MPFR https://www.mpfr.org/
 
 * :ref:`Libxc <cmake:libxc>` |w---w| :ref:`[what is Libxc?] <sec:libxc>` `[Libxc min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libxc/CMakeLists.txt#L1>`_
 
@@ -225,6 +226,8 @@ build system will automatically download and build.
 * QCEngine |w---w| `[what is QCEngine?] <https://qcengine.readthedocs.io/en/latest/>`_ (March 2019; added by v1.4)
 
 Additionally, there are runtime-only dependencies:
+
+* msgpack-python for MessagePack https://msgpack.org/ (transitive dependency of QCElemental; optional for QCElemental but required for |PSIfour|)
 
 * NumPy https://numpy.org/
 
@@ -258,7 +261,7 @@ are available pre-built from conda.
   * CTest https://cmake.org/download/
   * Perl (for some coupled-cluster CTest tests) https://www.perl.org/
   * pytest (for installed testing) http://doc.pytest.org/en/latest/
-  * pytest-xdist (for installed testing in parallel)
+  * pytest-xdist (for installed testing in parallel) https://docs.pytest.org/en/2.1.0/xdist.html
 
 * |PSIfour| Documentation (available pre-built at :psicode:`psi4manual/master/index.html`)
 
@@ -267,6 +270,8 @@ are available pre-built from conda.
   * nbsphinx (for converting Jupyter notebooks) http://nbsphinx.readthedocs.io/en/jupyter-theme/
   * sphinx-psi-theme https://github.com/psi4/sphinx-psi-theme
   * See `["message" lines] <https://github.com/psi4/psi4/blob/master/doc/sphinxman/CMakeLists.txt>`_ for advice on obtaining docs dependencies
+
+* Ambit |w---w| https://github.com/jturney/ambit
 
 * :ref:`CheMPS2 <cmake:chemps2>` |w---w| :ref:`[what is CheMPS2?] <sec:chemps2>` `[CheMPS2 min version] <https://github.com/psi4/psi4/blob/master/external/upstream/chemps2/CMakeLists.txt#L2>`_
 
@@ -306,13 +311,31 @@ Additionally, there are runtime-loaded capabilities:
 
 * v2rdm_casscf |w---w| :ref:`[what is v2rdm_casscf?] <sec:v2rdm_casscf>`
 
-* snsmp2 |w---w| https://github.com/DEShawResearch/sns-mp2/commits/master
+* :ref:`sns-mp2 <sec:snsmp2>` |w---w| https://github.com/DEShawResearch/sns-mp2/commits/master
 
 * resp |w---w| https://github.com/cdsgroup/resp
 
 * gpu_dfcc |w---w| https://github.com/edeprince3/gpu_dfcc/commits/master
 
 * OpenFermion-Psi4 |w---w| https://github.com/quantumlib/OpenFermion
+
+* :ref:`cppe <sec:cppe>` |w---w| https://github.com/maxscheurer/cppe
+
+* mp2d |w---w| https://github.com/Chandemonium/MP2D
+
+* :ref:`FockCI <sec:fockci>` |w---w| https://github.com/shannonhouck/psi4fockci
+
+* cct3 |w---w| https://github.com/piecuch-group/cct3
+
+* :ref:`adcc <sec:adcc>` |w---w| https://github.com/adc-connect/adcc
+
+* :ref:`BrianQC <sec:brianqc>` |w---w| https://www.brianqc.com/
+
+* i-PI |w---w| http://ipi-code.org/
+
+* psixas |w---w| https://github.com/Masterluke87/psixas
+
+* MDI |w---w| https://github.com/MolSSI-MDI/MDI_Library
 
 
 .. _`faq:setupmaxameri`:
@@ -1610,14 +1633,20 @@ How to test a Psi4 installation
 ``ctest`` requires a connection to source files and ``cmake``
 machinery and so can only be performed from :samp:`{objdir}`
 (staged installation). To test an installed |PSIfour| (full or staged
-installation), a limited number of "smoke" tests are available to be
-run via pytest.
+installation), a supplementary test suite is available to be
+run via pytest. Running a limited number of "smoke" tests is
+generally sufficient to verify an installation.
 
   * From the executable
 
     .. code-block:: bash
 
+     # smoke tests only in serial
      psi4 --test
+     # smoke tests only in parallel
+     psi4 --test -n`getconf _NPROCESSORS_ONLN`
+     # most tests
+     psi4 --test full
 
   * From the library (|PSIfour| must be detectable as a Python
     module. See setup at :ref:`faq:psi4psiapipath`
@@ -1625,12 +1654,18 @@ run via pytest.
 
     .. code-block:: bash
 
+     # smoke tests only
+     python -c "import psi4; psi4.test('smoke')"
+     # most tests
      python -c "import psi4; psi4.test()"
 
   * From pytest directly. If package ``pytest-xdist`` is installed, can run in parallel.
 
     .. code-block:: bash
 
+     # smoke tests only
+     pytest {prefix}/lib/{PYMOD_INSTALL_LIBDIR}/psi4/tests/ -m smoke -n`getconf _NPROCESSORS_ONLN`
+     # all tests
      pytest {prefix}/lib/{PYMOD_INSTALL_LIBDIR}/psi4/tests/ -n`getconf _NPROCESSORS_ONLN`
 
 Output looks something like the below. ``PASSED`` in green is good
@@ -1727,7 +1762,7 @@ If you're modifying the Add-On's file or directory structure, be
 smart and ``rm`` all traces of it within ``{objdir}/stage/``,
 especially any ``*.pyc`` files.
 
-Alternatively to the above, you can instead build and install the
+Alternatively and preferentially to the above, you can instead build and install the
 Add-On library yourself, external to the |PSIfour| repository. This
 is especially useful if you want to avoid full recompiles of the
 Add-On at each change to the Add-On's source. Build the Add-On
