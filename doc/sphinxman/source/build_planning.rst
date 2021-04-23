@@ -1296,7 +1296,8 @@ I. Build with MKL and GCC (iomp5 needed instead of gomp for threading. use OpenM
 
   * Perhaps the best choice, if available, is Intel's MKL library,
     which includes efficient threaded BLAS and LAPACK (as of |PSIfour|
-    v1.1, earliest known working version is MKL 2013). MKL, which is
+    v1.1, earliest known working version is MKL 2013; as of v1.4,
+    should use at leat MKL 2019). MKL, which is
     freely available through conda, is the only threaded BLAS/LAPACK
     distribution fully supported by |PSIfour|.
 
@@ -1367,6 +1368,12 @@ How to configure Python for building Psi4
 
 **CMake Variables**
 
+Note that in v1.4, |PSIfour| switched from Numpy-written CMake Python
+detection to new CMake-written CMake Python detection. Usually only
+:makevar:`Python_EXECUTABLE` is now needed to hint Python's location. See
+https://cmake.org/cmake/help/latest/module/FindPython.html for full
+guidance.
+
 * :makevar:`Python_EXECUTABLE` |w---w| specify name or full path to Python interpreter.
 * :makevar:`Python_LIBRARY` |w---w| specify path to Python library.
 * :makevar:`Python_INCLUDE_DIR` |w---w| specify directory of Python headers. Contains ``Python.h``.
@@ -1383,15 +1390,15 @@ B. Build with specific Python
 
   .. code-block:: bash
 
-    >>> cmake -DPython_EXECUTABLE=/path/to/interp/python3.6
+    >>> cmake -DPython_EXECUTABLE=/path/to/interp/python3.9
 
 C. Build with full Python specification to root directory ``${PFXC}``
 
   .. code-block:: bash
 
     >>> cmake -DPython_EXECUTABLE="${PFXC}/bin/python" \
-              -DPython_LIBRARY="${PFXC}/lib/libpython3.5m.so" \
-              -DPython_INCLUDE_DIR="${PFXC}/include/python3.5m"
+              -DPython_LIBRARY="${PFXC}/lib/libpython3.9.so" \
+              -DPython_INCLUDE_DIR="${PFXC}/include/python3.9"
 
 
 .. _`faq:runtimepython`:
@@ -1546,7 +1553,7 @@ How to use Psi4 within a PBS queue
 
 You will usually need to set up a PBS job script that is setting all
 necessary environment variables, making sure the scratch directories are
-set up, and invokes the executable. An :ref:`example <sec:PBS>` PBS script
+set up, and invoking the executable. An :ref:`example <sec:PBS>` PBS script
 is provided in the manual, but make sure to also consult your own PBS
 documentation for appropriate setup.
 
@@ -1558,10 +1565,13 @@ How to update and rebuild Psi4
 
 Obtain code updates as appropriate from :ref:`faq:binary`,
 :ref:`faq:clonepsi4public`, or :ref:`faq:forkpsi4public`.  Move into
-:samp:`{objdir}` and reissue ``make``, whereupon CMake may reconfigure but
+:samp:`{objdir}` and reissue ``make`` or ``cmake --build .``, whereupon CMake may reconfigure but
 will only rebuild objects and libraries depending on changed files. It is
 scarcely ever necessary for the user to reinvoke ``cmake`` to update
-:samp:`{objdir}`.
+:samp:`{objdir}` based on changes to the |PSIfour| repository.
+Upon switching conda environments, though, one should
+make a new objdir since there are many full paths baked into
+:samp:`{objdir}/CMakeCache.txt`.
 
 
 .. _`faq:minutetests`:
@@ -1593,7 +1603,7 @@ and *testlabel* are regex of labels (*e.g.*, ``cc``, ``mints``,
 
 * Run tests in parallel with ``-j`` flag. For maximum parallelism: :samp:`ctest -j\`getconf _NPROCESSORS_ONLN\`\ `
 * Run full test suite: ``ctest``
-* Run about a third of the tests in 10--20 minutes, the so-called *quicktests*: ``ctest -L quick``
+* Run about a third of the tests in 5 minutes, the so-called *quicktests*: ``ctest -L quick``
 * Run the same subset of tests that TravisCI checks (not the full test suite): ``ctest -L quick``
 * Run the minimal number of tests to ensure Psi4 and any add-ons in working order: ``ctest -L smoke``
 * Run tests matching by name: ``ctest -R testname``
@@ -1601,6 +1611,15 @@ and *testlabel* are regex of labels (*e.g.*, ``cc``, ``mints``,
 * Run tests matching by label: ``ctest -L testlabel``
 * Run tests excluding those by label: ``ctest -LE testlabel``
 
+Pytest has similar commands
+* Run tests in parallel with ``-n`` flag (if extenstion pytest-xdist installed). For maximum parallelism: :samp:`pytest -n\`getconf _NPROCESSORS_ONLN\`\ `
+* Run full test suite: ``pytest``
+* Run the quick tests: ``pytest -m quick``
+* Run the minimal number of tests to ensure Psi4 and any add-ons in working order: ``pytest -m smoke``
+* Run tests matching by name: ``pytest -k testname``
+* Run tests excluding those by name: ``pytest -k "not testname"``
+* Run tests matching by label: ``pytest -m testlabel``
+* Run tests excluding those by label: ``pytest -m "not testlabel"``
 
 .. _`faq:testsoutput`:
 
@@ -1619,7 +1638,7 @@ How to see CTest testing errors
 
 When ``ctest`` reports that some (or all) tests have failed, look in your
 build directory for file
-:samp:`{objdir}/tests/Testing/Temporary/LastTest.log`. It may have a
+:samp:`{objdir}/Testing/Temporary/LastTest.log`. It may have a
 ``.tmp`` extension, depending on whether the last test was interrupted and
 a few other factors. Either way, this file should contain CMake's testing
 output, as well as everything that was printed to the screen.

@@ -1,4 +1,5 @@
 import json
+import pprint
 
 import numpy as np
 import pytest
@@ -7,6 +8,8 @@ import qcelemental as qcel
 import psi4
 
 from .utils import *
+
+pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 
 pytestmark = pytest.mark.quick
 
@@ -111,6 +114,7 @@ def test_qcschema_cli(input_enc, input_fn, output_enc, output_fn, result_data_fi
     success, ret = run_psi4_cli(inputs, outfiles, cmds, as_binary=as_binary)
     if ret["stdout"] != "":
         print(f"<<<{ret['stdout']}>>>")
+    pp.pprint(ret)
     assert compare_integers(True, success, "Computation Status")
     assert compare_integers(True, ret['stdout'] == '', "Empty stdout")
 
