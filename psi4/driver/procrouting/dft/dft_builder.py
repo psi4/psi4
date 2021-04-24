@@ -77,13 +77,13 @@ dict = {
     },
 }
 """
-from psi4.driver.p4util.exceptions import ValidationError
 import copy
 import collections
 
 from qcengine.programs.empirical_dispersion_resources import dashcoeff, get_dispersion_aliases
 
 from psi4 import core
+from ...p4util.exceptions import ValidationError
 
 from . import libxc_functionals
 from . import lda_functionals

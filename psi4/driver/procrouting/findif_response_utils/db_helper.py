@@ -39,7 +39,7 @@ import os
 import collections
 
 from psi4 import core
-from psi4.driver import p4util
+from ... import p4util
 
 
 def generate_inputs(db,name):

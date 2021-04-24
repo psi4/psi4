@@ -32,6 +32,9 @@ import time
 import numpy as np
 
 import psi4
+
+__all__ = ["ipi_broker"]
+
 try:
     from ipi.interfaces.clients import Client
     ipi_available = True

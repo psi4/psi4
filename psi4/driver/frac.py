@@ -29,10 +29,12 @@
 from typing import Callable, Union
 
 from psi4 import core
-from psi4.driver import p4util
-from psi4.driver import driver
-from psi4.driver.p4util.exceptions import *
 
+from . import p4util
+from .driver import energy
+from .p4util.exceptions import ConvergenceError, ValidationError
+
+__all__ = ["ip_fitting", "frac_nuke", "frac_traverse"]
 
 def frac_traverse(name, **kwargs):
     """Scan electron occupancy from +1 electron to -1.
@@ -157,7 +159,7 @@ def frac_traverse(name, **kwargs):
     if (neutral_guess):
         if (hf_guess):
             core.set_local_option("SCF", "REFERENCE", "UHF")
-        driver.energy('scf', dft_functional=name, molecule=molecule, **kwargs)
+        energy('scf', dft_functional=name, molecule=molecule, **kwargs)
         core.set_local_option("SCF", "GUESS", "READ")
         core.set_local_option("SCF", "DF_INTS_IO", "LOAD")
 
@@ -169,7 +171,7 @@ def frac_traverse(name, **kwargs):
     # => Burn the anion in with hf, if requested <= #
     if hf_guess:
         core.set_local_option("SCF", "REFERENCE","UHF")
-        driver.energy('scf', dft_functional=name, molecule=molecule, **kwargs)
+        energy('scf', dft_functional=name, molecule=molecule, **kwargs)
         core.set_local_option("SCF", "REFERENCE", "UKS")
         core.set_local_option("SCF", "GUESS", "READ")
         core.set_local_option("SCF", "DF_INTS_IO", "SAVE")
@@ -183,7 +185,7 @@ def frac_traverse(name, **kwargs):
         core.set_local_option("SCF", "FRAC_OCC", [LUMO])
         core.set_local_option("SCF", "FRAC_VAL", [occ])
 
-        E, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule, **kwargs)
+        E, wfn = energy('scf', dft_functional=name, return_wfn=True, molecule=molecule, **kwargs)
         C = 1
         if E == 0.0:
             E = core.variable('SCF ITERATION ENERGY')
@@ -219,7 +221,7 @@ def frac_traverse(name, **kwargs):
         if hf_guess:
             core.set_local_option("SCF", "FRAC_START", 0)
             core.set_local_option("SCF", "REFERENCE", "UHF")
-            driver.energy('scf', dft_functional=name, molecule=molecule, **kwargs)
+            energy('scf', dft_functional=name, molecule=molecule, **kwargs)
             core.set_local_option("SCF", "REFERENCE", "UKS")
             core.set_local_option("SCF", "GUESS", "READ")
         # NYI core.set_local_option("SCF", "FRAC_LOAD", False)
@@ -232,7 +234,7 @@ def frac_traverse(name, **kwargs):
         core.set_local_option("SCF", "FRAC_OCC", [HOMO])
         core.set_local_option("SCF", "FRAC_VAL", [occ])
 
-        E, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule, **kwargs)
+        E, wfn = energy('scf', dft_functional=name, return_wfn=True, molecule=molecule, **kwargs)
         C = 1
         if E == 0.0:
             E = core.variable('SCF ITERATION ENERGY')
@@ -350,7 +352,7 @@ def frac_nuke(name, **kwargs):
     stats = []
 
     # Run one SCF to burn things in
-    E, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule, **kwargs)
+    E, wfn = energy('scf', dft_functional=name, return_wfn=True, molecule=molecule, **kwargs)
 
     # Determine HOMO
     eps_a = wfn.epsilon_a()
@@ -390,7 +392,7 @@ def frac_nuke(name, **kwargs):
             core.set_local_option("SCF", "FRAC_OCC", [HOMO])
             core.set_local_option("SCF", "FRAC_VAL", [occ])
 
-            E, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule, **kwargs)
+            E, wfn = energy('scf', dft_functional=name, return_wfn=True, molecule=molecule, **kwargs)
             C = 1
             if E == 0.0:
                 E = core.variable('SCF ITERATION ENERGY')
@@ -554,7 +556,7 @@ def ip_fitting(name: Union[str, Callable], omega_l: float = 0.05, omega_r: float
         core.set_local_option("SCF", "GUESS", "READ")
         copy_file_to_scratch(read180, 'psi', 'ot', 180)
     core.set_local_option("SCF", "DF_INTS_IO", "SAVE")
-    E, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule,
+    E, wfn = energy('scf', dft_functional=name, return_wfn=True, molecule=molecule,
                            banner='IP Fitting SCF: Burn-in', **kwargs)
     core.set_local_option("SCF", "DF_INTS_IO", "LOAD")
 
@@ -603,7 +605,7 @@ def ip_fitting(name: Union[str, Callable], omega_l: float = 0.05, omega_r: float
 
     molecule.set_molecular_charge(charge0)
     molecule.set_multiplicity(mult0)
-    E0r, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule,
+    E0r, wfn = energy('scf', dft_functional=name, return_wfn=True, molecule=molecule,
                              banner='IP Fitting SCF: Neutral, Right Endpoint', **kwargs)
     eps_a = wfn.epsilon_a()
     eps_b = wfn.epsilon_b()
@@ -623,7 +625,7 @@ def ip_fitting(name: Union[str, Callable], omega_l: float = 0.05, omega_r: float
 
     molecule.set_molecular_charge(charge1)
     molecule.set_multiplicity(mult1)
-    E1r = driver.energy('scf', dft_functional=name, molecule=molecule,
+    E1r = energy('scf', dft_functional=name, molecule=molecule,
                                banner='IP Fitting SCF: Cation, Right Endpoint', **kwargs)
     core.IO.change_file_namespace(180, "ot", "cation")
 
@@ -653,7 +655,7 @@ def ip_fitting(name: Union[str, Callable], omega_l: float = 0.05, omega_r: float
     molecule.set_multiplicity(mult0)
     core.set_global_option("DOCC", [Nb])
     core.set_global_option("SOCC", [Na - Nb])
-    E0l, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule,
+    E0l, wfn = energy('scf', dft_functional=name, return_wfn=True, molecule=molecule,
                              banner='IP Fitting SCF: Neutral, Left Endpoint', **kwargs)
     eps_a = wfn.epsilon_a()
     eps_b = wfn.epsilon_b()
@@ -672,7 +674,7 @@ def ip_fitting(name: Union[str, Callable], omega_l: float = 0.05, omega_r: float
     molecule.set_multiplicity(mult1)
     core.set_global_option("DOCC", [Nb1])
     core.set_global_option("SOCC", [Na1 - Nb1])
-    E1l = driver.energy('scf', dft_functional=name, molecule=molecule,
+    E1l = energy('scf', dft_functional=name, molecule=molecule,
                         banner='IP Fitting SCF: Cation, Left Endpoint', **kwargs)
     core.IO.change_file_namespace(180, "ot", "cation")
 
@@ -709,7 +711,7 @@ def ip_fitting(name: Union[str, Callable], omega_l: float = 0.05, omega_r: float
         molecule.set_multiplicity(mult0)
         core.set_global_option("DOCC", [Nb])
         core.set_global_option("SOCC", [Na - Nb])
-        E0, wfn = driver.energy('scf', dft_functional=name, return_wfn=True, molecule=molecule,
+        E0, wfn = energy('scf', dft_functional=name, return_wfn=True, molecule=molecule,
                                 banner='IP Fitting SCF: Neutral, Omega = {:11.3E}'.format(omega), **kwargs)
         eps_a = wfn.epsilon_a()
         eps_b = wfn.epsilon_b()
@@ -727,7 +729,7 @@ def ip_fitting(name: Union[str, Callable], omega_l: float = 0.05, omega_r: float
         molecule.set_multiplicity(mult1)
         core.set_global_option("DOCC", [Nb1])
         core.set_global_option("SOCC", [Na1 - Nb1])
-        E1 = driver.energy('scf', dft_functional=name, molecule=molecule,
+        E1 = energy('scf', dft_functional=name, molecule=molecule,
                            banner='IP Fitting SCF: Cation, Omega = {:11.3E}'.format(omega), **kwargs)
         core.IO.change_file_namespace(180, "ot", "cation")
 

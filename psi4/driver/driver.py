@@ -45,14 +45,15 @@ from psi4.driver import driver_util
 from psi4.driver import driver_cbs
 from psi4.driver import driver_nbody
 from psi4.driver import driver_findif
-from psi4.driver import p4util
-from psi4.driver import qcdb
-from psi4.driver.procrouting import *
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.mdi_engine import mdi_run
+from . import qcdb
+from .p4util.exceptions import OptimizationConvergenceError, ManagedMethodError, ValidationError, UpgradeHelper
+from . import p4util
+from .procrouting import *
+from .mdi_engine import mdi_run
 
 # never import wrappers or aliases into this file
 
+__all__ = ["energy", "fchk", "freq", "frequencies", "frequency", "gdma", "gradient", "hessian", "molden", "opt", "optimize", "optimize_geometric", "prop", "properties", "tdscf", "vibanal_wfn",]
 
 def _find_derivative_type(ptype, method_name, user_dertype):
     r"""

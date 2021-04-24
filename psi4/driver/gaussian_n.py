@@ -26,14 +26,16 @@
 # @END LICENSE
 #
 
-from psi4.driver import driver
-from psi4.driver import p4util
 from psi4.driver import constants
-from psi4.driver.p4util.exceptions import ValidationError
 
 from psi4 import core
 
+from . import driver, p4util
+from .p4util.exceptions import ValidationError
+
 # never import aliases into this file
+
+__all__ = ["run_gaussian_2"]
 
 # Gn theory.
 

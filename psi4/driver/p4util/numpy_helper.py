@@ -38,6 +38,9 @@ from .exceptions import ValidationError
 ### Matrix and Vector properties
 
 
+__all__ = ["block_diagonal_array"]
+
+
 def _get_raw_views(self, copy=False):
     """
     Gets simple raw view of the passed in object.

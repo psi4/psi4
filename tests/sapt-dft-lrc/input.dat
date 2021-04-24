@@ -24,7 +24,7 @@ set {
 set SAPT_DFT_EXCH_DISP_SCALE_SCHEME none
 
 # Prepare the fragments
-sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(dimer, "dimer")
+sapt_dimer, monomerA, monomerB = driver.procrouting.proc_util.prepare_sapt_molecule(dimer, "dimer")
 
 # Run the first monomer
 set DFT_OMEGA 0.3
@@ -38,7 +38,7 @@ energyB, wfnB = energy("wB97", molecule=monomerB, return_wfn=True)
 wfnD = core.Wavefunction.build(sapt_dimer) 
 
 # Compute SAPT(DFT) from the provided wavefunctions
-data = procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
+data = driver.procrouting.sapt.sapt_dft(wfnD, wfnA, wfnB)
 
 for k, v in Eref.items():                                  #TEST
     compare_values(v / 1000.0, psi4.variable(k), 6, k) #TEST

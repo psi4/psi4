@@ -34,7 +34,10 @@
 |PSIfour| API: Linking C++ and Python
 =====================================
 
+.. automodapi:: psi4
+
 .. automodapi:: psi4.core
 
 .. automodapi:: psi4.driver
 
+.. automodapi:: psi4.driver.p4util

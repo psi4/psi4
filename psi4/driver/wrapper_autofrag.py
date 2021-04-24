@@ -30,6 +30,7 @@ from typing import List
 
 from psi4 import core
 
+__all__ = ["auto_fragments"]
 
 def auto_fragments(molecule: core.Molecule = None, seed_atoms: List = None) -> core.Molecule:
     r"""Detects fragments in unfragmented molecule using BFS algorithm.

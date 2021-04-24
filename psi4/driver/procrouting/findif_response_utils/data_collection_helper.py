@@ -31,7 +31,7 @@ Module of helper functions for distributed ccresponse computations.
 
 Defines functions for retrieving data computed at displaced geometries.
 """
-from psi4.driver import p4util
+from ...p4util.exceptions import ParsingError
 
 
 def collect_displaced_matrix_data(db, signature, row_dim):
@@ -89,7 +89,7 @@ def parse_geometry_matrix_data(outfile, matrix_name, row_tot):
             try:
                 n_tries += 1
                 if n_tries > (row_tot + 13):
-                    raise p4util.ParsingError('{} Matrix was unreadable. Scanned {}'
+                    raise ParsingError('{} Matrix was unreadable. Scanned {}'
                                     'lines.'.format(matrix_name, n_tries))
                 else:
                     (index, x, y, z) = line.split()
@@ -100,13 +100,13 @@ def parse_geometry_matrix_data(outfile, matrix_name, row_tot):
             except:
                 pass
         if (n_rows == row_tot) and (len(matrix_data) != 3 * row_tot):
-            raise p4util.ParsingError('Collecting {} data failed!'
+            raise ParsingError('Collecting {} data failed!'
                             '\nExpected {} elements but only captured {}'.format(
                                 matrix_name, 3 * row_tot, len(matrix_data)))
         if len(matrix_data) == 3 * row_tot:
             return matrix_data
 
-    raise p4util.ParsingError('data for {}  was not found in the output file, '
+    raise ParsingError('data for {}  was not found in the output file, '
                     'but it was marked for collection. Check output files '
                     'in displacement sub-dirs!'.format(matrix_name))
 

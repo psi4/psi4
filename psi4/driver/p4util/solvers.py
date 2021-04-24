@@ -40,6 +40,8 @@ Generalized iterative solvers for Psi4.
 
 """
 
+__all__ = ["cg_solver", "davidson_solver", "DIIS", "hamiltonian_solver", "SolverEngine"]
+
 
 def cg_solver(rhs_vec: List[core.Matrix], hx_function: Callable, preconditioner: Callable, guess: List[core.Matrix] = None, printer: Callable = None, printlvl: int = 1, maxiter: int = 20, rcond: float = 1.e-6) -> List[core.Matrix]:
     """

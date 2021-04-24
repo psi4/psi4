@@ -35,6 +35,7 @@ from psi4 import core
 
 from .exceptions import ValidationError
 
+__all__ = ["OptionState", "OptionsState", "OptionsStateCM"]
 
 class OptionState(object):
     """Class to store the state of a single *option*. If *module* given, the *option*

@@ -40,6 +40,7 @@ import warnings
 
 from psi4.driver import driver_cbs
 
+__all__ = ["fake_file11", "allen_focal_point", "sherrill_gold_standard"]
 
 # Python procedures like these can be run directly from the input file or integrated
 # with the energy(), etc. routines by means of lines like those at the end

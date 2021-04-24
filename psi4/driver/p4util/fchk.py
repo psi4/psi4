@@ -28,11 +28,13 @@
 """Module with utility functions for FCHK files."""
 
 import numpy as np
-from psi4.driver.p4util.testing import compare_strings, compare_arrays, compare_values, compare_integers
-from psi4 import core
-from .exceptions import ValidationError
 
-__all__ = ['fchkfile_to_string','compare_fchkfiles']
+from psi4 import core
+
+from .exceptions import ValidationError
+from .testing import compare_arrays, compare_integers, compare_strings, compare_values
+
+__all__ = ["compare_fchkfiles"]
 
 def _consume_fchk_section(input_list, index):
     """compare a float or integer matrix section"""

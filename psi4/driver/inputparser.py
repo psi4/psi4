@@ -37,9 +37,9 @@ import sys
 import uuid
 
 from psi4 import core
-from psi4.driver.p4util.util import set_memory
-from psi4.driver.p4util.exceptions import *
 
+from .p4util.exceptions import TestComparisonError, ValidationError
+from .p4util.util import set_memory
 
 # inputfile contents to be preserved from the processor
 literals = {}
@@ -326,7 +326,7 @@ def process_basis_block(matchobj):
                 (spaces, basname(basblock[idx]), basblock[idx + 1])
 
     result += """%s    return basstrings\n""" % (spaces)
-    result += """{}qcdb.libmintsbasisset.basishorde['{}'] = {}\n""" \
+    result += """{}psi4.driver.qcdb.libmintsbasisset.basishorde['{}'] = {}\n""" \
               .format(spaces, name.upper(), 'basisspec_psi4_yo__' + cleanbas)
     result += """%score.set_global_option(\"%s\", \"%s\")""" % (spaces, basistype, name)
     return result
@@ -716,16 +716,11 @@ def process_input(raw_input, print_level=1):
 
     # imports
     imports = '\n'.join(future_imports) + '\n'
+    imports += "import math\n"
+    imports += "import numpy as np\n"
     imports += 'import psi4\n'
-    imports += 'from psi4 import *\n'
     imports += 'from psi4.core import *\n'
-    imports += 'from psi4.driver.diatomic import anharmonicity\n'
-    imports += 'from psi4.driver.gaussian_n import *\n'
-    imports += 'from psi4.driver.frac import ip_fitting, frac_traverse\n'
-    imports += 'from psi4.driver.aliases import *\n'
-    imports += 'from psi4.driver.driver_cbs import *\n'
-    imports += 'from psi4.driver.wrapper_database import database, db, DB_RGT, DB_RXN\n'
-    imports += 'from psi4.driver.wrapper_autofrag import auto_fragments\n'
+    imports += 'from psi4 import *\n'
     imports += 'psi4_io = core.IOManager.shared_object()\n'
 
     # psirc (a baby PSIthon script that might live in ~/.psi4rc)

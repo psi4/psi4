@@ -26,25 +26,46 @@
 # @END LICENSE
 #
 """Module with utility functions used by several Python functions."""
-import os
 import ast
-import sys
-import math
-import pickle
-import inspect
-import warnings
-import contextlib
 import collections
+import contextlib
+import inspect
+import math
+import os
+import pickle
+import warnings
 from typing import List, Union
 
 import numpy as np
 import qcelemental as qcel
+from psi4.metadata import __version__
 
 from psi4 import core
-from psi4.metadata import __version__
-from .exceptions import ValidationError
-from . import p4regex
 
+from . import p4regex
+from .exceptions import ValidationError
+
+__all__ = [
+"kwargs_lower",
+#"get_psifile",
+#"format_molecule_for_input",
+#"format_options_for_input",
+#"format_kwargs_for_input",
+"drop_duplicates",
+#"all_casings",
+"getattr_ignorecase",
+"import_ignorecase",
+#"extract_sowreap_from_output",
+#"reset_pe_options",
+#"prepare_options_for_modules",
+#"prepare_options_for_set_options",
+#"state_to_atomicinput",
+#"mat2arr",
+#"format_currentstate_for_input",
+"expand_psivars",
+"provenance_stamp",
+"plump_qcvar",
+]
 
 def kwargs_lower(kwargs):
     """Function to rebuild and return *kwargs* dictionary

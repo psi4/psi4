@@ -29,13 +29,14 @@
 
 import numpy as np
 
-from psi4.driver import psifiles as psif
-from psi4.driver.p4util.testing import compare_integers, compare_values, compare_recursive
-from psi4.driver.procrouting.proc_util import check_iwl_file_from_scf_type
-
 from psi4 import core
-from .exceptions import ValidationError, TestComparisonError
 
+from .. import psifiles as psif
+from ..procrouting.proc_util import check_iwl_file_from_scf_type
+from .exceptions import ValidationError
+from .testing import compare_integers, compare_recursive, compare_values
+
+__all__ = ["compare_fcidumps", "energies_from_fcidump", "fcidump", "fcidump_from_file"]
 
 def fcidump(wfn, fname='INTDUMP', oe_ints=None):
     """Save integrals to file in FCIDUMP format as defined in Comp. Phys. Commun. 54 75 (1989)

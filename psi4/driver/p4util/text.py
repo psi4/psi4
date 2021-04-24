@@ -36,6 +36,8 @@ from psi4.driver import constants
 
 from psi4 import core
 
+__all__ = ["banner", "find_approximate_string_matches", "message_box", "print_stderr", "print_stdout", "Table"]
+
 
 class Table(object):
     """Class defining a flexible Table object for storing data."""

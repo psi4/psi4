@@ -197,7 +197,7 @@ if args['plugin_name']:
         args['plugin_template'] = 'basic'
 
     # This call does not return.
-    psi4.pluginutil.create_plugin(args['plugin_name'], args['plugin_template'])
+    psi4.driver.pluginutil.create_plugin(args['plugin_name'], args['plugin_template'])
 
     sys.exit()
 
@@ -303,7 +303,7 @@ with open(args["input"]) as f:
 # Preprocess
 if not args["skip_preprocessor"]:
     # PSI_SCRATCH must be set before this call!
-    content = psi4.process_input(content)
+    content = psi4.driver.process_input(content)
 
 # Handle Verbose
 if args["verbose"]:

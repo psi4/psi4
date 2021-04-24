@@ -38,16 +38,17 @@ from tempfile import NamedTemporaryFile
 from typing import Any, Dict, Union
 
 import numpy as np
-
 import qcelemental as qcel
-from psi4 import core
-from psi4.driver import qcdb
 
-from . import optproc
-from .exceptions import TestComparisonError, ValidationError, UpgradeHelper
+from psi4 import core
+
+from .. import qcdb
+from .exceptions import TestComparisonError, UpgradeHelper, ValidationError
+from .optproc import OptionsState
 
 ## Python basis helps
 
+__all__ = ["basis_helper", "pcm_helper", "set_module_options", "set_options"]
 
 @staticmethod
 def _pybuild_basis(mol,
@@ -364,7 +365,7 @@ def _core_jk_build(orbital_basis: core.BasisSet, aux: core.BasisSet = None, jk_t
 
     """
 
-    optstash = optproc.OptionsState(["SCF_TYPE"])
+    optstash = OptionsState(["SCF_TYPE"])
 
     if jk_type is not None:
         core.set_global_option("SCF_TYPE", jk_type)
@@ -513,10 +514,6 @@ def pcm_helper(block: str):
 def basname(name):
     """Imitates BasisSet.make_filename() without the gbs extension"""
     return name.lower().replace('+', 'p').replace('*', 's').replace('(', '_').replace(')', '_').replace(',', '_')
-
-
-def temp_circular_import_blocker():
-    pass
 
 
 def basis_helper(block, name='', key='BASIS', set_option=True):

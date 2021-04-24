@@ -25,36 +25,162 @@
 #
 # @END LICENSE
 #
+"""
+Python driver for Psi4
 
-import pickle
-
-from . import dependency_check
+isort:skip_file
+"""
 
 from qcelemental import constants
-from psi4.driver import psifiles as psif
 
-from psi4.driver.ipi_broker import ipi_broker
-from psi4.driver.molutil import *
-from psi4.driver.inputparser import process_input
-from psi4.driver.p4util.util import *
-from psi4.driver.p4util.testing import *
-from psi4.driver.p4util.fcidump import *
-from psi4.driver.p4util.fchk import *
-from psi4.driver.p4util.text import *
-from psi4.driver.qmmm import QMMM
-from psi4.driver.pluginutil import *
+from . import dependency_check
+from .inputparser import process_input
+from . import psifiles as psif
 
-from psi4.driver import gaussian_n
-from psi4.driver import aliases
-from psi4.driver import diatomic
-from psi4.driver import wrapper_database
-from psi4.driver import wrapper_autofrag
-from psi4.driver import schema_wrapper
-from psi4.driver import schema_wrapper as json_wrapper # Deprecate in 1.4
-from psi4.driver import frac
+from . import pluginutil
+from .pluginutil import *
 
-from psi4.driver.driver import *
+from . import ipi_broker
+from .ipi_broker import *
 
-# Single functions
-from psi4.driver.driver_cbs import cbs
-from psi4.driver.p4util.python_helpers import set_options, set_module_options, pcm_helper, basis_helper
+from . import molutil
+from .molutil import *
+
+from . import wrapper_autofrag
+from .wrapper_autofrag import *
+
+from . import p4util
+from .p4util import *
+
+from . import mdi_engine
+from .mdi_engine import *
+
+from . import driver_findif
+from .driver_findif import *
+
+from . import procrouting
+from .procrouting import *
+from .procrouting.proc import scf_helper  # plugins use psi4.driver.scf_helper
+
+from . import driver_util
+from .driver_util import *
+
+from . import driver_cbs
+from .driver_cbs import *
+
+from . import qmmm
+from .qmmm import *
+
+from . import driver_nbody_helper
+from .driver_nbody_helper import *
+
+from . import driver_nbody
+from .driver_nbody import *
+
+from . import driver
+from .driver import *
+
+from . import wrapper_database
+from .wrapper_database import *
+
+from . import frac
+from .frac import *
+
+from . import aliases
+from .aliases import *
+
+from . import gaussian_n
+from .gaussian_n import *
+
+from . import diatomic
+from .diatomic import *
+
+from . import schema_wrapper
+from . import schema_wrapper as json_wrapper # Deprecate in 1.4
+from .schema_wrapper import *
+
+
+__all__ = [
+    "ConvergenceError",
+    "DB_RGT",
+    "DB_RXN",
+    "ManagedMethodError",
+    "MissingMethodError",
+    "OptimizationConvergenceError",
+    "QMMM",
+    "SCFConvergenceError",
+    "TDSCFConvergenceError",
+    "TestComparisonError",
+    "UpgradeHelper",
+    "ValidationError",
+    "activate",
+    "allen_focal_point",
+    "anharmonicity",
+    "auto_fragments",
+    "banner",
+    "basis_helper",
+    "cbs",
+    "compare",
+    "compare_arrays",
+    "compare_cubes",
+    "compare_fchkfiles",
+    "compare_fcidumps",
+    "compare_integers",
+    "compare_matrices",
+    "compare_molrecs",
+    "compare_recursive",
+    "compare_strings",
+    "compare_values",
+    "compare_vectors",
+    "compare_wavefunctions",
+    "constants",
+    "corl_xtpl_helgaker_2",
+    "cubeprop",
+    "database",
+    "db",
+    "diatomic",  # used in tests but should encourage anharmonic instead
+    "driver_cbs",  # used in tests but should encourage xtpl instead
+    "energies_from_fcidump",
+    "energy",
+    "fake_file11",
+    "fchk",
+    "fcidump",
+    "fcidump_from_file",
+    "frac_nuke",
+    "frac_traverse",
+    "freq",
+    "frequencies",
+    "frequency",
+    "gdma",
+    "geometry",
+    "get_memory",
+    "gradient",
+    "hessian",
+    "ip_fitting",
+    "ipi_broker",
+    "json_wrapper",  # kill off in 1.5
+    "message_box",
+    "molden",
+    "oeprop",
+    "opt",
+    "optimize",
+    "optimize_geometric",
+    "p4util",  # used in tests but psi4.driver.p4util preferred
+    "pcm_helper",
+    "procedures",  # old plugins using this as `psi4.procedures`. current plugins use `psi4.driver.procedures` so not needed in all
+    "prop",
+    "properties",
+    "qcdb",
+    "scf_xtpl_helgaker_2",
+    "scf_xtpl_helgaker_3",
+    "scf_xtpl_karton_2",
+    "scf_xtpl_truhlar_2",
+    "schema_wrapper",
+    "set_memory",
+    "set_module_options",  # kill off in 1.5
+    "set_options",
+    "sherrill_gold_standard",
+    "tdscf",
+    "vibanal_wfn",
+    "xtpl_highest_1",
+]

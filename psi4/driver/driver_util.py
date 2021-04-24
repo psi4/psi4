@@ -29,11 +29,12 @@
 import re
 
 from psi4 import core
-from psi4.driver import qcdb
-from psi4.driver import p4util
-from psi4.driver.p4util.exceptions import *
-from psi4.driver.procrouting import *
 
+from . import p4util
+from .p4util.exceptions import ManagedMethodError, MissingMethodError, ValidationError
+from .procrouting import *
+
+__all__ = ["_set_convergence_criterion", "negotiate_derivative_type", "parse_arbitrary_order", "parse_cotton_irreps"]
 
 def _method_exists(ptype, method_name):
     r"""

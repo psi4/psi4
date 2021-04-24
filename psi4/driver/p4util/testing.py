@@ -34,7 +34,8 @@ import numpy as np
 import qcelemental as qcel
 
 from psi4 import core
-from psi4.driver import qcdb
+
+from .. import qcdb
 from .exceptions import TestComparisonError
 
 __all__ = [
