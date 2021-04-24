@@ -38,7 +38,7 @@ Conda Binary Distribution
    Psi4conda installers are not ready for either platform.
 
 |PSIfour| is available as a pre-compiled binary for Mac and Linux (and
-Windows, through the Ubuntu shell) architectures
+Windows, through the Ubuntu shell) and native Windows architectures
 through `Anaconda (formerly Continuum Analytics
 <https://www.anaconda.com/products/individual>`_, the company that produces
 `Anaconda Python <http://docs.continuum.io/anaconda/index.html>`_ (a
@@ -79,7 +79,7 @@ How to install a Psi4 binary with the Psi4conda installer, download site
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 `Download one of the nine installers
-<http://psicode.org/downloads.html>`_ (Linux/Mac/Windows; Py27/35/36).
+<http://psicode.org/downloads.html>`_ (Linux/Mac/Windows; Py36/37/38/39).
 ``bash`` it. Follow the prompts and *do* make the adjustments to
 :envvar:`PATH` and :envvar:`PSI_SCRATCH` that it suggests at the end. Test
 with ``psi4 --test`` (green and yellow good; red bad). Done. Explicit commands at :ref:`sec:psi4conda`.
@@ -91,43 +91,43 @@ How to install a Psi4 binary with the Psi4conda installer, command-line
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Sequence of commands to get you to a working |PSIfour| on Linux,
-Mac, or Windows (Ubuntu shell for Windows accepts Linux installers).
+Mac, Windows (Ubuntu shell for Windows accepts Linux installers), or native Windows.
 Installs Miniconda+Psi4+AddOns into ``$HOME/psi4conda`` and
 the |PSIfour| executable into the main conda environment at
 ``$HOME/psi4conda/bin/psi4``.
 
 .. code-block:: bash
 
-    # Linux
-    # py27|py35|py36 for alternate python versions
-    >>> curl -O "http://vergil.chemistry.gatech.edu/download/Psi4conda-latest-py35-Linux-x86_64.sh" --keepalive-time 2
-    >>> bash
-    >>> bash Psi4conda-latest-py35-Linux-x86_64.sh -b -p $HOME/psi4conda  # agrees to license terms
-    >>> echo "export PATH=$HOME/psi4conda/bin:\$PATH" >> ~/.bashrc
+    # Linux or WSL (Windows Subsystem for Linux)
+    # py36|py37|py38|py39 for alternate python versions
+    >>> curl "http://vergil.chemistry.gatech.edu/psicode-download/Psi4conda-1.4rc1-py38-Linux-x86_64.sh" -o Psi4conda-latest-py38-Linux-x86_64.sh --keepalive-time 2
+    >>> bash Psi4conda-latest-py38-Linux-x86_64.sh -b -p $HOME/psi4conda  # agrees to license terms
+    >>> (bash) echo $'. $HOME/psi4conda/etc/profile.d/conda.sh\nconda activate' >> ~/.bashrc
+    >>> (tcsh) echo "source $HOME/psi4conda/etc/profile.d/conda.csh\nconda activate" >> ~/.tcshrc
     # log out, log back in so conda and psi4 in path
     >>> psi4 --test
 
 .. code-block:: bash
 
     # Mac
-    # py27|py35|py36 for alternate python versions
+    # py36|py37|py38|py39 for alternate python versions
     >>> curl -O "http://vergil.chemistry.gatech.edu/download/Psi4conda-latest-py35-MacOSX-x86_64.sh" --keepalive-time 2
-    >>> bash
-    >>> bash Psi4conda-latest-py35-MacOSX-x86_64.sh -b -p $HOME/psi4conda  # agrees to license terms
-    >>> echo "export PATH=$HOME/psi4conda/bin:\$PATH" >> ~/.bash_profile
+    >>> curl "http://vergil.chemistry.gatech.edu/psicode-download/Psi4conda-1.4rc1-py38-MacOSX-x86_64.sh" -o Psi4conda-latest-py38-MacOSX-x86_64.sh --keepalive-time 2
+    >>> bash Psi4conda-latest-py38-MacOSX-x86_64.sh -b -p $HOME/psi4conda  # agrees to license terms
+    >>> (bash) echo $'. $HOME/psi4conda/etc/profile.d/conda.sh\nconda activate' >> ~/.bash_profile
+    >>> (tcsh) echo "source $HOME/psi4conda/etc/profile.d/conda.csh\nconda activate" >> ~/.tcshrc
     # log out, log back in so conda and psi4 in path
     >>> psi4 --test
 
 .. code-block:: bash
 
     # Windows
-    # py27|py35|py36 for alternate python versions
-    >>> curl -O "http://vergil.chemistry.gatech.edu/download/Psi4conda-latest-py35-Windows-x86_64.sh" --keepalive-time 2
-    >>> bash
-    >>> bash Psi4conda-latest-py35-Windows-x86_64.sh -b -p $HOME/psi4conda  # agrees to license terms
-    >>> echo "export PATH=$HOME/psi4conda/bin:\$PATH" >> ~/.bashrc
-    # log out, log back in so conda and psi4 in path
-    >>> psi4 --test
+    # py38 only python version
+    # download via button at https://psicode.netlify.app/installs/latest with "Windows", "Installer", and "Stable Release" selected
+    >>> # install via GUI by double-clicking downloaded `.exe` file analogous to https://conda.io/projects/conda/en/latest/user-guide/install/windows.html
+    >>> # -OR- install via following line
+    >>>  start /wait "" Psi4conda-1.4rc1-py38-Windows-x86_64.exe /InstallationType=JustMe /RegisterPython=0 /S /D=%UserProfile%\psi4conda
+    >>>  psi4 --test
 
 That last command tested that ``psi4`` is in your path, and it's finding
 all the libraries it needs. It works because :envvar:`PSI_SCRATCH`
@@ -146,8 +146,6 @@ Configuration for this set-up is summarized at :ref:`faq:runfrombinary`.
 
 .. note:: |PSIfour| installs a Python distribution alongside, so you should choose an installer based on the Python version you *want*, irrespective of any Python version you *have*.
 
-.. note:: Above commands use bash for installation and set up your environment for bash at runtime. To use csh at runtime, follow the on-screen directions at the end of the installation or consult step 7 below.
-
 
 .. _`faq:psi4pkg`:
 
@@ -161,9 +159,9 @@ distribution.
 .. code-block:: bash
 
     # Linux or Mac or Windows
-    # substitute x.x by 3.5|3.6|3.7 for alternate python versions
+    # substitute x.x by 3.6|3.7|3.8|3.9 for alternate python versions
     # remove `-c psi4/label/dev` to get stable releases instead of nightly builds
-    >>> conda create -n p4env python=x.x psi4 psi4-rt -c psi4/label/dev -c psi4
+    >>> conda create -n p4env python=x.x psi4 -c psi4/label/dev
 
 Activate environment and make the adjustments to :envvar:`PATH` and
 :envvar:`PSI_SCRATCH` that it suggests at the end. Test with ``psi4
@@ -179,13 +177,15 @@ Activate environment and make the adjustments to :envvar:`PATH` and
   above, but the environment name (:samp:`{p4env}` above) can be
   substituted.
 
-* Only reason for ``psi4-rt`` package is to get the QC runtime
-  add-ons; could say any combination of ``dftd3 gcp v2rdm_casscf snsmp2`` instead of ``psi4-rt``;
-  or leave them out if you don't want them.
+* The ``psi4-rt`` package can be added to the package list to get the
+  QC runtime add-ons; could say any combination of ``v2rdm_casscf snsmp2
+  openfermion-psi4 adcc cppe`` etc. instead of ``psi4-rt``.
 
-* Grab a Miniconda through ``curl -o Miniconda-latest.sh
-  "https://repo.continuum.io/miniconda/Miniconda3-latest-[MacOSX|Linux]-x86_64.sh"``,
-  selecting between Mac and Linux.
+* Grab a Miniconda through one of the below, selecting OS.
+
+  >>> curl -O "https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh"
+  >>> curl -O "https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-MacOSX-x86_64.sh"
+  >>> curl -O "https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Windows-x86_64.exe"
 
 
 .. _`faq:updatepsi4`:
