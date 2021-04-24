@@ -90,14 +90,22 @@ def sanitize_name(name):
 available_plugins = []
 psidatadir = core.get_datadir()
 plugin_path = join_path(psidatadir, "plugin")
-for dir in os.listdir(plugin_path):
-    if os.path.isdir(join_path(plugin_path, dir)):
-        available_plugins.append(dir)
+for sdir in os.listdir(plugin_path):
+    if os.path.isdir(join_path(plugin_path, sdir)):
+        available_plugins.append(sdir)
 
 
-def create_plugin(name, template):
-    """Generate plugin in directory with sanitized *name* based upon *template*."""
+def create_plugin(name: str, template: str) -> None:
+    f"""Generate plugin in directory with sanitized *name* based upon *template*.
 
+    Parameters
+    ----------
+    name
+        Name of plugin. Should not have any fancy characters or reserved keywords.
+    template : {{{available_plugins}}}
+        Which existing template to model off of.
+
+    """
     name = sanitize_name(name)
     template_path = join_path(plugin_path, template)
 

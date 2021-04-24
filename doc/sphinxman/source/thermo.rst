@@ -73,7 +73,7 @@ Examples
 A thermochemical analysis is performed after any full (not just specific
 symmetry subgroups). If the wavefunction is retained, it may be reused
 at a different temperature, pressure, rotational symmetry number, or
-isotopic substitution through the function :py:func:`qcdb.vib.thermo`
+isotopic substitution through the function :py:func:`psi4.driver.qcdb.vib.thermo`
 as is shown in :srcsample:`freq-isotope2`.
 
 A few summary psivars are set: "ZPVE", "THERMAL ENERGY CORRECTION",

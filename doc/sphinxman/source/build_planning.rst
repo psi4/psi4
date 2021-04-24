@@ -55,11 +55,11 @@ Planning: how to configure Psi4 and invoke CMake
 
 CMake does a good job scanning your computer to locate libraries, header
 files, and executables needed for compilation. So it's very possible that
-from :samp:`{top-level-psi4-dir}` source directory, you can call :samp:`cmake -H.
+from :samp:`{top-level-psi4-dir}` source directory, you can call :samp:`cmake -S.
 -B{objdir}` without any further arguments, and it will invoke ``cmake``,
 detect some appropriate defaults, configure the build, create a build
 directory :samp:`{objdir}`, and complete, leaving you to only invoke
-``make`` in the new build directory.
+``make`` or Ninja in the new build directory.
 
 Should this happy scenario not come to pass, or if the default build
 options are not to your taste, use the links within :ref:`core
@@ -89,7 +89,7 @@ installing |PSIfour|. More detail is given :ref:`here
 .. code-block:: console
 
     >>> cd {top-level-psi4-dir}
-    >>> cmake -H. -Bobjdir [your configuration options]
+    >>> cmake -S. -Bobjdir [your configuration options]
     >>> cd objdir
     >>> make -j`getconf _NPROCESSORS_ONLN`
     >>> make install
@@ -141,7 +141,7 @@ How to build, test, and install Psi4, in detail
 
    ::
 
-    >>> cmake -H. -B{objdir} -DCMAKE_INSTALL_PREFIX={prefix} [your configuration options]
+    >>> cmake -S. -B{objdir} -DCMAKE_INSTALL_PREFIX={prefix} [your configuration options]
 
 **4. Compile**
 
@@ -154,7 +154,7 @@ How to build, test, and install Psi4, in detail
 
 **5. Test**
 
-   Optionally, use CTest (thorough) or pytest (cursory) to test the build.
+   Optionally, use CTest and Pytest to test the build.
 
    * :ref:`faq:minutetests`
    * :ref:`faq:subsettests`
@@ -199,20 +199,23 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 * :ref:`Optimized BLAS and LAPACK libraries <cmake:lapack>` (preferably NOT one supplied by a standard
   Linux distribution)
 
-* :ref:`Python interpreter and headers <cmake:python>` (3.6 or 3.7) https://www.python.org/
+* :ref:`Python interpreter and headers <cmake:python>` (3.6+) https://www.python.org/
 
-* CMake (3.8+) https://cmake.org/download/
+* CMake (3.15+) https://cmake.org/download/
 
 * NumPy (needed at runtime *and* buildtime) https://numpy.org/
 
-* System utilities: GNU make, GNU install, POSIX threads (Pthreads) library
+* System utilities: GNU make and GNU install or Ninja, POSIX threads (Pthreads) library
 
 The following are also required for |PSIfour|, but if not detected, the
 build system will automatically download and build.
 
 * :ref:`gau2grid <cmake:gau2grid>` |w---w| :ref:`[what is gau2grid?] <sec:gau2grid>` `[gau2grid min version] <https://github.com/psi4/psi4/blob/master/external/upstream/gau2grid/CMakeLists.txt#L1>`_
 
-* :ref:`Libint <cmake:libint>` |w---w| :ref:`[what is Libint?] <sec:libint>` `[Libint min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libint/CMakeLists.txt#L1>`_
+* :ref:`Libint <cmake:libint>` |w---w| :ref:`[what is Libint?] <sec:libint>` `[Libint min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libint/CMakeLists.txt#L1>`_ (Libint2 as of Nov 2020; added by v1.4)
+
+  * Eigen https://eigen.tuxfamily.org/index.php?title=Main_Page
+  * MPFR https://www.mpfr.org/
 
 * :ref:`Libxc <cmake:libxc>` |w---w| :ref:`[what is Libxc?] <sec:libxc>` `[Libxc min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libxc/CMakeLists.txt#L1>`_
 
@@ -223,6 +226,8 @@ build system will automatically download and build.
 * QCEngine |w---w| `[what is QCEngine?] <https://qcengine.readthedocs.io/en/latest/>`_ (March 2019; added by v1.4)
 
 Additionally, there are runtime-only dependencies:
+
+* msgpack-python for MessagePack https://msgpack.org/ (transitive dependency of QCElemental; optional for QCElemental but required for |PSIfour|)
 
 * NumPy https://numpy.org/
 
@@ -256,14 +261,17 @@ are available pre-built from conda.
   * CTest https://cmake.org/download/
   * Perl (for some coupled-cluster CTest tests) https://www.perl.org/
   * pytest (for installed testing) http://doc.pytest.org/en/latest/
+  * pytest-xdist (for installed testing in parallel) https://docs.pytest.org/en/2.1.0/xdist.html
 
 * |PSIfour| Documentation (available pre-built at :psicode:`psi4manual/master/index.html`)
 
-  * Sphinx (1.5+) http://sphinx-doc.org
+  * Sphinx (3.5+) http://sphinx-doc.org
   * Perl (for some auto-documentation scripts) https://www.perl.org/
   * nbsphinx (for converting Jupyter notebooks) http://nbsphinx.readthedocs.io/en/jupyter-theme/
   * sphinx-psi-theme https://github.com/psi4/sphinx-psi-theme
   * See `["message" lines] <https://github.com/psi4/psi4/blob/master/doc/sphinxman/CMakeLists.txt>`_ for advice on obtaining docs dependencies
+
+* Ambit |w---w| https://github.com/jturney/ambit
 
 * :ref:`CheMPS2 <cmake:chemps2>` |w---w| :ref:`[what is CheMPS2?] <sec:chemps2>` `[CheMPS2 min version] <https://github.com/psi4/psi4/blob/master/external/upstream/chemps2/CMakeLists.txt#L2>`_
 
@@ -303,7 +311,7 @@ Additionally, there are runtime-loaded capabilities:
 
 * v2rdm_casscf |w---w| :ref:`[what is v2rdm_casscf?] <sec:v2rdm_casscf>`
 
-* snsmp2 |w---w| https://github.com/DEShawResearch/sns-mp2/commits/master
+* :ref:`sns-mp2 <sec:snsmp2>` |w---w| https://github.com/DEShawResearch/sns-mp2/commits/master
 
 * resp |w---w| https://github.com/cdsgroup/resp
 
@@ -311,16 +319,77 @@ Additionally, there are runtime-loaded capabilities:
 
 * OpenFermion-Psi4 |w---w| https://github.com/quantumlib/OpenFermion
 
+* :ref:`cppe <sec:cppe>` |w---w| https://github.com/maxscheurer/cppe
+
+* mp2d |w---w| https://github.com/Chandemonium/MP2D
+
+* :ref:`FockCI <sec:fockci>` |w---w| https://github.com/shannonhouck/psi4fockci
+
+* cct3 |w---w| https://github.com/piecuch-group/cct3
+
+* :ref:`adcc <sec:adcc>` |w---w| https://github.com/adc-connect/adcc
+
+* :ref:`BrianQC <sec:brianqc>` |w---w| https://www.brianqc.com/
+
+* i-PI |w---w| http://ipi-code.org/
+
+* psixas |w---w| https://github.com/Masterluke87/psixas
+
+* MDI |w---w| https://github.com/MolSSI-MDI/MDI_Library
+
+
+.. _`faq:condapsi4dev`:
+
+How to use conda to get a Psi4 development environment
+------------------------------------------------------
+
+|PSIfour| has a lot of dependencies, some of which are complicated
+to build. Fortunately, conda can supply them all. A conda
+package ``psi4-dev`` is available to gather the dependencies
+and build tools needed to compiler |PSIfour| from source. Go to
+:psicode:`installs/latest`, select "source" and "nightly build" along
+with Linux/Mac and a Python version. Follow its instructions to create
+a conda environment that has a script ``psi4-path-advisor``. Running
+``psi4-path-advisor --help`` shows more options. Running the script
+without arguments gives a cmake command that supplies paths to dependency
+conda packages to CMake's cache. You can add further cmake options to
+this command when you execute it. Once the cmake command has built your
+:samp:`{objdir}`, you can build |PSIfour|. Remember to activate this
+conda environment during |PSIfour| running or development. There are a
+few extra options to ``psi4-path-advisor`` to set up using conda's GNU
+compilers (on Linux), conda's Clang compilers (on Mac; less reliably),
+or your own Intel compilers backed by conda's GNU compilers (on Linux).
+
+.. code-block:: console
+
+   >>> git clone https://github.com/psi4/psi4.git && cd psi4
+   >>> conda create -n p4dev psi4-dev python=3.8 -c psi4/label/dev
+   >>> conda activate p4dev
+   >>> `psi4-path-advisor --gcc`
+   >>> cd objdir && make -j`getconf _NPROCESSORS_ONLN`
+
 
 .. _`faq:setupmaxameri`:
 
 How to configure code to use high angular momentum basis sets
 -------------------------------------------------------------
 
-The :ref:`Libint <sec:libint>` integral code handles arbitrary order
-angular momentum, but compiling that is prohibitive. The default of ``5``
-is generally good. ``7`` has met all of a research group's needs for
-years. ``4`` is handy for quickly testing other parts of the build.
+The :ref:`Libint <sec:libint>` integral code handles
+arbitrary order angular momentum (AM), but compiling that is
+prohibitive. The build process for Libint2 takes longer than
+for Libint1, so it's recommended to :ref:`use the conda packages
+<faq:condamaxameri>`. The AM controlling keyword ``MAX_AM_ERI``
+has definition changed a little from Libint1. It is used to ensure
+that conventional energies can use at least ``MAX_AM_ERI`` zeta. See
+:source:`/external/upstream/libint2/CMakeLists.txt` for a fuller
+discussion of AM capabilities. Unless :makevar:`BUILD_Libint2_GENERATOR`
+is set to ``ON``, an internal build of Libint2 will download a
+pregenerated tarball of at least :makevar:`MAX_AM_ERI` AM. If you
+want to build completely from generator source, turn on the keyword,
+but parts can only run in serial and parts benefit from parallel, so
+it's not recommended. All the AM generation settings would need to be
+edited in the above ``CMakeLists.txt`` rather than passing them into
+the |PSIfour| build directly.
 
 * Build with Higher Angular Momentum
 
@@ -351,7 +420,7 @@ remove the result of ``make install`` (if ever invoked), remove
 ``external/upstream/libint/``. If earlier Libint was built
 internally (as opposed to detecting an external installation),
 remove ``stage/include/libint/``, ``stage/share/cmake/Libint/``,
-``stage/lib/libint.so``, ``stage/lib/libderiv.so``. Edit MAX_AM_ERI
+``stage/lib/libint2.so.2``. Edit MAX_AM_ERI
 value in ``CMakeCache.txt``. Reinvoke ``make`` and check the number
 beside ``Found Libint`` in the CMake output.
 
@@ -369,17 +438,31 @@ and point CMake toward a pre-built Libint AM8 just fine.
 How to get high angular momentum integrals from conda
 -----------------------------------------------------
 
-Since February 2019, the |PSIfour| conda package on Linux has been the
-large AM8. Likewise, this is the package you get upon ::
+Libint2 conda packages are available from conda for Linux, Mac, and Windows.
 
-    conda install libint -c psi4
+The Linux package has base ``MAX_AM_ERI=7`` and can run 7z energies
+and gradients conventional, 6z energies and gradients density-fitted,
+and qz Hessians both conventional and density fitted.
 
-There is no need for the extra ``am8`` argument previously documented here.
+The Mac and Windows packages have base ``MAX_AM_ERI=5`` and can run
+5z energies, qz gradients, and tz Hessians, both conventional and
+density-fitted.
 
-On Mac, the Libint conda package itself and the Libint compiled into
-the |PSIfour| conda package remain AM6.
+Details about angular momentum settings are available here
+https://github.com/psi4/psi4/blob/master/external/upstream/libint2/CMakeLists.txt
+.
 
-Beware this issue: https://github.com/psi4/psi4/issues/1533
+.. Since February 2019, the |PSIfour| conda package on Linux has been the
+.. large AM8. Likewise, this is the package you get upon ::
+..
+..     conda install libint -c psi4
+..
+.. There is no need for the extra ``am8`` argument previously documented here.
+..
+.. On Mac, the Libint conda package itself and the Libint compiled into
+.. the |PSIfour| conda package remain AM6.
+..
+.. Beware this issue: https://github.com/psi4/psi4/issues/1533
 
 
 .. _`faq:setuphelp`:
@@ -507,20 +590,20 @@ are detected pre-built rather than built.
 ..   .. code-block:: bash
 .. 
 ..    cd $top-level-psi4-dir
-..    cmake -H. -Bobj-gcc
+..    cmake -S. -Bobj-gcc
 ..    cd obj-gcc
 
 
-.. _`faq:erroreriam`:
-
-How to fix error "``RuntimeError: value for ERI``"
---------------------------------------------------
-
-You will need to rebuild Libint. Reissue ``cmake`` or edit
-``CMakeCache.txt`` with larger ``MAX_AM_ERI`` and rebuild.
-
-* :ref:`faq:setupmaxameri`
-* :ref:`faq:condamaxameri`
+.. .. _`faq:erroreriam`:
+..
+.. How to fix error "``RuntimeError: value for ERI``"
+.. --------------------------------------------------
+..
+.. You will need to rebuild Libint. Reissue ``cmake`` or edit
+.. ``CMakeCache.txt`` with larger ``MAX_AM_ERI`` and rebuild.
+..
+.. * :ref:`faq:setupmaxameri`
+.. * :ref:`faq:condamaxameri`
 
 .. _`faq:chooseobjdir`:
 
@@ -530,8 +613,8 @@ How to choose the compilation directory, ``{objdir}``
 * there is no default
 * common choices are ``objdir`` or ``build`` under :samp:`{top-level-psi4-dir}`
 
-  * ``cd {top-level-psi4-dir} && cmake -H. -Bobjdir``
-  * ``cd {top-level-psi4-dir} && cmake -H. -Bbuild``
+  * ``cd {top-level-psi4-dir} && cmake -S. -Bobjdir``
+  * ``cd {top-level-psi4-dir} && cmake -S. -Bbuild``
 
 * in-source builds (``*.cc`` and ``*.o`` in same directory) are disallowed
 * builds *outside* :samp:`{top-level-psi4-dir}` are permitted
@@ -547,7 +630,7 @@ Create a file like ``do-configure`` with the ``cmake`` command and options
 
  >>> cd {top-level-psi4-dir}
  >>> cat do-configure
-     cmake -H. -B{objdir} \
+     cmake -S. -B{objdir} \
          -DCMAKE_INSTALL_PATH="/Users/me/psi4" \
          -DCMAKE_PREFIX_PATH="/Users/me/externals/install-libint" \
          -DMAX_AM_ERI=6 \
@@ -648,9 +731,6 @@ Run |PSIfour|. ::
     SCF E.............................................................PASSED
 
 
-todo how to check if current py is compatible with compilation
-
-
 .. _`faq:modulenotfounderror`:
 
 How to solve ``ModuleNotFoundError: No module named 'psi4'``
@@ -669,7 +749,7 @@ How to configure paths for PsiAPI
 
 If you know the location of the |PSIfour| executable (``bin/psi4``)
 for Psithon mode and want to know the corresponding location to add to
-:envvar:`PYTHONPATH` for PsiAPI mode, execute ``psi4 --psiapi-path``. It
+:envvar:`PYTHONPATH` for PsiAPI mode, execute ``psi4 --psiapi``. It
 will return bash commands to set :envvar:`PATH` (for correct python
 interpreter) and :envvar:`PYTHONPATH` (to find psi4 module) correctly,
 after which ``import psi4`` will work.
@@ -684,6 +764,8 @@ after which ``import psi4`` will work.
     >>> export PYTHONPATH=/path/to/dir/of/psi4/core-dot-so:$PYTHONPATH
 
     >>> python -c "import psi4"
+
+    >>> python -c "import psi4;print(psi4.__file__, psi4.__version__)"
 
 
 .. _`faq:runordinarymodule`:
@@ -961,6 +1043,8 @@ On Mac, the following work nicely.
 :source:`cmake/custom_cxxstandard.cmake`, so either consult that file or
 try a test build to ensure your compiler is approved. Note that Intel
 compilers on Linux also rely on GCC, so both ``icpc`` and ``gcc`` versions are checked.
+Intel OneAPI Classic compilers work fine. OneAPI beta compilers build but have
+been only minimally tested.
 
 * :ref:`faq:modgcc`
 
@@ -994,14 +1078,14 @@ is through conda.
    x86_64-apple-darwin13.4.0
 
    # build with Clang
-   >>> cmake -H. -Bbuild \
+   >>> cmake -S. -Bbuild \
         -DCMAKE_C_COMPILER=${CLANG} \
         -DCMAKE_CXX_COMPILER=${CLANGXX} \
         -DCMAKE_CXX_FLAGS="-stdlib=libc++" \
         -DOpenMP_CXX_FLAG="-fopenmp=libiomp5"
 
    # build with Intel
-   >>> cmake -H. -Bbuild \
+   >>> cmake -S. -Bbuild \
         -DCMAKE_C_COMPILER=icc \
         -DCMAKE_CXX_COMPILER=icpc \
         -DCMAKE_C_FLAGS="-clang-name=${CLANG}" \
@@ -1041,12 +1125,12 @@ system. The latter route, tested on Linux with Intel compilers, is below.
          x86_64-conda_cos6-linux-gnu
 
          # build with GNU
-         >>> cmake -H. -Bbuild \
+         >>> cmake -S. -Bbuild \
               -DCMAKE_C_COMPILER=${CC} \
               -DCMAKE_CXX_COMPILER=${CXX} \
 
          # build with Intel
-         >>> cmake -H. -Bbuild \
+         >>> cmake -S. -Bbuild \
               -DCMAKE_C_COMPILER=icc \
               -DCMAKE_CXX_COMPILER=icpc \
               -DCMAKE_C_FLAGS="-gnu-prefix=${HOST}-" \
@@ -1054,7 +1138,7 @@ system. The latter route, tested on Linux with Intel compilers, is below.
 
    # (B) tell CMake to tell the compiler which GCC to use
          >>> GCC7=/path/to/miniconda/envs/gcc72
-         >>> cmake -H. -Bbuild \
+         >>> cmake -S. -Bbuild \
               -DCMAKE_C_COMPILER=icc \
               -DCMAKE_CXX_COMPILER=icpc \
               -DCMAKE_C_FLAGS="-gnu-prefix=${GCC7}/bin/x86_64-conda_cos6-linux-gnu-" \
@@ -1078,10 +1162,17 @@ How to configure a Psi4 build on Cray
 Cray systems strongly prefer to build static libraries, but |PSIfour|
 needs to be dynamic to function as a Python module. Courtesy of @misha
 at the forum and various supercomputer guides, building |PSIfour| on
-Cray requires setting environment variables :envvar:`CRAYPE_LINK_TYPE`
-and :envvar:`CRAY_ADD_RPATH` before running `cmake`. ::
+Cray requires setting environment variables before running `cmake`. ::
 
     CRAYPE_LINK_TYPE=dynamic CRAY_ADD_RPATH=yes cmake ...
+
+.. envvar:: CRAYPE_LINK_TYPE
+
+   Set to allow |PSIfour| to build as shared library on Cray supercomputers.
+
+.. envvar:: CRAY_ADD_RPATH
+
+   Set to true to allow |PSIfour| to build on Cray supercomputers.
 
 
 .. _`cmake:fortran`:
@@ -1173,11 +1264,17 @@ How to configure BLAS/LAPACK for building Psi4
 
 * :makevar:`BLAS_TYPE` |w---w| CMake variable to specify which BLAS libraries to look for among ``MKL|OPENBLAS|ESSL|ATLAS|ACML|SYSTEM_NATIVE``.
 * :makevar:`LAPACK_TYPE` |w---w| CMake variable to specify which LAPACK libraries to look for among ``MKL|OPENBLAS|ESSL|ATLAS|ACML|SYSTEM_NATIVE``.
-* :envvar:`MKL_ROOT` |w---w| Environment variable set by Intel compilervars scripts. Sufficient to trigger math detection of MKL at this location.
-* :envvar:`MATH_ROOT` |w---w| Environment variable to specify root directory in which BLAS/LAPACK libraries should be detected (*e.g.*, ``${MATH_ROOT}/lib64/libblas.so`` and ``${MATH_ROOT}/lib64/liblapack.so``).
 * :makevar:`LAPACK_LIBRARIES` |w---w| CMake variable to specify BLAS/LAPACK libraries explicitly, bypassing math detection. Should be ";"-separated list of full paths.
 * :makevar:`LAPACK_INCLUDE_DIRS` |w---w| CMake variable to specify BLAS/LAPACK header location explicitly, bypassing math detection. Only needed for MKL.
 * :makevar:`OpenMP_LIBRARY_DIRS` |w---w| CMake variable to specify OpenMP library (iomp5/gomp/omp) directories explicitly. Should be ";"-separated list of full directory paths. Usually the solution to error ``Could NOT find MathOpenMP``.
+
+.. envvar:: MKL_ROOT
+
+  Environment variable set by Intel compilervars scripts. Sufficient to trigger math detection of MKL at this location.
+
+.. envvar:: MATH_ROOT
+
+   Environment variable to specify root directory in which BLAS/LAPACK libraries should be detected (*e.g.*, ``${MATH_ROOT}/lib64/libblas.so`` and ``${MATH_ROOT}/lib64/liblapack.so``).
 
 **Examples**
 
@@ -1257,7 +1354,8 @@ I. Build with MKL and GCC (iomp5 needed instead of gomp for threading. use OpenM
 
   * Perhaps the best choice, if available, is Intel's MKL library,
     which includes efficient threaded BLAS and LAPACK (as of |PSIfour|
-    v1.1, earliest known working version is MKL 2013). MKL, which is
+    v1.1, earliest known working version is MKL 2013; as of v1.4,
+    should use at leat MKL 2019). MKL, which is
     freely available through conda, is the only threaded BLAS/LAPACK
     distribution fully supported by |PSIfour|.
 
@@ -1328,6 +1426,12 @@ How to configure Python for building Psi4
 
 **CMake Variables**
 
+Note that in v1.4, |PSIfour| switched from Numpy-written CMake Python
+detection to new CMake-written CMake Python detection. Usually only
+:makevar:`Python_EXECUTABLE` is now needed to hint Python's location. See
+https://cmake.org/cmake/help/latest/module/FindPython.html for full
+guidance.
+
 * :makevar:`Python_EXECUTABLE` |w---w| specify name or full path to Python interpreter.
 * :makevar:`Python_LIBRARY` |w---w| specify path to Python library.
 * :makevar:`Python_INCLUDE_DIR` |w---w| specify directory of Python headers. Contains ``Python.h``.
@@ -1344,15 +1448,15 @@ B. Build with specific Python
 
   .. code-block:: bash
 
-    >>> cmake -DPython_EXECUTABLE=/path/to/interp/python3.6
+    >>> cmake -DPython_EXECUTABLE=/path/to/interp/python3.9
 
 C. Build with full Python specification to root directory ``${PFXC}``
 
   .. code-block:: bash
 
     >>> cmake -DPython_EXECUTABLE="${PFXC}/bin/python" \
-              -DPython_LIBRARY="${PFXC}/lib/libpython3.5m.so" \
-              -DPython_INCLUDE_DIR="${PFXC}/include/python3.5m"
+              -DPython_LIBRARY="${PFXC}/lib/libpython3.9.so" \
+              -DPython_INCLUDE_DIR="${PFXC}/include/python3.9"
 
 
 .. _`faq:runtimepython`:
@@ -1507,7 +1611,7 @@ How to use Psi4 within a PBS queue
 
 You will usually need to set up a PBS job script that is setting all
 necessary environment variables, making sure the scratch directories are
-set up, and invokes the executable. An :ref:`example <sec:PBS>` PBS script
+set up, and invoking the executable. An :ref:`example <sec:PBS>` PBS script
 is provided in the manual, but make sure to also consult your own PBS
 documentation for appropriate setup.
 
@@ -1519,10 +1623,13 @@ How to update and rebuild Psi4
 
 Obtain code updates as appropriate from :ref:`faq:binary`,
 :ref:`faq:clonepsi4public`, or :ref:`faq:forkpsi4public`.  Move into
-:samp:`{objdir}` and reissue ``make``, whereupon CMake may reconfigure but
+:samp:`{objdir}` and reissue ``make`` or ``cmake --build .``, whereupon CMake may reconfigure but
 will only rebuild objects and libraries depending on changed files. It is
 scarcely ever necessary for the user to reinvoke ``cmake`` to update
-:samp:`{objdir}`.
+:samp:`{objdir}` based on changes to the |PSIfour| repository.
+Upon switching conda environments, though, one should
+make a new objdir since there are many full paths baked into
+:samp:`{objdir}/CMakeCache.txt`.
 
 
 .. _`faq:minutetests`:
@@ -1554,7 +1661,7 @@ and *testlabel* are regex of labels (*e.g.*, ``cc``, ``mints``,
 
 * Run tests in parallel with ``-j`` flag. For maximum parallelism: :samp:`ctest -j\`getconf _NPROCESSORS_ONLN\`\ `
 * Run full test suite: ``ctest``
-* Run about a third of the tests in 10--20 minutes, the so-called *quicktests*: ``ctest -L quick``
+* Run about a third of the tests in 5 minutes, the so-called *quicktests*: ``ctest -L quick``
 * Run the same subset of tests that TravisCI checks (not the full test suite): ``ctest -L quick``
 * Run the minimal number of tests to ensure Psi4 and any add-ons in working order: ``ctest -L smoke``
 * Run tests matching by name: ``ctest -R testname``
@@ -1562,6 +1669,15 @@ and *testlabel* are regex of labels (*e.g.*, ``cc``, ``mints``,
 * Run tests matching by label: ``ctest -L testlabel``
 * Run tests excluding those by label: ``ctest -LE testlabel``
 
+Pytest has similar commands
+* Run tests in parallel with ``-n`` flag (if extenstion pytest-xdist installed). For maximum parallelism: :samp:`pytest -n\`getconf _NPROCESSORS_ONLN\`\ `
+* Run full test suite: ``pytest``
+* Run the quick tests: ``pytest -m quick``
+* Run the minimal number of tests to ensure Psi4 and any add-ons in working order: ``pytest -m smoke``
+* Run tests matching by name: ``pytest -k testname``
+* Run tests excluding those by name: ``pytest -k "not testname"``
+* Run tests matching by label: ``pytest -m testlabel``
+* Run tests excluding those by label: ``pytest -m "not testlabel"``
 
 .. _`faq:testsoutput`:
 
@@ -1580,7 +1696,7 @@ How to see CTest testing errors
 
 When ``ctest`` reports that some (or all) tests have failed, look in your
 build directory for file
-:samp:`{objdir}/tests/Testing/Temporary/LastTest.log`. It may have a
+:samp:`{objdir}/Testing/Temporary/LastTest.log`. It may have a
 ``.tmp`` extension, depending on whether the last test was interrupted and
 a few other factors. Either way, this file should contain CMake's testing
 output, as well as everything that was printed to the screen.
@@ -1594,14 +1710,20 @@ How to test a Psi4 installation
 ``ctest`` requires a connection to source files and ``cmake``
 machinery and so can only be performed from :samp:`{objdir}`
 (staged installation). To test an installed |PSIfour| (full or staged
-installation), a limited number of "smoke" tests are available to be
-run via pytest.
+installation), a supplementary test suite is available to be
+run via pytest. Running a limited number of "smoke" tests is
+generally sufficient to verify an installation.
 
   * From the executable
 
     .. code-block:: bash
 
+     # smoke tests only in serial
      psi4 --test
+     # smoke tests only in parallel
+     psi4 --test -n`getconf _NPROCESSORS_ONLN`
+     # most tests
+     psi4 --test full
 
   * From the library (|PSIfour| must be detectable as a Python
     module. See setup at :ref:`faq:psi4psiapipath`
@@ -1609,12 +1731,18 @@ run via pytest.
 
     .. code-block:: bash
 
+     # smoke tests only
+     python -c "import psi4; psi4.test('smoke')"
+     # most tests
      python -c "import psi4; psi4.test()"
 
   * From pytest directly. If package ``pytest-xdist`` is installed, can run in parallel.
 
     .. code-block:: bash
 
+     # smoke tests only
+     pytest {prefix}/lib/{PYMOD_INSTALL_LIBDIR}/psi4/tests/ -m smoke -n`getconf _NPROCESSORS_ONLN`
+     # all tests
      pytest {prefix}/lib/{PYMOD_INSTALL_LIBDIR}/psi4/tests/ -n`getconf _NPROCESSORS_ONLN`
 
 Output looks something like the below. ``PASSED`` in green is good
@@ -1711,7 +1839,7 @@ If you're modifying the Add-On's file or directory structure, be
 smart and ``rm`` all traces of it within ``{objdir}/stage/``,
 especially any ``*.pyc`` files.
 
-Alternatively to the above, you can instead build and install the
+Alternatively and preferentially to the above, you can instead build and install the
 Add-On library yourself, external to the |PSIfour| repository. This
 is especially useful if you want to avoid full recompiles of the
 Add-On at each change to the Add-On's source. Build the Add-On

@@ -3118,9 +3118,11 @@ def run_cc_property(name, **kwargs):
                     core.set_variable("CC ROOT 0 QUADRUPOLE YZ", core.variable("CC QUADRUPOLE YZ"))
                     core.set_variable("CC ROOT 0 QUADRUPOLE ZZ", core.variable("CC QUADRUPOLE ZZ"))
             if 'dipole' in one:
-                core.set_variable("CC ROOT 0 DIPOLE", core.variable("CC DIPOLE"))  # P::e CCENERGY
+                core.set_variable("CC ROOT 0 DIPOLE", core.variable("CC DIPOLE"))
+                # core.set_variable("CC ROOT n DIPOLE", core.variable("CC DIPOLE"))  # P::e CCENERGY
             if 'quadrupole' in one:
-                core.set_variable("CC ROOT 0 QUADRUPOLE", core.variable("CC QUADRUPOLE"))  # P::e CCENERGY
+                core.set_variable("CC ROOT 0 QUADRUPOLE", core.variable("CC QUADRUPOLE"))
+                # core.set_variable("CC ROOT n QUADRUPOLE", core.variable("CC QUADRUPOLE"))  # P::e CCENERGY
 
             n_root = sum(core.get_global_option("ROOTS_PER_IRREP"))
             for rn in range(n_root):
@@ -3575,20 +3577,20 @@ def run_adcc(name, **kwargs):
                 continue
             energy = mp.energy_correction(level)
             mp_corr += energy
-            adc_wfn.set_variable(f"MP{level} correlation energy", energy)
-            adc_wfn.set_variable(f"MP{level} total energy", mp.energy(level))
+            adc_wfn.set_variable(f"MP{level} CORRELATION ENERGY", energy)
+            adc_wfn.set_variable(f"MP{level} TOTAL ENERGY", mp.energy(level))
             core.print_out(f"    Energy correlation MP{level}   {energy:15.8g} [Eh]\n")
         core.print_out("    Energy             total {0:15.8g} [Eh]\n".format(mp_energy))
-    adc_wfn.set_variable("current correlation energy", mp_corr)  # P::e ADC
-    adc_wfn.set_variable("current energy", mp_energy)  # P::e ADC
+    adc_wfn.set_variable("CURRENT CORRELATION ENERGY", mp_corr)  # P::e ADC
+    adc_wfn.set_variable("CURRENT ENERGY", mp_energy)  # P::e ADC
 
     # Set results of excited-states computation
     # TODO Does not work: Can't use strings
     # adc_wfn.set_variable("excitation kind", state.kind)
-    adc_wfn.set_variable("number of iterations", state.n_iter)  # P::e ADC
+    adc_wfn.set_variable("ADC ITERATIONS", state.n_iter)  # P::e ADC
     adc_wfn.set_variable(name + " excitation energies",
                          core.Matrix.from_array(state.excitation_energy.reshape(-1, 1)))
-    adc_wfn.set_variable("number of excited states", len(state.excitation_energy))  # P::e ADC
+    adc_wfn.set_variable("number of excited states", len(state.excitation_energy))
 
     core.print_out("\n\n  ==> Excited states summary <==  \n")
     core.print_out("\n" + state.describe(oscillator_strengths=False) + "\n")

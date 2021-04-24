@@ -29,8 +29,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #    ...
 #    -- Generating done
 #    -- Build files have been written to: /current/dir/objdir
-#    >>> cd objdir && make -j`getconf _NPROCESSORS_ONLN`
-#    >>> make install
+#    >>> cmake --build objdir --target install -j`getconf _NPROCESSORS_ONLN`
 
 #  <<<  Required build dependencies that Psi4 can't build itself  >>>
 #

@@ -29,10 +29,10 @@
 For details regarding MDI, see https://molssi.github.io/MDI_Library/html/index.html.
 
 """
-import psi4
-
 import numpy as np
 import qcelemental as qcel
+
+import psi4
 
 _have_mdi = False
 try:

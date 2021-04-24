@@ -70,6 +70,7 @@ Programmers' Manual
    psipep
    manage_index
    psi4api
+   external_apis
 
 * Indices
 

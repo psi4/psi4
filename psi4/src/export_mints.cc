@@ -640,8 +640,34 @@ void export_mints(py::module& m) {
           "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a, "B"_a,
           "transA"_a = false, "transB"_a = false);
     m.def("triplet", triplet_shared(&linalg::triplet),
-          "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand", "A"_a,
-          "B"_a, "C"_a, "transA"_a = false, "transB"_a = false, "transC"_a = false);
+          "A"_a, "B"_a, "C"_a, "transA"_a = false, "transB"_a = false, "transC"_a = false, R"pbdoc(
+            Returns the multiplication of three matrices, with options to transpose each beforehand.
+
+            Parameters
+            ----------
+            A
+                First matrix to multiply.
+            B
+                Second matrix to multiply.
+            C
+                Third matrix to multiply.
+            transA
+                Transpose the first matrix before operations?
+            transB
+                Transpose the second matrix before operations?
+            transC
+                Transpose the third matrix before operations?
+
+            Returns
+            -------
+            Matrix
+                New matrix of ``ABC``.
+
+            Notes
+            -----
+            * ``(AB)C`` vs. ``A(BC)`` selected by cost analysis of overall (not per-irrep) dimensions.
+            * If A, B, C not of the the same symmetry, always computed as ``(AB)C``.
+            )pbdoc");
 
     py::enum_<DerivCalcType>(m, "DerivCalcType")
         .value("Default", DerivCalcType::Default, "Use internal logic.")

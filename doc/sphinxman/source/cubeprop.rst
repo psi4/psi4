@@ -42,6 +42,7 @@ Generation of Cube Files |w---w| :py:func:`~psi4.cubeprop`
 .. sectionauthor:: Francesco A. Evangelista and Peter Kraus
 
 .. autofunction:: psi4.cubeprop(wfn)
+   :noindex:
 
 Introduction
 ------------
@@ -71,7 +72,7 @@ An example utilization of the code is::
    E, wfn = energy('scf', return_wfn=True)
    cubeprop(wfn)
 
-In this example, the :py:func:`~p4util.cubeprop`
+In this example, the :py:func:`~psi4.cubeprop`
 call after the ``energy('scf')`` command
 executes the cubeprop code.  The array |globals__cubeprop_tasks| specifies which
 tasks should be executed.  In this case the task ``'orbitals'`` generates cube
@@ -179,6 +180,13 @@ Script Prerequisites
 3. With ImageMagick installed, an environment variable called :envvar:`MONTAGE` needs to be created which points to the montage executable.
    This executable can be found in the /bin/ sub-directory wherever ImageMagick was installed.
 
+.. envvar:: VMDPATH
+
+   Filesystem path to the VMD executable.
+
+.. envvar:: MONTAGE
+
+   Filesystem path to the Montage executable of ImageMagick
 
 Running the Script
 ------------------

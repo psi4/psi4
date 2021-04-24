@@ -134,6 +134,7 @@ jobs:
                         conda-forge::libxc ^
                         conda-forge::mpfr ^
                         conda-forge::mpmath ^
+                        conda-forge::msgpack-python ^
                         conda-forge::qcelemental ^
                         conda-forge::qcengine
           pip install git+https://github.com/i-pi/i-pi.git@master-py3

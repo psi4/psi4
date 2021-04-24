@@ -34,23 +34,26 @@ import copy
 import datetime
 import json
 import os
+import pprint
 import sys
 import traceback
 import uuid
 import warnings
-import pprint
-pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
+from collections import defaultdict
 
 import numpy as np
 import qcelemental as qcel
 import qcengine as qcng
-from collections import defaultdict
-
-from psi4 import core
 from psi4.extras import exit_printing
 from psi4.header import print_header
 from psi4.metadata import __version__
 from psi4.driver import driver, p4util
+
+from psi4 import core
+
+pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
+
+
 
 __all__ = ["run_qcschema", "run_json"]
 
@@ -79,10 +82,10 @@ _qcschema_translation = {
 
     # Properties
     "properties": {
-        "mulliken_charges": {"variables": "MULLIKEN_CHARGES", "skip_null": True},
-        "lowdin_charges": {"variables": "LOWDIN_CHARGES", "skip_null": True},
-        "wiberg_lowdin_indices": {"variables": "WIBERG_LOWDIN_INDICES", "skip_null": True},
-        "mayer_indices": {"variables": "MAYER_INDICES", "skip_null": True},
+        "mulliken_charges": {"variables": "MULLIKEN CHARGES", "skip_null": True},
+        "lowdin_charges": {"variables": "LOWDIN CHARGES", "skip_null": True},
+        "wiberg_lowdin_indices": {"variables": "WIBERG LOWDIN INDICES", "skip_null": True},
+        "mayer_indices": {"variables": "MAYER INDICES", "skip_null": True},
     },
 
     # SCF variables
@@ -434,7 +437,7 @@ def run_qcschema(input_data, clean=True):
 def run_json(json_data, clean=True):
 
     warnings.warn(
-        "Using `psi4.schema_wrapper.run_schema` instead of `psi4.json_wrapper.run_qcschema` is deprecated, and in 1.5 it will stop working\n",
+        "Using `psi4.json_wrapper.run_json` instead of `psi4.schema_wrapper.run_qcschema` is deprecated, and in 1.5 it will stop working\n",
         category=FutureWarning)
 
     # Set scratch
@@ -555,10 +558,11 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         json_data["extras"] = {}
     json_data["extras"]["qcvars"] = {}
 
+    current_qcvars_only = json_data["extras"].get("current_qcvars_only", False)
     if json_data["extras"].get("wfn_qcvars_only", False):
-        psi_props = wfn.variables()
+        psi_props = wfn.variables(include_deprecated_keys=(not current_qcvars_only))
     else:
-        psi_props = core.variables()
+        psi_props = core.variables(include_deprecated_keys=(not current_qcvars_only))
         for k, v in psi_props.items():
             if k not in json_data["extras"]["qcvars"]:
                 json_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)

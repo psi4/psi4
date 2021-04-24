@@ -25,13 +25,12 @@
 from __future__ import print_function
 
 import argparse
-import sys
+import datetime
+import os
 import re
 import subprocess
-import os
-import datetime
-
-from os import listdir, environ
+import sys
+from os import environ, listdir
 from os.path import isfile, join
 
 vmd_cube_help = """vmd_cube is a script to render cube files with vmd.

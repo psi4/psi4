@@ -1,4 +1,6 @@
+import sys
 import json
+import pprint
 
 import numpy as np
 import pytest
@@ -7,6 +9,8 @@ import qcelemental as qcel
 import psi4
 
 from .utils import *
+
+pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 
 pytestmark = pytest.mark.quick
 
@@ -109,8 +113,11 @@ def test_qcschema_cli(input_enc, input_fn, output_enc, output_fn, result_data_fi
         as_binary.append(output_fn)
 
     success, ret = run_psi4_cli(inputs, outfiles, cmds, as_binary=as_binary)
+    pp.pprint(ret)
     assert compare_integers(True, success, "Computation Status")
-    assert compare_integers(True, ret['stdout'] == '', "Empty stdout")
+    # command shows up in stdout for Windows
+    if not sys.platform.startswith("win"):
+        assert compare_integers(True, ret['stdout'] == '', "Empty stdout")
 
     try:
         parsed = True

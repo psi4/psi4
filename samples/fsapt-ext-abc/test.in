@@ -71,3 +71,34 @@ Epsi = {  #TEST
 
 for key in keys:  #TEST
     compare_values(Eref[key], Epsi[key], 6, key)  #TEST
+
+
+import os
+import sys
+import subprocess
+
+os.chdir('fsapt')
+with open('fA.dat', 'w') as fA: fA.write("w1 1 2 3")
+with open('fB.dat', 'w') as fB: fB.write("w3 4 5 6")
+subprocess.run([sys.executable, os.path.join('..', 'fsapt.py')], check=True)
+
+fEnergies = {}
+fkeys = ['fEelst', 'fEexch', 'fEindAB', 'fEindBA', 'fEdisp', 'fEedisp', 'fEtot']    #TEST
+
+with open('fsapt.dat', 'r') as fsapt:                                    #TEST
+    Energies = [float(x) for x in fsapt.readlines()[-2].split()[2:]]     #TEST
+
+for pair in zip(fkeys,Energies):            #TEST
+    fEnergies[pair[0]] = pair[1] #TEST
+
+fEref = {               #TEST
+    'fEelst' : -30.867, #TEST
+    'fEexch' :  11.445, #TEST
+    'fEindAB': -3.138,  #TEST
+    'fEindBA': -1.863,  #TEST
+    'fEdisp' : -1.754,  #TEST
+    'fEedisp':  0.000,  #TEST
+    'fEtot'  : -26.177} #TEST
+
+for key in fkeys:                                      #TEST
+    compare_values(fEref[key], fEnergies[key], 2, key) #TEST

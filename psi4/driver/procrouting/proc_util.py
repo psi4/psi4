@@ -25,6 +25,7 @@
 #
 # @END LICENSE
 #
+from typing import Tuple
 
 import numpy as np
 
@@ -74,7 +75,7 @@ def oeprop_validator(prop_list):
     oeprop_methods = core.OEProp.valid_methods
 
     if not len(prop_list):
-        raise ValidationnError("OEProp: No properties specified!")
+        raise ValidationError("OEProp: No properties specified!")
 
     for prop in prop_list:
         prop = prop.upper()
@@ -208,7 +209,7 @@ def print_ci_results(ciwfn, rname, scf_e, ci_e, print_opdm_no=False):
     dvec.close_io_files(True)
 
 
-def prepare_sapt_molecule(sapt_dimer, sapt_basis):
+def prepare_sapt_molecule(sapt_dimer: core.Molecule, sapt_basis: str) -> Tuple[core.Molecule, core.Molecule, core.Molecule]:
     """
     Prepares a dimer molecule for a SAPT computations. Returns the dimer, monomerA, and monomerB.
     """

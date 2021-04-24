@@ -30,6 +30,8 @@
 
 .. index:: SNS-MP2
 
+.. _`sec:snsmp2`:
+
 Spin-Network-Scaled MP2 (SNS-MP2) by D. E. Shaw
 ===============================================
 

@@ -338,7 +338,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             SCFE += self.molecule().EFP.get_wavefunction_dependent_energy()
 
         self.set_energies("Total Energy", SCFE)
-        core.set_variable("SCF ITERATION ENERGY", SCFE)  # P::e SCF
+        core.set_variable("SCF ITERATION ENERGY", SCFE)
         Ediff = SCFE - SCFE_old
         SCFE_old = SCFE
 
@@ -429,7 +429,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.form_D()
         core.timer_off("HF: Form D")
 
-        self.set_variable("SCF ITERATION ENERGY", SCFE)  # P::e SCF
+        self.set_variable("SCF ITERATION ENERGY", SCFE)
 
         # After we've built the new D, damp the update
         if (damping_enabled and self.iteration_ > 1 and Dnorm > core.get_option('SCF', 'DAMPING_CONVERGENCE')):

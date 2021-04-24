@@ -48,3 +48,24 @@ freeze_core true
 }
 
 energy('fisapt0', external_potentials=external_potentials)
+
+
+    }
+
+
+
+
+import os
+import sys
+import subprocess
+
+os.chdir('fsapt')
+with open('fA.dat', 'w') as fA: fA.write("w1 1 2 3")
+with open('fB.dat', 'w') as fB: fB.write("w3 4 5 6")
+subprocess.run([sys.executable, os.path.join('..', 'fsapt.py')], check=True)
+
+fEnergies = {}
+
+
+
+

@@ -133,6 +133,7 @@ are the total multipoles, translated to |gdma__gdma_origin|, and summed.
 
 
 .. autofunction:: psi4.gdma(wfn)
+   :noindex:
 
 Options
 ~~~~~~~

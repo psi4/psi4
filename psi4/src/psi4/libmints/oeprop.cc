@@ -866,12 +866,23 @@ void OEProp::compute_multipoles(int order, bool transition) {
             int order_mpole;
             // unpack the multipole, which is: name, nuc, elec, total, order, ignore nuc and elec:
             std::tie(name, std::ignore, std::ignore, total_mpole, order_mpole) = *it;
-            /*- Process::environment.globals["DIPOLE X"] -*/
-            /*- Process::environment.globals["DIPOLE Y"] -*/
-            /*- Process::environment.globals["title DIPOLE"] -*/
-            /*- Process::environment.globals["32-POLE XXXXX"] -*/
-            /*- Process::environment.globals["32-POLE XXXXY"] -*/
-            /*- Process::environment.globals["title 32-POLE"] -*/
+            /*- Process::environment.globals["mtd DIPOLE X"] -*/
+            /*- Process::environment.globals["mtd DIPOLE Y"] -*/
+            /*- Process::environment.globals["mtd DIPOLE Z"] -*/
+            /*- Process::environment.globals["mtd QUADRUPOLE XX"] -*/
+            /*- Process::environment.globals["mtd OCTUPOLE XXX"] -*/
+            /*- Process::environment.globals["mtd HEXADECAPOLE XXXX"] -*/
+            /*- Process::environment.globals["mtd 32-POLE XXXXX"] -*/
+            /*- Process::environment.globals["mtd 32-POLE XXXXY"] -*/
+            /*- Process::environment.globals["mtd 64-POLE XXXXXX"] -*/
+            /*- Process::environment.globals["mtd 128-POLE XXXXXXX"] -*/
+            /*- Process::environment.globals["mtd DIPOLE"] -*/
+            /*- Process::environment.globals["mtd QUADRUPOLE"] -*/
+            /*- Process::environment.globals["mtd OCTUPOLE"] -*/
+            /*- Process::environment.globals["mtd HEXADECAPOLE"] -*/
+            /*- Process::environment.globals["mtd 32-POLE"] -*/
+            /*- Process::environment.globals["mtd 64-POLE"] -*/
+            /*- Process::environment.globals["mtd 128-POLE"] -*/
 
             if (order_mpole == l) {
                 Process::environment.globals[name] = total_mpole;
@@ -1651,7 +1662,7 @@ void OEProp::compute_mulliken_charges() {
     for (size_t i = 0; i < apcs->size(); i++) {
         vec_apcs->set(0, i, (*apcs)[i]);
     }
-    wfn_->set_array_variable("MULLIKEN_CHARGES", vec_apcs);
+    wfn_->set_array_variable("MULLIKEN CHARGES", vec_apcs);
 }
 
 std::tuple<PAC::SharedStdVector, PAC::SharedStdVector, PAC::SharedStdVector>
@@ -1746,7 +1757,7 @@ void OEProp::compute_lowdin_charges() {
     for (size_t i = 0; i < apcs->size(); i++) {
         vec_apcs->set(0, i, (*apcs)[i]);
     }
-    wfn_->set_array_variable("LOWDIN_CHARGES", vec_apcs);
+    wfn_->set_array_variable("LOWDIN CHARGES", vec_apcs);
 }
 
 std::tuple<PAC::SharedStdVector, PAC::SharedStdVector, PAC::SharedStdVector>
@@ -2435,7 +2446,7 @@ void OEProp::compute_mayer_indices() {
     SharedVector MBI_valence;
     std::tie(MBI_total, MBI_alpha, MBI_beta, MBI_valence) = pac_.compute_mayer_indices(true);
 
-    wfn_->set_array_variable("MAYER_INDICES", MBI_total);
+    wfn_->set_array_variable("MAYER INDICES", MBI_total);
 }
 
 std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> PopulationAnalysisCalc::compute_mayer_indices(
@@ -2556,7 +2567,7 @@ void OEProp::compute_wiberg_lowdin_indices() {
     SharedMatrix WBI_total, WBI_alpha, WBI_beta;
     SharedVector WBI_valence;
     std::tie(WBI_total, WBI_alpha, WBI_beta, WBI_valence) = pac_.compute_wiberg_lowdin_indices(true);
-    wfn_->set_array_variable("WIBERG_LOWDIN_INDICES", WBI_total);
+    wfn_->set_array_variable("WIBERG LOWDIN INDICES", WBI_total);
 }
 
 std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector>

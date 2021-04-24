@@ -26,8 +26,9 @@
 # @END LICENSE
 #
 
-import math
 import itertools
+import math
+from typing import Callable, Union
 
 import numpy as np
 
@@ -124,7 +125,7 @@ def _print_nbody_energy(energy_body_dict, header, embedding=False):
     core.print_out("\n")
 
 
-def nbody_gufunc(func, method_string, **kwargs):
+def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     """
     Computes the nbody interaction energy, gradient, or Hessian depending on input.
     This is a generalized univeral function for computing interaction and total quantities.
@@ -133,13 +134,13 @@ def nbody_gufunc(func, method_string, **kwargs):
 
     :returns: (*float*, :py:class:`~psi4.core.Wavefunction`) |w--w| data and wavefunction with energy/gradient/hessian set appropriately when **return_wfn** specified.
 
-    :type func: function
+    :type func: Callable
     :param func: ``energy`` || etc.
 
         Python function that accepts method_string and a molecule. Returns a
         energy, gradient, or Hessian as requested.
 
-    :type method_string: string
+    :type method_string: str
     :param method_string: ``'scf'`` || ``'mp2'`` || ``'ci5'`` || etc.
 
         First argument, lowercase and usually unlabeled. Indicates the computational
@@ -156,7 +157,7 @@ def nbody_gufunc(func, method_string, **kwargs):
         Indicate to additionally return the :py:class:`~psi4.core.Wavefunction`
         calculation result as the second element of a tuple.
 
-    :type bsse_type: string or list
+    :type bsse_type: str or list
     :param bsse_type: ``'cp'`` || ``['nocp', 'vmfc']`` || |dl| ``None`` |dr| || etc.
 
         Type of BSSE correction to compute: CP, NoCP, or VMFC. The first in this
@@ -167,7 +168,7 @@ def nbody_gufunc(func, method_string, **kwargs):
 
         Maximum n-body to compute, cannot exceed the number of fragments in the moleucle.
 
-    :type ptype: string
+    :type ptype: str
     :param ptype: ``'energy'`` || ``'gradient'`` || ``'hessian'``
 
         Type of the procedure passed in.
@@ -190,12 +191,12 @@ def nbody_gufunc(func, method_string, **kwargs):
 
         Dictionary of atom-centered point charges. keys: 1-based index of fragment, values: list of charges for each fragment.
 
-    :type charge_method: string
+    :type charge_method: str
     :param charge_method: ``scf/6-31g`` || ``b3lyp/6-31g*`` || etc
 
         Method to compute point charges for monomers. Overridden by embedding_charges if both are provided.
 
-    :type charge_type: string
+    :type charge_type: str
     :param charge_type: ``MULLIKEN_CHARGES`` || ``LOWDIN_CHARGES`` 
 
         Default is ``MULLIKEN_CHARGES``
@@ -419,7 +420,8 @@ def compute_nbody_components(func, method_string, metadata):
 
     Parameters
     ----------
-    func : {'energy', 'gradient', 'hessian'}
+    func : str
+        {'energy', 'gradient', 'hessian'}
         Function object to be called within N-Body procedure.
     method_string : str
         Indicates level of theory to be passed to function `func`.

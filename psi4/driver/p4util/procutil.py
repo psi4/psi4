@@ -588,27 +588,24 @@ def provenance_stamp(routine):
     return {'creator': 'Psi4', 'version': __version__, 'routine': routine}
 
 
-def plump_qcvar(val: Union[float, str, List], shape_clue: str, ret='np') -> Union[float, 'np.ndarray', 'psi4.core.Matrix']:
+def plump_qcvar(val: Union[float, str, List], shape_clue: str, ret: str = 'np') -> Union[float, np.ndarray, core.Matrix]:
     """Prepare serialized QCVariable for set_variable by convert flat arrays into shaped ones and floating strings.
 
     Parameters
     ----------
     val :
         flat (?, ) list or scalar or string, probably from JSON storage.
-    shape_clue : str
+    shape_clue
         Label that includes (case insensitive) one of the following as
         a clue to the array's natural dimensions: 'gradient', 'hessian'
-    ret : {'np', 'psi4'}
+    ret
+        {'np', 'psi4'}
         Whether to return `np.ndarray` or `psi4.core.Matrix`.
 
     Returns
     -------
-    float or np.ndarray or psi4.core.Matrix
+    float or numpy.ndarray or Matrix
         Reshaped array of type `ret` with natural dimensions of `shape_clue`.
-
-    Raises
-    ------
-    TODO
 
     """
     if isinstance(val, (np.ndarray, core.Matrix)):

@@ -31,8 +31,8 @@ module calls that access the C++ side of Psi4.
 
 """
 
-import re
 import os
+import re
 import sys
 import uuid
 
@@ -735,6 +735,7 @@ def process_input(raw_input, print_level=1):
         psirc = fh.read()
         fh.close()
         psirc = psirc.replace('psi4.IOManager', 'psi4.core.IOManager')
+        psirc += "\npsi4.core.print_out('Warning: As of v1.5, the ~/.psi4rc file will no longer be read into Psi4 input.\\n')\n"
     else:
         psirc = ''
 

@@ -66,6 +66,7 @@ Configuring, Building, and Installing |PSIfour| via Source
 #. :ref:`faq:setuphelp`
 #. :ref:`faq:chooseobjdir`
 #. :ref:`faq:setupprefix`
+#. :ref:`faq:condapsi4dev`
 #. :ref:`faq:setupmaxameri`
 #. :ref:`faq:cmakeverbose`
 #. :ref:`faq:doconfigure`
@@ -136,7 +137,7 @@ Runtime Errors and Debugging
 #. :ref:`faq:gdblldb`
 #. :ref:`faq:setuptype`
 #. :ref:`faq:wrongpyfalse`
-#. :ref:`faq:erroreriam`
+.. #. :ref:`faq:erroreriam`
 
 Managing Code
 -------------

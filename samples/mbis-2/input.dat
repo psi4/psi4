@@ -22,6 +22,10 @@ import numpy as np
 # H 0.41407672804054413
 
 
+vratios_ref = np.array([
+[1.568969],
+[0.457094]])
+
 molecule mol {
   -1 1
   O 0.0 0.0 0.0
@@ -50,4 +54,5 @@ quadrupoles = wfn.variable("MBIS QUADRUPOLES")
 octupoles = wfn.variable("MBIS OCTUPOLES")
 avols = wfn.variable("MBIS RADIAL MOMENTS <R^3>")
 vwidths = wfn.variable("MBIS VALENCE WIDTHS")
+vratios = wfn.variable("MBIS VOLUME RATIOS")
 

@@ -20,6 +20,12 @@
 # H 1.5094431403157609
 
 
+vratios_ref = psi4.Matrix.from_list([
+[1.339537], 
+[0.206664],
+[0.206664]])
+
+
 # Reference Valence Widths From Horton
 # O 0.40355537630901217
 # H 0.35780574579137503
@@ -55,4 +61,5 @@ quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
 avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
 vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vratios = wfn.array_variable('MBIS VOLUME RATIOS')
 

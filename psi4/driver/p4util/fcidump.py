@@ -322,7 +322,7 @@ def fcidump_from_file(fname):
 
 
 def compare_fcidumps(expected, computed, label):
-    """Function to compare two FCIDUMP files. Prints :py:func:`util.success`
+    """Function to compare two FCIDUMP files. Prints success
     when value *computed* matches value *expected*.
     Performs a system exit on failure. Used in input files in the test suite.
 

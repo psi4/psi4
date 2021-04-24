@@ -29,7 +29,7 @@ def check_leak(func, tol=1.e6):
 
     # A megabyte is excusable due to various GC funcs
     if diff > tol:
-        raise MemoryError("Function did not correctly clean up")
+        raise MemoryError("Function did not correctly clean up: leaked %d bytes of memory!" % diff)
     else:
         print("Function %s: PASSED" % func.__name__)
         return True

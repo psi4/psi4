@@ -26,6 +26,8 @@
 # @END LICENSE
 #
 
+from typing import Dict, List
+
 import numpy as np
 
 from psi4 import core
@@ -56,7 +58,7 @@ def least_squares_fit_polynomial(xvals, fvals, localization_point, no_factorials
     return fit
 
 
-def anharmonicity(rvals, energies, plot_fit='', mol = None):
+def anharmonicity(rvals: List, energies: List, plot_fit: str = '', mol = None) -> Dict:
     """Generates spectroscopic constants for a diatomic molecules.
        Fits a diatomic potential energy curve using a weighted least squares approach
        (c.f. https://doi.org/10.1063/1.4862157, particularly eqn. 7), locates the minimum
@@ -67,14 +69,11 @@ def anharmonicity(rvals, energies, plot_fit='', mol = None):
 
        A dictionary with the following keys, which correspond to spectroscopic constants, is returned:
 
-       :type rvals: list
        :param rvals: The bond lengths (in Angstrom) for which energies are
            provided, of length at least 5 and equal to the length of the energies array
 
-       :type energies: list
        :param energies: The energies (Eh) computed at the bond lengths in the rvals list
 
-       :type plot_fit: string
        :param plot_fit: A string describing where to save a plot of the harmonic and anharmonic fits, the
            inputted data points, re, r0 and the first few energy levels, if matplotlib
            is available.  Set to 'screen' to generate an interactive plot on the screen instead. If a filename is

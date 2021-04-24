@@ -105,6 +105,7 @@ jobs:
         eigen \
         mpfr \
         pytest-xdist \
+        msgpack-python \
         conda-forge::qcelemental \
         conda-forge::qcengine \
         conda-forge::pymdi \

@@ -47,6 +47,7 @@
 
 """
 import re
+
 import qcdb
 
 # <<< S66by8 Database Module >>>
