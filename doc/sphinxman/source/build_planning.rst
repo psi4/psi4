@@ -141,7 +141,7 @@ How to build, test, and install Psi4, in detail
 
    ::
 
-    >>> cmake -H. -B{objdir} -DCMAKE_INSTALL_PREFIX={prefix} [your configuration options]
+    >>> cmake -S. -B{objdir} -DCMAKE_INSTALL_PREFIX={prefix} [your configuration options]
 
 **4. Compile**
 
@@ -590,7 +590,7 @@ are detected pre-built rather than built.
 ..   .. code-block:: bash
 .. 
 ..    cd $top-level-psi4-dir
-..    cmake -H. -Bobj-gcc
+..    cmake -S. -Bobj-gcc
 ..    cd obj-gcc
 
 
@@ -630,7 +630,7 @@ Create a file like ``do-configure`` with the ``cmake`` command and options
 
  >>> cd {top-level-psi4-dir}
  >>> cat do-configure
-     cmake -H. -B{objdir} \
+     cmake -S. -B{objdir} \
          -DCMAKE_INSTALL_PATH="/Users/me/psi4" \
          -DCMAKE_PREFIX_PATH="/Users/me/externals/install-libint" \
          -DMAX_AM_ERI=6 \
@@ -1078,14 +1078,14 @@ is through conda.
    x86_64-apple-darwin13.4.0
 
    # build with Clang
-   >>> cmake -H. -Bbuild \
+   >>> cmake -S. -Bbuild \
         -DCMAKE_C_COMPILER=${CLANG} \
         -DCMAKE_CXX_COMPILER=${CLANGXX} \
         -DCMAKE_CXX_FLAGS="-stdlib=libc++" \
         -DOpenMP_CXX_FLAG="-fopenmp=libiomp5"
 
    # build with Intel
-   >>> cmake -H. -Bbuild \
+   >>> cmake -S. -Bbuild \
         -DCMAKE_C_COMPILER=icc \
         -DCMAKE_CXX_COMPILER=icpc \
         -DCMAKE_C_FLAGS="-clang-name=${CLANG}" \
@@ -1125,12 +1125,12 @@ system. The latter route, tested on Linux with Intel compilers, is below.
          x86_64-conda_cos6-linux-gnu
 
          # build with GNU
-         >>> cmake -H. -Bbuild \
+         >>> cmake -S. -Bbuild \
               -DCMAKE_C_COMPILER=${CC} \
               -DCMAKE_CXX_COMPILER=${CXX} \
 
          # build with Intel
-         >>> cmake -H. -Bbuild \
+         >>> cmake -S. -Bbuild \
               -DCMAKE_C_COMPILER=icc \
               -DCMAKE_CXX_COMPILER=icpc \
               -DCMAKE_C_FLAGS="-gnu-prefix=${HOST}-" \
@@ -1138,7 +1138,7 @@ system. The latter route, tested on Linux with Intel compilers, is below.
 
    # (B) tell CMake to tell the compiler which GCC to use
          >>> GCC7=/path/to/miniconda/envs/gcc72
-         >>> cmake -H. -Bbuild \
+         >>> cmake -S. -Bbuild \
               -DCMAKE_C_COMPILER=icc \
               -DCMAKE_CXX_COMPILER=icpc \
               -DCMAKE_C_FLAGS="-gnu-prefix=${GCC7}/bin/x86_64-conda_cos6-linux-gnu-" \
