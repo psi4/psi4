@@ -5,6 +5,10 @@ H 0 0 1
 H 0 1 0
 }
 
+#set e_convergence 1e-9
+#set r_convergence 1e-9
+#set d_convergence 1e-9
+
 # Values converged to 1e-9
 ref_blyp_dt     = -76.434228968884
 ref_blyp_d3_dt  = -76.434235158884
@@ -12,9 +16,10 @@ ref_b2plyp_d3_dt= -76.416397987029
 ref_b2plyp_naive= -76.402475256624
 ref_blyp_b2plyp = -76.387774735844
 ref_blyp_d3_dt_grad = psi4.core.Matrix.from_list(
-                      [[0.00000000000000,     0.00000000000000,    -0.05020298033034],
-                       [0.00000000000000,     0.00343955901157,     0.02510474695159],
-                       [0.00000000000000,    -0.00343955901157,     0.02510474695159]])
+                      [[0.00000000000000,     0.00000000000000,    -0.05020716012511],
+                       [0.00000000000000,     0.00342301517298,     0.02510683684897],
+                       [0.00000000000000,    -0.00342301517298,     0.02510683684897]])
+
 
 compare_values(ref_blyp_dt, energy('blyp/cc-pv[dt]z'), 7,           "BLYP/cc-[DT]")
 compare_values(ref_blyp_d3_dt, energy('blyp-d3/cc-pv[dt]z'), 7,     "BLYP-D3/cc-[DT]")
@@ -30,7 +35,10 @@ compare_values(ref_blyp_b2plyp, E, 7, "BLYP-D3/cc-[DT]+D:B2PLYP-D3/cc-pvdz with 
 E = energy('blyp-d3/cc-pv[dt]z+D:b2plyp-d3/cc-pvdz')
 compare_values(ref_blyp_b2plyp, E, 7, "BLYP-D3/cc-[DT]+D:B2PLYP-D3/cc-pvdz as string")
 
+G = gradient('blyp-d3/cc-pv[dt]z', dertype=0)
+compare_matrices(ref_blyp_d3_dt_grad, G, 5, "BLYP-D3/cc-pv[dt]z findif gradient")
+
 G = gradient('blyp-d3/cc-pv[dt]z', dertype=1)
-compare_matrices(ref_blyp_d3_dt_grad, G, 6, "BLYP-D3/cc-pv[dt]z analytic gradient")
+compare_matrices(ref_blyp_d3_dt_grad, G, 7, "BLYP-D3/cc-pv[dt]z analytic gradient")
 compare_values(2, variable("CBS NUMBER"), "BLYP-D3/cc-pv[dt]z analytic gradient - 2 steps only")
 

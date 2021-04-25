@@ -1972,10 +1972,12 @@ def cbs(func, label, **kwargs):
         core.clean_variables()
         core.clean()
 
-        # Copy data from 'run' to 'obtained' table
+        # Copy data from 'run' to 'obtained' table. Here we exclude DFT components, as they have been correctly
+        # assigned to JOBS_EXT in the block above, and we'd overwrite them with the wrong variable.
         for mce in JOBS_EXT:
             if (mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis']) and \
-               (mc['f_component'] == mce['f_component']) and (mc['f_options'] == mce['f_options']):
+               (mc['f_component'] == mce['f_component']) and (mc['f_options'] == mce['f_options']) and \
+               not (component.endswith("disp") or component.endswith("fctl")):
                 mce['f_energy'] = mc['f_energy']
                 mce['f_gradient'] = mc['f_gradient']
                 mce['f_hessian'] = mc['f_hessian']
