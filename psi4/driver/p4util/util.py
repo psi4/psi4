@@ -37,7 +37,46 @@ from psi4 import core
 
 from .exceptions import ValidationError
 
-__all__ = ["cubeprop", "get_memory", "set_memory"]
+__all__ = ["cubeprop", "get_memory", "oeprop", "set_memory"]
+
+
+def oeprop(wfn: core.Wavefunction, *args, **kwargs):
+    """Evaluate one-electron properties.
+
+    :returns: None
+
+    :param wfn: set of molecule, basis, orbitals from which to compute properties
+
+    How to specify args, which are actually the most important
+
+    :type title: str
+    :param title: label prepended to all psivars computed
+
+    :examples:
+
+    >>> # [1] Moments with specific label
+    >>> E, wfn = energy('hf', return_wfn=True)
+    >>> oeprop(wfn, 'DIPOLE', 'QUADRUPOLE', title='H3O+ SCF')
+
+    """
+    from ..prop_util import free_atom_volumes
+
+    oe = core.OEProp(wfn)
+    if 'title' in kwargs:
+        oe.set_title(kwargs['title'])
+    for prop in args:
+        oe.add(prop)
+
+        # If we're doing MBIS, we want the free-atom volumes
+        # in order to compute volume ratios,
+        # but only if we're calling oeprop as the whole molecule
+        free_atom = kwargs.get('free_atom',False)
+        if "MBIS" in prop.upper() and not free_atom:
+            core.print_out("  Computing free-atom volumes\n")
+            free_atom_volumes(wfn)
+
+    oe.compute()
+
 
 def cubeprop(wfn, **kwargs):
     """Evaluate properties on a grid and generate cube files.

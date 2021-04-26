@@ -32,43 +32,7 @@ from psi4 import core
 from . import p4util
 from .driver import energy
 
-__all__ = ["free_atom_volumes", "oeprop"]
-
-
-def oeprop(wfn: core.Wavefunction, *args, **kwargs):
-    """Evaluate one-electron properties.
-
-    :returns: None
-
-    :param wfn: set of molecule, basis, orbitals from which to compute properties
-
-    How to specify args, which are actually the most important
-
-    :type title: str
-    :param title: label prepended to all psivars computed
-
-    :examples:
-
-    >>> # [1] Moments with specific label
-    >>> E, wfn = energy('hf', return_wfn=True)
-    >>> oeprop(wfn, 'DIPOLE', 'QUADRUPOLE', title='H3O+ SCF')
-
-    """
-    oe = core.OEProp(wfn)
-    if 'title' in kwargs:
-        oe.set_title(kwargs['title'])
-    for prop in args:
-        oe.add(prop)
-
-        # If we're doing MBIS, we want the free-atom volumes
-        # in order to compute volume ratios,
-        # but only if we're calling oeprop as the whole molecule
-        free_atom = kwargs.get('free_atom',False)
-        if "MBIS" in prop.upper() and not free_atom:
-            core.print_out("  Computing free-atom volumes\n")
-            free_atom_volumes(wfn)
-
-    oe.compute()
+__all__ = ["free_atom_volumes"]
 
 
 def free_atom_volumes(wfn: core.Wavefunction, **kwargs):
@@ -148,7 +112,7 @@ def free_atom_volumes(wfn: core.Wavefunction, **kwargs):
         at_e, at_wfn = energy(method, return_wfn=True)
 
         # Now, re-run mbis for the atomic density, grabbing only the volume
-        oeprop(at_wfn, 'MBIS_CHARGES', title=a_sym + " " + method, free_atom=True)
+        p4util.oeprop(at_wfn, 'MBIS_CHARGES', title=a_sym + " " + method, free_atom=True)
 
         vw = at_wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')  # P::e OEPROP
         vw = vw.get(0, 0)

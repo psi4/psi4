@@ -168,7 +168,7 @@ def compute_charges(charge_method, charge_type, molecule):
     Compute charges for nbody fragments
     """
     from psi4.driver.driver import energy
-    from psi4.driver.prop_util import oeprop
+    from psi4.driver.p4util.util import oeprop
 
     charges = {}
     molecule = molecule.clone()
