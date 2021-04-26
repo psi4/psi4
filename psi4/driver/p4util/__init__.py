@@ -47,8 +47,6 @@ from . import p4regex
 from .p4regex import *
 from . import procutil
 from .procutil import *
-from . import prop_util
-from .prop_util import *
 from . import python_helpers
 from .python_helpers import *
 from . import solvers

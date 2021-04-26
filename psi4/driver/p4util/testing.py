@@ -209,6 +209,91 @@ compare_wavefunctions = partial(_mergedapis_compare_wavefunctions, return_handle
 compare_recursive = partial(qcdb.testing._mergedapis_compare_recursive, return_handler=_psi4_true_raise_handler)
 compare_molrecs = partial(qcdb.testing._mergedapis_compare_molrecs, return_handler=_psi4_true_raise_handler)
 
+compare_values.__doc__ = r"""
+    Returns True if two floats or float arrays are element-wise equal within a tolerance.
+
+    Parameters
+    ----------
+    expected : Union[float, List, numpy.ndarray]
+        float or float array-like
+        Reference value against which `computed` is compared.
+    computed : Union[float, List, numpy.ndarray]
+        float or float array-like
+        Input value to compare against `expected`.
+    atol : float
+        Absolute tolerance (see formula below).
+    label : str
+        Label for passed and error messages. Defaults to calling function name.
+    rtol : float
+        Relative tolerance (see formula below). By default set to zero so `atol` dominates.
+    equal_nan : bool
+        Passed to np.isclose. Compare NaN's as equal.
+    equal_phase : bool
+        Compare computed *or its opposite* as equal.
+    passnone : bool
+        Return True when both expected and computed are None.
+    return_message
+        Whether to return tuple. See below.
+
+    Returns
+    -------
+    allclose : bool
+        Returns True if `expected` and `computed` are equal within tolerance; False otherwise.
+    message : str
+        When return_message=True, also return passed or error message.
+
+    Notes
+    -----
+    * Akin to np.allclose.
+    * For scalar float-comparable types and for arbitrary-dimension, np.ndarray-castable, uniform-type,
+      float-comparable types. For mixed types, use :py:func:`compare_recursive`.
+    * Sets rtol to zero to match expected Psi4 behaviour, otherwise measured as:
+
+    .. code-block:: python
+
+        absolute(computed - expected) <= (atol + rtol * absolute(expected))
+"""
+
+compare_recursive.__doc__ = """
+    Recursively compares nested structures such as dictionaries and lists.
+
+    Parameters
+    ----------
+    expected : Dict
+        Reference value against which `computed` is compared.
+        Dict may be of any depth but should contain Plain Old Data.
+    computed : Dict
+        Input value to compare against `expected`.
+        Dict may be of any depth but should contain Plain Old Data.
+    label : str
+        Label for passed and error messages. Defaults to calling function name.
+    atol : float
+        Absolute tolerance (see formula below).
+    rtol : float
+        Relative tolerance (see formula below). By default set to zero so `atol` dominates.
+    forgive : List[str]
+        Keys in top level which may change between `expected` and `computed` without triggering failure.
+    equal_phase : Union[bool, List]
+        Compare computed *or its opposite* as equal.
+    return_message : bool
+        Whether to return tuple. See below.
+
+    Returns
+    -------
+    allclose : bool
+        Returns True if `expected` and `computed` are equal within tolerance; False otherwise.
+    message : str
+        When return_message=True, also return passed or error message.
+
+    Notes
+    -----
+
+    .. code-block:: python
+
+        absolute(computed - expected) <= (atol + rtol * absolute(expected))
+
+    """
+
 # docstring notes
 #    """Shim between Psi4-style and QCA-style testing interfaces for scalar floats.
 #

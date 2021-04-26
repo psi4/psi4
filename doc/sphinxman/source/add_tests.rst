@@ -83,7 +83,7 @@ geometry convergence criteria to very tight levels, and use these
 results for reference energies, reference geometries, reference cube
 files, *etc.*. Then, either remove or relax the convergence settings,
 if these are not a vital part of the test. In choosing the number of
-digits for :py:func:`~psi4.compare_values` and other compare_* functions,
+digits for :py:func:`~psi4.driver.p4util.testing.compare_values` and other compare_* functions,
 select a number looser than the convergence set in the test or the
 default convergence for the calculation type (energy, gradient, *etc.*).
 
@@ -134,4 +134,13 @@ marks argument in a parameterized test. Search "mark" in the test suite
 for examples. Use "quick" freely for tests that cover functionality and
 are under 15s. Use "long" sparingly to winnow out the longest examples,
 particularly those over a minute.
+
+Comparison Functions
+====================
+
+.. autofunction:: psi4.driver.p4util.testing.compare
+
+.. autofunction:: psi4.driver.p4util.testing.compare_values
+
+.. autofunction:: psi4.driver.p4util.testing.compare_recursive
 

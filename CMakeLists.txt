@@ -170,7 +170,7 @@ option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation mes
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 14)
 option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar sse avx avxfma micavx512)" avx)
 option_with_default(SPHINX_THEME "Theme for Sphinx documentation and extensions" sphinx_psi_theme)
-option_with_default(SPHINXMAN_STRICT "Turn warnings into errors for docs target sphinxman" OFF)
+option_with_default(SPHINXMAN_STRICT "Turn warnings and nit-picks into errors for docs target sphinxman" OFF)
 option_with_default(BUILD_Libint2_GENERATOR "If prebuilt not found, don't build Libint2 from source tarball but instead build and run generator (several hours for production library). Edit angular momentum and integrals classes directly in `external/upstream/libint2/CMakeLists.txt` (requires Ninja)." OFF)
 
 ########################  Process & Validate Options  ##########################

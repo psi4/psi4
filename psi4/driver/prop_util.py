@@ -27,26 +27,64 @@
 #
 """Module with property-related helper functions."""
 
-import psi4
-from . import optproc
+from psi4 import core
 
-__all__ = ['free_atom_volumes']
+from . import p4util
+from .driver import energy
+
+__all__ = ["free_atom_volumes", "oeprop"]
 
 
-def free_atom_volumes(wfn, **kwargs):
-    """ 
+def oeprop(wfn: core.Wavefunction, *args, **kwargs):
+    """Evaluate one-electron properties.
+
+    :returns: None
+
+    :param wfn: set of molecule, basis, orbitals from which to compute properties
+
+    How to specify args, which are actually the most important
+
+    :type title: str
+    :param title: label prepended to all psivars computed
+
+    :examples:
+
+    >>> # [1] Moments with specific label
+    >>> E, wfn = energy('hf', return_wfn=True)
+    >>> oeprop(wfn, 'DIPOLE', 'QUADRUPOLE', title='H3O+ SCF')
+
+    """
+    oe = core.OEProp(wfn)
+    if 'title' in kwargs:
+        oe.set_title(kwargs['title'])
+    for prop in args:
+        oe.add(prop)
+
+        # If we're doing MBIS, we want the free-atom volumes
+        # in order to compute volume ratios,
+        # but only if we're calling oeprop as the whole molecule
+        free_atom = kwargs.get('free_atom',False)
+        if "MBIS" in prop.upper() and not free_atom:
+            core.print_out("  Computing free-atom volumes\n")
+            free_atom_volumes(wfn)
+
+    oe.compute()
+
+
+def free_atom_volumes(wfn: core.Wavefunction, **kwargs):
+    """
     Computes free-atom volumes using MBIS density partitioning.
     The free-atom volumes are computed for all unique (inc. basis set)
     atoms in a molecule and stored as wavefunction variables.
-    Free-atom densities are computed at the same level of theory as the molecule, 
-    and we use unrestricted references as needed in computing the ground-state. 
+    Free-atom densities are computed at the same level of theory as the molecule,
+    and we use unrestricted references as needed in computing the ground-state.
 
     The free-atom volumes are used to compute volume ratios in routine MBIS computations
 
     Parameters
     ----------
-    wfn : psi4.core.Wavefunction
-        The wave function associated with the molecule, method, and basis for 
+    wfn
+        The wave function associated with the molecule, method, and basis for
         atomic computations
     """
 
@@ -85,32 +123,32 @@ def free_atom_volumes(wfn, **kwargs):
         basis = mol.basis_on_atom(atom)
         unq_atoms.add((symbol, Z, basis))
 
-    psi4.core.print_out(f"  Running {len(unq_atoms)} free-atom UHF computations")
+    core.print_out(f"  Running {len(unq_atoms)} free-atom UHF computations")
 
-    optstash = optproc.OptionsState(["SCF", 'REFERENCE'])
+    optstash = p4util.OptionsState(["SCF", 'REFERENCE'])
     for a_sym, a_z, basis in unq_atoms:
 
         # make sure we do UHF/UKS if we're not a singlet
         if reference_S[a_z] != 0:
-            psi4.core.set_local_option("SCF", "REFERENCE", "UHF")
+            core.set_local_option("SCF", "REFERENCE", "UHF")
         else:
-            psi4.core.set_local_option("SCF", "REFERENCE", "RHF")
+            core.set_local_option("SCF", "REFERENCE", "RHF")
 
         # Set the molecule, here just an atom
-        a_mol = psi4.core.Molecule.from_arrays(geom=[0, 0, 0],
+        a_mol = core.Molecule.from_arrays(geom=[0, 0, 0],
                                           elem=[a_sym],
                                           molecular_charge=0,
                                           molecular_multiplicity=int(1 + reference_S[a_z]))
         a_mol.update_geometry()
-        psi4.molutil.activate(a_mol)
+        core.set_active_molecule(a_mol)
 
         method = theory + "/" + basis
 
         # Get the atomic wfn
-        at_e, at_wfn = psi4.energy(method, return_wfn=True)
+        at_e, at_wfn = energy(method, return_wfn=True)
 
         # Now, re-run mbis for the atomic density, grabbing only the volume
-        psi4.oeprop(at_wfn, 'MBIS_CHARGES', title=a_sym + " " + method, free_atom=True)
+        oeprop(at_wfn, 'MBIS_CHARGES', title=a_sym + " " + method, free_atom=True)
 
         vw = at_wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')  # P::e OEPROP
         vw = vw.get(0, 0)
@@ -118,11 +156,11 @@ def free_atom_volumes(wfn, **kwargs):
         # set the atomic widths as wfn variables
         wfn.set_variable("MBIS FREE ATOM " + a_sym.upper() + " VOLUME", vw)
         # set_variable("MBIS FREE ATOM n VOLUME")  # P::e OEPROP
-        
-        psi4.core.clean()
-        psi4.core.clean_variables()
+
+        core.clean()
+        core.clean_variables()
 
     # reset mol and reference to original
     optstash.restore()
     mol.update_geometry()
-    psi4.molutil.activate(mol)
+    core.set_active_molecule(mol)
