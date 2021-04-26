@@ -34,7 +34,7 @@ import qcelemental as qcel
 
 import psi4
 
-__all__ = ["mdi_init", "mdi_run"]
+__all__ = ["mdi_init", "mdi_run", "MDIEngine"]
 
 _have_mdi = False
 try:

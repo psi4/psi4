@@ -141,8 +141,8 @@ __all__ = [
     "cubeprop",
     "database",
     "db",
-    "diatomic",  # used in tests but should encourage anharmonic instead
-    "driver_cbs",  # used in tests but should encourage xtpl instead
+    "diatomic",  # module  # used in tests but should encourage anharmonic instead
+    "driver_cbs",  # module  # used in tests but should encourage xtpl instead
     "energies_from_fcidump",
     "energy",
     "fake_file11",
@@ -161,24 +161,27 @@ __all__ = [
     "hessian",
     "ip_fitting",
     "ipi_broker",
-    "json_wrapper",  # kill off in 1.5
+    "json_wrapper",  # module  # kill off in 1.5
+    "mdi_init",
+    "mdi_run",
+    "MDIEngine",
     "message_box",
     "molden",
     "oeprop",
     "opt",
     "optimize",
     "optimize_geometric",
-    "p4util",  # used in tests but psi4.driver.p4util preferred
+    "p4util",  # module  # used in tests but psi4.driver.p4util preferred
     "pcm_helper",
     "procedures",  # old plugins using this as `psi4.procedures`. current plugins use `psi4.driver.procedures` so not needed in all
     "prop",
     "properties",
-    "qcdb",
+    "qcdb",  # module
     "scf_xtpl_helgaker_2",
     "scf_xtpl_helgaker_3",
     "scf_xtpl_karton_2",
     "scf_xtpl_truhlar_2",
-    "schema_wrapper",
+    "schema_wrapper",  # module
     "set_memory",
     "set_module_options",  # kill off in 1.5
     "set_options",

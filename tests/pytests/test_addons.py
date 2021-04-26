@@ -766,7 +766,8 @@ def test_json():
         "keywords": {}
     }
 
-    json_ret = psi4.json_wrapper.run_json(json_input)
+    json_ret = psi4.schema_wrapper.run_qcschema(json_input)
+    json_ret = json_ret.dict()
 
     assert psi4.compare_integers(True, json_ret["success"], "Success")
     assert psi4.compare_values(-5.474227786274896, json_ret["properties"]["return_energy"], 4, "SCF ENERGY")
@@ -777,7 +778,7 @@ def test_json():
     assert psi4.compare_arrays(bench_gradient, cgradient, 4, "SCF RETURN GRADIENT")
 
     with open("pytest_output.dat", "w") as f:
-        json.dump(json_ret["raw_output"], f)
+        json.dump(json_ret["stdout"], f)
 
 
 @using("cfour")

@@ -27,8 +27,8 @@ def test_mdi_water():
 
     scf_method = "scf/cc-pVDZ"
 
-    psi4.mdi_engine.mdi_init("-role DRIVER -name Psi4 -method TEST")
-    engine = psi4.mdi_engine.MDIEngine(scf_method)
+    psi4.mdi_init("-role DRIVER -name Psi4 -method TEST")
+    engine = psi4.MDIEngine(scf_method)
 
     # Test the <NATOMS command
     natom = engine.send_natoms()
