@@ -1,11 +1,10 @@
-#! DCT calculation for the triplet O2 using DC-06, DC-12 and CEPA0 functionals. 
+#! DCT calculation for the triplet O2 using DC-06 and DC-12.
 #! Only two-step algorithm is tested.
 
 
 # DC-06
 
-
-#CEPA0
+# DC-12
 
 molecule OO {
 0 3
@@ -21,7 +20,7 @@ set {
     d_convergence 12
     ao_basis    none
     algorithm   twostep
-    basis       cc-pcvtz
+    basis       cc-pvdz
     reference   uhf 
 }
 
@@ -31,5 +30,4 @@ energy('dct')
 
 set dct_functional dc-12
 energy('dct')
-
 
