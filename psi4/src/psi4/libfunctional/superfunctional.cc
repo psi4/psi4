@@ -142,6 +142,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
 void SuperFunctional::print(std::string out, int level) const {
     if (level < 1) return;
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
+    printer->Printf("   => %s <= \n\n", c_functionals_[0].get()->xclib_description().c_str());
     printer->Printf("   => Composite Functional: %s <= \n\n", name_.c_str());
 
     if (description_ != "") {
