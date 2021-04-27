@@ -61,6 +61,8 @@ class Functional {
     std::string description_;
     // Citations(s) defining functionals
     std::string citation_;
+    // Name, version, and citation of XC provider
+    std::string xclib_description_;
 
     // Is GGA?
     bool gga_;
@@ -118,6 +120,7 @@ class Functional {
     void set_name(const std::string &name) { name_ = name; }
     void set_description(const std::string &description) { description_ = description; }
     void set_citation(const std::string &citation) { citation_ = citation; }
+    void set_xclib_description(const std::string &description) { xclib_description_ = description; }
 
     void set_lsda_cutoff(double cut) { lsda_cutoff_ = cut; }
     void set_meta_cutoff(double cut) { meta_cutoff_ = cut; }
@@ -128,6 +131,7 @@ class Functional {
     std::string name() const { return name_; }
     std::string description() const { return description_; }
     std::string citation() const { return citation_; }
+    std::string xclib_description() const { return xclib_description_; }
 
     bool is_meta() const { return meta_; }
     bool is_gga() const { return gga_; }
