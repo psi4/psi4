@@ -38,7 +38,6 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libtrans/mospace.h"
 #include "psi4/libdpd/dpd.h"
-#include "psi4/libiwl/iwl.hpp"
 
 namespace psi {
 namespace dct {

@@ -31,7 +31,6 @@
 
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libmints/molecule.h"
 #include "psi4/psifiles.h"
 #include "psi4/libtrans/integraltransform.h"
@@ -60,11 +59,6 @@ void DCTSolver::build_d_R() {
     dpdbuf4 L1, L2;
     dpdfile2 T_OO, T_VV;
 
-    /*
-     * The following 4 lines are not able to dump Tau <O|O>'s onto PSIF_DCT_DPD
-     * T_OO's are assigned zero at the first time but it has correct symmetry blocks (correct size)
-     * Tau <O|O> are save on PSIF_DCT_DPD after contract442
-     */
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
 
