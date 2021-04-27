@@ -35,7 +35,6 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libdiis/diismanager.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/oeprop.h"

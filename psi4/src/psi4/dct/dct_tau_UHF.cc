@@ -31,7 +31,6 @@
 
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libmints/molecule.h"
 #include "psi4/psifiles.h"
 #include "psi4/libtrans/integraltransform.h"
