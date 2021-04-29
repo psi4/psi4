@@ -52,6 +52,7 @@ void SuperFunctional::common_init() {
     name_ = "";
     description_ = "";
     citation_ = "";
+    xclib_description_ = "";
 
     x_omega_ = 0.0;
     c_omega_ = 0.0;
@@ -92,6 +93,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, boo
     sup->set_name(xc_func->name());
     sup->set_description(xc_func->description());
     sup->set_citation(xc_func->citation());
+    sup->set_xclib_description(xc_func->xclib_description());
     sup->set_x_omega(xc_func->omega());
     sup->set_x_alpha(xc_func->global_exchange());
     sup->set_x_beta(xc_func->lr_exchange());
@@ -142,7 +144,11 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
 void SuperFunctional::print(std::string out, int level) const {
     if (level < 1) return;
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
-    printer->Printf("   => %s <= \n\n", c_functionals_[0].get()->xclib_description().c_str());
+    
+    if (xclib_description_ != "") {
+        printer->Printf("%s\n\n", xclib_description_.c_str());
+    }
+
     printer->Printf("   => Composite Functional: %s <= \n\n", name_.c_str());
 
     if (description_ != "") {
