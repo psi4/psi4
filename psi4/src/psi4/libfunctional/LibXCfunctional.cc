@@ -70,6 +70,8 @@ LibXCFunctional::LibXCFunctional(std::string xc_name, bool unpolarized) {
         outfile->Printf("Functional '%s' not found\n", xc_name.c_str());
         throw PSIEXCEPTION("Could not find required LibXC functional");
     }
+    
+    xclib_description_ = "   => LibXC <=\n\n    Version " + std::string(xc_version_string()) + "\n    " + xc_reference() + " (" + xc_reference_doi() + ")";
 
     // Extract citation information
     name_ = xc_name;
