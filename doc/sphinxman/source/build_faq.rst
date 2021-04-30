@@ -137,7 +137,6 @@ Runtime Errors and Debugging
 #. :ref:`faq:gdblldb`
 #. :ref:`faq:setuptype`
 #. :ref:`faq:wrongpyfalse`
-.. #. :ref:`faq:erroreriam`
 
 Managing Code
 -------------
@@ -156,4 +155,5 @@ Miscellaneous
 .. #. :ref:`faq:getversion`
 .. #. :ref:`faq:binarypackage`
 .. #. :ref:`faq:getting-and-using-the-psi4dependencies-package`
+.. #. :ref:`faq:erroreriam`
 
