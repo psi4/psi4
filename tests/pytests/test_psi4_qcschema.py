@@ -18,6 +18,7 @@ pytestmark = [pytest.mark.quick, pytest.mark.smoke]
 #    atres = psi4.schema_wrapper.run_qcschema(jatin)
 #    pprint.pprint(atres.dict())
 
+
 @pytest.fixture
 def datadir(tmpdir, request):
     """
