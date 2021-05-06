@@ -483,7 +483,7 @@ GWH
     often less accurate than the core guess (see
     [Lehtola:2019:1593]_).
 HUCKEL
-    An extended Hückel guess based on on-the-fly atomic UHF
+    An extended H\ |u_dots|\ ckel guess based on on-the-fly atomic UHF
     calculations alike SAD, see [Lehtola:2019:1593]_.
 READ
     Read the previous orbitals from a checkpoint file, casting from

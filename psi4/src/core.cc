@@ -968,6 +968,11 @@ void py_psi_set_gradient(SharedMatrix grad) { Process::environment.set_gradient(
 
 SharedMatrix py_psi_get_gradient() { return Process::environment.gradient(); }
 
+std::shared_ptr<Vector> py_psi_get_atomic_point_charges() {
+    auto empty = std::make_shared<psi::Vector>();
+    return empty;  // charges not added to process.h for environment - yet(?)
+}
+
 void py_psi_set_memory(size_t mem, bool quiet) {
     Process::environment.set_memory(mem);
     if (!quiet) {

@@ -462,7 +462,7 @@ Bibliography
 
 .. [Olsen:2010:3721]
    J. M. Olsen, K. Aidas, and J. Kongsted.
-   *J. Chem. Theory Comput.* **6**, 3721–3734 (2010).
+   *J. Chem. Theory Comput.* **6**, 3721-3734 (2010).
 
 .. [Dreuw:2014:82]
    A. Dreuw and M. Wormit.

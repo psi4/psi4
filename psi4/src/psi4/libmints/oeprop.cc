@@ -1858,7 +1858,7 @@ void OEProp::compute_mbis_multipoles() {
     wfn_->set_array_variable("MBIS OCTUPOLES", opole);
 }
 
-/// Helper Methods for MBIS (JCTC, 2016, p. 3894–3912, Verstraelen et al.)
+/// Helper Methods for MBIS (JCTC, 2016, p. 3894-3912, Verstraelen et al.)
 
 // Proatomic density of a specific shell of an atom  (Equation 7 in Verstraelen et al.)
 double rho_ai_0(double n, double sigma, double distance) {
@@ -1988,7 +1988,7 @@ std::vector<SharedMatrix> compute_radial_moments(const std::shared_ptr<DFTGrid>&
     return rmoms;
 }
 
-// Minimal Basis Iterative Stockhplder (JCTC, 2016, p. 3894–3912, Verstraelen et al.)
+// Minimal Basis Iterative Stockhplder (JCTC, 2016, p. 3894-3912, Verstraelen et al.)
 std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAnalysisCalc::compute_mbis_multipoles(
     bool print_output) {
     if (print_output) outfile->Printf("  ==> Computing MBIS Charges <==\n\n");
@@ -2538,7 +2538,7 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedVector> PopulationAna
     //    Note: The computed Mayer bond indices (MBI) will be different from the MBI values computed using
     //    some other program packages for the unrestricted case. The reason is that these programs left out
     //    the spin density contribution in the MBI equation for the unrestricted wavefunctions. As the result,
-    //    the MBI value will be underestimated. For example, the MBI value for the H–H bond of H2+
+    //    the MBI value will be underestimated. For example, the MBI value for the H-H bond of H2+
     //    is calculated to be 0.25 using the NBO program. The equation coded above gives the correct value of 0.5.
     //    For reference, see IJQC 29 (1986) P. 73 and IJQC 29 (1986) P. 477.
 
