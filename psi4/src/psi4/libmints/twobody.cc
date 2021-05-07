@@ -183,7 +183,7 @@ bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) const {
 bool TwoBodyAOInt::shell_significant_density_J(int M, int N, int R, int S) {
 
     // THR in Equation 9
-    double density_threshold = dens_screen_threshold_;
+    double density_threshold = density_screening_threshold_;
 
     // Equation 13
     double Q_MN_sq = shell_pair_values_[N * nshell_ + M];
@@ -208,7 +208,7 @@ bool TwoBodyAOInt::shell_significant_density_J(int M, int N, int R, int S) {
 bool TwoBodyAOInt::shell_significant_density_K(int M, int N, int R, int S) {
 
     // THR in Equation 9
-    double density_threshold = dens_screen_threshold_;
+    double density_threshold = density_screening_threshold_;
 
     // Equation 13
     double Q_MN_sq = shell_pair_values_[N * nshell_ + M];
@@ -249,9 +249,7 @@ double TwoBodyAOInt::pair_screen_linK(int M, int N) {
 
 // Quartet Screening Used in LinK procedure
 double TwoBodyAOInt::quart_screen_linK(int M, int N, int R, int S) {
-
     return max_dens_shell_pair_[M][R] * std::sqrt(shell_pair_values_[M * nshell_ + N] * shell_pair_values_[R * nshell_ + S]);
-
 }
 
 bool TwoBodyAOInt::shell_significant_csam(int M, int N, int R, int S) { 
