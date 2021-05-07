@@ -273,19 +273,6 @@ void JK::compute_D() {
                                                   C_right_[N]->rowspi(),
                                                   C_left_[N]->symmetry() ^ C_right_[N]->symmetry()));
         }
-        
-	for (size_t N = 0; N < C_left_.size(); ++N) {
-             std::stringstream s;
-             s << "D prev" << N << " (SO)";
-             D_prev_.push_back(std::make_shared<Matrix>(s.str(), C_left_[N]->nirrep(), C_left_[N]->rowspi(),
-                                                   C_right_[N]->rowspi(),
-                                                   C_left_[N]->symmetry() ^ C_right_[N]->symmetry()));
-         }
-    } else {
-        for (size_t N = 0; N < D_.size(); N++) {
-            D_prev_[N] = D_[N]->clone();
-            D_ao_prev_[N] = D_ao_[N]->clone();
-        }
     }
 
     // Form the density, differs from dou
