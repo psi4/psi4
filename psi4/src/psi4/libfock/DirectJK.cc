@@ -433,9 +433,6 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                         std::vector<std::shared_ptr<Matrix>>& J, std::vector<std::shared_ptr<Matrix>>& K) {
     
     timer_on("build_JK()");
-    
-    Options& options = Process::environment.options;
-    bool dens_screen = options.get_bool("SCF_DENSITY_SCREENING");
 
     // => Zeroing <= //
     for (size_t ind = 0; ind < J.size(); ind++) {
@@ -602,7 +599,6 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                         int S = task_shells[S2];
                         
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
-                        if (dens_screen && !ints[0]->shell_significant_density(P, Q, R, S)) continue;
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
                         if (density_screening_ && !ints[0]->shell_significant_density(P, Q, R, S)) continue;
 
@@ -915,10 +911,6 @@ void DirectJK::build_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::v
                   std::vector<std::shared_ptr<Matrix> >& J) {
     
     timer_on("build_J()");
-    outfile->Printf("I like pineapples on pizza.\n");
-    
-    // Options& options = Process::environment.options;
-    // bool dens_screen = options.get_bool("SCF_DENSITY_SCREENING");
     
     // => Zeroing <= //
     for (size_t ind = 0; ind < J.size(); ind++) {
@@ -1086,8 +1078,9 @@ void DirectJK::build_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::v
                         int S = task_shells[S2];
                         
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
-                        if (!ints[0]->shell_significant_density_J(P, Q, R, S)) continue;
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
+
+                        if (density_screening_ && !ints[0]->shell_significant_density_J(P, Q, R, S)) continue;
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
                         // timer_on("compute_shell(P, Q, R, S)");
@@ -1331,8 +1324,6 @@ void DirectJK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::v
     
     std::vector<std::vector<std::vector<int>> > linK_task_braket(ntask * ntask);
     
-    // outfile->Printf("\tMr. Blue Sky!!!\n");
-    
     if (do_linK) {
         for (size_t Ptask = 0; Ptask < ntask; Ptask++) {
             for (size_t Rtask = 0; Rtask < ntask; Rtask++) {
@@ -1366,8 +1357,6 @@ void DirectJK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::v
             }
         }
     }
-    
-    // outfile->Printf("\tPlease tell us why\n");
 
     // => Intermediate Buffers <= //
 
@@ -1498,11 +1487,12 @@ void DirectJK::build_K(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::v
                 std::vector<std::pair<int, int> > linK_RS_pairs;
                 
                 for (int dR = 0; dR < nRtask; dR++) {
+                    if (!PQ_sig_R[dR]) continue;
                     for (int dS = 0; dS < nStask; dS++) {
                         if (dS + Sstart > dR + Rstart) continue;
-                        if (PQ_sig_RS[dR][dS]) {
-                            linK_RS_pairs.push_back(std::pair<int, int>(dR + Rstart, dS + Sstart));
-                        }
+                        if (!PQ_sig_S[dS]) continue;
+                        if (!PQ_sig_RS[dR][dS]) continue;
+                        linK_RS_pairs.push_back(std::pair<int, int>(dR + Rstart, dS + Sstart));
                     }
                 }
                 
