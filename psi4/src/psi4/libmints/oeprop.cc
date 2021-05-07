@@ -1988,7 +1988,7 @@ std::vector<SharedMatrix> compute_radial_moments(const std::shared_ptr<DFTGrid>&
     return rmoms;
 }
 
-// Minimal Basis Iterative Stockhplder (JCTC, 2016, p. 3894-3912, Verstraelen et al.)
+// Minimal Basis Iterative Stockholder (JCTC, 2016, p. 3894-3912, Verstraelen et al.)
 std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAnalysisCalc::compute_mbis_multipoles(
     bool print_output) {
     if (print_output) outfile->Printf("  ==> Computing MBIS Charges <==\n\n");
