@@ -638,7 +638,7 @@ PSI Variables by Alpha
 .. psivar:: DCT LAMBDA ENERGY
 
    An energy term in density cumulant theory [Eh]. This term is the
-   2-electron cumulant’s contribution contribution to the reduced
+   2-electron cumulant's contribution contribution to the reduced
    density matrix energy expression. Not recommended for interpretative
    use except by reduced density matrix specialists.
 

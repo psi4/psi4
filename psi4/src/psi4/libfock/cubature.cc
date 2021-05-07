@@ -1996,7 +1996,7 @@ MassPoint const *LebedevGridMgr::mk5810ptGrid() {
 
 class RadialGridMgr {
    private:
-    // See P. Gill and S. Chien,  J. Comput. Chem. 24 (2003) 732–740
+    // See P. Gill and S. Chien,  J. Comput. Chem. 24 (2003) 732-740
     static double multiexp_r(double x) { return -log(x); }
     static double multiexp_dr(double x) {
         double logx = log(x);
@@ -2609,7 +2609,7 @@ void StandardGridMgr::ReleaseMemory() {
 }
 
 void StandardGridMgr::Initialize_SG0() {
-    // See S. Chien and P. Gill,  J. Comput. Chem. 27 (2006) 730–739.
+    // See S. Chien and P. Gill,  J. Comput. Chem. 27 (2006) 730-739.
     // This is Table 1 from that paper, with {0,0} terminators at the end of each row.
     //
     // We need an 18-point rule; this is not a Lebedev rule, but we
