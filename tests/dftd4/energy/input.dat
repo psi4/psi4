@@ -64,14 +64,14 @@ H   0.000000   0.000000   3.963929
 print('  -D correction from Py-side')  #TEST
 eneyne.update_geometry()
 E, G = eneyne.run_dftd4('b3lyp', 'd4bj')
-compare_values(ref_d4bj[0], E, 7, 'Ethene-Ethyne -D4 (bj)')  #TEST
+compare_values(ref_d4bj[0], E, 7, '1: Ethene-Ethyne -D4 (bj)')  #TEST
 mA = eneyne.extract_subsets(1)
 E, G = mA.run_dftd4('b3lyp', 'd4bj')
-compare_values(ref_d4bj[1], E, 7, 'Ethene -D4 (bj)')  #TEST
-compare_values(gref_d4bj[1], G, 7, 'Ethene -D4 (bj) grad')  #TEST
+compare_values(ref_d4bj[1], E, 7, '2: Ethene -D4 (bj)')  #TEST
+compare_values(gref_d4bj[1], G, 7, '3: Ethene -D4 (bj) grad')  #TEST
 mB = eneyne.extract_subsets(2)
 E, G = mB.run_dftd4('b3lyp', 'd4bj')
-compare_values(ref_d4bj[2], E, 7, 'Ethyne -D4 (bj)')  #TEST
+compare_values(ref_d4bj[2], E, 7, '4: Ethyne -D4 (bj)')  #TEST
 
 set basis sto-3g
 set scf_type df
@@ -83,59 +83,59 @@ set dft_spherical_points 110
 print('  -D correction from C-side')  #TEST
 activate(mA)
 gradient('b3lyp-d4bj')
-compare_values(ref_d4bj[1], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D4')  #TEST
-compare_values(gref_d4bj[1], variable('DISPERSION CORRECTION GRADIENT'), 7, 'Ethene -D4 grad')  #TEST
+compare_values(ref_d4bj[1], variable('DISPERSION CORRECTION ENERGY'), 7, '5: Ethene -D4')  #TEST
+compare_values(gref_d4bj[1], variable('DISPERSION CORRECTION GRADIENT'), 7, '6: Ethene -D4 grad')  #TEST
 
 mAgB = eneyne.extract_subsets(1, 2)
 activate(mAgB)
 energy('b3lyp-d4')
-compare_values(ref_d4bj[1], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D4 (alias)')  #TEST
+compare_values(ref_d4bj[1], variable('DISPERSION CORRECTION ENERGY'), 7, '7: Ethene -D4 (alias)')  #TEST
 
 print('  non-default -D correction from C-side')  #TEST
 activate(mB)
-set dft_dispersion_parameters [2.02929367, 0.40868035, 4.53807137, 1.0]  # b3lyp-d4
+set dft_dispersion_parameters [0.40868035, 4.53807137, 16.0, 1.0, 2.02929367, 1.0]  # b3lyp-d4
 energy('b3lyp-d4(bj)')
-compare_values(ref_d4bj[2], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D4')  #TEST
+compare_values(ref_d4bj[2], variable('DISPERSION CORRECTION ENERGY'), 7, '8: Ethene -D4')  #TEST
 
 activate(eneyne)
-set dft_dispersion_parameters [2.02929367, 0.40868035, 4.53807137, 0.0]  # b3lyp-d4-2body
+set dft_dispersion_parameters [0.40868035, 4.53807137, 16.0, 1.0, 2.02929367, 0.0]  # b3lyp-d4-2body
 energy('b3lyp-d4(bj)')
-compare_values(ref_d4bj_2body[0], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D4-2body')  #TEST
+compare_values(ref_d4bj_2body[0], variable('DISPERSION CORRECTION ENERGY'), 7, '9: Ethene -D4-2body')  #TEST
 
 gAmB = eneyne.extract_subsets(2, 1)
 activate(gAmB)
 set dft_dispersion_parameters [0.75]
 energy('b3lyp-d2')
-compare_values(ref_pbe_d2[2], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D2 (alias)')  #TEST
+compare_values(ref_pbe_d2[2], variable('DISPERSION CORRECTION ENERGY'), 7, '10: Ethene -D2 (alias)')  #TEST
 
 set dft_dispersion_parameters [1.0,  0.722, 1.217, 14.0]
 energy('b3lyp-d3')
-compare_values(ref_pbe_d3zero[2], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D4 (alias)')  #TEST
+compare_values(ref_pbe_d3zero[2], variable('DISPERSION CORRECTION ENERGY'), 7, '11: Ethene -D4 (alias)')  #TEST
 set dft_dispersion_parameters [0.75]
-set dft_dispersion_parameters [0.95948085, 0.38574991, 4.80688534, 1.0]  # pbe-d4
+set dft_dispersion_parameters [0.38574991, 4.80688534, 16.0, 1.0, 0.95948085, 1.0]  # pbe-d4
 energy('b3lyp-d4')
-compare_values(ref_pbe_d4bj[2], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D4 (alias)')  #TEST
+compare_values(ref_pbe_d4bj[2], variable('DISPERSION CORRECTION ENERGY'), 7, '12: Ethene -D4 (alias)')  #TEST
 activate(mA)
 set dft_dispersion_parameters [1.0]
 energy('wb97x-d')
-compare_values(-0.000834247063, variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene wb97x-d (chg)')  #TEST
+compare_values(-0.000834247063, variable('DISPERSION CORRECTION ENERGY'), 7, '13: Ethene wb97x-d (chg)')  #TEST
 
 print('  non-default -D correction from Py-side')  #TEST
 eneyne.update_geometry()
 
 eneyne.run_dftd4('', 'd4bj', {"s8": 0.95948085, "a1": 0.38574991, "a2": 4.80688534, "s9": 1.0})  # pbe-d4
-compare_values(ref_pbe_d4bj[0], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D4 (bj)')  #TEST
+compare_values(ref_pbe_d4bj[0], variable('DISPERSION CORRECTION ENERGY'), 7, '14: Ethene-Ethyne -D4 (bj)')  #TEST
 
 try:
     eneyne.run_dftd4('b3lyp', 'd4bj', {"s8": 0.95948085, "a1": 0.38574991, "a2": 4.80688534, "s9": 1.0})  # pbe-d4
-    compare_values(ref_pbe_d4bj[0], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D4 (bj)')  #TEST
+    compare_values(ref_pbe_d4bj[0], variable('DISPERSION CORRECTION ENERGY'), 7, '15: Ethene-Ethyne -D4 (bj)')  #TEST
 except psi4.driver.p4util.exceptions.TestComparisonError:
     # unlike Mol.run_dftd3(), functional overrides parameters in Mol.run_dftd4()
     compare(True, True, 'Ethene-Ethyne -D4 (bj) func trumps params')  #TEST
     pass
 
 eneyne.run_dftd4('', 'D4', {"s8": 2.02929367, "a1": 0.40868035, "a2": 4.53807137, "s9": 0.0})  # b3lyp-d4-2body
-compare_values(ref_d4bj_2body[0], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D4 (bj)')  #TEST
+compare_values(ref_d4bj_2body[0], variable('DISPERSION CORRECTION ENERGY'), 7, '16: Ethene-Ethyne -D4 (bj)')  #TEST
 
 print('  cast-up, -D correction from C-side')  #TEST
 clean_options()
@@ -143,5 +143,5 @@ activate(mB)
 set basis cc-pvdz
 set basis_guess sto-3g
 energy('b3lyp-d4bj')
-compare_values(ref_d4bj[2], variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D4 cast-up')  #TEST
+compare_values(ref_d4bj[2], variable('DISPERSION CORRECTION ENERGY'), 7, '17: Ethene -D4 cast-up')  #TEST
 
