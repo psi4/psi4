@@ -25,6 +25,8 @@
 #
 # @END LICENSE
 #
+import re
+
 """
 Superfunctional builder function & handlers.
 The new definition of functionals is based on a dictionary with the following structure
@@ -242,7 +244,7 @@ def check_consistency(func_dictionary):
     # 3d) check formatting for dispersion citation
         if "citation" in disp:
             cit = disp["citation"]
-            if cit and not (cit.startswith('    ') and cit.endswith('\n')):
+            if cit and not ((cit.startswith('    ') and cit.endswith('\n')) or re.match(r"^10.\d{4,9}/[-._;()/:A-Z0-9]+$", cit)):
                 raise ValidationError(
                     f"SCF: All citations should have the form '    A. Student, B. Prof, J. Goodstuff Vol, Page, Year\n', not : {cit}"
                 )
