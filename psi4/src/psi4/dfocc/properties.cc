@@ -33,6 +33,11 @@
 #include "ekt.h"
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/dipole.h"
+#include "psi4/libmints/mintshelper.h"
+#include "psi4/libmints/twobody.h"
+#include "psi4/libmints/integral.h"
 #include "psi4/physconst.h"
 
 namespace psi {
@@ -72,6 +77,54 @@ void DFOCC::oeprop() {
     Da_.reset();
     Db_.reset();
 
+    // Compute dipole moments
+    Vector3 origin;
+    origin[0] = 0.0;
+    origin[1] = 0.0;
+    origin[2] = 0.0;
+    SharedVector ndip = DipoleInt::nuclear_contribution(molecule_, origin);
+
+    // Compute dipoles
+    std::vector<SharedMatrix> Xtemp;
+    SharedTensor2d Xso_, Yso_, Zso_, Gtemp;
+    Xso_ = std::make_shared<Tensor2d>("Dipole X <mu|nu>", nso_, nso_);
+    Yso_ = std::make_shared<Tensor2d>("Dipole Y <mu|nu>", nso_, nso_);
+    Zso_ = std::make_shared<Tensor2d>("Dipole Z <mu|nu>", nso_, nso_);
+    Gtemp = std::make_shared<Tensor2d>("G AO <mu|nu>", nso_, nso_);
+
+    // Read SO-basis one-electron integrals
+    MintsHelper mints(MintsHelper(reference_wavefunction_->basisset(), options_, 0));
+    Xtemp = mints.ao_dipole();
+    for(int mu = 0; mu < nso_; ++mu) {
+        for(int nu = 0; nu < nso_; ++nu) {
+            Xso_->set(mu,nu, Xtemp[0]->get(mu,nu));
+            Yso_->set(mu,nu, Xtemp[1]->get(mu,nu));
+            Zso_->set(mu,nu, Xtemp[2]->get(mu,nu));
+        }
+    }
+    //Xso_->print();
+
+    // Compute dipole moments
+    if (reference_ == "RESTRICTED") {
+        Gtemp->back_transform(G1, CmoA);
+    }       
+    else if (reference_ == "UNRESTRICTED") {
+        Gtemp->back_transform(G1A, CmoA);
+        Gtemp->back_transform(G1B, CmoB, 1.0, 1.0);
+    }
+    double Mux = ndip->get(0) + Gtemp->vector_dot(Xso_); 
+    double Muy = ndip->get(1) + Gtemp->vector_dot(Yso_); 
+    double Muz = ndip->get(2) + Gtemp->vector_dot(Zso_); 
+
+    // Open file for writing.
+    outfile->Printf("\tMu_X (a.u.): %12.12f\n", Mux);
+    outfile->Printf("\tMu_Y (a.u.): %12.12f\n", Muy);
+    outfile->Printf("\tMu_Z (a.u.): %12.12f\n", Muz);
+    Xso_.reset();
+    Yso_.reset();
+    Zso_.reset();
+    Gtemp.reset();
+
     timer_off("oeprop");
 }  // end oeprop
 
@@ -86,6 +139,9 @@ void DFOCC::ekt_ip() {
 
     timer_on("ekt");
     if (reference_ == "RESTRICTED") {
+        // malloc
+        eigA = std::make_shared<Tensor1d>("epsilon <I|J>", noccA);
+        psA = std::make_shared<Tensor1d>("alpha occupied pole strength vector", noccA);
 
         // Call EKT
         auto ektA = std::make_shared<Ektip>("Alpha EKT", noccA, nmo_, GF, G1, 1.0, 0.5);

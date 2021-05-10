@@ -41,8 +41,8 @@ void DFOCC::omp2_opdm() {
     timer_on("opdm");
     if (reference_ == "RESTRICTED") {
         // Tensors
-        T = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
-        U = SharedTensor2d(new Tensor2d("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
+        T = std::make_shared<Tensor2d>("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA);
+        U = std::make_shared<Tensor2d>("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA);
         if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") {
             u2_rmp2_direct(T, U);
         } else {
@@ -82,53 +82,75 @@ void DFOCC::omp2_opdm() {
 
     else if (reference_ == "UNRESTRICTED") {
         // tensors
-        SharedTensor2d t2, l2, l1A, l1B;
+        SharedTensor2d t2;
+        SharedTensor2d K, L, M;
 
         // G_IJ = 1/2 \sum_{M,E,F} t_IM^EF t_JM^EF
-        t2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-        l2 = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
-        if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT")
-            t2AA_ump2_direct(t2);
-        else
+        if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") {
+            L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
+            tei_iajb_chem_directAA(L);
+            M = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA);
+            M->sort(1324, L, 1.0, 0.0);
+            L.reset();
+            t2 = std::make_shared<Tensor2d>("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA);
+            tei_pqrs_anti_symm_direct(t2, M);
+            M.reset();
+            t2->apply_denom(nfrzc, noccA, FockA);
+            //t2AA_ump2_direct(t2);
+        }
+        else {
+            t2 = std::make_shared<Tensor2d>("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA);
             t2->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
-        l2->copy(t2);
-        GijA->contract442(1, 1, t2, l2, 0.5, 0.0);
+        }
+        GijA->contract442(1, 1, t2, t2, 0.5, 0.0);
         // G_AB = -1/2\sum_{M,N,F} t_MN^FA t_MN^FB
-        GabA->contract442(4, 4, t2, l2, -0.5, 0.0);
+        GabA->contract442(4, 4, t2, t2, -0.5, 0.0);
         t2.reset();
-        l2.reset();
 
         // G_IJ = \sum_{m,E,f} t_Im^Ef t_Jm^Ef
-        t2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-        l2 = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
-        if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT")
-            t2AB_ump2_direct(t2);
-        else
+        if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") {
+            L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|jb)", naoccA, navirA, naoccB, navirB);
+            tei_iajb_chem_directAB(L);
+            t2 = std::make_shared<Tensor2d>("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
+            t2->sort(1324, L, 1.0, 0.0);
+            L.reset();
+            t2->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
+            //t2AB_ump2_direct(t2);
+        }
+        else {
+            t2 = std::make_shared<Tensor2d>("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB);
             t2->read(psio_, PSIF_DFOCC_AMPS);
-        l2->copy(t2);
-        GijA->contract442(1, 1, t2, l2, 1.0, 1.0);
+        }
+        GijA->contract442(1, 1, t2, t2, 1.0, 1.0);
         // G_ij = \sum_{M,e,F} t_Mi^Fe t_Mj^Fe
-        GijB->contract442(2, 2, t2, l2, 1.0, 0.0);
+        GijB->contract442(2, 2, t2, t2, 1.0, 0.0);
         // G_AB += -\sum_{M,n,f} t_Mn^Af t_Mn^Bf
-        GabA->contract442(3, 3, t2, l2, -1.0, 1.0);
+        GabA->contract442(3, 3, t2, t2, -1.0, 1.0);
         // G_ab += -\sum_{m,N,F} t_Mn^Fa t_Mn^Fb
-        GabB->contract442(4, 4, t2, l2, -1.0, 0.0);
+        GabB->contract442(4, 4, t2, t2, -1.0, 0.0);
         t2.reset();
-        l2.reset();
 
         // G_ij = 1/2 \sum_{m,e,f} t_im^ef t_jm^ef
-        t2 = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
-        l2 = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
-        if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT")
-            t2BB_ump2_direct(t2);
-        else
+        if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT") {
+            L = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (ia|jb)", naoccB, navirB, naoccB, navirB);
+            tei_iajb_chem_directBB(L);
+            M = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <ij|ab>", naoccB, naoccB, navirB, navirB);
+            M->sort(1324, L, 1.0, 0.0);
+            L.reset();
+            t2 = std::make_shared<Tensor2d>("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB);
+            tei_pqrs_anti_symm_direct(t2, M);
+            M.reset();
+            t2->apply_denom(nfrzc, noccB, FockB);
+            //t2BB_ump2_direct(t2);
+        }
+        else {
+            t2 = std::make_shared<Tensor2d>("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB);
             t2->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
-        l2->copy(t2);
-        GijB->contract442(1, 1, t2, l2, 0.5, 1.0);
+        }
+        GijB->contract442(1, 1, t2, t2, 0.5, 1.0);
         // G_ab = -1/2\sum_{m,n,f} t_mn^fa t_mn^fb
-        GabB->contract442(4, 4, t2, l2, -0.5, 1.0);
+        GabB->contract442(4, 4, t2, t2, -0.5, 1.0);
         t2.reset();
-        l2.reset();
 
         // outfile->Printf("\tI am here.\n");
 

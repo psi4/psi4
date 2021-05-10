@@ -1,6 +1,7 @@
 list(APPEND sources
   approx_diag_mohess_oo.cc
   approx_diag_mohess_vo.cc
+  approx_diag_mohess_vv.cc
   back_trans.cc
   cc_energy.cc
   ccd_3index_intr.cc
@@ -55,6 +56,8 @@ list(APPEND sources
   diis.cc
   effective_mograd.cc
   ekt.cc
+  fno.cc
+  fno_wrapper.cc
   fock.cc
   fock_so.cc
   get_moinfo.cc
@@ -103,5 +106,18 @@ list(APPEND sources
   update_mo.cc
   z_vector.cc
   z_vector_pcg.cc
+  cis.cc
+  davidson.cc
+  uccsd_W_intr.cc
+  uccsd_t2_amps.cc
+  uccsd_energy.cc
+  uccsdl_W_intr.cc
+  uccsdl_l2_amps.cc
+  uccsdl_energy.cc
+  uccsd_tpdm.cc
+  uccsd_pdm_3index_intr.cc
+  uccsd_triples_hm.cc
+  uccsdl_triples_hm.cc
+  uccsd_triples_grad_hm.cc
   )
 psi4_add_module(bin dfocc sources)
