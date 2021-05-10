@@ -172,7 +172,7 @@ void DFOCC::omp2_manager() {
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)  : %20.14f\n", Escsnmp2);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
     outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
@@ -274,7 +274,7 @@ void DFOCC::omp2_manager() {
             outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
         if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
         if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-        if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+        if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)  : %20.14f\n", Escsnmp2);
         outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Emp2 - Escf);
         outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
         outfile->Printf("\t======================================================================= \n");
@@ -288,7 +288,7 @@ void DFOCC::omp2_manager() {
         outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
         if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-OMP2 Total Energy (a.u.)    : %20.14f\n", Escsmp2);
         if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-OMP2 Total Energy (a.u.)    : %20.14f\n", Esosmp2);
-        if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-OMP2 Total Energy (a.u.)   : %20.14f\n", Escsnmp2);
+        if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-OMP2 Total Energy (a.u.) : %20.14f\n", Escsnmp2);
         outfile->Printf("\tDF-OMP2 Correlation Energy (a.u.)  : %20.14f\n", Emp2L - Escf);
         outfile->Printf("\tEdfomp2 - Eref (a.u.)              : %20.14f\n", Emp2L - Eref);
         outfile->Printf("\tDF-OMP2 Total Energy (a.u.)        : %20.14f\n", Emp2L);
@@ -501,7 +501,7 @@ void DFOCC::mp2_manager() {
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)  : %20.14f\n", Escsnmp2);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
     outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
@@ -794,7 +794,7 @@ void DFOCC::ccsd_manager() {
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)  : %20.14f\n", Escsnmp2);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
     outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
@@ -1227,7 +1227,7 @@ void DFOCC::ccsd_t_manager() {
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)  : %20.14f\n", Escsnmp2);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
     outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
@@ -1734,7 +1734,7 @@ void DFOCC::ccsdl_t_manager() {
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)  : %20.14f\n", Escsnmp2);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
     outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
@@ -2065,7 +2065,7 @@ void DFOCC::ccd_manager() {
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)  : %20.14f\n", Escsnmp2);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
     outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
@@ -2310,7 +2310,7 @@ void DFOCC::omp3_manager() {
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)  : %20.14f\n", Escsnmp2);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
     outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
@@ -2640,7 +2640,7 @@ void DFOCC::mp3_manager() {
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)  : %20.14f\n", Escsnmp2);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
     outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
@@ -2917,7 +2917,7 @@ void DFOCC::omp2_5_manager() {
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)  : %20.14f\n", Escsnmp2);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
     outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
@@ -3228,7 +3228,7 @@ void DFOCC::mp2_5_manager() {
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)  : %20.14f\n", Escsnmp2);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
     outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
@@ -3504,7 +3504,7 @@ void DFOCC::olccd_manager() {
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)  : %20.14f\n", Escsnmp2);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
     outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
@@ -3786,7 +3786,7 @@ void DFOCC::lccd_manager() {
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)  : %20.14f\n", Escsnmp2);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
     outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
@@ -4165,7 +4165,7 @@ void DFOCC::occd_manager() {
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)  : %20.14f\n", Escsnmp2);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
     outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
@@ -4523,7 +4523,7 @@ void DFOCC::occdl_t_manager() {
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
     if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
-    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS(N)-MP2 Total Energy (a.u.)  : %20.14f\n", Escsnmp2);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
     if (reference == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
     outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
