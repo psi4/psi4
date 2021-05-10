@@ -46,11 +46,11 @@ void DFOCC::tpdm_tilde() {
         // Reference TPDM
         //=========================
         // Read J-1/2
-        Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Jmhalf <P|Q>", nQ_ref, nQ_ref));
+        Jmhalf = std::make_shared<Tensor2d>("DF_BASIS_SCF Jmhalf <P|Q>", nQ_ref, nQ_ref);
         Jmhalf->read(psio_, PSIF_DFOCC_INTS);
 
-        G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM <Q|OO>", nQ_ref, noccA, noccA));
-        Gref = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA, noccA));
+        G = std::make_shared<Tensor2d>("Reference 3-Index TPDM <Q|OO>", nQ_ref, noccA, noccA);
+        Gref = std::make_shared<Tensor2d>("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA, noccA);
         Gref->read(psio_, PSIF_DFOCC_DENS);
         G->gemm(true, false, Jmhalf, Gref, 1.0, 0.0);
         Gref.reset();
@@ -61,8 +61,8 @@ void DFOCC::tpdm_tilde() {
         // Separable TPDM
         //=========================
         // OO Block
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|OO>", nQ_ref, noccA, noccA));
-        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA, noccA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|OO>", nQ_ref, noccA, noccA);
+        Gsep = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA, noccA);
         Gsep->read(psio_, PSIF_DFOCC_DENS);
         G->gemm(true, false, Jmhalf, Gsep, 1.0, 0.0);
         Gsep.reset();
@@ -70,23 +70,23 @@ void DFOCC::tpdm_tilde() {
         G.reset();
 
         // OV Block
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|OV>", nQ_ref, noccA, nvirA));
-        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA, nvirA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|OV>", nQ_ref, noccA, nvirA);
+        Gsep = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA, nvirA);
         Gsep->read(psio_, PSIF_DFOCC_DENS);
         G->gemm(true, false, Jmhalf, Gsep, 1.0, 0.0);
         Gsep.reset();
         G->write(psio_, PSIF_DFOCC_DENS);
 
         // VO Block
-        G2 = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|VO>", nQ_ref, nvirA, noccA));
+        G2 = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|VO>", nQ_ref, nvirA, noccA);
         G2->swap_3index_col(G);
         G.reset();
         G2->write(psio_, PSIF_DFOCC_DENS);
         G2.reset();
 
         // VV Block
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|VV>", nQ_ref, nvirA, nvirA));
-        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|VV>", nQ_ref, nvirA, nvirA);
+        Gsep = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA);
         Gsep->read(psio_, PSIF_DFOCC_DENS, true, true);
         G->gemm(true, false, Jmhalf, Gsep, 1.0, 0.0);
         Gsep.reset();
@@ -100,19 +100,19 @@ void DFOCC::tpdm_tilde() {
         // Correlation TPDM
         //=========================
         // Read J-1/2
-        Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_CC Jmhalf <P|Q>", nQ, nQ));
+        Jmhalf = std::make_shared<Tensor2d>("DF_BASIS_CC Jmhalf <P|Q>", nQ, nQ);
         Jmhalf->read(psio_, PSIF_DFOCC_INTS);
 
         // OV Block
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|OV>", nQ, noccA, nvirA));
-        Gcorr = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|OV>", nQ, noccA, nvirA);
+        Gcorr = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA);
         Gcorr->read(psio_, PSIF_DFOCC_DENS);
         G->gemm(true, false, Jmhalf, Gcorr, 1.0, 0.0);
         Gcorr.reset();
         G->write(psio_, PSIF_DFOCC_DENS);
 
         // VO Block
-        G2 = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|VO>", nQ, nvirA, noccA));
+        G2 = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|VO>", nQ, nvirA, noccA);
         G2->swap_3index_col(G);
         G.reset();
         G2->write(psio_, PSIF_DFOCC_DENS);
@@ -120,8 +120,8 @@ void DFOCC::tpdm_tilde() {
 
         if (wfn_type_ != "DF-OMP2") {
             // OO Block
-            G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|OO>", nQ, noccA, noccA));
-            Gcorr = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
+            G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|OO>", nQ, noccA, noccA);
+            Gcorr = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA);
             Gcorr->read(psio_, PSIF_DFOCC_DENS);
             G->gemm(true, false, Jmhalf, Gcorr, 1.0, 0.0);
             Gcorr.reset();
@@ -129,8 +129,8 @@ void DFOCC::tpdm_tilde() {
             G.reset();
 
             // VV Block
-            G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|VV>", nQ, nvirA, nvirA));
-            Gcorr = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
+            G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|VV>", nQ, nvirA, nvirA);
+            Gcorr = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA);
             Gcorr->read(psio_, PSIF_DFOCC_DENS, true, true);
             G->gemm(true, false, Jmhalf, Gcorr, 1.0, 0.0);
             Gcorr.reset();
@@ -148,12 +148,12 @@ void DFOCC::tpdm_tilde() {
         // Reference TPDM
         //=========================
         // Read J-1/2
-        Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_SCF Jmhalf <P|Q>", nQ_ref, nQ_ref));
+        Jmhalf = std::make_shared<Tensor2d>("DF_BASIS_SCF Jmhalf <P|Q>", nQ_ref, nQ_ref);
         Jmhalf->read(psio_, PSIF_DFOCC_INTS);
 
         // OO Block
-        G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM <Q|OO>", nQ_ref, noccA, noccA));
-        Gref = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA, noccA));
+        G = std::make_shared<Tensor2d>("Reference 3-Index TPDM <Q|OO>", nQ_ref, noccA, noccA);
+        Gref = std::make_shared<Tensor2d>("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA, noccA);
         Gref->read(psio_, PSIF_DFOCC_DENS);
         G->gemm(true, false, Jmhalf, Gref, 1.0, 0.0);
         Gref.reset();
@@ -161,8 +161,8 @@ void DFOCC::tpdm_tilde() {
         G.reset();
 
         // oo Block
-        G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM <Q|oo>", nQ_ref, noccB, noccB));
-        Gref = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|oo)", nQ_ref, noccB, noccB));
+        G = std::make_shared<Tensor2d>("Reference 3-Index TPDM <Q|oo>", nQ_ref, noccB, noccB);
+        Gref = std::make_shared<Tensor2d>("Reference 3-Index TPDM (Q|oo)", nQ_ref, noccB, noccB);
         Gref->read(psio_, PSIF_DFOCC_DENS);
         G->gemm(true, false, Jmhalf, Gref, 1.0, 0.0);
         Gref.reset();
@@ -173,8 +173,8 @@ void DFOCC::tpdm_tilde() {
         // Separable TPDM
         //=========================
         // OO Block
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|OO>", nQ_ref, noccA, noccA));
-        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA, noccA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|OO>", nQ_ref, noccA, noccA);
+        Gsep = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA, noccA);
         Gsep->read(psio_, PSIF_DFOCC_DENS);
         G->gemm(true, false, Jmhalf, Gsep, 1.0, 0.0);
         Gsep.reset();
@@ -182,8 +182,8 @@ void DFOCC::tpdm_tilde() {
         G.reset();
 
         // oo Block
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|oo>", nQ_ref, noccB, noccB));
-        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|oo)", nQ_ref, noccB, noccB));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|oo>", nQ_ref, noccB, noccB);
+        Gsep = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|oo)", nQ_ref, noccB, noccB);
         Gsep->read(psio_, PSIF_DFOCC_DENS);
         G->gemm(true, false, Jmhalf, Gsep, 1.0, 0.0);
         Gsep.reset();
@@ -191,38 +191,38 @@ void DFOCC::tpdm_tilde() {
         G.reset();
 
         // OV Block
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|OV>", nQ_ref, noccA, nvirA));
-        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA, nvirA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|OV>", nQ_ref, noccA, nvirA);
+        Gsep = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA, nvirA);
         Gsep->read(psio_, PSIF_DFOCC_DENS);
         G->gemm(true, false, Jmhalf, Gsep, 1.0, 0.0);
         Gsep.reset();
         G->write(psio_, PSIF_DFOCC_DENS);
 
         // VO Block
-        G2 = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|VO>", nQ_ref, nvirA, noccA));
+        G2 = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|VO>", nQ_ref, nvirA, noccA);
         G2->swap_3index_col(G);
         G.reset();
         G2->write(psio_, PSIF_DFOCC_DENS);
         G2.reset();
 
         // ov Block
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|ov>", nQ_ref, noccB, nvirB));
-        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|ov)", nQ_ref, noccB, nvirB));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|ov>", nQ_ref, noccB, nvirB);
+        Gsep = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|ov)", nQ_ref, noccB, nvirB);
         Gsep->read(psio_, PSIF_DFOCC_DENS);
         G->gemm(true, false, Jmhalf, Gsep, 1.0, 0.0);
         Gsep.reset();
         G->write(psio_, PSIF_DFOCC_DENS);
 
         // vo Block
-        G2 = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|vo>", nQ_ref, nvirB, noccB));
+        G2 = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|vo>", nQ_ref, nvirB, noccB);
         G2->swap_3index_col(G);
         G.reset();
         G2->write(psio_, PSIF_DFOCC_DENS);
         G2.reset();
 
         // VV Block
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|VV>", nQ_ref, nvirA, nvirA));
-        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|VV>", nQ_ref, nvirA, nvirA);
+        Gsep = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA);
         Gsep->read(psio_, PSIF_DFOCC_DENS, true, true);
         G->gemm(true, false, Jmhalf, Gsep, 1.0, 0.0);
         Gsep.reset();
@@ -230,8 +230,8 @@ void DFOCC::tpdm_tilde() {
         G.reset();
 
         // vv Block
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM <Q|vv>", nQ_ref, nvirB, nvirB));
-        Gsep = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM <Q|vv>", nQ_ref, nvirB, nvirB);
+        Gsep = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB);
         Gsep->read(psio_, PSIF_DFOCC_DENS, true, true);
         G->gemm(true, false, Jmhalf, Gsep, 1.0, 0.0);
         Gsep.reset();
@@ -245,34 +245,34 @@ void DFOCC::tpdm_tilde() {
         // Correlation TPDM
         //=========================
         // Read J-1/2
-        Jmhalf = SharedTensor2d(new Tensor2d("DF_BASIS_CC Jmhalf <P|Q>", nQ, nQ));
+        Jmhalf = std::make_shared<Tensor2d>("DF_BASIS_CC Jmhalf <P|Q>", nQ, nQ);
         Jmhalf->read(psio_, PSIF_DFOCC_INTS);
 
         // OV Block
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|OV>", nQ, noccA, nvirA));
-        Gcorr = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|OV>", nQ, noccA, nvirA);
+        Gcorr = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA);
         Gcorr->read(psio_, PSIF_DFOCC_DENS);
         G->gemm(true, false, Jmhalf, Gcorr, 1.0, 0.0);
         Gcorr.reset();
         G->write(psio_, PSIF_DFOCC_DENS);
 
         // VO Block
-        G2 = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|VO>", nQ, nvirA, noccA));
+        G2 = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|VO>", nQ, nvirA, noccA);
         G2->swap_3index_col(G);
         G.reset();
         G2->write(psio_, PSIF_DFOCC_DENS);
         G2.reset();
 
         // ov Block
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|ov>", nQ, noccB, nvirB));
-        Gcorr = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|ov)", nQ, noccB, nvirB));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|ov>", nQ, noccB, nvirB);
+        Gcorr = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|ov)", nQ, noccB, nvirB);
         Gcorr->read(psio_, PSIF_DFOCC_DENS);
         G->gemm(true, false, Jmhalf, Gcorr, 1.0, 0.0);
         Gcorr.reset();
         G->write(psio_, PSIF_DFOCC_DENS);
 
         // vo Block
-        G2 = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|vo>", nQ, nvirB, noccB));
+        G2 = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|vo>", nQ, nvirB, noccB);
         G2->swap_3index_col(G);
         G.reset();
         G2->write(psio_, PSIF_DFOCC_DENS);
@@ -280,8 +280,8 @@ void DFOCC::tpdm_tilde() {
 
         if (wfn_type_ != "DF-OMP2") {
             // OO Block
-            G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|OO>", nQ, noccA, noccA));
-            Gcorr = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
+            G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|OO>", nQ, noccA, noccA);
+            Gcorr = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA);
             Gcorr->read(psio_, PSIF_DFOCC_DENS);
             G->gemm(true, false, Jmhalf, Gcorr, 1.0, 0.0);
             Gcorr.reset();
@@ -289,8 +289,8 @@ void DFOCC::tpdm_tilde() {
             G.reset();
 
             // VV Block
-            G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|VV>", nQ, nvirA, nvirA));
-            Gcorr = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
+            G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|VV>", nQ, nvirA, nvirA);
+            Gcorr = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA);
             Gcorr->read(psio_, PSIF_DFOCC_DENS, true, true);
             G->gemm(true, false, Jmhalf, Gcorr, 1.0, 0.0);
             Gcorr.reset();
@@ -298,8 +298,8 @@ void DFOCC::tpdm_tilde() {
             G.reset();
 
             // oo Block
-            G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|oo>", nQ, noccB, noccB));
-            Gcorr = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|oo)", nQ, noccB, noccB));
+            G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|oo>", nQ, noccB, noccB);
+            Gcorr = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|oo)", nQ, noccB, noccB);
             Gcorr->read(psio_, PSIF_DFOCC_DENS);
             G->gemm(true, false, Jmhalf, Gcorr, 1.0, 0.0);
             Gcorr.reset();
@@ -307,8 +307,8 @@ void DFOCC::tpdm_tilde() {
             G.reset();
 
             // vv Block
-            G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM <Q|vv>", nQ, nvirB, nvirB));
-            Gcorr = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|vv)", nQ, nvirB, nvirB));
+            G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM <Q|vv>", nQ, nvirB, nvirB);
+            Gcorr = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|vv)", nQ, nvirB, nvirB);
             Gcorr->read(psio_, PSIF_DFOCC_DENS, true, true);
             G->gemm(true, false, Jmhalf, Gcorr, 1.0, 0.0);
             Gcorr.reset();

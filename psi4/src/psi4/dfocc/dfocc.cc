@@ -61,6 +61,8 @@ void DFOCC::common_init() {
     exp_cutoff = options_.get_int("CUTOFF");
     exp_int_cutoff = options_.get_int("INTEGRAL_CUTOFF");
     pcg_maxiter = options_.get_int("PCG_MAXITER");
+    nroot = options_.get_int("NUM_ROOTS");
+    follow_root = options_.get_int("FOLLOW_ROOT");
 
     step_max = options_.get_double("MO_STEP_MAX");
     lshift_parameter = options_.get_double("LEVEL_SHIFT");
@@ -76,11 +78,15 @@ void DFOCC::common_init() {
     tol_t2 = options_.get_double("R_CONVERGENCE");
     reg_param = options_.get_double("REG_PARAM");
     tol_ldl = options_.get_double("CHOLESKY_TOLERANCE");
+    tol_fno = options_.get_double("OCC_TOLERANCE");
+    fno_percentage = options_.get_double("OCC_PERCENTAGE");
+    tol_davidson = options_.get_double("DAVIDSON_TOLERANCE");
+    jk_memory = (size_t)options_.get_double("JK_MEMORY");
 
     orth_type = options_.get_str("ORTH_TYPE");
     opt_method = options_.get_str("OPT_METHOD");
     occ_orb_energy = options_.get_str("OCC_ORBS_PRINT");
-    natorb = options_.get_str("NAT_ORBS");
+    natorb = options_.get_str("NBO");
     do_scs = options_.get_str("DO_SCS");
     do_sos = options_.get_str("DO_SOS");
     lineq = options_.get_str("LINEQ_SOLVER");
@@ -106,13 +112,30 @@ void DFOCC::common_init() {
     Wabef_type_ = options_.get_str("PPL_TYPE");
     triples_iabc_type_ = options_.get_str("TRIPLES_IABC_TYPE");
     do_cd = options_.get_str("CHOLESKY");
+    do_fno = options_.get_str("NAT_ORBS");
+    diag_method = options_.get_str("DIAG_METHOD");
+    print_ci_vecs = options_.get_str("PRINT_CI_VECS");
+    cis_alg = options_.get_str("CIS_ALGORITHM");
+    jk_type = options_.get_str("JK_TYPE");
+    write_mo_coeff = options_.get_str("MO_WRITE");
+    read_mo_coeff = options_.get_str("MO_READ");
+
+    if (dertype == "FIRST" && cc_lambda_ == "FALSE") {
+        cc_lambda_ = "TRUE";
+        outfile->Printf("\tWarning: cc_lambda option is changed to TRUE\n");
+    }
+    else if (orb_opt_ == "TRUE" && cc_lambda_ == "FALSE") {
+        cc_lambda_ = "TRUE";
+        outfile->Printf("\tWarning: cc_lambda option is changed to TRUE\n");
+    }
+    else if (wfn_type_ == "DF-CCSD(AT)" && cc_lambda_ == "FALSE") {
+        cc_lambda_ = "TRUE";
+        outfile->Printf("\tWarning: cc_lambda option is changed to TRUE\n");
+    }
 
     if (!psio_) {
         throw PSIEXCEPTION("The wavefunction passed in lacks a PSIO object, crashing DFOCC. See GitHub issue #1851.");
     }
-
-    // title
-    title();
 
     //   Given default conjugate gradient convergence, set the criteria by what shoud
     //   be necessary to achive the target energy convergence.
@@ -153,7 +176,7 @@ void DFOCC::common_init() {
             if (temp2 < 3.0) {
                 temp2 = 3.0;
             }
-            mograd_max = pow(10.0, -temp2 - 1);
+            mograd_max = pow(10.0, -temp2 - 1); // CHECK
             // mograd_max = 10.0*tol_grad;
             outfile->Printf("\tFor this energy convergence, default MAX orbital gradient is: %12.2e\n", mograd_max);
         }
@@ -164,6 +187,15 @@ void DFOCC::common_init() {
         reference_ = "RESTRICTED";
     else if (reference == "UHF" || reference == "UKS" || reference == "ROHF")
         reference_ = "UNRESTRICTED";
+
+    // title
+    if (!((wfn_type_ == "DF-CCSD" || wfn_type_ == "DF-CCSD(T)" || wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") && reference_ == "UNRESTRICTED")) {
+        title();
+    }
+    else {
+        title_dfuccsd();
+    }
+
 
     // Only ROHF-CC energy is available, not the gradients
     if (reference == "ROHF" && orb_opt_ == "FALSE" && dertype == "FIRST") {
@@ -177,18 +209,22 @@ void DFOCC::common_init() {
         do_diis_ = 0;
 
     // Figure out HESSIAN TYPE
-    if (options_["HESS_TYPE"].has_changed()) {
-        hess_type = options_.get_str("HESS_TYPE");
-    } else {
-        if (reference_ == "RESTRICTED" && freeze_core_ == "FALSE") {
-            hess_type = "HF";
-        } else if (reference_ == "RESTRICTED" && freeze_core_ == "TRUE") {
-            hess_type = "APPROX_DIAG";
-        } else if (reference_ == "UNRESTRICTED") {
-            hess_type = "APPROX_DIAG";
-            outfile->Printf("\tMO Hessian type is changed to 'APPROX_DIAG'\n");
+    if (orb_opt_ == "TRUE") {
+        if (options_["HESS_TYPE"].has_changed()) {
+            hess_type = options_.get_str("HESS_TYPE");
+        } else {
+            if (reference_ == "RESTRICTED" && freeze_core_ == "FALSE") {
+                hess_type = "HF";
+                outfile->Printf("\tMO Hessian type is changed to 'HF'\n");
+            } else if (reference_ == "RESTRICTED" && freeze_core_ == "TRUE") {
+                hess_type = "APPROX_DIAG";
+                outfile->Printf("\tMO Hessian type is changed to 'APPROX_DIAG'\n");
+            } else if (reference_ == "UNRESTRICTED") {
+                hess_type = "APPROX_DIAG";
+                outfile->Printf("\tMO Hessian type is changed to 'APPROX_DIAG'\n");
+            }
         }
-    }
+    }  // end if (orb_opt_ == "TRUE")
 
     // Regularization
     if (regularization == "TRUE") {
@@ -199,154 +235,36 @@ void DFOCC::common_init() {
     cutoff = pow(10.0, -exp_cutoff);
     int_cutoff_ = pow(10.0, -exp_int_cutoff);
     get_moinfo();
-    pair_index();
+    if (do_fno == "FALSE") pair_index();
 
     // Frozen virtual
     if (nfrzv > 0 && dertype == "FIRST" && wfn_type_ != "DF-CCSD(T)") {
         throw PSIEXCEPTION("Frozen virtual gradients are not available for this method.");
     }
-    if (nfrzv > 0 && orb_opt_ == "TRUE") {
-        throw PSIEXCEPTION("Frozen virtual approximation is not available for orbital-optimized methods.");
+    //if (nfrzv > 0 && orb_opt_ == "TRUE") {
+    //    throw PSIEXCEPTION("Frozen virtual approximation is not available for orbital-optimized methods.");
+    //}
+
+    // CIS
+    if (wfn_type_ == "DF-CIS" && reference_ == "UNRESTRICTED") {
+         throw PSIEXCEPTION("CIS method runs only with the RHF ref.");
     }
 
+    // common malloc
+    common_malloc();
+
     if (reference_ == "RESTRICTED") {
-        // Memory allocation
-        HmoA = SharedTensor2d(new Tensor2d("MO-basis alpha one-electron ints", nmo_, nmo_));
-        FijA = SharedTensor2d(new Tensor2d("Fint <I|J>", naoccA, naoccA));
-        FabA = SharedTensor2d(new Tensor2d("Fint <A|B>", navirA, navirA));
-        HooA = SharedTensor2d(new Tensor2d("OEI <O|O>", noccA, noccA));
-        HovA = SharedTensor2d(new Tensor2d("OEI <O|V>", noccA, nvirA));
-        HvoA = SharedTensor2d(new Tensor2d("OEI <V|O>", nvirA, noccA));
-        HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
-        eigooA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <I|J>", naoccA));
-        eigvvA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <A|B>", navirA));
-
-        // if we need PDMs
-        if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE" || cc_lambda_ == "TRUE" ||
-            ekt_ip_ == "TRUE") {
-            GijA = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
-            GabA = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
-            G1c_oo = SharedTensor2d(new Tensor2d("Correlation OPDM <O|O>", noccA, noccA));
-            G1c_vv = SharedTensor2d(new Tensor2d("Correlation OPDM <V|V>", nvirA, nvirA));
-            G1 = SharedTensor2d(new Tensor2d("MO-basis OPDM", nmo_, nmo_));
-            G1ao = SharedTensor2d(new Tensor2d("AO-basis OPDM", nso_, nso_));
-            G1c = SharedTensor2d(new Tensor2d("MO-basis correlation OPDM", nmo_, nmo_));
-            GF = SharedTensor2d(new Tensor2d("MO-basis GFM", nmo_, nmo_));
-            GFao = SharedTensor2d(new Tensor2d("AO-basis GFM", nso_, nso_));
-            GFoo = SharedTensor2d(new Tensor2d("MO-basis GFM <O|O>", noccA, noccA));
-            GFvo = SharedTensor2d(new Tensor2d("MO-basis GFM <V|O>", nvirA, noccA));
-            GFov = SharedTensor2d(new Tensor2d("MO-basis GFM <O|V>", noccA, nvirA));
-            GFvv = SharedTensor2d(new Tensor2d("MO-basis GFM <V|V>", nvirA, nvirA));
-            GFtvv = SharedTensor2d(new Tensor2d("MO-basis Complementary GFM <V|V>", nvirA, nvirA));
-            WorbA = SharedTensor2d(new Tensor2d("MO-basis alpha MO gradient", nmo_, nmo_));
-            UorbA = SharedTensor2d(new Tensor2d("Alpha MO rotation matrix", nmo_, nmo_));
-            KorbA = SharedTensor2d(new Tensor2d("Alpha K MO rotation parameters matrix", nmo_, nmo_));
-            KsqrA = SharedTensor2d(new Tensor2d("Alpha K^2 MO rotation parameters matrix", nmo_, nmo_));
-            AvoA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <V|O>", nvirA, noccA));
-            if (orb_opt_ == "FALSE") {
-                WvoA = SharedTensor2d(new Tensor2d("Effective MO gradient <V|O>", nvirA, noccA));
-            }
-            if (nfrzc > 0) AooA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <I|FC>", naoccA, nfrzc));
-        }
-
         outfile->Printf("\tMO spaces... \n\n");
         outfile->Printf("\t FC   OCC   VIR   FV \n");
         outfile->Printf("\t----------------------\n");
         outfile->Printf("\t%3d  %3d   %3d  %3d\n", nfrzc, naoccA, navirA, nfrzv);
-
     }  // end if (reference_ == "RESTRICTED")
 
     else if (reference_ == "UNRESTRICTED") {
-        if (wfn_type_ == "DF-CCSD" || wfn_type_ == "DF-CCD") {
-            throw PSIEXCEPTION("UHF DF-CCSD has NOT been implemented yet!");
-        }
-        // Memory allocation
-        HmoA = SharedTensor2d(new Tensor2d("MO-basis alpha one-electron ints", nmo_, nmo_));
-        HmoB = SharedTensor2d(new Tensor2d("MO-basis beta one-electron ints", nmo_, nmo_));
-        FijA = SharedTensor2d(new Tensor2d("Fint <I|J>", naoccA, naoccA));
-        FijB = SharedTensor2d(new Tensor2d("Fint <i|j>", naoccB, naoccB));
-        FabA = SharedTensor2d(new Tensor2d("Fint <A|B>", navirA, navirA));
-        FabB = SharedTensor2d(new Tensor2d("Fint <a|b>", navirB, navirB));
-        HooA = SharedTensor2d(new Tensor2d("OEI <O|O>", noccA, noccA));
-        HooB = SharedTensor2d(new Tensor2d("OEI <o|o>", noccB, noccB));
-        HovA = SharedTensor2d(new Tensor2d("OEI <O|V>", noccA, nvirA));
-        HovB = SharedTensor2d(new Tensor2d("OEI <o|v>", noccB, nvirB));
-        HvoA = SharedTensor2d(new Tensor2d("OEI <V|O>", nvirA, noccA));
-        HvoB = SharedTensor2d(new Tensor2d("OEI <v|o>", nvirB, noccB));
-        HvvA = SharedTensor2d(new Tensor2d("OEI <V|V>", nvirA, nvirA));
-        HvvB = SharedTensor2d(new Tensor2d("OEI <v|v>", nvirB, nvirB));
-        eigooA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <I|J>", naoccA));
-        eigooB = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <i|j>", naoccB));
-        eigvvA = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <A|B>", navirA));
-        eigvvB = std::shared_ptr<Tensor1d>(new Tensor1d("epsilon <a|b>", navirB));
-
-        // if we need PDMs
-        if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE" || ekt_ip_ == "TRUE") {
-            GijA = SharedTensor2d(new Tensor2d("G Intermediate <I|J>", naoccA, naoccA));
-            GijB = SharedTensor2d(new Tensor2d("G Intermediate <i|j>", naoccB, naoccB));
-            GabA = SharedTensor2d(new Tensor2d("G Intermediate <A|B>", navirA, navirA));
-            GabB = SharedTensor2d(new Tensor2d("G Intermediate <a|b>", navirB, navirB));
-            G1c_ooA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|O>", noccA, noccA));
-            G1c_ooB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|o>", noccB, noccB));
-            G1c_vvA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|V>", nvirA, nvirA));
-            G1c_vvB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|v>", nvirB, nvirB));
-            G1cA = SharedTensor2d(new Tensor2d("MO-basis alpha correlation OPDM", nmo_, nmo_));
-            G1cB = SharedTensor2d(new Tensor2d("MO-basis beta correlation OPDM", nmo_, nmo_));
-            G1A = SharedTensor2d(new Tensor2d("MO-basis alpha OPDM", nmo_, nmo_));
-            G1B = SharedTensor2d(new Tensor2d("MO-basis beta OPDM", nmo_, nmo_));
-            G1ao = SharedTensor2d(new Tensor2d("AO-basis OPDM", nso_, nso_));
-            GFA = SharedTensor2d(new Tensor2d("MO-basis alpha GFM", nmo_, nmo_));
-            GFB = SharedTensor2d(new Tensor2d("MO-basis beta GFM", nmo_, nmo_));
-            GFao = SharedTensor2d(new Tensor2d("AO-basis GFM", nso_, nso_));
-            GFooA = SharedTensor2d(new Tensor2d("MO-basis GFM <O|O>", noccA, noccA));
-            GFooB = SharedTensor2d(new Tensor2d("MO-basis GFM <o|o>", noccB, noccB));
-            GFvoA = SharedTensor2d(new Tensor2d("MO-basis GFM <V|O>", nvirA, noccA));
-            GFvoB = SharedTensor2d(new Tensor2d("MO-basis GFM <v|o>", nvirB, noccB));
-            GFovA = SharedTensor2d(new Tensor2d("MO-basis GFM <O|V>", noccA, nvirA));
-            GFovB = SharedTensor2d(new Tensor2d("MO-basis GFM <o|v>", noccB, nvirB));
-            GFvvA = SharedTensor2d(new Tensor2d("MO-basis GFM <V|V>", nvirA, nvirA));
-            GFvvB = SharedTensor2d(new Tensor2d("MO-basis GFM <v|v>", nvirB, nvirB));
-            GFtvvA = SharedTensor2d(new Tensor2d("MO-basis Complementary GFM <V|V>", nvirA, nvirA));
-            GFtvvB = SharedTensor2d(new Tensor2d("MO-basis Complementary GFM <v|v>", nvirB, nvirB));
-            WorbA = SharedTensor2d(new Tensor2d("MO-basis alpha MO gradient", nmo_, nmo_));
-            WorbB = SharedTensor2d(new Tensor2d("MO-basis beta MO gradient", nmo_, nmo_));
-            UorbA = SharedTensor2d(new Tensor2d("Alpha MO rotation matrix", nmo_, nmo_));
-            UorbB = SharedTensor2d(new Tensor2d("Beta MO rotation matrix", nmo_, nmo_));
-            KorbA = SharedTensor2d(new Tensor2d("Alpha K MO rotation parameters matrix", nmo_, nmo_));
-            KorbB = SharedTensor2d(new Tensor2d("Beta K MO rotation parameters matrix", nmo_, nmo_));
-            KsqrA = SharedTensor2d(new Tensor2d("Alpha K^2 MO rotation parameters matrix", nmo_, nmo_));
-            KsqrB = SharedTensor2d(new Tensor2d("Beta K^2 MO rotation parameters matrix", nmo_, nmo_));
-            AvoA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <V|O>", nvirA, noccA));
-            AvoB = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <v|o>", nvirB, noccB));
-            if (orb_opt_ == "FALSE") {
-                WvoA = SharedTensor2d(new Tensor2d("Effective MO gradient <V|O>", nvirA, noccA));
-                WvoB = SharedTensor2d(new Tensor2d("Effective MO gradient <v|o>", nvirB, noccB));
-            }
-            if (nfrzc > 0) {
-                AooA = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <I|FC>", naoccA, nfrzc));
-                AooB = SharedTensor2d(new Tensor2d("Diagonal MO Hessian <i|FC>", naoccB, nfrzc));
-            }
-        }
-
-        // ROHF-MP2
-        if (reference == "ROHF" && wfn_type_ == "DF-OMP2") {
-            t1A = SharedTensor2d(new Tensor2d("T1_1 <I|A>", naoccA, navirA));
-            t1B = SharedTensor2d(new Tensor2d("T1_1 <i|a>", naoccB, navirB));
-            GiaA = SharedTensor2d(new Tensor2d("G Intermediate <I|A>", naoccA, navirA));
-            GiaB = SharedTensor2d(new Tensor2d("G Intermediate <i|a>", naoccB, navirB));
-            GaiA = SharedTensor2d(new Tensor2d("G Intermediate <A|I>", navirA, naoccA));
-            GaiB = SharedTensor2d(new Tensor2d("G Intermediate <a|i>", navirB, naoccB));
-            G1c_ovA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
-            G1c_ovB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|v>", noccB, nvirB));
-            G1c_voA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
-            G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
-        }
-
         outfile->Printf("\tMO spaces... \n\n");
         outfile->Printf("\t FC   AOCC   BOCC  AVIR   BVIR   FV \n");
         outfile->Printf("\t------------------------------------------\n");
         outfile->Printf("\t%3d   %3d   %3d   %3d    %3d   %3d\n", nfrzc, naoccA, naoccB, navirA, navirB, nfrzv);
-
     }  // else if (reference_ == "UNRESTRICTED")
 
     // outfile->Printf("\tI am here.\n");
@@ -369,8 +287,14 @@ void DFOCC::title() {
         outfile->Printf("                       DF-CCSD   \n");
     else if (wfn_type_ == "DF-CCSD(AT)" && do_cd == "FALSE")
         outfile->Printf("                       DF-CCSD   \n");
-    else if (wfn_type_ == "DF-CCD" && do_cd == "FALSE")
+    else if (wfn_type_ == "DF-OCCD" && orb_opt_ == "FALSE" && do_cd == "FALSE")
         outfile->Printf("                       DF-CCD   \n");
+    else if (wfn_type_ == "DF-OCCD" && orb_opt_ == "TRUE" && do_cd == "FALSE")
+        outfile->Printf("                       DF-OCCD   \n");
+    else if (wfn_type_ == "DF-OCCD(T)" && orb_opt_ == "TRUE" && do_cd == "FALSE")
+        outfile->Printf("                       DF-OCCD(T)   \n");
+    else if (wfn_type_ == "DF-OCCD(AT)" && orb_opt_ == "TRUE" && do_cd == "FALSE")
+        outfile->Printf("                       DF-OCCD(AT)   \n");
     else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE" && do_cd == "FALSE")
         outfile->Printf("                     DF-OMP3 (DF-OO-MP3)   \n");
     else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE" && do_cd == "FALSE")
@@ -383,6 +307,8 @@ void DFOCC::title() {
         outfile->Printf("                    DF-OMP2.5 (DF-OO-MP2.5)   \n");
     else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE" && do_cd == "FALSE")
         outfile->Printf("                    DF-MP2.5  \n");
+    else if (wfn_type_ == "DF-CIS" && do_cd == "FALSE")
+        outfile->Printf("                    CIS  \n");
     else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "TRUE" && do_cd == "TRUE")
         outfile->Printf("                      CD-OMP2 (CD-OO-MP2)   \n");
     else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE" && do_cd == "TRUE")
@@ -393,8 +319,14 @@ void DFOCC::title() {
         outfile->Printf("                       CD-CCSD   \n");
     else if (wfn_type_ == "DF-CCSD(AT)" && do_cd == "TRUE")
         outfile->Printf("                       CD-CCSD   \n");
-    else if (wfn_type_ == "DF-CCD" && do_cd == "TRUE")
+    else if (wfn_type_ == "DF-OCCD" && orb_opt_ == "FALSE" && do_cd == "TRUE")
         outfile->Printf("                       CD-CCD   \n");
+    else if (wfn_type_ == "DF-OCCD" && orb_opt_ == "TRUE" && do_cd == "TRUE")
+        outfile->Printf("                       CD-OCCD   \n");
+    else if (wfn_type_ == "DF-OCCD(T)" && orb_opt_ == "TRUE" && do_cd == "TRUE")
+        outfile->Printf("                       CD-OCCD(T)   \n");
+    else if (wfn_type_ == "DF-OCCD(AT)" && orb_opt_ == "TRUE" && do_cd == "TRUE")
+        outfile->Printf("                       CD-OCCD(AT)   \n");
     else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE" && do_cd == "TRUE")
         outfile->Printf("                    CD-OMP3 (CD-OO-MP3)   \n");
     else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE" && do_cd == "TRUE")
@@ -407,10 +339,12 @@ void DFOCC::title() {
         outfile->Printf("                    CD-OLCCD (CD-OO-LCCD)   \n");
     else if (wfn_type_ == "DF-OLCCD" && orb_opt_ == "FALSE" && do_cd == "TRUE")
         outfile->Printf("                    CD-LCCD   \n");
+    else if (wfn_type_ == "DF-CIS" && do_cd == "TRUE")
+        outfile->Printf("                    CIS  \n");
     else if (wfn_type_ == "QCHF")
         outfile->Printf("                      QCHF   \n");
     outfile->Printf("              Program Written by Ugur Bozkaya\n");
-    outfile->Printf("              Latest Revision September 9, 2017\n");
+    outfile->Printf("              Latest Revision December 8, 2020\n");
     outfile->Printf("\n");
     outfile->Printf(" ============================================================================== \n");
     outfile->Printf(" ============================================================================== \n");
@@ -420,24 +354,55 @@ void DFOCC::title() {
 }  //
 
 void DFOCC::lambda_title() {
-    outfile->Printf("\n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf("\n");
-    if (wfn_type_ == "DF-CCSD")
-        outfile->Printf("                       DF-CCSD-Lambda   \n");
-    else if (wfn_type_ == "DF-CCSD(T)" || wfn_type_ == "DF-CCSD(AT)")
-        outfile->Printf("                       DF-CCSD-Lambda   \n");
-    else if (wfn_type_ == "DF-CCD")
-        outfile->Printf("                       DF-CCD-Lambda   \n");
-    outfile->Printf("              Program Written by Ugur Bozkaya\n");
-    outfile->Printf("              Latest Revision May 31, 2016\n");
-    outfile->Printf("\n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf(" ============================================================================== \n");
-    outfile->Printf("\n");
+    if (reference_ == "RESTRICTED") {
+        outfile->Printf("\n");
+        outfile->Printf(" ============================================================================== \n");
+        outfile->Printf(" ============================================================================== \n");
+        outfile->Printf(" ============================================================================== \n");
+        outfile->Printf("\n");
+        if (wfn_type_ == "DF-CCSD")
+            outfile->Printf("                       DF-CCSD-Lambda   \n");
+        else if (wfn_type_ == "DF-CCSD(T)" || wfn_type_ == "DF-CCSD(AT)")
+            outfile->Printf("                       DF-CCSD(T)-Lambda   \n");
+        else if (wfn_type_ == "DF-OCCD")
+            outfile->Printf("                       DF-CCD-Lambda   \n");
+        else if (wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)")
+            outfile->Printf("                       DF-CCD(T)-Lambda   \n");
+        outfile->Printf("              Program Written by Ugur Bozkaya\n");
+        outfile->Printf("              Latest Revision Sep 9, 2020\n");
+        outfile->Printf("\n");
+        outfile->Printf(" ============================================================================== \n");
+        outfile->Printf(" ============================================================================== \n");
+        outfile->Printf(" ============================================================================== \n");
+        outfile->Printf("\n");
+    }
+    else if (reference_ == "UNRESTRICTED") {
+        outfile->Printf(" ============================================================================== \n");
+        outfile->Printf(" ============================================================================== \n");
+        outfile->Printf(" ============================================================================== \n");
+        outfile->Printf("\n");
+        if (wfn_type_ == "DF-CCSD") {
+            outfile->Printf("                              DF-CCSD-Lambda\n") ;
+            outfile->Printf("              Program Written by Ugur Bozkaya and Asli Unal\n") ;
+            outfile->Printf("              Latest Revision Sep 9, 2020\n") ;
+        }
+        else if (wfn_type_ == "DF-OCCD") {
+            outfile->Printf("                       DF-CCD-Lambda   \n");
+            outfile->Printf("              Program Written by Ugur Bozkaya and Asli Unal\n");
+            outfile->Printf("              Latest Revision Sep 5, 2020\n");
+        }
+        else if (wfn_type_ == "DF-OCCD(T)") {
+            outfile->Printf("                       DF-CCD(T)-Lambda   \n");
+            outfile->Printf("              Program Written by Ugur Bozkaya and Asli Unal\n");
+            outfile->Printf("              Latest Revision Sep 5, 2020\n");
+        }
+        outfile->Printf("\n");
+        outfile->Printf(" ============================================================================== \n");
+        outfile->Printf(" ============================================================================== \n");
+        outfile->Printf(" ============================================================================== \n");
+        outfile->Printf("\n");
+
+    }
 }  //
 
 void DFOCC::pt_title() {
@@ -448,10 +413,18 @@ void DFOCC::pt_title() {
     outfile->Printf("\n");
     if (wfn_type_ == "DF-CCSD(T)")
         outfile->Printf("                       DF-CCSD(T)   \n");
-    else if (wfn_type_ == "DF-CCD(T)")
-        outfile->Printf("                       DF-CCD(T)   \n");
-    outfile->Printf("              Program Written by Ugur Bozkaya\n");
-    outfile->Printf("              Latest Revision April 16, 2017\n");
+    else if (wfn_type_ == "DF-OCCD(T)")
+        outfile->Printf("                       DF-OCCD(T)   \n");
+    else if (wfn_type_ == "DF-OCCD(AT)")
+        outfile->Printf("                       DF-OCCD(AT)   \n");
+    if (reference_ == "RESTRICTED") {
+        outfile->Printf("              Program Written by Ugur Bozkaya\n");
+        outfile->Printf("              Latest Revision December 6, 2020\n");
+    }
+    else if (reference_ == "UNRESTRICTED") {
+        outfile->Printf("              Program Written by Ugur Bozkaya & Yavuz Alagoz\n");
+        outfile->Printf("              Latest Revision October 19, 2020\n");
+    }
     outfile->Printf("\n");
     outfile->Printf(" ============================================================================== \n");
     outfile->Printf(" ============================================================================== \n");
@@ -487,8 +460,18 @@ void DFOCC::pdm_title() {
     outfile->Printf("                         DFPDM   \n");
     outfile->Printf("              Particle Density Matrix Code   \n");
     outfile->Printf("               for Density-Fitted Methods       \n");
-    outfile->Printf("                   by Ugur Bozkaya\n");
-    outfile->Printf("              Latest Revision December 19, 2016\n");
+    if (reference_ == "RESTRICTED") {
+        outfile->Printf("                   by Ugur Bozkaya\n");
+    }
+    else if (reference_ == "UNRESTRICTED") {
+        if (wfn_type_ == "DF-CCSD") {
+            outfile->Printf("               by Ugur Bozkaya and Asli Unal\n");
+        }
+        else if (wfn_type_ == "DF-CCSD(T)") {
+            outfile->Printf("               by Ugur Bozkaya, Asli Unal & Yavuz Alagoz\n");
+        }
+    }
+    outfile->Printf("              Latest Revision Sep 5, 2020\n");
     outfile->Printf("\n");
     outfile->Printf(" ============================================================================== \n");
     outfile->Printf(" ============================================================================== \n");
@@ -496,6 +479,24 @@ void DFOCC::pdm_title() {
     outfile->Printf("\n");
 
 }  //
+
+void DFOCC::cis_title()
+{
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+   outfile->Printf("                     CIS   \n");
+   outfile->Printf("              Program Written by Ugur Bozkaya\n") ; 
+   outfile->Printf("              Latest Revision Feb 20, 2019\n") ;
+   outfile->Printf("\n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf(" ============================================================================== \n");
+   outfile->Printf("\n");
+
+}//
 
 double DFOCC::compute_energy() {
     // Call the appropriate manager
@@ -511,8 +512,14 @@ double DFOCC::compute_energy() {
         ccsd_t_manager();
     else if (wfn_type_ == "DF-CCSD(AT)" && do_cd == "FALSE")
         ccsdl_t_manager();
-    else if (wfn_type_ == "DF-CCD" && do_cd == "FALSE")
+    else if (wfn_type_ == "DF-OCCD" && orb_opt_ == "FALSE" && do_cd == "FALSE")
         ccd_manager();
+    else if (wfn_type_ == "DF-OCCD" && orb_opt_ == "TRUE" && do_cd == "FALSE")
+        occd_manager();
+    else if (wfn_type_ == "DF-OCCD(T)" && orb_opt_ == "TRUE" && do_cd == "FALSE")
+        occd_manager();
+    else if (wfn_type_ == "DF-OCCD(AT)" && orb_opt_ == "TRUE" && do_cd == "FALSE")
+        occdl_t_manager();
     else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "TRUE" && do_cd == "FALSE")
         omp3_manager();
     else if (wfn_type_ == "DF-OMP3" && orb_opt_ == "FALSE" && do_cd == "FALSE")
@@ -525,14 +532,22 @@ double DFOCC::compute_energy() {
         olccd_manager();
     else if (wfn_type_ == "DF-OLCCD" && orb_opt_ == "FALSE" && do_cd == "FALSE")
         lccd_manager();
+    else if (wfn_type_ == "DF-CIS" && do_cd == "FALSE")
+        cis_manager_df();
     else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "TRUE" && do_cd == "TRUE")
         cd_omp2_manager();
     else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE" && do_cd == "TRUE")
         cd_mp2_manager();
     else if (wfn_type_ == "DF-CCSD" && do_cd == "TRUE")
         ccsd_manager_cd();
-    else if (wfn_type_ == "DF-CCD" && do_cd == "TRUE")
+    else if (wfn_type_ == "DF-OCCD" && orb_opt_ == "FALSE" && do_cd == "TRUE")
         ccd_manager_cd();
+    else if (wfn_type_ == "DF-OCCD" && orb_opt_ == "TRUE" && do_cd == "TRUE")
+        occd_manager_cd();
+    else if (wfn_type_ == "DF-OCCD(T)" && orb_opt_ == "TRUE" && do_cd == "TRUE")
+        occd_manager_cd();
+    else if (wfn_type_ == "DF-OCCD(AT)" && orb_opt_ == "TRUE" && do_cd == "TRUE")
+        occdl_t_manager_cd();
     else if (wfn_type_ == "DF-CCSD(T)" && do_cd == "TRUE")
         ccsd_t_manager_cd();
     else if (wfn_type_ == "DF-CCSD(AT)" && do_cd == "TRUE")
@@ -549,6 +564,8 @@ double DFOCC::compute_energy() {
         olccd_manager_cd();
     else if (wfn_type_ == "DF-OLCCD" && orb_opt_ == "FALSE" && do_cd == "TRUE")
         lccd_manager_cd();
+    else if (wfn_type_ == "DF-CIS" && do_cd == "TRUE")
+        cis_manager_cd();
     else if (wfn_type_ == "QCHF")
         qchf_manager();
     else {
@@ -564,20 +581,314 @@ double DFOCC::compute_energy() {
         Etotal = Eccsd_t;
     else if (wfn_type_ == "DF-CCSD(AT)")
         Etotal = Eccsd_at;
-    else if (wfn_type_ == "DF-CCD")
-        Etotal = Eccd;
+    else if (wfn_type_ == "DF-OCCD")
+        Etotal = EccdL;
+    else if (wfn_type_ == "DF-OCCD(T)")
+        Etotal = Eccsd_t;
+    else if (wfn_type_ == "DF-OCCD(AT)")
+        Etotal = Eccsd_at;
     else if (wfn_type_ == "DF-OMP3")
         Etotal = Emp3L;
     else if (wfn_type_ == "DF-OMP2.5")
         Etotal = Emp3L;
     else if (wfn_type_ == "DF-OLCCD")
         Etotal = ElccdL;
+    else if (wfn_type_ == "DF-CIS")
+        Etotal = Ecis;
     else if (wfn_type_ == "QCHF")
         Etotal = Eref;
 
     return Etotal;
 
 }  // end of compute_energy
+
+void DFOCC::common_malloc() {
+    if (reference_ == "RESTRICTED") {
+        // Memory allocation
+        HmoA = std::make_shared<Tensor2d>("MO-basis alpha one-electron ints", nmo_, nmo_);
+        FijA = std::make_shared<Tensor2d>("Fint <I|J>", naoccA, naoccA);
+        FabA = std::make_shared<Tensor2d>("Fint <A|B>", navirA, navirA);
+        HooA = std::make_shared<Tensor2d>("OEI <O|O>", noccA, noccA);
+        HovA = std::make_shared<Tensor2d>("OEI <O|V>", noccA, nvirA);
+        HvoA = std::make_shared<Tensor2d>("OEI <V|O>", nvirA, noccA);
+        HvvA = std::make_shared<Tensor2d>("OEI <V|V>", nvirA, nvirA);
+        eigooA = std::make_shared<Tensor1d>("epsilon <I|J>", naoccA);
+        eigvvA = std::make_shared<Tensor1d>("epsilon <A|B>", navirA);
+
+        // if we need PDMs
+        if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE" || cc_lambda_ == "TRUE" ||
+            ekt_ip_ == "TRUE") {
+            GijA = std::make_shared<Tensor2d>("G Intermediate <I|J>", naoccA, naoccA);
+            GabA = std::make_shared<Tensor2d>("G Intermediate <A|B>", navirA, navirA);
+            G1c_oo = std::make_shared<Tensor2d>("Correlation OPDM <O|O>", noccA, noccA);
+            G1c_vv = std::make_shared<Tensor2d>("Correlation OPDM <V|V>", nvirA, nvirA);
+            G1 = std::make_shared<Tensor2d>("MO-basis OPDM", nmo_, nmo_);
+            G1ao = std::make_shared<Tensor2d>("AO-basis OPDM", nso_, nso_);
+            G1c = std::make_shared<Tensor2d>("MO-basis correlation OPDM", nmo_, nmo_);
+            GF = std::make_shared<Tensor2d>("MO-basis GFM", nmo_, nmo_);
+            GFao = std::make_shared<Tensor2d>("AO-basis GFM", nso_, nso_);
+            GFoo = std::make_shared<Tensor2d>("MO-basis GFM <O|O>", noccA, noccA);
+            GFvo = std::make_shared<Tensor2d>("MO-basis GFM <V|O>", nvirA, noccA);
+            GFov = std::make_shared<Tensor2d>("MO-basis GFM <O|V>", noccA, nvirA);
+            GFvv = std::make_shared<Tensor2d>("MO-basis GFM <V|V>", nvirA, nvirA);
+            GFtvv = std::make_shared<Tensor2d>("MO-basis Complementary GFM <V|V>", nvirA, nvirA);
+            WorbA = std::make_shared<Tensor2d>("MO-basis alpha MO gradient", nmo_, nmo_);
+            UorbA = std::make_shared<Tensor2d>("Alpha MO rotation matrix", nmo_, nmo_);
+            KorbA = std::make_shared<Tensor2d>("Alpha K MO rotation parameters matrix", nmo_, nmo_);
+            KsqrA = std::make_shared<Tensor2d>("Alpha K^2 MO rotation parameters matrix", nmo_, nmo_);
+            AvoA = std::make_shared<Tensor2d>("Diagonal MO Hessian <V|O>", nvirA, noccA);
+            if (orb_opt_ == "FALSE") {
+                WvoA = std::make_shared<Tensor2d>("Effective MO gradient <V|O>", nvirA, noccA);
+            }
+            if (nfrzc > 0) AooA = std::make_shared<Tensor2d>("Diagonal MO Hessian <I|FC>", naoccA, nfrzc);
+            if (nfrzv > 0) AvvA = std::make_shared<Tensor2d>("Diagonal MO Hessian <FV|A>", nfrzv, navirA);
+        }
+    }  // end if (reference_ == "RESTRICTED")
+
+    else if (reference_ == "UNRESTRICTED") {
+        // Memory allocation
+        HmoA = std::make_shared<Tensor2d>("MO-basis alpha one-electron ints", nmo_, nmo_);
+        HmoB = std::make_shared<Tensor2d>("MO-basis beta one-electron ints", nmo_, nmo_);
+        FijA = std::make_shared<Tensor2d>("Fint <I|J>", naoccA, naoccA);
+        FijB = std::make_shared<Tensor2d>("Fint <i|j>", naoccB, naoccB);
+        FabA = std::make_shared<Tensor2d>("Fint <A|B>", navirA, navirA);
+        FabB = std::make_shared<Tensor2d>("Fint <a|b>", navirB, navirB);
+        HooA = std::make_shared<Tensor2d>("OEI <O|O>", noccA, noccA);
+        HooB = std::make_shared<Tensor2d>("OEI <o|o>", noccB, noccB);
+        HovA = std::make_shared<Tensor2d>("OEI <O|V>", noccA, nvirA);
+        HovB = std::make_shared<Tensor2d>("OEI <o|v>", noccB, nvirB);
+        HvoA = std::make_shared<Tensor2d>("OEI <V|O>", nvirA, noccA);
+        HvoB = std::make_shared<Tensor2d>("OEI <v|o>", nvirB, noccB);
+        HvvA = std::make_shared<Tensor2d>("OEI <V|V>", nvirA, nvirA);
+        HvvB = std::make_shared<Tensor2d>("OEI <v|v>", nvirB, nvirB);
+        eigooA = std::make_shared<Tensor1d>("epsilon <I|J>", naoccA);
+        eigooB = std::make_shared<Tensor1d>("epsilon <i|j>", naoccB);
+        eigvvA = std::make_shared<Tensor1d>("epsilon <A|B>", navirA);
+        eigvvB = std::make_shared<Tensor1d>("epsilon <a|b>", navirB);
+
+        // if we need PDMs
+        if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE" || ekt_ip_ == "TRUE" || cc_lambda_ == "TRUE") {
+            GijA = std::make_shared<Tensor2d>("G Intermediate <I|J>", naoccA, naoccA);
+            GijB = std::make_shared<Tensor2d>("G Intermediate <i|j>", naoccB, naoccB);
+            GabA = std::make_shared<Tensor2d>("G Intermediate <A|B>", navirA, navirA);
+            GabB = std::make_shared<Tensor2d>("G Intermediate <a|b>", navirB, navirB);
+            G1c_ooA = std::make_shared<Tensor2d>("Correlation OPDM <O|O>", noccA, noccA);
+            G1c_ooB = std::make_shared<Tensor2d>("Correlation OPDM <o|o>", noccB, noccB);
+            G1c_vvA = std::make_shared<Tensor2d>("Correlation OPDM <V|V>", nvirA, nvirA);
+            G1c_vvB = std::make_shared<Tensor2d>("Correlation OPDM <v|v>", nvirB, nvirB);
+            G1cA = std::make_shared<Tensor2d>("MO-basis alpha correlation OPDM", nmo_, nmo_);
+            G1cB = std::make_shared<Tensor2d>("MO-basis beta correlation OPDM", nmo_, nmo_);
+            G1A = std::make_shared<Tensor2d>("MO-basis alpha OPDM", nmo_, nmo_);
+            G1B = std::make_shared<Tensor2d>("MO-basis beta OPDM", nmo_, nmo_);
+            G1ao = std::make_shared<Tensor2d>("AO-basis OPDM", nso_, nso_);
+            GFA = std::make_shared<Tensor2d>("MO-basis alpha GFM", nmo_, nmo_);
+            GFB = std::make_shared<Tensor2d>("MO-basis beta GFM", nmo_, nmo_);
+            GFao = std::make_shared<Tensor2d>("AO-basis GFM", nso_, nso_);
+            GFooA = std::make_shared<Tensor2d>("MO-basis GFM <O|O>", noccA, noccA);
+            GFooB = std::make_shared<Tensor2d>("MO-basis GFM <o|o>", noccB, noccB);
+            GFvoA = std::make_shared<Tensor2d>("MO-basis GFM <V|O>", nvirA, noccA);
+            GFvoB = std::make_shared<Tensor2d>("MO-basis GFM <v|o>", nvirB, noccB);
+            GFovA = std::make_shared<Tensor2d>("MO-basis GFM <O|V>", noccA, nvirA);
+            GFovB = std::make_shared<Tensor2d>("MO-basis GFM <o|v>", noccB, nvirB);
+            GFvvA = std::make_shared<Tensor2d>("MO-basis GFM <V|V>", nvirA, nvirA);
+            GFvvB = std::make_shared<Tensor2d>("MO-basis GFM <v|v>", nvirB, nvirB);
+            GFtvvA = std::make_shared<Tensor2d>("MO-basis Complementary GFM <V|V>", nvirA, nvirA);
+            GFtvvB = std::make_shared<Tensor2d>("MO-basis Complementary GFM <v|v>", nvirB, nvirB);
+            WorbA = std::make_shared<Tensor2d>("MO-basis alpha MO gradient", nmo_, nmo_);
+            WorbB = std::make_shared<Tensor2d>("MO-basis beta MO gradient", nmo_, nmo_);
+            UorbA = std::make_shared<Tensor2d>("Alpha MO rotation matrix", nmo_, nmo_);
+            UorbB = std::make_shared<Tensor2d>("Beta MO rotation matrix", nmo_, nmo_);
+            KorbA = std::make_shared<Tensor2d>("Alpha K MO rotation parameters matrix", nmo_, nmo_);
+            KorbB = std::make_shared<Tensor2d>("Beta K MO rotation parameters matrix", nmo_, nmo_);
+            KsqrA = std::make_shared<Tensor2d>("Alpha K^2 MO rotation parameters matrix", nmo_, nmo_);
+            KsqrB = std::make_shared<Tensor2d>("Beta K^2 MO rotation parameters matrix", nmo_, nmo_);
+            AvoA = std::make_shared<Tensor2d>("Diagonal MO Hessian <V|O>", nvirA, noccA);
+            AvoB = std::make_shared<Tensor2d>("Diagonal MO Hessian <v|o>", nvirB, noccB);
+            if (orb_opt_ == "FALSE") {
+                WvoA = std::make_shared<Tensor2d>("Effective MO gradient <V|O>", nvirA, noccA);
+                WvoB = std::make_shared<Tensor2d>("Effective MO gradient <v|o>", nvirB, noccB);
+            }
+            if (nfrzc > 0) {
+                AooA = std::make_shared<Tensor2d>("Diagonal MO Hessian <I|FC>", naoccA, nfrzc);
+                AooB = std::make_shared<Tensor2d>("Diagonal MO Hessian <i|FC>", naoccB, nfrzc);
+            }
+            if (nfrzv > 0) {
+                AvvA = std::make_shared<Tensor2d>("Diagonal MO Hessian <FV|A>", nfrzv, navirA);
+                AvvB = std::make_shared<Tensor2d>("Diagonal MO Hessian <FV|a>", nfrzv, navirB);
+            }
+        }
+
+        // ROHF-MP2
+        if (reference == "ROHF" && wfn_type_ == "DF-OMP2") {
+            t1A = std::make_shared<Tensor2d>("T1_1 <I|A>", naoccA, navirA);
+            t1B = std::make_shared<Tensor2d>("T1_1 <i|a>", naoccB, navirB);
+            GiaA = std::make_shared<Tensor2d>("G Intermediate <I|A>", naoccA, navirA);
+            GiaB = std::make_shared<Tensor2d>("G Intermediate <i|a>", naoccB, navirB);
+            GaiA = std::make_shared<Tensor2d>("G Intermediate <A|I>", navirA, naoccA);
+            GaiB = std::make_shared<Tensor2d>("G Intermediate <a|i>", navirB, naoccB);
+            G1c_ovA = std::make_shared<Tensor2d>("Correlation OPDM <O|V>", noccA, nvirA);
+            G1c_ovB = std::make_shared<Tensor2d>("Correlation OPDM <o|v>", noccB, nvirB);
+            G1c_voA = std::make_shared<Tensor2d>("Correlation OPDM <V|O>", nvirA, noccA);
+            G1c_voB = std::make_shared<Tensor2d>("Correlation OPDM <v|o>", nvirB, noccB);
+        }
+    }  // else if (reference_ == "UNRESTRICTED")
+
+}  // end of common_malloc
+
+void DFOCC::common_memfree() {
+    if (reference_ == "RESTRICTED") {
+        // Memory allocation
+        HmoA.reset();
+        FijA.reset();
+        FabA.reset();
+        HooA.reset();
+        HovA.reset();
+        HvoA.reset();
+        HvvA.reset();
+        eigooA.reset();
+        eigvvA.reset();
+
+        // if we need PDMs
+        if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE" || cc_lambda_ == "TRUE" ||
+            ekt_ip_ == "TRUE") {
+            GijA.reset();
+            GabA.reset();
+            G1c_oo.reset();
+            G1c_vv.reset();
+            G1.reset();
+            G1ao.reset();
+            G1c.reset();
+            GF.reset();
+            GFao.reset();
+            GFoo.reset();
+            GFvo.reset();
+            GFov.reset();
+            GFvv.reset();
+            GFtvv.reset();
+            WorbA.reset();
+            UorbA.reset();
+            KorbA.reset();
+            KsqrA.reset();
+            AvoA.reset();
+            if (orb_opt_ == "FALSE") {
+                WvoA.reset();
+            }
+            if (nfrzc > 0) AooA.reset();
+            if (nfrzv > 0) AvvA.reset();
+        }
+    }  // end if (reference_ == "RESTRICTED")
+
+    else if (reference_ == "UNRESTRICTED") {
+        // Memory allocation
+        HmoA.reset();
+        HmoB.reset();
+        FijA.reset();
+        FijB.reset();
+        FabA.reset();
+        FabB.reset();
+        HooA.reset();
+        HooB.reset();
+        HovA.reset();
+        HovB.reset();
+        HvoA.reset();
+        HvoB.reset();
+        HvvA.reset();
+        HvvB.reset();
+        eigooA.reset();
+        eigooB.reset();
+        eigvvA.reset();
+        eigvvB.reset();
+
+        // if we need PDMs
+        if (orb_opt_ == "TRUE" || dertype != "NONE" || oeprop_ == "TRUE" || qchf_ == "TRUE" || ekt_ip_ == "TRUE") {
+            GijA.reset();
+            GijB.reset();
+            GabA.reset();
+            GabB.reset();
+            G1c_ooA.reset();
+            G1c_ooB.reset();
+            G1c_vvA.reset();
+            G1c_vvB.reset();
+            G1cA.reset();
+            G1cB.reset();
+            G1A.reset();
+            G1B.reset();
+            G1ao.reset();
+            GFA.reset();
+            GFB.reset();
+            GFao.reset();
+            GFooA.reset();
+            GFooB.reset();
+            GFvoA.reset();
+            GFvoB.reset();
+            GFovA.reset();
+            GFovB.reset();
+            GFvvA.reset();
+            GFvvB.reset();
+            GFtvvA.reset();
+            GFtvvB.reset();
+            WorbA.reset();
+            WorbB.reset();
+            UorbA.reset();
+            UorbB.reset();
+            KorbA.reset();
+            KorbB.reset();
+            KsqrA.reset();
+            KsqrB.reset();
+            AvoA.reset();
+            AvoB.reset();
+            if (orb_opt_ == "FALSE") {
+                WvoA.reset();
+                WvoB.reset();
+            }
+            if (nfrzc > 0) {
+                AooA.reset();
+                AooB.reset();
+            }
+            if (nfrzv > 0) {
+                AvvA.reset();
+                AvvB.reset();
+            }
+        }
+
+        // ROHF-MP2
+        if (reference == "ROHF" && wfn_type_ == "DF-OMP2") {
+            t1A.reset();
+            t1B.reset();
+            GiaA.reset();
+            GiaB.reset();
+            GaiA.reset();
+            GaiB.reset();
+            G1c_ovA.reset();
+            G1c_ovB.reset();
+            G1c_voA.reset();
+            G1c_voB.reset();
+        }
+    }  // else if (reference_ == "UNRESTRICTED")
+
+}  // end of common_memfree
+
+void DFOCC::title_dfuccsd()
+{
+    outfile->Printf("\n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf("\n");
+    if (wfn_type_ == "DF-CCSD")
+        outfile->Printf("                       DF-CCSD   \n");
+    else if ((wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)") && orb_opt_ == "FALSE")
+        outfile->Printf("                       DF-CCD   \n");
+    else if ((wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") && orb_opt_ == "TRUE")
+        outfile->Printf("                       DF-OCCD   \n");
+    outfile->Printf("              Program Written by Ugur Bozkaya, Asli Unal & Yavuz Alagoz\n") ; 
+    outfile->Printf("              Latest Revision Sep 9, 2020\n") ;
+    outfile->Printf("\n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf(" ============================================================================== \n");
+    outfile->Printf("\n");
+}//
 
 }  // namespace dfoccwave
 }  // namespace psi

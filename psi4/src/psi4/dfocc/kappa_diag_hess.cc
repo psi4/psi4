@@ -183,21 +183,25 @@ void DFOCC::kappa_diag_hess() {
     if (hess_type == "APPROX_DIAG") {
         approx_diag_mohess_vo();
         if (nfrzc > 0) approx_diag_mohess_oo();
+        if (nfrzv > 0) approx_diag_mohess_vv(); // comment out to turn off FV-AVIR rotations
     }
 
     else if (hess_type == "APPROX_DIAG_EKT") {
         approx_diag_ekt_mohess_vo();
         if (nfrzc > 0) approx_diag_ekt_mohess_oo();
+        if (nfrzv > 0) approx_diag_mohess_vv(); // comment out to turn off FV-AVIR rotations
     }
 
     else if (hess_type == "APPROX_DIAG_HF") {
         approx_diag_hf_mohess_vo();
         if (nfrzc > 0) approx_diag_hf_mohess_oo();
+        if (nfrzv > 0) approx_diag_mohess_vv(); // comment out to turn off FV-AVIR rotations
     }
 
     else if (hess_type == "DIAG") {
         diagonal_mohess_vo();
         if (nfrzc > 0) diagonal_mohess_oo();
+        if (nfrzv > 0) approx_diag_mohess_vv(); // comment out to turn off FV-AVIR rotations
     }
 
     // Kappa
@@ -206,10 +210,19 @@ void DFOCC::kappa_diag_hess() {
         for (int x = 0; x < nidpA; x++) {
             int p = idprowA->get(x);
             int q = idpcolA->get(x);
+
+            // V-O Block
             if (p >= noccA && q < noccA)
                 value = AvoA->get(p - noccA, q);
+
+            // O-FC Block
             else if (p < noccA && q < noccA)
                 value = AooA->get(p - nfrzc, q);
+
+            // FV-V Block
+            else if (p >= navirA && q >= noccA)
+                value = AvvA->get(p - npop, q - noccA);
+
             kappaA->set(x, -wogA->get(x) / value);
         }
 
@@ -249,10 +262,19 @@ void DFOCC::kappa_diag_hess() {
         for (int x = 0; x < nidpA; x++) {
             int p = idprowA->get(x);
             int q = idpcolA->get(x);
+
+            // V-O Block
             if (p >= noccA && q < noccA)
                 value = AvoA->get(p - noccA, q);
+
+            // O-FC Block
             else if (p < noccA && q < noccA)
                 value = AooA->get(p - nfrzc, q);
+
+            // FV-V Block // comment out to turn off FV-AVIR rotations
+            else if (p >= navirA && q >= noccA)
+                value = AvvA->get(p - npop, q - noccA);
+
             kappaA->set(x, -wogA->get(x) / value);
         }
 
@@ -260,10 +282,19 @@ void DFOCC::kappa_diag_hess() {
         for (int x = 0; x < nidpB; x++) {
             int p = idprowB->get(x);
             int q = idpcolB->get(x);
+
+            // V-O Block
             if (p >= noccB && q < noccB)
                 value = AvoB->get(p - noccB, q);
+
+            // O-FC Block
             else if (p < noccB && q < noccB)
                 value = AooB->get(p - nfrzc, q);
+
+            // FV-V Block // comment out to turn off FV-AVIR rotations
+            else if (p >= navirB && q >= noccB)
+                value = AvvB->get(p - npop, q - noccB);
+
             kappaB->set(x, -wogB->get(x) / value);
         }
 
