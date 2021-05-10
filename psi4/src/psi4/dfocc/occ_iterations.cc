@@ -53,6 +53,8 @@ void DFOCC::occ_iterations() {
         outfile->Printf(" ================ Performing DF-OMP2.5 iterations... ========================== \n");
     else if (wfn_type_ == "DF-OLCCD" && do_cd == "FALSE")
         outfile->Printf(" ================ Performing DF-OLCCD iterations... =========================== \n");
+    else if ((wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") && do_cd == "FALSE")
+        outfile->Printf(" ================ Performing DF-OCCD iterations... ============================ \n");
     else if (wfn_type_ == "DF-OMP2" && do_cd == "TRUE")
         outfile->Printf(" ================ Performing CD-OMP2 iterations... ============================ \n");
     else if (wfn_type_ == "DF-OMP3" && do_cd == "TRUE")
@@ -61,6 +63,8 @@ void DFOCC::occ_iterations() {
         outfile->Printf(" ================ Performing CD-OMP2.5 iterations... ============================ \n");
     else if (wfn_type_ == "DF-OLCCD" && do_cd == "TRUE")
         outfile->Printf(" ================ Performing CD-OLCCD iterations... ============================ \n");
+    else if ((wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") && do_cd == "TRUE")
+        outfile->Printf(" ================ Performing CD-OCCD iterations... ============================ \n");
     outfile->Printf(" ============================================================================== \n");
     if (wfn_type_ == "DF-OMP2" && do_cd == "FALSE")
         outfile->Printf("\t            Minimizing DF-MP2-L Functional \n");
@@ -70,6 +74,8 @@ void DFOCC::occ_iterations() {
         outfile->Printf("\t            Minimizing DF-MP2.5-L Functional \n");
     else if (wfn_type_ == "DF-OLCCD" && do_cd == "FALSE")
         outfile->Printf("\t            Minimizing DF-LCCD-L Functional \n");
+    else if (wfn_type_ == "DF-OCCD" && do_cd == "FALSE")
+        outfile->Printf("\t            Minimizing DF-CCD-L Functional \n");
     else if (wfn_type_ == "DF-OMP2" && do_cd == "TRUE")
         outfile->Printf("\t            Minimizing CD-MP2-L Functional \n");
     else if (wfn_type_ == "DF-OMP3" && do_cd == "TRUE")
@@ -78,9 +84,17 @@ void DFOCC::occ_iterations() {
         outfile->Printf("\t            Minimizing CD-MP2.5-L Functional \n");
     else if (wfn_type_ == "DF-OLCCD" && do_cd == "TRUE")
         outfile->Printf("\t            Minimizing CD-LCCD-L Functional \n");
+    else if (wfn_type_ == "DF-OCCD" && do_cd == "TRUE")
+        outfile->Printf("\t            Minimizing CD-CCD-L Functional \n");
     outfile->Printf("\t            ------------------------------ \n");
-    outfile->Printf(" Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    \n");
-    outfile->Printf(" ----    ---------------    ----------     -----------      -----------     ---------- \n");
+    if (wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") {
+        outfile->Printf(" Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2         RMS L2   \n");
+        outfile->Printf(" ----    ---------------    ----------     -----------      -----------     ----------     ---------- \n");
+    }
+    else {
+        outfile->Printf(" Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    \n");
+        outfile->Printf(" ----    ---------------    ----------     -----------      -----------     ---------- \n");
+    }
 
     //==========================================================================================
     //========================= NR iterations ==================================================
@@ -90,17 +104,18 @@ void DFOCC::occ_iterations() {
     conver = 1;  // Assuming that the MOs will be optimized.
     mo_optimized = 0;
     itr_diis = 0;
+    EccdL = Emp2;
 
     // If diis?
     // if (noccA + noccB != 1) {
     if (do_diis_ == 1) {
         nvar = num_vecs + 1;
-        vecsA = SharedTensor2d(new Tensor2d("Alpha MO DIIS Vectors", num_vecs, nidpA));
-        errvecsA = SharedTensor2d(new Tensor2d("Alpha MO DIIS Error Vectors", num_vecs, nidpA));
+        vecsA = std::make_shared<Tensor2d>("Alpha MO DIIS Vectors", num_vecs, nidpA);
+        errvecsA = std::make_shared<Tensor2d>("Alpha MO DIIS Error Vectors", num_vecs, nidpA);
 
         if (reference_ == "UNRESTRICTED") {
-            vecsB = SharedTensor2d(new Tensor2d("Beta MO DIIS Vectors", num_vecs, nidpB));
-            errvecsB = SharedTensor2d(new Tensor2d("Beta MO DIIS Error Vectors", num_vecs, nidpB));
+            vecsB = std::make_shared<Tensor2d>("Beta MO DIIS Vectors", num_vecs, nidpB);
+            errvecsB = std::make_shared<Tensor2d>("Beta MO DIIS Error Vectors", num_vecs, nidpB);
         }
     }
     //}
@@ -178,6 +193,19 @@ void DFOCC::occ_iterations() {
             timer_off("T2");
         }
 
+        else if (wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") {
+            malloc_mo_df_ints();
+
+            timer_on("T2");
+            if (reference_ == "RESTRICTED") malloc_t2_rhf();
+            ccd_step();
+            timer_off("T2");
+
+            timer_on("L2");
+            ccdl_step();
+            timer_off("L2");
+        }
+
         //==========================================================================================
         //========================= PDMs ===========================================================
         //==========================================================================================
@@ -198,6 +226,12 @@ void DFOCC::occ_iterations() {
             lccd_pdm_3index_intr();
             omp3_opdm();
             olccd_tpdm();
+            sep_tpdm_cc();
+        }
+
+        else if (wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") {
+            ccd_opdm();
+            ccd_tpdm();
             sep_tpdm_cc();
         }
 
@@ -226,7 +260,7 @@ void DFOCC::occ_iterations() {
             mp2l_energy();
         else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5")
             mp3l_energy();
-        else if (wfn_type_ == "DF-OLCCD")
+        else if (wfn_type_ == "DF-OLCCD" || wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)")
             lccdl_energy();
 
         //==========================================================================================
@@ -253,8 +287,8 @@ void DFOCC::occ_iterations() {
             biggest_mograd = MAX0(biggest_mogradA, biggest_mogradB);
             rms_kappa = MAX0(rms_kappaA, rms_kappaB);
             biggest_kappa = MAX0(biggest_kappaA, biggest_kappaB);
-            rms_t2 = MAX0(rms_t2AA, rms_t2BB);
-            rms_t2 = MAX0(rms_t2, rms_t2AB);
+            //rms_t2 = MAX0(rms_t2AA, rms_t2BB);
+            //rms_t2 = MAX0(rms_t2, rms_t2AB);
         }
 
         if (wfn_type_ == "DF-OMP2") {
@@ -263,9 +297,12 @@ void DFOCC::occ_iterations() {
         } else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5") {
             outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n", itr_occ, Emp3L, DE, rms_wog,
                             biggest_mograd, rms_t2);
-        } else if (wfn_type_ == "DF-OLCCD")
+        } else if (wfn_type_ == "DF-OLCCD") {
             outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n", itr_occ, ElccdL, DE, rms_wog,
                             biggest_mograd, rms_t2);
+        } else if (wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)")
+            outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e   %12.2e \n", itr_occ, EccdL, DE, rms_wog,
+                            biggest_mograd, rms_t2, rms_l2);
 
         //==========================================================================================
         //========================= Convergence? ===================================================
@@ -293,7 +330,22 @@ void DFOCC::occ_iterations() {
             outfile->Printf(" ======================== DF-OMP2.5 ITERATIONS ARE CONVERGED ================== \n");
         else if (wfn_type_ == "DF-OLCCD")
             outfile->Printf(" ======================== DF-OLCCD ITERATIONS ARE CONVERGED =================== \n");
+        else if (wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)")
+            outfile->Printf(" ======================== DF-OCCD ITERATIONS ARE CONVERGED ==================== \n");
         outfile->Printf(" ============================================================================== \n");
+
+        // write orbital coefficients to external files
+        if (write_mo_coeff == "TRUE"){
+            if (reference_ == "RESTRICTED") {
+                outfile->Printf("\n\tWriting MO coefficients to the external file CmoA.dfocc ...\n");
+	            CmoA->mywrite("CmoA.dfocc");
+            }
+            else if (reference_ == "UNRESTRICTED") {
+                outfile->Printf("\n\tWriting MO coefficients to external files CmoA.dfocc and CmoB.dfocc ...\n");
+	            CmoA->mywrite("CmoA.dfocc");
+	            CmoB->mywrite("CmoB.dfocc");
+            }
+        }
 
     }
 
@@ -309,6 +361,9 @@ void DFOCC::occ_iterations() {
                             mo_maxiter);
         else if (wfn_type_ == "DF-OLCCD")
             outfile->Printf("\n ======================== DF-OLCCD IS NOT CONVERGED IN %2d ITERATIONS ========= \n",
+                            mo_maxiter);
+        else if (wfn_type_ == "DF-OCCD")
+            outfile->Printf("\n ======================== DF-OCCD IS NOT CONVERGED IN %2d ITERATIONS ========= \n",
                             mo_maxiter);
 
         throw PSIEXCEPTION("DF-OCC iterations did not converge");

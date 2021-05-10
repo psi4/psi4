@@ -2939,7 +2939,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("SOS_TYPE", "SOS", "SOS SOSPI");
         /*- Type of the wavefunction. -*/
         options.add_str("WFN_TYPE", "DF-OMP2",
-                        "DF-OMP2 DF-OMP3 DF-OLCCD DF-OMP2.5 DFGRAD DF-CCSD DF-CCD DF-CCSD(T) DF-CCSD(AT) QCHF");
+                        "DF-OMP2 DF-OMP3 DF-OLCCD DF-OMP2.5 DFGRAD DF-CCSD DF-CCD DF-OCCD DF-OCCD(T) DF-OCCD(AT) DF-CCSD(T) DF-CCSD(AT) QCHF");
         /*- CEPA type such as CEPA0, CEPA1 etc. currently we have only CEPA0. -*/
         // options.add_str("CEPA_TYPE","CEPA(0)","CEPA(0)");
         /*- The algorithm that used for 4 index MO TEIs. -*/
@@ -2993,6 +2993,26 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("MOLDEN_WRITE", false);
         /*- Do Cholesky decomposition of the ERI tensor -*/
         options.add_bool("CHOLESKY", false);
+        /*- Do compute natural orbitals? -*/
+        options.add_bool("NBO", false);
+
+        /*- Convergence criterion for davidson (residuals). -*/
+        options.add_double("DAVIDSON_TOLERANCE",1e-6);
+        /*- Convergence criterion for davidson (residuals). -*/
+        options.add_double("JK_MEMORY",1e+9);
+        /*- How to select model space. -*/
+        options.add_str("DIAG_METHOD","DAVIDSON","DAVIDSON FULL_DIAG");
+        /*- CIS algorithm. -*/
+        options.add_str("CIS_ALGORITHM","MO_BASIS","MO_BASIS AO_BASIS");
+        /*- Type of the JK algorithm. -*/
+        options.add_str("JK_TYPE", "DIRECT", "DF CD PK DIRECT OUT_OF_CORE");
+        /*- Do print CI coefficients? -*/
+        options.add_bool("PRINT_CI_VECS",false);
+
+        /*- Do read MO coefficients from external files? -*/
+        options.add_bool("MO_READ",false);
+        /*- Do write MO coefficients to external files? -*/
+        options.add_bool("MO_WRITE",false);
     }
     if (name == "MRCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/

@@ -52,8 +52,8 @@ void DFOCC::mp2l_energy() {
         Eoei = EcorrL;
 
         // DE += \sum_{Q} \sum_{i,a} G_ia^Q b_ia^Q
-        G2c_ov = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA * nvirA));
-        bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
+        G2c_ov = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OV)", nQ, noccA * nvirA);
+        bQovA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA);
         G2c_ov->read(psio_, PSIF_DFOCC_DENS);
         bQovA->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += G2c_ov->vector_dot(bQovA);
@@ -70,8 +70,8 @@ void DFOCC::mp2l_energy() {
         Eoei = EcorrL;
 
         // DE += \sum_{Q} \sum_{I,A} G_IA^Q b_IA^Q
-        G2c_ovA = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA * nvirA));
-        bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
+        G2c_ovA = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OV)", nQ, noccA * nvirA);
+        bQovA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA);
         G2c_ovA->read(psio_, PSIF_DFOCC_DENS);
         bQovA->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += G2c_ovA->vector_dot(bQovA);
@@ -79,8 +79,8 @@ void DFOCC::mp2l_energy() {
         bQovA.reset();
 
         // DE += \sum_{Q} \sum_{i,a} G_ia^Q b_ia^Q
-        G2c_ovB = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|ov)", nQ, noccB * nvirB));
-        bQovB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB));
+        G2c_ovB = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|ov)", nQ, noccB * nvirB);
+        bQovB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB);
         G2c_ovB->read(psio_, PSIF_DFOCC_DENS);
         bQovB->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += G2c_ovB->vector_dot(bQovB);
@@ -124,9 +124,9 @@ void DFOCC::mp3l_energy() {
         Eoei = EcorrL;
 
         // DE += 1/2 \sum_{Q} \sum_{i,j} G_ij^Q b_ij^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA);
         G->read(psio_, PSIF_DFOCC_DENS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
@@ -134,9 +134,9 @@ void DFOCC::mp3l_energy() {
         Eoo = EcorrL - Eoei;
 
         // DE += \sum_{Q} \sum_{i,a} G_ia^Q b_ia^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += G->vector_dot(K);
         G.reset();
@@ -144,9 +144,9 @@ void DFOCC::mp3l_energy() {
         Eov = EcorrL - Eoei - Eoo;
 
         // DE += 1/2 \sum_{Q} \sum_{a,b} G_ab^Q b_ab^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
@@ -162,18 +162,18 @@ void DFOCC::mp3l_energy() {
         Eoei = EcorrL;
 
         // DE += 1/2 \sum_{Q} \sum_{I,J} G_IJ^Q b_IJ^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA);
         G->read(psio_, PSIF_DFOCC_DENS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
         K.reset();
 
         // DE += 1/2 \sum_{Q} \sum_{i,j} G_ij^Q b_ij^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|oo)", nQ, noccB, noccB));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|oo)", nQ, noccB, noccB);
         G->read(psio_, PSIF_DFOCC_DENS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|oo)", nQ, noccB, noccB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|oo)", nQ, noccB, noccB);
         K->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
@@ -181,8 +181,8 @@ void DFOCC::mp3l_energy() {
         Eoo = EcorrL - Eoei;
 
         // DE += \sum_{Q} \sum_{I,A} G_IA^Q b_IA^Q
-        G2c_ovA = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA * nvirA));
-        bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
+        G2c_ovA = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OV)", nQ, noccA * nvirA);
+        bQovA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA);
         G2c_ovA->read(psio_, PSIF_DFOCC_DENS);
         bQovA->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += G2c_ovA->vector_dot(bQovA);
@@ -190,8 +190,8 @@ void DFOCC::mp3l_energy() {
         bQovA.reset();
 
         // DE += \sum_{Q} \sum_{i,a} G_ia^Q b_ia^Q
-        G2c_ovB = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|ov)", nQ, noccB * nvirB));
-        bQovB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB));
+        G2c_ovB = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|ov)", nQ, noccB * nvirB);
+        bQovB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB);
         G2c_ovB->read(psio_, PSIF_DFOCC_DENS);
         bQovB->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += G2c_ovB->vector_dot(bQovB);
@@ -200,18 +200,18 @@ void DFOCC::mp3l_energy() {
         Eov = EcorrL - Eoei - Eoo;
 
         // DE += 1/2 \sum_{Q} \sum_{A,B} G_AB^Q b_AB^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
         K.reset();
 
         // DE += 1/2 \sum_{Q} \sum_{a,b} G_ab^Q b_ab^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|vv)", nQ, nvirB, nvirB));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|vv)", nQ, nvirB, nvirB);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|vv)", nQ, nvirB, nvirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|vv)", nQ, nvirB, nvirB);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
@@ -251,7 +251,9 @@ void DFOCC::lccdl_energy() {
     double Eoo = 0.0;
     double Eov = 0.0;
     double Evv = 0.0;
-    ElccdL_old = ElccdL;
+
+    if (wfn_type_ == "DF-OLCCD") ElccdL_old = ElccdL;
+    else if (wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") EccdL_old = EccdL;
 
     if (reference_ == "RESTRICTED") {
         // DE = \sum_{p,q} G_pq f_pq
@@ -259,9 +261,9 @@ void DFOCC::lccdl_energy() {
         Eoei = EcorrL;
 
         // DE += 1/2 \sum_{Q} \sum_{i,j} G_ij^Q b_ij^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA);
         G->read(psio_, PSIF_DFOCC_DENS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
@@ -269,9 +271,9 @@ void DFOCC::lccdl_energy() {
         Eoo = EcorrL - Eoei;
 
         // DE += \sum_{Q} \sum_{i,a} G_ia^Q b_ia^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += G->vector_dot(K);
         G.reset();
@@ -279,9 +281,9 @@ void DFOCC::lccdl_energy() {
         Eov = EcorrL - Eoei - Eoo;
 
         // DE += 1/2 \sum_{Q} \sum_{a,b} G_ab^Q b_ab^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
@@ -297,18 +299,18 @@ void DFOCC::lccdl_energy() {
         Eoei = EcorrL;
 
         // DE += 1/2 \sum_{Q} \sum_{I,J} G_IJ^Q b_IJ^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA);
         G->read(psio_, PSIF_DFOCC_DENS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
         K.reset();
 
         // DE += 1/2 \sum_{Q} \sum_{i,j} G_ij^Q b_ij^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|oo)", nQ, noccB, noccB));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|oo)", nQ, noccB, noccB);
         G->read(psio_, PSIF_DFOCC_DENS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|oo)", nQ, noccB, noccB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|oo)", nQ, noccB, noccB);
         K->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
@@ -316,8 +318,8 @@ void DFOCC::lccdl_energy() {
         Eoo = EcorrL - Eoei;
 
         // DE += \sum_{Q} \sum_{I,A} G_IA^Q b_IA^Q
-        G2c_ovA = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA * nvirA));
-        bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
+        G2c_ovA = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OV)", nQ, noccA * nvirA);
+        bQovA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA);
         G2c_ovA->read(psio_, PSIF_DFOCC_DENS);
         bQovA->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += G2c_ovA->vector_dot(bQovA);
@@ -325,8 +327,8 @@ void DFOCC::lccdl_energy() {
         bQovA.reset();
 
         // DE += \sum_{Q} \sum_{i,a} G_ia^Q b_ia^Q
-        G2c_ovB = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|ov)", nQ, noccB * nvirB));
-        bQovB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB));
+        G2c_ovB = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|ov)", nQ, noccB * nvirB);
+        bQovB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB);
         G2c_ovB->read(psio_, PSIF_DFOCC_DENS);
         bQovB->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += G2c_ovB->vector_dot(bQovB);
@@ -335,18 +337,18 @@ void DFOCC::lccdl_energy() {
         Eov = EcorrL - Eoei - Eoo;
 
         // DE += 1/2 \sum_{Q} \sum_{A,B} G_AB^Q b_AB^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
         K.reset();
 
         // DE += 1/2 \sum_{Q} \sum_{a,b} G_ab^Q b_ab^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|vv)", nQ, nvirB, nvirB));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|vv)", nQ, nvirB, nvirB);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|vv)", nQ, nvirB, nvirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|vv)", nQ, nvirB, nvirB);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
@@ -355,8 +357,17 @@ void DFOCC::lccdl_energy() {
 
     }  // else if (reference_ == "UNRESTRICTED")
 
-    ElccdL = Eref + EcorrL;
-    DE = ElccdL - ElccdL_old;
+    if (wfn_type_ == "DF-OLCCD") {
+        ElccdL = Eref + EcorrL;
+        DE = ElccdL - ElccdL_old;
+    }
+    else if (wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") {
+        EccdL = Eref + EcorrL;
+        DE = EccdL - EccdL_old;
+    }
+    //outfile->Printf("\tEccdL_old (a.u.)     : %20.14f\n", EccdL_old);
+    //outfile->Printf("\tEccdL (a.u.)         : %20.14f\n", EccdL);
+    //outfile->Printf("\tDE (a.u.)            : %20.14f\n", DE);
 
     /*
     outfile->Printf("\n\tEnergies re-computed from CC density: \n");
@@ -386,6 +397,8 @@ void DFOCC::ccl_energy() {
     double Eoo = 0.0;
     double Eov = 0.0;
     double Evv = 0.0;
+    EccsdL_old = EccsdL;
+    EccdL_old = EccdL;
 
     if (reference_ == "RESTRICTED") {
         // DE = \sum_{p,q} G_pq f_pq
@@ -393,9 +406,9 @@ void DFOCC::ccl_energy() {
         Eoei = EcorrL;
 
         // DE += 1/2 \sum_{Q} \sum_{i,j} G_ij^Q b_ij^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA);
         G->read(psio_, PSIF_DFOCC_DENS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
@@ -403,9 +416,9 @@ void DFOCC::ccl_energy() {
         Eoo = EcorrL - Eoei;
 
         // DE += \sum_{Q} \sum_{i,a} G_ia^Q b_ia^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += G->vector_dot(K);
         G.reset();
@@ -413,9 +426,9 @@ void DFOCC::ccl_energy() {
         Eov = EcorrL - Eoei - Eoo;
 
         // DE += 1/2 \sum_{Q} \sum_{a,b} G_ab^Q b_ab^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
@@ -431,18 +444,18 @@ void DFOCC::ccl_energy() {
         Eoei = EcorrL;
 
         // DE += 1/2 \sum_{Q} \sum_{I,J} G_IJ^Q b_IJ^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA);
         G->read(psio_, PSIF_DFOCC_DENS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
         K.reset();
 
         // DE += 1/2 \sum_{Q} \sum_{i,j} G_ij^Q b_ij^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|oo)", nQ, noccB, noccB));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|oo)", nQ, noccB, noccB);
         G->read(psio_, PSIF_DFOCC_DENS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|oo)", nQ, noccB, noccB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|oo)", nQ, noccB, noccB);
         K->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
@@ -450,8 +463,8 @@ void DFOCC::ccl_energy() {
         Eoo = EcorrL - Eoei;
 
         // DE += \sum_{Q} \sum_{I,A} G_IA^Q b_IA^Q
-        G2c_ovA = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA * nvirA));
-        bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
+        G2c_ovA = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OV)", nQ, noccA * nvirA);
+        bQovA = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA);
         G2c_ovA->read(psio_, PSIF_DFOCC_DENS);
         bQovA->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += G2c_ovA->vector_dot(bQovA);
@@ -459,8 +472,8 @@ void DFOCC::ccl_energy() {
         bQovA.reset();
 
         // DE += \sum_{Q} \sum_{i,a} G_ia^Q b_ia^Q
-        G2c_ovB = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|ov)", nQ, noccB * nvirB));
-        bQovB = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB));
+        G2c_ovB = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|ov)", nQ, noccB * nvirB);
+        bQovB = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB);
         G2c_ovB->read(psio_, PSIF_DFOCC_DENS);
         bQovB->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += G2c_ovB->vector_dot(bQovB);
@@ -469,18 +482,18 @@ void DFOCC::ccl_energy() {
         Eov = EcorrL - Eoei - Eoo;
 
         // DE += 1/2 \sum_{Q} \sum_{A,B} G_AB^Q b_AB^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
         K.reset();
 
         // DE += 1/2 \sum_{Q} \sum_{a,b} G_ab^Q b_ab^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|vv)", nQ, nvirB, nvirB));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|vv)", nQ, nvirB, nvirB);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|vv)", nQ, nvirB, nvirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|vv)", nQ, nvirB, nvirB);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
@@ -490,6 +503,9 @@ void DFOCC::ccl_energy() {
     }  // else if (reference_ == "UNRESTRICTED")
 
     EccsdL = Eref + EcorrL;
+    EccdL = EccsdL;
+    DE = EccdL - EccdL_old;
+
     outfile->Printf("\n\tEnergies re-computed from CC density: \n");
     outfile->Printf("\t------------------------------------- \n");
     outfile->Printf("\tReference Energy (a.u.)            : %20.14f\n", Eref);
@@ -524,17 +540,17 @@ void DFOCC::ccl_energy2() {
 
         // DE += 1/2 \sum_{Q} \sum_{i,j} G_ij^Q b_ij^Q
         // Sep
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA, noccA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA, noccA);
         G->read(psio_, PSIF_DFOCC_DENS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
         K.reset();
         // Corr
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OO)", nQ, noccA, noccA);
         G->read(psio_, PSIF_DFOCC_DENS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OO)", nQ, noccA, noccA);
         K->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
@@ -543,17 +559,17 @@ void DFOCC::ccl_energy2() {
 
         // DE += \sum_{Q} \sum_{i,a} G_ia^Q b_ia^Q
         // Sep
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA, nvirA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += G->vector_dot(K);
         G.reset();
         K.reset();
         // Corr
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS);
         EcorrL += G->vector_dot(K);
         G.reset();
@@ -562,17 +578,17 @@ void DFOCC::ccl_energy2() {
 
         // DE += 1/2 \sum_{Q} \sum_{a,b} G_ab^Q b_ab^Q
         // Sep
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();
         K.reset();
         // Corr
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         EcorrL += 0.5 * G->vector_dot(K);
         G.reset();

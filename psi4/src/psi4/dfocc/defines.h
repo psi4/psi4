@@ -43,5 +43,6 @@
 
 #define DIIS_MIN_DET 1.0E-16
 #define DIVERGE 1.0E+3
+#define hartree2ev 27.21138
 
 #endif /* DEFINES_ */
