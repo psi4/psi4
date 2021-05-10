@@ -1158,6 +1158,7 @@ void export_mints(py::module& m) {
         .def("function_to_center", &BasisSet::function_to_center, "The atomic center for the i'th function", "i"_a)
         .def("nshell_on_center", &BasisSet::nshell_on_center, "Return the number of shells on a given center", "i"_a)
         .def("shell_on_center", &BasisSet::shell_on_center, "Return the i'th shell on center.", "c"_a, "i"_a)
+        .def("apply_hermite_normalization", &BasisSet::apply_hermite_normalization, "Renormalize all basis functions assuming that they represent Hermite Gaussians")
         .def("n_ecp_shell_on_center", &BasisSet::n_ecp_shell_on_center,
              "Return the number of ECP shells on a given center", "i"_a)
         .def("ecp_shell_on_center", &BasisSet::ecp_shell_on_center, "Return the i'th ECP shell on center.", "c"_a,

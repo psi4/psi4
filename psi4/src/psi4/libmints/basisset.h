@@ -283,6 +283,11 @@ class PSI_API BasisSet {
      *  @return A shared pointer to the libint2::Shell object for the i'th shell.
      */
     const libint2::Shell &l2_shell(int si) const;
+    /**
+     * Assume that this basis set uses Hermite functions, such as the auxilliary basis
+     * used in the Gaussian Electrostatic Model (GEM) and renormalize appropriately.
+     */
+    void apply_hermite_normalization();
 
     /** Return the i'th Gaussian shell on center
      *  @param center atomic center

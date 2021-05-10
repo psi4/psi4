@@ -98,7 +98,9 @@ void ExternalPotential::addMultipoles(std::shared_ptr<BasisSet> basis, SharedVec
             // clang-format on
             N1 = pow(2.0, 0.5 * l) * pow(exps[0], 0.5 * l + 1.5) / (PI_3_2 * df[l]);
         }
-        double normfac = N1 / N2;
+        // When a user specifies a positive coefficient, we assume that function represents a positive charge.  Because
+        // the diffuse bases are modeling negative charges, we flip the sign of the coefficient to account for this.
+        double normfac = -N1 / N2;
         if (shell.is_pure()) {
             for (int m = 0; m < 2 * l + 1; ++m) {
                 scale_facs.push_back(normfac);
@@ -258,7 +260,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
                     for (int oq = 0, index = 0; oq < numQ; oq++) {
                         for (int om = 0; om < numM; om++) {
                             for (int on = 0; on < numN; on++, index++) {
-                                Vp[om + Mstart][on + Nstart] -= dp[oq + Qstart] * buffer[index];
+                                Vp[om + Mstart][on + Nstart] += dp[oq + Qstart] * buffer[index];
                             }
                         }
                     }
@@ -432,9 +434,9 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
 
                     for (int a = 0; a < nA; a++) {
                         double prefac = pD[a + oA];
-                        Gp[atom][0] += prefac * (*intAx);
-                        Gp[atom][1] += prefac * (*intAy);
-                        Gp[atom][2] += prefac * (*intAz);
+                        Gp[atom][0] -= prefac * (*intAx);
+                        Gp[atom][1] -= prefac * (*intAy);
+                        Gp[atom][2] -= prefac * (*intAz);
                         ++intAx;
                         ++intAy;
                         ++intAz;
@@ -493,7 +495,7 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
                     double scale_fac = perm * pD[a + oA];
                     for (int p = 0; p < nP; p++) {
                         for (int q = 0; q < nQ; q++) {
-                            double val = -scale_fac * Dp[p + oP][q + oQ];
+                            double val = scale_fac * Dp[p + oP][q + oQ];
                             Vp[aP][0] += val * (*Px);
                             Vp[aP][1] += val * (*Py);
                             Vp[aP][2] += val * (*Pz);
@@ -547,8 +549,7 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
     }
 
     if (bases_.size()) {
-        // Nucleus-diffuse interaction
-        auto Zxyz = std::make_shared<Matrix>("Charges (Z,x,y,z)", mol->natom(), 4);
+        auto Zxyz = std::make_shared<Matrix>("Nuclear Charges (Z,x,y,z)", mol->natom(), 4);
         double **Zxyzp = Zxyz->pointer();
         for (int A = 0; A < mol->natom(); A++) {
             Zxyzp[A][0] = mol->Z(A);
@@ -556,20 +557,17 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
             Zxyzp[A][2] = mol->y(A);
             Zxyzp[A][3] = mol->z(A);
         }
-
         for (size_t ind = 0; ind < bases_.size(); ind++) {
+            // QM nucleus-diffuse interaction
             std::shared_ptr<BasisSet> aux = bases_[ind].first;
             SharedVector d = bases_[ind].second;
-
             auto V = std::make_shared<Matrix>("(Q|Z|0) Integrals", aux->nbf(), 1);
-
             std::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
             auto fact = std::make_shared<IntegralFactory>(aux, zero, zero, zero);
             std::shared_ptr<PotentialInt> pot(static_cast<PotentialInt *>(fact->ao_potential()));
-
             pot->set_charge_field(Zxyz);
             pot->compute(V);
-            E -= C_DDOT(aux->nbf(), d->pointer(), 1, V->pointer()[0], 1);
+            E += C_DDOT(aux->nbf(), d->pointer(), 1, V->pointer()[0], 1);
         }
     }
 
