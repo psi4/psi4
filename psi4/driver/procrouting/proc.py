@@ -437,6 +437,12 @@ def select_mp3(name, **kwargs):
                 core.print_out("""\nThis method is available inefficiently as a """
                                """byproduct of a CISD computation.\n  Add "set """
                                """qc_module detci" to input to access this route.\n""")
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
 
     if func is None:
         raise ManagedMethodError(['select_mp3', name, 'MP_TYPE', mtd_type, reference, module])
@@ -853,7 +859,6 @@ def select_fnoccsd(name, **kwargs):
     reference = core.get_option('SCF', 'REFERENCE')
     mtd_type = core.get_global_option('CC_TYPE')
     module = core.get_global_option('QC_MODULE')
-    # Considering only fnocc
 
     func = None
     if reference == 'RHF':
@@ -863,9 +868,20 @@ def select_fnoccsd(name, **kwargs):
         elif mtd_type == 'DF':
             if module in ['', 'FNOCC']:
                 func = run_fnodfcc
+            if module == 'OCC':
+                func = run_dfocc
         elif mtd_type == 'CD':
             if module in ['', 'FNOCC']:
                 func = run_fnodfcc
+            if module == 'OCC':
+                func = run_dfocc
+    elif reference in ['UHF', 'ROHF']:
+        if mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
 
     if func is None:
         raise ManagedMethodError(['select_fnoccsd', name, 'CC_TYPE', mtd_type, reference, module])
@@ -910,6 +926,12 @@ def select_ccsd(name, **kwargs):
         if mtd_type == 'CONV':
             if module in ['', 'CCENERGY']:
                 func = run_ccenergy
+        elif mtd_type == 'DF':
+            if module == 'OCC':
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module == 'OCC':
+                func = run_dfocc
     elif reference == 'ROHF':
         if mtd_type == 'CONV':
             if module == 'CCT3' and extras.addons("cct3"):
@@ -917,6 +939,12 @@ def select_ccsd(name, **kwargs):
                 func = cct3.run_cct3
             elif module in ['', 'CCENERGY']:
                 func = run_ccenergy
+            elif mtd_type == 'DF':
+                if module in ['', 'OCC']:
+                    func = run_dfocc
+            elif mtd_type == 'CD':
+                if module in ['', 'OCC']:
+                    func = run_dfocc
 
     if func is None:
         raise ManagedMethodError(['select_ccsd', name, 'CC_TYPE', mtd_type, reference, module])
@@ -949,10 +977,16 @@ def select_ccsd_gradient(name, **kwargs):
         if mtd_type == 'CONV':
             if module in ['', 'CCENERGY']:
                 func = run_ccenergy_gradient
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_gradient
     elif reference == 'ROHF':
         if mtd_type == 'CONV':
             if module in ['', 'CCENERGY']:
                 func = run_ccenergy_gradient
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_gradient
 
     if func is None:
         raise ManagedMethodError(['select_ccsd_gradient', name, 'CC_TYPE', mtd_type, reference, module])
@@ -981,12 +1015,99 @@ def select_fnoccsd_t_(name, **kwargs):
         elif mtd_type == 'DF':
             if module in ['', 'FNOCC']:
                 func = run_fnodfcc
+            if module == 'OCC':
+                func = run_dfocc
         elif mtd_type == 'CD':
             if module in ['', 'FNOCC']:
                 func = run_fnodfcc
+            if module == 'OCC':
+                func = run_dfocc
+    elif reference in ['UHF', 'ROHF']:
+        if mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+
 
     if func is None:
         raise ManagedMethodError(['select_fnoccsd_t_', name, 'CC_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+def select_fnolccd(name, **kwargs):
+    """Function selecting the algorithm for a FNO-LCCD energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('CC_TYPE')
+    module = core.get_global_option('QC_MODULE')
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'FNOCC']:
+                func = run_cepa
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+    elif reference in ['UHF', 'ROHF']:
+        if mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+
+
+    if func is None:
+        raise ManagedMethodError(['select_fnolccd', name, 'CC_TYPE', mtd_type, reference, module])
+
+    if kwargs.pop('probe', False):
+        return
+    else:
+        return func(name, **kwargs)
+
+
+def select_fnomp3(name, **kwargs):
+    """Function selecting the algorithm for a FNO-MP3 energy call
+    and directing to specified or best-performance default modules.
+
+    """
+    reference = core.get_option('SCF', 'REFERENCE')
+    mtd_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
+    module = core.get_global_option('QC_MODULE')
+
+    func = None
+    if reference == 'RHF':
+        if mtd_type == 'CONV':
+            if module in ['', 'FNOCC']:
+                func = run_fnocc
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+    elif reference in ['UHF', 'ROHF']:
+        if mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+
+
+    if func is None:
+        raise ManagedMethodError(['select_fnomp3', name, 'CC_TYPE', mtd_type, reference, module])
 
     if kwargs.pop('probe', False):
         return
@@ -1029,6 +1150,12 @@ def select_ccsd_t_(name, **kwargs):
         if mtd_type == 'CONV':
             if module in ['', 'CCENERGY']:
                 func = run_ccenergy
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
 
     if func is None:
         raise ManagedMethodError(['select_ccsd_t_', name, 'CC_TYPE', mtd_type, reference, module])
@@ -1061,6 +1188,9 @@ def select_ccsd_t__gradient(name, **kwargs):
         if mtd_type == 'CONV':
             if module in ['', 'CCENERGY']:
                 func = run_ccenergy_gradient
+        elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc_gradient
 
     if func is None:
         raise ManagedMethodError(['select_ccsd_t__gradient', name, 'CC_TYPE', mtd_type, reference, module])
@@ -1087,6 +1217,13 @@ def select_ccsd_at_(name, **kwargs):
             if module in ['', 'CCENERGY']:
                 func = run_ccenergy
         elif mtd_type == 'DF':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+        elif mtd_type == 'CD':
+            if module in ['', 'OCC']:
+                func = run_dfocc
+    elif reference in ['UHF', 'ROHF']:
+        if mtd_type == 'DF':
             if module in ['', 'OCC']:
                 func = run_dfocc
         elif mtd_type == 'CD':
@@ -1964,32 +2101,41 @@ def run_dfocc(name, **kwargs):
     if name in ['mp2', 'omp2']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
         corl_type = core.get_global_option('MP2_TYPE')
-    elif name in ['mp2.5']:
+    elif name in ['mp2.5', 'fno-mp2.5']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
         corl_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
     elif name in ['omp2.5']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
         corl_type = core.get_global_option('MP_TYPE')
-    elif name in ['mp3']:
+    elif name in ['mp3', 'fno-mp3']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
         corl_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
     elif name in ['omp3']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
         corl_type = core.get_global_option('MP_TYPE')
-    elif name in ['lccd', 'olccd']:
+    elif name in ['lccd', 'olccd', 'fno-lccd']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
         corl_type = core.get_global_option('CC_TYPE')
 
-    elif name == 'ccd':
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
+    elif name in ['ccd', 'fno-ccd']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OCCD')
         corl_type = core.get_global_option('CC_TYPE')
-    elif name == 'ccsd':
+    elif name == 'occd':
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OCCD')
+        corl_type = core.get_global_option('CC_TYPE')
+    elif name == 'occd(t)':
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OCCD(T)')
+        corl_type = core.get_global_option('CC_TYPE')
+    elif name == 'occd(at)':
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OCCD(AT)')
+        corl_type = core.get_global_option('CC_TYPE')
+    elif name in ['ccsd', 'fno-ccsd']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
         corl_type = core.get_global_option('CC_TYPE')
-    elif name == 'ccsd(t)':
+    elif name in ['ccsd(t)', 'fno-ccsd(t)']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
         corl_type = core.get_global_option('CC_TYPE')
-    elif name == 'a-ccsd(t)':
+    elif name in ['a-ccsd(t)', 'fno-a-ccsd(t)']:
         core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(AT)')
         corl_type = core.get_global_option('CC_TYPE')
@@ -2001,11 +2147,17 @@ def run_dfocc(name, **kwargs):
     set_cholesky_from(corl_type)
 
     # conventional vs. optimized orbitals
-    if name in ['mp2', 'mp2.5', 'mp3', 'lccd',
-                     'ccd', 'ccsd', 'ccsd(t)', 'a-ccsd(t)']:
+    if name in ['mp2', 'mp2.5', 'fno-mp2.5', 'mp3', 'fno-mp3', 'lccd',
+                     'fno-lccd', 'ccd', 'ccsd', 'ccsd(t)', 'a-ccsd(t)',
+                     'fno-ccd', 'fno-ccsd', 'fno-ccsd(t)', 'fno-a-ccsd(t)']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    elif name in ['omp2', 'omp2.5', 'omp3', 'olccd']:
+    elif name in ['omp2', 'omp2.5', 'omp3', 'olccd', 'occd', 'occd(t)', 'occd(at)']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
+
+    # FNO or not
+    if name in ['fno-mp2.5', 'fno-mp3', 'fno-lccd',
+                     'fno-ccd', 'fno-ccsd', 'fno-ccsd(t)', 'fno-ccsd(at)']:
+        core.set_local_option('DFOCC', 'NAT_ORBS', 'TRUE')
 
     core.set_local_option('DFOCC', 'DO_SCS', 'FALSE')
     core.set_local_option('DFOCC', 'DO_SOS', 'FALSE')
@@ -2096,7 +2248,10 @@ def run_dfocc_gradient(name, **kwargs):
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
         corl_type = core.get_global_option('CC_TYPE')
     elif name in ['ccd']:
-        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OCCD')
+        core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+    elif name in ['occd']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OCCD')
         core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
         corl_type = core.get_global_option('CC_TYPE')
     elif name in ['ccsd']:
@@ -2112,7 +2267,7 @@ def run_dfocc_gradient(name, **kwargs):
 
     if name in ['mp2', 'mp2.5', 'mp3', 'lccd', 'ccd', 'ccsd', 'ccsd(t)']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    elif name in ['omp2', 'omp2.5', 'omp3', 'olccd']:
+    elif name in ['omp2', 'omp2.5', 'omp3', 'olccd', 'occd']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
     if corl_type not in ["DF", "CD"]:
         raise ValidationError(f"""Invalid type '{corl_type}' for DFOCC""")

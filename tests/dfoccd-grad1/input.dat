@@ -1,0 +1,33 @@
+#! DF-OCCD cc-pVDZ gradient for the H2O molecule.
+
+ref = psi4.Matrix.from_list([
+        [  0.000000000000,  0.000000000000,  0.010049380213 ],
+        [ -0.000000000000,  0.000793077548, -0.005024690106 ],
+        [ -0.000000000000, -0.000793077549, -0.005024690107 ]
+       ])
+
+molecule h2o {
+  0 1
+  O          0.000000000000     0.000000000000    -0.065775570538
+  H          0.000000000000    -0.759061990794     0.521953018295
+  H          0.000000000000     0.759061990794     0.521953018295
+  nocom
+  noreorient
+  symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_cc cc-pvdz-ri
+  guess gwh
+  reference rhf
+  scf_type df
+  cc_type df
+  qc_module occ
+  freeze_core true
+}
+
+grad = gradient('occd')
+
+compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST

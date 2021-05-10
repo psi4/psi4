@@ -59,7 +59,7 @@ void DFOCC::approx_diag_mohess_vo() {
         }
 
         // A_ai += 2 G_ii \sum_{m} (ma|ma)
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA);
         tei_ovov_chem_ref_directAA(K);
         for (int a = 0; a < nvirA; a++) {
             for (int i = 0; i < noccA; i++) {
@@ -81,8 +81,8 @@ void DFOCC::approx_diag_mohess_vo() {
         //=========================
 
         // A_ai += 2\sum_{Q} b_aa^Q G_ii^Q
-        G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA * noccA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA * noccA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         for (int a = 0; a < nvirA; a++) {
@@ -104,8 +104,8 @@ void DFOCC::approx_diag_mohess_vo() {
         //=========================
 
         // A_ai += 2\sum_{Q} b_aa^Q G_ii^Q
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA * noccA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA * noccA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         for (int a = 0; a < nvirA; a++) {
@@ -123,8 +123,8 @@ void DFOCC::approx_diag_mohess_vo() {
         K.reset();
 
         // A_ai += 2\sum_{Q} b_ii^Q G_aa^Q
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
         K->read(psio_, PSIF_DFOCC_INTS);
         for (int a = 0; a < nvirA; a++) {
@@ -175,7 +175,7 @@ void DFOCC::approx_diag_mohess_vo() {
         }
 
         // A_AI += 2 G_II \sum_{M} (MA|MA)
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (OV|OV)", noccA, nvirA, noccA, nvirA);
         tei_ovov_chem_ref_directAA(K);
         for (int a = 0; a < nvirA; a++) {
             for (int i = 0; i < noccA; i++) {
@@ -193,7 +193,7 @@ void DFOCC::approx_diag_mohess_vo() {
         K.reset();
 
         // A_ai += -2 G_ii \sum_{m} (ma|ma)
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB));
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF MO Ints (ov|ov)", noccB, nvirB, noccB, nvirB);
         tei_ovov_chem_ref_directBB(K);
         for (int a = 0; a < nvirB; a++) {
             for (int i = 0; i < noccB; i++) {
@@ -215,8 +215,8 @@ void DFOCC::approx_diag_mohess_vo() {
         //=========================
 
         // A_AI += 2\sum_{Q} b_AA^Q G_II^Q
-        G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA * noccA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA * noccA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         for (int a = 0; a < nvirA; a++) {
@@ -234,8 +234,8 @@ void DFOCC::approx_diag_mohess_vo() {
         K.reset();
 
         // A_ai += 2\sum_{Q} b_aa^Q G_ii^Q
-        G = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|oo)", nQ_ref, noccB * noccB));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
+        G = std::make_shared<Tensor2d>("Reference 3-Index TPDM (Q|oo)", nQ_ref, noccB * noccB);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         for (int a = 0; a < nvirB; a++) {
@@ -257,8 +257,8 @@ void DFOCC::approx_diag_mohess_vo() {
         //=========================
 
         // A_AI += 2\sum_{Q} b_AA^Q G_II^Q
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA * noccA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA * noccA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         for (int a = 0; a < nvirA; a++) {
@@ -276,8 +276,8 @@ void DFOCC::approx_diag_mohess_vo() {
         K.reset();
 
         // A_ai += 2\sum_{Q} b_aa^Q G_ii^Q
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|oo)", nQ_ref, noccB * noccB));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|oo)", nQ_ref, noccB * noccB);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         for (int a = 0; a < nvirB; a++) {
@@ -295,8 +295,8 @@ void DFOCC::approx_diag_mohess_vo() {
         K.reset();
 
         // A_AI += 2\sum_{Q} b_II^Q G_AA^Q
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
         K->read(psio_, PSIF_DFOCC_INTS);
         for (int a = 0; a < nvirA; a++) {
@@ -314,8 +314,8 @@ void DFOCC::approx_diag_mohess_vo() {
         K.reset();
 
         // A_ai += 2\sum_{Q} b_ii^Q G_aa^Q
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB * noccB));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|oo)", nQ_ref, noccB * noccB);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
         K->read(psio_, PSIF_DFOCC_INTS);
         for (int a = 0; a < nvirB; a++) {
