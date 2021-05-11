@@ -862,10 +862,10 @@ def select_ccsd(name, **kwargs):
             elif module in ['', 'CCENERGY']:
                 func = run_ccenergy
             elif mtd_type == 'DF':
-                if module == 'OCC':
+                if module in ['', 'OCC']:
                     func = run_dfocc
             elif mtd_type == 'CD':
-                if module == 'OCC':
+                if module in ['', 'OCC']:
                     func = run_dfocc
 
     if func is None:
@@ -1069,10 +1069,10 @@ def select_ccsd_t_(name, **kwargs):
             if module in ['', 'CCENERGY']:
                 func = run_ccenergy
         elif mtd_type == 'DF':
-            if module == 'OCC':
+            if module in ['', 'OCC']:
                 func = run_dfocc
         elif mtd_type == 'CD':
-            if module == 'OCC':
+            if module in ['', 'OCC']:
                 func = run_dfocc
 
     if func is None:
