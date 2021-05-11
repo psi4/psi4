@@ -25,6 +25,7 @@
  *
  * @END LICENSE
  */
+#include "psi4/libmints/3coverlap.h"
 #include "psi4/libmints/extern.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
@@ -54,6 +55,7 @@ ExternalPotential::~ExternalPotential() {}
 void ExternalPotential::clear() {
     charges_.clear();
     bases_.clear();
+    exchange_bases_.clear();
 }
 
 void ExternalPotential::addCharge(double Z, double x, double y, double z) {
@@ -62,6 +64,10 @@ void ExternalPotential::addCharge(double Z, double x, double y, double z) {
 
 void ExternalPotential::addBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs) {
     bases_.push_back(std::make_pair(basis, coefs));
+}
+
+void ExternalPotential::addExchangeBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs) {
+    exchange_bases_.push_back(std::make_pair(basis, coefs));
 }
 
 void ExternalPotential::addMultipoles(std::shared_ptr<BasisSet> basis, SharedVector coefs) {
@@ -153,6 +159,21 @@ void ExternalPotential::print(std::string out) const {
             if (print_ > 2) {
                 printer->Printf("    Density Coefficients %d\n\n", i + 1);
                 bases_[i].second->print();
+            }
+        }
+    }
+
+    // Exchange Bases
+    if (exchange_bases_.size()) {
+        printer->Printf("    > Diffuse Exchange Bases < \n\n");
+        for (size_t i = 0; i < exchange_bases_.size(); i++) {
+            printer->Printf("    Molecule %d\n\n", i + 1);
+            exchange_bases_[i].first->molecule()->print();
+            printer->Printf("    Basis %d\n\n", i + 1);
+            exchange_bases_[i].first->print_by_level(out, print_);
+            if (print_ > 2) {
+                printer->Printf("    Exchange Overlap Coefficients %d\n\n", i + 1);
+                exchange_bases_[i].second->print();
             }
         }
     }
@@ -256,6 +277,42 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
 
                     eri->compute_shell(Q, 0, M, N);
                     const double *buffer = eri->buffers()[0];
+
+                    for (int oq = 0, index = 0; oq < numQ; oq++) {
+                        for (int om = 0; om < numM; om++) {
+                            for (int on = 0; on < numN; on++, index++) {
+                                Vp[om + Mstart][on + Nstart] += dp[oq + Qstart] * buffer[index];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // Exchange overlap Bases
+    for (size_t ind = 0; ind < exchange_bases_.size(); ind++) {
+        std::shared_ptr<BasisSet> aux = exchange_bases_[ind].first;
+        SharedVector d = exchange_bases_[ind].second;
+
+        // TODO thread this
+        auto fact3 = std::make_shared<IntegralFactory>(aux, basis, basis, BasisSet::zero_ao_basis_set());
+        std::shared_ptr<ThreeCenterOverlapInt> ov3c(fact3->overlap_3c());
+
+        double **Vp = V->pointer();
+        double *dp = d->pointer();
+
+        for (int Q = 0; Q < aux->nshell(); Q++) {
+            int numQ = aux->shell(Q).nfunction();
+            int Qstart = aux->shell(Q).function_index();
+            for (int M = 0; M < basis->nshell(); M++) {
+                int numM = basis->shell(M).nfunction();
+                int Mstart = basis->shell(M).function_index();
+                for (int N = 0; N < basis->nshell(); N++) {
+                    int numN = basis->shell(N).nfunction();
+                    int Nstart = basis->shell(N).function_index();
+
+                    ov3c->compute_shell(Q, M, N);
+                    const double *buffer = ov3c->buffer();
 
                     for (int oq = 0, index = 0; oq < numQ; oq++) {
                         for (int om = 0; om < numM; om++) {

@@ -61,6 +61,8 @@ class PSI_API ExternalPotential {
     std::vector<std::tuple<double, double, double, double> > charges_;
     /// Auxiliary basis sets (with accompanying molecules and coefs) of diffuse charges
     std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector> > bases_;
+    /// Auxiliary basis sets (with accompanying molecules and coefs) of functions for exchange
+    std::vector<std::pair<std::shared_ptr<BasisSet>, SharedVector> > exchange_bases_;
 
    public:
     /// Constructur, does nothing
@@ -84,8 +86,10 @@ class PSI_API ExternalPotential {
         charges_.insert(charges_.end(), new_charges.begin(), new_charges.end());
     }
 
-    /// Add a basis of auxiliary functions whose coeffiecients have been obtained by density fitting
+    /// Add a basis of auxiliary functions whose coefficients have been obtained by density fitting
     void addBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs);
+    /// Add a basis of auxiliary functions that will interact via overlap integrals to describe exchange
+    void addExchangeBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs);
     /// Add a basis of arbitrary angular momentum primitive functions with coefficients specified such
     /// that each function is normalized to unity.  This version should be used for something like
     /// TIP3P or AMOEBA force fields, while something that is obtained from direct density fitting
