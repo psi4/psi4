@@ -77,7 +77,6 @@ extensions = [
     @_jupyconf@  # nbsphinx
     # from Cloud
     'cloud_sptheme.ext.index_styling',
-    'cloud_sptheme.ext.escaped_samp_literals',
     # from Astropy
     'sphinx_automodapi.automodapi',
     'sphinx_automodapi.automodsumm',
