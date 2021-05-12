@@ -727,6 +727,9 @@ class PSI_API DirectJK : public JK {
     /// Common initialization
     void common_init();
 
+    // Current SCF iteration
+    int iteration_ = 0;
+
    public:
     // => Constructors < = //
 

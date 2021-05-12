@@ -1538,6 +1538,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- SAD guess density decomposition threshold !expert -*/
         options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
 
+        /*- SUBSECTION CFMM Linear J Build Algorithm -*/
+        options.add_bool("DO_CFMM_J", false);
+        options.add_int("CFMM_MAX_MPOLE_ORDER", 10);
+        options.add_int("CFMM_MAX_TREE_DEPTH", 4);
+
         /*- SUBSECTION DFT -*/
 
         /*- The DFT Range-separation parameter -*/
