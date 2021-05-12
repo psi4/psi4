@@ -41,6 +41,7 @@
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/lib3index/cholesky.h"
+#include "psi4/libfmm/fmm_tree.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
 
@@ -385,6 +386,19 @@ void DirectJK::compute_JK() {
     std::vector<SharedMatrix>& J_ref = (do_incfock_iter_ ? delta_J_ao_ : J_ao_);
     std::vector<SharedMatrix>& K_ref = (do_incfock_iter_ ? delta_K_ao_ : K_ao_);
     std::vector<SharedMatrix>& wK_ref = (do_incfock_iter_ ? delta_wK_ao_ : wK_ao_);
+
+    Options& options = Process::environment.options;
+    bool cfmm = options.get_bool("DO_CFMM_J") && (iteration_ > 0);
+
+    bool do_J = do_J_ && !cfmm;
+
+
+    if (cfmm) {
+        int nlevels = options.get_int("CFMM_MAX_TREE_DEPTH");
+        int lmax = options.get_int("CFMM_MAX_MPOLE_ORDER");
+        auto tree = std::make_shared<CFMMTree>(primary_->molecule(), primary_, D_ao_, J_ao_, nlevels, lmax);
+        tree->build_J();
+    }
 
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
