@@ -2609,10 +2609,12 @@ def run_dfmp2d_gradient(name, **kwargs):
     """Encode MP2-D method."""
 
     dfmp2_wfn = run_dfmp2_gradient('mp2', **kwargs)
+    wfn_grad = dfmp2_wfn.gradient().clone()
 
     _, _disp_functor = build_disp_functor('MP2D', restricted=True)
     disp_grad = _disp_functor.compute_gradient(dfmp2_wfn.molecule(), dfmp2_wfn)
-    dfmp2_wfn.gradient().add(disp_grad)
+    wfn_grad.add(disp_grad)
+    dfmp2_wfn.set_gradient(wfn_grad)
 
     dfmp2_wfn.set_variable('MP2D CORRELATION ENERGY', dfmp2_wfn.variable('MP2 CORRELATION ENERGY') + dfmp2_wfn.variable('DISPERSION CORRECTION ENERGY'))
     dfmp2_wfn.set_variable('MP2D TOTAL ENERGY', dfmp2_wfn.variable('MP2D CORRELATION ENERGY') + dfmp2_wfn.variable('HF TOTAL ENERGY'))

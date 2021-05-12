@@ -202,7 +202,7 @@ class EmpiricalDispersion(object):
                         'level_hint': self.dashlevel,
                         'params_tweaks': self.dashparams,
                         'dashcoeff_supplement': self.dashcoeff_supplement,
-                        'save_pairwise_dispersion': self.save_pairwise_disp,
+                        'pair_resolved': self.save_pairwise_disp,
                         'verbose': 1,
                     },
                     'molecule': molecule.to_schema(dtype=2),
@@ -217,15 +217,12 @@ class EmpiricalDispersion(object):
             dashd_part = float(jobrec.extras['qcvars']['DISPERSION CORRECTION ENERGY'])
             if wfn is not None:
                 for k, qca in jobrec.extras['qcvars'].items():
-                    # The pairwise dispersion analysis is already a nparray
-                    # Do we always want to save it?
-                    if ('CURRENT' not in k) and ('PAIRWISE' not in k):
-                        wfn.set_variable(k, p4util.plump_qcvar(qca, k))
+                    wfn.set_variable(k, float(qca) if isinstance(qca, str) else qca)
 
                 # Pass along the pairwise dispersion decomposition if we need it
                 if self.save_pairwise_disp is True:
                     wfn.set_variable("PAIRWISE DISPERSION CORRECTION ANALYSIS",
-                                     jobrec.extras['qcvars']["PAIRWISE DISPERSION CORRECTION ANALYSIS"])
+                                     jobrec.extras['qcvars']["2-BODY PAIRWISE DISPERSION CORRECTION ANALYSIS"])
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 jobrec = qcng.compute(
@@ -286,12 +283,10 @@ class EmpiricalDispersion(object):
                 raise_error=True,
                 local_options={"scratch_directory": core.IOManager.shared_object().get_default_path()})
 
-            dashd_part = core.Matrix.from_array(
-                np.array(jobrec.extras['qcvars']['DISPERSION CORRECTION GRADIENT']).reshape(-1, 3))
+            dashd_part = core.Matrix.from_array(jobrec.extras['qcvars']['DISPERSION CORRECTION GRADIENT'])
             if wfn is not None:
                 for k, qca in jobrec.extras['qcvars'].items():
-                    if 'CURRENT' not in k:
-                        wfn.set_variable(k, p4util.plump_qcvar(qca, k))
+                    wfn.set_variable(k, float(qca) if isinstance(qca, str) else qca)
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 jobrec = qcng.compute(
@@ -299,7 +294,7 @@ class EmpiricalDispersion(object):
                     "gcp",
                     raise_error=True,
                     local_options={"scratch_directory": core.IOManager.shared_object().get_default_path()})
-                gcp_part = core.Matrix.from_array(np.array(jobrec.return_result).reshape(-1, 3))
+                gcp_part = core.Matrix.from_array(jobrec.return_result)
                 dashd_part.add(gcp_part)
 
             return dashd_part
