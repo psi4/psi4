@@ -1336,7 +1336,7 @@ class Molecule(LibmintsMolecule):
         elif derint == 1:
             return jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']
 
-    def run_gcp(self, func=None, dertype=None, verbose=False):
+    def run_gcp(self, func: str = None, dertype: Union[int, str] = None, verbose: int = 1):
         """Compute geometrical BSSE correction via Grimme's GCP program.
 
         Function to call Grimme's GCP program
@@ -1361,7 +1361,7 @@ class Molecule(LibmintsMolecule):
             molecules, energy-only calculations can be significantly more
             efficient. Influences return values, see below.
         verbose : int, optional
-            Amount of printing.
+            Amount of printing. Unused at present.
 
         Returns
         -------
@@ -1394,19 +1394,19 @@ class Molecule(LibmintsMolecule):
         jobrec = qcng.compute(resinp, 'gcp', raise_error=True)
         jobrec = jobrec.dict()
 
-        # hack as not checking type GRAD
-        for k, qca in jobrec['extras']['qcvars'].items():
-            if isinstance(qca, (list, np.ndarray)):
-                jobrec['extras']['qcvars'][k] = np.array(qca).reshape(-1, 3)
+        # hack (instead of checking dertype GRAD) to collect `(nat, 3)` ndarray of gradient if present
+        for variable_name, qcv in jobrec['extras']['qcvars'].items():
+            if isinstance(qcv, (list, np.ndarray)):
+                jobrec['extras']['qcvars'][variable_name] = np.array(qcv).reshape(-1, 3)
 
         if isinstance(self, Molecule):
             pass
         else:
             from psi4 import core
 
-            for k, qca in jobrec['extras']['qcvars'].items():
-                if not isinstance(qca, (list, np.ndarray)):
-                    core.set_variable(k, float(qca))
+            for variable_name, qcv in jobrec['extras']['qcvars'].items():
+                if not isinstance(qcv, (list, np.ndarray)):
+                    core.set_variable(variable_name, float(qcv))
 
         if derint == -1:
             return (float(jobrec['extras']['qcvars']['GCP CORRECTION ENERGY']),
