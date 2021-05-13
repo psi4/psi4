@@ -1354,9 +1354,8 @@ class Molecule(LibmintsMolecule):
         Parameters
         ----------
         func : str, optional
-            Name of functional (func only, func & disp, or disp only) for
-            which to compute correction (e.g., blyp, BLYP-D2, blyp-d3bj,
-            blyp-d3(bj), hf+d).
+            Name of method/basis combination or composite method for which to compute the correction
+           (e.g., HF/cc-pVDZ, DFT/def2-SVP, HF3c, PBEh3c).
         dertype : int or str, optional
             Maximum derivative level at which to run GCP. For large
             molecules, energy-only calculations can be significantly more
