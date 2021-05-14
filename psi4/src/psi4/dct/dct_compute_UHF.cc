@@ -197,29 +197,22 @@ int DCTSolver::run_twostep_dct_cumulant_updates() {
     while ((!cumulantDone_ || !energyConverged_) && nAmplitudeIterations++ < maxiter_) {
         std::string diisString;
         // Build new Tau from current Amplitude
-        if (options_.get_bool("RELAX_TAU")) {
-            build_d_U();
-            // Compute tau exactly if requested
-            if (exact_tau_) {
-                build_tau_U();
-            }
-            if (options_.get_str("AO_BASIS") == "DISK") {
-                // Transform new Tau to the SO basis
-                transform_tau_U();
-                // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
-                build_AO_tensors();
-            } else {
-                // Compute GTau contribution for the Fock operator
-                build_gtau();
-            }
-            // Update Fock operator for the F intermediate
-            update_fock();
-        } else {
-            if (options_.get_str("AO_BASIS") == "DISK") {
-                // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
-                build_AO_tensors();
-            }
+        build_d_U();
+        // Compute tau exactly if requested
+        if (exact_tau_) {
+            build_tau_U();
         }
+        if (options_.get_str("AO_BASIS") == "DISK") {
+            // Transform new Tau to the SO basis
+            transform_tau_U();
+            // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
+            build_AO_tensors();
+        } else {
+            // Compute GTau contribution for the Fock operator
+            build_gtau();
+        }
+        // Update Fock operator for the F intermediate
+        update_fock();
         // Build G and F intermediates needed for the density cumulant residual equations and DCT energy computation
         build_cumulant_intermediates();
         // Compute the residuals for density cumulant equations
