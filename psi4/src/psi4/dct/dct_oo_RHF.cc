@@ -103,8 +103,6 @@ void DCTSolver::run_simult_dct_oo_RHF() {
             // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
             process_so_ints_RHF();
 
-            // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
-            Fa_->add(g_tau_a_);
             // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
             moFa_->copy(Fa_);
             // Transform the Fock matrix to the MO basis
