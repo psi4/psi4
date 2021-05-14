@@ -99,11 +99,8 @@ void DCTSolver::run_simult_dct_oo() {
             // Copy core hamiltonian into the Fock matrix array: F = H
             Fa_->copy(so_h_);
             Fb_->copy(so_h_);
-            // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
+            // Build the new Fock matrix from the SO integrals
             process_so_ints();
-            // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
-            Fa_->add(g_tau_a_);
-            Fb_->add(g_tau_b_);
             // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
             moFa_->copy(Fa_);
             moFb_->copy(Fb_);

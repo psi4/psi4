@@ -87,8 +87,6 @@ void DCTSolver::init() {
     scf_error_b_ = std::make_shared<Matrix>("Beta SCF Error Vector", nirrep_, nsopi_, nsopi_);
     Fa_ = reference_wavefunction_->Fa()->clone();
     Fb_ = reference_wavefunction_->Fb()->clone();
-    moF0a_ = std::make_shared<Matrix>("Alpha MO F0 Matrix", nirrep_, nmopi_, nmopi_);
-    moF0b_ = std::make_shared<Matrix>("Beta MO F0 Matrix", nirrep_, nmopi_, nmopi_);
     Ftilde_a_ = std::make_shared<Matrix>("Alpha MO Ftilde Matrix", nirrep_, nmopi_, nmopi_);
     Ftilde_b_ = std::make_shared<Matrix>("Beta MO Ftilde Matrix", nirrep_, nmopi_, nmopi_);
     Ca_ = std::make_shared<Matrix>("Alpha MO Coefficients", nirrep_, nsopi_, nsopi_);
@@ -99,8 +97,6 @@ void DCTSolver::init() {
     old_cb_ = std::make_shared<Matrix>("Old Beta MO Coefficients", nirrep_, nsopi_, nsopi_);
     kappa_so_a_ = std::make_shared<Matrix>("Alpha Kappa Matrix", nirrep_, nsopi_, nsopi_);
     kappa_so_b_ = std::make_shared<Matrix>("Beta Kappa Matrix", nirrep_, nsopi_, nsopi_);
-    g_tau_a_ = std::make_shared<Matrix>("Alpha External Potential Matrix", nirrep_, nsopi_, nsopi_);
-    g_tau_b_ = std::make_shared<Matrix>("Beta External Potential Matrix", nirrep_, nsopi_, nsopi_);
     ao_s_ = std::make_shared<Matrix>("SO Basis Overlap Integrals", nirrep_, nsopi_, nsopi_);
     so_h_ = Matrix("SO basis one-electron integrals", nirrep_, nsopi_, nsopi_);
     s_half_inv_ = std::make_shared<Matrix>("SO Basis Inverse Square Root Overlap Matrix", nirrep_, nsopi_, nsopi_);
@@ -226,8 +222,6 @@ void DCTSolver::finalize() {
     old_cb_.reset();
     kappa_so_a_.reset();
     kappa_so_b_.reset();
-    g_tau_a_.reset();
-    g_tau_b_.reset();
     ao_s_.reset();
     s_half_inv_.reset();
 }
