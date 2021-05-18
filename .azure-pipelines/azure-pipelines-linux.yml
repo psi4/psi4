@@ -30,7 +30,7 @@ jobs:
       clang_latest:
         CXX_COMPILER: 'clang++'
         PYTHON_VER: '3.9'
-        C_COMPILER: 'clang-6'
+        C_COMPILER: 'clang'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran clang-6.0'
@@ -119,6 +119,12 @@ jobs:
       source activate p4env
       python -V
       python -c 'import numpy; print(numpy.version.version)'
+      ls -l /usr/lib/libstdc++*
+      ls -l /usr/lib/x86_64-linux-gnu/libstdc++*
+      strings $CONDA_PREFIX/lib/libstdc++.so.6 | grep "^GLIBCXX"
+      unlink $CONDA_PREFIX/lib/libstdc++.so.6
+      ln -s /usr/lib/x86_64-linux-gnu/libstdc++.so.6 $CONDA_PREFIX/lib/libstdc++.so.6
+      strings $CONDA_PREFIX/lib/libstdc++.so.6 | grep "^GLIBCXX"
       export CXX=${CXX_COMPILER}
       export CC=${C_COMPILER}
       export FC=${F_COMPILER}
