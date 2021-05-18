@@ -34,6 +34,7 @@
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/typedefs.h"
+#include "psi4/libmints/numinthelper.h"
 #include "psi4/libdisp/dispersion.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfock/points.h"
@@ -326,4 +327,20 @@ void export_functional(py::module &m) {
              "Forms the uncoupled amplitudes and other matrices for either monomer.")
         .def("R_A", &sapt::FDDS_Dispersion::R_A, "Obtains (R^t)^-1 for monomer A.")
         .def("R_B", &sapt::FDDS_Dispersion::R_B, "Obtains (R^t)^-1 for monomer B.");
+
+     py::class_<NumIntHelper, std::shared_ptr<NumIntHelper>>(m, "NumIntHelper",
+                                                             "Computes numerical integrals using a DFT grid.")
+         .def(py::init<std::shared_ptr<DFTGrid>>())
+         .def("numint_grid", &NumIntHelper::numint_grid)
+         .def("density_integral", &NumIntHelper::density_integral,
+              "Compute an integral \\int \\rho(r) f(r) where f is a vector-valued function. f is represented for each "
+              "block of points of the integration grid as a matrix (n_data, n_points). Return has shape (n_data)",
+              "grid_data"_a, "D"_a)
+         .def("dd_density_integral", &NumIntHelper::dd_density_integral,
+              "Compute an integral \\int \\rho(r) f(r) where f is a vector-valued function. f is represented for each "
+              "block of points of the integration grid as a matrix (n_data, n_points). Return has shape (n_atoms, "
+              "n_data)", "grid_data"_a, "D"_a)
+         .def("potential_integral", &NumIntHelper::potential_integral,
+              "Compute an integral \\int \\chi_\\mu(r) \\chi_\\nu(r) f(r) where f is a scalar function represented for "
+              "each block of points of the integration grid as a vector of n_points.");
 }

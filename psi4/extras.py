@@ -145,6 +145,7 @@ _addons_ = {
     "ipi": which_import("ipi", return_bool=True),
     "pcmsolver": _CMake_to_Py_boolean("@ENABLE_PCMSolver@"),
     "cppe": which_import("cppe", return_bool=True),
+    "ddx": which_import("pyddx", return_bool=True),
     "simint": _CMake_to_Py_boolean("@ENABLE_simint@"),
     "dftd3": psi4_which("dftd3", return_bool=True),
     "cfour": psi4_which("xcfour", return_bool=True),

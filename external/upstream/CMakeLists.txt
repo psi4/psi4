@@ -20,6 +20,7 @@ foreach(dir
   simint
   libxc
   brianqc
+  ddx
   )
   add_subdirectory(${dir})
 endforeach()

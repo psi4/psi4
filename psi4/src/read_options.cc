@@ -302,6 +302,46 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("PCM_CC_TYPE", "PTE", "PTE");
     }
 
+    // TODO Should be merged with real PCM
+    /*- DDX boolean for ddx module -*/
+    options.add_bool("DDX", false);
+    if (name == "DDX" || options.read_globals()) {
+        /*- MODULEDESCRIPTION Performs continuum solvation model computations using
+            the domain-decomposition paradigm. -*/
+
+        /*- The amount of information to print to the output file for the ddx
+        module. 0 is essentially quiet and 1 is recommended. -*/
+        options.add_int("PRINT", 1);
+
+        /*- Switch available solvation models -*/
+        options.add_str("MODEL", "PCM", "PCM COSMO");
+
+        /*- Radius set for cavity spheres. Ignored if RADII is set. -*/
+        options.add_str("RADII_SET", "UFF", "UFF BONDI");
+
+        /*- Scaling factor for cavity spheres. Ignored if RADII is set. The default depends on
+            the radii set chosen. -*/
+        options.add_double("RADII_SCALING", 1.1);
+
+        /*- Custom cavity radii. One per atom, uses the unit of the molecule. -*/
+        options.add("RADII", new ArrayType());
+
+        /*- Solvent to use. Not case sensitive. Ignored if SOLVENT_EPSILON is set. -*/
+        options.add_str("SOLVENT", "");
+
+        /*- Dielectric constant of the solvent to use -*/
+        options.add_double("SOLVENT_EPSILON", 0);
+
+        /*- Maximal degree of modelling spherical harmonics -*/
+        options.add_int("LMAX", 10);
+
+        /*- Number of Lebedev grid points to use -*/
+        options.add_int("N_LEBEDEV", 302);
+
+        /*- Sphere overlap regularisation parameter -*/
+        options.add_double("ETA", 0.1);
+    }
+
     if (name == "PE" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs polarizable embedding model (PE) computations. -*/
 

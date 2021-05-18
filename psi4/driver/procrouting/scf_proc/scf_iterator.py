@@ -28,15 +28,14 @@
 """
 The SCF iteration functions
 """
-
 import numpy as np
 
-from psi4.driver import p4util
-from psi4.driver import constants
-from psi4.driver.p4util.exceptions import SCFConvergenceError, ValidationError
-from psi4 import core
+from ..solvent.efp import (get_qm_atoms_opts, modify_Fock_induced,
+                           modify_Fock_permanent)
 
-from ..solvent.efp import get_qm_atoms_opts, modify_Fock_permanent, modify_Fock_induced
+from psi4 import core
+from psi4.driver import constants, p4util
+from psi4.driver.p4util.exceptions import SCFConvergenceError, ValidationError
 
 #import logging
 #logger = logging.getLogger("scf.scf_iterator")
@@ -312,6 +311,16 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.push_back_external_potential(Vpcm)
         self.set_variable("PCM POLARIZATION ENERGY", upcm)  # P::e PCM
         self.set_energies("PCM Polarization", upcm)
+
+        uddx = 0.0
+        if core.get_option('SCF', 'DDX'):
+            Dt = self.Da().clone()
+            Dt.add(self.Db())
+            uddx, Vddx = self.ddx_state.get_solvation_contributions(Dt)
+            SCFE += uddx
+            self.push_back_external_potential(Vddx)
+        self.set_variable("DDX ENERGY", uddx)  # P::e DDX
+        self.set_energies("DDX Energy", uddx)
 
         upe = 0.0
         if core.get_option('SCF', 'PE'):
@@ -703,13 +712,15 @@ def scf_print_energies(self):
     evv10 = self.get_energies('VV10')
     eefp = self.get_energies('EFP')
     epcm = self.get_energies('PCM Polarization')
+    eddx = self.get_energies('DDX Energy')
     epe = self.get_energies('PE Energy')
     ke = self.get_energies('Kinetic')
 
     hf_energy = enuc + e1 + e2
     dft_energy = hf_energy + exc + ed + evv10
-    total_energy = dft_energy + eefp + epcm + epe
-    full_qm = not core.get_option('SCF', 'PCM') and not core.get_option('SCF', 'PE') and not hasattr(self.molecule(), 'EFP')
+    total_energy = dft_energy + eefp + epcm + eddx + epe
+    full_qm = (not core.get_option('SCF', 'PCM') and not core.get_option('SCF', 'DDX') and not core.get_option('SCF', 'PE')
+               and not hasattr(self.molecule(), 'EFP'))
 
     core.print_out("   => Energetics <=\n\n")
     core.print_out("    Nuclear Repulsion Energy =        {:24.16f}\n".format(enuc))
@@ -721,12 +732,14 @@ def scf_print_energies(self):
         core.print_out("    VV10 Nonlocal Energy =            {:24.16f}\n".format(evv10))
     if core.get_option('SCF', 'PCM'):
         core.print_out("    PCM Polarization Energy =         {:24.16f}\n".format(epcm))
+    if core.get_option('SCF', 'DDX'):
+        core.print_out("    DDX Solvation Energy =            {:24.16f}\n".format(eddx))
     if core.get_option('SCF', 'PE'):
         core.print_out("    PE Energy =                       {:24.16f}\n".format(epe))
     if hasattr(self.molecule(), 'EFP'):
         core.print_out("    EFP Energy =                      {:24.16f}\n".format(eefp))
     core.print_out("    Total Energy =                    {:24.16f}\n".format(total_energy))
-    
+
     if core.get_option('SCF', 'PE'):
         core.print_out(self.pe_state.cppe_state.summary_string)
 

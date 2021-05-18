@@ -1136,8 +1136,6 @@ void SAP::compute_V(std::vector<SharedMatrix> ret) {
     auto V_AO = std::make_shared<Matrix>("V AO Temp", nbf_, nbf_);
     double** Vp = V_AO->pointer();
 
-    // SAP potential
-    std::vector<std::vector<double>> sap_potential(num_threads_);
     // Nuclear coordinates
     std::vector<double> nucx, nucy, nucz, nucZ;
     nucx.resize(primary_->molecule()->natom());
@@ -1171,7 +1169,7 @@ void SAP::compute_V(std::vector<SharedMatrix> ret) {
 
         // Compute the SAP potential
         parallel_timer_on("Functional", rank);
-        sap_potential[rank].resize(block->npoints());
+        SharedVector sap_potential = std::make_shared<Vector>("sappot", block->npoints());
         for (int ip = 0; ip < block->npoints(); ip++) {
             // Coordinates of the point
             double xi = block->x()[ip];
@@ -1192,7 +1190,7 @@ void SAP::compute_V(std::vector<SharedMatrix> ret) {
             }
 
             // Store
-            sap_potential[rank][ip] = V;
+            (*sap_potential)[ip] = V;
         }
 
         parallel_timer_off("Functional", rank);
@@ -1205,7 +1203,7 @@ void SAP::compute_V(std::vector<SharedMatrix> ret) {
         parallel_timer_on("V_xc", rank);
 
         // => LSDA contribution (symmetrized) <= //
-        dft_integrators::sap_integrator(block, sap_potential[rank], pworker, V_local[rank]);
+        dft_integrators::sap_integrator(block, sap_potential, pworker, V_local[rank]);
 
         // => Unpacking <= //
         double** V2p = V_local[rank]->pointer();

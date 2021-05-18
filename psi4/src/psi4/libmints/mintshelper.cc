@@ -44,6 +44,7 @@
 #include "psi4/libmints/potential.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libmints/3coverlap.h"
+#include "psi4/libmints/potentialint.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/psi4-dec.h"
@@ -1748,6 +1749,35 @@ std::vector<SharedMatrix> MintsHelper::ao_nabla() {
     ints->compute(nabla);
 
     return nabla;
+}
+
+SharedVector MintsHelper::electrostatic_potential_value(SharedVector charges, SharedMatrix coords, SharedMatrix D) {
+    if (coords->ncol() != 3) throw PSIEXCEPTION("Origin argument must have length 3.");
+    if (coords->nrow() != charges->dim()) {
+        throw PSIEXCEPTION("Dimension mismatch charges and coordinates.");
+    }
+
+    auto potential_integrals_ = static_cast<PCMPotentialInt *>(integral_->pcm_potentialint());
+    // std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
+    // for (size_t i = 0; i < coords->nrow(); ++i) {
+    //     Zxyz.push_back({charges->pointer()[i], {coords->pointer()[i][0],
+    //                                             coords->pointer()[i][1],
+    //                                             coords->pointer()[i][2]}});
+    // }
+    // potential_integrals_->set_charge_field(Zxyz);
+    SharedMatrix Zxyz =  std::make_shared<Matrix>("Zxyz", coords->nrow(), 4);
+    for (size_t i = 0; i < coords->nrow(); ++i) {
+        Zxyz->pointer()[i][0] = charges->pointer()[i];
+        Zxyz->pointer()[i][1] = coords->pointer()[i][0];
+        Zxyz->pointer()[i][2] = coords->pointer()[i][1];
+        Zxyz->pointer()[i][3] = coords->pointer()[i][2];
+    }
+    potential_integrals_->set_charge_field(Zxyz);
+
+    SharedVector potvalues = std::make_shared<Vector>("potential values", coords->nrow());
+    ContractOverDensityFunctor contract_density_functor(potvalues->dim(), potvalues->pointer(), D);
+    potential_integrals_->compute(contract_density_functor);
+    return potvalues;
 }
 
 std::shared_ptr<CdSalcList> MintsHelper::cdsalcs(int needed_irreps, bool project_out_translations,

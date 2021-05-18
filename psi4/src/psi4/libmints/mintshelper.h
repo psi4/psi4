@@ -340,6 +340,9 @@ class PSI_API MintsHelper {
     /// Vector SO Traceless Quadrupole Integrals
     std::vector<SharedMatrix> so_traceless_quadrupole();
 
+    /// Electrostatic potential values at given sites with associated charge, specified as an (n_sites, 4) matrix
+    SharedVector electrostatic_potential_value(SharedVector charges, SharedMatrix coords, SharedMatrix D);
+
     /// Returns a CdSalcList object
     std::shared_ptr<CdSalcList> cdsalcs(int needed_irreps = 0xF, bool project_out_translations = true,
                                         bool project_out_rotations = true);

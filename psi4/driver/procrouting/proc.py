@@ -1843,6 +1843,16 @@ def scf_helper(name, post_scf=True, **kwargs):
         pcm_print_level = core.get_option('SCF', "PRINT")
         scf_wfn.set_PCM(core.PCM(pcmsolver_parsed_fname, pcm_print_level, scf_wfn.basisset()))
 
+    # DDPCM preparation
+    if core.get_option('SCF', 'DDX'):
+        if not solvent._have_ddx:
+            raise ModuleNotFoundError('Python module ddx not found. Solve by installing it: `pip install pyddx`')
+        ddx_options = solvent.ddx.get_ddx_options(scf_molecule)
+        scf_wfn.ddx_state = solvent.ddx.DdxInterface(
+            molecule=scf_molecule, options=ddx_options,
+            basisset=scf_wfn.basisset()
+        )
+
     # PE preparation
     if core.get_option('SCF', 'PE'):
         if not solvent._have_pe:
