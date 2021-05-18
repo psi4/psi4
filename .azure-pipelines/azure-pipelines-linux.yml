@@ -30,10 +30,10 @@ jobs:
       clang_latest:
         CXX_COMPILER: 'clang++'
         PYTHON_VER: '3.9'
-        C_COMPILER: 'clang-9'
+        C_COMPILER: 'clang-6'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran clang-9'
+        APT_INSTALL: 'gfortran clang-6'
 
   steps:
   - bash: |
