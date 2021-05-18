@@ -119,12 +119,12 @@ jobs:
 
   - bash: |
       source activate p4env
-      if [[ "${C_COMPILER}" == "clang" ]]
-      then
-        unlink ${CONDA_PREFIX}/lib/libstdc++.so.6
-        ln -s /usr/lib/x86_64-linux-gnu/libstdc++.so.6 ${CONDA_PREFIX}/lib/libstdc++.so.6
-        strings ${CONDA_PREFIX}/lib/libstdc++.so.6 | grep "^GLIBCXX" | tail -2 | head -1
-      fi
+      #if [[ "${C_COMPILER}" == "clang" ]]
+      #then
+      #  unlink ${CONDA_PREFIX}/lib/libstdc++.so.6
+      #  ln -s /usr/lib/x86_64-linux-gnu/libstdc++.so.6 ${CONDA_PREFIX}/lib/libstdc++.so.6
+      #  strings ${CONDA_PREFIX}/lib/libstdc++.so.6 | grep "^GLIBCXX" | tail -2 | head -1
+      #fi
       python -V
       python -c 'import numpy; print(numpy.version.version)'
       export CXX=${CXX_COMPILER}
@@ -173,7 +173,13 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      ./stage/bin/psi4 ../tests/dfep2-2/input.dat
+      LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/:$LD_LIBRARY_PATH ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
+    displayName: 'Spot Test'
+
+  - bash: |
+      cd build
+      source activate p4env
+      LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/:$LD_LIBRARY_PATH ./stage/bin/psi4 ../tests/dfep2-2/input.dat
     displayName: 'Spot Test'
 
   - bash: |
