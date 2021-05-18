@@ -33,7 +33,7 @@ jobs:
         C_COMPILER: 'clang-6'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran clang-6'
+        APT_INSTALL: 'gfortran clang-6.0'
 
   steps:
   - bash: |
