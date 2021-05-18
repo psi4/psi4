@@ -109,6 +109,7 @@ jobs:
         msgpack-python \
         conda-forge::qcelemental \
         conda-forge::qcengine \
+        conda-forge::pymdi \
         adcc::adcc
       source activate p4env
       which python
@@ -122,7 +123,7 @@ jobs:
       then
         unlink ${CONDA_PREFIX}/lib/libstdc++.so.6
         ln -s /usr/lib/x86_64-linux-gnu/libstdc++.so.6 ${CONDA_PREFIX}/lib/libstdc++.so.6
-        strings ${CONDA_PREFIX}/lib/libstdc++.so.6 | grep "^GLIBCXX"
+        strings ${CONDA_PREFIX}/lib/libstdc++.so.6 | grep "^GLIBCXX" | tail -2 | head -1
       fi
       python -V
       python -c 'import numpy; print(numpy.version.version)'
@@ -172,7 +173,7 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
+      ./stage/bin/psi4 ../tests/dfep2-2/input.dat
     displayName: 'Spot Test'
 
   - bash: |
