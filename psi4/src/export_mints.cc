@@ -1454,12 +1454,12 @@ void export_mints(py::module& m) {
         .def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "AO F12 double commutator integrals",
              "corr"_a)
         .def("ao_3coverlap", normal_eri(&MintsHelper::ao_3coverlap), "3 Center overlap integrals")
-        .def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "3 Center overalp integrals", "bs1"_a, "bs2"_a,
+        .def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "3 Center overlap integrals", "bs1"_a, "bs2"_a,
              "bs3"_a)
 
         // Two-electron MO and transformers
-        .def("mo_eri", eri(&MintsHelper::mo_eri), "MO ERI Integrals. Pass appropriate MO coefficients", "C1"_a, "C2"_a,
-             "C3"_a, "C4"_a)
+        .def("mo_eri", eri(&MintsHelper::mo_eri), "MO ERI Integrals involving only totally symmetric orbitals. Pass appropriate MO coefficients",
+             "C1"_a, "C2"_a, "C3"_a, "C4"_a)
         .def("mo_erf_eri", erf(&MintsHelper::mo_erf_eri), "MO ERFC Omega Integrals", "omega"_a, "C1"_a, "C2"_a, "C3"_a,
              "C4"_a)
         .def("mo_f12", &MintsHelper::mo_f12, "MO F12 Integrals", "corr"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
