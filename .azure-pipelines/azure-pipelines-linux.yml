@@ -80,6 +80,7 @@ jobs:
       conda create -q \
         -n p4env \
         python=$PYTHON_VER \
+        numpy \
         psi4/label/dev::gau2grid \
         psi4/label/dev::libint2 \
         psi4/label/dev::libxc=5 \
@@ -117,14 +118,15 @@ jobs:
 
   - bash: |
       source activate p4env
+      echo ${CONDA_PREFIX}
+      ls -l /usr/share/miniconda/envs/p4env/lib/libstdc++*
+      ls -l /usr/lib/x86_64-linux-gnu/libstdc++*
+      strings ${CONDA_PREFIX}/lib/libstdc++.so.6 | grep "^GLIBCXX"
+      unlink ${CONDA_PREFIX}/lib/libstdc++.so.6
+      ln -s /usr/lib/x86_64-linux-gnu/libstdc++.so.6 ${CONDA_PREFIX}/lib/libstdc++.so.6
+      strings ${CONDA_PREFIX}/lib/libstdc++.so.6 | grep "^GLIBCXX"
       python -V
       python -c 'import numpy; print(numpy.version.version)'
-      ls -l /usr/lib/libstdc++*
-      ls -l /usr/lib/x86_64-linux-gnu/libstdc++*
-      strings $CONDA_PREFIX/lib/libstdc++.so.6 | grep "^GLIBCXX"
-      unlink $CONDA_PREFIX/lib/libstdc++.so.6
-      ln -s /usr/lib/x86_64-linux-gnu/libstdc++.so.6 $CONDA_PREFIX/lib/libstdc++.so.6
-      strings $CONDA_PREFIX/lib/libstdc++.so.6 | grep "^GLIBCXX"
       export CXX=${CXX_COMPILER}
       export CC=${C_COMPILER}
       export FC=${F_COMPILER}
