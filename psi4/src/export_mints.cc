@@ -1458,7 +1458,7 @@ void export_mints(py::module& m) {
              "bs3"_a)
 
         // Two-electron MO and transformers
-        .def("mo_eri", eri(&MintsHelper::mo_eri), "MO ERI Integrals involving only totally symmetric orbitals. Pass appropriate MO coefficients",
+        .def("mo_eri", eri(&MintsHelper::mo_eri), "MO ERI Integrals. Pass appropriate MO coefficients in the AO basis.",
              "C1"_a, "C2"_a, "C3"_a, "C4"_a)
         .def("mo_erf_eri", erf(&MintsHelper::mo_erf_eri), "MO ERFC Omega Integrals", "omega"_a, "C1"_a, "C2"_a, "C3"_a,
              "C4"_a)
