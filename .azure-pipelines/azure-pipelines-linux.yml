@@ -63,6 +63,7 @@ jobs:
 
       echo "CXX Ver:"
       ${CXX_COMPILER} --version
+      ${CXX_COMPILER} -v
 
       echo "F Ver:"
       ${F_COMPILER} --version
@@ -81,6 +82,7 @@ jobs:
         -n p4env \
         python=$PYTHON_VER \
         numpy \
+        conda-forge::gxx_linux-64 \
         psi4/label/dev::gau2grid \
         psi4/label/dev::libint2 \
         psi4/label/dev::libxc=5 \
@@ -136,6 +138,7 @@ jobs:
       # * can't enable trivial plugins b/c no psi4 for them to detect at start (e.g., snsmp2)
       cmake -Bbuild -H. \
         -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
+        -DCMAKE_CXX_FLAGS="--gcc-toolchain=${CONDA_PREFIX}/x86_64-conda_cos6-linux-gnu/" \
         -DCMAKE_C_COMPILER=${C_COMPILER} \
         -DCMAKE_Fortran_COMPILER=${F_COMPILER} \
         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
