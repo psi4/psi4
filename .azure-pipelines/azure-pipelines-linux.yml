@@ -73,6 +73,19 @@ jobs:
     displayName: "Setup Information"
 
   - bash: |
+      if [[ "${C_COMPILER}" == "clang" ]]
+      then
+        export MYTOOLCHAIN=$(Agent.WorkFolder)/Toolchain
+        echo ${MYTOOLCHAIN}
+        cd ${MYTOOLCHAIN}
+        ln -s /usr/include include
+        ln -s /usr/bin bin
+        mkdir -p lib/gcc/x86_64-linux-gnu/
+        cd lib/gcc/x86_64-linux-gnu/
+        ln -s /usr/lib/gcc/x86_64-linux-gnu/9 9
+      fi
+
+  - bash: |
         echo "##vso[task.prependpath]$CONDA/bin"
         conda config --set always_yes yes
     displayName: "Add Conda to PATH"
@@ -138,8 +151,8 @@ jobs:
       # * can't enable trivial plugins b/c no psi4 for them to detect at start (e.g., snsmp2)
       cmake -Bbuild -H. \
         -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
-        -DCMAKE_CXX_FLAGS="--gcc-toolchain=${CONDA_PREFIX}/x86_64-conda_cos6-linux-gnu/" \
-        -DCMAKE_C_FLAGS="--gcc-toolchain=${CONDA_PREFIX}/x86_64-conda_cos6-linux-gnu/" \
+        -DCMAKE_CXX_FLAGS="--gcc-toolchain=$MYTOOLCHAIN" \
+        -DCMAKE_C_FLAGS="--gcc-toolchain=$MYTOOLCHAIN" \
         -DCMAKE_C_COMPILER=${C_COMPILER} \
         -DCMAKE_Fortran_COMPILER=${F_COMPILER} \
         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
