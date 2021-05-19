@@ -83,6 +83,7 @@ jobs:
         mkdir -p lib/gcc/x86_64-linux-gnu/
         cd lib/gcc/x86_64-linux-gnu/
         ln -s /usr/lib/gcc/x86_64-linux-gnu/9 9
+        clang -v --gcc-toolchain=$MYTOOLCHAIN
       fi
 
   - bash: |
@@ -190,13 +191,13 @@ jobs:
   - bash: |
       cd build
       source activate p4env
-      LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/:$LD_LIBRARY_PATH ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
+      ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
     displayName: 'Spot Test'
 
   - bash: |
       cd build
       source activate p4env
-      LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/:$LD_LIBRARY_PATH ./stage/bin/psi4 ../tests/dfep2-2/input.dat
+      ./stage/bin/psi4 ../tests/dfep2-2/input.dat
     displayName: 'Spot Test'
 
   - bash: |
