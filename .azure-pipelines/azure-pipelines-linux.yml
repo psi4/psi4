@@ -77,6 +77,7 @@ jobs:
       then
         export MYTOOLCHAIN=$(Agent.WorkFolder)/Toolchain
         echo ${MYTOOLCHAIN}
+        mkdir ${MYTOOLCHAIN}
         cd ${MYTOOLCHAIN}
         ln -s /usr/include include
         ln -s /usr/bin bin
