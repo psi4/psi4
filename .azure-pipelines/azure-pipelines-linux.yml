@@ -85,6 +85,9 @@ jobs:
         cd lib/gcc/x86_64-linux-gnu/
         ln -s /usr/lib/gcc/x86_64-linux-gnu/9 9
         clang -v --gcc-toolchain=$MYTOOLCHAIN
+        ls -l ${MYTOOLCHAIN}/lib/gcc/x86_64-linux-gnu/lib/
+        export LD_LIBRARY_PATH=${MYTOOLCHAIN}/lib/gcc/x86_64-linux-gnu/lib:${LD_LIBRARY_PATH}
+        echo ${LD_LIBRARY_PATH}
       fi
 
   - bash: |
