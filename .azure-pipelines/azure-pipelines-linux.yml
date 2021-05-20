@@ -72,25 +72,25 @@ jobs:
       ${C_COMPILER} --version
     displayName: "Setup Information"
 
-  - bash: |
-      if [[ "${C_COMPILER}" == "clang" ]]
-      then
-        export MYTOOLCHAIN=$(Agent.WorkFolder)/Toolchain
-        echo ${MYTOOLCHAIN}
-        mkdir ${MYTOOLCHAIN}
-        cd ${MYTOOLCHAIN}
-        ln -s /usr/include include
-        ln -s /usr/bin bin
-        mkdir -p lib/gcc/x86_64-linux-gnu/
-        cd lib/gcc/x86_64-linux-gnu/
-        ln -s /usr/lib/gcc/x86_64-linux-gnu/9 9
-        ls -l /usr/lib/gcc/x86_64-linux-gnu/9
-        clang -v --gcc-toolchain=$MYTOOLCHAIN
-        ls -lRL ${MYTOOLCHAIN}/lib/gcc/x86_64-linux-gnu/
-        #export LD_LIBRARY_PATH=${MYTOOLCHAIN}/lib/gcc/x86_64-linux-gnu/lib:${LD_LIBRARY_PATH}
-        export LD_LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/9:${LD_LIBRARY_PATH}
-        echo ${LD_LIBRARY_PATH}
-      fi
+  #- bash: |
+  #    if [[ "${C_COMPILER}" == "clang" ]]
+  #    then
+  #      export MYTOOLCHAIN=$(Agent.WorkFolder)/Toolchain
+  #      echo ${MYTOOLCHAIN}
+  #      mkdir ${MYTOOLCHAIN}
+  #      cd ${MYTOOLCHAIN}
+  #      ln -s /usr/include include
+  #      ln -s /usr/bin bin
+  #      mkdir -p lib/gcc/x86_64-linux-gnu/
+  #      cd lib/gcc/x86_64-linux-gnu/
+  #      ln -s /usr/lib/gcc/x86_64-linux-gnu/9 9
+  #      ls -l /usr/lib/gcc/x86_64-linux-gnu/9
+  #      clang -v --gcc-toolchain=$MYTOOLCHAIN
+  #      ls -lRL ${MYTOOLCHAIN}/lib/gcc/x86_64-linux-gnu/
+  #      #export LD_LIBRARY_PATH=${MYTOOLCHAIN}/lib/gcc/x86_64-linux-gnu/lib:${LD_LIBRARY_PATH}
+  #      export LD_LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/9:${LD_LIBRARY_PATH}
+  #      echo ${LD_LIBRARY_PATH}
+  #    fi
 
   - bash: |
         echo "##vso[task.prependpath]$CONDA/bin"
@@ -102,7 +102,6 @@ jobs:
         -n p4env \
         python=$PYTHON_VER \
         numpy \
-        conda-forge::gxx_linux-64 \
         psi4/label/dev::gau2grid \
         psi4/label/dev::libint2 \
         psi4/label/dev::libxc=5 \
@@ -192,18 +191,19 @@ jobs:
       ../devtools/scripts/ci_build.sh
       readelf -d ./stage/lib/psi4/core*.so
       ldd -v ./stage/lib/psi4/core*.so
+      LD_LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/9 ldd -v ./stage/lib/psi4/core*.so
     displayName: 'Build Psi4'
 
   - bash: |
       cd build
       source activate p4env
-      ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
+      LD_LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/9 ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
     displayName: 'Spot Test'
 
   - bash: |
       cd build
       source activate p4env
-      ./stage/bin/psi4 ../tests/dfep2-2/input.dat
+      LD_LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/9 ./stage/bin/psi4 ../tests/dfep2-2/input.dat
     displayName: 'Spot Test'
 
   - bash: |
