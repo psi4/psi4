@@ -2,8 +2,6 @@ jobs:
 # Configure, build, install, and test job
 - job: 'linux_build'
   displayName: 'Linux Builds'
-  pool:
-    vmImage: 'ubuntu-16.04'
   timeoutInMinutes: 120
   variables:
     CTEST_OUTPUT_ON_FAILURE: 1
@@ -18,6 +16,7 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran gcc-6 g++-6'
+        vmImage: 'ubuntu-18.04'
 
       gcc_latest:
         CXX_COMPILER: 'g++'
@@ -26,6 +25,7 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran'
+        vmImage: 'ubuntu-18.04'
 
       clang_latest:
         CXX_COMPILER: 'clang++'
@@ -34,7 +34,11 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran clang-6.0'
+        vmImage: 'ubuntu-16.04'
 
+  pool:
+    vmImage: $(vmImage)
+  
   steps:
   - bash: |
       [[ "${APT_REPOSITORY}" ]] && echo "Add Repo ${APT_REPOSITORY}" && sudo add-apt-repository "${APT_REPOSITORY}"
@@ -72,26 +76,6 @@ jobs:
       ${C_COMPILER} --version
     displayName: "Setup Information"
 
-  #- bash: |
-  #    if [[ "${C_COMPILER}" == "clang" ]]
-  #    then
-  #      export MYTOOLCHAIN=$(Agent.WorkFolder)/Toolchain
-  #      echo ${MYTOOLCHAIN}
-  #      mkdir ${MYTOOLCHAIN}
-  #      cd ${MYTOOLCHAIN}
-  #      ln -s /usr/include include
-  #      ln -s /usr/bin bin
-  #      mkdir -p lib/gcc/x86_64-linux-gnu/
-  #      cd lib/gcc/x86_64-linux-gnu/
-  #      ln -s /usr/lib/gcc/x86_64-linux-gnu/9 9
-  #      ls -l /usr/lib/gcc/x86_64-linux-gnu/9
-  #      clang -v --gcc-toolchain=$MYTOOLCHAIN
-  #      ls -lRL ${MYTOOLCHAIN}/lib/gcc/x86_64-linux-gnu/
-  #      #export LD_LIBRARY_PATH=${MYTOOLCHAIN}/lib/gcc/x86_64-linux-gnu/lib:${LD_LIBRARY_PATH}
-  #      export LD_LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/9:${LD_LIBRARY_PATH}
-  #      echo ${LD_LIBRARY_PATH}
-  #    fi
-
   - bash: |
         echo "##vso[task.prependpath]$CONDA/bin"
         conda config --set always_yes yes
@@ -101,7 +85,6 @@ jobs:
       conda create -q \
         -n p4env \
         python=$PYTHON_VER \
-        numpy \
         psi4/label/dev::gau2grid \
         psi4/label/dev::libint2 \
         psi4/label/dev::libxc=5 \
@@ -140,13 +123,6 @@ jobs:
 
   - bash: |
       source activate p4env
-      #if [[ "${C_COMPILER}" == "clang" ]]
-      #then
-      #  unlink ${CONDA_PREFIX}/lib/libstdc++.so.6
-      #  ln -s /usr/lib/x86_64-linux-gnu/libstdc++.so.6 ${CONDA_PREFIX}/lib/libstdc++.so.6
-      strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep "^GLIBCXX" | tail -2 | head -1
-      strings ${CONDA_PREFIX}/lib/libstdc++.so.6 | grep "^GLIBCXX" | tail -2 | head -1
-      #fi
       python -V
       python -c 'import numpy; print(numpy.version.version)'
       export CXX=${CXX_COMPILER}
@@ -156,8 +132,6 @@ jobs:
       #   b/c their c++ symbols don't mix with the different Travis compilers. for other
       #   reasons, pkgs are being compiled less statically, sad for CI.
       # * can't enable trivial plugins b/c no psi4 for them to detect at start (e.g., snsmp2)
-      #        -DCMAKE_CXX_FLAGS="--gcc-toolchain=$MYTOOLCHAIN" \
-      #  -DCMAKE_C_FLAGS="--gcc-toolchain=$MYTOOLCHAIN" \
       cmake -Bbuild -H. \
         -DCMAKE_CXX_COMPILER=${CXX_COMPILER} \
         -DCMAKE_C_COMPILER=${C_COMPILER} \
@@ -192,21 +166,12 @@ jobs:
       ../devtools/scripts/ci_build.sh
       readelf -d ./stage/lib/psi4/core*.so
       ldd -v ./stage/lib/psi4/core*.so
-      LD_LIBRARY_PATH=/usr/lib/gcc/x86_64-linux-gnu/9 ldd -v ./stage/lib/psi4/core*.so
     displayName: 'Build Psi4'
 
   - bash: |
       cd build
       source activate p4env
-      #LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 
       ./stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
-    displayName: 'Spot Test'
-
-  - bash: |
-      cd build
-      source activate p4env
-      #LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6 
-      ./stage/bin/psi4 ../tests/dfep2-2/input.dat
     displayName: 'Spot Test'
 
   - bash: |
