@@ -66,6 +66,7 @@ class Local_cc {
         int nvir;
         double cutoff;
         double unpert_cutoff;
+        double weak_pair_cutoff;
         double weak_pair_energy;
 
     private:
@@ -76,8 +77,6 @@ class Local_cc {
         void mp2_pair_energy();
         
         int npairs;
-        double pno_cut;
-        int *weak_pairs;
 
 };
 

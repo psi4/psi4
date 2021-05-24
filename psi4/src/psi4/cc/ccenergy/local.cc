@@ -68,7 +68,10 @@ void Local_cc::local_init() {
 
 void Local_cc::init_pno() {
     outfile->Printf("\n\tLocal correlation using Pair Natural Orbitals\n\tCutoff value: %e \n", cutoff);
-    // TODO weak pairs here
+    // Obtain and store weak pairs
+    if (weakp == "NEGLECT") {
+        mp2_pair_energy();
+    }
     npairs = nocc*nocc;
 
     dpdbuf4 T2;
@@ -156,7 +159,10 @@ void Local_cc::init_pnopp(const double omega, bool combined) {
     if (combined == false) {
         outfile->Printf("\n\tLocal correlation using Perturbed Pair Natural Orbitals\n\tCutoff value: %e\n", cutoff);
     }
-    // TODO weak pairs here
+    // Obtain and store weak pairs
+    if (weakp == "NEGLECT") {
+        mp2_pair_energy();
+    }
     npairs = nocc*nocc;
 
     std::vector<SharedMatrix> Xij;
@@ -743,7 +749,6 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
     //survivor_list.resize(npairs);
     int *survivors_list = new int[npairs];
     double *occ_eps = new double[nocc];
-    /*   local.weak_pairs = init_int_array(nocc*nocc); */
     psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) occ_eps, nocc * sizeof(double));
     psio_read_entry(PSIF_CC_INFO, "PNO dimensions", (char *) survivors_list, npairs * sizeof(int));
     //survivor_list.insert(survivor_list.begin(), std::begin(survivors), std::end(survivors));
@@ -886,7 +891,11 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
     for (auto qel : eps_occ) {
         outfile->Printf("%20.10f\t", qel);;
     }*/
-
+    int *weak_pairs = new int[npairs];
+    if (weakp == "NEGLECT") {
+        psio_read_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *) weak_pairs, npairs * sizeof(int));
+    }
+        
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ++ij) {
         int npno = survivors_list[ij];
@@ -946,62 +955,69 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
     global_dpd_->buf4_mat_irrep_rd(T2, 0);
 
     for (int ij = 0; ij < npairs; ++ij) {
-        int npno = survivors_list[ij];
-        auto T2temp = std::make_shared<Matrix>(nvir, nvir);
-        auto atemp = std::make_shared<Matrix>(nvir, npno);
-        auto btemp = std::make_shared<Matrix>(npno, npno);
-        auto T2bar = std::make_shared<Matrix>(npno, npno);
+        if(!weak_pairs[ij]) {
+            int npno = survivors_list[ij];
+            auto T2temp = std::make_shared<Matrix>(nvir, nvir);
+            auto atemp = std::make_shared<Matrix>(nvir, npno);
+            auto btemp = std::make_shared<Matrix>(npno, npno);
+            auto T2bar = std::make_shared<Matrix>(npno, npno);
 
-        // If Q is nullptr, set T to 0
-        // and skip the iteration
-        if (npno == 0) { 
+            // If Q is nullptr, set T to 0
+            // and skip the iteration
+            if (npno == 0) { 
+                for(int ab=0; ab < nvir*nvir; ++ab) {
+                    int a = ab / nvir;
+                    int b = ab % nvir;
+                    T2->matrix[0][ij][ab] = 0.0;
+                }
+                continue; 
+            }
+
             for(int ab=0; ab < nvir*nvir; ++ab) {
                 int a = ab / nvir;
                 int b = ab % nvir;
+                T2temp->set(a, b, T2->matrix[0][ij][ab]);
+            }
+
+            //outfile->Printf("T2 residual before change of basis\n");
+            //T2temp->print();
+            /* Transform the virtuals to the redundant projected virtual basis */
+            atemp->gemm(0, 0, 1, T2temp, Q[ij], 0);
+            T2bar->gemm(1, 0, 1, Q[ij], atemp, 0);
+
+            /* Transform the virtuals to the non-redundant virtual basis */
+            btemp->gemm(0, 0, 1, T2bar, L[ij], 0);
+            T2bar->gemm(1, 0, 1, L[ij], btemp, 0);
+
+            /* Divide the new amplitudes by the denominators */
+            int i = ij / nocc;
+            int j = ij % nocc;
+            for (int a = 0; a < npno; a++) {
+                for (int b = 0; b < npno; b++) {
+                    double val = T2bar->get(a,b);
+                    T2bar->set(a, b, val * 1.0 /
+                        (occ_eps[i] + occ_eps[j] - eps_pno[ij]->get(a) - eps_pno[ij]->get(b)));
+                }
+            }
+            /* Transform the new T2's to the redundant virtual basis */
+            btemp->gemm(0, 0, 1, L[ij], T2bar, 0);
+            T2bar->gemm(0, 1, 1, btemp, L[ij], 0);
+
+            /* Transform the new T2's to the MO basis */
+            atemp->gemm(0, 0, 1, Q[ij], T2bar, 0);
+            T2temp->gemm(0, 1, 1, atemp, Q[ij], 0);
+
+            for(int ab=0; ab < nvir*nvir; ++ab) {
+                int a = ab / nvir;
+                int b = ab % nvir;
+                T2->matrix[0][ij][ab] = T2temp->get(a,b);
+            }
+        }
+        else {
+            // Setting weak pair T2s to 0
+            for(int ab=0; ab < nvir*nvir; ++ab) {
                 T2->matrix[0][ij][ab] = 0.0;
             }
-            continue; 
-        }
-
-        for(int ab=0; ab < nvir*nvir; ++ab) {
-            int a = ab / nvir;
-            int b = ab % nvir;
-            T2temp->set(a, b, T2->matrix[0][ij][ab]);
-        }
-
-        //outfile->Printf("T2 residual before change of basis\n");
-        //T2temp->print();
-        /* Transform the virtuals to the redundant projected virtual basis */
-        atemp->gemm(0, 0, 1, T2temp, Q[ij], 0);
-        T2bar->gemm(1, 0, 1, Q[ij], atemp, 0);
-
-        /* Transform the virtuals to the non-redundant virtual basis */
-        btemp->gemm(0, 0, 1, T2bar, L[ij], 0);
-        T2bar->gemm(1, 0, 1, L[ij], btemp, 0);
-
-        /* Divide the new amplitudes by the denominators */
-        int i = ij / nocc;
-        int j = ij % nocc;
-        for (int a = 0; a < npno; a++) {
-            for (int b = 0; b < npno; b++) {
-                double val = T2bar->get(a,b);
-                T2bar->set(a, b, val * 1.0 /
-                    (occ_eps[i] + occ_eps[j] - eps_pno[ij]->get(a) - eps_pno[ij]->get(b)));
-            }
-        }
-        /* Transform the new T2's to the redundant virtual basis */
-        btemp->gemm(0, 0, 1, L[ij], T2bar, 0);
-        T2bar->gemm(0, 1, 1, btemp, L[ij], 0);
-
-        /* Transform the new T2's to the MO basis */
-        atemp->gemm(0, 0, 1, Q[ij], T2bar, 0);
-        T2temp->gemm(0, 1, 1, atemp, Q[ij], 0);
-
-        for(int ab=0; ab < nvir*nvir; ++ab) {
-            int a = ab / nvir;
-            int b = ab % nvir;
-            T2->matrix[0][ij][ab] = T2temp->get(a,b);
-
         }
     }
 
@@ -1027,7 +1043,42 @@ void Local_cc::init_filter_T2() {
     global_dpd_->buf4_close(&T2);
 }
 void Local_cc::mp2_pair_energy() {
-    
+    outfile->Printf("Weak pairs neglected. Finding weak pairs.\n");
+    dpdbuf4 T2;
+    dpdbuf4 D; 
+    npairs = nocc * nocc;
+    int *weak_pairs = new int[npairs];
+
+    // Compute pair energies as \sum_ab T_ijab <ij|ab>   
+    global_dpd_->buf4_init(&D, PSIF_CC_DINTS, 0, 0, 5, 0, 5, 0, "D 2<ij|ab> - <ij|ba>");
+    global_dpd_->buf4_mat_irrep_init(&D, 0);
+    global_dpd_->buf4_mat_irrep_rd(&D, 0);
+    global_dpd_->buf4_init(&T2, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
+    global_dpd_->buf4_mat_irrep_init(&T2, 0);
+    global_dpd_->buf4_mat_irrep_rd(&T2, 0);
+
+    outfile->Printf("Weak pair list:\n");
+    for (int ij = 0; ij < npairs; ij++) {
+        weak_pairs[ij] = 0;
+        auto pair_energy = 0.0;
+            for (int ab = 0; ab < nvir * nvir; ab++) {
+                pair_energy += D.matrix[0][ij][ab] * T2.matrix[0][ij][ab];
+            }
+            outfile->Printf("%3.8f ", pair_energy);
+            if (fabs(pair_energy) < weak_pair_cutoff) {
+                weak_pairs[ij] = 1;
+            }
+            outfile->Printf("%d\n", weak_pairs[ij]);
+    }
+
+    global_dpd_->buf4_mat_irrep_close(&T2, 0);
+    global_dpd_->buf4_close(&T2);
+    global_dpd_->buf4_mat_irrep_close(&D, 0);
+    global_dpd_->buf4_close(&D);
+
+    // Write weak pairs to file
+    outfile->Printf("Writing weak pairs to file\n");
+    psio_write_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *) weak_pairs, npairs * sizeof(int));
 }
 
 // Destructor attempt

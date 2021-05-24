@@ -146,6 +146,7 @@ void CCEnergyWavefunction::get_params(Options &options) {
             }
         }
         local_.weakp = options.get_str("LOCAL_WEAKP");
+        local_.weak_pair_cutoff = options.get_double("WEAKP_CUTOFF");
         local_.pert = options.get_str("LOCAL_PERT");
         local_.filter_singles = options.get_bool("LOCAL_FILTER_SINGLES");
 

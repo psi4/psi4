@@ -1856,9 +1856,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("JOBTYPE", "");
         /*- Do simulate the effects of local correlation techniques? -*/
         options.add_bool("LOCAL", false);
-        /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE`` (unique available option)
-        treats weak pairs in the same manner as strong pairs. -*/
-        options.add_str("LOCAL_WEAKP", "NONE");
+        /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE``
+        treats weak pairs in the same manner as strong pairs. ``NEGLECT`` neglects the
+        contribution of weak pairs while ``MP2`` adds the MP2-level correction to the energy -*/
+        options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT MP2");
+        /*- Value (always between one and zero) of the weak pair
+          threshold for the PNO and PNO++ methods. -*/
+        options.add_double("WEAKP_CUTOFF", 0.02);
         /*- Value (always between one and zero) of the PNO occupation number
           threshold for the PNO and PNO++ methods. -*/
         options.add_double("LOCAL_CUTOFF", 0.02);
@@ -2135,7 +2139,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("LOCAL_PERT", "NONE", "DIPOLE NABLA");
         /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE`` (unique available option)
         treats weak pairs in the same manner as strong pairs. -*/
-        options.add_str("LOCAL_WEAKP", "NONE");
+        options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT MP2");
+        /*- Value (always between one and zero) of the weak pair
+          threshold for the PNO and PNO++ methods. -*/
+        options.add_double("WEAKP_CUTOFF", 1e-4);
         /*- Value (always between one and zero) of the PNO occupation number
           threshold for the cPNO++ method. -*/
         options.add_double("UNPERT_CUTOFF", 1e-6);
@@ -2322,6 +2329,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         the same manner as strong pairs. A value of MP2 uses second-order perturbation
         theory to correct the local-CCSD energy computed with weak pairs ignored. -*/
         options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT MP2");
+        /*- Value (always between one and zero) of the weak pair
+          threshold for the PNO and PNO++ methods. -*/
+        options.add_double("WEAKP_CUTOFF", 1e-4);
         // options.add_int("LOCAL_FILTER_SINGLES", 1);
         /*- Cutoff value for local-coupled-perturbed-Hartree-Fock -*/
         options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
