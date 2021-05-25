@@ -306,7 +306,7 @@ void BasisSet::print(std::string out) const {
     printer->Printf("  Basis Set: %s\n", name_.c_str());
     printer->Printf("    Blend: %s\n", target_.c_str());
     printer->Printf("    Number of shells: %d\n", nshell());
-    printer->Printf("    Number of basis function: %d\n", nbf());
+    printer->Printf("    Number of basis functions: %d\n", nbf());
     printer->Printf("    Number of Cartesian functions: %d\n", nao());
     printer->Printf("    Spherical Harmonics?: %s\n", has_puream() ? "true" : "false");
     printer->Printf("    Max angular momentum: %d\n\n", max_am());

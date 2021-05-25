@@ -1,4 +1,4 @@
-find_package(Libxc 5.1.0 CONFIG QUIET COMPONENTS C)
+find_package(Libxc 5.1.2 CONFIG QUIET COMPONENTS C)
 
 if(${Libxc_FOUND})
     get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
@@ -15,9 +15,9 @@ else()
         # Default: use a stable release tarball of libxc. To use the
         # development version of libxc, instead, comment the URL line,
         # and uncomment the GIT lines.
-        URL https://gitlab.com/libxc/libxc/-/archive/5.1.0/libxc-5.1.0.tar.gz
+        URL https://gitlab.com/libxc/libxc/-/archive/5.1.2/libxc-5.1.2.tar.gz
         #GIT_REPOSITORY https://gitlab.com/libxc/libxc.git
-        #GIT_TAG 5.1.0
+        #GIT_TAG 5.1.2
         #UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -25,6 +25,7 @@ else()
                    -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                    -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
                    -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
+                   -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
                    -DNAMESPACE_INSTALL_INCLUDEDIR=/
                    -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
                    # OpenMP irrelevant

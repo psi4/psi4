@@ -61,7 +61,7 @@ namespace psi {
 **   int rsnum: The index combination for the ket indices for the new
 **     dpd file4.  N.B. this is NOT error checked for consistency
 **     with the input buffer.
-**   char *label: A string labelling for this buffer.
+**   std::string &label: A string labelling for this buffer.
 **
 ** Note that the notation for some of these multi-index sorts may be
 ** confusing.  When the caller requests ordering "psqr" for example,
@@ -115,7 +115,7 @@ namespace psi {
 ** spqr: IC     ** sprq: IC
 ** -RAK, Nov. 2005*/
 
-int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum, int rsnum, const char *label) {
+int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum, int rsnum, const std::string& label) {
     int h, nirreps, row, col, my_irrep, r_irrep;
     int p, q, r, s, P, Q, R, S, pq, rs, sr, pr, qs, qp, rq, qr, ps, sp, rp, sq;
     int PQ, RS;
@@ -1970,7 +1970,7 @@ int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, int pqnum
     return 0;
 }
 
-int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, string pq, string rs, const char *label) {
+int DPD::buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index, string pq, string rs, const std::string& label) {
     return buf4_sort(InBuf, outfilenum, index, pairnum(pq), pairnum(rs), label);
 }
 

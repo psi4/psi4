@@ -50,16 +50,17 @@ double DCTSolver::compute_energy_UHF() {
     cumulantDone_ = false;
     densityConverged_ = false;
     energyConverged_ = false;
-    // Perform SCF guess for the orbitals
-    scf_guess();
+    initialize_orbitals_from_reference_U();
 
     // If DCT computation type is density fitting, build b(Q|mn)
     if (options_.get_str("DCT_TYPE") == "DF") {
-        df_build_b();
+        initialize_df();
+        build_df_b();
     }
 
+    initialize_integraltransform();
     // Perform MP2 guess for the cumulant
-    mp2_guess();
+    initialize_amplitudes();
 
     // Print out information about the job
     outfile->Printf("\n\tDCT Functional:    \t\t %s", options_.get_str("DCT_FUNCTIONAL").c_str());
@@ -72,26 +73,6 @@ double DCTSolver::compute_energy_UHF() {
     }
     if (energy_level_shift_ > 1E-6) {
         outfile->Printf("\n\tUsing level shift of %5.3f a.u.            ", energy_level_shift_);
-    }
-
-    // Things that are not implemented yet...
-    if (options_.get_str("DERTYPE") == "FIRST" && (options_.get_str("DCT_FUNCTIONAL") == "DC-12"))
-        throw FeatureNotImplemented("DC-12 functional", "Analytic gradients", __FILE__, __LINE__);
-    if (!(options_.get_str("DCT_FUNCTIONAL") == "ODC-06" || options_.get_str("DCT_FUNCTIONAL") == "ODC-12" ||
-          options_.get_str("DCT_FUNCTIONAL") == "DC-06" || options_.get_str("DCT_FUNCTIONAL") == "DC-12") &&
-        options_.get_str("DCT_TYPE") == "DF")
-        throw FeatureNotImplemented("ODC-13", "Density Fitting", __FILE__, __LINE__);
-    if (options_.get_str("THREE_PARTICLE") == "PERTURBATIVE" && options_.get_str("DCT_TYPE") == "DF")
-        throw FeatureNotImplemented("Three-particle energy correction", "Density Fitting", __FILE__, __LINE__);
-    if (options_.get_str("ALGORITHM") == "QC") {
-        if (options_.get_str("AO_BASIS") == "DISK" && options_.get_str("QC_TYPE") == "SIMULTANEOUS")
-            throw FeatureNotImplemented("Simultaneous QC", "AO_BASIS = DISK", __FILE__, __LINE__);
-        if (options_.get_str("DCT_TYPE") == "DF")
-            throw FeatureNotImplemented("QC algorithm", "Density Fitting", __FILE__, __LINE__);
-        if (options_.get_str("DCT_FUNCTIONAL") != "DC-06")
-            outfile->Printf(
-                "\n\n\t**** Warning: Using DC-06 hessian, as others not implemented. Quadratic convergence is not "
-                "guaranteed. ****\n");
     }
 
     // Orbital-optimized stuff
@@ -126,39 +107,26 @@ double DCTSolver::compute_energy_UHF() {
     outfile->Printf("\t*%3s%5s Total Energy                               = %23.15f\n", prefix.c_str(),
                     options_.get_str("DCT_FUNCTIONAL").c_str(), new_total_energy_);
 
-    Process::environment.globals["DCT SCF ENERGY"] = scf_energy_;
-    Process::environment.globals["DCT LAMBDA ENERGY"] = lambda_energy_;
-    Process::environment.globals["DCT TOTAL ENERGY"] = new_total_energy_;
+    set_scalar_variable("DCT SCF ENERGY", scf_energy_);
+    set_scalar_variable("DCT LAMBDA ENERGY", lambda_energy_);
+    set_scalar_variable("DCT TOTAL ENERGY", new_total_energy_);
 
     // Compute three-particle contribution to the DCT energy
     if (options_.get_str("THREE_PARTICLE") == "PERTURBATIVE") {
-        // Check options
-        if (options_.get_str("DERTYPE") == "FIRST")
-            throw FeatureNotImplemented("DCT three-particle energy correction", "Analytic gradients", __FILE__,
-                                        __LINE__);
         // Compute the three-particle energy
         double three_particle_energy = compute_three_particle_energy();
         outfile->Printf("\t*DCT Three-particle Energy                        = %20.15f\n", three_particle_energy);
         outfile->Printf("\t*DCT Total Energy                                 = %20.15f\n",
                         new_total_energy_ + three_particle_energy);
         // Set global variables
-        Process::environment.globals["DCT THREE-PARTICLE ENERGY"] = three_particle_energy;
-        Process::environment.globals["CURRENT ENERGY"] = new_total_energy_ + three_particle_energy;
+        variables_["DCT THREE-PARTICLE ENERGY"] = three_particle_energy;
+        variables_["CURRENT ENERGY"] = new_total_energy_ + three_particle_energy;
     } else {
-        Process::environment.globals["CURRENT ENERGY"] = new_total_energy_;
+        variables_["CURRENT ENERGY"] = new_total_energy_;
     }
 
     // Print natural occupations
     print_opdm();
-
-    if (orbital_optimized_) {
-        construct_oo_density_UHF();
-        compute_oe_properties();
-        if (options_.get_bool("MOLDEN_WRITE")) write_molden_file();
-    }
-
-    if (options_.get_bool("TPDM")) dump_density();
-    //    check_n_representability();
 
     return (new_total_energy_);
 }
@@ -196,13 +164,8 @@ void DCTSolver::run_twostep_dct() {
             run_twostep_dct_cumulant_updates();
         } else
             outfile->Printf("\tSkipping the cumulant update to relax guess orbitals\n");
-        // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
-        build_tau();
-        // Compute tau exactly if requested
-        if (exact_tau_) {
-            refine_tau();
-        }
-        transform_tau();
+
+        compute_SO_tau_U();
         run_twostep_dct_orbital_updates();
     }
 
@@ -213,12 +176,12 @@ int DCTSolver::run_twostep_dct_cumulant_updates() {
     // Set up DIIS
     dpdbuf4 Laa, Lab, Lbb;
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
-    DIISManager lambdaDiisManager(maxdiis_, "DCT DIIS Lambdas", DIISManager::LargestError, DIISManager::InCore);
+                           "Amplitude <oo|vv>");
+    DIISManager lambdaDiisManager(maxdiis_, "DCT DIIS Amplitudes", DIISManager::LargestError, DIISManager::InCore);
     if ((nalpha_ + nbeta_) > 1) {
         lambdaDiisManager.set_error_vector_size(3, DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab,
                                                 DIISEntry::DPDBuf4, &Lbb);
@@ -229,34 +192,27 @@ int DCTSolver::run_twostep_dct_cumulant_updates() {
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);
     cumulantDone_ = false;
-    int nLambdaIterations = 0;
+    int nAmplitudeIterations = 0;
     // Start density cumulant (lambda) iterations
-    while ((!cumulantDone_ || !energyConverged_) && nLambdaIterations++ < maxiter_) {
+    while ((!cumulantDone_ || !energyConverged_) && nAmplitudeIterations++ < maxiter_) {
         std::string diisString;
-        // Build new Tau from current Lambda
-        if (options_.get_bool("RELAX_TAU")) {
-            build_tau();
-            // Compute tau exactly if requested
-            if (exact_tau_) {
-                refine_tau();
-            }
-            if (options_.get_str("AO_BASIS") == "DISK") {
-                // Transform new Tau to the SO basis
-                transform_tau();
-                // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
-                build_AO_tensors();
-            } else {
-                // Compute GTau contribution for the Fock operator
-                build_gtau();
-            }
-            // Update Fock operator for the F intermediate
-            update_fock();
-        } else {
-            if (options_.get_str("AO_BASIS") == "DISK") {
-                // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
-                build_AO_tensors();
-            }
+        // Build new Tau from current Amplitude
+        build_d_U();
+        // Compute tau exactly if requested
+        if (exact_tau_) {
+            build_tau_U();
         }
+        if (options_.get_str("AO_BASIS") == "DISK") {
+            // Transform new Tau to the SO basis
+            transform_tau_U();
+            // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
+            build_AO_tensors();
+        } else {
+            // Compute GTau contribution for the Fock operator
+            build_gtau();
+        }
+        // Update Fock operator for the F intermediate
+        update_fock();
         // Build G and F intermediates needed for the density cumulant residual equations and DCT energy computation
         build_cumulant_intermediates();
         // Compute the residuals for density cumulant equations
@@ -273,11 +229,11 @@ int DCTSolver::run_twostep_dct_cumulant_updates() {
             global_dpd_->buf4_init(&Rbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                                    "R <oo|vv>");
             global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                                   "Lambda <OO|VV>");
+                                   "Amplitude <OO|VV>");
             global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                                   "Lambda <Oo|Vv>");
+                                   "Amplitude <Oo|Vv>");
             global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                                   "Lambda <oo|vv>");
+                                   "Amplitude <oo|vv>");
 
             if (lambdaDiisManager.add_entry(6, &Raa, &Rab, &Rbb, &Laa, &Lab, &Lbb)) {
                 diisString += "S";
@@ -302,14 +258,14 @@ int DCTSolver::run_twostep_dct_cumulant_updates() {
         cumulantDone_ = cumulant_convergence_ < cumulant_threshold_;
         energyConverged_ = std::fabs(new_total_energy_ - old_total_energy_) < energy_threshold_;
         if (options_.get_str("ALGORITHM") == "TWOSTEP") {
-            outfile->Printf("\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n", nLambdaIterations,
+            outfile->Printf("\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n", nAmplitudeIterations,
                             orbitals_convergence_, cumulant_convergence_, new_total_energy_ - old_total_energy_,
                             new_total_energy_, diisString.c_str());
         }
         if (std::fabs(cumulant_convergence_) > 100.0) throw PSIEXCEPTION("DCT density cumulant equations diverged");
     }
 
-    return nLambdaIterations;
+    return nAmplitudeIterations;
 }
 
 void DCTSolver::run_twostep_dct_orbital_updates() {
@@ -406,11 +362,11 @@ void DCTSolver::run_simult_dct() {
     DIISManager diisManager(maxdiis_, "DCT DIIS vectors");
     dpdbuf4 Laa, Lab, Lbb;
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     diisManager.set_error_vector_size(5, DIISEntry::Matrix, scf_error_a_.get(), DIISEntry::Matrix, scf_error_b_.get(),
                                       DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4, &Lbb);
     diisManager.set_vector_size(5, DIISEntry::Matrix, Fa_.get(), DIISEntry::Matrix, Fb_.get(), DIISEntry::DPDBuf4, &Laa,
@@ -423,11 +379,7 @@ void DCTSolver::run_simult_dct() {
         // Save the old energy
         old_total_energy_ = new_total_energy_;
         // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
-        build_tau();
-        if (exact_tau_) {
-            refine_tau();
-        }
-        transform_tau();
+        compute_SO_tau_U();
         if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
             build_DF_tensors_UHF();
 
@@ -507,11 +459,11 @@ void DCTSolver::run_simult_dct() {
             global_dpd_->buf4_init(&Rbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                                    "R <oo|vv>");
             global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                                   "Lambda <OO|VV>");
+                                   "Amplitude <OO|VV>");
             global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                                   "Lambda <Oo|Vv>");
+                                   "Amplitude <Oo|Vv>");
             global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                                   "Lambda <oo|vv>");
+                                   "Amplitude <oo|vv>");
             if (diisManager.add_entry(10, scf_error_a_.get(), scf_error_b_.get(), &Raa, &Rab, &Rbb, Fa_.get(),
                                       Fb_.get(), &Laa, &Lab, &Lbb)) {
                 diisString += "S";

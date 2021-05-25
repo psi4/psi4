@@ -33,7 +33,6 @@ find_package(Perl QUIET)
 set(py3_fail_list pywrap-freq-e-sowreap
                   pywrap-freq-g-sowreap pywrap-opt-sowreap
                   pywrap-db2)
-#set(py36_fail_list extern1 extern2)
 foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp casscf-sp castup1
                   castup2 castup3 cbs-delta-energy cbs-parser cbs-xtpl-alpha cbs-xtpl-energy
                   cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func cbs-xtpl-nbody
@@ -57,14 +56,14 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-grac dft-ghost dft-grad-meta
                   dft-freq dft-freq-analytic dft-grad1 dft-grad2 dft-psivar dft-b3lyp dft1 dft-vv10
                   dft1-alt dft2 dft3 dft-omega dft-dens-cut docs-bases docs-dft explicit-am-basis extern1 extern2 extern3
-                  fsapt1 fsapt2 fsapt-terms fsapt-allterms fsapt-ext isapt1 isapt2
+                  fsapt1 fsapt2 fsapt-terms fsapt-allterms fsapt-ext fsapt-ext-abc fsapt-ext-abc2 isapt1 isapt2
                   fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2
                   fci-coverage
                   fcidump
                   fd-freq-energy fd-freq-energy-large fd-freq-gradient
                   fd-freq-gradient-large fd-gradient freq-isotope1 freq-isotope2 fnocc1 fnocc2
-                  fnocc3 fnocc4 fnocc5 frac frac-ip-fitting frac-traverse ghosts gibbs
-                  lccd-grad1 lccd-grad2 matrix1 mbis-1 mbis-2 mbis-3 mbis-4 mbis-5 mcscf1 mcscf2 mcscf3
+                  fnocc3 fnocc4 fnocc5 fnocc6 frac frac-ip-fitting frac-traverse ghosts gibbs
+                  lccd-grad1 lccd-grad2 matrix1 mbis-1 mbis-2 mbis-3 mbis-4 mbis-5 mbis-6 mcscf1 mcscf2 mcscf3
                   mints1 mints2 mints3 mints4 mints5 mints6 mints8 mints-benchmark mints-helper
                   mints9 mints10 mints15 molden1 molden2 mom mp2-1  mp2-def2 mp2-grad1 mp2-grad2 mp2-h
                   mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2
@@ -83,9 +82,9 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   psimrcc-fd-freq2 psimrcc-pt2 psimrcc-sp1 psithon1 psithon2
                   pubchem1 pubchem2 pywrap-alias pywrap-all pywrap-basis
                   pywrap-cbs1 pywrap-checkrun-convcrit pywrap-checkrun-rhf
-                  pywrap-checkrun-rohf pywrap-checkrun-uhf pywrap-db1 pywrap-db2
-                  pywrap-db3 pywrap-freq-e-sowreap pywrap-freq-g-sowreap
-                  pywrap-molecule pywrap-opt-sowreap rasci-c2-active rasci-h2o
+                  pywrap-checkrun-rohf pywrap-checkrun-uhf pywrap-db1
+                  pywrap-db3
+                  pywrap-molecule rasci-c2-active rasci-h2o
                   rasci-ne rasscf-sp sad-scf-type sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc sapt-ecp
                   sapt-exch-disp-inf
                   sapt7 sapt8 scf-bz2 scf-dipder scf-ecp scf-guess scf-guess-read1 scf-upcast-custom-basis
@@ -96,22 +95,10 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   options1 cubeprop-esp dft-smoke scf-hess1 scf-hess2 scf-hess3 scf-hess4 scf-hess5 scf-freq1 dft-jk scf-coverage
                   dft-custom-dhdf dft-custom-hybrid dft-custom-mgga dft-custom-gga
                   pywrap-bfs pywrap-align pywrap-align-chiral mints12 cc-module
-                  tdscf-1 tdscf-2 tdscf-3 tdscf-4
+                  tdscf-1 tdscf-2 tdscf-3 tdscf-4 tdscf-5
                   basis-ecp dft-pruning freq-masses sapt9 sapt10
 )
-    # Some tests fail in python 3
-    if("${Python_VERSION_MAJOR}" VERSION_EQUAL "3")
-        if (${test_name} IN_LIST py3_fail_list)
-            message("Python3 incompatible test: ${test_name}... skipping")
-        elseif(("${Python_VERSION_MINOR}" VERSION_EQUAL "6") AND
-               (${test_name} IN_LIST py36_fail_list))
-            message("Python3.6 recalcitrant test: ${test_name}... skipping")
-        else()
-            add_subdirectory(${test_name})
-        endif()
-    else()
-       add_subdirectory(${test_name})
-    endif()
+    add_subdirectory(${test_name})
 endforeach()
 
 # Add internal projects
@@ -159,13 +146,6 @@ if(ENABLE_CheMPS2)
     message(STATUS "Adding test cases: Psi4 + CheMPS2")
 endif()
 
-# <<<  CPPE  >>>
-
-if(ENABLE_cppe)
-    add_subdirectory(cppe)
-    message(STATUS "Adding test cases: Psi4 + CPPE")
-endif()
-
 # <<<  DFTD3  >>>
 
 find_program(DFTD3_EXECUTABLE
@@ -174,6 +154,9 @@ find_program(DFTD3_EXECUTABLE
 
 if(DFTD3_EXECUTABLE)
     add_subdirectory(dftd3)
+    add_subdirectory(sapt0-d)
+    add_subdirectory(fsapt-d)
+    add_subdirectory(fsaptd-terms)
     message(STATUS "${Cyan}Found DFTD3${ColourReset}: ${DFTD3_EXECUTABLE}")
     message(STATUS "Adding test cases: Psi4 + DFTD3")
 endif()

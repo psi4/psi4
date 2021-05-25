@@ -177,14 +177,23 @@ sub print_hash
      foreach my $Subsection (@OrderedSubsection) {
        if (exists($hash{$Module}{$Subsection})) {
          if($Subsection){
+             my $SubAbbr = lc($Subsection); #substr(lc($Subsection), 0, 5);
+             $SubAbbr =~ s/\s+//g;
+             $SubAbbr =~ s/\(//g;
+             $SubAbbr =~ s/\)//g;
+             $SubAbbr =~ s/\.//g;
+             $SubAbbr =~ s/\-//g;
+             $SubAbbr =~ s/\///g;
              if ($print_description) { 
                  my $Secdivider = "_" x (length($Subsection)-1);
                  print OUT "\\subsubsection{$Subsection}\n";
+                 printf SSOUT "\n.. _`apdx:%s%s`:\n", lc($Module), $SubAbbr;
                  print SSOUT "\n$Subsection\n$Secdivider\n\n";
              }
              else {
                  my $Secdivider = "_" x (8+length($Subsection));
                  print OUT "\\subsubsection{$Subsection}\n";
+                 printf SSOUT "\n.. _`apdx:%se%s`:\n", lc($Module), $SubAbbr;
                  print SSOUT "\n*Expert* $Subsection\n$Secdivider\n\n";
              }
          }

@@ -13,6 +13,11 @@ if(${Fortran_ENABLED})
     enable_language(Fortran)
 endif()
 
+if (NOT MSVC)
+  set(CMAKE_C_FLAGS_DEBUG "-g -O0")
+  set(CMAKE_CXX_FLAGS_DEBUG "-g -O0")
+endif()
+
 list(APPEND CMAKE_MODULE_PATH ${PSI4_ROOT}/cmake)
 
 include(psi4OptionsTools)
@@ -62,7 +67,7 @@ if(DEFINED ENV{LGTM_SRC})
 else()
     find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
 endif()
-find_package(pybind11 2.6.1 CONFIG REQUIRED)
+find_package(pybind11 2.6.2 CONFIG REQUIRED)
 message(STATUS "${Cyan}Using pybind11${ColourReset}: ${pybind11_INCLUDE_DIR} (version ${pybind11_VERSION} for Py${Python_VERSION} and ${CMAKE_CXX_STANDARD})")
 message(STATUS "${Cyan}Using Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE}")
 
@@ -157,7 +162,7 @@ list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libint2 ${Libint2_MAX_AM_ERI}${ColourReset}: ${_loc} (version ${Libint2_VERSION})")
 
 if(${ENABLE_mdi})
-    find_package(mdi 1.1.6 CONFIG REQUIRED)
+    find_package(mdi 1.2.3 CONFIG REQUIRED)
     get_property(_loc TARGET mdi::mdi PROPERTY LOCATION)
     list(APPEND _addons ${_loc})
     message(STATUS "${Cyan}Using mdi${ColourReset}: ${_loc} (version ${mdi_VERSION})")
@@ -201,7 +206,7 @@ else()
     message(STATUS "Disabled BrianQC")
 endif()
 
-find_package(Libxc 5.1.0 CONFIG REQUIRED COMPONENTS C)
+find_package(Libxc 5.1.2 CONFIG REQUIRED COMPONENTS C)
 get_property(_loc TARGET Libxc::xc PROPERTY LOCATION)
 list(APPEND _addons ${_loc})
 message(STATUS "${Cyan}Using Libxc${ColourReset}: ${_loc} (version ${Libxc_VERSION})")
@@ -274,51 +279,16 @@ install(FILES ${CMAKE_BINARY_DIR}/__init__.py
               ${CMAKE_BINARY_DIR}/extras.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 
-install(FILES ../tests/pytests/__init__.py
-              ../tests/pytests/conftest.py
-              ../tests/pytests/addons.py
-              ../tests/pytests/utils.py
-              ../tests/pytests/test_psi4.py
-              ../tests/pytests/test_option.py
-              ../tests/pytests/test_addons.py
-              ../tests/pytests/test_qcel_molparse_to_string.py
-              ../tests/pytests/test_matrix.py
-              ../tests/pytests/test_vector.py
-              ../tests/pytests/test_qcvars.py
-              ../tests/pytests/test_dft_benchmarks.py
-              ../tests/pytests/test_vibanalysis.py
-              ../tests/pytests/test_dftd3.py
-              ../tests/pytests/test_erisieve.py
-              ../tests/pytests/test_elec_fields.py
-              ../tests/pytests/test_fcidump_energy.py
-              ../tests/pytests/test_solvers.py
-              ../tests/pytests/test_tdscf_products.py
-              ../tests/pytests/test_tdscf_excitations.py
-              ../tests/pytests/tdscf_reference_data.json
-              ../tests/pytests/test_misc.py
-              ../tests/pytests/test_multipole_potential.py
-              ../tests/pytests/test_pyside_cubegen.py
-              ../tests/pytests/test_dipoles.py
-              ../tests/pytests/test_dertype.py
-              ../tests/pytests/test_mp2.py
-              ../tests/pytests/test_qcng_dftd3_mp2d.py
-              ../tests/pytests/test_geometric.py
-              ../tests/pytests/test_mp2d.py
-              ../tests/pytests/test_testing.py
-              ../tests/pytests/test_mints.py
-              ../tests/pytests/test_standard_suite.py
-              ../tests/pytests/standard_suite_runner.py
-              ../tests/pytests/test_detci_opdm.py
-              ../tests/pytests/test_gradients.py
-              ../tests/pytests/test_mdi.py
-              ../tests/pytests/test_weird_basis.py
-              ../tests/pytests/test_ccresponse.py
-              ../tests/pytests/test_fchk_writer.py
-              ../tests/pytests/test_psi4_qcschema.py
-              ../tests/pytests/test_addons_qcschema.py
-              ../tests/pytests/test_triplet.py
-              ../tests/pytests/test_raises.py
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
+install(DIRECTORY ../tests/pytests/
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
+        FILES_MATCHING
+        PATTERN "test_*.py"
+        PATTERN "__init__.py"
+        PATTERN "addons.py"
+        PATTERN "conftest.py"
+        PATTERN "standard_suite_runner.py"
+        PATTERN "tdscf_reference_data.json"
+        PATTERN "utils.py")
 install(DIRECTORY ../tests/pytests/test_fchk_writer
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 

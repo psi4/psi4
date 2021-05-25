@@ -348,7 +348,7 @@ funcs.append({
         "GGA_C_P86VWN_FT": {}
     },
     "description":
-    '    BP86 GGA Exchange-Correlation Functional based on VWN5 correlation with more accurate value for ftilde\n',
+    '    BP86 GGA XC Functional based on VWN5 corr. & more accurate ftilde value\n',
 })
 
 functional_list = {}

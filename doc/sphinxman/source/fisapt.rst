@@ -358,6 +358,25 @@ publication-quality renderings.
     :scale: 50%
     :alt: ESP of monomer A
 
+
+Adding Point Charges to F/I-SAPT Computations
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. Citation: Alenaizan, A; Cheney, D. L.; Sherrill, C. D. Electrostatatically embedded
+.. symmetry adapted pertubration theory. In preparation.
+
+Point charges can be added to the interacting subsystems A and B as well
+as to the ``linking`` fragment C. Briefly, the interaction between the point charges in A(B)
+and fragment B(A) enters the SAPT0 interction energy. It explicitly affects in the electrostatics
+and induction components, and implicitly affects other SAPT0 components by polarizing the orbitals.
+If point charges are present in both subsystems A and B, an additional charge-charge interaction
+term is also added to the electrostatic energy. When point charges are assigned to subsystem C, the point
+charges in C only polarize the orbitals in both fragment A and B. However, the presence of charges in C does not
+directly contribute to the SAPT0 interaction energy.
+
+Examples :srcsample:`fsapt-ext-abc` and :srcsample:`fsapt-ext-abc2`
+illustrate the use of point charges in F/I-SAPT procedure.
+
+
 F/I-SAPT Keywords
 ^^^^^^^^^^^^^^^^^
 
@@ -365,9 +384,8 @@ The input files described above cover roughly 90% of all F/I-SAPT analyses. For
 more delicate or involved problems, there are a large number of user options
 that permit the customization of the I-SAPT subsystem partition, the convergence
 of the IBO localization procedure, numerical thresholds, etc. We have an entire
-video tutorial devoted to these options `F/I-SAPT Options <https://www.youtube.com/watch?v=KFkPKSUZVfI&index=5&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_.
-Direct source-code documentation on these options is available :ref:`here
-<apdx:fisapt_psivar>`_.
+`video tutorial devoted to F/I-SAPT Options <https://www.youtube.com/watch?v=KFkPKSUZVfI&index=5&list=PLg_zUQpVYlA1Tc1X_HgAbqnFcHNydqN7W>`_ .
+Direct source-code documentation on these options is available :ref:`here <apdx:fisapt>`.
 
 Additional Notes
 ^^^^^^^^^^^^^^^^

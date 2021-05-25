@@ -38,7 +38,7 @@ Notes on Options
 
 .. note:: All |PSIfour| keyword names and values are insensitive to case, both
    those that are placed in ``set`` blocks and as Python function arguments.
-   The few exceptions are documented for the :py:func:`~wrapper_database.database` function,
+   The few exceptions are documented for the :py:func:`~psi4.database` function,
    where case structure must match the database file.
 
 .. _`op_c_bool`:
@@ -197,10 +197,11 @@ conventional integrals. Therefore, for a closed-shell molecule:
     +                      +----------------------+------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
     |                      | OCC                  |      |          |      |      |          |      |          |      |      |      |      |      |      |      |      |      |      |      |
     +----------------------+----------------------+------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
-    |  .. _tladc2:         | ADCC                 | Y    |          |      | D    |          |      |          |      |      |      |      |      |      |      |      |      |      |      |
-    | adc(2)               |                      |      |          |      |      |          |      |          |      |      |      |      |      |      |      |      |      |      |      |
+    | .. _tladc2:          | ADCC                 | Y    |          |      | D    |          |      |          |      |      |      |      |      |      |      |      |      |      |      |
     +                      +----------------------+------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
-    | |globals__mp_type|   | BUILTIN              | D    |          |      |      |          |      |          |      |      |      |      |      |      |      |      |      |      |      |
+    | adc(2)               | BUILTIN              | D    |          |      |      |          |      |          |      |      |      |      |      |      |      |      |      |      |      |
+    +                      +                      +      +          +      +      +          +      +          +      +      +      +      +      +      +      +      +      +      +      +
+    | |globals__mp_type|   |                      |      |          |      |      |          |      |          |      |      |      |      |      |      |      |      |      |      |      |
     +----------------------+----------------------+------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
 
 .. rubric:: Footnotes

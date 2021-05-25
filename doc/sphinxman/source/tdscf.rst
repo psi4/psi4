@@ -37,7 +37,7 @@ TDSCF: Time-dependent Hartree--Fock and density-functional theory
 .. codeauthor:: Andrew M. James, Daniel G. A. Smith, Ruhee Dcuhna, Roberto Di Remigio and Jeff Schriber
 .. sectionauthor:: Roberto Di Remigio
 
-*Module:* :ref:`Keywords <apdx:tdscf>`, :ref:`PSI Variables <apdx:tdscf_psivar>`, :source:`LIBSCF_SOLVER <psi4/src/psi4/libscf_solver>`
+*Module:* :ref:`Keywords <apdx:scftdscf>`, :ref:`PSI Variables <apdx:scf_psivar>`, :source:`LIBSCF_SOLVER <psi4/src/psi4/libscf_solver>`
 
 .. _`sec:tdscfintro`:
 
@@ -126,14 +126,13 @@ The solvers can be used to extract the first few roots of interest for the full
 time-dependent DFT (TDDFT) equations, also known as the random-phase
 approximation (RPA), or its Tamm--Dancoff approximation.
 The former is a *generalized* eigenvalue problem and our solver leverages
-the Hamiltonian structure of the equations to ensure robust convergence [Stratmann1998-ve]_.
+the Hamiltonian structure of the equations to ensure robust convergence [stratmann:1998]_.
 The latter is a Hermitian eigenvalue problem and we employ a Davidson solver.
 
 Known limitations
 ~~~~~~~~~~~~~~~~~
 
 .. warning:: The implementation cannot currently handle the following cases:
-             - The use of symmetry with density-fitted two-electron integrals.
              - Excited states of triplet symmetry from a restricted DFT reference.
              - Excited states from an unrestricted reference other than HF or LDA.
 
@@ -208,6 +207,7 @@ to the form:
   (\mathbf{A} - \mathbf{B})(\mathbf{A} + \mathbf{B})| \mathbf{X}_{n} + \mathbf{Y}_{n}\rangle
   =
   \omega^{2}_{n} | \mathbf{X}_{n} + \mathbf{Y}_{n}\rangle,
+
 and further to the Hermitian form:
 
 .. math::
@@ -221,7 +221,7 @@ eigenvectors and form a biorthonormal set together
 with the right eigenvectors :math:`| \mathbf{X}_{n} + \mathbf{Y}_{n}\rangle`.
 
 The algorithm for the subspace iteration Hamiltonian solver implemented in |PSIfour|
-was first described by Stratmann *et al.* [Stratmann1998-ve]_.
+was first described by Stratmann *et al.* [stratmann:1998]_.
 As already mentioned, the formation and storage of the matrix-vector products
 :math:`(\mathbf{A}+\mathbf{B})\mathbf{b}_{i}` and
 :math:`(\mathbf{A}-\mathbf{B})\mathbf{b}_{i}` for all trial vectors :math:`\mathbf{b}_{i}`

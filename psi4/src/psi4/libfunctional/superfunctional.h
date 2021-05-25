@@ -65,6 +65,7 @@ class SuperFunctional {
     std::string name_;
     std::string description_;
     std::string citation_;
+    std::string xclib_description_;
     bool locked_;
 
     // => Exchange-side DFA functionals <= //
@@ -175,6 +176,7 @@ class SuperFunctional {
     void set_name(const std::string& name) { name_ = name; }
     void set_description(const std::string& description) { description_ = description; }
     void set_citation(const std::string& citation) { citation_ = citation; }
+    void set_xclib_description(const std::string& description) { xclib_description_ = description; }
 
     void set_max_points(int max_points) { max_points_ = max_points; }
     void set_deriv(int deriv) { deriv_ = deriv; }
@@ -199,6 +201,7 @@ class SuperFunctional {
     std::string name() const { return name_; }
     std::string description() const { return description_; }
     std::string citation() const { return citation_; }
+    std::string xclib_description() const { return xclib_description_; }
 
     int ansatz() const;
     int max_points() const { return max_points_; }

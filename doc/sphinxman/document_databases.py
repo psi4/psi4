@@ -58,7 +58,8 @@ for pyfile in glob.glob(DriverPath + '../../psi4/share/psi4/databases/*.py'):
         pts('database', basename)
 
         fdriver.write(':srcdb:`%s`\n%s\n\n' % (basename, '"' * (9 + len(basename))))
-        fdriver.write('.. automodule:: %s\n\n' % (basename))
+        fdriver.write('.. automodule:: %s\n' % (basename))
+        fdriver.write('   :noindex:\n\n')
         fdriver.write('----\n')
 
     fdriver.write('\n')

@@ -905,13 +905,14 @@ splittings. This method can be invoked with `energy("SF-SAPT")` and
 publications resulting from the use of the SF-SAPT code should cite the
 following publications: [Patkowski:2018:164110]_
 
+.. _`sec:saptinf`:
 
 Second-Order Exchange Terms without Single-Exchange Approximation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Recently, the SAPT second-order exchange terms have been derived without
-the :math:`S^{2}` approximation in the works [Schaffer:2012:1235] and 
-[Schaffer:2013:2570]. These new terms can be computed with the following 
+the :math:`S^{2}` approximation in the works [Schaffer:2012:1235]_ and
+[Schaffer:2013:2570]_. These new terms can be computed with the following
 settings::
 
     set SAPT_DFT_FUNCTIONAL HF
@@ -922,6 +923,9 @@ settings::
                                             
 These calculations are performed with the atomic orbital and 
 density-fitting scheme of [J. M. Waldrop et al., to be published].
+
+S^inf Keywords
+~~~~~~~~~~~~~~
 
 .. include:: autodir_options_c/sapt__do_ind_exch_sinf.rst
 .. include:: autodir_options_c/sapt__do_disp_exch_sinf.rst

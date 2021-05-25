@@ -25,22 +25,25 @@
 #
 # @END LICENSE
 #
+from typing import Tuple
 
 import numpy as np
+
+from qcelemental import constants
 
 from psi4 import core
 from psi4.driver import p4util
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.procrouting.dft import functionals, build_superfunctional_from_dictionary
+from psi4.driver.procrouting.sapt import fisapt_proc
+
 
 def scf_set_reference_local(name, is_dft=False):
     """
     Figures out the correct SCF reference to set locally
     """
 
-    optstash = p4util.OptionsState(
-        ['SCF_TYPE'],
-        ['SCF', 'REFERENCE'])
+    optstash = p4util.OptionsState(['SCF_TYPE'], ['SCF', 'REFERENCE'])
 
     # Alter default algorithm
     if not core.has_global_option_changed('SCF_TYPE'):
@@ -72,8 +75,7 @@ def oeprop_validator(prop_list):
     oeprop_methods = core.OEProp.valid_methods
 
     if not len(prop_list):
-        raise ValidationnError("OEProp: No properties specified!")
-
+        raise ValidationError("OEProp: No properties specified!")
 
     for prop in prop_list:
         prop = prop.upper()
@@ -81,8 +83,7 @@ def oeprop_validator(prop_list):
         if 'MULTIPOLE(' in prop: continue
 
         if prop not in oeprop_methods:
-            alt_method_name = p4util.text.find_approximate_string_matches(prop,
-                                                                     oeprop_methods, 2)
+            alt_method_name = p4util.text.find_approximate_string_matches(prop, oeprop_methods, 2)
             alternatives = ""
             if len(alt_method_name) > 0:
                 alternatives = " Did you mean? %s" % (" ".join(alt_method_name))
@@ -95,18 +96,20 @@ def check_iwl_file_from_scf_type(scf_type, wfn):
     Ensures that a IWL file has been written based on input SCF type.
     """
 
-
     if scf_type in ['DF', 'DISK_DF', 'MEM_DF', 'CD', 'PK', 'DIRECT']:
         mints = core.MintsHelper(wfn.basisset())
         if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
-            rel_bas = core.BasisSet.build(wfn.molecule(), "BASIS_RELATIVISTIC",
+            rel_bas = core.BasisSet.build(wfn.molecule(),
+                                          "BASIS_RELATIVISTIC",
                                           core.get_option("SCF", "BASIS_RELATIVISTIC"),
-                                          "DECON", core.get_global_option('BASIS'),
+                                          "DECON",
+                                          core.get_global_option('BASIS'),
                                           puream=wfn.basisset().has_puream())
-            mints.set_basisset('BASIS_RELATIVISTIC',rel_bas)
+            mints.set_basisset('BASIS_RELATIVISTIC', rel_bas)
 
         mints.set_print(1)
         mints.integrals()
+
 
 def check_non_symmetric_jk_density(name):
     """
@@ -120,6 +123,7 @@ def check_non_symmetric_jk_density(name):
         raise ValidationError("Method %s: Requires support for non-symmetric density matrices.\n"
                               "     Please set SCF_TYPE to %s" % (name, supp_string))
 
+
 def check_disk_df(name, optstash):
 
     optstash.add_option(['SCF_TYPE'])
@@ -130,7 +134,9 @@ def check_disk_df(name, optstash):
         core.print_out(f"""    For method '{name}', SCF Algorithm Type (re)set to DISK_DF.\n""")
     else:
         if core.get_global_option('SCF_TYPE') == "MEM_DF":
-            raise ValidationError(f"    Method '{name}' requires SCF_TYPE = DISK_DF, please use SCF_TYPE = DF to automatically choose the correct DFJK implementation.")
+            raise ValidationError(
+                f"    Method '{name}' requires SCF_TYPE = DISK_DF, please use SCF_TYPE = DF to automatically choose the correct DFJK implementation."
+            )
 
 
 def print_ci_results(ciwfn, rname, scf_e, ci_e, print_opdm_no=False):
@@ -203,7 +209,7 @@ def print_ci_results(ciwfn, rname, scf_e, ci_e, print_opdm_no=False):
     dvec.close_io_files(True)
 
 
-def prepare_sapt_molecule(sapt_dimer, sapt_basis):
+def prepare_sapt_molecule(sapt_dimer: core.Molecule, sapt_basis: str) -> Tuple[core.Molecule, core.Molecule, core.Molecule]:
     """
     Prepares a dimer molecule for a SAPT computations. Returns the dimer, monomerA, and monomerB.
     """
@@ -257,3 +263,75 @@ def prepare_sapt_molecule(sapt_dimer, sapt_basis):
         raise ValidationError("SAPT basis %s not recognized" % sapt_basis)
 
     return (sapt_dimer, monomerA, monomerB)
+
+
+def sapt_empirical_dispersion(name, dimer_wfn, **kwargs):
+    sapt_dimer = dimer_wfn.molecule()
+    sapt_dimer, monomerA, monomerB = prepare_sapt_molecule(sapt_dimer, "dimer")
+    disp_name = name.split("-")[1]
+
+    # Get the names right between SAPT0 and FISAPT0
+    saptd_name = name.split('-')[0].upper()
+    if saptd_name == "SAPT0":
+        sapt0_name = "SAPT0"
+    else:
+        sapt0_name = "SAPT"
+
+    save_pair = (saptd_name == "FISAPT0")
+
+    from .proc import build_disp_functor
+    _, _disp_functor = build_disp_functor('hf-' + disp_name, restricted=True, save_pairwise_disp=save_pair, **kwargs)
+
+    ## Dimer dispersion
+    dimer_disp_energy = _disp_functor.compute_energy(dimer_wfn.molecule(), dimer_wfn)
+    ## Monomer dispersion
+    mon_disp_energy = _disp_functor.compute_energy(monomerA)
+    mon_disp_energy += _disp_functor.compute_energy(monomerB)
+
+    disp_interaction_energy = dimer_disp_energy - mon_disp_energy
+    core.set_variable(saptd_name + "-D DISP ENERGY", disp_interaction_energy)
+    core.set_variable("SAPT DISP ENERGY", disp_interaction_energy)
+    core.set_variable("DISPERSION CORRECTION ENERGY", disp_interaction_energy)
+    core.set_variable(saptd_name + "DISPERSION CORRECTION ENERGY", disp_interaction_energy)
+
+    ## Set SAPT0-D3 variables
+    total = disp_interaction_energy
+    saptd_en = {}
+    saptd_en['DISP'] = disp_interaction_energy
+    for term in ['ELST', 'EXCH', 'IND']:
+        en = core.variable(' '.join([sapt0_name, term, 'ENERGY']))
+        saptd_en[term] = en
+        core.set_variable(' '.join([saptd_name + '-D', term, 'ENERGY']), en)
+        core.set_variable(' '.join(['SAPT', term, 'ENERGY']), en)
+        total += en
+
+    core.set_variable(saptd_name + '-D TOTAL ENERGY', total)
+    core.set_variable('SAPT TOTAL ENERGY', total)
+    core.set_variable('CURRENT ENERGY', total)
+
+    ## Print Energy Summary
+    units = (1000.0, constants.hartree2kcalmol, constants.hartree2kJmol)
+    core.print_out(f"    => {saptd_name +'-D'} Energy Summary <=\n")
+
+    core.print_out("  " + "-" * 104 + "\n")
+    core.print_out(
+        "    %-25s % 16.8f [mEh] % 16.8f [kcal/mol] % 16.8f [kJ/mol]\n" %
+        ("Electrostatics", saptd_en['ELST'] * units[0], saptd_en['ELST'] * units[1], saptd_en['ELST'] * units[2]))
+    core.print_out("    %-25s % 16.8f [mEh] % 16.8f [kcal/mol] % 16.8f [kJ/mol]\n" %
+                   ("Exchange", saptd_en['EXCH'] * units[0], saptd_en['EXCH'] * units[1], saptd_en['EXCH'] * units[2]))
+    core.print_out("    %-25s % 16.8f [mEh] % 16.8f [kcal/mol] % 16.8f [kJ/mol]\n" %
+                   ("Induction", saptd_en['IND'] * units[0], saptd_en['IND'] * units[1], saptd_en['IND'] * units[2]))
+    core.print_out(
+        "    %-25s % 16.8f [mEh] % 16.8f [kcal/mol] % 16.8f [kJ/mol]\n" %
+        ("Dispersion", saptd_en['DISP'] * units[0], saptd_en['DISP'] * units[1], saptd_en['DISP'] * units[2]))
+    core.print_out("  %-27s % 16.8f [mEh] % 16.8f [kcal/mol] % 16.8f [kJ/mol]\n" %
+                   ("Total " + saptd_name + "-D", total * units[0], total * units[1], total * units[2]))
+    core.print_out("  " + "-" * 104 + "\n")
+
+    if saptd_name == "FISAPT0":
+        pw_disp = dimer_wfn.variable("PAIRWISE DISPERSION CORRECTION ANALYSIS")
+        pw_disp.name = 'Empirical_Disp'
+        filepath = core.get_option("FISAPT", "FISAPT_FSAPT_FILEPATH")
+        fisapt_proc._drop(pw_disp, filepath)
+
+    return dimer_wfn

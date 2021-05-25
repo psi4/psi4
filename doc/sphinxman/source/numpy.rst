@@ -39,7 +39,7 @@ Interface to NumPy
 .. codeauthor:: Daniel G. A. Smith
 .. sectionauthor:: Daniel G. A. Smith
 
-*Module:* :ref:`Keywords <apdx:numpy>`, :source:`psi4/driver/p4util/numpy_helper.py`
+*Module:* :source:`psi4/driver/p4util/numpy_helper.py`
 
 Basics
 ~~~~~~

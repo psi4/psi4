@@ -25,6 +25,139 @@ def build_RHF_AB_C1_singlet(wfn):
     return A_ref, B_ref
 
 
+def build_RHF_AB_singlet(wfn):
+    mints = psi4.core.MintsHelper(wfn.basisset())
+    Co = wfn.Ca_subset("SO", "OCC")
+    Cv = wfn.Ca_subset("SO", "VIR")
+    Fab = psi4.core.triplet(Cv, wfn.Fa(), Cv, True, False, False).to_array()
+    Fij = psi4.core.triplet(Co, wfn.Fa(), Co, True, False, False).to_array()
+    # mo_eri can't handle systems with symmetry. We need to work around this.
+    ao_eri = mints.ao_eri()
+    ao2so = wfn.aotoso()
+
+    # The h'th irrep stores the block where ia has symmetry h.
+    # The elements are indexed by ov pairs. Elements are in ascending order
+    # of the occupied element of the pair.
+    A_blocks = []
+    B_blocks = []
+
+    for hjb in range(wfn.nirrep()):
+        hia = hjb
+        A_block = []
+        B_block = []
+        for hi in range(wfn.nirrep()):
+            A_block.append([])
+            B_block.append([])
+            ha = hia ^ hi
+            Ca = np.matmul(ao2so.nph[ha], Cv.nph[ha])
+            Ci = np.matmul(ao2so.nph[hi], Co.nph[hi])
+            for hj in range(wfn.nirrep()):
+                hb = hjb ^ hj
+                Cb = np.matmul(ao2so.nph[hb], Cv.nph[hb])
+                Cj = np.matmul(ao2so.nph[hj], Co.nph[hj])
+                V_iajb = np.einsum("pqrs, pP, qQ, rR, sS -> PQRS", ao_eri, Ci, Ca, Cj, Cb, optimize=True)
+                V_jaib = np.einsum("pqrs, pP, qQ, rR, sS -> PQRS", ao_eri, Cj, Ca, Ci, Cb, optimize=True)
+                V_abij = np.einsum("pqrs, pP, qQ, rR, sS -> PQRS", ao_eri, Ca, Cb, Ci, Cj, optimize=True)
+                A_ref =  2 * V_iajb - np.einsum("abij->iajb", V_abij)
+                if ha == hb and hi == hj:
+                    A_ref += np.einsum("ab,ij->iajb", Fab[ha], np.eye(Fij[hi].shape[0]), optimize=True)
+                    A_ref -= np.einsum("ij,ab->iajb", Fij[hi], np.eye(Fab[ha].shape[0]), optimize=True)
+                B_ref = 2 * V_iajb - V_jaib.swapaxes(0, 2)
+                shape_tuple = (A_ref.shape[0] * A_ref.shape[1], A_ref.shape[2] * A_ref.shape[3])
+                A_block[-1].append(A_ref.reshape(shape_tuple))
+                B_block[-1].append(B_ref.reshape(shape_tuple))
+        A_blocks.append(np.block(A_block))
+        B_blocks.append(np.block(B_block))
+    return A_blocks, B_blocks
+
+
+def build_RHF_AB_C1_singlet_df(wfn):
+    orb = wfn.get_basisset("ORBITAL")
+    mints = psi4.core.MintsHelper(orb)
+    Co = wfn.Ca_subset("SO", "OCC")
+    Cv = wfn.Ca_subset("SO", "VIR")
+    zero_bas = psi4.core.BasisSet.zero_ao_basis_set()
+    aux = wfn.get_basisset("DF_BASIS_SCF")
+    Ppq = np.squeeze(mints.ao_eri(aux, zero_bas, orb, orb))
+    metric = mints.ao_eri(aux, zero_bas, aux, zero_bas)
+    metric.power(-0.5, 1.e-14)
+    metric = np.squeeze(metric)
+    Qpq = np.einsum("QP,Ppq->Qpq", metric, Ppq, optimize=True)
+    Qij = np.einsum("Qpq, pi, qj -> Qij", Qpq, Co, Co)
+    Qab = np.einsum("Qpq, pa, qb -> Qab", Qpq, Cv, Cv)
+    Qia = np.einsum("Qpq, pi, qa -> Qia", Qpq, Co, Cv)
+    V_iajb = np.einsum("Qia, Qjb -> iajb", Qia, Qia)
+    V_abij = np.einsum("Qab, Qij -> abij", Qab, Qij)
+    Fab = psi4.core.triplet(Cv, wfn.Fa(), Cv, True, False, False).to_array()
+    Fij = psi4.core.triplet(Co, wfn.Fa(), Co, True, False, False).to_array()
+    ni = Fij.shape[0]
+    na = Fab.shape[0]
+    nia = ni * na
+    A_ref = np.einsum("ab,ij->iajb", Fab, np.eye(ni))
+    A_ref -= np.einsum("ab,ij->iajb", np.eye(na), Fij)
+    A_ref += 2 * V_iajb - np.einsum("abij->iajb", V_abij)
+    B_ref = 2 * V_iajb - V_iajb.swapaxes(0, 2)
+    return A_ref, B_ref
+
+
+def build_RHF_AB_singlet_df(wfn):
+    orb = wfn.get_basisset("ORBITAL")
+    mints = psi4.core.MintsHelper(wfn.basisset())
+    Co = wfn.Ca_subset("SO", "OCC")
+    Cv = wfn.Ca_subset("SO", "VIR")
+    Fab = psi4.core.triplet(Cv, wfn.Fa(), Cv, True, False, False).to_array()
+    Fij = psi4.core.triplet(Co, wfn.Fa(), Co, True, False, False).to_array()
+    zero_bas = psi4.core.BasisSet.zero_ao_basis_set()
+    aux = wfn.get_basisset("DF_BASIS_SCF")
+    Ppq = np.squeeze(mints.ao_eri(aux, zero_bas, orb, orb))
+    metric = mints.ao_eri(aux, zero_bas, aux, zero_bas)
+    metric.power(-0.5, 1.e-14)
+    metric = np.squeeze(metric)
+    Qpq = np.einsum("QP,Ppq->Qpq", metric, Ppq, optimize=True)
+    ao2so = wfn.aotoso()
+
+    # The h'th irrep stores the block where ia has symmetry h.
+    # The elements are indexed by ov pairs. Elements are in ascending order
+    # of the occupied element of the pair.
+    A_blocks = []
+    B_blocks = []
+
+    for hjb in range(wfn.nirrep()):
+        hia = hjb
+        A_block = []
+        B_block = []
+        for hi in range(wfn.nirrep()):
+            A_block.append([])
+            B_block.append([])
+            ha = hia ^ hi
+            Ca = np.matmul(ao2so.nph[ha], Cv.nph[ha])
+            Ci = np.matmul(ao2so.nph[hi], Co.nph[hi])
+            for hj in range(wfn.nirrep()):
+                hb = hjb ^ hj
+                Cb = np.matmul(ao2so.nph[hb], Cv.nph[hb])
+                Cj = np.matmul(ao2so.nph[hj], Co.nph[hj])
+                Qij = np.einsum("Ppq, pi, qj -> Pij", Qpq, Ci, Cj, optimize=True)
+                Qab = np.einsum("Ppq, pa, qb -> Pab", Qpq, Ca, Cb, optimize=True)
+                Qia = np.einsum("Ppq, pi, qa -> Pia", Qpq, Ci, Ca, optimize=True)
+                Qjb = np.einsum("Ppq, pj, qb -> Pjb", Qpq, Cj, Cb, optimize=True)
+                Qja = np.einsum("Ppq, pj, qa -> Pja", Qpq, Cj, Ca, optimize=True)
+                Qib = np.einsum("Ppq, pi, qb -> Pib", Qpq, Ci, Cb, optimize=True)
+                V_iajb = np.einsum("Pia, Pjb -> iajb", Qia, Qjb, optimize=True)
+                V_jaib = np.einsum("Pia, Pjb -> iajb", Qja, Qib, optimize=True)
+                V_abij = np.einsum("Pij, Pab -> abij", Qij, Qab, optimize=True)
+                A_ref =  2 * V_iajb - np.einsum("abij->iajb", V_abij)
+                if ha == hb and hi == hj:
+                    A_ref += np.einsum("ab,ij->iajb", Fab[ha], np.eye(Fij[hi].shape[0]), optimize=True)
+                    A_ref -= np.einsum("ij,ab->iajb", Fij[hi], np.eye(Fab[ha].shape[0]), optimize=True)
+                B_ref = 2 * V_iajb - V_jaib.swapaxes(0, 2)
+                shape_tuple = (A_ref.shape[0] * A_ref.shape[1], A_ref.shape[2] * A_ref.shape[3])
+                A_block[-1].append(A_ref.reshape(shape_tuple))
+                B_block[-1].append(B_ref.reshape(shape_tuple))
+        A_blocks.append(np.block(A_block))
+        B_blocks.append(np.block(B_block))
+    return A_blocks, B_blocks
+
+
 def build_RHF_AB_C1_triplet(wfn):
     mints = psi4.core.MintsHelper(wfn.basisset())
     Co = wfn.Ca_subset("SO", "OCC")
@@ -114,6 +247,87 @@ def test_restricted_TDA_singlet_c1():
     ID = [psi4.core.Matrix.from_array(v.reshape((ni, na))) for v in tuple(np.eye(nia).T)]
     A_test = np.column_stack([x.to_array().flatten() for x in eng.compute_products(ID)[0]])
     assert compare_arrays(A_ref, A_test, 8, "RHF Ax C1 products")
+
+@pytest.mark.unittest
+@pytest.mark.tdscf
+def test_restricted_TDA_singlet():
+    "Build out the full CIS/TDA hamiltonian (A) col by col with the product engine"
+    h2o = psi4.geometry("""
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+    """)
+    psi4.set_options({"scf_type": "pk", 'save_jk': True})
+    e, wfn = psi4.energy("hf/cc-pvdz", molecule=h2o, return_wfn=True)
+    A_blocks, B_blocks = build_RHF_AB_singlet(wfn)
+    eng = TDRSCFEngine(wfn, ptype='tda', triplet=False)
+    vir_dim = wfn.nmopi() - wfn.doccpi()
+    for hia, A_block in enumerate(A_blocks):
+        ID = []
+        # Construct a matrix for each (O, V) pair with hia symmetry.
+        for hi in range(wfn.nirrep()):
+            for i in range(wfn.Ca_subset("SO", "OCC").coldim()[hi]):
+                for a in range(wfn.Ca_subset("SO", "VIR").coldim()[hi ^ hia]):
+                    matrix = psi4.core.Matrix("Test Matrix", wfn.doccpi(), vir_dim, hia)
+                    matrix.set(hi, i, a, 1)
+                    ID.append(matrix)
+        x = eng.compute_products(ID)[0][0]
+        # Assemble the A values as a single (ia, jb) matrix, all possible ia and jb of symmetry hia.
+        A_test = np.column_stack([np.concatenate([y.flatten() for y in x.to_array()]) for x in eng.compute_products(ID)[0]])
+        assert compare_arrays(A_block, A_test, 8, "RHF Ax C2v products")
+
+
+@pytest.mark.unittest
+@pytest.mark.tdscf
+def test_restricted_TDA_singlet_df_c1():
+    "Build out the full CIS/TDA hamiltonian (A) col by col with the product engine"
+    h2o = psi4.geometry("""
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+    symmetry c1
+    """)
+    psi4.set_options({"scf_type": "df", 'save_jk': True})
+    e, wfn = psi4.energy("hf/cc-pvdz", molecule=h2o, return_wfn=True)
+    A_ref, _ = build_RHF_AB_C1_singlet_df(wfn)
+    ni, na, _, _ = A_ref.shape
+    nia = ni * na
+    A_ref = A_ref.reshape((nia, nia))
+    # Build engine
+    eng = TDRSCFEngine(wfn, ptype='tda', triplet=False)
+    # our "guess"" vectors
+    ID = [psi4.core.Matrix.from_array(v.reshape((ni, na))) for v in tuple(np.eye(nia).T)]
+    A_test = np.column_stack([x.to_array().flatten() for x in eng.compute_products(ID)[0]])
+    assert compare_arrays(A_ref, A_test, 8, "DF-RHF Ax C1 products")
+
+
+@pytest.mark.unittest
+@pytest.mark.tdscf
+def test_restricted_TDA_singlet_df():
+    "Build out the full CIS/TDA hamiltonian (A) col by col with the product engine"
+    h2o = psi4.geometry("""
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+    """)
+    psi4.set_options({"scf_type": "df", 'save_jk': True})
+    e, wfn = psi4.energy("hf/cc-pvdz", molecule=h2o, return_wfn=True)
+    A_blocks, B_blocks = build_RHF_AB_singlet_df(wfn)
+    eng = TDRSCFEngine(wfn, ptype='tda', triplet=False)
+    vir_dim = wfn.nmopi() - wfn.doccpi()
+    for hia, A_block in enumerate(A_blocks):
+        ID = []
+        # Construct a matrix for each (O, V) pair with hia symmetry.
+        for hi in range(wfn.nirrep()):
+            for i in range(wfn.Ca_subset("SO", "OCC").coldim()[hi]):
+                for a in range(wfn.Ca_subset("SO", "VIR").coldim()[hi ^ hia]):
+                    matrix = psi4.core.Matrix("Test Matrix", wfn.doccpi(), vir_dim, hia)
+                    matrix.set(hi, i, a, 1)
+                    ID.append(matrix)
+        x = eng.compute_products(ID)[0][0]
+        # Assemble the A values as a single (ia, jb) matrix, all possible ia and jb of symmetry hia.
+        A_test = np.column_stack([np.concatenate([y.flatten() for y in x.to_array()]) for x in eng.compute_products(ID)[0]])
+        assert compare_arrays(A_block, A_test, 8, "DF-RHF Ax C2v products")
 
 
 @pytest.mark.unittest

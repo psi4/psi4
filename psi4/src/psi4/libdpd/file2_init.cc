@@ -49,7 +49,7 @@ namespace psi {
 **             dpd_init()].
 **   int qnum: The orbital subspace number for the right index [see
 **             dpd_init()].
-**   char *label: A string labelling for this buffer.
+**   std::string &label: A string labelling for this buffer.
 **   Note: Make sure that you use the correct label and inputfile combination.
 **      If you intend to read from or write to an existing quantity on disk be sure
 **      that the label string/file number point to that quantity. If you intend to
@@ -58,19 +58,20 @@ namespace psi {
 **      the labels currently used in in filenum and is quite useful for debugging.
 */
 
-int DPD::file2_init(dpdfile2 *File, int filenum, int irrep, int pnum, int qnum, const char *label) {
+int DPD::file2_init(dpdfile2 *File, int filenum, int irrep, int pnum, int qnum, const std::string& label) {
+    auto label_ptr = label.c_str();
     int i, q, rs, nirreps;
     dpd_file2_cache_entry *this_entry;
 
     File->dpdnum = dpd_default;
     File->params = &(dpd_list[dpd_default]->params2[pnum][qnum]);
-    strcpy(File->label, label);
+    strcpy(File->label, label_ptr);
     File->filenum = filenum;
     File->my_irrep = irrep;
 
     nirreps = File->params->nirreps;
 
-    this_entry = file2_cache_scan(filenum, irrep, pnum, qnum, label, dpd_default);
+    this_entry = file2_cache_scan(filenum, irrep, pnum, qnum, label_ptr, dpd_default);
     if (this_entry != nullptr) {
         File->incore = 1;
         File->matrix = this_entry->matrix;

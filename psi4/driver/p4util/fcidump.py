@@ -27,8 +27,6 @@
 #
 """Module with utility function for dumping the Hamiltonian to file in FCIDUMP format."""
 
-from datetime import datetime
-
 import numpy as np
 
 from psi4.driver import psifiles as psif
@@ -49,10 +47,10 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
     :raises: ValidationError when SCF wavefunction is not RHF
 
     :type wfn: :py:class:`~psi4.core.Wavefunction`
+
     :param wfn: set of molecule, basis, orbitals from which to generate cube files
     :param fname: name of the integrals file, defaults to INTDUMP
-    :param oe_ints: list of additional one-electron integrals to save to file.
-    So far only EIGENVALUES is a valid option.
+    :param oe_ints: list of additional one-electron integrals to save to file. So far only EIGENVALUES is a valid option.
 
     :examples:
 
@@ -239,7 +237,6 @@ def fcidump_from_file(fname):
     """Function to read in a FCIDUMP file.
 
     :returns: a dictionary with FCIDUMP header and integrals
-    The key-value pairs are:
       - 'norb' : number of basis functions
       - 'nelec' : number of electrons
       - 'ms2' : spin polarization of the system
@@ -287,7 +284,7 @@ def fcidump_from_file(fname):
 
     # Get dimensions and indices
     nbf = intdump['norb']
-    idxs = raw_ints[:, 1:].astype(np.int) - 1
+    idxs = raw_ints[:, 1:].astype(int) - 1
 
     # Slices
     sl = slice(ints.shape[0] - nbf, ints.shape[0])
@@ -325,12 +322,11 @@ def fcidump_from_file(fname):
 
 
 def compare_fcidumps(expected, computed, label):
-    """Function to compare two FCIDUMP files. Prints :py:func:`util.success`
+    """Function to compare two FCIDUMP files. Prints success
     when value *computed* matches value *expected*.
     Performs a system exit on failure. Used in input files in the test suite.
 
     :returns: a dictionary of energies computed from the MO integrals.
-    The key-value pairs are:
       - 'NUCLEAR REPULSION ENERGY' : nuclear repulsion plus frozen core energy
       - 'ONE-ELECTRON ENERGY' : SCF one-electron energy
       - 'TWO-ELECTRON ENERGY' : SCF two-electron energy

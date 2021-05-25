@@ -48,7 +48,7 @@ Interface to Libxc by M. A. L. Marques
    <br>
 
 .. image:: https://img.shields.io/badge/docs-latest-5077AB.svg
-   :target: https://gitlab.com/libxc/libxc/wikis/Manual-4.0
+   :target: https://www.tddft.org/programs/libxc/manual/
 
 |PSIfour|, relies upon the Libxc library for density functionals. Libxc
 requires no
@@ -73,8 +73,8 @@ Installation
   Then, hint its location with :makevar:`CMAKE_PREFIX_PATH`,
   and rebuild |PSIfour| to detect Libxc and activate dependent code.
 
-* Previous bullet had details. To build |PSIfour| from source and use
-  Libxc from conda without thinking, consult :ref:`sec:condapsi4dev`.
+.. * Previous bullet had details. To build |PSIfour| from source and use
+..   Libxc from conda without thinking, consult.
 
 * To remove a conda installation, ``conda remove libxc``.
 

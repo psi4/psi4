@@ -232,7 +232,9 @@ How to use low-level BLAS/LAPACK with ``psi4.core.Matrix``
 Jet's awesome new Matrix object has a lot of simple BLAS/LAPACK built in,
 but you can just as easily use the ``double***`` array underneath if you are
 careful (the outer index is the submatrix for each irrep). Here's an
-example::
+example:
+
+.. code-block:: cpp
 
     // BLAS/LAPACK
     #include "psi4/libqt/qt.h"

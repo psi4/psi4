@@ -415,7 +415,7 @@ void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>
     std::shared_ptr<BasisSet> bs1 = ints[0]->basis1();
     std::shared_ptr<BasisSet> bs2 = ints[0]->basis2();
 
-    // Limit to the number of incoming onbody ints
+    // Limit to the number of incoming onebody ints
     size_t nthread = nthread_;
     if (nthread > ints.size()) {
         nthread = ints.size();

@@ -1,5 +1,5 @@
 if(${ENABLE_v2rdm_casscf})
-    find_package(v2rdm_casscf 0.8 CONFIG QUIET)
+    find_package(v2rdm_casscf 0.9 CONFIG QUIET)
 
     if(${v2rdm_casscf_FOUND})
         get_property(_loc TARGET v2rdm_casscf::v2rdm_casscf PROPERTY LOCATION)
@@ -16,7 +16,7 @@ if(${ENABLE_v2rdm_casscf})
 
         ExternalProject_Add(v2rdm_casscf_external
             DEPENDS psi4-core
-            URL https://github.com/edeprince3/v2rdm_casscf/archive/e155289.tar.gz  # v0.8 + 26
+            URL https://github.com/loriab/v2rdm_casscf/archive/929d7fc.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

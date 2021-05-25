@@ -30,13 +30,39 @@
 #include "psi4/psifiles.h"
 
 #include "psi4/libdpd/dpd.h"
-#include "psi4/libiwl/iwl.hpp"
-#include "psi4/libtrans/integraltransform.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libtrans/integraltransform.h"
 
 namespace psi {
 namespace dct {
+
+void DCTSolver::initialize_integraltransform() {
+    IntegralTransform::TransformationType transtype;
+    std::string type_string;
+    if (same_a_b_orbs_ == true) {
+        transtype = IntegralTransform::TransformationType::Restricted;
+        type_string = "restricted";
+    } else {
+        transtype = IntegralTransform::TransformationType::Unrestricted;
+        type_string = "unrestricted";
+    }
+
+    std::vector<std::shared_ptr<MOSpace>> spaces{MOSpace::occ, MOSpace::vir, MOSpace::all};
+    _ints = std::make_unique<IntegralTransform>(shared_from_this(), spaces, transtype);
+    _ints->set_keep_iwl_so_ints(true);
+    _ints->set_keep_dpd_so_ints(true);
+    dpd_set_default(_ints->get_dpd_id());
+
+    outfile->Printf("\n\n\tTransforming two-electron integrals (transformation type: %s)...\n", type_string.c_str());
+
+    if (same_a_b_orbs_ == true) {
+        transform_integrals_RHF();
+    } else {
+        transform_integrals();
+    }
+}
 
 /**
  * Updates the MO coefficients, transforms the integrals into both chemists'
@@ -45,6 +71,7 @@ namespace dct {
 void DCTSolver::transform_integrals() {
     dct_timer_on("DCTSolver::transform_integrals()");
 
+    _ints->update_orbitals();
     if (options_.get_str("DCT_TYPE") == "DF") {
         // Transform b(Q|mn) to b(Q|pq) in MO basis
         transform_b();
@@ -64,10 +91,7 @@ void DCTSolver::transform_integrals() {
         }
 
         psio_->close(PSIF_LIBTRANS_DPD, 1);
-
-        _ints->update_orbitals();
     } else {
-        _ints->update_orbitals();
         if (print_ > 1) {
             outfile->Printf("\tTransforming integrals...\n");
         }
@@ -496,82 +520,25 @@ void DCTSolver::sort_OVVV_integrals() {
 
 void DCTSolver::transform_core_integrals() {
     // Transform one-electron integrals to the MO basis and store them in the DPD file
+    transform_core_integrals_RHF();
+
     dpdfile2 H;
-    Matrix aH(so_h_);
     Matrix bH(so_h_);
-    aH.transform(Ca_);
     bH.transform(Cb_);
 
-    global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "H <O|O>");
-    global_dpd_->file2_mat_init(&H);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < naoccpi_[h]; ++i) {
-            for (int j = 0; j < naoccpi_[h]; ++j) {
-                H.matrix[h][i][j] = aH.get(h, i, j);
-            }
-        }
-    }
-    global_dpd_->file2_mat_wrt(&H);
-    global_dpd_->file2_close(&H);
-
-    global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "H <V|V>");
-    global_dpd_->file2_mat_init(&H);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int a = 0; a < navirpi_[h]; ++a) {
-            for (int b = 0; b < navirpi_[h]; ++b) {
-                H.matrix[h][a][b] = aH.get(h, naoccpi_[h] + a, naoccpi_[h] + b);
-            }
-        }
-    }
-    global_dpd_->file2_mat_wrt(&H);
-    global_dpd_->file2_close(&H);
-
     global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "H <o|o>");
-    global_dpd_->file2_mat_init(&H);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nboccpi_[h]; ++i) {
-            for (int j = 0; j < nboccpi_[h]; ++j) {
-                H.matrix[h][i][j] = bH.get(h, i, j);
-            }
-        }
-    }
-    global_dpd_->file2_mat_wrt(&H);
+    auto temp = *bH.get_block(slices_.at("ACTIVE_OCC_B"));
+    temp.write_to_dpdfile2(&H);
     global_dpd_->file2_close(&H);
 
     global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "H <v|v>");
-    global_dpd_->file2_mat_init(&H);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int a = 0; a < nbvirpi_[h]; ++a) {
-            for (int b = 0; b < nbvirpi_[h]; ++b) {
-                H.matrix[h][a][b] = bH.get(h, nboccpi_[h] + a, nboccpi_[h] + b);
-            }
-        }
-    }
-    global_dpd_->file2_mat_wrt(&H);
-    global_dpd_->file2_close(&H);
-
-    global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "H <O|V>");
-    global_dpd_->file2_mat_init(&H);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < naoccpi_[h]; ++i) {
-            for (int j = 0; j < navirpi_[h]; ++j) {
-                H.matrix[h][i][j] = aH.get(h, i, naoccpi_[h] + j);
-            }
-        }
-    }
-    global_dpd_->file2_mat_wrt(&H);
+    temp = *bH.get_block(slices_.at("ACTIVE_VIR_B"));
+    temp.write_to_dpdfile2(&H);
     global_dpd_->file2_close(&H);
 
     global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('v'), "H <o|v>");
-    global_dpd_->file2_mat_init(&H);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nboccpi_[h]; ++i) {
-            for (int j = 0; j < nbvirpi_[h]; ++j) {
-                H.matrix[h][i][j] = bH.get(h, i, nboccpi_[h] + j);
-            }
-        }
-    }
-    global_dpd_->file2_mat_wrt(&H);
+    temp = *bH.get_block(slices_.at("ACTIVE_OCC_B"), slices_.at("ACTIVE_VIR_B"));
+    temp.write_to_dpdfile2(&H);
     global_dpd_->file2_close(&H);
 }
 
@@ -585,10 +552,10 @@ void DCTSolver::build_denominators() {
     dpdbuf4 D;
     dpdfile2 F;
 
-    auto *aOccEvals = new double[nalpha_];
-    auto *bOccEvals = new double[nbeta_];
-    auto *aVirEvals = new double[navir_];
-    auto *bVirEvals = new double[nbvir_];
+    auto aOccEvals = std::vector<double>(nalpha_, 0);
+    auto bOccEvals = std::vector<double>(nbeta_, 0);
+    auto aVirEvals = std::vector<double>(navir_, 0);
+    auto bVirEvals = std::vector<double>(nbvir_, 0);
     // Pick out the diagonal elements of the Fock matrix, making sure that they are in the order
     // used by the DPD library, i.e. starting from zero for each space and ordering by irrep
     int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;
@@ -609,6 +576,8 @@ void DCTSolver::build_denominators() {
 
     // Diagonal elements of the Fock matrix
     // Alpha spin
+    aocc_c_ = Ca_->get_block(slices_.at("SO"), slices_.at("ACTIVE_OCC_A"));
+    avir_c_ = Ca_->get_block(slices_.at("SO"), slices_.at("ACTIVE_VIR_A"));
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {
             if (!exact_tau_) {
@@ -616,7 +585,6 @@ void DCTSolver::build_denominators() {
             } else {
                 aOccEvals[aOccCount++] = moFa_->get(h, i, i) / (1.0 + 2.0 * T_OO.matrix[h][i][i]);
             }
-            for (int mu = 0; mu < nsopi_[h]; ++mu) aocc_c_->set(h, mu, i, Ca_->get(h, mu, i));
         }
 
         for (int a = 0; a < navirpi_[h]; ++a) {
@@ -626,7 +594,6 @@ void DCTSolver::build_denominators() {
                 aVirEvals[aVirCount++] =
                     moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) / (1.0 - 2.0 * T_VV.matrix[h][a][a]);
             }
-            for (int mu = 0; mu < nsopi_[h]; ++mu) avir_c_->set(h, mu, a, Ca_->get(h, mu, naoccpi_[h] + a));
         }
     }
 
@@ -636,15 +603,12 @@ void DCTSolver::build_denominators() {
     if (!exact_tau_) {
         global_dpd_->file2_init(&F, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "F <O|O>");
         global_dpd_->file2_mat_init(&F);
-        int offset = 0;
         for (int h = 0; h < nirrep_; ++h) {
-            offset += frzcpi_[h];
             for (int i = 0; i < naoccpi_[h]; ++i) {
                 for (int j = 0; j < naoccpi_[h]; ++j) {
                     F.matrix[h][i][j] = moFa_->get(h, i, j);
                 }
             }
-            offset += nmopi_[h];
         }
         global_dpd_->file2_mat_wrt(&F);
         global_dpd_->file2_close(&F);
@@ -652,15 +616,12 @@ void DCTSolver::build_denominators() {
         // Alpha Virtual
         global_dpd_->file2_init(&F, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "F <V|V>");
         global_dpd_->file2_mat_init(&F);
-        offset = 0;
         for (int h = 0; h < nirrep_; ++h) {
-            offset += naoccpi_[h];
             for (int i = 0; i < navirpi_[h]; ++i) {
                 for (int j = 0; j < navirpi_[h]; ++j) {
                     F.matrix[h][i][j] = moFa_->get(h, i + naoccpi_[h], j + naoccpi_[h]);
                 }
             }
-            offset += nmopi_[h] - naoccpi_[h];
         }
         global_dpd_->file2_mat_wrt(&F);
         global_dpd_->file2_close(&F);
@@ -668,6 +629,8 @@ void DCTSolver::build_denominators() {
 
     // Diagonal elements of the Fock matrix
     // Beta spin
+    bocc_c_ = Cb_->get_block(slices_.at("SO"), slices_.at("ACTIVE_OCC_B"));
+    bvir_c_ = Cb_->get_block(slices_.at("SO"), slices_.at("ACTIVE_VIR_B"));
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < nboccpi_[h]; ++i) {
             if (!exact_tau_) {
@@ -675,7 +638,6 @@ void DCTSolver::build_denominators() {
             } else {
                 bOccEvals[bOccCount++] = moFb_->get(h, i, i) / (1.0 + 2.0 * T_oo.matrix[h][i][i]);
             }
-            for (int mu = 0; mu < nsopi_[h]; ++mu) bocc_c_->set(h, mu, i, Cb_->get(h, mu, i));
         }
         for (int a = 0; a < nbvirpi_[h]; ++a) {
             if (!exact_tau_) {
@@ -684,7 +646,6 @@ void DCTSolver::build_denominators() {
                 bVirEvals[bVirCount++] =
                     moFb_->get(h, a + nboccpi_[h], a + nboccpi_[h]) / (1.0 - 2.0 * T_vv.matrix[h][a][a]);
             }
-            for (int mu = 0; mu < nsopi_[h]; ++mu) bvir_c_->set(h, mu, a, Cb_->get(h, mu, nboccpi_[h] + a));
         }
     }
 
@@ -694,15 +655,12 @@ void DCTSolver::build_denominators() {
     if (!exact_tau_) {
         global_dpd_->file2_init(&F, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "F <o|o>");
         global_dpd_->file2_mat_init(&F);
-        int offset = 0;
         for (int h = 0; h < nirrep_; ++h) {
-            offset += frzcpi_[h];
             for (int i = 0; i < nboccpi_[h]; ++i) {
                 for (int j = 0; j < nboccpi_[h]; ++j) {
                     F.matrix[h][i][j] = moFb_->get(h, i, j);
                 }
             }
-            offset += nmopi_[h];
         }
         global_dpd_->file2_mat_wrt(&F);
         global_dpd_->file2_close(&F);
@@ -710,15 +668,12 @@ void DCTSolver::build_denominators() {
         // Beta Virtual
         global_dpd_->file2_init(&F, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "F <v|v>");
         global_dpd_->file2_mat_init(&F);
-        offset = 0;
         for (int h = 0; h < nirrep_; ++h) {
-            offset += nboccpi_[h];
             for (int i = 0; i < nbvirpi_[h]; ++i) {
                 for (int j = 0; j < nbvirpi_[h]; ++j) {
                     F.matrix[h][i][j] = moFb_->get(h, i + nboccpi_[h], j + nboccpi_[h]);
                 }
             }
-            offset += nmopi_[h] - nboccpi_[h];
         }
         global_dpd_->file2_mat_wrt(&F);
         global_dpd_->file2_close(&F);
@@ -732,8 +687,7 @@ void DCTSolver::build_denominators() {
     ///////////////////////////////
     // The alpha-alpha spin case //
     ///////////////////////////////
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
-                           "D <OO|VV>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0, "D <OO|VV>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&D, h);
         for (int row = 0; row < D.params->rowtot[h]; ++row) {
@@ -754,8 +708,7 @@ void DCTSolver::build_denominators() {
     //////////////////////////////
     // The alpha-beta spin case //
     //////////////////////////////
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "D <Oo|Vv>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "D <Oo|Vv>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&D, h);
         for (int row = 0; row < D.params->rowtot[h]; ++row) {
@@ -776,8 +729,7 @@ void DCTSolver::build_denominators() {
     /////////////////////////////
     // The beta-beta spin case //
     /////////////////////////////
-    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
-                           "D <oo|vv>");
+    global_dpd_->buf4_init(&D, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0, "D <oo|vv>");
     for (int h = 0; h < nirrep_; ++h) {
         global_dpd_->buf4_mat_irrep_init(&D, h);
         for (int row = 0; row < D.params->rowtot[h]; ++row) {
@@ -794,11 +746,6 @@ void DCTSolver::build_denominators() {
         global_dpd_->buf4_mat_irrep_close(&D, h);
     }
     global_dpd_->buf4_close(&D);
-
-    delete[] aOccEvals;
-    delete[] bOccEvals;
-    delete[] aVirEvals;
-    delete[] bVirEvals;
 
     dct_timer_off("DCTSolver::build_denominators()");
 }

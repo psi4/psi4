@@ -55,6 +55,11 @@ developed by E. Valeev from early roots by J. Fermann. Libint requires no
 additional licence, downloads, or configuration. Conversely, |Psifour|
 cannot build *without* Libint.
 
+.. note:: As of Nov 2020 or release v1.4, |PSIfour| uses Libint2, not Libint1.
+   Compared to many other open-source QC codes, |PSIfour| requires a separate
+   Libint compilation with a different integrals ordering. See notes at top of
+   https://github.com/psi4/psi4/blob/master/external/upstream/libint2/CMakeLists.txt
+
 Installation
 ~~~~~~~~~~~~
 
@@ -73,8 +78,8 @@ Installation
   Then, hint its location with :makevar:`CMAKE_PREFIX_PATH`,
   and rebuild |PSIfour| to detect Libint and activate dependent code.
 
-* Previous bullet had details. To build |PSIfour| from source and use 
-  Libint from conda without thinking, consult :ref:`sec:condapsi4dev`.
+.. * Previous bullet had details. To build |PSIfour| from source and use 
+..   Libint from conda without thinking, consult.
 
 * To remove a conda installation, ``conda remove libint``.
 

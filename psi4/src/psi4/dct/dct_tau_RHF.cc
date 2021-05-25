@@ -31,7 +31,6 @@
 
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/libiwl/iwl.hpp"
 #include "psi4/libmints/molecule.h"
 #include "psi4/psifiles.h"
 #include "psi4/libtrans/integraltransform.h"
@@ -42,51 +41,54 @@
 
 namespace psi {
 namespace dct {
+
+void DCTSolver::compute_SO_tau_R() {
+    build_d_R();
+    if (exact_tau_) {
+        build_tau_R();
+    }
+    transform_tau_R();
+}
+
 /**
- * Forms Tau in the MO basis from the Lambda tensors and transforms it back
- * to the SO basis
- * for RHF reference.
+ * Forms d in the MO basis from the Amplitude tensors.
+ * Several variables used in this function are labeled Tau. At this time, they are NOT Tau, but d.
  */
-void DCTSolver::build_tau_RHF() {
-    dct_timer_on("DCTSolver::build_tau()");
+void DCTSolver::build_d_R() {
+    dct_timer_on("DCTSolver::build_d()");
     dpdbuf4 L1, L2;
     dpdfile2 T_OO, T_VV;
 
-    /*
-     * The following 4 lines are not able to dump Tau <O|O>'s onto PSIF_DCT_DPD
-     * T_OO's are assigned zero at the first time but it has correct symmetry blocks (correct size)
-     * Tau <O|O> are save on PSIF_DCT_DPD after contract442
-     */
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
 
-    global_dpd_->buf4_init(&L1, PSIF_DCT_DPD, 0, _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"), ID("[O,O]"),
-                           ID("[V,V]"), 0, "Lambda <OO|VV>");
-    global_dpd_->buf4_init(&L2, PSIF_DCT_DPD, 0, _ints->DPD_ID("[O,O]"), _ints->DPD_ID("[V,V]"), ID("[O,O]"),
-                           ID("[V,V]"), 0, "Lambda <OO|VV>");
+    global_dpd_->buf4_init(&L1, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                           "Amplitude <OO|VV>");
+    global_dpd_->buf4_init(&L2, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
+                           "Amplitude <OO|VV>");
 
     /*
-     * Tau_IJ = -1/2 Lambda_IKAB Lambda_JKAB
+     * d_IJ = -1/2 Amplitude_IKAB Amplitude_JKAB
      */
     global_dpd_->contract442(&L1, &L2, &T_OO, 0, 0, -0.5, 0.0);
     /*
-     * Tau_AB = +1/2 Lambda_IJAC Lambda_IJBC
+     * d_AB = +1/2 Amplitude_IJAC Amplitude_IJBC
      */
     global_dpd_->contract442(&L1, &L2, &T_VV, 2, 2, 0.5, 0.0);
     global_dpd_->buf4_close(&L1);
     global_dpd_->buf4_close(&L2);
 
     global_dpd_->buf4_init(&L1, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                           "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
     global_dpd_->buf4_init(&L2, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                           "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
 
     /*
-     * Tau_IJ -= 1/2 Lambda_IkAb Lambda_JkAb - 1/2 Lambda_IkaB Lambda_JkaB
+     * d_IJ -= 1/2 Amplitude_IkAb Amplitude_JkAb - 1/2 Amplitude_IkaB Amplitude_JkaB
      */
     global_dpd_->contract442(&L1, &L2, &T_OO, 0, 0, -1.0, 1.0);
     /*
-     * Tau_AB += 1/2 Lambda_IjAc Lambda_IjBc + 1/2 Lambda_iJAc Lambda_iJBc
+     * d_AB += 1/2 Amplitude_IjAc Amplitude_IjBc + 1/2 Amplitude_iJAc Amplitude_iJBc
      */
     global_dpd_->contract442(&L1, &L2, &T_VV, 2, 2, 1.0, 1.0);
 
@@ -99,61 +101,59 @@ void DCTSolver::build_tau_RHF() {
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
 
-    aocc_tau_ = std::make_shared<Matrix>(&T_OO);
-    avir_tau_ = std::make_shared<Matrix>(&T_VV);
+    aocc_tau_ = Matrix(&T_OO);
+    avir_tau_ = Matrix(&T_VV);
 
-    bocc_tau_->copy(aocc_tau_);
-    bvir_tau_->copy(avir_tau_);
+    bocc_tau_.copy(aocc_tau_);
+    bvir_tau_.copy(avir_tau_);
 
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
 
-    dct_timer_off("DCTSolver::build_tau()");
+    dct_timer_off("DCTSolver::build_d()");
 }
 
-void DCTSolver::refine_tau_RHF() {
-    dct_timer_on("DCTSolver::refine_tau()");
+void DCTSolver::build_tau_R() {
+    dct_timer_on("DCTSolver::build_tau()");
 
-    // Read MO-basis Tau from disk into the memory
     dpdfile2 T_OO, T_VV;
 
     // Iteratively compute the exact Tau
 
-    auto aocc_tau_old = std::make_shared<Matrix>("MO basis Tau (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
-    auto avir_tau_old = std::make_shared<Matrix>("MO basis Tau (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
-    auto aocc_d =
-        std::make_shared<Matrix>("Non-idempotency of OPDM (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
-    auto avir_d = std::make_shared<Matrix>("Non-idempotency of OPDM (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
+    auto aocc_tau_old = Matrix("MO basis Tau (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
+    auto avir_tau_old = Matrix("MO basis Tau (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
+    auto aocc_d = Matrix("Non-idempotency of OPDM (Alpha Occupied, old)", nirrep_, naoccpi_, naoccpi_);
+    auto avir_d = Matrix("Non-idempotency of OPDM (Alpha Virtual, old)", nirrep_, navirpi_, navirpi_);
 
     bool converged = false;
     bool failed = false;
     int cycle = 0;
 
     // Copy approximate Tau as the non-idempotency of OPDM
-    aocc_d->copy(aocc_tau_);
-    avir_d->copy(avir_tau_);
+    aocc_d.copy(aocc_tau_);
+    avir_d.copy(avir_tau_);
 
     while (!converged && !failed) {
         // Save old tau from previous iteration
-        aocc_tau_old->copy(aocc_tau_);
-        avir_tau_old->copy(avir_tau_);
+        aocc_tau_old.copy(aocc_tau_);
+        avir_tau_old.copy(avir_tau_);
 
         // Tau_ij = d_ij
         // Tau_ab = -d_ab
-        aocc_tau_->copy(aocc_d);
-        avir_tau_->copy(avir_d);
+        aocc_tau_.copy(aocc_d);
+        avir_tau_.copy(avir_d);
 
         // Tau_ij -= Tau_ik * Tau_kj
         // Tau_ab += Tau_ac * Tau_cb
-        aocc_tau_->gemm(false, false, -1.0, aocc_tau_old, aocc_tau_old, 1.0);
-        avir_tau_->gemm(false, false, 1.0, avir_tau_old, avir_tau_old, 1.0);
+        aocc_tau_.gemm(false, false, -1.0, aocc_tau_old, aocc_tau_old, 1.0);
+        avir_tau_.gemm(false, false, 1.0, avir_tau_old, avir_tau_old, 1.0);
 
         // Compute RMS
-        aocc_tau_old->subtract(aocc_tau_);
-        avir_tau_old->subtract(avir_tau_);
+        aocc_tau_old.subtract(aocc_tau_);
+        avir_tau_old.subtract(avir_tau_);
 
-        double rms = aocc_tau_old->rms();
-        rms += avir_tau_old->rms();
+        double rms = aocc_tau_old.rms();
+        rms += avir_tau_old.rms();
         rms *= 2.0;
 
         converged = (rms < cumulant_threshold_);
@@ -164,67 +164,63 @@ void DCTSolver::refine_tau_RHF() {
 
     }  // end of macroiterations
 
-    // Test the trace of Tau
-    // double trace = aocc_tau_->trace() + avir_tau_->trace() + bocc_tau_->trace() + bvir_tau_->trace();
-    // outfile->Printf( "\t Trace of Tau: %8.7e\n", trace);
-
     // If exact tau iterations failed, throw a message about it and compute it non-iteratively
     if (failed) {
         outfile->Printf("\t Exact Tau didn't converge. Evaluating it non-iteratively\n");
         // Set old tau matrices to identity
-        aocc_tau_old->identity();
-        avir_tau_old->identity();
+        aocc_tau_old.identity();
+        avir_tau_old.identity();
         // Scale the non-idempotency elements
-        aocc_d->scale(4.0);
-        avir_d->scale(-4.0);
+        aocc_d.scale(4.0);
+        avir_d.scale(-4.0);
         // Add them to the old tau
-        aocc_tau_old->add(aocc_d);
-        avir_tau_old->add(avir_d);
+        aocc_tau_old.add(aocc_d);
+        avir_tau_old.add(avir_d);
         // Zero out new tau
-        aocc_tau_->zero();
-        avir_tau_->zero();
+        aocc_tau_.zero();
+        avir_tau_.zero();
         // Diagonalize and take a square root
         auto aocc_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
         auto avir_evecs = std::make_shared<Matrix>("Eigenvectors (Alpha Virtual)", nirrep_, navirpi_, navirpi_);
         auto aocc_evals = std::make_shared<Vector>("Eigenvalues (Alpha Occupied)", nirrep_, naoccpi_);
         auto avir_evals = std::make_shared<Vector>("Eigenvalues (Alpha Virtual)", nirrep_, navirpi_);
-        aocc_tau_old->diagonalize(aocc_evecs, aocc_evals);
-        avir_tau_old->diagonalize(avir_evecs, avir_evals);
+        aocc_tau_old.diagonalize(aocc_evecs, aocc_evals);
+        avir_tau_old.diagonalize(avir_evecs, avir_evals);
 
         for (int h = 0; h < nirrep_; ++h) {
             if (nsopi_[h] == 0) continue;
 
             // Alpha occupied
-            for (int p = 0; p < naoccpi_[h]; ++p) aocc_tau_->set(h, p, p, (-1.0 + sqrt(aocc_evals->get(h, p))) / 2.0);
+            for (int p = 0; p < naoccpi_[h]; ++p) aocc_tau_.set(h, p, p, (-1.0 + sqrt(aocc_evals->get(h, p))) / 2.0);
 
             // Alpha virtual
-            for (int p = 0; p < navirpi_[h]; ++p) avir_tau_->set(h, p, p, (1.0 - sqrt(avir_evals->get(h, p))) / 2.0);
+            for (int p = 0; p < navirpi_[h]; ++p) avir_tau_.set(h, p, p, (1.0 - sqrt(avir_evals->get(h, p))) / 2.0);
         }
 
         // Back-transform the diagonal Tau to the original basis
-        aocc_tau_->back_transform(aocc_evecs);
-        avir_tau_->back_transform(avir_evecs);
+        aocc_tau_.back_transform(aocc_evecs);
+        avir_tau_.back_transform(avir_evecs);
     }
 
     // Copy Tau_alpha to Tau_beta
-    bocc_tau_->copy(aocc_tau_);
-    bvir_tau_->copy(avir_tau_);
+    bocc_tau_.copy(aocc_tau_);
+    bvir_tau_.copy(avir_tau_);
 
     // Write the exact tau back to disk
 
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
 
-    aocc_tau_->write_to_dpdfile2(&T_OO);
-    avir_tau_->write_to_dpdfile2(&T_VV);
+    aocc_tau_.write_to_dpdfile2(&T_OO);
+    avir_tau_.write_to_dpdfile2(&T_VV);
 
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
 
-    dct_timer_off("DCTSolver::refine_tau()");
+    dct_timer_off("DCTSolver::build_tau()");
 }
 
-void DCTSolver::transform_tau_RHF() {
+void DCTSolver::transform_tau_R() {
     dct_timer_on("DCTSolver::transform_tau()");
 
     dpdfile2 T_OO, T_VV;
@@ -232,48 +228,11 @@ void DCTSolver::transform_tau_RHF() {
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
 
-    global_dpd_->file2_mat_init(&T_OO);
-    global_dpd_->file2_mat_init(&T_VV);
-    global_dpd_->file2_mat_rd(&T_OO);
-    global_dpd_->file2_mat_rd(&T_VV);
-
     // Zero SO tau arrays before computing it in the MO basis
     tau_so_a_->zero();
+    tau_so_a_->add(linalg::triplet(*aocc_c_, Matrix(&T_OO), *aocc_c_, false, false, true));
+    tau_so_a_->add(linalg::triplet(*avir_c_, Matrix(&T_VV), *avir_c_, false, false, true));
 
-    for (int h = 0; h < nirrep_; ++h) {
-        if (nsopi_[h] == 0) continue;
-
-        double **temp = block_matrix(nsopi_[h], nsopi_[h]);
-        /*
-         * Backtransform the Tau matrices to the AO basis: soTau = C moTau Ct
-         * Attn: the forward MO->AO transformation would be: moTau = Ct S soTau S C
-         */
-        double **paOccC = aocc_c_->pointer(h);
-        double **paVirC = avir_c_->pointer(h);
-        double **pa_tau_ = tau_so_a_->pointer(h);
-
-        // Alpha occupied
-        if (naoccpi_[h] && nsopi_[h]) {
-            C_DGEMM('n', 'n', nsopi_[h], naoccpi_[h], naoccpi_[h], 1.0, paOccC[0], naoccpi_[h], T_OO.matrix[h][0],
-                    naoccpi_[h], 0.0, temp[0], nsopi_[h]);
-            C_DGEMM('n', 't', nsopi_[h], nsopi_[h], naoccpi_[h], 1.0, temp[0], nsopi_[h], paOccC[0], naoccpi_[h], 1.0,
-                    pa_tau_[0], nsopi_[h]);
-        }
-
-        // Alpha virtual
-        if (navirpi_[h] && nsopi_[h]) {
-            C_DGEMM('n', 'n', nsopi_[h], navirpi_[h], navirpi_[h], 1.0, paVirC[0], navirpi_[h], T_VV.matrix[h][0],
-                    navirpi_[h], 0.0, temp[0], nsopi_[h]);
-            C_DGEMM('n', 't', nsopi_[h], nsopi_[h], navirpi_[h], 1.0, temp[0], nsopi_[h], paVirC[0], navirpi_[h], 1.0,
-                    pa_tau_[0], nsopi_[h]);
-        }
-
-        free_block(temp);
-    }
-
-    global_dpd_->file2_mat_close(&T_OO);
-    global_dpd_->file2_mat_close(&T_VV);
-    
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
 

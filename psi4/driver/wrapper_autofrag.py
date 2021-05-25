@@ -26,10 +26,12 @@
 # @END LICENSE
 #
 
+from typing import List
+
 from psi4 import core
 
 
-def auto_fragments(**kwargs):
+def auto_fragments(molecule: core.Molecule = None, seed_atoms: List = None) -> core.Molecule:
     r"""Detects fragments in unfragmented molecule using BFS algorithm.
     Currently only used for the WebMO implementation of SAPT.
 
@@ -37,7 +39,7 @@ def auto_fragments(**kwargs):
     ----------
     molecule : :ref:`molecule <op_py_molecule>`, optional
         The target molecule, if not the last molecule defined.
-    seed_atoms : list, optional
+    seed_atoms
         List of lists of atoms (0-indexed) belonging to independent fragments.
         Useful to prompt algorithm or to define intramolecular fragments through
         border atoms. Example: `[[1, 0], [2]]`
@@ -57,12 +59,12 @@ def auto_fragments(**kwargs):
 
     """
     # Make sure the molecule the user provided is the active one
-    molecule = kwargs.pop('molecule', core.get_active_molecule())
-    seeds = kwargs.pop('seed_atoms', None)
+    if molecule is None:
+        molecule = core.get_active_molecule()
     molecule.update_geometry()
     molname = molecule.name()
 
-    frag, bmol = molecule.BFS(seed_atoms=seeds, return_molecule=True)
+    frag, bmol = molecule.BFS(seed_atoms=seed_atoms, return_molecule=True)
 
     bmol.set_name(molname)
     bmol.print_cluster()

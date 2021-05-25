@@ -31,6 +31,12 @@ else()
     set(SPHINX_STUFF_FOUND "ON")
 endif()
 
+if(SPHINXMAN_STRICT)
+    #set(SPHINX_EXTRAS "-n;-W;--keep-going")
+    set(SPHINX_EXTRAS "-W;--keep-going")
+else()
+    set(SPHINX_EXTRAS "")
+endif()
 
 # Setup and build Sphinx documentation
 if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
@@ -61,11 +67,9 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
     libxc.rst gau2grid.rst prog_conduct.rst prog_intro.rst prog_newcode.rst
     prog_setup.rst prog_welcome.rst prog_ways_to_add.rst
     prog_full_integration.rst prog_style_py.rst prog_help.rst
-    prog_code_intro.rst prog_debug_profile.rst manage_release.rst
-    plugin_psi4fockci.rst brianqc.rst
-    tdscf.rst prog_integrals.rst
-    prog_tour.rst prog_ways_to_add.rst
-    prog_code_intro.rst prog_debug_profile.rst
+    prog_debug_profile.rst manage_release.rst plugin_psi4fockci.rst
+    brianqc.rst tdscf.rst prog_integrals.rst prog_tour.rst mcscf.rst
+    code_style.rst nitpick-exceptions external_apis.rst
     )
 
     # * compute relative path btwn top_srcdir and objdir/doc/sphinxman
@@ -200,6 +204,14 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
                 ${psi4_SOURCE_DIR}/tests/*/input.dat
                 ${psi4_SOURCE_DIR}/tests/*/*/input.dat
         COMMENT "Autodoc test cases")
+
+
+    # Autodoc stubs
+    add_custom_command(
+        COMMAND ${Python_EXECUTABLE} ${CCSD}/document_stubs.py ${CCSD}
+        OUTPUT  ${CCBD}/source/api/psi4.core.set_variable.rst
+        DEPENDS ${CCSD}/document_stubs.py
+        COMMENT "Autodoc stubs")
 
 
 #    # Autodoc driver
@@ -340,6 +352,7 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
                 ${CCBD}/source/autodoc_available_databases.rst
                 ${CCBD}/source/autodoc_testsuite_corepsi4.rst
                 ${CCBD}/source/autodoc_testsuite_dftd3.rst
+                ${CCBD}/source/api/psi4.core.set_variable.rst
                 ${CCBD}/source/autodoc_dft_energy.rst
                 ${CCBD}/source/autodoc_dft_opt.rst
                 ${CCBD}/source/autodoc_dft_all.rst
@@ -359,6 +372,20 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
         DIRECTORY ${CCBD}/html
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_DOCDIR}
         OPTIONAL)
+
+    add_custom_target(linkcheck
+        DEPENDS sphinxman
+        COMMENT "Preparing Sphinx linkcheck documentation build")
+
+    add_custom_command(
+        TARGET linkcheck POST_BUILD
+        COMMAND ${SPHINX_EXECUTABLE}
+            -b linkcheck          # builder
+            -d ${CCBD}/_doctrees  # cache w/ pickled reST
+            -c ${CCBD}/source     # whereabouts of conf.py
+            ${CCBD}/source        # build from
+            ${CCBD}/latex         # build to
+        COMMENT "Building linkcheck documentation ...")
 
     # * full, proper build with LaTeX
     if (LATEX_COMPILER AND PDFLATEX_COMPILER)
@@ -397,6 +424,10 @@ if(PERL_FOUND AND SPHINX_FOUND AND SPHINX_STUFF_FOUND)
             # -Q  # Enable for even more quiet mode
             # -E  # don't use a saved environment, always read all file
             # -a  # write all files; default is to only write new and changed files
+            # -n                  # nit-picky mode, warn about all missing references
+            # -W                  # turn warnings into errors
+            # --keep-going        # with -W, keep going when getting warnings
+            ${SPHINX_EXTRAS}
             -b html               # builder
             -d ${CCBD}/_doctrees  # cache w/ pickled reST
             -c ${CCBD}/source     # whereabouts of conf.py

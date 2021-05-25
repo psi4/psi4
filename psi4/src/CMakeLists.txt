@@ -1,6 +1,30 @@
 ### >> Create core target, so we may link modules to it directly <<
 ### >> This allow to propagate dependencies upwards sanely
-pybind11_add_module(core MODULE core.cc)
+add_library(core SHARED core.cc)
+
+if(DEFINED ENV{LGTM_SRC})
+    target_include_directories(core
+      PRIVATE
+        ${Python_INCLUDE_DIRS}
+    )
+else()
+    target_link_libraries(core
+      PRIVATE
+        Python::Module
+    )
+endif()
+target_link_libraries(core
+  PRIVATE
+    pybind11::module
+    pybind11::lto
+    pybind11::windows_extras
+)
+pybind11_extension(core)
+if(NOT MSVC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug|RelWithDebInfo)
+    # Strip unnecessary sections of the binary on Linux/macOS
+    pybind11_strip(core)
+endif()
+set_target_properties(core PROPERTIES CXX_VISIBILITY_PRESET "hidden" VISIBILITY_INLINES_HIDDEN 1)
 
 ### >> Go into psi4 subdirectory to compile libraries and modules <<
 add_subdirectory(psi4)

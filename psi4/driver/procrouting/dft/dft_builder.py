@@ -25,6 +25,8 @@
 #
 # @END LICENSE
 #
+import re
+
 """
 Superfunctional builder function & handlers.
 The new definition of functionals is based on a dictionary with the following structure
@@ -77,14 +79,13 @@ dict = {
     },
 }
 """
-from psi4 import core
 from psi4.driver.p4util.exceptions import ValidationError
-
 import copy
 import collections
 
-import qcengine as qcng
-from qcengine.programs.empirical_dispersion_resources import dashcoeff
+from qcengine.programs.empirical_dispersion_resources import dashcoeff, get_dispersion_aliases
+
+from psi4 import core
 
 from . import libxc_functionals
 from . import lda_functionals
@@ -111,7 +112,7 @@ def get_functional_aliases(functional_dict):
     return aliases
 
 
-_dispersion_aliases = qcng.programs.empirical_dispersion_resources.get_dispersion_aliases()
+_dispersion_aliases = get_dispersion_aliases()
 
 functionals = {}
 dashcoeff_supplement = collections.defaultdict(lambda: collections.defaultdict(dict))
@@ -243,7 +244,7 @@ def check_consistency(func_dictionary):
     # 3d) check formatting for dispersion citation
         if "citation" in disp:
             cit = disp["citation"]
-            if cit and not (cit.startswith('    ') and cit.endswith('\n')):
+            if cit and not ((cit.startswith('    ') and cit.endswith('\n')) or re.match(r"^10.\d{4,9}/[-._;()/:A-Z0-9]+$", cit)):
                 raise ValidationError(
                     f"SCF: All citations should have the form '    A. Student, B. Prof, J. Goodstuff Vol, Page, Year\n', not : {cit}"
                 )

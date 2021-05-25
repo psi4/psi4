@@ -25,12 +25,11 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #
 #    >>> ls
 #    external/  COPYING  psi4/  tests/  ...
-#    >>> cmake -H. -Bobjdir -DCMAKE_INSTALL_PREFIX=/path/to/install-psi4 ...
+#    >>> cmake -S. -Bobjdir -DCMAKE_INSTALL_PREFIX=/path/to/install-psi4 ...
 #    ...
 #    -- Generating done
 #    -- Build files have been written to: /current/dir/objdir
-#    >>> cd objdir && make -j`getconf _NPROCESSORS_ONLN`
-#    >>> make install
+#    >>> cmake --build objdir --target install -j`getconf _NPROCESSORS_ONLN`
 
 #  <<<  Required build dependencies that Psi4 can't build itself  >>>
 #
@@ -171,6 +170,7 @@ option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation mes
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 14)
 option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar sse avx avxfma micavx512)" avx)
 option_with_default(SPHINX_THEME "Theme for Sphinx documentation and extensions" sphinx_psi_theme)
+option_with_default(SPHINXMAN_STRICT "Turn warnings into errors for docs target sphinxman" OFF)
 option_with_default(BUILD_Libint2_GENERATOR "If prebuilt not found, don't build Libint2 from source tarball but instead build and run generator (several hours for production library). Edit angular momentum and integrals classes directly in `external/upstream/libint2/CMakeLists.txt` (requires Ninja)." OFF)
 
 ########################  Process & Validate Options  ##########################
@@ -247,6 +247,7 @@ ExternalProject_Add(psi4-core
               -DCMAKE_CXX_STANDARD=${psi4_CXX_STANDARD}
               -DCMAKE_CXX_STANDARD_REQUIRED=ON
               -DCMAKE_CXX_EXTENSIONS=OFF
+              -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
               -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
               -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
               -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}

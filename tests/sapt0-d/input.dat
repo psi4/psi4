@@ -1,0 +1,45 @@
+#! Tests SAPT0-D corrections, with a variety of damping functions/parameters
+
+# ref values are [disp, total]
+ref_d3zero = [-1.97178000, -2.53507077]
+ref_d3m    = [-2.12721000, -2.69050077]
+ref_d3bj   = [-2.17010000, -2.73339077]
+ref_d3mbj  = [-2.12221000, -2.68550077] 
+
+molecule eneyne {
+C   0.000000  -0.667578  -2.124659
+C   0.000000   0.667578  -2.124659
+H   0.923621  -1.232253  -2.126185
+H  -0.923621  -1.232253  -2.126185
+H  -0.923621   1.232253  -2.126185
+H   0.923621   1.232253  -2.126185
+--
+C   0.000000   0.000000   2.900503
+C   0.000000   0.000000   1.693240
+H   0.000000   0.000000   0.627352
+H   0.000000   0.000000   3.963929
+}
+
+set {
+    scf_type df
+    basis jun-cc-pvdz
+}
+
+
+e_d3_total = energy('sapt0-d3')
+e_d3_disp = core.variable('SAPT0-D DISP ENERGY')
+
+e_d3m = energy('sapt0-d3m')
+e_d3m_disp = core.variable('SAPT0-D DISP ENERGY')
+
+e_d3bj = energy('sapt0-d3bj')
+e_d3bj_disp = core.variable('SAPT0-D DISP ENERGY')
+
+e_d3mbj = energy('sapt0-d3mbj')
+e_d3mbj_disp = core.variable('SAPT0-D DISP ENERGY')
+
+
+compare_values(ref_d3zero[0],   e_d3_disp*1000, 5, 'Ethene-Ethyne -D3')              #TEST
+compare_values(ref_d3m[0],     e_d3m_disp*1000, 5, 'Ethene-Ethyne -D3M')              #TEST
+compare_values(ref_d3bj[0],   e_d3bj_disp*1000, 5, 'Ethene-Ethyne -D3(BJ)')              #TEST
+compare_values(ref_d3mbj[0], e_d3mbj_disp*1000, 5, 'Ethene-Ethyne -D3M(BJ)')              #TEST

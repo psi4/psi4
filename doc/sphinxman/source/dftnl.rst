@@ -48,17 +48,17 @@ the functional name::
 
     energy('b3lyp-nl')
 
-Modification of the parameters `b` and `C` is done setting |scf__DFT_VV10_B| and |scf__DFT_VV10_C|. The `C` is usually left unchanged and the originally proposed
+Modification of the parameters `b` and `C` is done setting |scf__dft_vv10_b| and |scf__dft_vv10_c|. The `C` is usually left unchanged and the originally proposed
 value of `C=0.0093` is used.
 
-Adding |scf__DFT_VV10_B| to any functional activates the calculation of the VV10 kernel. A BLYP-NL calculation can be set as follows::
+Adding |scf__dft_vv10_b| to any functional activates the calculation of the VV10 kernel. A BLYP-NL calculation can be set as follows::
 
     set DFT_VV10_B 4.0
     energy('blyp')
 
 The default `C` parameter will be used.
 
-Similar to |scf__DFT_DISPERSION_PARAMETERS| the tuple |scf__NL_DISPERSION_PARAMETERS| can used::
+Similar to |scf__dft_dispersion_parameters| the tuple |scf__nl_dispersion_parameters| can used::
 
     set NL_DISPERSION_PARAMTERS [4.0]
     energy('blyp')
@@ -71,4 +71,4 @@ post-SCF time savings
 ~~~~~~~~~~~~~~~~~~~~~
 
 Substantial time-savings for energy calculations are available by evaluating the VV10 kernel only at the converged electron density, i.e. in a post-SCF fashion.
-The deviations from the fully self-consistent treatment are usually minimal. To activate this set |scf__DFT_VV10_POSTSCF| to `true`.
+The deviations from the fully self-consistent treatment are usually minimal. To activate this set |scf__dft_vv10_postscf| to `true`.

@@ -39,7 +39,7 @@ Vibrational and Thermochemical Analysis
 .. codeauthor:: Rollin A. King and Lori A. Burns
 .. sectionauthor:: Lori A. Burns
 
-*Module:* :ref:`Keywords <apdx:thermo>`, :ref:`PSI Variables <apdx:thermo_psivar>`, :source:`THERMO <psi4/src/psi4/thermo>`
+*Module:* :ref:`Keywords <apdx:thermo>`, :ref:`PSI Variables <apdx:thermo_psivar>`, :source:`THERMO <psi4/driver/qcdb/vib.py>`
 
 
 .. caution:: It is important to know that |PSIfour|, like any other
@@ -73,7 +73,7 @@ Examples
 A thermochemical analysis is performed after any full (not just specific
 symmetry subgroups). If the wavefunction is retained, it may be reused
 at a different temperature, pressure, rotational symmetry number, or
-isotopic substitution through the function :py:func:`qcdb.vib.thermo`
+isotopic substitution through the function :py:func:`psi4.driver.qcdb.vib.thermo`
 as is shown in :srcsample:`freq-isotope2`.
 
 A few summary psivars are set: "ZPVE", "THERMAL ENERGY CORRECTION",
@@ -82,7 +82,7 @@ ENTHALPHY", "THERMAL ENERGY", "ENTHALPY", "GIBBS FREE ENERGY".
 But additionally, every valid combination of {S, Cv, Cp, ZPE, E, H, G}
 with {elec, trans, rot, vib, corr, tot} (e.g., vibrational entropy,
 S_vib, and enthalpy correction, H_corr) is returned by dictionary
-from the ``thermo`` function. See :srcsamplepy:`python/vibanalysis`
+from the ``thermo`` function. See :source:`tests/pytests/test_vibanalysis.py`
 (near the end) for an example.
 
 

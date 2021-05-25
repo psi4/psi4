@@ -112,6 +112,7 @@ jobs:
       # Note: c-f eigen has Config.cmake file
       - script: |
           conda install cmake ^
+                        anaconda-project ^
                         conda-build ^
                         conda-forge::eigen ^
                         conda-verify ^
@@ -126,14 +127,20 @@ jobs:
                         pytest ^
                         pytest-xdist ^
                         python=%PYTHON_VERSION% ^
+                        psi4/label/dev::dftd3 ^
+                        psi4/label/dev::gcp ^
                         conda-forge::gau2grid ^
                         psi4/label/dev::libint2 ^
                         conda-forge::libxc ^
                         conda-forge::mpfr ^
                         conda-forge::mpmath ^
+                        conda-forge::msgpack-python ^
                         conda-forge::qcelemental ^
                         conda-forge::qcengine
           pip install git+https://github.com/i-pi/i-pi.git@master-py3
+          conda install --only-deps anaconda-client
+          pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent
+          which anaconda
           conda list
         displayName: "Install conda packages"
 
@@ -148,8 +155,11 @@ jobs:
 
       # Install Intel OpenMP import library
       # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
+      #set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
       - script: |
-          set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
+          cd
+          git clone https://github.com/psi4/iomp5md.git
+          set LIB=%cd%\iomp5md\conda\win\$(mkl.version);%LIB%
           echo '##vso[task.setvariable variable=LIB]%LIB%'
         displayName: "Install Intel OpenMP import library"
 
@@ -245,12 +255,34 @@ jobs:
           conda build --python %PYTHON_VERSION% ^
                       conda\win
           copy /y C:\tools\miniconda3\conda-bld\win-64\psi4-*.bz2 $(Build.ArtifactStagingDirectory)
-        condition: and(succeeded(), eq(variables['conda.build'], 'true'))
+        condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master')))
         displayName: "Build Psi4 package"
 
       # Publish package
       - task: PublishBuildArtifacts@1
         inputs:
           artifactName: conda
-        condition: and(succeeded(), eq(variables['conda.build'], 'true'))
+        condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master')))
         displayName: "Publish Psi4 package"
+
+      # Upload package
+      # * use same ANACONDA_TOKEN generated on anaconda.org for GHA and save it in Azure DevOps
+      #   at /psi4/psi4/Pipelines/psi4.psi4 -> Edit button -> Variables button -> new secret var `conda.anaconda_org_token`.
+      # * error handling may need tweaking as I don't know if failure to upload for lack of space (`echo $?`=1) will fail the workflow.
+      - bash: |
+          set -e
+          ls -l /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
+          echo "Using the mapped env var for this task works and is recommended: $(conda.anaconda_org_token)"
+          anaconda whoami
+          anaconda \
+            --verbose \
+           upload \
+            --label dev \
+            --skip \
+            /c/tools/miniconda3/conda-bld/win-64/*.tar.bz2
+          echo $?
+        env:
+          ANACONDA_API_TOKEN: $(conda.anaconda_org_token)
+        condition: and(succeeded(), or(eq(variables['conda.build'], 'true'), eq(variables['Build.SourceBranch'], 'refs/heads/master')))
+        displayName: "Upload Psi4 package to anaconda.org"
+

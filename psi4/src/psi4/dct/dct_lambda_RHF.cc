@@ -56,7 +56,7 @@ double DCTSolver::compute_cumulant_residual_RHF() {
 
     // R_IjAb = G_IjAb
     global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "G <OO|VV>");                        // G <Oo|Vv>
+                           "G <OO|VV>");                       // G <Oo|Vv>
     global_dpd_->buf4_copy(&G, PSIF_DCT_DPD, "R SF <OO|VV>");  // R <Oo|Vv>
     global_dpd_->buf4_close(&G);
     global_dpd_->buf4_init(&R, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
@@ -89,7 +89,7 @@ void DCTSolver::update_cumulant_jacobi_RHF() {
     dpdbuf4 L, D, R;
 
     /*
-     * Lambda_ijab += R_ijab / D_ijab
+     * Amplitude_ijab += R_ijab / D_ijab
      */
 
     // L_IjAb += R_IjAb / D_IjAb
@@ -101,7 +101,7 @@ void DCTSolver::update_cumulant_jacobi_RHF() {
     global_dpd_->buf4_close(&D);
     // Update new cumulant
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                           "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
     dpd_buf4_add(&L, &R, 1.0);
     global_dpd_->buf4_close(&L);
 
@@ -109,9 +109,9 @@ void DCTSolver::update_cumulant_jacobi_RHF() {
 
     /* update lambda <OO|VV> for tau and G intermediates */
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 1,
-                           "Lambda SF <OO|VV>");
-    global_dpd_->buf4_copy(&L, PSIF_DCT_DPD, "Lambda <OO|VV>");
-    global_dpd_->buf4_copy(&L, PSIF_DCT_DPD, "Lambda <oo|vv>");
+                           "Amplitude SF <OO|VV>");
+    global_dpd_->buf4_copy(&L, PSIF_DCT_DPD, "Amplitude <OO|VV>");
+    global_dpd_->buf4_copy(&L, PSIF_DCT_DPD, "Amplitude <oo|vv>");
     global_dpd_->buf4_close(&L);
 
     dct_timer_off("DCTSolver::update_lambda_from_residual()");

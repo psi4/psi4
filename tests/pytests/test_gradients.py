@@ -18,7 +18,13 @@ data = {
          [0, -5.52107556e-03, -6.14594166e-03]]),
     "df-mp2 fc/fv": np.array([[ 0, 0,  1.25984187e-02],
          [0,  5.71563223e-03, -6.29920936e-03],
-         [0, -5.71563223e-03, -6.29920936e-03]])
+         [0, -5.71563223e-03, -6.29920936e-03]]),
+    "df-dct": np.array([[0, 0, 0.008477558394],
+        [0,  0.005148825942, -0.004238779197],
+        [0, -0.005148825942, -0.004238779197]]),
+    "df-cc2": np.array([[0, 0, 0.011903811700],
+        [0,  0.006730035450, -0.005951905850],
+        [0, -0.006730035450, -0.005951905850]])
     }
 
 @pytest.mark.slow
@@ -27,7 +33,10 @@ data = {
     pytest.param({'name': 'mp2', 'options': {'mp2_type': 'df'}, 'ref': data["df-mp2 ae"]}, id='df-mp2 ae'),
     pytest.param({'name': 'mp2', 'options': {'mp2_type': 'df', 'freeze_core': 'true'}, 'ref': data["df-mp2 fc"]}, id='df-mp2 fc'),
     pytest.param({'name': 'mp2', 'options': {'mp2_type': 'df', 'num_frozen_uocc': 4}, 'ref': data["df-mp2 fv"]}, id='df-mp2 fv'),
-    pytest.param({'name': 'mp2', 'options': {'mp2_type': 'df', 'freeze_core': 'true', 'num_frozen_uocc': 4}, 'ref': data["df-mp2 fc/fv"]}, id='df-omp2 fc/fv')
+    pytest.param({'name': 'mp2', 'options': {'mp2_type': 'df', 'freeze_core': 'true', 'num_frozen_uocc': 4}, 'ref': data["df-mp2 fc/fv"]}, id='df-omp2 fc/fv'),
+    pytest.param({'name': 'dct', 'options': {'dct_type': 'df'}, 'ref': data["df-dct"]}, id='df-rdct'),
+    pytest.param({'name': 'dct', 'options': {'dct_type': 'df', 'reference': 'uhf'}, 'ref': data["df-dct"]}, id='df-udct'),
+    pytest.param({'name': 'cc2', 'options': {'cc_type': 'df'}, 'ref': data["df-cc2"]}, id='df-cc2')
     ]
 )
 def test_gradient(inp):

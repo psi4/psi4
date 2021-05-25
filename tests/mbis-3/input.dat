@@ -22,6 +22,26 @@ octupoles_ref = psi4.Matrix.from_list([ #TEST
    1.63782178e-03, -1.59837812e-15, -2.67426850e-15,  1.90542257e-02,
   -5.65466436e-16,  4.40364069e-02]])   #TEST
 
+# Reference Values for Atomic Volumes from Horton
+# O 22.412796513635886
+# H 1.5466730155452373
+
+avols_ref = psi4.Matrix.from_list([    #TEST
+ [22.4122239 ],   #TEST
+ [ 1.54670646]])  #TEST
+
+# Reference Values for Valence Widths from Horton
+# O 0.3907094315779262
+# H 0.355789207347543
+
+vwidths_ref = psi4.Matrix.from_list([  #TEST
+ [0.39070772],    #TEST
+ [0.35579084]])   #TEST
+
+vratios_ref = psi4.Matrix.from_list([  #TEST
+[1.139889],
+[0.211763]])
+
 molecule mol {
   0 2
   O 0.0 0.0 0.0
@@ -38,6 +58,7 @@ set {
   reference uhf
   mbis_radial_points 99
   mbis_spherical_points 350
+  max_radial_moment 5
 }
 
 e, wfn = energy('hf/cc-pvdz', return_wfn=True)
@@ -48,12 +69,18 @@ charges = wfn.array_variable('MBIS CHARGES')
 dipoles = wfn.array_variable('MBIS DIPOLES')
 quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
+avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
+vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vratios = wfn.array_variable('MBIS VOLUME RATIOS')
 
 compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
+compare_matrices(avols_ref, avols, 5, "MBIS Radial Moments <r^3>")    #TEST
+compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
+compare_matrices(vratios, vratios, 5, "MBIS Volume Ratios")      #TEST
+
 # lands on different degenerate solutions due to high-symmetry wfn, so test stable values. (happens for molecular quadrupole, too, not just mbis.)
 compare_values(quadrupoles_ref.np[0, 5], quadrupoles.np[0, 5], 5, "MBIS Quadrupoles: ZZ of O") #TEST
 compare_values(quadrupoles_ref.np[1, 5], quadrupoles.np[1, 5], 5, "MBIS Quadrupoles: ZZ of H") #TEST
 compare_values(octupoles_ref.np[0, 9], octupoles.np[0, 9], 5, "MBIS Octupoles: ZZZ of O") #TEST
 compare_values(octupoles_ref.np[1, 9], octupoles.np[1, 9], 5, "MBIS Octupoles: ZZZ of H") #TEST
-

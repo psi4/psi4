@@ -1323,6 +1323,8 @@ bool Wavefunction::has_scalar_variable(const std::string &key) { return variable
 
 bool Wavefunction::has_array_variable(const std::string &key) { return arrays_.count(to_upper_copy(key)); }
 
+bool Wavefunction::has_potential_variable(const std::string &key) { return potentials_.count(to_upper_copy(key)); }
+
 double Wavefunction::scalar_variable(const std::string &key) {
     std::string uc_key = to_upper_copy(key);
 
@@ -1345,6 +1347,17 @@ SharedMatrix Wavefunction::array_variable(const std::string &key) {
     }
 }
 
+std::shared_ptr<ExternalPotential> Wavefunction::potential_variable(const std::string &key) {
+    std::string uc_key = to_upper_copy(key);
+
+    auto search = potentials_.find(uc_key);
+    if (search != potentials_.end()) {
+        return search->second;
+    } else {
+        throw PSIEXCEPTION("Wavefunction::potential_variable: Requested variable " + uc_key + " was not set!\n");
+    }
+}
+
 void Wavefunction::set_scalar_variable(const std::string &key, double val) {
     variables_[to_upper_copy(key)] = val;
 
@@ -1358,13 +1371,21 @@ void Wavefunction::set_array_variable(const std::string &key, SharedMatrix val) 
     if (to_upper_copy(key) == "CURRENT HESSIAN") hessian_ = val->clone();
 }
 
+void Wavefunction::set_potential_variable(const std::string &key, std::shared_ptr<ExternalPotential> val) {
+    potentials_[to_upper_copy(key)] = val;
+}
+
 int Wavefunction::del_scalar_variable(const std::string &key) { return variables_.erase(to_upper_copy(key)); }
 
 int Wavefunction::del_array_variable(const std::string &key) { return arrays_.erase(to_upper_copy(key)); }
 
+int Wavefunction::del_potential_variable(const std::string &key) { return potentials_.erase(to_upper_copy(key)); }
+
 std::map<std::string, double> Wavefunction::scalar_variables() { return variables_; }
 
 std::map<std::string, SharedMatrix> Wavefunction::array_variables() { return arrays_; }
+
+std::map<std::string, std::shared_ptr<ExternalPotential>> Wavefunction::potential_variables() { return potentials_; }
 
 double Wavefunction::get_variable(const std::string &key) { return scalar_variable(key); }
 SharedMatrix Wavefunction::get_array(const std::string &key) { return array_variable(key); }

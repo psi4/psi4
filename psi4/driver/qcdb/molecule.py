@@ -29,16 +29,19 @@
 import os
 import hashlib
 import collections
+from typing import Dict, List, Tuple, Union
 
 import numpy as np
 
 import qcelemental as qcel
 
+import psi4
 from .util import parse_dertype
 from .libmintsmolecule import *
 from .testing import compare_values, compare_integers, compare_molrecs
 from .bfs import BFS
 
+qcdbmol = "psi4.driver.qcdb.molecule.Molecule"
 
 class Molecule(LibmintsMolecule):
     """Class to store the elements, coordinates, fragmentation pattern,
@@ -1056,19 +1059,19 @@ class Molecule(LibmintsMolecule):
 
         return ar
 
-    def to_arrays(self, dummy=False, ghost_as_dummy=False):
+    def to_arrays(self, dummy: bool = False, ghost_as_dummy: bool = False) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """Exports coordinate info into NumPy arrays.
 
         Parameters
         ----------
-        dummy : bool, optional
+        dummy
             Whether or not to include dummy atoms in returned arrays.
-        ghost_as_dummy : bool, optional
+        ghost_as_dummy
             Whether or not to treat ghost atoms as dummies.
 
         Returns
         -------
-        geom, mass, elem, elez, uniq : ndarray, ndarray, ndarray, ndarray, ndarray
+        geom, mass, elem, elez, uniq : numpy.ndarray, numpy.ndarray, numpy.ndarray, numpy.ndarray, numpy.ndarray
             (nat, 3) geometry [a0].
             (nat,) mass [u].
             (nat,) element symbol.
@@ -1250,30 +1253,30 @@ class Molecule(LibmintsMolecule):
             prec=prec)
         return smol
 
-    def run_dftd3(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbose=1):
+    def run_dftd3(self, func: str = None, dashlvl: str = None, dashparam: Dict = None, dertype: Union[int, str] = None, verbose: int = 1):
         """Compute dispersion correction via Grimme's DFTD3 program.
 
         Parameters
         ----------
-        func : str, optional
+        func
             Name of functional (func only, func & disp, or disp only) for
             which to compute dispersion (e.g., blyp, BLYP-D2, blyp-d3bj,
             blyp-d3(bj), hf+d). Any or all parameters initialized
             from `dashcoeff[dashlvl][func]` can be overwritten via
             `dashparam`.
-        dashlvl : str, optional
+        dashlvl
             Name of dispersion correction to be applied (e.g., d, D2,
             d3(bj), das2010). Must be key in `dashcoeff` or "alias" or
             "formal" to one.
-        dashparam : dict, optional
+        dashparam
             Values for the same keys as `dashcoeff[dashlvl]['default']`
             used to override any or all values initialized by `func`.
             Extra parameters will error.
-        dertype : int or str, optional
+        dertype
             Maximum derivative level at which to run DFTD3. For large
             molecules, energy-only calculations can be significantly more
             efficient. Influences return values, see below.
-        verbose : int, optional
+        verbose
             Amount of printing.
 
         Returns
@@ -1332,6 +1335,86 @@ class Molecule(LibmintsMolecule):
             return float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'])
         elif derint == 1:
             return jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']
+
+    def run_gcp(self, func: str = None, dertype: Union[int, str] = None, verbose: int = 1):
+        """Compute geometrical BSSE correction via Grimme's GCP program.
+
+        Function to call Grimme's GCP program
+        https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/gcp/gcp
+        to compute an a posteriori geometrical BSSE correction to *self* for
+        several HF, generic DFT, and specific HF-3c and PBEh-3c method/basis
+        combinations, *func*. Returns energy if *dertype* is 0, gradient
+        if *dertype* is 1, else tuple of energy and gradient if *dertype*
+        unspecified. The gcp executable must be independently compiled and
+        found in :envvar:`PATH` or :envvar:`PSIPATH`. *self* may be either a
+        qcdb.Molecule (sensibly) or a psi4.Molecule (works b/c psi4.Molecule
+        has been extended by this method py-side and only public interface
+        fns used) or a string that can be instantiated into a qcdb.Molecule.
+
+        Parameters
+        ----------
+        func : str, optional
+            Name of method/basis combination or composite method for which to compute the correction
+           (e.g., HF/cc-pVDZ, DFT/def2-SVP, HF3c, PBEh3c).
+        dertype : int or str, optional
+            Maximum derivative level at which to run GCP. For large
+            molecules, energy-only calculations can be significantly more
+            efficient. Influences return values, see below.
+        verbose : int, optional
+            Amount of printing. Unused at present.
+
+        Returns
+        -------
+        energy : float
+            When `dertype=0`, energy [Eh].
+        gradient : ndarray
+            When `dertype=1`, (nat, 3) gradient [Eh/a0].
+        (energy, gradient) : tuple of float and ndarray
+            When `dertype=None`, both energy [Eh] and (nat, 3) gradient [Eh/a0].
+
+        """
+        import qcengine as qcng
+
+        if dertype is None:
+            derint, derdriver = -1, 'gradient'
+        else:
+            derint, derdriver = parse_dertype(dertype, max_derivative=1)
+
+        resinp = {
+            'molecule': self.to_schema(dtype=2),
+            'driver': derdriver,
+            'model': {
+                'method': func,
+                'basis': '(auto)',
+            },
+            'keywords': {
+                'verbose': verbose,
+            },
+        }
+        jobrec = qcng.compute(resinp, 'gcp', raise_error=True)
+        jobrec = jobrec.dict()
+
+        # hack (instead of checking dertype GRAD) to collect `(nat, 3)` ndarray of gradient if present
+        for variable_name, qcv in jobrec['extras']['qcvars'].items():
+            if isinstance(qcv, (list, np.ndarray)):
+                jobrec['extras']['qcvars'][variable_name] = np.array(qcv).reshape(-1, 3)
+
+        if isinstance(self, Molecule):
+            pass
+        else:
+            from psi4 import core
+
+            for variable_name, qcv in jobrec['extras']['qcvars'].items():
+                if not isinstance(qcv, (list, np.ndarray)):
+                    core.set_variable(variable_name, float(qcv))
+
+        if derint == -1:
+            return (float(jobrec['extras']['qcvars']['GCP CORRECTION ENERGY']),
+                    jobrec['extras']['qcvars']['GCP CORRECTION GRADIENT'])
+        elif derint == 0:
+            return float(jobrec['extras']['qcvars']['GCP CORRECTION ENERGY'])
+        elif derint == 1:
+            return jobrec['extras']['qcvars']['GCP CORRECTION GRADIENT']
 
     @staticmethod
     def from_schema(molschema, return_dict=False, verbose=1):
@@ -1545,7 +1628,7 @@ class Molecule(LibmintsMolecule):
                 # TODO real back to type Ghost?
 
         # apparently py- and c- sides settled on a diff convention of 2nd of pair in fragments_
-        fragment_separators = np.array(molrec['fragment_separators'], dtype=np.int)
+        fragment_separators = np.array(molrec['fragment_separators'], dtype=int)
         fragment_separators = np.insert(fragment_separators, 0, 0)
         fragment_separators = np.append(fragment_separators, nat)
         fragments = [[fragment_separators[ifr], fr - 1] for ifr, fr in enumerate(fragment_separators[1:])]
@@ -1571,27 +1654,27 @@ class Molecule(LibmintsMolecule):
             self.update_geometry()
 
     def BFS(self,
-            seed_atoms=None,
-            bond_threshold=1.20,
-            return_arrays=False,
-            return_molecules=False,
-            return_molecule=False):
+            seed_atoms: List = None,
+            bond_threshold: float = 1.20,
+            return_arrays: bool = False,
+            return_molecules: bool = False,
+            return_molecule: bool = False):
         """Detect fragments among real atoms through a breadth-first search (BFS) algorithm.
 
         Parameters
         ----------
         self : qcdb.Molecule or psi4.core.Molecule
-        seed_atoms : list, optional
+        seed_atoms
             List of lists of atoms (0-indexed) belonging to independent fragments.
             Useful to prompt algorithm or to define intramolecular fragments through
             border atoms. Example: `[[1, 0], [2]]`
-        bond_threshold : float, optional
+        bond_threshold
             Factor beyond average of covalent radii to determine bond cutoff.
-        return_arrays : bool, optional
+        return_arrays
             If `True`, also return fragments as list of arrays.
-        return_molecules : bool, optional
+        return_molecules
             If True, also return fragments as list of Molecules.
-        return_molecule : bool, optional
+        return_molecule
             If True, also return one big Molecule with fragmentation encoded.
 
         Returns
@@ -1615,16 +1698,15 @@ class Molecule(LibmintsMolecule):
             Only provided if `return_molecule` is True.
             Returned is of same type as `self`.
 
-        Notes
-        -----
-        Relies upon van der Waals radii and so faulty for close (especially
-            hydrogen-bonded) fragments. See `seed_atoms`.
-        Any existing fragmentation info/chgmult encoded in `self` is lost.
-
         Authors
         -------
         Original code from Michael S. Marshall, linear-scaling algorithm from
         Trent M. Parker, revamped by Lori A. Burns
+
+        Notes
+        -----
+        Relies upon van der Waals radii and so faulty for close (especially hydrogen-bonded) fragments. See` `seed_atoms``.
+        Any existing fragmentation info/chgmult encoded in ``self`` is lost.
 
         """
         self.update_geometry()
@@ -1686,48 +1768,48 @@ class Molecule(LibmintsMolecule):
         outputs = tuple(outputs)
         return (frag_pattern, ) + outputs[1:]
 
-    def B787(concern_mol,
-             ref_mol,
-             do_plot=False,
-             verbose=1,
-             atoms_map=False,
-             run_resorting=False,
-             mols_align=False,
-             run_to_completion=False,
-             uno_cutoff=1.e-3,
-             run_mirror=False):
+    def B787(concern_mol: Union[qcdbmol, psi4.core.Molecule],
+             ref_mol: Union[qcdbmol, psi4.core.Molecule],
+             do_plot: bool = False,
+             verbose: int = 1,
+             atoms_map: bool = False,
+             run_resorting: bool = False,
+             mols_align: bool = False,
+             run_to_completion: bool = False,
+             uno_cutoff: float = 1.e-3,
+             run_mirror: bool = False):
         """Finds shift, rotation, and atom reordering of `concern_mol` that best
         aligns with `ref_mol`.
 
-        Wraps :py:func:`qcdb.align.B787` for :py:class:`qcdb.Molecule` or
+        Wraps :py:func:`qcelemental.molutil.B787` for :py:class:`psi4.driver.qcdb.Molecule` or
         :py:class:`psi4.core.Molecule`. Employs the Kabsch, Hungarian, and
         Uno algorithms to exhaustively locate the best alignment for
         non-oriented, non-ordered structures.
 
         Parameters
         ----------
-        concern_mol : qcdb.Molecule or psi4.core.Molecule
+        concern_mol
             Molecule of concern, to be shifted, rotated, and reordered into
             best coincidence with `ref_mol`.
-        ref_mol : qcdb.Molecule or psi4.core.Molecule
+        ref_mol
             Molecule to match.
-        atoms_map : bool, optional
+        atoms_map
             Whether atom1 of `ref_mol` corresponds to atom1 of `concern_mol`, etc.
             If true, specifying `True` can save much time.
-        mols_align : bool, optional
+        mols_align
             Whether `ref_mol` and `concern_mol` have identical geometries by eye
             (barring orientation or atom mapping) and expected final RMSD = 0.
             If `True`, procedure is truncated when RMSD condition met, saving time.
-        do_plot : bool, optional
+        do_plot
             Pops up a mpl plot showing before, after, and ref geometries.
-        run_to_completion : bool, optional
+        run_to_completion
             Run reorderings to completion (past RMSD = 0) even if unnecessary because
             `mols_align=True`. Used to test worst-case timings.
-        run_resorting : bool, optional
+        run_resorting
             Run the resorting machinery even if unnecessary because `atoms_map=True`.
-        uno_cutoff : float, optional
+        uno_cutoff
             TODO
-        run_mirror : bool, optional
+        run_mirror
             Run alternate geometries potentially allowing best match to `ref_mol`
             from mirror image of `concern_mol`. Only run if system confirmed to
             be nonsuperimposable upon mirror reflection.
@@ -1800,47 +1882,47 @@ class Molecule(LibmintsMolecule):
 
         return rmsd, solution, amol
 
-    def scramble(ref_mol,
-                 do_shift=True,
-                 do_rotate=True,
-                 do_resort=True,
-                 deflection=1.0,
-                 do_mirror=False,
-                 do_plot=False,
-                 run_to_completion=False,
-                 run_resorting=False,
-                 verbose=1):
+    def scramble(ref_mol: "Molecule",
+                 do_shift: Union[bool, np.ndarray, List] = True,
+                 do_rotate: Union[bool, np.ndarray, List[List]] = True,
+                 do_resort: Union[bool, List] = True,
+                 deflection: float = 1.0,
+                 do_mirror: bool = False,
+                 do_plot: bool = False,
+                 run_to_completion: bool = False,
+                 run_resorting: bool = False,
+                 verbose: int = 1):
         """Tester for B787 by shifting, rotating, and atom shuffling `ref_mol` and
         checking that the aligner returns the opposite transformation.
 
         Parameters
         ----------
-        ref_mol : qcdb.Molecule or psi4.core.Molecule
+        ref_mol
             Molecule to perturb.
-        do_shift : bool or array-like, optional
+        do_shift
             Whether to generate a random atom shift on interval [-3, 3) in each
             dimension (`True`) or leave at current origin. To shift by a specified
             vector, supply a 3-element list.
-        do_rotate : bool or array-like, optional
+        do_rotate
             Whether to generate a random 3D rotation according to algorithm of Arvo.
             To rotate by a specified matrix, supply a 9-element list of lists.
-        do_resort : bool or array-like, optional
+        do_resort
             Whether to shuffle atoms (`True`) or leave 1st atom 1st, etc. (`False`).
             To specify shuffle, supply a nat-element list of indices.
-        deflection : float, optional
+        deflection
             If `do_rotate`, how random a rotation: 0.0 is no change, 0.1 is small
             perturbation, 1.0 is completely random.
-        do_mirror : bool, optional
+        do_mirror
             Whether to construct the mirror image structure by inverting y-axis.
-        do_plot : bool, optional
+        do_plot
             Pops up a mpl plot showing before, after, and ref geometries.
-        run_to_completion : bool, optional
+        run_to_completion
             By construction, scrambled systems are fully alignable (final RMSD=0).
             Even so, `True` turns off the mechanism to stop when RMSD reaches zero
             and instead proceed to worst possible time.
-        run_resorting : bool, optional
+        run_resorting
             Even if atoms not shuffled, test the resorting machinery.
-        verbose : int, optional
+        verbose
             Print level.
 
         Returns
@@ -1910,5 +1992,3 @@ class Molecule(LibmintsMolecule):
 # Attach methods to qcdb.Molecule class
 from .parker import xyz2mol as _parker_xyz2mol_yo
 Molecule.format_molecule_for_mol = _parker_xyz2mol_yo
-from .interface_gcp import run_gcp as _gcp_qcdb_yo
-Molecule.run_gcp = _gcp_qcdb_yo

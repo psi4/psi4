@@ -282,7 +282,7 @@ or ::
     }
 
 will generate a helium dimer with the second atom ghosted, *i.e.*, possessing
-basis functions but no electrons or nuclear charge.  See :srcsample:`dfmp2_1`
+basis functions but no electrons or nuclear charge.  See :srcsample:`dfmp2-1`
 and :srcsample:`ghosts` for a demonstration of both mechanisms for specifying
 ghost atoms.
 
@@ -311,7 +311,7 @@ molecule's point group symmetry. ::
     }
 
 The masses used by |PSIfour| can be found at
-:source:`psi4/include/psi4/masses.h`. See :srcsample:`freq-isotope` for about
+:source:`psi4/include/psi4/masses.h`. See :srcsample:`freq-isotope2` for about
 the only use to which isotopologues can presently be put in |PSIfour|.
 
 .. index:: 
@@ -559,7 +559,7 @@ complexes, arrays can be used, e.g. ``extract_subsets(2,[1,3])``::
    energy('scf')
 
 If the molecule contains fragments but is not conveniently ordered for the
-``--`` marker, the :py:func:`~wrapper_autofrag.auto_fragments` function can be applied, as shown in
+``--`` marker, the :py:func:`~psi4.auto_fragments` function can be applied, as shown in
 :srcsample:`pywrap-basis`, to return as active molecule the previous
 active molecule, only fragmented.
 

@@ -363,11 +363,11 @@ When the basis set is too overcomplete, the eigendecomposition of the
 overlap matrix is no longer numerically stable. In this case the
 partial Cholesky decomposition can be used to pick a subset of basis
 functions that span a sufficiently complete set, see
-[Lehtola:2019:241102] and [Lehtola:2020:032504]. This subset can then
+[Lehtola:2019:241102]_ and [Lehtola:2020:032504]_. This subset can then
 be orthonormalized as usual; the rest of the basis functions are
 hidden from the calculation. The Cholesky approach allows reaching
 accurate energies even in the presence of significant linear
-dependencies [Lehtola:2020:04224].
+dependencies [Lehtola:2020:04224]_.
 
 In |PSIfour|, symmetric orthogonalization is used by default, unless
 the smallest overlap eigenvalue falls below the user-supplied double
@@ -476,15 +476,15 @@ SADNO
     Natural orbitals from Superposition of Atomic Densities. Similar
     to the above, but it forms natural orbitals from the SAD density
     matrix to get proper orbitals which are used to start the
-    calculation, see [Lehtola:2019:1593].
+    calculation, see [Lehtola:2019:1593]_.
 GWH
     A generalized Wolfsberg-Helmholtz modification of the core
     Hamiltonian matrix. May be useful in open-shell systems, but is
     often less accurate than the core guess (see
-    [Lehtola:2019:1593]).
+    [Lehtola:2019:1593]_).
 HUCKEL
-    An extended Hückel guess based on on-the-fly atomic UHF
-    calculations alike SAD, see [Lehtola:2019:1593].
+    An extended H\ |u_dots|\ ckel guess based on on-the-fly atomic UHF
+    calculations alike SAD, see [Lehtola:2019:1593]_.
 READ
     Read the previous orbitals from a checkpoint file, casting from
     one basis to another if needed. Useful for starting anion
@@ -497,13 +497,13 @@ SAP
     modification of the core Hamiltonian, which includes screening
     effects by using a radially screened effective atomic charge. The
     screening effects have been calculated at the complete basis set
-    limit with finite-element calculations, see [Lehtola:2019:25945]
-    and [Lehtola:2020:012516]. The guess and its implementation have
-    been described in [Lehtola:2019:1593]. The guess is evaluated on a
+    limit with finite-element calculations, see [Lehtola:2019:25945]_
+    and [Lehtola:2020:012516]_. The guess and its implementation have
+    been described in [Lehtola:2019:1593]_. The guess is evaluated on a
     DFT quadrature grid, so the guess energy depends slightly on the
     used DFT quadrature. The current implementation is based on
     exchange-only local density calculations that are but nanohartree
-    away from the complete basis set limit [Lehtola:2020:012516].
+    away from the complete basis set limit [Lehtola:2020:012516]_.
 
 These are all set by the |scf__guess| keyword. Also, an automatic Python
 procedure has been developed for converging the SCF in a small basis, and then

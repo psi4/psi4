@@ -1,5 +1,5 @@
 #! He Dimer VV10 functional test.
-#! notes: DFT_VV10_B/C overwrites the NL_.. tuple
+#! notes: DFT_VV10_B/C overwrites the NL_DISPERSION_PARAMETERS tuple
 #! updated 'bench' reference values for new BraggSlater radii.
 
 bench = {"DFT VV10 ENERGY": 0.01879662804, # TEST

@@ -73,6 +73,17 @@ class PSI_API ExternalPotential {
 
     /// Add a charge Z at (x,y,z)
     void addCharge(double Z, double x, double y, double z);
+
+    /// get the vector of charges
+    const std::vector<std::tuple<double, double, double, double>> getCharges() const {
+        return charges_;
+    }
+
+    /// Append some charges
+    void appendCharges(std::vector<std::tuple<double, double, double, double>> new_charges) {
+        charges_.insert(charges_.end(), new_charges.begin(), new_charges.end());
+    }
+ 
     /// Add a basis of S auxiliary functions with DF coefficients
     void addBasis(std::shared_ptr<BasisSet> basis, SharedVector coefs);
 
@@ -85,6 +96,9 @@ class PSI_API ExternalPotential {
     SharedMatrix computePotentialGradients(std::shared_ptr<BasisSet> basis, std::shared_ptr<Matrix> Dt);
     /// Compute the contribution to the nuclear repulsion energy for the given molecule
     double computeNuclearEnergy(std::shared_ptr<Molecule> mol);
+
+    // Compute the interaction of this potential with an external potential
+    double computeExternExternInteraction(std::shared_ptr<ExternalPotential> other_extern, bool in_angstrom=false);
 
     /// Print a trace of the external potential
     void print(std::string out_fname = "outfile") const;

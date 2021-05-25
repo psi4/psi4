@@ -1,6 +1,7 @@
 #! Tests CAM gradients with and without XC pieces to narrow grid error
 
 
+
 molecule {
     H  0.000  0.000  0.000
     F  0.000  0.000  1.100

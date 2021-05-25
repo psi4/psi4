@@ -39,5 +39,7 @@ compare_values(ccsd_t_energy_delta, ccsd_t_energy, 6, 'CCSD(T) Energy Call vs De
 cbs1_energy = energy('MP2/cc-pV[DT]Z + D:CCSD(T)/cc-pVDZ')
 compare_values(-100.383956631, cbs1_energy, 6, 'MP2/cc-pV[DT]Z + D:CCSD(T)/cc-pVDZ Energy')  #TEST
 
+compare_values(-0.00689863, variable('CBS DELTA1 TOTAL ENERGY'), 6, 'CBS Delta Variable Check')  #TEST
+
 # Need higher angular momentum to do more
 

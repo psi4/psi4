@@ -51,7 +51,7 @@ void DCTSolver::build_cumulant_intermediates_RHF() {
      */
     dct_timer_on("DCTSolver::copy <Ij|Ab>");
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "MO Ints <OO|VV>");               // MO Ints <Oo|Vv>
+                           "MO Ints <OO|VV>");              // MO Ints <Oo|Vv>
     global_dpd_->buf4_copy(&I, PSIF_DCT_DPD, "G <OO|VV>");  // G <Oo|Vv>
     global_dpd_->buf4_close(&I);
     dct_timer_off("DCTSolver::copy <Ij|Ab>");
@@ -64,7 +64,7 @@ void DCTSolver::build_cumulant_intermediates_RHF() {
         global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), ID("[V,V]"), 0,
                                "MO Ints <VV|VV>");  // MO Ints <Vv|Vv>
         global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                               "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
         global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "G <OO|VV>");  // G <Oo|Vv>
         global_dpd_->contract444(&L, &I, &G, 0, 0, 1.0, 1.0);
@@ -89,7 +89,7 @@ void DCTSolver::build_cumulant_intermediates_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0,
                            "MO Ints <OO|OO>");  // MO Ints <Oo|Oo>
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                           "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
     global_dpd_->buf4_init(&G, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "G <OO|VV>");  // G <Oo|Vv>
     global_dpd_->contract444(&I, &L, &G, 0, 1, 1.0, 1.0);
@@ -107,18 +107,18 @@ void DCTSolver::build_cumulant_intermediates_RHF() {
                            "Temp SF (OV|OV):(Ov|oV)");
 
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <OO|VV>");
-    global_dpd_->buf4_sort(&Laa, PSIF_DCT_DPD, prqs, ID("[O,V]"), ID("[O,V]"), "Lambda (OV|OV)");
+                           "Amplitude <OO|VV>");
+    global_dpd_->buf4_sort(&Laa, PSIF_DCT_DPD, prqs, ID("[O,V]"), ID("[O,V]"), "Amplitude (OV|OV)");
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Lambda (OV|OV)");
+                           "Amplitude (OV|OV)");
 
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");
-    global_dpd_->buf4_sort(&Lab, PSIF_DCT_DPD, psqr, ID("[O,V]"), ID("[O,V]"), "Lambda SF (OV|OV):(Ov|oV)");
+                           "Amplitude SF <OO|VV>");
+    global_dpd_->buf4_sort(&Lab, PSIF_DCT_DPD, psqr, ID("[O,V]"), ID("[O,V]"), "Amplitude SF (OV|OV):(Ov|oV)");
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Lambda SF (OV|OV):(Ov|oV)");
+                           "Amplitude SF (OV|OV):(Ov|oV)");
 
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "MO Ints <OV|OV>");
@@ -139,12 +139,12 @@ void DCTSolver::build_cumulant_intermediates_RHF() {
     global_dpd_->buf4_init(&Tab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
                            "Temp SF (OV|OV):(OV|ov)");
 
-    // Lambda_IbkC -> Lambda_ICkb
-    global_dpd_->buf4_sort(&Lab, PSIF_DCT_DPD, psrq, ID("[O,V]"), ID("[O,V]"), "Lambda SF (OV|OV):(OV|ov)");
+    // Amplitude_IbkC -> Amplitude_ICkb
+    global_dpd_->buf4_sort(&Lab, PSIF_DCT_DPD, psrq, ID("[O,V]"), ID("[O,V]"), "Amplitude SF (OV|OV):(OV|ov)");
     global_dpd_->buf4_close(&Lab);
 
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Lambda SF (OV|OV):(OV|ov)");
+                           "Amplitude SF (OV|OV):(OV|ov)");
 
     global_dpd_->buf4_close(&I);
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
@@ -224,7 +224,7 @@ void DCTSolver::compute_F_intermediate_RHF() {
     global_dpd_->buf4_init(&F, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "F <OO|VV>");  // F <Oo|Vv>
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                           "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
 
     // F_IjAb += lambda_IjCb F_AC
     global_dpd_->file2_init(&F_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "F <V|V>");
@@ -251,41 +251,16 @@ void DCTSolver::form_density_weighted_fock_RHF() {
 
     global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
-    global_dpd_->file2_mat_init(&T_OO);
-    global_dpd_->file2_mat_init(&T_VV);
-    global_dpd_->file2_mat_rd(&T_OO);
-    global_dpd_->file2_mat_rd(&T_VV);
 
     // Copy Tau in MO basis from the DPD library
-    auto a_tau_mo = std::make_shared<Matrix>("Alpha Tau in the MO basis", nirrep_, nmopi_, nmopi_);
-    auto b_tau_mo = std::make_shared<Matrix>("Beta Tau in the MO basis", nirrep_, nmopi_, nmopi_);
+    auto a_tau_mo = Matrix("Alpha Tau in the MO basis", nirrep_, nmopi_, nmopi_);
+    auto b_tau_mo = Matrix("Beta Tau in the MO basis", nirrep_, nmopi_, nmopi_);
 
-    for (int h = 0; h < nirrep_; ++h) {
-        if (nsopi_[h] == 0) continue;
+    a_tau_mo.set_block(slices_.at("ACTIVE_OCC_A"), Matrix(&T_OO));
+    a_tau_mo.set_block(slices_.at("ACTIVE_VIR_A"), Matrix(&T_VV));
 
-        // Alpha occupied
-        for (int p = 0; p < naoccpi_[h]; ++p) {
-            for (int q = 0; q <= p; ++q) {
-                double value = T_OO.matrix[h][p][q];
-                a_tau_mo->set(h, p, q, value);
-                if (p != q) a_tau_mo->set(h, q, p, value);
-            }
-        }
+    b_tau_mo.copy(a_tau_mo);
 
-        // Alpha virtual
-        for (int p = 0; p < navirpi_[h]; ++p) {
-            for (int q = 0; q <= p; ++q) {
-                double value = T_VV.matrix[h][p][q];
-                a_tau_mo->set(h, p + naoccpi_[h], q + naoccpi_[h], value);
-                if (p != q) a_tau_mo->set(h, q + naoccpi_[h], p + naoccpi_[h], value);
-            }
-        }
-    }
-
-    b_tau_mo->copy(a_tau_mo);
-
-    global_dpd_->file2_mat_close(&T_OO);
-    global_dpd_->file2_mat_close(&T_VV);
     global_dpd_->file2_close(&T_OO);
     global_dpd_->file2_close(&T_VV);
 
@@ -293,9 +268,9 @@ void DCTSolver::form_density_weighted_fock_RHF() {
     auto a_evals = std::make_shared<Vector>("Tau Eigenvalues (Alpha)", nirrep_, nmopi_);
 
     // Diagonalize Tau
-    a_tau_mo->diagonalize(a_evecs, a_evals);
-    a_tau_mo->zero();
-    a_tau_mo->set_diagonal(a_evals);
+    a_tau_mo.diagonalize(a_evecs, a_evals);
+    a_tau_mo.zero();
+    a_tau_mo.set_diagonal(a_evals);
 
     // Transform the Fock matrix to NSO basis
     auto nso_Fa = std::make_shared<Matrix>("Alpha Fock in the NSO basis", nirrep_, nmopi_, nmopi_);

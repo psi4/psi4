@@ -44,6 +44,7 @@
 
 """
 import re
+
 import qcdb
 
 # <<< S66 Database Module >>>

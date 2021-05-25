@@ -76,7 +76,6 @@ class OCCWave : public Wavefunction {
     void compute_sigma_vector();
     void orb_resp_pcg_rhf();
     void orb_resp_pcg_uhf();
-    void dump_ints();
     void denominators_rhf();
     void denominators_uhf();
     void gfock();

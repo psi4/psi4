@@ -49,6 +49,74 @@ namespace py = pybind11;
 using namespace pybind11::literals;
 
 void export_functional(py::module &m) {
+    py::class_<Functional, std::shared_ptr<Functional>>(m, "Functional", "docstring")
+        .def_static("build_base", &Functional::build_base, "alias"_a, "docstring")
+        .def("compute_functional", &Functional::compute_functional, "docstring")
+        .def("name", &Functional::name, "docstring")
+        .def("description", &Functional::description, "docstring")
+        .def("citation", &Functional::citation, "docstring")
+        .def("alpha", &Functional::alpha, "docstring")
+        .def("omega", &Functional::omega, "docstring")
+        .def("lsda_cutoff", &Functional::lsda_cutoff, "docstring")
+        .def("meta_cutoff", &Functional::meta_cutoff, "docstring")
+        .def("density_cutoff", &Functional::density_cutoff, "docstring")
+        .def("is_gga", &Functional::is_gga, "docstring")
+        .def("is_meta", &Functional::is_meta, "docstring")
+        .def("is_lrc", &Functional::is_lrc, "docstring")
+        .def("set_name", &Functional::set_name, "docstring")
+        .def("set_description", &Functional::set_description, "docstring")
+        .def("set_citation", &Functional::set_citation, "docstring")
+        .def("set_gga", &Functional::set_gga, "docstring")
+        .def("set_meta", &Functional::set_meta, "docstring")
+        .def("set_alpha", &Functional::set_alpha, "docstring")
+        .def("set_omega", &Functional::set_omega, "docstring")
+        .def("set_lsda_cutoff", &Functional::set_lsda_cutoff, "docstring")
+        .def("set_meta_cutoff", &Functional::set_meta_cutoff, "docstring")
+        .def("set_density_cutoff", &Functional::set_density_cutoff, "docstring")
+        .def("set_parameter", &Functional::set_parameter, "docstring")
+        .def("print_out", &Functional::py_print, "docstring")
+        .def("print_detail", &Functional::py_print_detail, "docstring");
+
+    py::class_<BasisExtents, std::shared_ptr<BasisExtents>>(m, "BasisExtents", "docstring")
+        .def(py::init<std::shared_ptr<BasisSet>, double>())
+        .def("set_delta", &BasisExtents::set_delta, "docstring")
+        .def("delta", &BasisExtents::delta, "docstring")
+        .def("basis", &BasisExtents::basis, "docstring")
+        .def("shell_extents", &BasisExtents::shell_extents, "docstring")
+        .def("maxR", &BasisExtents::maxR, "docstring");
+
+    py::class_<BlockOPoints, std::shared_ptr<BlockOPoints>>(m, "BlockOPoints", "docstring")
+        .def(py::init<SharedVector, SharedVector, SharedVector, SharedVector, std::shared_ptr<BasisExtents>>())
+        .def("x",
+             [](BlockOPoints &grid) {
+                 auto ret = std::make_shared<Vector>("X Grid points", grid.npoints());
+                 C_DCOPY(grid.npoints(), grid.x(), 1, ret->pointer(), 1);
+                 return ret;
+             })
+        .def("y",
+             [](BlockOPoints &grid) {
+                 auto ret = std::make_shared<Vector>("Y Grid points", grid.npoints());
+                 C_DCOPY(grid.npoints(), grid.y(), 1, ret->pointer(), 1);
+                 return ret;
+             })
+        .def("z",
+             [](BlockOPoints &grid) {
+                 auto ret = std::make_shared<Vector>("Z Grid points", grid.npoints());
+                 C_DCOPY(grid.npoints(), grid.z(), 1, ret->pointer(), 1);
+                 return ret;
+             })
+        .def("w",
+             [](BlockOPoints &grid) {
+                 auto ret = std::make_shared<Vector>("Grid Weights", grid.npoints());
+                 C_DCOPY(grid.npoints(), grid.w(), 1, ret->pointer(), 1);
+                 return ret;
+             })
+        .def("refresh", &BlockOPoints::refresh, "docstring")
+        .def("npoints", &BlockOPoints::npoints, "docstring")
+        .def("print_out", &BlockOPoints::print, "out_fname"_a = "outfile", "print"_a = 2, "docstring")
+        .def("shells_local_to_global", &BlockOPoints::shells_local_to_global, "docstring")
+        .def("functions_local_to_global", &BlockOPoints::functions_local_to_global, "docstring");
+
     py::class_<SuperFunctional, std::shared_ptr<SuperFunctional>>(m, "SuperFunctional", "docstring")
 
         .def(py::init<>())
@@ -121,34 +189,6 @@ void export_functional(py::module &m) {
         .def("print_out", &SuperFunctional::py_print, "Prints out functional details.")
         .def("print_detail", &SuperFunctional::py_print_detail, "Prints all SuperFunctional information.");
 
-    py::class_<Functional, std::shared_ptr<Functional>>(m, "Functional", "docstring")
-        .def_static("build_base", &Functional::build_base, "alias"_a, "docstring")
-        .def("compute_functional", &Functional::compute_functional, "docstring")
-        .def("name", &Functional::name, "docstring")
-        .def("description", &Functional::description, "docstring")
-        .def("citation", &Functional::citation, "docstring")
-        .def("alpha", &Functional::alpha, "docstring")
-        .def("omega", &Functional::omega, "docstring")
-        .def("lsda_cutoff", &Functional::lsda_cutoff, "docstring")
-        .def("meta_cutoff", &Functional::meta_cutoff, "docstring")
-        .def("density_cutoff", &Functional::density_cutoff, "docstring")
-        .def("is_gga", &Functional::is_gga, "docstring")
-        .def("is_meta", &Functional::is_meta, "docstring")
-        .def("is_lrc", &Functional::is_lrc, "docstring")
-        .def("set_name", &Functional::set_name, "docstring")
-        .def("set_description", &Functional::set_description, "docstring")
-        .def("set_citation", &Functional::set_citation, "docstring")
-        .def("set_gga", &Functional::set_gga, "docstring")
-        .def("set_meta", &Functional::set_meta, "docstring")
-        .def("set_alpha", &Functional::set_alpha, "docstring")
-        .def("set_omega", &Functional::set_omega, "docstring")
-        .def("set_lsda_cutoff", &Functional::set_lsda_cutoff, "docstring")
-        .def("set_meta_cutoff", &Functional::set_meta_cutoff, "docstring")
-        .def("set_density_cutoff", &Functional::set_density_cutoff, "docstring")
-        .def("set_parameter", &Functional::set_parameter, "docstring")
-        .def("print_out", &Functional::py_print, "docstring")
-        .def("print_detail", &Functional::py_print_detail, "docstring");
-
     typedef void (LibXCFunctional::*tweak_set1)(std::vector<double>, bool);
     typedef void (LibXCFunctional::*tweak_set2)(std::map<std::string, double>, bool);
 
@@ -163,6 +203,47 @@ void export_functional(py::module &m) {
         .def("set_density_cutoff", &LibXCFunctional::set_density_cutoff, "docstring")
         .def("density_cutoff", &LibXCFunctional::density_cutoff, "docstring")
         .def("query_libxc", &LibXCFunctional::query_libxc, "query libxc regarding functional parameters.");
+
+    py::class_<BasisFunctions, std::shared_ptr<BasisFunctions>>(m, "BasisFunctions", "docstring")
+        .def(py::init<std::shared_ptr<BasisSet>, int, int>())
+        .def("max_functions", &BasisFunctions::max_functions, "docstring")
+        .def("max_points", &BasisFunctions::max_points, "docstring")
+        .def("deriv", &BasisFunctions::deriv, "docstring")
+        .def("set_deriv", &BasisFunctions::set_deriv, "docstring")
+        .def("compute_functions", &BasisFunctions::compute_functions, "docstring")
+        .def("basis_values", &BasisFunctions::basis_values, "docstring");
+
+    typedef void (PointFunctions::*matrix_set1)(SharedMatrix);
+    typedef void (PointFunctions::*matrix_set2)(SharedMatrix, SharedMatrix);
+
+    py::class_<PointFunctions, std::shared_ptr<PointFunctions>, BasisFunctions>(m, "PointFunctions", "docstring")
+        .def("print_out", &PointFunctions::print, "out_fname"_a = "outfile", "print"_a = 2, "docstring")
+        .def("ansatz", &PointFunctions::ansatz, "docstring")
+        .def("set_ansatz", &PointFunctions::set_ansatz, "docstring")
+        .def("set_pointers", matrix_set1(&PointFunctions::set_pointers), "docstring")
+        .def("set_pointers", matrix_set2(&PointFunctions::set_pointers), "docstring")
+        .def("compute_points", &PointFunctions::compute_points, "block"_a, "force_compute"_a = true, "docstring")
+        .def("point_values", &PointFunctions::point_values, "docstring")
+        .def("orbital_values", &PointFunctions::orbital_values, "docstring");
+
+    py::class_<MolecularGrid, std::shared_ptr<MolecularGrid>>(m, "MolecularGrid", "docstring")
+        .def("print", &MolecularGrid::print, "Prints grid information.")
+        .def("orientation", &MolecularGrid::orientation, "Returns the orientation of the grid.")
+        .def("npoints", &MolecularGrid::npoints, "Returns the number of grid points.")
+        .def("max_points", &MolecularGrid::max_points, "Returns the maximum number of points in a block.")
+        .def("max_functions", &MolecularGrid::max_functions, "Returns the maximum number of functions in a block.")
+        .def("collocation_size", &MolecularGrid::collocation_size, "Returns the total collocation size of all blocks.")
+        .def("blocks", &MolecularGrid::blocks, "Returns a list of blocks.");
+
+    py::class_<DFTGrid, std::shared_ptr<DFTGrid>, MolecularGrid>(m, "DFTGrid", "docstring")
+        .def_static("build",
+                    [](std::shared_ptr<Molecule> &mol, std::shared_ptr<BasisSet> &basis) {
+                        return std::make_shared<DFTGrid>(mol, basis, Process::environment.options);
+                    })
+        .def_static("build", [](std::shared_ptr<Molecule> &mol, std::shared_ptr<BasisSet> &basis,
+                                std::map<std::string, int> int_opts, std::map<std::string, std::string> string_opts) {
+            return std::make_shared<DFTGrid>(mol, basis, int_opts, string_opts, Process::environment.options);
+        });
 
     py::class_<VBase, std::shared_ptr<VBase>>(m, "VBase", "docstring")
         .def_static("build",
@@ -195,92 +276,11 @@ void export_functional(py::module &m) {
         .def("finalize", &VBase::finalize, "Finalizes the V object.")
         .def("print_header", &VBase::print_header, "Prints the objects header.");
 
-    py::class_<BasisFunctions, std::shared_ptr<BasisFunctions>>(m, "BasisFunctions", "docstring")
-        .def(py::init<std::shared_ptr<BasisSet>, int, int>())
-        .def("max_functions", &BasisFunctions::max_functions, "docstring")
-        .def("max_points", &BasisFunctions::max_points, "docstring")
-        .def("deriv", &BasisFunctions::deriv, "docstring")
-        .def("set_deriv", &BasisFunctions::set_deriv, "docstring")
-        .def("compute_functions", &BasisFunctions::compute_functions, "docstring")
-        .def("basis_values", &BasisFunctions::basis_values, "docstring");
-
-    typedef void (PointFunctions::*matrix_set1)(SharedMatrix);
-    typedef void (PointFunctions::*matrix_set2)(SharedMatrix, SharedMatrix);
-
-    py::class_<PointFunctions, std::shared_ptr<PointFunctions>, BasisFunctions>(m, "PointFunctions", "docstring")
-        .def("print_out", &PointFunctions::print, "out_fname"_a = "outfile", "print"_a = 2, "docstring")
-        .def("ansatz", &PointFunctions::ansatz, "docstring")
-        .def("set_ansatz", &PointFunctions::set_ansatz, "docstring")
-        .def("set_pointers", matrix_set1(&PointFunctions::set_pointers), "docstring")
-        .def("set_pointers", matrix_set2(&PointFunctions::set_pointers), "docstring")
-        .def("compute_points", &PointFunctions::compute_points, "block"_a, "force_compute"_a = true, "docstring")
-        .def("point_values", &PointFunctions::point_values, "docstring")
-        .def("orbital_values", &PointFunctions::orbital_values, "docstring");
-
     py::class_<RKSFunctions, std::shared_ptr<RKSFunctions>, PointFunctions>(m, "RKSFunctions", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, int, int>());
 
     py::class_<UKSFunctions, std::shared_ptr<UKSFunctions>, PointFunctions>(m, "UKSFunctions", "docstring")
         .def(py::init<std::shared_ptr<BasisSet>, int, int>());
-
-    py::class_<BlockOPoints, std::shared_ptr<BlockOPoints>>(m, "BlockOPoints", "docstring")
-        .def(py::init<SharedVector, SharedVector, SharedVector, SharedVector, std::shared_ptr<BasisExtents>>())
-        .def("x",
-             [](BlockOPoints &grid) {
-                 auto ret = std::make_shared<Vector>("X Grid points", grid.npoints());
-                 C_DCOPY(grid.npoints(), grid.x(), 1, ret->pointer(), 1);
-                 return ret;
-             })
-        .def("y",
-             [](BlockOPoints &grid) {
-                 auto ret = std::make_shared<Vector>("Y Grid points", grid.npoints());
-                 C_DCOPY(grid.npoints(), grid.y(), 1, ret->pointer(), 1);
-                 return ret;
-             })
-        .def("z",
-             [](BlockOPoints &grid) {
-                 auto ret = std::make_shared<Vector>("Z Grid points", grid.npoints());
-                 C_DCOPY(grid.npoints(), grid.z(), 1, ret->pointer(), 1);
-                 return ret;
-             })
-        .def("w",
-             [](BlockOPoints &grid) {
-                 auto ret = std::make_shared<Vector>("Grid Weights", grid.npoints());
-                 C_DCOPY(grid.npoints(), grid.w(), 1, ret->pointer(), 1);
-                 return ret;
-             })
-        .def("refresh", &BlockOPoints::refresh, "docstring")
-        .def("npoints", &BlockOPoints::npoints, "docstring")
-        .def("print_out", &BlockOPoints::print, "out_fname"_a = "outfile", "print"_a = 2, "docstring")
-        .def("shells_local_to_global", &BlockOPoints::shells_local_to_global, "docstring")
-        .def("functions_local_to_global", &BlockOPoints::functions_local_to_global, "docstring");
-
-    py::class_<BasisExtents, std::shared_ptr<BasisExtents>>(m, "BasisExtents", "docstring")
-        .def(py::init<std::shared_ptr<BasisSet>, double>())
-        .def("set_delta", &BasisExtents::set_delta, "docstring")
-        .def("delta", &BasisExtents::delta, "docstring")
-        .def("basis", &BasisExtents::basis, "docstring")
-        .def("shell_extents", &BasisExtents::shell_extents, "docstring")
-        .def("maxR", &BasisExtents::maxR, "docstring");
-
-    py::class_<MolecularGrid, std::shared_ptr<MolecularGrid>>(m, "MolecularGrid", "docstring")
-        .def("print", &MolecularGrid::print, "Prints grid information.")
-        .def("orientation", &MolecularGrid::orientation, "Returns the orientation of the grid.")
-        .def("npoints", &MolecularGrid::npoints, "Returns the number of grid points.")
-        .def("max_points", &MolecularGrid::max_points, "Returns the maximum number of points in a block.")
-        .def("max_functions", &MolecularGrid::max_functions, "Returns the maximum number of functions in a block.")
-        .def("collocation_size", &MolecularGrid::collocation_size, "Returns the total collocation size of all blocks.")
-        .def("blocks", &MolecularGrid::blocks, "Returns a list of blocks.");
-
-    py::class_<DFTGrid, std::shared_ptr<DFTGrid>, MolecularGrid>(m, "DFTGrid", "docstring")
-        .def_static("build",
-                    [](std::shared_ptr<Molecule> &mol, std::shared_ptr<BasisSet> &basis) {
-                        return std::make_shared<DFTGrid>(mol, basis, Process::environment.options);
-                    })
-        .def_static("build", [](std::shared_ptr<Molecule> &mol, std::shared_ptr<BasisSet> &basis,
-                                std::map<std::string, int> int_opts, std::map<std::string, std::string> string_opts) {
-            return std::make_shared<DFTGrid>(mol, basis, int_opts, string_opts, Process::environment.options);
-        });
 
     py::class_<Dispersion, std::shared_ptr<Dispersion>>(m, "Dispersion", "docstring")
         .def_static("build", &Dispersion::build, "type"_a, "s6"_a = 0.0, "alpha6"_a = 0.0, "sr6"_a = 0.0,

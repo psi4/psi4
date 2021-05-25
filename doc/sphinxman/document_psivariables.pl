@@ -31,6 +31,8 @@
 use strict;
 use warnings;
 use File::Path qw(remove_tree);
+use Data::Dumper qw(Dumper);
+#print Dumper \@ltemp2;
 
 # Then, for each module detected in read_options.cc, we collect the process environment
 # variables set in src/bin/module and src/lib/libmodule_solver and place them in a TeX file,
@@ -128,9 +130,27 @@ print VOUT ".. toctree::\n   :maxdepth: 1\n\n";
 foreach my $Module (@PSIMODULES) {
     # Set path for each module of bin/module and lib/libmodule_solver
     #     Assign stray variables as for OEPROP below
-    my @RelevantDirs = ($SrcFolder . lc($Module), $SrcFolder . "lib" . lc($Module) . "_solver");
+    my @RelevantDirs = (
+        $SrcFolder . lc($Module),
+        $SrcFolder . "lib" . lc($Module) . "_solver",
+        $SrcFolder . "../../driver",
+        $SrcFolder . "../../driver/p4util",
+        $SrcFolder . "../../driver/procrouting",
+        $SrcFolder . "../../driver/procrouting/mcscf",
+        $SrcFolder . "../../driver/procrouting/scf_proc",
+        $SrcFolder . "../../driver/procrouting/response",
+    );
     if ($Module eq "OEPROP") { push(@RelevantDirs, $SrcFolder . "libmints"); }
-    if ($Module eq "GDMA") { push(@RelevantDirs, $SrcFolder . "libgdma"); }
+    if ($Module eq "GDMA") { push(@RelevantDirs, $SrcFolder . "gdma_interface"); }
+    if ($Module eq "CCENERGY") { push(@RelevantDirs, (
+            $SrcFolder . "cc/ccenergy",
+            $SrcFolder . "cc/ccdensity",
+            $SrcFolder . "cc/cceom",
+            $SrcFolder . "cc/cchbar",
+            $SrcFolder . "cc/cclambda",
+            $SrcFolder . "cc/ccresponse",
+            $SrcFolder . "cc/cctriples",
+    )); }
     my @EnvVariables = ();
     my @EnvArrays = ();
     printf TEXOUT "\n\\subsection{%s}\n",$Module;
@@ -141,16 +161,95 @@ foreach my $Module (@PSIMODULES) {
                 if (open(CODE, "<$Dir/$file")) {
                     my @text = <CODE>;
                     foreach my $line (@text) {
-                        if ($line =~ /\QProcess::environment.globals\E/) {
-                            my @ltemp = split( /"/, $line);
-                            if ($ltemp[0] =~ /\QProcess::environment.globals\E/) {
-                                push(@EnvVariables, $ltemp[1]);
+                        if ($file =~ /\.cc\z/) {
+                            if ($line =~ /\QProcess::environment.globals\E/) {
+                                if ($line =~ /\Qno-autodoc\E/) {
+                                } else {
+                                    my @ltemp = split( /"/, $line);
+                                    if ($ltemp[0] =~ /\QProcess::environment.globals\E/) {
+                                        if ($ltemp[1]) {
+                                            push(@EnvVariables, $ltemp[1]);
+                                            print "  collected for $Module from $file: $ltemp[1]\n";
+                                        }
+                                    }
+                                }
+                            }
+                            if ($line =~ /\QProcess::environment.arrays\E/) {
+                                if ($line =~ /\Qno-autodoc\E/) {
+                                } else {
+                                    my @ltemp = split( /"/, $line);
+                                    if ($ltemp[0] =~ /\QProcess::environment.arrays\E/) {
+                                        if ($ltemp[1]) {
+                                            push(@EnvArrays, $ltemp[1]);
+                                            print "  collected for $Module from $file: $ltemp[1]\n";
+                                        }
+                                    }
+                                }
+                            }
+                            if ($line =~ /\Qvariables_\E/) {
+                                if ($line =~ /\Qno-autodoc\E/) {
+                                } else {
+                                    my @ltemp = split( /"/, $line);
+                                    if ($ltemp[0] =~ /\Qvariables_\E/) {
+                                        if ($ltemp[1]) {
+                                            push(@EnvVariables, $ltemp[1]);
+                                            print "  collected for $Module from $file: $ltemp[1]\n";
+                                        }
+                                    }
+                                }
+                            }
+                            if ($line =~ /\Qarrays_\E/) {
+                                if ($line =~ /\Qno-autodoc\E/) {
+                                } else {
+                                    my @ltemp = split( /"/, $line);
+                                    if ($ltemp[0] =~ /\Qarrays_\E/) {
+                                        if ($ltemp[1]) {
+                                            push(@EnvArrays, $ltemp[1]);
+                                            print "  collected for $Module from $file: $ltemp[1]\n";
+                                        }
+                                    }
+                                }
+                            }
+                            if ($line =~ /\Qset_scalar_variable\E/) {
+                                if ($line =~ /\Qno-autodoc\E/) {
+                                } else {
+                                    my @ltemp = split( /"/, $line);
+                                    if ($ltemp[0] =~ /\Qset_scalar_variable\E/) {
+                                        if ($ltemp[1]) {
+                                            push(@EnvVariables, $ltemp[1]);
+                                            print "  collected for $Module from $file: $ltemp[1]\n";
+                                        }
+                                    }
+                                }
+                            }
+                            if ($line =~ /\Qset_array_variable\E/) {
+                                if ($line =~ /\Qno-autodoc\E/) {
+                                } else {
+                                    my @ltemp = split( /"/, $line);
+                                    if ($ltemp[0] =~ /\Qset_array_variable\E/) {
+                                        if ($ltemp[1]) {
+                                            push(@EnvArrays, $ltemp[1]);
+                                            print "  collected for $Module from $file: $ltemp[1]\n";
+                                        }
+                                    }
+                                }
                             }
                         }
-                        if ($line =~ /\QProcess::environment.arrays\E/) {
-                            my @ltemp = split( /"/, $line);
-                            if ($ltemp[0] =~ /\QProcess::environment.arrays\E/) {
-                                push(@EnvArrays, $ltemp[1]);
+                        if ($file =~ /\.py\z/) {
+                            if ($line =~ /\Qset_variable\E/) {
+                                my @ltemp = split( /"/, $line);
+                                if (($ltemp[0] =~ /\Qset_variable\E/) and ($#ltemp == 2)) {
+                                    my $var = $ltemp[1];
+                                    my @ltemp2 = split /P::e/, $line;
+                                    if ($#ltemp2 == 1) {
+                                        my $varModule = $ltemp2[1];
+                                        $varModule =~ s/^\s+|\s+$//g;
+                                        if ($varModule eq $Module) {
+                                            push(@EnvVariables, $var);
+                                            print "  collected for $Module from $file: $var\n";
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -184,9 +283,10 @@ foreach my $Module (@PSIMODULES) {
            my $squashedVar = $Var;
            $squashedVar =~ s/ //g;
            if ($EnvHash{$Var} == 2) {
-               printf VVOUT "   * :psivar:`%s <%s>` (array)\n\n", $Var, $squashedVar;
+               printf VVOUT "   * :psivar:`%s` (array)\n\n", $Var;
            } else {
-               printf VVOUT "   * :psivar:`%s <%s>`\n\n", $Var, $squashedVar;
+               printf VVOUT "   * :psivar:`%s`\n\n", $Var;
+               #printf VVOUT "   * :psivar:`%s <%s>`\n\n", $Var, $squashedVar;  # pre Sphinx 3 ?
            }
        }
        print VVOUT "\n";

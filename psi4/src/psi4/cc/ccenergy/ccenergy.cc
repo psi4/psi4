@@ -314,12 +314,11 @@ double CCEnergyWavefunction::compute_energy() {
     if (!done) {
         outfile->Printf("     ** Wave function not converged to %2.1e ** \n", params_.convergence);
 
-        if (params_.aobasis != "NONE") dpd_close(1);
+        if (params_.aobasis != "NONE" || params_.df) dpd_close(1);
         dpd_close(0);
         cleanup();
-        timer_off("ccenergy");
         exit_io();
-        return Failure;
+        throw PSIEXCEPTION("Coupled Cluster wave function not converged.");
     }
 
     outfile->Printf("    SCF energy       (wfn)                    = %20.15f\n", moinfo_.escf);
@@ -340,10 +339,6 @@ double CCEnergyWavefunction::compute_energy() {
                 "      * SCS-MP2 total energy                  = %20.15f\n",
                 moinfo_.eref + moinfo_.emp2_os * params_.scsmp2_scale_os + moinfo_.emp2_ss * params_.scsmp2_scale_ss);
 
-            Process::environment.globals["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] =
-                moinfo_.emp2_os * params_.scsmp2_scale_os;
-            Process::environment.globals["SCS-MP2 SAME-SPIN CORRELATION ENERGY"] =
-                moinfo_.emp2_ss * params_.scsmp2_scale_ss;
             Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] =
                 moinfo_.emp2_os * params_.scsmp2_scale_os + moinfo_.emp2_ss * params_.scsmp2_scale_ss;
             Process::environment.globals["SCS-MP2 TOTAL ENERGY"] =
@@ -356,10 +351,8 @@ double CCEnergyWavefunction::compute_energy() {
             outfile->Printf("      * SCSN-MP2 total energy             = %20.15f\n",
                             moinfo_.eref + moinfo_.emp2_ss * 1.76);
 
-            Process::environment.globals["SCSN-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = 0.0;
-            Process::environment.globals["SCSN-MP2 SAME-SPIN CORRELATION ENERGY"] = moinfo_.emp2_ss * 1.76;
-            Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = moinfo_.emp2_ss * 1.76;
-            Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = moinfo_.eref + moinfo_.emp2_ss * 1.76;
+            Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = moinfo_.emp2_ss * 1.76;
+            Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = moinfo_.eref + moinfo_.emp2_ss * 1.76;
         }
 
         outfile->Printf("\n    Opposite-spin MP2 correlation energy      = %20.15f\n", moinfo_.emp2_os);
@@ -412,10 +405,6 @@ double CCEnergyWavefunction::compute_energy() {
                 moinfo_.eref + moinfo_.ecc_os * params_.scscc_scale_os + moinfo_.ecc_ss * params_.scscc_scale_ss);
 
             // LAB TODO  reconsider variable names for ss/os cc
-            Process::environment.globals["SCS-CCSD OPPOSITE-SPIN CORRELATION ENERGY"] =
-                moinfo_.ecc_os * params_.scscc_scale_os;
-            Process::environment.globals["SCS-CCSD SAME-SPIN CORRELATION ENERGY"] =
-                moinfo_.ecc_ss * params_.scscc_scale_ss;
             Process::environment.globals["SCS-CCSD CORRELATION ENERGY"] =
                 moinfo_.ecc_os * params_.scscc_scale_os + moinfo_.ecc_ss * params_.scscc_scale_ss;
             Process::environment.globals["SCS-CCSD TOTAL ENERGY"] =
@@ -481,7 +470,7 @@ double CCEnergyWavefunction::compute_energy() {
 
     if (params_.brueckner) Process::environment.globals["BRUECKNER CONVERGED"] = rotate();
 
-    if (params_.aobasis != "NONE") dpd_close(1);
+    if (params_.aobasis != "NONE" || params_.df) dpd_close(1);
     dpd_close(0);
 
     if (params_.ref == 2)

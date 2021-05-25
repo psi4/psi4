@@ -27,8 +27,7 @@
 #
 """Module with non-generic exceptions classes."""
 
-from psi4 import core
-from psi4 import extras
+from psi4 import core, extras
 
 
 class PsiException(Exception):
@@ -250,7 +249,7 @@ class PastureRequiredError(PsiException):
     >>> # clone the pasture repo
     >>> git clone https://github.com/psi4/psi4pasture.git
 
-    >>> cmake -H. -Bobjdir -Dpsi4_DIR=$PSI4_INSTALL_PREFIX/share/cmake/psi4 {module_args}
+    >>> cmake -S. -Bobjdir -Dpsi4_DIR=$PSI4_INSTALL_PREFIX/share/cmake/psi4 {module_args}
     >>> # $PSI4_INSTALL_PREFIX is the $CMAKE_INSTALL_PREFIX for the psi4
     >>> # install you want to install pasture to
 

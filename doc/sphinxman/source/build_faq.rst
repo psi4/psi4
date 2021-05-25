@@ -41,8 +41,9 @@ Obtaining and Updating |PSIfour|
 #. :ref:`faq:clonepsi4public`
 #. :ref:`faq:forkpsi4public`
 #. :ref:`faq:tarballpsi4public`
-#. :ref:`faq:psi3sourceforge`
 #. :ref:`faq:recompile`
+
+.. #. :ref:`faq:psi3sourceforge`
 
 Configuring and Installing |PSIfour| via Binary
 -----------------------------------------------
@@ -65,6 +66,7 @@ Configuring, Building, and Installing |PSIfour| via Source
 #. :ref:`faq:setuphelp`
 #. :ref:`faq:chooseobjdir`
 #. :ref:`faq:setupprefix`
+#. :ref:`faq:condapsi4dev`
 #. :ref:`faq:setupmaxameri`
 #. :ref:`faq:cmakeverbose`
 #. :ref:`faq:doconfigure`
@@ -135,7 +137,6 @@ Runtime Errors and Debugging
 #. :ref:`faq:gdblldb`
 #. :ref:`faq:setuptype`
 #. :ref:`faq:wrongpyfalse`
-#. :ref:`faq:erroreriam`
 
 Managing Code
 -------------
@@ -154,4 +155,5 @@ Miscellaneous
 .. #. :ref:`faq:getversion`
 .. #. :ref:`faq:binarypackage`
 .. #. :ref:`faq:getting-and-using-the-psi4dependencies-package`
+.. #. :ref:`faq:erroreriam`
 
