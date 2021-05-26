@@ -1405,7 +1405,6 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
                     }
                     else break;
                 }
-<<<<<<< HEAD
                 if (P_sig_RS.size() == 0) break;
             }
 
@@ -1422,18 +1421,6 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
                             QR_sig.push_back(std::pair<int, int>(Q, R));
                             QS_sig.push_back(std::pair<int, int>(Q, S));
                         }
-=======
-                
-                std::vector<std::pair<int, int> > linK_RS_pairs;
-                
-                for (int dR = 0; dR < nRtask; dR++) {
-                    if (!PQ_sig_R[dR]) continue;
-                    for (int dS = 0; dS < nStask; dS++) {
-                        if (dS + Sstart > dR + Rstart) continue;
-                        if (!PQ_sig_S[dS]) continue;
-                        if (!PQ_sig_RS[dR][dS]) continue;
-                        linK_RS_pairs.push_back(std::pair<int, int>(dR + Rstart, dS + Sstart));
->>>>>>> polished and cleaned linK code, test ready
                     }
                     else break;
                 }

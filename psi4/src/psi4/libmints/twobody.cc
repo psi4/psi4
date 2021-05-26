@@ -132,7 +132,6 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
             int num_n = bs1_->shell(N).nfunction();
             
             double max_dens = 0.0;
-            
             for (int m = m_start; m < m_start + num_m; m++) {
                 for (int n = n_start; n < n_start + num_n; n++) {
                     double val = 0.0;
@@ -141,7 +140,6 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
                     }
                     if (val > max_dens) max_dens = val;
                 }
-                if (val > max_dens) max_dens = val;
             }
 
             max_dens_shell_pair_[M][N] = max_dens;
