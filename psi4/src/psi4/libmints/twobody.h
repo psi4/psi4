@@ -126,6 +126,8 @@ class PSI_API TwoBodyAOInt {
     std::vector<double> function_pair_values_;
     /// max |(MN|MN)| values (nshell * nshell)
     std::vector<double> shell_pair_values_;
+    /// max |(M*|M*)| values (nshell)
+    std::vector<double> shell_single_values_;
     /// max |(MM|NN)| values (nshell * nshell)
     std::vector<double> shell_pair_exchange_values_;
     /// sqrt|(mm|mm)| values (nshell)
@@ -212,6 +214,8 @@ class PSI_API TwoBodyAOInt {
     double pair_screen_linK(int M, int N);
     /// Quartet Screening used in the linK algorithm
     double quart_screen_linK(int M, int N, int R, int S);
+    // Schwarz pair screening value
+    double shell_pair_max_value(int M, int N);
     
     /// Density Screening of a shell quartet (Haser 1989)
     bool shell_significant_density(int M, int N, int R, int S);
