@@ -1512,7 +1512,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
                 int dP = P - Pstart;
                 int dQ = Q - Qstart;
 
-                std::vector<bool> PQ_sig_RS(nRtask * nStask, false);
+                std::set<int> PQ_sig_RS;
 
                 // Form ML_P (Oschenfeld Fig. 1)
                 for (int R2 = 0; R2 < PR_sig_shells[dP].size(); R2++) {
@@ -1525,7 +1525,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
 
                         double val = ints[0]->quart_screen_linK(P, Q, R, S);
                         if (val >= linK_thresh) {
-                            PQ_sig_RS[dR * nStask + dS] = true;
+                            if (!PQ_sig_RS.count(R * nshell + S)) PQ_sig_RS.insert(R * nshell + S);
                             count += 1;
                         }
                         else break;
@@ -1544,7 +1544,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
 
                         double val = ints[0]->quart_screen_linK(P, Q, R, S);
                         if (val >= linK_thresh) {
-                            PQ_sig_RS[dR * nStask + dS] = true;
+                            if (!PQ_sig_RS.count(R * nshell + S)) PQ_sig_RS.insert(R * nshell + S);
                             count += 1;
                         }
                         else break;
@@ -1552,25 +1552,11 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
                     if (count == 0) break;
                 }
 
-                std::vector<std::pair<int, int>> RS_list;
-
-                for (int dR = 0; dR < nRtask; dR++) {
-                    for (int dS = 0; dS < nStask; dS++) {
-                        int R = Rstart + dR;
-                        int S = Sstart + dS;
-                        if (R * nshell + S > P * nshell + Q) continue;
-                        if (S > R) continue;
-                        if (PQ_sig_RS[dR * nStask + dS]) {
-                            RS_list.push_back(std::pair<int, int>(R, S));
-                        }
-                    }
-                }
-
                 // Loop over significant RS pairs
-                for (int RS2 = 0; RS2 < RS_list.size(); RS2++) {
+                for (const int RS2 : PQ_sig_RS) {
 
-                    int R = RS_list[RS2].first;
-                    int S = RS_list[RS2].second;
+                    int R = RS2 / nshell;
+                    int S = RS2 % nshell;
                     int R2 = R;
                     int S2 = S;
                         
