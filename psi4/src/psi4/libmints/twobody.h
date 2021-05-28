@@ -230,6 +230,14 @@ class PSI_API TwoBodyAOInt {
     bool shell_block_significant(int shellpair12, int shellpair34) const;
     /// Does a given shell pair contribute to any significant integrals?
     bool shell_pair_significant(int shell1, int shell2) const;
+    /// Ceiling of a single shell pair
+     inline double shell_ceiling(int M, int N) {
+         return shell_pair_values_[N * nshell_ + M];
+     }
+    /// Max density of shell pair
+     inline double shell_max_density(int M, int N) {
+         return max_dens_shell_pair_[M][N];
+     }
     /// Square of ceiling of shell quartet (MN|RS)
      inline double shell_ceiling2(int M, int N, int R, int S) {
         return shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S];

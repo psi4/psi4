@@ -345,7 +345,6 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
     bs3_ = bs;
     bs4_ = bs;
     for (int P = 0; P < nshell_; P++) {
-        double shell_single_max_val = 0.0;
         for (int Q = 0; Q <= P; Q++) {
             int nP = bs->shell(P).nfunction();
             int nQ = bs->shell(Q).nfunction();
@@ -360,7 +359,6 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
                         std::max(shell_max_val, std::abs(buffer[p * (nQ * nP * nQ + nQ) + q * (nP * nQ + 1)]));
                 }
             }
-            shell_single_max_val = std::max(shell_single_max_val, shell_max_val);
 
             max_integral_ = std::max(max_integral_, shell_max_val);
             shell_pair_values_[P * nshell_ + Q] = shell_pair_values_[Q * nshell_ + P] = shell_max_val;
@@ -370,8 +368,14 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
                 }
             }
         }
-        shell_single_values_[P] = shell_single_max_val;
     }
+
+    for (int P = 0; P < nshell_; P++) {
+        for (int Q = 0; Q < nshell_; Q++) {
+            shell_single_values_[P] = std::max(shell_single_values_[P], shell_pair_values_[P * nshell_ + Q]);
+        }
+    }
+
     bs1_ = original_bs1_;
     bs2_ = original_bs2_;
     bs3_ = original_bs3_;

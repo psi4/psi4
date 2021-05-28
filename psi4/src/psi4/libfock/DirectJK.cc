@@ -1421,6 +1421,37 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
         std::vector<std::unordered_set<int>> PS_sig_shells2(nPtask, std::unordered_set<int>());
         std::vector<std::unordered_set<int>> QR_sig_shells2(nQtask, std::unordered_set<int>());
         std::vector<std::unordered_set<int>> QS_sig_shells2(nQtask, std::unordered_set<int>());
+
+        std::vector<double> shell_ceiling_P(nPtask, 0.0);
+        std::vector<double> shell_ceiling_Q(nQtask, 0.0);
+        std::vector<double> shell_ceiling_R(nRtask, 0.0);
+        std::vector<double> shell_ceiling_S(nStask, 0.0);
+
+        // P and Q shell ceilings
+        for (int P2 = P2start; P2 < P2start + nPtask; P2++) {
+            int P = task_shells[P2];
+            int dP = P - Pstart;
+            for (int Q2 = Q2start; Q2 < Q2start + nQtask; Q2++) {
+                int Q = task_shells[Q2];
+                int dQ = Q - Qstart;
+                double val = ints[0]->shell_ceiling(P, Q);
+                shell_ceiling_P[dP] = std::max(shell_ceiling_P[dP], val);
+                shell_ceiling_Q[dQ] = std::max(shell_ceiling_Q[dQ], val);
+            }
+        }
+
+        // R and S shell ceilings
+        for (int R2 = R2start; R2 < R2start + nRtask; R2++) {
+            int R = task_shells[R2];
+            int dR = R - Rstart;
+            for (int S2 = S2start; S2 < S2start + nStask; S2++) {
+                int S = task_shells[S2];
+                int dS = S - Sstart;
+                double val = ints[0]->shell_ceiling(R, S);
+                shell_ceiling_R[dR] = std::max(shell_ceiling_R[dR], val);
+                shell_ceiling_S[dS] = std::max(shell_ceiling_S[dS], val);
+            }
+        }
         
         // PR significant shells
         for (int P2 = P2start; P2 < P2start + nPtask; P2++) {
@@ -1429,7 +1460,8 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
             std::vector<std::tuple<int, double>> temp;
             for (int R2 = R2start; R2 < R2start + nRtask; R2++) {
                 int R = task_shells[R2];
-                double val = ints[0]->pair_screen_linK(P, R);
+                int dR = R - Rstart;
+                double val = ints[0]->shell_max_density(P, R) * shell_ceiling_P[dP] * shell_ceiling_R[dR];
                 if (val >= linK_thresh) temp.push_back(std::tuple<int, double>(R, val));
             }
 
@@ -1450,7 +1482,8 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
             std::vector<std::tuple<int, double>> temp;
             for (int S2 = S2start; S2 < S2start + nStask; S2++) {
                 int S = task_shells[S2];
-                double val = ints[0]->pair_screen_linK(P, S);
+                int dS = S - Sstart;
+                double val = ints[0]->shell_max_density(P, S) * shell_ceiling_P[dP] * shell_ceiling_S[dS];
                 if (val > linK_thresh) temp.push_back(std::tuple<int, double>(S, val));
             }
 
@@ -1471,7 +1504,8 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
             std::vector<std::tuple<int, double>> temp;
             for (int R2 = R2start; R2 < R2start + nRtask; R2++) {
                 int R = task_shells[R2];
-                double val = ints[0]->pair_screen_linK(Q, R);
+                int dR = R - Rstart;
+                double val = ints[0]->shell_max_density(Q, R) * shell_ceiling_Q[dQ] * shell_ceiling_R[dR];
                 if (val > linK_thresh) temp.push_back(std::tuple<int, double>(R, val));
             }
 
@@ -1492,7 +1526,8 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
             std::vector<std::tuple<int, double>> temp;
             for (int S2 = S2start; S2 < S2start + nStask; S2++) {
                 int S = task_shells[S2];
-                double val = ints[0]->pair_screen_linK(Q, S);
+                int dS = S - Sstart;
+                double val = ints[0]->shell_max_density(Q, S) * shell_ceiling_Q[dQ] * shell_ceiling_S[dS];
                 if (val > linK_thresh) temp.push_back(std::tuple<int, double>(S, val));
             }
 
