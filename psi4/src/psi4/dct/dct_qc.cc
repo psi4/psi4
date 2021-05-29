@@ -208,15 +208,6 @@ void DCTSolver::compute_orbital_gradient() {
     Fb_->copy(so_h_);
     // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
     process_so_ints();
-    // Form F0 matrix
-    moF0a_->copy(Fa_);
-    moF0b_->copy(Fb_);
-    // Transform the F0 matrix to the MO basis
-    moF0a_->transform(Ca_);
-    moF0b_->transform(Cb_);
-    // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
-    Fa_->add(g_tau_a_);
-    Fb_->add(g_tau_b_);
     // Copy the SO basis Fock for the transformation to the MO basis
     moFa_->copy(Fa_);
     moFb_->copy(Fb_);
