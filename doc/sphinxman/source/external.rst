@@ -103,17 +103,18 @@ the following code will do that::
     if scratch_dir:
         psi4_io.set_default_path(scratch_dir + '/')
 
-Individual files can be sent to specific locations.  For example, file 32 is
-the checkpoint file that the user might want to retain in the working directory
-(*i.e.*, where |PSIfour| was launched from) for restart purposes.  This is
+Individual files can be sent to specific locations.  For example, file 12
+contains information about the internal coordiantes of a geometry optimization.
+The user may want to retain this in the working directory
+(*i.e.*, where |PSIfour| was launched from) to analyze the optimization.  This is
 accomplished by the commands below::
 
-    psi4_io.set_specific_path(32, './')
-    psi4_io.set_specific_retention(32, True)
+    psi4_io.set_specific_path(12, './')
+    psi4_io.set_specific_retention(12, True)
 
     # equivalent to above
-    psi4_io.set_specific_path(PSIF_CHKPT, './')
-    psi4_io.set_specific_retention(PSIF_CHKPT, True)
+    psi4_io.set_specific_path(PSIF_INTCO, './')
+    psi4_io.set_specific_retention(PSIF_INTCO, True)
 
 A guide to the contents of individual scratch files may be found at :ref:`apdx:psiFiles`.
 To circumvent difficulties with running multiple jobs in the same scratch, the
@@ -176,14 +177,14 @@ To set up the scratch path from a variable ``$MYSCRATCH``::
     if scratch_dir:
         psi4_io.set_default_path(scratch_dir + '/')
 
-To set up a specific path for the checkpoint file and instruct |PSIfour| not to delete it::
+To set up a specific path for the internal coordinate file and instruct |PSIfour| not to delete it::
 
-    psi4_io.set_specific_path(32, './')
-    psi4_io.set_specific_retention(32, True)
+    psi4_io.set_specific_path(12, './')
+    psi4_io.set_specific_retention(12, True)
 
     # equivalent to above
-    psi4_io.set_specific_path(PSIF_CHKPT, './')
-    psi4_io.set_specific_retention(PSIF_CHKPT, True)
+    psi4_io.set_specific_path(PSIF_INTCO, './')
+    psi4_io.set_specific_retention(PSIF_INTCO, True)
 
 The Python interpreter will execute the contents of the
 |psirc| file in the current user's home area (if present) before performing any

@@ -57,7 +57,6 @@
 #define PSIF_INTCO               12   /*- internal coordinates file, currently is ASCII file like output.intco -*/
 #define PSIF_3INDEX              16   /*-  -*/
 #define PSIF_DSCF                31   /*-  -*/
-#define PSIF_CHKPT               32   /*- new libpsio checkpoint file number -*/
 #define PSIF_SO_TEI              33   /*-  -*/
 #define PSIF_SO_PK               34   /*-  -*/
 #define PSIF_OEI                 35   /*-  -*/
@@ -67,7 +66,6 @@
 #define PSIF_SO_R12T1            39   /*-  -*/
 #define PSIF_DERINFO             40   /*-  -*/
 #define PSIF_SO_PRESORT          41   /*-  -*/
-#define PSIF_OLD_CHKPT           42   /*- Until we have flexible PSIF_CHKPT this will store previous calculation info -*/
 #define PSIF_CIVECT              43   /*- CI vector from DETCI along with string and determinant info -*/
 
 #define PSIF_AO_DGDBX            44   /*- B-field derivative AO integrals over GIAO Gaussians -- only bra-ket permutational symmetry holds -*/
