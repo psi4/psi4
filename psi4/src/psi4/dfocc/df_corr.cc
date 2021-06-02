@@ -515,6 +515,7 @@ void DFOCC::b_so(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> a
         //}// end else
 
         Jmhalf.reset();
+        if (print_ > 3) bQso->print();
         bQso.reset();
     }// if do_mp2 = true
 
@@ -526,12 +527,10 @@ void DFOCC::b_so(std::shared_ptr<BasisSet> primary_, std::shared_ptr<BasisSet> a
         bQso->set(Ap);
         free_block(Ap);
         bQso->write(psio_, PSIF_DFOCC_INTS, true, true);
+        if (print_ > 3) bQso->print();
         bQso.reset();
     }// do_mp2 = false
 
-
-    // write & quit
-    if (print_ > 3) bQso->print();
 
     /*
     // Build C(Q, mu nu)

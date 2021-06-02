@@ -1162,6 +1162,12 @@ void DFOCC::uccsd_tpdm()
 
     G2.reset();
 
+    // remove files
+    remove_binary_file(PSIF_DFOCC_MIABC_AAAA);
+    remove_binary_file(PSIF_DFOCC_MIABC_BBBB);
+    remove_binary_file(PSIF_DFOCC_MIABC_AABB);
+    remove_binary_file(PSIF_DFOCC_MIABC_BBAA);
+
     //outfile->Printf("\tI am here.\n");
 } // end uccsd_tpdm
 }  // namespace dfoccwave

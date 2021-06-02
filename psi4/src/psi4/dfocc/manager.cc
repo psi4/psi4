@@ -4364,10 +4364,10 @@ void DFOCC::occd_manager() {
             outfile->Printf("\tDF-OCCD(T) Total Energy (a.u.)     : %20.14f\n", Eccsd_t);
             if (do_fno == "TRUE") outfile->Printf("\tDF-MP2 FNO Correction (a.u.)       : %20.14f\n", Emp2L - Emp2);
             if (do_fno == "TRUE") outfile->Printf("\tDF-CCSD(T) + delta_MP2 (a.u.)      : %20.14f\n", Eccsd_t + Emp2L - Emp2);
-            if (dertype == "FIRST") {
-                tstop();
-                tstart();
-            }
+            //if (dertype == "FIRST") {
+            //    tstop();
+            //    tstart();
+            //}
 
             if (do_fno == "TRUE") Eccsd_t += Emp2L - Emp2;
             Process::environment.globals["CURRENT ENERGY"] = Eccsd_t;

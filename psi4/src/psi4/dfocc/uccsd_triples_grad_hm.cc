@@ -2014,6 +2014,12 @@ void DFOCC::uccsd_triples_grad_hm()
 
     timer_off("CCSD(T)-HM-ABB");
 
+    // remove files
+    remove_binary_file(PSIF_DFOCC_IABC_AAAA);
+    remove_binary_file(PSIF_DFOCC_IABC_BBBB);
+    remove_binary_file(PSIF_DFOCC_IABC_BABA);
+    remove_binary_file(PSIF_DFOCC_IABC_ABAB);
+
     tL1A->write(psio_, PSIF_DFOCC_AMPS);
     tL1A.reset();
     tL1B->write(psio_, PSIF_DFOCC_AMPS);
