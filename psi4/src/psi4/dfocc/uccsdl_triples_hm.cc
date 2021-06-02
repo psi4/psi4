@@ -1471,6 +1471,12 @@ void DFOCC::uccsdl_triples_hm()
     l2BA.reset();
     l2BB.reset();
     timer_off("CCSD(AT)-HM-ABB");
+
+    // remove files
+    remove_binary_file(PSIF_DFOCC_IABC_AAAA);
+    remove_binary_file(PSIF_DFOCC_IABC_BBBB);
+    remove_binary_file(PSIF_DFOCC_IABC_BABA);
+    remove_binary_file(PSIF_DFOCC_IABC_ABAB);
 } // uccsd_triples_hm()
 
 }  // namespace dfoccwave

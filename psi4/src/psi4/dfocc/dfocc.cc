@@ -470,6 +470,9 @@ void DFOCC::pdm_title() {
         else if (wfn_type_ == "DF-CCSD(T)") {
             outfile->Printf("               by Ugur Bozkaya, Asli Unal & Yavuz Alagoz\n");
         }
+        else {
+            outfile->Printf("                   by Ugur Bozkaya\n");
+        }
     }
     outfile->Printf("              Latest Revision Sep 5, 2020\n");
     outfile->Printf("\n");
