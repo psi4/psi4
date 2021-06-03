@@ -895,6 +895,10 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
     if (weakp == "NEGLECT") {
         psio_read_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *) weak_pairs, npairs * sizeof(int));
     }
+    else {
+        for (int i=0; i < npairs; i++)
+            weak_pairs[i] = 0;
+    }
         
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ++ij) {
