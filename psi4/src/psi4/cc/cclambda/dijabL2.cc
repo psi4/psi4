@@ -51,8 +51,11 @@ void CCLambdaWavefunction::dijabL2(int L_irr) {
         global_dpd_->buf4_close(&newLIjAb);
 
         global_dpd_->buf4_init(&newLIjAb, PSIF_CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb Increment");
-        if (params.local)
+        if (params.local) {
+            local_.nocc = moinfo.occpi[0];
+            local_.nvir = moinfo.virtpi[0];
             local_.local_filter_T2(&newLIjAb);
+        }
         else {
             global_dpd_->buf4_init(&dIjAb, PSIF_CC_DENOM, L_irr, 0, 5, 0, 5, 0, "dIjAb");
             global_dpd_->buf4_dirprd(&dIjAb, &newLIjAb);
