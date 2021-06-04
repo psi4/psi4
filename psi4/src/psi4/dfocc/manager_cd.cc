@@ -3684,6 +3684,20 @@ void DFOCC::occd_manager_cd() {
     cost_amp = MAX0(cost_ampAA, cost_ampAA2);
     outfile->Printf("\tMemory requirement for Wabef term     : %9.2lf MB \n", cost_amp);
 
+    // cost_ppl_hm
+    cost_ppl_hm = ntri_abAA / 1024.0;
+    cost_ppl_hm *= cost_ppl_hm;
+    cost_ppl_hm *= sizeof(double);
+    cost_ppl_hm += cost_amp;
+    outfile->Printf("\tMemory for high mem Wabef algorithm   : %9.2lf MB \n", cost_ppl_hm);
+    if (cost_ppl_hm > memory_mb && Wabef_type_ == "AUTO") {
+        do_ppl_hm = false;
+        outfile->Printf("\tI will use the LOW_MEM Wabef algorithm! \n");
+    } else if (cost_ppl_hm <= memory_mb && Wabef_type_ == "AUTO") {
+        do_ppl_hm = true;
+        outfile->Printf("\tI will use the HIGH_MEM Wabef algorithm! \n");
+    }
+
     // Fock
     fock();
 
@@ -4043,6 +4057,20 @@ void DFOCC::occdl_t_manager_cd() {
     cost_ampAA2 *= sizeof(double);
     cost_amp = MAX0(cost_ampAA, cost_ampAA2);
     outfile->Printf("\tMemory requirement for Wabef term     : %9.2lf MB \n", cost_amp);
+
+    // cost_ppl_hm
+    cost_ppl_hm = ntri_abAA / 1024.0;
+    cost_ppl_hm *= cost_ppl_hm;
+    cost_ppl_hm *= sizeof(double);
+    cost_ppl_hm += cost_amp;
+    outfile->Printf("\tMemory for high mem Wabef algorithm   : %9.2lf MB \n", cost_ppl_hm);
+    if (cost_ppl_hm > memory_mb && Wabef_type_ == "AUTO") {
+        do_ppl_hm = false;
+        outfile->Printf("\tI will use the LOW_MEM Wabef algorithm! \n");
+    } else if (cost_ppl_hm <= memory_mb && Wabef_type_ == "AUTO") {
+        do_ppl_hm = true;
+        outfile->Printf("\tI will use the HIGH_MEM Wabef algorithm! \n");
+    }
 
     // Fock
     fock();
