@@ -217,6 +217,9 @@ if not os.path.isfile(args["input"]):
     raise KeyError("The file %s does not exist." % args["input"])
 args["input"] = os.path.normpath(args["input"])
 
+# Setup scratch_messy
+_clean_functions = [psi4.core.clean, psi4.extras.clean_numpy_files]
+
 # Setup outfile
 if args["append"] is None:
     args["append"] = False
@@ -260,7 +263,13 @@ if args["qcschema"]:
         raise Exception("qcschema files must either end in '.json' or '.msgpack'.")
 
     psi4.extras._success_flag_ = True
-    ret = psi4.schema_wrapper.run_qcschema(data)
+    clean = True
+    if args["messy"]:
+        clean = False
+        for func in _clean_functions:
+            atexit.unregister(func)
+
+    ret = psi4.schema_wrapper.run_qcschema(data, clean=clean)
 
     if args["output"] is not None:
         filename = args["output"]
@@ -312,17 +321,9 @@ if args["verbose"]:
     psi4.core.print_out('-' * 75)
 
 # Handle Messy
-_clean_functions = [psi4.core.clean, psi4.extras.clean_numpy_files]
 if args["messy"]:
-
-    if sys.version_info >= (3, 0):
-        for func in _clean_functions:
-            atexit.unregister(func)
-    else:
-        for handler in atexit._exithandlers:
-            for func in _clean_functions:
-                if handler[0] == func:
-                    atexit._exithandlers.remove(handler)
+    for func in _clean_functions:
+        atexit.unregister(func)
 
 # Register exit printing, failure GOTO coffee ELSE beer
 atexit.register(psi4.extras.exit_printing, start_time=start_time)

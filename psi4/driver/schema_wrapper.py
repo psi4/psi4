@@ -193,7 +193,7 @@ def _convert_variables(data, context=None, json=False):
             elif conversion_factor:
                 value = [x * conversion_factor for x in value]
         else:
-            raise TypeError("variables type not understood.")
+            raise TypeError(f"variable's type not understood: {key} {var}")
 
         # Handle skips
         if var.get("skip_zero", False) and (value == 0):
@@ -405,11 +405,11 @@ def run_qcschema(input_data, clean=True):
 
         # qcschema should be copied
         ret_data = run_json_qcschema(input_model.dict(), clean, False, keep_wfn=keep_wfn)
-        ret_data["provenance"] = {
+        ret_data["provenance"].update({
             "creator": "Psi4",
             "version": __version__,
             "routine": "psi4.schema_runner.run_qcschema"
-        }
+        })
 
         exit_printing(start_time=start_time, success=True)
 
@@ -630,6 +630,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
 
     json_data["properties"] = props
     json_data["success"] = True
+    json_data["provenance"]["module"] = wfn.module()
 
     if keep_wfn:
         json_data["wavefunction"] = _convert_wavefunction(wfn)

@@ -15,9 +15,9 @@ else()
         # Default: use a stable release tarball of libxc. To use the
         # development version of libxc, instead, comment the URL line,
         # and uncomment the GIT lines.
-        URL https://gitlab.com/libxc/libxc/-/archive/5.1.2/libxc-5.1.2.tar.gz
+        URL https://gitlab.com/libxc/libxc/-/archive/5.1.4/libxc-5.1.4.tar.gz
         #GIT_REPOSITORY https://gitlab.com/libxc/libxc.git
-        #GIT_TAG 5.1.2
+        #GIT_TAG 5.1.4
         #UPDATE_COMMAND ""
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
