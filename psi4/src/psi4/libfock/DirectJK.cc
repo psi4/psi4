@@ -428,7 +428,7 @@ void DirectJK::compute_JK() {
         }
     }
     
-    ncalls += 1;
+    iteration_ += 1;
 }
 void DirectJK::postiterations() {}
 
