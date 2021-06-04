@@ -1443,6 +1443,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Density Threshold to stop Incremental Fock Build -*/
         options.add_double("IFB_D_CONVERGENCE", 1.0e-5);
 
+        /*- Perform linK SCF optimization? -*/
+        options.add_bool("SCF_DO_LINK", false);
+        /*- Threshold for linK screening -*/
+        options.add_double("LINK_THRESHOLD", 1.0e-13);
+
         /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 
         /*- The iteration to start fractionally occupying orbitals (or 0 for no fractional occupation) -*/

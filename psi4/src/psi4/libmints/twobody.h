@@ -218,7 +218,7 @@ class PSI_API TwoBodyAOInt {
     double shell_pair_max_value(int M, int N);
     
     /// Density Screening of a shell quartet (Haser 1989)
-    bool shell_significant_density(int M, int N, int R, int S);
+    bool shell_significant_density(int M, int N, int R, int S) const;
     
     /// Separate J and K density screening
     bool shell_significant_density_J(int M, int N, int R, int S);
