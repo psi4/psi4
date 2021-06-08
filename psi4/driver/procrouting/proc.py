@@ -1283,6 +1283,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         ['DF_BASIS_SCF'],
         ['SCF', 'GUESS'],
         ['SCF', 'DF_INTS_IO'],
+        ['SCF', 'ORBITALS_WRITE'],
         ['SCF_TYPE'],  # Hack: scope gets changed internally with the Andy trick
     )
 
@@ -1304,6 +1305,16 @@ def scf_helper(name, post_scf=True, **kwargs):
     ref_wfn = kwargs.pop('ref_wfn', None)
     if ref_wfn is not None:
         raise ValidationError("Cannot seed an SCF calculation with a reference wavefunction ('ref_wfn' kwarg).")
+
+    # decide if we keep the checkpoint file
+    _chkfile = kwargs.get('write_orbitals', True)
+    write_checkpoint_file = False
+    if isinstance(_chkfile, str):
+        write_checkpoint_file = True
+        filename = kwargs.get('write_orbitals')
+        core.set_local_option("SCF", "ORBITALS_WRITE", filename)
+    elif _chkfile is True:
+        write_checkpoint_file = True
 
     # PCM needs to be run w/o symmetry
     if core.get_option("SCF", "PCM"):
@@ -1505,9 +1516,9 @@ def scf_helper(name, post_scf=True, **kwargs):
     # The wfn from_file routine adds the npy suffix if needed, but we add it here so that
     # we can use os.path.isfile to query whether the file exists before attempting to read
     read_filename = scf_wfn.get_scratch_filename(180) + '.npy'
-
-    if (core.get_option('SCF', 'GUESS') == 'READ') and os.path.isfile(read_filename):
+    if ((core.get_option('SCF', 'GUESS') == 'READ') and os.path.isfile(read_filename)):
         old_wfn = core.Wavefunction.from_file(read_filename)
+
         Ca_occ = old_wfn.Ca_subset("SO", "OCC")
         Cb_occ = old_wfn.Cb_subset("SO", "OCC")
 
@@ -1515,11 +1526,11 @@ def scf_helper(name, post_scf=True, **kwargs):
             raise ValidationError("Cannot compute projection of different symmetries.")
 
         if old_wfn.basisset().name() == scf_wfn.basisset().name():
-            core.print_out("  Reading orbitals from file 180, no projection.\n\n")
+            core.print_out(f"  Reading orbitals from file {read_filename}, no projection.\n\n")
             scf_wfn.guess_Ca(Ca_occ)
             scf_wfn.guess_Cb(Cb_occ)
         else:
-            core.print_out("  Reading orbitals from file 180, projecting to new basis.\n\n")
+            core.print_out(f"  Reading orbitals from file {read_filename}, projecting to new basis.\n\n")
             core.print_out("  Computing basis projection from %s to %s\n\n" % (old_wfn.basisset().name(), scf_wfn.basisset().name()))
 
             pCa = scf_wfn.basis_projection(Ca_occ, old_wfn.nalphapi(), old_wfn.basisset(), scf_wfn.basisset())
@@ -1533,9 +1544,8 @@ def scf_helper(name, post_scf=True, **kwargs):
         if old_ref != new_ref:
             scf_wfn.reset_occ_ = True
 
-
     elif (core.get_option('SCF', 'GUESS') == 'READ') and not os.path.isfile(read_filename):
-        core.print_out("  Unable to find file 180, defaulting to SAD guess.\n")
+        core.print_out(f"\n !!!  Unable to find file {read_filename}, defaulting to SAD guess. !!!\n\n")
         core.set_local_option('SCF', 'GUESS', 'SAD')
         sad_basis_list = core.BasisSet.build(scf_wfn.molecule(), "ORBITAL",
                                              core.get_global_option("BASIS"),
@@ -1642,12 +1652,15 @@ def scf_helper(name, post_scf=True, **kwargs):
                  scf_wfn.epsilon_b(), scf_wfn.occupation_a(),
                  scf_wfn.occupation_b(), dovirt)
 
-    # Write out orbitals and basis; Can be disabled, e.g., for findif displacements
-    if kwargs.get('write_orbitals', True):
-        write_filename = scf_wfn.get_scratch_filename(180)
-
-        scf_wfn.to_file(write_filename)
-        extras.register_numpy_file(write_filename)
+    # Write checkpoint file (orbitals and basis); Can be disabled, e.g., for findif displacements
+    if write_checkpoint_file and isinstance(_chkfile, str):
+        filename = kwargs['write_orbitals']
+        scf_wfn.to_file(filename)
+        # core.set_local_option("SCF", "ORBITALS_WRITE", filename)
+    elif write_checkpoint_file:
+        filename = scf_wfn.get_scratch_filename(180)
+        scf_wfn.to_file(filename)
+        extras.register_numpy_file(filename) # retain with -m (messy) option
 
     if do_timer:
         core.tstop()
@@ -5166,4 +5179,3 @@ def run_efp(name, **kwargs):
         core.set_variable("EFP TORQUE", torq)  # P::e EFP
 
     return ene['total']
-

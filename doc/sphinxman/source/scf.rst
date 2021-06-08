@@ -486,7 +486,7 @@ HUCKEL
     An extended H\ |u_dots|\ ckel guess based on on-the-fly atomic UHF
     calculations alike SAD, see [Lehtola:2019:1593]_.
 READ
-    Read the previous orbitals from a checkpoint file, casting from
+    Read the previous orbitals from a ``wfn`` file, casting from
     one basis to another if needed. Useful for starting anion
     computations from neutral orbitals, or after small geometry
     changes. At present, casting from a different molecular point
@@ -527,6 +527,37 @@ in a 3-21G basis and then casting up to cc-pVTZ is shown below::
     }
 
     energy('scf')
+
+.. .. _`scf:restart`:
+
+Restarting the SCF
+~~~~~~~~~~~~~~~~~~
+
+Reading orbital data from a previous calculations is done via the ``restart_file`` option,
+where the actual file is a serialized ``wfn`` object (see :ref:`saving the wfn <sec:save_wfn>`)
+By default, the orbital data file of the converged SCF(``psi.PID.name.180.npy``) is deleted
+after |PSIfour| exits or the ``clean()`` function is called. The orbital guess is automatically
+set to ``READ`` when ``restart_file`` is given a ``wfn`` file.
+To write the orbitals after every iteration and keep the orbitals from the last iteration, the ``write_orbitals`` options is available: ::
+
+  energy('scf', write_orbitals='my_mos'),
+
+which writes a ``Wavefunction`` object converted (serialized) to a numpy file called ``my_mos.npy``.
+The restart can then be done as follows: ::
+
+  energy('scf', restart_file='my_mos')
+
+Specifying the ``.npy`` suffix when writing and reading restart files is optional.
+
+Alternatively, the restart can also be done from any previously saved ``wfn`` object. ::
+
+  energy, scf_wfn = energy('scf',return_wfn=True)
+  scf_wfn.to_file('my_wfn')
+  energy('scf', restart_file='my_wfn')
+
+
+For advanced users manipulating or writing custom wavefunction files, note
+that |PSIfour| expects the numpy file on disk to have the ``.npy`` extension, not, e.g., `.npz`.
 
 
 .. index:: DIIS, MOM, damping
