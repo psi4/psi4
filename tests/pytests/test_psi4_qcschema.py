@@ -44,6 +44,11 @@ def test_psi4_basic(datadir):
     """tu1-h2o-energy"""
     #! Sample HF/cc-pVDZ H2O computation
 
+    if os.path.isdir(tmpdir):
+        print("tmpdir {} FOUND".format(tmpdir)
+    else:
+        raise FileNotFoundError("tmpdir {} not found.".format(tmpdir))
+
     ref_file = datadir.join(f"jatin1.ref")
     print("REF_FILE = {}".format(ref_file))
     with open(ref_file) as f:
