@@ -101,6 +101,7 @@ void DirectJK::print_header() const {
     }
 }
 void DirectJK::preiterations() {
+
 #ifdef USING_BrianQC
     if (brianEnable) {
         double threshold = cutoff_ * (brianCPHFFlag ? 1e-3 : 1e-0); // CPHF needs higher precision
@@ -109,7 +110,6 @@ void DirectJK::preiterations() {
     }
 #endif
 }
-
 void DirectJK::compute_JK() {
 #ifdef USING_BrianQC
     if (brianEnable) {
@@ -320,7 +320,6 @@ void DirectJK::compute_JK() {
             build_JK(ints, D_ref, temp, K_ref);
         }
     }
-
 }
 void DirectJK::postiterations() {}
 
