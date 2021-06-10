@@ -273,10 +273,10 @@ void DirectJK::compute_JK() {
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     
-    std::vector<SharedMatrix>& D_ref = (do_ifb_iter_ ? del_D_ : D_ao_);
-    std::vector<SharedMatrix>& J_ref = (do_ifb_iter_ ? del_J_ : J_ao_);
-    std::vector<SharedMatrix>& K_ref = (do_ifb_iter_ ? del_K_ : K_ao_);
-    std::vector<SharedMatrix>& wK_ref = (do_ifb_iter_ ? del_wK_ : wK_ao_);
+    std::vector<SharedMatrix>& D_ref = (do_ifb_iter_ ? del_D_ao_ : D_ao_);
+    std::vector<SharedMatrix>& J_ref = (do_ifb_iter_ ? del_J_ao_ : J_ao_);
+    std::vector<SharedMatrix>& K_ref = (do_ifb_iter_ ? del_K_ao_ : K_ao_);
+    std::vector<SharedMatrix>& wK_ref = (do_ifb_iter_ ? del_wK_ao_ : wK_ao_);
 
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;

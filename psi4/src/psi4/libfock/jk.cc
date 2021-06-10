@@ -215,7 +215,7 @@ void JK::common_init() {
     Options& options = Process::environment.options;
     density_screening_ = options.get_bool("SCF_DENSITY_SCREENING");
     ifb_ = options.get_bool("IFB");
-    dconv_ = options.get_double("D_CONVERGENCE");
+    d_conv_ = options.get_double("D_CONVERGENCE");
     ifb_d_conv_ = options.get_double("IFB_D_CONVERGENCE");
 
 }
@@ -602,28 +602,28 @@ void JK::ifb_postiter() {
         for (size_t N = 0; N < D_ao_.size(); N++) {
 
             if (do_wK_) {
-                wK_prev_[N]->add(del_wK_[N]);
-                wK_ao_[N]->copy(wK_prev_[N]);
+                wK_ao_prev_[N]->add(del_wK_ao_[N]);
+                wK_ao_[N]->copy(wK_ao_prev_[N]);
             }
 
             if (do_J_) {
-                J_prev_[N]->add(del_J_[N]);
-                J_ao_[N]->copy(J_prev_[N]);
+                J_ao_prev_[N]->add(del_J_ao_[N]);
+                J_ao_[N]->copy(J_ao_prev_[N]);
             }
 
             if (do_K_) {
-                K_prev_[N]->add(del_K_[N]);
-                K_ao_[N]->copy(K_prev_[N]);
+                K_ao_prev_[N]->add(del_K_ao_[N]);
+                K_ao_[N]->copy(K_ao_prev_[N]);
             }
 
-            D_prev_[N]->copy(D_ao_[N]);
+            D_ao_prev_[N]->copy(D_ao_[N]);
         }
     } else { // RMS D less than 1.0e-5
         for (size_t N = 0; N < D_ao_.size(); N++) {
-            if (do_wK_) wK_prev_[N]->copy(wK_ao_[N]);
-            if (do_J_) J_prev_[N]->copy(J_ao_[N]);
-            if (do_K_) K_prev_[N]->copy(K_ao_[N]);
-            D_prev_[N]->copy(D_ao_[N]);
+            if (do_wK_) wK_ao_prev_[N]->copy(wK_ao_[N]);
+            if (do_J_) J_ao_prev_[N]->copy(J_ao_[N]);
+            if (do_K_) K_ao_prev_[N]->copy(K_ao_[N]);
+            D_ao_prev_[N]->copy(D_ao_[N]);
         }
     }
 }
@@ -687,7 +687,7 @@ void JK::compute() {
         ifb_setup();
         double Dnorm = Process::environment.globals["SCF RMS D"];
         // Do IFB on this iteration?
-        bool do_ifb_iter_ = (iteration_ >= 1) && (Dnorm > ifb_d_conv_);
+        do_ifb_iter_ = (iteration_ >= 1) && (Dnorm > ifb_d_conv_);
         timer_off("JK: IFB Preprocessing");
     }
 
@@ -729,6 +729,8 @@ void JK::compute() {
     if (lr_symmetric_) {
         C_right_.clear();
     }
+
+    iteration_ += 1;
 }
 void JK::set_wcombine(bool wcombine) {
     wcombine_ = wcombine;
