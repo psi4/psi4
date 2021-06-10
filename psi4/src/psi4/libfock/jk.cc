@@ -213,9 +213,11 @@ void JK::common_init() {
     AO2USO_ = SharedMatrix(pet->aotoso());
 
     Options& options = Process::environment.options;
-
     density_screening_ = options.get_bool("SCF_DENSITY_SCREENING");
     ifb_ = options.get_bool("IFB");
+    dconv_ = options.get_double("D_CONVERGENCE");
+    ifb_d_conv_ = options.get_double("IFB_D_CONVERGENCE");
+
 }
 size_t JK::memory_overhead() const {
     size_t mem = 0L;
@@ -545,6 +547,86 @@ void JK::AO2USO() {
     delete[] temp;
 }
 void JK::initialize() { preiterations(); }
+void JK::ifb_setup() {
+
+    if (iteration_ == 0 || D_ao_prev_.size() != D_ao_.size()) {
+
+        iteration_ = 0;
+
+        D_ao_prev_.clear();
+        del_D_ao_.clear();
+
+        if (do_wK_) {
+            wK_ao_prev_.clear();
+            del_wK_ao_.clear();
+        }
+
+        if (do_J_) {
+            J_ao_prev_.clear();
+            del_J_ao_.clear();
+        }
+
+        if (do_K_) {
+            K_ao_prev_.clear();
+            del_K_ao_.clear();
+        }
+    
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            D_ao_prev_.push_back(std::make_shared<Matrix>("D Prev", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+            del_D_ao_.push_back(std::make_shared<Matrix>("Delta D", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+
+            if (do_wK_) {
+                wK_ao_prev_.push_back(std::make_shared<Matrix>("wK Prev", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
+                del_wK_ao_.push_back(std::make_shared<Matrix>("Delta wK", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
+            }
+                
+            if (do_J_) {
+                J_ao_prev_.push_back(std::make_shared<Matrix>("J Prev", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
+                del_J_ao_.push_back(std::make_shared<Matrix>("Delta J", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
+            }
+        
+            if (do_K_) {
+                K_ao_prev_.push_back(std::make_shared<Matrix>("K Prev", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
+                del_K_ao_.push_back(std::make_shared<Matrix>("Delta K", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
+            }
+        }
+    } else {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            del_D_ao_[N]->copy(D_ao_[N]);
+            del_D_ao_[N]->subtract(D_ao_prev_[N]);
+        }
+    }
+}
+void JK::ifb_postiter() {
+    if (do_ifb_iter_) { // RMS D greater than 1.0e-5
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+
+            if (do_wK_) {
+                wK_prev_[N]->add(del_wK_[N]);
+                wK_ao_[N]->copy(wK_prev_[N]);
+            }
+
+            if (do_J_) {
+                J_prev_[N]->add(del_J_[N]);
+                J_ao_[N]->copy(J_prev_[N]);
+            }
+
+            if (do_K_) {
+                K_prev_[N]->add(del_K_[N]);
+                K_ao_[N]->copy(K_prev_[N]);
+            }
+
+            D_prev_[N]->copy(D_ao_[N]);
+        }
+    } else { // RMS D less than 1.0e-5
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            if (do_wK_) wK_prev_[N]->copy(wK_ao_[N]);
+            if (do_J_) J_prev_[N]->copy(J_ao_[N]);
+            if (do_K_) K_prev_[N]->copy(K_ao_[N]);
+            D_prev_[N]->copy(D_ao_[N]);
+        }
+    }
+}
 void JK::compute() {
     // Is this density symmetric?
     if (C_left_.size() && !C_right_.size()) {
@@ -600,9 +682,25 @@ void JK::compute() {
         allocate_JK();
     }
 
+    if (ifb_) {
+        timer_on("JK: IFB Preprocessing");
+        ifb_setup();
+        double Dnorm = Process::environment.globals["SCF RMS D"];
+        // Do IFB on this iteration?
+        bool do_ifb_iter_ = (iteration_ >= 1) && (Dnorm > ifb_d_conv_);
+        timer_off("JK: IFB Preprocessing");
+    }
+
+
     timer_on("JK: JK");
     compute_JK();
     timer_off("JK: JK");
+
+    if (ifb_) {
+        timer_on("JK: IFB Postprocessing");
+        ifb_postiter();
+        timer_off("JK: IFB Postprocessing");
+    }
 
     if (C1()) {
         timer_on("JK: AO2USO");

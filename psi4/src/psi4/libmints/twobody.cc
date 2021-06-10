@@ -121,7 +121,7 @@ TwoBodyAOInt::~TwoBodyAOInt() {}
 // Haser 1989, Equation 7 
 void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
     
-    timer_on("Density Screen");
+    timer_on("Update Density");
 #pragma omp parallel for
     for (int M = 0; M < nshell_; M++) {
         for (int N = 0; N < nshell_; N++) {
@@ -133,19 +133,20 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
             
             double max_dens = 0.0;
             
-            for (int i = 0; i < D.size(); i++) {
-                double val = 0.0;
-                for (int m = m_start; m < m_start + num_m; m++) {
-                    for (int n = n_start; n < n_start + num_n; n++) {
+            for (int m = m_start; m < m_start + num_m; m++) {
+                for (int n = n_start; n < n_start + num_n; n++) {
+                    double val = 0.0;
+                    for (int i = 0; i < D.size(); i++) {
                         val += std::abs(D[i]->get(m, n));
                     }
+                    if (val > max_dens) max_dens = val;
                 }
-                if (val > max_dens) max_dens = val;
             }
+            
             max_dens_shell_pair_[M][N] = max_dens;
         }
     }
-    timer_off("Density Screen");
+    timer_off("Update Density");
 
 }
 

@@ -258,6 +258,12 @@ class PSI_API JK {
     bool density_screening_;
     /// Perform Incremental Fock Build for J and K Matrices?
     bool ifb_;
+    /// Density Matrix convergence criteria
+    double d_conv_;
+    /// The density matrix convergence value at which to stop performing IFB
+    double ifb_d_conv_;
+    /// Do IFB on the current iteration?
+    bool do_ifb_iter_;
 
     /// Combine (pq|rs) and (pq|w|rs) integrals before contracting?
     bool wcombine_;
@@ -308,6 +314,21 @@ class PSI_API JK {
     /// wK matrices: wK_mn = (ml|w|ns) C_li^left C_si^right
     std::vector<SharedMatrix> wK_ao_;
 
+    /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
+    std::vector<SharedMatrix> D_ao_prev_;
+    std::vector<SharedMatrix> J_ao_prev_;
+    std::vector<SharedMatrix> K_ao_prev_;
+    std::vector<SharedMatrix> wK_ao_prev_;
+
+    // Delta D, J, K, wK Matrices for Incremental Fock Build
+    std::vector<SharedMatrix> del_D_ao_;
+    std::vector<SharedMatrix> del_J_ao_;
+    std::vector<SharedMatrix> del_K_ao_;
+    std::vector<SharedMatrix> del_wK_ao_;
+
+    // Current SCF Iteration
+    int iteration_ = 0;
+
     // => Per-Iteration Setup/Finalize Routines <= //
 
     /// Build the pseudo-density D_, before compute_JK()
@@ -330,6 +351,10 @@ class PSI_API JK {
      *
      */
     void common_init();
+    /// Set up IFB variables per iteration
+    void ifb_setup();
+    /// Post-iteration IFB processing
+    void ifb_postiter();
 
     // => Required Algorithm-Specific Methods <= //
 
@@ -715,21 +740,6 @@ class PSI_API DirectJK : public JK {
     size_t memory_estimate() override;
 
     // => Required Algorithm-Specific Variables <= //
-
-    // Previous Iteration Matrices for Incremental Fock Build
-    std::vector<SharedMatrix> D_prev_;
-    std::vector<SharedMatrix> J_prev_;
-    std::vector<SharedMatrix> K_prev_;
-    std::vector<SharedMatrix> wK_prev_;
-
-    // Delta Matrices for Incremental Fock Build
-    std::vector<SharedMatrix> del_D_;
-    std::vector<SharedMatrix> del_J_;
-    std::vector<SharedMatrix> del_K_;
-    std::vector<SharedMatrix> del_wK_;
-
-    // Current Direct SCF Iteration
-    int iteration_ = 0;
 
     // => Required Algorithm-Specific Methods <= //
 
