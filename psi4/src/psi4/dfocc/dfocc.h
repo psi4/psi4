@@ -456,6 +456,10 @@ class DFOCC : public Wavefunction {
     void lccdl_energy();
     void lccd_energy();
 
+    // REMP & OO-REMP
+    void remp_manager();
+    void oremp_manager();
+
     // CCSD
     void ccsd_manager();
     void ccsd_manager_cd();
@@ -841,6 +845,7 @@ class DFOCC : public Wavefunction {
     double sos_scale;
     double sos_scale2;
     double e3_scale;
+    double remp_a;
     double rms_t2;
     double rms_t2AA;
     double rms_t2AB;
