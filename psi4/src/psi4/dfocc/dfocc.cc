@@ -115,7 +115,7 @@ void DFOCC::common_init() {
     // title
     title();
 
-    //   Given default conjugate gradient convergence, set the criteria by what shoud
+    //   Given default conjugate gradient convergence, set the criteria by what should
     //   be necessary to achive the target energy convergence.
     //   This is based solely on standard suite testing to achieve 1e-6 E & G with default convcrit.
     if (options_["PCG_CONVERGENCE"].has_changed()) {
