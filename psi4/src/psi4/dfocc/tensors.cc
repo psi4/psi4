@@ -3366,7 +3366,7 @@ void Tensor2d::reg_denom(int frzc, int occ, const SharedTensor2d &fock, double r
                 for (int b = 0; b < avir; b++) {
                     double dijab = dija - fock->A2d_[b + occ][b + occ];
                     int ab = col_idx_[a][b];
-                    A2d_[ij][ab] /= dijab;
+                    A2d_[ij][ab] /= dijab;    //SB A2d_ refers to the respective property of Tensor2d... this->Ad2
                 }
             }
         }
