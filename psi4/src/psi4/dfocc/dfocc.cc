@@ -41,7 +41,7 @@ namespace dfoccwave {
 
 DFOCC::DFOCC(SharedWavefunction ref_wfn, Options &options) : Wavefunction(options) {
     reference_wavefunction_ = ref_wfn;
-    shallow_copy(ref_wfn);
+    shallow_copy(ref_wfn); // SB: what is copied here to where??
     common_init();
 }  //
 
@@ -68,6 +68,7 @@ void DFOCC::common_init() {
     ss_scale = options_.get_double("MP2_SS_SCALE");
     sos_scale = options_.get_double("MP2_SOS_SCALE");
     sos_scale2 = options_.get_double("MP2_SOS_SCALE2");
+    remp_a = options_.get_double("REMP_A");
     // cepa_os_scale_=options_.get_double("CEPA_OS_SCALE");
     // cepa_ss_scale_=options_.get_double("CEPA_SS_SCALE");
     // cepa_sos_scale_=options_.get_double("CEPA_SOS_SCALE");
