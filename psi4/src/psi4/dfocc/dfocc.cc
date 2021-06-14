@@ -304,6 +304,10 @@ void DFOCC::title() {
         outfile->Printf("                     DF-OLCCD (DF-OO-LCCD)   \n");
     else if (wfn_type_ == "DF-OLCCD" && orb_opt_ == "FALSE" && do_cd == "FALSE")
         outfile->Printf("                       DF-LCCD   \n");
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "TRUE" && do_cd == "FALSE")
+        outfile->Printf("                     DF-OREMP   \n");
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "FALSE" && do_cd == "FALSE")
+        outfile->Printf("                       DF-REMP   \n");
     else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "TRUE" && do_cd == "FALSE")
         outfile->Printf("                    DF-OMP2.5 (DF-OO-MP2.5)   \n");
     else if (wfn_type_ == "DF-OMP2.5" && orb_opt_ == "FALSE" && do_cd == "FALSE")
@@ -342,6 +346,10 @@ void DFOCC::title() {
         outfile->Printf("                    CD-LCCD   \n");
     else if (wfn_type_ == "DF-CIS" && do_cd == "TRUE")
         outfile->Printf("                    CIS  \n");
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "TRUE" && do_cd == "TRUE")
+        outfile->Printf("                    CD-OREMP   \n");
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "FALSE" && do_cd == "TRUE")
+        outfile->Printf("                    CD-REMP   \n");
     else if (wfn_type_ == "QCHF")
         outfile->Printf("                      QCHF   \n");
     outfile->Printf("              Program Written by Ugur Bozkaya\n");
@@ -538,6 +546,10 @@ double DFOCC::compute_energy() {
         lccd_manager();
     else if (wfn_type_ == "DF-CIS" && do_cd == "FALSE")
         cis_manager_df();
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "TRUE" && do_cd == "FALSE")
+        oremp_manager();
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "FALSE" && do_cd == "FALSE")
+        remp_manager();
     else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "TRUE" && do_cd == "TRUE")
         cd_omp2_manager();
     else if (wfn_type_ == "DF-OMP2" && orb_opt_ == "FALSE" && do_cd == "TRUE")
@@ -570,6 +582,10 @@ double DFOCC::compute_energy() {
         lccd_manager_cd();
     else if (wfn_type_ == "DF-CIS" && do_cd == "TRUE")
         cis_manager_cd();
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "TRUE" && do_cd == "TRUE")
+        oremp_manager_cd();
+    else if (wfn_type_ == "DF-OREMP" && orb_opt_ == "FALSE" && do_cd == "TRUE")
+        remp_manager_cd();
     else if (wfn_type_ == "QCHF")
         qchf_manager();
     else {
@@ -599,6 +615,8 @@ double DFOCC::compute_energy() {
         Etotal = ElccdL;
     else if (wfn_type_ == "DF-CIS")
         Etotal = Ecis;
+    else if (wfn_type_ == "DF-OREMP")
+        Etotal = ElccdL;        //CSB this might need adjustment // FIXME (behnle#1#14.06.2021): maybe replace by an own variable
     else if (wfn_type_ == "QCHF")
         Etotal = Eref;
 

@@ -459,6 +459,8 @@ class DFOCC : public Wavefunction {
     // REMP & OO-REMP
     void remp_manager();
     void oremp_manager();
+    void remp_manager_cd();
+    void oremp_manager_cd();
 
     // CCSD
     void ccsd_manager();
