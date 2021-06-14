@@ -193,7 +193,7 @@ def _convert_variables(data, context=None, json=False):
             elif conversion_factor:
                 value = [x * conversion_factor for x in value]
         else:
-            raise TypeError(f"variable's type not understood: {key} {var}")
+            raise TypeError(f"Type of variable not understood: {key} {var}")
 
         # Handle skips
         if var.get("skip_zero", False) and (value == 0):
