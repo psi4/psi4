@@ -1525,7 +1525,6 @@ PSI Variables by Alpha
    Deprecated in favor of :psivar:`SCF QUADRUPOLE`.
 
 .. psivar:: SCF TOTAL ENERGY
-   SCF TOTAL ENERGY (CHKPT)
 
    The total electronic energy [Eh] of the SCF stage of the calculation.
    The :samp:`{method} CORRELATION ENERGY` variables from subsequent stages of a

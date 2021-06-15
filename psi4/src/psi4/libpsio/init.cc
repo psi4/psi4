@@ -103,7 +103,6 @@ PSIO::PSIO() {
     for (i = 1; i <= PSIO_MAXVOL; ++i) {
         char kwd[20];
         sprintf(kwd, "VOLUME%u", i);
-        filecfg_kwd("DEFAULT", kwd, PSIF_CHKPT, "./");
         filecfg_kwd("DEFAULT", kwd, -1, "/tmp/");
     }
     filecfg_kwd("DEFAULT", "NAME", -1, psi_file_prefix);

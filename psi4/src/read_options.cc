@@ -1231,8 +1231,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- The maximum size of the subspace for the stability check. The program will terminate if this parameter is
            exceeded and the convergence (STABILITY_CONVERGENCE) is not satisfied !expert-*/
         options.add_int("STABILITY_MAX_SPACE_SIZE", 200);
-        /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
-        options.add_bool("RELAX_TAU", true);
         /*- Chooses appropriate DCT method -*/
         options.add_str("DCT_FUNCTIONAL", "ODC-12", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
         /*- Whether to compute three-particle energy correction or not -*/

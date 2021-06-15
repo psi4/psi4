@@ -54,7 +54,7 @@ namespace ccenergy {
 
 /*
 ** get_moinfo():  Routine to obtain basic orbital information from
-** CHKPT and CC_INFO.
+** CC_INFO.
 **
 ** T. Daniel Crawford, October 1996
 ** Modified by TDC, March 1999

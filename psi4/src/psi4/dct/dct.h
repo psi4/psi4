@@ -447,10 +447,6 @@ class DCTSolver : public Wavefunction {
     SharedMatrix ao_s_;
     /// The one-electron integrals in the SO basis
     Matrix so_h_;
-    /// The alpha Fock matrix (without Tau contribution) in the MO basis
-    SharedMatrix moF0a_;
-    /// The beta Fock matrix (without Tau contribution) in the MO basis
-    SharedMatrix moF0b_;
     /// The alpha Fock matrix in the SO basis
     SharedMatrix Fa_;
     /// The beta Fock matrix in the SO basis
@@ -473,10 +469,6 @@ class DCTSolver : public Wavefunction {
     SharedMatrix kappa_so_a_;
     /// The beta kappa matrix in the SO basis
     SharedMatrix kappa_so_b_;
-    /// The alpha external potential in the SO basis
-    SharedMatrix g_tau_a_;
-    /// The beta external potential in the SO basis
-    SharedMatrix g_tau_b_;
     /// The alpha SCF error vector
     SharedMatrix scf_error_a_;
     /// The beta SCF error vector

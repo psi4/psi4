@@ -145,11 +145,6 @@ void DCTSolver::run_twostep_dct() {
     // Set up the DIIS manager for the density cumulant and SCF iterations
     old_ca_->copy(Ca_);
     old_cb_->copy(Cb_);
-    // Save F0 = H + G * Kappa for the Fock intermediate update in lambda iterations
-    moF0a_->copy(Fa_);
-    moF0b_->copy(Fb_);
-    moF0a_->transform(Ca_);
-    moF0b_->transform(Cb_);
     // Just so the correct value is printed in the first macro iteration
     orbitals_convergence_ = compute_scf_error_vector();
     // Start macro-iterations
@@ -197,29 +192,22 @@ int DCTSolver::run_twostep_dct_cumulant_updates() {
     while ((!cumulantDone_ || !energyConverged_) && nAmplitudeIterations++ < maxiter_) {
         std::string diisString;
         // Build new Tau from current Amplitude
-        if (options_.get_bool("RELAX_TAU")) {
-            build_d_U();
-            // Compute tau exactly if requested
-            if (exact_tau_) {
-                build_tau_U();
-            }
-            if (options_.get_str("AO_BASIS") == "DISK") {
-                // Transform new Tau to the SO basis
-                transform_tau_U();
-                // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
-                build_AO_tensors();
-            } else {
-                // Compute GTau contribution for the Fock operator
-                build_gtau();
-            }
-            // Update Fock operator for the F intermediate
-            update_fock();
-        } else {
-            if (options_.get_str("AO_BASIS") == "DISK") {
-                // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
-                build_AO_tensors();
-            }
+        build_d_U();
+        // Compute tau exactly if requested
+        if (exact_tau_) {
+            build_tau_U();
         }
+        if (options_.get_str("AO_BASIS") == "DISK") {
+            // Transform new Tau to the SO basis
+            transform_tau_U();
+            // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
+            build_AO_tensors();
+        } else {
+            // Compute GTau contribution for the Fock operator
+            build_gtau();
+        }
+        // Update Fock operator for the F intermediate
+        update_fock();
         // Build G and F intermediates needed for the density cumulant residual equations and DCT energy computation
         build_cumulant_intermediates();
         // Compute the residuals for density cumulant equations
@@ -298,16 +286,8 @@ void DCTSolver::run_twostep_dct_orbital_updates() {
         Fb_->copy(so_h_);
         // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
         process_so_ints();
-        // Save F0 = H + G * Kappa for the Fock intermediate update in lambda iterations
-        moF0a_->copy(Fa_);
-        moF0b_->copy(Fb_);
-        moF0a_->transform(Ca_);
-        moF0b_->transform(Cb_);
         // Save old SCF energy
         old_total_energy_ = new_total_energy_;
-        // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
-        Fa_->add(g_tau_a_);
-        Fb_->add(g_tau_b_);
         // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
         moFa_->copy(Fa_);
         moFb_->copy(Fb_);
@@ -421,11 +401,8 @@ void DCTSolver::run_simult_dct() {
             // Copy core hamiltonian into the Fock matrix array: F = H
             Fa_->copy(so_h_);
             Fb_->copy(so_h_);
-            // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
+            // Build the new Fock matrix from the SO integrals
             process_so_ints();
-            // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
-            Fa_->add(g_tau_a_);
-            Fb_->add(g_tau_b_);
             // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
             moFa_->copy(Fa_);
             moFb_->copy(Fb_);

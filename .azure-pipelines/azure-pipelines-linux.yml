@@ -2,8 +2,6 @@ jobs:
 # Configure, build, install, and test job
 - job: 'linux_build'
   displayName: 'Linux Builds'
-  pool:
-    vmImage: 'ubuntu-18.04'
   timeoutInMinutes: 120
   variables:
     CTEST_OUTPUT_ON_FAILURE: 1
@@ -18,6 +16,7 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran gcc-6 g++-6'
+        vmImage: 'ubuntu-18.04'
 
       gcc_latest:
         CXX_COMPILER: 'g++'
@@ -26,6 +25,7 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran'
+        vmImage: 'ubuntu-18.04'
 
       clang_latest:
         CXX_COMPILER: 'clang++'
@@ -34,7 +34,11 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran clang-6.0'
+        vmImage: 'ubuntu-16.04'
 
+  pool:
+    vmImage: $(vmImage)
+  
   steps:
   - bash: |
       [[ "${APT_REPOSITORY}" ]] && echo "Add Repo ${APT_REPOSITORY}" && sudo add-apt-repository "${APT_REPOSITORY}"
@@ -63,6 +67,7 @@ jobs:
 
       echo "CXX Ver:"
       ${CXX_COMPILER} --version
+      ${CXX_COMPILER} -v
 
       echo "F Ver:"
       ${F_COMPILER} --version
@@ -77,6 +82,7 @@ jobs:
     displayName: "Add Conda to PATH"
 
   - bash: |
+      # When we drop 3.6, remove dataclasses install. It should be part of Python then
       conda create -q \
         -n p4env \
         python=$PYTHON_VER \
@@ -101,6 +107,7 @@ jobs:
         blas=*=mkl \
         mkl-include \
         networkx \
+        dataclasses \
         pytest \
         eigen \
         mpfr \
@@ -160,6 +167,7 @@ jobs:
       source activate p4env
       ../devtools/scripts/ci_build.sh
       readelf -d ./stage/lib/psi4/core*.so
+      ldd -v ./stage/lib/psi4/core*.so
     displayName: 'Build Psi4'
 
   - bash: |

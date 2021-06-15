@@ -51,7 +51,7 @@ namespace psi {
 namespace ccresponse {
 
 /* get_moinfo(): Routine to obtain basic orbital information from
-** CHKPT and CC_INFO.
+** CC_INFO.
 **
 ** T. Daniel Crawford, October 1996
 ** Modified for ccresponse by TDC May, 2003
