@@ -1,0 +1,33 @@
+#! DF-OCCD(AT) cc-pVDZ energy for the H2O molecule.
+
+refnuc      =  9.16819329642544  #TEST
+refscf      = -76.02663273512483 #TEST
+refcc       = -76.24126572357615 #TEST
+
+molecule h2o {
+  0 1
+  O          0.000000000000     0.000000000000    -0.065775570538
+  H          0.000000000000    -0.759061990794     0.521953018295
+  H          0.000000000000     0.759061990794     0.521953018295
+  nocom
+  noreorient
+  symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_cc cc-pvdz-ri
+  guess gwh
+  reference rhf
+  scf_type df
+  cc_type df
+  qc_module occ
+  freeze_core true
+}
+
+energy('occd(at)')
+
+compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)");  #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "DF-HF Energy (a.u.)");                      #TEST
+compare_values(refcc, variable("OCCD(AT) Total Energy"), 6, "OCCD(AT) Total Energy (a.u.)");         #TEST

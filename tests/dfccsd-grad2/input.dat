@@ -1,0 +1,31 @@
+#! DF-CCSD cc-pVDZ gradient for the NH molecule.
+
+ref = psi4.Matrix.from_list([                                   #TEST
+        [ -0.002340580146,  0.000578570219,  0.000000000000 ],  #TEST
+        [  0.002340580146, -0.000578570220, -0.000000000000 ]   #TEST
+       ])                                                       #TEST
+
+molecule nh {
+  0 3
+  N    -0.873042000000      0.576431000000      0.000000000000
+  H     0.153816000000      0.322601000000      0.000000000000
+  nocom
+  noreorient
+  symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_cc cc-pvdz-ri
+  guess gwh
+  reference uhf
+  scf_type df
+  cc_type df
+  qc_module occ
+  freeze_core true
+}
+
+grad = gradient('ccsd')
+
+compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST

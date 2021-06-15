@@ -45,8 +45,6 @@ list(APPEND sources
   ccsdl_l2_amps.cc
   cd_ints.cc
   conv_mo_tei.cc
-  conv_mo_tei_direct.cc
-  conv_mo_tei_ref_direct.cc
   df_corr.cc
   df_ref.cc
   dfgrad.cc
