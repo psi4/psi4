@@ -27,6 +27,8 @@ else()
       -Dxtensor_DIR=${xtensor_DIR}
       -DHighFive_DIR=${HighFive_DIR}
       -DXTENSOR_IO_CMAKECONFIG_INSTALL_DIR=share/cmake/xtensor-io # Wrong in upstream CMakeLists.txt
+    PATCH_COMMAND
+      patch -p1 < ${CMAKE_CURRENT_LIST_DIR}/highfive-dumpmode.patch
     )
 
   set(xtensor-io_DIR ${STAGED_INSTALL_PREFIX}/share/cmake/xtensor-io CACHE PATH "path to internally built xtensor-ioConfig.cmake" FORCE)

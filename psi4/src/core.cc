@@ -34,7 +34,6 @@
 #include <sys/stat.h>
 
 #include <highfive/H5File.hpp>
-#include <xtensor-io/xhighfive.hpp>
 
 #include "psi4/psi4-dec.h"
 #include "psi4/psifiles.h"

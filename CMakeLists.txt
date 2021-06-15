@@ -182,12 +182,12 @@ set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
 message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")
 add_subdirectory(external/common)
 # Pin versions of the xtensor stack
-set(xtl_pinned 0.6.11)
-set(xsimd_pinned 7.4.5)
-set(xtensor_pinned 0.21.2)
-set(xtensor-blas_pinned 0.17.1)
-set(xtensor-python_pinned 0.24.1)
-set(xtensor-io_pinned 0.9.0)
+set(xtl_pinned 0.7.2)
+set(xsimd_pinned 7.5.0)
+set(xtensor_pinned 0.23.10)
+set(xtensor-blas_pinned 0.19.0)
+set(xtensor-python_pinned 0.25.3)
+set(xtensor-io_pinned 0.12.8)
 add_subdirectory(external/upstream)
 
 # external projects manage their own OpenMP and c++YY flags, so only add to CXX_FLAGS for psi4-core

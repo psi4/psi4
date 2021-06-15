@@ -11,7 +11,7 @@ else()
   message(STATUS "Suitable HighFive could not be located, ${Magenta}Building HighFive${ColourReset} instead.")
   ExternalProject_Add(HighFive_external
     URL
-      https://github.com/BlueBrain/HighFive/archive/v2.0.zip
+      https://github.com/BlueBrain/HighFive/archive/v2.1.1.zip
     CMAKE_ARGS
       -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}

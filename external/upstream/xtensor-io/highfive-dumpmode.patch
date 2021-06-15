@@ -1,0 +1,19 @@
+diff --git a/include/xtensor-io/xhighfive.hpp b/include/xtensor-io/xhighfive.hpp
+index d43e4e3..b5c06c6 100644
+--- a/include/xtensor-io/xhighfive.hpp
++++ b/include/xtensor-io/xhighfive.hpp
+@@ -102,11 +102,11 @@ namespace xt
+             switch (mode)
+             {
+                 case xt::dump_mode::create:
+-                  return HighFive::DumpMode::Create;
++                  return H5Easy::DumpMode::Create;
+                 case xt::dump_mode::overwrite:
+-                  return HighFive::DumpMode::Overwrite;
++                  return H5Easy::DumpMode::Overwrite;
+                 default:
+-                  return HighFive::DumpMode::Create;
++                  return H5Easy::DumpMode::Create;
+             }
+         }
+     }
