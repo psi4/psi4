@@ -217,7 +217,7 @@ void JK::common_init() {
     ifb_ = options.get_bool("IFB");
     d_conv_ = options.get_double("D_CONVERGENCE");
     ifb_d_conv_ = options.get_double("IFB_D_CONVERGENCE");
-
+    do_ifb_iter_ = false; // Initialize do IFB iteration
 }
 size_t JK::memory_overhead() const {
     size_t mem = 0L;
