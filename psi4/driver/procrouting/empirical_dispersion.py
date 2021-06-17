@@ -217,7 +217,8 @@ class EmpiricalDispersion(object):
             dashd_part = float(jobrec.extras['qcvars']['DISPERSION CORRECTION ENERGY'])
             if wfn is not None:
                 for k, qca in jobrec.extras['qcvars'].items():
-                    wfn.set_variable(k, float(qca) if isinstance(qca, str) else qca)
+                    if ("CURRENT" not in k) and ("PAIRWISE" not in k):
+                        wfn.set_variable(k, float(qca) if isinstance(qca, str) else qca)
 
                 # Pass along the pairwise dispersion decomposition if we need it
                 if self.save_pairwise_disp is True:
@@ -286,7 +287,8 @@ class EmpiricalDispersion(object):
             dashd_part = core.Matrix.from_array(jobrec.extras['qcvars']['DISPERSION CORRECTION GRADIENT'])
             if wfn is not None:
                 for k, qca in jobrec.extras['qcvars'].items():
-                    wfn.set_variable(k, float(qca) if isinstance(qca, str) else qca)
+                    if "CURRENT" not in k:
+                        wfn.set_variable(k, float(qca) if isinstance(qca, str) else qca)
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
                 jobrec = qcng.compute(

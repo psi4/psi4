@@ -302,6 +302,10 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
 
     core.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
     wfn.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
+    if metadata['ptype'] == 'gradient':
+        core.set_variable("CURRENT GRADIENT", nbody_results['ret_ptype'])
+    elif metadata['ptype'] == 'hessian':
+        core.set_variable("CURRENT HESSIAN", nbody_results['ret_ptype'])
 
     if metadata['return_wfn']:
         return (nbody_results['ret_ptype'], wfn)
