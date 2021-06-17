@@ -210,9 +210,7 @@ Publications resulting from the use of the orbital-optimized code should cite th
 
 * **OMP2.5** [Bozkaya:2011:omp3]_, [Bozkaya:2016:dfomp3]_, and [Bozkaya:2018:dfomp3grad]_
 
-* **OLCCD** [Bozkaya:2013:ocepa]_
-
-* **LCCD** [Bozkaya:2013:ocepa]_
+* **OLCCD** [Bozkaya:2013:ocepa]_, and [Bozkaya:2013:dfolccd]_
 
 * **OCCD** [Bozkaya:2020:dfoccd]_
 
@@ -386,6 +384,16 @@ preference to the default module, issue ``set qc_module occ``.
 Starting in v1.4, MP2.5 and MP3 default to the density-fit algorithm. Set |globals__mp_type| to ``CONV`` to get previous behavior.
 
 Publications resulting from the use of the non-OO CC codes should cite the following publications: 
+
+* **MP2** [Bozkaya:2011:omp2]_, [Bozkaya:2013:omp2grad]_, and [Bozkaya:2014:dfomp2grad]_
+
+* **MP3** [Bozkaya:2011:omp3]_ , [Bozkaya:2013:omp3]_, [Bozkaya:2013:omp3grad]_, [Bozkaya:2016:dfomp3]_, and [Bozkaya:2018:dfomp3grad]_
+
+* **MP2.5** [Bozkaya:2011:omp3]_, [Bozkaya:2016:dfomp3]_, and [Bozkaya:2018:dfomp3grad]_
+
+* **LCCD** [Bozkaya:2013:ocepa]_, and [Bozkaya:2013:dfolccd]_
+
+* **CCD** [Bozkaya:2020:dfoccd]_
 
 * **CCSD** [Bozkaya:2016:dfccsdgrad]_
 
