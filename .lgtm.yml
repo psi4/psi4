@@ -10,6 +10,8 @@ extraction:
         - python3.7
         - python3-pint
         - python3-numpy
+        - libgg-dev
+        - libgg2
 path_classifiers:
   library:
     - psi4/versioner.py
