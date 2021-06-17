@@ -2441,7 +2441,7 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string &aux_name, const std:
         // This is the price of only storing the lower triangle on disk.
         auto idx3_matrix = std::make_shared<Matrix>(np, nprim * nprim);
         auto idx3p = idx3_matrix->pointer();
-//#pragma omp parallel for
+#pragma omp parallel for
         for (int aux = 0; aux < np; aux++) {
             auto elt = &data[ntri * aux];
             for (int p = 0; p < nprim; p++) {
