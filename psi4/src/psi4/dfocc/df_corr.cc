@@ -774,7 +774,7 @@ void DFOCC::b_so_non_zero() {
     ndf_nz = 0;
 #pragma omp parallel for
     for (int Q = 0; Q < nQ; ++Q) {
-        for (int m = 0; m < nso_; ++m) {
+        for (int m = 0; m < nso_; ++m) {  // for (int mn=0; mn < (nso_*nso_ - 1); ++mn){} ??
             for (int n = 0; n < nso_; ++n) {
                 int mn = n + (m * nso_);
                 if (std::fabs(bQso->get(Q, mn)) > int_cutoff_) ndf_nz++;

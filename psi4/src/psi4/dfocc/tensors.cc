@@ -1289,6 +1289,8 @@ void Tensor2d::contract424(int target_x, int target_y, const SharedTensor2d &a, 
 
 }  //
 
+//CSB contract two four-index tensors to a two-index tensor. The target index specifies the number of the "surviving" index
+// i.e. the one that is not contracted
 void Tensor2d::contract442(int target_a, int target_b, const SharedTensor2d &a, const SharedTensor2d &b, double alpha,
                            double beta) {
     char ta;

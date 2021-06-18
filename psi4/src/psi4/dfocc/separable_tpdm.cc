@@ -55,7 +55,7 @@ void DFOCC::separable_tpdm() {
         }
         */
 
-        // G_Q = \sum_{m,n} b_mn^Q G1c_mn
+        // G_Q = \sum_{m,n} b_mn^Q G1c_mn   eq. (41)
         bQooA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OO)", nQ_ref, noccA * noccA));
         bQooA->read(psio_, PSIF_DFOCC_INTS);
         g1Qc->gemv(false, nQ_ref, noccA * noccA, bQooA, G1c_oo, 1.0, 0.0);
@@ -63,12 +63,12 @@ void DFOCC::separable_tpdm() {
         //=========================
         // Reference TPDM
         //=========================
-        // G_ij (ref) =
+        // G_ij (ref) =          .... eq. (36)
         G2c_oo = SharedTensor2d(new Tensor2d("Reference 3-Index TPDM (Q|OO)", nQ_ref, noccA * noccA));
-        G2c_oo->copy(bQooA);
+        G2c_oo->copy(bQooA); //b_ij^Q
         bQooA.reset();
         G2c_oo->scale(-1.0);
-        for (int Q = 0; Q < nQ_ref; Q++) {
+        for (int Q = 0; Q < nQ_ref; Q++) {   //delta(i,j)J_Q
             double value = Jc->get(Q);
             for (int i = 0; i < noccA; i++) {
                 int ii = oo_idxAA->get(i, i);
@@ -84,7 +84,7 @@ void DFOCC::separable_tpdm() {
         // Reference TPDM Done.
         //=========================
 
-        // Gt_Q = \sum_{e,f} b_ef^Q G1c_ef
+        // Gt_Q = \sum_{e,f} b_ef^Q G1c_ef  ... eq. (42)
         bQvvA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
         bQvvA->read(psio_, PSIF_DFOCC_INTS, true, true);
         g1Qt->gemv(false, nQ_ref, nvirA * nvirA, bQvvA, G1c_vv, 1.0, 0.0);
@@ -93,10 +93,10 @@ void DFOCC::separable_tpdm() {
         //=========================
         // Separable Part
         //=========================
-        // G_ij^Q
+        // G_ij^Q    ... eq. (38)
         G2c_oo = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OO)", nQ_ref, noccA * noccA));
         for (int Q = 0; Q < nQ_ref; Q++) {
-            double value = 2.0 * (g1Qc->get(Q) + g1Qt->get(Q));
+            double value = 2.0 * (g1Qc->get(Q) + g1Qt->get(Q)); //CSB reminder: g1Qc is gamma_Q, g1Qt is gamma^tilde (eqs. (41) & (42))
             for (int i = 0; i < noccA; i++) {
                 int ii = oo_idxAA->get(i, i);
                 G2c_oo->set(Q, ii, value);
@@ -116,7 +116,7 @@ void DFOCC::separable_tpdm() {
         if (print_ > 3) G2c_oo->print();
         G2c_oo.reset();
 
-        // G_ia^Q += - \sum_{e} b_ie^Q G_ea
+        // G_ia^Q += - \sum_{e} b_ie^Q G_ea  ... eq. (39)
         G2c_ov = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA, nvirA));
         bQovA = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA));
         bQovA->read(psio_, PSIF_DFOCC_INTS);
@@ -133,7 +133,7 @@ void DFOCC::separable_tpdm() {
         if (print_ > 3) G2c_vo->print();
         G2c_vo.reset();
 
-        // G_ab^Q = J_Q G_ab
+        // G_ab^Q = J_Q G_ab ... eq. (40)
         G2c_vv = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
         G2c_vv->dirprd123(Jc, G1c_vv, 1.0, 0.0);
         G2c_vv->write(psio_, PSIF_DFOCC_DENS, true, true);
