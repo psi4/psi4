@@ -55,6 +55,8 @@ void DFOCC::occ_iterations() {
         outfile->Printf(" ================ Performing DF-OLCCD iterations... =========================== \n");
     else if ((wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") && do_cd == "FALSE")
         outfile->Printf(" ================ Performing DF-OCCD iterations... ============================ \n");
+    else if (wfn_type_ == "DF-OREMP" && do_cd == "FALSE")
+        outfile->Printf(" ================ Performing DF-OREMP iterations... =========================== \n");
     else if (wfn_type_ == "DF-OMP2" && do_cd == "TRUE")
         outfile->Printf(" ================ Performing CD-OMP2 iterations... ============================ \n");
     else if (wfn_type_ == "DF-OMP3" && do_cd == "TRUE")
@@ -65,6 +67,8 @@ void DFOCC::occ_iterations() {
         outfile->Printf(" ================ Performing CD-OLCCD iterations... ============================ \n");
     else if ((wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") && do_cd == "TRUE")
         outfile->Printf(" ================ Performing CD-OCCD iterations... ============================ \n");
+    else if (wfn_type_ == "DF-OREMP" && do_cd == "TRUE")
+        outfile->Printf(" ================ Performing CD-OREMP iterations... ============================ \n");
     outfile->Printf(" ============================================================================== \n");
     if (wfn_type_ == "DF-OMP2" && do_cd == "FALSE")
         outfile->Printf("\t            Minimizing DF-MP2-L Functional \n");
@@ -76,6 +80,8 @@ void DFOCC::occ_iterations() {
         outfile->Printf("\t            Minimizing DF-LCCD-L Functional \n");
     else if (wfn_type_ == "DF-OCCD" && do_cd == "FALSE")
         outfile->Printf("\t            Minimizing DF-CCD-L Functional \n");
+    else if (wfn_type_ == "DF-OREMP" && do_cd == "FALSE")
+        outfile->Printf("\t            Minimizing DF-REMP-L Functional \n");
     else if (wfn_type_ == "DF-OMP2" && do_cd == "TRUE")
         outfile->Printf("\t            Minimizing CD-MP2-L Functional \n");
     else if (wfn_type_ == "DF-OMP3" && do_cd == "TRUE")
@@ -86,6 +92,8 @@ void DFOCC::occ_iterations() {
         outfile->Printf("\t            Minimizing CD-LCCD-L Functional \n");
     else if (wfn_type_ == "DF-OCCD" && do_cd == "TRUE")
         outfile->Printf("\t            Minimizing CD-CCD-L Functional \n");
+    else if (wfn_type_ == "DF-OREMP" && do_cd == "TRUE")
+        outfile->Printf("\t            Minimizing CD-REMP-L Functional \n");
     outfile->Printf("\t            ------------------------------ \n");
     if (wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") {
         outfile->Printf(" Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2         RMS L2   \n");
@@ -332,6 +340,8 @@ void DFOCC::occ_iterations() {
             outfile->Printf(" ======================== DF-OLCCD ITERATIONS ARE CONVERGED =================== \n");
         else if (wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)")
             outfile->Printf(" ======================== DF-OCCD ITERATIONS ARE CONVERGED ==================== \n");
+        else if (wfn_type_ == "DF-OREMP")
+            outfile->Printf(" ======================== DF-OREMP ITERATIONS ARE CONVERGED =================== \n");
         outfile->Printf(" ============================================================================== \n");
 
         // write orbital coefficients to external files
@@ -364,6 +374,8 @@ void DFOCC::occ_iterations() {
                             mo_maxiter);
         else if (wfn_type_ == "DF-OCCD")
             outfile->Printf("\n ======================== DF-OCCD IS NOT CONVERGED IN %2d ITERATIONS ========= \n",
+        else if (wfn_type_ == "DF-OREMP")
+            outfile->Printf("\n ======================== DF-OREMP IS NOT CONVERGED IN %2d ITERATIONS ========= \n",
                             mo_maxiter);
 
         throw PSIEXCEPTION("DF-OCC iterations did not converge");
