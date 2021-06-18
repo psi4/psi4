@@ -53,6 +53,8 @@ void DFOCC::occ_iterations() {
         outfile->Printf(" ================ Performing DF-OMP2.5 iterations... ========================== \n");
     else if (wfn_type_ == "DF-OLCCD" && do_cd == "FALSE")
         outfile->Printf(" ================ Performing DF-OLCCD iterations... =========================== \n");
+    else if (wfn_type_ == "DF-OREMP" && do_cd == "FALSE")
+        outfile->Printf(" ================ Performing DF-OREMP iterations... =========================== \n");
     else if (wfn_type_ == "DF-OMP2" && do_cd == "TRUE")
         outfile->Printf(" ================ Performing CD-OMP2 iterations... ============================ \n");
     else if (wfn_type_ == "DF-OMP3" && do_cd == "TRUE")
@@ -61,6 +63,8 @@ void DFOCC::occ_iterations() {
         outfile->Printf(" ================ Performing CD-OMP2.5 iterations... ============================ \n");
     else if (wfn_type_ == "DF-OLCCD" && do_cd == "TRUE")
         outfile->Printf(" ================ Performing CD-OLCCD iterations... ============================ \n");
+    else if (wfn_type_ == "DF-OREMP" && do_cd == "TRUE")
+        outfile->Printf(" ================ Performing CD-OREMP iterations... ============================ \n");
     outfile->Printf(" ============================================================================== \n");
     if (wfn_type_ == "DF-OMP2" && do_cd == "FALSE")
         outfile->Printf("\t            Minimizing DF-MP2-L Functional \n");
@@ -70,6 +74,8 @@ void DFOCC::occ_iterations() {
         outfile->Printf("\t            Minimizing DF-MP2.5-L Functional \n");
     else if (wfn_type_ == "DF-OLCCD" && do_cd == "FALSE")
         outfile->Printf("\t            Minimizing DF-LCCD-L Functional \n");
+    else if (wfn_type_ == "DF-OREMP" && do_cd == "FALSE")
+        outfile->Printf("\t            Minimizing DF-REMP-L Functional \n");
     else if (wfn_type_ == "DF-OMP2" && do_cd == "TRUE")
         outfile->Printf("\t            Minimizing CD-MP2-L Functional \n");
     else if (wfn_type_ == "DF-OMP3" && do_cd == "TRUE")
@@ -78,6 +84,8 @@ void DFOCC::occ_iterations() {
         outfile->Printf("\t            Minimizing CD-MP2.5-L Functional \n");
     else if (wfn_type_ == "DF-OLCCD" && do_cd == "TRUE")
         outfile->Printf("\t            Minimizing CD-LCCD-L Functional \n");
+    else if (wfn_type_ == "DF-OREMP" && do_cd == "TRUE")
+        outfile->Printf("\t            Minimizing CD-REMP-L Functional \n");
     outfile->Printf("\t            ------------------------------ \n");
     outfile->Printf(" Iter       E_total           DE           RMS MO Grad      MAX MO Grad      RMS T2    \n");
     outfile->Printf(" ----    ---------------    ----------     -----------      -----------     ---------- \n");
@@ -293,6 +301,8 @@ void DFOCC::occ_iterations() {
             outfile->Printf(" ======================== DF-OMP2.5 ITERATIONS ARE CONVERGED ================== \n");
         else if (wfn_type_ == "DF-OLCCD")
             outfile->Printf(" ======================== DF-OLCCD ITERATIONS ARE CONVERGED =================== \n");
+        else if (wfn_type_ == "DF-OREMP")
+            outfile->Printf(" ======================== DF-OREMP ITERATIONS ARE CONVERGED =================== \n");
         outfile->Printf(" ============================================================================== \n");
 
     }
@@ -309,6 +319,9 @@ void DFOCC::occ_iterations() {
                             mo_maxiter);
         else if (wfn_type_ == "DF-OLCCD")
             outfile->Printf("\n ======================== DF-OLCCD IS NOT CONVERGED IN %2d ITERATIONS ========= \n",
+                            mo_maxiter);
+        else if (wfn_type_ == "DF-OREMP")
+            outfile->Printf("\n ======================== DF-OREMP IS NOT CONVERGED IN %2d ITERATIONS ========= \n",
                             mo_maxiter);
 
         throw PSIEXCEPTION("DF-OCC iterations did not converge");
