@@ -159,10 +159,6 @@ void Local_cc::init_pnopp(const double omega, bool combined) {
     if (combined == false) {
         outfile->Printf("\n\tLocal correlation using Perturbed Pair Natural Orbitals\n\tCutoff value: %e\n", cutoff);
     }
-    // Obtain and store weak pairs
-    if (weakp == "NEGLECT") {
-        mp2_pair_energy();
-    }
     npairs = nocc*nocc;
 
     std::vector<SharedMatrix> Xij;
@@ -266,6 +262,14 @@ void Local_cc::init_pnopp(const double omega, bool combined) {
 
         global_dpd_->buf4_close(&pbar);
 
+    }
+
+    // Obtain and store weak pairs
+    if (weakp == "NEGLECT") {
+        mp2_pair_energy();      // MP2 pair energy-based weak pairs
+    }
+    else if (weakp == "RESPONSE") {
+        pair_perturbation();    // Similarity-transformed perturbation-based weak pairs
     }
 
     // Build X_ij as Abar/denom
@@ -892,7 +896,7 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
         outfile->Printf("%20.10f\t", qel);;
     }*/
     int *weak_pairs = new int[npairs];
-    if (weakp == "NEGLECT") {
+    if (weakp == "NEGLECT" || weakp == "RESPONSE") {
         psio_read_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *) weak_pairs, npairs * sizeof(int));
     }
     else {
@@ -1030,6 +1034,7 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
     global_dpd_->buf4_mat_irrep_close(T2, 0);
 
     delete[] survivors_list;
+    delete[] weak_pairs;
     delete[] occ_eps;
 
 }
@@ -1046,8 +1051,9 @@ void Local_cc::init_filter_T2() {
     local_filter_T2(&T2);
     global_dpd_->buf4_close(&T2);
 }
+
 void Local_cc::mp2_pair_energy() {
-    outfile->Printf("Weak pairs neglected. Finding weak pairs.\n");
+    outfile->Printf("Weak pairs neglected. Finding weak pairs using the pair energy.\n");
     dpdbuf4 T2;
     dpdbuf4 D; 
     npairs = nocc * nocc;
@@ -1083,6 +1089,64 @@ void Local_cc::mp2_pair_energy() {
     // Write weak pairs to file
     outfile->Printf("Writing weak pairs to file\n");
     psio_write_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *) weak_pairs, npairs * sizeof(int));
+    delete[] weak_pairs;
+}
+
+void Local_cc::pair_perturbation() {
+    outfile->Printf("Weak pairs neglected. Finding weak pairs using the perturbation.\n");
+    npairs = nocc * nocc;
+    int *weak_pairs = new int[npairs];
+    dpdbuf4 fbar_avg;
+    global_dpd_->buf4_init(&fbar_avg, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "Pertbar_avg");
+    global_dpd_->buf4_mat_irrep_init(&fbar_avg, 0);
+    global_dpd_->buf4_mat_irrep_rd(&fbar_avg, 0);
+
+    // Average over the cartesian coordinates
+    std::vector<std::string> cart_list = {"x","y","z"};
+    for (int n=0; n < 3; n++) {
+        dpdbuf4 fbar;
+        std::string lbl1 = "Pertbar_"+cart_list[n];
+        global_dpd_->buf4_init(&fbar, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, lbl1.c_str());
+        global_dpd_->buf4_mat_irrep_init(&fbar, 0);
+        global_dpd_->buf4_mat_irrep_rd(&fbar, 0);
+        
+        // Initializing the avg for safety
+        for (int ij = 0; ij < npairs; ij++) {
+            for (int ab = 0; ab < nvir * nvir; ab++) {
+                fbar_avg.matrix[0][ij][ab] = 0.0;
+            }
+        }
+        outfile->Printf("Pertbar matrix:"+cart_list[n]);
+        for (int ij = 0; ij < npairs; ij++) {
+            for (int ab = 0; ab < nvir * nvir; ab++) {
+                fbar_avg.matrix[0][ij][ab] += fbar.matrix[0][ij][ab] / 3.0;
+            }
+        }
+        global_dpd_->buf4_mat_irrep_close(&fbar, 0);
+        global_dpd_->buf4_close(&fbar);
+    }
+
+    outfile->Printf("Weak pair list:\n");
+    for (int ij = 0; ij < npairs; ij++) {
+        weak_pairs[ij] = 0;
+        auto pair_energy = 0.0;
+            for (int ab = 0; ab < nvir * nvir; ab++) {
+                pair_energy += fbar_avg.matrix[0][ij][ab];
+            }
+            outfile->Printf("%3.8f ", pair_energy);
+            if (fabs(pair_energy) < weak_pair_cutoff) {
+                weak_pairs[ij] = 1;
+            }
+            outfile->Printf("%d\n", weak_pairs[ij]);
+    }
+
+    global_dpd_->buf4_mat_irrep_close(&fbar_avg, 0);
+    global_dpd_->buf4_close(&fbar_avg);
+
+    // Write weak pairs to file
+    outfile->Printf("Writing weak pairs to file\n");
+    psio_write_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *) weak_pairs, npairs * sizeof(int));
+    delete[] weak_pairs;
 }
 
 // Destructor attempt

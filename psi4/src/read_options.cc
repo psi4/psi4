@@ -1859,7 +1859,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE``
         treats weak pairs in the same manner as strong pairs. ``NEGLECT`` neglects the
         contribution of weak pairs while ``MP2`` adds the MP2-level correction to the energy -*/
-        options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT MP2");
+        options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT RESPONSE MP2");
         /*- Value (always between one and zero) of the weak pair
           threshold for the PNO and PNO++ methods. -*/
         options.add_double("WEAKP_CUTOFF", 0.02);

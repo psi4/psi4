@@ -75,6 +75,7 @@ class Local_cc {
         std::vector<SharedMatrix> build_PNO_lists(double cutoff, std::vector<SharedMatrix> D);
         std::vector<SharedMatrix> build_cPNO_lists(double cutoff, std::vector<SharedMatrix> D);
         void mp2_pair_energy();
+        void pair_perturbation();
         
         int npairs;
 
