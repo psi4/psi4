@@ -40,7 +40,7 @@ void DFOCC::omp2_tpdm() {
     timer_on("tpdm");
     SharedTensor2d T, U;
     if (reference_ == "RESTRICTED") {
-        // G_ia^Q = 2\sum_{m,e} b_me^Q (2t_im^ae - t_mi^ae)
+        // G_ia^Q(corr) = 2\sum_{m,e} b_me^Q (2t_im^ae - t_mi^ae)
         G2c_ia = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|IA)", nQ, naoccA * navirA);
         u2p_1 = std::make_shared<Tensor2d>("U2_1 (ia|jb)", naoccA, navirA, naoccA, navirA);
         if (orb_opt_ == "FALSE" && mp2_amp_type_ == "DIRECT")
