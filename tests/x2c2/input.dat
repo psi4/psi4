@@ -28,3 +28,10 @@ testrel = energy('scf')
 compare_values(ref_nuc_energy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(ref_nr_energy,testnr, 9, "Non-relativistic SCF energy")                  #TEST
 compare_values(ref_rel_energy,testrel, 9, "X2C relativistic SCF energy")                #TEST
+
+grad_ran = True
+try:
+    testrelg = gradient("scf")
+except ValidationError as e:
+    grad_ran = False
+compare_integers(0, int(grad_ran), "gradient() exit gracefully but truthfully")
