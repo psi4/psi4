@@ -636,7 +636,7 @@ def tdscf_excitations(wfn,
        How verbose should the solver be?
        Default: 1
     coeff_cutoff : float, optional.
-       Cutoff for printing out excitation and deexcitation coefficients.
+       Cutoff for printing out excitation and de-excitation coefficients.
        Default: 0.1
     tdm_print : list, optional.
        List of transition dipole moments to print.
