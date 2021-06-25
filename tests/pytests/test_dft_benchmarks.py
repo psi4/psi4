@@ -159,6 +159,7 @@ def name_dft_test(val):
     pytest.param(         'wM05-D', 0.4560790902, '6-31G'),  # Q-Chem  # https://gitlab.com/libxc/libxc/-/issues/180
     pytest.param(        'wM06-D3', 0.4563459267, '6-31G', marks=using("dftd3")),  # https://gitlab.com/libxc/libxc/-/issues/180
     pytest.param(          'X3LYP', 0.4549534082, '6-31G'),  # Q-Chem
+    pytest.param(          'KMLYP', 0.4665060738, '6-31G'),  # ERKALE
 ], ids=name_dft_test)
 
 def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request):
