@@ -442,7 +442,7 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
             "what": lambda x: x.edtm_velocity,
         },
         "M_TDM": {
-            "title": "Magnetic Transition Dipole Moments (AU)",
+            "title": "Magnetic Transition Dipole Moments (au)",
             "what": lambda x: x.mdtm,
         },
     }
