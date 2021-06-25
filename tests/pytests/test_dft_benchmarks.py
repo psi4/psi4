@@ -154,7 +154,7 @@ def name_dft_test(val):
     pytest.param(        'wB97M-V', 0.4544676075, '6-31G'),  # Q-Chem
     pytest.param(          'wB97X', 0.4564711283, '6-31G'),  # Q-Chem
     pytest.param(        'wB97X-D', 0.4575912358, '6-31G', marks=pytest.mark.quick),  # Q-Chem
-    pytest.param(       'wB97X-D3', 0.4570744381, '6-31G', marks=[using("dftd3")]),   # Q-Chem  # needs tweaks in LibXC
+    pytest.param(       'wB97X-D3', 0.4570744381, '6-31G', marks=[using("dftd3")]),   # Q-Chem
     pytest.param(        'wB97X-V', 0.455302602,  '6-31G'),  # Q-Chem
     pytest.param(         'wM05-D', 0.4560790902, '6-31G'),  # Q-Chem  # https://gitlab.com/libxc/libxc/-/issues/180
     pytest.param(        'wM06-D3', 0.4563459267, '6-31G', marks=using("dftd3")),  # https://gitlab.com/libxc/libxc/-/issues/180
