@@ -61,7 +61,7 @@ SAPT: Symmetry-Adapted Perturbation Theory
 
 .. caution:: February 7, 2020, a missing term in :math:`E^{(30)}_{ind}` was added, causing
    possible discrepancies with prior versions of the code on the order of
-   0.01 kcal/mol. 
+   0.01 kcal/mol. See https://github.com/psi4/psi4/issues/1677
 
 Symmetry-adapted perturbation theory (SAPT) provides a means of directly
 computing the noncovalent interaction between two molecules, that is, the
