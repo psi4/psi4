@@ -471,7 +471,7 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
                 f"\nExcited State {i+1:4d} ({1 if x.spin_mult== 'singlet' else 3} {x.irrep_ES}):"
             )
             core.print_out(
-                f"{x.E_ex_au:> 10.5f} Ha   {E_ex_nm: >.2f} nm f = {x.f_length: >.4f}\n"
+                f"{x.E_ex_au:> 10.5f} au   {E_ex_nm: >.2f} nm f = {x.f_length: >.4f}\n"
             )
 
             if not restricted:
