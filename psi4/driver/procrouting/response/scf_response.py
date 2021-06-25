@@ -438,7 +438,7 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
             "what": lambda x: x.edtm_length,
         },
         "E_TDM_VEL": {
-            "title": "Electric Transition Dipole Moments (Velocity) (AU)",
+            "title": "Electric Transition Dipole Moments (Velocity) (au)",
             "what": lambda x: x.edtm_velocity,
         },
         "M_TDM": {
