@@ -183,7 +183,7 @@ that partitions a molecular one-particle density matrix into atomic electron den
 Running MBIS in |PSIfour| will calculate atomic valence charge widths, volume ratios,
 atomic charges, as well as dipoles, quadrupoles, and octupoles. 
 Additionally, all expectation values of radial moments of n-th order (:math:`<r^n>`) 
-are computed up to fourth order. Higher moments can be computed by specifying |globals__MAX_RADIAL_MOMENT|.
+are computed up to fourth order. Higher moments can be computed by specifying |globals__max_radial_moment|.
 The volume ratios are computed as the ratio between the volume of the atomic density
 (:math:`<r^3>`) and the volume of the free atom computed using the same level
 of theory, but with a potentially unrestricted reference.
