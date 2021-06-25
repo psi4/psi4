@@ -434,7 +434,7 @@ def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
     # Print out requested dipole moment vectors
     _printable = {
         "E_TDM_LEN": {
-            "title": "Electric Transition Dipole Moments (Length) (AU)",
+            "title": "Electric Transition Dipole Moments (Length) (au)",
             "what": lambda x: x.edtm_length,
         },
         "E_TDM_VEL": {
