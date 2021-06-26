@@ -1240,7 +1240,12 @@ void BasisSet::move_atom(int atom, const Vector3 &trans) {
     xyz_[offset + 2] += trans[2];
 }
 
-void BasisSet::compute_phi(double *phi_ao, double x, double y, double z) {
+void BasisSet::compute_phi(double* phi_ao, double x, double y, double z) {
+    if (puream_) compute_phi_pure(phi_ao, x, y, z);
+    else compute_phi_cart(phi_ao, x, y, z);
+}
+
+void BasisSet::compute_phi_cart(double *phi_ao, double x, double y, double z) {
     zero_arr(phi_ao, nao());
 
     int ao = 0;
@@ -1268,4 +1273,46 @@ void BasisSet::compute_phi(double *phi_ao, double x, double y, double z) {
 
         ao += INT_NCART(am);
     }  // nshell
+}
+
+void BasisSet::compute_phi_pure(double *phi_ao, double x, double y, double z) {
+    zero_arr(phi_ao, nbf());
+
+    int ao = 0;
+    for (int ns = 0; ns < nshell(); ns++) {
+        const GaussianShell &shell = shells_[ns];
+        int am = shell.am();
+        int nprim = shell.nprimitive();
+        const double *a = shell.exps();
+        const double *c = shell.coefs();
+
+        auto s_transform = SphericalTransform(am);
+
+        const double *xyz = shell.center();
+        double dx = x - xyz[0];
+        double dy = y - xyz[1];
+        double dz = z - xyz[2];
+        double rr = dx * dx + dy * dy + dz * dz;
+
+        double cexpr = 0.0;
+        for (int np = 0; np < nprim; np++) cexpr += c[np] * exp(-a[np] * rr);
+
+        std::vector<double> cart_buffer(INT_NCART(am), 0.0);
+
+        for (int l = 0; l < INT_NCART(am); l++) {
+            Vector3 &components = exp_ao[am][l];
+            cart_buffer[l] += pow(dx, (double)components[0]) * pow(dy, (double)components[1]) *
+                              pow(dz, (double)components[2]) * cexpr;
+        }
+
+        for (int i = 0; i < s_transform.n(); i++) {
+            int lcart = s_transform.cartindex(i);
+            int lpure = s_transform.pureindex(i);
+            double coef = s_transform.coef(i);
+
+            phi_ao[ao + lpure] += coef * cart_buffer[lcart];
+        }
+
+        ao += INT_NPURE(am);
+    } // nshell
 }
