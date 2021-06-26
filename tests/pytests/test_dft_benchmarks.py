@@ -154,11 +154,12 @@ def name_dft_test(val):
     pytest.param(        'wB97M-V', 0.4544676075, '6-31G'),  # Q-Chem
     pytest.param(          'wB97X', 0.4564711283, '6-31G'),  # Q-Chem
     pytest.param(        'wB97X-D', 0.4575912358, '6-31G', marks=pytest.mark.quick),  # Q-Chem
-    pytest.param(       'wB97X-D3', 0.4570744381, '6-31G', marks=[using("dftd3"), pytest.mark.xfail]),  # Q-Chem  # needs tweaks in LibXC
+    pytest.param(       'wB97X-D3', 0.4570744381, '6-31G', marks=[using("dftd3")]),   # Q-Chem
     pytest.param(        'wB97X-V', 0.455302602,  '6-31G'),  # Q-Chem
     pytest.param(         'wM05-D', 0.4560790902, '6-31G'),  # Q-Chem  # https://gitlab.com/libxc/libxc/-/issues/180
     pytest.param(        'wM06-D3', 0.4563459267, '6-31G', marks=using("dftd3")),  # https://gitlab.com/libxc/libxc/-/issues/180
     pytest.param(          'X3LYP', 0.4549534082, '6-31G'),  # Q-Chem
+    pytest.param(          'KMLYP', 0.4665060738, '6-31G'),  # ERKALE
 ], ids=name_dft_test)
 
 def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request):
@@ -276,12 +277,13 @@ def test_dft_bench_ionization(func, expected, basis, dft_bench_systems, request)
     pytest.param(   'wB97M-V', -0.0152233456,  '6-31G'),  #   Q-Chem
     pytest.param(     'wB97X', -0.0156289024,  '6-31G'),  #   Q-Chem
     pytest.param(   'wB97X-D', -0.0146246032,  '6-31G'),  #   Q-Chem
-    pytest.param(  'wB97X-D3', -0.0148666307,  '6-31G', marks=[using("dftd3"), pytest.mark.xfail]), #  Q-Chem
+    pytest.param(  'wB97X-D3', -0.0148666307,  '6-31G', marks=[using("dftd3")]), #  Q-Chem
     pytest.param('wB97X-D3BJ', -0.01295664452, 'cc-pVDZ', marks=using("dftd3")), #   Orca
     pytest.param(   'wB97X-V', -0.0151102751,  '6-31G'),  #   Q-Chem
     pytest.param(    'wM05-D', -0.0147496512,  '6-31G'),  #   Q-Chem  # https://gitlab.com/libxc/libxc/-/issues/180
     pytest.param(   'wM06-D3', -0.0151611219,  '6-31G'),  #   Q-Chem  # https://gitlab.com/libxc/libxc/-/issues/180
     pytest.param(     'X3LYP', -0.0151870467,  '6-31G'),  #   Q-Chem
+    pytest.param(     'KMLYP', -0.0173175768,  '6-31G'),  #   ERKALE
 ], ids=name_dft_test)
 
 def test_dft_bench_interaction(func, expected, basis, dft_bench_systems, request):
