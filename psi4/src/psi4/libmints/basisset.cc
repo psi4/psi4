@@ -288,6 +288,7 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
                 int current_shell = atom_to_period(Z + ECP);
                 int delta = period_to_full_shell(std::max(current_shell - req_shell, 0));
                 // If this center has an ECP, some electrons are already frozen
+                if (delta < ECP) throw PSIEXCEPTION("ECP on atom freezes more electrons than requested by choosing a previous shell.");
                 if (ECP > 0) delta -= ECP;
                 // Keep track of current valence electrons
                 mol_valence = mol_valence + Z - delta;
