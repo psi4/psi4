@@ -3580,6 +3580,239 @@ void DFOCC::lccd_manager() {
 }  // end lccd_manager
 
 //======================================================================
+//             REMP Manager
+//======================================================================
+void DFOCC::remp_manager() {
+    time4grad = 0;     // means i will not compute the gradient
+    mo_optimized = 0;  // means MOs are not optimized
+
+    timer_on("DF CC Integrals");
+    df_corr(); // read in the correlation auxiliary basis, form the J matrix and the B(Q,munu) factors in the AO basis
+    trans_corr(); //transform the B(Q,munu) factors and the OEIs to MO basis
+    timer_off("DF CC Integrals");
+    outfile->Printf("\n\tNumber of basis functions in the DF-CC basis: %3d\n", nQ);
+
+    if (dertype == "FIRST" || oeprop_ == "TRUE" || ekt_ip_ == "TRUE" || qchf_ == "TRUE") {
+        throw PSIEXCEPTION("NO RELAXED DENSITIES AND FIRST DERIVATIVES FOR REMP YET!");
+        timer_on("DF REF Integrals");
+        df_ref();
+        trans_ref();
+        timer_off("DF REF Integrals");
+        outfile->Printf("\tNumber of basis functions in the DF-HF basis: %3d\n", nQ_ref);
+        Jc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF J_Q", nQ_ref));
+    }
+
+    // avaliable mem
+    memory = Process::environment.get_memory();
+    memory_mb = (double)memory / (1024.0 * 1024.0);
+    outfile->Printf("\n\tAvailable memory                      : %9.2lf MB \n", memory_mb);
+
+    // memory requirements
+    // DF-CC B(Q,ab) + B(Q,ia) + B(Q,ij)
+    cost_df = 0.0;
+    cost_df = (navirA * navirA) + (navirA * naoccA) + (naoccA * naoccA);
+    cost_df *= nQ;
+    cost_df /= 1024.0 * 1024.0;
+    cost_df *= sizeof(double);
+    if (reference_ == "RESTRICTED")
+        outfile->Printf("\tMemory requirement for 3-index ints   : %9.2lf MB \n", cost_df);
+    else if (reference_ == "UNRESTRICTED")
+        outfile->Printf("\tMemory requirement for 3-index ints   : %9.2lf MB \n", 2.0 * cost_df);
+
+    // Cost of Integral transform for B(Q,ab)
+    cost_ampAA = 0.0;
+    cost_ampAA = nQ * nso2_;
+    cost_ampAA += nQ * navirA * navirA;
+    cost_ampAA += nQ * nso_ * navirA;
+    cost_ampAA /= 1024.0 * 1024.0;
+    cost_ampAA *= sizeof(double);
+    outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
+
+    // Mem for amplitudes
+    cost_ampAA = 0.0;
+    cost_ampAA = naocc2AA * nvir2AA;
+    cost_ampAA /= 1024.0 * 1024.0;
+    cost_ampAA *= sizeof(double);
+    cost_3amp = 3.0 * cost_ampAA;
+    cost_4amp = 4.0 * cost_ampAA;
+    cost_5amp = 5.0 * cost_ampAA;
+
+    if ((cost_4amp + cost_df) <= memory_mb) {
+        outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_4amp);
+        outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_4amp + cost_df);
+        nincore_amp = 4;
+        t2_incore = true;
+        df_ints_incore = true;
+    } else if ((cost_3amp + cost_df) <= memory_mb) {
+        outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
+        // outfile->Printf("\tTotal memory requirement for DF+CC int: %9.2lf MB \n", cost_3amp+cost_df);
+        outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
+        nincore_amp = 3;
+        t2_incore = false;
+        df_ints_incore = false;
+    } else if (cost_3amp < memory_mb && cost_df < memory_mb) {
+        outfile->Printf("\tMemory requirement for CC contractions: %9.2lf MB \n", cost_3amp);
+        outfile->Printf("\tWarning: T2 amplitudes will be stored on the disk!\n");
+        nincore_amp = 3;
+        t2_incore = false;
+        df_ints_incore = false;
+    } else {
+        outfile->Printf("\tWarning: There is NOT enough memory for CC contractions!\n");
+        outfile->Printf("\tIncrease memory by                    : %9.2lf MB \n", cost_3amp + cost_df - memory_mb);
+        throw PSIEXCEPTION("There is NOT enough memory for CC contractions!");
+    }
+
+    // W_abef term
+    cost_ampAA = 0.0;
+    cost_ampAA = naoccA * naoccA * navirA * navirA;
+    cost_ampAA += 2.0 * nQ * navirA * navirA;
+    cost_ampAA += navirA * navirA * navirA;
+    cost_ampAA /= 1024.0 * 1024.0;
+    cost_ampAA *= sizeof(double);
+    double cost_ampAA2 = 0.0;
+    cost_ampAA2 = naoccA * naoccA * navirA * navirA;
+    cost_ampAA2 += nQ * navirA * navirA;
+    cost_ampAA2 += 3.0 * navirA * navirA * navirA;
+    cost_ampAA2 /= 1024.0 * 1024.0;
+    cost_ampAA2 *= sizeof(double);
+    cost_amp = MAX0(cost_ampAA, cost_ampAA2);
+    outfile->Printf("\tMemory requirement for Wabef term     : %9.2lf MB \n", cost_amp);
+
+    // memalloc for density intermediates
+    if (qchf_ == "TRUE" || dertype == "FIRST") {
+        g1Qc = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1_Q", nQ_ref));
+        g1Qt = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1t_Q", nQ_ref));
+        g1Qp = SharedTensor1d(new Tensor1d("DF_BASIS_SCF G1p_Q", nQ_ref));
+        g1Q = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1_Q", nQ));
+        g1Qt2 = SharedTensor1d(new Tensor1d("DF_BASIS_CC G1t_Q", nQ));
+    }
+
+    // QCHF
+//    if (qchf_ == "TRUE") qchf(); // don't know what this is doing exactly, disabling for the moment
+
+    // Compute MP2 energy
+    if (reference == "ROHF") {
+        t1A = SharedTensor2d(new Tensor2d("T1_1 <I|A>", naoccA, navirA));
+        t1B = SharedTensor2d(new Tensor2d("T1_1 <i|a>", naoccB, navirB));
+        t1_1st_sc();
+    }
+    lccd_t2_1st_sc(); // BIS HIER
+
+    outfile->Printf("\n");
+    if (reference == "ROHF")
+        outfile->Printf("\tComputing DF-MP2 energy (DF-ROHF-MP2)... \n");
+    else
+        outfile->Printf("\tComputing DF-MP2 energy ... \n");
+    outfile->Printf("\t======================================================================= \n");
+    outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+    outfile->Printf("\tDF-HF Energy (a.u.)                : %20.14f\n", Escf);
+    outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", Emp2AA);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", Emp2BB);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", Emp2AB);
+    if (reference_ == "UNRESTRICTED")
+        outfile->Printf("\tScaled_SS Correlation Energy (a.u.): %20.14f\n", Escsmp2AA + Escsmp2BB);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tScaled_OS Correlation Energy (a.u.): %20.14f\n", Escsmp2AB);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCS-MP2 Total Energy (a.u.)     : %20.14f\n", Escsmp2);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SOS-MP2 Total Energy (a.u.)     : %20.14f\n", Esosmp2);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tDF-SCSN-MP2 Total Energy (a.u.)    : %20.14f\n", Escsnmp2);
+    if (reference == "ROHF") outfile->Printf("\tDF-MP2 Singles Energy (a.u.)       : %20.14f\n", Emp2_t1);
+    if (reference == "ROHF") outfile->Printf("\tDF-MP2 Doubles Energy (a.u.)       : %20.14f\n", Ecorr - Emp2_t1);
+    outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
+    outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
+    outfile->Printf("\t======================================================================= \n");
+
+    variables_["MP2 TOTAL ENERGY"] = Emp2;
+    Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
+    Process::environment.globals["SOS-MP2 TOTAL ENERGY"] = Esosmp2;
+    Process::environment.globals["SCS(N)-MP2 TOTAL ENERGY"] = Escsnmp2;
+
+    variables_["MP2 CORRELATION ENERGY"] = Emp2 - Escf;
+    Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = Escsmp2 - Escf;
+    Process::environment.globals["SOS-MP2 CORRELATION ENERGY"] = Esosmp2 - Escf;
+    Process::environment.globals["SCS(N)-MP2 CORRELATION ENERGY"] = Escsnmp2 - Escf;
+
+    if (reference_ == "UNRESTRICTED") {
+        variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = Emp2AB;
+        variables_["MP2 SAME-SPIN CORRELATION ENERGY"] = Emp2AA + Emp2BB;
+        variables_["MP2 DOUBLES ENERGY"] = Emp2AB + Emp2AA + Emp2BB;
+    }
+    else {
+        variables_["MP2 DOUBLES ENERGY"] = Ecorr - Emp2_t1;
+    }
+    variables_["MP2 SINGLES ENERGY"] = Emp2_t1;
+
+    // Perform LCCD iterations
+    timer_on("LCCD");
+    remp_iterations();
+    timer_off("LCCD");
+
+    outfile->Printf("\n");
+    outfile->Printf("\t======================================================================= \n");
+    outfile->Printf("\t================ REMP FINAL RESULTS =================================== \n");
+    outfile->Printf("\t======================================================================= \n");
+    outfile->Printf("\tNuclear Repulsion Energy (a.u.)    : %20.14f\n", Enuc);
+    outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
+    outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", ErempAA);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", ErempBB);
+    if (reference_ == "UNRESTRICTED") outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", ErempAB);
+    outfile->Printf("\tDF-REMP Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
+    outfile->Printf("\tDF-REMP Total Energy (a.u.)        : %20.14f\n", Eremp);
+    outfile->Printf("\t======================================================================= \n");
+    outfile->Printf("\n");
+
+    energy_ = Eremp;
+    variables_["CURRENT ENERGY"] = Eremp;
+    variables_["LCCD TOTAL ENERGY"] = Eremp;
+
+    variables_["CURRENT REFERENCE ENERGY"] = Escf;
+    variables_["CURRENT CORRELATION ENERGY"] = Eremp - Escf;
+    variables_["REMP CORRELATION ENERGY"] = Eremp - Escf;
+
+    if (reference_ == "UNRESTRICTED") {
+        variables_["REMP OPPOSITE-SPIN CORRELATION ENERGY"] = ErempAB;
+        variables_["REMP SAME-SPIN CORRELATION ENERGY"] = ErempAA + ErempBB;
+        variables_["REMP DOUBLES ENERGY"] = ErempAB + ErempAA + ErempBB;
+    }
+    else {
+        variables_["REMP DOUBLES ENERGY"] = Ecorr;  // no ROHF
+    }
+    variables_["REMP SINGLES ENERGY"] = 0.0;  // no ROHF
+
+    ErempL = Eremp;
+
+    /* updates the wavefunction for checkpointing */
+    name_ = "DF-REMP";
+
+    // Compute Analytic Gradients
+    if (dertype == "FIRST" || ekt_ip_ == "TRUE") {
+        throw PSIEXCEPTION("NO ANALYTICAL FIRST DERIVATIVES FOR REMP YET!!");
+        // memalloc
+        gQt = SharedTensor1d(new Tensor1d("CCD PDM G_Qt", nQ));
+        if (reference_ == "RESTRICTED") {
+            G1c_ov = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
+            G1c_vo = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+        } else if (reference_ == "UNRESTRICTED") {
+            G1c_ovA = SharedTensor2d(new Tensor2d("Correlation OPDM <O|V>", noccA, nvirA));
+            G1c_ovB = SharedTensor2d(new Tensor2d("Correlation OPDM <o|v>", noccB, nvirB));
+            G1c_voA = SharedTensor2d(new Tensor2d("Correlation OPDM <V|O>", nvirA, noccA));
+            G1c_voB = SharedTensor2d(new Tensor2d("Correlation OPDM <v|o>", nvirB, noccB));
+        }
+
+        outfile->Printf("\tComputing unrelaxed response density matrices...\n");
+        lccd_pdm_3index_intr();
+        omp3_opdm();
+        olccd_tpdm();
+        prepare4grad();
+        response_helper();
+        // ccl_energy();
+    }  // if (dertype == "FIRST" || ekt_ip_ == "TRUE")
+
+}  // end remp_manager
+
+
+//======================================================================
 //             HF Manager
 //======================================================================
 void DFOCC::qchf_manager() {
