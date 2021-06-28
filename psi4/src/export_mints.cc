@@ -70,7 +70,7 @@
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/overlap.h"
 #include "psi4/libmints/sieve.h"
-
+#include "psi4/libpsi4util/libpsi4util.h"
 #include <string>
 
 using namespace psi;
@@ -252,8 +252,8 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
         for (size_t iat = 0; iat < nat; ++iat) {
             std::string symbol = elem.at(iat);
             std::string label = elbl.at(iat);
-            std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
-            std::transform(label.begin(), label.end(), label.begin(), ::toupper);
+            to_upper(symbol);
+            to_upper(label);
             mol->add_unsettled_atom(elez.at(iat) * int(real.at(iat)), geom_unsettled.at(iat), symbol, mass.at(iat),
                                     elez.at(iat) * int(real.at(iat)), symbol + label, elea.at(iat));
         }
@@ -271,8 +271,8 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
         for (size_t iat = 0; iat < nat; ++iat) {
             std::string symbol = elem.at(iat);
             std::string label = elbl.at(iat);
-            std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
-            std::transform(label.begin(), label.end(), label.begin(), ::toupper);
+            to_upper(symbol);
+            to_upper(label);
             mol->add_atom(elez.at(iat) * int(real.at(iat)), geom.at(3 * iat), geom.at(3 * iat + 1), geom.at(3 * iat + 2),
                           symbol, mass.at(iat), elez.at(iat) * int(real.at(iat)), symbol + label, elea.at(iat));
         }

@@ -37,6 +37,7 @@
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psifiles.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 
 #include "vector3.h"
 #include "molecule.h"
@@ -77,7 +78,7 @@ bool has_ending(std::string const &fullString, std::string const &ending) {
 
 std::string to_upper_copy(const std::string &original) {
     std::string upper = original;
-    std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
+    to_upper(upper);
     return upper;
 }
 }  // namespace
@@ -513,7 +514,7 @@ std::string BasisSet::print_detail_cfour() const {
     char buffer[120];
     std::stringstream ss;
     std::string nameUpperCase = name_;
-    std::transform(nameUpperCase.begin(), nameUpperCase.end(), nameUpperCase.begin(), ::toupper);
+    to_upper(nameUpperCase);
 
     for (int uA = 0; uA < molecule_->nunique(); uA++) {
         const int A = molecule_->unique(uA);
