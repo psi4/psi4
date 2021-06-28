@@ -452,6 +452,7 @@ class DFOCC : public Wavefunction {
     void remp_manager_cd();
     void oremp_manager_cd();
     void remp_iterations();
+    void remp_t2_amps();
 
     // CCSD
     void ccsd_manager();
@@ -794,8 +795,8 @@ class DFOCC : public Wavefunction {
     double Eremp;
     double Eremp_old;
     double ErempAA;
-    double Eremp_BB;
-    double Eremp_AB;
+    double ErempBB;
+    double ErempAB;
     double ErempL;
 
     // CCSD
