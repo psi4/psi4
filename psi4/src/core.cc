@@ -261,7 +261,7 @@ extern int read_options(const std::string& name, Options& options, bool suppress
 
 std::string to_upper(const std::string& key) {
     std::string nonconst_key = key;
-    std::transform(nonconst_key.begin(), nonconst_key.end(), nonconst_key.begin(), ::toupper);
+    to_upper(nonconst_key);
     return nonconst_key;
 }
 

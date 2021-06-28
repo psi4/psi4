@@ -36,6 +36,7 @@
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libpsi4util/libpsi4util.h"
 
 namespace psi {
 #ifdef HAVE_DLFCN_H
@@ -79,7 +80,7 @@ plugin_info plugin_load(std::string &plugin_pathname) {
     }
 
     // Uppercase and store the name of the plugin for read_options
-    std::transform(info.name.begin(), info.name.end(), info.name.begin(), [](unsigned char c) { return std::toupper(c); });
+    to_upper(info.name);
 
     // Get the plugin's options into the global space
     Process::environment.options.set_read_globals(true);

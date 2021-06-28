@@ -33,14 +33,13 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libfock/cubature.h"
 #include "psi4/libfock/points.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 #include "superfunctional.h"
 #include "functional.h"
 #include "LibXCfunctional.h"
 
 #include <cmath>
 #include <cstdlib>
-#include <algorithm>
-#include <cctype>
 
 // using namespace psi;
 
@@ -81,7 +80,7 @@ void SuperFunctional::common_init() {
 std::shared_ptr<SuperFunctional> SuperFunctional::blank() { return std::make_shared<SuperFunctional>(); }
 std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, bool unpolarized) {
     // Capitalize name for consistency
-    std::transform(name.begin(), name.end(), name.begin(), ::toupper);
+    to_upper(name);
 
     // Only allow build from full XC kernels
     if (name.find("XC_") == std::string::npos) {
