@@ -2446,9 +2446,6 @@ def run_scf_gradient(name, **kwargs):
     if core.get_option('SCF', 'REFERENCE') in ['ROHF', 'CUHF']:
         ref_wfn.semicanonicalize()
 
-    if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
-        raise ValidationError("Analytic gradients not available for relativistic methods.")
-
     if hasattr(ref_wfn, "_disp_functor"):
         disp_grad = ref_wfn._disp_functor.compute_gradient(ref_wfn.molecule(), ref_wfn)
         ref_wfn.set_variable("-D Gradient", disp_grad)
