@@ -168,8 +168,11 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     :type bsse_type: str or list
     :param bsse_type: ``'cp'`` || ``['nocp', 'vmfc']`` || |dl| ``None`` |dr| || etc.
 
-        Type of BSSE correction to compute: CP, NoCP, or VMFC. The first in this
-        list is returned by this function. By default, this function is not called.
+        Type of BSSE correction to compute: CP for counterpoise correction, NoCP
+        for plain supramolecular interaction energy, or VMFC for Valiron-Mayer
+        Function Counterpoise correction. If a list is provided, the first string in
+        the list determines which interaction or total energies/gradients/Hessians are
+        returned by this function. By default, this function is not called.
 
     :type max_nbody: int
     :param max_nbody: ``3`` || etc.
@@ -184,15 +187,18 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     :type return_total_data: :ref:`boolean <op_py_boolean>`
     :param return_total_data: ``'on'`` || |dl| ``'off'`` |dr|
 
-        If True returns the total data (energy/gradient/etc) of the system,
-        otherwise returns interaction data.
+        If True returns the total data (energy/gradient/Hessian) of the system,
+        otherwise returns interaction data. Note that the calculation of total
+        counterpoise corrected energies implies the calculation of the energies of
+        monomers in the monomer basis, hence specifying ``return_total_data = True``
+        may carry out more computations than ``return_Total_data = False``.
 
     :type levels: dict
     :param levels: ``{1: 'ccsd(t)', 2: 'mp2', 'supersystem': 'scf'}`` || ``{1: 2, 2: 'ccsd(t)', 3: 'mp2'}`` || etc
 
         Dictionary of different levels of theory for different levels of expansion
-        Note that method_string is not used in this case.
-        supersystem computes all higher order n-body effects up to the number of fragments.
+        Note that method_string is not used in this case. ``supersystem`` computes
+        all higher order n-body effects up to the number of fragments.
 
     :type embedding_charges: dict
     :param embedding_charges: ``{1: [-0.834, 0.417, 0.417], ..}``
@@ -202,7 +208,8 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     :type charge_method: str
     :param charge_method: ``scf/6-31g`` || ``b3lyp/6-31g*`` || etc
 
-        Method to compute point charges for monomers. Overridden by embedding_charges if both are provided.
+        Method to compute point charges for monomers. Overridden by ``embedding_charges``
+        if both are provided.
 
     :type charge_type: str
     :param charge_type: ``MULLIKEN_CHARGES`` || ``LOWDIN_CHARGES``
@@ -555,17 +562,17 @@ def assemble_nbody_components(metadata, component_results):
 
         Contents:
         ``'ret_energy'``: float64
-            Interaction data requested.  If multiple BSSE types requested in `bsse_type_list`, the
-            interaction data associated with the *first* BSSE type in the list is returned.
+            Interaction data requested.  If multiple BSSE types requested in `bsse_type_list`, the interaction data associated with the *first* BSSE
+            type in the list is returned.
         ``'nbody_dict'``: dict of str: float64
             Dictionary of relevant N-body psivars to be set
         ``'energy_body_dict'``: dict of int: float64
-            Dictionary of total energies at each N-body level, i.e., ``results['energy_body_dict'][2]``
-            is the sum of all 2-body total energies for the supersystem.
+            Dictionary of total energies at each N-body level, i.e., ``results['energy_body_dict'][2]`` is the sum of all 2-body total energies
+            for the supersystem. May be empty if ``return_total_data`` is ``False``.
         ``'ptype_body_dict'``: dict or dict of int: array_like
-            Empty dictionary if `ptype is ``'energy'``, or dictionary of total ptype arrays at each
-            N-body level; i.e., ``results['ptype_body_dict'][2]`` for `ptype` ``'gradient'``is the
-            total 2-body gradient.
+            Empty dictionary if `ptype is ``'energy'``, or dictionary of total ptype
+            arrays at each N-body level; i.e., ``results['ptype_body_dict'][2]``
+            for `ptype` ``'gradient'``is the total 2-body gradient.
     """
     # Unpack metadata
     kwargs = metadata['kwargs']
