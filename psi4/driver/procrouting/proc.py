@@ -2054,6 +2054,9 @@ def run_dfocc(name, **kwargs):
     elif name in ['lccd', 'olccd', 'fno-lccd']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
         corl_type = core.get_global_option('CC_TYPE')
+    elif name in ['remp', 'oremp']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OREMP')
+        corl_type = core.get_global_option('CC_TYPE')
 
     elif name in ['ccd', 'fno-ccd']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OCCD')
@@ -2085,11 +2088,10 @@ def run_dfocc(name, **kwargs):
     set_cholesky_from(corl_type)
 
     # conventional vs. optimized orbitals
-    if name in ['mp2', 'mp2.5', 'fno-mp2.5', 'mp3', 'fno-mp3', 'lccd',
-                     'fno-lccd', 'ccd', 'ccsd', 'ccsd(t)', 'a-ccsd(t)',
-                     'fno-ccd', 'fno-ccsd', 'fno-ccsd(t)', 'fno-a-ccsd(t)']:
+    if name in [   'mp2',     'mp2.5',     'mp3',     'lccd',     'remp',     'ccd',     'ccsd',     'ccsd(t)',     'a-ccsd(t)',
+                          'fno-mp2.5', 'fno-mp3', 'fno-lccd',             'fno-ccd', 'fno-ccsd', 'fno-ccsd(t)', 'fno-a-ccsd(t)',]:
         core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    elif name in ['omp2', 'omp2.5', 'omp3', 'olccd', 'occd', 'occd(t)', 'a-occd(t)']:
+    elif name in ['omp2',    'omp2.5',    'omp3',    'olccd',    'oremp',    'occd',                 'occd(t)',     'a-occd(t)',]:
         core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
 
     # FNO or not
@@ -2133,7 +2135,7 @@ def run_dfocc(name, **kwargs):
     dfocc_wfn = core.dfocc(ref_wfn)
 
     # Shove variables into global space
-    if name in ['mp2', 'omp2', 'mp2.5', 'mp3', 'lccd', "a-ccsd(t)", "olccd", "occd"]:
+    if name in ['mp2', 'omp2', 'mp2.5', 'mp3', 'lccd', 'remp', "a-ccsd(t)", "olccd", "occd"]:
         for k, v in dfocc_wfn.variables().items():
             core.set_variable(k, v)
 

@@ -98,7 +98,7 @@ void DFOCC::remp_iterations() {
         remp_t2_amps();
         timer_off("T2 AMPS");
 
-        DE = Elccd - Elccd_old;
+        DE = Eremp - Eremp_old;
         Eremp_old = Eremp;
 
         // print
