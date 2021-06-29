@@ -59,6 +59,10 @@ SAPT: Symmetry-Adapted Perturbation Theory
    wherever possible, according to literature recommendations.
    In early July 2016, some total SAPT energy psivars were renamed.
 
+.. caution:: February 7, 2020, a missing term in :math:`E^{(30)}_{ind}` was added, causing
+   possible discrepancies with prior versions of the code on the order of
+   0.01 kcal/mol. See https://github.com/psi4/psi4/issues/1677
+
 Symmetry-adapted perturbation theory (SAPT) provides a means of directly
 computing the noncovalent interaction between two molecules, that is, the
 interaction energy is determined without computing the total energy of the
@@ -929,3 +933,49 @@ S^inf Keywords
 
 .. include:: autodir_options_c/sapt__do_ind_exch_sinf.rst
 .. include:: autodir_options_c/sapt__do_disp_exch_sinf.rst
+
+.. _`sec:saptd`:
+
+SAPT0-D
+~~~~~~~
+
+In SAPT0, the computation of :math:`E_{disp}^{(20)} + E_{exch-disp}^{(20)}` represents
+the computational bottleneck. One can avoid this bottleneck by replacing these
+dispersion terms with the empirical D3 corrections developed by Grimme.
+  
+:ref:`Grimme's dispersion corrections are discussed here. <sec:dftd3>`
+
+The corresponding method, termed SAPT0-D, thus relies on empirically fit parameters
+specific to SAPT0/jun-cc-pVDZ. While SAPT0-D can be used with any of the -D 
+variants using default parameters optimized for Hartee--Fock interaction energies, 
+we recommend using the refit parameters with Becke-Johnson damping, as described in
+[Schriber:2021:234107]_. Again, use of SAPT0-D with a basis set other than
+jun-cc-pVDZ is not tested and not guaranteed to give meaningful results without
+refitting the dispersion parameters. 
+A simple water dimer computation using SAPT0-D may look like::
+
+	molecule water_dimer {
+	     0 1
+	     O  -1.551007  -0.114520   0.000000
+	     H  -1.934259   0.762503   0.000000
+	     H  -0.599677   0.040712   0.000000
+	     --
+	     0 1
+	     O   1.350625   0.111469   0.000000
+	     H   1.680398  -0.373741  -0.758561
+	     H   1.680398  -0.373741   0.758561
+	
+	     units angstrom
+	     no_reorient
+	     symmetry c1
+	}
+	
+	set basis jun-cc-pvdz
+
+	energy('sapt0-d3mbj') # runs the recommended dispersion correction
+    energy('sapt0-d3') # tests an alternative damping scheme/parameterization
+
+Given the naturally pairwise-atomic nature of these empirical dispersion corrections,
+integration with existing FSAPT functionality is also available simply by calling
+`energy("fsapt0-d3mbj")`. See `FSAPT <fisapt>` documentation for more details on using FSAPT
+for functional group analyses.
