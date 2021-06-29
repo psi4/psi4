@@ -127,7 +127,7 @@ def _print_nbody_energy(energy_body_dict, header, embedding=False):
             core.print_out("""     %4s  %20.12f  %20.12f  %20.12f\n""" % (n, energy_body_dict[n], int_e_kcal,
                                                                        delta_e_kcal))
         else:
-            core.print_out("""     %4s  %20s  %20.12f  %20.12f\n""" % (n, " ", int_e_kcal,
+            core.print_out("""     %4s  %20s  %20.12f  %20.12f\n""" % (n, "N/A", int_e_kcal,
                                                                        delta_e_kcal))
         previous_e = energy_body_dict[n]
     core.print_out("\n")
@@ -188,7 +188,8 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     :param return_total_data: ``'on'`` || |dl| ``'off'`` |dr|
 
         If True returns the total data (energy/gradient/Hessian) of the system,
-        otherwise returns interaction data. Note that the calculation of total
+        otherwise returns interaction data. Default is ``'off'`` for energies,
+        ``'on'`` for gradients and Hessians. Note that the calculation of total
         counterpoise corrected energies implies the calculation of the energies of
         monomers in the monomer basis, hence specifying ``return_total_data = True``
         may carry out more computations than ``return_Total_data = False``.
@@ -226,7 +227,7 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
         return driver_nbody_helper.multi_level(func, **kwargs)
     metadata['ptype'] = kwargs.pop('ptype', None)
     metadata['return_wfn'] = kwargs.pop('return_wfn', False)
-    metadata['return_total_data'] = kwargs.pop('return_total_data', False)
+    metadata['return_total_data'] = kwargs.pop('return_total_data', None)
     metadata['molecule'] = kwargs.pop('molecule', core.get_active_molecule())
     metadata['molecule'].update_geometry()
     metadata['molecule'].fix_com(True)
@@ -237,6 +238,12 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
 
     if metadata['ptype'] not in ['energy', 'gradient', 'hessian']:
         raise ValidationError("""N-Body driver: The ptype '%s' is not regonized.""" % metadata['ptype'])
+
+    if metadata['return_total_data'] is None:
+        if metadata['ptype'] in ['gradient', 'hessian']:
+            metadata['return_total_data'] = True
+        else:
+            metadata['return_total_data'] = False
 
     # Parse bsse_type, raise exception if not provided or unrecognized
     metadata['bsse_type_list'] = kwargs.pop('bsse_type')
