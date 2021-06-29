@@ -2339,7 +2339,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("CC_SS_SCALE", 1.13);
         /*- Convert ROHF MOs to semicanonical MOs -*/
         options.add_bool("SEMICANONICAL", true);
-        /*- Convert ROHF MOs to semicanonical MOs -*/
+        /*- Maximum number of iterations for Brueckner CCD. -*/
         options.add_int("BCCD_MAXITER", 50);
     }
     if (name == "DFMP2" || options.read_globals()) {

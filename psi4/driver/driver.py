@@ -95,6 +95,10 @@ def _find_derivative_type(ptype, method_name, user_dertype):
         core.print_out('\nPCM analytic gradients are not implemented yet, re-routing to finite differences.\n')
         dertype = 0
 
+    if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
+        core.print_out("\nRelativistic analytic gradients are not implemented yet, re-routing to finite differences.\n")
+        dertype = 0
+
     # Summary validation
     if (dertype == 2) and (method_name in procedures['hessian']):
         pass
