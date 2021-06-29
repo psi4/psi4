@@ -794,33 +794,33 @@ def select_olccd_gradient(name, **kwargs):
     else:
         return func(name, **kwargs)
 
-def select_oremp_gradient(name, **kwargs):
-    """Function selecting the algorithm for an OREMP gradient call
-    and directing to specified or best-performance default modules.
-
-    """
-    reference = core.get_option('SCF', 'REFERENCE')
-    mtd_type = core.get_global_option('CC_TYPE')
-    module = core.get_global_option('QC_MODULE')
-    # Considering only [df]occ
-
-    func = None
-    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
-        if mtd_type == 'CONV':
-            if module in ['', 'OCC']:
-                func = run_occ_gradient
-        elif mtd_type == 'DF':
-            if module in ['', 'OCC']:
-                raise NotImplementedError(f"No DF gradients for OREMP (yet)")
-                #func = run_dfocc_gradient
-
-    if func is None:
-        raise ManagedMethodError(['select_oremp_gradient', name, 'CC_TYPE', mtd_type, reference, module])
-
-    if kwargs.pop('probe', False):
-        return
-    else:
-        return func(name, **kwargs)
+#def select_oremp_gradient(name, **kwargs):
+#    """Function selecting the algorithm for an OREMP gradient call
+#    and directing to specified or best-performance default modules.
+#
+#    """
+#    reference = core.get_option('SCF', 'REFERENCE')
+#    mtd_type = core.get_global_option('CC_TYPE')
+#    module = core.get_global_option('QC_MODULE')
+#    # Considering only [df]occ
+#
+#    func = None
+#    if reference in ['RHF', 'UHF', 'ROHF', 'RKS', 'UKS']:
+#        if mtd_type == 'CONV':
+#            if module in ['', 'OCC']:
+#                func = run_occ_gradient
+#        elif mtd_type == 'DF':
+#            if module in ['', 'OCC']:
+#                raise NotImplementedError(f"No DF gradients for OREMP (yet)")
+#                #func = run_dfocc_gradient
+#
+#    if func is None:
+#        raise ManagedMethodError(['select_oremp_gradient', name, 'CC_TYPE', mtd_type, reference, module])
+#
+#    if kwargs.pop('probe', False):
+#        return
+#    else:
+#        return func(name, **kwargs)
 
 
 def select_fnoccsd(name, **kwargs):
@@ -1417,7 +1417,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
             wfn.set_sad_fitting_basissets(sad_fitting_list)
             optstash.restore()
 
-    if hasattr(core, "EXTERN") and 'external_potentials' in kwargs: 
+    if hasattr(core, "EXTERN") and 'external_potentials' in kwargs:
         core.print_out("\n  Warning! Both an external potential EXTERN object and the external_potential" +
                        " keyword argument are specified. The external_potentials keyword argument will be ignored.\n")
         raise ValidationError("double extern")
