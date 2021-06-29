@@ -71,8 +71,8 @@ procedures = {
         'custom-scs-lccd' : proc.run_occ,
         'olccd'         : proc.select_olccd,
         'custom-scs-olccd' : proc.run_occ,
-        'remp'          : proc.run_occ,
-        'oremp'         : proc.run_occ,
+        'remp'          : proc.select_lccd,
+        'oremp'         : proc.select_lccd,
         'dfocc'         : proc.run_dfocc,  # full control over dfocc
         'qchf'          : proc.run_qchf,
         'ccd'           : proc.run_dfocc,

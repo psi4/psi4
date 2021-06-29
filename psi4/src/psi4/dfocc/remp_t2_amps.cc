@@ -39,7 +39,7 @@ void DFOCC::remp_t2_amps() {
     // defs
     SharedTensor2d K, L, M, I, T, Tnew, T1, T2, U, Tau, W, X, Y, Tnew_MP2;
     SharedTensor2d R, RAA, RBB, RAB, TAA, TBB, TAB;
-    outfile->Printf("starting REMP T2 amps\n");
+//    outfile->Printf("starting REMP T2 amps\n");
 
     if (reference_ == "RESTRICTED") {
         // Read DF integrals
