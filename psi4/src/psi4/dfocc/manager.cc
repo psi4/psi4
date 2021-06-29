@@ -3812,6 +3812,34 @@ void DFOCC::remp_manager() {
 }  // end remp_manager
 
 
+
+void DFOCC::oremp_manager(){
+  throw PSIEXCEPTION(" DUMMY! DF-OREMP NOT YET IMPLEMENTED!");
+
+
+
+
+} // end oremp manager
+
+
+
+void DFOCC::remp_manager_cd(){
+  throw PSIEXCEPTION(" DUMMY! CD-REMP NOT YET IMPLEMENTED!");
+
+
+} // end remp manager cd
+
+
+void DFOCC::oremp_manager_cd(){
+  throw PSIEXCEPTION(" DUMMY! CD-OREMP NOT YET IMPLEMENTED!");
+
+
+} // end oremp manager cd
+
+
+
+
+
 //======================================================================
 //             HF Manager
 //======================================================================
