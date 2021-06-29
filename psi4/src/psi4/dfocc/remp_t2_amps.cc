@@ -39,6 +39,7 @@ void DFOCC::remp_t2_amps() {
     // defs
     SharedTensor2d K, L, M, I, T, Tnew, T1, T2, U, Tau, W, X, Y, Tnew_MP2;
     SharedTensor2d R, RAA, RBB, RAB, TAA, TBB, TAB;
+    outfile->Printf("starting REMP T2 amps\n");
 
     if (reference_ == "RESTRICTED") {
         // Read DF integrals
@@ -73,7 +74,7 @@ void DFOCC::remp_t2_amps() {
 
         // new: copy Tnew to
         Tnew_MP2= SharedTensor2d(new Tensor2d("New T2_MP1 (IA|JB)", naoccA,navirA,naoccA,navirA));
-        T2new_MP2->copy(Tnew); // create a copy of the MP2 residuum
+        Tnew_MP2->copy(Tnew); // create a copy of the MP2 residuum
         Tnew->zero();
 
         // Write and close
@@ -95,8 +96,8 @@ void DFOCC::remp_t2_amps() {
 
         //The RE part is now finished and read-in again
         Tnew->scale(1.0E0-remp_a); //CSB scale the RE-ony part by 1-A
-        Tnew->add(T2new_MP2);
-        T2new_MP2->reset();
+        Tnew->add(Tnew_MP2);
+        Tnew_MP2.reset();
 
         Tnew->apply_denom_chem(nfrzc, noccA, FockA);
 

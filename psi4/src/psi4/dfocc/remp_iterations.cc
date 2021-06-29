@@ -95,7 +95,7 @@ void DFOCC::remp_iterations() {
 
         // T2 amplitudes
         timer_on("T2 AMPS");
-        lccd_t2_amps();
+        remp_t2_amps();
         timer_off("T2 AMPS");
 
         DE = Elccd - Elccd_old;
