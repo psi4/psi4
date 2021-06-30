@@ -1,0 +1,417 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 undefined 
+
+                         Git: Rev {level_shift} b99c9dd 
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Monday, 05 July 2021 05:19PM
+
+    Process ID: 106403
+    Host:       thinkpad
+    PSIDATADIR: /home/work/psi4/install/share/psi4
+    Memory:     500.0 MiB
+    Threads:    4
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+molecule {
+0 2
+O          1.14394        0.07535        0.00000
+O          0.00000        0.57695        0.00000
+O         -1.08211       -0.49387        0.00000
+H         -0.49463       -1.26742        0.00000
+}
+
+set basis pcseg-0
+set reference uhf
+set level_shift 0.5
+set level_shift_cutoff 1e-5
+set diis false
+set maxiter 1000
+
+energy('scf')
+compare_values(-224.2385882396446561, psi4.variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
+
+--------------------------------------------------------------------------
+
+Scratch directory: /home/work/scratch/
+
+*** tstart() called on thinkpad
+*** at Mon Jul  5 17:19:44 2021
+
+   => Loading Basis Set <=
+
+    Name: PCSEG-0
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-3 entry O          line   103 file /home/work/psi4/install/share/psi4/basis/pcseg-0.gbs 
+    atoms 4   entry H          line    13 file /home/work/psi4/install/share/psi4/basis/pcseg-0.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        4 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            1.133928990446     0.049698421622     0.000000000000    15.994914619570
+         O           -0.010011009554     0.551298421622     0.000000000000    15.994914619570
+         O           -1.092121009554    -0.519521578378     0.000000000000    15.994914619570
+         H           -0.504641009554    -1.293071578378     0.000000000000     1.007825032230
+
+  Running in cs symmetry.
+
+  Rotational constants: A =      2.25568  B =      0.38904  C =      0.33181 [cm^-1]
+  Rotational constants: A =  67623.45433  B =  11663.05197  C =   9947.41601 [MHz]
+  Nuclear repulsion =   72.673692676808287
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 25
+  Nalpha       = 13
+  Nbeta        = 12
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS disabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: PCSEG-0
+    Blend: PCSEG-0
+    Number of shells: 17
+    Number of basis functions: 29
+    Number of Cartesian functions: 29
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+   => Loading Basis Set <=
+
+    Name: (PCSEG-0 AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1-3 entry O          line   318 file /home/work/psi4/install/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 4   entry H          line    18 file /home/work/psi4/install/share/psi4/basis/def2-universal-jkfit.gbs 
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.002 GiB; user supplied 0.366 GiB. Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               4
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.4756
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (PCSEG-0 AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 81
+    Number of basis functions: 249
+    Number of Cartesian functions: 299
+    Spherical Harmonics?: true
+    Max angular momentum: 4
+
+  Minimum eigenvalue in the overlap matrix is 2.7577047861E-02.
+  Reciprocal condition number of the overlap matrix is 8.1496778035E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A'        23      23 
+     A"         6       6 
+   -------------------------
+    Total      29      29
+   -------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-UHF iter SAD:  -223.35085661142995   -2.23351e+02   0.00000e+00 
+   @DF-UHF iter   1:  -224.08708183277176   -7.36225e-01   2.11511e-02 SHIFT
+   @DF-UHF iter   2:  -224.19179718025120   -1.04715e-01   9.69242e-03 SHIFT
+   @DF-UHF iter   3:  -224.21365769803475   -2.18605e-02   3.96766e-03 SHIFT
+   @DF-UHF iter   4:  -224.22119253376817   -7.53484e-03   2.58902e-03 SHIFT
+   @DF-UHF iter   5:  -224.22507004899640   -3.87752e-03   1.71635e-03 SHIFT
+   @DF-UHF iter   6:  -224.22757410042882   -2.50405e-03   1.47443e-03 SHIFT
+   @DF-UHF iter   7:  -224.22935077461923   -1.77667e-03   1.23915e-03 SHIFT
+   @DF-UHF iter   8:  -224.23068305365962   -1.33228e-03   1.10595e-03 SHIFT
+   @DF-UHF iter   9:  -224.23171933117453   -1.03628e-03   9.86260e-04 SHIFT
+   @DF-UHF iter  10:  -224.23254591616265   -8.26585e-04   8.92748e-04 SHIFT
+   @DF-UHF iter  11:  -224.23321628433291   -6.70368e-04   8.10013e-04 SHIFT
+   @DF-UHF iter  12:  -224.23376581931964   -5.49535e-04   7.38028e-04 SHIFT
+   @DF-UHF iter  13:  -224.23421970581410   -4.53886e-04   6.73838e-04 SHIFT
+   @DF-UHF iter  14:  -224.23459700415708   -3.77298e-04   6.16990e-04 SHIFT
+   @DF-UHF iter  15:  -224.23491279428094   -3.15790e-04   5.66846e-04 SHIFT
+   @DF-UHF iter  16:  -224.23517929918233   -2.66505e-04   5.23124e-04 SHIFT
+   @DF-UHF iter  17:  -224.23540651962935   -2.27220e-04   4.85480e-04 SHIFT
+   @DF-UHF iter  18:  -224.23560263381154   -1.96114e-04   4.53537e-04 SHIFT
+   @DF-UHF iter  19:  -224.23577428837430   -1.71655e-04   4.26831e-04 SHIFT
+   @DF-UHF iter  20:  -224.23592683543822   -1.52547e-04   4.04826e-04 SHIFT
+   @DF-UHF iter  21:  -224.23606453790609   -1.37702e-04   3.86928e-04 SHIFT
+   @DF-UHF iter  22:  -224.23619075063283   -1.26213e-04   3.72523e-04 SHIFT
+   @DF-UHF iter  23:  -224.23630807965981   -1.17329e-04   3.61002e-04 SHIFT
+   @DF-UHF iter  24:  -224.23641852029454   -1.10441e-04   3.51791e-04 SHIFT
+   @DF-UHF iter  25:  -224.23652357495240   -1.05055e-04   3.44371e-04 SHIFT
+   @DF-UHF iter  26:  -224.23662435220339   -1.00777e-04   3.38289e-04 SHIFT
+   @DF-UHF iter  27:  -224.23672164892665   -9.72967e-05   3.33161e-04 SHIFT
+   @DF-UHF iter  28:  -224.23681601770727   -9.43688e-05   3.28671e-04 SHIFT
+   @DF-UHF iter  29:  -224.23690782166801   -9.18040e-05   3.24564e-04 SHIFT
+   @DF-UHF iter  30:  -224.23699727879830   -8.94571e-05   3.20639e-04 SHIFT
+   @DF-UHF iter  31:  -224.23708449764675   -8.72188e-05   3.16739e-04 SHIFT
+   @DF-UHF iter  32:  -224.23716950598978   -8.50083e-05   3.12746e-04 SHIFT
+   @DF-UHF iter  33:  -224.23725227382477   -8.27678e-05   3.08573e-04 SHIFT
+   @DF-UHF iter  34:  -224.23733273179928   -8.04580e-05   3.04158e-04 SHIFT
+   @DF-UHF iter  35:  -224.23741078596140   -7.80542e-05   2.99458e-04 SHIFT
+   @DF-UHF iter  36:  -224.23748632953144   -7.55436e-05   2.94450e-04 SHIFT
+   @DF-UHF iter  37:  -224.23755925224660   -7.29227e-05   2.89121e-04 SHIFT
+   @DF-UHF iter  38:  -224.23762944770061   -7.01955e-05   2.83470e-04 SHIFT
+   @DF-UHF iter  39:  -224.23769681901251   -6.73713e-05   2.77505e-04 SHIFT
+   @DF-UHF iter  40:  -224.23776128307955   -6.44641e-05   2.71241e-04 SHIFT
+   @DF-UHF iter  41:  -224.23782277363168   -6.14906e-05   2.64698e-04 SHIFT
+   @DF-UHF iter  42:  -224.23788124324795   -5.84696e-05   2.57901e-04 SHIFT
+   @DF-UHF iter  43:  -224.23793666448805   -5.54212e-05   2.50877e-04 SHIFT
+   @DF-UHF iter  44:  -224.23798903026776   -5.23658e-05   2.43656e-04 SHIFT
+   @DF-UHF iter  45:  -224.23803835359081   -4.93233e-05   2.36271e-04 SHIFT
+   @DF-UHF iter  46:  -224.23808466675194   -4.63132e-05   2.28754e-04 SHIFT
+   @DF-UHF iter  47:  -224.23812802011020   -4.33534e-05   2.21138e-04 SHIFT
+   @DF-UHF iter  48:  -224.23816848052937   -4.04604e-05   2.13455e-04 SHIFT
+   @DF-UHF iter  49:  -224.23820612957641   -3.76490e-05   2.05738e-04 SHIFT
+   @DF-UHF iter  50:  -224.23824106156101   -3.49320e-05   1.98016e-04 SHIFT
+   @DF-UHF iter  51:  -224.23827338148894   -3.23199e-05   1.90320e-04 SHIFT
+   @DF-UHF iter  52:  -224.23830320299825   -2.98215e-05   1.82676e-04 SHIFT
+   @DF-UHF iter  53:  -224.23833064633527   -2.74433e-05   1.75111e-04 SHIFT
+   @DF-UHF iter  54:  -224.23835583641244   -2.51901e-05   1.67647e-04 SHIFT
+   @DF-UHF iter  55:  -224.23837890099398   -2.30646e-05   1.60306e-04 SHIFT
+   @DF-UHF iter  56:  -224.23839996902939   -2.10680e-05   1.53108e-04 SHIFT
+   @DF-UHF iter  57:  -224.23841916915848   -1.92001e-05   1.46068e-04 SHIFT
+   @DF-UHF iter  58:  -224.23843662839820   -1.74592e-05   1.39201e-04 SHIFT
+   @DF-UHF iter  59:  -224.23845247101585   -1.58426e-05   1.32521e-04 SHIFT
+   @DF-UHF iter  60:  -224.23846681758425   -1.43466e-05   1.26036e-04 SHIFT
+   @DF-UHF iter  61:  -224.23847978421929   -1.29666e-05   1.19755e-04 SHIFT
+   @DF-UHF iter  62:  -224.23849148197911   -1.16978e-05   1.13685e-04 SHIFT
+   @DF-UHF iter  63:  -224.23850201642296   -1.05344e-05   1.07830e-04 SHIFT
+   @DF-UHF iter  64:  -224.23851148730600   -9.47088e-06   1.02192e-04 SHIFT
+   @DF-UHF iter  65:  -224.23851998840010   -8.50109e-06   9.67747e-05 SHIFT
+   @DF-UHF iter  66:  -224.23852760742128   -7.61902e-06   9.15767e-05 SHIFT
+   @DF-UHF iter  67:  -224.23853442604945   -6.81863e-06   8.65973e-05 SHIFT
+   @DF-UHF iter  68:  -224.23854052002363   -6.09397e-06   8.18344e-05 SHIFT
+   @DF-UHF iter  69:  -224.23854595930061   -5.43928e-06   7.72848e-05 SHIFT
+   @DF-UHF iter  70:  -224.23855080826158   -4.84896e-06   7.29449e-05 SHIFT
+   @DF-UHF iter  71:  -224.23855512595625   -4.31769e-06   6.88100e-05 SHIFT
+   @DF-UHF iter  72:  -224.23855896637460   -3.84042e-06   6.48751e-05 SHIFT
+   @DF-UHF iter  73:  -224.23856237873511   -3.41236e-06   6.11345e-05 SHIFT
+   @DF-UHF iter  74:  -224.23856540778371   -3.02905e-06   5.75824e-05 SHIFT
+   @DF-UHF iter  75:  -224.23856809409705   -2.68631e-06   5.42126e-05 SHIFT
+   @DF-UHF iter  76:  -224.23857047438253   -2.38029e-06   5.10185e-05 SHIFT
+   @DF-UHF iter  77:  -224.23857258177384   -2.10739e-06   4.79935e-05 SHIFT
+   @DF-UHF iter  78:  -224.23857444611721   -1.86434e-06   4.51312e-05 SHIFT
+   @DF-UHF iter  79:  -224.23857609424428   -1.64813e-06   4.24246e-05 SHIFT
+   @DF-UHF iter  80:  -224.23857755023423   -1.45599e-06   3.98673e-05 SHIFT
+   @DF-UHF iter  81:  -224.23857883565859   -1.28542e-06   3.74525e-05 SHIFT
+   @DF-UHF iter  82:  -224.23857996981238   -1.13415e-06   3.51736e-05 SHIFT
+   @DF-UHF iter  83:  -224.23858096992834   -1.00012e-06   3.30245e-05 SHIFT
+   @DF-UHF iter  84:  -224.23858185137613   -8.81448e-07   3.09986e-05 SHIFT
+   @DF-UHF iter  85:  -224.23858262784660   -7.76470e-07   2.90900e-05 SHIFT
+   @DF-UHF iter  86:  -224.23858331151976   -6.83673e-07   2.72927e-05 SHIFT
+   @DF-UHF iter  87:  -224.23858391322022   -6.01700e-07   2.56010e-05 SHIFT
+   @DF-UHF iter  88:  -224.23858444255646   -5.29336e-07   2.40094e-05 SHIFT
+   @DF-UHF iter  89:  -224.23858490805014   -4.65494e-07   2.25125e-05 SHIFT
+   @DF-UHF iter  90:  -224.23858531725153   -4.09201e-07   2.11053e-05 SHIFT
+   @DF-UHF iter  91:  -224.23858567684502   -3.59593e-07   1.97827e-05 SHIFT
+   @DF-UHF iter  92:  -224.23858599274342   -3.15898e-07   1.85402e-05 SHIFT
+   @DF-UHF iter  93:  -224.23858627017208   -2.77429e-07   1.73731e-05 SHIFT
+   @DF-UHF iter  94:  -224.23858651374746   -2.43575e-07   1.62774e-05 SHIFT
+   @DF-UHF iter  95:  -224.23858672754375   -2.13796e-07   1.52488e-05 SHIFT
+   @DF-UHF iter  96:  -224.23858691515539   -1.87612e-07   1.42835e-05 SHIFT
+   @DF-UHF iter  97:  -224.23858707975066   -1.64595e-07   1.33778e-05 SHIFT
+   @DF-UHF iter  98:  -224.23858722412223   -1.44372e-07   1.25282e-05 SHIFT
+   @DF-UHF iter  99:  -224.23858735072906   -1.26607e-07   1.17315e-05 SHIFT
+   @DF-UHF iter 100:  -224.23858746173585   -1.11007e-07   1.09844e-05 SHIFT
+   @DF-UHF iter 101:  -224.23858755904737   -9.73115e-08   1.02840e-05 SHIFT
+   @DF-UHF iter 102:  -224.23858764433888   -8.52915e-08   9.62746e-06 
+   @DF-UHF iter 103:  -224.23858776402392   -1.19685e-07   8.83677e-06 
+   @DF-UHF iter 104:  -224.23858785947968   -9.54558e-08   7.98249e-06 
+   @DF-UHF iter 105:  -224.23858793599098   -7.65113e-08   7.18451e-06 
+   @DF-UHF iter 106:  -224.23858799735899   -6.13680e-08   6.44312e-06 
+   @DF-UHF iter 107:  -224.23858804658116   -4.92222e-08   5.77951e-06 
+   @DF-UHF iter 108:  -224.23858808605567   -3.94745e-08   5.17625e-06 
+   @DF-UHF iter 109:  -224.23858811770759   -3.16519e-08   4.63858e-06 
+   @DF-UHF iter 110:  -224.23858814308198   -2.53744e-08   4.15265e-06 
+   @DF-UHF iter 111:  -224.23858816342104   -2.03391e-08   3.71956e-06 
+   @DF-UHF iter 112:  -224.23858817972126   -1.63002e-08   3.32921e-06 
+   @DF-UHF iter 113:  -224.23858819278237   -1.30611e-08   2.98113e-06 
+   @DF-UHF iter 114:  -224.23858820324719   -1.04648e-08   2.66792e-06 
+   @DF-UHF iter 115:  -224.23858821163074   -8.38355e-09   2.38848e-06 
+   @DF-UHF iter 116:  -224.23858821834594   -6.71520e-09   2.13734e-06 
+   @DF-UHF iter 117:  -224.23858822372452   -5.37858e-09   1.91318e-06 
+   @DF-UHF iter 118:  -224.23858822803214   -4.30762e-09   1.71190e-06 
+   @DF-UHF iter 119:  -224.23858823148163   -3.44949e-09   1.53218e-06 
+   @DF-UHF iter 120:  -224.23858823424393   -2.76231e-09   1.37091e-06 
+   @DF-UHF iter 121:  -224.23858823645577   -2.21183e-09   1.22687e-06 
+   @DF-UHF iter 122:  -224.23858823822684   -1.77107e-09   1.09770e-06 
+   @DF-UHF iter 123:  -224.23858823964466   -1.41782e-09   9.82293e-07 
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   2.195160922E-01
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                9.695160922E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1Ap   -20.780930     2Ap   -20.736181     3Ap   -20.658041  
+       4Ap    -1.725688     5Ap    -1.381024     6Ap    -1.155883  
+       1App   -0.843483     7Ap    -0.794602     8Ap    -0.766041  
+       9Ap    -0.642270     2App   -0.616995    10Ap    -0.540110  
+       3App   -0.517419  
+
+    Alpha Virtual:                                                        
+
+      11Ap     0.158989    12Ap     0.215674    13Ap     0.396007  
+      14Ap     0.954769    15Ap     1.151690    16Ap     1.286340  
+      17Ap     1.440720     4App    1.540331    18Ap     1.654491  
+       5App    1.655719    19Ap     1.761334     6App    1.801847  
+      20Ap     1.845841    21Ap     1.960473    22Ap     2.028496  
+      23Ap     2.176301  
+
+    Beta Occupied:                                                        
+
+       1Ap   -20.749456     2Ap   -20.694884     3Ap   -20.674819  
+       4Ap    -1.639008     5Ap    -1.403696     6Ap    -1.053842  
+       7Ap    -0.746418     8Ap    -0.726930     1App   -0.675773  
+       9Ap    -0.637822     2App   -0.539083    10Ap    -0.510095  
+
+    Beta Virtual:                                                         
+
+       3App    0.091750    11Ap     0.160671    12Ap     0.200174  
+      13Ap     0.452006    14Ap     0.951192    15Ap     1.184301  
+      16Ap     1.296952    17Ap     1.442963     4App    1.613320  
+      18Ap     1.690067    19Ap     1.765653     5App    1.771861  
+      20Ap     1.860166     6App    1.867681    21Ap     1.938642  
+      22Ap     2.074757    23Ap     2.164063  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [    10,    2 ]
+    SOCC [     0,    1 ]
+
+  @DF-UHF Final Energy:  -224.23858823964466
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             72.6736926768082867
+    One-Electron Energy =                -452.6140660441296859
+    Two-Electron Energy =                 155.7017851276767431
+    Total Energy =                       -224.2385882396446561
+
+  UHF NO Occupations:
+  HONO-2 :    2App 1.9979774
+  HONO-1 :   10 Ap 1.8885452
+  HONO-0 :    3App 1.0000000
+  LUNO+0 :   11 Ap 0.1114548
+  LUNO+1 :    4App 0.0020226
+  LUNO+2 :   12 Ap 0.0015139
+  LUNO+3 :   13 Ap 0.0004765
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:    -0.4729      Y:    -1.2118      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.7254      Y:     0.4539      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.2525      Y:    -0.7579      Z:     0.0000     Total:     0.7988
+
+  Dipole Moment: [D]
+     X:     0.6417      Y:    -1.9263      Z:     0.0000     Total:     2.0304
+
+
+*** tstop() called on thinkpad at Mon Jul  5 17:19:45 2021
+Module time:
+	user time   =       1.22 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.22 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+    SCF Energy............................................................................PASSED
+
+    Psi4 stopped on: Monday, 05 July 2021 05:19PM
+    Psi4 wall time for execution: 0:00:00.43
+
+*** Psi4 exiting successfully. Buy a developer a beer!

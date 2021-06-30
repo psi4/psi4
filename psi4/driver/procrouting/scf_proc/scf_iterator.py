@@ -410,7 +410,12 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
                 # frac, MOM invoked here from Wfn::HF::find_occupation
                 core.timer_on("HF: Form C")
-                self.form_C()
+                level_shift = core.get_option("SCF", "LEVEL_SHIFT")
+                if level_shift > 0 and Dnorm > core.get_option('SCF', 'LEVEL_SHIFT_CUTOFF'):
+                    status.append("SHIFT")
+                    self.form_C(level_shift)
+                else:
+                    self.form_C()
                 core.timer_off("HF: Form C")
 
                 if self.MOM_performed_:

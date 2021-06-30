@@ -209,10 +209,10 @@ void RHF::form_G() {
     }
 
     G_->axpy(2.0, J_);
-    
+
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
-    
+
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
@@ -220,8 +220,8 @@ void RHF::form_G() {
         beta = 1.0;
     }
 #endif
-    
-    if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine()) ) {
+
+    if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
         G_->axpy(-alpha, K_);
     } else {
         K_->zero();
@@ -236,7 +236,6 @@ void RHF::form_G() {
     } else {
         wK_->zero();
     }
-
 }
 
 double RHF::compute_orbital_gradient(bool save_fock, int max_diis_vectors) {
@@ -286,8 +285,19 @@ void RHF::form_F() {
     }
 }
 
-void RHF::form_C() {
-    diagonalize_F(Fa_, Ca_, epsilon_a_);
+void RHF::form_C(double shift) {
+    if (shift == 0.0) {
+        diagonalize_F(Fa_, Ca_, epsilon_a_);
+    } else {
+        auto shifted_F = SharedMatrix(factory_->create_matrix("F"));
+        auto Cvir = Ca_subset("SO", "VIR");
+
+        auto SCvir = std::make_shared<Matrix>(nirrep_, S_->rowspi(), Cvir->colspi());
+        SCvir->gemm(false, false, 1.0, S_, Cvir, 0.0);
+        shifted_F->gemm(false, true, shift, SCvir, SCvir, 0.0);
+        shifted_F->add(Fa_);
+        diagonalize_F(shifted_F, Ca_, epsilon_a_);
+    }
     find_occupation();
 }
 
@@ -337,10 +347,10 @@ double RHF::compute_E() {
     }
 
     double exchange_E = 0.0;
-    
+
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
-    
+
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
@@ -348,7 +358,7 @@ double RHF::compute_E() {
         beta = 1.0;
     }
 #endif
-    
+
     if (functional_->is_x_hybrid()) {
         exchange_E -= alpha * Da_->vector_dot(K_);
     }
@@ -516,7 +526,7 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         }
         potential_->compute_Vx(Dx, Vx);
     }
-    
+
     std::vector<SharedMatrix> V_ext_pert;
     for (const auto& pert : external_cpscf_perturbations_) {
         if (print_ > 1) outfile->Printf("Adding external CPSCF contribution %s.\n", pert.first.c_str());
@@ -528,11 +538,11 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
 
     Cl.clear();
     Cr.clear();
-    
+
     // Build return vector, ohyea thats fun
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
-    
+
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
@@ -540,7 +550,7 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         beta = 1.0;
     }
 #endif
-    
+
     std::vector<SharedMatrix> ret;
     if (combine) {
         // Cocc_ni (4 * J[D]_nm - K[D]_nm - K[D]_mn) C_vir_ma
@@ -564,7 +574,9 @@ std::vector<SharedMatrix> RHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         }
     } else {
         if (jk_->get_wcombine()) {
-            throw PSIEXCEPTION("RHF::twoel_Hx user asked for wcombine but combine==false in SCF::twoel_Hx. Please set wcombine false in your input.");
+            throw PSIEXCEPTION(
+                "RHF::twoel_Hx user asked for wcombine but combine==false in SCF::twoel_Hx. Please set wcombine false "
+                "in your input.");
         }
         for (size_t i = 0; i < x_vec.size(); i++) {
             // always have a J-like piece (optionally include Xc)
