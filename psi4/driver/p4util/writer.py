@@ -199,13 +199,69 @@ def _write_nbo(self, name):
 
 core.Wavefunction.write_nbo = _write_nbo
 
-def _write_molden(self, name='out.molden', dovirtual=None):
+def _write_molden(self, filename=None, do_virtual=None, use_natural=False):
+
+    """Function to write wavefunction information in *wfn* to *filename* in
+    molden format. Will write natural orbitals from *density* (MO basis) if supplied.
+    Warning! Most post-SCF Wavefunctions do not build the density as this is often
+    much more costly than the energy. In addition, the Wavefunction density attributes
+    (Da and Db) return the SO density and must be transformed to the MO basis
+    to use with this function.
+
+    .. versionadded:: 0.5
+       *wfn* parameter passed explicitly
+
+    :returns: None
+
+    :type filename: string
+    :param filename: destination file name for MOLDEN file (optional)
+
+    :type do_virtual: bool
+    :param do_virtual: do write all the MOs to the MOLDEN file (true) or discard the unoccupied MOs, not valid for NO's (false) (optional)
+
+    :type use_natural: bool
+    :param use_natural: write natural orbitals determined from density on wavefunction
+
+    :examples:
+
+    1. Molden file with the Kohn-Sham orbitals of a DFT calculation.
+
+       >>> E, wfn = energy('b3lyp', return_wfn=True)
+       >>> wfn.molden('mycalc.molden')
+
+    2. Molden file with the natural orbitals of a CCSD computation. For correlated methods, an energy call will not compute the density.
+       "properties" or "gradient" must be called.
+
+       >>> E, wfn = properties('ccsd', return_wfn=True)
+       >>> wfn.molden('ccsd_no.molden', use_natural=True)
+
+    3. To supply a custom density matrix, manually set the Da and Db of the wavefunction.
+       This is used, for example, to write natural orbitals coming from a root computed
+       by a ``CIWavefunction`` computation, e.g., ``detci``, ``fci``, ``casscf``.`
+       The first two arguments of ``get_opdm`` can be set to ``n, n`` where n => 0 selects the root to
+       write out, provided these roots were computed, see :term:`NUM_ROOTS <NUM_ROOTS (DETCI)>`. The
+       third argument controls the spin (``"A"``, ``"B"`` or ``"SUM"``) and the final
+       boolean option determines whether inactive orbitals are included.
+
+       >>> E, wfn = energy('detci', return_wfn=True)
+       >>> wfn.Da() = wfn.get_opdm(0, 0, "A", True)
+       >>> wfn.Db() = wfn.get_opdm(0, 0, "B", True)
+       >>> molden(wfn, 'no_root1.molden', use_natural=True)
+
+    """
+
+    if filename is None:
+        filename = core.get_writer_file_prefix(self.molecule().name()) + ".molden"
+
+    if do_virtual is None:
+        do_virtual = bool(core.get_option("SCF", "MOLDEN_WITH_VIRTUAL"))
+    
     basisset = self.basisset()
     mol = self.molecule()
     # Header and geometry (Atom, Atom #, Z, x, y, z)
     mol_string = '[Molden Format]\n[Atoms] (AU)\n'
     for atom in range(mol.natom()):
-        mol_string += f"{mol.symbol(atom):2s}  {atom+1:2d}  {int(mol.Z(atom)):3d}   {mol.x(atom):20.12f} {mol.y(atom):20.12f} {mol.z(atom):20.12f}\n"
+        mol_string += f"{mol.symbol(atom):2s}  {atom+1:2d}  {int(mol.Z(atom)):3d}   {mol.x(atom):20.10f} {mol.y(atom):20.10f} {mol.z(atom):20.10f}\n"
 
     # Dump basis set
     mol_string += '[GTO]\n'
@@ -218,16 +274,49 @@ def _write_molden(self, name='out.molden', dovirtual=None):
             for prim in range(shell.nprimitive):
                 mol_string += f"{shell.exp(prim):20.10f} {shell.original_coef(prim):20.10f}\n"
         mol_string += '\n'
+    
+    # 
+    if use_natural:
+        # Alphas
+        nmopi = self.nmopi()
+        #MO_Da = core.Matrix("MO Alpha Density Matrix", nmopi, nmopi)
+        #MO_Da.transform(self.Da(), self.Ca().transpose())
+        MO_Da = self.Da_subset("MO") #MO_Da.transform(self.Da(), self.Ca())
+        NO_Ra = core.Matrix("NO Alpha Rotation Matrix", nmopi, nmopi)
+        occupation_a = core.Vector(nmopi)
+        MO_Da.diagonalize(NO_Ra, occupation_a, core.DiagonalizeOrder.Descending)
+        Ca = core.doublet(self.Ca(), NO_Ra, False, False)
+        epsilon_a = occupation_a
+        # Betas
+        #MO_Db = core.Matrix("MO Beta Density Matrix", nmopi, nmopi)
+        #MO_Db.transform(self.Db(), self.Cb().transpose())
+        MO_Db = self.Db_subset("MO")
+        MO_Db.print_out()
+        NO_Rb = core.Matrix("NO Beta Rotation Matrix", nmopi, nmopi)
+        occupation_b = core.Vector(nmopi)
+        MO_Db.diagonalize(NO_Rb, occupation_b, core.DiagonalizeOrder.Descending)
+        Cb = core.doublet(self.Cb(), NO_Rb, False, False)
+        epsilon_b = occupation_b
+
+    else:
+        Ca = self.Ca()
+        Cb = self.Cb()
+        occupation_a = self.occupation_a()
+        occupation_b = self.occupation_b()
+        epsilon_a = self.epsilon_a()
+        epsilon_b = self.epsilon_b()
+
 
     # Convert C matrices to AO MO basis. Ca_subset costs information about which symmetry an orbital originally had, which is why we can't use it.
     aotoso = self.aotoso()
-    Ca_ao_mo = core.doublet(aotoso, self.Ca(), False, False).nph
-    Cb_ao_mo = core.doublet(aotoso, self.Cb(), False, False).nph
+    Ca_ao_mo = core.doublet(aotoso, Ca, False, False).nph
+    Cb_ao_mo = core.doublet(aotoso, Cb, False, False).nph
     ao_overlap = self.mintshelper().ao_overlap().np
     # Convert from Psi4 internal normalization to the unit normalization expected by Molden
     ao_normalizer = ao_overlap.diagonal()**(-1 / 2)
     Ca_ao_mo = core.Matrix.from_array([(i.T / ao_normalizer).T for i in Ca_ao_mo])
     Cb_ao_mo = core.Matrix.from_array([(i.T / ao_normalizer).T for i in Cb_ao_mo])
+    
     # Reorder AO x MO matrix to fit Molden conventions
     '''
     Reordering expected by Molden
@@ -267,13 +356,13 @@ def _write_molden(self, name='out.molden', dovirtual=None):
         mol_string += '[5D]\n[9G]\n\n'
     ct = mol.point_group().char_table()
     mol_string += '[MO]\n'
-    mo_dim = self.nmopi() if dovirtual else (self.doccpi() + self.soccpi())
+    mo_dim = self.nmopi() if do_virtual else (self.doccpi() + self.soccpi())
     
     # Alphas. If Alphas and Betas are the same, then only Alphas with double occupation will be written (see line marked "***")
     mos = []
     for h in range(nirrep):
         for n in range(mo_dim[h]):
-            mos.append((self.epsilon_a().get(h, n), (h, n)))
+            mos.append((epsilon_a.get(h, n), (h, n)))
 
     # Sort mos based on energy
     def mosSort(element):
@@ -282,13 +371,13 @@ def _write_molden(self, name='out.molden', dovirtual=None):
 
     for i in range(len(mos)):
         h, n = mos[i][1]
-        mol_string += f" Sym= {ct.gamma(h).symbol():s}\n Ene= {mos[i][0]:24.17e}\n Spin= Alpha\n"
+        mol_string += f" Sym= {ct.gamma(h).symbol():s}\n Ene= {epsilon_a.get(h, n):24.10e}\n Spin= Alpha\n"
         if self.same_a_b_orbs() and self.epsilon_a() == self.epsilon_b() and self.same_a_b_dens():
-            mol_string += f" Occup= {round(self.occupation_a().get(h, n) + self.occupation_b().get(h, n), 17):24.17e}\n"
+            mol_string += f" Occup= {occupation_a.get(h, n) + occupation_b.get(h, n):24.10e}\n"
         else:
-            mol_string += f" Occup= {self.occupation_a().get(h, n):24.17e}\n"
+            mol_string += f" Occup= {occupation_a.get(h, n):24.10e}\n"
         for so in range(self.nso()):
-            mol_string += f"{so+1:3d} {Ca_ao_mo.get(h, so, n):24.17e}\n"
+            mol_string += f"{so+1:3d} {Ca_ao_mo.get(h, so, n):24.10e}\n"
 
     # Betas
     mos = []
@@ -299,13 +388,13 @@ def _write_molden(self, name='out.molden', dovirtual=None):
         mos.sort(key=mosSort)
         for i in range(len(mos)):
             h, n = mos[i][1]
-            mol_string += f" Sym= {ct.gamma(h).symbol():s}\n Ene= {self.epsilon_b().get(h, n):24.17e}\n Spin= Beta\n " \
-                          f"Occup= {self.occupation_b().get(h, n):24.17e}\n"
+            mol_string += f" Sym= {ct.gamma(h).symbol():s}\n Ene= {epsilon_b.get(h, n):24.10e}\n Spin= Beta\n " \
+                          f"Occup= {occupation_b.get(h, n):24.10e}\n"
             for so in range(self.nso()):
-                mol_string += f"{so+1:3d} {Cb_ao_mo.get(h, so, n):24.17e}\n"
+                mol_string += f"{so+1:3d} {Cb_ao_mo.get(h, so, n):24.10e}\n"
 
     # Write Molden string to file
-    with open(name,'w') as fn:
+    with open(filename,'w') as fn:
         fn.write(mol_string)
 
 core.Wavefunction.write_molden = _write_molden
