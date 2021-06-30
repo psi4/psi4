@@ -192,7 +192,7 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
         ``'on'`` for gradients and Hessians. Note that the calculation of total
         counterpoise corrected energies implies the calculation of the energies of
         monomers in the monomer basis, hence specifying ``return_total_data = True``
-        may carry out more computations than ``return_Total_data = False``.
+        may carry out more computations than ``return_total_data = False``.
 
     :type levels: dict
     :param levels: ``{1: 'ccsd(t)', 2: 'mp2', 'supersystem': 'scf'}`` || ``{1: 2, 2: 'ccsd(t)', 3: 'mp2'}`` || etc
@@ -776,7 +776,7 @@ def assemble_nbody_components(metadata, component_results):
     results = {}
     results['nbody'] = nbody_dict
     for b in ['cp', 'nocp', 'vmfc']:
-        if b in metadata['bsse_type_list'] and monomer_energies != 0.0:
+        if monomer_energies != 0.0:
             results['%s_energy_body_dict' % b] = eval('%s_energy_body_dict' % b)
             results['%s_energy_body_dict' % b] = {str(i) + b: j for i, j in results['%s_energy_body_dict' % b].items()}
         else:
