@@ -46,6 +46,12 @@
 using namespace psi;
 ;
 
+
+MoldenWriter::MoldenWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {
+    outfile->Printf("\tConstructing a MoldenWriter and then calling write instead of using `wfn.write_molden(name)`\n");
+    outfile->Printf("\tis both buggy and deprecated, and in 1.5 it will stop working.\n\n");
+}
+
 MoldenWriter::MoldenWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {}
 void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb,
                          std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA,

@@ -81,6 +81,22 @@ class PSI_API MoldenWriter {
                std::shared_ptr<Vector> OccB, bool dovirtual);
 };
 
+class PSI_API MoldenWriter {
+    std::shared_ptr<Wavefunction> wavefunction_;
+
+   public:
+    PSI_DEPRECATED(
+        "Constructing an MoldenWriter and then calling write instead of using `wfn.write_molden(name)` "
+        "is both buggy and deprecated, and in 1.5 it will stop working")
+    MoldenWriter(std::shared_ptr<Wavefunction> wavefunction);
+
+    PSI_DEPRECATED(
+        "Constructing an MoldenWriter and then calling write instead of using `wfn.write_molden(name)` "
+        "is both buggy and deprecated, and in 1.5 it will stop working")
+    void write(const std::string &filename);
+};
+
+
 class PSI_API MOWriter {
     std::shared_ptr<Wavefunction> wavefunction_;
     bool restricted_;

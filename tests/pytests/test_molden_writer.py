@@ -1,10 +1,8 @@
-import sys
 import pytest
 import psi4
 import os
 from distutils import dir_util
 import re
-from ast import literal_eval
 from psi4.driver.p4util.testing import compare_strings, compare_values, compare_integers
 from psi4.driver.p4util.exceptions import ValidationError
 
