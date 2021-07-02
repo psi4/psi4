@@ -51,7 +51,7 @@ void DFOCC::remp_iterations() {
     //==========================================================================================
     itr_occ = 0;
     conver = 1;  // Assuming that the iterations will converge
-    Elccd_old = Elccd;
+    Eremp_old = Eremp;
 
     // DIIS
     if (do_diis_ == 1) {
