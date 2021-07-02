@@ -67,7 +67,7 @@ bool DCTSolver::correct_mo_phases(bool dieOnError) {
     return error;
 }
 
-bool DCTSolver::correct_mo_phase_spincase(Matrix& temp, Matrix& overlap, const Matrix& old_C, Matrix& C, bool dieOnError) {
+bool DCTSolver::correct_mo_phase_spincase(Matrix& temp, Matrix& overlap, const Matrix& old_C, Matrix& C, bool dieOnError) const {
     temp.gemm(false, false, 1.0, ao_s_, C, 0.0);
     overlap.gemm(true, false, 1.0, old_C, temp, 0.0);
 
