@@ -4170,12 +4170,6 @@ void DFOCC::oremp_manager(){
 
 
 
-void DFOCC::remp_manager_cd(){
-  throw PSIEXCEPTION(" DUMMY! CD-REMP NOT YET IMPLEMENTED!");
-
-
-} // end remp manager cd
-
 
 void DFOCC::oremp_manager_cd(){
   throw PSIEXCEPTION(" DUMMY! CD-OREMP NOT YET IMPLEMENTED!");

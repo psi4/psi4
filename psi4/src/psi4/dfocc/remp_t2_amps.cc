@@ -145,7 +145,7 @@ void DFOCC::remp_t2_amps() {
         Ecorr = U->vector_dot(K);
         U.reset();
         K.reset();
-        Elccd = Eref + Ecorr;
+        Eremp = Eref + Ecorr;
 
         // Free ints
         bQijA.reset();
