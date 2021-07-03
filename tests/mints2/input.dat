@@ -3,7 +3,7 @@
 #! lowered to account for the different basis sets.
 
 refnuc =  204.01995818061    #TEST
-refscf = -228.95763005900784 #TEST
+refscf = -228.95763005664    #TEST
 
 molecule bz {
     X
