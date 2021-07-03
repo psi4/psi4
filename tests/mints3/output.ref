@@ -1,41 +1,56 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1rc3.dev5 
+                               Psi4 undefined 
 
-                         Git: Rev {master} 3fbd859 
+                         Git: Rev {sto-ng} 7a76e79 
 
 
-    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
-    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
-    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
-    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
-    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
-    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    J. Chem. Theory Comput. in press (2017).
-    (doi: 10.1021/acs.jctc.7b00174)
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 15 May 2017 03:37PM
+    Psi4 started on: Saturday, 03 July 2021 12:50AM
 
-    Process ID:  14566
-    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Process ID: 117272
+    Host:       thinkpad
+    PSIDATADIR: /home/work/psi4/install/share/psi4
     Memory:     500.0 MiB
-    Threads:    1
+    Threads:    4
     
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! Test individual integral objects for correctness.
-print_stdout(' Case Study Test of Integrals')
+print(' Case Study Test of Integrals')
 
 molecule h2o {
-  o
-  h 1 1.0
-  h 1 1.0 2 103.1
+  o@15.99491461956
+  h@1.00782503207  1 R
+  h@1.00782503207  1 R 2 103.1
 }
+
+h2o.R = 0.52917721067 / 0.52917720859
 
 input_directory = get_input_directory() + "/"                        #TEST
 
@@ -65,7 +80,7 @@ RefX.load(input_directory + "Lx-STO-3G.dat")                         #TEST
 RefY.load(input_directory + "Ly-STO-3G.dat")                         #TEST
 RefZ.load(input_directory + "Lz-STO-3G.dat")                         #TEST
 
-print_stdout("   -H2O STO-3G Angular Momentum Integrals:")           #TEST
+print("   -H2O STO-3G Angular Momentum Integrals:")           #TEST
 compare_matrices(RefX, Li[0], 12, "SO Lx")                           #TEST
 compare_matrices(RefY, Li[1], 12, "SO Ly")                           #TEST
 compare_matrices(RefZ, Li[2], 12, "SO Lz")                           #TEST
@@ -92,7 +107,7 @@ RefX.load(input_directory + "Lx-6-311Gss.dat")                       #TEST
 RefY.load(input_directory + "Ly-6-311Gss.dat")                       #TEST
 RefZ.load(input_directory + "Lz-6-311Gss.dat")                       #TEST
 
-print_stdout("   -H2O 6-311G** Angular Momentum Integrals:")         #TEST
+print("   -H2O 6-311G** Angular Momentum Integrals:")         #TEST
 compare_matrices(RefX, Li[0], 12, "SO Lx")                           #TEST
 compare_matrices(RefY, Li[1], 12, "SO Ly")                           #TEST
 compare_matrices(RefZ, Li[2], 12, "SO Lz")                           #TEST
@@ -119,7 +134,7 @@ RefX.load(input_directory + "Lx-cc-pVTZ.dat")                        #TEST
 RefY.load(input_directory + "Ly-cc-pVTZ.dat")                        #TEST
 RefZ.load(input_directory + "Lz-cc-pVTZ.dat")                        #TEST
 
-print_stdout("   -H2O cc-pVTZ Angular Momentum Integrals:")          #TEST
+print("   -H2O cc-pVTZ Angular Momentum Integrals:")          #TEST
 compare_matrices(RefX, Li[0], 12, "SO Lx")                           #TEST
 compare_matrices(RefY, Li[1], 12, "SO Ly")                           #TEST
 compare_matrices(RefZ, Li[2], 12, "SO Lz")                           #TEST
@@ -150,7 +165,7 @@ RefX.load(input_directory + "Px-STO-3G.dat")                         #TEST
 RefY.load(input_directory + "Py-STO-3G.dat")                         #TEST
 RefZ.load(input_directory + "Pz-STO-3G.dat")                         #TEST
 
-print_stdout("   -H2O STO-3G Nabla Integrals:")                      #TEST
+print("   -H2O STO-3G Nabla Integrals:")                      #TEST
 compare_matrices(RefX, Pi[0], 12, "SO Px")                           #TEST
 compare_matrices(RefY, Pi[1], 12, "SO Py")                           #TEST
 compare_matrices(RefZ, Pi[2], 12, "SO Pz")                           #TEST
@@ -177,7 +192,7 @@ RefX.load(input_directory + "Px-6-311Gss.dat")                       #TEST
 RefY.load(input_directory + "Py-6-311Gss.dat")                       #TEST
 RefZ.load(input_directory + "Pz-6-311Gss.dat")                       #TEST
 
-print_stdout("   -H2O 6-311G** Nabla Integrals:")                    #TEST
+print("   -H2O 6-311G** Nabla Integrals:")                    #TEST
 compare_matrices(RefX, Pi[0], 12, "SO Px")                           #TEST
 compare_matrices(RefY, Pi[1], 12, "SO Py")                           #TEST
 compare_matrices(RefZ, Pi[2], 12, "SO Pz")                           #TEST
@@ -204,79 +219,82 @@ RefX.load(input_directory + "Px-cc-pVTZ.dat")                        #TEST
 RefY.load(input_directory + "Py-cc-pVTZ.dat")                        #TEST
 RefZ.load(input_directory + "Pz-cc-pVTZ.dat")                        #TEST
 
-print_stdout("   -H2O cc-pVTZ Nabla Integrals:")                     #TEST
+print("   -H2O cc-pVTZ Nabla Integrals:")                     #TEST
 compare_matrices(RefX, Pi[0], 12, "SO Px")                           #TEST
 compare_matrices(RefY, Pi[1], 12, "SO Py")                           #TEST
 compare_matrices(RefZ, Pi[2], 12, "SO Pz")                           #TEST
 --------------------------------------------------------------------------
+Molecule: geometry: Molecule is not complete, please use 'update_geometry'
+                    once all variables are set.
+Molecule: Setting geometry variable R to 1.000000
    => Loading Basis Set <=
 
     Name: STO-3G
     Role: ORBITAL
-    Keyword: BASIS
-    atoms 1   entry O          line    80 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
-    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    Keyword: None
+    atoms 1   entry O          line    79 file /home/work/psi4/install/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    17 file /home/work/psi4/install/share/psi4/basis/sto-3g.gbs 
 
-    There are an even number of electrons - assuming singlet.
-    Specify the multiplicity in the molecule input block.
-
-	SO Lx.............................................................PASSED
-	SO Ly.............................................................PASSED
-	SO Lz.............................................................PASSED
+    SO Lx.................................................................................PASSED
+    SO Ly.................................................................................PASSED
+    SO Lz.................................................................................PASSED
    => Loading Basis Set <=
 
     Name: 6-311G**
     Role: ORBITAL
-    Keyword: BASIS
-    atoms 1   entry O          line   150 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-311gss.gbs 
-    atoms 2-3 entry H          line    31 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-311gss.gbs 
+    Keyword: None
+    atoms 1   entry O          line   151 file /home/work/psi4/install/share/psi4/basis/6-311gss.gbs 
+    atoms 2-3 entry H          line    32 file /home/work/psi4/install/share/psi4/basis/6-311gss.gbs 
 
-	SO Lx.............................................................PASSED
-	SO Ly.............................................................PASSED
-	SO Lz.............................................................PASSED
+    SO Lx.................................................................................PASSED
+    SO Ly.................................................................................PASSED
+    SO Lz.................................................................................PASSED
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
-    Keyword: BASIS
-    atoms 1   entry O          line   247 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvtz.gbs 
-    atoms 2-3 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvtz.gbs 
+    Keyword: None
+    atoms 1   entry O          line   262 file /home/work/psi4/install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 2-3 entry H          line    23 file /home/work/psi4/install/share/psi4/basis/cc-pvtz.gbs 
 
-	SO Lx.............................................................PASSED
-	SO Ly.............................................................PASSED
-	SO Lz.............................................................PASSED
+    SO Lx.................................................................................PASSED
+    SO Ly.................................................................................PASSED
+    SO Lz.................................................................................PASSED
    => Loading Basis Set <=
 
     Name: STO-3G
     Role: ORBITAL
-    Keyword: BASIS
-    atoms 1   entry O          line    80 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
-    atoms 2-3 entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
+    Keyword: None
+    atoms 1   entry O          line    79 file /home/work/psi4/install/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    17 file /home/work/psi4/install/share/psi4/basis/sto-3g.gbs 
 
-	SO Px.............................................................PASSED
-	SO Py.............................................................PASSED
-	SO Pz.............................................................PASSED
+    SO Px.................................................................................PASSED
+    SO Py.................................................................................PASSED
+    SO Pz.................................................................................PASSED
    => Loading Basis Set <=
 
     Name: 6-311G**
     Role: ORBITAL
-    Keyword: BASIS
-    atoms 1   entry O          line   150 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-311gss.gbs 
-    atoms 2-3 entry H          line    31 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/6-311gss.gbs 
+    Keyword: None
+    atoms 1   entry O          line   151 file /home/work/psi4/install/share/psi4/basis/6-311gss.gbs 
+    atoms 2-3 entry H          line    32 file /home/work/psi4/install/share/psi4/basis/6-311gss.gbs 
 
-	SO Px.............................................................PASSED
-	SO Py.............................................................PASSED
-	SO Pz.............................................................PASSED
+    SO Px.................................................................................PASSED
+    SO Py.................................................................................PASSED
+    SO Pz.................................................................................PASSED
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
-    Keyword: BASIS
-    atoms 1   entry O          line   247 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvtz.gbs 
-    atoms 2-3 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvtz.gbs 
+    Keyword: None
+    atoms 1   entry O          line   262 file /home/work/psi4/install/share/psi4/basis/cc-pvtz.gbs 
+    atoms 2-3 entry H          line    23 file /home/work/psi4/install/share/psi4/basis/cc-pvtz.gbs 
 
-	SO Px.............................................................PASSED
-	SO Py.............................................................PASSED
-	SO Pz.............................................................PASSED
+    SO Px.................................................................................PASSED
+    SO Py.................................................................................PASSED
+    SO Pz.................................................................................PASSED
+
+    Psi4 stopped on: Saturday, 03 July 2021 12:50AM
+    Psi4 wall time for execution: 0:00:00.24
 
 *** Psi4 exiting successfully. Buy a developer a beer!

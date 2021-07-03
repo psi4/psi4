@@ -1,29 +1,42 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1rc3.dev5 
+                               Psi4 undefined 
 
-                         Git: Rev {master} 3fbd859 
+                         Git: Rev {sto-ng} 7a76e79 
 
 
-    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
-    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
-    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
-    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
-    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
-    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    J. Chem. Theory Comput. in press (2017).
-    (doi: 10.1021/acs.jctc.7b00174)
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 15 May 2017 03:37PM
+    Psi4 started on: Saturday, 03 July 2021 12:48AM
 
-    Process ID:  14565
-    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Process ID: 116729
+    Host:       thinkpad
+    PSIDATADIR: /home/work/psi4/install/share/psi4
     Memory:     500.0 MiB
-    Threads:    1
+    Threads:    4
     
   ==> Input File <==
 
@@ -32,8 +45,8 @@
 #! and various basis sets are assigned to different atoms.  The symmetry of the molecule is automatically
 #! lowered to account for the different basis sets.
 
-refnuc =  204.01995737868003 #TEST
-refscf = -228.95763005849557 #TEST
+refnuc =  204.01995818061    #TEST
+refscf = -228.95763005664    #TEST
 
 molecule bz {
     X
@@ -149,31 +162,31 @@ scfenergy = energy('scf')
 
 compare_strings("c2v", bz.schoenflies_symbol(), "Point group")                        #TEST
 compare_values(refnuc, bz.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy") #TEST
-compare_values(refscf, scfenergy, 10, "SCF Energy")                                   #TEST
+compare_values(refscf, scfenergy, 9, "SCF Energy")                                   #TEST
 --------------------------------------------------------------------------
 
-*** tstart() called on psinet
-*** at Mon May 15 15:37:08 2017
+Scratch directory: /home/work/scratch/
+
+*** tstart() called on thinkpad
+*** at Sat Jul  3 00:48:31 2021
 
    => Loading Basis Set <=
 
-    Name: ANONYMOUS3C020E89
+    Name: ANONYMOUSAA55E4EF
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-2, 4, 6  entry C          line    11 inputblock my3-21g 
-    atoms 3, 5       entry C          line    60 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
-    atoms 7, 10      entry H          line    18 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/sto-3g.gbs 
-    atoms 8-9, 11-12 entry H          line     4 inputblock dz 
-
-    There are an even number of electrons - assuming singlet.
-    Specify the multiplicity in the molecule input block.
+    atoms 1-2, 4, 6  entry C          line    12 inputblock my3-21g 
+    atoms 3, 5       entry C          line    59 file /home/work/psi4/install/share/psi4/basis/sto-3g.gbs 
+    atoms 7, 10      entry H          line    17 file /home/work/psi4/install/share/psi4/basis/sto-3g.gbs 
+    atoms 8-9, 11-12 entry H          line     5 inputblock dz 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RHF Reference
-                        1 Threads,    500 MiB Core
+                        4 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -185,24 +198,24 @@ compare_values(refscf, scfenergy, 10, "SCF Energy")                             
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           C         -0.000000000000     0.000000000000    -1.391500000000    12.000000000000
-           C          1.205074349366     0.000000000000    -0.695750000000    12.000000000000
-           C          1.205074349366     0.000000000000     0.695750000000    12.000000000000
-           C          0.000000000000    -0.000000000000     1.391500000000    12.000000000000
-           C         -1.205074349366    -0.000000000000     0.695750000000    12.000000000000
-           C         -1.205074349366    -0.000000000000    -0.695750000000    12.000000000000
-           H          0.000000000000     0.000000000000    -2.471500000000     1.007825032070
-           H          2.140381785453     0.000000000000    -1.235750000000     1.007825032070
-           H          2.140381785453     0.000000000000     1.235750000000     1.007825032070
-           H          0.000000000000     0.000000000000     2.471500000000     1.007825032070
-           H         -2.140381785453    -0.000000000000     1.235750000000     1.007825032070
-           H         -2.140381785453    -0.000000000000    -1.235750000000     1.007825032070
+         C            0.000000000000     0.000000000000    -1.391500000000    12.000000000000
+         C            1.205074349366     0.000000000000    -0.695750000000    12.000000000000
+         C            1.205074349366     0.000000000000     0.695750000000    12.000000000000
+         C            0.000000000000    -0.000000000000     1.391500000000    12.000000000000
+         C           -1.205074349366    -0.000000000000     0.695750000000    12.000000000000
+         C           -1.205074349366    -0.000000000000    -0.695750000000    12.000000000000
+         H           -0.000000000000     0.000000000000    -2.471500000000     1.007825032230
+         H            2.140381785453     0.000000000000    -1.235750000000     1.007825032230
+         H            2.140381785453     0.000000000000     1.235750000000     1.007825032230
+         H            0.000000000000     0.000000000000     2.471500000000     1.007825032230
+         H           -2.140381785453    -0.000000000000     1.235750000000     1.007825032230
+         H           -2.140381785453    -0.000000000000    -1.235750000000     1.007825032230
 
   Running in c2v symmetry.
 
   Rotational constants: A =      0.19119  B =      0.19119  C =      0.09559 [cm^-1]
-  Rotational constants: A =   5731.60177  B =   5731.60177  C =   2865.80088 [MHz]
-  Nuclear repulsion =  204.019957378679948
+  Rotational constants: A =   5731.60181  B =   5731.60181  C =   2865.80091 [MHz]
+  Nuclear repulsion =  204.019958180606807
 
   Charge       = 0
   Multiplicity = 1
@@ -219,30 +232,17 @@ compare_values(refscf, scfenergy, 10, "SCF Energy")                             
   Guess Type is SAD.
   Energy threshold   = 1.00e-11
   Density threshold  = 1.00e-11
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
-  Basis Set: ANONYMOUS3C020E89
+  Basis Set: ANONYMOUSAA55E4EF
     Blend: DZ + MY3-21G + STO-3G
     Number of shells: 36
-    Number of basis function: 56
+    Number of basis functions: 56
     Number of Cartesian functions: 56
     Spherical Harmonics?: true
     Max angular momentum: 1
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A1        27      27       0       0       0       0
-     A2         3       3       0       0       0       0
-     B1        19      19       0       0       0       0
-     B2         7       7       0       0       0       0
-   -------------------------------------------------------
-    Total      56      56      21      21      21       0
-   -------------------------------------------------------
 
   ==> Integral Setup <==
 
@@ -255,53 +255,71 @@ compare_values(refscf, scfenergy, 10, "SCF Energy")                             
       Number of basis functions:        56
 
       Integral cutoff                 1.00e-12
-      Number of threads:                 1
+      Number of threads:                 4
 
   Performing in-core PK
   Using 2548812 doubles for integral storage.
-  We computed 207824 shell quartets total.
+  We computed 216755 shell quartets total.
   Whereas there are 222111 unique shell quartets.
+
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               375
+    Memory [MiB]:              375
     Schwarz Cutoff:          1E-12
 
-    OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 9.2557720051E-03.
-  Using Symmetric Orthogonalization.
+    OpenMP threads:              4
 
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+  Minimum eigenvalue in the overlap matrix is 8.4628143509E-03.
+  Reciprocal condition number of the overlap matrix is 2.1723296341E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A1        27      27 
+     A2         3       3 
+     B1        19      19 
+     B2         7       7 
+   -------------------------
+    Total      56      56
+   -------------------------
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:  -230.36343057005166   -2.30363e+02   1.20761e-01 
-   @RHF iter   1:  -228.81536845566649    1.54806e+00   1.23672e-02 
-   @RHF iter   2:  -228.94060097443679   -1.25233e-01   4.53076e-03 DIIS
-   @RHF iter   3:  -228.95464787588423   -1.40469e-02   2.00248e-03 DIIS
-   @RHF iter   4:  -228.95757072386556   -2.92285e-03   2.83152e-04 DIIS
-   @RHF iter   5:  -228.95762251174665   -5.17879e-05   6.60275e-05 DIIS
-   @RHF iter   6:  -228.95762855976690   -6.04802e-06   2.39148e-05 DIIS
-   @RHF iter   7:  -228.95762974507909   -1.18531e-06   1.05106e-05 DIIS
-   @RHF iter   8:  -228.95763002739147   -2.82312e-07   3.45907e-06 DIIS
-   @RHF iter   9:  -228.95763005773202   -3.03405e-08   6.64379e-07 DIIS
-   @RHF iter  10:  -228.95763005844503   -7.13015e-10   2.19828e-07 DIIS
-   @RHF iter  11:  -228.95763005849091   -4.58726e-11   4.55220e-08 DIIS
-   @RHF iter  12:  -228.95763005849409   -3.18323e-12   9.96678e-09 DIIS
-   @RHF iter  13:  -228.95763005849412   -2.84217e-14   1.31055e-09 DIIS
-   @RHF iter  14:  -228.95763005849437   -2.55795e-13   3.76407e-10 DIIS
-   @RHF iter  15:  -228.95763005849423    1.42109e-13   8.58645e-11 DIIS
-   @RHF iter  16:  -228.95763005849426   -2.84217e-14   2.16532e-11 DIIS
-   @RHF iter  17:  -228.95763005849443   -1.70530e-13   6.78921e-12 DIIS
+   @RHF iter SAD:  -227.07700569072060   -2.27077e+02   0.00000e+00 
+   @RHF iter   1:  -228.85064914350966   -1.77364e+00   1.23612e-02 DIIS
+   @RHF iter   2:  -228.93176216773884   -8.11130e-02   6.48225e-03 DIIS
+   @RHF iter   3:  -228.95695890598063   -2.51967e-02   8.58972e-04 DIIS
+   @RHF iter   4:  -228.95755047000031   -5.91564e-04   3.33519e-04 DIIS
+   @RHF iter   5:  -228.95762540828119   -7.49383e-05   4.81701e-05 DIIS
+   @RHF iter   6:  -228.95762902593819   -3.61766e-06   1.95334e-05 DIIS
+   @RHF iter   7:  -228.95762980236594   -7.76428e-07   9.55915e-06 DIIS
+   @RHF iter   8:  -228.95763003901536   -2.36649e-07   2.81189e-06 DIIS
+   @RHF iter   9:  -228.95763005502459   -1.60092e-08   9.05013e-07 DIIS
+   @RHF iter  10:  -228.95763005649678   -1.47219e-09   2.76343e-07 DIIS
+   @RHF iter  11:  -228.95763005663412   -1.37334e-10   3.08287e-08 DIIS
+   @RHF iter  12:  -228.95763005663559   -1.47793e-12   6.13490e-09 DIIS
+   @RHF iter  13:  -228.95763005663534    2.55795e-13   9.27302e-10 DIIS
+   @RHF iter  14:  -228.95763005663520    1.42109e-13   2.16847e-10 DIIS
+   @RHF iter  15:  -228.95763005663534   -1.42109e-13   6.92110e-11 DIIS
+   @RHF iter  16:  -228.95763005663531    2.84217e-14   1.10872e-11 DIIS
+   @RHF iter  17:  -228.95763005663497    3.41061e-13   2.81293e-12 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -309,7 +327,7 @@ compare_values(refscf, scfenergy, 10, "SCF Energy")                             
        3A1   -11.162535     4A1   -11.103895     2B1   -11.103869  
        5A1    -1.147257     3B1    -1.008852     6A1    -1.006576  
        4B1    -0.818283     7A1    -0.815338     8A1    -0.709077  
-       9A1    -0.632936     5B1    -0.614328    10A1    -0.583773  
+       9A1    -0.632936     5B1    -0.614329    10A1    -0.583773  
        6B1    -0.583683     1B2    -0.501267    11A1    -0.483426  
        7B1    -0.483356     2B2    -0.335289     1A2    -0.327204  
 
@@ -332,51 +350,49 @@ compare_values(refscf, scfenergy, 10, "SCF Energy")                             
              A1    A2    B1    B2 
     DOCC [    11,    1,    7,    2 ]
 
-  Energy converged.
-
-  @RHF Final Energy:  -228.95763005849443
+  @RHF Final Energy:  -228.95763005663497
 
    => Energetics <=
 
-    Nuclear Repulsion Energy =            204.0199573786799476
-    One-Electron Energy =                -712.0955730520162206
-    Two-Electron Energy =                 279.1179856148418708
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                       -228.9576300584944306
+    Nuclear Repulsion Energy =            204.0199581806068068
+    One-Electron Energy =                -712.0955747105474529
+    Two-Electron Energy =                 279.1179864733056775
+    Total Energy =                       -228.9576300566349687
+
+Computation Completed
 
 
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.0000
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
-  Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: [e a0]
      X:     0.0000      Y:     0.0000      Z:     0.2124
 
-  Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.2124     Total:     0.2124
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.2124     Total:     0.2124
 
-  Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     0.5400     Total:     0.5400
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     0.5400     Total:     0.5400
 
 
-*** tstop() called on psinet at Mon May 15 15:37:10 2017
+*** tstop() called on thinkpad at Sat Jul  3 00:48:31 2021
 Module time:
-	user time   =       1.62 seconds =       0.03 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       2.18 seconds =       0.04 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.62 seconds =       0.03 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
-	Point group.......................................................PASSED
-	Nuclear repulsion energy..........................................PASSED
-	SCF Energy........................................................PASSED
+	user time   =       2.18 seconds =       0.04 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+    Point group...........................................................................PASSED
+    Nuclear repulsion energy..............................................................PASSED
+    SCF Energy............................................................................PASSED
+
+    Psi4 stopped on: Saturday, 03 July 2021 12:48AM
+    Psi4 wall time for execution: 0:00:00.63
 
 *** Psi4 exiting successfully. Buy a developer a beer!
