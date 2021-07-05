@@ -72,8 +72,8 @@ void DFOCC::remp_t2_amps() {
         Tnew->axpy(X, 2.0);
         X.reset();
 
-        // new: copy Tnew to
-        Tnew_MP2= SharedTensor2d(new Tensor2d("New T2_MP1 (IA|JB)", naoccA,navirA,naoccA,navirA));
+        // new: copy Tnew to Tnew_MP2
+        Tnew_MP2= SharedTensor2d(new Tensor2d("New T2_MP2 (IA|JB)", naoccA,navirA,naoccA,navirA));
         Tnew_MP2->copy(Tnew); // create a copy of the MP2 residuum
         Tnew->zero();
 
@@ -208,6 +208,11 @@ void DFOCC::remp_t2_amps() {
         Tnew->sort(1324, X, 1.0, 1.0);
         X.reset();
 
+        // new: copy Tnew to Tnew_MP2
+        Tnew_MP2= SharedTensor2d(new Tensor2d("New T2_MP2 <IJ|AB>", naoccA,naoccA,navirA,navirA));
+        Tnew_MP2->copy(Tnew); // create a copy of the MP2 residuum
+        Tnew->zero();
+
         // Write and close
         Tnew->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
         Tnew.reset();
@@ -224,6 +229,12 @@ void DFOCC::remp_t2_amps() {
         // Denom
         Tnew = SharedTensor2d(new Tensor2d("New T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
         Tnew->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+
+        //The RE part is now finished and read-in again
+        Tnew->scale(1.0E0-remp_a); //CSB scale the RE-ony part by 1-A
+        Tnew->add(Tnew_MP2);
+        Tnew_MP2.reset();
+
         Tnew->apply_denom(nfrzc, noccA, FockA);
         Tnew->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
 
@@ -278,6 +289,11 @@ void DFOCC::remp_t2_amps() {
         Tnew->sort(1324, X, 1.0, 1.0);
         X.reset();
 
+        // new: copy Tnew to Tnew_MP2
+        Tnew_MP2= SharedTensor2d(new Tensor2d("New T2_MP2 <ij|ab>", naoccB,naoccB,navirB,navirB));
+        Tnew_MP2->copy(Tnew); // create a copy of the MP2 residuum
+        Tnew->zero();
+
         // write and close
         Tnew->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
         Tnew.reset();
@@ -294,6 +310,12 @@ void DFOCC::remp_t2_amps() {
         // Denom
         Tnew = SharedTensor2d(new Tensor2d("New T2 <ij|ab>", naoccB, naoccB, navirB, navirB));
         Tnew->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+
+        //The RE part is now finished and read-in again
+        Tnew->scale(1.0E0-remp_a); //CSB scale the RE-ony part by 1-A
+        Tnew->add(Tnew_MP2);
+        Tnew_MP2.reset();
+
         Tnew->apply_denom(nfrzc, noccB, FockB);
         Tnew->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
 
@@ -339,6 +361,11 @@ void DFOCC::remp_t2_amps() {
         Tnew->contract424(1, 1, T, FijA, -1.0, 1.0);
         T.reset();
 
+        // new: copy Tnew to Tnew_MP2
+        Tnew_MP2= SharedTensor2d(new Tensor2d("New T2_MP2 <Ij|Ab>", naoccA,naoccB,navirA,navirB));
+        Tnew_MP2->copy(Tnew); // create a copy of the MP2 residuum
+        Tnew->zero();
+
         // write and close
         Tnew->write(psio_, PSIF_DFOCC_AMPS);
         Tnew.reset();
@@ -355,6 +382,11 @@ void DFOCC::remp_t2_amps() {
         // Denom
         Tnew = SharedTensor2d(new Tensor2d("New T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
         Tnew->read(psio_, PSIF_DFOCC_AMPS);
+        //The RE part is now finished and read-in again
+        Tnew->scale(1.0E0-remp_a); //CSB scale the RE-ony part by 1-A
+        Tnew->add(Tnew_MP2);
+        Tnew_MP2.reset();
+
         Tnew->apply_denom_os(nfrzc, noccA, noccB, FockA, FockB);
         Tnew->write(psio_, PSIF_DFOCC_AMPS);
 
@@ -457,7 +489,7 @@ void DFOCC::remp_t2_amps() {
         K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ||AB>", naoccA, naoccA, navirA, navirA));
         tei_pqrs_anti_symm_direct(K, M);
         M.reset();
-        ElccdAA = 0.25 * T->vector_dot(K);
+        ErempAA = 0.25 * T->vector_dot(K);
         K.reset();
 
         // Form T2(IA|JB)
@@ -486,7 +518,7 @@ void DFOCC::remp_t2_amps() {
         K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <ij||ab>", naoccB, naoccB, navirB, navirB));
         tei_pqrs_anti_symm_direct(K, M);
         M.reset();
-        ElccdBB = 0.25 * T->vector_dot(K);
+        ErempBB = 0.25 * T->vector_dot(K);
         K.reset();
 
         // Form T2(ia|jb)
@@ -512,12 +544,12 @@ void DFOCC::remp_t2_amps() {
         K = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <Ij|Ab>", naoccA, naoccB, navirA, navirB));
         K->sort(1324, L, 1.0, 0.0);
         L.reset();
-        ElccdAB = T->vector_dot(K);
+        ErempAB = T->vector_dot(K);
         K.reset();
 
         // Overall energy
-        Ecorr = ElccdAA + ElccdBB + ElccdAB;
-        Elccd = Eref + Ecorr;
+        Ecorr = ErempAA + ErempBB + ErempAB;
+        Eremp = Eref + Ecorr;
 
         // Form T2(IA|jb)
         U = SharedTensor2d(new Tensor2d("T2 (IA|jb)", naoccA, navirA, naoccB, navirB));

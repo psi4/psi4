@@ -3393,9 +3393,9 @@ void DFOCC::remp_manager_cd() {
     outfile->Printf("\tSCF Energy (a.u.)                  : %20.14f\n", Escf);
     outfile->Printf("\tREF Energy (a.u.)                  : %20.14f\n", Eref);
     if (reference_ == "UNRESTRICTED") {
-        outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", ElccdAA);
-        outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", ElccdBB);
-        outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", ElccdAB);
+        outfile->Printf("\tAlpha-Alpha Contribution (a.u.)    : %20.14f\n", ErempAA);
+        outfile->Printf("\tBeta-Beta Contribution (a.u.)      : %20.14f\n", ErempBB);
+        outfile->Printf("\tAlpha-Beta Contribution (a.u.)     : %20.14f\n", ErempAB);
     }
     outfile->Printf("\tCD-REMP Correlation Energy (a.u.)  : %20.14f\n", Ecorr);
     outfile->Printf("\tCD-REMP Total Energy (a.u.)        : %20.14f\n", Eremp);

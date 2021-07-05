@@ -3696,7 +3696,7 @@ void DFOCC::remp_manager() {
         t1B = SharedTensor2d(new Tensor2d("T1_1 <i|a>", naoccB, navirB));
         t1_1st_sc();
     }
-    lccd_t2_1st_sc(); // BIS HIER
+    lccd_t2_1st_sc();
 
     outfile->Printf("\n");
     if (reference == "ROHF")
