@@ -354,8 +354,8 @@ class HF : public Wavefunction {
     /// Form the guess (guarantees C, D, and E)
     virtual void guess();
 
-    /// Compute the MO coefficients (C_)
-    virtual void form_C();
+    /// Compute the MO coefficients (C_) using level shift
+    virtual void form_C(double shift = 0.0);
     /** Computes the initial MO coefficients (default is to call form_C) */
     virtual void form_initial_C() { form_C(); }
 
@@ -416,10 +416,11 @@ class HF : public Wavefunction {
     // External potentials
     void clear_external_potentials() { external_potentials_.clear(); }
     void push_back_external_potential(const SharedMatrix& V) { external_potentials_.push_back(V); }
-    void set_external_cpscf_perturbation(const std::string name, PerturbedPotentialFunction fun) { external_cpscf_perturbations_[name] = fun; }
+    void set_external_cpscf_perturbation(const std::string name, PerturbedPotentialFunction fun) {
+        external_cpscf_perturbations_[name] = fun;
+    }
     void clear_external_cpscf_perturbations() { external_cpscf_perturbations_.clear(); }
     void compute_fvpi();
-
 };
 }  // namespace scf
 }  // namespace psi
