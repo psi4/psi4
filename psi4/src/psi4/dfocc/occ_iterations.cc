@@ -158,6 +158,7 @@ void DFOCC::occ_iterations() {
         //========================= Trans TEI ======================================================
         //==========================================================================================
         // DF
+//        outfile->Printf("transforming integrals...\n");
         if (do_cd == "FALSE") {
             timer_on("DF CC Integrals");
             trans_corr();
@@ -214,6 +215,14 @@ void DFOCC::occ_iterations() {
             timer_off("L2");
         }
 
+        else if (wfn_type_ == "DF-OREMP") {
+//            outfile->Printf("updating amplitudes...\n");
+            timer_on("T2");
+            Fint_zero();
+            remp_t2_amps();
+            timer_off("T2");
+        }
+
         //==========================================================================================
         //========================= PDMs ===========================================================
         //==========================================================================================
@@ -243,6 +252,14 @@ void DFOCC::occ_iterations() {
             sep_tpdm_cc();
         }
 
+        else if (wfn_type_ == "DF-OREMP") {
+//            outfile->Printf("Generating densities...\n");
+            lccd_pdm_3index_intr();
+            omp3_opdm();
+            oremp_tpdm();
+            sep_tpdm_cc();
+        }
+
         //==========================================================================================
         //========================= GFM ============================================================
         //==========================================================================================
@@ -268,7 +285,7 @@ void DFOCC::occ_iterations() {
             mp2l_energy();
         else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5")
             mp3l_energy();
-        else if (wfn_type_ == "DF-OLCCD" || wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)")
+        else if (wfn_type_ == "DF-OLCCD" || wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)" || wfn_type_ == "DF-OREMP")
             lccdl_energy();
 
         //==========================================================================================
@@ -305,7 +322,7 @@ void DFOCC::occ_iterations() {
         } else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5") {
             outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n", itr_occ, Emp3L, DE, rms_wog,
                             biggest_mograd, rms_t2);
-        } else if (wfn_type_ == "DF-OLCCD") {
+        } else if (wfn_type_ == "DF-OLCCD" || wfn_type_ == "DF-OREMP")
             outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n", itr_occ, ElccdL, DE, rms_wog,
                             biggest_mograd, rms_t2);
         } else if (wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)")

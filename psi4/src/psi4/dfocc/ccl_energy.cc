@@ -359,6 +359,7 @@ void DFOCC::lccdl_energy() {
 
     if (wfn_type_ == "DF-OLCCD") {
         ElccdL = Eref + EcorrL;
+        ErempL = ElccdL;
         DE = ElccdL - ElccdL_old;
     }
     else if (wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") {
