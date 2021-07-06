@@ -80,6 +80,7 @@ list(APPEND sources
   mp3_pdm_3index_intr.cc
   occ_iterations.cc
   olccd_tpdm.cc
+  oremp_tpdm.cc
   omp2_opdm.cc
   omp2_tpdm.cc
   omp3_opdm.cc

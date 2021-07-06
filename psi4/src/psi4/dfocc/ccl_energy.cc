@@ -356,6 +356,7 @@ void DFOCC::lccdl_energy() {
     }  // else if (reference_ == "UNRESTRICTED")
 
     ElccdL = Eref + EcorrL;
+    ErempL = ElccdL;
     DE = ElccdL - ElccdL_old;
 
     /*

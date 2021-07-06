@@ -125,6 +125,9 @@ void DFOCC::tpdm_tilde() {
             Gcorr->read(psio_, PSIF_DFOCC_DENS);
             G->gemm(true, false, Jmhalf, Gcorr, 1.0, 0.0);
             Gcorr.reset();
+            if (wfn_type_ == "DF-OREMP") {
+              G->scale(1.0E0-remp_a);
+            }
             G->write(psio_, PSIF_DFOCC_DENS);
             G.reset();
 
@@ -134,6 +137,9 @@ void DFOCC::tpdm_tilde() {
             Gcorr->read(psio_, PSIF_DFOCC_DENS, true, true);
             G->gemm(true, false, Jmhalf, Gcorr, 1.0, 0.0);
             Gcorr.reset();
+            if (wfn_type_ == "DF-OREMP") {
+              G->scale(1.0E0-remp_a);
+            }
             G->write(psio_, PSIF_DFOCC_DENS, true, true);
             G.reset();
         }

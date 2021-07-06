@@ -57,14 +57,14 @@ void DFOCC::lccd_pdm_3index_intr() {
         U = SharedTensor2d(new Tensor2d("U2 (IA|JB)", naoccA, navirA, naoccA, navirA));
         ccsd_u2_amps(U, T1);
 
-        // T(Q,ia) = \sum_{jb} b_jb^Q U_ij^ab = \sum_{jb} b(Q,jb) U(jb,ia)
+        // T(Q,ia) = \sum_{jb} b_jb^Q U_ij^ab = \sum_{jb} b(Q,jb) U(jb,ia)  //CSB eq. (45) or (43), resp.
         T = SharedTensor2d(new Tensor2d("T2 (Q|IA)", nQ, naoccA, navirA));
         T->gemm(false, false, bQiaA, U, 1.0, 0.0);
         T->write(psio_, PSIF_DFOCC_AMPS);
         T.reset();
 
         // Build G_mi and G_ae
-        // G_mi = \sum_{n,e,f} U_mn^ef L_in^ef = U(mn,ef) L(in,ef)
+        // G_mi = \sum_{n,e,f} U_mn^ef L_in^ef = U(mn,ef) L(in,ef) //CSB correlation OPDM eq. (31) or (32), resp.
         T = SharedTensor2d(new Tensor2d("U2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
         T->sort(1324, U, 1.0, 0.0);
         U.reset();
@@ -72,13 +72,13 @@ void DFOCC::lccd_pdm_3index_intr() {
         L->sort(1324, T1, 1.0, 0.0);
         GijA->contract(false, true, naoccA, naoccA, naoccA * navirA * navirA, T, L, 1.0, 0.0);
 
-        // G_ae = -\sum_{m,n,f} U_mn^ef L_mn^af = L(mn,fa) U(mn,fe)
+        // G_ae = -\sum_{m,n,f} U_mn^ef L_mn^af = L(mn,fa) U(mn,fe) //CSB correlation OPDM eq. (32) or (33), resp.
         GabA->contract(true, false, navirA, navirA, naoccA * naoccA * navirA, L, T, -1.0, 0.0);
         T.reset();
         L.reset();
 
         // Build V_ijkl
-        // V_ijkl = \sum_{ef} T_ij^ef L_kl^ef
+        // V_ijkl = \sum_{ef} T_ij^ef L_kl^ef //CSB eq. (50)
         U = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
         U->sort(1324, T1, 1.0, 0.0);
         V = SharedTensor2d(new Tensor2d("V <IJ|KL>", naoccA, naoccA, naoccA, naoccA));
