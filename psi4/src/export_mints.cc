@@ -1158,6 +1158,7 @@ void export_mints(py::module& m) {
         .def("function_to_center", &BasisSet::function_to_center, "The atomic center for the i'th function", "i"_a)
         .def("nshell_on_center", &BasisSet::nshell_on_center, "Return the number of shells on a given center", "i"_a)
         .def("shell_on_center", &BasisSet::shell_on_center, "Return the i'th shell on center.", "c"_a, "i"_a)
+        .def("apply_hermite_normalization", &BasisSet::apply_hermite_normalization, "Renormalize all basis functions assuming that they represent Hermite Gaussians")
         .def("n_ecp_shell_on_center", &BasisSet::n_ecp_shell_on_center,
              "Return the number of ECP shells on a given center", "i"_a)
         .def("ecp_shell_on_center", &BasisSet::ecp_shell_on_center, "Return the i'th ECP shell on center.", "c"_a,
@@ -1562,7 +1563,11 @@ void export_mints(py::module& m) {
         .def("addCharge", &ExternalPotential::addCharge, "Add a charge Z at (x,y,z)", "Z"_a, "x"_a, "y"_a, "z"_a)
         .def("getCharges", &ExternalPotential::getCharges, "Get the vector of charge tuples")
         .def("appendCharges", &ExternalPotential::appendCharges, "Append a vector of charge tuples to a current ExternalPotential")
-        .def("addBasis", &ExternalPotential::addBasis, "Add a basis of S auxiliary functions iwth Df coefficients",
+        .def("addBasis", &ExternalPotential::addBasis, "Add a basis of auxiliary functions obtained by direct density fitting",
+             "basis"_a, "coefs"_a)
+        .def("addExchangeBasis", &ExternalPotential::addExchangeBasis, "Add a basis of auxiliary functions obtained to describe exchange via overlap integrals",
+             "basis"_a, "coefs"_a)
+        .def("addMultipoles", &ExternalPotential::addMultipoles, "Add a basis of arbitary multipoles with fixed coefficients",
              "basis"_a, "coefs"_a)
         .def("clear", &ExternalPotential::clear, "Reset the field to zero (eliminates all entries)")
         .def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix,
