@@ -120,6 +120,7 @@ class DCTSolver : public Wavefunction {
     // void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
     //        int r, int s, double value);
     bool correct_mo_phases(bool dieOnError = true);
+    bool correct_mo_phase_spincase(Matrix& temp, Matrix& overlap, const Matrix& old_C, Matrix& C, bool dieOnError = true) const;
     double compute_cumulant_residual();
     double compute_scf_error_vector();
     double update_scf_density(bool damp = false);

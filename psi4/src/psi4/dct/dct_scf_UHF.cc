@@ -57,20 +57,28 @@ namespace dct {
 bool DCTSolver::correct_mo_phases(bool dieOnError) {
     dct_timer_on("DCTSolver::correct_mo_phases()");
 
-    Matrix temp("temp", nirrep_, nsopi_, nsopi_);
-    Matrix overlap("Old - New Overlap", nirrep_, nsopi_, nsopi_);
+    Matrix temp("temp", nirrep_, nsopi_, nmopi_);
+    Matrix overlap("Old - New Overlap", nirrep_, nmopi_, nmopi_);
 
-    temp.gemm(true, false, 1.0, old_ca_, ao_s_, 0.0);
-    overlap.gemm(false, false, 1.0, temp, Ca_, 0.0);
-    temp.copy(Ca_);
-    std::map<int, int> mosUsed;
-    int offset = 0;
+    bool error = correct_mo_phase_spincase(temp, overlap, *old_ca_, *Ca_, dieOnError);
+    error = error && correct_mo_phase_spincase(temp, overlap, *old_cb_, *Cb_, dieOnError);
+
+    dct_timer_off("DCTSolver::correct_mo_phases()");
+    return error;
+}
+
+bool DCTSolver::correct_mo_phase_spincase(Matrix& temp, Matrix& overlap, const Matrix& old_C, Matrix& C, bool dieOnError) const {
+    temp.gemm(false, false, 1.0, ao_s_, C, 0.0);
+    overlap.gemm(true, false, 1.0, old_C, temp, 0.0);
+
+    temp.copy(C);
     for (int h = 0; h < nirrep_; ++h) {
-        for (int oldMO = 0; oldMO < nsopi_[h]; ++oldMO) {
+        std::map<int, int> mosUsed;
+        for (int oldMO = 0; oldMO < nmopi_[h]; ++oldMO) {
             int bestMO = 0;
             double maximumProjection = 0.0;
             double prefactor = 0.0;
-            for (int newMO = 0; newMO < nsopi_[h]; ++newMO) {
+            for (int newMO = 0; newMO < nmopi_[h]; ++newMO) {
                 double val = overlap.get(h, oldMO, newMO);
                 if (std::fabs(val) > maximumProjection) {
                     maximumProjection = std::fabs(val);
@@ -80,66 +88,23 @@ bool DCTSolver::correct_mo_phases(bool dieOnError) {
             }
             // Now we've found the MO to use, check it's not been used already then
             // copy it over.
-            if (mosUsed[bestMO + offset]++) {
+            if (mosUsed[bestMO]++) {
                 if (dieOnError) {
                     overlap.print();
-                    old_ca_->print();
+                    old_C.print();
                     temp.print();
-                    throw SanityCheckError("Duplicate MOs used in phase check", __FILE__, __LINE__);
+                    throw SanityCheckError("Two new MOs most resemble the same old MO. This has to be a bug.", __FILE__, __LINE__);
                 } else {
                     // Copy Ca back from temp
-                    Ca_->copy(temp);
-                    dct_timer_off("DCTSolver::correct_mo_phases()");
+                    C.copy(temp);
                     return false;
                 }
             }
             for (int so = 0; so < nsopi_[h]; ++so) {
-                Ca_->set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
+                C.set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
             }
         }
-        offset += nsopi_[h];
     }
-
-    temp.gemm(true, false, 1.0, old_cb_, ao_s_, 0.0);
-    overlap.gemm(false, false, 1.0, temp, Cb_, 0.0);
-    temp.copy(Cb_);
-    mosUsed.clear();
-    offset = 0;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int oldMO = 0; oldMO < nsopi_[h]; ++oldMO) {
-            int bestMO = 0;
-            double bestOverlap = 0.0;
-            double prefactor = 0.0;
-            for (int newMO = 0; newMO < nsopi_[h]; ++newMO) {
-                double val = overlap.get(h, oldMO, newMO);
-                if (std::fabs(val) > bestOverlap) {
-                    bestOverlap = std::fabs(val);
-                    bestMO = newMO;
-                    prefactor = val < 0.0 ? -1.0 : 1.0;
-                }
-            }
-            // Now we've found the MO to use, check it's not been used already then
-            // copy it over.
-            if (mosUsed[bestMO + offset]++) {
-                if (dieOnError) {
-                    overlap.print();
-                    old_cb_->print();
-                    temp.print();
-                    throw SanityCheckError("Duplicate MOs used in phase check", __FILE__, __LINE__);
-                } else {
-                    // Copy Cb back from temp
-                    Cb_->copy(temp);
-                    dct_timer_off("DCTSolver::correct_mo_phases()");
-                    return false;
-                }
-            }
-            for (int so = 0; so < nsopi_[h]; ++so) {
-                Cb_->set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
-            }
-        }
-        offset += nsopi_[h];
-    }
-    dct_timer_off("DCTSolver::correct_mo_phases()");
     return true;
 }
 
