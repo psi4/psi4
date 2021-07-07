@@ -570,7 +570,7 @@ Damping [Off by Default]
     "damping" can be activated by setting the
     |scf__damping_percentage| keyword to a nonzero percent. Damping is
     turned off when the DIIS error is smaller than
-    |scf__damping_threshold|.
+    |scf__damping_convergence|.
 Level shifting [Off by default]
     A commonly used alternative to damping is to use level shifting,
     which decreases the mixing of occupied and unoccupied orbitals in
