@@ -1,0 +1,20 @@
+#! Restricted DF-DCT ODC-12 energies with linearly dependent basis functions
+
+molecule { 
+o 
+h 1 1.0 
+h 1 1.0 2 104.5
+}
+
+set {
+  basis 'aug-cc-pvtz'
+  dct_type df
+  s_tolerance 1e-3
+}
+
+dct_energy = energy('dct')
+
+compare_values(-76.348218880997010, variable("DCT TOTAL ENERGY"), 8, "ODC-12 Energy")
+
+clean()
+
