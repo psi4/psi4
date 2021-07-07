@@ -4,20 +4,20 @@
 #! In the next computation ao_basis=disk algorithm is used, where the transformation of integrals for 
 #! four-virtual case is avoided. 
 
-refscf      = -55.18516793198418   #TEST
-refmp2      = -55.231284743990052  #TEST
+refscf      = -55.185167936892   #TEST
+refmp2      = -55.231284751657   #TEST
 
-# ODC-12                              #TEST
-refodc12scf        =  -55.086226757816547 #TEST
-refodc12           =  -55.250813588581103 #TEST
+# ODC-12                                  #TEST
+refodc12scf        =  -55.086226758311    #TEST
+refodc12           =  -55.250813596908    #TEST
 refodc12_lambda_3  =   -0.000258824532244 #TEST
-refodc12_total     =  -55.251072413113349 #TEST
+refodc12_total     =  -55.251072421427    #TEST
 
 # ODC-13
-refodc13scf        =  -55.082458007246863 #TEST
-refodc13           =  -55.251319082467731 #TEST
+refodc13scf        =  -55.082458007440    #TEST
+refodc13           =  -55.251319090843    #TEST
 refodc13_lambda_3  =   -0.000268406284863 #TEST
-refodc13_total     =  -55.251587488752591 #TEST
+refodc13_total     =  -55.251587497114    #TEST
 
 molecule NH3 {
 1 2

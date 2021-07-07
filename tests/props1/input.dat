@@ -1,9 +1,9 @@
 #! RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
 
-ref_energies = [  -74.9652300618, -74.9665748439,           #TEST
-                  -74.9645615224, -74.9672510783 ]          #TEST
-ref_3pt = 0.672391029                                       #TEST
-ref_5pt = 0.672391714                                       #TEST
+ref_energies = [  -74.9652300868, -74.9665748689,           #TEST
+                  -74.9645615473, -74.9672511033 ]          #TEST
+ref_3pt = 0.6723910644                                      #TEST
+ref_5pt = 0.6723917499                                      #TEST
 
 molecule h2o {
 0 1
