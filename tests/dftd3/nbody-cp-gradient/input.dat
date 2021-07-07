@@ -205,7 +205,7 @@ for result in [  #TEST
 
 # compute nbody again with return_total_data=False
 # * note CURRENT ENERGY moved from first to second testing block
-g, wfn = gradient('SCF-d3bj/STO-3G', molecule=water_trimer, bsse_type='cp', max_nbody=2,
+g, wfn = gradient('SCF-d3bj/STO-3G', molecule=water_trimer, bsse_type=['cp', 'nocp'], max_nbody=2,
                                       return_total_data=False, return_wfn=True)
 core.clean()
 
