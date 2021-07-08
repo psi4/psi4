@@ -268,13 +268,15 @@ PSI Variables by Alpha
    CCSD(T) CORRELATION ENERGY
    CCSD(AT) TOTAL ENERGY
    CCSD(AT) CORRELATION ENERGY
+   A-CCSD(T) TOTAL ENERGY
+   A-CCSD(T) CORRELATION ENERGY
    CCSDT(Q) TOTAL ENERGY
    CCSDT(Q) CORRELATION ENERGY
    CC(n-1)(n) TOTAL ENERGY
    CC(n-1)(n) CORRELATION ENERGY
 
    The total electronic energy [Eh] and correlation energy component [Eh]
-   for the perturbatively corrected coupled-cluster (CCSD(T), CCSD(AT), CCSDT(Q),
+   for the perturbatively corrected coupled-cluster (CCSD(T), A-CCSD(T) = CCSD(AT), CCSDT(Q),
    up to CC(\ *n*\ -1)(\ *n*\ ) level of theory.
 
 .. psivar:: CCSDT-1a TOTAL ENERGY
