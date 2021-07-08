@@ -321,10 +321,16 @@ double CCLambdaWavefunction::compute_energy() {
 
     if ((options_.get_str("WFN") == "CCSD_AT")) {
         // Run cctriples
-        if (psi::cctriples::cctriples(reference_wavefunction_, options_) == Success)
+        if (psi::cctriples::cctriples(reference_wavefunction_, options_) == Success) {
             energy_ = Process::environment.globals["CURRENT ENERGY"];
-        else
+            set_scalar_variable("A-(T) CORRECTION ENERGY", reference_wavefunction_->scalar_variable("A-(T) CORRECTION ENERGY"));
+            set_scalar_variable("A-CCSD(T) CORRELATION ENERGY", reference_wavefunction_->scalar_variable("A-CCSD(T) CORRELATION ENERGY"));
+            set_scalar_variable("A-CCSD(T) TOTAL ENERGY", reference_wavefunction_->scalar_variable("A-CCSD(T) TOTAL ENERGY"));
+            set_scalar_variable("CURRENT CORRELATION ENERGY", reference_wavefunction_->scalar_variable("A-CCSD(T) CORRELATION ENERGY"));
+            set_scalar_variable("CURRENT ENERGY", reference_wavefunction_->scalar_variable("A-CCSD(T) TOTAL ENERGY"));
+        } else {
             energy_ = 0.0;
+        }
     }
 
     return energy_;

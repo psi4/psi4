@@ -53,6 +53,7 @@ PSI Variables by Alpha
    The coupled-cluster perturbative triples correction [Eh].
 
 .. psivar:: (AT) CORRECTION ENERGY
+   A-(T) CORRECTION ENERGY
 
    The coupled-cluster asymmetric perturbative triples correction [Eh].
 
