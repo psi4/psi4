@@ -1955,12 +1955,14 @@ def run_dfocc_gradient(name, **kwargs):
     elif name in ['ccsd(t)']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
         core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+    elif name in ['remp', 'oremp']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OREMP')
     else:
         raise ValidationError('Unidentified method %s' % (name))
 
-    if name in ['mp2', 'mp2.5', 'mp3', 'lccd', 'ccd', 'ccsd', 'ccsd(t)']:
+    if name in ['mp2', 'mp2.5', 'mp3', 'lccd', 'ccd', 'ccsd', 'ccsd(t)', 'remp']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    elif name in ['omp2', 'omp2.5', 'omp3', 'olccd']:
+    elif name in ['omp2', 'omp2.5', 'omp3', 'olccd', 'oremp']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
 
     core.set_global_option('DERTYPE', 'FIRST')
