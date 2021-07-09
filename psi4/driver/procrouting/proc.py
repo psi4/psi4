@@ -1014,6 +1014,12 @@ def select_ccsd_at_(name, **kwargs):
     if func is None:
         raise ManagedMethodError(['select_ccsd_at_', name, 'CC_TYPE', mtd_type, reference, module])
 
+    if name.lower() == "a-ccsd(t)":
+        pass
+    elif name.lower() in ["ccsd(at)", "lambda-ccsd(t)"]:
+        core.print_out(f"""\nMethod "{name.lower()}" has been regularized to "a-ccsd(t)" for QCVariables.""")
+        name = "a-ccsd(t)"
+
     if kwargs.pop('probe', False):
         return
     else:
@@ -1826,7 +1832,7 @@ def run_dfocc(name, **kwargs):
     elif name == 'ccsd(t)':
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
         corl_type = core.get_global_option('CC_TYPE')
-    elif name == 'ccsd(at)':
+    elif name == 'a-ccsd(t)':
         core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(AT)')
         corl_type = core.get_global_option('CC_TYPE')
@@ -1839,7 +1845,7 @@ def run_dfocc(name, **kwargs):
 
     # conventional vs. optimized orbitals
     if name in ['mp2', 'mp2.5', 'mp3', 'lccd',
-                     'ccd', 'ccsd', 'ccsd(t)', 'ccsd(at)']:
+                     'ccd', 'ccsd', 'ccsd(t)', 'a-ccsd(t)']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
     elif name in ['omp2', 'omp2.5', 'omp3', 'olccd']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
@@ -1884,6 +1890,13 @@ def run_dfocc(name, **kwargs):
         for k, v in dfocc_wfn.variables().items():
             core.set_variable(k, v)
 
+    if name == "a-ccsd(t)":
+        # temporary until dfocc can be edited and qcvar name changed
+        core.set_variable("A-CCSD(T) TOTAL ENERGY", core.variables()["CCSD(AT) TOTAL ENERGY"])
+        core.set_variable("A-(T) CORRECTION ENERGY", core.variables()["(AT) CORRECTION ENERGY"])
+        core.del_variable("CCSD(AT) TOTAL ENERGY")
+        core.del_variable("(AT) CORRECTION ENERGY")
+
     optstash.restore()
     return dfocc_wfn
 
@@ -1909,21 +1922,34 @@ def run_dfocc_gradient(name, **kwargs):
 
     if name in ['mp2', 'omp2']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2')
-    elif name in ['mp2.5', 'omp2.5']:
+        corl_type = core.get_global_option('MP2_TYPE')
+    elif name in ['mp2.5']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
-    elif name in ['mp3', 'omp3']:
+        corl_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
+    elif name in ["omp2.5"]:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP2.5')
+        corl_type = core.get_global_option('MP_TYPE')
+    elif name in ['mp3']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
+        corl_type = core.get_global_option('MP_TYPE') if core.has_global_option_changed("MP_TYPE") else "DF"
+    elif name in ['omp3']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OMP3')
+        corl_type = core.get_global_option('MP_TYPE')
     elif name in ['lccd', 'olccd']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OLCCD')
+        corl_type = core.get_global_option('CC_TYPE')
     elif name in ['ccd']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCD')
         core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+        corl_type = core.get_global_option('CC_TYPE')
     elif name in ['ccsd']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD')
         core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+        corl_type = core.get_global_option('CC_TYPE')
     elif name in ['ccsd(t)']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
         core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+        corl_type = core.get_global_option('CC_TYPE')
     else:
         raise ValidationError('Unidentified method %s' % (name))
 
@@ -1931,6 +1957,8 @@ def run_dfocc_gradient(name, **kwargs):
         core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
     elif name in ['omp2', 'omp2.5', 'omp3', 'olccd']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
+    if corl_type not in ["DF", "CD"]:
+        raise ValidationError(f"""Invalid type '{corl_type}' for DFOCC""")
 
     core.set_global_option('DERTYPE', 'FIRST')
     core.set_local_option('DFOCC', 'DO_SCS', 'FALSE')
@@ -2648,7 +2676,7 @@ def run_ccenergy(name, **kwargs):
         core.set_local_option('CCSORT', 'WFN', 'CCSD_T')
         core.set_local_option('CCTRANSORT', 'WFN', 'CCSD_T')
         core.set_local_option('CCENERGY', 'WFN', 'CCSD_T')
-    elif name == 'ccsd(at)':
+    elif name == 'a-ccsd(t)':
         core.set_local_option('TRANSQT2', 'WFN', 'CCSD_AT')
         core.set_local_option('CCSORT', 'WFN', 'CCSD_AT')
         core.set_local_option('CCTRANSORT', 'WFN', 'CCSD_AT')
@@ -2695,7 +2723,7 @@ def run_ccenergy(name, **kwargs):
 
     # Obtain semicanonical orbitals
     if (core.get_option('SCF', 'REFERENCE') == 'ROHF') and \
-            ((name in ['ccsd(t)', 'ccsd(at)', 'cc2', 'cc3', 'eom-cc2', 'eom-cc3']) or
+            ((name in ['ccsd(t)', 'a-ccsd(t)', 'cc2', 'cc3', 'eom-cc2', 'eom-cc3']) or
               core.get_option('CCTRANSORT', 'SEMICANONICAL')):
         ref_wfn.semicanonicalize()
 
@@ -2713,9 +2741,11 @@ def run_ccenergy(name, **kwargs):
     if core.get_global_option('PE'):
         ccwfn.pe_state = ref_wfn.pe_state
 
-    if name == 'ccsd(at)':
+    if name == 'a-ccsd(t)':
         core.cchbar(ref_wfn)
-        core.cclambda(ref_wfn)
+        lambdawfn = core.cclambda(ref_wfn)
+        for k, v in lambdawfn.variables().items():
+            ccwfn.set_variable(k, v)
 
     optstash.restore()
     return ccwfn
@@ -2733,7 +2763,7 @@ def run_ccenergy_gradient(name, **kwargs):
 
     core.set_global_option('DERTYPE', 'FIRST')
 
-    if core.get_global_option('FREEZE_CORE') == 'TRUE':
+    if core.get_global_option('FREEZE_CORE') not in ["FALSE", "0"]:
         raise ValidationError('Frozen core is not available for the CC gradients.')
 
     ccwfn = run_ccenergy(name, **kwargs)

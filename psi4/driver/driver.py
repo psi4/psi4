@@ -356,7 +356,7 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | ccsd(t)                 | CCSD with perturbative triples (CCSD(T)) :ref:`[manual] <sec:cc>` :ref:`[details] <tlccsdt>`                  |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | ccsd(at)                | CCSD with asymmetric perturbative triples (CCSD(AT)) :ref:`[manual] <sec:cc>` :ref:`[details] <tlccsdat>`     |
+    | a-ccsd(t)               | CCSD with asymmetric perturbative triples (A-CCSD(T)) :ref:`[manual] <sec:cc>` :ref:`[details] <tlccsdat>`    |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | bccd(t)                 | BCCD with perturbative triples :ref:`[manual] <sec:cc>`                                                       |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
