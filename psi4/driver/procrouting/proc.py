@@ -2196,12 +2196,15 @@ def run_dfocc_gradient(name, **kwargs):
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-CCSD(T)')
         core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
         corl_type = core.get_global_option('CC_TYPE')
+    elif name in ['remp', 'oremp']:
+        core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OREMP')
+        corl_type = core.get_global_option('CC_TYPE')
     else:
         raise ValidationError('Unidentified method %s' % (name))
 
-    if name in ['mp2', 'mp2.5', 'mp3', 'lccd', 'ccd', 'ccsd', 'ccsd(t)']:
+    if name in ['mp2', 'mp2.5', 'mp3', 'lccd', 'ccd', 'ccsd', 'ccsd(t)', 'remp']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'FALSE')
-    elif name in ['omp2', 'omp2.5', 'omp3', 'olccd', 'occd']:
+    elif name in ['omp2', 'omp2.5', 'omp3', 'olccd', 'oremp', 'occd']:
         core.set_local_option('DFOCC', 'ORB_OPT', 'TRUE')
     if corl_type not in ["DF", "CD"]:
         raise ValidationError(f"""Invalid type '{corl_type}' for DFOCC""")
