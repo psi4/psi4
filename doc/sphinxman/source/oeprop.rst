@@ -171,7 +171,7 @@ manipulated using standard Python syntax.  For a complete demonstration of this
 utility, see the :srcsample:`props4` test case.
 
 
-..index:: ISA; MBIS
+.. index:: ISA; MBIS
 
 .. _`sec:oeprop_mbis`:
 
@@ -180,8 +180,15 @@ Minimal Basis Iterative Stockholder
 
 The Minimal Basis Iterative Stockholder (MBIS) method is one of many procedures
 that partitions a molecular one-particle density matrix into atomic electron densities.
-Running MBIS in |PSIfour| will calculate atomic charges, as well as dipoles, quadrupoles, and
-octupoles. The allowed number of iterations and convergence criteria for the stockholder 
+Running MBIS in |PSIfour| will calculate atomic valence charge widths, volume ratios,
+atomic charges, as well as dipoles, quadrupoles, and octupoles. 
+Additionally, all expectation values of radial moments of n-th order (:math:`<r^n>`) 
+are computed up to fourth order. Higher moments can be computed by specifying |globals__max_radial_moment|.
+The volume ratios are computed as the ratio between the volume of the atomic density
+(:math:`<r^3>`) and the volume of the free atom computed using the same level
+of theory, but with a potentially unrestricted reference.
+
+The allowed number of iterations and convergence criteria for the stockholder 
 algorithm is controlled by |globals__mbis_maxiter| and |globals__mbis_d_convergence|. Note 
 that the density is partitioned on a molecular quadrature grid, the details of which can be
 controlled with the keywords |globals__mbis_radial_points|, |globals__mbis_spherical_points|, and 

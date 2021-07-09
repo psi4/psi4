@@ -33,6 +33,7 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 PRAGMA_WARNING_POP
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
+#include "psi4/libpsi4util/libpsi4util.h"
 
 #include <string>
 #include <map>
@@ -58,7 +59,7 @@ std::string fullkwd(const char* kwdgrp, const char* kwd, int unit) {
 
     std::string fkwd = sep + kwdgrp + sep + "FILES" + sep + unitname + sep + kwd;
     // convert to upper case
-    std::transform(fkwd.begin(), fkwd.end(), fkwd.begin(), static_cast<int (*)(int)>(toupper));
+    to_upper(fkwd);
     return fkwd;
 }
 

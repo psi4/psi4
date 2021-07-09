@@ -2908,7 +2908,9 @@ def run_tdscf_excitations(wfn,**kwargs):
                                                 r_convergence=r_convergence,
                                                 maxiter=core.get_option("SCF", "TDSCF_MAXITER"),
                                                 guess=core.get_option("SCF", "TDSCF_GUESS"),
-                                                verbose=core.get_option("SCF", "TDSCF_PRINT"))
+                                                verbose=core.get_option("SCF", "TDSCF_PRINT"),
+                                                coeff_cutoff=core.get_option("SCF", "TDSCF_COEFF_CUTOFF"),
+                                                tdm_print=core.get_option("SCF", "TDSCF_TDM_PRINT"))
 
     # Shove variables into global space
     for k, v in wfn.variables().items():

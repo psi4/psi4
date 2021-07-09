@@ -33,6 +33,7 @@
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libfock/cubature.h"
 #include "psi4/libfock/points.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 #include "superfunctional.h"
 #include "functional.h"
 #include "LibXCfunctional.h"
@@ -78,7 +79,7 @@ void SuperFunctional::common_init() {
 }
 std::shared_ptr<SuperFunctional> SuperFunctional::blank() { return std::make_shared<SuperFunctional>(); }
 std::shared_ptr<SuperFunctional> SuperFunctional::XC_build(std::string name, bool unpolarized) {
-    // Only allow build from full XC kernals
+    // Only allow build from full XC kernels
     if (name.find("XC_") == std::string::npos) {
         throw PSIEXCEPTION("XC_build requires full XC_ functional names");
     }
@@ -144,7 +145,7 @@ std::shared_ptr<SuperFunctional> SuperFunctional::build_worker() {
 void SuperFunctional::print(std::string out, int level) const {
     if (level < 1) return;
     std::shared_ptr<psi::PsiOutStream> printer = (out == "outfile" ? outfile : std::make_shared<PsiOutStream>(out));
-    
+
     if (xclib_description_ != "") {
         printer->Printf("%s\n\n", xclib_description_.c_str());
     }

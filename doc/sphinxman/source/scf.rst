@@ -565,9 +565,27 @@ MOM [Off by Default]
     be used in concert with DIIS, though care should be taken to not turn MOM on
     until the oscillatory behavior begins.
 Damping [Off by Default]
-    In some cases, a static mixing of Fock Matrices from adjacent iterations can
-    quench oscillations. This mixing, known as "damping" can be activated by setting
-    the |scf__damping_percentage| keyword to a nonzero percent.
+    In some cases, a static mixing of Fock Matrices from adjacent
+    iterations can quench oscillations. This mixing, known as
+    "damping" can be activated by setting the
+    |scf__damping_percentage| keyword to a nonzero percent. Damping is
+    turned off when the DIIS error is smaller than
+    |scf__damping_convergence|.
+Level shifting [Off by default]
+    A commonly used alternative to damping is to use level shifting,
+    which decreases the mixing of occupied and unoccupied orbitals in
+    the SCF update by moving the unoccupied orbitals up in energy. It
+    can be shown that the SCF procedure always converges with a
+    suitably large level shift; however, the larger the shift is, the
+    slower the convergence becomes, and the calculation may end up
+    converging onto a higher lying SCF solution. Because of this, in
+    practice level shifting is most useful in the initial phase of the
+    calculation to reduce the orbital error enough for DIIS to work
+    well. The level shift is controlled by the parameter
+    |scf__level_shift|, and it is turned off when the DIIS error is
+    smaller than |scf__level_shift_cutoff|. Reasonable values for
+    the shift and convergence threshold are 5.0 and 1e-2,
+    respectively.
 SOSCF [Off by Default]
     See :ref:`sec:soscf`
 

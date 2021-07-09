@@ -120,6 +120,7 @@ class DCTSolver : public Wavefunction {
     // void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
     //        int r, int s, double value);
     bool correct_mo_phases(bool dieOnError = true);
+    bool correct_mo_phase_spincase(Matrix& temp, Matrix& overlap, const Matrix& old_C, Matrix& C, bool dieOnError = true) const;
     double compute_cumulant_residual();
     double compute_scf_error_vector();
     double update_scf_density(bool damp = false);
@@ -447,10 +448,6 @@ class DCTSolver : public Wavefunction {
     SharedMatrix ao_s_;
     /// The one-electron integrals in the SO basis
     Matrix so_h_;
-    /// The alpha Fock matrix (without Tau contribution) in the MO basis
-    SharedMatrix moF0a_;
-    /// The beta Fock matrix (without Tau contribution) in the MO basis
-    SharedMatrix moF0b_;
     /// The alpha Fock matrix in the SO basis
     SharedMatrix Fa_;
     /// The beta Fock matrix in the SO basis
@@ -473,10 +470,6 @@ class DCTSolver : public Wavefunction {
     SharedMatrix kappa_so_a_;
     /// The beta kappa matrix in the SO basis
     SharedMatrix kappa_so_b_;
-    /// The alpha external potential in the SO basis
-    SharedMatrix g_tau_a_;
-    /// The beta external potential in the SO basis
-    SharedMatrix g_tau_b_;
     /// The alpha SCF error vector
     SharedMatrix scf_error_a_;
     /// The beta SCF error vector

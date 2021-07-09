@@ -82,6 +82,7 @@ jobs:
     displayName: "Add Conda to PATH"
 
   - bash: |
+      # When we drop 3.6, remove dataclasses install. It should be part of Python then
       conda create -q \
         -n p4env \
         python=$PYTHON_VER \
@@ -106,6 +107,7 @@ jobs:
         blas=*=mkl \
         mkl-include \
         networkx \
+        dataclasses \
         pytest \
         eigen \
         mpfr \

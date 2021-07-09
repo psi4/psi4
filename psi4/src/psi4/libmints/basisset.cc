@@ -37,6 +37,7 @@
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psifiles.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 
 #include "vector3.h"
 #include "molecule.h"
@@ -77,7 +78,7 @@ bool has_ending(std::string const &fullString, std::string const &ending) {
 
 std::string to_upper_copy(const std::string &original) {
     std::string upper = original;
-    std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
+    to_upper(upper);
     return upper;
 }
 }  // namespace
@@ -288,6 +289,7 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
                 int current_shell = atom_to_period(Z + ECP);
                 int delta = period_to_full_shell(std::max(current_shell - req_shell, 0));
                 // If this center has an ECP, some electrons are already frozen
+                if (delta < ECP) throw PSIEXCEPTION("ECP on atom freezes more electrons than requested by choosing a previous shell.");
                 if (ECP > 0) delta -= ECP;
                 // Keep track of current valence electrons
                 mol_valence = mol_valence + Z - delta;
@@ -513,7 +515,7 @@ std::string BasisSet::print_detail_cfour() const {
     char buffer[120];
     std::stringstream ss;
     std::string nameUpperCase = name_;
-    std::transform(nameUpperCase.begin(), nameUpperCase.end(), nameUpperCase.begin(), ::toupper);
+    to_upper(nameUpperCase);
 
     for (int uA = 0; uA < molecule_->nunique(); uA++) {
         const int A = molecule_->unique(uA);

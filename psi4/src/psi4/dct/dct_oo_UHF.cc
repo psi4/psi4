@@ -99,11 +99,8 @@ void DCTSolver::run_simult_dct_oo() {
             // Copy core hamiltonian into the Fock matrix array: F = H
             Fa_->copy(so_h_);
             Fb_->copy(so_h_);
-            // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
+            // Build the new Fock matrix from the SO integrals
             process_so_ints();
-            // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
-            Fa_->add(g_tau_a_);
-            Fb_->add(g_tau_b_);
             // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
             moFa_->copy(Fa_);
             moFb_->copy(Fb_);
@@ -703,10 +700,10 @@ void DCTSolver::compute_orbital_gradient_VO(bool separate_gbargamma) {
         // and not the full gamma for the other 2RDM terms.
         // All we need is (gbargamma)^a_p gamma^p_i.
         auto zero = Dimension(nirrep_);
-        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(soccpi_ + doccpi_, nsopi_), Slice(zero, nsopi_));
-        auto gbar_beta_block = mo_gbarGamma_B_.get_block(Slice(doccpi_, nsopi_), Slice(zero, nsopi_));
-        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nsopi_), Slice(zero, soccpi_ + doccpi_));
-        auto gamma_beta_block = mo_gammaB_.get_block(Slice(zero, nsopi_), Slice(zero, doccpi_));
+        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(soccpi_ + doccpi_, nmopi_), Slice(zero, nmopi_));
+        auto gbar_beta_block = mo_gbarGamma_B_.get_block(Slice(doccpi_, nmopi_), Slice(zero, nmopi_));
+        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nmopi_), Slice(zero, soccpi_ + doccpi_));
+        auto gamma_beta_block = mo_gammaB_.get_block(Slice(zero, nmopi_), Slice(zero, doccpi_));
         auto alpha_jk = linalg::doublet(gbar_alpha_block, gamma_alpha_block, false, false);
         auto beta_jk = linalg::doublet(gbar_beta_block, gamma_beta_block, false, false);
 

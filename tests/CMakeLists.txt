@@ -45,8 +45,8 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   cepa2 cepa3 cepa-module ci-multi cisd-h2o+-0 cisd-h2o+-1
                   cisd-h2o+-2 cisd-h2o-clpse cisd-opt-fd cisd-sp cisd-sp-2
                   ci-property cubeprop cubeprop-frontier decontract dct-grad1 dct-grad2
-                  dct-grad3 dct-grad4 dct1 dct2 dct3 dct4 dct5 dct6
-                  dct7 dct8 dct9 dct10 ao-dfcasscf-sp dfcasscf-sa-sp dfcasscf-fzc-sp dfcasscf-sp
+                  dct-grad3 dct-grad4 dct1 dct2 dct3 dct4 dct5 dct6 dct7 dct8 dct9
+                  dct10 dct11 ao-dfcasscf-sp dfcasscf-sa-sp dfcasscf-fzc-sp dfcasscf-sp
                   dfccd1 dfccdl1 dfccd-grad1 dfccsd1 dfccsdl1 dfccsd-grad1 dfccsd-t-grad1
                   dfccsdt1 dfccsdat1 dfmp2-1 dfmp2-2 dfmp2-3 dfmp2-4 dfmp2-ecp dfmp2-fc dfmp2-grad1
                   dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfmp2-grad5 dfomp2-1 dfomp2-2 dfomp2-3
@@ -88,7 +88,8 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   rasci-ne rasscf-sp sad-scf-type sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc sapt-ecp
                   sapt-exch-disp-inf
                   sapt7 sapt8 scf-bz2 scf-dipder scf-ecp scf-guess scf-guess-read1 scf-upcast-custom-basis
-                  scf-guess-read2 scf-guess-read3 scf-bs scf1 scf-occ scf2 scf3 scf4 scf5 scf6 scf7 scf-property serial-wfn soscf-large soscf-ref
+                  scf-guess-read2 scf-guess-read3 scf-bs scf1 scf-occ scf2 scf3 scf4 scf5 scf6 scf7 scf-level-shift-rks scf-level-shift-uhf scf-level-shift-cuhf scf-level-shift-rohf
+                  scf-property serial-wfn soscf-large soscf-ref
                   soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare sapt-sf1 dft-custom dft-reference
                   stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 scf-response2 scf-cholesky-basis scf-auto-cholesky
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 x2c-perturb-h zaptn-nh2

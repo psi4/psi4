@@ -1400,6 +1400,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("DIIS_MAX_VECS", 10);
         /*- Do use DIIS extrapolation to accelerate convergence? -*/
         options.add_bool("DIIS", true);
+        /*- Do use a level shift? -*/
+        options.add_double("LEVEL_SHIFT", 0.0);
+        /*- DIIS error at which to stop applying the level shift -*/
+        options.add_double("LEVEL_SHIFT_CUTOFF", 1e-2);
         /*- The iteration to start MOM on (or 0 for no MOM) -*/
         options.add_int("MOM_START", 0);
         /*- The absolute indices of orbitals to excite from in MOM (+/- for alpha/beta) -*/
@@ -1650,6 +1654,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("TDSCF_MAXITER", 60);
         /*- Verbosity level in TDSCF -*/
         options.add_int("TDSCF_PRINT", 1);
+        /*- Cutoff for printing excitations and de-excitations icontributing to each excited state -*/
+        options.add_double("TDSCF_COEFF_CUTOFF", 0.1);
+        /*- Which transition dipole moments to print out:
+            - E_TDM_LEN : electric transition dipole moments, length representation
+            - E_TDM_VEL : electric transition dipole moments, velocity representation
+            - M_TDM : magnetic transition dipole moments -*/
+        options.add("TDSCF_TDM_PRINT", new ArrayType());
 
         /*- combine omega exchange and Hartree--Fock exchange into
               one matrix for efficiency?
@@ -2332,7 +2343,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("CC_SS_SCALE", 1.13);
         /*- Convert ROHF MOs to semicanonical MOs -*/
         options.add_bool("SEMICANONICAL", true);
-        /*- Convert ROHF MOs to semicanonical MOs -*/
+        /*- Maximum number of iterations for Brueckner CCD. -*/
         options.add_int("BCCD_MAXITER", 50);
     }
     if (name == "DFMP2" || options.read_globals()) {
