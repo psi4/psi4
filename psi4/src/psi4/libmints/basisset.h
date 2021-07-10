@@ -405,9 +405,6 @@ class PSI_API BasisSet {
     /// Helper functions for frozen core to reduce LOC
     int atom_to_period(int Z);
     int period_to_full_shell(int p);
-    /// Helper functions for compute_phi
-    void compute_phi_cart(double *phi_ao, double x, double y, double z);
-    void compute_phi_pure(double *phi_ao, double x, double y, double z);
 };
 
 }  // namespace psi
