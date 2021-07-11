@@ -1261,13 +1261,13 @@ void BasisSet::compute_phi(double* phi_ao, double x, double y, double z) {
         for (int np = 0; np < nprim; np++) cexpr += c[np] * exp(-a[np] * rr);
 
         if (puream_) {
-            auto s_transform = SphericalTransform(am);
+            const auto s_transform = SphericalTransform(am);
             std::vector<double> cart_buffer(INT_NCART(am), 0.0);
 
             for (int l = 0; l < INT_NCART(am); l++) {
                 Vector3 &components = exp_ao[am][l];
-                cart_buffer[l] += pow(dx, (double)components[0]) * pow(dy, (double)components[1]) *
-                                pow(dz, (double)components[2]) * cexpr;
+                cart_buffer[l] += pow(dx, static_cast<double>(components[0])) * pow(dy, static_cast<double>(components[1])) *
+                                pow(dz, static_cast<double>(components[2])) * cexpr;
             }
 
             for (int ind = 0; ind < s_transform.n(); ind++) {
@@ -1281,8 +1281,8 @@ void BasisSet::compute_phi(double* phi_ao, double x, double y, double z) {
         } else {
             for (int l = 0; l < INT_NCART(am); l++) {
                 Vector3 &components = exp_ao[am][l];
-                phi_ao[ao + l] += pow(dx, (double)components[0]) * pow(dy, (double)components[1]) *
-                                pow(dz, (double)components[2]) * cexpr;
+                phi_ao[ao + l] += pow(dx, static_cast<double>(components[0])) * pow(dy, static_cast<double>(components[1])) *
+                                pow(dz, static_cast<double>(components[2])) * cexpr;
             }
         }
 
