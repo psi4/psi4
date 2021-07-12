@@ -77,15 +77,15 @@ isOS = "True"
 # <<< Database Members >>>
 DIST = ["-0.9", "-1.0", "-1.2", "-1.5", "-2.0"]
 HRXN = [str(rxn) + d for rxn in range(1, 25) for d in DIST]
-# HRXN_SM = []
-# HRXN_LG = []
+#HRXN_SM = []
+#HRXN_LG = []
 HRXN_DD = [str(rxn) + d for rxn in [1, 2, 3, 4, 5, 6, 7, 8, 9] for d in DIST]
 HRXN_ED = [str(rxn) + d for rxn in [10, 11, 12, 13, 14, 15] for d in DIST]
 HRXN_MX = [str(rxn) + d for rxn in [16, 17, 18, 19, 20, 21, 22, 23, 24] for d in DIST]
 
 # <<< Chemical Systems Involved >>>
 RXNM = {}  # reaction matrix of reagent contributions per reaction
-ACTV = {}  # order of active reagents per counterpoise-corrected reaction
+ACTV = {}  # order of active reagents per not counterpoise-corrected reaction
 ACTV_CP = {}  # order of active reagents per counterpoise-corrected reaction
 ACTV_SA = {}  # order of active reagents for non-supermolecular calculations
 for rxn in HRXN:
@@ -93,12 +93,14 @@ for rxn in HRXN:
         "%s-%s-dimer" % (dbse, rxn): +1,
         "%s-%s-monoA-CP" % (dbse, rxn): -1,
         "%s-%s-monoB-CP" % (dbse, rxn): -1,
+        "%s-%s-monoA-unCP" % (dbse, rxn): -1,
+        "%s-%s-monoB-unCP" % (dbse, rxn): -1,
     }
 
     ACTV["%s-%s" % (dbse, rxn)] = [
         "%s-%s-dimer" % (dbse, rxn),
-        "%s-%s-monoA-CP" % (dbse, rxn),
-        "%s-%s-monoB-CP" % (dbse, rxn),
+        "%s-%s-monoA-unCP" % (dbse, rxn),
+        "%s-%s-monoB-unCP" % (dbse, rxn),
     ]
 
     ACTV_SA["%s-%s" % (dbse, rxn)] = ["%s-%s-dimer" % (dbse, rxn)]
@@ -2254,15 +2256,9 @@ units angstrom
 
 # <<< Derived Geometry Strings >>>
 for rxn in HRXN:
-    GEOS["%s-%s-monoA-CP" % (dbse, rxn)] = GEOS["%s-%s-dimer" % (dbse, rxn)].extract_fragments(
-        1,
-        [
-            2,
-        ],
-    )
-    GEOS["%s-%s-monoB-CP" % (dbse, rxn)] = GEOS["%s-%s-dimer" % (dbse, rxn)].extract_fragments(
-        2,
-        [
-            1,
-        ],
-    )
+    cp_monoA = (1, (2, ))
+    cp_monoB = (2, (1, ))
+    GEOS[f"{dbse}-{rxn}-monoA-CP"] = GEOS[f"{dbse}-{rxn}-dimer"].extract_fragments(*cp_monoA)
+    GEOS[f"{dbse}-{rxn}-monoB-CP"] = GEOS[f"{dbse}-{rxn}-dimer"].extract_fragments(*cp_monoB)
+    GEOS[f"{dbse}-{rxn}-monoA-unCP"] = GEOS[f"{dbse}-{rxn}-dimer"].extract_fragments(1)
+    GEOS[f"{dbse}-{rxn}-monoB-unCP"] = GEOS[f"{dbse}-{rxn}-dimer"].extract_fragments(2)
