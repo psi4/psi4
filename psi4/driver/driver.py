@@ -242,10 +242,19 @@ def energy(name, **kwargs):
         Indicate to additionally return the :py:class:`~psi4.core.Wavefunction`
         calculation result as the second element (after *float* energy) of a tuple.
 
+    :type write_orbitals: str, :ref:`boolean <op_py_boolean>`
+    :param write_orbitals: ``filename`` || |dl| ``'on'`` |dr| || ``'off'`` 
+
+        (str) Save wfn containing current orbitals to the given file name after each SCF iteration
+        and retain after |PSIfour| finishes.
+
+        (:ref:`boolean <op_py_boolean>`) Turns writing the orbitals after the converged SCF on/off.
+        Orbital file will be deleted unless |PSIfour| is called with `-m` flag.
+
     :type restart_file: str
     :param restart_file: ``['file.1, file.32]`` || ``./file`` || etc.
 
-        Binary data files to be renamed for calculation restart.
+        Existing files to be renamed and copied for calculation restart, e.g. a serialized wfn or module-specific binary data.
 
     .. _`table:energy_gen`:
 
@@ -544,6 +553,7 @@ def energy(name, **kwargs):
     #    precallback(lowername, **kwargs)
 
     optstash = driver_util._set_convergence_criterion('energy', lowername, 6, 8, 6, 8, 6)
+    optstash2 = p4util.OptionsState(['SCF', 'GUESS'])
 
     # Before invoking the procedure, we rename any file that should be read.
     # This is a workaround to do restarts with the current PSI4 capabilities
@@ -557,12 +567,17 @@ def energy(name, **kwargs):
             restartfile = (restartfile, )
         # Rename the files to be read to be consistent with psi4's file system
         for item in restartfile:
+            is_numpy_file = (os.path.isfile(item) and item.endswith(".npy")) or os.path.isfile(item + ".npy")
             name_split = re.split(r'\.', item)
-            if "npz" in item:
+            if is_numpy_file:
+                core.set_local_option('SCF', 'GUESS' ,'READ')
+                core.print_out(" Found user provided orbital data. Setting orbital guess to READ")
                 fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(molecule.name())))[1]
                 psi_scratch = core.IOManager.shared_object().get_default_path()
-                file_num = item.split('.')[-2]
-                targetfile = os.path.join(psi_scratch, fname + "." + file_num + ".npz")
+                file_num = item.split('.')[-2] if "180" in item else "180"
+                targetfile = os.path.join(psi_scratch, fname + "." + file_num + ".npy")
+                if not item.endswith(".npy"):
+                    item = item + ".npy"
             else:
                 filenum = name_split[-1]
                 try:
@@ -576,6 +591,7 @@ def energy(name, **kwargs):
                 pid = str(os.getpid())
                 prefix = 'psi'
                 targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.' + str(filenum)
+            core.print_out(f" \n Copying restart file <{item}> to <{targetfile}> for internal processing\n")
             shutil.copy(item, targetfile)
 
     wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
@@ -584,6 +600,7 @@ def energy(name, **kwargs):
         postcallback(lowername, wfn=wfn, **kwargs)
 
     optstash.restore()
+    optstash2.restore()
     if return_wfn:  # TODO current energy safer than wfn.energy() for now, but should be revisited
 
         # TODO place this with the associated call, very awkward to call this in other areas at the moment
@@ -740,6 +757,8 @@ def gradient(name, **kwargs):
         wfn = _process_displacement(energy, lowername, molecule, findif_meta_dict["reference"], 1, ndisp,
                                     **kwargs)
         var_dict = core.variables()
+        # ensure displacement calculations do not use restart_file orbitals.
+        kwargs.pop('restart_file', None)
 
         for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
             _process_displacement(
@@ -1565,6 +1584,8 @@ def hessian(name, **kwargs):
         wfn = _process_displacement(gradient, lowername, molecule, findif_meta_dict["reference"], 1, ndisp,
                                     **kwargs)
         var_dict = core.variables()
+        # ensure displacement calculations do not use restart_file orbitals.
+        kwargs.pop('restart_file', None)
 
         for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
             _process_displacement(

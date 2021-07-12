@@ -442,6 +442,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.damping_update(damping_percentage * 0.01)
             status.append("DAMP={}%".format(round(damping_percentage)))
 
+        if core.has_option_changed("SCF", "ORBITALS_WRITE"):
+            filename = core.get_option("SCF", "ORBITALS_WRITE")
+            self.to_file(filename)
+
         if verbose > 3:
             self.Ca().print_out()
             self.Cb().print_out()
