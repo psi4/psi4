@@ -38,8 +38,13 @@ set(FLEXIBLAS_LAPACK_HEADERS lapack.h)
 set(FLEXIBLAS_BLAS_LIBRARY_PATH_SUFFIXES)
 set(FLEXIBLAS_LAPACK_LIBRARY_PATH_SUFFIXES)
 
-set(FLEXIBLAS_BLAS_LIBS   flexiblas)
-set(FLEXIBLAS_LAPACK_LIBS flexiblas)
+if(ENABLE_64BIT_INTEGERS)
+  set(FLEXIBLAS_BLAS_LIBS   flexiblas64)
+  set(FLEXIBLAS_LAPACK_LIBS flexiblas64)
+else()
+  set(FLEXIBLAS_BLAS_LIBS   flexiblas)
+  set(FLEXIBLAS_LAPACK_LIBS flexiblas)
+endif()
 
 #-------------------------------------------------------------------------------
 # ESSL
