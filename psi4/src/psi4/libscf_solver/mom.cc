@@ -66,7 +66,7 @@ void HF::MOM_start() {
 
     // If we're here, we're doing MOM of some kind
     MOM_performed_ = true;  // Gets printed next iteration
-    //
+
     // Build Ca_old_ matrices
     Ca_old_ = std::make_shared<Matrix>("C Alpha Old (SO Basis)", nirrep_, nsopi_, nmopi_);
     if (!same_a_b_orbs()) {
@@ -94,7 +94,7 @@ void HF::MOM_start() {
         initialized_diis_manager_ = false;
     }
 
-    // Find out which orbitals are where
+    // Sort MOs by (energy, (irrep, # within irrep))
     std::vector<std::pair<double, std::pair<int, int> > > orbs_a;
     for (int h = 0; h < nirrep_; h++) {
         int nmo = nmopi_[h];
@@ -112,6 +112,7 @@ void HF::MOM_start() {
     sort(orbs_a.begin(), orbs_a.end());
     sort(orbs_b.begin(), orbs_b.end());
 
+    // Validate the orbitals to excite to/from
     if (options_["MOM_OCC"].size() != options_["MOM_VIR"].size())
         throw PSIEXCEPTION("SCF: MOM_OCC and MOM_VIR are not the same size");
 
@@ -548,7 +549,9 @@ void HF::MOM_start() {
             if (nalpha_ < nbeta_)
                 throw PSIEXCEPTION("PSI::MOM_start: Nbeta ends up being less than Nalpha, this is not supported");
 
-            // Fix doccpi/soccpi.
+            // Fix doccpi/soccpi. In MOM, we do _not_ assume that all singly occupied orbitals are alpha.
+            // All we assume is that when you pair the alpha and beta orbitals of a given irrep by energy,
+            // two being occupied increments docc, and one being occupied increments soccpi.
             for (int h = 0; h < nirrep_; h++) {
                 std::vector<std::pair<double, std::pair<int, bool> > > alphas;
                 std::vector<std::pair<double, std::pair<int, bool> > > betas;
