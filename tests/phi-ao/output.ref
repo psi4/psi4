@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {phi_fix} 6e2a0be dirty
+                         Git: Rev {phi_fix} 7185cf6 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Saturday, 10 July 2021 01:58PM
+    Psi4 started on: Wednesday, 14 July 2021 05:09PM
 
-    Process ID: 16926
+    Process ID: 5017
     Host:       ds6
     PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-hiba/stage/share/psi4
     Memory:     500.0 MiB
@@ -41,7 +41,7 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-#! Test of the new phi_ao code (for puream and non-puream basis functions)
+#! Test computing values of basis functions (puream and non-puream) at points
 import numpy as np
 
 REF_NELECTRON = 10.0000000 # TEST
@@ -56,14 +56,15 @@ mol = psi4.geometry("""
   no_com
 """)
 
-TEST_NELECTRON = {}
+psi4.set_options({'basis' : 'cc-pVQZ'})
+basis = psi4.core.BasisSet.build(mol, "ORBITAL", psi4.core.get_global_option("BASIS"))
+grid = psi4.core.DFTGrid.build(mol, basis)
 
 for puream in [True, False]:
-    psi4.set_options({'basis' : 'cc-pVQZ', 'puream' : puream})
+    psi4.set_options({'puream' : puream})
 
-    # Create puream and non-puream basissets and grids
+    # Create puream or non-puream basissets
     basis = psi4.core.BasisSet.build(mol, "ORBITAL", psi4.core.get_global_option("BASIS"), puream=puream)
-    grid = psi4.core.DFTGrid.build(mol, basis)
 
     # Run an SCF calculation to get Electron Density
     e, wfn = energy('scf', return_wfn=True)
@@ -94,18 +95,25 @@ for puream in [True, False]:
 
         running_points += npoints
 
-    # Creative manipulations for speedy calculations
     phi_prime = np.einsum('uv,pu->pv', D, phi_ao_points)
-    TEST_NELECTRON[puream] = 2.0 * np.einsum('p,pv,pv->', weights, phi_prime, phi_ao_points)
+    TEST_NELECTRON = 2.0 * np.einsum('p,pv,pv->', weights, phi_prime, phi_ao_points)
 
     if puream:
         testname = 'SPHERICAL BASIS PHI_AO TEST'
     else:
         testname = 'CARTESIAN BASIS PHI_AO TEST'
     
-    compare_values(TEST_NELECTRON[puream], REF_NELECTRON, 4, testname)
+    compare_values(REF_NELECTRON, TEST_NELECTRON, 4, testname)
 
 --------------------------------------------------------------------------
+   => Loading Basis Set <=
+
+    Name: CC-PVQZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   339 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-hiba/stage/share/psi4/basis/cc-pvqz.gbs 
+    atoms 2-3 entry H          line    22 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-hiba/stage/share/psi4/basis/cc-pvqz.gbs 
+
    => Loading Basis Set <=
 
     Name: CC-PVQZ
@@ -118,7 +126,7 @@ for puream in [True, False]:
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds6
-*** at Sat Jul 10 13:58:03 2021
+*** at Wed Jul 14 17:09:14 2021
 
    => Loading Basis Set <=
 
@@ -331,13 +339,13 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0413     Total:     2.0413
 
 
-*** tstop() called on ds6 at Sat Jul 10 13:58:03 2021
+*** tstop() called on ds6 at Wed Jul 14 17:09:14 2021
 Module time:
-	user time   =       0.36 seconds =       0.01 minutes
+	user time   =       0.43 seconds =       0.01 minutes
 	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.36 seconds =       0.01 minutes
+	user time   =       0.43 seconds =       0.01 minutes
 	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
     SPHERICAL BASIS PHI_AO TEST...........................................................PASSED
@@ -353,7 +361,7 @@ Total time:
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds6
-*** at Sat Jul 10 13:58:07 2021
+*** at Wed Jul 14 17:09:17 2021
 
    => Loading Basis Set <=
 
@@ -574,18 +582,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0362     Total:     2.0362
 
 
-*** tstop() called on ds6 at Sat Jul 10 13:58:07 2021
+*** tstop() called on ds6 at Wed Jul 14 17:09:18 2021
 Module time:
 	user time   =       0.44 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       3.91 seconds =       0.07 minutes
+	user time   =       4.05 seconds =       0.07 minutes
 	system time =       0.07 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
     CARTESIAN BASIS PHI_AO TEST...........................................................PASSED
 
-    Psi4 stopped on: Saturday, 10 July 2021 01:58PM
-    Psi4 wall time for execution: 0:00:04.95
+    Psi4 stopped on: Wednesday, 14 July 2021 05:09PM
+    Psi4 wall time for execution: 0:00:05.22
 
 *** Psi4 exiting successfully. Buy a developer a beer!

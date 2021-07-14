@@ -60,5 +60,5 @@ for puream in [True, False]:
     else:
         testname = 'CARTESIAN BASIS PHI_AO TEST'
     
-    compare_values(TEST_NELECTRON, REF_NELECTRON, 4, testname)
+    compare_values(REF_NELECTRON, TEST_NELECTRON, 4, testname)
 
