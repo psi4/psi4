@@ -29,6 +29,7 @@
 #ifndef _PSI4_SRC_BIN_DCT_DCT_H_
 #define _PSI4_SRC_BIN_DCT_DCT_H_
 
+#include "psi4/dct/dct_df_tensor.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/wavefunction.h"
@@ -509,38 +510,30 @@ class DCTSolver : public Wavefunction {
     // Density-Fitting DCT
     /// Set DF variables. Print header.
     void initialize_df();
-    /// Construct the B tensors
-    void build_df_b();
     /// Calculate memory required for density-fitting
-    void df_memory() const;
-    /// Build density-fitted <VV||VV>, <vv||vv>, and <Vv|Vv> tensors in G intermediate
-    void build_DF_tensors_RHF();
-    void build_DF_tensors_UHF();
-    /// Form J(P|Q)^-1/2 and write to disk
-    Matrix formJm12(std::shared_ptr<BasisSet> auxiliary, const std::string& name);
+    void estimate_df_memory() const;
+    /// Construct b(Q|mn) = Sum_P (mn|P) [J^-1/2]_PQ
+    void build_df_b();
     /// Form AO basis b(Q|mu,nu)
     Matrix formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                     std::shared_ptr<BasisSet> zero, const Matrix& Jm12, const std::string& name);
-    /// Transform AO-basis b(Q, mn) to MO-basis b(Q, pq)
-    void transform_b();
+    /// Form J(P|Q)^-1/2 and write to disk
+    Matrix formJm12(std::shared_ptr<BasisSet> auxiliary, const std::string& name);
+    /// Transform SO-basis b(Q, mn) to MO-basis b(Q, pq)
+    void transform_b_so2mo();
     /// Transform b(Q|mu,nu) from AO basis to SO basis
-    Matrix transform_b_ao2so(const Matrix& bQmn_ao) const;
+    DFTensor transform_b_ao2so(const Matrix& bQmn_ao) const;
     /// Transform b(Q|mu,nu) from AO basis to SO basis
-    Matrix transform_b_so2ao(const Matrix& bQmn_so) const;
+    Matrix transform_b_so2ao(const DFTensor& bQmn_so) const;
+    /// Build density-fitted <VV||VV>, <vv||vv>, and <Vv|Vv> tensors in G intermediate
+    void build_DF_tensors_RHF();
+    void build_DF_tensors_UHF();
     void construct_metric_density(const std::string& basis_type);
-    /// Transform b(Q|mu,nu) from SO basis to another basis with symmetry
-    Matrix three_idx_primary_transform(const Matrix& three_idx, const Matrix& left, const Matrix& right) const;
-    void three_idx_primary_transform_gemm(const Matrix& three_idx, const Matrix& left, const Matrix& right,
-                                          Matrix& result, double alpha, double beta) const;
     void three_idx_cumulant_density();
     void three_idx_cumulant_density_RHF();
     void three_idx_separable_density();
-    Matrix three_idx_cumulant_helper(Matrix& temp, const Matrix& J, const Matrix& bt1, const Matrix& bt2);
-    Matrix three_idx_separable_helper(const Matrix& Q, const Matrix& J, const Matrix& RDM, const Matrix& C_subset);
-    void contract343(const Matrix& b, dpdbuf4& G, Matrix& result, bool transpose, double alpha, double beta) const;
-    Matrix contract123(const Matrix& Q, const Matrix& G) const;
-    Matrix contract233(const Matrix& J, const Matrix& B) const;
-    void add_3idx_transpose_inplace(Matrix& M, const Dimension& dim) const;
+    DFTensor three_idx_cumulant_helper(DFTensor& temp, const Matrix& J, const Matrix& bt1, const Matrix& bt2);
+    DFTensor three_idx_separable_helper(const Matrix& Q, const Matrix& J, const Matrix& RDM, const Matrix& C_subset);
 
     /// Form density-fitted MO-basis TEI g(OV|OV) in chemists' notation
     void form_df_g_ovov();
@@ -575,22 +568,19 @@ class DCTSolver : public Wavefunction {
     int nQ_scf_;
     /// Number of alpha occupied orbitals
     int naocc_;
-    /// b(Q|mu,nu)
-    Matrix bQmn_so_;
-    Matrix bQmn_so_scf_;
-    /// b(Q|i, j)
-    Matrix bQijA_mo_;
-    Matrix bQijB_mo_;
 
+    /// b(Q|mu,nu)
+    DFTensor bQmn_so_;
+    DFTensor bQmn_so_scf_;
+    /// b(Q|i, j)
+    DFTensor bQijA_mo_;
+    DFTensor bQijB_mo_;
     /// b(Q|i, a)
-    Matrix bQiaA_mo_;
-    Matrix bQiaB_mo_;
+    DFTensor bQiaA_mo_;
+    DFTensor bQiaB_mo_;
     /// b(Q|a, b)
-    Matrix bQabA_mo_;
-    Matrix bQabB_mo_;
-    /// b(Q|p, q)
-    Matrix bQpqA_mo_;
-    Matrix bQpqB_mo_;
+    DFTensor bQabA_mo_;
+    DFTensor bQabB_mo_;
 
     /// The Tau in the MO basis (All)
     Matrix mo_tauA_;
