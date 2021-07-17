@@ -597,8 +597,6 @@ void OCCWave::mem_release() {
         delete oo_pairidxAA;
         delete vv_pairidxAA;
 
-        // Ca_.reset();
-        C_ref_[SpinType::Alpha].reset();
         Hso.reset();
         Tso.reset();
         Vso.reset();
@@ -628,10 +626,6 @@ void OCCWave::mem_release() {
             t1B.reset();
         }
 
-        Ca_.reset();
-        Cb_.reset();
-        C_ref_[SpinType::Alpha].reset();
-        C_ref_[SpinType::Beta].reset();
         Hso.reset();
         Tso.reset();
         Vso.reset();
