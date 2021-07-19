@@ -291,7 +291,6 @@ def _write_molden(self, filename=None, do_virtual=None, use_natural=False):
         #MO_Db = core.Matrix("MO Beta Density Matrix", nmopi, nmopi)
         #MO_Db.transform(self.Db(), self.Cb().transpose())
         MO_Db = self.Db_subset("MO")
-        MO_Db.print_out()
         NO_Rb = core.Matrix("NO Beta Rotation Matrix", nmopi, nmopi)
         occupation_b = core.Vector(nmopi)
         MO_Db.diagonalize(NO_Rb, occupation_b, core.DiagonalizeOrder.Descending)
