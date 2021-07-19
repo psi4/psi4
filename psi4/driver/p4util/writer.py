@@ -321,7 +321,7 @@ def _write_molden(self, filename=None, do_virtual=None, use_natural=False):
     '''
     Reordering expected by Molden
     P: x, y, z
-    5D: D 0, D+1, D-1, D-2
+    5D: D 0, D+1, D-1, D+2, D-2
     6D: xx, yy, zz, xy, xz, yz
     7F: F 0, F+1, F-1, F+2, F-2, F+3, F-3
     10F: xxx, yyy, zzz, xyy, xxy, xxz, xzz, yzz, yyz, xyz
