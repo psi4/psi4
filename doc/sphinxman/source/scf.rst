@@ -572,6 +572,7 @@ that |PSIfour| expects the numpy file on disk to have the ``.npy`` extension, no
 
 
 .. index:: DIIS, MOM, damping
+
 .. _`sec:scfconv`:
 
 Convergence Stabilization
