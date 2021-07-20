@@ -121,6 +121,9 @@ jobs:
       which python
       pip install git+https://github.com/i-pi/i-pi.git@master-py3
       conda list
+      python -c "import adcc"
+      python -c "import adcc;print(adcc.__file__)"
+      python -c "import adcc;print(adcc.__version__)"
     displayName: 'Build Environment'
 
   - bash: |
