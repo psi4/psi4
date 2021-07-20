@@ -116,11 +116,11 @@ class Gaussian94BasisSetParser(object):
         atom_array = re.compile(r'^\s*((' + ATOM + r'\s+)+)0\s*$', re.IGNORECASE)  # array of atomic symbols terminated by 0
         atom_ecp = re.compile(r'^\s*((' + ATOM + r'-ECP\s+)+)(\d+)\s+(\d+)\s*$', re.IGNORECASE)  # atom_ECP number number
         shell = re.compile(r'^\s*(\w+|L=\d+)\s*(\d+)\s*(-?\d+\.\d+)\s*$')  # Match beginning of contraction
-        blank = re.compile(r'^\s*$')
+        blank_line = re.compile(r'^\s*$')
         NUMBER = r'((?:[-+]?\d*\.\d+(?:[DdEe][-+]?\d+)?)|(?:[-+]?\d+\.\d*(?:[DdEe][-+]?\d+)?)|(?:[-+]?\d+))'
         primitives1 = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + '\s*$')  # Match s, p, d, f, g, ... functions
         primitives2 = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + '\s*$')  # match sp functions
-        ecpinfo = re.compile(r'^\s*(\d)\s+' + NUMBER + r'\s+' + NUMBER + '.*')  # Match rpower, exponent, coefficient
+        ecpinfo = re.compile(r'^\s*(\d)\s+' + NUMBER + r'\s+' + NUMBER + '\s*$')  # Match rpower, exponent, coefficient
 
         # s, p and s, p, d can be grouped together in Pople-style basis sets
         sp = 'SP'
@@ -164,7 +164,7 @@ class Gaussian94BasisSetParser(object):
             lineno += 1
 
             # Ignore blank lines
-            if blank.match(line):
+            if blank_line.match(line):
                 continue
 
             # Look for Cartesian or Spherical
