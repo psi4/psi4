@@ -119,6 +119,7 @@ which are useful in elucidating the stability and reactivity of the system.
 
 .. index::
    pair: SCF; theory
+
 .. _`sec:scftheory`:
 
 Theory
