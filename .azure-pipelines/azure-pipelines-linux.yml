@@ -116,6 +116,7 @@ jobs:
         conda-forge::qcelemental \
         conda-forge::qcengine \
         conda-forge::pymdi \
+        pandas \
         adcc::adcc
       source activate p4env
       which python
