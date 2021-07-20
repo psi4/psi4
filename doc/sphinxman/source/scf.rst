@@ -240,7 +240,7 @@ energy and density convergence criteria (since single-point, see
 orthogonalization, DIIS, and a core Hamiltonian guess. For more
 information on any of these options, see the relevant section below.
 
- .. _`sec:scfsymm`:
+.. _`sec:scfsymm`:
 
 Spin/Symmetry Treatment
 ~~~~~~~~~~~~~~~~~~~~~~~
