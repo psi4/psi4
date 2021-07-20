@@ -414,7 +414,7 @@ then instructs the program to read these integrals from disk instead of recomput
 them. For each SCF computation, we use ``psi4.IO.set_default_namespace`` to uniquely
 name scratch files. In the following SCF step, only file 97 is renamed using
 ``psi4.IO.change_file_namespace`` so that integrals can be read from it.
-For more information on stability analysis, see the :ref:`stability <stability_doc>`
+For more information on stability analysis, see the :ref:`stability <sec:scfstability_doc>`
 documentation.
 
 .. index:: SAPT; SAPT0

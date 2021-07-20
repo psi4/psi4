@@ -152,7 +152,7 @@ messy) flag will prevent files being deleted at the end of the run::
 
     psi4 -m
 
-The mechanism for restarting HF/DFT calculations is described in details :ref:`here <scf:restart>`.
+The mechanism for restarting HF/DFT calculations is described in details :ref:`here <sec:scfrestart>`.
 
 
 .. _`sec:save_wfn`:

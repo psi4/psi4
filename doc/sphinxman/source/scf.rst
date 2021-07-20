@@ -120,6 +120,8 @@ which are useful in elucidating the stability and reactivity of the system.
 .. index::
    pair: SCF; theory
 
+.. _`sec:scftheory`:
+
 Theory
 ~~~~~~
 
@@ -216,6 +218,8 @@ The formation of the Coulomb matrix :math:`J` and the exchange matrix
 very large systems, diagonalization of the Fock matrix can also present a
 significant hurdle.
 
+.. _`sec:scfinput`:
+
 Minimal Input
 ~~~~~~~~~~~~~
 
@@ -236,6 +240,8 @@ energy and density convergence criteria (since single-point, see
 :ref:`SCF Convergence & Algorithm <table:conv_scf>`), a DF ERI algorithm, symmetric
 orthogonalization, DIIS, and a core Hamiltonian guess. For more
 information on any of these options, see the relevant section below.
+
+.. _`sec:scfsymm`:
 
 Spin/Symmetry Treatment
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -316,6 +322,8 @@ actually,::
 
     energy('scf')
 
+.. _`sec:scfbrokensymm`:
+
 Broken Symmetry
 ~~~~~~~~~~~~~~~
 
@@ -332,6 +340,8 @@ keyword to true::
     set reference uhf
     set guess_mix true
     energy('scf')
+
+.. _`sec:scflindep`:
 
 Orthogonalization
 ~~~~~~~~~~~~~~~~~
@@ -441,6 +451,8 @@ assigned to irrep A, and 142 of which are assigned to irrep B. Within irrep A,
 above the eigenvalue cutoff. In total, 284 molecular orbitals are chosen from
 287 AOs/USOs.
 
+.. _`sec:scfguess`:
+
 Initial Guess
 ~~~~~~~~~~~~~
 
@@ -528,7 +540,7 @@ in a 3-21G basis and then casting up to cc-pVTZ is shown below::
 
     energy('scf')
 
-.. .. _`scf:restart`:
+.. _`sec:scfrestart`:
 
 Restarting the SCF
 ~~~~~~~~~~~~~~~~~~
@@ -561,6 +573,8 @@ that |PSIfour| expects the numpy file on disk to have the ``.npy`` extension, no
 
 
 .. index:: DIIS, MOM, damping
+
+.. _`sec:scfconv`:
 
 Convergence Stabilization
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -748,7 +762,7 @@ follows:
     |scf__soscf_print|: option to print the microiterations or not
 
 
-.. _`stability_doc`:
+.. _`sec:scfstability_doc`:
 
 Stability Analysis
 ~~~~~~~~~~~~~~~~~~
@@ -875,6 +889,8 @@ for examples of computations with ECP-containing basis sets.
 
 .. warning:: ECPs have not been tested with projected basis set guesses or with FI-SAPT calculations.  If you require this functionality, please contact the developers on GitHub and/or the `forum <http://forum.psicode.org>`_.
 
+.. _`sec:scfqmmm`:
+
 External potentials and QM/MM
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -910,6 +926,8 @@ Note that if any specified fields do not fall along a symmetry axis, the
 symmetry of the calculation should be reduced accordingly; if in doubt run the
 calculation in C1 symmetry.  For examples of SCF and MP2 calculations in an
 external field, see :srcsample:`scf7` and :srcsample:`dfmp2-grad5`.
+
+.. _`sec:scfdefault`:
 
 Convergence and Algorithm Defaults
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -981,6 +999,8 @@ Convergence and Algorithm Defaults
    |scf__e_convergence| and |scf__d_convergence| for SCF of HF or DFT, 11
    for |scf__e_convergence| and |scf__d_convergence| for SCF of post-HF,
    and 10 for E_CONVERGENCE for post-HF of post-HF.
+
+.. _`sec:scfrec`:
 
 Recommendations
 ~~~~~~~~~~~~~~~
