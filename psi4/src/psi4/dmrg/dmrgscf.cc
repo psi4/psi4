@@ -250,16 +250,16 @@ SharedMatrix print_rdm_ao( CheMPS2::DMRGSCFindices * idx, double * DMRG1DM, Shar
 }
 
 
-void buildHamDMRG( std::shared_ptr<IntegralTransform> ints, std::shared_ptr<MOSpace> Aorbs_ptr, CheMPS2::DMRGSCFmatrix * theTmatrix, CheMPS2::DMRGSCFmatrix * theQmatOCC, CheMPS2::DMRGSCFindices * iHandler, CheMPS2::Hamiltonian * HamDMRG, std::shared_ptr<PSIO> psio, std::shared_ptr<Wavefunction> wfn ){
+void buildHamDMRG( std::shared_ptr<IntegralTransform> ints, std::shared_ptr<MOSpace> Aorbs_ptr, CheMPS2::DMRGSCFmatrix * theTmatrix, CheMPS2::DMRGSCFmatrix * theQmatOCC, CheMPS2::DMRGSCFindices * iHandler, CheMPS2::Hamiltonian * HamDMRG, std::shared_ptr<PSIO> psio, const Wavefunction& wfn ){
 
     ints->update_orbitals();
     // Since we don't regenerate the SO ints, we don't call sort_so_tei, and the OEI are not updated !!!!!
     ints->transform_tei( Aorbs_ptr, Aorbs_ptr, Aorbs_ptr, Aorbs_ptr );
     dpd_set_default(ints->get_dpd_id());
-    const int nirrep = wfn->nirrep();
+    const int nirrep = wfn.nirrep();
 
     // Econstant and one-electron integrals
-    double Econstant = wfn->molecule()->nuclear_repulsion_energy(wfn->get_dipole_field_strength());
+    double Econstant = wfn.molecule()->nuclear_repulsion_energy(wfn.get_dipole_field_strength());
     for (int h = 0; h < iHandler->getNirreps(); h++){
         const int NOCC = iHandler->getNOCC(h);
         for (int froz = 0; froz < NOCC; froz++){
@@ -758,7 +758,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         update_WFNco( orig_coeff, iHandler, unitary, wfn, work1, work2 );
         buildTmatrix( theTmatrix, iHandler, psio, *wfn->Ca(), *wfn);
         buildQmatOCC( theQmatOCC, iHandler, work1, work2, *wfn->Ca(), myJK);
-        buildHamDMRG( ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, wfn );
+        buildHamDMRG( ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, *wfn );
 
         //Localize the active space and reorder the orbitals within each irrep based on the exchange matrix
         if (( dmrg_active_space.compare("LOC")==0 ) && (theDIIS==nullptr)){ //When the DIIS has started: stop
@@ -789,7 +789,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             update_WFNco( orig_coeff, iHandler, unitary, wfn, work1, work2 );
             buildTmatrix( theTmatrix, iHandler, psio, *wfn->Ca(), *wfn);
             buildQmatOCC( theQmatOCC, iHandler, work1, work2, *wfn->Ca(), myJK);
-            buildHamDMRG( ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, wfn );
+            buildHamDMRG( ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, *wfn );
             (*outfile->stream()) << "Rotated the active space to localized orbitals, sorted according to the exchange matrix." << std::endl;
 
         }
@@ -967,7 +967,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         (*outfile->stream()) << "###                     ###" << std::endl;
         (*outfile->stream()) << "###########################" << std::endl;
 
-        buildHamDMRG( ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, wfn );
+        buildHamDMRG( ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, *wfn );
 
         double * contract = new double[ tot_dmrg_power6 ];
         double * three_dm = new double[ tot_dmrg_power6 ];
