@@ -192,7 +192,7 @@ void buildQmatACT( CheMPS2::DMRGSCFmatrix * theQmatACT, CheMPS2::DMRGSCFindices 
 }
 
 
-SharedMatrix print_rdm_ao( CheMPS2::DMRGSCFindices * idx, double * DMRG1DM, SharedMatrix MO_RDM, SharedMatrix Cmat, std::shared_ptr<Wavefunction> wfn ){
+SharedMatrix print_rdm_ao( CheMPS2::DMRGSCFindices * idx, double * DMRG1DM, SharedMatrix MO_RDM, const Matrix& Cmat, const Matrix& aotoso ){
 
     const int num_irreps = idx->getNirreps();
     const int tot_dmrg   = idx->getDMRGcumulative( num_irreps );
@@ -217,24 +217,20 @@ SharedMatrix print_rdm_ao( CheMPS2::DMRGSCFindices * idx, double * DMRG1DM, Shar
         }
     }
 
-    const int nirrep = wfn->nirrep();
-    int * nmopi = init_int_array(nirrep);
-    for ( int h = 0; h < nirrep; ++h ){
-        nmopi[h] = wfn->nmopi()[h];
-    }
-    const int nao = wfn->aotoso()->rowspi( 0 );
+    const auto& nmopi = Cmat.colspi();
+    const int nao = aotoso.rowspi( 0 );
 
     SharedMatrix AO_RDM; AO_RDM = SharedMatrix( new Matrix( nao, nao ) );
 
-    const auto tfo = linalg::doublet(wfn->aotoso(), Cmat, false, false);
-    const auto work = linalg::doublet(tfo, MO_RDM, false, false);
+    const auto tfo = linalg::doublet(aotoso, Cmat, false, false);
+    const auto work = linalg::doublet(tfo, *MO_RDM, false, false);
 
     for ( int ao_row = 0; ao_row < nao; ao_row++ ){
         for ( int ao_col = 0; ao_col < nao; ao_col++ ){
             double value = 0.0;
             for ( int irrep = 0; irrep < num_irreps; irrep++ ){
                 for ( int mo = 0; mo < nmopi[ irrep ]; mo++ ){
-                    value += work->get( irrep, ao_row, mo ) * tfo->get( irrep, ao_col, mo );
+                    value += work.get( irrep, ao_row, mo ) * tfo.get( irrep, ao_col, mo );
                 }
             }
             AO_RDM->set( 0, ao_row, ao_col, value );
@@ -950,7 +946,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         (*outfile->stream()) << "###                      ###" << std::endl;
         (*outfile->stream()) << "############################" << std::endl;
         (*outfile->stream()) << "Please check the molden file for AO basis function information." << std::endl;
-        SharedMatrix AO_RDM = print_rdm_ao( iHandler, DMRG1DM, work1, wfn->Ca(), wfn );
+        SharedMatrix AO_RDM = print_rdm_ao( iHandler, DMRG1DM, work1, *wfn->Ca(), *wfn->aotoso() );
         AO_RDM->print("outfile");
 
     }
