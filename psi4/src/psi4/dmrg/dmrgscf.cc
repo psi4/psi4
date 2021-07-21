@@ -102,13 +102,11 @@ void buildJK(SharedMatrix MO_RDM, SharedMatrix MO_JK, SharedMatrix Cmat, std::sh
     const auto& nmopi = Cmat->colspi();
 
     // nso can be different from nmo
-    auto   SO_RDM = std::make_shared<Matrix>( "SO RDM",   nsopi, nsopi );
     auto Identity = std::make_shared<Matrix>( "Identity", nsopi, nsopi );
     auto    SO_JK = std::make_shared<Matrix>( "SO JK",    nsopi, nsopi );
-    auto     work = std::make_shared<Matrix>( "work",     nsopi, nmopi );
 
-    work->gemm(false, false, 1.0, Cmat, MO_RDM, 0.0);
-    SO_RDM->gemm(false, true, 1.0, work, Cmat, 0.0);
+    auto SO_RDM = MO_RDM->clone();
+    SO_RDM->back_transform(Cmat);
 
     std::vector<SharedMatrix> & CL = myJK->C_left();
     CL.clear();
@@ -128,8 +126,8 @@ void buildJK(SharedMatrix MO_RDM, SharedMatrix MO_JK, SharedMatrix Cmat, std::sh
     SO_JK->scale( -0.5 );
     SO_JK->add( myJK->J()[0] );
 
-    work->gemm(false, false, 1.0, SO_JK, Cmat, 0.0);
-    MO_JK->gemm(true, false, 1.0, Cmat, work,  0.0);
+    MO_JK->copy(SO_JK);
+    MO_JK->transform(Cmat);
 
 }
 
