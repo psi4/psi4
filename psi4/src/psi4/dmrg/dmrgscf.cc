@@ -298,33 +298,14 @@ void buildHamDMRG( std::shared_ptr<IntegralTransform> ints, std::shared_ptr<MOSp
 
 }
 
-void buildTmatrix( CheMPS2::DMRGSCFmatrix * theTmatrix, CheMPS2::DMRGSCFindices * iHandler, std::shared_ptr<PSIO> psio, SharedMatrix Cmat, std::shared_ptr<Wavefunction> wfn ){
-
-    const int nirrep = wfn->nirrep();
-    const int nmo    = wfn->nmo();
-    const int nso    = wfn->nso();
-    int * mopi       = init_int_array(nirrep);
-    int * sopi       = init_int_array(nirrep);
-    for ( int h = 0; h < nirrep; ++h ){
-        mopi[h] = wfn->nmopi()[h];
-        sopi[h] = wfn->nsopi()[h];
-    }
+void buildTmatrix( CheMPS2::DMRGSCFmatrix * theTmatrix, CheMPS2::DMRGSCFindices * iHandler, std::shared_ptr<PSIO> psio, const Matrix& Cmat, const Wavefunction& wfn){
 
     // Note this code is untested
-    SharedMatrix soOei; soOei = SharedMatrix( new Matrix("SO OEI", nirrep, sopi, sopi) );
-    soOei->add(wfn->mintshelper()->so_kinetic());
-    soOei->add(wfn->mintshelper()->so_potential());
-
-    SharedMatrix half;   half = SharedMatrix( new Matrix(  "Half", nirrep, mopi, sopi) );
-    SharedMatrix moOei; moOei = SharedMatrix( new Matrix("MO OEI", nirrep, mopi, mopi) );
-
-    half->gemm(true, false, 1.0, Cmat, soOei, 0.0);
-    moOei->gemm(false, false, 1.0, half, Cmat, 0.0);
+    auto moOei = wfn.mintshelper()->so_kinetic()->clone();
+    moOei->add(wfn.mintshelper()->so_potential());
+    moOei->transform(Cmat);
 
     copyPSIMXtoCHEMPS2MX( moOei, iHandler, theTmatrix );
-
-    free(mopi);
-    free(sopi);
 }
 
 
@@ -775,7 +756,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
 
         //Fill HamDMRG
         update_WFNco( orig_coeff, iHandler, unitary, wfn, work1, work2 );
-        buildTmatrix( theTmatrix, iHandler, psio, wfn->Ca(), wfn );
+        buildTmatrix( theTmatrix, iHandler, psio, *wfn->Ca(), *wfn);
         buildQmatOCC( theQmatOCC, iHandler, work1, work2, *wfn->Ca(), myJK);
         buildHamDMRG( ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, wfn );
 
@@ -806,7 +787,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             system(("rm " + chemps2filename).c_str());
 
             update_WFNco( orig_coeff, iHandler, unitary, wfn, work1, work2 );
-            buildTmatrix( theTmatrix, iHandler, psio, wfn->Ca(), wfn );
+            buildTmatrix( theTmatrix, iHandler, psio, *wfn->Ca(), *wfn);
             buildQmatOCC( theQmatOCC, iHandler, work1, work2, *wfn->Ca(), myJK);
             buildHamDMRG( ints, Aorbs_ptr, theTmatrix, theQmatOCC, iHandler, HamDMRG, psio, wfn );
             (*outfile->stream()) << "Rotated the active space to localized orbitals, sorted according to the exchange matrix." << std::endl;
@@ -864,7 +845,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             CheMPS2::CASSCF::block_diagonalize( 'A', theFmatrix, unitary, mem1, mem2, iHandler, true, DMRG2DM, nullptr, nullptr ); // Unitary is updated and DMRG2DM rotated
             CheMPS2::CASSCF::setDMRG1DM( nDMRGelectrons, nOrbDMRG, DMRG1DM, DMRG2DM );
             update_WFNco( orig_coeff, iHandler, unitary, wfn, work1, work2 );
-            buildTmatrix( theTmatrix, iHandler, psio, wfn->Ca(), wfn );
+            buildTmatrix( theTmatrix, iHandler, psio, *wfn->Ca(), *wfn);
             buildQmatOCC( theQmatOCC, iHandler, work1, work2, *wfn->Ca(), myJK);
             (*outfile->stream()) << "Rotated the active space to natural orbitals, sorted according to the NOON." << std::endl;
         }
@@ -922,7 +903,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         CheMPS2::CASSCF::block_diagonalize( 'V', theFmatrix, unitary, mem1, mem2, iHandler, false, nullptr, nullptr, nullptr );
         CheMPS2::CASSCF::setDMRG1DM( nDMRGelectrons, nOrbDMRG, DMRG1DM, DMRG2DM );
         update_WFNco( orig_coeff, iHandler, unitary, wfn, work1, work2 );
-        buildTmatrix( theTmatrix, iHandler, psio, wfn->Ca(), wfn );
+        buildTmatrix( theTmatrix, iHandler, psio, *wfn->Ca(), *wfn);
         buildQmatOCC( theQmatOCC, iHandler, work1, work2, *wfn->Ca(), myJK);
         buildQmatACT( theQmatACT, iHandler, DMRG1DM, work1, work2, *wfn->Ca(), myJK);
         CheMPS2::CASSCF::construct_fock( theFmatrix, theTmatrix, theQmatOCC, theQmatACT, iHandler );
@@ -1059,7 +1040,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
            CheMPS2::CASSCF::block_diagonalize( 'V', theFmatrix, unitary, mem1, mem2, iHandler, false, nullptr, nullptr, nullptr );
            CheMPS2::CASSCF::setDMRG1DM( nDMRGelectrons, nOrbDMRG, DMRG1DM, DMRG2DM ); // 1-RDM
            update_WFNco( orig_coeff, iHandler, unitary, wfn, work1, work2 );
-           buildTmatrix( theTmatrix, iHandler, psio, wfn->Ca(), wfn );
+           buildTmatrix( theTmatrix, iHandler, psio, *wfn->Ca(), *wfn);
            buildQmatOCC( theQmatOCC, iHandler, work1, work2, *wfn->Ca(), myJK);
            buildQmatACT( theQmatACT, iHandler, DMRG1DM, work1, work2, *wfn->Ca(), myJK);
            CheMPS2::CASSCF::construct_fock( theFmatrix, theTmatrix, theQmatOCC, theQmatACT, iHandler ); // Fock
