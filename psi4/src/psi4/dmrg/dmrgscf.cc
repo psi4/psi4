@@ -219,19 +219,15 @@ SharedMatrix print_rdm_ao( CheMPS2::DMRGSCFindices * idx, double * DMRG1DM, Shar
 
     const int nirrep = wfn->nirrep();
     int * nmopi = init_int_array(nirrep);
-    int * nsopi = init_int_array(nirrep);
     for ( int h = 0; h < nirrep; ++h ){
         nmopi[h] = wfn->nmopi()[h];
-        nsopi[h] = wfn->nsopi()[h];
     }
     const int nao = wfn->aotoso()->rowspi( 0 );
 
-    SharedMatrix tfo;       tfo = SharedMatrix( new Matrix( num_irreps, nao, nmopi ) );
-    SharedMatrix work;     work = SharedMatrix( new Matrix( num_irreps, nao, nmopi ) );
     SharedMatrix AO_RDM; AO_RDM = SharedMatrix( new Matrix( nao, nao ) );
 
-     tfo->gemm( false, false, 1.0, wfn->aotoso(), Cmat,   0.0 );
-    work->gemm( false, false, 1.0, tfo,           MO_RDM, 0.0 );
+    const auto tfo = linalg::doublet(wfn->aotoso(), Cmat, false, false);
+    const auto work = linalg::doublet(tfo, MO_RDM, false, false);
 
     for ( int ao_row = 0; ao_row < nao; ao_row++ ){
         for ( int ao_col = 0; ao_col < nao; ao_col++ ){
