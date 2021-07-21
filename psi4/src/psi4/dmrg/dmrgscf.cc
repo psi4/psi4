@@ -96,23 +96,16 @@ int chemps2_groupnumber(const std::string SymmLabel){
 }
 
 
-void buildJK(SharedMatrix MO_RDM, SharedMatrix MO_JK, SharedMatrix Cmat, std::shared_ptr<JK> myJK, std::shared_ptr<Wavefunction> wfn){
+void buildJK(SharedMatrix MO_RDM, SharedMatrix MO_JK, SharedMatrix Cmat, std::shared_ptr<JK> myJK){
 
-    const int nso    = wfn->nso();
-    const int nmo    = wfn->nmo();
-    const int nirrep = wfn->nirrep();
-    int * nmopi = init_int_array(nirrep);
-    int * nsopi = init_int_array(nirrep);
-    for ( int h = 0; h < nirrep; ++h ){
-        nmopi[h] = wfn->nmopi()[h];
-        nsopi[h] = wfn->nsopi()[h];
-    }
+    const auto& nsopi = Cmat->rowspi();
+    const auto& nmopi = Cmat->colspi();
 
     // nso can be different from nmo
-    SharedMatrix SO_RDM;     SO_RDM = SharedMatrix( new Matrix( "SO RDM",   nirrep, nsopi, nsopi ) );
-    SharedMatrix Identity; Identity = SharedMatrix( new Matrix( "Identity", nirrep, nsopi, nsopi ) );
-    SharedMatrix SO_JK;       SO_JK = SharedMatrix( new Matrix( "SO JK",    nirrep, nsopi, nsopi ) );
-    SharedMatrix work;         work = SharedMatrix( new Matrix( "work",     nirrep, nsopi, nmopi ) );
+    auto   SO_RDM = std::make_shared<Matrix>( "SO RDM",   nsopi, nsopi );
+    auto Identity = std::make_shared<Matrix>( "Identity", nsopi, nsopi );
+    auto    SO_JK = std::make_shared<Matrix>( "SO JK",    nsopi, nsopi );
+    auto     work = std::make_shared<Matrix>( "work",     nsopi, nmopi );
 
     work->gemm(false, false, 1.0, Cmat, MO_RDM, 0.0);
     SO_RDM->gemm(false, true, 1.0, work, Cmat, 0.0);
@@ -174,7 +167,7 @@ void buildQmatOCC( CheMPS2::DMRGSCFmatrix * theQmatOCC, CheMPS2::DMRGSCFindices 
             MO_RDM->set(irrep, orb, orb, 2.0);
         }
     }
-    buildJK( MO_RDM, MO_JK, Cmat, myJK, wfn );
+    buildJK( MO_RDM, MO_JK, Cmat, myJK);
     copyPSIMXtoCHEMPS2MX( MO_JK, iHandler, theQmatOCC );
 
 }
@@ -195,7 +188,7 @@ void buildQmatACT( CheMPS2::DMRGSCFmatrix * theQmatACT, CheMPS2::DMRGSCFindices 
             }
         }
     }
-    buildJK( MO_RDM, MO_JK, Cmat, myJK, wfn );
+    buildJK( MO_RDM, MO_JK, Cmat, myJK);
     copyPSIMXtoCHEMPS2MX( MO_JK, iHandler, theQmatACT );
 
 }
