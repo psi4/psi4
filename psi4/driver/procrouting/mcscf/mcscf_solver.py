@@ -369,7 +369,7 @@ def mcscf_solver(ref_wfn):
         ciwfn.transform_mcscf_integrals(approx_integrals_only)
         ciwfn.set_print(1)
         ciwfn.set_ci_guess("H0_BLOCK")
-        nci_iter = ciwfn.diag_h(abs(ediff) * 1.e-2, orb_grad_rms * 1.e-3)
+        nci_iter = ciwfn.diag_h(mcscf_e_conv, mcscf_e_conv ** 0.5)
 
         ciwfn.form_opdm()
         ciwfn.form_tpdm()
