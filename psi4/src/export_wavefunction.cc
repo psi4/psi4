@@ -554,6 +554,7 @@ void export_wavefunction(py::module& m) {
         .def("compute_state_transfer", &detci::CIWavefunction::compute_state_transfer, "docstring")
         .def("sigma", py_ci_sigma, "docstring")
         .def("sigma", py_ci_int_sigma, "docstring")
+        .def("reset_ci_H0block", &detci::CIWavefunction::reset_ci_H0block, "docstring")
         .def("cleanup_ci", &detci::CIWavefunction::cleanup_ci, "docstring")
         .def("cleanup_dpd", &detci::CIWavefunction::cleanup_dpd, "docstring")
         .def("set_ci_guess", &detci::CIWavefunction::set_ci_guess, "docstring");
