@@ -365,6 +365,7 @@ def mcscf_solver(ref_wfn):
 
         # Retransform intragrals and update CI coeffs., OPDM, and TPDM
         ciwfn.transform_mcscf_integrals(approx_integrals_only)
+        ciwfn.set_print(1)
         nci_iter = ciwfn.diag_h(abs(ediff) * 1.e-2, orb_grad_rms * 1.e-3)
 
         ciwfn.form_opdm()
