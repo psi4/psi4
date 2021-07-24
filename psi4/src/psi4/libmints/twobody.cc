@@ -200,10 +200,8 @@ bool TwoBodyAOInt::shell_significant_csam(int M, int N, int R, int S) {
 }
 
 bool TwoBodyAOInt::shell_significant_schwarz(int M, int N, int R, int S) {
-
     return shell_pair_values_[N * nshell_ + M] * shell_pair_values_[R * nshell_ + S] >= screening_threshold_squared_;
 }
-
 bool TwoBodyAOInt::shell_significant_none(int M, int N, int R, int S) { return true; }
 
 void TwoBodyAOInt::setup_sieve() {
