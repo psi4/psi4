@@ -94,7 +94,10 @@ def scf_compute_energy(self):
         else:
             core.print_out("  Energy and/or wave function did not converge, but proceeding anyway.\n\n")
     else:
-        core.print_out("  Energy and wave function converged.\n\n")
+        if core.get_option('SCF', 'MAXITER') == 0:
+            core.print_out("  Skipped SCF calculation; using input orbitals.\n\n")
+        else:
+            core.print_out("  Energy and wave function converged.\n\n")
 
     scf_energy = self.finalize_energy()
     return scf_energy
@@ -123,7 +126,7 @@ def initialize_jk(self, memory, jk=None):
     jk.set_omega(functional.x_omega())
 
     jk.set_omega_alpha(functional.x_alpha())
-    jk.set_omega_beta(functional.x_beta())   
+    jk.set_omega_beta(functional.x_beta())
 
     jk.initialize()
     jk.print_header()
@@ -219,7 +222,7 @@ def scf_initialize(self):
         self.guess()
         core.timer_off("HF: Guess")
         # Print out initial docc/socc/etc data
-        if self.get_print():                    
+        if self.get_print():
             lack_occupancy = core.get_local_option('SCF', 'GUESS') in ['SAD']
             if core.get_global_option('GUESS') in ['SAD']:
                 lack_occupancy = core.get_local_option('SCF', 'GUESS') in ['AUTO']
@@ -256,24 +259,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     efp_enabled = hasattr(self.molecule(), 'EFP')
     diis_rms = core.get_option('SCF', 'DIIS_RMS_ERROR')
 
-    if self.iteration_ < 2:
-        core.print_out("  ==> Iterations <==\n\n")
-        core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" %
-                       ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
-
-    # SCF iterations!
-    SCFE_old = 0.0
-    Dnorm = 0.0
-    while True:
-        self.iteration_ += 1
-
-        diis_performed = False
-        soscf_performed = False
-        self.frac_performed_ = False
-        #self.MOM_performed_ = False  # redundant from common_init()
-
-        self.save_density_and_energy()
-
+    def form_fock():
+        '''Calculate energy and form the Fock matrix'''
         if efp_enabled:
             # EFP: Add efp contribution to Fock matrix
             self.H().copy(self.Horig)
@@ -339,6 +326,35 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
         self.set_energies("Total Energy", SCFE)
         core.set_variable("SCF ITERATION ENERGY", SCFE)
+
+        return SCFE
+
+    # Single-shot calculation
+    if core.get_option('SCF', 'MAXITER') == 0:
+        core.print_out("  ==> Post-SCF calculation <==\n\n")
+        form_fock()
+        return
+
+    if self.iteration_ < 2:
+        core.print_out("  ==> Iterations <==\n\n")
+        core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" %
+                       ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
+
+    # SCF iterations!
+    SCFE_old = 0.0
+    Dnorm = 0.0
+    while True:
+        self.iteration_ += 1
+
+        diis_performed = False
+        soscf_performed = False
+        self.frac_performed_ = False
+        #self.MOM_performed_ = False  # redundant from common_init()
+
+        self.save_density_and_energy()
+
+        SCFE = form_fock()
+
         Ediff = SCFE - SCFE_old
         SCFE_old = SCFE
 
@@ -699,7 +715,7 @@ def scf_print_energies(self):
     if hasattr(self.molecule(), 'EFP'):
         core.print_out("    EFP Energy =                      {:24.16f}\n".format(eefp))
     core.print_out("    Total Energy =                    {:24.16f}\n".format(total_energy))
-    
+
     if core.get_option('SCF', 'PE'):
         core.print_out(self.pe_state.cppe_state.summary_string)
 
