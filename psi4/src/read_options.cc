@@ -1042,7 +1042,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- SUBSECTION SAPT(DFT) -*/
 
         /*- Compute GRAC shift automatically? -*/
-        options.add_bool("SAPT_DFT_COMPUTE_GRAC_SHIFT", false)
+        options.add_bool("SAPT_DFT_COMPUTE_GRAC_SHIFT", false);
         /*- Monomer A GRAC shift in Hartree -*/
         options.add_double("SAPT_DFT_GRAC_SHIFT_A", 0.0);
         /*- Monomer B GRAC shift in Hartree -*/
@@ -1057,9 +1057,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         ``NONE`` Use unscaled ``Exch-Disp2,u`` .
         ``FIXED`` Use a fixed factor |sapt__sapt_dft_exch_disp_fixed_scale| to scale ``Exch-Disp2,u`` .
         ``DISP`` Use the ratio of ``Disp2,r`` and ``Disp2,u`` to scale ``Exch-Disp2,u`` . -*/
-        options.add_str("SAPT_DFT_EXCH_DISP_SCALE_SCHEME", "DISP", "NONE FIXED DISP");
+        options.add_str("SAPT_DFT_EXCH_DISP_SCALE_SCHEME", "FIXED", "NONE FIXED DISP");
         /*- Exch-disp scaling factor for FIXED scheme for |sapt__sapt_dft_exch_disp_scale_scheme|. Default value of 0.686 suggested by Hesselmann and Korona, J. Chem. Phys. 141, 094107 (2014). !expert -*/
-        options.add_double("SAPT_DFT_EXCH_DISP_FIXED_SCALE", 0.686);
+        options.add_double("SAPT_DFT_EXCH_DISP_FIXED_SCALE", 0.769848);
         /*- Underlying funcitonal to use for SAPT(DFT) !expert -*/
         options.add_str("SAPT_DFT_FUNCTIONAL", "PBE0", "");
         /*- Number of points in the Legendre FDDS Dispersion time integration !expert -*/
