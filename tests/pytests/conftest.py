@@ -65,6 +65,7 @@ def tear_down():
         "FCIDUMP_SCF",
         "FCIDUMP_MP2",
         "*.fchk",
+        "*.molden",
     ]
     pytest_scratches = []
     for pat in patterns:

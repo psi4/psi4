@@ -80,11 +80,12 @@ def test_OH_molden(inp_oh, datadir):
             0 2
             O
             H   1   0.970369
+            symmetry c1
             """)
     psi4.set_options({
         'basis': 'dz',
         'scf_type': 'pk',
-        'r_convergence': 12,
+        'd_convergence': 8,
         'reference':inp_oh['ref']
         })
     molden_file = f"{inp_oh['name']}.molden"
