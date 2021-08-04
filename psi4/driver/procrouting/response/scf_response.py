@@ -134,6 +134,7 @@ def cpscf_linear_response(wfn, *args, **kwargs):
     # vectors will be passed to the cphf solver, vector_names stores the corresponding names
     vectors = []
     vector_names = []
+    restricted = wfn.same_a_b_orbs()
 
     # construct the list of vectors. for the keywords, fetch the appropriate tensors from MintsHelper
     for prop in complete_dict:
@@ -141,11 +142,13 @@ def cpscf_linear_response(wfn, *args, **kwargs):
             for name, vec in zip(prop['vector names'], prop['vectors']):
                 vectors.append(vec)
                 vector_names.append(name)
-
         else:
             tmp_vectors = prop['mints_function'](mints)
             for tmp in tmp_vectors:
-                tmp.scale(-2.0)  # RHF only
+                if restricted:
+                    tmp.scale(-2.0)
+                else:
+                    tmp.scale(-1.0)
                 vectors.append(tmp)
                 vector_names.append(tmp.name)
 
@@ -156,61 +159,88 @@ def cpscf_linear_response(wfn, *args, **kwargs):
     # print information on module, vectors that will be used
     _print_header(complete_dict, n_user)
 
-    # fetch wavefunction information
-    nmo = wfn.nmo()
-    ndocc = wfn.nalpha()
-    nvirt = nmo - ndocc
+    if restricted:
+        # fetch wavefunction information
+        nmo = wfn.nmo()
+        ndocc = wfn.nalpha()
+        nvirt = nmo - ndocc
 
-    c_occ = wfn.Ca_subset("AO", "OCC")
-    c_vir = wfn.Ca_subset("AO", "VIR")
-    nbf = c_occ.shape[0]
+        c_occ = wfn.Ca_subset("AO", "OCC")
+        c_vir = wfn.Ca_subset("AO", "VIR")
+        nbf = c_occ.shape[0]
+        # the vectors need to be in the MO basis. if they have the shape nbf x nbf, transform.
+        for i in range(len(vectors)):
+            shape = vectors[i].shape
+            if shape == (nbf, nbf):
+                vectors[i] = core.triplet(c_occ, vectors[i], c_vir, True, False, False)
+            # verify that this vector already has the correct shape
+            elif shape != (ndocc, nvirt):
+                raise ValidationError('ERROR: "{}" has an unrecognized shape ({}, {}).'
+                                      'Must be either ({}, {}) or ({}, {})'.format(
+                                          vector_names[i], shape[0], shape[1], nbf, nbf, ndocc, nvirt))
+    else:
+        Co = [wfn.Ca_subset("AO", "OCC"), wfn.Cb_subset("AO", "OCC")]
+        Cv = [wfn.Ca_subset("AO", "VIR"), wfn.Cb_subset("AO", "VIR")]
+        occpi = [wfn.nalphapi(), wfn.nbetapi()]
+        virpi = [wfn.nmopi() - occpi[0], wfn.nmopi() - occpi[1]]
+        nbf = Co[0].shape[0]
 
-    # the vectors need to be in the MO basis. if they have the shape nbf x nbf, transform.
-    for i in range(len(vectors)):
-        shape = vectors[i].shape
-
-        if shape == (nbf, nbf):
-            vectors[i] = core.triplet(c_occ, vectors[i], c_vir, True, False, False)
-
-        # verify that this vector already has the correct shape
-        elif shape != (ndocc, nvirt):
-            raise ValidationError('ERROR: "{}" has an unrecognized shape ({}, {}). Must be either ({}, {}) or ({}, {})'.format(
-                vector_names[i], shape[0], shape[1], nbf, nbf, ndocc, nvirt))
+        vectors_ab = []
+        for i in range(len(vectors)):
+            shape = vectors[i].shape
+            if shape == (nbf, nbf):
+                v_a = core.triplet(Co[0], vectors[i], Cv[0], True, False, False)
+                v_b = core.triplet(Co[1], vectors[i], Cv[1], True, False, False)
+            vectors_ab.append(v_a)
+            vectors_ab.append(v_b)
+        vectors = vectors_ab
 
     # compute response vectors for each input vector
     params = [kwargs.pop("conv_tol", 1.e-5), kwargs.pop("max_iter", 10), kwargs.pop("print_lvl", 2)]
 
     responses = wfn.cphf_solve(vectors, *params)
+    
+    if restricted:
+        # zip vectors, responses for easy access
+        vectors = {k: v for k, v in zip(vector_names, vectors)}
+        responses = {k: v for k, v in zip(vector_names, responses)}
 
-    # zip vectors, responses for easy access
-    vectors = {k: v for k, v in zip(vector_names, vectors)}
-    responses = {k: v for k, v in zip(vector_names, responses)}
-
-    # compute response values, format output
-    output = []
-    for prop in complete_dict:
-
-        # try to replicate the data structure of the input
-        if 'User' in prop['name']:
-            if prop['length'] == 0:
-                output.append(responses[prop['vector names'][0]])
+        # compute response values, format output
+        output = []
+        for prop in complete_dict:
+            # try to replicate the data structure of the input
+            if 'User' in prop['name']:
+                if prop['length'] == 0:
+                    output.append(responses[prop['vector names'][0]])
+                else:
+                    buf = []
+                    for name in prop['vector names']:
+                        buf.append(responses[name])
+                    output.append(buf)
             else:
-                buf = []
-                for name in prop['vector names']:
-                    buf.append(responses[name])
+                names = prop['vector names']
+                dim = len(names)
+                buf = np.zeros((dim, dim))
+                for i, i_name in enumerate(names):
+                    for j, j_name in enumerate(names):
+                        buf[i, j] = -1.0 * vectors[i_name].vector_dot(responses[j_name])
                 output.append(buf)
-
-        else:
-            names = prop['vector names']
-            dim = len(names)
-
-            buf = np.zeros((dim, dim))
-
-            for i, i_name in enumerate(names):
-                for j, j_name in enumerate(names):
-                    buf[i, j] = -1.0 * vectors[i_name].vector_dot(responses[j_name])
-
-            output.append(buf)
+    else:
+        vectors_a = {k: v for k, v in zip(vector_names, vectors[::2])}
+        vectors_b = {k: v for k, v in zip(vector_names, vectors[1::2])}
+        responses_a = {k: v for k, v in zip(vector_names, responses[::2])}
+        responses_b = {k: v for k, v in zip(vector_names, responses[1::2])}
+        output = []
+        names = prop['vector names']
+        dim = len(names)
+        buf = np.zeros((dim, dim))
+        for i, i_name in enumerate(names):
+            for j, j_name in enumerate(names):
+                # why 2.0?!
+                buf[i, j] = -2.0 * vectors_a[i_name].vector_dot(responses_a[j_name])
+                buf[i, j] += -2.0 * vectors_b[i_name].vector_dot(responses_b[j_name])
+        output.append(buf)
+        
 
     _print_output(complete_dict, output)
 
