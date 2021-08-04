@@ -62,8 +62,7 @@ def scf_compute_energy(self):
     """
     if core.get_option('SCF', 'DF_SCF_GUESS') and (core.get_global_option('SCF_TYPE') == 'DIRECT'):
         # speed up DIRECT algorithm (recomputes full (non-DF) integrals
-        #   each iter) by first converging via fast DF iterations, then
-        #   fully converging in fewer slow DIRECT iterations. aka Andy trick 2.0
+        #   each iter) by solving DF-SCF to get a guess. DF-SCF is faster than direct.
         core.print_out("  Starting with a DF guess...\n\n")
         with p4util.OptionsStateCM(['SCF_TYPE']):
             core.set_global_option('SCF_TYPE', 'DF')
@@ -186,7 +185,7 @@ def scf_initialize(self):
 
         efpobj.set_electron_density_field_fn(efp_field_fn)
 
-    # Initilize all integratals and perform the first guess
+    # Initialize all integrals and perform the first guess
     if self.attempt_number_ == 1:
         mints = core.MintsHelper(self.basisset())
 
@@ -239,6 +238,13 @@ def scf_initialize(self):
         self.functional().set_do_vv10(False)
         self.functional().set_lock(True)
 
+    # Print iteration header
+    is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
+    diis_rms = core.get_option('SCF', 'DIIS_RMS_ERROR')
+    core.print_out("  ==> Iterations <==\n\n")
+    core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" %
+                   ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
+
 
 def scf_iterate(self, e_conv=None, d_conv=None):
 
@@ -254,12 +260,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     soscf_enabled = _validate_soscf()
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
-    diis_rms = core.get_option('SCF', 'DIIS_RMS_ERROR')
-
-    if self.iteration_ < 2:
-        core.print_out("  ==> Iterations <==\n\n")
-        core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" %
-                       ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
 
     # SCF iterations!
     SCFE_old = 0.0
