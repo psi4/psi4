@@ -1413,12 +1413,12 @@ def test_dftd4():
 
     print('  non-default -D correction from C-side')
     psi4.activate(mB)
-    psi4.set_options({"dft_dispersion_parameters": [2.02929367, 0.40868035, 4.53807137, 1.0]})  # b3lyp-d4
+    psi4.set_options({"dft_dispersion_parameters": [0.40868035, 4.53807137, 16.0, 1.0, 2.02929367, 1.0]})  # b3lyp-d4
     psi4.energy('b3lyp-d4(bj)')
     assert psi4.compare_values(ref_d4bj[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D4')
 
     psi4.activate(eneyne)
-    psi4.set_options({"dft_dispersion_parameters": [2.02929367, 0.40868035, 4.53807137, 0.0]})  # b3lyp-d4-2body
+    psi4.set_options({"dft_dispersion_parameters": [0.40868035, 4.53807137, 16.0, 1.0, 2.02929367, 0.0]})  # b3lyp-d4-2body
     psi4.energy('b3lyp-d4(bj)')
     assert psi4.compare_values(ref_d4bj_2body[0], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D4-2body')
 
@@ -1432,7 +1432,7 @@ def test_dftd4():
     psi4.energy('b3lyp-d3')
     assert psi4.compare_values(ref_pbe_d3zero[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D4 (alias)')
 
-    psi4.set_options({"dft_dispersion_parameters": [0.95948085, 0.38574991, 4.80688534, 1.0]})  # pbe-d4
+    psi4.set_options({"dft_dispersion_parameters": [0.38574991, 4.80688534, 16.0, 1.0, 0.95948085, 1.0]})  # pbe-d4
     psi4.energy('b3lyp-d4')
     assert psi4.compare_values(ref_pbe_d4bj[2], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene -D4 (alias)')
     psi4.activate(mA)
