@@ -90,7 +90,7 @@ class EmpiricalDispersion(object):
     engine : str
         {'libdisp', 'dftd3', 'nl', 'mp2d', "dftd4"}
         Compute engine for dispersion. One of Psi4's internal libdisp
-        library, Grimme's DFTD3 executable, or nl.
+        library, external Grimme or Beran projects, or nl.
     disp : Dispersion
         Only present for :py:attr:`engine` `=libdisp`. Psi4 class instance prepared
         to compute dispersion.
@@ -326,7 +326,7 @@ class EmpiricalDispersion(object):
         optstash = p4util.OptionsState(['PRINT'], ['PARENT_SYMMETRY'])
         core.set_global_option('PRINT', 0)
 
-        core.print_out("\n\n   Analytical Dispersion Hessians are not supported by dftd3 or gcp.\n")
+        core.print_out("\n\n   Analytical Dispersion Hessians are not supported by any engine.\n")
         core.print_out("       Computing the Hessian through finite difference of gradients.\n\n")
 
         # Setup the molecule

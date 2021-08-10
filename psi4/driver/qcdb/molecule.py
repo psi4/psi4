@@ -1267,7 +1267,7 @@ class Molecule(LibmintsMolecule):
         dashlvl
             Name of dispersion correction to be applied (e.g., d, D2,
             d3(bj), das2010). Must be key in `dashcoeff` or "alias" or
-            "formal" to one.
+            "formal" to run.
         dashparam
             Values for the same keys as `dashcoeff[dashlvl]['default']`
             used to override any or all values initialized by `func`.
@@ -1350,7 +1350,7 @@ class Molecule(LibmintsMolecule):
         dashlvl : str, optional
             Name of dispersion correction to be applied (e.g., d, D2,
             d3(bj), das2010). Must be key in `dashcoeff` or "alias" or
-            "formal" to one.
+            "formal" to run.
         dashparam : dict, optional
             Values for the same keys as `dashcoeff[dashlvl]['default']`
             used to override any or all values initialized by `func`.

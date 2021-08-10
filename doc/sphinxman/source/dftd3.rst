@@ -207,7 +207,7 @@ define them. The dispersion correction is available after a calculation in
 the PSI variable :psivar:`DISPERSION CORRECTION ENERGY`.
 By default, the output from the ``dftd3``
 program is suppressed; to see it in the output file, set print > 2.
-No next output is available from the ``dftd4`` program.
+No text output is available from the ``dftd4`` program.
 
 
 .. _`table:dashd`:
