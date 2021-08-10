@@ -418,8 +418,7 @@ OptReturnType optking(void) {
       p_Opt_data->reset_trust_radius();
       delete p_Opt_data;
       INTCO_EXCEPT::dynamic_level = options.get_int("DYNAMIC_LEVEL"); // reset for future optimizations
-      opt_intco_dat_remove(); // rm intco definitions
-      opt_io_remove();        // rm optimization data
+      opt_clean();
       mol1->write_geom();  // write geometry -> chkpt file (also output for QChem)
       print_end_out();
 

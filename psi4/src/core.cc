@@ -260,12 +260,11 @@ PsiReturnType cceom(SharedWavefunction, Options&);
 }
 
 extern int read_options(const std::string& name, Options& options, bool suppress_printing = false);
-// extern void print_version(std::string);
 }  // namespace psi
 
 std::string to_upper(const std::string& key) {
     std::string nonconst_key = key;
-    std::transform(nonconst_key.begin(), nonconst_key.end(), nonconst_key.begin(), ::toupper);
+    to_upper(nonconst_key);
     return nonconst_key;
 }
 
@@ -526,22 +525,6 @@ SharedWavefunction py_psi_adc(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("ADC");
     SharedWavefunction adc_wfn = adc::adc(ref_wfn, Process::environment.options);
     return adc_wfn;
-}
-
-char const* py_psi_version() {
-#ifdef PSI_VERSION
-    return PSI_VERSION;
-#else
-    return "";
-#endif
-}
-
-char const* py_psi_git_version() {
-#ifdef GIT_VERSION
-    return GIT_VERSION;
-#else
-    return "";
-#endif
 }
 
 void py_psi_clean() { PSIOManager::shared_object()->psiclean(); }
@@ -984,10 +967,8 @@ py::object py_psi_get_option(std::string const& module, std::string const& key) 
 }
 
 void py_psi_set_active_molecule(std::shared_ptr<Molecule> molecule) { Process::environment.set_molecule(molecule); }
-void py_psi_set_legacy_molecule(std::shared_ptr<Molecule> legacy_molecule) {
-    Process::environment.set_legacy_molecule(legacy_molecule);
-}
 
+void py_psi_set_legacy_molecule(std::shared_ptr<Molecule> molecule) { Process::environment.set_legacy_molecule(molecule); }
 std::shared_ptr<Molecule> py_psi_get_active_molecule() { return Process::environment.molecule(); }
 std::shared_ptr<Molecule> py_psi_get_legacy_molecule() { return Process::environment.legacy_molecule(); }
 
@@ -1029,7 +1010,11 @@ void py_psi_set_n_threads(size_t nthread, bool quiet) {
 
 int py_psi_get_n_threads() { return Process::environment.get_n_threads(); }
 
+PSI_DEPRECATED("Using core.legacy_wavefunction rather than setting return_wfn=True for a computation is deprecated, "
+        "and in 1.5, it will stop working.")
 std::shared_ptr<Wavefunction> py_psi_legacy_wavefunction() { return Process::environment.legacy_wavefunction(); }
+PSI_DEPRECATED("Using core.set_legacy_wavefunction rather than passing a wavefunction into a computation is deprecated, "
+        "and in 1.5, it will stop working.")
 void py_psi_set_legacy_wavefunction(SharedWavefunction wfn) { Process::environment.set_legacy_wavefunction(wfn); }
 
 void py_psi_print_variable_map() {
@@ -1155,28 +1140,39 @@ PYBIND11_MODULE(core, core) {
     //           set_local_option
     //)pbdoc");
 
-    core.def("initialize", &psi4_python_module_initialize);
-    core.def("finalize", &psi4_python_module_finalize);
+    core.def("initialize", &psi4_python_module_initialize, "Called upon psi4 module import to initialize timers, singletons, and I/O. Idempotent");
+    core.def("finalize", &psi4_python_module_finalize, "Called upon psi4 module exit to closes timers and I/O.");
 
-    py::enum_<PsiReturnType>(core, "PsiReturnType", "docstring")
+    py::enum_<PsiReturnType>(core, "PsiReturnType", "Return status.")  // after C-OptKing, only Failure slightly used
         .value("Success", Success)
         .value("Failure", Failure)
         .value("Balk", Balk)
         .value("EndLoop", EndLoop)
         .export_values();
 
-    core.def("version", py_psi_version, "Returns the version ID of this copy of Psi.");
-    core.def("git_version", py_psi_git_version, "Returns the git version of this copy of Psi.");
-    core.def("clean", py_psi_clean, "Function to remove scratch files. Call between independent jobs.");
-    core.def("clean_options", py_psi_clean_options, "Function to reset options to clean state.");
+    core.def("version", []() { PyErr_SetString(PyExc_AttributeError, "psi4.core.version removed since hasn't been working as intended."); }, ".. deprecated:: 1.4");
+    core.def("git_version", []() { PyErr_SetString(PyExc_AttributeError, "psi4.core.git_version removed since hasn't been working as intended."); }, ".. deprecated:: 1.4");
+    core.def("clean", py_psi_clean, "Remove scratch files. Call between independent jobs.");
+    core.def("clean_options", py_psi_clean_options, "Reset options to clean state.");
 
-    core.def("get_writer_file_prefix", get_writer_file_prefix,
+    core.def("get_writer_file_prefix", get_writer_file_prefix, "molecule_name"_a,
              "Returns the prefix to use for writing files for external programs.");
     // Benchmarks
     export_benchmarks(core);
 
     // BLAS/LAPACK Static Wrappers
     export_blas_lapack(core);
+
+    // Define library classes
+    export_psio(core);
+    export_diis(core);
+    export_mints(core);
+    export_misc(core);
+    export_fock(core);
+    export_functional(core);
+    export_trans(core);
+    export_wavefunction(core);
+    export_options(core);
 
     // Plugins
     export_plugins(core);
@@ -1193,38 +1189,35 @@ PYBIND11_MODULE(core, core) {
     export_cubeprop(core);
 
     // Options
-    core.def("prepare_options_for_module", py_psi_prepare_options_for_module,
-             "Sets the options module up to return options pertaining to the named argument (e.g. SCF).");
-    core.def("set_active_molecule", py_psi_set_active_molecule,
-             "Activates a previously defined (in the input) molecule, by name.");
+    core.def("prepare_options_for_module", py_psi_prepare_options_for_module, "name"_a,
+             "Sets up the options library to return options pertaining to the module or plugin *name* (e.g. SCF).");
+    core.def("set_active_molecule", py_psi_set_active_molecule, "molecule"_a,
+             "Activates a previously defined *molecule* in global memory so next computations use it.");
     core.def("get_active_molecule", &py_psi_get_active_molecule, "Returns the currently active molecule object.");
-    core.def("set_legacy_molecule", py_psi_set_legacy_molecule,
-             "Activates a previously defined (in the input) molecule, by name.");
-    core.def("get_legacy_molecule", &py_psi_get_legacy_molecule, "Returns the currently active molecule object.");
+    core.def("set_legacy_molecule", py_psi_set_legacy_molecule, "molecule"_a,
+             "Activates a previously defined *molecule* in global memory so next computations use it. FOR INTERNAL OPTKING USE ONLY.");
+    core.def("get_legacy_molecule", &py_psi_get_legacy_molecule, "Returns the currently active legacy molecule object. FOR INTERNAL OPTKING USE ONLY.");
     core.def("legacy_wavefunction", py_psi_legacy_wavefunction,
-             "Returns the current legacy_wavefunction object from the most recent computation.");
-    core.def("set_legacy_wavefunction", py_psi_set_legacy_wavefunction,
-             "Returns the current legacy_wavefunction object from the most recent computation.");
+             "\nReturns the current legacy_wavefunction object from the most recent computation. FOR AGED PLUGIN USE ONLY\n\n.. deprecated:: 1.5\n");
+    core.def("set_legacy_wavefunction", py_psi_set_legacy_wavefunction, "wfn"_a,
+             "Sets the current legacy_wavefunction object from the most recent computation. FOR AGED PLUGIN USE ONLY.\n.. deprecated:: 1.5\n");
     core.def("get_legacy_gradient", py_psi_get_gradient,
-             "Returns the global gradient as a (nat, 3) :py:class:`~psi4.core.Matrix` object. FOR INTERNAL OPTKING USE "
-             "ONLY.");
-    core.def(
-        "set_legacy_gradient", py_psi_set_gradient,
+             "Returns the global gradient as a (nat, 3) :py:class:`~psi4.core.Matrix` object. FOR INTERNAL OPTKING USE ONLY.");
+    core.def("set_legacy_gradient", py_psi_set_gradient, "grad"_a,
         "Assigns the global gradient to the values in the (nat, 3) Matrix argument. FOR INTERNAL OPTKING USE ONLY.");
-    core.def("get_atomic_point_charges", py_psi_get_atomic_point_charges,
-             "Returns the most recently computed atomic point charges, as a double * object.");
+    core.def("get_atomic_point_charges", []() { PyErr_SetString(PyExc_AttributeError, "psi4.core.get_atomic_point_charges removed since hasn't been working as intended. Use Wavefunction.get_atomic_point_charges() instead."); }, ".. deprecated:: 1.4");
     core.def("set_memory_bytes", py_psi_set_memory, "memory"_a, "quiet"_a = false,
-             "Sets the memory available to Psi (in bytes).");
+             "Sets the memory available to Psi (in bytes); prefer :func:`psi4.set_memory`.");
     core.def("get_memory", py_psi_get_memory, "Returns the amount of memory available to Psi (in bytes).");
-    core.def("set_datadir", [](const std::string& pdd) { Process::environment.set_datadir(pdd); },
-             "Returns the amount of memory available to Psi (in bytes).");
+
+    core.def("set_datadir", [](const std::string& pdd) { Process::environment.set_datadir(pdd); }, "psidatadir"_a,
+             "Sets the path to shared text resources, :envvar:`PSIDATADIR`.");
     core.def("get_datadir", []() { return Process::environment.get_datadir(); },
-             "Sets the path to shared text resources, PSIDATADIR");
+             "Returns the path to shared text resources, :envvar:`PSIDATADIR`");
     core.def("set_num_threads", py_psi_set_n_threads, "nthread"_a, "quiet"_a = false,
              "Sets the number of threads to use in SMP parallel computations.");
     core.def("get_num_threads", py_psi_get_n_threads,
              "Returns the number of threads to use in SMP parallel computations.");
-    //    core.def("mol_from_file",&LibBabel::ParseFile,"Reads a molecule from another input file");
     core.def("print_options", py_psi_print_options,
              "Prints the currently set options (to the output file) for the current module.");
     core.def("print_global_options", py_psi_print_global_options,
@@ -1232,108 +1225,112 @@ PYBIND11_MODULE(core, core) {
     core.def("print_out", py_psi_print_out, "Prints a string (using sprintf-like notation) to the output file.");
 
     // Set the different local option types
-    core.def("set_local_option", py_psi_set_local_option_array_wrapper,
-             "Sets value *arg3* to array keyword *arg2* scoped only to a specific module *arg1*.");
-    core.def("set_local_option", py_psi_set_local_option_int,
-             "Sets value *arg3* to integer keyword *arg2* scoped only to a specific module *arg1*.");
-    core.def("set_local_option", py_psi_set_local_option_double,
-             "Sets value *arg3* to double keyword *arg2* scoped only to a specific module *arg1*.");
-    core.def("set_local_option", py_psi_set_local_option_string,
-             "Sets value *arg3* to string keyword *arg2* scoped only to a specific module *arg1*.");
-    core.def("set_local_option_python", py_psi_set_local_option_python,
-             "Sets an option to a Python object, but scoped only to a single module.");
+    core.def("set_local_option", py_psi_set_local_option_array_wrapper, "module"_a, "key"_a, "value"_a,
+             "Sets *value* to array keyword *key* scoped only to specific *module*.");
+    core.def("set_local_option", py_psi_set_local_option_int, "module"_a, "key"_a, "value"_a,
+             "Sets *value* to integer keyword *key* scoped only to specific *module*.");
+    core.def("set_local_option", py_psi_set_local_option_double, "module"_a, "key"_a, "value"_a,
+             "Sets *value* to double keyword *key* scoped only to specific *module*.");
+    core.def("set_local_option", py_psi_set_local_option_string, "module"_a, "key"_a, "value"_a,
+             "Sets *value* to string keyword *key* scoped only to specific *module*.");
+    core.def("set_local_option_python", py_psi_set_local_option_python, "key"_a, "value"_a,
+             "Sets *value* to Python keyword *key* scoped only to a single module.");
 
     // Set the different global option types
-    core.def("set_global_option", py_psi_set_global_option_array_wrapper,
-             "Sets value *arg2* to array keyword *arg1* for all modules.");
-    core.def("set_global_option", py_psi_set_global_option_int,
-             "Sets value *arg2* to integer keyword *arg1* for all modules.");
-    core.def("set_global_option", py_psi_set_global_option_double,
-             "Sets value *arg2* to double keyword *arg1* for all modules.");
-    core.def("set_global_option", py_psi_set_global_option_string,
-             "Sets value *arg2* to string keyword *arg1* for all modules.");
+    core.def("set_global_option", py_psi_set_global_option_array_wrapper, "key"_a, "value"_a,
+             "Sets *value* to array keyword *key* for all modules.");
+    core.def("set_global_option", py_psi_set_global_option_int, "key"_a, "value"_a,
+             "Sets *value* to integer keyword *key* for all modules.");
+    core.def("set_global_option", py_psi_set_global_option_double, "key"_a, "value"_a,
+             "Sets *value* to double keyword *key* for all modules.");
+    core.def("set_global_option", py_psi_set_global_option_string, "key"_a, "value"_a,
+             "Sets *value* to string keyword *key* for all modules.");
 
     // Print options list
     core.def("get_global_option_list", py_psi_get_global_option_list, "Returns a list of all global options.");
 
     // Get the option; either global or local or let liboptions decide whether to use global or local
-    core.def("get_global_option", py_psi_get_global_option,
-             "Given a string of a keyword name *arg1*, returns the value associated with the keyword from the global "
-             "options. Returns error if keyword is not recognized.");
-    core.def("get_local_option", py_psi_get_local_option,
-             "Given a string of a keyword name *arg2* and a particular module *arg1*, returns the value associated "
-             "with the keyword in the module options scope. Returns error if keyword is not recognized for the "
-             "module.");
-    core.def("get_option", py_psi_get_option,
-             "Given a string of a keyword name *arg2* and a particular module *arg1*, returns the local value "
-             "associated with the keyword if it's been set, else the global value if it's been set, else the local "
-             "core.default value. Returns error if keyword is not recognized globally or if keyword is not recognized "
-             "for the module.");
+    core.def("get_global_option", py_psi_get_global_option, "key"_a,
+             "Return keyword *key* value at global (all-module) scope. Use :func:`psi4.core.get_option` for "
+             "more common usage of negotiated value between global and local defaults and settings. "
+             "Returns error if *key* is not recognized.");
+    core.def("get_local_option", py_psi_get_local_option, "module"_a, "key"_a,
+             "Return keyword *key* value at *module* scope. Use :func:`psi4.core.get_option` for "
+             "more common usage of negotiated value between global and local defaults and settings. "
+             "Returns error if *key* is not recognized for the module.");
+    core.def("get_option", py_psi_get_option, "module"_a, "key"_a,
+             "Return keyword *key* value used by *module*. "
+             "Returns the local value associated with the keyword if it's been set, else the global "
+             "value if it's been set, else the local default value. "
+             "Returns error if *key* is not recognized globally or if *key* is not recognized for the module.");
 
     // Returns whether the option has changed/revoke has changed for silent resets
-    core.def("has_global_option_changed", py_psi_has_global_option_changed,
-             "Returns boolean for whether the keyword *arg1* has been touched in the global scope, by either user or "
+    core.def("has_global_option_changed", py_psi_has_global_option_changed, "key"_a,
+             "Whether keyword *key* value has been touched at global (all-module) scope. "
+             "Has it been touched in the global scope, by either user or "
              "code. Notwithstanding, code is written such that in practice, this returns whether the option has been "
              "touched in the global scope by the user.");
-    core.def("has_local_option_changed", py_psi_has_local_option_changed,
-             "Returns boolean for whether the keyword *arg2* has been touched in the scope of the specified module "
-             "*arg1*, by either user or code. Notwithstanding, code is written such that in practice, this returns "
+    core.def("has_local_option_changed", py_psi_has_local_option_changed, "module"_a, "key"_a,
+             "Whether keyword *key* value has been touched at *module* scope. "
+             "Has it been touched in the scope of the specified module by either user or code."
+             "Notwithstanding, code is written such that in practice, this returns "
              "whether the option has been touched in the module scope by the user.");
-    core.def("has_option_changed", py_psi_has_option_changed,
-             "Returns boolean for whether the option *arg2* has been touched either locally to the specified module "
-             "*arg1* or globally, by either user or code. Notwithstanding, code is written such that in practice, this "
+    core.def("has_option_changed", py_psi_has_option_changed, "module"_a, "key"_a,
+             "Whether keyword *key* value has been touched or is default. "
+             "Has it been touched either locally to the specified module "
+             "or globally, by either user or code. Notwithstanding, code is written such that in practice, this "
              "returns whether the option has been touched by the user.");
-    core.def("revoke_global_option_changed", py_psi_revoke_global_option_changed,
-             "Given a string of a keyword name *arg1*, sets the has_changed attribute in the global options scope to "
+    core.def("revoke_global_option_changed", py_psi_revoke_global_option_changed, "key"_a,
+             "Clear the touched status for keyword *key* at global (all-module) scope. "
+             "Sets the has_changed attribute in the global options scope to "
              "false. Used in python driver when a function sets the value of an option. Before the function exits, "
              "this command is called on the option so that has_changed reflects whether the user (not the program) has "
              "touched the option.");
-    core.def("revoke_local_option_changed", py_psi_revoke_local_option_changed,
-             "Given a string of a keyword name *arg2* and a particular module *arg1*, sets the has_changed attribute "
+    core.def("revoke_local_option_changed", py_psi_revoke_local_option_changed, "module"_a, "key"_a,
+             "Clear the touched status for keyword *key* at *module* scope. "
+             "Sets the has_changed attribute "
              "in the module options scope to false. Used in python driver when a function sets the value of an option. "
              "Before the function exits, this command is called on the option so that has_changed reflects whether the "
              "user (not the program) has touched the option.");
-    core.def("option_exists_in_module", py_psi_option_exists_in_module,
-             "Given a string of a keyword name *arg1* and a particular module *arg0*, returns whether *arg1* is a "
-             "valid option for *arg0*.");
-
+    core.def("option_exists_in_module", py_psi_option_exists_in_module, "module"_a, "key"_a,
+             "Whether keyword *key* is a valid keyword for *module*.");
     core.def("options_to_python", py_psi_options_to_python,
              "Get dictionary of whether options of module have changed.");
 
     // These return/set/print PSI variables found in Process::environment.globals
     core.def("has_scalar_variable",
              [](const std::string& key) { return bool(Process::environment.globals.count(to_upper(key))); },
-             "Is the double QC variable (case-insensitive) set?");
+             "key"_a, "Is the double QCVariable *key* (case-insensitive) set? Prefer :func:`~psi4.core.has_variable`");
     core.def("has_array_variable",
              [](const std::string& key) { return bool(Process::environment.arrays.count(to_upper(key))); },
-             "Is the Matrix QC variable (case-insensitive) set?");
+             "key"_a, "Is the Matrix QCVariable *key* (case-insensitive) set? Prefer :func:`~psi4.core.has_variable`");
     core.def("scalar_variable", [](const std::string& key) { return Process::environment.globals[to_upper(key)]; },
-             "Returns the requested (case-insensitive) double QC variable.");
+             "key"_a, "Returns the double QCVariable *key* (case-insensitive); prefer :func:`~psi4.variable`");
     core.def("array_variable",
              [](const std::string& key) { return Process::environment.arrays[to_upper(key)]->clone(); },
-             "Returns copy of the requested (case-insensitive) Matrix QC variable.");
+             "key"_a, "Returns copy of the Matrix QCVariable *key* (case-insensitive); prefer :func:`~psi4.variable`");
     core.def("set_scalar_variable",
-             [](const std::string& key, double val) { Process::environment.globals[to_upper(key)] = val; },
-             "Sets the requested (case-insensitive) double QC variable.");
+             [](const std::string& key, double value) { Process::environment.globals[to_upper(key)] = value; },
+             "key"_a, "value"_a, "Sets the double QCVariable *key* (case-insensitive); prefer :func:`~psi4.set_variable`");
     core.def(
         "set_array_variable",
-        [](const std::string& key, SharedMatrix val) { Process::environment.arrays[to_upper(key)] = val->clone(); },
-        "Sets the requested (case-insensitive) Matrix QC variable.");
+        [](const std::string& key, SharedMatrix value) { Process::environment.arrays[to_upper(key)] = value->clone(); },
+        "key"_a, "value"_a, "Sets the requested (case-insensitive) Matrix QCVariable; prefer :func:`~psi4.set_variable`");
     core.def("del_scalar_variable", [](const std::string key) { Process::environment.globals.erase(to_upper(key)); },
-             "Removes the requested (case-insensitive) double QC variable.");
+             "key"_a, "Removes the double QCVariable *key* (case-insensitive); prefer :func:`~psi4.core.del_variable`");
     core.def("del_array_variable", [](const std::string key) { Process::environment.arrays.erase(to_upper(key)); },
-             "Removes the requested (case-insensitive) Matrix QC variable.");
-    core.def("print_variables", py_psi_print_variable_map, "Prints all PSI variables that have been set internally.");
+             "key"_a, "Removes the Matrix QCVariable *key* (case-insensitive); prefer :func:`~psi4.core.del_variable`");
+    core.def("print_variables", py_psi_print_variable_map, "Prints to output file all QCVariables that have been set in global memory.");
     core.def("clean_variables",
              []() {
                  Process::environment.globals.clear();
                  Process::environment.arrays.clear();
              },
-             "Empties all PSI scalar and array variables that have been set internally.");
+             "Empties all double and Matrix QCVariables that have been set in global memory.");
     core.def("scalar_variables", []() { return Process::environment.globals; },
-             "Returns dictionary of all double QC variables.");
+             "Returns dictionary of all double QCVariables; prefer :func:`~psi4.core.variables`");
     core.def("array_variables", []() { return Process::environment.arrays; },
-             "Returns dictionary of all Matrix QC variables.");
+             "Returns dictionary of all Matrix QCVariables; prefer :func:`~psi4.core.variables`");
 
     // Returns the location where the Psi4 source is located.
     core.def("psi_top_srcdir", py_psi_top_srcdir, "Returns the location of the source code.");
@@ -1343,42 +1340,38 @@ PYBIND11_MODULE(core, core) {
     core.def("reopen_outfile", py_reopen_outfile, "Reopens the output file.");
     core.def("outfile_name", py_get_outfile_name, "Returns the name of the output file.");
     core.def("be_quiet", py_be_quiet,
-             "Redirects output to /dev/null.  To switch back to regular output mode, use reopen_outfile()");
-
-    // modules
-    core.def("scfgrad", py_psi_scfgrad, "Run scfgrad, which is a specialized DF-SCF gradient program.");
-    core.def("scfhess", py_psi_scfhess, "Run scfhess, which is a specialized DF-SCF hessian program.");
-
-    // core.def("scf", py_psi_scf, "Runs the SCF code.");
-    core.def("dct", py_psi_dct, "Runs the density cumulant (functional) theory code.");
-    core.def("dfmp2", py_psi_dfmp2, "Runs the DF-MP2 code.");
+             "Redirects output to ``/dev/null``. "
+             "To switch back to regular output mode, use :func:`~psi4.core.reopen_outfile()`. "
+             "Doesn't work with Windows.");
+    core.def("scfgrad", py_psi_scfgrad, "ref_wfn"_a, "Run scfgrad, which is a specialized DF-SCF gradient program.");
+    core.def("scfhess", py_psi_scfhess, "ref_wfn"_a, "Run scfhess, which is a specialized DF-SCF hessian program.");
+    core.def("dct", py_psi_dct, "ref_wfn"_a, "Runs the density cumulant (functional) theory code.");
+    core.def("dfmp2", py_psi_dfmp2, "ref_wfn"_a, "Runs the DF-MP2 code.");
     core.def("dlpno", py_psi_dlpno, "Runs the DLPNO codes.");
     core.def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
     core.def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");
     core.def("mrcc_load_densities", py_psi_mrcc_load_densities,
              "Reads in the density matrices from Kallay's MRCC code.");
-    core.def("sapt", py_psi_sapt, "Runs the symmetry adapted perturbation theory code.");
-    // core.def("fisapt", py_psi_fisapt, "Runs the functional-group intramolecular symmetry adapted perturbation theory
-    // code.");
+    core.def("sapt", py_psi_sapt, "dimer_wfn"_a, "monoa_wfn"_a, "monob_wfn"_a, "Runs the symmetry adapted perturbation theory code.");
     core.def("psimrcc", py_psi_psimrcc, "Runs the multireference coupled cluster code.");
-    core.def("optking", py_psi_optking, "Runs the geometry optimization / frequency analysis code.");
-    core.def("cctransort", py_psi_cctransort,
-             "Runs CCTRANSORT, which transforms and reorders integrals for use in the coupled cluster codes.");
-    core.def("ccenergy", py_psi_ccenergy, "Runs the coupled cluster energy code.");
-    core.def("cctriples", py_psi_cctriples, "Runs the coupled cluster (T) energy code.");
-    core.def("detci", py_psi_detci, "Runs the determinant-based configuration interaction code.");
-    core.def("dmrg", py_psi_dmrg, "Runs the DMRG code.");
-    core.def("run_gdma", py_psi_gdma, "Runs the GDMA code.");
-    core.def("fnocc", py_psi_fnocc, "Runs the fno-ccsd(t)/qcisd(t)/mp4/cepa energy code");
-    core.def("cchbar", py_psi_cchbar, "Runs the code to generate the similarity transformed Hamiltonian.");
-    core.def("cclambda", py_psi_cclambda, "Runs the coupled cluster lambda equations code.");
-    core.def("ccdensity", py_psi_ccdensity, "Runs the code to compute coupled cluster density matrices.");
-    core.def("ccresponse", py_psi_ccresponse, "Runs the coupled cluster response theory code.");
+    core.def("optking", py_psi_optking, "Runs the geometry optimization code.");
+    core.def("cctransort", py_psi_cctransort, "ref_wfn"_a,
+             "Runs cctransort that transforms and reorders integrals for use in the coupled cluster codes.");
+    core.def("ccenergy", py_psi_ccenergy, "ref_wfn"_a, "Runs the coupled cluster energy code.");
+    core.def("cctriples", py_psi_cctriples, "ref_wfn"_a, "Runs the coupled cluster (T) energy code.");
+    core.def("detci", py_psi_detci, "ref_wfn"_a, "Runs the determinant-based configuration interaction code.");
+    core.def("dmrg", py_psi_dmrg, "ref_wfn"_a, "Runs the CheMPS2 interface DMRG code.");
+    core.def("run_gdma", py_psi_gdma, "ref_wfn"_a, "datfilename"_a, "Runs the GDMA interface code.");
+    core.def("fnocc", py_psi_fnocc, "ref_wfn"_a, "Runs the FNO-CCSD(T)/QCISD(T)/MP4/CEPA energy code");
+    core.def("cchbar", py_psi_cchbar, "ref_wfn"_a, "Runs the code to generate the similarity transformed Hamiltonian.");
+    core.def("cclambda", py_psi_cclambda, "ref_wfn"_a, "Runs the coupled cluster lambda equations code.");
+    core.def("ccdensity", py_psi_ccdensity, "ref_wfn"_a, "Runs the code to compute coupled cluster density matrices.");
+    core.def("ccresponse", py_psi_ccresponse, "ref_wfn"_a, "Runs the coupled cluster response theory code.");
     core.def("scatter", py_psi_scatter, "New Scatter function.");
-    core.def("cceom", py_psi_cceom, "Runs the equation of motion coupled cluster code, for excited states.");
-    core.def("occ", py_psi_occ, "Runs the orbital optimized CC codes.");
-    core.def("dfocc", py_psi_dfocc, "Runs the density-fitted orbital optimized CC codes.");
-    core.def("adc", py_psi_adc, "Runs the ADC propagator code, for excited states.");
+    core.def("cceom", py_psi_cceom, "ref_wfn"_a, "Runs the equation of motion coupled cluster code for excited states.");
+    core.def("occ", py_psi_occ, "ref_wfn"_a, "Runs the orbital optimized CC codes.");
+    core.def("dfocc", py_psi_dfocc, "ref_wfn"_a, "Runs the density-fitted orbital optimized CC codes.");
+    core.def("adc", py_psi_adc, "ref_wfn"_a, "Runs the ADC propagator code, for excited states.");
     core.def("opt_clean", py_psi_opt_clean, "Cleans up the optimizer's scratch files.");
     core.def("get_options", py_psi_get_options, py::return_value_policy::reference, "Get options");
     core.def("set_output_file", [](const std::string ofname) {
@@ -1390,21 +1383,10 @@ PYBIND11_MODULE(core, core) {
         auto mode = append ? std::ostream::app : std::ostream::trunc;
         outfile = std::make_shared<PsiOutStream>(ofname, mode);
         outfile_name = ofname;
-    });
-    core.def("get_output_file", []() { return outfile_name; });
-    //    core.def("print_version", [](){ print_version("stdout"); });
-    core.def("set_psi_file_prefix", [](std::string fprefix) { psi_file_prefix = strdup(fprefix.c_str()); });
-
-    // Define library classes
-    export_psio(core);
-    export_diis(core);
-    export_mints(core);
-    export_functional(core);
-    export_misc(core);
-    export_fock(core);
-    export_trans(core);
-    export_wavefunction(core);
-    export_options(core);
+    }, "ofname"_a, "append"_a = false, "Set the name for output file; prefer :func:`~psi4.set_output_file`");
+    core.def("get_output_file", []() { return outfile_name; }, "Returns output file name (stem + suffix, no directory). 'stdout'.");
+    core.def("set_psi_file_prefix", []() { PyErr_SetString(PyExc_AttributeError, "psi4.core.set_psi_file_prefix removed since hasn't been working as intended."); }, ".. deprecated:: 1.4");
+        // [](std::string fprefix) { psi_file_prefix = strdup(fprefix.c_str()); });  // doesn't always work
 
     // ??
     // py::class_<Process::Environment>(core, "Environment")

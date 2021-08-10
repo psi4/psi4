@@ -35,7 +35,7 @@ Code style conventions
 
 It is important to keep a consistent formatting of the C++ and Python code
 to avoid hard-to-read diffs and merge conflicts.
-``clang-format``_ and ``yapf``_ can be used to format C++ and Python code,
+`clang-format <https://clang.llvm.org/docs/ClangFormat.html>`_ and `yapf <https://github.com/google/yapf>`_ can be used to format C++ and Python code,
 respectively, according to a predefined style file.
 |PSIfour| provides the :source:`.clang-format` and :source:`.style.yapf` files in the root
 folder of the project.
@@ -49,7 +49,7 @@ formatting of the code can be accomplished, in decreasing order of automation:
 2. By installing Git hooks to run the formatters when committing.
 3. By running the formatters manually on the modified files.
 
-.. _`faq:editor_code_style`:
+.. _`faq:editorcodestyle`:
 
 How to impose code style through your editor
 --------------------------------------------
@@ -58,7 +58,7 @@ Both ``clang-format`` and ``yapf`` can be integrated into widely used editors.
 The `Neoformat <https://github.com/sbdchd/neoformat>`_ plugin can be configured
 to format files when saving them to disk.
 
-.. _`faq:githooks_code_style`:
+.. _`faq:githookscodestyle`:
 
 How to impose code style through Git hooks
 ------------------------------------------
@@ -68,7 +68,7 @@ In this particular case, we want to make sure that all files that have been
 added to the staging area with ``git add`` are formatted according to the style
 *before* they committing them with ``git commit``.
 The hook to be modified is then the *pre-commit* hook.
-|PSIfour| uses the `pre-commit`_ framework, with configuration file :source:`.pre-commit-config.yaml`.
+|PSIfour| uses the `pre-commit <https://pre-commit.com/>`_ framework, with configuration file :source:`.pre-commit-config.yaml`.
 To take advantage of pre-commit hooks, you will need to install the ``pre-commit`` utility:
 
 ::
@@ -91,7 +91,7 @@ Hooks are powerful, but integrating the formatter into your editor will prove
 to be better. Hooks need to be installed anew for every fresh clone of the
 repository you are working on.
 
-.. _`faq:manual_code_style`:
+.. _`faq:manualcodestyle`:
 
 How to run code-style tools `clang-format` and `yapf` manually
 --------------------------------------------------------------
@@ -109,14 +109,3 @@ How and when to *not* apply code styling to your contributions
 
 TODO
 
-.. _``clang-format``: https://clang.llvm.org/docs/ClangFormat.html
-
-.. _``yapf``: https://github.com/google/yapf
-
-.. _``.clang-format``: https://github.com/psi4/psi4/blob/master/.clang-format
-
-.. _``.style.yapf``: https://github.com/psi4/psi4/blob/master/.style.yapf
-
-.. _pre-commit: https://pre-commit.com/
-
-.. _``.pre-commit-config.yaml``: https://github.com/psi4/psi4/blob/master/.pre-commit-config.yaml

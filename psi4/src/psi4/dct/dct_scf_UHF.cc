@@ -57,21 +57,28 @@ namespace dct {
 bool DCTSolver::correct_mo_phases(bool dieOnError) {
     dct_timer_on("DCTSolver::correct_mo_phases()");
 
-#if 1
-    Matrix temp("temp", nirrep_, nsopi_, nsopi_);
-    Matrix overlap("Old - New Overlap", nirrep_, nsopi_, nsopi_);
+    Matrix temp("temp", nirrep_, nsopi_, nmopi_);
+    Matrix overlap("Old - New Overlap", nirrep_, nmopi_, nmopi_);
 
-    temp.gemm(true, false, 1.0, old_ca_, ao_s_, 0.0);
-    overlap.gemm(false, false, 1.0, temp, Ca_, 0.0);
-    temp.copy(Ca_);
-    std::map<int, int> mosUsed;
-    int offset = 0;
+    bool error = correct_mo_phase_spincase(temp, overlap, *old_ca_, *Ca_, dieOnError);
+    error = error && correct_mo_phase_spincase(temp, overlap, *old_cb_, *Cb_, dieOnError);
+
+    dct_timer_off("DCTSolver::correct_mo_phases()");
+    return error;
+}
+
+bool DCTSolver::correct_mo_phase_spincase(Matrix& temp, Matrix& overlap, const Matrix& old_C, Matrix& C, bool dieOnError) const {
+    temp.gemm(false, false, 1.0, ao_s_, C, 0.0);
+    overlap.gemm(true, false, 1.0, old_C, temp, 0.0);
+
+    temp.copy(C);
     for (int h = 0; h < nirrep_; ++h) {
-        for (int oldMO = 0; oldMO < nsopi_[h]; ++oldMO) {
+        std::map<int, int> mosUsed;
+        for (int oldMO = 0; oldMO < nmopi_[h]; ++oldMO) {
             int bestMO = 0;
             double maximumProjection = 0.0;
             double prefactor = 0.0;
-            for (int newMO = 0; newMO < nsopi_[h]; ++newMO) {
+            for (int newMO = 0; newMO < nmopi_[h]; ++newMO) {
                 double val = overlap.get(h, oldMO, newMO);
                 if (std::fabs(val) > maximumProjection) {
                     maximumProjection = std::fabs(val);
@@ -81,229 +88,32 @@ bool DCTSolver::correct_mo_phases(bool dieOnError) {
             }
             // Now we've found the MO to use, check it's not been used already then
             // copy it over.
-            if (mosUsed[bestMO + offset]++) {
+            if (mosUsed[bestMO]++) {
                 if (dieOnError) {
                     overlap.print();
-                    old_ca_->print();
+                    old_C.print();
                     temp.print();
-                    throw SanityCheckError("Duplicate MOs used in phase check", __FILE__, __LINE__);
+                    throw SanityCheckError("Two new MOs most resemble the same old MO. This has to be a bug.", __FILE__, __LINE__);
                 } else {
                     // Copy Ca back from temp
-                    Ca_->copy(temp);
-                    dct_timer_off("DCTSolver::correct_mo_phases()");
+                    C.copy(temp);
                     return false;
                 }
             }
             for (int so = 0; so < nsopi_[h]; ++so) {
-                Ca_->set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
+                C.set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
             }
-        }
-        offset += nsopi_[h];
-    }
-
-    temp.gemm(true, false, 1.0, old_cb_, ao_s_, 0.0);
-    overlap.gemm(false, false, 1.0, temp, Cb_, 0.0);
-    temp.copy(Cb_);
-    mosUsed.clear();
-    offset = 0;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int oldMO = 0; oldMO < nsopi_[h]; ++oldMO) {
-            int bestMO = 0;
-            double bestOverlap = 0.0;
-            double prefactor = 0.0;
-            for (int newMO = 0; newMO < nsopi_[h]; ++newMO) {
-                double val = overlap.get(h, oldMO, newMO);
-                if (std::fabs(val) > bestOverlap) {
-                    bestOverlap = std::fabs(val);
-                    bestMO = newMO;
-                    prefactor = val < 0.0 ? -1.0 : 1.0;
-                }
-            }
-            // Now we've found the MO to use, check it's not been used already then
-            // copy it over.
-            if (mosUsed[bestMO + offset]++) {
-                if (dieOnError) {
-                    overlap.print();
-                    old_cb_->print();
-                    temp.print();
-                    throw SanityCheckError("Duplicate MOs used in phase check", __FILE__, __LINE__);
-                } else {
-                    // Copy Cb back from temp
-                    Cb_->copy(temp);
-                    dct_timer_off("DCTSolver::correct_mo_phases()");
-                    return false;
-                }
-            }
-            for (int so = 0; so < nsopi_[h]; ++so) {
-                Cb_->set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
-            }
-        }
-        offset += nsopi_[h];
-    }
-#else
-    Matrix temp("temp", nirrep_, nsopi_, nsopi_);
-    Matrix overlap("Old - New Overlap", nirrep_, nsopi_, nsopi_);
-
-    temp.gemm(true, false, 1.0, old_ca_, ao_s_, 0.0);
-    overlap.gemm(false, false, 1.0, temp, Ca_, 0.0);
-    temp.copy(Ca_);
-    int offset = 0;
-    std::vector<std::pair<double, int> > proj_orb;
-    for (int h = 0; h < nirrep_; ++h) {
-        proj_orb.clear();
-        for (int mo = 0; mo < nsopi_[h]; ++mo) {
-            double proj = 0.0;
-            for (int occ = 0; occ < nalphapi_[h]; ++occ) {
-                proj += overlap.get(h, occ, mo);
-            }
-            proj_orb.push_back(std::make_pair(proj, mo));
-        }
-        // Now we've found the MO to use, check it's not been used already then
-        // copy it over.
-        if (mosUsed[bestMO + offset]++) {
-            if (dieOnError) {
-                overlap.print();
-                old_ca_->print();
-                temp.print();
-                throw SanityCheckError("Duplicate MOs used in phase check", __FILE__, __LINE__);
-            } else {
-                // Copy Ca back from temp
-                Ca_->copy(temp);
-                dct_timer_off("DCTSolver::correct_mo_phases()");
-                return false;
-            }
-        }
-        for (int so = 0; so < nsopi_[h]; ++so) {
-            Ca_->set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
         }
     }
-    offset += nsopi_[h];
-}
-
-temp.gemm(true, false, 1.0, old_cb_, ao_s_, 0.0);
-overlap.gemm(false, false, 1.0, temp, Cb_, 0.0);
-temp.copy(Cb_);
-mosUsed.clear();
-offset = 0;
-for (int h = 0; h < nirrep_; ++h) {
-    for (int oldMO = 0; oldMO < nsopi_[h]; ++oldMO) {
-        int bestMO = 0;
-        double bestOverlap = 0.0;
-        double prefactor = 0.0;
-        for (int newMO = 0; newMO < nsopi_[h]; ++newMO) {
-            double val = overlap.get(h, oldMO, newMO);
-            if (std::fabs(val) > bestOverlap) {
-                bestOverlap = std::fabs(val);
-                bestMO = newMO;
-                prefactor = val < 0.0 ? -1.0 : 1.0;
-            }
-        }
-        // Now we've found the MO to use, check it's not been used already then
-        // copy it over.
-        if (mosUsed[bestMO + offset]++) {
-            if (dieOnError) {
-                overlap.print();
-                old_cb_->print();
-                temp.print();
-                throw SanityCheckError("Duplicate MOs used in phase check", __FILE__, __LINE__);
-            } else {
-                // Copy Cb back from temp
-                Cb_->copy(temp);
-                dct_timer_off("DCTSolver::correct_mo_phases()");
-                return false;
-            }
-        }
-        for (int so = 0; so < nsopi_[h]; ++so) {
-            Cb_->set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
-        }
-    }
-    offset += nsopi_[h];
-}
-#endif
-    dct_timer_off("DCTSolver::correct_mo_phases()");
     return true;
-}  // namespace dct
-
-/**
- * Figures out the orbital symmetries and prints them, ordered by energy and type
- */
-void DCTSolver::print_orbital_energies() {
-    std::vector<std::pair<double, int> > aPairs;
-    std::vector<std::pair<double, int> > bPairs;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nsopi_[h]; ++i) {
-            aPairs.push_back(std::make_pair(epsilon_a_->get(h, i), h));
-            bPairs.push_back(std::make_pair(epsilon_b_->get(h, i), h));
-        }
-    }
-    std::sort(aPairs.begin(), aPairs.end());
-    std::sort(bPairs.begin(), bPairs.end());
-
-    auto aIrrepCount = std::vector<int>(nirrep_, 0);
-    auto bIrrepCount = std::vector<int>(nirrep_, 0);
-    std::vector<std::string> irrepLabels = molecule_->irrep_labels();
-
-    outfile->Printf("\n\tOrbital energies (a.u.):\n\t\tAlpha occupied orbitals\n\t\t");
-    for (int i = 0, count = 0; i < nalpha_; ++i, ++count) {
-        int irrep = aPairs[i].second;
-        outfile->Printf("%4d%-4s%11.6f  ", ++aIrrepCount[irrep], irrepLabels[irrep].c_str(), aPairs[i].first);
-        if (count % 4 == 3 && i != nalpha_) outfile->Printf("\n\t\t");
-    }
-    outfile->Printf("\n\n\t\tBeta occupied orbitals\n\t\t");
-    for (int i = 0, count = 0; i < nbeta_; ++i, ++count) {
-        int irrep = bPairs[i].second;
-        outfile->Printf("%4d%-4s%11.6f  ", ++bIrrepCount[irrep], irrepLabels[irrep].c_str(), bPairs[i].first);
-        if (count % 4 == 3 && i != nbeta_) outfile->Printf("\n\t\t");
-    }
-    outfile->Printf("\n\n\t\tAlpha virtual orbitals\n\t\t");
-    for (int i = nalpha_, count = 0; i < nmo_; ++i, ++count) {
-        int irrep = aPairs[i].second;
-        outfile->Printf("%4d%-4s%11.6f  ", ++aIrrepCount[irrep], irrepLabels[irrep].c_str(), aPairs[i].first);
-        if (count % 4 == 3 && i != nmo_) outfile->Printf("\n\t\t");
-    }
-    outfile->Printf("\n\n\t\tBeta virtual orbitals\n\t\t");
-    for (int i = nbeta_, count = 0; i < nmo_; ++i, ++count) {
-        int irrep = bPairs[i].second;
-        outfile->Printf("%4d%-4s%11.6f  ", ++bIrrepCount[irrep], irrepLabels[irrep].c_str(), bPairs[i].first);
-        if (count % 4 == 3 && i != nmo_) outfile->Printf("\n\t\t");
-    }
-    outfile->Printf("\n\n");
-
-    outfile->Printf("\n\tIrrep              ");
-    for (int h = 0; h < nirrep_; ++h) outfile->Printf("%4s ", irrepLabels[h].c_str());
-    outfile->Printf("\n\t-------------------");
-    for (int h = 0; h < nirrep_; ++h) outfile->Printf("-----");
-    outfile->Printf("\n\t#Symmetry Orbitals ");
-    for (int h = 0; h < nirrep_; ++h) outfile->Printf("%4d ", nsopi_[h]);
-    outfile->Printf("\n\t#Alpha Occupied    ");
-    for (int h = 0; h < nirrep_; ++h) outfile->Printf("%4d ", naoccpi_[h]);
-    outfile->Printf("\n\t#Beta Occupied     ");
-    for (int h = 0; h < nirrep_; ++h) outfile->Printf("%4d ", nboccpi_[h]);
-    outfile->Printf("\n\t#Alpha Virtual     ");
-    for (int h = 0; h < nirrep_; ++h) outfile->Printf("%4d ", navirpi_[h]);
-    outfile->Printf("\n\t#Beta Virtual      ");
-    for (int h = 0; h < nirrep_; ++h) outfile->Printf("%4d ", nbvirpi_[h]);
-    outfile->Printf("\n\t-------------------");
-    for (int h = 0; h < nirrep_; ++h) outfile->Printf("-----");
-    outfile->Printf("\n\n");
-
-    if (print_ > 2) {
-        Ca_->print();
-        Cb_->print();
-    }
 }
 
 /**
  * Reads the orbitals and related quantities from the reference wavefunction
  * and reads the one-electron integrals from PSIO.
  */
-void DCTSolver::scf_guess() {
+void DCTSolver::initialize_orbitals_from_reference_U() {
     dct_timer_on("DCTSolver::scf_guess");
-    auto T = mintshelper()->so_kinetic()->clone();
-    auto V = mintshelper()->so_potential()->clone();
-
-    so_h_->add(T);
-    so_h_->add(V);
 
     epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
     epsilon_b_->copy(reference_wavefunction_->epsilon_b().get());
@@ -320,6 +130,8 @@ void DCTSolver::scf_guess() {
 
 /**
  * Computes the SCF energy from the latest Fock and density matrices.
+ * WARNING! This quantity is a misnomer from earlier days of the theory.
+ * "SCF" here means "excluding 2RDM cumulant, including 1RDM and 1RDM products."
  */
 void DCTSolver::compute_scf_energy() {
     dct_timer_on("DCTSolver::compute_scf_energy");
@@ -332,11 +144,8 @@ void DCTSolver::compute_scf_energy() {
     scf_energy_ += 0.5 * tau_so_b_->vector_dot(so_h_);
 
     if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
-        mo_gammaA_->add(kappa_mo_a_);
-        mo_gammaB_->add(kappa_mo_b_);
-
-        scf_energy_ += 0.5 * mo_gammaA_->vector_dot(moFa_);
-        scf_energy_ += 0.5 * mo_gammaB_->vector_dot(moFb_);
+        scf_energy_ += 0.5 * mo_gammaA_.vector_dot(moFa_);
+        scf_energy_ += 0.5 * mo_gammaB_.vector_dot(moFb_);
     } else {
         scf_energy_ += 0.5 * kappa_so_a_->vector_dot(Fa_);
         scf_energy_ += 0.5 * kappa_so_b_->vector_dot(Fb_);
@@ -357,24 +166,24 @@ double DCTSolver::compute_scf_error_vector() {
 
     size_t nElements = 0;
     double sumOfSquares = 0.0;
-    auto tmp1 = std::make_shared<Matrix>("tmp1", nirrep_, nsopi_, nsopi_);
-    auto tmp2 = std::make_shared<Matrix>("tmp2", nirrep_, nsopi_, nsopi_);
+    auto tmp1 = Matrix("tmp1", nirrep_, nsopi_, nsopi_);
+    auto tmp2 = Matrix("tmp2", nirrep_, nsopi_, nsopi_);
     // form FDS
-    tmp1->gemm(false, false, 1.0, kappa_so_a_, ao_s_, 0.0);
+    tmp1.gemm(false, false, 1.0, kappa_so_a_, ao_s_, 0.0);
     scf_error_a_->gemm(false, false, 1.0, Fa_, tmp1, 0.0);
     // form SDF
-    tmp1->gemm(false, false, 1.0, kappa_so_a_, Fa_, 0.0);
-    tmp2->gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
+    tmp1.gemm(false, false, 1.0, kappa_so_a_, Fa_, 0.0);
+    tmp2.gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
     scf_error_a_->subtract(tmp2);
     // Orthogonalize
     scf_error_a_->transform(s_half_inv_);
 
     // form FDS
-    tmp1->gemm(false, false, 1.0, kappa_so_b_, ao_s_, 0.0);
+    tmp1.gemm(false, false, 1.0, kappa_so_b_, ao_s_, 0.0);
     scf_error_b_->gemm(false, false, 1.0, Fb_, tmp1, 0.0);
     // form SDF
-    tmp1->gemm(false, false, 1.0, kappa_so_b_, Fb_, 0.0);
-    tmp2->gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
+    tmp1.gemm(false, false, 1.0, kappa_so_b_, Fb_, 0.0);
+    tmp2.gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
     scf_error_b_->subtract(tmp2);
     // Orthogonalize
     scf_error_b_->transform(s_half_inv_);
@@ -451,22 +260,20 @@ void DCTSolver::process_so_ints() {
 
     double *Da = init_array(ntriso_);
     double *Db = init_array(ntriso_);
-    double *Ta = init_array(ntriso_);
-    double *Tb = init_array(ntriso_);
     double *Ga = init_array(ntriso_);
     double *Gb = init_array(ntriso_);
-    double *Va = init_array(ntriso_);
-    double *Vb = init_array(ntriso_);
 
+    auto opdm_a = kappa_so_a_->clone();
+    opdm_a->add(tau_so_a_);
+    auto opdm_b = kappa_so_b_->clone();
+    opdm_b->add(tau_so_b_);
     int soOffset = 0;
     for (int h = 0; h < nirrep_; ++h) {
         for (int mu = 0; mu < nsopi_[h]; ++mu) {
             for (int nu = 0; nu <= mu; ++nu) {
                 int muNu = INDEX((nu + soOffset), (mu + soOffset));
-                Da[muNu] = kappa_so_a_->get(h, mu, nu);
-                Db[muNu] = kappa_so_b_->get(h, mu, nu);
-                Ta[muNu] = tau_so_a_->get(h, mu, nu);
-                Tb[muNu] = tau_so_b_->get(h, mu, nu);
+                Da[muNu] = opdm_a->get(h, mu, nu);
+                Db[muNu] = opdm_b->get(h, mu, nu);
             }
         }
         soOffset += nsopi_[h];
@@ -520,7 +327,7 @@ void DCTSolver::process_so_ints() {
 
         /********** AA ***********/
         global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                               "Lambda <OO|VV>");
+                               "Amplitude <OO|VV>");
         global_dpd_->buf4_init(&tau1_AO_aa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[n,n]"), ID("[O,O]"), ID("[n,n]"), 0,
                                "tau1AO <OO|nn>");
         global_dpd_->buf4_scm(&tau1_AO_aa, 0.0);
@@ -545,7 +352,7 @@ void DCTSolver::process_so_ints() {
 
         /********** BB ***********/
         global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                               "Lambda <oo|vv>");
+                               "Amplitude <oo|vv>");
         global_dpd_->buf4_init(&tau1_AO_bb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[n,n]"), ID("[o,o]"), ID("[n,n]"), 0,
                                "tau1AO <oo|nn>");
         global_dpd_->buf4_scm(&tau1_AO_bb, 0.0);
@@ -569,7 +376,7 @@ void DCTSolver::process_so_ints() {
 
         /********** AB ***********/
         global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                               "Lambda <Oo|Vv>");
+                               "Amplitude <Oo|Vv>");
         global_dpd_->buf4_init(&tau1_AO_ab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[n,n]"), ID("[O,o]"), ID("[n,n]"), 0,
                                "tau1AO <Oo|nn>");
         global_dpd_->buf4_scm(&tau1_AO_ab, 0.0);
@@ -634,13 +441,9 @@ void DCTSolver::process_so_ints() {
             /* (pq|rs) */
             Ga[rsArr] += (Da[pqArr] + Db[pqArr]) * value;
             Gb[rsArr] += (Da[pqArr] + Db[pqArr]) * value;
-            Va[rsArr] += (Ta[pqArr] + Tb[pqArr]) * value;
-            Vb[rsArr] += (Ta[pqArr] + Tb[pqArr]) * value;
             if (q >= r) {
                 Ga[qrArr] -= Da[psArr] * value;
                 Gb[qrArr] -= Db[psArr] * value;
-                Va[qrArr] -= Ta[psArr] * value;
-                Vb[qrArr] -= Tb[psArr] * value;
             }
 
             if (p != q && r != s && pqArr != rsArr) {
@@ -648,237 +451,169 @@ void DCTSolver::process_so_ints() {
                 if (s >= r) {
                     Ga[srArr] += (Da[pqArr] + Db[pqArr]) * value;
                     Gb[srArr] += (Da[pqArr] + Db[pqArr]) * value;
-                    Va[srArr] += (Ta[pqArr] + Tb[pqArr]) * value;
-                    Vb[srArr] += (Ta[pqArr] + Tb[pqArr]) * value;
                 }
                 if (q >= s) {
                     Ga[qsArr] -= Da[prArr] * value;
                     Gb[qsArr] -= Db[prArr] * value;
-                    Va[qsArr] -= Ta[prArr] * value;
-                    Vb[qsArr] -= Tb[prArr] * value;
                 }
 
                 /* (qp|rs) */
                 if (r >= s) {
                     Ga[rsArr] += (Da[qpArr] + Db[qpArr]) * value;
                     Gb[rsArr] += (Da[qpArr] + Db[qpArr]) * value;
-                    Va[rsArr] += (Ta[qpArr] + Tb[qpArr]) * value;
-                    Vb[rsArr] += (Ta[qpArr] + Tb[qpArr]) * value;
                 }
                 if (p >= r) {
                     Ga[prArr] -= Da[qsArr] * value;
                     Gb[prArr] -= Db[qsArr] * value;
-                    Va[prArr] -= Ta[qsArr] * value;
-                    Vb[prArr] -= Tb[qsArr] * value;
                 }
 
                 /* (qp|sr) */
                 if (s >= r) {
                     Ga[srArr] += (Da[qpArr] + Db[qpArr]) * value;
                     Gb[srArr] += (Da[qpArr] + Db[qpArr]) * value;
-                    Va[srArr] += (Ta[qpArr] + Tb[qpArr]) * value;
-                    Vb[srArr] += (Ta[qpArr] + Tb[qpArr]) * value;
                 }
                 if (p >= s) {
                     Ga[psArr] -= Da[qrArr] * value;
                     Gb[psArr] -= Db[qrArr] * value;
-                    Va[psArr] -= Ta[qrArr] * value;
-                    Vb[psArr] -= Tb[qrArr] * value;
                 }
 
                 /* (rs|pq) */
                 if (p >= q) {
                     Ga[pqArr] += (Da[rsArr] + Db[rsArr]) * value;
                     Gb[pqArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Va[pqArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                    Vb[pqArr] += (Ta[rsArr] + Tb[rsArr]) * value;
                 }
                 if (s >= p) {
                     Ga[spArr] -= Da[rqArr] * value;
                     Gb[spArr] -= Db[rqArr] * value;
-                    Va[spArr] -= Ta[rqArr] * value;
-                    Vb[spArr] -= Tb[rqArr] * value;
                 }
 
                 /* (sr|pq) */
                 if (p >= q) {
                     Ga[pqArr] += (Da[srArr] + Db[srArr]) * value;
                     Gb[pqArr] += (Da[srArr] + Db[srArr]) * value;
-                    Va[pqArr] += (Ta[srArr] + Tb[srArr]) * value;
-                    Vb[pqArr] += (Ta[srArr] + Tb[srArr]) * value;
                 }
                 if (r >= p) {
                     Ga[rpArr] -= Da[sqArr] * value;
                     Gb[rpArr] -= Db[sqArr] * value;
-                    Va[rpArr] -= Ta[sqArr] * value;
-                    Vb[rpArr] -= Tb[sqArr] * value;
                 }
 
                 /* (rs|qp) */
                 if (q >= p) {
                     Ga[qpArr] += (Da[rsArr] + Db[rsArr]) * value;
                     Gb[qpArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Va[qpArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                    Vb[qpArr] += (Ta[rsArr] + Tb[rsArr]) * value;
                 }
                 if (s >= q) {
                     Ga[sqArr] -= Da[rpArr] * value;
                     Gb[sqArr] -= Db[rpArr] * value;
-                    Va[sqArr] -= Ta[rpArr] * value;
-                    Vb[sqArr] -= Tb[rpArr] * value;
                 }
 
                 /* (sr|qp) */
                 if (q >= p) {
                     Ga[qpArr] += (Da[srArr] + Db[srArr]) * value;
                     Gb[qpArr] += (Da[srArr] + Db[srArr]) * value;
-                    Va[qpArr] += (Ta[srArr] + Tb[srArr]) * value;
-                    Vb[qpArr] += (Ta[srArr] + Tb[srArr]) * value;
                 }
                 if (r >= q) {
                     Ga[rqArr] -= Da[spArr] * value;
                     Gb[rqArr] -= Db[spArr] * value;
-                    Va[rqArr] -= Ta[spArr] * value;
-                    Vb[rqArr] -= Tb[spArr] * value;
                 }
             } else if (p != q && r != s && pqArr == rsArr) {
                 /* (pq|sr) */
                 if (s >= r) {
                     Ga[srArr] += (Da[pqArr] + Db[pqArr]) * value;
                     Gb[srArr] += (Da[pqArr] + Db[pqArr]) * value;
-                    Va[srArr] += (Ta[pqArr] + Tb[pqArr]) * value;
-                    Vb[srArr] += (Ta[pqArr] + Tb[pqArr]) * value;
                 }
                 if (q >= s) {
                     Ga[qsArr] -= Da[prArr] * value;
                     Gb[qsArr] -= Db[prArr] * value;
-                    Va[qsArr] -= Ta[prArr] * value;
-                    Vb[qsArr] -= Tb[prArr] * value;
                 }
                 /* (qp|rs) */
                 if (r >= s) {
                     Ga[rsArr] += (Da[qpArr] + Db[qpArr]) * value;
                     Gb[rsArr] += (Da[qpArr] + Db[qpArr]) * value;
-                    Va[rsArr] += (Ta[qpArr] + Tb[qpArr]) * value;
-                    Vb[rsArr] += (Ta[qpArr] + Tb[qpArr]) * value;
                 }
                 if (p >= r) {
                     Ga[prArr] -= Da[qsArr] * value;
                     Gb[prArr] -= Db[qsArr] * value;
-                    Va[prArr] -= Ta[qsArr] * value;
-                    Vb[prArr] -= Tb[qsArr] * value;
                 }
 
                 /* (qp|sr) */
                 if (s >= r) {
                     Ga[srArr] += (Da[qpArr] + Db[qpArr]) * value;
                     Gb[srArr] += (Da[qpArr] + Db[qpArr]) * value;
-                    Va[srArr] += (Ta[qpArr] + Tb[qpArr]) * value;
-                    Vb[srArr] += (Ta[qpArr] + Tb[qpArr]) * value;
                 }
                 if (p >= s) {
                     Ga[psArr] -= Da[qrArr] * value;
                     Gb[psArr] -= Db[qrArr] * value;
-                    Va[psArr] -= Ta[qrArr] * value;
-                    Vb[psArr] -= Tb[qrArr] * value;
                 }
             } else if (p != q && r == s) {
                 /* (qp|rs) */
                 if (r >= s) {
                     Ga[rsArr] += (Da[qpArr] + Db[qpArr]) * value;
                     Gb[rsArr] += (Da[qpArr] + Db[qpArr]) * value;
-                    Va[rsArr] += (Ta[qpArr] + Tb[qpArr]) * value;
-                    Vb[rsArr] += (Ta[qpArr] + Tb[qpArr]) * value;
                 }
                 if (p >= r) {
                     Ga[prArr] -= Da[qsArr] * value;
                     Gb[prArr] -= Db[qsArr] * value;
-                    Va[prArr] -= Ta[qsArr] * value;
-                    Vb[prArr] -= Tb[qsArr] * value;
                 }
 
                 /* (rs|pq) */
                 if (p >= q) {
                     Ga[pqArr] += (Da[rsArr] + Db[rsArr]) * value;
                     Gb[pqArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Va[pqArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                    Vb[pqArr] += (Ta[rsArr] + Tb[rsArr]) * value;
                 }
                 if (s >= p) {
                     Ga[spArr] -= Da[rqArr] * value;
                     Gb[spArr] -= Db[rqArr] * value;
-                    Va[spArr] -= Ta[rqArr] * value;
-                    Vb[spArr] -= Tb[rqArr] * value;
                 }
 
                 /* (rs|qp) */
                 if (q >= p) {
                     Ga[qpArr] += (Da[rsArr] + Db[rsArr]) * value;
                     Gb[qpArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Va[qpArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                    Vb[qpArr] += (Ta[rsArr] + Tb[rsArr]) * value;
                 }
                 if (s >= q) {
                     Ga[sqArr] -= Da[rpArr] * value;
                     Gb[sqArr] -= Db[rpArr] * value;
-                    Va[sqArr] -= Ta[rpArr] * value;
-                    Vb[sqArr] -= Tb[rpArr] * value;
                 }
             } else if (p == q && r != s) {
                 /* (pq|sr) */
                 if (s >= r) {
                     Ga[srArr] += (Da[pqArr] + Db[pqArr]) * value;
                     Gb[srArr] += (Da[pqArr] + Db[pqArr]) * value;
-                    Va[srArr] += (Ta[pqArr] + Tb[pqArr]) * value;
-                    Vb[srArr] += (Ta[pqArr] + Tb[pqArr]) * value;
                 }
                 if (q >= s) {
                     Ga[qsArr] -= Da[prArr] * value;
                     Gb[qsArr] -= Db[prArr] * value;
-                    Va[qsArr] -= Ta[prArr] * value;
-                    Vb[qsArr] -= Tb[prArr] * value;
                 }
 
                 /* (rs|pq) */
                 if (p >= q) {
                     Ga[pqArr] += (Da[rsArr] + Db[rsArr]) * value;
                     Gb[pqArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Va[pqArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                    Vb[pqArr] += (Ta[rsArr] + Tb[rsArr]) * value;
                 }
                 if (s >= p) {
                     Ga[spArr] -= Da[rqArr] * value;
                     Gb[spArr] -= Db[rqArr] * value;
-                    Va[spArr] -= Ta[rqArr] * value;
-                    Vb[spArr] -= Tb[rqArr] * value;
                 }
 
                 /* (sr|pq) */
                 if (p >= q) {
                     Ga[pqArr] += (Da[srArr] + Db[srArr]) * value;
                     Gb[pqArr] += (Da[srArr] + Db[srArr]) * value;
-                    Va[pqArr] += (Ta[srArr] + Tb[srArr]) * value;
-                    Vb[pqArr] += (Ta[srArr] + Tb[srArr]) * value;
                 }
                 if (r >= p) {
                     Ga[rpArr] -= Da[sqArr] * value;
                     Gb[rpArr] -= Db[sqArr] * value;
-                    Va[rpArr] -= Ta[sqArr] * value;
-                    Vb[rpArr] -= Tb[sqArr] * value;
                 }
             } else if (p == q && r == s && pqArr != rsArr) {
                 /* (rs|pq) */
                 if (p >= q) {
                     Ga[pqArr] += (Da[rsArr] + Db[rsArr]) * value;
                     Gb[pqArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Va[pqArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                    Vb[pqArr] += (Ta[rsArr] + Tb[rsArr]) * value;
                 }
                 if (s >= p) {
                     Ga[spArr] -= Da[rqArr] * value;
                     Gb[spArr] -= Db[rqArr] * value;
-                    Va[spArr] -= Ta[rqArr] * value;
-                    Vb[spArr] -= Tb[rqArr] * value;
                 }
             }
         } /* end loop through current buffer */
@@ -970,27 +705,17 @@ void DCTSolver::process_so_ints() {
                 int muNu = INDEX((nu + soOffset), (mu + soOffset));
                 double aVal = Ga[muNu];
                 double bVal = Gb[muNu];
-                double aGTVal = Va[muNu];
-                double bGTVal = Vb[muNu];
                 Fa_->add(h, mu, nu, aVal);
                 Fb_->add(h, mu, nu, bVal);
-                g_tau_a_->set(h, mu, nu, aGTVal);
-                g_tau_b_->set(h, mu, nu, bGTVal);
                 if (mu != nu) {
                     Fa_->add(h, nu, mu, aVal);
                     Fb_->add(h, nu, mu, bVal);
-                    g_tau_a_->set(h, nu, mu, aGTVal);
-                    g_tau_b_->set(h, nu, mu, bGTVal);
                 }
             }
         }
         soOffset += nsopi_[h];
     }
 
-    free(Ta);
-    free(Tb);
-    free(Va);
-    free(Vb);
     free(Da);
     free(Db);
     free(Ga);
@@ -1000,77 +725,48 @@ void DCTSolver::process_so_ints() {
 }
 
 /*
- * Updates the Fock operator every lambda iteration using new Tau
+ * Update the Fock operator, defined as h^p_q + gbar^pr_qs 1RDM^s_r
+ * This is an important intermediate in -06 DCT theories.
+ * We also construct the matrix's associated denominators. These appear in first-order update steps.
  */
 void DCTSolver::update_fock() {
     dct_timer_on("DCTSolver::update_fock");
 
     dpdfile2 Gtau;
 
-    moFa_->copy(moF0a_);
-    moFb_->copy(moF0b_);
+    moFa_->copy(so_h_);
+    moFa_->transform(Ca_);
 
-    // Copy MO basis GTau to the memory
+    moFb_->copy(so_h_);
+    moFb_->transform(Cb_);
+
+    // We already have the gbar * tau contraction computed, so let's just add it in.
+    auto moG_tau = Matrix("GGamma in the MO basis", nirrep_, nmopi_, nmopi_);
 
     // Alpha occupied
-    global_dpd_->file2_init(&Gtau, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "GTau <O|O>");
-    global_dpd_->file2_mat_init(&Gtau);
-    global_dpd_->file2_mat_rd(&Gtau);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < naoccpi_[h]; ++i) {
-            for (int j = 0; j < naoccpi_[h]; ++j) {
-                moG_tau_a_->set(h, frzcpi_[h] + i, frzcpi_[h] + j, Gtau.matrix[h][i][j]);
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&Gtau);
+    global_dpd_->file2_init(&Gtau, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "GGamma <O|O>");
+    moG_tau.set_block(slices_.at("ACTIVE_OCC_A"), Matrix(&Gtau));
     global_dpd_->file2_close(&Gtau);
 
     // Alpha virtual
-    global_dpd_->file2_init(&Gtau, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "GTau <V|V>");
-    global_dpd_->file2_mat_init(&Gtau);
-    global_dpd_->file2_mat_rd(&Gtau);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < navirpi_[h]; ++i) {
-            for (int j = 0; j < navirpi_[h]; ++j) {
-                moG_tau_a_->set(h, naoccpi_[h] + i, naoccpi_[h] + j, Gtau.matrix[h][i][j]);
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&Gtau);
+    global_dpd_->file2_init(&Gtau, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "GGamma <V|V>");
+    moG_tau.set_block(slices_.at("ACTIVE_VIR_A"), Matrix(&Gtau));
     global_dpd_->file2_close(&Gtau);
 
+    moFa_->add(moG_tau);
+
     // Beta occupied
-    global_dpd_->file2_init(&Gtau, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "GTau <o|o>");
-    global_dpd_->file2_mat_init(&Gtau);
-    global_dpd_->file2_mat_rd(&Gtau);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nboccpi_[h]; ++i) {
-            for (int j = 0; j < nboccpi_[h]; ++j) {
-                moG_tau_b_->set(h, frzcpi_[h] + i, frzcpi_[h] + j, Gtau.matrix[h][i][j]);
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&Gtau);
+    moG_tau.zero();
+    global_dpd_->file2_init(&Gtau, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "GGamma <o|o>");
+    moG_tau.set_block(slices_.at("ACTIVE_OCC_B"), Matrix(&Gtau));
     global_dpd_->file2_close(&Gtau);
 
     // Beta virtual
-    global_dpd_->file2_init(&Gtau, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "GTau <v|v>");
-    global_dpd_->file2_mat_init(&Gtau);
-    global_dpd_->file2_mat_rd(&Gtau);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nbvirpi_[h]; ++i) {
-            for (int j = 0; j < nbvirpi_[h]; ++j) {
-                moG_tau_b_->set(h, nboccpi_[h] + i, nboccpi_[h] + j, Gtau.matrix[h][i][j]);
-            }
-        }
-    }
-    global_dpd_->file2_mat_close(&Gtau);
+    global_dpd_->file2_init(&Gtau, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "GGamma <v|v>");
+    moG_tau.set_block(slices_.at("ACTIVE_VIR_B"), Matrix(&Gtau));
     global_dpd_->file2_close(&Gtau);
 
-    // Add the GTau contribution to the Fock operator
-    moFa_->add(moG_tau_a_);
-    moFb_->add(moG_tau_b_);
+    moFb_->add(moG_tau);
 
     // Write the MO basis Fock operator to the DPD file and update the denominators
     build_denominators();
@@ -1134,7 +830,7 @@ void DCTSolver::build_AO_tensors() {
 
     /********** AA ***********/
     global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>O]-"), ID("[V>V]-"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&tau1_AO_aa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[n,n]"), ID("[O,O]"), ID("[n,n]"), 0,
                            "tau1AO <OO|nn>");
     global_dpd_->buf4_scm(&tau1_AO_aa, 0.0);
@@ -1159,7 +855,7 @@ void DCTSolver::build_AO_tensors() {
 
     /********** BB ***********/
     global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>o]-"), ID("[v>v]-"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     global_dpd_->buf4_init(&tau1_AO_bb, PSIF_DCT_DPD, 0, ID("[o,o]"), ID("[n,n]"), ID("[o,o]"), ID("[n,n]"), 0,
                            "tau1AO <oo|nn>");
     global_dpd_->buf4_scm(&tau1_AO_bb, 0.0);
@@ -1183,7 +879,7 @@ void DCTSolver::build_AO_tensors() {
 
     /********** AB ***********/
     global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
-                           "Lambda <Oo|Vv>");
+                           "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&tau1_AO_ab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[n,n]"), ID("[O,o]"), ID("[n,n]"), 0,
                            "tau1AO <Oo|nn>");
     global_dpd_->buf4_scm(&tau1_AO_ab, 0.0);
@@ -1205,24 +901,17 @@ void DCTSolver::build_AO_tensors() {
                            "tau2AO <nn|Oo>");
     global_dpd_->buf4_scm(&tau2_AO_ab, 0.0);
 
-    // Preparing Tau for the GTau terms
-    // This is where the SO-basis Tau will be
+    // Prepare to contract TEI against the 1RDM.
+
+    // Write SO basis gamma to disk as s1(temp)
     global_dpd_->file2_init(&s_aa_1, PSIF_DCT_DPD, 0, ID('n'), ID('n'), "s1(temp)A <n|n>");
     global_dpd_->file2_init(&s_bb_1, PSIF_DCT_DPD, 0, ID('n'), ID('n'), "s1(temp)B <n|n>");
-
-    // Write SO-basis Tau to disk
-    global_dpd_->file2_mat_init(&s_aa_1);
-    global_dpd_->file2_mat_init(&s_bb_1);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nsopi_[h]; ++i) {
-            for (int j = 0; j < nsopi_[h]; ++j) {
-                s_aa_1.matrix[h][i][j] = tau_so_a_->get(h, i, j);
-                s_bb_1.matrix[h][i][j] = tau_so_b_->get(h, i, j);
-            }
-        }
-    }
-    global_dpd_->file2_mat_wrt(&s_aa_1);
-    global_dpd_->file2_mat_wrt(&s_bb_1);
+    auto gamma_a = tau_so_a_->clone();
+    gamma_a->add(kappa_so_a_);
+    auto gamma_b = tau_so_b_->clone();
+    gamma_b->add(kappa_so_b_);
+    gamma_a->write_to_dpdfile2(&s_aa_1);
+    gamma_b->write_to_dpdfile2(&s_bb_1);
     global_dpd_->file2_close(&s_aa_1);
     global_dpd_->file2_close(&s_bb_1);
 
@@ -1230,7 +919,7 @@ void DCTSolver::build_AO_tensors() {
     global_dpd_->file2_init(&s_aa_1, PSIF_DCT_DPD, 0, ID('n'), ID('n'), "s1(temp)A <n|n>");
     global_dpd_->file2_init(&s_bb_1, PSIF_DCT_DPD, 0, ID('n'), ID('n'), "s1(temp)B <n|n>");
 
-    // This is where GTau contribution will be placed
+    // This is where GGamma contribution will be placed
     global_dpd_->file2_init(&s_aa_2, PSIF_DCT_DPD, 0, ID('n'), ID('n'), "s2(temp)A <n|n>");
     global_dpd_->file2_init(&s_bb_2, PSIF_DCT_DPD, 0, ID('n'), ID('n'), "s2(temp)B <n|n>");
     global_dpd_->file2_scm(&s_aa_2, 0.0);
@@ -1353,27 +1042,27 @@ void DCTSolver::build_AO_tensors() {
     global_dpd_->buf4_close(&tau2_AO_ab);
     global_dpd_->buf4_close(&tau_temp);
 
-    // Transform the GTau contribution from MO to SO basis for the future use in the Fock operator
+    // Transform the GGamma contribution from SO to MO basis for the future use in the Fock operator
     // Alpha occupied
-    global_dpd_->file2_init(&tau, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "GTau <O|O>");
+    global_dpd_->file2_init(&tau, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "GGamma <O|O>");
     global_dpd_->file2_scm(&tau, 0.0);
     file2_transform(&s_aa_2, &tau, aocc_c_, false);
     global_dpd_->file2_close(&tau);
 
     // Alpha virtual
-    global_dpd_->file2_init(&tau, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "GTau <V|V>");
+    global_dpd_->file2_init(&tau, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "GGamma <V|V>");
     global_dpd_->file2_scm(&tau, 0.0);
     file2_transform(&s_aa_2, &tau, avir_c_, false);
     global_dpd_->file2_close(&tau);
 
     // Beta occupied
-    global_dpd_->file2_init(&tau, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "GTau <o|o>");
+    global_dpd_->file2_init(&tau, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "GGamma <o|o>");
     global_dpd_->file2_scm(&tau, 0.0);
     file2_transform(&s_bb_2, &tau, bocc_c_, false);
     global_dpd_->file2_close(&tau);
 
     // Beta virtual
-    global_dpd_->file2_init(&tau, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "GTau <v|v>");
+    global_dpd_->file2_init(&tau, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "GGamma <v|v>");
     global_dpd_->file2_scm(&tau, 0.0);
     file2_transform(&s_bb_2, &tau, bvir_c_, false);
     global_dpd_->file2_close(&tau);
@@ -1389,359 +1078,6 @@ void DCTSolver::build_AO_tensors() {
     free_int_matrix(Cd_row_start);
 
     dct_timer_off("DCTSolver::build_tensors");
-}
-
-/**
- * Builds the G matrix for Fock matrix, the external potential (tau contracted with the integrals)
- * and other tensors, if requested, out-of-core using the SO integrals.
- * All quantities are built simultaneously to reduce I/O.
- */
-void DCTSolver::build_G() {
-    dct_timer_on("DCTSolver::build_G");
-
-    IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, int_tolerance_, 1, 1);
-
-    Label *lblptr = iwl->labels();
-    Value *valptr = iwl->values();
-
-    double *Da = init_array(ntriso_);
-    double *Db = init_array(ntriso_);
-    double *Ta = init_array(ntriso_);
-    double *Tb = init_array(ntriso_);
-    double *Ga = init_array(ntriso_);
-    double *Gb = init_array(ntriso_);
-    double *Va = init_array(ntriso_);
-    double *Vb = init_array(ntriso_);
-    int soOffset = 0;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int mu = 0; mu < nsopi_[h]; ++mu) {
-            for (int nu = 0; nu <= mu; ++nu) {
-                int muNu = INDEX((nu + soOffset), (mu + soOffset));
-                Da[muNu] = kappa_so_a_->get(h, mu, nu);
-                Db[muNu] = kappa_so_b_->get(h, mu, nu);
-                Ta[muNu] = tau_so_a_->get(h, mu, nu);
-                Tb[muNu] = tau_so_b_->get(h, mu, nu);
-            }
-        }
-        soOffset += nsopi_[h];
-    }
-
-    double value;
-    int Gpr, Grp, Gps, Gsp, Gsq, Gqs, Gqr, Grq, Gc, Gd;
-    int pr, rp, ps, sp, qr, rq, qs, sq;
-    int pqArr, qpArr, rsArr, srArr, qrArr, rqArr;
-    int qsArr, sqArr, psArr, spArr, prArr, rpArr;
-    int offset, labelIndex, p, q, r, s, h;
-
-    bool lastBuffer;
-    do {
-        lastBuffer = iwl->last_buffer();
-        for (int index = 0; index < iwl->buffer_count(); ++index) {
-            labelIndex = 4 * index;
-            p = std::abs((int)lblptr[labelIndex++]);
-            q = (int)lblptr[labelIndex++];
-            r = (int)lblptr[labelIndex++];
-            s = (int)lblptr[labelIndex++];
-            value = (double)valptr[index];
-
-            qpArr = pqArr = INDEX(p, q);
-            srArr = rsArr = INDEX(r, s);
-            prArr = rpArr = INDEX(p, r);
-            qsArr = sqArr = INDEX(q, s);
-            spArr = psArr = INDEX(p, s);
-            qrArr = rqArr = INDEX(q, r);
-
-            /* (pq|rs) */
-            Ga[rsArr] += (Da[pqArr] + Db[pqArr]) * value;
-            Gb[rsArr] += (Da[pqArr] + Db[pqArr]) * value;
-            Va[rsArr] += (Ta[pqArr] + Tb[pqArr]) * value;
-            Vb[rsArr] += (Ta[pqArr] + Tb[pqArr]) * value;
-            if (q >= r) {
-                Ga[qrArr] -= Da[psArr] * value;
-                Gb[qrArr] -= Db[psArr] * value;
-                Va[qrArr] -= Ta[psArr] * value;
-                Vb[qrArr] -= Tb[psArr] * value;
-            }
-
-            if (p != q && r != s && pqArr != rsArr) {
-                /* (pq|sr) */
-                if (s >= r) {
-                    Ga[srArr] += (Da[pqArr] + Db[pqArr]) * value;
-                    Gb[srArr] += (Da[pqArr] + Db[pqArr]) * value;
-                    Va[srArr] += (Ta[pqArr] + Tb[pqArr]) * value;
-                    Vb[srArr] += (Ta[pqArr] + Tb[pqArr]) * value;
-                }
-                if (q >= s) {
-                    Ga[qsArr] -= Da[prArr] * value;
-                    Gb[qsArr] -= Db[prArr] * value;
-                    Va[qsArr] -= Ta[prArr] * value;
-                    Vb[qsArr] -= Tb[prArr] * value;
-                }
-
-                /* (qp|rs) */
-                if (r >= s) {
-                    Ga[rsArr] += (Da[qpArr] + Db[qpArr]) * value;
-                    Gb[rsArr] += (Da[qpArr] + Db[qpArr]) * value;
-                    Va[rsArr] += (Ta[qpArr] + Tb[qpArr]) * value;
-                    Vb[rsArr] += (Ta[qpArr] + Tb[qpArr]) * value;
-                }
-                if (p >= r) {
-                    Ga[prArr] -= Da[qsArr] * value;
-                    Gb[prArr] -= Db[qsArr] * value;
-                    Va[prArr] -= Ta[qsArr] * value;
-                    Vb[prArr] -= Tb[qsArr] * value;
-                }
-
-                /* (qp|sr) */
-                if (s >= r) {
-                    Ga[srArr] += (Da[qpArr] + Db[qpArr]) * value;
-                    Gb[srArr] += (Da[qpArr] + Db[qpArr]) * value;
-                    Va[srArr] += (Ta[qpArr] + Tb[qpArr]) * value;
-                    Vb[srArr] += (Ta[qpArr] + Tb[qpArr]) * value;
-                }
-                if (p >= s) {
-                    Ga[psArr] -= Da[qrArr] * value;
-                    Gb[psArr] -= Db[qrArr] * value;
-                    Va[psArr] -= Ta[qrArr] * value;
-                    Vb[psArr] -= Tb[qrArr] * value;
-                }
-
-                /* (rs|pq) */
-                if (p >= q) {
-                    Ga[pqArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Gb[pqArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Va[pqArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                    Vb[pqArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                }
-                if (s >= p) {
-                    Ga[spArr] -= Da[rqArr] * value;
-                    Gb[spArr] -= Db[rqArr] * value;
-                    Va[spArr] -= Ta[rqArr] * value;
-                    Vb[spArr] -= Tb[rqArr] * value;
-                }
-
-                /* (sr|pq) */
-                if (p >= q) {
-                    Ga[pqArr] += (Da[srArr] + Db[srArr]) * value;
-                    Gb[pqArr] += (Da[srArr] + Db[srArr]) * value;
-                    Va[pqArr] += (Ta[srArr] + Tb[srArr]) * value;
-                    Vb[pqArr] += (Ta[srArr] + Tb[srArr]) * value;
-                }
-                if (r >= p) {
-                    Ga[rpArr] -= Da[sqArr] * value;
-                    Gb[rpArr] -= Db[sqArr] * value;
-                    Va[rpArr] -= Ta[sqArr] * value;
-                    Vb[rpArr] -= Tb[sqArr] * value;
-                }
-
-                /* (rs|qp) */
-                if (q >= p) {
-                    Ga[qpArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Gb[qpArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Va[qpArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                    Vb[qpArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                }
-                if (s >= q) {
-                    Ga[sqArr] -= Da[rpArr] * value;
-                    Gb[sqArr] -= Db[rpArr] * value;
-                    Va[sqArr] -= Ta[rpArr] * value;
-                    Vb[sqArr] -= Tb[rpArr] * value;
-                }
-
-                /* (sr|qp) */
-                if (q >= p) {
-                    Ga[qpArr] += (Da[srArr] + Db[srArr]) * value;
-                    Gb[qpArr] += (Da[srArr] + Db[srArr]) * value;
-                    Va[qpArr] += (Ta[srArr] + Tb[srArr]) * value;
-                    Vb[qpArr] += (Ta[srArr] + Tb[srArr]) * value;
-                }
-                if (r >= q) {
-                    Ga[rqArr] -= Da[spArr] * value;
-                    Gb[rqArr] -= Db[spArr] * value;
-                    Va[rqArr] -= Ta[spArr] * value;
-                    Vb[rqArr] -= Tb[spArr] * value;
-                }
-            } else if (p != q && r != s && pqArr == rsArr) {
-                /* (pq|sr) */
-                if (s >= r) {
-                    Ga[srArr] += (Da[pqArr] + Db[pqArr]) * value;
-                    Gb[srArr] += (Da[pqArr] + Db[pqArr]) * value;
-                    Va[srArr] += (Ta[pqArr] + Tb[pqArr]) * value;
-                    Vb[srArr] += (Ta[pqArr] + Tb[pqArr]) * value;
-                }
-                if (q >= s) {
-                    Ga[qsArr] -= Da[prArr] * value;
-                    Gb[qsArr] -= Db[prArr] * value;
-                    Va[qsArr] -= Ta[prArr] * value;
-                    Vb[qsArr] -= Tb[prArr] * value;
-                }
-                /* (qp|rs) */
-                if (r >= s) {
-                    Ga[rsArr] += (Da[qpArr] + Db[qpArr]) * value;
-                    Gb[rsArr] += (Da[qpArr] + Db[qpArr]) * value;
-                    Va[rsArr] += (Ta[qpArr] + Tb[qpArr]) * value;
-                    Vb[rsArr] += (Ta[qpArr] + Tb[qpArr]) * value;
-                }
-                if (p >= r) {
-                    Ga[prArr] -= Da[qsArr] * value;
-                    Gb[prArr] -= Db[qsArr] * value;
-                    Va[prArr] -= Ta[qsArr] * value;
-                    Vb[prArr] -= Tb[qsArr] * value;
-                }
-
-                /* (qp|sr) */
-                if (s >= r) {
-                    Ga[srArr] += (Da[qpArr] + Db[qpArr]) * value;
-                    Gb[srArr] += (Da[qpArr] + Db[qpArr]) * value;
-                    Va[srArr] += (Ta[qpArr] + Tb[qpArr]) * value;
-                    Vb[srArr] += (Ta[qpArr] + Tb[qpArr]) * value;
-                }
-                if (p >= s) {
-                    Ga[psArr] -= Da[qrArr] * value;
-                    Gb[psArr] -= Db[qrArr] * value;
-                    Va[psArr] -= Ta[qrArr] * value;
-                    Vb[psArr] -= Tb[qrArr] * value;
-                }
-            } else if (p != q && r == s) {
-                /* (qp|rs) */
-                if (r >= s) {
-                    Ga[rsArr] += (Da[qpArr] + Db[qpArr]) * value;
-                    Gb[rsArr] += (Da[qpArr] + Db[qpArr]) * value;
-                    Va[rsArr] += (Ta[qpArr] + Tb[qpArr]) * value;
-                    Vb[rsArr] += (Ta[qpArr] + Tb[qpArr]) * value;
-                }
-                if (p >= r) {
-                    Ga[prArr] -= Da[qsArr] * value;
-                    Gb[prArr] -= Db[qsArr] * value;
-                    Va[prArr] -= Ta[qsArr] * value;
-                    Vb[prArr] -= Tb[qsArr] * value;
-                }
-
-                /* (rs|pq) */
-                if (p >= q) {
-                    Ga[pqArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Gb[pqArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Va[pqArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                    Vb[pqArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                }
-                if (s >= p) {
-                    Ga[spArr] -= Da[rqArr] * value;
-                    Gb[spArr] -= Db[rqArr] * value;
-                    Va[spArr] -= Ta[rqArr] * value;
-                    Vb[spArr] -= Tb[rqArr] * value;
-                }
-
-                /* (rs|qp) */
-                if (q >= p) {
-                    Ga[qpArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Gb[qpArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Va[qpArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                    Vb[qpArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                }
-                if (s >= q) {
-                    Ga[sqArr] -= Da[rpArr] * value;
-                    Gb[sqArr] -= Db[rpArr] * value;
-                    Va[sqArr] -= Ta[rpArr] * value;
-                    Vb[sqArr] -= Tb[rpArr] * value;
-                }
-            } else if (p == q && r != s) {
-                /* (pq|sr) */
-                if (s >= r) {
-                    Ga[srArr] += (Da[pqArr] + Db[pqArr]) * value;
-                    Gb[srArr] += (Da[pqArr] + Db[pqArr]) * value;
-                    Va[srArr] += (Ta[pqArr] + Tb[pqArr]) * value;
-                    Vb[srArr] += (Ta[pqArr] + Tb[pqArr]) * value;
-                }
-                if (q >= s) {
-                    Ga[qsArr] -= Da[prArr] * value;
-                    Gb[qsArr] -= Db[prArr] * value;
-                    Va[qsArr] -= Ta[prArr] * value;
-                    Vb[qsArr] -= Tb[prArr] * value;
-                }
-
-                /* (rs|pq) */
-                if (p >= q) {
-                    Ga[pqArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Gb[pqArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Va[pqArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                    Vb[pqArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                }
-                if (s >= p) {
-                    Ga[spArr] -= Da[rqArr] * value;
-                    Gb[spArr] -= Db[rqArr] * value;
-                    Va[spArr] -= Ta[rqArr] * value;
-                    Vb[spArr] -= Tb[rqArr] * value;
-                }
-
-                /* (sr|pq) */
-                if (p >= q) {
-                    Ga[pqArr] += (Da[srArr] + Db[srArr]) * value;
-                    Gb[pqArr] += (Da[srArr] + Db[srArr]) * value;
-                    Va[pqArr] += (Ta[srArr] + Tb[srArr]) * value;
-                    Vb[pqArr] += (Ta[srArr] + Tb[srArr]) * value;
-                }
-                if (r >= p) {
-                    Ga[rpArr] -= Da[sqArr] * value;
-                    Gb[rpArr] -= Db[sqArr] * value;
-                    Va[rpArr] -= Ta[sqArr] * value;
-                    Vb[rpArr] -= Tb[sqArr] * value;
-                }
-            } else if (p == q && r == s && pqArr != rsArr) {
-                /* (rs|pq) */
-                if (p >= q) {
-                    Ga[pqArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Gb[pqArr] += (Da[rsArr] + Db[rsArr]) * value;
-                    Va[pqArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                    Vb[pqArr] += (Ta[rsArr] + Tb[rsArr]) * value;
-                }
-                if (s >= p) {
-                    Ga[spArr] -= Da[rqArr] * value;
-                    Gb[spArr] -= Db[rqArr] * value;
-                    Va[spArr] -= Ta[rqArr] * value;
-                    Vb[spArr] -= Tb[rqArr] * value;
-                }
-            }
-        } /* end loop through current buffer */
-        if (!lastBuffer) iwl->fetch();
-    } while (!lastBuffer);
-    iwl->set_keep_flag(true);
-    delete iwl;
-
-    // Build the Fock matrices from the H and G matrices
-    soOffset = 0;
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int mu = 0; mu < nsopi_[h]; ++mu) {
-            for (int nu = 0; nu <= mu; ++nu) {
-                int muNu = INDEX((nu + soOffset), (mu + soOffset));
-                double aVal = Ga[muNu];
-                double bVal = Gb[muNu];
-                double aGTVal = Va[muNu];
-                double bGTVal = Vb[muNu];
-                Fa_->add(h, mu, nu, aVal);
-                Fb_->add(h, mu, nu, bVal);
-                g_tau_a_->set(h, mu, nu, aGTVal);
-                g_tau_b_->set(h, mu, nu, bGTVal);
-                if (mu != nu) {
-                    Fa_->add(h, nu, mu, aVal);
-                    Fb_->add(h, nu, mu, bVal);
-                    g_tau_a_->set(h, nu, mu, aGTVal);
-                    g_tau_b_->set(h, nu, mu, bGTVal);
-                }
-            }
-        }
-        soOffset += nsopi_[h];
-    }
-
-    free(Ta);
-    free(Tb);
-    free(Va);
-    free(Vb);
-    free(Da);
-    free(Db);
-    free(Ga);
-    free(Gb);
-
-    dct_timer_off("DCTSolver::build_G");
 }
 
 }  // namespace dct

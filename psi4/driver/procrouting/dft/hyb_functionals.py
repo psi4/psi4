@@ -82,39 +82,6 @@ funcs.append({
     '    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754, 2009\n',
 })
 
-# funcs.append({
-#     "name": "wB97X-D3",
-#     "alias": ["WB97X-D3ZERO"],
-#     "x_functionals": {
-#         "HYB_GGA_XC_WB97X": {
-#             "omega": 0.25,
-#             "tweaks": [0.804272, 0.698900, 0.508940, -3.744903, 10.060790,
-#                        1.000000, 2.433266, -15.446008, 17.644390, -8.879494,
-#                        1.000000, -4.868902, 21.295726, -36.020866, 19.177018]
-#         }
-#     },
-#     "x_hf": {
-#         "alpha": 0.195728,
-#         "beta": 1.0,
-#         "omega": 0.25
-#     },
-#     "c_functionals": {},
-#     "dispersion": {
-#         "type": "d3zero",
-#         "params": {
-#             's6': 1.0,
-#             's8': 1.000,
-#             'sr6': 1.281,
-#             'sr8': 1.094,
-#             'alpha6': 14.0
-#         }
-#     },
-#     "description":
-#     '    This functional is currently broken - wB97X needs enabled tweaks.\n',
-#     "citation":
-#     '    Y.-S. Lin, G.-D. Li, S.-P. Mao, J.-D. Chai, J. Chem. Theory Comput., 9, 263-272, 2013\n',
-# })
-
 funcs.append({
     "name": "HF",
     "alias": ["SCF"],
@@ -163,7 +130,10 @@ funcs.append({
     "alias": ["PBEH-3C"],
     "x_functionals": {
         "GGA_X_PBE": {
-            "tweak": [1.0245, 0.12345679],
+            "tweak": {
+                "_kappa": 1.0245,
+                "_mu": 0.12345679,
+            },
             "alpha": 0.58
         }
     },
@@ -172,7 +142,9 @@ funcs.append({
     },
     "c_functionals": {
         "GGA_C_PBE": {
-            "tweak": [0.03]
+            "tweak": {
+                "_beta": 0.03,
+            },
         }
     },
     "dispersion": {
@@ -343,25 +315,18 @@ funcs.append({
 
 
 def get_pw6b95_tweaks():
-    beta = 0.0018903811666999256  # 5.0*(36.0*math.pi)**(-5.0/3.0)
     X2S = 0.1282782438530421943003109254455883701296
-    X_FACTOR_C = 0.9305257363491000250020102180716672510262  #    /* 3/8*cur(3/pi)*4^(2/3) */
     bt = 0.00538  # paper values
     c_pw = 1.7382  # paper values
-    expo_pw6 = 3.8901  # paperl values
+    expo_pw6 = 3.8901  # paper values
     alpha_pw6 = c_pw / X2S / X2S
-    a_pw6 = 6.0 * bt / X2S
-    b_pw6 = 1.0 / X2S
-    c_pw6 = bt / (X_FACTOR_C * X2S * X2S)
-    d_pw6 = -(bt - beta) / (X_FACTOR_C * X2S * X2S)
-    f_pw6 = 1.0e-6 / (X_FACTOR_C * X2S**expo_pw6)
-    return ([a_pw6, b_pw6, c_pw6, d_pw6, f_pw6, alpha_pw6, expo_pw6])
+    return {"_bt": bt, "_alpha": alpha_pw6, "_expo": expo_pw6}
 
 
 funcs.append({
     "name": "PW6B95",
     "x_functionals": {
-        "GGA_X_PW91": {
+        "GGA_X_MPW91": {
             "tweak": get_pw6b95_tweaks(),
             "alpha": 0.72
         }
@@ -371,7 +336,10 @@ funcs.append({
     },
     "c_functionals": {
         "MGGA_C_BC95": {
-            "tweak": [0.03668, 0.00262]
+            "tweak": {
+                "_css": 0.03668,
+                "_copp": 0.00262,
+            },
         }
     },
     "description": '    PW6B95 Hybrid Meta-GGA XC Functional\n',
@@ -437,7 +405,7 @@ funcs.append({
 funcs.append({
     "name": "M05",
     "x_functionals": {
-        "HYB_MGGA_X_M05" : {
+        "HYB_MGGA_X_M05": {
             "use_libxc": True
         }
     },
@@ -564,7 +532,7 @@ funcs.append({
         "HYB_MGGA_XC_WB97M_V": {}
     },
     "dispersion": {
-        "nlc":False,
+        "nlc": False,
         "type": "d3bj",
         "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem.,14, 5725, 2018\n',
         "params": {
@@ -574,9 +542,11 @@ funcs.append({
             'a2': 3.1280
         },
     },
-    "description": '    wB97M-V with D3(BJ) instead of VV10 dispersion \n',
-    "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem.,14, 5725, 2018\n'+
-                '    N. Mardirossian, M. Head-Gordon, J. Chem. Phys. 144, 214110, 2016\n'
+    "description":
+    '    wB97M-V with D3(BJ) instead of VV10 dispersion \n',
+    "citation":
+    '    A. Najib, L. Goerigk, J. Comput. Theory Chem.,14, 5725, 2018\n' +
+    '    N. Mardirossian, M. Head-Gordon, J. Chem. Phys. 144, 214110, 2016\n'
 })
 
 funcs.append({
@@ -585,7 +555,7 @@ funcs.append({
         "HYB_GGA_XC_WB97X_V": {}
     },
     "dispersion": {
-        "nlc":False,
+        "nlc": False,
         "type": "d3bj",
         "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem.,14 5725, 2018\n',
         "params": {
@@ -595,9 +565,11 @@ funcs.append({
             'a2': 5.4959
         },
     },
-    "description": '    wB97X-V with D3(BJ) instead of VV10 dispersion \n',
-    "citation": '    A. Najib, L. Goerigk, J. Comput. Theory Chem., 14 5725, 2018)\n'+
-                '    N. Mardirossian, M. Head-Gordon, Phys. Chem. Chem. Phys, 16, 9904, 2014\n'
+    "description":
+    '    wB97X-V with D3(BJ) instead of VV10 dispersion \n',
+    "citation":
+    '    A. Najib, L. Goerigk, J. Comput. Theory Chem., 14 5725, 2018)\n' +
+    '    N. Mardirossian, M. Head-Gordon, Phys. Chem. Chem. Phys, 16, 9904, 2014\n'
 })
 
 funcs.append({
@@ -640,10 +612,22 @@ funcs.append({
     "c_functionals": {
         "GGA_C_BMK": {}
     },
-    "citation":
-    '    A. D. Boese, J. M. L. Martin, J. Chem. Phys. 121, 3405, 2004\n',
-    "description":
-    '    BMK Hybrid Meta-GGA XC Functional for kinetics\n',
+    "citation": '    A. D. Boese, J. M. L. Martin, J. Chem. Phys. 121, 3405, 2004\n',
+    "description": '    BMK Hybrid Meta-GGA XC Functional for kinetics\n',
+})
+
+funcs.append({
+    "name": "t-HCTHh",
+    "alias": ["tHCTHh", "tau-HCTHh"],
+    "x_functionals": {
+        "HYB_MGGA_X_TAU_HCTH": {
+            "use_libxc": True,
+        },
+    },
+    "c_functionals": {
+        "GGA_C_HYB_TAU_HCTH": {}
+    },
+    "description": '    Hybrid Tau HCTH Meta-GGA XC Functional\n',
 })
 
 functional_list = {}

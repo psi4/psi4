@@ -74,7 +74,8 @@ for pyfile in glob.glob(DriverPath + '../../psi4/driver/qcdb/cfour.py'):
 
 for pv in sorted(psivars):
     pvsquashed = pv.replace(' ', '')
-    fdriver.write('   * :psivar:`%s <%s>`\n\n' % (pv, pvsquashed))
+    fdriver.write(f'   * :psivar:`{pv}`\n\n')
+    #fdriver.write('   * :psivar:`%s <%s>`\n\n' % (pv, pvsquashed))
 
 fdriver.write('\n')
 fdriver.close()

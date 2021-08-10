@@ -1,4 +1,4 @@
-#!@PYTHON_EXECUTABLE@
+#!@Python_EXECUTABLE@
 
 #
 # @BEGIN LICENSE
@@ -28,17 +28,17 @@
 # @END LICENSE
 #
 
-import atexit
-import sys
-import os
-import json
-import datetime
 import argparse
-from argparse import RawTextHelpFormatter
+import atexit
+import datetime
+import json
+import os
+import sys
+import warnings
 from pathlib import Path
 
 # yapf: disable
-parser = argparse.ArgumentParser(description="Psi4: Open-Source Quantum Chemistry", formatter_class=RawTextHelpFormatter)
+parser = argparse.ArgumentParser(description="Psi4: Open-Source Quantum Chemistry", formatter_class=argparse.RawTextHelpFormatter)
 parser.add_argument("-i", "--input", default="input.dat",
                     help="Input file name. Default: input.dat.")
 parser.add_argument("-o", "--output", help="""\
@@ -60,8 +60,7 @@ parser.add_argument("-m", "--messy", action='store_true',
                     help="Leaves temporary files after the run is completed.")
 # parser.add_argument("-d", "--debug", action='store_true', help="Flush the outfile at every print statement.")
 # parser.add_argument("-r", "--restart", action='store_true', help="Number to be used instead of process id.")
-parser.add_argument("-p", "--prefix",
-                    help="Prefix name for psi files. Default psi")
+# parser.add_argument("-p", "--prefix", help="Prefix name for psi files. Default psi")
 parser.add_argument("--psiapi-path", action='store_true',
                     help="""Generates a bash command to source correct Python """
                          """interpreter and path for ``python -c "import psi4"``""")
@@ -72,8 +71,8 @@ parser.add_argument("-l", "--psidatadir",
                     help="Specifies where to look for the Psi4 data directory. Overrides PSIDATADIR. !Warning! expert option.")
 parser.add_argument("-k", "--skip-preprocessor", action='store_true',
                     help="Skips input preprocessing. !Warning! expert option.")
-parser.add_argument("--qcschema", action='store_true',
-                    help="Runs a QCSchema input file. Can either be JSON or Msgpack input.")
+parser.add_argument("--qcschema", "--schema", action='store_true',
+                    help="Runs input file as QCSchema. Can either be JSON or MessagePack input.")
 parser.add_argument("--json", action='store_true',
                     help="Runs a JSON input file. !Warning! depcrated option in 1.4, use --qcschema instead.")
 parser.add_argument("-t", "--test", nargs='?', const='smoke', default=None,
@@ -135,7 +134,7 @@ if len(unknown) > 0:
 if len(unknown) > 1:
     args["output"] = unknown[1]
 if len(unknown) > 2:
-    raise KeyError("Too many unknown arguments: %s" % str(unknown))
+    raise KeyError(f"Too many unknown arguments: {unknown}")
 
 # Figure out output arg
 if (args["output"] is None) and (args["qcschema"] is False):
@@ -161,7 +160,7 @@ if args['plugin_compile']:
         print("""Install "psi4-dev" via `conda install psi4-dev -c psi4[/label/dev]`, then reissue command.""")
 
 if args['psiapi_path']:
-    pyexe_dir = os.path.dirname("@PYTHON_EXECUTABLE@")
+    pyexe_dir = os.path.dirname("@Python_EXECUTABLE@")
     bin_dir = Path(cmake_install_prefix) / 'bin'
     print(f"""export PATH={pyexe_dir}:$PATH  # python interpreter\nexport PATH={bin_dir}:$PATH  # psi4 executable\nexport PYTHONPATH={lib_dir}:$PYTHONPATH  # psi4 pymodule""")
     sys.exit()
@@ -177,12 +176,11 @@ if args["psidatadir"] is not None:
 def custom_formatwarning(msg, *args, **kwargs):
     return str(msg) + '\n'
 
-import warnings
 warnings.formatwarning = custom_formatwarning
 
 # Import installed psi4
 sys.path.insert(1, lib_dir)
-import psi4
+import psi4  # isort:skip
 
 if args["version"]:
     print(psi4.__version__)
@@ -219,6 +217,9 @@ if not os.path.isfile(args["input"]):
     raise KeyError("The file %s does not exist." % args["input"])
 args["input"] = os.path.normpath(args["input"])
 
+# Setup scratch_messy
+_clean_functions = [psi4.core.clean, psi4.extras.clean_numpy_files]
+
 # Setup outfile
 if args["append"] is None:
     args["append"] = False
@@ -226,9 +227,6 @@ if (args["output"] != "stdout") and (args["qcschema"] is False):
     psi4.core.set_output_file(args["output"], args["append"])
 
 # Set a few options
-if args["prefix"] is not None:
-    psi4.core.set_psi_file_prefix(args["prefix"])
-
 psi4.core.set_num_threads(int(args["nthread"]), quiet=True)
 psi4.set_memory(args["memory"], quiet=True)
 psi4.extras._input_dir_ = os.path.dirname(os.path.abspath(args["input"]))
@@ -265,7 +263,13 @@ if args["qcschema"]:
         raise Exception("qcschema files must either end in '.json' or '.msgpack'.")
 
     psi4.extras._success_flag_ = True
-    ret = psi4.schema_wrapper.run_qcschema(data)
+    clean = True
+    if args["messy"]:
+        clean = False
+        for func in _clean_functions:
+            atexit.unregister(func)
+
+    ret = psi4.schema_wrapper.run_qcschema(data, clean=clean)
 
     if args["output"] is not None:
         filename = args["output"]
@@ -317,17 +321,9 @@ if args["verbose"]:
     psi4.core.print_out('-' * 75)
 
 # Handle Messy
-_clean_functions = [psi4.core.clean, psi4.extras.clean_numpy_files]
 if args["messy"]:
-
-    if sys.version_info >= (3, 0):
-        for func in _clean_functions:
-            atexit.unregister(func)
-    else:
-        for handler in atexit._exithandlers:
-            for func in _clean_functions:
-                if handler[0] == func:
-                    atexit._exithandlers.remove(handler)
+    for func in _clean_functions:
+        atexit.unregister(func)
 
 # Register exit printing, failure GOTO coffee ELSE beer
 atexit.register(psi4.extras.exit_printing, start_time=start_time)
@@ -364,7 +360,7 @@ except Exception as exception:
             in_str += mark + lines[lineno] + "\n"
         psi4.core.print_out(in_str)
 
-    # extact expection message and print it in a box for attention.
+    # extract exception message and print it in a box for attention.
     ex = ','.join(traceback.format_exception_only(type(exception), exception))
     ex_list = ex.split(":", 1)[-1]
     error = ''.join(ex_list)

@@ -580,7 +580,8 @@ SharedMatrix Deriv::compute(DerivCalcType deriv_calc_type) {
     // The current wavefunction's reference wavefunction, nullptr for SCF/DFT
     std::shared_ptr<Wavefunction> ref_wfn = wfn_->reference_wavefunction();
     // Whether the SCF contribution is separate from the correlated terms
-    bool reference_separate = (X) && ref_wfn;
+    // This is currently a hack and should be improved.
+    bool reference_separate = (X) && ref_wfn && wfn_->module() != "dct";
 
     // If the function is called without specifying the type of derivative computation
     // then use information from the wave function to determine it

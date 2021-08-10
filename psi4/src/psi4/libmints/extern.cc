@@ -409,4 +409,37 @@ double ExternalPotential::computeNuclearEnergy(std::shared_ptr<Molecule> mol) {
     return E;
 }
 
+double ExternalPotential::computeExternExternInteraction(std::shared_ptr<ExternalPotential> other_extern, bool in_angstrom) {
+    double E = 0.0;
+    double convfac = 1.0; // assume the geometry of the point charges is in Bohr.
+    if (in_angstrom) {
+        convfac /= pc_bohr2angstroms; // Here we convert to Angstrom
+    }
+
+    // charge-charge interaction
+    for (auto self_charge: charges_) {
+        double ZA = std::get<0>(self_charge);
+        double xA = convfac * std::get<1>(self_charge);
+        double yA = convfac * std::get<2>(self_charge);
+        double zA = convfac * std::get<3>(self_charge);
+
+        for (auto other_charge: other_extern->charges_) {
+            double ZB = std::get<0>(other_charge);
+            double xB = convfac * std::get<1>(other_charge);
+            double yB = convfac * std::get<2>(other_charge);
+            double zB = convfac * std::get<3>(other_charge);
+
+            double dx = xA - xB;
+            double dy = yA - yB;
+            double dz = zA - zB;
+            double R = sqrt(dx * dx + dy * dy + dz * dz);
+
+            E += ZA * ZB / R;
+        }
+    }
+
+    return E;
+}
+
+
 }  // namespace psi

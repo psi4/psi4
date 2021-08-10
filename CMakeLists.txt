@@ -1,5 +1,12 @@
 #############################  Superbuild Project  #############################
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR) # 3.8: CXX_STANDARD recognizes C++17
+if(DEFINED ENV{LGTM_SRC})
+    cmake_minimum_required(VERSION 3.12 FATAL_ERROR)
+else ()
+    cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+    cmake_policy(SET CMP0094 NEW)
+endif()
+                                              # 3.15: useable FindPython with NumPy component and LOCATION
+                                              # 3.8: CXX_STANDARD recognizes C++17
                                               # 3.3: EP_add(DEPENDS interfacelib, CheckFortranCompilerFlag
                                               # 3.2: continue()
                                               # 3.1: CMAKE_CXX_STANDARD, BUILD_ALWAYS
@@ -18,17 +25,16 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #
 #    >>> ls
 #    external/  COPYING  psi4/  tests/  ...
-#    >>> cmake -H. -Bobjdir -DCMAKE_INSTALL_PREFIX=/path/to/install-psi4 ...
+#    >>> cmake -S. -Bobjdir -DCMAKE_INSTALL_PREFIX=/path/to/install-psi4 ...
 #    ...
 #    -- Generating done
 #    -- Build files have been written to: /current/dir/objdir
-#    >>> cd objdir && make -j`getconf _NPROCESSORS_ONLN`
-#    >>> make install
+#    >>> cmake --build objdir --target install -j`getconf _NPROCESSORS_ONLN`
 
 #  <<<  Required build dependencies that Psi4 can't build itself  >>>
 #
 #    - CMake (e.g., `conda install cmake`)
-#    - C++ and C compilers (C++11 compliant)
+#    - C++ and C compilers (C++14 compliant)
 #    - BLAS/LAPACK (also runtime; e.g., `conda install mkl-devel`)
 #    - Python (also runtime; interpreter and headers; e.g., `conda install python`)
 #    - NumPy (also runtime; avoidable at buildtime if gau2grid pre-built; e.g., `conda install numpy`)
@@ -52,9 +58,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 #  <<<  Detecting dependencies and add-ons  >>>
 #
-#    - PYTHON_EXECUTABLE "Python interpreter to use (e.g., /path/to/bin/python3.7)"
-#    - PYTHON_LIBRARY "Python library that goes with the interpreter (e.g., /path/to/lib/python3.7.so)"
-#    - PYTHON_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python3.7)"
+#    - Python_EXECUTABLE "Python interpreter to use (e.g., /path/to/bin/python3.7)"
+#    - Python_LIBRARY "Python library that goes with the interpreter (e.g., /path/to/lib/python3.7.so)"
+#    - Python_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python3.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
 #    For any ${AddOn} of: ambit, CheMPS2, dkh, libefp, erd, gau2grid, gdma, Libint2, PCMSolver, pybind11, pylibefp,
@@ -69,9 +75,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #
 #    - ENV(MATH_ROOT) "Root directory where BLAS/LAPACK libraries should be detected (e.g., ${MATH_ROOT}/lib/libblas.so)"
 #    - BLAS_TYPE "Target BLAS distribution for math detection
-#                 (default: search order MKL>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
+#                 (default: search order MKL>FLEXIBLAS>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
 #    - LAPACK_TYPE "Target LAPACK distribution for math detection
-#                 (default: search order MKL>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
+#                 (default: search order MKL>FLEXIBLAS>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
 #    - LAPACK_LIBRARIES "Location of BLAS/LAPACK libraries as ";"-separated list of full paths, bypassing math detection"
 #    - LAPACK_INCLUDE_DIRS "Location of BLAS/LAPACK headers (only needed for MKL), bypassing math detection"
 #    - OpenMP_LIBRARY_DIRS "Location of OpenMP libraries (iomp5/gomp/omp) as ";"-separated list, hinting OpenMP detection"
@@ -153,7 +159,7 @@ option_with_flags(ENABLE_UBSAN "Enables undefined behavior sanitizer (requires s
                   "-fsanitize=undefined -fno-omit-frame-pointer")
 option_with_flags(ENABLE_MSAN "Enables memory sanitizer (requires similarly compiled Python and Numpy)" OFF
                   "-fsanitize=memory -fPIE -pie -fno-omit-frame-pointer")
-option_with_default(MAX_AM_ERI "Maximum angular momentum for integrals. The definition changed with Libint2. Default fine for production." 5)
+option_with_default(MAX_AM_ERI "Maximum angular momentum for integrals. The definition changed with Libint2 but still single integer. Default fine for production." 5)
 option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
 option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC "Compile static libraries with position independent code" ON)
@@ -164,6 +170,7 @@ option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation mes
 option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 14)
 option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar sse avx avxfma micavx512)" avx)
 option_with_default(SPHINX_THEME "Theme for Sphinx documentation and extensions" sphinx_psi_theme)
+option_with_default(SPHINXMAN_STRICT "Turn warnings into errors for docs target sphinxman" OFF)
 option_with_default(BUILD_Libint2_GENERATOR "If prebuilt not found, don't build Libint2 from source tarball but instead build and run generator (several hours for production library). Edit angular momentum and integrals classes directly in `external/upstream/libint2/CMakeLists.txt` (requires Ninja)." OFF)
 
 ########################  Process & Validate Options  ##########################
@@ -176,19 +183,24 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 
+
 # Python use in psi4 (not incl. external/)
 # * interpreter: run the versioner in psi4-core. run tests and build docs in psi4
 # * headers: Python.h for pybind11 to build against in psi4-core
 # * library: not at all
 
 set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7 3.6)  # adjust with CMake minimum FindPythonInterp
-find_package(PythonLibsNew 3.6 REQUIRED)
-message(STATUS "${Cyan}Found Python ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}${ColourReset}: ${PYTHON_EXECUTABLE} (found version ${PYTHON_VERSION_STRING})")
+if(DEFINED ENV{LGTM_SRC})
+    find_package(Python 3.7 EXACT COMPONENTS Interpreter Development REQUIRED)
+else()
+    find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
+endif()
+message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION})")
 
 if(DEFINED ENV{LGTM_SRC})
     set(BUILD_TESTING OFF)
     set(BUILD_Libint2_GENERATOR OFF)
-    set(MAX_AM_ERI 2)
+    set(MAX_AM_ERI 1)
     message(STATUS "LGTM enviroment detected so downgrading Libint2 build.")
 endif()
 
@@ -235,6 +247,7 @@ ExternalProject_Add(psi4-core
               -DCMAKE_CXX_STANDARD=${psi4_CXX_STANDARD}
               -DCMAKE_CXX_STANDARD_REQUIRED=ON
               -DCMAKE_CXX_EXTENSIONS=OFF
+              -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
               -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
               -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
               -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
@@ -244,9 +257,9 @@ ExternalProject_Add(psi4-core
               -DCMAKE_INSTALL_MESSAGE=${CMAKE_INSTALL_MESSAGE}
               -DPYMOD_INSTALL_LIBDIR=${PYMOD_INSTALL_LIBDIR}
               -DMAX_AM_ERI=${MAX_AM_ERI}
-              -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
-              -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
-              -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
+              -DPython_EXECUTABLE=${Python_EXECUTABLE}
+              -DPython_INCLUDE_DIR=${Python_INCLUDE_DIRS}
+              -DPython_LIBRARY=${Python_LIBRARIES}
               -DPSI4_ROOT=${CMAKE_CURRENT_SOURCE_DIR}
               -DENABLE_ambit=${ENABLE_ambit}
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}

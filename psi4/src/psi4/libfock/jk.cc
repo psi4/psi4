@@ -423,7 +423,9 @@ void JK::USO2AO() {
     }
     delete[] temp;
 
-    // Transform C_right
+    // Transform the left-index of all C matrices from SO basis to AO basis.
+
+    // Transform C_left. Assumed totally symmetric.
     for (size_t N = 0; N < D_.size(); ++N) {
         // Input is already C1
         if (!input_symmetry_cast_map_[N]) {
@@ -446,7 +448,7 @@ void JK::USO2AO() {
         }
     }
 
-    // Transform C_left
+    // Transform C_right. Not assumed totally symmetric.
     for (size_t N = 0; (N < D_.size()) && (!lr_symmetric_); ++N) {
         // Input is already C1
         if (!input_symmetry_cast_map_[N]) {
@@ -457,14 +459,17 @@ void JK::USO2AO() {
         int offset = 0;
         int symm = D_[N]->symmetry();
         for (int h = 0; h < AO2USO_->nirrep(); ++h) {
+            // We MUST pack columns in the order in which they appear for totally symmetric C_left.
+            // This means we transform in order of h ^ symm, not in order of h.
             int nao = AO2USO_->rowspi()[0];
-            int nso = AO2USO_->colspi()[h];
+            int nso = AO2USO_->colspi()[h ^ symm];
             int ncol = C_right_ao_[N]->colspi()[0];
-            int ncolspi = C_right_[N]->colspi()[h ^ symm];
+            // Remember: colspi_[h] describes not the orbitals of block h, but the orbitals that transform as h.
+            int ncolspi = C_right_[N]->colspi()[h];
             if (nso == 0 || ncolspi == 0) continue;
-            double** Up = AO2USO_->pointer(h);
+            double** Up = AO2USO_->pointer(h ^ symm);
             double** CAOp = C_right_ao_[N]->pointer();
-            double** CSOp = C_right_[N]->pointer(h);
+            double** CSOp = C_right_[N]->pointer(h ^ symm);
             C_DGEMM('N', 'N', nao, ncolspi, nso, 1.0, Up[0], nso, CSOp[0], ncolspi, 0.0, &CAOp[0][offset], ncol);
             offset += ncolspi;
         }

@@ -34,23 +34,26 @@ import copy
 import datetime
 import json
 import os
+import pprint
 import sys
 import traceback
 import uuid
 import warnings
-import pprint
-pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
+from collections import defaultdict
 
 import numpy as np
 import qcelemental as qcel
 import qcengine as qcng
-from collections import defaultdict
-
-from psi4 import core
 from psi4.extras import exit_printing
 from psi4.header import print_header
 from psi4.metadata import __version__
 from psi4.driver import driver, p4util
+
+from psi4 import core
+
+pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
+
+
 
 __all__ = ["run_qcschema", "run_json"]
 
@@ -79,10 +82,10 @@ _qcschema_translation = {
 
     # Properties
     "properties": {
-        "mulliken_charges": {"variables": "MULLIKEN_CHARGES", "skip_null": True},
-        "lowdin_charges": {"variables": "LOWDIN_CHARGES", "skip_null": True},
-        "wiberg_lowdin_indices": {"variables": "WIBERG_LOWDIN_INDICES", "skip_null": True},
-        "mayer_indices": {"variables": "MAYER_INDICES", "skip_null": True},
+        "mulliken_charges": {"variables": "MULLIKEN CHARGES", "skip_null": True},
+        "lowdin_charges": {"variables": "LOWDIN CHARGES", "skip_null": True},
+        "wiberg_lowdin_indices": {"variables": "WIBERG LOWDIN INDICES", "skip_null": True},
+        "mayer_indices": {"variables": "MAYER INDICES", "skip_null": True},
     },
 
     # SCF variables
@@ -190,7 +193,7 @@ def _convert_variables(data, context=None, json=False):
             elif conversion_factor:
                 value = [x * conversion_factor for x in value]
         else:
-            raise TypeError("variables type not understood.")
+            raise TypeError(f"Type of variable not understood: {key} {var}")
 
         # Handle skips
         if var.get("skip_zero", False) and (value == 0):
@@ -306,13 +309,6 @@ def _convert_wavefunction(wfn, context=None):
                 arr = arr[ao_map[:, None]]
         return arr
 
-    def re1d(mat):
-        arr = np.array(mat)
-        if reorder:
-            arr = arr[ao_map]
-
-        return arr
-
     # get occupations in orbital-energy ordering
     def sort_occs(noccpi, epsilon):
         occs = []
@@ -349,10 +345,10 @@ def _convert_wavefunction(wfn, context=None):
         "scf_density_b": re2d(wfn.Db_subset("AO")),
         "scf_fock_a": re2d(wfn.Fa_subset("AO")),
         "scf_fock_b": re2d(wfn.Fa_subset("AO")),
-        "scf_eigenvalues_a": re1d(wfn.epsilon_a_subset("AO", "ALL")),
-        "scf_eigenvalues_b": re1d(wfn.epsilon_b_subset("AO", "ALL")),
-        "scf_occupations_a": re1d(sort_occs((wfn.doccpi() + wfn.soccpi()).to_tuple(), wfn.epsilon_a().nph)),
-        "scf_occupations_b": re1d(sort_occs(wfn.doccpi().to_tuple(), wfn.epsilon_b().nph)),
+        "scf_eigenvalues_a": wfn.epsilon_a_subset("AO", "ALL"),
+        "scf_eigenvalues_b": wfn.epsilon_b_subset("AO", "ALL"),
+        "scf_occupations_a": sort_occs((wfn.doccpi() + wfn.soccpi()).to_tuple(), wfn.epsilon_a().nph),
+        "scf_occupations_b": sort_occs(wfn.doccpi().to_tuple(), wfn.epsilon_b().nph),
     }
 
     return ret
@@ -409,11 +405,11 @@ def run_qcschema(input_data, clean=True):
 
         # qcschema should be copied
         ret_data = run_json_qcschema(input_model.dict(), clean, False, keep_wfn=keep_wfn)
-        ret_data["provenance"] = {
+        ret_data["provenance"].update({
             "creator": "Psi4",
             "version": __version__,
             "routine": "psi4.schema_runner.run_qcschema"
-        }
+        })
 
         exit_printing(start_time=start_time, success=True)
 
@@ -441,7 +437,7 @@ def run_qcschema(input_data, clean=True):
 def run_json(json_data, clean=True):
 
     warnings.warn(
-        "Using `psi4.schema_wrapper.run_schema` instead of `psi4.json_wrapper.run_qcschema` is deprecated, and in 1.5 it will stop working\n",
+        "Using `psi4.json_wrapper.run_json` instead of `psi4.schema_wrapper.run_qcschema` is deprecated, and in 1.5 it will stop working\n",
         category=FutureWarning)
 
     # Set scratch
@@ -562,10 +558,11 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         json_data["extras"] = {}
     json_data["extras"]["qcvars"] = {}
 
+    current_qcvars_only = json_data["extras"].get("current_qcvars_only", False)
     if json_data["extras"].get("wfn_qcvars_only", False):
-        psi_props = wfn.variables()
+        psi_props = wfn.variables(include_deprecated_keys=(not current_qcvars_only))
     else:
-        psi_props = core.variables()
+        psi_props = core.variables(include_deprecated_keys=(not current_qcvars_only))
         for k, v in psi_props.items():
             if k not in json_data["extras"]["qcvars"]:
                 json_data["extras"]["qcvars"][k] = _serial_translation(v, json=json_serialization)
@@ -633,6 +630,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
 
     json_data["properties"] = props
     json_data["success"] = True
+    json_data["provenance"]["module"] = wfn.module()
 
     if keep_wfn:
         json_data["wavefunction"] = _convert_wavefunction(wfn)

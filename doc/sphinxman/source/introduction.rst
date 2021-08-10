@@ -93,6 +93,20 @@ Overall |PSIfour| Package
 The following citation should be used in any publication utilizing the
 |PSIfour| program package:
 
+* "Psi4 1.4: Open-Source Software for High-Throughput Quantum Chemistry",
+  D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish, M. C.
+  Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio, A. Alenaizan, A.
+  M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer, R. A. Shaw, J. B.
+  Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni, J. S. O'Brien, J. M.
+  Waldrop, A. Kumar, E. G. Hohenstein, B. P. Pritchard, B. R. Brooks, H. F.
+  Schaefer III, A. Yu. Sokolov, K. Patkowski, A. E. DePrince III, U.
+  Bozkaya, R. A. King, F. A. Evangelista, J. M. Turney, T. D. Crawford, C.
+  D. Sherrill, *J. Chem. Phys.* (2020).
+  (doi: `10.1063/5.0006002
+  <https://doi.org/10.1063/5.0006002>`_).
+
+The following citation covers |PSIfour| early stable releases:
+
 * "Psi4 1.1: An Open-Source Electronic Structure Program Emphasizing
   Automation, Advanced Libraries, and Interoperability", R. M. Parrish, L.
   A. Burns, D. G. A. Smith, A. C. Simmonett, A. E. DePrince III, E. G.
@@ -126,7 +140,7 @@ molecular orbitals. The default guess is the superposition of atomic
 densities (SAD), discussed in
 
 * "Principles for a direct SCF approach to LCAO-MO ab-initio
-  calculations", J. Almlöf, K. Faegri, and K. Korsell,
+  calculations", J. Alml\ |o_dots|\ f, K. Faegri, and K. Korsell,
   *J. Comput. Chem.* **3**, 385 (1982).
   (doi: `10.1002/jcc.540030314 <https://doi.org/10.1002/jcc.540030314>`_).
 
@@ -580,15 +594,15 @@ Architectures
     principle, it should work on any Unix system. The latest version of the
     |PSIfour| program package may be obtained at `psicode.org <http://psicode.org>`_.
     The package is available as a binary (:ref:`Installing from Binary
-    <sec:conda>`) for Linux, macOS, or Windows (via Windows Subsystem for
+    <sec:conda>`) for Linux, macOS, or Windows (both native and via Windows Subsystem for
     Linux aka `Bash on Ubuntu on Windows
-    <https://msdn.microsoft.com/commandline/wsl/about>`_)
+    <https://docs.microsoft.com/en-us/windows/wsl/about>`_)
     or as source code (git repository or zipped archive from
-    `https://github.com/psi4/psi4 <http://www.github.com/psi4/psi4>`_).
+    https://github.com/psi4/psi4.
 Compilers
     |PSIfour| has been successfully compiled using Intel, GCC, and Clang
     compilers. :ref:`Compiler requirements <faq:approvedcxx>` are primarily
-    C++14 compliance (*i.e.*, GCC version 5.1 or above).
+    C++14 compliance (now GCC version 6.0 or above).
     For some architectures, a :ref:`precompiled binary
     <sec:conda>` is available. See :ref:`Compiling and Installing
     <sec:installFile>` for details.
@@ -596,9 +610,10 @@ Python
     |PSIfour| 1.1 and 1.2 are supported on Python 2.7, 3.5,
     and 3.6. After 1.2, only Python 3 will be supported
     `in accordance with other scientific software projects
-    <https://python3statement.org/>`_). Now that Python 3.7 is released,
-    the plan is to support >=3.6 or at least two Python versions.
+    <https://python3statement.org/>`_).
+    The future plan is to support the two or three latest Python versions.
     |PSIfour| 1.3 supports Python 3.6 and 3.7.
+    |PSIfour| 1.4 supports Python 3.6, 3.7, 3.8, and 3.9.
 
 .. index:: license
 

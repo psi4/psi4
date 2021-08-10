@@ -2,8 +2,6 @@ jobs:
 # Configure, build, install, and test job
 - job: 'linux_build'
   displayName: 'Linux Builds'
-  pool:
-    vmImage: 'ubuntu-18.04'
   timeoutInMinutes: 120
   variables:
     CTEST_OUTPUT_ON_FAILURE: 1
@@ -11,13 +9,14 @@ jobs:
   strategy:
     maxParallel: 8
     matrix:
-      gcc_52:
-        CXX_COMPILER: 'g++-5'
+      gcc_6:
+        CXX_COMPILER: 'g++-6'
         PYTHON_VER: '3.6'
-        C_COMPILER: 'gcc-5'
+        C_COMPILER: 'gcc-6'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
-        APT_INSTALL: 'gfortran gcc-5 g++-5'
+        APT_INSTALL: 'gfortran gcc-6 g++-6'
+        vmImage: 'ubuntu-18.04'
 
       gcc_latest:
         CXX_COMPILER: 'g++'
@@ -26,15 +25,20 @@ jobs:
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran'
+        vmImage: 'ubuntu-18.04'
 
       clang_latest:
         CXX_COMPILER: 'clang++'
-        PYTHON_VER: '3.8'
+        PYTHON_VER: '3.9'
         C_COMPILER: 'clang'
         F_COMPILER: 'gfortran'
         BUILD_TYPE: 'release'
         APT_INSTALL: 'gfortran clang-6.0'
+        vmImage: 'ubuntu-16.04'
 
+  pool:
+    vmImage: $(vmImage)
+  
   steps:
   - bash: |
       [[ "${APT_REPOSITORY}" ]] && echo "Add Repo ${APT_REPOSITORY}" && sudo add-apt-repository "${APT_REPOSITORY}"
@@ -63,6 +67,7 @@ jobs:
 
       echo "CXX Ver:"
       ${CXX_COMPILER} --version
+      ${CXX_COMPILER} -v
 
       echo "F Ver:"
       ${F_COMPILER} --version
@@ -77,12 +82,13 @@ jobs:
     displayName: "Add Conda to PATH"
 
   - bash: |
+      # When we drop 3.6, remove dataclasses install. It should be part of Python then
       conda create -q \
         -n p4env \
         python=$PYTHON_VER \
-        psi4/label/dev::gau2grid=2 \
+        psi4/label/dev::gau2grid \
         psi4/label/dev::libint2 \
-        psi4/label/dev::libxc=4 \
+        psi4/label/dev::libxc=5 \
         psi4/label/dev::ambit \
         psi4/label/dev::chemps2 \
         psi4/label/dev::dkh \
@@ -101,18 +107,25 @@ jobs:
         blas=*=mkl \
         mkl-include \
         networkx \
+        dataclasses \
         pytest \
         eigen \
         mpfr \
         pytest-xdist \
+        msgpack-python \
         conda-forge::qcelemental \
         conda-forge::qcengine \
         conda-forge::pymdi \
-        psi4/label/dev::adcc
+        pandas!=1.3.0 \
+        adcc::adcc
       source activate p4env
       which python
       pip install git+https://github.com/i-pi/i-pi.git@master-py3
       conda list
+      python -c "import adcc;print(adcc.__file__, adcc.__version__)"
+      # ADCC causing build failures, beleived to be related to use of pandas 1.3.0.
+      # Temporarily printing debug information until problem resolved without needing
+      # to blacklist 1.3.0.
     displayName: 'Build Environment'
 
   - bash: |
@@ -133,8 +146,11 @@ jobs:
         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
         -DMAX_AM_ERI=4 \
         -DCMAKE_PREFIX_PATH=${CONDA}/envs/p4env \
-        -DPYTHON_EXECUTABLE="${CONDA}/envs/p4env/bin/python" \
+        -DPython_EXECUTABLE="${CONDA}/envs/p4env/bin/python" \
         -DMPFR_ROOT=${CONDA}/envs/p4env \
+        -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
+        -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
+        -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
         -DENABLE_adcc=ON \
         -DENABLE_CheMPS2=OFF \
         -DENABLE_dkh=ON \
@@ -155,6 +171,8 @@ jobs:
       cd build
       source activate p4env
       ../devtools/scripts/ci_build.sh
+      readelf -d ./stage/lib/psi4/core*.so
+      ldd -v ./stage/lib/psi4/core*.so
     displayName: 'Build Psi4'
 
   - bash: |

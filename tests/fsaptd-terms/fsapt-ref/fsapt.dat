@@ -1,0 +1,68 @@
+  ==> F-ISAPT: Links by Charge <==
+
+No exact dispersion present.  Copying & zeroing `Elst.dat`->`Disp.dat`, and proceeding.
+
+   => Full Analysis <=
+
+Frag1     Frag2         Elst     Exch    IndAB    IndBA     Disp    EDisp    Total 
+MethylA   MethylB     -0.002    0.000   -0.000   -0.000    0.000   -0.033   -0.002 
+MethylA   All         -0.002    0.000   -0.000   -0.000    0.000   -0.033   -0.002 
+All       MethylB     -0.002    0.000   -0.000   -0.000    0.000   -0.033   -0.002 
+All       All         -0.002    0.000   -0.000   -0.000    0.000   -0.033   -0.002 
+
+   => Reduced Analysis <=
+
+Frag1     Frag2         Elst     Exch    IndAB    IndBA     Disp    EDisp    Total 
+MethylA   MethylB     -0.002    0.000   -0.000   -0.000    0.000   -0.033   -0.036 
+MethylA   All         -0.002    0.000   -0.000   -0.000    0.000   -0.033   -0.036 
+All       MethylB     -0.002    0.000   -0.000   -0.000    0.000   -0.033   -0.036 
+All       All         -0.002    0.000   -0.000   -0.000    0.000   -0.033   -0.036 
+
+{'fragkeys': {'A': ['MethylA'], 'B': ['MethylB']},
+ 'fragkeysr': {'A': ['MethylA'], 'B': ['MethylB']},
+ 'frags': {'A': {'MethylA': [0, 1, 2, 3, 4]},
+           'B': {'MethylB': [5, 6, 7, 8, 9]}},
+ 'geom': [['C', 0.0, 0.0, 0.0],
+          ['H', 1.09, 0.0, 0.0],
+          ['H', -0.36333333, 0.83908239, 0.59332085],
+          ['H', -0.36333333, 0.09428973, -1.02332709],
+          ['H', -0.36333333, -0.93337212, 0.43000624],
+          ['C', 6.44536662, -0.26509169, 0.0],
+          ['H', 7.53536662, -0.26509169, 0.0],
+          ['H', 6.08203329, 0.5739907, 0.59332085],
+          ['H', 6.08203329, -0.17080196, -1.02332709],
+          ['H', 6.08203329, -1.19846381, 0.43000624]],
+ 'order2': {'Disp': {'MethylA': {'MethylB': 0.0}},
+            'EDisp': {'MethylA': {'MethylB': -0.03334999642735451}},
+            'Elst': {'MethylA': {'MethylB': -0.0023867840804996376}},
+            'Exch': {'MethylA': {'MethylB': 0.00011242396056464241}},
+            'IndAB': {'MethylA': {'MethylB': -1.2055171587096927e-05}},
+            'IndBA': {'MethylA': {'MethylB': -1.1984688140755572e-05}},
+            'Total': {'MethylA': {'MethylB': -0.0022983999809866873}}},
+ 'order2r': {'Disp': {'MethylA': {'MethylB': 0.0}},
+             'EDisp': {'MethylA': {'MethylB': -0.03334999642735451}},
+             'Elst': {'MethylA': {'MethylB': -0.0023867840804996376}},
+             'Exch': {'MethylA': {'MethylB': 0.00011242396056464241}},
+             'IndAB': {'MethylA': {'MethylB': -1.2055171587096927e-05}},
+             'IndBA': {'MethylA': {'MethylB': -1.1984688140755572e-05}},
+             'Total': {'MethylA': {'MethylB': -0.0356483964083412}}}}
+  ==> F-ISAPT: Links 50-50 <==
+
+No exact dispersion present.  Copying & zeroing `Elst.dat`->`Disp.dat`, and proceeding.
+
+   => Full Analysis <=
+
+Frag1     Frag2         Elst     Exch    IndAB    IndBA     Disp    EDisp    Total 
+MethylA   MethylB     -0.002    0.000   -0.000   -0.000    0.000   -0.033   -0.002 
+MethylA   All         -0.002    0.000   -0.000   -0.000    0.000   -0.033   -0.002 
+All       MethylB     -0.002    0.000   -0.000   -0.000    0.000   -0.033   -0.002 
+All       All         -0.002    0.000   -0.000   -0.000    0.000   -0.033   -0.002 
+
+   => Reduced Analysis <=
+
+Frag1     Frag2         Elst     Exch    IndAB    IndBA     Disp    EDisp    Total 
+MethylA   MethylB     -0.002    0.000   -0.000   -0.000    0.000   -0.033   -0.036 
+MethylA   All         -0.002    0.000   -0.000   -0.000    0.000   -0.033   -0.036 
+All       MethylB     -0.002    0.000   -0.000   -0.000    0.000   -0.033   -0.036 
+All       All         -0.002    0.000   -0.000   -0.000    0.000   -0.033   -0.036 
+

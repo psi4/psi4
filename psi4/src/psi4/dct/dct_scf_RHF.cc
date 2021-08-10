@@ -50,13 +50,8 @@ namespace dct {
  * and reads the one-electron integrals from PSIO.
  * for RHF reference.
  */
-void DCTSolver::scf_guess_RHF() {
+void DCTSolver::initialize_orbitals_from_reference_R() {
     dct_timer_on("DCTSolver::rhf_guess");
-    auto T = mintshelper()->so_kinetic()->clone();
-    auto V = mintshelper()->so_potential()->clone();
-
-    so_h_->add(T);
-    so_h_->add(V);
 
     epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
     epsilon_b_->copy(epsilon_a_.get());
@@ -119,17 +114,16 @@ void DCTSolver::process_so_ints_RHF() {
     Value *valptr = iwl->values();
 
     double *Da = init_array(ntriso_);
-    double *Ta = init_array(ntriso_);
     double *Ga = init_array(ntriso_);
-    double *Va = init_array(ntriso_);
 
+    auto opdm = kappa_so_a_->clone();
+    opdm->add(tau_so_a_);
     int soOffset = 0;
     for (int h = 0; h < nirrep_; ++h) {
         for (int mu = 0; mu < nsopi_[h]; ++mu) {
             for (int nu = 0; nu <= mu; ++nu) {
                 int muNu = INDEX((nu + soOffset), (mu + soOffset));
-                Da[muNu] = kappa_so_a_->get(h, mu, nu);
-                Ta[muNu] = tau_so_a_->get(h, mu, nu);
+                Da[muNu] = opdm->get(h, mu, nu);
             }
         }
         soOffset += nsopi_[h];
@@ -169,7 +163,7 @@ void DCTSolver::process_so_ints_RHF() {
 
         /********** AB ***********/
         global_dpd_->buf4_init(&lambda, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                               "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                               "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
         global_dpd_->buf4_init(&tau1_AO_ab, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[n,n]"), ID("[O,O]"), ID("[n,n]"), 0,
                                "tau1AO <OO|nn>");  // tau1AO <Oo|nn>
         global_dpd_->buf4_scm(&tau1_AO_ab, 0.0);
@@ -223,181 +217,145 @@ void DCTSolver::process_so_ints_RHF() {
             qrArr = rqArr = INDEX(q, r);
 
             /* (pq|rs) */
-            Ga[rsArr] += (Da[pqArr] + Da[pqArr]) * value;
-            Va[rsArr] += (Ta[pqArr] + Ta[pqArr]) * value;
+            Ga[rsArr] += 2 * Da[pqArr] * value;
             if (q >= r) {
                 Ga[qrArr] -= Da[psArr] * value;
-                Va[qrArr] -= Ta[psArr] * value;
             }
 
             if (p != q && r != s && pqArr != rsArr) {
                 /* (pq|sr) */
                 if (s >= r) {
-                    Ga[srArr] += (Da[pqArr] + Da[pqArr]) * value;
-                    Va[srArr] += (Ta[pqArr] + Ta[pqArr]) * value;
+                    Ga[srArr] += 2 * Da[pqArr] * value;
                 }
                 if (q >= s) {
                     Ga[qsArr] -= Da[prArr] * value;
-                    Va[qsArr] -= Ta[prArr] * value;
                 }
 
                 /* (qp|rs) */
                 if (r >= s) {
-                    Ga[rsArr] += (Da[qpArr] + Da[qpArr]) * value;
-                    Va[rsArr] += (Ta[qpArr] + Ta[qpArr]) * value;
+                    Ga[rsArr] += 2 * Da[qpArr] * value;
                 }
                 if (p >= r) {
                     Ga[prArr] -= Da[qsArr] * value;
-                    Va[prArr] -= Ta[qsArr] * value;
                 }
 
                 /* (qp|sr) */
                 if (s >= r) {
-                    Ga[srArr] += (Da[qpArr] + Da[qpArr]) * value;
-                    Va[srArr] += (Ta[qpArr] + Ta[qpArr]) * value;
+                    Ga[srArr] += 2 * Da[qpArr] * value;
                 }
                 if (p >= s) {
                     Ga[psArr] -= Da[qrArr] * value;
-                    Va[psArr] -= Ta[qrArr] * value;
                 }
 
                 /* (rs|pq) */
                 if (p >= q) {
-                    Ga[pqArr] += (Da[rsArr] + Da[rsArr]) * value;
-                    Va[pqArr] += (Ta[rsArr] + Ta[rsArr]) * value;
+                    Ga[pqArr] += 2 * Da[rsArr] * value;
                 }
                 if (s >= p) {
                     Ga[spArr] -= Da[rqArr] * value;
-                    Va[spArr] -= Ta[rqArr] * value;
                 }
 
                 /* (sr|pq) */
                 if (p >= q) {
-                    Ga[pqArr] += (Da[srArr] + Da[srArr]) * value;
-                    Va[pqArr] += (Ta[srArr] + Ta[srArr]) * value;
+                    Ga[pqArr] += 2 * Da[srArr] * value;
                 }
                 if (r >= p) {
                     Ga[rpArr] -= Da[sqArr] * value;
-                    Va[rpArr] -= Ta[sqArr] * value;
                 }
 
                 /* (rs|qp) */
                 if (q >= p) {
-                    Ga[qpArr] += (Da[rsArr] + Da[rsArr]) * value;
-                    Va[qpArr] += (Ta[rsArr] + Ta[rsArr]) * value;
+                    Ga[qpArr] += 2 * Da[rsArr] * value;
                 }
                 if (s >= q) {
                     Ga[sqArr] -= Da[rpArr] * value;
-                    Va[sqArr] -= Ta[rpArr] * value;
                 }
 
                 /* (sr|qp) */
                 if (q >= p) {
-                    Ga[qpArr] += (Da[srArr] + Da[srArr]) * value;
-                    Va[qpArr] += (Ta[srArr] + Ta[srArr]) * value;
+                    Ga[qpArr] += 2 * Da[srArr] * value;
                 }
                 if (r >= q) {
                     Ga[rqArr] -= Da[spArr] * value;
-                    Va[rqArr] -= Ta[spArr] * value;
                 }
             } else if (p != q && r != s && pqArr == rsArr) {
                 /* (pq|sr) */
                 if (s >= r) {
-                    Ga[srArr] += (Da[pqArr] + Da[pqArr]) * value;
-                    Va[srArr] += (Ta[pqArr] + Ta[pqArr]) * value;
+                    Ga[srArr] += 2 * Da[pqArr] * value;
                 }
                 if (q >= s) {
                     Ga[qsArr] -= Da[prArr] * value;
-                    Va[qsArr] -= Ta[prArr] * value;
                 }
                 /* (qp|rs) */
                 if (r >= s) {
-                    Ga[rsArr] += (Da[qpArr] + Da[qpArr]) * value;
-                    Va[rsArr] += (Ta[qpArr] + Ta[qpArr]) * value;
+                    Ga[rsArr] += 2 * Da[qpArr] * value;
                 }
                 if (p >= r) {
                     Ga[prArr] -= Da[qsArr] * value;
-                    Va[prArr] -= Ta[qsArr] * value;
                 }
 
                 /* (qp|sr) */
                 if (s >= r) {
-                    Ga[srArr] += (Da[qpArr] + Da[qpArr]) * value;
-                    Va[srArr] += (Ta[qpArr] + Ta[qpArr]) * value;
+                    Ga[srArr] += 2 * Da[qpArr] * value;
                 }
                 if (p >= s) {
                     Ga[psArr] -= Da[qrArr] * value;
-                    Va[psArr] -= Ta[qrArr] * value;
                 }
             } else if (p != q && r == s) {
                 /* (qp|rs) */
                 if (r >= s) {
-                    Ga[rsArr] += (Da[qpArr] + Da[qpArr]) * value;
-                    Va[rsArr] += (Ta[qpArr] + Ta[qpArr]) * value;
+                    Ga[rsArr] += 2 * Da[qpArr] * value;
                 }
                 if (p >= r) {
                     Ga[prArr] -= Da[qsArr] * value;
-                    Va[prArr] -= Ta[qsArr] * value;
                 }
 
                 /* (rs|pq) */
                 if (p >= q) {
-                    Ga[pqArr] += (Da[rsArr] + Da[rsArr]) * value;
-                    Va[pqArr] += (Ta[rsArr] + Ta[rsArr]) * value;
+                    Ga[pqArr] += 2 * Da[rsArr] * value;
                 }
                 if (s >= p) {
                     Ga[spArr] -= Da[rqArr] * value;
-                    Va[spArr] -= Ta[rqArr] * value;
                 }
 
                 /* (rs|qp) */
                 if (q >= p) {
-                    Ga[qpArr] += (Da[rsArr] + Da[rsArr]) * value;
-                    Va[qpArr] += (Ta[rsArr] + Ta[rsArr]) * value;
+                    Ga[qpArr] += 2 * Da[rsArr] * value;
                 }
                 if (s >= q) {
                     Ga[sqArr] -= Da[rpArr] * value;
-                    Va[sqArr] -= Ta[rpArr] * value;
                 }
             } else if (p == q && r != s) {
                 /* (pq|sr) */
                 if (s >= r) {
-                    Ga[srArr] += (Da[pqArr] + Da[pqArr]) * value;
-                    Va[srArr] += (Ta[pqArr] + Ta[pqArr]) * value;
+                    Ga[srArr] += 2 * Da[pqArr] * value;
                 }
                 if (q >= s) {
                     Ga[qsArr] -= Da[prArr] * value;
-                    Va[qsArr] -= Ta[prArr] * value;
                 }
 
                 /* (rs|pq) */
                 if (p >= q) {
-                    Ga[pqArr] += (Da[rsArr] + Da[rsArr]) * value;
-                    Va[pqArr] += (Ta[rsArr] + Ta[rsArr]) * value;
+                    Ga[pqArr] += 2 * Da[rsArr] * value;
                 }
                 if (s >= p) {
                     Ga[spArr] -= Da[rqArr] * value;
-                    Va[spArr] -= Ta[rqArr] * value;
                 }
 
                 /* (sr|pq) */
                 if (p >= q) {
-                    Ga[pqArr] += (Da[srArr] + Da[srArr]) * value;
-                    Va[pqArr] += (Ta[srArr] + Ta[srArr]) * value;
+                    Ga[pqArr] += 2 * Da[srArr] * value;
                 }
                 if (r >= p) {
                     Ga[rpArr] -= Da[sqArr] * value;
-                    Va[rpArr] -= Ta[sqArr] * value;
                 }
             } else if (p == q && r == s && pqArr != rsArr) {
                 /* (rs|pq) */
                 if (p >= q) {
-                    Ga[pqArr] += (Da[rsArr] + Da[rsArr]) * value;
-                    Va[pqArr] += (Ta[rsArr] + Ta[rsArr]) * value;
+                    Ga[pqArr] += 2 * Da[rsArr] * value;
                 }
                 if (s >= p) {
                     Ga[spArr] -= Da[rqArr] * value;
-                    Va[spArr] -= Ta[rqArr] * value;
                 }
             }
         } /* end loop through current buffer */
@@ -445,12 +403,9 @@ void DCTSolver::process_so_ints_RHF() {
             for (int nu = 0; nu <= mu; ++nu) {
                 int muNu = INDEX((nu + soOffset), (mu + soOffset));
                 double aVal = Ga[muNu];
-                double aGTVal = Va[muNu];
                 Fa_->add(h, mu, nu, aVal);
-                g_tau_a_->set(h, mu, nu, aGTVal);
                 if (mu != nu) {
                     Fa_->add(h, nu, mu, aVal);
-                    g_tau_a_->set(h, nu, mu, aGTVal);
                 }
             }
         }
@@ -458,10 +413,7 @@ void DCTSolver::process_so_ints_RHF() {
     }
 
     Fb_->copy(Fa_);
-    g_tau_b_->copy(g_tau_a_);
 
-    free(Ta);
-    free(Va);
     free(Da);
     free(Ga);
 
@@ -470,6 +422,8 @@ void DCTSolver::process_so_ints_RHF() {
 
 /**
  * Computes the SCF energy from the latest Fock and density matrices.
+ * WARNING! This quantity is a misnomer from earlier days of the theory.
+ * "SCF" here means "excluding 2RDM cumulant, including 1RDM and 1RDM products."
  */
 void DCTSolver::compute_scf_energy_RHF() {
     dct_timer_on("DCTSolver::compute_scf_energy");
@@ -480,9 +434,7 @@ void DCTSolver::compute_scf_energy_RHF() {
     scf_energy_ += tau_so_a_->vector_dot(so_h_);
 
     if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
-        mo_gammaA_->add(kappa_mo_a_);
-
-        scf_energy_ += mo_gammaA_->vector_dot(moFa_);
+        scf_energy_ += mo_gammaA_.vector_dot(moFa_);
     } else {
         scf_energy_ += kappa_so_a_->vector_dot(Fa_);
         scf_energy_ += tau_so_a_->vector_dot(Fa_);
@@ -496,14 +448,14 @@ double DCTSolver::compute_scf_error_vector_RHF() {
 
     size_t nElements = 0;
     double sumOfSquares = 0.0;
-    auto tmp1 = std::make_shared<Matrix>("tmp1", nirrep_, nsopi_, nsopi_);
-    auto tmp2 = std::make_shared<Matrix>("tmp2", nirrep_, nsopi_, nsopi_);
+    auto tmp1 = Matrix("tmp1", nirrep_, nsopi_, nsopi_);
+    auto tmp2 = Matrix("tmp2", nirrep_, nsopi_, nsopi_);
     // form FDS
-    tmp1->gemm(false, false, 1.0, kappa_so_a_, ao_s_, 0.0);
+    tmp1.gemm(false, false, 1.0, kappa_so_a_, ao_s_, 0.0);
     scf_error_a_->gemm(false, false, 1.0, Fa_, tmp1, 0.0);
     // form SDF
-    tmp1->gemm(false, false, 1.0, kappa_so_a_, Fa_, 0.0);
-    tmp2->gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
+    tmp1.gemm(false, false, 1.0, kappa_so_a_, Fa_, 0.0);
+    tmp2.gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
     scf_error_a_->subtract(tmp2);
     // Orthogonalize
     scf_error_a_->transform(s_half_inv_);

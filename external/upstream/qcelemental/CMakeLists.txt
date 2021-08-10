@@ -1,6 +1,6 @@
 if(NOT (${CMAKE_DISABLE_FIND_PACKAGE_qcelemental}))
     include(FindPythonModule)
-    find_python_module(qcelemental ATLEAST 0.16.0 QUIET)
+    find_python_module(qcelemental ATLEAST 0.19.0 QUIET)
 endif()
 
 if(${qcelemental_FOUND})
@@ -19,12 +19,12 @@ else()
 
     ExternalProject_Add(qcelemental_external
         BUILD_ALWAYS 1
-        URL https://github.com/MolSSI/QCElemental/archive/v0.16.0.tar.gz
+        URL https://github.com/MolSSI/QCElemental/archive/v0.21.0.tar.gz
         CONFIGURE_COMMAND ""
         UPDATE_COMMAND ""
-        BUILD_COMMAND ${PYTHON_EXECUTABLE} setup.py build
+        BUILD_COMMAND ${Python_EXECUTABLE} setup.py build
         BUILD_IN_SOURCE 1
-        INSTALL_COMMAND ${PYTHON_EXECUTABLE} setup.py install
+        INSTALL_COMMAND ${Python_EXECUTABLE} setup.py install
                                                       --record=record.txt
                                                       --single-version-externally-managed
                                                       --install-lib=${_install_lib})

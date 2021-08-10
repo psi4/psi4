@@ -39,20 +39,20 @@ for i in vmfc_scheme: #TEST
     compare_values(energy_dict[i], wfn.variables()[i], 8, 'Energy of %s' %i) #TEST
     compare_arrays(gradient_dict[i], wfn.variables()['PTYPE %s' %i], 8, 'Gradient of %s' %i) #TEST
 
-energy, gradient = 0, np.zeros((9, 3)) #TEST
+ene, grad = 0, np.zeros((9, 3)) #TEST
 
 for i in vmfc_scheme: #TEST
-    energy += vmfc_scheme[i] * energy_dict[i] #TEST
+    ene += vmfc_scheme[i] * energy_dict[i] #TEST
 
-compare_values(energy, wfn.variables()['2'], 8, 'VMFC-Corrected Energy') #TEST
+compare_values(ene, wfn.variables()['2'], 8, 'VMFC-Corrected Energy') #TEST
 
 for i in range(3): #TEST
     key = '((%i,), (%i,))' %(i + 1, i + 1) #TEST
-    gradient[i*3: i*3 + 3, :] += vmfc_scheme.pop(key) * np.array(gradient_dict[key]) #TEST
+    grad[i*3: i*3 + 3, :] += vmfc_scheme.pop(key) * np.array(gradient_dict[key]) #TEST
 
 for key in vmfc_scheme: #TEST
     i, j = eval(key)[1][0]-1, eval(key)[1][1]-1 #TEST
     index = [i*3, i*3 + 1, i*3 + 2, j*3, j*3 + 1, j*3 + 2] #TEST
-    gradient[index, :] += vmfc_scheme[key] * np.array(gradient_dict[key]) #TEST
+    grad[index, :] += vmfc_scheme[key] * np.array(gradient_dict[key]) #TEST
  
-compare_arrays(gradient, wfn.variables()['GRADIENT 2'], 8, 'VMFC-Corrected Gradient') #TEST
+compare_arrays(grad, wfn.variables()['GRADIENT 2'], 8, 'VMFC-Corrected Gradient') #TEST

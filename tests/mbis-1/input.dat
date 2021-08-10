@@ -30,6 +30,32 @@ octupoles_ref = psi4.Matrix.from_list([ #TEST
    3.67553844e-17,  7.58633642e-17,  3.24182338e-02, -1.86102449e-03,
    1.44283651e-02, -6.08715345e-03]]) #TEST
 
+# Reference Atomic Volumes From Horton
+# O 26.33864405917908
+# H 1.5096257589296491
+# H 1.5094431403157609
+
+avols_ref = psi4.Matrix.from_list([ # TEST
+ [26.33765183],   #TEST
+ [ 1.50946513],   #TEST
+ [ 1.50946513]])  #TEST
+
+vratios_ref = psi4.Matrix.from_list([
+[1.339537], 
+[0.206664],
+[0.206664]])
+
+
+# Reference Valence Widths From Horton
+# O 0.40355537630901217
+# H 0.35780574579137503
+# H 0.3577956925992588
+
+vwidths_ref = psi4.Matrix.from_list([ # TEST
+ [0.40355308],   #TEST
+ [0.35779695],   #TEST
+ [0.35779695]])  #TEST
+
 molecule mol {
   0 1
   O
@@ -46,6 +72,7 @@ set {
   e_convergence 10
   mbis_radial_points 99
   mbis_spherical_points 350
+  max_radial_moment 4
 }
 
 e, wfn = energy('hf/cc-pvdz', return_wfn=True)
@@ -56,8 +83,14 @@ charges = wfn.array_variable('MBIS CHARGES')
 dipoles = wfn.array_variable('MBIS DIPOLES')
 quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
 octupoles = wfn.array_variable('MBIS OCTUPOLES')
+avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
+vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vratios = wfn.array_variable('MBIS VOLUME RATIOS')
 
 compare_matrices(charges_ref, charges, 5, "MBIS Charges")             #TEST
 compare_matrices(dipoles_ref, dipoles, 5, "MBIS Dipoles")             #TEST
 compare_matrices(quadrupoles_ref, quadrupoles, 5, "MBIS Quadrupoles") #TEST
 compare_matrices(octupoles_ref, octupoles, 5, "MBIS Octupoles")       #TEST
+compare_matrices(avols_ref, avols, 5, "MBIS Radial Moments <r^3>")    #TEST
+compare_matrices(vwidths_ref, vwidths, 5, "MBIS Valence Widths")      #TEST
+compare_matrices(vratios_ref, vratios, 5, "MBIS Volume Ratios")      #TEST

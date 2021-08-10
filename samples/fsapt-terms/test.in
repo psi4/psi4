@@ -64,7 +64,7 @@ with open('fB.dat', 'w') as fB: fB.write("MethylB 6 7 8 9 10")
 subprocess.run([sys.executable, os.path.join('..', 'fsapt.py')], check=True)
 
 fEnergies = {}
-fkeys = ['fEelst', 'fEexch', 'fEindAB', 'fEindBA', 'fEdisp', 'fEtot']    #TEST 
+fkeys = ['fEelst', 'fEexch', 'fEindAB', 'fEindBA', 'fEdisp', 'fEedisp', 'fEtot']    #TEST 
 
 with open('fsapt.dat', 'r') as fsapt:                                    #TEST
     Energies = [float(x) for x in fsapt.readlines()[-2].split()[2:]]     #TEST
@@ -78,6 +78,7 @@ fEref = {               #TEST
     'fEindAB': -0.000,  #TEST 
     'fEindBA': -0.000,  #TEST 
     'fEdisp' : -0.021,  #TEST 
+    'fEedisp':  0.000,  #TEST 
     'fEtot'  : -0.023}  #TEST
 
 for key in fkeys:                                      #TEST

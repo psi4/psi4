@@ -43,9 +43,14 @@ namespace dct {
 SharedMatrix DCTSolver::compute_gradient() {
     // Print out the header
     outfile->Printf("\n\n\t***********************************************************************************\n");
-    outfile->Printf("\t*                           DCT Analytic Gradients Code                          *\n");
+    outfile->Printf("\t*                            DCT Analytic Gradients Code                          *\n");
     outfile->Printf("\t*                by Alexander Sokolov, Andy Simmonett, and Xiao Wang              *\n");
     outfile->Printf("\t***********************************************************************************\n\n");
+
+    validate_energy();
+    validate_opdm();
+    validate_gradient();
+    if (orbital_optimized_) oo_gradient_init();
 
     // If the system is closed-shell, then ...
     if (options_.get_str("REFERENCE") == "RHF") {

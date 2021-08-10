@@ -27,6 +27,26 @@ set(SYSTEM_NATIVE_BLAS_LIBS   blas)
 set(SYSTEM_NATIVE_LAPACK_LIBS lapack)
 
 #-------------------------------------------------------------------------------
+# FLEXIBLAS
+
+set(FLEXIBLAS_BLAS_INCLUDE_PATH_SUFFIXES   flexiblas)
+set(FLEXIBLAS_LAPACK_INCLUDE_PATH_SUFFIXES flexiblas)
+
+set(FLEXIBLAS_BLAS_HEADERS   cblas.h)
+set(FLEXIBLAS_LAPACK_HEADERS lapack.h)
+
+set(FLEXIBLAS_BLAS_LIBRARY_PATH_SUFFIXES)
+set(FLEXIBLAS_LAPACK_LIBRARY_PATH_SUFFIXES)
+
+if(ENABLE_64BIT_INTEGERS)
+  set(FLEXIBLAS_BLAS_LIBS   flexiblas64)
+  set(FLEXIBLAS_LAPACK_LIBS flexiblas64)
+else()
+  set(FLEXIBLAS_BLAS_LIBS   flexiblas)
+  set(FLEXIBLAS_LAPACK_LIBS flexiblas)
+endif()
+
+#-------------------------------------------------------------------------------
 # ESSL
 
 set(ESSL_BLAS_INCLUDE_PATH_SUFFIXES)

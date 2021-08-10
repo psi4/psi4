@@ -70,7 +70,7 @@
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/overlap.h"
 #include "psi4/libmints/sieve.h"
-
+#include "psi4/libpsi4util/libpsi4util.h"
 #include <string>
 
 using namespace psi;
@@ -252,8 +252,8 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
         for (size_t iat = 0; iat < nat; ++iat) {
             std::string symbol = elem.at(iat);
             std::string label = elbl.at(iat);
-            std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
-            std::transform(label.begin(), label.end(), label.begin(), ::toupper);
+            to_upper(symbol);
+            to_upper(label);
             mol->add_unsettled_atom(elez.at(iat) * int(real.at(iat)), geom_unsettled.at(iat), symbol, mass.at(iat),
                                     elez.at(iat) * int(real.at(iat)), symbol + label, elea.at(iat));
         }
@@ -271,8 +271,8 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
         for (size_t iat = 0; iat < nat; ++iat) {
             std::string symbol = elem.at(iat);
             std::string label = elbl.at(iat);
-            std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
-            std::transform(label.begin(), label.end(), label.begin(), ::toupper);
+            to_upper(symbol);
+            to_upper(label);
             mol->add_atom(elez.at(iat) * int(real.at(iat)), geom.at(3 * iat), geom.at(3 * iat + 1), geom.at(3 * iat + 2),
                           symbol, mass.at(iat), elez.at(iat) * int(real.at(iat)), symbol + label, elea.at(iat));
         }
@@ -306,16 +306,6 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
 }
 
 void export_mints(py::module& m) {
-    // This is needed to wrap an STL vector into Boost.Python. Since the vector
-    // is going to contain std::shared_ptr's we MUST set the no_proxy flag to true
-    // (as it is) to tell Boost.Python to not create a proxy class to handle
-    // the vector's data type.
-    py::bind_vector<std::vector<std::shared_ptr<Matrix>>>(m, "VectorMatrix");
-
-    // Other vector types
-    // py::class_<std::vector<double> >(m, "vector_of_doubles", "docstring").
-    //        def(vector_indexing_suite<std::vector<double>, true >());
-    //    py::bind_vector<double>(m, "VectorDouble");
 
     typedef void (Vector::*vector_setitem_1)(int, double);
     typedef void (Vector::*vector_setitem_2)(int, int, double);
@@ -459,6 +449,8 @@ void export_mints(py::module& m) {
     typedef bool (Matrix::*matrix_load_psio1)(std::shared_ptr<psi::PSIO>&, size_t, const std::string&, int);
     typedef void (Matrix::*matrix_load_psio2)(std::shared_ptr<psi::PSIO>&, size_t, Matrix::SaveType);
     typedef const Dimension& (Matrix::*matrix_ret_dimension)() const;
+    typedef void (Matrix::*set_block_shared)(const Slice&, const Slice&, SharedMatrix);
+    typedef SharedMatrix (Matrix::*get_block_shared)(const Slice&, const Slice&);
 
     py::enum_<Matrix::SaveType>(m, "SaveType", "The layout of the matrix for saving")
         .value("Full", Matrix::SaveType::Full)
@@ -569,14 +561,14 @@ void export_mints(py::module& m) {
         .def("get", matrix_get3(&Matrix::get), "Returns a single element of a matrix in subblock h, row m, col n",
              "h"_a, "m"_a, "n"_a)
         .def("get", matrix_get2(&Matrix::get), "Returns a single element of a matrix, row m, col n", "m"_a, "n"_a)
-        .def("get_block", &Matrix::get_block, "Get a matrix block", "rows"_a, "cols"_a)
+        .def("get_block", get_block_shared(&Matrix::get_block), "Get a matrix block", "rows"_a, "cols"_a)
         .def("set", matrix_set1(&Matrix::set), "Sets every element of a matrix to val", "val"_a)
         .def("set", matrix_set3(&Matrix::set), "Sets a single element of a matrix to val at row m, col n", "m"_a, "n"_a,
              "val"_a)
         .def("set", matrix_set4(&Matrix::set),
              "Sets a single element of a matrix, subblock h, row m, col n, with value val", "h"_a, "m"_a, "n"_a,
              "val"_a)
-        .def("set_block", &Matrix::set_block, "Set a matrix block", "rows"_a, "cols"_a, "block"_a)
+        .def("set_block", set_block_shared(&Matrix::set_block), "Set a matrix block", "rows"_a, "cols"_a, "block"_a)
         // destroyed according to matrix.h file
         //.def("project_out", &Matrix::project_out, "docstring")
         .def("save", matrix_save(&Matrix::save),
@@ -642,12 +634,40 @@ void export_mints(py::module& m) {
             py::return_value_policy::reference_internal);
 
     // Free functions
-    m.def("doublet", &linalg::doublet,
+    typedef Matrix (*doublet_shared)(const Matrix&, const Matrix&, bool, bool);
+    typedef Matrix (*triplet_shared)(const Matrix&, const Matrix&, const Matrix&, bool, bool, bool);
+    m.def("doublet", doublet_shared(&linalg::doublet),
           "Returns the multiplication of two matrices A and B, with options to transpose each beforehand", "A"_a, "B"_a,
           "transA"_a = false, "transB"_a = false);
-    m.def("triplet", &linalg::triplet,
-          "Returns the multiplication of three matrics A, B, and C, with options to transpose each beforehand", "A"_a,
-          "B"_a, "C"_a, "transA"_a = false, "transB"_a = false, "transC"_a = false);
+    m.def("triplet", triplet_shared(&linalg::triplet),
+          "A"_a, "B"_a, "C"_a, "transA"_a = false, "transB"_a = false, "transC"_a = false, R"pbdoc(
+            Returns the multiplication of three matrices, with options to transpose each beforehand.
+
+            Parameters
+            ----------
+            A
+                First matrix to multiply.
+            B
+                Second matrix to multiply.
+            C
+                Third matrix to multiply.
+            transA
+                Transpose the first matrix before operations?
+            transB
+                Transpose the second matrix before operations?
+            transC
+                Transpose the third matrix before operations?
+
+            Returns
+            -------
+            Matrix
+                New matrix of ``ABC``.
+
+            Notes
+            -----
+            * ``(AB)C`` vs. ``A(BC)`` selected by cost analysis of overall (not per-irrep) dimensions.
+            * If A, B, C not of the the same symmetry, always computed as ``(AB)C``.
+            )pbdoc");
 
     py::enum_<DerivCalcType>(m, "DerivCalcType")
         .value("Default", DerivCalcType::Default, "Use internal logic.")
@@ -677,432 +697,6 @@ void export_mints(py::module& m) {
         .def("create_matrix", create_shared_matrix_name(&MatrixFactory::create_shared_matrix),
              "Returns a new Matrix object named name with default dimensions");
     //              "name"_a, "symmetry"_a);
-
-    py::class_<CdSalc::Component, std::shared_ptr<CdSalc::Component>>(
-        m, "SalcComponent", "Component of a Cartesian displacement SALC in the basis of atomic displacements.")
-        .def_readwrite("coef", &CdSalc::Component::coef, "The coefficient of the displacement")
-        .def_readwrite("atom", &CdSalc::Component::atom, "The index of the atom being displaced. 0-indexed.")
-        .def_readwrite("xyz", &CdSalc::Component::xyz,
-                       "The direction of the displacement, given by x as 0, y as 1, z as 2.");
-
-    py::class_<CdSalc, std::shared_ptr<CdSalc>>(m, "CdSalc", "Cartesian displacement SALC")
-        .def("irrep", &CdSalc::irrep, "Return the irrep bit representation")
-        .def(
-            "irrep_index", [](const CdSalc& salc) { return static_cast<int>(salc.irrep()); }, "Return the irrep index")
-        .def("print_out", &CdSalc::print,
-             "Print the irrep index and the coordinates of the SALC of Cartesian displacements. \
-                                           Irrep index is 0-indexed and Cotton ordered.")
-        .def("__getitem__", [](const CdSalc& salc, size_t i) { return salc.component(i); })
-        .def("__len__", [](const CdSalc& salc) { return salc.ncomponent(); })
-        .def(
-            "__iter__", [](const CdSalc& salc) { return py::make_iterator(salc.get_components()); },
-            py::keep_alive<0, 1>());
-
-    py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(
-        m, "CdSalcList", "Class for generating symmetry adapted linear combinations of Cartesian displacements")
-        .def(py::init<std::shared_ptr<Molecule>, int, bool, bool>())
-        .def("ncd", &CdSalcList::ncd, "Return the number of cartesian displacements SALCs")
-        .def("create_matrices", &CdSalcList::create_matrices,
-             "Return a vector of matrices with the SALC symmetries. Dimensions determined by factory.", "basename"_a,
-             "factory"_a)
-        .def("salc_name", &CdSalcList::salc_name, "Return the name of SALC #i.", "i"_a)
-        .def("nirrep", &CdSalcList::nirrep, "Return the number of irreps")
-        .def("__getitem__", [](const CdSalcList& salclist, size_t i) { return salclist[i]; })
-        .def("__len__", [](const CdSalcList& salclist) { return salclist.ncd(); })
-        .def(
-            "__iter__", [](const CdSalcList& salclist) { return py::make_iterator(salclist.get_salcs()); },
-            py::keep_alive<0, 1>())
-        .def("print_out", &CdSalcList::print, "Print the SALCs to the output file")
-        .def("matrix", &CdSalcList::matrix, "Return the matrix that transforms Cartesian displacements to SALCs")
-        .def("matrix_irrep", &CdSalcList::matrix_irrep,
-             "Return the matrix that transforms Cartesian displacements to SALCs of irrep h", "h"_a);
-
-    py::class_<GaussianShell, std::shared_ptr<GaussianShell>>(m, "GaussianShell",
-                                                              "Class containing information about basis functions")
-        .def_property_readonly("nprimitive", py::cpp_function(&GaussianShell::nprimitive),
-                               "The number of primitive gaussians")
-        .def_property_readonly("nfunction", py::cpp_function(&GaussianShell::nfunction),
-                               "Total number of basis functions")
-        .def_property_readonly("ncartesian", py::cpp_function(&GaussianShell::ncartesian),
-                               "Total number of basis functions if this shell was Cartesian")
-        .def_property_readonly("am", py::cpp_function(&GaussianShell::am),
-                               "The angular momentum of the given contraction")
-        .def_property_readonly("amchar", py::cpp_function(&GaussianShell::amchar),
-                               "The character symbol for the angular momentum of the given contraction")
-        .def_property_readonly("AMCHAR", py::cpp_function(&GaussianShell::AMCHAR),
-                               "The upper-case character symbol for the angular momentum of the given contraction")
-        .def_property_readonly("ncenter", py::cpp_function(&GaussianShell::ncenter),
-                               "Returns atom number this shell is on")
-        .def_property("function_index", py::cpp_function(&GaussianShell::function_index),
-                      py::cpp_function(&GaussianShell::set_function_index),
-                      "Basis function index where this shell starts.")
-        .
-        //            add_property("center", &GaussianShell::center, "A double* representing the
-        //            center of the GaussianShell.").
-        //            add_property("exps", &GaussianShell::exps, "The exponents of all the
-        //            primitives").
-        //            add_property("coefs", &GaussianShell::coefs, "The coefficients of all the
-        //            primitives").
-        def("is_cartesian", &GaussianShell::is_cartesian, "Returns true if the contraction is Cartesian")
-        .def("is_pure", &GaussianShell::is_pure,
-             "Returns true if the contraction is pure, i.e. a spherical harmonic basis function")
-        .
-        //            def("normalize_shell", &GaussianShell::normalize_shell, "docstring").
-        def("exp", &GaussianShell::exp, "Returns the exponent of the given primitive", "prim"_a)
-        .def("original_coef", &GaussianShell::original_coef, "Return unnormalized coefficient of the pi'th primitive",
-             "pi"_a)
-        .def("erd_coef", &GaussianShell::erd_coef, "Return ERD normalized coefficient of pi'th primitive", "pi"_a)
-        .def("coef", &GaussianShell::coef, "Return coefficient of the pi'th primitive", "pi"_a);
-
-    py::enum_<PrimitiveType>(m, "PrimitiveType", "May be Normalized or Unnormalized")
-        .value("Normalized", Normalized)
-        .value("Unnormalized", Unnormalized)
-        .export_values();
-
-    py::enum_<GaussianType>(m, "GaussianType", "0 if Cartesian, 1 if Pure")
-        .value("Cartesian", Cartesian)
-        .value("Pure", Pure)
-        .export_values();
-
-    py::class_<ShellInfo, std::shared_ptr<ShellInfo>>(m, "ShellInfo")
-        .def(py::init<int, const std::vector<double>&, const std::vector<double>&, GaussianType, PrimitiveType>());
-
-    py::bind_vector<std::vector<ShellInfo>>(m, "BSVec");
-
-    py::class_<OneBodyAOInt, std::shared_ptr<OneBodyAOInt>> pyOneBodyAOInt(
-        m, "OneBodyAOInt", "Basis class for all one-electron integrals");
-    pyOneBodyAOInt
-        .def("compute_shell", &OneBodyAOInt::compute_shell,
-             "Compute integrals between basis functions in the given shell pair")
-        .def_property("origin", py::cpp_function(&OneBodyAOInt::origin), py::cpp_function(&OneBodyAOInt::set_origin),
-                      "The origin about which the one body ints are being computed.")
-        .def_property_readonly("basis", py::cpp_function(&OneBodyAOInt::basis), "The basis set on center one")
-        .def_property_readonly("basis1", py::cpp_function(&OneBodyAOInt::basis1), "The basis set on center one")
-        .def_property_readonly("basis2", py::cpp_function(&OneBodyAOInt::basis2),
-                               "The basis set on center two");  // <-- Added semicolon
-
-    // typedef void (OneBodySOInt::*matrix_version)(SharedMatrix) const;
-    // typedef void (OneBodySOInt::*vector_version)(std::vector<SharedMatrix>) const;
-    // class_<OneBodySOInt, std::shared_ptr<OneBodySOInt>, boost::noncopyable>("OneBodySOInt",
-    // "docstring", no_init).
-    //        def("compute", matrix_version(&OneBodySOInt::compute_shell), "docstring").
-    //        def("compute_list", vector_version(&OneBodySOInt::compute), "docstring").
-    //        add_property("basis", &OneBodySOInt::basis, "The basis set on center one").
-    //        add_property("basis1", &OneBodySOInt::basis1, "The basis set on center one").
-    //        add_property("basis2", &OneBodySOInt::basis2, "The basis set on center two");
-
-    py::class_<OverlapInt, std::shared_ptr<OverlapInt>>(m, "OverlapInt", pyOneBodyAOInt, "Computes overlap integrals");
-    py::class_<DipoleInt, std::shared_ptr<DipoleInt>>(m, "DipoleInt", pyOneBodyAOInt, "Computes dipole integrals");
-    py::class_<QuadrupoleInt, std::shared_ptr<QuadrupoleInt>>(m, "QuadrupoleInt", pyOneBodyAOInt,
-                                                              "Computes quadrupole integrals");
-    py::class_<MultipoleInt, std::shared_ptr<MultipoleInt>>(m, "MultipoleInt", pyOneBodyAOInt,
-                                                            "Computes arbitrary-order multipole integrals");
-    py::class_<TracelessQuadrupoleInt, std::shared_ptr<TracelessQuadrupoleInt>>(
-        m, "TracelessQuadrupoleInt", pyOneBodyAOInt, "Computes traceless quadrupole integrals");
-    py::class_<ElectricFieldInt, std::shared_ptr<ElectricFieldInt>>(m, "ElectricFieldInt", pyOneBodyAOInt,
-                                                                    "Computes electric field integrals");
-    py::class_<KineticInt, std::shared_ptr<KineticInt>>(m, "KineticInt", pyOneBodyAOInt, "Computes kinetic integrals");
-    py::class_<PotentialInt, std::shared_ptr<PotentialInt>>(m, "PotentialInt", pyOneBodyAOInt,
-                                                            "Computes potential integrals");
-    py::class_<PseudospectralInt, std::shared_ptr<PseudospectralInt>>(m, "PseudospectralInt", pyOneBodyAOInt,
-                                                                      "Computes pseudospectral integrals");
-    py::class_<ElectrostaticInt, std::shared_ptr<ElectrostaticInt>>(m, "ElectrostaticInt", pyOneBodyAOInt,
-                                                                    "Computes electrostatic integrals");
-    py::class_<NablaInt, std::shared_ptr<NablaInt>>(m, "NablaInt", pyOneBodyAOInt, "Computes nabla integrals");
-    py::class_<AngularMomentumInt, std::shared_ptr<AngularMomentumInt>>(m, "AngularMomentumInt", pyOneBodyAOInt,
-                                                                        "Computes angular momentum integrals");
-
-    typedef bool (TwoBodyAOInt::*compute_shell_significant)(int, int, int, int);
-    typedef size_t (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
-    py::class_<TwoBodyAOInt, std::shared_ptr<TwoBodyAOInt>> pyTwoBodyAOInt(m, "TwoBodyAOInt",
-                                                                           "Two body integral base class");
-    pyTwoBodyAOInt.def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell),
-                       "Compute ERIs between 4 shells")
-        .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
-                       "Determines if the P,Q,R,S shell combination is significant");
-
-    py::class_<Libint2TwoElectronInt, std::shared_ptr<Libint2TwoElectronInt>>(m, "TwoElectronInt", pyTwoBodyAOInt,
-                                                                "Computes two-electron repulsion integrals")
-        .def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "Compute ERIs between 4 shells")
-        .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
-                       "Determines if the P,Q,R,S shell combination is significant");
-
-    py::class_<Libint2ERI, std::shared_ptr<Libint2ERI>>(m, "ERI", pyTwoBodyAOInt, "Computes normal two electron repulsion integrals");
-#ifdef ENABLE_Libint1t
-    py::class_<F12, std::shared_ptr<F12>>(m, "F12", pyTwoBodyAOInt, "Computes F12 electron repulsion integrals");
-    py::class_<F12G12, std::shared_ptr<F12G12>>(m, "F12G12", pyTwoBodyAOInt,
-                                                "Computes F12G12 electron repulsion integrals");
-    py::class_<F12Squared, std::shared_ptr<F12Squared>>(m, "F12Squared", pyTwoBodyAOInt,
-                                                        "Computes F12 Squared electron repulsion integrals");
-    py::class_<F12DoubleCommutator, std::shared_ptr<F12DoubleCommutator>>(
-        m, "F12DoubleCommutator", pyTwoBodyAOInt, "Computes F12 Double Commutator electron repulsion integrals");
-    py::class_<ErfERI, std::shared_ptr<ErfERI>>(m, "ErfERI", pyTwoBodyAOInt,
-                                                "Computes ERF electron repulsion integrals");
-    py::class_<ErfComplementERI, std::shared_ptr<ErfComplementERI>>(
-        m, "ErfComplementERI", pyTwoBodyAOInt, "Computes ERF complement electron repulsion integrals");
-#endif  // ENABLE_Libint1t
-
-    py::class_<AOShellCombinationsIterator, std::shared_ptr<AOShellCombinationsIterator>>(m,
-                                                                                          "AOShellCombinationsIterator")
-        .def_property_readonly("p", py::cpp_function(&AOShellCombinationsIterator::p), "Returns current P index")
-        .def_property_readonly("q", py::cpp_function(&AOShellCombinationsIterator::q), "Returns current Q index")
-        .def_property_readonly("r", py::cpp_function(&AOShellCombinationsIterator::r), "Returns current R index")
-        .def_property_readonly("s", py::cpp_function(&AOShellCombinationsIterator::s), "Returns current S index")
-        .def("first", &AOShellCombinationsIterator::first, "docstring")
-        .def("next", &AOShellCombinationsIterator::next, "docstring")  // these are not documented C++ side
-        .def("is_done", &AOShellCombinationsIterator::is_done, "docstring");
-
-    py::class_<ThreeCenterOverlapInt, std::shared_ptr<ThreeCenterOverlapInt>>(m, "ThreeCenterOverlapInt",
-                                                                              "Three center overlap integrals")
-        .def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "Compute the integrals of the form (a|b|c)");
-
-    py::class_<IntegralFactory, std::shared_ptr<IntegralFactory>>(m, "IntegralFactory", "Computes integrals")
-        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
-                      std::shared_ptr<BasisSet>>())
-        .def(py::init<std::shared_ptr<BasisSet>>())
-        // def("shells_iterator", &IntegralFactory::shells_iterator_ptr,
-        // py::return_value_policy<manage_new_object>(), "docstring").
-        .def("shells_iterator", &IntegralFactory::shells_iterator_ptr,
-             "Returns an ERI iterator object, only coded for standard ERIs")
-        .def("eri", &IntegralFactory::eri, "Returns an ERI integral object", "deriv"_a = 0, "use_shell_pairs"_a = true, "needs_exchange"_a = false)
-        .def("f12", &IntegralFactory::f12, "Returns an F12 integral object", "cf"_a, "deriv"_a = 0,
-             "use_shell_pairs"_a = true)
-        .def("f12g12", &IntegralFactory::f12g12, "Returns an F12G12 integral object", "cf"_a, "deriv"_a = 0,
-             "use_shell_pairs"_a = true)
-        .def("f12_double_commutator", &IntegralFactory::f12_double_commutator,
-             "Returns an F12 double commutator integral object", "cf"_a, "deriv"_a = 0, "use_shell_pairs"_a = true)
-        .def("f12_squared", &IntegralFactory::f12_squared, "Returns an F12 squared integral object", "cf"_a,
-             "deriv"_a = 0, "use_shell_pairs"_a = true)
-        .def("erf_eri", &IntegralFactory::erf_eri, "Returns and erf ERI integral object (omega integral)", "omega"_a,
-             "deriv"_a = 0, "use_shell_pairs"_a = true, "needs_exchange"_a = false)
-        .def("erf_complement_eri", &IntegralFactory::erf_complement_eri,
-             "Returns an erf complement ERI integral object (omega integral)", "omega"_a, "deriv"_a = 0,
-             "use_shell_pairs"_a = true, "needs_exchange"_a = false)
-        .def("ao_overlap", &IntegralFactory::ao_overlap, "Returns a OneBodyInt that computes the AO overlap integrals",
-             "deriv"_a = 0)
-        .def("so_overlap", &IntegralFactory::so_overlap, "Returns a OneBodyInt that computes the SO overlap integrals",
-             "deriv"_a = 0)
-        .def("ao_dipole", &IntegralFactory::ao_dipole, "Returns a OneBodyInt that computes the AO dipole integrals",
-             "deriv"_a = 0)
-        .def("so_dipole", &IntegralFactory::so_dipole, "Returns a OneBodyInt that computes the SO dipole integrals",
-             "deriv"_a = 0)
-        .def("ao_kinetic", &IntegralFactory::ao_kinetic, "Returns a OneBodyInt that computes the AO kinetic integrals",
-             "deriv"_a = 0)
-        .def("so_kinetic", &IntegralFactory::so_kinetic, "Returns a OneBodyInt that computes the SO kinetic integrals",
-             "deriv"_a = 0)
-        .def("ao_potential", &IntegralFactory::ao_potential,
-             "Returns a OneBodyInt that computes the AO nuclear attraction integral", "deriv"_a = 0)
-        .def("so_potential", &IntegralFactory::so_potential,
-             "Returns a OneBodyInt that computes the SO nuclear attraction integral", "deriv"_a = 0)
-        .def("ao_pseudospectral", &IntegralFactory::ao_pseudospectral,
-             "Returns a OneBodyInt that computes the AO pseudospectral grid integrals", "deriv"_a = 0)
-        .def("so_pseudospectral", &IntegralFactory::so_pseudospectral,
-             "Returns a OneBodyInt that computes the SO pseudospectral grid integrals", "deriv"_a = 0)
-        .def("ao_nabla", &IntegralFactory::ao_nabla, "Returns a OneBodyInt that computes the AO nabla integral",
-             "deriv"_a = 0)
-        .def("so_nabla", &IntegralFactory::so_nabla, "Returns a OneBodyInt that computes the SO nabla integral",
-             "deriv"_a = 0)
-        .def("ao_angular_momentum", &IntegralFactory::ao_angular_momentum,
-             "Returns a OneBodyInt that computes the AO angular momentum integral", "deriv"_a = 0)
-        .def("so_angular_momentum", &IntegralFactory::so_angular_momentum,
-             "Returns a OneBodyInt that computes the SO angular momentum integral", "deriv"_a = 0)
-        .def("ao_quadrupole", &IntegralFactory::ao_quadrupole,
-             "Returns a OneBodyInt that computes AO the quadrupole integral")
-        .def("so_quadrupole", &IntegralFactory::so_quadrupole,
-             "Returns a OneBodyInt that computes SO the quadrupole integral")
-        .def("ao_multipoles", &IntegralFactory::ao_multipoles,
-             "Returns a OneBodyInt that computes arbitrary-order AO multipole integrals", "order"_a)
-        .def("so_multipoles", &IntegralFactory::so_multipoles,
-             "Returns a OneBodyInt that computes arbitrary-order SO multipole integrals", "order"_a)
-        .def("ao_traceless_quadrupole", &IntegralFactory::ao_traceless_quadrupole,
-             "Returns a OneBodyInt that computes the traceless AO quadrupole integral")
-        .def("so_traceless_quadrupole", &IntegralFactory::so_traceless_quadrupole,
-             "Returns a OneBodyInt that computes the traceless SO quadrupole integral")
-        .def("electric_field", &IntegralFactory::electric_field,
-             "Returns a OneBodyInt that computes the electric field")
-        .def("electrostatic", &IntegralFactory::electrostatic,
-             "Returns a OneBodyInt that computes the point electrostatic potential")
-        .def("overlap_3c", &IntegralFactory::overlap_3c,
-             "Returns a OneBodyInt that computes the 3 center overlap integral");
-
-    typedef std::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
-    typedef std::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;
-
-    typedef SharedMatrix (MintsHelper::*erf)(double, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
-    typedef SharedMatrix (MintsHelper::*eri)(SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
-    typedef SharedMatrix (MintsHelper::*normal_eri)();
-    typedef SharedMatrix (MintsHelper::*normal_eri_factory)(std::shared_ptr<IntegralFactory>);
-    typedef SharedMatrix (MintsHelper::*normal_eri2)(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
-                                                     std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
-    typedef SharedMatrix (MintsHelper::*normal_3c)(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
-                                                   std::shared_ptr<BasisSet>);
-
-    typedef SharedMatrix (MintsHelper::*normal_f12)(std::shared_ptr<CorrelationFactor>);
-    typedef SharedMatrix (MintsHelper::*normal_f122)(std::shared_ptr<CorrelationFactor>, std::shared_ptr<BasisSet>,
-                                                     std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
-                                                     std::shared_ptr<BasisSet>);
-
-    typedef SharedMatrix (MintsHelper::*oneelectron)();
-    typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis)(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
-    typedef SharedMatrix (MintsHelper::*perturb_grad_options)(SharedMatrix);
-    typedef SharedMatrix (MintsHelper::*perturb_grad_xyz)(SharedMatrix, double, double, double);
-
-    py::class_<MintsHelper, std::shared_ptr<MintsHelper>>(m, "MintsHelper", "Computes integrals")
-        .def(py::init<std::shared_ptr<BasisSet>>())
-        .def(py::init<std::shared_ptr<Wavefunction>>())
-
-        // Options and attributes
-        .def("nbf", &MintsHelper::nbf, "Returns the number of basis functions")
-        .def("set_print", &MintsHelper::set_print, "Sets the print level")
-        .def("basisset", &MintsHelper::basisset, "Returns the basis set being used")
-        .def("sobasisset", &MintsHelper::sobasisset, "Returns the SO basis set being used")
-        .def("factory", &MintsHelper::factory, "Returns the Matrix factory being used")
-        .def("cdsalcs", &MintsHelper::cdsalcs, "Returns a CdSalcList object")
-        .def("petite_list", petite_list_0(&MintsHelper::petite_list),
-             "Returns petite list, which transforms AO basis functions to SO's")
-        .def("petite_list1", petite_list_1(&MintsHelper::petite_list),
-             "Returns petite list which transforms AO basis functions to SO's, \
-              setting argument to true is for Cartesian basis, false is for Spherical Harmonic basis",
-             "include_pure_transform"_a)
-
-        // Integral builders
-        .def("integral", &MintsHelper::integral, "Integral factory being used")
-        .def("integrals", &MintsHelper::integrals, "Molecular integrals")
-        .def("integrals_erf", &MintsHelper::integrals_erf, "ERF integrals", "w"_a = -1.0)
-        .def("integrals_erfc", &MintsHelper::integrals_erfc, "ERFC integrals", "w"_a = -1.0)
-        .def("one_electron_integrals", &MintsHelper::one_electron_integrals, "Standard one-electron integrals")
-
-        // One-electron
-        .def("ao_overlap", oneelectron(&MintsHelper::ao_overlap), "AO basis overlap integrals")
-        .def("ao_overlap", oneelectron_mixed_basis(&MintsHelper::ao_overlap), "AO mixed basis overlap integrals")
-        .def("so_overlap", &MintsHelper::so_overlap, "SO basis overlap integrals", "include_perturbations"_a = true)
-        .def("ao_kinetic", oneelectron(&MintsHelper::ao_kinetic), "AO basis kinetic integrals")
-        .def("ao_kinetic", oneelectron_mixed_basis(&MintsHelper::ao_kinetic), "AO mixed basis kinetic integrals")
-        .def("so_kinetic", &MintsHelper::so_kinetic, "SO basis kinetic integrals", "include_perturbations"_a = true)
-        .def("ao_potential", oneelectron(&MintsHelper::ao_potential), "AO potential integrals")
-        .def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "AO mixed basis potential integrals")
-        .def("so_potential", &MintsHelper::so_potential, "SO basis potential integrals",
-             "include_perturbations"_a = true)
-        .def("ao_ecp", oneelectron(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
-        .def("ao_ecp", oneelectron_mixed_basis(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
-        .def("so_ecp", &MintsHelper::so_ecp, "SO basis effective core potential integrals.")
-
-        // One-electron properties and
-        .def("ao_pvp", &MintsHelper::ao_pvp, "AO pvp integrals")
-        .def("ao_dkh", &MintsHelper::ao_dkh, "AO dkh integrals")
-        .def("so_dkh", &MintsHelper::so_dkh, "SO dkh integrals")
-        .def("ao_dipole", &MintsHelper::ao_dipole, "Vector AO dipole integrals")
-        .def("so_dipole", &MintsHelper::so_dipole, "Vector SO dipole integrals")
-        .def("ao_quadrupole", &MintsHelper::ao_quadrupole, "Vector AO quadrupole integrals")
-        .def("so_quadrupole", &MintsHelper::so_quadrupole, "Vector SO quadrupole integrals")
-        .def("ao_traceless_quadrupole", &MintsHelper::ao_traceless_quadrupole,
-             "Vector AO traceless quadrupole integrals")
-        .def("so_traceless_quadrupole", &MintsHelper::so_traceless_quadrupole,
-             "Vector SO traceless quadrupole integrals")
-        .def("ao_nabla", &MintsHelper::ao_nabla, "Vector AO nabla integrals")
-        .def("so_nabla", &MintsHelper::so_nabla, "Vector SO nabla integrals")
-        .def("ao_angular_momentum", &MintsHelper::ao_angular_momentum, "Vector AO angular momentum integrals")
-        .def("so_angular_momentum", &MintsHelper::so_angular_momentum, "Vector SO angular momentum integrals")
-        .def("ao_efp_multipole_potential", &MintsHelper::ao_efp_multipole_potential,
-             "Vector AO EFP multipole integrals", "origin"_a = std::vector<double>{0, 0, 0}, "deriv"_a = 0)
-        .def("ao_multipole_potential", &MintsHelper::ao_multipole_potential, "Vector AO multipole potential integrals",
-             "origin"_a = std::vector<double>{0, 0, 0}, "max_k"_a = 0, "deriv"_a = 0)
-        .def("electric_field", &MintsHelper::electric_field, "Vector electric field integrals",
-             "origin"_a = std::vector<double>{0, 0, 0}, "deriv"_a = 0)
-        .def("induction_operator", &MintsHelper::induction_operator,
-             "Induction operator, formed by contracting electric field integrals with dipole moments at given "
-             "coordinates (needed for EFP and PE)")
-        .def("electric_field_value", &MintsHelper::electric_field_value,
-             "Electric field expectation value at given sites")
-
-        // Two-electron AO
-        .def("ao_eri", normal_eri_factory(&MintsHelper::ao_eri), "AO ERI integrals", "factory"_a = nullptr)
-        .def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "AO ERI integrals", "bs1"_a, "bs2"_a, "bs3"_a, "bs4"_a)
-        .def("ao_eri_shell", &MintsHelper::ao_eri_shell, "AO ERI Shell", "M"_a, "N"_a, "P"_a, "Q"_a)
-        .def("ao_erf_eri", &MintsHelper::ao_erf_eri, "AO ERF integrals", "omega"_a, "factory"_a = nullptr)
-        .def("ao_f12", normal_f12(&MintsHelper::ao_f12), "AO F12 integrals", "corr"_a)
-        .def("ao_f12", normal_f122(&MintsHelper::ao_f12), "AO F12 integrals", "corr"_a, "bs1"_a, "bs2"_a, "bs3"_a,
-             "bs4"_a)
-        .def("ao_f12_scaled", normal_f12(&MintsHelper::ao_f12_scaled), "AO F12 intgerals", "corr"_a)
-        .def("ao_f12_scaled", normal_f122(&MintsHelper::ao_f12_scaled), "AO F12 intgerals", "corr"_a, "bs1"_a, "bs2"_a,
-             "bs3"_a, "bs4"_a)
-        .def("ao_f12_squared", normal_f12(&MintsHelper::ao_f12_squared), "AO F12 squared integrals", "corr"_a)
-        .def("ao_f12_squared", normal_f122(&MintsHelper::ao_f12_squared), "AO F12 squared integrals", "corr"_a, "bs1"_a,
-             "bs2"_a, "bs3"_a, "bs4"_a)
-        .def("ao_f12g12", &MintsHelper::ao_f12g12, "AO F12G12 integrals", "corr"_a)
-        .def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "AO F12 double commutator integrals",
-             "corr"_a)
-        .def("ao_3coverlap", normal_eri(&MintsHelper::ao_3coverlap), "3 Center overlap integrals")
-        .def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "3 Center overalp integrals", "bs1"_a, "bs2"_a,
-             "bs3"_a)
-
-        // Two-electron MO and transformers
-        .def("mo_eri", eri(&MintsHelper::mo_eri), "MO ERI Integrals. Pass appropriate MO coefficients", "C1"_a, "C2"_a,
-             "C3"_a, "C4"_a)
-        .def("mo_erf_eri", erf(&MintsHelper::mo_erf_eri), "MO ERFC Omega Integrals", "omega"_a, "C1"_a, "C2"_a, "C3"_a,
-             "C4"_a)
-        .def("mo_f12", &MintsHelper::mo_f12, "MO F12 Integrals", "corr"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
-        .def("mo_f12_squared", &MintsHelper::mo_f12_squared, "MO F12 squared integrals", "corr"_a, "C1"_a, "C2"_a,
-             "C3"_a, "C4"_a)
-        .def("mo_f12g12", &MintsHelper::mo_f12g12, "MO F12G12 integrals", "corr"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
-        .def("mo_f12_double_commutator", &MintsHelper::mo_f12_double_commutator, "MO F12 double commutator integrals",
-             "corr"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
-        .def("mo_spin_eri", &MintsHelper::mo_spin_eri, "Symmetric MO Spin ERI Integrals", "C1"_a, "C2"_a)
-        .def("mo_transform", &MintsHelper::mo_transform, "N^5 ao to mo transfrom, in memory", "Iso"_a, "C1"_a, "C2"_a,
-             "C3"_a, "C4"_a)
-        .def("set_basisset", &MintsHelper::set_basisset, "Sets a basis set", "label"_a, "basis"_a)
-        .def("play", &MintsHelper::play, "play function")
-
-        // Contracted gradient terms
-        .def("dipole_grad", &MintsHelper::dipole_grad, "First nuclear derivative dipole integrals")
-        .def("overlap_grad", &MintsHelper::overlap_grad, "First nuclear derivative overlap integrals")
-        .def("kinetic_grad", &MintsHelper::kinetic_grad, "First nuclear derivative kinetic integrals")
-        .def("potential_grad", &MintsHelper::potential_grad, "First nuclear derivative potential integrals")
-        .def("perturb_grad", perturb_grad_options(&MintsHelper::perturb_grad),
-             "First nuclear derivative perturb integrals")
-        .def("perturb_grad", perturb_grad_xyz(&MintsHelper::perturb_grad), "First nuclear derivative perturb integrals")
-        .def("core_hamiltonian_grad", &MintsHelper::core_hamiltonian_grad,
-             "First nuclear derivative T + V + Perturb integrals")
-
-        // First and second derivatives of one and two electron integrals in AO and MO basis.
-        .def("ao_oei_deriv1", &MintsHelper::ao_oei_deriv1,
-             "Gradient of AO basis OEI integrals: returns (3 * natoms) matrices", "oei_type"_a, "atom"_a)
-        .def("ao_oei_deriv2", &MintsHelper::ao_oei_deriv2,
-             "Hessian  of AO basis OEI integrals: returns (3 * natoms)^2 matrices", "oei_type"_a, "atom1"_a, "atom2"_a)
-        .def("ao_overlap_half_deriv1", &MintsHelper::ao_overlap_half_deriv1,
-             "Half-derivative of AO basis overlap integrals: returns (3 * natoms) matrices","side"_a, "atom"_a)
-        .def("ao_tei_deriv1", &MintsHelper::ao_tei_deriv1,
-             "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices",
-             "atom"_a, "omega"_a = 0.0, "factory"_a = nullptr)
-        .def("ao_tei_deriv2", &MintsHelper::ao_tei_deriv2,
-             "Hessian  of AO basis TEI integrals: returns (3 * natoms)^2 matrices", "atom1"_a, "atom2"_a)
-        .def("ao_metric_deriv1", &MintsHelper::ao_metric_deriv1,
-             "Gradient of AO basis metric integrals: returns 3 matrices",
-             "atom"_a, "aux_name"_a)
-        .def("ao_3center_deriv1", &MintsHelper::ao_3center_deriv1,
-             "Gradient of AO basis 3-center, density-fitted integrals: returns 3 matrices",
-             "atom"_a, "aux_name"_a)
-        .def("mo_oei_deriv1", &MintsHelper::mo_oei_deriv1,
-             "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices",
-             "oei_type"_a, "atom"_a, "C1"_a, "C2"_a)
-        .def("mo_oei_deriv2", &MintsHelper::mo_oei_deriv2,
-             "Hessian  of MO basis OEI integrals: returns (3 * natoms)^2 matrices",
-             "oei_type"_a, "atom1"_a, "atom2"_a, "C1"_a, "C2"_a)
-        .def("mo_overlap_half_deriv1", &MintsHelper::mo_overlap_half_deriv1,
-             "Half-derivative of MO basis overlap integrals: returns (3 * natoms) matrices",
-             "side"_a, "atom"_a, "C1"_a, "C2"_a)
-        .def("mo_tei_deriv1", &MintsHelper::mo_tei_deriv1,
-             "Gradient of MO basis TEI integrals: returns (3 * natoms) matrices",
-             "atom"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
-        .def("mo_tei_deriv2", &MintsHelper::mo_tei_deriv2,
-             "Hessian  of MO basis TEI integrals: returns (3 * natoms)^2 matrices",
-             "atom1"_a, "atom2"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
-        
-        // First derivatives of electric dipole integrals in AO and MO basis.
-        .def("ao_elec_dip_deriv1", &MintsHelper::ao_elec_dip_deriv1,
-             "Gradient of AO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a)
-        .def("mo_elec_dip_deriv1", &MintsHelper::mo_elec_dip_deriv1,
-             "Gradient of MO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a, "C1"_a, "C2"_a);
 
     py::class_<Vector3>(m, "Vector3",
                         "Class for vectors of length three, often Cartesian coordinate vectors, "
@@ -1157,35 +751,19 @@ void export_mints(py::module& m) {
         .def("__getitem__",
              [](const SymmetryOperation& self, size_t i) { return std::vector<double>(self[i], self[i] + 3); });
 
-    py::class_<OrbitalSpace>(m, "OrbitalSpace", "Contains information about the orbitals")
-        .def(py::init<const std::string&, const std::string&, const SharedMatrix&, const SharedVector&,
-                      const std::shared_ptr<BasisSet>&, const std::shared_ptr<IntegralFactory>&>())
-        .def(py::init<const std::string&, const std::string&, const SharedMatrix&, const std::shared_ptr<BasisSet>&,
-                      const std::shared_ptr<IntegralFactory>&>())
-        .def(py::init<const std::string&, const std::string&, const std::shared_ptr<Wavefunction>&>())
-        .def("nirrep", &OrbitalSpace::nirrep, "Returns number of irreps")
-        .def("id", &OrbitalSpace::id, "Unique identifier")
-        .def("name", &OrbitalSpace::name, "Name of the orbital space")
-        .def("C", &OrbitalSpace::C, "MO coefficient matrix, AO->MO or SO->MO transformation matrix")
-        .def("evals", &OrbitalSpace::evals, "Corresponding eigenvalues of the C matrix")
-        .def("basisset", &OrbitalSpace::basisset, "The AO basis set used to create C")
-        .def("integral", &OrbitalSpace::integral, "The integral factory used to create C")
-        .def("dim", &OrbitalSpace::dim, "MO dimensions")
-        .def("print_out", &OrbitalSpace::print, "Print information about the orbital space to the output file")
-        .def_static("build_cabs_space", &OrbitalSpace::build_cabs_space,
-                    "Given two spaces, it projects out one space from the other and returns the new spaces \
-                    The first argument (orb_space) is the space to project out. The returned space will be orthogonal to this \
-                    The second argument (ri_space) is the space that is being projected on. The returned space = this space - orb_space \
-                    The third argument is the tolerance for linear dependencies",
-                    "orb_space"_a, "ri_space"_a, "linear_tol"_a)
-        .def_static("build_ri_space", &OrbitalSpace::build_ri_space,
-                    "Given two basis sets, it merges the basis sets and then constructs an orthogonalized \
-                    space with the same span. Linearly dependent orbitals are thrown out. \
-                    The first argument, molecule, is the molecule to construct the basis for \
-                    The second argument, obs_key, is the option keyword for orbital basis set 'BASIS' \
-                    The third argument, aux_key, is the option keyword for auxiliery basis set 'DF_BASIS_MP2' \
-                    The fourth argument, lindep_tol, is the tolerance for linear dependencies",
-                    "molecule"_a, "obs_key"_a, "aux_key"_a, "lindep_tol"_a);
+    py::class_<IrreducibleRepresentation, std::shared_ptr<IrreducibleRepresentation>>(
+        m, "IrreducibleRepresentation", "An irreducible representation of the point group")
+        .def("character", &IrreducibleRepresentation::character,
+             "Return the character of the i'th symmetry operation for the irrep. 0-indexed.")
+        .def("symbol", &IrreducibleRepresentation::symbol, "Return the symbol for the irrep");
+
+    py::class_<CharacterTable, std::shared_ptr<CharacterTable>>(m, "CharacterTable",
+                                                                "Contains the character table of the point group")
+        .def(py::init<const unsigned char>())
+        .def(py::init<const std::string&>())
+        .def("gamma", &CharacterTable::gamma, "Returns the irrep with the given index in the character table")
+        .def("order", &CharacterTable::order, "Return the order of the point group")
+        .def("symm_operation", &CharacterTable::symm_operation, "Return the i'th symmetry operation. 0-indexed.");
 
     py::class_<PointGroup, std::shared_ptr<PointGroup>>(m, "PointGroup", "Contains information about the point group")
         .def(py::init<const std::string&>())
@@ -1196,20 +774,6 @@ void export_mints(py::module& m) {
         .def("char_table", &PointGroup::char_table, "Return the CharacterTable of the point group");
     // def("origin", &PointGroup::origin).
     //            def("set_symbol", &PointGroup::set_symbol);
-
-    py::class_<CharacterTable, std::shared_ptr<CharacterTable>>(m, "CharacterTable",
-                                                                "Contains the character table of the point group")
-        .def(py::init<const unsigned char>())
-        .def(py::init<const std::string&>())
-        .def("gamma", &CharacterTable::gamma, "Returns the irrep with the given index in the character table")
-        .def("order", &CharacterTable::order, "Return the order of the point group")
-        .def("symm_operation", &CharacterTable::symm_operation, "Return the i'th symmetry operation. 0-indexed.");
-
-    py::class_<IrreducibleRepresentation, std::shared_ptr<IrreducibleRepresentation>>(
-        m, "IrreducibleRepresentation", "An irreducible representation of the point group")
-        .def("character", &IrreducibleRepresentation::character,
-             "Return the character of the i'th symmetry operation for the irrep. 0-indexed.")
-        .def("symbol", &IrreducibleRepresentation::symbol, "Return the symbol for the irrep");
 
     typedef void (Molecule::*matrix_set_geometry)(const Matrix&);
     typedef Vector3 (Molecule::*nuclear_dipole1)(const Vector3&) const;
@@ -1448,10 +1012,96 @@ void export_mints(py::module& m) {
         .def("set_full_geometry", matrix_set_geometry(&Molecule::set_full_geometry),
              "Sets the geometry, given a (Natom X 3) matrix arg0 of coordinates (in Bohr) (including dummies");
 
-    py::class_<PetiteList, std::shared_ptr<PetiteList>>(m, "PetiteList", "Handles symmetry transformations")
-        .def("aotoso", &PetiteList::aotoso, "Return the AO->SO coefficient matrix")
-        .def("sotoao", &PetiteList::sotoao, "Return the SO->AO coefficient matrix")
-        .def("print", &PetiteList::print, "Print to outfile");
+    py::class_<CdSalc::Component, std::shared_ptr<CdSalc::Component>>(
+        m, "SalcComponent", "Component of a Cartesian displacement SALC in the basis of atomic displacements.")
+        .def_readwrite("coef", &CdSalc::Component::coef, "The coefficient of the displacement")
+        .def_readwrite("atom", &CdSalc::Component::atom, "The index of the atom being displaced. 0-indexed.")
+        .def_readwrite("xyz", &CdSalc::Component::xyz,
+                       "The direction of the displacement, given by x as 0, y as 1, z as 2.");
+
+    py::class_<CdSalc, std::shared_ptr<CdSalc>>(m, "CdSalc", "Cartesian displacement SALC")
+        .def("irrep", &CdSalc::irrep, "Return the irrep bit representation")
+        .def(
+            "irrep_index", [](const CdSalc& salc) { return static_cast<int>(salc.irrep()); }, "Return the irrep index")
+        .def("print_out", &CdSalc::print,
+             "Print the irrep index and the coordinates of the SALC of Cartesian displacements. \
+                                           Irrep index is 0-indexed and Cotton ordered.")
+        .def("__getitem__", [](const CdSalc& salc, size_t i) { return salc.component(i); })
+        .def("__len__", [](const CdSalc& salc) { return salc.ncomponent(); })
+        .def(
+            "__iter__", [](const CdSalc& salc) { return py::make_iterator(salc.get_components()); },
+            py::keep_alive<0, 1>());
+
+    py::class_<CdSalcList, std::shared_ptr<CdSalcList>>(
+        m, "CdSalcList", "Class for generating symmetry adapted linear combinations of Cartesian displacements")
+        .def(py::init<std::shared_ptr<Molecule>, int, bool, bool>())
+        .def("ncd", &CdSalcList::ncd, "Return the number of cartesian displacements SALCs")
+        .def("create_matrices", &CdSalcList::create_matrices,
+             "Return a vector of matrices with the SALC symmetries. Dimensions determined by factory.", "basename"_a,
+             "factory"_a)
+        .def("salc_name", &CdSalcList::salc_name, "Return the name of SALC #i.", "i"_a)
+        .def("nirrep", &CdSalcList::nirrep, "Return the number of irreps")
+        .def("__getitem__", [](const CdSalcList& salclist, size_t i) { return salclist[i]; })
+        .def("__len__", [](const CdSalcList& salclist) { return salclist.ncd(); })
+        .def(
+            "__iter__", [](const CdSalcList& salclist) { return py::make_iterator(salclist.get_salcs()); },
+            py::keep_alive<0, 1>())
+        .def("print_out", &CdSalcList::print, "Print the SALCs to the output file")
+        .def("matrix", &CdSalcList::matrix, "Return the matrix that transforms Cartesian displacements to SALCs")
+        .def("matrix_irrep", &CdSalcList::matrix_irrep,
+             "Return the matrix that transforms Cartesian displacements to SALCs of irrep h", "h"_a);
+
+    py::class_<GaussianShell, std::shared_ptr<GaussianShell>>(m, "GaussianShell",
+                                                              "Class containing information about basis functions")
+        .def_property_readonly("nprimitive", py::cpp_function(&GaussianShell::nprimitive),
+                               "The number of primitive gaussians")
+        .def_property_readonly("nfunction", py::cpp_function(&GaussianShell::nfunction),
+                               "Total number of basis functions")
+        .def_property_readonly("ncartesian", py::cpp_function(&GaussianShell::ncartesian),
+                               "Total number of basis functions if this shell was Cartesian")
+        .def_property_readonly("am", py::cpp_function(&GaussianShell::am),
+                               "The angular momentum of the given contraction")
+        .def_property_readonly("amchar", py::cpp_function(&GaussianShell::amchar),
+                               "The character symbol for the angular momentum of the given contraction")
+        .def_property_readonly("AMCHAR", py::cpp_function(&GaussianShell::AMCHAR),
+                               "The upper-case character symbol for the angular momentum of the given contraction")
+        .def_property_readonly("ncenter", py::cpp_function(&GaussianShell::ncenter),
+                               "Returns atom number this shell is on")
+        .def_property("function_index", py::cpp_function(&GaussianShell::function_index),
+                      py::cpp_function(&GaussianShell::set_function_index),
+                      "Basis function index where this shell starts.")
+        .
+        //            add_property("center", &GaussianShell::center, "A double* representing the
+        //            center of the GaussianShell.").
+        //            add_property("exps", &GaussianShell::exps, "The exponents of all the
+        //            primitives").
+        //            add_property("coefs", &GaussianShell::coefs, "The coefficients of all the
+        //            primitives").
+        def("is_cartesian", &GaussianShell::is_cartesian, "Returns true if the contraction is Cartesian")
+        .def("is_pure", &GaussianShell::is_pure,
+             "Returns true if the contraction is pure, i.e. a spherical harmonic basis function")
+        .
+        //            def("normalize_shell", &GaussianShell::normalize_shell, "docstring").
+        def("exp", &GaussianShell::exp, "Returns the exponent of the given primitive", "prim"_a)
+        .def("original_coef", &GaussianShell::original_coef, "Return unnormalized coefficient of the pi'th primitive",
+             "pi"_a)
+        .def("erd_coef", &GaussianShell::erd_coef, "Return ERD normalized coefficient of pi'th primitive", "pi"_a)
+        .def("coef", &GaussianShell::coef, "Return coefficient of the pi'th primitive", "pi"_a);
+
+    py::enum_<PrimitiveType>(m, "PrimitiveType", "May be Normalized or Unnormalized")
+        .value("Normalized", Normalized)
+        .value("Unnormalized", Unnormalized)
+        .export_values();
+
+    py::enum_<GaussianType>(m, "GaussianType", "0 if Cartesian, 1 if Pure")
+        .value("Cartesian", Cartesian, "(n+1)(n+2)/2 functions")
+        .value("Pure", Pure, "2n+1 functions")
+        .export_values();
+
+    py::class_<ShellInfo, std::shared_ptr<ShellInfo>>(m, "ShellInfo")
+        .def(py::init<int, const std::vector<double>&, const std::vector<double>&, GaussianType, PrimitiveType>());
+
+    py::bind_vector<std::vector<ShellInfo>>(m, "BSVec");
 
     typedef void (BasisSet::*basis_print_out)() const;
     typedef const GaussianShell& (BasisSet::*no_center_version)(int)const;
@@ -1488,7 +1138,7 @@ void export_mints(py::module& m) {
              "Return the si'th Gaussian shell on center", "center"_a, "si"_a)
         .def("n_frozen_core", &BasisSet::n_frozen_core,
              "Returns the number of orbital (non-ECP) frozen core electrons. For a given molecule and "
-             "|globals__freeze_core|, `(n_ecp_core()/2 + n_frozen_core()) = constant`.")
+             ":term:`FREEZE_CORE <FREEZE_CORE (GLOBALS)>`, `(n_ecp_core()/2 + n_frozen_core()) = constant`.")
         .def("n_ecp_core", ncore_no_args(&BasisSet::n_ecp_core),
              "Returns the total number of core electrons associated with all ECPs in this basis.")
         .def("n_ecp_core", ncore_one_arg(&BasisSet::n_ecp_core),
@@ -1521,23 +1171,412 @@ void export_mints(py::module& m) {
         .def("max_function_per_shell", &BasisSet::max_function_per_shell,
              "The max number of basis functions in a shell")
         .def("max_nprimitive", &BasisSet::max_nprimitive, "The max number of primitives in a shell")
-        .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring");
+        .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring")
+        .def("compute_phi", [](BasisSet& basis, double x, double y, double z) {
+            auto phi_ao = new std::vector<double>(basis.nbf());
+            auto capsule = py::capsule(phi_ao, [](void *phi_ao) { delete reinterpret_cast<std::vector<double>*>(phi_ao); });
+            basis.compute_phi(phi_ao->data(), x, y, z);
+            return py::array(phi_ao->size(), phi_ao->data(), capsule);
+        }, "Calculate the value of all basis functions at a given point x, y, and z");
+
+    py::class_<OneBodyAOInt, std::shared_ptr<OneBodyAOInt>> pyOneBodyAOInt(
+        m, "OneBodyAOInt", "Basis class for all one-electron integrals");
+    pyOneBodyAOInt
+        .def("compute_shell", &OneBodyAOInt::compute_shell,
+             "Compute integrals between basis functions in the given shell pair")
+        .def_property("origin", py::cpp_function(&OneBodyAOInt::origin), py::cpp_function(&OneBodyAOInt::set_origin),
+                      "The origin about which the one body ints are being computed.")
+        .def_property_readonly("basis", py::cpp_function(&OneBodyAOInt::basis), "The basis set on center one")
+        .def_property_readonly("basis1", py::cpp_function(&OneBodyAOInt::basis1), "The basis set on center one")
+        .def_property_readonly("basis2", py::cpp_function(&OneBodyAOInt::basis2),
+                               "The basis set on center two");  // <-- Added semicolon
+
+    py::class_<OneBodySOInt, std::shared_ptr<OneBodySOInt>>(m, "OneBodySOInt")
+        .def(py::init<std::shared_ptr<OneBodyAOInt>, std::shared_ptr<IntegralFactory>>())
+        .def_property_readonly("basis", py::cpp_function(&OneBodySOInt::basis), "The basis set on center one")
+        .def_property_readonly("basis1", py::cpp_function(&OneBodySOInt::basis1), "The basis set on center one")
+        .def_property_readonly("basis2", py::cpp_function(&OneBodySOInt::basis2),
+                               "The basis set on center two");  // <-- Added semicolon
+
+    // typedef void (OneBodySOInt::*matrix_version)(SharedMatrix) const;
+    // typedef void (OneBodySOInt::*vector_version)(std::vector<SharedMatrix>) const;
+    // class_<OneBodySOInt, std::shared_ptr<OneBodySOInt>, boost::noncopyable>("OneBodySOInt",
+    // "docstring", no_init).
+    //        def("compute", matrix_version(&OneBodySOInt::compute_shell), "docstring").
+    //        def("compute_list", vector_version(&OneBodySOInt::compute), "docstring").
+    //        add_property("basis", &OneBodySOInt::basis, "The basis set on center one").
+    //        add_property("basis1", &OneBodySOInt::basis1, "The basis set on center one").
+    //        add_property("basis2", &OneBodySOInt::basis2, "The basis set on center two");
+
+    py::class_<OverlapInt, std::shared_ptr<OverlapInt>>(m, "OverlapInt", pyOneBodyAOInt, "Computes overlap integrals");
+    py::class_<DipoleInt, std::shared_ptr<DipoleInt>>(m, "DipoleInt", pyOneBodyAOInt, "Computes dipole integrals");
+    py::class_<QuadrupoleInt, std::shared_ptr<QuadrupoleInt>>(m, "QuadrupoleInt", pyOneBodyAOInt,
+                                                              "Computes quadrupole integrals");
+    py::class_<MultipoleInt, std::shared_ptr<MultipoleInt>>(m, "MultipoleInt", pyOneBodyAOInt,
+                                                            "Computes arbitrary-order multipole integrals");
+    py::class_<TracelessQuadrupoleInt, std::shared_ptr<TracelessQuadrupoleInt>>(
+        m, "TracelessQuadrupoleInt", pyOneBodyAOInt, "Computes traceless quadrupole integrals");
+    py::class_<ElectricFieldInt, std::shared_ptr<ElectricFieldInt>>(m, "ElectricFieldInt", pyOneBodyAOInt,
+                                                                    "Computes electric field integrals");
+    py::class_<KineticInt, std::shared_ptr<KineticInt>>(m, "KineticInt", pyOneBodyAOInt, "Computes kinetic integrals");
+    py::class_<PotentialInt, std::shared_ptr<PotentialInt>>(m, "PotentialInt", pyOneBodyAOInt,
+                                                            "Computes potential integrals");
+    py::class_<PseudospectralInt, std::shared_ptr<PseudospectralInt>>(m, "PseudospectralInt", pyOneBodyAOInt,
+                                                                      "Computes pseudospectral integrals");
+    py::class_<ElectrostaticInt, std::shared_ptr<ElectrostaticInt>>(m, "ElectrostaticInt", pyOneBodyAOInt,
+                                                                    "Computes electrostatic integrals");
+    py::class_<NablaInt, std::shared_ptr<NablaInt>>(m, "NablaInt", pyOneBodyAOInt, "Computes nabla integrals");
+    py::class_<AngularMomentumInt, std::shared_ptr<AngularMomentumInt>>(m, "AngularMomentumInt", pyOneBodyAOInt,
+                                                                        "Computes angular momentum integrals");
+
+    typedef bool (TwoBodyAOInt::*compute_shell_significant)(int, int, int, int);
+    typedef size_t (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
+    py::class_<TwoBodyAOInt, std::shared_ptr<TwoBodyAOInt>> pyTwoBodyAOInt(m, "TwoBodyAOInt",
+                                                                           "Two body integral base class");
+    pyTwoBodyAOInt.def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell),
+                       "Compute ERIs between 4 shells")
+        .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
+                       "Determines if the P,Q,R,S shell combination is significant");
+
+    py::class_<Libint2TwoElectronInt, std::shared_ptr<Libint2TwoElectronInt>>(m, "TwoElectronInt", pyTwoBodyAOInt,
+                                                                "Computes two-electron repulsion integrals")
+        .def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "Compute ERIs between 4 shells")
+        .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
+                       "Determines if the P,Q,R,S shell combination is significant");
+
+    py::class_<Libint2ERI, std::shared_ptr<Libint2ERI>>(m, "ERI", pyTwoBodyAOInt, "Computes normal two electron repulsion integrals");
+#ifdef ENABLE_Libint1t
+    py::class_<F12, std::shared_ptr<F12>>(m, "F12", pyTwoBodyAOInt, "Computes F12 electron repulsion integrals");
+    py::class_<F12G12, std::shared_ptr<F12G12>>(m, "F12G12", pyTwoBodyAOInt,
+                                                "Computes F12G12 electron repulsion integrals");
+    py::class_<F12Squared, std::shared_ptr<F12Squared>>(m, "F12Squared", pyTwoBodyAOInt,
+                                                        "Computes F12 Squared electron repulsion integrals");
+    py::class_<F12DoubleCommutator, std::shared_ptr<F12DoubleCommutator>>(
+        m, "F12DoubleCommutator", pyTwoBodyAOInt, "Computes F12 Double Commutator electron repulsion integrals");
+    py::class_<ErfERI, std::shared_ptr<ErfERI>>(m, "ErfERI", pyTwoBodyAOInt,
+                                                "Computes ERF electron repulsion integrals");
+    py::class_<ErfComplementERI, std::shared_ptr<ErfComplementERI>>(
+        m, "ErfComplementERI", pyTwoBodyAOInt, "Computes ERF complement electron repulsion integrals");
+#endif  // ENABLE_Libint1t
+
+    py::class_<AOShellCombinationsIterator, std::shared_ptr<AOShellCombinationsIterator>>(m,
+                                                                                          "AOShellCombinationsIterator")
+        .def_property_readonly("p", py::cpp_function(&AOShellCombinationsIterator::p), "Returns current P index")
+        .def_property_readonly("q", py::cpp_function(&AOShellCombinationsIterator::q), "Returns current Q index")
+        .def_property_readonly("r", py::cpp_function(&AOShellCombinationsIterator::r), "Returns current R index")
+        .def_property_readonly("s", py::cpp_function(&AOShellCombinationsIterator::s), "Returns current S index")
+        .def("first", &AOShellCombinationsIterator::first, "docstring")
+        .def("next", &AOShellCombinationsIterator::next, "docstring")  // these are not documented C++ side
+        .def("is_done", &AOShellCombinationsIterator::is_done, "docstring");
+
+    py::class_<ThreeCenterOverlapInt, std::shared_ptr<ThreeCenterOverlapInt>>(m, "ThreeCenterOverlapInt",
+                                                                              "Three center overlap integrals")
+        .def("compute_shell", &ThreeCenterOverlapInt::compute_shell, "Compute the integrals of the form (a|b|c)");
+
+    py::class_<IntegralFactory, std::shared_ptr<IntegralFactory>>(m, "IntegralFactory", "Computes integrals")
+        .def(py::init<std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+                      std::shared_ptr<BasisSet>>())
+        .def(py::init<std::shared_ptr<BasisSet>>())
+        // def("shells_iterator", &IntegralFactory::shells_iterator_ptr,
+        // py::return_value_policy<manage_new_object>(), "docstring").
+        .def("shells_iterator", &IntegralFactory::shells_iterator_ptr,
+             "Returns an ERI iterator object, only coded for standard ERIs")
+        .def("eri", &IntegralFactory::eri, "Returns an ERI integral object", "deriv"_a = 0, "use_shell_pairs"_a = true, "needs_exchange"_a = false)
+        .def("f12", &IntegralFactory::f12, "Returns an F12 integral object", "cf"_a, "deriv"_a = 0,
+             "use_shell_pairs"_a = true)
+        .def("f12g12", &IntegralFactory::f12g12, "Returns an F12G12 integral object", "cf"_a, "deriv"_a = 0,
+             "use_shell_pairs"_a = true)
+        .def("f12_double_commutator", &IntegralFactory::f12_double_commutator,
+             "Returns an F12 double commutator integral object", "cf"_a, "deriv"_a = 0, "use_shell_pairs"_a = true)
+        .def("f12_squared", &IntegralFactory::f12_squared, "Returns an F12 squared integral object", "cf"_a,
+             "deriv"_a = 0, "use_shell_pairs"_a = true)
+        .def("erf_eri", &IntegralFactory::erf_eri, "Returns and erf ERI integral object (omega integral)", "omega"_a,
+             "deriv"_a = 0, "use_shell_pairs"_a = true, "needs_exchange"_a = false)
+        .def("erf_complement_eri", &IntegralFactory::erf_complement_eri,
+             "Returns an erf complement ERI integral object (omega integral)", "omega"_a, "deriv"_a = 0,
+             "use_shell_pairs"_a = true, "needs_exchange"_a = false)
+        .def("ao_overlap", &IntegralFactory::ao_overlap, "Returns a OneBodyInt that computes the AO overlap integrals",
+             "deriv"_a = 0)
+        .def("so_overlap", &IntegralFactory::so_overlap, "Returns a OneBodyInt that computes the SO overlap integrals",
+             "deriv"_a = 0)
+        .def("ao_dipole", &IntegralFactory::ao_dipole, "Returns a OneBodyInt that computes the AO dipole integrals",
+             "deriv"_a = 0)
+        .def("so_dipole", &IntegralFactory::so_dipole, "Returns a OneBodyInt that computes the SO dipole integrals",
+             "deriv"_a = 0)
+        .def("ao_kinetic", &IntegralFactory::ao_kinetic, "Returns a OneBodyInt that computes the AO kinetic integrals",
+             "deriv"_a = 0)
+        .def("so_kinetic", &IntegralFactory::so_kinetic, "Returns a OneBodyInt that computes the SO kinetic integrals",
+             "deriv"_a = 0)
+        .def("ao_potential", &IntegralFactory::ao_potential,
+             "Returns a OneBodyInt that computes the AO nuclear attraction integral", "deriv"_a = 0)
+        .def("so_potential", &IntegralFactory::so_potential,
+             "Returns a OneBodyInt that computes the SO nuclear attraction integral", "deriv"_a = 0)
+        .def("ao_pseudospectral", &IntegralFactory::ao_pseudospectral,
+             "Returns a OneBodyInt that computes the AO pseudospectral grid integrals", "deriv"_a = 0)
+        .def("so_pseudospectral", &IntegralFactory::so_pseudospectral,
+             "Returns a OneBodyInt that computes the SO pseudospectral grid integrals", "deriv"_a = 0)
+        .def("ao_nabla", &IntegralFactory::ao_nabla, "Returns a OneBodyInt that computes the AO nabla integral",
+             "deriv"_a = 0)
+        .def("so_nabla", &IntegralFactory::so_nabla, "Returns a OneBodyInt that computes the SO nabla integral",
+             "deriv"_a = 0)
+        .def("ao_angular_momentum", &IntegralFactory::ao_angular_momentum,
+             "Returns a OneBodyInt that computes the AO angular momentum integral", "deriv"_a = 0)
+        .def("so_angular_momentum", &IntegralFactory::so_angular_momentum,
+             "Returns a OneBodyInt that computes the SO angular momentum integral", "deriv"_a = 0)
+        .def("ao_quadrupole", &IntegralFactory::ao_quadrupole,
+             "Returns a OneBodyInt that computes AO the quadrupole integral")
+        .def("so_quadrupole", &IntegralFactory::so_quadrupole,
+             "Returns a OneBodyInt that computes SO the quadrupole integral")
+        .def("ao_multipoles", &IntegralFactory::ao_multipoles,
+             "Returns a OneBodyInt that computes arbitrary-order AO multipole integrals", "order"_a)
+        .def("so_multipoles", &IntegralFactory::so_multipoles,
+             "Returns a OneBodyInt that computes arbitrary-order SO multipole integrals", "order"_a)
+        .def("ao_traceless_quadrupole", &IntegralFactory::ao_traceless_quadrupole,
+             "Returns a OneBodyInt that computes the traceless AO quadrupole integral")
+        .def("so_traceless_quadrupole", &IntegralFactory::so_traceless_quadrupole,
+             "Returns a OneBodyInt that computes the traceless SO quadrupole integral")
+        .def("electric_field", &IntegralFactory::electric_field,
+             "Returns a OneBodyInt that computes the electric field")
+        .def("electrostatic", &IntegralFactory::electrostatic,
+             "Returns a OneBodyInt that computes the point electrostatic potential")
+        .def("overlap_3c", &IntegralFactory::overlap_3c,
+             "Returns a OneBodyInt that computes the 3 center overlap integral");
+
+    typedef std::shared_ptr<PetiteList> (MintsHelper::*petite_list_0)() const;
+    typedef std::shared_ptr<PetiteList> (MintsHelper::*petite_list_1)(bool) const;
+
+    typedef SharedMatrix (MintsHelper::*erf)(double, SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
+    typedef SharedMatrix (MintsHelper::*eri)(SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix);
+    typedef SharedMatrix (MintsHelper::*normal_eri)();
+    typedef SharedMatrix (MintsHelper::*normal_eri_factory)(std::shared_ptr<IntegralFactory>);
+    typedef SharedMatrix (MintsHelper::*normal_eri2)(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+                                                     std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
+    typedef SharedMatrix (MintsHelper::*normal_3c)(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+                                                   std::shared_ptr<BasisSet>);
+
+    typedef SharedMatrix (MintsHelper::*normal_f12)(std::shared_ptr<CorrelationFactor>);
+    typedef SharedMatrix (MintsHelper::*normal_f122)(std::shared_ptr<CorrelationFactor>, std::shared_ptr<BasisSet>,
+                                                     std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+                                                     std::shared_ptr<BasisSet>);
+
+    typedef SharedMatrix (MintsHelper::*oneelectron)();
+    typedef SharedMatrix (MintsHelper::*oneelectron_mixed_basis)(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
+    typedef SharedMatrix (MintsHelper::*perturb_grad_options)(SharedMatrix);
+    typedef SharedMatrix (MintsHelper::*perturb_grad_xyz)(SharedMatrix, double, double, double);
+
+    py::class_<PetiteList, std::shared_ptr<PetiteList>>(m, "PetiteList", "Handles symmetry transformations")
+        .def("aotoso", &PetiteList::aotoso, "Return the AO->SO coefficient matrix")
+        .def("sotoao", &PetiteList::sotoao, "Return the SO->AO coefficient matrix")
+        .def("print", &PetiteList::print, "Print to outfile");
 
     py::class_<SOBasisSet, std::shared_ptr<SOBasisSet>>(
         m, "SOBasisSet",
         "An SOBasis object describes the transformation from an atomic orbital basis to a symmetry orbital basis.")
         .def("petite_list", &SOBasisSet::petite_list, "Return the PetiteList object used in creating this SO basis");
 
+    py::class_<MintsHelper, std::shared_ptr<MintsHelper>>(m, "MintsHelper", "Computes integrals")
+        .def(py::init<std::shared_ptr<BasisSet>>())
+        .def(py::init<std::shared_ptr<Wavefunction>>())
+
+        // Options and attributes
+        .def("nbf", &MintsHelper::nbf, "Returns the number of basis functions")
+        .def("set_print", &MintsHelper::set_print, "Sets the print level")
+        .def("basisset", &MintsHelper::basisset, "Returns the basis set being used")
+        .def("sobasisset", &MintsHelper::sobasisset, "Returns the SO basis set being used")
+        .def("factory", &MintsHelper::factory, "Returns the Matrix factory being used")
+        .def("cdsalcs", &MintsHelper::cdsalcs, "Returns a CdSalcList object")
+        .def("petite_list", petite_list_0(&MintsHelper::petite_list),
+             "Returns petite list, which transforms AO basis functions to SO's")
+        .def("petite_list1", petite_list_1(&MintsHelper::petite_list),
+             "Returns petite list which transforms AO basis functions to SO's, \
+              setting argument to true is for Cartesian basis, false is for Spherical Harmonic basis",
+             "include_pure_transform"_a)
+
+        // Integral builders
+        .def("integral", &MintsHelper::integral, "Integral factory being used")
+        .def("integrals", &MintsHelper::integrals, "Molecular integrals")
+        .def("integrals_erf", &MintsHelper::integrals_erf, "ERF integrals", "w"_a = -1.0)
+        .def("integrals_erfc", &MintsHelper::integrals_erfc, "ERFC integrals", "w"_a = -1.0)
+        .def("one_electron_integrals", &MintsHelper::one_electron_integrals, "Standard one-electron integrals")
+
+        // One-electron
+        .def("ao_overlap", oneelectron(&MintsHelper::ao_overlap), "AO basis overlap integrals")
+        .def("ao_overlap", oneelectron_mixed_basis(&MintsHelper::ao_overlap), "AO mixed basis overlap integrals")
+        .def("so_overlap", &MintsHelper::so_overlap, "SO basis overlap integrals", "include_perturbations"_a = true)
+        .def("ao_kinetic", oneelectron(&MintsHelper::ao_kinetic), "AO basis kinetic integrals")
+        .def("ao_kinetic", oneelectron_mixed_basis(&MintsHelper::ao_kinetic), "AO mixed basis kinetic integrals")
+        .def("so_kinetic", &MintsHelper::so_kinetic, "SO basis kinetic integrals", "include_perturbations"_a = true)
+        .def("ao_potential", oneelectron(&MintsHelper::ao_potential), "AO potential integrals")
+        .def("ao_potential", oneelectron_mixed_basis(&MintsHelper::ao_potential), "AO mixed basis potential integrals")
+        .def("so_potential", &MintsHelper::so_potential, "SO basis potential integrals",
+             "include_perturbations"_a = true)
+        .def("ao_ecp", oneelectron(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
+        .def("ao_ecp", oneelectron_mixed_basis(&MintsHelper::ao_ecp), "AO basis effective core potential integrals.")
+        .def("so_ecp", &MintsHelper::so_ecp, "SO basis effective core potential integrals.")
+
+        // One-electron properties and
+        .def("ao_pvp", &MintsHelper::ao_pvp, "AO pvp integrals")
+        .def("ao_dkh", &MintsHelper::ao_dkh, "AO dkh integrals")
+        .def("so_dkh", &MintsHelper::so_dkh, "SO dkh integrals")
+        .def("ao_dipole", &MintsHelper::ao_dipole, "Vector AO dipole integrals")
+        .def("so_dipole", &MintsHelper::so_dipole, "Vector SO dipole integrals")
+        .def("ao_quadrupole", &MintsHelper::ao_quadrupole, "Vector AO quadrupole integrals")
+        .def("so_quadrupole", &MintsHelper::so_quadrupole, "Vector SO quadrupole integrals")
+        .def("ao_traceless_quadrupole", &MintsHelper::ao_traceless_quadrupole,
+             "Vector AO traceless quadrupole integrals")
+        .def("so_traceless_quadrupole", &MintsHelper::so_traceless_quadrupole,
+             "Vector SO traceless quadrupole integrals")
+        .def("ao_nabla", &MintsHelper::ao_nabla, "Vector AO nabla integrals")
+        .def("so_nabla", &MintsHelper::so_nabla, "Vector SO nabla integrals")
+        .def("ao_angular_momentum", &MintsHelper::ao_angular_momentum, "Vector AO angular momentum integrals")
+        .def("so_angular_momentum", &MintsHelper::so_angular_momentum, "Vector SO angular momentum integrals")
+        .def("ao_efp_multipole_potential", &MintsHelper::ao_efp_multipole_potential,
+             "Vector AO EFP multipole integrals", "origin"_a = std::vector<double>{0, 0, 0}, "deriv"_a = 0)
+        .def("ao_multipole_potential", &MintsHelper::ao_multipole_potential, "Vector AO multipole potential integrals",
+             "origin"_a = std::vector<double>{0, 0, 0}, "max_k"_a = 0, "deriv"_a = 0)
+        .def("electric_field", &MintsHelper::electric_field, "Vector electric field integrals",
+             "origin"_a = std::vector<double>{0, 0, 0}, "deriv"_a = 0)
+        .def("induction_operator", &MintsHelper::induction_operator,
+             "Induction operator, formed by contracting electric field integrals with dipole moments at given "
+             "coordinates (needed for EFP and PE)")
+        .def("electric_field_value", &MintsHelper::electric_field_value,
+             "Electric field expectation value at given sites")
+
+        // Two-electron AO
+        .def("ao_eri", normal_eri_factory(&MintsHelper::ao_eri), "AO ERI integrals", "factory"_a = nullptr)
+        .def("ao_eri", normal_eri2(&MintsHelper::ao_eri), "AO ERI integrals", "bs1"_a, "bs2"_a, "bs3"_a, "bs4"_a)
+        .def("ao_eri_shell", &MintsHelper::ao_eri_shell, "AO ERI Shell", "M"_a, "N"_a, "P"_a, "Q"_a)
+        .def("ao_erf_eri", &MintsHelper::ao_erf_eri, "AO ERF integrals", "omega"_a, "factory"_a = nullptr)
+        .def("ao_f12", normal_f12(&MintsHelper::ao_f12), "AO F12 integrals", "corr"_a)
+        .def("ao_f12", normal_f122(&MintsHelper::ao_f12), "AO F12 integrals", "corr"_a, "bs1"_a, "bs2"_a, "bs3"_a,
+             "bs4"_a)
+        .def("ao_f12_scaled", normal_f12(&MintsHelper::ao_f12_scaled), "AO F12 intgerals", "corr"_a)
+        .def("ao_f12_scaled", normal_f122(&MintsHelper::ao_f12_scaled), "AO F12 intgerals", "corr"_a, "bs1"_a, "bs2"_a,
+             "bs3"_a, "bs4"_a)
+        .def("ao_f12_squared", normal_f12(&MintsHelper::ao_f12_squared), "AO F12 squared integrals", "corr"_a)
+        .def("ao_f12_squared", normal_f122(&MintsHelper::ao_f12_squared), "AO F12 squared integrals", "corr"_a, "bs1"_a,
+             "bs2"_a, "bs3"_a, "bs4"_a)
+        .def("ao_f12g12", &MintsHelper::ao_f12g12, "AO F12G12 integrals", "corr"_a)
+        .def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "AO F12 double commutator integrals",
+             "corr"_a)
+        .def("ao_3coverlap", normal_eri(&MintsHelper::ao_3coverlap), "3 Center overlap integrals")
+        .def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "3 Center overlap integrals", "bs1"_a, "bs2"_a,
+             "bs3"_a)
+
+        // Two-electron MO and transformers
+        .def("mo_eri", eri(&MintsHelper::mo_eri), "MO ERI Integrals. Pass appropriate MO coefficients in the AO basis.",
+             "C1"_a, "C2"_a, "C3"_a, "C4"_a)
+        .def("mo_erf_eri", erf(&MintsHelper::mo_erf_eri), "MO ERFC Omega Integrals", "omega"_a, "C1"_a, "C2"_a, "C3"_a,
+             "C4"_a)
+        .def("mo_f12", &MintsHelper::mo_f12, "MO F12 Integrals", "corr"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
+        .def("mo_f12_squared", &MintsHelper::mo_f12_squared, "MO F12 squared integrals", "corr"_a, "C1"_a, "C2"_a,
+             "C3"_a, "C4"_a)
+        .def("mo_f12g12", &MintsHelper::mo_f12g12, "MO F12G12 integrals", "corr"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
+        .def("mo_f12_double_commutator", &MintsHelper::mo_f12_double_commutator, "MO F12 double commutator integrals",
+             "corr"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
+        .def("mo_spin_eri", &MintsHelper::mo_spin_eri, "Symmetric MO Spin ERI Integrals", "C1"_a, "C2"_a)
+        .def("mo_transform", &MintsHelper::mo_transform, "N^5 ao to mo transfrom, in memory", "Iso"_a, "C1"_a, "C2"_a,
+             "C3"_a, "C4"_a)
+        .def("set_basisset", &MintsHelper::set_basisset, "Sets a basis set", "label"_a, "basis"_a)
+        .def("play", &MintsHelper::play, "play function")
+
+        // Contracted gradient terms
+        .def("dipole_grad", &MintsHelper::dipole_grad, "First nuclear derivative dipole integrals")
+        .def("overlap_grad", &MintsHelper::overlap_grad, "First nuclear derivative overlap integrals")
+        .def("kinetic_grad", &MintsHelper::kinetic_grad, "First nuclear derivative kinetic integrals")
+        .def("potential_grad", &MintsHelper::potential_grad, "First nuclear derivative potential integrals")
+        .def("perturb_grad", perturb_grad_options(&MintsHelper::perturb_grad),
+             "First nuclear derivative perturb integrals")
+        .def("perturb_grad", perturb_grad_xyz(&MintsHelper::perturb_grad), "First nuclear derivative perturb integrals")
+        .def("core_hamiltonian_grad", &MintsHelper::core_hamiltonian_grad,
+             "First nuclear derivative T + V + Perturb integrals")
+
+        // First and second derivatives of one and two electron integrals in AO and MO basis.
+        .def("ao_oei_deriv1", &MintsHelper::ao_oei_deriv1,
+             "Gradient of AO basis OEI integrals: returns (3 * natoms) matrices", "oei_type"_a, "atom"_a)
+        .def("ao_oei_deriv2", &MintsHelper::ao_oei_deriv2,
+             "Hessian  of AO basis OEI integrals: returns (3 * natoms)^2 matrices", "oei_type"_a, "atom1"_a, "atom2"_a)
+        .def("ao_overlap_half_deriv1", &MintsHelper::ao_overlap_half_deriv1,
+             "Half-derivative of AO basis overlap integrals: returns (3 * natoms) matrices","side"_a, "atom"_a)
+        .def("ao_tei_deriv1", &MintsHelper::ao_tei_deriv1,
+             "Gradient of AO basis TEI integrals: returns (3 * natoms) matrices",
+             "atom"_a, "omega"_a = 0.0, "factory"_a = nullptr)
+        .def("ao_tei_deriv2", &MintsHelper::ao_tei_deriv2,
+             "Hessian  of AO basis TEI integrals: returns (3 * natoms)^2 matrices", "atom1"_a, "atom2"_a)
+        .def("ao_metric_deriv1", &MintsHelper::ao_metric_deriv1,
+             "Gradient of AO basis metric integrals: returns 3 matrices",
+             "atom"_a, "aux_name"_a)
+        .def("ao_3center_deriv1", &MintsHelper::ao_3center_deriv1,
+             "Gradient of AO basis 3-center, density-fitted integrals: returns 3 matrices",
+             "atom"_a, "aux_name"_a)
+        .def("mo_oei_deriv1", &MintsHelper::mo_oei_deriv1,
+             "Gradient of MO basis OEI integrals: returns (3 * natoms) matrices",
+             "oei_type"_a, "atom"_a, "C1"_a, "C2"_a)
+        .def("mo_oei_deriv2", &MintsHelper::mo_oei_deriv2,
+             "Hessian  of MO basis OEI integrals: returns (3 * natoms)^2 matrices",
+             "oei_type"_a, "atom1"_a, "atom2"_a, "C1"_a, "C2"_a)
+        .def("mo_overlap_half_deriv1", &MintsHelper::mo_overlap_half_deriv1,
+             "Half-derivative of MO basis overlap integrals: returns (3 * natoms) matrices",
+             "side"_a, "atom"_a, "C1"_a, "C2"_a)
+        .def("mo_tei_deriv1", &MintsHelper::mo_tei_deriv1,
+             "Gradient of MO basis TEI integrals: returns (3 * natoms) matrices",
+             "atom"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
+        .def("mo_tei_deriv2", &MintsHelper::mo_tei_deriv2,
+             "Hessian  of MO basis TEI integrals: returns (3 * natoms)^2 matrices",
+             "atom1"_a, "atom2"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)
+
+        // First derivatives of electric dipole integrals in AO and MO basis.
+        .def("ao_elec_dip_deriv1", &MintsHelper::ao_elec_dip_deriv1,
+             "Gradient of AO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a)
+        .def("mo_elec_dip_deriv1", &MintsHelper::mo_elec_dip_deriv1,
+             "Gradient of MO basis electric dipole integrals: returns (3 * natoms) matrices", "atom"_a, "C1"_a, "C2"_a);
+
+    py::class_<OrbitalSpace>(m, "OrbitalSpace", "Contains information about the orbitals")
+        .def(py::init<const std::string&, const std::string&, const SharedMatrix&, const SharedVector&,
+                      const std::shared_ptr<BasisSet>&, const std::shared_ptr<IntegralFactory>&>())
+        .def(py::init<const std::string&, const std::string&, const SharedMatrix&, const std::shared_ptr<BasisSet>&,
+                      const std::shared_ptr<IntegralFactory>&>())
+        .def(py::init<const std::string&, const std::string&, const std::shared_ptr<Wavefunction>&>())
+        .def("nirrep", &OrbitalSpace::nirrep, "Returns number of irreps")
+        .def("id", &OrbitalSpace::id, "Unique identifier")
+        .def("name", &OrbitalSpace::name, "Name of the orbital space")
+        .def("C", &OrbitalSpace::C, "MO coefficient matrix, AO->MO or SO->MO transformation matrix")
+        .def("evals", &OrbitalSpace::evals, "Corresponding eigenvalues of the C matrix")
+        .def("basisset", &OrbitalSpace::basisset, "The AO basis set used to create C")
+        .def("integral", &OrbitalSpace::integral, "The integral factory used to create C")
+        .def("dim", &OrbitalSpace::dim, "MO dimensions")
+        .def("print_out", &OrbitalSpace::print, "Print information about the orbital space to the output file")
+        .def_static("build_cabs_space", &OrbitalSpace::build_cabs_space,
+                    "Given two spaces, it projects out one space from the other and returns the new spaces \
+                    The first argument (orb_space) is the space to project out. The returned space will be orthogonal to this \
+                    The second argument (ri_space) is the space that is being projected on. The returned space = this space - orb_space \
+                    The third argument is the tolerance for linear dependencies",
+                    "orb_space"_a, "ri_space"_a, "linear_tol"_a)
+        .def_static("build_ri_space", &OrbitalSpace::build_ri_space,
+                    "Given two basis sets, it merges the basis sets and then constructs an orthogonalized \
+                    space with the same span. Linearly dependent orbitals are thrown out. \
+                    The first argument, molecule, is the molecule to construct the basis for \
+                    The second argument, obs_key, is the option keyword for orbital basis set 'BASIS' \
+                    The third argument, aux_key, is the option keyword for auxiliery basis set 'DF_BASIS_MP2' \
+                    The fourth argument, lindep_tol, is the tolerance for linear dependencies",
+                    "molecule"_a, "obs_key"_a, "aux_key"_a, "lindep_tol"_a);
+
     py::class_<ExternalPotential, std::shared_ptr<ExternalPotential>>(
         m, "ExternalPotential", "Stores external potential field, computes external potential matrix")
         .def(py::init<>())
         .def("setName", &ExternalPotential::setName, "Sets the name")
         .def("addCharge", &ExternalPotential::addCharge, "Add a charge Z at (x,y,z)", "Z"_a, "x"_a, "y"_a, "z"_a)
+        .def("getCharges", &ExternalPotential::getCharges, "Get the vector of charge tuples")
+        .def("appendCharges", &ExternalPotential::appendCharges, "Append a vector of charge tuples to a current ExternalPotential")
         .def("addBasis", &ExternalPotential::addBasis, "Add a basis of S auxiliary functions iwth Df coefficients",
              "basis"_a, "coefs"_a)
         .def("clear", &ExternalPotential::clear, "Reset the field to zero (eliminates all entries)")
         .def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix,
              "Compute the external potential matrix in the given basis set", "basis"_a)
+        .def("computeNuclearEnergy", &ExternalPotential::computeNuclearEnergy,
+             "Compute the contribution to the nuclear repulsion energy for the given molecule")
+        .def("computeExternExternInteraction", &ExternalPotential::computeExternExternInteraction,
+             "Compute the interaction between this potential and other external potential")
         .def("print_out", &ExternalPotential::py_print, "Print python print helper to the outfile");
 
     typedef std::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, std::shared_ptr<BasisSet>,

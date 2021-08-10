@@ -586,7 +586,7 @@ void DFMP2::apply_gamma(size_t file, size_t naux, size_t nia) {
     // Tensor blocks
     auto Gia = std::make_shared<Matrix>("G(ia|Q)", max_nia, naux);
     auto Cia = std::make_shared<Matrix>("C(ia|Q)", max_nia, naux);
-    auto G = std::make_shared<Matrix>("g", naux, naux);
+    auto G = std::make_shared<Matrix>("G_PQ", naux, naux);
     double** Giap = Gia->pointer();
     double** Ciap = Cia->pointer();
     double** Gp = G->pointer();
@@ -618,7 +618,7 @@ void DFMP2::apply_gamma(size_t file, size_t naux, size_t nia) {
         timer_off("DFMP2 g");
     }
 
-    psio_->write_entry(file, "G_PQ", (char*)Gp[0], sizeof(double) * naux * naux);
+    G->save(psio_, file, Matrix::SaveType::SubBlocks);
 
     psio_->close(file, 1);
 }
@@ -740,11 +740,6 @@ void DFMP2::print_energies() {
                                            variables_["MP2 SINGLES ENERGY"];
     variables_["MP2 TOTAL ENERGY"] = variables_["SCF TOTAL ENERGY"] + variables_["MP2 CORRELATION ENERGY"];
 
-    //variables_["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = oss_ * variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"];
-    //variables_["SCS-MP2 SAME-SPIN CORRELATION ENERGY"] = sss_ * variables_["MP2 SAME-SPIN CORRELATION ENERGY"];
-    //variables_["SCS-MP2 CORRELATION ENERGY"] = variables_["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] +
-    //                                           variables_["SCS-MP2 SAME-SPIN CORRELATION ENERGY"] +
-    //                                           variables_["MP2 SINGLES ENERGY"];
     variables_["SCS-MP2 CORRELATION ENERGY"] = 6.0/5.0 * variables_["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] +
                                                1.0/3.0 * variables_["MP2 SAME-SPIN CORRELATION ENERGY"] +
                                                          variables_["MP2 SINGLES ENERGY"];
@@ -1503,9 +1498,7 @@ void RDFMP2::form_AB_x_terms() {
     auto naux = ribasis_->nbf();
 
     auto V = std::make_shared<Matrix>("G_PQ", naux, naux);
-    psio_->open(PSIF_DFMP2_AIA, PSIO_OPEN_OLD);
-    V->load(psio_, PSIF_DFMP2_AIA, Matrix::SaveType::Full);
-    psio_->close(PSIF_DFMP2_AIA, 1);
+    V->load(psio_, PSIF_DFMP2_AIA, Matrix::SaveType::SubBlocks);
     V->hermitivitize();
     V->scale(2);
     std::map<std::string, SharedMatrix> densities = {{"(A|B)^x", V}};
@@ -2210,24 +2203,10 @@ void RDFMP2::form_Z() {
             Ppq->partial_square_root(options_.get_double("DFMP2_P2_TOLERANCE"));
         auto P1 = factor1.first;
         auto N1 = factor1.second;
-        auto P1p = P1->pointer();
-        auto N1p = N1->pointer();
 
         // > Back-transform the transition orbitals < //
-        auto P1AO = std::make_shared<Matrix>("P AO", nso, P1->colspi()[0]);
-        auto N1AO = std::make_shared<Matrix>("N AO", nso, N1->colspi()[0]);
-        auto P1AOp = P1AO->pointer();
-        auto N1AOp = N1AO->pointer();
-
-        if (P1->colspi()[0]) {
-            C_DGEMM('N', 'N', nso, P1->colspi()[0], nmo, 1.0, Cp[0], nmo, P1p[0], P1->colspi()[0], 0.0, P1AOp[0],
-                    P1->colspi()[0]);
-        }
-
-        if (N1->colspi()[0]) {
-            C_DGEMM('N', 'N', nso, N1->colspi()[0], nmo, 1.0, Cp[0], nmo, N1p[0], N1->colspi()[0], 0.0, N1AOp[0],
-                    N1->colspi()[0]);
-        }
+        auto P1AO = linalg::doublet(C, P1);
+        auto N1AO = linalg::doublet(C, N1);
 
         // > Form the J/K-like matrices (P,N contributions are separable) < //
         Cl.clear();
@@ -2327,24 +2306,10 @@ void RDFMP2::form_Z() {
         dPpq->partial_square_root(options_.get_double("DFMP2_P2_TOLERANCE"));
     auto P2 = factor2.first;
     auto N2 = factor2.second;
-    auto P2p = P2->pointer();
-    auto N2p = N2->pointer();
 
     // > Back-transform the transition orbitals < //
-    auto P2AO = std::make_shared<Matrix>("P AO", nso, P2->colspi()[0]);
-    auto N2AO = std::make_shared<Matrix>("N AO", nso, N2->colspi()[0]);
-    auto P2AOp = P2AO->pointer();
-    auto N2AOp = N2AO->pointer();
-
-    if (P2->colspi()[0]) {
-        C_DGEMM('N', 'N', nso, P2->colspi()[0], nmo, 1.0, Cp[0], nmo, P2p[0], P2->colspi()[0], 0.0, P2AOp[0],
-                P2->colspi()[0]);
-    }
-
-    if (N2->colspi()[0]) {
-        C_DGEMM('N', 'N', nso, N2->colspi()[0], nmo, 1.0, Cp[0], nmo, N2p[0], N2->colspi()[0], 0.0, N2AOp[0],
-                N2->colspi()[0]);
-    }
+    auto P2AO = linalg::doublet(C, P2);
+    auto N2AO = linalg::doublet(C, N2);
 
     // > Form the J/K-like matrices (P,N contributions are separable) < //
     Cl.clear();

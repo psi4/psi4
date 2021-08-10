@@ -203,7 +203,7 @@ B3LYP, a B3LYP-D2, and a B3LYP-D3 (zero-damping) energy. ::
 Consult the table :ref:`-D Functionals <table:dft_disp>` to see for each
 functional what corrections are available and what default parameters
 define them. The dispersion correction is available after a calculation in
-the PSI variable :psivar:`DISPERSION CORRECTION ENERGY <DISPERSIONCORRECTIONENERGY>`. 
+the PSI variable :psivar:`DISPERSION CORRECTION ENERGY`.
 By default, the output from the ``dftd3``
 program is suppressed; to see it in the output file, set print > 2.
 
@@ -216,21 +216,70 @@ program is suppressed; to see it in the output file, set print > 2.
    | Extension [#f0]_                    | Variant                                                               | Computing Program (engine)      | |scf__dft_dispersion_parameters| [#f10]_                                       |
    +=====================================+=======================================================================+=================================+================================================================================+
    | -D                                  | alias to -D2                                                          |                                 |                                                                                |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
    | -D1                                 | -D1 [#f1]_                                                            | |PSIfours| libdisp              | [:math:`s_6`]                                                                  |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
    | -D2                                 | -D2 [#f2]_                                                            | |PSIfours| libdisp OR ``dftd3`` | [:math:`s_6`, :math:`\alpha_6`, :math:`s_{r,6}`]                               |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
    | -D3                                 | alias to -D3ZERO                                                      |                                 |                                                                                |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
    | -D3ZERO                             | -D3 [#f3]_ w/ original zero-damping                                   | ``dftd3``                       | [:math:`s_6`, :math:`s_8`, :math:`s_{r,6}`, :math:`\alpha_6`, :math:`s_{r,8}`] |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
    | -D3BJ                               | -D3 [#f4]_ w/ newer Becke-Johnson rational damping                    | ``dftd3``                       | [:math:`s_6`, :math:`s_8`, :math:`a_1`, :math:`a_2`]                           |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
    | -D3(BJ)                             | alias to -D3BJ                                                        |                                 |                                                                                |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
    | -D3M                                | alias to -D3MZERO                                                     |                                 |                                                                                |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
    | -D3MZERO                            | -D3 [#f5]_ w/ reparameterized and more flexible original zero-damping | ``dftd3``                       | [:math:`s_6`, :math:`s_8`, :math:`s_{r,6}`, :math:`\beta`]                     |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
    | -D3MBJ                              | -D3 [#f5]_ w/ reparameterized newer Becke-Johnson rational damping    | ``dftd3``                       | [:math:`s_6`, :math:`s_8`, :math:`a_1`, :math:`a_2`]                           |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
    | -D3M(BJ)                            | alias to -D3MBJ                                                       |                                 |                                                                                |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
    | -NL                                 | Grimme's -NL (DFT plus VV10 correlation) [#f6]_                       | |PSIfours| nl                   | [:math:`b`, :math:`c`] via |scf__nl_dispersion_parameters|                     |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
    | -CHG                                | Chai & Head-Gordon dispersion formula [#f7]_                          | |PSIfours| libdisp              | [:math:`s_6`]                                                                  |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
    | -DAS2009                            | Podeszwa & Szalewicz dispersion formula [#f8]_                        | |PSIfours| libdisp              | [:math:`s_6`]                                                                  |
+   +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
    | -DAS2010                            | Podeszwa & Szalewicz dispersion formula [#f9]_                        | |PSIfours| libdisp              | [:math:`s_6`]                                                                  |
    +-------------------------------------+-----------------------------------------------------------------------+---------------------------------+--------------------------------------------------------------------------------+
+
+
+Three-Body Dispersion Corrections
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In addition to the previously discussed two-body dispersion corrections, 
+the ``dftd3``/|PSIfour| interface enables computations of three-body dispersion
+corrections. In ``DFT-D3``, three-body dispersion is approximated with the
+Axilrod-Teller-Muto model:
+
+.. math:: E_{disp}^{(3)}=-\frac{1}{6}\sum_{A\neqB\neqC}\frac{C_{9}^{ABC}(3\cos{\theta_a}\cos{\theta_b}\cos{\theta_c}+1)}{(r_{AB}r_{BC}r_{AC})^{3}}f_{damp}(\bar{r}_{ABC})
+ 
+where :math:`\theta_a` is the angle at atom A corresponding to the triangle formed by atoms A, B, and C,
+and :math:`\bar{r}_{ABC}` is the geometric mean of the corresponding atomic-pair distances.
+The dispersion coefficients are defined as
+
+.. math:: C_{9}^{ABC} = \sqrt{C_{6}^{AB}C_{6}^{BC}C_{6}^{AC}}
+
+See the `DFT-D3 documentation <https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/dft-d3/man.pdf>`_ 
+for more details.
+
+For now, the three-body correction can be called by using the :py:func:`~qcdb.Molecule.run_dftd3`
+function with `d3-atmgr` as the passed functional string. 
+For example, the three-body ATM dispersion correction for a neon trimer could
+be computed with::
+
+   molecule ne3 {
+   Ne 0.0 0.0 0.0
+   Ne 0.0 0.0 1.0
+   Ne 0.0 1.0 1.0
+   }
+   ne.update_geometry()
+   energy = m.run_dftd3('d3-atmgr', dertype=0)
+   print(energy)
+
 
 .. rubric:: Footnotes
 
@@ -276,7 +325,7 @@ A few practical examples:
 
 If only dispersion corrections (rather than total energies) are of
 interest, the ``dftd3`` program can be run independently of the scf
-through the python function :py:func:`~qcdb.interface_dftd3.run_dftd3`. (This function
+through the python function :py:func:`~qcdb.Molecule.run_dftd3`. (This function
 is the same |PSIfour|/``dftd3`` interface that is called during an scf job.)
 This route is much faster than running a DFT-D energy.
 
@@ -306,8 +355,9 @@ This route is much faster than running a DFT-D energy.
    >>> print E
    -0.00024762
 
-.. autofunction:: qcdb.interface_dftd3.run_dftd3
+.. autofunction:: qcdb.Molecule.run_dftd3
 
+.. autoclass:: psi4.driver.procrouting.empirical_dispersion.EmpiricalDispersion
 
 .. comment print_stdout('  -D correction from Py-side')
 .. comment eneyne.update_geometry()

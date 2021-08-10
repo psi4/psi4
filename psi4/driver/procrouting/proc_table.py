@@ -104,7 +104,9 @@ procedures = {
         'ccenergy'      : proc.run_ccenergy,  # full control over ccenergy
         'ccsd'          : proc.select_ccsd,
         'ccsd(t)'       : proc.select_ccsd_t_,
-        'ccsd(at)'      : proc.select_ccsd_at_,
+        'ccsd(at)'      : proc.select_ccsd_at_,  # alias
+        'a-ccsd(t)'     : proc.select_ccsd_at_,
+        'lambda-ccsd(t)': proc.select_ccsd_at_,  # alias
         'cc2'           : proc.run_ccenergy,
         'cc3'           : proc.run_ccenergy,
         'mrcc'          : proc.run_mrcc,  # interface to Kallay's MRCC program
@@ -203,6 +205,7 @@ procedures = {
         'ccsd'         : proc.run_cc_property,
         'eom-cc2'      : proc.run_cc_property,
         'eom-ccsd'     : proc.run_cc_property,
+        'dct'          : proc.run_dct_property,
         'detci'        : proc.run_detci_property,  # full control over detci
         'cisd'         : proc.run_detci_property,
         'cisdt'        : proc.run_detci_property,
@@ -229,6 +232,14 @@ procedures = {
 # Will only allow energy to be run for the following methods
 energy_only_methods = [x for x in procedures['energy'].keys() if 'sapt' in x]
 energy_only_methods += ['efp', 'cphf', 'tdhf', 'cis']
+
+# Catch all SAPT-D variants
+for key in functionals:
+    # Grab the available -Ds from HF, since that's what SAPT0-D calls
+    if key.startswith('hf-d'):
+        disp = key.split('-')[-1]
+        procedures['energy']['sapt0-' + disp] = proc.run_sapt
+        procedures['energy']['fisapt0-' + disp] = proc.run_fisapt
 
 # Will complete modelchem spec with basis='(auto)' for following methods
 integrated_basis_methods = ['g2', 'gaussian-2', 'hf3c', 'hf-3c', 'pbeh3c', 'pbeh-3c', 'sns-mp2']

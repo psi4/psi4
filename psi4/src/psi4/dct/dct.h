@@ -66,16 +66,19 @@ namespace dct {
 
 class DCTSolver : public Wavefunction {
    public:
-    DCTSolver(SharedWavefunction ref_wfn, Options &options);
+    DCTSolver(SharedWavefunction ref_wfn, Options& options);
     ~DCTSolver() override;
 
     double compute_energy() override;
 
    protected:
-    IntegralTransform *_ints;
+    std::unique_ptr<IntegralTransform> _ints;
 
-    void mp2_guess();
-    void scf_guess();
+    void compute_relaxed_opdm();
+    void initialize_amplitudes();
+    void initialize_orbitals_from_reference_U();
+    void initialize_orbitals_from_reference_R();
+    void initialize_integraltransform();
     void finalize();
     void transform_integrals();
     void transform_core_integrals();
@@ -90,29 +93,34 @@ class DCTSolver : public Wavefunction {
     void compute_cepa0_energy();
     void update_cumulant_jacobi();
     void compute_scf_energy();
-    void build_tau_fourth_order();
-    void build_tau();
-    void transform_tau();
+    // Compute tau in the SO basis for unrestricted orbitals
+    void compute_SO_tau_U();
+    void compute_SO_tau_R();
+    void build_d_fourth_order_U();
+    void build_d_U();
+    void build_d_R();
+    void build_tau_U();
+    void build_tau_R();
+    void transform_tau_U();
+    void transform_tau_R();
     void build_gtau();
     void print_opdm();
-    void check_n_representability();
-    void print_orbital_energies();
     void build_cumulant_intermediates();
     void process_so_ints();
-    void build_G();
     void build_AO_tensors();
     void build_denominators();
     void update_fock();
     void dump_density();
-    void dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha);
-    void half_transform(dpdbuf4 *A, dpdbuf4 *B, SharedMatrix &C1, SharedMatrix &C2, int *mospi_left, int *mospi_right,
-                        int **so_row, int **mo_row, bool backwards, double alpha, double beta);
-    void file2_transform(dpdfile2 *A, dpdfile2 *B, SharedMatrix C, bool backwards);
-    void AO_contribute(dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO, int p, int q, int r, int s, double value,
-                       dpdfile2 * = nullptr, dpdfile2 * = nullptr, dpdfile2 * = nullptr);
+    void dpd_buf4_add(dpdbuf4* A, dpdbuf4* B, double alpha);
+    void half_transform(dpdbuf4* A, dpdbuf4* B, SharedMatrix& C1, SharedMatrix& C2, int* mospi_left, int* mospi_right,
+                        int** so_row, int** mo_row, bool backwards, double alpha, double beta);
+    void file2_transform(dpdfile2* A, dpdfile2* B, SharedMatrix C, bool backwards);
+    void AO_contribute(dpdbuf4* tau1_AO, dpdbuf4* tau2_AO, int p, int q, int r, int s, double value,
+                       dpdfile2* = nullptr, dpdfile2* = nullptr, dpdfile2* = nullptr);
     // void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
     //        int r, int s, double value);
     bool correct_mo_phases(bool dieOnError = true);
+    bool correct_mo_phase_spincase(Matrix& temp, Matrix& overlap, const Matrix& old_C, Matrix& C, bool dieOnError = true) const;
     double compute_cumulant_residual();
     double compute_scf_error_vector();
     double update_scf_density(bool damp = false);
@@ -123,10 +131,11 @@ class DCTSolver : public Wavefunction {
     void run_simult_dct_oo();
     // DCT analytic gradient subroutines
     SharedMatrix compute_gradient() override;
-    void compute_gradient_dc();
-    void compute_gradient_odc();
+    void dc06_response_init();
     void response_guess();
-    void gradient_init();
+    void dc06_response();
+    void dc06_compute_relaxed_density_1PDM();
+    void oo_gradient_init();
     void compute_lagrangian_OV();
     void compute_lagrangian_VO();
     void iterate_orbital_response();
@@ -140,15 +149,15 @@ class DCTSolver : public Wavefunction {
     void compute_cumulant_response_intermediates();
     double compute_cumulant_response_residual();
     void update_cumulant_response();
-    void compute_lagrangian_OO();
-    void compute_lagrangian_VV();
+    void compute_lagrangian_OO(bool separate_gbargamma);
+    void compute_lagrangian_VV(bool separate_gbargamma);
     void compute_ewdm_dc();
     void compute_ewdm_odc();
     void compute_relaxed_density_OOOO();
     void compute_relaxed_density_OOVV();
     void compute_relaxed_density_OVOV();
     void compute_relaxed_density_VVVV();
-    void compute_TPDM_trace();
+    void compute_TPDM_trace(bool cumulant_only);
     // Quadratically-convergent DCT
     void run_qc_dct();
     void compute_orbital_gradient();
@@ -183,18 +192,28 @@ class DCTSolver : public Wavefunction {
     void compute_N_intermediate();
 
     // Orbital-optimized DCT
+    // Converge a DC-12 computation to obtain guess orbitals and double amplitudes
     void run_simult_dc_guess();
     double compute_orbital_residual();
-    void compute_unrelaxed_density_OOOO();
-    void compute_unrelaxed_density_OOVV();
-    void compute_unrelaxed_density_OVOV();
-    void compute_unrelaxed_density_VVVV();
-    void compute_orbital_gradient_OV();
-    void compute_orbital_gradient_VO();
+    // Compute 2RDMs. These arise as intermediates in computing the
+    // orbital residual. For DF variants, only the cumulant of the
+    // 2RDM is needed (as the RIFIT part).
+    // Setting cumulant_only saves as "Cumulant", else "Gamma", in
+    // addition to changing what is actually computed.
+    void compute_unrelaxed_density_OOOO(bool cumulant_only);
+    void compute_unrelaxed_separable_density_OOOO();
+    void compute_unrelaxed_density_OOVV(bool cumulant_only);
+    void compute_unrelaxed_density_OVOV(bool cumulant_only);
+    void compute_unrelaxed_separable_density_OVOV();
+    void compute_unrelaxed_density_VVVV(bool cumulant_only);
+    void compute_unrelaxed_separable_density_VVVV();
+    void compute_orbital_gradient_OV(bool separate_gbargamma);
+    void compute_orbital_gradient_VO(bool separate_gbargamma);
     void compute_orbital_rotation_jacobi();
+    // target = old * exp(X)
+    void rotate_matrix(const Matrix& X, const Matrix& old, Matrix& target);
     void rotate_orbitals();
-    void compute_oe_properties();
-    void write_molden_file();
+    Matrix construct_oo_density(const Matrix& occtau, const Matrix& virtau, const Matrix& kappa, const Matrix& C);
     // Three-particle cumulant contributions
     double compute_three_particle_energy();
     void dct_semicanonicalize();
@@ -210,11 +229,10 @@ class DCTSolver : public Wavefunction {
 
     // RHF-reference DCT
     double compute_energy_RHF();
-    void scf_guess_RHF();
     double update_scf_density_RHF(bool damp = false);
     double compute_scf_error_vector_RHF();
     void build_denominators_RHF();
-    void mp2_guess_RHF();
+    void initialize_amplitudes_RHF();
     void transform_integrals_RHF();
     void transform_core_integrals_RHF();
     void sort_OOOO_integrals_RHF();
@@ -225,9 +243,6 @@ class DCTSolver : public Wavefunction {
     void sort_OOOV_integrals_RHF();
     void run_simult_dct_oo_RHF();
     void run_simult_dct_RHF();
-    void build_tau_RHF();
-    void refine_tau_RHF();
-    void transform_tau_RHF();
     void process_so_ints_RHF();
     void build_cumulant_intermediates_RHF();
     void form_density_weighted_fock_RHF();
@@ -239,17 +254,19 @@ class DCTSolver : public Wavefunction {
     void compute_orbital_rotation_jacobi_RHF();
     double compute_orbital_residual_RHF();
     void rotate_orbitals_RHF();
-    void compute_orbital_gradient_VO_RHF();
-    void compute_orbital_gradient_OV_RHF();
-    void compute_unrelaxed_density_VVVV_RHF();
-    void compute_unrelaxed_density_OVOV_RHF();
-    void compute_unrelaxed_density_OOVV_RHF();
-    void compute_unrelaxed_density_OOOO_RHF();
+    void compute_orbital_gradient_VO_RHF(bool separate_gbargamma);
+    void compute_orbital_gradient_OV_RHF(bool separate_gbargamma);
+    void compute_unrelaxed_density_VVVV_RHF(bool cumulant_only);
+    void compute_unrelaxed_separable_density_VVVV_RHF();
+    void compute_unrelaxed_density_OVOV_RHF(bool cumulant_only);
+    void compute_unrelaxed_separable_density_OVOV_RHF();
+    void compute_unrelaxed_density_OOVV_RHF(bool cumulant_only);
+    void compute_unrelaxed_density_OOOO_RHF(bool cumulant_only);
+    void compute_unrelaxed_separable_density_OOOO_RHF();
     void compute_gradient_RHF();
     void gradient_init_RHF();
-    void compute_gradient_odc_RHF();
-    void compute_lagrangian_OO_RHF();
-    void compute_lagrangian_VV_RHF();
+    void compute_lagrangian_OO_RHF(bool separate_gbargamma);
+    void compute_lagrangian_VV_RHF(bool separate_gbargamma);
     void compute_ewdm_odc_RHF();
     void print_opdm_RHF();
     void compute_R_AA_and_BB();
@@ -260,9 +277,13 @@ class DCTSolver : public Wavefunction {
     // UHF-reference DCT
     void compute_gradient_UHF();
     double compute_energy_UHF();
-    void construct_oo_density_UHF();
 
-    bool augment_b(double *vec, double tol);
+    // Validation
+    void validate_energy();
+    void validate_opdm();
+    void validate_gradient();
+
+    bool augment_b(double* vec, double tol);
     /// Controls convergence of the orbital updates
     bool orbitalsDone_;
     /// Controls convergence of the density cumulant updates
@@ -320,9 +341,9 @@ class DCTSolver : public Wavefunction {
     /// The maximum number of IDPs possible for cumulant updates
     int dim_cumulant_;
     /// The lookup array that determines which compound indices belong to orbital IDPs and which don't
-    int *lookup_orbitals_;
+    std::vector<bool> lookup_orbitals_;
     /// The lookup array that determines which compound indices belong to cumulant IDPs and which don't
-    int *lookup_cumulant_;
+    std::vector<bool> lookup_cumulant_;
     /// The number of the guess subspace vectors for the Davidson diagonalization
     int nguess_;
     /// The dimension of the subspace in the Davidson diagonalization
@@ -344,13 +365,13 @@ class DCTSolver : public Wavefunction {
     /// The number of virtual beta orbitals per irrep
     Dimension nbvirpi_;
     /// Alpha occupied MO offset
-    int *aocc_off_;
+    int* aocc_off_;
     /// Alpha virtual MO offset
-    int *avir_off_;
+    int* avir_off_;
     /// Beta occupied MO offset
-    int *bocc_off_;
+    int* bocc_off_;
     /// Beta virtual MO offset
-    int *bvir_off_;
+    int* bvir_off_;
     /// The nuclear repulsion energy in Hartree
     double enuc_;
     /// The cutoff below which and integral is assumed to be zero
@@ -404,21 +425,21 @@ class DCTSolver : public Wavefunction {
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the beta Fock matrix
     SharedMatrix tau_so_b_;
     /// The Tau matrix in the MO basis (alpha occupied)
-    SharedMatrix aocc_tau_;
+    Matrix aocc_tau_;
     /// The Tau matrix in the MO basis (beta occupied)
-    SharedMatrix bocc_tau_;
+    Matrix bocc_tau_;
     /// The Tau matrix in the MO basis (alpha virtual)
-    SharedMatrix avir_tau_;
+    Matrix avir_tau_;
     /// The Tau matrix in the MO basis (beta virtual)
-    SharedMatrix bvir_tau_;
+    Matrix bvir_tau_;
     /// The perturbed Tau matrix in the MO basis (alpha occupied)
-    SharedMatrix aocc_ptau_;
+    Matrix aocc_ptau_;
     /// The perturbed Tau matrix in the MO basis (beta occupied)
-    SharedMatrix bocc_ptau_;
+    Matrix bocc_ptau_;
     /// The perturbed Tau matrix in the MO basis (alpha virtual)
-    SharedMatrix avir_ptau_;
+    Matrix avir_ptau_;
     /// The perturbed Tau matrix in the MO basis (beta virtual)
-    SharedMatrix bvir_ptau_;
+    Matrix bvir_ptau_;
     /// The Kappa in the MO basis (alpha occupied)
     SharedMatrix kappa_mo_a_;
     /// The Kappa in the MO basis (beta occupied)
@@ -426,11 +447,7 @@ class DCTSolver : public Wavefunction {
     /// The overlap matrix in the AO basis
     SharedMatrix ao_s_;
     /// The one-electron integrals in the SO basis
-    SharedMatrix so_h_;
-    /// The alpha Fock matrix (without Tau contribution) in the MO basis
-    SharedMatrix moF0a_;
-    /// The beta Fock matrix (without Tau contribution) in the MO basis
-    SharedMatrix moF0b_;
+    Matrix so_h_;
     /// The alpha Fock matrix in the SO basis
     SharedMatrix Fa_;
     /// The beta Fock matrix in the SO basis
@@ -453,14 +470,6 @@ class DCTSolver : public Wavefunction {
     SharedMatrix kappa_so_a_;
     /// The beta kappa matrix in the SO basis
     SharedMatrix kappa_so_b_;
-    /// The alpha external potential in the SO basis
-    SharedMatrix g_tau_a_;
-    /// The beta external potential in the SO basis
-    SharedMatrix g_tau_b_;
-    /// The alpha external potential in the MO basis (only needed in two-step algorithm)
-    SharedMatrix moG_tau_a_;
-    /// The beta external potential in the MO basis (only needed in two-step algorithm)
-    SharedMatrix moG_tau_b_;
     /// The alpha SCF error vector
     SharedMatrix scf_error_a_;
     /// The beta SCF error vector
@@ -489,45 +498,49 @@ class DCTSolver : public Wavefunction {
     SharedVector Q_;
     /// The subspace vector in the Davidson diagonalization procedure
     SharedMatrix b_;
-    /// Generator of the orbital rotations (Alpha) with respect to the orbitals from the previous update
-    SharedMatrix X_a_;
-    /// Generator of the orbital rotations (Beta) with respect to the orbitals from the previous update
-    SharedMatrix X_b_;
-    /// Generator of the orbital rotations (Alpha) with respect to the reference orbitals
+    /// Orbital parameters. Specifically, the generators of the orbital rotations with respect to
+    /// the reference orbitals. Dimension: nmo_ x nmo_.
     SharedMatrix Xtotal_a_;
-    /// Generator of the orbital rotations (Beta) with respect to the reference orbitals
     SharedMatrix Xtotal_b_;
 
     /// Used to align things in the output
     std::string indent;
 
     // Density-Fitting DCT
+    /// Set DF variables. Print header.
+    void initialize_df();
     /// Construct the B tensors
-    void df_build_b();
+    void build_df_b();
     /// Calculate memory required for density-fitting
-    void df_memory();
+    void df_memory() const;
     /// Build density-fitted <VV||VV>, <vv||vv>, and <Vv|Vv> tensors in G intermediate
     void build_DF_tensors_RHF();
     void build_DF_tensors_UHF();
-    /// Form J(P|Q)^-1/2
-    SharedMatrix formJm12(std::shared_ptr<BasisSet> auxiliary);
+    /// Form J(P|Q)^-1/2 and write to disk
+    Matrix formJm12(std::shared_ptr<BasisSet> auxiliary, const std::string& name);
     /// Form AO basis b(Q|mu,nu)
-    SharedMatrix formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
-                  std::shared_ptr<BasisSet> zero, SharedMatrix Jm12);
+    Matrix formb_ao(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
+                    std::shared_ptr<BasisSet> zero, const Matrix& Jm12, const std::string& name);
     /// Transform AO-basis b(Q, mn) to MO-basis b(Q, pq)
     void transform_b();
     /// Transform b(Q|mu,nu) from AO basis to SO basis
-    SharedMatrix transform_b_ao2so(SharedMatrix bQmn_ao);
-    /// Form MO-basis b(Q, ij)
-    void formb_oo();
-    void formb_oo_scf();
-    /// Form MO-basis b(Q, ia)
-    void formb_ov();
-    /// Form MO-basis b(Q, ab)
-    void formb_vv();
-    /// Form MO-basis b(Q, pq)
-    void formb_pq();
-    void formb_pq_scf();
+    Matrix transform_b_ao2so(const Matrix& bQmn_ao) const;
+    /// Transform b(Q|mu,nu) from AO basis to SO basis
+    Matrix transform_b_so2ao(const Matrix& bQmn_so) const;
+    void construct_metric_density(const std::string& basis_type);
+    /// Transform b(Q|mu,nu) from SO basis to another basis with symmetry
+    Matrix three_idx_primary_transform(const Matrix& three_idx, const Matrix& left, const Matrix& right) const;
+    void three_idx_primary_transform_gemm(const Matrix& three_idx, const Matrix& left, const Matrix& right,
+                                          Matrix& result, double alpha, double beta) const;
+    void three_idx_cumulant_density();
+    void three_idx_cumulant_density_RHF();
+    void three_idx_separable_density();
+    Matrix three_idx_cumulant_helper(Matrix& temp, const Matrix& J, const Matrix& bt1, const Matrix& bt2);
+    Matrix three_idx_separable_helper(const Matrix& Q, const Matrix& J, const Matrix& RDM, const Matrix& C_subset);
+    void contract343(const Matrix& b, dpdbuf4& G, Matrix& result, bool transpose, double alpha, double beta) const;
+    Matrix contract123(const Matrix& Q, const Matrix& G) const;
+    Matrix contract233(const Matrix& J, const Matrix& B) const;
+    void add_3idx_transpose_inplace(Matrix& M, const Dimension& dim) const;
 
     /// Form density-fitted MO-basis TEI g(OV|OV) in chemists' notation
     void form_df_g_ovov();
@@ -544,9 +557,6 @@ class DCTSolver : public Wavefunction {
     /// Form MO-based Gbar*Gamma
     void build_gbarGamma_RHF();
     void build_gbarGamma_UHF();
-    /// Form MO-based Gbar*Kappa
-    void build_gbarKappa_RHF();
-    void build_gbarKappa_UHF();
     /// Form gbar<ab|cd> * lambda <ij|cd>
     void build_gbarlambda_RHF_v3mem();
     void build_gbarlambda_UHF_v3mem();
@@ -566,40 +576,33 @@ class DCTSolver : public Wavefunction {
     /// Number of alpha occupied orbitals
     int naocc_;
     /// b(Q|mu,nu)
-    SharedMatrix bQmn_so_;
-    SharedMatrix bQmn_so_scf_;
+    Matrix bQmn_so_;
+    Matrix bQmn_so_scf_;
     /// b(Q|i, j)
-    SharedMatrix bQijA_mo_;
-    SharedMatrix bQijB_mo_;
-    SharedMatrix bQijA_mo_scf_;
-    SharedMatrix bQijB_mo_scf_;
+    Matrix bQijA_mo_;
+    Matrix bQijB_mo_;
 
     /// b(Q|i, a)
-    SharedMatrix bQiaA_mo_;
-    SharedMatrix bQiaB_mo_;
-    /// b(Q|a, i)
-    SharedMatrix bQaiA_mo_;
-    SharedMatrix bQaiB_mo_;
+    Matrix bQiaA_mo_;
+    Matrix bQiaB_mo_;
     /// b(Q|a, b)
-    SharedMatrix bQabA_mo_;
-    SharedMatrix bQabB_mo_;
+    Matrix bQabA_mo_;
+    Matrix bQabB_mo_;
     /// b(Q|p, q)
-    SharedMatrix bQpqA_mo_;
-    SharedMatrix bQpqB_mo_;
-    SharedMatrix bQpqA_mo_scf_;
-    SharedMatrix bQpqB_mo_scf_;
+    Matrix bQpqA_mo_;
+    Matrix bQpqB_mo_;
 
     /// The Tau in the MO basis (All)
-    SharedMatrix mo_tauA_;
-    SharedMatrix mo_tauB_;
+    Matrix mo_tauA_;
+    Matrix mo_tauB_;
     /// MO-based (Gbar Tau + Gbar Kappa)
-    SharedMatrix mo_gbarGamma_A_;
-    SharedMatrix mo_gbarGamma_B_;
-    SharedMatrix mo_gbarKappa_A_;
-    SharedMatrix mo_gbarKappa_B_;
+    Matrix mo_gbarGamma_A_;
+    Matrix mo_gbarGamma_B_;
     /// MO-based Gamma <r|s>
-    SharedMatrix mo_gammaA_;
-    SharedMatrix mo_gammaB_;
+    Matrix mo_gammaA_;
+    Matrix mo_gammaB_;
+
+    std::map<std::string, Slice> slices_;
 };
 
 }  // namespace dct

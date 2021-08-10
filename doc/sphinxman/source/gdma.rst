@@ -72,8 +72,8 @@ Installation
   hint its location with :makevar:`CMAKE_PREFIX_PATH`,
   and rebuild |PSIfour| to detect gdma and activate dependent code.
 
-* Previous bullet had details. To build |PSIfour| from source and use
-  gdma from conda without thinking, consult :ref:`sec:condapsi4dev`.
+.. * Previous bullet had details. To build |PSIfour| from source and use
+..   gdma from conda without thinking, consult.
 
 * To remove a conda installation, ``conda remove gdma``.
 
@@ -133,6 +133,7 @@ are the total multipoles, translated to |gdma__gdma_origin|, and summed.
 
 
 .. autofunction:: psi4.gdma(wfn)
+   :noindex:
 
 Options
 ~~~~~~~

@@ -426,13 +426,13 @@ def load_basfam_other():
     # Here lie practical (non-validated) fitting bases for
     # Pople orbital basis sets
 
-    basis_sto3g.add_jkfit('def2-universal-JKFIT')
-    basis_sto3g.add_rifit('def2-SVP-RIFIT')
-    basis_sto6g.add_jkfit('def2-universal-JKFIT')
-    basis_sto6g.add_rifit('def2-SVP-RIFIT')
+    basis_sto3g.add_jkfit('def2-universal-jkfit')
+    basis_sto3g.add_rifit('def2-svp-ri')
+    basis_sto6g.add_jkfit('def2-universal-jkfit')
+    basis_sto6g.add_rifit('def2-svp-ri')
     # sto3g too small for add_guess
-    basis_321g.add_jkfit('def2-universal-JKFIT')
-    basis_321g.add_rifit('def2-SVP-RIFIT')
+    basis_321g.add_jkfit('def2-universal-jkfit')
+    basis_321g.add_rifit('def2-svp-ri')
     # 321g too small for add_guess
 
     basis_631g.add_jkfit('cc-pvdz-jkfit')
@@ -717,3 +717,9 @@ def load_basfam_other():
     basisfamily_list.append(basis_cc_pvtz_f12)
     basisfamily_list.append(basis_cc_pvqz_f12)
     # basisfamily_list.append(basis_cc_pv5z_f12)
+
+    # Point fix for dzvp basis set ; default def2-qzvpp-jkfit
+    # was not giving correct result for iodine-containing molecules.
+    basis_dzvp.add_jfit('dgauss-dzvp-autoabs')
+    basis_dzvp.add_jkfit('dgauss-dzvp-mix')
+    basis_dzvp.add_rifit('dgauss-dzvp-autoaux')    

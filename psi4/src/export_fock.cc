@@ -95,9 +95,6 @@ void export_fock(py::module &m) {
         .def("D", &JK::D, py::return_value_policy::reference_internal)
         .def("print_header", &JK::print_header, "docstring");
 
-    py::class_<MemDFJK, std::shared_ptr<MemDFJK>, JK>(m, "MemDFJK", "docstring")
-        .def("dfh", &MemDFJK::dfh, "Return the DFHelper object.");
-
     py::class_<LaplaceDenominator, std::shared_ptr<LaplaceDenominator>>(m, "LaplaceDenominator", "docstring")
         .def(py::init<std::shared_ptr<Vector>, std::shared_ptr<Vector>, double>())
         .def("denominator_occ", &LaplaceDenominator::denominator_occ, "docstring")
@@ -185,6 +182,9 @@ void export_fock(py::module &m) {
         .def("get_tensor_shape", &DFHelper::get_tensor_shape)
         .def("get_tensor", take_string(&DFHelper::get_tensor))
         .def("get_tensor", tensor_access3(&DFHelper::get_tensor));
+
+    py::class_<MemDFJK, std::shared_ptr<MemDFJK>, JK>(m, "MemDFJK", "docstring")
+        .def("dfh", &MemDFJK::dfh, "Return the DFHelper object.");
 
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",

@@ -415,7 +415,7 @@ void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>
     std::shared_ptr<BasisSet> bs1 = ints[0]->basis1();
     std::shared_ptr<BasisSet> bs2 = ints[0]->basis2();
 
-    // Limit to the number of incoming onbody ints
+    // Limit to the number of incoming onebody ints
     size_t nthread = nthread_;
     if (nthread > ints.size()) {
         nthread = ints.size();
@@ -2469,11 +2469,12 @@ SharedMatrix MintsHelper::three_idx_grad(const std::string& aux_name, const std:
         auto idx3p = idx3_matrix->pointer();
 #pragma omp parallel for
         for (int aux = 0; aux < np; aux++) {
+            auto elt = &data[ntri * aux];
             for (int p = 0; p < nprim; p++) {
                 for (int q = 0; q <= p; q++) {
-                    idx3p[aux][p * nprim + q] = *data;
-                    idx3p[aux][q * nprim + p] = *data;
-                    data++;
+                    idx3p[aux][p * nprim + q] = *elt;
+                    idx3p[aux][q * nprim + p] = *elt;
+                    elt++;
                 }
             }
         }

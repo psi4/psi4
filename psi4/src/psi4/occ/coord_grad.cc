@@ -66,101 +66,10 @@ void OCCWave::coord_grad() {
     // OEPROP
     if (oeprop_ == "TRUE") oeprop();
 
-    dump_ints();
     outfile->Printf("\tWriting particle density matrices and GFM to disk...\n");
 
     dump_pdms();
 }  //
-
-//========================================================================
-//         Dump Molecular Integrals
-//========================================================================
-void OCCWave::dump_ints() {
-    // outfile->Printf("\n dump_ints is starting... \n");
-    dpdfile2 H;
-    dpdbuf4 K;
-
-    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-
-    global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "H <O|O>");
-    global_dpd_->file2_mat_init(&H);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < occpiA[h]; ++i) {
-            for (int j = 0; j < occpiA[h]; ++j) {
-                H.matrix[h][i][j] = HmoA->get(h, i, j);
-            }
-        }
-    }
-    global_dpd_->file2_mat_wrt(&H);
-    global_dpd_->file2_close(&H);
-
-    global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "H <V|V>");
-    global_dpd_->file2_mat_init(&H);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int a = 0; a < virtpiA[h]; ++a) {
-            for (int b = 0; b < virtpiA[h]; ++b) {
-                H.matrix[h][a][b] = HmoA->get(h, a + occpiA[h], b + occpiA[h]);
-            }
-        }
-    }
-    global_dpd_->file2_mat_wrt(&H);
-    global_dpd_->file2_close(&H);
-
-    global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "H <O|V>");
-    global_dpd_->file2_mat_init(&H);
-    for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < occpiA[h]; ++i) {
-            for (int j = 0; j < virtpiA[h]; ++j) {
-                H.matrix[h][i][j] = HmoA->get(h, i, j + occpiA[h]);
-            }
-        }
-    }
-    global_dpd_->file2_mat_wrt(&H);
-    global_dpd_->file2_close(&H);
-
-    // Write beta-integrals if ref is UHF
-    if (reference_ == "UNRESTRICTED") {
-        global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "H <o|o>");
-        global_dpd_->file2_mat_init(&H);
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < occpiB[h]; ++i) {
-                for (int j = 0; j < occpiB[h]; ++j) {
-                    H.matrix[h][i][j] = HmoB->get(h, i, j);
-                }
-            }
-        }
-        global_dpd_->file2_mat_wrt(&H);
-        global_dpd_->file2_close(&H);
-
-        global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "H <v|v>");
-        global_dpd_->file2_mat_init(&H);
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int a = 0; a < virtpiB[h]; ++a) {
-                for (int b = 0; b < virtpiB[h]; ++b) {
-                    H.matrix[h][a][b] = HmoB->get(h, a + occpiB[h], b + occpiB[h]);
-                }
-            }
-        }
-        global_dpd_->file2_mat_wrt(&H);
-        global_dpd_->file2_close(&H);
-
-        global_dpd_->file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('v'), "H <o|v>");
-        global_dpd_->file2_mat_init(&H);
-        for (int h = 0; h < nirrep_; ++h) {
-            for (int i = 0; i < occpiB[h]; ++i) {
-                for (int j = 0; j < virtpiB[h]; ++j) {
-                    H.matrix[h][i][j] = HmoB->get(h, i, j + occpiB[h]);
-                }
-            }
-        }
-        global_dpd_->file2_mat_wrt(&H);
-        global_dpd_->file2_close(&H);
-    }  // end uhf
-
-    psio_->close(PSIF_LIBTRANS_DPD, 1);
-    // outfile->Printf("\n dump_ints done. \n");
-
-}  // end of dump_ints
 
 //========================================================================
 //         Dump PDMs
@@ -877,6 +786,10 @@ void OCCWave::effective_pdms() {
             g1symm->add(h, i, a + occpiA[h], 2.0 * zvectorA->get(x));
         }
 
+        Da_ = linalg::triplet(Ca_, g1symm, Ca_, false, false, true);
+        Da_->scale(0.5);
+        Db_->copy(Da_);
+
         // Form VOOO-block TPDM
         dpdbuf4 G, G2;
         psio_->open(PSIF_OCC_DENSITY, PSIO_OPEN_OLD);
@@ -942,6 +855,8 @@ void OCCWave::effective_pdms() {
             g1symmA->add(h, i, a + occpiA[h], zvectorA->get(x));
         }
 
+        Da_ = linalg::triplet(Ca_, g1symmA, Ca_, false, false, true);
+
         // vo and ov Blocks
         for (int x = 0; x < nidpB; x++) {
             int a = idprowB[x];
@@ -950,6 +865,8 @@ void OCCWave::effective_pdms() {
             g1symmB->add(h, a + occpiB[h], i, zvectorB->get(x));
             g1symmB->add(h, i, a + occpiB[h], zvectorB->get(x));
         }
+
+        Db_ = linalg::triplet(Cb_, g1symmB, Cb_, false, false, true);
 
         // Form VOOO-block TPDM
         dpdbuf4 G, G2;
@@ -1881,34 +1798,15 @@ void OCCWave::effective_gfock() {
 void OCCWave::oeprop() {
     outfile->Printf("\tComputing one-electron properties...\n");
 
-    // auto Da_ = std::make_shared<Matrix>("MO-basis alpha OPDM", nmo_, nmo_);
-    // auto Db_ = std::make_shared<Matrix>("MO-basis beta OPDM", nmo_, nmo_);
-    auto Da_ = std::make_shared<Matrix>("MO-basis alpha OPDM", nirrep_, nmopi_, nmopi_);
-    auto Db_ = std::make_shared<Matrix>("MO-basis beta OPDM", nirrep_, nmopi_, nmopi_);
-    if (reference_ == "RESTRICTED") {
-        Da_->copy(g1symm);
-        Da_->scale(0.5);
-        Db_->copy(Da_);
-    }
-
-    else if (reference_ == "UNRESTRICTED") {
-        Da_->copy(g1symmA);
-        Db_->copy(g1symmB);
-    }
-
     // Compute oeprop
     auto oe = std::make_shared<OEProp>(shared_from_this());
-    oe->set_Da_mo(Da_);
-    if (reference_ == "UNRESTRICTED") oe->set_Db_mo(Db_);
     oe->add("DIPOLE");
     oe->add("QUADRUPOLE");
     oe->add("MULLIKEN_CHARGES");
     oe->add("NO_OCCUPATIONS");
     oe->set_title("DF-OMP2");
     oe->compute();
-    Da_.reset();
-    Db_.reset();
 
 }  // end oeprop
-}
-}  // End Namespaces
+}  // namespace occwave
+}  // namespace psi

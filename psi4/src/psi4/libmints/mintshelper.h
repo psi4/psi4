@@ -89,6 +89,16 @@ class PSI_API MintsHelper {
 
     void common_init();
 
+    /**
+     * @brief Compute a one-body operator matrix.
+     * 
+     * This function takes in a vector of OneBodyAOInt objects and outputs a matrix
+     * representation of the one-body operator.
+     * 
+     * @param[in] ints Vector of OneBodyAOInt integrals
+     * @param[out] out Matrix containing the one-body operator
+     * @param[in] symm Use symmetry flag
+    */
     void one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix out, bool symm);
     void grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix D, SharedMatrix out);
     /// Helper function to convert ao integrals to so and cache them

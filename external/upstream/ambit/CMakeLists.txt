@@ -27,7 +27,7 @@ if(${ENABLE_ambit})
         ExternalProject_Add(ambit_external
             DEPENDS lapack_external
                     hdf5_external
-            URL https://github.com/jturney/ambit/archive/v0.4.1.tar.gz
+            URL https://github.com/jturney/ambit/archive/v0.5.1.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
                        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
@@ -43,10 +43,10 @@ if(${ENABLE_ambit})
                        #-DEXTRA_Fortran_FLAGS=${CMAKE_EXTRA_Fortran_FLAGS}
                        -DEXTRA_C_FLAGS=${CMAKE_C_FLAGS}
                        -DEXTRA_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-                       -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
-                       -DPYTHON_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}
-                       -DPYTHON_LIBRARY=${PYTHON_LIBRARY}
-                       -DPYTHON_INTERPRETER=${PYTHON_EXECUTABLE}
+                       -DPYTHON_EXECUTABLE=${Python_EXECUTABLE}
+                       -DPYTHON_INCLUDE_DIR=${Python_INCLUDE_DIRS}
+                       -DPYTHON_LIBRARY=${Python_LIBRARIES}
+                       -DPYTHON_INTERPRETER=${Python_EXECUTABLE}
                        -DENABLE_XHOST=${ENABLE_XHOST}
                        -DBUILD_FPIC=${BUILD_FPIC}
                        -DENABLE_GENERIC=${ENABLE_GENERIC}

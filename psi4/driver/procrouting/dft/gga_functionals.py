@@ -136,7 +136,7 @@ funcs.append({
         "GGA_X_PW91": {}
     },
     "c_functionals": {
-        "GGA_C_Pw91": {}
+        "GGA_C_PW91": {}
     },
     "citation": '    J.P. Perdew et. al., Phys. Rev. B., 46(11), 6671-6687, 1992\n',
     "description": '    PW91 GGA Exchange-Correlation Functional\n',
@@ -148,15 +148,14 @@ funcs.append({
         "GGA_X_mPW91": {}
     },
     "c_functionals": {
-        "GGA_C_Pw91": {}
+        "GGA_C_PW91": {}
     },
     "citation": '    C. Adamo, V. Barone, J. Chem. Phys., 108, 664, 1998\n',
     "description": '    mPWPW GGA Exchange-Correlation Functional\n',
 })
 
 funcs.append({
-    "name":
-    "BP86",
+    "name": "BP86",
     "x_functionals": {
         "GGA_X_B88": {}
     },
@@ -325,6 +324,31 @@ funcs.append({
     '    T. Tsuneda, T. Suzumura, K. Hirao, J. Chem. Phys. 111, 5656, 1999\n',
     "description":
     '    BP86 GGA Exchange-Correlation Functional\n',
+})
+
+funcs.append({
+    "name": "PBE-SOL",
+    "alias": ["PBESOL"],
+    "x_functionals": {
+        "GGA_X_PBE_SOL": {}
+    },
+    "c_functionals": {
+        "GGA_C_PBE_SOL": {}
+    },
+    "description": '    Perdew, Burke & Ernzerhof exchange (solids)',
+})
+
+funcs.append({
+    "name": "BP86-VWN",
+    "alias": ["BP86VWN"],
+    "x_functionals": {
+        "GGA_X_B88": {}
+    },
+    "c_functionals": {
+        "GGA_C_P86VWN_FT": {}
+    },
+    "description":
+    '    BP86 GGA XC Functional based on VWN5 corr. & more accurate ftilde value\n',
 })
 
 functional_list = {}

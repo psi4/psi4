@@ -27,6 +27,8 @@
 #
 """Module with utility functions that act on molecule objects."""
 
+from typing import Dict, Tuple, Union
+
 import numpy as np
 import qcelemental as qcel
 
@@ -61,7 +63,7 @@ def molecule_get_attr(self, name):
 
 
 @classmethod
-def molecule_from_string(cls,
+def _molecule_from_string(cls,
                          molstr,
                          dtype=None,
                          name=None,
@@ -94,7 +96,7 @@ def molecule_from_string(cls,
 
 
 @classmethod
-def molecule_from_arrays(cls,
+def _molecule_from_arrays(cls,
                          geom=None,
                          elea=None,
                          elez=None,
@@ -175,26 +177,26 @@ def molecule_from_arrays(cls,
 
 
 @classmethod
-def molecule_from_schema(cls, molschema, return_dict=False, nonphysical=False, verbose=1):
+def _molecule_from_schema(cls, molschema: Dict, return_dict: bool = False, nonphysical: bool = False, verbose: int = 1) -> Union[core.Molecule, Tuple[core.Molecule, Dict]]:
     """Construct Molecule from non-Psi4 schema.
 
     Light wrapper around :py:func:`~psi4.core.Molecule.from_arrays`.
 
     Parameters
     ----------
-    molschema : dict
+    molschema
         Dictionary form of Molecule following known schema.
-    return_dict : bool, optional
+    return_dict
         Additionally return Molecule dictionary intermediate.
-    nonphysical : bool, optional
+    nonphysical
         Do allow masses outside an element's natural range to pass validation?
-    verbose : int, optional
+    verbose
         Amount of printing.
 
     Returns
     -------
     mol : :py:class:`psi4.core.Molecule`
-    molrec : dict, optional
+    molrec : dict
         Dictionary representation of instance.
         Only provided if `return_dict` is True.
 
@@ -224,12 +226,13 @@ def dynamic_variable_bind(cls):
     cls.BFS = qcdb.Molecule.BFS
     cls.B787 = qcdb.Molecule.B787
     cls.scramble = qcdb.Molecule.scramble
-    cls.from_arrays = molecule_from_arrays
-    cls.from_string = molecule_from_string
+    cls.from_arrays = _molecule_from_arrays
+    cls.from_string = _molecule_from_string
     cls.to_string = qcdb.Molecule.to_string
-    cls.from_schema = molecule_from_schema
+    cls.from_schema = _molecule_from_schema
     cls.to_schema = qcdb.Molecule.to_schema
     cls.run_dftd3 = qcdb.Molecule.run_dftd3
+    cls.run_gcp= qcdb.Molecule.run_gcp
     cls.format_molecule_for_mol = qcdb.Molecule.format_molecule_for_mol
 
 

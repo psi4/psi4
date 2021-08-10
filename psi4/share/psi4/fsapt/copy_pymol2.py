@@ -28,7 +28,8 @@
 # @END LICENSE
 #
 
-import sys, os
+import os
+import sys
 
 root = os.path.dirname(os.path.realpath(__file__))
 

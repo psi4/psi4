@@ -42,6 +42,7 @@ void Functional::common_init() {
     name_ = "";
     description_ = "";
     citation_ = "";
+    xclib_description_ = "";
     alpha_ = 1.0;
     omega_ = 0.0;
 

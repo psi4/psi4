@@ -32,7 +32,6 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
-#include "psi4/libiwl/iwl.h"
 #include "psi4/libdiis/diismanager.h"
 
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -69,11 +68,11 @@ void DCTSolver::run_simult_dct_oo_RHF() {
     // DIIS on orbitals (AA and BB) and cumulants (AA, AB, BB)
     dpdbuf4 Laa, Lab, Lbb;
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");
+                           "Amplitude SF <OO|VV>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <oo|vv>");
+                           "Amplitude <oo|vv>");
     diisManager.set_error_vector_size(5, DIISEntry::Matrix, orbital_gradient_a_.get(), DIISEntry::Matrix,
                                       orbital_gradient_b_.get(), DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab,
                                       DIISEntry::DPDBuf4, &Lbb);
@@ -85,19 +84,14 @@ void DCTSolver::run_simult_dct_oo_RHF() {
 
     while ((!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_) && cycle++ < maxiter_) {
         std::string diisString;
-        // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
-        build_tau_RHF();
-        if (exact_tau_) {
-            refine_tau_RHF();
-        }
-        transform_tau_RHF();
+        compute_SO_tau_R();
 
         if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
             build_DF_tensors_RHF();
 
-            auto mo_h = std::make_shared<Matrix>("MO-based H", nirrep_, nmopi_, nmopi_);
-            mo_h->copy(so_h_);
-            mo_h->transform(Ca_);
+            auto mo_h = Matrix("MO-based H", nirrep_, nmopi_, nmopi_);
+            mo_h.copy(so_h_);
+            mo_h.transform(Ca_);
 
             moFa_->copy(mo_h);
             moFa_->add(mo_gbarGamma_A_);
@@ -109,8 +103,6 @@ void DCTSolver::run_simult_dct_oo_RHF() {
             // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
             process_so_ints_RHF();
 
-            // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
-            Fa_->add(g_tau_a_);
             // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
             moFa_->copy(Fa_);
             // Transform the Fock matrix to the MO basis
@@ -160,11 +152,11 @@ void DCTSolver::run_simult_dct_oo_RHF() {
             global_dpd_->buf4_init(&Rbb, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                    "R <oo|vv>");
             global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                                   "Lambda <OO|VV>");
+                                   "Amplitude <OO|VV>");
             global_dpd_->buf4_init(&Lab, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                                   "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                                   "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
             global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                                   "Lambda <oo|vv>");
+                                   "Amplitude <oo|vv>");
 
             if (diisManager.add_entry(10, orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Raa, &Rab, &Rbb,
                                       Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb)) {
@@ -210,16 +202,18 @@ double DCTSolver::compute_orbital_residual_RHF() {
 
     dpdfile2 Xai, Xia;
 
+    auto is_df = options_.get_str("DCT_TYPE") == "DF";
+
     // Compute the unrelaxed densities for the orbital gradient
-    compute_unrelaxed_density_OOOO_RHF();
-    compute_unrelaxed_density_OOVV_RHF();
-    compute_unrelaxed_density_OVOV_RHF();
+    compute_unrelaxed_density_OOOO_RHF(is_df);
+    compute_unrelaxed_density_OOVV_RHF(is_df);
+    compute_unrelaxed_density_OVOV_RHF(is_df);
 
     // Compute the OV part of the orbital gradient
-    compute_orbital_gradient_OV_RHF();
+    compute_orbital_gradient_OV_RHF(is_df);
 
     // Compute the VO part of the orbital gradient
-    compute_orbital_gradient_VO_RHF();
+    compute_orbital_gradient_VO_RHF(is_df);
 
     global_dpd_->file2_init(&Xia, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
     global_dpd_->file2_init(&Xai, PSIF_DCT_DPD, 0, ID('V'), ID('O'), "X <V|O>");
@@ -231,7 +225,7 @@ double DCTSolver::compute_orbital_residual_RHF() {
     double maxGradient = 0.0;
     // Alpha spin
     for (int h = 0; h < nirrep_; ++h) {
-#pragma omp parallel for reduction(max:maxGradient)
+#pragma omp parallel for reduction(max : maxGradient)
         for (int i = 0; i < naoccpi_[h]; ++i) {
             for (int a = 0; a < navirpi_[h]; ++a) {
                 double value = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
@@ -252,7 +246,7 @@ double DCTSolver::compute_orbital_residual_RHF() {
     return maxGradient;
 }
 
-void DCTSolver::compute_orbital_gradient_OV_RHF() {
+void DCTSolver::compute_orbital_gradient_OV_RHF(bool separate_gbargamma) {
     psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
@@ -278,34 +272,53 @@ void DCTSolver::compute_orbital_gradient_OV_RHF() {
     //
     // 2 * <OV||VV> Г_VVVV
     //
+    // The VVVV block is expensive, so we avoid computing it by changing the contraction order.
 
-    // Compute contributions from VVVV density
-    // 1. X_ia <-- <ib||cd> tau_ca tau_db
-    dct_timer_on("DCTSolver::g_IbCd tau_CA tau_DB");
-    global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    if (!separate_gbargamma) {
+        // Compute contributions from VVVV density
+        // 1. X_ia <-- <ib||cd> tau_ca tau_db
+        dct_timer_on("DCTSolver::g_IbCd tau_CA tau_DB");
+        global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
 
-    // Alpha contribution X_IA
-    global_dpd_->file2_init(&Y2_OV, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "Y2 <O|V>");
+        // Alpha contribution X_IA
+        global_dpd_->file2_init(&Y2_OV, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "Y2 <O|V>");
 
-    // Y2_IA = <IA|CD> Tau_CD
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0,
-                           "MO Ints <OV|VV>");
-    global_dpd_->contract422(&I, &T_VV, &Y2_OV, 0, 0, 1.0, 0.0);
-    global_dpd_->buf4_close(&I);
-    // Y2_IA -= 2 * (IA|CD) Tau_CD
-    global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V>=V]+"), 0,
-                           "MO Ints (OV|VV)");
-    global_dpd_->contract422(&I, &T_VV, &Y2_OV, 0, 0, -2.0, 1.0);
-    global_dpd_->buf4_close(&I);
+        // Y2_IA = <IA|CD> Tau_CD
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0,
+                               "MO Ints <OV|VV>");
+        global_dpd_->contract422(&I, &T_VV, &Y2_OV, 0, 0, 1.0, 0.0);
+        global_dpd_->buf4_close(&I);
+        // Y2_IA -= 2 * (IA|CD) Tau_CD
+        global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V>=V]+"), 0,
+                               "MO Ints (OV|VV)");
+        global_dpd_->contract422(&I, &T_VV, &Y2_OV, 0, 0, -2.0, 1.0);
+        global_dpd_->buf4_close(&I);
 
-    // X_IA -= Y2_IC Tau_CA
-    global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
-    global_dpd_->contract222(&Y2_OV, &T_VV, &X, 0, 1, -1.0, 1.0);
-    global_dpd_->file2_close(&X);
+        // X_IA -= Y2_IC Tau_CA
+        global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
+        global_dpd_->contract222(&Y2_OV, &T_VV, &X, 0, 1, -1.0, 1.0);
+        global_dpd_->file2_close(&X);
 
-    global_dpd_->file2_close(&Y2_OV);
-    global_dpd_->file2_close(&T_VV);
-    dct_timer_off("DCTSolver::g_IbCd tau_CA tau_DB");
+        global_dpd_->file2_close(&Y2_OV);
+        global_dpd_->file2_close(&T_VV);
+        dct_timer_off("DCTSolver::g_IbCd tau_CA tau_DB");
+    } else {
+        // We already computed gbar gamma! We can use that intermediate now to compute ALL terms involving the
+        // product of the 1RDM in our orbital gradient component. For this reason, we need to use the cumulant
+        // and not the full gamma for the other 2RDM terms.
+        // All we need is (gbargamma)^i_p gamma^p_a.
+        auto zero = Dimension(nirrep_);
+        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(zero, soccpi_ + doccpi_), Slice(zero, nmopi_));
+        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nmopi_), Slice(soccpi_ + doccpi_, nmopi_));
+        auto alpha_jk = linalg::doublet(gbar_alpha_block, gamma_alpha_block, false, false);
+
+        global_dpd_->file2_init(&H, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "X JK <O|V>");
+        alpha_jk->write_to_dpdfile2(&H);
+        global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
+        global_dpd_->file2_axpy(&H, &X, 1.0, 0);
+        global_dpd_->file2_close(&X);
+        global_dpd_->file2_close(&H);
+    }
 
     // 2. X_ia <-- 1/4 <ib||cd> lambda_abkl lambda_klcd
 
@@ -313,7 +326,7 @@ void DCTSolver::compute_orbital_gradient_OV_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V>V]-"), ID("[O,V]"), ID("[V,V]"), 1,
                            "MO Ints <OV|VV>");
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V>V]-"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
     global_dpd_->buf4_init(&W, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), ID("[O>O]-"), 0, "W <OV|OO>");
     global_dpd_->contract444(&I, &L, &W, 0, 0, 2.0, 0.0);
     global_dpd_->buf4_close(&I);
@@ -324,7 +337,7 @@ void DCTSolver::compute_orbital_gradient_OV_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0,
                            "MO Ints <OV|VV>");  // MO Ints <Ov|Vv>
     global_dpd_->buf4_init(&L, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                           "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
     global_dpd_->buf4_init(&W, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), 0,
                            "W SF <OO|OV>");  // W <Oo|Ov>
     global_dpd_->contract444(&L, &I, &W, 0, 0, 2.0, 0.0);
@@ -336,7 +349,7 @@ void DCTSolver::compute_orbital_gradient_OV_RHF() {
     global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
     global_dpd_->buf4_init(&W, PSIF_DCT_DPD, 0, ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), ID("[O>O]-"), 0, "W <OV|OO>");
     global_dpd_->buf4_init(&LL, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda <OO|VV>");
+                           "Amplitude <OO|VV>");
 
     global_dpd_->contract442(&W, &LL, &X, 0, 2, 0.25, 1.0);
     global_dpd_->buf4_close(&W);
@@ -348,7 +361,7 @@ void DCTSolver::compute_orbital_gradient_OV_RHF() {
     global_dpd_->buf4_init(&W, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), 0,
                            "W SF <OO|OV>");  // W <Oo|Ov>
     global_dpd_->buf4_init(&LL, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Lambda SF <OO|VV>");  // Lambda <Oo|Vv>
+                           "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
     global_dpd_->contract442(&W, &LL, &X, 2, 2, 0.5, 1.0);
     global_dpd_->buf4_close(&W);
     global_dpd_->buf4_close(&LL);
@@ -358,13 +371,16 @@ void DCTSolver::compute_orbital_gradient_OV_RHF() {
     // <OO||OV> Г_OOVV
     //
 
+    std::string density_variable = separate_gbargamma ? "Lambda " : "Gamma ";
+    auto varname = [&density_variable](const std::string& x) { return (density_variable + x); };
+
     // X_IA += <BI||JK> Г_BAJK
     dct_timer_on("DCTSolver::g_BiJk Gamma_BaJk");
     global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), ID("[O,O]"), 1,
                            "MO Ints <OV|OO>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), 0,
-                           "Gamma <VV|OO>");
+                           varname("<VV|OO>"));
     global_dpd_->contract442(&I, &G, &X, 0, 0, 1.0, 1.0);
 
     global_dpd_->buf4_close(&G);
@@ -378,7 +394,7 @@ void DCTSolver::compute_orbital_gradient_OV_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), ID("[O,O]"), 0,
                            "MO Ints <OV|OO>");  // MO Ints <Ov|Oo>
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), 0,
-                           "Gamma SF <VV|OO>");  // Gamma <Vv|Oo>
+                           varname("SF <VV|OO>"));  // Gamma <Vv|Oo>
 
     global_dpd_->contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -396,7 +412,7 @@ void DCTSolver::compute_orbital_gradient_OV_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), ID("[O,O]"), 1,
                            "MO Ints <OV|OO>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Gamma <OV|OV>");
+                           varname("<OV|OV>"));
 
     global_dpd_->contract442(&I, &G, &X, 3, 3, 1.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -409,7 +425,7 @@ void DCTSolver::compute_orbital_gradient_OV_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), ID("[O,O]"), 0,
                            "MO Ints <OV|OO>");  // MO Ints <oV|oO>
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Gamma SF <OV|OV>:<Ov|Ov>");  // Gamma <oV|oV>
+                           varname("SF <OV|OV>:<Ov|Ov>"));  // Gamma <oV|oV>
 
     global_dpd_->contract442(&I, &G, &X, 3, 3, 1.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -423,7 +439,7 @@ void DCTSolver::compute_orbital_gradient_OV_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), ID("[O,O]"), 0,
                            "MO Ints SF <OV|OO>");  // MO Ints <Ov|oO>
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Gamma SF <OV|OV>:<Ov|oV>");  // Gamma <Ov|oV>
+                           varname("SF <OV|OV>:<Ov|oV>"));  // Gamma <Ov|oV>
 
     global_dpd_->contract442(&I, &G, &X, 3, 3, -1.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -434,7 +450,7 @@ void DCTSolver::compute_orbital_gradient_OV_RHF() {
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
 
-void DCTSolver::compute_orbital_gradient_VO_RHF() {
+void DCTSolver::compute_orbital_gradient_VO_RHF(bool separate_gbargamma) {
     psio_->open(PSIF_DCT_DENSITY, PSIO_OPEN_OLD);
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
@@ -472,11 +488,32 @@ void DCTSolver::compute_orbital_gradient_VO_RHF() {
     global_dpd_->file2_close(&H);
     global_dpd_->file2_close(&X);
 
+    if (separate_gbargamma) {
+        // We already computed gbar gamma! We can use that intermediate now to compute ALL terms involving the
+        // product of the 1RDM in our orbital gradient component. For this reason, we need to use the cumulant
+        // and not the full gamma for the other 2RDM terms.
+        // All we need is (gbargamma)^a_p gamma^p_i.
+        auto zero = Dimension(nirrep_);
+        auto gbar_alpha_block = mo_gbarGamma_A_.get_block(Slice(soccpi_ + doccpi_, nmopi_), Slice(zero, nmopi_));
+        auto gamma_alpha_block = mo_gammaA_.get_block(Slice(zero, nmopi_), Slice(zero, soccpi_ + doccpi_));
+        auto alpha_jk = linalg::doublet(gbar_alpha_block, gamma_alpha_block, false, false);
+
+        global_dpd_->file2_init(&H, PSIF_DCT_DPD, 0, ID('V'), ID('O'), "X JK <V|O>");
+        alpha_jk->write_to_dpdfile2(&H);
+        global_dpd_->file2_init(&X, PSIF_DCT_DPD, 0, ID('V'), ID('O'), "X <V|O>");
+        global_dpd_->file2_axpy(&H, &X, 1.0, 0);
+        global_dpd_->file2_close(&X);
+        global_dpd_->file2_close(&H);
+    }
+
     // X_VO: Two-electron contributions
 
     //
     // 2 * <VO||OO> Г_OOOO
     //
+
+    std::string density_variable = separate_gbargamma ? "Lambda " : "Gamma ";
+    auto varname = [&density_variable](const std::string& x) { return (density_variable + x); };
 
     // X_AI += 2 * <AJ||KL> Г_IJKL
     dct_timer_on("DCTSolver::2 * g_AjKl Gamma_IjKl");
@@ -484,7 +521,7 @@ void DCTSolver::compute_orbital_gradient_VO_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), ID("[O,O]"), 1,
                            "MO Ints <OV|OO>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0,
-                           "Gamma <OO|OO>");
+                           varname("<OO|OO>"));
 
     global_dpd_->contract442(&I, &G, &X, 1, 1, 2.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -497,7 +534,7 @@ void DCTSolver::compute_orbital_gradient_VO_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"), ID("[O,V]"), ID("[O,O]"), 0,
                            "MO Ints <OV|OO>");  // MO Ints <oV|oO>
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), ID("[O,O]"), 0,
-                           "Gamma SF <OO|OO>");  // Gamma <Oo|Oo>
+                           varname("SF <OO|OO>"));  // Gamma <Oo|Oo>
 
     global_dpd_->contract442(&I, &G, &X, 1, 1, 4.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -514,7 +551,7 @@ void DCTSolver::compute_orbital_gradient_VO_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 1,
                            "MO Ints <OV|VV>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Gamma <OO|VV>");
+                           varname("<OO|VV>"));
 
     global_dpd_->contract442(&I, &G, &X, 1, 1, 1.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -527,7 +564,7 @@ void DCTSolver::compute_orbital_gradient_VO_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0,
                            "MO Ints <OV|VV>");  // MO Ints <oV|vV>
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
-                           "Gamma SF <OO|VV>");  // Gamma <Oo|Vv>
+                           varname("SF <OO|VV>"));  // Gamma <Oo|Vv>
 
     global_dpd_->contract442(&I, &G, &X, 1, 1, 2.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -544,7 +581,7 @@ void DCTSolver::compute_orbital_gradient_VO_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 1,
                            "MO Ints <OV|VV>");
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Gamma <OV|OV>");
+                           varname("<OV|OV>"));
 
     global_dpd_->contract442(&I, &G, &X, 2, 2, 1.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -557,7 +594,7 @@ void DCTSolver::compute_orbital_gradient_VO_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0,
                            "MO Ints <OV|VV>");  // MO Ints <Ov|Vv>
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Gamma SF <OV|OV>:<Ov|Ov>");  // Gamma <Ov|Ov>
+                           varname("SF <OV|OV>:<Ov|Ov>"));  // Gamma <Ov|Ov>
 
     global_dpd_->contract442(&I, &G, &X, 2, 2, 1.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -571,7 +608,7 @@ void DCTSolver::compute_orbital_gradient_VO_RHF() {
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0,
                            "MO Ints SF <OV|VV>");  // MO Ints <oV|Vv>
     global_dpd_->buf4_init(&G, PSIF_DCT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0,
-                           "Gamma SF <OV|OV>:<Ov|oV>");  // Gamma <oV|Ov>
+                           varname("SF <OV|OV>:<Ov|oV>"));  // Gamma <oV|Ov>
 
     global_dpd_->contract442(&I, &G, &X, 2, 2, -1.0, 1.0);
     global_dpd_->buf4_close(&G);
@@ -587,19 +624,20 @@ void DCTSolver::compute_orbital_rotation_jacobi_RHF() {
 
     // Determine the orbital rotation step
     // Alpha spin
+    auto X_a = Matrix("Alpha orbital step", nirrep_, nmopi_, nmopi_);
     for (int h = 0; h < nirrep_; ++h) {
         for (int i = 0; i < naoccpi_[h]; ++i) {
             for (int a = naoccpi_[h]; a < nmopi_[h]; ++a) {
                 double value = orbital_gradient_a_->get(h, i, a) /
                                (2.0 * (moFa_->get(h, i, i) - moFa_->get(h, a, a)) + orbital_level_shift_);
-                X_a_->set(h, i, a, value);
-                X_a_->set(h, a, i, (-1.0) * value);
+                X_a.set(h, i, a, value);
+                X_a.set(h, a, i, (-1.0) * value);
             }
         }
     }
 
     // Determine the rotation generator with respect to the reference orbitals
-    Xtotal_a_->add(X_a_);
+    Xtotal_a_->add(X_a);
 
     // Copy alpha case to beta case
     Xtotal_b_->copy(Xtotal_a_);
@@ -610,33 +648,7 @@ void DCTSolver::compute_orbital_rotation_jacobi_RHF() {
 void DCTSolver::rotate_orbitals_RHF() {
     dct_timer_on("DCTSolver::rotate_orbitals_RHF()");
 
-    // Initialize the orbital rotation matrix
-    auto U_a = std::make_shared<Matrix>("Orbital rotation matrix (Alpha)", nirrep_, nmopi_, nmopi_);
-
-    // Compute the orbital rotation matrix and rotate the orbitals
-
-    // U = I
-    U_a->identity();
-
-    // U += X
-    U_a->add(Xtotal_a_);
-
-    // U += 0.5 * X * X
-    U_a->gemm(false, false, 0.5, Xtotal_a_, Xtotal_a_, 1.0);
-
-    // Orthogonalize the U vectors
-    int rowA = U_a->nrow();
-    int colA = U_a->ncol();
-
-    auto U_a_block = U_a->to_block_matrix();
-    schmidt(U_a_block, rowA, colA, "outfile");
-    U_a->set(U_a_block);
-    free_block(U_a_block);
-
-    // Rotate the orbitals
-    Ca_->gemm(false, false, 1.0, old_ca_, U_a, 0.0);
-
-    // Copy alpha case to beta case
+    rotate_matrix(*Xtotal_a_, *old_ca_, *Ca_);
     Cb_->copy(Ca_);
 
     dct_timer_off("DCTSolver::rotate_orbitals_RHF()");

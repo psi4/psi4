@@ -287,7 +287,7 @@ void HF::common_init() {
     }
 
     // -D is zero by default
-    set_scalar_variable("-D Energy", 0.0);
+    set_scalar_variable("-D Energy", 0.0);  // no-autodoc
     energies_["-D"] = 0.0;
 
     // CPHF info
@@ -308,7 +308,7 @@ int HF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, 
 }
 
 void HF::form_V() { throw PSIEXCEPTION("Sorry, DFT functionals are not supported for this type of SCF wavefunction."); }
-void HF::form_C() { throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct orbitals."); }
+void HF::form_C(double shift) { throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct orbitals."); }
 void HF::form_D() { throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct densities."); }
 
 std::vector<SharedMatrix> HF::onel_Hx(std::vector<SharedMatrix> x) {

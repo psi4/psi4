@@ -53,7 +53,7 @@ namespace psi {
 **                   data as it will be stored on disk.
 **   int anti: Boolean flag which indicates whether the data needs to
 **             be antisymmetrized as it is read from disk.
-**   char *label: The string labelling the PSIO TOC entry on disk.
+**   std::string &label: The string labelling the PSIO TOC entry on disk.
 **
 **   Note: Make sure that you use the correct label and inputfile combination.
 **      If you intend to read from or write to an existing quantity on disk be sure
@@ -64,7 +64,7 @@ namespace psi {
 */
 
 int DPD::buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, int pqnum, int rsnum, int file_pqnum, int file_rsnum,
-                   int anti, const char *label) {
+                   int anti, const std::string& label) {
     int h, nirreps, nump, nrows, p, Gp, Gr, offset;
 
     Buf->dpdnum = dpd_default;
@@ -72,7 +72,7 @@ int DPD::buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, int pqnum, int rsnum,
 
     Buf->anti = anti;
 
-    file4_init(&(Buf->file), inputfile, irrep, file_pqnum, file_rsnum, label);
+    file4_init(&(Buf->file), inputfile, irrep, file_pqnum, file_rsnum, label.c_str());
 
     Buf->matrix = (double ***)malloc(Buf->params->nirreps * sizeof(double **));
 
@@ -118,13 +118,13 @@ int DPD::buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, int pqnum, int rsnum,
 
 // Wrapper for the main buf4_init() using strings rather than pair numbers
 int DPD::buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, string pq, string rs, string file_pq, string file_rs,
-                   int anti, const char *label) {
+                   int anti, const std::string& label) {
     return buf4_init(Buf, inputfile, irrep, pairnum(pq), pairnum(rs), pairnum(file_pq), pairnum(file_rs), anti, label);
 }
 
 // Wrapper for the main buf4_init() using strings rather than pair numbers and assuming the buf4 and file4 pairs are
 // identical (common case)
-int DPD::buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, string pq, string rs, int anti, const char *label) {
+int DPD::buf4_init(dpdbuf4 *Buf, int inputfile, int irrep, string pq, string rs, int anti, const std::string& label) {
     return buf4_init(Buf, inputfile, irrep, pairnum(pq), pairnum(rs), pairnum(pq), pairnum(rs), anti, label);
 }
 

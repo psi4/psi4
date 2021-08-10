@@ -35,7 +35,6 @@ Introduction to Programming in |PSIfour|
 .. toctree::
    prog_welcome
    prog_conduct
-   prog_overview 
    prog_setup
    prog_tour
    prog_help 

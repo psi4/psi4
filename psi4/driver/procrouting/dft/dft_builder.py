@@ -25,6 +25,8 @@
 #
 # @END LICENSE
 #
+import re
+
 """
 Superfunctional builder function & handlers.
 The new definition of functionals is based on a dictionary with the following structure
@@ -46,7 +48,7 @@ dict = {
                  "alpha": 1.0,   coefficient for (global) GGA exchange, by default 1.0
                  "omega": 0.0,   range-separation parameter
              "use_libxc": False  whether "x_hf" parameters should be set from LibXC values for this method
-                 "tweak": [],    tweak the underlying functional
+                 "tweak": {},    tweak the underlying functional
      },
 
            "x_hf":  {          definition of HF exchange for hybrid functionals
@@ -59,7 +61,7 @@ dict = {
   "c_functionals":  {          definition of C contributions
        "C_METHOD_NAME":  {       must match a LibXC method
                  "alpha": 1.0,   coefficient for (global) GGA correlation, by default 1.0
-                 "tweak": [],    tweak the underlying functional
+                 "tweak": {},    tweak the underlying functional
     },
 
           "c_mp2":  {          definition of MP2 correlation double hybrid functionals
@@ -77,14 +79,13 @@ dict = {
     },
 }
 """
-from psi4 import core
 from psi4.driver.p4util.exceptions import ValidationError
-
 import copy
 import collections
 
-import qcengine as qcng
-from qcengine.programs.empirical_dispersion_resources import dashcoeff
+from qcengine.programs.empirical_dispersion_resources import dashcoeff, get_dispersion_aliases
+
+from psi4 import core
 
 from . import libxc_functionals
 from . import lda_functionals
@@ -111,7 +112,7 @@ def get_functional_aliases(functional_dict):
     return aliases
 
 
-_dispersion_aliases = qcng.programs.empirical_dispersion_resources.get_dispersion_aliases()
+_dispersion_aliases = get_dispersion_aliases()
 
 functionals = {}
 dashcoeff_supplement = collections.defaultdict(lambda: collections.defaultdict(dict))
@@ -155,7 +156,8 @@ for functional_name in dict_functionals:
                 if dispersion_functional.lower() in functional_aliases:
                     func = copy.deepcopy(dict_functionals[functional_name])
                     func["name"] += "-" + resolved_dispersion_level
-                    func["dispersion"] = copy.deepcopy(dashcoeff[resolved_dispersion_level]['definitions'][dispersion_functional])
+                    func["dispersion"] = copy.deepcopy(
+                        dashcoeff[resolved_dispersion_level]['definitions'][dispersion_functional])
                     func["dispersion"]["type"] = resolved_dispersion_level
 
                     # this ensures that M06-2X-D3, M06-2X-D3ZERO, M062X-D3 or M062X-D3ZERO
@@ -177,9 +179,10 @@ def check_consistency(func_dictionary):
         raise ValidationError("SCF: No method name was specified in functional dictionary.")
     else:
         name = func_dictionary["name"]
-    # 0b) make sure provided name is unique:
+        # 0b) make sure provided name is unique:
         if (name.lower() in functionals.keys()) and (func_dictionary not in functionals.values()):
-            raise ValidationError("SCF: Provided name for a custom dft_functional matches an already defined one: %s." % (name))
+            raise ValidationError(
+                "SCF: Provided name for a custom dft_functional matches an already defined one: %s." % (name))
 
     # 1a) sanity checks definition of xc_functionals
     if "xc_functionals" in func_dictionary:
@@ -224,21 +227,27 @@ def check_consistency(func_dictionary):
     if "citation" in func_dictionary:
         cit = func_dictionary["citation"]
         if cit and not (cit.startswith('    ') and cit.endswith('\n')):
-            raise ValidationError("SCF: All citations should have the form '    A. Student, B. Prof, J. Goodstuff Vol, Page, Year\n', not : {}".format(cit))
+            raise ValidationError(
+                f"SCF: All citations should have the form '    A. Student, B. Prof, J. Goodstuff Vol, Page, Year\n', not : {cit}"
+            )
     if "dispersion" in func_dictionary:
         disp = func_dictionary["dispersion"]
-    # 3b) check dispersion type present and known
+        # 3b) check dispersion type present and known
         if "type" not in disp or disp["type"] not in _dispersion_aliases:
-            raise ValidationError("SCF: Dispersion type ({}) should be among ({})".format(disp['type'], _dispersion_aliases.keys()))
+            raise ValidationError(
+                f"SCF: Dispersion type ({disp['type']}) should be among ({_dispersion_aliases.keys()})")
     # 3c) check dispersion params complete
         allowed_params = sorted(dashcoeff[_dispersion_aliases[disp["type"]]]["default"].keys())
         if "params" not in disp or sorted(disp["params"].keys()) != allowed_params:
-            raise ValidationError("SCF: Dispersion params ({}) must include all ({})".format(list(disp['params'].keys()), allowed_params))
+            raise ValidationError(
+                f"SCF: Dispersion params ({list(disp['params'].keys())}) must include all ({allowed_params})")
     # 3d) check formatting for dispersion citation
         if "citation" in disp:
             cit = disp["citation"]
-            if cit and not (cit.startswith('    ') and cit.endswith('\n')):
-                raise ValidationError("SCF: All citations should have the form '    A. Student, B. Prof, J. Goodstuff Vol, Page, Year\n', not : {}".format(cit))
+            if cit and not ((cit.startswith('    ') and cit.endswith('\n')) or re.match(r"^10.\d{4,9}/[-._;()/:A-Z0-9]+$", cit)):
+                raise ValidationError(
+                    f"SCF: All citations should have the form '    A. Student, B. Prof, J. Goodstuff Vol, Page, Year\n', not : {cit}"
+                )
 
 
 def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restricted):
@@ -253,7 +262,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
     # Either process the "xc_functionals" special case
     if "xc_functionals" in func_dictionary:
         for xc_key in func_dictionary["xc_functionals"]:
-            xc_name = "XC_" + xc_key
+            xc_name = ("XC_" + xc_key).upper()
         sup = core.SuperFunctional.XC_build(xc_name, restricted)
         descr = "    " + func_dictionary["name"] + " "
         if sup.is_gga():
@@ -278,7 +287,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
             for x_key in x_funcs:
 
                 # Lookup the functional in LibXC
-                x_name = "XC_" + x_key
+                x_name = ("XC_" + x_key).upper()
                 x_func = core.LibXCFunctional(x_name, restricted)
                 x_params = x_funcs[x_key]
 
@@ -289,7 +298,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
                     x_func.set_alpha(1.0)
 
                 if "tweak" in x_params:
-                    x_func.set_tweak(x_params["tweak"])
+                    x_func.set_tweak(x_params["tweak"], quiet=True)
                 if "alpha" in x_params:
                     x_func.set_alpha(x_params["alpha"])
                 if "omega" in x_params:
@@ -310,7 +319,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
             # if "use_libxc" specified here, fetch parameters and set flag
             # Duplicate definition of "use_libxc" caught in check_consistency.
             if "use_libxc" in x_params:
-                x_name = "XC_" + x_params["use_libxc"]
+                x_name = ("XC_" + x_params["use_libxc"]).upper()
                 x_HF.update(core.LibXCFunctional(x_name, restricted).query_libxc("XC_HYB_CAM_COEF"))
                 x_HF["used"] = True
 
@@ -336,11 +345,11 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
         if "c_functionals" in func_dictionary:
             c_funcs = func_dictionary["c_functionals"]
             for c_key in c_funcs:
-                c_name = "XC_" + c_key
+                c_name = ("XC_" + c_key).upper()
                 c_func = core.LibXCFunctional(c_name, restricted)
                 c_params = func_dictionary["c_functionals"][c_key]
                 if "tweak" in c_params:
-                    c_func.set_tweak(c_params["tweak"])
+                    c_func.set_tweak(c_params["tweak"], quiet=True)
                 if "alpha" in c_params:
                     c_func.set_alpha(c_params["alpha"])
                 else:
@@ -377,7 +386,10 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
     if "citation" in func_dictionary:
         sup.set_citation(func_dictionary["citation"])
     if "description" in func_dictionary:
-        sup.set_description(func_dictionary["description"])
+        if "doi" in func_dictionary:
+            sup.set_description(func_dictionary["description"] + "(" + func_dictionary["doi"] + ")")
+        else:
+            sup.set_description(func_dictionary["description"])
 
     # Dispersion handling for tuple assembly
     dispersion = False
