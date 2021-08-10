@@ -4165,6 +4165,12 @@ def run_sapt(name, **kwargs):
 
     sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(sapt_dimer, sapt_basis)
 
+    # Need to ensure consistent orbital freezing
+    # between monomer and dimer computations
+    monomerA_basis = core.BasisSet.build(monomerA, "BASIS", core.get_global_option("BASIS"))
+    monomerB_basis = core.BasisSet.build(monomerB, "BASIS", core.get_global_option("BASIS"))
+    nfc_ab = monomerA_basis.n_frozen_core() + monomerB_basis.n_frozen_core()
+
     if (core.get_option('SCF', 'REFERENCE') != 'RHF') and (name.upper() != "SAPT0"):
         raise ValidationError('Only SAPT0 supports a reference different from \"reference rhf\".')
 
@@ -4193,6 +4199,8 @@ def run_sapt(name, **kwargs):
     if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
+    optstash2 = p4util.OptionsState(['NUM_FROZEN_DOCC'])
+    core.set_global_option("NUM_FROZEN_DOCC", nfc_ab)
     core.timer_on("SAPT: Dimer SCF")
     dimer_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
     core.timer_off("SAPT: Dimer SCF")
@@ -4201,6 +4209,7 @@ def run_sapt(name, **kwargs):
         select_mp2(name, ref_wfn=dimer_wfn, **kwargs)
         mp2_corl_interaction_e = core.variable('MP2 CORRELATION ENERGY')
 
+    optstash2.restore()
     if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.set_global_option('DF_INTS_IO', 'LOAD')
 
