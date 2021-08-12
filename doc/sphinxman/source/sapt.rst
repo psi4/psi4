@@ -63,6 +63,12 @@ SAPT: Symmetry-Adapted Perturbation Theory
    possible discrepancies with prior versions of the code on the order of
    0.01 kcal/mol. See https://github.com/psi4/psi4/issues/1677
 
+.. caution:: August 2021, the number of frozen core orbitals used in the dMP2 computations
+   is now standardized. Specifically, we now rigorously enforce that the number of core orbitals 
+   frozen in dimer computations is equal to the sum of frozen orbitals of each monomer. Prior to
+   this, a discrepency between these values was possible when one of the monomers was (exclusively) 
+   a charged alkali metal. 
+
 Symmetry-adapted perturbation theory (SAPT) provides a means of directly
 computing the noncovalent interaction between two molecules, that is, the
 interaction energy is determined without computing the total energy of the
