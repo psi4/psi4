@@ -47,13 +47,13 @@ class DFTensor : public Matrix {
       const int nQ() const { return nQ_; }
       const Dimension& idx2pi() const { return dim2_; }
       const Dimension& idx3pi() const { return dim3_; }
-      // A helper function needed by the constructor.
+      /// A helper function needed by the constructor.
       static const Dimension setup(const Dimension& idx2, const Dimension& idx3);
 
       // Non-static functions operate on the DFTensor they're called on.
       void add_3idx_transpose_inplace();
-      // r(Q|pq) = \sum_Q B(P|rs) (rs|pq) without transpose flag.
-      // r(Q|pq) = \sum_Q B(P|rs) (pq|rs) with.
+      /// r(Q|pq) = \sum_Q B(P|rs) (rs|pq) without transpose flag.
+      /// r(Q|pq) = \sum_Q B(P|rs) (pq|rs) with.
       void contract343(const DFTensor& b, dpdbuf4& G, bool transpose, double alpha, double beta);
       /// Transform b(Q|mu,nu) from SO basis to another basis with symmetry
       void three_idx_primary_transform_gemm(const DFTensor& three_idx, const Matrix& left, const Matrix& right,
@@ -61,9 +61,9 @@ class DFTensor : public Matrix {
 
       // Static functions create a new DFTensor and operate on it.
       static DFTensor three_idx_primary_transform(const DFTensor& three_idx, const Matrix& left, const Matrix& right);
-      // r(Q|pq) = \sum_Q J(PQ) B(P|pq)
+      /// r(Q|pq) = \sum_Q J(PQ) B(P|pq)
       static DFTensor contract233(const Matrix& J, const DFTensor& B);
-      // (Q) (p|q) -> (Q|pq)
+      /// (Q) (p|q) -> (Q|pq)
       static DFTensor contract123(const Matrix& Q, const Matrix& G);
 
 };

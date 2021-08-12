@@ -94,7 +94,6 @@ class DCTSolver : public Wavefunction {
     void compute_cepa0_energy();
     void update_cumulant_jacobi();
     void compute_scf_energy();
-    // Compute tau in the SO basis for unrestricted orbitals
     void compute_SO_tau_U();
     void compute_SO_tau_R();
     void build_d_fourth_order_U();
@@ -193,7 +192,7 @@ class DCTSolver : public Wavefunction {
     void compute_N_intermediate();
 
     // Orbital-optimized DCT
-    // Converge a DC-12 computation to obtain guess orbitals and double amplitudes
+    /// Converge a DC-12 computation to obtain guess orbitals and double amplitudes
     void run_simult_dc_guess();
     double compute_orbital_residual();
     // Compute 2RDMs. These arise as intermediates in computing the
@@ -211,7 +210,7 @@ class DCTSolver : public Wavefunction {
     void compute_orbital_gradient_OV(bool separate_gbargamma);
     void compute_orbital_gradient_VO(bool separate_gbargamma);
     void compute_orbital_rotation_jacobi();
-    // target = old * exp(X)
+    /// target = old * exp(X)
     void rotate_matrix(const Matrix& X, const Matrix& old, Matrix& target);
     void rotate_orbitals();
     Matrix construct_oo_density(const Matrix& occtau, const Matrix& virtau, const Matrix& kappa, const Matrix& C);
