@@ -213,7 +213,7 @@ void JK::common_init() {
     AO2USO_ = SharedMatrix(pet->aotoso());
 
     Options& options = Process::environment.options;
-    density_screening_ = options.get_bool("SCF_DENSITY_SCREENING");
+    density_screening_ = options.get_str("SCREENING") == "DENSITY";
     ifb_ = options.get_bool("IFB");
     d_conv_ = options.get_double("D_CONVERGENCE");
     ifb_d_conv_ = options.get_double("IFB_D_CONVERGENCE");

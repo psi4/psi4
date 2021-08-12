@@ -69,10 +69,6 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
     ket_same_ = (original_bs3_ == original_bs4_);
     braket_same_ = (original_bs1_ == original_bs3_ && original_bs2_ == original_bs4_);
 
-    // Density Screening Options
-    density_screening_ = Process::environment.options.get_bool("SCF_DENSITY_SCREENING");
-    density_screening_threshold_ = Process::environment.options.get_double("DENSITY_SCREENING_TOLERANCE");
-
     // Setup sieve data
     screening_threshold_ = Process::environment.options.get_double("INTS_TOLERANCE");
     auto screentype = Process::environment.options.get_str("SCREENING");
@@ -80,12 +76,14 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
         screening_type_ = ScreeningType::Schwarz;
     else if (screentype == "CSAM")
         screening_type_ = ScreeningType::CSAM;
+    else if (screentype == "DENSITY")
+        screening_type_ = ScreeningType::Density;
     else
         throw PSIEXCEPTION("Unknown screening type " + screentype + " in TwoBodyAOInt()");
     
     if (screening_threshold_ == 0.0) screening_type_ = ScreeningType::None;
 
-    max_dens_shell_pair_.resize(bs1_->nshell(), std::vector<double>(bs1_->nshell(), 1.0));
+    max_dens_shell_pair_.resize(bs1_->nshell() * bs1_->nshell(), 1.0);
 }
 
 TwoBodyAOInt::TwoBodyAOInt(const TwoBodyAOInt &rhs) : TwoBodyAOInt(rhs.integral_, rhs.deriv_) {
@@ -132,7 +130,6 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
             int num_n = bs1_->shell(N).nfunction();
             
             double max_dens = 0.0;
-            
             for (int m = m_start; m < m_start + num_m; m++) {
                 for (int n = n_start; n < n_start + num_n; n++) {
                     double val = 0.0;
@@ -143,7 +140,7 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
                 }
             }
             
-            max_dens_shell_pair_[M][N] = max_dens;
+            max_dens_shell_pair_[M * nshell_ + N] = max_dens;
         }
     }
     timer_off("Update Density");
@@ -151,32 +148,27 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
 }
 
 // Haser 1989 Equations 6 to 14
-bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) const {
+bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
 
     // THR in Equation 9
-    double density_threshold = density_screening_threshold_;
+    double density_threshold = screening_threshold_squared_;
 
     // Equation 13
     double Q_MN_sq = shell_pair_values_[N * nshell_ + M];
     double Q_RS_sq = shell_pair_values_[S * nshell_ + R];
 
-    // Equation 6
-    double max_dens_factor = max_dens_shell_pair_[M][N];
-    max_dens_factor = std::max(max_dens_factor, max_dens_shell_pair_[R][S]);
-    max_dens_factor = std::max(max_dens_factor, 0.25 * max_dens_shell_pair_[M][R]);
-    max_dens_factor = std::max(max_dens_factor, 0.25 * max_dens_shell_pair_[M][S]);
-    max_dens_factor = std::max(max_dens_factor, 0.25 * max_dens_shell_pair_[N][R]);
-    max_dens_factor = std::max(max_dens_factor, 0.25 * max_dens_shell_pair_[N][S]);
+    std::initializer_list<double> block_densities {max_dens_shell_pair_[M * nshell_ + N], max_dens_shell_pair_[R * nshell_ + S], 
+        0.25 * max_dens_shell_pair_[M * nshell_ + R], 0.25 * max_dens_shell_pair_[M * nshell_ + S],
+        0.25 * max_dens_shell_pair_[N * nshell_ + R], 0.25 * max_dens_shell_pair_[N * nshell_ + S]};
 
+    // Equation 6
+    double max_density = std::max(block_densities);
     // Squared to account for the fact that Q_MN is given as its square
-    max_dens_factor *= max_dens_factor;
-    density_threshold *= density_threshold;
+    max_density = max_density * max_density;
 
     // Equations 6, 9, and 14
-    if (Q_MN_sq * Q_RS_sq * max_dens_factor > density_threshold) return true;
-
+    if (Q_MN_sq * Q_RS_sq * max_density > density_threshold) return true;
     return false;
-
 }
 
 bool TwoBodyAOInt::shell_significant_csam(int M, int N, int R, int S) { 
@@ -221,6 +213,9 @@ void TwoBodyAOInt::setup_sieve() {
             break;
         case ScreeningType::Schwarz:
             sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_schwarz(M, N, R, S); };
+            break;
+        case ScreeningType::Density:
+            sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_density(M, N, R, S); };
             break;
         case ScreeningType::None:   
             sieve_impl_ = [=](int M, int N, int R, int S) { return this->shell_significant_none(M, N, R, S); };

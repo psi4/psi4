@@ -489,9 +489,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                         int S = task_shells[S2];
                         if (R2 * nshell + S2 > P2 * nshell + Q2) continue;
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
-                        
-                        if (density_screening_ && !ints[0]->shell_significant_density(P, Q, R, S)) continue;
-                        else if (!ints[0]->shell_significant(P, Q, R, S)) continue;
+                        if (!ints[0]->shell_significant(P, Q, R, S)) continue;
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
                         // if (thread == 0) timer_on("JK: Ints");

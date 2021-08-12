@@ -1,0 +1,23 @@
+#! RHF Density Matrix based-Integral Screening Test for water
+
+ref_energy = -76.04125669376049 # TEST
+
+molecule mol {
+    0 1
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+    symmetry c1
+    no_reorient
+    no_com
+}
+
+set {
+    scf_type direct
+    basis aug-cc-pVDZ
+    screening density
+    ints_tolerance 1.0e-12
+}
+
+ds_energy = energy('scf')
+psi4.compare_values(ref_energy, ds_energy, 6, "HF Density Screening Energy")

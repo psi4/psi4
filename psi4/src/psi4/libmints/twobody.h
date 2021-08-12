@@ -35,6 +35,7 @@
 #include <memory>
 #include <tuple>
 #include <vector>
+#include <initializer_list>
 
 #ifdef _POSIX_C_SOURCE
 #undef _POSIX_C_SOURCE
@@ -47,7 +48,7 @@
 
 namespace psi {
 
-enum class ScreeningType { None, Schwarz, CSAM, QQR };
+enum class ScreeningType { None, Schwarz, CSAM, QQR, Density };
 
 enum PermutedOrder { ABCD = 0, BACD = 1, ABDC = 2, BADC = 3, CDAB = 4, CDBA = 5, DCAB = 6, DCBA = 7 };
 
@@ -130,6 +131,8 @@ class PSI_API TwoBodyAOInt {
     std::vector<double> shell_pair_exchange_values_;
     /// sqrt|(mm|mm)| values (nshell)
     std::vector<double> function_sqrt_;
+    /// Max Density per Shell Pair
+    std::vector<double> max_dens_shell_pair_;
     /// Significant unique function pairs, in reduced triangular indexing
     PairList function_pairs_;
     /// Significant unique shell pairs, in reduced triangular indexing
@@ -145,12 +148,6 @@ class PSI_API TwoBodyAOInt {
     /// Significant shell pairs, indexes by shell
     std::vector<std::vector<int>> function_to_function_;
     std::function<bool(int, int, int, int)> sieve_impl_;
-    /// Do Density Screening?
-    bool density_screening_;
-    /// Density Screening Tolerance
-    double density_screening_threshold_;
-    /// Max Density per Shell Pair
-    std::vector<std::vector<double>> max_dens_shell_pair_;
 
     void setup_sieve();
     void create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, PairList &shell_pairs, bool is_bra);
@@ -159,6 +156,8 @@ class PSI_API TwoBodyAOInt {
     bool shell_significant_csam(int M, int N, int R, int S);
     /// Implements Schwarz inequality screening of a shell quartet
     bool shell_significant_schwarz(int M, int N, int R, int S);
+    /// Implements Density Matrix Based Screening of a shell quartet (Haser 1989)
+    bool shell_significant_density(int M, int N, int R, int S);
     /// Implements the null screening of a shell quartet - always true
     bool shell_significant_none(int M, int N, int R, int S);
 
@@ -207,8 +206,6 @@ class PSI_API TwoBodyAOInt {
      */
     /// Update the Max Density Per Shell Pair given an updated Density Matrix (Haser 1989)
     void update_density(const std::vector<SharedMatrix>& D);
-    /// Density Screening of a shell quartet (Haser 1989)
-    bool shell_significant_density(int M, int N, int R, int S) const;
     /// Ask the built in sieve whether this quartet contributes
     bool shell_significant(int M, int N, int R, int S) const { return sieve_impl_(M, N, R, S); };
     /// Are any of the quartets within a given shellpair list significant

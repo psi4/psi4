@@ -987,7 +987,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Do use Combined Schwarz Approximation Maximum (CSAM) screening on
         two-electron integrals. This is a slightly tighter bound than that of
         default Schwarz screening. -*/
-        options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM");
+        options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM DENSITY");
         /*- Memory safety -*/
         options.add_double("SAPT_MEM_SAFETY", 0.9);
         /*- Do force SAPT2 and higher to die if it thinks there isn't enough
@@ -1440,11 +1440,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             to make the wavefunction stable. !expert -*/
         options.add_int("MAX_ATTEMPTS", 1);
         /*- Do Perform Incremental Fock Build? -*/
-        options.add_bool("IFB", true);
-        /*- Do Perform Density Screening for Direct SCF? [Haser:1989:104] -*/
-        options.add_bool("SCF_DENSITY_SCREENING", true);
-        /*- Threshold for SCF Density Screening -*/
-        options.add_double("DENSITY_SCREENING_TOLERANCE", 1.0e-13);
+        options.add_bool("IFB", false);
         /*- Density Threshold to stop Incremental Fock Build -*/
         options.add_double("IFB_D_CONVERGENCE", 1.0e-5);
 

@@ -1,0 +1,288 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.4rc4.dev56 
+
+                         Git: Rev {increfock} 5f02451 dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Wednesday, 11 August 2021 08:23PM
+
+    Process ID: 15225
+    Host:       ds10
+    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-david/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! RHF Density Matrix based-Integral Screening Test for water
+
+ref_energy = -76.04125669376049 # TEST
+
+molecule mol {
+    0 1
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+    symmetry c1
+    no_reorient
+    no_com
+}
+
+set {
+    scf_type direct
+    basis aug-cc-pVDZ
+    screening density
+    ints_tolerance 1.0e-12
+}
+
+ds_energy = energy('scf')
+psi4.compare_values(ref_energy, ds_energy, 6, "HF Density Screening Energy")--------------------------------------------------------------------------
+
+Scratch directory: /scratch/jiang/
+
+*** tstart() called on ds10
+*** at Wed Aug 11 20:23:25 2021
+
+   => Loading Basis Set <=
+
+    Name: AUG-CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   254 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-david/stage/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3 entry H          line    40 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-david/stage/share/psi4/basis/aug-cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.065775570547    15.994914619570
+         H            0.000000000000    -0.759061990794     0.521953018286     1.007825032230
+         H            0.000000000000     0.759061990794     0.521953018286     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     27.26297  B =     14.51533  C =      9.47217 [cm^-1]
+  Rotational constants: A = 817323.21126  B = 435158.60141  C = 283968.37536 [MHz]
+  Nuclear repulsion =    9.168193296424347
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: AUG-CC-PVDZ
+    Blend: AUG-CC-PVDZ
+    Number of shells: 19
+    Number of basis functions: 41
+    Number of Cartesian functions: 43
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (AUG-CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   270 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-david/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    70 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-david/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+
+  Starting with a DF guess...
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.002 GiB; user supplied 0.366 GiB. Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (AUG-CC-PVDZ AUX)
+    Blend: AUG-CC-PVDZ-JKFIT
+    Number of shells: 52
+    Number of basis functions: 150
+    Number of Cartesian functions: 171
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 2.6921161277E-03.
+  Reciprocal condition number of the overlap matrix is 4.7404748701E-04.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         41      41 
+   -------------------------
+    Total      41      41
+   -------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter SAD:   -75.46290553834118   -7.54629e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.95702688950914   -4.94121e-01   1.10490e-02 DIIS
+   @DF-RHF iter   2:   -76.01019525066702   -5.31684e-02   7.21643e-03 DIIS
+   @DF-RHF iter   3:   -76.04083481028285   -3.06396e-02   5.18396e-04 DIIS
+   @DF-RHF iter   4:   -76.04121332649979   -3.78516e-04   1.16389e-04 DIIS
+   @DF-RHF iter   5:   -76.04123471651987   -2.13900e-05   2.62838e-05 DIIS
+   @DF-RHF iter   6:   -76.04123641176182   -1.69524e-06   5.29565e-06 DIIS
+   @DF-RHF iter   7:   -76.04123648476757   -7.30058e-08   8.84277e-07 DIIS
+
+  DF guess converged.
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Schwarz Cutoff:          1E-12
+
+   @RHF iter   8:   -76.04125668090663   -7.60413e+01   4.67670e-06 DIIS
+   @RHF iter   9:   -76.04125669376049   -1.28539e-08   6.32870e-07 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.577739     2A     -1.355221     3A     -0.717756  
+       4A     -0.585141     5A     -0.509218  
+
+    Virtual:                                                              
+
+       6A      0.035390     7A      0.057915     8A      0.174039  
+       9A      0.196812    10A      0.222451    11A      0.231524  
+      12A      0.290015    13A      0.331105    14A      0.385606  
+      15A      0.403674    16A      0.433391    17A      0.538814  
+      18A      0.647949    19A      0.658101    20A      0.810556  
+      21A      0.928975    22A      1.101244    23A      1.115395  
+      24A      1.148645    25A      1.306872    26A      1.466247  
+      27A      1.482348    28A      1.582934    29A      2.001554  
+      30A      2.009988    31A      2.107336    32A      2.367042  
+      33A      2.477342    34A      2.622363    35A      2.714256  
+      36A      2.965894    37A      3.672862    38A      3.689784  
+      39A      3.702440    40A      4.023740    41A      4.303266  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+
+  @RHF Final Energy:   -76.04125669376049
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1681932964243469
+    One-Electron Energy =                -122.9287504920067988
+    Two-Electron Energy =                  37.7193005018219623
+    Total Energy =                        -76.0412566937604879
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.9783
+
+  Electronic Dipole Moment: [e a0]
+     X:    -0.0000      Y:    -0.0000      Z:    -0.1910
+
+  Dipole Moment: [e a0]
+     X:    -0.0000      Y:    -0.0000      Z:     0.7873     Total:     0.7873
+
+  Dipole Moment: [D]
+     X:    -0.0000      Y:    -0.0000      Z:     2.0011     Total:     2.0011
+
+
+*** tstop() called on ds10 at Wed Aug 11 20:23:26 2021
+Module time:
+	user time   =       0.42 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.42 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+    HF Density Screening Energy...........................................................PASSED
+
+    Psi4 stopped on: Wednesday, 11 August 2021 08:23PM
+    Psi4 wall time for execution: 0:00:00.49
+
+*** Psi4 exiting successfully. Buy a developer a beer!
