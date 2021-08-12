@@ -431,6 +431,8 @@ void HF::find_occupation() {
     if (MOM_performed_) {
         MOM();
     } else {
+        // We first find the aufbau occupation.
+        // We then take our orbitals as the aufbau orbitals within the occupation.
         std::vector<std::pair<double, int> > pairs_a;
         std::vector<std::pair<double, int> > pairs_b;
         for (int h = 0; h < epsilon_a_->nirrep(); ++h) {

@@ -305,7 +305,8 @@ class HF : public Wavefunction {
     /// Save the current density and energy.
     virtual void save_density_and_energy();
 
-    /// Reset to regular occupation from the fractional occupation
+    /// Reset to the user-specified DOCC/SOCC if any, and zero's otherwise.
+    /// Fractional occupation requires this.
     void reset_occupation();
 
     /// Compute energy for the iteration.

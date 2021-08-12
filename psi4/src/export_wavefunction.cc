@@ -349,7 +349,7 @@ void export_wavefunction(py::module& m) {
         .def("set_external_cpscf_perturbation", &scf::HF::set_external_cpscf_perturbation,
              "Add an external potential/perturbation to the private external_cpscf_perturbations map for CPSCF", "name"_a, "function"_a)
         .def("clear_external_cpscf_perturbations", &scf::HF::clear_external_cpscf_perturbations, "Clear private external_cpscf_perturbations map")
-        .def_property("iteration_", &scf::HF::iteration, &scf::HF::set_iteration, "docstring")
+        .def_property("iteration_", &scf::HF::iteration, &scf::HF::set_iteration, "Internal iterator for SCF cycles. After completion, this equals the number of iterations taken to converge the SCF equations.")
         .def_property("diis_enabled_", &scf::HF::diis_enabled, &scf::HF::set_diis_enabled, "docstring")
         .def_property("diis_start_", &scf::HF::diis_start, &scf::HF::set_diis_start, "docstring")
         .def_property("frac_performed_", &scf::HF::frac_performed, &scf::HF::set_frac_performed,

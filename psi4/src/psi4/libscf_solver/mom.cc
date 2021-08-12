@@ -62,7 +62,7 @@ namespace scf {
 
 void HF::MOM_start() {
     // Perhaps no MOM (or at least no MOM_start())?
-    if (iteration_ != options_.get_int("MOM_START") || iteration_ == 0 || MOM_performed_) return;
+    if (iteration_ != options_.get_int("MOM_START") || options_.get_int("MOM_START") == 0 || MOM_performed_) return;
 
     // If we're here, we're doing MOM of some kind
     MOM_performed_ = true;  // Gets printed next iteration
@@ -86,8 +86,7 @@ void HF::MOM_start() {
     print_orbitals();
     outfile->Printf("\n  ==> MOM Excited-State Iterations <==\n\n");
 
-    // Reset iterations and DIIS (will automagically restart)
-    iteration_ = 0;
+    // Reset DIIS (will automagically restart)
     if (initialized_diis_manager_) {
         diis_manager_->delete_diis_file();
         diis_manager_.reset();
@@ -594,7 +593,6 @@ void HF::MOM_start() {
     outfile->Printf("\n                        Total Energy        Delta E      Density RMS\n\n");
 }
 void HF::MOM() {
-    // Go MOM go!
     // Alpha
     for (int h = 0; h < nirrep_; h++) {
         // Indexing
