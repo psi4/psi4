@@ -827,7 +827,8 @@ void OEProp::compute() {
     if (tasks_.count("MO_EXTENTS")) compute_mo_extents();
     if (tasks_.count("MULLIKEN_CHARGES")) compute_mulliken_charges();
     if (tasks_.count("LOWDIN_CHARGES")) compute_lowdin_charges();
-    if (tasks_.count("MBIS_CHARGES")) compute_mbis_multipoles();
+    if (tasks_.count("MBIS_VOLUME_RATIOS")) compute_mbis_multipoles(true);
+    else if (tasks_.count("MBIS_CHARGES")) compute_mbis_multipoles(false);
     if (tasks_.count("MAYER_INDICES")) compute_mayer_indices();
     if (tasks_.count("WIBERG_LOWDIN_INDICES")) compute_wiberg_lowdin_indices();
     if (tasks_.count("NO_OCCUPATIONS")) compute_no_occupations();
@@ -1848,9 +1849,9 @@ PopulationAnalysisCalc::compute_lowdin_charges(bool print_output) {
 }
 
 // See PopulationAnalysisCalc::compute_mbis_multipoles
-void OEProp::compute_mbis_multipoles() {
+void OEProp::compute_mbis_multipoles(bool free_atom_volumes) {
     SharedMatrix mpole, dpole, qpole, opole;
-    std::tie(mpole, dpole, qpole, opole) = pac_.compute_mbis_multipoles(true);
+    std::tie(mpole, dpole, qpole, opole) = pac_.compute_mbis_multipoles(free_atom_volumes, true);
 
     wfn_->set_array_variable("MBIS CHARGES", mpole);
     wfn_->set_array_variable("MBIS DIPOLES", dpole);
@@ -1990,7 +1991,7 @@ std::vector<SharedMatrix> compute_radial_moments(const std::shared_ptr<DFTGrid>&
 
 // Minimal Basis Iterative Stockholder (JCTC, 2016, p. 3894-3912, Verstraelen et al.)
 std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAnalysisCalc::compute_mbis_multipoles(
-    bool print_output) {
+    bool free_atom_volumes, bool print_output) {
     if (print_output) outfile->Printf("  ==> Computing MBIS Charges <==\n\n");
     timer_on("MBIS");
 
@@ -2395,14 +2396,16 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
     // Compute the volume widths, only for molecules
     bool free_atom = (num_atoms == 1);
     auto volume_ratios = valence_widths->clone();
-    volume_ratios->zero();
-    if (free_atom == false) {
-        for (int a = 0; a < num_atoms; ++a) {
-            double free_atom = wfn_->scalar_variable("MBIS FREE ATOM " + mol->label(a) + " VOLUME");
-            double vr = rmoms[1]->get(a, 0) / free_atom;
-            volume_ratios->set(a, 0, vr);
+    if (free_atom_volumes) {
+        volume_ratios->zero();
+        if (free_atom == false) {
+            for (int a = 0; a < num_atoms; ++a) {
+                double free_atom = wfn_->scalar_variable("MBIS FREE ATOM " + mol->label(a) + " VOLUME");
+                double vr = rmoms[1]->get(a, 0) / free_atom;
+                volume_ratios->set(a, 0, vr);
+            }
+            wfn_->set_array_variable("MBIS VOLUME RATIOS", volume_ratios);
         }
-        wfn_->set_array_variable("MBIS VOLUME RATIOS", volume_ratios);
     }
 
     if (print_output) {
@@ -2425,13 +2428,14 @@ std::tuple<SharedMatrix, SharedMatrix, SharedMatrix, SharedMatrix> PopulationAna
             outfile->Printf("  %5d      %2s %4d   %9.6f\n", a + 1, mol->label(a).c_str(), static_cast<int>(mol->Z(a)),
                             valence_widths->get(a, 0));
         }
-
-        if (free_atom == false) {
-            outfile->Printf("\n\n  MBIS Volume Ratios: \n");
-            outfile->Printf("   Center  Symbol  Z     \n");
-            for (int a = 0; a < num_atoms; a++) {
-                outfile->Printf("  %5d      %2s %4d   %9.6f\n", a + 1, mol->label(a).c_str(),
-                                static_cast<int>(mol->Z(a)), volume_ratios->get(a, 0));
+        if (free_atom_volumes) {
+            if (free_atom == false) {
+                outfile->Printf("\n\n  MBIS Volume Ratios: \n");
+                outfile->Printf("   Center  Symbol  Z     \n");
+                for (int a = 0; a < num_atoms; a++) {
+                    outfile->Printf("  %5d      %2s %4d   %9.6f\n", a + 1, mol->label(a).c_str(),
+                                    static_cast<int>(mol->Z(a)), volume_ratios->get(a, 0));
+                }
             }
         }
     }
