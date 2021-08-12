@@ -387,13 +387,13 @@ Build Psi4conda set
 
 Installers are build using the project ``constructor`` and build binary bash or exe scripts, one per OS per Python version. In analogy to Miniconda, they're called Psi4Conda. They are built through GHA on the psi4meta repo and get served from vergil (cdsgroup webserver).
 
-https://github.com/psi4/psi4meta/blob/master/.github/workflows/Installers.yml
 * Edit recipe https://github.com/psi4/psi4meta/blob/master/installers/construct.yaml
   - Edit the top matter for Configuration. See snapshots in directory for examples.
     - Edit ``release`` fields. (Windows is often ``dev1`` unless separate steps.)
     - Edit ``ltrtver`` field. This matches the current setting in ``conda_build_config.yaml``
     - For prereleases, ``"channel_tag": "/label/dev"``, while for (post)releases, it should be the empty string
   - Edit the packages and channels info if necessary. Probably long-term stable.
+
 * Edit the GHA control file https://github.com/psi4/psi4meta/blob/master/.github/workflows/Installers.yml matrix.cfg
 * All conda packages must already have been built and in the right ``channel_tag`` channel.
 * Commit ``construct.yaml`` to trigger installer builds.
