@@ -214,9 +214,9 @@ void JK::common_init() {
 
     Options& options = Process::environment.options;
     density_screening_ = options.get_str("SCREENING") == "DENSITY";
-    ifb_ = options.get_bool("IFB");
+    ifb_ = options.get_bool("INCFOCK");
     d_conv_ = options.get_double("D_CONVERGENCE");
-    ifb_d_conv_ = options.get_double("IFB_D_CONVERGENCE");
+    ifb_d_conv_ = options.get_double("INCFOCK_CONVERGENCE");
     do_ifb_iter_ = false; // Initialize do IFB iteration
 }
 size_t JK::memory_overhead() const {

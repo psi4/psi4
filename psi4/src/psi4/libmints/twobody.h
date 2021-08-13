@@ -35,7 +35,6 @@
 #include <memory>
 #include <tuple>
 #include <vector>
-#include <initializer_list>
 
 #ifdef _POSIX_C_SOURCE
 #undef _POSIX_C_SOURCE
@@ -156,7 +155,7 @@ class PSI_API TwoBodyAOInt {
     bool shell_significant_csam(int M, int N, int R, int S);
     /// Implements Schwarz inequality screening of a shell quartet
     bool shell_significant_schwarz(int M, int N, int R, int S);
-    /// Implements Density Matrix Based Screening of a shell quartet (Haser 1989)
+    /// Asks whether this shell quartet contributes by the density test (Haser 1989)
     bool shell_significant_density(int M, int N, int R, int S);
     /// Implements the null screening of a shell quartet - always true
     bool shell_significant_none(int M, int N, int R, int S);

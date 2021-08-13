@@ -1440,9 +1440,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             to make the wavefunction stable. !expert -*/
         options.add_int("MAX_ATTEMPTS", 1);
         /*- Do Perform Incremental Fock Build? -*/
-        options.add_bool("IFB", false);
+        options.add_bool("INCFOCK", false);
         /*- Density Threshold to stop Incremental Fock Build -*/
-        options.add_double("IFB_D_CONVERGENCE", 1.0e-5);
+        options.add_double("INCFOCK_CONVERGENCE", 1.0e-5);
 
         /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 

@@ -83,7 +83,6 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory *intsfactory, int deriv)
     
     if (screening_threshold_ == 0.0) screening_type_ = ScreeningType::None;
 
-    max_dens_shell_pair_.resize(bs1_->nshell() * bs1_->nshell(), 1.0);
 }
 
 TwoBodyAOInt::TwoBodyAOInt(const TwoBodyAOInt &rhs) : TwoBodyAOInt(rhs.integral_, rhs.deriv_) {
@@ -100,6 +99,7 @@ TwoBodyAOInt::TwoBodyAOInt(const TwoBodyAOInt &rhs) : TwoBodyAOInt(rhs.integral_
     screening_type_ = rhs.screening_type_;
     function_pair_values_ = rhs.function_pair_values_;
     shell_pair_values_ = rhs.shell_pair_values_;
+    max_dens_shell_pair_ = rhs.max_dens_shell_pair_;
     shell_pair_exchange_values_ = rhs.shell_pair_exchange_values_;
     function_sqrt_ = rhs.function_sqrt_;
     function_pairs_ = rhs.function_pairs_;
@@ -122,7 +122,7 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
     timer_on("Update Density");
 #pragma omp parallel for
     for (int M = 0; M < nshell_; M++) {
-        for (int N = 0; N < nshell_; N++) {
+        for (int N = M; N < nshell_; N++) {
             int m_start = bs1_->shell(M).function_index();
             int num_m = bs1_->shell(M).nfunction();
 
@@ -141,6 +141,7 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
             }
             
             max_dens_shell_pair_[M * nshell_ + N] = max_dens;
+            if (M != N) max_dens_shell_pair_[N * nshell_ + M] = max_dens;
         }
     }
     timer_off("Update Density");
@@ -151,24 +152,19 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
 bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
 
     // THR in Equation 9
-    double density_threshold = screening_threshold_squared_;
+    double density_threshold_squared = screening_threshold_squared_;
 
     // Equation 13
     double Q_MN_sq = shell_pair_values_[N * nshell_ + M];
     double Q_RS_sq = shell_pair_values_[S * nshell_ + R];
 
-    std::initializer_list<double> block_densities {max_dens_shell_pair_[M * nshell_ + N], max_dens_shell_pair_[R * nshell_ + S], 
-        0.25 * max_dens_shell_pair_[M * nshell_ + R], 0.25 * max_dens_shell_pair_[M * nshell_ + S],
-        0.25 * max_dens_shell_pair_[N * nshell_ + R], 0.25 * max_dens_shell_pair_[N * nshell_ + S]};
-
     // Equation 6
-    double max_density = std::max(block_densities);
-    // Squared to account for the fact that Q_MN is given as its square
-    max_density = max_density * max_density;
+    double max_density = std::max({max_dens_shell_pair_[M * nshell_ + N], max_dens_shell_pair_[R * nshell_ + S], 
+        0.25 * max_dens_shell_pair_[M * nshell_ + R], 0.25 * max_dens_shell_pair_[M * nshell_ + S],
+        0.25 * max_dens_shell_pair_[N * nshell_ + R], 0.25 * max_dens_shell_pair_[N * nshell_ + S]});
 
     // Equations 6, 9, and 14
-    if (Q_MN_sq * Q_RS_sq * max_density > density_threshold) return true;
-    return false;
+    return (Q_MN_sq * Q_RS_sq * max_density * max_density > density_threshold_squared);
 }
 
 bool TwoBodyAOInt::shell_significant_csam(int M, int N, int R, int S) { 
@@ -390,6 +386,10 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
                 shell_pair_exchange_values_[P * nshell_ + Q] = shell_pair_exchange_values_[Q * nshell_ + P] = max_val;
             }
         }
+    }
+
+    if (screening_type_ == ScreeningType::Density) {
+        max_dens_shell_pair_.resize(nshell_ * nshell_, 1.0);
     }
 }
 

@@ -305,7 +305,7 @@ ExternalProject_Add(psi4-core
    BUILD_ALWAYS 1)
 
 add_subdirectory(external/downstream)
-add_subdirectory(doc)
+# add_subdirectory(doc)
 include(ConfigTesting)
 
 # <<<  Install  >>>
