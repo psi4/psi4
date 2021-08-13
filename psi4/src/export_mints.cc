@@ -1138,7 +1138,8 @@ void export_mints(py::module& m) {
              "Return the si'th Gaussian shell on center", "center"_a, "si"_a)
         .def("n_frozen_core", &BasisSet::n_frozen_core,
              "Returns the number of orbital (non-ECP) frozen core electrons. For a given molecule and "
-             ":term:`FREEZE_CORE <FREEZE_CORE (GLOBALS)>`, `(n_ecp_core()/2 + n_frozen_core()) = constant`.")
+             ":term:`FREEZE_CORE <FREEZE_CORE (GLOBALS)>`, `(n_ecp_core()/2 + n_frozen_core()) = constant`.",
+             "local"_a="", "molecule"_a=nullptr)
         .def("n_ecp_core", ncore_no_args(&BasisSet::n_ecp_core),
              "Returns the total number of core electrons associated with all ECPs in this basis.")
         .def("n_ecp_core", ncore_one_arg(&BasisSet::n_ecp_core),
@@ -1171,7 +1172,13 @@ void export_mints(py::module& m) {
         .def("max_function_per_shell", &BasisSet::max_function_per_shell,
              "The max number of basis functions in a shell")
         .def("max_nprimitive", &BasisSet::max_nprimitive, "The max number of primitives in a shell")
-        .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring");
+        .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring")
+        .def("compute_phi", [](BasisSet& basis, double x, double y, double z) {
+            auto phi_ao = new std::vector<double>(basis.nbf());
+            auto capsule = py::capsule(phi_ao, [](void *phi_ao) { delete reinterpret_cast<std::vector<double>*>(phi_ao); });
+            basis.compute_phi(phi_ao->data(), x, y, z);
+            return py::array(phi_ao->size(), phi_ao->data(), capsule);
+        }, "Calculate the value of all basis functions at a given point x, y, and z");
 
     py::class_<OneBodyAOInt, std::shared_ptr<OneBodyAOInt>> pyOneBodyAOInt(
         m, "OneBodyAOInt", "Basis class for all one-electron integrals");

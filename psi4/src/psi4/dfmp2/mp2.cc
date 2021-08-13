@@ -2203,24 +2203,10 @@ void RDFMP2::form_Z() {
             Ppq->partial_square_root(options_.get_double("DFMP2_P2_TOLERANCE"));
         auto P1 = factor1.first;
         auto N1 = factor1.second;
-        auto P1p = P1->pointer();
-        auto N1p = N1->pointer();
 
         // > Back-transform the transition orbitals < //
-        auto P1AO = std::make_shared<Matrix>("P AO", nso, P1->colspi()[0]);
-        auto N1AO = std::make_shared<Matrix>("N AO", nso, N1->colspi()[0]);
-        auto P1AOp = P1AO->pointer();
-        auto N1AOp = N1AO->pointer();
-
-        if (P1->colspi()[0]) {
-            C_DGEMM('N', 'N', nso, P1->colspi()[0], nmo, 1.0, Cp[0], nmo, P1p[0], P1->colspi()[0], 0.0, P1AOp[0],
-                    P1->colspi()[0]);
-        }
-
-        if (N1->colspi()[0]) {
-            C_DGEMM('N', 'N', nso, N1->colspi()[0], nmo, 1.0, Cp[0], nmo, N1p[0], N1->colspi()[0], 0.0, N1AOp[0],
-                    N1->colspi()[0]);
-        }
+        auto P1AO = linalg::doublet(C, P1);
+        auto N1AO = linalg::doublet(C, N1);
 
         // > Form the J/K-like matrices (P,N contributions are separable) < //
         Cl.clear();
@@ -2320,24 +2306,10 @@ void RDFMP2::form_Z() {
         dPpq->partial_square_root(options_.get_double("DFMP2_P2_TOLERANCE"));
     auto P2 = factor2.first;
     auto N2 = factor2.second;
-    auto P2p = P2->pointer();
-    auto N2p = N2->pointer();
 
     // > Back-transform the transition orbitals < //
-    auto P2AO = std::make_shared<Matrix>("P AO", nso, P2->colspi()[0]);
-    auto N2AO = std::make_shared<Matrix>("N AO", nso, N2->colspi()[0]);
-    auto P2AOp = P2AO->pointer();
-    auto N2AOp = N2AO->pointer();
-
-    if (P2->colspi()[0]) {
-        C_DGEMM('N', 'N', nso, P2->colspi()[0], nmo, 1.0, Cp[0], nmo, P2p[0], P2->colspi()[0], 0.0, P2AOp[0],
-                P2->colspi()[0]);
-    }
-
-    if (N2->colspi()[0]) {
-        C_DGEMM('N', 'N', nso, N2->colspi()[0], nmo, 1.0, Cp[0], nmo, N2p[0], N2->colspi()[0], 0.0, N2AOp[0],
-                N2->colspi()[0]);
-    }
+    auto P2AO = linalg::doublet(C, P2);
+    auto N2AO = linalg::doublet(C, N2);
 
     // > Form the J/K-like matrices (P,N contributions are separable) < //
     Cl.clear();

@@ -23,5 +23,6 @@ energy('ccsd(at)')
 
 compare_values(refcc, variable("CCSD TOTAL ENERGY"), 6, "DF-CCSD");               #TEST
 compare_values(refcc_at, variable("CCSD(AT) TOTAL ENERGY"), 6, "DF-CCSD(AT)");               #TEST
+compare_values(refcc_at, variable("A-CCSD(T) TOTAL ENERGY"), 6, "DF-CCSD(AT)");               #TEST
 
 

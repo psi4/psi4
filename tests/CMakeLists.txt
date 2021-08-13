@@ -65,8 +65,8 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   fnocc3 fnocc4 fnocc5 fnocc6 frac frac-ip-fitting frac-traverse ghosts gibbs
                   lccd-grad1 lccd-grad2 matrix1 mbis-1 mbis-2 mbis-3 mbis-4 mbis-5 mbis-6 mcscf1 mcscf2 mcscf3
                   mints1 mints2 mints3 mints4 mints5 mints6 mints8 mints-benchmark mints-helper
-                  mints9 mints10 mints15 molden1 molden2 mom mp2-1  mp2-def2 mp2-grad1 mp2-grad2 mp2-h
-                  mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2
+                  mints9 mints10 mints15 molden1 molden2 mom mom-h2o-3 mom-h2o-4
+                  mp2-1  mp2-def2 mp2-grad1 mp2-grad2 mp2-h mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2
                   mp2-property mpn-bh nbody-he-cluster nbody-intermediates nbody-nocp-gradient
                   nbo nbody-cp-gradient nbody-vmfc-gradient nbody-convergence
                   nbody-freq nbody-multi-level numpy-array-interface
@@ -76,7 +76,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   omp3-3 omp3-4 omp3-5 omp3-grad1 omp3-grad2 opt-lindep-change
                   opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 opt6 opt7 opt8 opt9
                   opt11 opt12 opt13 opt14 opt-irc-1 opt-irc-2 opt-irc-3 opt-freeze-coords
-                  opt-full-hess-every
+                  opt-full-hess-every phi-ao
                   props1 props2 props3 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2
                   psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-fd-freq1
                   psimrcc-fd-freq2 psimrcc-pt2 psimrcc-sp1 psithon1 psithon2
@@ -88,8 +88,9 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   rasci-ne rasscf-sp sad-scf-type sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc sapt-ecp
                   sapt-exch-disp-inf
                   sapt7 sapt8 scf-bz2 scf-dipder scf-ecp scf-guess scf-guess-read1 scf-upcast-custom-basis
-                  scf-guess-read2 scf-guess-read3 scf-bs scf1 scf-occ scf2 scf3 scf4 scf5 scf6 scf7 scf-level-shift-rks scf-level-shift-uhf scf-level-shift-cuhf scf-level-shift-rohf
-                  scf-property serial-wfn soscf-large soscf-ref
+                  scf-guess-read2 scf-guess-read3 scf-bs scf1 scf-occ scf2 scf3 scf4 scf5 scf6
+                  scf7 scf-level-shift-rks scf-level-shift-uhf scf-level-shift-cuhf scf-level-shift-rohf
+                  scf-property soscf-large soscf-ref
                   soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare sapt-sf1 dft-custom dft-reference
                   stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 scf-response2 scf-cholesky-basis scf-auto-cholesky
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 x2c-perturb-h zaptn-nh2
@@ -97,7 +98,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   dft-custom-dhdf dft-custom-hybrid dft-custom-mgga dft-custom-gga
                   pywrap-bfs pywrap-align pywrap-align-chiral mints12 cc-module
                   tdscf-1 tdscf-2 tdscf-3 tdscf-4 tdscf-5
-                  basis-ecp dft-pruning freq-masses sapt9 sapt10
+                  basis-ecp dft-pruning freq-masses sapt9 sapt10 sapt11
 )
     add_subdirectory(${test_name})
 endforeach()

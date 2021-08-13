@@ -46,7 +46,12 @@
 using namespace psi;
 ;
 
-MoldenWriter::MoldenWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {}
+
+MoldenWriter::MoldenWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {
+    outfile->Printf("\tConstructing a MoldenWriter and then calling write instead of using `wfn.write_molden(name)`\n");
+    outfile->Printf("\tis both buggy and deprecated, and in 1.5 it will stop working.\n\n");
+}
+
 void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb,
                          std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA,
                          std::shared_ptr<Vector> OccB, bool dovirtual) {
@@ -67,7 +72,7 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
     printer->Printf("[Atoms] (AU)\n");
     for (atom = 0; atom < mol.natom(); ++atom) {
         Vector3 coord = mol.xyz(atom);
-        printer->Printf("%-2s  %2d  %3d   %20.12f %20.12f %20.12f\n", mol.symbol(atom).c_str(), atom + 1,
+        printer->Printf("%-2s  %2d  %3d   %20.10f %20.10f %20.10f\n", mol.symbol(atom).c_str(), atom + 1,
                         static_cast<int>(mol.Z(atom)), coord[0], coord[1], coord[2]);
     }
 
@@ -202,14 +207,14 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
         int n = mos[i].second.second;
 
         printer->Printf(" Sym= %s\n", ct.gamma(h).symbol());
-        printer->Printf(" Ene= %24.17e\n", Ea->get(h, n));
+        printer->Printf(" Ene= %24.10e\n", Ea->get(h, n));
         printer->Printf(" Spin= Alpha\n");
         if (Ca == Cb && Ea == Eb && SameOcc)
-            printer->Printf(" Occup= %24.17e\n", OccA->get(h, n) + OccB->get(h, n));
+            printer->Printf(" Occup= %24.10e\n", OccA->get(h, n) + OccB->get(h, n));
         else
-            printer->Printf(" Occup= %24.17e\n", OccA->get(h, n));
+            printer->Printf(" Occup= %24.10e\n", OccA->get(h, n));
         for (int so = 0; so < wavefunction_->nso(); ++so)
-            printer->Printf("%3d %24.17e\n", so + 1, Ca_ao_mo->get(h, so, n));
+            printer->Printf("%3d %24.10e\n", so + 1, Ca_ao_mo->get(h, so, n));
     }
 
     // do beta's
@@ -227,11 +232,11 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
             int n = mos[i].second.second;
 
             printer->Printf(" Sym= %s\n", ct.gamma(h).symbol());
-            printer->Printf(" Ene= %24.17e\n", Eb->get(h, n));
+            printer->Printf(" Ene= %24.10e\n", Eb->get(h, n));
             printer->Printf(" Spin= Beta\n");
-            printer->Printf(" Occup= %24.17e\n", OccB->get(h, n));
+            printer->Printf(" Occup= %24.10e\n", OccB->get(h, n));
             for (int so = 0; so < wavefunction_->nso(); ++so)
-                printer->Printf("%3d %24.17e\n", so + 1, Cb_ao_mo->get(h, so, n));
+                printer->Printf("%3d %24.10e\n", so + 1, Cb_ao_mo->get(h, so, n));
         }
     }
 }

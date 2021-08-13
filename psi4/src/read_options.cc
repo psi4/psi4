@@ -1340,6 +1340,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- If true, then repeat the specified guess procedure for the orbitals every time -
         even during a geometry optimization. -*/
         options.add_bool("GUESS_PERSIST", false);
+        /*- File name (case sensitive) to which to serialize Wavefunction orbital data. -*/
+        options.add_str_i("ORBITALS_WRITE", "");
 
         /*- Do print the molecular orbitals? -*/
         options.add_bool("PRINT_MOS", false);

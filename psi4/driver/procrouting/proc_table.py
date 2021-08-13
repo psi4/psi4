@@ -105,7 +105,9 @@ procedures = {
         'ccenergy'      : proc.run_ccenergy,  # full control over ccenergy
         'ccsd'          : proc.select_ccsd,
         'ccsd(t)'       : proc.select_ccsd_t_,
-        'ccsd(at)'      : proc.select_ccsd_at_,
+        'ccsd(at)'      : proc.select_ccsd_at_,  # alias
+        'a-ccsd(t)'     : proc.select_ccsd_at_,
+        'lambda-ccsd(t)': proc.select_ccsd_at_,  # alias
         'cc2'           : proc.run_ccenergy,
         'cc3'           : proc.run_ccenergy,
         'mrcc'          : proc.run_mrcc,  # interface to Kallay's MRCC program

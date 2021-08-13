@@ -63,6 +63,12 @@ SAPT: Symmetry-Adapted Perturbation Theory
    possible discrepancies with prior versions of the code on the order of
    0.01 kcal/mol. See https://github.com/psi4/psi4/issues/1677
 
+.. caution:: August 2021, the number of frozen core orbitals used in the dMP2 computations
+   is now standardized. Specifically, we now rigorously enforce that the number of core orbitals 
+   frozen in dimer computations is equal to the sum of frozen orbitals of each monomer. Prior to
+   this, a discrepency between these values was possible when one of the monomers was (exclusively) 
+   a charged alkali metal. 
+
 Symmetry-adapted perturbation theory (SAPT) provides a means of directly
 computing the noncovalent interaction between two molecules, that is, the
 interaction energy is determined without computing the total energy of the
@@ -414,7 +420,7 @@ then instructs the program to read these integrals from disk instead of recomput
 them. For each SCF computation, we use ``psi4.IO.set_default_namespace`` to uniquely
 name scratch files. In the following SCF step, only file 97 is renamed using
 ``psi4.IO.change_file_namespace`` so that integrals can be read from it.
-For more information on stability analysis, see the :ref:`stability <stability_doc>`
+For more information on stability analysis, see the :ref:`stability <sec:scfstability_doc>`
 documentation.
 
 .. index:: SAPT; SAPT0

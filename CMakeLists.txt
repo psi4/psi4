@@ -75,9 +75,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #
 #    - ENV(MATH_ROOT) "Root directory where BLAS/LAPACK libraries should be detected (e.g., ${MATH_ROOT}/lib/libblas.so)"
 #    - BLAS_TYPE "Target BLAS distribution for math detection
-#                 (default: search order MKL>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
+#                 (default: search order MKL>FLEXIBLAS>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
 #    - LAPACK_TYPE "Target LAPACK distribution for math detection
-#                 (default: search order MKL>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
+#                 (default: search order MKL>FLEXIBLAS>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
 #    - LAPACK_LIBRARIES "Location of BLAS/LAPACK libraries as ";"-separated list of full paths, bypassing math detection"
 #    - LAPACK_INCLUDE_DIRS "Location of BLAS/LAPACK headers (only needed for MKL), bypassing math detection"
 #    - OpenMP_LIBRARY_DIRS "Location of OpenMP libraries (iomp5/gomp/omp) as ";"-separated list, hinting OpenMP detection"
@@ -189,11 +189,11 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 # * headers: Python.h for pybind11 to build against in psi4-core
 # * library: not at all
 
-set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7 3.6)  # adjust with CMake minimum FindPythonInterp
+set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7)  # adjust with CMake minimum FindPythonInterp
 if(DEFINED ENV{LGTM_SRC})
     find_package(Python 3.7 EXACT COMPONENTS Interpreter Development REQUIRED)
 else()
-    find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
+    find_package(Python 3.7 COMPONENTS Interpreter Development NumPy REQUIRED)
 endif()
 message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION})")
 

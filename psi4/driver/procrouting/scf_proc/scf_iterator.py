@@ -62,8 +62,7 @@ def scf_compute_energy(self):
     """
     if core.get_option('SCF', 'DF_SCF_GUESS') and (core.get_global_option('SCF_TYPE') == 'DIRECT'):
         # speed up DIRECT algorithm (recomputes full (non-DF) integrals
-        #   each iter) by first converging via fast DF iterations, then
-        #   fully converging in fewer slow DIRECT iterations. aka Andy trick 2.0
+        #   each iter) by solving DF-SCF to get a guess. DF-SCF is faster than direct.
         core.print_out("  Starting with a DF guess...\n\n")
         with p4util.OptionsStateCM(['SCF_TYPE']):
             core.set_global_option('SCF_TYPE', 'DF')
@@ -186,7 +185,7 @@ def scf_initialize(self):
 
         efpobj.set_electron_density_field_fn(efp_field_fn)
 
-    # Initilize all integratals and perform the first guess
+    # Initialize all integrals and perform the first guess
     if self.attempt_number_ == 1:
         mints = core.MintsHelper(self.basisset())
 
@@ -239,6 +238,13 @@ def scf_initialize(self):
         self.functional().set_do_vv10(False)
         self.functional().set_lock(True)
 
+    # Print iteration header
+    is_dfjk = core.get_global_option('SCF_TYPE').endswith('DF')
+    diis_rms = core.get_option('SCF', 'DIIS_RMS_ERROR')
+    core.print_out("  ==> Iterations <==\n\n")
+    core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" %
+                   ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
+
 
 def scf_iterate(self, e_conv=None, d_conv=None):
 
@@ -254,12 +260,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     soscf_enabled = _validate_soscf()
     frac_enabled = _validate_frac()
     efp_enabled = hasattr(self.molecule(), 'EFP')
-    diis_rms = core.get_option('SCF', 'DIIS_RMS_ERROR')
-
-    if self.iteration_ < 2:
-        core.print_out("  ==> Iterations <==\n\n")
-        core.print_out("%s                        Total Energy        Delta E     %s |[F,P]|\n\n" %
-                       ("   " if is_dfjk else "", "RMS" if diis_rms else "MAX"))
 
     # SCF iterations!
     SCFE_old = 0.0
@@ -380,8 +380,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             # Normal convergence procedures if we do not do SOSCF
 
             # SAD: form initial orbitals from the initial Fock matrix, and
-            # reset the occupations. From here on, the density matrices
-            # are correct.
+            # reset the occupations. The reset is necessary because SAD
+            # nalpha_ and nbeta_ are not guaranteed physical.
+            # From here on, the density matrices are correct.
             if (self.iteration_ == 0) and self.sad_:
                 self.form_initial_C()
                 self.reset_occupation()
@@ -442,6 +443,10 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.damping_update(damping_percentage * 0.01)
             status.append("DAMP={}%".format(round(damping_percentage)))
 
+        if core.has_option_changed("SCF", "ORBITALS_WRITE"):
+            filename = core.get_option("SCF", "ORBITALS_WRITE")
+            self.to_file(filename)
+
         if verbose > 3:
             self.Ca().print_out()
             self.Cb().print_out()
@@ -455,7 +460,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
              ((self.iteration_ == 0) and self.sad_) else self.iteration_, SCFE, Ediff, Dnorm, '/'.join(status)))
 
         # if a an excited MOM is requested but not started, don't stop yet
-        if self.MOM_excited_ and not self.MOM_performed_:
+        # Note that MOM_performed_ just checks initialization, and our convergence measures used the pre-MOM orbitals
+        if self.MOM_excited_ and ((not self.MOM_performed_) or self.iteration_ == core.get_option('SCF', "MOM_START")):
             continue
 
         # if a fractional occupation is requested but not started, don't stop yet

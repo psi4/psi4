@@ -1242,8 +1242,8 @@ void BasisSet::move_atom(int atom, const Vector3 &trans) {
     xyz_[offset + 2] += trans[2];
 }
 
-void BasisSet::compute_phi(double *phi_ao, double x, double y, double z) {
-    zero_arr(phi_ao, nao());
+void BasisSet::compute_phi(double* phi_ao, double x, double y, double z) {
+    zero_arr(phi_ao, nbf());
 
     int ao = 0;
     for (int ns = 0; ns < nshell(); ns++) {
@@ -1262,12 +1262,32 @@ void BasisSet::compute_phi(double *phi_ao, double x, double y, double z) {
         double cexpr = 0;
         for (int np = 0; np < nprim; np++) cexpr += c[np] * exp(-a[np] * rr);
 
-        for (int l = 0; l < INT_NCART(am); l++) {
-            Vector3 &components = exp_ao[am][l];
-            phi_ao[ao + l] += pow(dx, (double)components[0]) * pow(dy, (double)components[1]) *
-                              pow(dz, (double)components[2]) * cexpr;
+        if (puream_) {
+            const auto s_transform = SphericalTransform(am);
+            std::vector<double> cart_buffer(INT_NCART(am), 0.0);
+
+            for (int l = 0; l < INT_NCART(am); l++) {
+                Vector3 &components = exp_ao[am][l];
+                cart_buffer[l] += pow(dx, static_cast<double>(components[0])) * pow(dy, static_cast<double>(components[1])) *
+                                pow(dz, static_cast<double>(components[2])) * cexpr;
+            }
+
+            for (int ind = 0; ind < s_transform.n(); ind++) {
+                int lcart = s_transform.cartindex(ind);
+                int lpure = s_transform.pureindex(ind);
+                double coef = s_transform.coef(ind);
+
+                phi_ao[ao + lpure] += coef * cart_buffer[lcart];
+            }
+
+        } else {
+            for (int l = 0; l < INT_NCART(am); l++) {
+                Vector3 &components = exp_ao[am][l];
+                phi_ao[ao + l] += pow(dx, static_cast<double>(components[0])) * pow(dy, static_cast<double>(components[1])) *
+                                pow(dz, static_cast<double>(components[2])) * cexpr;
+            }
         }
 
-        ao += INT_NCART(am);
+        ao += INT_NFUNC(puream_, am);
     }  // nshell
 }

@@ -24,7 +24,7 @@ else()
         OUTPUT_QUIET ERROR_QUIET RESULT_VARIABLE _exec_python_err)
 endif()
 if(_exec_python_err)
-    message(STATUS "No theme, no docs (try: conda install sphinx-psi-theme cloud_sptheme sphinx-automodapi graphviz python-graphviz -c conda-forge -c psi4)")
+    message(STATUS "No theme, no docs (try: conda install sphinx-psi-theme cloud_sptheme sphinx-automodapi sphinx-autodoc-typehints graphviz python-graphviz -c conda-forge -c psi4)")
     set(SPHINX_STUFF_FOUND "OFF")
 
 else()
