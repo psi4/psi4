@@ -1,3 +1,3 @@
 include(TestingMacros)
 
-add_regression_test(density-screen-1 "psi;quicktests;scf")
+add_regression_test(density-screen-2 "psi;quicktests;scf")
