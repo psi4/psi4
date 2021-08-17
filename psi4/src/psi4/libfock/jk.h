@@ -258,8 +258,6 @@ class PSI_API JK {
     bool density_screening_;
     /// Perform Incremental Fock Build for J and K Matrices?
     bool ifb_;
-    /// Density Matrix convergence criteria
-    double d_conv_;
     /// The density matrix convergence value at which to stop performing IFB
     double ifb_d_conv_;
     /// Do IFB on the current iteration?

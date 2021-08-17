@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.4rc4.dev56 
+                               Psi4 1.4rc4.dev62 
 
-                         Git: Rev {increfock} 5f02451 dirty
+                         Git: Rev {increfock} 9d963ff dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,11 +30,11 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 11 August 2021 08:23PM
+    Psi4 started on: Tuesday, 17 August 2021 10:12AM
 
-    Process ID: 15225
+    Process ID: 10836
     Host:       ds10
-    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-david/stage/share/psi4
+    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-caroline/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -68,15 +68,15 @@ psi4.compare_values(ref_energy, ds_energy, 6, "HF Density Screening Energy")----
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds10
-*** at Wed Aug 11 20:23:25 2021
+*** at Tue Aug 17 10:12:38 2021
 
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   254 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-david/stage/share/psi4/basis/aug-cc-pvdz.gbs 
-    atoms 2-3 entry H          line    40 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-david/stage/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 1   entry O          line   254 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-caroline/stage/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3 entry H          line    40 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-caroline/stage/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
@@ -138,8 +138,8 @@ Scratch directory: /scratch/jiang/
     Name: (AUG-CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   270 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-david/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    70 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-david/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   270 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-caroline/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    70 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-caroline/stage/share/psi4/basis/aug-cc-pvdz-jkfit.gbs 
 
   Starting with a DF guess...
 
@@ -189,14 +189,14 @@ Scratch directory: /scratch/jiang/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:   -75.46290553834118   -7.54629e+01   0.00000e+00 
-   @DF-RHF iter   1:   -75.95702688950914   -4.94121e-01   1.10490e-02 DIIS
-   @DF-RHF iter   2:   -76.01019525066702   -5.31684e-02   7.21643e-03 DIIS
-   @DF-RHF iter   3:   -76.04083481028285   -3.06396e-02   5.18396e-04 DIIS
-   @DF-RHF iter   4:   -76.04121332649979   -3.78516e-04   1.16389e-04 DIIS
-   @DF-RHF iter   5:   -76.04123471651987   -2.13900e-05   2.62838e-05 DIIS
-   @DF-RHF iter   6:   -76.04123641176182   -1.69524e-06   5.29565e-06 DIIS
-   @DF-RHF iter   7:   -76.04123648476757   -7.30058e-08   8.84277e-07 DIIS
+   @DF-RHF iter SAD:   -75.46290553834008   -7.54629e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.95702688950757   -4.94121e-01   1.10490e-02 DIIS
+   @DF-RHF iter   2:   -76.01019525066563   -5.31684e-02   7.21643e-03 DIIS
+   @DF-RHF iter   3:   -76.04083481028138   -3.06396e-02   5.18396e-04 DIIS
+   @DF-RHF iter   4:   -76.04121332649841   -3.78516e-04   1.16389e-04 DIIS
+   @DF-RHF iter   5:   -76.04123471651836   -2.13900e-05   2.62838e-05 DIIS
+   @DF-RHF iter   6:   -76.04123641176042   -1.69524e-06   5.29565e-06 DIIS
+   @DF-RHF iter   7:   -76.04123648476622   -7.30058e-08   8.84277e-07 DIIS
 
   DF guess converged.
 
@@ -208,8 +208,8 @@ Scratch directory: /scratch/jiang/
     Integrals threads:           1
     Schwarz Cutoff:          1E-12
 
-   @RHF iter   8:   -76.04125668090663   -7.60413e+01   4.67670e-06 DIIS
-   @RHF iter   9:   -76.04125669376049   -1.28539e-08   6.32870e-07 DIIS
+   @RHF iter   8:   -76.04125668090684   -7.60413e+01   4.67670e-06 DIIS
+   @RHF iter   9:   -76.04125669376072   -1.28539e-08   6.32870e-07 DIIS
   Energy and wave function converged.
 
 
@@ -242,14 +242,14 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [     5 ]
 
-  @RHF Final Energy:   -76.04125669376049
+  @RHF Final Energy:   -76.04125669376072
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1681932964243469
-    One-Electron Energy =                -122.9287504920067988
-    Two-Electron Energy =                  37.7193005018219623
-    Total Energy =                        -76.0412566937604879
+    One-Electron Energy =                -122.9287504920072962
+    Two-Electron Energy =                  37.7193005018222465
+    Total Energy =                        -76.0412566937607011
 
 Computation Completed
 
@@ -262,27 +262,27 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.9783
 
   Electronic Dipole Moment: [e a0]
-     X:    -0.0000      Y:    -0.0000      Z:    -0.1910
+     X:     0.0000      Y:    -0.0000      Z:    -0.1910
 
   Dipole Moment: [e a0]
-     X:    -0.0000      Y:    -0.0000      Z:     0.7873     Total:     0.7873
+     X:     0.0000      Y:    -0.0000      Z:     0.7873     Total:     0.7873
 
   Dipole Moment: [D]
-     X:    -0.0000      Y:    -0.0000      Z:     2.0011     Total:     2.0011
+     X:     0.0000      Y:    -0.0000      Z:     2.0011     Total:     2.0011
 
 
-*** tstop() called on ds10 at Wed Aug 11 20:23:26 2021
+*** tstop() called on ds10 at Tue Aug 17 10:12:39 2021
 Module time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.53 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.53 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
     HF Density Screening Energy...........................................................PASSED
 
-    Psi4 stopped on: Wednesday, 11 August 2021 08:23PM
-    Psi4 wall time for execution: 0:00:00.49
+    Psi4 stopped on: Tuesday, 17 August 2021 10:12AM
+    Psi4 wall time for execution: 0:00:01.22
 
 *** Psi4 exiting successfully. Buy a developer a beer!

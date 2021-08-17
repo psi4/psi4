@@ -136,7 +136,7 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
                     for (int i = 0; i < D.size(); i++) {
                         val += std::abs(D[i]->get(m, n));
                     }
-                    if (val > max_dens) max_dens = val;
+                    max_dens = std::max(val, max_dens);
                 }
             }
             

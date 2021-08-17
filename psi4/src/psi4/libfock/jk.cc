@@ -215,7 +215,6 @@ void JK::common_init() {
     Options& options = Process::environment.options;
     density_screening_ = options.get_str("SCREENING") == "DENSITY";
     ifb_ = options.get_bool("INCFOCK");
-    d_conv_ = options.get_double("D_CONVERGENCE");
     ifb_d_conv_ = options.get_double("INCFOCK_CONVERGENCE");
     do_ifb_iter_ = false; // Initialize do IFB iteration
 }
@@ -598,7 +597,7 @@ void JK::ifb_setup() {
     }
 }
 void JK::ifb_postiter() {
-    if (do_ifb_iter_) { // RMS D greater than 1.0e-5
+    if (do_ifb_iter_) {
         for (size_t N = 0; N < D_ao_.size(); N++) {
 
             if (do_wK_) {
@@ -618,7 +617,7 @@ void JK::ifb_postiter() {
 
             D_ao_prev_[N]->copy(D_ao_[N]);
         }
-    } else { // RMS D less than 1.0e-5
+    } else {
         for (size_t N = 0; N < D_ao_.size(); N++) {
             if (do_wK_) wK_ao_prev_[N]->copy(wK_ao_[N]);
             if (do_J_) J_ao_prev_[N]->copy(J_ao_[N]);

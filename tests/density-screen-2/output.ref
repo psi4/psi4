@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.4rc4.dev56 
+                               Psi4 1.4rc4.dev62 
 
-                         Git: Rev {increfock} 5f02451 dirty
+                         Git: Rev {increfock} 9d963ff dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,11 +30,11 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 11 August 2021 08:24PM
+    Psi4 started on: Tuesday, 17 August 2021 10:14AM
 
-    Process ID: 15303
+    Process ID: 10936
     Host:       ds10
-    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-david/stage/share/psi4
+    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-caroline/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -77,15 +77,15 @@ psi4.compare_values(ref_energy, ds_energy, 6, "B3LYP Density Screening Energy")-
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds10
-*** at Wed Aug 11 20:24:10 2021
+*** at Tue Aug 17 10:14:56 2021
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-6  entry C          line   186 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-david/stage/share/psi4/basis/cc-pvtz.gbs 
-    atoms 7-12 entry H          line    23 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-david/stage/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-6  entry C          line   186 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-caroline/stage/share/psi4/basis/cc-pvtz.gbs 
+    atoms 7-12 entry H          line    23 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-caroline/stage/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -210,8 +210,8 @@ Scratch directory: /scratch/jiang/
     Name: (CC-PVTZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1-6  entry C          line   125 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-david/stage/share/psi4/basis/cc-pvtz-jkfit.gbs 
-    atoms 7-12 entry H          line    51 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-david/stage/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 1-6  entry C          line   125 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-caroline/stage/share/psi4/basis/cc-pvtz-jkfit.gbs 
+    atoms 7-12 entry H          line    51 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-caroline/stage/share/psi4/basis/cc-pvtz-jkfit.gbs 
 
   Starting with a DF guess...
 
@@ -243,8 +243,8 @@ Scratch directory: /scratch/jiang/
 
   Cached 1.1% of DFT collocation blocks in 0.021 [GiB].
 
-  Minimum eigenvalue in the overlap matrix is 3.7592595821E-05.
-  Reciprocal condition number of the overlap matrix is 4.6398212531E-06.
+  Minimum eigenvalue in the overlap matrix is 3.7592595819E-05.
+  Reciprocal condition number of the overlap matrix is 4.6398212529E-06.
     Using symmetric orthogonalization.
 
   ==> Pre-Iterations <==
@@ -263,15 +263,15 @@ Scratch directory: /scratch/jiang/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:  -231.83026627827917   -2.31830e+02   0.00000e+00 
-   @DF-RKS iter   1:  -231.83550672660618   -5.24045e-03   3.65115e-03 DIIS
-   @DF-RKS iter   2:  -231.53466778158756    3.00839e-01   4.63424e-03 DIIS
-   @DF-RKS iter   3:  -232.32898684816820   -7.94319e-01   3.73715e-04 DIIS
-   @DF-RKS iter   4:  -232.33317117709038   -4.18433e-03   7.47832e-05 DIIS
-   @DF-RKS iter   5:  -232.33334748877556   -1.76312e-04   7.58187e-06 DIIS
-   @DF-RKS iter   6:  -232.33334783254975   -3.43774e-07   6.99684e-06 DIIS
-   @DF-RKS iter   7:  -232.33334976574278   -1.93319e-06   6.81955e-07 DIIS
-   @DF-RKS iter   8:  -232.33334978100356   -1.52608e-08   3.10875e-07 DIIS
+   @DF-RKS iter SAD:  -231.83026627816045   -2.31830e+02   0.00000e+00 
+   @DF-RKS iter   1:  -231.83550672649221   -5.24045e-03   3.65115e-03 DIIS
+   @DF-RKS iter   2:  -231.53466778147964    3.00839e-01   4.63424e-03 DIIS
+   @DF-RKS iter   3:  -232.32898684805073   -7.94319e-01   3.73715e-04 DIIS
+   @DF-RKS iter   4:  -232.33317117697109   -4.18433e-03   7.47832e-05 DIIS
+   @DF-RKS iter   5:  -232.33334748865724   -1.76312e-04   7.58187e-06 DIIS
+   @DF-RKS iter   6:  -232.33334783243120   -3.43774e-07   6.99684e-06 DIIS
+   @DF-RKS iter   7:  -232.33334976562426   -1.93319e-06   6.81955e-07 DIIS
+   @DF-RKS iter   8:  -232.33334978088538   -1.52611e-08   3.10875e-07 DIIS
 
   DF guess converged.
 
@@ -283,8 +283,8 @@ Scratch directory: /scratch/jiang/
     Integrals threads:           1
     Schwarz Cutoff:          1E-12
 
-   @RKS iter   9:  -232.33331388062632   -2.32333e+02   3.10826e-06 DIIS
-   @RKS iter  10:  -232.33331405717277   -1.76546e-07   1.37196e-07 DIIS
+   @RKS iter   9:  -232.33331388062547   -2.32333e+02   3.10826e-06 DIIS
+   @RKS iter  10:  -232.33331405717217   -1.76547e-07   1.37196e-07 DIIS
   Energy and wave function converged.
 
 
@@ -394,17 +394,17 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [    21 ]
 
-  @RKS Final Energy:  -232.33331405717277
+  @RKS Final Energy:  -232.33331405717217
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -714.7993948903546197
-    Two-Electron Energy =                 306.9306722970165993
-    DFT Exchange-Correlation Energy =     -28.1755228241136422
+    One-Electron Energy =                -714.7993948904212402
+    Two-Electron Energy =                 306.9306722970866872
+    DFT Exchange-Correlation Energy =     -28.1755228241165270
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -232.3333140571727711
+    Total Energy =                       -232.3333140571721742
 
 Computation Completed
 
@@ -417,27 +417,27 @@ Properties computed using the SCF density matrix
      X:  -147.6125      Y:   -22.9025      Z:     0.0000
 
   Electronic Dipole Moment: [e a0]
-     X:   147.6174      Y:    22.9057      Z:     0.0000
+     X:   147.6174      Y:    22.9057      Z:    -0.0000
 
   Dipole Moment: [e a0]
-     X:     0.0049      Y:     0.0032      Z:     0.0000     Total:     0.0059
+     X:     0.0049      Y:     0.0032      Z:    -0.0000     Total:     0.0059
 
   Dipole Moment: [D]
-     X:     0.0125      Y:     0.0081      Z:     0.0000     Total:     0.0149
+     X:     0.0125      Y:     0.0081      Z:    -0.0000     Total:     0.0149
 
 
-*** tstop() called on ds10 at Wed Aug 11 20:26:00 2021
+*** tstop() called on ds10 at Tue Aug 17 10:16:38 2021
 Module time:
-	user time   =     109.96 seconds =       1.83 minutes
-	system time =       0.58 seconds =       0.01 minutes
-	total time  =        110 seconds =       1.83 minutes
+	user time   =     101.38 seconds =       1.69 minutes
+	system time =       0.74 seconds =       0.01 minutes
+	total time  =        102 seconds =       1.70 minutes
 Total time:
-	user time   =     109.96 seconds =       1.83 minutes
-	system time =       0.58 seconds =       0.01 minutes
-	total time  =        110 seconds =       1.83 minutes
+	user time   =     101.38 seconds =       1.69 minutes
+	system time =       0.74 seconds =       0.01 minutes
+	total time  =        102 seconds =       1.70 minutes
     B3LYP Density Screening Energy........................................................PASSED
 
-    Psi4 stopped on: Wednesday, 11 August 2021 08:26PM
-    Psi4 wall time for execution: 0:01:50.57
+    Psi4 stopped on: Tuesday, 17 August 2021 10:16AM
+    Psi4 wall time for execution: 0:01:42.18
 
 *** Psi4 exiting successfully. Buy a developer a beer!

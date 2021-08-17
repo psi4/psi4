@@ -1233,14 +1233,13 @@ void export_mints(py::module& m) {
 
     typedef bool (TwoBodyAOInt::*compute_shell_significant)(int, int, int, int);
     typedef size_t (TwoBodyAOInt::*compute_shell_ints)(int, int, int, int);
-    typedef void (TwoBodyAOInt::*update_densities)(const std::vector<SharedMatrix>&);
     py::class_<TwoBodyAOInt, std::shared_ptr<TwoBodyAOInt>> pyTwoBodyAOInt(m, "TwoBodyAOInt",
                                                                            "Two body integral base class");
     pyTwoBodyAOInt.def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell),
                        "Compute ERIs between 4 shells")
         .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
                        "Determines if the P,Q,R,S shell combination is significant")
-        .def("update_density", update_densities(&TwoBodyAOInt::update_density),
+        .def("update_density", &TwoBodyAOInt::update_density,
                        "Update density matrix (c1 symmetry) for Density-matrix based integral screening");
 
     py::class_<Libint2TwoElectronInt, std::shared_ptr<Libint2TwoElectronInt>>(m, "TwoElectronInt", pyTwoBodyAOInt,
@@ -1248,7 +1247,7 @@ void export_mints(py::module& m) {
         .def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell), "Compute ERIs between 4 shells")
         .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
                        "Determines if the P,Q,R,S shell combination is significant")
-        .def("update_density", update_densities(&TwoBodyAOInt::update_density),
+        .def("update_density", &TwoBodyAOInt::update_density,
                        "Update density matrix (c1 symmetry) for Density-matrix based integral screening");
 
     py::class_<Libint2ERI, std::shared_ptr<Libint2ERI>>(m, "ERI", pyTwoBodyAOInt, "Computes normal two electron repulsion integrals");

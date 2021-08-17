@@ -302,7 +302,6 @@ void DirectJK::compute_JK() {
         if (density_screening_) ints[0]->update_density(D_ref);
         for (int thread = 1; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
-            if (density_screening_) ints[thread]->update_density(D_ref);
         }
         if (do_J_ && do_K_) {
             build_JK(ints, D_ref, J_ref, K_ref);
