@@ -10,6 +10,7 @@ set scf_type direct
 set df_scf_guess false
 set reference uhf
 set basis sto-6g
+set e_convergence 8
 
 computed_energy = energy('scf')
 
