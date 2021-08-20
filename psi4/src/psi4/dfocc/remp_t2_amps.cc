@@ -108,10 +108,11 @@ void DFOCC::remp_t2_amps() {
         Tau = SharedTensor2d(new Tensor2d("RT2 (IA|JB)", naoccA, navirA, naoccA, navirA));
         Tau->copy(Tnew);
         Tau->subtract(t2);
+        Tau->write_symm(psio_,PSIF_DFOCC_AMPS);
         t2->copy(Tnew);
         Tnew.reset();
 
-        // DIIS
+        // DIIS  DIIS is done here only if the orbitals are not optimized simultaneously
         if (orb_opt_ == "FALSE" || mo_optimized == 1) {
             std::shared_ptr<Matrix> RT2(new Matrix("RT2", naoccA * navirA, naoccA * navirA));
             Tau->to_matrix(RT2);
@@ -231,7 +232,7 @@ void DFOCC::remp_t2_amps() {
         Tnew->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
 
         //The RE part is now finished and read-in again
-        Tnew->scale(1.0E0-remp_a); //CSB scale the RE-ony part by 1-A
+        Tnew->scale(1.0E0-remp_a); //CSB scale the RE-only part by 1-A
         Tnew->add(Tnew_MP2);
         Tnew_MP2.reset();
 

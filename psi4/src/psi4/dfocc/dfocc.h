@@ -33,6 +33,7 @@
 
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libdiis/diismanager.h"
 #include "psi4/psifiles.h"
 
 namespace psi {
@@ -141,6 +142,7 @@ class DFOCC : public Wavefunction {
     void save_mo_to_wfn();
     void remove_binary_file(int fileno);
     void ekt_ip();
+    void oo_diis();
 
     void diis(int dimvec, SharedTensor2d &vecs, SharedTensor2d &errvecs, SharedTensor1d &vec_new,
               SharedTensor1d &errvec_new);
@@ -594,10 +596,11 @@ class DFOCC : public Wavefunction {
 
     // DIIS
     std::shared_ptr<DIISManager> ccsdDiisManager;
-    std::shared_ptr<DIISManager> ccsdDiisManagerAA;
-    std::shared_ptr<DIISManager> ccsdDiisManagerBB;
-    std::shared_ptr<DIISManager> ccsdDiisManagerAB;
+//    std::shared_ptr<DIISManager> ccsdDiisManagerAA; // What for?? DIISManager can handle arbitrary numbers of quantities
+//    std::shared_ptr<DIISManager> ccsdDiisManagerBB; // so there is no need for three managers except one wants to extrapolate
+//    std::shared_ptr<DIISManager> ccsdDiisManagerAB; // aa, ab and bb sepatarely... These  are used nowhere, anyway.
     std::shared_ptr<DIISManager> ccsdlDiisManager;
+    std::shared_ptr<DIISManager> orbitalDIIS;
 
     int natom;
     int nmo;      // Number of MOs
