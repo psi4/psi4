@@ -639,5 +639,5 @@ void OCCWave::oo_diis(DIISManager& orbital_diis) {
     }
     psio_->close(PSIF_OCC_DPD, 1);
 }
-}
+}   // namespace occwave
 }  // End Namespaces
