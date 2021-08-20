@@ -56,7 +56,7 @@ void DFOCC::ccd_iterations() {
     // DIIS
     if (do_diis_ == 1) {
         std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
-        if (reference_ == "RESTRICTED") {
+        if (reference_ == "RESTRICTED") { // unrestricted CCD seems to be not implemented
             ccsdDiisManager = std::shared_ptr<DIISManager>(
                 new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::LargestError, DIISManager::OnDisk));
             ccsdDiisManager->set_error_vector_size(1, DIISEntry::Matrix, T2.get());
@@ -111,7 +111,7 @@ void DFOCC::ccd_iterations() {
     // delete
     if (do_diis_ == 1) ccsdDiisManager->delete_diis_file();
 
-    // Mem alloc for DF ints
+    // Mem dealloc for DF ints
     if (df_ints_incore) {
         if (cc_lambda_ == "FALSE") {
             bQijA.reset();
