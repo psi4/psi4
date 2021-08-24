@@ -79,7 +79,7 @@ void DFOCC::t2_1st_gen() {
         rms_t2 = t2p_1new->rms(t2p_1); // calculate RMS of t2p_1new w.r.t. t2p_1
         // t2p_1new->print();
         // form and store the residuum for DIIS
-        RT2 = SharedTensor2d(new Tensor2d("RT2_1 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        RT2 = SharedTensor2d(new Tensor2d("RT2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
         RT2->copy(t2p_1new);
         RT2->subtract(t2p_1);
         RT2->write_symm(psio_,PSIF_DFOCC_AMPS);
@@ -318,11 +318,7 @@ void DFOCC::mp3_t2_1st_gen() {
         t2p_1new->axpy(X, 2.0);
         X.reset();
 
-        Tau = SharedTensor2d(new Tensor2d("RT2 (IA|JB)", naoccA, navirA, naoccA, navirA));
-        Tau->copy(t2p_1);
-        Tau->subtract(t2p_1);
-        Tau->write_symm(psio_,PSIF_DFOCC_AMPS);
-        Tau.reset();
+
 
         // Apply denominators
         t2p_1new->apply_denom_chem(nfrzc, noccA, FockA);
@@ -330,6 +326,13 @@ void DFOCC::mp3_t2_1st_gen() {
         // rms
         rms_t2 = 0.0;
         rms_t2 = t2p_1new->rms(t2p_1);
+
+        // DIIS stuff
+        Tau = SharedTensor2d(new Tensor2d("RT2_1 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        Tau->copy(t2p_1new);
+        Tau->subtract(t2p_1);
+        Tau->write_symm(psio_,PSIF_DFOCC_AMPS);
+        Tau.reset();
 
         // reset
         t2p_1->copy(t2p_1new);
@@ -377,6 +380,7 @@ void DFOCC::mp3_t2_1st_gen() {
         // T(IJ,AB) -= \sum_{M} T_MJ^AB F_MI
         t2_1newAA->contract424(1, 1, t2_1AA, FijA, -1.0, 1.0);
 
+
         // apply denom
         t2_1newAA->apply_denom(nfrzc, noccA, FockA);
         if (print_ > 2) t2_1newAA->print();
@@ -384,6 +388,13 @@ void DFOCC::mp3_t2_1st_gen() {
         // rms
         rms_t2AA = 0.0;
         rms_t2AA = t2_1newAA->rms(t2_1AA);
+
+        // stuff for DIIS
+        Tau = SharedTensor2d(new Tensor2d("RT2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+        Tau->copy(t2_1newAA);
+        Tau->subtract(t2_1AA);
+        Tau->write_anti_symm(psio_,PSIF_DFOCC_AMPS);
+        Tau.reset();
 
         // reset
         t2_1AA->copy(t2_1newAA);
@@ -432,6 +443,13 @@ void DFOCC::mp3_t2_1st_gen() {
         rms_t2BB = 0.0;
         rms_t2BB = t2_1newBB->rms(t2_1BB);
 
+        // stuff for DIIS
+        Tau = SharedTensor2d(new Tensor2d("RT2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
+        Tau->copy(t2_1newBB);
+        Tau->subtract(t2_1BB);
+        Tau->write_anti_symm(psio_,PSIF_DFOCC_AMPS);
+        Tau.reset();
+
         // reset
         t2_1BB->copy(t2_1newBB);
         t2_1newBB.reset();
@@ -475,6 +493,13 @@ void DFOCC::mp3_t2_1st_gen() {
         // rms
         rms_t2AB = 0.0;
         rms_t2AB = t2_1newAB->rms(t2_1AB);
+
+        // stuff for DIIS
+        Tau = SharedTensor2d(new Tensor2d("RT2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+        Tau->copy(t2_1newAB);
+        Tau->subtract(t2_1AB);
+        Tau->write(psio_,PSIF_DFOCC_AMPS);
+        Tau.reset();
 
         // reset
         t2_1AB->copy(t2_1newAB);

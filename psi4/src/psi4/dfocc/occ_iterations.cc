@@ -130,38 +130,74 @@ void DFOCC::occ_iterations() {
 
     //fire up DIIS
     if (do_diis_ == 1) {
-      //  outfile->Printf("firing up coupled DIIS...\n");
+        outfile->Printf("firing up coupled DIIS...\n");
       orbitalDIIS = std::shared_ptr<DIISManager>(new DIISManager (cc_maxdiis_,"Orbital Optimized DIIS",DIISManager::LargestError, DIISManager::OnDisk)); //initialize DIIS manager
+      std::shared_ptr<Vector> kappa_barA_(new Vector("Kappa_barA",nidpA));
       if (reference_ == "RESTRICTED" ) {
-        std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA)); // T2 buffer prototype
-        std::shared_ptr<Vector> kappa_barA_(new Vector("Kappa_barA",nidpA));
-        orbitalDIIS->set_error_vector_size(2, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Matrix, T2.get());
-        orbitalDIIS->set_vector_size(2, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Matrix, T2.get());
-        kappa_barA_.reset();
-        T2.reset();
+        if (wfn_type_ == "DF-OMP2" || wfn_type_ == "DF-OLCCD" ||  wfn_type_ == "DF-OREMP") {
+          std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA)); // T2 buffer prototype
+          orbitalDIIS->set_error_vector_size(2, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Matrix, T2.get());
+          orbitalDIIS->set_vector_size(2, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Matrix, T2.get());
+          T2.reset();
+        }
+        else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "DF-OMP3"){
+          std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));   // T2_1 and T2_2 share the same prototype
+          orbitalDIIS->set_error_vector_size(3, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Matrix, T2.get(), T2.get());
+          orbitalDIIS->set_vector_size(3, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Matrix, T2.get(), T2.get());
+          T2.reset();
+        }
+//        else if (wfn_type_ == "DF-OLCCD" ||  wfn_type_ == "DF-OREMP"){
+//         // still to come; PROBABLY IDENTICAL TO OMP2 -> save code...
+//        }
       } else if (reference_ == "UNRESTRICTED"){
-        std::shared_ptr<Matrix> T2AA(new Matrix("T2AA", naoccA * navirA, naoccA * navirA));
-        std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", naoccB * navirB, naoccB * navirB));
-        std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * navirA, naoccB * navirB));
-        std::shared_ptr<Matrix> RT2AA(new Matrix("RT2AA", naoccA * naoccA, navirA * navirA));
-        std::shared_ptr<Matrix> RT2BB(new Matrix("RT2BB", naoccB * naoccB, navirB * navirB));
-        std::shared_ptr<Matrix> RT2AB(new Matrix("RT2AB", naoccA * naoccB, navirA * navirB));
-        std::shared_ptr<Vector> kappa_barA_(new Vector("Kappa_barA", nidpA));
-        std::shared_ptr<Vector> kappa_barB_(new Vector("Kappa_barB", nidpB));
-        orbitalDIIS->set_error_vector_size(5, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Vector, kappa_barB_.get(),
-                     DIISEntry::Matrix, RT2AA.get(), DIISEntry::Matrix, RT2BB.get(), DIISEntry::Matrix, RT2AB.get());
-        orbitalDIIS->set_vector_size(5, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Vector, kappa_barB_.get(),
-                     DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get());
-        T2AA.reset();
-        T2BB.reset();
-        T2AB.reset();
-        RT2AA.reset();
-        RT2BB.reset();
-        RT2AB.reset();
-        kappa_barA_.reset();
-        kappa_barB_.reset();
+          std::shared_ptr<Vector> kappa_barB_(new Vector("Kappa_barB", nidpB));
+          if (wfn_type_ == "DF-OMP2"){
+            std::shared_ptr<Matrix> T2AA(new Matrix("T2AA", naoccA * navirA, naoccA * navirA));
+            std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", naoccB * navirB, naoccB * navirB));
+            std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * navirA, naoccB * navirB));
+            std::shared_ptr<Matrix> RT2AA(new Matrix("RT2AA", naoccA * naoccA, navirA * navirA)); // the amplitudes and the residuums differ in their signature
+            std::shared_ptr<Matrix> RT2BB(new Matrix("RT2BB", naoccB * naoccB, navirB * navirB)); // a possi le solution would be to reorder the residuum
+            std::shared_ptr<Matrix> RT2AB(new Matrix("RT2AB", naoccA * naoccB, navirA * navirB)); // but this would be computational wasted time
+            orbitalDIIS->set_error_vector_size(5, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Vector, kappa_barB_.get(),
+                         DIISEntry::Matrix, RT2AA.get(), DIISEntry::Matrix, RT2BB.get(), DIISEntry::Matrix, RT2AB.get());
+            orbitalDIIS->set_vector_size(5, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Vector, kappa_barB_.get(),
+                         DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get());
+            T2AA.reset();
+            T2BB.reset();
+            T2AB.reset();
+            RT2AA.reset();
+            RT2BB.reset();
+            RT2AB.reset();
+          }
+          else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "DF-OMP3"){
+            std::shared_ptr<Matrix> T2AA(new Matrix("T2AA", naoccA * naoccA, navirA * navirA)); //T2_1 and T2_2 and their respective residuals share the same prototype
+            std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", naoccB * naoccB, navirB * navirB));
+            std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * naoccB, navirA * navirB));
+            orbitalDIIS->set_error_vector_size(8, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Vector, kappa_barB_.get(),
+                         DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get(),
+                         DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get());
+            orbitalDIIS->set_vector_size(8, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Vector, kappa_barB_.get(),
+                         DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get(),
+                         DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get());
+            T2AA.reset();
+            T2BB.reset();
+            T2AB.reset();
+          }
+          else if (wfn_type_ == "DF-OLCCD" || wfn_type_ == "DF-OREMP"){
+            std::shared_ptr<Matrix> T2AA(new Matrix("T2AA", naoccA * naoccA, navirA * navirA));
+            std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", naoccB * naoccB, navirB * navirB));
+            std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * naoccB, navirA * navirB));
+            orbitalDIIS->set_error_vector_size(5,DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Vector, kappa_barB_.get(),
+                         DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get());
+            orbitalDIIS->set_vector_size(5,DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Vector, kappa_barB_.get(),
+                         DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get());
+            T2AA.reset();
+            T2BB.reset();
+            T2AB.reset();
+          }
+          kappa_barB_.reset();
       }
-
+      kappa_barA_.reset();
     }
 
 
@@ -553,32 +589,92 @@ void DFOCC::save_mo_to_wfn() {
 
 }  // end save_mo_to_wfn
 
+// do a coupled DIIS extrapolation of the amplitudes and orbital rotations
+// as is done in the canonical case
 void DFOCC::oo_diis() {
   SharedTensor2d  t1, t2, t1aa, t1bb, t1ab, t2aa, t2bb, t2ab;
   SharedTensor2d  rt1, rt2, rt1aa, rt1bb, rt1ab, rt2aa, rt2bb, rt2ab;
+  SharedTensor2d  U;
 
 //  outfile->Printf("entering oo_diis...\n");
-//  outfile->Printf("reference: %s wfn_type %s ...\n",reference_.c_str(),wfn_type_.c_str());
-    if (!do_diis_) return;
-//    return;
-
-
+  if (!do_diis_) return;
 
     psio_->open(PSIF_DFOCC_AMPS, PSIO_OPEN_OLD);
+    // current orbital rotations and orbital gradients
+    std::shared_ptr<Vector> wogA_vec(new Vector("wogA",nidpA));
+    wogA->to_shared_vector(wogA_vec);
+    std::shared_ptr<Vector> kappa_barA_vec(new Vector("kappabarA",nidpA));
+    kappa_barA->to_shared_vector(kappa_barA_vec);
     if (reference_ == "RESTRICTED"){
       if (wfn_type_ == "DF-OMP2")   {
         t1 = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
         t1->read_symm(psio_, PSIF_DFOCC_AMPS);
-
-
+        std::shared_ptr<Matrix> T1(new Matrix("T1",naoccA * navirA, naoccA * navirA));
+        t1->to_matrix(T1);
+        rt1 = SharedTensor2d(new Tensor2d("RT2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
+        rt1->read_symm(psio_, PSIF_DFOCC_AMPS);
+        std::shared_ptr<Matrix> RT1(new Matrix("RT1",naoccA * navirA, naoccA * navirA));
+        rt1->to_matrix(RT1);
+        orbitalDIIS->add_entry(4,wogA_vec.get(),RT1.get(),kappa_barA_vec.get(),T1.get());
+        if (orbitalDIIS->subspace_size() >= cc_mindiis_) {
+          orbitalDIIS->extrapolate(2,kappa_barA_vec.get(),T1.get());
+          t1->set2(T1);
+          t1->write_symm(psio_, PSIF_DFOCC_AMPS);
+          t1.reset();
+          for (int i=0; i<nidpA; i++ ){kappa_barA->set(i,kappa_barA_vec->get(i));}
+        }
+      }
+      else if (wfn_type_ == "OMP2.5" || wfn_type_ == "OMP3") {
+        t1 = SharedTensor2d(new Tensor2d("T2_1 (ia|jb)", naoccA, navirA, naoccA, navirA));
+        t1->read_symm(psio_, PSIF_DFOCC_AMPS);
+        std::shared_ptr<Matrix> T1(new Matrix("T1",naoccA * navirA, naoccA * navirA));
+        t1->to_matrix(T1);
+        t2 = SharedTensor2d(new Tensor2d("T2_2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        t2->read_symm(psio_, PSIF_DFOCC_AMPS);
+        std::shared_ptr<Matrix> T2(new Matrix("T2",naoccA * navirA, naoccA * navirA));
+        t2->to_matrix(T2);
+        rt1 = SharedTensor2d(new Tensor2d("RT2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        rt1->read_symm(psio_, PSIF_DFOCC_AMPS);
+        std::shared_ptr<Matrix> RT1(new Matrix("RT1",naoccA * navirA, naoccA * navirA));
+        rt1->to_matrix(RT1);
+        rt2 = SharedTensor2d(new Tensor2d("RT2_2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        rt2->read_symm(psio_, PSIF_DFOCC_AMPS);
+        std::shared_ptr<Matrix> RT2(new Matrix("RT2",naoccA * navirA, naoccA * navirA));
+        rt2->to_matrix(RT2);
+        orbitalDIIS->add_entry(6,wogA_vec.get(),RT1.get(),RT2.get(),kappa_barA_vec.get(),T1.get(),T2.get());
+        if (orbitalDIIS->subspace_size() >= cc_mindiis_) {
+          orbitalDIIS->extrapolate(3,kappa_barA_vec.get(),T1.get(),T2.get());
+          t1->set2(T1);
+          t1->write_symm(psio_, PSIF_DFOCC_AMPS);
+          t2->set2(T2);
+          t2->write_symm(psio_, PSIF_DFOCC_AMPS);
+          for (int i=0; i<nidpA; i++ ){kappa_barA->set(i,kappa_barA_vec->get(i));}
+        }
       }
       else if (wfn_type_ == "DF-OLCCD" || wfn_type_ == "DF-OREMP") {
         t1 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
         t1->read_symm(psio_, PSIF_DFOCC_AMPS);
-
+        std::shared_ptr<Matrix> T1(new Matrix("T1",naoccA * navirA, naoccA * navirA));
+        t1->to_matrix(T1);
+        rt1 = SharedTensor2d(new Tensor2d("RT2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        rt1->read_symm(psio_, PSIF_DFOCC_AMPS);
+        std::shared_ptr<Matrix> RT1(new Matrix("RT1",naoccA * navirA, naoccA * navirA));
+        rt1->to_matrix(RT1);
+        orbitalDIIS->add_entry(4,wogA_vec.get(),RT1.get(),kappa_barA_vec.get(),T1.get());
+        if (orbitalDIIS->subspace_size() >= cc_mindiis_) {
+          orbitalDIIS->extrapolate(2,kappa_barA_vec.get(),T1.get());
+          t1->set2(T1);
+          t1->write_symm(psio_, PSIF_DFOCC_AMPS);
+          for (int i=0; i<nidpA; i++ ){kappa_barA->set(i,kappa_barA_vec->get(i));}
+        }
       }
     } else if (reference_ == "UNRESTRICTED") {
 //      outfile->Printf("oo_diis:: entering unrestricted branch...\n");
+        std::shared_ptr<Vector> wogB_vec(new Vector("wogB",nidpB));
+        wogB->to_shared_vector(wogB_vec);
+        std::shared_ptr<Vector> kappa_barB_vec(new Vector("kappabarB",nidpB));
+        kappa_barB->to_shared_vector(kappa_barB_vec);
+
       if (wfn_type_ == "DF-OMP2")   {
          // AMPLITUDES
          // alpha-alpha
@@ -619,17 +715,9 @@ void DFOCC::oo_diis() {
         std::shared_ptr<Matrix> RT1AB(new Matrix("RT1AB", naoccA * naoccB, navirA * navirB));
         rt1ab->to_matrix(RT1AB);
 //        outfile->Printf("successfully transferred the OMP2 amplitudes and residuals...\n");
-        // current orbital rotations and orbital gradients
-        std::shared_ptr<Vector> wogA_vec(new Vector("wogA",nidpA));
-        wogA->to_shared_vector(wogA_vec);
-        std::shared_ptr<Vector> wogB_vec(new Vector("wogB",nidpB));
-        wogB->to_shared_vector(wogB_vec);
-        std::shared_ptr<Vector> kappa_barA_vec(new Vector("kappabarA",nidpA));
-        kappa_barA->to_shared_vector(kappa_barA_vec);
-        std::shared_ptr<Vector> kappa_barB_vec(new Vector("kappabarB",nidpB));
-        kappa_barB->to_shared_vector(kappa_barB_vec);
+
 //        outfile->Printf("successfully transferred the orbital gradient and rotation...\n");
-        // all complete. now call add_entry, first poass the error vector componenets, thenn the guess vector components
+        // all complete. now call add_entry, first pass the error vector componenets, then the guess vector components
         // in the same order as defined by set_error_vector_size and set_vector_size
         orbitalDIIS->add_entry(10,wogA_vec.get(),wogB_vec.get(),RT1AA.get(),RT1BB.get(),RT1AB.get(),
                                kappa_barA_vec.get(),kappa_barB_vec.get(),T1AA.get(),T1BB.get(),T1AB.get());
@@ -641,6 +729,12 @@ void DFOCC::oo_diis() {
           t1aa->set2(T1AA);
           t1bb->set2(T1BB);
           t1ab->set2(T1AB);
+          t1aa->write_symm(psio_, PSIF_DFOCC_AMPS);
+//          t1aa.reset();
+          t1bb->write_symm(psio_, PSIF_DFOCC_AMPS);
+//          t1bb.reset();
+          t1ab->write(psio_, PSIF_DFOCC_AMPS);
+//          t1ab.reset();
           for (int i=0; i<nidpA; i++ ){kappa_barA->set(i,kappa_barA_vec->get(i));} // please don't tell me that this is the only way to get the rotations back to kappa_barA...
           for (int i=0; i<nidpB; i++ ){kappa_barB->set(i,kappa_barB_vec->get(i));} // if someone can do better: go for it
 //          kappa_barA->set(&kappa_barA_vec);
@@ -655,6 +749,146 @@ void DFOCC::oo_diis() {
           RT1AB.reset();
           kappa_barA_vec.reset();
           kappa_barB_vec.reset();
+      } else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "DF-OMP3") {
+        // 1st order alpha-alpha amplitudes
+          t1aa = SharedTensor2d(new Tensor2d("T2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+          t1aa->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> T1AA(new Matrix("T1AA", naoccA * naoccA, navirA * navirA));
+          t1aa->to_matrix(T1AA);
+        // 2nd order alpha-alpha amplitudes
+          t2aa = SharedTensor2d(new Tensor2d("T2_2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+          t2aa->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> T2AA(new Matrix("T2AA", naoccA * naoccA, navirA * navirA));
+          t2aa->to_matrix(T2AA);
+        // 1st order beta-beta amplitudes
+          t1bb = SharedTensor2d(new Tensor2d("T2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
+          t1bb->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> T1BB(new Matrix("T1BB", naoccB * naoccB, navirB * navirB));
+          t1bb->to_matrix(T1BB);
+        // 2nd order beta amplitudes
+          t2bb = SharedTensor2d(new Tensor2d("T2_2 <ij|ab>", naoccB, naoccB, navirB, navirB));
+          t2bb->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", naoccB * naoccB, navirB * navirB));
+          t2bb->to_matrix(T2BB);
+        // 1st order alpha-beta amplitudes
+          t1ab = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+          t1ab->read(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> T1AB(new Matrix("T1AB", naoccA * naoccB, navirA * navirB));
+          t1ab->to_matrix(T1AB);
+        // 2nd order alpha-beta amplitudes
+          t2ab = SharedTensor2d(new Tensor2d("T2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+          t2ab->read(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * naoccB, navirA * navirB));
+          t2ab->to_matrix(T2AB);
+        // RESIDUALS
+        // 1st order alpha-alpha residuals
+          rt1aa = SharedTensor2d(new Tensor2d("RT2_1 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+          rt1aa->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> RT1AA(new Matrix("RT1AA", naoccA * naoccA, navirA * navirA));
+          rt1aa->to_matrix(RT1AA);
+        // 2nd order alpha-alpha residuals
+          rt2aa = SharedTensor2d(new  Tensor2d("RT2_2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+          rt2aa->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> RT2AA(new Matrix("RT2AA", naoccA * naoccA, navirA * navirA));
+          rt2aa->to_matrix(RT2AA);
+        // 1st order beta-beta residuals
+          rt1bb = SharedTensor2d(new Tensor2d("RT2_1 <ij|ab>", naoccB, naoccB, navirB, navirB));
+          rt1bb->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> RT1BB(new Matrix("RT1BB", naoccB * naoccB, navirB * navirB));
+          rt1bb->to_matrix(RT1BB);
+        // 2nd order beta-beta residuals
+          rt2bb = SharedTensor2d(new  Tensor2d("RT2_2 <ij|ab>", naoccB, naoccB, navirB, navirB));
+          rt2bb->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> RT2BB(new Matrix("RT2BB", naoccB * naoccB, navirB * navirB));
+          rt2bb->to_matrix(RT2BB);
+        // 1st order alpha-beta residuals
+          rt1ab = SharedTensor2d(new Tensor2d("RT2_1 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+          rt1ab->read(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> RT1AB(new Matrix("RT1AB", naoccA * naoccB, navirA * navirB));
+          rt1ab->to_matrix(RT1AB);
+       // 2nd order alpha-beta residuals
+          rt2ab = SharedTensor2d(new Tensor2d("RT2_2 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+          rt2ab->read(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> RT2AB(new Matrix("RT2AB", naoccA * naoccB, navirA * navirB));
+          rt2ab->to_matrix(RT2AB);
+          orbitalDIIS->add_entry(16,wogA_vec.get(),wogB_vec.get(),RT1AA.get(),RT1BB.get(),RT1AB.get(),
+                               RT2AA.get(),RT2BB.get(),RT2AB.get(),
+                               kappa_barA_vec.get(),kappa_barB_vec.get(),T1AA.get(),T1BB.get(),T1AB.get(),
+                               T2AA.get(),T2BB.get(),T2AB.get());
+          if (orbitalDIIS->subspace_size() >= cc_mindiis_) {
+            orbitalDIIS->extrapolate(8,kappa_barA_vec.get(),kappa_barB_vec.get(),T1AA.get(),T1BB.get(),T1AB.get(),T2AA.get(),T2BB.get(),T2AB.get());
+            t1aa->set2(T1AA);
+            t1bb->set2(T1BB);
+            t1ab->set2(T1AB);
+            t1aa->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+            t1bb->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+            t1ab->write(psio_, PSIF_DFOCC_AMPS);
+            t2aa->set2(T2AA);
+            t2bb->set2(T2BB);
+            t2ab->set2(T2AB);
+            t2aa->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+            t2bb->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+            t2ab->write(psio_, PSIF_DFOCC_AMPS);
+            for (int i=0; i<nidpA; i++ ){kappa_barA->set(i,kappa_barA_vec->get(i));} // please don't tell me that this is the only way to get the rotations back to kappa_barA...
+            for (int i=0; i<nidpB; i++ ){kappa_barB->set(i,kappa_barB_vec->get(i));} // if someone can do better: go for it
+
+        }
+
+      } else if (wfn_type_ == "DF-OLCCD" || wfn_type_ == "DF-OREMP") {
+//          outfile->Printf("collecting data for DF-OLCCD DIIS\n");
+          t1aa = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+          t1aa->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> T1AA(new Matrix("T1AA", naoccA * naoccA, navirA * navirA));
+          t1aa->to_matrix(T1AA);
+          t1bb = SharedTensor2d(new Tensor2d("T2 <ij|ab>", naoccB, naoccB, navirB, navirB));
+          t1bb->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> T1BB(new Matrix("T1BB", naoccB * naoccB, navirB * navirB));
+          t1bb->to_matrix(T1BB);
+          t1ab = SharedTensor2d(new Tensor2d("T2 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+          t1ab->read(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> T1AB(new Matrix("T1AB", naoccA * naoccB, navirA * navirB));
+          t1ab->to_matrix(T1AB);
+          rt1aa = SharedTensor2d(new Tensor2d("RT2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+          rt1aa->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> RT1AA(new Matrix("RT1AA", naoccA * naoccA, navirA * navirA));
+          rt1aa->to_matrix(RT1AA);
+          rt1bb = SharedTensor2d(new Tensor2d("RT2 <ij|ab>", naoccB, naoccB, navirB, navirB));
+          rt1bb->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> RT1BB(new Matrix("RT1BB", naoccB * naoccB, navirB * navirB));
+          rt1bb->to_matrix(RT1BB);
+          rt1ab = SharedTensor2d(new Tensor2d("RT2 <Ij|Ab>", naoccA, naoccB, navirA, navirB));
+          rt1ab->read(psio_, PSIF_DFOCC_AMPS);
+          std::shared_ptr<Matrix> RT1AB(new Matrix("RT1AB", naoccA * naoccB, navirA * navirB));
+          rt1ab->to_matrix(RT1AB);
+          orbitalDIIS->add_entry(10,wogA_vec.get(),wogB_vec.get(),RT1AA.get(),RT1BB.get(),RT1AB.get(),
+                               kappa_barA_vec.get(),kappa_barB_vec.get(),T1AA.get(),T1BB.get(),T1AB.get());
+          if (orbitalDIIS->subspace_size() >= cc_mindiis_) {
+            orbitalDIIS->extrapolate(5,kappa_barA_vec.get(),kappa_barB_vec.get(),T1AA.get(),T1BB.get(),T1AB.get());
+            t1aa->set2(T1AA);
+            t1bb->set2(T1BB);
+            t1ab->set2(T1AB);
+            t1aa->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+            t1bb->write_anti_symm(psio_, PSIF_DFOCC_AMPS);
+            t1ab->write(psio_, PSIF_DFOCC_AMPS);
+            // For some unknown reason, the OLCCD amplitudes are stored in two different formats in parallel
+            // let's update both, otherwise the iterations will diverge.
+            U = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+            U->sort(1324, t1aa, 1.0, 0.0);
+            U->write_symm(psio_, PSIF_DFOCC_AMPS);
+            U.reset();
+            U = SharedTensor2d(new Tensor2d("T2 (ia|ja)", naoccB, navirB, naoccB, navirB));
+            U->sort(1324, t1bb, 1.0, 0.0);
+            U->write_symm(psio_, PSIF_DFOCC_AMPS);
+            U.reset();
+            U = SharedTensor2d(new Tensor2d("T2 (IA|jb)", naoccA, navirA, naoccB, navirB));
+            U->sort(1324, t1ab, 1.0, 0.0);
+            U->write(psio_, PSIF_DFOCC_AMPS);
+            U.reset();
+            for (int i=0; i<nidpA; i++ ){kappa_barA->set(i,kappa_barA_vec->get(i));} // please don't tell me that this is the only way to get the rotations back to kappa_barA...
+            for (int i=0; i<nidpB; i++ ){kappa_barB->set(i,kappa_barB_vec->get(i));} // if someone can do better: go for it
+
+
+        }
       }
     }
 
@@ -663,6 +897,9 @@ void DFOCC::oo_diis() {
     t1aa.reset();
     t1bb.reset();
     t1ab.reset();
+    t2aa.reset();
+    t2bb.reset();
+    t2ab.reset();
     psio_->close(PSIF_DFOCC_AMPS,1);
 } // end oo_diis
 
