@@ -115,7 +115,7 @@ void DFOCC::occ_iterations() {
 
     //fire up DIIS
     if (do_diis_ == 1) {
-        outfile->Printf("firing up coupled DIIS...\n");
+//        outfile->Printf("firing up coupled DIIS...\n");
       orbitalDIIS = std::shared_ptr<DIISManager>(new DIISManager (cc_maxdiis_,"Orbital Optimized DIIS",DIISManager::LargestError, DIISManager::OnDisk)); //initialize DIIS manager
       std::shared_ptr<Vector> kappa_barA_(new Vector("Kappa_barA",nidpA));
       if (reference_ == "RESTRICTED" ) {
