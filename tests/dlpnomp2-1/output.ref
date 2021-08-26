@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 undefined 
+                               Psi4 1.5a1.dev44 
 
-                         Git: Rev {dlpno} 9da9eea dirty
+                         Git: Rev {dlpno} 5862c52 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,11 +30,11 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Saturday, 30 January 2021 10:33PM
+    Psi4 started on: Thursday, 26 August 2021 03:58PM
 
-    Process ID: 14089
-    Host:       ds10
-    PSIDATADIR: /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4
+    Process ID: 2309335
+    Host:       wasp
+    PSIDATADIR: /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -106,16 +106,16 @@ clean()
 
 Scratch directory: /scratch/glick/
 
-*** tstart() called on ds10
-*** at Sat Jan 30 22:33:54 2021
+*** tstart() called on wasp
+*** at Thu Aug 26 15:58:48 2021
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   198 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz.gbs 
-    atoms 2-3 entry H          line    22 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1   entry O          line   198 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
@@ -167,7 +167,7 @@ Scratch directory: /scratch/glick/
   Basis Set: CC-PVDZ
     Blend: CC-PVDZ
     Number of shells: 12
-    Number of basis function: 24
+    Number of basis functions: 24
     Number of Cartesian functions: 25
     Spherical Harmonics?: true
     Max angular momentum: 2
@@ -177,8 +177,8 @@ Scratch directory: /scratch/glick/
     Name: (CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   221 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    51 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   221 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -201,7 +201,7 @@ Scratch directory: /scratch/glick/
   Basis Set: (CC-PVDZ AUX)
     Blend: CC-PVDZ-JKFIT
     Number of shells: 42
-    Number of basis function: 116
+    Number of basis functions: 116
     Number of Cartesian functions: 131
     Spherical Harmonics?: true
     Max angular momentum: 3
@@ -226,17 +226,17 @@ Scratch directory: /scratch/glick/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:   -75.51187233988696   -7.55119e+01   0.00000e+00 
-   @DF-RHF iter   1:   -75.95408986630675   -4.42218e-01   1.74098e-02 DIIS
-   @DF-RHF iter   2:   -76.00736316501700   -5.32733e-02   9.93601e-03 DIIS
-   @DF-RHF iter   3:   -76.02638316395155   -1.90200e-02   9.06898e-04 DIIS
-   @DF-RHF iter   4:   -76.02676723440233   -3.84070e-04   2.07506e-04 DIIS
-   @DF-RHF iter   5:   -76.02678633697187   -1.91026e-05   3.81557e-05 DIIS
-   @DF-RHF iter   6:   -76.02678724924606   -9.12274e-07   6.08621e-06 DIIS
-   @DF-RHF iter   7:   -76.02678727504473   -2.57987e-08   8.51178e-07 DIIS
-   @DF-RHF iter   8:   -76.02678727556362   -5.18895e-10   1.96892e-07 DIIS
-   @DF-RHF iter   9:   -76.02678727559565   -3.20313e-11   3.35471e-08 DIIS
-   @DF-RHF iter  10:   -76.02678727559648   -8.24230e-13   2.76255e-09 DIIS
+   @DF-RHF iter SAD:   -75.51187233988692   -7.55119e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.95408986630672   -4.42218e-01   1.74098e-02 DIIS
+   @DF-RHF iter   2:   -76.00736316501693   -5.32733e-02   9.93601e-03 DIIS
+   @DF-RHF iter   3:   -76.02638316395146   -1.90200e-02   9.06898e-04 DIIS
+   @DF-RHF iter   4:   -76.02676723440223   -3.84070e-04   2.07506e-04 DIIS
+   @DF-RHF iter   5:   -76.02678633697168   -1.91026e-05   3.81557e-05 DIIS
+   @DF-RHF iter   6:   -76.02678724924604   -9.12274e-07   6.08621e-06 DIIS
+   @DF-RHF iter   7:   -76.02678727504454   -2.57985e-08   8.51178e-07 DIIS
+   @DF-RHF iter   8:   -76.02678727556352   -5.18980e-10   1.96892e-07 DIIS
+   @DF-RHF iter   9:   -76.02678727559554   -3.20171e-11   3.35471e-08 DIIS
+   @DF-RHF iter  10:   -76.02678727559646   -9.23706e-13   2.76255e-09 DIIS
   Energy and wave function converged.
 
 
@@ -264,13 +264,13 @@ Scratch directory: /scratch/glick/
               A 
     DOCC [     5 ]
 
-  @DF-RHF Final Energy:   -76.02678727559648
+  @DF-RHF Final Energy:   -76.02678727559646
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1969337142814815
-    One-Electron Energy =                -123.1545545847435221
-    Two-Electron Energy =                  37.9308335948655682
+    One-Electron Energy =                -123.1545545847433090
+    Two-Electron Energy =                  37.9308335948653621
     Total Energy =                        -76.0267872755964618
 
 Computation Completed
@@ -284,27 +284,27 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.9753
 
   Electronic Dipole Moment: [e a0]
-     X:    -0.0000      Y:     0.0000      Z:    -0.1661
+     X:     0.0000      Y:     0.0000      Z:    -0.1661
 
   Dipole Moment: [e a0]
-     X:    -0.0000      Y:     0.0000      Z:     0.8092     Total:     0.8092
+     X:     0.0000      Y:     0.0000      Z:     0.8092     Total:     0.8092
 
   Dipole Moment: [D]
-     X:    -0.0000      Y:     0.0000      Z:     2.0567     Total:     2.0567
+     X:     0.0000      Y:     0.0000      Z:     2.0567     Total:     2.0567
 
 
-*** tstop() called on ds10 at Sat Jan 30 22:33:54 2021
+*** tstop() called on wasp at Thu Aug 26 15:58:48 2021
 Module time:
-	user time   =       0.36 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.26 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.36 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.26 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds10
-*** at Sat Jan 30 22:33:54 2021
+*** tstart() called on wasp
+*** at Thu Aug 26 15:58:48 2021
 
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -316,8 +316,8 @@ Total time:
     Name: (CC-PVDZ AUX)
     Role: RIFIT
     Keyword: DF_BASIS_MP2
-    atoms 1   entry O          line   235 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-ri.gbs 
-    atoms 2-3 entry H          line    19 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 1   entry O          line   235 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    19 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
 
 	 --------------------------------------------------------
 	                          DF-MP2                         
@@ -333,7 +333,7 @@ Total time:
   Basis Set: (CC-PVDZ AUX)
     Blend: CC-PVDZ-RI
     Number of shells: 30
-    Number of basis function: 84
+    Number of basis functions: 84
     Number of Cartesian functions: 96
     Spherical Harmonics?: true
     Max angular momentum: 3
@@ -348,33 +348,33 @@ Total time:
 	-----------------------------------------------------------
 	 ==================> DF-MP2 Energies <==================== 
 	-----------------------------------------------------------
-	 Reference Energy          =     -76.0267872755964760 [Eh]
+	 Reference Energy          =     -76.0267872755964618 [Eh]
 	 Singles Energy            =      -0.0000000000000000 [Eh]
-	 Same-Spin Energy          =      -0.0507567532115651 [Eh]
-	 Opposite-Spin Energy      =      -0.1508223732913166 [Eh]
-	 Correlation Energy        =      -0.2015791265028817 [Eh]
-	 Total Energy              =     -76.2283664020993541 [Eh]
+	 Same-Spin Energy          =      -0.0507567532115653 [Eh]
+	 Opposite-Spin Energy      =      -0.1508223732913195 [Eh]
+	 Correlation Energy        =      -0.2015791265028848 [Eh]
+	 Total Energy              =     -76.2283664020993399 [Eh]
 	-----------------------------------------------------------
 	 ================> DF-SCS-MP2 Energies <================== 
 	-----------------------------------------------------------
 	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
 	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
 	 SCS Same-Spin Energy      =      -0.0169189177371884 [Eh]
-	 SCS Opposite-Spin Energy  =      -0.1809868479495800 [Eh]
-	 SCS Correlation Energy    =      -0.1979057656867683 [Eh]
-	 SCS Total Energy          =     -76.2246930412832455 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1809868479495834 [Eh]
+	 SCS Correlation Energy    =      -0.1979057656867718 [Eh]
+	 SCS Total Energy          =     -76.2246930412832313 [Eh]
 	-----------------------------------------------------------
 
 
-*** tstop() called on ds10 at Sat Jan 30 22:33:55 2021
+*** tstop() called on wasp at Thu Aug 26 15:58:48 2021
 Module time:
-	user time   =       0.06 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.42 seconds =       0.01 minutes
+	user time   =       0.29 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
     mp2 ref...............................................................................PASSED
     mp2 corl..............................................................................PASSED
     mp2 tot...............................................................................PASSED
@@ -385,16 +385,16 @@ Total time:
 
 Scratch directory: /scratch/glick/
 
-*** tstart() called on ds10
-*** at Sat Jan 30 22:33:55 2021
+*** tstart() called on wasp
+*** at Thu Aug 26 15:58:48 2021
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   198 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz.gbs 
-    atoms 2-3 entry H          line    22 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1   entry O          line   198 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
@@ -446,7 +446,7 @@ Scratch directory: /scratch/glick/
   Basis Set: CC-PVDZ
     Blend: CC-PVDZ
     Number of shells: 12
-    Number of basis function: 24
+    Number of basis functions: 24
     Number of Cartesian functions: 25
     Spherical Harmonics?: true
     Max angular momentum: 2
@@ -456,8 +456,8 @@ Scratch directory: /scratch/glick/
     Name: (CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   221 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    51 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   221 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -480,7 +480,7 @@ Scratch directory: /scratch/glick/
   Basis Set: (CC-PVDZ AUX)
     Blend: CC-PVDZ-JKFIT
     Number of shells: 42
-    Number of basis function: 116
+    Number of basis functions: 116
     Number of Cartesian functions: 131
     Spherical Harmonics?: true
     Max angular momentum: 3
@@ -505,17 +505,17 @@ Scratch directory: /scratch/glick/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:   -75.51187233988519   -7.55119e+01   0.00000e+00 
-   @DF-RHF iter   1:   -75.95408986630486   -4.42218e-01   1.74098e-02 DIIS
-   @DF-RHF iter   2:   -76.00736316501505   -5.32733e-02   9.93601e-03 DIIS
-   @DF-RHF iter   3:   -76.02638316394959   -1.90200e-02   9.06898e-04 DIIS
-   @DF-RHF iter   4:   -76.02676723440041   -3.84070e-04   2.07506e-04 DIIS
-   @DF-RHF iter   5:   -76.02678633696988   -1.91026e-05   3.81557e-05 DIIS
-   @DF-RHF iter   6:   -76.02678724924422   -9.12274e-07   6.08621e-06 DIIS
-   @DF-RHF iter   7:   -76.02678727504272   -2.57985e-08   8.51178e-07 DIIS
-   @DF-RHF iter   8:   -76.02678727556160   -5.18881e-10   1.96892e-07 DIIS
-   @DF-RHF iter   9:   -76.02678727559369   -3.20881e-11   3.35471e-08 DIIS
-   @DF-RHF iter  10:   -76.02678727559451   -8.24230e-13   2.76255e-09 DIIS
+   @DF-RHF iter SAD:   -75.51187233988423   -7.55119e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.95408986630409   -4.42218e-01   1.74098e-02 DIIS
+   @DF-RHF iter   2:   -76.00736316501424   -5.32733e-02   9.93601e-03 DIIS
+   @DF-RHF iter   3:   -76.02638316394884   -1.90200e-02   9.06898e-04 DIIS
+   @DF-RHF iter   4:   -76.02676723439961   -3.84070e-04   2.07506e-04 DIIS
+   @DF-RHF iter   5:   -76.02678633696905   -1.91026e-05   3.81557e-05 DIIS
+   @DF-RHF iter   6:   -76.02678724924341   -9.12274e-07   6.08621e-06 DIIS
+   @DF-RHF iter   7:   -76.02678727504190   -2.57985e-08   8.51178e-07 DIIS
+   @DF-RHF iter   8:   -76.02678727556084   -5.18938e-10   1.96892e-07 DIIS
+   @DF-RHF iter   9:   -76.02678727559289   -3.20597e-11   3.35471e-08 DIIS
+   @DF-RHF iter  10:   -76.02678727559370   -8.10019e-13   2.76255e-09 DIIS
   Energy and wave function converged.
 
 
@@ -543,14 +543,14 @@ Scratch directory: /scratch/glick/
               A 
     DOCC [     5 ]
 
-  @DF-RHF Final Energy:   -76.02678727559451
+  @DF-RHF Final Energy:   -76.02678727559370
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1969337142814869
-    One-Electron Energy =                -123.1545545847420868
-    Two-Electron Energy =                  37.9308335948660869
-    Total Energy =                        -76.0267872755945149
+    One-Electron Energy =                -123.1545545847418737
+    Two-Electron Energy =                  37.9308335948666766
+    Total Energy =                        -76.0267872755937049
 
 Computation Completed
 
@@ -563,27 +563,27 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     0.9753
 
   Electronic Dipole Moment: [e a0]
-     X:    -0.0000      Y:    -0.0000      Z:    -0.1661
+     X:     0.0000      Y:    -0.0000      Z:    -0.1661
 
   Dipole Moment: [e a0]
-     X:    -0.0000      Y:    -0.0000      Z:     0.8092     Total:     0.8092
+     X:     0.0000      Y:    -0.0000      Z:     0.8092     Total:     0.8092
 
   Dipole Moment: [D]
-     X:    -0.0000      Y:    -0.0000      Z:     2.0567     Total:     2.0567
+     X:     0.0000      Y:    -0.0000      Z:     2.0567     Total:     2.0567
 
 
-*** tstop() called on ds10 at Sat Jan 30 22:33:55 2021
+*** tstop() called on wasp at Thu Aug 26 15:58:48 2021
 Module time:
-	user time   =       0.29 seconds =       0.00 minutes
+	user time   =       0.24 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.72 seconds =       0.01 minutes
+	user time   =       0.54 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds10
-*** at Sat Jan 30 22:33:55 2021
+*** tstart() called on wasp
+*** at Thu Aug 26 15:58:48 2021
 
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -595,8 +595,8 @@ Total time:
     Name: (CC-PVDZ AUX)
     Role: RIFIT
     Keyword: DF_BASIS_MP2
-    atoms 1   entry O          line   235 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-ri.gbs 
-    atoms 2-3 entry H          line    19 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 1   entry O          line   235 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    19 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
 
    --------------------------------------------
                      DLPNO-MP2                 
@@ -623,23 +623,23 @@ Total time:
     Maxiter     =        1000
 
     Iteration                   Metric       Residual
-    @Boys    0   1.8043929643494716E-01              -
-    @Boys    1   2.2054591878454994E+00   1.122272E+01
-    @Boys    2   2.4972534490717946E+00   1.323054E-01
-    @Boys    3   2.5360980664278641E+00   1.555494E-02
-    @Boys    4   2.5411325151816548E+00   1.985116E-03
-    @Boys    5   2.5415119616433408E+00   1.493218E-04
-    @Boys    6   2.5415848202907729E+00   2.866744E-05
-    @Boys    7   2.5415953918363789E+00   4.159431E-06
-    @Boys    8   2.5415973276325783E+00   7.616461E-07
-    @Boys    9   2.5415975821265704E+00   1.001315E-07
-    @Boys   10   2.5415976563534537E+00   2.920481E-08
-    @Boys   11   2.5415976642617695E+00   3.111553E-09
-    @Boys   12   2.5415976660676183E+00   7.105172E-10
-    @Boys   13   2.5415976663698747E+00   1.189238E-10
-    @Boys   14   2.5415976664168047E+00   1.846477E-11
-    @Boys   15   2.5415976664228666E+00   2.385042E-12
-    @Boys   16   2.5415976664236926E+00   3.249948E-13
+    @Boys    0   1.8043929643496343E-01              -
+    @Boys    1   2.2054591878455785E+00   1.122272E+01
+    @Boys    2   2.4972534490720442E+00   1.323054E-01
+    @Boys    3   2.5360980664281625E+00   1.555494E-02
+    @Boys    4   2.5411325151819586E+00   1.985116E-03
+    @Boys    5   2.5415119616436455E+00   1.493218E-04
+    @Boys    6   2.5415848202910780E+00   2.866744E-05
+    @Boys    7   2.5415953918366836E+00   4.159431E-06
+    @Boys    8   2.5415973276328825E+00   7.616461E-07
+    @Boys    9   2.5415975821268746E+00   1.001315E-07
+    @Boys   10   2.5415976563537583E+00   2.920481E-08
+    @Boys   11   2.5415976642620746E+00   3.111553E-09
+    @Boys   12   2.5415976660679234E+00   7.105172E-10
+    @Boys   13   2.5415976663701798E+00   1.189238E-10
+    @Boys   14   2.5415976664171098E+00   1.846477E-11
+    @Boys   15   2.5415976664231721E+00   2.385217E-12
+    @Boys   16   2.5415976664239976E+00   3.248200E-13
 
     Boys Localizer converged.
 
@@ -714,15 +714,15 @@ Total time:
     LMO Truncation Correction:          0.000000000000 
     PNO Truncation Correction:         -0.000000056167 
 
-*** tstop() called on ds10 at Sat Jan 30 22:33:55 2021
+*** tstop() called on wasp at Thu Aug 26 15:58:48 2021
 Module time:
 	user time   =       0.10 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.82 seconds =       0.01 minutes
+	user time   =       0.64 seconds =       0.01 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
     mp2 ref...............................................................................PASSED
     mp2 corl..............................................................................PASSED
     mp2 tot...............................................................................PASSED
@@ -733,16 +733,16 @@ Total time:
 
 Scratch directory: /scratch/glick/
 
-*** tstart() called on ds10
-*** at Sat Jan 30 22:33:55 2021
+*** tstart() called on wasp
+*** at Thu Aug 26 15:58:48 2021
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   198 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz.gbs 
-    atoms 2-3 entry H          line    22 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 1   entry O          line   198 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
@@ -794,7 +794,7 @@ Scratch directory: /scratch/glick/
   Basis Set: CC-PVDZ
     Blend: CC-PVDZ
     Number of shells: 12
-    Number of basis function: 24
+    Number of basis functions: 24
     Number of Cartesian functions: 25
     Spherical Harmonics?: true
     Max angular momentum: 2
@@ -804,8 +804,8 @@ Scratch directory: /scratch/glick/
     Name: (CC-PVDZ AUX)
     Role: JKFIT
     Keyword: DF_BASIS_SCF
-    atoms 1   entry O          line   221 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
-    atoms 2-3 entry H          line    51 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 1   entry O          line   221 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
 
   ==> Integral Setup <==
 
@@ -828,7 +828,7 @@ Scratch directory: /scratch/glick/
   Basis Set: (CC-PVDZ AUX)
     Blend: CC-PVDZ-JKFIT
     Number of shells: 42
-    Number of basis function: 116
+    Number of basis functions: 116
     Number of Cartesian functions: 131
     Spherical Harmonics?: true
     Max angular momentum: 3
@@ -853,17 +853,17 @@ Scratch directory: /scratch/glick/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:   -75.51187233988553   -7.55119e+01   0.00000e+00 
-   @DF-RHF iter   1:   -75.95408986630508   -4.42218e-01   1.74098e-02 DIIS
-   @DF-RHF iter   2:   -76.00736316501526   -5.32733e-02   9.93601e-03 DIIS
-   @DF-RHF iter   3:   -76.02638316394989   -1.90200e-02   9.06898e-04 DIIS
-   @DF-RHF iter   4:   -76.02676723440065   -3.84070e-04   2.07506e-04 DIIS
-   @DF-RHF iter   5:   -76.02678633697008   -1.91026e-05   3.81557e-05 DIIS
-   @DF-RHF iter   6:   -76.02678724924444   -9.12274e-07   6.08621e-06 DIIS
-   @DF-RHF iter   7:   -76.02678727504301   -2.57986e-08   8.51178e-07 DIIS
-   @DF-RHF iter   8:   -76.02678727556183   -5.18824e-10   1.96892e-07 DIIS
-   @DF-RHF iter   9:   -76.02678727559396   -3.21307e-11   3.35471e-08 DIIS
-   @DF-RHF iter  10:   -76.02678727559484   -8.81073e-13   2.76255e-09 DIIS
+   @DF-RHF iter SAD:   -75.51187233988622   -7.55119e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.95408986630595   -4.42218e-01   1.74098e-02 DIIS
+   @DF-RHF iter   2:   -76.00736316501620   -5.32733e-02   9.93601e-03 DIIS
+   @DF-RHF iter   3:   -76.02638316395075   -1.90200e-02   9.06898e-04 DIIS
+   @DF-RHF iter   4:   -76.02676723440156   -3.84070e-04   2.07506e-04 DIIS
+   @DF-RHF iter   5:   -76.02678633697099   -1.91026e-05   3.81557e-05 DIIS
+   @DF-RHF iter   6:   -76.02678724924536   -9.12274e-07   6.08621e-06 DIIS
+   @DF-RHF iter   7:   -76.02678727504386   -2.57985e-08   8.51178e-07 DIIS
+   @DF-RHF iter   8:   -76.02678727556280   -5.18938e-10   1.96892e-07 DIIS
+   @DF-RHF iter   9:   -76.02678727559484   -3.20455e-11   3.35471e-08 DIIS
+   @DF-RHF iter  10:   -76.02678727559565   -8.10019e-13   2.76255e-09 DIIS
   Energy and wave function converged.
 
 
@@ -891,14 +891,14 @@ Scratch directory: /scratch/glick/
               A 
     DOCC [     5 ]
 
-  @DF-RHF Final Energy:   -76.02678727559484
+  @DF-RHF Final Energy:   -76.02678727559565
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1969337142814869
-    One-Electron Energy =                -123.1545545847434084
-    Two-Electron Energy =                  37.9308335948670887
-    Total Energy =                        -76.0267872755948417
+    One-Electron Energy =                -123.1545545847432663
+    Two-Electron Energy =                  37.9308335948661295
+    Total Energy =                        -76.0267872755956517
 
 Computation Completed
 
@@ -920,18 +920,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0567     Total:     2.0567
 
 
-*** tstop() called on ds10 at Sat Jan 30 22:33:55 2021
+*** tstop() called on wasp at Thu Aug 26 15:58:49 2021
 Module time:
 	user time   =       0.23 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.06 seconds =       0.02 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.87 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds10
-*** at Sat Jan 30 22:33:55 2021
+*** tstart() called on wasp
+*** at Thu Aug 26 15:58:49 2021
 
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -943,8 +943,8 @@ Total time:
     Name: (CC-PVDZ AUX)
     Role: RIFIT
     Keyword: DF_BASIS_MP2
-    atoms 1   entry O          line   235 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-ri.gbs 
-    atoms 2-3 entry H          line    19 file /theoryfs2/ds/glick/gits/psi4/objdir37/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 1   entry O          line   235 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    19 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
 
    --------------------------------------------
                      DLPNO-MP2                 
@@ -971,23 +971,23 @@ Total time:
     Maxiter     =        1000
 
     Iteration                   Metric       Residual
-    @Boys    0   1.8043929643488571E-01              -
-    @Boys    1   2.2054591878450274E+00   1.122272E+01
-    @Boys    2   2.4972534490713003E+00   1.323054E-01
-    @Boys    3   2.5360980664273867E+00   1.555494E-02
-    @Boys    4   2.5411325151811792E+00   1.985116E-03
-    @Boys    5   2.5415119616428665E+00   1.493218E-04
-    @Boys    6   2.5415848202902991E+00   2.866744E-05
-    @Boys    7   2.5415953918359047E+00   4.159431E-06
-    @Boys    8   2.5415973276321040E+00   7.616461E-07
-    @Boys    9   2.5415975821260961E+00   1.001315E-07
-    @Boys   10   2.5415976563529794E+00   2.920481E-08
-    @Boys   11   2.5415976642612956E+00   3.111553E-09
-    @Boys   12   2.5415976660671440E+00   7.105170E-10
-    @Boys   13   2.5415976663694009E+00   1.189240E-10
-    @Boys   14   2.5415976664163304E+00   1.846459E-11
-    @Boys   15   2.5415976664223932E+00   2.385392E-12
-    @Boys   16   2.5415976664232183E+00   3.246453E-13
+    @Boys    0   1.8043929643493142E-01              -
+    @Boys    1   2.2054591878453174E+00   1.122272E+01
+    @Boys    2   2.4972534490716338E+00   1.323054E-01
+    @Boys    3   2.5360980664277681E+00   1.555494E-02
+    @Boys    4   2.5411325151815705E+00   1.985116E-03
+    @Boys    5   2.5415119616432582E+00   1.493218E-04
+    @Boys    6   2.5415848202906917E+00   2.866744E-05
+    @Boys    7   2.5415953918362972E+00   4.159431E-06
+    @Boys    8   2.5415973276324961E+00   7.616461E-07
+    @Boys    9   2.5415975821264878E+00   1.001315E-07
+    @Boys   10   2.5415976563533720E+00   2.920481E-08
+    @Boys   11   2.5415976642616878E+00   3.111553E-09
+    @Boys   12   2.5415976660675361E+00   7.105170E-10
+    @Boys   13   2.5415976663697930E+00   1.189240E-10
+    @Boys   14   2.5415976664167230E+00   1.846477E-11
+    @Boys   15   2.5415976664227853E+00   2.385217E-12
+    @Boys   16   2.5415976664236108E+00   3.248200E-13
 
     Boys Localizer converged.
 
@@ -1062,14 +1062,14 @@ Total time:
     LMO Truncation Correction:          0.000000000000 
     PNO Truncation Correction:          0.000000000000 
 
-*** tstop() called on ds10 at Sat Jan 30 22:33:55 2021
+*** tstop() called on wasp at Thu Aug 26 15:58:49 2021
 Module time:
 	user time   =       0.10 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.17 seconds =       0.02 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.97 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
     mp2 ref...............................................................................PASSED
     mp2 corl..............................................................................PASSED
@@ -1079,7 +1079,7 @@ Total time:
     mp2 tot...............................................................................PASSED
     mp2 return............................................................................PASSED
 
-    Psi4 stopped on: Saturday, 30 January 2021 10:33PM
-    Psi4 wall time for execution: 0:00:01.34
+    Psi4 stopped on: Thursday, 26 August 2021 03:58PM
+    Psi4 wall time for execution: 0:00:01.09
 
 *** Psi4 exiting successfully. Buy a developer a beer!
