@@ -327,19 +327,18 @@ void DLPNOMP2::dipole_ints() {
             }
         }
         pao_inds = contract_lists(pao_inds, atom_to_bf_);
-        ;
 
-        SharedMatrix C_pao_i = submatrix_cols(C_pao, pao_inds);
-        SharedMatrix S_pao_i = submatrix_rows_and_cols(S_pao, pao_inds, pao_inds);
-        SharedMatrix F_pao_i = submatrix_rows_and_cols(F_pao, pao_inds, pao_inds);
+        auto C_pao_i = submatrix_cols(C_pao, pao_inds);
+        auto S_pao_i = submatrix_rows_and_cols(S_pao, pao_inds, pao_inds);
+        auto F_pao_i = submatrix_rows_and_cols(F_pao, pao_inds, pao_inds);
 
         SharedMatrix X_pao_i;
         SharedVector e_pao_i;
         std::tie(X_pao_i, e_pao_i) = orthocanonicalizer(S_pao_i, F_pao_i);
 
-        SharedMatrix lmo_pao_dipx_i = submatrix_rows_and_cols(lmo_pao_dipx, {(int)i}, pao_inds);
-        SharedMatrix lmo_pao_dipy_i = submatrix_rows_and_cols(lmo_pao_dipy, {(int)i}, pao_inds);
-        SharedMatrix lmo_pao_dipz_i = submatrix_rows_and_cols(lmo_pao_dipz, {(int)i}, pao_inds);
+        auto lmo_pao_dipx_i = submatrix_rows_and_cols(lmo_pao_dipx, {(int)i}, pao_inds);
+        auto lmo_pao_dipy_i = submatrix_rows_and_cols(lmo_pao_dipy, {(int)i}, pao_inds);
+        auto lmo_pao_dipz_i = submatrix_rows_and_cols(lmo_pao_dipz, {(int)i}, pao_inds);
 
         lmo_pao_dipx_i = linalg::doublet(lmo_pao_dipx_i, X_pao_i);
         lmo_pao_dipy_i = linalg::doublet(lmo_pao_dipy_i, X_pao_i);
@@ -359,8 +358,8 @@ void DLPNOMP2::dipole_ints() {
 
     for (size_t i = 0; i < naocc; ++i) {
         for (size_t j = i + 1; j < naocc; ++j) {
-            Vector3 R_ij = R_i[i] - R_i[j];
-            Vector3 Rh_ij = R_ij / R_ij.norm();
+            auto R_ij = R_i[i] - R_i[j];
+            auto Rh_ij = R_ij / R_ij.norm();
 
             double e_actual_temp = 0.0;
             double e_linear_temp = 0.0;
@@ -426,7 +425,7 @@ void DLPNOMP2::sparsity_prep() {
         // atomic mulliken populations for this orbital
         std::vector<double> mkn_pop(natom, 0.0);
 
-        SharedMatrix P_i = reference_wavefunction_->S()->clone();
+        auto P_i = reference_wavefunction_->S()->clone();
 
         for (size_t u = 0; u < nbf; u++) {
             P_i->scale_row(0, u, C_lmo->get(u, i));
@@ -641,7 +640,7 @@ void DLPNOMP2::df_ints() {
 
     print_integral_sparsity();
 
-    SharedMatrix SC_lmo =
+    auto SC_lmo =
         linalg::doublet(reference_wavefunction_->S(), C_lmo, false, false);  // intermediate for coefficient fitting
 
     qia.resize(naux);
@@ -723,9 +722,9 @@ void DLPNOMP2::df_ints() {
         //// Boughton and Pulay 1992 JCC, Equation 3
 
         // Solve for C_lmo_slice such that S[local,local] @ C_lmo_slice ~= S[local,all] @ C_lmo
-        SharedMatrix C_lmo_slice =
+        auto C_lmo_slice =
             submatrix_rows_and_cols(SC_lmo, riatom_to_bfs1[centerQ], riatom_to_lmos_ext[centerQ]);
-        SharedMatrix S_aa =
+        auto S_aa =
             submatrix_rows_and_cols(reference_wavefunction_->S(), riatom_to_bfs1[centerQ], riatom_to_bfs1[centerQ]);
         C_DGESV_wrapper(S_aa, C_lmo_slice);
 

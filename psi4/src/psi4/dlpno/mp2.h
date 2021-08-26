@@ -134,7 +134,7 @@ class DLPNOMP2 : public Wavefunction {
     /// form LMOs, PAOs, etc.
     void setup();
     
-    /// compute differential overlap integrals between LMO/LMO and LMO/PAO pairs (EQ 4)
+    /// compute differential overlap integrals between LMO/LMO and LMO/PAO pairs (EQ 4), DOI_ij and DOI_iu
     void overlap_ints();
 
     /// compute approximate MP2 pair energies for distant LMOs using dipole integrals (EQ 17)
