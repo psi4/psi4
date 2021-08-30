@@ -201,6 +201,7 @@ void JK::common_init() {
     do_J_ = true;
     do_K_ = true;
     do_wK_ = false;
+    do_cfmm_ = false;
     wcombine_ = false;
     lr_symmetric_ = false;
     omega_ = 0.0;
