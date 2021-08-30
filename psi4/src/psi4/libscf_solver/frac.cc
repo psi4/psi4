@@ -204,7 +204,6 @@ void HF::frac_helper(bool denom) {
         int nso = Ca_->rowspi()[h];
         int nmo = Ca_->colspi()[h];
 
-        // And I say all that to say this:
         C_DSCAL(nso, std::sqrt(val), &Cp[0][j], nmo);
     }
 }
