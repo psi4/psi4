@@ -253,6 +253,8 @@ class PSI_API JK {
     bool do_K_;
     /// Do wK matrices? Defaults to false
     bool do_wK_;
+    /// Build the J matrix using linear-scaling CFMM algorithm
+    bool do_cfmm_;
 
     /// Combine (pq|rs) and (pq|w|rs) integrals before contracting?
     bool wcombine_;

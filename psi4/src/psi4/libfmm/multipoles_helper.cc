@@ -125,6 +125,7 @@ SharedMatrix MultipoleRotationFactory::get_D(int l) {
         }
     } else {
         Drot = std::make_shared<Matrix>("D Rotation Matrix", 2*l+1, 2*l+1);
+
         for (int m1 = -l; m1 <= l; m1++) {
             int k1 = m_addr(m1);
             for (int m2 = -l; m2 <= l; m2++) {
@@ -140,10 +141,6 @@ SharedMatrix MultipoleRotationFactory::get_D(int l) {
             }
         }
     }
-
-    // if (l == 2) {
-    //    Drot->print_out();
-    // }
 
     D_cache_[l] = Drot;
     return D_cache_[l];
@@ -175,15 +172,12 @@ void HarmonicCoefficients::compute_terms_irregular() {
 void HarmonicCoefficients::compute_terms_regular() {
 
     for (int l = 0; l <= lmax_; l++) {
-
         int ncl = ncart(l);
 
         if (l == 0) {
             Rc_[0][0][0] = 1.0;
             Rs_[0][0][0] = 0.0;
-        }
-
-        else {
+        } else {
             // m < l-1 terms
             for (int m = 0; m < l-1; m++) {
                 double denom = (l+m)*(l-m);
@@ -389,14 +383,12 @@ void HarmonicCoefficients::compute_terms_regular() {
 
             } else {
                 prefactor = std::pow(-1.0, (double) m) * std::sqrt(2.0 * factorial(l-m) * factorial(l+m));
-
                 for (const std::pair<int, double>& rpair : Rs_[l][-m]) {
                     int ind = rpair.first;
                     double coef = rpair.second;
                     if (std::abs(coef) < 1.0e-16) continue;
                     mpole_terms_[l][mu][ind] = prefactor * coef;
                 }
-
             }
         }
     }
@@ -416,7 +408,19 @@ RealSolidHarmonics::RealSolidHarmonics(int lmax, Vector3 center, SolidHarmonicsT
     
 }
 
+std::shared_ptr<RealSolidHarmonics> RealSolidHarmonics::copy() {
+    std::shared_ptr<RealSolidHarmonics> new_harm = std::make_shared<RealSolidHarmonics>(lmax_, center_, type_);
+#pragma omp parallel for
+    for (int l = 0; l <= lmax_; l++) {
+        for (int mu = 0; mu < 2*l+1; mu++) {
+            new_harm->Ylm_[l][mu] = Ylm_[l][mu];
+        }
+    }
+    return new_harm;
+}
+
 void RealSolidHarmonics::add(const RealSolidHarmonics& rsh) {
+#pragma omp parallel for
     for (int l = 0; l <= lmax_; l++) {
         for (int mu = 0; mu < 2*l+1; mu++) {
             Ylm_[l][mu] += rsh.Ylm_[l][mu];
@@ -425,6 +429,7 @@ void RealSolidHarmonics::add(const RealSolidHarmonics& rsh) {
 }
 
 void RealSolidHarmonics::add(const std::shared_ptr<RealSolidHarmonics>& rsh) {
+#pragma omp parallel for
     for (int l = 0; l <= lmax_; l++) {
         for (int mu = 0; mu < 2*l+1; mu++) {
             Ylm_[l][mu] += rsh->Ylm_[l][mu];
@@ -433,6 +438,7 @@ void RealSolidHarmonics::add(const std::shared_ptr<RealSolidHarmonics>& rsh) {
 }
 
 void RealSolidHarmonics::scale(double val) {
+#pragma omp parallel for
     for (int l = 0; l <= lmax_; l++) {
         for (int mu = 0; mu < 2*l+1; mu++) {
             Ylm_[l][mu] *= val;

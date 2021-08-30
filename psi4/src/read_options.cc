@@ -1553,7 +1553,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- SUBSECTION CFMM Linear J Build Algorithm -*/
         options.add_bool("DO_CFMM_J", false);
-        options.add_int("CFMM_MAX_MPOLE_ORDER", 10);
+        options.add_int("CFMM_MAX_MPOLE_ORDER", 3);
         options.add_int("CFMM_MAX_TREE_DEPTH", 4);
 
         /*- SUBSECTION DFT -*/
