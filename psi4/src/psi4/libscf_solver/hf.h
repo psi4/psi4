@@ -340,6 +340,7 @@ class HF : public Wavefunction {
 
     /// Renormalize orbitals to 1.0 before saving
     void frac_renormalize();
+    void frac_helper(bool denom);
 
     /// Formation of H is the same regardless of RHF, ROHF, UHF
     // Temporarily converting to virtual function for testing embedding
