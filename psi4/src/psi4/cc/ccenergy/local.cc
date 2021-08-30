@@ -72,6 +72,9 @@ void Local_cc::init_pno() {
     if (weakp == "NEGLECT") {
         mp2_pair_energy();
     }
+    else if (weakp == "CUSTOM") {
+        custom_weak_pair(custom_no);
+    }
     npairs = nocc*nocc;
 
     dpdbuf4 T2;
@@ -267,6 +270,9 @@ void Local_cc::init_pnopp(const double omega, bool combined) {
     // Obtain and store weak pairs
     if (weakp == "NEGLECT") {
         mp2_pair_energy();      // MP2 pair energy-based weak pairs
+    }
+    else if (weakp == "CUSTOM") {
+        custom_weak_pair(custom_no);
     }
     else if (weakp == "RESPONSE") {
         pair_perturbation();    // Similarity-transformed perturbation-based weak pairs
@@ -896,7 +902,7 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
         outfile->Printf("%20.10f\t", qel);;
     }*/
     int *weak_pairs = new int[npairs];
-    if (weakp == "NEGLECT" || weakp == "RESPONSE") {
+    if (weakp == "NEGLECT" || weakp == "RESPONSE" || weakp == "CUSTOM") {
         psio_read_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *) weak_pairs, npairs * sizeof(int));
     }
     else {
@@ -1145,6 +1151,22 @@ void Local_cc::pair_perturbation() {
 
     // Write weak pairs to file
     outfile->Printf("Writing weak pairs to file\n");
+    psio_write_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *) weak_pairs, npairs * sizeof(int));
+    delete[] weak_pairs;
+}
+
+void Local_cc::custom_weak_pair(int pair_no) {
+    outfile->Printf("Custom weak pair %d neglected.\n", pair_no);
+    npairs = nocc * nocc;
+    int *weak_pairs = new int[npairs];
+    // Setting all pairs to strong
+    for (int ij = 0; ij < npairs; ij++) {
+        weak_pairs[ij] = 0;
+    }
+    // Setting the user-defined pair to weak
+    weak_pairs[pair_no] = 1;
+    
+    // Write weak pairs to file
     psio_write_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *) weak_pairs, npairs * sizeof(int));
     delete[] weak_pairs;
 }

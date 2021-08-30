@@ -64,6 +64,7 @@ class Local_cc {
         int filter_singles;
         int nocc;
         int nvir;
+        int custom_no;
         double cutoff;
         double unpert_cutoff;
         double weak_pair_cutoff;
@@ -76,6 +77,7 @@ class Local_cc {
         std::vector<SharedMatrix> build_cPNO_lists(double cutoff, std::vector<SharedMatrix> D);
         void mp2_pair_energy();
         void pair_perturbation();
+        void custom_weak_pair(int pair_no);
         
         int npairs;
 
