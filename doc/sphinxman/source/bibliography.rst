@@ -536,3 +536,11 @@ Bibliography
 .. [Schriber:2021:234107]
     J. B. Schriber, D. A. Sirianni, D. G. A. Smith, L. A. Burns, D. Sitkoff, D. L. Cheney, C. D. Sherrill
     *J. Chem. Phys.* **154**, 234107 (2021).
+
+.. [Neese:2009:64103]
+    F. Neese, A. Hansen, D. Liakos,
+    *J. Chem. Phys.* **131**, 64103 (2009).
+
+.. [Dcunha:2021:290]
+    R. D'Cunha and T. D. Crawford,
+    *J. Chem. Theory and Comput.* **17**, 290 (2021).

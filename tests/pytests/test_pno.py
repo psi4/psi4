@@ -23,8 +23,8 @@ def test_en(inp):
          H     -0.350498145881     0.910645626300     0.783035421467
          symmetry c1
     """)
-    psi4.set_module_options("SCF", {"E_CONVERGENCE": 1e-12})
-    psi4.set_module_options("SCF", {"D_CONVERGENCE": 1e-12})
+    psi4.set_options({"SCF__E_CONVERGENCE": 1e-12})
+    psi4.set_options({"SCF__D_CONVERGENCE": 1e-12})
     psi4.set_options({"basis": "cc-pVDZ", "scf_type": "pk",
               "freeze_core": "false", "e_convergence": 1e-10,
               "d_convergence": 1e-10, "r_convergence": 1e-10, 
@@ -63,8 +63,8 @@ def test_properties(inp):
          H     -0.350498145881     0.910645626300     0.783035421467
          symmetry c1
     """)
-    psi4.set_module_options("SCF", {"E_CONVERGENCE": 1e-12})
-    psi4.set_module_options("SCF", {"D_CONVERGENCE": 1e-12})
+    psi4.set_options({"SCF__E_CONVERGENCE": 1e-12})
+    psi4.set_options({"SCF__D_CONVERGENCE": 1e-12})
     psi4.set_options({"basis": "cc-pVDZ", "scf_type": "pk",
               "freeze_core": "false", "e_convergence": 1e-10,
               "d_convergence": 1e-10, "r_convergence": 1e-10, 

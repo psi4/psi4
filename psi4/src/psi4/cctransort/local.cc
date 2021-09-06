@@ -28,7 +28,7 @@
 
 /*! \file
     \ingroup CCTRANSORT
-    \brief Enter brief description of file here
+    \brief Contains a function to localize occupied orbitals using the PM solver for local correlation simulation
 */
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/local.h"
@@ -54,8 +54,7 @@ void localize_occupied(std::shared_ptr<Wavefunction> wfn) {
             C_occ->set(i,j-nfrz, C_full->get(i,j));
     }
 
-    outfile->Printf("Orbitals without localizing:\n");
-    C_occ->print();
+    outfile->Printf("\tLocalizing occupied orbitals using the Pipek-Mezey solver...\n");
     // Build localizer obj using active occupied orbitals
     std::shared_ptr<Localizer> local_obj = Localizer::build("PIPEK_MEZEY", wfn->basisset(), C_occ);
     local_obj->localize();
@@ -68,8 +67,7 @@ void localize_occupied(std::shared_ptr<Wavefunction> wfn) {
             C_full->set(i,j, new_C_occ->get(i,j-nfrz));
     }
 
-    outfile->Printf("Orbitals after localizing:\n");
-    new_C_occ->print();
+    outfile->Printf("\t...done localizing.\n");
 
     wfn->Ca()->copy(C_full);
     wfn->Cb()->copy(C_full);

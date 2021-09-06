@@ -1856,10 +1856,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("JOBTYPE", "");
         /*- Do simulate the effects of local correlation techniques? -*/
         options.add_bool("LOCAL", false);
-        /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE``
-        treats weak pairs in the same manner as strong pairs. ``NEGLECT`` neglects the
-        contribution of weak pairs while ``MP2`` adds the MP2-level correction to the energy -*/
-        options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT RESPONSE MP2 CUSTOM");
+        /*- Desired treatment of "weak pairs" in the local-CCSD method. A value of
+        ``NEGLECT`` ignores weak pairs entirely. A value of ``NONE`` treats weak pairs in
+        the same manner as strong pairs. A value of ``RESPONSE`` uses a dipole criterion 
+        and ignores weak pairs. ``CUSTOM`` allows the user to specify a given pair to
+        be neglected. -*/
+        options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT RESPONSE CUSTOM");
         /*- Value (always between one and zero) of the weak pair
           threshold for the PNO and PNO++ methods. -*/
         options.add_double("WEAKP_CUTOFF", 0.02);
@@ -1872,13 +1874,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Type of local-CCSD scheme to be simulated. 
         ``PNO`` selects the Pair Natural Orbital method
         developed by Meyer, Ahlrichs, and most recently by Neese and co-workers.
-        ``PNO++`` and ``cPNO++`` selects the Perturbed Pair Natural Orbital methods
+        ``PNO++`` and ``CPNO++`` selects the Perturbed Pair Natural Orbital methods
         developed by Crawford and co-workers. -*/
         options.add_str("LOCAL_METHOD", "PNO", "PNO PNO++ CPNO++");
         /*- Type of perturbation to use for PNO++ method. -*/
         options.add_str("LOCAL_PERT", "DIPOLE", "DIPOLE NABLA");
         /*- Value (always between one and zero) of the PNO occupation number
-          threshold for the cPNO++ method. -*/
+          threshold for the CPNO++ method. -*/
         options.add_double("UNPERT_CUTOFF", 1e-6);
         /*- Do apply local filtering to single de-excitation ($\lambda 1$ amplitudes? -*/
         options.add_bool("LOCAL_FILTER_SINGLES", true);
@@ -2106,7 +2108,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         For polarizability, this keyword is ignored and ``LENGTH`` gauge is computed.
         For optical rotation and raman optical activity, this keyword is active, and
         acceptable values are ``LENGTH`` for the usual length-gauge representation,
-        ``VELOCITY``(default) for the modified velocity-gauge representation in which the
+        ``VELOCITY`` (default) for the modified velocity-gauge representation in which the
         static-limit optical rotation tensor is subtracted from the frequency-
         dependent tensor, or ``BOTH``. Note that, for optical rotation and raman optical
         activity calculations, only the choices of ``VELOCITY`` or ``BOTH`` will yield
@@ -2135,19 +2137,24 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Type of local-CCSD scheme to be simulated. 
         ``PNO`` selects the Pair Natural Orbital method
         developed by Meyer, Ahlrichs, and most recently by Neese and co-workers.
-        ``PNO++`` and ``cPNO++`` selects the Perturbed Pair Natural Orbital methods
+        ``PNO++`` and ``CPNO++`` selects the Perturbed Pair Natural Orbital methods
         developed by Crawford and co-workers. -*/
         options.add_str("LOCAL_METHOD", "PNO PNO++ CPNO++");
-        /*- Type of perturbation to use for PNO++ method. -*/
+        /*- Type of perturbation to use for PNO++ method. ``DIPOLE`` corresponds
+          to the length gauge representation and ``NABLA`` corresponds to the 
+          velocity gauge representation of the electric dipole moment operator. -*/
         options.add_str("LOCAL_PERT", "NONE", "DIPOLE NABLA");
-        /*- Desired treatment of "weak pairs" in the local-CCSD method. The value of ``NONE`` (unique available option)
-        treats weak pairs in the same manner as strong pairs. -*/
-        options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT MP2");
+        /*- Desired treatment of "weak pairs" in the local-CCSD method. A value of
+        ``NEGLECT`` ignores weak pairs entirely. A value of ``NONE`` treats weak pairs in
+        the same manner as strong pairs. A value of ``RESPONSE`` uses a dipole criterion 
+        and ignores weak pairs. ``CUSTOM`` allows the user to specify a given pair to
+        be neglected. -*/
+        options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT RESPONSE CUSTOM");
         /*- Value (always between one and zero) of the weak pair
           threshold for the PNO and PNO++ methods. -*/
         options.add_double("WEAKP_CUTOFF", 1e-4);
         /*- Value (always between one and zero) of the PNO occupation number
-          threshold for the cPNO++ method. -*/
+          threshold for the CPNO++ method. -*/
         options.add_double("UNPERT_CUTOFF", 1e-6);
         /*- Do apply local filtering to single excitation amplitudes? -*/
         options.add_bool("LOCAL_FILTER_SINGLES", false);
@@ -2324,14 +2331,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Type of local-CCSD scheme to be simulated. /
         ``PNO`` selects the Pair Natural Orbital method
         developed by Meyer, Ahlrichs, and most recently by Neese and co-workers.
-        ``PNO++`` and ``cPNO++`` selects the Perturbed Pair Natural Orbital methods
+        ``PNO++`` and ``CPNO++`` selects the Perturbed Pair Natural Orbital methods
         developed by Crawford and co-workers. -*/
         options.add_str("LOCAL_METHOD", "PNO", "PNO PNO++ CPNO++");
         /*- Desired treatment of "weak pairs" in the local-CCSD method. A value of
         ``NEGLECT`` ignores weak pairs entirely. A value of ``NONE`` treats weak pairs in
-        the same manner as strong pairs. A value of MP2 uses second-order perturbation
-        theory to correct the local-CCSD energy computed with weak pairs ignored. -*/
-        options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT MP2");
+        the same manner as strong pairs. A value of ``RESPONSE`` uses a dipole criterion 
+        and ignores weak pairs. ``CUSTOM`` allows the user to specify a given pair to
+        be neglected. -*/
+        options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT RESPONSE CUSTOM");
         /*- Value (always between one and zero) of the weak pair
           threshold for the PNO and PNO++ methods. -*/
         options.add_double("WEAKP_CUTOFF", 1e-4);

@@ -139,7 +139,7 @@ PsiReturnType cctransort(SharedWavefunction ref, Options &options) {
     // Localization of occupied orbitals
     // while doing local correlation
     if (options.get_bool("LOCAL")) {
-        outfile->Printf("Localizing occupied orbitals for local correlation methods.\n");
+        outfile->Printf("\tLocalizing occupied orbitals for local correlation methods.\n");
         localize_occupied(ref);
     }
 

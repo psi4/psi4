@@ -28,7 +28,7 @@
 
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here
+    \brief Local correlation simulation setup and filter functions
 */
 
 #include "Local.h"
@@ -56,15 +56,6 @@ namespace psi {
 //Constructor attempt
 Local_cc::Local_cc() {
 };
-
-void Local_cc::local_init() {
-    /*if (method == "PNO")
-        init_pno();
-    if (method == "PNO++")
-        init_pnopp(basis);
-    outfile->Printf("    Localization parameters ready.\n\n");*/
-
-}
 
 void Local_cc::init_pno() {
     outfile->Printf("\n\tLocal correlation using Pair Natural Orbitals\n\tCutoff value: %e \n", cutoff);
@@ -113,7 +104,7 @@ void Local_cc::init_pno() {
     get_matvec(&T2tilde, &Ttij);
     global_dpd_->buf4_close(&T2tilde);
 
-    // Create Density
+    // Create Density using T2s
     std::vector<SharedMatrix> Dij;
     for(int ij=0; ij < npairs; ++ij) {
         temp->zero();
@@ -154,7 +145,7 @@ void Local_cc::init_pno() {
         Ltest->zero();
     }*/
 
-    // Assuming this memory needs to be freed
+    // This memory needs to be freed
     delete[] temp_occ_array;
 }
 
@@ -187,7 +178,7 @@ void Local_cc::init_pnopp(const double omega, bool combined) {
 
     // Build the denominator of Hbar elements
     // d_ia = H_ii - H_aa
-    //d_ijab = H_ii + H_jj - H_aa - H_bb
+    //d_ijab = H_ii + H_jj - H_aa - H_bb + \omega
 
     dpdfile2 FMI;
     dpdbuf4 D;
@@ -313,10 +304,6 @@ void Local_cc::init_pnopp(const double omega, bool combined) {
         Xij.clear();
         get_matvec(&Xijab, &Xij);
 
-        /*outfile->Printf("*** IJ Matrices ***\n");
-        for(int ij=0; ij<Xij.size(); ++ij) {
-            Xij.at(ij)->print();   }*/
-
         std::string lbl3 = "Xtijab_"+cart_list[n];
         global_dpd_->buf4_scmcopy(&Xijab, PSIF_CC_TMP0, lbl3.c_str(), 2);
         global_dpd_->buf4_sort_axpy(&Xijab, PSIF_CC_TMP0, pqsr, 0, 5, lbl3.c_str(), -1);
@@ -358,19 +345,21 @@ void Local_cc::init_pnopp(const double omega, bool combined) {
     // Get semicanonical transforms
     get_semicanonical_transforms(Q);
 
-    // Assuming this memory needs to be freed
+    // This memory needs to be freed
     delete[] h_oo_array;
     delete[] h_vv_array;
     delete[] temp_occ_array;
 }
 
 void Local_cc::init_cpnopp(const double omega) {
+    // Use the PNO++ function to also build the CPNO++ space
     outfile->Printf("\n\tLocal correlation using combined Perturbed Pair Natural Orbitals\n\tCutoff value: %e\n", cutoff);
     bool combined = true;
     init_pnopp(omega, combined);
 }
 void Local_cc::get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec) {
-    
+    // This function converts a 4-index obj into an occ^2 list of vir^2 matrices 
+    // For easy PNO manipulation
     auto mat = std::make_shared<Matrix>(nvir, nvir);
 
     global_dpd_->buf4_mat_irrep_init(buf_obj,0);
@@ -389,7 +378,8 @@ void Local_cc::get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec) {
 }
 
 void Local_cc::get_semicanonical_transforms(std::vector<SharedMatrix> Q) {
-    
+    // This function creates the semi-canonical space needed for applying the 
+    // denominator in the PNO space
     std::vector<SharedMatrix> L;
     std::vector<SharedVector> eps_pno;
 
@@ -450,6 +440,8 @@ void Local_cc::get_semicanonical_transforms(std::vector<SharedMatrix> Q) {
 }
 
 std::vector<SharedMatrix> Local_cc::build_PNO_lists(double cutoff, std::vector<SharedMatrix> Dij) {
+    // This function diagonalizes the pair density
+    // and further applies cutoffs to truncate the PNO/PNO++ space
     std::vector<SharedMatrix> Q_full(npairs);
     std::vector<SharedVector> occ_num(npairs);
     std::vector<SharedMatrix> Q;
@@ -476,14 +468,13 @@ std::vector<SharedMatrix> Local_cc::build_PNO_lists(double cutoff, std::vector<S
                 survivors += 1;
             }
         }
-        //outfile->Printf("Survivors: %i \t", survivors);
         survivor_list.push_back(survivors);
     }
 
     // Compute stats
     int total_pno = 0;
     double t2_ratio = 0.0;
-    outfile->Printf("\n\t Survivor list: "); 
+    outfile->Printf("\n\tSurvivor list: "); 
     for(int ij=0; ij < npairs; ++ij) {
         if (ij % 10 == 0) {
             outfile->Printf("\n\t");
@@ -492,14 +483,13 @@ std::vector<SharedMatrix> Local_cc::build_PNO_lists(double cutoff, std::vector<S
         total_pno += survivor_list[ij];
         t2_ratio += pow(survivor_list[ij],2);
     }
-    outfile->Printf("\n\tT2 ratio: %10.10lf \n", t2_ratio);
     double avg_pno = static_cast<float>(total_pno) / static_cast<float>(npairs);
     t2_ratio /= (nocc*nocc*nvir*nvir);
 
     // Print stats
-    outfile->Printf("\tTotal number of PNOs: %i \n", total_pno);
+    outfile->Printf("\n\tTotal number of PNOs: %i \n", total_pno);
     outfile->Printf("\tAverage number of PNOs: %10.10lf \n", avg_pno);
-    outfile->Printf("\tT2 ratio: %10.10lf \n", t2_ratio);
+    outfile->Printf("\tT2 ratio: %10.10lf \n\n", t2_ratio);
 
     // Truncate Q
     for(int ij=0; ij < npairs; ++ij) {
@@ -513,19 +503,13 @@ std::vector<SharedMatrix> Local_cc::build_PNO_lists(double cutoff, std::vector<S
         Q.push_back(qtemp->clone());
     }
 
-    // Print check Q
-    /*outfile->Printf("**** Truncated Q ****\n");
-    for (auto &qel : Q) {
-        qel->print();
-    }*/
-
     // Write PNO dimensions, Q to file
     int *survivors_list = new int[npairs];
     for (int ij=0; ij < npairs; ij++) {
         survivors_list[ij] = survivor_list[ij];
     }
     psio_write_entry(PSIF_CC_INFO, "PNO dimensions", (char *) survivors_list, npairs * sizeof(int));
-    // Segfaulting for PNO++
+
     psio_address next;
     next = PSIO_ZERO;
     for(int ij=0; ij < npairs; ++ij) {
@@ -544,6 +528,8 @@ std::vector<SharedMatrix> Local_cc::build_PNO_lists(double cutoff, std::vector<S
 }
 
 std::vector<SharedMatrix> Local_cc::build_cPNO_lists(double cutoff, std::vector<SharedMatrix> Dij) {
+    // This function truncates the PNO++ space and then builds a PNO space
+    // which is combined with and orthogonalized with respect to the PNO++ space
     std::vector<SharedMatrix> Q_full(npairs);
     std::vector<SharedVector> occ_num(npairs);
     std::vector<SharedMatrix> Q;
@@ -572,7 +558,6 @@ std::vector<SharedMatrix> Local_cc::build_cPNO_lists(double cutoff, std::vector<
                 survivors += 1;
             }
         }
-        //outfile->Printf("Survivors: %i \t", survivors);
         survivor_list.push_back(survivors);
     }
 
@@ -608,11 +593,6 @@ std::vector<SharedMatrix> Local_cc::build_cPNO_lists(double cutoff, std::vector<
     get_matvec(&T2tilde, &Ttij);
     global_dpd_->buf4_close(&T2tilde);
 
-    // Print check
-    /* outfile->Printf("*** IJ Matrices ***\n");
-    for(int ij=0; ij<Ttij.size(); ++ij)
-        Ttij.at(ij)->print(); */
-
     // Create Density
     std::vector<SharedMatrix> Dij_unpert;
     for(int ij=0; ij < npairs; ++ij) {
@@ -642,7 +622,6 @@ std::vector<SharedMatrix> Local_cc::build_cPNO_lists(double cutoff, std::vector<
                 survivors += 1;
             }
         }
-        //outfile->Printf("Survivors: %i \t", survivors);
         survivor_list_unpert.push_back(survivors);
     }
 
@@ -667,10 +646,6 @@ std::vector<SharedMatrix> Local_cc::build_cPNO_lists(double cutoff, std::vector<
         qtemp = linalg::horzcat(qs_to_combine);
         Q_combined.push_back(qtemp);
     }
-    /*outfile->Printf("**** Q_combined ****\n");
-    for (auto &qel : Q_combined) {
-        qel->print();
-    }*/
 
     std::vector<SharedMatrix> Q_new;
     std::vector<int> survivor_list_new;
@@ -697,29 +672,26 @@ std::vector<SharedMatrix> Local_cc::build_cPNO_lists(double cutoff, std::vector<
             survivor_list_new.push_back(npno);
         }
     }
-    // Print check Q
-    /*outfile->Printf("**** Q_new ****\n");
-    for (auto &qel : Q_new) {
-        qel->print();
-    }*/
 
     // Compute stats
     int total_pno = 0;
     double t2_ratio = 0.0;
     outfile->Printf("\nSurvivor list: "); 
     for(int ij=0; ij < npairs; ++ij) {
+        if (ij % 10 == 0) {
+            outfile->Printf("\n\t");
+        }
         outfile->Printf("%d\t", survivor_list_new[ij]);
         total_pno += survivor_list_new[ij];
         t2_ratio += pow(survivor_list_new[ij],2);
     }
-    outfile->Printf("\nT2 ratio: %10.10lf \n", t2_ratio);
     double avg_pno = static_cast<float>(total_pno) / static_cast<float>(npairs);
     t2_ratio /= (nocc*nocc*nvir*nvir);
 
     // Print stats
-    outfile->Printf("Total number of PNOs: %i \n", total_pno);
-    outfile->Printf("Average number of PNOs: %10.10lf \n", avg_pno);
-    outfile->Printf("T2 ratio: %10.10lf \n", t2_ratio);
+    outfile->Printf("\n\tTotal number of PNOs: %i \n", total_pno);
+    outfile->Printf("\tAverage number of PNOs: %10.10lf \n", avg_pno);
+    outfile->Printf("\tT2 ratio: %10.10lf \n\n", t2_ratio);
 
     // Write PNO dimensions, Q to file
     int *survivors_list = new int[npairs];
@@ -740,11 +712,13 @@ std::vector<SharedMatrix> Local_cc::build_cPNO_lists(double cutoff, std::vector<
         }
     }
     
+    // Freeing memory
     delete[] survivors_list;
+
     return Q_new;
 }
     
-void Local_cc::local_done() { outfile->Printf("    Local parameters free.\n"); }
+void Local_cc::local_done() { outfile->Printf("\n\tLocal parameters free.\n"); }
 
 void Local_cc::local_filter_T1(dpdfile2 *T1) {
     int ii;
@@ -756,18 +730,11 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
     std::vector<SharedMatrix> L;
     std::vector<SharedVector> eps_pno;
 
-    //survivor_list.resize(npairs);
+    // Reading in necessary transformation matrices
     int *survivors_list = new int[npairs];
     double *occ_eps = new double[nocc];
     psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) occ_eps, nocc * sizeof(double));
     psio_read_entry(PSIF_CC_INFO, "PNO dimensions", (char *) survivors_list, npairs * sizeof(int));
-    //survivor_list.insert(survivor_list.begin(), std::begin(survivors), std::end(survivors));
-
-    /*outfile->Printf("\nChecking read_in of survivor_list, nocc=%d\n", nocc);
-    for (auto sel : survivors) {
-        outfile->Printf("%d\t", sel);
-    }
-    outfile->Printf("End\n");*/
 
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ++ij) {
@@ -786,6 +753,7 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
     for (int ij = 0; ij < npairs; ++ij) {
         int npno = survivors_list[ij];
         auto qtemp = std::make_shared<Matrix>(nvir, npno);
+        // Checking for zeros in the PNO list
         if (npno == 0) {
             qtemp = nullptr;
             Q.push_back(qtemp);
@@ -796,14 +764,12 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
             Q.push_back(qtemp->clone());
         }
     }
-    /*outfile->Printf("Testing read-in of Q\n");
-    for (auto &qel : Q) {
-        qel->print();
-    }*/
+
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ij++) {
         int npno = survivors_list[ij];
         auto ltemp = std::make_shared<Matrix>(npno, npno);
+        // Checking for zeros in the PNO list
         if (npno == 0) {
             ltemp = nullptr;
             L.push_back(ltemp);
@@ -821,6 +787,7 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
     double *T1tilde, *T1bar;
     double **qtemp, **ltemp;
 
+    // Transforming the T1s using Q_ii, L_ii
     for (int i = 0; i < nocc; i++) {
         ii = i * nocc + i; /* diagonal element of pair matrices */
         int npno = survivors_list[ii];
@@ -833,39 +800,26 @@ void Local_cc::local_filter_T1(dpdfile2 *T1) {
             }
             continue; 
         }
-        // Print checking
-        /*Vector T1vec(nvir);
-        for(int a=0; a < nvir; ++a) {
-            T1vec.set(a, T1->matrix[0][i][a]);
-        }
-        outfile->Printf("**** T1[%d] vector before denom applied ****", i);
-        T1vec.print();*/
         T1tilde = init_array(npno);
         T1bar = init_array(npno);
         qtemp = Q[ii]->to_block_matrix();
         ltemp = L[ii]->to_block_matrix();
 
-        /* Transform the virtuals to the redundant projected virtual basis */
-        // T1tilde->gemv(1, 1, Q[ii].get(), &T1vec, 0);
+        /* Transforming the virtuals to the PNO basis */
         C_DGEMV('t', nvir, npno, 1.0, qtemp[0], npno, &(T1->matrix[0][i][0]), 1.0, 0.0, &(T1tilde[0]), 1);
 
-        /* Transform the virtuals to the non-redundant virtual basis */
-        // T1bar->gemv(1, 1, L[ii].get(), T1tilde.get(), 0);
+        /* Transforming the virtuals to the semi-canonical basis */
         C_DGEMV('t', npno, npno, 1.0, ltemp[0], npno, &(T1tilde[0]), 1.0, 0.0, &(T1bar[0]), 1);
 
-        /* Apply the denominators */
+        /* Applying the denominators */
         for (int a = 0; a < npno; a++) {
-            //outfile->Printf("T1 Residual before denom: %10.15f \n", T1bar[a]);
             T1bar[a] /= occ_eps[i] - eps_pno[ii]->get(a);
-            //outfile->Printf("T1 Residual after denom: %10.15f \n", T1bar[a]);
         }
 
-        /* Transform the new T1's to the redundant projected virtual basis */
-        // T1tilde->gemv(0, 1, L[ii].get(), T1bar.get(), 0);
+        /* Transforming the new T1s to the PNO basis */
         C_DGEMV('n', npno, npno, 1.0, ltemp[0], npno, &(T1bar[0]), 1.0, 0.0, &(T1tilde[0]), 1);
 
-        /* Transform the new T1's to the MO basis */
-        // T1vec.gemv(0, 1, Q[ii].get(), T1tilde.get(), 0);
+        /* Transforming the new T1s to the MO basis */
         C_DGEMV('n', nvir, npno, 1.0, qtemp[0], npno, &(T1tilde[0]), 1.0, 0.0, &(T1->matrix[0][i][0]), 1);
 
     }
@@ -888,19 +842,13 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
     std::vector<SharedMatrix> L;
     std::vector<SharedVector> eps_pno;
 
-    //survivor_list.resize(npairs, 0);
+    // Reading in necessary transformation matrices
     int *survivors_list = new int[npairs];
     double *occ_eps = new double[nocc];
 
     psio_read_entry(PSIF_CC_INFO, "Local Occupied Orbital Energies", (char *) occ_eps, nocc * sizeof(double));
     psio_read_entry(PSIF_CC_INFO, "PNO dimensions", (char *) survivors_list, npairs * sizeof(int));
-    /*outfile->Printf("Testing read-in of eps_occ\n");
-    for (int i=0; i < nocc; i++) {
-        outfile->Printf("%5.15f\t",occ_eps[i]);
-    }
-    for (auto qel : eps_occ) {
-        outfile->Printf("%20.10f\t", qel);;
-    }*/
+
     int *weak_pairs = new int[npairs];
     if (weakp == "NEGLECT" || weakp == "RESPONSE" || weakp == "CUSTOM") {
         psio_read_entry(PSIF_CC_INFO, "Local Weak Pairs", (char *) weak_pairs, npairs * sizeof(int));
@@ -923,18 +871,11 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
             eps_pno.push_back(eps_pno_temp);
         }
     }
-    /*outfile->Printf("Testing read-in of virtual orbital energies\n");
-    for(int ij=0; ij < npairs; ++ij) {
-        outfile->Printf("\nPair %d ", ij);
-        int npno = survivors[ij];
-        for(int a=0; a < npno; ++a) {
-            outfile->Printf("%10.10f\t", eps_pno[ij]->get(a));
-        }
-    }*/
     next = PSIO_ZERO;
     for (int ij = 0; ij < npairs; ij++) {
         int npno = survivors_list[ij];
         auto qtemp = std::make_shared<Matrix>(nvir, npno);
+        // Checking for zeros in the PNO list
         if (npno == 0) {
             qtemp = nullptr;
             Q.push_back(qtemp);
@@ -949,6 +890,7 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
     for (int ij = 0; ij < npairs; ij++) {
         int npno = survivors_list[ij];
         auto ltemp = std::make_shared<Matrix>(npno, npno);
+        // Checking for zeros in the PNO list
         if (npno == 0) {
             ltemp = nullptr;
             L.push_back(ltemp);
@@ -959,12 +901,8 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
             L.push_back(ltemp->clone());
         }
     }
-    /*outfile->Printf("Testing read-in of L\n");
-    for (auto &qel : L) {
-        qel->print();
-    }*/
 
-    /* Grab the MO-basis T2's */
+    /* Init the MO-basis T2s */
     global_dpd_->buf4_mat_irrep_init(T2, 0);
     global_dpd_->buf4_mat_irrep_rd(T2, 0);
 
@@ -993,8 +931,6 @@ void Local_cc::local_filter_T2(dpdbuf4 *T2) {
                 T2temp->set(a, b, T2->matrix[0][ij][ab]);
             }
 
-            //outfile->Printf("T2 residual before change of basis\n");
-            //T2temp->print();
             /* Transform the virtuals to the redundant projected virtual basis */
             atemp->gemm(0, 0, 1, T2temp, Q[ij], 0);
             T2bar->gemm(1, 0, 1, Q[ij], atemp, 0);
@@ -1171,7 +1107,7 @@ void Local_cc::custom_weak_pair(int pair_no) {
     delete[] weak_pairs;
 }
 
-// Destructor attempt
+// Destructor
 Local_cc::~Local_cc() {
 };
 
