@@ -28,14 +28,13 @@
 
 #include "sparse.h"
 
+#include "psi4/libqt/qt.h"
+
 #include <tuple>
 #include <algorithm>
 
 namespace psi {
 
-/* Args: sorted lists l1 and l2
- * Returns: sorted union of l1 and l2
- */
 std::vector<int> merge_lists(const std::vector<int> &l1, const std::vector<int> &l2) {
 
     std::vector<int> l12;
@@ -65,11 +64,6 @@ std::vector<int> merge_lists(const std::vector<int> &l1, const std::vector<int> 
 
 }
 
-/* Args: sorted list of y, sparse map from A to y (assume sorted)
- * Returns: sorted list yA
- *
- * For all a, every value in A_to_y[a] is included in yA if at least one is present in y
- */
 std::vector<int> contract_lists(const std::vector<int> &y, const std::vector<std::vector<int>> &A_to_y) {
 
     // TODO: runtime is proportional to A_to_y size (system size, O(N))
@@ -98,11 +92,6 @@ std::vector<int> contract_lists(const std::vector<int> &y, const std::vector<std
 
 }
 
-/* Args: x is a list of values (sorted), y is a map from values of x to values of y
- * Returns: a list of y values
- *
- * Multiple values in x may map to the same value in y (i.e. x is a list of bf, y is atoms)
- */
 std::vector<int> block_list(const std::vector<int> &x_list, const std::vector<int> &x_to_y_map) {
 
     std::vector<int> y_list;
@@ -120,9 +109,6 @@ std::vector<int> block_list(const std::vector<int> &x_list, const std::vector<in
 
 }
 
-/* Args: SparseMap from x to y, maximum possible y value
- * Returns: SparseMap from y to x
- */
 std::vector<std::vector<int>> invert_map(const std::vector<std::vector<int>> &x_to_y, int ny) {
 
     int nx = x_to_y.size();
@@ -138,9 +124,6 @@ std::vector<std::vector<int>> invert_map(const std::vector<std::vector<int>> &x_
 
 }
 
-/* Args: SparseMap from x to y, SparseMap from y to z
- * Returns: SparseMap from x to z
- */
 std::vector<std::vector<int>> chain_maps(const std::vector<std::vector<int>> &x_to_y, const std::vector<std::vector<int>> &y_to_z) {
 
     int nx = x_to_y.size();
@@ -160,9 +143,6 @@ std::vector<std::vector<int>> chain_maps(const std::vector<std::vector<int>> &x_
 
 }
 
-/* Args: SparseMap from x to y, list of pairs of type x
- * Returns: extended SparseMap from x to y
- */
 std::vector<std::vector<int>> extend_maps(const std::vector<std::vector<int>> &x_to_y, const std::vector<std::pair<int,int>> &xpairs) {
 
     int nx = x_to_y.size();
@@ -178,38 +158,38 @@ std::vector<std::vector<int>> extend_maps(const std::vector<std::vector<int>> &x
 
 }
 
-SharedMatrix submatrix_rows(SharedMatrix mat, const std::vector<int> &row_inds) {
+SharedMatrix submatrix_rows(const Matrix &mat, const std::vector<int> &row_inds) {
 
-    SharedMatrix mat_new = std::make_shared<Matrix>(mat->name(), row_inds.size(), mat->colspi(0));
+    SharedMatrix mat_new = std::make_shared<Matrix>(mat.name(), row_inds.size(), mat.colspi(0));
+    double** mat_newp = mat_new->pointer();
+    double** matp = mat.pointer();
     for(int r_new = 0; r_new < row_inds.size(); r_new++) {
         int r_old = row_inds[r_new];
-        for(int c = 0; c < mat->colspi(0); c++) {
-            mat_new->set(r_new, c, mat->get(r_old, c));
-        }
+        ::memcpy(&mat_newp[r_new][0], &matp[r_old][0], sizeof(double) * mat.colspi(0));
     }
     return mat_new;
 }
 
-SharedMatrix submatrix_cols(SharedMatrix mat, const std::vector<int> &col_inds) {
+SharedMatrix submatrix_cols(const Matrix &mat, const std::vector<int> &col_inds) {
 
-    SharedMatrix mat_new = std::make_shared<Matrix>(mat->name(), mat->rowspi(0), col_inds.size());
-    for(int r = 0; r < mat->rowspi(0); r++) {
-        for(int c_new = 0; c_new < col_inds.size(); c_new++) {
-            int c_old = col_inds[c_new];
-            mat_new->set(r, c_new, mat->get(r, c_old));
-        }
+    SharedMatrix mat_new = std::make_shared<Matrix>(mat.name(), mat.rowspi(0), col_inds.size());
+    double** mat_newp = mat_new->pointer();
+    double** matp = mat.pointer();
+    for(int c_new = 0; c_new < col_inds.size(); c_new++) {
+        int c_old = col_inds[c_new];
+        C_DCOPY(mat.rowspi(0), &matp[0][c_old], mat.colspi(0), &mat_newp[0][c_new], col_inds.size());
     }
     return mat_new;
 }
 
-SharedMatrix submatrix_rows_and_cols(SharedMatrix mat, const std::vector<int> &row_inds, const std::vector<int> &col_inds) {
+SharedMatrix submatrix_rows_and_cols(const Matrix &mat, const std::vector<int> &row_inds, const std::vector<int> &col_inds) {
 
-    SharedMatrix mat_new = std::make_shared<Matrix>(mat->name(), row_inds.size(), col_inds.size());
+    SharedMatrix mat_new = std::make_shared<Matrix>(mat.name(), row_inds.size(), col_inds.size());
     for(int r_new = 0; r_new < row_inds.size(); r_new++) {
         int r_old = row_inds[r_new];
         for(int c_new = 0; c_new < col_inds.size(); c_new++) {
             int c_old = col_inds[c_new];
-            mat_new->set(r_new, c_new, mat->get(r_old, c_old));
+            mat_new->set(r_new, c_new, mat.get(r_old, c_old));
         }
     }
     return mat_new;

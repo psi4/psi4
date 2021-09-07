@@ -31,7 +31,6 @@
 
 .. index::
    single: DLPNO-MP2
-   pair: MP2; density-fitting
 
 .. _`sec:dlpnomp2`:
 
