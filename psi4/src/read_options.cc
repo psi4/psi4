@@ -1877,8 +1877,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         ``PNO++`` and ``CPNO++`` selects the Perturbed Pair Natural Orbital methods
         developed by Crawford and co-workers. -*/
         options.add_str("LOCAL_METHOD", "PNO", "PNO PNO++ CPNO++");
-        /*- Type of perturbation to use for PNO++ method. -*/
-        options.add_str("LOCAL_PERT", "DIPOLE", "DIPOLE NABLA");
+        /*- Type of perturbation to use for PNO++ method. ``DIPOLE`` (unique 
+          available option) corresponds to the length gauge representation of
+          the electric dipole moment operator.-*/
+        options.add_str("LOCAL_PERT", "DIPOLE", "DIPOLE");
         /*- Value (always between one and zero) of the PNO occupation number
           threshold for the CPNO++ method. -*/
         options.add_double("UNPERT_CUTOFF", 1e-6);
@@ -2140,10 +2142,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         ``PNO++`` and ``CPNO++`` selects the Perturbed Pair Natural Orbital methods
         developed by Crawford and co-workers. -*/
         options.add_str("LOCAL_METHOD", "PNO PNO++ CPNO++");
-        /*- Type of perturbation to use for PNO++ method. ``DIPOLE`` corresponds
-          to the length gauge representation and ``NABLA`` corresponds to the 
-          velocity gauge representation of the electric dipole moment operator. -*/
-        options.add_str("LOCAL_PERT", "NONE", "DIPOLE NABLA");
+        /*- Type of perturbation to use for PNO++ method. ``DIPOLE`` (unique 
+          available option) corresponds to the length gauge representation of
+          the electric dipole moment operator.-*/
+        options.add_str("LOCAL_PERT", "NONE", "DIPOLE");
         /*- Desired treatment of "weak pairs" in the local-CCSD method. A value of
         ``NEGLECT`` ignores weak pairs entirely. A value of ``NONE`` treats weak pairs in
         the same manner as strong pairs. A value of ``RESPONSE`` uses a dipole criterion 

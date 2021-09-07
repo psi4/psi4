@@ -237,7 +237,7 @@ The coupled cluster singles and doubles code, invoked using either
 ``energy(‘ccsd’)`` or ``properties(‘ccsd’)``, can simulate the effect
 of the truncation of the virtual space using the pair natural orbital (PNO) 
 approach [Neese:2009:64103]_ as well as the PNO++ and combined PNO++ approaches
-[Dcunha:2021:290]_ for correlation energies, dynamic polarizabilities and specific
+[Dcunha:2021:290]_ for correlation energies, dynamic polarizabilities, and specific
 rotations. Truncation effects of weak pairs using a pair energy or a dipole
 criterion can be computed using the keyword ``LOCAL_WEAKP``.
 
