@@ -25,7 +25,6 @@
 .. #
 .. # @END LICENSE
 .. #
-.. # what does "single" and "pair" mean below? I don't understand the indexing
 
 .. include:: autodoc_abbr_options_c.rst
 
