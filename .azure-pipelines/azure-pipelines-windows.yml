@@ -9,7 +9,7 @@ jobs:
     variables:
       llvm.version: '11.0.0'
       mkl.version: '2019.1'
-      cmake.build_type: 'Release'
+      cmake.build_type: 'Debug'
       conda.build: false
       MKL_CBWR: AVX
       PYTHON_VERSION: '3.8'
