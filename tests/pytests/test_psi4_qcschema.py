@@ -45,7 +45,7 @@ def test_psi4_basic(datadir):
     #! Sample HF/cc-pVDZ H2O computation
 
     if os.path.isdir(tmpdir):
-        print("tmpdir {} FOUND".format(tmpdir)
+        print("tmpdir {} FOUND".format(tmpdir))
     else:
         raise FileNotFoundError("tmpdir {} not found.".format(tmpdir))
 
