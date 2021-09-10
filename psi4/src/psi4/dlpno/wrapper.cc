@@ -28,24 +28,8 @@
 
 #include "mp2.h"
 
-#include "psi4/psi4-dec.h"
-
-#include "psi4/psifiles.h"
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libpsio/psio.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libiwl/iwl.h"
-#include "psi4/libqt/qt.h"
-#include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/exception.h"
-
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
-#include <cmath>
-#include <sstream>
-
 
 namespace psi {
 namespace dlpno {
