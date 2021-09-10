@@ -344,6 +344,10 @@ void DirectJK::compute_JK() {
         }
     }
 
+    // for (int N = 0; N < D_ao_.size(); N++) {
+    //    J_[N]->print_out();
+    // }
+
     iteration_ += 1;
 }
 void DirectJK::postiterations() {}
