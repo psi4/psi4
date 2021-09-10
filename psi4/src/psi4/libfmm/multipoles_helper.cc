@@ -410,7 +410,6 @@ RealSolidHarmonics::RealSolidHarmonics(int lmax, Vector3 center, SolidHarmonicsT
 
 std::shared_ptr<RealSolidHarmonics> RealSolidHarmonics::copy() {
     std::shared_ptr<RealSolidHarmonics> new_harm = std::make_shared<RealSolidHarmonics>(lmax_, center_, type_);
-#pragma omp parallel for
     for (int l = 0; l <= lmax_; l++) {
         for (int mu = 0; mu < 2*l+1; mu++) {
             new_harm->Ylm_[l][mu] = Ylm_[l][mu];
@@ -420,7 +419,6 @@ std::shared_ptr<RealSolidHarmonics> RealSolidHarmonics::copy() {
 }
 
 void RealSolidHarmonics::add(const RealSolidHarmonics& rsh) {
-#pragma omp parallel for
     for (int l = 0; l <= lmax_; l++) {
         for (int mu = 0; mu < 2*l+1; mu++) {
             Ylm_[l][mu] += rsh.Ylm_[l][mu];
@@ -429,7 +427,6 @@ void RealSolidHarmonics::add(const RealSolidHarmonics& rsh) {
 }
 
 void RealSolidHarmonics::add(const std::shared_ptr<RealSolidHarmonics>& rsh) {
-#pragma omp parallel for
     for (int l = 0; l <= lmax_; l++) {
         for (int mu = 0; mu < 2*l+1; mu++) {
             Ylm_[l][mu] += rsh->Ylm_[l][mu];
@@ -438,7 +435,6 @@ void RealSolidHarmonics::add(const std::shared_ptr<RealSolidHarmonics>& rsh) {
 }
 
 void RealSolidHarmonics::scale(double val) {
-#pragma omp parallel for
     for (int l = 0; l <= lmax_; l++) {
         for (int mu = 0; mu < 2*l+1; mu++) {
             Ylm_[l][mu] *= val;

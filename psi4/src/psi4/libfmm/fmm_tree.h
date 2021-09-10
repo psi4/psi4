@@ -8,6 +8,7 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/onebody.h"
+#include "psi4/libmints/twobody.h"
 #include "psi4/libfmm/multipoles_helper.h"
 
 #include <functional>
@@ -92,11 +93,7 @@ class PSI_API CFMMBox : public std::enable_shared_from_this<CFMMBox> {
       std::vector<std::shared_ptr<CFMMBox>> local_far_field_;
 
       // Returns a shared pointer to the CFMMBox object
-      std::shared_ptr<CFMMBox> get();
-
-      // Compute the near field and far field J matrix contributions
-      void compute_nf_J(std::shared_ptr<BasisSet> basisset, std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J);
-      void compute_ff_J(std::shared_ptr<BasisSet> basisset, std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J);
+      std::shared_ptr<CFMMBox> get() { return shared_from_this(); }
       
     public:
       // Generic Constructor
@@ -109,15 +106,10 @@ class PSI_API CFMMBox : public std::enable_shared_from_this<CFMMBox> {
       void compute_mpoles(std::shared_ptr<BasisSet>& basisset, std::vector<SharedMatrix>& D);
       // Compute multipoles from children
       void compute_mpoles_from_children();
-      // Sets the near field and local far field vectors
-      void set_nf_lff();
-      // Calculate far field vector from local and parent far fields
-      void compute_far_field_vector();
-      // Compute the box's contribution to the J matrix
-      void compute_J(std::shared_ptr<BasisSet> basisset, std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J);
+      // Sets the near field and local far field and calculates far field vector from local and parent far fields
+      void compute_far_field();
 
       // => USEFUL GETTER METHODS <= //
-
       // Get the multipole level the box is on
       int get_level() { return level_; }
       // Get the ws criterion of the box
@@ -129,7 +121,13 @@ class PSI_API CFMMBox : public std::enable_shared_from_this<CFMMBox> {
       // Get the children of the box
       std::vector<std::shared_ptr<CFMMBox>>& get_children() { return children_; }
       // Get the shell pairs of the box
-      std::vector<std::shared_ptr<ShellPair>>& get_shell_pairs() { return shell_pairs_; };
+      std::vector<std::shared_ptr<ShellPair>>& get_shell_pairs() { return shell_pairs_; }
+      // Gets the number of shell pairs in the box
+      int get_nsp() { return shell_pairs_.size(); }
+      // Gets the near_field_boxes of the box
+      std::vector<std::shared_ptr<CFMMBox>>& near_field_boxes() { return near_field_; }
+      // Gets the far field vector
+      std::shared_ptr<RealSolidHarmonics>& far_field_vector() { return Vff_; }
 
 }; // End class CFMMBox
 
@@ -150,10 +148,16 @@ class PSI_API CFMMTree {
       int nlevels_;
       // Maximum Multipole Angular Momentum
       int lmax_;
-      // The tree structure (implemented as list for simplification)
+      // The tree structure (implemented as list for random access)
       std::vector<std::shared_ptr<CFMMBox>> tree_;
       // Harmonic Coefficients used to calculate multipoles
       std::shared_ptr<HarmonicCoefficients> mpole_coefs_;
+      // A list of significant bra shell pairs
+      std::vector<std::pair<int, int>> nf_bra_shell_pairs_;
+
+      // Number of threads
+      int nthread_;
+      std::vector<std::shared_ptr<TwoBodyAOInt>> ints_;
 
       // Sort the shell-pairs (radix sort)
       void sort_shell_pairs();
@@ -163,12 +167,12 @@ class PSI_API CFMMTree {
       void make_children();
       // Calculate multipoles
       void calculate_multipoles();
-      // Helper method to set the near field and lff vectors
-      void set_nf_lff();
       // Helper method to compute far field
       void compute_far_field();
-      // Helper method to build the J Matrix recursively
-      void calculate_J(CFMMBox* box);
+      // Build near-field J (like Direct SCF)
+      void build_nf_J();
+      // Build far-field J (long-range multipole interactions)
+      void build_ff_J();
     
     public:
       // Constructor
