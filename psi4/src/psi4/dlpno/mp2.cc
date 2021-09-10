@@ -129,19 +129,19 @@ void C_DGESV_wrapper(SharedMatrix A, SharedMatrix B) {
  * we need to "flatten" the sparse data structure (list of Matrix objects)
  * into a single Matrix
  */
-SharedMatrix flatten_mats(const std::vector<SharedMatrix>& mat_list) {
+SharedVector flatten_mats(const std::vector<SharedMatrix>& mat_list) {
     size_t total_size = 0;
     for (SharedMatrix mat : mat_list) {
         total_size += mat->size();
     }
 
-    SharedMatrix flat = std::make_shared<Matrix>("flattened matrix list", 1, total_size);
-    double** flatp = flat->pointer();
+    auto flat = std::make_shared<Vector>("flattened matrix list", total_size);
+    double* flatp = flat->pointer();
 
     size_t flat_ind = 0;
     for (SharedMatrix mat : mat_list) {
         if (mat->size() == 0) continue;
-        ::memcpy(&flatp[0][flat_ind], mat->pointer()[0], sizeof(double) * mat->size());
+        ::memcpy(&flatp[flat_ind], mat->pointer()[0], sizeof(double) * mat->size());
         flat_ind += mat->size();
     }
 
@@ -151,12 +151,12 @@ SharedMatrix flatten_mats(const std::vector<SharedMatrix>& mat_list) {
 /* This function is a complement to flatten_mats(). A flattened Matrix is
  * copied into a list of Matrix objects.
  */
-void copy_flat_mats(SharedMatrix flat, std::vector<SharedMatrix>& mat_list) {
-    double** flatp = flat->pointer();
+void copy_flat_mats(SharedVector flat, std::vector<SharedMatrix>& mat_list) {
+    double* flatp = flat->pointer();
     size_t flat_ind = 0;
     for (SharedMatrix mat : mat_list) {
         if (mat->size() == 0) continue;
-        ::memcpy(mat->pointer()[0], &flatp[0][flat_ind], sizeof(double) * mat->size());
+        ::memcpy(mat->pointer()[0], &flatp[flat_ind], sizeof(double) * mat->size());
         flat_ind += mat->size();
     }
 }
@@ -215,12 +215,12 @@ void DLPNOMP2::compute_overlap_ints() {
     nthread = omp_get_max_threads();
 #endif
     std::vector<std::shared_ptr<BasisFunctions>> point_funcs(nthread);
-    std::vector<SharedMatrix> DOI_ij_temps(nthread);
-    std::vector<SharedMatrix> DOI_iu_temps(nthread);
+    std::vector<Matrix> DOI_ij_temps(nthread);
+    std::vector<Matrix> DOI_iu_temps(nthread);
     for (size_t thread = 0; thread < nthread; thread++) {
         point_funcs[thread] = std::make_shared<BasisFunctions>(basisset_, grid.max_points(), nbf);
-        DOI_ij_temps[thread] = std::make_shared<Matrix>("(i,j) Differential Overlap Integrals", naocc, naocc);
-        DOI_iu_temps[thread] = std::make_shared<Matrix>("(i,u) Differential Overlap Integrals", naocc, nbf);
+        DOI_ij_temps[thread] = Matrix("(i,j) Differential Overlap Integrals", naocc, naocc);
+        DOI_iu_temps[thread] = Matrix("(i,u) Differential Overlap Integrals", naocc, nbf);
     }
 
     timer_on("Integration");
@@ -239,12 +239,12 @@ void DLPNOMP2::compute_overlap_ints() {
         point_funcs[thread]->compute_functions(block);
 
         // the values we just computed (max_points x max_functions)
-        SharedMatrix point_values = point_funcs[thread]->basis_values()["PHI"];
+        auto point_values = point_funcs[thread]->basis_values()["PHI"];
 
         std::vector<int> bf_map = block->functions_local_to_global();
 
         // resize point_values buffer to size of this block
-        SharedMatrix point_values_trim =
+        auto point_values_trim =
             std::make_shared<Matrix>("DFTGrid PHI Buffer", npoints_block, nbf_block);  // points x bf_block
         for (size_t p = 0; p < npoints_block; p++) {
             for (size_t k = 0; k < nbf_block; k++) {
@@ -252,8 +252,8 @@ void DLPNOMP2::compute_overlap_ints() {
             }
         }
 
-        SharedMatrix C_lmo_slice = submatrix_rows(*C_lmo_, bf_map);  // bf_block x naocc
-        SharedMatrix C_pao_slice = submatrix_rows(*C_pao_, bf_map);  // bf_block x npao
+        auto C_lmo_slice = submatrix_rows(*C_lmo_, bf_map);  // bf_block x naocc
+        auto C_pao_slice = submatrix_rows(*C_pao_, bf_map);  // bf_block x npao
 
         // value of mo at each point squared
         C_lmo_slice = linalg::doublet(point_values_trim, C_lmo_slice, false, false);  // points x naocc
@@ -268,13 +268,13 @@ void DLPNOMP2::compute_overlap_ints() {
             }
         }
 
-        SharedMatrix C_lmo_slice_w = std::make_shared<Matrix>(C_lmo_slice);  // points x naocc
+        auto C_lmo_slice_w = std::make_shared<Matrix>(C_lmo_slice);  // points x naocc
         for (size_t p = 0; p < npoints_block; p++) {
             C_lmo_slice_w->scale_row(0, p, block->w()[p]);
         }
 
-        DOI_ij_temps[thread]->add(linalg::doublet(C_lmo_slice_w, C_lmo_slice, true, false));  // naocc x naocc
-        DOI_iu_temps[thread]->add(linalg::doublet(C_lmo_slice_w, C_pao_slice, true, false));  // naocc x npao
+        DOI_ij_temps[thread].add(linalg::doublet(C_lmo_slice_w, C_lmo_slice, true, false));  // naocc x naocc
+        DOI_iu_temps[thread].add(linalg::doublet(C_lmo_slice_w, C_pao_slice, true, false));  // naocc x npao
     }
     timer_off("Integration");
 
@@ -1049,12 +1049,15 @@ void DLPNOMP2::lmp2_iterations() {
         // DIIS extrapolation
         auto T_iajb_flat = flatten_mats(T_iajb_);
         auto R_iajb_flat = flatten_mats(R_iajb);
+
         if (iteration == 0) {
-            diis.set_error_vector_size(1, DIISEntry::Matrix, R_iajb_flat.get());
-            diis.set_vector_size(1, DIISEntry::Matrix, T_iajb_flat.get());
+            diis.set_error_vector_size(1, DIISEntry::Vector, R_iajb_flat.get());
+            diis.set_vector_size(1, DIISEntry::Vector, T_iajb_flat.get());
         }
-        diis.add_entry(R_iajb_flat, T_iajb_flat);
-        diis.extrapolate(T_iajb_flat);
+
+        diis.add_entry(2, R_iajb_flat.get(), T_iajb_flat.get());
+        diis.extrapolate(1, T_iajb_flat.get());
+
         copy_flat_mats(T_iajb_flat, T_iajb_);
 
 #pragma omp parallel for schedule(static, 1)
@@ -1156,7 +1159,6 @@ double DLPNOMP2::compute_energy() {
     timer_on("DLPNO-MP2");
 
     print_header();
-    //(outfile->stream())->flush();
 
     setup();
 
