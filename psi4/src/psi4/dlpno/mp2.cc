@@ -1099,7 +1099,6 @@ void DLPNOMP2::setup() {
     auto C_occ = reference_wavefunction_->Ca_subset("AO", "OCC");
 
     // Localize active occupied orbitals
-    //    auto localizer = BoysLocalizer(basisset_, reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC"));
     if (options_.get_str("DLPNO_LOCAL_ORBITALS") == "BOYS") {
         BoysLocalizer localizer = BoysLocalizer(basisset_, reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC"));
         localizer.set_convergence(options_.get_double("LOCAL_CONVERGENCE"));
