@@ -77,6 +77,8 @@ _qcschema_translation = {
     # Generics
     "generics": {
         "return_energy": {"variables": "CURRENT ENERGY"},
+        "return_gradient": {"variables": "CURRENT GRADIENT"},
+        "return_hessian": {"variables": "CURRENT HESSIAN"},
         # "nuclear_repulsion_energy": {"variables": "NUCLEAR REPULSION ENERGY"},  # use mol instead
     },
 
@@ -98,6 +100,8 @@ _qcschema_translation = {
         "scf_vv10_energy": {"variables": "DFT VV10 ENERGY", "skip_zero": True},
         "scf_xc_energy": {"variables": "DFT XC ENERGY", "skip_zero": True},
         "scf_dispersion_correction_energy": {"variables": "DISPERSION CORRECTION ENERGY", "skip_zero": True},
+        "scf_total_gradient": {"variables": "SCF TOTAL GRADIENT"},
+        "scf_total_hessian": {"variables": "SCF TOTAL HESSIAN"},
 
         # SCF Properties (experimental)
         # "scf_quadrupole_moment": {"variables": ["SCF QUADRUPOLE " + x for x in ["XX", "XY", "XZ", "YY", "YZ", "ZZ"]], "skip_null": True},
@@ -532,6 +536,9 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
 
     # Set options
     kwargs = json_data["keywords"].pop("function_kwargs", {})
+    # TODO: handle differently before psi4 merge
+    if "DERTYPE" in json_data["keywords"]:
+        kwargs = {"dertype": json_data["keywords"].pop("DERTYPE")}
     p4util.set_options(json_data["keywords"])
 
     # Setup the computation

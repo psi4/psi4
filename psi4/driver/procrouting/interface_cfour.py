@@ -419,6 +419,11 @@ def cfour_gradient_list():
     return qcdb.cfour.cfour_gradient_list()
 
 
+def cfour_hessian_list():
+    """Form list of Cfour analytic :py:func:`~driver.gradient` arguments."""
+    return qcdb.cfour.cfour_hessian_list()
+
+
 def cfour_psivar_list():
     """Form dictionary of :ref:`PSI Variables <apdx:cfour_psivar>` set by Cfour methods."""
     return qcdb.cfour.cfour_psivar_list()
