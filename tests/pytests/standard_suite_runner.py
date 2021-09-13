@@ -59,6 +59,8 @@ def runner_asserter(inp, subject, method, basis, tnm):
     scf_type = natural_values[scf_type]
 
     atol = 1.0e-6
+    if driver == "hessian":
+        atol = 2.0e-6  # todo more elaborate
     chash = answer_hash(
         system=subject.name(), basis=basis, fcae=fcae, scf_type=scf_type, reference=reference, corl_type=corl_type,
     )
