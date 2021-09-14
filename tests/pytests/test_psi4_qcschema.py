@@ -27,8 +27,6 @@ def datadir(tmpdir, request):
     module and, if available, moving all contents to a temporary directory so
     tests can use them freely.
     """
-    print("FILE: {}".format(request.module.__file__))
-    print("tmpdir: {}".format(tmpdir))
     filename = request.module.__file__
     test_dir, _ = os.path.splitext(filename)
 
@@ -45,7 +43,6 @@ def test_psi4_basic(datadir):
     #! Sample HF/cc-pVDZ H2O computation
 
     ref_file = datadir.join(f"jatin1.ref")
-    print("REF_FILE = {}".format(ref_file))
     with open(ref_file) as f:
         jatin = json.load(f)
 
