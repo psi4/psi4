@@ -1376,26 +1376,15 @@ SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi) {
     return Fia;
 }
 SharedMatrix HF::form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso) {
-    auto FDSmSDF = std::make_shared<Matrix>("FDS-SDF", nirrep_, nsopi_, nsopi_);
-    auto DS = std::make_shared<Matrix>("DS", nirrep_, nsopi_, nsopi_);
-
-    DS->gemm(false, false, 1.0, Dso, S_, 0.0);
-    FDSmSDF->gemm(false, false, 1.0, Fso, DS, 0.0);
-
-    SharedMatrix SDF(FDSmSDF->transpose());
+    auto FDSmSDF = linalg::triplet(Fso, Dso, S_, false, false, false);
+    auto SDF = FDSmSDF->transpose();
     FDSmSDF->subtract(SDF);
 
-    DS.reset();
     SDF.reset();
 
-    auto XP = std::make_shared<Matrix>("X'(FDS - SDF)", nirrep_, nmopi_, nsopi_);
-    auto XPX = std::make_shared<Matrix>("X'(FDS - SDF)X", nirrep_, nmopi_, nmopi_);
-    XP->gemm(true, false, 1.0, X_, FDSmSDF, 0.0);
-    XPX->gemm(false, false, 1.0, XP, X_, 0.0);
+    FDSmSDF->transform(X_);
 
-    // XPX->print();
-
-    return XPX;
+    return FDSmSDF;
 }
 
 void HF::print_stability_analysis(std::vector<std::pair<double, int> >& vec) {
