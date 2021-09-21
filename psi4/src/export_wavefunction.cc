@@ -157,6 +157,7 @@ void export_wavefunction(py::module& m) {
         .def("epsilon_b", &Wavefunction::epsilon_b, "Returns the Beta Eigenvalues.")
         .def("epsilon_a_subset", &Wavefunction::epsilon_a_subset, R"pbdoc(
               Returns the requested Alpha orbital energies subset.
+
               Parameters
               ----------
               basis : str
@@ -166,6 +167,7 @@ void export_wavefunction(py::module& m) {
               subset : str
                   {'ALL', 'ACTIVE', 'FROZEN', 'OCC', 'VIR', 'FROZEN_OCC', 'ACTIVE_OCC', 'ACTIVE_VIR', 'FROZEN_VIR'}
                   Which subspace of orbital energies should be returned?
+
               Returns
               -------
               Vector
@@ -173,6 +175,7 @@ void export_wavefunction(py::module& m) {
          )pbdoc")
         .def("epsilon_b_subset", &Wavefunction::epsilon_b_subset, R"pbdoc(
               Returns the requested Beta orbital energies subset.
+
               Parameters
               ----------
               basis : str
@@ -182,6 +185,7 @@ void export_wavefunction(py::module& m) {
               subset : str
                   {'ALL', 'ACTIVE', 'FROZEN', 'OCC', 'VIR', 'FROZEN_OCC', 'ACTIVE_OCC', 'ACTIVE_VIR', 'FROZEN_VIR'}
                   Which subspace of orbital energies should be returned?
+
               Returns
               -------
               Vector
