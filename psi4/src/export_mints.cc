@@ -1173,11 +1173,14 @@ void export_mints(py::module& m) {
         .def("max_nprimitive", &BasisSet::max_nprimitive, "The max number of primitives in a shell")
         .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring");
 
+    typedef void (OneBodyAOInt::*vecmatrix_version)(std::vector<SharedMatrix>&);
     py::class_<OneBodyAOInt, std::shared_ptr<OneBodyAOInt>> pyOneBodyAOInt(
         m, "OneBodyAOInt", "Basis class for all one-electron integrals");
     pyOneBodyAOInt
         .def("compute_shell", &OneBodyAOInt::compute_shell,
              "Compute integrals between basis functions in the given shell pair")
+        .def("compute", vecmatrix_version(&OneBodyAOInt::compute),
+             "Compute all integrals over both basis sets, and store them in the provided matrix")
         .def_property("origin", py::cpp_function(&OneBodyAOInt::origin), py::cpp_function(&OneBodyAOInt::set_origin),
                       "The origin about which the one body ints are being computed.")
         .def_property_readonly("basis", py::cpp_function(&OneBodyAOInt::basis), "The basis set on center one")
@@ -1325,6 +1328,8 @@ void export_mints(py::module& m) {
              "Returns a OneBodyInt that computes arbitrary-order AO multipole integrals", "order"_a)
         .def("so_multipoles", &IntegralFactory::so_multipoles,
              "Returns a OneBodyInt that computes arbitrary-order SO multipole integrals", "order"_a)
+        .def("ao_multipole_potential", &IntegralFactory::ao_multipole_potential,
+             "Returns a OneBodyInt that computes the potential and its derivatives up to specified order (maximum of 3)", "order"_a, "deriv"_a = 0)
         .def("ao_traceless_quadrupole", &IntegralFactory::ao_traceless_quadrupole,
              "Returns a OneBodyInt that computes the traceless AO quadrupole integral")
         .def("so_traceless_quadrupole", &IntegralFactory::so_traceless_quadrupole,
