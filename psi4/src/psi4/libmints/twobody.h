@@ -130,8 +130,8 @@ class PSI_API TwoBodyAOInt {
     std::vector<double> shell_pair_exchange_values_;
     /// sqrt|(mm|mm)| values (nshell)
     std::vector<double> function_sqrt_;
-    /// Max Density per Shell Pair
-    std::vector<double> max_dens_shell_pair_;
+    /// Max Density per Shell Pair (accounts for multiple density matrices)
+    std::vector<std::vector<double>> max_dens_shell_pair_;
     /// Significant unique function pairs, in reduced triangular indexing
     PairList function_pairs_;
     /// Significant unique shell pairs, in reduced triangular indexing

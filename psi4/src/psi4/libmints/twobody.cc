@@ -118,6 +118,13 @@ TwoBodyAOInt::~TwoBodyAOInt() {}
 
 // Haser 1989, Equation 7 
 void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
+
+    if (max_dens_shell_pair_.size() == 0) {
+        max_dens_shell_pair_.resize(D.size());
+        for (int ind = 0; ind < D.size(); ind++) {
+            max_dens_shell_pair_[ind].resize(nshell_ * nshell_, 1.0);
+        }
+    }
     
     timer_on("Update Density");
 #pragma omp parallel for
@@ -128,20 +135,19 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
 
             int n_start = bs1_->shell(N).function_index();
             int num_n = bs1_->shell(N).nfunction();
-            
-            double max_dens = 0.0;
-            for (int m = m_start; m < m_start + num_m; m++) {
-                for (int n = n_start; n < n_start + num_n; n++) {
-                    double val = 0.0;
-                    for (int i = 0; i < D.size(); i++) {
-                        val += std::abs(D[i]->get(m, n));
+
+            for (int ind = 0; ind < D.size(); ind++) {
+                double** Dp = D[ind]->pointer();
+                double max_dens = 0.0;
+                for (int m = m_start; m < m_start + num_m; m++) {
+                    for (int n = n_start; n < n_start + num_n; n++) {
+                        max_dens = std::max(max_dens, std::abs(Dp[m][n]));
                     }
-                    max_dens = std::max(val, max_dens);
                 }
+                max_dens_shell_pair_[ind][M * nshell_ + N] = max_dens;
+                if (M != N) max_dens_shell_pair_[ind][N * nshell_ + M] = max_dens;
             }
-            
-            max_dens_shell_pair_[M * nshell_ + N] = max_dens;
-            if (M != N) max_dens_shell_pair_[N * nshell_ + M] = max_dens;
+
         }
     }
     timer_off("Update Density");
@@ -158,10 +164,26 @@ bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
     double Q_MN_sq = shell_pair_values_[N * nshell_ + M];
     double Q_RS_sq = shell_pair_values_[S * nshell_ + R];
 
-    // Equation 6
-    double max_density = std::max({max_dens_shell_pair_[M * nshell_ + N], max_dens_shell_pair_[R * nshell_ + S], 
-        0.25 * max_dens_shell_pair_[M * nshell_ + R], 0.25 * max_dens_shell_pair_[M * nshell_ + S],
-        0.25 * max_dens_shell_pair_[N * nshell_ + R], 0.25 * max_dens_shell_pair_[N * nshell_ + S]});
+    double max_density = 0.0;
+
+    // Equation 6 (RHF Case)
+    if (max_dens_shell_pair_.size() == 1) {
+        max_density = std::max({4.0 * max_dens_shell_pair_[0][M * nshell_ + N], 4.0 * max_dens_shell_pair_[0][R * nshell_ + S], 
+            max_dens_shell_pair_[0][M * nshell_ + R], max_dens_shell_pair_[0][M * nshell_ + S],
+            max_dens_shell_pair_[0][N * nshell_ + R], max_dens_shell_pair_[0][N * nshell_ + S]});
+    } else { // UHF and ROHF
+        // J-like terms
+        double D_MN = max_dens_shell_pair_[0][M * nshell_ + N] + max_dens_shell_pair_[1][M * nshell_ + N];
+        double D_RS = max_dens_shell_pair_[0][R * nshell_ + S] + max_dens_shell_pair_[1][R * nshell_ + S];
+
+        // K-like terms
+        double D_MR = std::max(max_dens_shell_pair_[0][M * nshell_ + R], max_dens_shell_pair_[1][M * nshell_ + R]);
+        double D_MS = std::max(max_dens_shell_pair_[0][M * nshell_ + S], max_dens_shell_pair_[1][M * nshell_ + S]);
+        double D_NR = std::max(max_dens_shell_pair_[0][N * nshell_ + R], max_dens_shell_pair_[1][N * nshell_ + R]);
+        double D_NS = std::max(max_dens_shell_pair_[0][N * nshell_ + S], max_dens_shell_pair_[1][N * nshell_ + S]);
+
+        max_density = std::max({2.0 * D_MN, 2.0 * D_RS, D_MR, D_MS, D_NR, D_NS});
+    }
 
     // Equations 6, 9, and 14
     return (Q_MN_sq * Q_RS_sq * max_density * max_density > density_threshold_squared);
@@ -386,10 +408,6 @@ void TwoBodyAOInt::create_sieve_pair_info(const std::shared_ptr<BasisSet> bs, Pa
                 shell_pair_exchange_values_[P * nshell_ + Q] = shell_pair_exchange_values_[Q * nshell_ + P] = max_val;
             }
         }
-    }
-
-    if (screening_type_ == ScreeningType::Density) {
-        max_dens_shell_pair_.resize(nshell_ * nshell_, 1.0);
     }
 }
 

@@ -206,7 +206,68 @@ def test_schwarz_vs_density_quartets():
             screen_count_density += 1
     
     assert compare_integers(screen_count_schwarz, 14504, 'Schwarz vs Density Screening, Cutoff 1.0e-12')
-    assert compare_integers(screen_count_density, 22452, 'Schwarz vs Density Screening, Cutoff 1.0e-12')
+    assert compare_integers(screen_count_density, 19440, 'Schwarz vs Density Screening, Cutoff 1.0e-12')
+
+def test_rhf_vs_uhf_screening():
+    """Checks difference between the number of shell quartets screened with Density screening in RHF vs UHF. 
+    Difference should be 0, mathematically. Default threshhold of 1.0E-12 is used"""
+
+    mol = psi4.geometry("""
+        0 1
+        O  -1.551007  -0.114520   0.000000
+        H  -1.934259   0.762503   0.000000
+        H  -0.599677   0.040712   0.000000
+        O   1.350625   0.111469   0.000000
+        H   1.680398  -0.373741  -0.758561
+        H   1.680398  -0.373741   0.758561
+        symmetry c1
+        no_reorient
+        no_com
+    """)
+
+    psi4.set_options({ "screening" : "density",
+                       "ints_tolerance" : 1e-12, 
+                       "reference" : "rhf",
+                       "integral_package" : 'libint2'})
+
+    # Run an SCF to get RHF Wavefunction
+    rhf_energy, rhf_wfn = psi4.energy('hf/DZ', return_wfn=True)
+    rhf_basis = rhf_wfn.basisset()
+    rhf_factory = psi4.core.IntegralFactory(rhf_basis)
+    eriRhf = rhf_factory.eri(0)
+
+    # Run an SCF to get UHF Wavefunction
+    psi4.set_options( { "reference" : "uhf" })
+    uhf_energy, uhf_wfn = psi4.energy('hf/DZ', return_wfn=True)
+    uhf_basis = uhf_wfn.basisset()
+    uhf_factory = psi4.core.IntegralFactory(uhf_basis)
+    eriUhf = uhf_factory.eri(0)
+
+
+    Drhf = [rhf_wfn.Da()]
+    Duhf = [uhf_wfn.Da(), uhf_wfn.Db()]
+
+    # Update using the Density Matrix
+    eriRhf.update_density(Drhf)
+    eriUhf.update_density(Duhf)
+
+    shell_inds = range(rhf_basis.nshell())
+    quartets = itertools.product(shell_inds, shell_inds, shell_inds, shell_inds)
+
+    screen_count_rhf = 0
+    screen_count_uhf = 0
+
+    for m, n, r, s in quartets:
+        screen_rhf = not eriRhf.shell_significant(m, n, r, s)
+        screen_uhf = not eriUhf.shell_significant(m, n, r, s)
+
+        if screen_rhf:
+            screen_count_rhf += 1
+        if screen_uhf:
+            screen_count_uhf += 1
+    
+    assert compare_integers(screen_count_rhf, 19440, 'RHF vs UHF Density Screening, Cutoff 1.0e-12')
+    assert compare_integers(screen_count_uhf, 19440, 'RHF vs UHF Density Screening, Cutoff 1.0e-12')
 
 def test_schwarz_vs_density_energy():
     """Checks difference in Hartree-Fock energy between Schwarz and Density screening (with and without IFB), 
