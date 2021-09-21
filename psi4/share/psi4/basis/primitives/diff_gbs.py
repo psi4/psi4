@@ -111,7 +111,8 @@ for el in elements:
             rdict = {bname: ''.join(refcontents)}
             bs, msg, ecp = qcdb.BasisSet.construct(parser, mol, 'BASIS', None, bdict, False)
             rbs, rmsg, recp = qcdb.BasisSet.construct(parser, mol, 'BASIS', None, rdict, False)
-            if bs == rbs:
+            #if bs.allclose(rbs, verbose=2):   # see changed coeff/exp
+            if bs.allclose(rbs):  # one line per BS
                 print('{:3}'.format(el.lower()), end='')
             else:
                 print(bcolors.WARNING + '{:3}'.format(el.upper()) + bcolors.ENDC, end='')

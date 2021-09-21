@@ -25,7 +25,6 @@
  *
  * @END LICENSE
  */
-
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -426,8 +425,38 @@ void ROHF::form_F() {
     }
 }
 
-void ROHF::form_C() {
-    soFeff_->diagonalize(Ct_, epsilon_a_);
+void ROHF::form_C(double shift) {
+    if (shift == 0.0) {
+        soFeff_->diagonalize(Ct_, epsilon_a_);
+    } else {
+        // Implementation of the shifting scheme from M.F. Guest &
+        // V. R. Saunders (1974), "On methods for converging open-shell
+        // Hartree-Fock wave-functions", Molecular Physics, 28:3,
+        // 819-828, DOI: 10.1080/00268977400102171. Virtuals are shifted
+        // up by shift, open-shell orbitals are shifted up by shift/2.
+
+        // Shifted Fock operator
+        auto shifted_F = SharedMatrix(factory_->create_matrix("F"));
+
+        // Zero dimensions
+        Dimension dim_zero(nirrep_);
+
+        // Shift open-shell orbitals by 0.5*shift
+        Dimension ospi = nalphapi_ - nbetapi_;
+        SharedMatrix Cos = Ct_->get_block({dim_zero, nmopi_}, {nbetapi_, nbetapi_ + ospi});
+        Cos->set_name("Cos");
+        shifted_F->gemm(false, true, 0.5 * shift, Cos, Cos, 0.0);
+
+        // Shift virtuals by shift
+        Dimension virpi = nmopi_ - nalphapi_;
+        SharedMatrix Cvir = Ct_->get_block({dim_zero, nmopi_}, {nalphapi_, nalphapi_ + virpi});
+        Cvir->set_name("Cvir");
+        shifted_F->gemm(false, true, shift, Cvir, Cvir, 1.0);
+
+        // Add in the Fock itself and diagonalize
+        shifted_F->add(soFeff_);
+        shifted_F->diagonalize(Ct_, epsilon_a_);
+    }
     // Form C = XC'
     Ca_->gemm(false, false, 1.0, X_, Ct_, 0.0);
 
@@ -439,6 +468,7 @@ void ROHF::form_C() {
         Ct_->eivprint(epsilon_a_);
     }
 }
+
 void ROHF::prepare_canonical_orthogonalization() {
     // Some matrix size changes if we canonical orthogonalization
     Ct_->init(nirrep_, nmopi_, nmopi_);

@@ -53,6 +53,7 @@ PSI Variables by Alpha
    The coupled-cluster perturbative triples correction [Eh].
 
 .. psivar:: (AT) CORRECTION ENERGY
+   A-(T) CORRECTION ENERGY
 
    The coupled-cluster asymmetric perturbative triples correction [Eh].
 
@@ -638,7 +639,7 @@ PSI Variables by Alpha
 .. psivar:: DCT LAMBDA ENERGY
 
    An energy term in density cumulant theory [Eh]. This term is the
-   2-electron cumulant’s contribution contribution to the reduced
+   2-electron cumulant's contribution contribution to the reduced
    density matrix energy expression. Not recommended for interpretative
    use except by reduced density matrix specialists.
 
@@ -1525,7 +1526,6 @@ PSI Variables by Alpha
    Deprecated in favor of :psivar:`SCF QUADRUPOLE`.
 
 .. psivar:: SCF TOTAL ENERGY
-   SCF TOTAL ENERGY (CHKPT)
 
    The total electronic energy [Eh] of the SCF stage of the calculation.
    The :samp:`{method} CORRELATION ENERGY` variables from subsequent stages of a

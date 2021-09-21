@@ -72,7 +72,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
 
     # <<<  Prepare Calculation and Call API  >>>
 
-    driver_call = {"energy": psi4.energy, "gradient": psi4.gradient}
+    driver_call = {"energy": psi4.energy, "gradient": psi4.gradient, "hessian": psi4.hessian}
 
     psi4.set_options(
         {
@@ -85,6 +85,7 @@ def runner_asserter(inp, subject, method, basis, tnm):
 
             # runtime conv crit
             "points": 5,
+            "fd_project": False,
         }
     )
     extra_kwargs = inp["keywords"].pop("function_kwargs", {})
@@ -190,6 +191,15 @@ def runner_asserter(inp, subject, method, basis, tnm):
             ref_block[f"{method.upper()} TOTAL GRADIENT"], wfn.gradient().np, tnm + " grad wfn", atol=atol
         )
         assert compare_values(ref_block[f"{method.upper()} TOTAL GRADIENT"], ret.np, tnm + " grad return", atol=atol)
+
+    elif driver == "hessian":
+        tf, errmsg = compare_values(ref_block[f"{method.upper()} TOTAL HESSIAN"], wfn.hessian().np, tnm + " hess wfn", atol=atol, return_message=True, quiet=True)
+        assert compare_values(ref_block[f"{method.upper()} TOTAL HESSIAN"], wfn.hessian().np, tnm + " hess wfn", atol=atol), errmsg
+        assert compare_values(ref_block[f"{method.upper()} TOTAL HESSIAN"], wfn.hessian().np, tnm + " hess wfn", atol=atol)
+        assert compare_values(
+            ref_block[f"{method.upper()} TOTAL GRADIENT"], wfn.gradient().np, tnm + " grad wfn", atol=atol
+        )
+        assert compare_values(ref_block[f"{method.upper()} TOTAL HESSIAN"], ret.np, tnm + " hess return", atol=atol)
 
     # generics
     # yapf: disable

@@ -308,7 +308,7 @@ int HF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter, 
 }
 
 void HF::form_V() { throw PSIEXCEPTION("Sorry, DFT functionals are not supported for this type of SCF wavefunction."); }
-void HF::form_C() { throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct orbitals."); }
+void HF::form_C(double shift) { throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct orbitals."); }
 void HF::form_D() { throw PSIEXCEPTION("Sorry, the base HF wavefunction cannot construct densities."); }
 
 std::vector<SharedMatrix> HF::onel_Hx(std::vector<SharedMatrix> x) {
@@ -431,6 +431,8 @@ void HF::find_occupation() {
     if (MOM_performed_) {
         MOM();
     } else {
+        // We first find the aufbau occupation.
+        // We then take our orbitals as the aufbau orbitals within the occupation.
         std::vector<std::pair<double, int> > pairs_a;
         std::vector<std::pair<double, int> > pairs_b;
         for (int h = 0; h < epsilon_a_->nirrep(); ++h) {
@@ -1374,26 +1376,15 @@ SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi) {
     return Fia;
 }
 SharedMatrix HF::form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso) {
-    auto FDSmSDF = std::make_shared<Matrix>("FDS-SDF", nirrep_, nsopi_, nsopi_);
-    auto DS = std::make_shared<Matrix>("DS", nirrep_, nsopi_, nsopi_);
-
-    DS->gemm(false, false, 1.0, Dso, S_, 0.0);
-    FDSmSDF->gemm(false, false, 1.0, Fso, DS, 0.0);
-
-    SharedMatrix SDF(FDSmSDF->transpose());
+    auto FDSmSDF = linalg::triplet(Fso, Dso, S_, false, false, false);
+    auto SDF = FDSmSDF->transpose();
     FDSmSDF->subtract(SDF);
 
-    DS.reset();
     SDF.reset();
 
-    auto XP = std::make_shared<Matrix>("X'(FDS - SDF)", nirrep_, nmopi_, nsopi_);
-    auto XPX = std::make_shared<Matrix>("X'(FDS - SDF)X", nirrep_, nmopi_, nmopi_);
-    XP->gemm(true, false, 1.0, X_, FDSmSDF, 0.0);
-    XPX->gemm(false, false, 1.0, XP, X_, 0.0);
+    FDSmSDF->transform(X_);
 
-    // XPX->print();
-
-    return XPX;
+    return FDSmSDF;
 }
 
 void HF::print_stability_analysis(std::vector<std::pair<double, int> >& vec) {

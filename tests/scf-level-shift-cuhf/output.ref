@@ -1,0 +1,304 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 undefined 
+
+                         Git: Rev {level_shift} b99c9dd 
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Monday, 05 July 2021 05:19PM
+
+    Process ID: 106388
+    Host:       thinkpad
+    PSIDATADIR: /home/work/psi4/install/share/psi4
+    Memory:     500.0 MiB
+    Threads:    4
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+molecule {
+units bohr
+0 2
+B
+O 1 2.277
+}
+
+set basis pcseg-1
+set reference cuhf
+set diis false
+set level_shift 0.5
+set level_shift_cutoff 1e-3
+set guess core
+energy('scf')
+compare_values(-99.49094368457799, psi4.variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
+--------------------------------------------------------------------------
+
+Scratch directory: /home/work/scratch/
+
+*** tstart() called on thinkpad
+*** at Mon Jul  5 17:19:41 2021
+
+   => Loading Basis Set <=
+
+    Name: PCSEG-1
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1 entry B          line    69 file /home/work/psi4/install/share/psi4/basis/pcseg-1.gbs 
+    atoms 2 entry O          line   132 file /home/work/psi4/install/share/psi4/basis/pcseg-1.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                             CUHF Reference
+                        4 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+    Full point group: C_inf_v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         B            0.000000000000     0.000000000000    -1.348693671445    11.009305360000
+         O            0.000000000000     0.000000000000     0.928306328555    15.994914619570
+
+  Running in c2v symmetry.
+
+  Rotational constants: A = ************  B =      1.78057  C =      1.78057 [cm^-1]
+  Rotational constants: A = ************  B =  53380.01185  C =  53380.01185 [MHz]
+  Nuclear repulsion =   17.566974088713216
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 13
+  Nalpha       = 7
+  Nbeta        = 6
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS disabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: PCSEG-1
+    Blend: PCSEG-1
+    Number of shells: 12
+    Number of basis functions: 28
+    Number of Cartesian functions: 30
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (PCSEG-1 AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1 entry B          line   138 file /home/work/psi4/install/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 2 entry O          line   318 file /home/work/psi4/install/share/psi4/basis/def2-universal-jkfit.gbs 
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.001 GiB; user supplied 0.366 GiB. Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               4
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (PCSEG-1 AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 50
+    Number of basis functions: 152
+    Number of Cartesian functions: 182
+    Spherical Harmonics?: true
+    Max angular momentum: 4
+
+  Minimum eigenvalue in the overlap matrix is 3.1210440413E-02.
+  Reciprocal condition number of the overlap matrix is 9.8672723135E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        14      14       5       4       4       1
+     A2         2       2       0       0       0       0
+     B1         6       6       1       1       1       0
+     B2         6       6       1       1       1       0
+   -------------------------------------------------------
+    Total      28      28       7       6       6       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-CUHF iter   1:   -91.03770791300806   -9.10377e+01   1.80380e-01 SHIFT
+   @DF-CUHF iter   2:   -89.98961220908691    1.04810e+00   1.62465e-01 SHIFT
+   @DF-CUHF iter   3:   -94.94987100031955   -4.96026e+00   1.69615e-01 SHIFT
+   @DF-CUHF iter   4:   -94.01795042049577    9.31921e-01   1.72839e-01 SHIFT
+   @DF-CUHF iter   5:   -96.46060489392289   -2.44265e+00   1.51898e-01 SHIFT
+   @DF-CUHF iter   6:   -96.83720006966362   -3.76595e-01   1.37652e-01 SHIFT
+   @DF-CUHF iter   7:   -98.42200070628886   -1.58480e+00   9.97244e-02 SHIFT
+   @DF-CUHF iter   8:   -99.18310800901742   -7.61107e-01   4.91318e-02 SHIFT
+   @DF-CUHF iter   9:   -99.41397558856963   -2.30868e-01   2.39275e-02 SHIFT
+   @DF-CUHF iter  10:   -99.46940021539635   -5.54246e-02   8.98314e-03 SHIFT
+   @DF-CUHF iter  11:   -99.48287539906343   -1.34752e-02   4.73944e-03 SHIFT
+   @DF-CUHF iter  12:   -99.48745668401656   -4.58128e-03   2.37245e-03 SHIFT
+   @DF-CUHF iter  13:   -99.48930898049963   -1.85230e-03   1.60338e-03 SHIFT
+   @DF-CUHF iter  14:   -99.49015937371422   -8.50393e-04   1.04173e-03 SHIFT
+   @DF-CUHF iter  15:   -99.49055838369532   -3.99010e-04   7.24139e-04 
+   @DF-CUHF iter  16:   -99.49084063213976   -2.82248e-04   3.67928e-04 
+   @DF-CUHF iter  17:   -99.49091537713329   -7.47450e-05   1.84097e-04 
+   @DF-CUHF iter  18:   -99.49093517632460   -1.97992e-05   9.39425e-05 
+   @DF-CUHF iter  19:   -99.49094094431106   -5.76799e-06   4.84873e-05 
+   @DF-CUHF iter  20:   -99.49094267080477   -1.72649e-06   2.53434e-05 
+   @DF-CUHF iter  21:   -99.49094331713223   -6.46327e-07   1.34724e-05 
+   @DF-CUHF iter  22:   -99.49094350000146   -1.82869e-07   7.13608e-06 
+   @DF-CUHF iter  23:   -99.49094362337502   -1.23374e-07   4.04573e-06 
+   @DF-CUHF iter  24:   -99.49094363120614   -7.83112e-09   2.25997e-06 
+   @DF-CUHF iter  25:   -99.49094367523270   -4.40266e-08   1.55704e-06 
+   @DF-CUHF iter  26:   -99.49094365994944    1.52833e-08   1.06509e-06 
+   @DF-CUHF iter  27:   -99.49094368461957   -2.46701e-08   9.08643e-07 
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+
+  @Spin Contamination Metric:  0.00000
+  @S^2 Expected:               0.75000
+  @S^2 Observed:               0.75000
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A1   -20.551785     2A1    -7.701438     3A1    -1.343600  
+       4A1    -0.652755     1B1    -0.529442     1B2    -0.529442  
+       5A1    -0.519347  
+
+    Alpha Virtual:                                                        
+
+       2B2     0.110430     2B1     0.110430     6A1     0.235908  
+       7A1     0.390553     3B2     0.431727     3B1     0.431727  
+       8A1     0.974053     9A1     1.009163     4B2     1.177486  
+       4B1     1.177486     1A2     1.671172    10A1     1.671172  
+       5B1     1.738990     5B2     1.738990    11A1     1.791891  
+      12A1     2.515521     2A2     2.603131    13A1     2.603131  
+       6B1     3.135005     6B2     3.135005    14A1     3.591744  
+
+    Beta Occupied:                                                        
+
+       1A1   -20.549810     2A1    -7.672254     3A1    -1.332383  
+       4A1    -0.631392     1B1    -0.519766     1B2    -0.519766  
+
+    Beta Virtual:                                                         
+
+       5A1    -0.013326     2B2     0.153151     2B1     0.153151  
+       6A1     0.252135     3B2     0.466114     3B1     0.466114  
+       7A1     0.508163     8A1     1.007565     9A1     1.033625  
+       4B2     1.179696     4B1     1.179696     1A2     1.700764  
+      10A1     1.700764     5B1     1.789861     5B2     1.789861  
+      11A1     1.796600    12A1     2.560857     2A2     2.606375  
+      13A1     2.606375     6B1     3.149153     6B2     3.149153  
+      14A1     3.601546  
+
+    Final Occupation by Irrep:
+             A1    A2    B1    B2 
+    DOCC [     4,    0,    1,    1 ]
+    SOCC [     1,    0,    0,    0 ]
+
+  @DF-CUHF Final Energy:   -99.49094368461957
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =             17.5669740887132164
+    One-Electron Energy =                -171.0626540705249852
+    Two-Electron Energy =                  54.0047362971922098
+    Total Energy =                        -99.4909436846195661
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.6830
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -1.8808
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -1.1978     Total:     1.1978
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:    -3.0446     Total:     3.0446
+
+
+*** tstop() called on thinkpad at Mon Jul  5 17:19:41 2021
+Module time:
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+    SCF Energy............................................................................PASSED
+
+    Psi4 stopped on: Monday, 05 July 2021 05:19PM
+    Psi4 wall time for execution: 0:00:00.16
+
+*** Psi4 exiting successfully. Buy a developer a beer!

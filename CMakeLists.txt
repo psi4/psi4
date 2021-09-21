@@ -75,9 +75,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #
 #    - ENV(MATH_ROOT) "Root directory where BLAS/LAPACK libraries should be detected (e.g., ${MATH_ROOT}/lib/libblas.so)"
 #    - BLAS_TYPE "Target BLAS distribution for math detection
-#                 (default: search order MKL>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
+#                 (default: search order MKL>FLEXIBLAS>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
 #    - LAPACK_TYPE "Target LAPACK distribution for math detection
-#                 (default: search order MKL>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
+#                 (default: search order MKL>FLEXIBLAS>OPENBLAS>ESSL>ATLAS>ACML>SYSTEM_NATIVE on Linux; MKL>Accelerate>... on Mac)"
 #    - LAPACK_LIBRARIES "Location of BLAS/LAPACK libraries as ";"-separated list of full paths, bypassing math detection"
 #    - LAPACK_INCLUDE_DIRS "Location of BLAS/LAPACK headers (only needed for MKL), bypassing math detection"
 #    - OpenMP_LIBRARY_DIRS "Location of OpenMP libraries (iomp5/gomp/omp) as ";"-separated list, hinting OpenMP detection"
@@ -142,10 +142,10 @@ option_with_print(ENABLE_PLUGIN_TESTING "Test the plugin templates build and run
 option_with_print(ENABLE_CYTHONIZE "Compile each python file rather than plaintext (requires cython) !experimental!" OFF)
 if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
 option_with_flags(ENABLE_XHOST "Enables processor-specific optimization (with MSVC, it enables AVX2 instructions)" ON
-                  "-xHost" "-march=native" "/arch:AVX2")
+                  "-xHost" "-march=native" "/arch:AVX")
 else()
 option_with_flags(ENABLE_XHOST "Enables processor-specific optimization (with MSVC, it enables AVX2 instructions)" ON
-                  "-march=native" "-xHost" "/arch:AVX2")
+                  "-march=native" "-xHost" "/arch:AVX")
 endif()
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
                   "-ftest-coverage")
@@ -159,7 +159,7 @@ option_with_flags(ENABLE_UBSAN "Enables undefined behavior sanitizer (requires s
                   "-fsanitize=undefined -fno-omit-frame-pointer")
 option_with_flags(ENABLE_MSAN "Enables memory sanitizer (requires similarly compiled Python and Numpy)" OFF
                   "-fsanitize=memory -fPIE -pie -fno-omit-frame-pointer")
-option_with_default(MAX_AM_ERI "Maximum angular momentum for integrals. The definition changed with Libint2. Default fine for production." 5)
+option_with_default(MAX_AM_ERI "Maximum angular momentum for integrals. The definition changed with Libint2 but still single integer. Default fine for production." 5)
 option_with_default(CMAKE_BUILD_TYPE "Build type (Release or Debug)" Release)
 option_with_default(FC_SYMBOL "The type of Fortran name mangling" 2)
 option_with_default(BUILD_FPIC "Compile static libraries with position independent code" ON)
@@ -189,11 +189,11 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 # * headers: Python.h for pybind11 to build against in psi4-core
 # * library: not at all
 
-set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7 3.6)  # adjust with CMake minimum FindPythonInterp
+set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7)  # adjust with CMake minimum FindPythonInterp
 if(DEFINED ENV{LGTM_SRC})
     find_package(Python 3.7 EXACT COMPONENTS Interpreter Development REQUIRED)
 else()
-    find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
+    find_package(Python 3.7 COMPONENTS Interpreter Development NumPy REQUIRED)
 endif()
 message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION})")
 

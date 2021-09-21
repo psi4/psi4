@@ -261,7 +261,7 @@ extern int read_options(const std::string& name, Options& options, bool suppress
 
 std::string to_upper(const std::string& key) {
     std::string nonconst_key = key;
-    std::transform(nonconst_key.begin(), nonconst_key.end(), nonconst_key.begin(), ::toupper);
+    to_upper(nonconst_key);
     return nonconst_key;
 }
 
@@ -967,6 +967,11 @@ std::shared_ptr<Molecule> py_psi_get_legacy_molecule() { return Process::environ
 void py_psi_set_gradient(SharedMatrix grad) { Process::environment.set_gradient(grad); }
 
 SharedMatrix py_psi_get_gradient() { return Process::environment.gradient(); }
+
+std::shared_ptr<Vector> py_psi_get_atomic_point_charges() {
+    auto empty = std::make_shared<psi::Vector>();
+    return empty;  // charges not added to process.h for environment - yet(?)
+}
 
 void py_psi_set_memory(size_t mem, bool quiet) {
     Process::environment.set_memory(mem);

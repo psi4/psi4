@@ -70,7 +70,7 @@
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/overlap.h"
 #include "psi4/libmints/sieve.h"
-
+#include "psi4/libpsi4util/libpsi4util.h"
 #include <string>
 
 using namespace psi;
@@ -252,8 +252,8 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
         for (size_t iat = 0; iat < nat; ++iat) {
             std::string symbol = elem.at(iat);
             std::string label = elbl.at(iat);
-            std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
-            std::transform(label.begin(), label.end(), label.begin(), ::toupper);
+            to_upper(symbol);
+            to_upper(label);
             mol->add_unsettled_atom(elez.at(iat) * int(real.at(iat)), geom_unsettled.at(iat), symbol, mass.at(iat),
                                     elez.at(iat) * int(real.at(iat)), symbol + label, elea.at(iat));
         }
@@ -271,8 +271,8 @@ std::shared_ptr<Molecule> from_dict(py::dict molrec) {
         for (size_t iat = 0; iat < nat; ++iat) {
             std::string symbol = elem.at(iat);
             std::string label = elbl.at(iat);
-            std::transform(symbol.begin(), symbol.end(), symbol.begin(), ::toupper);
-            std::transform(label.begin(), label.end(), label.begin(), ::toupper);
+            to_upper(symbol);
+            to_upper(label);
             mol->add_atom(elez.at(iat) * int(real.at(iat)), geom.at(3 * iat), geom.at(3 * iat + 1), geom.at(3 * iat + 2),
                           symbol, mass.at(iat), elez.at(iat) * int(real.at(iat)), symbol + label, elea.at(iat));
         }
@@ -1138,7 +1138,8 @@ void export_mints(py::module& m) {
              "Return the si'th Gaussian shell on center", "center"_a, "si"_a)
         .def("n_frozen_core", &BasisSet::n_frozen_core,
              "Returns the number of orbital (non-ECP) frozen core electrons. For a given molecule and "
-             ":term:`FREEZE_CORE <FREEZE_CORE (GLOBALS)>`, `(n_ecp_core()/2 + n_frozen_core()) = constant`.")
+             ":term:`FREEZE_CORE <FREEZE_CORE (GLOBALS)>`, `(n_ecp_core()/2 + n_frozen_core()) = constant`.",
+             "local"_a="", "molecule"_a=nullptr)
         .def("n_ecp_core", ncore_no_args(&BasisSet::n_ecp_core),
              "Returns the total number of core electrons associated with all ECPs in this basis.")
         .def("n_ecp_core", ncore_one_arg(&BasisSet::n_ecp_core),
@@ -1171,7 +1172,13 @@ void export_mints(py::module& m) {
         .def("max_function_per_shell", &BasisSet::max_function_per_shell,
              "The max number of basis functions in a shell")
         .def("max_nprimitive", &BasisSet::max_nprimitive, "The max number of primitives in a shell")
-        .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring");
+        .def_static("construct_from_pydict", &construct_basisset_from_pydict, "docstring")
+        .def("compute_phi", [](BasisSet& basis, double x, double y, double z) {
+            auto phi_ao = new std::vector<double>(basis.nbf());
+            auto capsule = py::capsule(phi_ao, [](void *phi_ao) { delete reinterpret_cast<std::vector<double>*>(phi_ao); });
+            basis.compute_phi(phi_ao->data(), x, y, z);
+            return py::array(phi_ao->size(), phi_ao->data(), capsule);
+        }, "Calculate the value of all basis functions at a given point x, y, and z");
 
     typedef void (OneBodyAOInt::*vecmatrix_version)(std::vector<SharedMatrix>&);
     py::class_<OneBodyAOInt, std::shared_ptr<OneBodyAOInt>> pyOneBodyAOInt(
@@ -1459,12 +1466,12 @@ void export_mints(py::module& m) {
         .def("ao_f12_double_commutator", &MintsHelper::ao_f12_double_commutator, "AO F12 double commutator integrals",
              "corr"_a)
         .def("ao_3coverlap", normal_eri(&MintsHelper::ao_3coverlap), "3 Center overlap integrals")
-        .def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "3 Center overalp integrals", "bs1"_a, "bs2"_a,
+        .def("ao_3coverlap", normal_3c(&MintsHelper::ao_3coverlap), "3 Center overlap integrals", "bs1"_a, "bs2"_a,
              "bs3"_a)
 
         // Two-electron MO and transformers
-        .def("mo_eri", eri(&MintsHelper::mo_eri), "MO ERI Integrals. Pass appropriate MO coefficients", "C1"_a, "C2"_a,
-             "C3"_a, "C4"_a)
+        .def("mo_eri", eri(&MintsHelper::mo_eri), "MO ERI Integrals. Pass appropriate MO coefficients in the AO basis.",
+             "C1"_a, "C2"_a, "C3"_a, "C4"_a)
         .def("mo_erf_eri", erf(&MintsHelper::mo_erf_eri), "MO ERFC Omega Integrals", "omega"_a, "C1"_a, "C2"_a, "C3"_a,
              "C4"_a)
         .def("mo_f12", &MintsHelper::mo_f12, "MO F12 Integrals", "corr"_a, "C1"_a, "C2"_a, "C3"_a, "C4"_a)

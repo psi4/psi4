@@ -120,6 +120,8 @@ which are useful in elucidating the stability and reactivity of the system.
 .. index::
    pair: SCF; theory
 
+.. _`sec:scftheory`:
+
 Theory
 ~~~~~~
 
@@ -216,6 +218,8 @@ The formation of the Coulomb matrix :math:`J` and the exchange matrix
 very large systems, diagonalization of the Fock matrix can also present a
 significant hurdle.
 
+.. _`sec:scfinput`:
+
 Minimal Input
 ~~~~~~~~~~~~~
 
@@ -236,6 +240,8 @@ energy and density convergence criteria (since single-point, see
 :ref:`SCF Convergence & Algorithm <table:conv_scf>`), a DF ERI algorithm, symmetric
 orthogonalization, DIIS, and a core Hamiltonian guess. For more
 information on any of these options, see the relevant section below.
+
+.. _`sec:scfsymm`:
 
 Spin/Symmetry Treatment
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -316,6 +322,8 @@ actually,::
 
     energy('scf')
 
+.. _`sec:scfbrokensymm`:
+
 Broken Symmetry
 ~~~~~~~~~~~~~~~
 
@@ -332,6 +340,8 @@ keyword to true::
     set reference uhf
     set guess_mix true
     energy('scf')
+
+.. _`sec:scflindep`:
 
 Orthogonalization
 ~~~~~~~~~~~~~~~~~
@@ -441,6 +451,8 @@ assigned to irrep A, and 142 of which are assigned to irrep B. Within irrep A,
 above the eigenvalue cutoff. In total, 284 molecular orbitals are chosen from
 287 AOs/USOs.
 
+.. _`sec:scfguess`:
+
 Initial Guess
 ~~~~~~~~~~~~~
 
@@ -483,10 +495,10 @@ GWH
     often less accurate than the core guess (see
     [Lehtola:2019:1593]_).
 HUCKEL
-    An extended Hückel guess based on on-the-fly atomic UHF
+    An extended H\ |u_dots|\ ckel guess based on on-the-fly atomic UHF
     calculations alike SAD, see [Lehtola:2019:1593]_.
 READ
-    Read the previous orbitals from a checkpoint file, casting from
+    Read the previous orbitals from a ``wfn`` file, casting from
     one basis to another if needed. Useful for starting anion
     computations from neutral orbitals, or after small geometry
     changes. At present, casting from a different molecular point
@@ -528,8 +540,41 @@ in a 3-21G basis and then casting up to cc-pVTZ is shown below::
 
     energy('scf')
 
+.. _`sec:scfrestart`:
+
+Restarting the SCF
+~~~~~~~~~~~~~~~~~~
+
+Reading orbital data from a previous calculations is done via the ``restart_file`` option,
+where the actual file is a serialized ``wfn`` object (see :ref:`saving the wfn <sec:save_wfn>`)
+By default, the orbital data file of the converged SCF(``psi.PID.name.180.npy``) is deleted
+after |PSIfour| exits or the ``clean()`` function is called. The orbital guess is automatically
+set to ``READ`` when ``restart_file`` is given a ``wfn`` file.
+To write the orbitals after every iteration and keep the orbitals from the last iteration, the ``write_orbitals`` options is available: ::
+
+  energy('scf', write_orbitals='my_mos'),
+
+which writes a ``Wavefunction`` object converted (serialized) to a numpy file called ``my_mos.npy``.
+The restart can then be done as follows: ::
+
+  energy('scf', restart_file='my_mos')
+
+Specifying the ``.npy`` suffix when writing and reading restart files is optional.
+
+Alternatively, the restart can also be done from any previously saved ``wfn`` object. ::
+
+  energy, scf_wfn = energy('scf',return_wfn=True)
+  scf_wfn.to_file('my_wfn')
+  energy('scf', restart_file='my_wfn')
+
+
+For advanced users manipulating or writing custom wavefunction files, note
+that |PSIfour| expects the numpy file on disk to have the ``.npy`` extension, not, e.g., `.npz`.
+
 
 .. index:: DIIS, MOM, damping
+
+.. _`sec:scfconv`:
 
 Convergence Stabilization
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -565,9 +610,27 @@ MOM [Off by Default]
     be used in concert with DIIS, though care should be taken to not turn MOM on
     until the oscillatory behavior begins.
 Damping [Off by Default]
-    In some cases, a static mixing of Fock Matrices from adjacent iterations can
-    quench oscillations. This mixing, known as "damping" can be activated by setting
-    the |scf__damping_percentage| keyword to a nonzero percent.
+    In some cases, a static mixing of Fock Matrices from adjacent
+    iterations can quench oscillations. This mixing, known as
+    "damping" can be activated by setting the
+    |scf__damping_percentage| keyword to a nonzero percent. Damping is
+    turned off when the DIIS error is smaller than
+    |scf__damping_convergence|.
+Level shifting [Off by default]
+    A commonly used alternative to damping is to use level shifting,
+    which decreases the mixing of occupied and unoccupied orbitals in
+    the SCF update by moving the unoccupied orbitals up in energy. It
+    can be shown that the SCF procedure always converges with a
+    suitably large level shift; however, the larger the shift is, the
+    slower the convergence becomes, and the calculation may end up
+    converging onto a higher lying SCF solution. Because of this, in
+    practice level shifting is most useful in the initial phase of the
+    calculation to reduce the orbital error enough for DIIS to work
+    well. The level shift is controlled by the parameter
+    |scf__level_shift|, and it is turned off when the DIIS error is
+    smaller than |scf__level_shift_cutoff|. Reasonable values for
+    the shift and convergence threshold are 5.0 and 1e-2,
+    respectively.
 SOSCF [Off by Default]
     See :ref:`sec:soscf`
 
@@ -699,7 +762,7 @@ follows:
     |scf__soscf_print|: option to print the microiterations or not
 
 
-.. _`stability_doc`:
+.. _`sec:scfstability_doc`:
 
 Stability Analysis
 ~~~~~~~~~~~~~~~~~~
@@ -826,6 +889,8 @@ for examples of computations with ECP-containing basis sets.
 
 .. warning:: ECPs have not been tested with projected basis set guesses or with FI-SAPT calculations.  If you require this functionality, please contact the developers on GitHub and/or the `forum <http://forum.psicode.org>`_.
 
+.. _`sec:scfqmmm`:
+
 External potentials and QM/MM
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -861,6 +926,8 @@ Note that if any specified fields do not fall along a symmetry axis, the
 symmetry of the calculation should be reduced accordingly; if in doubt run the
 calculation in C1 symmetry.  For examples of SCF and MP2 calculations in an
 external field, see :srcsample:`scf7` and :srcsample:`dfmp2-grad5`.
+
+.. _`sec:scfdefault`:
 
 Convergence and Algorithm Defaults
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -932,6 +999,8 @@ Convergence and Algorithm Defaults
    |scf__e_convergence| and |scf__d_convergence| for SCF of HF or DFT, 11
    for |scf__e_convergence| and |scf__d_convergence| for SCF of post-HF,
    and 10 for E_CONVERGENCE for post-HF of post-HF.
+
+.. _`sec:scfrec`:
 
 Recommendations
 ~~~~~~~~~~~~~~~

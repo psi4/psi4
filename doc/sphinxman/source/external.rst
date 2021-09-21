@@ -44,8 +44,8 @@ Installation and Runtime Configuration
 .. index:: scratch files, restart
 .. _`sec:Scratch`:
 
-Scratch Files and Elementary Restart
-====================================
+Scratch Files
+=============
 
 One very important part of user configuration at the end of the
 installation process
@@ -103,33 +103,45 @@ the following code will do that::
     if scratch_dir:
         psi4_io.set_default_path(scratch_dir + '/')
 
-Individual files can be sent to specific locations.  For example, file 32 is
-the checkpoint file that the user might want to retain in the working directory
-(*i.e.*, where |PSIfour| was launched from) for restart purposes.  This is
+Individual files can be sent to specific locations.  For example, file 12
+contains information about the internal coordiantes of a geometry optimization.
+The user may want to retain this in the working directory
+(*i.e.*, where |PSIfour| was launched from) to analyze the optimization.  This is
 accomplished by the commands below::
 
-    psi4_io.set_specific_path(32, './')
-    psi4_io.set_specific_retention(32, True)
+    psi4_io.set_specific_path(12, './')
+    psi4_io.set_specific_retention(12, True)
 
     # equivalent to above
-    psi4_io.set_specific_path(PSIF_CHKPT, './')
-    psi4_io.set_specific_retention(PSIF_CHKPT, True)
+    psi4_io.set_specific_path(PSIF_INTCO, './')
+    psi4_io.set_specific_retention(PSIF_INTCO, True)
 
 A guide to the contents of individual scratch files may be found at :ref:`apdx:psiFiles`.
 To circumvent difficulties with running multiple jobs in the same scratch, the
 process ID (PID) of the |PSIfour| instance is incorporated into the full file
 name; therefore, it is safe to use the same scratch directory for calculations
-running simultaneously. This also means that if the user wants |PSIfour| to use
-information from a previous file, like molecular orbitals, he needs to provide the
-name of the file. This can be done through the ``restart_file`` option ::
+running simultaneously.
+
+Elementary Restart
+==================
+
+The |PSIfour| intermediate files use the following naming scheme ::
+
+  psi.PID.name.filenumber
+
+where by default, PID is the process number, name the name of the molecule,
+and filenumber is listed in :ref:`content <apdx:psiFiles>`.
+
+For those modules providing restart capabilities, the previous file can
+be provided through the``restart_file`` option ::
 
   energy('scf',restart_file='./psi.PID.name.filenumber')
 
-where by default, PID is the process number, name the name of the molecule,
-and filenumber is listed in :ref:`content <apdx:psiFiles>`. Only the filenumber
-is necessary for the driver to appropriately rename the file for the next |PSIfour|
-job, and if none is found it defaults to 32, a checkpoint file. If two or more files
-are to be read, they need to be provided as a Python list ::
+Only the filenumber is necessary for the driver to appropriately rename the
+file and copy it to the scratch directory where |PSIfour| will expect it.
+The restart capabilities of a specific method (if any) are found in that method's documentation.
+
+To provide multiple files, pass them as arguments of a Python list ::
 
   energy('scf',restart_file=['./file1.filenumber','./file2.filenumber'])
 
@@ -140,6 +152,38 @@ messy) flag will prevent files being deleted at the end of the run::
 
     psi4 -m
 
+The mechanism for restarting HF/DFT calculations is described in details :ref:`here <sec:scfrestart>`.
+
+
+.. _`sec:save_wfn`:
+
+Saving the Wavefunction
+=======================
+
+A core object of |PSIfour| is the Wavefunction (short ``wfn``) object ::
+
+  energy, wfn = energy('scf',return_wfn=True)
+
+This C++/Python object (:py:class:`psi4.core.Wavefunction`) contains orbital
+data, basis set information, result variables and more.
+It can be saved either to a numpy file or converted to a python dictionary ::
+
+  # write the wavefunction to file
+  wfn.to_file('my_wfn')
+
+  # alternatively store the dict representation of the wavefunction in memory
+  wfn_dict = wfn.to_file()
+
+In either form, its attributes can be set and edited.
+This is an expert-level feature, though.
+In general, let |PSIfour| create the Wavefunction, then treat it as read-only.
+The back conversion to a Wavefunction object uses the ``.from_file()`` functionality ::
+
+  # read wavefunction from file
+  wfn_from_file = psi4.core.Wavefunction.from_file('my_wfn')
+
+  # make a wavefunction from the dict
+  wfn_from_dict = psi4.core.Wavefunction.from_file(wfn_dict)
 
 .. index:: psirc, psi4rc
 .. _`sec:psirc`:
@@ -176,14 +220,14 @@ To set up the scratch path from a variable ``$MYSCRATCH``::
     if scratch_dir:
         psi4_io.set_default_path(scratch_dir + '/')
 
-To set up a specific path for the checkpoint file and instruct |PSIfour| not to delete it::
+To set up a specific path for the internal coordinate file and instruct |PSIfour| not to delete it::
 
-    psi4_io.set_specific_path(32, './')
-    psi4_io.set_specific_retention(32, True)
+    psi4_io.set_specific_path(12, './')
+    psi4_io.set_specific_retention(12, True)
 
     # equivalent to above
-    psi4_io.set_specific_path(PSIF_CHKPT, './')
-    psi4_io.set_specific_retention(PSIF_CHKPT, True)
+    psi4_io.set_specific_path(PSIF_INTCO, './')
+    psi4_io.set_specific_retention(PSIF_INTCO, True)
 
 The Python interpreter will execute the contents of the
 |psirc| file in the current user's home area (if present) before performing any
@@ -667,4 +711,3 @@ These environment variables will influence |PSIfours| behavior.
    non-standard location. Value should be set
    to directory containing driver, basis, *etc.* directories, generally
    ending in ``share/psi4``.
-

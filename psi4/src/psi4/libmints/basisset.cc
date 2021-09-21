@@ -37,6 +37,7 @@
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psifiles.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 
 #include "vector3.h"
 #include "molecule.h"
@@ -77,7 +78,7 @@ bool has_ending(std::string const &fullString, std::string const &ending) {
 
 std::string to_upper_copy(const std::string &original) {
     std::string upper = original;
-    std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
+    to_upper(upper);
     return upper;
 }
 }  // namespace
@@ -288,6 +289,7 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
                 int current_shell = atom_to_period(Z + ECP);
                 int delta = period_to_full_shell(std::max(current_shell - req_shell, 0));
                 // If this center has an ECP, some electrons are already frozen
+                if (delta < ECP) throw PSIEXCEPTION("ECP on atom freezes more electrons than requested by choosing a previous shell.");
                 if (ECP > 0) delta -= ECP;
                 // Keep track of current valence electrons
                 mol_valence = mol_valence + Z - delta;
@@ -513,7 +515,7 @@ std::string BasisSet::print_detail_cfour() const {
     char buffer[120];
     std::stringstream ss;
     std::string nameUpperCase = name_;
-    std::transform(nameUpperCase.begin(), nameUpperCase.end(), nameUpperCase.begin(), ::toupper);
+    to_upper(nameUpperCase);
 
     for (int uA = 0; uA < molecule_->nunique(); uA++) {
         const int A = molecule_->unique(uA);
@@ -1240,8 +1242,8 @@ void BasisSet::move_atom(int atom, const Vector3 &trans) {
     xyz_[offset + 2] += trans[2];
 }
 
-void BasisSet::compute_phi(double *phi_ao, double x, double y, double z) {
-    zero_arr(phi_ao, nao());
+void BasisSet::compute_phi(double* phi_ao, double x, double y, double z) {
+    zero_arr(phi_ao, nbf());
 
     int ao = 0;
     for (int ns = 0; ns < nshell(); ns++) {
@@ -1260,12 +1262,32 @@ void BasisSet::compute_phi(double *phi_ao, double x, double y, double z) {
         double cexpr = 0;
         for (int np = 0; np < nprim; np++) cexpr += c[np] * exp(-a[np] * rr);
 
-        for (int l = 0; l < INT_NCART(am); l++) {
-            Vector3 &components = exp_ao[am][l];
-            phi_ao[ao + l] += pow(dx, (double)components[0]) * pow(dy, (double)components[1]) *
-                              pow(dz, (double)components[2]) * cexpr;
+        if (puream_) {
+            const auto s_transform = SphericalTransform(am);
+            std::vector<double> cart_buffer(INT_NCART(am), 0.0);
+
+            for (int l = 0; l < INT_NCART(am); l++) {
+                Vector3 &components = exp_ao[am][l];
+                cart_buffer[l] += pow(dx, static_cast<double>(components[0])) * pow(dy, static_cast<double>(components[1])) *
+                                pow(dz, static_cast<double>(components[2])) * cexpr;
+            }
+
+            for (int ind = 0; ind < s_transform.n(); ind++) {
+                int lcart = s_transform.cartindex(ind);
+                int lpure = s_transform.pureindex(ind);
+                double coef = s_transform.coef(ind);
+
+                phi_ao[ao + lpure] += coef * cart_buffer[lcart];
+            }
+
+        } else {
+            for (int l = 0; l < INT_NCART(am); l++) {
+                Vector3 &components = exp_ao[am][l];
+                phi_ao[ao + l] += pow(dx, static_cast<double>(components[0])) * pow(dy, static_cast<double>(components[1])) *
+                                pow(dz, static_cast<double>(components[2])) * cexpr;
+            }
         }
 
-        ao += INT_NCART(am);
+        ao += INT_NFUNC(puream_, am);
     }  // nshell
 }

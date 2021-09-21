@@ -1231,8 +1231,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- The maximum size of the subspace for the stability check. The program will terminate if this parameter is
            exceeded and the convergence (STABILITY_CONVERGENCE) is not satisfied !expert-*/
         options.add_int("STABILITY_MAX_SPACE_SIZE", 200);
-        /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
-        options.add_bool("RELAX_TAU", true);
         /*- Chooses appropriate DCT method -*/
         options.add_str("DCT_FUNCTIONAL", "ODC-12", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
         /*- Whether to compute three-particle energy correction or not -*/
@@ -1342,6 +1340,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- If true, then repeat the specified guess procedure for the orbitals every time -
         even during a geometry optimization. -*/
         options.add_bool("GUESS_PERSIST", false);
+        /*- File name (case sensitive) to which to serialize Wavefunction orbital data. -*/
+        options.add_str_i("ORBITALS_WRITE", "");
 
         /*- Do print the molecular orbitals? -*/
         options.add_bool("PRINT_MOS", false);
@@ -1402,6 +1402,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("DIIS_MAX_VECS", 10);
         /*- Do use DIIS extrapolation to accelerate convergence? -*/
         options.add_bool("DIIS", true);
+        /*- Do use a level shift? -*/
+        options.add_double("LEVEL_SHIFT", 0.0);
+        /*- DIIS error at which to stop applying the level shift -*/
+        options.add_double("LEVEL_SHIFT_CUTOFF", 1e-2);
         /*- The iteration to start MOM on (or 0 for no MOM) -*/
         options.add_int("MOM_START", 0);
         /*- The absolute indices of orbitals to excite from in MOM (+/- for alpha/beta) -*/
@@ -1652,6 +1656,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("TDSCF_MAXITER", 60);
         /*- Verbosity level in TDSCF -*/
         options.add_int("TDSCF_PRINT", 1);
+        /*- Cutoff for printing excitations and de-excitations icontributing to each excited state -*/
+        options.add_double("TDSCF_COEFF_CUTOFF", 0.1);
+        /*- Which transition dipole moments to print out:
+            - E_TDM_LEN : electric transition dipole moments, length representation
+            - E_TDM_VEL : electric transition dipole moments, velocity representation
+            - M_TDM : magnetic transition dipole moments -*/
+        options.add("TDSCF_TDM_PRINT", new ArrayType());
 
         /*- combine omega exchange and Hartree--Fock exchange into
               one matrix for efficiency?
@@ -2334,7 +2345,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("CC_SS_SCALE", 1.13);
         /*- Convert ROHF MOs to semicanonical MOs -*/
         options.add_bool("SEMICANONICAL", true);
-        /*- Convert ROHF MOs to semicanonical MOs -*/
+        /*- Maximum number of iterations for Brueckner CCD. -*/
         options.add_int("BCCD_MAXITER", 50);
     }
     if (name == "DFMP2" || options.read_globals()) {

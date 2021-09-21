@@ -19,7 +19,7 @@ set mcscf {
     diis_max_vecs 4
     docc        [10, 1]
     socc        [ 0, 2]
-    maxiter     120
+    maxiter     140
 }
 
 thisenergy = energy('mcscf')
