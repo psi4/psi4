@@ -204,6 +204,7 @@ void export_wavefunction(py::module& m) {
         .def("get_basisset", &Wavefunction::get_basisset, "Returns the requested auxiliary basis.")
         .def("set_basisset", &Wavefunction::set_basisset, "Sets the requested auxiliary basis.")
         .def("energy", &Wavefunction::energy, "Returns the Wavefunction's energy.")
+        .def("options", &Wavefunction::options, "Returns the Wavefunction's options object")
         .def("set_energy", &Wavefunction::set_energy,
              "Sets the Wavefunction's energy. Syncs with Wavefunction's QC variable ``CURRENT ENERGY``.")
         .def("gradient", &Wavefunction::gradient, "Returns the Wavefunction's gradient.")
@@ -333,6 +334,7 @@ void export_wavefunction(py::module& m) {
         .def("form_initial_F", &scf::HF::form_initial_F, "Forms the initial F matrix.")
         .def("form_H", &scf::HF::form_H, "Forms the core Hamiltonian")
         .def("form_Shalf", &scf::HF::form_Shalf, "Forms the S^1/2 matrix")
+        .def("form_FDSmSDF", &scf::HF::form_FDSmSDF, "Forms the residual of SCF theory")
         .def("guess", &scf::HF::guess, "Forms the guess (guarantees C, D, and E)")
         .def("initialize_gtfock_jk", &scf::HF::initialize_gtfock_jk, "Sets up a GTFock JK object")
         .def("onel_Hx", &scf::HF::onel_Hx, "One-electron Hessian-vector products.")
@@ -368,15 +370,16 @@ void export_wavefunction(py::module& m) {
         .def("compute_orbital_gradient", &scf::HF::compute_orbital_gradient, "docstring")
         .def("find_occupation", &scf::HF::find_occupation, "docstring")
         .def("diis", &scf::HF::diis, "docstring")
-        .def("diis_manager", &scf::HF::diis_manager, "docstring")
+        .def_property("diis_manager_", &scf::HF::diis_manager, &scf::HF::set_diis_manager, "The DIIS object.")
         .def_property("initialized_diis_manager_", &scf::HF::initialized_diis_manager,
-                      &scf::HF::set_initialized_diis_manager, "docstring")
+                      &scf::HF::set_initialized_diis_manager, "Has the DIIS object been initialized?")
         .def("damping_update", &scf::HF::damping_update, "docstring")
         .def("check_phases", &scf::HF::check_phases, "docstring")
         .def("print_orbitals", &scf::HF::print_orbitals, "docstring")
         .def("print_header", &scf::HF::print_header, "docstring")
         .def("get_energies", &scf::HF::get_energies, "docstring")
         .def("set_energies", &scf::HF::set_energies, "docstring")
+        .def("scf_type", &scf::HF::scf_type, "Return the value of scf_type_ used in the SCF computation.")
         .def("clear_external_potentials", &scf::HF::clear_external_potentials, "Clear private external_potentials list")
         .def("push_back_external_potential", &scf::HF::push_back_external_potential,
              "Add an external potential to the private external_potentials list", "V"_a)
@@ -410,9 +413,14 @@ void export_wavefunction(py::module& m) {
 
     py::class_<scf::ROHF, std::shared_ptr<scf::ROHF>, scf::HF>(m, "ROHF", "docstring")
         .def(py::init<std::shared_ptr<Wavefunction>, std::shared_ptr<SuperFunctional>>())
+        .def("soFeff", &scf::ROHF::soFeff,
+             "Returns the effective Fock matrix in the orthogonalized SO basis. See libscf_solver/rohf.cc::form_C"
+             "for technical definition.")
         .def("moFeff", &scf::ROHF::moFeff, "docstring")
         .def("moFa", &scf::ROHF::moFa, "docstring")
         .def("moFb", &scf::ROHF::moFb, "docstring")
+        .def("Ct", &scf::ROHF::Ct,
+             "MO coefficients in the orthogonalized MO basis. Differs from the standard C matrix by an orthogonalizer matrix.")
         .def("c1_deep_copy", &scf::ROHF::c1_deep_copy,
              "Returns a new wavefunction with internal data converted to C_1 symmetry, using pre-c1-constructed "
              "BasisSet *basis*",

@@ -292,52 +292,6 @@ void ROHF::save_density_and_energy() {
     Dt_old_->copy(Dt_);
 }
 
-double ROHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors) {
-    // Only the inact-act, inact-vir, and act-vir rotations are non-redundant
-    Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
-    Dimension noccpi = doccpi_ + soccpi_;
-    Dimension virpi = nmopi_ - doccpi_;
-    Slice row_slice(dim_zero, noccpi);
-    Slice col_slice(doccpi_, doccpi_ + virpi);
-    SharedMatrix MOgradient = moFeff_->get_block(row_slice, col_slice);
-
-    // Zero out act-act part
-    for (size_t h = 0; h < nirrep_; h++) {
-        if (!soccpi_[h]) continue;
-
-        for (size_t i = 0; i < soccpi_[h]; i++) {
-            for (size_t j = 0; j < soccpi_[h]; j++) {
-                MOgradient->set(h, i + doccpi_[h], j, 0.0);
-            }
-        }
-    }
-
-    // Grab inact-act and act-vir orbs
-    // Ct_ is actuall (nmo x nmo)
-    SharedMatrix Cia = Ct_->get_block({dim_zero, nmopi_}, {dim_zero, noccpi});
-    SharedMatrix Cav = Ct_->get_block({dim_zero, nmopi_}, {doccpi_, doccpi_ + virpi});
-
-    // Back transform MOgradient
-    SharedMatrix gradient = linalg::triplet(Cia, MOgradient, Cav, false, false, true);
-
-    if (save_diis) {
-        if (initialized_diis_manager_ == false) {
-            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector", DIISManager::LargestError,
-                                                          DIISManager::OnDisk);
-            diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, soFeff_.get());
-            diis_manager_->set_vector_size(1, DIISEntry::Matrix, soFeff_.get());
-            initialized_diis_manager_ = true;
-        }
-        diis_manager_->add_entry(2, gradient.get(), soFeff_.get());
-    }
-
-    if (options_.get_bool("DIIS_RMS_ERROR")) {
-        return gradient->rms();
-    } else {
-        return gradient->absmax();
-    }
-}
-
 bool ROHF::diis() { return diis_manager_->extrapolate(1, soFeff_.get()); }
 
 void ROHF::form_initial_F() {

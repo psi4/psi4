@@ -94,7 +94,6 @@ class CUHF final : public HF {
 
     bool diis() override;
     void save_density_and_energy() override;
-    double compute_orbital_gradient(bool save_diis, int max_diis_vectors) override;
 
     void form_C(double shift = 0.0) override;
     void form_D() override;

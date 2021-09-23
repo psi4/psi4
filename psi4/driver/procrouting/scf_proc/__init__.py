@@ -27,7 +27,7 @@
 #
 
 """
-A helper folder for auxiliary SCF funcitons and iterations.
+A helper folder for auxiliary SCF functions and iterations.
 """
 
-from . import scf_iterator
+from . import scf_iterator, subclass_methods
