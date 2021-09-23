@@ -179,7 +179,7 @@ A number of *a posteriori* dispersion corrections are available in
 |PSIfour|.  While some are computed within |PSIfours| codebase (-D1, -D2,
 -CHG, -DAS2009, -DAS2010), the -D3 or -D4 corrections and their variants are
 available only through the ``DFTD3`` or ``DFTD4`` programs. Once installed, the
-``dftd3``/|PSIfour| interface is transparent, and all corrections are
+``dftd3``/|PSIfour| and ``dftd4``/|PSIfour| interfaces are transparent, and all corrections are
 interfaced exactly alike.
 
 Dispersion corrections are built into DFT functionals, so appending an *a
@@ -337,7 +337,7 @@ If only dispersion corrections (rather than total energies) are of
 interest, the dispersion programs can be run independently of the scf
 through the python function :py:func:`~qcdb.Molecule.run_dftd3` or :py:func:`~qcdb.Molecule.run_dftd4`. (These functions
 call QCEngine, which is the same |PSIfour| + ``dftd3``/``dftd4`` interface that is called during an scf job.)
-This route is much faster than running a DFT-D energy.
+This "D-only" route is much faster than running a DFT-D energy.
 
 Note that in a DFT+D energy or gradient calculation, user-specified
 dispersion parameters override any information provided about the

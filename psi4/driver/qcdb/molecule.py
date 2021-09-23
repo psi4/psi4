@@ -1344,16 +1344,16 @@ class Molecule(LibmintsMolecule):
         func : str, optional
             Name of functional (func only, func & disp, or disp only) for
             which to compute dispersion (e.g., blyp, BLYP-D2, blyp-d3bj,
-            blyp-d3(bj), hf+d). Any or all parameters initialized
-            from `dashcoeff[dashlvl][func]` can be overwritten via
-            `dashparam`.
+            blyp-d3(bj), hf+d). Unlike run_dftd3, ``func`` overwrites any
+            parameter initialized via `dashparam`.
         dashlvl : str, optional
             Name of dispersion correction to be applied (e.g., d, D2,
             d3(bj), das2010). Must be key in `dashcoeff` or "alias" or
             "formal" to run.
         dashparam : dict, optional
             Values for the same keys as `dashcoeff[dashlvl]['default']`
-            used to override any or all values initialized by `func`.
+            used to provide custom values. Unlike run_dftd3, will not have
+            effect if `func` given. Must provide all parameters.
             Extra parameters will error.
         dertype : int or str, optional
             Maximum derivative level at which to run DFTD3. For large
