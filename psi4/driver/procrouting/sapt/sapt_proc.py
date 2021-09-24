@@ -419,6 +419,7 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
 
     # Dispersion
     core.timer_on("SAPT(DFT):SAPT(DFT):disp")
+    core.timer_on("FDDS Dispersion")
     primary_basis = wfn_A.basisset()
     core.print_out("\n")
     aux_basis = core.BasisSet.build(dimer_wfn.molecule(), "DF_BASIS_MP2", core.get_option("DFMP2", "DF_BASIS_MP2"),
@@ -428,7 +429,9 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
         x_alpha = 0.0
     fdds_disp = sapt_mp2_terms.df_fdds_dispersion(primary_basis, aux_basis, cache, is_hybrid, x_alpha)
     data.update(fdds_disp)
+    core.timer_off("FDDS Dispersion")
 
+    core.timer_on("MP2 Dispersion")
     if core.get_option("SAPT", "SAPT_DFT_MP2_DISP_ALG") == "FISAPT":
         mp2_disp = sapt_mp2_terms.df_mp2_fisapt_dispersion(wfn_A, primary_basis, aux_basis, cache, do_print=True)
     else:
@@ -440,6 +443,7 @@ def sapt_dft(dimer_wfn, wfn_A, wfn_B, sapt_jk=None, sapt_jk_B=None, data=None, p
                                                          cache,
                                                          do_print=True)
     data.update(mp2_disp)
+    core.timer_off("MP2 Dispersion")
     core.timer_off("SAPT(DFT):SAPT(DFT):disp")
 
     # Print out final data

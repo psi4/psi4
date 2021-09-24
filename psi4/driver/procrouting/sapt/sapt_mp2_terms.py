@@ -96,6 +96,7 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
         core.print_out("   (P|Fxc|Q) Thresh: % 8.3e\n" % rho_thresh)
 
     # Build object
+    core.timer_on("Form FDDS object")
     df_matrix_keys = ["Cocc_A", "Cvir_A", "Cocc_B", "Cvir_B"]
     fdds_matrix_cache = {key: cache[key] for key in df_matrix_keys}
 
@@ -103,8 +104,10 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
     fdds_vector_cache = {key: cache[key] for key in df_vector_keys}
 
     fdds_obj = core.FDDS_Dispersion(primary, auxiliary, fdds_matrix_cache, fdds_vector_cache, is_hybrid)
+    core.timer_off("Form FDDS object")
 
     # Aux Densities
+    core.timer_on("Form xc kernel")
     D = fdds_obj.project_densities([cache["D_A"], cache["D_B"]])
 
     # Temps
@@ -125,11 +128,13 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
 
     # Nuke the densities
     del D
+    core.timer_off("Form xc kernel")
 
     metric = fdds_obj.metric().clone().to_array()
     metric_inv = fdds_obj.metric_inv().clone().to_array()
 
     # Integrate
+    core.timer_on("Time Integration")
     core.print_out("\n   => Time Integration <= \n\n")
 
     val_pack = ("Omega", "Weight", "Disp20,u", "Disp20", "time [s]")
@@ -235,6 +240,7 @@ def df_fdds_dispersion(primary, auxiliary, cache, is_hybrid, x_alpha, leg_points
 
     Disp20_uc = -1.0 / (2.0 * np.pi) * total_uc
     Disp20_c = -1.0 / (2.0 * np.pi) * total_c
+    core.timer_off("Time Integration")
 
     core.print_out("\n")
     core.print_out(print_sapt_var("Disp20,u", Disp20_uc, short=True) + "\n")

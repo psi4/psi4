@@ -76,7 +76,8 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     }
 
     // ==> Form Metric <==
-
+   
+    timer_on("Form JS");
     size_t naux = auxiliary_->nbf();
     metric_ = std::make_shared<Matrix>("Inv Coulomb Metric", naux, naux);
 
@@ -140,6 +141,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     std::shared_ptr<OneBodyAOInt> overlap(factory.ao_overlap());
     aux_overlap_ = std::make_shared<Matrix>("Auxiliary Overlap", naux, naux);
     overlap->compute(aux_overlap_);
+    timer_off("Form JS");
 
     // ==> Form 3-index object <==
 
@@ -155,6 +157,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     for (auto& mat : Cstack_vec) max_MO = std::max(max_MO, (size_t)mat->ncol());
 
     // Build DFHelper
+    timer_on("MO Integral Transformation");
     dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_);
     dfh_->set_memory(doubles);
     if (is_hybrid_) {
@@ -213,6 +216,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     }
 
     dfh_->clear_spaces();
+    timer_off("MO Integral Transformation");
 
     if (is_hybrid_) {
         // QR Factorization of (ar|Q)
