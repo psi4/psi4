@@ -155,16 +155,16 @@ void export_wavefunction(py::module& m) {
              "Returns the requested Beta Density subset.")
         .def("epsilon_a", &Wavefunction::epsilon_a, "Returns the Alpha Eigenvalues.")
         .def("epsilon_b", &Wavefunction::epsilon_b, "Returns the Beta Eigenvalues.")
-        .def("epsilon_a_subset", &Wavefunction::epsilon_a_subset, R"pbdoc(
+        .def("epsilon_a_subset", &Wavefunction::epsilon_a_subset, "basis"_a, "subset"_a, R"pbdoc(
               Returns the requested Alpha orbital energies subset.
 
               Parameters
               ----------
-              basis : str
+              basis
                   {'AO', 'SO', 'MO'}
                   MO or SO select for Pitzer-ordering the return vector in the full computational point group symmetry.
                   AO selects for Pitzer-ordering the return vector without point group symmetry.
-              subset : str
+              subset
                   {'ALL', 'ACTIVE', 'FROZEN', 'OCC', 'VIR', 'FROZEN_OCC', 'ACTIVE_OCC', 'ACTIVE_VIR', 'FROZEN_VIR'}
                   Which subspace of orbital energies should be returned?
 
@@ -173,16 +173,16 @@ void export_wavefunction(py::module& m) {
               Vector
                   A Pitzer-ordered vector of the orbitals.
          )pbdoc")
-        .def("epsilon_b_subset", &Wavefunction::epsilon_b_subset, R"pbdoc(
+        .def("epsilon_b_subset", &Wavefunction::epsilon_b_subset, "basis"_a, "subset"_a, R"pbdoc(
               Returns the requested Beta orbital energies subset.
 
               Parameters
               ----------
-              basis : str
+              basis
                   {'AO', 'SO', 'MO'}
                   MO or SO select for Pitzer-ordering the return vector in the full computational point group symmetry.
                   AO selects for Pitzer-ordering the return vector without point group symmetry.
-              subset : str
+              subset
                   {'ALL', 'ACTIVE', 'FROZEN', 'OCC', 'VIR', 'FROZEN_OCC', 'ACTIVE_OCC', 'ACTIVE_VIR', 'FROZEN_VIR'}
                   Which subspace of orbital energies should be returned?
 
