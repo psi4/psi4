@@ -29,7 +29,7 @@
 import math
 import re
 import sys
-from typing import Callable, List
+from typing import Callable, List, Union
 
 import numpy as np
 
@@ -55,7 +55,7 @@ _lmh_labels = {
 }
 
 
-def _expand_bracketed_basis(basisstring: str, molecule=None):
+def _expand_bracketed_basis(basisstring: str, molecule: Union[qcdb.molecule.Molecule, core.Molecule] = None) -> tuple:
     """Function to transform and validate basis series specification for cbs().
 
     Parameters
@@ -142,7 +142,7 @@ def _expand_bracketed_basis(basisstring: str, molecule=None):
     return (BSET, ZSET)
 
 
-def _contract_bracketed_basis(basisarray: List):
+def _contract_bracketed_basis(basisarray: List) -> str:
     """Function to reform a bracketed basis set string from a sequential series
     of basis sets. Essentially the inverse of _expand_bracketed_basis(). Used to
     print a nicely formatted basis set string in the results table.
@@ -173,9 +173,11 @@ def _contract_bracketed_basis(basisarray: List):
 
 
 ### GENERIC FUNCTIONS
-
-
-def xtpl_highest_1(functionname, zHI, valueHI, verbose=True, **kwargs):
+def xtpl_highest_1(functionname: str,
+                   zHI: int,
+                   valueHI: float,
+                   verbose: bool = True,
+                   **kwargs) -> Union[float, core.Matrix, core.Vector]:
     r"""Scheme for total or correlation energies with a single basis or the highest
     zeta-level among an array of bases. Used by :py:func:`~psi4.cbs`.
 
@@ -219,7 +221,13 @@ def xtpl_highest_1(functionname, zHI, valueHI, verbose=True, **kwargs):
         return valueHI
 
 
-def xtpl_exponential_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+def xtpl_exponential_2(functionname: str,
+                       zLO: int,
+                       valueLO: float,
+                       zHI: int,
+                       valueHI: float,
+                       verbose: bool = True,
+                       alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
     r"""Extrapolation scheme using exponential form for reference energies with two adjacent
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
@@ -314,7 +322,13 @@ def xtpl_exponential_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, a
         raise ValidationError("xtpl_exponential_2: datatype is not recognized '%s'." % type(valueLO))
 
 
-def xtpl_power_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+def xtpl_power_2(functionname: str,
+                 zLO: int,
+                 valueLO: float,
+                 zHI: int,
+                 valueHI: float,
+                 verbose: bool = True,
+                 alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
     r"""Extrapolation scheme using power form for reference energies with two adjacent
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
@@ -409,7 +423,13 @@ def xtpl_power_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=N
         raise ValidationError("xtpl_power_2: datatype is not recognized '%s'." % type(valueLO))
 
 
-def xtpl_expsqrt_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+def xtpl_expsqrt_2(functionname: str,
+                   zLO: int,
+                   valueLO: float,
+                   zHI: int,
+                   valueHI: float,
+                   verbose: bool = True,
+                   alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
     r"""Extrapolation scheme using square root-exponential form for reference energies with two adjacent
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
@@ -505,7 +525,15 @@ def xtpl_expsqrt_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha
         raise ValidationError("xtpl_expsqrt_2: datatype is not recognized '%s'." % type(valueLO))
 
 
-def xtpl_exponential_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True, alpha=None):
+def xtpl_exponential_3(functionname: str,
+                       zLO: int,
+                       valueLO: float,
+                       zMD: int,
+                       valueMD: float,
+                       zHI: int,
+                       valueHI: float,
+                       verbose: bool = True,
+                       alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
 
@@ -599,7 +627,13 @@ def xtpl_exponential_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, v
 
 
 ### NAMED FUNCTION ALIASES
-def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+def scf_xtpl_helgaker_2(functionname: str,
+                        zLO: int,
+                        valueLO: float,
+                        zHI: int,
+                        valueHI: float,
+                        verbose: bool = True,
+                        alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
     r"""Alias for the exponential form of the extrapolation scheme for reference energies with two adjacent
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
@@ -646,7 +680,13 @@ def scf_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, 
     return xtpl_exponential_2(functionname, zLO, valueLO, zHI, valueHI, verbose=verbose, alpha=alpha)
 
 
-def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+def scf_xtpl_truhlar_2(functionname: str,
+                       zLO: int,
+                       valueLO: float,
+                       zHI: int,
+                       valueHI: float,
+                       verbose: bool = True,
+                       alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
     r"""Alias for the power form of the extrapolation scheme for reference energies with two adjacent
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
@@ -693,7 +733,13 @@ def scf_xtpl_truhlar_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, a
     return xtpl_power_2(functionname, zLO, valueLO, zHI, valueHI, verbose=verbose, alpha=alpha)
 
 
-def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+def scf_xtpl_karton_2(functionname: str,
+                      zLO: int,
+                      valueLO: float,
+                      zHI: int,
+                      valueHI: float,
+                      verbose: bool = True,
+                      alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
     r"""Alias for the exponential-square root of the extrapolation scheme for reference energies with two adjacent
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
@@ -740,7 +786,15 @@ def scf_xtpl_karton_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, al
     return xtpl_expsqrt_2(functionname, zLO, valueLO, zHI, valueHI, verbose=verbose, alpha=alpha)
 
 
-def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=True, alpha=None):
+def scf_xtpl_helgaker_3(functionname: str,
+                        zLO: int,
+                        valueLO: float,
+                        zMD: int,
+                        valueMD: float,
+                        zHI: int,
+                        valueHI: float,
+                        verbose: bool = True,
+                        alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
     r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
 
@@ -785,7 +839,13 @@ def scf_xtpl_helgaker_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, 
     return xtpl_exponential_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=verbose, alpha=alpha)
 
 
-def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True, alpha=None):
+def corl_xtpl_helgaker_2(functionname: str,
+                         zLO: int,
+                         valueLO: float,
+                         zHI: int,
+                         valueHI: float,
+                         verbose: bool = True,
+                         alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
     r"""Alias for the cubic power extrapolation scheme for correlation energies with two adjacent zeta-level bases.
     Used by :py:func:`~psi4.cbs`.
 
@@ -832,7 +892,7 @@ def corl_xtpl_helgaker_2(functionname, zLO, valueLO, zHI, valueHI, verbose=True,
     return xtpl_power_2(functionname, zLO, valueLO, zHI, valueHI, verbose=verbose, alpha=alpha)
 
 
-def return_energy_components():
+def return_energy_components() -> dict:
     """Define some quantum chemical knowledge, namely what methods are subsumed in others."""
 
     # yapf: disable
@@ -1043,7 +1103,7 @@ def return_energy_components():
 VARH = return_energy_components()
 
 
-def _get_default_xtpl(nbasis: int, xtpl_type: str) -> Callable:
+def _get_default_xtpl(nbasis: int, xtpl_type: Union[str, None]) -> Callable:
     """ A helper function to determine default extrapolation type.
 
     Parameters
@@ -1087,28 +1147,41 @@ def _get_default_xtpl(nbasis: int, xtpl_type: str) -> Callable:
         raise ValidationError(f"Wrong number of basis sets supplied to scf_xtpl: {nbasis}")
 
 
-def _get_dfa_alpha(xtpl_type, bdata, funcname):
-    """ A helper function to determine default extrapolation alpha for DFT. The
-    parameters for the 'fctl' component are based on a fit using numerical results
-    of 30 singlet diatomics with PBE-like functionals with varying amount of HF
-    exchange and MP2 correlation. The 'dh' values are based on the standard
-    correlation alpha of 3.0 for [3,4] extrapolation, and Truhlar's MP2 alpha of
-    2.4 for [2,3] extrapolation.
+def _get_dfa_alpha(xtpl_type: str, bdata: List, funcname: str) -> float:
+    """ A helper function to determine default extrapolation alpha for DFT.
 
+    The parameters for the 'fctl' component are from Kraus, [1]_ based on a fit
+    using numerical results of 30 singlet diatomics with PBE-like functionals
+    with varying amount of HF exchange and MP2 correlation.
+
+    The 'dh' values are based on the standard correlation alpha of 3.0 for [3,4]
+     extrapolation, [2]_ and Truhlar's MP2 alpha of 2.2 for [2,3] extrapolation. [3]_
+     
     Parameters
     ----------
-    xtpl_type : {'fctl', 'dh'}
+    xtpl_type
+        {'fctl', 'dh'}
         Extrapolation type: 'fctl' for the functional energy,
         'dh' for the double-hybrid correlation component.
-    bnames : string
-        Names of the basis sets to extrapolate from.
-    funcname : string
+    bdata
+        Names and zetas of the basis sets to extrapolate from.
+    funcname
         Name of the functional.
 
     Returns
     -------
     float
         Extrapolation alpha to be used.
+
+    References
+    ----------
+    .. [1] Kraus, J. Chem. Theor. Comput. 17 (2021) 5651-5660,
+       DOI: 10.1021/acs.jctc.1c00542
+    .. [2] Halkier, Helgaker, Jorgensen, Klopper, Koch, Olsen, & Wilson,
+       Chem. Phys. Lett. 286 (1998) 243-252,
+       DOI: 10.1016/S0009-2614(99)00179-7
+    .. [3] Truhlar, Chem. Phys. Lett. 294 (1998) 45-48,
+       DOI: 10.1016/S0009-2614(98)00866-5
     """
     bnames, bzetas = bdata
     if funcname not in functionals:
@@ -1166,19 +1239,17 @@ def _get_dfa_alpha(xtpl_type, bdata, funcname):
             raise ValidationError(f"DFT dh extrapolation alpha for basis sets {bnames} undefined.")
 
 
-def _get_default_alpha(xtpl_type, bdata, funcname=None):
+def _get_default_alpha(xtpl_type: Union[str, None], bdata: List, funcname: str = None) -> float:
     """ A helper function to determine default extrapolation alpha.
 
     Parameters
     ----------
-    nbasis : int
-        Number of basis sets
     xtpl_type : {'scf', 'corl', 'fctl', 'dh', None}
         Extrapolation type: 'scf' and 'fctl' for the total energy, 'corl' and 'dh'
         for just the correlation component, None if no extrapolation requested.
-    bname : string, optional
-        Basis set name for DFT extrapolation.
-    funcname : string, optional
+    bdata
+        Names and zetas of the basis sets to extrapolate from.
+    funcname
         Functional name for DFT extrapolation.
 
     Returns
@@ -1202,15 +1273,15 @@ def _get_default_alpha(xtpl_type, bdata, funcname=None):
         return None  # we don't need alpha for _3 methods
 
 
-def _validate_cbs_inputs(cbs_metadata, molecule):
+def _validate_cbs_inputs(cbs_metadata: List, molecule: Union[qcdb.molecule.Molecule, core.Molecule]) -> list:
     """ A helper function which validates the ``cbs_metadata`` format,
     expands basis sets, and provides sensible defaults for optional arguments.
 
     Parameters
     ----------
-    cbs_metadata : list
+    cbs_metadata
         List of dicts containing CBS stage keywords.
-    molecule : qcdb.molecule or psi4.core.Molecule
+    molecule
         Molecule to be passed to _expand_bracketed_basis()
 
     Returns
@@ -1353,13 +1424,13 @@ def _validate_cbs_inputs(cbs_metadata, molecule):
     return (metadata)
 
 
-def _process_cbs_kwargs(kwargs):
+def _process_cbs_kwargs(kwargs: dict) -> list:
     """ A helper function which translates supplied kwargs into the
     ``cbs_metadata`` format and passes it for validation.
 
     Parameters
     ----------
-    kwargs : dict
+    kwargs
         kwargs containing the CBS function specification.
 
     Returns
@@ -2140,7 +2211,8 @@ def cbs(func, label, **kwargs):
 ######### ASSEMBLE / REPORT
 
 
-def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, alpha, natom):
+def _expand_scheme_orders(scheme: Callable, basisname: List, basiszeta: List, wfnname: str, options: dict,
+                          alpha: float, natom: int) -> dict:
     """Check that the length of *basiszeta* array matches the implied degree of
     extrapolation in *scheme* name. Return a dictionary of same length as
     basiszeta, with *basisname* and *basiszeta* distributed therein.
@@ -2169,7 +2241,7 @@ def _expand_scheme_orders(scheme, basisname, basiszeta, wfnname, options, alpha,
     return NEED
 
 
-def _contract_scheme_orders(needdict, datakey='f_energy'):
+def _contract_scheme_orders(needdict: dict, datakey: str = 'f_energy') -> dict:
     """Prepared named arguments for extrapolation functions by
     extracting zetas and values (which one determined by *datakey*) out
     of *needdict* and returning a dictionary whose keys are constructed
@@ -2193,13 +2265,13 @@ def _contract_scheme_orders(needdict, datakey='f_energy'):
 complete_basis_set = cbs
 
 
-def _cbs_wrapper_methods(**kwargs):
+def _cbs_wrapper_methods(**kwargs: dict) -> list:
     """ A helper function for the driver to enumerate methods used in the
     stages of a cbs calculation.
 
     Parameters
     ----------
-    kwargs : dict
+    kwargs
         kwargs containing cbs specification either in the ``cbs_metadata``
         format, or in separate keywords (``scf_wfn``, ``corl_wfn`` etc.).
 
@@ -2222,13 +2294,13 @@ def _cbs_wrapper_methods(**kwargs):
     return cbs_methods
 
 
-def _parse_cbs_gufunc_string(method_name):
+def _parse_cbs_gufunc_string(method_name: str) -> tuple:
     """ A helper function that parses a ``"method/basis"`` input string
     into separate method and basis components. Also handles delta corrections.
 
     Parameters
     ----------
-    method_name : str
+    method_name
         A ``"method/basis"`` style string defining the calculation.
 
     Returns
@@ -2267,7 +2339,7 @@ def _parse_cbs_gufunc_string(method_name):
     return method_list, basis_list
 
 
-def _cbs_gufunc(func, total_method_name, **kwargs):
+def _cbs_gufunc(func: Callable, total_method_name: str, **kwargs: dict) -> Union[tuple, float]:
     """
     A text based parser of the CBS method string. Provided to handle "method/basis"
     specification of the requested calculations. Also handles "simple" (i.e.
@@ -2275,9 +2347,9 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
 
     Parameters
     ----------
-    func : function
+    func
         Function to be called (energy, gradient, frequency or cbs).
-    total_method_name : str
+    total_method_name
         String in a ``"method/basis"`` syntax. Simple calls (e.g. ``"blyp/sto-3g"``) are
         bounced out of CBS. More complex calls (e.g. ``"mp2/cc-pv[tq]z"`` or
         ``"mp2/cc-pv[tq]z+D:ccsd(t)/cc-pvtz"``) are expanded by `_parse_cbs_gufunc_string()`
@@ -2285,7 +2357,7 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
 
     Returns
     -------
-    tuple or float
+    qfloat
         Float, or if ``return_wfn`` is specified, a tuple of ``(value, wavefunction)``.
     """
 
