@@ -536,9 +536,6 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
 
     # Set options
     kwargs = json_data["keywords"].pop("function_kwargs", {})
-    # TODO: handle differently before psi4 merge
-    if "DERTYPE" in json_data["keywords"]:
-        kwargs = {"dertype": json_data["keywords"].pop("DERTYPE")}
     p4util.set_options(json_data["keywords"])
 
     # Setup the computation

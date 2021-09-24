@@ -48,13 +48,14 @@ def harvest_output(outtext):
     divided by xjoda.
 
     """
+    import qcengine as qcng
+
     pass_psivar = []
     pass_coord = []
     pass_grad = []
 
     #for outpass in re.split(r'--invoking executable xjoda', outtext, re.MULTILINE):
     for outpass in re.split(r'JODA beginning optimization cycle', outtext, re.MULTILINE):
-        import qcengine as qcng
         psivar, qcskcoord, c4grad, version, module, error = qcng.programs.cfour.harvester.harvest_outfile_pass(outpass)
         c4coord = Molecule.from_schema(qcskcoord.dict())
 
@@ -85,7 +86,10 @@ def harvest_output(outtext):
 
 def local_harvest_outfile_pass(outtext):
     """Function to read CFOUR output file *outtext* and parse important
-    quantum chemical information from it in
+    quantum chemical information from it.
+
+    c. Sept 2021, this fn is now defunct. The more capable fn `harvest_outfile_pass`
+      from QCEngine is now called instead.
 
     """
     psivar = PreservingDict()
