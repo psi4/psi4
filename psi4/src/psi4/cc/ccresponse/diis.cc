@@ -42,7 +42,6 @@
 #include "psi4/psifiles.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
 #define EXTERN
 #include "globals.h"
 

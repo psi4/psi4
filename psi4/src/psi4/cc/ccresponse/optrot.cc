@@ -83,7 +83,6 @@
 
 #include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
 #define EXTERN
 #include "globals.h"
 #include "psi4/physconst.h"

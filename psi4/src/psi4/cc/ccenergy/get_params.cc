@@ -32,7 +32,6 @@
 */
 
 #include "Params.h"
-#include "Local.h"
 #include "MOInfo.h"
 #include "psi4/cc/ccwave.h"
 
@@ -136,22 +135,43 @@ void CCEnergyWavefunction::get_params(Options &options) {
     params_.prop = options.get_str("PROPERTY");
     params_.abcd = options.get_str("ABCD");
     params_.local = options.get_bool("LOCAL");
-    local_.cutoff = options.get_double("LOCAL_CUTOFF");
-    local_.method = options.get_str("LOCAL_METHOD");
-    local_.weakp = options.get_str("LOCAL_WEAKP");
 
-    // local.filter_singles = options.get_bool("LOCAL_FILTER_SINGLES");
-    // if(params.dertype == 3) local.filter_singles = 0;
+    // Get local simulation params
+    if (params_.local) {
+        local_.cutoff = options.get_double("LOCAL_CUTOFF");
+        if (options["LOCAL_METHOD"].has_changed()) {
+            local_.method = options.get_str("LOCAL_METHOD");
+            if(local_.method != "PNO" && local_.method != "PNO++" && local_.method != "CPNO++") {
+                throw PsiException("Invalid local correlation method", __FILE__, __LINE__);
+            }
+        }
+        local_.weakp = options.get_str("LOCAL_WEAKP");
+        local_.weak_pair_cutoff = options.get_double("WEAKP_CUTOFF");
+        local_.custom_no = options.get_double("WEAKP_CUSTOM_NO");
+        local_.pert = options.get_str("LOCAL_PERT");
+        local_.filter_singles = options.get_bool("LOCAL_FILTER_SINGLES");
 
-    local_.cphf_cutoff = options.get_double("LOCAL_CPHF_CUTOFF");
-    std::string freeze_docc = options.get_str("FREEZE_CORE");
-    local_.freeze_core = (freeze_docc != "FALSE");
+        // Frequencies for freq-dependent local simulation
+        if (local_.method=="PNO++" || local_.method=="CPNO++") {
+            // grab the field freqs from input -- currently only E_h
+            int count = options["OMEGA"].size();
+            if (count == 0) {  // Assume 0.0 E_h for field energy
+                params_.nomega = 1;
+                params_.omega = 0.0;
+            } else if (count == 1) {  // Assume E_h for field energy and read value
+                params_.nomega = 1;
+                params_.omega = options["OMEGA"][0].to_double();
+            } else if (count >= 2) {
+                throw PsiException("Error: PNO++ cannot take multiple field frequencies", __FILE__,
+                                           __LINE__);
+            }
+        }
+    }
 
-    local_.pairdef = options.get_str("LOCAL_PAIRDEF");
-    if (params_.local && params_.dertype == 3)
-        local_.pairdef = "RESPONSE";
-    else if (params_.local)
-        local_.pairdef = "BP";
+    // Get unperturbed cutoff for CPNO++
+    if (params_.local && local_.method=="CPNO++") {
+        local_.unpert_cutoff = options.get_double("UNPERT_CUTOFF");
+    }
 
     params_.num_amps = options.get_int("NUM_AMPS_PRINT");
     params_.bconv = options.get_double("BRUECKNER_ORBS_R_CONVERGENCE");
@@ -224,12 +244,18 @@ void CCEnergyWavefunction::get_params(Options &options) {
         outfile->Printf("    T3 Ws incore    =     %s\n", params_.t3_Ws_incore ? "Yes" : "No");
 
     if (params_.local) {
-        outfile->Printf("    Local Cutoff       =     %3.1e\n", local_.cutoff);
-        outfile->Printf("    Local Method      =     %s\n", local_.method.c_str());
-        outfile->Printf("    Weak pairs        =     %s\n", local_.weakp.c_str());
-        outfile->Printf("    Filter singles    =     %s\n", local_.filter_singles ? "Yes" : "No");
-        outfile->Printf("    Local pairs       =     %s\n", local_.pairdef.c_str());
-        outfile->Printf("    Local CPHF cutoff =     %3.1e\n", local_.cphf_cutoff);
+        outfile->Printf("    Local Cutoff    =     %3.1e\n", local_.cutoff);
+        outfile->Printf("    Local Method    =     %s\n", local_.method.c_str());
+        outfile->Printf("    Weak pairs      =     %s\n", local_.weakp.c_str());
+        outfile->Printf("    Filter singles  =     %s\n", local_.filter_singles ? "Yes" : "No");
+        outfile->Printf("    Local pairs     =     %s\n", local_.pairdef.c_str());
+    }
+    if (params_.local && local_.pert!="NONE") {
+        outfile->Printf("    Local Pert      =     %s\n", local_.pert.c_str());
+        outfile->Printf("    Omega (E_h)     =     %1.6f\n", params_.omega);
+    }
+    if (params_.local && local_.method=="CPNO++") {
+        outfile->Printf("    Unpert Cutoff   =     %3.1e\n", local_.unpert_cutoff);
     }
     outfile->Printf("    SCS-MP2         =     %s\n", (params_.scs == 1) ? "True" : "False");
     outfile->Printf("    SCSN-MP2        =     %s\n", (params_.scsn == 1) ? "True" : "False");

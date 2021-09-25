@@ -63,13 +63,9 @@ void CCEnergyWavefunction::init_amps() {
             global_dpd_->buf4_close(&D);
 
             global_dpd_->buf4_init(&tIjAb, PSIF_CC_TAMPS, 0, 0, 5, 0, 5, 0, "tIjAb");
-            if (params_.local) {
-                local_filter_T2(&tIjAb);
-            } else {
-                global_dpd_->buf4_init(&dIjAb, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
-                global_dpd_->buf4_dirprd(&dIjAb, &tIjAb);
-                global_dpd_->buf4_close(&dIjAb);
-            }
+            global_dpd_->buf4_init(&dIjAb, PSIF_CC_DENOM, 0, 0, 5, 0, 5, 0, "dIjAb");
+            global_dpd_->buf4_dirprd(&dIjAb, &tIjAb);
+            global_dpd_->buf4_close(&dIjAb);
             global_dpd_->buf4_close(&tIjAb);
         } else
             outfile->Printf("    Using old T2 amplitudes.\n\n");

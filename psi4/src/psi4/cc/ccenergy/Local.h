@@ -28,44 +28,61 @@
 
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here
+    \brief Local_cc class definition for PNO simulation
 */
 
 #ifndef _psi_src_bin_ccenergy_local_h
 #define _psi_src_bin_ccenergy_local_h
 
 #include <string>
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/libdpd/dpd.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/local.h"
+#include "psi4/libmints/basisset.h"
 
 namespace psi {
-namespace ccenergy {
 
-struct Local {
-    int natom;
-    int nso;
-    int nocc;
-    int nvir;
-    int *aostart;
-    int *aostop;
-    int **domain;
-    int **pairdomain;
-    int *pairdom_len;
-    int *pairdom_nrlen;
-    int *weak_pairs;
-    double ***V;
-    double ***W;
-    double *eps_occ;
-    double **eps_vir;
-    double cutoff;
-    std::string method;
-    std::string weakp;
-    int filter_singles;
-    double weak_pair_energy;
-    double cphf_cutoff;
-    int freeze_core;
-    std::string pairdef;
+class Local_cc {
+    public:
+        Local_cc();
+        ~Local_cc();
+        void local_init();
+        void init_pno();
+        void init_pnopp(const double omega, bool combined=false);
+        void init_cpnopp(const double omega);
+        void init_filter_T2();
+        void local_filter_T1(dpdfile2 *T1);
+        void local_filter_T2(dpdbuf4 *T2);
+        void local_done();
+
+        std::string method;
+        std::string weakp;
+        std::string pairdef;
+        std::string pert;
+        int filter_singles;
+        int nocc;
+        int nvir;
+        int custom_no;
+        double cutoff;
+        double unpert_cutoff;
+        double weak_pair_cutoff;
+        double weak_pair_energy;
+
+    private:
+        void get_matvec(dpdbuf4 *buf_obj, std::vector<SharedMatrix> *matvec);
+        void get_semicanonical_transforms(std::vector<SharedMatrix> Q);
+        std::vector<SharedMatrix> build_PNO_lists(double cutoff, std::vector<SharedMatrix> D);
+        std::vector<SharedMatrix> build_cPNO_lists(double cutoff, std::vector<SharedMatrix> D);
+        void mp2_pair_energy();
+        void pair_perturbation();
+        void custom_weak_pair(int pair_no);
+        
+        int npairs;
+
 };
 
-}  // namespace ccenergy
-}  // namespace psi
+} //namespace psi
 
 #endif  // _psi_src_bin_ccenergy_local_h

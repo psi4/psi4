@@ -122,7 +122,7 @@ void local_filter_T1(dpdfile2 *T1) {
         ii = i * nocc + i; /* diagonal element of pair matrices */
 
         if (!local.pairdom_len[ii]) {
-            outfile->Printf("\n\tlocal_filter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n", ii);
+            outfile->Printf("\n\tlocalfilter_T1: Pair ii = [%d] is zero-length, which makes no sense.\n", ii);
             throw PsiException("cclambda: error", __FILE__, __LINE__);
         }
 

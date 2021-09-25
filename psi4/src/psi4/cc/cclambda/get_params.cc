@@ -43,10 +43,10 @@
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/psi4-dec.h"
 #include "cclambda.h"
+#include "psi4/cc/ccenergy/Local.h"
 
 #include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
 #define EXTERN
 #include "globals.h"
 
@@ -127,55 +127,33 @@ void CCLambdaWavefunction::get_params(Options &options) {
         }
     }
 
-    /* begin local parameters */
-    params.local = 0;
+    //Get local simulation parameters
     params.local = options.get_bool("LOCAL");
-    local.cutoff = 0.02;
-    local.cutoff = options.get_double("LOCAL_CUTOFF");
-    if (options["LOCAL_METHOD"].has_changed()) {
-        local.method = options.get_str("LOCAL_METHOD");
-        if (local.method == "AOBASIS" && local.method == "WERNER") {
-            outfile->Printf("Invalid local correlation method: %s\n", local.method.c_str());
-            throw PsiException("cclambda: error", __FILE__, __LINE__);
-        }
-    } else if (params.local) {
-        local.method = "WERNER";
+    // Local params not needed in ccresponse code
+    // Getting to print info
+    /*if (params.local) {
+        Local_cc local_; 
+        local_.cutoff = options.get_double("LOCAL_CUTOFF");
+        local_.method = options.get_str("LOCAL_METHOD");
+        local_.pert = options.get_str("LOCAL_PERT");
+        local_.weakp = options.get_str("LOCAL_WEAKP");
+        local_.filter_singles = options.get_bool("LOCAL_FILTER_SINGLES");
     }
 
-    if (options["LOCAL_WEAKP"].has_changed()) {
-        local.weakp = options.get_str("LOCAL_WEAKP");
-        if (local.weakp != "MP2" && local.weakp != "NEGLECT" && local.weakp != "NONE") {
-            outfile->Printf("Invalid method for treating local pairs: %s\n", local.weakp.c_str());
-            throw PsiException("cclambda: error", __FILE__, __LINE__);
-        }
-    } else if (params.local) {
-        local.weakp = "NONE";
+    if (params.local && local_.method=="CPNO++") {
+        local_.unpert_cutoff = options.get_double("UNPERT_CUTOFF");
     }
-
-    if (params.dertype == 3)
-        local.filter_singles = 0;
-    else
-        local.filter_singles = 1;
-
-    local.filter_singles = options.get_bool("LOCAL_FILTER_SINGLES");
-
-    local.cphf_cutoff = 0.10;
-    local.cphf_cutoff = options.get_double("LOCAL_CPHF_CUTOFF");
-
-    local.freeze_core = "FALSE";
-    local.freeze_core = options.get_str("FREEZE_CORE");
 
     if (options["LOCAL_PAIRDEF"].has_changed()) {
-        local.pairdef = options.get_str("LOCAL_PAIRDEF");
-        if (local.pairdef != "BP" && local.pairdef != "RESPONSE") {
-            outfile->Printf("Invalid keyword for strong/weak pair definition: %s\n", local.pairdef.c_str());
-            throw PsiException("cclambda: error", __FILE__, __LINE__);
+        local_.pairdef = options.get_str("LOCAL_PAIRDEF");
+        if (local_.pairdef != "BP" && local_.pairdef != "RESPONSE") {
+            throw PsiException("Invalid keyword for strong/weak pair definating", __FILE__, __LINE__);
         }
     } else if (params.local && params.dertype == 3)
-        local.pairdef = "RESPONSE";
+        local_.pairdef = strdup("RESPONSE");
     else if (params.local)
-        local.pairdef = "BP";
-
+        local_.pairdef = strdup("BP");
+    */
     /* Now setup the structure which determines what will be solved */
     /* if --zeta, use Xi and solve for Zeta */
     /* if (DERTYPE == FIRST) determine ground vs. excited from wfn.
@@ -429,14 +407,19 @@ void CCLambdaWavefunction::get_params(Options &options) {
     outfile->Printf("\tAO Basis          =     %s\n", params.aobasis ? "Yes" : "No");
     outfile->Printf("\tABCD              =     %s\n", params.abcd.c_str());
     outfile->Printf("\tLocal CC          =     %s\n", params.local ? "Yes" : "No");
-    if (params.local) {
-        outfile->Printf("\tLocal Cutoff      = %3.1e\n", local.cutoff);
-        outfile->Printf("\tLocal Method      =    %s\n", local.method.c_str());
-        outfile->Printf("\tWeak pairs        =    %s\n", local.weakp.c_str());
-        outfile->Printf("\tFilter singles    =    %s\n", local.filter_singles ? "Yes" : "No");
-        outfile->Printf("\tLocal pairs       =    %s\n", local.pairdef.c_str());
-        outfile->Printf("\tLocal CPHF cutoff =  %3.1e\n", local.cphf_cutoff);
+    /*if (params.local) {
+        outfile->Printf("\tLocal Cutoff      =     %3.1e\n", local_.cutoff);
+        outfile->Printf("\tLocal Method      =     %s\n", local_.method.c_str());
+        outfile->Printf("\tWeak pairs        =     %s\n", local_.weakp.c_str());
+        outfile->Printf("\tFilter singles    =     %s\n", local_.filter_singles ? "Yes" : "No");
+        outfile->Printf("\tLocal pairs       =     %s\n", local_.pairdef.c_str());
     }
+    if (params.local && local_.pert!="NONE") {
+        outfile->Printf("\tLocal Pert        =     %s\n", local_.pert.c_str());
+    }
+    if (params.local && local_.method=="CPNO++") {
+        outfile->Printf("\tUnpert Cutoff     =     %3.1e\n", local_.unpert_cutoff);
+    }*/
 
     outfile->Printf("\tParameters for left-handed eigenvectors:\n");
     outfile->Printf("\t    Irr   Root  Ground-State?    EOM energy        R0\n");

@@ -45,7 +45,7 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/halftrans.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/hbar_extra.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/init_amps.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/local.cc
+    #${CMAKE_CURRENT_SOURCE_DIR}/local.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/ortho_Rs.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/overlap.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/overlap_LAMPS.cc

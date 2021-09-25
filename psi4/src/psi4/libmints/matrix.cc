@@ -1574,6 +1574,25 @@ bool Matrix::schmidt_add_row(int h, int rows, Vector &v) {
         return false;
 }
 
+bool Matrix::schmidt_add_row(int h, int rows, double *v, double norm_cutoff) noexcept {
+    double dotval, normval;
+    int i, I;
+
+    for (i = 0; i < rows; ++i) {
+        dotval = C_DDOT(coldim(h), matrix_[h][i], 1, v, 1);
+        for (I = 0; I < coldim(h); ++I) v[I] -= dotval * matrix_[h][i][I];
+    }
+
+    normval = C_DDOT(coldim(h), v, 1, v, 1);
+    normval = sqrt(normval);
+
+    if (normval > norm_cutoff) {
+        for (I = 0; I < coldim(h); ++I) matrix_[h][rows][I] = v[I] / normval;
+        return true;
+    } else
+        return false;
+}
+
 bool Matrix::schmidt_add_row(int h, int rows, double *v) noexcept {
     double dotval, normval;
     int i, I;

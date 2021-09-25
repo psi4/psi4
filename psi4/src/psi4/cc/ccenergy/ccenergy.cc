@@ -36,7 +36,6 @@
 
 #include "Params.h"
 #include "MOInfo.h"
-#include "Local.h"
 #include "psi4/cc/ccwave.h"
 
 #include "psi4/libciomr/libciomr.h"
@@ -44,6 +43,7 @@
 #include "psi4/libqt/qt.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/wavefunction.h"
+#include "psi4/libmints/mintshelper.h"
 #include "psi4/libpsio/psio.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -166,17 +166,12 @@ double CCEnergyWavefunction::compute_energy() {
         return Success;
     }
 
-    if (params_.local) {
-        local_init();
-        if (local_.weakp == "MP2") lmp2();
-    }
-
     init_amps();
 
     /* Compute the MP2 energy while we're here */
     if (params_.ref == 0 || params_.ref == 2) {
         moinfo_.emp2 = mp2_energy();
-        outfile->Printf("MP2 correlation energy %4.16f\n", moinfo_.emp2);
+        outfile->Printf("\tMP2 correlation energy: %4.16f\n", moinfo_.emp2);
         psio_write_entry(PSIF_CC_INFO, "MP2 Energy", (char *)&(moinfo_.emp2), sizeof(double));
         Process::environment.globals["MP2 CORRELATION ENERGY"] = moinfo_.emp2;
         Process::environment.globals["MP2 TOTAL ENERGY"] = moinfo_.emp2 + moinfo_.eref;
@@ -186,6 +181,78 @@ double CCEnergyWavefunction::compute_energy() {
         set_scalar_variable("MP2 TOTAL ENERGY", moinfo_.emp2 + moinfo_.eref);
         set_scalar_variable("MP2 SINGLES ENERGY", moinfo_.emp2_s);
         set_scalar_variable("MP2 DOUBLES ENERGY", moinfo_.emp2_ss + moinfo_.emp2_os);
+    }
+
+    if (params_.local) {
+        // Do local simulation
+        local_.nocc = moinfo_.occpi[0];
+        local_.nvir = moinfo_.virtpi[0];
+        if (local_.method == "PNO") {
+            local_.init_pno();
+        }
+        else if (local_.method == "PNO++" || local_.method == "CPNO++") {
+            // Prepare the perturbation
+            MintsHelper mints(reference_wavefunction_->basisset(), Process::environment.options, 0);
+            int nmo = moinfo_.nmo;
+            int nso = moinfo_.nso;
+            std::vector<std::string> cart_list = {"x","y","z"};
+            dpdfile2 f;
+            std::vector<SharedMatrix> ao_pert;
+            // Currently only electric dipole perturbation
+            if (local_.pert == "DIPOLE") {
+                ao_pert = mints.so_dipole();
+            }
+            else {
+                ao_pert = mints.so_dipole();
+            }
+            double **TMP2 = block_matrix(nso, nso);
+            double **TMP3 = block_matrix(nmo, nmo);
+            for (int n=0; n < 3; n++) {
+                double **TMP1 = ao_pert[n]->to_block_matrix();
+                C_DGEMM('n', 'n', nso, nmo, nso, 1, TMP1[0], nso, moinfo_.scf[0], nmo, 0, TMP2[0], nso);
+                C_DGEMM('t', 'n', nmo, nmo, nso, 1, moinfo_.scf[0], nmo, TMP2[0], nso, 0, TMP3[0], nmo);
+
+                // Write the perturbation to file
+                std::string lbl1 = "PertAE_"+cart_list[n];
+                global_dpd_->file2_init(&f, PSIF_CC_OEI, 0, 1, 1, lbl1.c_str());
+                global_dpd_->file2_mat_init(&f);
+                for (int a=0; a < local_.nvir; a++) {
+                    for (int e=0; e < local_.nvir; e++) {
+                        f.matrix[0][a][e] = TMP3[local_.nocc+a][local_.nocc+e];
+                    }
+                }
+                global_dpd_->file2_mat_wrt(&f);
+                global_dpd_->file2_mat_close(&f);
+                global_dpd_->file2_close(&f);
+
+                std::string lbl2 = "PertMI_"+cart_list[n];
+                global_dpd_->file2_init(&f, PSIF_CC_OEI, 0, 0, 0, lbl2.c_str());
+                global_dpd_->file2_mat_init(&f);
+                for (int i=0; i < local_.nocc; i++) {
+                    for (int j=0; j < local_.nocc; j++) {
+                        f.matrix[0][i][j] = TMP3[i][j];
+                    }
+                }
+                global_dpd_->file2_mat_wrt(&f);
+                global_dpd_->file2_mat_close(&f);
+                global_dpd_->file2_close(&f);
+
+            }
+            free_block(TMP2);
+            free_block(TMP3);
+            if (local_.method == "CPNO++") {
+                local_.init_cpnopp(params_.omega);
+            }
+            else {
+                local_.init_pnopp(params_.omega);
+            }
+        }
+        else {
+            outfile->Printf("Local CC method not recognized.\n");
+        }
+        local_.init_filter_T2();
+        // Needs to be implemented
+        //if (local_.weakp == "MP2") lmp2();
     }
 
     if (params_.print_mp2_amps) amp_write();
@@ -386,11 +453,12 @@ double CCEnergyWavefunction::compute_energy() {
         set_scalar_variable("CC2 CORRELATION ENERGY", moinfo_.ecc);
         set_scalar_variable("CC2 TOTAL ENERGY", moinfo_.eref + moinfo_.ecc);
 
-        if (params_.local && local_.weakp == "MP2")
+        if (params_.local && local_.weakp == "MP2") {
             outfile->Printf("      * LCC2 (+LMP2) total energy             = %20.15f\n",
                             moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy);
-        Process::environment.globals["LCC2 (+LMP2) TOTAL ENERGY"] =
-            moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
+            Process::environment.globals["LCC2 (+LMP2) TOTAL ENERGY"] =
+                moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
+        }
     } else {
         if (params_.scscc) {
             outfile->Printf("\n    OS SCS-CCSD correlation energy            = %20.15f\n",
@@ -431,11 +499,12 @@ double CCEnergyWavefunction::compute_energy() {
         set_scalar_variable("CCSD TOTAL ENERGY", moinfo_.ecc + moinfo_.eref);
         set_scalar_variable("CCSD ITERATIONS", moinfo_.iter);
 
-        if (params_.local && local_.weakp == "MP2")
+        if (params_.local && local_.weakp == "MP2") {
             outfile->Printf("      * LCCSD (+LMP2) total energy            = %20.15f\n",
                             moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy);
-        Process::environment.globals["LCCSD (+LMP2) TOTAL ENERGY"] =
-            moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
+            Process::environment.globals["LCCSD (+LMP2) TOTAL ENERGY"] =
+                moinfo_.eref + moinfo_.ecc + local_.weak_pair_energy;
+        }
     }
     outfile->Printf("\n");
 
@@ -463,8 +532,7 @@ double CCEnergyWavefunction::compute_energy() {
     }
 
     if (params_.local) {
-        /*    local_print_T1_norm(); */
-        local_done();
+        local_.local_done();
     }
 
     if (params_.brueckner) Process::environment.globals["BRUECKNER CONVERGED"] = rotate();

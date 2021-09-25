@@ -230,3 +230,52 @@ The most important keywords associated with CC-LR calculations are as follows.
 .. include:: autodir_options_c/ccresponse__omega.rst
 .. include:: autodir_options_c/ccresponse__gauge.rst
 
+Simulation of Local Correlation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The coupled cluster singles and doubles code, invoked using either 
+``energy(‘ccsd’)`` or ``properties(‘ccsd’)``, can simulate the effect
+of the truncation of the virtual space using the pair natural orbital (PNO) 
+approach [Neese:2009:64103]_ as well as the PNO++ and combined PNO++ approaches
+[Dcunha:2021:290]_ for correlation energies, dynamic polarizabilities, and specific
+rotations. Truncation effects of weak pairs using a pair energy or a dipole
+criterion can be computed using the keyword ``LOCAL_WEAKP``.
+
+A sample input file for a CCSD linear response calculation with simulation 
+of the effect of PNOs is shown below:
+
+.. code-block:: python
+
+    molecule h2o2 {
+     O     -0.028962160801    -0.694396279686    -0.049338350190
+     O      0.028962160801     0.694396279686    -0.049338350190
+     H      0.350498145881    -0.910645626300     0.783035421467
+     H     -0.350498145881     0.910645626300     0.783035421467
+    symmetry c1
+    }
+
+    set {
+      basis cc-pVDZ
+      local true
+      local_method "PNO"
+      local_cutoff 1e-5
+    }
+
+    energy('ccsd')
+
+Switching the local correlation simulation on also localizes the occupied 
+orbital space using the Pipek-Mezey localization procedure. Only a single 
+frequency at one time (in atomic units) can be specified for linear response 
+using the PNO++ method, since the PNO++ method incorporates the frequency 
+into the pair density matrix.
+
+A complete list of keywords related to the local correlation simulation can be
+found in the Appendices :ref:`apdx:ccenergy` and :ref:`apdx:ccresponse`. The 
+most important keywords related to the simulation of a local CCSD linear 
+response calculation are given below:
+
+.. include:: autodir_options_c/ccresponse__local_method.rst
+.. include:: autodir_options_c/ccresponse__local_cutoff.rst
+.. include:: autodir_options_c/ccresponse__local_pert.rst
+.. include:: autodir_options_c/ccresponse__local_weakp.rst
+.. include:: autodir_options_c/ccresponse__weakp_cutoff.rst

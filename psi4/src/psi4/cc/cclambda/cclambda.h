@@ -70,8 +70,12 @@ class CCLambdaWavefunction final : public psi::ccenergy::CCEnergyWavefunction {
     void status(const char *, std::string);
     void update();
 
+    void L1_build(const struct L_Params&);
+    void cc2_L1_build(const struct L_Params&);
     void cc2_L2_build(const struct L_Params&);
     void L2_build(const struct L_Params&);
+    void dijabL2(int L_irr);
+
 };
 
 }  // namespace cclambda

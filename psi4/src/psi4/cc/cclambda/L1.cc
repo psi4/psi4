@@ -38,16 +38,14 @@
 #include "psi4/libqt/qt.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
+#include "cclambda.h"
 #define EXTERN
 #include "globals.h"
 
 namespace psi {
 namespace cclambda {
 
-void local_filter_T1(dpdfile2 *);
-
-void L1_build(const struct L_Params& L_params) {
+void CCLambdaWavefunction::L1_build(const struct L_Params& L_params) {
     dpdfile2 newLIA, newLia, LIA, Lia;
     dpdfile2 dIA, dia, Fme, FME;
     dpdfile2 LFaet2, LFAEt2, LFmit2, LFMIt2;
@@ -623,8 +621,11 @@ void L1_build(const struct L_Params& L_params) {
         global_dpd_->file2_close(&newLIA);
 
         global_dpd_->file2_init(&newLIA, PSIF_CC_LAMBDA, L_irr, 0, 1, "New LIA Increment");
-        if (params.local && local.filter_singles)
-            local_filter_T1(&newLIA);
+        if (params.local && local_.filter_singles) {
+            local_.nocc = moinfo.occpi[0];
+            local_.nvir = moinfo.virtpi[0];
+            local_.local_filter_T1(&newLIA);
+        }
         else {
             global_dpd_->file2_init(&dIA, PSIF_CC_DENOM, L_irr, 0, 1, "dIA");
             global_dpd_->file2_dirprd(&dIA, &newLIA);

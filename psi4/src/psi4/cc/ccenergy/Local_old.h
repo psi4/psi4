@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2019 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -25,20 +25,24 @@
  *
  * @END LICENSE
  */
-#ifndef CCLAMBDA_LOCAL_H
-#define CCLAMBDA_LOCAL_H
 
 /*! \file
-    \ingroup CCLAMBDA
+    \ingroup CCENERGY
     \brief Enter brief description of file here
 */
 
+#ifndef _psi_src_bin_ccenergy_local_h
+#define _psi_src_bin_ccenergy_local_h
+
 #include <string>
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/libdpd/dpd.h"
 
 namespace psi {
-namespace cclambda {
+namespace ccenergy {
 
 struct Local {
+    int natom;
     int nso;
     int nocc;
     int nvir;
@@ -57,12 +61,23 @@ struct Local {
     std::string method;
     std::string weakp;
     int filter_singles;
+    double weak_pair_energy;
     double cphf_cutoff;
-    std::string freeze_core;
+    int freeze_core;
     std::string pairdef;
+
+    // For PNOs
+    int npairs;
+    double pno_cut;
+    std::vector<int> survivor_list;
+    std::vector<SharedVector> occ_num;
+    std::vector<SharedVector> eps_pno;
+
+    std::vector<SharedMatrix> Q;
+    std::vector<SharedMatrix> L;
 };
 
-}  // namespace cclambda
+}  // namespace ccenergy
 }  // namespace psi
 
-#endif
+#endif  // _psi_src_bin_ccenergy_local_h

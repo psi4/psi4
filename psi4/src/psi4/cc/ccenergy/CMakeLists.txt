@@ -55,7 +55,7 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/get_params.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/halftrans.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/init_amps.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/lmp2.cc
+    # ${CMAKE_CURRENT_SOURCE_DIR}/lmp2.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/local.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/mp2_energy.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/new_d1diag.cc

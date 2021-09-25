@@ -34,9 +34,9 @@
 #include <cstring>
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libpsio/psio.h"
+#include "psi4/cc/ccenergy/Local.h"
 #include "MOInfo.h"
 #include "Params.h"
-#include "Local.h"
 #define EXTERN
 #include "globals.h"
 
@@ -45,8 +45,6 @@ namespace ccresponse {
 
 void denom1(dpdfile2 *X1, double omega);
 void denom2(dpdbuf4 *X2, double omega);
-void local_filter_T1(dpdfile2 *T1);
-void local_filter_T2(dpdbuf4 *T2);
 
 void init_X(const char *pert, int irrep, double omega) {
     char lbl[32];
@@ -59,8 +57,14 @@ void init_X(const char *pert, int irrep, double omega) {
     if (!params.restart || !psio_tocscan(PSIF_CC_OEI, lbl)) {
         global_dpd_->file2_copy(&mu1, PSIF_CC_OEI, lbl);
         global_dpd_->file2_init(&X1, PSIF_CC_OEI, irrep, 0, 1, lbl);
-        if (params.local && local.filter_singles)
-            local_filter_T1(&X1);
+        if (params.local) {
+            Local_cc local_;
+            //if (local_.filter_singles) {
+            local_.nocc = *moinfo.occpi;
+            local_.nvir = *moinfo.virtpi;
+            local_.local_filter_T1(&X1);
+            //}
+        }
         else
             denom1(&X1, omega);
         global_dpd_->file2_close(&X1);
@@ -74,8 +78,12 @@ void init_X(const char *pert, int irrep, double omega) {
     if (!params.restart || !psio_tocscan(PSIF_CC_LR, lbl)) {
         global_dpd_->buf4_copy(&mu2, PSIF_CC_LR, lbl);
         global_dpd_->buf4_init(&X2, PSIF_CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
-        if (params.local)
-            local_filter_T2(&X2);
+        if (params.local) {
+            Local_cc local_;
+            local_.nocc = *moinfo.occpi;
+            local_.nvir = *moinfo.virtpi;
+            local_.local_filter_T2(&X2);
+        }
         else
             denom2(&X2, omega);
         global_dpd_->buf4_close(&X2);

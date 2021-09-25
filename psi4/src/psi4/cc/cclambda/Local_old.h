@@ -25,29 +25,45 @@
  *
  * @END LICENSE
  */
+#ifndef CCLAMBDA_LOCAL_H
+#define CCLAMBDA_LOCAL_H
 
 /*! \file
-    \ingroup ccresponse
+    \ingroup CCLAMBDA
     \brief Enter brief description of file here
 */
-#include "psi4/libdpd/dpd.h"
-#include "MOInfo.h"
-#include "Params.h"
-#define EXTERN
-#include "globals.h"
+
+#include <string>
 
 namespace psi {
-namespace ccresponse {
+namespace cclambda {
 
-void sort_lamps() {
-    dpdbuf4 L;
+struct Local {
+    int nso;
+    int nocc;
+    int nvir;
+    int *aostart;
+    int *aostop;
+    int **domain;
+    int **pairdomain;
+    int *pairdom_len;
+    int *pairdom_nrlen;
+    int *weak_pairs;
+    double ***V;
+    double ***W;
+    double *eps_occ;
+    double **eps_vir;
+    double cutoff;
+    std::string method;
+    std::string weakp;
+    int filter_singles;
+    double cphf_cutoff;
+    std::string freeze_core;
+    std::string pairdef;
 
-    /* RAK fixing this for new cclambda, assuming A1 ground lambda? */
-    global_dpd_->buf4_init(&L, PSIF_CC_LAMPS, 0, 0, 5, 0, 5, 0, "LIjAb 0 -1");
-    global_dpd_->buf4_scmcopy(&L, PSIF_CC_LAMPS, "2 LIjAb - LIjBa", 2);
-    global_dpd_->buf4_sort_axpy(&L, PSIF_CC_LAMPS, pqsr, 0, 5, "2 LIjAb - LIjBa", -1);
-    global_dpd_->buf4_close(&L);
-}
+};
 
-}  // namespace ccresponse
+}  // namespace cclambda
 }  // namespace psi
+
+#endif
