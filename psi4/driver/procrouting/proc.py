@@ -1475,7 +1475,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         ref_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
         core.set_legacy_wavefunction(ref_wfn)
 
-        # Compute dftd3
+        # Compute additive correction: dftd3, mp2d, dftd4, etc.
         if hasattr(ref_wfn, "_disp_functor"):
             disp_energy = ref_wfn._disp_functor.compute_energy(ref_wfn.molecule())
             ref_wfn.set_variable("-D Energy", disp_energy)
@@ -1577,7 +1577,7 @@ def scf_helper(name, post_scf=True, **kwargs):
     if core.get_option("SCF", "PRINT_BASIS"):
         scf_wfn.basisset().print_detail_out()
 
-    # Compute dftd3
+    # Compute additive correction: dftd3, mp2d, dftd4, etc.
     if hasattr(scf_wfn, "_disp_functor"):
         disp_energy = scf_wfn._disp_functor.compute_energy(scf_wfn.molecule(), scf_wfn)
         scf_wfn.set_variable("-D Energy", disp_energy)
