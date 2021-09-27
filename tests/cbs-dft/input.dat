@@ -12,7 +12,7 @@ H 0 1 0
 # Values converged to 1e-9
 ref_blyp_dt     = -76.434228968884
 ref_blyp_d3_dt  = -76.434235158884
-ref_b2plyp_d3_dt= -76.416397987029
+ref_b2plyp_d3_dt= -76.418310528476
 ref_b2plyp_naive= -76.402475256624
 ref_blyp_b2plyp = -76.387774735844
 ref_blyp_d3_dt_grad = psi4.core.Matrix.from_list(
@@ -23,6 +23,7 @@ ref_blyp_d3_dt_grad = psi4.core.Matrix.from_list(
 
 compare_values(ref_blyp_dt, energy('blyp/cc-pv[dt]z'), 7,           "BLYP/cc-[DT]")
 compare_values(ref_blyp_d3_dt, energy('blyp-d3/cc-pv[dt]z'), 7,     "BLYP-D3/cc-[DT]")
+E = energy('b2plyp-d3/cc-pv[dt]z')
 compare_values(ref_b2plyp_d3_dt, energy('b2plyp-d3/cc-pv[dt]z'), 7, "B2PLYP-D3/cc-[DT]")
 
 E = energy(cbs, cbs_metadata=[{'wfn': "b2plyp-d3", 'basis': "cc-pv[dt]z", 'component': "dft"}])

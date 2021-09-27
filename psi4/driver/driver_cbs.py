@@ -29,7 +29,7 @@
 import math
 import re
 import sys
-from typing import Callable, List, Union
+from typing import Callable, List, Union, Tuple
 
 import numpy as np
 
@@ -55,7 +55,7 @@ _lmh_labels = {
 }
 
 
-def _expand_bracketed_basis(basisstring: str, molecule: Union[qcdb.molecule.Molecule, core.Molecule] = None) -> tuple:
+def _expand_bracketed_basis(basisstring: str, molecule: Union[qcdb.molecule.Molecule, core.Molecule] = None) -> Tuple:
     """Function to transform and validate basis series specification for cbs().
 
     Parameters
@@ -192,7 +192,7 @@ def xtpl_highest_1(functionname: str,
 
     Returns
     -------
-    float
+    float, core.Matrix, core.Vector
         Returns :math:`E_{total}^{\infty}` which is equal to valueHI.
 
     Notes
@@ -243,12 +243,12 @@ def xtpl_exponential_2(functionname: str,
         Higher zeta level. Should be equal to zLO + 1.
     valueHI
         Higher value used for extrapolation.
-    alpha : float
+    alpha
         Extrapolation parameter :math:`\alpha`.
 
     Returns
     -------
-    float
+    float, core.Matrix, core.Vector
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -344,12 +344,12 @@ def xtpl_power_2(functionname: str,
         Higher zeta level. Should be equal to zLO + 1.
     valueHI
         Higher value used for extrapolation.
-    alpha : float
+    alpha
         Extrapolation parameter :math:`\alpha`.
 
     Returns
     -------
-    float
+    float, core.Matrix, core.Vector
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -445,17 +445,17 @@ def xtpl_expsqrt_2(functionname: str,
         Higher zeta level. Should be equal to zLO + 1.
     valueHI
         Higher value used for extrapolation.
-    alpha : float
+    alpha
         Extrapolation parameter :math:`\alpha`.
 
     Returns
     -------
-    float
+    float, core.Matrix, core.Vector
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
     -----
-    The extrapolation is calculated according to [3]_:
+    The extrapolation is calculated according to:
     :math:`E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha\sqrt{X}}`
 
     """
@@ -553,12 +553,12 @@ def xtpl_exponential_3(functionname: str,
         Higher zeta level. Should be equal to zLO + 2.
     valueHI
         Higher value used for extrapolation.
-    alpha : float
+    alpha
         Not used.
 
     Returns
     -------
-    float
+    float, core.Matrix, core.Vector
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -654,7 +654,7 @@ def scf_xtpl_helgaker_2(functionname: str,
 
     Returns
     -------
-    float
+    float, core.Matrix, core.Vector
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -707,7 +707,7 @@ def scf_xtpl_truhlar_2(functionname: str,
 
     Returns
     -------
-    float
+    float, core.Matrix, core.Vector
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -760,7 +760,7 @@ def scf_xtpl_karton_2(functionname: str,
 
     Returns
     -------
-    float
+    float, core.Matrix, core.Vector
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -819,7 +819,7 @@ def scf_xtpl_helgaker_3(functionname: str,
 
     Returns
     -------
-    float
+    float, core.Matrix, core.Vector
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -866,7 +866,7 @@ def corl_xtpl_helgaker_2(functionname: str,
 
     Returns
     -------
-    float
+    float, core.Matrix, core.Vector
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -1078,10 +1078,10 @@ def return_energy_components() -> dict:
         for mplevel2 in range(2, mplevel):
             VARH[f'mp{mplevel}'][f'mp{mplevel2}'] = f'MP{mplevel2} TOTAL ENERGY'
 
-    # Integrate CFOUR methods
+    # Incorporate CFOUR methods
     VARH.update(cfour_psivar_list())
 
-    # Integrate density functionals
+    # Incorporate density functionals
     for funcname in functionals:
         if funcname == "hf" or funcname == "scf":
             continue
@@ -1187,43 +1187,37 @@ def _get_dfa_alpha(xtpl_type: str, bdata: List, funcname: str) -> float:
     if funcname not in functionals:
         raise ValidationError(f"Functional name {funcname} is undefined.")
     elif xtpl_type == "fctl":
-        if len(set(["cc-pvdz", "cc-pvtz", "cc-pvqz", "cc-pv5z", "cc-pv6z"]).intersection(bnames)) >= 2:
+        if len({"cc-pvdz", "cc-pvtz", "cc-pvqz", "cc-pv5z", "cc-pv6z"}.intersection(bnames)) >= 2:
             alphadata = [3.622, 1.511, 0.005]
-        elif len(set(["cc-pwcvdz", "cc-pwcvtz", "cc-pwcvqz", "cc-pwcv5z"]).intersection(bnames)) >= 2:
+        elif len({"cc-pwcvdz", "cc-pwcvtz", "cc-pwcvqz", "cc-pwcv5z"}.intersection(bnames)) >= 2:
             alphadata = [4.157, 1.192, -0.048]
-        elif len(
-                set(["aug-cc-pvdz", "aug-cc-pvtz", "aug-cc-pvqz", "aug-cc-pv5z", "aug-cc-pv6z"
-                     ]).intersection(bnames)) >= 2:
+        elif len({"aug-cc-pvdz", "aug-cc-pvtz", "aug-cc-pvqz", "aug-cc-pv5z", "aug-cc-pv6z"}.intersection(bnames)) >= 2:
             alphadata = [3.676, 1.887, 0.139]
-        elif len(set(["aug-cc-pwcvdz", "aug-cc-pwcvtz", "aug-cc-pwcvqz", "aug-cc-pwcv5z"]).intersection(bnames)) >= 2:
+        elif len({"aug-cc-pwcvdz", "aug-cc-pwcvtz", "aug-cc-pwcvqz", "aug-cc-pwcv5z"}.intersection(bnames)) >= 2:
             alphadata = [4.485, 1.445, 0.085]
-        elif len(set(["def2-svp", "def2-tzvp", "def2-qzvp"]).intersection(bnames)) >= 2:
+        elif len({"def2-svp", "def2-tzvp", "def2-qzvp"}.intersection(bnames)) >= 2:
             alphadata = [7.406, 1.266, -0.046]
-        elif len(set(["def2-svp", "def2-tzvpp", "def2-qzvpp"]).intersection(bnames)) >= 2:
+        elif len({"def2-svp", "def2-tzvpp", "def2-qzvpp"}.intersection(bnames)) >= 2:
             alphadata = [7.408, 1.267, -0.046]
-        elif len(set(["def2-svpd", "def2-tzvpd", "def2-qzvpd"]).intersection(bnames)) >= 2:
+        elif len({"def2-svpd", "def2-tzvpd", "def2-qzvpd"}.intersection(bnames)) >= 2:
             alphadata = [7.925, 1.370, 0.101]
-        elif len(set(["def2-svpd", "def2-tzvppd", "def2-qzvppd"]).intersection(bnames)) >= 2:
+        elif len({"def2-svpd", "def2-tzvppd", "def2-qzvppd"}.intersection(bnames)) >= 2:
             alphadata = [7.927, 1.371, 0.101]
-        elif len(set(["pc-0", "pc-1", "pc-2", "pc-3", "pc-4"]).intersection(bnames)) >= 2:
+        elif len({"pc-0", "pc-1", "pc-2", "pc-3", "pc-4"}.intersection(bnames)) >= 2:
             alphadata = [6.172, -1.623, 0.183]
-        elif len(set(["pcseg-0", "pcseg-1", "pcseg-2", "pcseg-3", "pcseg-4"]).intersection(bnames)) >= 2:
+        elif len({"pcseg-0", "pcseg-1", "pcseg-2", "pcseg-3", "pcseg-4"}.intersection(bnames)) >= 2:
             alphadata = [5.883, -1.825, 0.227]
-        elif len(set(["aug-pc-0", "aug-pc-1", "aug-pc-2", "aug-pc-3", "aug-pc-4"]).intersection(bnames)) >= 2:
+        elif len({"aug-pc-0", "aug-pc-1", "aug-pc-2", "aug-pc-3", "aug-pc-4"}.intersection(bnames)) >= 2:
             alphadata = [6.390, -1.874, 0.260]
-        elif len(
-                set(["aug-pcseg-0", "aug-pcseg-1", "aug-pcseg-2", "aug-pcseg-3", "aug-pcseg-4"
-                     ]).intersection(bnames)) >= 2:
+        elif len({"aug-pcseg-0", "aug-pcseg-1", "aug-pcseg-2", "aug-pcseg-3", "aug-pcseg-4"}.intersection(bnames)) >= 2:
             alphadata = [6.166, -2.137, 0.296]
-        elif len(set(["jorge-dzp", "jorge-tzp", "jorge-qzp", "jorge-5zp", "jorge-6zp"]).intersection(bnames)) >= 2:
+        elif len({"jorge-dzp", "jorge-tzp", "jorge-qzp", "jorge-5zp", "jorge-6zp"}.intersection(bnames)) >= 2:
             alphadata = [3.531, 0.338, -0.011]
-        elif len(set(["jorge-adzp", "jorge-atzp", "jorge-aqzp", "jorge-a5zp"]).intersection(bnames)) >= 2:
+        elif len({"jorge-adzp", "jorge-atzp", "jorge-aqzp", "jorge-a5zp"}.intersection(bnames)) >= 2:
             alphadata = [3.386, 0.245, 0.033]
-        elif len(set(["2zapa-nr", "3zapa-nr", "4zapa-nr", "5zapa-nr", "6zapa-nr"]).intersection(bnames)) >= 2:
+        elif len({"2zapa-nr", "3zapa-nr", "4zapa-nr", "5zapa-nr", "6zapa-nr"}.intersection(bnames)) >= 2:
             alphadata = [3.306, 2.525, -0.040]
-        elif len(
-                set(["2zapa-nr-cv", "3zapa-nr-cv", "4zapa-nr-cv", "5zapa-nr-cv", "6zapa-nr-cv"
-                     ]).intersection(bnames)) >= 2:
+        elif len({"2zapa-nr-cv", "3zapa-nr-cv", "4zapa-nr-cv", "5zapa-nr-cv", "6zapa-nr-cv"}.intersection(bnames)) >= 2:
             alphadata = [5.618, 0.490, -0.016]
         else:
             raise ValidationError(f"DFT fctl extrapolation alpha for basis sets {bnames} undefined.")
@@ -1232,7 +1226,7 @@ def _get_dfa_alpha(xtpl_type: str, bdata: List, funcname: str) -> float:
         return alpha
     elif xtpl_type == "dh":
         if bzetas == [2, 3]:
-            return 2.4
+            return 2.2
         elif bzetas == [3, 4]:
             return 3.0
         else:
@@ -1244,7 +1238,8 @@ def _get_default_alpha(xtpl_type: Union[str, None], bdata: List, funcname: str =
 
     Parameters
     ----------
-    xtpl_type : {'scf', 'corl', 'fctl', 'dh', None}
+    xtpl_type :
+        {'scf', 'corl', 'fctl', 'dh', None}
         Extrapolation type: 'scf' and 'fctl' for the total energy, 'corl' and 'dh'
         for just the correlation component, None if no extrapolation requested.
     bdata
