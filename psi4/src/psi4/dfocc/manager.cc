@@ -91,8 +91,8 @@ void DFOCC::omp2_manager() {
         // Cost of Integral transform for DF-HF B(Q,ab)
         cost_ampAA = 0.0;
         cost_ampAA = nQ_ref * nso2_;
-        cost_ampAA += nQ_ref * navirA * navirA;
-        cost_ampAA += nQ_ref * nso_ * navirA;
+        cost_ampAA += (long long int)nQ_ref * (long long int)navirA * (long long int)navirA;
+        cost_ampAA += (long long int)nQ_ref * (long long int)nso_ * (long long int)navirA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for DF-HF int trans: %9.2lf MB \n", cost_ampAA);
@@ -106,7 +106,7 @@ void DFOCC::omp2_manager() {
 
         // DF-CC B(Q,ab)
         cost_ampAA = 0.0;
-        cost_ampAA = nQ * navirA * navirA;
+        cost_ampAA = (long long int)nQ * (long long int)navirA * (long long int)navirA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for B-CC (Q|ab)    : %9.2lf MB \n", cost_ampAA);
@@ -114,8 +114,8 @@ void DFOCC::omp2_manager() {
         // Cost of Integral transform for DF-CC B(Q,ab)
         cost_ampAA = 0.0;
         cost_ampAA = nQ * nso2_;
-        cost_ampAA += nQ * navirA * navirA;
-        cost_ampAA += nQ * nso_ * navirA;
+        cost_ampAA += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+        cost_ampAA += (long long int)nQ * (long long int)nso_ * (long long int)navirA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
@@ -428,7 +428,7 @@ void DFOCC::mp2_manager() {
 
         // DF-CC B(Q,ab)
         cost_ampAA = 0.0;
-        cost_ampAA = nQ * navirA * navirA;
+        cost_ampAA = (long long int)nQ * (long long int)navirA * (long long int)navirA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for B-CC (Q|ab)    : %9.2lf MB \n", cost_ampAA);
@@ -436,8 +436,8 @@ void DFOCC::mp2_manager() {
         // Cost of Integral transform for DF-CC B(Q,ab)
         cost_ampAA = 0.0;
         cost_ampAA = nQ * nso2_;
-        cost_ampAA += nQ * navirA * navirA;
-        cost_ampAA += nQ * nso_ * navirA;
+        cost_ampAA += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+        cost_ampAA += (long long int)nQ * (long long int)nso_ * (long long int)navirA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
@@ -612,9 +612,9 @@ void DFOCC::ccsd_manager() {
 
         // Cost of Integral transform for B(Q,ab)
         cost_ampAA = 0.0;
-        cost_ampAA = nQ * nso2_;
-        cost_ampAA += nQ * navirA * navirA;
-        cost_ampAA += nQ * nso_ * navirA;
+        cost_ampAA = (long long int)nQ * (long long int)nso2_;
+        cost_ampAA += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+        cost_ampAA += (long long int)nQ * (long long int)nso_ * (long long int)navirA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
@@ -663,19 +663,19 @@ void DFOCC::ccsd_manager() {
 
         // W_abef term
         double cost_amp1 = 0.0;
-        cost_amp1 = 2.5 * naoccA * naoccA * navirA * navirA;
-        cost_amp1 += nQ * navirA * navirA;
+        cost_amp1 = 2.5 * (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_amp1 += (long long int)nQ * (long long int)navirA * (long long int)navirA;
         cost_amp1 /= 1024.0 * 1024.0;
         cost_amp1 *= sizeof(double);
         double cost_amp2 = 0.0;
-        cost_amp2 = 1.5 * naoccA * naoccA * navirA * navirA;
-        cost_amp2 += 4.0 * nQ * navirA * navirA;
+        cost_amp2 = 1.5 * (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_amp2 += 4.0 * (long long int)nQ * (long long int)navirA * (long long int)navirA;
         cost_amp2 /= 1024.0 * 1024.0;
         cost_amp2 *= sizeof(double);
         double cost_amp3 = 0.0;
-        cost_amp3 = 2.0 * naoccA * naoccA * navirA * navirA;
-        cost_amp3 += 3.0 * nQ * navirA * navirA;
-        cost_amp3 += 2.0 * navirA * navirA * navirA;
+        cost_amp3 = 2.0 * (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_amp3 += 3.0 * (long long int)nQ * (long long int)navirA * (long long int)navirA;
+        cost_amp3 += 2.0 * (long long int)navirA * (long long int)navirA * (long long int)navirA;
         cost_amp3 /= 1024.0 * 1024.0;
         cost_amp3 *= sizeof(double);
         cost_amp = MAX0(cost_amp1, cost_amp2);
@@ -683,7 +683,7 @@ void DFOCC::ccsd_manager() {
         outfile->Printf("\tMemory requirement for Wabef term (T2): %9.2lf MB \n", cost_amp);
 
         if (cc_lambda_ == "TRUE") {
-            cost_amp1 = navirA * navirA * navirA;
+            cost_amp1 = (long long int)navirA * (long long int)navirA * (long long int)navirA;
             cost_amp1 /= 1024.0 * 1024.0;
             cost_amp += cost_amp1;
             outfile->Printf("\tMemory requirement for Wefab term (L2): %9.2lf MB \n", cost_amp);
@@ -737,13 +737,13 @@ void DFOCC::ccsd_manager() {
 
         // memory requirements
         cost_ampAA = 0.0;
-        cost_ampAA = naocc2AA * nvir2AA;
+        cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
-        cost_ampBB = naocc2BB * nvir2BB;
+        cost_ampBB = (long long int)naocc2BB * (long long int)nvir2BB;
         cost_ampBB /= 1024.0 * 1024.0;
         cost_ampBB *= sizeof(double);
-        cost_ampAB = naocc2AB * nvir2AB;
+        cost_ampAB = (long long int)naocc2AB * (long long int)nvir2AB;
         cost_ampAB /= 1024.0 * 1024.0;
         cost_ampAB *= sizeof(double);
         cost_amp = MAX0(cost_ampAA, cost_ampBB);
@@ -1018,16 +1018,16 @@ void DFOCC::ccsd_t_manager() {
 
         // Cost of Integral transform for B(Q,ab)
         cost_ampAA = 0.0;
-        cost_ampAA = nQ * nso2_;
-        cost_ampAA += nQ * navirA * navirA;
-        cost_ampAA += nQ * nso_ * navirA;
+        cost_ampAA = (long long int)nQ * (long long int)nso2_;
+        cost_ampAA += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+        cost_ampAA += (long long int)nQ * (long long int)nso_ * (long long int)navirA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
 
         // Mem for amplitudes
         cost_ampAA = 0.0;
-        cost_ampAA = naocc2AA * nvir2AA;
+        cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         cost_3amp = 3.0 * cost_ampAA;
@@ -1061,19 +1061,19 @@ void DFOCC::ccsd_t_manager() {
 
         // W_abef term
         double cost_amp1 = 0.0;
-        cost_amp1 = 2.5 * naoccA * naoccA * navirA * navirA;
-        cost_amp1 += nQ * navirA * navirA;
+        cost_amp1 = 2.5 * (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_amp1 += (long long int)nQ * (long long int)navirA * (long long int)navirA;
         cost_amp1 /= 1024.0 * 1024.0;
         cost_amp1 *= sizeof(double);
         double cost_amp2 = 0.0;
-        cost_amp2 = 1.5 * naoccA * naoccA * navirA * navirA;
-        cost_amp2 += 4.0 * nQ * navirA * navirA;
+        cost_amp2 = 1.5 * (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_amp2 += 4.0 * (long long int)nQ * (long long int)navirA * (long long int)navirA;
         cost_amp2 /= 1024.0 * 1024.0;
         cost_amp2 *= sizeof(double);
         double cost_amp3 = 0.0;
-        cost_amp3 = 2.0 * naoccA * naoccA * navirA * navirA;
-        cost_amp3 += 3.0 * nQ * navirA * navirA;
-        cost_amp3 += 2.0 * navirA * navirA * navirA;
+        cost_amp3 = 2.0 * (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_amp3 += 3.0 * (long long int)nQ * (long long int)navirA * (long long int)navirA;
+        cost_amp3 += 2.0 * (long long int)navirA * (long long int)navirA * (long long int)navirA;
         cost_amp3 /= 1024.0 * 1024.0;
         cost_amp3 *= sizeof(double);
         cost_amp = MAX0(cost_amp1, cost_amp2);
@@ -1081,7 +1081,7 @@ void DFOCC::ccsd_t_manager() {
         outfile->Printf("\tMemory requirement for Wabef term (T2): %9.2lf MB \n", cost_amp);
 
         if (cc_lambda_ == "TRUE") {
-            cost_amp1 = navirA * navirA * navirA;
+            cost_amp1 = (long long int)navirA * (long long int)navirA * (long long int)navirA;
             cost_amp1 /= 1024.0 * 1024.0;
             cost_amp += cost_amp1;
             outfile->Printf("\tMemory requirement for Wefab term (L2): %9.2lf MB \n", cost_amp);
@@ -1103,19 +1103,19 @@ void DFOCC::ccsd_t_manager() {
 
         // Memory for triples: 2*O^2V^2 + 5*V^3 + O^3V + V^2N + V^3/2
         cost_amp1 = 0.0;
-        cost_amp1 = 2.0 * naoccA * naoccA * navirA * navirA;
-        cost_amp1 += 5.0 * naoccA * navirA * navirA;
-        cost_amp1 += naoccA * naoccA * naoccA * navirA;
-        cost_amp1 += nQ * navirA * navirA;
-        cost_amp1 += navirA * ntri_abAA;
+        cost_amp1 = 2.0 * (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_amp1 += 5.0 * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_amp1 += (long long int)naoccA * (long long int)naoccA * (long long int)naoccA * (long long int)navirA;
+        cost_amp1 += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+        cost_amp1 += (long long int)navirA * (long long int)ntri_abAA;
         cost_amp1 /= 1024.0 * 1024.0;
         cost_amp1 *= sizeof(double);
         // Memory: OV^3 + 2*O^2V^2 + 2*V^3 + O^3V + V^2N
         cost_triples_iabc = 0.0;
-        cost_triples_iabc = 2.0 * naoccA * naoccA * navirA * navirA;
-        cost_triples_iabc += 5.0 * naoccA * navirA * navirA;
-        cost_triples_iabc += naoccA * naoccA * naoccA * navirA;
-        cost_triples_iabc += nQ * navirA * navirA;
+        cost_triples_iabc = 2.0 * (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_triples_iabc += 5.0 * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_triples_iabc += (long long int)naoccA * (long long int)naoccA * (long long int)naoccA * (long long int)navirA;
+        cost_triples_iabc += (long long int)nQ * (long long int)navirA * (long long int)navirA;
         cost_triples_iabc /= 1024.0 * 1024.0;
         cost_amp2 = 0.0;
         cost_amp2 = (navirA * navirA) / 1024.0;
@@ -1173,13 +1173,13 @@ void DFOCC::ccsd_t_manager() {
 
         // memory requirements
         cost_ampAA = 0.0;
-        cost_ampAA = naocc2AA * nvir2AA;
+        cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
-        cost_ampBB = naocc2BB * nvir2BB;
+        cost_ampBB = (long long int)naocc2BB * (long long int)nvir2BB;
         cost_ampBB /= 1024.0 * 1024.0;
         cost_ampBB *= sizeof(double);
-        cost_ampAB = naocc2AB * nvir2AB;
+        cost_ampAB = (long long int)naocc2AB * (long long int)nvir2AB;
         cost_ampAB /= 1024.0 * 1024.0;
         cost_ampAB *= sizeof(double);
         cost_amp = MAX0(cost_ampAA, cost_ampBB);
@@ -1508,16 +1508,16 @@ void DFOCC::ccsdl_t_manager() {
 
         // Cost of Integral transform for B(Q,ab)
         cost_ampAA = 0.0;
-        cost_ampAA = nQ * nso2_;
-        cost_ampAA += nQ * navirA * navirA;
-        cost_ampAA += nQ * nso_ * navirA;
+        cost_ampAA = (long long int)nQ * (long long int)nso2_;
+        cost_ampAA += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+        cost_ampAA += (long long int)nQ * (long long int)nso_ * (long long int)navirA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
 
         // Mem for amplitudes
         cost_ampAA = 0.0;
-        cost_ampAA = naocc2AA * nvir2AA;
+        cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         cost_3amp = 3.0 * cost_ampAA;
@@ -1559,19 +1559,19 @@ void DFOCC::ccsdl_t_manager() {
 
         // W_abef term
         double cost_amp1 = 0.0;
-        cost_amp1 = 2.5 * naoccA * naoccA * navirA * navirA;
-        cost_amp1 += nQ * navirA * navirA;
+        cost_amp1 = 2.5 * (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_amp1 += (long long int)nQ * (long long int)navirA * (long long int)navirA;
         cost_amp1 /= 1024.0 * 1024.0;
         cost_amp1 *= sizeof(double);
         double cost_amp2 = 0.0;
-        cost_amp2 = 1.5 * naoccA * naoccA * navirA * navirA;
-        cost_amp2 += 4.0 * nQ * navirA * navirA;
+        cost_amp2 = 1.5 * (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_amp2 += 4.0 * (long long int)nQ * (long long int)navirA * (long long int)navirA;
         cost_amp2 /= 1024.0 * 1024.0;
         cost_amp2 *= sizeof(double);
         double cost_amp3 = 0.0;
-        cost_amp3 = 2.0 * naoccA * naoccA * navirA * navirA;
-        cost_amp3 += 3.0 * nQ * navirA * navirA;
-        cost_amp3 += 2.0 * navirA * navirA * navirA;
+        cost_amp3 = 2.0 * (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_amp3 += 3.0 * (long long int)nQ * (long long int)navirA * (long long int)navirA;
+        cost_amp3 += 2.0 * (long long int)navirA * (long long int)navirA * (long long int)navirA;
         cost_amp3 /= 1024.0 * 1024.0;
         cost_amp3 *= sizeof(double);
         cost_amp = MAX0(cost_amp1, cost_amp2);
@@ -1579,7 +1579,7 @@ void DFOCC::ccsdl_t_manager() {
         outfile->Printf("\tMemory requirement for Wabef term (T2): %9.2lf MB \n", cost_amp);
 
         if (cc_lambda_ == "TRUE") {
-            cost_amp1 = navirA * navirA * navirA;
+            cost_amp1 = (long long int)navirA * (long long int)navirA * (long long int)navirA;
             cost_amp1 /= 1024.0 * 1024.0;
             cost_amp += cost_amp1;
             outfile->Printf("\tMemory requirement for Wefab term (L2): %9.2lf MB \n", cost_amp);
@@ -1603,11 +1603,11 @@ void DFOCC::ccsdl_t_manager() {
 
         // Memory for triples: 3*O^2V^2 + 5*V^3 + O^3V + V^2N + V^3/2
         cost_amp1 = 0.0;
-        cost_amp1 = 3.0 * naoccA * naoccA * navirA * navirA;
-        cost_amp1 += 5.0 * naoccA * navirA * navirA;
-        cost_amp1 += naoccA * naoccA * naoccA * navirA;
-        cost_amp1 += nQ * navirA * navirA;
-        cost_amp1 += navirA * ntri_abAA;
+        cost_amp1 = 3.0 * (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_amp1 += 5.0 * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_amp1 += (long long int)naoccA * (long long int)naoccA * (long long int)naoccA * (long long int)navirA;
+        cost_amp1 += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+        cost_amp1 += (long long int)navirA * (long long int)ntri_abAA;
         cost_amp1 /= 1024.0 * 1024.0;
         cost_amp1 *= sizeof(double);
         outfile->Printf("\tMemory requirement for (AT) correction : %9.2lf MB \n", cost_amp1);
@@ -1680,13 +1680,13 @@ void DFOCC::ccsdl_t_manager() {
 
         // memory requirements
         cost_ampAA = 0.0;
-        cost_ampAA = naocc2AA * nvir2AA;
+        cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
-        cost_ampBB = naocc2BB * nvir2BB;
+        cost_ampBB = (long long int)naocc2BB * (long long int)nvir2BB;
         cost_ampBB /= 1024.0 * 1024.0;
         cost_ampBB *= sizeof(double);
-        cost_ampAB = naocc2AB * nvir2AB;
+        cost_ampAB = (long long int)naocc2AB * (long long int)nvir2AB;
         cost_ampAB /= 1024.0 * 1024.0;
         cost_ampAB *= sizeof(double);
         cost_amp = MAX0(cost_ampAA, cost_ampBB);
@@ -1922,16 +1922,16 @@ void DFOCC::ccd_manager() {
 
         // Cost of Integral transform for B(Q,ab)
         cost_ampAA = 0.0;
-        cost_ampAA = nQ * nso2_;
-        cost_ampAA += nQ * navirA * navirA;
-        cost_ampAA += nQ * nso_ * navirA;
+        cost_ampAA = (long long int)nQ * (long long int)nso2_;
+        cost_ampAA += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+        cost_ampAA += (long long int)nQ * (long long int)nso_ * (long long int)navirA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
 
         // Mem for amplitudes
         cost_ampAA = 0.0;
-        cost_ampAA = naocc2AA * nvir2AA;
+        cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         cost_3amp = 3.0 * cost_ampAA;
@@ -1973,15 +1973,15 @@ void DFOCC::ccd_manager() {
 
         // W_abef term
         cost_ampAA = 0.0;
-        cost_ampAA = naoccA * naoccA * navirA * navirA;
-        cost_ampAA += 2.0 * nQ * navirA * navirA;
-        cost_ampAA += navirA * navirA * navirA;
+        cost_ampAA = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_ampAA += 2.0 * (long long int)nQ * (long long int)navirA * (long long int)navirA;
+        cost_ampAA += (long long int)navirA * (long long int)navirA * (long long int)navirA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         double cost_ampAA2 = 0.0;
-        cost_ampAA2 = naoccA * naoccA * navirA * navirA;
-        cost_ampAA2 += nQ * navirA * navirA;
-        cost_ampAA2 += 3.0 * navirA * navirA * navirA;
+        cost_ampAA2 = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+        cost_ampAA2 += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+        cost_ampAA2 += 3.0 * (long long int)navirA * (long long int)navirA * (long long int)navirA;
         cost_ampAA2 /= 1024.0 * 1024.0;
         cost_ampAA2 *= sizeof(double);
         cost_amp = MAX0(cost_ampAA, cost_ampAA2);
@@ -2016,13 +2016,13 @@ void DFOCC::ccd_manager() {
     else if (reference_ == "UNRESTRICTED") {
         // memory requirements
         cost_ampAA = 0.0;
-        cost_ampAA = naocc2AA * nvir2AA;
+        cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
-        cost_ampBB = naocc2BB * nvir2BB;
+        cost_ampBB = (long long int)naocc2BB * (long long int)nvir2BB;
         cost_ampBB /= 1024.0 * 1024.0;
         cost_ampBB *= sizeof(double);
-        cost_ampAB = naocc2AB * nvir2AB;
+        cost_ampAB = (long long int)naocc2AB * (long long int)nvir2AB;
         cost_ampAB /= 1024.0 * 1024.0;
         cost_ampAB *= sizeof(double);
         cost_amp = MAX0(cost_ampAA, cost_ampBB);
@@ -2227,16 +2227,16 @@ void DFOCC::omp3_manager() {
 
     // Cost of Integral transform for B(Q,ab)
     cost_ampAA = 0.0;
-    cost_ampAA = nQ * nso2_;
-    cost_ampAA += nQ * navirA * navirA;
-    cost_ampAA += nQ * nso_ * navirA;
+    cost_ampAA = (long long int)nQ * (long long int)nso2_;
+    cost_ampAA += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += (long long int)nQ * (long long int)nso_ * (long long int)navirA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
 
     // Mem for amplitudes
     cost_ampAA = 0.0;
-    cost_ampAA = naocc2AA * nvir2AA;
+    cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     cost_3amp = 3.0 * cost_ampAA;
@@ -2270,15 +2270,15 @@ void DFOCC::omp3_manager() {
 
     // W_abef term
     cost_ampAA = 0.0;
-    cost_ampAA = naoccA * naoccA * navirA * navirA;
-    cost_ampAA += 2.0 * nQ * navirA * navirA;
-    cost_ampAA += navirA * navirA * navirA;
+    cost_ampAA = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += 2.0 * (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += (long long int)navirA * (long long int)navirA * (long long int)navirA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     double cost_ampAA2 = 0.0;
-    cost_ampAA2 = naoccA * naoccA * navirA * navirA;
-    cost_ampAA2 += nQ * navirA * navirA;
-    cost_ampAA2 += 3.0 * navirA * navirA * navirA;
+    cost_ampAA2 = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+    cost_ampAA2 += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA2 += 3.0 * (long long int)navirA * (long long int)navirA * (long long int)navirA;
     cost_ampAA2 /= 1024.0 * 1024.0;
     cost_ampAA2 *= sizeof(double);
     cost_amp = MAX0(cost_ampAA, cost_ampAA2);
@@ -2533,16 +2533,16 @@ void DFOCC::mp3_manager() {
 
     // Cost of Integral transform for B(Q,ab)
     cost_ampAA = 0.0;
-    cost_ampAA = nQ * nso2_;
-    cost_ampAA += nQ * navirA * navirA;
-    cost_ampAA += nQ * nso_ * navirA;
+    cost_ampAA = (long long int)nQ * (long long int)nso2_;
+    cost_ampAA += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += (long long int)nQ * (long long int)nso_ * (long long int)navirA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
 
     // Mem for amplitudes
     cost_ampAA = 0.0;
-    cost_ampAA = naocc2AA * nvir2AA;
+    cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     cost_3amp = 3.0 * cost_ampAA;
@@ -2576,15 +2576,15 @@ void DFOCC::mp3_manager() {
 
     // W_abef term
     cost_ampAA = 0.0;
-    cost_ampAA = naoccA * naoccA * navirA * navirA;
-    cost_ampAA += 2.0 * nQ * navirA * navirA;
-    cost_ampAA += navirA * navirA * navirA;
+    cost_ampAA = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += 2.0 * (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += (long long int)navirA * (long long int)navirA * (long long int)navirA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     double cost_ampAA2 = 0.0;
-    cost_ampAA2 = naoccA * naoccA * navirA * navirA;
-    cost_ampAA2 += nQ * navirA * navirA;
-    cost_ampAA2 += 3.0 * navirA * navirA * navirA;
+    cost_ampAA2 = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+    cost_ampAA2 += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA2 += 3.0 * (long long int)navirA * (long long int)navirA * (long long int)navirA;
     cost_ampAA2 /= 1024.0 * 1024.0;
     cost_ampAA2 *= sizeof(double);
     cost_amp = MAX0(cost_ampAA, cost_ampAA2);
@@ -2838,16 +2838,16 @@ void DFOCC::omp2_5_manager() {
 
     // Cost of Integral transform for B(Q,ab)
     cost_ampAA = 0.0;
-    cost_ampAA = nQ * nso2_;
-    cost_ampAA += nQ * navirA * navirA;
-    cost_ampAA += nQ * nso_ * navirA;
+    cost_ampAA = (long long int)nQ * (long long int)nso2_;
+    cost_ampAA += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += (long long int)nQ * (long long int)nso_ * (long long int)navirA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
 
     // Mem for amplitudes
     cost_ampAA = 0.0;
-    cost_ampAA = naocc2AA * nvir2AA;
+    cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     cost_3amp = 3.0 * cost_ampAA;
@@ -2881,15 +2881,15 @@ void DFOCC::omp2_5_manager() {
 
     // W_abef term
     cost_ampAA = 0.0;
-    cost_ampAA = naoccA * naoccA * navirA * navirA;
-    cost_ampAA += 2.0 * nQ * navirA * navirA;
-    cost_ampAA += navirA * navirA * navirA;
+    cost_ampAA = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += 2.0 * (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += (long long int)navirA * (long long int)navirA * (long long int)navirA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     double cost_ampAA2 = 0.0;
-    cost_ampAA2 = naoccA * naoccA * navirA * navirA;
-    cost_ampAA2 += nQ * navirA * navirA;
-    cost_ampAA2 += 3.0 * navirA * navirA * navirA;
+    cost_ampAA2 = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+    cost_ampAA2 += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA2 += 3.0 * (long long int)navirA * (long long int)navirA * (long long int)navirA;
     cost_ampAA2 /= 1024.0 * 1024.0;
     cost_ampAA2 *= sizeof(double);
     cost_amp = MAX0(cost_ampAA, cost_ampAA2);
@@ -3143,16 +3143,16 @@ void DFOCC::mp2_5_manager() {
 
     // Cost of Integral transform for B(Q,ab)
     cost_ampAA = 0.0;
-    cost_ampAA = nQ * nso2_;
-    cost_ampAA += nQ * navirA * navirA;
-    cost_ampAA += nQ * nso_ * navirA;
+    cost_ampAA = (long long int)nQ * (long long int)nso2_;
+    cost_ampAA += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += (long long int)nQ * (long long int)nso_ * (long long int)navirA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
 
     // Mem for amplitudes
     cost_ampAA = 0.0;
-    cost_ampAA = naocc2AA * nvir2AA;
+    cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     cost_3amp = 3.0 * cost_ampAA;
@@ -3186,15 +3186,15 @@ void DFOCC::mp2_5_manager() {
 
     // W_abef term
     cost_ampAA = 0.0;
-    cost_ampAA = naoccA * naoccA * navirA * navirA;
-    cost_ampAA += 2.0 * nQ * navirA * navirA;
-    cost_ampAA += navirA * navirA * navirA;
+    cost_ampAA = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += 2.0 * (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += (long long int)navirA * (long long int)navirA * (long long int)navirA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     double cost_ampAA2 = 0.0;
-    cost_ampAA2 = naoccA * naoccA * navirA * navirA;
-    cost_ampAA2 += nQ * navirA * navirA;
-    cost_ampAA2 += 3.0 * navirA * navirA * navirA;
+    cost_ampAA2 = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+    cost_ampAA2 += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA2 += 3.0 * (long long int)navirA * (long long int)navirA * (long long int)navirA;
     cost_ampAA2 /= 1024.0 * 1024.0;
     cost_ampAA2 *= sizeof(double);
     cost_amp = MAX0(cost_ampAA, cost_ampAA2);
@@ -3424,16 +3424,16 @@ void DFOCC::olccd_manager() {
 
     // Cost of Integral transform for B(Q,ab)
     cost_ampAA = 0.0;
-    cost_ampAA = nQ * nso2_;
-    cost_ampAA += nQ * navirA * navirA;
-    cost_ampAA += nQ * nso_ * navirA;
+    cost_ampAA = (long long int)nQ * (long long int)nso2_;
+    cost_ampAA += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += (long long int)nQ * (long long int)nso_ * (long long int)navirA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
 
     // Mem for amplitudes
     cost_ampAA = 0.0;
-    cost_ampAA = naocc2AA * nvir2AA;
+    cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     cost_3amp = 3.0 * cost_ampAA;
@@ -3467,15 +3467,15 @@ void DFOCC::olccd_manager() {
 
     // W_abef term
     cost_ampAA = 0.0;
-    cost_ampAA = naoccA * naoccA * navirA * navirA;
-    cost_ampAA += 2.0 * nQ * navirA * navirA;
-    cost_ampAA += navirA * navirA * navirA;
+    cost_ampAA = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += 2.0 * (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += (long long int)navirA * (long long int)navirA * (long long int)navirA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     double cost_ampAA2 = 0.0;
-    cost_ampAA2 = naoccA * naoccA * navirA * navirA;
-    cost_ampAA2 += nQ * navirA * navirA;
-    cost_ampAA2 += 3.0 * navirA * navirA * navirA;
+    cost_ampAA2 = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+    cost_ampAA2 += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA2 += 3.0 * (long long int)navirA * (long long int)navirA * (long long int)navirA;
     cost_ampAA2 /= 1024.0 * 1024.0;
     cost_ampAA2 *= sizeof(double);
     cost_amp = MAX0(cost_ampAA, cost_ampAA2);
@@ -3714,16 +3714,16 @@ void DFOCC::lccd_manager() {
 
     // Cost of Integral transform for B(Q,ab)
     cost_ampAA = 0.0;
-    cost_ampAA = nQ * nso2_;
-    cost_ampAA += nQ * navirA * navirA;
-    cost_ampAA += nQ * nso_ * navirA;
+    cost_ampAA = (long long int)nQ * (long long int)nso2_;
+    cost_ampAA += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += (long long int)nQ * (long long int)nso_ * (long long int)navirA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
 
     // Mem for amplitudes
     cost_ampAA = 0.0;
-    cost_ampAA = naocc2AA * nvir2AA;
+    cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     cost_3amp = 3.0 * cost_ampAA;
@@ -3757,15 +3757,15 @@ void DFOCC::lccd_manager() {
 
     // W_abef term
     cost_ampAA = 0.0;
-    cost_ampAA = naoccA * naoccA * navirA * navirA;
-    cost_ampAA += 2.0 * nQ * navirA * navirA;
-    cost_ampAA += navirA * navirA * navirA;
+    cost_ampAA = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += 2.0 * (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += (long long int)navirA * (long long int)navirA * (long long int)navirA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     double cost_ampAA2 = 0.0;
-    cost_ampAA2 = naoccA * naoccA * navirA * navirA;
-    cost_ampAA2 += nQ * navirA * navirA;
-    cost_ampAA2 += 3.0 * navirA * navirA * navirA;
+    cost_ampAA2 = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+    cost_ampAA2 += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA2 += 3.0 * (long long int)navirA * (long long int)navirA * (long long int)navirA;
     cost_ampAA2 /= 1024.0 * 1024.0;
     cost_ampAA2 *= sizeof(double);
     cost_amp = MAX0(cost_ampAA, cost_ampAA2);
@@ -3972,16 +3972,16 @@ void DFOCC::oremp_manager() {
 
     // Cost of Integral transform for B(Q,ab)
     cost_ampAA = 0.0;
-    cost_ampAA = nQ * nso2_;
-    cost_ampAA += nQ * navirA * navirA;
-    cost_ampAA += nQ * nso_ * navirA;
+    cost_ampAA = (long long int)nQ * (long long int)nso2_;
+    cost_ampAA += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += (long long int)nQ * (long long int)nso_ * (long long int)navirA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
 
     // Mem for amplitudes
     cost_ampAA = 0.0;
-    cost_ampAA = naocc2AA * nvir2AA;
+    cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     cost_3amp = 3.0 * cost_ampAA;
@@ -4015,15 +4015,15 @@ void DFOCC::oremp_manager() {
 
     // W_abef term
     cost_ampAA = 0.0;
-    cost_ampAA = naoccA * naoccA * navirA * navirA;
-    cost_ampAA += 2.0 * nQ * navirA * navirA;
-    cost_ampAA += navirA * navirA * navirA;
+    cost_ampAA = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += 2.0 * (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += (long long int)navirA * (long long int)navirA * (long long int)navirA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     double cost_ampAA2 = 0.0;
-    cost_ampAA2 = naoccA * naoccA * navirA * navirA;
-    cost_ampAA2 += nQ * navirA * navirA;
-    cost_ampAA2 += 3.0 * navirA * navirA * navirA;
+    cost_ampAA2 = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+    cost_ampAA2 += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA2 += 3.0 * (long long int)navirA * (long long int)navirA * (long long int)navirA;
     cost_ampAA2 /= 1024.0 * 1024.0;
     cost_ampAA2 *= sizeof(double);
     cost_amp = MAX0(cost_ampAA, cost_ampAA2);
@@ -4244,16 +4244,16 @@ void DFOCC::remp_manager() {
 
     // Cost of Integral transform for B(Q,ab)
     cost_ampAA = 0.0;
-    cost_ampAA = nQ * nso2_;
-    cost_ampAA += nQ * navirA * navirA;
-    cost_ampAA += nQ * nso_ * navirA;
+    cost_ampAA = (long long int)nQ * (long long int)nso2_;
+    cost_ampAA += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += (long long int)nQ * (long long int)nso_ * (long long int)navirA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
 
     // Mem for amplitudes
     cost_ampAA = 0.0;
-    cost_ampAA = naocc2AA * nvir2AA;
+    cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     cost_3amp = 3.0 * cost_ampAA;
@@ -4287,15 +4287,15 @@ void DFOCC::remp_manager() {
 
     // W_abef term
     cost_ampAA = 0.0;
-    cost_ampAA = naoccA * naoccA * navirA * navirA;
-    cost_ampAA += 2.0 * nQ * navirA * navirA;
-    cost_ampAA += navirA * navirA * navirA;
+    cost_ampAA = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += 2.0 * (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA += (long long int)navirA * (long long int)navirA * (long long int)navirA;
     cost_ampAA /= 1024.0 * 1024.0;
     cost_ampAA *= sizeof(double);
     double cost_ampAA2 = 0.0;
-    cost_ampAA2 = naoccA * naoccA * navirA * navirA;
-    cost_ampAA2 += nQ * navirA * navirA;
-    cost_ampAA2 += 3.0 * navirA * navirA * navirA;
+    cost_ampAA2 = (long long int)naoccA * (long long int)naoccA * (long long int)navirA * (long long int)navirA;
+    cost_ampAA2 += (long long int)nQ * (long long int)navirA * (long long int)navirA;
+    cost_ampAA2 += 3.0 * (long long int)navirA * (long long int)navirA * (long long int)navirA;
     cost_ampAA2 /= 1024.0 * 1024.0;
     cost_ampAA2 *= sizeof(double);
     cost_amp = MAX0(cost_ampAA, cost_ampAA2);
@@ -4387,7 +4387,7 @@ void DFOCC::remp_manager() {
 
     energy_ = Eremp;
     variables_["CURRENT ENERGY"] = Eremp;
-    variables_["LCCD TOTAL ENERGY"] = Eremp;
+    variables_["REMP TOTAL ENERGY"] = Eremp;
 
     variables_["CURRENT REFERENCE ENERGY"] = Escf;
     variables_["CURRENT CORRELATION ENERGY"] = Eremp - Escf;
@@ -4466,23 +4466,23 @@ void DFOCC::qchf_manager() {
         // memory requirements
         // DF-CC B(Q,mn)
         cost_ampAA = 0.0;
-        cost_ampAA = nQ_ref * nso2_;
+        cost_ampAA = (long long int)nQ_ref * (long long int)nso2_;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for B-CC (Q|mu nu) : %9.2lf MB \n", cost_ampAA);
 
         // DF-CC B(Q,ab)
         cost_ampAA = 0.0;
-        cost_ampAA = nQ_ref * navirA * navirA;
+        cost_ampAA = (long long int)nQ_ref * (long long int)navirA * (long long int)navirA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for B-CC (Q|ab)    : %9.2lf MB \n", cost_ampAA);
 
         // Cost of Integral transform for DF-CC B(Q,ab)
         cost_ampAA = 0.0;
-        cost_ampAA = nQ_ref * nso2_;
-        cost_ampAA += nQ_ref * navirA * navirA;
-        cost_ampAA += nQ_ref * nso_ * navirA;
+        cost_ampAA = (long long int)nQ_ref * (long long int)nso2_;
+        cost_ampAA += (long long int)nQ_ref * (long long int)navirA * (long long int)navirA;
+        cost_ampAA += (long long int)nQ_ref * (long long int)nso_ * (long long int)navirA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         outfile->Printf("\tMemory requirement for DF-CC int trans: %9.2lf MB \n", cost_ampAA);
