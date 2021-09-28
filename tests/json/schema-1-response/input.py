@@ -302,7 +302,7 @@ expected_response = {
   ]
 }
 
-expected_response = {k: (np.asarray(v) if isinstance(v, List) else v) for k, v in expected_response.items()}
+expected_response = {k: (np.asarray(v) if isinstance(v, list) else v) for k, v in expected_response.items()}
 
 json_ret = psi4.schema_wrapper.run_qcschema(json_data).dict()
 
