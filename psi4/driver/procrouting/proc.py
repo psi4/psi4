@@ -4575,7 +4575,7 @@ def run_mrcc(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
-    vscf = core.variable('SCF TOTAL ENERGY')
+    vscf = ref_wfn.variable('SCF TOTAL ENERGY')
 
     # The parse_arbitrary_order method provides us the following information
     # We require that level be provided. level is a dictionary
