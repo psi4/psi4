@@ -302,23 +302,9 @@ expected_response = {
   ]
 }
 
-# Convert lists to np arrays
-arrays = [
-    'CC2 DIPOLE', 'CC2 QUADRUPOLE', 'CC2 DIPOLE POLARIZABILITY TENSOR @ 355NM',
-    'CC2 DIPOLE POLARIZABILITY TENSOR @ 439NM', 'CC2 OPTICAL ROTATION TENSOR (MVG) @ 355NM',
-    'CC2 OPTICAL ROTATION TENSOR (MVG) @ 439NM', 'CC2 OPTICAL ROTATION TENSOR (VEL) @ 0NM',
-    'CC2 OPTICAL ROTATION TENSOR (VEL) @ 355NM', 'CC2 OPTICAL ROTATION TENSOR (VEL) @ 439NM',
-    'CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 0 @ 355NM',
-    'CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 0 @ 439NM',
-    'CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 1 @ 355NM',
-    'CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 1 @ 439NM',
-    'CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 2 @ 355NM',
-    'CC2 QUADRUPOLE POLARIZABILITY TENSOR COMPONENT 2 @ 439NM'
-]
-for a in arrays:
-    expected_response[a] = np.asarray(expected_response[a])
+expected_response = {k: (np.asarray(v) if isinstance(v, List) else v) for k, v in expected_response.items()}
 
-json_ret = psi4.json_wrapper.run_qcschema(json_data).dict()
+json_ret = psi4.schema_wrapper.run_qcschema(json_data).dict()
 
 psi4.compare_integers(True, json_ret["success"], "JSON Success")  #TEST
 psi4.compare_strings("qcschema_output", json_ret["schema_name"], "Schema Name")  #TEST
