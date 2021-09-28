@@ -41,6 +41,7 @@
 #include <omp.h>
 #endif
 
+#include <memory>
 #include "psi4/psi4-dec.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libfock/jk.h"
@@ -1411,9 +1412,7 @@ double* DFHelper::metric_prep_core(double m_pow) {
     if (!on) {
         power = m_pow;
         SharedMatrix J = metrics_[1.0];
-        if (fabs(m_pow + 1.0) < 1e-13) {
-            J->general_invert();
-        } else if ( fabs(m_pow - 1.0) < 1e-13 ) {
+        if ( fabs(m_pow - 1.0) < 1e-13 ) {
             return J->pointer()[0];
         } else {
             J->power(power, condition_);
@@ -1435,7 +1434,6 @@ void DFHelper::prepare_metric() {
     filename.append(std::to_string(1.0));
     filename_maker(filename, naux_, naux_, 1);
     metric_keys_.push_back(std::make_pair(1.0, filename));
-
     // store
     std::string putf = std::get<0>(files_[filename]);
     put_tensor(putf, Mp, 0, naux_ - 1, 0, naux_ - 1, "wb");
@@ -1466,11 +1464,7 @@ std::string DFHelper::compute_metric(double m_pow) {
 
         // get and compute
         get_tensor_(std::get<0>(files_[filename]), metp, 0, naux_ - 1, 0, naux_ - 1);
-        if (std::fabs(m_pow + 1.0) < 1e-13) { 
-            metric->general_invert();
-        } else { 
-            metric->power(m_pow, condition_);
-        }
+        metric->power(m_pow, condition_);
 
         // make new file
         std::string name = "metric";
@@ -3279,6 +3273,7 @@ void DFHelper::compute_J_combined(std::vector<SharedMatrix> D, std::vector<Share
         for (size_t k = 1; k < nthreads_; k++) {
             for (size_t l = 0; l < naux_; l++) { T1p[l] += T1p[ k * naux_ + l ]; }
         }
+
         //metric contraction
         C_DGEMV('N', naux_, naux_, 1.0, coul_metp, naux_, T1p, 1, 0.0, T2p, 1);
 
