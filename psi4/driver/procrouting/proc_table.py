@@ -269,5 +269,8 @@ for ssuper in interface_cfour.cfour_list():
 for ssuper in interface_cfour.cfour_gradient_list():
     procedures['gradient'][ssuper.lower()] = interface_cfour.run_cfour
 
+for ssuper in interface_cfour.cfour_hessian_list():
+    procedures['hessian'][ssuper.lower()] = interface_cfour.run_cfour
+
 # dictionary to register pre- and post-compute hooks for driver routines
 hooks = dict((k1, dict((k2, []) for k2 in ['pre', 'post'])) for k1 in ['energy', 'optimize', 'frequency'])

@@ -2574,6 +2574,12 @@ def run_scf_hessian(name, **kwargs):
 
     # Clearly, add some logic when the reach of this fn expands
     ref_wfn.set_variable("HF TOTAL HESSIAN", H)  # P::e SCF
+    ref_wfn.set_variable("SCF TOTAL HESSIAN", H)  # P::e SCF
+    core.set_variable("SCF TOTAL HESSIAN", H)  # P::e SCF
+
+    # Shove variables into global space
+    for k, v in ref_wfn.variables().items():
+        core.set_variable(k, v)
 
     optstash.restore()
     return ref_wfn

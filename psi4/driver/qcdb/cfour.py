@@ -48,13 +48,17 @@ def harvest_output(outtext):
     divided by xjoda.
 
     """
+    import qcengine as qcng
+
     pass_psivar = []
     pass_coord = []
     pass_grad = []
 
     #for outpass in re.split(r'--invoking executable xjoda', outtext, re.MULTILINE):
     for outpass in re.split(r'JODA beginning optimization cycle', outtext, re.MULTILINE):
-        psivar, c4coord, c4grad = harvest_outfile_pass(outpass)
+        psivar, qcskcoord, c4grad, version, module, error = qcng.programs.cfour.harvester.harvest_outfile_pass(outpass)
+        c4coord = Molecule.from_schema(qcskcoord.dict())
+
         pass_psivar.append(psivar)
         pass_coord.append(c4coord)
         pass_grad.append(c4grad)
@@ -80,9 +84,12 @@ def harvest_output(outtext):
     return pass_psivar[retindx], pass_coord[retindx], pass_grad[retindx]
 
 
-def harvest_outfile_pass(outtext):
+def local_harvest_outfile_pass(outtext):
     """Function to read CFOUR output file *outtext* and parse important
-    quantum chemical information from it in
+    quantum chemical information from it.
+
+    c. Sept 2021, this fn is now defunct. The more capable fn `harvest_outfile_pass`
+      from QCEngine is now called instead.
 
     """
     psivar = PreservingDict()
@@ -533,6 +540,10 @@ def harvest_outfile_pass(outtext):
 #        psivar['CURRENT CORRELATION ENERGY'] = psivar['%s CORRELATION ENERGY' % (mobj.group('fullCC')]
 #        psivar['CURRENT ENERGY'] = psivar['%s TOTAL ENERGY' % (mobj.group('fullCC')]
 
+    if 'CCD TOTAL ENERGY' in psivar and 'CCD CORRELATION ENERGY' in psivar:
+        psivar['CURRENT CORRELATION ENERGY'] = psivar['CCD CORRELATION ENERGY']
+        psivar['CURRENT ENERGY'] = psivar['CCD TOTAL ENERGY']
+
     if 'CC2 TOTAL ENERGY' in psivar and 'CC2 CORRELATION ENERGY' in psivar:
         psivar['CURRENT CORRELATION ENERGY'] = psivar['CC2 CORRELATION ENERGY']
         psivar['CURRENT ENERGY'] = psivar['CC2 TOTAL ENERGY']
@@ -548,6 +559,10 @@ def harvest_outfile_pass(outtext):
     if 'CC3 TOTAL ENERGY' in psivar and 'CC3 CORRELATION ENERGY' in psivar:
         psivar['CURRENT CORRELATION ENERGY'] = psivar['CC3 CORRELATION ENERGY']
         psivar['CURRENT ENERGY'] = psivar['CC3 TOTAL ENERGY']
+
+    if 'CCSDT-3 TOTAL ENERGY' in psivar and 'CCSDT-3 CORRELATION ENERGY' in psivar:
+        psivar['CURRENT CORRELATION ENERGY'] = psivar['CCSDT-3 CORRELATION ENERGY']
+        psivar['CURRENT ENERGY'] = psivar['CCSDT-3 TOTAL ENERGY']
 
     if 'CCSDT TOTAL ENERGY' in psivar and 'CCSDT CORRELATION ENERGY' in psivar:
         psivar['CURRENT CORRELATION ENERGY'] = psivar['CCSDT CORRELATION ENERGY']
@@ -933,8 +948,14 @@ def muster_modelchem(name, dertype):
     elif lowername == 'c4-mp4':
         options['CFOUR']['CFOUR_CALC_LEVEL']['value'] = 'MP4'
 
+    elif lowername == 'c4-lccd':
+        options['CFOUR']['CFOUR_CALC_LEVEL']['value'] = 'LCCD'
+
     elif lowername == 'c4-cc2':
         options['CFOUR']['CFOUR_CALC_LEVEL']['value'] = 'CC2'
+
+    elif lowername == 'c4-ccd':
+        options['CFOUR']['CFOUR_CALC_LEVEL']['value'] = 'CCD'
 
     elif lowername == 'c4-ccsd':
         options['CFOUR']['CFOUR_CALC_LEVEL']['value'] = 'CCSD'
@@ -948,6 +969,18 @@ def muster_modelchem(name, dertype):
         #options['CFOUR']['CFOUR_CALC_LEVEL']['value'] = 'CCSD(T)'
         options['CFOUR']['CFOUR_CALC_LEVEL']['value'] = 'CCSD[T]'
         options['CFOUR']['CFOUR_CC_PROGRAM']['value'] = 'ECC'
+
+    elif lowername == 'c4-ccsdt-1a':
+        options['CFOUR']['CFOUR_CALC_LEVEL']['value'] = 'CCSDT-1'
+
+    elif lowername == 'c4-ccsdt-1b':
+        options['CFOUR']['CFOUR_CALC_LEVEL']['value'] = 'CCSDT-1b'
+
+    elif lowername == 'c4-ccsdt-2':
+        options['CFOUR']['CFOUR_CALC_LEVEL']['value'] = 'CCSDT-2'
+
+    elif lowername == 'c4-ccsdt-3':
+        options['CFOUR']['CFOUR_CALC_LEVEL']['value'] = 'CCSDT-3'
 
     elif lowername == 'c4-ccsdt':
         options['CFOUR']['CFOUR_CALC_LEVEL']['value'] = 'CCSDT'
@@ -990,10 +1023,16 @@ def cfour_list():
     val.append('c4-mp3')
     val.append('c4-mp4(sdq)')
     val.append('c4-mp4')
+    val.append("c4-lccd")
     val.append('c4-cc2')
+    val.append("c4-ccd")
     val.append('c4-ccsd')
     val.append('c4-cc3')
     val.append('c4-ccsd(t)')
+    val.append('c4-ccsdt-1a')
+    val.append('c4-ccsdt-1b')
+    val.append('c4-ccsdt-2')
+    val.append('c4-ccsdt-3')
     val.append('c4-ccsdt')
     val.append('c4-ccsdt(q)')
     val.append('c4-ccsdtq')
@@ -1013,11 +1052,31 @@ def cfour_gradient_list():
     val.append('c4-mp3')
     val.append('c4-mp4(sdq)')
     val.append('c4-mp4')
+    val.append("c4-lccd")
     val.append('c4-cc2')
+    val.append('c4-ccd')
     val.append('c4-ccsd')
     val.append('c4-cc3')
     val.append('c4-ccsd(t)')
+    val.append('c4-ccsdt-1a')
+    val.append('c4-ccsdt-1b')
+    val.append('c4-ccsdt-2')
+    val.append('c4-ccsdt-3')
     val.append('c4-ccsdt')
+    return val
+
+
+def cfour_hessian_list():
+    val = []
+    val.append("c4-mp2")
+    val.append("c4-ccd")
+    val.append("c4-ccsd")
+    val.append("c4-ccsd(t)")
+    val.append("c4-ccsdt-1a")
+    val.append("c4-ccsdt-1b")
+    val.append("c4-ccsdt-2")
+    val.append("c4-ccsdt-3")
+    val.append("c4-ccsdt")
     return val
 
 
