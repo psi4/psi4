@@ -291,6 +291,7 @@ install(DIRECTORY ../tests/pytests/
         PATTERN "utils.py")
 install(DIRECTORY ../tests/pytests/test_fchk_writer
                   ../tests/pytests/test_molden_writer
+                  ../tests/pytests/test_psi4_qcschema
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 
     # <<<  install psi4 share/ & include/  >>>
