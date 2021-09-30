@@ -46,7 +46,7 @@ Introduction
 
 The steep polynomial scaling (in both time and memory) of post-HF dynamic
 correlation methods prohibits calculations on large systems, even for efficient
-codes like |Psifour|'s :ref:`DF-MP2 <sec:dfmp2>`. This poor scaling is in part
+codes like |PSIfours| :ref:`DF-MP2 <sec:dfmp2>`. This poor scaling is in part
 due to the use of canonical HF orbitals, which are entirely delocalized across
 the molecule. Canonical orbitals are commonly used because of mathematical
 convenience. Another possible choice is localized orbitals. Any two orbitals
@@ -103,7 +103,7 @@ Theory
 ------
 
 See :ref:`DF-MP2 <sec:dfmp2>` for background on the theory of (non-local)
-density-fitted MP2. |Psifour|'s DLPNO-MP2 implementation is based on the 
+density-fitted MP2. |PSIfours| DLPNO-MP2 implementation is based on the 
 manuscript by Pinski et al. [Pinski:2015:034108]_.
 
 In DLPNO-MP2, as in all local MP2 methods, the second-order MBPT energy is determined 
@@ -122,11 +122,11 @@ minimizing the following residual [Pulay:1986:357]_:
 
    R_{ij}^{ab} = (ia|jb) + (\epsilon_a + \epsilon_b - f_{ii} - f_{jj})t_{ij}^{ab} - \sum_{k \ne j} f_{ik} \sum_{c,d} S_{ac}t_{kj}^{c,d}S_{db} - \sum_{k \ne i} f_{kj} \sum_{cd} S_{ac}t_{ik}^{cd}S_{db} 
 
-where `i`, `j`, and `k` are (not necessarily canonical) occupied orbitals, `a`,
-`b`, `c`, and `d` are virtual orbitals, :math:`f_{ij}` are fock matrix elements,
+where ``i``, ``j``, and ``k`` are (not necessarily canonical) occupied orbitals, ``a``,
+``b``, ``c``, and ``d`` are virtual orbitals, :math:`f_{ij}` are fock matrix elements,
 :math:`S_{ab}` are orbital overlaps, and finally :math:`t_{ij}^{ab}` are the MP2
 amplitudes to be solved for. Virtual orbitals may be different for each pair
-of occupied orbitals. For a given occupied orbital pair `ij`, all virtuals are
+of occupied orbitals. For a given occupied orbital pair ``ij``, all virtuals are
 orthogonal and canonical, but virtuals belonging to different pair domains
 may not be orthogonal.
 
@@ -143,7 +143,7 @@ The error in :math:`E^{(2)}` scales quadratically with the error in the amplitud
 No local approximations have been made so far, and this iterative approach can
 be used to exactly determine :math:`E^{(2)}` with :math:`{\cal O}(N^5)` cost.
 In DLPNO-MP2, the first local approximation is to screen distant, non-interacting
-orbital pairs `ij`. Orbital pairs are screened if below both an overlap criteria:
+orbital pairs ``ij``. Orbital pairs are screened if below both an overlap criteria:
 
 .. math::
    :label: Energy
@@ -158,7 +158,7 @@ and a pair energy estimate:
    e_{ij}^{approx} = -\frac{4}{R^{6}} \sum_{a_{i} \in [i],b_{j} \in [j]} \frac{ (2 \langle i | \mathbf{r} | a_{i} \rangle \langle j | \mathbf{r} | b_{j} \rangle)^{2}}{\epsilon_{a_{i}} + \epsilon_{b_{j}} - f_{ii} - f_{jj}},
 
 in which small domains of virtual orbitals are used for each local MO. As a
-result, an asymptotically linear number of `ij` pairs enter the local MP2
+result, an asymptotically linear number of ``ij`` pairs enter the local MP2
 equations, and the approximate pair energy of neglected pairs is added to
 the final energy.
 
