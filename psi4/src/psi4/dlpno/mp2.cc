@@ -1269,14 +1269,14 @@ void DLPNOMP2::print_header() {
 
 void DLPNOMP2::print_aux_domains() {
     size_t total_atoms = 0, min_atoms = lmo_to_riatoms_[0].size(), max_atoms = 0;
-    for (auto atom_list : lmo_to_riatoms_) {
+    for (const auto &atom_list : lmo_to_riatoms_) {
         total_atoms += atom_list.size();
         min_atoms = std::min(min_atoms, atom_list.size());
         max_atoms = std::max(max_atoms, atom_list.size());
     }
 
     size_t total_bfs = 0, min_bfs = lmo_to_ribfs_[0].size(), max_bfs = 0;
-    for (auto bf_list : lmo_to_ribfs_) {
+    for (const auto &bf_list : lmo_to_ribfs_) {
         total_bfs += bf_list.size();
         min_bfs = std::min(min_bfs, bf_list.size());
         max_bfs = std::max(max_bfs, bf_list.size());
@@ -1292,14 +1292,14 @@ void DLPNOMP2::print_aux_domains() {
 
 void DLPNOMP2::print_pao_domains() {
     size_t total_atoms = 0, min_atoms = lmo_to_paoatoms_[0].size(), max_atoms = 0;
-    for (auto atom_list : lmo_to_paoatoms_) {
+    for (const auto &atom_list : lmo_to_paoatoms_) {
         total_atoms += atom_list.size();
         min_atoms = std::min(min_atoms, atom_list.size());
         max_atoms = std::max(max_atoms, atom_list.size());
     }
 
     size_t total_paos = 0, min_paos = lmo_to_paos_[0].size(), max_paos = 0;
-    for (auto pao_list : lmo_to_paos_) {
+    for (const auto &pao_list : lmo_to_paos_) {
         total_paos += pao_list.size();
         min_paos = std::min(min_paos, pao_list.size());
         max_paos = std::max(max_paos, pao_list.size());
