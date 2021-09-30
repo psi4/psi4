@@ -80,13 +80,19 @@ class DLPNOMP2 : public Wavefunction {
     std::vector<SharedVector> e_pno_;   ///< PNO orbital energies
     std::vector<int> n_pno_;       ///< number of pnos
     std::vector<double> de_pno_;   ///< PNO truncation energy error
+    std::vector<double> de_pno_os_;   ///< opposite-spin contributions to de_pno_
+    std::vector<double> de_pno_ss_;   ///< same-spin contributions to de_pno_
     std::vector<std::vector<SharedMatrix>> S_pno_ij_kj_; ///< pno overlaps
     std::vector<std::vector<SharedMatrix>> S_pno_ij_ik_; ///< pnooverlaps
 
     // final energies
     double de_dipole_; ///< energy correction for distant (LMO, LMO) pairs
     double de_pno_total_; ///< energy correction for PNO truncation
+    double de_pno_total_os_; ///< energy correction for PNO truncation
+    double de_pno_total_ss_; ///< energy correction for PNO truncation
     double e_lmp2_; ///< raw (uncorrected) local MP2 correlation energy
+    double e_lmp2_ss_; ///< same-spin component of e_lmp2_
+    double e_lmp2_os_; ///< opposite-spin component of e_lmp2_
 
     // => Sparse Maps <= //
 

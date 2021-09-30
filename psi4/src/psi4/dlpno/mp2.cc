@@ -761,6 +761,8 @@ void DLPNOMP2::pno_transform() {
 
     n_pno_.resize(n_lmo_pairs);   // number of pnos
     de_pno_.resize(n_lmo_pairs);  // PNO truncation error
+    de_pno_os_.resize(n_lmo_pairs);  // opposite-spin contributions to de_pno_
+    de_pno_ss_.resize(n_lmo_pairs);  // same-spin contributions to de_pno_
 
 #pragma omp parallel for schedule(static, 1)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
@@ -837,6 +839,8 @@ void DLPNOMP2::pno_transform() {
 
         // mp2 energy of this LMO pair before transformation to PNOs
         double e_ij_initial = K_pao_ij->vector_dot(Tt_pao_ij);
+        double e_ij_os_initial = K_pao_ij->vector_dot(T_pao_ij);
+        double e_ij_ss_initial = e_ij_initial - e_ij_os_initial;
 
         // Construct pair density from amplitudes
         auto D_ij = linalg::doublet(Tt_pao_ij, T_pao_ij, false, true);
@@ -875,9 +879,13 @@ void DLPNOMP2::pno_transform() {
 
         // mp2 energy of this LMO pair after transformation to PNOs and truncation
         double e_ij_trunc = K_pno_ij->vector_dot(Tt_pno_ij);
+        double e_ij_os_trunc = K_pno_ij->vector_dot(T_pno_ij);
+        double e_ij_ss_trunc = e_ij_trunc - e_ij_os_trunc;
 
         // truncation error
         double de_pno_ij = e_ij_initial - e_ij_trunc;
+        double de_pno_ij_os = e_ij_os_initial - e_ij_os_trunc;
+        double de_pno_ij_ss = e_ij_ss_initial - e_ij_ss_trunc;
 
         X_pno_ij = linalg::doublet(X_pao_ij, X_pno_ij, false, false);
 
@@ -887,6 +895,8 @@ void DLPNOMP2::pno_transform() {
         e_pno_[ij] = e_pno_ij;
         n_pno_[ij] = X_pno_ij->colspi(0);
         de_pno_[ij] = de_pno_ij;
+        de_pno_os_[ij] = de_pno_ij_os;
+        de_pno_ss_[ij] = de_pno_ij_ss;
 
         // account for symmetry
         if (i < j) {
@@ -896,16 +906,20 @@ void DLPNOMP2::pno_transform() {
             e_pno_[ji] = e_pno_[ij];
             n_pno_[ji] = n_pno_[ij];
             de_pno_[ji] = de_pno_ij;
+            de_pno_os_[ji] = de_pno_ij_os;
+            de_pno_ss_[ji] = de_pno_ij_os;
         }
     }
 
     int pno_count_total = 0, pno_count_min = nbf, pno_count_max = 0;
-    de_pno_total_ = 0.0;
+    de_pno_total_ = 0.0, de_pno_total_os_ = 0.0, de_pno_total_ss_ = 0.0;
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         pno_count_total += n_pno_[ij];
         pno_count_min = std::min(pno_count_min, n_pno_[ij]);
         pno_count_max = std::max(pno_count_max, n_pno_[ij]);
         de_pno_total_ += de_pno_[ij];
+        de_pno_total_os_ += de_pno_os_[ij];
+        de_pno_total_ss_ += de_pno_ss_[ij];
     }
 
     outfile->Printf("  \n");
@@ -1077,6 +1091,13 @@ void DLPNOMP2::lmp2_iterations() {
     }
 
     e_lmp2_ = e_curr;
+
+    e_lmp2_os_ = 0.0;
+    for (int ij = 0; ij < T_iajb_.size(); ++ij) {
+        e_lmp2_os_ += K_iajb_[ij]->vector_dot(T_iajb_[ij]);
+    }
+    e_lmp2_ss_ = e_curr - e_lmp2_os_;
+
 }
 
 double DLPNOMP2::compute_iteration_energy(const std::vector<SharedMatrix> &R_iajb) {
@@ -1196,7 +1217,12 @@ double DLPNOMP2::compute_energy() {
 
     double e_scf = reference_wavefunction_->energy();
     double e_mp2_corr = e_lmp2_ + de_dipole_ + de_pno_total_;
+    double e_mp2_corr_os = e_lmp2_os_ + 0.5 * de_dipole_ + de_pno_total_os_;
+    double e_mp2_corr_ss = e_lmp2_ss_ + 0.5 * de_dipole_ + de_pno_total_ss_;
     double e_mp2_total = e_scf + e_mp2_corr;
+
+    double sss = options_.get_double("MP2_SS_SCALE");
+    double oss = options_.get_double("MP2_OS_SCALE");
 
     set_scalar_variable("MP2 CORRELATION ENERGY", e_mp2_corr);
     set_scalar_variable("CURRENT CORRELATION ENERGY", e_mp2_corr);
@@ -1205,10 +1231,20 @@ double DLPNOMP2::compute_energy() {
 
     set_scalar_variable("MP2 SINGLES ENERGY", 0.0);
     set_scalar_variable("MP2 DOUBLES ENERGY", e_mp2_corr);
-    set_scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY", 0.0);      // TODO
-    set_scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY", 0.0);  // TODO
+    set_scalar_variable("MP2 SAME-SPIN CORRELATION ENERGY", e_mp2_corr_ss);
+    set_scalar_variable("MP2 OPPOSITE-SPIN CORRELATION ENERGY", e_mp2_corr_os);
+    set_scalar_variable("SCS-MP2 CORRELATION ENERGY", 6.0/5.0 * e_mp2_corr_os +
+                                                      1.0/3.0 * e_mp2_corr_ss);
+    set_scalar_variable("SCS-MP2 TOTAL ENERGY", e_scf +
+                                                6.0/5.0 * e_mp2_corr_os +
+                                                1.0/3.0 * e_mp2_corr_ss);
+    set_scalar_variable("CUSTOM SCS-MP2 CORRELATION ENERGY", oss * e_mp2_corr_os +
+                                                             sss * e_mp2_corr_ss);
+    set_scalar_variable("CUSTOM SCS-MP2 TOTAL ENERGY", e_scf +
+                                                       oss * e_mp2_corr_os +
+                                                       sss * e_mp2_corr_ss);
 
-    return e_mp2_total;  // correct, or return just correlation energy?
+    return e_mp2_total;
 }
 
 void DLPNOMP2::print_header() {
