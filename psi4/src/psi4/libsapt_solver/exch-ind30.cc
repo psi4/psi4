@@ -348,10 +348,6 @@ void SAPT2p3::sinf_e30ind() {
     psio_->read_entry(PSIF_SAPT_AMPS, "Ind30 uAR Amplitudes", (char *)uAR[0], sizeof(double) * na * nr);
     psio_->read_entry(PSIF_SAPT_AMPS, "Ind30 uBS Amplitudes", (char *)uBS[0], sizeof(double) * nb * ns);
 
-    outfile->Printf("%d %d\n",CoccA_->rowdim(),CoccA_->coldim());
-    outfile->Printf("%d %d\n",CoccB_->rowdim(),CoccB_->coldim());
-    outfile->Printf("%d %d\n",Smat_->rowdim(),Smat_->coldim());
-   
     // => Intermolecular overlap matrix and inverse <= //
     std::shared_ptr<Matrix> Sab = linalg::triplet(CoccA_, Smat_, CoccB_, true, false, false);
 
@@ -585,19 +581,6 @@ void SAPT2p3::sinf_e30ind() {
     C_DGEMM('N', 'N', nn, nb, nb, 1.0, SCt_Nb->pointer()[0], nb, &Dp[na][na], na + nb, 0.0,
             preXiBB->pointer()[0], nb);
 
-    Cl.clear();
-    Cr.clear();
-    Cl.push_back(CoccB_);
-    Cr.push_back(preXiBA);
-    Cl.push_back(CoccB_);
-    Cr.push_back(preXiBB);
-    jk_->compute();
-
-    std::shared_ptr<Matrix> J_XiBA = J[0];
-    std::shared_ptr<Matrix> K_XiBA = K[0]->transpose();
-    std::shared_ptr<Matrix> J_XiBB = J[1];
-    std::shared_ptr<Matrix> K_XiBB = K[1]->transpose();
-
     auto XiAA = std::make_shared<Matrix>("XiAA", nn, nn);
     auto XiAB = std::make_shared<Matrix>("XiAB", nn, nn);
     auto XiBA = std::make_shared<Matrix>("XiBA", nn, nn);
@@ -611,12 +594,19 @@ void SAPT2p3::sinf_e30ind() {
     C_DGEMM('N', 'T', nn, nn, nb, 1.0, CoccB_->pointer()[0], nb, preXiBB->pointer()[0], nb, 0.0,
             XiBB->pointer()[0], nn);
 
+    preXiBB->add(preXiBA);  //enough to calculate JK for the sum of the two
+
+    Cl.clear();
+    Cr.clear();
+    Cl.push_back(CoccB_);
+    Cr.push_back(preXiBB);
+    jk_->compute();
+
+    std::shared_ptr<Matrix> J_XiBB = J[0];
+    std::shared_ptr<Matrix> K_XiBB = K[0]->transpose();
+
     CompleteInd30 += 4.0 * C_DDOT(nn * nn, XiAA->pointer()[0], 1, J_XiBB->pointer()[0], 1);
     CompleteInd30 -= 2.0 * C_DDOT(nn * nn, XiAA->pointer()[0], 1, K_XiBB->pointer()[0], 1);
-    CompleteInd30 += 4.0 * C_DDOT(nn * nn, XiAB->pointer()[0], 1, J_XiBA->pointer()[0], 1);
-    CompleteInd30 -= 2.0 * C_DDOT(nn * nn, XiAB->pointer()[0], 1, K_XiBA->pointer()[0], 1);
-    CompleteInd30 += 4.0 * C_DDOT(nn * nn, XiAA->pointer()[0], 1, J_XiBA->pointer()[0], 1);
-    CompleteInd30 -= 2.0 * C_DDOT(nn * nn, XiAA->pointer()[0], 1, K_XiBA->pointer()[0], 1);
     CompleteInd30 += 4.0 * C_DDOT(nn * nn, XiAB->pointer()[0], 1, J_XiBB->pointer()[0], 1);
     CompleteInd30 -= 2.0 * C_DDOT(nn * nn, XiAB->pointer()[0], 1, K_XiBB->pointer()[0], 1);
 
