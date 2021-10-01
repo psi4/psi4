@@ -113,14 +113,12 @@ void HF::common_init() {
     H_.reset(factory_->create_matrix("One-electron Hamiltonian"));
     X_.reset(factory_->create_matrix("X"));
 
-    nmo_ = 0;
+    // nmo_ and nmopi_ not determined at present.
     nso_ = 0;
     const Dimension& dimpi = factory_->colspi();
     for (int h = 0; h < factory_->nirrep(); h++) {
         nsopi_[h] = dimpi[h];
-        nmopi_[h] = nsopi_[h];  // For now, may change in S^-1/2
         nso_ += nsopi_[h];
-        nmo_ += nmopi_[h];  // For now, may change in S^-1/2
     }
 
     density_fitted_ = false;
@@ -184,7 +182,7 @@ void HF::common_init() {
 
     // Check that we have enough basis functions
     for (int h = 0; h < nirrep_; ++h) {
-        if (doccpi_[h] + soccpi_[h] > nmopi_[h]) {
+        if (doccpi_[h] + soccpi_[h] > nsopi_[h]) {
             throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
         }
     }
