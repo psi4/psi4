@@ -4063,6 +4063,11 @@ def run_dlpnomp2(name, **kwargs):
         core.set_global_option('SCF_TYPE', 'DF')
         core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
+    # DLPNO-MP2 is only DF
+    if core.get_global_option('MP2_TYPE') != "DF":
+        raise ValidationError("""  DLPNO-MP2 is only implemented with density fitting.\n"""
+                              """  'mp2_type' must be set to 'DF'.\n""")
+
     # Bypass the scf call if a reference wavefunction is given
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
