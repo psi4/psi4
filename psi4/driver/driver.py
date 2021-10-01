@@ -655,7 +655,7 @@ def gradient(name, **kwargs):
     # Figure out lowername, dertype, and func
     # If we have analytical gradients we want to pass to our wrappers, otherwise we want to run
     # finite-diference energy or cbs energies
-    # TODO MP5/cc-pv[DT]Z behavior unkown due to "levels"
+    # TODO MP5/cc-pv[DT]Z behavior unknown due to "levels"
     user_dertype = kwargs.pop('dertype', None)
     if gradient_type == 'custom_function':
         if user_dertype is None:
@@ -1602,6 +1602,14 @@ def hessian(name, **kwargs):
         wfn.set_gradient(G0)
 
         # Explicitly set the current energy..
+        if isinstance(lowername, str) and lowername in procedures['energy']:
+            # this correctly filters out cbs fn and "hf/cc-pvtz"
+            # it probably incorrectly filters out mp5, but reconsider in DDD
+            core.set_variable(f"CURRENT HESSIAN", H)
+            core.set_variable(f"{lowername.upper()} TOTAL HESSIAN", H)
+            core.set_variable(f"{lowername.upper()} TOTAL GRADIENT", G0)
+            wfn.set_variable(f"{lowername.upper()} TOTAL HESSIAN", H)
+            wfn.set_variable(f"{lowername.upper()} TOTAL GRADIENT", G0)
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
         wfn.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
 
@@ -1645,6 +1653,14 @@ def hessian(name, **kwargs):
         wfn.set_gradient(G0)
 
         # Explicitly set the current energy..
+        if isinstance(lowername, str) and lowername in procedures['energy']:
+            # this correctly filters out cbs fn and "hf/cc-pvtz"
+            # it probably incorrectly filters out mp5, but reconsider in DDD
+            core.set_variable(f"CURRENT HESSIAN", H)
+            core.set_variable(f"{lowername.upper()} TOTAL HESSIAN", H)
+            core.set_variable(f"{lowername.upper()} TOTAL GRADIENT", G0)
+            wfn.set_variable(f"{lowername.upper()} TOTAL HESSIAN", H)
+            wfn.set_variable(f"{lowername.upper()} TOTAL GRADIENT", G0)
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
         wfn.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
 

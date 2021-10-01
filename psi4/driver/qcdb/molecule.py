@@ -1267,7 +1267,7 @@ class Molecule(LibmintsMolecule):
         dashlvl
             Name of dispersion correction to be applied (e.g., d, D2,
             d3(bj), das2010). Must be key in `dashcoeff` or "alias" or
-            "formal" to one.
+            "formal" to run.
         dashparam
             Values for the same keys as `dashcoeff[dashlvl]['default']`
             used to override any or all values initialized by `func`.
@@ -1312,6 +1312,96 @@ class Molecule(LibmintsMolecule):
         if dashparam:
             resinp['keywords']['params_tweaks'] = dashparam
         jobrec = qcng.compute(resinp, 'dftd3', raise_error=True)
+        jobrec = jobrec.dict()
+
+        # hack as not checking type GRAD
+        for k, qca in jobrec['extras']['qcvars'].items():
+            if isinstance(qca, (list, np.ndarray)):
+                jobrec['extras']['qcvars'][k] = np.array(qca).reshape(-1, 3)
+
+        if isinstance(self, Molecule):
+            pass
+        else:
+            from psi4 import core
+
+            for k, qca in jobrec['extras']['qcvars'].items():
+                if not isinstance(qca, (list, np.ndarray)):
+                    core.set_variable(k, float(qca))
+
+        if derint == -1:
+            return (float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY']),
+                    jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT'])
+        elif derint == 0:
+            return float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'])
+        elif derint == 1:
+            return jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']
+
+    def run_dftd4(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbose=1):
+        """Compute dispersion correction via Grimme's DFTD4 program.
+
+        Parameters
+        ----------
+        func : str, optional
+            Name of functional (func only, func & disp, or disp only) for
+            which to compute dispersion (e.g., blyp, BLYP-D2, blyp-d3bj,
+            blyp-d3(bj), hf+d). Unlike run_dftd3, ``func`` overwrites any
+            parameter initialized via `dashparam`.
+        dashlvl : str, optional
+            Name of dispersion correction to be applied (e.g., d, D2,
+            d3(bj), das2010). Must be key in `dashcoeff` or "alias" or
+            "formal" to run.
+        dashparam : dict, optional
+            Values for the same keys as `dashcoeff[dashlvl]['default']`
+            used to provide custom values. Unlike run_dftd3, will not have
+            effect if `func` given. Must provide all parameters.
+            Extra parameters will error.
+        dertype : int or str, optional
+            Maximum derivative level at which to run DFTD3. For large
+            molecules, energy-only calculations can be significantly more
+            efficient. Influences return values, see below.
+        verbose : int, optional
+            Amount of printing.
+
+        Returns
+        -------
+        energy : float
+            When `dertype=0`, energy [Eh].
+        gradient : ndarray
+            When `dertype=1`, (nat, 3) gradient [Eh/a0].
+        (energy, gradient) : tuple of float and ndarray
+            When `dertype=None`, both energy [Eh] and (nat, 3) gradient [Eh/a0].
+
+        Notes
+        -----
+        This function wraps the QCEngine dftd4 harness which wraps the internal DFTD4 Python API.
+        As such, the upstream convention of `func` trumping `dashparam` holds, rather than the
+        :py:func:`run_dftd3` behavior of `dashparam` extending or overriding `func`.
+
+        """
+        import qcengine as qcng
+
+        if dertype is None:
+            derint, derdriver = -1, 'gradient'
+        else:
+            derint, derdriver = parse_dertype(dertype, max_derivative=1)
+
+        resinp = {
+            'molecule': self.to_schema(dtype=2),
+            'driver': derdriver,
+            'model': {
+                'method': func,
+                'basis': '(auto)',
+            },
+            'keywords': {
+                'verbose': verbose,
+            },
+        }
+        if dashlvl:
+            resinp['keywords']['level_hint'] = dashlvl
+        if dashparam:
+            resinp['keywords']['params_tweaks'] = dashparam
+
+        jobrec = qcng.compute(resinp, 'dftd4', raise_error=True)
         jobrec = jobrec.dict()
 
         # hack as not checking type GRAD
