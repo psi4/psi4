@@ -380,8 +380,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             # Normal convergence procedures if we do not do SOSCF
 
             # SAD: form initial orbitals from the initial Fock matrix, and
-            # reset the occupations. From here on, the density matrices
-            # are correct.
+            # reset the occupations. The reset is necessary because SAD
+            # nalpha_ and nbeta_ are not guaranteed physical.
+            # From here on, the density matrices are correct.
             if (self.iteration_ == 0) and self.sad_:
                 self.form_initial_C()
                 self.reset_occupation()
@@ -459,7 +460,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
              ((self.iteration_ == 0) and self.sad_) else self.iteration_, SCFE, Ediff, Dnorm, '/'.join(status)))
 
         # if a an excited MOM is requested but not started, don't stop yet
-        if self.MOM_excited_ and not self.MOM_performed_:
+        # Note that MOM_performed_ just checks initialization, and our convergence measures used the pre-MOM orbitals
+        if self.MOM_excited_ and ((not self.MOM_performed_) or self.iteration_ == core.get_option('SCF', "MOM_START")):
             continue
 
         # if a fractional occupation is requested but not started, don't stop yet

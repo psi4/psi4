@@ -1475,7 +1475,7 @@ def scf_helper(name, post_scf=True, **kwargs):
         ref_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
         core.set_legacy_wavefunction(ref_wfn)
 
-        # Compute dftd3
+        # Compute additive correction: dftd3, mp2d, dftd4, etc.
         if hasattr(ref_wfn, "_disp_functor"):
             disp_energy = ref_wfn._disp_functor.compute_energy(ref_wfn.molecule())
             ref_wfn.set_variable("-D Energy", disp_energy)
@@ -1577,7 +1577,7 @@ def scf_helper(name, post_scf=True, **kwargs):
     if core.get_option("SCF", "PRINT_BASIS"):
         scf_wfn.basisset().print_detail_out()
 
-    # Compute dftd3
+    # Compute additive correction: dftd3, mp2d, dftd4, etc.
     if hasattr(scf_wfn, "_disp_functor"):
         disp_energy = scf_wfn._disp_functor.compute_energy(scf_wfn.molecule(), scf_wfn)
         scf_wfn.set_variable("-D Energy", disp_energy)
@@ -2574,6 +2574,12 @@ def run_scf_hessian(name, **kwargs):
 
     # Clearly, add some logic when the reach of this fn expands
     ref_wfn.set_variable("HF TOTAL HESSIAN", H)  # P::e SCF
+    ref_wfn.set_variable("SCF TOTAL HESSIAN", H)  # P::e SCF
+    core.set_variable("SCF TOTAL HESSIAN", H)  # P::e SCF
+
+    # Shove variables into global space
+    for k, v in ref_wfn.variables().items():
+        core.set_variable(k, v)
 
     optstash.restore()
     return ref_wfn
@@ -4226,6 +4232,12 @@ def run_sapt(name, **kwargs):
 
     sapt_dimer, monomerA, monomerB = proc_util.prepare_sapt_molecule(sapt_dimer, sapt_basis)
 
+    # Need to ensure consistent orbital freezing
+    # between monomer and dimer computations
+    monomerA_basis = core.BasisSet.build(monomerA, "BASIS", core.get_global_option("BASIS"))
+    monomerB_basis = core.BasisSet.build(monomerB, "BASIS", core.get_global_option("BASIS"))
+    nfc_ab = monomerA_basis.n_frozen_core() + monomerB_basis.n_frozen_core()
+
     if (core.get_option('SCF', 'REFERENCE') != 'RHF') and (name.upper() != "SAPT0"):
         raise ValidationError('Only SAPT0 supports a reference different from \"reference rhf\".')
 
@@ -4254,6 +4266,8 @@ def run_sapt(name, **kwargs):
     if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.set_global_option('DF_INTS_IO', 'SAVE')
 
+    optstash2 = p4util.OptionsState(['NUM_FROZEN_DOCC'])
+    core.set_global_option("NUM_FROZEN_DOCC", nfc_ab)
     core.timer_on("SAPT: Dimer SCF")
     dimer_wfn = scf_helper('RHF', molecule=sapt_dimer, **kwargs)
     core.timer_off("SAPT: Dimer SCF")
@@ -4262,6 +4276,7 @@ def run_sapt(name, **kwargs):
         select_mp2(name, ref_wfn=dimer_wfn, **kwargs)
         mp2_corl_interaction_e = core.variable('MP2 CORRELATION ENERGY')
 
+    optstash2.restore()
     if (sapt_basis == 'dimer') and (ri == 'DF'):
         core.set_global_option('DF_INTS_IO', 'LOAD')
 
@@ -4621,7 +4636,7 @@ def run_mrcc(name, **kwargs):
     ref_wfn = kwargs.get('ref_wfn', None)
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)
-    vscf = core.variable('SCF TOTAL ENERGY')
+    vscf = ref_wfn.variable('SCF TOTAL ENERGY')
 
     # The parse_arbitrary_order method provides us the following information
     # We require that level be provided. level is a dictionary

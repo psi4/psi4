@@ -45,6 +45,7 @@ _p20 = (psi4.ManagedMethodError, "Method 'mp2.5' with MP_TYPE 'CONV', FREEZE_COR
 _p21 = (psi4.ManagedMethodError, "Method 'mp2.5' with MP_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'UHF' not directable to QC_MODULE 'OCC'")
 _p22 = (psi4.ManagedMethodError, "Method 'lccd' with CC_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'RHF' not directable to QC_MODULE 'OCC'")
 _p23 = (psi4.ManagedMethodError, "Method 'lccd' with CC_TYPE 'CONV', FREEZE_CORE 'True', and REFERENCE 'UHF' not directable to QC_MODULE 'OCC'")
+_p24 = (psi4.ValidationError, "Derivative method 'name' mp2 and derivative level 'dertype' 2 are not available.")
 
 # yapf: enable
 
@@ -626,6 +627,87 @@ def test_mp2_gradient_default(inp, dertype, basis, subjects, clsd_open_pmols, re
         request.node.add_marker(inp["marks"][dertype])
 
     inpcopy["driver"] = "gradient"
+    inpcopy["call"] = method
+    inpcopy["keywords"]["basis"] = basis
+    inpcopy["keywords"]["function_kwargs"] = {"dertype": dertype}
+
+    runner_asserter(inpcopy, subject, method, basis, tnm)
+
+
+#
+#  ,--.   ,--.,------.  ,---.     ,--.  ,--.                     ,--.
+#  |   `.'   ||  .--. ''.-.  \    |  '--'  | ,---.  ,---.  ,---. `--' ,--,--.,--,--,
+#  |  |'.'|  ||  '--' | .-' .'    |  .--.  || .-. :(  .-' (  .-' ,--.' ,-.  ||      \
+#  |  |   |  ||  | --' /   '-.    |  |  |  |\   --..-'  `).-'  `)|  |\ '-'  ||  ||  |
+#  `--'   `--'`--'     '-----'    `--'  `--' `----'`----' `----' `--' `--`--'`--''--'
+#
+#  <<<  MP2 Hessian
+
+
+@pytest.mark.parametrize("dertype", [
+    # pytest.param(2, id="hes2"),  # no analytic Hessians available
+    pytest.param(1, id="hes1"),
+    pytest.param(0, id="hes0", marks=pytest.mark.long),
+])
+@pytest.mark.parametrize(
+    "basis, subjects",
+    [
+        pytest.param("cc-pvdz", ["hf", "bh3p", "bh3p"], id="dz"),
+        pytest.param("aug-cc-pvdz", ["h2o", "nh2", "nh2"], id="adz", marks=pytest.mark.long),
+        pytest.param("cfour-qz2p", ["h2o", "nh2", "nh2"], id="qz2p", marks=pytest.mark.long),
+    ],
+)
+@pytest.mark.parametrize(
+    "inp",
+    [
+        # yapf: disable
+        ######## Are all possible ways of computing <method> working?
+        # * no mixed-type gradients available (like pk+df) so no grad tests
+
+        ####### dfmp2
+        #pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",                   },                    }, id="mp2  rhf    df   fc: * dfmp2",),
+        #pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",                   }, "error": {1: _p2f},}, id="mp2  uhf    df   fc: * dfmp2",),
+        #pytest.param({"keywords": {"reference": "rohf", "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "true",                   }, "error": {1: _p3f},}, id="mp2 rohf    df   fc: * dfmp2",),
+        #pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",                  },                    }, id="mp2  rhf    df   ae: * dfmp2",),
+        #pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",                  }, "error": {1: _p2a},}, id="mp2  uhf    df   ae: * dfmp2",),
+        #pytest.param({"keywords": {"reference": "rohf", "mp2_type": "df",   "qc_module": "dfmp2", "freeze_core": "false",                  }, "error": {1: _p3a},}, id="mp2 rohf    df   ae: * dfmp2",),
+
+        ###### occ/dfocc
+        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _p5f, 2: _p24}}, id="mp2  rhf    conv fc: * occ  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "conv", "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _p5u},}, id="mp2  uhf    conv fc: * occ  ",),
+        #pytest.param({"keywords": {"reference": "rohf", "mp2_type": "conv", "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _p6f},}, id="mp2 rohf    conv fc: * occ  ",),
+        pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "conv", "qc_module": "occ", "freeze_core": "false",                    }, "error": {         2: _p24}}, id="mp2  rhf    conv ae: * occ  ",),
+        pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "conv", "qc_module": "occ", "freeze_core": "false",                    }, "error": {         2: _p24}}, id="mp2  uhf    conv ae: * occ  ",),
+        pytest.param({"keywords": {"reference": "rohf", "mp2_type": "conv", "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _p6a},}, id="mp2 rohf    conv ae: * occ  ",),
+        #####
+        #pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ", "freeze_core": "true",                     },                    }, id="mp2  rhf    df   fc:   dfocc",),
+        #pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "df",   "qc_module": "occ", "freeze_core": "true",                     },                    }, id="mp2  uhf    df   fc:   dfocc",),
+        #pytest.param({"keywords": {"reference": "rohf", "mp2_type": "df",   "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _p4f},}, id="mp2 rohf    df   fc:   dfocc",),
+        #pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "df",   "qc_module": "occ", "freeze_core": "false",                    },                    }, id="mp2  rhf    df   ae:   dfocc",),
+        #pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "df",   "qc_module": "occ", "freeze_core": "false",                    },                    }, id="mp2  uhf    df   ae:   dfocc",),
+        #pytest.param({"keywords": {"reference": "rohf", "mp2_type": "df",   "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _p4a},}, id="mp2 rohf    df   ae:   dfocc",),
+        #####
+        #pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _p7f},}, id="mp2  rhf    cd   fc: * dfocc",),
+        #pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _p8f},}, id="mp2  uhf    cd   fc: * dfocc",),
+        #pytest.param({"keywords": {"reference": "rohf", "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "true",                     }, "error": {1: _p9f},}, id="mp2 rohf    cd   fc: * dfocc",),
+        #pytest.param({"keywords": {"reference": "rhf",  "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _p7a},}, id="mp2  rhf    cd   ae: * dfocc",),
+        #pytest.param({"keywords": {"reference": "uhf",  "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _p8a},}, id="mp2  uhf    cd   ae: * dfocc",),
+        #pytest.param({"keywords": {"reference": "rohf", "mp2_type": "cd",   "qc_module": "occ", "freeze_core": "false",                    }, "error": {1: _p9a},}, id="mp2 rohf    cd   ae: * dfocc",),
+        # yapf: enable
+    ],
+)
+def test_mp2_hessian_module(inp, dertype, basis, subjects, clsd_open_pmols, request):
+    method = "mp2"
+    tnm = request.node.name
+    subject = clsd_open_pmols[subjects[std_refs.index(inp["keywords"]["reference"])]]
+
+    inpcopy = {k: v for k, v in inp.items() if k != "error"}
+    if inp.get("error", False) and inp["error"].get(dertype, False):
+        inpcopy["error"] = inp["error"][dertype]
+    if inp.get("marks", False) and inp["marks"].get(dertype, False):
+        request.node.add_marker(inp["marks"][dertype])
+
+    inpcopy["driver"] = "hessian"
     inpcopy["call"] = method
     inpcopy["keywords"]["basis"] = basis
     inpcopy["keywords"]["function_kwargs"] = {"dertype": dertype}

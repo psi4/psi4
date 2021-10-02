@@ -113,14 +113,12 @@ void HF::common_init() {
     H_.reset(factory_->create_matrix("One-electron Hamiltonian"));
     X_.reset(factory_->create_matrix("X"));
 
-    nmo_ = 0;
+    // nmo_ and nmopi_ not determined at present.
     nso_ = 0;
     const Dimension& dimpi = factory_->colspi();
     for (int h = 0; h < factory_->nirrep(); h++) {
         nsopi_[h] = dimpi[h];
-        nmopi_[h] = nsopi_[h];  // For now, may change in S^-1/2
         nso_ += nsopi_[h];
-        nmo_ += nmopi_[h];  // For now, may change in S^-1/2
     }
 
     density_fitted_ = false;
@@ -184,7 +182,7 @@ void HF::common_init() {
 
     // Check that we have enough basis functions
     for (int h = 0; h < nirrep_; ++h) {
-        if (doccpi_[h] + soccpi_[h] > nmopi_[h]) {
+        if (doccpi_[h] + soccpi_[h] > nsopi_[h]) {
             throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
         }
     }
@@ -431,6 +429,8 @@ void HF::find_occupation() {
     if (MOM_performed_) {
         MOM();
     } else {
+        // We first find the aufbau occupation.
+        // We then take our orbitals as the aufbau orbitals within the occupation.
         std::vector<std::pair<double, int> > pairs_a;
         std::vector<std::pair<double, int> > pairs_b;
         for (int h = 0; h < epsilon_a_->nirrep(); ++h) {
@@ -1374,26 +1374,15 @@ SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi) {
     return Fia;
 }
 SharedMatrix HF::form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso) {
-    auto FDSmSDF = std::make_shared<Matrix>("FDS-SDF", nirrep_, nsopi_, nsopi_);
-    auto DS = std::make_shared<Matrix>("DS", nirrep_, nsopi_, nsopi_);
-
-    DS->gemm(false, false, 1.0, Dso, S_, 0.0);
-    FDSmSDF->gemm(false, false, 1.0, Fso, DS, 0.0);
-
-    SharedMatrix SDF(FDSmSDF->transpose());
+    auto FDSmSDF = linalg::triplet(Fso, Dso, S_, false, false, false);
+    auto SDF = FDSmSDF->transpose();
     FDSmSDF->subtract(SDF);
 
-    DS.reset();
     SDF.reset();
 
-    auto XP = std::make_shared<Matrix>("X'(FDS - SDF)", nirrep_, nmopi_, nsopi_);
-    auto XPX = std::make_shared<Matrix>("X'(FDS - SDF)X", nirrep_, nmopi_, nmopi_);
-    XP->gemm(true, false, 1.0, X_, FDSmSDF, 0.0);
-    XPX->gemm(false, false, 1.0, XP, X_, 0.0);
+    FDSmSDF->transform(X_);
 
-    // XPX->print();
-
-    return XPX;
+    return FDSmSDF;
 }
 
 void HF::print_stability_analysis(std::vector<std::pair<double, int> >& vec) {

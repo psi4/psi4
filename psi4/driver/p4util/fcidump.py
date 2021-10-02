@@ -147,7 +147,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
                     row = mo_idx(il[0][index] + offset)
                     col = mo_idx(il[1][index] + offset)
                     if (abs(x) > ints_tolerance):
-                        intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
+                        intdump.write('{:29.20E}{:4d}{:4d}{:4d}{:4d}\n'.format(x, row, col, 0, 0))
                 offset += block.shape[0]
             # Additional one-electron integrals as requested in oe_ints
             # Orbital energies
@@ -168,7 +168,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
                     row = alpha_mo_idx(il[0][index] + offset)
                     col = alpha_mo_idx(il[1][index] + offset)
                     if (abs(x) > ints_tolerance):
-                        intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
+                        intdump.write('{:29.20E}{:4d}{:4d}{:4d}{:4d}\n'.format(x, row, col, 0, 0))
                 offset += block.shape[0]
             PSIF_MO_B_FZC = 'MO-basis Beta Frozen-Core Oper'
             moH_B = core.Matrix(PSIF_MO_B_FZC, wfn.nmopi(), wfn.nmopi())
@@ -182,7 +182,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
                     row = beta_mo_idx(il[0][index] + offset)
                     col = beta_mo_idx(il[1][index] + offset)
                     if (abs(x) > ints_tolerance):
-                        intdump.write('{:29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, row, col, 0, 0))
+                        intdump.write('{:29.20E}{:4d}{:4d}{:4d}{:4d}\n'.format(x, row, col, 0, 0))
                 offset += block.shape[0]
             # Additional one-electron integrals as requested in oe_ints
             # Orbital energies
@@ -199,7 +199,7 @@ def fcidump(wfn, fname='INTDUMP', oe_ints=None):
         core.print_out('Writing frozen core + nuclear repulsion energy in FCIDUMP format to ' + fname + '\n')
         e_fzc = ints.get_frozen_core_energy()
         e_nuc = molecule.nuclear_repulsion_energy(wfn.get_dipole_field_strength())
-        intdump.write('{: 29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(e_fzc + e_nuc, 0, 0, 0, 0))
+        intdump.write('{:29.20E}{:4d}{:4d}{:4d}{:4d}\n'.format(e_fzc + e_nuc, 0, 0, 0, 0))
     core.print_out('Done generating {} with integrals in FCIDUMP format.\n'.format(fname))
 
 
@@ -210,7 +210,7 @@ def write_eigenvalues(eigs, mo_idx):
     iorb = 0
     for h, block in enumerate(eigs):
         for idx, x in np.ndenumerate(block):
-            eigs_dump += '{: 29.20E} {:4d} {:4d} {:4d} {:4d}\n'.format(x, mo_idx(iorb), 0, 0, 0)
+            eigs_dump += '{:29.20E}{:4d}{:4d}{:4d}{:4d}\n'.format(x, mo_idx(iorb), 0, 0, 0)
             iorb += 1
     return eigs_dump
 

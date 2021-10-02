@@ -142,10 +142,10 @@ option_with_print(ENABLE_PLUGIN_TESTING "Test the plugin templates build and run
 option_with_print(ENABLE_CYTHONIZE "Compile each python file rather than plaintext (requires cython) !experimental!" OFF)
 if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
 option_with_flags(ENABLE_XHOST "Enables processor-specific optimization (with MSVC, it enables AVX2 instructions)" ON
-                  "-xHost" "-march=native" "/arch:AVX2")
+                  "-xHost" "-march=native" "/arch:AVX")
 else()
 option_with_flags(ENABLE_XHOST "Enables processor-specific optimization (with MSVC, it enables AVX2 instructions)" ON
-                  "-march=native" "-xHost" "/arch:AVX2")
+                  "-march=native" "-xHost" "/arch:AVX")
 endif()
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
                   "-ftest-coverage")
@@ -189,11 +189,11 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 # * headers: Python.h for pybind11 to build against in psi4-core
 # * library: not at all
 
-set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7 3.6)  # adjust with CMake minimum FindPythonInterp
+set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7)  # adjust with CMake minimum FindPythonInterp
 if(DEFINED ENV{LGTM_SRC})
     find_package(Python 3.7 EXACT COMPONENTS Interpreter Development REQUIRED)
 else()
-    find_package(Python 3.6 COMPONENTS Interpreter Development NumPy REQUIRED)
+    find_package(Python 3.7 COMPONENTS Interpreter Development NumPy REQUIRED)
 endif()
 message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION})")
 

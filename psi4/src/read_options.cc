@@ -4756,7 +4756,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
                --> localized and ordered orbitals (LOC) -*/
         options.add_str("DMRG_SCF_ACTIVE_SPACE", "INPUT", "INPUT NO LOC");
 
-        /*- Whether to start the active space localization process from a random unitary or the unit matrix. -*/
+        /*- Whether to start the active space localization process from a random unitary matrix instead of a unit matrix. -*/
         options.add_bool("DMRG_LOCAL_INIT", true);
 
         /*- Do calculate the DMRG-CASPT2 energy after the DMRGSCF calculations are done? -*/

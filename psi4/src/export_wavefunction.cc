@@ -155,8 +155,42 @@ void export_wavefunction(py::module& m) {
              "Returns the requested Beta Density subset.")
         .def("epsilon_a", &Wavefunction::epsilon_a, "Returns the Alpha Eigenvalues.")
         .def("epsilon_b", &Wavefunction::epsilon_b, "Returns the Beta Eigenvalues.")
-        .def("epsilon_a_subset", &Wavefunction::epsilon_a_subset, "Returns the requested Alpha Eigenvalues subset.")
-        .def("epsilon_b_subset", &Wavefunction::epsilon_b_subset, "Returns the requested Beta Eigenvalues subset.")
+        .def("epsilon_a_subset", &Wavefunction::epsilon_a_subset, "basis"_a, "subset"_a, R"pbdoc(
+              Returns the requested Alpha orbital energies subset.
+
+              Parameters
+              ----------
+              basis
+                  {'AO', 'SO', 'MO'}
+                  MO or SO select for Pitzer-ordering the return vector in the full computational point group symmetry.
+                  AO selects for Pitzer-ordering the return vector without point group symmetry.
+              subset
+                  {'ALL', 'ACTIVE', 'FROZEN', 'OCC', 'VIR', 'FROZEN_OCC', 'ACTIVE_OCC', 'ACTIVE_VIR', 'FROZEN_VIR'}
+                  Which subspace of orbital energies should be returned?
+
+              Returns
+              -------
+              Vector
+                  A Pitzer-ordered vector of the orbitals.
+         )pbdoc")
+        .def("epsilon_b_subset", &Wavefunction::epsilon_b_subset, "basis"_a, "subset"_a, R"pbdoc(
+              Returns the requested Beta orbital energies subset.
+
+              Parameters
+              ----------
+              basis
+                  {'AO', 'SO', 'MO'}
+                  MO or SO select for Pitzer-ordering the return vector in the full computational point group symmetry.
+                  AO selects for Pitzer-ordering the return vector without point group symmetry.
+              subset
+                  {'ALL', 'ACTIVE', 'FROZEN', 'OCC', 'VIR', 'FROZEN_OCC', 'ACTIVE_OCC', 'ACTIVE_VIR', 'FROZEN_VIR'}
+                  Which subspace of orbital energies should be returned?
+
+              Returns
+              -------
+              Vector
+                  A Pitzer-ordered vector of the orbitals.
+         )pbdoc")
         .def("lagrangian", &Wavefunction::lagrangian, "Returns the Lagrangian Matrix.")
         .def("set_lagrangian", &Wavefunction::set_lagrangian, "Sets the orbital Lagrangian matrix.")
         .def("basis_projection", &Wavefunction::basis_projection,
@@ -349,7 +383,7 @@ void export_wavefunction(py::module& m) {
         .def("set_external_cpscf_perturbation", &scf::HF::set_external_cpscf_perturbation,
              "Add an external potential/perturbation to the private external_cpscf_perturbations map for CPSCF", "name"_a, "function"_a)
         .def("clear_external_cpscf_perturbations", &scf::HF::clear_external_cpscf_perturbations, "Clear private external_cpscf_perturbations map")
-        .def_property("iteration_", &scf::HF::iteration, &scf::HF::set_iteration, "docstring")
+        .def_property("iteration_", &scf::HF::iteration, &scf::HF::set_iteration, "Internal iterator for SCF cycles. After completion, this equals the number of iterations taken to converge the SCF equations.")
         .def_property("diis_enabled_", &scf::HF::diis_enabled, &scf::HF::set_diis_enabled, "docstring")
         .def_property("diis_start_", &scf::HF::diis_start, &scf::HF::set_diis_start, "docstring")
         .def_property("frac_performed_", &scf::HF::frac_performed, &scf::HF::set_frac_performed,

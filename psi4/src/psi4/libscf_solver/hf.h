@@ -145,6 +145,9 @@ class HF : public Wavefunction {
 
     /// Frac started? (Same thing as frac_performed_)
     bool frac_performed_;
+    /// The orbitals _before_ scaling needed for Frac
+    SharedMatrix unscaled_Ca_;
+    SharedMatrix unscaled_Cb_;
 
     /// DIIS manager intiialized?
     bool initialized_diis_manager_;
@@ -305,7 +308,8 @@ class HF : public Wavefunction {
     /// Save the current density and energy.
     virtual void save_density_and_energy();
 
-    /// Reset to regular occupation from the fractional occupation
+    /// Reset to the user-specified DOCC/SOCC if any, and zero's otherwise.
+    /// Fractional occupation requires this.
     void reset_occupation();
 
     /// Compute energy for the iteration.
@@ -339,6 +343,7 @@ class HF : public Wavefunction {
 
     /// Renormalize orbitals to 1.0 before saving
     void frac_renormalize();
+    void frac_helper();
 
     /// Formation of H is the same regardless of RHF, ROHF, UHF
     // Temporarily converting to virtual function for testing embedding
