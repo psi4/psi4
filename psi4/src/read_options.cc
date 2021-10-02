@@ -2397,6 +2397,51 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- What is the maximum number of iterations? -*/
         options.add_int("EP2_MAXITER", 20);
     }
+    if (name == "DLPNO" || options.read_globals()) {
+        /*- MODULEDESCRIPTION Performs DLPNO-MP2 computations for RHF reference wavefunctions. -*/
+
+        /*- Auxiliary basis set for MP2 density fitting computations.
+        :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
+        options.add_str("DF_BASIS_MP2", "");
+        /*- General convergence criteria for DLPNO methods -*/
+        options.add_str("PNO_CONVERGENCE", "NORMAL", "LOOSE NORMAL TIGHT");
+        /*- Convergence criteria for the Foster-Boys orbital localization -*/
+        options.add_double("LOCAL_CONVERGENCE", 1.0E-12);
+        /*- Maximum iterations in Foster-Boys localization -*/
+        options.add_int("LOCAL_MAXITER", 1000);
+        /*- Energy convergence criteria for local MP2 iterations -*/
+        options.add_double("E_CONVERGENCE", 1e-6);
+        /*- Residual convergence criteria for local MP2 iterations -*/
+        options.add_double("R_CONVERGENCE", 1e-6);
+        /*- Orbital localizer -*/
+        options.add_str("DLPNO_LOCAL_ORBITALS", "BOYS", "BOYS PIPEK_MEZEY");
+        /*- Maximum number of iterations to determine the MP2 amplitudes. -*/
+        options.add_int("DLPNO_MAXITER", 50);
+
+        /*- SUBSECTION Expert -*/
+
+        /*- Occupation number threshold for removing PNOs !expert -*/
+        options.add_double("T_CUT_PNO", 1e-8);
+        /*- DOI threshold for including PAO (u) in domain of LMO (i) !expert -*/
+        options.add_double("T_CUT_DO", 1e-2);
+        /*- DOI threshold for treating LMOs (i,j) as interacting !expert -*/
+        options.add_double("T_CUT_DO_ij", 1e-5);
+        /*- Pair energy threshold (dipole approximation) for treating LMOs (i, j) as interacting !expert -*/
+        options.add_double("T_CUT_PRE", 1e-6); 
+        /*- DOI threshold for including PAO (u) in domain of LMO (i) during pre-screening !expert -*/
+        options.add_double("T_CUT_DO_PRE", 3e-2);
+        /*- Mulliken charge threshold for including aux BFs on atom (a) in domain of LMO (i) !expert -*/
+        options.add_double("T_CUT_MKN", 1e-3);
+        /*- Basis set coefficient threshold for including basis function (m) in domain of LMO (i) !expert -*/
+        options.add_double("T_CUT_CLMO", 1e-2);
+        /*- Basis set coefficient threshold for including basis function (n) in domain of PAO (u) !expert -*/
+        options.add_double("T_CUT_CPAO", 1e-3);
+        /*- Overlap matrix threshold for removing linear dependencies !expert -*/
+        options.add_double("S_CUT", 1e-8);
+        /*- Fock matrix threshold for treating ampltudes as coupled during local MP2 iterations !expert -*/
+        options.add_double("F_CUT", 1e-5);
+
+    }
     if (name == "PSIMRCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs multireference coupled cluster computations.  This theory
            should be used only by advanced users with a good working knowledge of multireference
