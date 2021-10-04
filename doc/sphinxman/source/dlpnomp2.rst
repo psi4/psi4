@@ -146,14 +146,14 @@ In DLPNO-MP2, the first local approximation is to screen distant, non-interactin
 orbital pairs ``ij``. Orbital pairs are screened if below both an overlap criteria:
 
 .. math::
-   :label: Energy
+   :label: Differential Overlap Integral
 
    DOI_{ij} \equiv \sqrt{\int d\mathbf{r} | \chi_{i}(\mathbf{r}) | ^{2} | \chi_{j}(\mathbf{r}) | ^{2}}, 
 
 and a pair energy estimate: 
 
 .. math::
-   :label: Energy
+   :label: Dipole Approximation
 
    e_{ij}^{approx} = -\frac{4}{R^{6}} \sum_{a_{i} \in [i],b_{j} \in [j]} \frac{ (2 \langle i | \mathbf{r} | a_{i} \rangle \langle j | \mathbf{r} | b_{j} \rangle)^{2}}{\epsilon_{a_{i}} + \epsilon_{b_{j}} - f_{ii} - f_{jj}},
 
