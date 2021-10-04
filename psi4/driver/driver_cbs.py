@@ -743,6 +743,9 @@ def return_energy_components():
     VARH['mp2'] = {
                              'hf': 'HF TOTAL ENERGY',
                             'mp2': 'MP2 TOTAL ENERGY'}
+    VARH['dlpno-mp2'] = {
+                             'hf': 'HF TOTAL ENERGY',
+                      'dlpno-mp2': 'MP2 TOTAL ENERGY'}
     VARH['mp2d'] = {
                              'hf': 'HF TOTAL ENERGY',
                            'mp2d': 'MP2D TOTAL ENERGY'}

@@ -4055,6 +4055,67 @@ def run_dfep2(name, **kwargs):
     return dfep2_wfn
 
 
+def run_dlpnomp2(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a DLPNO-MP2 calculation.
+
+    """
+    optstash = p4util.OptionsState(
+        ['DF_BASIS_MP2'],
+        ['SCF_TYPE'])
+
+    # Alter default algorithm
+    if not core.has_global_option_changed('SCF_TYPE'):
+        core.set_global_option('SCF_TYPE', 'DF')
+        core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
+
+    # DLPNO-MP2 is only DF
+    if core.get_global_option('MP2_TYPE') != "DF":
+        raise ValidationError("""  DLPNO-MP2 is only implemented with density fitting.\n"""
+                              """  'mp2_type' must be set to 'DF'.\n""")
+
+    # Bypass the scf call if a reference wavefunction is given
+    ref_wfn = kwargs.get('ref_wfn', None)
+    if ref_wfn is None:
+        ref_wfn = scf_helper(name, use_c1=True, **kwargs)  # C1 certified
+    elif ref_wfn.molecule().schoenflies_symbol() != 'c1':
+        raise ValidationError("""  DLPNO-MP2 does not make use of molecular symmetry: """
+                              """reference wavefunction must be C1.\n""")
+
+    if core.get_global_option('REFERENCE') != "RHF":
+        raise ValidationError("DLPNO-MP2 is not available for %s references.",
+                              core.get_global_option('REFERENCE'))
+
+    core.tstart()
+    core.print_out('\n')
+    p4util.banner('DLPNO-MP2')
+    core.print_out('\n')
+
+    aux_basis = core.BasisSet.build(ref_wfn.molecule(), "DF_BASIS_MP2",
+                                    core.get_option("DLPNO", "DF_BASIS_MP2"),
+                                    "RIFIT", core.get_global_option('BASIS'))
+    ref_wfn.set_basisset("DF_BASIS_MP2", aux_basis)
+
+    dlpnomp2_wfn = core.dlpno(ref_wfn)
+    dlpnomp2_wfn.compute_energy()
+
+    if name == 'scs-dlpno-mp2':
+        dlpnomp2_wfn.set_variable('CURRENT ENERGY', dlpnomp2_wfn.variable('SCS-MP2 TOTAL ENERGY'))
+        dlpnomp2_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnomp2_wfn.variable('SCS-MP2 CORRELATION ENERGY'))
+
+    elif name == 'dlpno-mp2':
+        dlpnomp2_wfn.set_variable('CURRENT ENERGY', dlpnomp2_wfn.variable('MP2 TOTAL ENERGY'))
+        dlpnomp2_wfn.set_variable('CURRENT CORRELATION ENERGY', dlpnomp2_wfn.variable('MP2 CORRELATION ENERGY'))
+
+    # Shove variables into global space
+    for k, v in dlpnomp2_wfn.variables().items():
+        core.set_variable(k, v)
+
+    optstash.restore()
+    core.tstop()
+    return dlpnomp2_wfn
+
+
 def run_dmrgscf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     an DMRG calculation.

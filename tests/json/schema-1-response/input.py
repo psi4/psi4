@@ -1,6 +1,5 @@
 #! test QC_JSON Schema for response properties
 
-import pytest
 import psi4
 import numpy as np
 import json
