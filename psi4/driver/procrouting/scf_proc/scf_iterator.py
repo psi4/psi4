@@ -711,8 +711,7 @@ def scf_print_energies(self):
     if self.functional().needs_xc():
         self.set_variable("DFT XC ENERGY", exc)  # P::e SCF
         self.set_variable("DFT VV10 ENERGY", evv10)  # P::e SCF
-        self.set_variable("DFT FUNCTIONAL TOTAL ENERGY", hf_energy + exc)  # P::e SCF
-        #self.set_variable(self.functional().name() + ' FUNCTIONAL TOTAL ENERGY', hf_energy + exc + evv10)
+        self.set_variable("DFT FUNCTIONAL TOTAL ENERGY", hf_energy + exc + evv10)  # P::e SCF
         self.set_variable("DFT TOTAL ENERGY", dft_energy)  # overwritten later for DH  # P::e SCF
     else:
         self.set_variable("HF TOTAL ENERGY", hf_energy)  # P::e SCF

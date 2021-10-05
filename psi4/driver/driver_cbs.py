@@ -2014,12 +2014,16 @@ def cbs(func, label, **kwargs):
             optionstash.restore()
 
         # Fill in energies for subsumed methods
+        # For DFT, we need to "correct" the -fctl energy by subtracting the -nl component.
+        # The "DFT VV10 ENERGY" is by default = 0.0, even for DFAs without -nl
         if ptype == 'energy':
             for component in VARH[mc['f_wfn']]:
                 for job in JOBS_EXT:
                     if (mc['f_wfn'] == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
                        (component == job['f_component']) and (mc['f_options'] == job['f_options']):
                         job['f_energy'] = core.variable(VARH[mc['f_wfn']][component])
+                        if component.endswith("fctl"):
+                            job['f_energy'] -= core.variable("DFT VV10 ENERGY")
         # For DFT, we have deleted duplicate gradient calls but the gradient components
         # are available as variables, with ENERGY-> GRADIENT. So if they are required, let us fill them.
         # At the moment, only "disp" gradients are possible ("nl" and "dh" not yet implemented):
@@ -2043,7 +2047,7 @@ def cbs(func, label, **kwargs):
         for mce in JOBS_EXT:
             if (mc['f_wfn'] == mce['f_wfn']) and (mc['f_basis'] == mce['f_basis']) and \
                (mc['f_component'] == mce['f_component']) and (mc['f_options'] == mce['f_options']) and \
-               not (component.endswith("disp") or component.endswith("fctl")):
+               not (mc['f_component'].endswith("disp") or mc['f_component'].endswith("fctl")):
                 mce['f_energy'] = mc['f_energy']
                 mce['f_gradient'] = mc['f_gradient']
                 mce['f_hessian'] = mc['f_hessian']
