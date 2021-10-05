@@ -216,6 +216,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     }
 
     dfh_->clear_spaces();
+    dfh_->clear_AO();
     timer_off("MO Integral Transformation");
 
     if (is_hybrid_) {

@@ -1725,6 +1725,12 @@ void DFHelper::clear_transformations() {
     transf_core_.clear();
 }
 
+void DFHelper::clear_AO() {
+    // clears in-core AO integral
+
+    Ppq_.reset();
+}
+
 void DFHelper::clear_all() {
     // invokes destructors, eliminating all files.
     file_streams_.clear();
