@@ -31,7 +31,6 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/lib3index/dfhelper.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
@@ -426,10 +425,10 @@ void SAPT2p3::sinf_e30ind() {
     jk_->initialize();
     jk_->print_header();
 
-    std::vector<SharedMatrix>& Cl = jk_->C_left();
-    std::vector<SharedMatrix>& Cr = jk_->C_right();
-    const std::vector<SharedMatrix>& J = jk_->J();
-    const std::vector<SharedMatrix>& K = jk_->K();
+    auto& Cl = jk_->C_left();
+    auto& Cr = jk_->C_right();
+    const auto& J = jk_->J();
+    const auto& K = jk_->K();
 
     Cl.clear();
     Cr.clear();
@@ -458,8 +457,6 @@ void SAPT2p3::sinf_e30ind() {
 
     // Make omega cores
     std::shared_ptr<Matrix> AJK(J_D_ia->clone());
-    AJK->zero();
-    AJK->add(J_D_ia);
     AJK->scale(2);
     AJK->add(VAmat_);
     AJK->subtract(K_D_ia);
@@ -470,8 +467,6 @@ void SAPT2p3::sinf_e30ind() {
     auto AJK_bs = linalg::triplet(C1b, AJK, Ct_Ks, true, false, false);
 
     std::shared_ptr<Matrix> BJK(J_D_ib->clone());
-    BJK->zero();
-    BJK->add(J_D_ib);
     BJK->scale(2);
     BJK->add(VBmat_);
     BJK->subtract(K_D_ib);
@@ -483,26 +478,18 @@ void SAPT2p3::sinf_e30ind() {
 
     // Finish omega terms
     std::shared_ptr<Matrix> omega_ar(AJK_ar->clone());
-    omega_ar->zero();
-    omega_ar->add(AJK_ar);
     omega_ar->add(BJK_ar);
     omega_ar->scale(2);
 
     std::shared_ptr<Matrix> omega_as(AJK_as->clone());
-    omega_as->zero();
-    omega_as->add(AJK_as);
     omega_as->add(BJK_as);
     omega_as->scale(2);
 
     std::shared_ptr<Matrix> omega_br(AJK_br->clone());
-    omega_br->zero();
-    omega_br->add(AJK_br);
     omega_br->add(BJK_br);
     omega_br->scale(2);
 
     std::shared_ptr<Matrix> omega_bs(AJK_bs->clone());
-    omega_bs->zero();
-    omega_bs->add(AJK_bs);
     omega_bs->add(BJK_bs);
     omega_bs->scale(2);
 
@@ -547,26 +534,22 @@ void SAPT2p3::sinf_e30ind() {
         }
     }
 
-    std::shared_ptr<Matrix> STS_br = linalg::triplet(sBS, Tas, sAR, false, true, false);
-    std::shared_ptr<Matrix> STS_as = linalg::triplet(sAR, Tbr, sBS, false, true, false);
-    std::shared_ptr<Matrix> STS_ar = linalg::triplet(sAR, Tar, sAR, false, true, false);
-    std::shared_ptr<Matrix> STS_bs = linalg::triplet(sBS, Tbs, sBS, false, true, false);
+    auto STS_br = linalg::triplet(sBS, Tas, sAR, false, true, false);
+    auto STS_as = linalg::triplet(sAR, Tbr, sBS, false, true, false);
+    auto STS_ar = linalg::triplet(sAR, Tar, sAR, false, true, false);
+    auto STS_bs = linalg::triplet(sBS, Tbs, sBS, false, true, false);
 
     CompleteInd30 += C_DDOT(na * nr, uAR[0], 1, omega_ar->pointer()[0], 1);
     CompleteInd30 += C_DDOT(nb * ns, uBS[0], 1, omega_bs->pointer()[0], 1);
-    CompleteInd30 -= C_DDOT(nb * nr, STS_br->pointer()[0], 1, omega_br->pointer()[0], 1);
-    CompleteInd30 -= C_DDOT(na * ns, STS_as->pointer()[0], 1, omega_as->pointer()[0], 1);
-    CompleteInd30 -= C_DDOT(na * nr, STS_ar->pointer()[0], 1, omega_ar->pointer()[0], 1);
-    CompleteInd30 -= C_DDOT(nb * ns, STS_bs->pointer()[0], 1, omega_bs->pointer()[0], 1);
+    CompleteInd30 -= STS_br->vector_dot(omega_br);
+    CompleteInd30 -= STS_as->vector_dot(omega_as);
+    CompleteInd30 -= STS_ar->vector_dot(omega_ar);
+    CompleteInd30 -= STS_bs->vector_dot(omega_bs);
 
 //All Omega-dependent contributions have been completed, now Xi-dependent (J/K) contributions
 
-    auto SCt_Na = std::make_shared<Matrix>("SCt_Na", nn, na);
-    auto SCt_Nb = std::make_shared<Matrix>("SCt_Nb", nn, nb);
-    C_DGEMM('N', 'T', nn, na, nr, 1.0, Ct_Kr->pointer()[0], nr, sAR->pointer()[0], nr, 0.0,
-            SCt_Na->pointer()[0], na);
-    C_DGEMM('N', 'T', nn, nb, ns, 1.0, Ct_Ks->pointer()[0], ns, sBS->pointer()[0], ns, 0.0,
-            SCt_Nb->pointer()[0], nb);
+    auto SCt_Na = linalg::doublet(Ct_Kr, sAR, false, true);
+    auto SCt_Nb = linalg::doublet(Ct_Ks, sBS, false, true);
 
     auto preXiAA = std::make_shared<Matrix>("preXiAA", nn, na);
     auto preXiBA = std::make_shared<Matrix>("preXiBA", nn, nb);
@@ -581,18 +564,10 @@ void SAPT2p3::sinf_e30ind() {
     C_DGEMM('N', 'N', nn, nb, nb, 1.0, SCt_Nb->pointer()[0], nb, &Dp[na][na], na + nb, 0.0,
             preXiBB->pointer()[0], nb);
 
-    auto XiAA = std::make_shared<Matrix>("XiAA", nn, nn);
-    auto XiAB = std::make_shared<Matrix>("XiAB", nn, nn);
-    auto XiBA = std::make_shared<Matrix>("XiBA", nn, nn);
-    auto XiBB = std::make_shared<Matrix>("XiBB", nn, nn);
-    C_DGEMM('N', 'T', nn, nn, na, 1.0, CoccA_->pointer()[0], na, preXiAA->pointer()[0], na, 0.0,
-            XiAA->pointer()[0], nn);
-    C_DGEMM('N', 'T', nn, nn, na, 1.0, CoccA_->pointer()[0], na, preXiAB->pointer()[0], na, 0.0,
-            XiAB->pointer()[0], nn);
-    C_DGEMM('N', 'T', nn, nn, nb, 1.0, CoccB_->pointer()[0], nb, preXiBA->pointer()[0], nb, 0.0,
-            XiBA->pointer()[0], nn);
-    C_DGEMM('N', 'T', nn, nn, nb, 1.0, CoccB_->pointer()[0], nb, preXiBB->pointer()[0], nb, 0.0,
-            XiBB->pointer()[0], nn);
+    auto XiAA = linalg::doublet(CoccA_, preXiAA, false, true);
+    auto XiAB = linalg::doublet(CoccA_, preXiAB, false, true);
+    auto XiBA = linalg::doublet(CoccB_, preXiBA, false, true);
+    auto XiBB = linalg::doublet(CoccB_, preXiBB, false, true);
 
     preXiBB->add(preXiBA);  //enough to calculate JK for the sum of the two
 
@@ -605,10 +580,10 @@ void SAPT2p3::sinf_e30ind() {
     std::shared_ptr<Matrix> J_XiBB = J[0];
     std::shared_ptr<Matrix> K_XiBB = K[0]->transpose();
 
-    CompleteInd30 += 4.0 * C_DDOT(nn * nn, XiAA->pointer()[0], 1, J_XiBB->pointer()[0], 1);
-    CompleteInd30 -= 2.0 * C_DDOT(nn * nn, XiAA->pointer()[0], 1, K_XiBB->pointer()[0], 1);
-    CompleteInd30 += 4.0 * C_DDOT(nn * nn, XiAB->pointer()[0], 1, J_XiBB->pointer()[0], 1);
-    CompleteInd30 -= 2.0 * C_DDOT(nn * nn, XiAB->pointer()[0], 1, K_XiBB->pointer()[0], 1);
+    CompleteInd30 += 4.0 * XiAA->vector_dot(J_XiBB);
+    CompleteInd30 -= 2.0 * XiAA->vector_dot(K_XiBB);
+    CompleteInd30 += 4.0 * XiAB->vector_dot(J_XiBB);
+    CompleteInd30 -= 2.0 * XiAB->vector_dot(K_XiBB);
 
     e_exch_ind30_sinf_ = CompleteInd30 - e_ind30_;
 
