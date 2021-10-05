@@ -379,7 +379,7 @@ void export_wavefunction(py::module& m) {
         .def("print_header", &scf::HF::print_header, "docstring")
         .def("get_energies", &scf::HF::get_energies, "docstring")
         .def("set_energies", &scf::HF::set_energies, "docstring")
-        .def("scf_type", &scf::HF::scf_type, "Return the value of scf_type_ used in the SCF computation.")
+        .def("scf_type", &scf::HF::scf_type, "Return the value of scf_type used in the SCF computation.")
         .def("clear_external_potentials", &scf::HF::clear_external_potentials, "Clear private external_potentials list")
         .def("push_back_external_potential", &scf::HF::push_back_external_potential,
              "Add an external potential to the private external_potentials list", "V"_a)
