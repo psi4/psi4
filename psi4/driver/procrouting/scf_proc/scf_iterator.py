@@ -716,7 +716,7 @@ def scf_print_energies(self):
     else:
         self.set_variable("HF TOTAL ENERGY", hf_energy)  # P::e SCF
     if hasattr(self, "_disp_functor"):
-        self.set_variable('DISPERSION CORRECTION ENERGY', ed)
+        self.set_variable('DISPERSION CORRECTION ENERGY', ed)  # P::e SCF
     else:
         self.set_variable('DISPERSION CORRECTION ENERGY', 0.0)  # P::e SCF
     #if abs(ed) > 1.0e-14:

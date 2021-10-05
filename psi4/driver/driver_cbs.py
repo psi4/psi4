@@ -77,7 +77,7 @@ def _expand_bracketed_basis(basisstring: str, molecule: Union[qcdb.molecule.Mole
 
     Returns
     -------
-    tuple
+    (BSET, ZSET) : Tuple[list, list]
         Tuple in the ``([basis set names], [basis set zetas])`` format.
 
     """
@@ -154,7 +154,7 @@ def _contract_bracketed_basis(basisarray: List) -> str:
 
     Returns
     -------
-    string
+    basisstring : str
         A nicely formatted basis set string, e.g. ``"cc-pv[q5]z"`` for the above example.
 
     """
@@ -192,7 +192,7 @@ def xtpl_highest_1(functionname: str,
 
     Returns
     -------
-    float, core.Matrix, core.Vector
+    valueHI : Union[float, core.Matrix, core.Vector]
         Returns :math:`E_{total}^{\infty}` which is equal to valueHI.
 
     Notes
@@ -248,7 +248,7 @@ def xtpl_exponential_2(functionname: str,
 
     Returns
     -------
-    float, core.Matrix, core.Vector
+    value : Union[float, core.Matrix, core.Vector]
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -349,7 +349,7 @@ def xtpl_power_2(functionname: str,
 
     Returns
     -------
-    float, core.Matrix, core.Vector
+    value : Union[float, core.Matrix, core.Vector]
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -450,7 +450,7 @@ def xtpl_expsqrt_2(functionname: str,
 
     Returns
     -------
-    float, core.Matrix, core.Vector
+    value : Union[float, core.Matrix, core.Vector]
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -558,7 +558,7 @@ def xtpl_exponential_3(functionname: str,
 
     Returns
     -------
-    float, core.Matrix, core.Vector
+    value : Union[float, core.Matrix, core.Vector]
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -639,22 +639,22 @@ def scf_xtpl_helgaker_2(functionname: str,
 
     Parameters
     ----------
-    functionname : string
+    functionname
         Name of the CBS component.
-    zLO : int
+    zLO
         Lower zeta level.
-    valueLO : float
+    valueLO
         Lower value used for extrapolation.
-    zHI : int
+    zHI
         Higher zeta level. Should be equal to zLO + 1.
-    valueHI : float
+    valueHI
         Higher value used for extrapolation.
-    alpha : float, optional
+    alpha
         Overrides the default :math:`\alpha = 1.63`
 
     Returns
     -------
-    float, core.Matrix, core.Vector
+    value : Union[float, core.Matrix, core.Vector]
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -694,20 +694,20 @@ def scf_xtpl_truhlar_2(functionname: str,
     ----------
     functionname : string
         Name of the CBS component.
-    zLO : int
+    zLO
         Lower zeta level.
-    valueLO : float
+    valueLO
         Lower value used for extrapolation.
-    zHI : int
+    zHI
         Higher zeta level. Should be equal to zLO + 1.
-    valueHI : float
+    valueHI
         Higher value used for extrapolation.
-    alpha : float, optional
+    alpha
         Overrides the default :math:`\alpha = 3.4`
 
     Returns
     -------
-    float, core.Matrix, core.Vector
+    value : Union[float, core.Matrix, core.Vector]
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -755,12 +755,12 @@ def scf_xtpl_karton_2(functionname: str,
         Higher zeta level. Should be equal to zLO + 1.
     valueHI
         Higher value used for extrapolation.
-    alpha : float, optional
+    alpha
         Overrides the default :math:`\alpha = 6.3`
 
     Returns
     -------
-    float, core.Matrix, core.Vector
+    value : Union[float, core.Matrix, core.Vector]
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -800,26 +800,26 @@ def scf_xtpl_helgaker_3(functionname: str,
 
     Parameters
     ----------
-    functionname : str
+    functionname
         Name of the CBS component.
-    zLO : int
+    zLO
         Lower zeta level.
-    valueLO : float
+    valueLO
         Lower value used for extrapolation.
-    zMD : int
+    zMD
         Intermediate zeta level. Should be equal to zLO + 1.
-    valueMD : float
+    valueMD
         Intermediate value used for extrapolation.
-    zHI : int
+    zHI
         Higher zeta level. Should be equal to zLO + 2.
-    valueHI : float
+    valueHI
         Higher value used for extrapolation.
-    alpha : float, optional
+    alpha
         Not used.
 
     Returns
     -------
-    float, core.Matrix, core.Vector
+    value : Union[float, core.Matrix, core.Vector]
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -851,22 +851,22 @@ def corl_xtpl_helgaker_2(functionname: str,
 
     Parameters
     ----------
-    functionname : str
+    functionname
         Name of the CBS component.
-    zLO : int
+    zLO
         Lower zeta level.
-    valueLO : float
+    valueLO
         Lower value used for extrapolation.
-    zHI : int
+    zHI
         Higher zeta level. Should be equal to zLO + 1.
-    valueHI : float
+    valueHI
         Higher value used for extrapolation.
-    alpha : float, optional
+    alpha
         Overrides the default :math:`\alpha = 3.0`
 
     Returns
     -------
-    float, core.Matrix, core.Vector
+    value : Union[float, core.Matrix, core.Vector]
         Returns :math:`E_{total}^{\infty}`, see below.
 
     Notes
@@ -1110,7 +1110,8 @@ def _get_default_xtpl(nbasis: int, xtpl_type: Union[str, None]) -> Callable:
     ----------
     nbasis
         Number of basis sets
-    xtpl_type : {'scf', 'corl', 'fctl', 'dh', None}
+    xtpl_type 
+        {'scf', 'corl', 'fctl', 'dh', None}
         Extrapolation type: 'scf' and 'fctl' for the total energy, 'corl' and 'dh'
         for just the correlation component, None if no extrapolation requested.
 
@@ -1170,7 +1171,7 @@ def _get_dfa_alpha(xtpl_type: str, bdata: List, funcname: str) -> float:
 
     Returns
     -------
-    float
+    alpha : float
         Extrapolation alpha to be used.
 
     References
@@ -1238,7 +1239,7 @@ def _get_default_alpha(xtpl_type: Union[str, None], bdata: List, funcname: str =
 
     Parameters
     ----------
-    xtpl_type :
+    xtpl_type
         {'scf', 'corl', 'fctl', 'dh', None}
         Extrapolation type: 'scf' and 'fctl' for the total energy, 'corl' and 'dh'
         for just the correlation component, None if no extrapolation requested.
@@ -1249,7 +1250,7 @@ def _get_default_alpha(xtpl_type: Union[str, None], bdata: List, funcname: str =
 
     Returns
     -------
-    float, None
+    alpha : Union[float, None]
         Extrapolation alpha to be used.
     """
     nbasis = len(bdata[0])
@@ -1281,7 +1282,7 @@ def _validate_cbs_inputs(cbs_metadata: List, molecule: Union[qcdb.molecule.Molec
 
     Returns
     -------
-    list
+    metadata : list
         Validated list of dictionaries, with each item consisting of an extrapolation
         stage. All validation takes place here.
     """
@@ -1430,7 +1431,7 @@ def _process_cbs_kwargs(kwargs: dict) -> list:
 
     Returns
     -------
-    list
+    metadata : list
         List of dictionaries, with each item consisting of an extrapolation
         stage. All validation takes place here.
     """
@@ -2276,7 +2277,7 @@ def _cbs_wrapper_methods(**kwargs: dict) -> list:
 
     Returns
     -------
-    list
+    cbs_methods : list
         List containing method name for each active stage.
     """
 
@@ -2304,7 +2305,7 @@ def _parse_cbs_gufunc_string(method_name: str) -> tuple:
 
     Returns
     -------
-    tuple
+    (methods_list, basis_list) : tuple
         Tuple in the ``(method_list, basis_list)`` format, where ``method_list``
         is the list of the component methods, and ``basis_list`` is the list of
         basis sets forming the extrapolation for each specified method.
@@ -2356,7 +2357,7 @@ def _cbs_gufunc(func: Callable, total_method_name: str, **kwargs: dict) -> Union
 
     Returns
     -------
-    qfloat
+    ptype_value : Union[tuple, float]
         Float, or if ``return_wfn`` is specified, a tuple of ``(value, wavefunction)``.
     """
 
