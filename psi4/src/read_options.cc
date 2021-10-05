@@ -2400,6 +2400,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     if (name == "DLPNO" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs DLPNO-MP2 computations for RHF reference wavefunctions. -*/
 
+        /*- SUBSECTION General Options -*/
+
         /*- Auxiliary basis set for MP2 density fitting computations.
         :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
         options.add_str("DF_BASIS_MP2", "");
@@ -2418,7 +2420,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Maximum number of iterations to determine the MP2 amplitudes. -*/
         options.add_int("DLPNO_MAXITER", 50);
 
-        /*- SUBSECTION Expert -*/
+        /*- SUBSECTION Expert Options -*/
 
         /*- Occupation number threshold for removing PNOs !expert -*/
         options.add_double("T_CUT_PNO", 1e-8);
@@ -2440,7 +2442,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("S_CUT", 1e-8);
         /*- Fock matrix threshold for treating ampltudes as coupled during local MP2 iterations !expert -*/
         options.add_double("F_CUT", 1e-5);
-
     }
     if (name == "PSIMRCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs multireference coupled cluster computations.  This theory
