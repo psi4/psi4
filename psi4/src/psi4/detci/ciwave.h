@@ -280,6 +280,9 @@ class CIWavefunction : public Wavefunction {
      */
     void cleanup_dpd();
 
+    /**
+     * Reset H0Block.
+     */
     void reset_ci_H0block();
 
     /**

@@ -222,7 +222,7 @@ void Vector::print(std::string out, const char *extra) const {
     }
     for (int h = 0; h < nirrep_; ++h) {
         printer->Printf(" Irrep: %d\n", h + 1);
-        for (int i = 0; i < dimpi_[h]; ++i) printer->Printf("   %4d: %10.7f\n", i + 1, vector_[h][i]);
+        for (int i = 0; i < dimpi_[h]; ++i) printer->Printf("   %4d: %20.15f\n", i + 1, vector_[h][i]);
         printer->Printf("\n");
     }
 }
