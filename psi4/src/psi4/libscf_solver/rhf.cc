@@ -238,33 +238,6 @@ void RHF::form_G() {
     }
 }
 
-double RHF::compute_orbital_gradient(bool save_fock, int max_diis_vectors) {
-    // Conventional DIIS (X'[FDS - SDF]X, where X levels things out)
-    SharedMatrix gradient = form_FDSmSDF(Fa_, Da_);
-
-    if (save_fock) {
-        if (initialized_diis_manager_ == false) {
-            if (scf_type_ == "DIRECT") {
-                diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector",
-                                                              DIISManager::LargestError, DIISManager::InCore);
-            } else {
-                diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector",
-                                                              DIISManager::LargestError, DIISManager::OnDisk);
-            }
-            diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, gradient.get());
-            diis_manager_->set_vector_size(1, DIISEntry::Matrix, Fa_.get());
-            initialized_diis_manager_ = true;
-        }
-        diis_manager_->add_entry(2, gradient.get(), Fa_.get());
-    }
-
-    if (options_.get_bool("DIIS_RMS_ERROR")) {
-        return gradient->rms();
-    } else {
-        return gradient->absmax();
-    }
-}
-
 bool RHF::diis() { return diis_manager_->extrapolate(1, Fa_.get()); }
 
 void RHF::form_F() {

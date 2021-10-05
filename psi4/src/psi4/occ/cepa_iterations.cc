@@ -59,9 +59,9 @@ void OCCWave::cepa_iterations() {
             global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                    "T2 <OO|VV>");
             t2DiisManager =
-                new DIISManager(maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::OnDisk);
-            t2DiisManager->set_error_vector_size(1, DIISEntry::DPDBuf4, &T);
-            t2DiisManager->set_vector_size(1, DIISEntry::DPDBuf4, &T);
+                new DIISManager(maxdiis_, "CEPA DIIS T2 Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk);
+            t2DiisManager->set_error_vector_size(1, DIISEntry::InputType::DPDBuf4, &T);
+            t2DiisManager->set_vector_size(1, DIISEntry::InputType::DPDBuf4, &T);
             global_dpd_->buf4_close(&T);
             psio_->close(PSIF_OCC_DPD, 1);
         }
@@ -76,10 +76,10 @@ void OCCWave::cepa_iterations() {
             global_dpd_->buf4_init(&Tab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                    "T2 <Oo|Vv>");
             t2DiisManager =
-                new DIISManager(maxdiis_, "CEPA DIIS T2 Amps", DIISManager::LargestError, DIISManager::InCore);
-            t2DiisManager->set_error_vector_size(3, DIISEntry::DPDBuf4, &Taa, DIISEntry::DPDBuf4, &Tbb,
-                                                 DIISEntry::DPDBuf4, &Tab);
-            t2DiisManager->set_vector_size(3, DIISEntry::DPDBuf4, &Taa, DIISEntry::DPDBuf4, &Tbb, DIISEntry::DPDBuf4,
+                new DIISManager(maxdiis_, "CEPA DIIS T2 Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+            t2DiisManager->set_error_vector_size(3, DIISEntry::InputType::DPDBuf4, &Taa, DIISEntry::InputType::DPDBuf4, &Tbb,
+                                                 DIISEntry::InputType::DPDBuf4, &Tab);
+            t2DiisManager->set_vector_size(3, DIISEntry::InputType::DPDBuf4, &Taa, DIISEntry::InputType::DPDBuf4, &Tbb, DIISEntry::InputType::DPDBuf4,
                                            &Tab);
             global_dpd_->buf4_close(&Taa);
             global_dpd_->buf4_close(&Tbb);

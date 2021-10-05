@@ -176,11 +176,11 @@ int DCTSolver::run_twostep_dct_cumulant_updates() {
                            "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Amplitude <oo|vv>");
-    DIISManager lambdaDiisManager(maxdiis_, "DCT DIIS Amplitudes", DIISManager::LargestError, DIISManager::InCore);
+    DIISManager lambdaDiisManager(maxdiis_, "DCT DIIS Amplitudes", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
     if ((nalpha_ + nbeta_) > 1) {
-        lambdaDiisManager.set_error_vector_size(3, DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab,
-                                                DIISEntry::DPDBuf4, &Lbb);
-        lambdaDiisManager.set_vector_size(3, DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4,
+        lambdaDiisManager.set_error_vector_size(3, DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab,
+                                                DIISEntry::InputType::DPDBuf4, &Lbb);
+        lambdaDiisManager.set_vector_size(3, DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4,
                                           &Lbb);
     }
     global_dpd_->buf4_close(&Laa);
@@ -267,11 +267,11 @@ void DCTSolver::run_twostep_dct_orbital_updates() {
     auto tmp = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
 
     // Set up DIIS
-    DIISManager scfDiisManager(maxdiis_, "DCT DIIS Orbitals", DIISManager::LargestError, DIISManager::InCore);
+    DIISManager scfDiisManager(maxdiis_, "DCT DIIS Orbitals", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
     if ((nalpha_ + nbeta_) > 1) {
-        scfDiisManager.set_error_vector_size(2, DIISEntry::Matrix, scf_error_a_.get(), DIISEntry::Matrix,
+        scfDiisManager.set_error_vector_size(2, DIISEntry::InputType::Matrix, scf_error_a_.get(), DIISEntry::InputType::Matrix,
                                              scf_error_b_.get());
-        scfDiisManager.set_vector_size(2, DIISEntry::Matrix, Fa_.get(), DIISEntry::Matrix, Fb_.get());
+        scfDiisManager.set_vector_size(2, DIISEntry::InputType::Matrix, Fa_.get(), DIISEntry::InputType::Matrix, Fb_.get());
     }
     // Update the orbitals
     int nSCFCycles = 0;
@@ -354,10 +354,10 @@ void DCTSolver::run_simult_dct() {
                            "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Amplitude <oo|vv>");
-    diisManager.set_error_vector_size(5, DIISEntry::Matrix, scf_error_a_.get(), DIISEntry::Matrix, scf_error_b_.get(),
-                                      DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4, &Lbb);
-    diisManager.set_vector_size(5, DIISEntry::Matrix, Fa_.get(), DIISEntry::Matrix, Fb_.get(), DIISEntry::DPDBuf4, &Laa,
-                                DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4, &Lbb);
+    diisManager.set_error_vector_size(5, DIISEntry::InputType::Matrix, scf_error_a_.get(), DIISEntry::InputType::Matrix, scf_error_b_.get(),
+                                      DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4, &Lbb);
+    diisManager.set_vector_size(5, DIISEntry::InputType::Matrix, Fa_.get(), DIISEntry::InputType::Matrix, Fb_.get(), DIISEntry::InputType::DPDBuf4, &Laa,
+                                DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4, &Lbb);
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);

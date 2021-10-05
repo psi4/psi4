@@ -76,7 +76,7 @@ def scf_compute_energy(self):
 
         # reset the DIIS & JK objects in prep for DIRECT
         if self.initialized_diis_manager_:
-            self.diis_manager().reset_subspace()
+            self.diis_manager_.reset_subspace()
         self.initialize_jk(self.memory_jk_)
     else:
         self.initialize()

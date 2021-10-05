@@ -4972,8 +4972,8 @@ void FISAPTSCF::compute_energy() {
     bool diised = false;
     auto Gsize = std::make_shared<Matrix>("Gsize", nmo, nmo);
     auto diis = std::make_shared<DIISManager>(max_diis_vectors, "FISAPT DIIS");
-    diis->set_error_vector_size(1, DIISEntry::Matrix, Gsize.get());
-    diis->set_vector_size(1, DIISEntry::Matrix, F.get());
+    diis->set_error_vector_size(1, DIISEntry::InputType::Matrix, Gsize.get());
+    diis->set_vector_size(1, DIISEntry::InputType::Matrix, F.get());
     Gsize.reset();
 
     // ==> Master Loop <== //

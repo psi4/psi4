@@ -223,9 +223,6 @@ class HF : public Wavefunction {
     /** Form Fia (for DIIS) **/
     virtual SharedMatrix form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi);
 
-    /** Form X'(FDS - SDF)X (for DIIS) **/
-    virtual SharedMatrix form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso);
-
     /** Performs any operations required for a incoming guess **/
     virtual void format_guess();
 
@@ -272,6 +269,8 @@ class HF : public Wavefunction {
     /** Computes the initial energy. */
     virtual double compute_initial_E() { return 0.0; }
 
+    const std::string& scf_type() const { return scf_type_; }
+
     /// Check MO phases
     void check_phases();
 
@@ -286,8 +285,9 @@ class HF : public Wavefunction {
 
     /// The DIIS object
     std::shared_ptr<DIISManager> diis_manager() const { return diis_manager_; }
-    void set_initialized_diis_manager(bool tf) { initialized_diis_manager_ = tf; }
+    void set_diis_manager(std::shared_ptr<DIISManager> manager) { diis_manager_ = manager; }
     bool initialized_diis_manager() const { return initialized_diis_manager_; }
+    void set_initialized_diis_manager(bool tf) { initialized_diis_manager_ = tf; }
 
     /// The JK object (or null if it has been deleted)
     std::shared_ptr<JK> jk() const { return jk_; }
@@ -377,6 +377,9 @@ class HF : public Wavefunction {
 
     /** Forms the G matrix */
     virtual void form_G();
+
+    /** Form X'(FDS - SDF)X (for DIIS) **/
+    virtual SharedMatrix form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso);
 
     /** Rotates orbitals inplace C' = exp(U) C, U = antisymmetric matrix from x */
     void rotate_orbitals(SharedMatrix C, const SharedMatrix x);
