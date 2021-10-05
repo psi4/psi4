@@ -2491,7 +2491,7 @@ def run_scf_gradient(name, **kwargs):
         disp_grad = ref_wfn._disp_functor.compute_gradient(ref_wfn.molecule(), ref_wfn)
         ref_wfn.set_variable("-D Gradient", disp_grad)
     else:
-        disp_grad = core.Matrix("", natom, 3)
+        disp_grad = core.Matrix("", ref_wfn.molecule().natom(), 3)
         disp_grad.zero()
 
     grad = core.scfgrad(ref_wfn)
