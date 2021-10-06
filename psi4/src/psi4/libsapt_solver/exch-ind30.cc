@@ -342,10 +342,10 @@ void SAPT2p3::sinf_e30ind() {
     nT = Process::environment.get_n_threads();
 #endif
 
-    double **uAR = block_matrix(na, nr);
-    double **uBS = block_matrix(nb, ns);
-    psio_->read_entry(PSIF_SAPT_AMPS, "Ind30 uAR Amplitudes", (char *)uAR[0], sizeof(double) * na * nr);
-    psio_->read_entry(PSIF_SAPT_AMPS, "Ind30 uBS Amplitudes", (char *)uBS[0], sizeof(double) * nb * ns);
+    auto uAR = std::make_shared<Matrix>("Ind30 uAR Amplitudes", na, nr);
+    auto uBS = std::make_shared<Matrix>("Ind30 uBS Amplitudes", nb, ns);
+    uAR->load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::Full);
+    uBS->load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::Full);
 
     // => Intermolecular overlap matrix and inverse <= //
     std::shared_ptr<Matrix> Sab = linalg::triplet(CoccA_, Smat_, CoccB_, true, false, false);
@@ -360,42 +360,33 @@ void SAPT2p3::sinf_e30ind() {
         }
     }
     D->power(-1.0, 1.0E-12);
-    Dp = D->pointer();
+
+    Dimension zero(1);
+    Dimension nadim(1);
+    Dimension nabdim(1);
+    zero[0] = 0;
+    nadim[0] = na;
+    nabdim[0] = na + nb;
+    auto Daa = D->get_block(Slice(zero, nadim), Slice(zero, nadim));
+    auto Dab = D->get_block(Slice(zero, nadim), Slice(nadim, nabdim));
+    auto Dbb = D->get_block(Slice(nadim, nabdim), Slice(nadim, nabdim));
 
     // => New Stuff <= //
     // Start with T's
     std::shared_ptr<Matrix> Sbr = linalg::triplet(CoccB_, Smat_, CvirA_, true, false, false);
     std::shared_ptr<Matrix> Sas = linalg::triplet(CoccA_, Smat_, CvirB_, true, false, false);
-    auto Tar = std::make_shared<Matrix>("Tar", na, nr);
-    auto Tbr = std::make_shared<Matrix>("Tbr", nb, nr);
-    auto Tas = std::make_shared<Matrix>("Tas", na, ns);
-    auto Tbs = std::make_shared<Matrix>("Tbs", nb, ns);
-
-    C_DGEMM('N', 'N', na, nr, nb, 1.0, &Dp[0][na], na + nb, Sbr->pointer()[0], nr, 0.0,
-            Tar->pointer()[0], nr);
-    C_DGEMM('N', 'N', nb, nr, nb, 1.0, &Dp[na][na], na + nb, Sbr->pointer()[0], nr, 0.0,
-            Tbr->pointer()[0], nr);
-    C_DGEMM('N', 'N', na, ns, na, 1.0, &Dp[0][0], na + nb, Sas->pointer()[0], ns, 0.0,
-            Tas->pointer()[0], ns);
-    C_DGEMM('N', 'N', nb, ns, na, 1.0, &Dp[na][0], na + nb, Sas->pointer()[0], ns, 0.0,
-            Tbs->pointer()[0], ns);
+    auto Tar = linalg::doublet(Dab, Sbr, false, false);
+    auto Tbr = linalg::doublet(Dbb, Sbr, false, false);
+    auto Tas = linalg::doublet(Daa, Sas, false, false);
+    auto Tbs = linalg::doublet(Dab, Sas, true, false);
 
     // C1's and C2's from D's and C's.
     // C1's are C times D diagonal blocks.
     // C2's are times off-diagonal blocks.
-    auto C1a = std::make_shared<Matrix>("C1a", nn, na);
-    auto C1b = std::make_shared<Matrix>("C1b", nn, nb);
-    auto C2a = std::make_shared<Matrix>("C2a", nn, na);
-    auto C2b = std::make_shared<Matrix>("C2b", nn, nb);
-
-    C_DGEMM('N', 'N', nn, na, na, 1.0, CoccA_->pointer()[0], na, &Dp[0][0], na + nb, 0.0,
-            C1a->pointer()[0], na);
-    C_DGEMM('N', 'N', nn, nb, nb, 1.0, CoccB_->pointer()[0], nb, &Dp[na][na], na + nb, 0.0,
-            C1b->pointer()[0], nb);
-    C_DGEMM('N', 'N', nn, na, nb, 1.0, CoccB_->pointer()[0], nb, &Dp[na][0], na + nb, 0.0,
-            C2a->pointer()[0], na);
-    C_DGEMM('N', 'N', nn, nb, na, 1.0, CoccA_->pointer()[0], na, &Dp[0][na], na + nb, 0.0,
-            C2b->pointer()[0], nb);
+    auto C1a = linalg::doublet(CoccA_, Daa, false, false);
+    auto C1b = linalg::doublet(CoccB_, Dbb, false, false);
+    auto C2a = linalg::doublet(CoccB_, Dab, false, true);
+    auto C2b = linalg::doublet(CoccA_, Dab, false, false);
 
     // Coeffs for all occupied
     std::vector<std::shared_ptr<Matrix> > hold_these;
@@ -539,8 +530,8 @@ void SAPT2p3::sinf_e30ind() {
     auto STS_ar = linalg::triplet(sAR, Tar, sAR, false, true, false);
     auto STS_bs = linalg::triplet(sBS, Tbs, sBS, false, true, false);
 
-    CompleteInd30 += C_DDOT(na * nr, uAR[0], 1, omega_ar->pointer()[0], 1);
-    CompleteInd30 += C_DDOT(nb * ns, uBS[0], 1, omega_bs->pointer()[0], 1);
+    CompleteInd30 += uAR->vector_dot(omega_ar);
+    CompleteInd30 += uBS->vector_dot(omega_bs);
     CompleteInd30 -= STS_br->vector_dot(omega_br);
     CompleteInd30 -= STS_as->vector_dot(omega_as);
     CompleteInd30 -= STS_ar->vector_dot(omega_ar);
@@ -551,18 +542,10 @@ void SAPT2p3::sinf_e30ind() {
     auto SCt_Na = linalg::doublet(Ct_Kr, sAR, false, true);
     auto SCt_Nb = linalg::doublet(Ct_Ks, sBS, false, true);
 
-    auto preXiAA = std::make_shared<Matrix>("preXiAA", nn, na);
-    auto preXiBA = std::make_shared<Matrix>("preXiBA", nn, nb);
-    auto preXiAB = std::make_shared<Matrix>("preXiAB", nn, na);
-    auto preXiBB = std::make_shared<Matrix>("preXiBB", nn, nb);
-    C_DGEMM('N', 'N', nn, na, na, 1.0, SCt_Na->pointer()[0], na, &Dp[0][0], na + nb, 0.0,
-            preXiAA->pointer()[0], na);
-    C_DGEMM('N', 'N', nn, nb, na, 1.0, SCt_Na->pointer()[0], na, &Dp[0][na], na + nb, 0.0,
-            preXiBA->pointer()[0], nb);
-    C_DGEMM('N', 'N', nn, na, nb, 1.0, SCt_Nb->pointer()[0], nb, &Dp[na][0], na + nb, 0.0,
-            preXiAB->pointer()[0], na);
-    C_DGEMM('N', 'N', nn, nb, nb, 1.0, SCt_Nb->pointer()[0], nb, &Dp[na][na], na + nb, 0.0,
-            preXiBB->pointer()[0], nb);
+    auto preXiAA = linalg::doublet(SCt_Na, Daa, false, false);
+    auto preXiBA = linalg::doublet(SCt_Na, Dab, false, false);
+    auto preXiAB = linalg::doublet(SCt_Nb, Dab, false, true);
+    auto preXiBB = linalg::doublet(SCt_Nb, Dbb, false, false);
 
     auto XiAA = linalg::doublet(CoccA_, preXiAA, false, true);
     auto XiAB = linalg::doublet(CoccA_, preXiAB, false, true);
