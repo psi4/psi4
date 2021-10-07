@@ -157,13 +157,7 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
 // Haser 1989 Equations 6 to 14
 bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
 
-    // THR in Equation 9
-    double density_threshold_squared = screening_threshold_squared_;
-
-    // Equation 13
-    double Q_MN_sq = shell_pair_values_[N * nshell_ + M];
-    double Q_RS_sq = shell_pair_values_[S * nshell_ + R];
-
+    // Maximum density matrix equation
     double max_density = 0.0;
 
     // Equation 6 (RHF Case)
@@ -185,9 +179,12 @@ bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
         max_density = std::max({2.0 * D_MN, 2.0 * D_RS, D_MR, D_MS, D_NR, D_NS});
     }
 
-    // Equations 6, 9, and 14
-    // Like in Schwarz Screening, we are using the squared quantities to avoid taking sqrts
-    return (Q_MN_sq * Q_RS_sq * max_density * max_density > density_threshold_squared);
+    // Square of Cauchy-Schwarz Q_MN terms (Eq. 13)
+    double mn_mn = shell_pair_values_[N * nshell_ + M];
+    double rs_rs = shell_pair_values_[S * nshell_ + R];
+
+    // The density screened ERI bound (Eq. 6)
+    return (mn_mn * rs_rs * max_density * max_density >= screening_threshold_squared_);
 }
 
 bool TwoBodyAOInt::shell_significant_csam(int M, int N, int R, int S) { 

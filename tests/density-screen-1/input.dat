@@ -19,6 +19,7 @@ set {
     screening density
     ints_tolerance 1.0e-12
     e_convergence 1.0e-10
+    incfock true
 }
 
 ds_energy = energy('scf')

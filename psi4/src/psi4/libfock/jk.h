@@ -260,7 +260,6 @@ class PSI_API JK {
     bool ifb_;
     /// The density matrix convergence value at which to stop performing IFB
     double ifb_d_conv_;
-    /// Do IFB on the current iteration?
     bool do_ifb_iter_;
 
     /// Combine (pq|rs) and (pq|w|rs) integrals before contracting?
@@ -324,8 +323,8 @@ class PSI_API JK {
     std::vector<SharedMatrix> del_K_ao_;
     std::vector<SharedMatrix> del_wK_ao_;
 
-    // Current SCF Iteration
-    int iteration_ = 0;
+    // Is the JK currently on a guess iteration
+    bool guess_ = true;
 
     // => Per-Iteration Setup/Finalize Routines <= //
 

@@ -272,6 +272,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         soscf_performed = False
         self.frac_performed_ = False
         #self.MOM_performed_ = False  # redundant from common_init()
+        ifb_performed = core.get_option("SCF", "INCFOCK") and Dnorm >= core.get_option("SCF", "INCFOCK_CONVERGENCE")
 
         self.save_density_and_energy()
 
@@ -426,6 +427,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 if self.frac_performed_:
                     status.append("FRAC")
 
+                if ifb_performed:
+                    status.append("IFB")
+
                 # Reset occupations if necessary
                 if (self.iteration_ == 0) and self.reset_occ_:
                     self.reset_occupation()
@@ -455,7 +459,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.Db().print_out()
 
         # Set the density convergence value (for INCFOCK)
-        core.set_variable("SCF RMS D", Dnorm)
+        core.set_variable("SCF D NORM", Dnorm)
 
         # Print out the iteration
         core.print_out(
@@ -670,6 +674,7 @@ def scf_finalize_energy(self):
         self.V_potential().clear_collocation_cache()
 
     core.print_out("\nComputation Completed\n")
+    core.del_variable("SCF D NORM")
 
     return energy
 

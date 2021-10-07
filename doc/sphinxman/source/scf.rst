@@ -709,6 +709,22 @@ sieving, set the |scf__ints_tolerance| keyword to your desired cutoff
 the |mints__screening| keyword to your desired option. For Schwarz screening, set it
 to ``SCHWARZ``, for CSAM, ``CSAM``, and for density matrix-based screening, ``DENSITY``.
 
+SCHWARZ
+    Uses the Cauchy-Schwarz inequality to calculate an upper bounded value of a shell quartet,
+
+.. math:: (PQ|RS) <= \sqrt{(PQ|PQ)(RS|RS)}
+
+CSAM
+    An extension of Schwarz estimate that also screens over the long range 1/r operator.
+
+DENSITY
+    An extension of the Schwarz estimate that also screens over elements of the density matrix.
+    For the RHF case, described in [Haser:1989:104]_
+
+.. math:: CON(PQ|RS) <= \sqrt{(PQ|PQ)(RS|RS)} \cdot DCON(PQ, RS)
+    DCON(PQ, RS) = max(4D_{PQ}, 4D_{RS}, D_{PR}, D_{PS}, D_{QR}, D_{QS})
+
+
 When using density-matrix based integral screening, it is useful to build the J and K matrices
 incrementally, using the difference in the density matrix between iterations, rather than the
 full density matrix. To turn on this option, set |scf__incfock| to ``true``. For numerical stability,

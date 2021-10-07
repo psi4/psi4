@@ -221,7 +221,7 @@ void JK::common_init() {
     density_screening_ = options.get_str("SCREENING") == "DENSITY";
     ifb_ = options.get_bool("INCFOCK");
     ifb_d_conv_ = options.get_double("INCFOCK_CONVERGENCE");
-    do_ifb_iter_ = false; // Initialize do IFB iteration
+    do_ifb_iter_ = false;
 }
 size_t JK::memory_overhead() const {
     size_t mem = 0L;
@@ -554,9 +554,9 @@ void JK::initialize() { preiterations(); }
 
 void JK::ifb_setup() {
 
-    if (iteration_ == 0 || D_ao_prev_.size() != D_ao_.size()) {
+    if (guess_ || D_ao_prev_.size() != D_ao_.size()) {
 
-        iteration_ = 0;
+        guess_ = true;
 
         D_ao_prev_.clear();
         del_D_ao_.clear();
@@ -690,9 +690,10 @@ void JK::compute() {
     if (ifb_) {
         timer_on("JK: IFB Preprocessing");
         ifb_setup();
-        double Dnorm = Process::environment.globals["SCF RMS D"];
+        double Dnorm = Process::environment.globals["SCF D NORM"];
+
         // Do IFB on this iteration?
-        do_ifb_iter_ = (iteration_ >= 1) && (Dnorm > ifb_d_conv_);
+        do_ifb_iter_ = !guess_ && (Dnorm >= ifb_d_conv_);
         timer_off("JK: IFB Preprocessing");
     }
 
@@ -735,7 +736,7 @@ void JK::compute() {
         C_right_.clear();
     }
 
-    iteration_ += 1;
+    if (guess_) guess_ = false;
 }
 void JK::set_wcombine(bool wcombine) {
     wcombine_ = wcombine;
