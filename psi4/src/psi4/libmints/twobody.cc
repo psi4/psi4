@@ -121,8 +121,8 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
 
     if (max_dens_shell_pair_.size() == 0) {
         max_dens_shell_pair_.resize(D.size());
-        for (int ind = 0; ind < D.size(); ind++) {
-            max_dens_shell_pair_[ind].resize(nshell_ * nshell_, 1.0);
+        for (int i = 0; i < D.size(); i++) {
+            max_dens_shell_pair_[i].resize(nshell_ * nshell_);
         }
     }
     
@@ -136,16 +136,16 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
             int n_start = bs1_->shell(N).function_index();
             int num_n = bs1_->shell(N).nfunction();
 
-            for (int ind = 0; ind < D.size(); ind++) {
-                double** Dp = D[ind]->pointer();
+            for (int i = 0; i < D.size(); i++) {
+                double** Dp = D[i]->pointer();
                 double max_dens = 0.0;
                 for (int m = m_start; m < m_start + num_m; m++) {
                     for (int n = n_start; n < n_start + num_n; n++) {
                         max_dens = std::max(max_dens, std::abs(Dp[m][n]));
                     }
                 }
-                max_dens_shell_pair_[ind][M * nshell_ + N] = max_dens;
-                if (M != N) max_dens_shell_pair_[ind][N * nshell_ + M] = max_dens;
+                max_dens_shell_pair_[i][M * nshell_ + N] = max_dens;
+                if (M != N) max_dens_shell_pair_[i][N * nshell_ + M] = max_dens;
             }
 
         }
@@ -186,6 +186,7 @@ bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
     }
 
     // Equations 6, 9, and 14
+    // Like in Schwarz Screening, we are using the squared quantities to avoid taking sqrts
     return (Q_MN_sq * Q_RS_sq * max_density * max_density > density_threshold_squared);
 }
 

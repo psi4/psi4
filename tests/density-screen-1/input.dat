@@ -1,6 +1,6 @@
 #! RHF Density Matrix based-Integral Screening Test for water
 
-ref_energy = -76.04125669376049 # TEST
+ref_energy = -76.04125669409470 # TEST
 
 molecule mol {
     0 1
@@ -14,9 +14,11 @@ molecule mol {
 
 set {
     scf_type direct
+    df_scf_guess false
     basis aug-cc-pVDZ
     screening density
     ints_tolerance 1.0e-12
+    e_convergence 1.0e-10
 }
 
 ds_energy = energy('scf')

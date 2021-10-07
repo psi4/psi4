@@ -737,8 +737,6 @@ class PSI_API DirectJK : public JK {
     std::string name() override { return "DirectJK"; }
     size_t memory_estimate() override;
 
-    // => Required Algorithm-Specific Variables <= //
-
     // => Required Algorithm-Specific Methods <= //
 
     /// Do we need to backtransform to C1 under the hood?

@@ -70,6 +70,11 @@ JK::JK(std::shared_ptr<BasisSet> primary) : primary_(primary) { common_init(); }
 JK::~JK() {}
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  Options& options, std::string jk_type) {
+
+    if (options.get_str("SCREENING") == "DENSITY" && !(jk_type == "DIRECT" || options.get_bool("DF_SCF_GUESS"))) {
+        throw PSIEXCEPTION("Density screening has not yet been implemented for non-Direct SCF algorithms.");
+    }
+
     // Throw small DF warning
     if (jk_type == "DF") {
         outfile->Printf("\n  Warning: JK type 'DF' found in simple constructor, defaulting to DiskDFJK.\n");
@@ -546,6 +551,7 @@ void JK::AO2USO() {
     delete[] temp;
 }
 void JK::initialize() { preiterations(); }
+
 void JK::ifb_setup() {
 
     if (iteration_ == 0 || D_ao_prev_.size() != D_ao_.size()) {

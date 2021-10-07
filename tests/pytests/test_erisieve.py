@@ -205,8 +205,8 @@ def test_schwarz_vs_density_quartets():
         if screen_density:
             screen_count_density += 1
     
-    assert compare_integers(screen_count_schwarz, 14504, 'Schwarz vs Density Screening, Cutoff 1.0e-12')
-    assert compare_integers(screen_count_density, 19440, 'Schwarz vs Density Screening, Cutoff 1.0e-12')
+    assert compare_integers(screen_count_schwarz, 14504, 'Schwarz Screened Ints Count, Cutoff 1.0e-12')
+    assert compare_integers(screen_count_density, 19440, 'Density Screened Ints Count, Cutoff 1.0e-12')
 
 def test_rhf_vs_uhf_screening():
     """Checks difference between the number of shell quartets screened with Density screening in RHF vs UHF. 
@@ -266,8 +266,8 @@ def test_rhf_vs_uhf_screening():
         if screen_uhf:
             screen_count_uhf += 1
     
-    assert compare_integers(screen_count_rhf, 19440, 'RHF vs UHF Density Screening, Cutoff 1.0e-12')
-    assert compare_integers(screen_count_uhf, 19440, 'RHF vs UHF Density Screening, Cutoff 1.0e-12')
+    assert compare_integers(screen_count_rhf, 19440, 'RHF Density Screened Ints Count, Cutoff 1.0e-12')
+    assert compare_integers(screen_count_uhf, 19440, 'UHF Density Screened Ints Count, Cutoff 1.0e-12')
 
 def test_schwarz_vs_density_energy():
     """Checks difference in Hartree-Fock energy between Schwarz and Density screening (with and without IFB), 

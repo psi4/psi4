@@ -561,4 +561,5 @@ Bibliography
 
 .. [Haser:1989:104]
    M. Haser and R. Ahlrichs,
+   10.1002/jcc.540100111
    *J. Comp. Chem.* **10(1)**, 104 (1989).

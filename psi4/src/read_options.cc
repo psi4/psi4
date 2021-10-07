@@ -1278,6 +1278,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("BASIS", "");
         /*- Omega scaling for Erf and Erfc.-*/
         options.add_double("OMEGA_ERF", 0.20);
+        /*- The type of screening used when computing two-electron integrals. 
+        This is a slightly tighter bound than that of default Schwarz screening. -*/
+        options.add_str("SCREENING", "SCHWARZ", "SCHWARZ CSAM DENSITY");
     }
     if (name == "SCF" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs self consistent field (Hartree-Fock and

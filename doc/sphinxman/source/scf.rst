@@ -706,8 +706,14 @@ For some of these algorithms, Schwarz and/or density sieving can be used to
 identify negligible integral contributions in extended systems. To activate
 sieving, set the |scf__ints_tolerance| keyword to your desired cutoff
 (1.0E-12 is recommended for most applications). To choose the type of sieving, set 
-the |sapt__screening| keyword to your desired option. For Schwarz screening, set it
-to ``SCHWARZ``, for CSAM, ``CSAM``, and for density sieving, ``DENSITY``.
+the |mints__screening| keyword to your desired option. For Schwarz screening, set it
+to ``SCHWARZ``, for CSAM, ``CSAM``, and for density matrix-based screening, ``DENSITY``.
+
+When using density-matrix based integral screening, it is useful to build the J and K matrices
+incrementally, using the difference in the density matrix between iterations, rather than the
+full density matrix. To turn on this option, set |scf__incfock| to ``true``. For numerical stability,
+it is useful to turn off the incremental Fock build when the difference density matrix becomes small.
+To account for this, set the keyword |scf__incfock_convergence| (default 1.0e-5).
 
 We have added the automatic capability to use the extremely fast DF
 code for intermediate convergence of the orbitals, for |globals__scf_type|
