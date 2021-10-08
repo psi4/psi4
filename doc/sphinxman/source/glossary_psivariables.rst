@@ -676,6 +676,12 @@ PSI Variables by Alpha
    Unless the method includes a dispersion correction, this quantity is
    equal to :psivar:`SCF TOTAL ENERGY`.
 
+.. psivar:: DFT FUNCTIONAL TOTAL GRADIENT
+
+   The total electronic gradient for the underlying functional of the
+   requested DFT method, without any dispersion correction. The gradient
+   analogue to :psivar:`DFT FUNCTIONAL TOTAL ENERGY`.
+
 .. psivar:: DFT TOTAL ENERGY
 
    The total electronic energy [Eh] for the requested DFT method,

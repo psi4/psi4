@@ -68,9 +68,9 @@ def _expand_bracketed_basis(basisstring: str, molecule: Union[qcdb.molecule.Mole
         for sensible sequence and returned as separate basis sets
         (e.g., ``'cc-pV[Q5]Z'` is returned as ``(["cc-pVQZ", "cc-pV5Z"], [4, 5])``).
         Allows out-of-order zeta specification (e.g., ``[qtd]``) and numeral for
-        number (e.g., ``[23]``). Does not allow skipped zetas (e.g., ``[dq]``), zetas
-        outside the [2,8] range, non-Dunning, non-Ahlrichs, or non-Jensen sets,
-        or non-findable .gbs sets.
+        number (e.g., ``[23]``). Does not allow skipped zetas (e.g., ``[dq]``), 
+        zetas outside the [2,8] range, non-Dunning, non-Ahlrichs, or non-Jensen 
+        sets, or non-findable .gbs sets.
     molecule : qcdb.molecule or psi4.core.Molecule
         This function checks that the basis is valid by trying to build
         the qcdb.BasisSet object for *molecule* or for H2 if None.
@@ -178,8 +178,8 @@ def xtpl_highest_1(functionname: str,
                    valueHI: float,
                    verbose: bool = True,
                    **kwargs) -> Union[float, core.Matrix, core.Vector]:
-    r"""Scheme for total or correlation energies with a single basis or the highest
-    zeta-level among an array of bases. Used by :py:func:`~psi4.cbs`.
+    r"""Scheme for energies with a single basis or the highest zeta-level among 
+    an array of bases. Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
@@ -226,10 +226,10 @@ def xtpl_exponential_2(functionname: str,
                        valueLO: float,
                        zHI: int,
                        valueHI: float,
-                       verbose: bool = True,
-                       alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
-    r"""Extrapolation scheme using exponential form for reference energies with two adjacent
-    zeta-level bases. Used by :py:func:`~psi4.cbs`.
+                       alpha: float,
+                       verbose: bool = True) -> Union[float, core.Matrix, core.Vector]:
+    r"""Extrapolation scheme using exponential form for energies with two 
+    adjacent zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
@@ -261,9 +261,9 @@ def xtpl_exponential_2(functionname: str,
         raise ValidationError("xtpl_exponential_2: Inputs must be of the same datatype! (%s, %s)" %
                               (type(valueLO), type(valueHI)))
 
-    if alpha is None:
-        raise ValidationError("xtpl_exponential_2: alpha must be provided.")
-
+    if not isinstance(alpha, float):
+        raise ValidationError(f"xtpl_exponential_2: Provided alpha must be a float, not {alpha}.")
+    
     beta_division = 1 / (math.exp(-1 * alpha * zLO) * (math.exp(-1 * alpha) - 1))
     beta_mult = math.exp(-1 * alpha * zHI)
 
@@ -327,9 +327,9 @@ def xtpl_power_2(functionname: str,
                  valueLO: float,
                  zHI: int,
                  valueHI: float,
-                 verbose: bool = True,
-                 alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
-    r"""Extrapolation scheme using power form for reference energies with two adjacent
+                 alpha: float,
+                 verbose: bool = True) -> Union[float, core.Matrix, core.Vector]:
+    r"""Extrapolation scheme using power form for energies with two adjacent 
     zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
     Parameters
@@ -428,10 +428,10 @@ def xtpl_expsqrt_2(functionname: str,
                    valueLO: float,
                    zHI: int,
                    valueHI: float,
-                   verbose: bool = True,
-                   alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
-    r"""Extrapolation scheme using square root-exponential form for reference energies with two adjacent
-    zeta-level bases. Used by :py:func:`~psi4.cbs`.
+                   alpha: float = None,
+                   verbose: bool = True) -> Union[float, core.Matrix, core.Vector]:
+    r"""Extrapolation scheme using square root-exponential form for energies 
+    with two adjacent zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
@@ -533,9 +533,9 @@ def xtpl_exponential_3(functionname: str,
                        zHI: int,
                        valueHI: float,
                        verbose: bool = True,
-                       alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
-    r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
-    Used by :py:func:`~psi4.cbs`.
+                       **kwargs) -> Union[float, core.Matrix, core.Vector]:
+    r"""Extrapolation scheme using exponential form for energies with three 
+    adjacent zeta-level bases. Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
@@ -553,8 +553,6 @@ def xtpl_exponential_3(functionname: str,
         Higher zeta level. Should be equal to zLO + 2.
     valueHI
         Higher value used for extrapolation.
-    alpha
-        Not used.
 
     Returns
     -------
@@ -632,10 +630,14 @@ def scf_xtpl_helgaker_2(functionname: str,
                         valueLO: float,
                         zHI: int,
                         valueHI: float,
-                        verbose: bool = True,
-                        alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
-    r"""Alias for the exponential form of the extrapolation scheme for reference energies with two adjacent
-    zeta-level bases. Used by :py:func:`~psi4.cbs`.
+                        alpha: float = None,
+                        verbose: bool = True) -> Union[float, core.Matrix, core.Vector]:
+    r"""Alias for the exponential form of the extrapolation scheme for reference 
+    energies with two adjacent zeta-level bases, with :math:`\alpha = 1.63`, see 
+    [1]_. Based on the average of 24 :math:`\alpha`s obtained by fitting 2-6, 
+    2-5, and 3-6 zeta results with the exponential form for H2, C2, N2, BH, HF, 
+    BF, CO, and NO+, see [1]_. This is the standard extrapolation function for 
+    reference energies in Psi4. Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
@@ -665,19 +667,16 @@ def scf_xtpl_helgaker_2(functionname: str,
     References
     ----------
 
-    .. [1] Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
+    .. [1] Halkier, Helgaker, Jorgensen, Klopper, & Olsen, 
+       Chem. Phys. Lett. 302 (1999) 437-446,
        DOI: 10.1016/S0009-2614(99)00179-7
 
     """
 
-    if type(valueLO) != type(valueHI):
-        raise ValidationError("scf_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)" %
-                              (type(valueLO), type(valueHI)))
-
     if alpha is None:
         alpha = 1.63
 
-    return xtpl_exponential_2(functionname, zLO, valueLO, zHI, valueHI, verbose=verbose, alpha=alpha)
+    return xtpl_exponential_2(functionname, zLO, valueLO, zHI, valueHI, alpha, verbose=verbose)
 
 
 def scf_xtpl_truhlar_2(functionname: str,
@@ -685,10 +684,13 @@ def scf_xtpl_truhlar_2(functionname: str,
                        valueLO: float,
                        zHI: int,
                        valueHI: float,
-                       verbose: bool = True,
-                       alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
-    r"""Alias for the power form of the extrapolation scheme for reference energies with two adjacent
-    zeta-level bases. Used by :py:func:`~psi4.cbs`.
+                       alpha: float = None,
+                       verbose: bool = True) -> Union[float, core.Matrix, core.Vector]:
+    r"""Alias for the power form of the extrapolation scheme for reference 
+    energies with two adjacent zeta-level bases with :math:`\alpha = 3.4`, see 
+    [2]_. Derived by minimizing the RMS error for Ne, HF, H2O; particularly 
+    useful for extrapolation from [2,3]-zeta Dunning-style basis sets, see [2]_. 
+    Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
@@ -723,14 +725,10 @@ def scf_xtpl_truhlar_2(functionname: str,
 
     """
 
-    if type(valueLO) != type(valueHI):
-        raise ValidationError("scf_xtpl_truhlar_2: Inputs must be of the same datatype! (%s, %s)" %
-                              (type(valueLO), type(valueHI)))
-
     if alpha is None:
         alpha = 3.40
-
-    return xtpl_power_2(functionname, zLO, valueLO, zHI, valueHI, verbose=verbose, alpha=alpha)
+    
+    return xtpl_power_2(functionname, zLO, valueLO, zHI, valueHI, alpha, verbose=verbose)
 
 
 def scf_xtpl_karton_2(functionname: str,
@@ -738,10 +736,12 @@ def scf_xtpl_karton_2(functionname: str,
                       valueLO: float,
                       zHI: int,
                       valueHI: float,
-                      verbose: bool = True,
-                      alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
+                      alpha: float = None,
+                      verbose: bool = True) -> Union[float, core.Matrix, core.Vector]:
     r"""Alias for the exponential-square root of the extrapolation scheme for reference energies with two adjacent
-    zeta-level bases. Used by :py:func:`~psi4.cbs`.
+    zeta-level bases, see e.g. [3]_. Origin of :math:`\alpha = 6.3` unknown. The exponential-square root function is 
+    known to be the correct scaling for HF and DFT, see [4]_; this is due to the nuclear cusp, see [5]_ and [6]_. 
+    Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
@@ -773,17 +773,22 @@ def scf_xtpl_karton_2(functionname: str,
 
     .. [3] Karton, Martin, Theor. Chem. Acc. 115 (2006) 330-333,
        DOI: 10.1007/s00214-005-0028-6
+    
+    .. [4] Shaw, Int. J. Quantum. Chem. 120 (2020) e26264,
+       DOI: 10.1002/qua.26264
+
+    .. [5] McKemmish, Gill, J. Chem. Theory Comput. 8 (2012) 267-273,
+       DOI: 10.1021/ct300559t
+    
+    .. [6] Klopper, Kutzelnigg, J. Mol. Struct. 135 (1986) 339-356,
+       DOI: 10.1016/0166-1280(86)80068-9
 
     """
 
-    if type(valueLO) != type(valueHI):
-        raise ValidationError("scf_xtpl_karton_2: Inputs must be of the same datatype! (%s, %s)" %
-                              (type(valueLO), type(valueHI)))
-
     if alpha is None:
-        alpha = 6.30
+        alpha = 6.3
 
-    return xtpl_expsqrt_2(functionname, zLO, valueLO, zHI, valueHI, verbose=verbose, alpha=alpha)
+    return xtpl_expsqrt_2(functionname, zLO, valueLO, zHI, valueHI, alpha, verbose=verbose)
 
 
 def scf_xtpl_helgaker_3(functionname: str,
@@ -794,9 +799,15 @@ def scf_xtpl_helgaker_3(functionname: str,
                         zHI: int,
                         valueHI: float,
                         verbose: bool = True,
-                        alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
-    r"""Extrapolation scheme for reference energies with three adjacent zeta-level bases.
-    Used by :py:func:`~psi4.cbs`.
+                        **kwargs) -> Union[float, core.Matrix, core.Vector]:
+    r"""Extrapolation scheme for reference energies with three adjacent 
+    zeta-level bases. Here, :math:`\alpha` is calculated directly from the three 
+    datapoints in addition to  the pre-factor :math:`\beta`, see [7]_. Unreliable, 
+    as the smallest basis set is too small to provide much benefit to extrapolate 
+    the largest basis set; even [7]_ suggests to use a two-point extrapolation 
+    with :math:`\alpha = 1.63`, i.e. :py:func:`scf_xtpl_helgaker_2`, instead. 
+    This  is the default extrapolation function for three point extrapolations 
+    in Psi4. Used by :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
@@ -831,12 +842,12 @@ def scf_xtpl_helgaker_3(functionname: str,
     References
     ----------
 
-    .. [4] Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
+    .. [7] Halkier, Helgaker, Jorgensen, Klopper, & Olsen, Chem. Phys. Lett. 302 (1999) 437-446,
        DOI: 10.1016/S0009-2614(99)00179-7
 
     """
 
-    return xtpl_exponential_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=verbose, alpha=alpha)
+    return xtpl_exponential_3(functionname, zLO, valueLO, zMD, valueMD, zHI, valueHI, verbose=verbose)
 
 
 def corl_xtpl_helgaker_2(functionname: str,
@@ -844,10 +855,14 @@ def corl_xtpl_helgaker_2(functionname: str,
                          valueLO: float,
                          zHI: int,
                          valueHI: float,
-                         verbose: bool = True,
-                         alpha: float = None) -> Union[float, core.Matrix, core.Vector]:
-    r"""Alias for the cubic power extrapolation scheme for correlation energies with two adjacent zeta-level bases.
-    Used by :py:func:`~psi4.cbs`.
+                         alpha: float = None,
+                         verbose: bool = True) -> Union[float, core.Matrix, core.Vector]:
+    r"""Alias for the cubic power extrapolation scheme for correlation energies 
+    with two adjacent zeta-level bases. The :math:`\alpha = 3.0` is from 
+    correlated calculations of H2O, see [8]_; it has been confirmed to work well
+    for HF, Ne, H2O with Dunning basis sets, see [9]_. This is the default 
+    extrapolation method for correlated calculations in Psi4. Used by 
+    :py:func:`~psi4.cbs`.
 
     Parameters
     ----------
@@ -876,20 +891,20 @@ def corl_xtpl_helgaker_2(functionname: str,
 
     References
     ----------
+    
+    .. [8] Helgaker, Klopper, Koch, Noga, J. Chem. Phys. 106 (1997) 9639-9646,
+       DOI: 10.1063/1.473863
 
-    .. [5] Halkier, Helgaker, Jorgensen, Klopper, Koch, Olsen, & Wilson,
+    .. [9] Halkier, Helgaker, Jorgensen, Klopper, Koch, Olsen, & Wilson,
        Chem. Phys. Lett. 286 (1998) 243-252,
        DOI: 10.1016/S0009-2614(99)00179-7
 
     """
-    if type(valueLO) != type(valueHI):
-        raise ValidationError("corl_xtpl_helgaker_2: Inputs must be of the same datatype! (%s, %s)" %
-                              (type(valueLO), type(valueHI)))
 
     if alpha is None:
         alpha = 3.0
 
-    return xtpl_power_2(functionname, zLO, valueLO, zHI, valueHI, verbose=verbose, alpha=alpha)
+    return xtpl_power_2(functionname, zLO, valueLO, zHI, valueHI, alpha, verbose=verbose)
 
 
 def return_energy_components() -> dict:
@@ -1122,28 +1137,29 @@ def _get_default_xtpl(nbasis: int, xtpl_type: Union[str, None]) -> Callable:
     """
 
     if nbasis == 1:
-        if xtpl_type in ["scf", "corl", "fctl", "dh", None]:
+        allowed = ["scf", "corl", "fctl", "dh", None]
+        if xtpl_type in allowed:
             return xtpl_highest_1
         else:
-            raise ValidationError(f"Stage treatment must be one of ['scf','corl','fctl','dh',None], not '{xtpl_type}'")
-    elif nbasis == 2 and xtpl_type in ["scf", "corl", "fctl", "dh"]:
+            raise ValidationError(f"Stage treatment must be one of {allowed}, not '{xtpl_type}'")
+    elif nbasis == 2:
+        allowed = ["scf", "corl", "fctl", "dh"]
         if xtpl_type == "scf":
-            return xtpl_exponential_2
+            return scf_xtpl_helgaker_2
         elif xtpl_type == "corl":
-            return xtpl_power_2
+            return corl_xtpl_helgaker_2
         elif xtpl_type == "fctl":
             return xtpl_expsqrt_2
         elif xtpl_type == "dh":
             return xtpl_power_2
         else:
-            raise ValidationError(f"Stage treatment must be one of ['scf','corl','fctl','dh'], not '{xtpl_type}'")
+            raise ValidationError(f"Stage treatment must be one of {allowed}, not '{xtpl_type}'")
     elif nbasis == 3:
+        allowed = ["scf"]
         if xtpl_type == "scf":
-            return xtpl_exponential_3
-        elif xtpl_type == "fctl":
-            return xtpl_expsqrt_3
+            return scf_xtpl_helgaker_3
         else:
-            raise ValidationError(f"Stage treatment must be one of ['scf','fctl'], not '{xtpl_type}'")
+            raise ValidationError(f"Stage treatment must be one of {allowed}, not '{xtpl_type}'")
     else:
         raise ValidationError(f"Wrong number of basis sets supplied to scf_xtpl: {nbasis}")
 
@@ -1234,8 +1250,11 @@ def _get_dfa_alpha(xtpl_type: str, bdata: List, funcname: str) -> float:
             raise ValidationError(f"DFT dh extrapolation alpha for basis sets {bnames} undefined.")
 
 
-def _get_default_alpha(xtpl_type: Union[str, None], bdata: List, funcname: str = None) -> float:
-    """ A helper function to determine default extrapolation alpha.
+def _get_default_alpha(xtpl_type: Union[str, None], bdata: List, funcname: str = None) -> Union[float, None]:
+    """ A helper function to determine default extrapolation alpha. Currently only
+    used by :py:func:`_validate_cbs_inputs` to get default alphas for DFA, as both
+    "scf" and "corl" types have their default alpha set.
+
 
     Parameters
     ----------
@@ -1258,9 +1277,9 @@ def _get_default_alpha(xtpl_type: Union[str, None], bdata: List, funcname: str =
         return None
     elif nbasis == 2:
         if xtpl_type == "scf":
-            return 1.63  # scf_xtpl_helgaker_2
+            return 1.63  # this is the scf_xtpl_helgaker_2 default
         elif xtpl_type == "corl":
-            return 3.00  # corl_xtpl_helgaker_2
+            return 3.00  # this is the corl_xtpl_helgaker_2 default
         elif xtpl_type in ["fctl", "dh"]:
             return _get_dfa_alpha(xtpl_type, bdata, funcname)
         else:
@@ -1485,8 +1504,8 @@ def _process_cbs_kwargs(kwargs: dict) -> list:
 
 def cbs(func, label, **kwargs):
     r"""Function to define a multistage energy method from combinations of
-    basis set extrapolations and delta corrections and condense the
-    components into a minimum number of calculations.
+    basis set extrapolations and delta corrections and condense the components 
+    into a minimum number of calculations.
 
     :aliases: complete_basis_set()
 
@@ -1510,12 +1529,20 @@ def cbs(func, label, **kwargs):
 
        - Need to add more extrapolation schemes
 
-    As represented in the equation below, a CBS energy method is defined in several
-    sequential stages (scf, corl, delta1, delta2, ... ) covering treatment
-    of the reference total energy, the correlation energy, a delta correction to the
-    correlation energy, and a second delta correction, etc.. Each is activated by its
-    stage_wfn keyword, or as a field in the ```cbs_metadata``` list, and is only
-    allowed if all preceding stages are active.
+    As represented in the equation below, a CBS energy method is defined in 
+    several sequential stages (scf, corl, delta1, delta2, ... ) covering treatment
+    of the reference total energy, the correlation energy, a delta correction to 
+    the correlation energy, and a second delta correction, etc. Each is activated 
+    by its stage_wfn keyword, or as a field in the ```cbs_metadata``` list, and 
+    is only allowed if all preceding stages are active.
+
+    The extrapolation of DFT calculations from basis sets of successive zeta 
+    levels is also implemented. By default, the components of the DFA recipe
+    (fctl, dh, disp, nl) are treated separately: the fctl component (equivalent
+    to the scf stage in WFT) is extrapolated using the exponential -- square root
+    function; the dh component (equivalent to the corl stage in WFT) is
+    extrapolated using the power function; and the disp and nl components are not
+    extrapolated at all.
 
     .. include:: /cbs_eqn.rst
 
@@ -1525,7 +1552,7 @@ def cbs(func, label, **kwargs):
         that stage in defining the CBS energy.
 
         The cbs() function requires, at a minimum, ``name='scf'`` and ``scf_basis``
-        keywords to be specified for reference-step only jobs and ``name`` and
+        keywords to be specified for reference-stage only jobs and ``name`` and
         ``corl_basis`` keywords for correlated jobs.
 
         The following energy methods have been set up for cbs().
@@ -1571,13 +1598,15 @@ def cbs(func, label, **kwargs):
            * mrccsd(t)
            * mrccsdt
            * mrccsdt(q)
+           * all built-in DFAs
 
     :type name: str
     :param name: ``'scf'`` || ``'ccsd'`` || etc.
 
         First argument, usually unlabeled. Indicates the computational method
         for the correlation energy, unless only reference step to be performed,
-        in which case should be ``'scf'``. Overruled if stage_wfn keywords supplied.
+        in which case should be ``'scf'``. Overruled if stage_wfn keywords is 
+        supplied.
 
     :type scf_wfn: str
     :param scf_wfn: |dl| ``'scf'`` |dr| || ``'c4-scf'`` || etc.
@@ -1650,72 +1679,86 @@ def cbs(func, label, **kwargs):
         Transformations of the energy through basis set extrapolation for each
         stage of the CBS definition. A complaint is generated if number of basis
         sets in stage_basis does not exactly satisfy requirements of stage_scheme.
-        An exception is the default, ``'xtpl_highest_1'``, which uses the best basis
-        set available. See :ref:`sec:cbs_xtpl` for all available schemes.
+        An exception is the default, ``'xtpl_highest_1'``, which uses the best 
+        basis set available. See :ref:`sec:cbs_xtpl` for all available schemes.
 
     :type scf_scheme: Callable
     :param scf_scheme: |dl| ``xtpl_highest_1`` |dr| || ``scf_xtpl_helgaker_3`` || etc.
 
-        Indicates the basis set extrapolation scheme to be applied to the reference energy.
-        Defaults to :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_3` if three valid basis sets
-        present in ``psi4.driver.driver_cbs.scf_basis``, :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_2` if two valid basis
-        sets present in ``scf_basis``, and :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` otherwise.
+        Indicates the basis set extrapolation scheme to be applied to the 
+        reference energy. Defaults to :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_3` 
+        if three valid basis sets present in ``psi4.driver.driver_cbs.scf_basis``, 
+        :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_2` if two valid basis
+        sets present in ``scf_basis``, and :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` 
+        otherwise.
 
         .. hlist::
            :columns: 1
 
            * :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1`
-           * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_3`
+           * :py:func:`~psi4.driver.driver_cbs.xtpl_exponential_2` 
+           * :py:func:`~psi4.driver.driver_cbs.xtpl_power_2` 
+           * :py:func:`~psi4.driver.driver_cbs.xtpl_expsqrt_2` 
            * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_2`
            * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_truhlar_2`
            * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_karton_2`
+           * :py:func:`~psi4.driver.driver_cbs.xtpl_exponential_3`
+           * :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_3`
 
     :type corl_scheme: Callable
     :param corl_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
-        Indicates the basis set extrapolation scheme to be applied to the correlation energy.
-        Defaults to :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``corl_basis`` and :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` otherwise.
+        Indicates the basis set extrapolation scheme to be applied to the 
+        correlation energy. Defaults to :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` 
+        if two valid basis sets present in ``corl_basis`` and 
+        :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` otherwise.
 
         .. hlist::
            :columns: 1
 
            * :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1`
+           * :py:func:`~psi4.driver.driver_cbs.xtpl_power_2`
            * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
 
     :type delta_scheme: Callable
     :param delta_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
-        Indicates the basis set extrapolation scheme to be applied to the delta correction
-        to the correlation energy.
-        Defaults to :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta_basis`` and :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` otherwise.
+        Indicates the basis set extrapolation scheme to be applied to the delta 
+        correction to the correlation energy. Defaults to 
+        :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` if two valid basis 
+        sets present in ``delta_basis`` and :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` 
+        otherwise.
 
         .. hlist::
            :columns: 1
 
            * :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1`
+           * :py:func:`~psi4.driver.driver_cbs.xtpl_power_2` 
            * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
 
     :type delta2_scheme: Callable
     :param delta2_scheme: |dl| ``xtpl_highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.
 
-        Indicates the basis set extrapolation scheme to be applied to the second delta correction
-        to the correlation energy.
-        Defaults to :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` if two valid basis sets
-        present in ``delta2_basis`` and :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` otherwise.
+        Indicates the basis set extrapolation scheme to be applied to the second 
+        delta correction to the correlation energy. Defaults to 
+        :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` if two valid 
+        basis sets present in ``delta2_basis`` and 
+        :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` otherwise.
 
         .. hlist::
            :columns: 1
 
            * :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1`
+           * :py:func:`~psi4.driver.driver_cbs.xtpl_power_2` 
            * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
 
     :type scf_alpha: float
     :param scf_alpha: |dl| ``1.63`` |dr|
 
-        Overrides the default \alpha parameter used in the listed SCF extrapolation procedures.
-        Has no effect on others, including :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` and :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_3`.
+        Overrides the default :math:`\alpha` parameter used in the listed SCF 
+        extrapolation procedures. Has no effect on others, including 
+        :py:func:`~psi4.driver.driver_cbs.xtpl_highest_1` and 
+        :py:func:`~psi4.driver.driver_cbs.scf_xtpl_helgaker_3`.
 
         .. hlist::
            :columns: 1
@@ -1727,8 +1770,10 @@ def cbs(func, label, **kwargs):
     :type corl_alpha: float
     :param corl_alpha: |dl| ``3.00`` |dr|
 
-        Overrides the default \alpha parameter used in the listed :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` correlation
-        extrapolation to the corl stage. The supplied \alpha does not impact delta or any further stages.
+        Overrides the default :math:`\alpha` parameter used in the listed 
+        :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` correlation
+        extrapolation to the corl stage. The supplied :math:`\alpha` does not 
+        impact delta or any further stages.
 
         .. hlist::
            :columns: 1
@@ -1738,10 +1783,11 @@ def cbs(func, label, **kwargs):
     :type delta_alpha: float
     :param delta_alpha: |dl| ``3.00`` |dr|
 
-        Overrides the default \alpha parameter used in the listed
-        :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` correlation extrapolation for the delta correction. Useful when
-        delta correction is performed using smaller basis sets for which a different \alpha might
-        be more appropriate.
+        Overrides the default :math:`\alpha` parameter used in the listed
+        :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2` correlation 
+        extrapolation for the delta correction. Useful when delta correction is 
+        performed using smaller basis sets for which a different :math:`\alpha` 
+        might be more appropriate.
 
         .. hlist::
            :columns: 1
@@ -1750,30 +1796,86 @@ def cbs(func, label, **kwargs):
 
     * Combined interface
 
-    :type cbs_metadata: list of dicts
+    :type cbs_metadata: list(dict)
     :param cbs_metadata: |dl| autogenerated from above keywords |dr| || ``[{"wfn": "hf", "basis": "cc-pv[TQ5]z"}]`` || etc.
 
-        This is the interface to which all of the above calls are internally translated. The first item in
-        the array is always defining the SCF contribution to the total energy. The required items in the
-        dictionary are:
+        This is the interface to which all of the above calls are internally 
+        translated. Each item in this list is a dict, corresponding to a stage
+        in the extrapolation recipe. For WFT, the first item in the list is always 
+        defining the SCF contribution to the total energy, and will be generated 
+        automatically if not supplied. The latter list elements then define 
+        correlated or delta stages, with keywords filled-in automatically from 
+        previous stages, unless supplied by the user. 
+        
+        The required keywords in each stage are:
 
-        * ```wfn```: typically ```HF```, which is subsumed in correlated methods anyway.
-        * ```basis```: basis set, can be in a bracketed form (eg. ```cc-pv[tq]z```)
+        * ``"wfn"``: method name, for WFT this is typically ``"HF"``, which is 
+          subsumed in correlated methods anyway.
+        * ``"basis"``: basis set, can be in a bracketed form (``"cc-pv[tq]z"``)
 
-        |  Other supported arguments for the first dictionary are:
+        Other supported keywords for all stages are:
 
-        * ```scheme```: scf extrapolation scheme function, by default it is worked out from the number of basis sets (1 - 3) supplied as ```basis```.
-        * ```alpha```: alpha for the above scheme, if the default is to be overriden
-        * ```options```: if special options are required for a step, they should be entered as a dict here. If some options should be used for both parts of the stage, they should be entered in both ```options``` and ```options_lo```. This is helpful for calculating all electron corrections in otherwise frozen core calculations, or relativistic (DKH) Hamiltionian corrections for otherwise nonrelativistic.
-        * ```options_lo```: special options for lower method in a given stage. This is useful to calculate a direct stage in an otherwise density-fitted calculation, or similar.
-        * ```treatment```: treat extrapolation stage as ```scf``` or ```corl```, by default only the first stage is ```scf``` and every later one is ```corl```.
-        * ```stage```: tag for the stage used in tables.
+        * ``"scheme"``: the extrapolation function (exponential, power, etc.). By 
+          default it is assigned based on the number of basis sets (1 - 3) 
+          supplied in ``"basis"`` and the ``"treatment"`` keyword for the stage.
+        * ``"alpha"``: the :math:`\alpha\` for the above scheme, if the default 
+          is to be overriden.
+        * ``"options"``: if special Psi4 options are required for a stage, they 
+          can be entered as a dict here. For corl or delta stages, if an option
+          should be used for both parts of the stage, it should be entered in 
+          both ``"options"`` and ``"options_lo"``. This functionality is helpful
+          for calculating all electron corrections in otherwise frozen core 
+          calculations, or relativistic (DKH) Hamiltionian corrections for 
+          otherwise nonrelativistic calculations.
+        * ``"treatment"``: treat the extrapolation stage as ``"scf"`` or ``"corl"``. 
+          Used only for WFT calculations. By default, only the first stage is 
+          treated as ``"scf"``, every latter one is treated as ``"corl"``. 
+          Processed by the metadata validator to infer the ``"scheme"``.
+        * ``"stage"``: a str tag for the stage written in the output tables.
 
-        |  The next items in the ```cbs_metadata``` array extrapolate correlation. All of the above parameters are available, with only the ```wfn``` and ```basis``` keywords required. Other supported parameters are:
+        From second stage onwards, the following keywords can be specified:
 
-        * ```wfn_lo```: the lower method from which the delta correction is to be calculated. By default, it is set to ```wfn``` from the previous field in the ```cbs_metadata``` array.
-        * ```basis_lo```: basis set to be used for the delta correction. By default, it is the same as the ```basis``` specified above.
+        * ``"wfn_lo"``: the lower method from which a delta correction is to be 
+          calculated. By default, it is set to ``"wfn"`` from the previous stage
+          in the ``cbs_metadata`` list: therefore a ``"corl"`` stage would be 
+          ``"wfn": "MP2" - "wfn_lo":"HF"``.
+        * ```basis_lo```: basis set to be used for the delta correction. By 
+          default, it is the same as the ``"basis"`` in the current stage 
+          specified above.
+        * ``"options_lo"``: special options for the lower method in a given stage. 
+          This is useful when options for both the lower and upper method in a
+          single stage should differ from the global options, e.g. to calculate 
+          a stage using direct integrals in an otherwise density-fitted 
+          calculation.
+        
+        For DFT calculations, the components of the total DFT energy obtained in 
+        a single calculation may be extrapolated using different formulas. To 
+        avoid recomputing, the ``"component"`` keyword can be specified for each
+        stage. The allowed values are:
 
+        * ``"dft"``, specifying the total energy, i.e. the ``DFT TOTAL ENERGY``,
+        * ``"fctl"``, specifying the base functional SCF energy excluding non-
+          local corrections, i.e. ``DFT FUNCTIONAL TOTAL ENERGY`` less any
+          ``DFT VV10 ENERGY``
+        * ``"dh"``, specifying the perturbative correlation in double hybrid
+          functionals, i.e. the ``DOUBLE-HYBRID CORRECTION ENERGY``
+        * ``"disp"``, specifying dispersion corrections such as -D3(0), i.e.
+          the ``DISPERSION CORRECTION ENERGY``
+        * ``"nl"``, specifying the non-local correction energy, i.e. the
+          ``DFT VV10 ENERGY``
+        
+        Unless specified by the user, any ``cbs()`` calculation requesting a DFA
+        as a method will generate a stage with ``"fctl"`` treatment automatically,
+        using :py:func:`~psi4.driver.driver_cbs.xtpl_expsqrt_2` and 
+        :py:func:`~psi4.driver.driver_cbs._get_dfa_alpha` to extrapolate. The
+        ``"dh"``, ``"disp"``, or ``"nl"`` stages are generated as required, with
+        the ``"dh"`` stage extrapolated using :py:func:`~psi4.driver.driver_cbs.xtpl_power_2`
+        while the ``"disp"`` and ``"nl"`` stages are not extrapolated by default.
+        See example [10] below.
+
+        DFA delta stages, i.e. stages where both ``"wfn"`` and ``"wfn_lo"`` are 
+        supplied, are understood by the parser and can be computed; see example 
+        [11] below.
 
     * Others
 
@@ -1812,6 +1914,14 @@ def cbs(func, label, **kwargs):
 
     >>> # [9] cbs() coupled with optimize()
     >>> TODO optimize('mp2', corl_basis='cc-pV[DT]Z', corl_scheme=corl_xtpl_helgaker_2, func=cbs)
+
+    >>> # [10] basis set extrapolation for a dispersion-corrected double-hybrid DFA with fctl and dh extrapolated separately
+    >>> energy('B2PLYP-D3BJ/def2-[st]zvpd')
+
+    >>> # [11] cbs() of BLYP-D3/cc-pv[dt]z with a delta-correction from B2PLYP-D3
+    >>> E = energy(cbs, cbs_metadata=[{'wfn': "blyp-d3", 'basis': "cc-pv[dt]z"},
+    >>>                               {'wfn': "b2plyp-d3", 'basis': "cc-pvdz"}])
+
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
