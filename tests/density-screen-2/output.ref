@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.4rc4.dev64 
+                               Psi4 1.4rc4.dev66 
 
-                         Git: Rev {increfock} f2ab2cc dirty
+                         Git: Rev {increfock} 4fec861 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,20 +30,20 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 06 October 2021 08:42PM
+    Psi4 started on: Friday, 08 October 2021 06:23PM
 
-    Process ID: 14431
+    Process ID: 23981
     Host:       ds10
     PSIDATADIR: /scratch/jiang/p4dev/psi4/objdir-dscreen/stage/share/psi4
     Memory:     500.0 MiB
-    Threads:    1
+    Threads:    6
     
   ==> Input File <==
 
 --------------------------------------------------------------------------
 #! RKS Density Matrix based-Integral Screening Test for benzene
 
-ref_energy = -232.33331405754811 # TEST
+ref_energy = -232.33331405755291 # TEST (CSAM Screening)
 
 molecule mol {
     0 1
@@ -66,21 +66,23 @@ molecule mol {
 
 set {
     scf_type direct
-    df_scf_guess true
+    df_scf_guess false
     basis cc-pVTZ
-    screening density
     ints_tolerance 1.0e-12
     e_convergence 1.0e-10
+    screening density
+    incfock true
+    incfock_convergence 1.0e-8
 }
 
 ds_energy = energy('b3lyp')
-psi4.compare_values(ref_energy, ds_energy, 6, "B3LYP Density Screening Energy")
+psi4.compare_values(ref_energy, ds_energy, 9, "B3LYP Density Screening Energy")
 --------------------------------------------------------------------------
 
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds10
-*** at Wed Oct  6 20:42:17 2021
+*** at Fri Oct  8 18:23:23 2021
 
    => Loading Basis Set <=
 
@@ -96,7 +98,7 @@ Scratch directory: /scratch/jiang/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                        1 Threads,    500 MiB Core
+                        6 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -208,46 +210,22 @@ Scratch directory: /scratch/jiang/
     Max Functions          =            264
     Weights Tolerance      =       1.00E-15
 
-   => Loading Basis Set <=
-
-    Name: (CC-PVTZ AUX)
-    Role: JKFIT
-    Keyword: DF_BASIS_SCF
-    atoms 1-6  entry C          line   125 file /scratch/jiang/p4dev/psi4/objdir-dscreen/stage/share/psi4/basis/cc-pvtz-jkfit.gbs 
-    atoms 7-12 entry H          line    51 file /scratch/jiang/p4dev/psi4/objdir-dscreen/stage/share/psi4/basis/cc-pvtz-jkfit.gbs 
-
-  Starting with a DF guess...
-
   ==> Integral Setup <==
 
-  DFHelper Memory: AOs need 0.349 GiB; user supplied 0.349 GiB. Using in-core AOs.
+  ==> DirectJK: Integral-Direct J/K Matrices <==
 
-  ==> MemDFJK: Density-Fitted J/K Matrices <==
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           6
+    Screening Type:        DENSITY
+    Inc. Fock Build?           Yes
+    Screening Cutoff:        1E-12
 
-    J tasked:                   Yes
-    K tasked:                   Yes
-    wK tasked:                   No
-    OpenMP threads:               1
-    Memory [MiB]:               357
-    Algorithm:                 Core
-    Schwarz Cutoff:           1E-12
-    Mask sparsity (%):       2.5568
-    Fitting Condition:        1E-10
+  Cached 20.0% of DFT collocation blocks in 0.306 [GiB].
 
-   => Auxiliary Basis Set <=
-
-  Basis Set: (CC-PVTZ AUX)
-    Blend: CC-PVTZ-JKFIT
-    Number of shells: 210
-    Number of basis functions: 654
-    Number of Cartesian functions: 786
-    Spherical Harmonics?: true
-    Max angular momentum: 4
-
-  Cached 1.1% of DFT collocation blocks in 0.021 [GiB].
-
-  Minimum eigenvalue in the overlap matrix is 3.7592595819E-05.
-  Reciprocal condition number of the overlap matrix is 4.6398212529E-06.
+  Minimum eigenvalue in the overlap matrix is 3.7592595820E-05.
+  Reciprocal condition number of the overlap matrix is 4.6398212530E-06.
     Using symmetric orthogonalization.
 
   ==> Pre-Iterations <==
@@ -264,34 +242,19 @@ Scratch directory: /scratch/jiang/
 
   ==> Iterations <==
 
-                           Total Energy        Delta E     RMS |[F,P]|
+                        Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RKS iter SAD:  -231.83026627816045   -2.31830e+02   0.00000e+00 
-   @DF-RKS iter   1:  -231.83550672649221   -5.24045e-03   3.65115e-03 DIIS
-   @DF-RKS iter   2:  -231.53466778147964    3.00839e-01   4.63424e-03 DIIS
-   @DF-RKS iter   3:  -232.32898684805073   -7.94319e-01   3.73715e-04 DIIS
-   @DF-RKS iter   4:  -232.33317117697109   -4.18433e-03   7.47832e-05 DIIS
-   @DF-RKS iter   5:  -232.33334748865724   -1.76312e-04   7.58187e-06 DIIS
-   @DF-RKS iter   6:  -232.33334783243120   -3.43774e-07   6.99684e-06 DIIS
-   @DF-RKS iter   7:  -232.33334976562426   -1.93319e-06   6.81955e-07 DIIS
-   @DF-RKS iter   8:  -232.33334978088538   -1.52611e-08   3.10875e-07 DIIS
-   @DF-RKS iter   9:  -232.33334978402786   -3.14247e-09   1.70960e-08 DIIS
-   @DF-RKS iter  10:  -232.33334978403653   -8.66862e-12   6.57057e-09 DIIS
-
-  DF guess converged.
-
-  ==> DirectJK: Integral-Direct J/K Matrices <==
-
-    J tasked:                  Yes
-    K tasked:                  Yes
-    wK tasked:                  No
-    Integrals threads:           1
-    Schwarz Cutoff:          1E-12
-
-   @RKS iter  11:  -232.33331388054850   -2.32333e+02   3.10796e-06 DIIS
-   @RKS iter  12:  -232.33331405712150   -1.76573e-07   1.34924e-07 DIIS
-   @RKS iter  13:  -232.33331405745076   -3.29266e-10   5.74753e-08 DIIS
-   @RKS iter  14:  -232.33331405754811   -9.73444e-11   2.27575e-08 DIIS
+   @RKS iter SAD:  -231.83025753211228   -2.31830e+02   0.00000e+00 
+   @RKS iter   1:  -231.83545137999977   -5.19385e-03   3.65134e-03 DIIS
+   @RKS iter   2:  -231.53451997878960    3.00931e-01   4.63456e-03 DIIS/INCFOCK
+   @RKS iter   3:  -232.32894950290932   -7.94430e-01   3.73774e-04 DIIS/INCFOCK
+   @RKS iter   4:  -232.33313545627331   -4.18595e-03   7.47838e-05 DIIS/INCFOCK
+   @RKS iter   5:  -232.33331176056589   -1.76304e-04   7.58429e-06 DIIS/INCFOCK
+   @RKS iter   6:  -232.33331210817815   -3.47612e-07   6.99285e-06 DIIS/INCFOCK
+   @RKS iter   7:  -232.33331403921483   -1.93104e-06   6.80699e-07 DIIS/INCFOCK
+   @RKS iter   8:  -232.33331405442135   -1.52065e-08   3.10689e-07 DIIS/INCFOCK
+   @RKS iter   9:  -232.33331405756397   -3.14262e-09   1.70681e-08 DIIS/INCFOCK
+   @RKS iter  10:  -232.33331405757451   -1.05445e-11   6.56240e-09 DIIS/INCFOCK
   Energy and wave function converged.
 
 
@@ -305,10 +268,10 @@ Scratch directory: /scratch/jiang/
 
     Doubly Occupied:                                                      
 
-       1A    -10.179336     2A    -10.179068     3A    -10.179026  
-       4A    -10.178479     5A    -10.178469     6A    -10.178177  
+       1A    -10.179336     2A    -10.179069     3A    -10.179026  
+       4A    -10.178480     5A    -10.178470     6A    -10.178177  
        7A     -0.856473     8A     -0.748537     9A     -0.748355  
-      10A     -0.605599    11A     -0.605522    12A     -0.527215  
+      10A     -0.605600    11A     -0.605522    12A     -0.527215  
       13A     -0.464476    14A     -0.449847    15A     -0.425094  
       16A     -0.424859    17A     -0.371376    18A     -0.348012  
       19A     -0.347777    20A     -0.258029    21A     -0.257914  
@@ -321,19 +284,19 @@ Scratch directory: /scratch/jiang/
       31A      0.231221    32A      0.231230    33A      0.257186  
       34A      0.261219    35A      0.264707    36A      0.264844  
       37A      0.278951    38A      0.321940    39A      0.321998  
-      40A      0.354309    41A      0.362817    42A      0.362961  
+      40A      0.354309    41A      0.362816    42A      0.362961  
       43A      0.387790    44A      0.398016    45A      0.398230  
       46A      0.404759    47A      0.404825    48A      0.435500  
-      49A      0.435585    50A      0.446933    51A      0.479869  
-      52A      0.482474    53A      0.482613    54A      0.495601  
+      49A      0.435585    50A      0.446932    51A      0.479869  
+      52A      0.482474    53A      0.482612    54A      0.495601  
       55A      0.497537    56A      0.546544    57A      0.547445  
       58A      0.547558    59A      0.573793    60A      0.573889  
       61A      0.649985    62A      0.674175    63A      0.674460  
       64A      0.707566    65A      0.727883    66A      0.728087  
       67A      0.745400    68A      0.761139    69A      0.761504  
       70A      0.797716    71A      0.860926    72A      0.860998  
-      73A      0.897726    74A      0.926248    75A      0.961555  
-      76A      1.001705    77A      1.002118    78A      1.018485  
+      73A      0.897725    74A      0.926248    75A      0.961555  
+      76A      1.001704    77A      1.002118    78A      1.018485  
       79A      1.018515    80A      1.021122    81A      1.088628  
       82A      1.088636    83A      1.098050    84A      1.108073  
       85A      1.108332    86A      1.168862    87A      1.168915  
@@ -348,7 +311,7 @@ Scratch directory: /scratch/jiang/
      112A      1.963086   113A      1.969155   114A      1.986565  
      115A      1.987121   116A      2.064607   117A      2.091555  
      118A      2.091694   119A      2.142684   120A      2.160513  
-     121A      2.161542   122A      2.175115   123A      2.175225  
+     121A      2.161541   122A      2.175115   123A      2.175224  
      124A      2.289609   125A      2.353421   126A      2.412318  
      127A      2.412371   128A      2.456258   129A      2.457140  
      130A      2.472079   131A      2.496168   132A      2.565774  
@@ -364,54 +327,54 @@ Scratch directory: /scratch/jiang/
      160A      3.054760   161A      3.057684   162A      3.058044  
      163A      3.084711   164A      3.110789   165A      3.119015  
      166A      3.119264   167A      3.136306   168A      3.168848  
-     169A      3.283882   170A      3.300185   171A      3.300434  
+     169A      3.283882   170A      3.300185   171A      3.300433  
      172A      3.313047   173A      3.328494   174A      3.328504  
      175A      3.362648   176A      3.362789   177A      3.380997  
      178A      3.381027   179A      3.392716   180A      3.393322  
      181A      3.413229   182A      3.557590   183A      3.558218  
      184A      3.574236   185A      3.602040   186A      3.728889  
-     187A      3.751464   188A      3.761037   189A      3.762259  
+     187A      3.751464   188A      3.761037   189A      3.762258  
      190A      3.768308   191A      3.770075   192A      3.770426  
      193A      3.775796   194A      3.789114   195A      3.791649  
      196A      3.791781   197A      3.836624   198A      3.840739  
-     199A      3.841061   200A      3.882804   201A      3.882897  
+     199A      3.841060   200A      3.882803   201A      3.882896  
      202A      4.001702   203A      4.002220   204A      4.016555  
      205A      4.080168   206A      4.080229   207A      4.087682  
      208A      4.091945   209A      4.097187   210A      4.097606  
      211A      4.170148   212A      4.187742   213A      4.208166  
      214A      4.209170   215A      4.228777   216A      4.312788  
-     217A      4.312888   218A      4.315935   219A      4.315942  
+     217A      4.312887   218A      4.315935   219A      4.315942  
      220A      4.317340   221A      4.317952   222A      4.352398  
      223A      4.352451   224A      4.493427   225A      4.533560  
-     226A      4.534391   227A      4.658320   228A      4.662722  
-     229A      4.663688   230A      4.710571   231A      4.756582  
+     226A      4.534390   227A      4.658320   228A      4.662722  
+     229A      4.663688   230A      4.710570   231A      4.756582  
      232A      4.756594   233A      4.771138   234A      4.771573  
-     235A      4.806610   236A      4.906240   237A      4.947581  
+     235A      4.806609   236A      4.906240   237A      4.947581  
      238A      5.016407   239A      5.026875   240A      5.027548  
-     241A      5.032724   242A      5.054001   243A      5.054646  
+     241A      5.032724   242A      5.054001   243A      5.054645  
      244A      5.156966   245A      5.158059   246A      5.350314  
      247A      5.350342   248A      5.458722   249A      5.675541  
      250A      5.677298   251A      5.707016   252A      5.867583  
      253A      5.867737   254A      5.947513   255A      6.115983  
-     256A      6.117090   257A      6.439567   258A      6.925196  
-     259A      8.904352   260A     12.359149   261A     12.360793  
+     256A      6.117089   257A      6.439566   258A      6.925195  
+     259A      8.904351   260A     12.359149   261A     12.360793  
      262A     12.863070   263A     12.864273   264A     15.402448  
 
     Final Occupation by Irrep:
               A 
     DOCC [    21 ]
 
-  @RKS Final Energy:  -232.33331405754811
+  @RKS Final Energy:  -232.33331405757451
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -714.7993723892254820
-    Two-Electron Energy =                 306.9306533367969223
-    DFT Exchange-Correlation Energy =     -28.1755263653984329
+    One-Electron Energy =                -714.7993060138547889
+    Two-Electron Energy =                 306.9305832600625763
+    DFT Exchange-Correlation Energy =     -28.1755226640611838
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -232.3333140575481082
+    Total Energy =                       -232.3333140575745119
 
 Computation Completed
 
@@ -424,27 +387,27 @@ Properties computed using the SCF density matrix
      X:  -147.6125      Y:   -22.9025      Z:     0.0000
 
   Electronic Dipole Moment: [e a0]
-     X:   147.6174      Y:    22.9056      Z:    -0.0000
+     X:   147.6174      Y:    22.9056      Z:     0.0000
 
   Dipole Moment: [e a0]
-     X:     0.0049      Y:     0.0032      Z:    -0.0000     Total:     0.0058
+     X:     0.0049      Y:     0.0032      Z:     0.0000     Total:     0.0058
 
   Dipole Moment: [D]
-     X:     0.0125      Y:     0.0080      Z:    -0.0000     Total:     0.0149
+     X:     0.0125      Y:     0.0080      Z:     0.0000     Total:     0.0149
 
 
-*** tstop() called on ds10 at Wed Oct  6 20:45:21 2021
+*** tstop() called on ds10 at Fri Oct  8 18:24:21 2021
 Module time:
-	user time   =     183.17 seconds =       3.05 minutes
-	system time =       1.01 seconds =       0.02 minutes
-	total time  =        184 seconds =       3.07 minutes
+	user time   =     349.03 seconds =       5.82 minutes
+	system time =       1.08 seconds =       0.02 minutes
+	total time  =         58 seconds =       0.97 minutes
 Total time:
-	user time   =     183.17 seconds =       3.05 minutes
-	system time =       1.01 seconds =       0.02 minutes
-	total time  =        184 seconds =       3.07 minutes
+	user time   =     349.03 seconds =       5.82 minutes
+	system time =       1.08 seconds =       0.02 minutes
+	total time  =         58 seconds =       0.97 minutes
     B3LYP Density Screening Energy........................................................PASSED
 
-    Psi4 stopped on: Wednesday, 06 October 2021 08:45PM
-    Psi4 wall time for execution: 0:03:04.21
+    Psi4 stopped on: Friday, 08 October 2021 06:24PM
+    Psi4 wall time for execution: 0:00:58.80
 
 *** Psi4 exiting successfully. Buy a developer a beer!

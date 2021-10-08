@@ -80,14 +80,24 @@ DirectJK::DirectJK(std::shared_ptr<BasisSet> primary) : JK(primary) { common_ini
 DirectJK::~DirectJK() {}
 void DirectJK::common_init() {
     df_ints_num_threads_ = 1;
+
 #ifdef _OPENMP
     df_ints_num_threads_ = Process::environment.get_n_threads();
 #endif
+
+    Options& options = Process::environment.options;
+    incfock_ = options.get_bool("INCFOCK");
+    incfock_d_conv_ = options.get_double("INCFOCK_CONVERGENCE");
+    do_incfock_iter_ = false;
+    density_screening_ = options.get_str("SCREENING") == "DENSITY";
+    set_cutoff(options.get_double("INTS_TOLERANCE"));
 }
 size_t DirectJK::memory_estimate() {
     return 0;  // Effectively
 }
 void DirectJK::print_header() const {
+    Options& options = Process::environment.options;
+    std::string screen_type = options.get_str("SCREENING");
     if (print_) {
         outfile->Printf("  ==> DirectJK: Integral-Direct J/K Matrices <==\n\n");
 
@@ -97,7 +107,9 @@ void DirectJK::print_header() const {
         if (do_wK_) outfile->Printf("    Omega:             %11.3E\n", omega_);
         outfile->Printf("    Integrals threads: %11d\n", df_ints_num_threads_);
         // outfile->Printf( "    Memory [MiB]:      %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        outfile->Printf("    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
+        outfile->Printf("    Screening Type:    %11s\n", screen_type.c_str());
+        outfile->Printf("    Inc. Fock Build?   %11s\n", incfock_ ? "Yes" : "No");
+        outfile->Printf("    Screening Cutoff:  %11.0E\n\n", cutoff_);
     }
 }
 void DirectJK::preiterations() {
@@ -110,6 +122,87 @@ void DirectJK::preiterations() {
     }
 #endif
 }
+
+void DirectJK::incfock_setup() {
+
+    if (initial_iteration_ || D_ao_prev_.size() != D_ao_.size()) {
+        initial_iteration_ = true;
+
+        D_ao_prev_.clear();
+        del_D_ao_.clear();
+
+        if (do_wK_) {
+            wK_ao_prev_.clear();
+            del_wK_ao_.clear();
+        }
+
+        if (do_J_) {
+            J_ao_prev_.clear();
+            del_J_ao_.clear();
+        }
+
+        if (do_K_) {
+            K_ao_prev_.clear();
+            del_K_ao_.clear();
+        }
+    
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            D_ao_prev_.push_back(std::make_shared<Matrix>("D Prev", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+            del_D_ao_.push_back(std::make_shared<Matrix>("Delta D", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+
+            if (do_wK_) {
+                wK_ao_prev_.push_back(std::make_shared<Matrix>("wK Prev", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
+                del_wK_ao_.push_back(std::make_shared<Matrix>("Delta wK", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
+            }
+                
+            if (do_J_) {
+                J_ao_prev_.push_back(std::make_shared<Matrix>("J Prev", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
+                del_J_ao_.push_back(std::make_shared<Matrix>("Delta J", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
+            }
+        
+            if (do_K_) {
+                K_ao_prev_.push_back(std::make_shared<Matrix>("K Prev", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
+                del_K_ao_.push_back(std::make_shared<Matrix>("Delta K", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
+            }
+        }
+    } else {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            del_D_ao_[N]->copy(D_ao_[N]);
+            del_D_ao_[N]->subtract(D_ao_prev_[N]);
+        }
+    }
+}
+void DirectJK::incfock_postiter() {
+    if (do_incfock_iter_) {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+
+            if (do_wK_) {
+                wK_ao_prev_[N]->add(del_wK_ao_[N]);
+                wK_ao_[N]->copy(wK_ao_prev_[N]);
+            }
+
+            if (do_J_) {
+                J_ao_prev_[N]->add(del_J_ao_[N]);
+                J_ao_[N]->copy(J_ao_prev_[N]);
+            }
+
+            if (do_K_) {
+                K_ao_prev_[N]->add(del_K_ao_[N]);
+                K_ao_[N]->copy(K_ao_prev_[N]);
+            }
+
+            D_ao_prev_[N]->copy(D_ao_[N]);
+        }
+    } else {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            if (do_wK_) wK_ao_prev_[N]->copy(wK_ao_[N]);
+            if (do_J_) J_ao_prev_[N]->copy(J_ao_[N]);
+            if (do_K_) K_ao_prev_[N]->copy(K_ao_[N]);
+            D_ao_prev_[N]->copy(D_ao_[N]);
+        }
+    }
+}
+
 void DirectJK::compute_JK() {
 #ifdef USING_BrianQC
     if (brianEnable) {
@@ -271,12 +364,21 @@ void DirectJK::compute_JK() {
     }
 #endif
 
+    if (incfock_) {
+        timer_on("DirectJK: IFB Preprocessing");
+        incfock_setup();
+        double Dnorm = Process::environment.globals["SCF D NORM"];
+        // Do IFB on this iteration?
+        do_incfock_iter_ = !initial_iteration_ && (Dnorm >= incfock_d_conv_);
+        timer_off("DirectJK: IFB Preprocessing");
+    }
+
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
     
-    std::vector<SharedMatrix>& D_ref = (do_ifb_iter_ ? del_D_ao_ : D_ao_);
-    std::vector<SharedMatrix>& J_ref = (do_ifb_iter_ ? del_J_ao_ : J_ao_);
-    std::vector<SharedMatrix>& K_ref = (do_ifb_iter_ ? del_K_ao_ : K_ao_);
-    std::vector<SharedMatrix>& wK_ref = (do_ifb_iter_ ? del_wK_ao_ : wK_ao_);
+    std::vector<SharedMatrix>& D_ref = (do_incfock_iter_ ? del_D_ao_ : D_ao_);
+    std::vector<SharedMatrix>& J_ref = (do_incfock_iter_ ? del_J_ao_ : J_ao_);
+    std::vector<SharedMatrix>& K_ref = (do_incfock_iter_ ? del_K_ao_ : K_ao_);
+    std::vector<SharedMatrix>& wK_ref = (do_incfock_iter_ ? del_wK_ao_ : wK_ao_);
 
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
@@ -319,6 +421,14 @@ void DirectJK::compute_JK() {
             build_JK(ints, D_ref, temp, K_ref);
         }
     }
+
+    if (incfock_) {
+        timer_on("DirectJK: IFB Postprocessing");
+        incfock_postiter();
+        timer_off("DirectJK: IFB Postprocessing");
+    }
+
+    if (initial_iteration_) initial_iteration_ = false;
 }
 void DirectJK::postiterations() {}
 

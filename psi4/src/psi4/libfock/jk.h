@@ -254,14 +254,6 @@ class PSI_API JK {
     /// Do wK matrices? Defaults to false
     bool do_wK_;
 
-    /// Perform Density Screening for ERIs?
-    bool density_screening_;
-    /// Perform Incremental Fock Build for J and K Matrices?
-    bool ifb_;
-    /// The density matrix convergence value at which to stop performing IFB
-    double ifb_d_conv_;
-    bool do_ifb_iter_;
-
     /// Combine (pq|rs) and (pq|w|rs) integrals before contracting?
     bool wcombine_;
 
@@ -311,21 +303,6 @@ class PSI_API JK {
     /// wK matrices: wK_mn = (ml|w|ns) C_li^left C_si^right
     std::vector<SharedMatrix> wK_ao_;
 
-    /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
-    std::vector<SharedMatrix> D_ao_prev_;
-    std::vector<SharedMatrix> J_ao_prev_;
-    std::vector<SharedMatrix> K_ao_prev_;
-    std::vector<SharedMatrix> wK_ao_prev_;
-
-    // Delta D, J, K, wK Matrices for Incremental Fock Build
-    std::vector<SharedMatrix> del_D_ao_;
-    std::vector<SharedMatrix> del_J_ao_;
-    std::vector<SharedMatrix> del_K_ao_;
-    std::vector<SharedMatrix> del_wK_ao_;
-
-    // Is the JK currently on a guess iteration
-    bool guess_ = true;
-
     // => Per-Iteration Setup/Finalize Routines <= //
 
     /// Build the pseudo-density D_, before compute_JK()
@@ -348,10 +325,6 @@ class PSI_API JK {
      *
      */
     void common_init();
-    /// Set up IFB variables per iteration
-    void ifb_setup();
-    /// Post-iteration IFB processing
-    void ifb_postiter();
 
     // => Required Algorithm-Specific Methods <= //
 
@@ -733,6 +706,31 @@ class PSI_API DirectJK : public JK {
     /// ERI Sieve
     std::shared_ptr<ERISieve> sieve_;
 
+    // Perform Density matrix-based integral screening?
+    bool density_screening_;
+
+    // => Incremental Fock build variables <= //
+    /// Perform Incremental Fock Build for J and K Matrices?
+    bool incfock_;
+    /// The density matrix convergence value at which to stop performing IFB
+    double incfock_d_conv_;
+    bool do_incfock_iter_;
+
+    /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
+    std::vector<SharedMatrix> D_ao_prev_;
+    std::vector<SharedMatrix> J_ao_prev_;
+    std::vector<SharedMatrix> K_ao_prev_;
+    std::vector<SharedMatrix> wK_ao_prev_;
+
+    // Delta D, J, K, wK Matrices for Incremental Fock Build
+    std::vector<SharedMatrix> del_D_ao_;
+    std::vector<SharedMatrix> del_J_ao_;
+    std::vector<SharedMatrix> del_K_ao_;
+    std::vector<SharedMatrix> del_wK_ao_;
+
+    // Is the JK currently on a guess iteration
+    bool initial_iteration_ = true;
+
     std::string name() override { return "DirectJK"; }
     size_t memory_estimate() override;
 
@@ -746,6 +744,11 @@ class PSI_API DirectJK : public JK {
     void compute_JK() override;
     /// Delete integrals, files, etc
     void postiterations() override;
+
+    /// Set up Incfock variables per iteration
+    void incfock_setup();
+    /// Post-iteration Incfock processing
+    void incfock_postiter();
 
     /// Build the J and K matrices for this integral class
     void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,

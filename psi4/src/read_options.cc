@@ -1278,9 +1278,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("BASIS", "");
         /*- Omega scaling for Erf and Erfc.-*/
         options.add_double("OMEGA_ERF", 0.20);
-        /*- The type of screening used when computing two-electron integrals. 
-        This is a slightly tighter bound than that of default Schwarz screening. -*/
-        options.add_str("SCREENING", "SCHWARZ", "SCHWARZ CSAM DENSITY");
+        /*- The type of screening used when computing two-electron integrals. -*/
+        options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM DENSITY");
     }
     if (name == "SCF" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs self consistent field (Hartree-Fock and
@@ -1325,7 +1324,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("S_TOLERANCE", 1E-7);
         /*- Tolerance for partial Cholesky decomposition of overlap matrix. -*/
         options.add_double("S_CHOLESKY_TOLERANCE", 1E-8);
-        /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
+        /*- Screening threshold for the chosen screening method (SCHWARZ, CSAM, DENSITY)
+          Mininum absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 1E-12);
         /*- The type of guess orbitals.  Defaults to ``READ`` for geometry optimizations after the first step, to
           ``CORE`` for single atoms, and to ``SAD`` otherwise. The ``HUCKEL`` guess employs on-the-fly calculations

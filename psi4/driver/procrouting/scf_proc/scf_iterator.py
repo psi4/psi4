@@ -272,7 +272,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         soscf_performed = False
         self.frac_performed_ = False
         #self.MOM_performed_ = False  # redundant from common_init()
-        ifb_performed = core.get_option("SCF", "INCFOCK") and Dnorm >= core.get_option("SCF", "INCFOCK_CONVERGENCE")
+        incfock_performed = core.get_global_option("SCF_TYPE") == "DIRECT" and core.get_option("SCF", "INCFOCK") and \
+            Dnorm >= core.get_option("SCF", "INCFOCK_CONVERGENCE")
 
         self.save_density_and_energy()
 
@@ -427,8 +428,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 if self.frac_performed_:
                     status.append("FRAC")
 
-                if ifb_performed:
-                    status.append("IFB")
+                if incfock_performed:
+                    status.append("INCFOCK")
 
                 # Reset occupations if necessary
                 if (self.iteration_ == 0) and self.reset_occ_:

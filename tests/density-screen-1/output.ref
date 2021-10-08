@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.4rc4.dev64 
+                               Psi4 1.4rc4.dev66 
 
-                         Git: Rev {increfock} f2ab2cc dirty
+                         Git: Rev {increfock} 4fec861 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 06 October 2021 07:46PM
+    Psi4 started on: Friday, 08 October 2021 06:22PM
 
-    Process ID: 11401
+    Process ID: 23936
     Host:       ds10
     PSIDATADIR: /scratch/jiang/p4dev/psi4/objdir-dscreen/stage/share/psi4
     Memory:     500.0 MiB
@@ -43,7 +43,7 @@
 --------------------------------------------------------------------------
 #! RHF Density Matrix based-Integral Screening Test for water
 
-ref_energy = -76.04125669409470 # TEST
+ref_energy = -76.04125669409474 # TEST (Compare to CSAM Screening)
 
 molecule mol {
     0 1
@@ -59,19 +59,20 @@ set {
     scf_type direct
     df_scf_guess false
     basis aug-cc-pVDZ
-    screening density
     ints_tolerance 1.0e-12
     e_convergence 1.0e-10
+    screening density
+    incfock true
 }
 
 ds_energy = energy('scf')
-psi4.compare_values(ref_energy, ds_energy, 6, "HF Density Screening Energy")
+psi4.compare_values(ref_energy, ds_energy, 9, "HF Density Screening Energy")
 --------------------------------------------------------------------------
 
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds10
-*** at Wed Oct  6 19:46:58 2021
+*** at Fri Oct  8 18:22:59 2021
 
    => Loading Basis Set <=
 
@@ -144,7 +145,9 @@ Scratch directory: /scratch/jiang/
     K tasked:                  Yes
     wK tasked:                  No
     Integrals threads:           1
-    Schwarz Cutoff:          1E-12
+    Screening Type:        DENSITY
+    Inc. Fock Build?           Yes
+    Screening Cutoff:        1E-12
 
   Minimum eigenvalue in the overlap matrix is 2.6921161277E-03.
   Reciprocal condition number of the overlap matrix is 4.7404748701E-04.
@@ -168,14 +171,14 @@ Scratch directory: /scratch/jiang/
 
    @RHF iter SAD:   -75.46291161737804   -7.54629e+01   0.00000e+00 
    @RHF iter   1:   -75.95704831424509   -4.94137e-01   1.10492e-02 DIIS
-   @RHF iter   2:   -76.01021534699387   -5.31670e-02   7.21652e-03 DIIS
-   @RHF iter   3:   -76.04085526036542   -3.06399e-02   5.18207e-04 DIIS
-   @RHF iter   4:   -76.04123352979893   -3.78269e-04   1.16384e-04 DIIS
-   @RHF iter   5:   -76.04125492372376   -2.13939e-05   2.62852e-05 DIIS
-   @RHF iter   6:   -76.04125661917362   -1.69545e-06   5.29539e-06 DIIS
-   @RHF iter   7:   -76.04125669217758   -7.30040e-08   8.83808e-07 DIIS
-   @RHF iter   8:   -76.04125669405531   -1.87772e-09   1.36743e-07 DIIS
-   @RHF iter   9:   -76.04125669409470   -3.93925e-11   3.56798e-08 DIIS
+   @RHF iter   2:   -76.01021534699387   -5.31670e-02   7.21652e-03 DIIS/INCFOCK
+   @RHF iter   3:   -76.04085526036550   -3.06399e-02   5.18207e-04 DIIS/INCFOCK
+   @RHF iter   4:   -76.04123352979887   -3.78269e-04   1.16384e-04 DIIS/INCFOCK
+   @RHF iter   5:   -76.04125492372377   -2.13939e-05   2.62852e-05 DIIS/INCFOCK
+   @RHF iter   6:   -76.04125661917368   -1.69545e-06   5.29539e-06 DIIS/INCFOCK
+   @RHF iter   7:   -76.04125669217753   -7.30038e-08   8.83808e-07 DIIS
+   @RHF iter   8:   -76.04125669405535   -1.87782e-09   1.36743e-07 DIIS
+   @RHF iter   9:   -76.04125669409476   -3.94067e-11   3.56798e-08 DIIS
   Energy and wave function converged.
 
 
@@ -208,14 +211,14 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [     5 ]
 
-  @RHF Final Energy:   -76.04125669409470
+  @RHF Final Energy:   -76.04125669409476
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1681932964243469
-    One-Electron Energy =                -122.9287781791896350
-    Two-Electron Energy =                  37.7193281886706018
-    Total Energy =                        -76.0412566940946846
+    One-Electron Energy =                -122.9287781791897487
+    Two-Electron Energy =                  37.7193281886706302
+    Total Energy =                        -76.0412566940947698
 
 Computation Completed
 
@@ -237,18 +240,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:    -0.0000      Z:     2.0011     Total:     2.0011
 
 
-*** tstop() called on ds10 at Wed Oct  6 19:46:59 2021
+*** tstop() called on ds10 at Fri Oct  8 18:23:00 2021
 Module time:
-	user time   =       0.70 seconds =       0.01 minutes
+	user time   =       0.72 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.70 seconds =       0.01 minutes
+	user time   =       0.72 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
     HF Density Screening Energy...........................................................PASSED
 
-    Psi4 stopped on: Wednesday, 06 October 2021 07:46PM
-    Psi4 wall time for execution: 0:00:00.75
+    Psi4 stopped on: Friday, 08 October 2021 06:23PM
+    Psi4 wall time for execution: 0:00:00.76
 
 *** Psi4 exiting successfully. Buy a developer a beer!
