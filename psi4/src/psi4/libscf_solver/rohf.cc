@@ -366,7 +366,7 @@ void ROHF::form_F() {
     }
 
     // Form the orthogonalized SO basis moFeff matrix, for use in DIIS
-    soFeff_ = linalg::triplet(Ct_, moFeff_, Ct_, false, false, true);
+    soFeff_->back_transform(moFeff_, Ct_);
 
     if (debug_) {
         Fa_->print();
