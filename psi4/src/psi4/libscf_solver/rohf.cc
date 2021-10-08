@@ -366,8 +366,7 @@ void ROHF::form_F() {
     }
 
     // Form the orthogonalized SO basis moFeff matrix, for use in DIIS
-    diag_F_temp_->gemm(false, false, 1.0, Ct_, moFeff_, 0.0);
-    soFeff_->gemm(false, true, 1.0, diag_F_temp_, Ct_, 0.0);
+    soFeff_ = linalg::triplet(Ct_, moFeff_, Ct_, false, false, true);
 
     if (debug_) {
         Fa_->print();
@@ -437,11 +436,10 @@ void ROHF::form_initial_C() {
     // to either H or the GWH Hamiltonian.
 
     // Form F' = X'FX for canonical orthogonalization
-    diag_temp_->gemm(true, false, 1.0, X_, Fa_, 0.0);
-    diag_F_temp_->gemm(false, false, 1.0, diag_temp_, X_, 0.0);
+    auto diag_F_temp = linalg::triplet(X_, Fa_, X_, true, false, false);
 
     // Form C' = eig(F')
-    diag_F_temp_->diagonalize(Ct_, epsilon_a_);
+    diag_F_temp->diagonalize(Ct_, epsilon_a_);
 
     // Form C = XC'
     Ca_->gemm(false, false, 1.0, X_, Ct_, 0.0);
