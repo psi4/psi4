@@ -87,7 +87,7 @@ void DirectJK::common_init() {
 
     Options& options = Process::environment.options;
     incfock_ = options.get_bool("INCFOCK");
-    incfock_d_conv_ = options.get_double("INCFOCK_CONVERGENCE");
+    incfock_count_ = 0;
     do_incfock_iter_ = false;
     density_screening_ = options.get_str("SCREENING") == "DENSITY";
     set_cutoff(options.get_double("INTS_TOLERANCE"));
@@ -96,8 +96,7 @@ size_t DirectJK::memory_estimate() {
     return 0;  // Effectively
 }
 void DirectJK::print_header() const {
-    Options& options = Process::environment.options;
-    std::string screen_type = options.get_str("SCREENING");
+    std::string screen_type = Process::environment.options.get_str("SCREENING");
     if (print_) {
         outfile->Printf("  ==> DirectJK: Integral-Direct J/K Matrices <==\n\n");
 
@@ -367,9 +366,10 @@ void DirectJK::compute_JK() {
     if (incfock_) {
         timer_on("DirectJK: IFB Preprocessing");
         incfock_setup();
-        double Dnorm = Process::environment.globals["SCF D NORM"];
+        int reset = Process::environment.options.get_int("INCFOCK_RESET");
         // Do IFB on this iteration?
-        do_incfock_iter_ = !initial_iteration_ && (Dnorm >= incfock_d_conv_);
+        do_incfock_iter_ = !initial_iteration_ && (incfock_count_ % reset != reset - 1);
+        if (!initial_iteration_) incfock_count_ += 1;
         timer_off("DirectJK: IFB Preprocessing");
     }
 

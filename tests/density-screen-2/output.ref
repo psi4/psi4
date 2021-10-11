@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.4rc4.dev66 
+                               Psi4 1.4rc4.dev67 
 
-                         Git: Rev {increfock} 4fec861 dirty
+                         Git: Rev {increfock} 04a678a dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Friday, 08 October 2021 06:23PM
+    Psi4 started on: Monday, 11 October 2021 11:51AM
 
-    Process ID: 23981
+    Process ID: 5163
     Host:       ds10
     PSIDATADIR: /scratch/jiang/p4dev/psi4/objdir-dscreen/stage/share/psi4
     Memory:     500.0 MiB
@@ -72,7 +72,7 @@ set {
     e_convergence 1.0e-10
     screening density
     incfock true
-    incfock_convergence 1.0e-8
+    incfock_reset 5
 }
 
 ds_energy = energy('b3lyp')
@@ -82,7 +82,7 @@ psi4.compare_values(ref_energy, ds_energy, 9, "B3LYP Density Screening Energy")
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds10
-*** at Fri Oct  8 18:23:23 2021
+*** at Mon Oct 11 11:51:32 2021
 
    => Loading Basis Set <=
 
@@ -244,17 +244,17 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter SAD:  -231.83025753211228   -2.31830e+02   0.00000e+00 
-   @RKS iter   1:  -231.83545137999977   -5.19385e-03   3.65134e-03 DIIS
-   @RKS iter   2:  -231.53451997878960    3.00931e-01   4.63456e-03 DIIS/INCFOCK
-   @RKS iter   3:  -232.32894950290932   -7.94430e-01   3.73774e-04 DIIS/INCFOCK
-   @RKS iter   4:  -232.33313545627331   -4.18595e-03   7.47838e-05 DIIS/INCFOCK
-   @RKS iter   5:  -232.33331176056589   -1.76304e-04   7.58429e-06 DIIS/INCFOCK
-   @RKS iter   6:  -232.33331210817815   -3.47612e-07   6.99285e-06 DIIS/INCFOCK
-   @RKS iter   7:  -232.33331403921483   -1.93104e-06   6.80699e-07 DIIS/INCFOCK
-   @RKS iter   8:  -232.33331405442135   -1.52065e-08   3.10689e-07 DIIS/INCFOCK
-   @RKS iter   9:  -232.33331405756397   -3.14262e-09   1.70681e-08 DIIS/INCFOCK
-   @RKS iter  10:  -232.33331405757451   -1.05445e-11   6.56240e-09 DIIS/INCFOCK
+   @RKS iter SAD:  -231.83025753211251   -2.31830e+02   0.00000e+00 
+   @RKS iter   1:  -231.83545138000403   -5.19385e-03   3.65134e-03 DIIS
+   @RKS iter   2:  -231.53451997876564    3.00931e-01   4.63456e-03 DIIS/INCFOCK
+   @RKS iter   3:  -232.32894950291336   -7.94430e-01   3.73774e-04 DIIS/INCFOCK
+   @RKS iter   4:  -232.33313545627695   -4.18595e-03   7.47838e-05 DIIS/INCFOCK
+   @RKS iter   5:  -232.33331176058817   -1.76304e-04   7.58429e-06 DIIS/INCFOCK
+   @RKS iter   6:  -232.33331210820089   -3.47613e-07   6.99285e-06 DIIS
+   @RKS iter   7:  -232.33331403923700   -1.93104e-06   6.80699e-07 DIIS/INCFOCK
+   @RKS iter   8:  -232.33331405444352   -1.52065e-08   3.10689e-07 DIIS/INCFOCK
+   @RKS iter   9:  -232.33331405758639   -3.14287e-09   1.70681e-08 DIIS/INCFOCK
+   @RKS iter  10:  -232.33331405756383    2.25668e-11   6.56241e-09 DIIS/INCFOCK
   Energy and wave function converged.
 
 
@@ -364,17 +364,17 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [    21 ]
 
-  @RKS Final Energy:  -232.33331405757451
+  @RKS Final Energy:  -232.33331405756383
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -714.7993060138547889
-    Two-Electron Energy =                 306.9305832600625763
-    DFT Exchange-Correlation Energy =     -28.1755226640611838
+    One-Electron Energy =                -714.7993060137357588
+    Two-Electron Energy =                 306.9305832599754353
+    DFT Exchange-Correlation Energy =     -28.1755226640823651
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -232.3333140575745119
+    Total Energy =                       -232.3333140575637970
 
 Computation Completed
 
@@ -387,27 +387,27 @@ Properties computed using the SCF density matrix
      X:  -147.6125      Y:   -22.9025      Z:     0.0000
 
   Electronic Dipole Moment: [e a0]
-     X:   147.6174      Y:    22.9056      Z:     0.0000
+     X:   147.6174      Y:    22.9056      Z:    -0.0000
 
   Dipole Moment: [e a0]
-     X:     0.0049      Y:     0.0032      Z:     0.0000     Total:     0.0058
+     X:     0.0049      Y:     0.0032      Z:    -0.0000     Total:     0.0058
 
   Dipole Moment: [D]
-     X:     0.0125      Y:     0.0080      Z:     0.0000     Total:     0.0149
+     X:     0.0125      Y:     0.0080      Z:    -0.0000     Total:     0.0149
 
 
-*** tstop() called on ds10 at Fri Oct  8 18:24:21 2021
+*** tstop() called on ds10 at Mon Oct 11 11:52:33 2021
 Module time:
-	user time   =     349.03 seconds =       5.82 minutes
-	system time =       1.08 seconds =       0.02 minutes
-	total time  =         58 seconds =       0.97 minutes
+	user time   =     366.03 seconds =       6.10 minutes
+	system time =       1.09 seconds =       0.02 minutes
+	total time  =         61 seconds =       1.02 minutes
 Total time:
-	user time   =     349.03 seconds =       5.82 minutes
-	system time =       1.08 seconds =       0.02 minutes
-	total time  =         58 seconds =       0.97 minutes
+	user time   =     366.03 seconds =       6.10 minutes
+	system time =       1.09 seconds =       0.02 minutes
+	total time  =         61 seconds =       1.02 minutes
     B3LYP Density Screening Energy........................................................PASSED
 
-    Psi4 stopped on: Friday, 08 October 2021 06:24PM
-    Psi4 wall time for execution: 0:00:58.80
+    Psi4 stopped on: Monday, 11 October 2021 11:52AM
+    Psi4 wall time for execution: 0:01:01.56
 
 *** Psi4 exiting successfully. Buy a developer a beer!

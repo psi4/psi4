@@ -197,6 +197,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Write all the MOs to the MOLDEN file (true) or discard the unoccupied MOs (false). -*/
     options.add_bool("MOLDEN_WITH_VIRTUAL", true);
 
+    /*- The type of screening used when computing two-electron integrals. -*/
+    options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM DENSITY");
+
     // CDS-TODO: We should go through and check that the user hasn't done
     // something silly like specify frozen_docc in DETCI but not in TRANSQT.
     // That would create problems.  (This was formerly checked in DETCI
@@ -984,10 +987,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         default is conservative, but there isn't much to be gained from
         loosening it, especially for higher-order SAPT. -*/
         options.add_double("INTS_TOLERANCE", 1.0E-12);
-        /*- Do use Combined Schwarz Approximation Maximum (CSAM) screening on
-        two-electron integrals. This is a slightly tighter bound than that of
-        default Schwarz screening. -*/
-        options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM DENSITY");
         /*- Memory safety -*/
         options.add_double("SAPT_MEM_SAFETY", 0.9);
         /*- Do force SAPT2 and higher to die if it thinks there isn't enough
@@ -1278,8 +1277,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("BASIS", "");
         /*- Omega scaling for Erf and Erfc.-*/
         options.add_double("OMEGA_ERF", 0.20);
-        /*- The type of screening used when computing two-electron integrals. -*/
-        options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM DENSITY");
     }
     if (name == "SCF" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs self consistent field (Hartree-Fock and
@@ -1444,8 +1441,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("MAX_ATTEMPTS", 1);
         /*- Do Perform Incremental Fock Build? -*/
         options.add_bool("INCFOCK", false);
-        /*- Density Threshold to stop Incremental Fock Build -*/
-        options.add_double("INCFOCK_CONVERGENCE", 1.0e-5);
+        /*- After many iterations to perform a full Fock build if using INCFOCK? -*/
+        options.add_int("INCFOCK_RESET", 5);
 
         /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 

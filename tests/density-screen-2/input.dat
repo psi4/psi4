@@ -29,7 +29,7 @@ set {
     e_convergence 1.0e-10
     screening density
     incfock true
-    incfock_convergence 1.0e-8
+    incfock_reset 5
 }
 
 ds_energy = energy('b3lyp')

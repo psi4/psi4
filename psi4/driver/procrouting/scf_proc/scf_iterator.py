@@ -272,8 +272,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         soscf_performed = False
         self.frac_performed_ = False
         #self.MOM_performed_ = False  # redundant from common_init()
-        incfock_performed = core.get_global_option("SCF_TYPE") == "DIRECT" and core.get_option("SCF", "INCFOCK") and \
-            Dnorm >= core.get_option("SCF", "INCFOCK_CONVERGENCE")
+        incfock_performed = isinstance(self.jk(), core.DirectJK) and self.jk().do_incfock_iter()
 
         self.save_density_and_energy()
 
@@ -458,9 +457,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
             self.Cb().print_out()
             self.Da().print_out()
             self.Db().print_out()
-
-        # Set the density convergence value (for INCFOCK)
-        core.set_variable("SCF D NORM", Dnorm)
 
         # Print out the iteration
         core.print_out(

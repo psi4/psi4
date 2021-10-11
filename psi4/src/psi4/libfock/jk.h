@@ -712,8 +712,8 @@ class PSI_API DirectJK : public JK {
     // => Incremental Fock build variables <= //
     /// Perform Incremental Fock Build for J and K Matrices?
     bool incfock_;
-    /// The density matrix convergence value at which to stop performing IFB
-    double incfock_d_conv_;
+    /// The number of times INCFOCK has been performed (includes resets)
+    int incfock_count_;
     bool do_incfock_iter_;
 
     /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
@@ -780,6 +780,7 @@ class PSI_API DirectJK : public JK {
     void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
 
     // => Accessors <= //
+    bool do_incfock_iter() { return do_incfock_iter_; }
 
     /**
     * Print header information regarding JK
