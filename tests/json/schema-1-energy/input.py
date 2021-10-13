@@ -60,7 +60,6 @@ expected_properties = {
     0.0,
     1.040372174058
   ],
-  "scf_iterations": 10,
   "scf_total_energy": -75.98014187232745,
   "mp2_same_spin_correlation_energy": -0.031030063236104254,
   "mp2_opposite_spin_correlation_energy": -0.10168342161187537,
@@ -88,6 +87,7 @@ with open("output.json", "w") as ofile:                                         
 psi4.compare_integers(True, json_ret["success"], "JSON Success")                           #TEST
 psi4.compare_values(expected_return_result, json_ret["return_result"], 5, "Return Value")  #TEST
 psi4.compare_integers(True, "MAYER_INDICES" in json_ret["extras"]["qcvars"], "Mayer Indices Found")                           #TEST
+psi4.compare_integers(True, json_ret["properties"].get("scf_iterations", 0) >= 1, "SCF Iteration Count Sane")  # TEST
 
 for k in expected_properties.keys():                                                       #TEST
     psi4.compare_values(expected_properties[k], json_ret["properties"][k], 5, k.upper())   #TEST
