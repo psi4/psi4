@@ -272,7 +272,6 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         soscf_performed = False
         self.frac_performed_ = False
         #self.MOM_performed_ = False  # redundant from common_init()
-        incfock_performed = isinstance(self.jk(), core.DirectJK) and self.jk().do_incfock_iter()
 
         self.save_density_and_energy()
 
@@ -291,6 +290,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         core.timer_on("HF: Form G")
         self.form_G()
         core.timer_off("HF: Form G")
+
+        incfock_performed = isinstance(self.jk(), core.DirectJK) and self.jk().do_incfock_iter()
 
         upcm = 0.0
         if core.get_option('SCF', 'PCM'):
@@ -441,6 +442,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         core.timer_off("HF: Form D")
 
         self.set_variable("SCF ITERATION ENERGY", SCFE)
+        core.set_variable("SCF D NORM", Dnorm)
 
         # After we've built the new D, damp the update
         if (damping_enabled and self.iteration_ > 1 and Dnorm > core.get_option('SCF', 'DAMPING_CONVERGENCE')):

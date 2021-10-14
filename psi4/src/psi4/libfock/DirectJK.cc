@@ -124,6 +124,7 @@ void DirectJK::preiterations() {
 
 void DirectJK::incfock_setup() {
 
+    // The D_ao_prev_ condition is used to handle stability analysis case
     if (initial_iteration_ || D_ao_prev_.size() != D_ao_.size()) {
         initial_iteration_ = true;
 
@@ -364,13 +365,17 @@ void DirectJK::compute_JK() {
 #endif
 
     if (incfock_) {
-        timer_on("DirectJK: IFB Preprocessing");
+        timer_on("DirectJK: INCFOCK Preprocessing");
         incfock_setup();
-        int reset = Process::environment.options.get_int("INCFOCK_RESET");
+        Options& options = Process::environment.options;
+        int reset = options.get_int("INCFOCK_RESET");
+        double dconv = options.get_double("D_CONVERGENCE");
+        double Dnorm = Process::environment.globals["SCF D NORM"];
         // Do IFB on this iteration?
-        do_incfock_iter_ = !initial_iteration_ && (incfock_count_ % reset != reset - 1);
-        if (!initial_iteration_) incfock_count_ += 1;
-        timer_off("DirectJK: IFB Preprocessing");
+        do_incfock_iter_ = (Dnorm >= dconv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
+        
+        if (!initial_iteration_ && (Dnorm >= dconv)) incfock_count_ += 1;
+        timer_off("DirectJK: INCFOCK Preprocessing");
     }
 
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
@@ -423,9 +428,9 @@ void DirectJK::compute_JK() {
     }
 
     if (incfock_) {
-        timer_on("DirectJK: IFB Postprocessing");
+        timer_on("DirectJK: INCFOCK Postprocessing");
         incfock_postiter();
-        timer_off("DirectJK: IFB Postprocessing");
+        timer_off("DirectJK: INCFOCK Postprocessing");
     }
 
     if (initial_iteration_) initial_iteration_ = false;

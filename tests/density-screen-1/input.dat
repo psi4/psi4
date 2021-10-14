@@ -18,6 +18,7 @@ set {
     basis aug-cc-pVDZ
     ints_tolerance 1.0e-12
     e_convergence 1.0e-10
+    d_convergence 1.0e-6
     screening density
     incfock true
     incfock_reset 5
