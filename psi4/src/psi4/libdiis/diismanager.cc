@@ -204,13 +204,13 @@ bool DIISManager::add_entry(int numQuantities, ...) {
     double *array;
     va_list args;
     va_start(args, numQuantities);
-    auto *errorVectorPtr = new double[_errorVectorSize];
-    auto *vectorPtr = new double[_vectorSize];
-    double *arrayPtr = errorVectorPtr;
+    auto errorVector = std::vector<double>(_errorVectorSize);
+    auto paramVector = std::vector<double>(_vectorSize);
+    double *arrayPtr = errorVector.data();
     for (int i = 0; i < numQuantities; ++i) {
         DIISEntry::InputType type = _componentTypes[i];
         // If we've filled the error vector, start filling the vector
-        if (i == _numErrorVectorComponents) arrayPtr = vectorPtr;
+        if (i == _numErrorVectorComponents) arrayPtr = paramVector.data();
         switch (type) {
             case DIISEntry::InputType::Pointer:
                 array = va_arg(args, double *);
@@ -268,12 +268,10 @@ bool DIISManager::add_entry(int numQuantities, ...) {
 
     int entryID = get_next_entry_id();
     if (_subspace.size() < _maxSubspaceSize) {
-        _subspace.push_back(new DIISEntry(_label, entryID, _entryCount++, _errorVectorSize, errorVectorPtr, _vectorSize,
-                                          vectorPtr, _psio));
+        _subspace.push_back(new DIISEntry(_label, entryID, _entryCount++, errorVector, paramVector, _psio));
     } else {
         delete _subspace[entryID];
-        _subspace[entryID] = new DIISEntry(_label, entryID, _entryCount++, _errorVectorSize, errorVectorPtr,
-                                           _vectorSize, vectorPtr, _psio);
+        _subspace[entryID] = new DIISEntry(_label, entryID, _entryCount++, errorVector, paramVector, _psio);
     }
 
     if (_storagePolicy == StoragePolicy::OnDisk) {
