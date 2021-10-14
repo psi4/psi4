@@ -181,7 +181,7 @@ class DLPNOMP2 : public Wavefunction {
     DLPNOMP2(SharedWavefunction ref_wfn, Options& options);
     ~DLPNOMP2() override;
 
-    double compute_energy();
+    double compute_energy() override;
 };
 
 }  // namespace dlpno
