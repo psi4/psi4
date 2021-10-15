@@ -268,10 +268,9 @@ bool DIISManager::add_entry(int numQuantities, ...) {
 
     int entryID = get_next_entry_id();
     if (_subspace.size() < _maxSubspaceSize) {
-        _subspace.push_back(new DIISEntry(_label, entryID, _entryCount++, std::move(errorVector), std::move(paramVector), _psio));
+        _subspace.push_back(std::make_unique<DIISEntry>(_label, entryID, _entryCount++, std::move(errorVector), std::move(paramVector), _psio));
     } else {
-        delete _subspace[entryID];
-        _subspace[entryID] = new DIISEntry(_label, entryID, _entryCount++, std::move(errorVector), std::move(paramVector), _psio);
+        _subspace[entryID] = std::make_unique<DIISEntry>(_label, entryID, _entryCount++, std::move(errorVector), std::move(paramVector), _psio);
     }
 
     if (_storagePolicy == StoragePolicy::OnDisk) {
@@ -333,27 +332,24 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
     timer_on("DIISManager::extrapolate");
 
     auto dimension = _subspace.size() + 1;
-    auto B = std::make_shared<Matrix>("B (DIIS Connectivity Matrix", dimension, dimension);
-    auto bMatrix = B->pointer();
-    auto coefficients = new double[dimension];
-    std::fill_n(coefficients, dimension, 0.0);
-    auto force = new double[dimension];
-    std::fill_n(force, dimension, 0.0);
+    auto B = Matrix("B (DIIS Connectivity Matrix", dimension, dimension);
+    auto Bp = B.pointer();
+    auto coefficients = std::vector<double>(dimension, 0.0);
+    auto force = std::vector<double>(dimension, 0.0);
 
     timer_on("bMatrix setup");
 
     for (int i = 0; i < _subspace.size(); ++i) {
-        coefficients[i] = 0.0;
-        bMatrix[i][_subspace.size()] = bMatrix[_subspace.size()][i] = 1.0;
-        DIISEntry *entryI = _subspace[i];
+        Bp[i][_subspace.size()] = Bp[_subspace.size()][i] = 1.0;
+        auto entryI = _subspace[i];
         for (int j = 0; j < _subspace.size(); ++j) {
-            DIISEntry *entryJ = _subspace[j];
+            auto entryJ = _subspace[j];
             if (entryI->dot_is_known_with(j)) {
-                bMatrix[i][j] = entryI->dot_with(j);
+                Bp[i][j] = entryI->dot_with(j);
             } else {
                 double dot = C_DDOT(_errorVectorSize, const_cast<double *>(entryI->errorVector()), 1,
                                     const_cast<double *>(entryJ->errorVector()), 1);
-                bMatrix[i][j] = dot;
+                Bp[i][j] = dot;
                 entryI->set_dot_with(j, dot);
                 entryJ->set_dot_with(i, dot);
                 if (_storagePolicy == StoragePolicy::OnDisk) {
@@ -364,17 +360,14 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
         }
     }
     force[_subspace.size()] = 1.0;
-    bMatrix[_subspace.size()][_subspace.size()] = 0.0;
+    Bp[_subspace.size()][_subspace.size()] = 0.0;
 
     timer_off("bMatrix setup");
     timer_on("bMatrix pseudoinverse");
 
     // => Balance <= //
 
-    double **Bp = B->pointer();
-
-    auto S = std::make_shared<Vector>("S", dimension);
-    double *Sp = S->pointer();
+    auto S = std::vector<double>(dimension);
 
     // Trap an explicit zero
     bool is_zero = false;
@@ -386,27 +379,27 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
 
     if (is_zero) {
         for (int i = 0; i < dimension; i++) {
-            Sp[i] = 1.0;
+            S[i] = 1.0;
         }
     } else {
         for (int i = 0; i < dimension - 1; i++) {
-            Sp[i] = pow(Bp[i][i], -1.0 / 2.0);
+            S[i] = pow(Bp[i][i], -1.0 / 2.0);
         }
-        Sp[dimension - 1] = 1.0;
+        S[dimension - 1] = 1.0;
     }
 
     for (int i = 0; i < dimension; i++) {
         for (int j = 0; j < dimension; j++) {
-            Bp[i][j] *= Sp[i] * Sp[j];
+            Bp[i][j] *= S[i] * S[j];
         }
     }
 
     // => S [S^-1 B S^-1] S \ f <= //
 
-    B->power(-1.0, 1.0E-12);
-    C_DGEMV('N', dimension, dimension, 1.0, Bp[0], dimension, force, 1, 0.0, coefficients, 1);
+    B.power(-1.0, 1.0E-12);
+    C_DGEMV('N', dimension, dimension, 1.0, Bp[0], dimension, force.data(), 1, 0.0, coefficients.data(), 1);
     for (int i = 0; i < dimension; i++) {
-        coefficients[i] *= Sp[i];
+        coefficients[i] *= S[i];
     }
 
     timer_off("bMatrix pseudoinverse");
@@ -505,8 +498,6 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
     timer_off("New vector");
 
     if (print > 2) outfile->Printf("\n");
-    delete[] coefficients;
-    delete[] force;
     timer_off("DIISManager::extrapolate");
 
     return true;
@@ -516,7 +507,6 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
  * Removes any vectors existing in the DIIS subspace.
  */
 void DIISManager::reset_subspace() {
-    for (int i = 0; i < _subspace.size(); ++i) delete _subspace[i];
     _subspace.clear();
 }
 
@@ -531,10 +521,6 @@ void DIISManager::delete_diis_file() {
 }
 
 DIISManager::~DIISManager() {
-    for (int i = 0; i < _subspace.size(); ++i) {
-        DIISEntry *temp = _subspace[i];
-        delete temp;
-    }
     _subspace.clear();
     if (_psio->open_check(PSIF_LIBDIIS)) _psio->close(PSIF_LIBDIIS, 1);
 }

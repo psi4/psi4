@@ -109,7 +109,7 @@ class PSI_API DIISManager {
     /// The counter that keeps track of how many entries have been added
     int _entryCount;
     /// The DIIS entries
-    std::vector<DIISEntry*> _subspace;
+    std::vector<std::shared_ptr<DIISEntry>> _subspace;
     /// The types used in building the vector and the error vector
     std::vector<DIISEntry::InputType> _componentTypes;
     /// The types used in the vector
