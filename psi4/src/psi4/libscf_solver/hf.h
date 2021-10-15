@@ -61,12 +61,6 @@ class HF : public Wavefunction {
     SharedMatrix Vb_;
     /// The orthogonalization matrix (symmetric or canonical)
     SharedMatrix X_;
-    /// Temporary matrix for diagonalize_F
-    SharedMatrix diag_temp_;
-    /// Temporary matrix for diagonalize_F
-    SharedMatrix diag_F_temp_;
-    /// Temporary matrix for diagonalize_F
-    SharedMatrix diag_C_temp_;
     /// List of external potentials to add to Fock matrix and updated at every iteration
     /// e.g. PCM potential
     std::vector<SharedMatrix> external_potentials_;

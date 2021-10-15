@@ -406,9 +406,6 @@ void HF::finalize() {
     // Sphalf_.reset();
     X_.reset();
     T_.reset();
-    diag_temp_.reset();
-    diag_F_temp_.reset();
-    diag_C_temp_.reset();
 }
 
 void HF::set_jk(std::shared_ptr<JK> jk) {
@@ -762,11 +759,6 @@ void HF::form_Shalf() {
         // Extra matrix dimension changes for specific derived classes
         prepare_canonical_orthogonalization();
 
-        // Temporary variables needed by diagonalize_F
-        diag_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nsopi_);
-        diag_F_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
-        diag_C_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
-
         if (print_ > 3) {
             S_->print("outfile");
             X_->print("outfile");
@@ -802,11 +794,6 @@ void HF::form_Shalf() {
 
     // Extra matrix dimension changes for specific derived classes
     prepare_canonical_orthogonalization();
-
-    // Temporary variables needed by diagonalize_F
-    diag_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nsopi_);
-    diag_F_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
-    diag_C_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
 
     if (print_ > 3) {
         S_->print("outfile");
@@ -1305,14 +1292,14 @@ void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr
 #endif
 
     // Form F' = X'FX for canonical orthogonalization
-    diag_temp_->gemm(true, false, 1.0, X_, Fm, 0.0);
-    diag_F_temp_->gemm(false, false, 1.0, diag_temp_, X_, 0.0);
+    auto diag_F_temp = linalg::triplet(X_, Fm, X_, true, false, false);
 
     // Form C' = eig(F')
-    diag_F_temp_->diagonalize(diag_C_temp_, epsm);
+    auto diag_C_temp = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
+    diag_F_temp->diagonalize(diag_C_temp, epsm);
 
     // Form C = XC'
-    Cm->gemm(false, false, 1.0, X_, diag_C_temp_, 0.0);
+    Cm->gemm(false, false, 1.0, X_, diag_C_temp, 0.0);
 }
 
 void HF::reset_occupation() {
