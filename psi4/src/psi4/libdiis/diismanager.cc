@@ -521,7 +521,6 @@ void DIISManager::delete_diis_file() {
 }
 
 DIISManager::~DIISManager() {
-    _subspace.clear();
     if (_psio->open_check(PSIF_LIBDIIS)) _psio->close(PSIF_LIBDIIS, 1);
 }
 

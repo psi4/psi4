@@ -61,7 +61,6 @@ class DIISEntry {
     enum class InputType { DPDBuf4, DPDFile2, Matrix, Vector, Pointer };
     DIISEntry(std::string label, int ID, int count, std::unique_ptr<std::vector<double>> vector,
               std::unique_ptr<std::vector<double>> errorVector, std::shared_ptr<PSIO> psio);
-    ~DIISEntry();
     /// Whether the dot product of this entry's and the nth entry's error vector is known
     bool dot_is_known_with(int n) { return _knownDotProducts[n]; }
     /// The dot product of this entry's and the nth entry's error vectors
@@ -78,7 +77,7 @@ class DIISEntry {
     /// Marks the dot product with vector n as invalid
     void invalidate_dot(int n) { _knownDotProducts[n] = false; }
     /// Set the vector
-    void set_vector(std::unique_ptr<std::vector<double>> vec) { _vector = std::move(vec); }
+    void set_vector(std::unique_ptr<std::vector<double>> vec) { _vector = *vec.release(); }
     /// Put this vector entry on disk and free the memory
     void dump_vector_to_disk();
     /// Allocate vector memory and read from disk
@@ -94,12 +93,12 @@ class DIISEntry {
     /// Returns the error vector
     const double *errorVector() {
         read_error_vector_from_disk();
-        return _errorVector->data();
+        return _errorVector.data();
     }
     /// Returns the vector
     const double *vector() {
         read_vector_from_disk();
-        return _vector->data();
+        return _vector.data();
     }
     /// Open the psi file, if needed.
     void open_psi_file();
@@ -122,9 +121,9 @@ class DIISEntry {
     /// The RMS error for this entry
     double _rmsError;
     /// The error vector
-    std::unique_ptr<std::vector<double>> _errorVector;
+    std::vector<double> _errorVector;
     /// The error vector
-    std::unique_ptr<std::vector<double>> _vector;
+    std::vector<double> _vector;
     /// The label used for disk storage
     std::string _label;
     /// PSIO object
