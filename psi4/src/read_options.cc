@@ -1441,8 +1441,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("MAX_ATTEMPTS", 1);
         /*- Do Perform Incremental Fock Build? -*/
         options.add_bool("INCFOCK", false);
-        /*- After many iterations to perform a full Fock build if using INCFOCK? -*/
-        options.add_int("INCFOCK_RESET", 5);
+        /*- Frequency with which to compute the full Fock matrix if using |scf__incfock| . 
+        N means rebuild every N SCF iterations to avoid accumulating error from the incremental procedure. -*/
+        options.add_int("INCFOCK_FULL_FOCK_EVERY", 5);
 
         /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 
