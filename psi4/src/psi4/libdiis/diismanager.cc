@@ -268,19 +268,19 @@ bool DIISManager::add_entry(int numQuantities, ...) {
 
     int entryID = get_next_entry_id();
     if (_subspace.size() < _maxSubspaceSize) {
-        _subspace.push_back(std::make_unique<DIISEntry>(_label, entryID, _entryCount++, std::move(errorVector), std::move(paramVector), _psio));
+        _subspace.emplace_back(_label, entryID, _entryCount++, std::move(errorVector), std::move(paramVector), _psio);
     } else {
-        _subspace[entryID] = std::make_unique<DIISEntry>(_label, entryID, _entryCount++, std::move(errorVector), std::move(paramVector), _psio);
+        _subspace[entryID] = DIISEntry(_label, entryID, _entryCount++, std::move(errorVector), std::move(paramVector), _psio);
     }
 
     if (_storagePolicy == StoragePolicy::OnDisk) {
-        _subspace[entryID]->dump_vector_to_disk();
-        _subspace[entryID]->dump_error_vector_to_disk();
+        _subspace[entryID].dump_vector_to_disk();
+        _subspace[entryID].dump_error_vector_to_disk();
     }
 
     // Make we don't know any inner products involving this new entry
     for (int i = 0; i < _subspace.size(); ++i)
-        if (i != entryID) _subspace[i]->invalidate_dot(entryID);
+        if (i != entryID) _subspace[i].invalidate_dot(entryID);
 
     timer_off("DIISManager::add_entry");
 
@@ -297,18 +297,18 @@ int DIISManager::get_next_entry_id() {
         entry = _subspace.size();
     } else {
         if (_removalPolicy == RemovalPolicy::OldestAdded) {
-            int oldest = _subspace[0]->orderAdded();
+            int oldest = _subspace[0].orderAdded();
             for (int i = 1; i < _subspace.size(); ++i) {
-                if (_subspace[i]->orderAdded() < oldest) {
-                    oldest = _subspace[i]->orderAdded();
+                if (_subspace[i].orderAdded() < oldest) {
+                    oldest = _subspace[i].orderAdded();
                     entry = i;
                 }
             }
         } else if (_removalPolicy == RemovalPolicy::LargestError) {
-            double largest = _subspace[0]->rmsError();
+            double largest = _subspace[0].rmsError();
             for (int i = 1; i < _subspace.size(); ++i) {
-                if (_subspace[i]->rmsError() > largest) {
-                    largest = _subspace[i]->rmsError();
+                if (_subspace[i].rmsError() > largest) {
+                    largest = _subspace[i].rmsError();
                     entry = i;
                 }
             }
@@ -341,20 +341,20 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
 
     for (int i = 0; i < _subspace.size(); ++i) {
         Bp[i][_subspace.size()] = Bp[_subspace.size()][i] = 1.0;
-        auto entryI = _subspace[i];
+        auto& entryI = _subspace[i];
         for (int j = 0; j < _subspace.size(); ++j) {
-            auto entryJ = _subspace[j];
-            if (entryI->dot_is_known_with(j)) {
-                Bp[i][j] = entryI->dot_with(j);
+            auto& entryJ = _subspace[j];
+            if (entryI.dot_is_known_with(j)) {
+                Bp[i][j] = entryI.dot_with(j);
             } else {
-                double dot = C_DDOT(_errorVectorSize, const_cast<double *>(entryI->errorVector()), 1,
-                                    const_cast<double *>(entryJ->errorVector()), 1);
+                double dot = C_DDOT(_errorVectorSize, const_cast<double *>(entryI.errorVector()), 1,
+                                    const_cast<double *>(entryJ.errorVector()), 1);
                 Bp[i][j] = dot;
-                entryI->set_dot_with(j, dot);
-                entryJ->set_dot_with(i, dot);
+                entryI.set_dot_with(j, dot);
+                entryJ.set_dot_with(i, dot);
                 if (_storagePolicy == StoragePolicy::OnDisk) {
-                    entryI->free_error_vector_memory();
-                    entryJ->free_error_vector_memory();
+                    entryI.free_error_vector_memory();
+                    entryJ.free_error_vector_memory();
                 }
             }
         }
@@ -417,7 +417,7 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
     for (int n = 0; n < _subspace.size(); ++n) {
         double coefficient = coefficients[n];
         if (print > 2) outfile->Printf(" %.3f ", coefficient);
-        const double *arrayPtr = _subspace[n]->vector();
+        const double *arrayPtr = _subspace[n].vector();
         va_start(args, numQuantities);
         for (int i = 0; i < numQuantities; ++i) {
             // The indexing arrays contain the error vector, then the vector, so they
@@ -491,7 +491,7 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
                     throw SanityCheckError("Unknown input type", __FILE__, __LINE__);
             }
         }
-        if (_storagePolicy == StoragePolicy::OnDisk) _subspace[n]->free_vector_memory();
+        if (_storagePolicy == StoragePolicy::OnDisk) _subspace[n].free_vector_memory();
         va_end(args);
     }
 
