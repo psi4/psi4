@@ -51,6 +51,8 @@ void DFOCC::oeprop() {
     // However, CD-OMP2/OLCCD have oeprop enabled but gradients disabled for undocumented reasons.
     // Accordingly, we'll play it safe and not set the density for those cases just yet.
     // ...Which means we can't assume the density to be set in general. Sad. - JPM 07/2020
+    // This makes sense insofar as there are no CD nuclear gradient integrals (there are also no CD-HF gradients)
+    // but you can still calculate one electron properties from the CD-OMP2/OLCCD density - SB 10/2021
     auto Da_ = std::make_shared<Matrix>("MO-basis alpha OPDM", nmo_, nmo_);
     auto Db_ = std::make_shared<Matrix>("MO-basis beta OPDM", nmo_, nmo_);
     if (reference_ == "RESTRICTED") {
