@@ -724,9 +724,8 @@ DENSITY
 .. math:: CON(PQ|RS) <= \sqrt{(PQ|PQ)(RS|RS)} \cdot DCON(PQ, RS)
     DCON(PQ, RS) = max(4D_{PQ}, 4D_{RS}, D_{PR}, D_{PS}, D_{QR}, D_{QS})
 
-
 When using density-matrix based integral screening, it is useful to build the J and K matrices
-incrementally, using the difference in the density matrix between iterations, rather than the
+incrementally, also described in [Haser:1989:104]_, using the difference in the density matrix between iterations, rather than the
 full density matrix. To turn on this option, set |scf__incfock| to ``true``.
 
 We have added the automatic capability to use the extremely fast DF
