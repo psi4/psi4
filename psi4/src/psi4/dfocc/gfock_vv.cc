@@ -50,8 +50,8 @@ void DFOCC::gfock_vv() {
         GFvv->gemm(true, false, HvvA, G1c_vv, 1.0, 0.0);
 
         // Fab += \sum_{Q} \sum_{m} G_mb^Q b_ma^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS);
         GFvv->contract(true, false, nvirA, nvirA, nQ * noccA, K, G, 1.0, 1.0);
@@ -63,8 +63,8 @@ void DFOCC::gfock_vv() {
         //=========================
 
         // Fab += \sum_{Q} \sum_{m} G_mb^Q b_ma^Q
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA * nvirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA * nvirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS);
         GFvv->contract(true, false, nvirA, nvirA, nQ_ref * noccA, K, G, 1.0, 1.0);
@@ -72,8 +72,8 @@ void DFOCC::gfock_vv() {
         K.reset();
 
         // Fab += \sum_{Q} \sum_{e} G_eb^Q b_ea^Q
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         GFvv->contract(true, false, nvirA, nvirA, nQ_ref * nvirA, K, G, 1.0, 1.0);
@@ -87,7 +87,7 @@ void DFOCC::gfock_vv() {
         /*
         // Energy
         double Etemp = 0.0;
-        G = SharedTensor2d(new Tensor2d("MO-basis correlation OPDM", nmo_, nmo_));
+        G = std::make_shared<Tensor2d>("MO-basis correlation OPDM", nmo_, nmo_);
         G->copy(G1c);
         for (int i = 0; i < noccA; i++) G->add(i, i, 2.0);
         Etemp += 0.5 * G->vector_dot(HmoA);
@@ -118,8 +118,8 @@ void DFOCC::gfock_vv() {
 
         // Fab += \sum_{Q} \sum_{m} G_mb^Q b_ma^Q
         // alpha spin
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS);
         GFvvA->contract(true, false, nvirA, nvirA, nQ * noccA, K, G, 1.0, 1.0);
@@ -127,8 +127,8 @@ void DFOCC::gfock_vv() {
         K.reset();
 
         // beta spin
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|ov)", nQ, noccB, nvirB));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|ov)", nQ, noccB, nvirB);
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS);
         GFvvB->contract(true, false, nvirB, nvirB, nQ * noccB, K, G, 1.0, 1.0);
@@ -141,8 +141,8 @@ void DFOCC::gfock_vv() {
 
         // Fab += \sum_{Q} \sum_{m} G_mb^Q b_ma^Q
         // alpha spin
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA * nvirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA * nvirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS);
         GFvvA->contract(true, false, nvirA, nvirA, nQ_ref * noccA, K, G, 1.0, 1.0);
@@ -150,8 +150,8 @@ void DFOCC::gfock_vv() {
         K.reset();
 
         // beta spin
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|ov)", nQ_ref, noccB * nvirB));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB * nvirB));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|ov)", nQ_ref, noccB * nvirB);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB * nvirB);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS);
         GFvvB->contract(true, false, nvirB, nvirB, nQ_ref * noccB, K, G, 1.0, 1.0);
@@ -160,8 +160,8 @@ void DFOCC::gfock_vv() {
 
         // Fab += \sum_{Q} \sum_{e} G_eb^Q b_ea^Q
         // alpha spin
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         GFvvA->contract(true, false, nvirA, nvirA, nQ_ref * nvirA, K, G, 1.0, 1.0);
@@ -169,8 +169,8 @@ void DFOCC::gfock_vv() {
         K.reset();
 
         // beta spin
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         GFvvB->contract(true, false, nvirB, nvirB, nQ_ref * nvirB, K, G, 1.0, 1.0);
@@ -189,13 +189,13 @@ void DFOCC::gfock_vv() {
         /*
         // Energy
         double Etemp = 0.0;
-        G = SharedTensor2d(new Tensor2d("MO-basis correlation OPDM", nmo_, nmo_));
+        G = std::make_shared<Tensor2d>("MO-basis correlation OPDM", nmo_, nmo_);
         G->copy(G1cA);
         for (int i = 0; i < noccA; i++) G->add(i, i, 1.0);
         Etemp += 0.5 * G->vector_dot(HmoA);
         G.reset();
 
-        G = SharedTensor2d(new Tensor2d("MO-basis correlation OPDM", nmo_, nmo_));
+        G = std::make_shared<Tensor2d>("MO-basis correlation OPDM", nmo_, nmo_);
         G->copy(G1cB);
         for (int i = 0; i < noccB; i++) G->add(i, i, 1.0);
         Etemp += 0.5 * G->vector_dot(HmoB);
@@ -237,8 +237,8 @@ void DFOCC::gfock_cc_vv() {
         GFvv->gemm(false, false, HvoA, G1c_ov, 1.0, 1.0);
 
         // Fab += \sum_{Q} \sum_{m} G_mb^Q b_ma^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OV)", nQ, noccA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS);
         GFvv->contract(true, false, nvirA, nvirA, nQ * noccA, K, G, 1.0, 1.0);
@@ -246,8 +246,8 @@ void DFOCC::gfock_cc_vv() {
         K.reset();
 
         // Fab += \sum_{Q} \sum_{e} G_eb^Q b_ea^Q
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         GFvv->contract(true, false, nvirA, nvirA, nQ * nvirA, K, G, 1.0, 1.0);
@@ -259,8 +259,8 @@ void DFOCC::gfock_cc_vv() {
         //=========================
 
         // Fab += \sum_{Q} \sum_{m} G_mb^Q b_ma^Q
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA * nvirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA * nvirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS);
         GFvv->contract(true, false, nvirA, nvirA, nQ_ref * noccA, K, G, 1.0, 1.0);
@@ -268,8 +268,8 @@ void DFOCC::gfock_cc_vv() {
         K.reset();
 
         // Fab += \sum_{Q} \sum_{e} G_eb^Q b_ea^Q
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         GFvv->contract(true, false, nvirA, nvirA, nQ_ref * nvirA, K, G, 1.0, 1.0);
@@ -308,8 +308,8 @@ void DFOCC::gfock_cc_vv() {
 
         // Fab += \sum_{Q} \sum_{m} G_mb^Q b_ma^Q
         // alpha spin
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|OV)", nQ, noccA, nvirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|OV)", nQ, noccA * nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS);
         GFvvA->contract(true, false, nvirA, nvirA, nQ * noccA, K, G, 1.0, 1.0);
@@ -317,8 +317,8 @@ void DFOCC::gfock_cc_vv() {
         K.reset();
 
         // beta spin
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|ov)", nQ, noccB, nvirB));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|ov)", nQ, noccB, nvirB);
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|ov)", nQ, noccB * nvirB);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS);
         GFvvB->contract(true, false, nvirB, nvirB, nQ * noccB, K, G, 1.0, 1.0);
@@ -327,8 +327,8 @@ void DFOCC::gfock_cc_vv() {
 
         // Fab += \sum_{Q} \sum_{e} G_eb^Q b_ea^Q
         // alpha spin
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|VV)", nQ, nvirA, nvirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|VV)", nQ, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         GFvvA->contract(true, false, nvirA, nvirA, nQ * nvirA, K, G, 1.0, 1.0);
@@ -336,8 +336,8 @@ void DFOCC::gfock_cc_vv() {
         K.reset();
 
         // beta spin
-        G = SharedTensor2d(new Tensor2d("Correlation 3-Index TPDM (Q|vv)", nQ, nvirB, nvirB));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|vv)", nQ, nvirB, nvirB));
+        G = std::make_shared<Tensor2d>("Correlation 3-Index TPDM (Q|vv)", nQ, nvirB, nvirB);
+        K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|vv)", nQ, nvirB, nvirB);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         GFvvB->contract(true, false, nvirB, nvirB, nQ * nvirB, K, G, 1.0, 1.0);
@@ -350,8 +350,8 @@ void DFOCC::gfock_cc_vv() {
 
         // Fab += \sum_{Q} \sum_{m} G_mb^Q b_ma^Q
         // alpha spin
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA * nvirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|OV)", nQ_ref, noccA * nvirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|OV)", nQ_ref, noccA * nvirA);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS);
         GFvvA->contract(true, false, nvirA, nvirA, nQ_ref * noccA, K, G, 1.0, 1.0);
@@ -359,8 +359,8 @@ void DFOCC::gfock_cc_vv() {
         K.reset();
 
         // beta spin
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|ov)", nQ_ref, noccB * nvirB));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB * nvirB));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|ov)", nQ_ref, noccB * nvirB);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|ov)", nQ_ref, noccB * nvirB);
         G->read(psio_, PSIF_DFOCC_DENS);
         K->read(psio_, PSIF_DFOCC_INTS);
         GFvvB->contract(true, false, nvirB, nvirB, nQ_ref * noccB, K, G, 1.0, 1.0);
@@ -369,8 +369,8 @@ void DFOCC::gfock_cc_vv() {
 
         // Fab += \sum_{Q} \sum_{e} G_eb^Q b_ea^Q
         // alpha spin
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|VV)", nQ_ref, nvirA, nvirA);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|VV)", nQ_ref, nvirA, nvirA);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         GFvvA->contract(true, false, nvirA, nvirA, nQ_ref * nvirA, K, G, 1.0, 1.0);
@@ -378,8 +378,8 @@ void DFOCC::gfock_cc_vv() {
         K.reset();
 
         // beta spin
-        G = SharedTensor2d(new Tensor2d("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB));
-        K = SharedTensor2d(new Tensor2d("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB));
+        G = std::make_shared<Tensor2d>("3-Index Separable TPDM (Q|vv)", nQ_ref, nvirB, nvirB);
+        K = std::make_shared<Tensor2d>("DF_BASIS_SCF B (Q|vv)", nQ_ref, nvirB, nvirB);
         G->read(psio_, PSIF_DFOCC_DENS, true, true);
         K->read(psio_, PSIF_DFOCC_INTS, true, true);
         GFvvB->contract(true, false, nvirB, nvirB, nQ_ref * nvirB, K, G, 1.0, 1.0);

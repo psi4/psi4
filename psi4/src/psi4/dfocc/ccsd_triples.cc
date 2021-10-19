@@ -46,6 +46,12 @@ void DFOCC::ccsd_canonic_triples() {
     SharedTensor1d Eijk;
     long int Nijk;
 
+    // progress counter
+    std::time_t stop, start = std::time(nullptr);
+    long int ind = 0;
+    double step_print = 10.0;
+    double next_print = step_print;
+
     // Find number of unique ijk combinations (i>=j>=k)
     /*
     Nijk = 0;
@@ -61,49 +67,49 @@ void DFOCC::ccsd_canonic_triples() {
     outfile->Printf("\tNumber of ijk combinations: %i \n", Nijk);
 
     // Malloc Eijk
-    // Eijk = SharedTensor1d(new Tensor1d("Eijk", Nijk));
+    // Eijk = std::make_shared<Tensor1d>("Eijk", Nijk);
 
     // Memory: 2*O^2V^2 + 5*V^3 + O^3V + V^2N + V^3/2
 
     // Read t2 amps
-    t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    t2 = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     t2->read_symm(psio_, PSIF_DFOCC_AMPS);
-    T = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    T = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
     T->sort(1324, t2, 1.0, 0.0);
     t2.reset();
 
     // Form (ij|ka)
-    M = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    M = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
     M->read(psio_, PSIF_DFOCC_INTS);
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA);
     K->read(psio_, PSIF_DFOCC_INTS);
-    J = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA));
+    J = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA);
     J->gemm(true, false, K, M, 1.0, 0.0);
     K.reset();
-    I = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|KA>", naoccA, naoccA, naoccA, navirA));
+    I = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ|KA>", naoccA, naoccA, naoccA, navirA);
     I->sort(1324, J, 1.0, 0.0);
     J.reset();
 
     // Form (ia|jb)
-    J = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    J = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
     J->gemm(true, false, M, M, 1.0, 0.0);
 
     // B(iaQ)
-    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ));
+    L = std::make_shared<Tensor2d>("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ);
     L = M->transpose();
     M.reset();
 
     // malloc W[ijk](abc)
-    W = SharedTensor2d(new Tensor2d("W[IJK] <AB|C>", navirA * navirA, navirA));
-    V = SharedTensor2d(new Tensor2d("V[IJK] <BA|C>", navirA * navirA, navirA));
-    J1 = SharedTensor2d(new Tensor2d("J[I] <AB|E>", navirA * navirA, navirA));
-    J2 = SharedTensor2d(new Tensor2d("J[J] <AB|E>", navirA * navirA, navirA));
-    J3 = SharedTensor2d(new Tensor2d("J[K] <AB|E>", navirA * navirA, navirA));
+    W = std::make_shared<Tensor2d>("W[IJK] <AB|C>", navirA * navirA, navirA);
+    V = std::make_shared<Tensor2d>("V[IJK] <BA|C>", navirA * navirA, navirA);
+    J1 = std::make_shared<Tensor2d>("J[I] <AB|E>", navirA * navirA, navirA);
+    J2 = std::make_shared<Tensor2d>("J[J] <AB|E>", navirA * navirA, navirA);
+    J3 = std::make_shared<Tensor2d>("J[K] <AB|E>", navirA * navirA, navirA);
 
     // B(Q,ab)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA);
     K->read(psio_, PSIF_DFOCC_INTS);
-    Jt = SharedTensor2d(new Tensor2d("J[I] <A|B>=C", navirA, ntri_abAA));
+    Jt = std::make_shared<Tensor2d>("J[I] <A|B>=C", navirA, ntri_abAA);
 
     // main loop
     E_t = 0.0;
@@ -116,6 +122,7 @@ void DFOCC::ccsd_canonic_triples() {
         J1->expand23(navirA, navirA, navirA, Jt);
 
         for (long int j = 0; j <= i; ++j) {
+            long int ij = ij_idxAA->get(i, j);
             double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
 
             // Compute J[j](a,bc) = (ja|bc) = \sum(Q) B[j](aQ) * B(Q,bc)
@@ -123,6 +130,8 @@ void DFOCC::ccsd_canonic_triples() {
             J2->expand23(navirA, navirA, navirA, Jt);
 
             for (long int k = 0; k <= j; ++k) {
+                long int ik = ij_idxAA->get(i, k);
+                long int jk = ij_idxAA->get(j, k);
                 // Compute J[k](a,bc) = (ka|bc) = \sum(Q) B[k](aQ) * B(Q,bc)
                 Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, k * navirA * nQ, 0, 1.0, 0.0);
                 J3->expand23(navirA, navirA, navirA, Jt);
@@ -226,6 +235,7 @@ void DFOCC::ccsd_canonic_triples() {
                 V->copy(W);
 
 // V[ijk](ab,c) += t_i^a (jb|kc) + t_j^b (ia|kc) + t_k^c (ia|jb)
+// V[ijk](ab,c) += f_ia T(jk|bc) + f_jb T(ik|ac) + f_kc T(ij|ab)
 // Vt[ijk](ab,c) = V[ijk](ab,c) / (1 + \delta(abc))
 #pragma omp parallel for
                 for (long int a = 0; a < navirA; ++a) {
@@ -234,9 +244,16 @@ void DFOCC::ccsd_canonic_triples() {
                         long int jb = ia_idxAA->get(j, b);
                         long int ab = ab_idxAA->get(a, b);
                         for (long int c = 0; c < navirA; ++c) {
+                            long int ac = ab_idxAA->get(a, c);
+                            long int bc = ab_idxAA->get(b, c);
                             long int kc = ia_idxAA->get(k, c);
                             double value = V->get(ab, c) + (t1A->get(i, a) * J->get(jb, kc)) +
                                            (t1A->get(j, b) * J->get(ia, kc)) + (t1A->get(k, c) * J->get(ia, jb));
+
+                            // E[4]_DT term
+                            value += (FockA->get(i+nfrzc, a+noccA) * T->get(jk, bc)) +
+                                           (FockA->get(j+nfrzc, b+noccA) * T->get(ik, ac)) + (FockA->get(k+nfrzc, c+noccA) * T->get(ij, ab));
+
                             double denom = 1 + ((a == b) + (b == c) + (a == c));
                             V->set(ab, c, value / denom);
                         }
@@ -283,6 +300,16 @@ void DFOCC::ccsd_canonic_triples() {
                     }
                 }
 
+                // progress counter
+                ind += 1;
+                double percent = static_cast<double>(ind) / static_cast<double>(Nijk) * 100.0;
+                if (percent >= next_print) {
+                    stop = std::time(nullptr);
+                    next_print += step_print;
+                    outfile->Printf("              %5.1lf  %8d s\n", percent,
+                                    static_cast<int>(stop) - static_cast<int>(start));
+                }
+
             }  // k
         }      // j
     }          // i
@@ -314,6 +341,12 @@ void DFOCC::ccsd_canonic_triples_hm() {
     SharedTensor1d Eijk;
     long int Nijk;
 
+    // progress counter
+    std::time_t stop, start = std::time(nullptr);
+    long int ind = 0;
+    double step_print = 10.0;
+    double next_print = step_print;
+
     // Find number of unique ijk combinations (i>=j>=k)
     Nijk = naoccA * (naoccA + 1) * (naoccA + 2) / 6;
     outfile->Printf("\tNumber of ijk combinations: %i \n", Nijk);
@@ -321,49 +354,49 @@ void DFOCC::ccsd_canonic_triples_hm() {
     // Memory: OV^3 + 2*O^2V^2 + 2*V^3 + O^3V + V^2N
 
     // Read t2 amps
-    t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    t2 = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     t2->read_symm(psio_, PSIF_DFOCC_AMPS);
-    T = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    T = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
     T->sort(1324, t2, 1.0, 0.0);
     t2.reset();
 
     // Form (ij|ka)
-    M = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    M = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
     M->read(psio_, PSIF_DFOCC_INTS);
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA);
     K->read(psio_, PSIF_DFOCC_INTS);
-    J = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA));
+    J = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA);
     J->gemm(true, false, K, M, 1.0, 0.0);
     K.reset();
-    I = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|KA>", naoccA, naoccA, naoccA, navirA));
+    I = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ|KA>", naoccA, naoccA, naoccA, navirA);
     I->sort(1324, J, 1.0, 0.0);
     J.reset();
 
     // Form (ia|jb)
-    J = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    J = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
     J->gemm(true, false, M, M, 1.0, 0.0);
 
     // B(iaQ)
-    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ));
+    L = std::make_shared<Tensor2d>("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ);
     L = M->transpose();
     M.reset();
 
     // B(Q,ab)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, navirA, navirA);
     K->read(psio_, PSIF_DFOCC_INTS, true, true);
 
     // Form (ia|bc)
-    J1 = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|BC)", naoccA, navirA, navirA, navirA));
+    J1 = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|BC)", naoccA, navirA, navirA, navirA);
     J1->gemm(false, false, L, K, 1.0, 0.0);
     K.reset();
     L.reset();
 
     // malloc W[ijk](abc)
-    W = SharedTensor2d(new Tensor2d("W[IJK] <AB|C>", navirA * navirA, navirA));
-    V = SharedTensor2d(new Tensor2d("V[IJK] <BA|C>", navirA * navirA, navirA));
+    W = std::make_shared<Tensor2d>("W[IJK] <AB|C>", navirA * navirA, navirA);
+    V = std::make_shared<Tensor2d>("V[IJK] <BA|C>", navirA * navirA, navirA);
 
     // B(Q,a>=b)
-    // K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA));
+    // K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA);
     // K->read(psio_, PSIF_DFOCC_INTS);
 
     // main loop
@@ -372,8 +405,11 @@ void DFOCC::ccsd_canonic_triples_hm() {
     for (long int i = 0; i < naoccA; ++i) {
         double Di = FockA->get(i + nfrzc, i + nfrzc);
         for (long int j = 0; j <= i; ++j) {
+            long int ij = ij_idxAA->get(i, j);
             double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
             for (long int k = 0; k <= j; ++k) {
+                long int ik = ij_idxAA->get(i, k);
+                long int jk = ij_idxAA->get(j, k);
                 // W[ijk](ab,c) = \sum(e) t_jk^ec (ia|be) (1+)
                 // W[ijk](ab,c) = \sum(e) J[i](ab,e) T[jk](ec)
                 W->contract(false, false, navirA * navirA, navirA, navirA, J1, T, i * navirA * navirA * navirA,
@@ -473,6 +509,7 @@ void DFOCC::ccsd_canonic_triples_hm() {
                 V->copy(W);
 
 // V[ijk](ab,c) += t_i^a (jb|kc) + t_j^b (ia|kc) + t_k^c (ia|jb)
+// V[ijk](ab,c) += f_ia T(jk|bc) + f_jb T(ik|ac) + f_kc T(ij|ab)
 // Vt[ijk](ab,c) = V[ijk](ab,c) / (1 + \delta(abc))
 #pragma omp parallel for
                 for (long int a = 0; a < navirA; ++a) {
@@ -482,8 +519,15 @@ void DFOCC::ccsd_canonic_triples_hm() {
                         long int ab = ab_idxAA->get(a, b);
                         for (long int c = 0; c < navirA; ++c) {
                             long int kc = ia_idxAA->get(k, c);
+                            long int ac = ab_idxAA->get(a, c);
+                            long int bc = ab_idxAA->get(b, c);
                             double value = V->get(ab, c) + (t1A->get(i, a) * J->get(jb, kc)) +
                                            (t1A->get(j, b) * J->get(ia, kc)) + (t1A->get(k, c) * J->get(ia, jb));
+
+                            // E[4]_DT term
+                            value += (FockA->get(i+nfrzc, a+noccA) * T->get(jk, bc)) +
+                                           (FockA->get(j+nfrzc, b+noccA) * T->get(ik, ac)) + (FockA->get(k+nfrzc, c+noccA) * T->get(ij, ab));
+
                             double denom = 1 + ((a == b) + (b == c) + (a == c));
                             V->set(ab, c, value / denom);
                         }
@@ -530,6 +574,16 @@ void DFOCC::ccsd_canonic_triples_hm() {
                     }
                 }
 
+                // progress counter
+                ind += 1;
+                double percent = static_cast<double>(ind) / static_cast<double>(Nijk) * 100.0;
+                if (percent >= next_print) {
+                    stop = std::time(nullptr);
+                    next_print += step_print;
+                    outfile->Printf("              %5.1lf  %8d s\n", percent,
+                                    static_cast<int>(stop) - static_cast<int>(start));
+                }
+
             }  // k
         }      // j
     }          // i
@@ -547,7 +601,7 @@ void DFOCC::ccsd_canonic_triples_hm() {
 }  // end ccsd_canonic_triples_hm
 
 //======================================================================
-//       (T): disk
+//       (T): disk, This version includes E[4]_DT term
 //======================================================================
 void DFOCC::ccsd_canonic_triples_disk() {
     // defs
@@ -556,56 +610,62 @@ void DFOCC::ccsd_canonic_triples_disk() {
     SharedTensor1d Eijk;
     long int Nijk;
 
+    // progress counter
+    std::time_t stop, start = std::time(nullptr);
+    long int ind = 0;
+    double step_print = 10.0;
+    double next_print = step_print;
+
     // Find number of unique ijk combinations (i>=j>=k)
     Nijk = naoccA * (naoccA + 1) * (naoccA + 2) / 6;
     outfile->Printf("\tNumber of ijk combinations: %i \n", Nijk);
 
     // Malloc Eijk
-    // Eijk = SharedTensor1d(new Tensor1d("Eijk", Nijk));
+    // Eijk = std::make_shared<Tensor1d>("Eijk", Nijk);
 
     // Memory: 2*O^2V^2 + 5*V^3 + O^3V + V^2N + V^3/2
 
     // Read t2 amps
-    t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    t2 = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     t2->read_symm(psio_, PSIF_DFOCC_AMPS);
-    T = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    T = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
     T->sort(1324, t2, 1.0, 0.0);
     t2.reset();
 
     // Form (ij|ka)
-    M = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    M = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
     M->read(psio_, PSIF_DFOCC_INTS);
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA);
     K->read(psio_, PSIF_DFOCC_INTS);
-    J = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA));
+    J = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA);
     J->gemm(true, false, K, M, 1.0, 0.0);
     K.reset();
-    I = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|KA>", naoccA, naoccA, naoccA, navirA));
+    I = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ|KA>", naoccA, naoccA, naoccA, navirA);
     I->sort(1324, J, 1.0, 0.0);
     J.reset();
 
     // Form (ia|jb)
-    J = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    J = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
     J->gemm(true, false, M, M, 1.0, 0.0);
 
     // B(iaQ)
-    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ));
+    L = std::make_shared<Tensor2d>("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ);
     L = M->transpose();
     M.reset();
 
     // malloc W[ijk](abc)
-    W = SharedTensor2d(new Tensor2d("W[IJK] <AB|C>", navirA * navirA, navirA));
-    V = SharedTensor2d(new Tensor2d("V[IJK] <BA|C>", navirA * navirA, navirA));
-    J1 = SharedTensor2d(new Tensor2d("J[I] (A|BC)", navirA * navirA, navirA));
-    J2 = SharedTensor2d(new Tensor2d("J[I] (A|BC)", navirA * navirA, navirA));
-    J3 = SharedTensor2d(new Tensor2d("J[I] (A|BC)", navirA * navirA, navirA));
+    W = std::make_shared<Tensor2d>("W[IJK] <AB|C>", navirA * navirA, navirA);
+    V = std::make_shared<Tensor2d>("V[IJK] <BA|C>", navirA * navirA, navirA);
+    J1 = std::make_shared<Tensor2d>("J[I] (A|BC)", navirA * navirA, navirA);
+    J2 = std::make_shared<Tensor2d>("J[I] (A|BC)", navirA * navirA, navirA);
+    J3 = std::make_shared<Tensor2d>("J[I] (A|BC)", navirA * navirA, navirA);
 
     // B(Q,ab)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA);
     K->read(psio_, PSIF_DFOCC_INTS);
 
     // Form (ia|bc)
-    Jt = SharedTensor2d(new Tensor2d("J[I] <A|B>=C", navirA, ntri_abAA));
+    Jt = std::make_shared<Tensor2d>("J[I] <A|B>=C", navirA, ntri_abAA);
     /*
     //psio_address addr = PSIO_ZERO;
     for(long int i = 0 ; i < naoccA; ++i){
@@ -620,14 +680,14 @@ void DFOCC::ccsd_canonic_triples_disk() {
     */
     Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, 0, 0, 1.0, 0.0);
     J1->expand23(navirA, navirA, navirA, Jt);
-    J1->mywrite(PSIF_DFOCC_IABC, false);
+    J1->mywrite(psio_, PSIF_DFOCC_IABC, false);
     for (long int i = 1; i < naoccA; ++i) {
         // Compute J[i](a,bc) = (ia|bc) = \sum(Q) B[i](aQ) * B(Q,bc)
         Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, i * navirA * nQ, 0, 1.0, 0.0);
         J1->expand23(navirA, navirA, navirA, Jt);
 
         // write
-        J1->mywrite(PSIF_DFOCC_IABC, true);
+        J1->mywrite(psio_, PSIF_DFOCC_IABC, true);
     }
     K.reset();
     Jt.reset();
@@ -642,21 +702,24 @@ void DFOCC::ccsd_canonic_triples_disk() {
         // Read J[i](a,bc)
         // psio_address addr1 = psio_get_address(PSIO_ZERO,(size_t)(i*navirA*navirA*navirA)*sizeof(double));
         // J1->read(psio_, PSIF_DFOCC_INTS, addr1, &addr1);
-        J1->myread(PSIF_DFOCC_IABC, (size_t)(i * navirA * navirA * navirA) * sizeof(double));
+        J1->myread(psio_, PSIF_DFOCC_IABC, (size_t)(i * navirA * navirA * navirA) * sizeof(double));
 
         for (long int j = 0; j <= i; ++j) {
-            double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
+             long int ij = ij_idxAA->get(i, j);
+             double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
 
             // Read J[j](a,bc)
             // psio_address addr2 = psio_get_address(PSIO_ZERO,(size_t)(j*navirA*navirA*navirA)*sizeof(double));
             // J2->read(psio_, PSIF_DFOCC_INTS, addr2, &addr2);
-            J2->myread(PSIF_DFOCC_IABC, (size_t)(j * navirA * navirA * navirA) * sizeof(double));
+            J2->myread(psio_, PSIF_DFOCC_IABC, (size_t)(j * navirA * navirA * navirA) * sizeof(double));
 
             for (long int k = 0; k <= j; ++k) {
+                 long int ik = ij_idxAA->get(i, k);
+                 long int jk = ij_idxAA->get(j, k);
                 // Read J[k](a,bc)
                 // psio_address addr3 = psio_get_address(PSIO_ZERO,(size_t)(k*navirA*navirA*navirA)*sizeof(double));
                 // J3->read(psio_, PSIF_DFOCC_INTS, addr3, &addr3);
-                J3->myread(PSIF_DFOCC_IABC, (size_t)(k * navirA * navirA * navirA) * sizeof(double));
+                J3->myread(psio_, PSIF_DFOCC_IABC, (size_t)(k * navirA * navirA * navirA) * sizeof(double));
 
                 // W[ijk](ab,c) = \sum(e) t_jk^ec (ia|be) (1+)
                 // W[ijk](ab,c) = \sum(e) J[i](ab,e) T[jk](ec)
@@ -757,6 +820,7 @@ void DFOCC::ccsd_canonic_triples_disk() {
                 V->copy(W);
 
 // V[ijk](ab,c) += t_i^a (jb|kc) + t_j^b (ia|kc) + t_k^c (ia|jb)
+// V[ijk](ab,c) += f_ia T(jk|bc) + f_jb T(ik|ac) + f_kc T(ij|ab)
 // Vt[ijk](ab,c) = V[ijk](ab,c) / (1 + \delta(abc))
 #pragma omp parallel for
                 for (long int a = 0; a < navirA; ++a) {
@@ -766,8 +830,15 @@ void DFOCC::ccsd_canonic_triples_disk() {
                         long int ab = ab_idxAA->get(a, b);
                         for (long int c = 0; c < navirA; ++c) {
                             long int kc = ia_idxAA->get(k, c);
+                            long int ac = ab_idxAA->get(a, c);
+                            long int bc = ab_idxAA->get(b, c);
                             double value = V->get(ab, c) + (t1A->get(i, a) * J->get(jb, kc)) +
                                            (t1A->get(j, b) * J->get(ia, kc)) + (t1A->get(k, c) * J->get(ia, jb));
+
+                            // E[4]_DT term
+                            value += (FockA->get(i+nfrzc, a+noccA) * T->get(jk, bc)) +
+                                           (FockA->get(j+nfrzc, b+noccA) * T->get(ik, ac)) + (FockA->get(k+nfrzc, c+noccA) * T->get(ij, ab));
+
                             double denom = 1 + ((a == b) + (b == c) + (a == c));
                             V->set(ab, c, value / denom);
                         }
@@ -814,6 +885,16 @@ void DFOCC::ccsd_canonic_triples_disk() {
                     }
                 }
 
+                // progress counter
+                ind += 1;
+                double percent = static_cast<double>(ind) / static_cast<double>(Nijk) * 100.0;
+                if (percent >= next_print) {
+                    stop = std::time(nullptr);
+                    next_print += step_print;
+                    outfile->Printf("              %5.1lf  %8d s\n", percent,
+                                    static_cast<int>(stop) - static_cast<int>(start));
+                }
+
             }  // k
         }      // j
     }          // i
@@ -854,80 +935,80 @@ void DFOCC::ccsd_canonic_triples_grad() {
 
     // Read t2 amps
     if (!t2_incore) {
-        t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        t2 = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
         t2->read_symm(psio_, PSIF_DFOCC_AMPS);
     }
-    T = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    T = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
     T->sort(1324, t2, 1.0, 0.0);
     t2.reset();
 
     // Form (ij|ka)
-    M = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    M = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
     M->read(psio_, PSIF_DFOCC_INTS);
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA);
     K->read(psio_, PSIF_DFOCC_INTS);
-    J = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA));
+    J = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA);
     J->gemm(true, false, K, M, 1.0, 0.0);
     K.reset();
-    I = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|KA>", naoccA, naoccA, naoccA, navirA));
+    I = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ|KA>", naoccA, naoccA, naoccA, navirA);
     I->sort(1324, J, 1.0, 0.0);
     J.reset();
 
     // Form (ia|jb)
-    J = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    J = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
     J->gemm(true, false, M, M, 1.0, 0.0);
-    I2 = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    I2 = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA);
     I2->sort(1324, J, 1.0, 0.0);
     J.reset();
 
     // B(iaQ)
-    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ));
+    L = std::make_shared<Tensor2d>("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ);
     L = M->transpose();
     M.reset();
 
     // B(Q,ab)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA);
     K->read(psio_, PSIF_DFOCC_INTS);
 
     // Form (ia|bc)
-    J1 = SharedTensor2d(new Tensor2d("J[I] (A|BC)", navirA * navirA, navirA));
-    Jt = SharedTensor2d(new Tensor2d("J[I] <A|B>=C", navirA, ntri_abAA));
+    J1 = std::make_shared<Tensor2d>("J[I] (A|BC)", navirA * navirA, navirA);
+    Jt = std::make_shared<Tensor2d>("J[I] <A|B>=C", navirA, ntri_abAA);
     Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, 0, 0, 1.0, 0.0);
     J1->expand23(navirA, navirA, navirA, Jt);
-    J1->mywrite(PSIF_DFOCC_IABC, false);
+    J1->mywrite(psio_, PSIF_DFOCC_IABC, false);
     for (long int i = 1; i < naoccA; ++i) {
         // Compute J[i](a,bc) = (ia|bc) = \sum(Q) B[i](aQ) * B(Q,bc)
         Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, i * navirA * nQ, 0, 1.0, 0.0);
         J1->expand23(navirA, navirA, navirA, Jt);
 
         // write
-        J1->mywrite(PSIF_DFOCC_IABC, true);
+        J1->mywrite(psio_, PSIF_DFOCC_IABC, true);
     }
     K.reset();
     Jt.reset();
     L.reset();
 
     // Alloc (t)^L_i^a amps
-    tL1 = SharedTensor2d(new Tensor2d("(T)L <I|A>", naoccA, navirA));
-    P1 = SharedTensor1d(new Tensor1d("P1 <A>", navirA));
-    P2 = SharedTensor2d(new Tensor2d("P2 <A|B>", navirA, navirA));
-    P3 = SharedTensor2d(new Tensor2d("P3 <A|I>", navirA, naoccA));
-    // G1c_ii = SharedTensor1d(new Tensor1d("(T) Correlation OPDM <I|I>", naoccA));
-    // G1c_aa = SharedTensor1d(new Tensor1d("(T) Correlation OPDM <A|A>", navirA));
-    G1c_ia = SharedTensor2d(new Tensor2d("(T) Correlation OPDM <I|A>", naoccA, navirA));
-    G1c_ab = SharedTensor2d(new Tensor2d("(T) Correlation OPDM <A|B>", navirA, navirA));
-    L2 = SharedTensor2d(new Tensor2d("(T)AL2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    tL1 = std::make_shared<Tensor2d>("(T)L <I|A>", naoccA, navirA);
+    P1 = std::make_shared<Tensor1d>("P1 <A>", navirA);
+    P2 = std::make_shared<Tensor2d>("P2 <A|B>", navirA, navirA);
+    P3 = std::make_shared<Tensor2d>("P3 <A|I>", navirA, naoccA);
+    // G1c_ii = std::make_shared<Tensor1d>("(T) Correlation OPDM <I|I>", naoccA);
+    // G1c_aa = std::make_shared<Tensor1d>("(T) Correlation OPDM <A|A>", navirA);
+    G1c_ia = std::make_shared<Tensor2d>("(T) Correlation OPDM <I|A>", naoccA, navirA);
+    G1c_ab = std::make_shared<Tensor2d>("(T) Correlation OPDM <A|B>", navirA, navirA);
+    L2 = std::make_shared<Tensor2d>("(T)AL2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
 
     // malloc W[ijk](abc)
-    W = SharedTensor2d(new Tensor2d("W[IJK] <AB|C>", navirA * navirA, navirA));
-    V = SharedTensor2d(new Tensor2d("V[IJK] <AB|C>", navirA * navirA, navirA));
-    I3 = SharedTensor2d(new Tensor2d("I[I] (A|BC)", navirA * navirA, navirA));
-    Z = SharedTensor2d(new Tensor2d("Z[IJK] <I|AB>", naoccA, navirA * navirA));
+    W = std::make_shared<Tensor2d>("W[IJK] <AB|C>", navirA * navirA, navirA);
+    V = std::make_shared<Tensor2d>("V[IJK] <AB|C>", navirA * navirA, navirA);
+    I3 = std::make_shared<Tensor2d>("I[I] (A|BC)", navirA * navirA, navirA);
+    Z = std::make_shared<Tensor2d>("Z[IJK] <I|AB>", naoccA, navirA * navirA);
 
     // Malloc M long intermediates
-    Mijam = SharedTensor2d(new Tensor2d("M <IJ|AM>", naoccA, naoccA, navirA, naoccA));
-    Mijab = SharedTensor2d(new Tensor2d("M <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    Miabd = SharedTensor2d(new Tensor2d("M[I] <AB|D>", navirA * navirA, navirA));
+    Mijam = std::make_shared<Tensor2d>("M <IJ|AM>", naoccA, naoccA, navirA, naoccA);
+    Mijab = std::make_shared<Tensor2d>("M <IJ|AB>", naoccA, naoccA, navirA, navirA);
+    Miabd = std::make_shared<Tensor2d>("M[I] <AB|D>", navirA * navirA, navirA);
 
     // main loop
     E_t = 0.0;
@@ -943,7 +1024,7 @@ void DFOCC::ccsd_canonic_triples_grad() {
                 long int jk = ij_idxAA->get(j, k);
 
                 // Read J[i](a,bc)
-                J1->myread(PSIF_DFOCC_IABC, (size_t)(i * navirA * navirA * navirA) * sizeof(double));
+                J1->myread(psio_, PSIF_DFOCC_IABC, (size_t)(i * navirA * navirA * navirA) * sizeof(double));
 
                 // W[ijk](ab,c) = \sum(e) t_jk^ec (ia|be) (1+):123
                 // W[ijk](ab,c) = \sum(e) J[i](ab,e) T[jk](ec)
@@ -973,7 +1054,7 @@ void DFOCC::ccsd_canonic_triples_grad() {
                 }
 
                 // Read J[j](a,bc)
-                J1->myread(PSIF_DFOCC_IABC, (size_t)(j * navirA * navirA * navirA) * sizeof(double));
+                J1->myread(psio_, PSIF_DFOCC_IABC, (size_t)(j * navirA * navirA * navirA) * sizeof(double));
 
                 // W[ijk](ba,c) = \sum(e) t_ik^ec (jb|ae) (3+):213
                 // W[ijk](ba,c) = \sum(e) J[j](ba,e) T[ik](ec)
@@ -1010,7 +1091,7 @@ void DFOCC::ccsd_canonic_triples_grad() {
                 }
 
                 // Read J[k](a,bc)
-                J1->myread(PSIF_DFOCC_IABC, (size_t)(k * navirA * navirA * navirA) * sizeof(double));
+                J1->myread(psio_, PSIF_DFOCC_IABC, (size_t)(k * navirA * navirA * navirA) * sizeof(double));
 
                 // W[ijk](ca,b) = \sum(e) t_ij^eb (kc|ae) (5+):312
                 // W[ijk](ca,b) = \sum(e) J[k](ca,e) T[ij](eb)
@@ -1289,7 +1370,7 @@ void DFOCC::ccsd_canonic_triples_grad() {
 
             }  // k
         }      // j
-        Miabd->mywrite(PSIF_DFOCC_MIABC, true);
+        Miabd->mywrite(psio_, PSIF_DFOCC_MIABC, true);
     }  // i
     // T.reset();
     I2.reset();
@@ -1315,10 +1396,10 @@ void DFOCC::ccsd_canonic_triples_grad() {
     Mijam.reset();
 
     // Form L2
-    L2c = SharedTensor2d(new Tensor2d("(T)AL2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    L2c = std::make_shared<Tensor2d>("(T)AL2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     L2c->sort(1324, L2, 1.0, 0.0);
     L2.reset();
-    tL2 = SharedTensor2d(new Tensor2d("(T)L2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    tL2 = std::make_shared<Tensor2d>("(T)L2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     tL2->symmetrize(L2c);
     tL2->scale(2.0);
     L2c.reset();
@@ -1336,42 +1417,42 @@ void DFOCC::ccsd_canonic_triples_grad() {
     // Start for WIJK & VIJK
     //==========================================================================
     // Form (ij|ka)
-    M = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    M = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
     M->read(psio_, PSIF_DFOCC_INTS);
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA);
     K->read(psio_, PSIF_DFOCC_INTS);
-    J = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA));
+    J = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA);
     J->gemm(true, false, K, M, 1.0, 0.0);
     K.reset();
-    I = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <AI|JK>", navirA, naoccA, naoccA, naoccA));
+    I = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <AI|JK>", navirA, naoccA, naoccA, naoccA);
     I->sort(4132, J, 1.0, 0.0);
     J.reset();
 
     // Form (ia|jb)
-    J = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    J = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
     J->gemm(true, false, M, M, 1.0, 0.0);
-    I2 = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    I2 = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA);
     I2->sort(1324, J, 1.0, 0.0);
     J.reset();
 
     // Read
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AI)", nQ, navirA, naoccA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AI)", nQ, navirA, naoccA);
     K->swap_3index_col(M);
     M.reset();
 
     // B(iaQ)
-    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (AI|Q)", naoccA * navirA, nQ));
+    L = std::make_shared<Tensor2d>("DF_BASIS_CC B (AI|Q)", naoccA * navirA, nQ);
     L = K->transpose();
     K.reset();
 
     // B(Q,ab)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA);
     K->read(psio_, PSIF_DFOCC_INTS);
 
     // Form (ia|bc)
-    J1 = SharedTensor2d(new Tensor2d("J[A] (IB|C)", naoccA * navirA, navirA));
-    Jt = SharedTensor2d(new Tensor2d("J[A] <I|B>=C", naoccA, ntri_abAA));
-    I3 = SharedTensor2d(new Tensor2d("I[AB] <I|C>", naoccA, navirA));
+    J1 = std::make_shared<Tensor2d>("J[A] (IB|C)", naoccA * navirA, navirA);
+    Jt = std::make_shared<Tensor2d>("J[A] <I|B>=C", naoccA, ntri_abAA);
+    I3 = std::make_shared<Tensor2d>("I[AB] <I|C>", naoccA, navirA);
     for (long int a = 0; a < navirA; ++a) {
         // Compute J[a](i,bc) = (ai|bc) = \sum(Q) B[a](iQ) * B(Q,bc)
         Jt->contract(false, false, naoccA, ntri_abAA, nQ, L, K, a * naoccA * nQ, 0, 1.0, 0.0);
@@ -1385,7 +1466,7 @@ void DFOCC::ccsd_canonic_triples_grad() {
                     I3->set(i, c, J1->get(ib, c));
                 }
             }
-            I3->mywrite(PSIF_DFOCC_ABIC, true);
+            I3->mywrite(psio_, PSIF_DFOCC_ABIC, true);
         }
     }
     K.reset();
@@ -1394,15 +1475,15 @@ void DFOCC::ccsd_canonic_triples_grad() {
     L.reset();
 
     // Form T transpose
-    U = SharedTensor2d(new Tensor2d("T2 <AB|IJ>", navirA, navirA, naoccA, naoccA));
+    U = std::make_shared<Tensor2d>("T2 <AB|IJ>", navirA, navirA, naoccA, naoccA);
     U->trans(T);
     T.reset();
 
     // malloc W[abc](ijk)
-    W = SharedTensor2d(new Tensor2d("W[ABC] <I|JK>", naoccA, naoccA * naoccA));
-    V = SharedTensor2d(new Tensor2d("V[ABC] <I|JK>", naoccA, naoccA * naoccA));
-    X = SharedTensor2d(new Tensor2d("X[ABC] <I|JK>", naoccA, naoccA * naoccA));
-    G1c_ij = SharedTensor2d(new Tensor2d("(T) Correlation OPDM <I|J>", naoccA, naoccA));
+    W = std::make_shared<Tensor2d>("W[ABC] <I|JK>", naoccA, naoccA * naoccA);
+    V = std::make_shared<Tensor2d>("V[ABC] <I|JK>", naoccA, naoccA * naoccA);
+    X = std::make_shared<Tensor2d>("X[ABC] <I|JK>", naoccA, naoccA * naoccA);
+    G1c_ij = std::make_shared<Tensor2d>("(T) Correlation OPDM <I|J>", naoccA, naoccA);
 
     // main loop
     // E_t = 0.0;
@@ -1419,7 +1500,7 @@ void DFOCC::ccsd_canonic_triples_grad() {
 
                 // Read I[ac]
                 syc = (a * navirA * naoccA * navirA) + (c * naoccA * navirA);
-                I3->myread(PSIF_DFOCC_ABIC, syc * sizeof(double));
+                I3->myread(psio_, PSIF_DFOCC_ABIC, syc * sizeof(double));
 
                 // W[abc](i,jk) = \sum(e) I[ac](i,e) T'[b](e,jk) (1+):123
                 W->contract(false, false, naoccA, naoccA * naoccA, navirA, I3, U, 0, b * navirA * naoccA * naoccA, 1.0,
@@ -1432,7 +1513,7 @@ void DFOCC::ccsd_canonic_triples_grad() {
 
                 // Read I[ab]
                 syc = (a * navirA * naoccA * navirA) + (b * naoccA * navirA);
-                I3->myread(PSIF_DFOCC_ABIC, syc * sizeof(double));
+                I3->myread(psio_, PSIF_DFOCC_ABIC, syc * sizeof(double));
 
                 // W[abc](i,kj) = \sum(e) I[ab](i,e) T'[c](e,kj) (2+):132
                 V->contract(false, false, naoccA, naoccA * naoccA, navirA, I3, U, 0, c * navirA * naoccA * naoccA, 1.0,
@@ -1452,7 +1533,7 @@ void DFOCC::ccsd_canonic_triples_grad() {
 
                 // Read I[bc]
                 syc = (b * navirA * naoccA * navirA) + (c * naoccA * navirA);
-                I3->myread(PSIF_DFOCC_ABIC, syc * sizeof(double));
+                I3->myread(psio_, PSIF_DFOCC_ABIC, syc * sizeof(double));
 
                 // W[abc](j,ik) = \sum(e) I[bc](j,e) T'[a](e,ik) (3+):213
                 V->contract(false, false, naoccA, naoccA * naoccA, navirA, I3, U, 0, a * navirA * naoccA * naoccA, 1.0,
@@ -1472,7 +1553,7 @@ void DFOCC::ccsd_canonic_triples_grad() {
 
                 // Read I[ba]
                 syc = (b * navirA * naoccA * navirA) + (a * naoccA * navirA);
-                I3->myread(PSIF_DFOCC_ABIC, syc * sizeof(double));
+                I3->myread(psio_, PSIF_DFOCC_ABIC, syc * sizeof(double));
 
                 // W[abc](j,ki) = \sum(e) I[ba](j,e) T'[c](e,ki) (4+):231
                 V->contract(false, false, naoccA, naoccA * naoccA, navirA, I3, U, 0, c * navirA * naoccA * naoccA, 1.0,
@@ -1492,7 +1573,7 @@ void DFOCC::ccsd_canonic_triples_grad() {
 
                 // Read I[cb]
                 syc = (c * navirA * naoccA * navirA) + (b * naoccA * navirA);
-                I3->myread(PSIF_DFOCC_ABIC, syc * sizeof(double));
+                I3->myread(psio_, PSIF_DFOCC_ABIC, syc * sizeof(double));
 
                 // W[abc](k,ij) = \sum(e) I[cb](k,e) T'[a](e,ij) (5+):312
                 V->contract(false, false, naoccA, naoccA * naoccA, navirA, I3, U, 0, a * navirA * naoccA * naoccA, 1.0,
@@ -1512,7 +1593,7 @@ void DFOCC::ccsd_canonic_triples_grad() {
 
                 // Read I[ca]
                 syc = (c * navirA * naoccA * navirA) + (a * naoccA * navirA);
-                I3->myread(PSIF_DFOCC_ABIC, syc * sizeof(double));
+                I3->myread(psio_, PSIF_DFOCC_ABIC, syc * sizeof(double));
 
                 // W[abc](k,ji) = \sum(e) I[ca](k,e) T'[b](e,ji) (6+):321
                 V->contract(false, false, naoccA, naoccA * naoccA, navirA, I3, U, 0, b * navirA * naoccA * naoccA, 1.0,
@@ -1632,7 +1713,7 @@ for(long int i = 0 ; i < naoccA; ++i){
 
     // Read t2 amps
     if (t2_incore || cc_lambda_ == "TRUE") {
-        t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        t2 = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
         t2->read_symm(psio_, PSIF_DFOCC_AMPS);
     }
 
@@ -1662,78 +1743,78 @@ void DFOCC::ccsd_canonic_triples_grad2() {
 
     // Read t2 amps
     if (!t2_incore) {
-        t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        t2 = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
         t2->read_symm(psio_, PSIF_DFOCC_AMPS);
     }
-    T = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    T = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
     T->sort(1324, t2, 1.0, 0.0);
     t2.reset();
 
     // Form (ij|ka)
-    M = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    M = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
     M->read(psio_, PSIF_DFOCC_INTS);
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA);
     K->read(psio_, PSIF_DFOCC_INTS);
-    J = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA));
+    J = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA);
     J->gemm(true, false, K, M, 1.0, 0.0);
     K.reset();
-    I = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|KA>", naoccA, naoccA, naoccA, navirA));
+    I = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ|KA>", naoccA, naoccA, naoccA, navirA);
     I->sort(1324, J, 1.0, 0.0);
     J.reset();
 
     // Form (ia|jb)
-    J = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    J = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
     J->gemm(true, false, M, M, 1.0, 0.0);
-    I2 = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    I2 = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ|AB>", naoccA, naoccA, navirA, navirA);
     I2->sort(1324, J, 1.0, 0.0);
     J.reset();
 
     // B(iaQ)
-    L = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ));
+    L = std::make_shared<Tensor2d>("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ);
     L = M->transpose();
     M.reset();
 
     // B(Q,ab)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA);
     K->read(psio_, PSIF_DFOCC_INTS);
 
     // Form (ia|bc)
-    J1 = SharedTensor2d(new Tensor2d("J[I] (A|BC)", navirA * navirA, navirA));
-    Jt = SharedTensor2d(new Tensor2d("J[I] <A|B>=C", navirA, ntri_abAA));
+    J1 = std::make_shared<Tensor2d>("J[I] (A|BC)", navirA * navirA, navirA);
+    Jt = std::make_shared<Tensor2d>("J[I] <A|B>=C", navirA, ntri_abAA);
     Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, 0, 0, 1.0, 0.0);
     J1->expand23(navirA, navirA, navirA, Jt);
-    J1->mywrite(PSIF_DFOCC_IABC, false);
+    J1->mywrite(psio_, PSIF_DFOCC_IABC, false);
     for (long int i = 1; i < naoccA; ++i) {
         // Compute J[i](a,bc) = (ia|bc) = \sum(Q) B[i](aQ) * B(Q,bc)
         Jt->contract(false, false, navirA, ntri_abAA, nQ, L, K, i * navirA * nQ, 0, 1.0, 0.0);
         J1->expand23(navirA, navirA, navirA, Jt);
 
         // write
-        J1->mywrite(PSIF_DFOCC_IABC, true);
+        J1->mywrite(psio_, PSIF_DFOCC_IABC, true);
     }
     K.reset();
     Jt.reset();
     L.reset();
 
     // Alloc (t)^L_i^a amps
-    tL1 = SharedTensor2d(new Tensor2d("(T)L <I|A>", naoccA, navirA));
-    P1 = SharedTensor1d(new Tensor1d("P1 <A>", navirA));
-    P2 = SharedTensor2d(new Tensor2d("P2 <A|B>", navirA, navirA));
-    P3 = SharedTensor2d(new Tensor2d("P3 <A|I>", navirA, naoccA));
-    G1c_ii = SharedTensor1d(new Tensor1d("(T) Correlation OPDM <I|I>", naoccA));
-    G1c_aa = SharedTensor1d(new Tensor1d("(T) Correlation OPDM <A|A>", navirA));
-    L2 = SharedTensor2d(new Tensor2d("(T)AL2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    tL1 = std::make_shared<Tensor2d>("(T)L <I|A>", naoccA, navirA);
+    P1 = std::make_shared<Tensor1d>("P1 <A>", navirA);
+    P2 = std::make_shared<Tensor2d>("P2 <A|B>", navirA, navirA);
+    P3 = std::make_shared<Tensor2d>("P3 <A|I>", navirA, naoccA);
+    G1c_ii = std::make_shared<Tensor1d>("(T) Correlation OPDM <I|I>", naoccA);
+    G1c_aa = std::make_shared<Tensor1d>("(T) Correlation OPDM <A|A>", navirA);
+    L2 = std::make_shared<Tensor2d>("(T)AL2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
 
     // malloc W[ijk](abc)
-    W = SharedTensor2d(new Tensor2d("W[IJK] <AB|C>", navirA * navirA, navirA));
-    V = SharedTensor2d(new Tensor2d("V[IJK] <AB|C>", navirA * navirA, navirA));
-    I3 = SharedTensor2d(new Tensor2d("I[I] (A|BC)", navirA * navirA, navirA));
-    Z = SharedTensor2d(new Tensor2d("Z[IJK] <I|AB>", naoccA, navirA * navirA));
+    W = std::make_shared<Tensor2d>("W[IJK] <AB|C>", navirA * navirA, navirA);
+    V = std::make_shared<Tensor2d>("V[IJK] <AB|C>", navirA * navirA, navirA);
+    I3 = std::make_shared<Tensor2d>("I[I] (A|BC)", navirA * navirA, navirA);
+    Z = std::make_shared<Tensor2d>("Z[IJK] <I|AB>", naoccA, navirA * navirA);
 
     // Malloc M long intermediates
-    Mijam = SharedTensor2d(new Tensor2d("M <IJ|AM>", naoccA, naoccA, navirA, naoccA));
-    Mijab = SharedTensor2d(new Tensor2d("M <IJ|AB>", naoccA, naoccA, navirA, navirA));
-    Miabd = SharedTensor2d(new Tensor2d("M[I] <AB|D>", navirA * navirA, navirA));
+    Mijam = std::make_shared<Tensor2d>("M <IJ|AM>", naoccA, naoccA, navirA, naoccA);
+    Mijab = std::make_shared<Tensor2d>("M <IJ|AB>", naoccA, naoccA, navirA, navirA);
+    Miabd = std::make_shared<Tensor2d>("M[I] <AB|D>", navirA * navirA, navirA);
 
     // progress counter
     std::time_t stop, start = std::time(nullptr);
@@ -1755,7 +1836,7 @@ void DFOCC::ccsd_canonic_triples_grad2() {
                 long int jk = ij_idxAA->get(j, k);
 
                 // Read J[i](a,bc)
-                J1->myread(PSIF_DFOCC_IABC, (size_t)(i * navirA * navirA * navirA) * sizeof(double));
+                J1->myread(psio_, PSIF_DFOCC_IABC, (size_t)(i * navirA * navirA * navirA) * sizeof(double));
 
                 // W[ijk](ab,c) = \sum(e) t_jk^ec (ia|be) (1+):123
                 // W[ijk](ab,c) = \sum(e) J[i](ab,e) T[jk](ec)
@@ -1785,7 +1866,7 @@ void DFOCC::ccsd_canonic_triples_grad2() {
                 }
 
                 // Read J[j](a,bc)
-                J1->myread(PSIF_DFOCC_IABC, (size_t)(j * navirA * navirA * navirA) * sizeof(double));
+                J1->myread(psio_, PSIF_DFOCC_IABC, (size_t)(j * navirA * navirA * navirA) * sizeof(double));
 
                 // W[ijk](ba,c) = \sum(e) t_ik^ec (jb|ae) (3+):213
                 // W[ijk](ba,c) = \sum(e) J[j](ba,e) T[ik](ec)
@@ -1822,7 +1903,7 @@ void DFOCC::ccsd_canonic_triples_grad2() {
                 }
 
                 // Read J[k](a,bc)
-                J1->myread(PSIF_DFOCC_IABC, (size_t)(k * navirA * navirA * navirA) * sizeof(double));
+                J1->myread(psio_, PSIF_DFOCC_IABC, (size_t)(k * navirA * navirA * navirA) * sizeof(double));
 
                 // W[ijk](ca,b) = \sum(e) t_ij^eb (kc|ae) (5+):312
                 // W[ijk](ca,b) = \sum(e) J[k](ca,e) T[ij](eb)
@@ -2115,7 +2196,7 @@ void DFOCC::ccsd_canonic_triples_grad2() {
 
             }  // k
         }      // j
-        Miabd->mywrite(PSIF_DFOCC_MIABC, true);
+        Miabd->mywrite(psio_, PSIF_DFOCC_MIABC, true);
     }  // i
     I2.reset();
     W.reset();
@@ -2140,18 +2221,34 @@ void DFOCC::ccsd_canonic_triples_grad2() {
     Mijam.reset();
 
     // Form L2
-    L2c = SharedTensor2d(new Tensor2d("(T)AL2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    L2c = std::make_shared<Tensor2d>("(T)AL2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     L2c->sort(1324, L2, 1.0, 0.0);
     L2.reset();
-    tL2 = SharedTensor2d(new Tensor2d("(T)L2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    tL2 = std::make_shared<Tensor2d>("(T)L2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     tL2->symmetrize(L2c);
     tL2->scale(2.0);
     L2c.reset();
+
+    // debug
+    //L2c = std::make_shared<Tensor2d>("(T)L2 <Ij|Ab>", naoccA, naoccA, navirA, navirA);
+    //L2c->sort(1324, tL2, 1.0, 0.0);
+    //L2c->print();
+
+
+    //auto L2aa = std::make_shared<Tensor2d>("(T)L2 <IJ||AB>", naoccA, naoccA, navirA, navirA);
+    //L2aa->sort(2134, L2c, -1.0, 0.0);
+    //L2aa->add(L2c);
+    //L2aa->print();
+    //L2c.reset();
+    //L2aa.reset();
+    // end debug
+
     tL2->write_symm(psio_, PSIF_DFOCC_AMPS);
     tL2.reset();
 
     // write
     tL1->write(psio_, PSIF_DFOCC_AMPS);
+    //tL1->print();
     tL1.reset();
 
     // Delete the (IA|BC) file
@@ -2159,7 +2256,7 @@ void DFOCC::ccsd_canonic_triples_grad2() {
 
     // Read t2 amps
     if (t2_incore || cc_lambda_ == "TRUE") {
-        t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+        t2 = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
         t2->read_symm(psio_, PSIF_DFOCC_AMPS);
     }
 
@@ -2186,59 +2283,59 @@ void DFOCC::ccsdl_canonic_triples_disk() {
     outfile->Printf("\tNumber of ijk combinations: %i \n", Nijk);
 
     // Malloc Eijk
-    // Eijk = SharedTensor1d(new Tensor1d("Eijk", Nijk));
+    // Eijk = std::make_shared<Tensor1d>("Eijk", Nijk);
 
     // Memory: 3*O^2V^2 + 5*V^3 + O^3V + V^2N + V^3/2
 
     // Read t2 amps
-    t2 = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    t2 = std::make_shared<Tensor2d>("T2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     t2->read_symm(psio_, PSIF_DFOCC_AMPS);
-    T = SharedTensor2d(new Tensor2d("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    T = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
     T->sort(1324, t2, 1.0, 0.0);
     t2.reset();
 
     // Read l2 amps
-    l2 = SharedTensor2d(new Tensor2d("L2 (IA|JB)", naoccA, navirA, naoccA, navirA));
+    l2 = std::make_shared<Tensor2d>("L2 (IA|JB)", naoccA, navirA, naoccA, navirA);
     l2->read_symm(psio_, PSIF_DFOCC_AMPS);
-    L = SharedTensor2d(new Tensor2d("L2 <IJ|AB>", naoccA, naoccA, navirA, navirA));
+    L = std::make_shared<Tensor2d>("L2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
     L->sort(1324, l2, 1.0, 0.0);
     l2.reset();
 
     // Form (ij|ka)
-    M = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA));
+    M = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IA)", nQ, naoccA, navirA);
     M->read(psio_, PSIF_DFOCC_INTS);
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|IJ)", nQ, naoccA, naoccA);
     K->read(psio_, PSIF_DFOCC_INTS);
-    J = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA));
+    J = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IJ|KA)", naoccA, naoccA, naoccA, navirA);
     J->gemm(true, false, K, M, 1.0, 0.0);
     K.reset();
-    I = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints <IJ|KA>", naoccA, naoccA, naoccA, navirA));
+    I = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints <IJ|KA>", naoccA, naoccA, naoccA, navirA);
     I->sort(1324, J, 1.0, 0.0);
     J.reset();
 
     // Form (ia|jb)
-    J = SharedTensor2d(new Tensor2d("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA));
+    J = std::make_shared<Tensor2d>("DF_BASIS_CC MO Ints (IA|JB)", naoccA, navirA, naoccA, navirA);
     J->gemm(true, false, M, M, 1.0, 0.0);
 
     // B(iaQ)
-    U = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ));
+    U = std::make_shared<Tensor2d>("DF_BASIS_CC B (IA|Q)", naoccA * navirA, nQ);
     U = M->transpose();
     M.reset();
 
     // malloc W[ijk](abc)
-    W = SharedTensor2d(new Tensor2d("W[IJK] <AB|C>", navirA * navirA, navirA));
-    WL = SharedTensor2d(new Tensor2d("WL[IJK] <AB|C>", navirA * navirA, navirA));
-    V = SharedTensor2d(new Tensor2d("V[IJK] <BA|C>", navirA * navirA, navirA));
-    J1 = SharedTensor2d(new Tensor2d("J[I] (A|BC)", navirA * navirA, navirA));
-    J2 = SharedTensor2d(new Tensor2d("J[I] (A|BC)", navirA * navirA, navirA));
-    J3 = SharedTensor2d(new Tensor2d("J[I] (A|BC)", navirA * navirA, navirA));
+    W = std::make_shared<Tensor2d>("W[IJK] <AB|C>", navirA * navirA, navirA);
+    WL = std::make_shared<Tensor2d>("WL[IJK] <AB|C>", navirA * navirA, navirA);
+    V = std::make_shared<Tensor2d>("V[IJK] <BA|C>", navirA * navirA, navirA);
+    J1 = std::make_shared<Tensor2d>("J[I] (A|BC)", navirA * navirA, navirA);
+    J2 = std::make_shared<Tensor2d>("J[I] (A|BC)", navirA * navirA, navirA);
+    J3 = std::make_shared<Tensor2d>("J[I] (A|BC)", navirA * navirA, navirA);
 
     // B(Q,ab)
-    K = SharedTensor2d(new Tensor2d("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA));
+    K = std::make_shared<Tensor2d>("DF_BASIS_CC B (Q|AB)", nQ, ntri_abAA);
     K->read(psio_, PSIF_DFOCC_INTS);
 
     // Form (ia|bc)
-    Jt = SharedTensor2d(new Tensor2d("J[I] <A|B>=C", navirA, ntri_abAA));
+    Jt = std::make_shared<Tensor2d>("J[I] <A|B>=C", navirA, ntri_abAA);
     /*
     //psio_address addr = PSIO_ZERO;
     for(long int i = 0 ; i < naoccA; ++i){
@@ -2253,14 +2350,14 @@ void DFOCC::ccsdl_canonic_triples_disk() {
     */
     Jt->contract(false, false, navirA, ntri_abAA, nQ, U, K, 0, 0, 1.0, 0.0);
     J1->expand23(navirA, navirA, navirA, Jt);
-    J1->mywrite(PSIF_DFOCC_IABC, false);
+    J1->mywrite(psio_, PSIF_DFOCC_IABC, false);
     for (long int i = 1; i < naoccA; ++i) {
         // Compute J[i](a,bc) = (ia|bc) = \sum(Q) B[i](aQ) * B(Q,bc)
         Jt->contract(false, false, navirA, ntri_abAA, nQ, U, K, i * navirA * nQ, 0, 1.0, 0.0);
         J1->expand23(navirA, navirA, navirA, Jt);
 
         // write
-        J1->mywrite(PSIF_DFOCC_IABC, true);
+        J1->mywrite(psio_, PSIF_DFOCC_IABC, true);
     }
 
     K.reset();
@@ -2276,21 +2373,24 @@ void DFOCC::ccsdl_canonic_triples_disk() {
         // Read J[i](a,bc)
         // psio_address addr1 = psio_get_address(PSIO_ZERO,(size_t)(i*navirA*navirA*navirA)*sizeof(double));
         // J1->read(psio_, PSIF_DFOCC_INTS, addr1, &addr1);
-        J1->myread(PSIF_DFOCC_IABC, (size_t)(i * navirA * navirA * navirA) * sizeof(double));
+        J1->myread(psio_, PSIF_DFOCC_IABC, (size_t)(i * navirA * navirA * navirA) * sizeof(double));
 
         for (long int j = 0; j <= i; ++j) {
+            long int ij = ij_idxAA->get(i, j);
             double Dij = Di + FockA->get(j + nfrzc, j + nfrzc);
 
             // Read J[j](a,bc)
             // psio_address addr2 = psio_get_address(PSIO_ZERO,(size_t)(j*navirA*navirA*navirA)*sizeof(double));
             // J2->read(psio_, PSIF_DFOCC_INTS, addr2, &addr2);
-            J2->myread(PSIF_DFOCC_IABC, (size_t)(j * navirA * navirA * navirA) * sizeof(double));
+            J2->myread(psio_, PSIF_DFOCC_IABC, (size_t)(j * navirA * navirA * navirA) * sizeof(double));
 
             for (long int k = 0; k <= j; ++k) {
+                 long int ik = ij_idxAA->get(i, k);
+                 long int jk = ij_idxAA->get(j, k);
                 // Read J[k](a,bc)
                 // psio_address addr3 = psio_get_address(PSIO_ZERO,(size_t)(k*navirA*navirA*navirA)*sizeof(double));
                 // J3->read(psio_, PSIF_DFOCC_INTS, addr3, &addr3);
-                J3->myread(PSIF_DFOCC_IABC, (size_t)(k * navirA * navirA * navirA) * sizeof(double));
+                J3->myread(psio_, PSIF_DFOCC_IABC, (size_t)(k * navirA * navirA * navirA) * sizeof(double));
 
                 // W[ijk](ab,c) = \sum(e) t_jk^ec (ia|be) (1+)
                 // W[ijk](ab,c) = \sum(e) J[i](ab,e) T[jk](ec)
@@ -2499,8 +2599,15 @@ void DFOCC::ccsdl_canonic_triples_disk() {
                         long int ab = ab_idxAA->get(a, b);
                         for (long int c = 0; c < navirA; ++c) {
                             long int kc = ia_idxAA->get(k, c);
+                            long int ac = ab_idxAA->get(a, c);
+                            long int bc = ab_idxAA->get(b, c);
                             double value = V->get(ab, c) + (l1A->get(i, a) * J->get(jb, kc)) +
                                            (l1A->get(j, b) * J->get(ia, kc)) + (l1A->get(k, c) * J->get(ia, jb));
+
+                            // E[4]_DT term
+                            value += (FockA->get(i+nfrzc, a+noccA) * L->get(jk, bc)) +
+                                           (FockA->get(j+nfrzc, b+noccA) * L->get(ik, ac)) + (FockA->get(k+nfrzc, c+noccA) * L->get(ij, ab));
+
                             double denom = 1 + ((a == b) + (b == c) + (a == c));
                             V->set(ab, c, value / denom);
                         }

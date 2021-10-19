@@ -314,12 +314,48 @@ Bibliography
    *J. Chem. Phys.* **136**, 204114 (2012).
 
 .. [Bozkaya:2013:ocepa]
-   U. Bozkaya and C. D. Sherrill
+   U. Bozkaya and C. D. Sherrill,
    *J. Chem. Phys.* **139**, 054104 (2013).
 
 .. [Bozkaya:2013:omp3grad]
    U. Bozkaya,
    *J. Chem. Phys.* **139**, 104116 (2013).
+
+.. [Bozkaya:2014:dfomp2]
+   U. Bozkaya,
+   *J. Chem. Phys.* **141**, 124108 (2014).
+
+.. [Bozkaya:2014:dfomp2grad]
+   U. Bozkaya,
+   *J. Chem. Theory Comput.* **10**, 4389-4399 (2014).
+
+.. [Bozkaya:2016:dfomp3]
+   U. Bozkaya,
+   *J. Chem. Theory Comput.* **12**, 1179-1188 (2016).
+
+.. [Bozkaya:2016:dfolccd]
+   U. Bozkaya,
+   *Phys. Chem. Chem. Phys.* **18**, 11362-11373 (2016).
+
+.. [Bozkaya:2016:dfccsdat]
+   U. Bozkaya,
+   *J. Chem. Phys.* **144**, 144108 (2016).
+
+.. [Bozkaya:2016:dfccsdgrad]
+   U. Bozkaya and C. D. Sherrill,
+   *J. Chem. Phys.* **144**, 174103 (2016).
+
+.. [Bozkaya:2017:dfccsdtgrad]
+   U. Bozkaya and C. D. Sherrill,
+   *J. Chem. Phys.* **147**, 044104 (2017).
+
+.. [Bozkaya:2018:dfomp3grad]
+   U. Bozkaya,
+   *J. Comput. Chem.* **39**, 351-360 (2018).
+
+.. [Bozkaya:2020:dfoccd]
+   U. Bozkaya,
+   *J. Chem. Phys.* **153**, 244115 (2020).
 
 .. [Grimme:2004:1463]
    S. Grimme, *J. Comp. Chem.* **25** 1463-1473 (2004).

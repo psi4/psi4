@@ -31,6 +31,7 @@
 
 #include "psi4/libpsio/psio.h"
 #include "psi4/libmints/typedefs.h"
+#include "psi4/libciomr/libciomr.h"
 
 #define index2(i, j) ((i > j) ? ((i * (i + 1) / 2) + j) : ((j * (j + 1) / 2) + i))
 #define index4(i, j, k, l) index2(index2(i, j), index2(k, l))
@@ -127,6 +128,8 @@ class Tensor1d {
     // ltm: lower triangular matrix: A(p>=q) = A(p,q)
     void ltm(const SharedTensor2d &A);
 
+    SharedTensor2d to_2d(int row, int col);
+
     friend class Tensor2d;
     friend class Tensor3d;
 };
@@ -193,6 +196,7 @@ class Tensor2d {
     void axpy(const SharedTensor2d &a, double alpha);
     void axpy(size_t length, int inc_a, const SharedTensor2d &a, int inc_2d, double alpha);
     void axpy(size_t length, int start_a, int inc_a, const SharedTensor2d &A, int start_2d, int inc_2d, double alpha);
+    void axpy(size_t length, int start_a, int inc_a, const SharedTensor1d &A, int start_2d, int inc_2d, double alpha);
     double **transpose2();
     SharedTensor2d transpose();
     void trans(const SharedTensor2d &A);
@@ -207,6 +211,8 @@ class Tensor2d {
     double get_max_element();
     // diagonalize: diagonalize via rsp
     void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff);
+    void diagonalize(const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff, bool ascending);
+    void diagonalize(int dim, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues, double cutoff, bool ascending);
     // cdsyev: diagonalize via lapack
     void cdsyev(char jobz, char uplo, const SharedTensor2d &eigvectors, const SharedTensor1d &eigvalues);
     // davidson: diagonalize via davidson algorithm
@@ -288,6 +294,11 @@ class Tensor2d {
     void mgs();
     // gs: orthogonalize with a Classical Gram-Schmid algorithm
     void gs();
+    // gs_add(): Assume A is a orthogonal matrix.  This function Gram-Schmidt
+    // orthogonalizes a new vector v and adds it to matrix A.  A must contain
+    // a free row pointer for a new row.  Don't add orthogonalized v' if
+    // norm(v') < NORM_TOL.
+    int gs_add(int rows, SharedTensor1d v);
     // row_vector: return nth row as a vector
     double *row_vector(int n);
     // column_vector: return nth column as a vector
@@ -311,6 +322,7 @@ class Tensor2d {
     void read(psi::PSIO *psio, size_t fileno);
     void read(psi::PSIO *psio, size_t fileno, psio_address start, psio_address *end);
     void read(std::shared_ptr<psi::PSIO> psio, size_t fileno);
+    void read(std::shared_ptr<psi::PSIO> psio, const std::string &label, size_t fileno);
     void read(std::shared_ptr<psi::PSIO> psio, size_t fileno, psio_address start, psio_address *end);
     void read(psi::PSIO &psio, size_t fileno);
     void read(psi::PSIO &psio, size_t fileno, psio_address start, psio_address *end);
@@ -328,13 +340,14 @@ class Tensor2d {
     void load(psi::PSIO &psio, size_t fileno, std::string name, int d1, int d2);
 
     void mywrite(const std::string &filename);
-    void mywrite(int fileno);
-    void mywrite(int fileno, bool append);
+    void mywrite(std::shared_ptr<psi::PSIO> psio, int fileno);
+    void mywrite(std::shared_ptr<psi::PSIO> psio, int fileno, bool append);
+    void mywrite(std::shared_ptr<psi::PSIO> psio, int fileno, size_t start);
 
     void myread(const std::string &filename);
-    void myread(int fileno);
-    void myread(int fileno, bool append);
-    void myread(int fileno, size_t start);
+    void myread(std::shared_ptr<psi::PSIO> psio, int fileno);
+    void myread(std::shared_ptr<psi::PSIO> psio, int fileno, bool append);
+    void myread(std::shared_ptr<psi::PSIO> psio, int fileno, size_t start);
 
     // sort (for example 1432 sort): A2d_(ps,rq) = A(pq,rs)
     // A2d_ = alpha*A + beta*A2d_

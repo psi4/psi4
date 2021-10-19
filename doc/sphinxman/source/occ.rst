@@ -165,6 +165,12 @@ Now, let us define a variational energy functional (Lagrangian) as a function of
    \ + \ \langle 0| \big(\hat{W}_{N}^{\kappa}\hat{T}_{2}\big)_{c} | 0 \rangle \\
    &+ \langle 0| \{\hat{\Lambda}_{2} \ \big(\hat{W}_{N}^{\kappa} \ + \ \hat{H}_{N}^{\kappa}\hat{T}_{2} \big)_{c}\}_{c}  | 0 \rangle
 
+* OCCD
+
+.. math::
+   \widetilde{E}({\bf \kappa})  &= \langle 0|(1+\hat{\Lambda}_{2}) e^{-\hat{T}_{2}}  \hat{H}^{\kappa}  e^{\hat{T}_{2}}|0\rangle,  
+
+
 where subscript c means only connected diagrams are allowed, and 
 :math:`\hat{H}^{\kappa}`, :math:`\hat{f}_{N}^{\kappa}`, and :math:`\hat{W}_{N}^{\kappa}` defined as
 
@@ -198,16 +204,15 @@ This final equation corresponds to the usual Newton-Raphson step.
 
 Publications resulting from the use of the orbital-optimized code should cite the following publications: 
 
-* **OMP2** [Bozkaya:2011:omp2]_ and [Bozkaya:2013:omp2grad]_
+* **OMP2** [Bozkaya:2011:omp2]_, [Bozkaya:2013:omp2grad]_, and [Bozkaya:2014:dfomp2grad]_
 
-* **OMP3** [Bozkaya:2011:omp3]_ , [Bozkaya:2013:omp3]_, and [Bozkaya:2013:omp3grad]_
+* **OMP3** [Bozkaya:2011:omp3]_ , [Bozkaya:2013:omp3]_, [Bozkaya:2013:omp3grad]_, [Bozkaya:2016:dfomp3]_, and [Bozkaya:2018:dfomp3grad]_
 
-* **OMP2.5** [Bozkaya:2011:omp3]_
+* **OMP2.5** [Bozkaya:2011:omp3]_, [Bozkaya:2016:dfomp3]_, and [Bozkaya:2018:dfomp3grad]_
 
-* **OLCCD** [Bozkaya:2013:ocepa]_
+* **OLCCD** [Bozkaya:2013:ocepa]_, and [Bozkaya:2013:dfolccd]_
 
-* **LCCD** [Bozkaya:2013:ocepa]_
-
+* **OCCD** [Bozkaya:2020:dfoccd]_
 
 Convergence Problems
 ~~~~~~~~~~~~~~~~~~~~
@@ -261,6 +266,12 @@ through "type select" values in the rightmost Table column.
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     |                         | Cholesky-Decomposed Orbital-Optimized LCCD                   | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    | occd                    | Orbital-Optimized CCD                                        | ---                  | ----                 | |globals__cc_type| CONV   |
+    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    |                         | Density-Fitted Orbital-Optimized CCD                         | RHF/UHF/ROHF/RKS/UKS | RHF/UHF/ROHF/RKS/UKS | |globals__cc_type| DF     |
+    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    |                         | Cholesky-Decomposed Orbital-Optimized CCD                    | RHF/UHF/ROHF/RKS/UKS | ---                  | |globals__cc_type| CD     |
+    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
 
 .. _`table:occ_scsoo_calls`:
 
@@ -299,6 +310,7 @@ through "type select" values in the rightmost Table column.
 .. index:: OMP3; setting keywords
 .. index:: OMP2.5; setting keywords
 .. index:: OLCCD; setting keywords
+.. index:: OCCD; setting keywords
 
 Basic OCC Keywords
 ~~~~~~~~~~~~~~~~~~
@@ -371,6 +383,24 @@ preference to the default module, issue ``set qc_module occ``.
 
 Starting in v1.4, MP2.5 and MP3 default to the density-fit algorithm. Set |globals__mp_type| to ``CONV`` to get previous behavior.
 
+Publications resulting from the use of the non-OO CC codes should cite the following publications: 
+
+* **MP2** [Bozkaya:2011:omp2]_, [Bozkaya:2013:omp2grad]_, and [Bozkaya:2014:dfomp2grad]_
+
+* **MP3** [Bozkaya:2011:omp3]_ , [Bozkaya:2013:omp3]_, [Bozkaya:2013:omp3grad]_, [Bozkaya:2016:dfomp3]_, and [Bozkaya:2018:dfomp3grad]_
+
+* **MP2.5** [Bozkaya:2011:omp3]_, [Bozkaya:2016:dfomp3]_, and [Bozkaya:2018:dfomp3grad]_
+
+* **LCCD** [Bozkaya:2013:ocepa]_, and [Bozkaya:2013:dfolccd]_
+
+* **CCD** [Bozkaya:2020:dfoccd]_
+
+* **CCSD** [Bozkaya:2016:dfccsdgrad]_
+
+* **CCSD(T)** [Bozkaya:2017:dfccsdtgrad]_
+
+* **CCSD(AT)** [Bozkaya:2016:dfccsdat]_
+
 .. _`table:occ_nonoo_calls`:
 
 .. table:: Conventional (non-OO) CC and MP capabilities of OCC/DFOCC modules
@@ -404,26 +434,38 @@ Starting in v1.4, MP2.5 and MP3 default to the density-fit algorithm. Set |globa
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     | ccd                     | CCD                                                          | ---                  | ---                  | |globals__cc_type| CONV   |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted CCD                                           | RHF                  | RHF                  | |globals__cc_type| DF     |
+    |                         | Density-Fitted CCD                                           | RHF/UHF              | RHF/UHF              | |globals__cc_type| DF     |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed CCD                                      | RHF                  | ---                  | |globals__cc_type| CD     |
+    |                         | Cholesky-Decomposed CCD                                      | RHF/UHF              | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     | ccsd                    | CCSD                                                         | ---                  | ---                  | |globals__cc_type| CONV   |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted CCSD                                          | RHF                  | RHF                  | |globals__cc_type| DF     |
+    |                         | Density-Fitted CCSD                                          | RHF/UHF              | RHF/UHF              | |globals__cc_type| DF     |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed CCSD                                     | RHF                  | ---                  | |globals__cc_type| CD     |
+    |                         | Cholesky-Decomposed CCSD                                     | RHF/UHF              | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     | ccsd(t)                 | CCSD(T)                                                      | ---                  | ---                  | |globals__cc_type| CONV   |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted CCSD(T)                                       | RHF                  | RHF                  | |globals__cc_type| DF     |
+    |                         | Density-Fitted CCSD(T)                                       | RHF/UHF              | RHF/UHF              | |globals__cc_type| DF     |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed CCSD(T)                                  | RHF                  | ---                  | |globals__cc_type| CD     |
+    |                         | Cholesky-Decomposed CCSD(T)                                  | RHF/UHF              | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
     | ccsd(at)                | Lambda-CCSD(T)                                               | ---                  | ---                  | |globals__cc_type| CONV   |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Density-Fitted Lambda-CCSD(T)                                | RHF                  | ---                  | |globals__cc_type| DF     |
+    |                         | Density-Fitted Lambda-CCSD(T)                                | RHF/UHF              | ---                  | |globals__cc_type| DF     |
     +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
-    |                         | Cholesky-Decomposed Lambda-CCSD(T)                           | RHF                  | ---                  | |globals__cc_type| CD     |
+    |                         | Cholesky-Decomposed Lambda-CCSD(T)                           | RHF/UHF              | ---                  | |globals__cc_type| CD     |
+    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    | occd(t)                 | OCCD(T)                                                      | ---                  | ---                  | |globals__cc_type| CONV   |
+    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    |                         | Density-Fitted OCCD(T)                                       | RHF/UHF              | ---                  | |globals__cc_type| DF     |
+    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    |                         | Cholesky-Decomposed OCCD(T)                                  | RHF/UHF              | ---                  | |globals__cc_type| CD     |
+    +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    | occd(at)                | Lambda-OCCD(T)                                               | ---                  | ---                  | |globals__cc_type| CONV   |
+    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    |                         | Density-Fitted Lambda-OCCD(T)                                | RHF/UHF              | ---                  | |globals__cc_type| DF     |
+    +                         +--------------------------------------------------------------+----------------------+----------------------+---------------------------+
+    |                         | Cholesky-Decomposed Lambda-OCCD(T)                           | RHF/UHF              | ---                  | |globals__cc_type| CD     |
     +-------------------------+--------------------------------------------------------------+----------------------+----------------------+---------------------------+
 

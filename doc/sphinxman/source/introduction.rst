@@ -513,12 +513,24 @@ Density-Fitted and Cholesky-Decomposed Orbital-optimized MP3 and MP2.5 (DF-OMP3 
   U. Bozkaya,   *J. Chem. Theory Comput.* **12**, 1179 (2016).
   (doi: `10.1021/acs.jctc.5b01128 <https://doi.org/10.1021/acs.jctc.5b01128>`_).
 
+* "Analytic energy gradients for orbital-optimized MP3 and MP2.5 with the
+  density-fitting approximation: An efficient implementation,"
+  U. Bozkaya,   *J. Comput. Chem.* **39**, 351-360 (2018).
+  (doi: `10.1002/jcc.25122 <https://doi.org/10.1002/jcc.25122>`_).
+
 Density-Fitted and Cholesky-Decomposed Orbital-Optimized Linearized Coupled-Cluster Doubles Method (DF-OLCCD)
 
 * "Orbital-optimized linearized coupled-cluster doubles with density-fitting
   and Cholesky decomposition approximations: an efficient implementation,"
   U. Bozkaya,   *Phys. Chem. Chem. Phys.* **18**, 11362 (2016).
   (doi: `10.1039/c6cp00164e <https://doi.org/10.1039/c6cp00164e>`_).
+
+Density-Fitted and Cholesky-Decomposed Orbital-Optimized Coupled-Cluster Doubles Method (DF-OCCD)
+
+* "Energy and Analytic Gradients for the Orbital-Optimized Coupled-Cluster
+  Doubles Method with the Density-Fitting Approximation: An Efficient Implementation,"
+  U. Bozkaya, A. Ünal and Y. Alagöz,   *J. Chem. Phys.* **153**, 244115 (2020).
+  (doi: `10.1063/5.0035811 <https://doi.org/10.1063/5.0035811>`_).
 
 
 Algebraic-Diagrammatic Construction methods (ADC)
@@ -675,15 +687,19 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | CEPA(n), n=0,1,3        | RHF            | CONV              | ---          | ---            | threaded [#f3]_             |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | CCD                     | RHF            | DF/CD             | RHF          | DF             | threaded [#f3]_             |           |            |
+    | CCD                     | RHF            | DF/CD             | RHF          | DF             | threaded [#f3]_             | E/G       | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | CC2                     | RHF/UHF/ROHF   | CONV              | RHF          | CONV           | threaded [#f3]_             |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | CCSD [#f10]_            | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | RHF/UHF/ROHF | CONV/DF [#f8]_ | threaded [#f3]_             |           | E [#f2]_   |
+    | CCSD [#f10]_            | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | RHF/UHF/ROHF | CONV/DF [#f8]_ | threaded [#f3]_             |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | CCSD(T) [#f10]_         | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | RHF/UHF      | CONV/DF [#f8]_ | threaded (pthreads) [#f3]_  |           | E [#f2]_   |
+    | CCSD(T) [#f10]_         | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | RHF/UHF      | CONV/DF [#f8]_ | threaded (pthreads) [#f3]_  |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | CCSD(AT) [#f10]_        | RHF            | CONV/DF/CD        | ---          | ---            | threaded [#f3]_             |           |            |
+    | CCSD(AT) [#f10]_        | RHF            | CONV/DF/CD        | ---          | ---            | threaded [#f3]_             |           | E          |
+    +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
+    | OCCD(T) [#f10]_         | RHF/UHF/ROHF   | DF/CD             | RHF/UHF/ROHF | DF [#f8]_      | threaded (pthreads) [#f3]_  |           |            |
+    +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
+    | OCCD(AT) [#f10]_        | RHF/UHF/ROHF   | DF/CD             | RHF/UHF/ROHF | DF [#f8]_      | threaded (pthreads) [#f3]_  |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | CC3                     | RHF/UHF/ROHF   | CONV              | ---          | ---            | threaded (pthreads)         |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
