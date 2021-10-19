@@ -278,7 +278,7 @@ bool DIISManager::add_entry(int numQuantities, ...) {
         _subspace[entryID].dump_error_vector_to_disk();
     }
 
-    // Make we don't know any inner products involving this new entry
+    // Clear all inner products with this entry that may be cached
     for (int i = 0; i < _subspace.size(); ++i)
         if (i != entryID) _subspace[i].invalidate_dot(entryID);
 
