@@ -291,7 +291,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.form_G()
         core.timer_off("HF: Form G")
 
-        incfock_performed = isinstance(self.jk(), core.DirectJK) and self.jk().do_incfock_iter()
+        incfock_performed = hasattr(self.jk(), "do_incfock_iter") and self.jk().do_incfock_iter()
 
         upcm = 0.0
         if core.get_option('SCF', 'PCM'):

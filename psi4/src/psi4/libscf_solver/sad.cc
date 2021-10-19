@@ -523,7 +523,7 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
         dfjk->dfh()->set_print_lvl(0);
         jk = std::unique_ptr<JK>(dfjk);
     } else {
-        DirectJK* directjk(new DirectJK(bas));
+        DirectJK* directjk(new DirectJK(bas, options_));
         if (options_["DF_INTS_NUM_THREADS"].has_changed())
             directjk->set_df_ints_num_threads(options_.get_int("DF_INTS_NUM_THREADS"));
         jk = std::unique_ptr<JK>(directjk);

@@ -21,7 +21,7 @@ set {
     d_convergence 1.0e-6
     screening density
     incfock true
-    incfock_reset 5
+    incfock_full_fock_every 4
 }
 
 ds_energy = energy('scf')

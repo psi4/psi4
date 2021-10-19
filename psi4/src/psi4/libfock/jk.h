@@ -706,6 +706,9 @@ class PSI_API DirectJK : public JK {
     /// ERI Sieve
     std::shared_ptr<ERISieve> sieve_;
 
+    /// Options object
+    Options& options_;
+
     // Perform Density matrix-based integral screening?
     bool density_screening_;
 
@@ -717,16 +720,16 @@ class PSI_API DirectJK : public JK {
     bool do_incfock_iter_;
 
     /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
-    std::vector<SharedMatrix> D_ao_prev_;
-    std::vector<SharedMatrix> J_ao_prev_;
-    std::vector<SharedMatrix> K_ao_prev_;
-    std::vector<SharedMatrix> wK_ao_prev_;
+    std::vector<SharedMatrix> prev_D_ao_;
+    std::vector<SharedMatrix> prev_J_ao_;
+    std::vector<SharedMatrix> prev_K_ao_;
+    std::vector<SharedMatrix> prev_wK_ao_;
 
     // Delta D, J, K, wK Matrices for Incremental Fock Build
-    std::vector<SharedMatrix> del_D_ao_;
-    std::vector<SharedMatrix> del_J_ao_;
-    std::vector<SharedMatrix> del_K_ao_;
-    std::vector<SharedMatrix> del_wK_ao_;
+    std::vector<SharedMatrix> delta_D_ao_;
+    std::vector<SharedMatrix> delta_J_ao_;
+    std::vector<SharedMatrix> delta_K_ao_;
+    std::vector<SharedMatrix> delta_wK_ao_;
 
     // Is the JK currently on a guess iteration
     bool initial_iteration_ = true;
@@ -767,7 +770,7 @@ class PSI_API DirectJK : public JK {
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    DirectJK(std::shared_ptr<BasisSet> primary);
+    DirectJK(std::shared_ptr<BasisSet> primary, Options& options);
     /// Destructor
     ~DirectJK() override;
 
