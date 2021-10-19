@@ -398,13 +398,13 @@ void DFOCC::occ_iterations() {
         } else if (wfn_type_ == "DF-OMP3" || wfn_type_ == "DF-OMP2.5") {
             outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n", itr_occ, Emp3L, DE, rms_wog,
                             biggest_mograd, rms_t2);
-        } else if (wfn_type_ == "DF-OLCCD" || wfn_type_ == "DF-OREMP")
+        } else if (wfn_type_ == "DF-OLCCD" || wfn_type_ == "DF-OREMP") {
             outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e \n", itr_occ, ElccdL, DE, rms_wog,
                             biggest_mograd, rms_t2);
-        } else if (wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)")
+        } else if (wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") {
             outfile->Printf(" %3d     %12.10f  %12.2e   %12.2e     %12.2e    %12.2e   %12.2e \n", itr_occ, EccdL, DE, rms_wog,
                             biggest_mograd, rms_t2, rms_l2);
-
+        }
         //==========================================================================================
         //========================= Convergence? ===================================================
         //==========================================================================================
