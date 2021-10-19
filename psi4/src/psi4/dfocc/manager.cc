@@ -621,7 +621,7 @@ void DFOCC::ccsd_manager() {
 
         // Mem for amplitudes
         cost_ampAA = 0.0;
-        cost_ampAA = naocc2AA * nvir2AA;
+        cost_ampAA = (long long int)naocc2AA * (long long int)nvir2AA;
         cost_ampAA /= 1024.0 * 1024.0;
         cost_ampAA *= sizeof(double);
         cost_3amp = 3.0 * cost_ampAA;
