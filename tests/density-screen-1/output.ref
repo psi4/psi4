@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.5a1.dev182 
+                               Psi4 1.5a1.dev184 
 
-                         Git: Rev {increfock} b092083 dirty
+                         Git: Rev {increfock} 7b2e19c dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 18 October 2021 09:24PM
+    Psi4 started on: Wednesday, 20 October 2021 10:18AM
 
-    Process ID: 15297
+    Process ID: 14686
     Host:       ds10
     PSIDATADIR: /scratch/jiang/p4dev/psi4/objdir-dscreen/stage/share/psi4
     Memory:     500.0 MiB
@@ -74,7 +74,7 @@ psi4.compare_values(ref_energy, ds_energy, 9, "HF Density Screening Energy")
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds10
-*** at Mon Oct 18 21:24:23 2021
+*** at Wed Oct 20 10:18:51 2021
 
    => Loading Basis Set <=
 
@@ -149,7 +149,7 @@ Scratch directory: /scratch/jiang/
     Integrals threads:           1
     Screening Type:        DENSITY
     Screening Cutoff:        1E-12
-    Inc. Fock Build?           Yes
+    Incremental Fock:          Yes
 
   Minimum eigenvalue in the overlap matrix is 2.6921161277E-03.
   Reciprocal condition number of the overlap matrix is 4.7404748701E-04.
@@ -242,18 +242,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:    -0.0000      Z:     2.0011     Total:     2.0011
 
 
-*** tstop() called on ds10 at Mon Oct 18 21:24:24 2021
+*** tstop() called on ds10 at Wed Oct 20 10:18:51 2021
 Module time:
-	user time   =       0.72 seconds =       0.01 minutes
+	user time   =       0.69 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.72 seconds =       0.01 minutes
+	user time   =       0.69 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
     HF Density Screening Energy...........................................................PASSED
 
-    Psi4 stopped on: Monday, 18 October 2021 09:24PM
-    Psi4 wall time for execution: 0:00:00.76
+    Psi4 stopped on: Wednesday, 20 October 2021 10:18AM
+    Psi4 wall time for execution: 0:00:00.73
 
 *** Psi4 exiting successfully. Buy a developer a beer!
