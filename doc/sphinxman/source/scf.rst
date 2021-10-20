@@ -706,7 +706,7 @@ For some of these algorithms, Schwarz and/or density sieving can be used to
 identify negligible integral contributions in extended systems. To activate
 sieving, set the |scf__ints_tolerance| keyword to your desired cutoff
 (1.0E-12 is recommended for most applications). To choose the type of sieving, set 
-the |mints__screening| keyword to your desired option. For Schwarz screening, set it
+the |globals__screening| keyword to your desired option. For Schwarz screening, set it
 to ``SCHWARZ``, for CSAM, ``CSAM``, and for density matrix-based screening, ``DENSITY``.
 
 SCHWARZ
@@ -722,7 +722,8 @@ DENSITY
     For the RHF case, described in [Haser:1989:104]_
 
 .. math:: CON(PQ|RS) <= \sqrt{(PQ|PQ)(RS|RS)} \cdot DCON(PQ, RS)
-    DCON(PQ, RS) = max(4D_{PQ}, 4D_{RS}, D_{PR}, D_{PS}, D_{QR}, D_{QS})
+
+.. math:: DCON(PQ, RS) = max(4D_{PQ}, 4D_{RS}, D_{PR}, D_{PS}, D_{QR}, D_{QS})
 
 When using density-matrix based integral screening, it is useful to build the J and K matrices
 incrementally, also described in [Haser:1989:104]_, using the difference in the density matrix between iterations, rather than the
