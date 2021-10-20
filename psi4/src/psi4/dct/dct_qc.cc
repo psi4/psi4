@@ -32,9 +32,10 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
-#include "psi4/libdiis/diismanager.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
+
+#include "psi4/pybind11.h"
 
 #include <cmath>
 
@@ -64,16 +65,14 @@ void DCTSolver::run_qc_dct() {
     int cycle_jacobi = 0;
 
     // Copy the reference orbitals and to use them as the reference for the orbital rotation
-    outfile->Printf("About to Copied C matrices\n");
     old_ca_->copy(Ca_);
     old_cb_->copy(Cb_);
-    outfile->Printf("Copied C matrices\n");
 
     orbitals_convergence_ = compute_scf_error_vector();
-    outfile->Printf("Compute scf_error_vector\n");
 
     // Set up the DIIS manager
-    DIISManager diisManager(maxdiis_, "DCT DIIS vectors");
+    py::object diis_file = py::module_::import("psi4").attr("driver").attr("scf_proc").attr("diis");
+    py::object diis_manager = diis_file.attr("DIIS")(maxdiis_, "DCT DIIS vectors");
     dpdbuf4 Laa, Lab, Lbb;
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "Amplitude <OO|VV>");
@@ -81,11 +80,8 @@ void DCTSolver::run_qc_dct() {
                            "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Amplitude <oo|vv>");
-    diisManager.set_error_vector_size(5, DIISEntry::InputType::Matrix, orbital_gradient_a_.get(), DIISEntry::InputType::Matrix,
-                                      orbital_gradient_b_.get(), DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab,
-                                      DIISEntry::InputType::DPDBuf4, &Lbb);
-    diisManager.set_vector_size(5, DIISEntry::InputType::Matrix, Xtotal_a_.get(), DIISEntry::InputType::Matrix, Xtotal_b_.get(),
-                                DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4, &Lbb);
+    diis_manager.attr("set_error_vector_size")(orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Laa, &Lab, &Lbb);
+    diis_manager.attr("set_vector_size")(Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb);
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);
@@ -148,13 +144,15 @@ void DCTSolver::run_qc_dct() {
                                        "Amplitude <Oo|Vv>");
                 global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                                        "Amplitude <oo|vv>");
-                if (diisManager.add_entry(10, orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Raa, &Rab, &Rbb,
-                                          Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb)) {
+                if (diis_manager.attr("add_entry")(orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Raa, &Rab, &Rbb,
+                                          Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb).cast<bool>()) {
                     diisString += "S";
                 }
-                if (diisManager.subspace_size() > mindiisvecs_) {
+                int subspace_size = py::len(diis_manager.attr("stored_vectors"));
+
+                if (subspace_size > mindiisvecs_) {
                     diisString += "/E";
-                    diisManager.extrapolate(5, Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb);
+                    diis_manager.attr("extrapolate")(Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb);
                 }
                 global_dpd_->buf4_close(&Raa);
                 global_dpd_->buf4_close(&Rab);

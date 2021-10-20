@@ -35,11 +35,7 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
-#include "psi4/libdiis/diismanager.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libmints/oeprop.h"
-#include "psi4/libmints/writer.h"
-#include "psi4/libmints/writer_file_prefix.h"
 
 namespace psi {
 namespace dct {

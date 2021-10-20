@@ -41,7 +41,6 @@
 
 #include "psi4/lib3index/dfhelper.h"
 #include "psi4/libcubeprop/csg.h"
-#include "psi4/libdiis/diismanager.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/extern.h"
@@ -56,6 +55,8 @@
 #include "psi4/libqt/qt.h"
 
 #include "local2.h"
+
+#include "psi4/pybind11.h"
 
 namespace psi {
 
@@ -4913,7 +4914,6 @@ FISAPTSCF::FISAPTSCF(std::shared_ptr<JK> jk, double enuc, std::shared_ptr<Matrix
 FISAPTSCF::~FISAPTSCF() {}
 void FISAPTSCF::compute_energy() {
     // => Sizing <= //
-
     int nbf = matrices_["X"]->rowspi()[0];
     int nmo = matrices_["X"]->colspi()[0];
     int nocc = matrices_["C0"]->colspi()[0];
@@ -4966,9 +4966,10 @@ void FISAPTSCF::compute_energy() {
 
     bool diised = false;
     auto Gsize = std::make_shared<Matrix>("Gsize", nmo, nmo);
-    auto diis = std::make_shared<DIISManager>(max_diis_vectors, "FISAPT DIIS");
-    diis->set_error_vector_size(1, DIISEntry::InputType::Matrix, Gsize.get());
-    diis->set_vector_size(1, DIISEntry::InputType::Matrix, F.get());
+    py::object diis_file = py::module_::import("psi4").attr("driver").attr("scf_proc").attr("diis");
+    py::object diis_manager = diis_file.attr("DIIS")(max_diis_vectors, "FISAPT DIIS");
+    diis_manager.attr("set_error_vector_size")(Gsize.get());
+    diis_manager.attr("set_vector_size")(F.get());
     Gsize.reset();
 
     // ==> Master Loop <== //
@@ -5031,8 +5032,8 @@ void FISAPTSCF::compute_energy() {
 
         // => DIIS <= //
 
-        diis->add_entry(2, G1.get(), F.get());
-        diised = diis->extrapolate(1, F.get());
+        diis_manager.attr("add_entry")(G1.get(), F.get());
+        diised = diis_manager.attr("extrapolate")(F.get()).cast<bool>();
 
         // => Diagonalize Fock Matrix <= //
 

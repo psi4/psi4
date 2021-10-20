@@ -30,7 +30,6 @@
 #include "sparse.h"
 
 #include "psi4/lib3index/3index.h"
-#include "psi4/libdiis/diismanager.h"
 #include "psi4/libfock/cubature.h"
 #include "psi4/libfock/points.h"
 #include "psi4/libmints/basisset.h"
@@ -47,6 +46,8 @@
 #include "psi4/libqt/qt.h"
 
 #include <algorithm>
+
+#include "psi4/pybind11.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -993,8 +994,9 @@ void DLPNOMP2::lmp2_iterations() {
     int iteration = 0, max_iteration = options_.get_int("DLPNO_MAXITER");
     double e_curr = 0.0, e_prev = 0.0, r_curr = 0.0;
     bool e_converged = false, r_converged = false;
-    DIISManager diis(options_.get_int("DIIS_MAX_VECS"), "LMP2 DIIS", DIISManager::RemovalPolicy::LargestError,
-                                       DIISManager::StoragePolicy::InCore);
+    py::object diis_file = py::module_::import("psi4").attr("driver").attr("scf_proc").attr("diis");
+    py::object diis_temp = diis_file.attr("DIIS")(options_.get_int("DIIS_MAX_VECS"), "LMP2 DIIS", diis_file.attr("RemovalPolicy").attr("LargestError"),
+                                              diis_file.attr("StoragePolicy").attr("InCore"));
 
     while (!(e_converged && r_converged)) {
         // RMS of residual per LMO pair, for assessing convergence
@@ -1066,12 +1068,12 @@ void DLPNOMP2::lmp2_iterations() {
         auto R_iajb_flat = flatten_mats(R_iajb);
 
         if (iteration == 0) {
-            diis.set_error_vector_size(1, DIISEntry::InputType::Vector, R_iajb_flat.get());
-            diis.set_vector_size(1, DIISEntry::InputType::Vector, T_iajb_flat.get());
+            diis_temp.attr("set_error_vector_size")(R_iajb_flat.get());
+            diis_temp.attr("set_vector_size")(T_iajb_flat.get());
         }
 
-        diis.add_entry(2, R_iajb_flat.get(), T_iajb_flat.get());
-        diis.extrapolate(1, T_iajb_flat.get());
+        diis_temp.attr("add_entry")(R_iajb_flat.get(), T_iajb_flat.get());
+        diis_temp.attr("extrapolate")(T_iajb_flat.get());
 
         copy_flat_mats(T_iajb_flat, T_iajb_);
 

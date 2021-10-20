@@ -50,6 +50,8 @@ PRAGMA_WARNING_POP
 
 namespace psi {
 
+class Matrix;
+
 #define T3_TIMER_ON (0)
 
 #define DPD_BIGNUM 2147483647 /* the four-byte signed int limit */
@@ -111,6 +113,9 @@ struct dpdbuf4 {
     int **row_offset;
     int **col_offset;
     double ***matrix;
+
+    int axpy_matrix(const Matrix& MatX, double alpha);
+    int zero();
 };
 
 struct dpdtrans4 {
@@ -146,6 +151,9 @@ struct dpdfile2 {
     dpdparams2 *params;
     int incore;
     double ***matrix;
+
+    int axpy_matrix(const Matrix& MatX, double alpha);
+    int zero();
 };
 
 /* DPD File4 Cache entries */

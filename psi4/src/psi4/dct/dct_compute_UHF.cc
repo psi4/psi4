@@ -33,9 +33,10 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libtrans/integraltransform.h"
-#include "psi4/libdiis/diismanager.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libpsio/psio.h"
+
+#include "psi4/pybind11.h"
 
 #include <cmath>
 
@@ -175,12 +176,12 @@ int DCTSolver::run_twostep_dct_cumulant_updates() {
                            "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Amplitude <oo|vv>");
-    DIISManager lambdaDiisManager(maxdiis_, "DCT DIIS Amplitudes", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+    py::object diis_file = py::module_::import("psi4").attr("driver").attr("scf_proc").attr("diis");
+    py::object diis_manager = diis_file.attr("DIIS")(maxdiis_, "DCT DIIS Amplitudes", diis_file.attr("RemovalPolicy").attr("LargestError"),
+            diis_file.attr("StoragePolicy").attr("InCore"));
     if ((nalpha_ + nbeta_) > 1) {
-        lambdaDiisManager.set_error_vector_size(3, DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab,
-                                                DIISEntry::InputType::DPDBuf4, &Lbb);
-        lambdaDiisManager.set_vector_size(3, DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4,
-                                          &Lbb);
+        diis_manager.attr("set_error_vector_size")(&Laa, &Lab, &Lbb);
+        diis_manager.attr("set_vector_size")(&Laa, &Lab, &Lbb);
     }
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
@@ -229,12 +230,13 @@ int DCTSolver::run_twostep_dct_cumulant_updates() {
             global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                                    "Amplitude <oo|vv>");
 
-            if (lambdaDiisManager.add_entry(6, &Raa, &Rab, &Rbb, &Laa, &Lab, &Lbb)) {
+            if (diis_manager.attr("add_entry")(&Raa, &Rab, &Rbb, &Laa, &Lab, &Lbb)) {
                 diisString += "S";
             }
-            if (lambdaDiisManager.subspace_size() >= mindiisvecs_ && maxdiis_ > 0) {
+            int subspace_size = py::len(diis_manager.attr("stored_vectors"));
+            if (subspace_size >= mindiisvecs_ && maxdiis_ > 0) {
                 diisString += "/E";
-                lambdaDiisManager.extrapolate(3, &Laa, &Lab, &Lbb);
+                diis_manager.attr("extrapolate")(&Laa, &Lab, &Lbb);
             }
             global_dpd_->buf4_close(&Raa);
             global_dpd_->buf4_close(&Rab);
@@ -266,11 +268,12 @@ void DCTSolver::run_twostep_dct_orbital_updates() {
     auto tmp = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
 
     // Set up DIIS
-    DIISManager scfDiisManager(maxdiis_, "DCT DIIS Orbitals", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+    py::object diis_file = py::module_::import("psi4").attr("driver").attr("scf_proc").attr("diis");
+    py::object diis_manager = diis_file.attr("DIIS")(maxdiis_, "DCT DIIS Orbitals", diis_file.attr("RemovalPolicy").attr("LargestError"),
+            diis_file.attr("StoragePolicy").attr("InCore"));
     if ((nalpha_ + nbeta_) > 1) {
-        scfDiisManager.set_error_vector_size(2, DIISEntry::InputType::Matrix, scf_error_a_.get(), DIISEntry::InputType::Matrix,
-                                             scf_error_b_.get());
-        scfDiisManager.set_vector_size(2, DIISEntry::InputType::Matrix, Fa_.get(), DIISEntry::InputType::Matrix, Fb_.get());
+        diis_manager.attr("set_error_vector_size")(scf_error_a_.get(), scf_error_b_.get());
+        diis_manager.attr("set_vector_size")(Fa_.get(), Fb_.get());
     }
     // Update the orbitals
     int nSCFCycles = 0;
@@ -295,11 +298,12 @@ void DCTSolver::run_twostep_dct_orbital_updates() {
         orbitals_convergence_ = compute_scf_error_vector();
         orbitalsDone_ = orbitals_convergence_ < orbitals_threshold_;
         if (orbitals_convergence_ < diis_start_thresh_ && (nalpha_ + nbeta_) > 1) {
-            if (scfDiisManager.add_entry(4, scf_error_a_.get(), scf_error_b_.get(), Fa_.get(), Fb_.get()))
+            if (diis_manager.attr("add_entry")(scf_error_a_.get(), scf_error_b_.get(), Fa_.get(), Fb_.get()))
                 diisString += "S";
-            if (scfDiisManager.subspace_size() > mindiisvecs_ && (nalpha_ + nbeta_) > 1) {
+            int subspace_size = py::len(diis_manager.attr("stored_vectors"));
+            if (subspace_size > mindiisvecs_ && (nalpha_ + nbeta_) > 1) {
                 diisString += "/E";
-                scfDiisManager.extrapolate(2, Fa_.get(), Fb_.get());
+                diis_manager.attr("extrapolate")(Fa_.get(), Fb_.get());
             }
         }
         // Transform the Fock matrix to the symmetrically orhogonalized basis set and digonalize it
@@ -344,7 +348,8 @@ void DCTSolver::run_simult_dct() {
 
     auto tmp = std::make_shared<Matrix>("temp", nirrep_, nsopi_, nsopi_);
     // Set up the DIIS manager
-    DIISManager diisManager(maxdiis_, "DCT DIIS vectors");
+    py::object diis_file = py::module_::import("psi4").attr("driver").attr("scf_proc").attr("diis");
+    py::object diis_manager = diis_file.attr("DIIS")(maxdiis_, "DCT DIIS vectors");
     dpdbuf4 Laa, Lab, Lbb;
     global_dpd_->buf4_init(&Laa, PSIF_DCT_DPD, 0, ID("[O>O]-"), ID("[V>V]-"), ID("[O>O]-"), ID("[V>V]-"), 0,
                            "Amplitude <OO|VV>");
@@ -352,10 +357,8 @@ void DCTSolver::run_simult_dct() {
                            "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Amplitude <oo|vv>");
-    diisManager.set_error_vector_size(5, DIISEntry::InputType::Matrix, scf_error_a_.get(), DIISEntry::InputType::Matrix, scf_error_b_.get(),
-                                      DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4, &Lbb);
-    diisManager.set_vector_size(5, DIISEntry::InputType::Matrix, Fa_.get(), DIISEntry::InputType::Matrix, Fb_.get(), DIISEntry::InputType::DPDBuf4, &Laa,
-                                DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4, &Lbb);
+    diis_manager.attr("set_error_vector_size")(scf_error_a_.get(), scf_error_b_.get(), &Laa, &Lab, &Lbb);
+    diis_manager.attr("set_vector_size")(Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb);
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);
@@ -446,13 +449,14 @@ void DCTSolver::run_simult_dct() {
                                    "Amplitude <Oo|Vv>");
             global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                                    "Amplitude <oo|vv>");
-            if (diisManager.add_entry(10, scf_error_a_.get(), scf_error_b_.get(), &Raa, &Rab, &Rbb, Fa_.get(),
+            if (diis_manager.attr("add_entry")(scf_error_a_.get(), scf_error_b_.get(), &Raa, &Rab, &Rbb, Fa_.get(),
                                       Fb_.get(), &Laa, &Lab, &Lbb)) {
                 diisString += "S";
             }
-            if (diisManager.subspace_size() > mindiisvecs_) {
+            int subspace_size = py::len(diis_manager.attr("stored_vectors"));
+            if (subspace_size > mindiisvecs_) {
                 diisString += "/E";
-                diisManager.extrapolate(5, Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb);
+                diis_manager.attr("extrapolate")(Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb);
             }
             global_dpd_->buf4_close(&Raa);
             global_dpd_->buf4_close(&Rab);

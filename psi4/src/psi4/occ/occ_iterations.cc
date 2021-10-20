@@ -73,21 +73,24 @@ void OCCWave::occ_iterations() {
     mo_optimized = 0;
     itr_diis = 0;
 
+    py::object orbital_diis;
     // If diis?
     // if (nooA + nooB != 1) {
     if (do_diis_ == 1) {
-        orbitalDiis = new DIISManager(maxdiis_, "Orbital Optimized DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk);
+        py::object diis_file = py::module_::import("psi4").attr("driver").attr("scf_proc").attr("diis");
+        orbital_diis = diis_file.attr("DIIS")(maxdiis_, "Orbital Optimized DIIS", diis_file.attr("RemovalPolicy").attr("LargestError"),
+            diis_file.attr("StoragePolicy").attr("OnDisk"));
         std::string tensor_name = (wfn_type_ == "OCEPA") ? "T2" : (wfn_type_ == "OMP2" ? "T" : "T2_1");
         if (reference_ == "RESTRICTED") {
             dpdbuf4 T;
             std::string temp1 = tensor_name + " <OO|VV>";
             global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, temp1.c_str());
             if (wfn_type_ == "OMP2.5" || wfn_type_ == "OMP3") {
-                orbitalDiis->set_error_vector_size(3, DIISEntry::InputType::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::InputType::DPDBuf4, &T, DIISEntry::InputType::DPDBuf4, &T);
-                orbitalDiis->set_vector_size(3, DIISEntry::InputType::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::InputType::DPDBuf4, &T, DIISEntry::InputType::DPDBuf4, &T);
+                orbital_diis.attr("set_error_vector_size")(kappa_bar_[SpinType::Alpha].get(), &T, &T);
+                orbital_diis.attr("set_vector_size")(kappa_bar_[SpinType::Alpha].get(), &T, &T);
             } else {
-                orbitalDiis->set_error_vector_size(2, DIISEntry::InputType::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::InputType::DPDBuf4, &T);
-                orbitalDiis->set_vector_size(2, DIISEntry::InputType::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::InputType::DPDBuf4, &T);
+                orbital_diis.attr("set_error_vector_size")(kappa_bar_[SpinType::Alpha].get(), &T);
+                orbital_diis.attr("set_vector_size")(kappa_bar_[SpinType::Alpha].get(), &T);
             }
             global_dpd_->buf4_close(&T);
         } else if (reference_ == "UNRESTRICTED") {
@@ -104,15 +107,19 @@ void OCCWave::occ_iterations() {
             global_dpd_->buf4_init(&Tbb, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                temp1.c_str());
             if (wfn_type_ == "OMP2.5" || wfn_type_ == "OMP3") {
-                orbitalDiis->set_error_vector_size(8, DIISEntry::InputType::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::InputType::Vector, kappa_bar_[SpinType::Beta].get(),
-                                         DIISEntry::InputType::DPDBuf4, &Taa, DIISEntry::InputType::DPDBuf4, &Tab, DIISEntry::InputType::DPDBuf4, &Tbb, DIISEntry::InputType::DPDBuf4, &Taa, DIISEntry::InputType::DPDBuf4, &Tab, DIISEntry::InputType::DPDBuf4, &Tbb);
-                orbitalDiis->set_vector_size(8, DIISEntry::InputType::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::InputType::Vector, kappa_bar_[SpinType::Beta].get(),
-                                         DIISEntry::InputType::DPDBuf4, &Taa, DIISEntry::InputType::DPDBuf4, &Tab, DIISEntry::InputType::DPDBuf4, &Tbb, DIISEntry::InputType::DPDBuf4, &Taa, DIISEntry::InputType::DPDBuf4, &Tab, DIISEntry::InputType::DPDBuf4, &Tbb);
+                orbital_diis.attr("set_error_vector_size")(kappa_bar_[SpinType::Alpha].get(),
+                                                           kappa_bar_[SpinType::Beta].get(),
+                                                           &Taa, &Tab, &Tbb, &Taa, &Tab, &Tbb);
+                orbital_diis.attr("set_vector_size")(kappa_bar_[SpinType::Alpha].get(),
+                                                     kappa_bar_[SpinType::Beta].get(),
+                                                     &Taa, &Tab, &Tbb, &Taa, &Tab, &Tbb);
             } else {
-                orbitalDiis->set_error_vector_size(5, DIISEntry::InputType::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::InputType::Vector, kappa_bar_[SpinType::Beta].get(),
-                        DIISEntry::InputType::DPDBuf4, &Taa, DIISEntry::InputType::DPDBuf4, &Tab, DIISEntry::InputType::DPDBuf4, &Tbb);
-                orbitalDiis->set_vector_size(5, DIISEntry::InputType::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::InputType::Vector, kappa_bar_[SpinType::Beta].get(),
-                        DIISEntry::InputType::DPDBuf4, &Taa, DIISEntry::InputType::DPDBuf4, &Tab, DIISEntry::InputType::DPDBuf4, &Tbb);
+                orbital_diis.attr("set_error_vector_size")(kappa_bar_[SpinType::Alpha].get(),
+                                                           kappa_bar_[SpinType::Beta].get(),
+                                                           &Taa, &Tab, &Tbb);
+                orbital_diis.attr("set_vector_size")(kappa_bar_[SpinType::Alpha].get(),
+                                                     kappa_bar_[SpinType::Beta].get(),
+                                                     &Taa, &Tab, &Tbb);
             }
             global_dpd_->buf4_close(&Taa);
             global_dpd_->buf4_close(&Tab);
@@ -354,7 +361,7 @@ void OCCWave::occ_iterations() {
         }
 
         // Now it's time for DIIS.
-        oo_diis();
+        oo_diis(orbital_diis);
 
         // Handle any needed resorts of amplitudes, after the DIIS.
         if (wfn_type_ == "OCEPA") {
@@ -418,10 +425,6 @@ void OCCWave::occ_iterations() {
         delete kappa_newB;
     }
 
-    if (do_diis_) {
-        delete orbitalDiis;
-    }
-
     // Clean up the mess of ORB-RESP
     if (opt_method == "ORB_RESP") {
         if (orb_resp_solver_ == "LINEQ") {
@@ -481,7 +484,7 @@ void OCCWave::compute_orbital_step() {
     }
 }
 
-void OCCWave::oo_diis() {
+void OCCWave::oo_diis(py::object& orbital_diis) {
     if (!do_diis_) return;
 
     psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
@@ -494,9 +497,10 @@ void OCCWave::oo_diis() {
                                "T <OO|VV>");
             global_dpd_->buf4_init(&R, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "RT2_1 <OO|VV>");
-            orbitalDiis->add_entry(4, wogA_vec.get(), &R, kappa_bar_[SpinType::Alpha].get(), &T);
-            if (orbitalDiis->subspace_size() >= mindiis_) {
-                orbitalDiis->extrapolate(2, kappa_bar_[SpinType::Alpha].get(), &T);
+            orbital_diis.attr("add_entry")(wogA_vec.get(), &R, kappa_bar_[SpinType::Alpha].get(), &T);
+            int subspace_size = py::len(orbital_diis.attr("stored_vectors"));
+            if (subspace_size >= mindiis_) {
+                orbital_diis.attr("extrapolate")(kappa_bar_[SpinType::Alpha].get(), &T);
             }
         } else if (wfn_type_ == "OMP2.5" || wfn_type_ == "OMP3") {
             dpdbuf4 T1, R1, T2, R2;
@@ -508,9 +512,10 @@ void OCCWave::oo_diis() {
                                "T2_2 <OO|VV>");
             global_dpd_->buf4_init(&R2, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "RT2_2 <OO|VV>");
-            orbitalDiis->add_entry(6, wogA_vec.get(), &R1, &R2, kappa_bar_[SpinType::Alpha].get(), &T1, &T2);
-            if (orbitalDiis->subspace_size() >= mindiis_) {
-                orbitalDiis->extrapolate(3, kappa_bar_[SpinType::Alpha].get(), &T1, &T2);
+            orbital_diis.attr("add_entry")(wogA_vec.get(), &R1, &R2, kappa_bar_[SpinType::Alpha].get(), &T1, &T2);
+            int subspace_size = py::len(orbital_diis.attr("stored_vectors"));
+            if (subspace_size >= mindiis_) {
+                orbital_diis.attr("extrapolate")(kappa_bar_[SpinType::Alpha].get(), &T1, &T2);
             }
         } else if (wfn_type_ == "OCEPA") {
             dpdbuf4 T, R;
@@ -518,9 +523,10 @@ void OCCWave::oo_diis() {
                                "T2 <OO|VV>");
             global_dpd_->buf4_init(&R, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "RT2 <OO|VV>");
-            orbitalDiis->add_entry(4, wogA_vec.get(), &R, kappa_bar_[SpinType::Alpha].get(), &T);
-            if (orbitalDiis->subspace_size() >= mindiis_) {
-                orbitalDiis->extrapolate(2, kappa_bar_[SpinType::Alpha].get(), &T);
+            orbital_diis.attr("add_entry")(wogA_vec.get(), &R, kappa_bar_[SpinType::Alpha].get(), &T);
+            int subspace_size = py::len(orbital_diis.attr("stored_vectors"));
+            if (subspace_size >= mindiis_) {
+                orbital_diis.attr("extrapolate")(kappa_bar_[SpinType::Alpha].get(), &T);
             }
         }
     } else if (reference_ == "UNRESTRICTED") {
@@ -539,10 +545,11 @@ void OCCWave::oo_diis() {
                                "T2_1 <oo|vv>");
             global_dpd_->buf4_init(&R1bb, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                "RT2_1 <oo|vv>");
-            orbitalDiis->add_entry(10, wogA_vec.get(), wogB_vec.get(), &R1aa, &R1ab, &R1bb,
+            orbital_diis.attr("add_entry")(wogA_vec.get(), wogB_vec.get(), &R1aa, &R1ab, &R1bb,
                     kappa_bar_[SpinType::Alpha].get(), kappa_bar_[SpinType::Beta].get(), &T1aa, &T1ab, &T1bb);
-            if (orbitalDiis->subspace_size() >= mindiis_) {
-                orbitalDiis->extrapolate(5, kappa_bar_[SpinType::Alpha].get(), kappa_bar_[SpinType::Beta].get(), &T1aa, &T1ab, &T1bb);
+            int subspace_size = py::len(orbital_diis.attr("stored_vectors"));
+            if (subspace_size >= mindiis_) {
+                orbital_diis.attr("extrapolate")(kappa_bar_[SpinType::Alpha].get(), kappa_bar_[SpinType::Beta].get(), &T1aa, &T1ab, &T1bb);
             }
             global_dpd_->buf4_close(&T1aa);
             global_dpd_->buf4_close(&T1ab);
@@ -576,10 +583,11 @@ void OCCWave::oo_diis() {
                                "T2_2 <oo|vv>");
             global_dpd_->buf4_init(&R2bb, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                "RT2_2 <oo|vv>");
-            orbitalDiis->add_entry(16, wogA_vec.get(), wogB_vec.get(), &R1aa, &R1ab, &R1bb, &R2aa, &R2ab, &R2bb,
+            orbital_diis.attr("add_entry")(wogA_vec.get(), wogB_vec.get(), &R1aa, &R1ab, &R1bb, &R2aa, &R2ab, &R2bb,
                     kappa_bar_[SpinType::Alpha].get(), kappa_bar_[SpinType::Beta].get(), &T1aa, &T1ab, &T1bb, &T2aa, &T2ab, &T2bb);
-            if (orbitalDiis->subspace_size() >= mindiis_) {
-                orbitalDiis->extrapolate(8, kappa_bar_[SpinType::Alpha].get(), kappa_bar_[SpinType::Beta].get(), &T1aa, &T1ab, &T1bb, &T2aa, &T2ab, &T2bb);
+            int subspace_size = py::len(orbital_diis.attr("stored_vectors"));
+            if (subspace_size >= mindiis_) {
+                orbital_diis.attr("extrapolate")(kappa_bar_[SpinType::Alpha].get(), kappa_bar_[SpinType::Beta].get(), &T1aa, &T1ab, &T1bb, &T2aa, &T2ab, &T2bb);
             }
             global_dpd_->buf4_close(&T1aa);
             global_dpd_->buf4_close(&T1ab);
@@ -607,10 +615,11 @@ void OCCWave::oo_diis() {
                                "T2 <oo|vv>");
             global_dpd_->buf4_init(&Rbb, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                "RT2 <oo|vv>");
-            orbitalDiis->add_entry(10, wogA_vec.get(), wogB_vec.get(), &Raa, &Rab, &Rbb,
+            orbital_diis.attr("add_entry")(wogA_vec.get(), wogB_vec.get(), &Raa, &Rab, &Rbb,
                     kappa_bar_[SpinType::Alpha].get(), kappa_bar_[SpinType::Beta].get(), &Taa, &Tab, &Tbb);
-            if (orbitalDiis->subspace_size() >= mindiis_) {
-                orbitalDiis->extrapolate(5, kappa_bar_[SpinType::Alpha].get(), kappa_bar_[SpinType::Beta].get(), &Taa, &Tab, &Tbb);
+            int subspace_size = py::len(orbital_diis.attr("stored_vectors"));
+            if (subspace_size >= mindiis_) {
+                orbital_diis.attr("extrapolate")(kappa_bar_[SpinType::Alpha].get(), kappa_bar_[SpinType::Beta].get(), &Taa, &Tab, &Tbb);
             }
             global_dpd_->buf4_close(&Taa);
             global_dpd_->buf4_close(&Tab);

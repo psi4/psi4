@@ -46,8 +46,6 @@
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
-#include "psi4/libdiis/diismanager.h"
-#include "psi4/libdiis/diisentry.h"
 
 #include "hf.h"
 
@@ -88,8 +86,8 @@ void HF::MOM_start() {
 
     // Reset DIIS (will automagically restart)
     if (initialized_diis_manager_) {
-        diis_manager_->delete_diis_file();
-        diis_manager_.reset();
+        diis_manager_.attr("delete_diis_file")();
+        diis_manager_ = py::none();
         initialized_diis_manager_ = false;
     }
 

@@ -36,6 +36,7 @@
 
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsio/psio.hpp"
 
 #include "dimension.h"
 #include "matrix.h"
@@ -279,5 +280,48 @@ void Vector::axpy(double scale, const Vector &other) {
     }
 
     C_DAXPY(v_.size(), scale, const_cast<double *>(other.v_.data()), 1, v_.data(), 1);
+}
+
+void Vector::save(psi::PSIO *const psio, size_t fileno) {
+    // Check to see if the file is open
+    bool already_open = false;
+    if (psio->open_check(fileno)) {
+        already_open = true;
+    } else {
+        psio->open(fileno, PSIO_OPEN_OLD);
+    }
+
+    for (int h = 0; h < nirrep_; ++h) {
+        std::string str(name_);
+        str += " Irrep " + std::to_string(h);
+
+        // Write the sub-blocks
+        if (dimpi_[h] > 0)
+            psio->write_entry(fileno, const_cast<char *>(str.c_str()), (char *)vector_[h],
+                              sizeof(double) * dimpi_[h]);
+    }
+    if (!already_open) psio->close(fileno, 1);  // Close and keep
+}
+
+void Vector::load(psi::PSIO *const psio, size_t fileno) {
+    // Check to see if the file is open
+    bool already_open = false;
+    if (psio->open_check(fileno)) {
+        already_open = true;
+    } else {
+        psio->open(fileno, PSIO_OPEN_OLD);
+    }
+
+    for (int h = 0; h < nirrep_; ++h) {
+        std::string str(name_);
+        str += " Irrep " + std::to_string(h);
+
+        // Read the sub-blocks
+        if (dimpi_[h] > 0)
+            psio->read_entry(fileno, str.c_str(), (char *)vector_[h],
+                             sizeof(double) * dimpi_[h]);
+    }
+
+    if (!already_open) psio->close(fileno, 1);  // Close and keep
 }
 }  // namespace psi
