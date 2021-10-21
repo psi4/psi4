@@ -3288,6 +3288,7 @@ void FISAPT::felst() {
         double E = 0.0;
         for (int B = 0; B < nB; B++) {
             auto atom = std::make_shared<Molecule>();
+            atom->set_units(mol->units());
             atom->add_atom(ZBp[B], mol->x(B)*conv, mol->y(B)*conv, mol->z(B)*conv);
             double interaction = reference_->potential_variable("A")->computeNuclearEnergy(atom);
             Ep[nA + na][B] = interaction;
@@ -3306,6 +3307,7 @@ void FISAPT::felst() {
         double E = 0.0;
         for (int A = 0; A < nA; A++) {
             auto atom = std::make_shared<Molecule>();
+            atom->set_units(mol->units());
             atom->add_atom(ZAp[A], mol->x(A)*conv, mol->y(A)*conv, mol->z(A)*conv);
             double interaction = reference_->potential_variable("B")->computeNuclearEnergy(atom);
             Ep[A][nB + nb] = interaction;
