@@ -722,10 +722,6 @@ void FISAPT::nuclear() {
             for (int p2 = p1+1; p2 < pot_list.size(); p2++) {
 
                 bool in_angstrom = false;
-                if (mol->units() == Molecule::Angstrom) {
-                    in_angstrom = true;
-                }
-
                 double IE = pot_list[p1]->computeExternExternInteraction(pot_list[p2], in_angstrom);
                 // store half the interaction so that Eij + Eji = Etotal
                 extern_extern_IE_matp[pot_ids[p1]][pot_ids[p2]] = IE * 0.5;

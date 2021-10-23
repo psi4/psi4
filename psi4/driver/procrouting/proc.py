@@ -1274,12 +1274,18 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
         # For the dimer SAPT calculation, we need to account for the external potential
         # in all of the subsystems A, B, C. So we add them all in total_external_potential
         # and set the external potential to the dimer wave function
+        from psi4.driver.qmmm import QMMMbohr
+
         total_external_potential = core.ExternalPotential()
 
         for frag in kwargs['external_potentials']:
             if frag.upper() in "ABC":
-                wfn.set_potential_variable(frag.upper(), kwargs['external_potentials'][frag].extern)
-                total_external_potential.appendCharges(kwargs['external_potentials'][frag].extern.getCharges())
+                chrgfield = QMMMbohr()
+                for qxyz in kwargs['external_potentials'][frag]:
+                    chrgfield.extern.addCharge(qxyz[0], qxyz[1][0], qxyz[1][1], qxyz[1][2])
+
+                wfn.set_potential_variable(frag.upper(), chrgfield.extern)
+                total_external_potential.appendCharges(chrgfield.extern.getCharges())
 
             else:
                 core.print_out("\n  Warning! Unknown key for the external_potentials argument: %s" % frag)

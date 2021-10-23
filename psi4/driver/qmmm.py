@@ -123,7 +123,7 @@ class Diffuse(object):
 class QMMM():
 
     def __init__(self):
-        raise UpgradeHelper(self.__class__.__name__, "QMMMbohr", 1.4, ' Replace object with a list of charges and locations in Bohr passed as keyword argument, e.g., `energy(..., embedding_charges=[[0.5, [0, 0, 1]], [-0.5, [0, 0, -1]]])`.')
+        raise UpgradeHelper(self.__class__.__name__, "QMMMbohr", 1.5, ' Replace object with a list of charges and locations in Bohr passed as keyword argument, e.g., `energy(..., embedding_charges=[[0.5, [0, 0, 1]], [-0.5, [0, 0, -1]]])`.')
 
 
 class QMMMbohr():

@@ -261,7 +261,7 @@ def _print_nbody_energy(energy_body_dict, header, embedding=False):
     """
 
 
-def build_nbody_compute_list(bsse_type_list, nbody, max_frag):
+def build_nbody_compute_list(bsse_type_list, nbody, max_frag, return_total_data):
     """Generates the list of N-Body computations to be performed for a given BSSE type.
 
     Parameters
@@ -322,17 +322,13 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
         basis_tuple = tuple(fragment_range)
 
         for nb in nbody:
-            if nb == 1:
-                # Add monomers in monomer basis
-                for x in fragment_range:
-                    cp_compute_list[1].add(((x, ), (x, )))
-            else:
+            if nb > 1:
                 for sublevel in range(1, nb + 1):
                     for x in itertools.combinations(fragment_range, sublevel):
                         if nbody == 1: break
                         cp_compute_list[nb].add((x, basis_tuple))
 
-    if 'nocp' in bsse_type_list or metadata['return_total_data']:
+    if 'nocp' in bsse_type_list or return_total_data:
         # Everything in monomer basis
         for nb in nbody:
             for sublevel in range(1, nb + 1):
@@ -447,7 +443,7 @@ def assemble_nbody_components(metadata, component_results):
             nbody_range = metadata['nbody_list'][level]
             metadata['bsse_type'] = ['nocp']
 
-    compute_dict = build_nbody_compute_list(metadata['bsse_type'], nbody_range, metadata['max_frag'])
+    compute_dict = build_nbody_compute_list(metadata['bsse_type'], nbody_range, metadata['max_frag'], metadata["return_total_data"])
     cp_compute_list = compute_dict['cp']
     cp_ptype_compute_list = {x: set() for x in nbody_range}
     nocp_compute_list = compute_dict['nocp']
@@ -496,12 +492,11 @@ def assemble_nbody_components(metadata, component_results):
         cp_ptype_by_level, cp_ptype_body_dict = {}, {}
         nocp_ptype_by_level, nocp_ptype_body_dict = {}, {}
         vmfc_ptype_body_dict = {}
-        cp_mon_in_mon_basis = 0.0
+        monomer_energies = 0.0
 
     # Sum up all of the levels
     nbody_dict = {}
 
-    add_cp_mon = False
     cp_add_dict = set()
     nocp_add_dict = set()
 
@@ -514,32 +509,32 @@ def assemble_nbody_components(metadata, component_results):
             for w in nocp_compute_list[n]:
                 nocp_ptype_compute_list[len(w[0])].add(w)
 
-    cp_mon_in_mon_basis = 0.0
+    monomer_energies = 0.0
     for n in nbody_range:
 
         # Energy
         # Extract energies for monomers in monomer basis for CP total data
         if n == 1:
-            monomers_in_monomer_basis = [v for v in cp_compute_list[1] if len(v[1]) == 1]
+            monomers_in_monomer_basis = [v for v in nocp_compute_list[1] if len(v[1]) == 1]
             monomer_energies = 0.0
             monomer_energy_list = []
             for i in monomers_in_monomer_basis:
                 key = str(level) + "_" + str(i)
                 monomer_energy_list.append(component_results['energies'][key])
                 monomer_energies += component_results['energies'][key]
-                cp_compute_list[1].remove(i)
-            add_cp_mon = True
 
         if 'cp' in metadata['bsse_type']:
             for v in cp_compute_list[n]:
                 if v not in cp_add_dict:
-                    energy = component_results['energies'][str(level) + "_" + str(v)]
+                    key = str(level) + "_" + str(v)
+                    energy = component_results['energies'][key]
                     cp_energy_by_level[len(v[0])] += energy
                     cp_add_dict.add(v)
         if 'nocp' in metadata['bsse_type']:
             for v in nocp_compute_list[n]:
                 if v not in nocp_add_dict:
-                    energy = component_results['energies'][str(level) + "_" + str(v)]
+                    key = str(level) + "_" + str(v)
+                    energy = component_results['energies'][key]
                     nocp_energy_by_level[len(v[0])] += energy
                     nocp_add_dict.add(v)
 
@@ -681,7 +676,7 @@ def assemble_nbody_components(metadata, component_results):
     results['nbody'] = nbody_dict
     for b in ['cp', 'nocp', 'vmfc']:
         if monomer_energies != 0.0:
-            results['%s_energy_body_dict' % b] = locals('%s_energy_body_dict' % b)
+            results['%s_energy_body_dict' % b] = locals()['%s_energy_body_dict' % b]
             results['%s_energy_body_dict' % b] = {str(i) + b: j for i, j in results['%s_energy_body_dict' % b].items()}
         else:
             results['%s_energy_body_dict' % b] = {}
@@ -752,7 +747,7 @@ class ManyBodyComputer(BaseComputer):
     nbody_list: List[int] = []
     nbody_level: int = 1
     return_wfn: bool = False
-    return_total_data: bool
+    return_total_data: bool = None
     embedding_charges: Dict[int, list] = {}
     quiet: bool = False
 
@@ -797,15 +792,14 @@ class ManyBodyComputer(BaseComputer):
 
         return bsse_types
 
-    @pydantic.validator("return_total_data")
+    @pydantic.validator("return_total_data", always=True)
     def set_return_total_data(cls, v, values):
-        if "return_total_data" in values:
+        if v is not None:
             return v
+        elif values["driver"] in ["gradient", "hessian"]:
+            return True
         else:
-            if values["driver"] in ["gradient", "hessian"]:
-                return True
-            else:
-                return False
+            return False
 
     # Build task for a given level
     def build_tasks(self, obj, **kwargs):
@@ -830,10 +824,10 @@ class ManyBodyComputer(BaseComputer):
             logger.debug(info)
             # This should always be NOCP
             compute_dict = build_nbody_compute_list(["nocp"], [i for i in range(1, self.max_nbody + 1)],
-                                                    self.max_frag)
+                                                    self.max_frag, self.return_total_data)
         else:
             # Get compute list
-            compute_dict = build_nbody_compute_list(self.bsse_type, nbody, self.max_frag)
+            compute_dict = build_nbody_compute_list(self.bsse_type, nbody, self.max_frag, self.return_total_data)
 
         compute_list = compute_dict[bsse_type]
 
@@ -1008,6 +1002,10 @@ class ManyBodyComputer(BaseComputer):
 
         core.set_variable("CURRENT ENERGY", nbody_results.properties.return_energy)
         # wfn.set_energy(nbody_results.properties['return_energy'])  # catches CURRENT ENERGY on Wfn
+        if self.driver == "gradient":
+            core.set_variable("CURRENT GRADIENT", nbody_results.extras["qcvars"]["CURRENT GRADIENT"])
+        elif self.driver == "hessian":
+            core.set_variable("CURRENT HESSIAN", nbody_results.extras["qcvars"]["CURRENT HESSIAN"])
 
         if return_wfn:
             return (ret, wfn)

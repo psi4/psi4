@@ -120,9 +120,7 @@ def test_nbody_dimer():
     }
 
     assert isinstance(plan, ManyBodyComputer)
-    # DGAS Note: This is wrong, for some reason cp is adding monomers in monomer basis.
-    # See the CP builder in nbody:build_nbody_compute_list
-    assert len(plan.task_list) == 5
+    assert len(plan.task_list) == 3
 
     for k2, plan2 in plan.task_list.items():
         assert isinstance(plan2, AtomicComputer)
@@ -154,8 +152,6 @@ def test_nbody_dimer_gradient():
     }
 
     assert isinstance(plan, ManyBodyComputer)
-    # DGAS Note: This is wrong, for some reason cp is adding monomers in monomer basis.
-    # See the CP builder in nbody:build_nbody_compute_list
     assert len(plan.task_list) == 5
 
     for k2, plan2 in plan.task_list.items():
@@ -204,8 +200,6 @@ def test_nbody_dimer_gradient_1_0(mtd, kw):
     }
 
     assert isinstance(plan, ManyBodyComputer)
-    # DGAS Note: This is wrong, for some reason cp is adding monomers in monomer basis.
-    # See the CP builder in nbody:build_nbody_compute_list
     assert len(plan.task_list) == 5
 
     ghostiness = {
@@ -248,9 +242,7 @@ def test_nbody_dimer_cbs():
     plan = task_planner("energy", "MP2/cc-pV[D,T]Z", mol, bsse_type="cp")
 
     assert isinstance(plan, ManyBodyComputer)
-    # DGAS Note: This is wrong, for some reason cp is adding monomers in monomer basis.
-    # See the CP builder in nbody:build_nbody_compute_list
-    assert len(plan.task_list) == 5
+    assert len(plan.task_list) == 3
 
     for k2, plan2 in plan.task_list.items():
         assert isinstance(plan2, CompositeComputer)
@@ -274,8 +266,6 @@ def test_nbody_dimer_cbs_gradient():
     plan = task_planner("gradient", "MP2/cc-pV[D,T]Z", mol, bsse_type="cp")
 
     assert isinstance(plan, ManyBodyComputer)
-    # DGAS Note: This is wrong, for some reason cp is adding monomers in monomer basis.
-    # See the CP builder in nbody:build_nbody_compute_list
     assert len(plan.task_list) == 5
 
     for k2, plan2 in plan.task_list.items():
@@ -331,8 +321,6 @@ def test_nbody_dimer_cbs_gradient_1_0(mtd, kw):
     }
 
     assert isinstance(plan, ManyBodyComputer)
-    # DGAS Note: This is wrong, for some reason cp is adding monomers in monomer basis.
-    # See the CP builder in nbody:build_nbody_compute_list
     assert len(plan.task_list) == 5
 
     for k2, plan2 in plan.task_list.items():

@@ -145,10 +145,9 @@ def fisapt_fdrop(self, external_potentials=None):
         for frag in "ABC":
             potential = external_potentials.get(frag, None)
             if potential is not None:
-                charges = potential.extern.getCharges()
-                xyz = str(len(charges)) + "\n\n"
-                for charge in charges:
-                    xyz += "Ch %f %f %f\n" % (charge[1], charge[2], charge[3])
+                xyz = str(len(potential)) + "\n\n"
+                for qxyz in potential:
+                    xyz += "Ch %f %f %f\n" % (qxyz[1][0], qxyz[1][1], qxyz[1][2])
 
                 with open(filepath + os.sep + "Extern_%s.xyz" % frag, "w") as fh:
                     fh.write(xyz)

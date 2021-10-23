@@ -158,7 +158,7 @@ class AtomicComputer(BaseComputer):
             raise_error=True,
             # local_options below suitable for continuous mode
             local_options={
-                "memory": core.get_memory() / 1000000000,
+                "memory": core.get_memory() / (2 ** 30),
                 "ncores": core.get_num_threads(),
             },
         )

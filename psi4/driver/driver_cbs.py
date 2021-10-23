@@ -1655,11 +1655,11 @@ class CompositeComputer(BaseComputer):
             qcvars[qcv + ' CORRELATION ENERGY'] = assembled_results['energy'] - self.cbsrec[0]['d_energy']
             qcvars[qcv + ('' if qcv == 'CURRENT' else ' TOTAL') + ' ENERGY'] = assembled_results['energy']
 
-        for idelta in range(int(len(cbs.grand_need) / 2)):
+        for idelta in range(int(len(self.cbsrec) / 2)):
             if idelta == 0:
                 continue
             dc = idelta * 2 + 1
-            qcvars[f"CBS {cbs.grand_need[dc]['d_stage'].upper()} TOTAL ENERGY"] = self.grand_need[dc]["d_energy"] - self.grand_need[dc + 1]["d_energy"]
+            qcvars[f"CBS {self.cbsrec[dc]['d_stage'].upper()} TOTAL ENERGY"] = self.cbsrec[dc]["d_energy"] - self.cbsrec[dc + 1]["d_energy"]
 
         if np.count_nonzero(assembled_results['gradient']):
             for qcv in ['CURRENT GRADIENT', 'CBS TOTAL GRADIENT']:

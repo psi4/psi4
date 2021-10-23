@@ -20,25 +20,19 @@ no_reorient
 no_com
 }
 
-Chrgfield_B = QMMM()
-Chrgfield_B.extern.addCharge(0.417, -2.5628, -0.8269, -1.6696)
-Chrgfield_B.extern.addCharge(-0.834, -1.7899, -0.4027, -1.2768)
-Chrgfield_B.extern.addCharge(0.417, -1.8988, -0.4993, -0.3072)
-
-Chrgfield_C = QMMM()
-Chrgfield_C.extern.addCharge(0.417, 1.1270, 1.5527, -0.1658)
-Chrgfield_C.extern.addCharge(-0.834, 1.9896, 1.0738, -0.1673)
-Chrgfield_C.extern.addCharge(0.417, 2.6619, 1.7546, -0.2910)
-Chrgfield_C.extern.addCharge(0.417, -1.0231, 1.6243, -0.8743)
-Chrgfield_C.extern.addCharge(-0.834, -0.5806, 2.0297, -0.1111)
-Chrgfield_C.extern.addCharge(0.417, -0.9480, 1.5096, 0.6281)
-
-
-
 external_potentials = {
-                       'B': Chrgfield_B,
-                       'C': Chrgfield_C,
-                      }
+    "B": [
+        [ 0.417, np.array([-2.5628, -0.8269, -1.6696]) / psi_bohr2angstroms],
+        [-0.834, np.array([-1.7899, -0.4027, -1.2768]) / psi_bohr2angstroms],
+        [ 0.417, np.array([-1.8988, -0.4993, -0.3072]) / psi_bohr2angstroms]],
+    "C": [
+        [ 0.417, np.array([ 1.1270,  1.5527, -0.1658]) / psi_bohr2angstroms],
+        [-0.834, np.array([ 1.9896,  1.0738, -0.1673]) / psi_bohr2angstroms],
+        [ 0.417, np.array([ 2.6619,  1.7546, -0.2910]) / psi_bohr2angstroms],
+        [ 0.417, np.array([-1.0231,  1.6243, -0.8743]) / psi_bohr2angstroms],
+        [-0.834, np.array([-0.5806,  2.0297, -0.1111]) / psi_bohr2angstroms],
+        [ 0.417, np.array([-0.9480,  1.5096,  0.6281]) / psi_bohr2angstroms]],
+}
 
 set {
 basis jun-cc-pvdz

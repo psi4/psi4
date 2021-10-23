@@ -50,6 +50,7 @@ input.py.dat
 *.molden
 *.cube
 dfh.*
+input.log
 
 *.json
 

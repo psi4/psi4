@@ -486,8 +486,6 @@ def run_json(json_data, clean=True):
 
         json_data["raw_output"] = _read_output(outfile)
 
-    json_data.pop("module", None)
-
     if return_output:
         json_data["raw_output"] = _read_output(outfile)
 
@@ -652,6 +650,5 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
     _clean_psi_environ(clean)
 
     json_data["schema_name"] = "qcschema_output"
-    json_data["module"] = wfn.module()
 
     return json_data
