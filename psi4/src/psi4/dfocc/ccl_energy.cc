@@ -252,7 +252,7 @@ void DFOCC::lccdl_energy() {
     double Eov = 0.0;
     double Evv = 0.0;
 
-    if (wfn_type_ == "DF-OLCCD") ElccdL_old = ElccdL;
+    if (wfn_type_ == "DF-OLCCD" | wfn_type_ == "DF-OREMP" ) ElccdL_old = ElccdL;
     else if (wfn_type_ == "DF-OCCD" || wfn_type_ == "DF-OCCD(T)" || wfn_type_ == "DF-OCCD(AT)") EccdL_old = EccdL;
 
     if (reference_ == "RESTRICTED") {
