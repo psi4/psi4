@@ -675,7 +675,8 @@ def assemble_nbody_components(metadata, component_results):
     results = {}
     results['nbody'] = nbody_dict
     for b in ['cp', 'nocp', 'vmfc']:
-        if monomer_energies != 0.0:
+        #if monomer_energies != 0.0:
+        if True:
             results['%s_energy_body_dict' % b] = locals()['%s_energy_body_dict' % b]
             results['%s_energy_body_dict' % b] = {str(i) + b: j for i, j in results['%s_energy_body_dict' % b].items()}
         else:
@@ -714,8 +715,8 @@ def assemble_nbody_components(metadata, component_results):
     else:
         results['ret_ptype'] = results['ret_energy']
 
-    if monomer_energies == 0.0:
-        del results['energy_body_dict']
+    #if monomer_energies == 0.0:
+    #    del results['energy_body_dict']
 
     return results
 
@@ -818,8 +819,9 @@ class ManyBodyComputer(BaseComputer):
         if level == 'supersystem':
             data = template
             data["molecule"] = self.molecule
-            self.task_list[str(level) + '_' + str(self.max_frag)] = obj(**data)
-            info = str(level) + ', ' + str(self.max_frag) + '\n'
+            key = f"{level}_{self.max_frag}"
+            self.task_list[key] = obj(**data)
+            info = key.replace("_", ", ") + "\n"
             core.print_out(info)
             logger.debug(info)
             # This should always be NOCP

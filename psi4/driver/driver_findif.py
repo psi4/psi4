@@ -1184,8 +1184,10 @@ class FiniteDifferenceComputer(BaseComputer):
             if 'CURRENT GRADIENT' in task.extras['qcvars']:
                 reference['gradient'] = task.extras['qcvars']['CURRENT GRADIENT']
 
+        dipole_available = False
         if 'CURRENT DIPOLE' in task.extras['qcvars']:
             reference['dipole'] = task.extras['qcvars']['CURRENT DIPOLE']
+            dipole_available = True
 
         # load AtomicComputer results into findifrec[displacements]
         for label, displacement in self.findifrec["displacements"].items():
@@ -1238,8 +1240,9 @@ class FiniteDifferenceComputer(BaseComputer):
             else:
                 self.findifrec["reference"]["gradient"] = G0
 
-            DD0 = assemble_dipder_from_dipoles(self.findifrec, self.metameta['irrep'])
-            self.findifrec["reference"]["dipole derivative"] = DD0
+            if dipole_available:
+                DD0 = assemble_dipder_from_dipoles(self.findifrec, self.metameta['irrep'])
+                self.findifrec["reference"]["dipole derivative"] = DD0
 
             H0 = assemble_hessian_from_energies(self.findifrec, self.metameta['irrep'])
             self.findifrec["reference"][self.driver.name] = H0

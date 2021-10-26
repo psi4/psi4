@@ -58,6 +58,12 @@ def base_schema():
                  id='nbody-embedded'),
 ])
 def test_nbody_levels(inp, expected, base_schema):
+    # reference for nbody-multilevel generated with this larger fitting basis for sto-3g. fails otherwise by 3.e-5
+    basfams = psi4.driver.qcdb.basislist.load_basis_families()
+    for fam in basfams:
+        if fam.ornate == "STO-3G":
+            fam.add_rifit("def2-qzvpp-ri")
+
     jin = copy.deepcopy(base_schema)
     jin['model']['method'] = inp['method']
     jin['keywords']['function_kwargs'] = inp['kfk']
