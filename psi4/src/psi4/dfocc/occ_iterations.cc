@@ -113,6 +113,7 @@ void DFOCC::occ_iterations() {
     mo_optimized = 0;
     itr_diis = 0;
     EccdL = Emp2;
+    ErempL = Emp2;
 
     // If diis?
     // if (noccA + noccB != 1) {
