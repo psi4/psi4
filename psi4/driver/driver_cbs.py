@@ -175,7 +175,7 @@ def _contract_bracketed_basis(basisarray: List) -> str:
 ### GENERIC FUNCTIONS
 def xtpl_highest_1(functionname: str,
                    zHI: int,
-                   valueHI: float,
+                   valueHI: Union[float, core.Matrix, core.Vector],
                    verbose: bool = True,
                    **kwargs) -> Union[float, core.Matrix, core.Vector]:
     r"""Scheme for energies with a single basis or the highest zeta-level among 
@@ -188,7 +188,8 @@ def xtpl_highest_1(functionname: str,
     zHI
         Zeta-level, only used for printing.
     valueHI
-        Value of the CBS component.
+        Value of the CBS component. Type :class:`float` for energy, 
+        :class:`core.Matrix` or :class:`core.Vector` for gradients.
 
     Returns
     -------
@@ -215,7 +216,7 @@ def xtpl_highest_1(functionname: str,
     elif isinstance(valueHI, (core.Matrix, core.Vector)):
 
         if verbose > 2:
-            core.print_out("""   HI-zeta (%s) Total Energy:\n""" % (str(zHI)))
+            core.print_out("""   HI-zeta (%s) Total Data:\n""" % (str(zHI)))
             valueHI.print_out()
 
         return valueHI
@@ -223,9 +224,9 @@ def xtpl_highest_1(functionname: str,
 
 def xtpl_exponential_2(functionname: str,
                        zLO: int,
-                       valueLO: float,
+                       valueLO: Union[float, core.Matrix, core.Vector],
                        zHI: int,
-                       valueHI: float,
+                       valueHI: Union[float, core.Matrix, core.Vector],
                        alpha: float,
                        verbose: bool = True) -> Union[float, core.Matrix, core.Vector]:
     r"""Extrapolation scheme using exponential form for energies with two 
@@ -238,18 +239,21 @@ def xtpl_exponential_2(functionname: str,
     zLO
         Lower zeta level.
     valueLO
-        Lower value used for extrapolation.
+        Lower value used for extrapolation. Type :class:`float` for energy, 
+        :class:`core.Matrix` or :class:`core.Vector` for gradients.
     zHI
         Higher zeta level. Should be equal to zLO + 1.
     valueHI
-        Higher value used for extrapolation.
+        Higher value used for extrapolation. Type :class:`float` for energy, 
+        :class:`core.Matrix` or :class:`core.Vector` for gradients.
     alpha
         Extrapolation parameter :math:`\alpha`.
 
     Returns
     -------
     value : Union[float, core.Matrix, core.Vector]
-        Returns :math:`E_{total}^{\infty}`, see below.
+        Returns :math:`E_{total}^{\infty}`, or the analogue for derivatives,
+        see below.
 
     Notes
     -----
@@ -324,9 +328,9 @@ def xtpl_exponential_2(functionname: str,
 
 def xtpl_power_2(functionname: str,
                  zLO: int,
-                 valueLO: float,
+                 valueLO: Union[float, core.Matrix, core.Vector],
                  zHI: int,
-                 valueHI: float,
+                 valueHI: Union[float, core.Matrix, core.Vector],
                  alpha: float,
                  verbose: bool = True) -> Union[float, core.Matrix, core.Vector]:
     r"""Extrapolation scheme using power form for energies with two adjacent 
@@ -339,18 +343,21 @@ def xtpl_power_2(functionname: str,
     zLO
         Lower zeta level.
     valueLO
-        Lower value used for extrapolation.
+        Lower value used for extrapolation. Type :class:`float` for energy, 
+        :class:`core.Matrix` or :class:`core.Vector` for gradients.
     zHI
         Higher zeta level. Should be equal to zLO + 1.
     valueHI
-        Higher value used for extrapolation.
+        Higher value used for extrapolation. Type :class:`float` for energy, 
+        :class:`core.Matrix` or :class:`core.Vector` for gradients.
     alpha
         Extrapolation parameter :math:`\alpha`.
 
     Returns
     -------
     value : Union[float, core.Matrix, core.Vector]
-        Returns :math:`E_{total}^{\infty}`, see below.
+        Returns :math:`E_{total}^{\infty}`, or the analogue for derivatives,
+        see below.
 
     Notes
     -----
@@ -425,9 +432,9 @@ def xtpl_power_2(functionname: str,
 
 def xtpl_expsqrt_2(functionname: str,
                    zLO: int,
-                   valueLO: float,
+                   valueLO: Union[float, core.Matrix, core.Vector],
                    zHI: int,
-                   valueHI: float,
+                   valueHI: Union[float, core.Matrix, core.Vector],
                    alpha: float = None,
                    verbose: bool = True) -> Union[float, core.Matrix, core.Vector]:
     r"""Extrapolation scheme using square root-exponential form for energies 
@@ -440,19 +447,21 @@ def xtpl_expsqrt_2(functionname: str,
     zLO
         Lower zeta level.
     valueLO
-        Lower value used for extrapolation.
+        Lower value used for extrapolation. Type :class:`float` for energy, 
+        :class:`core.Matrix` or :class:`core.Vector` for gradients.
     zHI
         Higher zeta level. Should be equal to zLO + 1.
     valueHI
-        Higher value used for extrapolation.
+        Higher value used for extrapolation. Type :class:`float` for energy, 
+        :class:`core.Matrix` or :class:`core.Vector` for gradients.
     alpha
         Extrapolation parameter :math:`\alpha`.
 
     Returns
     -------
     value : Union[float, core.Matrix, core.Vector]
-        Returns :math:`E_{total}^{\infty}`, see below.
-
+        Returns :math:`E_{total}^{\infty}`, or the analogue for derivatives,
+        see below.
     Notes
     -----
     The extrapolation is calculated according to:
@@ -527,11 +536,11 @@ def xtpl_expsqrt_2(functionname: str,
 
 def xtpl_exponential_3(functionname: str,
                        zLO: int,
-                       valueLO: float,
+                       valueLO: Union[float, core.Matrix, core.Vector],
                        zMD: int,
-                       valueMD: float,
+                       valueMD: Union[float, core.Matrix, core.Vector],
                        zHI: int,
-                       valueHI: float,
+                       valueHI: Union[float, core.Matrix, core.Vector],
                        verbose: bool = True,
                        **kwargs) -> Union[float, core.Matrix, core.Vector]:
     r"""Extrapolation scheme using exponential form for energies with three 
@@ -544,11 +553,13 @@ def xtpl_exponential_3(functionname: str,
     zLO
         Lower zeta level.
     valueLO
-        Lower value used for extrapolation.
+        Lower value used for extrapolation. Type :class:`float` for energy, 
+        :class:`core.Matrix` or :class:`core.Vector` for gradients.
     zMD
         Intermediate zeta level. Should be equal to zLO + 1.
     valueMD
-        Intermediate value used for extrapolation.
+        Intermediate value used for extrapolation. Type :class:`float` for energy, 
+        :class:`core.Matrix` or :class:`core.Vector` for gradients.
     zHI
         Higher zeta level. Should be equal to zLO + 2.
     valueHI
@@ -557,7 +568,8 @@ def xtpl_exponential_3(functionname: str,
     Returns
     -------
     value : Union[float, core.Matrix, core.Vector]
-        Returns :math:`E_{total}^{\infty}`, see below.
+        Returns :math:`E_{total}^{\infty}`, or the analogue for derivatives,
+        see below.
 
     Notes
     -----
@@ -627,9 +639,9 @@ def xtpl_exponential_3(functionname: str,
 ### NAMED FUNCTION ALIASES
 def scf_xtpl_helgaker_2(functionname: str,
                         zLO: int,
-                        valueLO: float,
+                        valueLO: Union[float, core.Matrix, core.Vector],
                         zHI: int,
-                        valueHI: float,
+                        valueHI: Union[float, core.Matrix, core.Vector],
                         alpha: float = None,
                         verbose: bool = True) -> Union[float, core.Matrix, core.Vector]:
     r"""Alias for the exponential form of the extrapolation scheme for reference 
@@ -657,7 +669,8 @@ def scf_xtpl_helgaker_2(functionname: str,
     Returns
     -------
     value : Union[float, core.Matrix, core.Vector]
-        Returns :math:`E_{total}^{\infty}`, see below.
+        Returns :math:`E_{total}^{\infty}`, or the analogue for derivatives,
+        see below.
 
     Notes
     -----
@@ -681,9 +694,9 @@ def scf_xtpl_helgaker_2(functionname: str,
 
 def scf_xtpl_truhlar_2(functionname: str,
                        zLO: int,
-                       valueLO: float,
+                       valueLO: Union[float, core.Matrix, core.Vector],
                        zHI: int,
-                       valueHI: float,
+                       valueHI: Union[float, core.Matrix, core.Vector],
                        alpha: float = None,
                        verbose: bool = True) -> Union[float, core.Matrix, core.Vector]:
     r"""Alias for the power form of the extrapolation scheme for reference 
@@ -710,7 +723,8 @@ def scf_xtpl_truhlar_2(functionname: str,
     Returns
     -------
     value : Union[float, core.Matrix, core.Vector]
-        Returns :math:`E_{total}^{\infty}`, see below.
+        Returns :math:`E_{total}^{\infty}`, or the analogue for derivatives,
+        see below.
 
     Notes
     -----
@@ -733,9 +747,9 @@ def scf_xtpl_truhlar_2(functionname: str,
 
 def scf_xtpl_karton_2(functionname: str,
                       zLO: int,
-                      valueLO: float,
+                      valueLO: Union[float, core.Matrix, core.Vector],
                       zHI: int,
-                      valueHI: float,
+                      valueHI: Union[float, core.Matrix, core.Vector],
                       alpha: float = None,
                       verbose: bool = True) -> Union[float, core.Matrix, core.Vector]:
     r"""Alias for the exponential-square root of the extrapolation scheme for reference energies with two adjacent
@@ -761,7 +775,8 @@ def scf_xtpl_karton_2(functionname: str,
     Returns
     -------
     value : Union[float, core.Matrix, core.Vector]
-        Returns :math:`E_{total}^{\infty}`, see below.
+        Returns :math:`E_{total}^{\infty}`, or the analogue for derivatives,
+        see below.
 
     Notes
     -----
@@ -793,11 +808,11 @@ def scf_xtpl_karton_2(functionname: str,
 
 def scf_xtpl_helgaker_3(functionname: str,
                         zLO: int,
-                        valueLO: float,
+                        valueLO: Union[float, core.Matrix, core.Vector],
                         zMD: int,
-                        valueMD: float,
+                        valueMD: Union[float, core.Matrix, core.Vector],
                         zHI: int,
-                        valueHI: float,
+                        valueHI: Union[float, core.Matrix, core.Vector],
                         verbose: bool = True,
                         **kwargs) -> Union[float, core.Matrix, core.Vector]:
     r"""Extrapolation scheme for reference energies with three adjacent 
@@ -831,7 +846,8 @@ def scf_xtpl_helgaker_3(functionname: str,
     Returns
     -------
     value : Union[float, core.Matrix, core.Vector]
-        Returns :math:`E_{total}^{\infty}`, see below.
+        Returns :math:`E_{total}^{\infty}`, or the analogue for derivatives,
+        see below.
 
     Notes
     -----
@@ -852,9 +868,9 @@ def scf_xtpl_helgaker_3(functionname: str,
 
 def corl_xtpl_helgaker_2(functionname: str,
                          zLO: int,
-                         valueLO: float,
+                         valueLO: Union[float, core.Matrix, core.Vector],
                          zHI: int,
-                         valueHI: float,
+                         valueHI: Union[float, core.Matrix, core.Vector],
                          alpha: float = None,
                          verbose: bool = True) -> Union[float, core.Matrix, core.Vector]:
     r"""Alias for the cubic power extrapolation scheme for correlation energies 
@@ -882,7 +898,8 @@ def corl_xtpl_helgaker_2(functionname: str,
     Returns
     -------
     value : Union[float, core.Matrix, core.Vector]
-        Returns :math:`E_{total}^{\infty}`, see below.
+        Returns :math:`E_{total}^{\infty}`, or the analogue for derivatives,
+        see below.
 
     Notes
     -----
@@ -1097,6 +1114,14 @@ def return_energy_components() -> dict:
     VARH.update(cfour_psivar_list())
 
     # Incorporate density functionals
+    # Somewhat confusingly, we need both {funcname} and {funcname}-dft, even 
+    # though they point at the same energy:
+    #   - {funcname} matches the name that is extracted as a wfn, either by
+    #     specifications in the metadata directly, or from a method/basis format
+    #   - {funcname}-dft is the component that corresponds to the total energy
+    #     of the functional recipe, useful for "naive" extrapolations
+    # The other components -fctl, -disp, -dh, and -nl are self-explanatory,
+    # however note that currently -fctl includes -nl but does not include -disp
     for funcname in functionals:
         if funcname == "hf" or funcname == "scf":
             continue
@@ -1204,13 +1229,13 @@ def _get_dfa_alpha(xtpl_type: str, bdata: List, funcname: str) -> float:
     if funcname not in functionals:
         raise ValidationError(f"Functional name {funcname} is undefined.")
     elif xtpl_type == "fctl":
-        if len({"cc-pvdz", "cc-pvtz", "cc-pvqz", "cc-pv5z", "cc-pv6z"}.intersection(bnames)) >= 2:
+        if len({f"cc-pv{x}z" for x in "dtq56"}.intersection(bnames)) >= 2:
             alphadata = [3.622, 1.511, 0.005]
-        elif len({"cc-pwcvdz", "cc-pwcvtz", "cc-pwcvqz", "cc-pwcv5z"}.intersection(bnames)) >= 2:
+        elif len({f"cc-pwcv{x}z" for x in "dtq5"}.intersection(bnames)) >= 2:
             alphadata = [4.157, 1.192, -0.048]
-        elif len({"aug-cc-pvdz", "aug-cc-pvtz", "aug-cc-pvqz", "aug-cc-pv5z", "aug-cc-pv6z"}.intersection(bnames)) >= 2:
+        elif len({f"aug-cc-pv{x}z" for x in "dtq56"}.intersection(bnames)) >= 2:
             alphadata = [3.676, 1.887, 0.139]
-        elif len({"aug-cc-pwcvdz", "aug-cc-pwcvtz", "aug-cc-pwcvqz", "aug-cc-pwcv5z"}.intersection(bnames)) >= 2:
+        elif len({f"aug-cc-pwcv{x}z" for x in "dtq5"}.intersection(bnames)) >= 2:
             alphadata = [4.485, 1.445, 0.085]
         elif len({"def2-svp", "def2-tzvp", "def2-qzvp"}.intersection(bnames)) >= 2:
             alphadata = [7.406, 1.266, -0.046]
@@ -1220,21 +1245,21 @@ def _get_dfa_alpha(xtpl_type: str, bdata: List, funcname: str) -> float:
             alphadata = [7.925, 1.370, 0.101]
         elif len({"def2-svpd", "def2-tzvppd", "def2-qzvppd"}.intersection(bnames)) >= 2:
             alphadata = [7.927, 1.371, 0.101]
-        elif len({"pc-0", "pc-1", "pc-2", "pc-3", "pc-4"}.intersection(bnames)) >= 2:
+        elif len({f"pc-{N}" for N in "01234"}.intersection(bnames)) >= 2:
             alphadata = [6.172, -1.623, 0.183]
-        elif len({"pcseg-0", "pcseg-1", "pcseg-2", "pcseg-3", "pcseg-4"}.intersection(bnames)) >= 2:
+        elif len({f"pcseg-{N}" for N in "01234"}.intersection(bnames)) >= 2:
             alphadata = [5.883, -1.825, 0.227]
-        elif len({"aug-pc-0", "aug-pc-1", "aug-pc-2", "aug-pc-3", "aug-pc-4"}.intersection(bnames)) >= 2:
+        elif len({f"aug-pc-{N}" for N in "01234"}.intersection(bnames)) >= 2:
             alphadata = [6.390, -1.874, 0.260]
-        elif len({"aug-pcseg-0", "aug-pcseg-1", "aug-pcseg-2", "aug-pcseg-3", "aug-pcseg-4"}.intersection(bnames)) >= 2:
+        elif len({f"aug-pcseg-{N}" for N in "01234"}.intersection(bnames)) >= 2:
             alphadata = [6.166, -2.137, 0.296]
-        elif len({"jorge-dzp", "jorge-tzp", "jorge-qzp", "jorge-5zp", "jorge-6zp"}.intersection(bnames)) >= 2:
+        elif len({f"jorge-{x}zp" for x in "dtq56"}.intersection(bnames)) >= 2:
             alphadata = [3.531, 0.338, -0.011]
-        elif len({"jorge-adzp", "jorge-atzp", "jorge-aqzp", "jorge-a5zp"}.intersection(bnames)) >= 2:
+        elif len({f"jorge-a{x}zp" for x in "dtq5"}.intersection(bnames)) >= 2:
             alphadata = [3.386, 0.245, 0.033]
-        elif len({"2zapa-nr", "3zapa-nr", "4zapa-nr", "5zapa-nr", "6zapa-nr"}.intersection(bnames)) >= 2:
+        elif len({f"{x}zapa-nr" for x in "23456"}.intersection(bnames)) >= 2:
             alphadata = [3.306, 2.525, -0.040]
-        elif len({"2zapa-nr-cv", "3zapa-nr-cv", "4zapa-nr-cv", "5zapa-nr-cv", "6zapa-nr-cv"}.intersection(bnames)) >= 2:
+        elif len({f"{x}zapa-nr-cv" for x in "23456"}.intersection(bnames)) >= 2:
             alphadata = [5.618, 0.490, -0.016]
         else:
             raise ValidationError(f"DFT fctl extrapolation alpha for basis sets {bnames} undefined.")
@@ -1319,6 +1344,25 @@ def _validate_cbs_inputs(cbs_metadata: List, molecule: Union[qcdb.molecule.Molec
         stage["wfn"] = item["wfn"].lower()
         stage["basis"] = _expand_bracketed_basis(item["basis"].lower(), molecule)
         # 2a) process DFT methods
+        # Quick rundown of entries in each stage:
+        # - "wfn":        str, method names for upper level of theory (l.o.t.)
+        # - "wfn_lo":     "wfn" analogue for the lower l.o.t. 
+        #                 Defaults to "wfn" of previous stage.
+        # - "basis":      tuple, expanded basis set names for upper l.o.t.
+        # - "basis_lo":   "basis" analogue for the lower l.o.t.
+        #                 Defaults to "basis" of the current stage.
+        # - "options":    dict, containing options to be set for upper l.o.t.
+        # - "options_lo": "options" analogue for the lower l.o.t.
+        #                 Defaults to empty dict, i.e. no special options.
+        # - "component":  str, name of the component energy of "wfn" to extrapolate. 
+        #                 In WFT, likely to be the same as "wfn".
+        #                 In DFT, specifies the -fctl, -dh, -disp, -nl, or -dft part.      
+        # - "component_lo": lower l.o.t. analogue for component.
+        # - "stage":      str, tag of the stage, used only in printing
+        # - "isdelta":    bool, determines whether a stage is computed by difference 
+        #                 between upper/lower l.o.t.
+        # - "scheme":     Callable, function to be used for extrapolation
+        # - "alpha":      float, alpha to be passed into "scheme"
         if stage["wfn"] in functionals and stage["wfn"] not in ["hf", "scf"]:
             # 2ai) first stage - split into components, unless "component" == "dft"
             if len(metadata) == 0:
@@ -1546,16 +1590,20 @@ def cbs(func, label, **kwargs):
 
     .. include:: /cbs_eqn.rst
 
-    * Energy Methods
-        The presence of a stage_wfn keyword is the indicator to incorporate
-        (and check for stage_basis and stage_scheme keywords) and compute
-        that stage in defining the CBS energy.
+    .. _cbs-energy-methods:
 
-        The cbs() function requires, at a minimum, ``name='scf'`` and ``scf_basis``
-        keywords to be specified for reference-stage only jobs and ``name`` and
-        ``corl_basis`` keywords for correlated jobs.
+    Energy Methods
+    --------------
+    
+    The presence of a stage_wfn keyword is the indicator to incorporate (and check
+    for stage_basis and stage_scheme keywords) and compute that stage in defining 
+    the CBS energy.
 
-        The following energy methods have been set up for cbs().
+    The cbs() function requires, at a minimum, ``name='scf'`` and ``scf_basis``
+    keywords to be specified for reference-stage only jobs and ``name`` and
+    ``corl_basis`` keywords for correlated jobs.
+
+    The following energy methods have been set up for cbs().
 
         .. hlist::
            :columns: 5
@@ -1647,9 +1695,8 @@ def cbs(func, label, **kwargs):
         Indicates the inferior energy method for which a second delta correction
         to the correlation energy is to be obtained.
 
-    * Basis Sets
-        Currently, the basis set set through ``set`` commands have no influence
-        on a cbs calculation.
+    Basis Sets
+    ----------
 
     :type scf_basis: :ref:`basis string <apdx:basisElement>`
     :param scf_basis: |dl| ``corl_basis`` |dr| || ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
@@ -1674,13 +1721,19 @@ def cbs(func, label, **kwargs):
 
         Indicates the sequence of basis sets employed for the second delta correction
         to the correlation energy.
+    
+    .. note::
+        Currently, the basis set set through ``set`` commands have no influence
+        on a cbs calculation.
 
-    * Schemes
-        Transformations of the energy through basis set extrapolation for each
-        stage of the CBS definition. A complaint is generated if number of basis
-        sets in stage_basis does not exactly satisfy requirements of stage_scheme.
-        An exception is the default, ``'xtpl_highest_1'``, which uses the best 
-        basis set available. See :ref:`sec:cbs_xtpl` for all available schemes.
+    Schemes
+    -------
+
+    Transformations of the energy through basis set extrapolation for each stage
+    of the CBS definition. A complaint is generated if number of basis sets in 
+    stage_basis does not exactly satisfy requirements of stage_scheme. An exception
+    is the default, ``'xtpl_highest_1'``, which uses the best basis set available.
+    See :ref:`sec:cbs_xtpl` for all available schemes.
 
     :type scf_scheme: Callable
     :param scf_scheme: |dl| ``xtpl_highest_1`` |dr| || ``scf_xtpl_helgaker_3`` || etc.
@@ -1794,22 +1847,27 @@ def cbs(func, label, **kwargs):
 
            * :py:func:`~psi4.driver.driver_cbs.corl_xtpl_helgaker_2`
 
-    * Combined interface
+    Combined interface
+    ------------------
+
+    This is the interface to which all of the above calls are internally 
+    translated. This applies for WFT as well as DFT extrapolations.
 
     :type cbs_metadata: list(dict)
     :param cbs_metadata: |dl| autogenerated from above keywords |dr| || ``[{"wfn": "hf", "basis": "cc-pv[TQ5]z"}]`` || etc.
 
-        This is the interface to which all of the above calls are internally 
-        translated. Each item in this list is a dict, corresponding to a stage
-        in the extrapolation recipe. For WFT, the first item in the list is always 
-        defining the SCF contribution to the total energy, and will be generated 
-        automatically if not supplied. The latter list elements then define 
-        correlated or delta stages, with keywords filled-in automatically from 
-        previous stages, unless supplied by the user. 
+        Each item in this list is a dict, corresponding to a stage in the 
+        extrapolation recipe. For discussion of DFT, see :ref:`further below <cbs-dft>`.
+        For WFT, the first item in the list is always defining the SCF contribution to 
+        the total energy, and will be generated automatically if not supplied. 
+        The latter list elements then define correlated or delta stages, with 
+        keywords filled-in automatically from previous stages, unless supplied 
+        by the user. 
         
         The required keywords in each stage are:
 
-        * ``"wfn"``: method name, for WFT this is typically ``"HF"``, which is 
+        * ``"wfn"``: method name, for WFT this is typically ``"HF"`` or one of the
+          other energy methods in :ref:`cbs-energy-methods`. Note that HF is 
           subsumed in correlated methods anyway.
         * ``"basis"``: basis set, can be in a bracketed form (``"cc-pv[tq]z"``)
 
@@ -1847,7 +1905,9 @@ def cbs(func, label, **kwargs):
           single stage should differ from the global options, e.g. to calculate 
           a stage using direct integrals in an otherwise density-fitted 
           calculation.
-        
+    
+    .. _cbs-dft:
+
         For DFT calculations, the components of the total DFT energy obtained in 
         a single calculation may be extrapolated using different formulas. To 
         avoid recomputing, the ``"component"`` keyword can be specified for each
@@ -1877,7 +1937,8 @@ def cbs(func, label, **kwargs):
         supplied, are understood by the parser and can be computed; see example 
         [11] below.
 
-    * Others
+    Others
+    ------
 
     :type molecule: :ref:`molecule <op_py_molecule>`
     :param molecule: ``h2o`` || etc.
@@ -1916,7 +1977,7 @@ def cbs(func, label, **kwargs):
     >>> TODO optimize('mp2', corl_basis='cc-pV[DT]Z', corl_scheme=corl_xtpl_helgaker_2, func=cbs)
 
     >>> # [10] basis set extrapolation for a dispersion-corrected double-hybrid DFA with fctl and dh extrapolated separately
-    >>> energy('B2PLYP-D3BJ/def2-[st]zvpd')
+    >>> energy('B2PLYP-D3BJ/def2-[tq]zvpd')
 
     >>> # [11] cbs() of BLYP-D3/cc-pv[dt]z with a delta-correction from B2PLYP-D3
     >>> E = energy(cbs, cbs_metadata=[{'wfn': "blyp-d3", 'basis': "cc-pv[dt]z"},
