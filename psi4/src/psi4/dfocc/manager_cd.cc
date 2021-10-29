@@ -3672,6 +3672,7 @@ void DFOCC::oremp_manager_cd() {
     outfile->Printf("\tCD-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
     outfile->Printf("\tCD-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
     outfile->Printf("\t======================================================================= \n");
+    outfile->Printf("\tUsing A=%9.5g as REMP mixing parameter\n",remp_a);
 
     Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
@@ -3943,6 +3944,7 @@ void DFOCC::remp_manager_cd() {
     outfile->Printf("\tCD-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
     outfile->Printf("\tCD-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
     outfile->Printf("\t======================================================================= \n");
+    outfile->Printf("\tUsing A=%9.5g as REMP mixing parameter\n",remp_a);
 
     variables_["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;

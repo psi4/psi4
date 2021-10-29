@@ -837,7 +837,7 @@ void DFOCC::ccsd_manager() {
     timer_off("CCSD");
 
     if (reference_ == "UNRESTRICTED" && cc_lambda_ == "FALSE") {
-        // Free ints 
+        // Free ints
         reset_mo_df_ints() ;
     }
 
@@ -898,7 +898,7 @@ void DFOCC::ccsd_manager() {
     }
 
     if (reference_ == "UNRESTRICTED" && dertype == "NONE") {
-        // Free ints 
+        // Free ints
         bQijA.reset();
         bQijB.reset();
         bQiaA.reset();
@@ -947,7 +947,7 @@ void DFOCC::ccsd_manager() {
     }  // if (dertype == "FIRST" || ekt_ip_ == "TRUE")
 
     if (reference_ == "UNRESTRICTED") {
-        // Free ints 
+        // Free ints
         bQijA.reset();
         bQijB.reset();
         bQiaA.reset();
@@ -1387,7 +1387,7 @@ void DFOCC::ccsd_t_manager() {
     }
 
     if (reference_ == "UNRESTRICTED" && dertype == "NONE") {
-        // Free ints 
+        // Free ints
         bQijA.reset();
         bQijB.reset();
         bQiaA.reset();
@@ -1437,7 +1437,7 @@ void DFOCC::ccsd_t_manager() {
     }  // if (dertype == "FIRST" || ekt_ip_ == "TRUE")
 
     if (reference_ == "UNRESTRICTED") {
-        // free ints 
+        // free ints
         bQijA.reset();
         bQijB.reset();
         bQiaA.reset();
@@ -1830,7 +1830,7 @@ void DFOCC::ccsdl_t_manager() {
     Process::environment.globals["(AT) CORRECTION ENERGY"] = E_at;
 
     if (reference_ == "UNRESTRICTED" && dertype == "NONE") {
-        // Free ints 
+        // Free ints
         bQijA.reset();
         bQijB.reset();
         bQiaA.reset();
@@ -4045,6 +4045,7 @@ void DFOCC::oremp_manager() {
     outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
     outfile->Printf("\t======================================================================= \n");
+    outfile->Printf("\tUsing A=%9.5g as REMP mixing parameter\n",remp_a);
 
     Process::environment.globals["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
@@ -4286,7 +4287,7 @@ void DFOCC::remp_manager() {
     }
 
     // QCHF
-//    if (qchf_ == "TRUE") qchf(); // don't know what this is doing exactly, disabling for the moment
+    if (qchf_ == "TRUE") qchf();
 
     // Compute MP2 energy
     if (reference == "ROHF") {
@@ -4319,6 +4320,7 @@ void DFOCC::remp_manager() {
     outfile->Printf("\tDF-MP2 Correlation Energy (a.u.)   : %20.14f\n", Ecorr);
     outfile->Printf("\tDF-MP2 Total Energy (a.u.)         : %20.14f\n", Emp2);
     outfile->Printf("\t======================================================================= \n");
+    outfile->Printf("\tUsing A=%9.5g as REMP mixing parameter\n",remp_a);
 
     variables_["MP2 TOTAL ENERGY"] = Emp2;
     Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = Escsmp2;
