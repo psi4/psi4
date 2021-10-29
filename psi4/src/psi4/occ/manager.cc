@@ -724,6 +724,8 @@ void OCCWave::oremp_manager() {
 
     mp2_postprocessing();
 
+    outfile->Printf("\tUsing A=%9.5g as REMP mixing parameter\n",remp_A);
+
     occ_iterations();
 
     if (conver == 1) {
@@ -822,7 +824,9 @@ void OCCWave::remp_manager() {
 
     mp2_postprocessing();
 
-    // Perform CEPA iterations
+    outfile->Printf("\tUsing A=%9.5g as REMP mixing parameter\n",remp_A);
+
+    // Perform REMP iterations
     remp_iterations();
 
     outfile->Printf("\n");
