@@ -1445,6 +1445,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         N means rebuild every N SCF iterations to avoid accumulating error from the incremental procedure. -*/
         options.add_int("INCFOCK_FULL_FOCK_EVERY", 5);
 
+        /*- Do perform Linear Exchange Build (Link) -*/
+        options.add_bool("DO_LINEAR_EXCHANGE", false);
+        options.add_double("LINK_INTS_TOLERANCE", 1.0e-12);
+
         /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 
         /*- The iteration to start fractionally occupying orbitals (or 0 for no fractional occupation) -*/

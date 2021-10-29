@@ -712,7 +712,12 @@ class PSI_API DirectJK : public JK {
     // Perform Density matrix-based integral screening?
     bool density_screening_;
 
+    // Perform Linear Exchange matrix build?
+    bool linear_exchange_;
+    double linK_ints_cutoff_;
+
     // => Incremental Fock build variables <= //
+
     /// Perform Incremental Fock Build for J and K Matrices?
     bool incfock_;
     /// The number of times INCFOCK has been performed (includes resets)
@@ -752,6 +757,23 @@ class PSI_API DirectJK : public JK {
     void incfock_setup();
     /// Post-iteration Incfock processing
     void incfock_postiter();
+
+    /// Build the J matrix using the continuous fast multipole method
+    /// TODO: Put CFMM algorithm here after linK PR is merged
+    // void build_cfmm_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
+    //               std::vector<std::shared_ptr<Matrix> >& J);
+
+    /// Build the K matrix using the linear exchange algorithm
+    void build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
+                  std::vector<std::shared_ptr<Matrix> >& K);
+
+    /// Build the J matrix only using the traditional quadratic scaling algorithm
+    void build_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
+                  std::vector<std::shared_ptr<Matrix> >& J);
+
+    /// Build the K matrix only using the traditional quadratic scaling algorithm
+    // void build_K(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
+    //              std::vector<std::shared_ptr<Matrix> >& K);
 
     /// Build the J and K matrices for this integral class
     void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
