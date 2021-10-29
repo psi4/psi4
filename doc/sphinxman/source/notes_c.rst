@@ -179,7 +179,7 @@ conventional integrals. Therefore, for a closed-shell molecule:
     +----------------------+----------------------+------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
     | .. _tlccsdat:        | CCENERGY             | D    |          |      |      |          |      |          |      |      |      |      |      |      |      |      |      |      |      |
     +                      +----------------------+------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
-    | ccsd(at)             | DETCI                |      |          |      |      |          |      |          |      |      |      |      |      |      |      |      |      |      |      |
+    | a-ccsd(t) [#f4]_     | DETCI                |      |          |      |      |          |      |          |      |      |      |      |      |      |      |      |      |      |      |
     +                      +----------------------+------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
     | |globals__cc_type|   | DFMP2                |      |          |      |      |          |      |          |      |      |      |      |      |      |      |      |      |      |      |
     +                      +----------------------+------+----------+------+------+----------+------+----------+------+------+------+------+------+------+------+------+------+------+------+
@@ -209,4 +209,5 @@ conventional integrals. Therefore, for a closed-shell molecule:
 .. [#f1] Algorithm type selection keyword below. Values to the right: conventional ``CONV`` (here abbreviated CV), density-fitted ``DF``, and Cholesky-decomposed ``CD``.
 .. [#f2] Also available for KS reference.
 .. [#f3] Conditions have *no* default module (computationally inefficient) and can only be accessed by specifying |globals__qc_module|.
+.. [#f4] Also known as CCSD(AT), Lambda-CCSD(T), CCSD(T)_L
 

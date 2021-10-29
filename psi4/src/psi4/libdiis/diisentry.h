@@ -58,7 +58,7 @@ class DIISEntry {
      *            set_size.. routines should be the number of elements to read.
      * Psio     - The PSIO object to use for I/O
      */
-    enum InputType { DPDBuf4, DPDFile2, Matrix, Vector, Pointer };
+    enum class InputType { DPDBuf4, DPDFile2, Matrix, Vector, Pointer };
     DIISEntry(std::string label, int ID, int count, int vectorSize, double *vector, int errorVectorSize,
               double *errorVector, std::shared_ptr<PSIO> psio);
     ~DIISEntry();

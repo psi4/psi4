@@ -509,9 +509,9 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     int iteration = 0;
 
     // Setup DIIS
-    DIISManager diis_manager(6, "SAD DIIS", DIISManager::LargestError, DIISManager::InCore);
-    diis_manager.set_error_vector_size(2, DIISEntry::Matrix, gradient_a.get(), DIISEntry::Matrix, gradient_b.get());
-    diis_manager.set_vector_size(2, DIISEntry::Matrix, Fa.get(), DIISEntry::Matrix, Fb.get());
+    DIISManager diis_manager(6, "SAD DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+    diis_manager.set_error_vector_size(2, DIISEntry::InputType::Matrix, gradient_a.get(), DIISEntry::InputType::Matrix, gradient_b.get());
+    diis_manager.set_vector_size(2, DIISEntry::InputType::Matrix, Fa.get(), DIISEntry::InputType::Matrix, Fb.get());
 
     // Setup JK
     std::unique_ptr<JK> jk;

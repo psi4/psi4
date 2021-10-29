@@ -331,6 +331,7 @@ _modules = [
     "DFEP2",
     "DFMP2",
     "DFOCC",
+    "DLPNO",
     "DMRG",
     "EFP",
     "FINDIF",

@@ -170,6 +170,8 @@ def mcscf_solver(ref_wfn):
 
         current_energy = ciwfn.variable("MCSCF TOTAL ENERGY")
 
+        ciwfn.reset_ci_H0block()
+
         orb_grad_rms = mcscf_obj.gradient_rms()
         ediff = current_energy - eold
 
@@ -365,9 +367,9 @@ def mcscf_solver(ref_wfn):
 
         # Retransform intragrals and update CI coeffs., OPDM, and TPDM
         ciwfn.transform_mcscf_integrals(approx_integrals_only)
-        nci_iter = ciwfn.diag_h(abs(ediff) * 1.e-2, orb_grad_rms * 1.e-3)
-
-        ciwfn.set_ci_guess("DFILE")
+        ciwfn.set_print(1)
+        ciwfn.set_ci_guess("H0_BLOCK")
+        nci_iter = ciwfn.diag_h(mcscf_e_conv, mcscf_e_conv ** 0.5)
 
         ciwfn.form_opdm()
         ciwfn.form_tpdm()

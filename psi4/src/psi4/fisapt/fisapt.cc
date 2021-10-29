@@ -3288,6 +3288,7 @@ void FISAPT::felst() {
         double E = 0.0;
         for (int B = 0; B < nB; B++) {
             auto atom = std::make_shared<Molecule>();
+            atom->set_units(mol->units());
             atom->add_atom(ZBp[B], mol->x(B)*conv, mol->y(B)*conv, mol->z(B)*conv);
             double interaction = reference_->potential_variable("A")->computeNuclearEnergy(atom);
             Ep[nA + na][B] = interaction;
@@ -3306,6 +3307,7 @@ void FISAPT::felst() {
         double E = 0.0;
         for (int A = 0; A < nA; A++) {
             auto atom = std::make_shared<Molecule>();
+            atom->set_units(mol->units());
             atom->add_atom(ZAp[A], mol->x(A)*conv, mol->y(A)*conv, mol->z(A)*conv);
             double interaction = reference_->potential_variable("B")->computeNuclearEnergy(atom);
             Ep[A][nB + nb] = interaction;
@@ -4932,18 +4934,11 @@ void FISAPTSCF::compute_energy() {
 
     // => For Convenience <= //
 
-    std::shared_ptr<Matrix> H = matrices_["H"];
-    std::shared_ptr<Matrix> F = matrices_["F"];
-    std::shared_ptr<Matrix> S = matrices_["S"];
-    std::shared_ptr<Matrix> X = matrices_["X"];
-    std::shared_ptr<Matrix> W = matrices_["W"];
-
-    // matrices_["S"]->print();
-    // matrices_["X"]->print();
-    // matrices_["T"]->print();
-    // matrices_["V"]->print();
-    // matrices_["W"]->print();
-    // matrices_["C0"]->print();
+    auto H = matrices_["H"];
+    auto F = matrices_["F"];
+    auto S = matrices_["S"];
+    auto X = matrices_["X"];
+    auto W = matrices_["W"];
 
     // => Guess <= //
 
@@ -4972,8 +4967,8 @@ void FISAPTSCF::compute_energy() {
     bool diised = false;
     auto Gsize = std::make_shared<Matrix>("Gsize", nmo, nmo);
     auto diis = std::make_shared<DIISManager>(max_diis_vectors, "FISAPT DIIS");
-    diis->set_error_vector_size(1, DIISEntry::Matrix, Gsize.get());
-    diis->set_vector_size(1, DIISEntry::Matrix, F.get());
+    diis->set_error_vector_size(1, DIISEntry::InputType::Matrix, Gsize.get());
+    diis->set_vector_size(1, DIISEntry::InputType::Matrix, F.get());
     Gsize.reset();
 
     // ==> Master Loop <== //
@@ -4982,15 +4977,15 @@ void FISAPTSCF::compute_energy() {
     for (int iter = 1; iter <= maxiter; iter++) {
         // => Compute Density Matrix <= //
 
-        std::shared_ptr<Matrix> D = linalg::doublet(Cocc2, Cocc2, false, true);
+        auto D = linalg::doublet(Cocc2, Cocc2, false, true);
 
         // => Compute Fock Matrix <= //
 
-        std::vector<SharedMatrix>& Cl = jk_->C_left();
-        std::vector<SharedMatrix>& Cr = jk_->C_right();
+        auto& Cl = jk_->C_left();
+        auto& Cr = jk_->C_right();
 
-        const std::vector<SharedMatrix>& Js = jk_->J();
-        const std::vector<SharedMatrix>& Ks = jk_->K();
+        const auto& Js = jk_->J();
+        const auto& Ks = jk_->K();
 
         Cl.clear();
         Cr.clear();
@@ -5000,8 +4995,8 @@ void FISAPTSCF::compute_energy() {
 
         jk_->compute();
 
-        std::shared_ptr<Matrix> J = Js[0];
-        std::shared_ptr<Matrix> K = Ks[0];
+        auto J = Js[0];
+        auto K = Ks[0];
 
         F->copy(H);
         F->add(W);
@@ -5017,11 +5012,11 @@ void FISAPTSCF::compute_energy() {
 
         // => Compute Orbital Gradient <= //
 
-        std::shared_ptr<Matrix> G1 = linalg::triplet(F, D, S);
-        std::shared_ptr<Matrix> G2 = linalg::triplet(S, D, F);
+        auto G1 = linalg::triplet(F, D, S);
+        auto G2 = G1->transpose();
         G1->subtract(G2);
-        std::shared_ptr<Matrix> G3 = linalg::triplet(X, G1, X, true, false, false);
-        double Gnorm = G3->rms();
+        G1->transform(X);
+        double Gnorm = G1->rms();
 
         // => Print and Check Convergence <= //
 
@@ -5036,16 +5031,16 @@ void FISAPTSCF::compute_energy() {
 
         // => DIIS <= //
 
-        diis->add_entry(2, G3.get(), F.get());
+        diis->add_entry(2, G1.get(), F.get());
         diised = diis->extrapolate(1, F.get());
 
         // => Diagonalize Fock Matrix <= //
 
-        std::shared_ptr<Matrix> F2 = linalg::triplet(X, F, X, true, false, false);
+        auto F2 = linalg::triplet(X, F, X, true, false, false);
         auto U2 = std::make_shared<Matrix>("C", nmo, nmo);
         auto e2 = std::make_shared<Vector>("eps", nmo);
         F2->diagonalize(U2, e2, ascending);
-        std::shared_ptr<Matrix> C = linalg::doublet(X, U2, false, false);
+        auto C = linalg::doublet(X, U2, false, false);
 
         // => Assign New Orbitals <= //
 
@@ -5070,13 +5065,13 @@ void FISAPTSCF::compute_energy() {
 
     // => Post Results <= //
 
-    std::shared_ptr<Vector> eps = vectors_["eps"];
+    auto eps = vectors_["eps"];
     auto eps_occ = std::make_shared<Vector>("eps_occ", nocc);
     auto eps_vir = std::make_shared<Vector>("eps_vir", nvir);
 
-    double* ep = eps->pointer();
-    double* eop = eps_occ->pointer();
-    double* evp = eps_vir->pointer();
+    auto ep = eps->pointer();
+    auto eop = eps_occ->pointer();
+    auto evp = eps_vir->pointer();
 
     for (int i = 0; i < nocc; i++) {
         eop[i] = ep[i];
@@ -5089,13 +5084,13 @@ void FISAPTSCF::compute_energy() {
     vectors_["eps_occ"] = eps_occ;
     vectors_["eps_vir"] = eps_vir;
 
-    std::shared_ptr<Matrix> C = matrices_["C"];
+    auto C = matrices_["C"];
     auto Cocc = std::make_shared<Matrix>("Cocc", nbf, nocc);
     auto Cvir = std::make_shared<Matrix>("Cvir", nbf, nvir);
 
-    double** Cp = C->pointer();
-    double** Cop = Cocc->pointer();
-    double** Cvp = Cvir->pointer();
+    auto Cp = C->pointer();
+    auto Cop = Cocc->pointer();
+    auto Cvp = Cvir->pointer();
 
     for (int m = 0; m < nbf; m++) {
         for (int i = 0; i < nocc; i++) {
@@ -5112,8 +5107,8 @@ void FISAPTSCF::compute_energy() {
     matrices_["Cocc"] = Cocc;
     matrices_["Cvir"] = Cvir;
 
-    const std::vector<SharedMatrix>& Js = jk_->J();
-    const std::vector<SharedMatrix>& Ks = jk_->K();
+    const auto& Js = jk_->J();
+    const auto& Ks = jk_->K();
 
     matrices_["J"] = std::shared_ptr<Matrix>(Js[0]->clone());
     matrices_["K"] = std::shared_ptr<Matrix>(Ks[0]->clone());
@@ -5318,27 +5313,13 @@ std::map<std::string, std::shared_ptr<Matrix> > CPHF_FISAPT::product(
 
     if (do_A) {
         Cl.push_back(Cocc_A_);
-        int no = b["A"]->nrow();
-        int nv = b["A"]->ncol();
-        int nso = Cvir_A_->nrow();
-        double** Cp = Cvir_A_->pointer();
-        double** bp = b["A"]->pointer();
-        auto T = std::make_shared<Matrix>("T", nso, no);
-        double** Tp = T->pointer();
-        C_DGEMM('N', 'T', nso, no, nv, 1.0, Cp[0], nv, bp[0], nv, 0.0, Tp[0], no);
+        auto T = linalg::doublet(Cvir_A_, b["A"], false, true);
         Cr.push_back(T);
     }
 
     if (do_B) {
         Cl.push_back(Cocc_B_);
-        int no = b["B"]->nrow();
-        int nv = b["B"]->ncol();
-        int nso = Cvir_B_->nrow();
-        double** Cp = Cvir_B_->pointer();
-        double** bp = b["B"]->pointer();
-        auto T = std::make_shared<Matrix>("T", nso, no);
-        double** Tp = T->pointer();
-        C_DGEMM('N', 'T', nso, no, nv, 1.0, Cp[0], nv, bp[0], nv, 0.0, Tp[0], no);
+        auto T = linalg::doublet(Cvir_B_, b["B"], false, true);
         Cr.push_back(T);
     }
 
@@ -5360,19 +5341,12 @@ std::map<std::string, std::shared_ptr<Matrix> > CPHF_FISAPT::product(
         int no = b["A"]->nrow();
         int nv = b["A"]->ncol();
         int nso = Cvir_A_->nrow();
-        auto T = std::make_shared<Matrix>("T", no, nso);
-        s["A"] = std::make_shared<Matrix>("S", no, nv);
-        double** Cop = Cocc_A_->pointer();
-        double** Cvp = Cvir_A_->pointer();
-        double** Jp = Jv->pointer();
-        double** Tp = T->pointer();
-        double** Sp = s["A"]->pointer();
-        C_DGEMM('T', 'N', no, nso, nso, 1.0, Cop[0], no, Jp[0], nso, 0.0, Tp[0], nso);
-        C_DGEMM('N', 'N', no, nv, nso, 1.0, Tp[0], nso, Cvp[0], nv, 0.0, Sp[0], nv);
+        s["A"] = linalg::triplet(Cocc_A_, Jv, Cvir_A_, true, false, false);
+        auto Sp = s["A"]->pointer();
 
-        double** bp = b["A"]->pointer();
-        double* op = eps_occ_A_->pointer();
-        double* vp = eps_vir_A_->pointer();
+        auto bp = b["A"]->pointer();
+        auto op = eps_occ_A_->pointer();
+        auto vp = eps_vir_A_->pointer();
         for (int i = 0; i < no; i++) {
             for (int a = 0; a < nv; a++) {
                 Sp[i][a] += bp[i][a] * (vp[a] - op[i]);
@@ -5389,20 +5363,12 @@ std::map<std::string, std::shared_ptr<Matrix> > CPHF_FISAPT::product(
 
         int no = b["B"]->nrow();
         int nv = b["B"]->ncol();
-        int nso = Cvir_B_->nrow();
-        auto T = std::make_shared<Matrix>("T", no, nso);
-        s["B"] = std::make_shared<Matrix>("S", no, nv);
-        double** Cop = Cocc_B_->pointer();
-        double** Cvp = Cvir_B_->pointer();
-        double** Jp = Jv->pointer();
-        double** Tp = T->pointer();
-        double** Sp = s["B"]->pointer();
-        C_DGEMM('T', 'N', no, nso, nso, 1.0, Cop[0], no, Jp[0], nso, 0.0, Tp[0], nso);
-        C_DGEMM('N', 'N', no, nv, nso, 1.0, Tp[0], nso, Cvp[0], nv, 0.0, Sp[0], nv);
+        s["B"] = linalg::triplet(Cocc_B_, Jv, Cvir_B_, true, false, false);
+        auto Sp = s["B"]->pointer();
 
-        double** bp = b["B"]->pointer();
-        double* op = eps_occ_B_->pointer();
-        double* vp = eps_vir_B_->pointer();
+        auto bp = b["B"]->pointer();
+        auto op = eps_occ_B_->pointer();
+        auto vp = eps_vir_B_->pointer();
         for (int i = 0; i < no; i++) {
             for (int a = 0; a < nv; a++) {
                 Sp[i][a] += bp[i][a] * (vp[a] - op[i]);

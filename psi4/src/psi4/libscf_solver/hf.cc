@@ -113,14 +113,12 @@ void HF::common_init() {
     H_.reset(factory_->create_matrix("One-electron Hamiltonian"));
     X_.reset(factory_->create_matrix("X"));
 
-    nmo_ = 0;
+    // nmo_ and nmopi_ not determined at present.
     nso_ = 0;
     const Dimension& dimpi = factory_->colspi();
     for (int h = 0; h < factory_->nirrep(); h++) {
         nsopi_[h] = dimpi[h];
-        nmopi_[h] = nsopi_[h];  // For now, may change in S^-1/2
         nso_ += nsopi_[h];
-        nmo_ += nmopi_[h];  // For now, may change in S^-1/2
     }
 
     density_fitted_ = false;
@@ -184,7 +182,7 @@ void HF::common_init() {
 
     // Check that we have enough basis functions
     for (int h = 0; h < nirrep_; ++h) {
-        if (doccpi_[h] + soccpi_[h] > nmopi_[h]) {
+        if (doccpi_[h] + soccpi_[h] > nsopi_[h]) {
             throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
         }
     }
@@ -408,9 +406,6 @@ void HF::finalize() {
     // Sphalf_.reset();
     X_.reset();
     T_.reset();
-    diag_temp_.reset();
-    diag_F_temp_.reset();
-    diag_C_temp_.reset();
 }
 
 void HF::set_jk(std::shared_ptr<JK> jk) {
@@ -764,11 +759,6 @@ void HF::form_Shalf() {
         // Extra matrix dimension changes for specific derived classes
         prepare_canonical_orthogonalization();
 
-        // Temporary variables needed by diagonalize_F
-        diag_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nsopi_);
-        diag_F_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
-        diag_C_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
-
         if (print_ > 3) {
             S_->print("outfile");
             X_->print("outfile");
@@ -804,11 +794,6 @@ void HF::form_Shalf() {
 
     // Extra matrix dimension changes for specific derived classes
     prepare_canonical_orthogonalization();
-
-    // Temporary variables needed by diagonalize_F
-    diag_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nsopi_);
-    diag_F_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
-    diag_C_temp_ = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
 
     if (print_ > 3) {
         S_->print("outfile");
@@ -1307,14 +1292,14 @@ void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, std::shared_ptr
 #endif
 
     // Form F' = X'FX for canonical orthogonalization
-    diag_temp_->gemm(true, false, 1.0, X_, Fm, 0.0);
-    diag_F_temp_->gemm(false, false, 1.0, diag_temp_, X_, 0.0);
+    auto diag_F_temp = linalg::triplet(X_, Fm, X_, true, false, false);
 
     // Form C' = eig(F')
-    diag_F_temp_->diagonalize(diag_C_temp_, epsm);
+    auto diag_C_temp = std::make_shared<Matrix>(nirrep_, nmopi_, nmopi_);
+    diag_F_temp->diagonalize(diag_C_temp, epsm);
 
     // Form C = XC'
-    Cm->gemm(false, false, 1.0, X_, diag_C_temp_, 0.0);
+    Cm->gemm(false, false, 1.0, X_, diag_C_temp, 0.0);
 }
 
 void HF::reset_occupation() {
@@ -1376,26 +1361,15 @@ SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi) {
     return Fia;
 }
 SharedMatrix HF::form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso) {
-    auto FDSmSDF = std::make_shared<Matrix>("FDS-SDF", nirrep_, nsopi_, nsopi_);
-    auto DS = std::make_shared<Matrix>("DS", nirrep_, nsopi_, nsopi_);
-
-    DS->gemm(false, false, 1.0, Dso, S_, 0.0);
-    FDSmSDF->gemm(false, false, 1.0, Fso, DS, 0.0);
-
-    SharedMatrix SDF(FDSmSDF->transpose());
+    auto FDSmSDF = linalg::triplet(Fso, Dso, S_, false, false, false);
+    auto SDF = FDSmSDF->transpose();
     FDSmSDF->subtract(SDF);
 
-    DS.reset();
     SDF.reset();
 
-    auto XP = std::make_shared<Matrix>("X'(FDS - SDF)", nirrep_, nmopi_, nsopi_);
-    auto XPX = std::make_shared<Matrix>("X'(FDS - SDF)X", nirrep_, nmopi_, nmopi_);
-    XP->gemm(true, false, 1.0, X_, FDSmSDF, 0.0);
-    XPX->gemm(false, false, 1.0, XP, X_, 0.0);
+    FDSmSDF->transform(X_);
 
-    // XPX->print();
-
-    return XPX;
+    return FDSmSDF;
 }
 
 void HF::print_stability_analysis(std::vector<std::pair<double, int> >& vec) {

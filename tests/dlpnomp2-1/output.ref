@@ -1,0 +1,1085 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.5a1.dev44 
+
+                         Git: Rev {dlpno} 5862c52 dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Thursday, 26 August 2021 03:58PM
+
+    Process ID: 2309335
+    Host:       wasp
+    PSIDATADIR: /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! comparison of DF-MP2 and DLPNO-MP2
+
+ref_scf                  =    -76.0267872755965              #TEST
+                              
+ref_dfmp2_corl           =     -0.2015791266780              #TEST
+ref_dfmp2_tot            =    -76.2283664022745              #TEST
+                                               
+ref_dlpnomp2_corl        =     -0.2015778022639              #TEST
+ref_dlpnomp2_tot         =    -76.2283650778585              #TEST
+
+molecule h2o {
+O
+H 1 0.957
+H 1 0.957 2 104.5
+symmetry c1
+}
+
+set basis cc-pvdz
+set freeze_core True
+set scf_type df
+set mp2_type df
+
+print('   Testing DF-MP2 ...')
+val = energy('mp2')
+
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'mp2 ref')                        #TEST
+compare_values(ref_dfmp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')          #TEST
+compare_values(ref_dfmp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')                  #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')                #TEST
+compare_values(ref_dfmp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')      #TEST
+compare_values(ref_dfmp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                    #TEST
+compare_values(ref_dfmp2_tot, val, 7, 'mp2 return')                                        #TEST
+clean()
+
+print('   Testing DLPNO-MP2 ...')
+val = energy('dlpno-mp2')
+
+# The DLPNO-MP2 energy is close to the DF-MP2 energy, but not exactly the same
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'mp2 ref')                        #TEST
+compare_values(ref_dlpnomp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')       #TEST
+compare_values(ref_dlpnomp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')               #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')                #TEST
+compare_values(ref_dlpnomp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')   #TEST
+compare_values(ref_dlpnomp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                 #TEST
+compare_values(ref_dlpnomp2_tot, val, 7, 'mp2 return')                                     #TEST
+clean()
+
+set pno_convergence tight
+
+print('   Testing DLPNO-MP2 w/ tight settings ...')
+val = energy('dlpno-mp2')
+
+# DLPNO-MP2 matches DF-MP2 if the thresholds are tightened enough
+compare_values(ref_scf, variable('SCF TOTAL ENERGY'), 7, 'mp2 ref')                        #TEST
+compare_values(ref_dfmp2_corl, variable('MP2 CORRELATION ENERGY'), 7, 'mp2 corl')          #TEST
+compare_values(ref_dfmp2_tot, variable('MP2 TOTAL ENERGY'), 7, 'mp2 tot')                  #TEST
+compare_values(ref_scf, variable('CURRENT REFERENCE ENERGY'), 7, 'mp2 ref')                #TEST
+compare_values(ref_dfmp2_corl, variable('CURRENT CORRELATION ENERGY'), 7, 'mp2 corl')      #TEST
+compare_values(ref_dfmp2_tot, variable('CURRENT ENERGY'), 7, 'mp2 tot')                    #TEST
+compare_values(ref_dfmp2_tot, val, 7, 'mp2 return')                                        #TEST
+clean()
+--------------------------------------------------------------------------
+
+Scratch directory: /scratch/glick/
+
+*** tstart() called on wasp
+*** at Thu Aug 26 15:58:48 2021
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   198 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.065570021889    15.994914619570
+         H            0.000000000000    -0.756689922073     0.520321915104     1.007825032230
+         H            0.000000000000     0.756689922073     0.520321915104     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     27.43416  B =     14.60648  C =      9.53165 [cm^-1]
+  Rotational constants: A = 822455.52651  B = 437891.14479  C = 285751.53189 [MHz]
+  Nuclear repulsion =    9.196933714281482
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis functions: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   221 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.001 GiB; user supplied 0.366 GiB. Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 42
+    Number of basis functions: 116
+    Number of Cartesian functions: 131
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.4162833904E-02.
+  Reciprocal condition number of the overlap matrix is 9.2080850101E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         24      24 
+   -------------------------
+    Total      24      24
+   -------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter SAD:   -75.51187233988692   -7.55119e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.95408986630672   -4.42218e-01   1.74098e-02 DIIS
+   @DF-RHF iter   2:   -76.00736316501693   -5.32733e-02   9.93601e-03 DIIS
+   @DF-RHF iter   3:   -76.02638316395146   -1.90200e-02   9.06898e-04 DIIS
+   @DF-RHF iter   4:   -76.02676723440223   -3.84070e-04   2.07506e-04 DIIS
+   @DF-RHF iter   5:   -76.02678633697168   -1.91026e-05   3.81557e-05 DIIS
+   @DF-RHF iter   6:   -76.02678724924604   -9.12274e-07   6.08621e-06 DIIS
+   @DF-RHF iter   7:   -76.02678727504454   -2.57985e-08   8.51178e-07 DIIS
+   @DF-RHF iter   8:   -76.02678727556352   -5.18980e-10   1.96892e-07 DIIS
+   @DF-RHF iter   9:   -76.02678727559554   -3.20171e-11   3.35471e-08 DIIS
+   @DF-RHF iter  10:   -76.02678727559646   -9.23706e-13   2.76255e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.550396     2A     -1.336833     3A     -0.699409  
+       4A     -0.566642     5A     -0.493163  
+
+    Virtual:                                                              
+
+       6A      0.185614     7A      0.256287     8A      0.789487  
+       9A      0.854656    10A      1.163645    11A      1.200456  
+      12A      1.253394    13A      1.444812    14A      1.476790  
+      15A      1.675235    16A      1.867468    17A      1.935894  
+      18A      2.453618    19A      2.491350    20A      3.286614  
+      21A      3.339622    22A      3.511619    23A      3.866679  
+      24A      4.148184  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+
+  @DF-RHF Final Energy:   -76.02678727559646
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1969337142814815
+    One-Electron Energy =                -123.1545545847433090
+    Two-Electron Energy =                  37.9308335948653621
+    Total Energy =                        -76.0267872755964618
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.9753
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.1661
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.8092     Total:     0.8092
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     2.0567     Total:     2.0567
+
+
+*** tstop() called on wasp at Thu Aug 26 15:58:48 2021
+Module time:
+	user time   =       0.26 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.26 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on wasp
+*** at Thu Aug 26 15:58:48 2021
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //               DFMP2               //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   235 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    19 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+
+	 --------------------------------------------------------
+	                          DF-MP2                         
+	      2nd-Order Density-Fitted Moller-Plesset Theory     
+	              RMP2 Wavefunction,   1 Threads             
+	                                                         
+	        Rob Parrish, Justin Turney, Andy Simmonett,      
+	           Ed Hohenstein, and C. David Sherrill          
+	 --------------------------------------------------------
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-RI
+    Number of shells: 30
+    Number of basis functions: 84
+    Number of Cartesian functions: 96
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+	 --------------------------------------------------------
+	                 NBF =    24, NAUX =    84
+	 --------------------------------------------------------
+	   CLASS    FOCC     OCC    AOCC    AVIR     VIR    FVIR
+	   PAIRS       1       5       4      19      19       0
+	 --------------------------------------------------------
+
+	-----------------------------------------------------------
+	 ==================> DF-MP2 Energies <==================== 
+	-----------------------------------------------------------
+	 Reference Energy          =     -76.0267872755964618 [Eh]
+	 Singles Energy            =      -0.0000000000000000 [Eh]
+	 Same-Spin Energy          =      -0.0507567532115653 [Eh]
+	 Opposite-Spin Energy      =      -0.1508223732913195 [Eh]
+	 Correlation Energy        =      -0.2015791265028848 [Eh]
+	 Total Energy              =     -76.2283664020993399 [Eh]
+	-----------------------------------------------------------
+	 ================> DF-SCS-MP2 Energies <================== 
+	-----------------------------------------------------------
+	 SCS Same-Spin Scale       =       0.3333333333333333 [-]
+	 SCS Opposite-Spin Scale   =       1.2000000000000000 [-]
+	 SCS Same-Spin Energy      =      -0.0169189177371884 [Eh]
+	 SCS Opposite-Spin Energy  =      -0.1809868479495834 [Eh]
+	 SCS Correlation Energy    =      -0.1979057656867718 [Eh]
+	 SCS Total Energy          =     -76.2246930412832313 [Eh]
+	-----------------------------------------------------------
+
+
+*** tstop() called on wasp at Thu Aug 26 15:58:48 2021
+Module time:
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.29 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+    mp2 ref...............................................................................PASSED
+    mp2 corl..............................................................................PASSED
+    mp2 tot...............................................................................PASSED
+    mp2 ref...............................................................................PASSED
+    mp2 corl..............................................................................PASSED
+    mp2 tot...............................................................................PASSED
+    mp2 return............................................................................PASSED
+
+Scratch directory: /scratch/glick/
+
+*** tstart() called on wasp
+*** at Thu Aug 26 15:58:48 2021
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   198 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.065570021889    15.994914619570
+         H            0.000000000000    -0.756689922073     0.520321915104     1.007825032230
+         H            0.000000000000     0.756689922073     0.520321915104     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     27.43416  B =     14.60648  C =      9.53165 [cm^-1]
+  Rotational constants: A = 822455.52651  B = 437891.14479  C = 285751.53189 [MHz]
+  Nuclear repulsion =    9.196933714281487
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis functions: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   221 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.001 GiB; user supplied 0.366 GiB. Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 42
+    Number of basis functions: 116
+    Number of Cartesian functions: 131
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.4162833904E-02.
+  Reciprocal condition number of the overlap matrix is 9.2080850101E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         24      24 
+   -------------------------
+    Total      24      24
+   -------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter SAD:   -75.51187233988423   -7.55119e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.95408986630409   -4.42218e-01   1.74098e-02 DIIS
+   @DF-RHF iter   2:   -76.00736316501424   -5.32733e-02   9.93601e-03 DIIS
+   @DF-RHF iter   3:   -76.02638316394884   -1.90200e-02   9.06898e-04 DIIS
+   @DF-RHF iter   4:   -76.02676723439961   -3.84070e-04   2.07506e-04 DIIS
+   @DF-RHF iter   5:   -76.02678633696905   -1.91026e-05   3.81557e-05 DIIS
+   @DF-RHF iter   6:   -76.02678724924341   -9.12274e-07   6.08621e-06 DIIS
+   @DF-RHF iter   7:   -76.02678727504190   -2.57985e-08   8.51178e-07 DIIS
+   @DF-RHF iter   8:   -76.02678727556084   -5.18938e-10   1.96892e-07 DIIS
+   @DF-RHF iter   9:   -76.02678727559289   -3.20597e-11   3.35471e-08 DIIS
+   @DF-RHF iter  10:   -76.02678727559370   -8.10019e-13   2.76255e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.550396     2A     -1.336833     3A     -0.699409  
+       4A     -0.566642     5A     -0.493163  
+
+    Virtual:                                                              
+
+       6A      0.185614     7A      0.256287     8A      0.789487  
+       9A      0.854656    10A      1.163645    11A      1.200456  
+      12A      1.253394    13A      1.444812    14A      1.476790  
+      15A      1.675235    16A      1.867468    17A      1.935894  
+      18A      2.453618    19A      2.491350    20A      3.286614  
+      21A      3.339622    22A      3.511619    23A      3.866679  
+      24A      4.148184  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+
+  @DF-RHF Final Energy:   -76.02678727559370
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1969337142814869
+    One-Electron Energy =                -123.1545545847418737
+    Two-Electron Energy =                  37.9308335948666766
+    Total Energy =                        -76.0267872755937049
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.9753
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:    -0.0000      Z:    -0.1661
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:    -0.0000      Z:     0.8092     Total:     0.8092
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:    -0.0000      Z:     2.0567     Total:     2.0567
+
+
+*** tstop() called on wasp at Thu Aug 26 15:58:48 2021
+Module time:
+	user time   =       0.24 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.54 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on wasp
+*** at Thu Aug 26 15:58:48 2021
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //             DLPNO-MP2             //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   235 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    19 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+
+   --------------------------------------------
+                     DLPNO-MP2                 
+                   by Zach Glick               
+   --------------------------------------------
+
+  DLPNO convergence set to NORMAL.
+
+  Detailed DLPNO thresholds and cutoffs:
+    T_CUT_DO     = 1.000e-02 
+    T_CUT_PNO    = 1.000e-08 
+    T_CUT_DO_ij  = 1.000e-05 
+    T_CUT_PRE    = 1.000e-06 
+    T_CUT_DO_PRE = 3.000e-02 
+    T_CUT_MKN    = 1.000e-03 
+    T_CUT_CLMO   = 1.000e-02 
+    T_CUT_CPAO   = 1.000e-03 
+    S_CUT        = 1.000e-08 
+    F_CUT        = 1.000e-05 
+
+  ==> Boys Localizer <==
+
+    Convergence =   1.000E-12
+    Maxiter     =        1000
+
+    Iteration                   Metric       Residual
+    @Boys    0   1.8043929643496343E-01              -
+    @Boys    1   2.2054591878455785E+00   1.122272E+01
+    @Boys    2   2.4972534490720442E+00   1.323054E-01
+    @Boys    3   2.5360980664281625E+00   1.555494E-02
+    @Boys    4   2.5411325151819586E+00   1.985116E-03
+    @Boys    5   2.5415119616436455E+00   1.493218E-04
+    @Boys    6   2.5415848202910780E+00   2.866744E-05
+    @Boys    7   2.5415953918366836E+00   4.159431E-06
+    @Boys    8   2.5415973276328825E+00   7.616461E-07
+    @Boys    9   2.5415975821268746E+00   1.001315E-07
+    @Boys   10   2.5415976563537583E+00   2.920481E-08
+    @Boys   11   2.5415976642620746E+00   3.111553E-09
+    @Boys   12   2.5415976660679234E+00   7.105172E-10
+    @Boys   13   2.5415976663701798E+00   1.189238E-10
+    @Boys   14   2.5415976664171098E+00   1.846477E-11
+    @Boys   15   2.5415976664231721E+00   2.385217E-12
+    @Boys   16   2.5415976664239976E+00   3.248200E-13
+
+    Boys Localizer converged.
+
+  ==> Forming Local MO Domains <==
+
+    Auxiliary BFs per Local MO:
+      Average =   84 AUX BFs (3 atoms)
+      Min     =   84 AUX BFs (3 atoms)
+      Max     =   84 AUX BFs (3 atoms)
+  
+    Projected AOs per Local MO:
+      Average =   24 PAOs (3 atoms)
+      Min     =   24 PAOs (3 atoms)
+      Max     =   24 PAOs (3 atoms)
+
+    Local MOs per Local MO:
+      Average =    4 LMOs
+      Min     =    4 LMOs
+      Max     =    4 LMOs
+ 
+    Screened 0 of 16 LMO pairs (0.00 %)
+             0 pairs met overlap criteria
+             4 pairs met energy criteria
+ 
+    Screened LMO pair energy =  0.000000000000 
+
+  ==> Merging LMO Domains into LMO Pair Domains <==
+  
+    Auxiliary BFs per Local MO pair:
+      Average =   84 AUX BFs (3 atoms)
+      Min     =   84 AUX BFs (3 atoms)
+      Max     =   84 AUX BFs (3 atoms)
+  
+    Projected AOs per Local MO pair:
+      Average =   24 PAOs (3 atoms)
+      Min     =   24 PAOs (3 atoms)
+      Max     =   24 PAOs (3 atoms)
+
+  ==> Transforming 3-Index Integrals to LMO/PAO basis <==
+
+    Coefficient sparsity in AO -> LMO transform:   0.00 % 
+    Coefficient sparsity in AO -> PAO transform:   0.00 % 
+    Coefficient sparsity in combined transforms:   0.00 % 
+
+    Storing transformed LMO/PAO integrals in sparse format.
+    Required memory: 0.000 GiB (0.00 % reduction from dense format) 
+
+  ==> Forming Pair Natural Orbitals <==
+  
+    Natural Orbitals per Local MO pair:
+      Avg:  18 NOs 
+      Min:  18 NOs 
+      Max:  19 NOs 
+  
+    PNO truncation energy = -0.000000056167
+
+  ==> Local MP2 <==
+
+    E_CONVERGENCE = 1.00e-06
+    R_CONVERGENCE = 1.00e-06
+
+                     Corr. Energy    Delta E     Max R
+  @LMP2 iter   0:  -0.199401866843 -1.994e-01  1.301e-03
+  @LMP2 iter   1:  -0.201480991414 -2.079e-03  3.492e-04
+  @LMP2 iter   2:  -0.201570573486 -8.958e-05  6.919e-05
+  @LMP2 iter   3:  -0.201577496452 -6.923e-06  1.342e-05
+  @LMP2 iter   4:  -0.201577741797 -2.453e-07  1.572e-06
+  @LMP2 iter   5:  -0.201577745815 -4.018e-09  2.833e-07
+  
+  Total DLPNO-MP2 Correlation Energy:  -0.201577801983 
+    MP2 Correlation Energy:            -0.201577745815 
+    LMO Truncation Correction:          0.000000000000 
+    PNO Truncation Correction:         -0.000000056167 
+
+*** tstop() called on wasp at Thu Aug 26 15:58:48 2021
+Module time:
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.64 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+    mp2 ref...............................................................................PASSED
+    mp2 corl..............................................................................PASSED
+    mp2 tot...............................................................................PASSED
+    mp2 ref...............................................................................PASSED
+    mp2 corl..............................................................................PASSED
+    mp2 tot...............................................................................PASSED
+    mp2 return............................................................................PASSED
+
+Scratch directory: /scratch/glick/
+
+*** tstart() called on wasp
+*** at Thu Aug 26 15:58:48 2021
+
+   => Loading Basis Set <=
+
+    Name: CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   198 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2-3 entry H          line    22 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.065570021889    15.994914619570
+         H            0.000000000000    -0.756689922073     0.520321915104     1.007825032230
+         H            0.000000000000     0.756689922073     0.520321915104     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     27.43416  B =     14.60648  C =      9.53165 [cm^-1]
+  Rotational constants: A = 822455.52651  B = 437891.14479  C = 285751.53189 [MHz]
+  Nuclear repulsion =    9.196933714281487
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: CC-PVDZ
+    Blend: CC-PVDZ
+    Number of shells: 12
+    Number of basis functions: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   221 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+    atoms 2-3 entry H          line    51 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-jkfit.gbs 
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.001 GiB; user supplied 0.366 GiB. Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (CC-PVDZ AUX)
+    Blend: CC-PVDZ-JKFIT
+    Number of shells: 42
+    Number of basis functions: 116
+    Number of Cartesian functions: 131
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Minimum eigenvalue in the overlap matrix is 3.4162833904E-02.
+  Reciprocal condition number of the overlap matrix is 9.2080850101E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         24      24 
+   -------------------------
+    Total      24      24
+   -------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter SAD:   -75.51187233988622   -7.55119e+01   0.00000e+00 
+   @DF-RHF iter   1:   -75.95408986630595   -4.42218e-01   1.74098e-02 DIIS
+   @DF-RHF iter   2:   -76.00736316501620   -5.32733e-02   9.93601e-03 DIIS
+   @DF-RHF iter   3:   -76.02638316395075   -1.90200e-02   9.06898e-04 DIIS
+   @DF-RHF iter   4:   -76.02676723440156   -3.84070e-04   2.07506e-04 DIIS
+   @DF-RHF iter   5:   -76.02678633697099   -1.91026e-05   3.81557e-05 DIIS
+   @DF-RHF iter   6:   -76.02678724924536   -9.12274e-07   6.08621e-06 DIIS
+   @DF-RHF iter   7:   -76.02678727504386   -2.57985e-08   8.51178e-07 DIIS
+   @DF-RHF iter   8:   -76.02678727556280   -5.18938e-10   1.96892e-07 DIIS
+   @DF-RHF iter   9:   -76.02678727559484   -3.20455e-11   3.35471e-08 DIIS
+   @DF-RHF iter  10:   -76.02678727559565   -8.10019e-13   2.76255e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.550396     2A     -1.336833     3A     -0.699409  
+       4A     -0.566642     5A     -0.493163  
+
+    Virtual:                                                              
+
+       6A      0.185614     7A      0.256287     8A      0.789487  
+       9A      0.854656    10A      1.163645    11A      1.200456  
+      12A      1.253394    13A      1.444812    14A      1.476790  
+      15A      1.675235    16A      1.867468    17A      1.935894  
+      18A      2.453618    19A      2.491350    20A      3.286614  
+      21A      3.339622    22A      3.511619    23A      3.866679  
+      24A      4.148184  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+
+  @DF-RHF Final Energy:   -76.02678727559565
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1969337142814869
+    One-Electron Energy =                -123.1545545847432663
+    Two-Electron Energy =                  37.9308335948661295
+    Total Energy =                        -76.0267872755956517
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.9753
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:    -0.1661
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.8092     Total:     0.8092
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:     0.0000      Z:     2.0567     Total:     2.0567
+
+
+*** tstop() called on wasp at Thu Aug 26 15:58:49 2021
+Module time:
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.87 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on wasp
+*** at Thu Aug 26 15:58:49 2021
+
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //             DLPNO-MP2             //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+   => Loading Basis Set <=
+
+    Name: (CC-PVDZ AUX)
+    Role: RIFIT
+    Keyword: DF_BASIS_MP2
+    atoms 1   entry O          line   235 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+    atoms 2-3 entry H          line    19 file /theoryfs2/ds/glick/gits/psi4/objdir/stage/share/psi4/basis/cc-pvdz-ri.gbs 
+
+   --------------------------------------------
+                     DLPNO-MP2                 
+                   by Zach Glick               
+   --------------------------------------------
+
+  DLPNO convergence set to TIGHT.
+
+  Detailed DLPNO thresholds and cutoffs:
+    T_CUT_DO     = 5.000e-03 
+    T_CUT_PNO    = 1.000e-09 
+    T_CUT_DO_ij  = 1.000e-05 
+    T_CUT_PRE    = 1.000e-06 
+    T_CUT_DO_PRE = 3.000e-02 
+    T_CUT_MKN    = 1.000e-03 
+    T_CUT_CLMO   = 1.000e-02 
+    T_CUT_CPAO   = 1.000e-03 
+    S_CUT        = 1.000e-08 
+    F_CUT        = 1.000e-05 
+
+  ==> Boys Localizer <==
+
+    Convergence =   1.000E-12
+    Maxiter     =        1000
+
+    Iteration                   Metric       Residual
+    @Boys    0   1.8043929643493142E-01              -
+    @Boys    1   2.2054591878453174E+00   1.122272E+01
+    @Boys    2   2.4972534490716338E+00   1.323054E-01
+    @Boys    3   2.5360980664277681E+00   1.555494E-02
+    @Boys    4   2.5411325151815705E+00   1.985116E-03
+    @Boys    5   2.5415119616432582E+00   1.493218E-04
+    @Boys    6   2.5415848202906917E+00   2.866744E-05
+    @Boys    7   2.5415953918362972E+00   4.159431E-06
+    @Boys    8   2.5415973276324961E+00   7.616461E-07
+    @Boys    9   2.5415975821264878E+00   1.001315E-07
+    @Boys   10   2.5415976563533720E+00   2.920481E-08
+    @Boys   11   2.5415976642616878E+00   3.111553E-09
+    @Boys   12   2.5415976660675361E+00   7.105170E-10
+    @Boys   13   2.5415976663697930E+00   1.189240E-10
+    @Boys   14   2.5415976664167230E+00   1.846477E-11
+    @Boys   15   2.5415976664227853E+00   2.385217E-12
+    @Boys   16   2.5415976664236108E+00   3.248200E-13
+
+    Boys Localizer converged.
+
+  ==> Forming Local MO Domains <==
+
+    Auxiliary BFs per Local MO:
+      Average =   84 AUX BFs (3 atoms)
+      Min     =   84 AUX BFs (3 atoms)
+      Max     =   84 AUX BFs (3 atoms)
+  
+    Projected AOs per Local MO:
+      Average =   24 PAOs (3 atoms)
+      Min     =   24 PAOs (3 atoms)
+      Max     =   24 PAOs (3 atoms)
+
+    Local MOs per Local MO:
+      Average =    4 LMOs
+      Min     =    4 LMOs
+      Max     =    4 LMOs
+ 
+    Screened 0 of 16 LMO pairs (0.00 %)
+             0 pairs met overlap criteria
+             4 pairs met energy criteria
+ 
+    Screened LMO pair energy =  0.000000000000 
+
+  ==> Merging LMO Domains into LMO Pair Domains <==
+  
+    Auxiliary BFs per Local MO pair:
+      Average =   84 AUX BFs (3 atoms)
+      Min     =   84 AUX BFs (3 atoms)
+      Max     =   84 AUX BFs (3 atoms)
+  
+    Projected AOs per Local MO pair:
+      Average =   24 PAOs (3 atoms)
+      Min     =   24 PAOs (3 atoms)
+      Max     =   24 PAOs (3 atoms)
+
+  ==> Transforming 3-Index Integrals to LMO/PAO basis <==
+
+    Coefficient sparsity in AO -> LMO transform:   0.00 % 
+    Coefficient sparsity in AO -> PAO transform:   0.00 % 
+    Coefficient sparsity in combined transforms:   0.00 % 
+
+    Storing transformed LMO/PAO integrals in sparse format.
+    Required memory: 0.000 GiB (0.00 % reduction from dense format) 
+
+  ==> Forming Pair Natural Orbitals <==
+  
+    Natural Orbitals per Local MO pair:
+      Avg:  19 NOs 
+      Min:  19 NOs 
+      Max:  19 NOs 
+  
+    PNO truncation energy = 0.000000000000
+
+  ==> Local MP2 <==
+
+    E_CONVERGENCE = 1.00e-06
+    R_CONVERGENCE = 1.00e-06
+
+                     Corr. Energy    Delta E     Max R
+  @LMP2 iter   0:  -0.199401936826 -1.994e-01  1.301e-03
+  @LMP2 iter   1:  -0.201482371759 -2.080e-03  3.492e-04
+  @LMP2 iter   2:  -0.201571956586 -8.958e-05  6.909e-05
+  @LMP2 iter   3:  -0.201578871531 -6.915e-06  1.361e-05
+  @LMP2 iter   4:  -0.201579122330 -2.508e-07  1.581e-06
+  @LMP2 iter   5:  -0.201579126405 -4.075e-09  2.801e-07
+  
+  Total DLPNO-MP2 Correlation Energy:  -0.201579126405 
+    MP2 Correlation Energy:            -0.201579126405 
+    LMO Truncation Correction:          0.000000000000 
+    PNO Truncation Correction:          0.000000000000 
+
+*** tstop() called on wasp at Thu Aug 26 15:58:49 2021
+Module time:
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.97 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+    mp2 ref...............................................................................PASSED
+    mp2 corl..............................................................................PASSED
+    mp2 tot...............................................................................PASSED
+    mp2 ref...............................................................................PASSED
+    mp2 corl..............................................................................PASSED
+    mp2 tot...............................................................................PASSED
+    mp2 return............................................................................PASSED
+
+    Psi4 stopped on: Thursday, 26 August 2021 03:58PM
+    Psi4 wall time for execution: 0:00:01.09
+
+*** Psi4 exiting successfully. Buy a developer a beer!

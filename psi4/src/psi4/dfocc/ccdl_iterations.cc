@@ -75,11 +75,11 @@ void DFOCC::ccdl_iterations() {
         //gQ = std::make_shared<Tensor1d>("CCDL G_Q", nQ);
         l2 = std::make_shared<Tensor2d>("L2 (IA|JB)", naoccA, navirA, naoccA, navirA);
         l2->copy(t2);
-        //if (orbs_already_opt == 1) 
+        //if (orbs_already_opt == 1)
         //    l2->read_symm(psio_, PSIF_DFOCC_AMPS);
         //else l2->copy(t2);
         t2.reset();
-    }// if (reference_ == "RESTRICTED") 
+    }// if (reference_ == "RESTRICTED")
 
     else if (reference_ == "UNRESTRICTED") {
         // W intermediates
@@ -96,9 +96,9 @@ void DFOCC::ccdl_iterations() {
         ccdl_WmBEj_BAAB();
         timer_off("CCSDL W intr");
 
-        SharedTensor2d T2, L2; 
+        SharedTensor2d T2, L2;
         T2 = std::make_shared<Tensor2d>("T2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
-        T2->read_anti_symm(psio_, PSIF_DFOCC_AMPS);    
+        T2->read_anti_symm(psio_, PSIF_DFOCC_AMPS);
         L2 = std::make_shared<Tensor2d>("L2 <IJ|AB>", naoccA, naoccA, navirA, navirA);
         L2->copy(T2);
         T2.reset();
@@ -120,7 +120,7 @@ void DFOCC::ccdl_iterations() {
         T2.reset();
         L2->write(psio_, PSIF_DFOCC_AMPS);
         L2.reset();
-    }// else if (reference_ == "UNRESTRICTED") 
+    }// else if (reference_ == "UNRESTRICTED")
 
     //==========================================================================================
     //========================= Title ==========================================================
@@ -145,9 +145,9 @@ void DFOCC::ccdl_iterations() {
         if (reference_ == "RESTRICTED") {
             std::shared_ptr<Matrix> L2(new Matrix("L2", naoccA * navirA, naoccA * navirA));
             ccsdlDiisManager = std::shared_ptr<DIISManager>(
-                new DIISManager(cc_maxdiis_, "CCDL DIIS L2 Amps", DIISManager::LargestError, DIISManager::OnDisk));
-            ccsdlDiisManager->set_error_vector_size(1, DIISEntry::Matrix, L2.get());
-            ccsdlDiisManager->set_vector_size(1, DIISEntry::Matrix, L2.get());
+                new DIISManager(cc_maxdiis_, "CCDL DIIS L2 Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
+            ccsdlDiisManager->set_error_vector_size(1, DIISEntry::InputType::Matrix, L2.get());
+            ccsdlDiisManager->set_vector_size(1, DIISEntry::InputType::Matrix, L2.get());
             L2.reset();
         }
         else if (reference_ == "UNRESTRICTED") {
@@ -156,11 +156,11 @@ void DFOCC::ccdl_iterations() {
             std::shared_ptr<Matrix> L2AB(new Matrix("L2AB", naoccA * naoccB, navirA * navirB));
 
             ccsdlDiisManager = std::shared_ptr<DIISManager>(
-                    new DIISManager(cc_maxdiis_, "CCSDL DIIS L Amps", DIISManager::LargestError, DIISManager::OnDisk));
-            ccsdlDiisManager->set_error_vector_size(3, DIISEntry::Matrix, L2AA.get(), DIISEntry::Matrix, L2BB.get(),
-                    DIISEntry::Matrix, L2AB.get());
-            ccsdlDiisManager->set_vector_size(3, DIISEntry::Matrix, L2AA.get(), DIISEntry::Matrix, L2BB.get(),
-                    DIISEntry::Matrix, L2AB.get());
+                    new DIISManager(cc_maxdiis_, "CCSDL DIIS L Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
+            ccsdlDiisManager->set_error_vector_size(3, DIISEntry::InputType::Matrix, L2AA.get(), DIISEntry::InputType::Matrix, L2BB.get(),
+                    DIISEntry::InputType::Matrix, L2AB.get());
+            ccsdlDiisManager->set_vector_size(3, DIISEntry::InputType::Matrix, L2AA.get(), DIISEntry::InputType::Matrix, L2BB.get(),
+                    DIISEntry::InputType::Matrix, L2AB.get());
             L2AA.reset();
             L2BB.reset();
             L2AB.reset();
@@ -279,7 +279,7 @@ void DFOCC::ccdl_step() {
         l2 = std::make_shared<Tensor2d>("L2 (IA|JB)", naoccA, navirA, naoccA, navirA);
         l2->read_symm(psio_, PSIF_DFOCC_AMPS);
         t2.reset();
-    }// if (reference_ == "RESTRICTED") 
+    }// if (reference_ == "RESTRICTED")
 
     else if (reference_ == "UNRESTRICTED") {
         // W intermediates
@@ -296,7 +296,7 @@ void DFOCC::ccdl_step() {
         ccdl_WmBEj_BAAB();
         timer_off("CCSDL W intr");
 
-     }// else if (reference_ == "UNRESTRICTED") 
+     }// else if (reference_ == "UNRESTRICTED")
 
     //==========================================================================================
     //========================= CCDL iterations ================================================

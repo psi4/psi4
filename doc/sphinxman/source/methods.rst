@@ -48,6 +48,7 @@ A complete list of standard keywords is provided in Appendix
    dftnl
    dct
    dfmp2
+   dlpnomp2
    cc
    fnocc
    occ

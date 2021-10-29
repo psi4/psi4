@@ -181,6 +181,9 @@ SharedWavefunction detci(SharedWavefunction, Options&);
 namespace dfmp2 {
 SharedWavefunction dfmp2(SharedWavefunction, Options&);
 }
+namespace dlpno {
+SharedWavefunction dlpno(SharedWavefunction, Options&);
+}
 namespace dfoccwave {
 SharedWavefunction dfoccwave(SharedWavefunction, Options&);
 }
@@ -365,6 +368,11 @@ SharedWavefunction py_psi_dct(SharedWavefunction ref_wfn) {
 SharedWavefunction py_psi_dfmp2(SharedWavefunction ref_wfn) {
     py_psi_prepare_options_for_module("DFMP2");
     return dfmp2::dfmp2(ref_wfn, Process::environment.options);
+}
+
+SharedWavefunction py_psi_dlpno(SharedWavefunction ref_wfn) {
+    py_psi_prepare_options_for_module("DLPNO");
+    return dlpno::dlpno(ref_wfn, Process::environment.options);
 }
 
 double py_psi_sapt(SharedWavefunction Dimer, SharedWavefunction MonomerA, SharedWavefunction MonomerB) {
@@ -1335,12 +1343,12 @@ PYBIND11_MODULE(core, core) {
              "Redirects output to ``/dev/null``. "
              "To switch back to regular output mode, use :func:`~psi4.core.reopen_outfile()`. "
              "Doesn't work with Windows.");
-
     // modules
     core.def("scfgrad", py_psi_scfgrad, "ref_wfn"_a, "Run scfgrad, which is a specialized DF-SCF gradient program.");
     core.def("scfhess", py_psi_scfhess, "ref_wfn"_a, "Run scfhess, which is a specialized DF-SCF hessian program.");
     core.def("dct", py_psi_dct, "ref_wfn"_a, "Runs the density cumulant (functional) theory code.");
     core.def("dfmp2", py_psi_dfmp2, "ref_wfn"_a, "Runs the DF-MP2 code.");
+    core.def("dlpno", py_psi_dlpno, "Runs the DLPNO codes.");
     core.def("mcscf", py_psi_mcscf, "Runs the MCSCF code, (N.B. restricted to certain active spaces).");
     core.def("mrcc_generate_input", py_psi_mrcc_generate_input, "Generates an input for Kallay's MRCC code.");
     core.def("mrcc_load_densities", py_psi_mrcc_load_densities,

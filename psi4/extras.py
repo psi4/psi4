@@ -152,6 +152,7 @@ _addons_ = {
     "adcc": which_import("adcc", return_bool=True),
     "mdi": which_import("mdi", return_bool=True),
     "cct3": which_import("cct3", return_bool=True),
+    "dftd4": which_import("dftd4", return_bool=True),
 }
 
 

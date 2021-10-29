@@ -563,6 +563,22 @@ Bibliography
    A. Hesselmann and T. Korona,
    *J. Chem. Phys.* **141**, 094107 (2014).
 
+.. [Hylleraas:1930:209]
+   E. Hylleraas
+   *Z. Phys.* **65**, 209 (1930).
+
+.. [Pulay:1986:357]
+   P. Pulay and S. Saeb\ |o_slash|\ ,
+   *Theor. Chim. Acta* **69**, 357 (1986).
+
+.. [Pinski:2015:034108]
+   P. Pinski, C. Riplinger, E. Valeev, and F. Neese,
+   *J. Chem. Phys.* **143**, 034108 (2015).
+
+.. [Liakos:2015:1525]
+   D. Liakos, M. Sparta, M. Kesharwani, J. Martin, and F. Neese,
+   *J. Chem. Theory Comput.* **11**, 1525 (2015).
+   
 .. [Smith:2018:3504]
     10.1021/acs.jctc.8b00286,
     "PSI4NUMPY: An Interactive Quantum Chemistry Programming Environment for Reference Implementations and Rapid Development",
@@ -572,3 +588,9 @@ Bibliography
 .. [Schriber:2021:234107]
     J. B. Schriber, D. A. Sirianni, D. G. A. Smith, L. A. Burns, D. Sitkoff, D. L. Cheney, C. D. Sherrill
     *J. Chem. Phys.* **154**, 234107 (2021).
+
+.. [Caldeweyher:2019:154122]
+   "A generally applicable atomic-charge dependent London dispersion correction",
+   E. Caldeweyher,  S. Ehlert,  A. Hansen, H. Neugebauer, S. Spicher, C. Bannwarth, and S. Grimme,
+   *J. Chem. Phys.* **150**, 154122 (2019).
+   https://doi.org/10.1063/1.5090222

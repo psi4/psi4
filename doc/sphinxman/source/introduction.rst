@@ -424,7 +424,7 @@ approximation are found in the following two works:
   (doi: `10.1007/s00214-012-1235-6 <https://doi.org/10.1007/s00214-012-1235-6>`_)
 
 * "Single-determinant-based symmetry-adapted perturbation theory without
-  single-exchange approximation," 
+  single-exchange approximation,"
   R. Sch\ |a_dots|\ ffer and G. Jansen, *Mol. Phys.* **111**, 2570 (2013).
   (doi: `10.1080/00268976.2013.827253 <https://doi.org/10.1080/00268976.2013.827253>`_)
 
@@ -695,7 +695,7 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | CCSD(T) [#f10]_         | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | RHF/UHF      | CONV/DF [#f8]_ | threaded (pthreads) [#f3]_  |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | CCSD(AT) [#f10]_        | RHF            | CONV/DF/CD        | ---          | ---            | threaded [#f3]_             |           | E          |
+    | A-CCSD(AT) [#f10]_      | RHF            | CONV/DF/CD        | ---          | ---            | threaded [#f3]_             |           | E          |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | OCCD(T) [#f10]_         | RHF/UHF/ROHF   | DF/CD             | RHF/UHF/ROHF | DF [#f8]_      | threaded (pthreads) [#f3]_  |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
