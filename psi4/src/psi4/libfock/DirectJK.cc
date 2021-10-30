@@ -1243,15 +1243,17 @@ bool linK_sort_helper(const std::tuple<int, double>& t1, const std::tuple<int, d
     return std::get<1>(t1) > std::get<1>(t2);
 }
 
-void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
-                  std::vector<std::shared_ptr<Matrix> >& K) {
+void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<std::shared_ptr<Matrix>>& D,
+                  std::vector<std::shared_ptr<Matrix>>& K) {
 
-    timer_on("build_K()");
+    timer_on("build_linK()");
 
     // => Zeroing <= //
+
     for (size_t ind = 0; ind < K.size(); ind++) {
         K[ind]->zero();
     }
+
     // => Sizing <= //
 
     int nshell = primary_->nshell();
@@ -1337,11 +1339,11 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
 
     // => Intermediate Buffers <= //
 
-    std::vector<std::vector<std::shared_ptr<Matrix> > > JKT;
+    std::vector<std::vector<std::shared_ptr<Matrix>>> JKT;
     for (int thread = 0; thread < nthread; thread++) {
-        std::vector<std::shared_ptr<Matrix> > JK2;
+        std::vector<std::shared_ptr<Matrix>> JK2;
         for (size_t ind = 0; ind < D.size(); ind++) {
-            JK2.push_back(std::make_shared<Matrix>("JKT (K only)", (lr_symmetric_ ? 4 : 8) * max_task, max_task));
+            JK2.push_back(std::make_shared<Matrix>("JKT (linK)", (lr_symmetric_ ? 4 : 8) * max_task, max_task));
         }
         JKT.push_back(JK2);
     }
@@ -1396,16 +1398,13 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
         thread = omp_get_thread_num();
 #endif
 
-        std::vector<std::vector<int>> PR_sig_shells(nPtask, std::vector<int>(0));
-        std::vector<std::vector<int>> PS_sig_shells(nPtask, std::vector<int>(0));
-        std::vector<std::vector<int>> QR_sig_shells(nQtask, std::vector<int>(0));
-        std::vector<std::vector<int>> QS_sig_shells(nQtask, std::vector<int>(0));
+        // Used in the first pre-screening iteration loops
+        std::vector<std::vector<int>> PR_sig_shells(nPtask);
+        std::vector<std::vector<int>> PS_sig_shells(nPtask);
+        std::vector<std::vector<int>> QR_sig_shells(nQtask);
+        std::vector<std::vector<int>> QS_sig_shells(nQtask);
 
-        std::vector<std::unordered_set<int>> PR_sig_shells2(nPtask, std::unordered_set<int>());
-        std::vector<std::unordered_set<int>> PS_sig_shells2(nPtask, std::unordered_set<int>());
-        std::vector<std::unordered_set<int>> QR_sig_shells2(nQtask, std::unordered_set<int>());
-        std::vector<std::unordered_set<int>> QS_sig_shells2(nQtask, std::unordered_set<int>());
-
+        // Shell ceilings are max value of (U*|U*) for shell U
         std::vector<double> shell_ceiling_P(nPtask, 0.0);
         std::vector<double> shell_ceiling_Q(nQtask, 0.0);
         std::vector<double> shell_ceiling_R(nRtask, 0.0);
@@ -1424,7 +1423,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
             }
         }
 
-        // R and S shell ceilings
+        // R and S shell ceilings max(R*|R*) and max(S*|S*)
         for (int R2 = R2start; R2 < R2start + nRtask; R2++) {
             int R = task_shells[R2];
             int dR = R - Rstart;
@@ -1437,7 +1436,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
             }
         }
 
-        // PR significant shells
+        // PR significant shells (joined by density matrix)
         for (int P2 = P2start; P2 < P2start + nPtask; P2++) {
             int P = task_shells[P2];
             int dP = P - Pstart;
@@ -1529,6 +1528,12 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
             }
         }
 
+        // Used in the second pre-screening iteration loop (and later used in the stripeout)
+        std::vector<std::unordered_set<int>> PR_stripeout(nPtask);
+        std::vector<std::unordered_set<int>> PS_stripeout(nPtask);
+        std::vector<std::unordered_set<int>> QR_stripeout(nQtask);
+        std::vector<std::unordered_set<int>> QS_stripeout(nQtask);
+
         bool touched = false;
         for (int P2 = P2start; P2 < P2start + nPtask; P2++) {
             for (int Q2 = Q2start; Q2 < Q2start + nQtask; Q2++) {
@@ -1559,8 +1564,8 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
                             count += 1;
                             if (S > R) continue;
                             if (R * nshell + S > P * nshell + Q) continue;
-                            if (!PR_sig_shells2[dP].count(R)) PR_sig_shells2[dP].emplace(R);
-                            if (!PS_sig_shells2[dP].count(S)) PS_sig_shells2[dP].emplace(S);
+                            if (!PR_stripeout[dP].count(R)) PR_stripeout[dP].emplace(R);
+                            if (!PS_stripeout[dP].count(S)) PS_stripeout[dP].emplace(S);
                             if (PQ_sig_RS.count(R * nshell + S)) continue;
                             PQ_sig_RS.emplace(R * nshell + S);
                         }
@@ -1584,8 +1589,8 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
                             count += 1;
                             if (S > R) continue;
                             if (R * nshell + S > P * nshell + Q) continue;
-                            if (!QR_sig_shells2[dQ].count(R)) QR_sig_shells2[dQ].emplace(R);
-                            if (!QS_sig_shells2[dQ].count(S)) QS_sig_shells2[dQ].emplace(S);
+                            if (!QR_stripeout[dQ].count(R)) QR_stripeout[dQ].emplace(R);
+                            if (!QS_stripeout[dQ].count(S)) QS_stripeout[dQ].emplace(S);
                             if (PQ_sig_RS.count(R * nshell + S)) continue;
                             PQ_sig_RS.emplace(R * nshell + S);
                         }
@@ -1738,7 +1743,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
             // > K_PR < //
 
             for (int P2 = 0; P2 < nPtask; P2++) {
-                for (const int R : PR_sig_shells2[P2]) {
+                for (const int R : PR_stripeout[P2]) {
                     int P = task_shells[P2start + P2];
                     // int R = task_shells[R2start + R2];
                     int R2 = R - Rstart;
@@ -1766,7 +1771,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
             // > K_PS < //
 
             for (int P2 = 0; P2 < nPtask; P2++) {
-                for (const int S : PS_sig_shells2[P2]) {
+                for (const int S : PS_stripeout[P2]) {
                     int P = task_shells[P2start + P2];
                     // int S = task_shells[S2start + S2];
                     int S2 = S - Sstart;
@@ -1794,7 +1799,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
             // > K_QR < //
 
             for (int Q2 = 0; Q2 < nQtask; Q2++) {
-                for (const int R : QR_sig_shells2[Q2]) {
+                for (const int R : QR_stripeout[Q2]) {
                     int Q = task_shells[Q2start + Q2];
                     // int R = task_shells[R2start + R2];
                     int R2 = R - Rstart;
@@ -1822,7 +1827,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
             // > K_QS < //
 
             for (int Q2 = 0; Q2 < nQtask; Q2++) {
-                for (const int S : QS_sig_shells2[Q2]) {
+                for (const int S : QS_stripeout[Q2]) {
                     int Q = task_shells[Q2start + Q2];
                     // int S = task_shells[S2start + S2];
                     int S2 = S - Sstart;
@@ -1867,7 +1872,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std
         printer->Printf("Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
                         possible_shells, computed_shells / (double)possible_shells);
     }
-    timer_off("build_K()");
+    timer_off("build_linK()");
 }
 
 }  // namespace psi
