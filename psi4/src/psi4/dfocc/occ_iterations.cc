@@ -134,19 +134,19 @@ void DFOCC::occ_iterations() {
     //fire up DIIS
     if (do_diis_ == 1) {
 //        outfile->Printf("firing up coupled DIIS...\n");
-      orbitalDIIS = std::shared_ptr<DIISManager>(new DIISManager (cc_maxdiis_,"Orbital Optimized DIIS",DIISManager::LargestError, DIISManager::OnDisk)); //initialize DIIS manager
+      orbitalDIIS = std::shared_ptr<DIISManager>(new DIISManager (cc_maxdiis_,"Orbital Optimized DIIS",DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk)); //initialize DIIS manager
       std::shared_ptr<Vector> kappa_barA_(new Vector("Kappa_barA",nidpA));
       if (reference_ == "RESTRICTED" ) {
         if (wfn_type_ == "DF-OMP2" || wfn_type_ == "DF-OLCCD" ||  wfn_type_ == "DF-OREMP") {
           std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA)); // T2 buffer prototype
-          orbitalDIIS->set_error_vector_size(2, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Matrix, T2.get());
-          orbitalDIIS->set_vector_size(2, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Matrix, T2.get());
+          orbitalDIIS->set_error_vector_size(2, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Matrix, T2.get());
+          orbitalDIIS->set_vector_size(2, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Matrix, T2.get());
           T2.reset();
         }
         else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "DF-OMP3"){
           std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));   // T2_1 and T2_2 share the same prototype
-          orbitalDIIS->set_error_vector_size(3, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Matrix, T2.get(), T2.get());
-          orbitalDIIS->set_vector_size(3, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Matrix, T2.get(), T2.get());
+          orbitalDIIS->set_error_vector_size(3, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Matrix, T2.get(), T2.get());
+          orbitalDIIS->set_vector_size(3, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Matrix, T2.get(), T2.get());
           T2.reset();
         }
 //        else if (wfn_type_ == "DF-OLCCD" ||  wfn_type_ == "DF-OREMP"){
@@ -159,12 +159,12 @@ void DFOCC::occ_iterations() {
             std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", naoccB * navirB, naoccB * navirB));
             std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * navirA, naoccB * navirB));
             std::shared_ptr<Matrix> RT2AA(new Matrix("RT2AA", naoccA * naoccA, navirA * navirA)); // the amplitudes and the residuums differ in their signature
-            std::shared_ptr<Matrix> RT2BB(new Matrix("RT2BB", naoccB * naoccB, navirB * navirB)); // a possi le solution would be to reorder the residuum
-            std::shared_ptr<Matrix> RT2AB(new Matrix("RT2AB", naoccA * naoccB, navirA * navirB)); // but this would be computational wasted time
-            orbitalDIIS->set_error_vector_size(5, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Vector, kappa_barB_.get(),
-                         DIISEntry::Matrix, RT2AA.get(), DIISEntry::Matrix, RT2BB.get(), DIISEntry::Matrix, RT2AB.get());
-            orbitalDIIS->set_vector_size(5, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Vector, kappa_barB_.get(),
-                         DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get());
+            std::shared_ptr<Matrix> RT2BB(new Matrix("RT2BB", naoccB * naoccB, navirB * navirB)); // a possible solution would be to reorder the residuum
+            std::shared_ptr<Matrix> RT2AB(new Matrix("RT2AB", naoccA * naoccB, navirA * navirB)); // but this would be computationally wasted time
+            orbitalDIIS->set_error_vector_size(5, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Vector, kappa_barB_.get(),
+                         DIISEntry::InputType::Matrix, RT2AA.get(), DIISEntry::InputType::Matrix, RT2BB.get(), DIISEntry::InputType::Matrix, RT2AB.get());
+            orbitalDIIS->set_vector_size(5, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Vector, kappa_barB_.get(),
+                         DIISEntry::InputType::Matrix, T2AA.get(), DIISEntry::InputType::Matrix, T2BB.get(), DIISEntry::InputType::Matrix, T2AB.get());
             T2AA.reset();
             T2BB.reset();
             T2AB.reset();
@@ -176,12 +176,12 @@ void DFOCC::occ_iterations() {
             std::shared_ptr<Matrix> T2AA(new Matrix("T2AA", naoccA * naoccA, navirA * navirA)); //T2_1 and T2_2 and their respective residuals share the same prototype
             std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", naoccB * naoccB, navirB * navirB));
             std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * naoccB, navirA * navirB));
-            orbitalDIIS->set_error_vector_size(8, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Vector, kappa_barB_.get(),
-                         DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get(),
-                         DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get());
-            orbitalDIIS->set_vector_size(8, DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Vector, kappa_barB_.get(),
-                         DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get(),
-                         DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get());
+            orbitalDIIS->set_error_vector_size(8, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Vector, kappa_barB_.get(),
+                         DIISEntry::InputType::Matrix, T2AA.get(), DIISEntry::InputType::Matrix, T2BB.get(), DIISEntry::InputType::Matrix, T2AB.get(),
+                         DIISEntry::InputType::Matrix, T2AA.get(), DIISEntry::InputType::Matrix, T2BB.get(), DIISEntry::InputType::Matrix, T2AB.get());
+            orbitalDIIS->set_vector_size(8, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Vector, kappa_barB_.get(),
+                         DIISEntry::InputType::Matrix, T2AA.get(), DIISEntry::InputType::Matrix, T2BB.get(), DIISEntry::InputType::Matrix, T2AB.get(),
+                         DIISEntry::InputType::Matrix, T2AA.get(), DIISEntry::InputType::Matrix, T2BB.get(), DIISEntry::InputType::Matrix, T2AB.get());
             T2AA.reset();
             T2BB.reset();
             T2AB.reset();
@@ -190,10 +190,10 @@ void DFOCC::occ_iterations() {
             std::shared_ptr<Matrix> T2AA(new Matrix("T2AA", naoccA * naoccA, navirA * navirA));
             std::shared_ptr<Matrix> T2BB(new Matrix("T2BB", naoccB * naoccB, navirB * navirB));
             std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * naoccB, navirA * navirB));
-            orbitalDIIS->set_error_vector_size(5,DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Vector, kappa_barB_.get(),
-                         DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get());
-            orbitalDIIS->set_vector_size(5,DIISEntry::Vector, kappa_barA_.get(), DIISEntry::Vector, kappa_barB_.get(),
-                         DIISEntry::Matrix, T2AA.get(), DIISEntry::Matrix, T2BB.get(), DIISEntry::Matrix, T2AB.get());
+            orbitalDIIS->set_error_vector_size(5,DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Vector, kappa_barB_.get(),
+                         DIISEntry::InputType::Matrix, T2AA.get(), DIISEntry::InputType::Matrix, T2BB.get(), DIISEntry::InputType::Matrix, T2AB.get());
+            orbitalDIIS->set_vector_size(5,DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Vector, kappa_barB_.get(),
+                         DIISEntry::InputType::Matrix, T2AA.get(), DIISEntry::InputType::Matrix, T2BB.get(), DIISEntry::InputType::Matrix, T2AB.get());
             T2AA.reset();
             T2BB.reset();
             T2AB.reset();
