@@ -1287,7 +1287,7 @@ class FiniteDifferenceComputer(BaseComputer):
             **{
                 'driver': self.driver,
                 'model': {
-                    'basis': '(auto)',  #self.basis,
+                    "basis": self.basis,
                     'method': self.method,
                 },
                 'molecule': self.molecule.to_schema(dtype=2),
@@ -1330,7 +1330,8 @@ def _findif_schema_to_wfn(findifjob):
 
     # new skeleton wavefunction w/mol, highest-SCF basis (just to choose one), & not energy
     mol = core.Molecule.from_schema(findifjob.molecule.dict(), nonphysical=True)
-    basis = core.BasisSet.build(mol, "ORBITAL", 'def2-svp')
+    sbasis = "def2-svp" if (findifjob.model.basis == "(auto)") else findifjob.model.basis
+    basis = core.BasisSet.build(mol, "ORBITAL", sbasis)
     wfn = core.Wavefunction(mol, basis)
     if hasattr(findifjob.provenance, "module"):
         wfn.set_module(findifjob.provenance.module)

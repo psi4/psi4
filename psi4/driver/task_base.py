@@ -101,6 +101,7 @@ class AtomicComputer(BaseComputer):
             },
             "extras": {
                 "psiapi": True,
+                "wfn_qcvars_only": True,
             },
         })
 
