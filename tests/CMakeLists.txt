@@ -100,7 +100,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   dft-custom-dhdf dft-custom-hybrid dft-custom-mgga dft-custom-gga
                   pywrap-bfs pywrap-align pywrap-align-chiral mints12 cc-module
                   tdscf-1 tdscf-2 tdscf-3 tdscf-4 tdscf-5
-                  basis-ecp dft-pruning freq-masses sapt9 sapt10 sapt11
+                  basis-ecp dft-pruning freq-masses sapt9 sapt10 sapt11 scf-uhf-grad-nobeta
 )
     add_subdirectory(${test_name})
 endforeach()
