@@ -452,15 +452,17 @@ void DFJKGrad::build_Amn_terms() {
 
         // > Beta < //
         if (!restricted && (do_K_ || do_wK_)) {
-            // > (A|mn) C_ni -> (A|mi) < //
-            C_DGEMM('N', 'N', np * (size_t)nso, nb, nso, 1.0, Amnp[0], nso, Cbp[0], nb, 0.0, Amip[0], na);
+            // skip if there are no beta electrons
+            if (nb > 0){
+                // > (A|mn) C_ni -> (A|mi) < //
+                    C_DGEMM('N', 'N', np * (size_t)nso, nb, nso, 1.0, Amnp[0], nso, Cbp[0], nb, 0.0, Amip[0], na);
 
-            // > (A|mi) C_mj -> (A|ij) < //
+                // > (A|mi) C_mj -> (A|ij) < //
 #pragma omp parallel for
-            for (int p = 0; p < np; p++) {
-                C_DGEMM('T', 'N', nb, nb, nso, 1.0, Amip[p], na, Cbp[0], nb, 0.0, &Aijp[0][p * (size_t)nb * nb], nb);
+                for (int p = 0; p < np; p++) {
+                    C_DGEMM('T', 'N', nb, nb, nso, 1.0, Amip[p], na, Cbp[0], nb, 0.0, &Aijp[0][p * (size_t)nb * nb], nb);
+                }
             }
-
             // > Stripe < //
             psio_->write(unit_b_, "(A|ij)", (char*)Aijp[0], sizeof(double) * np * nb * nb, next_Aijb, &next_Aijb);
         }
@@ -993,13 +995,15 @@ void DFJKGrad::build_Amn_x_terms() {
     std::vector<std::tuple<size_t, std::string, double**, size_t, psio_address*, double**>> transforms;
     if (do_K_ || do_wK_) {
         transforms.push_back(std::make_tuple(unit_a_, "(A|ij)", Cap, na, &next_Aija, Kmnp));
-        if (!restricted) {
+        // skip if there are no beta electrons
+        if (!restricted && nb > 0) {
             transforms.push_back(std::make_tuple(unit_b_, "(A|ij)", Cbp, nb, &next_Aijb, Kmnp));
         }
     }
     if (do_wK_) {
         transforms.push_back(std::make_tuple(unit_a_, "(A|w|ij)", Cap, na, &next_Awija, wKmnp));
-        if (!restricted) {
+        // skip if there are no beta electrons        
+        if (!restricted && nb > 0) {
             transforms.push_back(std::make_tuple(unit_b_, "(A|w|ij)", Cbp, nb, &next_Awijb, wKmnp));
         }
     }
@@ -1029,15 +1033,11 @@ void DFJKGrad::build_Amn_x_terms() {
             size_t nmo = std::get<3>(trans);
             psio_address* address = std::get<4>(trans);
             double** retp = std::get<5>(trans);
-            // printf("%4.2lf : %zu  %s %zu | %zu %zu\n", factor, unit, buffer.c_str(), nmo, address->page,
-            // address->offset);
 
             size_t nmo2 = nmo * nmo;
 
             // > Stripe < //
             psio_->read(unit, buffer.c_str(), (char*)Aijp[0], sizeof(double) * np * nmo2, *address, address);
-            // printf("%4.2lf : %zu  %s %zu | %zu %zu\n", factor, unit, buffer.c_str(), nmo, address->page,
-            // address->offset); printf("\n");
 
             // > (A|ij) C_mi -> (A|mj) < //
 #pragma omp parallel for
