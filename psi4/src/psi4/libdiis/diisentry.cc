@@ -39,17 +39,17 @@ PRAGMA_WARNING_POP
 
 namespace psi {
 
-DIISEntry::DIISEntry(std::string label, int ID, int orderAdded, int errorVectorSize, double *errorVector,
-                     int vectorSize, double *vector, std::shared_ptr<PSIO> psio)
-    : _vectorSize(vectorSize),
-      _errorVectorSize(errorVectorSize),
-      _vector(vector),
-      _errorVector(errorVector),
+DIISEntry::DIISEntry(std::string label, int ID, int orderAdded, std::unique_ptr<std::vector<double>> errorVector,
+                     std::unique_ptr<std::vector<double>> vector, std::shared_ptr<PSIO> psio)
+    : _vectorSize(static_cast<int>(vector->size())),
+      _errorVectorSize(static_cast<int>(errorVector->size())),
+      _vector(*vector.release()),
+      _errorVector(*errorVector.release()),
       _ID(ID),
       _orderAdded(orderAdded),
       _label(label),
       _psio(psio) {
-    double sumSQ = C_DDOT(_errorVectorSize, _errorVector, 1, _errorVector, 1);
+    double sumSQ = C_DDOT(_errorVectorSize, _errorVector.data(), 1, _errorVector.data(), 1);
     _rmsError = sqrt(sumSQ / _errorVectorSize);
     _dotProducts[_ID] = sumSQ;
     _knownDotProducts[_ID] = true;
@@ -73,48 +73,41 @@ void DIISEntry::close_psi_file() {
 void DIISEntry::dump_vector_to_disk() {
     std::string label = _label + " vector";
     open_psi_file();
-    _psio->write_entry(PSIF_LIBDIIS, label.c_str(), (char *)_vector, _vectorSize * sizeof(double));
+    _psio->write_entry(PSIF_LIBDIIS, label.c_str(), (char *)_vector.data(), _vectorSize * sizeof(double));
     free_vector_memory();
 }
 
 void DIISEntry::read_vector_from_disk() {
-    if (_vector == nullptr) {
-        _vector = new double[_vectorSize];
+    if (_vector.empty()) {
+        _vector = std::vector<double>(_vectorSize);
         std::string label = _label + " vector";
         open_psi_file();
-        _psio->read_entry(PSIF_LIBDIIS, label.c_str(), (char *)_vector, _vectorSize * sizeof(double));
+        _psio->read_entry(PSIF_LIBDIIS, label.c_str(), (char *)_vector.data(), _vectorSize * sizeof(double));
     }
 }
 
 void DIISEntry::dump_error_vector_to_disk() {
     std::string label = _label + " error";
     open_psi_file();
-    _psio->write_entry(PSIF_LIBDIIS, label.c_str(), (char *)_errorVector, _errorVectorSize * sizeof(double));
+    _psio->write_entry(PSIF_LIBDIIS, label.c_str(), (char *)_errorVector.data(), _errorVectorSize * sizeof(double));
     free_error_vector_memory();
 }
 
 void DIISEntry::read_error_vector_from_disk() {
-    if (_errorVector == nullptr) {
-        _errorVector = new double[_errorVectorSize];
+    if (_errorVector.empty()) {
+        _errorVector = std::vector<double>(_errorVectorSize);
         std::string label = _label + " error";
         open_psi_file();
-        _psio->read_entry(PSIF_LIBDIIS, label.c_str(), (char *)_errorVector, _errorVectorSize * sizeof(double));
+        _psio->read_entry(PSIF_LIBDIIS, label.c_str(), (char *)_errorVector.data(), _errorVectorSize * sizeof(double));
     }
 }
 
 void DIISEntry::free_vector_memory() {
-    if (_vector) delete[] _vector;
-    _vector = nullptr;
+    _vector = std::vector<double>(0);
 }
 
 void DIISEntry::free_error_vector_memory() {
-    if (_errorVector) delete[] _errorVector;
-    _errorVector = nullptr;
-}
-
-DIISEntry::~DIISEntry() {
-    if (_vector != nullptr) delete[] _vector;
-    if (_errorVector != nullptr) delete[] _errorVector;
+    _errorVector = std::vector<double>(0);
 }
 
 }  // namespace psi

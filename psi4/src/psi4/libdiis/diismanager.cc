@@ -204,13 +204,13 @@ bool DIISManager::add_entry(int numQuantities, ...) {
     double *array;
     va_list args;
     va_start(args, numQuantities);
-    auto *errorVectorPtr = new double[_errorVectorSize];
-    auto *vectorPtr = new double[_vectorSize];
-    double *arrayPtr = errorVectorPtr;
+    auto errorVector = std::make_unique<std::vector<double>>(_errorVectorSize);
+    auto paramVector = std::make_unique<std::vector<double>>(_vectorSize);
+    double *arrayPtr = errorVector->data();
     for (int i = 0; i < numQuantities; ++i) {
         DIISEntry::InputType type = _componentTypes[i];
         // If we've filled the error vector, start filling the vector
-        if (i == _numErrorVectorComponents) arrayPtr = vectorPtr;
+        if (i == _numErrorVectorComponents) arrayPtr = paramVector->data();
         switch (type) {
             case DIISEntry::InputType::Pointer:
                 array = va_arg(args, double *);
@@ -268,22 +268,19 @@ bool DIISManager::add_entry(int numQuantities, ...) {
 
     int entryID = get_next_entry_id();
     if (_subspace.size() < _maxSubspaceSize) {
-        _subspace.push_back(new DIISEntry(_label, entryID, _entryCount++, _errorVectorSize, errorVectorPtr, _vectorSize,
-                                          vectorPtr, _psio));
+        _subspace.emplace_back(_label, entryID, _entryCount++, std::move(errorVector), std::move(paramVector), _psio);
     } else {
-        delete _subspace[entryID];
-        _subspace[entryID] = new DIISEntry(_label, entryID, _entryCount++, _errorVectorSize, errorVectorPtr,
-                                           _vectorSize, vectorPtr, _psio);
+        _subspace[entryID] = DIISEntry(_label, entryID, _entryCount++, std::move(errorVector), std::move(paramVector), _psio);
     }
 
     if (_storagePolicy == StoragePolicy::OnDisk) {
-        _subspace[entryID]->dump_vector_to_disk();
-        _subspace[entryID]->dump_error_vector_to_disk();
+        _subspace[entryID].dump_vector_to_disk();
+        _subspace[entryID].dump_error_vector_to_disk();
     }
 
-    // Make we don't know any inner products involving this new entry
+    // Clear all inner products with this entry that may be cached
     for (int i = 0; i < _subspace.size(); ++i)
-        if (i != entryID) _subspace[i]->invalidate_dot(entryID);
+        if (i != entryID) _subspace[i].invalidate_dot(entryID);
 
     timer_off("DIISManager::add_entry");
 
@@ -300,18 +297,18 @@ int DIISManager::get_next_entry_id() {
         entry = _subspace.size();
     } else {
         if (_removalPolicy == RemovalPolicy::OldestAdded) {
-            int oldest = _subspace[0]->orderAdded();
+            int oldest = _subspace[0].orderAdded();
             for (int i = 1; i < _subspace.size(); ++i) {
-                if (_subspace[i]->orderAdded() < oldest) {
-                    oldest = _subspace[i]->orderAdded();
+                if (_subspace[i].orderAdded() < oldest) {
+                    oldest = _subspace[i].orderAdded();
                     entry = i;
                 }
             }
         } else if (_removalPolicy == RemovalPolicy::LargestError) {
-            double largest = _subspace[0]->rmsError();
+            double largest = _subspace[0].rmsError();
             for (int i = 1; i < _subspace.size(); ++i) {
-                if (_subspace[i]->rmsError() > largest) {
-                    largest = _subspace[i]->rmsError();
+                if (_subspace[i].rmsError() > largest) {
+                    largest = _subspace[i].rmsError();
                     entry = i;
                 }
             }
@@ -335,48 +332,42 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
     timer_on("DIISManager::extrapolate");
 
     auto dimension = _subspace.size() + 1;
-    auto B = std::make_shared<Matrix>("B (DIIS Connectivity Matrix", dimension, dimension);
-    auto bMatrix = B->pointer();
-    auto coefficients = new double[dimension];
-    std::fill_n(coefficients, dimension, 0.0);
-    auto force = new double[dimension];
-    std::fill_n(force, dimension, 0.0);
+    auto B = Matrix("B (DIIS Connectivity Matrix", dimension, dimension);
+    auto Bp = B.pointer();
+    auto coefficients = std::vector<double>(dimension, 0.0);
+    auto force = std::vector<double>(dimension, 0.0);
 
     timer_on("bMatrix setup");
 
     for (int i = 0; i < _subspace.size(); ++i) {
-        coefficients[i] = 0.0;
-        bMatrix[i][_subspace.size()] = bMatrix[_subspace.size()][i] = 1.0;
-        DIISEntry *entryI = _subspace[i];
+        Bp[i][_subspace.size()] = Bp[_subspace.size()][i] = 1.0;
+        auto& entryI = _subspace[i];
         for (int j = 0; j < _subspace.size(); ++j) {
-            DIISEntry *entryJ = _subspace[j];
-            if (entryI->dot_is_known_with(j)) {
-                bMatrix[i][j] = entryI->dot_with(j);
+            auto& entryJ = _subspace[j];
+            if (entryI.dot_is_known_with(j)) {
+                Bp[i][j] = entryI.dot_with(j);
             } else {
-                double dot = C_DDOT(_errorVectorSize, const_cast<double *>(entryI->errorVector()), 1,
-                                    const_cast<double *>(entryJ->errorVector()), 1);
-                bMatrix[i][j] = dot;
-                entryI->set_dot_with(j, dot);
-                entryJ->set_dot_with(i, dot);
+                double dot = C_DDOT(_errorVectorSize, const_cast<double *>(entryI.errorVector()), 1,
+                                    const_cast<double *>(entryJ.errorVector()), 1);
+                Bp[i][j] = dot;
+                entryI.set_dot_with(j, dot);
+                entryJ.set_dot_with(i, dot);
                 if (_storagePolicy == StoragePolicy::OnDisk) {
-                    entryI->free_error_vector_memory();
-                    entryJ->free_error_vector_memory();
+                    entryI.free_error_vector_memory();
+                    entryJ.free_error_vector_memory();
                 }
             }
         }
     }
     force[_subspace.size()] = 1.0;
-    bMatrix[_subspace.size()][_subspace.size()] = 0.0;
+    Bp[_subspace.size()][_subspace.size()] = 0.0;
 
     timer_off("bMatrix setup");
     timer_on("bMatrix pseudoinverse");
 
     // => Balance <= //
 
-    double **Bp = B->pointer();
-
-    auto S = std::make_shared<Vector>("S", dimension);
-    double *Sp = S->pointer();
+    auto S = std::vector<double>(dimension);
 
     // Trap an explicit zero
     bool is_zero = false;
@@ -388,27 +379,27 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
 
     if (is_zero) {
         for (int i = 0; i < dimension; i++) {
-            Sp[i] = 1.0;
+            S[i] = 1.0;
         }
     } else {
         for (int i = 0; i < dimension - 1; i++) {
-            Sp[i] = pow(Bp[i][i], -1.0 / 2.0);
+            S[i] = pow(Bp[i][i], -1.0 / 2.0);
         }
-        Sp[dimension - 1] = 1.0;
+        S[dimension - 1] = 1.0;
     }
 
     for (int i = 0; i < dimension; i++) {
         for (int j = 0; j < dimension; j++) {
-            Bp[i][j] *= Sp[i] * Sp[j];
+            Bp[i][j] *= S[i] * S[j];
         }
     }
 
     // => S [S^-1 B S^-1] S \ f <= //
 
-    B->power(-1.0, 1.0E-12);
-    C_DGEMV('N', dimension, dimension, 1.0, Bp[0], dimension, force, 1, 0.0, coefficients, 1);
+    B.power(-1.0, 1.0E-12);
+    C_DGEMV('N', dimension, dimension, 1.0, Bp[0], dimension, force.data(), 1, 0.0, coefficients.data(), 1);
     for (int i = 0; i < dimension; i++) {
-        coefficients[i] *= Sp[i];
+        coefficients[i] *= S[i];
     }
 
     timer_off("bMatrix pseudoinverse");
@@ -426,7 +417,7 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
     for (int n = 0; n < _subspace.size(); ++n) {
         double coefficient = coefficients[n];
         if (print > 2) outfile->Printf(" %.3f ", coefficient);
-        const double *arrayPtr = _subspace[n]->vector();
+        const double *arrayPtr = _subspace[n].vector();
         va_start(args, numQuantities);
         for (int i = 0; i < numQuantities; ++i) {
             // The indexing arrays contain the error vector, then the vector, so they
@@ -500,15 +491,13 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
                     throw SanityCheckError("Unknown input type", __FILE__, __LINE__);
             }
         }
-        if (_storagePolicy == StoragePolicy::OnDisk) _subspace[n]->free_vector_memory();
+        if (_storagePolicy == StoragePolicy::OnDisk) _subspace[n].free_vector_memory();
         va_end(args);
     }
 
     timer_off("New vector");
 
     if (print > 2) outfile->Printf("\n");
-    delete[] coefficients;
-    delete[] force;
     timer_off("DIISManager::extrapolate");
 
     return true;
@@ -518,7 +507,6 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
  * Removes any vectors existing in the DIIS subspace.
  */
 void DIISManager::reset_subspace() {
-    for (int i = 0; i < _subspace.size(); ++i) delete _subspace[i];
     _subspace.clear();
 }
 
@@ -533,11 +521,6 @@ void DIISManager::delete_diis_file() {
 }
 
 DIISManager::~DIISManager() {
-    for (int i = 0; i < _subspace.size(); ++i) {
-        DIISEntry *temp = _subspace[i];
-        delete temp;
-    }
-    _subspace.clear();
     if (_psio->open_check(PSIF_LIBDIIS)) _psio->close(PSIF_LIBDIIS, 1);
 }
 
