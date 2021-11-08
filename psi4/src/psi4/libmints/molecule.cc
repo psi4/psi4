@@ -145,11 +145,9 @@ Molecule::Molecule()
       full_pg_(PG_C1),
       full_pg_n_(1),
       nunique_(0),
-      nequiv_(nullptr),
       equiv_(nullptr),
       zmat_(false),
       cart_(false),
-      atom_to_unique_(nullptr),
       // old_symmetry_frame_(0)
       reinterpret_coordentries_(true),
       lock_frame_(false) {}
@@ -186,9 +184,7 @@ Molecule &Molecule::operator=(const Molecule &other) {
     // These are symmetry related variables, and are filled in by the following functions
     pg_ = std::shared_ptr<PointGroup>();
     nunique_ = 0;
-    nequiv_ = nullptr;
     equiv_ = nullptr;
-    atom_to_unique_ = nullptr;
     symmetry_from_input_ = other.symmetry_from_input_;
     form_symmetry_information();
     full_pg_ = other.full_pg_;
@@ -2089,12 +2085,10 @@ void Molecule::release_symmetry_information() {
         delete[] equiv_[i];
     }
     delete[] equiv_;
-    delete[] nequiv_;
-    delete[] atom_to_unique_;
+    nequiv_.clear();
     nunique_ = 0;
     equiv_ = 0;
-    nequiv_ = 0;
-    atom_to_unique_ = 0;
+    atom_to_unique_.clear();
 }
 
 void Molecule::form_symmetry_information(double tol) {
@@ -2103,14 +2097,14 @@ void Molecule::form_symmetry_information(double tol) {
     if (natom() == 0) {
         nunique_ = 0;
         equiv_ = 0;
-        nequiv_ = 0;
-        atom_to_unique_ = 0;
+        nequiv_.clear();
+        atom_to_unique_.clear();
         // outfile->Printf( "No atoms detected, returning\n");
         return;
     }
 
-    nequiv_ = new int[natom()];
-    atom_to_unique_ = new int[natom()];
+    nequiv_ = std::vector<int>(natom());
+    atom_to_unique_ = std::vector<int>(natom());
     equiv_ = new int *[natom()];
 
     if (point_group()->symbol() == "c1") {

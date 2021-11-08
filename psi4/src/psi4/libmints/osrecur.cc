@@ -294,13 +294,10 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    auto *F = new double[mmax + 1];  // TODO: Move this allocation into constructor
-
-    // Zero out F
-    memset(F, 0, sizeof(double) * (mmax + 1));
+    auto F = std::vector<double>(mmax + 1, 0);
 
     // Form Fm(U) from A20
-    calculate_f(F, mmax, u);
+    calculate_f(F.data(), mmax, u);
 
     // Perform recursion in m for (a|A(0)|s) using A20
     for (m = 0; m <= mmax; ++m) {
@@ -1299,7 +1296,6 @@ void ObaraSaikaTwoCenterMultipolePotentialRecursion::compute(double PA[3], doubl
             }
         }
     }
-    delete[] F;
 }
 
 ObaraSaikaTwoCenterRecursion::ObaraSaikaTwoCenterRecursion(int max_am1, int max_am2)
@@ -1469,10 +1465,10 @@ void ObaraSaikaTwoCenterVIRecursion::compute(double PA[3], double PB[3], double 
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    auto *F = new double[mmax + 1];
+    auto F = std::vector<double>(mmax + 1);
 
     // Form Fm(U) from A20
-    calculate_f(F, mmax, u);
+    calculate_f(F.data(), mmax, u);
 
     // Think we're having problems with values being left over.
     // zero_box(vi_, size_, size_, mmax + 1);
@@ -1610,8 +1606,6 @@ void ObaraSaikaTwoCenterVIRecursion::compute(double PA[3], double PB[3], double 
             }
         }
     }
-
-    delete[] F;
 }
 
 void ObaraSaikaTwoCenterVIRecursion::compute_erf(double PA[3], double PB[3], double PC[3], double zeta, int am1,
@@ -1632,10 +1626,10 @@ void ObaraSaikaTwoCenterVIRecursion::compute_erf(double PA[3], double PB[3], dou
     double tmp = sqrt(zetam) * M_2_SQRTPI;
     // U from A21
     double u = zetam * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    auto *F = new double[mmax + 1];
+    auto F = std::vector<double>(mmax + 1);
 
     // Form Fm(U) from A20
-    calculate_f(F, mmax, u);
+    calculate_f(F.data(), mmax, u);
 
     // Think we're having problems with values being left over.
     // zero_box(vi_, size_, size_, mmax + 1);
@@ -1778,8 +1772,6 @@ void ObaraSaikaTwoCenterVIRecursion::compute_erf(double PA[3], double PB[3], dou
             }
         }
     }
-
-    delete[] F;
 }
 
 ObaraSaikaTwoCenterVIDerivRecursion::ObaraSaikaTwoCenterVIDerivRecursion(int max_am1, int max_am2)
@@ -1813,13 +1805,10 @@ void ObaraSaikaTwoCenterVIDerivRecursion::compute(double PA[3], double PB[3], do
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    auto *F = new double[mmax + 1];
-
-    // Zero out F
-    memset(F, 0, sizeof(double) * (mmax + 1));
+    auto F = std::vector<double>(mmax + 1, 0);
 
     // Form Fm(U) from A20
-    calculate_f(F, mmax, u);
+    calculate_f(F.data(), mmax, u);
 
     // Perform recursion in m for (a|A(0)|s) using A20
     for (m = 0; m <= mmax; ++m) {
@@ -2094,7 +2083,6 @@ void ObaraSaikaTwoCenterVIDerivRecursion::compute(double PA[3], double PB[3], do
             }
         }
     }
-    delete[] F;
 }
 
 ObaraSaikaTwoCenterVIDeriv2Recursion::ObaraSaikaTwoCenterVIDeriv2Recursion(int max_am1, int max_am2)
@@ -2136,13 +2124,10 @@ void ObaraSaikaTwoCenterVIDeriv2Recursion::compute(double PA[3], double PB[3], d
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    auto *F = new double[mmax + 1];  // TODO: Move this allocation into constructor
-
-    // Zero out F
-    memset(F, 0, sizeof(double) * (mmax + 1));
+    auto F = std::vector<double>(mmax + 1, 0);
 
     // Form Fm(U) from A20
-    calculate_f(F, mmax, u);
+    calculate_f(F.data(), mmax, u);
 
     // Perform recursion in m for (a|A(0)|s) using A20
     for (m = 0; m <= mmax; ++m) {
@@ -2673,7 +2658,6 @@ void ObaraSaikaTwoCenterVIDeriv2Recursion::compute(double PA[3], double PB[3], d
             }
         }
     }
-    delete[] F;
 }
 
 ObaraSaikaTwoCenterElectricField::ObaraSaikaTwoCenterElectricField(int max_am1, int max_am2)
@@ -2710,13 +2694,10 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
     double tmp = sqrt(zeta) * M_2_SQRTPI;
     // U from A21
     double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
-    auto *F = new double[mmax + 1];  // TODO: Move this allocation into constructor
-
-    // Zero out F
-    memset(F, 0, sizeof(double) * (mmax + 1));
+    auto F = std::vector<double>(mmax + 1, 0);
 
     // Form Fm(U) from A20
-    calculate_f(F, mmax, u);
+    calculate_f(F.data(), mmax, u);
 
     // Perform recursion in m for (a|A(0)|s) using A20
     for (m = 0; m <= mmax; ++m) {
@@ -2993,7 +2974,6 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
             }
         }
     }
-    delete[] F;
 }
 
 ObaraSaikaTwoCenterElectricFieldGradient::ObaraSaikaTwoCenterElectricFieldGradient(int max_am1, int max_am2)

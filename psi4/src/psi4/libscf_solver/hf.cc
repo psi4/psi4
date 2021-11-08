@@ -110,8 +110,8 @@ void HF::common_init() {
 
     scf_type_ = options_.get_str("SCF_TYPE");
 
-    H_.reset(factory_->create_matrix("One-electron Hamiltonian"));
-    X_.reset(factory_->create_matrix("X"));
+    H_ = factory_->create_matrix("One-electron Hamiltonian");
+    X_ = factory_->create_matrix("X");
 
     // nmo_ and nmopi_ not determined at present.
     nso_ = 0;

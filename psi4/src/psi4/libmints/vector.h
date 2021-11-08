@@ -113,7 +113,7 @@ class PSI_API Vector final {
 
     void init(const Dimension &v);
 
-    Vector *clone();
+    std::unique_ptr<Vector> clone();
 
     /// Returns a pointer to irrep h
     double *pointer(int h = 0) { return vector_[h]; }

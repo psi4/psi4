@@ -369,7 +369,7 @@ class PSI_API IrreducibleRepresentation {
     char* symb;    // mulliken symbol for this irrep
     char* csymb;   // mulliken symbol for this irrep w/o special characters
 
-    SymRep* rep;  // representation matrices for the symops
+    std::vector<SymRep> rep;  // representation matrices for the symops
 
    public:
     IrreducibleRepresentation();

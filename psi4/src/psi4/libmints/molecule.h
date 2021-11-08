@@ -164,11 +164,11 @@ class PSI_API Molecule {
     /// Number of unique atoms
     int nunique_;
     /// Number of equivalent atoms per unique atom (length nunique_)
-    int* nequiv_;
+    std::vector<int> nequiv_;
     /// Equivalent atom mapping array
     int** equiv_;
     /// Atom to unique atom mapping array (length natom)
-    int* atom_to_unique_;
+    std::vector<int> atom_to_unique_;
 
     /// A listing of the variables used to define the geometries
     std::map<std::string, double> geometry_variables_;
