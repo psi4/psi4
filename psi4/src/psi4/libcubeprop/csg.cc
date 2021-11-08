@@ -60,9 +60,6 @@ CubicScalarGrid::CubicScalarGrid(std::shared_ptr<BasisSet> primary, Options& opt
     y_ = nullptr;
     z_ = nullptr;
     w_ = nullptr;
-    N_ = new int[3];
-    D_ = new double[3];
-    O_ = new double[3];
 
     build_grid();  // Defaults from Options
 }
@@ -71,9 +68,6 @@ CubicScalarGrid::~CubicScalarGrid() {
     if (y_) delete[] y_;
     if (z_) delete[] z_;
     if (w_) delete[] w_;
-    delete[] N_;
-    delete[] D_;
-    delete[] O_;
 }
 void CubicScalarGrid::build_grid(const std::string filepath, int* N, double* D, double* O) {
     filepath_ = filepath;
@@ -238,7 +232,7 @@ void CubicScalarGrid::write_gen_file(double* v, const std::string& name, const s
 void CubicScalarGrid::write_cube_file(double* v, const std::string& name, const std::string& comment) {
     // => Reorder the grid <= //
 
-    double* v2 = new double[npoints_];
+    auto v2 = std::vector<double>(npoints_);
     size_t offset = 0L;
     for (int istart = 0L; istart <= N_[0]; istart += nxyz_) {
         int ni = (istart + nxyz_ > N_[0] ? (N_[0] + 1) - istart : nxyz_);
@@ -590,38 +584,33 @@ void CubicScalarGrid::add_ELF(double* v, std::shared_ptr<Matrix> D) {
     points_->set_ansatz(0);
 }
 void CubicScalarGrid::compute_density(std::shared_ptr<Matrix> D, const std::string& name, const std::string& type) {
-    double* v = new double[npoints_];
-    memset(v, '\0', npoints_ * sizeof(double));
-    add_density(v, D);
+    auto v = std::vector<double>(npoints_, 0);
+    add_density(v.data(), D);
     // Get adaptive isocountour range
-    std::pair<double, double> isocontour_range = compute_isocontour_range(v, 1.0);
+    std::pair<double, double> isocontour_range = compute_isocontour_range(v.data(), 1.0);
     double density_percent = 100.0 * options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
     std::stringstream comment;
     comment << " [e/a0^3]. Isocontour range for " << density_percent << "% of the density: (" << isocontour_range.first
             << "," << isocontour_range.second << ")." << ecp_header();
     // Write to disk
-    write_gen_file(v, name, type, comment.str());
-    delete[] v;
+    write_gen_file(v.data(), name, type, comment.str());
 }
 void CubicScalarGrid::compute_esp(std::shared_ptr<Matrix> D, const std::vector<double>& w, const std::string& name,
                                   const std::string& type) {
-    double* v = new double[npoints_];
-    memset(v, '\0', npoints_ * sizeof(double));
-    add_esp(v, D, w);
-    write_gen_file(v, name, type, " [Eh/e]");
-    delete[] v;
+    auto v = std::vector<double>(npoints_, 0);
+    add_esp(v.data(), D, w);
+    write_gen_file(v.data(), name, type, " [Eh/e]");
 }
 void CubicScalarGrid::compute_basis_functions(const std::vector<int>& indices, const std::string& name,
                                               const std::string& type) {
-    double** v = block_matrix(indices.size(), npoints_);
-    memset(v[0], '\0', indices.size() * npoints_ * sizeof(double));
-    add_basis_functions(v, indices);
+    auto v = Matrix(indices.size(), npoints_);
+    auto vp = v.pointer();
+    add_basis_functions(vp, indices);
     for (int k = 0; k < indices.size(); k++) {
         std::stringstream ss;
         ss << name << "_" << (indices[k] + 1);
-        write_gen_file(v[k], ss.str(), type);
+        write_gen_file(vp[k], ss.str(), type);
     }
-    free_block(v);
 }
 void CubicScalarGrid::compute_orbitals(std::shared_ptr<Matrix> C, const std::vector<int>& indices,
                                        const std::vector<std::string>& labels, const std::string& name,
@@ -632,12 +621,12 @@ void CubicScalarGrid::compute_orbitals(std::shared_ptr<Matrix> C, const std::vec
     for (int k = 0; k < indices.size(); k++) {
         C_DCOPY(primary_->nbf(), &Cp[0][indices[k]], C->colspi()[0], &C2p[0][k], C2->colspi()[0]);
     }
-    double** v = block_matrix(indices.size(), npoints_);
-    memset(v[0], '\0', indices.size() * npoints_ * sizeof(double));
-    add_orbitals(v, C2);
+    auto v = Matrix(indices.size(), npoints_);
+    auto vp = v.pointer();
+    add_orbitals(vp, C2);
     for (int k = 0; k < indices.size(); k++) {
         // Get adaptive isocountour range
-        std::pair<double, double> isocontour_range = compute_isocontour_range(v[k], 2.0);
+        std::pair<double, double> isocontour_range = compute_isocontour_range(vp[k], 2.0);
         double density_percent = 100.0 * options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
         std::stringstream comment;
         comment << ". Isocontour range for " << density_percent << "% of the density: (" << isocontour_range.first
@@ -645,9 +634,8 @@ void CubicScalarGrid::compute_orbitals(std::shared_ptr<Matrix> C, const std::vec
         // Write to disk
         std::stringstream ss;
         ss << name << "_" << (indices[k] + 1) << "_" << labels[k];
-        write_gen_file(v[k], ss.str(), type, comment.str());
+        write_gen_file(vp[k], ss.str(), type, comment.str());
     }
-    free_block(v);
 }
 void CubicScalarGrid::compute_difference(std::shared_ptr<Matrix> C, const std::vector<int>& indices,
                                          const std::string& label, const bool square, const std::string& type) {
@@ -678,18 +666,14 @@ void CubicScalarGrid::compute_difference(std::shared_ptr<Matrix> C, const std::v
     write_gen_file(&vp[0], label, type, comment.str());
 }
 void CubicScalarGrid::compute_LOL(std::shared_ptr<Matrix> D, const std::string& name, const std::string& type) {
-    double* v = new double[npoints_];
-    memset(v, '\0', npoints_ * sizeof(double));
-    add_LOL(v, D);
-    write_gen_file(v, name, type);
-    delete[] v;
+    auto v = std::vector<double>(npoints_, 0);
+    add_LOL(v.data(), D);
+    write_gen_file(v.data(), name, type);
 }
 void CubicScalarGrid::compute_ELF(std::shared_ptr<Matrix> D, const std::string& name, const std::string& type) {
-    double* v = new double[npoints_];
-    memset(v, '\0', npoints_ * sizeof(double));
-    add_ELF(v, D);
-    write_gen_file(v, name, type);
-    delete[] v;
+    auto v = std::vector<double>(npoints_, 0);
+    add_ELF(v.data(), D);
+    write_gen_file(v.data(), name, type);
 }
 std::pair<double, double> CubicScalarGrid::compute_isocontour_range(double* v2, double exponent) {
     double cumulative_threshold = options_.get_double("CUBEPROP_ISOCONTOUR_THRESHOLD");
