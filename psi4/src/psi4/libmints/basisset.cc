@@ -101,7 +101,7 @@ BasisSet::BasisSet() {
     ucoefficients_ = std::vector<double>(1, 1.0);
     uerd_coefficients_ = std::vector<double>(1, 1.0);
     uoriginal_coefficients_ = std::vector<double>(1, 1.0);
-    shell_first_ao_ = std::vector<int>(1);
+    shell_first_ao_ = std::vector<int>(1, 0);
     shell_first_basis_function_ = std::vector<int>(1, 0);
     shells_ = std::vector<GaussianShell>(1);
     l2_shells_.push_back(libint2::Shell::unit());
@@ -112,7 +112,6 @@ BasisSet::BasisSet() {
     center_to_nshell_ = std::vector<int>(1, 1);
     center_to_shell_ = std::vector<int>(1, 0);
     xyz_ = std::vector<double>(3, 0.0);
-    shell_first_ao_[0] = 0;
     puream_ = false;
     max_am_ = 0;
     max_nprimitive_ = 1;
@@ -312,9 +311,9 @@ void BasisSet::print_summary(std::string out) const {
     auto amtypes = std::vector<char>(max_am_ + 1);
 
     for (int A = 0; A < molecule_->natom(); A++) {
-        memset((void *)nprims.data(), '\0', (max_am_ + 1) * sizeof(int));
-        memset((void *)nunique.data(), '\0', (max_am_ + 1) * sizeof(int));
-        memset((void *)nshells.data(), '\0', (max_am_ + 1) * sizeof(int));
+        std::fill(nprims.begin(), nprims.end(), 0);
+        std::fill(nunique.begin(), nunique.end(), 0);
+        std::fill(nshells.begin(), nshells.end(), 0);
 
         printer->Printf("    %4d    ", A + 1);
         printer->Printf("%2s     ", molecule_->symbol(A).c_str());

@@ -145,7 +145,6 @@ Molecule::Molecule()
       full_pg_(PG_C1),
       full_pg_n_(1),
       nunique_(0),
-      equiv_(nullptr),
       zmat_(false),
       cart_(false),
       // old_symmetry_frame_(0)
@@ -184,7 +183,6 @@ Molecule &Molecule::operator=(const Molecule &other) {
     // These are symmetry related variables, and are filled in by the following functions
     pg_ = std::shared_ptr<PointGroup>();
     nunique_ = 0;
-    equiv_ = nullptr;
     symmetry_from_input_ = other.symmetry_from_input_;
     form_symmetry_information();
     full_pg_ = other.full_pg_;
@@ -2081,37 +2079,30 @@ void Molecule::symmetrize(double tol, bool suppress_mol_print_in_exc) {
 }
 
 void Molecule::release_symmetry_information() {
-    for (int i = 0; i < nunique_; ++i) {
-        delete[] equiv_[i];
-    }
-    delete[] equiv_;
     nequiv_.clear();
     nunique_ = 0;
-    equiv_ = 0;
+    equiv_.clear();
     atom_to_unique_.clear();
 }
 
 void Molecule::form_symmetry_information(double tol) {
-    if (equiv_) release_symmetry_information();
+    if (equiv_.size()) release_symmetry_information();
 
     if (natom() == 0) {
-        nunique_ = 0;
-        equiv_ = 0;
-        nequiv_.clear();
-        atom_to_unique_.clear();
+        release_symmetry_information();
         // outfile->Printf( "No atoms detected, returning\n");
         return;
     }
 
     nequiv_ = std::vector<int>(natom());
     atom_to_unique_ = std::vector<int>(natom());
-    equiv_ = new int *[natom()];
+    equiv_ = std::vector<std::vector<int>>(natom());
 
     if (point_group()->symbol() == "c1") {
         nunique_ = natom();
         for (int i = 0; i < natom(); ++i) {
             nequiv_[i] = 1;
-            equiv_[i] = new int[1];
+            equiv_[i] = std::vector<int>(1);
             equiv_[i][0] = i;
             atom_to_unique_[i] = i;
         }
@@ -2121,7 +2112,7 @@ void Molecule::form_symmetry_information(double tol) {
     // The first atom is always unique
     nunique_ = 1;
     nequiv_[0] = 1;
-    equiv_[0] = new int[1];
+    equiv_[0] = std::vector<int>(1);
     equiv_[0][0] = 0;
     atom_to_unique_[0] = 0;
 
@@ -2160,16 +2151,11 @@ void Molecule::form_symmetry_information(double tol) {
         }
         if (i_is_unique) {
             nequiv_[nunique_] = 1;
-            equiv_[nunique_] = new int[1];
-            equiv_[nunique_][0] = i;
+            equiv_[nunique_] = {i};
             atom_to_unique_[i] = nunique_;
             nunique_++;
         } else {
-            int *tmp = new int[nequiv_[i_equiv] + 1];
-            memcpy(tmp, equiv_[i_equiv], nequiv_[i_equiv] * sizeof(int));
-            delete[] equiv_[i_equiv];
-            equiv_[i_equiv] = tmp;
-            equiv_[i_equiv][nequiv_[i_equiv]] = i;
+            equiv_[i_equiv].push_back(i);
             nequiv_[i_equiv]++;
             atom_to_unique_[i] = i_equiv;
         }

@@ -166,7 +166,7 @@ class PSI_API Molecule {
     /// Number of equivalent atoms per unique atom (length nunique_)
     std::vector<int> nequiv_;
     /// Equivalent atom mapping array
-    int** equiv_;
+    std::vector<std::vector<int>> equiv_;
     /// Atom to unique atom mapping array (length natom)
     std::vector<int> atom_to_unique_;
 
