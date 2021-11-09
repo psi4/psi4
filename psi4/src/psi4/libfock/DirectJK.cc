@@ -1388,6 +1388,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std:
         int Rstart = task_shells[R2start];
         int Sstart = task_shells[S2start];
 
+        // Number of basis functions per atom
         int dPsize = task_offsets[P2start + nPtask] - task_offsets[P2start];
         int dQsize = task_offsets[Q2start + nQtask] - task_offsets[Q2start];
         int dRsize = task_offsets[R2start + nRtask] - task_offsets[R2start];
