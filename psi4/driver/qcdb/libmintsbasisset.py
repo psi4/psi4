@@ -192,24 +192,24 @@ class BasisSet(object):
 
 
     # <<< Methods for Construction >>>
-
-    def initialize_singletons(self):
+    @classmethod
+    def initialize_singletons(cls):
         """Initialize singleton values that are shared by all basis set objects."""
         # Populate the exp_ao arrays
-        for l in range(self.LIBINT_MAX_AM):
+        for l in range(cls.LIBINT_MAX_AM):
             for i in range(l + 1):
                 x = l - i
                 for j in range(i + 1):
                     y = i - j
                     z = j
-                    self.exp_ao[l].append([x, y, z])
+                    cls.exp_ao[l].append([x, y, z])
+        cls.initialized_shared = True
 
     def constructor_zero_ao_basis(self):
         """Constructs a zero AO basis set"""
 
         if not self.initialized_shared:
             self.initialize_singletons()
-        self.initialized_shared = True
 
         # Add a dummy atom at the origin, to hold this basis function
         self.molecule = Molecule()
@@ -258,7 +258,6 @@ class BasisSet(object):
         # Singletons
         if not self.initialized_shared:
             self.initialize_singletons()
-        self.initialized_shared = True
 
         # These will tell us where the primitives for [basis][symbol] start and end in the compact array
         primitive_start = {}
@@ -393,7 +392,6 @@ class BasisSet(object):
         # Singletons; these should've been initialized by this point, but just in case
         if not self.initialized_shared:
             self.initialize_singletons()
-        self.initialized_shared = True
 
         # First, find the shells we need, and grab the data
         uexps = []
