@@ -197,7 +197,8 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
         // Contracted 3-index integrals to reproduce 4-index ERI
         dfh_->clear_spaces();
         dfh_->clear_transformations();
-        dfh_->set_method("STORE");
+        // dfh_->set_method("STORE");
+        dfh_->set_method("DIRECT_iaQ");
         dfh_->set_metric_pow(-0.5);
         dfh_->initialize();
 
