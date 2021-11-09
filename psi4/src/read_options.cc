@@ -1680,19 +1680,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("DEBUG", 0);
         /*- What app to test?
           -*/
-        options.add_str("MODULE", "RCIS", "RCIS RCPHF RTDHF RCPKS RTDA RTDDFT");
-        /*- Do singlet states? Default true
-         -*/
-        options.add_bool("DO_SINGLETS", true);
-        /*- Do triplet states? Default true
-         -*/
-        options.add_bool("DO_TRIPLETS", true);
+        options.add_str("MODULE", "RCPHF", "RCPHF");
         /*- Do explicit hamiltonian only? -*/
         options.add_bool("EXPLICIT_HAMILTONIAN", false);
-        /*- Minimum singles amplitude to print in
-            CIS analysis
-         -*/
-        options.add_double("CIS_AMPLITUDE_CUTOFF", 0.15);
         /*- Which tasks to run CPHF For
          *  Valid choices:
          *  -Polarizability
