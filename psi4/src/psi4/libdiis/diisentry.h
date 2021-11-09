@@ -59,8 +59,8 @@ class DIISEntry {
      * Psio     - The PSIO object to use for I/O
      */
     enum class InputType { DPDBuf4, DPDFile2, Matrix, Vector, Pointer };
-    DIISEntry(std::string label, int ID, int count, std::unique_ptr<std::vector<double>> vector,
-              std::unique_ptr<std::vector<double>> errorVector, std::shared_ptr<PSIO> psio);
+    DIISEntry(std::string label, int ID, int count, std::vector<double> vector,
+              std::vector<double> errorVector, std::shared_ptr<PSIO> psio);
     /// Whether the dot product of this entry's and the nth entry's error vector is known
     bool dot_is_known_with(int n) { return _knownDotProducts[n]; }
     /// The dot product of this entry's and the nth entry's error vectors
@@ -77,7 +77,7 @@ class DIISEntry {
     /// Marks the dot product with vector n as invalid
     void invalidate_dot(int n) { _knownDotProducts[n] = false; }
     /// Set the vector
-    void set_vector(std::unique_ptr<std::vector<double>> vec) { _vector = *vec.release(); }
+    void set_vector(std::vector<double> vec) { _vector = std::move(vec); }
     /// Put this vector entry on disk and free the memory
     void dump_vector_to_disk();
     /// Allocate vector memory and read from disk

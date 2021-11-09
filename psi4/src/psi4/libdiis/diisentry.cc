@@ -39,12 +39,12 @@ PRAGMA_WARNING_POP
 
 namespace psi {
 
-DIISEntry::DIISEntry(std::string label, int ID, int orderAdded, std::unique_ptr<std::vector<double>> errorVector,
-                     std::unique_ptr<std::vector<double>> vector, std::shared_ptr<PSIO> psio)
-    : _vectorSize(static_cast<int>(vector->size())),
-      _errorVectorSize(static_cast<int>(errorVector->size())),
-      _vector(*vector.release()),
-      _errorVector(*errorVector.release()),
+DIISEntry::DIISEntry(std::string label, int ID, int orderAdded, std::vector<double> errorVector,
+                     std::vector<double> vector, std::shared_ptr<PSIO> psio)
+    : _vectorSize(static_cast<int>(vector.size())),
+      _errorVectorSize(static_cast<int>(errorVector.size())),
+      _vector(std::move(vector)),
+      _errorVector(std::move(errorVector)),
       _ID(ID),
       _orderAdded(orderAdded),
       _label(label),
@@ -103,11 +103,11 @@ void DIISEntry::read_error_vector_from_disk() {
 }
 
 void DIISEntry::free_vector_memory() {
-    _vector = std::vector<double>(0);
+    _vector.clear();
 }
 
 void DIISEntry::free_error_vector_memory() {
-    _errorVector = std::vector<double>(0);
+    _errorVector.clear();
 }
 
 }  // namespace psi

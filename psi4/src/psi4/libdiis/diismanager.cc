@@ -204,13 +204,13 @@ bool DIISManager::add_entry(int numQuantities, ...) {
     double *array;
     va_list args;
     va_start(args, numQuantities);
-    auto errorVector = std::make_unique<std::vector<double>>(_errorVectorSize);
-    auto paramVector = std::make_unique<std::vector<double>>(_vectorSize);
-    double *arrayPtr = errorVector->data();
+    auto errorVector = std::vector<double>(_errorVectorSize);
+    auto paramVector = std::vector<double>(_vectorSize);
+    double *arrayPtr = errorVector.data();
     for (int i = 0; i < numQuantities; ++i) {
         DIISEntry::InputType type = _componentTypes[i];
         // If we've filled the error vector, start filling the vector
-        if (i == _numErrorVectorComponents) arrayPtr = paramVector->data();
+        if (i == _numErrorVectorComponents) arrayPtr = paramVector.data();
         switch (type) {
             case DIISEntry::InputType::Pointer:
                 array = va_arg(args, double *);
