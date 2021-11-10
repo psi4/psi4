@@ -2084,7 +2084,7 @@ def cbs(func, label, **kwargs):
     for stage in metadata:
 
         NEED = _expand_scheme_orders(stage["scheme"], stage["basis"][0], stage["basis"][1], stage["wfn"],
-                                     stage["options"], stage["alpha"], natsom)
+                                     stage["options"], stage["alpha"], natom)
         GRAND_NEED.append(
             dict(
                 zip(d_fields, [
@@ -2205,18 +2205,18 @@ def cbs(func, label, **kwargs):
             optionstash = False
 
         # Make energy(), etc. call
-        response = func(molecule=molecule, **kwargs)
+        response, wfn = func(molecule=molecule, return_wfn = True, **kwargs)
         if ptype == 'energy':
-            mc['f_energy'] = core.variable(VARH[mc['f_wfn']][mc['f_component']])
+            mc['f_energy'] = wfn.variable(VARH[mc['f_wfn']][mc['f_component']])
         elif ptype == 'gradient':
             # For DFT gradients, we handle all functional components below.
             mc['f_gradient'] = response
-            mc['f_energy'] = core.variable('CURRENT ENERGY')
+            mc['f_energy'] = wfn.variable('CURRENT ENERGY')
             if verbose > 1:
                 mc['f_gradient'].print_out()
         elif ptype == 'hessian':
             mc['f_hessian'] = response
-            mc['f_energy'] = core.variable('CURRENT ENERGY')
+            mc['f_energy'] = wfn.variable('CURRENT ENERGY')
             if verbose > 1:
                 mc['f_hessian'].print_out()
         Njobs += 1
@@ -2235,9 +2235,9 @@ def cbs(func, label, **kwargs):
                 for job in JOBS_EXT:
                     if (mc['f_wfn'] == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
                        (component == job['f_component']) and (mc['f_options'] == job['f_options']):
-                        job['f_energy'] = core.variable(VARH[mc['f_wfn']][component])
+                        job['f_energy'] = wfn.variable(VARH[mc['f_wfn']][component])
                         if component.endswith("fctl"):
-                            job['f_energy'] -= core.variable("DFT VV10 ENERGY")
+                            job['f_energy'] -= wfn.variable("DFT VV10 ENERGY")
         # For DFT, we have deleted duplicate gradient calls but the gradient components
         # are available as variables, with ENERGY-> GRADIENT. So if they are required, let us fill them.
         # At the moment, only "disp" gradients are possible ("nl" and "dh" not yet implemented):
@@ -2247,8 +2247,8 @@ def cbs(func, label, **kwargs):
                     for job in JOBS_EXT:
                         if (mc['f_wfn'] == job['f_wfn']) and (mc['f_basis'] == job['f_basis']) and \
                         (component == job['f_component']) and (mc['f_options'] == job['f_options']):
-                            job['f_energy'] = core.variable(VARH[mc['f_wfn']][component])
-                            job['f_gradient'] = core.variable(VARH[mc['f_wfn']][component].replace(
+                            job['f_energy'] = wfn.variable(VARH[mc['f_wfn']][component])
+                            job['f_gradient'] = wfn.variable(VARH[mc['f_wfn']][component].replace(
                                 "ENERGY", "GRADIENT"))
 
         if verbose > 1:
