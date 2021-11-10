@@ -1162,18 +1162,20 @@ def _get_default_xtpl(nbasis: int, xtpl_type: Union[str, None]) -> Callable:
     """
 
     if nbasis == 1:
-        allowed = ["scf", "corl", "fctl", "dh", None]
+        allowed = ["scf", "corl", "fctl", "dh", "dft", None]
         if xtpl_type in allowed:
             return xtpl_highest_1
         else:
             raise ValidationError(f"Stage treatment must be one of {allowed}, not '{xtpl_type}'")
     elif nbasis == 2:
-        allowed = ["scf", "corl", "fctl", "dh"]
+        allowed = ["scf", "corl", "fctl", "dh", "dft"]
         if xtpl_type == "scf":
             return scf_xtpl_helgaker_2
         elif xtpl_type == "corl":
             return corl_xtpl_helgaker_2
         elif xtpl_type == "fctl":
+            return xtpl_expsqrt_2
+        elif xtpl_type == "dft":
             return xtpl_expsqrt_2
         elif xtpl_type == "dh":
             return xtpl_power_2
@@ -1228,7 +1230,7 @@ def _get_dfa_alpha(xtpl_type: str, bdata: List, funcname: str) -> float:
     bnames, bzetas = bdata
     if funcname not in functionals:
         raise ValidationError(f"Functional name {funcname} is undefined.")
-    elif xtpl_type == "fctl":
+    elif xtpl_type in ["fctl", "dft"]:
         if len({f"cc-pv{x}z" for x in "dtq56"}.intersection(bnames)) >= 2:
             alphadata = [3.622, 1.511, 0.005]
         elif len({f"cc-pwcv{x}z" for x in "dtq5"}.intersection(bnames)) >= 2:
@@ -1305,10 +1307,13 @@ def _get_default_alpha(xtpl_type: Union[str, None], bdata: List, funcname: str =
             return 1.63  # this is the scf_xtpl_helgaker_2 default
         elif xtpl_type == "corl":
             return 3.00  # this is the corl_xtpl_helgaker_2 default
-        elif xtpl_type in ["fctl", "dh"]:
+        elif xtpl_type in ["fctl", "dh", "dft"]:
             return _get_dfa_alpha(xtpl_type, bdata, funcname)
         else:
-            raise ValidationError(f"Stage treatment must be one of ['scf','corl','fctl','dh'], not '{xtpl_type}'")
+            raise ValidationError(
+                f"Stage treatment must be one of ['scf','corl','fctl','dh',"
+                f"'dft'], not '{xtpl_type}'"
+            )
     elif nbasis == 3:
         return None  # we don't need alpha for _3 methods
 
@@ -1400,53 +1405,71 @@ def _interpret_cbs_inputs(cbs_metadata: List, molecule: Union[qcdb.molecule.Mole
             # call is made and the components are picked from the returned wfn
             # automatically.
             if len(metadata) == 0:
-                fctl = {
-                    "wfn": stage["wfn"],
-                    "basis": stage["basis"],
-                    "component": f'{stage["wfn"]}-{item.get("component", "fctl")}',
-                    "stage": item.get("stage", "fctl"),
-                    "isdelta": False,
-                    "scheme": _get_default_xtpl(len(stage["basis"][1]), "fctl"),
-                    "options": item.get("options", False),
-                    "alpha": item.get("alpha", _get_default_alpha("fctl", stage["basis"], stage["wfn"]))
-                }
-                metadata.append(fctl)
-                if f'{stage["wfn"]}-dh' in VARH[stage["wfn"]] and item.get("component", "fctl") != "dft":
-                    dh = {
+                if "component" not in item:
+                    fctl = {
                         "wfn": stage["wfn"],
                         "basis": stage["basis"],
-                        "component": f'{stage["wfn"]}-dh',
-                        "stage": 'dh',
+                        "component": f'{stage["wfn"]}-fctl',
+                        "stage": item.get("stage", "fctl"),
                         "isdelta": False,
-                        "scheme": _get_default_xtpl(len(stage["basis"][1]), "dh"),
+                        "scheme": _get_default_xtpl(len(stage["basis"][1]), "fctl"),
                         "options": item.get("options", False),
-                        "alpha": item.get("alpha", _get_default_alpha("dh", stage["basis"], stage["wfn"]))
+                        "alpha": item.get("alpha", _get_default_alpha("fctl", stage["basis"], stage["wfn"]))
                     }
-                    metadata.append(dh)
-                if f'{stage["wfn"]}-nl' in VARH[stage["wfn"]] and item.get("component", "fctl") != "dft":
-                    nl = {
+                    metadata.append(fctl)
+                    if f'{stage["wfn"]}-dh' in VARH[stage["wfn"]]:
+                        dh = {
+                            "wfn": stage["wfn"],
+                            "basis": stage["basis"],
+                            "component": f'{stage["wfn"]}-dh',
+                            "stage": 'dh',
+                            "isdelta": False,
+                            "scheme": _get_default_xtpl(len(stage["basis"][1]), "dh"),
+                            "options": item.get("options", False),
+                            "alpha": item.get("alpha", _get_default_alpha("dh", stage["basis"], stage["wfn"]))
+                        }
+                        metadata.append(dh)
+                    if f'{stage["wfn"]}-nl' in VARH[stage["wfn"]]:
+                        nl = {
+                            "wfn": stage["wfn"],
+                            "basis": ([stage["basis"][0][-1]], [stage["basis"][1][-1]]),
+                            "component": f'{stage["wfn"]}-nl',
+                            "stage": 'nl',
+                            "isdelta": False,
+                            "scheme": _get_default_xtpl(1, None),
+                            "options": item.get("options", False),
+                            "alpha": item.get("alpha", None)
+                        }
+                        metadata.append(nl)
+                    if f'{stage["wfn"]}-disp' in VARH[stage["wfn"]]:
+                        di = {
+                            "wfn": stage["wfn"],
+                            "basis": ([stage["basis"][0][-1]], [stage["basis"][1][-1]]),
+                            "component": f'{stage["wfn"]}-disp',
+                            "stage": 'disp',
+                            "isdelta": False,
+                            "scheme": _get_default_xtpl(1, None),
+                            "options": item.get("options", False),
+                            "alpha": item.get("alpha", None)
+                        }
+                        metadata.append(di)
+                elif item["component"] in ["dft", "fctl"]:
+                    fctl = {
                         "wfn": stage["wfn"],
-                        "basis": ([stage["basis"][0][-1]], [stage["basis"][1][-1]]),
-                        "component": f'{stage["wfn"]}-nl',
-                        "stage": 'nl',
+                        "basis": stage["basis"],
+                        "component": f'{stage["wfn"]}-{item["component"]}',
+                        "stage": item.get("stage", item["component"]),
                         "isdelta": False,
-                        "scheme": _get_default_xtpl(1, None),
+                        "scheme": _get_default_xtpl(len(stage["basis"][1]), item["component"]),
                         "options": item.get("options", False),
-                        "alpha": item.get("alpha", None)
+                        "alpha": item.get("alpha", _get_default_alpha(item["component"], stage["basis"], stage["wfn"]))
                     }
-                    metadata.append(nl)
-                if f'{stage["wfn"]}-disp' in VARH[stage["wfn"]] and item.get("component", "fctl") != "dft":
-                    di = {
-                        "wfn": stage["wfn"],
-                        "basis": ([stage["basis"][0][-1]], [stage["basis"][1][-1]]),
-                        "component": f'{stage["wfn"]}-disp',
-                        "stage": 'disp',
-                        "isdelta": False,
-                        "scheme": _get_default_xtpl(1, None),
-                        "options": item.get("options", False),
-                        "alpha": item.get("alpha", None)
-                    }
-                    metadata.append(di)
+                    metadata.append(fctl)
+                else:
+                    raise ValidationError(
+                        f"Component '{item['component']}' is not a valid choice "
+                        "for the first stage in extrapolation."
+                    )
             # 2aii) further stages - treat as delta stages
             else:
                 delta = {"wfn": stage["wfn"], "basis": stage["basis"]}

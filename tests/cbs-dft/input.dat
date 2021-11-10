@@ -15,12 +15,12 @@ ref_blyp_d3_dt  = -76.434235158884
 ref_b2plyp_d3_dt= -76.418310528476
 ref_blyp_nl_dt  = -76.360210812341
 ref_b2plyp_naive= -76.402475256624
+ref_b2plyp_fctl = -76.313679154211
 ref_blyp_b2plyp = -76.387774735844
 ref_blyp_d3_dt_grad = psi4.core.Matrix.from_list(
                       [[0.00000000000000,     0.00000000000000,    -0.05020716012511],
                        [0.00000000000000,     0.00342301517298,     0.02510683684897],
                        [0.00000000000000,    -0.00342301517298,     0.02510683684897]])
-
 
 compare_values(ref_blyp_dt, energy('blyp/cc-pv[dt]z'), 7,           "BLYP/cc-[DT]")
 compare_values(ref_blyp_d3_dt, energy('blyp-d3/cc-pv[dt]z'), 7,     "BLYP-D3/cc-[DT]")
@@ -29,6 +29,9 @@ compare_values(ref_blyp_nl_dt, energy('blyp-nl/cc-pv[dt]z'), 7,     "BLYP-NL/cc-
 
 E = energy(cbs, cbs_metadata=[{'wfn': "b2plyp-d3", 'basis': "cc-pv[dt]z", 'component': "dft"}])
 compare_values(ref_b2plyp_naive, E, 7, "B2PLYP-D3/cc-[DT] total DFA energy xtpl")
+
+E = energy(cbs, cbs_metadata=[{'wfn': "b2plyp-d3", 'basis': "cc-pv[dt]z", 'component': "fctl"}])
+compare_values(ref_b2plyp_fctl, E, 7, "B2PLYP-D3/cc-[DT] fctl component xtpl")
 
 E = energy(cbs, cbs_metadata=[{'wfn': "blyp-d3", 'basis': "cc-pv[dt]z"},
                               {'wfn': "b2plyp-d3", 'basis': "cc-pvdz"}])
