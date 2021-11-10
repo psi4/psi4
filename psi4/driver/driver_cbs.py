@@ -904,7 +904,7 @@ def corl_xtpl_helgaker_2(functionname: str,
     Notes
     -----
     The extrapolation is calculated according to [5]_:
-    :math:`E_{corl}^X = E_{corl}^{\infty} + \beta X^{-alpha}`
+    :math:`E_{corl}^X = E_{corl}^{\infty} + \beta X^{-\alpha}`
 
     References
     ----------
@@ -1277,7 +1277,7 @@ def _get_dfa_alpha(xtpl_type: str, bdata: List, funcname: str) -> float:
 
 def _get_default_alpha(xtpl_type: Union[str, None], bdata: List, funcname: str = None) -> Union[float, None]:
     """ A helper function to determine default extrapolation alpha. Currently only
-    used by :py:func:`_validate_cbs_inputs` to get default alphas for DFA, as both
+    used by :py:func:`_interpret_cbs_inputs` to get default alphas for DFA, as both
     "scf" and "corl" types have their default alpha set.
 
 
@@ -1313,9 +1313,53 @@ def _get_default_alpha(xtpl_type: Union[str, None], bdata: List, funcname: str =
         return None  # we don't need alpha for _3 methods
 
 
-def _validate_cbs_inputs(cbs_metadata: List, molecule: Union[qcdb.molecule.Molecule, core.Molecule]) -> list:
+def _interpret_cbs_inputs(cbs_metadata: List, molecule: Union[qcdb.molecule.Molecule, core.Molecule]) -> list:
     """ A helper function which validates the ``cbs_metadata`` format,
     expands basis sets, and provides sensible defaults for optional arguments.
+
+    There are currently three ways to run a CBS calculation:
+
+    1) by specifying arguments, such as ``scf_wfn``, ``corl_basis``, or ``delta_scheme``
+    2) by using the "method/basis+delta" syntax
+    3) by explicitly passing ``cbs_metadata`` as one of the arguments
+
+    These three are interpreted into a single, internal specification here. For the
+    description of the user-facing interfaces see :py:func:`~psi4.cbs`.
+
+    The main role of this function is to interpret the user-provided arguments,
+    infer any missing stages (if possible) such as the SCF stage if the user
+    provides "MP2/cc-pv[dt]z" or the split stages if user requests an extrapolation
+    of a DFA.
+
+    The resulting ``metadata`` :class:`(list[dict])` contains the list of all stages,
+    with possible entries in each of the dicts being:
+
+     - ``"wfn"`` :class:`(str)`: method name for upper level of theory (l.o.t.)
+     - ``"basis"`` :class:`(tuple)`: definition of the basis sets for the upper
+       l.o.t., provided as an "expanded" tuple of names and zeta levels
+     - ``"options"`` :class:`(dict)`: specification of additional Psi4 options to
+       switch on in the upper l.o.t.
+     - ``"component"`` :class:`(str)`: component of the total E/G/H to use for
+       extrapolation as the upper l.o.t.; for WFT it's usually the same as ``"wfn"``,
+       for DFT it allows splitting of the total DFT energy into its components
+     - ``"isdelta"`` :class:`(bool)`: a toggle determining whether the current 
+       stage is to be computed as a difference between upper and lower l.o.t.;
+       if ``True``, the following keys will be determined:
+         
+         - ``"wfn_lo"``: ``"wfn"`` analogue for the lower l.o.t. Defaults to the
+           value of ``"wfn"`` from the **previous** stage.
+         - ``"basis_lo"``: ``"basis"`` analogue for the lower l.o.t. Defaults to 
+           the value of ``"basis"`` from the **current** stage.
+         - ``"options_lo"``: ``"options"`` analogue for the lower l.o.t. Defaults
+           to an empty ``{}``, i.e. no special options compared to upper l.o.t.
+         - ``"component_lo"``: lower l.o.t. analogue for component. Defaults to
+           the value of ``"component"`` from the **current** stage
+     
+     - ``"stage"`` :class:`(str)`: a string tag of the stage, used only in printing
+     - ``"scheme"`` :class:`(Callable)`: the function to be used for extrapolation,
+       applies for both upper and lower l.o.t.
+     - ``"alpha"`` :class:`(float)`: the value of :math:`\alpha` to be passed into 
+       the requested ``"scheme"``, applies for both upper and lower l.o.t.
 
     Parameters
     ----------
@@ -1326,7 +1370,7 @@ def _validate_cbs_inputs(cbs_metadata: List, molecule: Union[qcdb.molecule.Molec
 
     Returns
     -------
-    metadata : list
+    metadata : list[dict]
         Validated list of dictionaries, with each item consisting of an extrapolation
         stage. All validation takes place here.
     """
@@ -1344,27 +1388,17 @@ def _validate_cbs_inputs(cbs_metadata: List, molecule: Union[qcdb.molecule.Molec
         stage["wfn"] = item["wfn"].lower()
         stage["basis"] = _expand_bracketed_basis(item["basis"].lower(), molecule)
         # 2a) process DFT methods
-        # Quick rundown of entries in each stage:
-        # - "wfn":        str, method names for upper level of theory (l.o.t.)
-        # - "wfn_lo":     "wfn" analogue for the lower l.o.t. 
-        #                 Defaults to "wfn" of previous stage.
-        # - "basis":      tuple, expanded basis set names for upper l.o.t.
-        # - "basis_lo":   "basis" analogue for the lower l.o.t.
-        #                 Defaults to "basis" of the current stage.
-        # - "options":    dict, containing options to be set for upper l.o.t.
-        # - "options_lo": "options" analogue for the lower l.o.t.
-        #                 Defaults to empty dict, i.e. no special options.
-        # - "component":  str, name of the component energy of "wfn" to extrapolate. 
-        #                 In WFT, likely to be the same as "wfn".
-        #                 In DFT, specifies the -fctl, -dh, -disp, -nl, or -dft part.      
-        # - "component_lo": lower l.o.t. analogue for component.
-        # - "stage":      str, tag of the stage, used only in printing
-        # - "isdelta":    bool, determines whether a stage is computed by difference 
-        #                 between upper/lower l.o.t.
-        # - "scheme":     Callable, function to be used for extrapolation
-        # - "alpha":      float, alpha to be passed into "scheme"
         if stage["wfn"] in functionals and stage["wfn"] not in ["hf", "scf"]:
             # 2ai) first stage - split into components, unless "component" == "dft"
+            #     This allows users to request "BLYP-D3(0)/pc-[12]" without 
+            # specifying extra parameters. If "component" is not "dft", the "fctl", 
+            # "disp", "dh", and "nl" stages are generated automatically as required, 
+            # and the "DFT TOTAL ENERGY" is not used.
+            #     In cases where "component" is "dft", that setting gets processed,
+            # and further generation of component stages is skipped.
+            #     Note that none of these stages are delta-stages, as only one E/G/H
+            # call is made and the components are picked from the returned wfn
+            # automatically.
             if len(metadata) == 0:
                 fctl = {
                     "wfn": stage["wfn"],
@@ -1485,7 +1519,7 @@ def _validate_cbs_inputs(cbs_metadata: List, molecule: Union[qcdb.molecule.Molec
 
 def _process_cbs_kwargs(kwargs: dict) -> list:
     """ A helper function which translates supplied kwargs into the
-    ``cbs_metadata`` format and passes it for validation.
+    ``cbs_metadata`` format and passes it for further validation.
 
     Parameters
     ----------
@@ -1538,7 +1572,7 @@ def _process_cbs_kwargs(kwargs: dict) -> list:
             elif sn == "delta":
                 possible_stages.append("delta2")
 
-    return _validate_cbs_inputs(cbs_metadata, molecule)
+    return _interpret_cbs_inputs(cbs_metadata, molecule)
 
 
 ###################################
@@ -1850,8 +1884,11 @@ def cbs(func, label, **kwargs):
     Combined interface
     ------------------
 
-    This is the interface to which all of the above calls are internally 
-    translated. This applies for WFT as well as DFT extrapolations.
+    This user-facing interface allows for the specification of more detailed 
+    extrapolation recipes, and is a superset of the keyword functionality above.
+    Internally, all calls to cbs() get first translated into this user-facing form, 
+    before being validated and interpreted into an internal specification discussed
+    in :py:func:`~psi4.driver.driver_cbs._interpret_cbs_inputs`.
 
     :type cbs_metadata: list(dict)
     :param cbs_metadata: |dl| autogenerated from above keywords |dr| || ``[{"wfn": "hf", "basis": "cc-pv[TQ5]z"}]`` || etc.
@@ -1986,6 +2023,11 @@ def cbs(func, label, **kwargs):
 
     """
     kwargs = p4util.kwargs_lower(kwargs)
+
+    # All kwargs get processed using _process_cbs_kwargs(), which calls 
+    # _interpret_cbs_inputs(), ensuring that the user-facing spec is always correctly
+    # converted into the internal spec. Note that the "method/basis" type inputs
+    # get processed into kwargs in _cbs_gufunc() before ever reaching cbs().
     metadata = _process_cbs_kwargs(kwargs)
     return_wfn = kwargs.pop('return_wfn', False)
     verbose = kwargs.pop('verbose', 0)
@@ -2042,7 +2084,7 @@ def cbs(func, label, **kwargs):
     for stage in metadata:
 
         NEED = _expand_scheme_orders(stage["scheme"], stage["basis"][0], stage["basis"][1], stage["wfn"],
-                                     stage["options"], stage["alpha"], natom)
+                                     stage["options"], stage["alpha"], natsom)
         GRAND_NEED.append(
             dict(
                 zip(d_fields, [
@@ -2598,17 +2640,13 @@ def _cbs_gufunc(func: Callable, total_method_name: str, **kwargs: dict) -> Union
         stage['basis'] = basis_list[0]
         if 'scf_scheme' in kwargs:
             stage['scheme'] = kwargs.pop('scf_scheme')
-        #stage['stage'] = "scf"
-        #stage['treatment'] = "scf"
     else:
-        # _validate_cbs_inputs will produce scf stage automatically
+        # _interpret_cbs_inputs will produce scf stage automatically
         stage = {}
         stage['wfn'] = method_list[0]
         stage['basis'] = basis_list[0]
         if 'corl_scheme' in kwargs:
             stage['scheme'] = kwargs.pop('corl_scheme')
-        #stage['stage'] = "corl"
-        #stage['treatment'] = "corl"
     metadata.append(stage)
 
     # "method/basis" syntax only allows for one delta correction
