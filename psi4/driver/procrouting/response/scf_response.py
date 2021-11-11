@@ -82,7 +82,7 @@ def cpscf_linear_response(wfn, *args, **kwargs):
         The reference wavefunction.
     args : list
         The list of arguments. For each argument, such as ``dipole polarizability``, will return the corresponding
-        response. The user may also choose to pass a list or tuple of custom vectors.
+        response.
     kwargs : dict
         Options that control how the response is computed. The following options are supported (with default values):
           - ``conv_tol``: 1e-5
@@ -92,44 +92,23 @@ def cpscf_linear_response(wfn, *args, **kwargs):
     Returns
     -------
     responses : list
-        The list of responses.
+        The list of response tensors.
     """
     mints = core.MintsHelper(wfn.basisset())
 
-    # list of dictionaries to control response calculations, count how many user-supplied vectors we have
+    # list of dictionaries to control response calculations
     complete_dict = []
-    n_user = 0
 
     for arg in args:
-
         # for each string keyword, append the appropriate dictionary (vide supra) to our list
-        if isinstance(arg, str):
-            ret = property_dicts.get(arg)
-            if ret:
-                complete_dict.append(ret)
-            else:
-                raise ValidationError('Do not understand {}. Abort.'.format(arg))
-
-        # the user passed a list of vectors. absorb them into a dictionary
-        elif isinstance(arg, tuple) or isinstance(arg, list):
-            complete_dict.append({
-                'name': 'User Vectors',
-                'length': len(arg),
-                'vectors': arg,
-                'vector names': ['User Vector {}_{}'.format(n_user, i) for i in range(len(arg))]
-            })
-            n_user += len(arg)
-
-        # single vector passed. stored in a dictionary as a list of length 1 (can be handled as the case above that way)
-        # note: the length is set to '0' to designate that it was not really passed as a list
+        if not isinstance(arg, str):
+            # TODO: better to raise TypeError?
+            raise ValidationError("Property name must be of type string.")
+        ret = property_dicts.get(arg)
+        if ret:
+            complete_dict.append(ret)
         else:
-            complete_dict.append({
-                'name': 'User Vector',
-                'length': 0,
-                'vectors': [arg],
-                'vector names': ['User Vector {}'.format(n_user)]
-            })
-            n_user += 1
+            raise ValidationError(f"Do not understand '{arg}'.")
 
     # vectors will be passed to the cphf solver, vector_names stores the corresponding names
     vectors = []
@@ -138,116 +117,70 @@ def cpscf_linear_response(wfn, *args, **kwargs):
 
     # construct the list of vectors. for the keywords, fetch the appropriate tensors from MintsHelper
     for prop in complete_dict:
-        if 'User' in prop['name']:
-            for name, vec in zip(prop['vector names'], prop['vectors']):
-                vectors.append(vec)
-                vector_names.append(name)
-        else:
-            tmp_vectors = prop['mints_function'](mints)
-            for tmp in tmp_vectors:
-                if restricted:
-                    tmp.scale(-2.0)
-                else:
-                    tmp.scale(-1.0)
-                vectors.append(tmp)
-                vector_names.append(tmp.name)
+        tmp_vectors = prop['mints_function'](mints)
+        for tmp in tmp_vectors:
+            if restricted:
+                tmp.scale(-2.0)
+            else:
+                tmp.scale(-1.0)
+            vectors.append(tmp)
+            vector_names.append(tmp.name)
 
     # do we have any vectors to work with?
     if len(vectors) == 0:
-        raise ValidationError('I have no vectors to work with. Aborting.')
+        raise ValidationError('No vectors to work with. Aborting.')
 
     # print information on module, vectors that will be used
-    _print_header(complete_dict, n_user)
+    _print_header(complete_dict)
 
-    if restricted:
-        # fetch wavefunction information
-        nmo = wfn.nmo()
-        ndocc = wfn.nalpha()
-        nvirt = nmo - ndocc
-
-        c_occ = wfn.Ca_subset("AO", "OCC")
-        c_vir = wfn.Ca_subset("AO", "VIR")
-        nbf = c_occ.shape[0]
-        # the vectors need to be in the MO basis. if they have the shape nbf x nbf, transform.
-        for i in range(len(vectors)):
-            shape = vectors[i].shape
-            if shape == (nbf, nbf):
-                vectors[i] = core.triplet(c_occ, vectors[i], c_vir, True, False, False)
-            # verify that this vector already has the correct shape
-            elif shape != (ndocc, nvirt):
-                raise ValidationError('ERROR: "{}" has an unrecognized shape ({}, {}).'
-                                      'Must be either ({}, {}) or ({}, {})'.format(
-                                          vector_names[i], shape[0], shape[1], nbf, nbf, ndocc, nvirt))
-    else:
-        Co = [wfn.Ca_subset("AO", "OCC"), wfn.Cb_subset("AO", "OCC")]
-        Cv = [wfn.Ca_subset("AO", "VIR"), wfn.Cb_subset("AO", "VIR")]
-        occpi = [wfn.nalphapi(), wfn.nbetapi()]
-        virpi = [wfn.nmopi() - occpi[0], wfn.nmopi() - occpi[1]]
-        nbf = Co[0].shape[0]
-
-        vectors_ab = []
-        for i in range(len(vectors)):
-            shape = vectors[i].shape
-            if shape == (nbf, nbf):
-                v_a = core.triplet(Co[0], vectors[i], Cv[0], True, False, False)
-                v_b = core.triplet(Co[1], vectors[i], Cv[1], True, False, False)
-            vectors_ab.append(v_a)
-            vectors_ab.append(v_b)
-        vectors = vectors_ab
+    nbf = wfn.basisset().nbf()
+    Co = [wfn.Ca_subset("AO", "OCC"), wfn.Cb_subset("AO", "OCC")]
+    Cv = [wfn.Ca_subset("AO", "VIR"), wfn.Cb_subset("AO", "VIR")]
+    vectors_transformed = []
+    for vector in vectors:
+        if vector.shape != (nbf, nbf):
+            raise ValidationError(f"Vector must be of shape {nbf}x{nbf} for transformation"
+                                  " to the SO basis.")
+        v_a = core.triplet(Co[0], vector, Cv[0], True, False, False)
+        vectors_transformed.append(v_a)
+        if not restricted:
+            v_b = core.triplet(Co[1], vector, Cv[1], True, False, False)
+            vectors_transformed.append(v_b)
 
     # compute response vectors for each input vector
     params = [kwargs.pop("conv_tol", 1.e-5), kwargs.pop("max_iter", 10), kwargs.pop("print_lvl", 2)]
 
-    responses = wfn.cphf_solve(vectors, *params)
-    
-    if restricted:
-        # zip vectors, responses for easy access
-        vectors = {k: v for k, v in zip(vector_names, vectors)}
-        responses = {k: v for k, v in zip(vector_names, responses)}
+    responses_list = wfn.cphf_solve(vectors_transformed, *params)
 
-        # compute response values, format output
-        output = []
-        for prop in complete_dict:
-            # try to replicate the data structure of the input
-            if 'User' in prop['name']:
-                if prop['length'] == 0:
-                    output.append(responses[prop['vector names'][0]])
-                else:
-                    buf = []
-                    for name in prop['vector names']:
-                        buf.append(responses[name])
-                    output.append(buf)
-            else:
-                names = prop['vector names']
-                dim = len(names)
-                buf = np.zeros((dim, dim))
-                for i, i_name in enumerate(names):
-                    for j, j_name in enumerate(names):
-                        buf[i, j] = -1.0 * vectors[i_name].vector_dot(responses[j_name])
-                output.append(buf)
+    # zip vectors, responses for easy access
+    if restricted:
+        vectors = {f"{k}_a": v for k, v in zip(vector_names, vectors_transformed)}
+        responses = {f"{k}_a": v for k, v in zip(vector_names, responses_list)}
     else:
-        vectors_a = {k: v for k, v in zip(vector_names, vectors[::2])}
-        vectors_b = {k: v for k, v in zip(vector_names, vectors[1::2])}
-        responses_a = {k: v for k, v in zip(vector_names, responses[::2])}
-        responses_b = {k: v for k, v in zip(vector_names, responses[1::2])}
-        output = []
+        vectors = {f"{k}_a": v for k, v in zip(vector_names, vectors_transformed[::2])}
+        vectors.update({f"{k}_b": v for k, v in zip(vector_names, vectors_transformed[1::2])})
+        responses = {f"{k}_a": v for k, v in zip(vector_names, responses_list[::2])}
+        responses.update({f"{k}_b": v for k, v in zip(vector_names, responses_list[1::2])})
+    # compute response values, format output
+    output = []
+    pref = -1.0 if restricted else -2.0
+    for prop in complete_dict:
         names = prop['vector names']
         dim = len(names)
         buf = np.zeros((dim, dim))
         for i, i_name in enumerate(names):
             for j, j_name in enumerate(names):
-                # why 2.0?!
-                buf[i, j] = -2.0 * vectors_a[i_name].vector_dot(responses_a[j_name])
-                buf[i, j] += -2.0 * vectors_b[i_name].vector_dot(responses_b[j_name])
+                buf[i, j] = pref * vectors[f"{i_name}_a"].vector_dot(responses[f"{j_name}_a"])
+                if not restricted:
+                    buf[i, j] += pref * vectors[f"{i_name}_b"].vector_dot(responses[f"{j_name}_b"])
         output.append(buf)
-        
 
     _print_output(complete_dict, output)
 
     return output
 
 
-def _print_header(complete_dict, n_user):
+def _print_header(complete_dict):
     core.print_out('\n\n         ---------------------------------------------------------\n'
                    '         {:^57}\n'.format('CPSCF Linear Response Solver') +
                    '         {:^57}\n'.format('by Marvin Lechner and Daniel G. A. Smith') +
@@ -258,9 +191,6 @@ def _print_header(complete_dict, n_user):
     for prop in complete_dict:
         if 'User' not in prop['name']:
             core.print_out('    {}\n'.format(prop['name']))
-
-    if n_user != 0:
-        core.print_out('    {} user-supplied vector(s)\n'.format(n_user))
 
 
 def _print_matrix(descriptors, content, title):
