@@ -119,10 +119,7 @@ def cpscf_linear_response(wfn, *args, **kwargs):
     for prop in complete_dict:
         tmp_vectors = prop['mints_function'](mints)
         for tmp in tmp_vectors:
-            if restricted:
-                tmp.scale(-2.0)
-            else:
-                tmp.scale(-1.0)
+            tmp.scale(-1.0)
             vectors.append(tmp)
             vector_names.append(tmp.name)
 
@@ -139,7 +136,7 @@ def cpscf_linear_response(wfn, *args, **kwargs):
     vectors_transformed = []
     for vector in vectors:
         if vector.shape != (nbf, nbf):
-            raise ValidationError(f"Vector must be of shape {nbf}x{nbf} for transformation"
+            raise ValidationError(f"Vector must be of shape ({nbf}, {nbf}) for transformation"
                                   " to the SO basis.")
         v_a = core.triplet(Co[0], vector, Cv[0], True, False, False)
         vectors_transformed.append(v_a)
@@ -163,7 +160,7 @@ def cpscf_linear_response(wfn, *args, **kwargs):
         responses.update({f"{k}_b": v for k, v in zip(vector_names, responses_list[1::2])})
     # compute response values, format output
     output = []
-    pref = -1.0 if restricted else -2.0
+    pref = -4.0 if restricted else -2.0
     for prop in complete_dict:
         names = prop['vector names']
         dim = len(names)
