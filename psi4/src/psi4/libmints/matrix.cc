@@ -1417,7 +1417,8 @@ void Matrix::axpy(double a, SharedMatrix X) {
     }
     for (int h = 0; h < nirrep_; h++) {
         size_t size = colspi_[h ^ symmetry()] * (size_t)rowspi_[h];
-        if (size != (X->rowspi()[h] * X->colspi()[h ^ X->symmetry()])) {
+        size_t size_X = X->colspi()[h ^ X->symmetry()] * (size_t)X->rowspi()[h];
+        if (size != size_X) {
             throw PSIEXCEPTION("Matrix::axpy: Matrices sizes do not match.");
         }
         if (size) {
