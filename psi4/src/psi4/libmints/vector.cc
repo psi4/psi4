@@ -122,7 +122,7 @@ void Vector::init(const Dimension &v) {
     alloc();
 }
 
-std::unique_ptr<Vector> Vector::clone() {
+std::unique_ptr<Vector> Vector::clone() const {
     auto temp = std::make_unique<Vector>(dimpi_);
     temp->copy(this);
     return temp;
