@@ -232,7 +232,7 @@ void Vector::gemv(bool transa, double alpha, Matrix *A, Vector *X, double beta) 
     char trans = transa ? 't' : 'n';
 
     for (int h = 0; h < nirrep_; ++h) {
-        C_DGEMV(trans, A->rowspi(h), A->colspi(h), alpha, A->get_pointer(h), A->rowspi(h), &(X->vector_[h][0]), 1, beta,
+        C_DGEMV(trans, A->rowspi(h), A->colspi(h), alpha, A->get_pointer(h), A->colspi(h), &(X->vector_[h][0]), 1, beta,
                 &(vector_[h][0]), 1);
     }
 }

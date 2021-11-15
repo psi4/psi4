@@ -566,20 +566,22 @@ void HF::form_H() {
             // Set up AO->SO transformation matrix (u)
             MintsHelper helper(basisset_, options_, 0);
             SharedMatrix aotoso = helper.petite_list(true)->aotoso();
-            int* col_offset = new int[nirrep_];
-            col_offset[0] = 0;
-            for (int h = 1; h < nirrep_; h++) col_offset[h] = col_offset[h - 1] + aotoso->coldim(h - 1);
+            Matrix u(nao, nso);
+            int offset = 0;
 
-            double** u = block_matrix(nao, nso);
-            for (int h = 0; h < nirrep_; h++)
-                for (int j = 0; j < aotoso->coldim(h); j++)
-                    for (int i = 0; i < nao; i++) u[i][j + col_offset[h]] = aotoso->get(h, i, j);
-            delete[] col_offset;
+            for (int h = 0; h < nirrep_; h++) {
+                // These loops should be vectorized for a (small) efficiency gain.
+                for (int j = 0; j < aotoso->coldim(h); j++) {
+                    for (int i = 0; i < nao; i++) {
+                        u.set(i, j + offset, aotoso->get(h, i, j));
+                    }
+                }
+                offset += aotoso->coldim(h);
+            }
 
-            double *phi_ao, *phi_so, **V_eff;
-            phi_ao = init_array(nao);
-            phi_so = init_array(nso);
-            V_eff = block_matrix(nso, nso);
+            Vector phi_ao(nao);
+            Vector phi_so(nso);
+            Matrix V_eff(nso, nso);
 
             if (dipole_field_type_ == embpot) {
                 FILE* input = fopen("EMBPOT", "r");
@@ -592,11 +594,11 @@ void HF::form_H() {
                     statusvalue = fscanf(input, "%lf %lf %lf %lf %lf", &x, &y, &z, &w, &v);
                     if (std::fabs(v) > max) max = std::fabs(v);
 
-                    basisset_->compute_phi(phi_ao, x, y, z);
+                    basisset_->compute_phi(phi_ao.pointer(), x, y, z);
                     // Transform phi_ao to SO basis
-                    C_DGEMV('t', nao, nso, 1.0, &(u[0][0]), nso, &(phi_ao[0]), 1, 0.0, &(phi_so[0]), 1);
+                    phi_so.gemv(true, 1.0, &u, &phi_ao, 0.0);
                     for (int i = 0; i < nso; i++)
-                        for (int j = 0; j < nso; j++) V_eff[i][j] += w * v * phi_so[i] * phi_so[j];
+                        for (int j = 0; j < nso; j++) V_eff.add(i, j, w * v * phi_so[i] * phi_so[j]);
                 }  // npoints
 
                 outfile->Printf("  Max. embpot value = %20.10f\n", max);
@@ -604,7 +606,7 @@ void HF::form_H() {
 
             }  // embpot
             else if (dipole_field_type_ == dx) {
-                dx_read(V_eff, phi_ao, phi_so, nao, nso, u);
+                dx_read(V_eff.pointer(), phi_ao.pointer(), phi_so.pointer(), nao, nso, u.pointer());
 
             }  // dx file
             else if (dipole_field_type_ == sphere) {
@@ -633,13 +635,13 @@ void HF::form_H() {
 
                             double jacobian = weight * r * r * sin(theta);
 
-                            basisset_->compute_phi(phi_ao, x, y, z);
+                            basisset_->compute_phi(phi_ao.pointer(), x, y, z);
 
-                            C_DGEMV('t', nao, nso, 1.0, &(u[0][0]), nso, &(phi_ao[0]), 1, 0.0, &(phi_so[0]), 1);
+                            phi_so.gemv(true, 1.0, &u, &phi_ao, 0.0);
 
                             for (int i = 0; i < nso; i++)
                                 for (int j = 0; j < nso; j++)
-                                    V_eff[i][j] += jacobian * (-1.0e6) * phi_so[i] * phi_so[j];
+                                    V_eff.add(i, j, jacobian * (-1.0e6) * phi_so[i] * phi_so[j]);
                         }
                     }
                 }
@@ -647,19 +649,14 @@ void HF::form_H() {
 
             outfile->Printf("  Perturbing H by %f %f %f V_eff.\n", dipole_field_strength_[0], dipole_field_strength_[1],
                             dipole_field_strength_[2]);
-            if (options_.get_int("PRINT") > 3) mat_print(V_eff, nso, nso, "outfile");
+            if (options_.get_int("PRINT") > 3) V_eff.print_out();
 
             if (dipole_field_type_ == dx) {
-                for (int i = 0; i < nso; i++)
-                    for (int j = 0; j < nso; j++) V_->set(i, j, V_eff[i][j]);  // ignore nuclear potential
+                V_->copy(V_eff);
             } else {
-                for (int i = 0; i < nso; i++)
-                    for (int j = 0; j < nso; j++) V_->set(i, j, (V_eff[i][j] + V_->get(i, j)));
+                V_->add(V_eff);
             }
 
-            free(phi_ao);
-            free(phi_so);
-            free_block(V_eff);
         }  // embpot or sphere
     }      // end perturb_h_
 
