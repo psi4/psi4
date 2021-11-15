@@ -196,6 +196,7 @@ int C_DGEGV(char jobvl, char jobvr, int n, double* a, int lda, double* b, int ld
             double* beta, double* vl, int ldvl, double* vr, int ldvr, double* work, int lwork);
 int C_DGEHRD(int n, int ilo, int ihi, double* a, int lda, double* tau, double* work, int lwork);
 int C_DGELQF(int m, int n, double* a, int lda, double* tau, double* work, int lwork);
+PSI_API
 int C_DGELS(char trans, int m, int n, int nrhs, double* a, int lda, double* b, int ldb, double* work, int lwork);
 int C_DGELSD(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, double* s, double rcond, int* rank,
              double* work, int lwork, int* iwork);
