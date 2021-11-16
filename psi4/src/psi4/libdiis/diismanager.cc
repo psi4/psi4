@@ -207,6 +207,7 @@ bool DIISManager::add_entry(int numQuantities, ...) {
     auto errorVector = std::vector<double>(_errorVectorSize);
     auto paramVector = std::vector<double>(_vectorSize);
     double *arrayPtr = errorVector.data();
+    outfile->Printf("Beginning entry filling\n");
     for (int i = 0; i < numQuantities; ++i) {
         DIISEntry::InputType type = _componentTypes[i];
         // If we've filled the error vector, start filling the vector
@@ -248,12 +249,18 @@ bool DIISManager::add_entry(int numQuantities, ...) {
             }
             case DIISEntry::InputType::Matrix:
             {
+                outfile->Printf("Starting matrix add\n");
                 matrix = va_arg(args, Matrix *);
                 for (int h = 0; h < matrix->nirrep(); ++h) {
+                    outfile->Printf("Entered irrep\n");
                     auto size = matrix->rowdim(h) * matrix->coldim(h ^ matrix->symmetry());
+                    outfile->Printf("Sizing complete\n");
                     std::copy(matrix->pointer(h)[0], matrix->pointer(h)[0] + size, arrayPtr);
+                    outfile->Printf("Data copy complete\n");
                     arrayPtr += size;
+                    outfile->Printf("Pointer arithmetic done\n");
                 }
+                outfile->Printf("Finished matrix add\n");
                 break;
             }
             case DIISEntry::InputType::Vector:
@@ -270,16 +277,20 @@ bool DIISManager::add_entry(int numQuantities, ...) {
     }
     va_end(args);
 
+    outfile->Printf("DIIS Entry prep\n");
     int entryID = get_next_entry_id();
     if (_subspace.size() < _maxSubspaceSize) {
         _subspace.emplace_back(_label, entryID, _entryCount++, std::move(errorVector), std::move(paramVector), _psio);
     } else {
         _subspace[entryID] = DIISEntry(_label, entryID, _entryCount++, std::move(errorVector), std::move(paramVector), _psio);
     }
+    outfile->Printf("DIIS Entry built\n");
 
     if (_storagePolicy == StoragePolicy::OnDisk) {
+        outfile->Printf("Attempting dump to disk\n");
         _subspace[entryID].dump_vector_to_disk();
         _subspace[entryID].dump_error_vector_to_disk();
+        outfile->Printf("Dump to disk succeeded.\n");
     }
 
     // Clear all inner products with this entry that may be cached
@@ -480,15 +491,15 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
                     if (!n) matrix->zero();
                     for (int h = 0; h < matrix->nirrep(); ++h) {
                         auto size = static_cast<size_t>(matrix->rowdim(h)) * matrix->colspi(h ^ matrix->symmetry());
-                        outfile->Printf("Attempting Matrix extrapolation");
+                        outfile->Printf("Attempting Matrix extrapolation\n");
                         if (size) {
-                            outfile->Printf("Confirmed nonzero size");
+                            outfile->Printf("Confirmed nonzero size\n");
                             C_DAXPY(size, coefficient, arrayPtr, 1, matrix->pointer(h)[0], 1);
-                            outfile->Printf("AXPY executed");
+                            outfile->Printf("AXPY executed\n");
                             arrayPtr += static_cast<int>(size);
-                            outfile->Printf("Pointer arithmetic done");
+                            outfile->Printf("Pointer arithmetic done\n");
                         }
-                        outfile->Printf("Matrix extrapolation success for this irrep");
+                        outfile->Printf("Matrix extrapolation success for this irrep\n");
                     }
                     break;
                 }
