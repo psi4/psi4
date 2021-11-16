@@ -215,7 +215,7 @@ bool DIISManager::add_entry(int numQuantities, ...) {
             case DIISEntry::InputType::Pointer:
             {
                 array = va_arg(args, double *);
-                auto size = _componentSizes[i];
+                auto size = static_cast<int>(_componentSizes[i]);
                 std::copy(array, array + size, arrayPtr);
                 arrayPtr += size;
                 break;
@@ -436,7 +436,7 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
                     if (!n) ::memset(array, 0, size * sizeof(double));
                     if (size) {
                         C_DAXPY(size, coefficient, arrayPtr, 1, array, 1);
-                        arrayPtr += size;
+                        arrayPtr += static_cast<int>(size);
                     }
                     break;
                 }
@@ -450,7 +450,7 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
                         auto size = static_cast<size_t>(buf4->params->rowtot[h]) * buf4->params->coltot[h ^ buf4->file.my_irrep];
                         if (size) {
                             C_DAXPY(size, coefficient, arrayPtr, 1, buf4->matrix[h][0], 1);
-                            arrayPtr += size;
+                            arrayPtr += static_cast<int>(size);
                         }
                         global_dpd_->buf4_mat_irrep_wrt(buf4, h);
                         global_dpd_->buf4_mat_irrep_close(buf4, h);
@@ -467,7 +467,7 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
                         auto size = static_cast<size_t>(file2->params->rowtot[h]) * file2->params->coltot[file2->my_irrep ^ h];
                         if (size) {
                             C_DAXPY(size, coefficient, arrayPtr, 1, file2->matrix[h][0], 1);
-                            arrayPtr += size;
+                            arrayPtr += static_cast<int>(size);
                         }
                     }
                     global_dpd_->file2_mat_wrt(file2);
@@ -482,7 +482,7 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
                         auto size = static_cast<size_t>(matrix->rowdim(h)) * matrix->colspi(h ^ matrix->symmetry());
                         if (size) {
                             C_DAXPY(size, coefficient, arrayPtr, 1, matrix->pointer(h)[0], 1);
-                            arrayPtr += size;
+                            arrayPtr += static_cast<int>(size);
                         }
                     }
                     break;
@@ -494,7 +494,7 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
                     auto size = static_cast<size_t>(vector->dimpi().sum());
                     if (size) {
                         C_DAXPY(size, coefficient, arrayPtr, 1, vector->pointer(), 1);
-                        arrayPtr += size;
+                        arrayPtr += static_cast<int>(size);
                     }
                     break;
                 }
