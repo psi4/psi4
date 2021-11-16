@@ -247,7 +247,7 @@ bool DIISManager::add_entry(int numQuantities, ...) {
                     auto size = file2->params->rowtot[h] * file2->params->coltot[file2->my_irrep ^ h];
                     if (size) {
                         std::copy(file2->matrix[h][0], file2->matrix[h][0] + size, arrayPtr);
-                        arrayPtr += sizei;
+                        arrayPtr += size;
                     }
                 }
                 global_dpd_->file2_mat_close(file2);
