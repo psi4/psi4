@@ -144,9 +144,12 @@ void DFOCC::occ_iterations() {
           T2.reset();
         }
         else if (wfn_type_ == "DF-OMP2.5" || wfn_type_ == "DF-OMP3"){
+          outfile->Printf("\ttrying to launch coupled DIIS for DF-OMP2.5/DF-OMP3...\n");
           std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));   // T2_1 and T2_2 share the same prototype
-          orbitalDIIS->set_error_vector_size(3, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Matrix, T2.get(), T2.get());
-          orbitalDIIS->set_vector_size(3, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Matrix, T2.get(), T2.get());
+          orbitalDIIS->set_error_vector_size(3, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Matrix, T2.get(), DIISEntry::InputType::Matrix, T2.get());
+      outfile->Printf("\tsuccessfully set the error vectors...\n");
+          orbitalDIIS->set_vector_size(3, DIISEntry::InputType::Vector, kappa_barA_.get(), DIISEntry::InputType::Matrix, T2.get(), DIISEntry::InputType::Matrix, T2.get());
+      outfile->Printf("\tsuccessfully set the guess vectors...\n");
           T2.reset();
         }
 //        else if (wfn_type_ == "DF-OLCCD" ||  wfn_type_ == "DF-OREMP"){
@@ -201,6 +204,7 @@ void DFOCC::occ_iterations() {
           kappa_barB_.reset();
       }
       kappa_barA_.reset();
+      outfile->Printf("\tsuccessfully fired up coupled DIIS...\n");
     }
 
 

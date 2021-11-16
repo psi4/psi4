@@ -2137,6 +2137,7 @@ def run_dfocc_gradient(name, **kwargs):
     elif name in ['ccd']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OCCD')
         core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
+        corl_type = core.get_global_option('CC_TYPE')
     elif name in ['occd']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OCCD')
         core.set_local_option('DFOCC', 'CC_LAMBDA', 'TRUE')
@@ -2151,6 +2152,7 @@ def run_dfocc_gradient(name, **kwargs):
         corl_type = core.get_global_option('CC_TYPE')
     elif name in ['remp', 'oremp']:
         core.set_local_option('DFOCC', 'WFN_TYPE', 'DF-OREMP')
+        corl_type = core.get_global_option('CC_TYPE')
     else:
         raise ValidationError('Unidentified method %s' % (name))
 
