@@ -480,10 +480,15 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
                     if (!n) matrix->zero();
                     for (int h = 0; h < matrix->nirrep(); ++h) {
                         auto size = static_cast<size_t>(matrix->rowdim(h)) * matrix->colspi(h ^ matrix->symmetry());
+                        outfile->Printf("Attempting Matrix extrapolation");
                         if (size) {
+                            outfile->Printf("Confirmed nonzero size");
                             C_DAXPY(size, coefficient, arrayPtr, 1, matrix->pointer(h)[0], 1);
+                            outfile->Printf("AXPY executed");
                             arrayPtr += static_cast<int>(size);
+                            outfile->Printf("Pointer arithmetic done");
                         }
+                        outfile->Printf("Matrix extrapolation success for this irrep");
                     }
                     break;
                 }
