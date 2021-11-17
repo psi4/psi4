@@ -606,7 +606,7 @@ def energy(name, **kwargs):
     if return_wfn:  # TODO current energy safer than wfn.energy() for now, but should be revisited
 
         # TODO place this with the associated call, very awkward to call this in other areas at the moment
-        if lowername in ['efp', 'mrcc', 'dmrg', 'psimrcc']:
+        if lowername in ['efp', 'mrcc', 'dmrg']:
             core.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
             core.print_out("The returned wavefunction is the incoming reference wavefunction.\n\n")
         elif 'sapt' in lowername:
