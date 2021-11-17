@@ -548,7 +548,8 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     const int nOrbDMRG = iHandler->getDMRGcumulative(nirrep);
     double * DMRG1DM = new double[nOrbDMRG * nOrbDMRG];
     double * DMRG2DM = new double[nOrbDMRG * nOrbDMRG * nOrbDMRG * nOrbDMRG];
-    CheMPS2::DMRGSCFmatrix * theFmatrix = new CheMPS2::DMRGSCFmatrix( iHandler ); theFmatrix->clear();
+    auto theFmatrix = std::make_unique<CheMPS2::DMRGSCFmatrix>(iHandler);
+    theFmatrix->clear();
     CheMPS2::DMRGSCFmatrix * theQmatOCC = new CheMPS2::DMRGSCFmatrix( iHandler ); theQmatOCC->clear();
     CheMPS2::DMRGSCFmatrix * theQmatACT = new CheMPS2::DMRGSCFmatrix( iHandler ); theQmatACT->clear();
     CheMPS2::DMRGSCFmatrix * theTmatrix = new CheMPS2::DMRGSCFmatrix( iHandler ); theTmatrix->clear();
@@ -826,8 +827,8 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         }
 
         if (( dmrg_active_space.compare("NO")==0 ) && (theDIIS==nullptr)){ //When the DIIS has started: stop
-            CheMPS2::CASSCF::copy_active( DMRG1DM, theFmatrix, iHandler, true );
-            CheMPS2::CASSCF::block_diagonalize( 'A', theFmatrix, unitary, mem1, mem2, iHandler, true, DMRG2DM, nullptr, nullptr ); // Unitary is updated and DMRG2DM rotated
+            CheMPS2::CASSCF::copy_active( DMRG1DM, theFmatrix.get(), iHandler, true );
+            CheMPS2::CASSCF::block_diagonalize( 'A', theFmatrix.get(), unitary, mem1, mem2, iHandler, true, DMRG2DM, nullptr, nullptr ); // Unitary is updated and DMRG2DM rotated
             CheMPS2::CASSCF::setDMRG1DM( nDMRGelectrons, nOrbDMRG, DMRG1DM, DMRG2DM );
             update_WFNco(orig_coeff, iHandler, *unitary, wfn);
             buildTmatrix(theTmatrix, iHandler, psio, *wfn->Ca(), *wfn);
@@ -852,9 +853,9 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             capturing.open( chemps2filename.c_str() , std::ios::trunc ); // truncate
             cout_buffer = std::cout.rdbuf( capturing.rdbuf() );
 
-            CheMPS2::CASSCF::buildFmat( theFmatrix, theTmatrix, theQmatOCC, theQmatACT, iHandler, theRotatedTEI, DMRG2DM, DMRG1DM);
+            CheMPS2::CASSCF::buildFmat(theFmatrix.get(), theTmatrix, theQmatOCC, theQmatACT, iHandler, theRotatedTEI, DMRG2DM, DMRG1DM);
             CheMPS2::CASSCF::buildWtilde(wmattilde, theTmatrix, theQmatOCC, theQmatACT, iHandler, theRotatedTEI, DMRG2DM, DMRG1DM);
-            CheMPS2::CASSCF::augmentedHessianNR(theFmatrix, wmattilde, iHandler, unitary, theupdate, &updateNorm, &gradNorm);
+            CheMPS2::CASSCF::augmentedHessianNR(theFmatrix.get(), wmattilde, iHandler, unitary, theupdate, &updateNorm, &gradNorm);
 
             std::cout.rdbuf(cout_buffer);
             capturing.close();
@@ -882,7 +883,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         (*outfile->stream()) << "###   Rotation to pseudocanonical orbitals   ###" << std::endl;
         (*outfile->stream()) << "###                                          ###" << std::endl;
         (*outfile->stream()) << "################################################" << std::endl;
-        CheMPS2::CASSCF::construct_fock( theFmatrix, theTmatrix, theQmatOCC, theQmatACT, iHandler );
+        CheMPS2::CASSCF::construct_fock(theFmatrix.get(), theTmatrix, theQmatOCC, theQmatACT, iHandler );
         CheMPS2::CASSCF::block_diagonalize( 'O', theFmatrix, unitary, mem1, mem2, iHandler, false, nullptr, nullptr, nullptr );
         CheMPS2::CASSCF::block_diagonalize( 'A', theFmatrix, unitary, mem1, mem2, iHandler, false, DMRG2DM, nullptr, nullptr );
         CheMPS2::CASSCF::block_diagonalize( 'V', theFmatrix, unitary, mem1, mem2, iHandler, false, nullptr, nullptr, nullptr );
@@ -891,7 +892,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
         buildTmatrix(theTmatrix, iHandler, psio, *wfn->Ca(), *wfn);
         buildQmatOCC(theQmatOCC, iHandler, work1, work2, *wfn->Ca(), *myJK);
         buildQmatACT(theQmatACT, iHandler, DMRG1DM, work1, work2, *wfn->Ca(), *myJK);
-        CheMPS2::CASSCF::construct_fock( theFmatrix, theTmatrix, theQmatOCC, theQmatACT, iHandler );
+        CheMPS2::CASSCF::construct_fock(theFmatrix, theTmatrix, theQmatOCC, theQmatACT, iHandler );
 
     }
 
@@ -920,14 +921,14 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             const int NACT = iHandler->getNDMRG( h );
             const int NVIR = iHandler->getNVIRT( h );
             for ( int orb = 0; orb < orbspi[ h ]; orb++ ){
-               sp_energies->set( h, orb, theFmatrix->get( h, orb, orb ) );
+               sp_energies->set( h, orb, theFmatrix->get(h, orb, orb ) );
             }
         }
 
-        std::shared_ptr<MoldenWriter> molden( new MoldenWriter( wfn ) );
+        MoldenWriter molden(wfn);
         std::string filename = get_writer_file_prefix( wfn->molecule()->name() ) + ".pseudocanonical.molden";
         outfile->Printf( "Write molden file to %s. \n", filename.c_str() );
-        molden->write( filename, wfn->Ca(), wfn->Ca(), sp_energies, sp_energies, occupation, occupation, true );
+        molden.write( filename, wfn->Ca(), wfn->Ca(), sp_energies, sp_energies, occupation, occupation, true );
 
     }
 
@@ -977,8 +978,8 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             CheMPS2::CASSCF::copy2DMover( theDMRG->get2DM(), nOrbDMRG, DMRG2DM  );        // 2-RDM
             CheMPS2::CASSCF::setDMRG1DM( nDMRGelectrons, nOrbDMRG, DMRG1DM, DMRG2DM );    // 1-RDM
             buildQmatACT( theQmatACT, iHandler, DMRG1DM, work1, work2, *wfn->Ca(), *myJK);
-            CheMPS2::CASSCF::construct_fock( theFmatrix, theTmatrix, theQmatOCC, theQmatACT, iHandler );
-            CheMPS2::CASSCF::copy_active( theFmatrix, mem2, iHandler );                   // Fock
+            CheMPS2::CASSCF::construct_fock(theFmatrix.get(), theTmatrix, theQmatOCC, theQmatACT, iHandler );
+            CheMPS2::CASSCF::copy_active(theFmatrix.get(), mem2, iHandler );                   // Fock
             for ( int cnt = 0; cnt < tot_dmrg_power6; cnt++ ){ contract[ cnt ] = 0.0; }
             for ( int ham_orbz = 0; ham_orbz < nOrbDMRG; ham_orbz++ ){
                theDMRG->Symm4RDM( three_dm, ham_orbz, ham_orbz, false );
@@ -1019,22 +1020,22 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
        }
 
        if ( PSEUDOCANONICAL == false ){
-           (*outfile->stream()) << "CASPT2 : Deviation from pseudocanonical = " << CheMPS2::CASSCF::deviation_from_blockdiag( theFmatrix, iHandler ) << std::endl;
-           CheMPS2::CASSCF::block_diagonalize( 'O', theFmatrix, unitary, mem1, mem2, iHandler, false, nullptr, nullptr, nullptr );
-           CheMPS2::CASSCF::block_diagonalize( 'A', theFmatrix, unitary, mem1, mem2, iHandler, false, DMRG2DM, three_dm, contract ); // 2-RDM, 3-RDM, and trace( Fock * cu(4)-4-RDM )
-           CheMPS2::CASSCF::block_diagonalize( 'V', theFmatrix, unitary, mem1, mem2, iHandler, false, nullptr, nullptr, nullptr );
+           (*outfile->stream()) << "CASPT2 : Deviation from pseudocanonical = " << CheMPS2::CASSCF::deviation_from_blockdiag(theFmatrix.get(), iHandler ) << std::endl;
+           CheMPS2::CASSCF::block_diagonalize( 'O', theFmatrix.get(), unitary, mem1, mem2, iHandler, false, nullptr, nullptr, nullptr );
+           CheMPS2::CASSCF::block_diagonalize( 'A', theFmatrix.get(), unitary, mem1, mem2, iHandler, false, DMRG2DM, three_dm, contract ); // 2-RDM, 3-RDM, and trace( Fock * cu(4)-4-RDM )
+           CheMPS2::CASSCF::block_diagonalize( 'V', theFmatrix.get(), unitary, mem1, mem2, iHandler, false, nullptr, nullptr, nullptr );
            CheMPS2::CASSCF::setDMRG1DM( nDMRGelectrons, nOrbDMRG, DMRG1DM, DMRG2DM ); // 1-RDM
            update_WFNco(orig_coeff, iHandler, *unitary, wfn);
            buildTmatrix(theTmatrix, iHandler, psio, *wfn->Ca(), *wfn);
            buildQmatOCC(theQmatOCC, iHandler, work1, work2, *wfn->Ca(), *myJK);
            buildQmatACT(theQmatACT, iHandler, DMRG1DM, work1, work2, *wfn->Ca(), *myJK);
-           CheMPS2::CASSCF::construct_fock( theFmatrix, theTmatrix, theQmatOCC, theQmatACT, iHandler ); // Fock
+           CheMPS2::CASSCF::construct_fock(theFmatrix.get(), theTmatrix, theQmatOCC, theQmatACT, iHandler ); // Fock
        }
 
        fillRotatedTEI_coulomb(  ints, OAorbs_ptr, theRotatedTEI, iHandler, psio);
        fillRotatedTEI_exchange( ints, OAorbs_ptr, Vorbs_ptr,  theRotatedTEI, iHandler, psio );
 
-       (*outfile->stream()) << "CASPT2 : Norm F - F_pseudocan = " << CheMPS2::CASSCF::deviation_from_blockdiag( theFmatrix, iHandler ) << std::endl;
+       (*outfile->stream()) << "CASPT2 : Norm F - F_pseudocan = " << CheMPS2::CASSCF::deviation_from_blockdiag(theFmatrix.get(), iHandler ) << std::endl;
        double E_CASPT2 = 0.0;
        {
             std::ofstream capturing;
@@ -1044,7 +1045,7 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
             capturing.open( chemps2filename.c_str() , std::ios::trunc ); // truncate
             cout_buffer = std::cout.rdbuf( capturing.rdbuf() );
 
-            CheMPS2::CASPT2 * myCASPT2 = new CheMPS2::CASPT2( iHandler, theRotatedTEI, theTmatrix, theFmatrix, DMRG1DM, DMRG2DM, three_dm, contract, dmrg_ipea );
+            CheMPS2::CASPT2 * myCASPT2 = new CheMPS2::CASPT2( iHandler, theRotatedTEI, theTmatrix, theFmatrix.get(), DMRG1DM, DMRG2DM, three_dm, contract, dmrg_ipea );
             E_CASPT2 = myCASPT2->solve( dmrg_imag_shift );
             delete myCASPT2;
 
@@ -1084,7 +1085,6 @@ SharedWavefunction dmrg(SharedWavefunction wfn, Options& options)
     delete theTmatrix;
     delete theQmatOCC;
     delete theQmatACT;
-    delete theFmatrix;
     delete [] DMRG1DM;
     delete [] DMRG2DM;
     delete theRotatedTEI;
