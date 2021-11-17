@@ -320,33 +320,23 @@ void CFMMBox::compute_mpoles_from_children() {
 
 }
 
-CFMMTree::CFMMTree(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basisset, std::vector<SharedMatrix>& D, 
-                std::vector<SharedMatrix>& J, const std::vector<std::pair<int, int>>& shell_pairs, int nlevels, int lmax) {
-    molecule_ = molecule;
-    basisset_ = basisset;
+CFMMTree::CFMMTree(std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
+                std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J, int nlevels, int lmax) {
+
+    basisset_ = basis;
+    molecule_ = basisset_->molecule();
+    ints_ = ints;
     D_ = D;
     J_ = J;
     nlevels_ = nlevels;
     lmax_ = lmax;
+
     int num_boxes = (nlevels_ == 1) ? 1 : (0.5 * std::pow(16, nlevels_) + 7) / 15;
     tree_.resize(num_boxes);
-    Options& options = Process::environment.options;
-    mpole_coefs_ = std::make_shared<HarmonicCoefficients>(options.get_int("CFMM_MAX_MPOLE_ORDER"), Regular);
 
-    std::shared_ptr<IntegralFactory> factory = std::make_shared<IntegralFactory>(basisset_);
-    std::shared_ptr<TwoBodyAOInt> eri = std::shared_ptr<TwoBodyAOInt>(factory->eri());
-    ints_.push_back(eri);
+    mpole_coefs_ = std::make_shared<HarmonicCoefficients>(lmax_, Regular);
 
-    nthread_ = 1;
-#ifdef _OPENMP
-    nthread_ = Process::environment.get_n_threads();
-#endif
-
-    for (int thread = 1; thread < nthread_; thread++) {
-        ints_.push_back(std::shared_ptr<TwoBodyAOInt>(eri->clone()));
-    }
-
-    for (const auto& pair : shell_pairs) {
+    for (const auto& pair : ints[0]->shell_pairs()) {
         shell_pairs_.push_back(std::make_shared<ShellPair>(basisset_, pair, mpole_coefs_));
     }
 

@@ -1445,7 +1445,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         N means rebuild every N SCF iterations to avoid accumulating error from the incremental procedure. -*/
         options.add_int("INCFOCK_FULL_FOCK_EVERY", 5);
 
-        /*- Do perform Linear Exchange Build (Link) -*/
+        /*- Do perform Continuous Fast Multipole Method (J-Build) *-/
+        options.add_bool("DO_CFMM", false);
+        options.add_int("CFMM_ORDER", 3);
+        options.add_int("CFMM_GRAIN", 4);
+
+        /*- Do perform Linear Exchange Build (LinK) -*/
         options.add_bool("DO_LINEAR_EXCHANGE", false);
         options.add_double("LINK_INTS_TOLERANCE", 1.0e-12);
 
@@ -1550,11 +1555,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("SAD_SPIN_AVERAGE", true);
         /*- SAD guess density decomposition threshold !expert -*/
         options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
-
-        /*- SUBSECTION CFMM Linear J Build Algorithm -*/
-        options.add_bool("DO_CFMM_J", false);
-        options.add_int("CFMM_MAX_MPOLE_ORDER", 3);
-        options.add_int("CFMM_MAX_TREE_DEPTH", 4);
 
         /*- SUBSECTION DFT -*/
 

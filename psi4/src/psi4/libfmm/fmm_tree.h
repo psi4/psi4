@@ -176,8 +176,8 @@ class PSI_API CFMMTree {
     
     public:
       // Constructor
-      CFMMTree(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basisset, std::vector<SharedMatrix>& D, 
-                std::vector<SharedMatrix>& J, const std::vector<std::pair<int, int>>& shell_pairs, int nlevels, int lmax);
+      CFMMTree(std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
+                std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J, int nlevels, int lmax);
 
       // Build the J matrix of CFMMTree
       void build_J();
