@@ -563,3 +563,8 @@ Bibliography
    M. Haser and R. Ahlrichs,
    *J. Comp. Chem.* **10(1)**, 104 (1989).
    doi: 10.1002/jcc.540100111
+   
+.. [Thompson:2017:144101]
+   T. H. Thompson and C. Ochsenfeld
+   *J. Chem. Phys.* **147**, 144101 (2017).
+   doi: 10.1063/1.4994190
