@@ -43,10 +43,11 @@
 #undef _XOPEN_SOURCE
 #endif
 #include "psi4/libpsi4util/exception.h"
+#include "psi4/libmints/matrix.h"
 
 namespace psi {
 
-enum class ScreeningType { None, Schwarz, CSAM, QQR };
+enum class ScreeningType { None, Schwarz, CSAM, QQR, Density };
 
 enum PermutedOrder { ABCD = 0, BACD = 1, ABDC = 2, BADC = 3, CDAB = 4, CDBA = 5, DCAB = 6, DCBA = 7 };
 
@@ -129,6 +130,8 @@ class PSI_API TwoBodyAOInt {
     std::vector<double> shell_pair_exchange_values_;
     /// sqrt|(mm|mm)| values (nshell)
     std::vector<double> function_sqrt_;
+    /// Max density per matrix (Outer loop over density matrices, inner loop over shell pairs)
+    std::vector<std::vector<double>> max_dens_shell_pair_;
     /// Significant unique function pairs, in reduced triangular indexing
     PairList function_pairs_;
     /// Significant unique shell pairs, in reduced triangular indexing
@@ -152,6 +155,8 @@ class PSI_API TwoBodyAOInt {
     bool shell_significant_csam(int M, int N, int R, int S);
     /// Implements Schwarz inequality screening of a shell quartet
     bool shell_significant_schwarz(int M, int N, int R, int S);
+    /// Asks whether this shell quartet contributes by the density test (Haser 1989)
+    bool shell_significant_density(int M, int N, int R, int S);
     /// Implements the null screening of a shell quartet - always true
     bool shell_significant_none(int M, int N, int R, int S);
 
@@ -198,6 +203,8 @@ class PSI_API TwoBodyAOInt {
     /*
      * Sieve information
      */
+    /// Update max_dens_shell_pair_ given an updated density matrix (Haser 1989)
+    void update_density(const std::vector<SharedMatrix>& D);
     /// Ask the built in sieve whether this quartet contributes
     bool shell_significant(int M, int N, int R, int S) const { return sieve_impl_(M, N, R, S); };
     /// Are any of the quartets within a given shellpair list significant

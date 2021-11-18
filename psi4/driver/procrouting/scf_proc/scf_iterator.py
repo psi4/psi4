@@ -62,7 +62,8 @@ def scf_compute_energy(self):
     """
     if core.get_option('SCF', 'DF_SCF_GUESS') and (core.get_global_option('SCF_TYPE') == 'DIRECT'):
         # speed up DIRECT algorithm (recomputes full (non-DF) integrals
-        #   each iter) by solving DF-SCF to get a guess. DF-SCF is faster than direct.
+        #   each iter) by first converging via fast DF iterations, then
+        #   fully converging in fewer slow DIRECT iterations. aka Andy trick 2.0
         core.print_out("  Starting with a DF guess...\n\n")
         with p4util.OptionsStateCM(['SCF_TYPE']):
             core.set_global_option('SCF_TYPE', 'DF')
@@ -290,6 +291,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.form_G()
         core.timer_off("HF: Form G")
 
+        incfock_performed = hasattr(self.jk(), "do_incfock_iter") and self.jk().do_incfock_iter()
+
         upcm = 0.0
         if core.get_option('SCF', 'PCM'):
             calc_type = core.PCM.CalcType.Total
@@ -425,6 +428,9 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 if self.frac_performed_:
                     status.append("FRAC")
 
+                if incfock_performed:
+                    status.append("INCFOCK")
+
                 # Reset occupations if necessary
                 if (self.iteration_ == 0) and self.reset_occ_:
                     self.reset_occupation()
@@ -436,6 +442,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         core.timer_off("HF: Form D")
 
         self.set_variable("SCF ITERATION ENERGY", SCFE)
+        core.set_variable("SCF D NORM", Dnorm)
 
         # After we've built the new D, damp the update
         if (damping_enabled and self.iteration_ > 1 and Dnorm > core.get_option('SCF', 'DAMPING_CONVERGENCE')):
@@ -666,6 +673,7 @@ def scf_finalize_energy(self):
         self.V_potential().clear_collocation_cache()
 
     core.print_out("\nComputation Completed\n")
+    core.del_variable("SCF D NORM")
 
     return energy
 

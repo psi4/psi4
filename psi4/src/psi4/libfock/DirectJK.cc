@@ -76,18 +76,29 @@ using namespace psi;
 
 namespace psi {
 
-DirectJK::DirectJK(std::shared_ptr<BasisSet> primary) : JK(primary) { common_init(); }
+DirectJK::DirectJK(std::shared_ptr<BasisSet> primary, Options& options) : JK(primary), options_(options) { common_init(); }
 DirectJK::~DirectJK() {}
 void DirectJK::common_init() {
     df_ints_num_threads_ = 1;
+
 #ifdef _OPENMP
     df_ints_num_threads_ = Process::environment.get_n_threads();
 #endif
+
+    incfock_ = options_.get_bool("INCFOCK");
+    incfock_count_ = 0;
+    do_incfock_iter_ = false;
+    if (options_.get_int("INCFOCK_FULL_FOCK_EVERY") <= 0) {
+        throw PSIEXCEPTION("Invalid input for option INCFOCK_FULL_FOCK_EVERY (<= 0)");
+    }
+    density_screening_ = options_.get_str("SCREENING") == "DENSITY";
+    set_cutoff(options_.get_double("INTS_TOLERANCE"));
 }
 size_t DirectJK::memory_estimate() {
     return 0;  // Effectively
 }
 void DirectJK::print_header() const {
+    std::string screen_type = options_.get_str("SCREENING");
     if (print_) {
         outfile->Printf("  ==> DirectJK: Integral-Direct J/K Matrices <==\n\n");
 
@@ -97,7 +108,9 @@ void DirectJK::print_header() const {
         if (do_wK_) outfile->Printf("    Omega:             %11.3E\n", omega_);
         outfile->Printf("    Integrals threads: %11d\n", df_ints_num_threads_);
         // outfile->Printf( "    Memory [MiB]:      %11ld\n", (memory_ *8L) / (1024L * 1024L));
-        outfile->Printf("    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
+        outfile->Printf("    Screening Type:    %11s\n", screen_type.c_str());
+        outfile->Printf("    Screening Cutoff:  %11.0E\n", cutoff_);
+        outfile->Printf("    Incremental Fock:  %11s\n\n", incfock_ ? "Yes" : "No");
     }
 }
 void DirectJK::preiterations() {
@@ -110,6 +123,88 @@ void DirectJK::preiterations() {
     }
 #endif
 }
+
+void DirectJK::incfock_setup() {
+
+    // The prev_D_ao_ condition is used to handle stability analysis case
+    if (initial_iteration_ || prev_D_ao_.size() != D_ao_.size()) {
+        initial_iteration_ = true;
+
+        prev_D_ao_.clear();
+        delta_D_ao_.clear();
+
+        if (do_wK_) {
+            prev_wK_ao_.clear();
+            delta_wK_ao_.clear();
+        }
+
+        if (do_J_) {
+            prev_J_ao_.clear();
+            delta_J_ao_.clear();
+        }
+
+        if (do_K_) {
+            prev_K_ao_.clear();
+            delta_K_ao_.clear();
+        }
+    
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            prev_D_ao_.push_back(std::make_shared<Matrix>("D Prev", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+            delta_D_ao_.push_back(std::make_shared<Matrix>("Delta D", D_ao_[N]->nrow(), D_ao_[N]->ncol()));
+
+            if (do_wK_) {
+                prev_wK_ao_.push_back(std::make_shared<Matrix>("wK Prev", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
+                delta_wK_ao_.push_back(std::make_shared<Matrix>("Delta wK", wK_ao_[N]->nrow(), wK_ao_[N]->ncol()));
+            }
+                
+            if (do_J_) {
+                prev_J_ao_.push_back(std::make_shared<Matrix>("J Prev", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
+                delta_J_ao_.push_back(std::make_shared<Matrix>("Delta J", J_ao_[N]->nrow(), J_ao_[N]->ncol()));
+            }
+        
+            if (do_K_) {
+                prev_K_ao_.push_back(std::make_shared<Matrix>("K Prev", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
+                delta_K_ao_.push_back(std::make_shared<Matrix>("Delta K", K_ao_[N]->nrow(), K_ao_[N]->ncol()));
+            }
+        }
+    } else {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            delta_D_ao_[N]->copy(D_ao_[N]);
+            delta_D_ao_[N]->subtract(prev_D_ao_[N]);
+        }
+    }
+}
+void DirectJK::incfock_postiter() {
+    if (do_incfock_iter_) {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+
+            if (do_wK_) {
+                prev_wK_ao_[N]->add(delta_wK_ao_[N]);
+                wK_ao_[N]->copy(prev_wK_ao_[N]);
+            }
+
+            if (do_J_) {
+                prev_J_ao_[N]->add(delta_J_ao_[N]);
+                J_ao_[N]->copy(prev_J_ao_[N]);
+            }
+
+            if (do_K_) {
+                prev_K_ao_[N]->add(delta_K_ao_[N]);
+                K_ao_[N]->copy(prev_K_ao_[N]);
+            }
+
+            prev_D_ao_[N]->copy(D_ao_[N]);
+        }
+    } else {
+        for (size_t N = 0; N < D_ao_.size(); N++) {
+            if (do_wK_) prev_wK_ao_[N]->copy(wK_ao_[N]);
+            if (do_J_) prev_J_ao_[N]->copy(J_ao_[N]);
+            if (do_K_) prev_K_ao_[N]->copy(K_ao_[N]);
+            prev_D_ao_[N]->copy(D_ao_[N]);
+        }
+    }
+}
+
 void DirectJK::compute_JK() {
 #ifdef USING_BrianQC
     if (brianEnable) {
@@ -271,52 +366,83 @@ void DirectJK::compute_JK() {
     }
 #endif
 
+    if (incfock_) {
+        timer_on("DirectJK: INCFOCK Preprocessing");
+        incfock_setup();
+        int reset = options_.get_int("INCFOCK_FULL_FOCK_EVERY");
+        double dconv = options_.get_double("D_CONVERGENCE");
+        double Dnorm = Process::environment.globals["SCF D NORM"];
+        // Do IFB on this iteration?
+        do_incfock_iter_ = (Dnorm >= dconv) && !initial_iteration_ && (incfock_count_ % reset != reset - 1);
+        
+        if (!initial_iteration_ && (Dnorm >= dconv)) incfock_count_ += 1;
+        timer_off("DirectJK: INCFOCK Preprocessing");
+    }
+
     auto factory = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
+    
+    std::vector<SharedMatrix>& D_ref = (do_incfock_iter_ ? delta_D_ao_ : D_ao_);
+    std::vector<SharedMatrix>& J_ref = (do_incfock_iter_ ? delta_J_ao_ : J_ao_);
+    std::vector<SharedMatrix>& K_ref = (do_incfock_iter_ ? delta_K_ao_ : K_ao_);
+    std::vector<SharedMatrix>& wK_ref = (do_incfock_iter_ ? delta_wK_ao_ : wK_ao_);
 
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         for (int thread = 0; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
+            if (density_screening_) ints[thread]->update_density(D_ref);
         }
         // TODO: Fast K algorithm
         if (do_J_) {
-            build_JK(ints, D_ao_, J_ao_, wK_ao_);
+            build_JK(ints, D_ref, J_ref, wK_ref);
         } else {
             std::vector<std::shared_ptr<Matrix>> temp;
             for (size_t i = 0; i < D_ao_.size(); i++) {
                 temp.push_back(std::make_shared<Matrix>("temp", primary_->nbf(), primary_->nbf()));
             }
-            build_JK(ints, D_ao_, temp, wK_ao_);
+            build_JK(ints, D_ref, temp, wK_ref);
         }
     }
 
     if (do_J_ || do_K_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
+        if (density_screening_) ints[0]->update_density(D_ref);
         for (int thread = 1; thread < df_ints_num_threads_; thread++) {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
         if (do_J_ && do_K_) {
-            build_JK(ints, D_ao_, J_ao_, K_ao_);
+            build_JK(ints, D_ref, J_ref, K_ref);
         } else if (do_J_) {
             std::vector<std::shared_ptr<Matrix>> temp;
             for (size_t i = 0; i < D_ao_.size(); i++) {
                 temp.push_back(std::make_shared<Matrix>("temp", primary_->nbf(), primary_->nbf()));
             }
-            build_JK(ints, D_ao_, J_ao_, temp);
+            build_JK(ints, D_ref, J_ref, temp);
         } else {
             std::vector<std::shared_ptr<Matrix>> temp;
             for (size_t i = 0; i < D_ao_.size(); i++) {
                 temp.push_back(std::make_shared<Matrix>("temp", primary_->nbf(), primary_->nbf()));
             }
-            build_JK(ints, D_ao_, temp, K_ao_);
+            build_JK(ints, D_ref, temp, K_ref);
         }
     }
+
+    if (incfock_) {
+        timer_on("DirectJK: INCFOCK Postprocessing");
+        incfock_postiter();
+        timer_off("DirectJK: INCFOCK Postprocessing");
+    }
+
+    if (initial_iteration_) initial_iteration_ = false;
 }
 void DirectJK::postiterations() {}
 
 void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<std::shared_ptr<Matrix>>& D,
                         std::vector<std::shared_ptr<Matrix>>& J, std::vector<std::shared_ptr<Matrix>>& K) {
+    
+    timer_on("build_JK()");
+
     // => Zeroing <= //
     for (size_t ind = 0; ind < J.size(); ind++) {
         J[ind]->zero();
@@ -481,7 +607,6 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
-
                         // if (thread == 0) timer_on("JK: Ints");
                         if (ints[thread]->compute_shell(P, Q, R, S) == 0)
                             continue;  // No integrals in this shell quartet
@@ -780,6 +905,7 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
         printer->Printf("Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
                         possible_shells, computed_shells / (double)possible_shells);
     }
+    timer_off("build_JK()");
 }
 
 }  // namespace psi

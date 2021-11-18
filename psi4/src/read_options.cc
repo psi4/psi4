@@ -197,6 +197,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Write all the MOs to the MOLDEN file (true) or discard the unoccupied MOs (false). -*/
     options.add_bool("MOLDEN_WITH_VIRTUAL", true);
 
+    /*- The type of screening used when computing two-electron integrals. -*/
+    options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM DENSITY");
+
     // CDS-TODO: We should go through and check that the user hasn't done
     // something silly like specify frozen_docc in DETCI but not in TRANSQT.
     // That would create problems.  (This was formerly checked in DETCI
@@ -984,10 +987,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         default is conservative, but there isn't much to be gained from
         loosening it, especially for higher-order SAPT. -*/
         options.add_double("INTS_TOLERANCE", 1.0E-12);
-        /*- Do use Combined Schwarz Approximation Maximum (CSAM) screening on
-        two-electron integrals. This is a slightly tighter bound than that of
-        default Schwarz screening. -*/
-        options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM");
         /*- Memory safety -*/
         options.add_double("SAPT_MEM_SAFETY", 0.9);
         /*- Do force SAPT2 and higher to die if it thinks there isn't enough
@@ -1322,7 +1321,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("S_TOLERANCE", 1E-7);
         /*- Tolerance for partial Cholesky decomposition of overlap matrix. -*/
         options.add_double("S_CHOLESKY_TOLERANCE", 1E-8);
-        /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
+        /*- Screening threshold for the chosen screening method (SCHWARZ, CSAM, DENSITY)
+          Absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 1E-12);
         /*- The type of guess orbitals.  Defaults to ``READ`` for geometry optimizations after the first step, to
           ``CORE`` for single atoms, and to ``SAD`` otherwise. The ``HUCKEL`` guess employs on-the-fly calculations
@@ -1439,6 +1439,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- When using |scf__stability_analysis| ``FOLLOW``, maximum number of orbital optimization attempts
             to make the wavefunction stable. !expert -*/
         options.add_int("MAX_ATTEMPTS", 1);
+        /*- Do Perform Incremental Fock Build? -*/
+        options.add_bool("INCFOCK", false);
+        /*- Frequency with which to compute the full Fock matrix if using |scf__incfock| . 
+        N means rebuild every N SCF iterations to avoid accumulating error from the incremental procedure. -*/
+        options.add_int("INCFOCK_FULL_FOCK_EVERY", 5);
 
         /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 
