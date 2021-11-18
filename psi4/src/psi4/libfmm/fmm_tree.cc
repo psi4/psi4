@@ -331,6 +331,11 @@ CFMMTree::CFMMTree(std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<
     nlevels_ = nlevels;
     lmax_ = lmax;
 
+    nthread_ = 1;
+#ifdef _OPENMP
+    nthread_ = Process::environment.get_n_threads();
+#endif
+
     int num_boxes = (nlevels_ == 1) ? 1 : (0.5 * std::pow(16, nlevels_) + 7) / 15;
     tree_.resize(num_boxes);
 
@@ -344,7 +349,7 @@ CFMMTree::CFMMTree(std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<
     make_root_node();
     make_children();
 
-    int print = options.get_int("PRINT");
+    int print = Process::environment.options.get_int("PRINT");
     if (print >= 2) print_out();
 }
 

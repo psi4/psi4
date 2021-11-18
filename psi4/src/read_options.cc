@@ -1445,10 +1445,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         N means rebuild every N SCF iterations to avoid accumulating error from the incremental procedure. -*/
         options.add_int("INCFOCK_FULL_FOCK_EVERY", 5);
 
-        /*- Do perform Continuous Fast Multipole Method (J-Build) *-/
+        /*- Do perform Continuous Fast Multipole Method (J-Build) -*/
         options.add_bool("DO_CFMM", false);
-        options.add_int("CFMM_ORDER", 3);
-        options.add_int("CFMM_GRAIN", 4);
+        options.add_int("CFMM_ORDER", 10);
+        options.add_int("CFMM_GRAIN", 3);
 
         /*- Do perform Linear Exchange Build (LinK) -*/
         options.add_bool("DO_LINEAR_EXCHANGE", false);

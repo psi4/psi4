@@ -436,10 +436,6 @@ void DirectJK::compute_JK() {
         } else if (do_J_) {
             build_J(ints, D_ref, J_ref);
         } else {
-            std::vector<std::shared_ptr<Matrix>> temp;
-            for (size_t i = 0; i < D_ao_.size(); i++) {
-                temp.push_back(std::make_shared<Matrix>("temp", primary_->nbf(), primary_->nbf()));
-            }
             build_K(ints, D_ref, K_ref);
         }
     }
