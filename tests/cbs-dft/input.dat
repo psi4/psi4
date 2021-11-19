@@ -17,6 +17,7 @@ ref_blyp_nl_dt  = -76.360210812341
 ref_b2plyp_naive= -76.402475256624
 ref_b2plyp_fctl = -76.313679154211
 ref_blyp_b2plyp = -76.387774735844
+ref_fctl_dh_dis = -76.528948621559
 ref_blyp_d3_dt_grad = psi4.core.Matrix.from_list(
                       [[0.00000000000000,     0.00000000000000,    -0.05020716012511],
                        [0.00000000000000,     0.00342301517298,     0.02510683684897],
@@ -39,6 +40,12 @@ compare_values(ref_blyp_b2plyp, E, 7, "BLYP-D3/cc-[DT]+D:B2PLYP-D3/cc-pvdz with 
 
 E = energy('blyp-d3/cc-pv[dt]z+D:b2plyp-d3/cc-pvdz')
 compare_values(ref_blyp_b2plyp, E, 7, "BLYP-D3/cc-[DT]+D:B2PLYP-D3/cc-pvdz as string")
+
+E = energy(cbs, cbs_metadata=[{'wfn': "blyp-d3", 'basis': "cc-pv[dt]z", 'component': "fctl"},
+                              {'wfn': "b2plyp-d3", 'basis': "cc-pv[dt]z", 'component': "dh"},
+                              {'wfn': "blyp-d3", 'basis': "cc-pvtz", 'component': "disp"}])
+compare_values(ref_fctl_dh_dis, E, 7, "BLYP-D3(fctl)/cc-[DT]+B2PLYP(dh)/cc-[DT]+BLYP-D3(disp)/cc-pvtz")
+compare_values(4, variable("CBS NUMBER"), "BLYP-D3(fctl)/cc-[DT]+B2PLYP(dh)/cc-[DT]+BLYP-D3(disp)/cc-pvtz - 4 steps only")
 
 G = gradient('blyp-d3/cc-pv[dt]z', dertype=0)
 compare_matrices(ref_blyp_d3_dt_grad, G, 5, "BLYP-D3/cc-pv[dt]z findif gradient")

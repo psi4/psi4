@@ -1324,9 +1324,12 @@ def _interpret_cbs_inputs(cbs_metadata: List, molecule: Union[qcdb.molecule.Mole
 
     There are currently three ways to run a CBS calculation:
 
-    1) by specifying arguments, such as ``scf_wfn``, ``corl_basis``, or ``delta_scheme``
-    2) by using the "method/basis+delta" syntax
-    3) by explicitly passing ``cbs_metadata`` as one of the arguments
+    1) By specifying arguments, such as ``scf_wfn``, ``corl_basis``, or ``delta_scheme``.
+       This is the original interface, however option (3) is preferred nowadays.
+    2) By using the "method/basis+delta" syntax. This option offeres limited features,
+       as the default treatments and alphas are imposed.
+    3) By explicitly passing ``cbs_metadata`` as one of the arguments. This is the
+       full-featured user-facing interface.
 
     These three are interpreted into a single, internal specification here. For the
     description of the user-facing interfaces see :py:func:`~psi4.cbs`.
@@ -1337,7 +1340,7 @@ def _interpret_cbs_inputs(cbs_metadata: List, molecule: Union[qcdb.molecule.Mole
     of a DFA.
 
     The resulting ``metadata`` :class:`(list[dict])` contains the list of all stages,
-    with possible entries in each of the dicts being:
+    with the following entries set in each of the dicts:
 
      - ``"wfn"`` :class:`(str)`: method name for upper level of theory (l.o.t.)
      - ``"basis"`` :class:`(tuple)`: definition of the basis sets for the upper
@@ -1395,10 +1398,11 @@ def _interpret_cbs_inputs(cbs_metadata: List, molecule: Union[qcdb.molecule.Mole
         # 2a) process DFT methods
         if stage["wfn"] in functionals and stage["wfn"] not in ["hf", "scf"]:
             # 2ai) first stage - split into components, unless "component" == "dft"
-            #     This allows users to request "BLYP-D3(0)/pc-[12]" without 
-            # specifying extra parameters. If "component" is not "dft", the "fctl", 
-            # "disp", "dh", and "nl" stages are generated automatically as required, 
-            # and the "DFT TOTAL ENERGY" is not used.
+            #     This allows users to request method/basis extrapolations, such
+            # as "BLYP-D3(0)/pc-[12]", without specifying extra parameters. If 
+            # "component" is not "dft", the "fctl", "disp", "dh", and "nl" stages 
+            # are generated automatically as required, and the "DFT TOTAL ENERGY" 
+            # variable is not used in the extrapolation.
             #     In cases where "component" is "dft", that setting gets processed,
             # and further generation of component stages is skipped.
             #     Note that none of these stages are delta-stages, as only one E/G/H
@@ -1481,7 +1485,7 @@ def _interpret_cbs_inputs(cbs_metadata: List, molecule: Union[qcdb.molecule.Mole
                                                 between high ({}) and low ({}) levels.""".format(
                         len(stage["basis"][0]), len(stage["basis_lo"][0])))
                 delta["stage"] = item.get("stage", f"delta_{len(metadata)}")
-                delta["isdelta"] = True
+                delta["isdelta"] = True if item.get("component", "dft") in ["fctl", "dft"] else False
                 delta["scheme"] = _get_default_xtpl(len(stage["basis"][1]), item.get("treatment", "scf"))
                 delta["options"] = item.get("options", False)
                 delta["options_lo"] = item.get("options_lo", False)
@@ -2144,30 +2148,54 @@ def cbs(func, label, **kwargs):
 
     #     Remove duplicate modelchem portion listings
     for mc in MODELCHEM:
-        dups = -1
+        dups = []
+        print("\n\nmc", mc)
         for indx_job, job in enumerate(JOBS):
-            if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']) and \
-               (job['f_options'] == mc['f_options']) and \
-               (job['f_options'] != False or ptype == 'energy'):
-                dups += 1
-                if dups >= 1:
-                    del JOBS[indx_job]
-
+            print(indx_job)
+            if (
+                job['f_wfn'] == mc['f_wfn'] and 
+                job['f_basis'] == mc['f_basis'] and 
+                job['f_options'] == mc['f_options'] and 
+                (job['f_options'] != False or ptype == 'energy')
+            ):
+                print("1job", job)
+                #dups.append(indx_job)
+                dups.insert(0, indx_job)
     #     Remove chemically subsumed modelchem portion listings for energies and DFT
-        if ptype == "energy" or mc['f_wfn'] in functionals and mc['f_wfn'] not in ["scf", "hf"]:
-            for component in VARH[mc['f_wfn']]:
-                for indx_job, job in enumerate(JOBS):
-                    if (job['f_basis'] == mc['f_basis']) and \
-                        (job['f_options'] == False) and \
-                        (job['f_options'] == mc['f_options']):
-                        if (job['f_component'] == component) and \
-                            (job['f_wfn'] != mc['f_wfn']):
-                            del JOBS[indx_job]
-                        elif (job['f_component'].endswith(("dh", "disp", "nl"))) and \
-                                (job['f_component'] != job['f_wfn']) and \
-                                (job['f_wfn'] == mc['f_wfn']):
-                            del JOBS[indx_job]
-
+            elif (
+                ptype == "energy" or 
+                (mc['f_wfn'] in functionals and mc['f_wfn'] not in ["scf", "hf"])
+            ):
+                if ( 
+                    job['f_component'] != job['f_wfn'] and 
+                    job['f_wfn'] == mc['f_wfn'] and
+                    job['f_basis'] == mc['f_basis'] and 
+                    job['f_options'] == False and 
+                    job['f_options'] == mc['f_options']
+                ):
+                    print("2job", job)
+                    dups.append(indx_job)
+                #elif (mc['f_wfn'] in functionals and mc['f_wfn'] not in ["scf", "hf"]):
+                else:
+                    for component in VARH[mc['f_wfn']]:
+                        if (
+                            job['f_basis'] == mc['f_basis'] and 
+                            job['f_options'] == False and 
+                            job['f_options'] == mc['f_options'] and
+                            job['f_component'] == component and 
+                            job['f_wfn'] != mc['f_wfn']
+                        ):
+                            print("3job", job)
+                            #dups.insert(0, indx_job)
+                            dups.append(indx_job)
+        print("dups")
+        for d in dups:
+            print(JOBS[d])
+        if len(dups) > 1:
+            for d in dups[1:][::-1]:
+                print("deleting", JOBS[d])
+                del JOBS[d]
+            
     instructions += """\n    Enlightened listing of computations required.\n"""
     for mc in JOBS:
         instructions += """   %12s / %-24s for  %s%s\n""" % \
