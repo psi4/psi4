@@ -415,8 +415,7 @@ def run_qcschema(input_data, clean=True):
             "version": __version__,
             "routine": "psi4.schema_runner.run_qcschema"
         })
-        if qcel.util.parse_version(qcel.__version__) >= qcel.util.parse_version("0.24.0"):
-            ret_data["native_files"]["input"] = json.dumps(json.loads(input_model.json()), indent=1)
+        ret_data["native_files"]["input"] = json.dumps(json.loads(input_model.json()), indent=1)
 
         exit_printing(start_time=start_time, success=True)
 
@@ -642,8 +641,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         # binary "psi4.180.npy": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".180.npy"),
         "timer.dat": Path("timer.dat"),
     }
-    if qcel.util.parse_version(qcel.__version__) >= qcel.util.parse_version("0.24.0"):
-        json_data["native_files"] = {fl: flpath.read_text() for fl, flpath in files.items() if flpath.exists()}
+    json_data["native_files"] = {fl: flpath.read_text() for fl, flpath in files.items() if flpath.exists()}
 
     # Reset state
     _clean_psi_environ(clean)
