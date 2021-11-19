@@ -772,8 +772,8 @@ class PSI_API DirectJK : public JK {
                   std::vector<std::shared_ptr<Matrix> >& J);
 
     /// Build the K matrix only using the traditional quadratic scaling algorithm
-    // void build_K(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
-    //              std::vector<std::shared_ptr<Matrix> >& K);
+    void build_K(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
+                 std::vector<std::shared_ptr<Matrix> >& K);
 
     /// Build the J and K matrices for this integral class
     void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
