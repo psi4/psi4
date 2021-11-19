@@ -94,7 +94,7 @@ void DirectJK::common_init() {
     }
     density_screening_ = options_.get_str("SCREENING") == "DENSITY";
     linear_exchange_ = options_.get_bool("DO_LINEAR_EXCHANGE");
-    linK_ints_cutoff_ = options_.get_double("LINK_INTS_TOLERANCE")
+    linK_ints_cutoff_ = options_.get_double("LINK_INTS_TOLERANCE");
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
 }
 size_t DirectJK::memory_estimate() {
