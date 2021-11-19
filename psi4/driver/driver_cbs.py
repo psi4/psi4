@@ -1385,10 +1385,9 @@ def _interpret_cbs_inputs(cbs_metadata: List, molecule: Union[qcdb.molecule.Mole
 
     metadata = []
     for iitem, item in enumerate(cbs_metadata):
-        # 1a) all items must have wfn
+        # 1) all items must have wfn and basis set
         if "wfn" not in item:
             raise ValidationError(f"Stage {iitem} doesn't have defined level of theory!")
-        # 1b) all items must have basis set
         if "basis" not in item:
             raise ValidationError(f"Stage {iitem} doesn't have defined basis sets!")
         # 2) process required stage parameters and assign defaults
@@ -1397,7 +1396,7 @@ def _interpret_cbs_inputs(cbs_metadata: List, molecule: Union[qcdb.molecule.Mole
         stage["basis"] = _expand_bracketed_basis(item["basis"].lower(), molecule)
         # 2a) process DFT methods
         if stage["wfn"] in functionals and stage["wfn"] not in ["hf", "scf"]:
-            # 2ai) first stage - split into components, unless "component" == "dft"
+            # 2ai) first stage - split it into components, unless "component" == "dft"
             #     This allows users to request method/basis extrapolations, such
             # as "BLYP-D3(0)/pc-[12]", without specifying extra parameters. If 
             # "component" is not "dft", the "fctl", "disp", "dh", and "nl" stages 
@@ -1485,6 +1484,8 @@ def _interpret_cbs_inputs(cbs_metadata: List, molecule: Union[qcdb.molecule.Mole
                                                 between high ({}) and low ({}) levels.""".format(
                         len(stage["basis"][0]), len(stage["basis_lo"][0])))
                 delta["stage"] = item.get("stage", f"delta_{len(metadata)}")
+                # This allows for doing true delta energies (from two calculations, by passing no component or "dft")
+                # as well as single-stage extrapolated "deltas" for ["dh", "disp", "nl"] components.
                 delta["isdelta"] = True if item.get("component", "dft") in ["fctl", "dft"] else False
                 delta["scheme"] = _get_default_xtpl(len(stage["basis"][1]), item.get("treatment", "scf"))
                 delta["options"] = item.get("options", False)
@@ -2149,18 +2150,15 @@ def cbs(func, label, **kwargs):
     #     Remove duplicate modelchem portion listings
     for mc in MODELCHEM:
         dups = []
-        print("\n\nmc", mc)
         for indx_job, job in enumerate(JOBS):
-            print(indx_job)
             if (
                 job['f_wfn'] == mc['f_wfn'] and 
                 job['f_basis'] == mc['f_basis'] and 
                 job['f_options'] == mc['f_options'] and 
                 (job['f_options'] != False or ptype == 'energy')
             ):
-                print("1job", job)
-                #dups.append(indx_job)
-                dups.insert(0, indx_job)
+                # the highest priority "duplicate" with matching f_wfn is prepended
+                dups.insert(0, indx_job) 
     #     Remove chemically subsumed modelchem portion listings for energies and DFT
             elif (
                 ptype == "energy" or 
@@ -2173,9 +2171,7 @@ def cbs(func, label, **kwargs):
                     job['f_options'] == False and 
                     job['f_options'] == mc['f_options']
                 ):
-                    print("2job", job)
                     dups.append(indx_job)
-                #elif (mc['f_wfn'] in functionals and mc['f_wfn'] not in ["scf", "hf"]):
                 else:
                     for component in VARH[mc['f_wfn']]:
                         if (
@@ -2185,15 +2181,10 @@ def cbs(func, label, **kwargs):
                             job['f_component'] == component and 
                             job['f_wfn'] != mc['f_wfn']
                         ):
-                            print("3job", job)
-                            #dups.insert(0, indx_job)
                             dups.append(indx_job)
-        print("dups")
-        for d in dups:
-            print(JOBS[d])
         if len(dups) > 1:
+            # keep the first item and delete others in reverse order to avoid oob error
             for d in dups[1:][::-1]:
-                print("deleting", JOBS[d])
                 del JOBS[d]
             
     instructions += """\n    Enlightened listing of computations required.\n"""
