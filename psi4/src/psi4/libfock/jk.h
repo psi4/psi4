@@ -712,18 +712,18 @@ class PSI_API DirectJK : public JK {
     // Perform Density matrix-based integral screening?
     bool density_screening_;
 
-    // Perform Linear Exchange matrix build?
-    bool linear_exchange_;
-    double linK_ints_cutoff_;
-
     // => Incremental Fock build variables <= //
-
-    /// Perform Incremental Fock Build for J and K Matrices?
+    
+    /// Perform Incremental Fock Build for J and K Matrices? (default false)
     bool incfock_;
     /// The number of times INCFOCK has been performed (includes resets)
     int incfock_count_;
     bool do_incfock_iter_;
-
+    
+    // Perform Linear Exchange matrix build?
+    bool linear_exchange_;
+    double linK_ints_cutoff_;
+    
     /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
     std::vector<SharedMatrix> prev_D_ao_;
     std::vector<SharedMatrix> prev_J_ao_;

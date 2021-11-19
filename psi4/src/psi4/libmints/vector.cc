@@ -71,8 +71,9 @@ Vector::Vector(int dim) : dimpi_(1) {
 
 Vector::Vector(const std::string &name, int nirreps, int *dimpi) : dimpi_(nirreps) {
     nirrep_ = nirreps;
-    dimpi_ = new int[nirrep_];
-    for (int h = 0; h < nirrep_; ++h) dimpi_[h] = dimpi[h];
+    auto dim_vector = std::vector<int>(nirrep_);
+    for (int h = 0; h < nirrep_; ++h) dim_vector[h] = dimpi[h];
+    dimpi_ = Dimension(dim_vector);
     alloc();
     name_ = name;
 }
@@ -121,8 +122,8 @@ void Vector::init(const Dimension &v) {
     alloc();
 }
 
-Vector *Vector::clone() {
-    Vector *temp = new Vector(dimpi_);
+std::unique_ptr<Vector> Vector::clone() const {
+    auto temp = std::make_unique<Vector>(dimpi_);
     temp->copy(this);
     return temp;
 }
@@ -231,7 +232,7 @@ void Vector::gemv(bool transa, double alpha, Matrix *A, Vector *X, double beta) 
     char trans = transa ? 't' : 'n';
 
     for (int h = 0; h < nirrep_; ++h) {
-        C_DGEMV(trans, A->rowspi(h), A->colspi(h), alpha, A->get_pointer(h), A->rowspi(h), &(X->vector_[h][0]), 1, beta,
+        C_DGEMV(trans, A->rowspi(h), A->colspi(h), alpha, A->get_pointer(h), A->colspi(h), &(X->vector_[h][0]), 1, beta,
                 &(vector_[h][0]), 1);
     }
 }

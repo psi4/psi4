@@ -154,6 +154,7 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
 
 }
 
+
 double TwoBodyAOInt::max_density(int M, int N) const {
     double D_max = 0.0;
     for (int i = 0; i < max_dens_shell_pair_.size(); i++) {

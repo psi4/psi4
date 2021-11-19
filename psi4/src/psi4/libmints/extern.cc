@@ -67,7 +67,7 @@ void ExternalPotential::print(std::string out) const {
 
     // Charges
     if (charges_.size()) {
-        printer->Printf("    > Charges [a.u.] < \n\n");
+        printer->Printf("    > Charges [e] [molecule length units] < \n\n");
         printer->Printf("     %10s %10s %10s %10s\n", "Z", "x", "y", "z");
         for (size_t i = 0; i < charges_.size(); i++) {
             printer->Printf("     %10.5f %10.5f %10.5f %10.5f\n", std::get<0>(charges_[i]), std::get<1>(charges_[i]),

@@ -57,7 +57,8 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   dft-freq dft-freq-analytic dft-grad1 dft-grad2 dft-psivar dft-b3lyp dft1 dft-vv10
                   dft1-alt dft2 dft3 dft-omega dft-dens-cut dlpnomp2-1 dlpnomp2-2
                   docs-bases docs-dft explicit-am-basis extern1 extern2 extern3
-                  fsapt1 fsapt2 fsapt-terms fsapt-allterms fsapt-ext fsapt-ext-abc fsapt-ext-abc2 isapt1 isapt2
+                  fsapt1 fsapt2 fsapt-terms fsapt-allterms fsapt-ext fsapt-ext-abc fsapt-ext-abc2
+                  fsapt-ext-abc-au isapt1 isapt2
                   fci-dipole fci-h2o fci-h2o-2 fci-h2o-fzcv fci-tdm fci-tdm-2
                   fci-coverage
                   fcidump
@@ -93,13 +94,14 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   scf7 scf-level-shift-rks scf-level-shift-uhf scf-level-shift-cuhf scf-level-shift-rohf
                   scf-property soscf-large soscf-ref
                   soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare sapt-sf1 dft-custom dft-reference
-                  stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 scf-response2 scf-cholesky-basis scf-auto-cholesky
+                  stability2 tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt scf-response1 scf-response2 scf-response3
+                  scf-cholesky-basis scf-auto-cholesky
                   tu4-h2o-freq tu5-sapt tu6-cp-ne2 x2c1 x2c2 x2c3 x2c-perturb-h zaptn-nh2
                   options1 cubeprop-esp dft-smoke scf-hess1 scf-hess2 scf-hess3 scf-hess4 scf-hess5 scf-freq1 dft-jk scf-coverage
                   dft-custom-dhdf dft-custom-hybrid dft-custom-mgga dft-custom-gga
                   pywrap-bfs pywrap-align pywrap-align-chiral mints12 cc-module
                   tdscf-1 tdscf-2 tdscf-3 tdscf-4 tdscf-5
-                  basis-ecp dft-pruning freq-masses sapt9 sapt10 sapt11
+                  basis-ecp dft-pruning freq-masses sapt9 sapt10 sapt11 scf-uhf-grad-nobeta
 )
     add_subdirectory(${test_name})
 endforeach()

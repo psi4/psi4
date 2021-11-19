@@ -89,9 +89,12 @@ void DirectJK::common_init() {
     incfock_ = options_.get_bool("INCFOCK");
     incfock_count_ = 0;
     do_incfock_iter_ = false;
+    if (options_.get_int("INCFOCK_FULL_FOCK_EVERY") <= 0) {
+        throw PSIEXCEPTION("Invalid input for option INCFOCK_FULL_FOCK_EVERY (<= 0)");
+    }
     density_screening_ = options_.get_str("SCREENING") == "DENSITY";
     linear_exchange_ = options_.get_bool("DO_LINEAR_EXCHANGE");
-    linK_ints_cutoff_ = options_.get_double("LINK_INTS_TOLERANCE");
+    linK_ints_cutoff_ = options_.get_double("LINK_INTS_TOLERANCE")
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
 }
 size_t DirectJK::memory_estimate() {

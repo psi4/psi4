@@ -715,7 +715,7 @@ SCHWARZ
 .. math:: (PQ|RS) <= \sqrt{(PQ|PQ)(RS|RS)}
 
 CSAM
-    An extension of the Schwarz estimate that also screens over the long range 1/r operator.
+    An extension of the Schwarz estimate that also screens over the long range 1/r operator, described in [Thompson:2017:144101]_.
 
 DENSITY
     An extension of the Schwarz estimate that also screens over elements of the density matrix.

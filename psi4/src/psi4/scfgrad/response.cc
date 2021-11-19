@@ -37,7 +37,6 @@
 #include "psi4/libmints/cdsalclist.h"
 #include "psi4/libfock/v.h"
 //#include "psi4/libfock/jk.h"
-#include "psi4/libfock/apps.h"
 #include "psi4/libfunctional/superfunctional.h"
 #include "psi4/psifiles.h"
 #include "psi4/lib3index/dftensor.h"
