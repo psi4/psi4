@@ -154,6 +154,15 @@ void TwoBodyAOInt::update_density(const std::vector<SharedMatrix>& D) {
 
 }
 
+
+double TwoBodyAOInt::max_density(int M, int N) const {
+    double D_max = 0.0;
+    for (int i = 0; i < max_dens_shell_pair_.size(); i++) {
+        D_max = std::max(D_max, max_dens_shell_pair_[i][M * nshell_ + N]);
+    }
+    return D_max;
+}
+
 // Haser 1989 Equations 6 to 14
 bool TwoBodyAOInt::shell_significant_density(int M, int N, int R, int S) {
 

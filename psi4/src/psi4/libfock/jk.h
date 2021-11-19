@@ -713,12 +713,17 @@ class PSI_API DirectJK : public JK {
     bool density_screening_;
 
     // => Incremental Fock build variables <= //
+    
     /// Perform Incremental Fock Build for J and K Matrices? (default false)
     bool incfock_;
     /// The number of times INCFOCK has been performed (includes resets)
     int incfock_count_;
     bool do_incfock_iter_;
-
+    
+    // Perform Linear Exchange matrix build?
+    bool linear_exchange_;
+    double linK_ints_cutoff_;
+    
     /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
     std::vector<SharedMatrix> prev_D_ao_;
     std::vector<SharedMatrix> prev_J_ao_;
@@ -752,6 +757,23 @@ class PSI_API DirectJK : public JK {
     void incfock_setup();
     /// Post-iteration Incfock processing
     void incfock_postiter();
+
+    /// Build the J matrix using the continuous fast multipole method
+    /// TODO: Put CFMM algorithm here after linK PR is merged
+    // void build_cfmm_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
+    //               std::vector<std::shared_ptr<Matrix> >& J);
+
+    /// Build the K matrix using the linear exchange algorithm
+    void build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
+                  std::vector<std::shared_ptr<Matrix> >& K);
+
+    /// Build the J matrix only using the traditional quadratic scaling algorithm
+    void build_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
+                  std::vector<std::shared_ptr<Matrix> >& J);
+
+    /// Build the K matrix only using the traditional quadratic scaling algorithm
+    // void build_K(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
+    //              std::vector<std::shared_ptr<Matrix> >& K);
 
     /// Build the J and K matrices for this integral class
     void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
