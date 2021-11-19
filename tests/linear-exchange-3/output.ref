@@ -1,0 +1,586 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.5a1.dev248 
+
+                         Git: Rev {linK-new} a239ba8 dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Friday, 19 November 2021 03:04PM
+
+    Process ID: 26276
+    Host:       ds10
+    PSIDATADIR: /scratch/jiang/p4dev/psi4/objdir-livie/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    6
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! UHF and ROHF Linear Exchange Algorithm test for benzyl cation
+
+uhf_ref = -230.41721644022974 # REF, with UHF (CSAM Screening)
+rohf_ref = -230.40279222744851 # REF, with ROHF (CSAM Screening)
+
+molecule mol {
+    1 2
+    C    -1.0478252   -1.4216736    0.0000000
+    C    -1.4545034   -0.8554459    1.2062048
+    C    -1.4545034   -0.8554459   -1.2062048
+    C    -2.2667970    0.2771610    1.2069539
+    C    -2.6714781    0.8450211    0.0000000
+    C    -2.2667970    0.2771610   -1.2069539
+    H    -1.1338534   -1.2920593   -2.1423150
+    H    -2.5824943    0.7163066   -2.1437977
+    H    -3.3030422    1.7232700    0.0000000
+    H    -2.5824943    0.7163066    2.1437977
+    H    -1.1338534   -1.2920593    2.1423150
+    H    -0.4060253   -2.2919049    0.0000000
+    symmetry c1
+    no_reorient
+    no_com
+}
+
+set {
+    reference uhf
+    scf_type direct
+    df_scf_guess false
+    basis 6-31G*
+    ints_tolerance 1.0e-12
+    e_convergence 1.0e-10
+    screening density
+    incfock true
+    incfock_full_fock_every 4
+    do_linear_exchange true
+    linK_ints_tolerance 1.0e-12
+}
+
+uhf_energy = energy('scf')
+psi4.compare_values(uhf_energy, uhf_ref, 6, "UHF Energy (using LinK algo)")
+
+set reference rohf
+rohf_energy = energy('scf')
+psi4.compare_values(rohf_energy, rohf_ref, 6, "ROHF Energy (using LinK algo)")
+--------------------------------------------------------------------------
+
+Scratch directory: /scratch/jiang/
+
+*** tstart() called on ds10
+*** at Fri Nov 19 15:04:45 2021
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-6  entry C          line   111 file /scratch/jiang/p4dev/psi4/objdir-livie/stage/share/psi4/basis/6-31gs.gbs 
+    atoms 7-12 entry H          line    44 file /scratch/jiang/p4dev/psi4/objdir-livie/stage/share/psi4/basis/6-31gs.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              UHF Reference
+                        6 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C           -1.047825200000    -1.421673600000     0.000000000000    12.000000000000
+         C           -1.454503400000    -0.855445900000     1.206204800000    12.000000000000
+         C           -1.454503400000    -0.855445900000    -1.206204800000    12.000000000000
+         C           -2.266797000000     0.277161000000     1.206953900000    12.000000000000
+         C           -2.671478100000     0.845021100000     0.000000000000    12.000000000000
+         C           -2.266797000000     0.277161000000    -1.206953900000    12.000000000000
+         H           -1.133853400000    -1.292059300000    -2.142315000000     1.007825032230
+         H           -2.582494300000     0.716306600000    -2.143797700000     1.007825032230
+         H           -3.303042200000     1.723270000000     0.000000000000     1.007825032230
+         H           -2.582494300000     0.716306600000     2.143797700000     1.007825032230
+         H           -1.133853400000    -1.292059300000     2.142315000000     1.007825032230
+         H           -0.406025300000    -2.291904900000     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =      0.10996  B =      0.04618  C =      0.04339 [cm^-1]
+  Rotational constants: A =   3296.45833  B =   1384.51424  C =   1300.84014 [MHz]
+  Nuclear repulsion =  203.710931360278892
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 41
+  Nalpha       = 21
+  Nbeta        = 20
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-06
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31G*
+    Blend: 6-31G*
+    Number of shells: 48
+    Number of basis functions: 102
+    Number of Cartesian functions: 102
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           6
+    Screening Type:        DENSITY
+    Screening Cutoff:        1E-12
+    Incremental Fock:          Yes
+
+  Minimum eigenvalue in the overlap matrix is 5.0916634930E-04.
+  Reciprocal condition number of the overlap matrix is 6.6215194190E-05.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A        102     102 
+   -------------------------
+    Total     102     102
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @UHF iter SAD:  -229.97627956888920   -2.29976e+02   0.00000e+00 
+   @UHF iter   1:  -230.34044701502182   -3.64167e-01   2.84845e-03 DIIS
+   @UHF iter   2:  -230.40548499345101   -6.50380e-02   9.10337e-04 DIIS/INCFOCK
+   @UHF iter   3:  -230.41337609360528   -7.89110e-03   4.49308e-04 DIIS/INCFOCK
+   @UHF iter   4:  -230.41564841538329   -2.27232e-03   1.91617e-04 DIIS/INCFOCK
+   @UHF iter   5:  -230.41680626874773   -1.15785e-03   1.04554e-04 DIIS
+   @UHF iter   6:  -230.41718686741680   -3.80599e-04   3.43901e-05 DIIS/INCFOCK
+   @UHF iter   7:  -230.41721458790164   -2.77205e-05   8.95279e-06 DIIS/INCFOCK
+   @UHF iter   8:  -230.41721616045268   -1.57255e-06   3.00469e-06 DIIS/INCFOCK
+   @UHF iter   9:  -230.41721606402797    9.64247e-08   7.72661e-07 DIIS
+   @UHF iter  10:  -230.41721607525511   -1.12271e-08   3.44486e-07 DIIS
+   @UHF iter  11:  -230.41721607852242   -3.26730e-09   2.31089e-07 DIIS
+   @UHF iter  12:  -230.41721608051347   -1.99105e-09   1.92255e-07 DIIS
+   @UHF iter  13:  -230.41721608240212   -1.88865e-09   1.62477e-07 DIIS
+   @UHF iter  14:  -230.41721608633475   -3.93263e-09   7.90718e-08 DIIS
+   @UHF iter  15:  -230.41721608725163   -9.16884e-10   2.63543e-08 DIIS
+   @UHF iter  16:  -230.41721608727897   -2.73417e-11   9.57322e-09 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   @Spin Contamination Metric:   1.219279920E-01
+   @S^2 Expected:                7.500000000E-01
+   @S^2 Observed:                8.719279920E-01
+   @S   Expected:                5.000000000E-01
+   @S   Observed:                5.000000000E-01
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Alpha Occupied:                                                       
+
+       1A    -11.495305     2A    -11.495291     3A    -11.494078  
+       4A    -11.494045     5A    -11.442162     6A    -11.441956  
+       7A     -1.401110     8A     -1.280953     9A     -1.236593  
+      10A     -1.061728    11A     -1.054985    12A     -0.936797  
+      13A     -0.864865    14A     -0.857338    15A     -0.829019  
+      16A     -0.800194    17A     -0.754838    18A     -0.721359  
+      19A     -0.718865    20A     -0.623430    21A     -0.545548  
+
+    Alpha Virtual:                                                        
+
+      22A     -0.126042    23A     -0.063897    24A      0.042797  
+      25A      0.098946    26A      0.113678    27A      0.130299  
+      28A      0.135660    29A      0.151029    30A      0.159926  
+      31A      0.255044    32A      0.258588    33A      0.275867  
+      34A      0.280571    35A      0.442065    36A      0.497354  
+      37A      0.513966    38A      0.548631    39A      0.565379  
+      40A      0.568889    41A      0.578758    42A      0.605166  
+      43A      0.615845    44A      0.616396    45A      0.619368  
+      46A      0.623269    47A      0.666026    48A      0.706239  
+      49A      0.774274    50A      0.889198    51A      0.897618  
+      52A      0.898364    53A      0.906629    54A      0.921992  
+      55A      0.965296    56A      0.966879    57A      0.991253  
+      58A      1.023044    59A      1.071307    60A      1.091040  
+      61A      1.153718    62A      1.166937    63A      1.242023  
+      64A      1.262251    65A      1.406922    66A      1.474558  
+      67A      1.477738    68A      1.505778    69A      1.524028  
+      70A      1.525068    71A      1.563469    72A      1.796733  
+      73A      1.852111    74A      1.938720    75A      1.943215  
+      76A      2.058696    77A      2.085228    78A      2.149822  
+      79A      2.155240    80A      2.206060    81A      2.211483  
+      82A      2.230374    83A      2.244964    84A      2.369328  
+      85A      2.401998    86A      2.403913    87A      2.625833  
+      88A      2.651999    89A      2.754622    90A      2.829447  
+      91A      2.834927    92A      2.845615    93A      2.849862  
+      94A      2.854186    95A      3.156276    96A      3.560695  
+      97A      4.268438    98A      4.283484    99A      4.316108  
+     100A      4.500657   101A      4.529756   102A      4.858266  
+
+    Beta Occupied:                                                        
+
+       1A    -11.486776     2A    -11.486754     3A    -11.485742  
+       4A    -11.485707     5A    -11.449303     6A    -11.449029  
+       7A     -1.375638     8A     -1.240951     9A     -1.227679  
+      10A     -1.049482    11A     -1.040402    12A     -0.932663  
+      13A     -0.858733    14A     -0.850872    15A     -0.819312  
+      16A     -0.802208    17A     -0.719893    18A     -0.714828  
+      19A     -0.668245    20A     -0.567785  
+
+    Beta Virtual:                                                         
+
+      21A     -0.243132    22A     -0.042620    23A     -0.017261  
+      24A      0.045969    25A      0.103744    26A      0.113898  
+      27A      0.146327    28A      0.149971    29A      0.162670  
+      30A      0.167894    31A      0.259712    32A      0.264405  
+      33A      0.280738    34A      0.283655    35A      0.445200  
+      36A      0.501617    37A      0.542697    38A      0.566200  
+      39A      0.568279    40A      0.578069    41A      0.615615  
+      42A      0.621778    43A      0.622249    44A      0.631181  
+      45A      0.631489    46A      0.632666    47A      0.700192  
+      48A      0.711440    49A      0.789124    50A      0.895794  
+      51A      0.903016    52A      0.905262    53A      0.907060  
+      54A      0.920329    55A      0.967244    56A      0.973272  
+      57A      0.992378    58A      1.025530    59A      1.082373  
+      60A      1.091282    61A      1.163033    62A      1.166772  
+      63A      1.245479    64A      1.289196    65A      1.430031  
+      66A      1.477756    67A      1.483811    68A      1.533743  
+      69A      1.536137    70A      1.561947    71A      1.565986  
+      72A      1.818410    73A      1.855408    74A      1.940885  
+      75A      1.947024    76A      2.073220    77A      2.083820  
+      78A      2.153804    79A      2.163166    80A      2.229438  
+      81A      2.235283    82A      2.237787    83A      2.242391  
+      84A      2.397805    85A      2.406366    86A      2.412183  
+      87A      2.645258    88A      2.650638    89A      2.766596  
+      90A      2.835198    91A      2.840928    92A      2.844989  
+      93A      2.853684    94A      2.858898    95A      3.158498  
+      96A      3.563249    97A      4.275211    98A      4.295465  
+      99A      4.315036   100A      4.511805   101A      4.527382  
+     102A      4.862423  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [    20 ]
+    SOCC [     1 ]
+
+  @UHF Final Energy:  -230.41721608727897
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =            203.7109313602788916
+    One-Electron Energy =                -703.9938288481906739
+    Two-Electron Energy =                 269.8656814006328091
+    Total Energy =                       -230.4172160872789732
+
+  UHF NO Occupations:
+  HONO-2 :   19  A 1.9835727
+  HONO-1 :   20  A 1.9574808
+  HONO-0 :   21  A 1.0000000
+  LUNO+0 :   22  A 0.0425192
+  LUNO+1 :   23  A 0.0164273
+  LUNO+2 :   24  A 0.0005170
+  LUNO+3 :   25  A 0.0005078
+
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:  -147.6125      Y:   -22.9025      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:   144.1022      Y:    22.3599      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:    -3.5103      Y:    -0.5426      Z:     0.0000     Total:     3.5520
+
+  Dipole Moment: [D]
+     X:    -8.9224      Y:    -1.3792      Z:     0.0000     Total:     9.0283
+
+
+*** tstop() called on ds10 at Fri Nov 19 15:04:56 2021
+Module time:
+	user time   =      62.02 seconds =       1.03 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =         11 seconds =       0.18 minutes
+Total time:
+	user time   =      62.02 seconds =       1.03 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =         11 seconds =       0.18 minutes
+    UHF Energy (using LinK algo)..........................................................PASSED
+
+Scratch directory: /scratch/jiang/
+
+*** tstart() called on ds10
+*** at Fri Nov 19 15:04:56 2021
+
+   => Loading Basis Set <=
+
+    Name: 6-31G*
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1-6  entry C          line   111 file /scratch/jiang/p4dev/psi4/objdir-livie/stage/share/psi4/basis/6-31gs.gbs 
+    atoms 7-12 entry H          line    44 file /scratch/jiang/p4dev/psi4/objdir-livie/stage/share/psi4/basis/6-31gs.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                             ROHF Reference
+                        6 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: Cs
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         C           -1.047825200000    -1.421673600000     0.000000000000    12.000000000000
+         C           -1.454503400000    -0.855445900000     1.206204800000    12.000000000000
+         C           -1.454503400000    -0.855445900000    -1.206204800000    12.000000000000
+         C           -2.266797000000     0.277161000000     1.206953900000    12.000000000000
+         C           -2.671478100000     0.845021100000     0.000000000000    12.000000000000
+         C           -2.266797000000     0.277161000000    -1.206953900000    12.000000000000
+         H           -1.133853400000    -1.292059300000    -2.142315000000     1.007825032230
+         H           -2.582494300000     0.716306600000    -2.143797700000     1.007825032230
+         H           -3.303042200000     1.723270000000     0.000000000000     1.007825032230
+         H           -2.582494300000     0.716306600000     2.143797700000     1.007825032230
+         H           -1.133853400000    -1.292059300000     2.142315000000     1.007825032230
+         H           -0.406025300000    -2.291904900000     0.000000000000     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =      0.10996  B =      0.04618  C =      0.04339 [cm^-1]
+  Rotational constants: A =   3296.45833  B =   1384.51424  C =   1300.84014 [MHz]
+  Nuclear repulsion =  203.710931360278892
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 41
+  Nalpha       = 21
+  Nbeta        = 20
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-06
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: 6-31G*
+    Blend: 6-31G*
+    Number of shells: 48
+    Number of basis functions: 102
+    Number of Cartesian functions: 102
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           6
+    Screening Type:        DENSITY
+    Screening Cutoff:        1E-12
+    Incremental Fock:          Yes
+
+  Minimum eigenvalue in the overlap matrix is 5.0916634930E-04.
+  Reciprocal condition number of the overlap matrix is 6.6215194190E-05.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A        102     102 
+   -------------------------
+    Total     102     102
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @ROHF iter SAD:  -229.97627956888942   -2.29976e+02   0.00000e+00 
+   @ROHF iter   1:  -230.34044701502154   -3.64167e-01   1.97113e-03 DIIS
+   @ROHF iter   2:  -230.39746640379121   -5.70194e-02   5.92164e-04 DIIS/INCFOCK
+   @ROHF iter   3:  -230.40206233123865   -4.59593e-03   2.54103e-04 DIIS/INCFOCK
+   @ROHF iter   4:  -230.40278526419883   -7.22933e-04   2.60323e-05 DIIS/INCFOCK
+   @ROHF iter   5:  -230.40278953489747   -4.27070e-06   1.09717e-05 DIIS
+   @ROHF iter   6:  -230.40279177894655   -2.24405e-06   2.55633e-06 DIIS/INCFOCK
+   @ROHF iter   7:  -230.40279215023327   -3.71287e-07   5.60801e-07 DIIS/INCFOCK
+   @ROHF iter   8:  -230.40279166615767    4.84076e-07   1.01896e-07 DIIS
+   @ROHF iter   9:  -230.40279166630160   -1.43928e-10   2.92717e-08 DIIS
+   @ROHF iter  10:  -230.40279166632530   -2.37037e-11   1.42135e-08 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -11.493077     2A    -11.493072     3A    -11.491947  
+       4A    -11.491914     5A    -11.448972     6A    -11.448720  
+       7A     -1.388454     8A     -1.254757     9A     -1.239479  
+      10A     -1.053702    11A     -1.051761    12A     -0.935625  
+      13A     -0.862761    14A     -0.855305    15A     -0.824851  
+      16A     -0.802488    17A     -0.721535    18A     -0.718149  
+      19A     -0.703154    20A     -0.553195  
+
+    Singly Occupied:                                                      
+
+      21A     -0.432135  
+
+    Virtual:                                                              
+
+      22A     -0.070931    23A     -0.061052    24A      0.044037  
+      25A      0.100990    26A      0.113237    27A      0.140709  
+      28A      0.146863    29A      0.149804    30A      0.160765  
+      31A      0.258592    32A      0.259208    33A      0.277730  
+      34A      0.281316    35A      0.443064    36A      0.499351  
+      37A      0.529394    38A      0.557189    39A      0.566073  
+      40A      0.573208    41A      0.603433    42A      0.616954  
+      43A      0.618132    44A      0.619309    45A      0.621438  
+      46A      0.622519    47A      0.687945    48A      0.700366  
+      49A      0.779039    50A      0.891763    51A      0.899720  
+      52A      0.900791    53A      0.905798    54A      0.920021  
+      55A      0.965133    56A      0.969047    57A      0.990861  
+      58A      1.023145    59A      1.076450    60A      1.090446  
+      61A      1.158073    62A      1.166355    63A      1.243193  
+      64A      1.275057    65A      1.418528    66A      1.475951  
+      67A      1.480342    68A      1.519583    69A      1.528548  
+      70A      1.544586    71A      1.561840    72A      1.806804  
+      73A      1.852878    74A      1.939007    75A      1.943320  
+      76A      2.065604    77A      2.083449    78A      2.150881  
+      79A      2.158330    80A      2.217212    81A      2.223689  
+      82A      2.231764    83A      2.242751    84A      2.383087  
+      85A      2.403928    86A      2.406111    87A      2.634791  
+      88A      2.650107    89A      2.759577    90A      2.831371  
+      91A      2.837090    92A      2.844025    93A      2.852645  
+      94A      2.852855    95A      3.156199    96A      3.560723  
+      97A      4.270668    98A      4.288478    99A      4.314058  
+     100A      4.505240   101A      4.526807   102A      4.858853  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [    20 ]
+    SOCC [     1 ]
+
+  @ROHF Final Energy:  -230.40279166632530
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =            203.7109313602788916
+    One-Electron Energy =                -703.9661865240327643
+    Two-Electron Energy =                 269.8524634974285732
+    Total Energy =                       -230.4027916663252995
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:  -147.6125      Y:   -22.9025      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:   144.1020      Y:    22.3602      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:    -3.5105      Y:    -0.5423      Z:     0.0000     Total:     3.5521
+
+  Dipole Moment: [D]
+     X:    -8.9228      Y:    -1.3783      Z:     0.0000     Total:     9.0286
+
+
+*** tstop() called on ds10 at Fri Nov 19 15:05:02 2021
+Module time:
+	user time   =      38.79 seconds =       0.65 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
+Total time:
+	user time   =     100.87 seconds =       1.68 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =         17 seconds =       0.28 minutes
+    ROHF Energy (using LinK algo).........................................................PASSED
+
+    Psi4 stopped on: Friday, 19 November 2021 03:05PM
+    Psi4 wall time for execution: 0:00:17.29
+
+*** Psi4 exiting successfully. Buy a developer a beer!
