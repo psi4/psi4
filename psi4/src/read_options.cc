@@ -1671,9 +1671,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- combine omega exchange and Hartree--Fock exchange into
               one matrix for efficiency?
-            Default is True for MemDFJK
-              (itself the default for |globals__scf_type| DF),
-            False otherwise as not yet implemented. -*/
+              Disabled until fixed.-*/
+            //NOTE: Re-enable with below doc string:
+            // Default is True for MemDFJK
+            //   (itself the default for |globals__scf_type| DF),
+            // False otherwise as not yet implemented. -*/
         options.add_bool("WCOMBINE", false);
     }
     if (name == "CPHF" || options.read_globals()) {
