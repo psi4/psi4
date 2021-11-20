@@ -639,7 +639,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
         "psi4.grad": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".grad"),
         "psi4.hess": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".hess"),
         # binary "psi4.180.npy": Path(core.get_writer_file_prefix(wfn.molecule().name()) + ".180.npy"),
-        "timer.dat": Path("timer.dat"),
+        "timer.dat": Path("timer.dat"),  # ok for `psi4 --qcschema` but no file collected for `qcengine.run_program(..., "psi4")`
     }
     json_data["native_files"] = {fl: flpath.read_text() for fl, flpath in files.items() if flpath.exists()}
 
