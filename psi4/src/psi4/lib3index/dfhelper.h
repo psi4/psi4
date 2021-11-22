@@ -31,6 +31,7 @@
 
 #include "psi4/psi4-dec.h"
 #include <psi4/libmints/typedefs.h>
+#include "psi4/libpsi4util/exception.h"
 
 #include <map>
 #include <list>
@@ -143,8 +144,14 @@ class PSI_API DFHelper {
     ///
     /// Do we calculate omega exchange and regular hf exchange together?
     /// @param wcombine boolean: all exchange in one matrix
-    ///
-    void set_wcombine(bool wcombine) {wcombine_ = wcombine;}
+    /// TODO: re-enable after all bugs are fixed.
+    // void set_wcombine(bool wcombine) {wcombine_ = wcombine;}
+    void set_wcombine(bool wcombine) {
+        if (wcombine) {
+            throw PSIEXCEPTION("JK: wcombine option is currently not available.");
+        }
+        wcombine_ = wcombine;
+    }
     bool get_wcombine() { return wcombine_; }
 
     ///
