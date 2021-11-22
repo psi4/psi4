@@ -578,7 +578,7 @@ Bibliography
 .. [Liakos:2015:1525]
    D. Liakos, M. Sparta, M. Kesharwani, J. Martin, and F. Neese,
    *J. Chem. Theory Comput.* **11**, 1525 (2015).
-   
+
 .. [Smith:2018:3504]
     10.1021/acs.jctc.8b00286,
     "PSI4NUMPY: An Interactive Quantum Chemistry Programming Environment for Reference Implementations and Rapid Development",
@@ -594,3 +594,15 @@ Bibliography
    E. Caldeweyher,  S. Ehlert,  A. Hansen, H. Neugebauer, S. Spicher, C. Bannwarth, and S. Grimme,
    *J. Chem. Phys.* **150**, 154122 (2019).
    https://doi.org/10.1063/1.5090222
+
+.. [Behnle:2019:REMP]
+   "REMP: A hybrid perturbation theory providing improved electronic wavefunctions and properties",
+   S. Behnle and R. F. Fink,
+   *J. Chem. Phys.* **150**, 1241077 (2019).
+   https://doi.org/10.1063/1.5086168
+
+.. [Behnle:2021:OREMP]
+   "OO-REMP: Approaching Chemical Accuracy with Second-Order Perturbation Theory",
+   S. Behnle and R. F. Fink,
+   *J. Chem. Theory Comput.* **17**, 3259 (2021).
+   https://doi.org/10.1021/acs.jctc.1c00280
