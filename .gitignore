@@ -21,9 +21,6 @@ CMakeLists.txt.user
 *.cbp
 *.save
 
-# Code::Blocks cscope plugin files
-**/*.cscope_file_list
-
 # Files resulting from compilation
 *.o
 *.a
