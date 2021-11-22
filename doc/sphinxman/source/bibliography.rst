@@ -630,3 +630,16 @@ Bibliography
    C. Ochsenfeld, C. A. White, M. Head-Gordon
    *J. Chem. Phys.* **109**, 1663 (1998)
    https://doi.org/10.1063/1.476741
+
+.. [Behnle:2019:REMP]
+   "REMP: A hybrid perturbation theory providing improved electronic wavefunctions and properties",
+   S. Behnle and R. F. Fink,
+   *J. Chem. Phys.* **150**, 1241077 (2019).
+   https://doi.org/10.1063/1.5086168
+
+.. [Behnle:2021:OREMP]
+   "OO-REMP: Approaching Chemical Accuracy with Second-Order Perturbation Theory",
+   S. Behnle and R. F. Fink,
+   *J. Chem. Theory Comput.* **17**, 3259 (2021).
+   https://doi.org/10.1021/acs.jctc.1c00280
+
