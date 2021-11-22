@@ -758,12 +758,12 @@ class PSI_API DirectJK : public JK {
     /// Post-iteration Incfock processing
     void incfock_postiter();
 
-    /// Build the J matrix using the continuous fast multipole method
+    /// Build the J matrix using the continuous fast multipole method, described in [White:1994:8]_
     /// TODO: Put CFMM algorithm here after linK PR is merged
     // void build_cfmm_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
     //               std::vector<std::shared_ptr<Matrix> >& J);
 
-    /// Build the K matrix using the linear exchange algorithm
+    /// Build the K matrix using the linear exchange algorithm, described in [Ochsenfeld:1998:1663]_
     void build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
                   std::vector<std::shared_ptr<Matrix> >& K);
 
