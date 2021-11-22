@@ -20,7 +20,6 @@ CMakeLists.txt.user
 # Code::Blocks project and backup files
 *.cbp
 *.save
-*.layout
 
 # Code::Blocks cscope plugin files
 **/*.cscope_file_list
