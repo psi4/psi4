@@ -1,0 +1,18 @@
+#! Test fnocc with linear dependencies
+
+molecule { 
+o 
+h 1 1.0 
+h 1 1.0 2 104.5
+}
+
+set {
+  basis 'aug-cc-pvtz'
+  scf_type df
+  cc_type df
+  s_tolerance 1e-3
+}
+
+set fnocc maxiter 50
+energy = energy('ccsd')
+
