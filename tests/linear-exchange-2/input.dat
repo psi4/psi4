@@ -30,7 +30,7 @@ set {
     screening density
     incfock true
     incfock_full_fock_every 4
-    do_linear_exchange true
+    do_linK true
     linK_ints_tolerance 1.0e-12
 }
 

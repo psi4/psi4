@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.5a1.dev248 
+                               Psi4 1.5a1.dev251 
 
-                         Git: Rev {linK-new} a239ba8 dirty
+                         Git: Rev {linK-new} a680f17 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Friday, 19 November 2021 02:51PM
+    Psi4 started on: Tuesday, 23 November 2021 08:28PM
 
-    Process ID: 25781
+    Process ID: 6744
     Host:       ds10
     PSIDATADIR: /scratch/jiang/p4dev/psi4/objdir-livie/stage/share/psi4
     Memory:     500.0 MiB
@@ -73,7 +73,7 @@ set {
     screening density
     incfock true
     incfock_full_fock_every 4
-    do_linear_exchange true
+    do_linK true
     linK_ints_tolerance 1.0e-12
 }
 
@@ -84,7 +84,7 @@ psi4.compare_values(ref_energy, linK_energy, 7, "B3LYP Energy (using LinK algo)"
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds10
-*** at Fri Nov 19 14:51:26 2021
+*** at Tue Nov 23 20:28:59 2021
 
    => Loading Basis Set <=
 
@@ -223,6 +223,13 @@ Scratch directory: /scratch/jiang/
     Screening Type:        DENSITY
     Screening Cutoff:        1E-12
     Incremental Fock:          Yes
+    LinK:                      Yes
+
+            -------------------------------
+           |      Linear Exchange (LinK)   |
+           |          By: Andy Jiang       |
+            -------------------------------
+          **Do I get a fist-bump for this?**
 
   Cached 20.0% of DFT collocation blocks in 0.306 [GiB].
 
@@ -246,19 +253,19 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter SAD:  -231.83025753211237   -2.31830e+02   0.00000e+00 
-   @RKS iter   1:  -231.83545138972826   -5.19386e-03   3.65134e-03 DIIS
-   @RKS iter   2:  -231.53451813678478    3.00933e-01   4.63456e-03 DIIS/INCFOCK
-   @RKS iter   3:  -232.32894881250871   -7.94431e-01   3.73776e-04 DIIS/INCFOCK
-   @RKS iter   4:  -232.33313490440693   -4.18609e-03   7.47837e-05 DIIS/INCFOCK
-   @RKS iter   5:  -232.33331174772380   -1.76843e-04   7.66105e-06 DIIS
-   @RKS iter   6:  -232.33331208371470   -3.35991e-07   6.96989e-06 DIIS/INCFOCK
-   @RKS iter   7:  -232.33331399492607   -1.91121e-06   7.63237e-07 DIIS/INCFOCK
-   @RKS iter   8:  -232.33331403191485   -3.69888e-08   1.01676e-06 DIIS
-   @RKS iter   9:  -232.33331390292147    1.28993e-07   8.43098e-07 DIIS/INCFOCK
-   @RKS iter  10:  -232.33331403339380   -1.30472e-07   1.21539e-06 DIIS
-   @RKS iter  11:  -232.33331403832261   -4.92881e-09   1.13336e-07 DIIS
-   @RKS iter  12:  -232.33331403834507   -2.24532e-11   8.76232e-08 DIIS
+   @RKS iter SAD:  -231.83025753211231   -2.31830e+02   0.00000e+00 
+   @RKS iter   1:  -231.83545138972829   -5.19386e-03   3.65134e-03 DIIS/LINK
+   @RKS iter   2:  -231.53451813678475    3.00933e-01   4.63456e-03 DIIS/INCFOCK/LINK
+   @RKS iter   3:  -232.32894881250905   -7.94431e-01   3.73776e-04 DIIS/INCFOCK/LINK
+   @RKS iter   4:  -232.33313490440673   -4.18609e-03   7.47837e-05 DIIS/INCFOCK/LINK
+   @RKS iter   5:  -232.33331174772394   -1.76843e-04   7.66105e-06 DIIS/LINK
+   @RKS iter   6:  -232.33331208371479   -3.35991e-07   6.96989e-06 DIIS/INCFOCK/LINK
+   @RKS iter   7:  -232.33331399492678   -1.91121e-06   7.63237e-07 DIIS/INCFOCK/LINK
+   @RKS iter   8:  -232.33331403191488   -3.69881e-08   1.01676e-06 DIIS/LINK
+   @RKS iter   9:  -232.33331390292125    1.28994e-07   8.43098e-07 DIIS/INCFOCK/LINK
+   @RKS iter  10:  -232.33331403339380   -1.30473e-07   1.21539e-06 DIIS/LINK
+   @RKS iter  11:  -232.33331403832292   -4.92912e-09   1.13336e-07 DIIS/LINK
+   @RKS iter  12:  -232.33331403834504   -2.21121e-11   8.76232e-08 DIIS/LINK
   Energy and wave function converged.
 
 
@@ -368,17 +375,17 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [    21 ]
 
-  @RKS Final Energy:  -232.33331403834507
+  @RKS Final Energy:  -232.33331403834504
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -714.7993068249302269
-    Two-Electron Energy =                 306.9305834231119547
-    DFT Exchange-Correlation Energy =     -28.1755219968056529
+    One-Electron Energy =                -714.7993068249319322
+    Two-Electron Energy =                 306.9305834231136600
+    DFT Exchange-Correlation Energy =     -28.1755219968056174
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -232.3333140383450370
+    Total Energy =                       -232.3333140383450086
 
 Computation Completed
 
@@ -400,18 +407,18 @@ Properties computed using the SCF density matrix
      X:     0.0125      Y:     0.0080      Z:    -0.0000     Total:     0.0149
 
 
-*** tstop() called on ds10 at Fri Nov 19 14:53:40 2021
+*** tstop() called on ds10 at Tue Nov 23 20:31:17 2021
 Module time:
-	user time   =     802.23 seconds =      13.37 minutes
-	system time =       0.48 seconds =       0.01 minutes
-	total time  =        134 seconds =       2.23 minutes
+	user time   =     824.41 seconds =      13.74 minutes
+	system time =       0.49 seconds =       0.01 minutes
+	total time  =        138 seconds =       2.30 minutes
 Total time:
-	user time   =     802.23 seconds =      13.37 minutes
-	system time =       0.48 seconds =       0.01 minutes
-	total time  =        134 seconds =       2.23 minutes
+	user time   =     824.41 seconds =      13.74 minutes
+	system time =       0.49 seconds =       0.01 minutes
+	total time  =        138 seconds =       2.30 minutes
     B3LYP Energy (using LinK algo)........................................................PASSED
 
-    Psi4 stopped on: Friday, 19 November 2021 02:53PM
-    Psi4 wall time for execution: 0:02:14.22
+    Psi4 stopped on: Tuesday, 23 November 2021 08:31PM
+    Psi4 wall time for execution: 0:02:17.85
 
 *** Psi4 exiting successfully. Buy a developer a beer!

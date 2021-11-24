@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.5a1.dev248 
+                               Psi4 1.5a1.dev251 
 
-                         Git: Rev {linK-new} a239ba8 dirty
+                         Git: Rev {linK-new} a680f17 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Friday, 19 November 2021 03:04PM
+    Psi4 started on: Tuesday, 23 November 2021 08:31PM
 
-    Process ID: 26276
+    Process ID: 6845
     Host:       ds10
     PSIDATADIR: /scratch/jiang/p4dev/psi4/objdir-livie/stage/share/psi4
     Memory:     500.0 MiB
@@ -75,7 +75,7 @@ set {
     screening density
     incfock true
     incfock_full_fock_every 4
-    do_linear_exchange true
+    do_linK true
     linK_ints_tolerance 1.0e-12
 }
 
@@ -90,7 +90,7 @@ psi4.compare_values(rohf_energy, rohf_ref, 6, "ROHF Energy (using LinK algo)")
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds10
-*** at Fri Nov 19 15:04:45 2021
+*** at Tue Nov 23 20:31:59 2021
 
    => Loading Basis Set <=
 
@@ -175,6 +175,13 @@ Scratch directory: /scratch/jiang/
     Screening Type:        DENSITY
     Screening Cutoff:        1E-12
     Incremental Fock:          Yes
+    LinK:                      Yes
+
+            -------------------------------
+           |      Linear Exchange (LinK)   |
+           |          By: Andy Jiang       |
+            -------------------------------
+          **Do I get a fist-bump for this?**
 
   Minimum eigenvalue in the overlap matrix is 5.0916634930E-04.
   Reciprocal condition number of the overlap matrix is 6.6215194190E-05.
@@ -196,23 +203,23 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UHF iter SAD:  -229.97627956888920   -2.29976e+02   0.00000e+00 
-   @UHF iter   1:  -230.34044701502182   -3.64167e-01   2.84845e-03 DIIS
-   @UHF iter   2:  -230.40548499345101   -6.50380e-02   9.10337e-04 DIIS/INCFOCK
-   @UHF iter   3:  -230.41337609360528   -7.89110e-03   4.49308e-04 DIIS/INCFOCK
-   @UHF iter   4:  -230.41564841538329   -2.27232e-03   1.91617e-04 DIIS/INCFOCK
-   @UHF iter   5:  -230.41680626874773   -1.15785e-03   1.04554e-04 DIIS
-   @UHF iter   6:  -230.41718686741680   -3.80599e-04   3.43901e-05 DIIS/INCFOCK
-   @UHF iter   7:  -230.41721458790164   -2.77205e-05   8.95279e-06 DIIS/INCFOCK
-   @UHF iter   8:  -230.41721616045268   -1.57255e-06   3.00469e-06 DIIS/INCFOCK
-   @UHF iter   9:  -230.41721606402797    9.64247e-08   7.72661e-07 DIIS
-   @UHF iter  10:  -230.41721607525511   -1.12271e-08   3.44486e-07 DIIS
-   @UHF iter  11:  -230.41721607852242   -3.26730e-09   2.31089e-07 DIIS
-   @UHF iter  12:  -230.41721608051347   -1.99105e-09   1.92255e-07 DIIS
-   @UHF iter  13:  -230.41721608240212   -1.88865e-09   1.62477e-07 DIIS
-   @UHF iter  14:  -230.41721608633475   -3.93263e-09   7.90718e-08 DIIS
-   @UHF iter  15:  -230.41721608725163   -9.16884e-10   2.63543e-08 DIIS
-   @UHF iter  16:  -230.41721608727897   -2.73417e-11   9.57322e-09 DIIS
+   @UHF iter SAD:  -229.97627956888940   -2.29976e+02   0.00000e+00 
+   @UHF iter   1:  -230.34044701502165   -3.64167e-01   2.84845e-03 DIIS/LINK
+   @UHF iter   2:  -230.40548499345095   -6.50380e-02   9.10337e-04 DIIS/INCFOCK/LINK
+   @UHF iter   3:  -230.41337609360545   -7.89110e-03   4.49308e-04 DIIS/INCFOCK/LINK
+   @UHF iter   4:  -230.41564841538326   -2.27232e-03   1.91617e-04 DIIS/INCFOCK/LINK
+   @UHF iter   5:  -230.41680626874771   -1.15785e-03   1.04554e-04 DIIS/LINK
+   @UHF iter   6:  -230.41718686741689   -3.80599e-04   3.43901e-05 DIIS/INCFOCK/LINK
+   @UHF iter   7:  -230.41721458790178   -2.77205e-05   8.95279e-06 DIIS/INCFOCK/LINK
+   @UHF iter   8:  -230.41721616045254   -1.57255e-06   3.00469e-06 DIIS/INCFOCK/LINK
+   @UHF iter   9:  -230.41721606402814    9.64244e-08   7.72661e-07 DIIS/LINK
+   @UHF iter  10:  -230.41721607525503   -1.12269e-08   3.44486e-07 DIIS/LINK
+   @UHF iter  11:  -230.41721607852264   -3.26762e-09   2.31089e-07 DIIS/LINK
+   @UHF iter  12:  -230.41721608051324   -1.99060e-09   1.92255e-07 DIIS/LINK
+   @UHF iter  13:  -230.41721608240243   -1.88919e-09   1.62477e-07 DIIS/LINK
+   @UHF iter  14:  -230.41721608633480   -3.93237e-09   7.90718e-08 DIIS/LINK
+   @UHF iter  15:  -230.41721608725189   -9.17083e-10   2.63543e-08 DIIS/LINK
+   @UHF iter  16:  -230.41721608727909   -2.71996e-11   9.57322e-09 DIIS/LINK
   Energy and wave function converged.
 
 
@@ -313,14 +320,14 @@ Scratch directory: /scratch/jiang/
     DOCC [    20 ]
     SOCC [     1 ]
 
-  @UHF Final Energy:  -230.41721608727897
+  @UHF Final Energy:  -230.41721608727909
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
     One-Electron Energy =                -703.9938288481906739
-    Two-Electron Energy =                 269.8656814006328091
-    Total Energy =                       -230.4172160872789732
+    Two-Electron Energy =                 269.8656814006326954
+    Total Energy =                       -230.4172160872790869
 
   UHF NO Occupations:
   HONO-2 :   19  A 1.9835727
@@ -352,21 +359,21 @@ Properties computed using the SCF density matrix
      X:    -8.9224      Y:    -1.3792      Z:     0.0000     Total:     9.0283
 
 
-*** tstop() called on ds10 at Fri Nov 19 15:04:56 2021
+*** tstop() called on ds10 at Tue Nov 23 20:32:10 2021
 Module time:
-	user time   =      62.02 seconds =       1.03 minutes
-	system time =       0.14 seconds =       0.00 minutes
+	user time   =      63.32 seconds =       1.06 minutes
+	system time =       0.12 seconds =       0.00 minutes
 	total time  =         11 seconds =       0.18 minutes
 Total time:
-	user time   =      62.02 seconds =       1.03 minutes
-	system time =       0.14 seconds =       0.00 minutes
+	user time   =      63.32 seconds =       1.06 minutes
+	system time =       0.12 seconds =       0.00 minutes
 	total time  =         11 seconds =       0.18 minutes
     UHF Energy (using LinK algo)..........................................................PASSED
 
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds10
-*** at Fri Nov 19 15:04:56 2021
+*** at Tue Nov 23 20:32:10 2021
 
    => Loading Basis Set <=
 
@@ -451,6 +458,13 @@ Scratch directory: /scratch/jiang/
     Screening Type:        DENSITY
     Screening Cutoff:        1E-12
     Incremental Fock:          Yes
+    LinK:                      Yes
+
+            -------------------------------
+           |      Linear Exchange (LinK)   |
+           |          By: Andy Jiang       |
+            -------------------------------
+          **Do I get a fist-bump for this?**
 
   Minimum eigenvalue in the overlap matrix is 5.0916634930E-04.
   Reciprocal condition number of the overlap matrix is 6.6215194190E-05.
@@ -473,16 +487,16 @@ Scratch directory: /scratch/jiang/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @ROHF iter SAD:  -229.97627956888942   -2.29976e+02   0.00000e+00 
-   @ROHF iter   1:  -230.34044701502154   -3.64167e-01   1.97113e-03 DIIS
-   @ROHF iter   2:  -230.39746640379121   -5.70194e-02   5.92164e-04 DIIS/INCFOCK
-   @ROHF iter   3:  -230.40206233123865   -4.59593e-03   2.54103e-04 DIIS/INCFOCK
-   @ROHF iter   4:  -230.40278526419883   -7.22933e-04   2.60323e-05 DIIS/INCFOCK
-   @ROHF iter   5:  -230.40278953489747   -4.27070e-06   1.09717e-05 DIIS
-   @ROHF iter   6:  -230.40279177894655   -2.24405e-06   2.55633e-06 DIIS/INCFOCK
-   @ROHF iter   7:  -230.40279215023327   -3.71287e-07   5.60801e-07 DIIS/INCFOCK
-   @ROHF iter   8:  -230.40279166615767    4.84076e-07   1.01896e-07 DIIS
-   @ROHF iter   9:  -230.40279166630160   -1.43928e-10   2.92717e-08 DIIS
-   @ROHF iter  10:  -230.40279166632530   -2.37037e-11   1.42135e-08 DIIS
+   @ROHF iter   1:  -230.34044701502160   -3.64167e-01   1.97113e-03 DIIS/LINK
+   @ROHF iter   2:  -230.39746640379110   -5.70194e-02   5.92164e-04 DIIS/INCFOCK/LINK
+   @ROHF iter   3:  -230.40206233123854   -4.59593e-03   2.54103e-04 DIIS/INCFOCK/LINK
+   @ROHF iter   4:  -230.40278526419866   -7.22933e-04   2.60323e-05 DIIS/INCFOCK/LINK
+   @ROHF iter   5:  -230.40278953489764   -4.27070e-06   1.09717e-05 DIIS/LINK
+   @ROHF iter   6:  -230.40279177894683   -2.24405e-06   2.55633e-06 DIIS/INCFOCK/LINK
+   @ROHF iter   7:  -230.40279215023310   -3.71286e-07   5.60801e-07 DIIS/INCFOCK/LINK
+   @ROHF iter   8:  -230.40279166615755    4.84076e-07   1.01896e-07 DIIS/LINK
+   @ROHF iter   9:  -230.40279166630120   -1.43643e-10   2.92717e-08 DIIS/LINK
+   @ROHF iter  10:  -230.40279166632564   -2.44427e-11   1.42135e-08 DIIS/LINK
   Energy and wave function converged.
 
 
@@ -540,14 +554,14 @@ Scratch directory: /scratch/jiang/
     DOCC [    20 ]
     SOCC [     1 ]
 
-  @ROHF Final Energy:  -230.40279166632530
+  @ROHF Final Energy:  -230.40279166632564
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -703.9661865240327643
-    Two-Electron Energy =                 269.8524634974285732
-    Total Energy =                       -230.4027916663252995
+    One-Electron Energy =                -703.9661865240340148
+    Two-Electron Energy =                 269.8524634974294827
+    Total Energy =                       -230.4027916663256406
 
 Computation Completed
 
@@ -569,18 +583,18 @@ Properties computed using the SCF density matrix
      X:    -8.9228      Y:    -1.3783      Z:     0.0000     Total:     9.0286
 
 
-*** tstop() called on ds10 at Fri Nov 19 15:05:02 2021
+*** tstop() called on ds10 at Tue Nov 23 20:32:17 2021
 Module time:
-	user time   =      38.79 seconds =       0.65 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =      39.66 seconds =       0.66 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 Total time:
-	user time   =     100.87 seconds =       1.68 minutes
-	system time =       0.23 seconds =       0.00 minutes
-	total time  =         17 seconds =       0.28 minutes
+	user time   =     103.04 seconds =       1.72 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =         18 seconds =       0.30 minutes
     ROHF Energy (using LinK algo).........................................................PASSED
 
-    Psi4 stopped on: Friday, 19 November 2021 03:05PM
-    Psi4 wall time for execution: 0:00:17.29
+    Psi4 stopped on: Tuesday, 23 November 2021 08:32PM
+    Psi4 wall time for execution: 0:00:17.66
 
 *** Psi4 exiting successfully. Buy a developer a beer!

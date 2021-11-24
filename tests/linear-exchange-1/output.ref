@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.5a1.dev248 
+                               Psi4 1.5a1.dev251 
 
-                         Git: Rev {linK-new} a239ba8 dirty
+                         Git: Rev {linK-new} a680f17 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Friday, 19 November 2021 02:45PM
+    Psi4 started on: Tuesday, 23 November 2021 08:27PM
 
-    Process ID: 25593
+    Process ID: 6638
     Host:       ds10
     PSIDATADIR: /scratch/jiang/p4dev/psi4/objdir-livie/stage/share/psi4
     Memory:     500.0 MiB
@@ -65,7 +65,7 @@ set {
     screening density
     incfock true
     incfock_full_fock_every 4
-    do_linear_exchange true
+    do_linK true
     linK_ints_tolerance 1.0e-14
 }
 
@@ -76,7 +76,7 @@ psi4.compare_values(ref_energy, linK_energy, 9, "HF Energy (Using LinK algo)")
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds10
-*** at Fri Nov 19 14:45:44 2021
+*** at Tue Nov 23 20:27:53 2021
 
    => Loading Basis Set <=
 
@@ -152,6 +152,13 @@ Scratch directory: /scratch/jiang/
     Screening Type:        DENSITY
     Screening Cutoff:        1E-12
     Incremental Fock:          Yes
+    LinK:                      Yes
+
+            -------------------------------
+           |      Linear Exchange (LinK)   |
+           |          By: Andy Jiang       |
+            -------------------------------
+          **Do I get a fist-bump for this?**
 
   Minimum eigenvalue in the overlap matrix is 2.6921161277E-03.
   Reciprocal condition number of the overlap matrix is 4.7404748701E-04.
@@ -174,15 +181,15 @@ Scratch directory: /scratch/jiang/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter SAD:   -75.46291161737804   -7.54629e+01   0.00000e+00 
-   @RHF iter   1:   -75.95704831424509   -4.94137e-01   1.10492e-02 DIIS
-   @RHF iter   2:   -76.01021534699385   -5.31670e-02   7.21652e-03 DIIS/INCFOCK
-   @RHF iter   3:   -76.04085526036543   -3.06399e-02   5.18207e-04 DIIS/INCFOCK
-   @RHF iter   4:   -76.04123352979879   -3.78269e-04   1.16384e-04 DIIS/INCFOCK
-   @RHF iter   5:   -76.04125492372377   -2.13939e-05   2.62852e-05 DIIS
-   @RHF iter   6:   -76.04125661917358   -1.69545e-06   5.29539e-06 DIIS/INCFOCK
-   @RHF iter   7:   -76.04125669217747   -7.30039e-08   8.83808e-07 DIIS/INCFOCK
-   @RHF iter   8:   -76.04125669405535   -1.87788e-09   1.36743e-07 DIIS
-   @RHF iter   9:   -76.04125669409476   -3.94067e-11   3.56798e-08 DIIS
+   @RHF iter   1:   -75.95704831424509   -4.94137e-01   1.10492e-02 DIIS/LINK
+   @RHF iter   2:   -76.01021534699385   -5.31670e-02   7.21652e-03 DIIS/INCFOCK/LINK
+   @RHF iter   3:   -76.04085526036543   -3.06399e-02   5.18207e-04 DIIS/INCFOCK/LINK
+   @RHF iter   4:   -76.04123352979879   -3.78269e-04   1.16384e-04 DIIS/INCFOCK/LINK
+   @RHF iter   5:   -76.04125492372377   -2.13939e-05   2.62852e-05 DIIS/LINK
+   @RHF iter   6:   -76.04125661917358   -1.69545e-06   5.29539e-06 DIIS/INCFOCK/LINK
+   @RHF iter   7:   -76.04125669217747   -7.30039e-08   8.83808e-07 DIIS/INCFOCK/LINK
+   @RHF iter   8:   -76.04125669405535   -1.87788e-09   1.36743e-07 DIIS/LINK
+   @RHF iter   9:   -76.04125669409476   -3.94067e-11   3.56798e-08 DIIS/LINK
   Energy and wave function converged.
 
 
@@ -244,18 +251,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:    -0.0000      Z:     2.0011     Total:     2.0011
 
 
-*** tstop() called on ds10 at Fri Nov 19 14:45:45 2021
+*** tstop() called on ds10 at Tue Nov 23 20:27:54 2021
 Module time:
-	user time   =       1.07 seconds =       0.02 minutes
+	user time   =       1.09 seconds =       0.02 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.07 seconds =       0.02 minutes
+	user time   =       1.09 seconds =       0.02 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
     HF Energy (Using LinK algo)...........................................................PASSED
 
-    Psi4 stopped on: Friday, 19 November 2021 02:45PM
-    Psi4 wall time for execution: 0:00:01.10
+    Psi4 stopped on: Tuesday, 23 November 2021 08:27PM
+    Psi4 wall time for execution: 0:00:01.12
 
 *** Psi4 exiting successfully. Buy a developer a beer!
