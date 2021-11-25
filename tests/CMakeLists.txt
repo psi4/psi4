@@ -30,9 +30,9 @@ find_package(Perl QUIET)
 #  In order to ensure that this works properly, please add your tests to the
 #  appropriate variables given below
 
-set(py3_fail_list pywrap-freq-e-sowreap
-                  pywrap-freq-g-sowreap pywrap-opt-sowreap
-                  pywrap-db2)
+#set(py3_fail_list pywrap-freq-e-sowreap
+#                  pywrap-freq-g-sowreap pywrap-opt-sowreap
+#                  pywrap-db2)
 foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp casscf-sp castup1
                   castup2 castup3 cbs-delta-energy cbs-parser cbs-xtpl-alpha cbs-xtpl-energy
                   cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func cbs-xtpl-nbody
