@@ -41,6 +41,7 @@
 #include "psi4/libmints/twobody.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/lib3index/cholesky.h"
+#include "psi4/libfmm/fmm_tree.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"
 
@@ -95,6 +96,9 @@ void DirectJK::common_init() {
     density_screening_ = options_.get_str("SCREENING") == "DENSITY";
     linK_ = options_.get_bool("DO_LINK");
     linK_ints_cutoff_ = options_.get_double("LINK_INTS_TOLERANCE");
+    cfmm_ = options_.get_bool("DO_CFMM");
+    cfmm_order_ = options_.get_int("CFMM_ORDER");
+    cfmm_grain_ = options_.get_int("CFMM_GRAIN");
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
 }
 size_t DirectJK::memory_estimate() {
@@ -412,6 +416,7 @@ void DirectJK::compute_JK() {
         }
     }
     
+
     if (do_J_ || do_K_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->eri()));
@@ -997,6 +1002,17 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                         possible_shells, computed_shells / (double)possible_shells);
     }
     timer_off("build_JK()");
+}
+
+void DirectJK::build_cfmm_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
+                    std::vector<std::shared_ptr<Matrix> >& J) {
+    
+    timer_on("build_cfmm_J()");
+
+    std::shared_ptr<CFMMTree> tree = std::make_shared<CFMMTree>(primary_, ints, D, J, cfmm_grain_, cfmm_order_);
+    tree->build_J();
+
+    timer_off("build_cfmm_J()");
 }
 
 bool linK_sort_helper(const std::tuple<int, double>& t1, const std::tuple<int, double>& t2) {

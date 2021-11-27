@@ -1445,6 +1445,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         N means rebuild every N SCF iterations to avoid accumulating error from the incremental procedure. -*/
         options.add_int("INCFOCK_FULL_FOCK_EVERY", 5);
 
+        /*- Do perform Continuous Fast Multipole Method (J-Build) -*/
+        options.add_bool("DO_CFMM", false);
+        /*- The maximum multipole order to use in the CFMM algorithm -*/
+        options.add_int("CFMM_ORDER", 10);
+        /*- The maximum tree depth to use in the CFMM algorithm -*/
+        options.add_int("CFMM_GRAIN", 3);
+      
         /*- Perform the linear scaling exchange (LinK) algorithm, as described in [Ochsenfeld:1998:1663]_ -*/
         options.add_bool("DO_LINK", false);
         /*- The screening tolerance used for ERI/Density sparsity in the linK algorithm -*/
