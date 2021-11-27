@@ -6,7 +6,7 @@
     "codeRepository": "https://github.com/psi4/psi4",
     "issueTracker": "https://github.com/psi4/psi4/issues",
     "license": "https://opensource.org/licenses/lgpl-3.0.html",
-    "version": "1.4",
+    "version": "1.5",
     "author": [
         {
             "@type": "Person",
@@ -478,6 +478,16 @@
             "longitude": -85.4852,
             "@id": "https://orcid.org/0000-0003-0442-193X",
             "identifier": "https://github.com/jwaldrop107"
+        },
+        {
+            "@type": "Person",
+            "givenName": "Andy",
+            "familyName": "Jiang",
+            "affiliation": "Center for Computational Molecular Science and Technology, Georgia Institute of Technology",
+            "latitude": 33.780,
+            "longitude": -84.3965,
+            "@id": "https://orcid.org/0000-0002-6946-209X",
+            "identifier": "https://github.com/andyj10224"
         }
     ],
     "developmentStatus": "active",
