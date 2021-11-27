@@ -563,3 +563,18 @@ Bibliography
    M. Haser and R. Ahlrichs,
    *J. Comp. Chem.* **10(1)**, 104 (1989).
    doi: 10.1002/jcc.540100111
+   
+.. [Thompson:2017:144101]
+   T. H. Thompson and C. Ochsenfeld
+   *J. Chem. Phys.* **147**, 144101 (2017).
+   doi: 10.1063/1.4994190
+
+.. [Ochsenfeld:1998:1663]
+   C. Ochsenfeld, C. A. White, M. Head-Gordon
+   *J. Chem. Phys.* **109**, 1663 (1998)
+   doi: 10.1063/1.476741
+
+.. [White:1994:8]
+   C. A. White, B. G. Johnson, P. M. W. Gill, M. Head-Gordon
+   *Chem. Phys. Lett.* **230** 8 (1994)
+   doi: 10.1016/0009-2614(94)01128-1

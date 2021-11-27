@@ -724,13 +724,17 @@ class PSI_API DirectJK : public JK {
     int cfmm_grain_;
 
     // => Incremental Fock build variables <= //
-
-    /// Perform Incremental Fock Build for J and K Matrices?
+    
+    /// Perform Incremental Fock Build for J and K Matrices? (default false)
     bool incfock_;
     /// The number of times INCFOCK has been performed (includes resets)
     int incfock_count_;
     bool do_incfock_iter_;
-
+    
+    // Perform Linear Exchange matrix build?
+    bool linK_;
+    double linK_ints_cutoff_;
+    
     /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
     std::vector<SharedMatrix> prev_D_ao_;
     std::vector<SharedMatrix> prev_J_ao_;
@@ -765,25 +769,19 @@ class PSI_API DirectJK : public JK {
     /// Post-iteration Incfock processing
     void incfock_postiter();
 
-    /// Build the J matrix using the continuous fast multipole method
-    void build_cfmm_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
-                    std::vector<std::shared_ptr<Matrix> >& J);
+    /// Build the J matrix using the continuous fast multipole method, described in [White:1994:8]_
+    /// TODO: Put CFMM algorithm here after linK PR is merged
+    void build_cfmm_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<SharedMatrix >& D,
+                  std::vector<SharedMatrix >& J);
 
-    /// Build the K matrix using the linear exchange algorithm
-    void build_linK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
-                  std::vector<std::shared_ptr<Matrix> >& K);
+    /// Build the K matrix using the linear exchange algorithm, described in [Ochsenfeld:1998:1663]_
+    void build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<SharedMatrix>& D,
+                  std::vector<SharedMatrix >& K);
 
-    /// Build the J matrix separately using the traditional quadratic scaling algorithm
-    void build_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
-                  std::vector<std::shared_ptr<Matrix> >& J);
-
-    /// Build the K matrix separately using the traditional quadratic scaling algorithm
-    void build_K(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
-                  std::vector<std::shared_ptr<Matrix> >& K);
-
-    /// Build the J and K matrices (together) for this integral class
-    void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
-                  std::vector<std::shared_ptr<Matrix> >& J, std::vector<std::shared_ptr<Matrix> >& K);
+    /// The standard J and K matrix builds for this integral class
+    void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<SharedMatrix >& D,
+                  std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K,
+                  bool build_J, bool build_K);
 
     /// Common initialization
     void common_init();
@@ -815,6 +813,7 @@ class PSI_API DirectJK : public JK {
 
     // => Accessors <= //
     bool do_incfock_iter() { return do_incfock_iter_; }
+    bool do_linK() { return linK_; }
 
     /**
     * Print header information regarding JK

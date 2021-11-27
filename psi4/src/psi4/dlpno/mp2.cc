@@ -992,8 +992,8 @@ void DLPNOMP2::lmp2_iterations() {
     int iteration = 0, max_iteration = options_.get_int("DLPNO_MAXITER");
     double e_curr = 0.0, e_prev = 0.0, r_curr = 0.0;
     bool e_converged = false, r_converged = false;
-    auto diis = DIISManager(options_.get_int("DIIS_MAX_VECS"), "LMP2 DIIS", DIISManager::RemovalPolicy::LargestError,
-                                              DIISManager::StoragePolicy::InCore);
+    DIISManager diis(options_.get_int("DIIS_MAX_VECS"), "LMP2 DIIS", DIISManager::RemovalPolicy::LargestError,
+                                       DIISManager::StoragePolicy::InCore);
 
     while (!(e_converged && r_converged)) {
         // RMS of residual per LMO pair, for assessing convergence
