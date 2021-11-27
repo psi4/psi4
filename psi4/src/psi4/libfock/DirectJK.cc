@@ -425,14 +425,24 @@ void DirectJK::compute_JK() {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
         if (do_J_ && do_K_) {
-            if (initial_iteration_ || !linK_) {
+            if (initial_iteration_ || (!linK_ && !cfmm_)) {
                 build_JK(ints, D_ref, J_ref, K_ref, true, true);
-            } else {
+            } else if (linK_ && cfmm_) {
+                build_cfmm_J(ints, D_ref, J_ref);
                 build_linK(ints, D_ref, K_ref);
+            } else if (linK_) {
                 build_JK(ints, D_ref, J_ref, K_ref, true, false);
+                build_linK(ints, D_ref, K_ref);
+            } else {
+                build_cfmm_J(ints, D_ref, J_ref);
+                build_JK(ints, D_ref, J_ref, K_ref, false, true);
             }
         } else if (do_J_) {
-            build_JK(ints, D_ref, J_ref, K_ref, true, false);
+            if (initial_iteration_ || !cfmm_) {
+                build_JK(ints, D_ref, J_ref, K_ref, true, false);
+            } else {
+                build_cfmm_J(ints, D_ref, J_ref);
+            }
         } else {
             if (initial_iteration_ || !linK_) {
                 build_JK(ints, D_ref, J_ref, K_ref, false, true);
