@@ -250,6 +250,8 @@ Psithon keywords
 .. include:: autodir_options_c/scf__tdscf_maxiter.rst
 .. include:: autodir_options_c/scf__tdscf_guess.rst
 .. include:: autodir_options_c/scf__tdscf_print.rst
+.. include:: autodir_options_c/scf__tdscf_coeff_cutoff.rst
+.. include:: autodir_options_c/scf__tdscf_tdm_print.rst
 
 
 PsiAPI usage
