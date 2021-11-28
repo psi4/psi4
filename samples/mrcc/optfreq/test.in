@@ -23,5 +23,5 @@ ref_freq.set(0, 1, 3820.4305)  #TEST
 ref_freq.set(0, 2, 3926.3098)  #TEST
 
 fd_freq = wfn.frequencies()  #TEST
-compare_vectors(ref_freq, fd_freq, 0, 'freq:')  #TEST
+compare_vectors(ref_freq, fd_freq, 'freq:', atol=0.8)  #TEST
 

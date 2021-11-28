@@ -83,7 +83,7 @@ set {
 }
 
 e, wfn = energy('hf/cc-pvdz', return_wfn=True)
-oeprop(wfn, 'MBIS_CHARGES', title='OH- SCF')
+oeprop(wfn, 'MBIS_CHARGES', "MBIS_VOLUME_RATIOS", title='OH- SCF')
 
 #NOTE: wfn.variable gives you the expanded, redundant atomic multipole arrays as numpy arrays; for flat, unique arrays, use wfn.array_variable
 charges = wfn.variable("MBIS CHARGES")
