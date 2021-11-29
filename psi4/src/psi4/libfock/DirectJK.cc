@@ -406,9 +406,9 @@ void DirectJK::compute_JK() {
         }
         // TODO: Fast K algorithm
         if (do_J_) {
-            build_JK(ints, D_ref, J_ref, wK_ref, true, true);
+            build_JK(ints, D_ref, J_ref, wK_ref, true, true, true, true);
         } else {
-            build_JK(ints, D_ref, J_ref, wK_ref, false, true);
+            build_JK(ints, D_ref, J_ref, wK_ref, false, true, true, true);
         }
     }
     
@@ -421,18 +421,18 @@ void DirectJK::compute_JK() {
         }
         if (do_J_ && do_K_) {
             if (initial_iteration_ || !linK_) {
-                build_JK(ints, D_ref, J_ref, K_ref, true, true);
+                build_JK(ints, D_ref, J_ref, K_ref, true, true, true, true);
             } else {
-                build_linK(ints, D_ref, K_ref);
-                build_JK(ints, D_ref, J_ref, K_ref, true, false);
+                build_linK(ints, D_ref, J_ref, K_ref, true);
+                build_JK(ints, D_ref, J_ref, K_ref, true, false, false, false);
             }
         } else if (do_J_) {
-            build_JK(ints, D_ref, J_ref, K_ref, true, false);
+            build_JK(ints, D_ref, J_ref, K_ref, true, false, true, false);
         } else {
             if (initial_iteration_ || !linK_) {
-                build_JK(ints, D_ref, J_ref, K_ref, false, true);
+                build_JK(ints, D_ref, J_ref, K_ref, false, true, false, true);
             } else {
-                build_linK(ints, D_ref, K_ref);
+                build_linK(ints, D_ref, J_ref, K_ref, false);
             }
         }
     }
@@ -449,18 +449,21 @@ void DirectJK::postiterations() {}
 
 void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<SharedMatrix>& D,
                         std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K,
-                        bool build_J, bool build_K) {
+                        bool build_J, bool build_K, bool reset_J, bool reset_K) {
     
     timer_on("build_JK()");
 
+    // Are we also performing linK on this iteration?
+    bool linK_iter = linK_ && !initial_iteration_;
+
     // => Zeroing <= //
-    if (build_J) {
+    if (build_J && reset_J) {
         for (auto Jmat : J) {
             Jmat->zero();
         }
     }
     
-    if (build_K) {
+    if (build_K && reset_K) {
         for (auto Kmat : K) {
             Kmat->zero();
         }
@@ -636,6 +639,22 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
                         if (R2 * nshell + S2 > P2 * nshell + Q2) continue;
                         if (!ints[0]->shell_pair_significant(R, S)) continue;
                         if (!ints[0]->shell_significant(P, Q, R, S)) continue;
+
+                        // Avoid integral recomputation in the linK case
+                        if (linK_iter) {
+                            eri_index index = ((eri_index) P) * nshell * nshell * nshell;
+                            index += ((eri_index) Q) * nshell * nshell;
+                            index += ((eri_index) R) * nshell;
+                            index += (eri_index) S;
+                            bool is_computed = false;
+
+                            for (int i = 0; i < computed_integrals_.size(); i++) {
+                                if (computed_integrals_[i].count(index)) {
+                                    is_computed = true;
+                                }
+                            }
+                            if (is_computed) continue;
+                        }
 
                         // printf("Quartet: %2d %2d %2d %2d\n", P, Q, R, S);
                         // if (thread == 0) timer_on("JK: Ints");
@@ -996,6 +1015,11 @@ void DirectJK::build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::v
         printer.Printf("Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
                         possible_shells, computed_shells / (double)possible_shells);
     }
+
+    for (int i = 0; i < computed_integrals_.size(); i++) {
+        computed_integrals_[i].clear();
+    }
+
     timer_off("build_JK()");
 }
 
@@ -1004,11 +1028,17 @@ bool linK_sort_helper(const std::tuple<int, double>& t1, const std::tuple<int, d
 }
 
 void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<SharedMatrix>& D,
-                  std::vector<SharedMatrix>& K) {
+                  std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K, bool do_J) {
 
     timer_on("build_linK()");
 
     // => Zeroing <= //
+
+    if (do_J) {
+        for (auto Jmat : J) {
+            Jmat->zero();
+        }
+    }
 
     for (auto Kmat : K) {
         Kmat->zero();
@@ -1018,6 +1048,11 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std:
 
     int nshell = primary_->nshell();
     int nthread = df_ints_num_threads_;
+
+    // => Setting up computed integrals map <= //
+    if (do_J) {
+        computed_integrals_.resize(nthread);
+    }
 
     // => Task Blocking <= //
 
@@ -1098,6 +1133,17 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std:
     size_t ntask_pair2 = ntask_pair * ntask_pair;
 
     // => Intermediate Buffers <= //
+
+    std::vector<std::vector<SharedMatrix>> JT;
+    if (do_J) {
+        for (int thread = 0; thread < nthread; thread++) {
+            std::vector<SharedMatrix> J2;
+            for (size_t ind = 0; ind < D.size(); ind++) {
+                J2.push_back(std::make_shared<Matrix>("JT (linK)", 2 * max_task, max_task));
+            }
+            JT.push_back(J2);
+        }
+    }
 
     std::vector<std::vector<SharedMatrix>> KT;
     for (int thread = 0; thread < nthread; thread++) {
@@ -1289,6 +1335,10 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std:
             }
         }
 
+        // Used in the stripeout of J
+        std::vector<std::unordered_set<int>> PQ_stripeout(nPtask);
+        std::vector<std::unordered_set<int>> RS_stripeout(nRtask);
+
         // Used in the second pre-screening iteration loop (and later used in the stripeout)
         std::vector<std::unordered_set<int>> PR_stripeout(nPtask);
         std::vector<std::unordered_set<int>> PS_stripeout(nPtask);
@@ -1325,8 +1375,17 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std:
                             count += 1;
                             if (S > R) continue;
                             if (R * nshell + S > P * nshell + Q) continue;
+
+                            // Bra Stripeouts
+                            if (do_J) {
+                                if (!PQ_stripeout[dP].count(Q)) PQ_stripeout[dP].emplace(Q);
+                                if (!RS_stripeout[dR].count(S)) RS_stripeout[dR].emplace(S);
+                            }
+
+                            // Ket Stripeouts
                             if (!PR_stripeout[dP].count(R)) PR_stripeout[dP].emplace(R);
                             if (!PS_stripeout[dP].count(S)) PS_stripeout[dP].emplace(S);
+
                             if (PQ_sig_RS.count(R * nshell + S)) continue;
                             PQ_sig_RS.emplace(R * nshell + S);
                         }
@@ -1350,8 +1409,17 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std:
                             count += 1;
                             if (S > R) continue;
                             if (R * nshell + S > P * nshell + Q) continue;
+
+                            // Bra Stripeouts
+                            if (do_J) {
+                                if (!PQ_stripeout[dP].count(Q)) PQ_stripeout[dP].emplace(Q);
+                                if (!RS_stripeout[dR].count(S)) RS_stripeout[dR].emplace(S);
+                            }
+
+                            // Ket Stripeouts
                             if (!QR_stripeout[dQ].count(R)) QR_stripeout[dQ].emplace(R);
                             if (!QS_stripeout[dQ].count(S)) QS_stripeout[dQ].emplace(S);
+
                             if (PQ_sig_RS.count(R * nshell + S)) continue;
                             PQ_sig_RS.emplace(R * nshell + S);
                         }
@@ -1383,6 +1451,14 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std:
                     // if (thread == 0) timer_off("JK: Ints");
                     // timer_off("compute_shell(P, Q, R, S)");
 
+                    if (do_J) {
+                        eri_index index = ((eri_index) P) * nshell * nshell * nshell;
+                        index += ((eri_index) Q) * nshell * nshell;
+                        index += ((eri_index) R) * nshell;
+                        index += (eri_index) S;
+                        computed_integrals_[thread].emplace(index);
+                    }
+
                     const double* buffer = ints[thread]->buffer();
 
                     int Psize = primary_->shell(P).nfunction();
@@ -1403,10 +1479,18 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std:
                     // if (thread == 0) timer_on("JK: GEMV");
                     for (size_t ind = 0; ind < D.size(); ind++) {
                         double** Dp = D[ind]->pointer();
+                        double** JTp;
+                        if (do_J) {
+                            JTp = JT[thread][ind]->pointer();
+                        }
                         double** KTp = KT[thread][ind]->pointer();
                         const double* buffer2 = buffer;
 
                         if (!touched) {
+                            if (do_J) {
+                                ::memset((void*)JTp[0L * max_task], '\0', dPsize * dQsize * sizeof(double));
+                                ::memset((void*)JTp[1L * max_task], '\0', dRsize * dSsize * sizeof(double));
+                            }
                             ::memset((void*)KTp[0L * max_task], '\0', dPsize * dRsize * sizeof(double));
                             ::memset((void*)KTp[1L * max_task], '\0', dPsize * dSsize * sizeof(double));
                             ::memset((void*)KTp[2L * max_task], '\0', dQsize * dRsize * sizeof(double));
@@ -1419,6 +1503,12 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std:
                             }
                         }
 
+                        double* J1p;
+                        double* J2p;
+                        if (do_J) {
+                            J1p = JTp[0L * max_task];
+                            J2p = JTp[1L * max_task];
+                        }
                         double* K1p = KTp[0L * max_task];
                         double* K2p = KTp[1L * max_task];
                         double* K3p = KTp[2L * max_task];
@@ -1443,7 +1533,14 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std:
                             for (int q = 0; q < Qsize; q++) {
                                 for (int r = 0; r < Rsize; r++) {
                                     for (int s = 0; s < Ssize; s++) {
-
+                                        if (do_J) {
+                                            J1p[(p + Poff2) * dQsize + q + Qoff2] +=
+                                                prefactor * (Dp[r + Roff][s + Soff] + Dp[s + Soff][r + Roff]) *
+                                                (*buffer2);
+                                            J2p[(r + Roff2) * dSsize + s + Soff2] +=
+                                                prefactor * (Dp[p + Poff][q + Qoff] + Dp[q + Qoff][p + Poff]) *
+                                                (*buffer2);
+                                        }
                                         K1p[(p + Poff2) * dRsize + r + Roff2] +=
                                             prefactor * (Dp[q + Qoff][s + Soff]) * (*buffer2);
                                         K2p[(p + Poff2) * dSsize + s + Soff2] +=
@@ -1483,9 +1580,21 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std:
 
         // if (thread == 0) timer_on("JK: Atomic");
         for (size_t ind = 0; ind < D.size(); ind++) {
+            double** JTp;
+            double** Jp;
+            if (do_J) {
+                JTp = JT[thread][ind]->pointer();
+                Jp = J[ind]->pointer();
+            }
             double** KTp = KT[thread][ind]->pointer();
             double** Kp = K[ind]->pointer();
 
+            double* J1p;
+            double* J2p;
+            if (do_J) {
+                J1p = JTp[0L * max_task];
+                J2p = JTp[1L * max_task];
+            }
             double* K1p = KTp[0L * max_task];
             double* K2p = KTp[1L * max_task];
             double* K3p = KTp[2L * max_task];
@@ -1499,6 +1608,56 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std:
                 K6p = KTp[5L * max_task];
                 K7p = KTp[6L * max_task];
                 K8p = KTp[7L * max_task];
+            }
+
+            if (do_J) {
+                
+                // > J_PQ < //
+
+                for (int P2 = 0; P2 < nPtask; P2++) {
+                    for (const int Q : PQ_stripeout[P2]) {
+                        int P = task_shells[P2start + P2];
+                        // int Q = task_shells[Q2start + Q2];
+                        int Q2 = Q - Qstart;
+
+                        int Psize = primary_->shell(P).nfunction();
+                        int Qsize = primary_->shell(Q).nfunction();
+                        int Poff = primary_->shell(P).function_index();
+                        int Qoff = primary_->shell(Q).function_index();
+                        int Poff2 = task_offsets[P2 + P2start] - task_offsets[P2start];
+                        int Qoff2 = task_offsets[Q2 + Q2start] - task_offsets[Q2start];
+                        for (int p = 0; p < Psize; p++) {
+                            for (int q = 0; q < Qsize; q++) {
+#pragma omp atomic
+                                Jp[p + Poff][q + Qoff] += J1p[(p + Poff2) * dQsize + q + Qoff2];
+                            }
+                        }
+                    }
+                }
+
+                // > J_RS < //
+
+                for (int R2 = 0; R2 < nRtask; R2++) {
+                    for (const int S : RS_stripeout[R2]) {
+                        int R = task_shells[R2start + R2];
+                        // int S = task_shells[S2start + S2];
+                        int S2 = S - Sstart;
+
+                        int Rsize = primary_->shell(R).nfunction();
+                        int Ssize = primary_->shell(S).nfunction();
+                        int Roff = primary_->shell(R).function_index();
+                        int Soff = primary_->shell(S).function_index();
+                        int Roff2 = task_offsets[R2 + R2start] - task_offsets[R2start];
+                        int Soff2 = task_offsets[S2 + S2start] - task_offsets[S2start];
+                        for (int r = 0; r < Rsize; r++) {
+                            for (int s = 0; s < Ssize; s++) {
+#pragma omp atomic
+                                Jp[r + Roff][s + Soff] += J2p[(r + Roff2) * dSsize + s + Soff2];
+                            }
+                        }
+                    }
+                }
+                // end J
             }
 
             // > K_PR < //
