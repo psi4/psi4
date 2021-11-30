@@ -426,20 +426,20 @@ void DirectJK::compute_JK() {
         }
         if (do_J_ && do_K_) {
             if (initial_iteration_ || (!linK_ && !cfmm_)) {
-                build_JK(ints, D_ref, J_ref, K_ref, true, true);
+                build_JK(ints, D_ref, J_ref, K_ref, true, true, true, true);
             } else if (linK_ && cfmm_) {
                 build_cfmm_J(ints, D_ref, J_ref);
-                build_linK(ints, D_ref, K_ref);
+                build_linK(ints, D_ref, J_ref, K_ref, false);
             } else if (linK_) {
-                build_JK(ints, D_ref, J_ref, K_ref, true, false);
-                build_linK(ints, D_ref, K_ref);
+                build_linK(ints, D_ref, J_ref, K_ref, true);
+                build_JK(ints, D_ref, J_ref, K_ref, true, false, false, false);
             } else {
                 build_cfmm_J(ints, D_ref, J_ref);
-                build_JK(ints, D_ref, J_ref, K_ref, false, true);
+                build_JK(ints, D_ref, J_ref, K_ref, false, true, false, true);
             }
         } else if (do_J_) {
             if (initial_iteration_ || !cfmm_) {
-                build_JK(ints, D_ref, J_ref, K_ref, true, false);
+                build_JK(ints, D_ref, J_ref, K_ref, true, false, true, false);
             } else {
                 build_cfmm_J(ints, D_ref, J_ref);
             }

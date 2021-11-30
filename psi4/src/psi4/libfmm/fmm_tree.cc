@@ -20,6 +20,7 @@
 #include <tuple>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 #include <unordered_map>
 #include <utility>
 #include <csignal>
@@ -610,9 +611,17 @@ void CFMMTree::build_nf_J() {
         JT.push_back(J2);
     }
 
-#pragma omp parallel for
+    std::vector<std::shared_ptr<CFMMBox>> dense_tree;
     for (int bi = start; bi < end; bi++) {
-        std::shared_ptr<CFMMBox> curr = tree_[bi];
+        std::shared_ptr<CFMMBox> box = tree_[bi];
+        if (box->get_nsp() > 0) {
+            dense_tree.push_back(box);
+        }
+    }
+
+#pragma omp parallel for
+    for (int i = 0; i < dense_tree.size(); i++) {
+        std::shared_ptr<CFMMBox> curr = dense_tree[i];
         auto& PQshells = curr->get_shell_pairs();
         auto& nf_boxes = curr->near_field_boxes();
 
@@ -624,6 +633,8 @@ void CFMMTree::build_nf_J() {
         for (int nfi = 0; nfi < nf_boxes.size(); nfi++) {
             std::shared_ptr<CFMMBox> neighbor = nf_boxes[nfi];
             auto& RSshells = neighbor->get_shell_pairs();
+
+            if (neighbor->get_nsp() == 0) continue;
             
             bool touched = false;
             for (int PQind = 0; PQind < PQshells.size(); PQind++) {
