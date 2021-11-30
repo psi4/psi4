@@ -1,4 +1,5 @@
 #! integral conventional REMP/cc-pVDZ energies for the H2O molecule.
+#! results were independently verified against the initial wavels implementation
 
 test_dict = { "0.00": -76.24029833889607,  #TEST
               "0.10": -76.23848960921946,  #TEST
