@@ -1,0 +1,10 @@
+[
+    // {
+    //     "name": "Intel(R) 2021.2.0",
+    //     "compilers": {
+    //         "C": "/opt/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/icc",
+    //         "CXX": "/opt/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/icpc",
+    //         "Fortran": "/opt/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/ifort"
+    //     }
+    // }
+]
