@@ -7,6 +7,7 @@ foreach(dir_name
   libdpd
   libfilesystem
   libfock
+  libfmm
   libfunctional
   libiwl
   libmints

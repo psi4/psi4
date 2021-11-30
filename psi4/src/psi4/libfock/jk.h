@@ -257,6 +257,8 @@ class PSI_API JK {
     bool do_K_;
     /// Do wK matrices? Defaults to false
     bool do_wK_;
+    /// Build the J matrix using linear-scaling CFMM algorithm
+    bool do_cfmm_;
 
     /// Combine (pq|rs) and (pq|w|rs) integrals before contracting?
     bool wcombine_;
@@ -716,6 +718,15 @@ class PSI_API DirectJK : public JK {
     // Perform Density matrix-based integral screening?
     bool density_screening_;
 
+    // Perform Continuous Fast Multipole Method for J Build?
+    bool cfmm_;
+    int cfmm_order_;
+    int cfmm_grain_;
+
+    // Perform Linear Exchange matrix build?
+    bool linK_;
+    double linK_ints_cutoff_;
+
     // => Incremental Fock build variables <= //
     
     /// Perform Incremental Fock Build for J and K Matrices? (default false)
@@ -768,8 +779,8 @@ class PSI_API DirectJK : public JK {
 
     /// Build the J matrix using the continuous fast multipole method, described in [White:1994:8]_
     /// TODO: Put CFMM algorithm here after linK PR is merged
-    // void build_cfmm_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<SharedMatrix >& D,
-    //               std::vector<SharedMatrix >& J);
+    void build_cfmm_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<SharedMatrix >& D,
+                  std::vector<SharedMatrix >& J);
 
     /// Build the K matrix using the linear exchange algorithm, described in [Ochsenfeld:1998:1663]_
     void build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<SharedMatrix>& D,
@@ -782,6 +793,9 @@ class PSI_API DirectJK : public JK {
 
     /// Common initialization
     void common_init();
+
+    // Current SCF iteration
+    int iteration_ = 0;
 
    public:
     // => Constructors < = //
