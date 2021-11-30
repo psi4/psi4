@@ -62,11 +62,15 @@ macro(psi4_add_module binlib libname sources)
     PRIVATE
       tgt::lapack
     )
-  if(MSVC)
-    target_link_libraries(${libname}
-      PRIVATE
-        Libint2::cxx
-      )
+  #if(MSVC)
+  #  target_link_libraries(${libname}
+  #    PRIVATE
+  #      Libint2::cxx
+  #    )
+  #endif()
+
+  if (NOT ${libname} MATCHES mints)
+    target_link_libraries(${libname} PRIVATE mints)
   endif()
 
   # library modules get their headers installed

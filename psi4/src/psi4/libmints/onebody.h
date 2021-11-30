@@ -42,6 +42,12 @@
 
 #include "psi4/libpsi4util/exception.h"
 
+#include <libint2/engine.h>
+
+namespace libint2 {
+class Shell;
+}  // namespace libint2
+
 namespace psi {
 
 class BasisSet;
@@ -72,12 +78,27 @@ class PSI_API OneBodyAOInt {
 
     int buffer_size_;
 
+    /// Libint2 engines
+    libint2::Engine engine0_;
+    libint2::Engine engine1_;  // derivatives
+    libint2::Engine engine2_;  // hessians
+
+    /// Buffer where each chunk of integrals is placed
+    const std::vector<const double*>& buffers() const { return buffers_; }
+
+    /// Pointers to each chunk of (derivative/multipole) integrals
+    std::vector<const double*> buffers_;
+
+    std::vector<std::pair<int, int>> shellpairs_;
+
     OneBodyAOInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                  int deriv = 0);
 
     virtual void compute_pair(const GaussianShell& s1, const GaussianShell& s2) = 0;
     virtual void compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2);
     virtual void compute_pair_deriv2(const GaussianShell& s1, const GaussianShell& s2);
+
+    void compute_pair(const libint2::Shell&, const libint2::Shell&);
 
     void set_chunks(int nchunk) { nchunk_ = nchunk; }
     void pure_transform(const GaussianShell&, const GaussianShell&, int = 1);
@@ -123,6 +144,9 @@ class PSI_API OneBodyAOInt {
     /// What order of derivative was requested?
     int deriv() const { return deriv_; }
 
+    /// Use libint2?
+    virtual bool l2() const { return false; }
+
     /// Computes the first derivatives and stores them in result
     virtual void compute_deriv1(std::vector<SharedMatrix>& result);
 
@@ -148,6 +172,10 @@ class PSI_API OneBodyAOInt {
 };
 
 typedef std::shared_ptr<OneBodyAOInt> SharedOneBodyAOInt;
+
+std::vector<std::pair<int, int>> build_shell_pair_list_no_spdata(std::shared_ptr<BasisSet> bs1,
+                                                                 std::shared_ptr<BasisSet> bs2, double threshold);
+
 }  // namespace psi
 
 #endif

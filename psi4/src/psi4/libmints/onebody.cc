@@ -31,6 +31,10 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+
+#include <libint2/engine.h>
+#include <libint2/shell.h>
 
 #include <stdexcept>
 
@@ -80,6 +84,69 @@ static void transform1e_2(int am, SphericalTransformIter &sti, double *s, double
 }
 }  // namespace
 
+//! Form shell pair information for one electron routines, which don't use the shell pair information
+std::vector<std::pair<int, int>> build_shell_pair_list_no_spdata(std::shared_ptr<BasisSet> bs1,
+                                                                 std::shared_ptr<BasisSet> bs2, double threshold) {
+    const auto nsh1 = bs1->nshell();
+    const auto nsh2 = bs2->nshell();
+    const auto bs1_equiv_bs2 = (bs1 == bs2);
+    auto nthreads = Process::environment.get_n_threads();
+
+    // construct the 2-electron repulsion integrals engine
+    using libint2::Engine;
+    std::vector<Engine> engines;
+    engines.reserve(nthreads);
+    engines.emplace_back(libint2::Operator::overlap, std::max(bs1->max_nprimitive(), bs2->max_nprimitive()),
+                         std::max(bs1->max_am(), bs2->max_am()), 0);
+    for (size_t i = 1; i != nthreads; ++i) {
+        engines.push_back(engines[0]);
+    }
+    std::vector<std::vector<std::pair<int, int>>> threads_sp_list(nthreads);
+
+    threshold *= threshold;
+
+#pragma omp parallel num_threads(nthreads)
+    {
+        int thread_id = 0;
+#ifdef _OPENMP
+        thread_id = omp_get_thread_num();
+#endif
+        auto &engine = engines[thread_id];
+        const auto &buf = engine.results();
+
+        // loop over permutationally-unique set of shells
+        for (auto s1 = 0l, s12 = 0l; s1 != nsh1; ++s1) {
+            auto n1 = bs1->shell(s1).nfunction();
+
+            auto s2_max = bs1_equiv_bs2 ? s1 : nsh2 - 1;
+            for (auto s2 = 0; s2 <= s2_max; ++s2, ++s12) {
+                if (s12 % nthreads != thread_id) continue;
+
+                auto on_same_center = (bs1->shell(s1).center() == bs2->shell(s2).center());
+                bool significant = on_same_center;
+                if (!on_same_center) {
+                    auto n2 = bs2->shell(s2).nfunction();
+                    engines[thread_id].compute(bs1->l2_shell(s1), bs2->l2_shell(s2));
+                    double normsq = std::inner_product(buf[0], buf[0] + n1 * n2, buf[0], 0.0);
+                    significant = (normsq >= threshold);
+                }
+
+                if (significant) {
+                    threads_sp_list[thread_id].push_back(std::make_pair(s1, s2));
+                }
+            }
+        }
+    }  // end of compute
+
+    for (int thread = 1; thread < nthreads; ++thread) {
+        for (const auto &pair : threads_sp_list[thread]) {
+            threads_sp_list[0].push_back(pair);
+        }
+    }
+
+    return threads_sp_list[0];
+};
+
 OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms, std::shared_ptr<BasisSet> bs1,
                            std::shared_ptr<BasisSet> bs2, int deriv)
     : bs1_(bs1), bs2_(bs2), spherical_transforms_(spherical_transforms), deriv_(deriv), nchunk_(1) {
@@ -90,6 +157,10 @@ OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms
 
     tformbuf_ = new double[buffsize];
     target_ = new double[buffsize];
+
+    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
+    libint2::initialize();
+    auto shellpairex = build_shell_pair_list_no_spdata(bs1, bs2, threshold);
 }
 
 OneBodyAOInt::~OneBodyAOInt() {
@@ -235,36 +306,75 @@ void OneBodyAOInt::compute_shell_deriv1(int sh1, int sh2) {
     pure_transform(s1, s2, nchunk_);
 }
 
+void OneBodyAOInt::compute_pair(const libint2::Shell &s1, const libint2::Shell &s2) {
+    engine0_.compute(s1, s2);
+
+    for (int chunk = 0; chunk < nchunk(); chunk++) {
+        buffers_[chunk] = engine0_.results()[chunk];
+    }
+    buffer_ = const_cast<double *>(buffers_[0]);
+}
+
 void OneBodyAOInt::compute(SharedMatrix &result) {
-    // Do not worry about zeroing out result
-    int ns1 = bs1_->nshell();
-    int ns2 = bs2_->nshell();
+    if (l2() == false) {
+        // Do not worry about zeroing out result
+        int ns1 = bs1_->nshell();
+        int ns2 = bs2_->nshell();
 
-    int i_offset = 0;
-    double *location;
+        int i_offset = 0;
+        double *location;
 
-    // Leave as this full double for loop. We could be computing nonsymmetric integrals
-    for (int i = 0; i < ns1; ++i) {
-        int ni = bs1_->shell(i).nfunction();
-        int j_offset = 0;
-        for (int j = 0; j < ns2; ++j) {
-            int nj = bs2_->shell(j).nfunction();
+        // Leave as this full double for loop. We could be computing nonsymmetric integrals
+        for (int i = 0; i < ns1; ++i) {
+            int ni = bs1_->shell(i).nfunction();
+            int j_offset = 0;
+            for (int j = 0; j < ns2; ++j) {
+                int nj = bs2_->shell(j).nfunction();
 
-            // Compute the shell (automatically transforms to pure am in needed)
-            compute_shell(i, j);
+                // Compute the shell (automatically transforms to pure am in needed)
+                compute_shell(i, j);
 
-            // For each integral that we got put in its contribution
-            location = buffer_;
+                // For each integral that we got put in its contribution
+                location = buffer_;
+                for (int p = 0; p < ni; ++p) {
+                    for (int q = 0; q < nj; ++q) {
+                        result->add(0, i_offset + p, j_offset + q, *location);
+                        location++;
+                    }
+                }
+
+                j_offset += nj;
+            }
+            i_offset += ni;
+        }
+    } else {
+        // use libint2
+        const auto bs1_equiv_bs2 = (bs1_ == bs2_);
+
+        for (auto pair : shellpairs_) {
+            int p1 = pair.first;
+            int p2 = pair.second;
+
+            const auto &s1 = bs1_->l2_shell(p1);
+            const auto &s2 = bs2_->l2_shell(p2);
+            int ni = bs1_->shell(p1).nfunction();
+            int nj = bs2_->shell(p2).nfunction();
+            int i_offset = bs1_->shell_to_basis_function(p1);
+            int j_offset = bs2_->shell_to_basis_function(p2);
+
+            compute_pair(s1, s2);
+
+            const double *location = buffers_[0];
             for (int p = 0; p < ni; ++p) {
                 for (int q = 0; q < nj; ++q) {
                     result->add(0, i_offset + p, j_offset + q, *location);
+                    if (bs1_equiv_bs2 && p1 != p2) {
+                        result->add(0, j_offset + q, i_offset + p, *location);
+                    }
                     location++;
                 }
             }
-
-            j_offset += nj;
         }
-        i_offset += ni;
     }
 }
 

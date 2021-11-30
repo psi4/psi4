@@ -33,9 +33,10 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/basisset.h"
 
+#include <libint2/engine.h>
+
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-;
 using namespace psi;
 
 OverlapInt::OverlapInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs1,
@@ -51,22 +52,33 @@ OverlapInt::OverlapInt(std::vector<SphericalTransform> &st, std::shared_ptr<Basi
     int maxnao1 = INT_NCART(maxam1);
     int maxnao2 = INT_NCART(maxam2);
 
+    int max_am = std::max(basis1()->max_am(), basis2()->max_am());
+    int max_nprim = std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive());
+
+    engine0_ = libint2::Engine(libint2::Operator::overlap, max_nprim, max_am, 0);
+
     if (deriv == 1) {
         // We set chunk count for normalize_am and pure_transform
         set_chunks(6);
 
         maxnao1 *= 3;
         maxnao2 *= 3;
+
+        engine1_ = libint2::Engine(libint2::Operator::overlap, max_nprim, max_am, 1);
     } else if (deriv == 2) {
         set_chunks(6);
         maxnao1 *= 6;
         maxnao2 *= 1;
+
+        engine1_ = libint2::Engine(libint2::Operator::overlap, max_nprim, max_am, 1);
+        engine2_ = libint2::Engine(libint2::Operator::overlap, max_nprim, max_am, 2);
     }
 
-    buffer_ = new double[maxnao1 * maxnao2];
+    // buffer_ = new double[maxnao1 * maxnao2];
+    buffer_ = nullptr;
 }
 
-OverlapInt::~OverlapInt() { delete[] buffer_; }
+OverlapInt::~OverlapInt() {}
 
 // The engine only supports segmented basis sets
 void OverlapInt::compute_pair(const GaussianShell &s1, const GaussianShell &s2) {
