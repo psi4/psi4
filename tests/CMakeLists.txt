@@ -89,7 +89,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   pywrap-db3
                   pywrap-molecule rasci-c2-active rasci-h2o
                   rasci-ne rasscf-sp 
-                  remp-energy1
+                  remp-energy1 remp-energy2
                   sad-scf-type sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc sapt-ecp
                   sapt-exch-disp-inf
                   sapt7 sapt8 scf-bz2 scf-dipder scf-ecp scf-guess scf-guess-read1 scf-upcast-custom-basis
