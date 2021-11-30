@@ -30,6 +30,8 @@
 #define JK_H
 
 #include <vector>
+#include <unordered_set>
+#include <tuple>
 #include "psi4/pragma.h"
 PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
@@ -51,6 +53,8 @@ class DFHelper;
 namespace pk {
 class PKManager;
 }
+
+typedef unsigned long long int eri_index;
 
 // => BASE CLASS <= //
 
@@ -731,6 +735,14 @@ class PSI_API DirectJK : public JK {
     int incfock_count_;
     bool do_incfock_iter_;
     
+    // Perform Linear Exchange matrix build?
+    bool linK_;
+    double linK_ints_cutoff_;
+
+    // => A list of all four index integrals that are already computed (to avoid redundant work, per thread) <= //
+    // => Used for split J/K algorithms <= //
+    std::vector<std::unordered_set<eri_index>> computed_integrals_;
+    
     /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
     std::vector<SharedMatrix> prev_D_ao_;
     std::vector<SharedMatrix> prev_J_ao_;
@@ -772,12 +784,12 @@ class PSI_API DirectJK : public JK {
 
     /// Build the K matrix using the linear exchange algorithm, described in [Ochsenfeld:1998:1663]_
     void build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<SharedMatrix>& D,
-                  std::vector<SharedMatrix >& K);
+                  std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K, bool do_J);
 
     /// The standard J and K matrix builds for this integral class
-    void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<SharedMatrix >& D,
+    void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<SharedMatrix>& D,
                   std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K,
-                  bool build_J, bool build_K);
+                  bool build_J, bool build_K, bool reset_J, bool reset_K);
 
     /// Common initialization
     void common_init();
