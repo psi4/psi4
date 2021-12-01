@@ -1,5 +1,5 @@
 if(${ENABLE_ecpint})
-    find_package(ecpint 1.0.6 CONFIG QUIET) # COMPONENTS C)
+    find_package(ecpint 1.0.6 CONFIG QUIET)
 
     if(${ecpint_FOUND})
         get_property(_loc TARGET ECPINT::ecpint PROPERTY LOCATION)
