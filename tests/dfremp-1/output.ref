@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {changes_for_global_merge} 322c576 dirty
+                         Git: Rev {changes_for_global_merge} 71fed73 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 01 December 2021 04:09PM
+    Psi4 started on: Wednesday, 01 December 2021 07:14PM
 
-    Process ID: 20167
+    Process ID: 26034
     Host:       south
     PSIDATADIR: /mnt/home/behnle/prog/psi4/psi4/objdir_python39/stage/share/psi4
     Memory:     500.0 MiB
@@ -41,7 +41,7 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-#! integral conventional REMP/cc-pVDZ energies for the H2O molecule.
+#! density fitted REMP/cc-pVDZ energies for the CO2 molecule.
 
 test_dict = { "0.00": -188.31390691171310,  #TEST
               "0.10": -188.31215742342371,  #TEST
@@ -89,24 +89,24 @@ set{
 set remp_A=0.00
 e_remp=energy('remp')
 compare_values(ESCF, variable("SCF TOTAL ENERGY"), 6, "DF-SCF Energy") #TEST
-compare_values(test_dict["0.00"], variable("REMP TOTAL ENERGY"), 7, "REMP(0.00) Total Energy") #TEST
+compare_values(test_dict["0.00"], variable("REMP TOTAL ENERGY"), 7, "DF-REMP(0.00) Total Energy") #TEST
 
 
 set remp_A=0.10
 e_remp=energy('remp')
-compare_values(test_dict["0.10"], variable("REMP TOTAL ENERGY"), 7, "REMP(0.10) Total Energy") #TEST
+compare_values(test_dict["0.10"], variable("REMP TOTAL ENERGY"), 7, "DF-REMP(0.10) Total Energy") #TEST
 
 set remp_A=0.20
 e_remp=energy('remp')
-compare_values(test_dict["0.20"], variable("REMP TOTAL ENERGY"), 7, "REMP(0.20) Total Energy") #TEST
+compare_values(test_dict["0.20"], variable("REMP TOTAL ENERGY"), 7, "DF-REMP(0.20) Total Energy") #TEST
 
 set remp_A=0.30
 e_remp=energy('remp')
-compare_values(test_dict["0.30"], variable("REMP TOTAL ENERGY"), 7, "REMP(0.30) Total Energy") #TEST
+compare_values(test_dict["0.30"], variable("REMP TOTAL ENERGY"), 7, "DF-REMP(0.30) Total Energy") #TEST
 
 set remp_A=1.00
 e_remp=energy('remp')
-compare_values(test_dict["1.00"], variable("REMP TOTAL ENERGY"), 7, "REMP(1.00) Total Energy") #TEST
+compare_values(test_dict["1.00"], variable("REMP TOTAL ENERGY"), 7, "DF-REMP(1.00) Total Energy") #TEST
 
 --------------------------------------------------------------------------
 
@@ -114,7 +114,7 @@ Scratch directory: /scr/behnle/
     For method 'REMP', SCF Algorithm Type (re)set to DISK_DF.
 
 *** tstart() called on south
-*** at Wed Dec  1 16:09:00 2021
+*** at Wed Dec  1 19:14:37 2021
 
    => Loading Basis Set <=
 
@@ -233,17 +233,17 @@ Scratch directory: /scr/behnle/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:  -186.80596774561187   -1.86806e+02   0.00000e+00 
-   @DF-RHF iter   1:  -187.62701476001365   -8.21047e-01   7.28763e-03 DIIS
-   @DF-RHF iter   2:  -187.66737543111168   -4.03607e-02   5.43583e-03 DIIS
-   @DF-RHF iter   3:  -187.71367769619394   -4.63023e-02   2.57307e-04 DIIS
-   @DF-RHF iter   4:  -187.71388356409835   -2.05868e-04   5.64652e-05 DIIS
-   @DF-RHF iter   5:  -187.71389411996938   -1.05559e-05   1.18721e-05 DIIS
-   @DF-RHF iter   6:  -187.71389474322575   -6.23256e-07   1.81898e-06 DIIS
-   @DF-RHF iter   7:  -187.71389476044683   -1.72211e-08   3.17692e-07 DIIS
-   @DF-RHF iter   8:  -187.71389476083471   -3.87871e-10   7.35240e-08 DIIS
-   @DF-RHF iter   9:  -187.71389476084633   -1.16245e-11   2.52664e-08 DIIS
-   @DF-RHF iter  10:  -187.71389476084744   -1.10845e-12   6.69960e-09 DIIS
+   @DF-RHF iter SAD:  -186.80596774561184   -1.86806e+02   0.00000e+00 
+   @DF-RHF iter   1:  -187.62701476001359   -8.21047e-01   7.28763e-03 DIIS
+   @DF-RHF iter   2:  -187.66737543111151   -4.03607e-02   5.43583e-03 DIIS
+   @DF-RHF iter   3:  -187.71367769619397   -4.63023e-02   2.57307e-04 DIIS
+   @DF-RHF iter   4:  -187.71388356409838   -2.05868e-04   5.64652e-05 DIIS
+   @DF-RHF iter   5:  -187.71389411996950   -1.05559e-05   1.18721e-05 DIIS
+   @DF-RHF iter   6:  -187.71389474322598   -6.23256e-07   1.81898e-06 DIIS
+   @DF-RHF iter   7:  -187.71389476044715   -1.72212e-08   3.17692e-07 DIIS
+   @DF-RHF iter   8:  -187.71389476083479   -3.87644e-10   7.35240e-08 DIIS
+   @DF-RHF iter   9:  -187.71389476084656   -1.17666e-11   2.52664e-08 DIIS
+   @DF-RHF iter  10:  -187.71389476084747   -9.09495e-13   6.69961e-09 DIIS
   Energy and wave function converged.
 
 
@@ -294,14 +294,14 @@ Scratch directory: /scr/behnle/
              Ap   App 
     DOCC [     9,    2 ]
 
-  @DF-RHF Final Energy:  -187.71389476084744
+  @DF-RHF Final Energy:  -187.71389476084747
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             57.9389934488022433
-    One-Electron Energy =                -371.6693086840937212
-    Two-Electron Energy =                 126.0164204744440326
-    Total Energy =                       -187.7138947608474382
+    One-Electron Energy =                -371.6693086840939486
+    Two-Electron Energy =                 126.0164204744442316
+    Total Energy =                       -187.7138947608474666
 
 Computation Completed
 
@@ -323,15 +323,15 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
 
 
-*** tstop() called on south at Wed Dec  1 16:09:02 2021
+*** tstop() called on south at Wed Dec  1 19:14:38 2021
 Module time:
-	user time   =       2.29 seconds =       0.04 minutes
-	system time =       0.89 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       2.15 seconds =       0.04 minutes
+	system time =       0.83 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.29 seconds =       0.04 minutes
-	system time =       0.89 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       2.15 seconds =       0.04 minutes
+	system time =       0.83 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   A requested method does not make use of molecular symmetry: further calculations in C1 point group.
 
@@ -355,7 +355,7 @@ Total time:
 
 
 *** tstart() called on south
-*** at Wed Dec  1 16:09:02 2021
+*** at Wed Dec  1 19:14:38 2021
 
 
 
@@ -514,10 +514,10 @@ Total time:
 	Computing DF-MP2 energy ... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :    57.93899344880224
-	DF-HF Energy (a.u.)                :  -187.71389476084744
-	REF Energy (a.u.)                  :  -187.71389476084744
+	DF-HF Energy (a.u.)                :  -187.71389476084747
+	REF Energy (a.u.)                  :  -187.71389476084747
 	DF-MP2 Correlation Energy (a.u.)   :    -0.60072388711485
-	DF-MP2 Total Energy (a.u.)         :  -188.31461864796228
+	DF-MP2 Total Energy (a.u.)         :  -188.31461864796231
 	======================================================================= 
 	Using A=        0 as REMP mixing parameter
 
@@ -527,21 +527,21 @@ Total time:
 
   Iter       E_corr                  DE                 T2 RMS      
   ----   ----------------      ----------------       ----------    
-   1      -0.5833797097          0.0173441774         6.00e-05  
-   2      -0.5962601298         -0.0128804201         1.77e-05  
-   3      -0.5998347003         -0.0035745705         8.75e-06  
-   4      -0.5999095392         -0.0000748388         2.78e-06  
-   5      -0.5999975407         -0.0000880015         6.64e-07  
-   6      -0.6000144843         -0.0000169436         2.11e-07  
-   7      -0.6000127397          0.0000017446         6.75e-08  
+   1      -0.5833797097          0.0173441774         7.03e-05  
+   2      -0.5962601298         -0.0128804201         2.46e-05  
+   3      -0.5998347003         -0.0035745705         5.71e-06  
+   4      -0.5999095392         -0.0000748388         1.78e-06  
+   5      -0.5999975407         -0.0000880015         7.35e-07  
+   6      -0.6000144843         -0.0000169436         1.79e-07  
+   7      -0.6000127397          0.0000017446         6.34e-08  
    8      -0.6000130283         -0.0000002886         8.61e-09  
-   9      -0.6000124230          0.0000006052         1.17e-08  
-  10      -0.6000122622          0.0000001608         2.92e-09  
-  11      -0.6000121932          0.0000000690         7.71e-10  
+   9      -0.6000124230          0.0000006052         7.33e-09  
+  10      -0.6000122622          0.0000001608         2.05e-09  
+  11      -0.6000121932          0.0000000690         6.02e-10  
   12      -0.6000121620          0.0000000312         2.25e-10  
-  13      -0.6000121526          0.0000000094         8.52e-11  
-  14      -0.6000121508          0.0000000018         3.82e-11  
-  15      -0.6000121509         -0.0000000000         5.28e-12  
+  13      -0.6000121526          0.0000000094         7.02e-11  
+  14      -0.6000121508          0.0000000018         6.21e-12  
+  15      -0.6000121509         -0.0000000000         9.35e-12  
 
  ============================================================================== 
  ===================== DF-REMP ITERATIONS ARE CONVERGED ======================= 
@@ -551,30 +551,30 @@ Total time:
 	================ REMP FINAL RESULTS =================================== 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :    57.93899344880224
-	SCF Energy (a.u.)                  :  -187.71389476084744
-	REF Energy (a.u.)                  :  -187.71389476084744
+	SCF Energy (a.u.)                  :  -187.71389476084747
+	REF Energy (a.u.)                  :  -187.71389476084747
 	DF-REMP Correlation Energy (a.u.)  :    -0.60001215086551
-	DF-REMP Total Energy (a.u.)        :  -188.31390691171293
+	DF-REMP Total Energy (a.u.)        :  -188.31390691171296
 	======================================================================= 
 
 
-*** tstop() called on south at Wed Dec  1 16:09:28 2021
+*** tstop() called on south at Wed Dec  1 19:14:58 2021
 Module time:
-	user time   =      61.84 seconds =       1.03 minutes
-	system time =      22.33 seconds =       0.37 minutes
-	total time  =         26 seconds =       0.43 minutes
+	user time   =      53.43 seconds =       0.89 minutes
+	system time =      14.81 seconds =       0.25 minutes
+	total time  =         20 seconds =       0.33 minutes
 Total time:
-	user time   =      64.57 seconds =       1.08 minutes
-	system time =      23.39 seconds =       0.39 minutes
-	total time  =         28 seconds =       0.47 minutes
+	user time   =      56.06 seconds =       0.93 minutes
+	system time =      15.79 seconds =       0.26 minutes
+	total time  =         21 seconds =       0.35 minutes
     DF-SCF Energy.........................................................................PASSED
-    REMP(0.00) Total Energy...............................................................PASSED
+    DF-REMP(0.00) Total Energy............................................................PASSED
 
 Scratch directory: /scr/behnle/
     For method 'REMP', SCF Algorithm Type (re)set to DISK_DF.
 
 *** tstart() called on south
-*** at Wed Dec  1 16:09:28 2021
+*** at Wed Dec  1 19:14:58 2021
 
    => Loading Basis Set <=
 
@@ -693,17 +693,17 @@ Scratch directory: /scr/behnle/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:  -186.80596774561181   -1.86806e+02   0.00000e+00 
-   @DF-RHF iter   1:  -187.62701476001365   -8.21047e-01   7.28763e-03 DIIS
-   @DF-RHF iter   2:  -187.66737543111162   -4.03607e-02   5.43583e-03 DIIS
-   @DF-RHF iter   3:  -187.71367769619394   -4.63023e-02   2.57307e-04 DIIS
-   @DF-RHF iter   4:  -187.71388356409830   -2.05868e-04   5.64652e-05 DIIS
-   @DF-RHF iter   5:  -187.71389411996964   -1.05559e-05   1.18721e-05 DIIS
-   @DF-RHF iter   6:  -187.71389474322561   -6.23256e-07   1.81898e-06 DIIS
-   @DF-RHF iter   7:  -187.71389476044683   -1.72212e-08   3.17692e-07 DIIS
-   @DF-RHF iter   8:  -187.71389476083488   -3.88042e-10   7.35240e-08 DIIS
-   @DF-RHF iter   9:  -187.71389476084650   -1.16245e-11   2.52664e-08 DIIS
-   @DF-RHF iter  10:  -187.71389476084741   -9.09495e-13   6.69961e-09 DIIS
+   @DF-RHF iter SAD:  -186.80596774561187   -1.86806e+02   0.00000e+00 
+   @DF-RHF iter   1:  -187.62701476001362   -8.21047e-01   7.28763e-03 DIIS
+   @DF-RHF iter   2:  -187.66737543111168   -4.03607e-02   5.43583e-03 DIIS
+   @DF-RHF iter   3:  -187.71367769619397   -4.63023e-02   2.57307e-04 DIIS
+   @DF-RHF iter   4:  -187.71388356409832   -2.05868e-04   5.64652e-05 DIIS
+   @DF-RHF iter   5:  -187.71389411996941   -1.05559e-05   1.18721e-05 DIIS
+   @DF-RHF iter   6:  -187.71389474322558   -6.23256e-07   1.81898e-06 DIIS
+   @DF-RHF iter   7:  -187.71389476044706   -1.72215e-08   3.17692e-07 DIIS
+   @DF-RHF iter   8:  -187.71389476083482   -3.87757e-10   7.35240e-08 DIIS
+   @DF-RHF iter   9:  -187.71389476084647   -1.16529e-11   2.52664e-08 DIIS
+   @DF-RHF iter  10:  -187.71389476084738   -9.09495e-13   6.69960e-09 DIIS
   Energy and wave function converged.
 
 
@@ -754,14 +754,14 @@ Scratch directory: /scr/behnle/
              Ap   App 
     DOCC [     9,    2 ]
 
-  @DF-RHF Final Energy:  -187.71389476084741
+  @DF-RHF Final Energy:  -187.71389476084738
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             57.9389934488022433
-    One-Electron Energy =                -371.6693086840940055
-    Two-Electron Energy =                 126.0164204744443452
-    Total Energy =                       -187.7138947608474098
+    One-Electron Energy =                -371.6693086840937781
+    Two-Electron Energy =                 126.0164204744441463
+    Total Energy =                       -187.7138947608473813
 
 Computation Completed
 
@@ -783,15 +783,15 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
 
 
-*** tstop() called on south at Wed Dec  1 16:09:30 2021
+*** tstop() called on south at Wed Dec  1 19:14:59 2021
 Module time:
-	user time   =       4.25 seconds =       0.07 minutes
-	system time =       1.36 seconds =       0.02 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       4.19 seconds =       0.07 minutes
+	system time =       1.34 seconds =       0.02 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      68.85 seconds =       1.15 minutes
-	system time =      24.77 seconds =       0.41 minutes
-	total time  =         30 seconds =       0.50 minutes
+	user time   =      60.28 seconds =       1.00 minutes
+	system time =      17.16 seconds =       0.29 minutes
+	total time  =         22 seconds =       0.37 minutes
 
   A requested method does not make use of molecular symmetry: further calculations in C1 point group.
 
@@ -815,7 +815,7 @@ Total time:
 
 
 *** tstart() called on south
-*** at Wed Dec  1 16:09:30 2021
+*** at Wed Dec  1 19:15:00 2021
 
 
 
@@ -974,10 +974,10 @@ Total time:
 	Computing DF-MP2 energy ... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :    57.93899344880224
-	DF-HF Energy (a.u.)                :  -187.71389476084741
-	REF Energy (a.u.)                  :  -187.71389476084741
-	DF-MP2 Correlation Energy (a.u.)   :    -0.60072388711485
-	DF-MP2 Total Energy (a.u.)         :  -188.31461864796225
+	DF-HF Energy (a.u.)                :  -187.71389476084738
+	REF Energy (a.u.)                  :  -187.71389476084738
+	DF-MP2 Correlation Energy (a.u.)   :    -0.60072388711484
+	DF-MP2 Total Energy (a.u.)         :  -188.31461864796222
 	======================================================================= 
 	Using A=      0.1 as REMP mixing parameter
 
@@ -987,20 +987,20 @@ Total time:
 
   Iter       E_corr                  DE                 T2 RMS      
   ----   ----------------      ----------------       ----------    
-   1      -0.5851141275          0.0156097596         4.17e-05  
-   2      -0.5958030003         -0.0106888728         1.44e-05  
-   3      -0.5981899836         -0.0023869833         4.14e-06  
-   4      -0.5982113573         -0.0000213737         1.10e-06  
-   5      -0.5982564141         -0.0000450568         1.51e-07  
-   6      -0.5982636951         -0.0000072809         5.31e-08  
-   7      -0.5982629452          0.0000007499         1.62e-08  
-   8      -0.5982629266          0.0000000186         3.12e-09  
-   9      -0.5982627286          0.0000001980         3.45e-09  
-  10      -0.5982626860          0.0000000426         7.67e-10  
-  11      -0.5982626705          0.0000000155         1.89e-10  
-  12      -0.5982626643          0.0000000063         5.57e-11  
-  13      -0.5982626628          0.0000000015         2.12e-11  
-  14      -0.5982626626          0.0000000002         6.53e-12  
+   1      -0.5851141275          0.0156097596         4.89e-05  
+   2      -0.5958030003         -0.0106888728         1.24e-05  
+   3      -0.5981899836         -0.0023869833         5.93e-06  
+   4      -0.5982113573         -0.0000213737         9.38e-07  
+   5      -0.5982564141         -0.0000450568         2.10e-07  
+   6      -0.5982636951         -0.0000072809         3.25e-08  
+   7      -0.5982629452          0.0000007499         2.55e-08  
+   8      -0.5982629266          0.0000000186         7.49e-09  
+   9      -0.5982627286          0.0000001980         3.33e-09  
+  10      -0.5982626860          0.0000000426         4.25e-10  
+  11      -0.5982626705          0.0000000155         1.77e-10  
+  12      -0.5982626643          0.0000000063         2.74e-11  
+  13      -0.5982626628          0.0000000015         1.32e-11  
+  14      -0.5982626626          0.0000000002         3.61e-12  
 
  ============================================================================== 
  ===================== DF-REMP ITERATIONS ARE CONVERGED ======================= 
@@ -1010,29 +1010,29 @@ Total time:
 	================ REMP FINAL RESULTS =================================== 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :    57.93899344880224
-	SCF Energy (a.u.)                  :  -187.71389476084741
-	REF Energy (a.u.)                  :  -187.71389476084741
+	SCF Energy (a.u.)                  :  -187.71389476084738
+	REF Energy (a.u.)                  :  -187.71389476084738
 	DF-REMP Correlation Energy (a.u.)  :    -0.59826266257628
-	DF-REMP Total Energy (a.u.)        :  -188.31215742342368
+	DF-REMP Total Energy (a.u.)        :  -188.31215742342366
 	======================================================================= 
 
 
-*** tstop() called on south at Wed Dec  1 16:10:01 2021
+*** tstop() called on south at Wed Dec  1 19:15:17 2021
 Module time:
-	user time   =      62.42 seconds =       1.04 minutes
-	system time =      25.28 seconds =       0.42 minutes
-	total time  =         31 seconds =       0.52 minutes
+	user time   =      47.55 seconds =       0.79 minutes
+	system time =      12.21 seconds =       0.20 minutes
+	total time  =         17 seconds =       0.28 minutes
 Total time:
-	user time   =     131.69 seconds =       2.19 minutes
-	system time =      50.23 seconds =       0.84 minutes
-	total time  =         61 seconds =       1.02 minutes
-    REMP(0.10) Total Energy...............................................................PASSED
+	user time   =     108.21 seconds =       1.80 minutes
+	system time =      29.47 seconds =       0.49 minutes
+	total time  =         40 seconds =       0.67 minutes
+    DF-REMP(0.10) Total Energy............................................................PASSED
 
 Scratch directory: /scr/behnle/
     For method 'REMP', SCF Algorithm Type (re)set to DISK_DF.
 
 *** tstart() called on south
-*** at Wed Dec  1 16:10:01 2021
+*** at Wed Dec  1 19:15:17 2021
 
    => Loading Basis Set <=
 
@@ -1151,17 +1151,17 @@ Scratch directory: /scr/behnle/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:  -186.80596774561181   -1.86806e+02   0.00000e+00 
-   @DF-RHF iter   1:  -187.62701476001345   -8.21047e-01   7.28763e-03 DIIS
-   @DF-RHF iter   2:  -187.66737543111154   -4.03607e-02   5.43583e-03 DIIS
-   @DF-RHF iter   3:  -187.71367769619368   -4.63023e-02   2.57307e-04 DIIS
-   @DF-RHF iter   4:  -187.71388356409844   -2.05868e-04   5.64652e-05 DIIS
-   @DF-RHF iter   5:  -187.71389411996932   -1.05559e-05   1.18721e-05 DIIS
+   @DF-RHF iter SAD:  -186.80596774561189   -1.86806e+02   0.00000e+00 
+   @DF-RHF iter   1:  -187.62701476001348   -8.21047e-01   7.28763e-03 DIIS
+   @DF-RHF iter   2:  -187.66737543111162   -4.03607e-02   5.43583e-03 DIIS
+   @DF-RHF iter   3:  -187.71367769619388   -4.63023e-02   2.57307e-04 DIIS
+   @DF-RHF iter   4:  -187.71388356409832   -2.05868e-04   5.64652e-05 DIIS
+   @DF-RHF iter   5:  -187.71389411996921   -1.05559e-05   1.18721e-05 DIIS
    @DF-RHF iter   6:  -187.71389474322558   -6.23256e-07   1.81898e-06 DIIS
-   @DF-RHF iter   7:  -187.71389476044715   -1.72216e-08   3.17692e-07 DIIS
-   @DF-RHF iter   8:  -187.71389476083473   -3.87587e-10   7.35240e-08 DIIS
-   @DF-RHF iter   9:  -187.71389476084647   -1.17382e-11   2.52664e-08 DIIS
-   @DF-RHF iter  10:  -187.71389476084755   -1.08002e-12   6.69961e-09 DIIS
+   @DF-RHF iter   7:  -187.71389476044695   -1.72214e-08   3.17692e-07 DIIS
+   @DF-RHF iter   8:  -187.71389476083476   -3.87814e-10   7.35240e-08 DIIS
+   @DF-RHF iter   9:  -187.71389476084607   -1.13118e-11   2.52664e-08 DIIS
+   @DF-RHF iter  10:  -187.71389476084744   -1.36424e-12   6.69960e-09 DIIS
   Energy and wave function converged.
 
 
@@ -1187,7 +1187,7 @@ Scratch directory: /scr/behnle/
       20Ap     0.877978    21Ap     0.980792    22Ap     1.190775  
        8App    1.190775    23Ap     1.241868    24Ap     1.492249  
       25Ap     1.547465     9App    1.571257    26Ap     1.571257  
-      27Ap     1.638718    10App    1.638718    28Ap     1.921537  
+      10App    1.638718    27Ap     1.638718    28Ap     1.921537  
       11App    1.921537    29Ap     1.935006    12App    2.177028  
       30Ap     2.177028    31Ap     2.293908    13App    2.293908  
       32Ap     2.548589    33Ap     2.705561    14App    2.840798  
@@ -1212,14 +1212,14 @@ Scratch directory: /scr/behnle/
              Ap   App 
     DOCC [     9,    2 ]
 
-  @DF-RHF Final Energy:  -187.71389476084755
+  @DF-RHF Final Energy:  -187.71389476084744
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             57.9389934488022433
-    One-Electron Energy =                -371.6693086840944034
-    Two-Electron Energy =                 126.0164204744446010
-    Total Energy =                       -187.7138947608475519
+    One-Electron Energy =                -371.6693086840940623
+    Two-Electron Energy =                 126.0164204744443737
+    Total Energy =                       -187.7138947608474382
 
 Computation Completed
 
@@ -1241,15 +1241,15 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
 
 
-*** tstop() called on south at Wed Dec  1 16:10:03 2021
+*** tstop() called on south at Wed Dec  1 19:15:18 2021
 Module time:
-	user time   =       3.10 seconds =       0.05 minutes
-	system time =       1.32 seconds =       0.02 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       4.06 seconds =       0.07 minutes
+	system time =       1.26 seconds =       0.02 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =     134.82 seconds =       2.25 minutes
-	system time =      51.56 seconds =       0.86 minutes
-	total time  =         63 seconds =       1.05 minutes
+	user time   =     112.33 seconds =       1.87 minutes
+	system time =      30.73 seconds =       0.51 minutes
+	total time  =         41 seconds =       0.68 minutes
 
   A requested method does not make use of molecular symmetry: further calculations in C1 point group.
 
@@ -1273,7 +1273,7 @@ Total time:
 
 
 *** tstart() called on south
-*** at Wed Dec  1 16:10:04 2021
+*** at Wed Dec  1 19:15:19 2021
 
 
 
@@ -1432,10 +1432,10 @@ Total time:
 	Computing DF-MP2 energy ... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :    57.93899344880224
-	DF-HF Energy (a.u.)                :  -187.71389476084755
-	REF Energy (a.u.)                  :  -187.71389476084755
+	DF-HF Energy (a.u.)                :  -187.71389476084744
+	REF Energy (a.u.)                  :  -187.71389476084744
 	DF-MP2 Correlation Energy (a.u.)   :    -0.60072388711485
-	DF-MP2 Total Energy (a.u.)         :  -188.31461864796239
+	DF-MP2 Total Energy (a.u.)         :  -188.31461864796228
 	======================================================================= 
 	Using A=      0.2 as REMP mixing parameter
 
@@ -1445,19 +1445,19 @@ Total time:
 
   Iter       E_corr                  DE                 T2 RMS      
   ----   ----------------      ----------------       ----------    
-   1      -0.5868485452          0.0138753419         5.62e-05  
+   1      -0.5868485452          0.0138753419         3.72e-05  
    2      -0.5954836736         -0.0086351284         1.36e-05  
-   3      -0.5970024550         -0.0015187814         4.44e-06  
-   4      -0.5970034785         -0.0000010235         3.37e-07  
-   5      -0.5970258248         -0.0000223463         1.11e-07  
-   6      -0.5970288014         -0.0000029766         4.27e-08  
-   7      -0.5970285013          0.0000003001         1.00e-08  
-   8      -0.5970284604          0.0000000409         2.52e-09  
-   9      -0.5970284028          0.0000000576         9.33e-10  
-  10      -0.5970283927          0.0000000101         1.38e-10  
-  11      -0.5970283896          0.0000000031         3.00e-11  
-  12      -0.5970283885          0.0000000011         9.42e-12  
-  13      -0.5970283882          0.0000000002         2.92e-12  
+   3      -0.5970024550         -0.0015187814         3.99e-06  
+   4      -0.5970034785         -0.0000010235         8.13e-07  
+   5      -0.5970258248         -0.0000223463         2.03e-07  
+   6      -0.5970288014         -0.0000029766         3.55e-08  
+   7      -0.5970285013          0.0000003001         6.15e-09  
+   8      -0.5970284604          0.0000000409         3.30e-09  
+   9      -0.5970284028          0.0000000576         8.97e-10  
+  10      -0.5970283927          0.0000000101         1.48e-10  
+  11      -0.5970283896          0.0000000031         4.06e-11  
+  12      -0.5970283885          0.0000000011         7.17e-12  
+  13      -0.5970283882          0.0000000002         1.15e-12  
 
  ============================================================================== 
  ===================== DF-REMP ITERATIONS ARE CONVERGED ======================= 
@@ -1467,29 +1467,29 @@ Total time:
 	================ REMP FINAL RESULTS =================================== 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :    57.93899344880224
-	SCF Energy (a.u.)                  :  -187.71389476084755
-	REF Energy (a.u.)                  :  -187.71389476084755
+	SCF Energy (a.u.)                  :  -187.71389476084744
+	REF Energy (a.u.)                  :  -187.71389476084744
 	DF-REMP Correlation Energy (a.u.)  :    -0.59702838824625
-	DF-REMP Total Energy (a.u.)        :  -188.31092314909381
+	DF-REMP Total Energy (a.u.)        :  -188.31092314909370
 	======================================================================= 
 
 
-*** tstop() called on south at Wed Dec  1 16:10:31 2021
+*** tstop() called on south at Wed Dec  1 19:15:40 2021
 Module time:
-	user time   =      54.91 seconds =       0.92 minutes
-	system time =      21.67 seconds =       0.36 minutes
-	total time  =         27 seconds =       0.45 minutes
+	user time   =      48.42 seconds =       0.81 minutes
+	system time =      15.09 seconds =       0.25 minutes
+	total time  =         21 seconds =       0.35 minutes
 Total time:
-	user time   =     190.07 seconds =       3.17 minutes
-	system time =      73.39 seconds =       1.22 minutes
-	total time  =         91 seconds =       1.52 minutes
-    REMP(0.20) Total Energy...............................................................PASSED
+	user time   =     161.20 seconds =       2.69 minutes
+	system time =      45.99 seconds =       0.77 minutes
+	total time  =         63 seconds =       1.05 minutes
+    DF-REMP(0.20) Total Energy............................................................PASSED
 
 Scratch directory: /scr/behnle/
     For method 'REMP', SCF Algorithm Type (re)set to DISK_DF.
 
 *** tstart() called on south
-*** at Wed Dec  1 16:10:31 2021
+*** at Wed Dec  1 19:15:40 2021
 
    => Loading Basis Set <=
 
@@ -1608,17 +1608,17 @@ Scratch directory: /scr/behnle/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:  -186.80596774561192   -1.86806e+02   0.00000e+00 
-   @DF-RHF iter   1:  -187.62701476001371   -8.21047e-01   7.28763e-03 DIIS
-   @DF-RHF iter   2:  -187.66737543111151   -4.03607e-02   5.43583e-03 DIIS
-   @DF-RHF iter   3:  -187.71367769619380   -4.63023e-02   2.57307e-04 DIIS
-   @DF-RHF iter   4:  -187.71388356409818   -2.05868e-04   5.64652e-05 DIIS
-   @DF-RHF iter   5:  -187.71389411996907   -1.05559e-05   1.18721e-05 DIIS
-   @DF-RHF iter   6:  -187.71389474322561   -6.23257e-07   1.81898e-06 DIIS
-   @DF-RHF iter   7:  -187.71389476044709   -1.72215e-08   3.17692e-07 DIIS
-   @DF-RHF iter   8:  -187.71389476083465   -3.87558e-10   7.35240e-08 DIIS
-   @DF-RHF iter   9:  -187.71389476084644   -1.17950e-11   2.52664e-08 DIIS
-   @DF-RHF iter  10:  -187.71389476084761   -1.16529e-12   6.69961e-09 DIIS
+   @DF-RHF iter SAD:  -186.80596774561195   -1.86806e+02   0.00000e+00 
+   @DF-RHF iter   1:  -187.62701476001359   -8.21047e-01   7.28763e-03 DIIS
+   @DF-RHF iter   2:  -187.66737543111174   -4.03607e-02   5.43583e-03 DIIS
+   @DF-RHF iter   3:  -187.71367769619383   -4.63023e-02   2.57307e-04 DIIS
+   @DF-RHF iter   4:  -187.71388356409827   -2.05868e-04   5.64652e-05 DIIS
+   @DF-RHF iter   5:  -187.71389411996932   -1.05559e-05   1.18721e-05 DIIS
+   @DF-RHF iter   6:  -187.71389474322552   -6.23256e-07   1.81898e-06 DIIS
+   @DF-RHF iter   7:  -187.71389476044700   -1.72215e-08   3.17692e-07 DIIS
+   @DF-RHF iter   8:  -187.71389476083496   -3.87956e-10   7.35240e-08 DIIS
+   @DF-RHF iter   9:  -187.71389476084653   -1.15676e-11   2.52664e-08 DIIS
+   @DF-RHF iter  10:  -187.71389476084738   -8.52651e-13   6.69960e-09 DIIS
   Energy and wave function converged.
 
 
@@ -1669,14 +1669,14 @@ Scratch directory: /scr/behnle/
              Ap   App 
     DOCC [     9,    2 ]
 
-  @DF-RHF Final Energy:  -187.71389476084761
+  @DF-RHF Final Energy:  -187.71389476084738
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             57.9389934488022433
-    One-Electron Energy =                -371.6693086840940623
-    Two-Electron Energy =                 126.0164204744442031
-    Total Energy =                       -187.7138947608476087
+    One-Electron Energy =                -371.6693086840937212
+    Two-Electron Energy =                 126.0164204744440895
+    Total Energy =                       -187.7138947608473813
 
 Computation Completed
 
@@ -1698,15 +1698,15 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
 
 
-*** tstop() called on south at Wed Dec  1 16:10:32 2021
+*** tstop() called on south at Wed Dec  1 19:15:43 2021
 Module time:
-	user time   =       2.35 seconds =       0.04 minutes
-	system time =       1.06 seconds =       0.02 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       3.91 seconds =       0.07 minutes
+	system time =       1.46 seconds =       0.02 minutes
+	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =     192.45 seconds =       3.21 minutes
-	system time =      74.46 seconds =       1.24 minutes
-	total time  =         92 seconds =       1.53 minutes
+	user time   =     165.15 seconds =       2.75 minutes
+	system time =      47.48 seconds =       0.79 minutes
+	total time  =         66 seconds =       1.10 minutes
 
   A requested method does not make use of molecular symmetry: further calculations in C1 point group.
 
@@ -1730,7 +1730,7 @@ Total time:
 
 
 *** tstart() called on south
-*** at Wed Dec  1 16:10:33 2021
+*** at Wed Dec  1 19:15:44 2021
 
 
 
@@ -1889,10 +1889,10 @@ Total time:
 	Computing DF-MP2 energy ... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :    57.93899344880224
-	DF-HF Energy (a.u.)                :  -187.71389476084761
-	REF Energy (a.u.)                  :  -187.71389476084761
+	DF-HF Energy (a.u.)                :  -187.71389476084738
+	REF Energy (a.u.)                  :  -187.71389476084738
 	DF-MP2 Correlation Energy (a.u.)   :    -0.60072388711485
-	DF-MP2 Total Energy (a.u.)         :  -188.31461864796245
+	DF-MP2 Total Energy (a.u.)         :  -188.31461864796222
 	======================================================================= 
 	Using A=      0.3 as REMP mixing parameter
 
@@ -1902,17 +1902,17 @@ Total time:
 
   Iter       E_corr                  DE                 T2 RMS      
   ----   ----------------      ----------------       ----------    
-   1      -0.5885829629          0.0121409242         5.30e-05  
-   2      -0.5953280276         -0.0067450646         1.04e-05  
-   3      -0.5962379762         -0.0009099487         3.02e-06  
-   4      -0.5962336273          0.0000043489         5.63e-07  
-   5      -0.5962441174         -0.0000104900         8.08e-08  
-   6      -0.5962452429         -0.0000011256         1.53e-08  
-   7      -0.5962451337          0.0000001093         2.63e-09  
-   8      -0.5962451126          0.0000000211         9.49e-10  
-   9      -0.5962450980          0.0000000146         1.52e-10  
-  10      -0.5962450959          0.0000000021         2.59e-11  
-  11      -0.5962450954          0.0000000005         6.41e-12  
+   1      -0.5885829629          0.0121409242         4.59e-05  
+   2      -0.5953280276         -0.0067450646         1.41e-05  
+   3      -0.5962379762         -0.0009099487         3.75e-06  
+   4      -0.5962336273          0.0000043489         3.80e-07  
+   5      -0.5962441174         -0.0000104900         8.88e-08  
+   6      -0.5962452429         -0.0000011256         4.20e-09  
+   7      -0.5962451337          0.0000001093         3.47e-09  
+   8      -0.5962451126          0.0000000211         6.92e-10  
+   9      -0.5962450980          0.0000000146         1.87e-10  
+  10      -0.5962450959          0.0000000021         3.46e-11  
+  11      -0.5962450954          0.0000000005         6.29e-12  
 
  ============================================================================== 
  ===================== DF-REMP ITERATIONS ARE CONVERGED ======================= 
@@ -1922,29 +1922,29 @@ Total time:
 	================ REMP FINAL RESULTS =================================== 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :    57.93899344880224
-	SCF Energy (a.u.)                  :  -187.71389476084761
-	REF Energy (a.u.)                  :  -187.71389476084761
+	SCF Energy (a.u.)                  :  -187.71389476084738
+	REF Energy (a.u.)                  :  -187.71389476084738
 	DF-REMP Correlation Energy (a.u.)  :    -0.59624509538799
-	DF-REMP Total Energy (a.u.)        :  -188.31013985623559
+	DF-REMP Total Energy (a.u.)        :  -188.31013985623537
 	======================================================================= 
 
 
-*** tstop() called on south at Wed Dec  1 16:10:52 2021
+*** tstop() called on south at Wed Dec  1 19:16:29 2021
 Module time:
-	user time   =      44.09 seconds =       0.73 minutes
-	system time =      15.27 seconds =       0.25 minutes
-	total time  =         19 seconds =       0.32 minutes
+	user time   =      44.58 seconds =       0.74 minutes
+	system time =      21.59 seconds =       0.36 minutes
+	total time  =         45 seconds =       0.75 minutes
 Total time:
-	user time   =     236.89 seconds =       3.95 minutes
-	system time =      89.81 seconds =       1.50 minutes
+	user time   =     210.08 seconds =       3.50 minutes
+	system time =      69.15 seconds =       1.15 minutes
 	total time  =        112 seconds =       1.87 minutes
-    REMP(0.30) Total Energy...............................................................PASSED
+    DF-REMP(0.30) Total Energy............................................................PASSED
 
 Scratch directory: /scr/behnle/
     For method 'REMP', SCF Algorithm Type (re)set to DISK_DF.
 
 *** tstart() called on south
-*** at Wed Dec  1 16:10:52 2021
+*** at Wed Dec  1 19:16:29 2021
 
    => Loading Basis Set <=
 
@@ -2063,17 +2063,17 @@ Scratch directory: /scr/behnle/
 
                            Total Energy        Delta E     RMS |[F,P]|
 
-   @DF-RHF iter SAD:  -186.80596774561192   -1.86806e+02   0.00000e+00 
-   @DF-RHF iter   1:  -187.62701476001337   -8.21047e-01   7.28763e-03 DIIS
-   @DF-RHF iter   2:  -187.66737543111168   -4.03607e-02   5.43583e-03 DIIS
-   @DF-RHF iter   3:  -187.71367769619380   -4.63023e-02   2.57307e-04 DIIS
-   @DF-RHF iter   4:  -187.71388356409841   -2.05868e-04   5.64652e-05 DIIS
-   @DF-RHF iter   5:  -187.71389411996941   -1.05559e-05   1.18721e-05 DIIS
-   @DF-RHF iter   6:  -187.71389474322592   -6.23257e-07   1.81898e-06 DIIS
-   @DF-RHF iter   7:  -187.71389476044692   -1.72210e-08   3.17692e-07 DIIS
-   @DF-RHF iter   8:  -187.71389476083471   -3.87786e-10   7.35240e-08 DIIS
-   @DF-RHF iter   9:  -187.71389476084627   -1.15676e-11   2.52664e-08 DIIS
-   @DF-RHF iter  10:  -187.71389476084752   -1.25056e-12   6.69961e-09 DIIS
+   @DF-RHF iter SAD:  -186.80596774561181   -1.86806e+02   0.00000e+00 
+   @DF-RHF iter   1:  -187.62701476001365   -8.21047e-01   7.28763e-03 DIIS
+   @DF-RHF iter   2:  -187.66737543111154   -4.03607e-02   5.43583e-03 DIIS
+   @DF-RHF iter   3:  -187.71367769619368   -4.63023e-02   2.57307e-04 DIIS
+   @DF-RHF iter   4:  -187.71388356409827   -2.05868e-04   5.64652e-05 DIIS
+   @DF-RHF iter   5:  -187.71389411996924   -1.05559e-05   1.18721e-05 DIIS
+   @DF-RHF iter   6:  -187.71389474322564   -6.23256e-07   1.81898e-06 DIIS
+   @DF-RHF iter   7:  -187.71389476044703   -1.72214e-08   3.17692e-07 DIIS
+   @DF-RHF iter   8:  -187.71389476083479   -3.87757e-10   7.35240e-08 DIIS
+   @DF-RHF iter   9:  -187.71389476084633   -1.15392e-11   2.52664e-08 DIIS
+   @DF-RHF iter  10:  -187.71389476084761   -1.27898e-12   6.69960e-09 DIIS
   Energy and wave function converged.
 
 
@@ -2124,14 +2124,14 @@ Scratch directory: /scr/behnle/
              Ap   App 
     DOCC [     9,    2 ]
 
-  @DF-RHF Final Energy:  -187.71389476084752
+  @DF-RHF Final Energy:  -187.71389476084761
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             57.9389934488022433
     One-Electron Energy =                -371.6693086840940055
-    Two-Electron Energy =                 126.0164204744442316
-    Total Energy =                       -187.7138947608475235
+    Two-Electron Energy =                 126.0164204744441605
+    Total Energy =                       -187.7138947608476087
 
 Computation Completed
 
@@ -2153,15 +2153,15 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
 
 
-*** tstop() called on south at Wed Dec  1 16:10:53 2021
+*** tstop() called on south at Wed Dec  1 19:16:33 2021
 Module time:
-	user time   =       3.79 seconds =       0.06 minutes
-	system time =       1.33 seconds =       0.02 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       3.73 seconds =       0.06 minutes
+	system time =       1.45 seconds =       0.02 minutes
+	total time  =          4 seconds =       0.07 minutes
 Total time:
-	user time   =     240.71 seconds =       4.01 minutes
-	system time =      91.17 seconds =       1.52 minutes
-	total time  =        113 seconds =       1.88 minutes
+	user time   =     213.83 seconds =       3.56 minutes
+	system time =      70.62 seconds =       1.18 minutes
+	total time  =        116 seconds =       1.93 minutes
 
   A requested method does not make use of molecular symmetry: further calculations in C1 point group.
 
@@ -2185,7 +2185,7 @@ Total time:
 
 
 *** tstart() called on south
-*** at Wed Dec  1 16:10:54 2021
+*** at Wed Dec  1 19:16:34 2021
 
 
 
@@ -2344,10 +2344,10 @@ Total time:
 	Computing DF-MP2 energy ... 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :    57.93899344880224
-	DF-HF Energy (a.u.)                :  -187.71389476084752
-	REF Energy (a.u.)                  :  -187.71389476084752
+	DF-HF Energy (a.u.)                :  -187.71389476084761
+	REF Energy (a.u.)                  :  -187.71389476084761
 	DF-MP2 Correlation Energy (a.u.)   :    -0.60072388711485
-	DF-MP2 Total Energy (a.u.)         :  -188.31461864796236
+	DF-MP2 Total Energy (a.u.)         :  -188.31461864796245
 	======================================================================= 
 	Using A=        1 as REMP mixing parameter
 
@@ -2357,7 +2357,7 @@ Total time:
 
   Iter       E_corr                  DE                 T2 RMS      
   ----   ----------------      ----------------       ----------    
-   1      -0.6007238871          0.0000000000         3.00e-20  
+   1      -0.6007238871          0.0000000000         3.77e-20  
 
  ============================================================================== 
  ===================== DF-REMP ITERATIONS ARE CONVERGED ======================= 
@@ -2367,25 +2367,25 @@ Total time:
 	================ REMP FINAL RESULTS =================================== 
 	======================================================================= 
 	Nuclear Repulsion Energy (a.u.)    :    57.93899344880224
-	SCF Energy (a.u.)                  :  -187.71389476084752
-	REF Energy (a.u.)                  :  -187.71389476084752
+	SCF Energy (a.u.)                  :  -187.71389476084761
+	REF Energy (a.u.)                  :  -187.71389476084761
 	DF-REMP Correlation Energy (a.u.)  :    -0.60072388711485
-	DF-REMP Total Energy (a.u.)        :  -188.31461864796236
+	DF-REMP Total Energy (a.u.)        :  -188.31461864796245
 	======================================================================= 
 
 
-*** tstop() called on south at Wed Dec  1 16:10:56 2021
+*** tstop() called on south at Wed Dec  1 19:16:38 2021
 Module time:
-	user time   =       4.94 seconds =       0.08 minutes
-	system time =       1.86 seconds =       0.03 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       4.79 seconds =       0.08 minutes
+	system time =       2.40 seconds =       0.04 minutes
+	total time  =          4 seconds =       0.07 minutes
 Total time:
-	user time   =     246.06 seconds =       4.10 minutes
-	system time =      93.22 seconds =       1.55 minutes
-	total time  =        116 seconds =       1.93 minutes
-    REMP(1.00) Total Energy...............................................................PASSED
+	user time   =     218.94 seconds =       3.65 minutes
+	system time =      73.10 seconds =       1.22 minutes
+	total time  =        121 seconds =       2.02 minutes
+    DF-REMP(1.00) Total Energy............................................................PASSED
 
-    Psi4 stopped on: Wednesday, 01 December 2021 04:10PM
-    Psi4 wall time for execution: 0:01:55.31
+    Psi4 stopped on: Wednesday, 01 December 2021 07:16PM
+    Psi4 wall time for execution: 0:02:01.14
 
 *** Psi4 exiting successfully. Buy a developer a beer!
