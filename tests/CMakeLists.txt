@@ -80,7 +80,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 opt6 opt7 opt8 opt9
                   opt11 opt12 opt13 opt14 opt-irc-1 opt-irc-2 opt-irc-3 opt-freeze-coords
                   opt-full-hess-every
-                  oremp-engrad1 
+                  oremp-engrad1 oremp-engrad2
                   phi-ao
                   props1 props2 props3 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2
                   psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-fd-freq1
