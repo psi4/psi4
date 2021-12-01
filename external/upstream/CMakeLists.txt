@@ -5,6 +5,7 @@ foreach(dir
   chemps2
   cppe
   dkh
+  ecpint
   libefp
   erd
   gau2grid

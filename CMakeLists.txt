@@ -63,7 +63,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #    - Python_INCLUDE_DIR "Path to the python include files (e.g., /path/to/include/python3.7)"
 #    - SPHINX_ROOT "Root directory for Sphinx: 'bin/sphinx-build' (or similar) should be in this dir."
 #
-#    For any ${AddOn} of: ambit, CheMPS2, dkh, libefp, erd, gau2grid, gdma, Libint2, PCMSolver, pybind11, pylibefp,
+#    For any ${AddOn} of: ambit, CheMPS2, dkh, ecpint, libefp, erd, gau2grid, gdma, Libint2, PCMSolver, pybind11, pylibefp,
 #                         qcelemental, qcengine, simint, Libxc
 #    - CMAKE_PREFIX_PATH "Set to list of root directories to look for externally built add-ons and dependencies
 #      (e.g., /path/to/install-libint;/path/to/install-gdma where exists /path/to/install-libint/lib/libderiv.a)"
@@ -98,6 +98,7 @@ option(ENABLE_CheMPS2 "Enables CheMPS2 for DMRG (requires HDF5)" OFF)
 option(ENABLE_cppe "Enables CPPE for Polarizable Embedding" OFF)
 option(ENABLE_adcc "Enables adcc for algebraic-diagrammatic construction methods (can also be added at runtime)" OFF)
 option(ENABLE_dkh "Enables DKH integrals (requires Fortran)" OFF)
+option(ENABLE_ecpint "Enables ECP integrals" OFF)
 option(ENABLE_libefp "Enables LIBEFP and PylibEFP for fragments" OFF)
 option(ENABLE_erd "Enables use of ERD instead of Libint (requires Fortran)" OFF)
 option(ENABLE_simint "Enables use of SIMINT two-electron integral library" OFF)
@@ -222,6 +223,7 @@ ExternalProject_Add(psi4-core
            chemps2_external
            cppe_external
            dkh_external
+           ecpint_external
            libefp_external
            erd_external
            gau2grid_external
@@ -264,6 +266,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_ambit=${ENABLE_ambit}
               -DENABLE_CheMPS2=${ENABLE_CheMPS2}
               -DENABLE_dkh=${ENABLE_dkh}
+              -DENABLE_ecpint=${ENABLE_ecpint}
               -DENABLE_libefp=${ENABLE_libefp}
               -DENABLE_cppe=${ENABLE_cppe}
               -DENABLE_erd=${ENABLE_erd}
@@ -278,6 +281,7 @@ ExternalProject_Add(psi4-core
               -Dambit_DIR=${ambit_DIR}
               -DCheMPS2_DIR=${CheMPS2_DIR}
               -Ddkh_DIR=${dkh_DIR}
+              -Decpint_DIR=${ecpint_DIR}
               -Dlibefp_DIR=${libefp_DIR}
               -Dcppe_DIR=${cppe_DIR}
               -Derd_DIR=${erd_DIR}

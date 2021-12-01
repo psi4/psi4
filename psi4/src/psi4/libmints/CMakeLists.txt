@@ -108,6 +108,13 @@ if(TARGET dkh::dkh)
     )
 endif()
 
+if(TARGET ECPINT::ecpint)
+  target_link_libraries(mints
+    PUBLIC
+      ECPINT::ecpint
+    )
+endif()
+
 if(TARGET PCMSolver::pcm)
   target_link_libraries(mints
     PUBLIC
