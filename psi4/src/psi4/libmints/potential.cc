@@ -37,6 +37,8 @@
 #include "psi4/physconst.h"
 #include "typedefs.h"
 
+#include <libint2/engine.h>
+
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 #define VDEBUG 1
@@ -48,52 +50,52 @@ using namespace psi;
 PotentialInt::PotentialInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs1,
                            std::shared_ptr<BasisSet> bs2, int deriv)
     : OneBodyAOInt(st, bs1, bs2, deriv) {
-    if (deriv == 0)
-        potential_recur_ = new ObaraSaikaTwoCenterVIRecursion(bs1->max_am() + 1, bs2->max_am() + 1);
-    else if (deriv == 1)
-        potential_recur_ = new ObaraSaikaTwoCenterVIDerivRecursion(bs1->max_am() + 2, bs2->max_am() + 2);
-    else if (deriv == 2)
-        potential_recur_ = new ObaraSaikaTwoCenterVIDeriv2Recursion(bs1->max_am() + 3, bs2->max_am() + 3);
-    else
-        throw PSIEXCEPTION("PotentialInt: deriv > 2 is not supported.");
-
-    const int maxam1 = bs1_->max_am();
-    const int maxam2 = bs2_->max_am();
-
-    int maxnao1 = INT_NCART(maxam1);
-    int maxnao2 = INT_NCART(maxam2);
-
-    if (deriv == 1) {
-        // We set chunk count for normalize_am and pure_transform
-        // We can't use the trick of using less memory that I implemented in overlap & kinetic
-        // since potential integral derivatives also have a contribution to center c...which is
-        // over all atoms.
-        set_chunks(3 * natom_);
-
-        maxnao1 *= 3 * natom_;
-    } else if (deriv == 2) {
-        set_chunks(27 * natom_);
-        maxnao1 *= 27 * natom_;
+    if (bs1 != bs2) {
+        throw PSIEXCEPTION("We only support potential integrals with the same basis set in bra and ket.");
     }
 
-    buffer_ = new double[maxnao1 * maxnao2];
+    int max_am = std::max(basis1()->max_am(), basis2()->max_am());
+    int max_nprim = std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive());
 
     // Setup the initial field of partial charges
-    Zxyz_ = std::make_shared<Matrix>("Partial Charge Field (Z,x,y,z)", bs1_->molecule()->natom(), 4);
-    double **Zxyzp = Zxyz_->pointer();
-
+    std::vector<std::pair<double, std::array<double, 3>>> params;
     for (int A = 0; A < bs1_->molecule()->natom(); A++) {
-        Zxyzp[A][0] = (double)bs1_->molecule()->Z(A);
-        Zxyzp[A][1] = bs1_->molecule()->x(A);
-        Zxyzp[A][2] = bs1_->molecule()->y(A);
-        Zxyzp[A][3] = bs1_->molecule()->z(A);
+        params.emplace_back(std::make_pair(
+            (double)bs1_->molecule()->Z(A),
+            std::array<double, 3>{bs1_->molecule()->x(A), bs1_->molecule()->y(A), bs1_->molecule()->z(A)}));
     }
+
+    engine0_ = std::unique_ptr<libint2::Engine>(new libint2::Engine(libint2::Operator::nuclear, max_nprim, max_am, 0));
+    engine0_->set_params(params);
+
+    if (deriv == 1) {
+        const auto nresults = 3 * (2 + bs1_->molecule()->natom());
+
+        set_chunks(nresults);
+
+        engine1_ =
+            std::unique_ptr<libint2::Engine>(new libint2::Engine(libint2::Operator::nuclear, max_nprim, max_am, 1));
+        engine1_->set_params(params);
+
+    } else if (deriv == 2) {
+        constexpr auto nopers = libint2::operator_traits<libint2::Operator::nuclear>::nopers;
+        const auto nresults = nopers * libint2::num_geometrical_derivatives(bs1_->molecule()->natom(), 2);
+
+        set_chunks(nresults);
+
+        engine1_ =
+            std::unique_ptr<libint2::Engine>(new libint2::Engine(libint2::Operator::nuclear, max_nprim, max_am, 1));
+        engine2_ =
+            std::unique_ptr<libint2::Engine>(new libint2::Engine(libint2::Operator::nuclear, max_nprim, max_am, 2));
+        engine1_->set_params(params);
+        engine2_->set_params(params);
+    }
+
+    buffer_ = nullptr;
+    buffers_.resize(nchunk_);
 }
 
-PotentialInt::~PotentialInt() {
-    delete[] buffer_;
-    delete potential_recur_;
-}
+PotentialInt::~PotentialInt() {}
 
 // The engine only supports segmented basis sets
 void PotentialInt::compute_pair(const GaussianShell &s1, const GaussianShell &s2) {

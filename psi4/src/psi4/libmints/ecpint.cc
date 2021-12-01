@@ -650,7 +650,10 @@ ECPInt::ECPInt(std::vector<SphericalTransform> &st, std::shared_ptr<BasisSet> bs
 
     int maxnao1 = INT_NCART(maxam1);
     int maxnao2 = INT_NCART(maxam2);
+
     buffer_ = new double[maxnao1 * maxnao2];
+    buffers_.resize(1);
+    buffers_[0] = buffer_;
 }
 
 ECPInt::~ECPInt() { delete[] buffer_; }

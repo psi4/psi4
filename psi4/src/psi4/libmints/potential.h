@@ -87,6 +87,8 @@ class PotentialInt : public OneBodyAOInt {
 
     /// Does the method provide first derivatives?
     bool has_deriv1() override { return true; }
+
+    bool l2() const { return true; }
 };
 
 class PotentialSOInt : public OneBodySOInt {

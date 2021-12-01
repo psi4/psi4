@@ -80,42 +80,90 @@ void OneBodySOInt::compute(SharedMatrix result) {
     // Do not worry about zeroing out result
     int ns1 = b1_->nshell();
     int ns2 = b2_->nshell();
-    const double *aobuf = ob_->buffer();
 
-    // Loop over the unique AO shells.
-    for (int ish = 0; ish < ns1; ++ish) {
-        for (int jsh = 0; jsh < ns2; ++jsh) {
-            const SOTransform &t1 = b1_->sotrans(ish);
-            const SOTransform &t2 = b2_->sotrans(jsh);
+    if (ob_->l2() == false) {
+        const double *aobuf = ob_->buffer();
+        // Loop over the unique AO shells.
+        for (int ish = 0; ish < ns1; ++ish) {
+            for (int jsh = 0; jsh < ns2; ++jsh) {
+                const SOTransform &t1 = b1_->sotrans(ish);
+                const SOTransform &t2 = b2_->sotrans(jsh);
 
-            int nao2 = b2_->naofunction(jsh);
+                int nao2 = b2_->naofunction(jsh);
 
-            // loop through the AO shells that make up this SO shell
-            // by the end of these 4 for loops we will have our final integral in buffer_
-            for (int i = 0; i < t1.naoshell; ++i) {
-                const SOTransformShell &s1 = t1.aoshell[i];
-                for (int j = 0; j < t2.naoshell; ++j) {
-                    const SOTransformShell &s2 = t2.aoshell[j];
-                    ob_->compute_shell(s1.aoshell, s2.aoshell);
+                // loop through the AO shells that make up this SO shell
+                // by the end of these 4 for loops we will have our final integral in buffer_
+                for (int i = 0; i < t1.naoshell; ++i) {
+                    const SOTransformShell &s1 = t1.aoshell[i];
+                    for (int j = 0; j < t2.naoshell; ++j) {
+                        const SOTransformShell &s2 = t2.aoshell[j];
+                        ob_->compute_shell(s1.aoshell, s2.aoshell);
 
-                    for (int itr = 0; itr < s1.nfunc; ++itr) {
-                        const SOTransformFunction &ifunc = s1.func[itr];
-                        double icoef = ifunc.coef;
-                        int iaofunc = ifunc.aofunc;
-                        int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
-                        int iaooff = iaofunc;
+                        for (int itr = 0; itr < s1.nfunc; ++itr) {
+                            const SOTransformFunction &ifunc = s1.func[itr];
+                            double icoef = ifunc.coef;
+                            int iaofunc = ifunc.aofunc;
+                            int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
+                            int iaooff = iaofunc;
 
-                        for (int jtr = 0; jtr < s2.nfunc; ++jtr) {
-                            const SOTransformFunction &jfunc = s2.func[jtr];
-                            double jcoef = jfunc.coef * icoef;
-                            int jaofunc = jfunc.aofunc;
-                            int jsofunc = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
-                            int jaooff = iaooff * nao2 + jaofunc;
+                            for (int jtr = 0; jtr < s2.nfunc; ++jtr) {
+                                const SOTransformFunction &jfunc = s2.func[jtr];
+                                double jcoef = jfunc.coef * icoef;
+                                int jaofunc = jfunc.aofunc;
+                                int jsofunc = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
+                                int jaooff = iaooff * nao2 + jaofunc;
 
-                            // Check the irreps to ensure symmetric quantities.
-                            if (ifunc.irrep == jfunc.irrep)
-                                result->add(ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
-                                            b2_->function_within_irrep(jsh, jsofunc), jcoef * aobuf[jaooff]);
+                                // Check the irreps to ensure symmetric quantities.
+                                if (ifunc.irrep == jfunc.irrep)
+                                    result->add(ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
+                                                b2_->function_within_irrep(jsh, jsofunc), jcoef * aobuf[jaooff]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        // Loop over the unique AO shells.
+        for (int ish = 0; ish < ns1; ++ish) {
+            for (int jsh = 0; jsh < ns2; ++jsh) {
+                const SOTransform &t1 = b1_->sotrans(ish);
+                const SOTransform &t2 = b2_->sotrans(jsh);
+
+                int nao2 = b2_->naofunction(jsh);
+
+                // loop through the AO shells that make up this SO shell
+                // by the end of these 4 for loops we will have our final integral in buffer_
+                for (int i = 0; i < t1.naoshell; ++i) {
+                    const SOTransformShell &s1 = t1.aoshell[i];
+                    for (int j = 0; j < t2.naoshell; ++j) {
+                        const SOTransformShell &s2 = t2.aoshell[j];
+
+                        const auto &l2_s1 = b1_->basis()->l2_shell(s1.aoshell);
+                        const auto &l2_s2 = b2_->basis()->l2_shell(s2.aoshell);
+
+                        ob_->compute_pair(l2_s1, l2_s2);
+                        const double *aobuf = ob_->buffers()[0];
+
+                        for (int itr = 0; itr < s1.nfunc; ++itr) {
+                            const SOTransformFunction &ifunc = s1.func[itr];
+                            double icoef = ifunc.coef;
+                            int iaofunc = ifunc.aofunc;
+                            int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
+                            int iaooff = iaofunc;
+
+                            for (int jtr = 0; jtr < s2.nfunc; ++jtr) {
+                                const SOTransformFunction &jfunc = s2.func[jtr];
+                                double jcoef = jfunc.coef * icoef;
+                                int jaofunc = jfunc.aofunc;
+                                int jsofunc = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
+                                int jaooff = iaooff * nao2 + jaofunc;
+
+                                // Check the irreps to ensure symmetric quantities.
+                                if (ifunc.irrep == jfunc.irrep)
+                                    result->add(ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
+                                                b2_->function_within_irrep(jsh, jsofunc), jcoef * aobuf[jaooff]);
+                            }
                         }
                     }
                 }
@@ -129,7 +177,6 @@ void OneBodySOInt::compute(std::vector<SharedMatrix> results) {
     int nchunk = ob_->nchunk();
     int ns1 = b1_->nshell();
     int ns2 = b2_->nshell();
-    const double *aobuf = ob_->buffer();
 
     // Loop over the unique AO shells.
     for (int ish = 0; ish < ns1; ++ish) {
@@ -148,7 +195,11 @@ void OneBodySOInt::compute(std::vector<SharedMatrix> results) {
                 for (int j = 0; j < t2.naoshell; ++j) {
                     const SOTransformShell &s2 = t2.aoshell[j];
 
-                    ob_->compute_shell(s1.aoshell, s2.aoshell);
+                    const auto &l2_s1 = b1_->basis()->l2_shell(s1.aoshell);
+                    const auto &l2_s2 = b2_->basis()->l2_shell(s2.aoshell);
+
+                    ob_->compute_pair(l2_s1, l2_s2);
+                    const auto &aobuf = ob_->buffers();
 
                     for (int itr = 0; itr < s1.nfunc; ++itr) {
                         const SOTransformFunction &ifunc = s1.func[itr];
@@ -166,7 +217,7 @@ void OneBodySOInt::compute(std::vector<SharedMatrix> results) {
 
                             // Handle chunks
                             for (int i = 0; i < nchunk; ++i) {
-                                double temp = jcoef * aobuf[jaooff + (i * nao)];
+                                double temp = jcoef * aobuf[i][jaooff];
 
                                 int ijirrep = ifunc.irrep ^ jfunc.irrep;
                                 if (ijirrep == results[i]->symmetry()) {
@@ -197,7 +248,6 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
 
     int ns1 = b1_->nshell();
     int ns2 = b2_->nshell();
-    const double *aobuf = ob_->buffer();
 
     // Loop over unique SO shells.
     for (int ish = 0; ish < ns1; ++ish) {
@@ -225,7 +275,11 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
                     // If we're working on the same atomic center, don't even bother with the derivative
                     if (center_i == center_j) continue;
 
-                    ob_->compute_shell_deriv1(s1.aoshell, s2.aoshell);
+                    const auto &l2_s1 = b1_->basis()->l2_shell(s1.aoshell);
+                    const auto &l2_s2 = b2_->basis()->l2_shell(s2.aoshell);
+
+                    ob_->compute_pair_deriv1(l2_s1, l2_s2);
+                    const auto &aobuf = ob_->buffers();
 
                     // handle SO transform
                     for (int itr = 0; itr < s1.nfunc; ++itr) {
@@ -253,7 +307,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
 
                             // Need to loop over the cdsalcs
 
-                            double jcoef_aobuf = jcoef * aobuf[jaooff + 0 * nao12];
+                            double jcoef_aobuf = jcoef * aobuf[0][jaooff];
                             for (int nx = 0; nx < cdsalc1.nx(); ++nx) {
                                 const CdSalcWRTAtom::Component element = cdsalc1.x(nx);
                                 double temp = jcoef_aobuf * element.coef;
@@ -262,7 +316,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
                                 }
                             }
 
-                            jcoef_aobuf = jcoef * aobuf[jaooff + 1 * nao12];
+                            jcoef_aobuf = jcoef * aobuf[1][jaooff];
                             for (int ny = 0; ny < cdsalc1.ny(); ++ny) {
                                 const CdSalcWRTAtom::Component element = cdsalc1.y(ny);
                                 double temp = jcoef_aobuf * element.coef;
@@ -271,7 +325,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
                                 }
                             }
 
-                            jcoef_aobuf = jcoef * aobuf[jaooff + 2 * nao12];
+                            jcoef_aobuf = jcoef * aobuf[2][jaooff];
                             for (int nz = 0; nz < cdsalc1.nz(); ++nz) {
                                 const CdSalcWRTAtom::Component element = cdsalc1.z(nz);
                                 double temp = jcoef_aobuf * element.coef;
@@ -280,7 +334,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
                                 }
                             }
 
-                            jcoef_aobuf = jcoef * aobuf[jaooff + 3 * nao12];
+                            jcoef_aobuf = jcoef * aobuf[3][jaooff];
                             for (int nx = 0; nx < cdsalc2.nx(); ++nx) {
                                 const CdSalcWRTAtom::Component element = cdsalc2.x(nx);
                                 double temp = jcoef_aobuf * element.coef;
@@ -289,7 +343,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
                                 }
                             }
 
-                            jcoef_aobuf = jcoef * aobuf[jaooff + 4 * nao12];
+                            jcoef_aobuf = jcoef * aobuf[4][jaooff];
                             for (int ny = 0; ny < cdsalc2.ny(); ++ny) {
                                 const CdSalcWRTAtom::Component element = cdsalc2.y(ny);
                                 double temp = jcoef_aobuf * element.coef;
@@ -298,7 +352,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
                                 }
                             }
 
-                            jcoef_aobuf = jcoef * aobuf[jaooff + 5 * nao12];
+                            jcoef_aobuf = jcoef * aobuf[5][jaooff];
                             for (int nz = 0; nz < cdsalc2.nz(); ++nz) {
                                 const CdSalcWRTAtom::Component element = cdsalc2.z(nz);
                                 double temp = jcoef_aobuf * element.coef;

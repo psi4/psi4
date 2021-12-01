@@ -42,9 +42,8 @@
 
 #include "psi4/libpsi4util/exception.h"
 
-#include <libint2/engine.h>
-
 namespace libint2 {
+class Engine;
 class Shell;
 }  // namespace libint2
 
@@ -79,12 +78,9 @@ class PSI_API OneBodyAOInt {
     int buffer_size_;
 
     /// Libint2 engines
-    libint2::Engine engine0_;
-    libint2::Engine engine1_;  // derivatives
-    libint2::Engine engine2_;  // hessians
-
-    /// Buffer where each chunk of integrals is placed
-    const std::vector<const double*>& buffers() const { return buffers_; }
+    std::unique_ptr<libint2::Engine> engine0_;
+    std::unique_ptr<libint2::Engine> engine1_;  // derivatives
+    std::unique_ptr<libint2::Engine> engine2_;  // hessians
 
     /// Pointers to each chunk of (derivative/multipole) integrals
     std::vector<const double*> buffers_;
@@ -93,13 +89,6 @@ class PSI_API OneBodyAOInt {
 
     OneBodyAOInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                  int deriv = 0);
-
-    virtual void compute_pair(const GaussianShell& s1, const GaussianShell& s2) = 0;
-    virtual void compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2);
-    virtual void compute_pair_deriv2(const GaussianShell& s1, const GaussianShell& s2);
-
-    void compute_pair(const libint2::Shell&, const libint2::Shell&);
-
     void set_chunks(int nchunk) { nchunk_ = nchunk; }
     void pure_transform(const GaussianShell&, const GaussianShell&, int = 1);
 
@@ -120,9 +109,11 @@ class PSI_API OneBodyAOInt {
     int nchunk() const { return nchunk_; }
 
     /// Buffer where the integrals are placed.
+    PSI_DEPRECATED("No.")
     const double* buffer() const;
 
     /// Compute the integrals between basis function in the given shell pair.
+    PSI_DEPRECATED("No. Maybe.")
     void compute_shell(int, int);
 
     /*! @{
@@ -169,6 +160,17 @@ class PSI_API OneBodyAOInt {
 
     /// Set the origin (useful for properties)
     void set_origin(const Vector3& _origin) { origin_ = _origin; }
+
+    virtual void compute_pair(const GaussianShell& s1, const GaussianShell& s2){};
+    virtual void compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2){};
+    virtual void compute_pair_deriv2(const GaussianShell& s1, const GaussianShell& s2){};
+
+    virtual void compute_pair(const libint2::Shell&, const libint2::Shell&);
+    virtual void compute_pair_deriv1(const libint2::Shell&, const libint2::Shell&);
+    virtual void compute_pair_deriv2(const libint2::Shell&, const libint2::Shell&);
+
+    /// Buffer where each chunk of integrals is placed
+    const std::vector<const double*>& buffers() const { return buffers_; }
 };
 
 typedef std::shared_ptr<OneBodyAOInt> SharedOneBodyAOInt;
