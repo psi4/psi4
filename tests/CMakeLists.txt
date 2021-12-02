@@ -41,7 +41,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   cc29 cc3 cc30 cc31 cc32 cc33 cc34 cc35 cc36 cc37 cc38 cc39
                   cc4 cc40 cc41 cc42 cc43 cc44 cc45 cc46 cc47 cc48 cc49 cc4a
                   cc50 cc51 cc52 cc53 cc54 cc55 cc5a cc6 cc7 cc8 cc8a cc8b cc8c
-                  cc9 cc9a cdomp2-1 cdomp2-2 cepa1
+                  cc9 cc9a cdomp2-1 cdomp2-2 cdremp-1 cdremp-2 cepa1
                   cepa2 cepa3 cepa-module ci-multi cisd-h2o+-0 cisd-h2o+-1
                   cisd-h2o+-2 cisd-h2o-clpse cisd-opt-fd cisd-sp cisd-sp-2
                   ci-property cubeprop cubeprop-frontier decontract dct-grad1 dct-grad2
@@ -52,7 +52,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   dfmp2-grad2 dfmp2-grad3 dfmp2-grad4 dfmp2-grad5 dfoccdat1 dfoccdat2 dfoccd-grad1 dfoccd-grad2
                   dfoccdt1 dfoccdt2 fnodfccsdt1 fnodfccsdt2 dfomp2-1 dfomp2-2 dfomp2-3
                   dfomp2-4 dfomp2-grad1 dfomp2-grad2 dfomp2-grad3 dfomp3-1 dfomp3-2
-                  dfomp3-grad1 dfomp3-grad2 dfomp2p5-1 dfomp2p5-2 dfomp2p5-grad1 dfremp-1
+                  dfomp3-grad1 dfomp3-grad2 dfomp2p5-1 dfomp2p5-2 dfomp2p5-grad1 dfremp-1 dfremp-2
                   dft-grad-lr1 dft-grad-lr2 dft-grad-lr3 dft-grad-disk
                   dfomp2p5-grad2 dfrasscf-sp dfscf-bz2 dft-b2plyp dft-grac dft-ghost dft-grad-meta
                   dft-freq dft-freq-analytic dft-grad1 dft-grad2 dft-psivar dft-b3lyp dft1 dft-vv10
