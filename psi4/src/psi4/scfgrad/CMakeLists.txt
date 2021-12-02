@@ -16,3 +16,10 @@ if(TARGET BrianQC::static_wrapper)
       $<TARGET_PROPERTY:BrianQC::static_wrapper,INTERFACE_INCLUDE_DIRECTORIES>
     )
 endif()
+
+if(TARGET ECPINT::ecpint)
+  target_link_libraries(scfgrad
+    PUBLIC
+      ECPINT::ecpint
+    )
+endif()
