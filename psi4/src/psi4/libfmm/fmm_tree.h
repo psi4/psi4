@@ -21,6 +21,8 @@
 
 namespace psi {
 
+class Options;
+
 class PSI_API ShellPair {
     protected:
       // The basisset associated with the shell-pair
@@ -155,8 +157,12 @@ class PSI_API CFMMTree {
       // A list of significant bra shell pairs
       std::vector<std::pair<int, int>> nf_bra_shell_pairs_;
 
+      // Options object
+      Options& options_;
       // Number of threads
       int nthread_;
+
+      // The integral objects used to compute the integrals
       std::vector<std::shared_ptr<TwoBodyAOInt>> ints_;
 
       // Sort the shell-pairs (radix sort)
@@ -176,8 +182,8 @@ class PSI_API CFMMTree {
     
     public:
       // Constructor
-      CFMMTree(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basisset, std::vector<SharedMatrix>& D, 
-                std::vector<SharedMatrix>& J, const std::vector<std::pair<int, int>>& shell_pairs, int nlevels, int lmax);
+      CFMMTree(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<SharedMatrix>& D, 
+                std::vector<SharedMatrix>& J, Options& options);
 
       // Build the J matrix of CFMMTree
       void build_J();

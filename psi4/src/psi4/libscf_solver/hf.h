@@ -61,12 +61,6 @@ class HF : public Wavefunction {
     SharedMatrix Vb_;
     /// The orthogonalization matrix (symmetric or canonical)
     SharedMatrix X_;
-    /// Temporary matrix for diagonalize_F
-    SharedMatrix diag_temp_;
-    /// Temporary matrix for diagonalize_F
-    SharedMatrix diag_F_temp_;
-    /// Temporary matrix for diagonalize_F
-    SharedMatrix diag_C_temp_;
     /// List of external potentials to add to Fock matrix and updated at every iteration
     /// e.g. PCM potential
     std::vector<SharedMatrix> external_potentials_;
@@ -145,6 +139,9 @@ class HF : public Wavefunction {
 
     /// Frac started? (Same thing as frac_performed_)
     bool frac_performed_;
+    /// The orbitals _before_ scaling needed for Frac
+    SharedMatrix unscaled_Ca_;
+    SharedMatrix unscaled_Cb_;
 
     /// DIIS manager intiialized?
     bool initialized_diis_manager_;
@@ -220,9 +217,6 @@ class HF : public Wavefunction {
     /** Form Fia (for DIIS) **/
     virtual SharedMatrix form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi);
 
-    /** Form X'(FDS - SDF)X (for DIIS) **/
-    virtual SharedMatrix form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso);
-
     /** Performs any operations required for a incoming guess **/
     virtual void format_guess();
 
@@ -269,6 +263,8 @@ class HF : public Wavefunction {
     /** Computes the initial energy. */
     virtual double compute_initial_E() { return 0.0; }
 
+    const std::string& scf_type() const { return scf_type_; }
+
     /// Check MO phases
     void check_phases();
 
@@ -283,8 +279,9 @@ class HF : public Wavefunction {
 
     /// The DIIS object
     std::shared_ptr<DIISManager> diis_manager() const { return diis_manager_; }
-    void set_initialized_diis_manager(bool tf) { initialized_diis_manager_ = tf; }
+    void set_diis_manager(std::shared_ptr<DIISManager> manager) { diis_manager_ = manager; }
     bool initialized_diis_manager() const { return initialized_diis_manager_; }
+    void set_initialized_diis_manager(bool tf) { initialized_diis_manager_ = tf; }
 
     /// The JK object (or null if it has been deleted)
     std::shared_ptr<JK> jk() const { return jk_; }
@@ -305,7 +302,8 @@ class HF : public Wavefunction {
     /// Save the current density and energy.
     virtual void save_density_and_energy();
 
-    /// Reset to regular occupation from the fractional occupation
+    /// Reset to the user-specified DOCC/SOCC if any, and zero's otherwise.
+    /// Fractional occupation requires this.
     void reset_occupation();
 
     /// Compute energy for the iteration.
@@ -339,6 +337,7 @@ class HF : public Wavefunction {
 
     /// Renormalize orbitals to 1.0 before saving
     void frac_renormalize();
+    void frac_helper();
 
     /// Formation of H is the same regardless of RHF, ROHF, UHF
     // Temporarily converting to virtual function for testing embedding
@@ -354,8 +353,8 @@ class HF : public Wavefunction {
     /// Form the guess (guarantees C, D, and E)
     virtual void guess();
 
-    /// Compute the MO coefficients (C_)
-    virtual void form_C();
+    /// Compute the MO coefficients (C_) using level shift
+    virtual void form_C(double shift = 0.0);
     /** Computes the initial MO coefficients (default is to call form_C) */
     virtual void form_initial_C() { form_C(); }
 
@@ -372,6 +371,9 @@ class HF : public Wavefunction {
 
     /** Forms the G matrix */
     virtual void form_G();
+
+    /** Form X'(FDS - SDF)X (for DIIS) **/
+    virtual SharedMatrix form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso);
 
     /** Rotates orbitals inplace C' = exp(U) C, U = antisymmetric matrix from x */
     void rotate_orbitals(SharedMatrix C, const SharedMatrix x);
@@ -416,10 +418,11 @@ class HF : public Wavefunction {
     // External potentials
     void clear_external_potentials() { external_potentials_.clear(); }
     void push_back_external_potential(const SharedMatrix& V) { external_potentials_.push_back(V); }
-    void set_external_cpscf_perturbation(const std::string name, PerturbedPotentialFunction fun) { external_cpscf_perturbations_[name] = fun; }
+    void set_external_cpscf_perturbation(const std::string name, PerturbedPotentialFunction fun) {
+        external_cpscf_perturbations_[name] = fun;
+    }
     void clear_external_cpscf_perturbations() { external_cpscf_perturbations_.clear(); }
     void compute_fvpi();
-
 };
 }  // namespace scf
 }  // namespace psi

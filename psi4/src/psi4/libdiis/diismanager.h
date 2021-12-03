@@ -52,16 +52,16 @@ class PSI_API DIISManager {
      * OnDisk - Stored on disk, and retrieved when required
      * InCore - Stored in memory throughout
      */
-    enum StoragePolicy { InCore, OnDisk };
+    enum class StoragePolicy { InCore, OnDisk };
     /**
      * @brief How vectors are removed from the subspace, when required
      *
      * LargestError - The vector corresponding to the largest error is removed
      * OldestFirst - A first-in-first-out policy is used
      */
-    enum RemovalPolicy { LargestError, OldestAdded };
+    enum class RemovalPolicy { LargestError, OldestAdded };
 
-    DIISManager(int maxSubspaceSize, const std::string& label, RemovalPolicy = LargestError, StoragePolicy = OnDisk);
+    DIISManager(int maxSubspaceSize, const std::string& label, RemovalPolicy = RemovalPolicy::LargestError, StoragePolicy = StoragePolicy::OnDisk);
     DIISManager() { _maxSubspaceSize = 0; }
     ~DIISManager();
 
@@ -109,7 +109,7 @@ class PSI_API DIISManager {
     /// The counter that keeps track of how many entries have been added
     int _entryCount;
     /// The DIIS entries
-    std::vector<DIISEntry*> _subspace;
+    std::vector<DIISEntry> _subspace;
     /// The types used in building the vector and the error vector
     std::vector<DIISEntry::InputType> _componentTypes;
     /// The types used in the vector

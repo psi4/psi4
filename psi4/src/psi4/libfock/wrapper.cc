@@ -60,20 +60,6 @@ SharedWavefunction libfock(SharedWavefunction ref_wfn, Options& options) {
             cphf->add_task(options["CPHF_TASKS"][i].to_string());
         }
         wfn = std::shared_ptr<RBase>(cphf);
-    } else if (options.get_str("MODULE") == "RCIS") {
-        wfn = std::make_shared<RCIS>(ref_wfn, options);
-    } else if (options.get_str("MODULE") == "RTDHF") {
-        wfn = std::make_shared<RTDHF>(ref_wfn, options);
-    } else if (options.get_str("MODULE") == "RCPKS") {
-        RCPKS* cphf(new RCPKS(ref_wfn, options));
-        for (size_t i = 0; i < options["CPHF_TASKS"].size(); i++) {
-            cphf->add_task(options["CPHF_TASKS"][i].to_string());
-        }
-        wfn = std::shared_ptr<RBase>(cphf);
-    } else if (options.get_str("MODULE") == "RTDA") {
-        wfn = std::make_shared<RTDA>(ref_wfn, options);
-    } else if (options.get_str("MODULE") == "RTDDFT") {
-        wfn = std::make_shared<RTDDFT>(ref_wfn, options);
     } else {
         throw PSIEXCEPTION("Libfock: Applications module not recognized");
     }

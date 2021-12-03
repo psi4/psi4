@@ -123,7 +123,7 @@ A few practical examples:
 
 If only BSSE/basis set corrections (rather than total energies) are of
 interest, the ``gcp`` program can be run independently of the scf
-through the python function :py:func:`~qcdb.interface_gcp.run_gcp`. (This function
+through the python function :py:func:`~qcdb.Molecule.run_gcp`. (This function
 is the same |PSIfour|/``gcp`` interface that is called during an scf job.)
 This route is much faster than running a HF or DFT energy. ::
 
@@ -131,12 +131,12 @@ This route is much faster than running a HF or DFT energy. ::
    Ne
    Ne 1 2.0
    }
-   
+
    nene.update_geometry()
 
    >>> E, G = nene.run_gcp('hf3c')
 
    >>> E, G = nene.run_gcp(func='HF3c', verbose=True)
 
-.. autofunction:: qcdb.interface_gcp.run_gcp
+.. autofunction:: qcdb.Molecule.run_gcp
 

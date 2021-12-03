@@ -29,6 +29,8 @@
 #ifndef _psi_src_lib_libmints_cartesianiter_h_
 #define _psi_src_lib_libmints_cartesianiter_h_
 
+#include <vector>
+
 #include "psi4/pragma.h"
 
 namespace psi {
@@ -79,7 +81,7 @@ class PSI_API CartesianIter {
 class PSI_API RedundantCartesianIter {
     int done_;
     int l_;
-    int *axis_;
+    std::vector<int> axis_;
 
    public:
     /// Create a object for the given angular momentum.
@@ -151,12 +153,12 @@ class PSI_API RedundantCartesianSubIter {
     int done_;
     int l_;
     int e_[3];
-    int *axis_;
+    std::vector<int> axis_;
 
     // the locations of the z's in the axis array
-    int *zloc_;
+    std::vector<int> zloc_;
     // the locations of the y's in the subarray after the z's are removed
-    int *yloc_;
+    std::vector<int> yloc_;
 
     int valid();
 

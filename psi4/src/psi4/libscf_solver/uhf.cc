@@ -183,7 +183,6 @@ void UHF::form_V() {
     // Vb_ = Va_;
 }
 void UHF::form_G() {
-
     if (functional_->needs_xc()) {
         form_V();
         Ga_->copy(Va_);
@@ -216,10 +215,10 @@ void UHF::form_G() {
     }
     Ga_->add(J_);
     Gb_->add(J_);
-    
+
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
-    
+
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
@@ -228,7 +227,7 @@ void UHF::form_G() {
     }
 #endif
 
-    if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine()) ){
+    if (functional_->is_x_hybrid() && !(functional_->is_x_lrc() && jk_->get_wcombine())) {
         Ga_->axpy(-alpha, Ka_);
         Gb_->axpy(-alpha, Kb_);
     } else {
@@ -240,8 +239,7 @@ void UHF::form_G() {
         if (jk_->get_wcombine()) {
             Ga_->axpy(-1.0, wKa_);
             Gb_->axpy(-1.0, wKb_);
-        }
-        else {
+        } else {
             Ga_->axpy(-beta, wKa_);
             Gb_->axpy(-beta, wKb_);
         }
@@ -270,9 +268,28 @@ void UHF::form_F() {
     }
 }
 
-void UHF::form_C() {
-    diagonalize_F(Fa_, Ca_, epsilon_a_);
-    diagonalize_F(Fb_, Cb_, epsilon_b_);
+void UHF::form_C(double shift) {
+    if (shift == 0.0) {
+        diagonalize_F(Fa_, Ca_, epsilon_a_);
+        diagonalize_F(Fb_, Cb_, epsilon_b_);
+
+    } else {
+        auto shifted_F = SharedMatrix(factory_->create_matrix("F"));
+
+        auto Cvir = Ca_subset("SO", "VIR");
+        auto SCvir = std::make_shared<Matrix>(nirrep_, S_->rowspi(), Cvir->colspi());
+        SCvir->gemm(false, false, 1.0, S_, Cvir, 0.0);
+        shifted_F->gemm(false, true, shift, SCvir, SCvir, 0.0);
+        shifted_F->add(Fa_);
+        diagonalize_F(shifted_F, Ca_, epsilon_a_);
+
+        Cvir = Cb_subset("SO", "VIR");
+        SCvir = std::make_shared<Matrix>(nirrep_, S_->rowspi(), Cvir->colspi());
+        SCvir->gemm(false, false, 1.0, S_, Cvir, 0.0);
+        shifted_F->gemm(false, true, shift, SCvir, SCvir, 0.0);
+        shifted_F->add(Fb_);
+        diagonalize_F(shifted_F, Cb_, epsilon_b_);
+    }
     if (options_.get_bool("GUESS_MIX") && (iteration_ == 0)) {
         if (Ca_->nirrep() == 1) {
             outfile->Printf("  Mixing alpha HOMO/LUMO orbitals (%d,%d)\n\n", nalpha_, nalpha_ + 1);
@@ -354,7 +371,7 @@ double UHF::compute_E() {
 
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
-    
+
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
@@ -362,7 +379,7 @@ double UHF::compute_E() {
         beta = 1.0;
     }
 #endif
-    
+
     double exchange_E = 0.0;
     if (functional_->is_x_hybrid()) {
         exchange_E -= alpha * Da_->vector_dot(Ka_);
@@ -370,8 +387,8 @@ double UHF::compute_E() {
     }
     if (functional_->is_x_lrc()) {
         if (jk_->get_do_wK() && jk_->get_wcombine()) {
-            exchange_E -=  Da_->vector_dot(wKa_);
-            exchange_E -=  Db_->vector_dot(wKb_);
+            exchange_E -= Da_->vector_dot(wKa_);
+            exchange_E -= Db_->vector_dot(wKb_);
         } else {
             exchange_E -= beta * Da_->vector_dot(wKa_);
             exchange_E -= beta * Db_->vector_dot(wKb_);
@@ -453,13 +470,13 @@ std::vector<SharedMatrix> UHF::onel_Hx(std::vector<SharedMatrix> x_vec) {
             Cbv = Cbvir_ao;
 
         } else {
-
-            if ((x_vec[2 * i + 1]->rowspi() != Cbocc_so->colspi()) || (x_vec[2 * i + 1]->colspi() != Cbvir_so->colspi())) {
+            if ((x_vec[2 * i + 1]->rowspi() != Cbocc_so->colspi()) ||
+                (x_vec[2 * i + 1]->colspi() != Cbvir_so->colspi())) {
                 throw PSIEXCEPTION("SCF::onel_Hx incoming rotation matrices must have shape (occ x vir).");
             }
             Fa = Fa_;
             Fb = Fb_;
-    
+
             Cao = Caocc_so;
             Cbo = Cbocc_so;
             Cav = Cavir_so;
@@ -536,14 +553,14 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
             if ((x_vec[2 * i]->rowspi() != Caocc_ao->colspi()) || (x_vec[2 * i]->colspi() != Cavir_ao->colspi())) {
                 throw PSIEXCEPTION("SCF::twoel_Hx incoming rotation matrices must have shape (occ x vir).");
             }
-            Cao = Caocc_ao; 
-            Cav = Cavir_ao; 
+            Cao = Caocc_ao;
+            Cav = Cavir_ao;
         } else {
             if ((x_vec[2 * i]->rowspi() != Caocc_so->colspi()) || (x_vec[2 * i]->colspi() != Cavir_so->colspi())) {
                 throw PSIEXCEPTION("SCF::twoel_Hx incoming rotation matrices must have shape (occ x vir).");
             }
-            Cao = Caocc_so; 
-            Cav = Cavir_so; 
+            Cao = Caocc_so;
+            Cav = Cavir_so;
         }
 
         Cl.push_back(Cao);
@@ -554,17 +571,19 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     }
     for (size_t i = 0; i < nvecs; i++) {
         if (c1_input_[i]) {
-            if ((x_vec[2 * i + 1]->rowspi() != Cbocc_ao->colspi()) || (x_vec[2 * i + 1]->colspi() != Cbvir_ao->colspi())) {
+            if ((x_vec[2 * i + 1]->rowspi() != Cbocc_ao->colspi()) ||
+                (x_vec[2 * i + 1]->colspi() != Cbvir_ao->colspi())) {
                 throw PSIEXCEPTION("SCF::twoel_Hx incoming rotation matrices must have shape (occ x vir).");
             }
-            Cbo = Cbocc_ao; 
-            Cbv = Cbvir_ao; 
+            Cbo = Cbocc_ao;
+            Cbv = Cbvir_ao;
         } else {
-            if ((x_vec[2 * i + 1]->rowspi() != Cbocc_so->colspi()) || (x_vec[2 * i + 1]->colspi() != Cbvir_so->colspi())) {
+            if ((x_vec[2 * i + 1]->rowspi() != Cbocc_so->colspi()) ||
+                (x_vec[2 * i + 1]->colspi() != Cbvir_so->colspi())) {
                 throw PSIEXCEPTION("SCF::twoel_Hx incoming rotation matrices must have shape (occ x vir).");
             }
-            Cbo = Cbocc_so; 
-            Cbv = Cbvir_so; 
+            Cbo = Cbocc_so;
+            Cbv = Cbvir_so;
         }
         Cl.push_back(Cbo);
 
@@ -596,7 +615,7 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     }
 
     std::vector<SharedMatrix> V_ext_pert;
-    for (const auto &pert : external_cpscf_perturbations_) {
+    for (const auto& pert : external_cpscf_perturbations_) {
         if (print_ > 1) outfile->Printf("Adding external CPSCF contribution %s.\n", pert.first.c_str());
         for (size_t i = 0; i < nvecs; i++) {
             auto Dx_a = linalg::doublet(Cl[i], Cr[i], false, true);
@@ -612,7 +631,7 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
     // Build return vector
     double alpha = functional_->x_alpha();
     double beta = functional_->x_beta();
-    
+
 #ifdef USING_BrianQC
     if (brianEnable and brianEnableDFT) {
         // BrianQC multiplies with the exact exchange factors inside the Fock building, so we must not do it here
@@ -620,7 +639,7 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         beta = 1.0;
     }
 #endif
-    
+
     std::vector<SharedMatrix> ret;
     if (combine) {
         for (size_t i = 0; i < nvecs; i++) {
@@ -654,7 +673,9 @@ std::vector<SharedMatrix> UHF::twoel_Hx(std::vector<SharedMatrix> x_vec, bool co
         }
     } else {
         if (jk_->get_wcombine()) {
-            throw PSIEXCEPTION("UHF::twoel_Hx user asked for wcombine but combine==false in SCF::twoel_Hx. Please set wcombine false in your input.");
+            throw PSIEXCEPTION(
+                "UHF::twoel_Hx user asked for wcombine but combine==false in SCF::twoel_Hx. Please set wcombine false "
+                "in your input.");
         }
         for (size_t i = 0; i < nvecs; i++) {
             J[i]->add(J[nvecs + i]);
@@ -720,7 +741,7 @@ std::vector<SharedMatrix> UHF::cphf_Hx(std::vector<SharedMatrix> x_vec) {
 std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, double conv_tol, int max_iter,
                                           int print_lvl) {
     if ((x_vec.size() % 2) != 0) {
-        throw PSIEXCEPTION("UHF::onel_Hx expect incoming vector to alternate A/B");
+        throw PSIEXCEPTION("UHF::cphf_solve expect incoming vector to alternate A/B");
     }
 
     std::time_t start, stop;
@@ -743,12 +764,11 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
             needs_so = true;
         }
     }
-        
 
     // => Build preconditioner <= //
     SharedMatrix Precon_ao_a, Precon_ao_b, Precon_so_a, Precon_so_b;
 
-    if (needs_ao) { 
+    if (needs_ao) {
         // MO (C1) Fock Matrix (Inactive Fock in Helgaker's language)
         SharedMatrix Caocc_ao = Ca_subset("AO", "ALL");
         SharedMatrix Cbocc_ao = Cb_subset("AO", "ALL");
@@ -780,20 +800,20 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         // Grab occ and vir orbitals
         Dimension virpi_a = nmopi_ - nalphapi_;
         Dimension virpi_b = nmopi_ - nbetapi_;
-        
+
         // MO Fock Matrix (Inactive Fock in Helgaker's language)
         SharedMatrix IFock_a = linalg::triplet(Ca_, Fa_, Ca_, true, false, false);
         SharedMatrix IFock_b = linalg::triplet(Cb_, Fb_, Cb_, true, false, false);
         Precon_so_a = std::make_shared<Matrix>("Alpha Precon", nirrep_, nalphapi_, virpi_a);
         Precon_so_b = std::make_shared<Matrix>("Beta Precon", nirrep_, nbetapi_, virpi_b);
 
-        for (size_t h = 0; h < nirrep_; h++){
+        for (size_t h = 0; h < nirrep_; h++) {
             if (virpi_a[h] && nalphapi_[h]) {
                 double* denom_ap = Precon_so_a->pointer(h)[0];
                 double** f_ap = IFock_a->pointer(h);
                 for (size_t i = 0, target = 0, max_i = nalphapi_[h], max_a = nmopi_[h]; i < max_i; i++) {
                     for (size_t a = max_i; a < max_a; a++) {
-                       denom_ap[target++] = -f_ap[i][i] + f_ap[a][a]; 
+                        denom_ap[target++] = -f_ap[i][i] + f_ap[a][a];
                     }
                 }
             }
@@ -803,13 +823,12 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
                 double** f_bp = IFock_b->pointer(h);
                 for (size_t i = 0, target = 0, max_i = nbetapi_[h], max_a = nmopi_[h]; i < max_i; i++) {
                     for (size_t a = max_i; a < max_a; a++) {
-                       denom_bp[target++] = -f_bp[i][i] + f_bp[a][a]; 
+                        denom_bp[target++] = -f_bp[i][i] + f_bp[a][a];
                     }
                 }
             }
         }
     }
-
 
     // => Header <= //
     if (print_lvl) {
@@ -838,7 +857,7 @@ std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, doubl
         ret_vec.push_back(x_vec[2 * i]->clone());
         ret_vec.push_back(x_vec[2 * i + 1]->clone());
 
-        if (c1_input_[i]){
+        if (c1_input_[i]) {
             ret_vec[2 * i]->apply_denominator(Precon_ao_a);
             ret_vec[2 * i + 1]->apply_denominator(Precon_ao_b);
         } else {
@@ -1053,30 +1072,6 @@ int UHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter,
     rotate_orbitals(Cb_, ret_x[1]);
 
     return cphf_nfock_builds_;
-}
-
-double UHF::compute_orbital_gradient(bool save_fock, int max_diis_vectors) {
-    SharedMatrix gradient_a = form_FDSmSDF(Fa_, Da_);
-    SharedMatrix gradient_b = form_FDSmSDF(Fb_, Db_);
-
-    if (save_fock) {
-        if (initialized_diis_manager_ == false) {
-            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector", DIISManager::LargestError,
-                                                          DIISManager::OnDisk);
-            diis_manager_->set_error_vector_size(2, DIISEntry::Matrix, gradient_a.get(), DIISEntry::Matrix,
-                                                 gradient_b.get());
-            diis_manager_->set_vector_size(2, DIISEntry::Matrix, Fa_.get(), DIISEntry::Matrix, Fb_.get());
-            initialized_diis_manager_ = true;
-        }
-
-        diis_manager_->add_entry(4, gradient_a.get(), gradient_b.get(), Fa_.get(), Fb_.get());
-    }
-
-    if (options_.get_bool("DIIS_RMS_ERROR")) {
-        return std::sqrt(0.5 * (std::pow(gradient_a->rms(), 2) + std::pow(gradient_b->rms(), 2)));
-    } else {
-        return std::max(gradient_a->absmax(), gradient_b->absmax());
-    }
 }
 
 bool UHF::diis() { return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get()); }

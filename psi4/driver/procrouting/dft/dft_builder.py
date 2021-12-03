@@ -25,6 +25,8 @@
 #
 # @END LICENSE
 #
+import re
+
 """
 Superfunctional builder function & handlers.
 The new definition of functionals is based on a dictionary with the following structure
@@ -242,7 +244,7 @@ def check_consistency(func_dictionary):
     # 3d) check formatting for dispersion citation
         if "citation" in disp:
             cit = disp["citation"]
-            if cit and not (cit.startswith('    ') and cit.endswith('\n')):
+            if cit and not ((cit.startswith('    ') and cit.endswith('\n')) or re.match(r"^10.\d{4,9}/[-._;()/:A-Z0-9]+$", cit)):
                 raise ValidationError(
                     f"SCF: All citations should have the form '    A. Student, B. Prof, J. Goodstuff Vol, Page, Year\n', not : {cit}"
                 )
@@ -260,7 +262,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
     # Either process the "xc_functionals" special case
     if "xc_functionals" in func_dictionary:
         for xc_key in func_dictionary["xc_functionals"]:
-            xc_name = "XC_" + xc_key
+            xc_name = ("XC_" + xc_key).upper()
         sup = core.SuperFunctional.XC_build(xc_name, restricted)
         descr = "    " + func_dictionary["name"] + " "
         if sup.is_gga():
@@ -285,7 +287,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
             for x_key in x_funcs:
 
                 # Lookup the functional in LibXC
-                x_name = "XC_" + x_key
+                x_name = ("XC_" + x_key).upper()
                 x_func = core.LibXCFunctional(x_name, restricted)
                 x_params = x_funcs[x_key]
 
@@ -317,7 +319,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
             # if "use_libxc" specified here, fetch parameters and set flag
             # Duplicate definition of "use_libxc" caught in check_consistency.
             if "use_libxc" in x_params:
-                x_name = "XC_" + x_params["use_libxc"]
+                x_name = ("XC_" + x_params["use_libxc"]).upper()
                 x_HF.update(core.LibXCFunctional(x_name, restricted).query_libxc("XC_HYB_CAM_COEF"))
                 x_HF["used"] = True
 
@@ -343,7 +345,7 @@ def build_superfunctional_from_dictionary(func_dictionary, npoints, deriv, restr
         if "c_functionals" in func_dictionary:
             c_funcs = func_dictionary["c_functionals"]
             for c_key in c_funcs:
-                c_name = "XC_" + c_key
+                c_name = ("XC_" + c_key).upper()
                 c_func = core.LibXCFunctional(c_name, restricted)
                 c_params = func_dictionary["c_functionals"][c_key]
                 if "tweak" in c_params:

@@ -38,6 +38,7 @@
 #include "psi4/libpsi4util/libpsi4util.h"  // Needed for Ref counting, string splitting, and conversions
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 
 namespace psi {
 
@@ -52,7 +53,7 @@ void DataType::changed() { changed_ = true; }
 
 void DataType::dechanged() { changed_ = false; }
 
-void DataType::to_upper(std::string& str) const { std::transform(str.begin(), str.end(), str.begin(), ::toupper); }
+void DataType::to_upper(std::string& str) const { psi::to_upper(str); }
 
 void DataType::add_choices(std::string str) {
     printf("I am here!\n");
@@ -513,7 +514,7 @@ void Options::set_current_module(const std::string s) {
     all_local_options_.clear();
 }
 
-void Options::to_upper(std::string& str) const { std::transform(str.begin(), str.end(), str.begin(), ::toupper); }
+void Options::to_upper(std::string& str) const { psi::to_upper(str); }
 
 void Options::validate_options() {
     std::map<std::string, Data>::const_iterator iter = locals_[current_module_].begin();

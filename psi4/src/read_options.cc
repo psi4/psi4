@@ -197,6 +197,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Write all the MOs to the MOLDEN file (true) or discard the unoccupied MOs (false). -*/
     options.add_bool("MOLDEN_WITH_VIRTUAL", true);
 
+    /*- The type of screening used when computing two-electron integrals. -*/
+    options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM DENSITY");
+
     // CDS-TODO: We should go through and check that the user hasn't done
     // something silly like specify frozen_docc in DETCI but not in TRANSQT.
     // That would create problems.  (This was formerly checked in DETCI
@@ -984,10 +987,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         default is conservative, but there isn't much to be gained from
         loosening it, especially for higher-order SAPT. -*/
         options.add_double("INTS_TOLERANCE", 1.0E-12);
-        /*- Do use Combined Schwarz Approximation Maximum (CSAM) screening on
-        two-electron integrals. This is a slightly tighter bound than that of
-        default Schwarz screening. -*/
-        options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM");
         /*- Memory safety -*/
         options.add_double("SAPT_MEM_SAFETY", 0.9);
         /*- Do force SAPT2 and higher to die if it thinks there isn't enough
@@ -1231,8 +1230,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- The maximum size of the subspace for the stability check. The program will terminate if this parameter is
            exceeded and the convergence (STABILITY_CONVERGENCE) is not satisfied !expert-*/
         options.add_int("STABILITY_MAX_SPACE_SIZE", 200);
-        /*- Controls whether to relax tau during the cumulant updates or not !expert-*/
-        options.add_bool("RELAX_TAU", true);
         /*- Chooses appropriate DCT method -*/
         options.add_str("DCT_FUNCTIONAL", "ODC-12", "DC-06 DC-12 ODC-06 ODC-12 ODC-13 CEPA0");
         /*- Whether to compute three-particle energy correction or not -*/
@@ -1324,7 +1321,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("S_TOLERANCE", 1E-7);
         /*- Tolerance for partial Cholesky decomposition of overlap matrix. -*/
         options.add_double("S_CHOLESKY_TOLERANCE", 1E-8);
-        /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
+        /*- Screening threshold for the chosen screening method (SCHWARZ, CSAM, DENSITY)
+          Absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 1E-12);
         /*- The type of guess orbitals.  Defaults to ``READ`` for geometry optimizations after the first step, to
           ``CORE`` for single atoms, and to ``SAD`` otherwise. The ``HUCKEL`` guess employs on-the-fly calculations
@@ -1342,6 +1340,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- If true, then repeat the specified guess procedure for the orbitals every time -
         even during a geometry optimization. -*/
         options.add_bool("GUESS_PERSIST", false);
+        /*- File name (case sensitive) to which to serialize Wavefunction orbital data. -*/
+        options.add_str_i("ORBITALS_WRITE", "");
 
         /*- Do print the molecular orbitals? -*/
         options.add_bool("PRINT_MOS", false);
@@ -1402,6 +1402,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("DIIS_MAX_VECS", 10);
         /*- Do use DIIS extrapolation to accelerate convergence? -*/
         options.add_bool("DIIS", true);
+        /*- Do use a level shift? -*/
+        options.add_double("LEVEL_SHIFT", 0.0);
+        /*- DIIS error at which to stop applying the level shift -*/
+        options.add_double("LEVEL_SHIFT_CUTOFF", 1e-2);
         /*- The iteration to start MOM on (or 0 for no MOM) -*/
         options.add_int("MOM_START", 0);
         /*- The absolute indices of orbitals to excite from in MOM (+/- for alpha/beta) -*/
@@ -1435,6 +1439,23 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- When using |scf__stability_analysis| ``FOLLOW``, maximum number of orbital optimization attempts
             to make the wavefunction stable. !expert -*/
         options.add_int("MAX_ATTEMPTS", 1);
+        /*- Do Perform Incremental Fock Build? -*/
+        options.add_bool("INCFOCK", false);
+        /*- Frequency with which to compute the full Fock matrix if using |scf__incfock| . 
+        N means rebuild every N SCF iterations to avoid accumulating error from the incremental procedure. -*/
+        options.add_int("INCFOCK_FULL_FOCK_EVERY", 5);
+
+        /*- Do perform Continuous Fast Multipole Method (J-Build), as described in [White:1994:8]_ -*/
+        options.add_bool("DO_CFMM", false);
+        /*- The maximum multipole order to use in the CFMM algorithm -*/
+        options.add_int("CFMM_ORDER", 10);
+        /*- The maximum tree depth to use in the CFMM algorithm -*/
+        options.add_int("CFMM_GRAIN", 3);
+      
+        /*- Perform the linear scaling exchange (LinK) algorithm, as described in [Ochsenfeld:1998:1663]_ -*/
+        options.add_bool("DO_LINK", false);
+        /*- The screening tolerance used for ERI/Density sparsity in the linK algorithm -*/
+        options.add_double("LINK_INTS_TOLERANCE", 1.0e-12);
 
         /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 
@@ -1657,6 +1678,13 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("TDSCF_MAXITER", 60);
         /*- Verbosity level in TDSCF -*/
         options.add_int("TDSCF_PRINT", 1);
+        /*- Cutoff for printing excitations and de-excitations icontributing to each excited state -*/
+        options.add_double("TDSCF_COEFF_CUTOFF", 0.1);
+        /*- Which transition dipole moments to print out:
+            - E_TDM_LEN : electric transition dipole moments, length representation
+            - E_TDM_VEL : electric transition dipole moments, velocity representation
+            - M_TDM : magnetic transition dipole moments -*/
+        options.add("TDSCF_TDM_PRINT", new ArrayType());
 
         /*- combine omega exchange and Hartree--Fock exchange into
               one matrix for efficiency?
@@ -1674,19 +1702,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("DEBUG", 0);
         /*- What app to test?
           -*/
-        options.add_str("MODULE", "RCIS", "RCIS RCPHF RTDHF RCPKS RTDA RTDDFT");
-        /*- Do singlet states? Default true
-         -*/
-        options.add_bool("DO_SINGLETS", true);
-        /*- Do triplet states? Default true
-         -*/
-        options.add_bool("DO_TRIPLETS", true);
+        options.add_str("MODULE", "RCPHF", "RCPHF");
         /*- Do explicit hamiltonian only? -*/
         options.add_bool("EXPLICIT_HAMILTONIAN", false);
-        /*- Minimum singles amplitude to print in
-            CIS analysis
-         -*/
-        options.add_double("CIS_AMPLITUDE_CUTOFF", 0.15);
         /*- Which tasks to run CPHF For
          *  Valid choices:
          *  -Polarizability
@@ -2339,7 +2357,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("CC_SS_SCALE", 1.13);
         /*- Convert ROHF MOs to semicanonical MOs -*/
         options.add_bool("SEMICANONICAL", true);
-        /*- Convert ROHF MOs to semicanonical MOs -*/
+        /*- Maximum number of iterations for Brueckner CCD. -*/
         options.add_int("BCCD_MAXITER", 50);
     }
     if (name == "DFMP2" || options.read_globals()) {
@@ -2390,6 +2408,52 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("EP2_CONVERGENCE", 5.e-5);
         /*- What is the maximum number of iterations? -*/
         options.add_int("EP2_MAXITER", 20);
+    }
+    if (name == "DLPNO" || options.read_globals()) {
+        /*- MODULEDESCRIPTION Performs DLPNO-MP2 computations for RHF reference wavefunctions. -*/
+
+        /*- SUBSECTION General Options -*/
+
+        /*- Auxiliary basis set for MP2 density fitting computations.
+        :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
+        options.add_str("DF_BASIS_MP2", "");
+        /*- General convergence criteria for DLPNO methods -*/
+        options.add_str("PNO_CONVERGENCE", "NORMAL", "LOOSE NORMAL TIGHT");
+        /*- Convergence criteria for the Foster-Boys orbital localization -*/
+        options.add_double("LOCAL_CONVERGENCE", 1.0E-12);
+        /*- Maximum iterations in Foster-Boys localization -*/
+        options.add_int("LOCAL_MAXITER", 1000);
+        /*- Energy convergence criteria for local MP2 iterations -*/
+        options.add_double("E_CONVERGENCE", 1e-6);
+        /*- Residual convergence criteria for local MP2 iterations -*/
+        options.add_double("R_CONVERGENCE", 1e-6);
+        /*- Orbital localizer -*/
+        options.add_str("DLPNO_LOCAL_ORBITALS", "BOYS", "BOYS PIPEK_MEZEY");
+        /*- Maximum number of iterations to determine the MP2 amplitudes. -*/
+        options.add_int("DLPNO_MAXITER", 50);
+
+        /*- SUBSECTION Expert Options -*/
+
+        /*- Occupation number threshold for removing PNOs !expert -*/
+        options.add_double("T_CUT_PNO", 1e-8);
+        /*- DOI threshold for including PAO (u) in domain of LMO (i) !expert -*/
+        options.add_double("T_CUT_DO", 1e-2);
+        /*- DOI threshold for treating LMOs (i,j) as interacting !expert -*/
+        options.add_double("T_CUT_DO_ij", 1e-5);
+        /*- Pair energy threshold (dipole approximation) for treating LMOs (i, j) as interacting !expert -*/
+        options.add_double("T_CUT_PRE", 1e-6); 
+        /*- DOI threshold for including PAO (u) in domain of LMO (i) during pre-screening !expert -*/
+        options.add_double("T_CUT_DO_PRE", 3e-2);
+        /*- Mulliken charge threshold for including aux BFs on atom (a) in domain of LMO (i) !expert -*/
+        options.add_double("T_CUT_MKN", 1e-3);
+        /*- Basis set coefficient threshold for including basis function (m) in domain of LMO (i) !expert -*/
+        options.add_double("T_CUT_CLMO", 1e-2);
+        /*- Basis set coefficient threshold for including basis function (n) in domain of PAO (u) !expert -*/
+        options.add_double("T_CUT_CPAO", 1e-3);
+        /*- Overlap matrix threshold for removing linear dependencies !expert -*/
+        options.add_double("S_CUT", 1e-8);
+        /*- Fock matrix threshold for treating ampltudes as coupled during local MP2 iterations !expert -*/
+        options.add_double("F_CUT", 1e-5);
     }
     if (name == "PSIMRCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs multireference coupled cluster computations.  This theory
@@ -4705,7 +4769,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
                --> localized and ordered orbitals (LOC) -*/
         options.add_str("DMRG_SCF_ACTIVE_SPACE", "INPUT", "INPUT NO LOC");
 
-        /*- Whether to start the active space localization process from a random unitary or the unit matrix. -*/
+        /*- Whether to start the active space localization process from a random unitary matrix instead of a unit matrix. -*/
         options.add_bool("DMRG_LOCAL_INIT", true);
 
         /*- Do calculate the DMRG-CASPT2 energy after the DMRGSCF calculations are done? -*/

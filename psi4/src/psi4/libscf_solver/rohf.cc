@@ -25,7 +25,6 @@
  *
  * @END LICENSE
  */
-
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -293,52 +292,6 @@ void ROHF::save_density_and_energy() {
     Dt_old_->copy(Dt_);
 }
 
-double ROHF::compute_orbital_gradient(bool save_diis, int max_diis_vectors) {
-    // Only the inact-act, inact-vir, and act-vir rotations are non-redundant
-    Dimension dim_zero = Dimension(nirrep_, "Zero Dim");
-    Dimension noccpi = doccpi_ + soccpi_;
-    Dimension virpi = nmopi_ - doccpi_;
-    Slice row_slice(dim_zero, noccpi);
-    Slice col_slice(doccpi_, doccpi_ + virpi);
-    SharedMatrix MOgradient = moFeff_->get_block(row_slice, col_slice);
-
-    // Zero out act-act part
-    for (size_t h = 0; h < nirrep_; h++) {
-        if (!soccpi_[h]) continue;
-
-        for (size_t i = 0; i < soccpi_[h]; i++) {
-            for (size_t j = 0; j < soccpi_[h]; j++) {
-                MOgradient->set(h, i + doccpi_[h], j, 0.0);
-            }
-        }
-    }
-
-    // Grab inact-act and act-vir orbs
-    // Ct_ is actuall (nmo x nmo)
-    SharedMatrix Cia = Ct_->get_block({dim_zero, nmopi_}, {dim_zero, noccpi});
-    SharedMatrix Cav = Ct_->get_block({dim_zero, nmopi_}, {doccpi_, doccpi_ + virpi});
-
-    // Back transform MOgradient
-    SharedMatrix gradient = linalg::triplet(Cia, MOgradient, Cav, false, false, true);
-
-    if (save_diis) {
-        if (initialized_diis_manager_ == false) {
-            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector", DIISManager::LargestError,
-                                                          DIISManager::OnDisk);
-            diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, soFeff_.get());
-            diis_manager_->set_vector_size(1, DIISEntry::Matrix, soFeff_.get());
-            initialized_diis_manager_ = true;
-        }
-        diis_manager_->add_entry(2, gradient.get(), soFeff_.get());
-    }
-
-    if (options_.get_bool("DIIS_RMS_ERROR")) {
-        return gradient->rms();
-    } else {
-        return gradient->absmax();
-    }
-}
-
 bool ROHF::diis() { return diis_manager_->extrapolate(1, soFeff_.get()); }
 
 void ROHF::form_initial_F() {
@@ -413,8 +366,7 @@ void ROHF::form_F() {
     }
 
     // Form the orthogonalized SO basis moFeff matrix, for use in DIIS
-    diag_F_temp_->gemm(false, false, 1.0, Ct_, moFeff_, 0.0);
-    soFeff_->gemm(false, true, 1.0, diag_F_temp_, Ct_, 0.0);
+    soFeff_->back_transform(moFeff_, Ct_);
 
     if (debug_) {
         Fa_->print();
@@ -426,8 +378,38 @@ void ROHF::form_F() {
     }
 }
 
-void ROHF::form_C() {
-    soFeff_->diagonalize(Ct_, epsilon_a_);
+void ROHF::form_C(double shift) {
+    if (shift == 0.0) {
+        soFeff_->diagonalize(Ct_, epsilon_a_);
+    } else {
+        // Implementation of the shifting scheme from M.F. Guest &
+        // V. R. Saunders (1974), "On methods for converging open-shell
+        // Hartree-Fock wave-functions", Molecular Physics, 28:3,
+        // 819-828, DOI: 10.1080/00268977400102171. Virtuals are shifted
+        // up by shift, open-shell orbitals are shifted up by shift/2.
+
+        // Shifted Fock operator
+        auto shifted_F = SharedMatrix(factory_->create_matrix("F"));
+
+        // Zero dimensions
+        Dimension dim_zero(nirrep_);
+
+        // Shift open-shell orbitals by 0.5*shift
+        Dimension ospi = nalphapi_ - nbetapi_;
+        SharedMatrix Cos = Ct_->get_block({dim_zero, nmopi_}, {nbetapi_, nbetapi_ + ospi});
+        Cos->set_name("Cos");
+        shifted_F->gemm(false, true, 0.5 * shift, Cos, Cos, 0.0);
+
+        // Shift virtuals by shift
+        Dimension virpi = nmopi_ - nalphapi_;
+        SharedMatrix Cvir = Ct_->get_block({dim_zero, nmopi_}, {nalphapi_, nalphapi_ + virpi});
+        Cvir->set_name("Cvir");
+        shifted_F->gemm(false, true, shift, Cvir, Cvir, 1.0);
+
+        // Add in the Fock itself and diagonalize
+        shifted_F->add(soFeff_);
+        shifted_F->diagonalize(Ct_, epsilon_a_);
+    }
     // Form C = XC'
     Ca_->gemm(false, false, 1.0, X_, Ct_, 0.0);
 
@@ -439,6 +421,7 @@ void ROHF::form_C() {
         Ct_->eivprint(epsilon_a_);
     }
 }
+
 void ROHF::prepare_canonical_orthogonalization() {
     // Some matrix size changes if we canonical orthogonalization
     Ct_->init(nirrep_, nmopi_, nmopi_);
@@ -453,11 +436,10 @@ void ROHF::form_initial_C() {
     // to either H or the GWH Hamiltonian.
 
     // Form F' = X'FX for canonical orthogonalization
-    diag_temp_->gemm(true, false, 1.0, X_, Fa_, 0.0);
-    diag_F_temp_->gemm(false, false, 1.0, diag_temp_, X_, 0.0);
+    auto diag_F_temp = linalg::triplet(X_, Fa_, X_, true, false, false);
 
     // Form C' = eig(F')
-    diag_F_temp_->diagonalize(Ct_, epsilon_a_);
+    diag_F_temp->diagonalize(Ct_, epsilon_a_);
 
     // Form C = XC'
     Ca_->gemm(false, false, 1.0, X_, Ct_, 0.0);

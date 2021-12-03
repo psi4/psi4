@@ -115,7 +115,7 @@ class PluginFileManager {
         std::string format_source_list = imploded.str();
         std::string format_plugin(plugin_name_);
         std::string format_PLUGIN = plugin_name_;
-        std::transform(format_PLUGIN.begin(), format_PLUGIN.end(), format_PLUGIN.begin(), ::toupper);
+        to_upper(format_PLUGIN);
         std::string format_ldflags(TOSTRING(PLUGIN_LDFLAGS));
 
         trim_spaces(format_source_list);

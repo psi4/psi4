@@ -53,6 +53,7 @@ PSI Variables by Alpha
    The coupled-cluster perturbative triples correction [Eh].
 
 .. psivar:: (AT) CORRECTION ENERGY
+   A-(T) CORRECTION ENERGY
 
    The coupled-cluster asymmetric perturbative triples correction [Eh].
 
@@ -267,13 +268,15 @@ PSI Variables by Alpha
    CCSD(T) CORRELATION ENERGY
    CCSD(AT) TOTAL ENERGY
    CCSD(AT) CORRELATION ENERGY
+   A-CCSD(T) TOTAL ENERGY
+   A-CCSD(T) CORRELATION ENERGY
    CCSDT(Q) TOTAL ENERGY
    CCSDT(Q) CORRELATION ENERGY
    CC(n-1)(n) TOTAL ENERGY
    CC(n-1)(n) CORRELATION ENERGY
 
    The total electronic energy [Eh] and correlation energy component [Eh]
-   for the perturbatively corrected coupled-cluster (CCSD(T), CCSD(AT), CCSDT(Q),
+   for the perturbatively corrected coupled-cluster (CCSD(T), A-CCSD(T) = CCSD(AT), CCSDT(Q),
    up to CC(\ *n*\ -1)(\ *n*\ ) level of theory.
 
 .. psivar:: CCSDT-1a TOTAL ENERGY
@@ -1525,7 +1528,6 @@ PSI Variables by Alpha
    Deprecated in favor of :psivar:`SCF QUADRUPOLE`.
 
 .. psivar:: SCF TOTAL ENERGY
-   SCF TOTAL ENERGY (CHKPT)
 
    The total electronic energy [Eh] of the SCF stage of the calculation.
    The :samp:`{method} CORRELATION ENERGY` variables from subsequent stages of a

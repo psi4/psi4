@@ -30,6 +30,8 @@
 #define JK_H
 
 #include <vector>
+#include <unordered_set>
+#include <tuple>
 #include "psi4/pragma.h"
 PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
@@ -51,6 +53,8 @@ class DFHelper;
 namespace pk {
 class PKManager;
 }
+
+typedef unsigned long long int eri_index;
 
 // => BASE CLASS <= //
 
@@ -708,6 +712,46 @@ class PSI_API DirectJK : public JK {
     /// ERI Sieve
     std::shared_ptr<ERISieve> sieve_;
 
+    /// Options object
+    Options& options_;
+
+    // Perform Density matrix-based integral screening?
+    bool density_screening_;
+
+    // => Incremental Fock build variables <= //
+    
+    /// Perform Incremental Fock Build for J and K Matrices? (default false)
+    bool incfock_;
+    /// The number of times INCFOCK has been performed (includes resets)
+    int incfock_count_;
+    bool do_incfock_iter_;
+
+    // Perform Continuous Fast Multipole Method for J Build?
+    bool cfmm_;
+    
+    // Perform Linear Exchange matrix build?
+    bool linK_;
+    double linK_ints_cutoff_;
+
+    // => A list of all four index integrals that are already computed (to avoid redundant work, per thread) <= //
+    // => Used for split J/K algorithms <= //
+    std::vector<std::unordered_set<eri_index>> computed_integrals_;
+    
+    /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
+    std::vector<SharedMatrix> prev_D_ao_;
+    std::vector<SharedMatrix> prev_J_ao_;
+    std::vector<SharedMatrix> prev_K_ao_;
+    std::vector<SharedMatrix> prev_wK_ao_;
+
+    // Delta D, J, K, wK Matrices for Incremental Fock Build
+    std::vector<SharedMatrix> delta_D_ao_;
+    std::vector<SharedMatrix> delta_J_ao_;
+    std::vector<SharedMatrix> delta_K_ao_;
+    std::vector<SharedMatrix> delta_wK_ao_;
+
+    // Is the JK currently on a guess iteration
+    bool initial_iteration_ = true;
+
     std::string name() override { return "DirectJK"; }
     size_t memory_estimate() override;
 
@@ -722,9 +766,24 @@ class PSI_API DirectJK : public JK {
     /// Delete integrals, files, etc
     void postiterations() override;
 
-    /// Build the J and K matrices for this integral class
-    void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<std::shared_ptr<Matrix> >& D,
-                  std::vector<std::shared_ptr<Matrix> >& J, std::vector<std::shared_ptr<Matrix> >& K);
+    /// Set up Incfock variables per iteration
+    void incfock_setup();
+    /// Post-iteration Incfock processing
+    void incfock_postiter();
+
+    /// Build the J matrix using the continuous fast multipole method, described in [White:1994:8]_
+    /// TODO: Put CFMM algorithm here after linK PR is merged
+    void build_cfmm_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<SharedMatrix >& D,
+                  std::vector<SharedMatrix >& J);
+
+    /// Build the K matrix using the linear exchange algorithm, described in [Ochsenfeld:1998:1663]_
+    void build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<SharedMatrix>& D,
+                  std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K, bool do_J);
+
+    /// The standard J and K matrix builds for this integral class
+    void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<SharedMatrix>& D,
+                  std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K,
+                  bool build_J, bool build_K, bool reset_J, bool reset_K);
 
     /// Common initialization
     void common_init();
@@ -742,7 +801,7 @@ class PSI_API DirectJK : public JK {
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    DirectJK(std::shared_ptr<BasisSet> primary);
+    DirectJK(std::shared_ptr<BasisSet> primary, Options& options);
     /// Destructor
     ~DirectJK() override;
 
@@ -755,6 +814,8 @@ class PSI_API DirectJK : public JK {
     void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }
 
     // => Accessors <= //
+    bool do_incfock_iter() { return do_incfock_iter_; }
+    bool do_linK() { return linK_; }
 
     /**
     * Print header information regarding JK

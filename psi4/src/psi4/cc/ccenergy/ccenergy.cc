@@ -324,7 +324,6 @@ double CCEnergyWavefunction::compute_energy() {
     outfile->Printf("    SCF energy       (wfn)                    = %20.15f\n", moinfo_.escf);
     outfile->Printf("    Reference energy (file100)                = %20.15f\n", moinfo_.eref);
 
-    // Process::environment.globals["SCF TOTAL ENERGY (CHKPT)"] = moinfo.escf;
     // Process::environment.globals["SCF TOTAL ENERGY"] = moinfo.eref;
 
     if (params_.ref == 0 || params_.ref == 2) {

@@ -37,12 +37,12 @@ from psi4 import core
 from psi4.driver import p4util
 from psi4.driver import driver_findif
 from psi4.driver.p4util.exceptions import ValidationError
-from psi4.driver.qcdb import interface_gcp as gcp
 
 _engine_can_do = collections.OrderedDict([('libdisp', ['d1', 'd2', 'chg', 'das2009', 'das2010']),
                                           ('dftd3', ['d2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj']),
                                           ('nl', ['nl']),
                                           ('mp2d', ['dmp2']),
+                                          ("dftd4", ["d4bjeeqatm"]),
                                         ]) # yapf: disable
 
 _capable_engines_for_disp = collections.defaultdict(list)
@@ -57,7 +57,7 @@ class EmpiricalDispersion(object):
     Attributes
     ----------
     dashlevel : str
-        {'d1', 'd2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj', 'chg', 'das2009', 'das2010', 'nl', 'dmp2'}
+        {'d1', 'd2', 'd3zero', 'd3bj', 'd3mzero', 'd3mbj', 'chg', 'das2009', 'das2010', 'nl', 'dmp2', "d4bjeeqatm"}
         Name of dispersion correction to be applied. Resolved
         from `name_hint` and/or `level_hint` into a key of
         `empirical_dispersion_resources.dashcoeff`.
@@ -88,9 +88,9 @@ class EmpiricalDispersion(object):
         `qcengine.programs.empirical_dispersion_resources.dashcoeff` itself for purposes of
         validating :py:attr:`fctldash`.
     engine : str
-        {'libdisp', 'dftd3', 'nl', 'mp2d'}
+        {'libdisp', 'dftd3', 'nl', 'mp2d', "dftd4"}
         Compute engine for dispersion. One of Psi4's internal libdisp
-        library, Grimme's DFTD3 executable, or nl.
+        library, external Grimme or Beran projects, or nl.
     disp : Dispersion
         Only present for :py:attr:`engine` `=libdisp`. Psi4 class instance prepared
         to compute dispersion.
@@ -191,7 +191,7 @@ class EmpiricalDispersion(object):
             Set if :py:attr:`fctldash` nonempty.
 
         """
-        if self.engine in ['dftd3', 'mp2d']:
+        if self.engine in ['dftd3', 'mp2d', "dftd4"]:
             resi = AtomicInput(
                 **{
                     'driver': 'energy',
@@ -203,7 +203,7 @@ class EmpiricalDispersion(object):
                         'level_hint': self.dashlevel,
                         'params_tweaks': self.dashparams,
                         'dashcoeff_supplement': self.dashcoeff_supplement,
-                        'save_pairwise_dispersion': self.save_pairwise_disp,
+                        'pair_resolved': self.save_pairwise_disp,
                         'verbose': 1,
                     },
                     'molecule': molecule.to_schema(dtype=2),
@@ -218,18 +218,21 @@ class EmpiricalDispersion(object):
             dashd_part = float(jobrec.extras['qcvars']['DISPERSION CORRECTION ENERGY'])
             if wfn is not None:
                 for k, qca in jobrec.extras['qcvars'].items():
-                    # The pairwise dispersion analysis is already a nparray
-                    # Do we always want to save it?
-                    if ('CURRENT' not in k) and ('PAIRWISE' not in k):
-                        wfn.set_variable(k, p4util.plump_qcvar(qca, k))
+                    if ("CURRENT" not in k) and ("PAIRWISE" not in k):
+                        wfn.set_variable(k, float(qca) if isinstance(qca, str) else qca)
 
                 # Pass along the pairwise dispersion decomposition if we need it
                 if self.save_pairwise_disp is True:
                     wfn.set_variable("PAIRWISE DISPERSION CORRECTION ANALYSIS",
-                                     jobrec.extras['qcvars']["PAIRWISE DISPERSION CORRECTION ANALYSIS"])
+                                     jobrec.extras['qcvars']["2-BODY PAIRWISE DISPERSION CORRECTION ANALYSIS"])
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
-                gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=0)
+                jobrec = qcng.compute(
+                    resi,
+                    "gcp",
+                    raise_error=True,
+                    local_options={"scratch_directory": core.IOManager.shared_object().get_default_path()})
+                gcp_part = jobrec.return_result
                 dashd_part += gcp_part
 
             return dashd_part
@@ -259,7 +262,7 @@ class EmpiricalDispersion(object):
             (nat, 3) dispersion gradient [Eh/a0].
 
         """
-        if self.engine in ['dftd3', 'mp2d']:
+        if self.engine in ['dftd3', 'mp2d', "dftd4"]:
             resi = AtomicInput(
                 **{
                     'driver': 'gradient',
@@ -282,15 +285,19 @@ class EmpiricalDispersion(object):
                 raise_error=True,
                 local_options={"scratch_directory": core.IOManager.shared_object().get_default_path()})
 
-            dashd_part = core.Matrix.from_array(
-                np.array(jobrec.extras['qcvars']['DISPERSION CORRECTION GRADIENT']).reshape(-1, 3))
+            dashd_part = core.Matrix.from_array(jobrec.extras['qcvars']['DISPERSION CORRECTION GRADIENT'])
             if wfn is not None:
                 for k, qca in jobrec.extras['qcvars'].items():
-                    if 'CURRENT' not in k:
-                        wfn.set_variable(k, p4util.plump_qcvar(qca, k))
+                    if "CURRENT" not in k:
+                        wfn.set_variable(k, float(qca) if isinstance(qca, str) else qca)
 
             if self.fctldash in ['hf3c', 'pbeh3c']:
-                gcp_part = gcp.run_gcp(molecule, self.fctldash, verbose=False, dertype=1)
+                jobrec = qcng.compute(
+                    resi,
+                    "gcp",
+                    raise_error=True,
+                    local_options={"scratch_directory": core.IOManager.shared_object().get_default_path()})
+                gcp_part = core.Matrix.from_array(jobrec.return_result)
                 dashd_part.add(gcp_part)
 
             return dashd_part
@@ -319,7 +326,7 @@ class EmpiricalDispersion(object):
         optstash = p4util.OptionsState(['PRINT'], ['PARENT_SYMMETRY'])
         core.set_global_option('PRINT', 0)
 
-        core.print_out("\n\n   Analytical Dispersion Hessians are not supported by dftd3 or gcp.\n")
+        core.print_out("\n\n   Analytical Dispersion Hessians are not supported by any engine.\n")
         core.print_out("       Computing the Hessian through finite difference of gradients.\n\n")
 
         # Setup the molecule

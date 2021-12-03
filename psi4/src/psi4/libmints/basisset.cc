@@ -37,6 +37,7 @@
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/psifiles.h"
+#include "psi4/libpsi4util/libpsi4util.h"
 
 #include "vector3.h"
 #include "molecule.h"
@@ -77,7 +78,7 @@ bool has_ending(std::string const &fullString, std::string const &ending) {
 
 std::string to_upper_copy(const std::string &original) {
     std::string upper = original;
-    std::transform(upper.begin(), upper.end(), upper.begin(), ::toupper);
+    to_upper(upper);
     return upper;
 }
 }  // namespace
@@ -95,78 +96,33 @@ BasisSet::BasisSet() {
     nprimitive_ = 1;
     nao_ = 1;
     nbf_ = 1;
-    n_prim_per_shell_ = new int[1];
-    uexponents_ = new double[1];
-    ucoefficients_ = new double[1];
-    uerd_coefficients_ = new double[1];
-    uoriginal_coefficients_ = new double[1];
-    shell_first_ao_ = new int[1];
-    shell_first_basis_function_ = new int[1];
-    shells_ = new GaussianShell[1];
+    n_prim_per_shell_ = std::vector<int>(1, 1);
+    uexponents_ = std::vector<double>(1, 0.0);
+    ucoefficients_ = std::vector<double>(1, 1.0);
+    uerd_coefficients_ = std::vector<double>(1, 1.0);
+    uoriginal_coefficients_ = std::vector<double>(1, 1.0);
+    shell_first_ao_ = std::vector<int>(1, 0);
+    shell_first_basis_function_ = std::vector<int>(1, 0);
+    shells_ = std::vector<GaussianShell>(1);
     l2_shells_.push_back(libint2::Shell::unit());
-    ao_to_shell_ = new int[1];
-    function_to_shell_ = new int[1];
-    function_center_ = new int[1];
-    shell_center_ = new int[1];
-    center_to_nshell_ = new int[1];
-    center_to_shell_ = new int[1];
-    xyz_ = new double[3];
-    ecp_shell_center_ = nullptr;
-    center_to_ecp_nshell_ = nullptr;
-    center_to_ecp_shell_ = nullptr;
-    uecpexponents_ = nullptr;
-    uecpcoefficients_ = nullptr;
-    uecpns_ = nullptr;
-    ecp_shells_ = nullptr;
-    n_prim_per_shell_[0] = 1;
-    uexponents_[0] = 0.0;
-    ucoefficients_[0] = 1.0;
-    uerd_coefficients_[0] = 1.0;
-    uoriginal_coefficients_[0] = 1.0;
-    shell_first_ao_[0] = 0;
-    shell_first_basis_function_[0] = 0;
-    ao_to_shell_[0] = 0;
-    function_to_shell_[0] = 0;
-    function_center_[0] = 0;
-    shell_center_[0] = 0;
-    center_to_nshell_[0] = 1;
-    center_to_shell_[0] = 0;
+    ao_to_shell_ = std::vector<int>(1, 0);
+    function_to_shell_ = std::vector<int>(1, 0);
+    function_center_ = std::vector<int>(1, 0);
+    shell_center_ = std::vector<int>(1, 0);
+    center_to_nshell_ = std::vector<int>(1, 1);
+    center_to_shell_ = std::vector<int>(1, 0);
+    xyz_ = std::vector<double>(3, 0.0);
     puream_ = false;
     max_am_ = 0;
     max_nprimitive_ = 1;
-    xyz_[0] = 0.0;
-    xyz_[1] = 0.0;
-    xyz_[2] = 0.0;
     name_ = "(Empty Basis Set)";
     key_ = "(Empty Basis Set)";
     target_ = "(Empty Basis Set)";
-    shells_[0] = GaussianShell(Gaussian, 0, nprimitive_, uoriginal_coefficients_, ucoefficients_, uerd_coefficients_,
-                               uexponents_, GaussianType(0), 0, xyz_, 0);
+    shells_[0] = GaussianShell(Gaussian, 0, nprimitive_, uoriginal_coefficients_.data(), ucoefficients_.data(), uerd_coefficients_.data(),
+                               uexponents_.data(), GaussianType(0), 0, xyz_.data(), 0);
 }
 
 BasisSet::~BasisSet() {
-    delete[] n_prim_per_shell_;
-    delete[] uexponents_;
-    delete[] ucoefficients_;
-    delete[] uerd_coefficients_;
-    delete[] uoriginal_coefficients_;
-    delete[] shell_first_ao_;
-    delete[] shell_first_basis_function_;
-    delete[] shells_;
-    delete[] ao_to_shell_;
-    delete[] function_to_shell_;
-    delete[] function_center_;
-    delete[] shell_center_;
-    delete[] center_to_nshell_;
-    delete[] center_to_shell_;
-    delete[] xyz_;
-    if (ecp_shell_center_) delete[] ecp_shell_center_;
-    if (center_to_ecp_nshell_) delete[] center_to_ecp_nshell_;
-    if (center_to_ecp_shell_) delete[] center_to_ecp_shell_;
-    if (uecpexponents_) delete[] uecpexponents_;
-    if (uecpcoefficients_) delete[] uecpcoefficients_;
-    if (uecpns_) delete[] uecpns_;
-    if (ecp_shells_) delete[] ecp_shells_;
 }
 
 std::shared_ptr<BasisSet> BasisSet::build(std::shared_ptr<Molecule> /*molecule*/,
@@ -288,6 +244,7 @@ int BasisSet::n_frozen_core(const std::string &depth, SharedMolecule mol) {
                 int current_shell = atom_to_period(Z + ECP);
                 int delta = period_to_full_shell(std::max(current_shell - req_shell, 0));
                 // If this center has an ECP, some electrons are already frozen
+                if (delta < ECP) throw PSIEXCEPTION("ECP on atom freezes more electrons than requested by choosing a previous shell.");
                 if (ECP > 0) delta -= ECP;
                 // Keep track of current valence electrons
                 mol_valence = mol_valence + Z - delta;
@@ -348,15 +305,15 @@ void BasisSet::print_summary(std::string out) const {
     printer->Printf("    Atom   Type   All Primitives // Shells:\n");
     printer->Printf("   ------ ------ --------------------------\n");
 
-    int *nprims = new int[max_am_ + 1];
-    int *nunique = new int[max_am_ + 1];
-    int *nshells = new int[max_am_ + 1];
-    char *amtypes = new char[max_am_ + 1];
+    auto nprims = std::vector<int>(max_am_ + 1);
+    auto nunique = std::vector<int>(max_am_ + 1);
+    auto nshells = std::vector<int>(max_am_ + 1);
+    auto amtypes = std::vector<char>(max_am_ + 1);
 
     for (int A = 0; A < molecule_->natom(); A++) {
-        memset((void *)nprims, '\0', (max_am_ + 1) * sizeof(int));
-        memset((void *)nunique, '\0', (max_am_ + 1) * sizeof(int));
-        memset((void *)nshells, '\0', (max_am_ + 1) * sizeof(int));
+        std::fill(nprims.begin(), nprims.end(), 0);
+        std::fill(nunique.begin(), nunique.end(), 0);
+        std::fill(nshells.begin(), nshells.end(), 0);
 
         printer->Printf("    %4d    ", A + 1);
         printer->Printf("%2s     ", molecule_->symbol(A).c_str());
@@ -387,10 +344,6 @@ void BasisSet::print_summary(std::string out) const {
     }
     printer->Printf("\n");
 
-    delete[] nprims;
-    delete[] nunique;
-    delete[] nshells;
-    delete[] amtypes;
     if (has_ECP()) {
         printer->Printf("  -CORE POTENTIAL INFORMATION:\n");
         printer->Printf("    Total number of shells   = %d\n", n_ecp_shell());
@@ -403,15 +356,15 @@ void BasisSet::print_summary(std::string out) const {
         printer->Printf("    Atom   Type  #elec    All terms // Shells:   \n");
         printer->Printf("   ------ ------ ----- --------------------------\n");
 
-        int *nprims = new int[max_ecp_am_ + 1];
-        int *nunique = new int[max_ecp_am_ + 1];
-        int *nshells = new int[max_ecp_am_ + 1];
-        char *amtypes = new char[max_ecp_am_ + 1];
+        auto nprims = std::vector<int>(max_ecp_am_ + 1);
+        auto nunique = std::vector<int>(max_ecp_am_ + 1);
+        auto nshells = std::vector<int>(max_ecp_am_ + 1);
+        auto amtypes = std::vector<char>(max_ecp_am_ + 1);
 
         for (int A = 0; A < molecule_->natom(); A++) {
-            memset((void *)nprims, '\0', (max_ecp_am_ + 1) * sizeof(int));
-            memset((void *)nunique, '\0', (max_ecp_am_ + 1) * sizeof(int));
-            memset((void *)nshells, '\0', (max_ecp_am_ + 1) * sizeof(int));
+            memset((void *)nprims.data(), '\0', (max_ecp_am_ + 1) * sizeof(int));
+            memset((void *)nunique.data(), '\0', (max_ecp_am_ + 1) * sizeof(int));
+            memset((void *)nshells.data(), '\0', (max_ecp_am_ + 1) * sizeof(int));
 
             printer->Printf("    %4d    ", A + 1);
             printer->Printf("%2s     ", molecule_->symbol(A).c_str());
@@ -445,11 +398,6 @@ void BasisSet::print_summary(std::string out) const {
             printer->Printf("\n");
         }
         printer->Printf("\n");
-
-        delete[] nprims;
-        delete[] nunique;
-        delete[] nshells;
-        delete[] amtypes;
     }
 }
 
@@ -513,7 +461,7 @@ std::string BasisSet::print_detail_cfour() const {
     char buffer[120];
     std::stringstream ss;
     std::string nameUpperCase = name_;
-    std::transform(nameUpperCase.begin(), nameUpperCase.end(), nameUpperCase.begin(), ::toupper);
+    to_upper(nameUpperCase);
 
     for (int uA = 0; uA < molecule_->nunique(); uA++) {
         const int A = molecule_->unique(uA);
@@ -777,15 +725,15 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
     /*
      * Allocate arrays
      */
-    n_prim_per_shell_ = new int[n_shells_];
+    n_prim_per_shell_ = std::vector<int>(n_shells_);
     // The unique primitives
-    uexponents_ = new double[n_uprimitive_];
-    ucoefficients_ = new double[n_uprimitive_];
-    uoriginal_coefficients_ = new double[n_uprimitive_];
-    uerd_coefficients_ = new double[n_uprimitive_];
-    uecpexponents_ = new double[n_ecp_uprimitive_];
-    uecpcoefficients_ = new double[n_ecp_uprimitive_];
-    uecpns_ = new int[n_ecp_uprimitive_];
+    uexponents_ = std::vector<double>(n_uprimitive_);
+    ucoefficients_ = std::vector<double>(n_uprimitive_);
+    uoriginal_coefficients_ = std::vector<double>(n_uprimitive_);
+    uerd_coefficients_ = std::vector<double>(n_uprimitive_);
+    uecpexponents_ = std::vector<double>(n_ecp_uprimitive_);
+    uecpcoefficients_ = std::vector<double>(n_ecp_uprimitive_);
+    uecpns_ = std::vector<int>(n_ecp_uprimitive_);
 
     for (int i = 0; i < n_uprimitive_; ++i) {
         uexponents_[i] = uexps[i];
@@ -799,21 +747,21 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
         uecpns_[i] = uns[i];
     }
 
-    shell_first_ao_ = new int[n_shells_];
-    shell_first_basis_function_ = new int[n_shells_];
-    shells_ = new GaussianShell[n_shells_];
-    ecp_shells_ = new GaussianShell[n_ecp_shells_];
+    shell_first_ao_ = std::vector<int>(n_shells_);
+    shell_first_basis_function_ = std::vector<int>(n_shells_);
+    shells_ = std::vector<GaussianShell>(n_shells_);
+    ecp_shells_ = std::vector<GaussianShell>(n_ecp_shells_);
     l2_shells_.resize(n_shells_);
-    ao_to_shell_ = new int[nao_];
-    function_to_shell_ = new int[nbf_];
-    function_center_ = new int[nbf_];
-    shell_center_ = new int[n_shells_];
-    center_to_nshell_ = new int[natom];
-    center_to_shell_ = new int[natom];
-    center_to_ecp_nshell_ = new int[natom];
-    center_to_ecp_shell_ = new int[natom];
-    ecp_shell_center_ = new int[n_ecp_shells_];
-    xyz_ = new double[3 * natom];
+    ao_to_shell_ = std::vector<int>(nao_);
+    function_to_shell_ = std::vector<int>(nbf_);
+    function_center_ = std::vector<int>(nbf_);
+    shell_center_ = std::vector<int>(n_shells_);
+    center_to_nshell_ = std::vector<int>(natom);
+    center_to_shell_ = std::vector<int>(natom);
+    center_to_ecp_nshell_ = std::vector<int>(natom);
+    center_to_ecp_shell_ = std::vector<int>(natom);
+    ecp_shell_center_ = std::vector<int>(n_ecp_shells_);
+    xyz_ = std::vector<double>(3 * natom);
 
     /*
      * Now loop over all atoms, and point to the appropriate unique data
@@ -821,7 +769,6 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
     int shell_count = 0;
     int ao_count = 0;
     int bf_count = 0;
-    double *xyz_ptr = xyz_;
     puream_ = false;
     max_am_ = 0;
     max_nprimitive_ = 0;
@@ -836,9 +783,9 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
         center_to_nshell_[n] = nshells;
         center_to_shell_[n] = shell_count;
         Vector3 xyz = molecule_->xyz(n);
-        xyz_ptr[0] = xyz[0];
-        xyz_ptr[1] = xyz[1];
-        xyz_ptr[2] = xyz[2];
+        xyz_[3 * n + 0] = xyz[0];
+        xyz_[3 * n + 1] = xyz[1];
+        xyz_[3 * n + 2] = xyz[2];
         int atom_nprim = 0;
         for (int i = 0; i < nshells; ++i) {
             const ShellInfo &thisshell = shells[i];
@@ -857,13 +804,13 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                 shells_[shell_count] =
                     GaussianShell(shelltype, am, shell_nprim, &uoriginal_coefficients_[ustart + atom_nprim],
                                   &ucoefficients_[ustart + atom_nprim], &uerd_coefficients_[ustart + atom_nprim],
-                                  &uexponents_[ustart + atom_nprim], puream, n, xyz_ptr, bf_count);
+                                  &uexponents_[ustart + atom_nprim], puream, n, &xyz_.data()[3 * n], bf_count);
                 auto l2c = libint2::svector<double>(&uoriginal_coefficients_[ustart + atom_nprim],
                                                     &uoriginal_coefficients_[ustart + atom_nprim + shell_nprim]);
                 auto l2e = libint2::svector<double>(&uexponents_[ustart + atom_nprim],
                                                     &uexponents_[ustart + atom_nprim + shell_nprim]);
                 l2_shells_[shell_count] =
-                    libint2::Shell{l2e, {{am, static_cast<bool>(puream), l2c}}, {{xyz_ptr[0], xyz_ptr[1], xyz_ptr[2]}}};
+                    libint2::Shell{l2e, {{am, static_cast<bool>(puream), l2c}}, {{xyz[0], xyz[1], xyz[2]}}};
             } else {
                 throw PSIEXCEPTION("Unexpected shell type in BasisSet constructor!");
             }
@@ -877,7 +824,6 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
             atom_nprim += shell_nprim;
             shell_count++;
         }
-        xyz_ptr += 3;
         if (atom_nprim != uend - ustart) {
             throw PSIEXCEPTION("Problem with nprimitive in basis set construction!");
         }
@@ -888,7 +834,6 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
      */
     max_ecp_am_ = -1;
     if (!ecp_shell_map.empty()) {
-        xyz_ptr = xyz_;
         int ecp_shell_count = 0;
         for (int n = 0; n < natom; ++n) {
             const std::shared_ptr<CoordEntry> &atom = molecule_->atom_entry(n);
@@ -911,7 +856,7 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                 if (shelltype == ECPType1 || shelltype == ECPType2) {
                     ecp_shells_[ecp_shell_count] =
                         GaussianShell(shelltype, am, ecp_shell_nprim, &uecpcoefficients_[ustart + atom_nprim],
-                                      &uecpexponents_[ustart + atom_nprim], &uecpns_[ustart + atom_nprim], n, xyz_ptr);
+                                      &uecpexponents_[ustart + atom_nprim], &uecpns_[ustart + atom_nprim], n, &xyz_.data()[3 * n]);
                 } else {
                     throw PSIEXCEPTION("Unknown ECP shell type in BasisSet constructor!");
                 }
@@ -921,7 +866,6 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
             if (atom_nprim != uend - ustart) {
                 throw PSIEXCEPTION("Problem with nprimitive in ECP basis set construction!");
             }
-            xyz_ptr += 3;
         }
     }
 }
@@ -1240,8 +1184,8 @@ void BasisSet::move_atom(int atom, const Vector3 &trans) {
     xyz_[offset + 2] += trans[2];
 }
 
-void BasisSet::compute_phi(double *phi_ao, double x, double y, double z) {
-    zero_arr(phi_ao, nao());
+void BasisSet::compute_phi(double* phi_ao, double x, double y, double z) {
+    zero_arr(phi_ao, nbf());
 
     int ao = 0;
     for (int ns = 0; ns < nshell(); ns++) {
@@ -1260,12 +1204,32 @@ void BasisSet::compute_phi(double *phi_ao, double x, double y, double z) {
         double cexpr = 0;
         for (int np = 0; np < nprim; np++) cexpr += c[np] * exp(-a[np] * rr);
 
-        for (int l = 0; l < INT_NCART(am); l++) {
-            Vector3 &components = exp_ao[am][l];
-            phi_ao[ao + l] += pow(dx, (double)components[0]) * pow(dy, (double)components[1]) *
-                              pow(dz, (double)components[2]) * cexpr;
+        if (puream_) {
+            const auto s_transform = SphericalTransform(am);
+            std::vector<double> cart_buffer(INT_NCART(am), 0.0);
+
+            for (int l = 0; l < INT_NCART(am); l++) {
+                Vector3 &components = exp_ao[am][l];
+                cart_buffer[l] += pow(dx, static_cast<double>(components[0])) * pow(dy, static_cast<double>(components[1])) *
+                                pow(dz, static_cast<double>(components[2])) * cexpr;
+            }
+
+            for (int ind = 0; ind < s_transform.n(); ind++) {
+                int lcart = s_transform.cartindex(ind);
+                int lpure = s_transform.pureindex(ind);
+                double coef = s_transform.coef(ind);
+
+                phi_ao[ao + lpure] += coef * cart_buffer[lcart];
+            }
+
+        } else {
+            for (int l = 0; l < INT_NCART(am); l++) {
+                Vector3 &components = exp_ao[am][l];
+                phi_ao[ao + l] += pow(dx, static_cast<double>(components[0])) * pow(dy, static_cast<double>(components[1])) *
+                                pow(dz, static_cast<double>(components[2])) * cexpr;
+            }
         }
 
-        ao += INT_NCART(am);
+        ao += INT_NFUNC(puream_, am);
     }  // nshell
 }

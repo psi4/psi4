@@ -1267,7 +1267,7 @@ class Molecule(LibmintsMolecule):
         dashlvl
             Name of dispersion correction to be applied (e.g., d, D2,
             d3(bj), das2010). Must be key in `dashcoeff` or "alias" or
-            "formal" to one.
+            "formal" to run.
         dashparam
             Values for the same keys as `dashcoeff[dashlvl]['default']`
             used to override any or all values initialized by `func`.
@@ -1335,6 +1335,176 @@ class Molecule(LibmintsMolecule):
             return float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'])
         elif derint == 1:
             return jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']
+
+    def run_dftd4(self, func=None, dashlvl=None, dashparam=None, dertype=None, verbose=1):
+        """Compute dispersion correction via Grimme's DFTD4 program.
+
+        Parameters
+        ----------
+        func : str, optional
+            Name of functional (func only, func & disp, or disp only) for
+            which to compute dispersion (e.g., blyp, BLYP-D2, blyp-d3bj,
+            blyp-d3(bj), hf+d). Unlike run_dftd3, ``func`` overwrites any
+            parameter initialized via `dashparam`.
+        dashlvl : str, optional
+            Name of dispersion correction to be applied (e.g., d, D2,
+            d3(bj), das2010). Must be key in `dashcoeff` or "alias" or
+            "formal" to run.
+        dashparam : dict, optional
+            Values for the same keys as `dashcoeff[dashlvl]['default']`
+            used to provide custom values. Unlike run_dftd3, will not have
+            effect if `func` given. Must provide all parameters.
+            Extra parameters will error.
+        dertype : int or str, optional
+            Maximum derivative level at which to run DFTD3. For large
+            molecules, energy-only calculations can be significantly more
+            efficient. Influences return values, see below.
+        verbose : int, optional
+            Amount of printing.
+
+        Returns
+        -------
+        energy : float
+            When `dertype=0`, energy [Eh].
+        gradient : ndarray
+            When `dertype=1`, (nat, 3) gradient [Eh/a0].
+        (energy, gradient) : tuple of float and ndarray
+            When `dertype=None`, both energy [Eh] and (nat, 3) gradient [Eh/a0].
+
+        Notes
+        -----
+        This function wraps the QCEngine dftd4 harness which wraps the internal DFTD4 Python API.
+        As such, the upstream convention of `func` trumping `dashparam` holds, rather than the
+        :py:func:`run_dftd3` behavior of `dashparam` extending or overriding `func`.
+
+        """
+        import qcengine as qcng
+
+        if dertype is None:
+            derint, derdriver = -1, 'gradient'
+        else:
+            derint, derdriver = parse_dertype(dertype, max_derivative=1)
+
+        resinp = {
+            'molecule': self.to_schema(dtype=2),
+            'driver': derdriver,
+            'model': {
+                'method': func,
+                'basis': '(auto)',
+            },
+            'keywords': {
+                'verbose': verbose,
+            },
+        }
+        if dashlvl:
+            resinp['keywords']['level_hint'] = dashlvl
+        if dashparam:
+            resinp['keywords']['params_tweaks'] = dashparam
+
+        jobrec = qcng.compute(resinp, 'dftd4', raise_error=True)
+        jobrec = jobrec.dict()
+
+        # hack as not checking type GRAD
+        for k, qca in jobrec['extras']['qcvars'].items():
+            if isinstance(qca, (list, np.ndarray)):
+                jobrec['extras']['qcvars'][k] = np.array(qca).reshape(-1, 3)
+
+        if isinstance(self, Molecule):
+            pass
+        else:
+            from psi4 import core
+
+            for k, qca in jobrec['extras']['qcvars'].items():
+                if not isinstance(qca, (list, np.ndarray)):
+                    core.set_variable(k, float(qca))
+
+        if derint == -1:
+            return (float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY']),
+                    jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT'])
+        elif derint == 0:
+            return float(jobrec['extras']['qcvars']['DISPERSION CORRECTION ENERGY'])
+        elif derint == 1:
+            return jobrec['extras']['qcvars']['DISPERSION CORRECTION GRADIENT']
+
+    def run_gcp(self, func: str = None, dertype: Union[int, str] = None, verbose: int = 1):
+        """Compute geometrical BSSE correction via Grimme's GCP program.
+
+        Function to call Grimme's GCP program
+        https://www.chemie.uni-bonn.de/pctc/mulliken-center/software/gcp/gcp
+        to compute an a posteriori geometrical BSSE correction to *self* for
+        several HF, generic DFT, and specific HF-3c and PBEh-3c method/basis
+        combinations, *func*. Returns energy if *dertype* is 0, gradient
+        if *dertype* is 1, else tuple of energy and gradient if *dertype*
+        unspecified. The gcp executable must be independently compiled and
+        found in :envvar:`PATH` or :envvar:`PSIPATH`. *self* may be either a
+        qcdb.Molecule (sensibly) or a psi4.Molecule (works b/c psi4.Molecule
+        has been extended by this method py-side and only public interface
+        fns used) or a string that can be instantiated into a qcdb.Molecule.
+
+        Parameters
+        ----------
+        func : str, optional
+            Name of method/basis combination or composite method for which to compute the correction
+           (e.g., HF/cc-pVDZ, DFT/def2-SVP, HF3c, PBEh3c).
+        dertype : int or str, optional
+            Maximum derivative level at which to run GCP. For large
+            molecules, energy-only calculations can be significantly more
+            efficient. Influences return values, see below.
+        verbose : int, optional
+            Amount of printing. Unused at present.
+
+        Returns
+        -------
+        energy : float
+            When `dertype=0`, energy [Eh].
+        gradient : ndarray
+            When `dertype=1`, (nat, 3) gradient [Eh/a0].
+        (energy, gradient) : tuple of float and ndarray
+            When `dertype=None`, both energy [Eh] and (nat, 3) gradient [Eh/a0].
+
+        """
+        import qcengine as qcng
+
+        if dertype is None:
+            derint, derdriver = -1, 'gradient'
+        else:
+            derint, derdriver = parse_dertype(dertype, max_derivative=1)
+
+        resinp = {
+            'molecule': self.to_schema(dtype=2),
+            'driver': derdriver,
+            'model': {
+                'method': func,
+                'basis': '(auto)',
+            },
+            'keywords': {
+                'verbose': verbose,
+            },
+        }
+        jobrec = qcng.compute(resinp, 'gcp', raise_error=True)
+        jobrec = jobrec.dict()
+
+        # hack (instead of checking dertype GRAD) to collect `(nat, 3)` ndarray of gradient if present
+        for variable_name, qcv in jobrec['extras']['qcvars'].items():
+            if isinstance(qcv, (list, np.ndarray)):
+                jobrec['extras']['qcvars'][variable_name] = np.array(qcv).reshape(-1, 3)
+
+        if isinstance(self, Molecule):
+            pass
+        else:
+            from psi4 import core
+
+            for variable_name, qcv in jobrec['extras']['qcvars'].items():
+                if not isinstance(qcv, (list, np.ndarray)):
+                    core.set_variable(variable_name, float(qcv))
+
+        if derint == -1:
+            return (float(jobrec['extras']['qcvars']['GCP CORRECTION ENERGY']),
+                    jobrec['extras']['qcvars']['GCP CORRECTION GRADIENT'])
+        elif derint == 0:
+            return float(jobrec['extras']['qcvars']['GCP CORRECTION ENERGY'])
+        elif derint == 1:
+            return jobrec['extras']['qcvars']['GCP CORRECTION GRADIENT']
 
     @staticmethod
     def from_schema(molschema, return_dict=False, verbose=1):
@@ -1912,5 +2082,3 @@ class Molecule(LibmintsMolecule):
 # Attach methods to qcdb.Molecule class
 from .parker import xyz2mol as _parker_xyz2mol_yo
 Molecule.format_molecule_for_mol = _parker_xyz2mol_yo
-from .interface_gcp import run_gcp as _gcp_qcdb_yo
-Molecule.run_gcp = _gcp_qcdb_yo

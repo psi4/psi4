@@ -109,7 +109,7 @@ void C_DROT(size_t ntot, double* x, int incx, double* y, int incy, double costhe
 void C_DSWAP(size_t length, double* x, int incx, double* y, int inc_y);
 void C_DSCAL(size_t len, double alpha, double* vec, int inc);
 void C_DCOPY(size_t length, double* x, int inc_x, double* y, int inc_y);
-void C_DAXPY(size_t length, double a, double* x, int inc_x, double* y, int inc_y);
+void C_DAXPY(size_t length, double a, const double* x, int inc_x, double* y, int inc_y);
 double C_DDOT(size_t n, double* X, int inc_x, double* Y, int inc_y);
 double C_DNRM2(size_t n, double* X, int inc_x);
 double C_DASUM(size_t n, double* X, int inc_x);
@@ -196,6 +196,7 @@ int C_DGEGV(char jobvl, char jobvr, int n, double* a, int lda, double* b, int ld
             double* beta, double* vl, int ldvl, double* vr, int ldvr, double* work, int lwork);
 int C_DGEHRD(int n, int ilo, int ihi, double* a, int lda, double* tau, double* work, int lwork);
 int C_DGELQF(int m, int n, double* a, int lda, double* tau, double* work, int lwork);
+PSI_API
 int C_DGELS(char trans, int m, int n, int nrhs, double* a, int lda, double* b, int ldb, double* work, int lwork);
 int C_DGELSD(int m, int n, int nrhs, double* a, int lda, double* b, int ldb, double* s, double rcond, int* rank,
              double* work, int lwork, int* iwork);

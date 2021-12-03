@@ -74,7 +74,7 @@ void DCTSolver::transform_integrals() {
     _ints->update_orbitals();
     if (options_.get_str("DCT_TYPE") == "DF") {
         // Transform b(Q|mn) to b(Q|pq) in MO basis
-        transform_b();
+        transform_b_so2mo();
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
         /*- Transform g(OV|OV) -*/
         form_df_g_ovov();
@@ -765,7 +765,19 @@ void DCTSolver::build_gtau() {
     global_dpd_->file2_init(&T_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
     global_dpd_->file2_init(&T_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
 
-    global_dpd_->file2_init(&GT_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "GTau <V|V>");
+    auto OO_mat = Matrix(&T_OO);
+    OO_mat.add(kappa_mo_a_->get_block(slices_.at("ACTIVE_OCC_A")));
+    auto oo_mat = Matrix(&T_oo);
+    oo_mat.add(kappa_mo_b_->get_block(slices_.at("ACTIVE_OCC_B")));
+    global_dpd_->file2_close(&T_OO);
+    global_dpd_->file2_close(&T_oo);
+
+    global_dpd_->file2_init(&T_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "Gamma <O|O>");
+    global_dpd_->file2_init(&T_oo, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "Gamma <o|o>");
+    OO_mat.write_to_dpdfile2(&T_OO);
+    oo_mat.write_to_dpdfile2(&T_oo);
+
+    global_dpd_->file2_init(&GT_VV, PSIF_DCT_DPD, 0, ID('V'), ID('V'), "GGamma <V|V>");
 
     // GT_AB = (AB|CD) Tau_CD
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"), ID("[V>=V]+"), ID("[V>=V]+"), 0,
@@ -800,7 +812,7 @@ void DCTSolver::build_gtau() {
     global_dpd_->buf4_close(&I);
     global_dpd_->file2_close(&GT_VV);
 
-    global_dpd_->file2_init(&GT_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "GTau <v|v>");
+    global_dpd_->file2_init(&GT_vv, PSIF_DCT_DPD, 0, ID('v'), ID('v'), "GGamma <v|v>");
 
     // GT_ab = +(ab|cd) Tau_cd
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"), ID("[v>=v]+"), ID("[v>=v]+"), 0,
@@ -835,7 +847,7 @@ void DCTSolver::build_gtau() {
     global_dpd_->buf4_close(&I);
     global_dpd_->file2_close(&GT_vv);
 
-    global_dpd_->file2_init(&GT_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "GTau <O|O>");
+    global_dpd_->file2_init(&GT_OO, PSIF_DCT_DPD, 0, ID('O'), ID('O'), "GGamma <O|O>");
     // GT_IJ = +(IJ|AB) Tau_AB
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O>=O]+"), ID("[V>=V]+"), 0,
                            "MO Ints (OO|VV)");
@@ -869,7 +881,7 @@ void DCTSolver::build_gtau() {
     global_dpd_->buf4_close(&I);
     global_dpd_->file2_close(&GT_OO);
 
-    global_dpd_->file2_init(&GT_oo, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "GTau <o|o>");
+    global_dpd_->file2_init(&GT_oo, PSIF_DCT_DPD, 0, ID('o'), ID('o'), "GGamma <o|o>");
     // GT_ij = +(ij|ab) Tau_ab
     global_dpd_->buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o>=o]+"), ID("[v>=v]+"), 0,
                            "MO Ints (oo|vv)");

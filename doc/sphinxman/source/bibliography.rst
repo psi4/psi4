@@ -527,9 +527,54 @@ Bibliography
    A. Hesselmann and T. Korona,
    *J. Chem. Phys.* **141**, 094107 (2014).
 
+.. [Hylleraas:1930:209]
+   E. Hylleraas
+   *Z. Phys.* **65**, 209 (1930).
+
+.. [Pulay:1986:357]
+   P. Pulay and S. Saeb\ |o_slash|\ ,
+   *Theor. Chim. Acta* **69**, 357 (1986).
+
+.. [Pinski:2015:034108]
+   P. Pinski, C. Riplinger, E. Valeev, and F. Neese,
+   *J. Chem. Phys.* **143**, 034108 (2015).
+
+.. [Liakos:2015:1525]
+   D. Liakos, M. Sparta, M. Kesharwani, J. Martin, and F. Neese,
+   *J. Chem. Theory Comput.* **11**, 1525 (2015).
+   
 .. [Smith:2018:3504]
     10.1021/acs.jctc.8b00286,
     "PSI4NUMPY: An Interactive Quantum Chemistry Programming Environment for Reference Implementations and Rapid Development",
     D. G. A. Smith, L. A. Burns, D. A. Sirianni, D. R. Nascimento, A. Kumar, A. M. James, J. B. Schriber, T. Zhang, B. Zhang, A. S. Abbott, E. J. Berquist, M. H. Lechner, L. A. Cunha, A. G. Heide, J. M. Waldrop, T. Y. Takeshita, A. Alenaizan, D. Neuhauser, R. A. King, A. C. Simmonett, J. M. Turney, H. F. Schaefer III, F. A. Evangelista, A. E. DePrince, T. D. Crawford, K. Patkowski, and C. D. Sherrill
     *J. Chem. Theory Comput.* **14**, 3504-3511 (2018).
 
+.. [Schriber:2021:234107]
+    J. B. Schriber, D. A. Sirianni, D. G. A. Smith, L. A. Burns, D. Sitkoff, D. L. Cheney, C. D. Sherrill
+    *J. Chem. Phys.* **154**, 234107 (2021).
+
+.. [Caldeweyher:2019:154122]
+   "A generally applicable atomic-charge dependent London dispersion correction",
+   E. Caldeweyher,  S. Ehlert,  A. Hansen, H. Neugebauer, S. Spicher, C. Bannwarth, and S. Grimme,
+   *J. Chem. Phys.* **150**, 154122 (2019).
+   https://doi.org/10.1063/1.5090222
+
+.. [Haser:1989:104]
+   M. Haser and R. Ahlrichs,
+   *J. Comp. Chem.* **10(1)**, 104 (1989).
+   doi: 10.1002/jcc.540100111
+   
+.. [Thompson:2017:144101]
+   T. H. Thompson and C. Ochsenfeld
+   *J. Chem. Phys.* **147**, 144101 (2017).
+   doi: 10.1063/1.4994190
+
+.. [Ochsenfeld:1998:1663]
+   C. Ochsenfeld, C. A. White, M. Head-Gordon
+   *J. Chem. Phys.* **109**, 1663 (1998)
+   doi: 10.1063/1.476741
+
+.. [White:1994:8]
+   C. A. White, B. G. Johnson, P. M. W. Gill, M. Head-Gordon
+   *Chem. Phys. Lett.* **230** 8 (1994)
+   doi: 10.1016/0009-2614(94)01128-1

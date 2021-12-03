@@ -1,0 +1,259 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.5a1.dev188 
+
+                         Git: Rev {increfock} aa93468 
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, and M. H. Lechner
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Wednesday, 20 October 2021 10:39AM
+
+    Process ID: 19700
+    Host:       ds10
+    PSIDATADIR: /scratch/jiang/p4dev/psi4/objdir-dscreen/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! RHF Density Matrix based-Integral Screening Test for water
+
+ref_energy = -76.04125669409474 # TEST (Compare to CSAM Screening)
+
+molecule mol {
+    0 1
+    O
+    H 1 0.96
+    H 1 0.96 2 104.5
+    symmetry c1
+    no_reorient
+    no_com
+}
+
+set {
+    scf_type direct
+    df_scf_guess false
+    basis aug-cc-pVDZ
+    ints_tolerance 1.0e-12
+    e_convergence 1.0e-10
+    d_convergence 1.0e-6
+    screening density
+    incfock true
+    incfock_full_fock_every 4
+}
+
+ds_energy = energy('scf')
+psi4.compare_values(ref_energy, ds_energy, 9, "HF Density Screening Energy")
+--------------------------------------------------------------------------
+
+Scratch directory: /scratch/jiang/
+
+*** tstart() called on ds10
+*** at Wed Oct 20 10:39:43 2021
+
+   => Loading Basis Set <=
+
+    Name: AUG-CC-PVDZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   254 file /scratch/jiang/p4dev/psi4/objdir-dscreen/stage/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3 entry H          line    40 file /scratch/jiang/p4dev/psi4/objdir-dscreen/stage/share/psi4/basis/aug-cc-pvdz.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.065775570547    15.994914619570
+         H            0.000000000000    -0.759061990794     0.521953018286     1.007825032230
+         H            0.000000000000     0.759061990794     0.521953018286     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     27.26297  B =     14.51533  C =      9.47217 [cm^-1]
+  Rotational constants: A = 817323.21126  B = 435158.60141  C = 283968.37536 [MHz]
+  Nuclear repulsion =    9.168193296424347
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-06
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: AUG-CC-PVDZ
+    Blend: AUG-CC-PVDZ
+    Number of shells: 19
+    Number of basis functions: 41
+    Number of Cartesian functions: 43
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Integral Setup <==
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Integrals threads:           1
+    Screening Type:        DENSITY
+    Screening Cutoff:        1E-12
+    Incremental Fock:          Yes
+
+  Minimum eigenvalue in the overlap matrix is 2.6921161277E-03.
+  Reciprocal condition number of the overlap matrix is 4.7404748701E-04.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A         41      41 
+   -------------------------
+    Total      41      41
+   -------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RHF iter SAD:   -75.46291161737804   -7.54629e+01   0.00000e+00 
+   @RHF iter   1:   -75.95704831424509   -4.94137e-01   1.10492e-02 DIIS
+   @RHF iter   2:   -76.01021534699387   -5.31670e-02   7.21652e-03 DIIS/INCFOCK
+   @RHF iter   3:   -76.04085526036545   -3.06399e-02   5.18207e-04 DIIS/INCFOCK
+   @RHF iter   4:   -76.04123352979882   -3.78269e-04   1.16384e-04 DIIS/INCFOCK
+   @RHF iter   5:   -76.04125492372376   -2.13939e-05   2.62852e-05 DIIS
+   @RHF iter   6:   -76.04125661917359   -1.69545e-06   5.29539e-06 DIIS/INCFOCK
+   @RHF iter   7:   -76.04125669217754   -7.30039e-08   8.83808e-07 DIIS/INCFOCK
+   @RHF iter   8:   -76.04125669405535   -1.87781e-09   1.36743e-07 DIIS
+   @RHF iter   9:   -76.04125669409473   -3.93783e-11   3.56798e-08 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.577732     2A     -1.355219     3A     -0.717755  
+       4A     -0.585137     5A     -0.509216  
+
+    Virtual:                                                              
+
+       6A      0.035389     7A      0.057915     8A      0.174039  
+       9A      0.196812    10A      0.222451    11A      0.231524  
+      12A      0.290014    13A      0.331105    14A      0.385606  
+      15A      0.403674    16A      0.433391    17A      0.538813  
+      18A      0.647949    19A      0.658101    20A      0.810556  
+      21A      0.928975    22A      1.101245    23A      1.115396  
+      24A      1.148646    25A      1.306873    26A      1.466248  
+      27A      1.482349    28A      1.582936    29A      2.001553  
+      30A      2.009988    31A      2.107335    32A      2.367041  
+      33A      2.477342    34A      2.622364    35A      2.714255  
+      36A      2.965894    37A      3.672864    38A      3.689787  
+      39A      3.702442    40A      4.023743    41A      4.303268  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+
+  @RHF Final Energy:   -76.04125669409473
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              9.1681932964243469
+    One-Electron Energy =                -122.9287781791897061
+    Two-Electron Energy =                  37.7193281886706231
+    Total Energy =                        -76.0412566940947272
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     0.9783
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.0000      Y:    -0.0000      Z:    -0.1910
+
+  Dipole Moment: [e a0]
+     X:     0.0000      Y:    -0.0000      Z:     0.7873     Total:     0.7873
+
+  Dipole Moment: [D]
+     X:     0.0000      Y:    -0.0000      Z:     2.0011     Total:     2.0011
+
+
+*** tstop() called on ds10 at Wed Oct 20 10:39:44 2021
+Module time:
+	user time   =       0.71 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.71 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+    HF Density Screening Energy...........................................................PASSED
+
+    Psi4 stopped on: Wednesday, 20 October 2021 10:39AM
+    Psi4 wall time for execution: 0:00:00.77
+
+*** Psi4 exiting successfully. Buy a developer a beer!

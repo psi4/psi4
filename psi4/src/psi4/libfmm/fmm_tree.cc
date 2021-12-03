@@ -20,9 +20,9 @@
 #include <tuple>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 #include <unordered_map>
 #include <utility>
-#include <csignal>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -36,7 +36,7 @@ int num_digits(long n) {
 }
 
 ShellPair::ShellPair(std::shared_ptr<BasisSet>& basisset, std::pair<int, int> pair_index, 
-                     std::shared_ptr<HarmonicCoefficients>& mpole_coefs) {     
+                     std::shared_ptr<HarmonicCoefficients>& mpole_coefs) {
     basisset_ = basisset;
     pair_index_ = pair_index;
 
@@ -243,9 +243,7 @@ void CFMMBox::compute_far_field() {
 
         // Add the parent's far field contribution
         Vff_->add(parent->Vff_->translate(center_));
-    }
-
-    else {
+    } else {
         near_field_.push_back(this->get());
     }
 
@@ -320,33 +318,26 @@ void CFMMBox::compute_mpoles_from_children() {
 
 }
 
-CFMMTree::CFMMTree(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet> basisset, std::vector<SharedMatrix>& D, 
-                std::vector<SharedMatrix>& J, const std::vector<std::pair<int, int>>& shell_pairs, int nlevels, int lmax) {
-    molecule_ = molecule;
-    basisset_ = basisset;
-    D_ = D;
-    J_ = J;
-    nlevels_ = nlevels;
-    lmax_ = lmax;
-    int num_boxes = (nlevels_ == 1) ? 1 : (0.5 * std::pow(16, nlevels_) + 7) / 15;
-    tree_.resize(num_boxes);
-    Options& options = Process::environment.options;
-    mpole_coefs_ = std::make_shared<HarmonicCoefficients>(options.get_int("CFMM_MAX_MPOLE_ORDER"), Regular);
+CFMMTree::CFMMTree(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<SharedMatrix>& D, 
+                    std::vector<SharedMatrix>& J, Options& options) 
+                    : options_(options), ints_(ints), D_(D), J_(J) {
 
-    std::shared_ptr<IntegralFactory> factory = std::make_shared<IntegralFactory>(basisset_);
-    std::shared_ptr<TwoBodyAOInt> eri = std::shared_ptr<TwoBodyAOInt>(factory->eri());
-    ints_.push_back(eri);
+    basisset_ = ints[0]->basis();
+    molecule_ = basisset_->molecule();
+    nlevels_ = options_.get_int("CFMM_GRAIN");
+    lmax_ = options_.get_int("CFMM_ORDER");
 
     nthread_ = 1;
 #ifdef _OPENMP
     nthread_ = Process::environment.get_n_threads();
 #endif
 
-    for (int thread = 1; thread < nthread_; thread++) {
-        ints_.push_back(std::shared_ptr<TwoBodyAOInt>(eri->clone()));
-    }
+    int num_boxes = (nlevels_ == 1) ? 1 : (0.5 * std::pow(16, nlevels_) + 7) / 15;
+    tree_.resize(num_boxes);
 
-    for (const auto& pair : shell_pairs) {
+    mpole_coefs_ = std::make_shared<HarmonicCoefficients>(lmax_, Regular);
+
+    for (const auto& pair : ints[0]->shell_pairs()) {
         shell_pairs_.push_back(std::make_shared<ShellPair>(basisset_, pair, mpole_coefs_));
     }
 
@@ -354,7 +345,7 @@ CFMMTree::CFMMTree(std::shared_ptr<Molecule> molecule, std::shared_ptr<BasisSet>
     make_root_node();
     make_children();
 
-    int print = options.get_int("PRINT");
+    int print = Process::environment.options.get_int("PRINT");
     if (print >= 2) print_out();
 }
 
@@ -615,11 +606,21 @@ void CFMMTree::build_nf_J() {
         JT.push_back(J2);
     }
 
-#pragma omp parallel for
+    std::vector<std::shared_ptr<CFMMBox>> dense_tree;
     for (int bi = start; bi < end; bi++) {
-        std::shared_ptr<CFMMBox> curr = tree_[bi];
+        std::shared_ptr<CFMMBox> box = tree_[bi];
+        if (box->get_nsp() > 0) {
+            dense_tree.push_back(box);
+        }
+    }
+
+#pragma omp parallel for
+    for (int i = 0; i < dense_tree.size(); i++) {
+        std::shared_ptr<CFMMBox> curr = dense_tree[i];
         auto& PQshells = curr->get_shell_pairs();
         auto& nf_boxes = curr->near_field_boxes();
+
+        if (curr->get_nsp() == 0) continue;
 
         int thread = 0;
 #ifdef _OPENMP
@@ -629,6 +630,8 @@ void CFMMTree::build_nf_J() {
         for (int nfi = 0; nfi < nf_boxes.size(); nfi++) {
             std::shared_ptr<CFMMBox> neighbor = nf_boxes[nfi];
             auto& RSshells = neighbor->get_shell_pairs();
+
+            if (neighbor->get_nsp() == 0) continue;
             
             bool touched = false;
             for (int PQind = 0; PQind < PQshells.size(); PQind++) {

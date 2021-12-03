@@ -66,7 +66,7 @@ methods_dict_ = {
     'hessian': driver.hessian,
     'frequency': driver.frequency,
 }
-can_do_properties_ = {
+default_properties_ = {
     "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices"
 }
 
@@ -77,6 +77,8 @@ _qcschema_translation = {
     # Generics
     "generics": {
         "return_energy": {"variables": "CURRENT ENERGY"},
+        "return_gradient": {"variables": "CURRENT GRADIENT"},
+        "return_hessian": {"variables": "CURRENT HESSIAN"},
         # "nuclear_repulsion_energy": {"variables": "NUCLEAR REPULSION ENERGY"},  # use mol instead
     },
 
@@ -98,6 +100,8 @@ _qcschema_translation = {
         "scf_vv10_energy": {"variables": "DFT VV10 ENERGY", "skip_zero": True},
         "scf_xc_energy": {"variables": "DFT XC ENERGY", "skip_zero": True},
         "scf_dispersion_correction_energy": {"variables": "DISPERSION CORRECTION ENERGY", "skip_zero": True},
+        "scf_total_gradient": {"variables": "SCF TOTAL GRADIENT"},
+        "scf_total_hessian": {"variables": "SCF TOTAL HESSIAN"},
 
         # SCF Properties (experimental)
         # "scf_quadrupole_moment": {"variables": ["SCF QUADRUPOLE " + x for x in ["XX", "XY", "XZ", "YY", "YZ", "ZZ"]], "skip_null": True},
@@ -193,7 +197,7 @@ def _convert_variables(data, context=None, json=False):
             elif conversion_factor:
                 value = [x * conversion_factor for x in value]
         else:
-            raise TypeError("variables type not understood.")
+            raise TypeError(f"Type of variable not understood: {key} {var}")
 
         # Handle skips
         if var.get("skip_zero", False) and (value == 0):
@@ -405,11 +409,11 @@ def run_qcschema(input_data, clean=True):
 
         # qcschema should be copied
         ret_data = run_json_qcschema(input_model.dict(), clean, False, keep_wfn=keep_wfn)
-        ret_data["provenance"] = {
+        ret_data["provenance"].update({
             "creator": "Psi4",
             "version": __version__,
             "routine": "psi4.schema_runner.run_qcschema"
-        }
+        })
 
         exit_printing(start_time=start_time, success=True)
 
@@ -541,14 +545,8 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
 
     # Handle special properties case
     if json_data["driver"] == "properties":
-        if "properties" in json_data["model"]:
-            kwargs["properties"] = [x.lower() for x in json_data["model"]["properties"]]
-
-            extra = set(kwargs["properties"]) - can_do_properties_
-            if len(extra):
-                raise KeyError("Did not understand property key %s." % kwargs["properties"])
-        else:
-            kwargs["properties"] = list(can_do_properties_)
+        if not "properties" in kwargs:
+            kwargs["properties"] = list(default_properties_)
 
     # Actual driver run
     val, wfn = methods_dict_[json_data["driver"]](method, **kwargs)
@@ -630,6 +628,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
 
     json_data["properties"] = props
     json_data["success"] = True
+    json_data["provenance"]["module"] = wfn.module()
 
     if keep_wfn:
         json_data["wavefunction"] = _convert_wavefunction(wfn)

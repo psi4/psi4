@@ -56,6 +56,8 @@ procedures = {
         'scs-omp2'      : proc.run_occ,
         'sos-omp2'       : proc.run_occ,
         'custom-scs-omp2' : proc.run_occ,
+        'dlpno-mp2'     : proc.run_dlpnomp2,
+        'scs-dlpno-mp2' : proc.run_dlpnomp2,
         'mp2.5'         : proc.select_mp2p5,
         'custom-scs-mp2.5' : proc.run_occ,
         'omp2.5'        : proc.select_omp2p5,
@@ -103,7 +105,9 @@ procedures = {
         'ccenergy'      : proc.run_ccenergy,  # full control over ccenergy
         'ccsd'          : proc.select_ccsd,
         'ccsd(t)'       : proc.select_ccsd_t_,
-        'ccsd(at)'      : proc.select_ccsd_at_,
+        'ccsd(at)'      : proc.select_ccsd_at_,  # alias
+        'a-ccsd(t)'     : proc.select_ccsd_at_,
+        'lambda-ccsd(t)': proc.select_ccsd_at_,  # alias
         'cc2'           : proc.run_ccenergy,
         'cc3'           : proc.run_ccenergy,
         'mrcc'          : proc.run_mrcc,  # interface to Kallay's MRCC program
@@ -266,6 +270,9 @@ for ssuper in interface_cfour.cfour_list():
 
 for ssuper in interface_cfour.cfour_gradient_list():
     procedures['gradient'][ssuper.lower()] = interface_cfour.run_cfour
+
+for ssuper in interface_cfour.cfour_hessian_list():
+    procedures['hessian'][ssuper.lower()] = interface_cfour.run_cfour
 
 # dictionary to register pre- and post-compute hooks for driver routines
 hooks = dict((k1, dict((k2, []) for k2 in ['pre', 'post'])) for k1 in ['energy', 'optimize', 'frequency'])

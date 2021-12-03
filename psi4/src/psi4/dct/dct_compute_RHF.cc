@@ -139,10 +139,10 @@ void DCTSolver::run_simult_dct_RHF() {
                            "Amplitude SF <OO|VV>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "Amplitude <oo|vv>");
-    diisManager.set_error_vector_size(5, DIISEntry::Matrix, scf_error_a_.get(), DIISEntry::Matrix, scf_error_b_.get(),
-                                      DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4, &Lbb);
-    diisManager.set_vector_size(5, DIISEntry::Matrix, Fa_.get(), DIISEntry::Matrix, Fb_.get(), DIISEntry::DPDBuf4, &Laa,
-                                DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4, &Lbb);
+    diisManager.set_error_vector_size(5, DIISEntry::InputType::Matrix, scf_error_a_.get(), DIISEntry::InputType::Matrix, scf_error_b_.get(),
+                                      DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4, &Lbb);
+    diisManager.set_vector_size(5, DIISEntry::InputType::Matrix, Fa_.get(), DIISEntry::InputType::Matrix, Fb_.get(), DIISEntry::InputType::DPDBuf4, &Laa,
+                                DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4, &Lbb);
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);
@@ -177,8 +177,6 @@ void DCTSolver::run_simult_dct_RHF() {
             // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
             process_so_ints_RHF();
 
-            // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
-            Fa_->add(g_tau_a_);
             // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
             moFa_->copy(Fa_);
             // Transform the Fock matrix to the MO basis

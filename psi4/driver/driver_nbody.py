@@ -112,6 +112,10 @@ def _print_nbody_energy(energy_body_dict, header, embedding=False):
     core.print_out("""\n   ==> N-Body: %s energies <==\n\n""" % header)
     core.print_out("""   n-Body     Total Energy [Eh]       I.E. [kcal/mol]      Delta [kcal/mol]\n""")
     previous_e = energy_body_dict[1]
+    if previous_e == 0.0:
+        tot_e = False
+    else:
+        tot_e = True
     nbody_range = list(energy_body_dict)
     nbody_range.sort()
     for n in nbody_range:
@@ -119,8 +123,12 @@ def _print_nbody_energy(energy_body_dict, header, embedding=False):
         delta_e_kcal = delta_e * constants.hartree2kcalmol
         int_e_kcal = (
             energy_body_dict[n] - energy_body_dict[1]) * constants.hartree2kcalmol if not embedding else np.nan
-        core.print_out("""     %4s  %20.12f  %20.12f  %20.12f\n""" % (n, energy_body_dict[n], int_e_kcal,
-                                                                      delta_e_kcal))
+        if tot_e:
+            core.print_out("""     %4s  %20.12f  %20.12f  %20.12f\n""" % (n, energy_body_dict[n], int_e_kcal,
+                                                                       delta_e_kcal))
+        else:
+            core.print_out("""     %4s  %20s  %20.12f  %20.12f\n""" % (n, "N/A", int_e_kcal,
+                                                                       delta_e_kcal))
         previous_e = energy_body_dict[n]
     core.print_out("\n")
 
@@ -128,7 +136,7 @@ def _print_nbody_energy(energy_body_dict, header, embedding=False):
 def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     """
     Computes the nbody interaction energy, gradient, or Hessian depending on input.
-    This is a generalized univeral function for computing interaction and total quantities.
+    This is a generalized universal function for computing interaction and total quantities.
 
     :returns: *return type of func* |w--w| The data.
 
@@ -160,13 +168,16 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     :type bsse_type: str or list
     :param bsse_type: ``'cp'`` || ``['nocp', 'vmfc']`` || |dl| ``None`` |dr| || etc.
 
-        Type of BSSE correction to compute: CP, NoCP, or VMFC. The first in this
-        list is returned by this function. By default, this function is not called.
+        Type of BSSE correction to compute: CP for counterpoise correction, NoCP
+        for plain supramolecular interaction energy, or VMFC for Valiron-Mayer
+        Function Counterpoise correction. If a list is provided, the first string in
+        the list determines which interaction or total energies/gradients/Hessians are
+        returned by this function. By default, this function is not called.
 
     :type max_nbody: int
     :param max_nbody: ``3`` || etc.
 
-        Maximum n-body to compute, cannot exceed the number of fragments in the moleucle.
+        Maximum n-body to compute, cannot exceed the number of fragments in the molecule.
 
     :type ptype: str
     :param ptype: ``'energy'`` || ``'gradient'`` || ``'hessian'``
@@ -176,15 +187,19 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     :type return_total_data: :ref:`boolean <op_py_boolean>`
     :param return_total_data: ``'on'`` || |dl| ``'off'`` |dr|
 
-        If True returns the total data (energy/gradient/etc) of the system,
-        otherwise returns interaction data.
+        If True returns the total data (energy/gradient/Hessian) of the system,
+        otherwise returns interaction data. Default is ``'off'`` for energies,
+        ``'on'`` for gradients and Hessians. Note that the calculation of total
+        counterpoise corrected energies implies the calculation of the energies of
+        monomers in the monomer basis, hence specifying ``return_total_data = True``
+        may carry out more computations than ``return_total_data = False``.
 
     :type levels: dict
     :param levels: ``{1: 'ccsd(t)', 2: 'mp2', 'supersystem': 'scf'}`` || ``{1: 2, 2: 'ccsd(t)', 3: 'mp2'}`` || etc
 
         Dictionary of different levels of theory for different levels of expansion
-        Note that method_string is not used in this case.
-        supersystem computes all higher order n-body effects up to nfragments.
+        Note that method_string is not used in this case. ``supersystem`` computes
+        all higher order n-body effects up to the number of fragments.
 
     :type embedding_charges: dict
     :param embedding_charges: ``{1: [-0.834, 0.417, 0.417], ..}``
@@ -194,10 +209,11 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
     :type charge_method: str
     :param charge_method: ``scf/6-31g`` || ``b3lyp/6-31g*`` || etc
 
-        Method to compute point charges for monomers. Overridden by embedding_charges if both are provided.
+        Method to compute point charges for monomers. Overridden by ``embedding_charges``
+        if both are provided.
 
     :type charge_type: str
-    :param charge_type: ``MULLIKEN_CHARGES`` || ``LOWDIN_CHARGES`` 
+    :param charge_type: ``MULLIKEN_CHARGES`` || ``LOWDIN_CHARGES``
 
         Default is ``MULLIKEN_CHARGES``
     """
@@ -211,7 +227,7 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
         return driver_nbody_helper.multi_level(func, **kwargs)
     metadata['ptype'] = kwargs.pop('ptype', None)
     metadata['return_wfn'] = kwargs.pop('return_wfn', False)
-    metadata['return_total_data'] = kwargs.pop('return_total_data', False)
+    metadata['return_total_data'] = kwargs.pop('return_total_data', None)
     metadata['molecule'] = kwargs.pop('molecule', core.get_active_molecule())
     metadata['molecule'].update_geometry()
     metadata['molecule'].fix_com(True)
@@ -222,6 +238,12 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
 
     if metadata['ptype'] not in ['energy', 'gradient', 'hessian']:
         raise ValidationError("""N-Body driver: The ptype '%s' is not regonized.""" % metadata['ptype'])
+
+    if metadata['return_total_data'] is None:
+        if metadata['ptype'] in ['gradient', 'hessian']:
+            metadata['return_total_data'] = True
+        else:
+            metadata['return_total_data'] = False
 
     # Parse bsse_type, raise exception if not provided or unrecognized
     metadata['bsse_type_list'] = kwargs.pop('bsse_type')
@@ -302,6 +324,10 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
 
     core.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
     wfn.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])
+    if metadata['ptype'] == 'gradient':
+        core.set_variable("CURRENT GRADIENT", nbody_results['ret_ptype'])
+    elif metadata['ptype'] == 'hessian':
+        core.set_variable("CURRENT HESSIAN", nbody_results['ret_ptype'])
 
     if metadata['return_wfn']:
         return (nbody_results['ret_ptype'], wfn)
@@ -372,11 +398,8 @@ Possible values are 'cp', 'nocp', and 'vmfc'.""" % ', '.join(str(i) for i in bss
             for x in itertools.combinations(fragment_range, nbody):
                 if metadata['max_nbody'] == 1: break
                 cp_compute_list[nbody].add((x, basis_tuple))
-        # Add monomers in monomer basis
-        for x in fragment_range:
-            cp_compute_list[1].add(((x, ), (x, )))
 
-    if 'nocp' in metadata['bsse_type_list']:
+    if 'nocp' in metadata['bsse_type_list'] or metadata['return_total_data']:
         # Everything in monomer basis
         for nbody in nbody_range:
             for x in itertools.combinations(fragment_range, nbody):
@@ -546,17 +569,17 @@ def assemble_nbody_components(metadata, component_results):
 
         Contents:
         ``'ret_energy'``: float64
-            Interaction data requested.  If multiple BSSE types requested in `bsse_type_list`, the
-            interaction data associated with the *first* BSSE type in the list is returned.
+            Interaction data requested.  If multiple BSSE types requested in `bsse_type_list`, the interaction data associated with the *first* BSSE
+            type in the list is returned.
         ``'nbody_dict'``: dict of str: float64
             Dictionary of relevant N-body psivars to be set
         ``'energy_body_dict'``: dict of int: float64
-            Dictionary of total energies at each N-body level, i.e., ``results['energy_body_dict'][2]``
-            is the sum of all 2-body total energies for the supersystem.
+            Dictionary of total energies at each N-body level, i.e., ``results['energy_body_dict'][2]`` is the sum of all 2-body total energies
+            for the supersystem. May be empty if ``return_total_data`` is ``False``.
         ``'ptype_body_dict'``: dict or dict of int: array_like
-            Empty dictionary if `ptype is ``'energy'``, or dictionary of total ptype arrays at each
-            N-body level; i.e., ``results['ptype_body_dict'][2]`` for `ptype` ``'gradient'``is the
-            total 2-body gradient.
+            Empty dictionary if `ptype is ``'energy'``, or dictionary of total ptype
+            arrays at each N-body level; i.e., ``results['ptype_body_dict'][2]``
+            for `ptype` ``'gradient'``is the total 2-body gradient.
     """
     # Unpack metadata
     kwargs = metadata['kwargs']
@@ -569,6 +592,7 @@ def assemble_nbody_components(metadata, component_results):
     nocp_compute_list = metadata['compute_dict']['nocp']
     vmfc_compute_list = metadata['compute_dict']['vmfc_compute']
     vmfc_level_list = metadata['compute_dict']['vmfc_levels']
+
 
     # Build size and slices dictionaries
     fragment_size_dict = {
@@ -619,13 +643,13 @@ def assemble_nbody_components(metadata, component_results):
         # Energy
         # Extract energies for monomers in monomer basis for CP total data
         if n == 1:
-            cp_monomers_in_monomer_basis = [v for v in cp_compute_list[1] if len(v[1]) == 1]
-            cp_monomer_energies = 0.0
-            cp_monomer_energy_list = []
-            for i in cp_monomers_in_monomer_basis:
-                cp_monomer_energy_list.append(component_results['energies'][i])
-                cp_monomer_energies += component_results['energies'][i]
-                cp_compute_list[1].remove(i)
+            monomers_in_monomer_basis = [v for v in nocp_compute_list[1] if len(v[1]) == 1]
+            monomer_energies = 0.0
+            monomer_energy_list = []
+            for i in monomers_in_monomer_basis:
+                monomer_energy_list.append(component_results['energies'][i])
+                monomer_energies += component_results['energies'][i]
+
 
         cp_energy_by_level[n] = sum(component_results['energies'][v] for v in cp_compute_list[n])
         nocp_energy_by_level[n] = sum(component_results['energies'][v] for v in nocp_compute_list[n])
@@ -652,15 +676,11 @@ def assemble_nbody_components(metadata, component_results):
                 vmfc=True,
                 n=n)
 
-        # Add extracted monomers back.
-        for i, j in enumerate(cp_monomers_in_monomer_basis):
-            cp_compute_list[1].add(j)
-
     if metadata['ptype'] != 'energy':
         # Extract ptype data for monomers in monomer basis for CP total data
-        cp_monomer_ptype = np.zeros(arr_shape)
-        _sum_cluster_ptype_data(metadata['ptype'], component_results['ptype'], cp_monomers_in_monomer_basis,
-                                fragment_slice_dict, fragment_size_dict, cp_monomer_ptype)
+        monomer_ptype = np.zeros(arr_shape)
+        _sum_cluster_ptype_data(metadata['ptype'], component_results['ptype'], monomers_in_monomer_basis,
+                                fragment_slice_dict, fragment_size_dict, monomer_ptype)
 
     # Compute cp energy and ptype
     if 'cp' in metadata['bsse_type_list']:
@@ -682,11 +702,11 @@ def assemble_nbody_components(metadata, component_results):
                     cp_ptype_body_dict[n] += take_nk * sign * value
 
             if n == 1:
-                bsse = cp_energy_body_dict[n] - cp_monomer_energies
-                cp_energy_body_dict[n] = cp_monomer_energies
+                bsse = cp_energy_body_dict[n] - monomer_energies
+                cp_energy_body_dict[n] = monomer_energies
                 if metadata['ptype'] != 'energy':
-                    bsse_ptype = cp_ptype_body_dict[n] - cp_monomer_ptype
-                    cp_ptype_body_dict[n] = cp_monomer_ptype.copy()
+                    bsse_ptype = cp_ptype_body_dict[n] - monomer_ptype
+                    cp_ptype_body_dict[n] = monomer_ptype.copy()
 
             else:
                 cp_energy_body_dict[n] -= bsse
@@ -702,7 +722,8 @@ def assemble_nbody_components(metadata, component_results):
 
         _print_nbody_energy(cp_energy_body_dict, "Counterpoise Corrected (CP)", metadata['embedding_charges'])
         cp_interaction_energy = cp_energy_body_dict[metadata['max_nbody']] - cp_energy_body_dict[1]
-        nbody_dict['Counterpoise Corrected Total Energy'] = cp_energy_body_dict[metadata['max_nbody']]
+        if monomer_energies != 0.0:
+            nbody_dict['Counterpoise Corrected Total Energy'] = cp_energy_body_dict[metadata['max_nbody']]
         nbody_dict['Counterpoise Corrected Interaction Energy'] = cp_interaction_energy
 
     # Compute nocp energy and ptype
@@ -755,8 +776,11 @@ def assemble_nbody_components(metadata, component_results):
     results = {}
     results['nbody'] = nbody_dict
     for b in ['cp', 'nocp', 'vmfc']:
-        results['%s_energy_body_dict' % b] = eval('%s_energy_body_dict' % b)
-        results['%s_energy_body_dict' % b] = {str(i) + b: j for i, j in results['%s_energy_body_dict' % b].items()}
+        if monomer_energies != 0.0:
+            results['%s_energy_body_dict' % b] = eval('%s_energy_body_dict' % b)
+            results['%s_energy_body_dict' % b] = {str(i) + b: j for i, j in results['%s_energy_body_dict' % b].items()}
+        else:
+            results['%s_energy_body_dict' % b] = {}
 
     # Figure out and build return types
     return_method = metadata['bsse_type_list'][0]
@@ -790,5 +814,8 @@ def assemble_nbody_components(metadata, component_results):
         results['ret_ptype'] = core.Matrix.from_array(np_final_ptype)
     else:
         results['ret_ptype'] = results['ret_energy']
+
+    if monomer_energies == 0.0:
+        del results['energy_body_dict']
 
     return results

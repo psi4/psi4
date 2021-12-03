@@ -81,11 +81,11 @@ void DCTSolver::run_qc_dct() {
                            "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Amplitude <oo|vv>");
-    diisManager.set_error_vector_size(5, DIISEntry::Matrix, orbital_gradient_a_.get(), DIISEntry::Matrix,
-                                      orbital_gradient_b_.get(), DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab,
-                                      DIISEntry::DPDBuf4, &Lbb);
-    diisManager.set_vector_size(5, DIISEntry::Matrix, Xtotal_a_.get(), DIISEntry::Matrix, Xtotal_b_.get(),
-                                DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4, &Lbb);
+    diisManager.set_error_vector_size(5, DIISEntry::InputType::Matrix, orbital_gradient_a_.get(), DIISEntry::InputType::Matrix,
+                                      orbital_gradient_b_.get(), DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab,
+                                      DIISEntry::InputType::DPDBuf4, &Lbb);
+    diisManager.set_vector_size(5, DIISEntry::InputType::Matrix, Xtotal_a_.get(), DIISEntry::InputType::Matrix, Xtotal_b_.get(),
+                                DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4, &Lbb);
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);
@@ -208,15 +208,6 @@ void DCTSolver::compute_orbital_gradient() {
     Fb_->copy(so_h_);
     // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
     process_so_ints();
-    // Form F0 matrix
-    moF0a_->copy(Fa_);
-    moF0b_->copy(Fb_);
-    // Transform the F0 matrix to the MO basis
-    moF0a_->transform(Ca_);
-    moF0b_->transform(Cb_);
-    // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
-    Fa_->add(g_tau_a_);
-    Fb_->add(g_tau_b_);
     // Copy the SO basis Fock for the transformation to the MO basis
     moFa_->copy(Fa_);
     moFb_->copy(Fb_);

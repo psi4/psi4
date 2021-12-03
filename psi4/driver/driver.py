@@ -95,6 +95,10 @@ def _find_derivative_type(ptype, method_name, user_dertype):
         core.print_out('\nPCM analytic gradients are not implemented yet, re-routing to finite differences.\n')
         dertype = 0
 
+    if core.get_global_option("RELATIVISTIC") in ["X2C", "DKH"]:
+        core.print_out("\nRelativistic analytic gradients are not implemented yet, re-routing to finite differences.\n")
+        dertype = 0
+
     # Summary validation
     if (dertype == 2) and (method_name in procedures['hessian']):
         pass
@@ -238,10 +242,19 @@ def energy(name, **kwargs):
         Indicate to additionally return the :py:class:`~psi4.core.Wavefunction`
         calculation result as the second element (after *float* energy) of a tuple.
 
+    :type write_orbitals: str, :ref:`boolean <op_py_boolean>`
+    :param write_orbitals: ``filename`` || |dl| ``'on'`` |dr| || ``'off'`` 
+
+        (str) Save wfn containing current orbitals to the given file name after each SCF iteration
+        and retain after |PSIfour| finishes.
+
+        (:ref:`boolean <op_py_boolean>`) Turns writing the orbitals after the converged SCF on/off.
+        Orbital file will be deleted unless |PSIfour| is called with `-m` flag.
+
     :type restart_file: str
     :param restart_file: ``['file.1, file.32]`` || ``./file`` || etc.
 
-        Binary data files to be renamed for calculation restart.
+        Existing files to be renamed and copied for calculation restart, e.g. a serialized wfn or module-specific binary data.
 
     .. _`table:energy_gen`:
 
@@ -261,6 +274,8 @@ def energy(name, **kwargs):
     | dct                     | density cumulant (functional) theory :ref:`[manual] <sec:dct>`                                                |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order |MollerPlesset| perturbation theory (MP2) :ref:`[manual] <sec:dfmp2>` :ref:`[details] <tlmp2>`      |
+    +-------------------------+---------------------------------------------------------------------------------------------------------------+
+    | dlpno-mp2               | local MP2 with pair natural orbital domains :ref:`[manual] <sec:dlpnomp2>`                                    |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | mp3                     | 3rd-order |MollerPlesset| perturbation theory (MP3) :ref:`[manual] <sec:occ_nonoo>` :ref:`[details] <tlmp3>`  |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
@@ -352,7 +367,7 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | ccsd(t)                 | CCSD with perturbative triples (CCSD(T)) :ref:`[manual] <sec:cc>` :ref:`[details] <tlccsdt>`                  |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
-    | ccsd(at)                | CCSD with asymmetric perturbative triples (CCSD(AT)) :ref:`[manual] <sec:cc>` :ref:`[details] <tlccsdat>`     |
+    | a-ccsd(t)               | CCSD with asymmetric perturbative triples (A-CCSD(T)) :ref:`[manual] <sec:cc>` :ref:`[details] <tlccsdat>`    |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
     | bccd(t)                 | BCCD with perturbative triples :ref:`[manual] <sec:cc>`                                                       |
     +-------------------------+---------------------------------------------------------------------------------------------------------------+
@@ -540,6 +555,7 @@ def energy(name, **kwargs):
     #    precallback(lowername, **kwargs)
 
     optstash = driver_util._set_convergence_criterion('energy', lowername, 6, 8, 6, 8, 6)
+    optstash2 = p4util.OptionsState(['SCF', 'GUESS'])
 
     # Before invoking the procedure, we rename any file that should be read.
     # This is a workaround to do restarts with the current PSI4 capabilities
@@ -553,12 +569,17 @@ def energy(name, **kwargs):
             restartfile = (restartfile, )
         # Rename the files to be read to be consistent with psi4's file system
         for item in restartfile:
+            is_numpy_file = (os.path.isfile(item) and item.endswith(".npy")) or os.path.isfile(item + ".npy")
             name_split = re.split(r'\.', item)
-            if "npz" in item:
+            if is_numpy_file:
+                core.set_local_option('SCF', 'GUESS' ,'READ')
+                core.print_out(" Found user provided orbital data. Setting orbital guess to READ")
                 fname = os.path.split(os.path.abspath(core.get_writer_file_prefix(molecule.name())))[1]
                 psi_scratch = core.IOManager.shared_object().get_default_path()
-                file_num = item.split('.')[-2]
-                targetfile = os.path.join(psi_scratch, fname + "." + file_num + ".npz")
+                file_num = item.split('.')[-2] if "180" in item else "180"
+                targetfile = os.path.join(psi_scratch, fname + "." + file_num + ".npy")
+                if not item.endswith(".npy"):
+                    item = item + ".npy"
             else:
                 filenum = name_split[-1]
                 try:
@@ -572,6 +593,7 @@ def energy(name, **kwargs):
                 pid = str(os.getpid())
                 prefix = 'psi'
                 targetfile = filepath + prefix + '.' + pid + '.' + namespace + '.' + str(filenum)
+            core.print_out(f" \n Copying restart file <{item}> to <{targetfile}> for internal processing\n")
             shutil.copy(item, targetfile)
 
     wfn = procedures['energy'][lowername](lowername, molecule=molecule, **kwargs)
@@ -580,10 +602,11 @@ def energy(name, **kwargs):
         postcallback(lowername, wfn=wfn, **kwargs)
 
     optstash.restore()
+    optstash2.restore()
     if return_wfn:  # TODO current energy safer than wfn.energy() for now, but should be revisited
 
         # TODO place this with the associated call, very awkward to call this in other areas at the moment
-        if lowername in ['efp', 'mrcc', 'dmrg', 'psimrcc']:
+        if lowername in ['efp', 'mrcc', 'dmrg']:
             core.print_out("\n\nWarning! %s does not have an associated derived wavefunction." % name)
             core.print_out("The returned wavefunction is the incoming reference wavefunction.\n\n")
         elif 'sapt' in lowername:
@@ -634,7 +657,7 @@ def gradient(name, **kwargs):
     # Figure out lowername, dertype, and func
     # If we have analytical gradients we want to pass to our wrappers, otherwise we want to run
     # finite-diference energy or cbs energies
-    # TODO MP5/cc-pv[DT]Z behavior unkown due to "levels"
+    # TODO MP5/cc-pv[DT]Z behavior unknown due to "levels"
     user_dertype = kwargs.pop('dertype', None)
     if gradient_type == 'custom_function':
         if user_dertype is None:
@@ -736,6 +759,8 @@ def gradient(name, **kwargs):
         wfn = _process_displacement(energy, lowername, molecule, findif_meta_dict["reference"], 1, ndisp,
                                     **kwargs)
         var_dict = core.variables()
+        # ensure displacement calculations do not use restart_file orbitals.
+        kwargs.pop('restart_file', None)
 
         for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
             _process_displacement(
@@ -1561,6 +1586,8 @@ def hessian(name, **kwargs):
         wfn = _process_displacement(gradient, lowername, molecule, findif_meta_dict["reference"], 1, ndisp,
                                     **kwargs)
         var_dict = core.variables()
+        # ensure displacement calculations do not use restart_file orbitals.
+        kwargs.pop('restart_file', None)
 
         for n, displacement in enumerate(findif_meta_dict["displacements"].values(), start=2):
             _process_displacement(
@@ -1577,6 +1604,14 @@ def hessian(name, **kwargs):
         wfn.set_gradient(G0)
 
         # Explicitly set the current energy..
+        if isinstance(lowername, str) and lowername in procedures['energy']:
+            # this correctly filters out cbs fn and "hf/cc-pvtz"
+            # it probably incorrectly filters out mp5, but reconsider in DDD
+            core.set_variable(f"CURRENT HESSIAN", H)
+            core.set_variable(f"{lowername.upper()} TOTAL HESSIAN", H)
+            core.set_variable(f"{lowername.upper()} TOTAL GRADIENT", G0)
+            wfn.set_variable(f"{lowername.upper()} TOTAL HESSIAN", H)
+            wfn.set_variable(f"{lowername.upper()} TOTAL GRADIENT", G0)
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
         wfn.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
 
@@ -1620,6 +1655,14 @@ def hessian(name, **kwargs):
         wfn.set_gradient(G0)
 
         # Explicitly set the current energy..
+        if isinstance(lowername, str) and lowername in procedures['energy']:
+            # this correctly filters out cbs fn and "hf/cc-pvtz"
+            # it probably incorrectly filters out mp5, but reconsider in DDD
+            core.set_variable(f"CURRENT HESSIAN", H)
+            core.set_variable(f"{lowername.upper()} TOTAL HESSIAN", H)
+            core.set_variable(f"{lowername.upper()} TOTAL GRADIENT", G0)
+            wfn.set_variable(f"{lowername.upper()} TOTAL HESSIAN", H)
+            wfn.set_variable(f"{lowername.upper()} TOTAL GRADIENT", G0)
         core.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
         wfn.set_variable('CURRENT ENERGY', findif_meta_dict["reference"]["energy"])
 
@@ -1686,7 +1729,7 @@ def frequency(name, **kwargs):
         :math:`a_1`, requesting only the totally symmetric modes.
         ``-1`` indicates a full frequency calculation.
 
-    .. note:: Analytic hessians are only available for RHF. For all other methods, Frequencies will
+    .. note:: Analytic hessians are only available for RHF and UHF. For all other methods, Frequencies will
         proceed through finite differences according to availability of gradients or energies.
 
     .. _`table:freq_gen`:

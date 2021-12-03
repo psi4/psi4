@@ -108,19 +108,19 @@ class Gaussian94BasisSetParser(object):
             lines = dataset
 
         # Regular expressions that we'll be checking for.
-        cartesian = re.compile(r'^\s*cartesian\s*', re.IGNORECASE)
-        spherical = re.compile(r'^\s*spherical\s*', re.IGNORECASE)
+        cartesian = re.compile(r'^\s*cartesian\s*$', re.IGNORECASE)
+        spherical = re.compile(r'^\s*spherical\s*$', re.IGNORECASE)
         comment = re.compile(r'^\s*\!.*')  # line starts with !
-        separator = re.compile(r'^\s*\*\*\*\*')  # line starts with ****
+        separator = re.compile(r'^\s*\*\*\*\*\s*$')  # line starts with ****
         ATOM = r'(([A-Z]{1,3}\d*)|([A-Z]{1,3}_\w+))'  # match 'C 0', 'Al c 0', 'P p88 p_pass 0' not 'Ofail 0', 'h99_text 0'
         atom_array = re.compile(r'^\s*((' + ATOM + r'\s+)+)0\s*$', re.IGNORECASE)  # array of atomic symbols terminated by 0
         atom_ecp = re.compile(r'^\s*((' + ATOM + r'-ECP\s+)+)(\d+)\s+(\d+)\s*$', re.IGNORECASE)  # atom_ECP number number
-        shell = re.compile(r'^\s*(\w+|L=\d+)\s*(\d+)\s*(-?\d+\.\d+)')  # Match beginning of contraction
-        blank = re.compile(r'^\s*$')
+        shell = re.compile(r'^\s*(\w+|L=\d+)\s*(\d+)\s*(-?\d+\.\d+)\s*$')  # Match beginning of contraction
+        blank_line = re.compile(r'^\s*$')
         NUMBER = r'((?:[-+]?\d*\.\d+(?:[DdEe][-+]?\d+)?)|(?:[-+]?\d+\.\d*(?:[DdEe][-+]?\d+)?)|(?:[-+]?\d+))'
-        primitives1 = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + '.*')  # Match s, p, d, f, g, ... functions
-        primitives2 = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + '.*')  # match sp functions
-        ecpinfo = re.compile(r'^\s*(\d)\s+' + NUMBER + r'\s+' + NUMBER + '.*')  # Match rpower, exponent, coefficient
+        primitives1 = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + '\s*$')  # Match s, p, d, f, g, ... functions
+        primitives2 = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + '\s*$')  # match sp functions
+        ecpinfo = re.compile(r'^\s*(\d)\s+' + NUMBER + r'\s+' + NUMBER + '\s*$')  # Match rpower, exponent, coefficient
 
         # s, p and s, p, d can be grouped together in Pople-style basis sets
         sp = 'SP'
@@ -164,7 +164,7 @@ class Gaussian94BasisSetParser(object):
             lineno += 1
 
             # Ignore blank lines
-            if blank.match(line):
+            if blank_line.match(line):
                 continue
 
             # Look for Cartesian or Spherical

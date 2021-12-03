@@ -70,16 +70,24 @@ class PSI_API FCHKWriter {
     const SharedMatrix SCF_Dtot() const { return Dtot_ao; }
 };
 
+
 class PSI_API MoldenWriter {
     std::shared_ptr<Wavefunction> wavefunction_;
 
    public:
+    PSI_DEPRECATED(
+        "Constructing an MoldenWriter and then calling write instead of using `wfn.write_molden(name)` "
+        "is both buggy and deprecated, and in 1.5 it will stop working")
     MoldenWriter(std::shared_ptr<Wavefunction> wavefunction);
 
+    PSI_DEPRECATED(
+        "Constructing an MoldenWriter and then calling write instead of using `wfn.write_molden(name)` "
+        "is both buggy and deprecated, and in 1.5 it will stop working")
     void write(const std::string &filename, std::shared_ptr<Matrix> Ca, std::shared_ptr<Matrix> Cb,
                std::shared_ptr<Vector> Ea, std::shared_ptr<Vector> Eb, std::shared_ptr<Vector> OccA,
                std::shared_ptr<Vector> OccB, bool dovirtual);
 };
+
 
 class PSI_API MOWriter {
     std::shared_ptr<Wavefunction> wavefunction_;

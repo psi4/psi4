@@ -27,12 +27,21 @@
  */
 
 /*
- * frac.cc. So close to a great Battlestar Galactica joke.
+ * frac.cc.
+ *
+ * frac handles SCF with fractional occupation numbers. Each fractionally occupied orbital is regarded as occupied
+ * for purposes of docc, socc, nalpha, nbeta, etc. However, each orbital's contribution to the density matrix is
+ * scaled by the fractional occupation number. The density matrix no longer describes a single Slater determinant
+ * but an ensemble of Slater determinants. This is useful for finite-temperature theory and removing artifacts
+ * where some orbitals but not others of a degenerate set are held occupied, artificially breaking the degeneracy.
+ *
  * The way this works:
  * 1) form_C returns 1's normalized C matrices.
  * 2) find_occupation determines the occupations of said matrix via either Aufbau or MOM selection
  * 3) find_occupation then calls this, which renormalizes the C matrices with \sqrt(val) for each frac occ
+ *    These renormalized C matrices produce the desired density matrices, but are not orthonormal.
  * 4) find_D is then computed with the renormalized C matrices, and everything is transparent until 1) on the next cycle
+ * 5) frac_renormalize sets the wfn's C matrices to be un-renormalized.
  *
  * Some executive decisions:
  *  -DIIS: Upon FRAC start, the old DIIS info is nuked, and DIIS_START is incremented by the current iteration count.
@@ -71,26 +80,20 @@ void HF::frac() {
 
     // First frac iteration, blow away the diis and print the frac task
     if (iteration_ == options_.get_int("FRAC_START")) {
-        // Throw unless UHF/UKS
         if (!(options_.get_str("REFERENCE") == "UHF" || options_.get_str("REFERENCE") == "UKS"))
             throw PSIEXCEPTION("Fractional Occupation SCF is only implemented for UHF/UKS");
 
-        // Throw if no frac tasks
         if (!options_["FRAC_OCC"].size())
             throw PSIEXCEPTION("Fractional Occupation SCF requested, but empty FRAC_OCC/FRAC_VAL vector");
 
-        // Throw if inconsistent size
         if (options_["FRAC_OCC"].size() != options_["FRAC_VAL"].size())
             throw PSIEXCEPTION("Fractional Occupation SCF: FRAC_OCC/FRAC_VAL are of different dimensions");
 
-        // Throw if the user is being an idiot with docc/socc
         if (input_docc_ || input_socc_) throw PSIEXCEPTION("Fractional Occupation SCF: Turn off DOCC/SOCC");
 
-        // Throw if the user is trying to start MOM before FRAC
         if (options_.get_int("MOM_START") <= options_.get_int("FRAC_START") && options_.get_int("MOM_START") != 0)
             throw PSIEXCEPTION("Fractional Occupation SCF: MOM must start after FRAC");
 
-        // Throw if the user is just way too eager
         if (MOM_excited_) throw PSIEXCEPTION("Fractional Occupation SCF: Don't try an excited-state MOM");
 
         // Close off a previous burn-in SCF
@@ -112,11 +115,8 @@ void HF::frac() {
                     nbeta_++;
             }
 
-            // Throw if the user is insane
             if (val < 0.0)
-                throw PSIEXCEPTION(
-                    "Fractional Occupation SCF: Psi4 is not configured for positrons. Please annihilate and start "
-                    "again");
+                throw PSIEXCEPTION("Fractional Occupation SCF: Occupations must be non-negative.");
 
             outfile->Printf("    %-5s orbital %4d will contain %11.3E electron.\n", (i > 0 ? "Alpha" : "Beta"),
                             std::abs(i), val);
@@ -148,46 +148,29 @@ void HF::frac() {
     }
 
     // Every frac iteration: renormalize the Ca/Cb matrices
-
-    // Sort the eigenvalues in the usual manner
-    std::vector<std::tuple<double, int, int> > pairs_a;
-    std::vector<std::tuple<double, int, int> > pairs_b;
-    for (int h = 0; h < epsilon_a_->nirrep(); ++h) {
-        for (int i = 0; i < epsilon_a_->dimpi()[h]; ++i)
-            pairs_a.push_back(std::tuple<double, int, int>(epsilon_a_->get(h, i), h, i));
-    }
-    for (int h = 0; h < epsilon_b_->nirrep(); ++h) {
-        for (int i = 0; i < epsilon_b_->dimpi()[h]; ++i)
-            pairs_b.push_back(std::tuple<double, int, int>(epsilon_b_->get(h, i), h, i));
-    }
-    sort(pairs_a.begin(), pairs_a.end());
-    sort(pairs_b.begin(), pairs_b.end());
-
-    // Renormalize the C matrix entries
-    for (int ind = 0; ind < options_["FRAC_OCC"].size(); ind++) {
-        int i = options_["FRAC_OCC"][ind].to_integer();
-        double val = options_["FRAC_VAL"][ind].to_double();
-        bool is_alpha = (i > 0);
-        i = std::abs(i) - 1;  // Back to C ordering
-
-        int h = ((is_alpha) ? std::get<1>(pairs_a[i]) : std::get<1>(pairs_b[i]));
-
-        int nso = Ca_->rowspi()[h];
-        int nmo = Ca_->colspi()[h];
-
-        double** Cp = ((is_alpha) ? Ca_->pointer(h) : Cb_->pointer(h));
-
-        // And I say all that to say this
-        C_DSCAL(nso, std::sqrt(val), &Cp[0][i], nmo);
-    }
+    frac_helper();
 }
+
 void HF::frac_renormalize() {
     if ((options_.get_int("FRAC_START") == 0)       // frac disabled
         || !options_.get_bool("FRAC_RENORMALIZE"))  // || don't renormalize C
         return;
 
     // Renormalize the fractional occupations back to 1, if possible before storage
+    // We need to cache the old quantities because the renormalization isn't invertible
+    // for an occupation of 0. A user may want this during, say, frac_traverse.
     outfile->Printf("    FRAC: Renormalizing orbitals to 1.0 for storage.\n\n");
+
+    Ca_ = unscaled_Ca_;
+    Cb_ = unscaled_Cb_;
+}
+
+
+void HF::frac_helper() {
+
+    // Save the orbitals, without scaling factors
+    unscaled_Ca_ = Ca_->clone();
+    unscaled_Cb_ = Cb_->clone();
 
     // Sort the eigenvalues in the usual manner
     std::vector<std::tuple<double, int, int> > pairs_a;
@@ -210,15 +193,21 @@ void HF::frac_renormalize() {
         bool is_alpha = (i > 0);
         i = std::abs(i) - 1;  // Back to C ordering
 
-        int h = ((is_alpha) ? std::get<1>(pairs_a[i]) : std::get<1>(pairs_b[i]));
+        int h; double** Cp; int j;
+        if (is_alpha) {
+            h = std::get<1>(pairs_a[i]);
+            j = std::get<2>(pairs_a[i]);
+            Cp = Ca_->pointer(h);
+        } else {
+            h = std::get<1>(pairs_b[i]);
+            j = std::get<2>(pairs_b[i]);
+            Cp = Cb_->pointer(h);
+        }
 
         int nso = Ca_->rowspi()[h];
         int nmo = Ca_->colspi()[h];
 
-        double** Cp = ((is_alpha) ? Ca_->pointer(h) : Cb_->pointer(h));
-
-        // And I say all that to say this: TODO: This destroys FMP2 computations if val == 0
-        if (val != 0.0) C_DSCAL(nso, 1.0 / std::sqrt(val), &Cp[0][i], nmo);
+        C_DSCAL(nso, std::sqrt(val), &Cp[0][j], nmo);
     }
 }
 

@@ -2,10 +2,10 @@
 
 | **Status** | [![Azure DevOps builds](https://img.shields.io/azure-devops/build/psi4/e80489d7-9619-4512-8e7b-255e355b3ab8/1?logo=azure%20devops)](https://dev.azure.com/psi4/psi4/_build?definitionId=1) [![Codecov coverage](https://img.shields.io/codecov/c/github/psi4/psi4.svg?logo=Codecov&logoColor=white)](https://codecov.io/gh/psi4/psi4) [![LGTM analysis](https://img.shields.io/lgtm/grade/python/g/psi4/psi4.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/psi4/psi4/context:python) [![LGTM analysis](https://img.shields.io/lgtm/grade/cpp/g/psi4/psi4.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/psi4/psi4/context:cpp) |
 | :------ | :------- |
-| **Latest Release** | [![Last release tag](https://img.shields.io/github/release/psi4/psi4.svg)](https://github.com/psi4/psi4/releases)  [![Commits since release](https://img.shields.io/github/commits-since/psi4/psi4/v1.3.svg)](https://github.com/psi4/psi4/releases/tag/v1.3) [![python](https://img.shields.io/badge/python-3.6%2C%203.7-blue.svg)](https://psicode.org/psi4manual/master/introduction.html#supported-systems) |
+| **Latest Release** | [![Last release tag](https://img.shields.io/github/release/psi4/psi4.svg)](https://github.com/psi4/psi4/releases)  [![Commits since release](https://img.shields.io/github/commits-since/psi4/psi4/v1.4.svg)](https://github.com/psi4/psi4/releases/tag/v1.4) [![python](https://img.shields.io/badge/python-3.6%2C%203.7%2C%203.8%2C%203.9-blue.svg)](https://psicode.org/psi4manual/master/introduction.html#supported-systems) |
 | **Communication** | [![User site](https://img.shields.io/badge/home-Psi4-5077AB.svg)](https://psicode.org/) [![docs latest](https://img.shields.io/badge/docs-latest-5077AB.svg?logo=read%20the%20docs)](https://psicode.org/psi4manual/master/index.html) [![chat on forum](https://img.shields.io/badge/chat-on_forum-808493.svg?logo=Discourse&logoColor=white)](http://forum.psicode.org/) [![dev chat on slack](https://img.shields.io/badge/dev_chat-on_slack-808493.svg?logo=slack)](https://join.slack.com/t/psi4/shared_invite/zt-5s36s4rb-SQH6_AWyfWOqlKYN3cFs4Q) |
-| **Foundation** | [![license](https://img.shields.io/github/license/psi4/psi4.svg)](https://opensource.org/licenses/LGPL-3.0) [![platforms](https://img.shields.io/badge/Platforms-Linux%2C%20MacOS%2C%20Windows%20WSL-orange.svg)](https://psicode.org/psi4manual/master/introduction.html#supported-systems) [![python](https://img.shields.io/badge/python-3.6+-blue.svg)](https://psicode.org/psi4manual/master/introduction.html#supported-systems) |
-| **Installation** | [![obtain latest](https://img.shields.io/badge/obtain-latest-green.svg)](https://admiring-tesla-08529a.netlify.com/installs/latest) [![Conda](https://img.shields.io/conda/v/psi4/psi4.svg)](https://anaconda.org/psi4/psi4) [![Anaconda-Server Badge](https://anaconda.org/psi4/psi4/badges/latest_release_relative_date.svg)](https://anaconda.org/psi4/psi4) |
+| **Foundation** | [![license](https://img.shields.io/github/license/psi4/psi4.svg)](https://opensource.org/licenses/LGPL-3.0) [![platforms](https://img.shields.io/badge/Platforms-Linux%2C%20MacOS%2C%20Windows%2C%20Windows%20WSL-orange.svg)](https://psicode.org/psi4manual/master/introduction.html#supported-systems) [![python](https://img.shields.io/badge/python-3.7+-blue.svg)](https://psicode.org/psi4manual/master/introduction.html#supported-systems) |
+| **Installation** | [![obtain latest](https://img.shields.io/badge/obtain-latest-green.svg)](https://psicode.netlify.com/installs/latest) [![Conda](https://img.shields.io/conda/v/psi4/psi4.svg)](https://anaconda.org/psi4/psi4) [![Anaconda-Server Badge](https://anaconda.org/psi4/psi4/badges/latest_release_relative_date.svg)](https://anaconda.org/psi4/psi4) |
 | **Demo** | [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/psi4/psi4/master?filepath=doc%2Fsphinxman%2Fsource%2Fpsiapi.ipynb) |
 
 <!--  -->
@@ -36,7 +36,7 @@ strives to be friendly to both users and developers.
 
 * **Downloading and Installing Psi4** https://psicode.org/psi4manual/master/build_faq.html (for the CMake adept, see [CMakeLists.txt](CMakeLists.txt)
 
-* **Manual**  [http://bit.ly/psi4manual](https://psicode.org/psi4manual/master/index.html) (built nightly from master branch) or https://psicode.org/psi4manual/1.3.2/index.html (last release)
+* **Manual**  [http://bit.ly/psi4manual](https://psicode.org/psi4manual/master/index.html) (built nightly from master branch) or https://psicode.org/psi4manual/1.4.0/index.html (last release)
 
 * **Tutorial** https://psicode.org/psi4manual/master/tutorial.html for Psithon (``psi4 job.in``), https://psicode.org/psi4manual/master/psiapi.html for PsiAPI (``python job.py``)
 
@@ -44,11 +44,11 @@ strives to be friendly to both users and developers.
 
 * **Communication & Support** https://psicode.org/psi4manual/master/introduction.html#technical-support
 
-* **Github**  https://github.com/psi4/psi4 (authoritative repository)
+* **GitHub**  https://github.com/psi4/psi4 (authoritative repository)
 
 * **Continuous Integration Status** [![Azure DevOps builds](https://img.shields.io/azure-devops/build/psi4/e80489d7-9619-4512-8e7b-255e355b3ab8/1/master.svg?logo=azure%20devops)](https://dev.azure.com/psi4/psi4/_build?definitionId=1) on Linux and Windows
 
-* **Anaconda**  https://anaconda.org/psi4 (binary available for Linux, Mac, and WSL Windows [![Binstar Badge](https://anaconda.org/psi4/psi4/badges/downloads.svg)](https://anaconda.org/psi4/psi4) ) [instructions](https://psicode.org/psi4manual/master/conda.html#how-to-install-a-psi4-binary-with-the-psi4conda-installer-download-site)
+* **Anaconda**  https://anaconda.org/psi4 (binary available for Linux, Mac, Windows, and WSL Windows [![Binstar Badge](https://anaconda.org/psi4/psi4/badges/downloads.svg)](https://anaconda.org/psi4/psi4) ) [instructions](https://psicode.org/psi4manual/master/conda.html#how-to-install-a-psi4-binary-with-the-psi4conda-installer-download-site)
 
 * **Coverage** Python and C++ source code lines hit by running most of the test suite. [![codecov](https://img.shields.io/codecov/c/github/psi4/psi4.svg?logo=Codecov&logoColor=white)](https://codecov.io/gh/psi4/psi4)
 

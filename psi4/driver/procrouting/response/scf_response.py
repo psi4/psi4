@@ -82,7 +82,7 @@ def cpscf_linear_response(wfn, *args, **kwargs):
         The reference wavefunction.
     args : list
         The list of arguments. For each argument, such as ``dipole polarizability``, will return the corresponding
-        response. The user may also choose to pass a list or tuple of custom vectors.
+        response.
     kwargs : dict
         Options that control how the response is computed. The following options are supported (with default values):
           - ``conv_tol``: 1e-5
@@ -92,132 +92,92 @@ def cpscf_linear_response(wfn, *args, **kwargs):
     Returns
     -------
     responses : list
-        The list of responses.
+        The list of response tensors.
     """
     mints = core.MintsHelper(wfn.basisset())
 
-    # list of dictionaries to control response calculations, count how many user-supplied vectors we have
+    # list of dictionaries to control response calculations
     complete_dict = []
-    n_user = 0
 
     for arg in args:
-
         # for each string keyword, append the appropriate dictionary (vide supra) to our list
-        if isinstance(arg, str):
-            ret = property_dicts.get(arg)
-            if ret:
-                complete_dict.append(ret)
-            else:
-                raise ValidationError('Do not understand {}. Abort.'.format(arg))
-
-        # the user passed a list of vectors. absorb them into a dictionary
-        elif isinstance(arg, tuple) or isinstance(arg, list):
-            complete_dict.append({
-                'name': 'User Vectors',
-                'length': len(arg),
-                'vectors': arg,
-                'vector names': ['User Vector {}_{}'.format(n_user, i) for i in range(len(arg))]
-            })
-            n_user += len(arg)
-
-        # single vector passed. stored in a dictionary as a list of length 1 (can be handled as the case above that way)
-        # note: the length is set to '0' to designate that it was not really passed as a list
+        if not isinstance(arg, str):
+            # TODO: better to raise TypeError?
+            raise ValidationError("Property name must be of type string.")
+        ret = property_dicts.get(arg)
+        if ret:
+            complete_dict.append(ret)
         else:
-            complete_dict.append({
-                'name': 'User Vector',
-                'length': 0,
-                'vectors': [arg],
-                'vector names': ['User Vector {}'.format(n_user)]
-            })
-            n_user += 1
+            raise ValidationError(f"Do not understand '{arg}'.")
 
     # vectors will be passed to the cphf solver, vector_names stores the corresponding names
     vectors = []
     vector_names = []
+    restricted = wfn.same_a_b_orbs()
 
     # construct the list of vectors. for the keywords, fetch the appropriate tensors from MintsHelper
     for prop in complete_dict:
-        if 'User' in prop['name']:
-            for name, vec in zip(prop['vector names'], prop['vectors']):
-                vectors.append(vec)
-                vector_names.append(name)
-
-        else:
-            tmp_vectors = prop['mints_function'](mints)
-            for tmp in tmp_vectors:
-                tmp.scale(-2.0)  # RHF only
-                vectors.append(tmp)
-                vector_names.append(tmp.name)
+        tmp_vectors = prop['mints_function'](mints)
+        for tmp in tmp_vectors:
+            tmp.scale(-1.0)
+            vectors.append(tmp)
+            vector_names.append(tmp.name)
 
     # do we have any vectors to work with?
     if len(vectors) == 0:
-        raise ValidationError('I have no vectors to work with. Aborting.')
+        raise ValidationError('No vectors to work with. Aborting.')
 
     # print information on module, vectors that will be used
-    _print_header(complete_dict, n_user)
+    _print_header(complete_dict)
 
-    # fetch wavefunction information
-    nmo = wfn.nmo()
-    ndocc = wfn.nalpha()
-    nvirt = nmo - ndocc
-
-    c_occ = wfn.Ca_subset("AO", "OCC")
-    c_vir = wfn.Ca_subset("AO", "VIR")
-    nbf = c_occ.shape[0]
-
-    # the vectors need to be in the MO basis. if they have the shape nbf x nbf, transform.
-    for i in range(len(vectors)):
-        shape = vectors[i].shape
-
-        if shape == (nbf, nbf):
-            vectors[i] = core.triplet(c_occ, vectors[i], c_vir, True, False, False)
-
-        # verify that this vector already has the correct shape
-        elif shape != (ndocc, nvirt):
-            raise ValidationError('ERROR: "{}" has an unrecognized shape ({}, {}). Must be either ({}, {}) or ({}, {})'.format(
-                vector_names[i], shape[0], shape[1], nbf, nbf, ndocc, nvirt))
+    nbf = wfn.basisset().nbf()
+    Co = [wfn.Ca_subset("AO", "OCC"), wfn.Cb_subset("AO", "OCC")]
+    Cv = [wfn.Ca_subset("AO", "VIR"), wfn.Cb_subset("AO", "VIR")]
+    vectors_transformed = []
+    for vector in vectors:
+        if vector.shape != (nbf, nbf):
+            raise ValidationError(f"Vector must be of shape ({nbf}, {nbf}) for transformation"
+                                  " to the SO basis.")
+        v_a = core.triplet(Co[0], vector, Cv[0], True, False, False)
+        vectors_transformed.append(v_a)
+        if not restricted:
+            v_b = core.triplet(Co[1], vector, Cv[1], True, False, False)
+            vectors_transformed.append(v_b)
 
     # compute response vectors for each input vector
     params = [kwargs.pop("conv_tol", 1.e-5), kwargs.pop("max_iter", 10), kwargs.pop("print_lvl", 2)]
 
-    responses = wfn.cphf_solve(vectors, *params)
+    responses_list = wfn.cphf_solve(vectors_transformed, *params)
 
     # zip vectors, responses for easy access
-    vectors = {k: v for k, v in zip(vector_names, vectors)}
-    responses = {k: v for k, v in zip(vector_names, responses)}
-
+    if restricted:
+        vectors = {f"{k}_a": v for k, v in zip(vector_names, vectors_transformed)}
+        responses = {f"{k}_a": v for k, v in zip(vector_names, responses_list)}
+    else:
+        vectors = {f"{k}_a": v for k, v in zip(vector_names, vectors_transformed[::2])}
+        vectors.update({f"{k}_b": v for k, v in zip(vector_names, vectors_transformed[1::2])})
+        responses = {f"{k}_a": v for k, v in zip(vector_names, responses_list[::2])}
+        responses.update({f"{k}_b": v for k, v in zip(vector_names, responses_list[1::2])})
     # compute response values, format output
     output = []
+    pref = -4.0 if restricted else -2.0
     for prop in complete_dict:
-
-        # try to replicate the data structure of the input
-        if 'User' in prop['name']:
-            if prop['length'] == 0:
-                output.append(responses[prop['vector names'][0]])
-            else:
-                buf = []
-                for name in prop['vector names']:
-                    buf.append(responses[name])
-                output.append(buf)
-
-        else:
-            names = prop['vector names']
-            dim = len(names)
-
-            buf = np.zeros((dim, dim))
-
-            for i, i_name in enumerate(names):
-                for j, j_name in enumerate(names):
-                    buf[i, j] = -1.0 * vectors[i_name].vector_dot(responses[j_name])
-
-            output.append(buf)
+        names = prop['vector names']
+        dim = len(names)
+        buf = np.zeros((dim, dim))
+        for i, i_name in enumerate(names):
+            for j, j_name in enumerate(names):
+                buf[i, j] = pref * vectors[f"{i_name}_a"].vector_dot(responses[f"{j_name}_a"])
+                if not restricted:
+                    buf[i, j] += pref * vectors[f"{i_name}_b"].vector_dot(responses[f"{j_name}_b"])
+        output.append(buf)
 
     _print_output(complete_dict, output)
 
     return output
 
 
-def _print_header(complete_dict, n_user):
+def _print_header(complete_dict):
     core.print_out('\n\n         ---------------------------------------------------------\n'
                    '         {:^57}\n'.format('CPSCF Linear Response Solver') +
                    '         {:^57}\n'.format('by Marvin Lechner and Daniel G. A. Smith') +
@@ -228,9 +188,6 @@ def _print_header(complete_dict, n_user):
     for prop in complete_dict:
         if 'User' not in prop['name']:
             core.print_out('    {}\n'.format(prop['name']))
-
-    if n_user != 0:
-        core.print_out('    {} user-supplied vector(s)\n'.format(n_user))
 
 
 def _print_matrix(descriptors, content, title):
@@ -425,6 +382,147 @@ def _validate_tdscf(*, wfn, states, triplets, guess) -> None:
     if guess != "DENOMINATORS":
         raise ValidationError(f"TDSCF: Guess type {guess} is not valid")
 
+# Generate additional output from TDSCF caclulations
+def _analyze_tdscf_excitations(tdscf_results, wfn, tda, coeff_cutoff,
+                               tdm_print):
+
+    restricted = wfn.same_a_b_orbs()
+
+    # Print out requested dipole moment vectors
+    _printable = {
+        "E_TDM_LEN": {
+            "title": "Electric Transition Dipole Moments (Length) (au)",
+            "what": lambda x: x.edtm_length,
+        },
+        "E_TDM_VEL": {
+            "title": "Electric Transition Dipole Moments (Velocity) (au)",
+            "what": lambda x: x.edtm_velocity,
+        },
+        "M_TDM": {
+            "title": "Magnetic Transition Dipole Moments (au)",
+            "what": lambda x: x.mdtm,
+        },
+    }
+
+    for p in tdm_print:
+        core.print_out(
+            f"\n{_printable[p]['title']}:\nState      X          Y          Z\n"
+        )
+        for i, q in enumerate(tdscf_results):
+            x, y, z = _printable[p]['what'](q)
+            core.print_out(f" {i+1: 4d} {x:< 10.6f} {y:< 10.6f} {z:< 10.6f}\n")
+
+    # Print contributing transitions...
+    core.print_out(f"\n\nContributing excitations{'' if tda else ' and de-excitations'}")
+    #...only currently for C1 symmetry
+    if wfn.molecule().point_group().symbol() != 'c1':
+        core.print_out("...only curently available with C1 symmetry\n")
+    else:
+        core.print_out(
+            f"\nOnly contributions with coefficients >{coeff_cutoff: .2e} will be printed:\n"
+        )
+        for i, x in enumerate(tdscf_results):
+            E_ex_nm = 1e9 / (constants.conversion_factor('hartree', 'm^-1') *
+                             x.E_ex_au)
+            core.print_out(
+                f"\nExcited State {i+1:4d} ({1 if x.spin_mult== 'singlet' else 3} {x.irrep_ES}):"
+            )
+            core.print_out(
+                f"{x.E_ex_au:> 10.5f} au   {E_ex_nm: >.2f} nm f = {x.f_length: >.4f}\n"
+            )
+
+            if not restricted:
+                core.print_out("Alpha orbitals:\n")
+            # Extract contributing transitions from left and right eigenvectors from solver
+            if tda:
+                X = x.L_eigvec if restricted else x.L_eigvec[0]
+                Xssq = X.sum_of_squares()
+                core.print_out(f"  Sums of squares: Xssq = {Xssq: .6e}\n")
+            else:
+                L = x.L_eigvec if restricted else x.L_eigvec[0]
+                R = x.R_eigvec if restricted else x.R_eigvec[0]
+                X = L.clone()
+                X.add(R)
+                X.scale(0.5)
+                Y = R.clone()
+                Y.subtract(L)
+                Y.scale(0.5)
+                Xssq = X.sum_of_squares()
+                Yssq = Y.sum_of_squares()
+
+                core.print_out(
+                    f"  Sums of squares: Xssq = {Xssq: .6e}; Yssq = {Yssq: .6e}; Xssq - Yssq = {Xssq-Yssq: .6e}\n"
+                )
+
+            nocc = X.rows()
+            nvirt = X.cols()
+            # Ignore any scaling for now
+            div = 1
+            # Excitations
+            for row in range(nocc):
+                for col in range(nvirt):
+                    coef = X.get(row, col) / div
+                    if abs(coef) > coeff_cutoff:
+                        perc = 100 * coef**2
+                        core.print_out(
+                            f"   {row+1: 3} ->{col+1+nocc: 3}  {coef: 10.6f} ({perc: >6.3f}%)\n"
+                        )
+            # De-excitations if not using TDA
+            if not tda:
+                for row in range(nocc):
+                    for col in range(nvirt):
+                        coef = Y.get(row, col) / div
+                        if abs(coef) > coeff_cutoff:
+                            perc = 100 * coef**2
+                            core.print_out(
+                                f"   {row+1: 3} <-{col+1+nocc: 3}  {coef: 10.6f} ({perc: >6.3f}%)\n"
+                            )
+            # Now treat beta orbitals if needed
+            if not restricted:
+                core.print_out("Beta orbitals:\n")
+                if tda:
+                    X = x.L_eigvec if restricted else x.L_eigvec[1]
+                    Xssq = X.sum_of_squares()
+                    core.print_out(f"  Sums of squares: Xssq = {Xssq: .6e}\n")
+                else:
+                    L = x.L_eigvec if restricted else x.L_eigvec[1]
+                    R = x.R_eigvec if restricted else x.R_eigvec[1]
+                    X = L.clone()
+                    X.add(R)
+                    X.scale(0.5)
+                    Y = R.clone()
+                    Y.subtract(L)
+                    Y.scale(0.5)
+                    Xssq = X.sum_of_squares()
+                    Yssq = Y.sum_of_squares()
+
+                    core.print_out(
+                        f"  Sums of squares: Xssq = {Xssq: .6e}; Yssq = {Yssq: .6e}; Xssq - Yssq = {Xssq-Yssq: .6e}\n"
+                    )
+
+                nocc = X.rows()
+                nvirt = X.cols()
+                # Excitations (beta orbitals)
+                for row in range(nocc):
+                    for col in range(nvirt):
+                        coef = X.get(row, col) / div
+                        if abs(coef) > coeff_cutoff:
+                            perc = 100 * coef**2
+                            core.print_out(
+                                f"   {row+1: 3}B->{col+1+nocc: 3}B {coef: 10.6f} ({perc: >6.3f}%)\n"
+                            )
+                # De-excitations if not using TDA (beta orbitals):
+                if not tda:
+                    for row in range(nocc):
+                        for col in range(nvirt):
+                            coef = Y.get(row, col) / div
+                            if abs(coef) > coeff_cutoff:
+                                perc = 100 * coef**2
+                                core.print_out(
+                                    f"   {row+1: 3}B<-{col+1+nocc: 3}B {coef: 10.6f} ({perc: >6.3f}%)\n"
+                                )
+    core.print_out("\n")
+
 
 def tdscf_excitations(wfn,
                       *,
@@ -434,7 +532,9 @@ def tdscf_excitations(wfn,
                       r_convergence: float = 1.0e-4,
                       maxiter: int = 60,
                       guess: str = "DENOMINATORS",
-                      verbose: int = 1):
+                      verbose: int = 1,
+                      coeff_cutoff: float = 0.1,
+                      tdm_print: List[str] = []):
     """Compute excitations from a SCF(HF/KS) wavefunction
 
     Parameters
@@ -492,6 +592,16 @@ def tdscf_excitations(wfn,
     verbose : int, optional.
        How verbose should the solver be?
        Default: 1
+    coeff_cutoff : float, optional.
+       Cutoff for printing out excitation and de-excitation coefficients.
+       Default: 0.1
+    tdm_print : list, optional.
+       List of transition dipole moments to print.
+       Valid options are:
+         - `ETDM_LEN`. Electric Transition Dipole Moments, length representation
+         - `ETDM_VEL`. Electric Transition Dipole Moments, velocity representation
+         - `MTDM`. Magnetic Transition Dipole Moments
+       Default: `none`
 
     Notes
     -----
@@ -680,5 +790,7 @@ def tdscf_excitations(wfn,
         )
 
     core.print_out("\n")
+    
+    _analyze_tdscf_excitations(_results, wfn, tda, coeff_cutoff, tdm_print)
 
     return solver_results

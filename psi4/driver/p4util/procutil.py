@@ -57,7 +57,7 @@ def kwargs_lower(kwargs):
     caseless_kwargs = {}
     for key, value in kwargs.items():
         lkey = key.lower()
-        if lkey in ['subset', 'banner']:  # only kw for which case matters
+        if lkey in ['subset', 'banner', 'restart_file', 'write_orbitals']:  # only kw for which case matters
             lvalue = value
         else:
             try:
@@ -331,6 +331,7 @@ _modules = [
     "DFEP2",
     "DFMP2",
     "DFOCC",
+    "DLPNO",
     "DMRG",
     "EFP",
     "FINDIF",

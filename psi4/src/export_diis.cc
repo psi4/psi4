@@ -33,10 +33,42 @@
 
 using namespace psi;
 namespace py = pybind11;
+using namespace pybind11::literals;
 
 void export_diis(py::module &m) {
-    py::class_<DIISManager, std::shared_ptr<DIISManager> >(m, "DIISManager", "docstring")
-        .def(py::init<>())
+    py::class_<DIISManager, std::shared_ptr<DIISManager> > diis(m, "DIISManager", "docstring");
+
+    py::enum_<DIISManager::StoragePolicy>(diis, "StoragePolicy")
+        .value("InCore", DIISManager::StoragePolicy::InCore)
+        .value("OnDisk", DIISManager::StoragePolicy::OnDisk);
+
+    py::enum_<DIISManager::RemovalPolicy>(diis, "RemovalPolicy")
+        .value("LargestError", DIISManager::RemovalPolicy::LargestError)
+        .value("OldestAdded", DIISManager::RemovalPolicy::OldestAdded);
+
+    diis.def(py::init<>())
+        .def(py::init<int, const std::string&, DIISManager::RemovalPolicy, DIISManager::StoragePolicy>(),
+                "max_vectors"_a, "name"_a, "removal_policy"_a = DIISManager::RemovalPolicy::LargestError, "storage_policy"_a = DIISManager::StoragePolicy::InCore)
+        .def("set_error_vector_size", [](DIISManager& diis, const SharedMatrix mat) {
+                diis.set_error_vector_size(1, DIISEntry::InputType::Matrix, mat.get());
+            })
+        .def("set_vector_size", [](DIISManager& diis, const SharedMatrix mat) {
+                diis.set_vector_size(1, DIISEntry::InputType::Matrix, mat.get());
+            })
+        .def("add_entry", [](DIISManager& diis, const SharedMatrix m1, const SharedMatrix m2) {
+                diis.add_entry(2, m1.get(), m2.get());
+            })
+        .def("set_error_vector_size", [](DIISManager& diis, const SharedMatrix m1, const SharedMatrix m2) {
+                diis.set_error_vector_size(2, DIISEntry::InputType::Matrix, m1.get(),  DIISEntry::InputType::Matrix, m2.get());
+            })
+        .def("set_vector_size", [](DIISManager& diis, const SharedMatrix m1, const SharedMatrix m2) {
+                diis.set_vector_size(2, DIISEntry::InputType::Matrix, m1.get(),  DIISEntry::InputType::Matrix, m2.get());
+             })
+        .def("add_entry", [](DIISManager& diis, const SharedMatrix m1, const SharedMatrix m2, const SharedMatrix m3, const SharedMatrix m4) {
+                diis.add_entry(4, m1.get(), m2.get(), m3.get(), m4.get());
+            })
         .def("reset_subspace", &DIISManager::reset_subspace, "docstring")
         .def("delete_diis_file", &DIISManager::delete_diis_file, "docstring");
+
+    py::class_<DIISEntry, std::shared_ptr<DIISEntry> > diis_entry(m, "DIISEntry", "docstring");
 }

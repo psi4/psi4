@@ -76,18 +76,18 @@ void OCCWave::occ_iterations() {
     // If diis?
     // if (nooA + nooB != 1) {
     if (do_diis_ == 1) {
-        orbitalDiis = new DIISManager(maxdiis_, "Orbital Optimized DIIS", DIISManager::LargestError, DIISManager::OnDisk);
+        orbitalDiis = new DIISManager(maxdiis_, "Orbital Optimized DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk);
         std::string tensor_name = (wfn_type_ == "OCEPA") ? "T2" : (wfn_type_ == "OMP2" ? "T" : "T2_1");
         if (reference_ == "RESTRICTED") {
             dpdbuf4 T;
             std::string temp1 = tensor_name + " <OO|VV>";
             global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, temp1.c_str());
             if (wfn_type_ == "OMP2.5" || wfn_type_ == "OMP3") {
-                orbitalDiis->set_error_vector_size(3, DIISEntry::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::DPDBuf4, &T, DIISEntry::DPDBuf4, &T);
-                orbitalDiis->set_vector_size(3, DIISEntry::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::DPDBuf4, &T, DIISEntry::DPDBuf4, &T);
+                orbitalDiis->set_error_vector_size(3, DIISEntry::InputType::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::InputType::DPDBuf4, &T, DIISEntry::InputType::DPDBuf4, &T);
+                orbitalDiis->set_vector_size(3, DIISEntry::InputType::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::InputType::DPDBuf4, &T, DIISEntry::InputType::DPDBuf4, &T);
             } else {
-                orbitalDiis->set_error_vector_size(2, DIISEntry::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::DPDBuf4, &T);
-                orbitalDiis->set_vector_size(2, DIISEntry::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::DPDBuf4, &T);
+                orbitalDiis->set_error_vector_size(2, DIISEntry::InputType::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::InputType::DPDBuf4, &T);
+                orbitalDiis->set_vector_size(2, DIISEntry::InputType::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::InputType::DPDBuf4, &T);
             }
             global_dpd_->buf4_close(&T);
         } else if (reference_ == "UNRESTRICTED") {
@@ -104,15 +104,15 @@ void OCCWave::occ_iterations() {
             global_dpd_->buf4_init(&Tbb, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                temp1.c_str());
             if (wfn_type_ == "OMP2.5" || wfn_type_ == "OMP3") {
-                orbitalDiis->set_error_vector_size(8, DIISEntry::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::Vector, kappa_bar_[SpinType::Beta].get(),
-                                         DIISEntry::DPDBuf4, &Taa, DIISEntry::DPDBuf4, &Tab, DIISEntry::DPDBuf4, &Tbb, DIISEntry::DPDBuf4, &Taa, DIISEntry::DPDBuf4, &Tab, DIISEntry::DPDBuf4, &Tbb);
-                orbitalDiis->set_vector_size(8, DIISEntry::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::Vector, kappa_bar_[SpinType::Beta].get(),
-                                         DIISEntry::DPDBuf4, &Taa, DIISEntry::DPDBuf4, &Tab, DIISEntry::DPDBuf4, &Tbb, DIISEntry::DPDBuf4, &Taa, DIISEntry::DPDBuf4, &Tab, DIISEntry::DPDBuf4, &Tbb);
+                orbitalDiis->set_error_vector_size(8, DIISEntry::InputType::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::InputType::Vector, kappa_bar_[SpinType::Beta].get(),
+                                         DIISEntry::InputType::DPDBuf4, &Taa, DIISEntry::InputType::DPDBuf4, &Tab, DIISEntry::InputType::DPDBuf4, &Tbb, DIISEntry::InputType::DPDBuf4, &Taa, DIISEntry::InputType::DPDBuf4, &Tab, DIISEntry::InputType::DPDBuf4, &Tbb);
+                orbitalDiis->set_vector_size(8, DIISEntry::InputType::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::InputType::Vector, kappa_bar_[SpinType::Beta].get(),
+                                         DIISEntry::InputType::DPDBuf4, &Taa, DIISEntry::InputType::DPDBuf4, &Tab, DIISEntry::InputType::DPDBuf4, &Tbb, DIISEntry::InputType::DPDBuf4, &Taa, DIISEntry::InputType::DPDBuf4, &Tab, DIISEntry::InputType::DPDBuf4, &Tbb);
             } else {
-                orbitalDiis->set_error_vector_size(5, DIISEntry::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::Vector, kappa_bar_[SpinType::Beta].get(),
-                        DIISEntry::DPDBuf4, &Taa, DIISEntry::DPDBuf4, &Tab, DIISEntry::DPDBuf4, &Tbb);
-                orbitalDiis->set_vector_size(5, DIISEntry::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::Vector, kappa_bar_[SpinType::Beta].get(),
-                        DIISEntry::DPDBuf4, &Taa, DIISEntry::DPDBuf4, &Tab, DIISEntry::DPDBuf4, &Tbb);
+                orbitalDiis->set_error_vector_size(5, DIISEntry::InputType::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::InputType::Vector, kappa_bar_[SpinType::Beta].get(),
+                        DIISEntry::InputType::DPDBuf4, &Taa, DIISEntry::InputType::DPDBuf4, &Tab, DIISEntry::InputType::DPDBuf4, &Tbb);
+                orbitalDiis->set_vector_size(5, DIISEntry::InputType::Vector, kappa_bar_[SpinType::Alpha].get(), DIISEntry::InputType::Vector, kappa_bar_[SpinType::Beta].get(),
+                        DIISEntry::InputType::DPDBuf4, &Taa, DIISEntry::InputType::DPDBuf4, &Tab, DIISEntry::InputType::DPDBuf4, &Tbb);
             }
             global_dpd_->buf4_close(&Taa);
             global_dpd_->buf4_close(&Tab);

@@ -478,7 +478,7 @@ def set_module_options(module: str, options_dict: Dict[str, Any]) -> None:
     Sets Psi4 module options from a module specification and input dictionary.
     """
     warnings.warn(
-        "Using `psi4.set_module_options(<module>, {keys: vals})` instead of `psi4.set_options({<module>__<keys>: <vals>})` is deprecated, and in 1.5 it will stop working\n",
+        "Using `psi4.set_module_options(<module>, {<key>: <val>})` instead of `psi4.set_options({<module>__<key>: <val>})` is deprecated, and in 1.5 it will stop working\n",
         category=FutureWarning,
         stacklevel=2)
 
@@ -630,6 +630,9 @@ _qcvar_transitions = {
     "WIBERG_LOWDIN_INDICES": "WIBERG LOWDIN INDICES",
     "LOWDIN_CHARGES": "LOWDIN CHARGES",
     "MULLIKEN_CHARGES": "MULLIKEN CHARGES",
+    "(AT) CORRECTION ENERGY": "A-(T) CORRECTION ENERGY",
+    "CCSD(AT) TOTAL ENERGY": "A-CCSD(T) TOTAL ENERGY",
+    "CCSD(AT) CORRELATION ENERGY": "A-CCSD(T) CORRELATION ENERGY",
 }
 
 _qcvar_cancellations = {

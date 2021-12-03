@@ -107,10 +107,10 @@ void DCTSolver::dc06_response() {
         global_dpd_->file2_init(&zaa, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
         global_dpd_->file2_init(&zbb, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
         DIISManager diisManager(maxdiis_, "DCT DIIS orbital response vectors");
-        diisManager.set_error_vector_size(5, DIISEntry::DPDFile2, &zaa, DIISEntry::DPDFile2, &zbb, DIISEntry::DPDBuf4,
-                                          &Zaa, DIISEntry::DPDBuf4, &Zab, DIISEntry::DPDBuf4, &Zbb);
-        diisManager.set_vector_size(5, DIISEntry::DPDFile2, &zaa, DIISEntry::DPDFile2, &zbb, DIISEntry::DPDBuf4, &Zaa,
-                                    DIISEntry::DPDBuf4, &Zab, DIISEntry::DPDBuf4, &Zbb);
+        diisManager.set_error_vector_size(5, DIISEntry::InputType::DPDFile2, &zaa, DIISEntry::InputType::DPDFile2, &zbb, DIISEntry::InputType::DPDBuf4,
+                                          &Zaa, DIISEntry::InputType::DPDBuf4, &Zab, DIISEntry::InputType::DPDBuf4, &Zbb);
+        diisManager.set_vector_size(5, DIISEntry::InputType::DPDFile2, &zaa, DIISEntry::InputType::DPDFile2, &zbb, DIISEntry::InputType::DPDBuf4, &Zaa,
+                                    DIISEntry::InputType::DPDBuf4, &Zab, DIISEntry::InputType::DPDBuf4, &Zbb);
         global_dpd_->buf4_close(&Zaa);
         global_dpd_->buf4_close(&Zab);
         global_dpd_->buf4_close(&Zbb);
@@ -1117,9 +1117,9 @@ void DCTSolver::iterate_orbital_response() {
     dpdfile2 zaa, zbb, raa, rbb;
     global_dpd_->file2_init(&zaa, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
     global_dpd_->file2_init(&zbb, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
-    DIISManager ZiaDiisManager(maxdiis_, "DCT DIIS Orbital Z", DIISManager::LargestError, DIISManager::InCore);
-    ZiaDiisManager.set_error_vector_size(2, DIISEntry::DPDFile2, &zaa, DIISEntry::DPDFile2, &zbb);
-    ZiaDiisManager.set_vector_size(2, DIISEntry::DPDFile2, &zaa, DIISEntry::DPDFile2, &zbb);
+    DIISManager ZiaDiisManager(maxdiis_, "DCT DIIS Orbital Z", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+    ZiaDiisManager.set_error_vector_size(2, DIISEntry::InputType::DPDFile2, &zaa, DIISEntry::InputType::DPDFile2, &zbb);
+    ZiaDiisManager.set_vector_size(2, DIISEntry::InputType::DPDFile2, &zaa, DIISEntry::InputType::DPDFile2, &zbb);
     global_dpd_->file2_close(&zaa);
     global_dpd_->file2_close(&zbb);
 
@@ -1912,9 +1912,9 @@ void DCTSolver::iterate_cumulant_response() {
     global_dpd_->buf4_init(&Zab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
     global_dpd_->buf4_init(&Zbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Z <oo|vv>");
-    DIISManager ZDiisManager(maxdiis_, "DCT DIIS Z", DIISManager::LargestError, DIISManager::InCore);
-    ZDiisManager.set_error_vector_size(3, DIISEntry::DPDBuf4, &Zaa, DIISEntry::DPDBuf4, &Zab, DIISEntry::DPDBuf4, &Zbb);
-    ZDiisManager.set_vector_size(3, DIISEntry::DPDBuf4, &Zaa, DIISEntry::DPDBuf4, &Zab, DIISEntry::DPDBuf4, &Zbb);
+    DIISManager ZDiisManager(maxdiis_, "DCT DIIS Z", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+    ZDiisManager.set_error_vector_size(3, DIISEntry::InputType::DPDBuf4, &Zaa, DIISEntry::InputType::DPDBuf4, &Zab, DIISEntry::InputType::DPDBuf4, &Zbb);
+    ZDiisManager.set_vector_size(3, DIISEntry::InputType::DPDBuf4, &Zaa, DIISEntry::InputType::DPDBuf4, &Zab, DIISEntry::InputType::DPDBuf4, &Zbb);
     global_dpd_->buf4_close(&Zaa);
     global_dpd_->buf4_close(&Zab);
     global_dpd_->buf4_close(&Zbb);

@@ -167,26 +167,49 @@ class BasisSet(object):
     def __ne__(self, other):
         return not self.__eq__(other)
 
+    def allclose(self, other, atol: float=1.e-8, verbose: int=1):
+        """Equality test. Sorts the coefficients so handles different shell orderings. Print any failed exp/coeff differences if verbose > 1."""
+        sc, se = (list(t) for t in zip(*sorted(zip(self.uoriginal_coefficients, self.uexponents))))
+        oc, oe = (list(t) for t in zip(*sorted(zip(other.uoriginal_coefficients, other.uexponents))))
+
+        if isinstance(other, self.__class__):
+            if ((self.name == other.name) and
+                (self.puream == other.puream) and
+                (self.PYnao == other.PYnao) and
+                (self.PYnbf == other.PYnbf) and
+                (self.n_prim_per_shell == other.n_prim_per_shell) and
+                (all(abs(isc - ioc) < atol for isc, ioc in zip(sc, oc))) and
+                (all(abs(ise - ioe) < atol for ise, ioe in zip(se, oe)))):
+                return True
+            else:
+                if verbose > 1:
+                    print("")
+                    for idx in range(len(sc)):
+                        if not((abs(sc[idx] - oc[idx]) < atol) and (abs(se[idx] - oe[idx]) < atol)):
+                            print(f"{sc[idx]:20.12f} {oc[idx]:20.12f}\t\t{sc[idx] - oc[idx]:8.1E}\t\t\t{se[idx]:20.12f} {oe[idx]:20.12f}\t\t{se[idx] - oe[idx]:8.1E}")
+                return False
+        return False
+
 
     # <<< Methods for Construction >>>
-
-    def initialize_singletons(self):
+    @classmethod
+    def initialize_singletons(cls):
         """Initialize singleton values that are shared by all basis set objects."""
         # Populate the exp_ao arrays
-        for l in range(self.LIBINT_MAX_AM):
+        for l in range(cls.LIBINT_MAX_AM):
             for i in range(l + 1):
                 x = l - i
                 for j in range(i + 1):
                     y = i - j
                     z = j
-                    self.exp_ao[l].append([x, y, z])
+                    cls.exp_ao[l].append([x, y, z])
+        cls.initialized_shared = True
 
     def constructor_zero_ao_basis(self):
         """Constructs a zero AO basis set"""
 
         if not self.initialized_shared:
             self.initialize_singletons()
-        self.initialized_shared = True
 
         # Add a dummy atom at the origin, to hold this basis function
         self.molecule = Molecule()
@@ -235,7 +258,6 @@ class BasisSet(object):
         # Singletons
         if not self.initialized_shared:
             self.initialize_singletons()
-        self.initialized_shared = True
 
         # These will tell us where the primitives for [basis][symbol] start and end in the compact array
         primitive_start = {}
@@ -370,7 +392,6 @@ class BasisSet(object):
         # Singletons; these should've been initialized by this point, but just in case
         if not self.initialized_shared:
             self.initialize_singletons()
-        self.initialized_shared = True
 
         # First, find the shells we need, and grab the data
         uexps = []

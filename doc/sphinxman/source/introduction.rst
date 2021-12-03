@@ -594,7 +594,7 @@ Architectures
     principle, it should work on any Unix system. The latest version of the
     |PSIfour| program package may be obtained at `psicode.org <http://psicode.org>`_.
     The package is available as a binary (:ref:`Installing from Binary
-    <sec:conda>`) for Linux, macOS, or Windows (via Windows Subsystem for
+    <sec:conda>`) for Linux, macOS, or Windows (both native and via Windows Subsystem for
     Linux aka `Bash on Ubuntu on Windows
     <https://docs.microsoft.com/en-us/windows/wsl/about>`_)
     or as source code (git repository or zipped archive from
@@ -602,7 +602,7 @@ Architectures
 Compilers
     |PSIfour| has been successfully compiled using Intel, GCC, and Clang
     compilers. :ref:`Compiler requirements <faq:approvedcxx>` are primarily
-    C++14 compliance (*i.e.*, GCC version 5.1 or above).
+    C++14 compliance (now GCC version 6.0 or above).
     For some architectures, a :ref:`precompiled binary
     <sec:conda>` is available. See :ref:`Compiling and Installing
     <sec:installFile>` for details.
@@ -683,7 +683,7 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | CCSD(T) [#f10]_         | RHF/UHF/ROHF   | CONV/DF/CD [#f8]_ | RHF/UHF      | CONV/DF [#f8]_ | threaded (pthreads) [#f3]_  |           | E [#f2]_   |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
-    | CCSD(AT) [#f10]_        | RHF            | CONV/DF/CD        | ---          | ---            | threaded [#f3]_             |           |            |
+    | A-CCSD(T) [#f10]_       | RHF            | CONV/DF/CD        | ---          | ---            | threaded [#f3]_             |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
     | CC3                     | RHF/UHF/ROHF   | CONV              | ---          | ---            | threaded (pthreads)         |           |            |
     +-------------------------+----------------+-------------------+--------------+----------------+-----------------------------+-----------+------------+
