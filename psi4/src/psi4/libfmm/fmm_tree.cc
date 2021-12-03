@@ -23,7 +23,6 @@
 #include <algorithm>
 #include <unordered_map>
 #include <utility>
-#include <csignal>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -37,7 +36,7 @@ int num_digits(long n) {
 }
 
 ShellPair::ShellPair(std::shared_ptr<BasisSet>& basisset, std::pair<int, int> pair_index, 
-                     std::shared_ptr<HarmonicCoefficients>& mpole_coefs) {     
+                     std::shared_ptr<HarmonicCoefficients>& mpole_coefs) {
     basisset_ = basisset;
     pair_index_ = pair_index;
 
@@ -244,9 +243,7 @@ void CFMMBox::compute_far_field() {
 
         // Add the parent's far field contribution
         Vff_->add(parent->Vff_->translate(center_));
-    }
-
-    else {
+    } else {
         near_field_.push_back(this->get());
     }
 
@@ -321,16 +318,14 @@ void CFMMBox::compute_mpoles_from_children() {
 
 }
 
-CFMMTree::CFMMTree(std::shared_ptr<BasisSet> basis, std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, 
-                std::vector<SharedMatrix>& D, std::vector<SharedMatrix>& J, int nlevels, int lmax) {
+CFMMTree::CFMMTree(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<SharedMatrix>& D, 
+                    std::vector<SharedMatrix>& J, Options& options) 
+                    : options_(options), ints_(ints), D_(D), J_(J) {
 
-    basisset_ = basis;
+    basisset_ = ints[0]->basis();
     molecule_ = basisset_->molecule();
-    ints_ = ints;
-    D_ = D;
-    J_ = J;
-    nlevels_ = nlevels;
-    lmax_ = lmax;
+    nlevels_ = options_.get_int("CFMM_GRAIN");
+    lmax_ = options_.get_int("CFMM_ORDER");
 
     nthread_ = 1;
 #ifdef _OPENMP
@@ -624,6 +619,8 @@ void CFMMTree::build_nf_J() {
         std::shared_ptr<CFMMBox> curr = dense_tree[i];
         auto& PQshells = curr->get_shell_pairs();
         auto& nf_boxes = curr->near_field_boxes();
+
+        if (curr->get_nsp() == 0) continue;
 
         int thread = 0;
 #ifdef _OPENMP

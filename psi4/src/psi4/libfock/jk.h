@@ -728,8 +728,6 @@ class PSI_API DirectJK : public JK {
 
     // Perform Continuous Fast Multipole Method for J Build?
     bool cfmm_;
-    int cfmm_order_;
-    int cfmm_grain_;
     
     // Perform Linear Exchange matrix build?
     bool linK_;

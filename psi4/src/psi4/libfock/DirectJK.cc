@@ -97,8 +97,6 @@ void DirectJK::common_init() {
     linK_ = options_.get_bool("DO_LINK");
     linK_ints_cutoff_ = options_.get_double("LINK_INTS_TOLERANCE");
     cfmm_ = options_.get_bool("DO_CFMM");
-    cfmm_order_ = options_.get_int("CFMM_ORDER");
-    cfmm_grain_ = options_.get_int("CFMM_GRAIN");
     set_cutoff(options_.get_double("INTS_TOLERANCE"));
 }
 size_t DirectJK::memory_estimate() {
@@ -1043,7 +1041,7 @@ void DirectJK::build_cfmm_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, s
     
     timer_on("build_cfmm_J()");
 
-    std::shared_ptr<CFMMTree> tree = std::make_shared<CFMMTree>(primary_, ints, D, J, cfmm_grain_, cfmm_order_);
+    std::shared_ptr<CFMMTree> tree = std::make_shared<CFMMTree>(ints, D, J, options_);
     tree->build_J();
 
     timer_off("build_cfmm_J()");
