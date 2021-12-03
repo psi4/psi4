@@ -31,7 +31,6 @@
 
 #include <vector>
 #include <unordered_set>
-#include <tuple>
 #include "psi4/pragma.h"
 PRAGMA_WARNING_PUSH
 PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
@@ -728,10 +727,10 @@ class PSI_API DirectJK : public JK {
     bool linK_;
     double linK_ints_cutoff_;
 
-    // => A list of all four index integrals that are already computed (to avoid redundant work, per thread) <= //
-    // => Used for split J/K algorithms <= //
+    // => A list of all four index integrals that are already computed, per thread, to avoid redundant work <= //
+    // Used for split J/K algorithms
     std::vector<std::unordered_set<eri_index>> computed_integrals_;
-    
+
     /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
     std::vector<SharedMatrix> prev_D_ao_;
     std::vector<SharedMatrix> prev_J_ao_;
@@ -766,17 +765,34 @@ class PSI_API DirectJK : public JK {
     /// Post-iteration Incfock processing
     void incfock_postiter();
 
-    /// Build the J matrix using the continuous fast multipole method, described in [White:1994:8]_
-    /// TODO: Put CFMM algorithm here after linK PR is merged
-    // void build_cfmm_J(std::vector<std::shared_ptr<TwoBodyAOInt> >& ints, std::vector<SharedMatrix >& D,
-    //               std::vector<SharedMatrix >& J);
+    /**
+     * @author Andy Jiang, Georgia Tech, December 2021
+     * 
+     * @brief constructs the K matrix using the LinK algorithm, described in [Ochsenfeld:1998:1663]_
+     * 
+     * @param ints A list of TwoBodyAOInt objects (one per thread) to optimize parallel efficiency
+     * @param D The list of density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
+     * @param J The list of J matrices to build (Same size as D) [Won't be fully built]
+     * @param K The list of K matrices to build (Same size as D)
+     * 
+     */
+    void build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
+                  std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K);
 
-    /// Build the K matrix using the linear exchange algorithm, described in [Ochsenfeld:1998:1663]_
-    void build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<SharedMatrix>& D,
-                  std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K, bool do_J);
-
-    /// The standard J and K matrix builds for this integral class
-    void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<SharedMatrix>& D,
+    /**
+     * @brief The standard J and K matrix builds for this integral class
+     * 
+     * @param ints A list of TwoBodyAOInt objects (one per thread) to optimize parallel efficiency
+     * @param D The list of density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
+     * @param J The list of J matrices to build (Same size as D)
+     * @param K The list of K matrices to build (Same size as D)
+     * @param build_J Allocate memory to build J matrix? (For split J/K algos)
+     * @param build_K Allocate memory to build K matrix? (For split J/K algos)
+     * @param reset_J Zero out J matrix buffer before start? (False if J is partially built by another method)
+     * @param reset_K Zero out K matrix buffer before start? (False if K is partially built by another method)
+     * 
+     */
+    void build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
                   std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K,
                   bool build_J, bool build_K, bool reset_J, bool reset_K);
 

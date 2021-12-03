@@ -739,27 +739,20 @@ To avoid this, either set |scf__df_basis_scf| to an auxiliary
 basis set defined for all atoms in the system, or set |scf__df_scf_guess|
 to false, which disables this acceleration entirely.
 
-Linear-Scaling Fock Builds
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Linear-Scaling Exchange Build
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Methods that build J and K matrices in linear time have been developed. Among these include
-the Continuous Fast Multipole Method (CFMM) method to build J matrices, described in [White:1994:8]_,
-as well as the Linear Exchange (LinK) Method to build K matrices, described in [Ochsenfeld:1998:1663]_.
-Currently, the CFMM method has not been implemented yet, but the LinK method is available to use as part
-of the Direct SCF algorithm. Linear-Scaling direct algorithms are a fast alternative to density
-fitting when the amount of available memory is low, especially when combined with Density-matrix based ERI
-screening and incremental Fock builds.
+Methods that build K matrices in linear time have been developed. One of which is the Linear Exchange (LinK) Method 
+to build K matrices, described in [Ochsenfeld:1998:1663]_. The LinK method is available to use as part
+of the Direct SCF algorithm. LinK offers a fast alternative to density-fitted K builds when the amount of available memory is low, 
+especially when combined with Density-matrix based ERI screening and incremental Fock builds.
 
 To turn on and control the LinK algorithm, here are the list of options provided.
 
-DO_LINEAR_EXCHANGE
-    Defaults to false. If turned on, the K matrix will be built using the linear scaling algorithm described in
-    [Ochsenfeld:1998:1663]_.
+  |scf__do_linK|: Defaults to false. If turned on, the K matrix will be built using the algorithm described in [Ochsenfeld:1998:1663]_.
 
-LINK_INTS_TOLERANCE
-    Defaults to 1.0e-12. The integral screening tolerance used for sparsity-prep in the LinK algorithm. Note that
-    this option is separate from and independent of the INTS_TOLERANCE option. A tighter value is reccomended for
-    diffuse basis sets.
+  |scf__linK_ints_tolerance|: Defaults to 1.0e-12. The integral screening tolerance used for sparsity-prep in the LinK algorithm. Note that
+    this option is separate from and independent of the |scf__ints_tolerance| option. A tighter value is recommended for more diffuse basis sets (1.0e-14).
 
 .. index::
     single: SOSCF
