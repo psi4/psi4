@@ -634,10 +634,10 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
                         // Avoid integral recomputation in the linK case
                         if (linK_iter) {
-                            eri_index index = ((eri_index) P) * nshell * nshell * nshell;
-                            index += ((eri_index) Q) * nshell * nshell;
-                            index += ((eri_index) R) * nshell;
-                            index += (eri_index) S;
+                            size_t index = ((size_t) P) * nshell * nshell * nshell;
+                            index += ((size_t) Q) * nshell * nshell;
+                            index += ((size_t) R) * nshell;
+                            index += (size_t) S;
                             bool is_computed = false;
 
                             for (int i = 0; i < computed_integrals_.size(); i++) {
@@ -1434,10 +1434,10 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                     // timer_off("compute_shell(P, Q, R, S)");
 
                     // Adding computed integrals to buffer
-                    eri_index index = ((eri_index) P) * nshell * nshell * nshell;
-                    index += ((eri_index) Q) * nshell * nshell;
-                    index += ((eri_index) R) * nshell;
-                    index += (eri_index) S;
+                    size_t index = ((size_t) P) * nshell * nshell * nshell;
+                    index += ((size_t) Q) * nshell * nshell;
+                    index += ((size_t) R) * nshell;
+                    index += (size_t) S;
                     computed_integrals_[thread].emplace(index);
 
                     const double* buffer = ints[thread]->buffer();

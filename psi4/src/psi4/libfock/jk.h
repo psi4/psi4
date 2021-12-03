@@ -53,8 +53,6 @@ namespace pk {
 class PKManager;
 }
 
-typedef unsigned long long int eri_index;
-
 // => BASE CLASS <= //
 
 /**
@@ -729,7 +727,7 @@ class PSI_API DirectJK : public JK {
 
     // => A list of all four index integrals that are already computed, per thread, to avoid redundant work <= //
     // Used for split J/K algorithms
-    std::vector<std::unordered_set<eri_index>> computed_integrals_;
+    std::vector<std::unordered_set<size_t>> computed_integrals_;
 
     /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
     std::vector<SharedMatrix> prev_D_ao_;
