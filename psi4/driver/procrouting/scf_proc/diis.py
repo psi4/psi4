@@ -80,7 +80,7 @@ class DIIS:
         return copy
 
     def get_name(self, name, entry_num, item_num):
-        return f"{name} Entry {entry_num}, Item {item_num}"
+        return f"{self.name}: {name} Entry {entry_num}, Item {item_num}"
 
     def get_dot_product(self, i, j):
         key = frozenset([i, j])
@@ -195,6 +195,7 @@ class DIIS:
 
     def delete_diis_file(self):
         psio = core.IO.shared_object()
-        if psio.open_check(psif.PSIF_LIBDIIS):
-            psio.close(psif.PSIF_LIBDIIS, 0) # 0 = DELETE
+        if not psio.open_check(psif.PSIF_LIBDIIS):
+            psio.open(psif.PSIF_LIBDIIS, 1) # 1 = PSIO_OPEN_OLD
+        psio.close(psif.PSIF_LIBDIIS, 0) # 0 = DELETE
 
