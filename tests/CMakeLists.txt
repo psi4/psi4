@@ -37,8 +37,8 @@ foreach(test_name adc1 adc2 aediis-1
                   cc29 cc3 cc30 cc31 cc32 cc33 cc34 cc35 cc36 cc37 cc38 cc39
                   cc4 cc40 cc41 cc42 cc43 cc44 cc45 cc46 cc47 cc48 cc49 cc4a
                   cc50 cc51 cc52 cc53 cc54 cc55 cc56 cc5a cc6 cc7 cc8 cc8a cc8b cc8c
-                  cc9 cc9a cdomp2-1 cdomp2-2 cdremp-1 cdremp-2 cepa1 cepa2 cepa3 cepa-module
-                  ci-multi cisd-h2o+-0 cisd-h2o+-1
+                  cc9 cc9a cdomp2-1 cdomp2-2 cdoremp-energy1 cdoremp-energy2 cdremp-1 cdremp-2 cepa1
+                  cepa2 cepa3 cepa-module ci-multi cisd-h2o+-0 cisd-h2o+-1
                   cisd-h2o+-2 cisd-h2o-clpse cisd-opt-fd cisd-sp cisd-sp-2
                   ci-property cubeprop cubeprop-frontier decontract dct-grad1 dct-grad2
                   dct-grad3 dct-grad4 dct1 dct2 dct3 dct4 dct5 dct6 dct7 dct8 dct9
