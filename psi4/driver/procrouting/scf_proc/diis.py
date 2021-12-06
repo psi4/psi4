@@ -44,15 +44,18 @@ class DIIS:
         self.R_template = []
         self.T_template = []
         self.reset_subspace()
+        self.opened_libdiis = False
         if self.storage_policy == StoragePolicy.OnDisk:
             psio = core.IO.shared_object()
             if not psio.open_check(psif.PSIF_LIBDIIS):
                 psio.open(psif.PSIF_LIBDIIS, 1) # 1 = PSIO_OPEN_OLD
+                self.opened_libdiis = True
 
     def __del__(self):
-        psio = core.IO.shared_object()
-        if psio.open_check(psif.PSIF_LIBDIIS):
-            psio.close(psif.PSIF_LIBDIIS, 1) # 1 = KEEP
+        if self.opened_libdiis:
+            psio = core.IO.shared_object()
+            if psio.open_check(psif.PSIF_LIBDIIS):
+                psio.close(psif.PSIF_LIBDIIS, 1) # 1 = KEEP
 
     def reset_subspace(self):
         self.stored_vectors = [] # list[tuple[R entry, T entry]]
