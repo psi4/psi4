@@ -761,7 +761,7 @@ void OCCWave::oremp_manager() {
         outfile->Printf("\n");
 
         // Set the global variables with the energies
-        variables_["OLCCD TOTAL ENERGY"] = EcepaL;
+        variables_["OREMP TOTAL ENERGY"] = EcepaL;
         variables_["CURRENT REFERENCE ENERGY"] = Escf;
 
         variables_["OREMP REFERENCE CORRECTION ENERGY"] = Eref - Escf;
