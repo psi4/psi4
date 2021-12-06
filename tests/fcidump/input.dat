@@ -8,8 +8,8 @@ set {
   basis 6-311g
   scf_type pk
   reference rhf
-  d_convergence 1e-8
-  e_convergence 1e-8
+  d_convergence 1e-10
+  e_convergence 1e-10
 }
 
 scf_e, scf_wfn = energy('SCF', return_wfn=True)
@@ -21,8 +21,8 @@ set {
   basis cc-pvdz
   scf_type pk
   reference uhf
-  d_convergence 1e-8
-  e_convergence 1e-8
+  d_convergence 1e-10
+  e_convergence 1e-10
 }
 
 scf_e, scf_wfn = energy('SCF', return_wfn=True)
@@ -37,8 +37,8 @@ set {
   basis 6-311g
   scf_type pk
   reference rhf
-  d_convergence 1e-8
-  e_convergence 1e-8
+  d_convergence 1e-10
+  e_convergence 1e-10
 }
 
 scf_e, scf_wfn = energy('SCF', return_wfn=True)
@@ -50,8 +50,8 @@ set {
   basis cc-pvdz
   scf_type pk
   reference uhf
-  d_convergence 1e-8
-  e_convergence 1e-8
+  d_convergence 1e-10
+  e_convergence 1e-10
 }
 
 scf_e, scf_wfn = energy('SCF', return_wfn=True)
