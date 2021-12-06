@@ -33,7 +33,6 @@
 #include <map>
 
 #include "psi4/pragma.h"
-#include "psi4/libdiis/diisentry.h"
 #include "psi4/libmints/matrix.h"
 
 #include "psi4/pybind11.h"
@@ -48,8 +47,6 @@ class PSIO;
 
 class PSI_API DIISManager {
    public:
-
-    py::object pydiis;
 
     /**
      * @brief How the quantities are to be stored;
@@ -67,7 +64,7 @@ class PSI_API DIISManager {
     enum class RemovalPolicy { LargestError, OldestAdded };
 
     DIISManager(int maxSubspaceSize, const std::string& label, RemovalPolicy = RemovalPolicy::LargestError, StoragePolicy = StoragePolicy::OnDisk);
-    DIISManager() { _maxSubspaceSize = 0; }
+    DIISManager() {}
     ~DIISManager();
 
     // Variadic templates to interface with Python.
@@ -92,45 +89,14 @@ class PSI_API DIISManager {
         return success.template cast<bool>();
     };
 
-    // Wrappers for those who dislike variadic
-    void set_error_vector_size(SharedMatrix error) { DIISManager::set_error_vector_size(error.get()); }
-
-    void set_vector_size(SharedMatrix state) { DIISManager::set_vector_size(state.get()); }
-
-    bool add_entry(SharedMatrix state, SharedMatrix error) {
-        return DIISManager::add_entry(state.get(), error.get());
-    }
-
-    bool extrapolate(SharedMatrix extrapolated) { return DIISManager::extrapolate(extrapolated.get()); }
-
-    int remove_entry();
     void delete_diis_file();
     /// The number of vectors currently in the subspace
     int subspace_size();
 
-   protected:
-    /// How the vectors are handled in memory
-    StoragePolicy _storagePolicy;
-    /// How vectors are removed from the subspace
-    RemovalPolicy _removalPolicy;
-    /// The maximum number of vectors allowed in the subspace
-    int _maxSubspaceSize;
-    /// The size of the error vector
-    int _errorVectorSize;
-    /// The size of the vector
-    int _vectorSize;
-    /// The counter that keeps track of how many entries have been added
-    int _entryCount;
-    /// The DIIS entries
-    std::vector<DIISEntry> _subspace;
-    /// The types used in building the vector and the error vector
-    std::vector<DIISEntry::InputType> _componentTypes;
-    /// The types used in the vector
-    std::vector<size_t> _componentSizes;
-    /// The label used in disk storage of the DIISEntry objects
-    std::string _label;
-    /// The PSIO object to use for I/O
-    std::shared_ptr<PSIO> _psio;
+  protected:
+
+    py::object pydiis;
+
 };
 
 }  // namespace psi

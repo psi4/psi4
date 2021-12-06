@@ -28,21 +28,6 @@
 
 #include "diismanager.h"
 
-#include <cmath>
-#include <cstdarg>
-#include <memory>
-
-#include "psi4/psifiles.h"
-
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libdpd/dpd.h"
-#include "psi4/libmints/vector.h"
-#include "psi4/libmints/matrix.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libpsi4util/process.h"
-#include "psi4/libpsio/psio.hpp"
-#include "psi4/libqt/qt.h"
-
 using namespace psi;
 
 namespace psi {
@@ -53,18 +38,9 @@ namespace psi {
  * @param label: the base part of the label used to store the vectors to disk
  * @param removalPolicy: How to decide which vectors to remove when the subspace is full
  * @param storagePolicy: How to store the DIIS vectors
- * @param psio: the PSIO object to use for I/O.  Do not specify if DPD is being used.
  */
 DIISManager::DIISManager(int maxSubspaceSize, const std::string &label, RemovalPolicy removalPolicy,
-                         StoragePolicy storagePolicy)
-    : _maxSubspaceSize(maxSubspaceSize),
-      _removalPolicy(removalPolicy),
-      _storagePolicy(storagePolicy),
-      _errorVectorSize(0),
-      _vectorSize(0),
-      _psio(_default_psio_lib_),
-      _entryCount(0),
-      _label(label) {
+                         StoragePolicy storagePolicy) {
           auto diis_file = py::module_::import("psi4").attr("driver").attr("scf_proc").attr("diis");
           py::object pyRemovalPolicy, pyStoragePolicy;
          if (removalPolicy == RemovalPolicy::LargestError) {

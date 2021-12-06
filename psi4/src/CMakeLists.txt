@@ -35,7 +35,6 @@ target_sources(core
     export_benchmarks.cc
     export_blas_lapack.cc
     export_cubeprop.cc
-    export_diis.cc
     export_dpd.cc
     export_fock.cc
     export_functional.cc
