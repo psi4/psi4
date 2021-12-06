@@ -63,8 +63,8 @@ void DFOCC::ccsd_iterations_low() {
         if (reference_ == "RESTRICTED") {
             ccsdDiisManager = std::shared_ptr<DIISManager>(
                 new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
-            ccsdDiisManager->set_error_vector_size(2, DIISEntry::InputType::Matrix, T2.get(), DIISEntry::InputType::Matrix, T1.get());
-            ccsdDiisManager->set_vector_size(2, DIISEntry::InputType::Matrix, T2.get(), DIISEntry::InputType::Matrix, T1.get());
+            ccsdDiisManager->set_error_vector_size(T2.get(), T1.get());
+            ccsdDiisManager->set_vector_size(2, T2.get(), T1.get());
         }
         T2.reset();
         T1.reset();

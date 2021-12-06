@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include "psi4/libdiis/diismanager.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
@@ -52,18 +53,16 @@ void OCCWave::cepa_iterations() {
     itr_occ = 0;
     conver = 1;  // Assuming that the iterations will converge
                  // DIIS
-    py::object t2_diis;
+    DIISManager t2_diis;
     if (nooA + nooB != 1) {
         psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
-        py::object diis_file = py::module_::import("psi4").attr("driver").attr("scf_proc").attr("diis");
-        t2_diis = diis_file.attr("DIIS")(maxdiis_, "CEPA DIIS T2 Amps", diis_file.attr("RemovalPolicy").attr("LargestError"),
-            diis_file.attr("StoragePolicy").attr("InCore"));
+        t2_diis = DIISManager(maxdiis_, "CEPA DIIS T2 Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk);
         if (reference_ == "RESTRICTED") {
             dpdbuf4 T;
             global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                    "T2 <OO|VV>");
-            t2_diis.attr("set_error_vector_size")(&T);
-            t2_diis.attr("set_vector_size")(&T);
+            t2_diis.set_error_vector_size(&T);
+            t2_diis.set_vector_size(&T);
             global_dpd_->buf4_close(&T);
         }
 
@@ -75,8 +74,8 @@ void OCCWave::cepa_iterations() {
                                    "T2 <oo|vv>");
             global_dpd_->buf4_init(&Tab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                    "T2 <Oo|Vv>");
-            t2_diis.attr("set_error_vector_size")(&Taa, &Tbb, &Tab);
-            t2_diis.attr("set_vector_size")(&Taa, &Tbb, &Tab);
+            t2_diis.set_error_vector_size(&Taa, &Tbb, &Tab);
+            t2_diis.set_vector_size(&Taa, &Tbb, &Tab);
             global_dpd_->buf4_close(&Taa);
             global_dpd_->buf4_close(&Tbb);
             global_dpd_->buf4_close(&Tab);
@@ -136,7 +135,7 @@ void OCCWave::cepa_iterations() {
 
 }  // end main
 
-void OCCWave::cepa_diis(py::object& t2_diis) {
+void OCCWave::cepa_diis(DIISManager& t2_diis) {
     psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
     if (reference_ == "RESTRICTED") {
         dpdbuf4 R, T;
@@ -144,9 +143,8 @@ void OCCWave::cepa_diis(py::object& t2_diis) {
                                "RT2 <OO|VV>");
         global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "T2 <OO|VV>");
-        t2_diis.attr("add_entry")(&R, &T);
-        int subspace_size = py::len(t2_diis.attr("stored_vectors"));
-        if (subspace_size >= mindiis_) t2_diis.attr("extrapolate")(&T);
+        t2_diis.add_entry(&R, &T);
+        if (t2_diis.subspace_size() >= mindiis_) t2_diis.extrapolate(&T);
         global_dpd_->buf4_close(&R);
         global_dpd_->buf4_close(&T);
     } else if (reference_ == "UNRESTRICTED") {
@@ -163,9 +161,8 @@ void OCCWave::cepa_diis(py::object& t2_diis) {
                                "RT2 <Oo|Vv>");
         global_dpd_->buf4_init(&Tab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "T2 <Oo|Vv>");
-        t2_diis.attr("add_entry")(&Raa, &Rbb, &Rab, &Taa, &Tbb, &Tab);
-        int subspace_size = py::len(t2_diis.attr("stored_vectors"));
-        if (subspace_size >= mindiis_) t2_diis.attr("extrapolate")(&Taa, &Tbb, &Tab);
+        t2_diis.add_entry(&Raa, &Rbb, &Rab, &Taa, &Tbb, &Tab);
+        if (t2_diis.subspace_size() >= mindiis_) t2_diis.extrapolate(&Taa, &Tbb, &Tab);
         global_dpd_->buf4_close(&Raa);
         global_dpd_->buf4_close(&Rbb);
         global_dpd_->buf4_close(&Rab);

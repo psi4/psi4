@@ -33,10 +33,9 @@
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
 #include "psi4/libiwl/iwl.h"
+#include "psi4/libdiis/diismanager.h"
 #include "psi4/liboptions/liboptions.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-
-#include "psi4/pybind11.h"
 
 #include <cmath>
 
@@ -107,10 +106,9 @@ void DCTSolver::dc06_response() {
                                "Z <oo|vv>");
         global_dpd_->file2_init(&zaa, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
         global_dpd_->file2_init(&zbb, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
-        py::object diis_file = py::module_::import("psi4").attr("driver").attr("scf_proc").attr("diis");
-        py::object diis_manager = diis_file.attr("DIIS")(maxdiis_, "DCT DIIS orbital response vectors");
-        diis_manager.attr("set_error_vector_size")(&zaa, &zbb, &Zaa, &Zab, &Zbb);
-        diis_manager.attr("set_vector_size")(&zaa, &zbb, &Zaa, &Zab, &Zbb);
+        DIISManager diisManager(maxdiis_, "DCT DIIS orbital response vectors");
+        diisManager.set_error_vector_size(&zaa, &zbb, &Zaa, &Zab, &Zbb);
+        diisManager.set_vector_size(&zaa, &zbb, &Zaa, &Zab, &Zbb);
         global_dpd_->buf4_close(&Zaa);
         global_dpd_->buf4_close(&Zab);
         global_dpd_->buf4_close(&Zbb);
@@ -158,13 +156,12 @@ void DCTSolver::dc06_response() {
                     global_dpd_->file2_init(&zaa, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
                     global_dpd_->file2_init(&zbb, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
 
-                    if (diis_manager.attr("add_entry")(&raa, &rbb, &Raa, &Rab, &Rbb, &zaa, &zbb, &Zaa, &Zab, &Zbb)) {
+                    if (diisManager.add_entry(&raa, &rbb, &Raa, &Rab, &Rbb, &zaa, &zbb, &Zaa, &Zab, &Zbb)) {
                         diisString += "S";
                     }
-                    int subspace_size = py::len(diis_manager.attr("stored_vectors"));
-                    if (subspace_size > mindiisvecs_) {
+                    if (diisManager.subspace_size() > mindiisvecs_) {
                         diisString += "/E";
-                        diis_manager.attr("extrapolate")(&zaa, &zbb, &Zaa, &Zab, &Zbb);
+                        diisManager.extrapolate(&zaa, &zbb, &Zaa, &Zab, &Zbb);
                     }
                     global_dpd_->file2_close(&zaa);
                     global_dpd_->file2_close(&zbb);
@@ -1118,11 +1115,9 @@ void DCTSolver::iterate_orbital_response() {
     dpdfile2 zaa, zbb, raa, rbb;
     global_dpd_->file2_init(&zaa, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
     global_dpd_->file2_init(&zbb, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
-    py::object diis_file = py::module_::import("psi4").attr("driver").attr("scf_proc").attr("diis");
-    py::object diis_manager = diis_file.attr("DIIS")(maxdiis_, "DCT DIIS Orbital Z", diis_file.attr("RemovalPolicy").attr("LargestError"),
-            diis_file.attr("StoragePolicy").attr("InCore"));
-    diis_manager.attr("set_error_vector_size")(&zaa, &zbb);
-    diis_manager.attr("set_vector_size")(&zaa, &zbb);
+    DIISManager ZiaDiisManager(maxdiis_, "DCT DIIS Orbital Z", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+    ZiaDiisManager.set_error_vector_size(&zaa, &zbb);
+    ZiaDiisManager.set_vector_size(&zaa, &zbb);
     global_dpd_->file2_close(&zaa);
     global_dpd_->file2_close(&zbb);
 
@@ -1146,14 +1141,13 @@ void DCTSolver::iterate_orbital_response() {
             global_dpd_->file2_init(&zaa, PSIF_DCT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
             global_dpd_->file2_init(&zbb, PSIF_DCT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
 
-            if (diis_manager.attr("add_entry")(&raa, &rbb, &zaa, &zbb)) {
+            if (ZiaDiisManager.add_entry(&raa, &rbb, &zaa, &zbb)) {
                 diisString += "S";
             }
             // Extrapolate orbital response
-            int subspace_size = py::len(diis_manager.attr("stored_vectors"));
-            if (subspace_size >= mindiisvecs_ && maxdiis_ > 0) {
+            if (ZiaDiisManager.subspace_size() >= mindiisvecs_ && maxdiis_ > 0) {
                 diisString += "/E";
-                diis_manager.attr("extrapolate")(&zaa, &zbb);
+                ZiaDiisManager.extrapolate(&zaa, &zbb);
             }
             global_dpd_->file2_close(&zaa);
             global_dpd_->file2_close(&zbb);
@@ -1916,11 +1910,9 @@ void DCTSolver::iterate_cumulant_response() {
     global_dpd_->buf4_init(&Zab, PSIF_DCT_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
     global_dpd_->buf4_init(&Zbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Z <oo|vv>");
-    py::object diis_file = py::module_::import("psi4").attr("driver").attr("scf_proc").attr("diis");
-    py::object diis_manager = diis_file.attr("DIIS")(maxdiis_, "DCT DIIS Z", diis_file.attr("RemovalPolicy").attr("LargestError"),
-            diis_file.attr("StoragePolicy").attr("InCore"));
-    diis_manager.attr("set_error_vector_size")(&Zaa, &Zab, &Zbb);
-    diis_manager.attr("set_vector_size")(&Zaa, &Zab, &Zbb);
+    DIISManager ZDiisManager(maxdiis_, "DCT DIIS Z", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+    ZDiisManager.set_error_vector_size(&Zaa, &Zab, &Zbb);
+    ZDiisManager.set_vector_size(&Zaa, &Zab, &Zbb);
     global_dpd_->buf4_close(&Zaa);
     global_dpd_->buf4_close(&Zab);
     global_dpd_->buf4_close(&Zbb);
@@ -1961,14 +1953,13 @@ void DCTSolver::iterate_cumulant_response() {
             global_dpd_->buf4_init(&Zbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                                    "Z <oo|vv>");
 
-            if (diis_manager.attr("add_entry")(&Raa, &Rab, &Rbb, &Zaa, &Zab, &Zbb).cast<bool>()) {
+            if (ZDiisManager.add_entry(&Raa, &Rab, &Rbb, &Zaa, &Zab, &Zbb)) {
                 diisString += "S";
             }
             // Extrapolate cumulant response
-            int subspace_size = py::len(diis_manager.attr("stored_vectors"));
-            if (subspace_size >= mindiisvecs_ && maxdiis_ > 0) {
+            if (ZDiisManager.subspace_size() >= mindiisvecs_ && maxdiis_ > 0) {
                 diisString += "/E";
-                diis_manager.attr("extrapolate")(&Zaa, &Zab, &Zbb);
+                ZDiisManager.extrapolate(&Zaa, &Zab, &Zbb);
             }
             global_dpd_->buf4_close(&Raa);
             global_dpd_->buf4_close(&Rab);

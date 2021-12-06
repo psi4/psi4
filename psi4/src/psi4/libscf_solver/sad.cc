@@ -54,6 +54,7 @@
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/factory.h"
+#include "psi4/libdiis/diismanager.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/lib3index/dfhelper.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -61,8 +62,6 @@
 #include "psi4/liboptions/liboptions.h"
 #include "hf.h"
 #include "sad.h"
-
-#include "psi4/pybind11.h"
 
 using namespace psi;
 
@@ -509,10 +508,9 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
     int iteration = 0;
 
     // Setup DIIS
-    py::object diis_file = py::module_::import("psi4").attr("driver").attr("scf_proc").attr("diis");
-    py::object diis_manager = diis_file.attr("DIIS")(6, "SAD DIIS", diis_file.attr("RemovalPolicy").attr("LargestError"), diis_file.attr("StoragePolicy").attr("InCore"));
-    diis_manager.attr("set_error_vector_size")(gradient_a.get(), gradient_b.get());
-    diis_manager.attr("set_vector_size")(Fa.get(), Fb.get());
+    DIISManager diis_manager(6, "SAD DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
+    diis_manager.set_error_vector_size(gradient_a.get(), gradient_b.get());
+    diis_manager.set_vector_size(Fa.get(), Fb.get());
 
     // Setup JK
     std::unique_ptr<JK> jk;
@@ -593,8 +591,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
                                 : std::max(gradient_a->absmax(), gradient_b->absmax());
 
         // Add and extrapolate DIIS
-        diis_manager.attr("add_entry")(gradient_a.get(), gradient_b.get(), Fa.get(), Fb.get());
-        diis_manager.attr("extrapolate")(Fa.get(), Fb.get());
+        diis_manager.add_entry(gradient_a.get(), gradient_b.get(), Fa.get(), Fb.get());
+        diis_manager.extrapolate(Fa.get(), Fb.get());
 
         // Diagonalize Fa and Fb to from Ca and Cb and Da and Db
         form_C_and_D(X, Fa, Ca, Ea, Ca_occ, occ_a, Da);

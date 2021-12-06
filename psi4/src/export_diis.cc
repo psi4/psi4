@@ -67,7 +67,6 @@ void export_diis(py::module &m) {
         .def("add_entry", [](DIISManager& diis, const SharedMatrix m1, const SharedMatrix m2, const SharedMatrix m3, const SharedMatrix m4) {
                 diis.add_entry(4, m1.get(), m2.get(), m3.get(), m4.get());
             })
-        .def("reset_subspace", &DIISManager::reset_subspace, "docstring")
         .def("delete_diis_file", &DIISManager::delete_diis_file, "docstring");
 
     py::class_<DIISEntry, std::shared_ptr<DIISEntry> > diis_entry(m, "DIISEntry", "docstring");

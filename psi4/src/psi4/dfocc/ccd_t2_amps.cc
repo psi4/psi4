@@ -103,12 +103,12 @@ void DFOCC::ccd_t2_amps() {
     t2->to_matrix(T2);
 
     // add entry
-    if (do_diis_ == 1) ccsdDiisManager->add_entry(2, RT2.get(), T2.get());
+    if (do_diis_ == 1) ccsdDiisManager->add_entry(RT2.get(), T2.get());
     RT2.reset();
 
     // extrapolate
     if (do_diis_ == 1) {
-        if (ccsdDiisManager->subspace_size() >= cc_mindiis_) ccsdDiisManager->extrapolate(1, T2.get());
+        if (ccsdDiisManager->subspace_size() >= cc_mindiis_) ccsdDiisManager->extrapolate(T2.get());
         t2->set2(T2);
     }
     T2.reset();

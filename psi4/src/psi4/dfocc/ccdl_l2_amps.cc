@@ -117,12 +117,12 @@ void DFOCC::ccdl_l2_amps() {
     l2->to_matrix(L2);
 
     // add entry
-    if (do_diis_ == 1) ccsdlDiisManager->add_entry(2, RL2.get(), L2.get());
+    if (do_diis_ == 1) ccsdlDiisManager->add_entry(RL2.get(), L2.get());
     RL2.reset();
 
     // extrapolate
     if (do_diis_ == 1) {
-        if (ccsdlDiisManager->subspace_size() >= cc_mindiis_) ccsdlDiisManager->extrapolate(1, L2.get());
+        if (ccsdlDiisManager->subspace_size() >= cc_mindiis_) ccsdlDiisManager->extrapolate(L2.get());
         l2->set2(L2);
     }
     L2.reset();

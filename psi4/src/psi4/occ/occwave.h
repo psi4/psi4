@@ -34,12 +34,11 @@
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-#include "psi4/pybind11.h"
-
 #include "arrays.h"
 
 namespace psi {
 
+class DIISManager;
 class IntegralTransform;
 
 namespace occwave {
@@ -109,7 +108,7 @@ class OCCWave : public Wavefunction {
     void second_order_opdm();
     void set_t2_amplitudes_mp2();
     void mp2_energy(bool include_singles = false);
-    void oo_diis(py::object&);
+    void oo_diis(DIISManager&);
 
     // Processing functions - print output, save variables
     void mp2_printing(bool scf = false, bool include_singles = false);
@@ -152,7 +151,7 @@ class OCCWave : public Wavefunction {
     void ocepa_manager();
     void cepa_manager();
     void cepa_iterations();
-    void cepa_diis(py::object&);
+    void cepa_diis(DIISManager&);
     void cepa_chemist();
     void ocepa_tpdm_vvvv();
     void ocepa_response_pdms();

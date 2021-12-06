@@ -34,10 +34,9 @@
 #include "psi4/libmints/molecule.h"
 #include "psi4/psifiles.h"
 #include "psi4/libtrans/integraltransform.h"
+#include "psi4/libdiis/diismanager.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/liboptions/liboptions.h"
-
-#include "psi4/pybind11.h"
 
 #include <algorithm>
 #include <functional>
@@ -720,11 +719,10 @@ void DCTSolver::build_tau_U() {
     bocc_d->copy(bocc_tau_);
     bvir_d->copy(bvir_tau_);
 
-    py::object diis_file = py::module_::import("psi4").attr("driver").attr("scf_proc").attr("diis");
-    py::object diis_manager = diis_file.attr("DIIS")(maxdiis_, "DCT DIIS Tau", diis_file.attr("RemovalPolicy").attr("LargestError"), diis_file.attr("StoragePolicy").attr("InCore"));
+    DIISManager diisManager(maxdiis_, "DCT DIIS Tau", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
     if ((nalpha_ + nbeta_) > 1) {
-        diis_manager.attr("set_error_vector_size")(&aocc_tau_, &bocc_tau_, &avir_tau_, &bvir_tau_);
-        diis_manager.attr("set_vector_size")(&aocc_tau_, &bocc_tau_, &avir_tau_, &bvir_tau_);
+        diisManager.set_error_vector_size(&aocc_tau_, &bocc_tau_, &avir_tau_, &bvir_tau_);
+        diisManager.set_vector_size(&aocc_tau_, &bocc_tau_, &avir_tau_, &bvir_tau_);
     }
 
     auto aocc_r = std::make_shared<Matrix>("Residual (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);
@@ -778,15 +776,13 @@ void DCTSolver::build_tau_U() {
 
         if (rms < diis_start_thresh_) {
             // Store the DIIS vectors
-            if (diis_manager.attr("add_entry")(aocc_r.get(), bocc_r.get(), avir_r.get(), bvir_r.get(), &aocc_tau_, &bocc_tau_, &avir_tau_, &bvir_tau_).cast<bool>()) {
+            if (diisManager.add_entry(aocc_r.get(), bocc_r.get(), avir_r.get(), bvir_r.get(), &aocc_tau_, &bocc_tau_, &avir_tau_, &bvir_tau_)) {
                 diisString += "S";
             }
 
-            int subspace_size = py::len(diis_manager.attr("stored_vectors"));
-
-            if (subspace_size > mindiisvecs_) {
+            if (diisManager.subspace_size() > mindiisvecs_) {
                 diisString += "/E";
-                diis_manager.attr("extrapolate")(&aocc_tau_, &bocc_tau_, &avir_tau_, &bvir_tau_);
+                diisManager.extrapolate(&aocc_tau_, &bocc_tau_, &avir_tau_, &bvir_tau_);
             }
         }
 

@@ -36,6 +36,8 @@
 #include "psi4/libdiis/diisentry.h"
 #include "psi4/libmints/matrix.h"
 
+#include "psi4/pybind11.h"
+
 namespace psi {
 
 class PSIO;
@@ -46,6 +48,9 @@ class PSIO;
 
 class PSI_API DIISManager {
    public:
+
+    py::object pydiis;
+
     /**
      * @brief How the quantities are to be stored;
      *
@@ -65,33 +70,45 @@ class PSI_API DIISManager {
     DIISManager() { _maxSubspaceSize = 0; }
     ~DIISManager();
 
-    // C-style variadic allows you to DIIS "direct sums" of quantities.
-    // For instance, orbital-optimized theories can do a combined DIIS on orbital amplitudes and T2
-    void set_error_vector_size(int numQuantities, ...);
-    void set_vector_size(int numQuantities, ...);
-    bool extrapolate(int numQuatities, ...);
-    bool add_entry(int numQuatities, ...);
+    // Variadic templates to interface with Python.
+    // If you're new to variadics, these allow multiple arguments.
+    // MUST be implemented in header.
+    template <typename ... types>
+    void set_error_vector_size(types ... arrays) {
+        pydiis.attr("set_error_vector_size")(arrays...);
+    };
+    template <typename ... types>
+    void set_vector_size(types... arrays) {
+        pydiis.attr("set_vector_size")(arrays...);
+    };
+    template <typename... types>
+    bool extrapolate(types... arrays) {
+        auto success = pydiis.attr("extrapolate")(arrays...);
+        return success.template cast<bool>();
+    };
+    template <typename ... types>
+    bool add_entry(types... arrays) {
+        auto success = pydiis.attr("add_entry")(arrays...);
+        return success.template cast<bool>();
+    };
 
     // Wrappers for those who dislike variadic
-    void set_error_vector_size(SharedMatrix error) { DIISManager::set_error_vector_size(1, error.get()); }
+    void set_error_vector_size(SharedMatrix error) { DIISManager::set_error_vector_size(error.get()); }
 
-    void set_vector_size(SharedMatrix state) { DIISManager::set_vector_size(1, state.get()); }
+    void set_vector_size(SharedMatrix state) { DIISManager::set_vector_size(state.get()); }
 
     bool add_entry(SharedMatrix state, SharedMatrix error) {
-        return DIISManager::add_entry(2, state.get(), error.get());
+        return DIISManager::add_entry(state.get(), error.get());
     }
 
-    bool extrapolate(SharedMatrix extrapolated) { return DIISManager::extrapolate(1, extrapolated.get()); }
+    bool extrapolate(SharedMatrix extrapolated) { return DIISManager::extrapolate(extrapolated.get()); }
 
     int remove_entry();
-    void reset_subspace();
     void delete_diis_file();
     /// The number of vectors currently in the subspace
     int subspace_size();
 
    protected:
-    int get_next_entry_id();
-
     /// How the vectors are handled in memory
     StoragePolicy _storagePolicy;
     /// How vectors are removed from the subspace
@@ -102,10 +119,6 @@ class PSI_API DIISManager {
     int _errorVectorSize;
     /// The size of the vector
     int _vectorSize;
-    /// The number of components in the error vector
-    int _numErrorVectorComponents;
-    /// The number of components in the vector
-    int _numVectorComponents;
     /// The counter that keeps track of how many entries have been added
     int _entryCount;
     /// The DIIS entries
