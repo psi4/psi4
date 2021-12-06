@@ -359,6 +359,8 @@ void export_mints(py::module& m) {
         .def("set", vector_setitem_2(&Vector::set), "Sets a single element value located at m in irrep h", "h"_a, "m"_a,
              "val"_a)
         .def("copy", vector_one(&Vector::copy), "Returns a copy of the matrix")
+        .def("clone", [](Vector& vec) {
+                std::shared_ptr<Vector> result = std::move(vec.clone()); return result; }, "Clone the vector")
         .def("print_out", &Vector::print_out, "Prints the vector to the output file")
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", "sc"_a)
         .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", "h"_a = 0)
