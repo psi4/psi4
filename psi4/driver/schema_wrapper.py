@@ -66,6 +66,7 @@ methods_dict_ = {
     'properties': driver.properties,
     'hessian': driver.hessian,
     'frequency': driver.frequency,
+    'tamps': driver.energy
 }
 default_properties_ = {
     "dipole", "quadrupole", "mulliken_charges", "lowdin_charges", "wiberg_lowdin_indices", "mayer_indices"
@@ -602,6 +603,14 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
             ret["quadrupole"] = _serial_translation(psi_props[mtd + " QUADRUPOLE"], json=json_serialization)
         ret.update(_convert_variables(wfn.variables(), context="properties", json=json_serialization))
 
+        json_data["return_result"] = ret
+    elif json_data["driver"] == "tamps" :
+        ret = {}
+        if method in ["ccsd", "ccsd(t)"] :
+            ret["tIA"] = wfn.get_amplitudes()["tIA"].to_array()
+        if method in ["ccsd", "ccsd(t)", "mp2"] :
+            ret["tIJAB"] = wfn.get_amplitudes()["tIJAB"].to_array()
+        ret["density"] = wfn.Da().to_array()
         json_data["return_result"] = ret
     else:
         raise KeyError("Did not understand Driver key %s." % json_data["driver"])
