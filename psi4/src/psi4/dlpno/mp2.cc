@@ -224,7 +224,7 @@ void DLPNOMP2::compute_overlap_ints() {
     }
 
     timer_on("Integration");
-#pragma omp parallel for schedule(static, 1)
+#pragma omp parallel for schedule(dynamic, 1)
     for (size_t Q = 0; Q < grid.blocks().size(); Q++) {
         size_t thread = 0;
 #ifdef _OPENMP
@@ -632,8 +632,9 @@ void DLPNOMP2::compute_df_ints() {
         std::make_shared<IntegralFactory>(ribasis_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eris(nthread);
 
-    for (size_t thread = 0; thread < nthread; thread++) {
-        eris[thread] = std::shared_ptr<TwoBodyAOInt>(factory->eri());
+    eris[0] = std::shared_ptr<TwoBodyAOInt>(factory->eri());
+    for (size_t thread = 1; thread < nthread; thread++) {
+        eris[thread] = std::shared_ptr<TwoBodyAOInt>(eris.front()->clone());
     }
 
     outfile->Printf("\n  ==> Transforming 3-Index Integrals to LMO/PAO basis <==\n");
@@ -645,7 +646,7 @@ void DLPNOMP2::compute_df_ints() {
 
     qia_.resize(naux);
 
-#pragma omp parallel for schedule(static, 1)
+#pragma omp parallel for schedule(dynamic, 1)
     for (int Q = 0; Q < ribasis_->nshell(); Q++) {
         int nq = ribasis_->shell(Q).nfunction();
         int qstart = ribasis_->shell(Q).function_index();
@@ -764,7 +765,7 @@ void DLPNOMP2::pno_transform() {
     de_pno_os_.resize(n_lmo_pairs);  // opposite-spin contributions to de_pno_
     de_pno_ss_.resize(n_lmo_pairs);  // same-spin contributions to de_pno_
 
-#pragma omp parallel for schedule(static, 1)
+#pragma omp parallel for schedule(dynamic, 1)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
@@ -945,7 +946,7 @@ void DLPNOMP2::compute_pno_overlaps() {
     S_pno_ij_kj_.resize(n_lmo_pairs);
     S_pno_ij_ik_.resize(n_lmo_pairs);
 
-#pragma omp parallel for schedule(static, 1)
+#pragma omp parallel for schedule(dynamic, 1)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
@@ -1180,7 +1181,9 @@ double DLPNOMP2::compute_energy() {
 
     print_header();
 
+    timer_on("Setup");
     setup();
+    timer_off("Setup");
 
     timer_on("Overlap Ints");
     compute_overlap_ints();
