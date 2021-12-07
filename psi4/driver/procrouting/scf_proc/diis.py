@@ -172,7 +172,14 @@ class DIIS:
 
         rhs = np.zeros((dim))
         rhs[-1] = -1
-        coeffs = np.linalg.lstsq(B, rhs, rcond=-1)[0][:-1]
+
+        # solve will crash at a linear dependency.
+        # Near a linear dependency, solve and lstsq disagree. Numerical tests suggest
+        # solve is the more accurate when that happens.
+        try:
+            coeffs = np.linalg.solve(B, rhs)[:-1]
+        except np.linalg.LinAlgError:
+            coeffs = np.linalg.lstsq(B, rhs, rcond=-1)[0][:-1]
 
         for j, Tj in enumerate(args):
             Tj.zero()
