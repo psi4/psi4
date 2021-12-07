@@ -29,7 +29,7 @@ json_data = {
             (0, 2, 1.0)
         ]
     },
-    "driver": "tamps",
+    "driver": "energy",
     "model": {
         "method": "MP2",
         "basis" "6-31g"
@@ -37,10 +37,28 @@ json_data = {
     "keywords": {
         "scf_type": "df",
         "mp2_type": "df"
-    }
+    },
+    {
+        "extras": {
+            "qcvars": {
+                "tIJAB": {}
+                }
+            }
+        }
 }
 json_ret = psi4.json_wrapper.run_json(json_data)
 
+h2o_test = psi4.geometry("""
+0 1
+O 0.0 0.0 0.1294769411935893
+H 0.0 -1.494187339479985 1.0274465079245698
+H 0.0 1.494187339479985 1.0274465079245698
+""")
+e, wfn = psi4.energy("mp2/6-31g", return_wfn = True)
+tIJAB = wfn.get_amplitudes("tIJAB").to_array
+
 with open("output.json", "w") as ofile:
     json.dump(json_ret, ofile, indent=2)
+
+psi4.compare_values(tIJAB, json_ret["extras"]["qcvars"]["tIJAB"])
 
