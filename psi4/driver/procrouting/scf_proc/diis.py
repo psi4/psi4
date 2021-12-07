@@ -172,7 +172,7 @@ class DIIS:
 
         rhs = np.zeros((dim))
         rhs[-1] = -1
-        coeffs = np.linalg.lstsq(B, rhs, rcond=None)[0][:-1]
+        coeffs = np.linalg.lstsq(B, rhs, rcond=-1)[0][:-1]
 
         for j, Tj in enumerate(args):
             Tj.zero()
