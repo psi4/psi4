@@ -141,13 +141,20 @@ option_with_print(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
 option_with_print(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
 option_with_print(ENABLE_PLUGIN_TESTING "Test the plugin templates build and run" OFF)
 option_with_print(ENABLE_CYTHONIZE "Compile each python file rather than plaintext (requires cython) !experimental!" OFF)
+
+# Need to check things per compiler brand since they're different
 if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
-option_with_flags(ENABLE_XHOST "Enables processor-specific optimization (with MSVC, it enables AVX2 instructions)" ON
-                  "-xHost" "-march=native" "/arch:AVX")
-else()
-option_with_flags(ENABLE_XHOST "Enables processor-specific optimization (with MSVC, it enables AVX2 instructions)" ON
-                  "-march=native" "-xHost" "/arch:AVX")
+  option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON "-xHost")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES GNU)
+  option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "-march=native")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "-march=native")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES PGI)
+  option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "-tp host")
+elseif(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
+  option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "/arch:AVX2")
 endif()
+
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
                   "-ftest-coverage")
 option_with_flags(ENABLE_BOUNDS_CHECK "Enables bounds check in Fortran" OFF
