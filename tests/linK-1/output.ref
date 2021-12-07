@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.5a1.dev253 
+                               Psi4 1.5a1.dev255 
 
-                         Git: Rev {linK-new} 63fec34 dirty
+                         Git: Rev {linK-new} a715f45 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,11 +30,11 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Friday, 03 December 2021 04:23PM
+    Psi4 started on: Sunday, 05 December 2021 02:07PM
 
-    Process ID: 16509
-    Host:       ds10
-    PSIDATADIR: /scratch/jiang/p4dev/psi4/objdir-livie/stage/share/psi4
+    Process ID: 757583
+    Host:       jacket
+    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-livie/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -75,16 +75,16 @@ psi4.compare_values(ref_energy, linK_energy, 9, "HF Energy (Using LinK algo)")
 
 Scratch directory: /scratch/jiang/
 
-*** tstart() called on ds10
-*** at Fri Dec  3 16:23:52 2021
+*** tstart() called on jacket
+*** at Sun Dec  5 14:07:42 2021
 
    => Loading Basis Set <=
 
     Name: AUG-CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1   entry O          line   254 file /scratch/jiang/p4dev/psi4/objdir-livie/stage/share/psi4/basis/aug-cc-pvdz.gbs 
-    atoms 2-3 entry H          line    40 file /scratch/jiang/p4dev/psi4/objdir-livie/stage/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 1   entry O          line   254 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-livie/stage/share/psi4/basis/aug-cc-pvdz.gbs 
+    atoms 2-3 entry H          line    40 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-livie/stage/share/psi4/basis/aug-cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
@@ -174,16 +174,16 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter SAD:   -75.46291161737794   -7.54629e+01   0.00000e+00 
-   @RHF iter   1:   -75.95704831424507   -4.94137e-01   1.10492e-02 DIIS/LINK
-   @RHF iter   2:   -76.01021534699382   -5.31670e-02   7.21652e-03 DIIS/INCFOCK/LINK
-   @RHF iter   3:   -76.04085526036546   -3.06399e-02   5.18207e-04 DIIS/INCFOCK/LINK
-   @RHF iter   4:   -76.04123352979889   -3.78269e-04   1.16384e-04 DIIS/INCFOCK/LINK
-   @RHF iter   5:   -76.04125492372374   -2.13939e-05   2.62852e-05 DIIS/LINK
-   @RHF iter   6:   -76.04125661917365   -1.69545e-06   5.29539e-06 DIIS/INCFOCK/LINK
-   @RHF iter   7:   -76.04125669217758   -7.30039e-08   8.83808e-07 DIIS/INCFOCK/LINK
-   @RHF iter   8:   -76.04125669405542   -1.87784e-09   1.36743e-07 DIIS/LINK
-   @RHF iter   9:   -76.04125669409477   -3.93499e-11   3.56798e-08 DIIS/LINK
+   @RHF iter SAD:   -75.46291161737793   -7.54629e+01   0.00000e+00 
+   @RHF iter   1:   -75.95704831424477   -4.94137e-01   1.10492e-02 DIIS/LINK
+   @RHF iter   2:   -76.01021534699366   -5.31670e-02   7.21652e-03 DIIS/INCFOCK/LINK
+   @RHF iter   3:   -76.04085526036515   -3.06399e-02   5.18207e-04 DIIS/INCFOCK/LINK
+   @RHF iter   4:   -76.04123352979862   -3.78269e-04   1.16384e-04 DIIS/INCFOCK/LINK
+   @RHF iter   5:   -76.04125492372350   -2.13939e-05   2.62852e-05 DIIS/LINK
+   @RHF iter   6:   -76.04125661917338   -1.69545e-06   5.29539e-06 DIIS/INCFOCK/LINK
+   @RHF iter   7:   -76.04125669217733   -7.30039e-08   8.83808e-07 DIIS/INCFOCK/LINK
+   @RHF iter   8:   -76.04125669405515   -1.87782e-09   1.36743e-07 DIIS/LINK
+   @RHF iter   9:   -76.04125669409441   -3.92646e-11   3.56798e-08 DIIS/LINK
   Energy and wave function converged.
 
 
@@ -216,14 +216,14 @@ Scratch directory: /scratch/jiang/
               A 
     DOCC [     5 ]
 
-  @RHF Final Energy:   -76.04125669409477
+  @RHF Final Energy:   -76.04125669409441
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              9.1681932964243469
-    One-Electron Energy =                -122.9287781791896776
-    Two-Electron Energy =                  37.7193281886705591
-    Total Energy =                        -76.0412566940947698
+    One-Electron Energy =                -122.9287781791892229
+    Two-Electron Energy =                  37.7193281886704597
+    Total Energy =                        -76.0412566940944146
 
 Computation Completed
 
@@ -245,18 +245,18 @@ Properties computed using the SCF density matrix
      X:    -0.0000      Y:    -0.0000      Z:     2.0011     Total:     2.0011
 
 
-*** tstop() called on ds10 at Fri Dec  3 16:23:53 2021
+*** tstop() called on jacket at Sun Dec  5 14:07:43 2021
 Module time:
-	user time   =       0.80 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       1.06 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.80 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       1.06 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
     HF Energy (Using LinK algo)...........................................................PASSED
 
-    Psi4 stopped on: Friday, 03 December 2021 04:23PM
-    Psi4 wall time for execution: 0:00:00.85
+    Psi4 stopped on: Sunday, 05 December 2021 02:07PM
+    Psi4 wall time for execution: 0:00:01.13
 
 *** Psi4 exiting successfully. Buy a developer a beer!
