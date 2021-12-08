@@ -1110,7 +1110,7 @@ double DLPNOMP2::compute_iteration_energy(const std::vector<SharedMatrix> &R_iaj
     return e_mp2;
 }
 
-void DLPNOMP2::setup() {
+void DLPNOMP2::setup_orbitals() {
     int natom = molecule_->natom();
     int nbf = basisset_->nbf();
     int nshell = basisset_->nshell();
@@ -1120,6 +1120,7 @@ void DLPNOMP2::setup() {
 
     auto C_occ = reference_wavefunction_->Ca_subset("AO", "OCC");
 
+    timer_on("Local MOs");
     // Localize active occupied orbitals
     if (options_.get_str("DLPNO_LOCAL_ORBITALS") == "BOYS") {
         BoysLocalizer localizer = BoysLocalizer(basisset_, reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC"));
@@ -1136,8 +1137,11 @@ void DLPNOMP2::setup() {
     } else {
         throw PSIEXCEPTION("Invalid option for DLPNO_LOCAL_ORBITALS");
     }
+    timer_off("Local MOs");
 
     F_lmo_ = linalg::triplet(C_lmo_, reference_wavefunction_->Fa(), C_lmo_, true, false, false);
+
+    timer_on("Projected AOs");
 
     // Form projected atomic orbitals by removing occupied space from the basis
     C_pao_ = std::make_shared<Matrix>("Projected Atomic Orbitals", nbf, nbf);
@@ -1151,6 +1155,8 @@ void DLPNOMP2::setup() {
     }
     S_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->S(), C_pao_, true, false, false);
     F_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->Fa(), C_pao_, true, false, false);
+
+    timer_off("Projected AOs");
 
     // map from atomic center to orbital/aux basis function/shell index
 
@@ -1181,9 +1187,9 @@ double DLPNOMP2::compute_energy() {
 
     print_header();
 
-    timer_on("Setup");
-    setup();
-    timer_off("Setup");
+    timer_on("Setup Orbitals");
+    setup_orbitals();
+    timer_off("Setup Orbitals");
 
     timer_on("Overlap Ints");
     compute_overlap_ints();

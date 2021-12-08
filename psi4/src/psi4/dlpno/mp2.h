@@ -138,7 +138,7 @@ class DLPNOMP2 : public Wavefunction {
     std::pair<SharedMatrix, SharedVector> orthocanonicalizer(SharedMatrix S, SharedMatrix F);
 
     /// Form LMOs, PAOs, etc.
-    void setup();
+    void setup_orbitals();
     
     /// Compute differential overlap integrals between LMO/LMO and LMO/PAO pairs (EQ 4), DOI_ij and DOI_iu
     void compute_overlap_ints();
