@@ -165,21 +165,20 @@ class DIIS:
             for j in range(len(self.stored_vectors)):
                 B[i, j] = self.get_dot_product(i, j)
         B[-1, :-1] = B[:-1, -1] = -1
-        # Normalize for numerical stability
-        max_val = np.abs(B[:-1, :-1]).max()
-        if max_val:
-            B[:-1, :-1] /= max_val
 
         rhs = np.zeros((dim))
         rhs[-1] = -1
 
-        # solve will crash at a linear dependency.
-        # Near a linear dependency, solve and lstsq disagree. Numerical tests suggest
-        # solve is the more accurate when that happens.
-        try:
-            coeffs = np.linalg.solve(B, rhs)[:-1]
-        except np.linalg.LinAlgError:
-            coeffs = np.linalg.lstsq(B, rhs, rcond=-1)[0][:-1]
+        # Transform B to improve performance for near-singular B.
+        # We owe this trick to Rob Parrish. No known citation.
+        diagonals = B.diagonal().copy()
+        diagonals[-1] = 1
+        if np.all(diagonals > 0):
+            diagonals = diagonals ** (- 0.5)
+            B = np.einsum("i,ij,j -> ij", diagonals, B, diagonals)
+            coeffs = np.linalg.lstsq(B, rhs, rcond=None)[0][:-1] * diagonals[:-1]
+        else:
+            coeffs = np.linalg.lstsq(B, rhs, rcond=None)[0][:-1]
 
         for j, Tj in enumerate(args):
             Tj.zero()
