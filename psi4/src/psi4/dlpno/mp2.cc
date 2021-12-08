@@ -224,7 +224,7 @@ void DLPNOMP2::compute_overlap_ints() {
     }
 
     timer_on("Integration");
-#pragma omp parallel for schedule(static, 1)
+#pragma omp parallel for schedule(dynamic, 1)
     for (size_t Q = 0; Q < grid.blocks().size(); Q++) {
         size_t thread = 0;
 #ifdef _OPENMP
@@ -632,8 +632,9 @@ void DLPNOMP2::compute_df_ints() {
         std::make_shared<IntegralFactory>(ribasis_, BasisSet::zero_ao_basis_set(), basisset_, basisset_);
     std::vector<std::shared_ptr<TwoBodyAOInt>> eris(nthread);
 
-    for (size_t thread = 0; thread < nthread; thread++) {
-        eris[thread] = std::shared_ptr<TwoBodyAOInt>(factory->eri());
+    eris[0] = std::shared_ptr<TwoBodyAOInt>(factory->eri());
+    for (size_t thread = 1; thread < nthread; thread++) {
+        eris[thread] = std::shared_ptr<TwoBodyAOInt>(eris.front()->clone());
     }
 
     outfile->Printf("\n  ==> Transforming 3-Index Integrals to LMO/PAO basis <==\n");
@@ -645,7 +646,7 @@ void DLPNOMP2::compute_df_ints() {
 
     qia_.resize(naux);
 
-#pragma omp parallel for schedule(static, 1)
+#pragma omp parallel for schedule(dynamic, 1)
     for (int Q = 0; Q < ribasis_->nshell(); Q++) {
         int nq = ribasis_->shell(Q).nfunction();
         int qstart = ribasis_->shell(Q).function_index();
@@ -764,7 +765,7 @@ void DLPNOMP2::pno_transform() {
     de_pno_os_.resize(n_lmo_pairs);  // opposite-spin contributions to de_pno_
     de_pno_ss_.resize(n_lmo_pairs);  // same-spin contributions to de_pno_
 
-#pragma omp parallel for schedule(static, 1)
+#pragma omp parallel for schedule(dynamic, 1)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
@@ -945,7 +946,7 @@ void DLPNOMP2::compute_pno_overlaps() {
     S_pno_ij_kj_.resize(n_lmo_pairs);
     S_pno_ij_ik_.resize(n_lmo_pairs);
 
-#pragma omp parallel for schedule(static, 1)
+#pragma omp parallel for schedule(dynamic, 1)
     for (int ij = 0; ij < n_lmo_pairs; ++ij) {
         int i, j;
         std::tie(i, j) = ij_to_i_j_[ij];
@@ -1109,7 +1110,7 @@ double DLPNOMP2::compute_iteration_energy(const std::vector<SharedMatrix> &R_iaj
     return e_mp2;
 }
 
-void DLPNOMP2::setup() {
+void DLPNOMP2::setup_orbitals() {
     int natom = molecule_->natom();
     int nbf = basisset_->nbf();
     int nshell = basisset_->nshell();
@@ -1119,6 +1120,7 @@ void DLPNOMP2::setup() {
 
     auto C_occ = reference_wavefunction_->Ca_subset("AO", "OCC");
 
+    timer_on("Local MOs");
     // Localize active occupied orbitals
     if (options_.get_str("DLPNO_LOCAL_ORBITALS") == "BOYS") {
         BoysLocalizer localizer = BoysLocalizer(basisset_, reference_wavefunction_->Ca_subset("AO", "ACTIVE_OCC"));
@@ -1135,8 +1137,11 @@ void DLPNOMP2::setup() {
     } else {
         throw PSIEXCEPTION("Invalid option for DLPNO_LOCAL_ORBITALS");
     }
+    timer_off("Local MOs");
 
     F_lmo_ = linalg::triplet(C_lmo_, reference_wavefunction_->Fa(), C_lmo_, true, false, false);
+
+    timer_on("Projected AOs");
 
     // Form projected atomic orbitals by removing occupied space from the basis
     C_pao_ = std::make_shared<Matrix>("Projected Atomic Orbitals", nbf, nbf);
@@ -1150,6 +1155,8 @@ void DLPNOMP2::setup() {
     }
     S_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->S(), C_pao_, true, false, false);
     F_pao_ = linalg::triplet(C_pao_, reference_wavefunction_->Fa(), C_pao_, true, false, false);
+
+    timer_off("Projected AOs");
 
     // map from atomic center to orbital/aux basis function/shell index
 
@@ -1180,7 +1187,9 @@ double DLPNOMP2::compute_energy() {
 
     print_header();
 
-    setup();
+    timer_on("Setup Orbitals");
+    setup_orbitals();
+    timer_off("Setup Orbitals");
 
     timer_on("Overlap Ints");
     compute_overlap_ints();
