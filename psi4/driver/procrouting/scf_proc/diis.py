@@ -169,8 +169,10 @@ class DIIS:
         rhs = np.zeros((dim))
         rhs[-1] = -1
 
-        # Transform B to improve performance for near-singular B.
-        # We owe this trick to Rob Parrish. No known citation.
+        # Trick to improve numerical conditioning.
+        # Instead of solving B c = r, we solve D B X D^-1 c = D r, using
+        # D r = r. D is the diagonals ^ -1/2 matrix.
+        # This improves the conditioning of the problem.
         diagonals = B.diagonal().copy()
         diagonals[-1] = 1
         if np.all(diagonals > 0):
