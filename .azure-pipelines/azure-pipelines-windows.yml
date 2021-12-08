@@ -121,7 +121,7 @@ jobs:
                         ninja ^
                         numpy ^
                         pint ^
-                        pybind11 ^
+                        pybind11=2.7.0 ^
                         pymdi ^
                         pytest ^
                         pytest-xdist ^
