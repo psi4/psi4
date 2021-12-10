@@ -3904,7 +3904,7 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
 #endif
 
     npoints_ = 0;
-    for (auto grid_per_atom : atomic_grids_) {
+    for (const auto &grid_per_atom : atomic_grids_) {
         npoints_ += grid_per_atom.size();
     }
 
@@ -3914,8 +3914,8 @@ void MolecularGrid::buildGridFromOptions(MolecularGridOptions const &opt) {
     w_ = new double[npoints_];
 
     int grid_vector_index = 0;
-    for (auto grid_per_atom : atomic_grids_) {  // loop over all atoms
-        for (auto Q : grid_per_atom) {          // grid points of a given atom
+    for (const auto &grid_per_atom : atomic_grids_) {  // loop over all atoms
+        for (const auto &Q : grid_per_atom) {          // grid points of a given atom
             x_[grid_vector_index] = Q.x;
             y_[grid_vector_index] = Q.y;
             z_[grid_vector_index] = Q.z;
@@ -4423,14 +4423,11 @@ MolecularGrid::~MolecularGrid() {
 void MolecularGrid::block(int max_points, int min_points, double max_radius) {
     std::shared_ptr<GridBlocker> blocker;
     if (options_.blockscheme == "NAIVE") {
-        blocker = std::shared_ptr<GridBlocker>(
-            new NaiveGridBlocker(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_));
+        blocker = std::make_shared<NaiveGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_);
     } else if (options_.blockscheme == "OCTREE") {
-        blocker = std::shared_ptr<GridBlocker>(
-            new OctreeGridBlocker(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_));
+        blocker = std::make_shared<OctreeGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_);
     } else if (options_.blockscheme == "ATOMIC") {
-        blocker = std::shared_ptr<GridBlocker>(new AtomicGridBlocker(npoints_, x_, y_, z_, w_, max_points, min_points,
-                                                                     max_radius, extents_, molecule_, atomic_grids_));
+        blocker = std::make_shared<AtomicGridBlocker>(npoints_, x_, y_, z_, w_, max_points, min_points, max_radius, extents_, molecule_, atomic_grids_);
     }
 
     blocker->set_print(options_.print);
@@ -4453,19 +4450,10 @@ void MolecularGrid::block(int max_points, int min_points, double max_radius) {
     max_points_ = blocker->max_points();
     max_functions_ = blocker->max_functions();
     collocation_size_ = blocker->collocation_size();
-    size_t count = 0;
-    const std::vector<std::shared_ptr<BlockOPoints>> &block = blocker->blocks();
-    for (size_t i = 0; i < block.size(); i++) {
-        count += block[i]->npoints();
-        blocks_.push_back(block[i]);
-    }
+
+    blocks_ = blocker->blocks();
     if (options_.blockscheme == "ATOMIC") {
-        atomic_blocks_.resize(molecule_->natom());
-        for (size_t i = 0; i < molecule_->natom(); i++) {
-            for (size_t Q = 0; Q < blocker->atomic_blocks()[i].size(); Q++) {
-                atomic_blocks_[i].push_back(blocker->atomic_blocks()[i][Q]);
-            }
-        }
+        atomic_blocks_ = blocker->atomic_blocks();
     }
 }
 
@@ -4475,7 +4463,7 @@ void MolecularGrid::remove_distant_points(double Rmax) {
     int npoints2 = npoints_;
     int offset = 0;
     int point_index = 0;
-    std::vector<std::vector<MassPoint>> temp_grids_(molecule_->natom());
+    std::vector<std::vector<MassPoint>> temp_grids(molecule_->natom());
     for (int atom = 0; atom < atomic_grids_.size(); ++atom) {
         for (int Q = 0; Q < atomic_grids_[atom].size(); ++Q) {
             auto P = atomic_grids_[atom][Q];
@@ -4492,7 +4480,7 @@ void MolecularGrid::remove_distant_points(double Rmax) {
             if (R > Rmax * Rmax) {
                 npoints2--;
             } else {
-                temp_grids_[atom].push_back(P);
+                temp_grids[atom].push_back(P);
                 x_[offset] = x_[point_index];
                 y_[offset] = y_[point_index];
                 z_[offset] = z_[point_index];
@@ -4503,7 +4491,11 @@ void MolecularGrid::remove_distant_points(double Rmax) {
         }
     }
     npoints_ = npoints2;
-    atomic_grids_ = temp_grids_;
+    atomic_grids_ = temp_grids;
+    // free up allocated storage capacity.
+    for (size_t i = 0; i < atomic_grids_.size(); i++){
+        atomic_grids_[i].shrink_to_fit();
+    }
 }
 
 void MolecularGrid::postProcess(std::shared_ptr<BasisExtents> extents, int max_points, int min_points,

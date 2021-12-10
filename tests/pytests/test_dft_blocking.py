@@ -117,3 +117,40 @@ def test_dft_block_schemes():
         XC = wfn.variable("DFT XC ENERGY")
         assert psi4.compare_integers(ref["XC GRID TOTAL POINTS"], P, f" {S} GRID POINTS:")
         assert psi4.compare_values(ref["DFT XC ENERGY"], XC, f" {S} XC ENERGY:")
+
+
+def test_dft_block_scheme_distantpoints():
+    """Test removal of distant grid points. all DFT_BLOCK_SCHEME should give same results and number
+    of grid points."""
+
+    mol = psi4.geometry(
+        """
+    0 1
+    O  -1.551007  -0.114520   0.000000
+    H  -1.934259   0.762503   0.000000
+    H  -0.599677   0.040712   0.000000
+    no_com
+    no_reorient
+    symmetry c1
+    """
+    )
+    psi4.set_options(
+        {
+            "BASIS": "sto-3g",
+            "maxiter": 1,
+            "FAIL_ON_MAXITER": False,
+            "DFT_PRUNING_SCHEME": "ROBUST",
+            "DFT_WEIGHTS_TOLERANCE": -1.0,
+        }
+    )
+    ref = {"True": 45929, "False": 46890}
+    YESNO = [True,False]
+    SCHEMES = ["OCTREE", "NAIVE", "ATOMIC"]
+    for YN in YESNO:
+        psi4.set_options({"DFT_REMOVE_DISTANT_POINTS":YN})
+        for S in SCHEMES:
+            psi4.set_options({"DFT_BLOCK_SCHEME": S})
+            e, wfn = psi4.energy("pbe", return_wfn=True)
+            P = psi4.variable("XC GRID TOTAL POINTS")
+            XC = wfn.variable("DFT XC ENERGY")
+            assert psi4.compare_integers(ref[f"{YN}"], P, f" scheme={S}; distant points={YN} ")
