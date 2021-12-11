@@ -446,13 +446,13 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
     // => Zeroing <= //
     if (build_J) {
-        for (auto Jmat : J) {
+        for (auto& Jmat : J) {
             Jmat->zero();
         }
     }
     
     if (build_K) {
-        for (auto Kmat : K) {
+        for (auto& Kmat : K) {
             Kmat->zero();
         }
     }
@@ -966,14 +966,14 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     }  // End master task list
 
     if (build_J) {
-        for (auto Jmat : J) {
+        for (auto& Jmat : J) {
             Jmat->scale(2.0);
             Jmat->hermitivitize();
         }
     }
 
     if (build_K && lr_symmetric_) {
-        for (auto Kmat : K) {
+        for (auto& Kmat : K) {
             Kmat->scale(2.0);
             Kmat->hermitivitize();
         }
@@ -1002,7 +1002,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
     // => Zeroing <= //
 
-    for (auto Kmat : K) {
+    for (auto& Kmat : K) {
         Kmat->zero();
     }
 
@@ -1012,6 +1012,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
     int nthread = df_ints_num_threads_;
 
     // => Task Blocking <= //
+    // Define the shells of each atom as a task
 
     std::vector<int> atom_first_shell_idx;
 
@@ -1139,6 +1140,8 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         int Ratom = atom_pairs[atom2].first;
         int Satom = atom_pairs[atom2].second;
 
+        // If the index of Ratom > Patom, no matter what Qatom or Satom are,
+        // The integrals have already been computed, and therefore we don't need to compute again
         if (Ratom > Patom) continue;
 
         // First layer of sparsity screening (Atom Bra-ket screening)
@@ -1617,7 +1620,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
     }  // End master task list
 
     if (lr_symmetric_) {
-        for (auto Kmat : K) {
+        for (auto& Kmat : K) {
             Kmat->scale(2.0);
             Kmat->hermitivitize();
         }

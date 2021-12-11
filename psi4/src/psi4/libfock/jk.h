@@ -766,8 +766,8 @@ class PSI_API DirectJK : public JK {
      * @brief constructs the K matrix using the LinK algorithm, described in [Ochsenfeld:1998:1663]_
      * 
      * @param ints A list of TwoBodyAOInt objects (one per thread) to optimize parallel efficiency
-     * @param D The list of density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
-     * @param K The list of K matrices to build (Same size as D)
+     * @param D The list of AO density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
+     * @param K The list of AO K matrices to build (Same size as D)
      * 
      */
     void build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
@@ -777,11 +777,11 @@ class PSI_API DirectJK : public JK {
      * @brief The standard J and K matrix builds for this integral class
      * 
      * @param ints A list of TwoBodyAOInt objects (one per thread) to optimize parallel efficiency
-     * @param D The list of density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
-     * @param J The list of J matrices to build (Same size as D)
-     * @param K The list of K matrices to build (Same size as D)
-     * @param build_J Allocate memory to build J matrix? (For split J/K algos)
-     * @param build_K Allocate memory to build K matrix? (For split J/K algos)
+     * @param D The list of AO density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
+     * @param J The list of AO J matrices to build (Same size as D)
+     * @param K The list of AO K matrices to build (Same size as D)
+     * @param build_J Build J matrix?
+     * @param build_K Build K matrix?
      * 
      */
     void build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
