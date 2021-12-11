@@ -48,7 +48,6 @@ namespace dct {
 double DCTSolver::compute_energy_UHF() {
     orbitalsDone_ = false;
     cumulantDone_ = false;
-    densityConverged_ = false;
     energyConverged_ = false;
     initialize_orbitals_from_reference_U();
 
@@ -95,7 +94,7 @@ double DCTSolver::compute_energy_UHF() {
     }
 
     // If not converged -> Break
-    if (!orbitalsDone_ || !cumulantDone_ || !densityConverged_)
+    if (!orbitalsDone_ || !cumulantDone_)
         throw ConvergenceError<int>("DCT", maxiter_, cumulant_threshold_, cumulant_convergence_, __FILE__, __LINE__);
 
     std::string prefix = options_.get_str("DCT_TYPE") == "DF" ? "DF-" : " ";
@@ -276,10 +275,9 @@ void DCTSolver::run_twostep_dct_orbital_updates() {
     // Update the orbitals
     int nSCFCycles = 0;
     // Reset the booleans that control the convergence
-    densityConverged_ = false;
     energyConverged_ = false;
     outfile->Printf("\tOrbital Updates\n");
-    while ((!densityConverged_ || !orbitalsDone_ || !energyConverged_) && (nSCFCycles++ < maxiter_)) {
+    while ((!orbitalsDone_ || !energyConverged_) && (nSCFCycles++ < maxiter_)) {
         std::string diisString;
         // Copy core hamiltonian into the Fock matrix array: F = H
         Fa_->copy(so_h_);
@@ -317,7 +315,7 @@ void DCTSolver::run_twostep_dct_orbital_updates() {
         // Make sure that the orbital phase is retained
         correct_mo_phases(false);
         // Update SCF density (Kappa) and check its RMS
-        densityConverged_ = update_scf_density() < orbitals_threshold_;
+        update_scf_density();
         // Compute the DCT energy
         new_total_energy_ = scf_energy_ + lambda_energy_;
         // Check convergence of the total DCT energy
@@ -361,7 +359,7 @@ void DCTSolver::run_simult_dct() {
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);
-    while ((!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_) && cycle++ < maxiter_) {
+    while ((!orbitalsDone_ || !cumulantDone_ || !energyConverged_) && cycle++ < maxiter_) {
         std::string diisString;
         // Save the old energy
         old_total_energy_ = new_total_energy_;
@@ -483,7 +481,7 @@ void DCTSolver::run_simult_dct() {
         // Transform two-electron integrals to the MO basis using new orbitals, build denominators
         transform_integrals();
         // Update SCF density (Kappa) and check its RMS
-        densityConverged_ = update_scf_density() < orbitals_threshold_;
+        update_scf_density();
         // If we've performed enough lambda updates since the last orbitals
         // update, reset the counter so another SCF update is performed
         outfile->Printf("\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n", cycle, orbitals_convergence_,

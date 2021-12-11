@@ -288,8 +288,6 @@ class DCTSolver : public Wavefunction {
     bool orbitalsDone_;
     /// Controls convergence of the density cumulant updates
     bool cumulantDone_;
-    /// Controls convergence of the idempotent one-particle density
-    bool densityConverged_;
     /// Controls convergence of the DCT energy
     bool energyConverged_;
     /// Whether the user requested the DCT functional that is variationally orbitally-optimized
