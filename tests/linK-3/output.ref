@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.5a1.dev256 
+                               Psi4 1.5a1.dev259 
 
-                         Git: Rev {linK-new} 78027ab dirty
+                         Git: Rev {linK-new} c83626b dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Friday, 10 December 2021 11:00PM
+    Psi4 started on: Monday, 13 December 2021 03:20PM
 
-    Process ID: 18257
+    Process ID: 19369
     Host:       ds10
     PSIDATADIR: /scratch/jiang/p4dev/psi4/objdir-livie/stage/share/psi4
     Memory:     500.0 MiB
@@ -90,7 +90,7 @@ psi4.compare_values(rohf_energy, rohf_ref, 6, "ROHF Energy (using LinK algo)")
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds10
-*** at Fri Dec 10 23:00:58 2021
+*** at Mon Dec 13 15:20:42 2021
 
    => Loading Basis Set <=
 
@@ -197,31 +197,31 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UHF iter SAD:  -229.97627956888934   -2.29976e+02   0.00000e+00 
-   @UHF iter   1:  -230.34044701502177   -3.64167e-01   2.84845e-03 DIIS/LINK
-   @UHF iter   2:  -230.40548499345104   -6.50380e-02   9.10337e-04 DIIS/INCFOCK/LINK
-   @UHF iter   3:  -230.41337609360528   -7.89110e-03   4.49308e-04 DIIS/INCFOCK/LINK
-   @UHF iter   4:  -230.41564841538309   -2.27232e-03   1.91617e-04 DIIS/INCFOCK/LINK
-   @UHF iter   5:  -230.41680626874776   -1.15785e-03   1.04554e-04 DIIS/LINK
-   @UHF iter   6:  -230.41718686741683   -3.80599e-04   3.43901e-05 DIIS/INCFOCK/LINK
-   @UHF iter   7:  -230.41721458790178   -2.77205e-05   8.95279e-06 DIIS/INCFOCK/LINK
-   @UHF iter   8:  -230.41721616045277   -1.57255e-06   3.00469e-06 DIIS/INCFOCK/LINK
-   @UHF iter   9:  -230.41721606402831    9.64245e-08   7.72661e-07 DIIS/LINK
-   @UHF iter  10:  -230.41721607525506   -1.12267e-08   3.44486e-07 DIIS/LINK
-   @UHF iter  11:  -230.41721607852259   -3.26753e-09   2.31089e-07 DIIS/LINK
-   @UHF iter  12:  -230.41721608051353   -1.99094e-09   1.92255e-07 DIIS/LINK
-   @UHF iter  13:  -230.41721608240206   -1.88854e-09   1.62477e-07 DIIS/LINK
-   @UHF iter  14:  -230.41721608633452   -3.93246e-09   7.90718e-08 DIIS/LINK
-   @UHF iter  15:  -230.41721608725152   -9.16998e-10   2.63543e-08 DIIS/LINK
-   @UHF iter  16:  -230.41721608727903   -2.75122e-11   9.57322e-09 DIIS/LINK
+   @UHF iter SAD:  -229.97627956888942   -2.29976e+02   0.00000e+00 
+   @UHF iter   1:  -230.34044701581044   -3.64167e-01   2.84845e-03 DIIS/LINK
+   @UHF iter   2:  -230.40548499088121   -6.50380e-02   9.10337e-04 DIIS/INCFOCK/LINK
+   @UHF iter   3:  -230.41337609140930   -7.89110e-03   4.49308e-04 DIIS/INCFOCK/LINK
+   @UHF iter   4:  -230.41564841329472   -2.27232e-03   1.91617e-04 DIIS/INCFOCK/LINK
+   @UHF iter   5:  -230.41680627326915   -1.15786e-03   1.04554e-04 DIIS/LINK
+   @UHF iter   6:  -230.41718687303879   -3.80600e-04   3.43899e-05 DIIS/INCFOCK/LINK
+   @UHF iter   7:  -230.41721459323207   -2.77202e-05   8.95270e-06 DIIS/INCFOCK/LINK
+   @UHF iter   8:  -230.41721616345998   -1.57023e-06   3.00464e-06 DIIS/INCFOCK/LINK
+   @UHF iter   9:  -230.41721606844646    9.50135e-08   7.72670e-07 DIIS/LINK
+   @UHF iter  10:  -230.41721607967310   -1.12266e-08   3.44560e-07 DIIS/LINK
+   @UHF iter  11:  -230.41721608293946   -3.26636e-09   2.31174e-07 DIIS/LINK
+   @UHF iter  12:  -230.41721608492861   -1.98915e-09   1.92301e-07 DIIS/LINK
+   @UHF iter  13:  -230.41721608681917   -1.89056e-09   1.62486e-07 DIIS/LINK
+   @UHF iter  14:  -230.41721609075481   -3.93564e-09   7.90277e-08 DIIS/LINK
+   @UHF iter  15:  -230.41721609167081   -9.16003e-10   2.63565e-08 DIIS/LINK
+   @UHF iter  16:  -230.41721609169838   -2.75691e-11   9.57358e-09 DIIS/LINK
   Energy and wave function converged.
 
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   1.219279920E-01
+   @Spin Contamination Metric:   1.219279829E-01
    @S^2 Expected:                7.500000000E-01
-   @S^2 Observed:                8.719279920E-01
+   @S^2 Observed:                8.719279829E-01
    @S   Expected:                5.000000000E-01
    @S   Observed:                5.000000000E-01
 
@@ -240,31 +240,31 @@ Scratch directory: /scratch/jiang/
 
     Alpha Virtual:                                                        
 
-      22A     -0.126042    23A     -0.063897    24A      0.042797  
-      25A      0.098946    26A      0.113678    27A      0.130299  
-      28A      0.135660    29A      0.151029    30A      0.159926  
-      31A      0.255044    32A      0.258588    33A      0.275867  
+      22A     -0.126042    23A     -0.063897    24A      0.042798  
+      25A      0.098946    26A      0.113680    27A      0.130299  
+      28A      0.135661    29A      0.151028    30A      0.159926  
+      31A      0.255043    32A      0.258590    33A      0.275867  
       34A      0.280571    35A      0.442065    36A      0.497354  
-      37A      0.513966    38A      0.548631    39A      0.565379  
+      37A      0.513966    38A      0.548638    39A      0.565379  
       40A      0.568889    41A      0.578758    42A      0.605166  
       43A      0.615845    44A      0.616396    45A      0.619368  
-      46A      0.623269    47A      0.666026    48A      0.706239  
-      49A      0.774274    50A      0.889198    51A      0.897618  
-      52A      0.898364    53A      0.906629    54A      0.921992  
-      55A      0.965296    56A      0.966879    57A      0.991253  
-      58A      1.023044    59A      1.071307    60A      1.091040  
-      61A      1.153718    62A      1.166937    63A      1.242023  
-      64A      1.262251    65A      1.406922    66A      1.474558  
-      67A      1.477738    68A      1.505778    69A      1.524028  
+      46A      0.623270    47A      0.666026    48A      0.706238  
+      49A      0.774274    50A      0.889197    51A      0.897618  
+      52A      0.898369    53A      0.906632    54A      0.921992  
+      55A      0.965297    56A      0.966880    57A      0.991254  
+      58A      1.023044    59A      1.071308    60A      1.091039  
+      61A      1.153718    62A      1.166938    63A      1.242022  
+      64A      1.262251    65A      1.406922    66A      1.474556  
+      67A      1.477740    68A      1.505778    69A      1.524028  
       70A      1.525068    71A      1.563469    72A      1.796733  
-      73A      1.852111    74A      1.938720    75A      1.943215  
+      73A      1.852111    74A      1.938720    75A      1.943238  
       76A      2.058696    77A      2.085228    78A      2.149822  
       79A      2.155240    80A      2.206060    81A      2.211483  
       82A      2.230374    83A      2.244964    84A      2.369328  
       85A      2.401998    86A      2.403913    87A      2.625833  
-      88A      2.651999    89A      2.754622    90A      2.829447  
-      91A      2.834927    92A      2.845615    93A      2.849862  
-      94A      2.854186    95A      3.156276    96A      3.560695  
+      88A      2.652000    89A      2.754622    90A      2.829447  
+      91A      2.834926    92A      2.845616    93A      2.849870  
+      94A      2.854186    95A      3.156276    96A      3.560697  
       97A      4.268438    98A      4.283484    99A      4.316108  
      100A      4.500657   101A      4.529756   102A      4.858266  
 
@@ -281,47 +281,47 @@ Scratch directory: /scratch/jiang/
     Beta Virtual:                                                         
 
       21A     -0.243132    22A     -0.042620    23A     -0.017261  
-      24A      0.045969    25A      0.103744    26A      0.113898  
-      27A      0.146327    28A      0.149971    29A      0.162670  
-      30A      0.167894    31A      0.259712    32A      0.264405  
-      33A      0.280738    34A      0.283655    35A      0.445200  
-      36A      0.501617    37A      0.542697    38A      0.566200  
+      24A      0.045970    25A      0.103744    26A      0.113900  
+      27A      0.146328    28A      0.149969    29A      0.162670  
+      30A      0.167894    31A      0.259714    32A      0.264404  
+      33A      0.280739    34A      0.283655    35A      0.445200  
+      36A      0.501617    37A      0.542697    38A      0.566207  
       39A      0.568279    40A      0.578069    41A      0.615615  
       42A      0.621778    43A      0.622249    44A      0.631181  
       45A      0.631489    46A      0.632666    47A      0.700192  
       48A      0.711440    49A      0.789124    50A      0.895794  
-      51A      0.903016    52A      0.905262    53A      0.907060  
-      54A      0.920329    55A      0.967244    56A      0.973272  
-      57A      0.992378    58A      1.025530    59A      1.082373  
-      60A      1.091282    61A      1.163033    62A      1.166772  
-      63A      1.245479    64A      1.289196    65A      1.430031  
-      66A      1.477756    67A      1.483811    68A      1.533743  
+      51A      0.903021    52A      0.905262    53A      0.907062  
+      54A      0.920330    55A      0.967246    56A      0.973273  
+      57A      0.992379    58A      1.025530    59A      1.082374  
+      60A      1.091280    61A      1.163033    62A      1.166773  
+      63A      1.245478    64A      1.289196    65A      1.430031  
+      66A      1.477754    67A      1.483814    68A      1.533743  
       69A      1.536137    70A      1.561947    71A      1.565986  
-      72A      1.818410    73A      1.855408    74A      1.940885  
-      75A      1.947024    76A      2.073220    77A      2.083820  
+      72A      1.818410    73A      1.855408    74A      1.940886  
+      75A      1.947047    76A      2.073220    77A      2.083820  
       78A      2.153804    79A      2.163166    80A      2.229438  
       81A      2.235283    82A      2.237787    83A      2.242391  
       84A      2.397805    85A      2.406366    86A      2.412183  
-      87A      2.645258    88A      2.650638    89A      2.766596  
-      90A      2.835198    91A      2.840928    92A      2.844989  
-      93A      2.853684    94A      2.858898    95A      3.158498  
-      96A      3.563249    97A      4.275211    98A      4.295465  
+      87A      2.645257    88A      2.650639    89A      2.766596  
+      90A      2.835198    91A      2.840928    92A      2.844990  
+      93A      2.853684    94A      2.858907    95A      3.158498  
+      96A      3.563250    97A      4.275211    98A      4.295465  
       99A      4.315036   100A      4.511805   101A      4.527382  
-     102A      4.862423  
+     102A      4.862424  
 
     Final Occupation by Irrep:
               A 
     DOCC [    20 ]
     SOCC [     1 ]
 
-  @UHF Final Energy:  -230.41721608727903
+  @UHF Final Energy:  -230.41721609169838
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -703.9938288481907875
-    Two-Electron Energy =                 269.8656814006328659
-    Total Energy =                       -230.4172160872790300
+    One-Electron Energy =                -703.9938287797452858
+    Two-Electron Energy =                 269.8656813277680158
+    Total Energy =                       -230.4172160916983785
 
   UHF NO Occupations:
   HONO-2 :   19  A 1.9835727
@@ -353,21 +353,21 @@ Properties computed using the SCF density matrix
      X:    -8.9224      Y:    -1.3792      Z:     0.0000     Total:     9.0283
 
 
-*** tstop() called on ds10 at Fri Dec 10 23:01:08 2021
+*** tstop() called on ds10 at Mon Dec 13 15:20:54 2021
 Module time:
-	user time   =      63.36 seconds =       1.06 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =      70.57 seconds =       1.18 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =         12 seconds =       0.20 minutes
 Total time:
-	user time   =      63.36 seconds =       1.06 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =      70.57 seconds =       1.18 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =         12 seconds =       0.20 minutes
     UHF Energy (using LinK algo)..........................................................PASSED
 
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds10
-*** at Fri Dec 10 23:01:08 2021
+*** at Mon Dec 13 15:20:54 2021
 
    => Loading Basis Set <=
 
@@ -474,17 +474,17 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter SAD:  -229.97627956888914   -2.29976e+02   0.00000e+00 
-   @ROHF iter   1:  -230.34044701502171   -3.64167e-01   1.97113e-03 DIIS/LINK
-   @ROHF iter   2:  -230.39746640379110   -5.70194e-02   5.92164e-04 DIIS/INCFOCK/LINK
-   @ROHF iter   3:  -230.40206233123837   -4.59593e-03   2.54103e-04 DIIS/INCFOCK/LINK
-   @ROHF iter   4:  -230.40278526419854   -7.22933e-04   2.60323e-05 DIIS/INCFOCK/LINK
-   @ROHF iter   5:  -230.40278953489758   -4.27070e-06   1.09717e-05 DIIS/LINK
-   @ROHF iter   6:  -230.40279177894689   -2.24405e-06   2.55633e-06 DIIS/INCFOCK/LINK
-   @ROHF iter   7:  -230.40279215023298   -3.71286e-07   5.60801e-07 DIIS/INCFOCK/LINK
-   @ROHF iter   8:  -230.40279166615801    4.84075e-07   1.01896e-07 DIIS/LINK
-   @ROHF iter   9:  -230.40279166630114   -1.43132e-10   2.92717e-08 DIIS/LINK
-   @ROHF iter  10:  -230.40279166632570   -2.45564e-11   1.42135e-08 DIIS/LINK
+   @ROHF iter SAD:  -229.97627956888942   -2.29976e+02   0.00000e+00 
+   @ROHF iter   1:  -230.34044701581041   -3.64167e-01   1.97113e-03 DIIS/LINK
+   @ROHF iter   2:  -230.39746640117050   -5.70194e-02   5.92164e-04 DIIS/INCFOCK/LINK
+   @ROHF iter   3:  -230.40206232904563   -4.59593e-03   2.54103e-04 DIIS/INCFOCK/LINK
+   @ROHF iter   4:  -230.40278526216900   -7.22933e-04   2.60323e-05 DIIS/INCFOCK/LINK
+   @ROHF iter   5:  -230.40278952904930   -4.26688e-06   1.09715e-05 DIIS/LINK
+   @ROHF iter   6:  -230.40279175824128   -2.22919e-06   2.55596e-06 DIIS/INCFOCK/LINK
+   @ROHF iter   7:  -230.40279209798450   -3.39743e-07   5.58700e-07 DIIS/INCFOCK/LINK
+   @ROHF iter   8:  -230.40279166038772    4.37597e-07   9.07282e-08 DIIS/LINK
+   @ROHF iter   9:  -230.40279166052306   -1.35344e-10   2.78568e-08 DIIS/LINK
+   @ROHF iter  10:  -230.40279166054501   -2.19416e-11   1.36388e-08 DIIS/LINK
   Energy and wave function converged.
 
 
@@ -509,47 +509,47 @@ Scratch directory: /scratch/jiang/
 
     Virtual:                                                              
 
-      22A     -0.070931    23A     -0.061052    24A      0.044037  
-      25A      0.100990    26A      0.113237    27A      0.140709  
-      28A      0.146863    29A      0.149804    30A      0.160765  
-      31A      0.258592    32A      0.259208    33A      0.277730  
+      22A     -0.070931    23A     -0.061052    24A      0.044038  
+      25A      0.100993    26A      0.113238    27A      0.140707  
+      28A      0.146863    29A      0.149804    30A      0.160766  
+      31A      0.258593    32A      0.259211    33A      0.277730  
       34A      0.281316    35A      0.443064    36A      0.499351  
-      37A      0.529394    38A      0.557189    39A      0.566073  
+      37A      0.529394    38A      0.557206    39A      0.566073  
       40A      0.573208    41A      0.603433    42A      0.616954  
       43A      0.618132    44A      0.619309    45A      0.621438  
       46A      0.622519    47A      0.687945    48A      0.700366  
-      49A      0.779039    50A      0.891763    51A      0.899720  
-      52A      0.900791    53A      0.905798    54A      0.920021  
-      55A      0.965133    56A      0.969047    57A      0.990861  
-      58A      1.023145    59A      1.076450    60A      1.090446  
-      61A      1.158073    62A      1.166355    63A      1.243193  
-      64A      1.275057    65A      1.418528    66A      1.475951  
-      67A      1.480342    68A      1.519583    69A      1.528548  
-      70A      1.544586    71A      1.561840    72A      1.806804  
-      73A      1.852878    74A      1.939007    75A      1.943320  
+      49A      0.779039    50A      0.891765    51A      0.899733  
+      52A      0.900791    53A      0.905800    54A      0.920022  
+      55A      0.965134    56A      0.969051    57A      0.990863  
+      58A      1.023145    59A      1.076448    60A      1.090445  
+      61A      1.158075    62A      1.166356    63A      1.243191  
+      64A      1.275057    65A      1.418528    66A      1.475954  
+      67A      1.480343    68A      1.519583    69A      1.528548  
+      70A      1.544587    71A      1.561840    72A      1.806804  
+      73A      1.852878    74A      1.939007    75A      1.943379  
       76A      2.065604    77A      2.083449    78A      2.150881  
       79A      2.158330    80A      2.217212    81A      2.223689  
       82A      2.231764    83A      2.242751    84A      2.383087  
-      85A      2.403928    86A      2.406111    87A      2.634791  
+      85A      2.403928    86A      2.406111    87A      2.634792  
       88A      2.650107    89A      2.759577    90A      2.831371  
-      91A      2.837090    92A      2.844025    93A      2.852645  
-      94A      2.852855    95A      3.156199    96A      3.560723  
+      91A      2.837090    92A      2.844025    93A      2.852644  
+      94A      2.852876    95A      3.156199    96A      3.560728  
       97A      4.270668    98A      4.288478    99A      4.314058  
-     100A      4.505240   101A      4.526807   102A      4.858853  
+     100A      4.505240   101A      4.526807   102A      4.858854  
 
     Final Occupation by Irrep:
               A 
     DOCC [    20 ]
     SOCC [     1 ]
 
-  @ROHF Final Energy:  -230.40279166632570
+  @ROHF Final Energy:  -230.40279166054501
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -703.9661865240337875
-    Two-Electron Energy =                 269.8524634974291985
-    Total Energy =                       -230.4027916663256974
+    One-Electron Energy =                -703.9661864430912601
+    Two-Electron Energy =                 269.8524634222673626
+    Total Energy =                       -230.4027916605450059
 
 Computation Completed
 
@@ -571,18 +571,18 @@ Properties computed using the SCF density matrix
      X:    -8.9228      Y:    -1.3783      Z:     0.0000     Total:     9.0286
 
 
-*** tstop() called on ds10 at Fri Dec 10 23:01:15 2021
+*** tstop() called on ds10 at Mon Dec 13 15:21:01 2021
 Module time:
-	user time   =      39.64 seconds =       0.66 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =      44.02 seconds =       0.73 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          7 seconds =       0.12 minutes
 Total time:
-	user time   =     103.06 seconds =       1.72 minutes
-	system time =       0.17 seconds =       0.00 minutes
-	total time  =         17 seconds =       0.28 minutes
+	user time   =     114.65 seconds =       1.91 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =         19 seconds =       0.32 minutes
     ROHF Energy (using LinK algo).........................................................PASSED
 
-    Psi4 stopped on: Friday, 10 December 2021 11:01PM
-    Psi4 wall time for execution: 0:00:17.58
+    Psi4 stopped on: Monday, 13 December 2021 03:21PM
+    Psi4 wall time for execution: 0:00:19.53
 
 *** Psi4 exiting successfully. Buy a developer a beer!

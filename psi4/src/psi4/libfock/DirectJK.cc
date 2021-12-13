@@ -1284,12 +1284,12 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
         }
 
-        // Used in the second pre-screening iteration loop 
-        // (and later used in the stripeout of K)
-        std::vector<std::unordered_set<int>> PR_stripeout(nPshell);
-        std::vector<std::unordered_set<int>> PS_stripeout(nPshell);
-        std::vector<std::unordered_set<int>> QR_stripeout(nQshell);
-        std::vector<std::unordered_set<int>> QS_stripeout(nQshell);
+        // Used in the second pre-screening iteration loop
+        // Minilists, as defined in Oschenfeld Fig. 1
+        std::vector<std::unordered_set<int>> PR_minilist(nPshell);
+        std::vector<std::unordered_set<int>> PS_minilist(nPshell);
+        std::vector<std::unordered_set<int>> QR_minilist(nQshell);
+        std::vector<std::unordered_set<int>> QS_minilist(nQshell);
 
         bool touched = false;
         for (int P = Pstart; P < Pstart + nPshell; P++) {
@@ -1303,12 +1303,11 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                 // Significant ket shell pairs RS for bra shell pair PQ
                 std::unordered_set<int> PQ_sig_RS;
 
-                // Form ML_P (Oschenfeld Fig. 1)
-                for (int R2 = 0; R2 < PR_sig_shells[dP].size(); R2++) {
+                // Form ML_P (using PR elements)
+                for (const int R : PR_sig_shells[dP]) {
                     int count = 0;
-                    for (int S2 = 0; S2 < PS_sig_shells[dP].size(); S2++) {
-                        int R = PR_sig_shells[dP][R2];
-                        int S = PS_sig_shells[dP][S2];
+                    for (const int S : PS_sig_shells[dP]) {
+
                         int dR = R - Rstart;
                         int dS = S - Sstart;
 
@@ -1320,10 +1319,9 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                             if (R * nshell + S > P * nshell + Q) continue;
 
                             // Ket Stripeouts
-                            if (!PR_stripeout[dP].count(R)) PR_stripeout[dP].emplace(R);
-                            if (!PS_stripeout[dP].count(S)) PS_stripeout[dP].emplace(S);
+                            PR_minilist[dP].emplace(R);
+                            PS_minilist[dP].emplace(S);
 
-                            if (PQ_sig_RS.count(R * nshell + S)) continue;
                             PQ_sig_RS.emplace(R * nshell + S);
                         }
                         else break;
@@ -1331,12 +1329,37 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                     if (count == 0) break;
                 }
 
-                // Form ML_Q
-                for (int R2 = 0; R2 < QR_sig_shells[dQ].size(); R2++) {
+                // Form ML_P (using PS elements)
+                for (const int S : PS_sig_shells[dP]) {
                     int count = 0;
-                    for (int S2 = 0; S2 < QS_sig_shells[dQ].size(); S2++) {
-                        int R = QR_sig_shells[dQ][R2];
-                        int S = QS_sig_shells[dQ][S2];
+                    for (const int R : PR_sig_shells[dP]) {
+
+                        int dR = R - Rstart;
+                        int dS = S - Sstart;
+
+                        double screen_val = ints[0]->shell_pair_max_density(P, S) * std::sqrt(ints[0]->shell_ceiling2(P, Q, R, S));
+
+                        if (screen_val >= linK_ints_cutoff_) {
+                            count += 1;
+                            if (S > R) continue;
+                            if (R * nshell + S > P * nshell + Q) continue;
+
+                            // Ket Stripeouts
+                            PR_minilist[dP].emplace(R);
+                            PS_minilist[dP].emplace(S);
+
+                            PQ_sig_RS.emplace(R * nshell + S);
+                        }
+                        else break;
+                    }
+                    if (count == 0) break;
+                }
+
+                // Form ML_Q (using QR) elements
+                for (const int R : QR_sig_shells[dQ]) {
+                    int count = 0;
+                    for (const int S : QS_sig_shells[dQ]) {
+
                         int dR = R - Rstart;
                         int dS = S - Sstart;
 
@@ -1348,10 +1371,35 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                             if (R * nshell + S > P * nshell + Q) continue;
 
                             // Ket Stripeouts
-                            if (!QR_stripeout[dQ].count(R)) QR_stripeout[dQ].emplace(R);
-                            if (!QS_stripeout[dQ].count(S)) QS_stripeout[dQ].emplace(S);
+                            QR_minilist[dQ].emplace(R);
+                            QS_minilist[dQ].emplace(S);
 
-                            if (PQ_sig_RS.count(R * nshell + S)) continue;
+                            PQ_sig_RS.emplace(R * nshell + S);
+                        }
+                        else break;
+                    }
+                    if (count == 0) break;
+                }
+
+                // Form ML_Q (using QS) elements
+                for (const int S : QS_sig_shells[dQ]) {
+                    int count = 0;
+                    for (const int R : QR_sig_shells[dQ]) {
+
+                        int dR = R - Rstart;
+                        int dS = S - Sstart;
+
+                        double screen_val = ints[0]->shell_pair_max_density(Q, S) * std::sqrt(ints[0]->shell_ceiling2(P, Q, R, S));
+
+                        if (screen_val >= linK_ints_cutoff_) {
+                            count += 1;
+                            if (S > R) continue;
+                            if (R * nshell + S > P * nshell + Q) continue;
+
+                            // Ket Stripeouts
+                            QR_minilist[dQ].emplace(R);
+                            QS_minilist[dQ].emplace(S);
+
                             PQ_sig_RS.emplace(R * nshell + S);
                         }
                         else break;
@@ -1500,7 +1548,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
             for (int P = Pstart; P < Pstart + nPshell; P++) {
                 int dP = P - Pstart;
-                for (const int R : PR_stripeout[dP]) {
+                for (const int R : PR_minilist[dP]) {
 
                     int Psize = primary_->shell(P).nfunction();
                     int Rsize = primary_->shell(R).nfunction();
@@ -1528,7 +1576,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
             for (int P = Pstart; P < Pstart + nPshell; P++) {
                 int dP = P - Pstart;
-                for (const int S : PS_stripeout[dP]) {
+                for (const int S : PS_minilist[dP]) {
 
                     int Psize = primary_->shell(P).nfunction();
                     int Ssize = primary_->shell(S).nfunction();
@@ -1556,7 +1604,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
             for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
                 int dQ = Q - Qstart;
-                for (const int R : QR_stripeout[dQ]) {
+                for (const int R : QR_minilist[dQ]) {
 
                     int Qsize = primary_->shell(Q).nfunction();
                     int Rsize = primary_->shell(R).nfunction();
@@ -1584,7 +1632,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
             for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
                 int dQ = Q - Qstart;
-                for (const int S : QS_stripeout[dQ]) {
+                for (const int S : QS_minilist[dQ]) {
 
                     int Qsize = primary_->shell(Q).nfunction();
                     int Ssize = primary_->shell(S).nfunction();
