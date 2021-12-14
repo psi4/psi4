@@ -41,7 +41,7 @@ namespace psi {
  */
 DIISManager::DIISManager(int maxSubspaceSize, const std::string &label, RemovalPolicy removalPolicy,
                          StoragePolicy storagePolicy) {
-          auto diis_file = py::module_::import("psi4").attr("driver").attr("scf_proc").attr("diis");
+          auto diis_file = py::module_::import("psi4").attr("driver").attr("diis");
           py::object pyRemovalPolicy, pyStoragePolicy;
          if (removalPolicy == RemovalPolicy::LargestError) {
              pyRemovalPolicy = diis_file.attr("RemovalPolicy").attr("LargestError");

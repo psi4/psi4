@@ -1,7 +1,7 @@
 import math
 
 from psi4 import core
-from .diis import DIIS, StoragePolicy, RemovalPolicy
+from ..diis import DIIS, StoragePolicy, RemovalPolicy
 
 def _RHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
     gradient = self.form_FDSmSDF(self.Fa(), self.Da())
