@@ -260,12 +260,8 @@ void SAPT2p3::print_results() {
     for (scal_it = Xscal.begin(); scal_it != Xscal.end(); ++scal_it) {
         double dHF2 = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + *scal_it * e_exch_ind20_);
         double dHF3 = 0.0;
-        if (e_exch_ind30r_sinf_ != 0.0)
-            dHF3 = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + *scal_it * e_exch_ind20_ + e_ind30r_ +
-                              *scal_it * e_exch_ind30r_sinf_);
-        else
-            dHF3 = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + *scal_it * e_exch_ind20_ + e_ind30r_ +
-                              *scal_it * e_exch_ind30r_);
+        dHF3 = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + *scal_it * e_exch_ind20_ + e_ind30r_ +
+                       *scal_it * e_exch_ind30r_);
 
         double dMP2_2 = 0.0;
         double dMP2_3 = 0.0;
@@ -340,24 +336,13 @@ void SAPT2p3::print_results() {
             e_sapt_2pp3_dmp2 = e_sapt2pp3_ + dMP2_2;
         }
 
-        if (e_exch_ind30r_sinf_ != 0.0)
-            e_sapt2p3_ = e_elst10_ + e_elst12_ + e_elst13_ + e_exch10_ + *scal_it * (e_exch11_ + e_exch12_) + dHF3 +
-                     e_ind20_ + *scal_it * (e_exch_ind20_ + e_exch_ind22_ + e_exch_ind30r_sinf_) + e_ind22_ + e_ind30r_ +
-                     e_disp_mp4 + e_disp30_ + *scal_it * (e_exch_disp30_ + e_exch_ind_disp30_) + e_ind_disp30_;
-        else
-            e_sapt2p3_ = e_elst10_ + e_elst12_ + e_elst13_ + e_exch10_ + *scal_it * (e_exch11_ + e_exch12_) + dHF3 +
+        e_sapt2p3_ = e_elst10_ + e_elst12_ + e_elst13_ + e_exch10_ + *scal_it * (e_exch11_ + e_exch12_) + dHF3 +
                      e_ind20_ + *scal_it * (e_exch_ind20_ + e_exch_ind22_ + e_exch_ind30r_) + e_ind22_ + e_ind30r_ +
                      e_disp_mp4 + e_disp30_ + *scal_it * (e_exch_disp30_ + e_exch_ind_disp30_) + e_ind_disp30_;
 
         double e_sapt2p3_ccd_dmp2 = 0.0;
         if (ccd_disp_) {
-            if (e_exch_ind30r_sinf_ != 0.0)
-                e_sapt2p3_ccd_ = e_elst10_ + e_elst12_ + e_elst13_ + e_exch10_ + *scal_it * (e_exch11_ + e_exch12_) + dHF3 +
-                             e_ind20_ + *scal_it * (e_exch_ind20_ + e_exch_ind22_ + e_exch_ind30r_sinf_) + e_ind22_ +
-                             e_ind30r_ + e_disp_ccd + e_disp30_ + *scal_it * (e_exch_disp30_ + e_exch_ind_disp30_) +
-                             e_ind_disp30_;
-            else
-                e_sapt2p3_ccd_ = e_elst10_ + e_elst12_ + e_elst13_ + e_exch10_ + *scal_it * (e_exch11_ + e_exch12_) + dHF3 +
+            e_sapt2p3_ccd_ = e_elst10_ + e_elst12_ + e_elst13_ + e_exch10_ + *scal_it * (e_exch11_ + e_exch12_) + dHF3 +
                              e_ind20_ + *scal_it * (e_exch_ind20_ + e_exch_ind22_ + e_exch_ind30r_) + e_ind22_ +
                              e_ind30r_ + e_disp_ccd + e_disp30_ + *scal_it * (e_exch_disp30_ + e_exch_ind_disp30_) +
                              e_ind_disp30_;
@@ -373,11 +358,7 @@ void SAPT2p3::print_results() {
         double tot_elst = e_elst10_ + e_elst12_ + e_elst13_;
         double tot_exch = e_exch10_ + *scal_it * (e_exch11_ + e_exch12_);
         double tot_ind = 0.0;
-        if (e_exch_ind30r_sinf_ != 0.0)
-            tot_ind =
-                e_ind20_ + dHF3 + e_ind22_ + e_ind30r_ + *scal_it * (e_exch_ind20_ + e_exch_ind22_ + e_exch_ind30r_sinf_);
-        else
-            tot_ind =
+        tot_ind =
                 e_ind20_ + dHF3 + e_ind22_ + e_ind30r_ + *scal_it * (e_exch_ind20_ + e_exch_ind22_ + e_exch_ind30r_);
         if (e_MP2 != 0.0) {
             if (third_order_)
@@ -386,10 +367,7 @@ void SAPT2p3::print_results() {
                 tot_ind += dMP2_2;
         }
         double tot_ct = 0.0;
-        if (e_exch_ind30r_sinf_ != 0.0)
-            tot_ct = e_ind20_ + e_ind22_ + e_ind30r_ + *scal_it * (e_exch_ind20_ + e_exch_ind22_ + e_exch_ind30r_sinf_);
-        else
-            tot_ct = e_ind20_ + e_ind22_ + e_ind30r_ + *scal_it * (e_exch_ind20_ + e_exch_ind22_ + e_exch_ind30r_);
+        tot_ct = e_ind20_ + e_ind22_ + e_ind30r_ + *scal_it * (e_exch_ind20_ + e_exch_ind22_ + e_exch_ind30r_);
         double tot_disp = 0.0;
         if (nat_orbs_t3_)
             tot_disp = e_disp20_ + e_disp21_ + e_disp22sdq_ + e_est_disp22t_ + e_disp30_ + e_ind_disp30_ +
@@ -621,10 +599,9 @@ void SAPT2p3::print_results() {
             if (third_order_) {
                 Process::environment.globals["SAPT IND30,R ENERGY"] = e_ind30r_;
                 Process::environment.globals["SAPT IND-DISP30 ENERGY"] = e_ind_disp30_;
+                Process::environment.globals["SAPT EXCH-IND30,R ENERGY"] = e_exch_ind30r_;
                 if (e_exch_ind30r_sinf_ != 0.0)
-                    Process::environment.globals["SAPT EXCH-IND30,R ENERGY"] = e_exch_ind30r_sinf_;
-                else
-                    Process::environment.globals["SAPT EXCH-IND30,R ENERGY"] = e_exch_ind30r_;
+                    Process::environment.globals["SAPT EXCH-IND30,R(S^INF) ENERGY"] = e_exch_ind30r_sinf_;
                 Process::environment.globals["SAPT EXCH-IND-DISP30 ENERGY"] = e_exch_ind_disp30_;
                 Process::environment.globals["SAPT EXCH-DISP30 ENERGY"] = e_exch_disp30_;
             }
