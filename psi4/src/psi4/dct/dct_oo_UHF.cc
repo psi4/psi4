@@ -75,7 +75,7 @@ void DCTSolver::run_simult_dct_oo() {
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);
 
-    while ((!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_) && cycle++ < maxiter_) {
+    while ((!orbitalsDone_ || !cumulantDone_ || !energyConverged_) && cycle++ < maxiter_) {
         std::string diisString;
         compute_SO_tau_U();
 
@@ -174,8 +174,8 @@ void DCTSolver::run_simult_dct_oo() {
         }
         // Transform two-electron integrals to the MO basis using new orbitals, build denominators
         transform_integrals();
-        // Update SCF density (Kappa) and check its RMS
-        densityConverged_ = update_scf_density() < orbitals_threshold_;
+        // Update SCF density (Kappa)
+        update_scf_density();
         // If we've performed enough lambda updates since the last orbitals
         // update, reset the counter so another SCF update is performed
         outfile->Printf("\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n", cycle, orbitals_convergence_,
