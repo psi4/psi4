@@ -51,7 +51,6 @@ namespace dct {
 double DCTSolver::compute_energy_RHF() {
     orbitalsDone_ = false;
     cumulantDone_ = false;
-    densityConverged_ = false;
     energyConverged_ = false;
     initialize_orbitals_from_reference_U();
 
@@ -94,7 +93,7 @@ double DCTSolver::compute_energy_RHF() {
     }
 
     // If not converged -> Break
-    if (!orbitalsDone_ || !cumulantDone_ || !densityConverged_)
+    if (!orbitalsDone_ || !cumulantDone_)
         throw ConvergenceError<int>("DCT", maxiter_, cumulant_threshold_, cumulant_convergence_, __FILE__, __LINE__);
 
     std::string prefix = options_.get_str("DCT_TYPE") == "DF" ? "DF-" : " ";
@@ -139,15 +138,15 @@ void DCTSolver::run_simult_dct_RHF() {
                            "Amplitude SF <OO|VV>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "Amplitude <oo|vv>");
-    diisManager.set_error_vector_size(5, DIISEntry::Matrix, scf_error_a_.get(), DIISEntry::Matrix, scf_error_b_.get(),
-                                      DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4, &Lbb);
-    diisManager.set_vector_size(5, DIISEntry::Matrix, Fa_.get(), DIISEntry::Matrix, Fb_.get(), DIISEntry::DPDBuf4, &Laa,
-                                DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4, &Lbb);
+    diisManager.set_error_vector_size(5, DIISEntry::InputType::Matrix, scf_error_a_.get(), DIISEntry::InputType::Matrix, scf_error_b_.get(),
+                                      DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4, &Lbb);
+    diisManager.set_vector_size(5, DIISEntry::InputType::Matrix, Fa_.get(), DIISEntry::InputType::Matrix, Fb_.get(), DIISEntry::InputType::DPDBuf4, &Laa,
+                                DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4, &Lbb);
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);
 
-    while ((!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_) && cycle++ < maxiter_) {
+    while ((!orbitalsDone_ || !cumulantDone_ || !energyConverged_) && cycle++ < maxiter_) {
         std::string diisString;
         // Save the old energy
         old_total_energy_ = new_total_energy_;
@@ -157,15 +156,13 @@ void DCTSolver::run_simult_dct_RHF() {
         if (options_.get_str("DCT_TYPE") == "DF" && options_.get_str("AO_BASIS") == "NONE") {
             build_DF_tensors_RHF();
 
-            auto mo_h = std::make_shared<Matrix>("MO-based H", nirrep_, nmopi_, nmopi_);
-            mo_h->copy(so_h_);
+            auto mo_h = so_h_.clone();
             mo_h->transform(Ca_);
 
             moFa_->copy(mo_h);
             moFa_->add(mo_gbarGamma_A_);
             // Back-transform the Fock matrix to the SO basis: F_so = (Ct)^-1 F_mo C^-1 = (C^-1)t F_mo C^-1
-            auto Ca_inverse = std::make_shared<Matrix>("Ca_ inverse", nirrep_, nmopi_, nsopi_);
-            Ca_inverse->copy(Ca_);
+            auto Ca_inverse = Ca_->clone();
             Ca_inverse->general_invert();
             Fa_->copy(moFa_);
             Fa_->transform(Ca_inverse);
@@ -254,8 +251,8 @@ void DCTSolver::run_simult_dct_RHF() {
         }
         // Transform two-electron integrals to the MO basis using new orbitals, build denominators
         transform_integrals_RHF();
-        // Update SCF density (Kappa) and check its RMS
-        densityConverged_ = update_scf_density_RHF() < orbitals_threshold_;
+        // Update SCF density (Kappa)
+        update_scf_density_RHF();
         // If we've performed enough lambda updates since the last orbitals
         // update, reset the counter so another SCF update is performed
         outfile->Printf("\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n", cycle, orbitals_convergence_,

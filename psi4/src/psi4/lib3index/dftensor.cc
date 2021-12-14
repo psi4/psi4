@@ -105,6 +105,16 @@ void DFTensor::common_init() {
 
     naux_ = auxiliary_->nbf();
 
+    // Qso construction requires Aso+Bso+metric to be held in core. For a small safety margin we take 95% of the total
+    // memory. In practice this only becomes an issue for heavy (>1000 bfs) calculations with large aux sets.
+    double required_mem = (nbf_ * nbf_ * naux_ * 2 + naux_ * naux_) * sizeof(double) / (1024.0 * 1024.0 * 1024.0);
+    double memory = (double)Process::environment.get_memory() / (1024.0 * 1024.0 * 1024.0) * 0.95;
+    outfile->Printf("  The DF Tensor (Qso) construction requires %.3f GiB of memory. \n", required_mem);
+    if (required_mem > memory) {
+        outfile->Printf("\t !! The Qso DFTensor requires %.3f GiB of memory but only %.3f GiB (95/% of total) are available !! ", required_mem, memory);
+        throw PSIEXCEPTION("Out of memory for the Qso DF Tensor!");
+    }
+
     build_metric();
 }
 void DFTensor::print_header() {

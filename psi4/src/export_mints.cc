@@ -40,6 +40,7 @@
 #include "psi4/libmints/orbitalspace.h"
 #include "psi4/libmints/local.h"
 #include "psi4/libmints/vector3.h"
+#include "psi4/libmints/matrix.h"
 #include "psi4/libmints/pointgrp.h"
 #include "psi4/libmints/extern.h"
 #include "psi4/libmints/sobasis.h"
@@ -358,6 +359,8 @@ void export_mints(py::module& m) {
         .def("set", vector_setitem_2(&Vector::set), "Sets a single element value located at m in irrep h", "h"_a, "m"_a,
              "val"_a)
         .def("copy", vector_one(&Vector::copy), "Returns a copy of the matrix")
+        .def("clone", [](Vector& vec) {
+                std::shared_ptr<Vector> result = std::move(vec.clone()); return result; }, "Clone the vector")
         .def("print_out", &Vector::print_out, "Prints the vector to the output file")
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", "sc"_a)
         .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", "h"_a = 0)
@@ -1237,7 +1240,9 @@ void export_mints(py::module& m) {
     pyTwoBodyAOInt.def("compute_shell", compute_shell_ints(&TwoBodyAOInt::compute_shell),
                        "Compute ERIs between 4 shells")
         .def("shell_significant", compute_shell_significant(&TwoBodyAOInt::shell_significant),
-                       "Determines if the P,Q,R,S shell combination is significant");
+                       "Determines if the P,Q,R,S shell combination is significant")
+        .def("update_density", &TwoBodyAOInt::update_density,
+                       "Update density matrix (c1 symmetry) for Density-matrix based integral screening");
 
     py::class_<Libint2TwoElectronInt, std::shared_ptr<Libint2TwoElectronInt>>(m, "TwoElectronInt", pyTwoBodyAOInt,
                                                                 "Computes two-electron repulsion integrals")

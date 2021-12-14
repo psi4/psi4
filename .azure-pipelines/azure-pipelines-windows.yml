@@ -121,7 +121,7 @@ jobs:
                         ninja ^
                         numpy ^
                         pint ^
-                        pybind11 ^
+                        pybind11=2.7.0 ^
                         pymdi ^
                         pytest ^
                         pytest-xdist ^
@@ -222,7 +222,7 @@ jobs:
       - script: |
           setlocal EnableDelayedExpansion
           set PATH=$(Build.BinariesDirectory)\install\bin;%PATH%
-          psi4 $(Build.SourcesDirectory)\tests\tu1-h2o-energy\input.dat
+          psi4 $(Build.SourcesDirectory)\tests\tu1-h2o-energy\input.dat -o stdout
         displayName: 'Run, Run, Spot, Run Test'
         workingDirectory: $(Build.BinariesDirectory)/build
 

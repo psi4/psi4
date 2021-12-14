@@ -223,6 +223,9 @@ Tag (pre)release
 
     # pause here and push to upstream and let Azure complete if want an
     #       on-tag Windows conda package, not just tag+1.dev1
+    #       below pushes commit and tag together so only one CI
+    #       > git push --atomic upstream master v1.5
+    #       also, grab the docs build from GHA artifacts
 
     >>> vi psi4/metadata.py
     >>> git diff

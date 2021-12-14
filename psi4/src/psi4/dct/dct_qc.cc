@@ -81,16 +81,16 @@ void DCTSolver::run_qc_dct() {
                            "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Amplitude <oo|vv>");
-    diisManager.set_error_vector_size(5, DIISEntry::Matrix, orbital_gradient_a_.get(), DIISEntry::Matrix,
-                                      orbital_gradient_b_.get(), DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab,
-                                      DIISEntry::DPDBuf4, &Lbb);
-    diisManager.set_vector_size(5, DIISEntry::Matrix, Xtotal_a_.get(), DIISEntry::Matrix, Xtotal_b_.get(),
-                                DIISEntry::DPDBuf4, &Laa, DIISEntry::DPDBuf4, &Lab, DIISEntry::DPDBuf4, &Lbb);
+    diisManager.set_error_vector_size(5, DIISEntry::InputType::Matrix, orbital_gradient_a_.get(), DIISEntry::InputType::Matrix,
+                                      orbital_gradient_b_.get(), DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab,
+                                      DIISEntry::InputType::DPDBuf4, &Lbb);
+    diisManager.set_vector_size(5, DIISEntry::InputType::Matrix, Xtotal_a_.get(), DIISEntry::InputType::Matrix, Xtotal_b_.get(),
+                                DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4, &Lbb);
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);
 
-    while ((!orbitalsDone_ || !cumulantDone_ || !energyConverged_ || !densityConverged_) && cycle++ < maxiter_) {
+    while ((!orbitalsDone_ || !cumulantDone_ || !energyConverged_) && cycle++ < maxiter_) {
         std::string diisString;
         // Compute the generalized Fock matrix and orbital gradient in the MO basis
         compute_orbital_gradient();
@@ -178,7 +178,7 @@ void DCTSolver::run_qc_dct() {
 
             if (orbital_idp_ != 0) {
                 // Update the density
-                densityConverged_ = update_scf_density() < orbitals_threshold_;
+                update_scf_density();
                 // Transform two-electron integrals to the MO basis using new orbitals, build denominators
                 // TODO: Transform_integrals shouldn't call build denominators for the QC alogorithm
                 transform_integrals();
@@ -196,7 +196,7 @@ void DCTSolver::run_qc_dct() {
             "\n");
     }
 
-    if (!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_)
+    if (!orbitalsDone_ || !cumulantDone_ || !energyConverged_)
         throw ConvergenceError<int>("DCT", maxiter_, cumulant_threshold_, cumulant_convergence_, __FILE__, __LINE__);
 }
 

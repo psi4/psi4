@@ -70,6 +70,11 @@ JK::JK(std::shared_ptr<BasisSet> primary) : primary_(primary) { common_init(); }
 JK::~JK() {}
 std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> auxiliary,
                                  Options& options, std::string jk_type) {
+
+    if (options.get_str("SCREENING") == "DENSITY" && !(jk_type == "DIRECT" || options.get_bool("DF_SCF_GUESS"))) {
+        throw PSIEXCEPTION("Density screening has not been implemented for non-Direct SCF algorithms.");
+    }
+
     // Throw small DF warning
     if (jk_type == "DF") {
         outfile->Printf("\n  Warning: JK type 'DF' found in simple constructor, defaulting to DiskDFJK.\n");
@@ -102,7 +107,8 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
     } else if (jk_type == "MEM_DF") {
         MemDFJK* jk = new MemDFJK(primary, auxiliary);
-        jk->set_wcombine(true);
+        // TODO: re-enable after fixing all bugs
+        jk->set_wcombine(false);
         _set_dfjk_options<MemDFJK>(jk, options);
         if (options["WCOMBINE"].has_changed()) { jk->set_wcombine(options.get_bool("WCOMBINE")); }
 
@@ -129,7 +135,7 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
         return std::shared_ptr<JK>(jk);
 
     } else if (jk_type == "DIRECT") {
-        DirectJK* jk = new DirectJK(primary);
+        DirectJK* jk = new DirectJK(primary, options);
 
         if (options["INTS_TOLERANCE"].has_changed()) jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
         if (options["SCREENING"].has_changed()) jk->set_csam(options.get_str("SCREENING") == "CSAM");
@@ -540,6 +546,7 @@ void JK::AO2USO() {
     delete[] temp;
 }
 void JK::initialize() { preiterations(); }
+
 void JK::compute() {
     // Is this density symmetric?
     if (C_left_.size() && !C_right_.size()) {

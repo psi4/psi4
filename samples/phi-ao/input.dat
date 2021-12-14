@@ -1,0 +1,63 @@
+#! Test computing values of basis functions (puream and non-puream) at points
+import numpy as np
+
+
+mol = psi4.geometry("""
+  0 1
+  O
+  H 1 1.0
+  H 1 1.0 2 104.5
+  symmetry c1
+  no_reorient
+  no_com
+""")
+
+psi4.set_options({'basis' : 'cc-pVQZ'})
+basis = psi4.core.BasisSet.build(mol, "ORBITAL", psi4.core.get_global_option("BASIS"))
+grid = psi4.core.DFTGrid.build(mol, basis)
+
+for puream in [True, False]:
+    psi4.set_options({'puream' : puream})
+
+    # Create puream or non-puream basissets
+    basis = psi4.core.BasisSet.build(mol, "ORBITAL", psi4.core.get_global_option("BASIS"), puream=puream)
+
+    # Run an SCF calculation to get Electron Density
+    e, wfn = energy('scf', return_wfn=True)
+
+    # Density Matrix
+    D = np.asarray(wfn.Da())
+    
+    # Grid information
+    total_points = grid.npoints()
+    blocks = grid.blocks()
+    nbf = basis.nbf()
+
+    phi_ao_points = np.zeros((total_points, nbf))
+    weights = np.zeros(total_points)
+
+    running_points = 0
+    for block in blocks:
+
+        npoints = block.npoints()
+        w = np.asarray(block.w())
+        x = np.asarray(block.x())
+        y = np.asarray(block.y())
+        z = np.asarray(block.z())
+
+        for point in range(npoints):
+            phi_ao_points[running_points + point] = basis.compute_phi(x[point], y[point], z[point])
+            weights[running_points + point] = w[point]
+
+        running_points += npoints
+
+    phi_prime = np.einsum('uv,pu->pv', D, phi_ao_points)
+    TEST_NELECTRON = 2.0 * np.einsum('p,pv,pv->', weights, phi_prime, phi_ao_points)
+
+    if puream:
+        testname = 'SPHERICAL BASIS PHI_AO TEST'
+    else:
+        testname = 'CARTESIAN BASIS PHI_AO TEST'
+    
+    compare_values(REF_NELECTRON, TEST_NELECTRON, 4, testname)
+

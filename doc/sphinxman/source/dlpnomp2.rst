@@ -39,7 +39,7 @@ DLPNO-MP2: Domain-Based Local Pair Natural Orbital MP2
 .. codeauthor:: Zach Glick 
 .. sectionauthor:: Zach Glick
 
-*Module:* :ref:`Keywords <apdx:dlpnomp2>`, :ref:`PSI Variables <apdx:dlpnomp2_psivar>`, :source:`DLPNOMP2 <psi4/src/psi4/dlpnomp2>`
+*Module:* :ref:`Keywords <apdx:dlpno>`, :ref:`PSI Variables <apdx:dlpno_psivar>`, :source:`DLPNOMP2 <psi4/src/psi4/dlpno>`
 
 Introduction
 ------------
@@ -146,14 +146,14 @@ In DLPNO-MP2, the first local approximation is to screen distant, non-interactin
 orbital pairs ``ij``. Orbital pairs are screened if below both an overlap criteria:
 
 .. math::
-   :label: Energy
+   :label: Differential Overlap Integral
 
    DOI_{ij} \equiv \sqrt{\int d\mathbf{r} | \chi_{i}(\mathbf{r}) | ^{2} | \chi_{j}(\mathbf{r}) | ^{2}}, 
 
 and a pair energy estimate: 
 
 .. math::
-   :label: Energy
+   :label: Dipole Approximation
 
    e_{ij}^{approx} = -\frac{4}{R^{6}} \sum_{a_{i} \in [i],b_{j} \in [j]} \frac{ (2 \langle i | \mathbf{r} | a_{i} \rangle \langle j | \mathbf{r} | b_{j} \rangle)^{2}}{\epsilon_{a_{i}} + \epsilon_{b_{j}} - f_{ii} - f_{jj}},
 
@@ -205,7 +205,7 @@ Some practical notes on running the code:
   the hardware, but can be as low as 2,000 basis functions.
 
 * The accuracy of DLPNO-MP2 (relative to DF-MP2) can be controlled with the
-  |dlpno__PNO_CONVERGENCE| keyword according to recommendation by Liakos et al.
+  |dlpno__pno_convergence| keyword according to recommendation by Liakos et al.
   [Liakos:2015:1525]_. For non-covalent interactions ``TIGHT`` is highly recommended. 
   
 * The greater the spatial sparsity of a molecular system, the smaller the pair
@@ -223,7 +223,7 @@ Some practical notes on running the code:
 * DLPNO-MP2 is not symmetry aware. This should not be a concern for large systems in
   which symmetry is seldom present.
 
-* As with DF-MP2, freezing core orbitals (by setting |globals__FREEZE_CORE|
+* As with DF-MP2, freezing core orbitals (by setting |globals__freeze_core|
   to ``True``) is recommended for efficiency. In DLPNO methods, this is also
   recommended for accuracy, since core excitations are known to exhibit
   greater errors relative to valence excitations.

@@ -719,12 +719,12 @@ void DCTSolver::build_tau_U() {
     bocc_d->copy(bocc_tau_);
     bvir_d->copy(bvir_tau_);
 
-    DIISManager diisManager(maxdiis_, "DCT DIIS Tau", DIISManager::LargestError, DIISManager::InCore);
+    DIISManager diisManager(maxdiis_, "DCT DIIS Tau", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
     if ((nalpha_ + nbeta_) > 1) {
-        diisManager.set_error_vector_size(4, DIISEntry::Matrix, &aocc_tau_, DIISEntry::Matrix, &bocc_tau_,
-                                          DIISEntry::Matrix, &avir_tau_, DIISEntry::Matrix, &bvir_tau_);
-        diisManager.set_vector_size(4, DIISEntry::Matrix, &aocc_tau_, DIISEntry::Matrix, &bocc_tau_, DIISEntry::Matrix,
-                                    &avir_tau_, DIISEntry::Matrix, &bvir_tau_);
+        diisManager.set_error_vector_size(4, DIISEntry::InputType::Matrix, &aocc_tau_, DIISEntry::InputType::Matrix, &bocc_tau_,
+                                          DIISEntry::InputType::Matrix, &avir_tau_, DIISEntry::InputType::Matrix, &bvir_tau_);
+        diisManager.set_vector_size(4, DIISEntry::InputType::Matrix, &aocc_tau_, DIISEntry::InputType::Matrix, &bocc_tau_, DIISEntry::InputType::Matrix,
+                                    &avir_tau_, DIISEntry::InputType::Matrix, &bvir_tau_);
     }
 
     auto aocc_r = std::make_shared<Matrix>("Residual (Alpha Occupied)", nirrep_, naoccpi_, naoccpi_);

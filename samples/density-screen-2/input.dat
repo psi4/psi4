@@ -1,0 +1,35 @@
+#! RKS Density Matrix based-Integral Screening Test for benzene
+
+
+molecule mol {
+    0 1
+    C    -1.0478252   -1.4216736    0.0000000
+    C    -1.4545034   -0.8554459    1.2062048
+    C    -1.4545034   -0.8554459   -1.2062048
+    C    -2.2667970    0.2771610    1.2069539
+    C    -2.6714781    0.8450211    0.0000000
+    C    -2.2667970    0.2771610   -1.2069539
+    H    -1.1338534   -1.2920593   -2.1423150
+    H    -2.5824943    0.7163066   -2.1437977
+    H    -3.3030422    1.7232700    0.0000000
+    H    -2.5824943    0.7163066    2.1437977
+    H    -1.1338534   -1.2920593    2.1423150
+    H    -0.4060253   -2.2919049    0.0000000
+    symmetry c1
+    no_reorient
+    no_com
+}
+
+set {
+    scf_type direct
+    df_scf_guess false
+    basis cc-pVTZ
+    ints_tolerance 1.0e-12
+    e_convergence 1.0e-10
+    screening density
+    incfock true
+    incfock_full_fock_every 4
+}
+
+ds_energy = energy('b3lyp')
+psi4.compare_values(ref_energy, ds_energy, 9, "B3LYP Density Screening Energy")

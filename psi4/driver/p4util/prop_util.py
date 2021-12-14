@@ -50,6 +50,14 @@ def free_atom_volumes(wfn, **kwargs):
         atomic computations
     """
 
+    # If we're already a free atom, break to avoid recursion
+    # We don't ever need volume ratios for free atoms since they
+    # are by definition 1.0
+    natom = wfn.molecule().natom()
+    if natom == 1:
+        return 0 
+    
+
     # the level of theory
     current_en = wfn.scalar_variable('CURRENT ENERGY')
     total_energies = [k for k, v in wfn.scalar_variables().items() if abs(v - current_en) <= 1e-12]

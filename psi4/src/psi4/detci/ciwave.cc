@@ -443,6 +443,14 @@ SharedMatrix CIWavefunction::get_tpdm(const std::string& spin, bool symmetrize) 
     }
 }
 
+void CIWavefunction::reset_ci_H0block() {
+    // Free H0block
+    H0block_free();
+
+    // initialize H0block
+    H0block_init(CIblks_->vectlen);
+}
+
 /*
 ** cleanup(): Free any allocated memory that wasn't already freed elsewhere
 */

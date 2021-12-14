@@ -290,6 +290,7 @@ print_out("\t" + ethane_gauche.get_full_point_group() + "\n" )
 
 
 molecule triplet_ethylene {
+  0 3
   C1
   C2 C1 rCC
   H1 C1 rCH C2 aHCC

@@ -72,7 +72,7 @@ def print_header():
                             Additional Code Authors
     E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
     J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
-    P. Verma, and M. H. Lechner
+    P. Verma, M. H. Lechner, and A. Jiang
 
              Previous Authors, Complete List of Code Contributors,
                        and Citations for Specific Modules

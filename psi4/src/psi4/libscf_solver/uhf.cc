@@ -741,7 +741,7 @@ std::vector<SharedMatrix> UHF::cphf_Hx(std::vector<SharedMatrix> x_vec) {
 std::vector<SharedMatrix> UHF::cphf_solve(std::vector<SharedMatrix> x_vec, double conv_tol, int max_iter,
                                           int print_lvl) {
     if ((x_vec.size() % 2) != 0) {
-        throw PSIEXCEPTION("UHF::onel_Hx expect incoming vector to alternate A/B");
+        throw PSIEXCEPTION("UHF::cphf_solve expect incoming vector to alternate A/B");
     }
 
     std::time_t start, stop;
@@ -1072,30 +1072,6 @@ int UHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter,
     rotate_orbitals(Cb_, ret_x[1]);
 
     return cphf_nfock_builds_;
-}
-
-double UHF::compute_orbital_gradient(bool save_fock, int max_diis_vectors) {
-    SharedMatrix gradient_a = form_FDSmSDF(Fa_, Da_);
-    SharedMatrix gradient_b = form_FDSmSDF(Fb_, Db_);
-
-    if (save_fock) {
-        if (initialized_diis_manager_ == false) {
-            diis_manager_ = std::make_shared<DIISManager>(max_diis_vectors, "HF DIIS vector", DIISManager::LargestError,
-                                                          DIISManager::OnDisk);
-            diis_manager_->set_error_vector_size(2, DIISEntry::Matrix, gradient_a.get(), DIISEntry::Matrix,
-                                                 gradient_b.get());
-            diis_manager_->set_vector_size(2, DIISEntry::Matrix, Fa_.get(), DIISEntry::Matrix, Fb_.get());
-            initialized_diis_manager_ = true;
-        }
-
-        diis_manager_->add_entry(4, gradient_a.get(), gradient_b.get(), Fa_.get(), Fb_.get());
-    }
-
-    if (options_.get_bool("DIIS_RMS_ERROR")) {
-        return std::sqrt(0.5 * (std::pow(gradient_a->rms(), 2) + std::pow(gradient_b->rms(), 2)));
-    } else {
-        return std::max(gradient_a->absmax(), gradient_b->absmax());
-    }
 }
 
 bool UHF::diis() { return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get()); }

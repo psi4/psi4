@@ -1624,6 +1624,11 @@ def scf_helper(name, post_scf=True, **kwargs):
         for x in props:
             oeprop.add(x)
 
+        # Populate free-atom volumes
+        # if we're doing MBIS
+        if 'MBIS_VOLUME_RATIOS' in props:
+            p4util.free_atom_volumes(scf_wfn)
+
         # Compute properties
         oeprop.compute()
         for obj in [core, scf_wfn]:

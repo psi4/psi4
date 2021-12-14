@@ -60,7 +60,7 @@
 extern "C" {
 
 extern void F_DSWAP(int *length, double *x, int *incx, double *y, int *inc_y);
-extern void F_DAXPY(int *length, double *a, double *x, int *inc_x, double *y, int *inc_y);
+extern void F_DAXPY(int *length, double *a, const double *x, int *inc_x, double *y, int *inc_y);
 extern void F_DCOPY(int *length, double *x, int *inc_x, double *y, int *inc_y);
 extern void F_DGEMM(char *transa, char *transb, int *m, int *n, int *k, double *alpha, double *A, int *lda, double *B,
                     int *ldb, double *beta, double *C, int *ldc);
@@ -118,11 +118,11 @@ void PSI_API C_DSWAP(size_t length, double *x, int inc_x, double *y, int inc_y) 
  *
  * \ingroup QT
  */
-void PSI_API C_DAXPY(size_t length, double a, double *x, int inc_x, double *y, int inc_y) {
+void PSI_API C_DAXPY(size_t length, double a, const double *x, int inc_x, double *y, int inc_y) {
     int big_blocks = (int)(length / INT_MAX);
     int small_size = (int)(length % INT_MAX);
     for (int block = 0; block <= big_blocks; block++) {
-        double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
+        const double *x_s = &x[static_cast<size_t>(block) * inc_x * INT_MAX];
         double *y_s = &y[static_cast<size_t>(block) * inc_y * INT_MAX];
         signed int length_s = (block == big_blocks) ? small_size : INT_MAX;
         ::F_DAXPY(&length_s, &a, x_s, &inc_x, y_s, &inc_y);

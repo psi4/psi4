@@ -89,28 +89,28 @@ void DIISManager::set_vector_size(int numQuantities, ...) {
         _componentTypes.push_back(type);
         size_t size = 0;
         switch (type) {
-            case DIISEntry::Pointer:
+            case DIISEntry::InputType::Pointer:
                 size += va_arg(args, int);
                 break;
-            case DIISEntry::DPDBuf4:
+            case DIISEntry::InputType::DPDBuf4:
                 buf4 = va_arg(args, dpdbuf4 *);
                 for (int h = 0; h < buf4->params->nirreps; ++h) {
                     size += static_cast<unsigned long> (buf4->params->rowtot[h]) * buf4->params->coltot[h];
                 }
                 break;
-            case DIISEntry::DPDFile2:
+            case DIISEntry::InputType::DPDFile2:
                 file2 = va_arg(args, dpdfile2 *);
                 for (int h = 0; h < file2->params->nirreps; ++h) {
                     size += static_cast<unsigned long> (file2->params->rowtot[h]) * file2->params->coltot[h];
                 }
                 break;
-            case DIISEntry::Matrix:
+            case DIISEntry::InputType::Matrix:
                 matrix = va_arg(args, Matrix *);
                 for (int h = 0; h < matrix->nirrep(); ++h) {
                     size += static_cast<unsigned long> (matrix->rowspi()[h]) * matrix->colspi()[h];
                 }
                 break;
-            case DIISEntry::Vector:
+            case DIISEntry::InputType::Vector:
                 vector = va_arg(args, Vector *);
                 size = vector->dimpi().sum();
                 break;
@@ -141,28 +141,28 @@ void DIISManager::set_error_vector_size(int numQuantities, ...) {
         _componentTypes.push_back(type);
         size_t size = 0;
         switch (type) {
-            case DIISEntry::Pointer:
+            case DIISEntry::InputType::Pointer:
                 size += va_arg(args, int);
                 break;
-            case DIISEntry::DPDBuf4:
+            case DIISEntry::InputType::DPDBuf4:
                 buf4 = va_arg(args, dpdbuf4 *);
                 for (int h = 0; h < buf4->params->nirreps; ++h) {
                     size += static_cast<unsigned long> (buf4->params->rowtot[h]) * buf4->params->coltot[h];
                 }
                 break;
-            case DIISEntry::DPDFile2:
+            case DIISEntry::InputType::DPDFile2:
                 file2 = va_arg(args, dpdfile2 *);
                 for (int h = 0; h < file2->params->nirreps; ++h) {
                     size += static_cast<unsigned long> (file2->params->rowtot[h]) * file2->params->coltot[h];
                 }
                 break;
-            case DIISEntry::Matrix:
+            case DIISEntry::InputType::Matrix:
                 matrix = va_arg(args, Matrix *);
                 for (int h = 0; h < matrix->nirrep(); ++h) {
                     size += static_cast<unsigned long> (matrix->rowspi()[h]) * matrix->colspi()[h];
                 }
                 break;
-            case DIISEntry::Vector:
+            case DIISEntry::InputType::Vector:
                 vector = va_arg(args, Vector *);
                 size = vector->dimpi().sum();
                 break;
@@ -204,62 +204,77 @@ bool DIISManager::add_entry(int numQuantities, ...) {
     double *array;
     va_list args;
     va_start(args, numQuantities);
-    auto *errorVectorPtr = new double[_errorVectorSize];
-    auto *vectorPtr = new double[_vectorSize];
-    double *arrayPtr = errorVectorPtr;
+    auto errorVector = std::vector<double>(_errorVectorSize);
+    auto paramVector = std::vector<double>(_vectorSize);
+    double *arrayPtr = errorVector.data();
+
     for (int i = 0; i < numQuantities; ++i) {
         DIISEntry::InputType type = _componentTypes[i];
         // If we've filled the error vector, start filling the vector
-        if (i == _numErrorVectorComponents) arrayPtr = vectorPtr;
+        if (i == _numErrorVectorComponents) arrayPtr = paramVector.data();
         switch (type) {
-            case DIISEntry::Pointer:
+            case DIISEntry::InputType::Pointer:
+            {
                 array = va_arg(args, double *);
-                for (int j = 0; j < _componentSizes[i]; ++j) *arrayPtr++ = array[j];
+                auto size = static_cast<int>(_componentSizes[i]);
+                if (size) {
+                    std::copy(array, array + size, arrayPtr);
+                    arrayPtr += size;
+                }
                 break;
-            case DIISEntry::DPDBuf4:
+            }
+            case DIISEntry::InputType::DPDBuf4:
+            {
                 buf4 = va_arg(args, dpdbuf4 *);
                 for (int h = 0; h < buf4->params->nirreps; ++h) {
                     global_dpd_->buf4_mat_irrep_init(buf4, h);
                     global_dpd_->buf4_mat_irrep_rd(buf4, h);
-                    for (int row = 0; row < buf4->params->rowtot[h]; ++row) {
-                        for (int col = 0; col < buf4->params->coltot[h]; ++col) {
-                            *arrayPtr++ = buf4->matrix[h][row][col];
-                        }
+                    auto size = buf4->params->rowtot[h] * buf4->params->coltot[h ^ buf4->file.my_irrep];
+                    if (size) {
+                        std::copy(buf4->matrix[h][0], buf4->matrix[h][0] + size, arrayPtr);
+                        arrayPtr += size;
                     }
                     global_dpd_->buf4_mat_irrep_close(buf4, h);
                 }
                 break;
-            case DIISEntry::DPDFile2:
+            }
+            case DIISEntry::InputType::DPDFile2:
+            {
                 file2 = va_arg(args, dpdfile2 *);
                 global_dpd_->file2_mat_init(file2);
                 global_dpd_->file2_mat_rd(file2);
                 for (int h = 0; h < file2->params->nirreps; ++h) {
-                    for (int row = 0; row < file2->params->rowtot[h]; ++row) {
-                        for (int col = 0; col < file2->params->coltot[h]; ++col) {
-                            *arrayPtr++ = file2->matrix[h][row][col];
-                        }
+                    auto size = file2->params->rowtot[h] * file2->params->coltot[file2->my_irrep ^ h];
+                    if (size) {
+                        std::copy(file2->matrix[h][0], file2->matrix[h][0] + size, arrayPtr);
+                        arrayPtr += size;
                     }
                 }
                 global_dpd_->file2_mat_close(file2);
                 break;
-            case DIISEntry::Matrix:
+            }
+            case DIISEntry::InputType::Matrix:
+            {
                 matrix = va_arg(args, Matrix *);
                 for (int h = 0; h < matrix->nirrep(); ++h) {
-                    for (int row = 0; row < matrix->rowspi()[h]; ++row) {
-                        for (int col = 0; col < matrix->colspi()[h]; ++col) {
-                            *arrayPtr++ = matrix->get(h, row, col);
-                        }
+                    auto size = matrix->rowdim(h) * matrix->coldim(h ^ matrix->symmetry());
+                    if (size) {
+                        std::copy(matrix->pointer(h)[0], matrix->pointer(h)[0] + size, arrayPtr);
+                        arrayPtr += size;
                     }
                 }
                 break;
-            case DIISEntry::Vector:
+            }
+            case DIISEntry::InputType::Vector:
+            {
                 vector = va_arg(args, Vector *);
-                for (int h = 0; h < vector->nirrep(); ++h) {
-                    for (int row = 0; row < vector->dimpi()[h]; ++row) {
-                        *arrayPtr++ = vector->get(h, row);
-                    }
+                auto size = vector->dimpi().sum();
+                if (size) {
+                    std::copy(vector->pointer(), vector->pointer() + size, arrayPtr);
+                    arrayPtr += size;
                 }
                 break;
+            }
             default:
                 throw SanityCheckError("Unknown input type", __FILE__, __LINE__);
         }
@@ -268,22 +283,19 @@ bool DIISManager::add_entry(int numQuantities, ...) {
 
     int entryID = get_next_entry_id();
     if (_subspace.size() < _maxSubspaceSize) {
-        _subspace.push_back(new DIISEntry(_label, entryID, _entryCount++, _errorVectorSize, errorVectorPtr, _vectorSize,
-                                          vectorPtr, _psio));
+        _subspace.emplace_back(_label, entryID, _entryCount++, std::move(errorVector), std::move(paramVector), _psio);
     } else {
-        delete _subspace[entryID];
-        _subspace[entryID] = new DIISEntry(_label, entryID, _entryCount++, _errorVectorSize, errorVectorPtr,
-                                           _vectorSize, vectorPtr, _psio);
+        _subspace[entryID] = DIISEntry(_label, entryID, _entryCount++, std::move(errorVector), std::move(paramVector), _psio);
     }
 
-    if (_storagePolicy == OnDisk) {
-        _subspace[entryID]->dump_vector_to_disk();
-        _subspace[entryID]->dump_error_vector_to_disk();
+    if (_storagePolicy == StoragePolicy::OnDisk) {
+        _subspace[entryID].dump_vector_to_disk();
+        _subspace[entryID].dump_error_vector_to_disk();
     }
 
-    // Make we don't know any inner products involving this new entry
+    // Clear all inner products with this entry that may be cached
     for (int i = 0; i < _subspace.size(); ++i)
-        if (i != entryID) _subspace[i]->invalidate_dot(entryID);
+        if (i != entryID) _subspace[i].invalidate_dot(entryID);
 
     timer_off("DIISManager::add_entry");
 
@@ -299,19 +311,19 @@ int DIISManager::get_next_entry_id() {
     if (_subspace.size() < _maxSubspaceSize) {
         entry = _subspace.size();
     } else {
-        if (_removalPolicy == OldestAdded) {
-            int oldest = _subspace[0]->orderAdded();
+        if (_removalPolicy == RemovalPolicy::OldestAdded) {
+            int oldest = _subspace[0].orderAdded();
             for (int i = 1; i < _subspace.size(); ++i) {
-                if (_subspace[i]->orderAdded() < oldest) {
-                    oldest = _subspace[i]->orderAdded();
+                if (_subspace[i].orderAdded() < oldest) {
+                    oldest = _subspace[i].orderAdded();
                     entry = i;
                 }
             }
-        } else if (_removalPolicy == LargestError) {
-            double largest = _subspace[0]->rmsError();
+        } else if (_removalPolicy == RemovalPolicy::LargestError) {
+            double largest = _subspace[0].rmsError();
             for (int i = 1; i < _subspace.size(); ++i) {
-                if (_subspace[i]->rmsError() > largest) {
-                    largest = _subspace[i]->rmsError();
+                if (_subspace[i].rmsError() > largest) {
+                    largest = _subspace[i].rmsError();
                     entry = i;
                 }
             }
@@ -335,48 +347,42 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
     timer_on("DIISManager::extrapolate");
 
     auto dimension = _subspace.size() + 1;
-    auto B = std::make_shared<Matrix>("B (DIIS Connectivity Matrix", dimension, dimension);
-    auto bMatrix = B->pointer();
-    auto coefficients = new double[dimension];
-    std::fill_n(coefficients, dimension, 0.0);
-    auto force = new double[dimension];
-    std::fill_n(force, dimension, 0.0);
+    auto B = Matrix("B (DIIS Connectivity Matrix", dimension, dimension);
+    auto Bp = B.pointer();
+    auto coefficients = std::vector<double>(dimension, 0.0);
+    auto force = std::vector<double>(dimension, 0.0);
 
     timer_on("bMatrix setup");
 
     for (int i = 0; i < _subspace.size(); ++i) {
-        coefficients[i] = 0.0;
-        bMatrix[i][_subspace.size()] = bMatrix[_subspace.size()][i] = 1.0;
-        DIISEntry *entryI = _subspace[i];
+        Bp[i][_subspace.size()] = Bp[_subspace.size()][i] = 1.0;
+        auto& entryI = _subspace[i];
         for (int j = 0; j < _subspace.size(); ++j) {
-            DIISEntry *entryJ = _subspace[j];
-            if (entryI->dot_is_known_with(j)) {
-                bMatrix[i][j] = entryI->dot_with(j);
+            auto& entryJ = _subspace[j];
+            if (entryI.dot_is_known_with(j)) {
+                Bp[i][j] = entryI.dot_with(j);
             } else {
-                double dot = C_DDOT(_errorVectorSize, const_cast<double *>(entryI->errorVector()), 1,
-                                    const_cast<double *>(entryJ->errorVector()), 1);
-                bMatrix[i][j] = dot;
-                entryI->set_dot_with(j, dot);
-                entryJ->set_dot_with(i, dot);
-                if (_storagePolicy == OnDisk) {
-                    entryI->free_error_vector_memory();
-                    entryJ->free_error_vector_memory();
+                double dot = C_DDOT(_errorVectorSize, const_cast<double *>(entryI.errorVector()), 1,
+                                    const_cast<double *>(entryJ.errorVector()), 1);
+                Bp[i][j] = dot;
+                entryI.set_dot_with(j, dot);
+                entryJ.set_dot_with(i, dot);
+                if (_storagePolicy == StoragePolicy::OnDisk) {
+                    entryI.free_error_vector_memory();
+                    entryJ.free_error_vector_memory();
                 }
             }
         }
     }
     force[_subspace.size()] = 1.0;
-    bMatrix[_subspace.size()][_subspace.size()] = 0.0;
+    Bp[_subspace.size()][_subspace.size()] = 0.0;
 
     timer_off("bMatrix setup");
     timer_on("bMatrix pseudoinverse");
 
     // => Balance <= //
 
-    double **Bp = B->pointer();
-
-    auto S = std::make_shared<Vector>("S", dimension);
-    double *Sp = S->pointer();
+    auto S = std::vector<double>(dimension);
 
     // Trap an explicit zero
     bool is_zero = false;
@@ -388,27 +394,27 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
 
     if (is_zero) {
         for (int i = 0; i < dimension; i++) {
-            Sp[i] = 1.0;
+            S[i] = 1.0;
         }
     } else {
         for (int i = 0; i < dimension - 1; i++) {
-            Sp[i] = pow(Bp[i][i], -1.0 / 2.0);
+            S[i] = pow(Bp[i][i], -1.0 / 2.0);
         }
-        Sp[dimension - 1] = 1.0;
+        S[dimension - 1] = 1.0;
     }
 
     for (int i = 0; i < dimension; i++) {
         for (int j = 0; j < dimension; j++) {
-            Bp[i][j] *= Sp[i] * Sp[j];
+            Bp[i][j] *= S[i] * S[j];
         }
     }
 
     // => S [S^-1 B S^-1] S \ f <= //
 
-    B->power(-1.0, 1.0E-12);
-    C_DGEMV('N', dimension, dimension, 1.0, Bp[0], dimension, force, 1, 0.0, coefficients, 1);
+    B.power(-1.0, 1.0E-12);
+    C_DGEMV('N', dimension, dimension, 1.0, Bp[0], dimension, force.data(), 1, 0.0, coefficients.data(), 1);
     for (int i = 0; i < dimension; i++) {
-        coefficients[i] *= Sp[i];
+        coefficients[i] *= S[i];
     }
 
     timer_off("bMatrix pseudoinverse");
@@ -426,7 +432,7 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
     for (int n = 0; n < _subspace.size(); ++n) {
         double coefficient = coefficients[n];
         if (print > 2) outfile->Printf(" %.3f ", coefficient);
-        const double *arrayPtr = _subspace[n]->vector();
+        const double *arrayPtr = _subspace[n].vector();
         va_start(args, numQuantities);
         for (int i = 0; i < numQuantities; ++i) {
             // The indexing arrays contain the error vector, then the vector, so they
@@ -434,81 +440,86 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
             int componentIndex = i + _numErrorVectorComponents;
             DIISEntry::InputType type = _componentTypes[componentIndex];
             switch (type) {
-                case DIISEntry::Pointer:
+                case DIISEntry::InputType::Pointer:
+                {
                     array = va_arg(args, double *);
-                    if (!n) ::memset(array, 0, _componentSizes[componentIndex] * sizeof(double));
-                    for (int j = 0; j < _componentSizes[componentIndex]; ++j) array[j] += coefficient * *arrayPtr++;
+                    auto size = _componentSizes[componentIndex];
+                    if (!n) ::memset(array, 0, size * sizeof(double));
+                    if (size) {
+                        C_DAXPY(size, coefficient, arrayPtr, 1, array, 1);
+                        arrayPtr += static_cast<int>(size);
+                    }
                     break;
-                case DIISEntry::DPDBuf4:
+                }
+                case DIISEntry::InputType::DPDBuf4:
+                {
                     buf4 = va_arg(args, dpdbuf4 *);
                     if (!n) global_dpd_->buf4_scm(buf4, 0.0);
                     for (int h = 0; h < buf4->params->nirreps; ++h) {
                         global_dpd_->buf4_mat_irrep_init(buf4, h);
                         global_dpd_->buf4_mat_irrep_rd(buf4, h);
-                        for (int row = 0; row < buf4->params->rowtot[h]; ++row) {
-                            for (int col = 0; col < buf4->params->coltot[h]; ++col) {
-                                buf4->matrix[h][row][col] += coefficient * *arrayPtr++;
-                            }
+                        auto size = static_cast<size_t>(buf4->params->rowtot[h]) * buf4->params->coltot[h ^ buf4->file.my_irrep];
+                        if (size) {
+                            C_DAXPY(size, coefficient, arrayPtr, 1, buf4->matrix[h][0], 1);
+                            arrayPtr += static_cast<int>(size);
                         }
                         global_dpd_->buf4_mat_irrep_wrt(buf4, h);
                         global_dpd_->buf4_mat_irrep_close(buf4, h);
                     }
                     break;
-                case DIISEntry::DPDFile2:
+                }
+                case DIISEntry::InputType::DPDFile2:
+                {
                     file2 = va_arg(args, dpdfile2 *);
                     if (!n) global_dpd_->file2_scm(file2, 0.0);
                     global_dpd_->file2_mat_init(file2);
                     global_dpd_->file2_mat_rd(file2);
                     for (int h = 0; h < file2->params->nirreps; ++h) {
-                        for (int row = 0; row < file2->params->rowtot[h]; ++row) {
-                            for (int col = 0; col < file2->params->coltot[h]; ++col) {
-                                file2->matrix[h][row][col] += coefficient * *arrayPtr++;
-                            }
+                        auto size = static_cast<size_t>(file2->params->rowtot[h]) * file2->params->coltot[file2->my_irrep ^ h];
+                        if (size) {
+                            C_DAXPY(size, coefficient, arrayPtr, 1, file2->matrix[h][0], 1);
+                            arrayPtr += static_cast<int>(size);
                         }
                     }
                     global_dpd_->file2_mat_wrt(file2);
                     global_dpd_->file2_mat_close(file2);
                     break;
-                case DIISEntry::Matrix:
+                }
+                case DIISEntry::InputType::Matrix:
+                {
                     matrix = va_arg(args, Matrix *);
                     if (!n) matrix->zero();
                     for (int h = 0; h < matrix->nirrep(); ++h) {
-                        for (int row = 0; row < matrix->rowspi()[h]; ++row) {
-                            for (int col = 0; col < matrix->colspi()[h]; ++col) {
-                                matrix->add(h, row, col, coefficient * *arrayPtr++);
-                            }
+                        auto size = static_cast<size_t>(matrix->rowdim(h)) * matrix->colspi(h ^ matrix->symmetry());
+                        if (size) {
+                            C_DAXPY(size, coefficient, arrayPtr, 1, matrix->pointer(h)[0], 1);
+                            arrayPtr += static_cast<int>(size);
                         }
                     }
                     break;
-                case DIISEntry::Vector:
+                }
+                case DIISEntry::InputType::Vector:
+                {
                     vector = va_arg(args, Vector *);
-                    if (!n) {
-                        for (int h = 0; h < vector->nirrep(); ++h) {
-                            for (int row = 0; row < vector->dimpi()[h]; ++row) {
-                                vector->set(h, row, 0.0);
-                            }
-                        }
-                    }
-                    for (int h = 0; h < vector->nirrep(); ++h) {
-                        for (int row = 0; row < vector->dimpi()[h]; ++row) {
-                            double val = vector->get(h, row);
-                            vector->set(h, row, coefficient * *arrayPtr++ + val);
-                        }
+                    if (!n) vector->zero();
+                    auto size = static_cast<size_t>(vector->dimpi().sum());
+                    if (size) {
+                        C_DAXPY(size, coefficient, arrayPtr, 1, vector->pointer(), 1);
+                        arrayPtr += static_cast<int>(size);
                     }
                     break;
+                }
                 default:
                     throw SanityCheckError("Unknown input type", __FILE__, __LINE__);
             }
         }
-        if (_storagePolicy == OnDisk) _subspace[n]->free_vector_memory();
+        if (_storagePolicy == StoragePolicy::OnDisk) _subspace[n].free_vector_memory();
         va_end(args);
     }
 
     timer_off("New vector");
 
     if (print > 2) outfile->Printf("\n");
-    delete[] coefficients;
-    delete[] force;
     timer_off("DIISManager::extrapolate");
 
     return true;
@@ -518,7 +529,6 @@ bool DIISManager::extrapolate(int numQuantities, ...) {
  * Removes any vectors existing in the DIIS subspace.
  */
 void DIISManager::reset_subspace() {
-    for (int i = 0; i < _subspace.size(); ++i) delete _subspace[i];
     _subspace.clear();
 }
 
@@ -533,11 +543,6 @@ void DIISManager::delete_diis_file() {
 }
 
 DIISManager::~DIISManager() {
-    for (int i = 0; i < _subspace.size(); ++i) {
-        DIISEntry *temp = _subspace[i];
-        delete temp;
-    }
-    _subspace.clear();
     if (_psio->open_check(PSIF_LIBDIIS)) _psio->close(PSIF_LIBDIIS, 1);
 }
 

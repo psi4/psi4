@@ -197,6 +197,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- Write all the MOs to the MOLDEN file (true) or discard the unoccupied MOs (false). -*/
     options.add_bool("MOLDEN_WITH_VIRTUAL", true);
 
+    /*- The type of screening used when computing two-electron integrals. -*/
+    options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM DENSITY");
+
     // CDS-TODO: We should go through and check that the user hasn't done
     // something silly like specify frozen_docc in DETCI but not in TRANSQT.
     // That would create problems.  (This was formerly checked in DETCI
@@ -987,10 +990,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         default is conservative, but there isn't much to be gained from
         loosening it, especially for higher-order SAPT. -*/
         options.add_double("INTS_TOLERANCE", 1.0E-12);
-        /*- Do use Combined Schwarz Approximation Maximum (CSAM) screening on
-        two-electron integrals. This is a slightly tighter bound than that of
-        default Schwarz screening. -*/
-        options.add_str("SCREENING", "CSAM", "SCHWARZ CSAM");
         /*- Memory safety -*/
         options.add_double("SAPT_MEM_SAFETY", 0.9);
         /*- Do force SAPT2 and higher to die if it thinks there isn't enough
@@ -1325,7 +1324,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("S_TOLERANCE", 1E-7);
         /*- Tolerance for partial Cholesky decomposition of overlap matrix. -*/
         options.add_double("S_CHOLESKY_TOLERANCE", 1E-8);
-        /*- Schwarz screening threshold. Mininum absolute value below which TEI are neglected. -*/
+        /*- Screening threshold for the chosen screening method (SCHWARZ, CSAM, DENSITY)
+          Absolute value below which TEI are neglected. -*/
         options.add_double("INTS_TOLERANCE", 1E-12);
         /*- The type of guess orbitals.  Defaults to ``READ`` for geometry optimizations after the first step, to
           ``CORE`` for single atoms, and to ``SAD`` otherwise. The ``HUCKEL`` guess employs on-the-fly calculations
@@ -1442,6 +1442,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- When using |scf__stability_analysis| ``FOLLOW``, maximum number of orbital optimization attempts
             to make the wavefunction stable. !expert -*/
         options.add_int("MAX_ATTEMPTS", 1);
+        /*- Do Perform Incremental Fock Build? -*/
+        options.add_bool("INCFOCK", false);
+        /*- Frequency with which to compute the full Fock matrix if using |scf__incfock| . 
+        N means rebuild every N SCF iterations to avoid accumulating error from the incremental procedure. -*/
+        options.add_int("INCFOCK_FULL_FOCK_EVERY", 5);
 
         /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 
@@ -1669,9 +1674,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- combine omega exchange and Hartree--Fock exchange into
               one matrix for efficiency?
-            Default is True for MemDFJK
-              (itself the default for |globals__scf_type| DF),
-            False otherwise as not yet implemented. -*/
+              Disabled until fixed.-*/
+            //NOTE: Re-enable with below doc string:
+            // Default is True for MemDFJK
+            //   (itself the default for |globals__scf_type| DF),
+            // False otherwise as not yet implemented. -*/
         options.add_bool("WCOMBINE", false);
     }
     if (name == "CPHF" || options.read_globals()) {
@@ -1683,19 +1690,9 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("DEBUG", 0);
         /*- What app to test?
           -*/
-        options.add_str("MODULE", "RCIS", "RCIS RCPHF RTDHF RCPKS RTDA RTDDFT");
-        /*- Do singlet states? Default true
-         -*/
-        options.add_bool("DO_SINGLETS", true);
-        /*- Do triplet states? Default true
-         -*/
-        options.add_bool("DO_TRIPLETS", true);
+        options.add_str("MODULE", "RCPHF", "RCPHF");
         /*- Do explicit hamiltonian only? -*/
         options.add_bool("EXPLICIT_HAMILTONIAN", false);
-        /*- Minimum singles amplitude to print in
-            CIS analysis
-         -*/
-        options.add_double("CIS_AMPLITUDE_CUTOFF", 0.15);
         /*- Which tasks to run CPHF For
          *  Valid choices:
          *  -Polarizability
@@ -2403,6 +2400,8 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     if (name == "DLPNO" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs DLPNO-MP2 computations for RHF reference wavefunctions. -*/
 
+        /*- SUBSECTION General Options -*/
+
         /*- Auxiliary basis set for MP2 density fitting computations.
         :ref:`Defaults <apdx:basisFamily>` to a RI basis. -*/
         options.add_str("DF_BASIS_MP2", "");
@@ -2421,7 +2420,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- Maximum number of iterations to determine the MP2 amplitudes. -*/
         options.add_int("DLPNO_MAXITER", 50);
 
-        /*- SUBSECTION Expert -*/
+        /*- SUBSECTION Expert Options -*/
 
         /*- Occupation number threshold for removing PNOs !expert -*/
         options.add_double("T_CUT_PNO", 1e-8);
@@ -2443,7 +2442,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_double("S_CUT", 1e-8);
         /*- Fock matrix threshold for treating ampltudes as coupled during local MP2 iterations !expert -*/
         options.add_double("F_CUT", 1e-5);
-
     }
     if (name == "PSIMRCC" || options.read_globals()) {
         /*- MODULEDESCRIPTION Performs multireference coupled cluster computations.  This theory

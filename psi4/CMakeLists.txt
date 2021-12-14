@@ -99,6 +99,15 @@ else()
     message(STATUS "Disabled dkh")
 endif()
 
+if(${ENABLE_ecpint})
+    find_package(ecpint 1.0.6 CONFIG REQUIRED)
+    get_property(_loc TARGET ECPINT::ecpint PROPERTY LOCATION)
+    list(APPEND _addons ${_loc})
+    message(STATUS "${Cyan}Using ecpint${ColourReset}: ${_loc} (version ${ecpint_VERSION})")
+else()
+    message(STATUS "Disabled ecpint")
+endif()
+
 if(${ENABLE_libefp})
     # neither libefp nor pylibefp actually needed c-side; runtime detection would
     #   do just as well. included for completeness and so pylibefp_PYMOD can be

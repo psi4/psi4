@@ -558,3 +558,13 @@ Bibliography
    E. Caldeweyher,  S. Ehlert,  A. Hansen, H. Neugebauer, S. Spicher, C. Bannwarth, and S. Grimme,
    *J. Chem. Phys.* **150**, 154122 (2019).
    https://doi.org/10.1063/1.5090222
+
+.. [Haser:1989:104]
+   M. Haser and R. Ahlrichs,
+   *J. Comp. Chem.* **10(1)**, 104 (1989).
+   doi: 10.1002/jcc.540100111
+   
+.. [Thompson:2017:144101]
+   T. H. Thompson and C. Ochsenfeld
+   *J. Chem. Phys.* **147**, 144101 (2017).
+   doi: 10.1063/1.4994190
