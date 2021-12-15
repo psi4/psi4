@@ -341,24 +341,24 @@ void SAPT2p3::sinf_e30ind() {
     nT = Process::environment.get_n_threads();
 #endif
 
-    auto uAR = std::make_shared<Matrix>("Ind30 uAR Amplitudes", na, nr);
-    auto uBS = std::make_shared<Matrix>("Ind30 uBS Amplitudes", nb, ns);
-    uAR->load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::Full);
-    uBS->load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::Full);
+    auto uAR = Matrix("Ind30 uAR Amplitudes", na, nr);
+    auto uBS = Matrix("Ind30 uBS Amplitudes", nb, ns);
+    uAR.load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::Full);
+    uBS.load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::Full);
 
     // => Intermolecular overlap matrix and inverse <= //
     auto Sab = linalg::triplet(CoccA_, Smat_, CoccB_, true, false, false);
 
     double** Sabp = Sab->pointer();
-    auto D = std::make_shared<Matrix>("D", na + nb, na + nb);
-    D->identity();
-    double** Dp = D->pointer();
+    auto D = Matrix("D", na + nb, na + nb);
+    D.identity();
+    double** Dp = D.pointer();
     for (int a = 0; a < na; a++) {
         for (int b = 0; b < nb; b++) {
             Dp[a][b + na] = Dp[b + na][a] = Sabp[a][b];
         }
     }
-    D->power(-1.0, 1.0E-12);
+    D.power(-1.0, 1.0E-12);
 
     Dimension zero(1);
     Dimension nadim(1);
@@ -366,9 +366,9 @@ void SAPT2p3::sinf_e30ind() {
     zero[0] = 0;
     nadim[0] = na;
     nabdim[0] = na + nb;
-    auto Daa = D->get_block(Slice(zero, nadim), Slice(zero, nadim));
-    auto Dab = D->get_block(Slice(zero, nadim), Slice(nadim, nabdim));
-    auto Dbb = D->get_block(Slice(nadim, nabdim), Slice(nadim, nabdim));
+    auto Daa = D.get_block(Slice(zero, nadim), Slice(zero, nadim));
+    auto Dab = D.get_block(Slice(zero, nadim), Slice(nadim, nabdim));
+    auto Dbb = D.get_block(Slice(nadim, nabdim), Slice(nadim, nabdim));
 
     // => New Stuff <= //
     // Start with T's
@@ -467,21 +467,21 @@ void SAPT2p3::sinf_e30ind() {
     auto BJK_bs = linalg::triplet(C2b, BJK, Ct_Ks, true, false, false);
 
     // Finish omega terms
-    std::shared_ptr<Matrix> omega_ar(AJK_ar->clone());
-    omega_ar->add(BJK_ar);
-    omega_ar->scale(2);
+    Matrix omega_ar(AJK_ar->clone());
+    omega_ar.add(BJK_ar);
+    omega_ar.scale(2);
 
-    std::shared_ptr<Matrix> omega_as(AJK_as->clone());
-    omega_as->add(BJK_as);
-    omega_as->scale(2);
+    Matrix omega_as(AJK_as->clone());
+    omega_as.add(BJK_as);
+    omega_as.scale(2);
 
-    std::shared_ptr<Matrix> omega_br(AJK_br->clone());
-    omega_br->add(BJK_br);
-    omega_br->scale(2);
+    Matrix omega_br(AJK_br->clone());
+    omega_br.add(BJK_br);
+    omega_br.scale(2);
 
-    std::shared_ptr<Matrix> omega_bs(AJK_bs->clone());
-    omega_bs->add(BJK_bs);
-    omega_bs->scale(2);
+    Matrix omega_bs(AJK_bs->clone());
+    omega_bs.add(BJK_bs);
+    omega_bs.scale(2);
 
     Cocc0AB.reset();
     D_Ni_a.reset();
@@ -529,8 +529,8 @@ void SAPT2p3::sinf_e30ind() {
     auto STS_ar = linalg::triplet(sAR, Tar, sAR, false, true, false);
     auto STS_bs = linalg::triplet(sBS, Tbs, sBS, false, true, false);
 
-    CompleteInd30 += uAR->vector_dot(omega_ar);
-    CompleteInd30 += uBS->vector_dot(omega_bs);
+    CompleteInd30 += uAR.vector_dot(omega_ar);
+    CompleteInd30 += uBS.vector_dot(omega_bs);
     CompleteInd30 -= STS_br->vector_dot(omega_br);
     CompleteInd30 -= STS_as->vector_dot(omega_as);
     CompleteInd30 -= STS_ar->vector_dot(omega_ar);
