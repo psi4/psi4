@@ -335,7 +335,6 @@ void SAPT2p3::sinf_e30ind() {
     int nb = noccB_;
     int nr = nvirA_;
     int ns = nvirB_;
-    int nQ = ribasis_->nbf();
 
     int nT = 1;
 #ifdef _OPENMP
@@ -348,7 +347,7 @@ void SAPT2p3::sinf_e30ind() {
     uBS->load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::Full);
 
     // => Intermolecular overlap matrix and inverse <= //
-    std::shared_ptr<Matrix> Sab = linalg::triplet(CoccA_, Smat_, CoccB_, true, false, false);
+    auto Sab = linalg::triplet(CoccA_, Smat_, CoccB_, true, false, false);
 
     double** Sabp = Sab->pointer();
     auto D = std::make_shared<Matrix>("D", na + nb, na + nb);
@@ -373,8 +372,8 @@ void SAPT2p3::sinf_e30ind() {
 
     // => New Stuff <= //
     // Start with T's
-    std::shared_ptr<Matrix> Sbr = linalg::triplet(CoccB_, Smat_, CvirA_, true, false, false);
-    std::shared_ptr<Matrix> Sas = linalg::triplet(CoccA_, Smat_, CvirB_, true, false, false);
+    auto Sbr = linalg::triplet(CoccB_, Smat_, CvirA_, true, false, false);
+    auto Sas = linalg::triplet(CoccA_, Smat_, CvirB_, true, false, false);
     auto Tar = linalg::doublet(Dab, Sbr, false, false);
     auto Tbr = linalg::doublet(Dbb, Sbr, false, false);
     auto Tas = linalg::doublet(Daa, Sas, false, false);
@@ -429,11 +428,11 @@ void SAPT2p3::sinf_e30ind() {
     Cr.push_back(D_Ni_b);
     jk_->compute();
 
-    std::shared_ptr<Matrix> J_D_ia = J[0];
-    std::shared_ptr<Matrix> K_D_ia = K[0];
+    auto J_D_ia = J[0];
+    auto K_D_ia = K[0];
 
-    std::shared_ptr<Matrix> J_D_ib = J[1];
-    std::shared_ptr<Matrix> K_D_ib = K[1];
+    auto J_D_ib = J[1];
+    auto K_D_ib = K[1];
 
     // Finish D_ia and D_ib transformation to make tilded C's
     auto D_ia = linalg::doublet(Cocc0AB, D_Ni_a, false, true);
