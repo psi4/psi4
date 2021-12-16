@@ -1319,8 +1319,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                             if (R * nshell + S > P * nshell + Q) continue;
 
                             // Ket Stripeouts
-                            PR_minilist[dP].emplace(R);
-                            PS_minilist[dP].emplace(S);
+                            QS_minilist[dQ].emplace(S);
 
                             PQ_sig_RS.emplace(R * nshell + S);
                         }
@@ -1345,8 +1344,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                             if (R * nshell + S > P * nshell + Q) continue;
 
                             // Ket Stripeouts
-                            PR_minilist[dP].emplace(R);
-                            PS_minilist[dP].emplace(S);
+                            QR_minilist[dQ].emplace(R);
 
                             PQ_sig_RS.emplace(R * nshell + S);
                         }
@@ -1371,8 +1369,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                             if (R * nshell + S > P * nshell + Q) continue;
 
                             // Ket Stripeouts
-                            QR_minilist[dQ].emplace(R);
-                            QS_minilist[dQ].emplace(S);
+                            PS_minilist[dP].emplace(S);
 
                             PQ_sig_RS.emplace(R * nshell + S);
                         }
@@ -1397,8 +1394,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                             if (R * nshell + S > P * nshell + Q) continue;
 
                             // Ket Stripeouts
-                            QR_minilist[dQ].emplace(R);
-                            QS_minilist[dQ].emplace(S);
+                            PR_minilist[dP].emplace(R);
 
                             PQ_sig_RS.emplace(R * nshell + S);
                         }
