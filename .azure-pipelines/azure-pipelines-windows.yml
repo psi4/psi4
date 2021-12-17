@@ -180,6 +180,7 @@ jobs:
                 -DCMAKE_CXX_COMPILER=clang-cl ^
                 -DENABLE_XHOST=!ENABLE_XHOST! ^
                 -DCMAKE_CXX_FLAGS="/arch:AVX" ^
+                -DCMAKE_VERBOSE_MAKEFILE=ON ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
                 -DPython_EXECUTABLE="C:/tools/miniconda3/python.exe" ^
                 -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
