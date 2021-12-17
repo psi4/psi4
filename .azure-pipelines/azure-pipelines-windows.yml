@@ -178,7 +178,7 @@ jobs:
                 -DCMAKE_INSTALL_PREFIX=../install ^
                 -DCMAKE_C_COMPILER=clang-cl ^
                 -DCMAKE_CXX_COMPILER=clang-cl ^
-                -DENABLE_XHOST=!ENABLE_XHOST! ^
+                -DENABLE_XHOST=OFF ^
                 -DCMAKE_CXX_FLAGS="/arch:AVX" ^
                 -DCMAKE_VERBOSE_MAKEFILE=ON ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
