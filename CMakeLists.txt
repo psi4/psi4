@@ -143,17 +143,25 @@ option_with_print(ENABLE_PLUGIN_TESTING "Test the plugin templates build and run
 option_with_print(ENABLE_CYTHONIZE "Compile each python file rather than plaintext (requires cython) !experimental!" OFF)
 
 # Need to check things per compiler brand since they're different
-if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
   option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON "-xHost")
-elseif(CMAKE_CXX_COMPILER_ID MATCHES GNU)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "-march=native")
-elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "MSVC")
+        # clang-cl
+        option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "/arch:AVX2")
+    elseif (CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
+        option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "-march=native")
+    endif()
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
   option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "-march=native")
-elseif(CMAKE_CXX_COMPILER_ID MATCHES PGI)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "PGI")
   option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "-tp host")
-elseif(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "/arch:AVX2")
 endif()
+# IntelLLVM
 
 set(CMAKE_VERBOSE_MAKEFILE ON CACHE BOOL "ON")
 
