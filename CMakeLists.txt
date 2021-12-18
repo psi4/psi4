@@ -163,8 +163,6 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 endif()
 # IntelLLVM
 
-set(CMAKE_VERBOSE_MAKEFILE ON CACHE BOOL "ON")
-
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
                   "-ftest-coverage")
 option_with_flags(ENABLE_BOUNDS_CHECK "Enables bounds check in Fortran" OFF
