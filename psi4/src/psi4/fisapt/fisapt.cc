@@ -55,7 +55,7 @@
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libqt/qt.h"
 
-#include "local2.h"
+#include "psi4/libmints/local.h"
 
 namespace psi {
 
@@ -118,8 +118,8 @@ void FISAPT::localize() {
     ranges.push_back(vectors_["eps_focc"]->dimpi()[0]);
     ranges.push_back(vectors_["eps_occ"]->dimpi()[0]);
 
-    std::shared_ptr<fisapt::IBOLocalizer2> local =
-        fisapt::IBOLocalizer2::build(primary_, reference_->get_basisset("MINAO"), matrices_["Cocc"], options_);
+    std::shared_ptr<IBOLocalizer> local =
+        IBOLocalizer::build(primary_, reference_->get_basisset("MINAO"), matrices_["Cocc"], options_);
     local->print_header();
     std::map<std::string, std::shared_ptr<Matrix> > ret = local->localize(matrices_["Cocc"], Focc, ranges);
 
@@ -3106,8 +3106,8 @@ void FISAPT::flocalize() {
             new Matrix("Focc", vectors_["eps_occ0A"]->dimpi()[0], vectors_["eps_occ0A"]->dimpi()[0]));
         Focc->set_diagonal(vectors_["eps_occ0A"]);
 
-        std::shared_ptr<fisapt::IBOLocalizer2> local =
-            fisapt::IBOLocalizer2::build(primary_, reference_->get_basisset("MINAO"), matrices_["Cocc0A"], options_);
+        std::shared_ptr<IBOLocalizer> local =
+            IBOLocalizer::build(primary_, reference_->get_basisset("MINAO"), matrices_["Cocc0A"], options_);
         local->print_header();
         std::map<std::string, std::shared_ptr<Matrix> > ret = local->localize(matrices_["Cocc0A"], Focc, ranges);
 
@@ -3174,8 +3174,8 @@ void FISAPT::flocalize() {
             new Matrix("Focc", vectors_["eps_occ0B"]->dimpi()[0], vectors_["eps_occ0B"]->dimpi()[0]));
         Focc->set_diagonal(vectors_["eps_occ0B"]);
 
-        std::shared_ptr<fisapt::IBOLocalizer2> local =
-            fisapt::IBOLocalizer2::build(primary_, reference_->get_basisset("MINAO"), matrices_["Cocc0B"], options_);
+        std::shared_ptr<IBOLocalizer> local =
+            IBOLocalizer::build(primary_, reference_->get_basisset("MINAO"), matrices_["Cocc0B"], options_);
         local->print_header();
         std::map<std::string, std::shared_ptr<Matrix> > ret = local->localize(matrices_["Cocc0B"], Focc, ranges);
 

@@ -31,6 +31,7 @@
 #include <algorithm>
 
 #include "psi4/libqt/qt.h"
+#include "psi4/libmints/vector.h"
 #include "psi4/libmints/matrix.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/onebody.h"
@@ -547,6 +548,546 @@ void PMLocalizer::localize() {
     }
 
     U_->transpose_this();
+}
+
+IBOLocalizer::IBOLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> minao,
+                             std::shared_ptr<Matrix> C)
+    : Localizer(primary, C), minao_(minao) {
+    common_init();
+}
+IBOLocalizer::~IBOLocalizer() {}
+void IBOLocalizer::common_init() {
+    print_ = 0;
+    debug_ = 0;
+    bench_ = 0;
+    convergence_ = 1.0E-12;
+    maxiter_ = 50;
+    use_ghosts_ = false;
+    power_ = 4;
+    condition_ = 1.0E-7;
+    use_stars_ = false;
+    stars_completeness_ = 0.9;
+    stars_.clear();
+}
+std::shared_ptr<IBOLocalizer> IBOLocalizer::build(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> minao,
+                                                    std::shared_ptr<Matrix> C, Options& options) {
+
+    auto local = std::make_shared<IBOLocalizer>(primary, minao, C);
+
+    local->set_print(options.get_int("PRINT"));
+    local->set_debug(options.get_int("DEBUG"));
+    local->set_bench(options.get_int("BENCH"));
+    local->set_convergence(options.get_double("LOCAL_CONVERGENCE"));
+    local->set_maxiter(options.get_int("LOCAL_MAXITER"));
+    local->set_use_ghosts(options.get_bool("LOCAL_USE_GHOSTS"));
+    local->set_condition(options.get_double("LOCAL_IBO_CONDITION"));
+    local->set_power(options.get_double("LOCAL_IBO_POWER"));
+    local->set_use_stars(options.get_bool("LOCAL_IBO_USE_STARS"));
+    local->set_stars_completeness(options.get_double("LOCAL_IBO_STARS_COMPLETENESS"));
+
+    std::vector<int> stars;
+    for (int ind = 0; ind < options["LOCAL_IBO_STARS"].size(); ind++) {
+        stars.push_back(options["LOCAL_IBO_STARS"][ind].to_integer() - 1);
+    }
+    local->set_stars(stars);
+
+    return local;
+}
+void IBOLocalizer::print_header() const {
+    outfile->Printf("  ==> IBO Localizer 2 <==\n\n");
+    outfile->Printf("    MinAO Basis = %11s\n", minao_->name().c_str());
+    outfile->Printf("    Use Ghosts  = %11s\n", (use_ghosts_ ? "TRUE" : "FALSE"));
+    outfile->Printf("    Use Stars   = %11s\n", (use_stars_ ? "TRUE" : "FALSE"));
+    outfile->Printf("    Condition   = %11.3E\n", condition_);
+    outfile->Printf("    Power       = %11d\n", power_);
+    outfile->Printf("    Convergence = %11.3E\n", convergence_);
+    outfile->Printf("    Maxiter     = %11d\n", maxiter_);
+    outfile->Printf("\n");
+}
+
+void IBOLocalizer::build_iaos() {
+
+    // => Ghosting <= //
+    std::shared_ptr<Molecule> mol = minao_->molecule();
+    true_atoms_.clear();
+    true_iaos_.clear();
+    iaos_to_atoms_.clear();
+    for (int A = 0; A < mol->natom(); A++) {
+        if (!use_ghosts_ && mol->Z(A) == 0.0) continue;
+        int Atrue = true_atoms_.size();
+        int nPshells = minao_->nshell_on_center(A);
+        int sPshells = minao_->shell_on_center(A, 0);
+        for (int P = sPshells; P < sPshells + nPshells; P++) {
+            int nP = minao_->shell(P).nfunction();
+            int oP = minao_->shell(P).function_index();
+            for (int p = 0; p < nP; p++) {
+                true_iaos_.push_back(p + oP);
+                iaos_to_atoms_.push_back(Atrue);
+            }
+        }
+        true_atoms_.push_back(A);
+    }
+
+    // => Overlap Integrals <= //
+
+    auto fact11 = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
+    auto fact12 = std::make_shared<IntegralFactory>(primary_, minao_, primary_, minao_);
+    auto fact22 = std::make_shared<IntegralFactory>(minao_, minao_, minao_, minao_);
+
+    std::shared_ptr<OneBodyAOInt> ints11(fact11->ao_overlap());
+    std::shared_ptr<OneBodyAOInt> ints12(fact12->ao_overlap());
+    std::shared_ptr<OneBodyAOInt> ints22(fact22->ao_overlap());
+
+    auto S11 = std::make_shared<Matrix>("S11", primary_->nbf(), primary_->nbf());
+    auto S12f = std::make_shared<Matrix>("S12f", primary_->nbf(), minao_->nbf());
+    auto S22f = std::make_shared<Matrix>("S22f", minao_->nbf(), minao_->nbf());
+
+    ints11->compute(S11);
+    ints12->compute(S12f);
+    ints22->compute(S22f);
+
+    ints11.reset();
+    ints12.reset();
+    ints22.reset();
+
+    fact11.reset();
+    fact12.reset();
+    fact22.reset();
+
+    // => Ghosted Overlap Integrals <= //
+
+    auto S12 = std::make_shared<Matrix>("S12", primary_->nbf(), true_iaos_.size());
+    auto S22 = std::make_shared<Matrix>("S22", true_iaos_.size(), true_iaos_.size());
+
+    double** S12p = S12->pointer();
+    double** S12fp = S12f->pointer();
+    for (int m = 0; m < primary_->nbf(); m++) {
+        for (int p = 0; p < true_iaos_.size(); p++) {
+            S12p[m][p] = S12fp[m][true_iaos_[p]];
+        }
+    }
+
+    double** S22p = S22->pointer();
+    double** S22fp = S22f->pointer();
+    for (int p = 0; p < true_iaos_.size(); p++) {
+        for (int q = 0; q < true_iaos_.size(); q++) {
+            S22p[p][q] = S22fp[true_iaos_[p]][true_iaos_[q]];
+        }
+    }
+
+    // => Metric Inverses <= //
+
+    std::shared_ptr<Matrix> S11_m12(S11->clone());
+    std::shared_ptr<Matrix> S22_m12(S22->clone());
+    S11_m12->copy(S11);
+    S22_m12->copy(S22);
+    S11_m12->power(-1.0 / 2.0, condition_);
+    S22_m12->power(-1.0 / 2.0, condition_);
+
+    // => Tilde C <= //
+
+    std::shared_ptr<Matrix> C = C_;
+    std::shared_ptr<Matrix> T1 = linalg::doublet(S22_m12, S12, false, true);
+    std::shared_ptr<Matrix> T2 = linalg::doublet(S11_m12, linalg::triplet(T1, T1, C, true, false, false), false, false);
+    std::shared_ptr<Matrix> T3 = linalg::doublet(T2, T2, true, false);
+    T3->power(-1.0 / 2.0, condition_);
+    std::shared_ptr<Matrix> Ctilde = linalg::triplet(S11_m12, T2, T3, false, false, false);
+
+    // => D and Tilde D <= //
+
+    std::shared_ptr<Matrix> D = linalg::doublet(C, C, false, true);
+    std::shared_ptr<Matrix> Dtilde = linalg::doublet(Ctilde, Ctilde, false, true);
+
+    // => A (Before Orthogonalization) <= //
+
+    std::shared_ptr<Matrix> DSDtilde = linalg::triplet(D, S11, Dtilde, false, false, false);
+    DSDtilde->scale(2.0);
+
+    std::shared_ptr<Matrix> L = linalg::doublet(S11_m12, S11_m12, false, false);  // TODO: Possibly Unstable
+    L->add(DSDtilde);
+    L->subtract(D);
+    L->subtract(Dtilde);
+
+    std::shared_ptr<Matrix> AN = linalg::doublet(L, S12, false, false);
+
+    // => A (After Orthogonalization) <= //
+
+    std::shared_ptr<Matrix> V = linalg::triplet(AN, S11, AN, true, false, false);
+    V->power(-1.0 / 2.0, condition_);
+
+    std::shared_ptr<Matrix> A = linalg::doublet(AN, V, false, false);
+
+    // => Assignment <= //
+
+    S_ = S11;
+    A_ = A;
+}
+
+std::map<std::string, std::shared_ptr<Matrix> > IBOLocalizer::localize_task(
+    std::shared_ptr<Matrix> L, const std::vector<std::vector<int> >& minao_inds,
+    const std::vector<std::pair<int, int> >& rot_inds, double convergence, int maxiter, int power) {
+    int nmin = L->colspi()[0];
+    int nocc = L->rowspi()[0];
+
+    std::shared_ptr<Matrix> L2(L->clone());
+    L2->copy(L);
+    double** Lp = L2->pointer();
+
+    auto U = std::make_shared<Matrix>("U", nocc, nocc);
+    U->identity();
+    double** Up = U->pointer();
+
+    bool converged = false;
+
+    if (power != 2 && power != 4) throw PSIEXCEPTION("IAO: Invalid metric power.");
+
+    outfile->Printf("    @IBO %4s: %24s %14s\n", "Iter", "Metric", "Gradient");
+
+    for (int iter = 1; iter <= maxiter; iter++) {
+        double metric = 0.0;
+        for (int i = 0; i < nocc; i++) {
+            for (int A = 0; A < minao_inds.size(); A++) {
+                double Lval = 0.0;
+                for (int m = 0; m < minao_inds[A].size(); m++) {
+                    int mind = minao_inds[A][m];
+                    Lval += Lp[i][mind] * Lp[i][mind];
+                }
+                metric += pow(Lval, power);
+            }
+        }
+        metric = pow(metric, 1.0 / power);
+
+        double gradient = 0.0;
+        for (int ind = 0; ind < rot_inds.size(); ind++) {
+            int i = rot_inds[ind].first;
+            int j = rot_inds[ind].second;
+
+            double Aij = 0.0;
+            double Bij = 0.0;
+            for (int A = 0; A < minao_inds.size(); A++) {
+                double Qii = 0.0;
+                double Qij = 0.0;
+                double Qjj = 0.0;
+                for (int m = 0; m < minao_inds[A].size(); m++) {
+                    int mind = minao_inds[A][m];
+                    Qii += Lp[i][mind] * Lp[i][mind];
+                    Qij += Lp[i][mind] * Lp[j][mind];
+                    Qjj += Lp[j][mind] * Lp[j][mind];
+                }
+                if (power == 2) {
+                    Aij += 4.0 * Qij * Qij - (Qii - Qjj) * (Qii - Qjj);
+                    Bij += 4.0 * Qij * (Qii - Qjj);
+                } else {
+                    Aij += (-1.0) * Qii * Qii * Qii * Qii - Qjj * Qjj * Qjj * Qjj +
+                           6.0 * (Qii * Qii + Qjj * Qjj) * Qij * Qij + Qii * Qii * Qii * Qjj + Qii * Qjj * Qjj * Qjj;
+                    Bij += 4.0 * Qij * (Qii * Qii * Qii - Qjj * Qjj * Qjj);
+                }
+            }
+
+            double phi = 0.25 * atan2(Bij, -Aij);
+            double c = cos(phi);
+            double s = sin(phi);
+
+            C_DROT(nmin, Lp[i], 1, Lp[j], 1, c, s);
+            C_DROT(nocc, Up[i], 1, Up[j], 1, c, s);
+
+            gradient += Bij * Bij;
+        }
+        gradient = sqrt(gradient);
+
+        outfile->Printf("    @IBO %4d: %24.16E %14.6E\n", iter, metric, gradient);
+
+        if (gradient < convergence) {
+            converged = true;
+            break;
+        }
+    }
+
+    outfile->Printf("\n");
+    if (converged) {
+        outfile->Printf("    IBO Localizer 2 converged.\n\n");
+    } else {
+        outfile->Printf("    IBO Localizer 2 failed.\n\n");
+    }
+
+    U->transpose_this();
+
+    std::map<std::string, std::shared_ptr<Matrix> > ret;
+    ret["U"] = U;
+    ret["L"] = L2;
+
+    ret["U"]->set_name("U");
+    ret["L"]->set_name("L");
+
+    return ret;
+}
+
+std::shared_ptr<Matrix> IBOLocalizer::reorder_orbitals(std::shared_ptr<Matrix> F, const std::vector<int>& ranges) {
+    int nmo = F->rowspi()[0];
+    double** Fp = F->pointer();
+
+    auto U = std::make_shared<Matrix>("U", nmo, nmo);
+    double** Up = U->pointer();
+
+    for (int ind = 0; ind < ranges.size() - 1; ind++) {
+        int start = ranges[ind];
+        int stop = ranges[ind + 1];
+        std::vector<std::pair<double, int> > fvals;
+        for (int i = start; i < stop; i++) {
+            fvals.push_back(std::pair<double, int>(Fp[i][i], i));
+        }
+        std::sort(fvals.begin(), fvals.end());
+        for (int i = start; i < stop; i++) {
+            Up[i][fvals[i - start].second] = 1.0;
+        }
+    }
+
+    return U;
+}
+
+std::map<std::string, std::shared_ptr<Matrix>> IBOLocalizer::localize(std::shared_ptr<Matrix> Cocc,
+                                                                        std::shared_ptr<Matrix> Focc,
+                                                                        const std::vector<int>& ranges2) {
+    if (!A_) build_iaos();
+
+    std::vector<int> ranges = ranges2;
+    if (!ranges.size()) {
+        ranges.push_back(0);
+        ranges.push_back(Cocc->colspi()[0]);
+    }
+
+    std::vector<std::vector<int> > minao_inds;
+    for (int A = 0; A < true_atoms_.size(); A++) {
+        std::vector<int> vec;
+        for (int m = 0; m < iaos_to_atoms_.size(); m++) {
+            if (iaos_to_atoms_[m] == A) {
+                vec.push_back(m);
+            }
+        }
+        minao_inds.push_back(vec);
+    }
+
+    std::vector<std::pair<int, int> > rot_inds;
+    for (int ind = 0; ind < ranges.size() - 1; ind++) {
+        int start = ranges[ind];
+        int stop = ranges[ind + 1];
+        for (int i = start; i < stop; i++) {
+            for (int j = start; j < i; j++) {
+                rot_inds.push_back(std::pair<int, int>(i, j));
+            }
+        }
+    }
+
+    std::shared_ptr<Matrix> L = linalg::triplet(Cocc, S_, A_, true, false, false);
+    L->set_name("L");
+
+    std::map<std::string, std::shared_ptr<Matrix> > ret1 =
+        IBOLocalizer::localize_task(L, minao_inds, rot_inds, convergence_, maxiter_, power_);
+    L = ret1["L"];
+    std::shared_ptr<Matrix> U = ret1["U"];
+
+    if (use_stars_) {
+        std::shared_ptr<Matrix> Q = orbital_charges(L);
+        double** Qp = Q->pointer();
+        int nocc = Q->colspi()[0];
+        int natom = Q->rowspi()[0];
+
+        std::vector<int> pi_orbs;
+        for (int i = 0; i < nocc; i++) {
+            std::vector<double> Qs;
+            for (int A = 0; A < natom; A++) {
+                Qs.push_back(std::fabs(Qp[A][i]));
+            }
+            std::sort(Qs.begin(), Qs.end(), std::greater<double>());
+            double Qtot = 0.0;
+            for (int A = 0; A < natom && A < 2; A++) {
+                Qtot += Qs[A];
+            }
+            if (Qtot < stars_completeness_) {
+                pi_orbs.push_back(i);
+            }
+        }
+
+        std::vector<std::pair<int, int> > rot_inds2;
+        for (int iind = 0; iind < pi_orbs.size(); iind++) {
+            for (int jind = 0; jind < iind; jind++) {
+                rot_inds2.push_back(std::pair<int, int>(pi_orbs[iind], pi_orbs[jind]));
+            }
+        }
+
+        std::vector<std::vector<int> > minao_inds2;
+        for (int Aind = 0; Aind < stars_.size(); Aind++) {
+            int A = -1;
+            for (int A2 = 0; A2 < true_atoms_.size(); A2++) {
+                if (stars_[Aind] == true_atoms_[A2]) {
+                    A = A2;
+                    break;
+                }
+            }
+            if (A == -1) continue;
+            std::vector<int> vec;
+            for (int m = 0; m < iaos_to_atoms_.size(); m++) {
+                if (iaos_to_atoms_[m] == A) {
+                    vec.push_back(m);
+                }
+            }
+            minao_inds2.push_back(vec);
+        }
+
+        outfile->Printf("    *** Stars Procedure ***\n\n");
+        outfile->Printf("    Pi Completeness = %11.3f\n", stars_completeness_);
+        outfile->Printf("    Number of Pis   = %11zu\n", pi_orbs.size());
+        outfile->Printf("    Number of Stars = %11zu\n", stars_.size());
+        outfile->Printf("    Star Centers: ");
+        for (int ind = 0; ind < stars_.size(); ind++) {
+            outfile->Printf("%3d ", stars_[ind] + 1);
+        }
+        outfile->Printf("\n\n");
+
+        std::map<std::string, std::shared_ptr<Matrix> > ret2 =
+            IBOLocalizer::localize_task(L, minao_inds2, rot_inds2, convergence_, maxiter_, power_);
+        L = ret2["L"];
+        std::shared_ptr<Matrix> U3 = ret2["U"];
+        U = linalg::doublet(U, U3, false, false);
+
+        std::map<std::string, std::shared_ptr<Matrix> > ret3 =
+            IBOLocalizer::localize_task(L, minao_inds, rot_inds, convergence_, maxiter_, power_);
+        L = ret3["L"];
+        std::shared_ptr<Matrix> U4 = ret3["U"];
+        U = linalg::doublet(U, U4, false, false);
+
+        // => Analysis <= //
+
+        Q = orbital_charges(L);
+        Qp = Q->pointer();
+
+        pi_orbs.clear();
+        for (int i = 0; i < nocc; i++) {
+            std::vector<double> Qs;
+            for (int A = 0; A < natom; A++) {
+                Qs.push_back(std::fabs(Qp[A][i]));
+            }
+            std::sort(Qs.begin(), Qs.end(), std::greater<double>());
+            double Qtot = 0.0;
+            for (int A = 0; A < natom && A < 2; A++) {
+                Qtot += Qs[A];
+            }
+            if (Qtot < stars_completeness_) {
+                pi_orbs.push_back(i);
+            }
+        }
+
+        std::vector<int> centers;
+        for (int i2 = 0; i2 < pi_orbs.size(); i2++) {
+            int i = pi_orbs[i2];
+            int ind = 0;
+            for (int A = 0; A < natom; A++) {
+                if (std::fabs(Qp[A][i]) >= std::fabs(Qp[ind][i])) {
+                    ind = A;
+                }
+            }
+            centers.push_back(ind);
+        }
+        std::sort(centers.begin(), centers.end());
+
+        outfile->Printf("    *** Stars Analysis ***\n\n");
+        outfile->Printf("    Pi Centers: ");
+        for (int ind = 0; ind < centers.size(); ind++) {
+            outfile->Printf("%3d ", centers[ind] + 1);
+        }
+        outfile->Printf("\n\n");
+    }
+
+    std::shared_ptr<Matrix> Focc2 = linalg::triplet(U, Focc, U, true, false, false);
+    std::shared_ptr<Matrix> U2 = IBOLocalizer::reorder_orbitals(Focc2, ranges);
+
+    std::shared_ptr<Matrix> Uocc3 = linalg::doublet(U, U2, false, false);
+    std::shared_ptr<Matrix> Focc3 = linalg::triplet(Uocc3, Focc, Uocc3, true, false, false);
+    std::shared_ptr<Matrix> Locc3 = linalg::doublet(Cocc, Uocc3, false, false);
+
+    L = linalg::doublet(U2, L, true, false);
+    std::shared_ptr<Matrix> Q = orbital_charges(L);
+
+    std::map<std::string, std::shared_ptr<Matrix> > ret;
+    ret["L"] = Locc3;
+    ret["U"] = Uocc3;
+    ret["F"] = Focc3;
+    ret["Q"] = Q;
+
+    ret["L"]->set_name("L");
+    ret["U"]->set_name("U");
+    ret["F"]->set_name("F");
+    ret["Q"]->set_name("Q");
+
+    L_ = ret["L"];
+    U_ = ret["U"];
+
+    return ret;
+}
+
+void IBOLocalizer::localize() {
+    throw PSIEXCEPTION("Non-parameter input function localize() in IBOLocalizer is not defined. Use localize(Cocc, Focc, ranges2).");
+}
+
+std::shared_ptr<Matrix> IBOLocalizer::orbital_charges(std::shared_ptr<Matrix> L) {
+    double** Lp = L->pointer();
+    int nocc = L->rowspi()[0];
+    int nmin = L->colspi()[0];
+    int natom = true_atoms_.size();
+
+    auto Q = std::make_shared<Matrix>("Q", natom, nocc);
+    double** Qp = Q->pointer();
+
+    for (int i = 0; i < nocc; i++) {
+        for (int m = 0; m < nmin; m++) {
+            Qp[iaos_to_atoms_[m]][i] += Lp[i][m] * Lp[i][m];
+        }
+    }
+
+    return Q;
+}
+
+void IBOLocalizer::print_charges(double scale) {
+    if (!A_) build_iaos();
+
+    std::shared_ptr<Matrix> L = linalg::triplet(C_, S_, A_, true, false, false);
+
+    int nocc = L->rowspi()[0];
+    int natom = true_atoms_.size();
+
+    std::shared_ptr<Matrix> Q = orbital_charges(L);
+    double** Qp = Q->pointer();
+
+    auto N = std::make_shared<Vector>("N", natom);
+    double* Np = N->pointer();
+
+    for (int A = 0; A < natom; A++) {
+        for (int i = 0; i < nocc; i++) {
+            Np[A] += Qp[A][i];
+        }
+    }
+
+    std::shared_ptr<Molecule> mol = minao_->molecule();
+
+    outfile->Printf("   > Atomic Charges <\n\n");
+    outfile->Printf("    %4s %3s %11s %11s %11s\n", "N", "Z", "Nuclear", "Electronic", "Atomic");
+    double Ztot = 0.0;
+    double Qtot = 0.0;
+    for (int A = 0; A < natom; A++) {
+        int Afull = true_atoms_[A];
+        double Z = mol->Z(Afull);
+        double Q = -scale * Np[A];
+        outfile->Printf("    %4d %3s %11.3E %11.3E %11.3E\n", Afull + 1, mol->symbol(Afull).c_str(), Z, Q, Z + Q);
+        Ztot += Z;
+        Qtot += Q;
+    }
+    outfile->Printf("    %8s %11.3E %11.3E %11.3E\n", "Total", Ztot, Qtot, Ztot + Qtot);
+    outfile->Printf("\n");
+
+    outfile->Printf("    True Molecular Charge: %11.3E\n", (double)mol->molecular_charge());
+    outfile->Printf("    IBO  Molecular Charge: %11.3E\n", Ztot + Qtot);
+    outfile->Printf("    IBO  Error:            %11.3E\n", Ztot + Qtot - (double)mol->molecular_charge());
+    outfile->Printf("\n");
 }
 
 }  // Namespace psi
