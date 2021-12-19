@@ -462,3 +462,103 @@ void Libint2ErfComplementERI::libint2_wrapper2(const libint2::Shell &sh1, const 
 }
 
 Libint2ErfComplementERI::~Libint2ErfComplementERI(){};
+
+//// Libint2 implementation
+Libint2YukawaERI::Libint2YukawaERI(double zeta, const IntegralFactory *integral, double screening_threshold, int deriv, 
+                                    bool use_shell_pairs, bool needs_exchange)
+    : Libint2TwoElectronInt(integral, deriv, screening_threshold, use_shell_pairs, needs_exchange) {
+    timer_on("Libint2YukawaERI::Libint2YukawaERI");
+    int max_am =
+        std::max(std::max(basis1()->max_am(), basis2()->max_am()), std::max(basis3()->max_am(), basis4()->max_am()));
+    int max_nprim = std::max(std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive()),
+                             std::max(basis3()->max_nprimitive(), basis4()->max_nprimitive()));
+    const auto max_precision = 0.;  // equivalent in accuracy and timings is `std::numeric_limits<double>::epsilon() * 1e-30;`
+
+    bool dummy1 = basis1()->l2_shell(0) == libint2::Shell::unit();
+    bool dummy2 = basis2()->l2_shell(0) == libint2::Shell::unit();
+    bool dummy3 = basis3()->l2_shell(0) == libint2::Shell::unit();
+    bool dummy4 = basis4()->l2_shell(0) == libint2::Shell::unit();
+
+    if (!dummy1 && !dummy2 && !dummy3 && !dummy4) {
+        braket_ = libint2::BraKet::xx_xx;
+    } else if (!dummy1 && dummy2 && !dummy3 && !dummy4) {
+        braket_ = libint2::BraKet::xs_xx;
+    } else if (!dummy1 && !dummy2 && !dummy3 && dummy4) {
+        braket_ = libint2::BraKet::xx_xs;
+    } else if (!dummy1 && dummy2 && !dummy3 && dummy4) {
+        braket_ = libint2::BraKet::xs_xs;
+    } else {
+        throw PSIEXCEPTION("Bad BraKet type in Libint2TwoElectronInt");
+    }
+
+    for (int der = 0; der <= deriv; ++der) {
+        // set braket upon engine construction so particular LIBINT2_MAX_AM_eri[|2|3] limit governs validity
+        engines_.emplace_back(libint2::Operator::yukawa, max_nprim, max_am, der, max_precision, zeta, braket_);
+    }
+    // set max_am for primary basis to be sieved, not all basis1234
+    max_am = bra_same_ ? basis1()->max_am() : ket_same_ ? basis3()->max_am() : 0;
+    schwarz_engine_ = libint2::Engine(libint2::Operator::yukawa, max_nprim, max_am, 0, max_precision, zeta, libint2::BraKet::xx_xx);
+    common_init();
+    timer_on("Libint2YukawaERI::Libint2YukawaERI");
+}
+
+void Libint2YukawaERI::libint2_wrapper0(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12, const libint2::ShellPair *sp34) {
+    switch (braket_) {
+        case libint2::BraKet::xx_xx:
+            engines_[0].compute2<libint2::Operator::yukawa, libint2::BraKet::xx_xx, 0>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xx:
+            engines_[0].compute2<libint2::Operator::yukawa, libint2::BraKet::xs_xx, 0>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xx_xs:
+            engines_[0].compute2<libint2::Operator::yukawa, libint2::BraKet::xx_xs, 0>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xs:
+            engines_[0].compute2<libint2::Operator::yukawa, libint2::BraKet::xs_xs, 0>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        default:
+            throw PSIEXCEPTION("Bad BraKet type in Libint2YukawaERI::libint2wrapper0");
+    }
+}
+
+void Libint2YukawaERI::libint2_wrapper1(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12, const libint2::ShellPair *sp34) {
+    switch (braket_) {
+        case libint2::BraKet::xx_xx:
+            engines_[1].compute2<libint2::Operator::yukawa, libint2::BraKet::xx_xx, 1>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xx:
+            engines_[1].compute2<libint2::Operator::yukawa, libint2::BraKet::xs_xx, 1>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xx_xs:
+            engines_[1].compute2<libint2::Operator::yukawa, libint2::BraKet::xx_xs, 1>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xs:
+            engines_[1].compute2<libint2::Operator::yukawa, libint2::BraKet::xs_xs, 1>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        default:
+            throw PSIEXCEPTION("Bad BraKet type in Libint2YukawaERI::libint2wrapper1");
+    }
+}
+void Libint2YukawaERI::libint2_wrapper2(const libint2::Shell &sh1, const libint2::Shell &sh2, const libint2::Shell &sh3,
+                                    const libint2::Shell &sh4, const libint2::ShellPair *sp12, const libint2::ShellPair *sp34) {
+    switch (braket_) {
+        case libint2::BraKet::xx_xx:
+            engines_[2].compute2<libint2::Operator::yukawa, libint2::BraKet::xx_xx, 2>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xx:
+            engines_[2].compute2<libint2::Operator::yukawa, libint2::BraKet::xs_xx, 2>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xx_xs:
+            engines_[2].compute2<libint2::Operator::yukawa, libint2::BraKet::xx_xs, 2>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        case libint2::BraKet::xs_xs:
+            engines_[2].compute2<libint2::Operator::yukawa, libint2::BraKet::xs_xs, 2>(sh1, sh2, sh3, sh4, sp12, sp34);
+            break;
+        default:
+            throw PSIEXCEPTION("Bad BraKet type in Libint2YukawaERI::libint2wrapper2");
+    }
+}
+
+Libint2YukawaERI::~Libint2YukawaERI(){};
