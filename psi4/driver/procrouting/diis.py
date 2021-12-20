@@ -18,7 +18,7 @@ def axpy(y, alpha, x):
     elif isinstance(y, (core.dpdbuf4, core.dpdfile2)):
         y.axpy_matrix(x, alpha)
     else:
-        raise Exception("Unrecognized object type for DIIS.")
+        raise TypeError("Unrecognized object type for DIIS.")
 
 def template_helper(template, *args):
     if template:
@@ -30,7 +30,7 @@ def template_helper(template, *args):
         elif isinstance(arg, (core.Matrix, core.dpdfile2, core.dpdbuf4)):
             template.append([arg.rowdim(), arg.coldim()])
         else:
-            raise Exception("Unrecognized object type for DIIS.")
+            raise TypeError("Unrecognized object type for DIIS.")
 
 class DIIS:
 
@@ -68,7 +68,7 @@ class DIIS:
         elif isinstance(x, (core.dpdbuf4, core.dpdfile2)):
             copy = core.Matrix(x)
         else:
-            raise Exception("Unrecognized object type for DIIS.")
+            raise TypeError("Unrecognized object type for DIIS.")
 
         copy.name = new_name
 
@@ -109,7 +109,7 @@ class DIIS:
                         Rix.load(psio, psif.PSIF_LIBDIIS)
                         Rjx.load(psio, psif.PSIF_LIBDIIS)
                     else:
-                        raise Exception("R_template may only have 1 or 2 dimensions.")
+                        raise Exception("R_template may only have 1 or 2 dimensions. This is a bug: contact developers.")
                     dot_product += Rix.vector_dot(Rjx)
             else:
                 raise Exception(f"StoragePolicy {self.storage_policy} not recognized. This is a bug: contact developers.")
@@ -170,7 +170,7 @@ class DIIS:
         rhs[-1] = -1
 
         # Trick to improve numerical conditioning.
-        # Instead of solving B c = r, we solve D B X D^-1 c = D r, using
+        # Instead of solving B c = r, we solve D B D^-1 D c = D r, using
         # D r = r. D is the diagonals ^ -1/2 matrix.
         # This improves the conditioning of the problem.
         diagonals = B.diagonal().copy()
@@ -197,7 +197,7 @@ class DIIS:
                         Tij = core.Matrix(self.get_name("T", i, j), *self.T_template[j])
                         Tij.load(psio, psif.PSIF_LIBDIIS, core.SaveType.SubBlocks)
                     else:
-                        raise Exception("Unrecognized object type for DIIS.")
+                        raise TypeError("Unrecognized object type for DIIS.")
                     axpy(Tj, ci, Tij)
             else:
                 raise Exception(f"StoragePolicy {self.storage_policy} not recognized. This is a bug: contact developers.")

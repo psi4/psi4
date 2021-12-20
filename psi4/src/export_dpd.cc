@@ -37,38 +37,38 @@ using namespace pybind11::literals;
 
 void export_dpd(py::module &m) {
     py::class_<dpdbuf4, std::shared_ptr<dpdbuf4>>(m, "dpdbuf4", "docstring")
-        .def("axpy_matrix", &dpdbuf4::axpy_matrix, "docstring")
-        .def("zero", &dpdbuf4::zero, "docstring")
+        .def("axpy_matrix", &dpdbuf4::axpy_matrix, "Add 'a' times a Matrix to this.")
+        .def("zero", &dpdbuf4::zero, "Fill all with entries.")
         .def("rowdim", [](dpdbuf4& buf) {
                 std::vector<int> dim;
                 for (int h = 0; h < buf.params->nirreps; ++h) {
                     dim.push_back(buf.params->rowtot[h]);
                 }
                 return Dimension(dim);
-            }, "docstring")
+            }, "Return the dimensions of the row index.")
         .def("coldim", [](dpdbuf4& buf) {
                 std::vector<int> dim;
                 for (int h = 0; h < buf.params->nirreps; ++h) {
                     dim.push_back(buf.params->coltot[h]);
                 }
                 return Dimension(dim);
-            }, "docstring");
+            }, "Return the dimensions of the column index.");
 
     py::class_<dpdfile2, std::shared_ptr<dpdfile2>>(m, "dpdfile2", "docstring")
-        .def("axpy_matrix", &dpdfile2::axpy_matrix, "docstring")
-        .def("zero", &dpdfile2::zero, "docstring")
+        .def("axpy_matrix", &dpdfile2::axpy_matrix, "Add 'a' times a Matrix to this.")
+        .def("zero", &dpdfile2::zero, "Fill all entries with zeroes.")
         .def("rowdim", [](dpdfile2& file) {
                 std::vector<int> dim;
                 for (int h = 0; h < file.params->nirreps; ++h) {
                     dim.push_back(file.params->rowtot[h]);
                 }
                 return Dimension(dim);
-            }, "docstring")
+            }, "Return the dimensions of the row index.")
         .def("coldim", [](dpdfile2& file) {
                 std::vector<int> dim;
                 for (int h = 0; h < file.params->nirreps; ++h) {
                     dim.push_back(file.params->coltot[h]);
                 }
                 return Dimension(dim);
-            }, "docstring");
+            }, "Return the dimensions of the column index.");
 }
