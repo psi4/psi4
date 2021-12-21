@@ -35,8 +35,10 @@ def template_helper(template, *args):
 class DIIS:
 
     def __init__(self, max_vecs: int, name: str, removal_policy = RemovalPolicy.LargestError, storage_policy = StoragePolicy.OnDisk):
-        assert isinstance(removal_policy, RemovalPolicy)
-        assert isinstance(storage_policy, StoragePolicy)
+        if not isinstance(removal_policy, RemovalPolicy):
+            raise TypeError(f"removal_policy must be a RemovalPolicy, not a {type(removal_policy)}")
+        if not isinstance(storage_policy, StoragePolicy):
+            raise TypeError(f"stroage_policy must be a StoragePolicy, not a {type(storage_policy)}")
         self.max_vecs = max_vecs
         self.name = name
         self.removal_policy = removal_policy
@@ -125,7 +127,8 @@ class DIIS:
         template_helper(self.T_template, *args)
 
     def build_entry(self, entry, target_index):
-        assert len(self.R_template) + len(self.T_template) == len(entry)
+        if len(self.R_template) + len(self.T_template) != len(entry):
+            raise Exception(f"Cannot build {len(self.R_template)} residuals and {len(self.T_template)} amplitudes from {len(entries)} items.")
         R = entry[:len(self.R_template)]
         T = entry[len(self.R_template):]
 
