@@ -764,6 +764,7 @@ class PSI_API DirectJK : public JK {
      * @author Andy Jiang, Georgia Tech, December 2021
      * 
      * @brief constructs the K matrix using the LinK algorithm, described in [Ochsenfeld:1998:1663]_
+     * doi: 10.1063/1.476741
      * 
      * @param ints A list of TwoBodyAOInt objects (one per thread) to optimize parallel efficiency
      * @param D The list of AO density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)

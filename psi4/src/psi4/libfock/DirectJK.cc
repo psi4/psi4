@@ -1012,8 +1012,8 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
     int nthread = df_ints_num_threads_;
 
     // => Atom Blocking <= //
-
     // Define the shells of each atom as a task
+    
     std::vector<int> shell_endpoints_for_atom;
     std::vector<int> basis_endpoints_for_shell;
 
