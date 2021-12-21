@@ -991,12 +991,12 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     timer_off("build_JK_matrices()");
 }
 
-bool linK_sort_helper(const std::tuple<int, double>& t1, const std::tuple<int, double>& t2) {
-    return std::get<1>(t1) > std::get<1>(t2);
-}
-
 void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
                   std::vector<SharedMatrix>& K) {
+
+    if (!lr_symmetric_) {
+        throw PSIEXCEPTION("Non-symmetric K matrix builds are currently not supported in the LinK algorithm.");
+    }
 
     timer_on("build_linK()");
 
@@ -1077,6 +1077,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
     }
 
     // => Calculate Shell Ceilings (To find significant bra-ket atom pairs)
+    // sqrt(Umax|Umax) in Oschenfeld Eq. 3
     std::vector<double> shell_ceilings(nshell, 0.0);
     for (int P = 0; P < nshell; P++) {
         for (int Q = 0; Q <= P; Q++) {
@@ -1088,6 +1089,10 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
     // => Signficant Ket Atoms for a given Bra Atom <= //
     std::vector<std::unordered_set<int>> significant_kets(natom);
+
+    // => Defined in Oschenfeld Eq. 3 <= //
+    // If shell U belonging to atom P, and shell V belonging to atom R satisfies the inequality
+    // |Duv| * sqrt(Umax|Umax) * sqrt(Vmax|Vmax) >= linK_ints_cutoff_, then atom R is added to the ket list of atom P
     for (size_t Patom = 0; Patom < natom; Patom++) {
         for (size_t Ratom = 0; Ratom < natom; Ratom++) {
             bool found = false;
@@ -1109,36 +1114,44 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
     size_t natom_pair2 = natom_pair * natom_pair;
 
     // => Intermediate Buffers <= //
-    // Temporary buffers placed in the deepest loops
-    // of the code to minimize race conditions
+
+    // Temporary buffers used during the K contraction process to
+    // Take full advantage of permutational symmetry of ERIs
+
     std::vector<std::vector<SharedMatrix>> KT;
+
+    // A buffer is created for every thread to minimize race conditions
     for (int thread = 0; thread < nthread; thread++) {
         std::vector<SharedMatrix> K2;
         for (size_t ind = 0; ind < D.size(); ind++) {
-            K2.push_back(std::make_shared<Matrix>("KT (linK)", (lr_symmetric_ ? 4 : 8) * max_functions_per_shell, max_functions_per_shell));
+            // (pq|rs) can be contracted into Kpr, Kps, Kqr, Kqs (hence the 4)
+            K2.push_back(std::make_shared<Matrix>("KT (linK)", 4 * max_functions_per_shell, max_functions_per_shell));
         }
         KT.push_back(K2);
     }
 
-    // => Benchmarks <= //
+    // Number of computed shell quartets is tracked for benchmarking purposes
     size_t computed_shells = 0L;
 
-// ==> Master Task Loop <== //
+// ==> Master Task Loop (Atom Quartet Indexing) <== //
 
 #pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells)
     for (size_t quartet = 0L; quartet < natom_pair2; quartet++) {
-        size_t atom1 = quartet / natom_pair;
-        size_t atom2 = quartet % natom_pair;
 
-        int Patom = atom_pairs[atom1].first;
-        int Qatom = atom_pairs[atom1].second;
-        int Ratom = atom_pairs[atom2].first;
-        int Satom = atom_pairs[atom2].second;
+        // Decomposing the quartet index into its atom indices
+        size_t atom_pair1 = quartet / natom_pair;
+        size_t atom_pair2 = quartet % natom_pair;
+
+        int Patom = atom_pairs[atom_pair1].first;
+        int Qatom = atom_pairs[atom_pair1].second;
+        int Ratom = atom_pairs[atom_pair2].first;
+        int Satom = atom_pairs[atom_pair2].second;
 
         // If Ratom > Patom, the integrals have already been computed - don't compute them again
         if (Ratom > Patom) continue;
 
         // First layer of sparsity screening (Atom Bra-ket screening)
+        // Using an unordered_set allows for O(1) access
         if (!significant_kets[Patom].count(Ratom)) continue;
         if (!significant_kets[Patom].count(Satom)) continue;
         if (!significant_kets[Qatom].count(Ratom)) continue;
@@ -1168,12 +1181,13 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 #endif
 
         // Shell ceilings are max value of (U*|U*) for shell U
+        // sqrt(Umax|Umax) in Oschenfeld Eq. 3
         std::vector<double> shell_ceiling_P(nPshell, 0.0);
         std::vector<double> shell_ceiling_Q(nQshell, 0.0);
         std::vector<double> shell_ceiling_R(nRshell, 0.0);
         std::vector<double> shell_ceiling_S(nSshell, 0.0);
 
-        // P and Q shell ceilings max(P*|P*) and max(Q*|Q*)
+        // sqrt(Pmax|Pmax) and sqrt(Qmax|Qmax)
         for (int P = Pstart; P < Pstart + nPshell; P++) {
             int dP = P - Pstart;
             for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
@@ -1184,7 +1198,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
             }
         }
 
-        // R and S shell ceilings max(R*|R*) and max(S*|S*)
+        // sqrt(Rmax|Rmax) and sqrt(Smax|Smax)
         for (int R = Rstart; R < Rstart + nRshell; R++) {
             int dR = R - Rstart;
             for (int S = Sstart; S < Sstart + nSshell; S++) {
@@ -1195,13 +1209,23 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
             }
         }
 
-        // Used in the first pre-screening iteration loops
-        std::vector<std::vector<int>> PR_sig_shells(nPshell);
-        std::vector<std::vector<int>> PS_sig_shells(nPshell);
-        std::vector<std::vector<int>> QR_sig_shells(nQshell);
-        std::vector<std::vector<int>> QS_sig_shells(nQshell);
+        // Significant R shells for a given P shell (on Ratom and Patom only)
+        // Sorted by value of max(D_PR) * sqrt(Pmax|Pmax) * sqrt(Rmax|Rmax)
+        // Repeated for PS, QR, and QS
+        std::vector<std::vector<int>> sig_R_for_P(nPshell);
+        std::vector<std::vector<int>> sig_S_for_P(nPshell);
+        std::vector<std::vector<int>> sig_R_for_Q(nQshell);
+        std::vector<std::vector<int>> sig_S_for_Q(nQshell);
 
-        // PR significant shells (joined by density matrix)
+        // Significant R shells for a given P shell (repeated for PS, QR, QS)
+        // Defined in Fig. 1 in Oschenfeld under header
+
+        // ==> "Pre-ordering and Pre-selection to find significant elements in Duv" <== //
+
+        auto ket_compare = [](const std::tuple<int, double> &a, 
+                                    const std::tuple<int, double> &b) { return std::get<1>(a) > std::get<1>(b); };
+
+        // Significant R for P
         for (int P = Pstart; P < Pstart + nPshell; P++) {
             int dP = P - Pstart;
             std::vector<std::tuple<int, double>> shell_values;
@@ -1214,14 +1238,14 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                 }
             }
 
-            std::sort(shell_values.begin(), shell_values.end(), linK_sort_helper);
+            std::sort(shell_values.begin(), shell_values.end(), ket_compare);
 
             for (const auto& value : shell_values) {
-                PR_sig_shells[dP].push_back(std::get<0>(value));
+                sig_R_for_P[dP].push_back(std::get<0>(value));
             }
         }
 
-        // PS significant shells
+        // Significant S for P
         for (int P = Pstart; P < Pstart + nPshell; P++) {
             int dP = P - Pstart;
             std::vector<std::tuple<int, double>> shell_values;
@@ -1234,15 +1258,15 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                 }
             }
 
-            std::sort(shell_values.begin(), shell_values.end(), linK_sort_helper);
+            std::sort(shell_values.begin(), shell_values.end(), ket_compare);
 
             for (const auto& value : shell_values) {
-                PS_sig_shells[dP].push_back(std::get<0>(value));
+                sig_S_for_P[dP].push_back(std::get<0>(value));
             }
 
         }
 
-        // QR significant shells
+        // Significant R for Q
         for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
             int dQ = Q - Qstart;
             std::vector<std::tuple<int, double>> shell_values;
@@ -1255,15 +1279,15 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                 }
             }
 
-            std::sort(shell_values.begin(), shell_values.end(), linK_sort_helper);
+            std::sort(shell_values.begin(), shell_values.end(), ket_compare);
 
             for (const auto& value : shell_values) {
-                QR_sig_shells[dQ].push_back(std::get<0>(value));
+                sig_R_for_Q[dQ].push_back(std::get<0>(value));
             }
 
         }
 
-        // QS significant shells
+        // Significant S for Q
         for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
             int dQ = Q - Qstart;
             std::vector<std::tuple<int, double>> shell_values;
@@ -1276,20 +1300,19 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                 }
             }
 
-            std::sort(shell_values.begin(), shell_values.end(), linK_sort_helper);
+            std::sort(shell_values.begin(), shell_values.end(), ket_compare);
 
             for (const auto& value : shell_values) {
-                QS_sig_shells[dQ].push_back(std::get<0>(value));
+                sig_S_for_Q[dQ].push_back(std::get<0>(value));
             }
-
         }
 
-        // Used in the second pre-screening iteration loop
-        // Minilists, as defined in Oschenfeld Fig. 1
-        std::vector<std::unordered_set<int>> PR_minilist(nPshell);
-        std::vector<std::unordered_set<int>> PS_minilist(nPshell);
-        std::vector<std::unordered_set<int>> QR_minilist(nQshell);
-        std::vector<std::unordered_set<int>> QS_minilist(nQshell);
+        // Stripeout Lists, used in the "Stripe out" section of the code
+        // Defined after the forthcoming loop
+        std::vector<std::unordered_set<int>> stripeout_R_for_P(nPshell);
+        std::vector<std::unordered_set<int>> stripeout_S_for_P(nPshell);
+        std::vector<std::unordered_set<int>> stripeout_R_for_Q(nQshell);
+        std::vector<std::unordered_set<int>> stripeout_S_for_Q(nQshell);
 
         bool touched = false;
         for (int P = Pstart; P < Pstart + nPshell; P++) {
@@ -1300,13 +1323,18 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                 int dP = P - Pstart;
                 int dQ = Q - Qstart;
 
-                // Significant ket shell pairs RS for bra shell pair PQ
-                std::unordered_set<int> PQ_sig_RS;
+                // => "Formation of Significant Shell Pair List ML" <= //
 
-                // Form ML_P (using PR elements)
-                for (const int R : PR_sig_shells[dP]) {
+                // Significant ket shell pairs RS for bra shell pair PQ
+                // represents the merge of ML_P and ML_Q as defined in Oschenfeld
+                // Unordered set structure allows for automatic merging as new elements are added
+                
+                std::unordered_set<int> ML_PQ;
+
+                // Form ML_P inside ML_PQ (using PR elements)
+                for (const int R : sig_R_for_P[dP]) {
                     int count = 0;
-                    for (const int S : PS_sig_shells[dP]) {
+                    for (const int S : sig_S_for_P[dP]) {
 
                         int dR = R - Rstart;
                         int dS = S - Sstart;
@@ -1318,20 +1346,20 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                             if (S > R) continue;
                             if (R * nshell + S > P * nshell + Q) continue;
 
-                            // Ket Stripeouts
-                            QS_minilist[dQ].emplace(S);
+                            // Since D_PR elements are contracted over, the contributions would be to K_QS
+                            stripeout_S_for_Q[dQ].emplace(S);
 
-                            PQ_sig_RS.emplace(R * nshell + S);
+                            ML_PQ.emplace(R * nshell + S);
                         }
                         else break;
                     }
                     if (count == 0) break;
                 }
 
-                // Form ML_P (using PS elements)
-                for (const int S : PS_sig_shells[dP]) {
+                // Form ML_P inside ML_PQ (using PS elements)
+                for (const int S : sig_S_for_P[dP]) {
                     int count = 0;
-                    for (const int R : PR_sig_shells[dP]) {
+                    for (const int R : sig_R_for_P[dP]) {
 
                         int dR = R - Rstart;
                         int dS = S - Sstart;
@@ -1343,20 +1371,20 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                             if (S > R) continue;
                             if (R * nshell + S > P * nshell + Q) continue;
 
-                            // Ket Stripeouts
-                            QR_minilist[dQ].emplace(R);
+                            // Since D_PS elements are contracted over, the contributions would be to K_QR
+                            stripeout_R_for_Q[dQ].emplace(R);
 
-                            PQ_sig_RS.emplace(R * nshell + S);
+                            ML_PQ.emplace(R * nshell + S);
                         }
                         else break;
                     }
                     if (count == 0) break;
                 }
 
-                // Form ML_Q (using QR) elements
-                for (const int R : QR_sig_shells[dQ]) {
+                // Form ML_Q inside ML_PQ (using QR) elements
+                for (const int R : sig_R_for_Q[dQ]) {
                     int count = 0;
-                    for (const int S : QS_sig_shells[dQ]) {
+                    for (const int S : sig_S_for_Q[dQ]) {
 
                         int dR = R - Rstart;
                         int dS = S - Sstart;
@@ -1368,20 +1396,20 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                             if (S > R) continue;
                             if (R * nshell + S > P * nshell + Q) continue;
 
-                            // Ket Stripeouts
-                            PS_minilist[dP].emplace(S);
+                            // Since D_QR elements are contracted over, the contributions would be to K_PS
+                            stripeout_S_for_P[dP].emplace(S);
 
-                            PQ_sig_RS.emplace(R * nshell + S);
+                            ML_PQ.emplace(R * nshell + S);
                         }
                         else break;
                     }
                     if (count == 0) break;
                 }
 
-                // Form ML_Q (using QS) elements
-                for (const int S : QS_sig_shells[dQ]) {
+                // Form ML_Q inside ML_PQ (using QS) elements
+                for (const int S : sig_S_for_Q[dQ]) {
                     int count = 0;
-                    for (const int R : QR_sig_shells[dQ]) {
+                    for (const int R : sig_R_for_Q[dQ]) {
 
                         int dR = R - Rstart;
                         int dS = S - Sstart;
@@ -1393,10 +1421,10 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                             if (S > R) continue;
                             if (R * nshell + S > P * nshell + Q) continue;
 
-                            // Ket Stripeouts
-                            PR_minilist[dP].emplace(R);
+                            // Since D_QS elements are contracted over, the contributions would be to K_PR
+                            stripeout_R_for_P[dP].emplace(R);
 
-                            PQ_sig_RS.emplace(R * nshell + S);
+                            ML_PQ.emplace(R * nshell + S);
                         }
                         else break;
                     }
@@ -1404,7 +1432,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                 }
 
                 // Loop over significant RS pairs
-                for (const int RS : PQ_sig_RS) {
+                for (const int RS : ML_PQ) {
 
                     int R = RS / nshell;
                     int S = RS % nshell;
@@ -1422,24 +1450,23 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                     const double* buffer = ints[thread]->buffer();
 
                     // Number of basis functions in shells P, Q, R, S
-                    int Psize = primary_->shell(P).nfunction();
-                    int Qsize = primary_->shell(Q).nfunction();
-                    int Rsize = primary_->shell(R).nfunction();
-                    int Ssize = primary_->shell(S).nfunction();
+                    int shell_P_nfunc = primary_->shell(P).nfunction();
+                    int shell_Q_nfunc = primary_->shell(Q).nfunction();
+                    int shell_R_nfunc = primary_->shell(R).nfunction();
+                    int shell_S_nfunc = primary_->shell(S).nfunction();
 
                     // Basis Function Starting index for shell
-                    int Poff = primary_->shell(P).function_index();
+                    int shell_P_start = primary_->shell(P).function_index();
                     int Qoff = primary_->shell(Q).function_index();
                     int Roff = primary_->shell(R).function_index();
                     int Soff = primary_->shell(S).function_index();
 
                     // Basis Function offset from first basis function in the atom
-                    int Poff2 = basis_endpoints_for_shell[P] - basis_endpoints_for_shell[Pstart];
-                    int Qoff2 = basis_endpoints_for_shell[Q] - basis_endpoints_for_shell[Qstart];
-                    int Roff2 = basis_endpoints_for_shell[R] - basis_endpoints_for_shell[Rstart];
-                    int Soff2 = basis_endpoints_for_shell[S] - basis_endpoints_for_shell[Sstart];
+                    int shell_P_offset = basis_endpoints_for_shell[P] - basis_endpoints_for_shell[Pstart];
+                    int shell_Q_offset = basis_endpoints_for_shell[Q] - basis_endpoints_for_shell[Qstart];
+                    int shell_R_offset = basis_endpoints_for_shell[R] - basis_endpoints_for_shell[Rstart];
+                    int shell_S_offset = basis_endpoints_for_shell[S] - basis_endpoints_for_shell[Sstart];
 
-                    // if (thread == 0) timer_on("JK: GEMV");
                     for (size_t ind = 0; ind < D.size(); ind++) {
                         double** Dp = D[ind]->pointer();
                         double** KTp = KT[thread][ind]->pointer();
@@ -1450,57 +1477,32 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                             ::memset((void*)KTp[1L * max_functions_per_shell], '\0', nPbasis * nSbasis * sizeof(double));
                             ::memset((void*)KTp[2L * max_functions_per_shell], '\0', nQbasis * nRbasis * sizeof(double));
                             ::memset((void*)KTp[3L * max_functions_per_shell], '\0', nQbasis * nSbasis * sizeof(double));
-                            if (!lr_symmetric_) {
-                                ::memset((void*)KTp[4L * max_functions_per_shell], '\0', nRbasis * nPbasis * sizeof(double));
-                                ::memset((void*)KTp[5L * max_functions_per_shell], '\0', nSbasis * nPbasis * sizeof(double));
-                                ::memset((void*)KTp[6L * max_functions_per_shell], '\0', nRbasis * nQbasis * sizeof(double));
-                                ::memset((void*)KTp[7L * max_functions_per_shell], '\0', nSbasis * nQbasis * sizeof(double));
-                            }
                         }
 
+                        // Four pointers needed for PR, PS, QR, QS
                         double* K1p = KTp[0L * max_functions_per_shell];
                         double* K2p = KTp[1L * max_functions_per_shell];
                         double* K3p = KTp[2L * max_functions_per_shell];
                         double* K4p = KTp[3L * max_functions_per_shell];
-                        double* K5p;
-                        double* K6p;
-                        double* K7p;
-                        double* K8p;
-                        if (!lr_symmetric_) {
-                            K5p = KTp[4L * max_functions_per_shell];
-                            K6p = KTp[5L * max_functions_per_shell];
-                            K7p = KTp[6L * max_functions_per_shell];
-                            K8p = KTp[7L * max_functions_per_shell];
-                        }
 
                         double prefactor = 1.0;
                         if (P == Q) prefactor *= 0.5;
                         if (R == S) prefactor *= 0.5;
                         if (P == R && Q == S) prefactor *= 0.5;
 
-                        for (int p = 0; p < Psize; p++) {
-                            for (int q = 0; q < Qsize; q++) {
-                                for (int r = 0; r < Rsize; r++) {
-                                    for (int s = 0; s < Ssize; s++) {
+                        for (int p = 0; p < shell_P_nfunc; p++) {
+                            for (int q = 0; q < shell_Q_nfunc; q++) {
+                                for (int r = 0; r < shell_R_nfunc; r++) {
+                                    for (int s = 0; s < shell_S_nfunc; s++) {
 
-                                        K1p[(p + Poff2) * nRbasis + r + Roff2] +=
+                                        K1p[(p + shell_P_offset) * nRbasis + r + shell_R_offset] +=
                                             prefactor * (Dp[q + Qoff][s + Soff]) * (*buffer2);
-                                        K2p[(p + Poff2) * nSbasis + s + Soff2] +=
+                                        K2p[(p + shell_P_offset) * nSbasis + s + shell_S_offset] +=
                                             prefactor * (Dp[q + Qoff][r + Roff]) * (*buffer2);
-                                        K3p[(q + Qoff2) * nRbasis + r + Roff2] +=
-                                            prefactor * (Dp[p + Poff][s + Soff]) * (*buffer2);
-                                        K4p[(q + Qoff2) * nSbasis + s + Soff2] +=
-                                            prefactor * (Dp[p + Poff][r + Roff]) * (*buffer2);
-                                        if (!lr_symmetric_) {
-                                            K5p[(r + Roff2) * nPbasis + p + Poff2] +=
-                                                prefactor * (Dp[s + Soff][q + Qoff]) * (*buffer2);
-                                            K6p[(s + Soff2) * nPbasis + p + Poff2] +=
-                                                prefactor * (Dp[r + Roff][q + Qoff]) * (*buffer2);
-                                            K7p[(r + Roff2) * nQbasis + q + Qoff2] +=
-                                                prefactor * (Dp[s + Soff][p + Poff]) * (*buffer2);
-                                            K8p[(s + Soff2) * nQbasis + q + Qoff2] +=
-                                                prefactor * (Dp[r + Roff][p + Poff]) * (*buffer2);
-                                        }
+                                        K3p[(q + shell_Q_offset) * nRbasis + r + shell_R_offset] +=
+                                            prefactor * (Dp[p + shell_P_start][s + Soff]) * (*buffer2);
+                                        K4p[(q + shell_Q_offset) * nSbasis + s + shell_S_offset] +=
+                                            prefactor * (Dp[p + shell_P_start][r + Roff]) * (*buffer2);
 
                                         buffer2++;
                                     }
@@ -1509,7 +1511,6 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                         }
                     }
                     touched = true;
-                // if (thread == 0) timer_off("JK: GEMV");
                 }
             }
         }
@@ -1520,7 +1521,6 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
         // => Stripe out <= //
 
-        // if (thread == 0) timer_on("JK: Atomic");
         for (size_t ind = 0; ind < D.size(); ind++) {
             double** KTp = KT[thread][ind]->pointer();
             double** Kp = K[ind]->pointer();
@@ -1529,40 +1529,26 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
             double* K2p = KTp[1L * max_functions_per_shell];
             double* K3p = KTp[2L * max_functions_per_shell];
             double* K4p = KTp[3L * max_functions_per_shell];
-            double* K5p;
-            double* K6p;
-            double* K7p;
-            double* K8p;
-            if (!lr_symmetric_) {
-                K5p = KTp[4L * max_functions_per_shell];
-                K6p = KTp[5L * max_functions_per_shell];
-                K7p = KTp[6L * max_functions_per_shell];
-                K8p = KTp[7L * max_functions_per_shell];
-            }
 
             // > K_PR < //
 
             for (int P = Pstart; P < Pstart + nPshell; P++) {
                 int dP = P - Pstart;
-                for (const int R : PR_minilist[dP]) {
+                for (const int R : stripeout_R_for_P[dP]) {
 
-                    int Psize = primary_->shell(P).nfunction();
-                    int Rsize = primary_->shell(R).nfunction();
+                    int shell_P_nfunc = primary_->shell(P).nfunction();
+                    int shell_R_nfunc = primary_->shell(R).nfunction();
 
-                    int Poff = primary_->shell(P).function_index();
+                    int shell_P_start = primary_->shell(P).function_index();
                     int Roff = primary_->shell(R).function_index();
 
-                    int Poff2 = basis_endpoints_for_shell[P] - basis_endpoints_for_shell[Pstart];
-                    int Roff2 = basis_endpoints_for_shell[R] - basis_endpoints_for_shell[Rstart];
+                    int shell_P_offset = basis_endpoints_for_shell[P] - basis_endpoints_for_shell[Pstart];
+                    int shell_R_offset = basis_endpoints_for_shell[R] - basis_endpoints_for_shell[Rstart];
 
-                    for (int p = 0; p < Psize; p++) {
-                        for (int r = 0; r < Rsize; r++) {
+                    for (int p = 0; p < shell_P_nfunc; p++) {
+                        for (int r = 0; r < shell_R_nfunc; r++) {
 #pragma omp atomic
-                            Kp[p + Poff][r + Roff] += K1p[(p + Poff2) * nRbasis + r + Roff2];
-                            if (!lr_symmetric_) {
-#pragma omp atomic
-                                Kp[r + Roff][p + Poff] += K5p[(r + Roff2) * nPbasis + p + Poff2];
-                            }
+                            Kp[p + shell_P_start][r + Roff] += K1p[(p + shell_P_offset) * nRbasis + r + shell_R_offset];
                         }
                     }
                 }
@@ -1572,25 +1558,21 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
             for (int P = Pstart; P < Pstart + nPshell; P++) {
                 int dP = P - Pstart;
-                for (const int S : PS_minilist[dP]) {
+                for (const int S : stripeout_S_for_P[dP]) {
 
-                    int Psize = primary_->shell(P).nfunction();
-                    int Ssize = primary_->shell(S).nfunction();
+                    int shell_P_nfunc = primary_->shell(P).nfunction();
+                    int shell_S_nfunc = primary_->shell(S).nfunction();
 
-                    int Poff = primary_->shell(P).function_index();
+                    int shell_P_start = primary_->shell(P).function_index();
                     int Soff = primary_->shell(S).function_index();
 
-                    int Poff2 = basis_endpoints_for_shell[P] - basis_endpoints_for_shell[Pstart];
-                    int Soff2 = basis_endpoints_for_shell[S] - basis_endpoints_for_shell[Sstart];
+                    int shell_P_offset = basis_endpoints_for_shell[P] - basis_endpoints_for_shell[Pstart];
+                    int shell_S_offset = basis_endpoints_for_shell[S] - basis_endpoints_for_shell[Sstart];
 
-                    for (int p = 0; p < Psize; p++) {
-                        for (int s = 0; s < Ssize; s++) {
+                    for (int p = 0; p < shell_P_nfunc; p++) {
+                        for (int s = 0; s < shell_S_nfunc; s++) {
 #pragma omp atomic
-                            Kp[p + Poff][s + Soff] += K2p[(p + Poff2) * nSbasis + s + Soff2];
-                            if (!lr_symmetric_) {
-#pragma omp atomic
-                                Kp[s + Soff][p + Poff] += K6p[(s + Soff2) * nPbasis + p + Poff2];
-                            }
+                            Kp[p + shell_P_start][s + Soff] += K2p[(p + shell_P_offset) * nSbasis + s + shell_S_offset];
                         }
                     }
                 }
@@ -1600,25 +1582,21 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
             for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
                 int dQ = Q - Qstart;
-                for (const int R : QR_minilist[dQ]) {
+                for (const int R : stripeout_R_for_Q[dQ]) {
 
-                    int Qsize = primary_->shell(Q).nfunction();
-                    int Rsize = primary_->shell(R).nfunction();
+                    int shell_Q_nfunc = primary_->shell(Q).nfunction();
+                    int shell_R_nfunc = primary_->shell(R).nfunction();
 
                     int Qoff = primary_->shell(Q).function_index();
                     int Roff = primary_->shell(R).function_index();
 
-                    int Qoff2 = basis_endpoints_for_shell[Q] - basis_endpoints_for_shell[Qstart];
-                    int Roff2 = basis_endpoints_for_shell[R] - basis_endpoints_for_shell[Rstart];
+                    int shell_Q_offset = basis_endpoints_for_shell[Q] - basis_endpoints_for_shell[Qstart];
+                    int shell_R_offset = basis_endpoints_for_shell[R] - basis_endpoints_for_shell[Rstart];
 
-                    for (int q = 0; q < Qsize; q++) {
-                        for (int r = 0; r < Rsize; r++) {
+                    for (int q = 0; q < shell_Q_nfunc; q++) {
+                        for (int r = 0; r < shell_R_nfunc; r++) {
 #pragma omp atomic
-                            Kp[q + Qoff][r + Roff] += K3p[(q + Qoff2) * nRbasis + r + Roff2];
-                            if (!lr_symmetric_) {
-#pragma omp atomic
-                                Kp[r + Roff][q + Qoff] += K7p[(r + Roff2) * nQbasis + q + Qoff2];
-                            }
+                            Kp[q + Qoff][r + Roff] += K3p[(q + shell_Q_offset) * nRbasis + r + shell_R_offset];
                         }
                     }
                 }
@@ -1628,40 +1606,33 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
             for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
                 int dQ = Q - Qstart;
-                for (const int S : QS_minilist[dQ]) {
+                for (const int S : stripeout_S_for_Q[dQ]) {
 
-                    int Qsize = primary_->shell(Q).nfunction();
-                    int Ssize = primary_->shell(S).nfunction();
+                    int shell_Q_nfunc = primary_->shell(Q).nfunction();
+                    int shell_S_nfunc = primary_->shell(S).nfunction();
 
                     int Qoff = primary_->shell(Q).function_index();
                     int Soff = primary_->shell(S).function_index();
 
-                    int Qoff2 = basis_endpoints_for_shell[Q] - basis_endpoints_for_shell[Qstart];
-                    int Soff2 = basis_endpoints_for_shell[S] - basis_endpoints_for_shell[Sstart];
+                    int shell_Q_offset = basis_endpoints_for_shell[Q] - basis_endpoints_for_shell[Qstart];
+                    int shell_S_offset = basis_endpoints_for_shell[S] - basis_endpoints_for_shell[Sstart];
 
-                    for (int q = 0; q < Qsize; q++) {
-                        for (int s = 0; s < Ssize; s++) {
+                    for (int q = 0; q < shell_Q_nfunc; q++) {
+                        for (int s = 0; s < shell_S_nfunc; s++) {
 #pragma omp atomic
-                            Kp[q + Qoff][s + Soff] += K4p[(q + Qoff2) * nSbasis + s + Soff2];
-                            if (!lr_symmetric_) {
-#pragma omp atomic
-                                Kp[s + Soff][q + Qoff] += K8p[(s + Soff2) * nQbasis + q + Qoff2];
-                            }
+                            Kp[q + Qoff][s + Soff] += K4p[(q + shell_Q_offset) * nSbasis + s + shell_S_offset];
                         }
                     }
                 }
             }
 
         }  // End stripe out
-        // if (thread == 0) timer_off("JK: Atomic");
 
     }  // End master task list
 
-    if (lr_symmetric_) {
-        for (auto& Kmat : K) {
-            Kmat->scale(2.0);
-            Kmat->hermitivitize();
-        }
+    for (auto& Kmat : K) {
+        Kmat->scale(2.0);
+        Kmat->hermitivitize();
     }
 
     if (bench_) {
@@ -1669,7 +1640,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         auto printer = PsiOutStream("bench.dat", mode);
         size_t ntri = nshell * (nshell + 1L) / 2L;
         size_t possible_shells = ntri * (ntri + 1L) / 2L;
-        printer.Printf("(linK) Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
+        printer.Printf("(LinK) Computed %20zu Shell Quartets out of %20zu, (%11.3E ratio)\n", computed_shells,
                         possible_shells, computed_shells / (double)possible_shells);
     }
     timer_off("build_linK()");

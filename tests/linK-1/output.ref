@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.5a1.dev260 
+                               Psi4 1.5a1.dev262 
 
-                         Git: Rev {linK-new} a89bdf4 dirty
+                         Git: Rev {linK-new} 070ee5a dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 16 December 2021 09:05AM
+    Psi4 started on: Tuesday, 21 December 2021 01:03PM
 
-    Process ID: 669
+    Process ID: 1788
     Host:       ds10
     PSIDATADIR: /scratch/jiang/p4dev/psi4/objdir-livie/stage/share/psi4
     Memory:     500.0 MiB
@@ -76,7 +76,7 @@ psi4.compare_values(ref_energy, linK_energy, 9, "HF Energy (Using LinK algo)")
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on ds10
-*** at Thu Dec 16 09:05:37 2021
+*** at Tue Dec 21 13:03:20 2021
 
    => Loading Basis Set <=
 
@@ -245,18 +245,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:    -0.0000      Z:     2.0011     Total:     2.0011
 
 
-*** tstop() called on ds10 at Thu Dec 16 09:05:38 2021
+*** tstop() called on ds10 at Tue Dec 21 13:03:21 2021
 Module time:
-	user time   =       1.06 seconds =       0.02 minutes
+	user time   =       1.08 seconds =       0.02 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.06 seconds =       0.02 minutes
+	user time   =       1.08 seconds =       0.02 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
     HF Energy (Using LinK algo)...........................................................PASSED
 
-    Psi4 stopped on: Thursday, 16 December 2021 09:05AM
-    Psi4 wall time for execution: 0:00:01.07
+    Psi4 stopped on: Tuesday, 21 December 2021 01:03PM
+    Psi4 wall time for execution: 0:00:01.12
 
 *** Psi4 exiting successfully. Buy a developer a beer!
