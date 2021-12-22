@@ -1530,7 +1530,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
             double* K3p = KTp[2L * max_functions_per_shell];
             double* K4p = KTp[3L * max_functions_per_shell];
 
-            // > K_PR < //
+            // > K_PR and K_PS < //
 
             for (int P = Pstart; P < Pstart + nPshell; P++) {
                 int dP = P - Pstart;
@@ -1552,12 +1552,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                         }
                     }
                 }
-            }
 
-            // > K_PS < //
-
-            for (int P = Pstart; P < Pstart + nPshell; P++) {
-                int dP = P - Pstart;
                 for (const int S : stripeout_S_for_P[dP]) {
 
                     int shell_P_nfunc = primary_->shell(P).nfunction();
@@ -1578,7 +1573,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                 }
             }
 
-            // > K_QR < //
+            // > K_QR and K_QS < //
 
             for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
                 int dQ = Q - Qstart;
@@ -1600,12 +1595,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                         }
                     }
                 }
-            }
 
-            // > K_QS < //
-
-            for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
-                int dQ = Q - Qstart;
                 for (const int S : stripeout_S_for_Q[dQ]) {
 
                     int shell_Q_nfunc = primary_->shell(Q).nfunction();
