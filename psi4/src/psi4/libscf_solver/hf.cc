@@ -51,8 +51,6 @@
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
-#include "psi4/libdiis/diismanager.h"
-#include "psi4/libdiis/diisentry.h"
 
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libmints/basisset.h"
@@ -394,8 +392,8 @@ void HF::finalize() {
     }
 
     // Clean up after DIIS
-    if (initialized_diis_manager_) diis_manager_->delete_diis_file();
-    diis_manager_.reset();
+    if (initialized_diis_manager_) diis_manager_.attr("delete_diis_file")();
+    diis_manager_ = py::none();
     initialized_diis_manager_ = false;
 
     // Figure out how many frozen virtual and frozen core per irrep

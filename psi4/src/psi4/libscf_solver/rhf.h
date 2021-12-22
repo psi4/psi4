@@ -32,6 +32,8 @@
 #include "psi4/libpsio/psio.hpp"
 #include "hf.h"
 
+#include "psi4/pybind11.h"
+
 namespace psi {
 
 namespace scf {

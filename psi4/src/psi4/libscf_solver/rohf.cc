@@ -37,8 +37,6 @@
 #include "psi4/psifiles.h"
 
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libdiis/diisentry.h"
-#include "psi4/libdiis/diismanager.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libfunctional/superfunctional.h"
@@ -292,7 +290,7 @@ void ROHF::save_density_and_energy() {
     Dt_old_->copy(Dt_);
 }
 
-bool ROHF::diis() { return diis_manager_->extrapolate(1, soFeff_.get()); }
+bool ROHF::diis() { return diis_manager_.attr("extrapolate")(soFeff_.get()).cast<bool>(); }
 
 void ROHF::form_initial_F() {
     // Form the initial Fock matrix, closed and open variants

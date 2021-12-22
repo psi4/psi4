@@ -73,11 +73,8 @@ void DCTSolver::run_simult_dct_oo_RHF() {
                            "Amplitude SF <OO|VV>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "Amplitude <oo|vv>");
-    diisManager.set_error_vector_size(5, DIISEntry::InputType::Matrix, orbital_gradient_a_.get(), DIISEntry::InputType::Matrix,
-                                      orbital_gradient_b_.get(), DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab,
-                                      DIISEntry::InputType::DPDBuf4, &Lbb);
-    diisManager.set_vector_size(5, DIISEntry::InputType::Matrix, Xtotal_a_.get(), DIISEntry::InputType::Matrix, Xtotal_b_.get(),
-                                DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4, &Lbb);
+    diisManager.set_error_vector_size(orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Laa, &Lab, &Lbb);
+    diisManager.set_vector_size(Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb);
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);
@@ -158,13 +155,14 @@ void DCTSolver::run_simult_dct_oo_RHF() {
             global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                    "Amplitude <oo|vv>");
 
-            if (diisManager.add_entry(10, orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Raa, &Rab, &Rbb,
+            if (diisManager.add_entry(orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Raa, &Rab, &Rbb,
                                       Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb)) {
                 diisString += "S";
             }
+
             if (diisManager.subspace_size() > mindiisvecs_) {
                 diisString += "/E";
-                diisManager.extrapolate(5, Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb);
+                diisManager.extrapolate(Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb);
             }
             global_dpd_->buf4_close(&Raa);
             global_dpd_->buf4_close(&Rab);

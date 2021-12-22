@@ -1,10 +1,7 @@
 import math
 
 from psi4 import core
-
-# Aliases for less typing. Sadly, can't `from psi4.core.X import Y` them
-StoragePolicy = core.DIISManager.StoragePolicy
-RemovalPolicy = core.DIISManager.RemovalPolicy
+from ..diis import DIIS, StoragePolicy, RemovalPolicy
 
 def _RHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
     gradient = self.form_FDSmSDF(self.Fa(), self.Da())
@@ -12,7 +9,7 @@ def _RHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
     if save_fock:
         if not self.initialized_diis_manager_:
             storage_policy = StoragePolicy.InCore if self.scf_type() == "DIRECT" else StoragePolicy.OnDisk
-            self.diis_manager_ = core.DIISManager(max_diis_vectors, "HF DIIS vector", RemovalPolicy.LargestError, storage_policy)
+            self.diis_manager_ = DIIS(max_diis_vectors, "HF DIIS vector", RemovalPolicy.LargestError, storage_policy)
             self.diis_manager_.set_error_vector_size(gradient)
             self.diis_manager_.set_vector_size(self.Fa())
             self.initialized_diis_manager_ = True
@@ -30,7 +27,7 @@ def _UHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
 
     if save_fock:
         if not self.initialized_diis_manager_:
-            self.diis_manager_ = core.DIISManager(max_diis_vectors, "HF DIIS vector", RemovalPolicy.LargestError,
+            self.diis_manager_ = DIIS(max_diis_vectors, "HF DIIS vector", RemovalPolicy.LargestError,
                                                           StoragePolicy.OnDisk)
             self.diis_manager_.set_error_vector_size(gradient_a, gradient_b)
             self.diis_manager_.set_vector_size(self.Fa(), self.Fb())
@@ -71,7 +68,7 @@ def _ROHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> floa
 
     if save_fock:
         if not self.initialized_diis_manager_:
-            self.diis_manager_ = core.DIISManager(max_diis_vectors, "HF DIIS vector", RemovalPolicy.LargestError, StoragePolicy.OnDisk)
+            self.diis_manager_ = DIIS(max_diis_vectors, "HF DIIS vector", RemovalPolicy.LargestError, StoragePolicy.OnDisk)
             self.diis_manager_.set_error_vector_size(gradient)
             self.diis_manager_.set_vector_size(self.soFeff())
             self.initialized_diis_manager_ = True

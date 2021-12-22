@@ -137,7 +137,7 @@ void handleBrianOption(bool value) {
 void export_benchmarks(py::module&);
 void export_blas_lapack(py::module&);
 void export_cubeprop(py::module&);
-void export_diis(py::module&);
+void export_dpd(py::module&);
 void export_fock(py::module&);
 void export_functional(py::module&);
 void export_mints(py::module&);
@@ -1165,7 +1165,6 @@ PYBIND11_MODULE(core, core) {
 
     // Define library classes
     export_psio(core);
-    export_diis(core);
     export_mints(core);
     export_misc(core);
     export_fock(core);
@@ -1173,6 +1172,7 @@ PYBIND11_MODULE(core, core) {
     export_trans(core);
     export_wavefunction(core);
     export_options(core);
+    export_dpd(core);
 
     // Plugins
     export_plugins(core);

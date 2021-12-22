@@ -138,10 +138,8 @@ void DCTSolver::run_simult_dct_RHF() {
                            "Amplitude SF <OO|VV>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                            "Amplitude <oo|vv>");
-    diisManager.set_error_vector_size(5, DIISEntry::InputType::Matrix, scf_error_a_.get(), DIISEntry::InputType::Matrix, scf_error_b_.get(),
-                                      DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4, &Lbb);
-    diisManager.set_vector_size(5, DIISEntry::InputType::Matrix, Fa_.get(), DIISEntry::InputType::Matrix, Fb_.get(), DIISEntry::InputType::DPDBuf4, &Laa,
-                                DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4, &Lbb);
+    diisManager.set_error_vector_size(scf_error_a_.get(), scf_error_b_.get(), &Laa, &Lab, &Lbb);
+    diisManager.set_error_vector_size(Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb);
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);
@@ -220,13 +218,13 @@ void DCTSolver::run_simult_dct_RHF() {
                                    "Amplitude SF <OO|VV>");  // Amplitude <Oo|Vv>
             global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                    "Amplitude <oo|vv>");
-            if (diisManager.add_entry(10, scf_error_a_.get(), scf_error_b_.get(), &Raa, &Rab, &Rbb, Fa_.get(),
+            if (diisManager.add_entry(scf_error_a_.get(), scf_error_b_.get(), &Raa, &Rab, &Rbb, Fa_.get(),
                                       Fb_.get(), &Laa, &Lab, &Lbb)) {
                 diisString += "S";
             }
             if (diisManager.subspace_size() > mindiisvecs_) {
                 diisString += "/E";
-                diisManager.extrapolate(5, Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb);
+                diisManager.extrapolate(Fa_.get(), Fb_.get(), &Laa, &Lab, &Lbb);
             }
             global_dpd_->buf4_close(&Raa);
             global_dpd_->buf4_close(&Rab);

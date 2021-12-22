@@ -121,8 +121,8 @@ void DFOCC::ccsdl_iterations() {
         if (reference_ == "RESTRICTED") {
             ccsdlDiisManager = std::shared_ptr<DIISManager>(
                 new DIISManager(cc_maxdiis_, "CCSDL DIIS L Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
-            ccsdlDiisManager->set_error_vector_size(2, DIISEntry::InputType::Matrix, L2.get(), DIISEntry::InputType::Matrix, L1.get());
-            ccsdlDiisManager->set_vector_size(2, DIISEntry::InputType::Matrix, L2.get(), DIISEntry::InputType::Matrix, L1.get());
+            ccsdlDiisManager->set_error_vector_size(L2.get(), L1.get());
+            ccsdlDiisManager->set_vector_size(L2.get(), L1.get());
         }
         L2.reset();
         L1.reset();

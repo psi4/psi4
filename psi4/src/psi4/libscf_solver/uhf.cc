@@ -41,9 +41,6 @@
 #include "psi4/physconst.h"
 
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libdiis/diisentry.h"
-#include "psi4/libdiis/diismanager.h"
-#include "psi4/libdpd/dpd.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
@@ -1074,7 +1071,7 @@ int UHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter,
     return cphf_nfock_builds_;
 }
 
-bool UHF::diis() { return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get()); }
+bool UHF::diis() { return diis_manager_.attr("extrapolate")(Fa_.get(), Fb_.get()).cast<bool>(); }
 
 bool UHF::stability_analysis() {
     if (functional_->needs_xc()) {

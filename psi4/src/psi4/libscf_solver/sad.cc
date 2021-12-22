@@ -55,7 +55,6 @@
 #include "psi4/libmints/sointegral_onebody.h"
 #include "psi4/libmints/factory.h"
 #include "psi4/libdiis/diismanager.h"
-#include "psi4/libdiis/diisentry.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/lib3index/dfhelper.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
@@ -510,8 +509,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
 
     // Setup DIIS
     DIISManager diis_manager(6, "SAD DIIS", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
-    diis_manager.set_error_vector_size(2, DIISEntry::InputType::Matrix, gradient_a.get(), DIISEntry::InputType::Matrix, gradient_b.get());
-    diis_manager.set_vector_size(2, DIISEntry::InputType::Matrix, Fa.get(), DIISEntry::InputType::Matrix, Fb.get());
+    diis_manager.set_error_vector_size(gradient_a.get(), gradient_b.get());
+    diis_manager.set_vector_size(Fa.get(), Fb.get());
 
     // Setup JK
     std::unique_ptr<JK> jk;
@@ -592,8 +591,8 @@ void SADGuess::get_uhf_atomic_density(std::shared_ptr<BasisSet> bas, std::shared
                                 : std::max(gradient_a->absmax(), gradient_b->absmax());
 
         // Add and extrapolate DIIS
-        diis_manager.add_entry(4, gradient_a.get(), gradient_b.get(), Fa.get(), Fb.get());
-        diis_manager.extrapolate(2, Fa.get(), Fb.get());
+        diis_manager.add_entry(gradient_a.get(), gradient_b.get(), Fa.get(), Fb.get());
+        diis_manager.extrapolate(Fa.get(), Fb.get());
 
         // Diagonalize Fa and Fb to from Ca and Cb and Da and Db
         form_C_and_D(X, Fa, Ca, Ea, Ca_occ, occ_a, Da);

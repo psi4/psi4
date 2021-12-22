@@ -60,8 +60,8 @@ void DFOCC::lccd_iterations() {
             std::shared_ptr<Matrix> T2(new Matrix("T2", naoccA * navirA, naoccA * navirA));
             ccsdDiisManager = std::shared_ptr<DIISManager>(
                 new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
-            ccsdDiisManager->set_error_vector_size(1, DIISEntry::InputType::Matrix, T2.get());
-            ccsdDiisManager->set_vector_size(1, DIISEntry::InputType::Matrix, T2.get());
+            ccsdDiisManager->set_error_vector_size(T2.get());
+            ccsdDiisManager->set_vector_size(T2.get());
             T2.reset();
         }
 
@@ -72,10 +72,8 @@ void DFOCC::lccd_iterations() {
             std::shared_ptr<Matrix> T2AB(new Matrix("T2AB", naoccA * naoccB, navirA * navirB));
             ccsdDiisManager = std::shared_ptr<DIISManager>(
                 new DIISManager(cc_maxdiis_, "CCSD DIIS T Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk));
-            ccsdDiisManager->set_error_vector_size(3, DIISEntry::InputType::Matrix, T2AA.get(), DIISEntry::InputType::Matrix, T2BB.get(),
-                                                   DIISEntry::InputType::Matrix, T2AB.get());
-            ccsdDiisManager->set_vector_size(3, DIISEntry::InputType::Matrix, T2AA.get(), DIISEntry::InputType::Matrix, T2BB.get(),
-                                             DIISEntry::InputType::Matrix, T2AB.get());
+            ccsdDiisManager->set_error_vector_size(T2AA.get(), T2BB.get(), T2AB.get());
+            ccsdDiisManager->set_vector_size(T2AA.get(), T2BB.get(), T2AB.get());
             T2AA.reset();
             T2BB.reset();
             T2AB.reset();

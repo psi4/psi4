@@ -39,8 +39,6 @@
 #include "psi4/libmints/factory.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
-#include "psi4/libdiis/diismanager.h"
-#include "psi4/libdiis/diisentry.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -390,7 +388,7 @@ double CUHF::compute_E() {
     return Etotal;
 }
 
-bool CUHF::diis() { return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get()); }
+bool CUHF::diis() { return diis_manager_.attr("extrapolate")(Fa_.get(), Fb_.get()).cast<bool>(); }
 
 bool CUHF::stability_analysis() {
     throw PSIEXCEPTION("CUHF stability analysis has not been implemented yet.  Sorry :(");

@@ -33,6 +33,7 @@
 #include <pybind11/operators.h>
 #include <libint2/shell.h>
 
+#include "psi4/libdpd/dpd.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/deriv.h"
 #include "psi4/libmints/twobody.h"
@@ -313,6 +314,8 @@ void export_mints(py::module& m) {
     typedef double (Vector::*vector_getitem_1)(int) const;
     typedef double (Vector::*vector_getitem_2)(int, int) const;
     typedef void (Vector::*vector_one)(const Vector &other);
+    typedef double (Vector::*vector_one_double)(const Vector &other);
+    typedef void (Vector::*vector_two)(double scale, const Vector &other);
 
     py::class_<Dimension>(m, "Dimension", "Initializes and defines Dimension Objects")
         .def(py::init<int>())
@@ -361,11 +364,16 @@ void export_mints(py::module& m) {
         .def("copy", vector_one(&Vector::copy), "Returns a copy of the matrix")
         .def("clone", [](Vector& vec) {
                 std::shared_ptr<Vector> result = std::move(vec.clone()); return result; }, "Clone the vector")
+        .def("zero", &Vector::zero, "Zeros the vector")
         .def("print_out", &Vector::print_out, "Prints the vector to the output file")
         .def("scale", &Vector::scale, "Scales the elements of a vector by sc", "sc"_a)
         .def("dim", &Vector::dim, "Returns the dimensions of the vector per irrep h", "h"_a = 0)
         .def("dimpi", &Vector::dimpi, "Returns the Dimension object")
         .def("nirrep", &Vector::nirrep, "Returns the number of irreps")
+        .def("vector_dot", vector_one_double(&Vector::vector_dot), "Take the dot product of two vectors", "other"_a)
+        .def("axpy", vector_two(&Vector::axpy), "Adds to this vector another vector scaled by a", "a"_a, "other"_a)
+        .def("save", &Vector::save, "Save the vector to disk", "psio"_a, "file"_a)
+        .def("load", &Vector::load, "Load the vector from disk", "psio"_a, "file"_a)
         .def("get_block", &Vector::get_block, "Get a vector block", "slice"_a)
         .def("set_block", &Vector::set_block, "Set a vector block", "slice"_a, "block"_a)
         .def(
@@ -443,6 +451,7 @@ void export_mints(py::module& m) {
     typedef double (Matrix::*double_matrix_one)(const SharedMatrix&);
     typedef void (Matrix::*matrix_two)(const SharedMatrix&, const SharedMatrix&);
     typedef void (Matrix::*matrix_save)(const std::string&, bool, bool, bool);
+    typedef void (Matrix::*matrix_save2)(psi::PSIO* const, size_t, Matrix::SaveType);
     typedef void (Matrix::*matrix_set1)(double);
     typedef void (Matrix::*matrix_set3)(int, int, double);
     typedef void (Matrix::*matrix_set4)(int, int, int, double);
@@ -468,6 +477,8 @@ void export_mints(py::module& m) {
         .def(py::init<const std::string&, const Dimension&, const Dimension&>())
         .def(py::init<const std::string&, const Dimension&, const Dimension&, int>())
         .def(py::init<const std::string&>())
+        .def(py::init<dpdbuf4*>())
+        .def(py::init<dpdfile2*>())
         .def("clone", &Matrix::clone, "Creates exact copy of the matrix and returns it")
         .def_property("name", py::cpp_function(&Matrix::name), py::cpp_function(&Matrix::set_name),
                       "The name of the Matrix. Used in printing.")
@@ -577,6 +588,9 @@ void export_mints(py::module& m) {
         .def("save", matrix_save(&Matrix::save),
              "Saves the matrix in ASCII format to filename, as symmetry blocks or full matrix", "filename"_a,
              "append"_a = true, "saveLowerTriangle"_a = true, "saveSubBlocks"_a = false)
+        .def("save", matrix_save2(&Matrix::save),
+             "Saves the matrix in ASCII format to filename, as symmetry blocks or full matrix", "psio"_a,
+             "filename"_a, "savetype"_a = Matrix::SaveType::LowerTriangle)
         .def("load", matrix_load(&Matrix::load),
              "Loads a block matrix from an ASCII file (see tests/mints3 for format)", "filename"_a)
         .def("load_mpqc", &Matrix::load_mpqc, "Loads a matrix from an ASCII file in MPQC format", "filename"_a)
