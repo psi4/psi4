@@ -47,17 +47,6 @@ class Molecule;
  *  Use an IntegralFactory to create this object.
  */
 class ElectricFieldInt : public OneBodyAOInt {
-    //! Obara and Saika recursion object to be used.
-    ObaraSaikaTwoCenterElectricField efield_recur_;
-
-    //! Number of atoms.
-    int natom_;
-
-    //! Computes the electric field between two gaussian shells.
-    void compute_pair(const GaussianShell &, const GaussianShell &) override;
-
-    //! Computes the electric field gradient between two gaussian shells.
-    void compute_pair_deriv1(const GaussianShell &, const GaussianShell &) override;
 
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
@@ -70,7 +59,9 @@ class ElectricFieldInt : public OneBodyAOInt {
     bool has_deriv1() override { return false; }
 
     static Vector3 nuclear_contribution(const Vector3 &origin, std::shared_ptr<Molecule> mol);
-    static SharedMatrix nuclear_contribution_to_gradient(const Vector3 &origin, std::shared_ptr<Molecule> mol);
+
+    /// Computes all integrals and stores them in result by default this method throws
+    void compute(std::vector<SharedMatrix>& result) override;
 
     /** Compute field integrals at coords with a functor to obtain
     a) the expectation value of the electric field at all coords (ContractOverDensityFieldFunctor)
@@ -78,6 +69,8 @@ class ElectricFieldInt : public OneBodyAOInt {
     */
     template <typename ContractionFunctor>
     void compute_with_functor(ContractionFunctor functor, SharedMatrix coords);
+
+    void set_origin(const Vector3& _origin) override;
 };
 
 class ContractOverDipolesFunctor {

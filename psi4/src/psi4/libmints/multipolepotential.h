@@ -57,7 +57,7 @@ class MultipolePotentialInt : public OneBodyAOInt {
     int max_k_;
 
     //! Computes the electric field between two gaussian shells.
-    void compute_pair(const GaussianShell&, const GaussianShell&) override;
+    void compute_pair(const libint2::Shell&, const libint2::Shell&) override;
 
    public:
     //! Constructor. Do not call directly use an IntegralFactory.

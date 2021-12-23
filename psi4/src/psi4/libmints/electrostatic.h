@@ -57,11 +57,6 @@ class ElectrostaticInt : public PotentialInt {
 // Intel C++ 12 thinks we're trying to overload the "void compute_shell(int, int)" and warns us about it.
 // The following line is to shut it up.
 #pragma warning disable 1125
-    /// Computes integrals between two shells.
-    void compute_shell(int, int, const Vector3&);
-    /// Computes integrals between two shells.
-    void compute_pair(const GaussianShell&, const GaussianShell&, const Vector3&);
-
     PRAGMA_WARNING_PUSH
     PRAGMA_WARNING_IGNORE_OVERLOADED_VIRTUAL
     /// Computes integrals and stores in result.

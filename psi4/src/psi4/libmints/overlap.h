@@ -45,8 +45,6 @@ class SphericalTransform;
  *  Use an IntegralFactory to create this object.
  */
 class OverlapInt : public OneBodyAOInt {
-    /// Generic Obara Saika recursion object.
-    ObaraSaikaTwoCenterRecursion overlap_recur_;
 
    public:
     /// Constructor, it assumes you are not computing derivatives by default
@@ -59,11 +57,6 @@ class OverlapInt : public OneBodyAOInt {
     bool has_deriv2() override { return true; }
 
     bool l2() const override { return true; }
-
-    /// Computes the overlap between a given shell pair.
-    // void compute_pair(const GaussianShell&, const GaussianShell&) override;
-    void compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2) override;
-    void compute_pair_deriv2(const GaussianShell&, const GaussianShell&) override;
 };
 
 }  // namespace psi

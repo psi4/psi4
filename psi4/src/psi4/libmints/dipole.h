@@ -34,10 +34,7 @@
 
 #include "psi4/pragma.h"
 #include "psi4/libmints/onebody.h"
-
-namespace libint2 {
-class Shell;
-}
+#include "psi4/libmints/osrecur.h"
 
 namespace psi {
 class SphericalTransform;
@@ -49,6 +46,8 @@ class Molecule;
  *
  * Use an IntegralFactory to create this object. */
 class DipoleInt : public OneBodyAOInt {
+    // This is to disappear when l2 dipole derivatives are worked out
+    ObaraSaikaTwoCenterRecursion overlap_recur_;
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
     DipoleInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);

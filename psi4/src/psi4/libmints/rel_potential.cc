@@ -33,8 +33,11 @@
 #include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/physconst.h"
+
+#include <libint2/shell.h>
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -82,21 +85,21 @@ RelPotentialInt::~RelPotentialInt() {
 */
 
 // The engine only supports segmented basis sets
-void RelPotentialInt::compute_pair(const GaussianShell& s1, const GaussianShell& s2) {
+void RelPotentialInt::compute_pair(const libint2::Shell& s1, const libint2::Shell& s2) {
     int ao12;
-    int am1 = s1.am();
-    int am2 = s2.am();
-    int nprim1 = s1.nprimitive();
-    int nprim2 = s2.nprimitive();
+    int am1 = s1.contr[0].l;
+    int am2 = s2.contr[0].l;
+    int nprim1 = s1.nprim();
+    int nprim2 = s2.nprim();
     double A[3], B[3];
     double Ixx, Iyy, Izz, Itotal;
 
-    A[0] = s1.center()[0];
-    A[1] = s1.center()[1];
-    A[2] = s1.center()[2];
-    B[0] = s2.center()[0];
-    B[1] = s2.center()[1];
-    B[2] = s2.center()[2];
+    A[0] = s1.O[0];
+    A[1] = s1.O[1];
+    A[2] = s1.O[2];
+    B[0] = s2.O[0];
+    B[1] = s2.O[1];
+    B[2] = s2.O[2];
 
     int izm = 1;
     int iym = am1 + 2;
@@ -111,7 +114,7 @@ void RelPotentialInt::compute_pair(const GaussianShell& s1, const GaussianShell&
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, s1.ncartesian() * s2.ncartesian() * sizeof(double));
+    memset(buffer_, 0, s1.cartesian_size() * s2.cartesian_size() * sizeof(double));
 
     double*** vi = potential_recur_->vi();
 
@@ -127,17 +130,17 @@ void RelPotentialInt::compute_pair(const GaussianShell& s1, const GaussianShell&
 #endif
 
     for (int p1 = 0; p1 < nprim1; ++p1) {
-        double a1 = s1.exp(p1);
+        double a1 = s1.alpha[p1];
 #if RELVDEBUG
         outfile->Printf("alpha_a=%20.14f\n", a1);
 #endif
-        double c1 = s1.coef(p1);
+        double c1 = s1.contr[0].coeff[p1];
         for (int p2 = 0; p2 < nprim2; ++p2) {
-            double a2 = s2.exp(p2);
+            double a2 = s2.alpha[p2];
 #if RELVDEBUG
             outfile->Printf("alpha_b=%20.14f\n", a2);
 #endif
-            double c2 = s2.coef(p2);
+            double c2 = s2.contr[0].coeff[p2];
             double gamma = a1 + a2;
             double oog = 1.0 / gamma;
 
@@ -276,6 +279,9 @@ void RelPotentialInt::compute_pair(const GaussianShell& s1, const GaussianShell&
             }
         }
     }
+    buffers_.resize(1);
+    pure_transform(s1, s2, 1);
+    buffers_[0] = buffer_;
 }
 
 void RelPotentialInt::compute_pair_deriv1(const GaussianShell&, const GaussianShell&) {

@@ -52,7 +52,7 @@ class CdSalcList;
  */
 class RelPotentialInt : public OneBodyAOInt {
     /// Computes integrals between two shell objects.
-    void compute_pair(const GaussianShell&, const GaussianShell&) override;
+    void compute_pair(const libint2::Shell&, const libint2::Shell&) override;
     /// Computes integrals between two shell objects.
     void compute_pair_deriv1(const GaussianShell&, const GaussianShell&) override;
     void compute_pair_deriv2(const GaussianShell&, const GaussianShell&) override;

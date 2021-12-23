@@ -50,11 +50,8 @@ class BasisSet;
  *  Use an IntegralFactory to create this object.
  */
 class TracelessQuadrupoleInt : public OneBodyAOInt {
-    ObaraSaikaTwoCenterRecursion overlap_recur_;
 
-    // This the work horse function.
-    void compute_pair(const GaussianShell&, const GaussianShell&) override;
-
+    void compute_pair(const libint2::Shell &, const libint2::Shell &) override;
    public:
     TracelessQuadrupoleInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>);
     ~TracelessQuadrupoleInt() override;

@@ -104,6 +104,8 @@ std::vector<std::pair<int, int>> build_shell_pair_list_no_spdata(std::shared_ptr
     std::vector<std::vector<std::pair<int, int>>> threads_sp_list(nthreads);
 
     threshold *= threshold;
+    ///ACS TODO make sure we set the threshold appropriately
+    threshold = 0.0;
 
 #pragma omp parallel num_threads(nthreads)
     {
@@ -160,7 +162,7 @@ OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms
 
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
     libint2::initialize();
-    auto shellpairex = build_shell_pair_list_no_spdata(bs1, bs2, threshold);
+    shellpairs_ = build_shell_pair_list_no_spdata(bs1, bs2, threshold);
 }
 
 OneBodyAOInt::~OneBodyAOInt() {
@@ -211,6 +213,63 @@ void OneBodyAOInt::normalize_am(const GaussianShell & /*s1*/, const GaussianShel
     //            }
     //        }
     //    }
+}
+
+void OneBodyAOInt::pure_transform(const libint2::Shell &s1, const libint2::Shell &s2, int chunks) {
+    for (int chunk = 0; chunk < chunks; ++chunk) {
+        const int am1 = s1.contr[0].l;
+        const int is_pure1 = s1.contr[0].pure && am1 > 0;
+        const int ncart1 = s1.cartesian_size();
+        const int nbf1 = s1.size();
+
+        const int am2 = s2.contr[0].l;
+        const int is_pure2 = s2.contr[0].pure && am2 > 0;
+        const int ncart2 = s2.cartesian_size();
+        const int nbf2 = s2.size();
+
+        int ncart12 = ncart1 * ncart2;
+        int nbf12 = nbf1 * nbf2;
+
+        // Memory pointers that aid in transform
+        double *source1, *target1;
+        double *source2, *target2;
+        double *source = buffer_ + (chunk * ncart12);
+        double *target = target_;
+        double *tmpbuf = tformbuf_;
+
+        int transform_index = 2 * is_pure1 + is_pure2;
+        switch (transform_index) {
+            case 0:
+                break;
+            case 1:
+                source2 = source;
+                target2 = target;
+                break;
+            case 2:
+                source1 = source;
+                target1 = target;
+                break;
+            case 3:
+                source2 = source;
+                target2 = tmpbuf;
+                source1 = tmpbuf;
+                target1 = target;
+                break;
+        }
+
+        if (is_pure2) {
+            SphericalTransformIter stiter(spherical_transforms_[am2]);
+            transform1e_2(am2, stiter, source2, target2, ncart1, ncart2);
+        }
+        if (is_pure1) {
+            SphericalTransformIter stiter(spherical_transforms_[am1]);
+            transform1e_1(am1, stiter, source1, target1, nbf2);
+        }
+
+        if (transform_index) {
+            memcpy(buffer_ + (chunk * nbf12), target_, sizeof(double) * nbf12);
+        }
+    }
 }
 
 void OneBodyAOInt::pure_transform(const GaussianShell &s1, const GaussianShell &s2, int chunks) {
@@ -317,80 +376,46 @@ void OneBodyAOInt::compute_pair(const libint2::Shell &s1, const libint2::Shell &
 
 void OneBodyAOInt::compute_pair_deriv1(const libint2::Shell &s1, const libint2::Shell &s2) {
     engine1_->compute(s1, s2);
-
-    for (int chunk = 0; chunk < nchunk(); chunk++) {
+    set_chunks(engine1_->results().size());
+    buffers_.resize(nchunk_);
+    for (int chunk = 0; chunk < nchunk_; chunk++) {
         buffers_[chunk] = engine1_->results()[chunk];
     }
-    buffer_ = const_cast<double *>(buffers_[0]);
 }
 
 void OneBodyAOInt::compute_pair_deriv2(const libint2::Shell &s1, const libint2::Shell &s2) {
     engine2_->compute(s1, s2);
-
-    for (int chunk = 0; chunk < nchunk(); chunk++) {
+    set_chunks(engine2_->results().size());
+    buffers_.resize(nchunk_);
+    for (int chunk = 0; chunk < nchunk_; chunk++) {
         buffers_[chunk] = engine2_->results()[chunk];
     }
-    buffer_ = const_cast<double *>(buffers_[0]);
 }
 
 void OneBodyAOInt::compute(SharedMatrix &result) {
-    if (l2() == false) {
-        // Do not worry about zeroing out result
-        int ns1 = bs1_->nshell();
-        int ns2 = bs2_->nshell();
+    const auto bs1_equiv_bs2 = (bs1_ == bs2_);
 
-        int i_offset = 0;
-        double *location;
+    for (auto pair : shellpairs_) {
+        int p1 = pair.first;
+        int p2 = pair.second;
 
-        // Leave as this full double for loop. We could be computing nonsymmetric integrals
-        for (int i = 0; i < ns1; ++i) {
-            int ni = bs1_->shell(i).nfunction();
-            int j_offset = 0;
-            for (int j = 0; j < ns2; ++j) {
-                int nj = bs2_->shell(j).nfunction();
+        const auto &s1 = bs1_->l2_shell(p1);
+        const auto &s2 = bs2_->l2_shell(p2);
+        int ni = bs1_->shell(p1).nfunction();
+        int nj = bs2_->shell(p2).nfunction();
+        int i_offset = bs1_->shell_to_basis_function(p1);
+        int j_offset = bs2_->shell_to_basis_function(p2);
 
-                // Compute the shell (automatically transforms to pure am in needed)
-                compute_shell(i, j);
+        compute_pair(s1, s2);
 
-                // For each integral that we got put in its contribution
-                location = buffer_;
-                for (int p = 0; p < ni; ++p) {
-                    for (int q = 0; q < nj; ++q) {
-                        result->add(0, i_offset + p, j_offset + q, *location);
-                        location++;
-                    }
+        const double *location = buffers_[0];
+        for (int p = 0; p < ni; ++p) {
+            for (int q = 0; q < nj; ++q) {
+                result->add(0, i_offset + p, j_offset + q, *location);
+                if (bs1_equiv_bs2 && p1 != p2) {
+                    result->add(0, j_offset + q, i_offset + p, *location);
                 }
-
-                j_offset += nj;
-            }
-            i_offset += ni;
-        }
-    } else {
-        // use libint2
-        const auto bs1_equiv_bs2 = (bs1_ == bs2_);
-
-        for (auto pair : shellpairs_) {
-            int p1 = pair.first;
-            int p2 = pair.second;
-
-            const auto &s1 = bs1_->l2_shell(p1);
-            const auto &s2 = bs2_->l2_shell(p2);
-            int ni = bs1_->shell(p1).nfunction();
-            int nj = bs2_->shell(p2).nfunction();
-            int i_offset = bs1_->shell_to_basis_function(p1);
-            int j_offset = bs2_->shell_to_basis_function(p2);
-
-            compute_pair(s1, s2);
-
-            const double *location = buffers_[0];
-            for (int p = 0; p < ni; ++p) {
-                for (int q = 0; q < nj; ++q) {
-                    result->add(0, i_offset + p, j_offset + q, *location);
-                    if (bs1_equiv_bs2 && p1 != p2) {
-                        result->add(0, j_offset + q, i_offset + p, *location);
-                    }
-                    location++;
-                }
+                location++;
             }
         }
     }
@@ -400,8 +425,7 @@ void OneBodyAOInt::compute(std::vector<SharedMatrix> &result) {
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
     int ns2 = bs2_->nshell();
-    int i_offset = 0;
-    double *location = 0;
+    const auto bs1_equiv_bs2 = (bs1_ == bs2_);
 
     // Check the length of result, must be chunk
     // There not an easy way of checking the size now.
@@ -411,35 +435,41 @@ void OneBodyAOInt::compute(std::vector<SharedMatrix> &result) {
     }
 
     // Check the individual matrices, we can only handle nirrep() == 1
-    for (SharedMatrix a : result) {
+    for (int chunk = 0; chunk < result.size(); ++chunk) {
+        const auto a = result[chunk];
         if (a->nirrep() != 1) {
             throw SanityCheckError("OneBodyInt::compute(result): one or more of the matrices given has symmetry.",
                                    __FILE__, __LINE__);
         }
     }
 
-    for (int i = 0; i < ns1; ++i) {
-        int ni = bs1_->shell(i).nfunction();
-        int j_offset = 0;
-        for (int j = 0; j < ns2; ++j) {
-            int nj = bs2_->shell(j).nfunction();
+    for (const auto &pair : shellpairs_) {
+        int p1 = pair.first;
+        int p2 = pair.second;
 
-            // Compute the shell
-            compute_shell(i, j);
+        const auto &s1 = bs1_->l2_shell(p1);
+        const auto &s2 = bs2_->l2_shell(p2);
+        int ni = bs1_->shell(p1).nfunction();
+        int nj = bs2_->shell(p2).nfunction();
+        int i_offset = bs1_->shell_to_basis_function(p1);
+        int j_offset = bs2_->shell_to_basis_function(p2);
 
-            // For each integral that we got put in its contribution
-            location = buffer_;
-            for (int r = 0; r < nchunk_; ++r) {
-                for (int p = 0; p < ni; ++p) {
-                    for (int q = 0; q < nj; ++q) {
-                        result[r]->add(0, i_offset + p, j_offset + q, *location);
-                        location++;
+        // Compute the shell
+        compute_pair(s1, s2);
+
+        // For each integral that we got put in its contribution
+        for (int r = 0; r < nchunk_; ++r) {
+            const double *location = buffers_[r];
+            for (int p = 0; p < ni; ++p) {
+                for (int q = 0; q < nj; ++q) {
+                    result[r]->add(0, i_offset + p, j_offset + q, *location);
+                    if (bs1_equiv_bs2 && p1 != p2) {
+                        result[r]->add(0, j_offset + q, i_offset + p, *location);
                     }
+                    location++;
                 }
             }
-            j_offset += nj;
         }
-        i_offset += ni;
     }
 }
 
@@ -448,62 +478,95 @@ void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix> &result) {
         throw SanityCheckError("OneBodyInt::compute_deriv1(result): integral object not created to handle derivatives.",
                                __FILE__, __LINE__);
 
-    if (l2() == false) {
-        // Do not worry about zeroing out result
-        int ns1 = bs1_->nshell();
-        int ns2 = bs2_->nshell();
-        int i_offset = 0;
-        double *location = 0;
+    //if (l2() == false) {
+    //    // Do not worry about zeroing out result
+    //    int ns1 = bs1_->nshell();
+    //    int ns2 = bs2_->nshell();
+    //    int i_offset = 0;
+    //    double *location = 0;
 
-        // Check the length of result, must be 3*natom_
-        if (result.size() != (size_t)3 * natom_)
-            throw SanityCheckError("OneBodyInt::compute_deriv1(result): result must be 3 * natom in length.", __FILE__,
-                                   __LINE__);
+    //    // Check the length of result, must be 3*natom_
+    //    if (result.size() != (size_t)3 * natom_)
+    //        throw SanityCheckError("OneBodyInt::compute_deriv1(result): result must be 3 * natom in length.", __FILE__,
+    //                               __LINE__);
 
-        if (result[0]->nirrep() != 1)
-            throw SanityCheckError("OneBodyInt::compute_deriv1(result): results must be C1 symmetry.", __FILE__,
-                                   __LINE__);
+    //    if (result[0]->nirrep() != 1)
+    //        throw SanityCheckError("OneBodyInt::compute_deriv1(result): results must be C1 symmetry.", __FILE__,
+    //                               __LINE__);
 
-        for (int i = 0; i < ns1; ++i) {
-            int ni = bs1_->shell(i).nfunction();
-            int center_i3 = 3 * bs1_->shell(i).ncenter();
-            int j_offset = 0;
-            for (int j = 0; j < ns2; ++j) {
-                int nj = bs2_->shell(j).nfunction();
-                int center_j3 = 3 * bs2_->shell(j).ncenter();
+    //    for (int i = 0; i < ns1; ++i) {
+    //        int ni = bs1_->shell(i).nfunction();
+    //        int center_i3 = 3 * bs1_->shell(i).ncenter();
+    //        int j_offset = 0;
+    //        for (int j = 0; j < ns2; ++j) {
+    //            int nj = bs2_->shell(j).nfunction();
+    //            int center_j3 = 3 * bs2_->shell(j).ncenter();
 
-                if (center_i3 != center_j3) {
-                    // Compute the shell
-                    compute_shell_deriv1(i, j);
+    //            if (center_i3 != center_j3) {
+    //                // Compute the shell
+    //                compute_shell_deriv1(i, j);
 
-                    // Center i
-                    location = buffer_;
-                    for (int r = 0; r < 3; ++r) {
-                        for (int p = 0; p < ni; ++p) {
-                            for (int q = 0; q < nj; ++q) {
-                                result[center_i3 + r]->add(0, i_offset + p, j_offset + q, *location);
-                                location++;
-                            }
-                        }
-                    }
+    //                // Center i
+    //                location = buffer_;
+    //                for (int r = 0; r < 3; ++r) {
+    //                    for (int p = 0; p < ni; ++p) {
+    //                        for (int q = 0; q < nj; ++q) {
+    //                            result[center_i3 + r]->add(0, i_offset + p, j_offset + q, *location);
+    //                            location++;
+    //                        }
+    //                    }
+    //                }
 
-                    // Center j -- only if center i != center j
-                    for (int r = 0; r < 3; ++r) {
-                        for (int p = 0; p < ni; ++p) {
-                            for (int q = 0; q < nj; ++q) {
-                                result[center_j3 + r]->add(0, i_offset + p, j_offset + q, *location);
-                                location++;
-                            }
-                        }
-                    }
+    //                // Center j -- only if center i != center j
+    //                for (int r = 0; r < 3; ++r) {
+    //                    for (int p = 0; p < ni; ++p) {
+    //                        for (int q = 0; q < nj; ++q) {
+    //                            result[center_j3 + r]->add(0, i_offset + p, j_offset + q, *location);
+    //                            location++;
+    //                        }
+    //                    }
+    //                }
+    //            }
+
+    //            j_offset += nj;
+    //        }
+    //        i_offset += ni;
+    //    }
+    for (auto pair : shellpairs_) {
+        int p1 = pair.first;
+        int p2 = pair.second;
+
+        int center1 = bs1_->shell(p1).ncenter();
+        int center2 = bs2_->shell(p2).ncenter();
+        if (center1 == center2) continue;
+
+        const auto bs1_equiv_bs2 = (bs1_ == bs2_);
+        const auto &s1 = bs1_->l2_shell(p1);
+        const auto &s2 = bs2_->l2_shell(p2);
+        int ni = bs1_->shell(p1).nfunction();
+        int nj = bs2_->shell(p2).nfunction();
+        int i_offset = bs1_->shell_to_basis_function(p1);
+        int j_offset = bs2_->shell_to_basis_function(p2);
+
+        // Compute the shell
+        compute_pair_deriv1(s1, s2);
+
+        // For each integral that we got put in its contribution
+        for (int chunk = 0; chunk < nchunk_; ++chunk) {
+            int target_center = (chunk < 3 ? center1 : (chunk < 6 ? center2 : chunk-6) );
+            int xyz = chunk % 3;
+            const double *buffer = buffers_[chunk];
+            const double *location = buffer;
+            for (int p = 0; p < ni; ++p) {
+                for (int q = 0; q < nj; ++q) {
+                   result[3*target_center + xyz]->add(0, i_offset + p, j_offset + q, *location);
+                   if (bs1_equiv_bs2 && p1 != p2) {
+                       result[3*target_center + xyz]->add(0, j_offset + q, i_offset + p, *location);
+                   }
+                   location++;
                 }
-
-                j_offset += nj;
             }
-            i_offset += ni;
         }
-    } else {
-        // TODO: To make mintshelper work.
     }
 }
 

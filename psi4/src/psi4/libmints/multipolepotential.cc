@@ -30,7 +30,8 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 
-;
+#include <libint2/shell.h>
+
 using namespace psi;
 
 #define have_moment(k, max_k) (k <= max_k);
@@ -68,23 +69,24 @@ MultipolePotentialInt::MultipolePotentialInt(std::vector<SphericalTransform> &sp
     int nchunks = number_of_chunks(max_k_);
     buffer_ = new double[nchunks * maxnao1 * maxnao2];
     set_chunks(nchunks);
+    buffers_.resize(nchunks);
 }
 
 MultipolePotentialInt::~MultipolePotentialInt() { delete[] buffer_; }
 
-void MultipolePotentialInt::compute_pair(const GaussianShell &s1, const GaussianShell &s2) {
+void MultipolePotentialInt::compute_pair(const libint2::Shell &s1, const libint2::Shell &s2) {
     int ao12;
-    int am1 = s1.am();
-    int am2 = s2.am();
-    int nprim1 = s1.nprimitive();
-    int nprim2 = s2.nprimitive();
+    int am1 = s1.contr[0].l;
+    int am2 = s2.contr[0].l;
+    int nprim1 = s1.nprim();
+    int nprim2 = s2.nprim();
     double A[3], B[3];
-    A[0] = s1.center()[0];
-    A[1] = s1.center()[1];
-    A[2] = s1.center()[2];
-    B[0] = s2.center()[0];
-    B[1] = s2.center()[1];
-    B[2] = s2.center()[2];
+    A[0] = s1.O[0];
+    A[1] = s1.O[1];
+    A[2] = s1.O[2];
+    B[0] = s2.O[0];
+    B[1] = s2.O[1];
+    B[2] = s2.O[2];
 
     int izm = 1;
     int iym = am1 + 1;
@@ -140,11 +142,11 @@ void MultipolePotentialInt::compute_pair(const GaussianShell &s1, const Gaussian
     double Cz = origin_[2];
 
     for (int p1 = 0; p1 < nprim1; ++p1) {
-        double a1 = s1.exp(p1);
-        double c1 = s1.coef(p1);
+        double a1 = s1.alpha[p1];
+        double c1 = s1.contr[0].coeff[p1];
         for (int p2 = 0; p2 < nprim2; ++p2) {
-            double a2 = s2.exp(p2);
-            double c2 = s2.coef(p2);
+            double a2 = s2.alpha[p2];
+            double c2 = s2.contr[0].coeff[p2];
             double gamma = a1 + a2;
             double oog = 1.0 / gamma;
 
@@ -222,4 +224,8 @@ void MultipolePotentialInt::compute_pair(const GaussianShell &s1, const Gaussian
             }
         }
     }
+    pure_transform(s1, s2, 3);
+    buffers_[0] = buffer_ + 0 * s1.size() * s2.size();
+    buffers_[1] = buffer_ + 1 * s1.size() * s2.size();
+    buffers_[2] = buffer_ + 2 * s1.size() * s2.size();
 }

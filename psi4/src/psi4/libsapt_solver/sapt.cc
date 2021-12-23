@@ -230,40 +230,26 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
     free_block(sAJ);
 
     auto potA = std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(intfact->ao_potential()));
-    SharedMatrix ZxyzA(new Matrix("Charges A (Z,x,y,z)", natomsA_, 4));
+    std::vector<std::pair<double, std::array<double, 3>>> ZxyzA;
     for (int n = 0, p = 0; n < monomerA->natom(); n++) {
         if (monomerA->Z(n)) {
-            double Z = (double)monomerA->Z(n);
-            double x = monomerA->x(n);
-            double y = monomerA->y(n);
-            double z = monomerA->z(n);
-            ZxyzA->set(0, p, 0, Z);
-            ZxyzA->set(0, p, 1, x);
-            ZxyzA->set(0, p, 2, y);
-            ZxyzA->set(0, p, 3, z);
-            p++;
+            ZxyzA.push_back({(double)monomerA->Z(n), {{monomerA->x(n), monomerA->y(n), monomerA->z(n)}}});
         }
     }
     potA->set_charge_field(ZxyzA);
+
     auto VAmat = std::make_shared<Matrix>(fact->create_matrix("Nuclear Attraction (Monomer A)"));
     potA->compute(VAmat);
 
     auto potB = std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(intfact->ao_potential()));
-    auto ZxyzB = std::make_shared<Matrix>("Charges B (Z,x,y,z)", natomsB_, 4);
+    std::vector<std::pair<double, std::array<double, 3>>> ZxyzB;
     for (int n = 0, p = 0; n < monomerB->natom(); n++) {
         if (monomerB->Z(n)) {
-            double Z = (double)monomerB->Z(n);
-            double x = monomerB->x(n);
-            double y = monomerB->y(n);
-            double z = monomerB->z(n);
-            ZxyzB->set(0, p, 0, Z);
-            ZxyzB->set(0, p, 1, x);
-            ZxyzB->set(0, p, 2, y);
-            ZxyzB->set(0, p, 3, z);
-            p++;
+            ZxyzB.push_back({(double)monomerB->Z(n), {{monomerB->x(n), monomerB->y(n), monomerB->z(n)}}});
         }
     }
     potB->set_charge_field(ZxyzB);
+
     auto VBmat = std::make_shared<Matrix>(fact->create_matrix("Nuclear Attraction (Monomer B)"));
     potB->compute(VBmat);
 

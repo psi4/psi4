@@ -52,17 +52,14 @@ class AngularMomentumInt : public OneBodyAOInt {
     //! Obara and Saika recursion object to be used.
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
-    //! Computes the dipole between two gaussian shells.
-    void compute_pair(const GaussianShell&, const GaussianShell&) override;
-    //! Computes the dipole derivative between two gaussian shells.
-    //    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
-
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
     AngularMomentumInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                        int deriv = 0);
     //! Virtual destructor
     ~AngularMomentumInt() override;
+
+    void compute_pair(const libint2::Shell &, const libint2::Shell &) override;
 
     //! Does the method provide first derivatives?
     bool has_deriv1() override { return true; }

@@ -47,12 +47,6 @@ class MultipoleInt : public OneBodyAOInt {
     //! Obara and Saika recursion object to be used.
     ObaraSaikaTwoCenterMIRecursion mi_recur_;
 
-    //! Computes the multipole integrals between two gaussian shells.
-    void compute_pair(const GaussianShell &, const GaussianShell &) override;
-
-    //! Computes the multipole derivative between two gaussian shells.
-    void compute_pair_deriv1(const GaussianShell &, const GaussianShell &) override { throw PSIEXCEPTION("NYI"); }
-
     //! The order of multipole moment to compute
     int order_;
 
@@ -62,6 +56,9 @@ class MultipoleInt : public OneBodyAOInt {
                  int deriv = 0);
     //! Virtual destructor
     ~MultipoleInt() override;
+
+    //! Computes the multipole integrals between two gaussian shells.
+    void compute_pair(const libint2::Shell &, const libint2::Shell &) override;
 
     //! Does the method provide first derivatives?
     bool has_deriv1() override { return false; }

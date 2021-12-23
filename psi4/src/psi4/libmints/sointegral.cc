@@ -81,89 +81,45 @@ void OneBodySOInt::compute(SharedMatrix result) {
     int ns1 = b1_->nshell();
     int ns2 = b2_->nshell();
 
-    if (ob_->l2() == false) {
-        const double *aobuf = ob_->buffer();
-        // Loop over the unique AO shells.
-        for (int ish = 0; ish < ns1; ++ish) {
-            for (int jsh = 0; jsh < ns2; ++jsh) {
-                const SOTransform &t1 = b1_->sotrans(ish);
-                const SOTransform &t2 = b2_->sotrans(jsh);
+    // Loop over the unique AO shells.
+    for (int ish = 0; ish < ns1; ++ish) {
+        for (int jsh = 0; jsh < ns2; ++jsh) {
+            const SOTransform &t1 = b1_->sotrans(ish);
+            const SOTransform &t2 = b2_->sotrans(jsh);
 
-                int nao2 = b2_->naofunction(jsh);
+            int nao2 = b2_->naofunction(jsh);
 
-                // loop through the AO shells that make up this SO shell
-                // by the end of these 4 for loops we will have our final integral in buffer_
-                for (int i = 0; i < t1.naoshell; ++i) {
-                    const SOTransformShell &s1 = t1.aoshell[i];
-                    for (int j = 0; j < t2.naoshell; ++j) {
-                        const SOTransformShell &s2 = t2.aoshell[j];
-                        ob_->compute_shell(s1.aoshell, s2.aoshell);
+            // loop through the AO shells that make up this SO shell
+            // by the end of these 4 for loops we will have our final integral in buffer_
+            for (int i = 0; i < t1.naoshell; ++i) {
+                const SOTransformShell &s1 = t1.aoshell[i];
+                for (int j = 0; j < t2.naoshell; ++j) {
+                    const SOTransformShell &s2 = t2.aoshell[j];
 
-                        for (int itr = 0; itr < s1.nfunc; ++itr) {
-                            const SOTransformFunction &ifunc = s1.func[itr];
-                            double icoef = ifunc.coef;
-                            int iaofunc = ifunc.aofunc;
-                            int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
-                            int iaooff = iaofunc;
+                    const auto &l2_s1 = b1_->basis()->l2_shell(s1.aoshell);
+                    const auto &l2_s2 = b2_->basis()->l2_shell(s2.aoshell);
 
-                            for (int jtr = 0; jtr < s2.nfunc; ++jtr) {
-                                const SOTransformFunction &jfunc = s2.func[jtr];
-                                double jcoef = jfunc.coef * icoef;
-                                int jaofunc = jfunc.aofunc;
-                                int jsofunc = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
-                                int jaooff = iaooff * nao2 + jaofunc;
+                    ob_->compute_pair(l2_s1, l2_s2);
+                    const double *aobuf = ob_->buffers()[0];
 
-                                // Check the irreps to ensure symmetric quantities.
-                                if (ifunc.irrep == jfunc.irrep)
-                                    result->add(ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
-                                                b2_->function_within_irrep(jsh, jsofunc), jcoef * aobuf[jaooff]);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    } else {
-        // Loop over the unique AO shells.
-        for (int ish = 0; ish < ns1; ++ish) {
-            for (int jsh = 0; jsh < ns2; ++jsh) {
-                const SOTransform &t1 = b1_->sotrans(ish);
-                const SOTransform &t2 = b2_->sotrans(jsh);
+                    for (int itr = 0; itr < s1.nfunc; ++itr) {
+                        const SOTransformFunction &ifunc = s1.func[itr];
+                        double icoef = ifunc.coef;
+                        int iaofunc = ifunc.aofunc;
+                        int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
+                        int iaooff = iaofunc;
 
-                int nao2 = b2_->naofunction(jsh);
+                        for (int jtr = 0; jtr < s2.nfunc; ++jtr) {
+                            const SOTransformFunction &jfunc = s2.func[jtr];
+                            double jcoef = jfunc.coef * icoef;
+                            int jaofunc = jfunc.aofunc;
+                            int jsofunc = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
+                            int jaooff = iaooff * nao2 + jaofunc;
 
-                // loop through the AO shells that make up this SO shell
-                // by the end of these 4 for loops we will have our final integral in buffer_
-                for (int i = 0; i < t1.naoshell; ++i) {
-                    const SOTransformShell &s1 = t1.aoshell[i];
-                    for (int j = 0; j < t2.naoshell; ++j) {
-                        const SOTransformShell &s2 = t2.aoshell[j];
-
-                        const auto &l2_s1 = b1_->basis()->l2_shell(s1.aoshell);
-                        const auto &l2_s2 = b2_->basis()->l2_shell(s2.aoshell);
-
-                        ob_->compute_pair(l2_s1, l2_s2);
-                        const double *aobuf = ob_->buffers()[0];
-
-                        for (int itr = 0; itr < s1.nfunc; ++itr) {
-                            const SOTransformFunction &ifunc = s1.func[itr];
-                            double icoef = ifunc.coef;
-                            int iaofunc = ifunc.aofunc;
-                            int isofunc = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
-                            int iaooff = iaofunc;
-
-                            for (int jtr = 0; jtr < s2.nfunc; ++jtr) {
-                                const SOTransformFunction &jfunc = s2.func[jtr];
-                                double jcoef = jfunc.coef * icoef;
-                                int jaofunc = jfunc.aofunc;
-                                int jsofunc = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
-                                int jaooff = iaooff * nao2 + jaofunc;
-
-                                // Check the irreps to ensure symmetric quantities.
-                                if (ifunc.irrep == jfunc.irrep)
-                                    result->add(ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
-                                                b2_->function_within_irrep(jsh, jsofunc), jcoef * aobuf[jaooff]);
-                            }
+                            // Check the irreps to ensure symmetric quantities.
+                            if (ifunc.irrep == jfunc.irrep)
+                                result->add(ifunc.irrep, b1_->function_within_irrep(ish, isofunc),
+                                            b2_->function_within_irrep(jsh, jsofunc), jcoef * aobuf[jaooff]);
                         }
                     }
                 }

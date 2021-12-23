@@ -523,28 +523,20 @@ void FISAPT::nuclear() {
 
     // => Nuclear Potentials <= //
 
-    auto Zxyz = std::make_shared<Matrix>("Zxyz", nA, 4);
-    double** Zxyzp = Zxyz->pointer();
-
     auto Vfact = std::make_shared<IntegralFactory>(primary_);
     std::shared_ptr<PotentialInt> Vint;
     Vint = std::shared_ptr<PotentialInt>(static_cast<PotentialInt*>(Vfact->ao_potential()));
-    Vint->set_charge_field(Zxyz);
 
     // > Molecular Centers < //
 
-    for (int A = 0; A < nA; A++) {
-        Zxyzp[A][1] = mol->x(A);
-        Zxyzp[A][2] = mol->y(A);
-        Zxyzp[A][3] = mol->z(A);
-    }
+    std::vector<std::pair<double, std::array<double, 3>>> Zxyz;
 
     // > A < //
-
     double* ZAp = vectors_["ZA"]->pointer();
     for (int A = 0; A < nA; A++) {
-        Zxyzp[A][0] = ZAp[A];
+        Zxyz.push_back({ZAp[A], {{mol->x(A), mol->y(A), mol->z(A)}}});
     }
+    Vint->set_charge_field(Zxyz);
 
     matrices_["VA"] = std::make_shared<Matrix>("VA", nm, nm);
     Vint->compute(matrices_["VA"]);
@@ -553,8 +545,9 @@ void FISAPT::nuclear() {
 
     double* ZBp = vectors_["ZB"]->pointer();
     for (int A = 0; A < nA; A++) {
-        Zxyzp[A][0] = ZBp[A];
+        Zxyz[A].first = ZBp[A];
     }
+    Vint->set_charge_field(Zxyz);
 
     matrices_["VB"] = std::make_shared<Matrix>("VB", nm, nm);
     Vint->compute(matrices_["VB"]);
@@ -563,8 +556,9 @@ void FISAPT::nuclear() {
 
     double* ZCp = vectors_["ZC"]->pointer();
     for (int A = 0; A < nA; A++) {
-        Zxyzp[A][0] = ZCp[A];
+        Zxyz[A].first = ZCp[A];
     }
+    Vint->set_charge_field(Zxyz);
 
     matrices_["VC"] = std::make_shared<Matrix>("VC", nm, nm);
     Vint->compute(matrices_["VC"]);
@@ -3366,23 +3360,17 @@ void FISAPT::felst() {
     matrices_["Vlocc0B"] = QbC;
 
     // => Nuclear Part (PITA) <= //
-
-    auto Zxyz2 = std::make_shared<Matrix>("Zxyz", 1, 4);
-    double** Zxyz2p = Zxyz2->pointer();
     auto Vfact2 = std::make_shared<IntegralFactory>(primary_);
     std::shared_ptr<PotentialInt> Vint2(static_cast<PotentialInt*>(Vfact2->ao_potential()));
-    Vint2->set_charge_field(Zxyz2);
     auto Vtemp2 = std::make_shared<Matrix>("Vtemp2", nn, nn);
+
 
     // => A <-> b <= //
 
     for (int A = 0; A < nA; A++) {
         if (ZAp[A] == 0.0) continue;
         Vtemp2->zero();
-        Zxyz2p[0][0] = ZAp[A];
-        Zxyz2p[0][1] = mol->x(A);
-        Zxyz2p[0][2] = mol->y(A);
-        Zxyz2p[0][3] = mol->z(A);
+        Vint2->set_charge_field({{ZAp[A], {mol->x(A), mol->y(A), mol->z(A)}}});
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Vbb =
             linalg::triplet(matrices_["Locc0B"], Vtemp2, matrices_["Locc0B"], true, false, false);
@@ -3411,10 +3399,7 @@ void FISAPT::felst() {
     for (int B = 0; B < nB; B++) {
         if (ZBp[B] == 0.0) continue;
         Vtemp2->zero();
-        Zxyz2p[0][0] = ZBp[B];
-        Zxyz2p[0][1] = mol->x(B);
-        Zxyz2p[0][2] = mol->y(B);
-        Zxyz2p[0][3] = mol->z(B);
+        Vint2->set_charge_field({{ZBp[B], {mol->x(B), mol->y(B), mol->z(B)}}});
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Vaa =
             linalg::triplet(matrices_["Locc0A"], Vtemp2, matrices_["Locc0A"], true, false, false);
@@ -3717,20 +3702,14 @@ void FISAPT::find() {
 
     // => Nuclear Part (PITA) <= //
 
-    auto Zxyz2 = std::make_shared<Matrix>("Zxyz", 1, 4);
-    double** Zxyz2p = Zxyz2->pointer();
     auto Vfact2 = std::make_shared<IntegralFactory>(primary_);
     std::shared_ptr<PotentialInt> Vint2(static_cast<PotentialInt*>(Vfact2->ao_potential()));
-    Vint2->set_charge_field(Zxyz2);
     auto Vtemp2 = std::make_shared<Matrix>("Vtemp2", nn, nn);
 
     double* ZAp = vectors_["ZA"]->pointer();
     for (size_t A = 0; A < nA; A++) {
         Vtemp2->zero();
-        Zxyz2p[0][0] = ZAp[A];
-        Zxyz2p[0][1] = mol->x(A);
-        Zxyz2p[0][2] = mol->y(A);
-        Zxyz2p[0][3] = mol->z(A);
+        Vint2->set_charge_field({{ZAp[A], {mol->x(A), mol->y(A), mol->z(A)}}});
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Vbs = linalg::triplet(Cocc_B, Vtemp2, Cvir_B, true, false, false);
         dfh_->write_disk_tensor("WAbs", Vbs, {A, A + 1});
@@ -3739,10 +3718,7 @@ void FISAPT::find() {
     double* ZBp = vectors_["ZB"]->pointer();
     for (size_t B = 0; B < nB; B++) {
         Vtemp2->zero();
-        Zxyz2p[0][0] = ZBp[B];
-        Zxyz2p[0][1] = mol->x(B);
-        Zxyz2p[0][2] = mol->y(B);
-        Zxyz2p[0][3] = mol->z(B);
+        Vint2->set_charge_field({{ZBp[B], {mol->x(B), mol->y(B), mol->z(B)}}});
         Vint2->compute(Vtemp2);
         std::shared_ptr<Matrix> Var = linalg::triplet(Cocc_A, Vtemp2, Cvir_A, true, false, false);
         dfh_->write_disk_tensor("WBar", Var, {B, B + 1});

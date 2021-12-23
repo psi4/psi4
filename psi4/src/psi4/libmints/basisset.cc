@@ -1182,6 +1182,11 @@ void BasisSet::move_atom(int atom, const Vector3 &trans) {
     xyz_[offset + 0] += trans[0];
     xyz_[offset + 1] += trans[1];
     xyz_[offset + 2] += trans[2];
+    for (int shell = 0; shell < nshell(); ++shell) {
+        if (shells_[shell].ncenter() == atom) {
+            l2_shells_[shell].O = std::array<double, 3>{xyz_[offset + 0], xyz_[offset + 1], xyz_[offset + 2]};
+        }
+    }
 }
 
 void BasisSet::compute_phi(double* phi_ao, double x, double y, double z) {

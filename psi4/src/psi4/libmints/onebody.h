@@ -91,6 +91,7 @@ class PSI_API OneBodyAOInt {
                  int deriv = 0);
     void set_chunks(int nchunk) { nchunk_ = nchunk; }
     void pure_transform(const GaussianShell&, const GaussianShell&, int = 1);
+    void pure_transform(const libint2::Shell &s1, const libint2::Shell &s2, int nchunks = 1);
 
     /// Normalize Cartesian functions based on angular momentum
     void normalize_am(const GaussianShell&, const GaussianShell&, int nchunk = 1);
@@ -104,6 +105,8 @@ class PSI_API OneBodyAOInt {
     std::shared_ptr<BasisSet> basis1();
     /// Basis set on center two.
     std::shared_ptr<BasisSet> basis2();
+
+    const auto& shellpairs() const { return shellpairs_; }
 
     /// Number of chunks. Normally 1, but dipoles (3) quadrupoles (6).
     int nchunk() const { return nchunk_; }
@@ -159,7 +162,7 @@ class PSI_API OneBodyAOInt {
     Vector3 origin() const { return origin_; }
 
     /// Set the origin (useful for properties)
-    void set_origin(const Vector3& _origin) { origin_ = _origin; }
+    virtual void set_origin(const Vector3& _origin) { origin_ = _origin; }
 
     virtual void compute_pair(const GaussianShell& s1, const GaussianShell& s2){};
     virtual void compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2){};
