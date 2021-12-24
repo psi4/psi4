@@ -17,6 +17,8 @@ if(TARGET BrianQC::static_wrapper)
     )
 endif()
 
+target_link_libraries(scfgrad PUBLIC pybind11::headers)
+
 if(TARGET ECPINT::ecpint)
   target_link_libraries(scfgrad
     PUBLIC

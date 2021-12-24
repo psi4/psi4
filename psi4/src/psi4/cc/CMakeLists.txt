@@ -1,5 +1,7 @@
 psi4_add_module(bin cc "")
 
+target_link_libraries(cc PUBLIC pybind11::headers)
+
 # FIXME Remove once done
 list(APPEND _Clang_debug_flags
   "-Wall"
