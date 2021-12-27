@@ -1009,6 +1009,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
     // => Sizing <= //
 
     int nshell = primary_->nshell();
+    int nbf = primary_->nbf();
     int nthread = df_ints_num_threads_;
 
     // => Atom Blocking <= //
@@ -1026,19 +1027,19 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         basis_endpoints_for_shell.push_back(primary_->shell_to_basis_function(P));
     }
     shell_endpoints_for_atom.push_back(nshell);
-    basis_endpoints_for_shell.push_back(primary_->nbf());
+    basis_endpoints_for_shell.push_back(nbf);
 
     // => End Atomic Blocking <= //
 
     size_t natom = shell_endpoints_for_atom.size() - 1;
 
-    size_t max_functions_per_shell = 0L;
+    size_t max_functions_per_atom = 0L;
     for (size_t atom = 0; atom < natom; atom++) {
         size_t size = 0L;
         for (int P = shell_endpoints_for_atom[atom]; P < shell_endpoints_for_atom[atom + 1]; P++) {
             size += primary_->shell(P).nfunction();
         }
-        max_functions_per_shell = std::max(max_functions_per_shell, size);
+        max_functions_per_atom = std::max(max_functions_per_atom, size);
     }
 
     if (debug_) {
@@ -1087,31 +1088,50 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         }
     }
 
-    // => Signficant Ket Atoms for a given Bra Atom <= //
-    std::vector<std::unordered_set<int>> significant_kets(natom);
+    auto screen_compare = [](const std::pair<int, double> &a, 
+                                    const std::pair<int, double> &b) { return a.second > b.second; };
+
+    // Shells linked to each other through Schwarz Screening
+    std::vector<std::vector<int>> significant_bras(nshell);
+
+    for (size_t P = 0; P < nshell; P++) {
+        std::vector<std::pair<int, double>> PQ_shell_values;
+        for (size_t Q = 0; Q < nshell; Q++) {
+            double schwarz_value = std::sqrt(ints[0]->shell_ceiling2(P, Q, P, Q));
+            if (schwarz_value >= cutoff_) {
+                PQ_shell_values.emplace_back(Q, schwarz_value);
+            }
+        }
+        std::sort(PQ_shell_values.begin(), PQ_shell_values.end(), screen_compare);
+
+        for (const auto& value : PQ_shell_values) {
+            significant_bras[P].push_back(value.first);
+        }
+    }
+
+
+    // => "Pre-ordering and Pre-selection to find significant elements in Puv" <= //
+    std::vector<std::vector<int>> significant_kets(nshell);
 
     // => Defined in Oschenfeld Eq. 3 <= //
     // If shell U belonging to atom P, and shell V belonging to atom R satisfies the inequality
     // |Duv| * sqrt(Umax|Umax) * sqrt(Vmax|Vmax) >= linK_ints_cutoff_, then atom R is added to the ket list of atom P
-    for (size_t Patom = 0; Patom < natom; Patom++) {
-        for (size_t Ratom = 0; Ratom < natom; Ratom++) {
-            bool found = false;
-            for (int P = shell_endpoints_for_atom[Patom]; P < shell_endpoints_for_atom[Patom + 1]; P++) {
-                for (int R = shell_endpoints_for_atom[Ratom]; R < shell_endpoints_for_atom[Ratom + 1]; R++) {
-                    double screen = shell_ceilings[P] * shell_ceilings[R] * ints[0]->shell_pair_max_density(P, R);
-                    if (screen >= linK_ints_cutoff_) {
-                        found = true;
-                        significant_kets[Patom].emplace(Ratom);
-                        break;
-                    }
-                }
-                if (found) break;
+    for (size_t P = 0; P < nshell; P++) {
+        std::vector<std::pair<int, double>> PR_shell_values;
+        for (size_t R = 0; R < nshell; R++) {
+            double screen_val = shell_ceilings[P] * shell_ceilings[R] * ints[0]->shell_pair_max_density(P, R);
+            if (screen_val >= linK_ints_cutoff_) {
+                PR_shell_values.emplace_back(R, screen_val);
             }
+        }
+        std::sort(PR_shell_values.begin(), PR_shell_values.end(), screen_compare);
+
+        for (const auto& value : PR_shell_values) {
+            significant_kets[P].push_back(value.first);
         }
     }
 
     size_t natom_pair = atom_pairs.size();
-    size_t natom_pair2 = natom_pair * natom_pair;
 
     // => Intermediate Buffers <= //
 
@@ -1125,7 +1145,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         std::vector<SharedMatrix> K2;
         for (size_t ind = 0; ind < D.size(); ind++) {
             // (pq|rs) can be contracted into Kpr, Kps, Kqr, Kqs (hence the 4)
-            K2.push_back(std::make_shared<Matrix>("KT (linK)", 4 * max_functions_per_shell, max_functions_per_shell));
+            K2.push_back(std::make_shared<Matrix>("KT (linK)", 4 * max_functions_per_atom, nbf));
         }
         KT.push_back(K2);
     }
@@ -1136,192 +1156,40 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 // ==> Master Task Loop (Atom Quartet Indexing) <== //
 
 #pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells)
-    for (size_t quartet = 0L; quartet < natom_pair2; quartet++) {
+    for (size_t ipair = 0L; ipair < natom_pair; ipair++) { // O(N) shell-pairs in asymptotic limit
 
-        // Decomposing the quartet index into its atom indices
-        size_t atom_pair1 = quartet / natom_pair;
-        size_t atom_pair2 = quartet % natom_pair;
-
-        int Patom = atom_pairs[atom_pair1].first;
-        int Qatom = atom_pairs[atom_pair1].second;
-        int Ratom = atom_pairs[atom_pair2].first;
-        int Satom = atom_pairs[atom_pair2].second;
-
-        // If Ratom > Patom, the integrals have already been computed - don't compute them again
-        if (Ratom > Patom) continue;
-
-        // First layer of sparsity screening (Atom Bra-ket screening)
-        // Using an unordered_set allows for O(1) access
-        if (!significant_kets[Patom].count(Ratom)) continue;
-        if (!significant_kets[Patom].count(Satom)) continue;
-        if (!significant_kets[Qatom].count(Ratom)) continue;
-        if (!significant_kets[Qatom].count(Satom)) continue;
+        int Patom = atom_pairs[ipair].first;
+        int Qatom = atom_pairs[ipair].second;
         
         // Number of shells per atom
         int nPshell = shell_endpoints_for_atom[Patom + 1] - shell_endpoints_for_atom[Patom];
         int nQshell = shell_endpoints_for_atom[Qatom + 1] - shell_endpoints_for_atom[Qatom];
-        int nRshell = shell_endpoints_for_atom[Ratom + 1] - shell_endpoints_for_atom[Ratom];
-        int nSshell = shell_endpoints_for_atom[Satom + 1] - shell_endpoints_for_atom[Satom];
 
         // First shell per atom
         int Pstart = shell_endpoints_for_atom[Patom];
         int Qstart = shell_endpoints_for_atom[Qatom];
-        int Rstart = shell_endpoints_for_atom[Ratom];
-        int Sstart = shell_endpoints_for_atom[Satom];
 
         // Number of basis functions per atom
         int nPbasis = basis_endpoints_for_shell[Pstart + nPshell] - basis_endpoints_for_shell[Pstart];
         int nQbasis = basis_endpoints_for_shell[Qstart + nQshell] - basis_endpoints_for_shell[Qstart];
-        int nRbasis = basis_endpoints_for_shell[Rstart + nRshell] - basis_endpoints_for_shell[Rstart];
-        int nSbasis = basis_endpoints_for_shell[Sstart + nSshell] - basis_endpoints_for_shell[Sstart];
 
         int thread = 0;
 #ifdef _OPENMP
         thread = omp_get_thread_num();
 #endif
 
-        // Shell ceilings are max value of (U*|U*) for shell U
-        // sqrt(Umax|Umax) in Oschenfeld Eq. 3
-        std::vector<double> shell_ceiling_P(nPshell, 0.0);
-        std::vector<double> shell_ceiling_Q(nQshell, 0.0);
-        std::vector<double> shell_ceiling_R(nRshell, 0.0);
-        std::vector<double> shell_ceiling_S(nSshell, 0.0);
-
-        // sqrt(Pmax|Pmax) and sqrt(Qmax|Qmax)
-        for (int P = Pstart; P < Pstart + nPshell; P++) {
-            int dP = P - Pstart;
-            for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
-                int dQ = Q - Qstart;
-                double val = std::sqrt(ints[0]->shell_ceiling2(P, Q, P, Q));
-                shell_ceiling_P[dP] = std::max(shell_ceiling_P[dP], val);
-                shell_ceiling_Q[dQ] = std::max(shell_ceiling_Q[dQ], val);
-            }
-        }
-
-        // sqrt(Rmax|Rmax) and sqrt(Smax|Smax)
-        for (int R = Rstart; R < Rstart + nRshell; R++) {
-            int dR = R - Rstart;
-            for (int S = Sstart; S < Sstart + nSshell; S++) {
-                int dS = S - Sstart;
-                double val = std::sqrt(ints[0]->shell_ceiling2(R, S, R, S));
-                shell_ceiling_R[dR] = std::max(shell_ceiling_R[dR], val);
-                shell_ceiling_S[dS] = std::max(shell_ceiling_S[dS], val);
-            }
-        }
-
-        // Significant R shells for a given P shell (on Ratom and Patom only)
-        // Sorted by value of max(D_PR) * sqrt(Pmax|Pmax) * sqrt(Rmax|Rmax)
-        // Repeated for PS, QR, and QS
-        std::vector<std::vector<int>> sig_R_for_P(nPshell);
-        std::vector<std::vector<int>> sig_S_for_P(nPshell);
-        std::vector<std::vector<int>> sig_R_for_Q(nQshell);
-        std::vector<std::vector<int>> sig_S_for_Q(nQshell);
-
-        // Significant R shells for a given P shell (repeated for PS, QR, QS)
-        // Defined in Fig. 1 in Oschenfeld under header
-
-        // ==> "Pre-ordering and Pre-selection to find significant elements in Duv" <== //
-
-        auto ket_compare = [](const std::tuple<int, double> &a, 
-                                    const std::tuple<int, double> &b) { return std::get<1>(a) > std::get<1>(b); };
-
-        // Significant R for P
-        for (int P = Pstart; P < Pstart + nPshell; P++) {
-            int dP = P - Pstart;
-            std::vector<std::tuple<int, double>> shell_values;
-            for (int R = Rstart; R < Rstart + nRshell; R++) {
-                int dR = R - Rstart;
-                double D_max = ints[0]->shell_pair_max_density(P, R);
-                double screen_val = D_max * shell_ceiling_P[dP] * shell_ceiling_R[dR];
-                if (screen_val >= linK_ints_cutoff_) {
-                    shell_values.push_back(std::make_tuple(R, screen_val));
-                }
-            }
-
-            std::sort(shell_values.begin(), shell_values.end(), ket_compare);
-
-            for (const auto& value : shell_values) {
-                sig_R_for_P[dP].push_back(std::get<0>(value));
-            }
-        }
-
-        // Significant S for P
-        for (int P = Pstart; P < Pstart + nPshell; P++) {
-            int dP = P - Pstart;
-            std::vector<std::tuple<int, double>> shell_values;
-            for (int S = Sstart; S < Sstart + nSshell; S++) {
-                int dS = S - Sstart;
-                double D_max = ints[0]->shell_pair_max_density(P, S);
-                double screen_val = D_max * shell_ceiling_P[dP] * shell_ceiling_S[dS];
-                if (screen_val > linK_ints_cutoff_) {
-                    shell_values.push_back(std::make_tuple(S, screen_val));
-                }
-            }
-
-            std::sort(shell_values.begin(), shell_values.end(), ket_compare);
-
-            for (const auto& value : shell_values) {
-                sig_S_for_P[dP].push_back(std::get<0>(value));
-            }
-
-        }
-
-        // Significant R for Q
-        for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
-            int dQ = Q - Qstart;
-            std::vector<std::tuple<int, double>> shell_values;
-            for (int R = Rstart; R < Rstart + nRshell; R++) {
-                int dR = R - Rstart;
-                double D_max = ints[0]->shell_pair_max_density(Q, R);
-                double screen_val = D_max * shell_ceiling_Q[dQ] * shell_ceiling_R[dR];
-                if (screen_val > linK_ints_cutoff_) {
-                    shell_values.push_back(std::make_tuple(R, screen_val));
-                }
-            }
-
-            std::sort(shell_values.begin(), shell_values.end(), ket_compare);
-
-            for (const auto& value : shell_values) {
-                sig_R_for_Q[dQ].push_back(std::get<0>(value));
-            }
-
-        }
-
-        // Significant S for Q
-        for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
-            int dQ = Q - Qstart;
-            std::vector<std::tuple<int, double>> shell_values;
-            for (int S = Sstart; S < Sstart + nSshell; S++) {
-                int dS = S - Sstart;
-                double D_max = ints[0]->shell_pair_max_density(Q, S);
-                double screen_val = D_max * shell_ceiling_Q[dQ] * shell_ceiling_S[dS];
-                if (screen_val > linK_ints_cutoff_) {
-                    shell_values.push_back(std::make_tuple(S, screen_val));
-                }
-            }
-
-            std::sort(shell_values.begin(), shell_values.end(), ket_compare);
-
-            for (const auto& value : shell_values) {
-                sig_S_for_Q[dQ].push_back(std::get<0>(value));
-            }
-        }
-
-        // Stripeout Lists, used in the "Stripe out" section of the code
-        // Defined after the forthcoming loop
-        std::vector<std::unordered_set<int>> stripeout_R_for_P(nPshell);
-        std::vector<std::unordered_set<int>> stripeout_S_for_P(nPshell);
-        std::vector<std::unordered_set<int>> stripeout_R_for_Q(nQshell);
-        std::vector<std::unordered_set<int>> stripeout_S_for_Q(nQshell);
+        // Keep track of contraction indices for stripeout
+        std::vector<std::unordered_set<int>> P_stripeout_list(nPshell);
+        std::vector<std::unordered_set<int>> Q_stripeout_list(nQshell);
 
         bool touched = false;
         for (int P = Pstart; P < Pstart + nPshell; P++) {
             for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
 
-                if (Q > P) continue;
-
                 int dP = P - Pstart;
                 int dQ = Q - Qstart;
+
+                if (Q > P) continue;
 
                 // => "Formation of Significant Shell Pair List ML" <= //
 
@@ -1331,100 +1199,36 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                 
                 std::unordered_set<int> ML_PQ;
 
-                // Form ML_P inside ML_PQ (using PR elements)
-                for (const int R : sig_R_for_P[dP]) {
+                // Form ML_P inside ML_PQ
+                for (const int R : significant_kets[P]) {
                     int count = 0;
-                    for (const int S : sig_S_for_P[dP]) {
-
-                        int dR = R - Rstart;
-                        int dS = S - Sstart;
-
+                    for (const int S : significant_bras[R]) {
                         double screen_val = ints[0]->shell_pair_max_density(P, R) * std::sqrt(ints[0]->shell_ceiling2(P, Q, R, S));
 
                         if (screen_val >= linK_ints_cutoff_) {
                             count += 1;
-                            if (S > R) continue;
-                            if (R * nshell + S > P * nshell + Q) continue;
-
-                            // Since D_PR elements are contracted over, the contributions would be to K_QS
-                            stripeout_S_for_Q[dQ].emplace(S);
-
-                            ML_PQ.emplace(R * nshell + S);
+                            int RS = (R >= S) ? R * nshell + S : S * nshell + R;
+                            if (RS > P * nshell + Q) continue;
+                            ML_PQ.emplace(RS);
+                            Q_stripeout_list[dQ].emplace(S);
                         }
                         else break;
                     }
                     if (count == 0) break;
                 }
 
-                // Form ML_P inside ML_PQ (using PS elements)
-                for (const int S : sig_S_for_P[dP]) {
+                // Form ML_Q inside ML_PQ
+                for (const int R : significant_kets[Q]) {
                     int count = 0;
-                    for (const int R : sig_R_for_P[dP]) {
-
-                        int dR = R - Rstart;
-                        int dS = S - Sstart;
-
-                        double screen_val = ints[0]->shell_pair_max_density(P, S) * std::sqrt(ints[0]->shell_ceiling2(P, Q, R, S));
-
-                        if (screen_val >= linK_ints_cutoff_) {
-                            count += 1;
-                            if (S > R) continue;
-                            if (R * nshell + S > P * nshell + Q) continue;
-
-                            // Since D_PS elements are contracted over, the contributions would be to K_QR
-                            stripeout_R_for_Q[dQ].emplace(R);
-
-                            ML_PQ.emplace(R * nshell + S);
-                        }
-                        else break;
-                    }
-                    if (count == 0) break;
-                }
-
-                // Form ML_Q inside ML_PQ (using QR) elements
-                for (const int R : sig_R_for_Q[dQ]) {
-                    int count = 0;
-                    for (const int S : sig_S_for_Q[dQ]) {
-
-                        int dR = R - Rstart;
-                        int dS = S - Sstart;
-
+                    for (const int S : significant_bras[R]) {
                         double screen_val = ints[0]->shell_pair_max_density(Q, R) * std::sqrt(ints[0]->shell_ceiling2(P, Q, R, S));
 
                         if (screen_val >= linK_ints_cutoff_) {
                             count += 1;
-                            if (S > R) continue;
-                            if (R * nshell + S > P * nshell + Q) continue;
-
-                            // Since D_QR elements are contracted over, the contributions would be to K_PS
-                            stripeout_S_for_P[dP].emplace(S);
-
-                            ML_PQ.emplace(R * nshell + S);
-                        }
-                        else break;
-                    }
-                    if (count == 0) break;
-                }
-
-                // Form ML_Q inside ML_PQ (using QS) elements
-                for (const int S : sig_S_for_Q[dQ]) {
-                    int count = 0;
-                    for (const int R : sig_R_for_Q[dQ]) {
-
-                        int dR = R - Rstart;
-                        int dS = S - Sstart;
-
-                        double screen_val = ints[0]->shell_pair_max_density(Q, S) * std::sqrt(ints[0]->shell_ceiling2(P, Q, R, S));
-
-                        if (screen_val >= linK_ints_cutoff_) {
-                            count += 1;
-                            if (S > R) continue;
-                            if (R * nshell + S > P * nshell + Q) continue;
-
-                            // Since D_QS elements are contracted over, the contributions would be to K_PR
-                            stripeout_R_for_P[dP].emplace(R);
-
-                            ML_PQ.emplace(R * nshell + S);
+                            int RS = (R >= S) ? R * nshell + S : S * nshell + R;
+                            if (RS > P * nshell + Q) continue;
+                            ML_PQ.emplace(RS);
+                            P_stripeout_list[dP].emplace(S);
                         }
                         else break;
                     }
@@ -1436,9 +1240,6 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
                     int R = RS / nshell;
                     int S = RS % nshell;
-
-                    if (S > R) continue;
-                    if (R * nshell + S > P * nshell + Q) continue;
 
                     if (!ints[0]->shell_pair_significant(R, S)) continue;
                     if (!ints[0]->shell_significant(P, Q, R, S)) continue;
@@ -1457,33 +1258,32 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
                     // Basis Function Starting index for shell
                     int shell_P_start = primary_->shell(P).function_index();
-                    int Qoff = primary_->shell(Q).function_index();
-                    int Roff = primary_->shell(R).function_index();
-                    int Soff = primary_->shell(S).function_index();
+                    int shell_Q_start = primary_->shell(Q).function_index();
+                    int shell_R_start = primary_->shell(R).function_index();
+                    int shell_S_start = primary_->shell(S).function_index();
 
                     // Basis Function offset from first basis function in the atom
                     int shell_P_offset = basis_endpoints_for_shell[P] - basis_endpoints_for_shell[Pstart];
                     int shell_Q_offset = basis_endpoints_for_shell[Q] - basis_endpoints_for_shell[Qstart];
-                    int shell_R_offset = basis_endpoints_for_shell[R] - basis_endpoints_for_shell[Rstart];
-                    int shell_S_offset = basis_endpoints_for_shell[S] - basis_endpoints_for_shell[Sstart];
 
                     for (size_t ind = 0; ind < D.size(); ind++) {
+                        double** Kp = K[ind]->pointer();
                         double** Dp = D[ind]->pointer();
                         double** KTp = KT[thread][ind]->pointer();
                         const double* buffer2 = buffer;
 
                         if (!touched) {
-                            ::memset((void*)KTp[0L * max_functions_per_shell], '\0', nPbasis * nRbasis * sizeof(double));
-                            ::memset((void*)KTp[1L * max_functions_per_shell], '\0', nPbasis * nSbasis * sizeof(double));
-                            ::memset((void*)KTp[2L * max_functions_per_shell], '\0', nQbasis * nRbasis * sizeof(double));
-                            ::memset((void*)KTp[3L * max_functions_per_shell], '\0', nQbasis * nSbasis * sizeof(double));
+                            ::memset((void*)KTp[0L * max_functions_per_atom], '\0', nPbasis * nbf * sizeof(double));
+                            ::memset((void*)KTp[1L * max_functions_per_atom], '\0', nPbasis * nbf * sizeof(double));
+                            ::memset((void*)KTp[2L * max_functions_per_atom], '\0', nQbasis * nbf * sizeof(double));
+                            ::memset((void*)KTp[3L * max_functions_per_atom], '\0', nQbasis * nbf * sizeof(double));
                         }
 
                         // Four pointers needed for PR, PS, QR, QS
-                        double* K1p = KTp[0L * max_functions_per_shell];
-                        double* K2p = KTp[1L * max_functions_per_shell];
-                        double* K3p = KTp[2L * max_functions_per_shell];
-                        double* K4p = KTp[3L * max_functions_per_shell];
+                        double* K1p = KTp[0L * max_functions_per_atom];
+                        double* K2p = KTp[1L * max_functions_per_atom];
+                        double* K3p = KTp[2L * max_functions_per_atom];
+                        double* K4p = KTp[3L * max_functions_per_atom];
 
                         double prefactor = 1.0;
                         if (P == Q) prefactor *= 0.5;
@@ -1495,14 +1295,14 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                                 for (int r = 0; r < shell_R_nfunc; r++) {
                                     for (int s = 0; s < shell_S_nfunc; s++) {
 
-                                        K1p[(p + shell_P_offset) * nRbasis + r + shell_R_offset] +=
-                                            prefactor * (Dp[q + Qoff][s + Soff]) * (*buffer2);
-                                        K2p[(p + shell_P_offset) * nSbasis + s + shell_S_offset] +=
-                                            prefactor * (Dp[q + Qoff][r + Roff]) * (*buffer2);
-                                        K3p[(q + shell_Q_offset) * nRbasis + r + shell_R_offset] +=
-                                            prefactor * (Dp[p + shell_P_start][s + Soff]) * (*buffer2);
-                                        K4p[(q + shell_Q_offset) * nSbasis + s + shell_S_offset] +=
-                                            prefactor * (Dp[p + shell_P_start][r + Roff]) * (*buffer2);
+                                        K1p[(p + shell_P_offset) * nbf + r + shell_R_start] +=
+                                            prefactor * (Dp[q + shell_Q_start][s + shell_S_start]) * (*buffer2);
+                                        K2p[(p + shell_P_offset) * nbf + s + shell_S_start] +=
+                                            prefactor * (Dp[q + shell_Q_start][r + shell_R_start]) * (*buffer2);
+                                        K3p[(q + shell_Q_offset) * nbf + r + shell_R_start] +=
+                                            prefactor * (Dp[p + shell_P_start][s + shell_S_start]) * (*buffer2);
+                                        K4p[(q + shell_Q_offset) * nbf + s + shell_S_start] +=
+                                            prefactor * (Dp[p + shell_P_start][r + shell_R_start]) * (*buffer2);
 
                                         buffer2++;
                                     }
@@ -1525,94 +1325,50 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
             double** KTp = KT[thread][ind]->pointer();
             double** Kp = K[ind]->pointer();
 
-            double* K1p = KTp[0L * max_functions_per_shell];
-            double* K2p = KTp[1L * max_functions_per_shell];
-            double* K3p = KTp[2L * max_functions_per_shell];
-            double* K4p = KTp[3L * max_functions_per_shell];
+            double* K1p = KTp[0L * max_functions_per_atom];
+            double* K2p = KTp[1L * max_functions_per_atom];
+            double* K3p = KTp[2L * max_functions_per_atom];
+            double* K4p = KTp[3L * max_functions_per_atom];
 
-            // > K_PR and K_PS < //
-
+            // K_PR and K_PS
             for (int P = Pstart; P < Pstart + nPshell; P++) {
-                int dP = P - Pstart;
-                for (const int R : stripeout_R_for_P[dP]) {
-
-                    int shell_P_nfunc = primary_->shell(P).nfunction();
-                    int shell_R_nfunc = primary_->shell(R).nfunction();
-
-                    int shell_P_start = primary_->shell(P).function_index();
-                    int Roff = primary_->shell(R).function_index();
-
-                    int shell_P_offset = basis_endpoints_for_shell[P] - basis_endpoints_for_shell[Pstart];
-                    int shell_R_offset = basis_endpoints_for_shell[R] - basis_endpoints_for_shell[Rstart];
-
-                    for (int p = 0; p < shell_P_nfunc; p++) {
-                        for (int r = 0; r < shell_R_nfunc; r++) {
-#pragma omp atomic
-                            Kp[p + shell_P_start][r + Roff] += K1p[(p + shell_P_offset) * nRbasis + r + shell_R_offset];
-                        }
-                    }
-                }
-
-                for (const int S : stripeout_S_for_P[dP]) {
-
-                    int shell_P_nfunc = primary_->shell(P).nfunction();
+                int shell_P_start = primary_->shell(P).function_index();
+                int shell_P_nfunc = primary_->shell(P).nfunction();
+                int shell_P_offset = basis_endpoints_for_shell[P] - basis_endpoints_for_shell[Pstart];
+                for (const int S : P_stripeout_list[P - Pstart]) {
+                    int shell_S_start = primary_->shell(S).function_index();
                     int shell_S_nfunc = primary_->shell(S).nfunction();
-
-                    int shell_P_start = primary_->shell(P).function_index();
-                    int Soff = primary_->shell(S).function_index();
-
-                    int shell_P_offset = basis_endpoints_for_shell[P] - basis_endpoints_for_shell[Pstart];
-                    int shell_S_offset = basis_endpoints_for_shell[S] - basis_endpoints_for_shell[Sstart];
 
                     for (int p = 0; p < shell_P_nfunc; p++) {
                         for (int s = 0; s < shell_S_nfunc; s++) {
 #pragma omp atomic
-                            Kp[p + shell_P_start][s + Soff] += K2p[(p + shell_P_offset) * nSbasis + s + shell_S_offset];
+                            Kp[shell_P_start + p][shell_S_start + s] += K1p[(p + shell_P_offset) * nbf + s + shell_S_start];
+#pragma omp atomic
+                            Kp[shell_P_start + p][shell_S_start + s] += K2p[(p + shell_P_offset) * nbf + s + shell_S_start];
                         }
                     }
+
                 }
             }
 
-            // > K_QR and K_QS < //
-
+            // K_QR and K_QS
             for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
-                int dQ = Q - Qstart;
-                for (const int R : stripeout_R_for_Q[dQ]) {
-
-                    int shell_Q_nfunc = primary_->shell(Q).nfunction();
-                    int shell_R_nfunc = primary_->shell(R).nfunction();
-
-                    int Qoff = primary_->shell(Q).function_index();
-                    int Roff = primary_->shell(R).function_index();
-
-                    int shell_Q_offset = basis_endpoints_for_shell[Q] - basis_endpoints_for_shell[Qstart];
-                    int shell_R_offset = basis_endpoints_for_shell[R] - basis_endpoints_for_shell[Rstart];
-
-                    for (int q = 0; q < shell_Q_nfunc; q++) {
-                        for (int r = 0; r < shell_R_nfunc; r++) {
-#pragma omp atomic
-                            Kp[q + Qoff][r + Roff] += K3p[(q + shell_Q_offset) * nRbasis + r + shell_R_offset];
-                        }
-                    }
-                }
-
-                for (const int S : stripeout_S_for_Q[dQ]) {
-
-                    int shell_Q_nfunc = primary_->shell(Q).nfunction();
+                int shell_Q_start = primary_->shell(Q).function_index();
+                int shell_Q_nfunc = primary_->shell(Q).nfunction();
+                int shell_Q_offset = basis_endpoints_for_shell[Q] - basis_endpoints_for_shell[Qstart];
+                for (const int S : Q_stripeout_list[Q - Qstart]) {
+                    int shell_S_start = primary_->shell(S).function_index();
                     int shell_S_nfunc = primary_->shell(S).nfunction();
-
-                    int Qoff = primary_->shell(Q).function_index();
-                    int Soff = primary_->shell(S).function_index();
-
-                    int shell_Q_offset = basis_endpoints_for_shell[Q] - basis_endpoints_for_shell[Qstart];
-                    int shell_S_offset = basis_endpoints_for_shell[S] - basis_endpoints_for_shell[Sstart];
 
                     for (int q = 0; q < shell_Q_nfunc; q++) {
                         for (int s = 0; s < shell_S_nfunc; s++) {
 #pragma omp atomic
-                            Kp[q + Qoff][s + Soff] += K4p[(q + shell_Q_offset) * nSbasis + s + shell_S_offset];
+                            Kp[shell_Q_start + q][shell_S_start + s] += K3p[(q + shell_Q_offset) * nbf + s + shell_S_start];
+#pragma omp atomic
+                            Kp[shell_Q_start + q][shell_S_start + s] += K4p[(q + shell_Q_offset) * nbf + s + shell_S_start];
                         }
                     }
+
                 }
             }
 
