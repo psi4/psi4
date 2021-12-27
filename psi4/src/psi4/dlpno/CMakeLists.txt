@@ -5,4 +5,4 @@ list(APPEND sources
   )
 psi4_add_module(bin dlpno sources)
 
-target_link_libraries(dlpno PUBLIC pybind11::headers)
+target_link_libraries(dlpno PUBLIC diis)

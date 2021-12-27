@@ -4,4 +4,4 @@ list(APPEND sources
   )
 psi4_add_module(bin fisapt sources)
 
-target_link_libraries(fisapt PUBLIC pybind11::headers)
+target_link_libraries(fisapt PUBLIC diis)

@@ -55,4 +55,4 @@ list(APPEND sources
   )
 psi4_add_module(bin occ sources)
 
-target_link_libraries(occ PUBLIC pybind11::headers)
+target_link_libraries(occ PUBLIC diis)

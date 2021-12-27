@@ -50,4 +50,4 @@ endif ()
 
 psi4_add_module(bin dct sources)
 
-target_link_libraries(dct PUBLIC pybind11::headers)
+target_link_libraries(dct PUBLIC diis)

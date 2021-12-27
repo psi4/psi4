@@ -106,4 +106,4 @@ list(APPEND sources
   )
 psi4_add_module(bin dfocc sources)
 
-target_link_libraries(dfocc PUBLIC pybind11::headers)
+target_link_libraries(dfocc PUBLIC diis)
