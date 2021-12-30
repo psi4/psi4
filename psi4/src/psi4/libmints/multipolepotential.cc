@@ -224,8 +224,8 @@ void MultipolePotentialInt::compute_pair(const libint2::Shell &s1, const libint2
             }
         }
     }
-    pure_transform(s1, s2, 3);
-    buffers_[0] = buffer_ + 0 * s1.size() * s2.size();
-    buffers_[1] = buffer_ + 1 * s1.size() * s2.size();
-    buffers_[2] = buffer_ + 2 * s1.size() * s2.size();
+    pure_transform(s1, s2, number_of_chunks(max_k_));
+    for (int chunk = 0; chunk < number_of_chunks(max_k_); ++chunk) {
+        buffers_[chunk] = buffer_ + chunk * s1.size() * s2.size();
+    }
 }

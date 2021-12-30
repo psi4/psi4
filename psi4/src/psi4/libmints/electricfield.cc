@@ -62,7 +62,7 @@ ElectricFieldInt::~ElectricFieldInt() { }
 
 void ElectricFieldInt::set_origin(const Vector3 &origin) {
     set_chunks(9);
-    engine0_->set_params(std::vector<std::pair<double, std::array<double,3>>>{{1.0, {origin[0], origin[1], origin[2]}}});
+    engine0_->set_params(std::vector<std::pair<double, std::array<double,3>>>{{-1.0, {origin[0], origin[1], origin[2]}}});
 }
 
 void ElectricFieldInt::compute(std::vector<SharedMatrix> &result) {

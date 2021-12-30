@@ -3189,49 +3189,50 @@ std::vector<SharedMatrix> MintsHelper::ao_elec_dip_deriv1_helper(int atom) {
     int nbf2 = bs2->nbf();
 
     std::vector<SharedMatrix> grad;
-    //for (int p = 0; p < 3; p++) {
-    //    std::stringstream sstream;
-    //    sstream << "ao_mu" << cartcomp[p] << "_deriv1_";
-    //    for (int q = 0; q < 3; q++) {
-    //        sstream << atom << cartcomp[q];
-    //        grad.push_back(std::make_shared<Matrix>(sstream.str(), nbf1, nbf2));
-    //    }
-    //}
+    for (int p = 0; p < 3; p++) {
+        std::stringstream sstream;
+        sstream << "ao_mu" << cartcomp[p] << "_deriv1_";
+        for (int q = 0; q < 3; q++) {
+            sstream << atom << cartcomp[q];
+            grad.push_back(std::make_shared<Matrix>(sstream.str(), nbf1, nbf2));
+        }
+    }
 
-    //const double *buffer = Dint->buffer();
+    for (int P = 0; P < bs1->nshell(); P++) {
+        for (int Q = 0; Q < bs2->nshell(); Q++) {
+            int nP = basisset_->shell(P).nfunction();
+            int oP = basisset_->shell(P).function_index();
+            int aP = basisset_->shell(P).ncenter();
 
-    //for (int P = 0; P < bs1->nshell(); P++) {
-    //    for (int Q = 0; Q < bs2->nshell(); Q++) {
-    //        int nP = basisset_->shell(P).nfunction();
-    //        int oP = basisset_->shell(P).function_index();
-    //        int aP = basisset_->shell(P).ncenter();
+            int nQ = basisset_->shell(Q).nfunction();
+            int oQ = basisset_->shell(Q).function_index();
+            int aQ = basisset_->shell(Q).ncenter();
 
-    //        int nQ = basisset_->shell(Q).nfunction();
-    //        int oQ = basisset_->shell(Q).function_index();
-    //        int aQ = basisset_->shell(Q).ncenter();
+            if (aP != atom && aQ != atom) continue;
 
-    //        if (aP != atom && aQ != atom) continue;
+            const auto &l2_s1 = basisset_->l2_shell(P);
+            const auto &l2_s2 = basisset_->l2_shell(Q);
+            Dint->compute_pair_deriv1(l2_s1, l2_s2);
+            const auto &buffers = Dint->buffers();
 
-    //        const auto &l2_s1 = basisset_->l2_shell(P);
-    //        const auto &l2_s2 = basisset_->l2_shell(Q);
-    //        Dint->compute_pair_deriv1(l2_s1, l2_s2);
-    //        const auto &buffers = Dint->buffers();
-
-    //        for (int mu_cart = 0; mu_cart < 3; mu_cart++) {
-    //            for (int atom_cart = 0; atom_cart < 3; atom_cart++) {
-    //                int offset = (6 * mu_cart * nP * nQ) + (atom_cart * nP * nQ) + (3 * (atom == aQ) * nP * nQ);
-    //                for (int p = 0; p < nP; p++) {
-    //                    for (int q = 0; q < nQ; q++) {
-    //                        if (aP == aQ)
-    //                            grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ,
-    //                                                               buffer[p * nQ + q + offset - (3 * nP * nQ)]);
-    //                        grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ, buffer[p * nQ + q + offset]);
-    //                    }
-    //                }
-    //            }
-    //        }
-    //    }
-    //}
+            for (int mu_cart = 0; mu_cart < 3; mu_cart++) {
+                for (int atom_cart = 0; atom_cart < 3; atom_cart++) {
+                    const double * bufferP = buffers[6*mu_cart + atom_cart];
+                    const double * bufferQ = buffers[6*mu_cart + atom_cart + 3];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            if (atom == aP) {
+                                grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ, *bufferP++);
+                            }
+                            if (atom == aQ) {
+                                grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ, *bufferQ++);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     return grad;
 }
