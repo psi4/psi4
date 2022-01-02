@@ -102,7 +102,7 @@ def _sum_cluster_ptype_data(ptype,
 
             for abs_sl1, rel_sl1 in zip(abs_slices, rel_slices):
                 for abs_sl2, rel_sl2 in zip(abs_slices, rel_slices):
-                    ret[abs_sl1, abs_sl2] += hess[rel_sl1, rel_sl2]
+                    ret[abs_sl1, abs_sl2] += sign * hess[rel_sl1, rel_sl2]
 
     else:
         raise KeyError("ptype can only be gradient or hessian How did you end up here?")
