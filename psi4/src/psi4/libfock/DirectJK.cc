@@ -1013,8 +1013,8 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
     int nthread = df_ints_num_threads_;
 
     // => Atom Blocking <= //
+
     // Define the shells of each atom as a task
-    
     std::vector<int> shell_endpoints_for_atom;
     std::vector<int> basis_endpoints_for_shell;
 
@@ -1077,21 +1077,11 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         }
     }
 
-    // => Calculate Shell Ceilings (To find significant bra-ket atom pairs)
-    // sqrt(Umax|Umax) in Oschenfeld Eq. 3
-    std::vector<double> shell_ceilings(nshell, 0.0);
-    for (int P = 0; P < nshell; P++) {
-        for (int Q = 0; Q <= P; Q++) {
-            double val = std::sqrt(ints[0]->shell_ceiling2(P, Q, P, Q));
-            shell_ceilings[P] = std::max(shell_ceilings[P], val);
-            shell_ceilings[Q] = std::max(shell_ceilings[Q], val);
-        }
-    }
-
+    // A comparator used for sorting integral screening values
     auto screen_compare = [](const std::pair<int, double> &a, 
                                     const std::pair<int, double> &b) { return a.second > b.second; };
 
-    // Shells linked to each other through Schwarz Screening
+    // Shells linked to each other through Schwarz Screening (Significant Overlap)
     std::vector<std::vector<int>> significant_bras(nshell);
 
     for (size_t P = 0; P < nshell; P++) {
@@ -1109,13 +1099,23 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         }
     }
 
+    // => Calculate Shell Ceilings (To find significant bra-ket atom pairs)
+    // sqrt(Umax|Umax) in Oschenfeld Eq. 3
+    std::vector<double> shell_ceilings(nshell, 0.0);
+    for (int P = 0; P < nshell; P++) {
+        for (int Q = 0; Q <= P; Q++) {
+            double val = std::sqrt(ints[0]->shell_ceiling2(P, Q, P, Q));
+            shell_ceilings[P] = std::max(shell_ceilings[P], val);
+            shell_ceilings[Q] = std::max(shell_ceilings[Q], val);
+        }
+    }
 
     // => "Pre-ordering and Pre-selection to find significant elements in Puv" <= //
     std::vector<std::vector<int>> significant_kets(nshell);
 
     // => Defined in Oschenfeld Eq. 3 <= //
-    // If shell U belonging to atom P, and shell V belonging to atom R satisfies the inequality
-    // |Duv| * sqrt(Umax|Umax) * sqrt(Vmax|Vmax) >= linK_ints_cutoff_, then atom R is added to the ket list of atom P
+    // For shells P and R, If |Dpr| * sqrt(Pmax|Pmax) * sqrt(Rmax|Rmax) [screening value] >= linK_ints_cutoff_,
+    // Then shell R is added to the ket list of shell P (and sorted by the screening value)
     for (size_t P = 0; P < nshell; P++) {
         std::vector<std::pair<int, double>> PR_shell_values;
         for (size_t R = 0; R < nshell; R++) {
@@ -1137,7 +1137,6 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
     // Temporary buffers used during the K contraction process to
     // Take full advantage of permutational symmetry of ERIs
-
     std::vector<std::vector<SharedMatrix>> KT;
 
     // A buffer is created for every thread to minimize race conditions
@@ -1178,7 +1177,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         thread = omp_get_thread_num();
 #endif
 
-        // Keep track of contraction indices for stripeout
+        // Keep track of contraction indices for stripeout (Towards end of this function)
         std::vector<std::unordered_set<int>> P_stripeout_list(nPshell);
         std::vector<std::unordered_set<int>> Q_stripeout_list(nQshell);
 
@@ -1196,7 +1195,6 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                 // Significant ket shell pairs RS for bra shell pair PQ
                 // represents the merge of ML_P and ML_Q as defined in Oschenfeld
                 // Unordered set structure allows for automatic merging as new elements are added
-                
                 std::unordered_set<int> ML_PQ;
 
                 // Form ML_P inside ML_PQ
