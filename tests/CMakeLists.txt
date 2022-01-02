@@ -70,7 +70,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   mints9 mints10 mints15 molden1 molden2 mom mom-h2o-3 mom-h2o-4
                   mp2-1  mp2-def2 mp2-grad1 mp2-grad2 mp2-h mp2p5-grad1 mp2p5-grad2 mp3-grad1 mp3-grad2
                   mp2-property mpn-bh nbody-he-cluster nbody-intermediates nbody-nocp-gradient
-                  nbo nbody-cp-gradient nbody-vmfc-gradient nbody-convergence
+                  nbo nbody-cp-gradient nbody-vmfc-gradient nbody-vmfc-hessian nbody-convergence
                   nbody-freq nbody-multi-level numpy-array-interface
                   olccd-freq1 olccd-grad1 olccd-grad2 olccd1 olccd2 olccd3
                   omp2-1 omp2-2 omp2-3 omp2-4 omp2-5 omp2-grad1 omp2-grad2
