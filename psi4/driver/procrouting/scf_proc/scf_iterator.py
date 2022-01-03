@@ -292,7 +292,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         self.form_G()
         core.timer_off("HF: Form G")
 
-        # Check if the J and K matrices have been built from INCFOCK (Haser 1989) or LinK (Oschenfeld 1998)
+        # Check if special J/K construction algorithms were used
         incfock_performed = hasattr(self.jk(), "do_incfock_iter") and self.jk().do_incfock_iter()
         linK_performed = hasattr(self.jk(), "do_linK") and self.jk().do_linK()
 
