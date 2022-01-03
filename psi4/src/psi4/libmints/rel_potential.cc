@@ -284,14 +284,6 @@ void RelPotentialInt::compute_pair(const libint2::Shell& s1, const libint2::Shel
     buffers_[0] = buffer_;
 }
 
-void RelPotentialInt::compute_pair_deriv1(const GaussianShell&, const GaussianShell&) {
-    throw SanityCheckError("RelPotentialInt::compute_pair_deriv1(): not implemented.", __FILE__, __LINE__);
-}
-
-void RelPotentialInt::compute_pair_deriv2(const GaussianShell&, const GaussianShell&) {
-    throw SanityCheckError("RelPotentialInt::compute_pair_deriv2(): not implemented.", __FILE__, __LINE__);
-}
-
 void RelPotentialInt::compute_deriv1(std::vector<SharedMatrix>&) {
     throw SanityCheckError("RelPotentialInt::compute_deriv1(): not implemented.", __FILE__, __LINE__);
 }

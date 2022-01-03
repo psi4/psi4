@@ -50,7 +50,6 @@ class Shell;
 namespace psi {
 
 class BasisSet;
-class GaussianShell;
 class SphericalTransform;
 
 /*! \ingroup MINTS
@@ -90,11 +89,7 @@ class PSI_API OneBodyAOInt {
     OneBodyAOInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                  int deriv = 0);
     void set_chunks(int nchunk) { nchunk_ = nchunk; }
-    void pure_transform(const GaussianShell&, const GaussianShell&, int = 1);
     void pure_transform(const libint2::Shell &s1, const libint2::Shell &s2, int nchunks = 1);
-
-    /// Normalize Cartesian functions based on angular momentum
-    void normalize_am(const GaussianShell&, const GaussianShell&, int nchunk = 1);
 
    public:
     virtual ~OneBodyAOInt();
@@ -116,7 +111,6 @@ class PSI_API OneBodyAOInt {
     const double* buffer() const;
 
     /// Compute the integrals between basis function in the given shell pair.
-    PSI_DEPRECATED("No. Maybe.")
     void compute_shell(int, int);
 
     /*! @{
@@ -137,9 +131,6 @@ class PSI_API OneBodyAOInt {
 
     /// What order of derivative was requested?
     int deriv() const { return deriv_; }
-
-    /// Use libint2?
-    virtual bool l2() const { return false; }
 
     /// Computes the first derivatives and stores them in result
     virtual void compute_deriv1(std::vector<SharedMatrix>& result);
@@ -163,10 +154,6 @@ class PSI_API OneBodyAOInt {
 
     /// Set the origin (useful for properties)
     virtual void set_origin(const Vector3& _origin) { origin_ = _origin; }
-
-    virtual void compute_pair(const GaussianShell& s1, const GaussianShell& s2){};
-    virtual void compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2){};
-    virtual void compute_pair_deriv2(const GaussianShell& s1, const GaussianShell& s2){};
 
     virtual void compute_pair(const libint2::Shell&, const libint2::Shell&);
     virtual void compute_pair_deriv1(const libint2::Shell&, const libint2::Shell&);

@@ -50,10 +50,6 @@ class SphericalTransform;
  * Use an IntegralFactory to create this object.
  */
 class PseudospectralInt : public OneBodyAOInt {
-    /// Computes integrals between two shell objects.
-    void compute_pair(const GaussianShell&, const GaussianShell&) override;
-    /// Computes integrals between two shell objects.
-    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&) override;
 
    protected:
     /// Use range-separation or not? Defaults to false. If so, produce <m|erf(\omega r) / r|n> integrals
@@ -66,17 +62,12 @@ class PseudospectralInt : public OneBodyAOInt {
     double C_[3];
     /// Recursion object that does the heavy lifting.
     ObaraSaikaTwoCenterVIRecursion potential_recur_;
-    /// Recursion object that does the heavy lifting.
-    ObaraSaikaTwoCenterVIDerivRecursion potential_deriv_recur_;
 
    public:
     /// Constructor
     PseudospectralInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                       int deriv = 0);
     ~PseudospectralInt() override;
-
-    /// Computes integrals between two shells.
-    void compute_shell_deriv1(int, int) override;
 
     /// Set integration point
     void set_point(double x, double y, double z) {
@@ -94,8 +85,7 @@ class PseudospectralInt : public OneBodyAOInt {
     /// Set the value of the use_omega_ flag
     void use_omega(bool yes) { use_omega_ = yes; }
 
-    /// Does the method provide first derivatives?
-    bool has_deriv1() override { return false; }
+    void compute_pair(const libint2::Shell &, const libint2::Shell &) override;
 };
 
 }  // namespace psi

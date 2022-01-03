@@ -184,37 +184,6 @@ OneBodyAOInt *OneBodyAOInt::clone() const {
     throw FeatureNotImplemented("libmints", "OneBodyInt::clone()", __FILE__, __LINE__);
 }
 
-void OneBodyAOInt::normalize_am(const GaussianShell & /*s1*/, const GaussianShell & /*s2*/, int /*nchunk*/) {
-    // ACS removed this; the normalize function just returns 1.0
-    //    // Integrals are done. Normalize for angular momentum
-    //    int am1 = s1.am();
-    //    int am2 = s2.am();
-    //    int length = INT_NCART(am1) * INT_NCART(am2);
-
-    //    int ao12 = 0;
-    //    for(int ii = 0; ii <= am1; ii++) {
-    //        int l1 = am1 - ii;
-    //        for(int jj = 0; jj <= ii; jj++) {
-    //            int m1 = ii - jj;
-    //            int n1 = jj;
-    //            /*--- create all am components of sj ---*/
-    //            for(int kk = 0; kk <= am2; kk++) {
-    //                int l2 = am2 - kk;
-    //                for(int ll = 0; ll <= kk; ll++) {
-    //                    int m2 = kk - ll;
-    //                    int n2 = ll;
-
-    //                    for (int chunk=0; chunk<nchunk; ++chunk) {
-    //                        buffer_[ao12+(chunk*length)] *= GaussianShell::normalize(l1, m1, n1) *
-    //                        GaussianShell::normalize(l2, m2, n2);
-    //                    }
-    //                    ao12++;
-    //                }
-    //            }
-    //        }
-    //    }
-}
-
 void OneBodyAOInt::pure_transform(const libint2::Shell &s1, const libint2::Shell &s2, int chunks) {
     for (int chunk = 0; chunk < chunks; ++chunk) {
         const int am1 = s1.contr[0].l;
@@ -272,102 +241,8 @@ void OneBodyAOInt::pure_transform(const libint2::Shell &s1, const libint2::Shell
     }
 }
 
-void OneBodyAOInt::pure_transform(const GaussianShell &s1, const GaussianShell &s2, int chunks) {
-    for (int chunk = 0; chunk < chunks; ++chunk) {
-        const int am1 = s1.am();
-        const int is_pure1 = s1.is_pure() && am1 > 0;
-        const int ncart1 = s1.ncartesian();
-        const int nbf1 = s1.nfunction();
-
-        const int am2 = s2.am();
-        const int is_pure2 = s2.is_pure() && am2 > 0;
-        const int ncart2 = s2.ncartesian();
-        const int nbf2 = s2.nfunction();
-
-        int ncart12 = ncart1 * ncart2;
-        int nbf12 = nbf1 * nbf2;
-
-        // Memory pointers that aid in transform
-        double *source1, *target1;
-        double *source2, *target2;
-        double *source = buffer_ + (chunk * ncart12);
-        double *target = target_;
-        double *tmpbuf = tformbuf_;
-
-        int transform_index = 2 * is_pure1 + is_pure2;
-        switch (transform_index) {
-            case 0:
-                break;
-            case 1:
-                source2 = source;
-                target2 = target;
-                break;
-            case 2:
-                source1 = source;
-                target1 = target;
-                break;
-            case 3:
-                source2 = source;
-                target2 = tmpbuf;
-                source1 = tmpbuf;
-                target1 = target;
-                break;
-        }
-
-        if (is_pure2) {
-            SphericalTransformIter stiter(spherical_transforms_[am2]);
-            transform1e_2(am2, stiter, source2, target2, ncart1, ncart2);
-        }
-        if (is_pure1) {
-            SphericalTransformIter stiter(spherical_transforms_[am1]);
-            transform1e_1(am1, stiter, source1, target1, nbf2);
-        }
-
-        if (transform_index) {
-            memcpy(buffer_ + (chunk * nbf12), target_, sizeof(double) * nbf12);
-        }
-    }
-}
-
-void OneBodyAOInt::compute_shell(int sh1, int sh2) {
-    const GaussianShell &s1 = bs1_->shell(sh1);
-    const GaussianShell &s2 = bs2_->shell(sh2);
-
-    // Call the child's compute_pair method, results better be in buffer_.
-    compute_pair(s1, s2);
-
-    // Normalize for angular momentum
-    normalize_am(s1, s2, nchunk_);
-    // Pure angular momentum (6d->5d, ...) transformation
-    pure_transform(s1, s2, nchunk_);
-    buffer_size_ = nchunk_ * s1.nfunction() * s2.nfunction();
-
-    for (int chunk = 0; chunk < nchunk_; chunk++) {
-        buffers_[chunk] = buffer_ + chunk * s1.nfunction() * s2.nfunction();
-    }
-}
-
-void OneBodyAOInt::compute_shell_deriv1(int sh1, int sh2) {
-    const GaussianShell &s1 = bs1_->shell(sh1);
-    const GaussianShell &s2 = bs2_->shell(sh2);
-
-    // Call the child's compute_pair method, results better be in buffer_.
-    compute_pair_deriv1(s1, s2);
-
-    // Normalize for angular momentum
-    normalize_am(s1, s2, nchunk_);
-
-    // Pure angular momentum (6d->5d, ...) transformation
-    pure_transform(s1, s2, nchunk_);
-
-    for (int chunk = 0; chunk < nchunk_; chunk++) {
-        buffers_[chunk] = buffer_ + chunk * s1.nfunction() * s2.nfunction();
-    }
-}
-
 void OneBodyAOInt::compute_pair(const libint2::Shell &s1, const libint2::Shell &s2) {
     engine0_->compute(s1, s2);
-
     for (int chunk = 0; chunk < nchunk(); chunk++) {
         buffers_[chunk] = engine0_->results()[chunk];
     }
@@ -478,60 +353,6 @@ void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix> &result) {
         throw SanityCheckError("OneBodyInt::compute_deriv1(result): integral object not created to handle derivatives.",
                                __FILE__, __LINE__);
 
-    //if (l2() == false) {
-    //    // Do not worry about zeroing out result
-    //    int ns1 = bs1_->nshell();
-    //    int ns2 = bs2_->nshell();
-    //    int i_offset = 0;
-    //    double *location = 0;
-
-    //    // Check the length of result, must be 3*natom_
-    //    if (result.size() != (size_t)3 * natom_)
-    //        throw SanityCheckError("OneBodyInt::compute_deriv1(result): result must be 3 * natom in length.", __FILE__,
-    //                               __LINE__);
-
-    //    if (result[0]->nirrep() != 1)
-    //        throw SanityCheckError("OneBodyInt::compute_deriv1(result): results must be C1 symmetry.", __FILE__,
-    //                               __LINE__);
-
-    //    for (int i = 0; i < ns1; ++i) {
-    //        int ni = bs1_->shell(i).nfunction();
-    //        int center_i3 = 3 * bs1_->shell(i).ncenter();
-    //        int j_offset = 0;
-    //        for (int j = 0; j < ns2; ++j) {
-    //            int nj = bs2_->shell(j).nfunction();
-    //            int center_j3 = 3 * bs2_->shell(j).ncenter();
-
-    //            if (center_i3 != center_j3) {
-    //                // Compute the shell
-    //                compute_shell_deriv1(i, j);
-
-    //                // Center i
-    //                location = buffer_;
-    //                for (int r = 0; r < 3; ++r) {
-    //                    for (int p = 0; p < ni; ++p) {
-    //                        for (int q = 0; q < nj; ++q) {
-    //                            result[center_i3 + r]->add(0, i_offset + p, j_offset + q, *location);
-    //                            location++;
-    //                        }
-    //                    }
-    //                }
-
-    //                // Center j -- only if center i != center j
-    //                for (int r = 0; r < 3; ++r) {
-    //                    for (int p = 0; p < ni; ++p) {
-    //                        for (int q = 0; q < nj; ++q) {
-    //                            result[center_j3 + r]->add(0, i_offset + p, j_offset + q, *location);
-    //                            location++;
-    //                        }
-    //                    }
-    //                }
-    //            }
-
-    //            j_offset += nj;
-    //        }
-    //        i_offset += ni;
-    //    }
     for (auto pair : shellpairs_) {
         int p1 = pair.first;
         int p2 = pair.second;
@@ -628,21 +449,22 @@ void OneBodyAOInt::compute_deriv2(std::vector<SharedMatrix> &result) {
     }
 }
 
+void OneBodyAOInt::compute_shell(int sh1, int sh2) {
+    const auto &s1 = bs1_->l2_shell(sh1);
+    const auto &s2 = bs2_->l2_shell(sh2);
+    compute_pair(s1, s2);
+}
+
+void OneBodyAOInt::compute_shell_deriv1(int sh1, int sh2) {
+    const auto &s1 = bs1_->l2_shell(sh1);
+    const auto &s2 = bs2_->l2_shell(sh2);
+    compute_pair_deriv1(s1, s2);
+}
+
 void OneBodyAOInt::compute_shell_deriv2(int sh1, int sh2) {
-    const GaussianShell &s1 = bs1_->shell(sh1);
-    const GaussianShell &s2 = bs2_->shell(sh2);
-
+    const auto &s1 = bs1_->l2_shell(sh1);
+    const auto &s2 = bs2_->l2_shell(sh2);
     compute_pair_deriv2(s1, s2);
-
-    // Normalize for angular momentum
-    normalize_am(s1, s2, nchunk_);
-
-    // Pure angular momentum (6d->5d, ...) transformation
-    pure_transform(s1, s2, nchunk_);
-
-    for (int chunk = 0; chunk < nchunk_; chunk++) {
-        buffers_[chunk] = buffer_ + chunk * s1.nfunction() * s2.nfunction();
-    }
 }
 
 }  // namespace psi

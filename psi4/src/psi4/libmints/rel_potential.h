@@ -37,7 +37,6 @@
 namespace psi {
 // TODO:  This is all in typedefs.h ....
 class BasisSet;
-class GaussianShell;
 class ObaraSaikaTwoCenterVIRecursion;
 class OneBodyAOInt;
 class IntegralFactory;
@@ -53,9 +52,6 @@ class CdSalcList;
 class RelPotentialInt : public OneBodyAOInt {
     /// Computes integrals between two shell objects.
     void compute_pair(const libint2::Shell&, const libint2::Shell&) override;
-    /// Computes integrals between two shell objects.
-    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&) override;
-    void compute_pair_deriv2(const GaussianShell&, const GaussianShell&) override;
 
    protected:
     /// Recursion object that does the heavy lifting.

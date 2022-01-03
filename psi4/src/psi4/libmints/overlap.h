@@ -36,7 +36,6 @@
 namespace psi {
 
 class BasisSet;
-class GaussianShell;
 class SphericalTransform;
 
 /*! \ingroup MINTS
@@ -55,8 +54,6 @@ class OverlapInt : public OneBodyAOInt {
     bool has_deriv1() override { return true; }
     /// Does the method provide second derivatives?
     bool has_deriv2() override { return true; }
-
-    bool l2() const override { return true; }
 };
 
 }  // namespace psi
