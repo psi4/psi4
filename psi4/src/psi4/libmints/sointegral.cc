@@ -96,10 +96,7 @@ void OneBodySOInt::compute(SharedMatrix result) {
                 for (int j = 0; j < t2.naoshell; ++j) {
                     const SOTransformShell &s2 = t2.aoshell[j];
 
-                    const auto &l2_s1 = b1_->basis()->l2_shell(s1.aoshell);
-                    const auto &l2_s2 = b2_->basis()->l2_shell(s2.aoshell);
-
-                    ob_->compute_pair(l2_s1, l2_s2);
+                    ob_->compute_shell(s1.aoshell, s2.aoshell);
                     const double *aobuf = ob_->buffers()[0];
 
                     for (int itr = 0; itr < s1.nfunc; ++itr) {
@@ -151,10 +148,7 @@ void OneBodySOInt::compute(std::vector<SharedMatrix> results) {
                 for (int j = 0; j < t2.naoshell; ++j) {
                     const SOTransformShell &s2 = t2.aoshell[j];
 
-                    const auto &l2_s1 = b1_->basis()->l2_shell(s1.aoshell);
-                    const auto &l2_s2 = b2_->basis()->l2_shell(s2.aoshell);
-
-                    ob_->compute_pair(l2_s1, l2_s2);
+                    ob_->compute_shell(s1.aoshell, s2.aoshell);
                     const auto &aobuf = ob_->buffers();
 
                     for (int itr = 0; itr < s1.nfunc; ++itr) {
@@ -231,10 +225,7 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalc
                     // If we're working on the same atomic center, don't even bother with the derivative
                     if (center_i == center_j) continue;
 
-                    const auto &l2_s1 = b1_->basis()->l2_shell(s1.aoshell);
-                    const auto &l2_s2 = b2_->basis()->l2_shell(s2.aoshell);
-
-                    ob_->compute_pair_deriv1(l2_s1, l2_s2);
+                    ob_->compute_shell_deriv1(s1.aoshell, s2.aoshell);
                     const auto &aobuf = ob_->buffers();
 
                     // handle SO transform

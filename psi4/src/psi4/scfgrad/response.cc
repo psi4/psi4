@@ -216,9 +216,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                     int aP = shellP.ncenter();
                     int aQ = shellQ.ncenter();
                     if ((aP != A && aQ != A) || aP == aQ) continue;
-                    const auto & l2_s1 = basisset_->l2_shell(P);
-                    const auto & l2_s2 = basisset_->l2_shell(Q);
-                    Sint->compute_pair_deriv1(l2_s1, l2_s2);
+                    Sint->compute_shell_deriv1(P, Q);
                     const auto &buffers = Sint->buffers();
                     int nP = shellP.nfunction();
                     int nQ = shellQ.nfunction();
@@ -408,9 +406,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                     int aP = shellP.ncenter();
                     int aQ = shellQ.ncenter();
                     if ((aP != A && aQ != A) || aP == aQ) continue;
-                    const auto &l2_s1 = basisset_->l2_shell(P);
-                    const auto &l2_s2 = basisset_->l2_shell(Q);
-                    Tint->compute_pair_deriv1(l2_s1, l2_s2);
+                    Tint->compute_shell_deriv1(P, Q);
                     const auto &buffers = Tint->buffers();
                     int nP = shellP.nfunction();
                     int nQ = shellQ.nfunction();
@@ -563,9 +559,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                     const auto & shellQ = basisset_->shell(Q);
                     int aP = shellP.ncenter();
                     int aQ = shellQ.ncenter();
-                    const auto &l2_s1 = basisset_->l2_shell(P);
-                    const auto &l2_s2 = basisset_->l2_shell(Q);
-                    Vint->compute_pair_deriv1(l2_s1, l2_s2);
+                    Vint->compute_shell_deriv1(P, Q);
                     const auto &buffers = Vint->buffers();
                     int nP = shellP.nfunction();
                     int nQ = shellQ.nfunction();
@@ -2874,9 +2868,7 @@ void USCFDeriv::overlap_deriv(std::shared_ptr<Matrix> C,
                 int aP = shellP.ncenter();
                 int aQ = shellQ.ncenter();
                 if ((aP != A && aQ != A) || aP == aQ) continue;
-                const auto & l2_s1 = basisset_->l2_shell(P);
-                const auto & l2_s2 = basisset_->l2_shell(Q);
-                Sint->compute_pair_deriv1(l2_s1, l2_s2);
+                Sint->compute_shell_deriv1(P, Q);
                 const auto &buffers = Sint->buffers();
                 int nP = shellP.nfunction();
                 int nQ = shellQ.nfunction();
@@ -3060,9 +3052,7 @@ void USCFDeriv::kinetic_deriv(std::shared_ptr<Matrix> C,
                 int aP = shellP.ncenter();
                 int aQ = shellQ.ncenter();
                 if ((aP != A && aQ != A) || aP == aQ) continue;
-                const auto &l2_s1 = basisset_->l2_shell(P);
-                const auto &l2_s2 = basisset_->l2_shell(Q);
-                Tint->compute_pair_deriv1(l2_s1, l2_s2);
+                Tint->compute_shell_deriv1(P, Q);
                 const auto &buffers = Tint->buffers();
                 int nP = shellP.nfunction();
                 int nQ = shellQ.nfunction();
@@ -3220,9 +3210,7 @@ void USCFDeriv::potential_deriv(std::shared_ptr<Matrix> C,
                 const auto & shellQ = basisset_->shell(Q);
                 int aP = shellP.ncenter();
                 int aQ = shellQ.ncenter();
-                const auto &l2_s1 = basisset_->l2_shell(P);
-                const auto &l2_s2 = basisset_->l2_shell(Q);
-                Vint->compute_pair_deriv1(l2_s1, l2_s2);
+                Vint->compute_shell_deriv1(P, Q);
                 const auto &buffers = Vint->buffers();
                 int nP = shellP.nfunction();
                 int nQ = shellQ.nfunction();

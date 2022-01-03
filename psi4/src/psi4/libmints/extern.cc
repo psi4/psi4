@@ -136,16 +136,13 @@ SharedMatrix ExternalPotential::computePotentialMatrix(std::shared_ptr<BasisSet>
         size_t index_i = basis->shell(i).function_index();
         size_t index_j = basis->shell(j).function_index();
 
-        const auto& l2_i = basis->l2_shell(i);
-        const auto& l2_j = basis->l2_shell(j);
-
         size_t rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
 
         double **Vp = V_charge[rank]->pointer();
-        pot[rank]->compute_pair(l2_i, l2_j);
+        pot[rank]->compute_shell(i, j);
         const auto* buffer = pot[rank]->buffers()[0];
 
         size_t index = 0;
@@ -274,9 +271,7 @@ SharedMatrix ExternalPotential::computePotentialGradients(std::shared_ptr<BasisS
 #ifdef _OPENMP
         thread = omp_get_thread_num();
 #endif
-        const auto &l2_s1 = basis->l2_shell(P);
-        const auto &l2_s2 = basis->l2_shell(Q);
-        Vint[thread]->compute_pair_deriv1(l2_s1, l2_s2);
+        Vint[thread]->compute_shell_deriv1(P, Q);
         const auto& buffers = Vint[thread]->buffers();
 
         int cP = basis->shell(P).ncenter();

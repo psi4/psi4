@@ -439,13 +439,10 @@ void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>
         if (symm) {
             // Triangular
             for (size_t NU = 0; NU <= MU; ++NU) {
-                const auto &l2_s1 = bs1->l2_shell(MU);
-                const auto &l2_s2 = bs2->l2_shell(NU);
-
                 const size_t num_nu = bs2->shell(NU).nfunction();
                 const size_t index_nu = bs2->shell(NU).function_index();
 
-                ints[rank]->compute_pair(l2_s1, l2_s2);
+                ints[rank]->compute_shell(MU, NU);
                 const auto *ints_buff = ints[rank]->buffers()[0];
 
                 size_t index = 0;
@@ -459,13 +456,10 @@ void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>
         else {
             // Rectangular
             for (size_t NU = 0; NU < bs2->nshell(); ++NU) {
-                const auto &l2_s1 = bs1->l2_shell(MU);
-                const auto &l2_s2 = bs2->l2_shell(NU);
-
                 const size_t num_nu = bs2->shell(NU).nfunction();
                 const size_t index_nu = bs2->shell(NU).function_index();
 
-                ints[rank]->compute_pair(l2_s1, l2_s2);
+                ints[rank]->compute_shell(MU, NU);
                 const auto *ints_buff = ints[rank]->buffers()[0];
 
                 size_t index = 0;
@@ -508,10 +502,7 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
         rank = omp_get_thread_num();
 #endif
         for (size_t Q = 0; Q <= P; Q++) {
-            const auto &l2_s1 = bs1->l2_shell(P);
-            const auto &l2_s2 = bs2->l2_shell(Q);
-
-            ints[rank]->compute_pair_deriv1(l2_s1, l2_s2);
+            ints[rank]->compute_shell_deriv1(P, Q);
             const auto &ints_buff = ints[rank]->buffers();
 
             size_t nP = basisset_->shell(P).nfunction();
@@ -1960,10 +1951,7 @@ SharedMatrix MintsHelper::potential_grad(SharedMatrix D) {
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        const auto &l2_s1 = basisset_->l2_shell(P);
-        const auto &l2_s2 = basisset_->l2_shell(Q);
-
-        ints_vec[rank]->compute_pair_deriv1(l2_s1, l2_s2);
+        ints_vec[rank]->compute_shell_deriv1(P, Q);
         const auto &buffers = ints_vec[rank]->buffers();
 
         size_t nP = basisset_->shell(P).nfunction();
@@ -2105,9 +2093,7 @@ SharedMatrix MintsHelper::dipole_grad(SharedMatrix D) {
 
     for (int P = 0; P < basisset_->nshell(); P++) {
         for (int Q = 0; Q <= P; Q++) {
-            const auto &l2_s1 = basisset_->l2_shell(P);
-            const auto &l2_s2 = basisset_->l2_shell(Q);
-            Dint->compute_pair_deriv1(l2_s1, l2_s2);
+            Dint->compute_shell_deriv1(P, Q);
             const auto &buffers = Dint->buffers();
 
             const auto &shellP = basisset_->shell(P);
@@ -2611,9 +2597,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_kinetic_deriv1_helper(const st
 
             if (aP != atom && aQ != atom) continue;
 
-            const auto &l2_s1 = basisset_->l2_shell(P);
-            const auto &l2_s2 = basisset_->l2_shell(Q);
-            GInt->compute_pair_deriv1(l2_s1, l2_s2);
+            GInt->compute_shell_deriv1(P, Q);
             const auto &buffers = GInt->buffers();
 
             if (aP == atom) {
@@ -2698,9 +2682,7 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_deriv1_helper(int atom) {
             int oQ = shellQ.function_index();
             int aQ = shellQ.ncenter();
 
-            const auto &l2_s1 = bs1->l2_shell(P);
-            const auto &l2_s2 = bs2->l2_shell(Q);
-            Vint->compute_pair_deriv1(l2_s1, l2_s2);
+            Vint->compute_shell_deriv1(P, Q);
             const auto &buffers = Vint->buffers();
 
             const double *ref0 = buffers[3 * atom + 6];
@@ -2778,9 +2760,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1_helper(const std::
 
             if (aP != atom && aQ != atom) continue;
 
-            const auto &l2_s1 = bs1->l2_shell(P);
-            const auto &l2_s2 = bs2->l2_shell(Q);
-            GInt->compute_pair_deriv1(l2_s1, l2_s2);
+            GInt->compute_shell_deriv1(P, Q);
             const auto &buffers = GInt->buffers();
             int offset = 0;
 
@@ -2899,9 +2879,7 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_deriv2_helper(int atom1, int
                 std::dynamic_pointer_cast<PotentialInt>(Vint)->set_charge_field(full_params);
             }
 
-            const auto &l2_s1 = bs1->l2_shell(P);
-            const auto &l2_s2 = bs2->l2_shell(Q);
-            Vint->compute_pair_deriv2(l2_s1, l2_s2);
+            Vint->compute_shell_deriv2(P, Q);
             const auto &buffers = Vint->buffers();
 
             // clang-format off
@@ -3103,9 +3081,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_kinetic_deriv2_helper(const st
 
             if (aP != atom1 && aQ != atom1 && aP != atom2 && aQ != atom2) continue;
 
-            const auto &l2_s1 = bs1->l2_shell(P);
-            const auto &l2_s2 = bs2->l2_shell(Q);
-            GInt->compute_pair_deriv2(l2_s1, l2_s2);
+            GInt->compute_shell_deriv2(P, Q);
             const auto &buffers = GInt->buffers();
 
             // This code makes use of the translational invariance relations
@@ -3210,9 +3186,7 @@ std::vector<SharedMatrix> MintsHelper::ao_elec_dip_deriv1_helper(int atom) {
 
             if (aP != atom && aQ != atom) continue;
 
-            const auto &l2_s1 = basisset_->l2_shell(P);
-            const auto &l2_s2 = basisset_->l2_shell(Q);
-            Dint->compute_pair_deriv1(l2_s1, l2_s2);
+            Dint->compute_shell_deriv1(P, Q);
             const auto &buffers = Dint->buffers();
 
             for (int mu_cart = 0; mu_cart < 3; mu_cart++) {

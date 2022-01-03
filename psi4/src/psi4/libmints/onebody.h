@@ -91,6 +91,14 @@ class PSI_API OneBodyAOInt {
     void set_chunks(int nchunk) { nchunk_ = nchunk; }
     void pure_transform(const libint2::Shell &s1, const libint2::Shell &s2, int nchunks = 1);
 
+    /// Compute integrals for a given shell pair
+    virtual void compute_pair(const libint2::Shell&, const libint2::Shell&);
+    /// Compute first derivative integrals for a given shell pair
+    virtual void compute_pair_deriv1(const libint2::Shell&, const libint2::Shell&);
+    /// Compute second derivative integrals for a given shell pair
+    virtual void compute_pair_deriv2(const libint2::Shell&, const libint2::Shell&);
+
+
    public:
     virtual ~OneBodyAOInt();
 
@@ -109,9 +117,6 @@ class PSI_API OneBodyAOInt {
     /// Buffer where the integrals are placed.
     PSI_DEPRECATED("No.")
     const double* buffer() const;
-
-    /// Compute the integrals between basis function in the given shell pair.
-    void compute_shell(int, int);
 
     /*! @{
      * Computes all integrals and stores them in result
@@ -138,6 +143,8 @@ class PSI_API OneBodyAOInt {
     /// Computes the second derivatives and stores them in result
     virtual void compute_deriv2(std::vector<SharedMatrix>& result);
 
+    /// Compute the integrals between basis function in the given shell pair.
+    void compute_shell(int, int);
     /// Computes the integrals between basis function in the given shell pair
     virtual void compute_shell_deriv1(int, int);
     /// Computes the integrals between basis function in the given shell pair
@@ -154,10 +161,6 @@ class PSI_API OneBodyAOInt {
 
     /// Set the origin (useful for properties)
     virtual void set_origin(const Vector3& _origin) { origin_ = _origin; }
-
-    virtual void compute_pair(const libint2::Shell&, const libint2::Shell&);
-    virtual void compute_pair_deriv1(const libint2::Shell&, const libint2::Shell&);
-    virtual void compute_pair_deriv2(const libint2::Shell&, const libint2::Shell&);
 
     /// Buffer where each chunk of integrals is placed
     const std::vector<const double*>& buffers() const { return buffers_; }

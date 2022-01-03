@@ -450,7 +450,6 @@ SharedMatrix SCFDeriv::compute_hessian()
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             const GaussianShell& s1 = basisset_->shell(P);
-            const libint2::Shell &l2_s1 = basisset_->l2_shell(P);
             int nP = s1.nfunction();
             int oP = s1.function_index();
             int aP = s1.ncenter();
@@ -460,7 +459,6 @@ SharedMatrix SCFDeriv::compute_hessian()
             for (int Q = 0; Q <= P; Q++) {
 
                 const GaussianShell& s2 = basisset_->shell(Q);
-                const libint2::Shell &l2_s2 = basisset_->l2_shell(Q);
                 int nQ = s2.nfunction();
                 int oQ = s2.function_index();
                 int aQ = s2.ncenter();
@@ -474,7 +472,7 @@ SharedMatrix SCFDeriv::compute_hessian()
 #if DEBUGINTS
                 outfile->Printf("AM1 %d AM2 %d a1 %f a2 %f center1 %d center2 %d\n", s1.am(), s2.am(), s1.exp(0), s2.exp(0), s1.ncenter(), s2.ncenter());
 #endif
-                Vint->compute_pair_deriv2(l2_s1, l2_s2);
+                Vint->compute_shell_deriv2(P, Q);
                 const auto &buffers = Vint->buffers();
 
                 std::vector<double> Dvals;
@@ -520,7 +518,6 @@ SharedMatrix SCFDeriv::compute_hessian()
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             const GaussianShell& s1 = basisset_->shell(P);
-            const libint2::Shell& l2_s1 = basisset_->l2_shell(P);
             int nP = s1.nfunction();
             int oP = s1.function_index();
             int aP = s1.ncenter();
@@ -529,12 +526,11 @@ SharedMatrix SCFDeriv::compute_hessian()
             int Pz = 3 * aP + 2;
             for (int Q = 0; Q <= P; Q++) {
                 const GaussianShell& s2 = basisset_->shell(Q);
-                const libint2::Shell& l2_s2 = basisset_->l2_shell(Q);
                 int nQ = s2.nfunction();
                 int oQ = s2.function_index();
                 int aQ = s2.ncenter();
 
-                Tint->compute_pair_deriv2(l2_s1, l2_s2);
+                Tint->compute_shell_deriv2(P, Q);
                 const auto &buffers = Tint->buffers();
 
                 std::vector<double> Dvals;
@@ -603,7 +599,6 @@ SharedMatrix SCFDeriv::compute_hessian()
         const double* buffer = Sint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
-            const libint2::Shell& l2_s1 = basisset_->l2_shell(P);
             const GaussianShell& s1 = basisset_->shell(P);
             int nP = s1.nfunction();
             int oP = s1.function_index();
@@ -612,13 +607,12 @@ SharedMatrix SCFDeriv::compute_hessian()
             int Py = 3 * aP + 1;
             int Pz = 3 * aP + 2;
             for (int Q = 0; Q <= P; Q++) {
-                const libint2::Shell& l2_s2 = basisset_->l2_shell(Q);
                 const GaussianShell& s2 = basisset_->shell(Q);
                 int nQ = s2.nfunction();
                 int oQ = s2.function_index();
                 int aQ = s2.ncenter();
 
-                Sint->compute_pair_deriv2(l2_s1, l2_s2);
+                Sint->compute_shell_deriv2(P, Q);
                 const auto &buffers = Sint->buffers();
 
                 std::vector<double> Wvals;
