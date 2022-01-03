@@ -753,6 +753,7 @@ class PSI_API DirectJK : public JK {
     /// Post-iteration Incfock processing
     void incfock_postiter();
 
+    /// Build the J and K matrices for this integral class
     void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<SharedMatrix>& D,
                   std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K);
 
