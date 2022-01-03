@@ -1099,7 +1099,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         }
     }
 
-    // => Calculate Shell Ceilings (To find significant bra-ket atom pairs)
+    // => Calculate Shell Ceilings (To find significant bra-ket pairs)
     // sqrt(Umax|Umax) in Oschenfeld Eq. 3
     std::vector<double> shell_ceilings(nshell, 0.0);
     for (int P = 0; P < nshell; P++) {
