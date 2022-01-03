@@ -253,8 +253,6 @@ class PSI_API JK {
     bool do_K_;
     /// Do wK matrices? Defaults to false
     bool do_wK_;
-    /// Build the J matrix using linear-scaling CFMM algorithm
-    bool do_cfmm_;
 
     /// Combine (pq|rs) and (pq|w|rs) integrals before contracting?
     bool wcombine_;
@@ -720,7 +718,7 @@ class PSI_API DirectJK : public JK {
     /// The number of times INCFOCK has been performed (includes resets)
     int incfock_count_;
     bool do_incfock_iter_;
-    
+
     /// D, J, K, wK Matrices from previous iteration, used in Incremental Fock Builds
     std::vector<SharedMatrix> prev_D_ao_;
     std::vector<SharedMatrix> prev_J_ao_;
@@ -755,7 +753,6 @@ class PSI_API DirectJK : public JK {
     /// Post-iteration Incfock processing
     void incfock_postiter();
 
-    /// The standard J and K matrix builds for this integral class
     void build_JK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, std::vector<SharedMatrix>& D,
                   std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K);
 
