@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.5a1.dev266 
+                               Psi4 1.5a1.dev272 
 
-                         Git: Rev {linK-new} 00084b6 dirty
+                         Git: Rev {linK-new} ceed12b dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Sunday, 02 January 2022 12:20PM
+    Psi4 started on: Monday, 03 January 2022 11:30AM
 
-    Process ID: 992428
+    Process ID: 1000109
     Host:       jacket
     PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-livie/stage/share/psi4
     Memory:     500.0 MiB
@@ -76,7 +76,7 @@ psi4.compare_values(ref_energy, linK_energy, 9, "HF Energy (Using LinK algo)")
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Sun Jan  2 12:20:49 2022
+*** at Mon Jan  3 11:30:10 2022
 
    => Loading Basis Set <=
 
@@ -245,18 +245,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0011     Total:     2.0011
 
 
-*** tstop() called on jacket at Sun Jan  2 12:20:51 2022
+*** tstop() called on jacket at Mon Jan  3 11:30:11 2022
 Module time:
-	user time   =       1.12 seconds =       0.02 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.08 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.12 seconds =       0.02 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.08 seconds =       0.02 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
     HF Energy (Using LinK algo)...........................................................PASSED
 
-    Psi4 stopped on: Sunday, 02 January 2022 12:20PM
-    Psi4 wall time for execution: 0:00:01.27
+    Psi4 stopped on: Monday, 03 January 2022 11:30AM
+    Psi4 wall time for execution: 0:00:01.19
 
 *** Psi4 exiting successfully. Buy a developer a beer!

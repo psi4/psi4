@@ -1110,27 +1110,6 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         }
     }
 
-    // => "Pre-ordering and Pre-selection to find significant elements in Puv" <= //
-    std::vector<std::vector<int>> significant_kets(nshell);
-
-    // => Defined in Oschenfeld Eq. 3 <= //
-    // For shells P and R, If |Dpr| * sqrt(Pmax|Pmax) * sqrt(Rmax|Rmax) [screening value] >= linK_ints_cutoff_,
-    // Then shell R is added to the ket list of shell P (and sorted by the screening value)
-    for (size_t P = 0; P < nshell; P++) {
-        std::vector<std::pair<int, double>> PR_shell_values;
-        for (size_t R = 0; R < nshell; R++) {
-            double screen_val = shell_ceilings[P] * shell_ceilings[R] * ints[0]->shell_pair_max_density(P, R);
-            if (screen_val >= linK_ints_cutoff_) {
-                PR_shell_values.emplace_back(R, screen_val);
-            }
-        }
-        std::sort(PR_shell_values.begin(), PR_shell_values.end(), screen_compare);
-
-        for (const auto& value : PR_shell_values) {
-            significant_kets[P].push_back(value.first);
-        }
-    }
-
     size_t natom_pair = atom_pairs.size();
 
     // => Intermediate Buffers <= //
@@ -1154,6 +1133,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
 // ==> Master Task Loop (Atom Quartet Indexing) <== //
 
+// ==> "Loop over types (angular momenta, contraction, ...) of shell-pair blocks" <== //
 #pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells)
     for (size_t ipair = 0L; ipair < natom_pair; ipair++) { // O(N) shell-pairs in asymptotic limit
 
@@ -1177,6 +1157,43 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         thread = omp_get_thread_num();
 #endif
 
+        // => "Pre-ordering and Pre-selection to find significant elements in Puv" <= //
+        std::vector<std::vector<int>> significant_kets_P(nPshell);
+        std::vector<std::vector<int>> significant_kets_Q(nQshell);
+
+        // => Defined in Oschenfeld Eq. 3 <= //
+        // For shells P and R, If |Dpr| * sqrt(Pmax|Pmax) * sqrt(Rmax|Rmax) [screening value] >= linK_ints_cutoff_,
+        // Then shell R is added to the ket list of shell P (and sorted by the screening value)
+        for (size_t P = Pstart; P < Pstart + nPshell; P++) {
+            std::vector<std::pair<int, double>> PR_shell_values;
+            for (size_t R = 0; R < nshell; R++) {
+                double screen_val = shell_ceilings[P] * shell_ceilings[R] * ints[0]->shell_pair_max_density(P, R);
+                if (screen_val >= linK_ints_cutoff_) {
+                    PR_shell_values.emplace_back(R, screen_val);
+                }
+            }
+            std::sort(PR_shell_values.begin(), PR_shell_values.end(), screen_compare);
+
+            for (const auto& value : PR_shell_values) {
+                significant_kets_P[P - Pstart].push_back(value.first);
+            }
+        }
+
+        for (size_t Q = Qstart; Q < Qstart + nQshell; Q++) {
+            std::vector<std::pair<int, double>> QR_shell_values;
+            for (size_t R = 0; R < nshell; R++) {
+                double screen_val = shell_ceilings[Q] * shell_ceilings[R] * ints[0]->shell_pair_max_density(Q, R);
+                if (screen_val >= linK_ints_cutoff_) {
+                    QR_shell_values.emplace_back(R, screen_val);
+                }
+            }
+            std::sort(QR_shell_values.begin(), QR_shell_values.end(), screen_compare);
+
+            for (const auto& value : QR_shell_values) {
+                significant_kets_Q[Q - Qstart].push_back(value.first);
+            }
+        }
+
         // Keep track of contraction indices for stripeout (Towards end of this function)
         std::vector<std::unordered_set<int>> P_stripeout_list(nPshell);
         std::vector<std::unordered_set<int>> Q_stripeout_list(nQshell);
@@ -1198,7 +1215,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                 std::unordered_set<int> ML_PQ;
 
                 // Form ML_P inside ML_PQ
-                for (const int R : significant_kets[P]) {
+                for (const int R : significant_kets_P[P - Pstart]) {
                     int count = 0;
                     for (const int S : significant_bras[R]) {
                         double screen_val = ints[0]->shell_pair_max_density(P, R) * std::sqrt(ints[0]->shell_ceiling2(P, Q, R, S));
@@ -1216,7 +1233,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                 }
 
                 // Form ML_Q inside ML_PQ
-                for (const int R : significant_kets[Q]) {
+                for (const int R : significant_kets_Q[Q - Qstart]) {
                     int count = 0;
                     for (const int S : significant_bras[R]) {
                         double screen_val = ints[0]->shell_pair_max_density(Q, R) * std::sqrt(ints[0]->shell_ceiling2(P, Q, R, S));
