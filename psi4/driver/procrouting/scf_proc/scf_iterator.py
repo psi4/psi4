@@ -287,7 +287,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
         SCFE = 0.0
         self.clear_external_potentials()
 
-        # Form G represents the step in the SCF Algorithm where J and K are built
+        # Form G = Build J, K
         core.timer_on("HF: Form G")
         self.form_G()
         core.timer_off("HF: Form G")
