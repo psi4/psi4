@@ -30,7 +30,6 @@
 #define JK_H
 
 #include <vector>
-#include <unordered_set>
 
 #include "psi4/pragma.h"
 PRAGMA_WARNING_PUSH
@@ -779,14 +778,11 @@ class PSI_API DirectJK : public JK {
      * 
      * @param ints A list of TwoBodyAOInt objects (one per thread) to optimize parallel efficiency
      * @param D The list of AO density matrices to contract to form J and K (1 for RHF, 2 for UHF/ROHF)
-     * @param J The list of AO J matrices to build (Same size as D)
-     * @param K The list of AO K matrices to build (Same size as D)
-     * @param build_J Build J matrix?
-     * @param build_K Build K matrix?
-     * 
+     * @param J The list of AO J matrices to build (Same size as D, 0 if no matrices are to be built)
+     * @param K The list of AO K matrices to build (Same size as D, 0 if no matrices are to be built)
      */
     void build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
-                  std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K, bool build_J, bool build_K);
+                  std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K);
 
     /// Common initialization
     void common_init();

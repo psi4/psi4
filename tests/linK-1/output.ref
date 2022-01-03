@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.5a1.dev272 
+                               Psi4 1.5a1.dev273 
 
-                         Git: Rev {linK-new} ceed12b dirty
+                         Git: Rev {linK-new} 9efbe77 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 03 January 2022 11:30AM
+    Psi4 started on: Monday, 03 January 2022 11:47AM
 
-    Process ID: 1000109
+    Process ID: 1000995
     Host:       jacket
     PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-livie/stage/share/psi4
     Memory:     500.0 MiB
@@ -76,7 +76,7 @@ psi4.compare_values(ref_energy, linK_energy, 9, "HF Energy (Using LinK algo)")
 Scratch directory: /scratch/jiang/
 
 *** tstart() called on jacket
-*** at Mon Jan  3 11:30:10 2022
+*** at Mon Jan  3 11:47:03 2022
 
    => Loading Basis Set <=
 
@@ -245,18 +245,18 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.0011     Total:     2.0011
 
 
-*** tstop() called on jacket at Mon Jan  3 11:30:11 2022
+*** tstop() called on jacket at Mon Jan  3 11:47:04 2022
 Module time:
-	user time   =       1.08 seconds =       0.02 minutes
+	user time   =       1.12 seconds =       0.02 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.08 seconds =       0.02 minutes
+	user time   =       1.12 seconds =       0.02 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
     HF Energy (Using LinK algo)...........................................................PASSED
 
-    Psi4 stopped on: Monday, 03 January 2022 11:30AM
+    Psi4 stopped on: Monday, 03 January 2022 11:47AM
     Psi4 wall time for execution: 0:00:01.19
 
 *** Psi4 exiting successfully. Buy a developer a beer!

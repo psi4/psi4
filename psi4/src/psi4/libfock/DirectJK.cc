@@ -390,6 +390,9 @@ void DirectJK::compute_JK() {
     std::vector<SharedMatrix>& K_ref = (do_incfock_iter_ ? delta_K_ao_ : K_ao_);
     std::vector<SharedMatrix>& wK_ref = (do_incfock_iter_ ? delta_wK_ao_ : wK_ao_);
 
+    // Passed in as a dummy when J (and/or K) is not built
+    std::vector<SharedMatrix> temp;
+
     if (do_wK_) {
         std::vector<std::shared_ptr<TwoBodyAOInt>> ints;
         for (int thread = 0; thread < df_ints_num_threads_; thread++) {
@@ -398,9 +401,9 @@ void DirectJK::compute_JK() {
         }
         // TODO: Fast K algorithm
         if (do_J_) {
-            build_JK_matrices(ints, D_ref, J_ref, wK_ref, true, true);
+            build_JK_matrices(ints, D_ref, J_ref, wK_ref);
         } else {
-            build_JK_matrices(ints, D_ref, J_ref, wK_ref, false, true);
+            build_JK_matrices(ints, D_ref, temp, wK_ref);
         }
     }
     
@@ -413,16 +416,16 @@ void DirectJK::compute_JK() {
         }
         if (do_J_ && do_K_) {
             if (initial_iteration_ || !linK_) {
-                build_JK_matrices(ints, D_ref, J_ref, K_ref, true, true);
+                build_JK_matrices(ints, D_ref, J_ref, K_ref);
             } else {
                 build_linK(ints, D_ref, K_ref);
-                build_JK_matrices(ints, D_ref, J_ref, K_ref, true, false);
+                build_JK_matrices(ints, D_ref, J_ref, temp);
             }
         } else if (do_J_) {
-            build_JK_matrices(ints, D_ref, J_ref, K_ref, true, false);
+            build_JK_matrices(ints, D_ref, J_ref, temp);
         } else {
             if (initial_iteration_ || !linK_) {
-                build_JK_matrices(ints, D_ref, J_ref, K_ref, false, true);
+                build_JK_matrices(ints, D_ref, temp, K_ref);
             } else {
                 build_linK(ints, D_ref, K_ref);
             }
@@ -440,7 +443,12 @@ void DirectJK::compute_JK() {
 void DirectJK::postiterations() {}
 
 void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
-                        std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K, bool build_J, bool build_K) {
+                        std::vector<SharedMatrix>& J, std::vector<SharedMatrix>& K) {
+
+    bool build_J = (J.size() != 0);
+    bool build_K = (K.size() != 0);
+
+    if (!build_J && !build_K) return;
     
     timer_on("build_JK_matrices()");
 
