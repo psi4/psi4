@@ -1451,11 +1451,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("CFMM_ORDER", 10);
         /*- The maximum tree depth to use in the CFMM algorithm -*/
         options.add_int("CFMM_GRAIN", 3);
-      
-        /*- Perform the linear scaling exchange (LinK) algorithm, as described in [Ochsenfeld:1998:1663]_ -*/
-        options.add_bool("DO_LINK", false);
-        /*- The screening tolerance used for ERI/Density sparsity in the linK algorithm -*/
-        options.add_double("LINK_INTS_TOLERANCE", 1.0e-12);
 
         /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 
@@ -1558,11 +1553,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("SAD_SPIN_AVERAGE", true);
         /*- SAD guess density decomposition threshold !expert -*/
         options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
-
-        /*- SUBSECTION CFMM Linear J Build Algorithm -*/
-        options.add_bool("DO_CFMM_J", false);
-        options.add_int("CFMM_MAX_MPOLE_ORDER", 3);
-        options.add_int("CFMM_MAX_TREE_DEPTH", 4);
 
         /*- SUBSECTION DFT -*/
 

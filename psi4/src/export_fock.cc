@@ -187,8 +187,7 @@ void export_fock(py::module &m) {
         .def("dfh", &MemDFJK::dfh, "Return the DFHelper object.");
 
     py::class_<DirectJK, std::shared_ptr<DirectJK>, JK>(m, "DirectJK", "docstring")
-        .def("do_incfock_iter", &DirectJK::do_incfock_iter, "Return whether an incremental Fock iteration was performed.")
-        .def("do_linK", &DirectJK::do_linK, "Return whether or not the DirectJK algorithm is using the linK algorithm (Oschenfeld 1998).");
+        .def("do_incfock_iter", &DirectJK::do_incfock_iter, "Return whether an incremental Fock iteration was performed.");
 
     py::class_<scf::SADGuess, std::shared_ptr<scf::SADGuess>>(m, "SADGuess", "docstring")
         .def_static("build_SAD",

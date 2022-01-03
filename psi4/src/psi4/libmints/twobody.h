@@ -219,8 +219,6 @@ class PSI_API TwoBodyAOInt {
      inline double function_ceiling2(int m, int n, int r, int s) {
         return function_pair_values_[m * nbf_ + n] * function_pair_values_[r * nbf_ + s];
     }
-    /// Return the maximum density per shell pair
-    double shell_pair_max_density(int M, int N) const;
 
     /// For a given PQ shellpair index, what's the first RS pair that should be processed such
     /// that loops may be processed generating only permutationally unique PQ<=RS.  For engines
