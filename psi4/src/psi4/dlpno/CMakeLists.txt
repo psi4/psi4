@@ -4,3 +4,5 @@ list(APPEND sources
   sparse.cc
   )
 psi4_add_module(bin dlpno sources)
+
+target_link_libraries(dlpno PUBLIC diis)

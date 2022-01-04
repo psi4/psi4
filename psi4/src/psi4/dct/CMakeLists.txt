@@ -49,3 +49,5 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Intel")
 endif ()
 
 psi4_add_module(bin dct sources)
+
+target_link_libraries(dct PUBLIC diis)
