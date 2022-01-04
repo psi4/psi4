@@ -58,10 +58,39 @@ def _sum_cluster_ptype_data(ptype,
                             vmfc=False,
                             n=0):
     """
-    Sums gradient and hessian data from compute_list.
+    Sum gradients/hessians from n-body computations to obtain the BSSE corrected or uncorrected gradient/hessian
 
-    compute_list comes in as a tuple(frag, basis)
+    Parameters
+    ----------
+    ptype : str
+        Either "gradient" or "hessian"
+
+    ptype_dict : dict
+        Dictionary containing computed gradient or Hessian obtained from each subsystem computation
+
+    compute_list : tuple
+        A tuple of (frag, basis) data containing all the required computations
+
+    fragment_slice_dict : dict
+        Dictionary containing slices that index the gradient or Hessian matrix for each of the fragments
+
+    fragment_size_dict : dict
+        Dictionary containing the number of atoms of each fragment
+
+    ret : np.ndarray
+        An array containing the returned gradient or Hessian data. Modified in place
+
+    vmfc : bool
+        Is it a VMFC calculation
+
+    n : int
+        MBE level; required for VMFC calculations
+
+    Returns
+    -------
+    None
     """
+
 
     if len(compute_list) == 0:
         return
@@ -102,7 +131,7 @@ def _sum_cluster_ptype_data(ptype,
 
             for abs_sl1, rel_sl1 in zip(abs_slices, rel_slices):
                 for abs_sl2, rel_sl2 in zip(abs_slices, rel_slices):
-                    ret[abs_sl1, abs_sl2] += hess[rel_sl1, rel_sl2]
+                    ret[abs_sl1, abs_sl2] += sign * hess[rel_sl1, rel_sl2]
 
     else:
         raise KeyError("ptype can only be gradient or hessian How did you end up here?")
