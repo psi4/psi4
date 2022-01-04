@@ -6,5 +6,7 @@ if(TARGET PCMSolver::pcm)
   target_link_libraries(psipcm
     PUBLIC
       PCMSolver::pcm
+      mints
+      Libint2::cxx
     )
 endif()

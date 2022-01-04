@@ -29,6 +29,7 @@
 #ifndef _psi_src_lib_libmints_potential_h_
 #define _psi_src_lib_libmints_potential_h_
 
+#include <array>
 #include <vector>
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/onebody.h"
@@ -50,8 +51,8 @@ class CdSalcList;
 class PotentialInt : public OneBodyAOInt {
 
    protected:
-    /// Recursion object that does the heavy lifting.
-    ObaraSaikaTwoCenterVIRecursion* potential_recur_;
+    /// The charges and locations that define the external potential
+    std::vector<std::pair<double, std::array<double, 3>>> Zxyz_;
 
    public:
     /// Constructor. Assumes nuclear centers/charges as the potential
@@ -60,9 +61,6 @@ class PotentialInt : public OneBodyAOInt {
 
     /// Set the field of charges
     void set_charge_field(const std::vector<std::pair<double, std::array<double, 3>>>& Zxyz);
-
-    /// Get the field of charges
-    // SharedMatrix charge_field() const { return Zxyz_; }
 
     /// Does the method provide first derivatives?
     bool has_deriv1() override { return true; }

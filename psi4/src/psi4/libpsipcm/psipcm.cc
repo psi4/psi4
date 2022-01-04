@@ -215,20 +215,15 @@ PCM::PCM(const PCM *other) {
 }
 
 SharedVector PCM::compute_electronic_MEP(const SharedMatrix &D) const {
-    double **ptess_Zxyz = tess_Zxyz_->pointer();
-    for (int tess = 0; tess < ntess_; ++tess) ptess_Zxyz[tess][0] = 1.0;
-    potential_int_->set_charge_field(tess_Zxyz_);
-
-    SharedMatrix D_carts;
-    if (basisset_->has_puream()) {
-        D_carts = std::make_shared<Matrix>("D carts", basisset_->nao(), basisset_->nao());
-        D_carts->back_transform(D, my_aotoso_);
-    } else {
-        D_carts = D;
+    double **pZxyz = tess_Zxyz_->pointer();
+    std::vector<std::pair<double, std::array<double, 3>>> field;
+    for (int tess = 0; tess < ntess_; ++tess) {
+        field.push_back({1.0, {pZxyz[tess][1], pZxyz[tess][2], pZxyz[tess][3]}});
     }
+    potential_int_->set_charge_field(field);
 
     auto MEP = std::make_shared<Vector>(tesspi_);
-    ContractOverDensityFunctor contract_density_functor(ntess_, MEP->pointer(0), D_carts);
+    ContractOverDensityFunctor contract_density_functor(ntess_, MEP->pointer(0), D);
     // Add in the electronic contribution to the potential at each tessera
     potential_int_->compute(contract_density_functor);
 
@@ -374,18 +369,10 @@ double PCM::compute_E_electronic(const SharedVector &MEP_e) const {
 }
 
 SharedMatrix PCM::compute_Vpcm(const SharedVector &ASC) const {
-    auto V_pcm_cart = std::make_shared<Matrix>("PCM potential cart", basisset_->nao(), basisset_->nao());
-    ContractOverChargesFunctor contract_charges_functor(ASC->pointer(0), V_pcm_cart);
+    auto V_pcm = std::make_shared<Matrix>("PCM potential cart", basisset_->nbf(), basisset_->nbf());
+    ContractOverChargesFunctor contract_charges_functor(ASC->pointer(0), V_pcm);
     potential_int_->compute(contract_charges_functor);
-    // The potential might need to be transformed to the spherical harmonic basis
-    SharedMatrix V_pcm_pure;
-    if (basisset_->has_puream()) {
-        V_pcm_pure = std::make_shared<Matrix>("PCM potential pure", basisset_->nbf(), basisset_->nbf());
-        V_pcm_pure->transform(V_pcm_cart, my_aotoso_);
-        return V_pcm_pure;
-    } else {
-        return V_pcm_cart;
-    }
+    return V_pcm;
 }
 }  // namespace psi
 

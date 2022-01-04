@@ -105,6 +105,7 @@ void PotentialInt::set_charge_field(const std::vector<std::pair<double, std::arr
     engine0_->set_params(Zxyz);
     if (engine1_) engine1_->set_params(Zxyz);
     if (engine2_) engine2_->set_params(Zxyz);
+    Zxyz_ = Zxyz;
 }
 
 
