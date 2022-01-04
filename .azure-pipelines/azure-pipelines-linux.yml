@@ -86,7 +86,7 @@ jobs:
         -n p4env \
         python=$PYTHON_VER \
         psi4/label/dev::gau2grid \
-        psi4/label/dev::libint2 \
+        psi4/label/dev::libint2=2.6.0=h2fe1556_13 \
         psi4/label/dev::libxc=5 \
         psi4/label/dev::ambit \
         psi4/label/dev::chemps2 \
