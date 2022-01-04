@@ -1,6 +1,0 @@
-{
-    // On Windows, VSCode will touch every file and change the end-of-line
-    // character to \r\n.  This forces it to use only \n.  We want this
-    // because we are using a Docker image to Unix/Linux which uses \n.
-    "files.eol": "\n"
-}
