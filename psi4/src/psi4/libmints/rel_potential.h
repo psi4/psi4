@@ -66,12 +66,6 @@ class RelPotentialInt : public OneBodyAOInt {
                     int deriv = 0);
     ~RelPotentialInt() override;
 
-    /// Computes the first derivatives and stores them in result
-    void compute_deriv1(std::vector<SharedMatrix>& result) override;
-
-    /// Computes the second derivatives and store them in result
-    void compute_deriv2(std::vector<SharedMatrix>& result) override;
-
     /// Set the field of charges
     void set_charge_field(SharedMatrix Zxyz) { Zxyz_ = Zxyz; }
 

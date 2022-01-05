@@ -446,7 +446,6 @@ SharedMatrix SCFDeriv::compute_hessian()
 
         // Potential energy derivatives
         std::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(2));
-        const double* buffer = Vint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             const GaussianShell& s1 = basisset_->shell(P);
@@ -514,7 +513,6 @@ SharedMatrix SCFDeriv::compute_hessian()
 
         // Kinetic energy derivatives
         std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(2));
-        const double* buffer = Tint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             const GaussianShell& s1 = basisset_->shell(P);
@@ -596,7 +594,6 @@ SharedMatrix SCFDeriv::compute_hessian()
 
         // Overlap derivatives
         std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(2));
-        const double* buffer = Sint->buffer();
 
         for (int P = 0; P < basisset_->nshell(); P++) {
             const GaussianShell& s1 = basisset_->shell(P);

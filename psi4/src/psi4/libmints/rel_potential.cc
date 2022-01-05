@@ -284,14 +284,6 @@ void RelPotentialInt::compute_pair(const libint2::Shell& s1, const libint2::Shel
     buffers_[0] = buffer_;
 }
 
-void RelPotentialInt::compute_deriv1(std::vector<SharedMatrix>&) {
-    throw SanityCheckError("RelPotentialInt::compute_deriv1(): not implemented.", __FILE__, __LINE__);
-}
-
-void RelPotentialInt::compute_deriv2(std::vector<SharedMatrix>&) {
-    throw SanityCheckError("RelPotentialInt::compute_deriv2(): not implemented.", __FILE__, __LINE__);
-}
-
 RelPotentialSOInt::RelPotentialSOInt(const std::shared_ptr<OneBodyAOInt>& aoint,
                                      const std::shared_ptr<IntegralFactory>& fact)
     : OneBodySOInt(aoint, fact) {

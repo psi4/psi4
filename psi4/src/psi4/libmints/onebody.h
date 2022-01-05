@@ -114,10 +114,6 @@ class PSI_API OneBodyAOInt {
     /// Number of chunks. Normally 1, but dipoles (3) quadrupoles (6).
     int nchunk() const { return nchunk_; }
 
-    /// Buffer where the integrals are placed.
-    PSI_DEPRECATED("No.")
-    const double* buffer() const;
-
     /*! @{
      * Computes all integrals and stores them in result
      * @param result Shared matrix object that will hold the results.
@@ -125,7 +121,7 @@ class PSI_API OneBodyAOInt {
     void compute(SharedMatrix& result);
     /*! @} */
 
-    /// Computes all integrals and stores them in result by default this method throws
+    ///// Computes all integrals and stores them in result by default this method throws
     virtual void compute(std::vector<SharedMatrix>& result);
 
     /// Does the method provide first derivatives?
@@ -136,12 +132,6 @@ class PSI_API OneBodyAOInt {
 
     /// What order of derivative was requested?
     int deriv() const { return deriv_; }
-
-    /// Computes the first derivatives and stores them in result
-    virtual void compute_deriv1(std::vector<SharedMatrix>& result);
-
-    /// Computes the second derivatives and stores them in result
-    virtual void compute_deriv2(std::vector<SharedMatrix>& result);
 
     /// Compute the integrals between basis function in the given shell pair.
     void compute_shell(int, int);

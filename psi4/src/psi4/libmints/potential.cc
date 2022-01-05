@@ -120,7 +120,6 @@ PotentialSOInt::PotentialSOInt(const std::shared_ptr<OneBodyAOInt> &aoint, const
 }
 
 void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSalcList &cdsalcs) {
-    // Do not worry about zeroing out result.
 
     // Do some checks:
     if (deriv_ < 1)
@@ -133,7 +132,6 @@ void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSa
 
     int ns1 = b1_->nshell();
     int ns2 = b2_->nshell();
-    const double *aobuf = ob_->buffer();
 
     // Loop over unique SO shells.
     for (int ish = 0; ish < ns1; ++ish) {
@@ -147,21 +145,18 @@ void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSa
             int nao12 = nao1 * nao2;
 
             // loop through the AO shells that make up this SO shell
-            // by the end of these 4 for loops we will have our final integral in buffer_
             for (int i = 0; i < t1.naoshell; ++i) {
                 const SOTransformShell &s1 = t1.aoshell[i];
 
                 for (int j = 0; j < t2.naoshell; ++j) {
                     const SOTransformShell &s2 = t2.aoshell[j];
 
-                    // If we're working on the same atomic center, don't even bother with the derivative
-                    // Does this still hold for potentials? nope
-                    //                    if (center_i == center_j)
-                    //                        continue;
-
                     ob_->compute_shell_deriv1(s1.aoshell, s2.aoshell);
+                    const auto &buffers = ob_->buffers(); 
+                    size_t nchunks = buffers.size();
+                    int icenter = b1_->basis()->shell(s1.aoshell).ncenter();
+                    int jcenter = b2_->basis()->shell(s2.aoshell).ncenter();
 
-                    // handle SO transform
                     for (int itr = 0; itr < s1.nfunc; ++itr) {
                         const SOTransformFunction &ifunc = s1.func[itr];
                         // SO transform coefficient
@@ -185,16 +180,11 @@ void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSa
                             int jrel = b2_->function_within_irrep(jsh, jsofunc);
                             int jirrep = jfunc.irrep;
 
-                            // Need to loop over the cdsalcs over ALL atoms
-                            // Potential integral derivatives include contribution
-                            // to a third atom.
+                            for (int chunk = 0; chunk < nchunks; ++chunk) {
+                                int atom = (chunk < 1 ? icenter : (chunk < 2 ? jcenter : chunk-2) );
+                                const CdSalcWRTAtom &cdsalc1 = cdsalcs.atom_salc(atom);
 
-                            // third atom loop (actually goes over all atoms)
-                            for (int a = 0; a < natom_; ++a) {
-                                const CdSalcWRTAtom &cdsalc1 = cdsalcs.atom_salc(a);
-                                int offset = jaooff + 3 * a * nao12;
-
-                                double jcoef_aobuf = jcoef * aobuf[offset + (0 * nao12)];
+                                double jcoef_aobuf = jcoef * buffers[3*chunk + 0][jaooff];
                                 for (int nx = 0; nx < cdsalc1.nx(); ++nx) {
                                     const CdSalcWRTAtom::Component element = cdsalc1.x(nx);
                                     double temp = jcoef_aobuf * element.coef;
@@ -203,7 +193,7 @@ void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSa
                                     }
                                 }
 
-                                jcoef_aobuf = jcoef * aobuf[offset + (1 * nao12)];
+                                jcoef_aobuf = jcoef * buffers[3*chunk+1][jaooff];
                                 for (int ny = 0; ny < cdsalc1.ny(); ++ny) {
                                     const CdSalcWRTAtom::Component element = cdsalc1.y(ny);
                                     double temp = jcoef_aobuf * element.coef;
@@ -212,7 +202,7 @@ void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix> result, const CdSa
                                     }
                                 }
 
-                                jcoef_aobuf = jcoef * aobuf[offset + (2 * nao12)];
+                                jcoef_aobuf = jcoef * buffers[3*chunk+2][jaooff];
                                 for (int nz = 0; nz < cdsalc1.nz(); ++nz) {
                                     const CdSalcWRTAtom::Component element = cdsalc1.z(nz);
                                     double temp = jcoef_aobuf * element.coef;

@@ -176,8 +176,6 @@ std::shared_ptr<BasisSet> OneBodyAOInt::basis1() { return bs1_; }
 
 std::shared_ptr<BasisSet> OneBodyAOInt::basis2() { return bs2_; }
 
-const double *OneBodyAOInt::buffer() const { return buffer_; }
-
 bool OneBodyAOInt::cloneable() const { return false; }
 
 OneBodyAOInt *OneBodyAOInt::clone() const {
@@ -345,107 +343,6 @@ void OneBodyAOInt::compute(std::vector<SharedMatrix> &result) {
                 }
             }
         }
-    }
-}
-
-void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix> &result) {
-    if (deriv_ < 1)
-        throw SanityCheckError("OneBodyInt::compute_deriv1(result): integral object not created to handle derivatives.",
-                               __FILE__, __LINE__);
-
-    for (auto pair : shellpairs_) {
-        int p1 = pair.first;
-        int p2 = pair.second;
-
-        int center1 = bs1_->shell(p1).ncenter();
-        int center2 = bs2_->shell(p2).ncenter();
-        if (center1 == center2) continue;
-
-        const auto bs1_equiv_bs2 = (bs1_ == bs2_);
-        const auto &s1 = bs1_->l2_shell(p1);
-        const auto &s2 = bs2_->l2_shell(p2);
-        int ni = bs1_->shell(p1).nfunction();
-        int nj = bs2_->shell(p2).nfunction();
-        int i_offset = bs1_->shell_to_basis_function(p1);
-        int j_offset = bs2_->shell_to_basis_function(p2);
-
-        // Compute the shell
-        compute_pair_deriv1(s1, s2);
-
-        // For each integral that we got put in its contribution
-        for (int chunk = 0; chunk < nchunk_; ++chunk) {
-            int target_center = (chunk < 3 ? center1 : (chunk < 6 ? center2 : chunk-6) );
-            int xyz = chunk % 3;
-            const double *buffer = buffers_[chunk];
-            const double *location = buffer;
-            for (int p = 0; p < ni; ++p) {
-                for (int q = 0; q < nj; ++q) {
-                   result[3*target_center + xyz]->add(0, i_offset + p, j_offset + q, *location);
-                   if (bs1_equiv_bs2 && p1 != p2) {
-                       result[3*target_center + xyz]->add(0, j_offset + q, i_offset + p, *location);
-                   }
-                   location++;
-                }
-            }
-        }
-    }
-}
-
-void OneBodyAOInt::compute_deriv2(std::vector<SharedMatrix> &result) {
-    if (deriv_ < 2)
-        throw SanityCheckError("OneBodyInt::compute_deriv2(result): integral object not created to handle derivatives.",
-                               __FILE__, __LINE__);
-
-    // Do not worry about zeroing out result
-    int ns1 = bs1_->nshell();
-    int ns2 = bs2_->nshell();
-    int i_offset = 0;
-
-    // Check the length of result, must be 3*natom_
-    if (result.size() != (size_t)9 * natom_ * natom_)
-        throw SanityCheckError("OneBodyInt::compute_deriv2(result): result must be 9 * natom^2 in length.", __FILE__,
-                               __LINE__);
-
-    if (result[0]->nirrep() != 1)
-        throw SanityCheckError("OneBodyInt::compute_deriv2(result): results must be C1 symmetry.", __FILE__, __LINE__);
-
-    for (int i = 0; i < ns1; ++i) {
-        int ni = bs1_->shell(i).nfunction();
-        int center_i3 = 3 * bs1_->shell(i).ncenter();
-        int j_offset = 0;
-        for (int j = 0; j < ns2; ++j) {
-            int nj = bs2_->shell(j).nfunction();
-            int center_j3 = 3 * bs2_->shell(j).ncenter();
-
-            if (center_i3 != center_j3) {
-                // Compute the shell
-                compute_shell_deriv2(i, j);
-
-                //                // Center i
-                //                location = buffer_;
-                //                for (int r=0; r<3; ++r) {
-                //                    for (int p=0; p<ni; ++p) {
-                //                        for (int q=0; q<nj; ++q) {
-                //                            result[center_i3+r]->add(0, i_offset+p, j_offset+q, *location);
-                //                            location++;
-                //                        }
-                //                    }
-                //                }
-
-                //                // Center j -- only if center i != center j
-                //                for (int r=0; r<3; ++r) {
-                //                    for (int p=0; p<ni; ++p) {
-                //                        for (int q=0; q<nj; ++q) {
-                //                            result[center_j3+r]->add(0, i_offset+p, j_offset+q, *location);
-                //                            location++;
-                //                        }
-                //                    }
-                //                }
-            }
-
-            j_offset += nj;
-        }
-        i_offset += ni;
     }
 }
 

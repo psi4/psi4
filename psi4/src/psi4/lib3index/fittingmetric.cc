@@ -162,7 +162,7 @@ void FittingMetric::form_fitting_metric() {
         std::shared_ptr<OneBodyAOInt>* Oint = new std::shared_ptr<OneBodyAOInt>[ nthread ];
         for (int Q = 0; Q < nthread; Q++) {
             Oint[Q] = std::shared_ptr<OneBodyAOInt>(rifactory_RP.ao_overlap());
-            Obuffer[Q] = Oint[Q]->buffer();
+            Obuffer[Q] = Oint[Q]->buffers()[0];
         }
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
@@ -199,7 +199,7 @@ void FittingMetric::form_fitting_metric() {
         std::shared_ptr<OneBodyAOInt>* Tint = new std::shared_ptr<OneBodyAOInt>[ nthread ];
         for (int Q = 0; Q < nthread; Q++) {
             Tint[Q] = std::shared_ptr<OneBodyAOInt>(rifactory_P.ao_kinetic());
-            Tbuffer[Q] = Tint[Q]->buffer();
+            Tbuffer[Q] = Tint[Q]->buffers()[0];
         }
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread)
