@@ -275,7 +275,6 @@ ExternalProject_Add(psi4-core
               -DENABLE_dkh=${ENABLE_dkh}
               -DENABLE_ecpint=${ENABLE_ecpint}
               -DENABLE_libefp=${ENABLE_libefp}
-              -DENABLE_cppe=${ENABLE_cppe}
               -DENABLE_erd=${ENABLE_erd}
               -DENABLE_simint=${ENABLE_simint}
               -DENABLE_gdma=${ENABLE_gdma}
@@ -290,7 +289,6 @@ ExternalProject_Add(psi4-core
               -Ddkh_DIR=${dkh_DIR}
               -Decpint_DIR=${ecpint_DIR}
               -Dlibefp_DIR=${libefp_DIR}
-              -Dcppe_DIR=${cppe_DIR}
               -Derd_DIR=${erd_DIR}
               -Dgau2grid_DIR=${gau2grid_DIR}
               -Dgdma_DIR=${gdma_DIR}

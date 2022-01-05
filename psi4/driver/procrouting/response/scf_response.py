@@ -535,7 +535,7 @@ def tdscf_excitations(wfn,
                       verbose: int = 1,
                       coeff_cutoff: float = 0.1,
                       tdm_print: List[str] = []):
-    """Compute excitations from a SCF(HF/KS) wavefunction
+    r"""Compute excitations from a SCF(HF/KS) wavefunction
 
     Parameters
     -----------
