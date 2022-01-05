@@ -20,7 +20,8 @@ if(${ENABLE_cppe})
             URL https://github.com/maxscheurer/cppe/archive/v0.3.1.tar.gz
             UPDATE_COMMAND ""
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
-                       -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                        # runtime segfault if Debug passed from Psi4
+                       -DCMAKE_BUILD_TYPE=Release
                        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_BINDIR=${CMAKE_INSTALL_BINDIR}
