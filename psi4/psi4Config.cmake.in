@@ -88,7 +88,6 @@ psi4_component(ecpint @ENABLE_ecpint@)
 psi4_component(erd @ENABLE_erd@)
 psi4_component(gdma @ENABLE_gdma@)
 psi4_component(pcmsolver @ENABLE_PCMSolver@)
-psi4_component(cppe @ENABLE_cppe@)
 psi4_component(simint @ENABLE_simint@)
 
 foreach(_comp ${${PN}_FIND_COMPONENTS})
