@@ -25,5 +25,7 @@ set pe {
 }
 
 # Run computation of ADC(2) plus a few properties
-_, wfn = properties('adc(2)', properties=["oscillator_strength", "dipole"], return_wfn=True)
+# environment="True" turns on ptSS/ptLR corrections
+_, wfn = properties('adc(2)', properties=["oscillator_strength", "dipole"],
+                    environment=True, return_wfn=True)
 
