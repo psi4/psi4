@@ -24,13 +24,11 @@ list(APPEND sources
   electrostatic.cc
   wavefunction.cc
   irrep.cc
-  eribase.cc
   fjt.cc
   potentialint.cc
   chartab.cc
   corrtab.cc
   quadrupole.cc
-  eri.cc
   symop.cc
   benchmark.cc
   get_writer_file_prefix.cc
@@ -54,7 +52,6 @@ list(APPEND sources
   kinetic.cc
   tracelessquadrupole.cc
   pseudospectral.cc
-  integral.cc
   matrix.cc
   gshell.cc
   integraliter.cc
@@ -69,16 +66,18 @@ list(APPEND sources
   orthog.cc
   )
 
-# CXX_STANDARD property for targets, not files, hence the double flag
-set_source_files_properties(
-  eri.cc
-  eribase.cc
-  integral.cc
-  PROPERTIES COMPILE_OPTIONS "-std=c++14")
+add_library(l2intf OBJECT eri.cc eribase.cc integral.cc)
+set_property(TARGET l2intf PROPERTY CXX_STANDARD 14)
+set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 psi4_add_module(lib mints sources)
+target_link_libraries(mints PRIVATE l2intf)
 
 # Always linked-to external projects
+target_link_libraries(l2intf
+  PUBLIC
+    Libint2::cxx
+  )
 target_link_libraries(mints
   PUBLIC
     Libint2::cxx
