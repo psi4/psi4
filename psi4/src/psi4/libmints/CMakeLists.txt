@@ -69,6 +69,12 @@ list(APPEND sources
   orthog.cc
   )
 
+# CXX_STANDARD property for targets, not files, hence the double flag
+set_source_files_properties(
+  eri.cc
+  eribase.cc
+  PROPERTIES COMPILE_OPTIONS "-std=c++14")
+
 psi4_add_module(lib mints sources)
 
 # Always linked-to external projects

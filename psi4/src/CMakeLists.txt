@@ -52,6 +52,11 @@ target_sources(core
     python_data_type.cc
   )
 
+# need to down-standard the Libint2 connection from c++17 for Intel as of 2021.4
+set_source_files_properties(
+  export_mints.cc
+  PROPERTIES COMPILE_OPTIONS "-std=c++14")
+
 # set_target_properties(core
    # PROPERTIES
      # implicit in pybind11_add_module
