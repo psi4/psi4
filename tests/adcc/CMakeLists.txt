@@ -23,5 +23,6 @@ add_subdirectory(hf-adc2-spin-flip)
 add_subdirectory(methyloxirane-rotation)
 
 if(ENABLE_cppe)
+    add_subdirectory(formaldehyde-pe-adc1)
     add_subdirectory(formaldehyde-pe-adc2)
 endif()

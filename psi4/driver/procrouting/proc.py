@@ -3493,7 +3493,7 @@ def run_adcc(name, **kwargs):
 
     try:
         import adcc
-        from adcc.backends import InvalidReference
+        from adcc.exceptions import InvalidReference
     except ModuleNotFoundError:
         raise ValidationError("adcc extras qc_module not available. Try installing "
             "via 'pip install adcc' or 'conda install -c adcc adcc'.")
@@ -3603,7 +3603,10 @@ def run_adcc(name, **kwargs):
     except InvalidReference as ex:
         raise ValidationError("Cannot run adcc because the passed reference wavefunction is "
                               "not supported in adcc. Check Psi4 SCF parameters. adcc reports: "
-                              "{}".format(str(ex)))
+                              f"{ex}")
+    except Exception as ex:
+        raise ValidationError("Unknown exception occured while "
+                              f"running adcc: '{ex}' ({type(ex).__name__})")
     core.print_out("\n")
 
     # TODO Should a non-converged calculation throw?
