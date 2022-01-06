@@ -73,6 +73,7 @@ list(APPEND sources
 set_source_files_properties(
   eri.cc
   eribase.cc
+  integral.cc
   PROPERTIES COMPILE_OPTIONS "-std=c++14")
 
 psi4_add_module(lib mints sources)
