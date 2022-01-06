@@ -482,9 +482,8 @@ void export_mints(py::module& m) {
         .def("clone", &Matrix::clone, "Creates exact copy of the matrix and returns it")
         .def_property("name", py::cpp_function(&Matrix::name), py::cpp_function(&Matrix::set_name),
                       "The name of the Matrix. Used in printing.")
-
-        // def("set_name", &Matrix::set_name, "docstring").
-        // def("name", &Matrix::name, py::return_value_policy::copy, "docstring").
+        .def("is_approx_equal", &Matrix::is_approx_equal, "Is this approximately equal to other matrix within tolerance?",
+             "other"_a, "tol"_a = 1e-10)
         .def("print_out", &Matrix::print_out, "Prints the matrix to the output file")
         .def("print_atom_vector", &Matrix::print_atom_vector, "RMRoutfile"_a = "outfile",
              "Print the matrix with atom labels, assuming it is an natom X 3 tensor")

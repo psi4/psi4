@@ -316,6 +316,30 @@ SharedMatrix Matrix::clone() const {
     return temp;
 }
 
+bool Matrix::is_approx_equal(const Matrix& other, double tol) const {
+    auto result = name_ == other.name();
+    result = result && nirrep_ == other.nirrep();
+    result = result && rowspi_ == other.rowspi();
+    result = result && colspi_ == other.colspi();
+    result = result && symmetry_ == other.symmetry();
+    result = result && numpy_shape_ == other.numpy_shape();
+    if (!result) {
+        return false;
+    }
+    for (int h = 0; h < nirrep_; ++h) {
+        auto my_pointer = get_pointer(h);
+        auto other_pointer = other.get_pointer(h);
+        for (int m = 0; m < rowspi_[h] * colspi_[h ^ symmetry_]; ++m) {
+            if (std::abs(*my_pointer - *other_pointer) > tol) {
+                return false;
+            }
+            my_pointer++;
+            other_pointer++;
+        }
+    }
+    return true;
+}
+
 void Matrix::copy(const Matrix *cp) {
     // Make sure we are the same size as cp
     bool same = true;

@@ -224,3 +224,11 @@ def test_doublets(adl, adr, Ga, bdl, bdr, Gb, at, bt):
     block_checks = []
     for blk_idx in range(res.nirrep()):
         assert compare_arrays(expected[blk_idx], res_blocks[blk_idx], 8, f"Block[{blk_idx}]")
+
+def test_approx_equal():
+    a = build_random_mat(Dimension([5]), Dimension([5]))
+    a.name = "Test Matrix"
+    b = a.clone()
+    assert a.is_approx_equal(b)
+    b.identity()
+    assert not a.is_approx_equal(b)

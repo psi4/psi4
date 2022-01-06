@@ -271,6 +271,8 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
     void copy(const Matrix* cp);
     /** @} */
 
+    bool is_approx_equal(const Matrix& other, double tol = 1e-10) const;
+
     /**
     ** For a matrix of 3D vectors (ncol==3), rotate a set of points around an
     ** arbitrary axis.  Vectors are the rows of the matrix.
@@ -1121,7 +1123,7 @@ class PSI_API Matrix : public std::enable_shared_from_this<Matrix> {
      * Adds accessability to the matrix shape for numpy
      */
     void set_numpy_shape(std::vector<int> shape) { numpy_shape_ = shape; }
-    std::vector<int> numpy_shape() { return numpy_shape_; }
+    const std::vector<int> numpy_shape() const { return numpy_shape_; }
 
     /**
      * Rotates columns i and j in irrep h, by an angle theta
