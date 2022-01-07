@@ -53,11 +53,11 @@ target_sources(core
   )
 
 # need to down-standard the Libint2 connection from c++17 for Intel as of 2021.4
-if (MSVC)
-    set_source_files_properties(export_mints.cc PROPERTIES COMPILE_OPTIONS "-std:c++14")
-else()
-    set_source_files_properties(export_mints.cc PROPERTIES COMPILE_OPTIONS "-std=c++14")
-endif()
+#OK if (MSVC)
+#OK     set_source_files_properties(export_mints.cc PROPERTIES COMPILE_OPTIONS "-std:c++14")
+#OK else()
+#OK     set_source_files_properties(export_mints.cc PROPERTIES COMPILE_OPTIONS "-std=c++14")
+#OK endif()
 #TMP add_library(l2export OBJECT export_mints.cc)
 #TMP set_property(TARGET l2export PROPERTY CXX_STANDARD 14)
 #TMP set_property(TARGET l2export PROPERTY POSITION_INDEPENDENT_CODE ON)
@@ -118,7 +118,7 @@ endif()
 target_include_directories(core
   INTERFACE
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
+#TMP2    $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
   )
 #TMP target_include_directories(l2export
 #TMP   PRIVATE
