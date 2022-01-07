@@ -64,21 +64,34 @@ list(APPEND sources
   gaussquad.cc
   ecpint.cc
   orthog.cc
+  eri.cc      # ~TMP
+  eribase.cc  # ~TMP
+  integral.cc # ~TMP
   )
 
-add_library(l2intf OBJECT eri.cc eribase.cc integral.cc)
-set_property(TARGET l2intf PROPERTY CXX_STANDARD 14)
-set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(l2intf
-  PRIVATE
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
-  )
+if (MSVC)
+    set_source_files_properties(eri.cc eribase.cc integral.cc PROPERTIES COMPILE_OPTIONS "-std:c++14")
+else()
+    set_source_files_properties(eri.cc eribase.cc integral.cc PROPERTIES COMPILE_OPTIONS "-std=c++14")
+endif()
+
+#TMP add_library(l2intf OBJECT eri.cc eribase.cc integral.cc)
+#TMP set_property(TARGET l2intf PROPERTY CXX_STANDARD 14)
+#TMP set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
+#TMP target_include_directories(l2intf
+#TMP   PRIVATE
+#TMP     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+#TMP     $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
+#TMP   )
 
 psi4_add_module(lib mints sources)
-target_link_libraries(mints PRIVATE l2intf)
+#TMP target_link_libraries(mints PRIVATE l2intf)
 
 # Always linked-to external projects
+#target_link_libraries(l2intf
+#  PUBLIC
+#    Libint2::cxx
+#  )
 target_link_libraries(mints
   PUBLIC
     Libint2::cxx
