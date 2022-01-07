@@ -81,6 +81,9 @@ def _mergedapis_compare_matrices(expected, computed, *args, **kwargs):
 
     qcdb.testing._merge_psi4_qcel_apis(args, kwargs)
 
+    if kwargs.pop("check_name", False):
+        compare(expected.name, computed.name, f'{expected.name} vs. {computed.name} name', quiet=True)
+
     compare(expected.nirrep(), computed.nirrep(), f'{expected.name} vs. {computed.name} irreps', quiet=True)
     compare(expected.symmetry(), computed.symmetry(), f'{expected.name} vs. {computed.name} symmetry', quiet=True)
     for irrep in range(expected.nirrep()):
