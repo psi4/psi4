@@ -78,11 +78,22 @@ list(APPEND sources
 add_library(l2intf OBJECT eri.cc eribase.cc integral.cc)
 set_property(TARGET l2intf PROPERTY CXX_STANDARD 14)
 set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_include_directories(l2intf
+#target_include_directories(l2intf
+#  PRIVATE
+#    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+#    $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
+#  )
+target_link_libraries(l2intf
   PRIVATE
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-    $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
+    tgt::lapack
   )
+#if(MSVC)
+  target_link_libraries(l2intf
+    PRIVATE
+      Libint2::cxx
+      )
+#endif()
+
 
 psi4_add_module(lib mints sources)
 target_link_libraries(mints PRIVATE l2intf)
