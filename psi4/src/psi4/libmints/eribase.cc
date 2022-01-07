@@ -37,8 +37,8 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
-#include <libint2/engine.h>
 #include <libint2/shell.h>
+#include <libint2/engine.h>
 
 #include <algorithm>
 #include <memory>
