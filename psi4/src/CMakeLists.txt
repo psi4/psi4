@@ -59,6 +59,13 @@ target_include_directories(l2export
   PRIVATE
     $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
   )
+if(MSVC)
+  target_link_libraries(l2export
+    PRIVATE
+      pybind11::headers
+      pybind11::windows_extras
+    )
+endif()
 target_link_libraries(core PRIVATE l2export)
 
 # set_target_properties(core
