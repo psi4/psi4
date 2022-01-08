@@ -64,45 +64,24 @@ list(APPEND sources
   gaussquad.cc
   ecpint.cc
   orthog.cc
-#  eri.cc      # ~TMP
-#  eribase.cc  # ~TMP
-#  integral.cc # ~TMP
   )
-
-#OK if (MSVC)
-#OK     set_source_files_properties(eri.cc eribase.cc integral.cc PROPERTIES COMPILE_OPTIONS "-std:c++14")
-#OK else()
-#OK     set_source_files_properties(eri.cc eribase.cc integral.cc PROPERTIES COMPILE_OPTIONS "-std=c++14")
-#OK endif()
 
 add_library(l2intf OBJECT eri.cc eribase.cc integral.cc)
 set_property(TARGET l2intf PROPERTY CXX_STANDARD 14)
 set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
-#target_include_directories(l2intf
-#  PRIVATE
-#    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-#    $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
-#  )
+# below are what l2intf files would ordinarily have gotten from psi4_add_module.
+# * first brings OpenMP headers
+# * second brings l2. Linux needs only headers, but Windows needs headers and linking, so slight overkill here
 target_link_libraries(l2intf
   PRIVATE
     tgt::lapack
+    Libint2::cxx
   )
-#if(MSVC)
-  target_link_libraries(l2intf
-    PRIVATE
-      Libint2::cxx
-      )
-#endif()
-
 
 psi4_add_module(lib mints sources)
 target_link_libraries(mints PRIVATE l2intf)
 
 # Always linked-to external projects
-#target_link_libraries(l2intf
-#  PUBLIC
-#    Libint2::cxx
-#  )
 target_link_libraries(mints
   PUBLIC
     Libint2::cxx
@@ -117,16 +96,16 @@ if(TARGET Libint::libint)
 endif()
 
 if(TARGET simint::simint)
-  target_sources(mints
+  target_sources(l2intf
     PRIVATE
       siminteri.cc
     )
   # Add USING_simint definition, which is not in simint::simint
-  target_compile_definitions(mints
+  target_compile_definitions(l2intf
     PUBLIC
       USING_simint
     )
-  target_link_libraries(mints
+  target_link_libraries(l2intf
     PUBLIC
       simint::simint
     )
