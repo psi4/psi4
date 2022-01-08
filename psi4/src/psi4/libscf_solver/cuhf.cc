@@ -388,8 +388,6 @@ double CUHF::compute_E() {
     return Etotal;
 }
 
-bool CUHF::diis() { return diis_manager_.attr("extrapolate")(Fa_.get(), Fb_.get()).cast<bool>(); }
-
 bool CUHF::stability_analysis() {
     throw PSIEXCEPTION("CUHF stability analysis has not been implemented yet.  Sorry :(");
     return false;

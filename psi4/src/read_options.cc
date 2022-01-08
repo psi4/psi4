@@ -1439,6 +1439,12 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- When using |scf__stability_analysis| ``FOLLOW``, maximum number of orbital optimization attempts
             to make the wavefunction stable. !expert -*/
         options.add_int("MAX_ATTEMPTS", 1);
+        /*- Which method to use to accelerate initial SCF convergence?-*/
+        options.add_str("INITIAL_SCF_ACCELERATOR", "ADIIS", "NONE EDIIS ADIIS");
+        /*- When the SCF error hits this number, start the linear blend of the initial SCF method out of SCF steps. -*/
+        options.add_double("INITIAL_SCF_BLEND_START", 1.0E-1);
+        /*- When the SCF error hits this number, complete the linear blend of the initial SCF method out of SCF steps. -*/
+        options.add_double("INITIAL_SCF_BLEND_STOP", 1.0E-4);
         /*- Do Perform Incremental Fock Build? -*/
         options.add_bool("INCFOCK", false);
         /*- Frequency with which to compute the full Fock matrix if using |scf__incfock| . 

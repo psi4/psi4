@@ -1,4 +1,4 @@
-#
+
 # @BEGIN LICENSE
 #
 # Psi4: an open-source quantum chemistry software package
@@ -254,7 +254,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
     reference = core.get_option('SCF', "REFERENCE")
 
     # self.member_data_ signals are non-local, used internally by c-side fns
-    self.diis_enabled_ = _validate_diis()
+    self.diis_enabled_ = self.validate_diis()
     self.MOM_excited_ = _validate_MOM()
     self.diis_start_ = core.get_option('SCF', 'DIIS_START')
     damping_enabled = _validate_damping()
@@ -400,10 +400,8 @@ def scf_iterate(self, e_conv=None, d_conv=None):
                 Dnorm = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
 
                 if add_to_diis_subspace:
-                    diis_performed = self.diis()
-
-                if diis_performed:
-                    status.append("DIIS")
+                    for engine_used in self.diis(Dnorm):
+                        status.append(engine_used)
 
                 core.timer_off("HF: DIIS")
 
@@ -823,7 +821,7 @@ def _validate_damping():
     return enabled
 
 
-def _validate_diis():
+def _validate_diis(self):
     """Sanity-checks DIIS control options
 
     Raises
@@ -834,10 +832,24 @@ def _validate_diis():
     Returns
     -------
     bool
-        Whether DIIS is enabled during scf.
+        Whether some form of DIIS is enabled during SCF.
 
     """
-    enabled = bool(core.get_option('SCF', 'DIIS'))
+
+    restricted_open = self.same_a_b_orbs() and not self.same_a_b_dens()
+    aediis_active = core.get_option('SCF', 'INITIAL_SCF_ACCELERATOR') != "NONE" and not restricted_open
+
+    if aediis_active:
+        start = core.get_option('SCF', 'INITIAL_SCF_BLEND_START')
+        stop = core.get_option('SCF', 'INITIAL_SCF_BLEND_STOP')
+        if start < stop:
+            raise ValidationError('INITIAL_SCF_BLEND_START cannot be after INITIAL_SCF_BLEND_STOP.')
+        elif start < 0:
+            raise ValidationError('INITIAL_SCF_BLEND_START cannot be negative.')
+        elif stop < 0:
+            raise ValidationError('INITIAL_SCF_BLEND_STOP cannot be negative.')
+
+    enabled = bool(core.get_option('SCF', 'DIIS')) or aediis_active
     if enabled:
         start = core.get_option('SCF', 'DIIS_START')
         if start < 1:
@@ -927,6 +939,7 @@ def _validate_soscf():
 
     return enabled
 
+core.HF.validate_diis = _validate_diis
 
 def efp_field_fn(xyz):
     """Callback function for PylibEFP to compute electric field from electrons
