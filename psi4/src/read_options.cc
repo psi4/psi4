@@ -741,7 +741,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         iteration, 2 is every other iteration, etc. -*/
         options.add_int("DIIS_FREQ", 1);
 
-        /*- Minimum number of error vectors stored for DIIS extrapolation -*/
+        /*- Minimum number of error vectors stored for DIIS extrapolation. Will be removed in v1.7. -*/
         options.add_int("DIIS_MIN_VECS", 2);
 
         /*- Maximum number of error vectors stored for DIIS extrapolation -*/
