@@ -128,11 +128,6 @@ void OCCWave::common_init() {
             "\tSpin-scaling in OCC changed in 1.4. Leave options to the energy call. Just pass in the method name, "
             "like scs-mp2.\n\n");
     }
-    if (options_["MO_DIIS_NUM_VECS"].has_changed() || options_["CC_DIIS_MIN_VECS"].has_changed() ||
-        options_["CC_DIIS_MAX_VECS"].has_changed()) {
-        outfile->Printf(
-            "\tDIIS keywords in OCC simplified in 1.4. DIIS_MIN_VECS and DIIS_MAX_VECS are the ones to use.\n\n");
-    }
 
     //   Given default orbital convergence, set the criteria by what should
     //   be necessary to achieve the target energy convergence.
