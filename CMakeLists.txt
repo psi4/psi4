@@ -34,7 +34,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #  <<<  Required build dependencies that Psi4 can't build itself  >>>
 #
 #    - CMake (e.g., `conda install cmake`)
-#    - C++ and C compilers (C++14 compliant)
+#    - C++ and C compilers (C++17 compliant)
 #    - BLAS/LAPACK (also runtime; e.g., `conda install mkl-devel`)
 #    - Python (also runtime; interpreter and headers; e.g., `conda install python`)
 #    - NumPy (also runtime; avoidable at buildtime if gau2grid pre-built; e.g., `conda install numpy`)
@@ -175,7 +175,7 @@ option_with_default(CMAKE_INSTALL_LIBDIR "Directory to which libraries installed
 option_with_default(PYMOD_INSTALL_LIBDIR "Location within CMAKE_INSTALL_LIBDIR to which python modules are installed" /)
 option_with_default(ENABLE_GENERIC "Enables mostly static linking of language libraries for shared library" OFF)
 option_with_default(CMAKE_INSTALL_MESSAGE "Specify verbosity of installation messages" LAZY)
-option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 14)
+option_with_default(psi4_CXX_STANDARD "Specify C++ standard for core Psi4" 17)
 option_with_default(SIMINT_VECTOR "Vectorization type to use for simint (scalar sse avx avxfma micavx512)" avx)
 option_with_default(SPHINX_THEME "Theme for Sphinx documentation and extensions" sphinx_psi_theme)
 option_with_default(SPHINXMAN_STRICT "Turn warnings into errors for docs target sphinxman" OFF)
