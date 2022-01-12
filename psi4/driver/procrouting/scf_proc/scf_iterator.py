@@ -399,7 +399,7 @@ def scf_iterate(self, e_conv=None, d_conv=None):
 
                 Dnorm = self.compute_orbital_gradient(add_to_diis_subspace, core.get_option('SCF', 'DIIS_MAX_VECS'))
 
-                if (add_to_diis_subspace and core.get_option('SCF', 'DIIS_MIN_VECS') - 1):
+                if add_to_diis_subspace:
                     diis_performed = self.diis()
 
                 if diis_performed:
@@ -829,8 +829,7 @@ def _validate_diis():
     Raises
     ------
     ValidationError
-        If any of |scf__diis|, |scf__diis_start|,
-        |scf__diis_min_vecs|, |scf__diis_max_vecs| don't play well together.
+        If any of DIIS options don't play well together.
 
     Returns
     -------
@@ -843,15 +842,6 @@ def _validate_diis():
         start = core.get_option('SCF', 'DIIS_START')
         if start < 1:
             raise ValidationError('SCF DIIS_START ({}) must be at least 1'.format(start))
-
-        minvecs = core.get_option('SCF', 'DIIS_MIN_VECS')
-        if minvecs < 1:
-            raise ValidationError('SCF DIIS_MIN_VECS ({}) must be at least 1'.format(minvecs))
-
-        maxvecs = core.get_option('SCF', 'DIIS_MAX_VECS')
-        if maxvecs < minvecs:
-            raise ValidationError('SCF DIIS_MAX_VECS ({}) must be at least DIIS_MIN_VECS ({})'.format(
-                maxvecs, minvecs))
 
     return enabled
 

@@ -569,6 +569,9 @@ void throw_deprecation_errors(std::string const& key, std::string const& module 
                 ". All instances of 'dcft' should be replaced with 'dct'. The method was renamed in v1.4.",
             __FILE__, __LINE__);
     }
+    if (module == "SCF" && key == "DIIS_MIN_VECS") {
+        py_psi_print_out("WARNING!\n\tRemove keyword DIIS_MIN_VECS! This keyword does nothing. Using it will raise an error in v1.7.\n");
+    }
 }
 
 Options& py_psi_get_options() { return Process::environment.options; }

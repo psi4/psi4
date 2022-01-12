@@ -1396,7 +1396,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("DIIS_RMS_ERROR", true);
         /*- The minimum iteration to start storing DIIS vectors -*/
         options.add_int("DIIS_START", 1);
-        /*- Minimum number of error vectors stored for DIIS extrapolation -*/
+        /*- Minimum number of error vectors stored for DIIS extrapolation. Will be removed in v1.7. -*/
         options.add_int("DIIS_MIN_VECS", 2);
         /*- Maximum number of error vectors stored for DIIS extrapolation -*/
         options.add_int("DIIS_MAX_VECS", 10);
@@ -2772,12 +2772,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         which means that all four-index quantities with up to two virtual-orbital
         indices (e.g., $\langle ij | ab \rangle$ integrals) may be held in the cache. -*/
         options.add_int("CACHELEVEL", 2);
-        /*- Removed in 1.4. Will raise an error in 1.5. -*/
-        options.add_int("MO_DIIS_NUM_VECS", 6);
-        /*- Removed in 1.4. Will raise an error in 1.5. -*/
-        options.add_int("CC_DIIS_MIN_VECS", 2);
-        /*- Removed in 1.4. Will raise an error in 1.5. -*/
-        options.add_int("CC_DIIS_MAX_VECS", 6);
         /*- Minimum number of error vectors stored for DIIS extrapolation -*/
         options.add_int("DIIS_MIN_VECS", 2);
         /*- Maximum number of error vectors stored for DIIS extrapolation -*/
