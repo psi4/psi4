@@ -245,7 +245,8 @@ class DIIS:
     def adiis_coefficients(self):
         self.adiis_populate()
         result = minimize(self.adiis_energy, np.ones(len(self.stored_vectors)), method="BFGS",
-                jac = self.adiis_gradient, tol=1e-9, options={"gtol": 1e-9})
+                jac = self.adiis_gradient, tol=1e-6, options={"maxiter": 200})
+
         if not result.success:
             raise Exception("ADIIS minimization failed. File a bug, and include your entire input and output files.")
         return transform_input(result.x)
@@ -279,7 +280,7 @@ class DIIS:
         if self.closedshell:
             self.adiis_linear *= 2
             self.adiis_quadratic *= 2
-    
+
     def ediis_energy(self, x):
         x = transform_input(x)
         ediis_linear = np.array([entry["energy"][0] for entry in self.stored_vectors])
@@ -299,9 +300,10 @@ class DIIS:
     def ediis_coefficients(self):
         self.ediis_populate()
         result = minimize(self.ediis_energy, np.ones(len(self.stored_vectors)), method="BFGS",
-                jac = self.ediis_gradient, tol=1e-9, options={"gtol": 1e-9})
+                jac=self.ediis_gradient, tol=1e-6, options={"maxiter": 200})
         if not result.success:
             raise Exception("EDIIS minimization failed. File a bug, and include your entire input and output files.")
+
         return transform_input(result.x)
 
     def ediis_populate(self):

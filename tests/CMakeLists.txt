@@ -33,7 +33,8 @@ find_package(Perl QUIET)
 #set(py3_fail_list pywrap-freq-e-sowreap
 #                  pywrap-freq-g-sowreap pywrap-opt-sowreap
 #                  pywrap-db2)
-foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp casscf-sp castup1
+foreach(test_name adc1 adc2 aediis-1 aediis-2
+                  casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp casscf-sp castup1
                   castup2 castup3 cbs-delta-energy cbs-parser cbs-xtpl-alpha cbs-xtpl-energy
                   cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func cbs-xtpl-nbody
                   cbs-xtpl-wrapper cbs-xtpl-dict cc1 cc10 cc11 cc12 cc13 cc13a cc13b cc13c

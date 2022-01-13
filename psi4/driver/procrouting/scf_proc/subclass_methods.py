@@ -29,8 +29,8 @@ def _RHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
         aediis = core.get_option('SCF', 'INITIAL_SCF_ACCELERATOR')
         if aediis != "NONE":
             entry["densities"] = [self.Da()]
-        elif aediis == "EDIIS":
-            entry["energy"] = [self.compute_E()]
+            if aediis == "EDIIS":
+                entry["energy"] = [self.compute_E()]
         self.diis_manager_.add_entry(entry)
 
     if self.options().get_bool("DIIS_RMS_ERROR"):
@@ -54,8 +54,8 @@ def _UHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
         aediis = core.get_option('SCF', 'INITIAL_SCF_ACCELERATOR')
         if aediis != "NONE":
             entry["densities"] = [self.Da(), self.Db()]
-        elif aediis == "EDIIS":
-            entry["energy"] = [self.compute_E()]
+            if aediis == "EDIIS":
+                entry["energy"] = [self.compute_E()]
         self.diis_manager_.add_entry(entry)
 
     if self.options().get_bool("DIIS_RMS_ERROR"):
