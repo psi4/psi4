@@ -268,6 +268,7 @@ void OneBodyAOInt::compute_pair_deriv2(const libint2::Shell &s1, const libint2::
 void OneBodyAOInt::compute(SharedMatrix &result) {
     const auto bs1_equiv_bs2 = (bs1_ == bs2_);
 
+    double sign = is_antisymmetric() ? -1 : 1;
     for (auto pair : shellpairs_) {
         int p1 = pair.first;
         int p2 = pair.second;
@@ -286,7 +287,7 @@ void OneBodyAOInt::compute(SharedMatrix &result) {
             for (int q = 0; q < nj; ++q) {
                 result->add(0, i_offset + p, j_offset + q, *location);
                 if (bs1_equiv_bs2 && p1 != p2) {
-                    result->add(0, j_offset + q, i_offset + p, *location);
+                    result->add(0, j_offset + q, i_offset + p, (*location) * sign);
                 }
                 location++;
             }
@@ -316,6 +317,7 @@ void OneBodyAOInt::compute(std::vector<SharedMatrix> &result) {
         }
     }
 
+    double sign = is_antisymmetric() ? -1 : 1;
     for (const auto &pair : shellpairs_) {
         int p1 = pair.first;
         int p2 = pair.second;
@@ -337,7 +339,7 @@ void OneBodyAOInt::compute(std::vector<SharedMatrix> &result) {
                 for (int q = 0; q < nj; ++q) {
                     result[r]->add(0, i_offset + p, j_offset + q, *location);
                     if (bs1_equiv_bs2 && p1 != p2) {
-                        result[r]->add(0, j_offset + q, i_offset + p, *location);
+                        result[r]->add(0, j_offset + q, i_offset + p, *location * sign);
                     }
                     location++;
                 }

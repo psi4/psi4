@@ -55,6 +55,8 @@ class NablaInt : public OneBodyAOInt {
     NablaInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
     //! Virtual destructor
     ~NablaInt() override;
+
+    bool is_antisymmetric() const override { return true; }
 };
 
 }  // namespace psi

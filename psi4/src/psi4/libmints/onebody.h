@@ -97,6 +97,8 @@ class PSI_API OneBodyAOInt {
     virtual void compute_pair_deriv1(const libint2::Shell&, const libint2::Shell&);
     /// Compute second derivative integrals for a given shell pair
     virtual void compute_pair_deriv2(const libint2::Shell&, const libint2::Shell&);
+    /// Whether the operator is antisymmetric with respect to interchange of the bra and ket
+    virtual bool is_antisymmetric() const { return false; }
 
 
    public:

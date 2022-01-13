@@ -61,8 +61,7 @@ class AngularMomentumInt : public OneBodyAOInt {
 
     void compute_pair(const libint2::Shell &, const libint2::Shell &) override;
 
-    //! Does the method provide first derivatives?
-    bool has_deriv1() override { return true; }
+    bool is_antisymmetric() const override { return true; }
 };
 
 }  // namespace psi
