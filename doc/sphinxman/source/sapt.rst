@@ -939,7 +939,7 @@ and the third-order exchange-induction term is computed as follows::
                        
 These calculations are performed with the atomic orbital and 
 density-fitting scheme described in the Supplementary Material to
-[Smith:2020:184108] for the second-order terms and in [Waldrop:2021:024103]_
+[Smith:2020:184108]_ for the second-order terms and in [Waldrop:2021:024103]_
 for the third-order exchange induction. The coupled (response) version of the
 exchange-induction corrections are also calculated, exactly for 
 :math:`E_{exch-ind,resp}^{(20)}` and by scaling the uncoupled term for
