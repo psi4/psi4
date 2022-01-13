@@ -948,9 +948,11 @@ py::object py_psi_get_global_option(std::string const& key) {
 
 py::object py_psi_get_option(std::string const& module, std::string const& key) {
     std::string nonconst_key = to_upper(key);
+    std::string module_temp = Process::environment.options.get_current_module();
     Process::environment.options.set_current_module(module);
     py_psi_prepare_options_for_module(module);
     Data& data = Process::environment.options.use_local(nonconst_key);
+    Process::environment.options.set_current_module(module_temp);
 
     if (data.type() == "string" || data.type() == "istring")
         return py::cast(data.to_string());
