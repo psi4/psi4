@@ -336,11 +336,6 @@ void SAPT2p3::sinf_e30ind() {
     int nr = nvirA_;
     int ns = nvirB_;
 
-    int nT = 1;
-#ifdef _OPENMP
-    nT = Process::environment.get_n_threads();
-#endif
-
     auto uAR = Matrix("Ind30 uAR Amplitudes", na, nr);
     auto uBS = Matrix("Ind30 uBS Amplitudes", nb, ns);
     uAR.load(psio_, PSIF_SAPT_AMPS, Matrix::SaveType::Full);
