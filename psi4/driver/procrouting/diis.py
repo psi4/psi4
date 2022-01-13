@@ -244,9 +244,11 @@ class DIIS:
 
     def adiis_coefficients(self):
         self.adiis_populate()
-        soln_vector = minimize(self.adiis_energy, np.ones(len(self.stored_vectors)), method="BFGS",
-                jac = self.adiis_gradient, tol=1e-9, options={"gtol": 1e-9}).x
-        return transform_input(soln_vector)
+        result = minimize(self.adiis_energy, np.ones(len(self.stored_vectors)), method="BFGS",
+                jac = self.adiis_gradient, tol=1e-9, options={"gtol": 1e-9})
+        if not result.success:
+            raise Exception("ADIIS minimization failed. File a bug, and include your entire input and output files.")
+        return transform_input(result.x)
 
     def adiis_populate(self):
         # We are currently assuming that all of dD and dF fit in-core.
@@ -296,10 +298,11 @@ class DIIS:
 
     def ediis_coefficients(self):
         self.ediis_populate()
-        soln_vector = minimize(self.ediis_energy, np.ones(len(self.stored_vectors)), method="BFGS",
-                jac = self.ediis_gradient, tol=1e-9, options={"gtol": 1e-9}).x
-
-        return transform_input(soln_vector)
+        result = minimize(self.ediis_energy, np.ones(len(self.stored_vectors)), method="BFGS",
+                jac = self.ediis_gradient, tol=1e-9, options={"gtol": 1e-9})
+        if not result.success:
+            raise Exception("EDIIS minimization failed. File a bug, and include your entire input and output files.")
+        return transform_input(result.x)
 
     def ediis_populate(self):
         num_entries = len(self.stored_vectors)
