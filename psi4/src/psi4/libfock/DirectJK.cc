@@ -1091,11 +1091,13 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
     // Shells linked to each other through Schwarz Screening (Significant Overlap)
     std::vector<std::vector<int>> significant_bras(nshell);
+    double max_integral = ints[0]->max_integral();
 
     for (size_t P = 0; P < nshell; P++) {
         std::vector<std::pair<int, double>> PQ_shell_values;
         for (size_t Q = 0; Q < nshell; Q++) {
-            double schwarz_value = std::sqrt(ints[0]->shell_ceiling2(P, Q, P, Q));
+            double pq_pq = std::sqrt(ints[0]->shell_ceiling2(P, Q, P, Q));
+            double schwarz_value = std::sqrt(pq_pq * max_integral);
             if (schwarz_value >= cutoff_) {
                 PQ_shell_values.emplace_back(Q, schwarz_value);
             }

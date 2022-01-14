@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.5a1.dev273 
+                               Psi4 1.5a1.dev274 
 
-                         Git: Rev {linK-new} 9efbe77 dirty
+                         Git: Rev {linK-new} 6a94a14 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,13 +30,13 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 03 January 2022 11:45AM
+    Psi4 started on: Friday, 14 January 2022 10:11AM
 
-    Process ID: 1000950
-    Host:       jacket
-    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-livie/stage/share/psi4
+    Process ID: 22296
+    Host:       ds10
+    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-burnetty/stage/share/psi4
     Memory:     500.0 MiB
-    Threads:    18
+    Threads:    6
     
   ==> Input File <==
 
@@ -83,16 +83,16 @@ psi4.compare_values(ref_energy, linK_energy, 7, "B3LYP Energy (using LinK algo)"
 
 Scratch directory: /scratch/jiang/
 
-*** tstart() called on jacket
-*** at Mon Jan  3 11:45:37 2022
+*** tstart() called on ds10
+*** at Fri Jan 14 10:11:20 2022
 
    => Loading Basis Set <=
 
     Name: CC-PVTZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-6  entry C          line   186 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-livie/stage/share/psi4/basis/cc-pvtz.gbs 
-    atoms 7-12 entry H          line    23 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-livie/stage/share/psi4/basis/cc-pvtz.gbs 
+    atoms 1-6  entry C          line   186 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-burnetty/stage/share/psi4/basis/cc-pvtz.gbs 
+    atoms 7-12 entry H          line    23 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-burnetty/stage/share/psi4/basis/cc-pvtz.gbs 
 
 
          ---------------------------------------------------------
@@ -100,7 +100,7 @@ Scratch directory: /scratch/jiang/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               RKS Reference
-                       18 Threads,    500 MiB Core
+                        6 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -219,16 +219,16 @@ Scratch directory: /scratch/jiang/
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Integrals threads:          18
+    Integrals threads:           6
     Screening Type:        DENSITY
     Screening Cutoff:        1E-12
     Incremental Fock:          Yes
     LinK:                      Yes
 
-  Cached 20.0% of DFT collocation blocks in 0.302 [GiB].
+  Cached 20.0% of DFT collocation blocks in 0.306 [GiB].
 
   Minimum eigenvalue in the overlap matrix is 3.7592595820E-05.
-  Reciprocal condition number of the overlap matrix is 4.6398212531E-06.
+  Reciprocal condition number of the overlap matrix is 4.6398212530E-06.
     Using symmetric orthogonalization.
 
   ==> Pre-Iterations <==
@@ -247,17 +247,17 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter SAD:  -231.83025753211203   -2.31830e+02   0.00000e+00 
-   @RKS iter   1:  -231.83545137792976   -5.19385e-03   3.65134e-03 DIIS/LINK
-   @RKS iter   2:  -231.53451997735215    3.00931e-01   4.63456e-03 DIIS/INCFOCK/LINK
-   @RKS iter   3:  -232.32894950007497   -7.94430e-01   3.73774e-04 DIIS/INCFOCK/LINK
-   @RKS iter   4:  -232.33313545362407   -4.18595e-03   7.47838e-05 DIIS/INCFOCK/LINK
-   @RKS iter   5:  -232.33331175794237   -1.76304e-04   7.58429e-06 DIIS/LINK
-   @RKS iter   6:  -232.33331210555400   -3.47612e-07   6.99286e-06 DIIS/INCFOCK/LINK
-   @RKS iter   7:  -232.33331403659119   -1.93104e-06   6.80699e-07 DIIS/INCFOCK/LINK
-   @RKS iter   8:  -232.33331405177157   -1.51804e-08   3.10689e-07 DIIS/LINK
-   @RKS iter   9:  -232.33331405490995   -3.13838e-09   1.70681e-08 DIIS/LINK
-   @RKS iter  10:  -232.33331405491870   -8.75389e-12   6.56237e-09 DIIS/LINK
+   @RKS iter SAD:  -231.83025753211257   -2.31830e+02   0.00000e+00 
+   @RKS iter   1:  -231.83545138000019   -5.19385e-03   3.65134e-03 DIIS/LINK
+   @RKS iter   2:  -231.53451997879230    3.00931e-01   4.63456e-03 DIIS/INCFOCK/LINK
+   @RKS iter   3:  -232.32894950290878   -7.94430e-01   3.73774e-04 DIIS/INCFOCK/LINK
+   @RKS iter   4:  -232.33313545627314   -4.18595e-03   7.47838e-05 DIIS/INCFOCK/LINK
+   @RKS iter   5:  -232.33331176058832   -1.76304e-04   7.58429e-06 DIIS/LINK
+   @RKS iter   6:  -232.33331210820114   -3.47613e-07   6.99285e-06 DIIS/INCFOCK/LINK
+   @RKS iter   7:  -232.33331403923731   -1.93104e-06   6.80699e-07 DIIS/INCFOCK/LINK
+   @RKS iter   8:  -232.33331405441692   -1.51796e-08   3.10689e-07 DIIS/LINK
+   @RKS iter   9:  -232.33331405755581   -3.13889e-09   1.70681e-08 DIIS/LINK
+   @RKS iter  10:  -232.33331405756437   -8.55493e-12   6.56236e-09 DIIS/LINK
   Energy and wave function converged.
 
 
@@ -287,32 +287,32 @@ Scratch directory: /scratch/jiang/
       31A      0.231221    32A      0.231230    33A      0.257186  
       34A      0.261219    35A      0.264707    36A      0.264844  
       37A      0.278951    38A      0.321940    39A      0.321998  
-      40A      0.354310    41A      0.362816    42A      0.362961  
+      40A      0.354309    41A      0.362816    42A      0.362961  
       43A      0.387790    44A      0.398016    45A      0.398230  
       46A      0.404759    47A      0.404825    48A      0.435500  
       49A      0.435585    50A      0.446932    51A      0.479869  
-      52A      0.482474    53A      0.482613    54A      0.495601  
+      52A      0.482474    53A      0.482612    54A      0.495601  
       55A      0.497537    56A      0.546544    57A      0.547445  
-      58A      0.547558    59A      0.573792    60A      0.573889  
+      58A      0.547558    59A      0.573793    60A      0.573889  
       61A      0.649985    62A      0.674175    63A      0.674460  
       64A      0.707566    65A      0.727883    66A      0.728087  
       67A      0.745400    68A      0.761139    69A      0.761504  
       70A      0.797716    71A      0.860926    72A      0.860998  
       73A      0.897725    74A      0.926248    75A      0.961555  
       76A      1.001704    77A      1.002118    78A      1.018485  
-      79A      1.018516    80A      1.021122    81A      1.088628  
+      79A      1.018515    80A      1.021122    81A      1.088628  
       82A      1.088636    83A      1.098050    84A      1.108073  
       85A      1.108332    86A      1.168862    87A      1.168915  
       88A      1.250030    89A      1.250389    90A      1.263517  
       91A      1.265924    92A      1.268110    93A      1.268959  
       94A      1.284407    95A      1.284517    96A      1.369946  
-      97A      1.370553    98A      1.378744    99A      1.378795  
-     100A      1.386562   101A      1.405670   102A      1.406085  
-     103A      1.468762   104A      1.484862   105A      1.484880  
-     106A      1.524480   107A      1.580466   108A      1.666309  
-     109A      1.856942   110A      1.927163   111A      1.927701  
-     112A      1.963084   113A      1.969155   114A      1.986564  
-     115A      1.987121   116A      2.064608   117A      2.091555  
+      97A      1.370553    98A      1.378743    99A      1.378794  
+     100A      1.386563   101A      1.405672   102A      1.406087  
+     103A      1.468761   104A      1.484861   105A      1.484880  
+     106A      1.524480   107A      1.580466   108A      1.666311  
+     109A      1.856942   110A      1.927162   111A      1.927700  
+     112A      1.963086   113A      1.969155   114A      1.986565  
+     115A      1.987121   116A      2.064607   117A      2.091555  
      118A      2.091694   119A      2.142684   120A      2.160513  
      121A      2.161541   122A      2.175115   123A      2.175224  
      124A      2.289609   125A      2.353421   126A      2.412318  
@@ -322,62 +322,62 @@ Scratch directory: /scratch/jiang/
      136A      2.633279   137A      2.682083   138A      2.682187  
      139A      2.684307   140A      2.698265   141A      2.698266  
      142A      2.749812   143A      2.750283   144A      2.751274  
-     145A      2.785901   146A      2.828060   147A      2.828664  
+     145A      2.785902   146A      2.828060   147A      2.828664  
      148A      2.901598   149A      2.905118   150A      2.905295  
-     151A      2.965711   152A      2.965957   153A      2.979951  
-     154A      2.980069   155A      3.011810   156A      3.037543  
+     151A      2.965710   152A      2.965956   153A      2.979951  
+     154A      2.980069   155A      3.011809   156A      3.037543  
      157A      3.049709   158A      3.050640   159A      3.054290  
-     160A      3.054760   161A      3.057683   162A      3.058044  
-     163A      3.084711   164A      3.110788   165A      3.119015  
+     160A      3.054760   161A      3.057684   162A      3.058044  
+     163A      3.084711   164A      3.110789   165A      3.119015  
      166A      3.119264   167A      3.136306   168A      3.168848  
      169A      3.283882   170A      3.300185   171A      3.300433  
      172A      3.313047   173A      3.328494   174A      3.328504  
-     175A      3.362648   176A      3.362788   177A      3.380997  
-     178A      3.381026   179A      3.392716   180A      3.393322  
-     181A      3.413228   182A      3.557590   183A      3.558219  
+     175A      3.362648   176A      3.362789   177A      3.380997  
+     178A      3.381027   179A      3.392716   180A      3.393322  
+     181A      3.413229   182A      3.557590   183A      3.558218  
      184A      3.574236   185A      3.602040   186A      3.728889  
      187A      3.751464   188A      3.761037   189A      3.762258  
      190A      3.768308   191A      3.770075   192A      3.770426  
      193A      3.775796   194A      3.789114   195A      3.791649  
      196A      3.791781   197A      3.836624   198A      3.840739  
      199A      3.841060   200A      3.882803   201A      3.882896  
-     202A      4.001702   203A      4.002220   204A      4.016553  
-     205A      4.080169   206A      4.080230   207A      4.087682  
+     202A      4.001702   203A      4.002220   204A      4.016555  
+     205A      4.080168   206A      4.080229   207A      4.087682  
      208A      4.091945   209A      4.097187   210A      4.097606  
-     211A      4.170148   212A      4.187742   213A      4.208167  
-     214A      4.209171   215A      4.228777   216A      4.312788  
+     211A      4.170148   212A      4.187742   213A      4.208166  
+     214A      4.209170   215A      4.228777   216A      4.312788  
      217A      4.312887   218A      4.315935   219A      4.315942  
      220A      4.317340   221A      4.317952   222A      4.352398  
      223A      4.352451   224A      4.493427   225A      4.533560  
      226A      4.534390   227A      4.658320   228A      4.662722  
-     229A      4.663687   230A      4.710570   231A      4.756582  
+     229A      4.663688   230A      4.710570   231A      4.756582  
      232A      4.756594   233A      4.771138   234A      4.771573  
      235A      4.806609   236A      4.906240   237A      4.947581  
-     238A      5.016407   239A      5.026874   240A      5.027548  
-     241A      5.032723   242A      5.054001   243A      5.054646  
-     244A      5.156965   245A      5.158059   246A      5.350313  
-     247A      5.350341   248A      5.458722   249A      5.675541  
-     250A      5.677298   251A      5.707016   252A      5.867584  
-     253A      5.867739   254A      5.947513   255A      6.115983  
-     256A      6.117089   257A      6.439565   258A      6.925195  
-     259A      8.904355   260A     12.359149   261A     12.360792  
+     238A      5.016407   239A      5.026875   240A      5.027548  
+     241A      5.032724   242A      5.054001   243A      5.054645  
+     244A      5.156966   245A      5.158059   246A      5.350314  
+     247A      5.350342   248A      5.458722   249A      5.675541  
+     250A      5.677298   251A      5.707016   252A      5.867583  
+     253A      5.867737   254A      5.947513   255A      6.115983  
+     256A      6.117089   257A      6.439566   258A      6.925195  
+     259A      8.904351   260A     12.359149   261A     12.360793  
      262A     12.863070   263A     12.864273   264A     15.402448  
 
     Final Occupation by Irrep:
               A 
     DOCC [    21 ]
 
-  @RKS Final Energy:  -232.33331405491870
+  @RKS Final Energy:  -232.33331405756437
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -714.7993060029416483
-    Two-Electron Energy =                 306.9305832430358691
-    DFT Exchange-Correlation Energy =     -28.1755226552918003
+    One-Electron Energy =                -714.7993060137770271
+    Two-Electron Energy =                 306.9305832600248891
+    DFT Exchange-Correlation Energy =     -28.1755226640911296
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -232.3333140549186737
+    Total Energy =                       -232.3333140575643654
 
 Computation Completed
 
@@ -390,27 +390,27 @@ Properties computed using the SCF density matrix
      X:  -147.6125      Y:   -22.9025      Z:     0.0000
 
   Electronic Dipole Moment: [e a0]
-     X:   147.6174      Y:    22.9056      Z:    -0.0000
+     X:   147.6174      Y:    22.9056      Z:     0.0000
 
   Dipole Moment: [e a0]
-     X:     0.0049      Y:     0.0032      Z:    -0.0000     Total:     0.0058
+     X:     0.0049      Y:     0.0032      Z:     0.0000     Total:     0.0058
 
   Dipole Moment: [D]
-     X:     0.0125      Y:     0.0080      Z:    -0.0000     Total:     0.0149
+     X:     0.0125      Y:     0.0080      Z:     0.0000     Total:     0.0149
 
 
-*** tstop() called on jacket at Mon Jan  3 11:46:24 2022
+*** tstop() called on ds10 at Fri Jan 14 10:13:25 2022
 Module time:
-	user time   =     810.88 seconds =      13.51 minutes
-	system time =       2.43 seconds =       0.04 minutes
-	total time  =         47 seconds =       0.78 minutes
+	user time   =     742.60 seconds =      12.38 minutes
+	system time =       0.73 seconds =       0.01 minutes
+	total time  =        125 seconds =       2.08 minutes
 Total time:
-	user time   =     810.88 seconds =      13.51 minutes
-	system time =       2.43 seconds =       0.04 minutes
-	total time  =         47 seconds =       0.78 minutes
+	user time   =     742.60 seconds =      12.38 minutes
+	system time =       0.73 seconds =       0.01 minutes
+	total time  =        125 seconds =       2.08 minutes
     B3LYP Energy (using LinK algo)........................................................PASSED
 
-    Psi4 stopped on: Monday, 03 January 2022 11:46AM
-    Psi4 wall time for execution: 0:00:46.84
+    Psi4 stopped on: Friday, 14 January 2022 10:13AM
+    Psi4 wall time for execution: 0:02:04.54
 
 *** Psi4 exiting successfully. Buy a developer a beer!
