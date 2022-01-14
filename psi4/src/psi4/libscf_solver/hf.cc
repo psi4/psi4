@@ -1115,7 +1115,7 @@ void HF::guess() {
 
     } else if (guess_type == "GWH") {
         // Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
-        if (print_) outfile->Printf("  SCF Guess: Generalized Wolfsberg-Helmholtz.\n\n");
+        if (print_) outfile->Printf("  SCF Guess: Generalized Wolfsberg-Helmholtz applied to core Hamiltonian.\n\n");
 
         Fa_->zero();  // Try Fa_{mn} = S_{mn} (H_{mm} + H_{nn})/2
         int h, i, j;
