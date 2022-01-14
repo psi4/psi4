@@ -315,7 +315,6 @@ Advanced OCC Keywords
 ~~~~~~~~~~~~~~~~~~~~~
 
 .. include:: /autodir_options_c/occ__opt_method.rst
-.. include:: /autodir_options_c/occ__mo_diis_num_vecs.rst
 .. include:: /autodir_options_c/occ__lineq_solver.rst
 .. include:: /autodir_options_c/occ__orth_type.rst
 .. include:: /autodir_options_c/occ__mp2_os_scale.rst
