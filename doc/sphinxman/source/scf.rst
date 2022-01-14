@@ -491,8 +491,8 @@ SADNO
     calculation, see [Lehtola:2019:1593]_.
 GWH
     A generalized Wolfsberg-Helmholtz modification of the core
-    Hamiltonian matrix. May be useful in open-shell systems, but is
-    often less accurate than the core guess (see
+    Hamiltonian matrix. Usually less accurate than the core guess: the
+    latter is exact for one-electron systems, GWH is not; see
     [Lehtola:2019:1593]_).
 HUCKEL
     An extended H\ |u_dots|\ ckel guess based on on-the-fly atomic UHF
