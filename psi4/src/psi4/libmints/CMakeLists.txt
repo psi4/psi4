@@ -1,6 +1,5 @@
 list(APPEND sources
   local.cc
-  onebody.cc
   x2cint.cc
   orbitalspace.cc
   osrecur.cc
@@ -14,43 +13,33 @@ list(APPEND sources
   multipolesymmetry.cc
   shellrotation.cc
   deriv.cc
-  overlap.cc
   integralparameters.cc
   twobody.cc
   vector.cc
   sobasis.cc
   cartesianiter.cc
   basisset.cc
-  electrostatic.cc
   wavefunction.cc
   irrep.cc
   fjt.cc
-  potentialint.cc
   chartab.cc
   corrtab.cc
-  quadrupole.cc
   symop.cc
   benchmark.cc
   get_writer_file_prefix.cc
   3coverlap.cc
   petitelist.cc
   solidharmonics.cc
-  electricfield.cc
   multipoles.cc
-  dipole.cc
   sointegral.cc
   extern.cc
-  nabla.cc
   factory.cc
   psimath.cc
   dimension.cc
   molecule.cc
   intvector.cc
-  potential.cc
   mintshelper.cc
   coordentry.cc
-  kinetic.cc
-  tracelessquadrupole.cc
   pseudospectral.cc
   matrix.cc
   gshell.cc
@@ -66,7 +55,21 @@ list(APPEND sources
   orthog.cc
   )
 
-add_library(l2intf OBJECT eri.cc eribase.cc integral.cc)
+add_library(l2intf OBJECT 
+dipole.cc
+electricfield.cc
+electrostatic.cc
+eribase.cc
+eri.cc
+integral.cc
+kinetic.cc
+nabla.cc
+onebody.cc
+overlap.cc
+potential.cc
+potentialint.cc
+quadrupole.cc
+tracelessquadrupole.cc)
 set_property(TARGET l2intf PROPERTY CXX_STANDARD 14)
 set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
 # below are what l2intf files would ordinarily have gotten from psi4_add_module.
