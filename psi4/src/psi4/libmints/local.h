@@ -181,6 +181,8 @@ class PSI_API IBOLocalizer : public Localizer {
 
     // => IAO Data <= //
 
+    /// The ranges used in localizing IBO
+    std::vector<int> ranges_;
     /// Map from non-ghosted to full atoms: true_atoms[ind_true] = ind_full
     std::vector<int> true_atoms_;
     /// Map from non-ghosted IAOs to full IAOs: true_iaos[ind_true] = ind_full
@@ -192,6 +194,8 @@ class PSI_API IBOLocalizer : public Localizer {
     std::shared_ptr<Matrix> S_;
     /// Non-ghosted IAOs in full basis
     std::shared_ptr<Matrix> A_;
+    /// Orbital Charges
+    std::shared_ptr<Matrix> Q_;
 
     /// Set defaults
     void common_init();
@@ -226,35 +230,29 @@ class PSI_API IBOLocalizer : public Localizer {
     // => Computers <= //
 
     /// Print out the localization algorithm and parameters
-    virtual void print_header() const;
-
-    /// Localize the orbitals, returns the matrices L [nbf x nmo], U [nmo(dlocal) x nmo(local)], and F [nmo x nmo]
-    std::map<std::string, std::shared_ptr<Matrix>> localize(
-        std::shared_ptr<Matrix> Cocc,  // Orbitals to localize [nbf x nmo], must live in C above
-        std::shared_ptr<Matrix> Focc,  // Fock matrix of orbitals to localize [nmo x nmo]
-        const std::vector<int>& ranges =
-            std::vector<int>()  // [0, nfocc, nocc] will separately localize core and valence
-        );
+    void print_header() const override;
 
     /// Localize function from parent class
     void localize() override;
+    /// Fock update function for IBO (Slightly different than for regular localizers)
+    std::shared_ptr<Matrix> fock_update(std::shared_ptr<Matrix> F_orig);
 
     /// Print the charges
     void print_charges(double scale = 2.0);
 
+    // => Accessors <= //
+
+    std::shared_ptr<Matrix> Q() { return Q_; }
+
     // => Knobs <= //
 
-    void set_print(int print) { print_ = print; }
-    void set_debug(int debug) { debug_ = debug; }
-    void set_bench(int bench) { bench_ = bench; }
-    void set_convergence(double convergence) { convergence_ = convergence; }
-    void set_maxiter(int maxiter) { maxiter_ = maxiter; }
     void set_use_ghosts(bool use_ghosts) { use_ghosts_ = use_ghosts; }
     void set_condition(double condition) { condition_ = condition; }
     void set_power(double power) { power_ = power; }
     void set_use_stars(bool use_stars) { use_stars_ = use_stars; }
     void set_stars_completeness(double stars_completeness) { stars_completeness_ = stars_completeness; }
     void set_stars(const std::vector<int>& stars) { stars_ = stars; }
+    void set_ranges(const std::vector<int>& ranges) { ranges_ = ranges; }
 };
 
 }  // Namespace psi
