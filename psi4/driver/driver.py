@@ -2051,7 +2051,8 @@ def fchk(wfn: core.Wavefunction, filename: str, *, debug: bool = False, strict_l
 
     # At this point we don't know the method name, so we try to search for it.
     # idea: get the method from the variable matching closely the 'current energy'
-    varlist = wfn.scalar_variables()
+    # for varlist, wfn is long-term and to allow from-file wfns. core is b/c some modules not storing in wfn yet
+    varlist = {**wfn.scalar_variables(), **core.scalar_variables()}
     current = varlist['CURRENT ENERGY']
 
     # delete problematic entries
