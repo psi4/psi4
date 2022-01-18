@@ -455,7 +455,6 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
         VtempT[thread]->zero();
         VintT[thread]->set_charge_field({{1.0, {x_[P], y_[P], z_[P]}}});
         VintT[thread]->compute(VtempT[thread]);
-        double * ptr = const_cast<double*>(VintT[thread]->buffers()[0]);
 
         // Contraction
         v[P] += C_DDOT(naux, dp, 1, VtempTp[0], 1);  // Potential integrals are negative definite already

@@ -107,6 +107,7 @@ else()
                        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
                        -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}
                        -DCMAKE_INSTALL_INCLUDEDIR=${CMAKE_INSTALL_INCLUDEDIR}
+                       -DENABLE_ONEBODY=2
                        -DENABLE_ERI=2
                        -DENABLE_ERI3=2
                        -DENABLE_ERI2=2

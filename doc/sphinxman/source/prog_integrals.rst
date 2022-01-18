@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2022 The Psi4 Developers.
+.. # Copyright (c) 2007-2021 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -277,3 +277,95 @@ performs much cheaper cloning operations to create the other objects for each
 thread.  Moreover, if integral objects are created only in the initialization
 of each code that uses them, and stored persistently, the cost of integral
 object creation is further reduced.
+
+===================================
+One Electron Integrals in |PSIfour|
+===================================
+
+In version 1.5, we started transitioning the one electron integral code over to
+use Libint2 instead of the old handwritten Obara-Saika code.  There are a
+number of reasons motivating this switch.  As we have more methods requiring
+potentials and fields evaluated at many external sites, such as PCM and
+polarizable embedding, the efficiency of the one electron integrals can be rate
+limiting.  We also started to introduce integral screening, and it is important
+to balance the screening used for one- and two-electron terms carefully so this
+is a good opportunity to re-evaluate the code.  Finally, given the complexity
+of the OS recursion code, the switch to an external library leaves a more
+compact codebase to maintain.  The tips below serve as an upgrade guide as to
+what has changed and how to implement methods requiring one electron integrals
+going forwards.
+
+Calling ``compute_shell(int P, int Q)``
+.......................................
+
+The hand-implemented OS recursion code also took care of the Cartesian->pure
+transformation (if required by the basis set).  The mechanism for handling this
+was to provide a public facing ``compute_shell(int P, int Q)`` method for the
+caller; this then looked up the appropriate ``GaussianShell`` objects that were
+passed into the corresponding (private) ``compute_pair(GaussianShell &s1,
+GaussianShell &s2)`` function that computed the integrals and transformed them
+to the spherical harmonic basis, if needed.  The switch to Libint2 integrals
+preserves this mechanism, but the ``compute_shell(int P, int Q)`` simply looks
+up the appropriate Libint2-compatible shells and hands them off to the
+re-written, private ``compute_pair()`` routines, which call Libint2 directly.
+Therefore, any calls to shell-pair level integral computations should look the
+same as before the introduction of Libint2, however access to the integrals has
+changed, as described below.
+
+Accessing integrals
+...................
+
+Before the Libint2 transition, one electron integrals were computed in a flat
+array, internally called `buffer_`, which was accessed through the integral
+object's ``buffer()`` method.  For integrals with multiple operators, e.g.,
+dipole operators that have three distinct components, the buffer was simply
+elongated by the appropriate amount and the caller was responsible for striding
+through each resulting batch correctly.  The Libint2 engines instead return a
+list of pointers into each operator's batch of integrals, the ordering of which
+are detailed on the Libint2 wiki.  For this reason, the call to ``buffer()``
+that returns a single buffer must be replaced with a call to ``buffer()`` to
+get a list of pointers; we recommend that be assigned the type ``const auto
+&``.  For simple integrals, such as overlap or kinetic, only the buffer
+corresponding to the zeroth element of this array contains integrals.
+
+Derivative Integrals
+....................
+
+The old one electron integral code used translational invariance relations to
+minimze the number of integrals to be computed, leaving the caller with some
+bookkeeping to do to compute all terms.  For example, consider an overlap
+integral: its value depends only on the relative separation of the two centers
+and not their absolute positions in space.  Therefore, the derivative with
+respect to center A is the negative of the same derivative with respect to
+center B, so one is trivially gleaned from the other.  Extending this to second
+derivatives, the same principle leads to the fact that double derivatives with
+respect to center A are equal to double derivatives with respect to center B,
+which are also equal to the negative of the mixed double derivatives with
+respect to both center A and B.  The old code only provided the double
+derivative with respect to center A, leaving the caller to determine the other
+values.  The Libint2 engine instead provides all integrals, so the caller
+simply needs to loop over all of the buffers provided in the appropriate order.
+
+Changes to External Potential Engines
+.....................................
+
+Benchmarking showed that early versions of the old code spent a non-negligible
+amount of time performing the Cartesian to spherical harmonic transformation of
+the integrals, which is needed for most modern basis sets.  To improve
+performance, we instead backtransformed the density to the Cartesian
+representation (denoted "CartAO") and computed / contracted all integrals in
+this Cartesian basis, eliminating the need to transform to spherical harmonics
+as the integrals are computed.  This bottleneck no longer exists, so these
+extra transformation steps have been removed as part of the switch to Libint2,
+and the affected codes (PCM and CPPE interfaces) now compute the potential and
+field integrals in the representation required by the basis set.
+
+New Operators Available
+.......................
+
+Libint2 provides a range of integrals that were previously not available in
+|PSIfour|, such as the Erfc attenuated nuclear potential integrals needed for
+Ewald methods.  If new integrals are added to Libint2 but are not yet
+interfaced to |PSIfour|, please open an issue on the |PSIfour| GitHub page to
+alert the developers, who will be able to add the appropriate code.
+

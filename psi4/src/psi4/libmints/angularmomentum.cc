@@ -31,7 +31,6 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/integral.h"
-#include "psi4/physconst.h"
 
 #include <memory>
 #include <stdexcept>

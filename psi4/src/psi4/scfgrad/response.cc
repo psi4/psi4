@@ -50,7 +50,6 @@
 #include "psi4/libscf_solver/rhf.h"
 #include "psi4/libscf_solver/uhf.h"
 
-//##include <libint2/Shell.h>
 
 #include <algorithm>
 #include <mutex>
@@ -566,7 +565,7 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
                     int oP = shellP.function_index();
                     int oQ = shellQ.function_index();
 
-                    // buffer ordering is [Px, Py, Pz, Qx, Qy, Qz, A1x, A1y, A1z, A1x, ... ANy, ANz]
+                    // buffer ordering is [Px, Py, Pz, Qx, Qy, Qz, A1x, A1y, A1z, A2x, ... ANy, ANz]
                     // where the Px is the x derivative of shell P and A1x is the derivative w.r.t.
                     // the nuclear charge located on atom1.  There are therefore 6 + 3*natoms buffers.
                     const double* buf_x = buffers[3 * A + 6];

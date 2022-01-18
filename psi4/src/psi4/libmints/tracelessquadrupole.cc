@@ -30,7 +30,6 @@
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/physconst.h"
 
 #include <libint2/engine.h>
 

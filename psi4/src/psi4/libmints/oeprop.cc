@@ -1180,13 +1180,6 @@ SharedMatrix ESPPropCalc::compute_field_over_grid_in_memory(SharedMatrix input_g
 
     std::shared_ptr<Molecule> mol = basisset_->molecule();
 
-    //SharedMatrix Dtot = wfn_->matrix_subset_helper(Da_so_, Ca_so_, "CartAO", "D");
-    //if (same_dens_) {
-    //    Dtot->scale(2.0);
-    //} else {
-    //    Dtot->add(wfn_->matrix_subset_helper(Db_so_, Cb_so_, "CartAO", "D beta"));
-    //}
-
     SharedMatrix Dtot = wfn_->Da_subset("AO");
     if (same_dens_) {
         Dtot->scale(2.0);

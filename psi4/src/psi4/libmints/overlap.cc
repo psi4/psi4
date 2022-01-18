@@ -28,7 +28,6 @@
 
 #include <stdexcept>
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/physconst.h"
 #include "psi4/libmints/overlap.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/basisset.h"

@@ -32,7 +32,6 @@
 #include <stdexcept>
 #include <vector>
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/physconst.h"
 
 #include <libint2/engine.h>
 
@@ -51,7 +50,7 @@ ElectricFieldInt::ElectricFieldInt(std::vector<SphericalTransform>& spherical_tr
         engine0_ = std::make_unique<libint2::Engine>(libint2::Operator::nuclear, max_nprim, max_am, 1);
         set_chunks(9);
     } else {
-        throw FeatureNotImplemented("LibMints", "ElectricFieldInts called with deriv > 1", __FILE__, __LINE__);
+        throw FeatureNotImplemented("LibMints", "ElectricFieldInts called with deriv > 0", __FILE__, __LINE__);
     }
 
     buffer_ = nullptr;

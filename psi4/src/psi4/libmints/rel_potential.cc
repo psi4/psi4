@@ -35,7 +35,6 @@
 #include "psi4/libmints/matrix.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/physconst.h"
 
 #include <libint2/shell.h>
 
