@@ -23,7 +23,8 @@ def axpy(y, alpha, x):
     else:
         raise TypeError("Unrecognized object type for DIIS.")
 
-def transform_input(x):
+def normalize_input(x):
+    """ Transform input vector to be normalized and have positive components only. """
     square = x ** 2
     return square / square.sum()
 
@@ -43,7 +44,7 @@ def template_helper(*args):
 
 class DIIS:
 
-    def __init__(self, max_vecs: int, name: str, removal_policy = RemovalPolicy.LargestError, storage_policy = StoragePolicy.OnDisk, closedshell = True, engines = {"diis"}):
+    def __init__(self, max_vecs: int, name: str, removal_policy = RemovalPolicy.LargestError, storage_policy = StoragePolicy.OnDisk, closed_shell = True, engines = {"diis"}):
         # We don't have a good sense for how this class may need to expand, so the current structure is amorphous.
 
         # LargestError is only _defined_ for the case of one engine and not theoretically sound for adiis/ediis:
@@ -74,7 +75,7 @@ class DIIS:
                 psio.open(psif.PSIF_LIBDIIS, 1) # 1 = PSIO_OPEN_OLD
                 self.opened_libdiis = True
 
-        self.closedshell = closedshell # Only needed for A/EDIIS, which doesn't allow ROHF anyways.
+        self.closed_shell = closed_shell # Only needed for A/EDIIS, which doesn't allow ROHF anyways.
         self.engines = engines
 
     def __del__(self):
@@ -121,14 +122,16 @@ class DIIS:
 
     def load_quantity(self, name, entry_num, item_num, force_new = True):
         """ Load quantity from wherever it's stored, constructing a new object if needed. """
-        if isinstance(self.template[name][item_num], float):
-            quantity = self.template[name][item_num]
-        elif self.storage_policy == StoragePolicy.InCore:
+        template_object = self.template[name][item_num]
+        if isinstance(template_object, float) or self.storage_policy == StoragePolicy.InCore:
             quantity = self.stored_vectors[entry_num][name][item_num]
-            if force_new:
+            try:
                 quantity = quantity.clone()
+            except AttributeError:
+                # The quantity must have been a float. No need to clone.
+                pass
         elif self.storage_policy == StoragePolicy.OnDisk:
-            entry_dims = self.template[name][item_num]
+            entry_dims = template_object
             full_name = self.get_name(name, entry_num, item_num)
             psio = core.IO.shared_object()
             if len(entry_dims) == 2:
@@ -150,9 +153,9 @@ class DIIS:
             return self.cached_dot_products[key]
         except KeyError:
             dot_product = 0
-            for item_num in range(len(self.template["gradient"])):
-                Rix = self.load_quantity("gradient", i, item_num)
-                Rjx = self.load_quantity("gradient", j, item_num)
+            for item_num in range(len(self.template["error"])):
+                Rix = self.load_quantity("error", i, item_num)
+                Rjx = self.load_quantity("error", j, item_num)
                 dot_product += Rix.vector_dot(Rjx)
 
             self.cached_dot_products[key] = dot_product
@@ -161,7 +164,7 @@ class DIIS:
 
     def set_error_vector_size(self, *args):
         """ Set the template for the DIIS error. Kept mainly for backwards compatibility. """
-        self.template["gradient"] = template_helper(*args)
+        self.template["error"] = template_helper(*args)
 
     def set_vector_size(self, *args):
         """ Set the template for the extrapolation target. Kept mainly for backwards compatibility. """
@@ -177,11 +180,11 @@ class DIIS:
         # Convert from "raw list of args" syntax to a proper entry.
         # While "entry" format is more general, "raw list of args" won't break C-side code, which doesn't need the generality.
         if not (len(args) == 1 and isinstance(args[0], dict)):
-            R_len = len(self.template.get("gradient", []))
+            R_len = len(self.template.get("error", []))
             T_len = len(self.template.get("target", []))
             if R_len + T_len != len(args):
                 raise Exception(f"Cannot build {R_len} residuals and {T_len} amplitudes from {len(entries)} items.")
-            entry = {"gradient": args[:R_len], "target": args[R_len:]}
+            entry = {"error": args[:R_len], "target": args[R_len:]}
         else:
             entry = args[0]
             self.template = {key: template_helper(*val) for key, val in entry.items()}
@@ -229,11 +232,11 @@ class DIIS:
             return np.linalg.lstsq(B, rhs, rcond=None)[0][:-1]
 
     def adiis_energy(self, x):
-        x = transform_input(x)
+        x = normalize_input(x)
         return np.dot(self.adiis_linear, x) + np.einsum("i,ij,j->", x, self.adiis_quadratic, x) / 2
 
     def adiis_gradient(self, x):
-        c = transform_input(x)
+        c = normalize_input(x)
         dedc = self.adiis_linear + np.einsum("i,ij->j", c, self.adiis_quadratic)
 
         norm_sq = (x**2).sum()
@@ -249,7 +252,7 @@ class DIIS:
 
         if not result.success:
             raise Exception("ADIIS minimization failed. File a bug, and include your entire input and output files.")
-        return transform_input(result.x)
+        return normalize_input(result.x)
 
     def adiis_populate(self):
         # We are currently assuming that all of dD and dF fit in-core.
@@ -277,17 +280,17 @@ class DIIS:
         for i, j in product(range(num_entries), repeat = 2):
             self.adiis_quadratic[i][j] = sum(d.vector_dot(f) for d, f in zip(dD[i], dF[j]))
 
-        if self.closedshell:
+        if self.closed_shell:
             self.adiis_linear *= 2
             self.adiis_quadratic *= 2
 
     def ediis_energy(self, x):
-        x = transform_input(x)
+        x = normalize_input(x)
         ediis_linear = np.array([entry["energy"][0] for entry in self.stored_vectors])
         return np.dot(ediis_linear, x) + np.einsum("i,ij,j->", x, self.ediis_quadratic, x) / 2
 
     def ediis_gradient(self, x):
-        c = transform_input(x)
+        c = normalize_input(x)
         ediis_linear = np.array([entry["energy"][0] for entry in self.stored_vectors])
         dedc = ediis_linear + np.einsum("i,ij->j", c, self.ediis_quadratic)
 
@@ -304,7 +307,7 @@ class DIIS:
         if not result.success:
             raise Exception("EDIIS minimization failed. File a bug, and include your entire input and output files.")
 
-        return transform_input(result.x)
+        return normalize_input(result.x)
 
     def ediis_populate(self):
         num_entries = len(self.stored_vectors)
@@ -319,15 +322,18 @@ class DIIS:
 
         diag = np.diag(self.ediis_quadratic)
         # D_i F_i + D_j F_j - D_i F_j - D_j F_i; First two terms use broadcasting tricks
-        self.ediis_quadratic = diag[:,None] + diag - self.ediis_quadratic - self.ediis_quadratic.T
+        self.ediis_quadratic = diag[:, None] + diag - self.ediis_quadratic - self.ediis_quadratic.T
 
         self.ediis_quadratic *= -1/2
 
-        if self.closedshell:
+        if self.closed_shell:
             self.ediis_quadratic *= 2
 
-    def extrapolate(self, *args, Dnorm = 0):
+    def extrapolate(self, *args, Dnorm = None):
         """ Perform extrapolation. Must be passed in the RMS error to decide how to handle hybrid algorithms. """
+
+        if {"adiis", "ediis"}.intersection(self.engines) and Dnorm is None:
+            raise ValidationError("An extrapolation engine insists you specify the error metric.")
 
         performed = set()
 

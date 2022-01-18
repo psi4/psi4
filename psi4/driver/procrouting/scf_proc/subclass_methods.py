@@ -25,7 +25,7 @@ def _RHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
 
         entry = {"target": [self.Fa()]}
         if core.get_option('SCF', 'DIIS'):
-            entry["gradient"] = [gradient]
+            entry["error"] = [gradient]
         aediis = core.get_option('SCF', 'INITIAL_SCF_ACCELERATOR')
         if aediis != "NONE":
             entry["densities"] = [self.Da()]
@@ -50,7 +50,7 @@ def _UHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
 
         entry = {"target": [self.Fa(), self.Fb()]}
         if core.get_option('SCF', 'DIIS'):
-            entry["gradient"] = [gradient_a, gradient_b]
+            entry["error"] = [gradient_a, gradient_b]
         aediis = core.get_option('SCF', 'INITIAL_SCF_ACCELERATOR')
         if aediis != "NONE":
             entry["densities"] = [self.Da(), self.Db()]
@@ -96,7 +96,7 @@ def _ROHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> floa
             self.diis_manager_.set_vector_size(self.soFeff())
             self.initialized_diis_manager_ = True
 
-        self.diis_manager_.add_entry({"gradient": [gradient], "target": [self.soFeff()]})
+        self.diis_manager_.add_entry({"error": [gradient], "target": [self.soFeff()]})
 
     if self.options().get_bool("DIIS_RMS_ERROR"):
         return gradient.rms()
