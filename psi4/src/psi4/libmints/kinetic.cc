@@ -42,22 +42,19 @@ KineticInt::KineticInt(std::vector<SphericalTransform> &st, std::shared_ptr<Basi
     int max_am = std::max(basis1()->max_am(), basis2()->max_am());
     int max_nprim = std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive());
 
-    engine0_ = std::unique_ptr<libint2::Engine>(new libint2::Engine(libint2::Operator::kinetic, max_nprim, max_am, 0));
+    engine0_ = std::make_unique<libint2::Engine>(libint2::Operator::kinetic, max_nprim, max_am, 0);
 
     if (deriv == 1) {
         // We set chunk count for normalize_am and pure_transform
         set_chunks(6);
 
-        engine1_ =
-            std::unique_ptr<libint2::Engine>(new libint2::Engine(libint2::Operator::kinetic, max_nprim, max_am, 1));
+        engine1_ = std::make_unique<libint2::Engine>(libint2::Operator::kinetic, max_nprim, max_am, 1);
 
     } else if (deriv == 2) {
         set_chunks(6);
 
-        engine1_ =
-            std::unique_ptr<libint2::Engine>(new libint2::Engine(libint2::Operator::kinetic, max_nprim, max_am, 1));
-        engine2_ =
-            std::unique_ptr<libint2::Engine>(new libint2::Engine(libint2::Operator::kinetic, max_nprim, max_am, 2));
+        engine1_ = std::make_unique<libint2::Engine>(libint2::Operator::kinetic, max_nprim, max_am, 1);
+        engine2_ = std::make_unique<libint2::Engine>(libint2::Operator::kinetic, max_nprim, max_am, 2);
     }
 
     buffer_ = nullptr;

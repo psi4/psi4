@@ -66,15 +66,15 @@ DipoleInt::DipoleInt(std::vector<SphericalTransform> &spherical_transforms, std:
         set_chunks(3);
 
         engine0_ =
-            std::unique_ptr<libint2::Engine>(new libint2::Engine(libint2::Operator::emultipole1, max_nprim, max_am, 0));
+            std::make_unique<libint2::Engine>(libint2::Operator::emultipole1, max_nprim, max_am, 0);
     } else if (nderiv == 1) {
         // We set chunk count for normalize_am and pure_transform
         set_chunks(18);
 
         engine0_ =
-            std::unique_ptr<libint2::Engine>(new libint2::Engine(libint2::Operator::emultipole1, max_nprim, max_am, 0));
+            std::make_unique<libint2::Engine>(libint2::Operator::emultipole1, max_nprim, max_am, 0);
         engine1_ =
-            std::unique_ptr<libint2::Engine>(new libint2::Engine(libint2::Operator::emultipole1, max_nprim, max_am, 1));
+            std::make_unique<libint2::Engine>(libint2::Operator::emultipole1, max_nprim, max_am, 1);
         buffer_ = new double[6 * 3 * maxnao1 * maxnao2];
     }
 

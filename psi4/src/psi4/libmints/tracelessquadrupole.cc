@@ -48,8 +48,7 @@ TracelessQuadrupoleInt::TracelessQuadrupoleInt(std::vector<SphericalTransform>& 
     if (deriv_ == 0) {
         set_chunks(6);
 
-        engine0_ =
-            std::unique_ptr<libint2::Engine>(new libint2::Engine(libint2::Operator::emultipole2, max_nprim, max_am, 0));
+        engine0_ = std::make_unique<libint2::Engine>(libint2::Operator::emultipole2, max_nprim, max_am, 0);
     } else {
         throw PSIEXCEPTION("Derivatives for quadrupole integrals are not implemented.");
     }

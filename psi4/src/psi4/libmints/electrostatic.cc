@@ -44,7 +44,7 @@ ElectrostaticInt::ElectrostaticInt(std::vector<SphericalTransform>& st, std::sha
     int max_am = std::max(basis1()->max_am(), basis2()->max_am());
     int max_nprim = std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive());
 
-    engine0_ = std::unique_ptr<libint2::Engine>(new libint2::Engine(libint2::Operator::nuclear, max_nprim, max_am, 0));
+    engine0_ = std::make_unique<libint2::Engine>(libint2::Operator::nuclear, max_nprim, max_am, 0);
 
     if (deriv > 0) {
         throw PSIEXCEPTION("ElectrostaticInt: Derivatives are not supported");

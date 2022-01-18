@@ -53,8 +53,7 @@ NablaInt::NablaInt(std::vector<SphericalTransform>& spherical_transforms, std::s
     // We're returning Ax,Ay,Az and ignoring Bx,By,Bz
     set_chunks(3);
 
-    engine0_ =
-        std::unique_ptr<libint2::Engine>(new libint2::Engine(libint2::Operator::overlap, max_nprim, max_am, 1));
+    engine0_ = std::make_unique<libint2::Engine>(libint2::Operator::overlap, max_nprim, max_am, 1);
 
     buffer_ = nullptr;
     buffers_.resize(nchunk_);
