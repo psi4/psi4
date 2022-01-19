@@ -46,6 +46,9 @@ class UHF : public HF {
 
     void common_init();
 
+    // Guess mix performed?
+    bool mix_performed_;
+
     // Scaling factor for orbital rotation
     double step_scale_;
     // Increment to explore different scaling factors
