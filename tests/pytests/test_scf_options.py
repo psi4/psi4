@@ -31,7 +31,7 @@ def test_guess_mix_for_broken_symmetry(inp):
     psi4.set_options(inp.get("options", {}))
 
     thisSCF = psi4.energy("scf")
-    psi4.set_options(inp.get("options_late", {}))
+    psi4.set_options(inp.get("late_options", {}))
     psi4.set_options({"guess_mix": True})
     thisBSSCF = psi4.energy("scf")
 
