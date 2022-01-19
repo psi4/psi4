@@ -287,7 +287,7 @@ void UHF::form_C(double shift) {
         shifted_F->add(Fb_);
         diagonalize_F(shifted_F, Cb_, epsilon_b_);
     }
-    if (options_.get_bool("GUESS_MIX") && (iteration_ == 0)) {
+    if (options_.get_bool("GUESS_MIX") && ((!sad_ && iteration_ == 0) || (sad_ && iteration_ == 1)) {
         if (Ca_->nirrep() == 1) {
             outfile->Printf("  Mixing alpha HOMO/LUMO orbitals (%d,%d)\n\n", nalpha_, nalpha_ + 1);
             Ca_->rotate_columns(0, nalpha_ - 1, nalpha_, pc_pi * 0.25);
