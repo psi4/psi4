@@ -90,7 +90,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   rasci-ne rasscf-sp sad-scf-type sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc sapt-ecp
                   sapt-exch-disp-inf
                   sapt7 sapt8 scf-bz2 scf-dipder scf-ecp scf-guess scf-guess-read1 scf-upcast-custom-basis
-                  scf-guess-read2 scf-guess-read3 scf-bs-gwh scf-bs-huckel scf-bs-sad scf-bs-sadno scf-bs-core scf-bs-read scf-bs-sap scf1 scf-occ scf2 scf3 scf4 scf5 scf6
+                  scf-guess-read2 scf-guess-read3 scf1 scf-occ scf2 scf3 scf4 scf5 scf6
                   scf7 scf-level-shift-rks scf-level-shift-uhf scf-level-shift-cuhf scf-level-shift-rohf
                   scf-property soscf-large soscf-ref
                   soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare sapt-sf1 dft-custom dft-reference
