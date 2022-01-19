@@ -289,9 +289,12 @@ void UHF::form_C(double shift) {
     }
     if (options_.get_bool("GUESS_MIX") && ((!sad_ && iteration_ == 0) || (sad_ && iteration_ == 1))) {
         if (Ca_->nirrep() == 1) {
-            outfile->Printf("  Mixing alpha HOMO/LUMO orbitals (%d,%d)\n\n", nalpha_, nalpha_ + 1);
+            outfile->Printf("  Mixing alpha HOMO/LUMO orbitals (%d,%d)\n", nalpha_, nalpha_ + 1);
             Ca_->rotate_columns(0, nalpha_ - 1, nalpha_, pc_pi * 0.25);
-            Cb_->rotate_columns(0, nbeta_ - 1, nbeta_, -pc_pi * 0.25);
+            if(nbeta_ > 0) {
+              outfile->Printf("  Mixing beta HOMO/LUMO orbitals (%d,%d)\n", nbeta_, nbeta_ + 1);
+              Cb_->rotate_columns(0, nbeta_ - 1, nbeta_, -pc_pi * 0.25);
+            }
         } else {
             throw InputException("Warning: cannot mix alpha HOMO/LUMO orbitals. Run in C1 symmetry.",
                                  "to 'symmetry c1'", __FILE__, __LINE__);
