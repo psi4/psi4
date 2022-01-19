@@ -296,19 +296,23 @@ void UHF::form_C(double shift) {
                                  "to 'symmetry c1'", __FILE__, __LINE__);
         }
 
-        Ca_->rotate_columns(0, nalpha_ - 1, nalpha_, pc_pi * 0.25);
-        if (nbeta_ > 0) {
-            outfile->Printf("  Mixing beta HOMO/LUMO orbitals (%d,%d)\n", nbeta_, nbeta_ + 1);
-            Cb_->rotate_columns(0, nbeta_ - 1, nbeta_, -pc_pi * 0.25);
-        }
-        mix_performed_ = true;
+        // SAD doesn't have orbitals in iteration 0, other guesses do
+        bool have_orbitals = !sad_ || (sad_ && iteration_ > 0);
+        if (have_orbitals) {
+            Ca_->rotate_columns(0, nalpha_ - 1, nalpha_, pc_pi * 0.25);
+            if (nbeta_ > 0) {
+                outfile->Printf("  Mixing beta HOMO/LUMO orbitals (%d,%d)\n", nbeta_, nbeta_ + 1);
+                Cb_->rotate_columns(0, nbeta_ - 1, nbeta_, -pc_pi * 0.25);
+            }
+            mix_performed_ = true;
 
-        // Since we've changed the orbitals, delete the DIIS history
-        // so that we don't fall back to spin-restricted orbitals
-        if (initialized_diis_manager_) {
-            diis_manager_.attr("delete_diis_file")();
-            diis_manager_ = py::none();
-            initialized_diis_manager_ = false;
+            // Since we've changed the orbitals, delete the DIIS history
+            // so that we don't fall back to spin-restricted orbitals
+            if (initialized_diis_manager_) {
+                diis_manager_.attr("delete_diis_file")();
+                diis_manager_ = py::none();
+                initialized_diis_manager_ = false;
+            }
         }
     }
     find_occupation();
