@@ -8,7 +8,7 @@ from .utils import compare_values
     pytest.param({'options': {"guess": "core"}}, id="core"),
     pytest.param({'options': {"guess": "gwh"}}, id="gwh"),
     pytest.param({'options': {"guess": "huckel"}}, id="huckel"),
-    pytest.param({'late_options': {"guess": "read"}}, id="huckel"),
+    pytest.param({'late_options': {"guess": "read"}}, id="read"),
     pytest.param({'options': {"guess": "sad"}}, id="sad"),
     pytest.param({'options': {"guess": "sadno"}}, id="sadno"),
     pytest.param({'options': {"guess": "sap"}}, id="sap"),
