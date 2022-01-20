@@ -92,6 +92,8 @@ UHF::~UHF() {}
 void UHF::common_init() {
     name_ = "UHF";
 
+    mix_performed_ = false;
+
     // TODO: Move that to the base object
     step_scale_ = options_.get_double("FOLLOW_STEP_SCALE");
     step_increment_ = options_.get_double("FOLLOW_STEP_INCREMENT");
@@ -287,14 +289,30 @@ void UHF::form_C(double shift) {
         shifted_F->add(Fb_);
         diagonalize_F(shifted_F, Cb_, epsilon_b_);
     }
-    if (options_.get_bool("GUESS_MIX") && (iteration_ == 0)) {
-        if (Ca_->nirrep() == 1) {
-            outfile->Printf("  Mixing alpha HOMO/LUMO orbitals (%d,%d)\n\n", nalpha_, nalpha_ + 1);
-            Ca_->rotate_columns(0, nalpha_ - 1, nalpha_, pc_pi * 0.25);
-            Cb_->rotate_columns(0, nbeta_ - 1, nbeta_, -pc_pi * 0.25);
-        } else {
+    if (options_.get_bool("GUESS_MIX") && !mix_performed_) {
+        if (Ca_->nirrep() != 1) {
+            outfile->Printf("  Mixing alpha HOMO/LUMO orbitals (%d,%d)\n", nalpha_, nalpha_ + 1);
             throw InputException("Warning: cannot mix alpha HOMO/LUMO orbitals. Run in C1 symmetry.",
                                  "to 'symmetry c1'", __FILE__, __LINE__);
+        }
+
+        // SAD doesn't have orbitals in iteration 0, other guesses do
+        bool have_orbitals = !sad_ || (sad_ && iteration_ > 0);
+        if (have_orbitals) {
+            Ca_->rotate_columns(0, nalpha_ - 1, nalpha_, pc_pi * 0.25);
+            if (nbeta_ > 0) {
+                outfile->Printf("  Mixing beta HOMO/LUMO orbitals (%d,%d)\n", nbeta_, nbeta_ + 1);
+                Cb_->rotate_columns(0, nbeta_ - 1, nbeta_, -pc_pi * 0.25);
+            }
+            mix_performed_ = true;
+
+            // Since we've changed the orbitals, delete the DIIS history
+            // so that we don't fall back to spin-restricted orbitals
+            if (initialized_diis_manager_) {
+                diis_manager_.attr("delete_diis_file")();
+                diis_manager_ = py::none();
+                initialized_diis_manager_ = false;
+            }
         }
     }
     find_occupation();
