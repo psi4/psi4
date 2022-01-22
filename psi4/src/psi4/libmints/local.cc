@@ -550,9 +550,9 @@ void PMLocalizer::localize() {
     U_->transpose_this();
 }
 
-IBOLocalizer::IBOLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> minao,
-                             std::shared_ptr<Matrix> C)
-    : Localizer(primary, C), minao_(minao) {
+IBOLocalizer::IBOLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> minao, std::shared_ptr<Matrix> C,
+                            std::shared_ptr<Matrix> F, const std::vector<int>& ranges)
+    : Localizer(primary, C), minao_(minao), Focc_(F), ranges_(ranges) {
     common_init();
 }
 IBOLocalizer::~IBOLocalizer() {}
@@ -570,9 +570,10 @@ void IBOLocalizer::common_init() {
     stars_.clear();
 }
 std::shared_ptr<IBOLocalizer> IBOLocalizer::build(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> minao,
-                                                    std::shared_ptr<Matrix> C, Options& options) {
+                                                std::shared_ptr<Matrix> C, std::shared_ptr<Matrix> F, 
+                                                const std::vector<int>& ranges, Options& options) {
 
-    auto local = std::make_shared<IBOLocalizer>(primary, minao, C);
+    auto local = std::make_shared<IBOLocalizer>(primary, minao, C, F, ranges);
 
     local->set_print(options.get_int("PRINT"));
     local->set_debug(options.get_int("DEBUG"));
@@ -593,6 +594,12 @@ std::shared_ptr<IBOLocalizer> IBOLocalizer::build(std::shared_ptr<BasisSet> prim
 
     return local;
 }
+
+std::shared_ptr<IBOLocalizer> IBOLocalizer::build(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> minao, std::shared_ptr<Matrix> C, 
+                                                std::shared_ptr<Matrix> F, const std::vector<int>& ranges) {
+    return IBOLocalizer::build(primary, minao, C, F, ranges, Process::environment.options);
+}
+
 void IBOLocalizer::print_header() const {
     outfile->Printf("  ==> IBO Localizer <==\n\n");
     outfile->Printf("    MinAO Basis = %11s\n", minao_->name().c_str());
@@ -993,25 +1000,16 @@ void IBOLocalizer::localize() {
         Q_ = Q;
     }
 
-    U_ = U;
-    L_ = L;
-}
-
-std::shared_ptr<Matrix> IBOLocalizer::fock_update(std::shared_ptr<Matrix> F_orig) {
-    auto Focc2 = linalg::triplet(U_, F_orig, U_, true, false, false);
+    auto Focc2 = linalg::triplet(U, Focc_, U, true, false, false);
     auto U2 = IBOLocalizer::reorder_orbitals(Focc2, ranges_);
 
     // Compute Orbital Charges
-    L_ = linalg::doublet(U2, L_, true, false);
-    Q_ = orbital_charges(L_);
+    L = linalg::doublet(U2, L, true, false);
+    Q_ = orbital_charges(L);
 
     // Form new U and L
-    U_ = linalg::doublet(U_, U2, false, false);
+    U_ = linalg::doublet(U, U2, false, false);
     L_ = linalg::doublet(C_, U_, false, false);
-
-    // Return the new Fock Matrix
-    auto Fl = linalg::triplet(U_, F_orig, U_, true, false, false);
-    return Fl;
 }
 
 std::shared_ptr<Matrix> IBOLocalizer::orbital_charges(std::shared_ptr<Matrix> L) {
@@ -1043,8 +1041,8 @@ void IBOLocalizer::print_charges(double scale) {
     auto Q = orbital_charges(L);
     double** Qp = Q->pointer();
 
-    auto N = std::make_shared<Vector>("N", natom);
-    double* Np = N->pointer();
+    auto N = Vector("N", natom);
+    double* Np = N.pointer();
 
     for (int A = 0; A < natom; A++) {
         for (int i = 0; i < nocc; i++) {

@@ -1600,6 +1600,8 @@ void export_mints(py::module& m) {
 
     typedef std::shared_ptr<Localizer> (*localizer_with_type)(const std::string&, std::shared_ptr<BasisSet>,
                                                               std::shared_ptr<Matrix>);
+    typedef std::shared_ptr<IBOLocalizer> (*ibo_localizer_builder)(std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+                                                                   std::shared_ptr<Matrix>, std::shared_ptr<Matrix>, const std::vector<int>&);
 
     py::class_<Localizer, std::shared_ptr<Localizer>>(m, "Localizer",
                                                       "Class containing orbital localization procedures")
@@ -1614,6 +1616,9 @@ void export_mints(py::module& m) {
                                                                          "Performs Boys orbital localization");
     py::class_<PMLocalizer, std::shared_ptr<PMLocalizer>, Localizer>(m, "PMLocalizer",
                                                                      "Performs Pipek-Mezey orbital localization");
+    py::class_<IBOLocalizer, std::shared_ptr<IBOLocalizer>, Localizer>(m, "IBOLocalizer",
+                                                                       "Performs IBO orbital localization")
+        .def_static("build", ibo_localizer_builder(&IBOLocalizer::build), "Builds an IBOLocalizer object");
 
     py::class_<FCHKWriter, std::shared_ptr<FCHKWriter>>(m, "FCHKWriter",
                                                         "Extracts information from a wavefunction object, \

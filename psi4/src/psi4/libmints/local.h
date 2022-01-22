@@ -197,6 +197,9 @@ class PSI_API IBOLocalizer : public Localizer {
     /// Orbital Charges
     std::shared_ptr<Matrix> Q_;
 
+    /// The Fock Matrix of occupied orbitals (needed for localization)
+    std::shared_ptr<Matrix> Focc_;
+
     /// Set defaults
     void common_init();
 
@@ -219,13 +222,18 @@ class PSI_API IBOLocalizer : public Localizer {
    public:
     // => Constructors <= //
 
-    IBOLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> minao, std::shared_ptr<Matrix> C);
+    IBOLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> minao, std::shared_ptr<Matrix> C,
+                 std::shared_ptr<Matrix> F, const std::vector<int>& ranges);
 
     virtual ~IBOLocalizer();
 
     /// Build IBO with defaults from Options object (including MINAO_BASIS)
     static std::shared_ptr<IBOLocalizer> build(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> minao,
-                                                std::shared_ptr<Matrix> C, Options& options);
+                                                std::shared_ptr<Matrix> C, std::shared_ptr<Matrix> F, 
+                                                const std::vector<int>& ranges, Options& options);
+    /// Alternative constructor for IBOLocalizer (without options)
+    static std::shared_ptr<IBOLocalizer> build(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> minao, std::shared_ptr<Matrix> C, 
+                                                std::shared_ptr<Matrix> F, const std::vector<int>& ranges);
 
     // => Computers <= //
 
@@ -234,8 +242,6 @@ class PSI_API IBOLocalizer : public Localizer {
 
     /// Localize function from parent class
     void localize() override;
-    /// Fock update function for IBO (Slightly different than for regular localizers)
-    std::shared_ptr<Matrix> fock_update(std::shared_ptr<Matrix> F_orig);
 
     /// Print the charges
     void print_charges(double scale = 2.0);
@@ -252,7 +258,6 @@ class PSI_API IBOLocalizer : public Localizer {
     void set_use_stars(bool use_stars) { use_stars_ = use_stars; }
     void set_stars_completeness(double stars_completeness) { stars_completeness_ = stars_completeness; }
     void set_stars(const std::vector<int>& stars) { stars_ = stars; }
-    void set_ranges(const std::vector<int>& ranges) { ranges_ = ranges; }
 };
 
 }  // Namespace psi
