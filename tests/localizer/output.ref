@@ -1,0 +1,395 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.6a1.dev38 
+
+                         Git: Rev {ibo-localizer} 04a6eca 
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, and A. Jiang
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Tuesday, 25 January 2022 11:29AM
+
+    Process ID: 25808
+    Host:       ds10
+    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-asim/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! MO Localization on H2O
+import numpy as np
+
+Lboys = psi4.Matrix.from_list([   # TEST
+ [ 1.01292176e+00, 9.60495184e-02, 6.77998618e-02, 9.60495999e-02,
+   6.77998638e-02],     # TEST
+ [-6.47709797e-02, -6.55374402e-01, -2.56113858e-01, -6.55374589e-01,
+  -2.56113874e-01],     # TEST
+ [ 3.35336048e-02, 3.82670808e-01, -3.92681973e-01, 3.82670995e-01,
+  -3.92681961e-01],     # TEST
+ [-4.11320072e-08, -7.07106900e-01, 6.49881832e-08, 7.07106663e-01,
+   3.59647606e-08],     # TEST
+ [-1.00756369e-10, 1.43401485e-08, 4.28032466e-01, -3.22857776e-09,
+  -4.28032468e-01],     # TEST
+ [-2.54456841e-03, 1.00124188e-01, -5.29669163e-01, 1.00124265e-01,
+   1.03495727e-01],     # TEST
+ [-2.54456856e-03, 1.00124209e-01, 1.03495723e-01, 1.00124260e-01,
+  -5.29669161e-01]])    # TEST
+
+Lpm = psi4.Matrix.from_list([     # TEST
+ [ 1.02229370e+00, 4.36741931e-02, 4.36742164e-02, 6.89577273e-02,
+  -8.52928892e-04],     # TEST
+ [-1.41812259e-01, -1.76324826e-01, -1.76324834e-01, -9.55051696e-01,
+   1.18318027e-04],     # TEST
+ [ 5.86166729e-02, -4.35364313e-01, -4.35364309e-01, 4.68910132e-01,
+  -4.89055679e-05],     # TEST
+ [ 8.34328333e-04, 6.38545034e-14, 5.66510786e-15, -1.88990379e-13,
+   9.99999652e-01],     # TEST
+ [-9.62862423e-09, -4.28032467e-01, 4.28032467e-01, -2.01591650e-09,
+   8.05868255e-12],     # TEST
+ [-5.89831649e-09, 9.32501673e-02, -5.39914719e-01, 1.05420521e-01,
+   4.93673236e-12],     # TEST
+ [-2.01413469e-08, -5.39914720e-01, 9.32501679e-02, 1.05420518e-01,
+   1.68562871e-11]])    # TEST
+
+Libo = psi4.Matrix.from_list([    # TEST
+ [ 9.23729907e-01, -4.02956845e-01, 1.82820093e-01, 4.78582351e-02,
+   4.78582351e-02],     # TEST
+ [ 1.39514960e-01, 8.84820804e-01, 1.59034278e-01, -2.88748318e-01,
+  -2.88748318e-01],     # TEST
+ [-1.20089488e-01, -5.46905502e-01, -1.07051659e-01, -3.72430950e-01,
+  -3.72430950e-01],     # TEST
+ [-2.48072526e-01, -1.33345389e-01, 9.59520208e-01, 1.73687398e-15,
+   1.97423908e-15],     # TEST
+ [ 8.91464223e-14, 3.86752264e-13, 7.72540396e-14, 4.28032467e-01,
+  -4.28032467e-01],     # TEST
+ [-4.90908961e-02, -1.46390504e-01, -3.30358872e-02, -5.23870445e-01,
+   1.09294442e-01],     # TEST
+ [-4.90908961e-02, -1.46390504e-01, -3.30358872e-02, 1.09294442e-01,
+  -5.23870445e-01]])    # TEST
+
+molecule mol {
+  0 1
+  O
+  H 1 1.0
+  H 1 1.0 2 104.5
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  e_convergence 1.0e-10
+  d_convergence 1.0e-10
+}
+
+e, wfn = energy('hf/sto-3g', return_wfn=True)
+basis = wfn.basisset()
+Cocc = wfn.Ca_subset('AO', 'OCC')
+
+boys = core.Localizer.build("BOYS", basis, Cocc)
+boys.localize()
+compare_matrices(Lboys, boys.L, 6, "BOYS LOCAL MO COEFFS")
+
+pm = core.Localizer.build("PIPEK_MEZEY", basis, Cocc)
+pm.localize()
+compare_matrices(Lpm, pm.L, 6, "PIPEK-MEZEY LOCAL MO COEFFS")
+
+ndocc = wfn.nalpha()
+Focc = psi4.Matrix.from_list(list(wfn.Fa_subset('AO').np[:ndocc,:ndocc]))
+minao = core.BasisSet.build(wfn.molecule(), "BASIS", core.get_global_option("MINAO_BASIS"))
+ibo = core.IBOLocalizer.build(basis, minao, Cocc, Focc, [])
+ibo.localize()
+compare_matrices(Libo, ibo.L, 6, "IBO LOCAL MO COEFFS")
+--------------------------------------------------------------------------
+
+Scratch directory: /scratch/jiang/
+
+Scratch directory: /scratch/jiang/
+
+*** tstart() called on ds10
+*** at Tue Jan 25 11:29:24 2022
+
+   => Loading Basis Set <=
+
+    Name: STO-3G
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line    81 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-asim/stage/share/psi4/basis/sto-3g.gbs 
+    atoms 2-3 entry H          line    19 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-asim/stage/share/psi4/basis/sto-3g.gbs 
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RHF Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+    Full point group: C2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         O            0.000000000000     0.000000000000    -0.068516219320    15.994914619570
+         H            0.000000000000    -0.790689573744     0.543701060715     1.007825032230
+         H            0.000000000000     0.790689573744     0.543701060715     1.007825032230
+
+  Running in c1 symmetry.
+
+  Rotational constants: A =     25.12555  B =     13.37733  C =      8.72955 [cm^-1]
+  Rotational constants: A = 753245.07149  B = 401042.16706  C = 261705.25473 [MHz]
+  Nuclear repulsion =    8.801465564567374
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: STO-3G
+    Blend: STO-3G
+    Number of shells: 5
+    Number of basis functions: 7
+    Number of Cartesian functions: 7
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+   => Loading Basis Set <=
+
+    Name: (STO-3G AUX)
+    Role: JKFIT
+    Keyword: DF_BASIS_SCF
+    atoms 1   entry O          line   318 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-asim/stage/share/psi4/basis/def2-universal-jkfit.gbs 
+    atoms 2-3 entry H          line    18 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-asim/stage/share/psi4/basis/def2-universal-jkfit.gbs 
+
+  ==> Integral Setup <==
+
+  DFHelper Memory: AOs need 0.000 GiB; user supplied 0.366 GiB. Using in-core AOs.
+
+  ==> MemDFJK: Density-Fitted J/K Matrices <==
+
+    J tasked:                   Yes
+    K tasked:                   Yes
+    wK tasked:                   No
+    OpenMP threads:               1
+    Memory [MiB]:               375
+    Algorithm:                 Core
+    Schwarz Cutoff:           1E-12
+    Mask sparsity (%):       0.0000
+    Fitting Condition:        1E-10
+
+   => Auxiliary Basis Set <=
+
+  Basis Set: (STO-3G AUX)
+    Blend: DEF2-UNIVERSAL-JKFIT
+    Number of shells: 37
+    Number of basis functions: 113
+    Number of Cartesian functions: 133
+    Spherical Harmonics?: true
+    Max angular momentum: 4
+
+  Minimum eigenvalue in the overlap matrix is 3.7028400386E-01.
+  Reciprocal condition number of the overlap matrix is 1.9726983142E-01.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A          7       7 
+   -------------------------
+    Total       7       7
+   -------------------------
+
+  ==> Iterations <==
+
+                           Total Energy        Delta E     RMS |[F,P]|
+
+   @DF-RHF iter SAD:   -74.12096770337371   -7.41210e+01   0.00000e+00 
+   @DF-RHF iter   1:   -74.91008507788368   -7.89117e-01   3.66830e-02 DIIS
+   @DF-RHF iter   2:   -74.96364594387148   -5.35609e-02   5.93607e-03 DIIS
+   @DF-RHF iter   3:   -74.96467208422307   -1.02614e-03   1.33686e-03 DIIS
+   @DF-RHF iter   4:   -74.96475039071304   -7.83065e-05   1.30589e-04 DIIS
+   @DF-RHF iter   5:   -74.96475171074229   -1.32003e-06   1.29198e-05 DIIS
+   @DF-RHF iter   6:   -74.96475172208747   -1.13452e-08   1.60660e-07 DIIS
+   @DF-RHF iter   7:   -74.96475172208901   -1.53477e-12   8.88006e-10 DIIS
+   @DF-RHF iter   8:   -74.96475172208902   -1.42109e-14   1.05092e-12 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1A    -20.247493     2A     -1.247793     3A     -0.595851  
+       4A     -0.447885     5A     -0.388958  
+
+    Virtual:                                                              
+
+       6A      0.564174     7A      0.693044  
+
+    Final Occupation by Irrep:
+              A 
+    DOCC [     5 ]
+
+  @DF-RHF Final Energy:   -74.96475172208902
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =              8.8014655645673745
+    One-Electron Energy =                -121.6764760142076653
+    Two-Electron Energy =                  37.9102587275512661
+    Total Energy =                        -74.9647517220890194
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:     0.0000      Y:     0.0000      Z:     1.0191
+
+  Electronic Dipole Moment: [e a0]
+     X:    -0.0000      Y:     0.0000      Z:    -0.3626
+
+  Dipole Moment: [e a0]
+     X:    -0.0000      Y:     0.0000      Z:     0.6565     Total:     0.6565
+
+  Dipole Moment: [D]
+     X:    -0.0000      Y:     0.0000      Z:     1.6687     Total:     1.6687
+
+
+*** tstop() called on ds10 at Tue Jan 25 11:29:26 2022
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+  ==> Boys Localizer <==
+
+    Convergence =   1.000E-12
+    Maxiter     =         200
+
+    Iteration                   Metric       Residual
+    @Boys    0   2.5414312980642223E-01              -
+    @Boys    1   2.5803445302157759E+00   9.153115E+00
+    @Boys    2   3.0723297002640839E+00   1.906665E-01
+    @Boys    3   3.0791337276965125E+00   2.214615E-03
+    @Boys    4   3.0796456488487838E+00   1.662549E-04
+    @Boys    5   3.0796682079087683E+00   7.325213E-06
+    @Boys    6   3.0796691040848798E+00   2.909976E-07
+    @Boys    7   3.0796691736632029E+00   2.259279E-08
+    @Boys    8   3.0796691785101777E+00   1.573862E-09
+    @Boys    9   3.0796691789775670E+00   1.517661E-10
+    @Boys   10   3.0796691790092794E+00   1.029734E-11
+    @Boys   11   3.0796691790125004E+00   1.045885E-12
+    @Boys   12   3.0796691790128192E+00   1.035358E-13
+
+    Boys Localizer converged.
+
+    BOYS LOCAL MO COEFFS..................................................................PASSED
+  ==> Pipek-Mezey Localizer <==
+
+    Convergence =   1.000E-12
+    Maxiter     =         200
+
+    Iteration                   Metric       Residual
+    @PM    0   3.7614649624973699E+00              -
+    @PM    1   4.0929979422006992E+00   8.813932E-02
+    @PM    2   4.1093639834910061E+00   3.998546E-03
+    @PM    3   4.1093666676213410E+00   6.531742E-07
+    @PM    4   4.1093666758720833E+00   2.007789E-09
+    @PM    5   4.1093666758722387E+00   3.782364E-14
+
+    PM Localizer converged.
+
+    PIPEK-MEZEY LOCAL MO COEFFS...........................................................PASSED
+   => Loading Basis Set <=
+
+    Name: CC-PVTZ-MINAO
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry O          line   179 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-asim/stage/share/psi4/basis/cc-pvtz-minao.gbs 
+    atoms 2-3 entry H          line    20 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-asim/stage/share/psi4/basis/cc-pvtz-minao.gbs 
+
+  ==> IBO Localizer <==
+
+    MinAO Basis = CC-PVTZ-MINAO
+    Use Ghosts  =       FALSE
+    Use Stars   =       FALSE
+    Condition   =   1.000E-07
+    Power       =           4
+    Convergence =   1.000E-12
+    Maxiter     =         200
+
+    @IBO Iter:                   Metric       Gradient
+    @IBO    1:   1.3182390836920017E+00   2.099999E-01
+    @IBO    2:   1.3461169549477434E+00   1.113641E-03
+    @IBO    3:   1.3502288525456387E+00   2.114707E-06
+    @IBO    4:   1.3502288525459893E+00   7.321993E-08
+    @IBO    5:   1.3502288525459900E+00   7.637007E-12
+    @IBO    6:   1.3502288525459900E+00   2.201814E-16
+
+    IBO Localizer converged.
+
+    IBO LOCAL MO COEFFS...................................................................PASSED
+
+    Psi4 stopped on: Tuesday, 25 January 2022 11:29AM
+    Psi4 wall time for execution: 0:00:01.55
+
+*** Psi4 exiting successfully. Buy a developer a beer!

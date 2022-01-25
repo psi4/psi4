@@ -1,0 +1,85 @@
+#! MO Localization on H2O
+import numpy as np
+
+Lboys = psi4.Matrix.from_list([   # TEST
+ [ 1.01292176e+00, 9.60495184e-02, 6.77998618e-02, 9.60495999e-02,
+   6.77998638e-02],     # TEST
+ [-6.47709797e-02, -6.55374402e-01, -2.56113858e-01, -6.55374589e-01,
+  -2.56113874e-01],     # TEST
+ [ 3.35336048e-02, 3.82670808e-01, -3.92681973e-01, 3.82670995e-01,
+  -3.92681961e-01],     # TEST
+ [-4.11320072e-08, -7.07106900e-01, 6.49881832e-08, 7.07106663e-01,
+   3.59647606e-08],     # TEST
+ [-1.00756369e-10, 1.43401485e-08, 4.28032466e-01, -3.22857776e-09,
+  -4.28032468e-01],     # TEST
+ [-2.54456841e-03, 1.00124188e-01, -5.29669163e-01, 1.00124265e-01,
+   1.03495727e-01],     # TEST
+ [-2.54456856e-03, 1.00124209e-01, 1.03495723e-01, 1.00124260e-01,
+  -5.29669161e-01]])    # TEST
+
+Lpm = psi4.Matrix.from_list([     # TEST
+ [ 1.02229370e+00, 4.36741931e-02, 4.36742164e-02, 6.89577273e-02,
+  -8.52928892e-04],     # TEST
+ [-1.41812259e-01, -1.76324826e-01, -1.76324834e-01, -9.55051696e-01,
+   1.18318027e-04],     # TEST
+ [ 5.86166729e-02, -4.35364313e-01, -4.35364309e-01, 4.68910132e-01,
+  -4.89055679e-05],     # TEST
+ [ 8.34328333e-04, 6.38545034e-14, 5.66510786e-15, -1.88990379e-13,
+   9.99999652e-01],     # TEST
+ [-9.62862423e-09, -4.28032467e-01, 4.28032467e-01, -2.01591650e-09,
+   8.05868255e-12],     # TEST
+ [-5.89831649e-09, 9.32501673e-02, -5.39914719e-01, 1.05420521e-01,
+   4.93673236e-12],     # TEST
+ [-2.01413469e-08, -5.39914720e-01, 9.32501679e-02, 1.05420518e-01,
+   1.68562871e-11]])    # TEST
+
+Libo = psi4.Matrix.from_list([    # TEST
+ [ 9.23729907e-01, -4.02956845e-01, 1.82820093e-01, 4.78582351e-02,
+   4.78582351e-02],     # TEST
+ [ 1.39514960e-01, 8.84820804e-01, 1.59034278e-01, -2.88748318e-01,
+  -2.88748318e-01],     # TEST
+ [-1.20089488e-01, -5.46905502e-01, -1.07051659e-01, -3.72430950e-01,
+  -3.72430950e-01],     # TEST
+ [-2.48072526e-01, -1.33345389e-01, 9.59520208e-01, 1.73687398e-15,
+   1.97423908e-15],     # TEST
+ [ 8.91464223e-14, 3.86752264e-13, 7.72540396e-14, 4.28032467e-01,
+  -4.28032467e-01],     # TEST
+ [-4.90908961e-02, -1.46390504e-01, -3.30358872e-02, -5.23870445e-01,
+   1.09294442e-01],     # TEST
+ [-4.90908961e-02, -1.46390504e-01, -3.30358872e-02, 1.09294442e-01,
+  -5.23870445e-01]])    # TEST
+
+molecule mol {
+  0 1
+  O
+  H 1 1.0
+  H 1 1.0 2 104.5
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  e_convergence 1.0e-10
+  d_convergence 1.0e-10
+}
+
+e, wfn = energy('hf/sto-3g', return_wfn=True)
+basis = wfn.basisset()
+Cocc = wfn.Ca_subset('AO', 'OCC')
+
+boys = core.Localizer.build("BOYS", basis, Cocc)
+boys.localize()
+compare_matrices(Lboys, boys.L, 6, "BOYS LOCAL MO COEFFS")
+
+pm = core.Localizer.build("PIPEK_MEZEY", basis, Cocc)
+pm.localize()
+compare_matrices(Lpm, pm.L, 6, "PIPEK-MEZEY LOCAL MO COEFFS")
+
+ndocc = wfn.nalpha()
+Focc = psi4.Matrix.from_list(list(wfn.Fa_subset('AO').np[:ndocc,:ndocc]))
+minao = core.BasisSet.build(wfn.molecule(), "BASIS", core.get_global_option("MINAO_BASIS"))
+ibo = core.IBOLocalizer.build(basis, minao, Cocc, Focc, [])
+ibo.localize()
+compare_matrices(Libo, ibo.L, 6, "IBO LOCAL MO COEFFS")
