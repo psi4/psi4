@@ -42,7 +42,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #    - pint (runtime only; e.g., `conda install pint -c conda-forge`)
 #    - pydantic >=1.0 (runtime only; e.g., `conda install pydantic -c conda-forge`)
 #    - msgpack-python (runtime only; e.g., `conda install msgpack-python`)
-#    - mpfr (for Libint2; e.g., `conda install mpfr`))
 #    - Eigen (for Libint2; e.g., `conda install eigen`)
 #    - SciPy (runtime only; e.g., `conda install scipy`)
 
@@ -274,6 +273,7 @@ ExternalProject_Add(psi4-core
               -DENABLE_OPENMP=${ENABLE_OPENMP}
               -DTargetLAPACK_DIR=${TargetLAPACK_DIR}
               -DTargetHDF5_DIR=${TargetHDF5_DIR}
+              -DEigen3_DIR=${Eigen3_DIR}
               -Dambit_DIR=${ambit_DIR}
               -DCheMPS2_DIR=${CheMPS2_DIR}
               -Ddkh_DIR=${dkh_DIR}

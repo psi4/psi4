@@ -129,9 +129,8 @@ jobs:
                         psi4/label/dev::dftd3 ^
                         psi4/label/dev::gcp ^
                         conda-forge::gau2grid ^
-                        psi4/label/dev::libint2=2.6.0=h2e52968_5 ^
                         conda-forge::libxc ^
-                        conda-forge::mpfr ^
+                        psi4/label/testing::libint2=*=h2e52968_4 ^
                         conda-forge::mpmath ^
                         conda-forge::msgpack-python ^
                         conda-forge::qcelemental ^
@@ -185,8 +184,9 @@ jobs:
                 -DCMAKE_CXX_FLAGS="/arch:AVX" ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
                 -DPython_EXECUTABLE="C:/tools/miniconda3/python.exe" ^
-                -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
-                -DEigen_ROOT="C:/tools/miniconda3/Library" ^
+                -DEigen3_ROOT="C:/tools/miniconda3/Library" ^
+                -DBOOST_ROOT="C:/tools/miniconda3/Library" ^
+                -DMultiprecision_ROOT="C:/tools/miniconda3/Library" ^
                 -DBUILD_Libint2_GENERATOR=OFF ^
                 -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
                 -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^

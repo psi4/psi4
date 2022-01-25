@@ -23,7 +23,6 @@ list(APPEND sources
   solve_pep.cc
   timer.cc
   )
-add_definitions("-DFC_SYMBOL=${FC_SYMBOL}")
 
 if(WIN32)
   set(_has_dggsvd3 TRUE)
@@ -45,6 +44,7 @@ target_compile_definitions(qt
   PRIVATE
     $<$<BOOL:${_has_dggsvd3}>:LAPACK_HAS_DGGSVD3>
     $<$<BOOL:${_has_dggsvp3}>:LAPACK_HAS_DGGSVP3>
+    FC_SYMBOL=${FC_SYMBOL}
   )
 unset(_has_dggsvd3)
 unset(_has_dggsvp3)

@@ -82,7 +82,8 @@ def test_dft_atomic_blocking():
     assert psi4.compare_values(xc_ref, xc_e, 7, "psi4numpy XC energy")
 
 
-def test_dft_block_schemes():
+@pytest.mark.parametrize("scheme", ["OCTREE", "NAIVE", "ATOMIC"])
+def test_dft_block_schemes(scheme):
     """all DFT_BLOCK_SCHEME should give same results and number
     of grid points. Water dimer with ghost atoms"""
 
@@ -106,17 +107,16 @@ def test_dft_block_schemes():
             "DFT_SPHERICAL_POINTS": 590,
             "DFT_RADIAL_POINTS": 85,
             "D_convergence": 1e-8,
+            "DFT_WEIGHTS_TOLERANCE": -1.0,
         }
     )
-    ref = {"XC GRID TOTAL POINTS": 293259, "DFT XC ENERGY": -9.218561399189895}
-    SCHEMES = ["OCTREE", "NAIVE", "ATOMIC"]
-    for S in SCHEMES:
-        psi4.set_options({"DFT_BLOCK_SCHEME": S})
-        e, wfn = psi4.energy("pbe/def2-SVPD", return_wfn=True)
-        P = psi4.variable("XC GRID TOTAL POINTS")
-        XC = wfn.variable("DFT XC ENERGY")
-        assert psi4.compare_integers(ref["XC GRID TOTAL POINTS"], P, f" {S} GRID POINTS:")
-        assert psi4.compare_values(ref["DFT XC ENERGY"], XC, f" {S} XC ENERGY:")
+    ref = {"XC GRID TOTAL POINTS": 300900, "DFT XC ENERGY": -9.218561399189895}
+    psi4.set_options({"DFT_BLOCK_SCHEME": scheme})
+    e, wfn = psi4.energy("pbe/def2-SVPD", return_wfn=True)
+    P = psi4.variable("XC GRID TOTAL POINTS")
+    XC = wfn.variable("DFT XC ENERGY")
+    assert psi4.compare_integers(ref["XC GRID TOTAL POINTS"], P, f" {scheme} GRID POINTS:")
+    assert psi4.compare_values(ref["DFT XC ENERGY"], XC, f" {scheme} XC ENERGY:")
 
 
 def test_dft_block_scheme_distantpoints():
