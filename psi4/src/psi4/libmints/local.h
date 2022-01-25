@@ -225,7 +225,7 @@ class PSI_API IBOLocalizer : public Localizer {
     IBOLocalizer(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> minao, std::shared_ptr<Matrix> C,
                  std::shared_ptr<Matrix> F, const std::vector<int>& ranges);
 
-    virtual ~IBOLocalizer();
+    ~IBOLocalizer() override;
 
     /// Build IBO with defaults from Options object (including MINAO_BASIS)
     static std::shared_ptr<IBOLocalizer> build(std::shared_ptr<BasisSet> primary, std::shared_ptr<BasisSet> minao,
