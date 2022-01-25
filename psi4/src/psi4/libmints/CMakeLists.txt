@@ -5,7 +5,6 @@ list(APPEND sources
   osrecur.cc
   maketab.cc
   multipolepotential.cc
-  rel_potential.cc
   oeprop.cc
   writer.cc
   transform.cc
@@ -55,6 +54,10 @@ list(APPEND sources
   orthog.cc
   )
 
+# l2intf is a listing of all the files that include libint2's engine.h include.  they must
+# all be built with the same C++ standard, which is currently chosen as C++14 due to
+# problems building with C++17 using Intel compilers on Linux.  Any files including
+# the engine.h should be added here instead of the sources list above.
 add_library(l2intf OBJECT 
 dipole.cc
 electricfield.cc
@@ -69,6 +72,7 @@ overlap.cc
 potential.cc
 potentialint.cc
 quadrupole.cc
+rel_potential.cc
 tracelessquadrupole.cc)
 set_property(TARGET l2intf PROPERTY CXX_STANDARD 14)
 set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)

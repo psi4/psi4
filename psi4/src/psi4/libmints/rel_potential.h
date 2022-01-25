@@ -50,16 +50,14 @@ class CdSalcList;
  * Use an IntegralFactory to create this object.
  */
 class RelPotentialInt : public OneBodyAOInt {
-    /// Computes integrals between two shell objects.
-    void compute_pair(const libint2::Shell&, const libint2::Shell&) override;
 
    protected:
-    /// Recursion object that does the heavy lifting.
-    ObaraSaikaTwoCenterVIRecursion* potential_recur_;
 
     /// Matrix of coordinates/charges of partial charges
     SharedMatrix Zxyz_;
 
+    /// Computes integrals between two shell objects.
+    void compute_pair(const libint2::Shell&, const libint2::Shell&) override;
    public:
     /// Constructor. Assumes nuclear centers/charges as the potential
     RelPotentialInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
@@ -71,9 +69,6 @@ class RelPotentialInt : public OneBodyAOInt {
 
     /// Get the field of charges
     SharedMatrix charge_field() const { return Zxyz_; }
-
-    /// Does the method provide first derivatives?
-    bool has_deriv1() override { return true; }
 };
 
 class RelPotentialSOInt : public OneBodySOInt {
@@ -82,15 +77,6 @@ class RelPotentialSOInt : public OneBodySOInt {
    public:
     RelPotentialSOInt(const std::shared_ptr<OneBodyAOInt>&, const std::shared_ptr<IntegralFactory>&);
     RelPotentialSOInt(const std::shared_ptr<OneBodyAOInt>&, const IntegralFactory*);
-
-    /**
-     * Computes one-electron integral derivative matrices.
-     * Specifically handles CdSalc SO potential integral derivatives.
-     *
-     * \param result Where the integral derivatives are going.
-     * \param cdsalcs The Cartesian displacement SALCs that you are interested in.
-     */
-    void compute_deriv1(std::vector<SharedMatrix> result, const CdSalcList& cdsalcs) override;
 };
 
 }  // namespace psi
