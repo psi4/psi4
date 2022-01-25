@@ -203,7 +203,7 @@ class PSI_API IBOLocalizer : public Localizer {
     /// Set defaults
     void common_init();
 
-    /// Build the IAOs
+    /// Build and set the IAO matrix A_ and overlap matrix S_
     void build_iaos();
     /// Localization task (returns U and L)
     static std::map<std::string, std::shared_ptr<Matrix> > localize_task(

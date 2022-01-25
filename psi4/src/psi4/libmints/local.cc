@@ -637,9 +637,9 @@ void IBOLocalizer::build_iaos() {
 
     // => Overlap Integrals <= //
 
-    auto fact11 = std::make_shared<IntegralFactory>(primary_, primary_, primary_, primary_);
-    auto fact12 = std::make_shared<IntegralFactory>(primary_, minao_, primary_, minao_);
-    auto fact22 = std::make_shared<IntegralFactory>(minao_, minao_, minao_, minao_);
+    auto fact11 = std::make_unique<IntegralFactory>(primary_, primary_, primary_, primary_);
+    auto fact12 = std::make_unique<IntegralFactory>(primary_, minao_, primary_, minao_);
+    auto fact22 = std::make_unique<IntegralFactory>(minao_, minao_, minao_, minao_);
 
     std::unique_ptr<OneBodyAOInt> ints11(fact11->ao_overlap());
     std::unique_ptr<OneBodyAOInt> ints12(fact12->ao_overlap());
@@ -684,10 +684,8 @@ void IBOLocalizer::build_iaos() {
 
     // => Metric Inverses <= //
 
-    std::shared_ptr<Matrix> S11_m12(S11->clone());
-    std::shared_ptr<Matrix> S22_m12(S22->clone());
-    S11_m12->copy(S11);
-    S22_m12->copy(S22);
+    auto S11_m12 = S11->clone();
+    auto S22_m12 = S22->clone();
     S11_m12->power(-1.0 / 2.0, condition_);
     S22_m12->power(-1.0 / 2.0, condition_);
 
@@ -736,8 +734,7 @@ std::map<std::string, std::shared_ptr<Matrix> > IBOLocalizer::localize_task(
     int nmin = L->colspi()[0];
     int nocc = L->rowspi()[0];
 
-    std::shared_ptr<Matrix> L2(L->clone());
-    L2->copy(L);
+    auto L2 = L->clone();
     double** Lp = L2->pointer();
 
     auto U = std::make_shared<Matrix>("U", nocc, nocc);
