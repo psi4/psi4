@@ -7,7 +7,7 @@ jobs:
       vmImage: 'windows-2022'
     timeoutInMinutes: 360
     variables:
-      llvm.version: '11.0.0'
+      llvm.version: '12.0.0'  # 13 bad c. Jan 2022
       mkl.version: '2019.1'
       cmake.build_type: 'Release'
       conda.build: false
@@ -146,7 +146,7 @@ jobs:
       # Install LLVM
       # Note: LLVM distributed by conda is too old
       - script: |
-          choco install llvm --version %LLVM_VERSION% --yes
+          choco install llvm --version %LLVM_VERSION% --allow-downgrade --yes
           set PATH=C:\Program Files\LLVM\bin;%PATH%
           echo '##vso[task.setvariable variable=PATH]%PATH%'
           clang-cl --version
