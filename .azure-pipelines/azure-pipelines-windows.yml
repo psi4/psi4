@@ -2,9 +2,9 @@ jobs:
 
   # Configure, build, install, and test job
   - job: 'windows_build'
-    displayName: 'Windows VS2017'
+    displayName: 'Windows VS2022'
     pool:
-      vmImage: 'vs2017-win2016'
+      vmImage: 'windows-2022'
     timeoutInMinutes: 360
     variables:
       llvm.version: '11.0.0'
