@@ -165,7 +165,7 @@ jobs:
       # Configure
       - script: |
           setlocal EnableDelayedExpansion
-          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
           mkdir build & cd build
           if "%CMAKE_BUILD_TYPE%"=="Debug" set MAX_AM_ERI=4
           if "%CMAKE_BUILD_TYPE%"=="Release" set MAX_AM_ERI=5
