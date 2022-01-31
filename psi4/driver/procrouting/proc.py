@@ -2495,6 +2495,9 @@ def run_scf_gradient(name, **kwargs):
     if hasattr(ref_wfn, "_disp_functor"):
         disp_grad = ref_wfn._disp_functor.compute_gradient(ref_wfn.molecule(), ref_wfn)
         ref_wfn.set_variable("-D Gradient", disp_grad)
+    else:
+        disp_grad = core.Matrix("", ref_wfn.molecule().natom(), 3)
+        disp_grad.zero()
 
     grad = core.scfgrad(ref_wfn)
 
@@ -2542,6 +2545,9 @@ def run_scf_gradient(name, **kwargs):
     ref_wfn.set_variable("SCF TOTAL GRADIENT", grad)  # P::e SCF
     if ref_wfn.functional().needs_xc():
         ref_wfn.set_variable("DFT TOTAL GRADIENT", grad)  # overwritten later for DH -- TODO when DH gradients  # P::e SCF
+        fctl_grad = grad.clone()
+        fctl_grad.subtract(disp_grad)
+        ref_wfn.set_variable("DFT FUNCTIONAL TOTAL GRADIENT", fctl_grad)  # P::e SCF
     else:
         ref_wfn.set_variable("HF TOTAL GRADIENT", grad)  # P::e SCF
 
