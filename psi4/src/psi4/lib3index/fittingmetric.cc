@@ -360,6 +360,7 @@ void FittingMetric::form_QR_inverse(double tol) {
         std::vector<double> tau(n);
 
         // First, find out how much workspace to provide
+        // Optimal size of work vector is written to work_size
         double work_size;
         C_DGEQRF(n, n, Rp[0], n, tau.data(), &work_size, -1);
 
@@ -380,6 +381,7 @@ void FittingMetric::form_QR_inverse(double tol) {
             }
 
         // First, find out how much workspace to provide
+        // Optimal size of work vector is written to work_size
         C_DORGQR(n, n, n, Qp[0], n, tau.data(), &work_size, -1);
 
         // Now, form Q
