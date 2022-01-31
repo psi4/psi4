@@ -165,10 +165,8 @@ jobs:
       # Configure
       - script: |
           setlocal EnableDelayedExpansion
-          dir "C:\Program Files (x86)\Microsoft Visual Studio\Installer"
-          dir "C:\Program Files (x86)\Microsoft Visual Studio\Shared"
           call "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
           mkdir build & cd build
           if "%CMAKE_BUILD_TYPE%"=="Debug" set MAX_AM_ERI=4
           if "%CMAKE_BUILD_TYPE%"=="Release" set MAX_AM_ERI=5
