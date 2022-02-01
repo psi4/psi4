@@ -129,7 +129,7 @@ jobs:
                         psi4/label/dev::dftd3 ^
                         psi4/label/dev::gcp ^
                         conda-forge::gau2grid ^
-                        psi4/label/dev::libint2 ^
+                        psi4/label/testing::libint2=2.6.0=h2e52968_3 ^
                         conda-forge::libxc ^
                         conda-forge::mpfr ^
                         conda-forge::mpmath ^
