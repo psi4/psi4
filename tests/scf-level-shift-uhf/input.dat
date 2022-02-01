@@ -1,3 +1,5 @@
+#! SCF level shift on a UHF computation
+
 molecule {
 0 2
 O          1.14394        0.07535        0.00000

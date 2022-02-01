@@ -1,3 +1,5 @@
+#! FSAPT with external charge on dimer
+
 memory 1 GB
 
 # water prism: https://science.sciencemag.org/content/sci/suppl/2012/05/16/336.6083.897.DC1/Perez_SM.pdf
