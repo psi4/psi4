@@ -5,7 +5,7 @@ from psi4 import core
 from psi4.driver import psifiles as psif
 
 import numpy as np
-from scipy.optimize import minimize
+from qcelemental.util import which_import
 
 class RemovalPolicy(Enum):
     LargestError = 1
@@ -57,7 +57,12 @@ class DIIS:
             self.removal_policy = removal_policy
 
         if not isinstance(storage_policy, StoragePolicy):
-            raise TypeError(f"stroage_policy must be a StoragePolicy, not a {type(storage_policy)}")
+            raise TypeError(f"storage_policy must be a StoragePolicy, not a {type(storage_policy)}")
+
+        if not which_import("scipy", return_bool=True) and ("ediis" in engines or "adiis" in engines):
+            raise ModuleNotFoundError("Python module scipy not found. Solve by\n" +
+                                      "    (1) installing it: `conda install networkx` or `pip install networkx`, or" +
+                                      "    (2) de-activating a/ediis with option: `set scf initial_scf_accelerator none`")
         self.max_vecs = max_vecs
         self.name = name
         self.storage_policy = storage_policy
@@ -246,12 +251,14 @@ class DIIS:
         return np.einsum("i,ij->j", dedc, dcdx)
 
     def adiis_coefficients(self):
+        from scipy.optimize import minimize
         self.adiis_populate()
         result = minimize(self.adiis_energy, np.ones(len(self.stored_vectors)), method="BFGS",
                 jac = self.adiis_gradient, tol=1e-6, options={"maxiter": 200})
 
         if not result.success:
             raise Exception("ADIIS minimization failed. File a bug, and include your entire input and output files.")
+
         return normalize_input(result.x)
 
     def adiis_populate(self):
@@ -301,9 +308,11 @@ class DIIS:
         return np.einsum("i,ij->j", dedc, dcdx)
 
     def ediis_coefficients(self):
+        from scipy.optimize import minimize
         self.ediis_populate()
         result = minimize(self.ediis_energy, np.ones(len(self.stored_vectors)), method="BFGS",
                 jac=self.ediis_gradient, tol=1e-6, options={"maxiter": 200})
+
         if not result.success:
             raise Exception("EDIIS minimization failed. File a bug, and include your entire input and output files.")
 
