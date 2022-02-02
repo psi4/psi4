@@ -18,6 +18,7 @@ set guess core    # With this guess, un-accelerated DIIS will fail.
 set scf_type pk
 set basis 3-21G
 set initial_scf_accelerator adiis
+set maxiter 15
 energy = energy('scf')
 
 compare_values(-5663.1433914266744978, energy, 6, "SCF Energy")

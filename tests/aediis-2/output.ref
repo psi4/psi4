@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.6a1.dev31 
+                               Psi4 1.6a1.dev41 
 
-                         Git: Rev {ediis_single_class} 7506724 dirty
+                         Git: Rev {ediis_single_class} 8cc7815 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,10 +30,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Thursday, 13 January 2022 04:32PM
+    Psi4 started on: Wednesday, 02 February 2022 12:10PM
 
-    Process ID: 60984
-    Host:       dhcp190-210.emerson.emory.edu
+    Process ID: 7180
+    Host:       dhcp189-142.emerson.emory.edu
     PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -41,7 +41,7 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-# EDIIS test cas efrom 10.1063/1.1470195
+# EDIIS test case from 10.1063/1.1470195
 
 molecule {
 U
@@ -55,6 +55,7 @@ set guess gwh    # With this guess, un-accelerated DIIS will fail
 set scf_type pk
 set basis lanl2dz
 set initial_scf_accelerator ediis
+set maxiter 28
 energy = energy('b3lyp')
 
 compare_values(-451.2300583940044021, energy, 6, "SCF Energy")
@@ -62,8 +63,8 @@ compare_values(-451.2300583940044021, energy, 6, "SCF Energy")
 
 Scratch directory: /tmp/
 
-*** tstart() called on dhcp190-210.emerson.emory.edu
-*** at Thu Jan 13 16:32:33 2022
+*** tstart() called on dhcp189-142.emerson.emory.edu
+*** at Wed Feb  2 12:10:54 2022
 
    => Loading Basis Set <=
 
@@ -228,7 +229,7 @@ Scratch directory: /tmp/
 
   ==> Pre-Iterations <==
 
-  SCF Guess: Generalized Wolfsberg-Helmholtz.
+  SCF Guess: Generalized Wolfsberg-Helmholtz applied to core Hamiltonian.
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -244,17 +245,17 @@ Scratch directory: /tmp/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RKS iter   1:  -379.42867587807143   -3.79429e+02   2.32679e-01 EDIIS
-   @RKS iter   2:  -407.87341463703058   -2.84447e+01   8.25329e-02 DIIS/EDIIS
+   @RKS iter   2:  -407.87341463703058   -2.84447e+01   8.25329e-02 EDIIS/DIIS
    @RKS iter   3:  -374.41012263147388    3.34633e+01   2.22772e-01 EDIIS
-   @RKS iter   4:  -448.83230637360987   -7.44222e+01   3.33173e-02 DIIS/EDIIS
+   @RKS iter   4:  -448.83230637360987   -7.44222e+01   3.33173e-02 EDIIS/DIIS
    @RKS iter   5:  -421.45161588365198    2.73807e+01   1.60039e-01 EDIIS
-   @RKS iter   6:  -449.79009619111531   -2.83385e+01   3.55568e-02 DIIS/EDIIS
-   @RKS iter   7:  -446.61032231942090    3.17977e+00   6.46680e-02 DIIS/EDIIS
-   @RKS iter   8:  -451.16246441884294   -4.55214e+00   7.08904e-03 DIIS/EDIIS
-   @RKS iter   9:  -451.20289705480781   -4.04326e-02   4.31343e-03 DIIS/EDIIS
-   @RKS iter  10:  -451.22355636853422   -2.06593e-02   2.03674e-03 DIIS/EDIIS
-   @RKS iter  11:  -451.22803023583566   -4.47387e-03   1.10935e-03 DIIS/EDIIS
-   @RKS iter  12:  -451.22999726496107   -1.96703e-03   1.04385e-04 DIIS/EDIIS
+   @RKS iter   6:  -449.79009619111531   -2.83385e+01   3.55568e-02 EDIIS/DIIS
+   @RKS iter   7:  -446.61032231942090    3.17977e+00   6.46680e-02 EDIIS/DIIS
+   @RKS iter   8:  -451.16246441884294   -4.55214e+00   7.08904e-03 EDIIS/DIIS
+   @RKS iter   9:  -451.20289705480781   -4.04326e-02   4.31343e-03 EDIIS/DIIS
+   @RKS iter  10:  -451.22355636853422   -2.06593e-02   2.03674e-03 EDIIS/DIIS
+   @RKS iter  11:  -451.22803023583566   -4.47387e-03   1.10935e-03 EDIIS/DIIS
+   @RKS iter  12:  -451.22999726496107   -1.96703e-03   1.04385e-04 EDIIS/DIIS
    @RKS iter  13:  -451.23002248627580   -2.52213e-05   3.92994e-05 DIIS
    @RKS iter  14:  -451.23003198883669   -9.50256e-06   1.99836e-05 DIIS
    @RKS iter  15:  -451.23003809681313   -6.10798e-06   1.37230e-05 DIIS
@@ -351,18 +352,18 @@ Properties computed using the SCF density matrix
      X:     0.3102      Y:    -0.1216      Z:     0.0000     Total:     0.3332
 
 
-*** tstop() called on dhcp190-210.emerson.emory.edu at Thu Jan 13 16:33:00 2022
+*** tstop() called on dhcp189-142.emerson.emory.edu at Wed Feb  2 12:11:21 2022
 Module time:
-	user time   =      25.62 seconds =       0.43 minutes
-	system time =       0.44 seconds =       0.01 minutes
+	user time   =      26.02 seconds =       0.43 minutes
+	system time =       0.46 seconds =       0.01 minutes
 	total time  =         27 seconds =       0.45 minutes
 Total time:
-	user time   =      25.62 seconds =       0.43 minutes
-	system time =       0.44 seconds =       0.01 minutes
+	user time   =      26.02 seconds =       0.43 minutes
+	system time =       0.46 seconds =       0.01 minutes
 	total time  =         27 seconds =       0.45 minutes
     SCF Energy............................................................................PASSED
 
-    Psi4 stopped on: Thursday, 13 January 2022 04:33PM
-    Psi4 wall time for execution: 0:00:26.45
+    Psi4 stopped on: Wednesday, 02 February 2022 12:11PM
+    Psi4 wall time for execution: 0:00:26.92
 
 *** Psi4 exiting successfully. Buy a developer a beer!
