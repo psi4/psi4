@@ -61,7 +61,7 @@ class DIIS:
 
         if not which_import("scipy", return_bool=True) and ("ediis" in engines or "adiis" in engines):
             raise ModuleNotFoundError("Python module scipy not found. Solve by\n" +
-                                      "    (1) installing it: `conda install networkx` or `pip install networkx`, or" +
+                                      "    (1) installing it: `conda install scipy` or `pip install scipy`, or" +
                                       "    (2) de-activating a/ediis with option: `set scf initial_scf_accelerator none`")
         self.max_vecs = max_vecs
         self.name = name
@@ -241,6 +241,7 @@ class DIIS:
         return np.dot(self.adiis_linear, x) + np.einsum("i,ij,j->", x, self.adiis_quadratic, x) / 2
 
     def adiis_gradient(self, x):
+        """ Gradient of energy estimate w.r.t. input coefficient """
         c = normalize_input(x)
         dedc = self.adiis_linear + np.einsum("i,ij->j", c, self.adiis_quadratic)
 
@@ -262,6 +263,7 @@ class DIIS:
         return normalize_input(result.x)
 
     def adiis_populate(self):
+        """ Fills linear and quadratic coefficients in ADIIS energy estimate. """
         # We are currently assuming that all of dD and dF fit in-core.
         # These quantities are N^2, so this should be fine in most cases.
 
@@ -297,6 +299,7 @@ class DIIS:
         return np.dot(ediis_linear, x) + np.einsum("i,ij,j->", x, self.ediis_quadratic, x) / 2
 
     def ediis_gradient(self, x):
+        """ Gradient of energy estimate w.r.t. input coefficient """
         c = normalize_input(x)
         ediis_linear = np.array([entry["energy"][0] for entry in self.stored_vectors])
         dedc = ediis_linear + np.einsum("i,ij->j", c, self.ediis_quadratic)
@@ -319,6 +322,7 @@ class DIIS:
         return normalize_input(result.x)
 
     def ediis_populate(self):
+        """ Fills quadratic coefficients in ADIIS energy estimate. """
         num_entries = len(self.stored_vectors)
 
         self.ediis_quadratic = np.zeros((num_entries, num_entries))
@@ -339,7 +343,7 @@ class DIIS:
             self.ediis_quadratic *= 2
 
     def extrapolate(self, *args, Dnorm = None):
-        """ Perform extrapolation. Must be passed in the RMS error to decide how to handle hybrid algorithms. """
+        """ Perform extrapolation. Must be passed in an error metric to decide how to handle hybrid algorithms. """
 
         if {"adiis", "ediis"}.intersection(self.engines) and Dnorm is None:
             raise ValidationError("An extrapolation engine insists you specify the error metric.")
@@ -350,7 +354,6 @@ class DIIS:
             coeffs = self.diis_coefficients()
             performed.add("DIIS")
         elif len(self.engines) == 1:
-            blend_start = core.get_option("SCF", "INITIAL_SCF_BLEND_START")
             blend_stop = core.get_option("SCF", "INITIAL_SCF_BLEND_STOP")
             if Dnorm <= blend_stop:
                 return performed

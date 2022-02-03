@@ -1441,9 +1441,11 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("MAX_ATTEMPTS", 1);
         /*- Which method to use to accelerate initial SCF convergence?-*/
         options.add_str("INITIAL_SCF_ACCELERATOR", "ADIIS", "NONE EDIIS ADIIS");
-        /*- When the SCF error hits this number, start the linear blend of the initial SCF method out of SCF steps. -*/
+        /*- SCF error at which to start the linear interpolation between DIIS steps and steps of the initial SCF accelerator -*/
+        // c.f. Garza and Scuseria, DOI: 10.1063/1.4740249
         options.add_double("INITIAL_SCF_BLEND_START", 1.0E-1);
-        /*- When the SCF error hits this number, complete the linear blend of the initial SCF method out of SCF steps. -*/
+        /*- SCF error at which to complete the linear interpolation between DIIS steps and steps of the initial SCF accelerator -*/
+        // c.f. Garza and Scuseria, DOI: 10.1063/1.4740249
         options.add_double("INITIAL_SCF_BLEND_STOP", 1.0E-4);
         /*- Do Perform Incremental Fock Build? -*/
         options.add_bool("INCFOCK", false);

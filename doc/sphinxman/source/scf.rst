@@ -591,11 +591,11 @@ DIIS [On by Default]
 ADIIS [On by Default]
     ADIIS uses previous iterates of the Fock and density matrices to produce an
     informed estimate of the next Fock matrix. ADIIS estimates are based on minimizing
-    the energy rather than zeroing the residual, so this performs best in the early
+    an energy estimate rather than zeroing the residual, so this performs best in the early
     iterations. By default, Psi will start using ADIIS before blending the ADIIS step with
     the DIIS step, eventually using the pure DIIS step. The closely-related EDIIS procedure
     may be used instead by setting |scf__initial_scf_acelerator|. This is formally identical
-    to ADIIS for HF, but will differ for more general DFT.
+    to ADIIS for HF, but the methods will differ for more general DFT.
 MOM [Off by Default]
     MOM was developed to combat a particular class of convergence failure:
     occupation flipping. In some cases, midway though the SCF procedure, a partially
