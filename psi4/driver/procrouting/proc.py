@@ -3479,7 +3479,19 @@ def run_adc(name, **kwargs):
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
 
-    return core.adc(ref_wfn)
+    error_msg = ("\n\t\t\t\t!!!!! WARNING !!!!!\n" +
+            "\t\tThe built-in ADC(2) method may give incorrect results if\n"
+        "\t\tmultiple roots are requested, due to an error in the Davidson solver,\n"
+        "\t\tand is no longer maintained. It is slated for removal in Psi4 1.7.\n"
+        "\t\tUse of the Psi interface to `adcc` instead is strongly recommended.\n")
+
+    core.print_out(error_msg)
+
+    wfn = core.adc(ref_wfn)
+
+    core.print_out(error_msg)
+
+    return wfn
 
 
 def run_adcc(name, **kwargs):
