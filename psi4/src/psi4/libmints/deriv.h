@@ -55,16 +55,15 @@ class CdSalcList;
 // SCFandDF:    Correlated methods using DF (no reference contribution)
 // Correlated:  Correlated methods that write RDMs and Lagrangian to disk
 enum class DerivCalcType { Default,
-    PSI_DEPRECATED(
+    SCF PSI_DEPRECATED(
         "DerivCalcType::SCF is planned for removal in 1.7, due to lack of use and "
         "being superseded by the scfgrad library. Contact developers if you need "
-        "this ability.")
-      SCF,
-    PSI_DEPRECATED(
+        "this ability."),
+    SCFandDF PSI_DEPRECATED(
         "DerivCalcType::SCFandDF is planned for removal in 1.7, due to lack of use "
-        "and being superseded by the compute_df method. Contact devvelopers if you "
-        "need this ability.")
-      SCFandDF, Correlated };
+        "and being superseded by the compute_df method. Contact developers if you "
+        "need this ability."),
+    Correlated };
 
 class PSI_API Deriv {
     const std::shared_ptr<Wavefunction> wfn_;
