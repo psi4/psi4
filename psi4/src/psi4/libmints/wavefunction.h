@@ -462,7 +462,7 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     /// Returns the alpha OPDM for the wavefunction
     const SharedMatrix Da() const;
     /// Returns the beta OPDM for the wavefunction
-    SharedMatrix Db() const;
+    const SharedMatrix Db() const;
 
     /**
      * Return a subset of the Ca matrix in a desired basis

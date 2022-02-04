@@ -41,7 +41,6 @@ namespace scf {
 class RHF : public HF {
    protected:
     // Temporary matrices
-    SharedMatrix D_;
     SharedMatrix Dold_;
     SharedMatrix G_;
     SharedMatrix J_;
@@ -57,8 +56,6 @@ class RHF : public HF {
     RHF(SharedWavefunction ref_wfn, std::shared_ptr<SuperFunctional> functional, Options& options,
         std::shared_ptr<PSIO> psio);
     ~RHF() override;
-
-    virtual SharedMatrix Da() const;
 
     virtual bool same_a_b_orbs() const { return true; }
     virtual bool same_a_b_dens() const { return true; }
