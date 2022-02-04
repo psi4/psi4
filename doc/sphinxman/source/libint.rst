@@ -58,7 +58,7 @@ cannot build *without* Libint.
 .. note:: As of Nov 2020 or release v1.4, |PSIfour| uses Libint2, not Libint1.
    Compared to many other open-source QC codes, |PSIfour| requires a separate
    Libint compilation with a different integrals ordering. See notes at top of
-   https://github.com/psi4/psi4/blob/master/external/upstream/libint2/CMakeLists.txt
+   :source:`external/upstream/libint2/CMakeLists.txt` .
 
 Installation
 ~~~~~~~~~~~~
