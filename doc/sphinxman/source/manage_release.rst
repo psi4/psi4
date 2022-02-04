@@ -112,7 +112,7 @@ Update copyright year
   - ``README.md``
   - ``tests/psitest.pl``
 
-* Also, in content of https://github.com/psi4/psi4/blob/master/doc/sphinxman/source/conf.py.in#L118
+* Also, in content of :source:`doc/sphinxman/source/conf.py.in#L130`
 
 
 Update samples
