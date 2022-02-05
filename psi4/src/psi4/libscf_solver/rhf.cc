@@ -102,7 +102,6 @@ void RHF::common_init() {
     Da_ = SharedMatrix(factory_->create_matrix("SCF density"));
     Db_ = Da_;
     Lagrangian_ = SharedMatrix(factory_->create_matrix("X"));
-    D_ = Da_;
     Dold_ = SharedMatrix(factory_->create_matrix("D old"));
     Va_ = SharedMatrix(factory_->create_matrix("V"));
     Vb_ = Va_;
@@ -138,10 +137,8 @@ void RHF::finalize() {
     HF::finalize();
 }
 
-SharedMatrix RHF::Da() const { return D_; }
-
 void RHF::save_density_and_energy() {
-    Dold_->copy(D_);  // Save previous density
+    Dold_->copy(Da_);  // Save previous density
 }
 
 void forPermutation(int depth, std::vector<int>& array, std::vector<int>& indices, int curDepth,
@@ -174,7 +171,7 @@ void RHF::form_V() {
     // // Pull the V matrices off
     // const std::vector<SharedMatrix> & V = potential_->V();
     // Va_ = V[0];
-    potential_->set_D({D_});
+    potential_->set_D({Da_});
     potential_->compute_V({Va_});
     Vb_ = Va_;
 }
@@ -273,7 +270,7 @@ void RHF::form_C(double shift) {
 }
 
 void RHF::form_D() {
-    D_->zero();
+    Da_->zero();
 
     for (int h = 0; h < nirrep_; ++h) {
         int nso = nsopi_[h];
@@ -283,30 +280,30 @@ void RHF::form_D() {
         if (nso == 0 || nmo == 0) continue;
 
         double** Ca = Ca_->pointer(h);
-        double** D = D_->pointer(h);
+        double** D = Da_->pointer(h);
 
         C_DGEMM('N', 'T', nso, nso, na, 1.0, Ca[0], nmo, Ca[0], nmo, 0.0, D[0], nso);
     }
 
     if (debug_) {
         outfile->Printf("in RHF::form_D:\n");
-        D_->print();
+        Da_->print();
     }
 }
 
 void RHF::damping_update(double damping_percentage) {
-    D_->scale(1.0 - damping_percentage);
-    D_->axpy(damping_percentage, Dold_);
+    Da_->scale(1.0 - damping_percentage);
+    Da_->axpy(damping_percentage, Dold_);
 }
 
 double RHF::compute_initial_E() {
-    double Etotal = nuclearrep_ + D_->vector_dot(H_);
+    double Etotal = nuclearrep_ + Da_->vector_dot(H_);
     return Etotal;
 }
 
 double RHF::compute_E() {
-    double one_electron_E = 2.0 * D_->vector_dot(H_);
-    double coulomb_E = 2.0 * D_->vector_dot(J_);
+    double one_electron_E = 2.0 * Da_->vector_dot(H_);
+    double coulomb_E = 2.0 * Da_->vector_dot(J_);
 
     double XC_E = 0.0;
     double VV10_E = 0.0;
@@ -341,7 +338,7 @@ double RHF::compute_E() {
         }
     }
 
-    double two_electron_E = D_->vector_dot(Fa_) - 0.5 * one_electron_E;
+    double two_electron_E = Da_->vector_dot(Fa_) - 0.5 * one_electron_E;
 
     energies_["Nuclear"] = nuclearrep_;
     energies_["One-Electron"] = one_electron_E;
@@ -1008,7 +1005,6 @@ std::shared_ptr<RHF> RHF::c1_deep_copy(std::shared_ptr<BasisSet> basis) {
     if (Da_) {
         hf_wfn->Da_ = Da_subset("AO");
         hf_wfn->Db_ = hf_wfn->Da_;
-        hf_wfn->D_ = hf_wfn->Da_;
     }
     if (Fa_) {
         hf_wfn->Fa_ = Fa_subset("AO");
