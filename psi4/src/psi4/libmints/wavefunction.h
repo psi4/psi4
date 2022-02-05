@@ -370,6 +370,9 @@ class PSI_API Wavefunction : public std::enable_shared_from_this<Wavefunction> {
     void set_reference_wavefunction(const std::shared_ptr<Wavefunction> wfn);
 
     /// Returns whether this wavefunction was obtained using density fitting or not
+    PSI_DEPRECATED(
+        "Using `Wavefunction.density_fitted` is deprecated for lack of use and will be removed in Psi4 1.7. "
+        "If you need an analogue of this, create a Wavefunction subclass.")
     bool density_fitted() const { return density_fitted_; }
 
     /// Returns the print level
