@@ -1809,14 +1809,22 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("XI", false);
         /*- Do use zeta?  -*/
         options.add_bool("ZETA", false);
-        /*- Do compute one-particle density matrix? -*/
+        /*- Deprecated and will be removed in 1.7. Use OPDM_ONLY. -*/
         options.add_bool("ONEPDM", false);
-        /*- Write one-particle density matrix on a grid to file opdm.dx -*/
+        /*- For internal use only! Compute the one-particle density matrix, but not the two-particle density matrix. -*/
+        options.add_bool("OPDM_ONLY", false);
+        /*- Deprecated and will be removed in 1.7. Use OPDM_GRID_DUMP. -*/
         options.add_bool("ONEPDM_GRID_DUMP", false);
-        /*- Cutoff (e/A^3) for printing one-particle density matrix values on a grid -*/
+        /*- Write one-particle density matrix on a grid to file opdm.dx -*/
+        options.add_bool("OPDM_GRID_DUMP", false);
+        /*- Deprecated and will be removed in 1.7. Use OPDM_GRID_CUTOFF. -*/
         options.add_double("ONEPDM_GRID_CUTOFF", 1.0e-30);
-        /*- Step size (Angstrom) for one-particle density matrix values on a grid -*/
+        /*- Cutoff (e/A^3) for printing one-particle density matrix values on a grid -*/
+        options.add_double("OPDM_GRID_CUTOFF", 1.0e-30);
+        /*- Deprecated and will be removed in 1.7. Use OPDM_GRID_STEPSIZE. -*/
         options.add_double("ONEPDM_GRID_STEPSIZE", 0.1);
+        /*- Step size (Angstrom) for one-particle density matrix values on a grid -*/
+        options.add_double("OPDM_GRID_STEPSIZE", 0.1);
         /*- Do write natural orbitals (molden) -*/
         options.add_bool("WRITE_NOS", false);
         /*- Reproducing energies from densities ? -*/

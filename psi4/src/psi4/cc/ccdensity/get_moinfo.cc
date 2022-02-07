@@ -81,6 +81,7 @@ void get_moinfo(std::shared_ptr<Wavefunction> wfn) {
         moinfo.clsdpi[h] = wfn->doccpi()[h];
         moinfo.openpi[h] = wfn->soccpi()[h];
     }
+    moinfo.Ca = wfn->Ca();
     scf_pitzer = wfn->Ca()->to_block_matrix();
 
     moinfo.sym = 0;

@@ -36,6 +36,7 @@
 
 #include <string>
 #include <vector>
+#include "psi4/libmints/matrix.h"
 
 namespace psi {
 namespace ccdensity {
@@ -108,6 +109,7 @@ struct MOInfo {
     int *pitzer2qt;                  /* Pitzer to QT re-ordering array */
     int *qt2pitzer;                  /* QT to Pitzer re-ordering array */
     double **scf_qt;                 /* SCF orbitals (QT ordering of MOs) */
+    SharedMatrix Ca;                 /* SCF orbitals (standard ordering) */
     double ***L;
     double ***nabla;
     double ***dip;
