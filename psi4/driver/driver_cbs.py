@@ -1987,7 +1987,7 @@ def _cbs_gufunc(func, total_method_name, **kwargs):
     cbs_kwargs['molecule'] = molecule
     cbs_kwargs['verbose'] = cbs_verbose
 
-    if user_dertype != None:
+    if user_dertype is not None:
         cbs_kwargs['dertype'] = user_dertype
 
     # Find method and basis
