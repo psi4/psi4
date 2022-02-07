@@ -126,25 +126,8 @@ void CoupledPair::OPDM() {
     free(irrepoffset);
 
     // set Da_ for properties with oeprop ... note Da needs to be in so basis
-    int symm = opdm_a->symmetry();
-    int nirrep = opdm_a->nirrep();
     Da_->set_name("CEPA unrelaxed density");
-
-    auto* temp = new double[Ca->max_ncol() * Ca->max_nrow()];
-    for (int h = 0; h < nirrep; h++) {
-        int nmol = Ca->colspi()[h];
-        int nmor = Ca->colspi()[h ^ symm];
-        int nsol = Ca->rowspi()[h];
-        int nsor = Ca->rowspi()[h ^ symm];
-        if (!nmol || !nmor || !nsol || !nsor) continue;
-        double** Clp = Ca->pointer(h);
-        double** Crp = Ca->pointer(h ^ symm);
-        double** Dmop = opdm_a->pointer(h ^ symm);
-        double** Dsop = Da_->pointer(h ^ symm);
-        C_DGEMM('N', 'T', nmol, nsor, nmor, 1.0, Dmop[0], nmor, Crp[0], nmor, 0.0, temp, nsor);
-        C_DGEMM('N', 'N', nsol, nsor, nmol, 1.0, Clp[0], nmol, temp, nsor, 0.0, Dsop[0], nsor);
-    }
-    delete[] temp;
+    Da_->transform(opdm_a, Ca);
 
     free(D1);
 }
