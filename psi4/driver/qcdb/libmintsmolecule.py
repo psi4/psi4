@@ -1676,10 +1676,10 @@ class LibmintsMolecule():
         2
 
         """
-        if depth == False or depth.upper() == 'FALSE':
+        if not depth or depth.upper() == 'FALSE':
             return 0
 
-        elif depth == True or depth.upper() == 'TRUE':
+        elif depth or depth.upper() == 'TRUE':
             # Freeze the number of core electrons corresponding to the
             # nearest previous noble gas atom.  This means that the 4p block
             # will still have 3d electrons active.  Alkali earth atoms will

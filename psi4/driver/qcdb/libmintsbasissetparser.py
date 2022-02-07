@@ -146,7 +146,7 @@ class Gaussian94BasisSetParser(object):
         gaussian_type = 'Pure'
 
         if self.force_puream_or_cartesian:
-            if self.forced_is_puream == False:
+            if not self.forced_is_puream:
                 gaussian_type = 'Cartesian'
 
         # Need a dummy center for the shell.

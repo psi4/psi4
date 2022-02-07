@@ -1392,8 +1392,8 @@ def optimize(name, **kwargs):
             # Mark the optimization data as disposable now that the optimization is done.
             core.IOManager.shared_object().set_specific_retention(1, False)
             # Check if user wants to see the intcos; if so, don't delete them.
-            if core.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False:
-                if core.get_option('OPTKING', 'KEEP_INTCOS') == False:
+            if not core.get_option('OPTKING', 'INTCOS_GENERATE_EXIT'):
+                if not core.get_option('OPTKING', 'KEEP_INTCOS'):
                     core.opt_clean()
             # Changing environment to optimized geometry as expected by user
             molecule.set_geometry(moleculeclone.geometry())
@@ -1427,7 +1427,7 @@ def optimize(name, **kwargs):
             print('Optimizer: Optimization failed!')
             # Mark the optimization data as disposable now that the optimization is done.
             core.IOManager.shared_object().set_specific_retention(1, False)
-            if (core.get_option('OPTKING', 'KEEP_INTCOS') == False):
+            if not core.get_option('OPTKING', 'KEEP_INTCOS'):
                 core.opt_clean()
             molecule.set_geometry(moleculeclone.geometry())
             core.clean()
@@ -1440,8 +1440,8 @@ def optimize(name, **kwargs):
 
         n += 1
 
-    if core.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False:
-        if core.get_option('OPTKING', 'KEEP_INTCOS') == False:
+    if not core.get_option('OPTKING', 'INTCOS_GENERATE_EXIT'):
+        if not core.get_option('OPTKING', 'KEEP_INTCOS'):
             core.opt_clean()
 
     optstash.restore()

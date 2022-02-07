@@ -2876,7 +2876,7 @@ def run_bccd(name, **kwargs):
 
         ref_wfn = core.ccenergy(ref_wfn)
         core.print_out('Brueckner convergence check: %s\n' % bool(core.variable('BRUECKNER CONVERGED')))
-        if (core.variable('BRUECKNER CONVERGED') == True):
+        if core.variable('BRUECKNER CONVERGED'):
             break
 
         if bcc_iter_cnt >= core.get_option('CCENERGY', 'BCCD_MAXITER'):
@@ -4730,7 +4730,7 @@ def run_mrcc(name, **kwargs):
     lenv['OMP_NUM_THREADS'] = str(core.get_num_threads())
 
     # If the user provided MRCC_OMP_NUM_THREADS set the environ to it
-    if core.has_option_changed('MRCC', 'MRCC_OMP_NUM_THREADS') == True:
+    if core.has_option_changed('MRCC', 'MRCC_OMP_NUM_THREADS'):
         lenv['OMP_NUM_THREADS'] = str(core.get_option('MRCC', 'MRCC_OMP_NUM_THREADS'))
 
     # Call dmrcc, directing all screen output to the output file
@@ -4787,7 +4787,7 @@ def run_mrcc(name, **kwargs):
     os.chdir(current_directory)
 
     # If we're told to keep the files or the user provided a path, do nothing.
-    if (keep != False or ('path' in kwargs)):
+    if keep or ('path' in kwargs):
         core.print_out('\nMRCC scratch files have been kept.\n')
         core.print_out('They can be found in ' + mrcc_tmpdir)
 
@@ -4996,7 +4996,7 @@ def run_fnocc(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    if core.get_option('FNOCC', 'USE_DF_INTS') == False:
+    if not core.get_option('FNOCC', 'USE_DF_INTS'):
         # Ensure IWL files have been written
         proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
     else:
@@ -5093,7 +5093,7 @@ def run_cepa(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    if core.get_option('FNOCC', 'USE_DF_INTS') == False:
+    if not core.get_option('FNOCC', 'USE_DF_INTS'):
         # Ensure IWL files have been written
         proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
     else:
