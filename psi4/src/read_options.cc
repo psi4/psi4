@@ -174,7 +174,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- When several modules can compute the same methods and the default
     routing is not suitable, this targets a module. ``CCENERGY`` covers
     CCHBAR, etc. ``OCC`` covers OCC and DFOCC. -*/
-    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC ADCC CCT3");
+    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC ADCC CCT3 BUILTIN");
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
