@@ -769,7 +769,7 @@ def ternary(sapt, title='', labeled=True, view=True,
         yvals.append(ydot)
         cvals.append(cdot)
 
-    sc = ax.scatter(xvals, yvals, c=cvals, s=15, marker="o", \
+    sc = ax.scatter(xvals, yvals, c=cvals, s=15, marker="o",
         cmap=mpl.cm.jet, edgecolor='none', vmin=0, vmax=1, zorder=10)
 
     # remove figure outline

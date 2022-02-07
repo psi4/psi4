@@ -332,7 +332,7 @@ class CoordEntry(object):
         try:
             return self.PYbasissets[role]
         except ValueError:
-            raise ValidationError('CoordEntry::basisset: Basisset not set for %s and type of %s' % \
+            raise ValidationError('CoordEntry::basisset: Basisset not set for %s and type of %s' %
                 (self.PYlabel, role))
 
     def basissets(self):
@@ -356,7 +356,7 @@ class CoordEntry(object):
         try:
             return self.PYshells[key]
         except (ValueError, KeyError):
-            raise ValidationError('CoordEntry::shells: Shells not set for %s and type of %s' % \
+            raise ValidationError('CoordEntry::shells: Shells not set for %s and type of %s' %
                 (self.PYlabel, key))
 
     def shells(self):
