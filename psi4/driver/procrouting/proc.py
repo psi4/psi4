@@ -3228,7 +3228,7 @@ def run_dfmp2_property(name, **kwargs):
         core.set_global_option('SCF_TYPE', 'DF')  # local set insufficient b/c SCF option read in DFMP2
         core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
-    if not 'DF' in core.get_global_option('SCF_TYPE'):
+    if 'DF' not in core.get_global_option('SCF_TYPE'):
         raise ValidationError('DF-MP2 properties need DF-SCF reference.')
 
     properties = kwargs.pop('properties')
@@ -3567,10 +3567,10 @@ def run_adcc(name, **kwargs):
     if isinstance(ref_wfn, core.UHF):
         if not core.has_option_changed("ADC", "KIND"):
             kind = "any"
-        elif not kind in ["any", "spin_flip"]:
+        elif kind not in ["any", "spin_flip"]:
             raise ValidationError("For UHF references the only valid values for 'KIND' are "
                                   "'SPIN_FLIP' or 'ANY' and not '{}.".format(kind.upper()))
-    elif not kind in ["singlet", "triplet", "any"]:
+    elif kind not in ["singlet", "triplet", "any"]:
         raise ValidationError("For RHF references the value '{}' for 'KIND' is "
                               "not supported.".format(kind.upper()))
     kwargs["kind"] = kind
@@ -3590,7 +3590,7 @@ def run_adcc(name, **kwargs):
     if "cvs" in name and "core_orbitals" not in kwargs:
         raise ValidationError("If a CVS-ADC method is requested, the NUM_CORE_ORBITALS option "
                               "needs to be set.")
-    if "core_orbitals" in kwargs and not "cvs" in name:
+    if "core_orbitals" in kwargs and "cvs" not in name:
         raise ValidationError("The NUM_CORE_ORBITALS option needs to be set to '0' or absent "
                               "unless a CVS ADC method is requested.")
     if "cvs" in name and kwargs["kind"] in ["spin_flip"]:
