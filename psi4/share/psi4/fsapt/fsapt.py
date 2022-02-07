@@ -102,7 +102,7 @@ def write_xyz(filename, geom):
     fh.write('%d\n\n' % len(geom))
     for line in geom:
         fh.write('%6s %14.10f %14.10f %14.10f\n' % (line[0], line[1], line[2], line[3]))
-    fh.close();
+    fh.close()
 
 def read_list(filename, factor = 1.0):
 
@@ -264,7 +264,7 @@ def partition_fragments(fragkeys,frags,Z,Q,completeness = 0.85):
     links = {}
     link_nuclear_ws = {}
     link_orbital_ws = {}
-    linkindex = 0;
+    linkindex = 0
 
     for a in linkas:
         sums = []
@@ -297,8 +297,8 @@ def partition_fragments(fragkeys,frags,Z,Q,completeness = 0.85):
         nuclear_ws[key1][A1] -= 1.0 / Z[A1]
         nuclear_ws[key2][A2] -= 1.0 / Z[A2]
 
-        linkname = 'Link-%d' % (linkindex+1);
-        linkindex+=1;
+        linkname = 'Link-%d' % (linkindex+1)
+        linkindex+=1
 
         linkkeys.append(linkname)
         links[linkname] = [A1, A2]

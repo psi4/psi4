@@ -90,7 +90,7 @@ for atom in range(natoms):
         map_key = string + cart[p]
         deriv1[map_key] = np.asarray(deriv1_mat[string][p])
 
-Hes = {};
+Hes = {}
 deriv2_mat = {}
 deriv2 = {}
 

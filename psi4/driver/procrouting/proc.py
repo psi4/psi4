@@ -1467,11 +1467,11 @@ def scf_helper(name, post_scf=True, **kwargs):
     if cast or do_broken:
         # Cast or broken are special cases
         base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
-        core.print_out("\n         ---------------------------------------------------------\n");
+        core.print_out("\n         ---------------------------------------------------------\n")
         if banner:
-            core.print_out("         " + banner.center(58));
+            core.print_out("         " + banner.center(58))
         if cast:
-            core.print_out("         " + "SCF Castup computation".center(58));
+            core.print_out("         " + "SCF Castup computation".center(58))
         ref_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
         core.set_legacy_wavefunction(ref_wfn)
 
@@ -1507,8 +1507,8 @@ def scf_helper(name, post_scf=True, **kwargs):
     # the SECOND scf call
     base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
     if banner:
-        core.print_out("\n         ---------------------------------------------------------\n");
-        core.print_out("         " + banner.center(58));
+        core.print_out("\n         ---------------------------------------------------------\n")
+        core.print_out("         " + banner.center(58))
 
     scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
     core.set_legacy_wavefunction(scf_wfn)
@@ -1770,7 +1770,7 @@ def run_dct_property(name, **kwargs):
     optstash = p4util.OptionsState(
         ['DCT', 'OPDM'])
 
-    core.set_local_option('DCT', 'OPDM', 'true');
+    core.set_local_option('DCT', 'OPDM', 'true')
     dct_wfn = run_dct(name, **kwargs)
 
     # Run OEProp
@@ -3894,10 +3894,10 @@ def run_detci(name, **kwargs):
 
     proc_util.print_ci_results(ciwfn, name.upper(), ciwfn.variable("HF TOTAL ENERGY"), ciwfn.variable("CURRENT ENERGY"), print_nos)
 
-    core.print_out("\t\t \"A good bug is a dead bug\" \n\n");
-    core.print_out("\t\t\t - Starship Troopers\n\n");
-    core.print_out("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
-    core.print_out("\t\t\t - Edward Valeev\n");
+    core.print_out("\t\t \"A good bug is a dead bug\" \n\n")
+    core.print_out("\t\t\t - Starship Troopers\n\n")
+    core.print_out("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n")
+    core.print_out("\t\t\t - Edward Valeev\n")
 
     if core.get_global_option("DIPMOM") and ("mp" not in name.lower()):
         # We always would like to print a little dipole information

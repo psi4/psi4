@@ -333,14 +333,14 @@ class InPsight:
                 y2 = self.atoms[l][2]
                 z2 = self.atoms[l][3]
 
-                r1 = self.atoms[k][5];
-                g1 = self.atoms[k][6];
-                b1 = self.atoms[k][7];
-                t1 = self.atoms[k][8];
-                r2 = self.atoms[l][5];
-                g2 = self.atoms[l][6];
-                b2 = self.atoms[l][7];
-                t2 = self.atoms[l][8];
+                r1 = self.atoms[k][5]
+                g1 = self.atoms[k][6]
+                b1 = self.atoms[k][7]
+                t1 = self.atoms[k][8]
+                r2 = self.atoms[l][5]
+                g2 = self.atoms[l][6]
+                b2 = self.atoms[l][7]
+                t2 = self.atoms[l][8]
 
                 R = math.sqrt((x1-x2)*(x1-x2) +
                          (y1-y2)*(y1-y2) +
