@@ -118,9 +118,9 @@ class Gaussian94BasisSetParser(object):
         shell = re.compile(r'^\s*(\w+|L=\d+)\s*(\d+)\s*(-?\d+\.\d+)\s*$')  # Match beginning of contraction
         blank_line = re.compile(r'^\s*$')
         NUMBER = r'((?:[-+]?\d*\.\d+(?:[DdEe][-+]?\d+)?)|(?:[-+]?\d+\.\d*(?:[DdEe][-+]?\d+)?)|(?:[-+]?\d+))'
-        primitives1 = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + '\s*$')  # Match s, p, d, f, g, ... functions
-        primitives2 = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + '\s*$')  # match sp functions
-        ecpinfo = re.compile(r'^\s*(\d)\s+' + NUMBER + r'\s+' + NUMBER + '\s*$')  # Match rpower, exponent, coefficient
+        primitives1 = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s*$')  # Match s, p, d, f, g, ... functions
+        primitives2 = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')  # match sp functions
+        ecpinfo = re.compile(r'^\s*(\d)\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')  # Match rpower, exponent, coefficient
 
         # s, p and s, p, d can be grouped together in Pople-style basis sets
         sp = 'SP'

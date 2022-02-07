@@ -42,7 +42,7 @@ def collect_version_input_from_fallback(meta_file='metadata.py'):
 
     """
     cwd = os.path.dirname(os.path.abspath(__file__))
-    res = dict(re.findall("__version_([a-z_]+)\s*=\s*'([^']+)'", open(cwd + '/' + meta_file).read()))
+    res = dict(re.findall(r"__version_([a-z_]+)\s*=\s*'([^']+)'", open(cwd + '/' + meta_file).read()))
     res.pop('_')
     return res
 
@@ -141,7 +141,7 @@ def reconcile_and_compute_version_output(quiet=False):
 
     # this is the tag format (PEP440 compliant) that our machinery is expecting.
     #   let's catch any deviations with Travis before it can corrupt versioning.
-    sane_tag = re.compile("""^(?P<tag>(?P<forwardseries>\d+\.\d+(?P<patch>\.[1-9]+)?)(?(patch)|(?P<prere>((a)|(b)|(rc))\d+)?))$""")
+    sane_tag = re.compile(r"""^(?P<tag>(?P<forwardseries>\d+\.\d+(?P<patch>\.[1-9]+)?)(?(patch)|(?P<prere>((a)|(b)|(rc))\d+)?))$""")
 
     mobj = sane_tag.match(meta_latest_annotated_v_tag)
     if mobj:

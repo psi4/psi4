@@ -52,11 +52,11 @@ def sphinxify_comment(text):
 
     text = text.replace('@@', '_')
     text = text.replace(' $', ' :math:`')
-    text = text.replace('($', '(\ :math:`')
+    text = text.replace('($', r'(\ :math:`')
     text = text.replace('$ ', '` ')
     text = text.replace('$.', '`.')
     text = text.replace('$,', '`,')
-    text = text.replace('$)', '`\ )')
+    text = text.replace('$)', r'`\ )')
 
     return text
 

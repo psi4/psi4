@@ -891,7 +891,7 @@ def composition_tile(db, aa1, aa2):
     """
     import re
     import numpy as np
-    bfdbpattern = re.compile("\d\d\d([A-Z][A-Z][A-Z])-\d\d\d([A-Z][A-Z][A-Z])-\d")
+    bfdbpattern = re.compile(r"\d\d\d([A-Z][A-Z][A-Z])-\d\d\d([A-Z][A-Z][A-Z])-\d")
 
     tiles = []
     for key, val in db.items():
