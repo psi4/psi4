@@ -2757,7 +2757,7 @@ def run_ccenergy(name, **kwargs):
         try:
             from psi4.driver.pasture import addins
             addins.ccsort_transqt2(ref_wfn)
-        except:
+        except Exception:
             raise PastureRequiredError("RUN_CCTRANSORT")
 
 
@@ -2868,7 +2868,7 @@ def run_bccd(name, **kwargs):
             from psi4.driver.pasture import addins
             core.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
             sort_func = addins.ccsort_transqt2
-        except:
+        except Exception:
             raise PastureRequiredError("RUN_CCTRANSORT")
 
     while True:

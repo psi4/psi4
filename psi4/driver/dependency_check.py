@@ -31,7 +31,7 @@
 # NumPy import
 try:
     import numpy as np
-except:
+except ImportError:
     msg = """
     NumPy is a runtime requirement for Psi4. Please install NumPy to proceed.
 

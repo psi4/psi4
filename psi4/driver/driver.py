@@ -1961,7 +1961,7 @@ def gdma(wfn, datafile=""):
             if origin:
                 try:
                     f.write("Origin %f %f %f\n" % (float(origin[0]), float(origin[1]), float(origin[2])))
-                except:
+                except IndexError:
                     raise ValidationError("The GDMA origin array should contain three entries: x, y, and z.")
             f.write("Switch %f\n" % core.get_option('GDMA', 'GDMA_SWITCH'))
             if radii:

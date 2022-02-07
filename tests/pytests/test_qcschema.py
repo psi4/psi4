@@ -93,7 +93,7 @@ def test_qcschema_cli(input_enc, input_fn, output_enc, output_fn, result_data_fi
     if (input_enc == "msgpack-ext") or (output_enc == "msgpack-ext"):
         try:
             import msgpack
-        except:
+        except ImportError:
             pytest.skip("Msgpack could not be found, skipping.")
 
     inputs = {input_fn: data.serialize(input_enc)}

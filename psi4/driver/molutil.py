@@ -280,7 +280,7 @@ def geometry(geom, name="default"):
     # Attempt to go ahead and construct the molecule
     try:
         molecule.update_geometry()
-    except:
+    except Exception:
         core.print_out("Molecule: geometry: Molecule is not complete, please use 'update_geometry'\n"
                        "                    once all variables are set.\n")
 

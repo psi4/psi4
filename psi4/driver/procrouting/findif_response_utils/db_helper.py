@@ -170,7 +170,7 @@ def stat(db):
                             break
                         else:
                             db['job_status'][job] = 'running'
-            except:
+            except Exception:
                 pass
     # check all jobs done?
     if n_finished == len(db['job_status'].keys()):

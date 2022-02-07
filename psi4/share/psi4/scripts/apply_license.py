@@ -67,7 +67,7 @@ def check_header(infile):
                 f.close()
                 print('Did not find "wings" of license block in file %s' % infile)
                 return
-    except:
+    except Exception:
         print('Could not find license block in file %s' % infile)
         f.close()
         return
