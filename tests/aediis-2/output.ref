@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.6a1.dev41 
+                               Psi4 1.6a1.dev43 
 
-                         Git: Rev {ediis_single_class} 8cc7815 dirty
+                         Git: Rev {ediis_single_class} f12f63b dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,10 +30,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 02 February 2022 12:10PM
+    Psi4 started on: Monday, 07 February 2022 03:26PM
 
-    Process ID: 7180
-    Host:       dhcp189-142.emerson.emory.edu
+    Process ID: 37041
+    Host:       dhcp189-153.emerson.emory.edu
     PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -41,7 +41,7 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-# EDIIS test case from 10.1063/1.1470195
+#! EDIIS test case from 10.1063/1.1470195
 
 molecule {
 U
@@ -54,7 +54,7 @@ F   1 1.98  2  109.4712  3 -120.0000
 set guess gwh    # With this guess, un-accelerated DIIS will fail
 set scf_type pk
 set basis lanl2dz
-set initial_scf_accelerator ediis
+set scf_initial_accelerator ediis
 set maxiter 28
 energy = energy('b3lyp')
 
@@ -63,8 +63,8 @@ compare_values(-451.2300583940044021, energy, 6, "SCF Energy")
 
 Scratch directory: /tmp/
 
-*** tstart() called on dhcp189-142.emerson.emory.edu
-*** at Wed Feb  2 12:10:54 2022
+*** tstart() called on dhcp189-153.emerson.emory.edu
+*** at Mon Feb  7 15:26:25 2022
 
    => Loading Basis Set <=
 
@@ -244,33 +244,33 @@ Scratch directory: /tmp/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RKS iter   1:  -379.42867587807143   -3.79429e+02   2.32679e-01 EDIIS
-   @RKS iter   2:  -407.87341463703058   -2.84447e+01   8.25329e-02 EDIIS/DIIS
-   @RKS iter   3:  -374.41012263147388    3.34633e+01   2.22772e-01 EDIIS
-   @RKS iter   4:  -448.83230637360987   -7.44222e+01   3.33173e-02 EDIIS/DIIS
-   @RKS iter   5:  -421.45161588365198    2.73807e+01   1.60039e-01 EDIIS
-   @RKS iter   6:  -449.79009619111531   -2.83385e+01   3.55568e-02 EDIIS/DIIS
-   @RKS iter   7:  -446.61032231942090    3.17977e+00   6.46680e-02 EDIIS/DIIS
-   @RKS iter   8:  -451.16246441884294   -4.55214e+00   7.08904e-03 EDIIS/DIIS
-   @RKS iter   9:  -451.20289705480781   -4.04326e-02   4.31343e-03 EDIIS/DIIS
-   @RKS iter  10:  -451.22355636853422   -2.06593e-02   2.03674e-03 EDIIS/DIIS
-   @RKS iter  11:  -451.22803023583566   -4.47387e-03   1.10935e-03 EDIIS/DIIS
-   @RKS iter  12:  -451.22999726496107   -1.96703e-03   1.04385e-04 EDIIS/DIIS
-   @RKS iter  13:  -451.23002248627580   -2.52213e-05   3.92994e-05 DIIS
+   @RKS iter   1:  -379.42867587807376   -3.79429e+02   2.32679e-01 EDIIS
+   @RKS iter   2:  -407.87341463702762   -2.84447e+01   8.25329e-02 DIIS/EDIIS
+   @RKS iter   3:  -374.41012263148116    3.34633e+01   2.22772e-01 EDIIS
+   @RKS iter   4:  -448.83230637361027   -7.44222e+01   3.33173e-02 DIIS/EDIIS
+   @RKS iter   5:  -421.45161588367597    2.73807e+01   1.60039e-01 EDIIS
+   @RKS iter   6:  -449.79009619113333   -2.83385e+01   3.55568e-02 DIIS/EDIIS
+   @RKS iter   7:  -446.61032231952311    3.17977e+00   6.46680e-02 DIIS/EDIIS
+   @RKS iter   8:  -451.16246441884323   -4.55214e+00   7.08904e-03 DIIS/EDIIS
+   @RKS iter   9:  -451.20289705480695   -4.04326e-02   4.31343e-03 DIIS/EDIIS
+   @RKS iter  10:  -451.22355636853416   -2.06593e-02   2.03674e-03 DIIS/EDIIS
+   @RKS iter  11:  -451.22803023583589   -4.47387e-03   1.10935e-03 DIIS/EDIIS
+   @RKS iter  12:  -451.22999726496096   -1.96703e-03   1.04385e-04 DIIS/EDIIS
+   @RKS iter  13:  -451.23002248627620   -2.52213e-05   3.92994e-05 DIIS
    @RKS iter  14:  -451.23003198883669   -9.50256e-06   1.99836e-05 DIIS
-   @RKS iter  15:  -451.23003809681313   -6.10798e-06   1.37230e-05 DIIS
-   @RKS iter  16:  -451.23004335979948   -5.26299e-06   6.13905e-06 DIIS
-   @RKS iter  17:  -451.23004425849876   -8.98699e-07   3.93967e-06 DIIS
-   @RKS iter  18:  -451.23004453081830   -2.72320e-07   3.64447e-06 DIIS
-   @RKS iter  19:  -451.23004551956353   -9.88745e-07   3.43502e-06 DIIS
+   @RKS iter  15:  -451.23003809681347   -6.10798e-06   1.37230e-05 DIIS
+   @RKS iter  16:  -451.23004335980005   -5.26299e-06   6.13905e-06 DIIS
+   @RKS iter  17:  -451.23004425849899   -8.98699e-07   3.93967e-06 DIIS
+   @RKS iter  18:  -451.23004453081825   -2.72319e-07   3.64447e-06 DIIS
+   @RKS iter  19:  -451.23004551956376   -9.88746e-07   3.43502e-06 DIIS
    @RKS iter  20:  -451.23004702771721   -1.50815e-06   3.19401e-06 DIIS
-   @RKS iter  21:  -451.23004947930963   -2.45159e-06   2.87605e-06 DIIS
-   @RKS iter  22:  -451.23005419681101   -4.71750e-06   3.30326e-06 DIIS
-   @RKS iter  23:  -451.23005637963490   -2.18282e-06   2.46810e-06 DIIS
-   @RKS iter  24:  -451.23005646462207   -8.49872e-08   2.31800e-06 DIIS
-   @RKS iter  25:  -451.23005806600514   -1.60138e-06   3.03127e-06 DIIS
-   @RKS iter  26:  -451.23005813319014   -6.71850e-08   1.00537e-06 DIIS
-   @RKS iter  27:  -451.23005839400440   -2.60814e-07   8.79410e-07 DIIS
+   @RKS iter  21:  -451.23004947931008   -2.45159e-06   2.87605e-06 DIIS
+   @RKS iter  22:  -451.23005419681141   -4.71750e-06   3.30326e-06 DIIS
+   @RKS iter  23:  -451.23005637963558   -2.18282e-06   2.46810e-06 DIIS
+   @RKS iter  24:  -451.23005646462258   -8.49870e-08   2.31800e-06 DIIS
+   @RKS iter  25:  -451.23005806600526   -1.60138e-06   3.03127e-06 DIIS
+   @RKS iter  26:  -451.23005813319020   -6.71849e-08   1.00537e-06 DIIS
+   @RKS iter  27:  -451.23005839400480   -2.60815e-07   8.79410e-07 DIIS
   Energy and wave function converged.
 
 
@@ -320,17 +320,17 @@ Scratch directory: /tmp/
              Ap   App 
     DOCC [    17,    8 ]
 
-  @RKS Final Energy:  -451.23005839400440
+  @RKS Final Energy:  -451.23005839400480
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            214.2400673536658644
-    One-Electron Energy =               -1075.5540496065787011
-    Two-Electron Energy =                 449.3384716544920252
-    DFT Exchange-Correlation Energy =     -39.2545477955835622
+    One-Electron Energy =               -1075.5540496065634670
+    Two-Electron Energy =                 449.3384716544720732
+    DFT Exchange-Correlation Energy =     -39.2545477955792563
     Empirical Dispersion Energy =           0.0000000000000000
     VV10 Nonlocal Energy =                  0.0000000000000000
-    Total Energy =                       -451.2300583940044021
+    Total Energy =                       -451.2300583940048000
 
 Computation Completed
 
@@ -352,18 +352,18 @@ Properties computed using the SCF density matrix
      X:     0.3102      Y:    -0.1216      Z:     0.0000     Total:     0.3332
 
 
-*** tstop() called on dhcp189-142.emerson.emory.edu at Wed Feb  2 12:11:21 2022
+*** tstop() called on dhcp189-153.emerson.emory.edu at Mon Feb  7 15:26:50 2022
 Module time:
-	user time   =      26.02 seconds =       0.43 minutes
-	system time =       0.46 seconds =       0.01 minutes
-	total time  =         27 seconds =       0.45 minutes
+	user time   =      24.32 seconds =       0.41 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =         25 seconds =       0.42 minutes
 Total time:
-	user time   =      26.02 seconds =       0.43 minutes
-	system time =       0.46 seconds =       0.01 minutes
-	total time  =         27 seconds =       0.45 minutes
+	user time   =      24.32 seconds =       0.41 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =         25 seconds =       0.42 minutes
     SCF Energy............................................................................PASSED
 
-    Psi4 stopped on: Wednesday, 02 February 2022 12:11PM
-    Psi4 wall time for execution: 0:00:26.92
+    Psi4 stopped on: Monday, 07 February 2022 03:26PM
+    Psi4 wall time for execution: 0:00:24.73
 
 *** Psi4 exiting successfully. Buy a developer a beer!

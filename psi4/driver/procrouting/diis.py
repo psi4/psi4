@@ -62,7 +62,7 @@ class DIIS:
         if not which_import("scipy", return_bool=True) and ("ediis" in engines or "adiis" in engines):
             raise ModuleNotFoundError("Python module scipy not found. Solve by\n" +
                                       "    (1) installing it: `conda install scipy` or `pip install scipy`, or" +
-                                      "    (2) de-activating a/ediis with option: `set scf initial_scf_accelerator none`")
+                                      "    (2) de-activating a/ediis with option: `set scf scf_initial_accelerator none`")
         self.max_vecs = max_vecs
         self.name = name
         self.storage_policy = storage_policy
@@ -354,7 +354,7 @@ class DIIS:
             coeffs = self.diis_coefficients()
             performed.add("DIIS")
         elif len(self.engines) == 1:
-            blend_stop = core.get_option("SCF", "INITIAL_SCF_BLEND_STOP")
+            blend_stop = core.get_option("SCF", "SCF_INITIAL_FINISH_DIIS_TRANSITION")
             if Dnorm <= blend_stop:
                 return performed
             elif self.engines == {"ediis"}:
@@ -366,8 +366,8 @@ class DIIS:
             else:
                 raise Exception(f"DIIS engine not recognized: {self.engines[0]}.")
         elif self.engines == {"diis", "adiis"} or self.engines == {"diis", "ediis"}:
-            blend_start = core.get_option("SCF", "INITIAL_SCF_BLEND_START")
-            blend_stop = core.get_option("SCF", "INITIAL_SCF_BLEND_STOP")
+            blend_start = core.get_option("SCF", "SCF_INITIAL_START_DIIS_TRANSITION")
+            blend_stop = core.get_option("SCF", "SCF_INITIAL_FINISH_DIIS_TRANSITION")
             if "adiis" in self.engines:
                 initial_coefficient_function = self.adiis_coefficients
                 initial_name = "ADIIS"

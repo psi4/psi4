@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.6a1.dev41 
+                               Psi4 1.6a1.dev43 
 
-                         Git: Rev {ediis_single_class} 8cc7815 dirty
+                         Git: Rev {ediis_single_class} f12f63b dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,10 +30,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Wednesday, 02 February 2022 12:10PM
+    Psi4 started on: Monday, 07 February 2022 03:26PM
 
-    Process ID: 7178
-    Host:       dhcp189-142.emerson.emory.edu
+    Process ID: 37039
+    Host:       dhcp189-153.emerson.emory.edu
     PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -41,7 +41,7 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-# ADIIS test case, from 10.1063/1.3304922 
+#! ADIIS test case, from 10.1063/1.3304922 
 
 molecule {
 2 1
@@ -60,7 +60,7 @@ H       -1.3131700977      0.0000000000     -5.1747180497
 set guess core    # With this guess, un-accelerated DIIS will fail.
 set scf_type pk
 set basis 3-21G
-set initial_scf_accelerator adiis
+set scf_initial_accelerator adiis
 set maxiter 15
 energy = energy('scf')
 
@@ -69,8 +69,8 @@ compare_values(-5663.1433914266744978, energy, 6, "SCF Energy")
 
 Scratch directory: /tmp/
 
-*** tstart() called on dhcp189-142.emerson.emory.edu
-*** at Wed Feb  2 12:10:49 2022
+*** tstart() called on dhcp189-153.emerson.emory.edu
+*** at Mon Feb  7 15:26:19 2022
 
    => Loading Basis Set <=
 
@@ -197,24 +197,24 @@ Scratch directory: /tmp/
              Ap   App 
     DOCC [    32,    9 ]
 
-   @RHF iter   1: -5544.26200103439533   -5.54426e+03   4.70688e-01 ADIIS
+   @RHF iter   1: -5544.26200103442716   -5.54426e+03   4.70688e-01 ADIIS
     Occupation by irrep:
              Ap   App 
     DOCC [    31,   10 ]
 
-   @RHF iter   2: -5405.84264418824023    1.38419e+02   1.31829e-01 ADIIS
-   @RHF iter   3: -5656.45992991363073   -2.50617e+02   3.84336e-02 DIIS/ADIIS
-   @RHF iter   4: -5641.45555526528369    1.50044e+01   5.37623e-02 DIIS/ADIIS
-   @RHF iter   5: -5662.24472376795165   -2.07892e+01   1.98472e-02 DIIS/ADIIS
-   @RHF iter   6: -5663.09571130534277   -8.50988e-01   4.13293e-03 DIIS/ADIIS
-   @RHF iter   7: -5663.13861803125201   -4.29067e-02   9.85657e-04 DIIS/ADIIS
-   @RHF iter   8: -5663.14254314300342   -3.92511e-03   3.36660e-04 DIIS/ADIIS
-   @RHF iter   9: -5663.14317898901209   -6.35846e-04   1.43721e-04 DIIS/ADIIS
-   @RHF iter  10: -5663.14335029095128   -1.71302e-04   6.19597e-05 DIIS
-   @RHF iter  11: -5663.14338715335271   -3.68624e-05   2.27677e-05 DIIS
-   @RHF iter  12: -5663.14339101241058   -3.85906e-06   9.38628e-06 DIIS
-   @RHF iter  13: -5663.14339136978015   -3.57370e-07   4.06514e-06 DIIS
-   @RHF iter  14: -5663.14339142667359   -5.68934e-08   8.63995e-07 DIIS
+   @RHF iter   2: -5405.84264418823113    1.38419e+02   1.31829e-01 ADIIS
+   @RHF iter   3: -5656.45992991362436   -2.50617e+02   3.84336e-02 ADIIS/DIIS
+   @RHF iter   4: -5641.45555526529643    1.50044e+01   5.37623e-02 ADIIS/DIIS
+   @RHF iter   5: -5662.24472376795075   -2.07892e+01   1.98472e-02 ADIIS/DIIS
+   @RHF iter   6: -5663.09571130533459   -8.50988e-01   4.13293e-03 ADIIS/DIIS
+   @RHF iter   7: -5663.13861803125565   -4.29067e-02   9.85657e-04 ADIIS/DIIS
+   @RHF iter   8: -5663.14254314299978   -3.92511e-03   3.36660e-04 ADIIS/DIIS
+   @RHF iter   9: -5663.14317898901209   -6.35846e-04   1.43721e-04 ADIIS/DIIS
+   @RHF iter  10: -5663.14335029095037   -1.71302e-04   6.19597e-05 DIIS
+   @RHF iter  11: -5663.14338715335361   -3.68624e-05   2.27677e-05 DIIS
+   @RHF iter  12: -5663.14339101239420   -3.85904e-06   9.38628e-06 DIIS
+   @RHF iter  13: -5663.14339136977378   -3.57380e-07   4.06514e-06 DIIS
+   @RHF iter  14: -5663.14339142666449   -5.68907e-08   8.63995e-07 DIIS
   Energy and wave function converged.
 
 
@@ -264,14 +264,14 @@ Scratch directory: /tmp/
              Ap   App 
     DOCC [    31,   10 ]
 
-  @RHF Final Energy: -5663.14339142667359
+  @RHF Final Energy: -5663.14339142666449
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            435.8398752721217306
-    One-Electron Energy =               -8653.0469385568394500
-    Two-Electron Energy =                2554.0636718580431079
-    Total Energy =                      -5663.1433914266744978
+    One-Electron Energy =               -8653.0469385568540019
+    Two-Electron Energy =                2554.0636718580667548
+    Total Energy =                      -5663.1433914266654028
 
 Computation Completed
 
@@ -293,18 +293,18 @@ Properties computed using the SCF density matrix
      X:     1.6040      Y:     1.8246      Z:     0.0000     Total:     2.4294
 
 
-*** tstop() called on dhcp189-142.emerson.emory.edu at Wed Feb  2 12:10:52 2022
+*** tstop() called on dhcp189-153.emerson.emory.edu at Mon Feb  7 15:26:24 2022
 Module time:
-	user time   =       1.89 seconds =       0.03 minutes
-	system time =       0.17 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.81 seconds =       0.03 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
 Total time:
-	user time   =       1.89 seconds =       0.03 minutes
-	system time =       0.17 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.81 seconds =       0.03 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
     SCF Energy............................................................................PASSED
 
-    Psi4 stopped on: Wednesday, 02 February 2022 12:10PM
-    Psi4 wall time for execution: 0:00:02.90
+    Psi4 stopped on: Monday, 07 February 2022 03:26PM
+    Psi4 wall time for execution: 0:00:05.59
 
 *** Psi4 exiting successfully. Buy a developer a beer!

@@ -9,7 +9,7 @@ def diis_engine_helper(self):
         engines.add('diis')
     restricted_open = self.same_a_b_orbs() and not self.same_a_b_dens()
     if not restricted_open:
-        aediis = core.get_option('SCF', 'INITIAL_SCF_ACCELERATOR')
+        aediis = core.get_option('SCF', 'SCF_INITIAL_ACCELERATOR')
         if aediis != "NONE":
             engines.add(aediis.lower())
     return engines
@@ -26,7 +26,7 @@ def _RHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
         entry = {"target": [self.Fa()]}
         if core.get_option('SCF', 'DIIS'):
             entry["error"] = [gradient]
-        aediis = core.get_option('SCF', 'INITIAL_SCF_ACCELERATOR')
+        aediis = core.get_option('SCF', 'SCF_INITIAL_ACCELERATOR')
         if aediis != "NONE":
             entry["densities"] = [self.Da()]
             if aediis == "EDIIS":
@@ -51,7 +51,7 @@ def _UHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
         entry = {"target": [self.Fa(), self.Fb()]}
         if core.get_option('SCF', 'DIIS'):
             entry["error"] = [gradient_a, gradient_b]
-        aediis = core.get_option('SCF', 'INITIAL_SCF_ACCELERATOR')
+        aediis = core.get_option('SCF', 'SCF_INITIAL_ACCELERATOR')
         if aediis != "NONE":
             entry["densities"] = [self.Da(), self.Db()]
             if aediis == "EDIIS":

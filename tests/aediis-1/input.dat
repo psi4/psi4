@@ -1,4 +1,4 @@
-# ADIIS test case, from 10.1063/1.3304922 
+#! ADIIS test case, from 10.1063/1.3304922 
 
 molecule {
 2 1
@@ -17,7 +17,7 @@ H       -1.3131700977      0.0000000000     -5.1747180497
 set guess core    # With this guess, un-accelerated DIIS will fail.
 set scf_type pk
 set basis 3-21G
-set initial_scf_accelerator adiis
+set scf_initial_accelerator adiis
 set maxiter 15
 energy = energy('scf')
 

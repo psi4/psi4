@@ -837,17 +837,17 @@ def _validate_diis(self):
     """
 
     restricted_open = self.same_a_b_orbs() and not self.same_a_b_dens()
-    aediis_active = core.get_option('SCF', 'INITIAL_SCF_ACCELERATOR') != "NONE" and not restricted_open
+    aediis_active = core.get_option('SCF', 'SCF_INITIAL_ACCELERATOR') != "NONE" and not restricted_open
 
     if aediis_active:
-        start = core.get_option('SCF', 'INITIAL_SCF_BLEND_START')
-        stop = core.get_option('SCF', 'INITIAL_SCF_BLEND_STOP')
+        start = core.get_option('SCF', 'SCF_INITIAL_START_DIIS_TRANSITION')
+        stop = core.get_option('SCF', 'SCF_INITIAL_FINISH_DIIS_TRANSITION')
         if start < stop:
-            raise ValidationError('INITIAL_SCF_BLEND_START cannot be after INITIAL_SCF_BLEND_STOP.')
+            raise ValidationError('SCF_INITIAL_START_DIIS_TRANSITION error magnitude cannot be less than SCF_INITIAL_FINISH_DIIS_TRANSITION.')
         elif start < 0:
-            raise ValidationError('INITIAL_SCF_BLEND_START cannot be negative.')
+            raise ValidationError('SCF_INITIAL_START_DIIS_TRANSITION cannot be negative.')
         elif stop < 0:
-            raise ValidationError('INITIAL_SCF_BLEND_STOP cannot be negative.')
+            raise ValidationError('SCF_INITIAL_FINISH_DIIS_TRANSITION cannot be negative.')
 
     enabled = bool(core.get_option('SCF', 'DIIS')) or aediis_active
     if enabled:
