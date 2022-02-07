@@ -1111,9 +1111,9 @@ def select_adc2(name, **kwargs):
     func = None
     if reference == 'RHF':
         if mtd_type == 'CONV':
-            if module == 'ADCC' and extras.addons("adcc"):
+            if module in {'ADCC', ''} and extras.addons("adcc"):
                 func = run_adcc
-            elif module in ['', 'BUILTIN']:
+            elif module in {'BUILTIN', ''}:
                 func = run_adc
 
     if reference == 'UHF':
@@ -3478,6 +3478,9 @@ def run_adc(name, **kwargs):
 
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
+
+    warnings.warn("Using built-in `adc` module instead of add-on `adcc` interface is deprecated due "
+                  "to certain wrong results, and in 1.7, it will stop working.", category=FutureWarning)
 
     error_msg = ("\n\t\t\t\t!!!!! WARNING !!!!!\n" +
             "\t\tThe built-in ADC(2) method may give incorrect results if\n"

@@ -314,6 +314,8 @@ Built-in ADC(2) code
              multiple roots are requested, due to an error in the Davidson solver,
              and is no longer maintained. It is slated for removal in Psi4 1.7.
              Use of the Psi interface to `adcc` instead is strongly recommended.
+             To use this code regardless, either do not have `adcc` installed, or
+             set `qc_module builtin`.
 
 The ADC code built into |PSIfour| is capable of ADC(2) computations
 of singlet excited states only.
