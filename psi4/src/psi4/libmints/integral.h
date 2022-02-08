@@ -39,44 +39,51 @@ PRAGMA_WARNING_POP
 #include "onebody.h"
 #include "twobody.h"
 
+
+namespace psi {
+
 /*! \def INT_NCART(am)
     Gives the number of cartesian functions for an angular momentum.
 */
-#if !defined(INT_NCART)
-#define INT_NCART(am) ((am >= 0) ? ((((am) + 2) * ((am) + 1)) >> 1) : 0)
-#endif
+inline int INT_NCART(unsigned int am) {
+    return (am >= 0) ? ((((am) + 2) * ((am) + 1)) >> 1) : 0;
+}
+
 /*! \def INT_PURE(am)
     Gives the number of spherical functions for an angular momentum.
 */
-#if !defined(INT_NPURE)
-#define INT_NPURE(am) (2 * (am) + 1)
-#endif
+inline int INT_NPURE(unsigned int am) {
+    return 2 * (am) + 1;
+}
+
 /*! \def INT_NFUNC(pu,am)
     Gives the number of functions for an angular momentum based on pu.
 */
-#if !defined(INT_NFUNC)
-#define INT_NFUNC(pu, am) ((pu) ? INT_NPURE(am) : INT_NCART(am))
-#endif
+inline int INT_NFUNC(unsigned int pu, unsigned int am) {
+    return (pu) ? INT_NPURE(am) : INT_NCART(am);
+}
+
 /*! \def INT_CARTINDEX(am,i,j)
     Computes offset index for cartesian function.
 */
-#if !defined(INT_CARTINDEX)
-#define INT_CARTINDEX(am, i, j) (((i) == (am)) ? 0 : (((((am) - (i) + 1) * ((am) - (i))) >> 1) + (am) - (i) - (j)))
-#endif
+inline int INT_CARTINDEX(unsigned int am, int i, int j) {
+    return ((i) == (am)) ? 0 : (((((am) - (i) + 1) * ((am) - (i))) >> 1) + (am) - (i) - (j));
+}
+
 /*! \def INT_ICART(a, b, c)
     Given a, b, and c compute a cartesian offset.
 */
-#if !defined(INT_ICART)
-#define INT_ICART(a, b, c) (((((((a) + (b) + (c) + 1) << 1) - (a)) * ((a) + 1)) >> 1) - (b)-1)
-#endif
+inline int INT_ICART(int a, int b, int c) {
+    return ((((((a) + (b) + (c) + 1) << 1) - (a)) * ((a) + 1)) >> 1) - (b)-1;
+}
+
 /*! \def INT_IPURE(l, m)
     Given l and m compute a pure function offset.
 */
-#if !defined(INT_IPURE)
-#define INT_IPURE(l, m) ((l) + (m))
-#endif
+inline int INT_IPURE(int l, int m) {
+    return (l) + (m);
+}
 
-namespace psi {
 
 class BasisSet;
 class GaussianShell;
