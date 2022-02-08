@@ -1175,6 +1175,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         // For shells P and R, If |Dpr| * sqrt(Pmax|Pmax) * sqrt(Rmax|Rmax) [screening value] >= linK_ints_cutoff_,
         // Then shell R is added to the ket list of shell P (and sorted by the screening value)
         for (size_t P = Pstart; P < Pstart + nPshell; P++) {
+            size_t dP = P - Pstart;
             std::vector<std::pair<int, double>> PR_shell_values;
             for (size_t R = 0; R < nshell; R++) {
                 double screen_val = shell_ceilings[P] * shell_ceilings[R] * ints[0]->shell_pair_max_density(P, R);
@@ -1185,11 +1186,12 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
             std::sort(PR_shell_values.begin(), PR_shell_values.end(), screen_compare);
 
             for (const auto& value : PR_shell_values) {
-                significant_kets_P[P - Pstart].push_back(value.first);
+                significant_kets_P[dP].push_back(value.first);
             }
         }
 
         for (size_t Q = Qstart; Q < Qstart + nQshell; Q++) {
+            size_t dQ = Q - Qstart;
             std::vector<std::pair<int, double>> QR_shell_values;
             for (size_t R = 0; R < nshell; R++) {
                 double screen_val = shell_ceilings[Q] * shell_ceilings[R] * ints[0]->shell_pair_max_density(Q, R);
@@ -1200,7 +1202,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
             std::sort(QR_shell_values.begin(), QR_shell_values.end(), screen_compare);
 
             for (const auto& value : QR_shell_values) {
-                significant_kets_Q[Q - Qstart].push_back(value.first);
+                significant_kets_Q[dQ].push_back(value.first);
             }
         }
 
@@ -1357,10 +1359,11 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
             // K_PR and K_PS
             for (int P = Pstart; P < Pstart + nPshell; P++) {
+                int dP = P - Pstart;
                 int shell_P_start = primary_->shell(P).function_index();
                 int shell_P_nfunc = primary_->shell(P).nfunction();
                 int shell_P_offset = basis_endpoints_for_shell[P] - basis_endpoints_for_shell[Pstart];
-                for (const int S : P_stripeout_list[P - Pstart]) {
+                for (const int S : P_stripeout_list[dP]) {
                     int shell_S_start = primary_->shell(S).function_index();
                     int shell_S_nfunc = primary_->shell(S).nfunction();
 
@@ -1378,10 +1381,11 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
             // K_QR and K_QS
             for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
+                int dQ = Q - Qstart;
                 int shell_Q_start = primary_->shell(Q).function_index();
                 int shell_Q_nfunc = primary_->shell(Q).nfunction();
                 int shell_Q_offset = basis_endpoints_for_shell[Q] - basis_endpoints_for_shell[Qstart];
-                for (const int S : Q_stripeout_list[Q - Qstart]) {
+                for (const int S : Q_stripeout_list[dQ]) {
                     int shell_S_start = primary_->shell(S).function_index();
                     int shell_S_nfunc = primary_->shell(S).nfunction();
 
