@@ -45,28 +45,28 @@ namespace psi {
 /*! \def INT_NCART(am)
     Gives the number of cartesian functions for an angular momentum.
 */
-inline int INT_NCART(unsigned int am) {
+inline int INT_NCART(int am) {
     return (am >= 0) ? ((((am) + 2) * ((am) + 1)) >> 1) : 0;
 }
 
 /*! \def INT_PURE(am)
     Gives the number of spherical functions for an angular momentum.
 */
-inline int INT_NPURE(unsigned int am) {
+inline int INT_NPURE(int am) {
     return 2 * (am) + 1;
 }
 
 /*! \def INT_NFUNC(pu,am)
     Gives the number of functions for an angular momentum based on pu.
 */
-inline int INT_NFUNC(unsigned int pu, unsigned int am) {
+inline int INT_NFUNC(int pu, int am) {
     return (pu) ? INT_NPURE(am) : INT_NCART(am);
 }
 
 /*! \def INT_CARTINDEX(am,i,j)
     Computes offset index for cartesian function.
 */
-inline int INT_CARTINDEX(unsigned int am, int i, int j) {
+inline int INT_CARTINDEX(int am, int i, int j) {
     return ((i) == (am)) ? 0 : (((((am) - (i) + 1) * ((am) - (i))) >> 1) + (am) - (i) - (j));
 }
 
