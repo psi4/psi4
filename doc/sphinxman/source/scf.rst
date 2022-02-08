@@ -594,7 +594,7 @@ ADIIS [On by Default]
     an energy estimate rather than zeroing the residual, so this performs best in the early
     iterations. By default, Psi will start using ADIIS before blending the ADIIS step with
     the DIIS step, eventually using the pure DIIS step. The closely-related EDIIS procedure
-    may be used instead by setting |scf__initial_scf_acelerator|. This is formally identical
+    may be used instead by setting |scf__scf_initial_accelerator|. This is formally identical
     to ADIIS for HF, but the methods will differ for more general DFT.
 MOM [Off by Default]
     MOM was developed to combat a particular class of convergence failure:
