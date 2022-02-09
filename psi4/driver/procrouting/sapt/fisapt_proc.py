@@ -148,9 +148,9 @@ def fisapt_fdrop(self, external_potentials=None):
                 charges = potential.extern.getCharges()
                 xyz = str(len(charges)) + "\n\n"
                 for charge in charges:
-                    xyz += "Ch %f %f %f\n" %(charge[1], charge[2], charge[3])
+                    xyz += "Ch %f %f %f\n" % (charge[1], charge[2], charge[3])
 
-                with open(filepath + os.sep + "Extern_%s.xyz" %frag, "w") as fh:
+                with open(filepath + os.sep + "Extern_%s.xyz" % frag, "w") as fh:
                     fh.write(xyz)
 
     vectors = self.vectors()

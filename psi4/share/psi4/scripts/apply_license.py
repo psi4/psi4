@@ -9,7 +9,7 @@ import os
 # File type we know how to handle
 ftypes = ['cc', 'h', 'py']
 
-c_header ="""/*
+c_header = """/*
  * @BEGIN LICENSE
  *
  * Psi4: an open-source quantum chemistry software package

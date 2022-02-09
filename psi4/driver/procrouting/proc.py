@@ -1257,7 +1257,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
                 total_external_potential.appendCharges(kwargs['external_potentials'][frag].extern.getCharges())
 
             else:
-                core.print_out("\n  Warning! Unknown key for the external_potentials argument: %s" %frag)
+                core.print_out("\n  Warning! Unknown key for the external_potentials argument: %s" % frag)
 
         wfn.set_external_potential(total_external_potential)
 

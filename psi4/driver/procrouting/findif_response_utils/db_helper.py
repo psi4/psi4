@@ -115,7 +115,7 @@ def initialize_database(database, name, prop, properties_array, additional_kwarg
     """
     database['inputs_generated'] = False
     database['jobs_complete'] = False
-    prop_cmd ="property('{0}',".format(name)
+    prop_cmd = "property('{0}',".format(name)
     prop_cmd += "properties=[ '{}' ".format(properties_array[0])
     if len(properties_array) > 1:
         for element in properties_array[1:]:
