@@ -47,7 +47,6 @@
 #include <algorithm>
 #include <limits>
 #include <sstream>
-#include <map>
 #include <unordered_set>
 #include "psi4/libpsi4util/PsiOutStream.h"
 #ifdef _OPENMP
@@ -724,6 +723,10 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                             if (R == S) prefactor *= 0.5;
                             if (P == R && Q == S) prefactor *= 0.5;
 
+                            if (build_J && build_K) {
+
+                            }
+
                             for (int p = 0; p < Psize; p++) {
                                 for (int q = 0; q < Qsize; q++) {
                                     for (int r = 0; r < Rsize; r++) {
@@ -736,7 +739,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                                                     prefactor * (Dp[p + Poff][q + Qoff] + Dp[q + Qoff][p + Poff]) *
                                                     (*buffer2);
                                             }
-
+                                            
                                             if (build_K) {
                                                 K1p[(p + Poff2) * dRsize + r + Roff2] +=
                                                     prefactor * (Dp[q + Qoff][s + Soff]) * (*buffer2);
@@ -757,6 +760,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
                                                         prefactor * (Dp[r + Roff][p + Poff]) * (*buffer2);
                                                 }
                                             }
+                                            
                                             buffer2++;
                                         }
                                     }
