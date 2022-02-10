@@ -826,7 +826,7 @@ def _validate_diis(self):
 
     Raises
     ------
-    ValidationError
+    psi4.driver.p4util.exceptions.ValidationError
         If any of DIIS options don't play well together.
 
     Returns
