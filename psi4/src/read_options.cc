@@ -1811,7 +1811,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("ZETA", false);
         /*- Deprecated and will be removed in 1.7. Use OPDM_ONLY. -*/
         options.add_bool("ONEPDM", false);
-        /*- For internal use only! Compute the one-particle density matrix, but not the two-particle density matrix. -*/
+        /*- For internal use only! Compute the one-particle density matrix, but not the two-particle density matrix. !expert -*/
         options.add_bool("OPDM_ONLY", false);
         /*- Deprecated and will be removed in 1.7. Use OPDM_GRID_DUMP. -*/
         options.add_bool("ONEPDM_GRID_DUMP", false);
