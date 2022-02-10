@@ -67,7 +67,6 @@ set {
 
 ref = 0.283463
 string = "TD-CAM-B3LYP ROOT 0 -> ROOT 1 EXCITATION ENERGY - A SYMMETRY"
-string = "TD-CAM-B3LYP ROOT 0 -> ROOT 1 EXCITATION ENERGY - A SYMMETRY"
 
 wfn = psi4.energy("cam-b3lyp", return_wfn=True, molecule=h2o)[1]
 res = tdscf_excitations(wfn, states=1, tda=True)
