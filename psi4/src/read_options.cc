@@ -1394,7 +1394,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("DF_BASIS_GUESS", "FALSE", "");
         /*- Use RMS error instead of the more robust absolute error? -*/
         options.add_bool("DIIS_RMS_ERROR", true);
-        /*- The minimum iteration to start storing DIIS vectors -*/
+        /*- The minimum iteration to start storing DIIS vectors and performing ADIIS/EDIIS. -*/
         options.add_int("DIIS_START", 1);
         /*- Minimum number of error vectors stored for DIIS extrapolation. Will be removed in v1.7. -*/
         options.add_int("DIIS_MIN_VECS", 2);
@@ -1439,6 +1439,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- When using |scf__stability_analysis| ``FOLLOW``, maximum number of orbital optimization attempts
             to make the wavefunction stable. !expert -*/
         options.add_int("MAX_ATTEMPTS", 1);
+        /*- Use a method to accelerate initial SCF convergence? Use ``NONE`` for DIIS alone (if enabled) and ``EDIIS`` or ``ADIIS``
+            to have both the chosen accelerator and DIIS (if enabled). For restricted-open references, ``EDIIS`` and ``ADIIS`` have no effect. -*/
+        options.add_str("SCF_INITIAL_ACCELERATOR", "ADIIS", "NONE EDIIS ADIIS");
+        /*- SCF error at which to start the linear interpolation between DIIS steps and steps of the initial SCF accelerator.
+            Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249 -*/
+        options.add_double("SCF_INITIAL_START_DIIS_TRANSITION", 1.0E-1);
+        /*- SCF error at which to complete the linear interpolation between DIIS steps and steps of the initial SCF accelerator
+            Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249 -*/
+        options.add_double("SCF_INITIAL_FINISH_DIIS_TRANSITION", 1.0E-4);
         /*- Do Perform Incremental Fock Build? -*/
         options.add_bool("INCFOCK", false);
         /*- Frequency with which to compute the full Fock matrix if using |scf__incfock| . 

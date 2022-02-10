@@ -320,7 +320,7 @@ class HF : public Wavefunction {
     void find_occupation();
 
     /** Performs DIIS extrapolation */
-    virtual bool diis() { return false; }
+    virtual bool diis(double dnorm) { return false; }
 
     /** Compute the orbital gradient */
     virtual double compute_orbital_gradient(bool save_diis, int max_diis_vectors) { return 0.0; }

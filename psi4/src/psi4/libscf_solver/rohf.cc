@@ -290,8 +290,6 @@ void ROHF::save_density_and_energy() {
     Dt_old_->copy(Dt_);
 }
 
-bool ROHF::diis() { return diis_manager_.attr("extrapolate")(soFeff_.get()).cast<bool>(); }
-
 void ROHF::form_initial_F() {
     // Form the initial Fock matrix, closed and open variants
     Fa_->copy(H_);

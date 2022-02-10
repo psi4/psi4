@@ -135,7 +135,8 @@ jobs:
                         conda-forge::mpmath ^
                         conda-forge::msgpack-python ^
                         conda-forge::qcelemental ^
-                        conda-forge::qcengine
+                        conda-forge::qcengine ^
+                        scipy
           pip install git+https://github.com/i-pi/i-pi.git@master-py3
           conda install --only-deps anaconda-client
           pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent

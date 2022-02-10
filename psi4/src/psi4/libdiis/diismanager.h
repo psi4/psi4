@@ -80,8 +80,7 @@ class PSI_API DIISManager {
     };
     template <typename... types>
     bool extrapolate(types... arrays) {
-        auto success = pydiis.attr("extrapolate")(arrays...);
-        return success.template cast<bool>();
+        return py::len(pydiis.attr("extrapolate")(arrays...));
     };
     template <typename ... types>
     bool add_entry(types... arrays) {

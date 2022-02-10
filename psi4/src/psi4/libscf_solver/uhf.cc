@@ -1089,8 +1089,6 @@ int UHF::soscf_update(double soscf_conv, int soscf_min_iter, int soscf_max_iter,
     return cphf_nfock_builds_;
 }
 
-bool UHF::diis() { return diis_manager_.attr("extrapolate")(Fa_.get(), Fb_.get()).cast<bool>(); }
-
 bool UHF::stability_analysis() {
     if (functional_->needs_xc()) {
         throw PSIEXCEPTION("Stability analysis not yet supported for XC functionals.");

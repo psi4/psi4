@@ -60,7 +60,6 @@ class RHF : public HF {
     virtual bool same_a_b_orbs() const { return true; }
     virtual bool same_a_b_dens() const { return true; }
 
-    bool diis() override;
     void save_density_and_energy() override;
 
     void form_C(double shift = 0.0) override;
