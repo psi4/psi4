@@ -67,7 +67,7 @@ void get_params(Options& options) {
     if (options["ONEPDM_GRID_DUMP"].has_changed()) {
         outfile->Printf("\tWarning! ONEPDM_GRID_DUMP is deprecated and will be removed in 1.7. Use OPDM_GRID_DUMP instead.");
         if (not options["OPDM_GRID_DUMP"].has_changed()) {
-            params.onepdm = options.get_bool("ONEPDM_GRID_DUMP");
+            params.onepdm_grid_dump = options.get_bool("ONEPDM_GRID_DUMP");
         }
     }
 
