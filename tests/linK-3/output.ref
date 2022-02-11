@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.5a1.dev275 
+                               Psi4 1.5a1.dev277 
 
-                         Git: Rev {linK-new} 313766d dirty
+                         Git: Rev {linK-new} f7541b2 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,13 +30,13 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Tuesday, 08 February 2022 02:45PM
+    Psi4 started on: Thursday, 10 February 2022 09:45PM
 
-    Process ID: 1541871
-    Host:       jacket
-    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-livie/stage/share/psi4
+    Process ID: 2767
+    Host:       ds10
+    PSIDATADIR: /theoryfs2/ds/jiang/p4dev/psi4/objdir-burnetty/stage/share/psi4
     Memory:     500.0 MiB
-    Threads:    18
+    Threads:    6
     
   ==> Input File <==
 
@@ -89,16 +89,16 @@ psi4.compare_values(rohf_energy, rohf_ref, 6, "ROHF Energy (using LinK algo)")
 
 Scratch directory: /scratch/jiang/
 
-*** tstart() called on jacket
-*** at Tue Feb  8 14:45:18 2022
+*** tstart() called on ds10
+*** at Thu Feb 10 21:45:35 2022
 
    => Loading Basis Set <=
 
     Name: 6-31G*
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-6  entry C          line   111 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-livie/stage/share/psi4/basis/6-31gs.gbs 
-    atoms 7-12 entry H          line    44 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-livie/stage/share/psi4/basis/6-31gs.gbs 
+    atoms 1-6  entry C          line   111 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-burnetty/stage/share/psi4/basis/6-31gs.gbs 
+    atoms 7-12 entry H          line    44 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-burnetty/stage/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -106,7 +106,7 @@ Scratch directory: /scratch/jiang/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                               UHF Reference
-                       18 Threads,    500 MiB Core
+                        6 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -171,7 +171,7 @@ Scratch directory: /scratch/jiang/
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Integrals threads:          18
+    Integrals threads:           6
     Screening Type:        DENSITY
     Screening Cutoff:        1E-12
     Incremental Fock:          Yes
@@ -197,23 +197,23 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @UHF iter SAD:  -229.97627956888965   -2.29976e+02   0.00000e+00 
-   @UHF iter   1:  -230.34044789161118   -3.64168e-01   2.84844e-03 DIIS/LINK
-   @UHF iter   2:  -230.40548604986913   -6.50382e-02   9.10344e-04 DIIS/INCFOCK/LINK
-   @UHF iter   3:  -230.41337709671024   -7.89105e-03   4.49307e-04 DIIS/INCFOCK/LINK
-   @UHF iter   4:  -230.41564970389038   -2.27261e-03   1.91616e-04 DIIS/INCFOCK/LINK
-   @UHF iter   5:  -230.41680663949728   -1.15694e-03   1.04553e-04 DIIS/LINK
-   @UHF iter   6:  -230.41718705326451   -3.80414e-04   3.43939e-05 DIIS/INCFOCK/LINK
-   @UHF iter   7:  -230.41721486606400   -2.78128e-05   8.95276e-06 DIIS/INCFOCK/LINK
+   @UHF iter SAD:  -229.97627956888920   -2.29976e+02   0.00000e+00 
+   @UHF iter   1:  -230.34044789161101   -3.64168e-01   2.84844e-03 DIIS/LINK
+   @UHF iter   2:  -230.40548604986895   -6.50382e-02   9.10344e-04 DIIS/INCFOCK/LINK
+   @UHF iter   3:  -230.41337709671009   -7.89105e-03   4.49307e-04 DIIS/INCFOCK/LINK
+   @UHF iter   4:  -230.41564970389055   -2.27261e-03   1.91616e-04 DIIS/INCFOCK/LINK
+   @UHF iter   5:  -230.41680663949703   -1.15694e-03   1.04553e-04 DIIS/LINK
+   @UHF iter   6:  -230.41718705326471   -3.80414e-04   3.43939e-05 DIIS/INCFOCK/LINK
+   @UHF iter   7:  -230.41721486606386   -2.78128e-05   8.95276e-06 DIIS/INCFOCK/LINK
    @UHF iter   8:  -230.41721624493954   -1.37888e-06   3.00191e-06 DIIS/INCFOCK/LINK
-   @UHF iter   9:  -230.41721641706442   -1.72125e-07   7.61334e-07 DIIS/LINK
-   @UHF iter  10:  -230.41721642828952   -1.12251e-08   3.40177e-07 DIIS/LINK
-   @UHF iter  11:  -230.41721643173105   -3.44153e-09   2.27420e-07 DIIS/LINK
-   @UHF iter  12:  -230.41721643344971   -1.71866e-09   1.91673e-07 DIIS/LINK
-   @UHF iter  13:  -230.41721643571964   -2.26993e-09   1.56608e-07 DIIS/LINK
-   @UHF iter  14:  -230.41721643958715   -3.86751e-09   6.68934e-08 DIIS/LINK
-   @UHF iter  15:  -230.41721644022141   -6.34259e-10   1.79696e-08 DIIS/LINK
-   @UHF iter  16:  -230.41721644023551   -1.40972e-11   6.37313e-09 DIIS/LINK
+   @UHF iter   9:  -230.41721641706454   -1.72125e-07   7.61334e-07 DIIS/LINK
+   @UHF iter  10:  -230.41721642828958   -1.12250e-08   3.40177e-07 DIIS/LINK
+   @UHF iter  11:  -230.41721643173119   -3.44161e-09   2.27420e-07 DIIS/LINK
+   @UHF iter  12:  -230.41721643344968   -1.71849e-09   1.91673e-07 DIIS/LINK
+   @UHF iter  13:  -230.41721643571913   -2.26945e-09   1.56608e-07 DIIS/LINK
+   @UHF iter  14:  -230.41721643958738   -3.86825e-09   6.68934e-08 DIIS/LINK
+   @UHF iter  15:  -230.41721644022155   -6.34174e-10   1.79696e-08 DIIS/LINK
+   @UHF iter  16:  -230.41721644023531   -1.37561e-11   6.37313e-09 DIIS/LINK
   Energy and wave function converged.
 
 
@@ -314,14 +314,14 @@ Scratch directory: /scratch/jiang/
     DOCC [    20 ]
     SOCC [     1 ]
 
-  @UHF Final Energy:  -230.41721644023551
+  @UHF Final Energy:  -230.41721644023531
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -703.9938395439478427
-    Two-Electron Energy =                 269.8656917434334446
-    Total Energy =                       -230.4172164402355065
+    One-Electron Energy =                -703.9938395439477290
+    Two-Electron Energy =                 269.8656917434335583
+    Total Energy =                       -230.4172164402352792
 
   UHF NO Occupations:
   HONO-2 :   19  A 1.9835728
@@ -353,29 +353,29 @@ Properties computed using the SCF density matrix
      X:    -8.9224      Y:    -1.3792      Z:    -0.0000     Total:     9.0283
 
 
-*** tstop() called on jacket at Tue Feb  8 14:45:23 2022
+*** tstop() called on ds10 at Thu Feb 10 21:45:47 2022
 Module time:
-	user time   =      78.73 seconds =       1.31 minutes
-	system time =       0.47 seconds =       0.01 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =      66.47 seconds =       1.11 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =         12 seconds =       0.20 minutes
 Total time:
-	user time   =      78.73 seconds =       1.31 minutes
-	system time =       0.47 seconds =       0.01 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =      66.47 seconds =       1.11 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =         12 seconds =       0.20 minutes
     UHF Energy (using LinK algo)..........................................................PASSED
 
 Scratch directory: /scratch/jiang/
 
-*** tstart() called on jacket
-*** at Tue Feb  8 14:45:23 2022
+*** tstart() called on ds10
+*** at Thu Feb 10 21:45:47 2022
 
    => Loading Basis Set <=
 
     Name: 6-31G*
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1-6  entry C          line   111 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-livie/stage/share/psi4/basis/6-31gs.gbs 
-    atoms 7-12 entry H          line    44 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-livie/stage/share/psi4/basis/6-31gs.gbs 
+    atoms 1-6  entry C          line   111 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-burnetty/stage/share/psi4/basis/6-31gs.gbs 
+    atoms 7-12 entry H          line    44 file /theoryfs2/ds/jiang/p4dev/psi4/objdir-burnetty/stage/share/psi4/basis/6-31gs.gbs 
 
 
          ---------------------------------------------------------
@@ -383,7 +383,7 @@ Scratch directory: /scratch/jiang/
                by Justin Turney, Rob Parrish, Andy Simmonett
                           and Daniel G. A. Smith
                              ROHF Reference
-                       18 Threads,    500 MiB Core
+                        6 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -448,7 +448,7 @@ Scratch directory: /scratch/jiang/
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Integrals threads:          18
+    Integrals threads:           6
     Screening Type:        DENSITY
     Screening Cutoff:        1E-12
     Incremental Fock:          Yes
@@ -474,17 +474,17 @@ Scratch directory: /scratch/jiang/
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @ROHF iter SAD:  -229.97627956888959   -2.29976e+02   0.00000e+00 
-   @ROHF iter   1:  -230.34044789161112   -3.64168e-01   1.97112e-03 DIIS/LINK
-   @ROHF iter   2:  -230.39747337637419   -5.70255e-02   5.92170e-04 DIIS/INCFOCK/LINK
-   @ROHF iter   3:  -230.40205323520718   -4.57986e-03   2.54100e-04 DIIS/INCFOCK/LINK
-   @ROHF iter   4:  -230.40277635897758   -7.23124e-04   2.60331e-05 DIIS/INCFOCK/LINK
-   @ROHF iter   5:  -230.40279010126767   -1.37423e-05   1.09637e-05 DIIS/LINK
-   @ROHF iter   6:  -230.40279199978488   -1.89852e-06   2.55497e-06 DIIS/INCFOCK/LINK
-   @ROHF iter   7:  -230.40279221878626   -2.19001e-07   5.52954e-07 DIIS/INCFOCK/LINK
-   @ROHF iter   8:  -230.40279222731908   -8.53282e-09   6.61631e-08 DIIS/LINK
-   @ROHF iter   9:  -230.40279222743402   -1.14937e-10   2.77723e-08 DIIS/LINK
-   @ROHF iter  10:  -230.40279222745244   -1.84173e-11   1.23437e-08 DIIS/LINK
+   @ROHF iter SAD:  -229.97627956888948   -2.29976e+02   0.00000e+00 
+   @ROHF iter   1:  -230.34044789161129   -3.64168e-01   1.97112e-03 DIIS/LINK
+   @ROHF iter   2:  -230.39747337637408   -5.70255e-02   5.92170e-04 DIIS/INCFOCK/LINK
+   @ROHF iter   3:  -230.40205323520740   -4.57986e-03   2.54100e-04 DIIS/INCFOCK/LINK
+   @ROHF iter   4:  -230.40277635897752   -7.23124e-04   2.60331e-05 DIIS/INCFOCK/LINK
+   @ROHF iter   5:  -230.40279010126790   -1.37423e-05   1.09637e-05 DIIS/LINK
+   @ROHF iter   6:  -230.40279199978443   -1.89852e-06   2.55497e-06 DIIS/INCFOCK/LINK
+   @ROHF iter   7:  -230.40279221878626   -2.19002e-07   5.52954e-07 DIIS/INCFOCK/LINK
+   @ROHF iter   8:  -230.40279222731920   -8.53294e-09   6.61631e-08 DIIS/LINK
+   @ROHF iter   9:  -230.40279222743425   -1.15051e-10   2.77723e-08 DIIS/LINK
+   @ROHF iter  10:  -230.40279222745244   -1.81899e-11   1.23437e-08 DIIS/LINK
   Energy and wave function converged.
 
 
@@ -547,8 +547,8 @@ Scratch directory: /scratch/jiang/
    => Energetics <=
 
     Nuclear Repulsion Energy =            203.7109313602788916
-    One-Electron Energy =                -703.9661920351466051
-    Two-Electron Energy =                 269.8524684474152764
+    One-Electron Energy =                -703.9661920351464914
+    Two-Electron Energy =                 269.8524684474151627
     Total Energy =                       -230.4027922274524371
 
 Computation Completed
@@ -571,18 +571,18 @@ Properties computed using the SCF density matrix
      X:    -8.9228      Y:    -1.3783      Z:     0.0000     Total:     9.0286
 
 
-*** tstop() called on jacket at Tue Feb  8 14:45:26 2022
+*** tstop() called on ds10 at Thu Feb 10 21:45:54 2022
 Module time:
-	user time   =      51.24 seconds =       0.85 minutes
-	system time =       0.30 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =      41.60 seconds =       0.69 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 Total time:
-	user time   =     130.15 seconds =       2.17 minutes
-	system time =       0.78 seconds =       0.01 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =     108.14 seconds =       1.80 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =         19 seconds =       0.32 minutes
     ROHF Energy (using LinK algo).........................................................PASSED
 
-    Psi4 stopped on: Tuesday, 08 February 2022 02:45PM
-    Psi4 wall time for execution: 0:00:07.76
+    Psi4 stopped on: Thursday, 10 February 2022 09:45PM
+    Psi4 wall time for execution: 0:00:18.53
 
 *** Psi4 exiting successfully. Buy a developer a beer!

@@ -744,7 +744,8 @@ Linear-Scaling Exchange Build
 
 Methods that build exchange matrices in linear time with the size of the system (linear-time K builds) are often useful for large calculations.
 The Linear Exchange (LinK) Method, described in [Ochsenfeld:1998:1663]_, is available to use in the Direct SCF algorithm.
-LinK is a competitive alternative to density-fitted K builds with non-diffuse orbital basis sets that lead to considerable sparsity in large systems, and/or when there is not enough memory to perform the density-fitting procedure in-core.
+LinK exploits shell pair sparsity in the density matrix, which when combined with the overlap sparsity between shell pairs, leads to linear-scaling K builds.
+LinK is most competitive when used with non-diffuse orbital basis sets, since orbital and density overlaps decay slower with diffuse functions.
 LinK is especially powerful when combined with density-matrix based ERI screening and incremental Fock builds, which decrease the number of significant two-electron integrals to calculate.
 
 To turn on and control the LinK algorithm, here are the list of options provided.
