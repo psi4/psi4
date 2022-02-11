@@ -46,8 +46,8 @@ struct Params {
     int cachelev;
     int aobasis;
     int ref;
-    int onepdm;            /* produce ONLY the onepdm for properties */
-    int onepdm_grid_dump;  // dump the onepdm on a grid to a dx file
+    bool onepdm;            /* produce ONLY the onepdm for properties */
+    bool onepdm_grid_dump;  // dump the onepdm on a grid to a dx file
     int relax_opdm;
     int use_zeta;
     int calc_xi;

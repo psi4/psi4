@@ -3113,15 +3113,19 @@ def run_cc_property(name, **kwargs):
         if name == 'eom-ccsd':
             core.set_global_option('WFN', 'EOM_CCSD')
             core.set_global_option('DERTYPE', 'NONE')
-            core.set_global_option('ONEPDM', 'TRUE')
             core.cceom(ccwfn)
         elif name == 'eom-cc2':
             core.set_global_option('WFN', 'EOM_CC2')
             core.set_global_option('DERTYPE', 'NONE')
-            core.set_global_option('ONEPDM', 'TRUE')
             core.cceom(ccwfn)
         core.set_global_option('DERTYPE', 'NONE')
-        core.set_global_option('ONEPDM', 'TRUE')
+        if core.get_option('CCDENSITY', 'OPDM_RELAX') or n_two > 0:
+            # WARNING!!! A one-particle property computed _with_ a two-particle property will differ
+            # from a one-particle property computed by itself. There are no two-particle properties at
+            # present, so we can kick the issue further down the road.
+            core.set_global_option('OPDM_ONLY', 'FALSE')
+        else:
+            core.set_global_option('OPDM_ONLY', 'TRUE')
         core.cclambda(ccwfn)
         core.ccdensity(ccwfn)
 
@@ -3142,7 +3146,10 @@ def run_cc_property(name, **kwargs):
         else:
             raise ValidationError("""Unknown excited-state CC wave function.""")
         core.set_global_option('DERTYPE', 'NONE')
-        core.set_global_option('ONEPDM', 'TRUE')
+        if core.get_option('CCDENSITY', 'OPDM_RELAX'):
+            core.set_global_option('OPDM_ONLY', 'FALSE')
+        else:
+            core.set_global_option('OPDM_ONLY', 'TRUE')
         # Tight convergence unnecessary for transition properties
         core.set_local_option('CCLAMBDA', 'R_CONVERGENCE', 1e-4)
         core.set_local_option('CCEOM', 'R_CONVERGENCE', 1e-4)
