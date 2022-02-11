@@ -62,6 +62,10 @@ void DIISManager::delete_diis_file() {
     pydiis.attr("delete_diis_file")();
 }
 
+void DIISManager::reset_subspace() {
+    pydiis.attr("reset_subspace")();
+}
+
 DIISManager::~DIISManager() {
 }
 
