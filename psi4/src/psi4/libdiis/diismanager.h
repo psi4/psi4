@@ -89,6 +89,8 @@ class PSI_API DIISManager {
     };
 
     void delete_diis_file();
+
+    void reset_subspace();
     /// The number of vectors currently in the subspace
     int subspace_size();
 
