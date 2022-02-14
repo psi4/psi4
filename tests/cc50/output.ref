@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.6a1.dev51 
+                               Psi4 1.6a1.dev56 
 
-                         Git: Rev {ccdensity_fix} 4732348 dirty
+                         Git: Rev {ccdensity_fix} 027e6dd dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,10 +30,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Saturday, 12 February 2022 03:23PM
+    Psi4 started on: Monday, 14 February 2022 02:01PM
 
-    Process ID: 65665
-    Host:       Jonathons-MacBook-Pro.local
+    Process ID: 12265
+    Host:       dhcp189-242.emerson.emory.edu
     PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -143,21 +143,29 @@ D 2 1.00
 ****
 }
 
+scf_ref = -38.273017419213 # TEST
+cc3_ref = -38.387945828926 # TEST
+eom_ref = -38.223605162856 # TEST
+
 energy('eom-cc3')
+compare_values(scf_ref, variable("SCF TOTAL ENERGY"), 6, "SCF energy")              #TEST
+compare_values(cc3_ref, variable("CC3 TOTAL ENERGY"), 6, "CC3 energy")              #TEST
+compare_values(eom_ref, variable("CC ROOT 1 TOTAL ENERGY"), 6, "EOM-CC3 energy")    #TEST
+
 --------------------------------------------------------------------------
 
 Scratch directory: /tmp/
 
-*** tstart() called on Jonathons-MacBook-Pro.local
-*** at Sat Feb 12 15:23:06 2022
+*** tstart() called on dhcp189-242.emerson.emory.edu
+*** at Mon Feb 14 14:01:58 2022
 
    => Loading Basis Set <=
 
-    Name: ANONYMOUSAF20C94B
+    Name: ANONYMOUS80518D25
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1 entry C          line    22 inputblock anonymousaf20c94b 
-    atoms 2 entry H          line     5 inputblock anonymousaf20c94b 
+    atoms 1 entry C          line    22 inputblock anonymous80518d25 
+    atoms 2 entry H          line     5 inputblock anonymous80518d25 
 
 
          ---------------------------------------------------------
@@ -205,8 +213,8 @@ Scratch directory: /tmp/
 
   ==> Primary Basis <==
 
-  Basis Set: ANONYMOUSAF20C94B
-    Blend: ANONYMOUSAF20C94B
+  Basis Set: ANONYMOUS80518D25
+    Blend: ANONYMOUS80518D25
     Number of shells: 15
     Number of basis functions: 33
     Number of Cartesian functions: 35
@@ -338,13 +346,13 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     1.5663     Total:     1.5663
 
 
-*** tstop() called on Jonathons-MacBook-Pro.local at Sat Feb 12 15:23:06 2022
+*** tstop() called on dhcp189-242.emerson.emory.edu at Mon Feb 14 14:01:58 2022
 Module time:
-	user time   =       0.47 seconds =       0.01 minutes
+	user time   =       0.27 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.47 seconds =       0.01 minutes
+	user time   =       0.27 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
  MINTS: Wrapper to libmints.
@@ -371,8 +379,8 @@ Total time:
         Stored in file 33.
 
 
-*** tstart() called on Jonathons-MacBook-Pro.local
-*** at Sat Feb 12 15:23:06 2022
+*** tstart() called on dhcp189-242.emerson.emory.edu
+*** at Mon Feb 14 14:01:58 2022
 
 
 	Wfn Parameters:
@@ -516,15 +524,15 @@ Total time:
 	Two-electron energy          =      4.81738194669782
 	Reference energy             =    -38.27301741921383
 
-*** tstop() called on Jonathons-MacBook-Pro.local at Sat Feb 12 15:23:07 2022
+*** tstop() called on dhcp189-242.emerson.emory.edu at Mon Feb 14 14:01:58 2022
 Module time:
-	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.24 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.64 seconds =       0.01 minutes
-	system time =       0.28 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.37 seconds =       0.01 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
             **************************
             *                        *
             *        CCENERGY        *
@@ -1096,8 +1104,11 @@ Largest components of excited wave function #1:
         1   0 >   0   6     :    3a1    2a1 >    1b1   10a1 :    0.0082992876
 
 	Total # of sigma evaluations: 79
+    SCF energy............................................................................PASSED
+    CC3 energy............................................................................PASSED
+    EOM-CC3 energy........................................................................PASSED
 
-    Psi4 stopped on: Saturday, 12 February 2022 03:23PM
-    Psi4 wall time for execution: 0:00:23.43
+    Psi4 stopped on: Monday, 14 February 2022 02:02PM
+    Psi4 wall time for execution: 0:00:12.42
 
 *** Psi4 exiting successfully. Buy a developer a beer!
