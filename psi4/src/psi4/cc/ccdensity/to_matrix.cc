@@ -8,7 +8,6 @@ namespace psi {
 namespace ccdensity {
 
 SharedMatrix block_to_matrix(double ** block) {
-    moinfo.Ca->colspi().print();
     auto mat = std::make_shared<Matrix>("Matrix", moinfo.Ca->colspi(), moinfo.Ca->colspi());
     int mo_offset = 0;
 
