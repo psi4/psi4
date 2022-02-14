@@ -46,7 +46,7 @@ DIISManager::DIISManager(int maxSubspaceSize, const std::string &label, RemovalP
     if (removalPolicy == RemovalPolicy::LargestError) {
         pyRemovalPolicy = diis_file.attr("RemovalPolicy").attr("LargestError");
     } else {
-        pyRemovalPolicy = diis_file.attr("RemovalPolicy").attr("OldestFirst");
+        pyRemovalPolicy = diis_file.attr("RemovalPolicy").attr("OldestAdded");
     }
     if (storagePolicy == StoragePolicy::InCore) {
         pyStoragePolicy = diis_file.attr("StoragePolicy").attr("InCore");
