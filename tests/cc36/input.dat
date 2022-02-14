@@ -14,3 +14,12 @@ set {
 }
 
 energy('cc2')
+
+enuc =   9.00935422966266 # TEST
+escf = -76.02403851151333 # TEST
+ecc2 = -76.22960579193078 # TEST
+
+compare_values(enuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(escf, variable("SCF TOTAL ENERGY"), 7, "SCF energy") #TEST
+compare_values(ecc2, variable("CC2 TOTAL ENERGY"), 7, "CC2 energy") #TEST
+
