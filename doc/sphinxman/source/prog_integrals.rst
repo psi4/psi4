@@ -282,7 +282,7 @@ object creation is further reduced.
 One Electron Integrals in |PSIfour|
 ===================================
 
-In version 1.5, we started transitioning the one electron integral code over to
+After version 1.5, we started transitioning the one electron integral code over to
 use Libint2 instead of the old handwritten Obara-Saika code.  There are a
 number of reasons motivating this switch.  As we have more methods requiring
 potentials and fields evaluated at many external sites, such as PCM and
