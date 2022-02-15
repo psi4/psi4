@@ -42,7 +42,7 @@ using namespace psi;
 // to compute the dipole derivatives
 DipoleInt::DipoleInt(std::vector<SphericalTransform> &spherical_transforms, std::shared_ptr<BasisSet> bs1,
                      std::shared_ptr<BasisSet> bs2, int nderiv)
-    : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv),overlap_recur_(bs1->max_am() + 1, bs2->max_am() + 1) {
+    : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), overlap_recur_(bs1->max_am() + 1, bs2->max_am() + 1) {
     // ACS delete these when L2 can provide the correct derivatives
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
