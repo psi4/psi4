@@ -368,4 +368,6 @@ Libint2 provides a range of integrals that were previously not available in
 Ewald methods.  If new integrals are added to Libint2 but are not yet
 interfaced to |PSIfour|, please open an issue on the |PSIfour| GitHub page to
 alert the developers, who will be able to add the appropriate code.
+Available integrals classes and parameters currently documented at 
+`Libint2 C++11 Interface Wiki <https://github.com/evaleev/libint/wiki/using-modern-CPlusPlus-API#create-an-integral-engine>`_
 
