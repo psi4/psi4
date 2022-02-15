@@ -122,7 +122,7 @@ void DipoleInt::compute_pair(const libint2::Shell &s1, const libint2::Shell &s2)
     }
 }
 
-// This version should be reinstated when we can link against a libint2 that provides dipole derivatives
+// This function should replace the function below it when we can link against a libint2 that provides dipole derivatives https://github.com/evaleev/libint/issues/236
 //void DipoleInt::compute_pair_deriv1(const libint2::Shell &s1, const libint2::Shell &s2) {
 //    engine1_->compute(s1, s2);
 //
