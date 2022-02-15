@@ -284,11 +284,11 @@ One Electron Integrals in |PSIfour|
 
 After version 1.5, we started transitioning the one electron integral code over to
 use Libint2 instead of the old handwritten Obara-Saika code.  There are a
-number of reasons motivating this switch.  As we have more methods requiring
+number of reasons motivating this switch.  For methods requiring
 potentials and fields evaluated at many external sites, such as PCM and
 polarizable embedding, the efficiency of the one electron integrals can be rate
 limiting.  We also started to introduce integral screening, and it is important
-to balance the screening used for one- and two-electron terms carefully so this
+to balance the screening used for one- and two-electron terms carefully, so this
 is a good opportunity to re-evaluate the code.  Finally, given the complexity
 of the OS recursion code, the switch to an external library leaves a more
 compact codebase to maintain.  The tips below serve as an upgrade guide as to
