@@ -1108,9 +1108,12 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         }
     }
 
-    // ==> Calculate Shell Ceilings <==
-    // sqrt(Umax|Umax) in Ochsenfeld Eq. 3
+    // ==> "Pre-ordering and Pre-selection to find significant elements in Puv" <== //
+
+    // => Calculate Shell Ceilings <=
     std::vector<double> shell_ceilings(nshell, 0.0);
+
+    // sqrt(Umax|Umax) in Ochsenfeld Eq. 3
     for (int P = 0; P < nshell; P++) {
         for (int Q = 0; Q <= P; Q++) {
             double val = std::sqrt(ints[0]->shell_ceiling2(P, Q, P, Q));
@@ -1118,8 +1121,6 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
             shell_ceilings[Q] = std::max(shell_ceilings[Q], val);
         }
     }
-
-    // => "Pre-ordering and Pre-selection to find significant elements in Puv" <= //
 
     std::vector<std::vector<int>> significant_kets(nshell);
 
