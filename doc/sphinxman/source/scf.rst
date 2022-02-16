@@ -752,8 +752,7 @@ To turn on and control the LinK algorithm, here are the list of options provided
 
   |scf__do_linK|: Defaults to false. If turned on, the K matrix will be built using the algorithm described in [Ochsenfeld:1998:1663]_.
 
-  |scf__linK_ints_tolerance|: Defaults to 1.0e-12. The integral screening tolerance used for sparsity-prep in the LinK algorithm. Note that
-    this option is separate from and independent of the |scf__ints_tolerance| option.
+  |scf__linK_ints_tolerance|: The integral screening tolerance used for sparsity-prep in the LinK algorithm. Defaults to the |scf__ints_tolerance| option.
 
 .. index::
     single: SOSCF

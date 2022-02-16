@@ -1000,6 +1000,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
     timer_off("build_JK_matrices()");
 }
 
+// To follow this code, compare with figure 1 of DOI: 10.1063/1.476741
 void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, const std::vector<SharedMatrix>& D,
                   std::vector<SharedMatrix>& K) {
 
@@ -1009,21 +1010,21 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
     timer_on("build_linK()");
 
-    // => Zeroing <= //
+    // => Prep Auxiliary Quantities <=
+    // ==> Zeroing <== //
 
     for (auto& Kmat : K) {
         Kmat->zero();
     }
 
-    // => Sizing <= //
+    // ==> Sizing <== //
 
     int nshell = primary_->nshell();
     int nbf = primary_->nbf();
     int nthread = df_ints_num_threads_;
 
-    // => Atom Blocking <= //
+    // ==> Atom Blocking <== //
 
-    // Define the shells of each atom as a task
     std::vector<int> shell_endpoints_for_atom;
     std::vector<int> basis_endpoints_for_shell;
 
@@ -1037,8 +1038,6 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
     }
     shell_endpoints_for_atom.push_back(nshell);
     basis_endpoints_for_shell.push_back(nbf);
-
-    // => End Atomic Blocking <= //
 
     size_t natom = shell_endpoints_for_atom.size() - 1;
 
@@ -1067,7 +1066,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         outfile->Printf("\n");
     }
 
-    // => Store significant atom pairs for parallelization <= //
+    // ==> Store significant atom pairs for parallelization <== //
     std::vector<std::pair<int, int>> atom_pairs;
     for (size_t Patom = 0; Patom < natom; Patom++) {
         for (size_t Qatom = 0; Qatom <= Patom; Qatom++) {
@@ -1085,7 +1084,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         }
     }
 
-    // => Store shell pairs that are significant by Schwarz estimate <= //
+    // ==> Store shell pairs that are significant by Schwarz estimate <== //
     // A comparator used for sorting integral screening values
     auto screen_compare = [](const std::pair<int, double> &a, 
                                     const std::pair<int, double> &b) { return a.second > b.second; };
@@ -1109,7 +1108,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         }
     }
 
-    // => Calculate Shell Ceilings (To find significant bra-ket pairs) <=
+    // ==> Calculate Shell Ceilings <==
     // sqrt(Umax|Umax) in Ochsenfeld Eq. 3
     std::vector<double> shell_ceilings(nshell, 0.0);
     for (int P = 0; P < nshell; P++) {
@@ -1124,9 +1123,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
     std::vector<std::vector<int>> significant_kets(nshell);
 
-    // => Defined in Ochsenfeld Eq. 3 <= //
-    // For shells P and R, If |Dpr| * sqrt(Pmax|Pmax) * sqrt(Rmax|Rmax) [screening value] >= linK_ints_cutoff_,
-    // Then shell R is added to the ket list of shell P (and sorted by the screening value)
+    // ==> Use shell ceilings to compute significant ket-shells for each bra-shell <==
     for (size_t P = 0; P < nshell; P++) {
         std::vector<std::pair<int, double>> PR_shell_values;
         for (size_t R = 0; R < nshell; R++) {
@@ -1144,7 +1141,9 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
     size_t natom_pair = atom_pairs.size();
 
-    // => Intermediate Buffers <= //
+    // => Integral Formation Loop <=
+
+    // ==> Intermediate Buffers <== //
 
     // Temporary buffers used during the K contraction process to
     // Take full advantage of permutational symmetry of ERIs
@@ -1163,9 +1162,8 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
     // Number of computed shell quartets is tracked for benchmarking purposes
     size_t computed_shells = 0L;
 
-// ==> Master Task Loop (Atom Quartet Indexing) <== //
-
-// ==> "Loop over types (angular momenta, contraction, ...) of shell-pair blocks" <==
+// "Loop over types significant bra-shell pairs mu-lambda"
+// But for sake of parallelization, we distribute this over atom pairs
 #pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells)
     for (size_t ipair = 0L; ipair < natom_pair; ipair++) { // O(N) shell-pairs in asymptotic limit
 
