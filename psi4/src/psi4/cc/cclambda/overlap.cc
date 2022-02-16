@@ -32,6 +32,7 @@
 */
 #include <cstdio>
 #include "psi4/libdpd/dpd.h"
+#include "psi4/libmints/wavefunction.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
@@ -40,7 +41,7 @@
 namespace psi {
 namespace cclambda {
 
-void overlap(int L_irr) {
+double overlap(int L_irr) {
     int h, nirreps;
     int row, col;
     int i, j, a, b, I, J, A, B, Isym, Jsym, Asym, Bsym;
@@ -218,8 +219,8 @@ void overlap(int L_irr) {
     */
 
     value = 1.0 - ST1A - ST1B - ST2AA - ST2BB - ST2AB + ST12AA + ST12BB + ST12AB;
-
     outfile->Printf("\tOverlap <L|e^T> = %20.11f\n", value);
+    return value;
 }
 
 }  // namespace cclambda
