@@ -303,6 +303,9 @@ double CCLambdaWavefunction::compute_energy() {
             } else if (params.wfn == "CC2" || params.wfn == "EOM_CC2") {
                 gs_name = "CC2";
             } else if (params.wfn == "CCSD" || params.wfn == "EOM_CCSD" || params.wfn == "CCSD_AT") {
+                // In the CCSD_AT case, we solve the CCSD lambda equations so we can use them for a triples
+                // correction. For CCSD_AT analytic gradient theory, you would need to solve response equations
+                // including that triples correction, and only then would gs_name be CCSD_AT.
                 gs_name = "CCSD";
             } else if (params.wfn == "CCSD_T") {
                 gs_name = "CCSD(T)";
