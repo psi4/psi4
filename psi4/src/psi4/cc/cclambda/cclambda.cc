@@ -297,7 +297,7 @@ double CCLambdaWavefunction::compute_energy() {
         }
         if (pL_params[i].ground) {
             auto LR_overlap = overlap(pL_params[i].irrep);
-            std::string gs_name; // What theory's lambda equations did we just solve?
+            std::string gs_name; // Which theory's lambda equations did we just solve?
             if (params.wfn == "CC3" || params.wfn == "EOM_CC3") {
                 gs_name = "CC3";
             } else if (params.wfn == "CC2" || params.wfn == "EOM_CC2") {
@@ -312,7 +312,7 @@ double CCLambdaWavefunction::compute_energy() {
             } else {
                 throw PsiException("cclambda: unknown wfn", __FILE__, __LINE__);
             }
-            reference_wavefunction_->set_scalar_variable("Left-Right " + gs_name + " Eigenvector Overlap", LR_overlap);
+            reference_wavefunction_->set_scalar_variable("LEFT-RIGHT " + gs_name + " EIGENVECTOR OVERLAP", LR_overlap);
         }
     }
 
