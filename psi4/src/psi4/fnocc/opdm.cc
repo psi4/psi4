@@ -125,9 +125,8 @@ void CoupledPair::OPDM() {
     free(reorder);
     free(irrepoffset);
 
-    // set Da_ for properties with oeprop ... note Da needs to be in so basis
     Da_->set_name("CEPA unrelaxed density");
-    Da_->transform(opdm_a, Ca);
+    Da_->back_transform(opdm_a, Ca);
 
     free(D1);
 }
