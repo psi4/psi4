@@ -1196,10 +1196,11 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         for (int P = Pstart; P < Pstart + nPshell; P++) {
             for (int Q = Qstart; Q < Qstart + nQshell; Q++) {
 
+                if (Q > P) continue;
+                if (!ints[0]->shell_pair_significant(P, Q)) continue;
+
                 int dP = P - Pstart;
                 int dQ = Q - Qstart;
-
-                if (Q > P) continue;
 
                 // => "Formation of Significant Shell Pair List ML" <= //
 
