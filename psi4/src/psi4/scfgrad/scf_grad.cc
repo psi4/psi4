@@ -446,49 +446,48 @@ SharedMatrix SCFDeriv::compute_hessian()
 
         // Potential energy derivatives
         std::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(2));
+        const auto& shell_pairs = Vint->shellpairs();
+        size_t n_pairs = shell_pairs.size();
 
-        for (int P = 0; P < basisset_->nshell(); P++) {
+        for (size_t p = 0; p < n_pairs; ++p) {
+            auto P = shell_pairs[p].first;
+            auto Q = shell_pairs[p].second;
             const GaussianShell& s1 = basisset_->shell(P);
+            const GaussianShell& s2 = basisset_->shell(Q);
             int nP = s1.nfunction();
             int oP = s1.function_index();
             int aP = s1.ncenter();
+            int nQ = s2.nfunction();
+            int oQ = s2.function_index();
+            int aQ = s2.ncenter();
             int Px = 3 * aP + 0;
             int Py = 3 * aP + 1;
             int Pz = 3 * aP + 2;
-            for (int Q = 0; Q <= P; Q++) {
-
-                const GaussianShell& s2 = basisset_->shell(Q);
-                int nQ = s2.nfunction();
-                int oQ = s2.function_index();
-                int aQ = s2.ncenter();
-
-                int Qx = 3 * aQ + 0;
-                int Qy = 3 * aQ + 1;
-                int Qz = 3 * aQ + 2;
-
+            int Qx = 3 * aQ + 0;
+            int Qy = 3 * aQ + 1;
+            int Qz = 3 * aQ + 2;
 #define DEBUGINTS 0
 
 #if DEBUGINTS
-                outfile->Printf("AM1 %d AM2 %d a1 %f a2 %f center1 %d center2 %d\n", s1.am(), s2.am(), s1.exp(0), s2.exp(0), s1.ncenter(), s2.ncenter());
+            outfile->Printf("AM1 %d AM2 %d a1 %f a2 %f center1 %d center2 %d\n", s1.am(), s2.am(), s1.exp(0), s2.exp(0), s1.ncenter(), s2.ncenter());
 #endif
-                Vint->compute_shell_deriv2(P, Q);
-                const auto &buffers = Vint->buffers();
+            Vint->compute_shell_deriv2(P, Q);
+            const auto &buffers = Vint->buffers();
 
-                std::vector<double> Dvals;
-                // find the D values against which this batch will be contracted
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Dvals.push_back(Dp[p + oP][q + oQ]);
-                    }
+            std::vector<double> Dvals;
+            // find the D values against which this batch will be contracted
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Dvals.push_back(Dp[p + oP][q + oQ]);
                 }
-                // build the Hessian contributions for each buffer entry
-                std::vector<double> Hvals;
-                for (int i = 0; i < buffers.size(); ++i) {
-                    const double *buffer = buffers[i];
-                    Hvals.push_back(std::inner_product(Dvals.begin(), Dvals.end(), buffer, 0.0));
-                }
-                process_buffers(Vp, Hvals, aP, aQ, natom, P==Q, true);
             }
+            // build the Hessian contributions for each buffer entry
+            std::vector<double> Hvals;
+            for (int i = 0; i < buffers.size(); ++i) {
+                const double *buffer = buffers[i];
+                Hvals.push_back(std::inner_product(Dvals.begin(), Dvals.end(), buffer, 0.0));
+            }
+            process_buffers(Vp, Hvals, aP, aQ, natom, P==Q, true);
         }
         // Symmetrize the result
         int dim = hessians_["Potential"]->rowdim();
@@ -514,37 +513,40 @@ SharedMatrix SCFDeriv::compute_hessian()
         // Kinetic energy derivatives
         std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(2));
 
-        for (int P = 0; P < basisset_->nshell(); P++) {
+        const auto& shell_pairs = Tint->shellpairs();
+        size_t n_pairs = shell_pairs.size();
+
+        for (size_t p = 0; p < n_pairs; ++p) {
+            auto P = shell_pairs[p].first;
+            auto Q = shell_pairs[p].second;
             const GaussianShell& s1 = basisset_->shell(P);
+            const GaussianShell& s2 = basisset_->shell(Q);
             int nP = s1.nfunction();
             int oP = s1.function_index();
             int aP = s1.ncenter();
             int Px = 3 * aP + 0;
             int Py = 3 * aP + 1;
             int Pz = 3 * aP + 2;
-            for (int Q = 0; Q <= P; Q++) {
-                const GaussianShell& s2 = basisset_->shell(Q);
-                int nQ = s2.nfunction();
-                int oQ = s2.function_index();
-                int aQ = s2.ncenter();
+            int nQ = s2.nfunction();
+            int oQ = s2.function_index();
+            int aQ = s2.ncenter();
 
-                Tint->compute_shell_deriv2(P, Q);
-                const auto &buffers = Tint->buffers();
+            Tint->compute_shell_deriv2(P, Q);
+            const auto &buffers = Tint->buffers();
 
-                std::vector<double> Dvals;
-                // find the D values against which this batch will be conctracted
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Dvals.push_back(Dp[p + oP][q + oQ]);
-                    }
+            std::vector<double> Dvals;
+            // find the D values against which this batch will be conctracted
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Dvals.push_back(Dp[p + oP][q + oQ]);
                 }
-                // build the Hessian contributions for each buffer entry
-                std::vector<double> Hvals;
-                for (const double *buffer : buffers) {
-                    Hvals.push_back(std::inner_product(Dvals.begin(), Dvals.end(), buffer, 0.0));
-                }
-                process_buffers(Tp, Hvals, aP, aQ, natom, P==Q, false);
             }
+            // build the Hessian contributions for each buffer entry
+            std::vector<double> Hvals;
+            for (const double *buffer : buffers) {
+                Hvals.push_back(std::inner_product(Dvals.begin(), Dvals.end(), buffer, 0.0));
+            }
+            process_buffers(Tp, Hvals, aP, aQ, natom, P==Q, false);
         }
         // Symmetrize the result
         int dim = hessians_["Kinetic"]->rowdim();
@@ -595,38 +597,41 @@ SharedMatrix SCFDeriv::compute_hessian()
         // Overlap derivatives
         std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(2));
 
-        for (int P = 0; P < basisset_->nshell(); P++) {
+        const auto& shell_pairs = Sint->shellpairs();
+        size_t n_pairs = shell_pairs.size();
+
+        for (size_t p = 0; p < n_pairs; ++p) {
+            auto P = shell_pairs[p].first;
+            auto Q = shell_pairs[p].second;
             const GaussianShell& s1 = basisset_->shell(P);
+            const GaussianShell& s2 = basisset_->shell(Q);
             int nP = s1.nfunction();
             int oP = s1.function_index();
             int aP = s1.ncenter();
+            int nQ = s2.nfunction();
+            int oQ = s2.function_index();
+            int aQ = s2.ncenter();
             int Px = 3 * aP + 0;
             int Py = 3 * aP + 1;
             int Pz = 3 * aP + 2;
-            for (int Q = 0; Q <= P; Q++) {
-                const GaussianShell& s2 = basisset_->shell(Q);
-                int nQ = s2.nfunction();
-                int oQ = s2.function_index();
-                int aQ = s2.ncenter();
 
-                Sint->compute_shell_deriv2(P, Q);
-                const auto &buffers = Sint->buffers();
+            Sint->compute_shell_deriv2(P, Q);
+            const auto &buffers = Sint->buffers();
 
-                std::vector<double> Wvals;
-                // find the W values against which this batch will be contracted
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        Wvals.push_back(Wp[p + oP][q + oQ]);
-                    }
+            std::vector<double> Wvals;
+            // find the W values against which this batch will be contracted
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    Wvals.push_back(Wp[p + oP][q + oQ]);
                 }
-                // build the Hessian contributions for each buffer entry
-                std::vector<double> Hvals;
-                for (int i = 0; i < buffers.size(); ++i) {
-                    const double *buffer = buffers[i];
-                    Hvals.push_back(std::inner_product(Wvals.begin(), Wvals.end(), buffer, 0.0));
-                }
-                process_buffers(Sp, Hvals, aP, aQ, natom, P==Q, false);
             }
+            // build the Hessian contributions for each buffer entry
+            std::vector<double> Hvals;
+            for (int i = 0; i < buffers.size(); ++i) {
+                const double *buffer = buffers[i];
+                Hvals.push_back(std::inner_product(Wvals.begin(), Wvals.end(), buffer, 0.0));
+            }
+            process_buffers(Sp, Hvals, aP, aQ, natom, P==Q, false);
         }
         // Symmetrize the result
         int dim = hessians_["Overlap"]->rowdim();

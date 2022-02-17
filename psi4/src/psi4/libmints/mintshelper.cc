@@ -425,54 +425,44 @@ void MintsHelper::one_body_ao_computer(std::vector<std::shared_ptr<OneBodyAOInt>
 
     double **outp = out->pointer();
 
-// Loop it
-#pragma omp parallel for schedule(guided) num_threads(nthread)
-    for (size_t MU = 0; MU < bs1->nshell(); ++MU) {
-        const size_t num_mu = bs1->shell(MU).nfunction();
-        const size_t index_mu = bs1->shell(MU).function_index();
+    const auto& shell_pairs = ints[0]->shellpairs();
+    size_t n_pairs = shell_pairs.size();
 
+    // Loop it
+#pragma omp parallel for schedule(guided) num_threads(nthread)
+    for (size_t p = 0; p < n_pairs; ++p) {
         size_t rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
+        auto mu = shell_pairs[p].first;
+        auto nu = shell_pairs[p].second;
+        const size_t num_mu = bs1->shell(mu).nfunction();
+        const size_t index_mu = bs1->shell(mu).function_index();
+        const size_t num_nu = bs2->shell(nu).nfunction();
+        const size_t index_nu = bs2->shell(nu).function_index();
 
+        ints[rank]->compute_shell(mu, nu);
+        const auto *ints_buff = ints[rank]->buffers()[0];
+
+        size_t index = 0;
         if (symm) {
-            // Triangular
-            for (size_t NU = 0; NU <= MU; ++NU) {
-                const size_t num_nu = bs2->shell(NU).nfunction();
-                const size_t index_nu = bs2->shell(NU).function_index();
-
-                ints[rank]->compute_shell(MU, NU);
-                const auto *ints_buff = ints[rank]->buffers()[0];
-
-                size_t index = 0;
-                for (size_t mu = index_mu; mu < (index_mu + num_mu); ++mu) {
-                    for (size_t nu = index_nu; nu < (index_nu + num_nu); ++nu) {
-                        outp[nu][mu] = outp[mu][nu] = ints_buff[index++];
-                    }
+            for (size_t mu = index_mu; mu < (index_mu + num_mu); ++mu) {
+                for (size_t nu = index_nu; nu < (index_nu + num_nu); ++nu) {
+                    outp[nu][mu] = outp[mu][nu] = ints_buff[index++];
                 }
-            }  // End NU
-        }      // End Symm
-        else {
-            // Rectangular
-            for (size_t NU = 0; NU < bs2->nshell(); ++NU) {
-                const size_t num_nu = bs2->shell(NU).nfunction();
-                const size_t index_nu = bs2->shell(NU).function_index();
-
-                ints[rank]->compute_shell(MU, NU);
-                const auto *ints_buff = ints[rank]->buffers()[0];
-
-                size_t index = 0;
-                for (size_t mu = index_mu; mu < (index_mu + num_mu); ++mu) {
-                    for (size_t nu = index_nu; nu < (index_nu + num_nu); ++nu) {
-                        // printf("%zu %zu | %zu %zu | %lf\n", MU, NU, mu, nu, ints_buff[rank][index]);
-                        outp[mu][nu] = ints_buff[index++];
-                    }
+            }
+        } else {
+            for (size_t mu = index_mu; mu < (index_mu + num_mu); ++mu) {
+                for (size_t nu = index_nu; nu < (index_nu + num_nu); ++nu) {
+                    outp[mu][nu] = ints_buff[index++];
                 }
-            }  // End NU
-        }      // End Rectangular
-    }          // End Mu
+            }
+        }
+    }
 }
+
+
 void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAOInt>> ints, SharedMatrix D,
                                            SharedMatrix out) {
     // Grab basis info
@@ -495,93 +485,97 @@ void MintsHelper::grad_two_center_computer(std::vector<std::shared_ptr<OneBodyAO
     double **outp = out->pointer();
     double **Dp = D->pointer();
 
+    const auto& shell_pairs = ints[0]->shellpairs();
+    size_t n_pairs = shell_pairs.size();
+
+    // Loop it
 #pragma omp parallel for schedule(guided) num_threads(nthread)
-    for (size_t P = 0; P < basisset_->nshell(); P++) {
+    for (size_t p = 0; p < n_pairs; ++p) {
         size_t rank = 0;
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
-        for (size_t Q = 0; Q <= P; Q++) {
-            ints[rank]->compute_shell_deriv1(P, Q);
-            const auto &ints_buff = ints[rank]->buffers();
+        auto P = shell_pairs[p].first;
+        auto Q = shell_pairs[p].second;
+        ints[rank]->compute_shell_deriv1(P, Q);
+        const auto &ints_buff = ints[rank]->buffers();
 
-            size_t nP = basisset_->shell(P).nfunction();
-            size_t oP = basisset_->shell(P).function_index();
-            size_t aP = basisset_->shell(P).ncenter();
+        size_t nP = basisset_->shell(P).nfunction();
+        size_t oP = basisset_->shell(P).function_index();
+        size_t aP = basisset_->shell(P).ncenter();
 
-            size_t nQ = basisset_->shell(Q).nfunction();
-            size_t oQ = basisset_->shell(Q).function_index();
-            size_t aQ = basisset_->shell(Q).ncenter();
+        size_t nQ = basisset_->shell(Q).nfunction();
+        size_t oQ = basisset_->shell(Q).function_index();
+        size_t aQ = basisset_->shell(Q).ncenter();
 
-            size_t offset = nP * nQ;
-            double perm = (P == Q ? 1.0 : 2.0);
+        size_t offset = nP * nQ;
+        double perm = (P == Q ? 1.0 : 2.0);
 
-            // Px
-            double Px = 0.0;
-            const double *ref = ints_buff[0];
-            for (size_t p = 0; p < nP; p++) {
-                for (size_t q = 0; q < nQ; q++) {
-                    Px += perm * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        // Px
+        double Px = 0.0;
+        const double *ref = ints_buff[0];
+        for (size_t p = 0; p < nP; p++) {
+            for (size_t q = 0; q < nQ; q++) {
+                Px += perm * Dp[p + oP][q + oQ] * (*ref++);
             }
-#pragma omp atomic update
-            outp[aP][0] += Px;
-
-            // Py
-            double Py = 0.0;
-            ref = ints_buff[1];
-            for (size_t p = 0; p < nP; p++) {
-                for (size_t q = 0; q < nQ; q++) {
-                    Py += perm * Dp[p + oP][q + oQ] * (*ref++);
-                }
-            }
-#pragma omp atomic update
-            outp[aP][1] += Py;
-
-            // Pz
-            double Pz = 0.0;
-            ref = ints_buff[2];
-            for (size_t p = 0; p < nP; p++) {
-                for (size_t q = 0; q < nQ; q++) {
-                    Pz += perm * Dp[p + oP][q + oQ] * (*ref++);
-                }
-            }
-#pragma omp atomic update
-            outp[aP][2] += Pz;
-
-            // Qx
-            double Qx = 0.0;
-            ref = ints_buff[3];
-            for (size_t p = 0; p < nP; p++) {
-                for (size_t q = 0; q < nQ; q++) {
-                    Qx += perm * Dp[p + oP][q + oQ] * (*ref++);
-                }
-            }
-#pragma omp atomic update
-            outp[aQ][0] += Qx;
-
-            // Qy
-            double Qy = 0.0;
-            ref = ints_buff[4];
-            for (size_t p = 0; p < nP; p++) {
-                for (size_t q = 0; q < nQ; q++) {
-                    Qy += perm * Dp[p + oP][q + oQ] * (*ref++);
-                }
-            }
-#pragma omp atomic update
-            outp[aQ][1] += Qy;
-
-            // Qz
-            double Qz = 0.0;
-            ref = ints_buff[5];
-            for (size_t p = 0; p < nP; p++) {
-                for (size_t q = 0; q < nQ; q++) {
-                    Qz += perm * Dp[p + oP][q + oQ] * (*ref++);
-                }
-            }
-#pragma omp atomic update
-            outp[aQ][2] += Qz;
         }
+#pragma omp atomic update
+        outp[aP][0] += Px;
+
+        // Py
+        double Py = 0.0;
+        ref = ints_buff[1];
+        for (size_t p = 0; p < nP; p++) {
+            for (size_t q = 0; q < nQ; q++) {
+                Py += perm * Dp[p + oP][q + oQ] * (*ref++);
+            }
+        }
+#pragma omp atomic update
+        outp[aP][1] += Py;
+
+        // Pz
+        double Pz = 0.0;
+        ref = ints_buff[2];
+        for (size_t p = 0; p < nP; p++) {
+            for (size_t q = 0; q < nQ; q++) {
+                Pz += perm * Dp[p + oP][q + oQ] * (*ref++);
+            }
+        }
+#pragma omp atomic update
+        outp[aP][2] += Pz;
+
+        // Qx
+        double Qx = 0.0;
+        ref = ints_buff[3];
+        for (size_t p = 0; p < nP; p++) {
+            for (size_t q = 0; q < nQ; q++) {
+                Qx += perm * Dp[p + oP][q + oQ] * (*ref++);
+            }
+        }
+#pragma omp atomic update
+        outp[aQ][0] += Qx;
+
+        // Qy
+        double Qy = 0.0;
+        ref = ints_buff[4];
+        for (size_t p = 0; p < nP; p++) {
+            for (size_t q = 0; q < nQ; q++) {
+                Qy += perm * Dp[p + oP][q + oQ] * (*ref++);
+            }
+        }
+#pragma omp atomic update
+        outp[aQ][1] += Qy;
+
+        // Qz
+        double Qz = 0.0;
+        ref = ints_buff[5];
+        for (size_t p = 0; p < nP; p++) {
+            for (size_t q = 0; q < nQ; q++) {
+                Qz += perm * Dp[p + oP][q + oQ] * (*ref++);
+            }
+        }
+#pragma omp atomic update
+        outp[aQ][2] += Qz;
     }
 }
 
@@ -1932,20 +1926,14 @@ SharedMatrix MintsHelper::potential_grad(SharedMatrix D) {
         ints_vec.push_back(std::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
     }
 
-    // Lower Triangle
-    std::vector<std::pair<int, int>> PQ_pairs;
-    for (int P = 0; P < basisset_->nshell(); P++) {
-        for (int Q = 0; Q <= P; Q++) {
-            PQ_pairs.push_back(std::pair<int, int>(P, Q));
-        }
-    }
+    const auto& shell_pairs = ints_vec[0]->shellpairs();
 
     double **Dp = D->pointer();
 
 #pragma omp parallel for schedule(dynamic) num_threads(nthread_)
-    for (size_t PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
-        size_t P = PQ_pairs[PQ].first;
-        size_t Q = PQ_pairs[PQ].second;
+    for (size_t PQ = 0L; PQ < shell_pairs.size(); PQ++) {
+        size_t P = shell_pairs[PQ].first;
+        size_t Q = shell_pairs[PQ].second;
 
         size_t rank = 0;
 #ifdef _OPENMP
@@ -2091,175 +2079,180 @@ SharedMatrix MintsHelper::dipole_grad(SharedMatrix D) {
 
     std::shared_ptr<OneBodyAOInt> Dint(integral_->ao_dipole(1));
 
-    for (int P = 0; P < basisset_->nshell(); P++) {
-        for (int Q = 0; Q <= P; Q++) {
-            Dint->compute_shell_deriv1(P, Q);
-            const auto &buffers = Dint->buffers();
+    const auto& shell_pairs = Dint->shellpairs();
+    size_t n_pairs = shell_pairs.size();
 
-            const auto &shellP = basisset_->shell(P);
-            const auto &shellQ = basisset_->shell(Q);
+    // Loop it
+    for (size_t p = 0; p < n_pairs; ++p) {
+        auto P = shell_pairs[p].first;
+        auto Q = shell_pairs[p].second;
 
-            int nP = shellP.nfunction();
-            int oP = shellP.function_index();
-            int aP = shellP.ncenter();
+        Dint->compute_shell_deriv1(P, Q);
+        const auto &buffers = Dint->buffers();
 
-            int nQ = shellQ.nfunction();
-            int oQ = shellQ.function_index();
-            int aQ = shellQ.ncenter();
+        const auto &shellP = basisset_->shell(P);
+        const auto &shellQ = basisset_->shell(Q);
 
-            double prefac = (P == Q ? 1.0 : 2.0);
+        int nP = shellP.nfunction();
+        int oP = shellP.function_index();
+        int aP = shellP.ncenter();
 
-            /*
-             * Mu X derivatives
-             */
-            // Px
-            const double *ref = buffers[0];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aP + 0][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        int nQ = shellQ.nfunction();
+        int oQ = shellQ.function_index();
+        int aQ = shellQ.ncenter();
+
+        double prefac = (P == Q ? 1.0 : 2.0);
+
+        /*
+         * Mu X derivatives
+         */
+        // Px
+        const double *ref = buffers[0];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aP + 0][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            // Py
-            ref = buffers[1];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aP + 1][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        // Py
+        ref = buffers[1];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aP + 1][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            // Pz
-            ref = buffers[2];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aP + 2][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        // Pz
+        ref = buffers[2];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aP + 2][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            // Qx
-            ref = buffers[3];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aQ + 0][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        // Qx
+        ref = buffers[3];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aQ + 0][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            // Qy
-            ref = buffers[4];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aQ + 1][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        // Qy
+        ref = buffers[4];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aQ + 1][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            // Qz
-            ref = buffers[5];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aQ + 2][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        // Qz
+        ref = buffers[5];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aQ + 2][0] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            /*
-             * Mu Y derivatives
-             */
-            // Px
-            ref = buffers[6];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aP + 0][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        /*
+         * Mu Y derivatives
+         */
+        // Px
+        ref = buffers[6];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aP + 0][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            // Py
-            ref = buffers[7];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aP + 1][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        // Py
+        ref = buffers[7];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aP + 1][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            // Pz
-            ref = buffers[8];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aP + 2][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        // Pz
+        ref = buffers[8];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aP + 2][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            // Qx
-            ref = buffers[9];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aQ + 0][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        // Qx
+        ref = buffers[9];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aQ + 0][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            // Qy
-            ref = buffers[10];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aQ + 1][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        // Qy
+        ref = buffers[10];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aQ + 1][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            // Qz
-            ref = buffers[11];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aQ + 2][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        // Qz
+        ref = buffers[11];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aQ + 2][1] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            /*
-             * Mu Z derivatives
-             */
-            // Px
-            ref = buffers[12];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aP + 0][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        /*
+         * Mu Z derivatives
+         */
+        // Px
+        ref = buffers[12];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aP + 0][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            // Py
-            ref = buffers[13];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aP + 1][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        // Py
+        ref = buffers[13];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aP + 1][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            // Pz
-            ref = buffers[14];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aP + 2][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        // Pz
+        ref = buffers[14];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aP + 2][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            // Qx
-            ref = buffers[15];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aQ + 0][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        // Qx
+        ref = buffers[15];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aQ + 0][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            // Qy
-            ref = buffers[16];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aQ + 1][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        // Qy
+        ref = buffers[16];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aQ + 1][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
+        }
 
-            // Qz
-            ref = buffers[17];
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    Pp[3 * aQ + 2][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
-                }
+        // Qz
+        ref = buffers[17];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                Pp[3 * aQ + 2][2] += prefac * Dp[p + oP][q + oQ] * (*ref++);
             }
         }
     }
@@ -2582,70 +2575,82 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_kinetic_deriv1_helper(const st
         grad.push_back(std::make_shared<Matrix>(sstream.str(), nbf1, nbf2));
     }
 
-    for (int P = 0; P < bs1->nshell(); P++)
-        for (int Q = 0; Q < bs2->nshell(); Q++) {
-            const auto& shellP = basisset_->shell(P);
-            const auto& shellQ = basisset_->shell(Q);
+    const auto& shell_pairs = GInt->shellpairs();
+    size_t n_pairs = shell_pairs.size();
 
-            int nP = shellP.nfunction();
-            int oP = shellP.function_index();
-            int aP = shellP.ncenter();
+    // Loop it
+    for (size_t p = 0; p < n_pairs; ++p) {
+        auto P = shell_pairs[p].first;
+        auto Q = shell_pairs[p].second;
+        const auto& shellP = basisset_->shell(P);
+        const auto& shellQ = basisset_->shell(Q);
 
-            int nQ = shellQ.nfunction();
-            int oQ = shellQ.function_index();
-            int aQ = shellQ.ncenter();
+        int nP = shellP.nfunction();
+        int oP = shellP.function_index();
+        int aP = shellP.ncenter();
 
-            if (aP != atom && aQ != atom) continue;
+        int nQ = shellQ.nfunction();
+        int oQ = shellQ.function_index();
+        int aQ = shellQ.ncenter();
 
-            GInt->compute_shell_deriv1(P, Q);
-            const auto &buffers = GInt->buffers();
+        if (aP != atom && aQ != atom) continue;
 
-            if (aP == atom) {
-                // Px
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[0]->add(p + oP, q + oQ, buffers[0][p * nQ + q]);
-                    }
-                }
+        GInt->compute_shell_deriv1(P, Q);
+        const auto &buffers = GInt->buffers();
+        double scale = P == Q ? 0.5 : 1.0;
 
-                // Py
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[1]->add(p + oP, q + oQ, buffers[1][p * nQ + q]);
-                    }
-                }
-
-                // Pz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[2]->add(p + oP, q + oQ, buffers[2][p * nQ + q]);
-                    }
+        if (aP == atom) {
+            // Px
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[0]->add(p + oP, q + oQ, scale * buffers[0][p * nQ + q]);
+                    grad[0]->add(q + oQ, p + oP, scale * buffers[0][p * nQ + q]);
                 }
             }
 
-            if (aQ == atom) {
-                // Qx
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[0]->add(p + oP, q + oQ, buffers[3][p * nQ + q]);
-                    }
+            // Py
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[1]->add(p + oP, q + oQ, scale * buffers[1][p * nQ + q]);
+                    grad[1]->add(q + oQ, p + oP, scale * buffers[1][p * nQ + q]);
                 }
+            }
 
-                // Qy
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[1]->add(p + oP, q + oQ, buffers[4][p * nQ + q]);
-                    }
-                }
-
-                // Qz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[2]->add(p + oP, q + oQ, buffers[5][p * nQ + q]);
-                    }
+            // Pz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[2]->add(p + oP, q + oQ, scale * buffers[2][p * nQ + q]);
+                    grad[2]->add(q + oQ, p + oP, scale * buffers[2][p * nQ + q]);
                 }
             }
         }
+
+        if (aQ == atom) {
+            // Qx
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[0]->add(p + oP, q + oQ, scale * buffers[3][p * nQ + q]);
+                    grad[0]->add(q + oQ, p + oP, scale * buffers[3][p * nQ + q]);
+                }
+            }
+
+            // Qy
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[1]->add(p + oP, q + oQ, scale * buffers[4][p * nQ + q]);
+                    grad[1]->add(q + oQ, p + oP, scale * buffers[4][p * nQ + q]);
+                }
+            }
+
+            // Qz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[2]->add(p + oP, q + oQ, scale * buffers[5][p * nQ + q]);
+                    grad[2]->add(q + oQ, p + oP, scale * buffers[5][p * nQ + q]);
+                }
+            }
+        }
+    }
 
     return grad;
 }
@@ -2669,56 +2674,71 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_deriv1_helper(int atom) {
         grad.push_back(std::make_shared<Matrix>(sstream.str(), nbf1, nbf2));
     }
 
-    for (int P = 0; P < bs1->nshell(); P++) {
-        for (int Q = 0; Q < bs2->nshell(); Q++) {
-            const auto &shellP = bs1->shell(P);
-            const auto &shellQ = bs2->shell(Q);
+    const auto& shell_pairs = Vint->shellpairs();
+    size_t n_pairs = shell_pairs.size();
 
-            int nP = shellP.nfunction();
-            int oP = shellP.function_index();
-            int aP = shellP.ncenter();
+    // Loop it
+    for (size_t p = 0; p < n_pairs; ++p) {
+        auto P = shell_pairs[p].first;
+        auto Q = shell_pairs[p].second;
+        const auto &shellP = bs1->shell(P);
+        const auto &shellQ = bs2->shell(Q);
 
-            int nQ = shellQ.nfunction();
-            int oQ = shellQ.function_index();
-            int aQ = shellQ.ncenter();
+        int nP = shellP.nfunction();
+        int oP = shellP.function_index();
+        int aP = shellP.ncenter();
 
-            Vint->compute_shell_deriv1(P, Q);
-            const auto &buffers = Vint->buffers();
+        int nQ = shellQ.nfunction();
+        int oQ = shellQ.function_index();
+        int aQ = shellQ.ncenter();
 
-            const double *ref0 = buffers[3 * atom + 6];
-            const double *ref1 = buffers[3 * atom + 7];
-            const double *ref2 = buffers[3 * atom + 8];
+        Vint->compute_shell_deriv1(P, Q);
+        const auto &buffers = Vint->buffers();
+
+        double scale = P == Q ? 0.5 : 1.0;
+
+        const double *ref0 = buffers[3 * atom + 6];
+        const double *ref1 = buffers[3 * atom + 7];
+        const double *ref2 = buffers[3 * atom + 8];
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                grad[0]->add(p + oP, q + oQ, scale*(*ref0));
+                grad[1]->add(p + oP, q + oQ, scale*(*ref1));
+                grad[2]->add(p + oP, q + oQ, scale*(*ref2));
+                grad[0]->add(q + oQ, p + oP, scale*(*ref0++));
+                grad[1]->add(q + oQ, p + oP, scale*(*ref1++));
+                grad[2]->add(q + oQ, p + oP, scale*(*ref2++));
+            }
+        }
+
+        if (aP == atom) {
+            ref0 = buffers[0];
+            ref1 = buffers[1];
+            ref2 = buffers[2];
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
-                    grad[0]->set(p + oP, q + oQ, (*ref0++));
-                    grad[1]->set(p + oP, q + oQ, (*ref1++));
-                    grad[2]->set(p + oP, q + oQ, (*ref2++));
+                    grad[0]->add(p + oP, q + oQ, scale*(*ref0));
+                    grad[1]->add(p + oP, q + oQ, scale*(*ref1));
+                    grad[2]->add(p + oP, q + oQ, scale*(*ref2));
+                    grad[0]->add(q + oQ, p + oP, scale*(*ref0++));
+                    grad[1]->add(q + oQ, p + oP, scale*(*ref1++));
+                    grad[2]->add(q + oQ, p + oP, scale*(*ref2++));
                 }
             }
+        }
 
-            if (aP == atom) {
-                ref0 = buffers[0];
-                ref1 = buffers[1];
-                ref2 = buffers[2];
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[0]->add(p + oP, q + oQ, (*ref0++));
-                        grad[1]->add(p + oP, q + oQ, (*ref1++));
-                        grad[2]->add(p + oP, q + oQ, (*ref2++));
-                    }
-                }
-            }
-
-            if (aQ == atom) {
-                ref0 = buffers[3];
-                ref1 = buffers[4];
-                ref2 = buffers[5];
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[0]->add(p + oP, q + oQ, (*ref0++));
-                        grad[1]->add(p + oP, q + oQ, (*ref1++));
-                        grad[2]->add(p + oP, q + oQ, (*ref2++));
-                    }
+        if (aQ == atom) {
+            ref0 = buffers[3];
+            ref1 = buffers[4];
+            ref2 = buffers[5];
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[0]->add(p + oP, q + oQ, scale*(*ref0));
+                    grad[1]->add(p + oP, q + oQ, scale*(*ref1));
+                    grad[2]->add(p + oP, q + oQ, scale*(*ref2));
+                    grad[0]->add(q + oQ, p + oP, scale*(*ref0++));
+                    grad[1]->add(q + oQ, p + oP, scale*(*ref1++));
+                    grad[2]->add(q + oQ, p + oP, scale*(*ref2++));
                 }
             }
         }
@@ -2726,6 +2746,7 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_deriv1_helper(int atom) {
 
     return grad;
 }
+
 
 std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1_helper(const std::string &half_der_side, int atom) {
     std::array<std::string, 3> cartcomp{{"X", "Y", "Z"}};
@@ -2745,68 +2766,79 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1_helper(const std::
         grad.push_back(std::make_shared<Matrix>(sstream.str(), nbf1, nbf2));
     }
 
-    for (int P = 0; P < bs1->nshell(); P++) {
-        for (int Q = 0; Q < bs2->nshell(); Q++) {
-            const auto &shellP = basisset_->shell(P);
-            const auto &shellQ = basisset_->shell(Q);
+    const auto& shell_pairs = GInt->shellpairs();
+    size_t n_pairs = shell_pairs.size();
 
-            int nP = shellP.nfunction();
-            int oP = shellP.function_index();
-            int aP = shellP.ncenter();
+    // Loop it
+    for (size_t p = 0; p < n_pairs; ++p) {
+        auto P = shell_pairs[p].first;
+        auto Q = shell_pairs[p].second;
+        const auto &shellP = basisset_->shell(P);
+        const auto &shellQ = basisset_->shell(Q);
 
-            int nQ = shellQ.nfunction();
-            int oQ = shellQ.function_index();
-            int aQ = shellQ.ncenter();
+        int nP = shellP.nfunction();
+        int oP = shellP.function_index();
+        int aP = shellP.ncenter();
 
-            if (aP != atom && aQ != atom) continue;
+        int nQ = shellQ.nfunction();
+        int oQ = shellQ.function_index();
+        int aQ = shellQ.ncenter();
 
-            GInt->compute_shell_deriv1(P, Q);
-            const auto &buffers = GInt->buffers();
-            int offset = 0;
+        if (aP != atom && aQ != atom) continue;
 
-            if (aP == atom && half_der_side == "LEFT") {
-                // Px
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[0]->add(p + oP, q + oQ, buffers[0][p * nQ + q]);
-                    }
-                }
+        GInt->compute_shell_deriv1(P, Q);
+        const auto &buffers = GInt->buffers();
+        int offset = 0;
+        double scale = P == Q ? 0.5 : 1.0;
 
-                // Py
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[1]->add(p + oP, q + oQ, buffers[1][p * nQ + q]);
-                    }
-                }
-
-                // Pz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[2]->add(p + oP, q + oQ, buffers[2][p * nQ + q]);
-                    }
+        if (aP == atom && half_der_side == "LEFT") {
+            // Px
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[0]->add(p + oP, q + oQ, scale * buffers[0][p * nQ + q]);
+                    grad[0]->add(q + oQ, p + oP, scale * buffers[0][p * nQ + q]);
                 }
             }
 
-            if (aQ == atom && half_der_side == "RIGHT") {
-                // Qx
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[0]->add(p + oP, q + oQ, buffers[3][p * nQ + q]);
-                    }
+            // Py
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[1]->add(p + oP, q + oQ, scale * buffers[1][p * nQ + q]);
+                    grad[1]->add(q + oQ, p + oP, scale * buffers[1][p * nQ + q]);
                 }
+            }
 
-                // Qy
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[1]->add(p + oP, q + oQ, buffers[4][p * nQ + q]);
-                    }
+            // Pz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[2]->add(p + oP, q + oQ, scale * buffers[2][p * nQ + q]);
+                    grad[2]->add(q + oQ, p + oP, scale * buffers[2][p * nQ + q]);
                 }
+            }
+        }
 
-                // Qz
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        grad[2]->add(p + oP, q + oQ, buffers[5][p * nQ + q]);
-                    }
+        if (aQ == atom && half_der_side == "RIGHT") {
+            // Qx
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[0]->add(p + oP, q + oQ, scale * buffers[3][p * nQ + q]);
+                    grad[0]->add(q + oQ, p + oP, scale * buffers[3][p * nQ + q]);
+                }
+            }
+
+            // Qy
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[1]->add(p + oP, q + oQ, scale * buffers[4][p * nQ + q]);
+                    grad[1]->add(q + oQ, p + oP, scale * buffers[4][p * nQ + q]);
+                }
+            }
+
+            // Qz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[2]->add(p + oP, q + oQ, scale * buffers[5][p * nQ + q]);
+                    grad[2]->add(q + oQ, p + oP, scale * buffers[5][p * nQ + q]);
                 }
             }
         }
@@ -2849,184 +2881,233 @@ std::vector<SharedMatrix> MintsHelper::ao_potential_deriv2_helper(int atom1, int
          return std::min(i, j) * (2*matrix_dim - std::min(i, j) - 1) / 2 + std::max(i, j);
     };
 
-    for (int P = 0; P < bs1->nshell(); P++) {
-        for (int Q = 0; Q < bs2->nshell(); Q++) {
-            const auto &shellP = bs1->shell(P);
-            const auto &shellQ = bs2->shell(Q);
+    const auto& shell_pairs = Vint->shellpairs();
+    size_t n_pairs = shell_pairs.size();
 
-            int nP = shellP.nfunction();
-            int oP = shellP.function_index();
-            int aP = shellP.ncenter();
+    for (size_t p = 0; p < n_pairs; ++p) {
+        auto P = shell_pairs[p].first;
+        auto Q = shell_pairs[p].second;
+        const auto &shellP = bs1->shell(P);
+        const auto &shellQ = bs2->shell(Q);
 
-            int nQ = shellQ.nfunction();
-            int oQ = shellQ.function_index();
-            int aQ = shellQ.ncenter();
+        int nP = shellP.nfunction();
+        int oP = shellP.function_index();
+        int aP = shellP.ncenter();
 
-            bool do_full_field;
-            int num_buffers;
-            if (atom1 != aP && atom2 != aQ) {
-                // Neither bra nor ket are atoms of interest - only compute external charge contributions for atom1 and atom2
-                do_full_field = false;
-                num_buffers = 12;
-                std::dynamic_pointer_cast<PotentialInt>(Vint)->set_charge_field({
-                    {(double)mol->Z(atom1), {mol->x(atom1), mol->y(atom1), mol->z(atom1)}},
-                    {(double)mol->Z(atom2), {mol->x(atom2), mol->y(atom2), mol->z(atom2)}}
-                });
-            } else {
-                // One of the atoms of interest is in the bra or ket - do a full computation
-                do_full_field = true;
-                num_buffers = 3 * (natom + 2);
-                std::dynamic_pointer_cast<PotentialInt>(Vint)->set_charge_field(full_params);
-            }
+        int nQ = shellQ.nfunction();
+        int oQ = shellQ.function_index();
+        int aQ = shellQ.ncenter();
 
-            Vint->compute_shell_deriv2(P, Q);
-            const auto &buffers = Vint->buffers();
+        bool do_full_field;
+        int num_buffers;
+        if (atom1 != aP && atom2 != aQ) {
+            // Neither bra nor ket are atoms of interest - only compute external charge contributions for atom1 and atom2
+            do_full_field = false;
+            num_buffers = 12;
+            std::dynamic_pointer_cast<PotentialInt>(Vint)->set_charge_field({
+                {(double)mol->Z(atom1), {mol->x(atom1), mol->y(atom1), mol->z(atom1)}},
+                {(double)mol->Z(atom2), {mol->x(atom2), mol->y(atom2), mol->z(atom2)}}
+            });
+        } else {
+            // One of the atoms of interest is in the bra or ket - do a full computation
+            do_full_field = true;
+            num_buffers = 3 * (natom + 2);
+            std::dynamic_pointer_cast<PotentialInt>(Vint)->set_charge_field(full_params);
+        }
 
-            // clang-format off
-            // The derivatives emerge in upper triangular order 
-            // AxAx, AxAy, AxAz, AxBx, AxBy, AxBz, AxC1x, AxC2x, ... AxCNz
-            //       AyAy, AyAz, AyBx, AyBy, AyBz, AyC1x, AyC2x, ... AyCNz
-            //             AzAz, AzBx, AzBy, AyBz, AzC1x, AzC2x, ... AzCNz
-            //                                                         .
-            //                                                         .
-            //                                                         .
-            //                                               CNyCNz CNzCNz
-            //                                                      CNzCNz
-            // clang-format on
-            // For each shell pair, we get 3 buffers in the bra, 3 in the ket and 3 for each atom
+        Vint->compute_shell_deriv2(P, Q);
+        const auto &buffers = Vint->buffers();
 
-            if (aP == atom1 && aP == atom2) {
-                const double *AxAx = buffers[upper_triangle_index(num_buffers, 0, 0)];
-                const double *AxAy = buffers[upper_triangle_index(num_buffers, 0, 1)];
-                const double *AxAz = buffers[upper_triangle_index(num_buffers, 0, 2)];
-                const double *AyAy = buffers[upper_triangle_index(num_buffers, 1, 1)];
-                const double *AyAz = buffers[upper_triangle_index(num_buffers, 1, 2)];
-                const double *AzAz = buffers[upper_triangle_index(num_buffers, 2, 2)];
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        hess[0]->add(p + oP, q + oQ, *AxAx++);
-                        hess[1]->add(p + oP, q + oQ, *AxAy++);
-                        hess[2]->add(p + oP, q + oQ, *AxAz++);
-                        hess[4]->add(p + oP, q + oQ, *AyAy++);
-                        hess[5]->add(p + oP, q + oQ, *AyAz++);
-                        hess[8]->add(p + oP, q + oQ, *AzAz++);
-                    }
+        double perm = P == Q ? 0.5 : 1.0;
+        // clang-format off
+        // The derivatives emerge in upper triangular order 
+        // AxAx, AxAy, AxAz, AxBx, AxBy, AxBz, AxC1x, AxC2x, ... AxCNz
+        //       AyAy, AyAz, AyBx, AyBy, AyBz, AyC1x, AyC2x, ... AyCNz
+        //             AzAz, AzBx, AzBy, AyBz, AzC1x, AzC2x, ... AzCNz
+        //                                                         .
+        //                                                         .
+        //                                                         .
+        //                                               CNyCNz CNzCNz
+        //                                                      CNzCNz
+        // clang-format on
+        // For each shell pair, we get 3 buffers in the bra, 3 in the ket and 3 for each atom
+
+        if (aP == atom1 && aP == atom2) {
+            const double *AxAx = buffers[upper_triangle_index(num_buffers, 0, 0)];
+            const double *AxAy = buffers[upper_triangle_index(num_buffers, 0, 1)];
+            const double *AxAz = buffers[upper_triangle_index(num_buffers, 0, 2)];
+            const double *AyAy = buffers[upper_triangle_index(num_buffers, 1, 1)];
+            const double *AyAz = buffers[upper_triangle_index(num_buffers, 1, 2)];
+            const double *AzAz = buffers[upper_triangle_index(num_buffers, 2, 2)];
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    hess[0]->add(p + oP, q + oQ, perm * (*AxAx));
+                    hess[1]->add(p + oP, q + oQ, perm * (*AxAy));
+                    hess[2]->add(p + oP, q + oQ, perm * (*AxAz));
+                    hess[4]->add(p + oP, q + oQ, perm * (*AyAy));
+                    hess[5]->add(p + oP, q + oQ, perm * (*AyAz));
+                    hess[8]->add(p + oP, q + oQ, perm * (*AzAz));
+                    hess[0]->add(q + oQ, p + oP, perm * (*AxAx++));
+                    hess[1]->add(q + oQ, p + oP, perm * (*AxAy++));
+                    hess[2]->add(q + oQ, p + oP, perm * (*AxAz++));
+                    hess[4]->add(q + oQ, p + oP, perm * (*AyAy++));
+                    hess[5]->add(q + oQ, p + oP, perm * (*AyAz++));
+                    hess[8]->add(q + oQ, p + oP, perm * (*AzAz++));
                 }
             }
+        }
 
-            if (aQ == atom1 && aQ == atom2) {
-                const double *BxBx = buffers[upper_triangle_index(num_buffers, 3, 3)];
-                const double *BxBy = buffers[upper_triangle_index(num_buffers, 3, 4)];
-                const double *BxBz = buffers[upper_triangle_index(num_buffers, 3, 5)];
-                const double *ByBy = buffers[upper_triangle_index(num_buffers, 4, 4)];
-                const double *ByBz = buffers[upper_triangle_index(num_buffers, 4, 5)];
-                const double *BzBz = buffers[upper_triangle_index(num_buffers, 5, 5)];
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        hess[0]->add(p + oP, q + oQ, *BxBx++);
-                        hess[1]->add(p + oP, q + oQ, *BxBy++);
-                        hess[2]->add(p + oP, q + oQ, *BxBz++);
-                        hess[4]->add(p + oP, q + oQ, *ByBy++);
-                        hess[5]->add(p + oP, q + oQ, *ByBz++);
-                        hess[8]->add(p + oP, q + oQ, *BzBz++);
-                    }
+        if (aQ == atom1 && aQ == atom2) {
+            const double *BxBx = buffers[upper_triangle_index(num_buffers, 3, 3)];
+            const double *BxBy = buffers[upper_triangle_index(num_buffers, 3, 4)];
+            const double *BxBz = buffers[upper_triangle_index(num_buffers, 3, 5)];
+            const double *ByBy = buffers[upper_triangle_index(num_buffers, 4, 4)];
+            const double *ByBz = buffers[upper_triangle_index(num_buffers, 4, 5)];
+            const double *BzBz = buffers[upper_triangle_index(num_buffers, 5, 5)];
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    hess[0]->add(p + oP, q + oQ, perm * (*BxBx));
+                    hess[1]->add(p + oP, q + oQ, perm * (*BxBy));
+                    hess[2]->add(p + oP, q + oQ, perm * (*BxBz));
+                    hess[4]->add(p + oP, q + oQ, perm * (*ByBy));
+                    hess[5]->add(p + oP, q + oQ, perm * (*ByBz));
+                    hess[8]->add(p + oP, q + oQ, perm * (*BzBz));
+                    hess[0]->add(q + oQ, p + oP, perm * (*BxBx++));
+                    hess[1]->add(q + oQ, p + oP, perm * (*BxBy++));
+                    hess[2]->add(q + oQ, p + oP, perm * (*BxBz++));
+                    hess[4]->add(q + oQ, p + oP, perm * (*ByBy++));
+                    hess[5]->add(q + oQ, p + oP, perm * (*ByBz++));
+                    hess[8]->add(q + oQ, p + oP, perm * (*BzBz++));
                 }
             }
+        }
 
-            if (aP == atom1 && aQ == atom2) {
-                const double *AxBx = buffers[upper_triangle_index(num_buffers, 0, 3)];
-                const double *AyBx = buffers[upper_triangle_index(num_buffers, 1, 3)];
-                const double *AzBx = buffers[upper_triangle_index(num_buffers, 2, 3)];
-                const double *AxBy = buffers[upper_triangle_index(num_buffers, 0, 4)];
-                const double *AyBy = buffers[upper_triangle_index(num_buffers, 1, 4)];
-                const double *AzBy = buffers[upper_triangle_index(num_buffers, 2, 4)];
-                const double *AxBz = buffers[upper_triangle_index(num_buffers, 0, 5)];
-                const double *AyBz = buffers[upper_triangle_index(num_buffers, 1, 5)];
-                const double *AzBz = buffers[upper_triangle_index(num_buffers, 2, 5)];
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        hess[0]->add(p + oP, q + oQ, scale*(*AxBx++));
-                        hess[1]->add(p + oP, q + oQ,       (*AxBy++));
-                        hess[2]->add(p + oP, q + oQ,       (*AxBz++));
-                        hess[3]->add(p + oP, q + oQ,       (*AyBx++));
-                        hess[4]->add(p + oP, q + oQ, scale*(*AyBy++));
-                        hess[5]->add(p + oP, q + oQ,       (*AyBz++));
-                        hess[6]->add(p + oP, q + oQ,       (*AzBx++));
-                        hess[7]->add(p + oP, q + oQ,       (*AzBy++));
-                        hess[8]->add(p + oP, q + oQ, scale*(*AzBz++));
-                    }
+        if (aP == atom1 && aQ == atom2) {
+            const double *AxBx = buffers[upper_triangle_index(num_buffers, 0, 3)];
+            const double *AyBx = buffers[upper_triangle_index(num_buffers, 1, 3)];
+            const double *AzBx = buffers[upper_triangle_index(num_buffers, 2, 3)];
+            const double *AxBy = buffers[upper_triangle_index(num_buffers, 0, 4)];
+            const double *AyBy = buffers[upper_triangle_index(num_buffers, 1, 4)];
+            const double *AzBy = buffers[upper_triangle_index(num_buffers, 2, 4)];
+            const double *AxBz = buffers[upper_triangle_index(num_buffers, 0, 5)];
+            const double *AyBz = buffers[upper_triangle_index(num_buffers, 1, 5)];
+            const double *AzBz = buffers[upper_triangle_index(num_buffers, 2, 5)];
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    hess[0]->add(p + oP, q + oQ, perm *  scale*(*AxBx));
+                    hess[1]->add(p + oP, q + oQ, perm *        (*AxBy));
+                    hess[2]->add(p + oP, q + oQ, perm *        (*AxBz));
+                    hess[3]->add(p + oP, q + oQ, perm *        (*AyBx));
+                    hess[4]->add(p + oP, q + oQ, perm *  scale*(*AyBy));
+                    hess[5]->add(p + oP, q + oQ, perm *        (*AyBz));
+                    hess[6]->add(p + oP, q + oQ, perm *        (*AzBx));
+                    hess[7]->add(p + oP, q + oQ, perm *        (*AzBy));
+                    hess[8]->add(p + oP, q + oQ, perm *  scale*(*AzBz));
+                    hess[0]->add(q + oQ, p + oP, perm *  scale*(*AxBx++));
+                    hess[1]->add(q + oQ, p + oP, perm *        (*AxBy++));
+                    hess[2]->add(q + oQ, p + oP, perm *        (*AxBz++));
+                    hess[3]->add(q + oQ, p + oP, perm *        (*AyBx++));
+                    hess[4]->add(q + oQ, p + oP, perm *  scale*(*AyBy++));
+                    hess[5]->add(q + oQ, p + oP, perm *        (*AyBz++));
+                    hess[6]->add(q + oQ, p + oP, perm *        (*AzBx++));
+                    hess[7]->add(q + oQ, p + oP, perm *        (*AzBy++));
+                    hess[8]->add(q + oQ, p + oP, perm *  scale*(*AzBz++));
                 }
             }
+        }
 
-            if (atom1 == atom2) {
-                int C = do_full_field ? 3*atom1+6 : 6;
-                const double *CxCx = buffers[upper_triangle_index(num_buffers, C+0, C+0)];
-                const double *CxCy = buffers[upper_triangle_index(num_buffers, C+0, C+1)];
-                const double *CxCz = buffers[upper_triangle_index(num_buffers, C+0, C+2)];
-                const double *CyCy = buffers[upper_triangle_index(num_buffers, C+1, C+1)];
-                const double *CyCz = buffers[upper_triangle_index(num_buffers, C+1, C+2)];
-                const double *CzCz = buffers[upper_triangle_index(num_buffers, C+2, C+2)];
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        hess[0]->add(p + oP, q + oQ, *CxCx++);
-                        hess[1]->add(p + oP, q + oQ, *CxCy++);
-                        hess[2]->add(p + oP, q + oQ, *CxCz++);
-                        hess[4]->add(p + oP, q + oQ, *CyCy++);
-                        hess[5]->add(p + oP, q + oQ, *CyCz++);
-                        hess[8]->add(p + oP, q + oQ, *CzCz++);
-                    }
+        if (atom1 == atom2) {
+            int C = do_full_field ? 3*atom1+6 : 6;
+            const double *CxCx = buffers[upper_triangle_index(num_buffers, C+0, C+0)];
+            const double *CxCy = buffers[upper_triangle_index(num_buffers, C+0, C+1)];
+            const double *CxCz = buffers[upper_triangle_index(num_buffers, C+0, C+2)];
+            const double *CyCy = buffers[upper_triangle_index(num_buffers, C+1, C+1)];
+            const double *CyCz = buffers[upper_triangle_index(num_buffers, C+1, C+2)];
+            const double *CzCz = buffers[upper_triangle_index(num_buffers, C+2, C+2)];
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    hess[0]->add(p + oP, q + oQ, perm * (*CxCx));
+                    hess[1]->add(p + oP, q + oQ, perm * (*CxCy));
+                    hess[2]->add(p + oP, q + oQ, perm * (*CxCz));
+                    hess[4]->add(p + oP, q + oQ, perm * (*CyCy));
+                    hess[5]->add(p + oP, q + oQ, perm * (*CyCz));
+                    hess[8]->add(p + oP, q + oQ, perm * (*CzCz));
+                    hess[0]->add(q + oQ, p + oP, perm * (*CxCx++));
+                    hess[1]->add(q + oQ, p + oP, perm * (*CxCy++));
+                    hess[2]->add(q + oQ, p + oP, perm * (*CxCz++));
+                    hess[4]->add(q + oQ, p + oP, perm * (*CyCy++));
+                    hess[5]->add(q + oQ, p + oP, perm * (*CyCz++));
+                    hess[8]->add(q + oQ, p + oP, perm * (*CzCz++));
                 }
             }
+        }
 
-            if (aP == atom1) {
-                int C = do_full_field ? 3*atom2+6 : 9;
-                const double *AxCx = buffers[upper_triangle_index(num_buffers, 0, C+0)];
-                const double *AyCx = buffers[upper_triangle_index(num_buffers, 1, C+0)];
-                const double *AzCx = buffers[upper_triangle_index(num_buffers, 2, C+0)];
-                const double *AxCy = buffers[upper_triangle_index(num_buffers, 0, C+1)];
-                const double *AyCy = buffers[upper_triangle_index(num_buffers, 1, C+1)];
-                const double *AzCy = buffers[upper_triangle_index(num_buffers, 2, C+1)];
-                const double *AxCz = buffers[upper_triangle_index(num_buffers, 0, C+2)];
-                const double *AyCz = buffers[upper_triangle_index(num_buffers, 1, C+2)];
-                const double *AzCz = buffers[upper_triangle_index(num_buffers, 2, C+2)];
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        hess[0]->add(p + oP, q + oQ, scale*(*AxCx++));
-                        hess[1]->add(p + oP, q + oQ,       (*AxCy++));
-                        hess[2]->add(p + oP, q + oQ,       (*AxCz++));
-                        hess[3]->add(p + oP, q + oQ,       (*AyCx++));
-                        hess[4]->add(p + oP, q + oQ, scale*(*AyCy++));
-                        hess[5]->add(p + oP, q + oQ,       (*AyCz++));
-                        hess[6]->add(p + oP, q + oQ,       (*AzCx++));
-                        hess[7]->add(p + oP, q + oQ,       (*AzCy++));
-                        hess[8]->add(p + oP, q + oQ, scale*(*AzCz++));
-                    }
+        if (aP == atom1) {
+            int C = do_full_field ? 3*atom2+6 : 9;
+            const double *AxCx = buffers[upper_triangle_index(num_buffers, 0, C+0)];
+            const double *AyCx = buffers[upper_triangle_index(num_buffers, 1, C+0)];
+            const double *AzCx = buffers[upper_triangle_index(num_buffers, 2, C+0)];
+            const double *AxCy = buffers[upper_triangle_index(num_buffers, 0, C+1)];
+            const double *AyCy = buffers[upper_triangle_index(num_buffers, 1, C+1)];
+            const double *AzCy = buffers[upper_triangle_index(num_buffers, 2, C+1)];
+            const double *AxCz = buffers[upper_triangle_index(num_buffers, 0, C+2)];
+            const double *AyCz = buffers[upper_triangle_index(num_buffers, 1, C+2)];
+            const double *AzCz = buffers[upper_triangle_index(num_buffers, 2, C+2)];
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    hess[0]->add(p + oP, q + oQ, perm * scale*(*AxCx));
+                    hess[1]->add(p + oP, q + oQ, perm *       (*AxCy));
+                    hess[2]->add(p + oP, q + oQ, perm *       (*AxCz));
+                    hess[3]->add(p + oP, q + oQ, perm *       (*AyCx));
+                    hess[4]->add(p + oP, q + oQ, perm * scale*(*AyCy));
+                    hess[5]->add(p + oP, q + oQ, perm *       (*AyCz));
+                    hess[6]->add(p + oP, q + oQ, perm *       (*AzCx));
+                    hess[7]->add(p + oP, q + oQ, perm *       (*AzCy));
+                    hess[8]->add(p + oP, q + oQ, perm * scale*(*AzCz));
+                    hess[0]->add(q + oQ, p + oP, perm * scale*(*AxCx++));
+                    hess[1]->add(q + oQ, p + oP, perm *       (*AxCy++));
+                    hess[2]->add(q + oQ, p + oP, perm *       (*AxCz++));
+                    hess[3]->add(q + oQ, p + oP, perm *       (*AyCx++));
+                    hess[4]->add(q + oQ, p + oP, perm * scale*(*AyCy++));
+                    hess[5]->add(q + oQ, p + oP, perm *       (*AyCz++));
+                    hess[6]->add(q + oQ, p + oP, perm *       (*AzCx++));
+                    hess[7]->add(q + oQ, p + oP, perm *       (*AzCy++));
+                    hess[8]->add(q + oQ, p + oP, perm * scale*(*AzCz++));
                 }
             }
+        }
 
-            if (aQ == atom2) {
-                int C = do_full_field ? 3*atom1+6 : 6;
-                const double *CxBx = buffers[upper_triangle_index(num_buffers, C+0, 3)];
-                const double *CxBy = buffers[upper_triangle_index(num_buffers, C+0, 4)];
-                const double *CxBz = buffers[upper_triangle_index(num_buffers, C+0, 5)];
-                const double *CyBx = buffers[upper_triangle_index(num_buffers, C+1, 3)];
-                const double *CyBy = buffers[upper_triangle_index(num_buffers, C+1, 4)];
-                const double *CyBz = buffers[upper_triangle_index(num_buffers, C+1, 5)];
-                const double *CzBx = buffers[upper_triangle_index(num_buffers, C+2, 3)];
-                const double *CzBy = buffers[upper_triangle_index(num_buffers, C+2, 4)];
-                const double *CzBz = buffers[upper_triangle_index(num_buffers, C+2, 5)];
-                for (int p = 0; p < nP; p++) {
-                    for (int q = 0; q < nQ; q++) {
-                        hess[0]->add(p + oP, q + oQ, scale*(*CxBx++));
-                        hess[1]->add(p + oP, q + oQ,       (*CxBy++));
-                        hess[2]->add(p + oP, q + oQ,       (*CxBz++));
-                        hess[3]->add(p + oP, q + oQ,       (*CyBx++));
-                        hess[4]->add(p + oP, q + oQ, scale*(*CyBy++));
-                        hess[5]->add(p + oP, q + oQ,       (*CyBz++));
-                        hess[6]->add(p + oP, q + oQ,       (*CzBx++));
-                        hess[7]->add(p + oP, q + oQ,       (*CzBy++));
-                        hess[8]->add(p + oP, q + oQ, scale*(*CzBz++));
-                    }
+        if (aQ == atom2) {
+            int C = do_full_field ? 3*atom1+6 : 6;
+            const double *CxBx = buffers[upper_triangle_index(num_buffers, C+0, 3)];
+            const double *CxBy = buffers[upper_triangle_index(num_buffers, C+0, 4)];
+            const double *CxBz = buffers[upper_triangle_index(num_buffers, C+0, 5)];
+            const double *CyBx = buffers[upper_triangle_index(num_buffers, C+1, 3)];
+            const double *CyBy = buffers[upper_triangle_index(num_buffers, C+1, 4)];
+            const double *CyBz = buffers[upper_triangle_index(num_buffers, C+1, 5)];
+            const double *CzBx = buffers[upper_triangle_index(num_buffers, C+2, 3)];
+            const double *CzBy = buffers[upper_triangle_index(num_buffers, C+2, 4)];
+            const double *CzBz = buffers[upper_triangle_index(num_buffers, C+2, 5)];
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    hess[0]->add(p + oP, q + oQ, perm * scale*(*CxBx));
+                    hess[1]->add(p + oP, q + oQ, perm *       (*CxBy));
+                    hess[2]->add(p + oP, q + oQ, perm *       (*CxBz));
+                    hess[3]->add(p + oP, q + oQ, perm *       (*CyBx));
+                    hess[4]->add(p + oP, q + oQ, perm * scale*(*CyBy));
+                    hess[5]->add(p + oP, q + oQ, perm *       (*CyBz));
+                    hess[6]->add(p + oP, q + oQ, perm *       (*CzBx));
+                    hess[7]->add(p + oP, q + oQ, perm *       (*CzBy));
+                    hess[8]->add(p + oP, q + oQ, perm * scale*(*CzBz));
+                    hess[0]->add(q + oQ, p + oP, perm * scale*(*CxBx++));
+                    hess[1]->add(q + oQ, p + oP, perm *       (*CxBy++));
+                    hess[2]->add(q + oQ, p + oP, perm *       (*CxBz++));
+                    hess[3]->add(q + oQ, p + oP, perm *       (*CyBx++));
+                    hess[4]->add(q + oQ, p + oP, perm * scale*(*CyBy++));
+                    hess[5]->add(q + oQ, p + oP, perm *       (*CyBz++));
+                    hess[6]->add(q + oQ, p + oP, perm *       (*CzBx++));
+                    hess[7]->add(q + oQ, p + oP, perm *       (*CzBy++));
+                    hess[8]->add(q + oQ, p + oP, perm * scale*(*CzBz++));
                 }
             }
         }
@@ -3059,92 +3140,122 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_kinetic_deriv2_helper(const st
     int nbf2 = bs2->nbf();
 
     std::vector<SharedMatrix> grad;
-    for (int p = 0; p < 3; p++)
+    for (int p = 0; p < 3; p++) {
         for (int q = 0; q < 3; q++) {
             std::stringstream sstream;
             sstream << "ao_" << type << "_deriv2_" << atom1 << atom2 << cartcomp[p] << cartcomp[q];
             grad.push_back(std::make_shared<Matrix>(sstream.str(), nbf1, nbf2));
         }
+    }
 
-    for (int P = 0; P < bs1->nshell(); P++) {
-        for (int Q = 0; Q < bs2->nshell(); Q++) {
-            const auto &shellP = bs1->shell(P);
-            const auto &shellQ = bs2->shell(Q);
+    const auto& shell_pairs = GInt->shellpairs();
+    size_t n_pairs = shell_pairs.size();
 
-            int nP = shellP.nfunction();
-            int oP = shellP.function_index();
-            int aP = shellP.ncenter();
+    for (size_t p = 0; p < n_pairs; ++p) {
+        auto P = shell_pairs[p].first;
+        auto Q = shell_pairs[p].second;
+        const auto &shellP = bs1->shell(P);
+        const auto &shellQ = bs2->shell(Q);
 
-            int nQ = shellQ.nfunction();
-            int oQ = shellQ.function_index();
-            int aQ = shellQ.ncenter();
+        int nP = shellP.nfunction();
+        int oP = shellP.function_index();
+        int aP = shellP.ncenter();
 
-            if (aP != atom1 && aQ != atom1 && aP != atom2 && aQ != atom2) continue;
+        int nQ = shellQ.nfunction();
+        int oQ = shellQ.function_index();
+        int aQ = shellQ.ncenter();
 
-            GInt->compute_shell_deriv2(P, Q);
-            const auto &buffers = GInt->buffers();
+        if (aP != atom1 && aQ != atom1 && aP != atom2 && aQ != atom2) continue;
 
-            // This code makes use of the translational invariance relations
-            //     ∂^2 S   ∂^2 S       ∂^2 S
-            //     ----- = -----  =  - -----
-            //     ∂A ∂A   ∂B ∂B       ∂A ∂B
-            // and writes everything in terms of derivs w.r.t. center A only
-            const double *pxx = buffers[0];
-            const double *pxy = buffers[1];
-            const double *pxz = buffers[2];
-            const double *pyy = buffers[6];
-            const double *pyz = buffers[7];
-            const double *pzz = buffers[11];
+        GInt->compute_shell_deriv2(P, Q);
+        const auto &buffers = GInt->buffers();
 
-            for (int p = 0; p < nP; p++) {
-                for (int q = 0; q < nQ; q++) {
-                    double tmpxx = (*pxx);
-                    double tmpxy = (*pxy);
-                    double tmpxz = (*pxz);
-                    double tmpyy = (*pyy);
-                    double tmpyz = (*pyz);
-                    double tmpzz = (*pzz);
+        double perm = P == Q ? 0.5 : 1.0;
 
-                    if (atom1 == atom2) {
-                        if (aP == aQ) {
-                            grad[0]->set(p + oP, q + oQ, 0);
-                            grad[1]->set(p + oP, q + oQ, tmpxy);
-                            grad[2]->set(p + oP, q + oQ, tmpxz);
-                            grad[3]->set(p + oP, q + oQ, -tmpxy);
-                            grad[4]->set(p + oP, q + oQ, 0);
-                            grad[5]->set(p + oP, q + oQ, tmpyz);
-                            grad[6]->set(p + oP, q + oQ, -tmpxz);
-                            grad[7]->set(p + oP, q + oQ, -tmpyz);
-                            grad[8]->set(p + oP, q + oQ, 0);
-                        } else {
-                            grad[0]->set(p + oP, q + oQ, tmpxx);
-                            grad[1]->set(p + oP, q + oQ, tmpxy);
-                            grad[2]->set(p + oP, q + oQ, tmpxz);
-                            grad[4]->set(p + oP, q + oQ, tmpyy);
-                            grad[5]->set(p + oP, q + oQ, tmpyz);
-                            grad[8]->set(p + oP, q + oQ, tmpzz);
-                        }
+        // This code makes use of the translational invariance relations
+        //     ∂^2 S   ∂^2 S       ∂^2 S
+        //     ----- = -----  =  - -----
+        //     ∂A ∂A   ∂B ∂B       ∂A ∂B
+        // and writes everything in terms of derivs w.r.t. center A only
+        const double *pxx = buffers[0];
+        const double *pxy = buffers[1];
+        const double *pxz = buffers[2];
+        const double *pyy = buffers[6];
+        const double *pyz = buffers[7];
+        const double *pzz = buffers[11];
+
+        for (int p = 0; p < nP; p++) {
+            for (int q = 0; q < nQ; q++) {
+                double tmpxx = (*pxx);
+                double tmpxy = (*pxy);
+                double tmpxz = (*pxz);
+                double tmpyy = (*pyy);
+                double tmpyz = (*pyz);
+                double tmpzz = (*pzz);
+
+                if (atom1 == atom2) {
+                    if (aP == aQ) {
+                        grad[0]->set(p + oP, q + oQ, perm * 0);
+                        grad[1]->set(p + oP, q + oQ, perm * tmpxy);
+                        grad[2]->set(p + oP, q + oQ, perm * tmpxz);
+                        grad[3]->set(p + oP, q + oQ, perm * -tmpxy);
+                        grad[4]->set(p + oP, q + oQ, perm * 0);
+                        grad[5]->set(p + oP, q + oQ, perm * tmpyz);
+                        grad[6]->set(p + oP, q + oQ, perm * -tmpxz);
+                        grad[7]->set(p + oP, q + oQ, perm * -tmpyz);
+                        grad[8]->set(p + oP, q + oQ, perm * 0);
+                        grad[0]->set(q + oQ, p + oP, perm * 0);
+                        grad[1]->set(q + oQ, p + oP, perm * tmpxy);
+                        grad[2]->set(q + oQ, p + oP, perm * tmpxz);
+                        grad[3]->set(q + oQ, p + oP, perm * -tmpxy);
+                        grad[4]->set(q + oQ, p + oP, perm * 0);
+                        grad[5]->set(q + oQ, p + oP, perm * tmpyz);
+                        grad[6]->set(q + oQ, p + oP, perm * -tmpxz);
+                        grad[7]->set(q + oQ, p + oP, perm * -tmpyz);
+                        grad[8]->set(q + oQ, p + oP, perm * 0);
                     } else {
-                        if (aP == atom1 && aQ == atom2) {
-                            grad[0]->set(p + oP, q + oQ, -tmpxx);
-                            grad[1]->set(p + oP, q + oQ, -tmpxy);
-                            grad[2]->set(p + oP, q + oQ, -tmpxz);
-                            grad[3]->set(p + oP, q + oQ, -tmpxy);
-                            grad[4]->set(p + oP, q + oQ, -tmpyy);
-                            grad[5]->set(p + oP, q + oQ, -tmpyz);
-                            grad[6]->set(p + oP, q + oQ, -tmpxz);
-                            grad[7]->set(p + oP, q + oQ, -tmpyz);
-                            grad[8]->set(p + oP, q + oQ, -tmpzz);
-                        }
+                        grad[0]->set(p + oP, q + oQ, perm * tmpxx);
+                        grad[1]->set(p + oP, q + oQ, perm * tmpxy);
+                        grad[2]->set(p + oP, q + oQ, perm * tmpxz);
+                        grad[4]->set(p + oP, q + oQ, perm * tmpyy);
+                        grad[5]->set(p + oP, q + oQ, perm * tmpyz);
+                        grad[8]->set(p + oP, q + oQ, perm * tmpzz);
+                        grad[0]->set(q + oQ, p + oP, perm * tmpxx);
+                        grad[1]->set(q + oQ, p + oP, perm * tmpxy);
+                        grad[2]->set(q + oQ, p + oP, perm * tmpxz);
+                        grad[4]->set(q + oQ, p + oP, perm * tmpyy);
+                        grad[5]->set(q + oQ, p + oP, perm * tmpyz);
+                        grad[8]->set(q + oQ, p + oP, perm * tmpzz);
                     }
-
-                    ++pxx;
-                    ++pxy;
-                    ++pxz;
-                    ++pyy;
-                    ++pyz;
-                    ++pzz;
+                } else {
+                    if (aP == atom1 && aQ == atom2) {
+                        grad[0]->set(p + oP, q + oQ, perm * -tmpxx);
+                        grad[1]->set(p + oP, q + oQ, perm * -tmpxy);
+                        grad[2]->set(p + oP, q + oQ, perm * -tmpxz);
+                        grad[3]->set(p + oP, q + oQ, perm * -tmpxy);
+                        grad[4]->set(p + oP, q + oQ, perm * -tmpyy);
+                        grad[5]->set(p + oP, q + oQ, perm * -tmpyz);
+                        grad[6]->set(p + oP, q + oQ, perm * -tmpxz);
+                        grad[7]->set(p + oP, q + oQ, perm * -tmpyz);
+                        grad[8]->set(p + oP, q + oQ, perm * -tmpzz);
+                        grad[0]->set(q + oQ, p + oP, perm * -tmpxx);
+                        grad[1]->set(q + oQ, p + oP, perm * -tmpxy);
+                        grad[2]->set(q + oQ, p + oP, perm * -tmpxz);
+                        grad[3]->set(q + oQ, p + oP, perm * -tmpxy);
+                        grad[4]->set(q + oQ, p + oP, perm * -tmpyy);
+                        grad[5]->set(q + oQ, p + oP, perm * -tmpyz);
+                        grad[6]->set(q + oQ, p + oP, perm * -tmpxz);
+                        grad[7]->set(q + oQ, p + oP, perm * -tmpyz);
+                        grad[8]->set(q + oQ, p + oP, perm * -tmpzz);
+                    }
                 }
+
+                ++pxx;
+                ++pxy;
+                ++pxz;
+                ++pyy;
+                ++pyz;
+                ++pzz;
             }
         }
     }
@@ -3174,33 +3285,36 @@ std::vector<SharedMatrix> MintsHelper::ao_elec_dip_deriv1_helper(int atom) {
         }
     }
 
-    for (int P = 0; P < bs1->nshell(); P++) {
-        for (int Q = 0; Q < bs2->nshell(); Q++) {
-            int nP = basisset_->shell(P).nfunction();
-            int oP = basisset_->shell(P).function_index();
-            int aP = basisset_->shell(P).ncenter();
+    const auto& shell_pairs = Dint->shellpairs();
+    size_t n_pairs = shell_pairs.size();
 
-            int nQ = basisset_->shell(Q).nfunction();
-            int oQ = basisset_->shell(Q).function_index();
-            int aQ = basisset_->shell(Q).ncenter();
+    for (size_t p = 0; p < n_pairs; ++p) {
+        auto P = shell_pairs[p].first;
+        auto Q = shell_pairs[p].second;
+        int nP = basisset_->shell(P).nfunction();
+        int oP = basisset_->shell(P).function_index();
+        int aP = basisset_->shell(P).ncenter();
 
-            if (aP != atom && aQ != atom) continue;
+        int nQ = basisset_->shell(Q).nfunction();
+        int oQ = basisset_->shell(Q).function_index();
+        int aQ = basisset_->shell(Q).ncenter();
 
-            Dint->compute_shell_deriv1(P, Q);
-            const auto &buffers = Dint->buffers();
+        if (aP != atom && aQ != atom) continue;
 
-            for (int mu_cart = 0; mu_cart < 3; mu_cart++) {
-                for (int atom_cart = 0; atom_cart < 3; atom_cart++) {
-                    const double * bufferP = buffers[6*mu_cart + atom_cart];
-                    const double * bufferQ = buffers[6*mu_cart + atom_cart + 3];
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            if (atom == aP) {
-                                grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ, *bufferP++);
-                            }
-                            if (atom == aQ) {
-                                grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ, *bufferQ++);
-                            }
+        Dint->compute_shell_deriv1(P, Q);
+        const auto &buffers = Dint->buffers();
+
+        for (int mu_cart = 0; mu_cart < 3; mu_cart++) {
+            for (int atom_cart = 0; atom_cart < 3; atom_cart++) {
+                const double * bufferP = buffers[6*mu_cart + atom_cart];
+                const double * bufferQ = buffers[6*mu_cart + atom_cart + 3];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        if (atom == aP) {
+                            grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ, *bufferP++);
+                        }
+                        if (atom == aQ) {
+                            grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ, *bufferQ++);
                         }
                     }
                 }
