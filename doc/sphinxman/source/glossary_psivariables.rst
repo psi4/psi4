@@ -845,6 +845,14 @@ PSI Variables by Alpha
 
    The total electronic energy [Eh] for the local CCSD level of theory.
 
+.. psivar:: LEFT-RIGHT CC2 EIGENVECTOR OVERLAP
+   LEFT-RIGHT CC3 EIGENVECTOR OVERLAP
+   LEFT-RIGHT CCSD EIGENVECTOR OVERLAP
+   LEFT-RIGHT CCSD(T) EIGENVECTOR OVERLAP
+
+   The overlap between the right-hand coupled coupled cluster eigenvector and the
+   left-hand eigenvector from the coupled cluster lambda (response) equations.
+
 .. psivar:: LOWDIN CHARGES
 
    Property of partial atomic charges [e] by the method of L\ |o_dots|\ wdin, (nat,).

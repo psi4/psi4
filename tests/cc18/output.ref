@@ -1,27 +1,40 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.1rc3.dev5 
+                               Psi4 undefined 
 
-                         Git: Rev {master} 3fbd859 
+                         Git: Rev {master} ec840e8 dirty
 
 
-    R. M. Parrish, L. A. Burns, D. G. A. Smith, A. C. Simmonett,
-    A. E. DePrince III, E. G. Hohenstein, U. Bozkaya, A. Yu. Sokolov,
-    R. Di Remigio, R. M. Richard, J. F. Gonthier, A. M. James,
-    H. R. McAlexander, A. Kumar, M. Saitow, X. Wang, B. P. Pritchard,
-    P. Verma, H. F. Schaefer III, K. Patkowski, R. A. King, E. F. Valeev,
-    F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill,
-    J. Chem. Theory Comput. in press (2017).
-    (doi: 10.1021/acs.jctc.7b00174)
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, and A. Jiang
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
 
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 15 May 2017 03:34PM
+    Psi4 started on: Wednesday, 16 February 2022 03:45PM
 
-    Process ID:  12522
-    PSIDATADIR: /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4
+    Process ID: 27681
+    Host:       dhcp189-242.emerson.emory.edu
+    PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
     
@@ -42,38 +55,46 @@ set {
    basis cc-pVDZ
 }
 
-property('ccsd', properties=['polarizability'])
+wfn = properties('ccsd', properties=['polarizability'], return_wfn=True)[1]
 
 refnuc = 46.780362058359806     #TEST
 refscf = -174.41843300162472    #TEST
 refccsd = -0.368843103062227    #TEST
 reftotal = -174.787276104686754 #TEST
+refpolar = 5.124724706689 # TEST
+refoverlap = 0.92327310262 # TEST
+reftensor = psi4.core.Matrix.from_list(          # TEST
+   [[5.725437022190079, -1.786158517444678, 0],  # TEST
+   [-1.786158517444678, 6.486317384450757, 0],   # TEST
+   [0, 0, 3.162419713425239]])                   # TEST
 
 compare_values(refnuc, hof.nuclear_repulsion_energy(),           9, "Nuclear repulsion energy") #TEST
-compare_values(refscf, get_variable("SCF total energy"),         9, "SCF energy")               #TEST
-compare_values(refccsd, get_variable("CCSD correlation energy"), 8, "CCSD correlation energy")  #TEST
-compare_values(reftotal, get_variable("Current energy"),         8, "CCSD total energy")        #TEST
+compare_values(refscf, variable("SCF total energy"),         9, "SCF energy")               #TEST
+compare_values(refccsd, variable("CCSD correlation energy"), 8, "CCSD correlation energy")  #TEST
+compare_values(reftotal, variable("Current energy"),         8, "CCSD total energy")        #TEST
+
+compare_values(reftensor, wfn.variable("CCSD DIPOLE POLARIZABILITY TENSOR @ INF NM"), 5, "Dipole Polarizability Tensor") # TEST
+compare_values(refpolar, variable("CCSD DIPOLE POLARIZABILITY @ INF NM"), 5, "Dipole Polarizability") # TEST
+compare_values(refoverlap, wfn.variable("Left-Right CCSD Eigenvector Overlap"), 5, "Left-Right CCSD Overlap") # TEST
 --------------------------------------------------------------------------
 
-*** tstart() called on psinet
-*** at Mon May 15 15:34:15 2017
+*** tstart() called on dhcp189-242.emerson.emory.edu
+*** at Wed Feb 16 15:45:24 2022
 
    => Loading Basis Set <=
 
     Name: CC-PVDZ
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1 entry O          line   190 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
-    atoms 2 entry H          line    20 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
-    atoms 3 entry F          line   220 file /home/psilocaluser/gits/hrw-direct/objdir4/stage/usr/local/psi4/share/psi4/basis/cc-pvdz.gbs 
-
-    There are an even number of electrons - assuming singlet.
-    Specify the multiplicity in the molecule input block.
+    atoms 1 entry O          line   198 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 2 entry H          line    22 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
+    atoms 3 entry F          line   228 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/cc-pvdz.gbs 
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
                               RHF Reference
                         1 Threads,    500 MiB Core
          ---------------------------------------------------------
@@ -87,14 +108,14 @@ compare_values(reftotal, get_variable("Current energy"),         8, "CCSD total 
 
        Center              X                  Y                   Z               Mass       
     ------------   -----------------  -----------------  -----------------  -----------------
-           O         -0.947809457408    -0.132934425181     0.000000000000    15.994914619560
-           H         -1.513924046286     1.610489987673     0.000000000000     1.007825032070
-           F          0.878279174340     0.026485523618     0.000000000000    18.998403224000
+         O           -0.947809455906    -0.132934425143     0.000000000000    15.994914619570
+         H           -1.513924044784     1.610489987711     0.000000000000     1.007825032230
+         F            0.878279175842     0.026485523656     0.000000000000    18.998403162730
 
   Running in cs symmetry.
 
   Rotational constants: A =     20.68749  B =      1.92124  C =      1.75798 [cm^-1]
-  Rotational constants: A = 620195.40405  B =  57597.45554  C =  52702.94118 [MHz]
+  Rotational constants: A = 620195.40382  B =  57597.45561  C =  52702.94124 [MHz]
   Nuclear repulsion =   46.780362058359806
 
   Charge       = 0
@@ -112,28 +133,17 @@ compare_values(reftotal, get_variable("Current energy"),         8, "CCSD total 
   Guess Type is SAD.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-10
-  Integral threshold = 0.00e+00
+  Integral threshold = 1.00e-12
 
   ==> Primary Basis <==
 
   Basis Set: CC-PVDZ
     Blend: CC-PVDZ
     Number of shells: 15
-    Number of basis function: 33
+    Number of basis functions: 33
     Number of Cartesian functions: 35
     Spherical Harmonics?: true
     Max angular momentum: 2
-
-  ==> Pre-Iterations <==
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A'        24      24       0       0       0       0
-     A"         9       9       0       0       0       0
-   -------------------------------------------------------
-    Total      33      33       9       9       9       0
-   -------------------------------------------------------
 
   ==> Integral Setup <==
 
@@ -152,43 +162,59 @@ compare_values(reftotal, get_variable("Current energy"),         8, "CCSD total 
   Using 315282 doubles for integral storage.
   We computed 7260 shell quartets total.
   Whereas there are 7260 unique shell quartets.
+
   ==> DiskJK: Disk-Based J/K Matrices <==
 
     J tasked:                  Yes
     K tasked:                  Yes
     wK tasked:                  No
-    Memory (MB):               375
+    Memory [MiB]:              375
     Schwarz Cutoff:          1E-12
 
     OpenMP threads:              1
-  Minimum eigenvalue in the overlap matrix is 1.1480368199E-02.
-  Using Symmetric Orthogonalization.
 
-  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
+  Minimum eigenvalue in the overlap matrix is 1.1480368199E-02.
+  Reciprocal condition number of the overlap matrix is 3.1300362044E-03.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF (no occupation information).
+
+   -------------------------
+    Irrep   Nso     Nmo    
+   -------------------------
+     A'        24      24 
+     A"         9       9 
+   -------------------------
+    Total      33      33
+   -------------------------
 
   ==> Iterations <==
 
                         Total Energy        Delta E     RMS |[F,P]|
 
-   @RHF iter   0:  -176.46735633451576   -1.76467e+02   1.55847e-01 
-   @RHF iter   1:  -174.37904569912268    2.08831e+00   1.33080e-02 
-   @RHF iter   2:  -174.41426912926551   -3.52234e-02   4.00695e-03 DIIS
-   @RHF iter   3:  -174.41781988025593   -3.55075e-03   1.21325e-03 DIIS
-   @RHF iter   4:  -174.41836283366902   -5.42953e-04   3.37025e-04 DIIS
-   @RHF iter   5:  -174.41842730781693   -6.44741e-05   6.88587e-05 DIIS
-   @RHF iter   6:  -174.41843271973795   -5.41192e-06   1.68789e-05 DIIS
-   @RHF iter   7:  -174.41843299213377   -2.72396e-07   3.57882e-06 DIIS
-   @RHF iter   8:  -174.41843300140854   -9.27477e-09   7.45043e-07 DIIS
-   @RHF iter   9:  -174.41843300161435   -2.05802e-10   1.78380e-07 DIIS
-   @RHF iter  10:  -174.41843300162424   -9.89075e-12   2.53484e-08 DIIS
-   @RHF iter  11:  -174.41843300162455   -3.12639e-13   4.44891e-09 DIIS
-   @RHF iter  12:  -174.41843300162461   -5.68434e-14   7.75281e-10 DIIS
-   @RHF iter  13:  -174.41843300162463   -2.84217e-14   9.91439e-11 DIIS
+   @RHF iter SAD:  -175.71153508650366   -1.75712e+02   0.00000e+00 
+   @RHF iter   1:  -174.37900637995455    1.33253e+00   1.23779e-02 ADIIS/DIIS
+   @RHF iter   2:  -174.41628672542191   -3.72803e-02   2.97325e-03 ADIIS/DIIS
+   @RHF iter   3:  -174.41816198318293   -1.87526e-03   8.87545e-04 ADIIS/DIIS
+   @RHF iter   4:  -174.41840010823466   -2.38125e-04   3.13379e-04 ADIIS/DIIS
+   @RHF iter   5:  -174.41843041377791   -3.03055e-05   4.87270e-05 DIIS
+   @RHF iter   6:  -174.41843281428160   -2.40050e-06   1.28265e-05 DIIS
+   @RHF iter   7:  -174.41843299643415   -1.82153e-07   2.26423e-06 DIIS
+   @RHF iter   8:  -174.41843300144276   -5.00862e-09   6.05795e-07 DIIS
+   @RHF iter   9:  -174.41843300161108   -1.68313e-10   1.59552e-07 DIIS
+   @RHF iter  10:  -174.41843300162398   -1.29035e-11   2.92361e-08 DIIS
+   @RHF iter  11:  -174.41843300162469   -7.10543e-13   4.22907e-09 DIIS
+   @RHF iter  12:  -174.41843300162469    0.00000e+00   7.64167e-10 DIIS
+   @RHF iter  13:  -174.41843300162441    2.84217e-13   9.05641e-11 DIIS
+  Energy and wave function converged.
+
 
   ==> Post-Iterations <==
 
-    Orbital Energies (a.u.)
-    -----------------------
+    Orbital Energies [Eh]
+    ---------------------
 
     Doubly Occupied:                                                      
 
@@ -211,49 +237,44 @@ compare_values(reftotal, get_variable("Current energy"),         8, "CCSD total 
              Ap   App 
     DOCC [     7,    2 ]
 
-  Energy converged.
-
-  @RHF Final Energy:  -174.41843300162463
+  @RHF Final Energy:  -174.41843300162441
 
    => Energetics <=
 
     Nuclear Repulsion Energy =             46.7803620583598061
-    One-Electron Energy =                -334.7576923185320084
-    Two-Electron Energy =                 113.5588972585475602
-    DFT Exchange-Correlation Energy =       0.0000000000000000
-    Empirical Dispersion Energy =           0.0000000000000000
-    PCM Polarization Energy =               0.0000000000000000
-    EFP Energy =                            0.0000000000000000
-    Total Energy =                       -174.4184330016246349
+    One-Electron Energy =                -334.7576923169988277
+    Two-Electron Energy =                 113.5588972570146211
+    Total Energy =                       -174.4184330016244076
+
+Computation Completed
 
 
-
-Properties will be evaluated at   0.000000,   0.000000,   0.000000 Bohr
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
 
 Properties computed using the SCF density matrix
 
-  Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: [e a0]
      X:    -1.1919      Y:     0.7854      Z:     0.0000
 
-  Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: [e a0]
      X:     1.1188      Y:    -0.1743      Z:     0.0000
 
-  Dipole Moment: (a.u.)
+  Dipole Moment: [e a0]
      X:    -0.0731      Y:     0.6110      Z:     0.0000     Total:     0.6154
 
-  Dipole Moment: (Debye)
+  Dipole Moment: [D]
      X:    -0.1857      Y:     1.5531      Z:     0.0000     Total:     1.5642
 
 
-*** tstop() called on psinet at Mon May 15 15:34:15 2017
+*** tstop() called on dhcp189-242.emerson.emory.edu at Wed Feb 16 15:45:26 2022
 Module time:
-	user time   =       0.51 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       1.06 seconds =       0.02 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       0.51 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       1.06 seconds =       0.02 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
 
@@ -267,19 +288,19 @@ Total time:
       Number of basis functions:        33
 
       Number of irreps:                  2
-      Integral cutoff                 0.00e+00
+      Integral cutoff                 1.00e-12
       Number of functions per irrep: [  24    9 ]
 
  OEINTS: Overlap, kinetic, potential, dipole, and quadrupole integrals
          stored in file 35.
 
       Computing two-electron integrals...done
-      Computed 79998 non-zero two-electron integrals.
+      Computed 78700 non-zero two-electron integrals.
         Stored in file 33.
 
 
-*** tstart() called on psinet
-*** at Mon May 15 15:34:16 2017
+*** tstart() called on dhcp189-242.emerson.emory.edu
+*** at Wed Feb 16 15:45:26 2022
 
 
 	Wfn Parameters:
@@ -302,7 +323,7 @@ Total time:
 	(OO|OO)...
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (nn|nn) nbuckets = 1
-	Transforming the one-electron integrals and constructing Fock matrices
+	Constructing frozen core operators
 	Starting first half-transformation.
 	Sorting half-transformed integrals.
 	First half integral transformation complete.
@@ -353,24 +374,20 @@ Total time:
 	Total:                                     0.025 (MW) /      0.197 (MB)
 
 	Nuclear Rep. energy          =     46.78036205835981
-	SCF energy                   =   -174.41843300162463
-	One-electron energy          =   -334.75769231697109
-	Two-electron energy          =    113.55889725698678
-	Reference energy             =   -174.41843300162452
+	SCF energy                   =   -174.41843300162441
+	One-electron energy          =   -334.75769231730192
+	Two-electron energy          =    113.55889725731765
+	Reference energy             =   -174.41843300162446
 
-*** tstop() called on psinet at Mon May 15 15:34:16 2017
+*** tstop() called on dhcp189-242.emerson.emory.edu at Wed Feb 16 15:45:27 2022
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.66 seconds =       0.01 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.21 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
-
-*** tstart() called on psinet
-*** at Mon May 15 15:34:16 2017
-
+Total time:
+	user time   =       1.32 seconds =       0.02 minutes
+	system time =       0.38 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
             **************************
             *                        *
             *        CCENERGY        *
@@ -378,8 +395,8 @@ Total time:
             **************************
 
     Nuclear Rep. energy (wfn)     =   46.780362058359806
-    SCF energy          (wfn)     = -174.418433001624635
-    Reference energy    (file100) = -174.418433001624521
+    SCF energy          (wfn)     = -174.418433001624408
+    Reference energy    (file100) = -174.418433001624464
 
     Input parameters:
     -----------------
@@ -407,38 +424,38 @@ Total time:
     SCSN-MP2        =     False
     SCS-CCSD        =     False
 
-MP2 correlation energy -0.3566362407158364
+MP2 correlation energy -0.3566362407166802
                 Solving CC Amplitude Equations
                 ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
-     0        -0.356636240715836    0.000e+00    0.000000    0.000000    0.000000    0.109615
-     1        -0.362752063085787    3.144e-02    0.004275    0.011894    0.011894    0.119295
-     2        -0.368196197132806    1.020e-02    0.004675    0.013297    0.013297    0.125545
-     3        -0.368909989044554    3.691e-03    0.005274    0.015965    0.015965    0.127551
-     4        -0.368843223251892    1.064e-03    0.005417    0.016790    0.016790    0.128058
-     5        -0.368847102128174    5.172e-04    0.005511    0.017384    0.017384    0.128207
-     6        -0.368845295155212    1.896e-04    0.005559    0.017671    0.017671    0.128212
-     7        -0.368842607501074    4.221e-05    0.005566    0.017712    0.017712    0.128200
-     8        -0.368842991733845    9.726e-06    0.005568    0.017722    0.017722    0.128199
-     9        -0.368843083958683    1.805e-06    0.005568    0.017722    0.017722    0.128199
-    10        -0.368843084636058    4.602e-07    0.005568    0.017723    0.017723    0.128198
-    11        -0.368843099038191    1.246e-07    0.005568    0.017723    0.017723    0.128198
-    12        -0.368843101814606    3.400e-08    0.005568    0.017723    0.017723    0.128198
-    13        -0.368843102644184    8.788e-09    0.005568    0.017723    0.017723    0.128198
+     0        -0.356636240716680    0.000e+00    0.000000    0.000000    0.000000    0.109615
+     1        -0.362752063086016    3.144e-02    0.004275    0.011894    0.011894    0.119295
+     2        -0.368196197130606    1.020e-02    0.004675    0.013297    0.013297    0.125545
+     3        -0.368909989044804    3.691e-03    0.005274    0.015965    0.015965    0.127551
+     4        -0.368843223250895    1.064e-03    0.005417    0.016790    0.016790    0.128058
+     5        -0.368847102127169    5.172e-04    0.005511    0.017384    0.017384    0.128207
+     6        -0.368845295154130    1.896e-04    0.005559    0.017671    0.017671    0.128212
+     7        -0.368842607499978    4.221e-05    0.005566    0.017712    0.017712    0.128200
+     8        -0.368842991732743    9.726e-06    0.005568    0.017722    0.017722    0.128199
+     9        -0.368843083957580    1.805e-06    0.005568    0.017722    0.017722    0.128199
+    10        -0.368843084634956    4.602e-07    0.005568    0.017723    0.017723    0.128198
+    11        -0.368843099037087    1.246e-07    0.005568    0.017723    0.017723    0.128198
+    12        -0.368843101813504    3.400e-08    0.005568    0.017723    0.017723    0.128198
+    13        -0.368843102643079    8.788e-09    0.005568    0.017723    0.017723    0.128198
 
     Iterations converged.
 
 
     Largest TIA Amplitudes:
-              6   0         0.0137313979
-              6   2        -0.0064752642
+              6   0         0.0137313982
+              6   2        -0.0064752643
               7  17        -0.0058546058
-              5   0        -0.0054830976
-              6   9         0.0050129177
-              3   1         0.0049539840
-              8  17        -0.0043004442
-              6   1        -0.0041980393
+              5   0        -0.0054830977
+              6   9         0.0050129178
+              3   1         0.0049539841
+              8  17        -0.0043004440
+              6   1        -0.0041980387
               4   9        -0.0039633123
               7  18         0.0038967922
 
@@ -446,40 +463,28 @@ MP2 correlation energy -0.3566362407158364
       8   8  17  17        -0.0347803136
       6   6   2   2        -0.0346572612
       6   6   0   0        -0.0242680490
-      6   6   0   2         0.0221026068
-      6   6   2   0         0.0221026068
+      6   6   0   2         0.0221026069
+      6   6   2   0         0.0221026069
       8   8  18  18        -0.0216499642
       7   7  18  18        -0.0211241947
       7   8  17  17        -0.0203462181
       8   7  17  17        -0.0203462181
       7   8  18  18         0.0189838363
 
-    SCF energy       (wfn)                    = -174.418433001624635
-    Reference energy (file100)                = -174.418433001624521
+    SCF energy       (wfn)                    = -174.418433001624408
+    Reference energy (file100)                = -174.418433001624464
 
-    Opposite-spin MP2 correlation energy      =   -0.260477904529496
-    Same-spin MP2 correlation energy          =   -0.096158336186340
-    MP2 correlation energy                    =   -0.356636240715836
-      * MP2 total energy                      = -174.775069242340351
+    Opposite-spin MP2 correlation energy      =   -0.260477904529681
+    Same-spin MP2 correlation energy          =   -0.096158336186999
+    Singles MP2 correlation energy            =   -0.000000000000000
+    MP2 correlation energy                    =   -0.356636240716680
+      * MP2 total energy                      = -174.775069242341146
 
-    Opposite-spin CCSD correlation energy     =   -0.280899925284156
-    Same-spin CCSD correlation energy         =   -0.087943177358422
-    CCSD correlation energy                   =   -0.368843102644184
-      * CCSD total energy                     = -174.787276104268699
-
-
-*** tstop() called on psinet at Mon May 15 15:34:16 2017
-Module time:
-	user time   =       0.28 seconds =       0.00 minutes
-	system time =       0.26 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.94 seconds =       0.02 minutes
-	system time =       0.35 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
-
-*** tstart() called on psinet
-*** at Mon May 15 15:34:16 2017
+    Opposite-spin CCSD correlation energy     =   -0.280899925283734
+    Same-spin CCSD correlation energy         =   -0.087943177359345
+    Singles CCSD correlation energy           =    0.000000000000000
+    CCSD correlation energy                   =   -0.368843102643079
+      * CCSD total energy                     = -174.787276104267534
 
 
 			**************************
@@ -489,20 +494,6 @@ Total time:
 			**************************
 
 
-*** tstop() called on psinet at Mon May 15 15:34:16 2017
-Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.96 seconds =       0.02 minutes
-	system time =       0.38 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
-
-*** tstart() called on psinet
-*** at Mon May 15 15:34:16 2017
-
-
 			**************************
 			*        CCLAMBDA        *
 			**************************
@@ -510,10 +501,10 @@ Total time:
 
 	Nuclear Rep. energy (wfn)     =   46.780362058359806
 	Reference           (wfn)     =                    0
-	SCF energy          (wfn)     = -174.418433001624635
-	Reference energy    (CC_INFO) = -174.418433001624521
-	CCSD energy         (CC_INFO) =   -0.368843102644184
-	Total CCSD energy   (CC_INFO) = -174.787276104268699
+	SCF energy          (wfn)     = -174.418433001624408
+	Reference energy    (CC_INFO) = -174.418433001624464
+	CCSD energy         (CC_INFO) =   -0.368843102643079
+	Total CCSD energy   (CC_INFO) = -174.787276104267534
 
 	Input parameters:
 	-----------------
@@ -526,7 +517,7 @@ Total time:
 	AO Basis          =     No
 	ABCD              =     NEW
 	Local CC          =     No
-	Paramaters for left-handed eigenvectors:
+	Parameters for left-handed eigenvectors:
 	    Irr   Root  Ground-State?    EOM energy        R0
 	  1   0     0        Yes       0.0000000000   1.0000000000
 	Labels for eigenvector 1:
@@ -539,28 +530,28 @@ Total time:
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0        -0.368917658546573    0.000e+00
-	   1        -0.364932522975125    1.124e-02
-	   2        -0.364255665894247    1.639e-03
-	   3        -0.364135867440904    9.744e-04
-	   4        -0.364111552219230    4.261e-04
-	   5        -0.364122022062909    1.761e-04
-	   6        -0.364124905762203    4.164e-05
-	   7        -0.364124461330677    9.123e-06
-	   8        -0.364124452934033    1.977e-06
-	   9        -0.364124473938754    5.096e-07
-	  10        -0.364124471206592    1.305e-07
-	  11        -0.364124470168710    3.649e-08
+	   0        -0.368917658547535    0.000e+00
+	   1        -0.364932522974435    1.124e-02
+	   2        -0.364255665893209    1.639e-03
+	   3        -0.364135867439815    9.744e-04
+	   4        -0.364111552218176    4.261e-04
+	   5        -0.364122022061905    1.761e-04
+	   6        -0.364124905761203    4.164e-05
+	   7        -0.364124461329678    9.123e-06
+	   8        -0.364124452933033    1.977e-06
+	   9        -0.364124473937755    5.096e-07
+	  10        -0.364124471205595    1.305e-07
+	  11        -0.364124470167711    3.649e-08
 
 	Largest LIA Amplitudes:
-	          6   0         0.0088889534
+	          6   0         0.0088889537
 	          6   9         0.0046230269
 	          6   2        -0.0043558320
 	          7  17        -0.0037331039
-	          3   1         0.0037156072
+	          3   1         0.0037156073
 	          4   9        -0.0037153618
-	          5   0        -0.0036782944
-	          6   1        -0.0029821785
+	          5   0        -0.0036782945
+	          6   1        -0.0029821779
 	          4   2        -0.0027873897
 	          3  10         0.0027698857
 
@@ -578,21 +569,7 @@ Total time:
 
 	Iterations converged.
 
-	Overlap <L|e^T> =        0.92327310263
-
-*** tstop() called on psinet at Mon May 15 15:34:16 2017
-Module time:
-	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       1.06 seconds =       0.02 minutes
-	system time =       0.44 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
-
-*** tstart() called on psinet
-*** at Mon May 15 15:34:16 2017
-
+	Overlap <L|e^T> =        0.92327310262
 			**************************
 			*                        *
 			*       ccresponse       *
@@ -625,676 +602,86 @@ Total time:
 	Local CC         =    No
 
 
-	DPD File2: Mu_X_IA
-	DPD Parameters:
-	------------------
-	pnum = 0   qnum = 1   irrep = 0 
-	Irreps = 2
-
-	   Row and column dimensions for DPD Block:
-	   ----------------------------------------
-	   Irrep: 0 row =     7	col =    17
-	   Irrep: 1 row =     2	col =     7
-
-	File 101 DPD File2: Mu_X_IA
-	Matrix for Irrep 0
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6                  7                  8     
-                      (  0)              (  1)              (  2)              (  3)              (  4)              (  5)              (  6)              (  7)              (  8)    
-
-    0  (  0)  0.004973311842420  0.013266995929194 -0.000628781752650  0.005821270029711  0.000919567978389 -0.029199972126277 -0.045028399100615 -0.004470261442868  0.011877997660973
-    1  (  1) -0.009507235197465  0.012821706325681  0.003799126662323  0.002252865927789 -0.055209495109638 -0.024587025371536 -0.024606989745353  0.013427377489122  0.015081303210996
-    2  (  2)  0.017389558115330  0.090269894198298 -0.021790983039229  0.002273396073767 -0.116264596862995 -0.115462041463182 -0.161679143653215 -0.004382227235246  0.044152650113456
-    3  (  3) -0.045800490256979  0.102684016384532  0.004298149179316  0.100539443932561  0.370543586881228 -0.055770882127095 -0.078687877648937  0.007825357989151 -0.005958094935074
-    4  (  4) -0.010437720508756 -0.261361023414715  0.067136694654885  0.024410751781307  0.194687941602072  0.189213367030643 -0.016782925636855  0.030449297972061  0.042728748936542
-    5  (  5) -0.204520483232375 -0.650047613350723  0.223047478915115  0.041190532288828  0.240619423579020  0.137439279021806  0.171279245566349  0.016185016716155  0.121002567618243
-    6  (  6)  0.280902317075686 -0.160624493052630 -0.273839367320915  0.104387818057079  0.105984664365181 -0.191695563527147  0.108911766202156  0.343815605886557 -0.365957079247593
-
-                         9                 10                 11                 12                 13                 14                 15                 16     
-                      (  9)              ( 10)              ( 11)              ( 12)              ( 13)              ( 14)              ( 15)              ( 16)    
-
-    0  (  0) -0.004053113693639 -0.001130746719724  0.002197040319962  0.015409285346726  0.020385399861542 -0.015317248885300  0.001807788770669 -0.017920595472896
-    1  (  1)  0.009120082216771  0.007242671494465  0.002352070818783  0.003227187191148  0.007274880671275 -0.006594278499477  0.000810229863832 -0.037744633186989
-    2  (  2)  0.003699393587885 -0.014491498350452  0.012365540077675  0.024534096582420  0.035400276246270 -0.027568218912892 -0.001277774119094 -0.041982803931278
-    3  (  3) -0.007020625904771 -0.030420086186429  0.005111711552613 -0.010981748828457 -0.029324107040541  0.031529857635967  0.023380127781764 -0.037504135613166
-    4  (  4)  0.028745091229062  0.004362974798259  0.043337123990434  0.007599994175584 -0.010124122330634 -0.015830192253864 -0.106395365799599 -0.053301540072467
-    5  (  5)  0.000191291817130  0.025549777277615 -0.058630833236206  0.035380012602333  0.052526050019725 -0.020071096582297  0.076201395794856 -0.101034119172714
-    6  (  6) -0.057417324803445  0.003770361171130  0.312155564894551 -0.019595345178408  0.032179561711375 -0.085712769628612 -0.091655662969558 -0.043614568508174
-
-	File 101 DPD File2: Mu_X_IA
-	Matrix for Irrep 1
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6     
-                      ( 17)              ( 18)              ( 19)              ( 20)              ( 21)              ( 22)              ( 23)    
-
-    0  (  7)  0.002562166576810 -0.127624975977973 -0.006095786674712 -0.057070001911147 -0.023443205612938  0.016613258960547 -0.145264601529894
-    1  (  8) -0.188514280230696 -0.034959079109968  0.090846586736882  0.600224852290862 -0.049044165260569 -0.027854382028144  0.077976937344799
-
-	DPD File2: Mu_XBAR_MI
-	DPD Parameters:
-	------------------
-	pnum = 0   qnum = 0   irrep = 0 
-	Irreps = 2
-
-	   Row and column dimensions for DPD Block:
-	   ----------------------------------------
-	   Irrep: 0 row =     7	col =     7
-	   Irrep: 1 row =     2	col =     2
-
-	File 101 DPD File2: Mu_XBAR_MI
-	Matrix for Irrep 0
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6     
-                      (  0)              (  1)              (  2)              (  3)              (  4)              (  5)              (  6)    
-
-    0  (  0) -0.877967627777422  0.000313522193885 -0.019259885114899  0.021251632646677  0.017412558381543  0.034335407608122 -0.000238172067977
-    1  (  1)  0.000322608301159  0.947380586418927  0.024249733504118  0.009114321616672 -0.017152420036553 -0.038527066340585 -0.008117265825269
-    2  (  2) -0.019192337212076  0.024108802324621 -0.143587960734164 -0.609589206490412 -0.080850441455274 -0.015635633462244  0.017209818026152
-    3  (  3)  0.021307524418295  0.009065921973045 -0.609927216030261  0.011341171531792 -0.562777560041806 -1.130102822062636  0.098161002116207
-    4  (  4)  0.017437875196281 -0.016860670100678 -0.081233426405492 -0.564804896125186 -0.137787092581000  0.037141276598305 -0.832484571958431
-    5  (  5)  0.034336422207809 -0.038415705150775 -0.016763474874715 -1.132859634730825  0.035968686389388  0.264833058338806  0.457303575012872
-    6  (  6) -0.000330176196204 -0.008043840531137  0.016330711457040  0.098416114621248 -0.830420506786361  0.457130067031749  0.385470725689891
-
-	File 101 DPD File2: Mu_XBAR_MI
-	Matrix for Irrep 1
-	----------------------------------------
-
-                         0                  1     
-                      (  7)              (  8)    
-
-    0  (  7) -0.227964898187111  0.899784121233826
-    1  (  8)  0.899333065983887  0.346847097589671
-
-	DPD File2: Mu_XBAR_AE
-	DPD Parameters:
-	------------------
-	pnum = 1   qnum = 1   irrep = 0 
-	Irreps = 2
-
-	   Row and column dimensions for DPD Block:
-	   ----------------------------------------
-	   Irrep: 0 row =    17	col =    17
-	   Irrep: 1 row =     7	col =     7
-
-	File 101 DPD File2: Mu_XBAR_AE
-	Matrix for Irrep 0
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6                  7                  8     
-                      (  0)              (  1)              (  2)              (  3)              (  4)              (  5)              (  6)              (  7)              (  8)    
-
-    0  (  0)  1.616069892967479  0.536999907051150  0.064570261876040 -0.021746949912277  0.311054630877821 -0.014988999172405  0.403937330087945  0.080677979873057  0.190208106487455
-    1  (  1)  0.539100056498516  1.121467176666247  0.501269943316642  0.076120073616449  1.006742706967183  0.003907518839869 -0.383146326015906 -0.474993266173891 -0.025427814708290
-    2  (  2)  0.061217021707026  0.499628876649760  1.154179761547679 -0.137928182230207 -0.495313577328704  0.318380781085083  0.413200746977768  0.157674454194187  0.163348441730637
-    3  (  3) -0.019662932181902  0.077523110716237 -0.139848581831016  0.935298042213461 -0.495168520230326 -0.312161918206558  0.553850138158318  0.050690221949478 -0.115705670983923
-    4  (  4)  0.310943231912245  1.007930671638323 -0.496792878828608 -0.496057332349687 -0.163289419911835  0.399873031900545  0.581449523537223 -0.151289222759544 -0.558580697485669
-    5  (  5) -0.016981854891947  0.004948048764034  0.318027411184761 -0.311334572285935  0.400040741651111 -0.163260855919447 -0.043209700057495 -0.714667048662943  0.807833175148087
-    6  (  6)  0.405126484890687 -0.384326977793760  0.412161084214200  0.554052652902420  0.580944240575065 -0.043533045765473 -0.738038189913174  0.085634839739791 -0.225430347568135
-    7  (  7)  0.084899534839486 -0.477102952332268  0.155861734152232  0.049692746203376 -0.151524749975201 -0.714700304975363  0.085653110388686  1.020372569509527  0.273203758137360
-    8  (  8)  0.184458527486899 -0.023781009109428  0.165473299991741 -0.114600831781509 -0.558632517834899  0.809040541017665 -0.225150367734397  0.272550659433566  0.714544346078630
-    9  (  9)  0.053140085566933 -0.342609131399032 -0.159311675950025  0.022341895172406 -0.065531666457941 -0.269706601792044 -0.158590290040883 -0.172377416642127  0.098583572112276
-   10  ( 10)  0.103318634513581  0.336891904621928 -0.211860379640619  0.028705977449186  0.219074363337676  0.147144167978260  0.232719520034019  0.268264154907058  0.208839112806249
-   11  ( 11) -0.186528320728560  0.153201146227160  0.313141523626848 -0.072865729142206 -0.113774903876904  0.278147399319773 -0.079792554944406 -0.195212219985092  0.186019861514605
-   12  ( 12)  0.151804562470380 -0.108110913589193  0.032295103397482 -0.162704962998080  0.020425035985395  0.192138610039798  0.222419633081555  0.130336458514063  0.009407451168347
-   13  ( 13)  0.121608980468147 -0.110977070036416  0.045709995700808 -0.051967255031550  0.089407073382375  0.164909440906492  0.397216369690148 -0.051479025562843 -0.182819729690442
-   14  ( 14) -0.078729676811449  0.035361204543499 -0.059248000570132  0.112066401729467 -0.064040771924493 -0.235871938611370 -0.273666216491851  0.082834082600954 -0.020031425337546
-   15  ( 15) -0.041387782348737  0.012446902025401 -0.027295301343398 -0.097753764879968  0.030026558446350 -0.090321793918167  0.019874335440574  0.116017714618159 -0.126972589824017
-   16  ( 16) -0.132346570961014 -0.061311035452528 -0.029455538314585  0.015897095654094  0.164187274367228  0.163025551532529  0.169577657089619  0.068368765349842  0.040151411900286
-
-                         9                 10                 11                 12                 13                 14                 15                 16     
-                      (  9)              ( 10)              ( 11)              ( 12)              ( 13)              ( 14)              ( 15)              ( 16)    
-
-    0  (  0)  0.055450179392143  0.103885767798645 -0.191032843184630  0.152009876765531  0.121262205093580 -0.077396557926399 -0.039919053508789 -0.132668039484833
-    1  (  1) -0.341982473849473  0.338042385842939  0.154837698936014 -0.109646885589326 -0.112374874685015  0.036067541299672  0.012224215969483 -0.062173439974433
-    2  (  2) -0.161380436915144 -0.212525022100407  0.315178751222925  0.032643675793772  0.046296273705364 -0.060259188597456 -0.027924052357600 -0.029774347871233
-    3  (  3)  0.022756835482508  0.028917816386245 -0.072019929552279 -0.162829131148313 -0.051988133264679  0.111942009790314 -0.098152283948774  0.016121374057657
-    4  (  4) -0.065398587780104  0.219671416349953 -0.113855291654843  0.020875558658277  0.090234442225764 -0.064699443883818  0.030327734232072  0.164965146771546
-    5  (  5) -0.271645100740161  0.146334667900198  0.279031366705043  0.192410761999396  0.165180364781844 -0.236457911753614 -0.090839325876831  0.163445998890292
-    6  (  6) -0.158392571216331  0.232617546830469 -0.079904277525555  0.222795557006379  0.397833037393700 -0.274049556346731  0.020076568565878  0.169937762836577
-    7  (  7) -0.170682218930737  0.268852788924461 -0.195692655631593  0.130524483662394 -0.051165870753592  0.082798905111474  0.115829481611921  0.068470603637687
-    8  (  8)  0.096564774400459  0.208060530676781  0.185992253087691  0.009546396555931 -0.182917669130660 -0.020127532892354 -0.126885643557734  0.040301896445589
-    9  (  9)  1.091880727567691  0.618059189550446  0.064491178316728 -0.255127265298153  0.132183322659193  0.068956515747449 -0.080323214785153  0.053878904245470
-   10  ( 10)  0.618133427217973 -0.009840747270555 -0.012838874312449 -0.097969065788503  0.187597974236331 -0.202172218192428  0.021959943928536 -0.096709126143790
-   11  ( 11)  0.065903124056332 -0.012296213223516  0.598357018260268  0.059602437106640  0.013365498655060  0.114364469387422  0.827703714814272  0.048268697375416
-   12  ( 12) -0.255300845543072 -0.098147098302428  0.059580177286631  0.567724364588334  0.571908990688770  0.504236828319316 -0.162215368687525 -0.181543287290882
-   13  ( 13)  0.132327758452044  0.187460052134370  0.013164164091644  0.571973146708029 -0.024738561731451 -0.558762474457290  0.053196123755600 -0.396928116374643
-   14  ( 14)  0.068667391811250 -0.202141325825509  0.114385734772808  0.504185200524863 -0.558826822299811  0.386685477843168 -0.175467887973287  0.372361407623275
-   15  ( 15) -0.080419165584540  0.021930833178644  0.827828341049347 -0.162189801264582  0.053238745633506 -0.175544320290206 -0.303093580717964 -0.025810555425005
-   16  ( 16)  0.053860155724737 -0.096716021429521  0.048339421207049 -0.181761176256103 -0.397159003963137  0.372509037743374 -0.025797733506413 -0.684921057347843
-
-	File 101 DPD File2: Mu_XBAR_AE
-	Matrix for Irrep 1
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6     
-                      ( 17)              ( 18)              ( 19)              ( 20)              ( 21)              ( 22)              ( 23)    
-
-    0  ( 17)  0.996221771264781  0.634916601424205 -0.014362716631635  0.063989857296955 -0.042407746505356 -0.006245913013570 -0.058879619182911
-    1  ( 18)  0.635492231729567 -0.849574597065479 -0.222501748008102 -0.070695707728260 -0.044659773960105 -0.000858385134597  0.091968108784986
-    2  ( 19) -0.014244902761393 -0.222479167715802  1.390369489816734 -0.091171600676680  0.230379334026940 -0.056370061079156 -0.056296969685364
-    3  ( 20)  0.061641277916797 -0.072215991374829 -0.089669757728556  0.479776129624267 -0.001619307121866  0.050691341679411 -0.843378870070342
-    4  ( 21) -0.042015467261129 -0.044624154704689  0.230215986734824 -0.001665187241094  0.807122289756001  0.600336959720774  0.061822950945867
-    5  ( 22) -0.006217156495504 -0.000752286573158 -0.056429339022518  0.050647999718981  0.600335726118913 -0.657774788651638 -0.002451531484141
-    6  ( 23) -0.058260203196288  0.091274675691581 -0.056274995793589 -0.843437750772329  0.061822627544744 -0.002424678590388 -0.386375955817265
-
-	DPD File2: Mu_XBAR_IA
-	DPD Parameters:
-	------------------
-	pnum = 0   qnum = 1   irrep = 0 
-	Irreps = 2
-
-	   Row and column dimensions for DPD Block:
-	   ----------------------------------------
-	   Irrep: 0 row =     7	col =    17
-	   Irrep: 1 row =     2	col =     7
-
-	File 101 DPD File2: Mu_XBAR_IA
-	Matrix for Irrep 0
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6                  7                  8     
-                      (  0)              (  1)              (  2)              (  3)              (  4)              (  5)              (  6)              (  7)              (  8)    
-
-    0  (  0)  0.005067718602564  0.012834536697545 -0.000479852203790  0.005722139901833  0.000833808063496 -0.028778886596553 -0.044364182938668 -0.004452517622790  0.011610939961984
-    1  (  1) -0.009366317446028  0.012436714707338  0.003619967651494  0.002506343633191 -0.054364550699126 -0.024231895654861 -0.024309365376738  0.013315051357905  0.015021310452871
-    2  (  2)  0.013031948627571  0.082073139548056 -0.016750891783675  0.005003053437332 -0.107195561546812 -0.115639730242362 -0.163350570683235 -0.004090408571963  0.044315107876541
-    3  (  3) -0.036519743525604  0.094411862150342  0.011079097248522  0.098683633129517  0.374242899840913 -0.057337396588692 -0.088127176408084 -0.006641022684203 -0.002221148233647
-    4  (  4) -0.000669699172289 -0.250491740261667  0.056329271904452  0.020699653792360  0.189174399877583  0.184564489543563 -0.035853071510258  0.034875430761871  0.027893872485011
-    5  (  5) -0.214156532952001 -0.615288665228073  0.215771246496463  0.046102431034998  0.224131841627018  0.112114948214997  0.150102522248780  0.016602833134577  0.122840663448384
-    6  (  6)  0.274003045126345 -0.143471801350552 -0.253398037809428  0.106851026797139  0.096788453036176 -0.178572747687720  0.102040610315469  0.332630496777659 -0.346310147474924
-
-                         9                 10                 11                 12                 13                 14                 15                 16     
-                      (  9)              ( 10)              ( 11)              ( 12)              ( 13)              ( 14)              ( 15)              ( 16)    
-
-    0  (  0) -0.004029200957262 -0.000882760387815  0.002163389161852  0.015131943390768  0.019986233213131 -0.015021193015430  0.001769851076152 -0.017643335711180
-    1  (  1)  0.008928102950838  0.007088858124711  0.002274297322438  0.003234469739506  0.007168429052842 -0.006447748030626  0.000776633831883 -0.037286026575744
-    2  (  2)  0.001170842165982 -0.008217089214694  0.012153847196611  0.024134889946246  0.032866749918210 -0.025142667403112 -0.001212134116123 -0.040817148842223
-    3  (  3) -0.011819482888983 -0.019738644366229  0.003700824753807 -0.007133785910539 -0.023026708836450  0.026144977983312  0.022041055636284 -0.034121256234260
-    4  (  4)  0.022466660017067  0.007998429684733  0.041919351164412  0.007813392525526 -0.007265785085742 -0.016637369547839 -0.098013371195297 -0.048843349051820
-    5  (  5) -0.004397289983522  0.028748859918863 -0.050560469286314  0.032522695518837  0.047617334307217 -0.017989934308051  0.071203484599801 -0.093017155821172
-    6  (  6) -0.042123284623241  0.008732952171968  0.284856396785623 -0.018363970093683  0.031949856970873 -0.080004455070452 -0.086790220224970 -0.043344803159577
-
-	File 101 DPD File2: Mu_XBAR_IA
-	Matrix for Irrep 1
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6     
-                      ( 17)              ( 18)              ( 19)              ( 20)              ( 21)              ( 22)              ( 23)    
-
-    0  (  7)  0.001724783206467 -0.146102349699597 -0.011750241124814 -0.057277414548615 -0.020173503070547  0.015641770076300 -0.133391360672721
-    1  (  8) -0.182384400209357 -0.023648068007241  0.082951126731175  0.562127906579000 -0.042963631893793 -0.024859663227064  0.073688495864428
-
 	Computing Mu_X-Perturbed Wave Function (0.000 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         3.976751893091
-	   1         4.972589784033    2.597e-01
-	   2         5.830519290748    1.478e-01
-	   3         5.866075623999    4.363e-02
-	   4         5.892854079204    2.424e-02
-	   5         5.896437561772    3.929e-03
-	   6         5.895342196228    1.112e-03
-	   7         5.895385893277    3.007e-04
-	   8         5.895365551650    7.196e-05
-	   9         5.895352778625    1.804e-05
-	  10         5.895354148765    4.329e-06
-	  11         5.895356144258    1.026e-06
-	  12         5.895356910320    2.202e-07
+	   0         3.976751895439
+	   1         4.972589787293    2.597e-01
+	   2         5.830519295753    1.478e-01
+	   3         5.866075629205    4.363e-02
+	   4         5.892854084491    2.424e-02
+	   5         5.896437567073    3.929e-03
+	   6         5.895342201525    1.112e-03
+	   7         5.895385898573    3.007e-04
+	   8         5.895365556947    7.196e-05
+	   9         5.895352783922    1.804e-05
+	  10         5.895354154061    4.329e-06
+	  11         5.895356149554    1.026e-06
+	  12         5.895356915617    2.202e-07
 	-----------------------------------------
 	Converged Mu_X-Perturbed Wfn to 5.099e-08
-
-	DPD File2: Mu_Y_IA
-	DPD Parameters:
-	------------------
-	pnum = 0   qnum = 1   irrep = 0 
-	Irreps = 2
-
-	   Row and column dimensions for DPD Block:
-	   ----------------------------------------
-	   Irrep: 0 row =     7	col =    17
-	   Irrep: 1 row =     2	col =     7
-
-	File 101 DPD File2: Mu_Y_IA
-	Matrix for Irrep 0
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6                  7                  8     
-                      (  0)              (  1)              (  2)              (  3)              (  4)              (  5)              (  6)              (  7)              (  8)    
-
-    0  (  0) -0.003265067152215  0.002026492209092  0.005500435318608  0.008078622301942 -0.008658500881106  0.036459293961255 -0.029326652250389  0.007624907133579 -0.017230266414265
-    1  (  1)  0.019848975655178 -0.008568674096348 -0.035768118335384  0.039338967933433 -0.008739192142374  0.002236852315730  0.003842536150609 -0.006370808307975  0.006387188771097
-    2  (  2) -0.001311158102685  0.005996603930091 -0.012088378357489  0.063288593855744 -0.042686750248059  0.096527587997972 -0.064713284258082 -0.038913772194288  0.014267016211386
-    3  (  3) -0.069641434452892  0.057681873117430  0.132311010020052 -0.036249277341740  0.036248934686344  0.111143378691463 -0.091174493929583  0.097901000061866 -0.105673461585860
-    4  (  4)  0.434124623887636 -0.301640726175215 -0.258270584723751 -0.205811882736700 -0.089339728161529  0.039739513490042 -0.135462303940184  0.002375526322154 -0.043263965637087
-    5  (  5)  0.081173968533580  0.037394137923489 -0.122560942083271  0.305171944931136  0.078260777553572  0.027064995698856  0.046022990304438  0.193875689971935 -0.171790059938538
-    6  (  6) -0.474121713810929  0.141227640283334  0.441524301346358  0.264512324388007 -0.140054125878107 -0.132135738723402 -0.051997998775653 -0.032760210570494 -0.100063633119551
-
-                         9                 10                 11                 12                 13                 14                 15                 16     
-                      (  9)              ( 10)              ( 11)              ( 12)              ( 13)              ( 14)              ( 15)              ( 16)    
-
-    0  (  0)  0.006013935012044  0.002206969220207 -0.014470075947404  0.001368309875554  0.002087239599490 -0.000365868142111 -0.003958916776740 -0.001873434717837
-    1  (  1) -0.035403072354539 -0.013826422633142 -0.010343466208206  0.017788524189127 -0.002520441967521  0.012986907297243  0.004538611831476 -0.001552742472358
-    2  (  2) -0.005745134984338 -0.006714974843580 -0.127066954751499  0.030070029489333  0.001125013323686  0.025517535242833  0.018059867151877 -0.002030574745860
-    3  (  3)  0.088384862569299  0.013343980191348  0.044104599203942 -0.013053883960178 -0.019339911467359 -0.028936077036826 -0.075177469099725 -0.012052012829738
-    4  (  4) -0.210300662230572  0.088714358597727  0.069888081915218 -0.172504610132771  0.167942817048365  0.026139419673210 -0.056730594878719  0.041941123068078
-    5  (  5)  0.040118833547137 -0.073298763846333  0.248063286831581  0.077429976518254 -0.092806173921394 -0.056087804592584 -0.059344073998482 -0.039436610747242
-    6  (  6) -0.161288525186604  0.166450983348441  0.144923762167859 -0.094775042270013  0.169918790080026  0.220638703768902 -0.015086442554779  0.082074773648390
-
-	File 101 DPD File2: Mu_Y_IA
-	Matrix for Irrep 1
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6     
-                      ( 17)              ( 18)              ( 19)              ( 20)              ( 21)              ( 22)              ( 23)    
-
-    0  (  7)  0.023731286269060  0.015034330755529 -0.273330752922169  0.037820426660388  0.284138842805452 -0.218153574225315 -0.012438921134731
-    1  (  8)  0.021668325834951  0.033987896894464 -0.356592806410256  0.086505819787761  0.103102147653206  0.310664447039768  0.006708929270897
-
-	DPD File2: Mu_YBAR_MI
-	DPD Parameters:
-	------------------
-	pnum = 0   qnum = 0   irrep = 0 
-	Irreps = 2
-
-	   Row and column dimensions for DPD Block:
-	   ----------------------------------------
-	   Irrep: 0 row =     7	col =     7
-	   Irrep: 1 row =     2	col =     2
-
-	File 101 DPD File2: Mu_YBAR_MI
-	Matrix for Irrep 0
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6     
-                      (  0)              (  1)              (  2)              (  3)              (  4)              (  5)              (  6)    
-
-    0  (  0) -0.026466323364559  0.000028319304914 -0.001006810306637 -0.003418731692120  0.036663472175781 -0.018334333792420  0.037935397785809
-    1  (  1)  0.000028904174656  0.132705286535538  0.004008345044156 -0.010613170205885  0.032674204290777 -0.013900441820929 -0.038334147025938
-    2  (  2) -0.001010822077971  0.003967468036571 -0.002590146822484  0.085957463458999 -0.499260024044768  0.196034713340710 -0.015724343702868
-    3  (  3) -0.003440122629554 -0.010318982830086  0.086228041588959 -0.148739686038100  0.111883116788758  0.082549353436769 -0.646716339039268
-    4  (  4)  0.036870064509151  0.032414924454826 -0.500220770355435  0.111669597456318 -0.258922049164232 -0.258637762864377  0.023570822312189
-    5  (  5) -0.018463661866319 -0.013983080919738  0.195754953301460  0.081901638937253 -0.256070472760292  0.202482702191776  0.274528565175947
-    6  (  6)  0.038006050342084 -0.038540981085223 -0.014408679735145 -0.644760562649144  0.014285517766137  0.275314735896225 -0.068476999092295
-
-	File 101 DPD File2: Mu_YBAR_MI
-	Matrix for Irrep 1
-	----------------------------------------
-
-                         0                  1     
-                      (  7)              (  8)    
-
-    0  (  7)  0.018929182095806  0.062039276079497
-    1  (  8)  0.062346959056565  0.053081448921198
-
-	DPD File2: Mu_YBAR_AE
-	DPD Parameters:
-	------------------
-	pnum = 1   qnum = 1   irrep = 0 
-	Irreps = 2
-
-	   Row and column dimensions for DPD Block:
-	   ----------------------------------------
-	   Irrep: 0 row =    17	col =    17
-	   Irrep: 1 row =     7	col =     7
-
-	File 101 DPD File2: Mu_YBAR_AE
-	Matrix for Irrep 0
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6                  7                  8     
-                      (  0)              (  1)              (  2)              (  3)              (  4)              (  5)              (  6)              (  7)              (  8)    
-
-    0  (  0) -2.045993134873734 -0.095409898653669 -0.387594270642955 -0.505900146912231  0.172746641033000 -0.046910168040382 -0.084737755155622 -0.410360151963465 -0.382261890655825
-    1  (  1) -0.095231007303541  0.039819948857629 -0.291910351304736  0.063885771451574 -0.017162503817739  0.571287954038889 -0.394953952483367 -0.243045723102717  0.180443842009833
-    2  (  2) -0.382632249330515 -0.292847693911793 -1.382982378647364 -0.154259655960531  0.173864428021709 -0.295670794202407 -0.107123996346558 -0.385982188376379  0.028658840683464
-    3  (  3) -0.505410909881606  0.062390573871568 -0.154036310291696  0.982968534089464 -0.104512367175268  0.145166782117123  0.226696601336105  0.135831670563815  0.433133822599857
-    4  (  4)  0.169297759495750 -0.015832070254979  0.175669698448429 -0.103333610656280 -0.088624263975631  0.268908892217773 -0.031655422270645 -0.274623540930947  0.238460903427719
-    5  (  5) -0.049136629278739  0.571895176561895 -0.294649084124478  0.144292264858322  0.268065736642374 -0.004325047106749  0.145918393270322  0.372810273860127 -0.431016787132347
-    6  (  6) -0.087260279206977 -0.394385667800874 -0.105217644713450  0.228088087956043 -0.031697143408108  0.145949167135854 -0.298604551214600 -0.041713472364671 -0.051008501927253
-    7  (  7) -0.410914339621009 -0.243365268427796 -0.386858728731762  0.135833418297807 -0.274552066892987  0.373543891834703 -0.041506475789743 -0.451020585572387  0.170871627903220
-    8  (  8) -0.381821204572559  0.180205615072463  0.029084404500180  0.432574410104846  0.238320694111665 -0.431320613321813 -0.051272354410903  0.170589507033257 -0.675829352019596
-    9  (  9) -0.283473421710108  0.112050034408641  0.560595473087410 -0.245415063372381 -0.149264847460167  0.242302621470803 -0.157290698226530  0.100468128429856 -0.266025795313113
-   10  ( 10) -0.052116385440732  0.107624847200385  0.282558920287420  0.059943056512644 -0.062387825969201 -0.115486622660793  0.256555884018007 -0.163523915221602  0.290885113176909
-   11  ( 11)  0.000312513273039  0.155187941900456  0.100393094451125  0.020336020080174  0.127674754605006 -0.211106522265874  0.120135660107403  0.136023622283614 -0.462455224037332
-   12  ( 12) -0.040088912895177  0.048991874235712 -0.011811422909597  0.091257017452875  0.019784182970081  0.016868406587957 -0.000544174708020 -0.124924205510192 -0.058166887460760
-   13  ( 13) -0.009390682767173 -0.016745321738357  0.010403462867077  0.088355953809484 -0.051207257527787  0.168655348073088 -0.014606152117843 -0.074404615170143  0.046843317912910
-   14  ( 14) -0.073276112260003  0.057758888405736  0.174249113368949 -0.108526984756355  0.005873988347775 -0.115290133695343  0.046811486241021 -0.064124627762954  0.051346278871493
-   15  ( 15)  0.005779177395602 -0.060389355097237  0.012276575492418 -0.096153630668441  0.181712320706006  0.128331892268205  0.225366212207420  0.081713947674810 -0.144525489497539
-   16  ( 16) -0.060752757257590  0.018327091553218  0.019085185007194  0.030973177274890  0.012354348831077  0.069603475266524 -0.030006835141835  0.005552576291131 -0.060836699707624
-
-                         9                 10                 11                 12                 13                 14                 15                 16     
-                      (  9)              ( 10)              ( 11)              ( 12)              ( 13)              ( 14)              ( 15)              ( 16)    
-
-    0  (  0) -0.285303582746384 -0.056294192160593 -0.000200687930225 -0.038024825027713 -0.012046819629205 -0.077012885660405  0.006033548694711 -0.061807525496145
-    1  (  1)  0.113071704196745  0.108778532345281  0.156184092789695  0.048684365197346 -0.016243813405121  0.058823369178358 -0.060407135004655  0.018519743013245
-    2  (  2)  0.562523645229396  0.285264478722423  0.101513510030168 -0.013175405914302  0.011768340960845  0.176049115365106  0.011615146885546  0.019552984614216
-    3  (  3) -0.243737456306063  0.060847590488239  0.019824546151330  0.091291375704049  0.089537547257207 -0.108209096483273 -0.096544747228477  0.031323007671113
-    4  (  4) -0.149018755824788 -0.062754456373284  0.127376600662528  0.020366865409571 -0.051674532870016  0.005753595837911  0.181922433672115  0.012276690572428
-    5  (  5)  0.240627721939830 -0.114767648002937 -0.211416289254050  0.015975616858922  0.169586883038260 -0.114607009513284  0.128525855676328  0.070097551806592
-    6  (  6) -0.156693567229503  0.256215700441612  0.120063103357265 -0.000003040389646 -0.014992046515810  0.046904705681076  0.225574226220886 -0.030177739023550
-    7  (  7)  0.100263606325565 -0.163703826662575  0.135989927625168 -0.124576096560562 -0.074129889564206 -0.064680677402417  0.081773026674511  0.005774218340428
-    8  (  8) -0.266668295925257  0.290777226339086 -0.462544053201029 -0.058743583333774  0.046629285110787  0.051624572732366 -0.144465149214098 -0.061087050064986
-    9  (  9) -0.925652707319130 -0.583660752355721 -0.155775235357378  0.445905510547564 -0.085223163401934  0.320909369856136 -0.139003830120718  0.030422261138600
-   10  ( 10) -0.583279755470421 -0.303453157038685  0.125949989442476  0.209539965251728 -0.039645500897496  0.087763726360860 -0.069331015366599  0.008115477198631
-   11  ( 11) -0.155376626940263  0.125927989282926 -0.104729836793830  0.011349449787098 -0.028985031796451  0.101545429706523  0.020786740802599 -0.071540693180178
-   12  ( 12)  0.446199204416258  0.209533527715532  0.010652562772014 -0.122763822621383  0.084004825690866 -0.060856238307872  0.055415498514065 -0.016323905923519
-   13  ( 13) -0.084813114367250 -0.039575228923154 -0.029630201276168  0.084050535539900  0.039685632988852 -0.042279600675473  0.024577846833790 -0.033021008737515
-   14  ( 14)  0.321789737507088  0.088054269353279  0.102052558884907 -0.060946364351187 -0.042213968647845  0.054671591708830 -0.027704713949386  0.044786029623289
-   15  ( 15) -0.139004434932311 -0.069324980587496  0.020862927433163  0.055283762920506  0.024483424096936 -0.027399434763090  0.027805312058636 -0.039717899136089
-   16  ( 16)  0.030710136385120  0.008185345443271 -0.071909346470975 -0.016262510423582 -0.033030270773793  0.044859369380167 -0.039589710603285 -0.008513189267103
-
-	File 101 DPD File2: Mu_YBAR_AE
-	Matrix for Irrep 1
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6     
-                      ( 17)              ( 18)              ( 19)              ( 20)              ( 21)              ( 22)              ( 23)    
-
-    0  ( 17)  0.063740436686828 -0.004787154508133  0.538538933439878 -0.009052843531209  0.210737581731212  0.068032599878639 -0.012686995100758
-    1  ( 18) -0.005077960748828 -0.059037803747963  0.228349904229329 -0.009206614582857  0.138527633914903  0.009964745684758  0.007455890177029
-    2  ( 19)  0.541597901122952  0.227776389588701 -1.147253894628630  0.026129576715581 -0.564507518878204 -0.149606564239045 -0.032515314853600
-    3  ( 20) -0.009580989251237 -0.009149486679313  0.025566850285473  0.093409480733593  0.029387857687169 -0.006908216669476 -0.071485607388481
-    4  ( 21)  0.208618544932733  0.139451761819441 -0.563840838338456  0.028663300088684 -0.100582743739000  0.005895697838308  0.010722959978136
-    5  ( 22)  0.067974194993359  0.008600203631054 -0.149010367735971 -0.006598982413936  0.005915244102598 -0.015400685691487  0.019226657028193
-    6  ( 23) -0.012651691467565  0.007379655026593 -0.032350130589990 -0.071504127733179  0.010703285254014  0.019026056021973  0.017499411133405
-
-	DPD File2: Mu_YBAR_IA
-	DPD Parameters:
-	------------------
-	pnum = 0   qnum = 1   irrep = 0 
-	Irreps = 2
-
-	   Row and column dimensions for DPD Block:
-	   ----------------------------------------
-	   Irrep: 0 row =     7	col =    17
-	   Irrep: 1 row =     2	col =     7
-
-	File 101 DPD File2: Mu_YBAR_IA
-	Matrix for Irrep 0
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6                  7                  8     
-                      (  0)              (  1)              (  2)              (  3)              (  4)              (  5)              (  6)              (  7)              (  8)    
-
-    0  (  0) -0.003751828875244  0.002066993521910  0.005646018523720  0.007971235352961 -0.008514547746191  0.035651407199239 -0.028594135193665  0.007405276527297 -0.016749550255976
-    1  (  1)  0.019502304040524 -0.008601083038432 -0.034986080726306  0.038437171228536 -0.008699374239562  0.002232591662415  0.003683855646165 -0.005845992541354  0.006431929732319
-    2  (  2)  0.005162322558809  0.005006091601700 -0.013651447640219  0.073108562117693 -0.037110502694347  0.099971679953216 -0.061818640904384 -0.030065850288976  0.009991736200857
-    3  (  3) -0.057916505621734  0.056341598633687  0.113645462083398 -0.051661279744270  0.032845238255001  0.115183118840808 -0.098236437619899  0.091663726075911 -0.108759469637929
-    4  (  4)  0.406321573590687 -0.279225795319120 -0.216702557125567 -0.194841625855337 -0.082000972365002  0.036206780650500 -0.131621874359769 -0.002941154857462 -0.038291774767932
-    5  (  5)  0.082666085704480  0.037170774751614 -0.109366104305055  0.306227368555688  0.055852393512510  0.029132834214217  0.047858698305305  0.191190362296920 -0.153017394069272
-    6  (  6) -0.458136442070612  0.106031150480325  0.393081188393346  0.249752536705700 -0.125320465454475 -0.124263776658662 -0.043393736784764 -0.030845035580433 -0.093961046813168
-
-                         9                 10                 11                 12                 13                 14                 15                 16     
-                      (  9)              ( 10)              ( 11)              ( 12)              ( 13)              ( 14)              ( 15)              ( 16)    
-
-    0  (  0)  0.005798934978530  0.002143687367547 -0.014089335198481  0.001324299844749  0.002019868875779 -0.000354215696095 -0.003864986390855 -0.001821684258311
-    1  (  1) -0.034363827795977 -0.013298895705877 -0.010073948025801  0.017368630238862 -0.002386826220116  0.012568412345400  0.004482838074461 -0.001577091809587
-    2  (  2) -0.005900863534115 -0.005792364484338 -0.113458341680317  0.027244997206743  0.000391909756193  0.024110004459925  0.015153768321953 -0.000959743197844
-    3  (  3)  0.079557340675881  0.007706717681703  0.039901607106570 -0.010833609875425 -0.018472734672826 -0.026055254589986 -0.070732329632560 -0.011158996652326
-    4  (  4) -0.182787083526409  0.089427715986301  0.062916944018861 -0.160041676635635  0.153729637667917  0.025374508612105 -0.050608420481545  0.037499586551574
-    5  (  5)  0.040920622349525 -0.067223701668150  0.223222565090089  0.071193525531536 -0.081550793775841 -0.055819422855804 -0.053722239139884 -0.036812165791079
-    6  (  6) -0.179948389216919  0.155410883892631  0.129738152623872 -0.084750037649373  0.153208006748097  0.206079952934260 -0.014680354899955  0.075082232624922
-
-	File 101 DPD File2: Mu_YBAR_IA
-	Matrix for Irrep 1
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6     
-                      ( 17)              ( 18)              ( 19)              ( 20)              ( 21)              ( 22)              ( 23)    
-
-    0  (  7)  0.007727960051406  0.014188761911135 -0.254870847034814  0.036245861641137  0.257329582057485 -0.202509743936332 -0.011664708636641
-    1  (  8) -0.000813195416600  0.022554294061319 -0.332537774106674  0.079445887399926  0.088054726222404  0.285022367621264  0.005162037999851
 
 	Computing Mu_Y-Perturbed Wave Function (0.000 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         4.189912867103
-	   1         5.316215416920    3.468e-01
-	   2         6.621374918080    2.143e-01
-	   3         6.657896543451    5.176e-02
-	   4         6.705061175306    2.583e-02
-	   5         6.710746768802    3.633e-03
-	   6         6.710441156705    1.007e-03
-	   7         6.710586032342    1.961e-04
-	   8         6.710602112375    4.222e-05
-	   9         6.710595537130    1.178e-05
-	  10         6.710596758658    3.554e-06
-	  11         6.710598616585    1.037e-06
-	  12         6.710599508806    2.329e-07
+	   0         4.189912870331
+	   1         5.316215421605    3.468e-01
+	   2         6.621374925516    2.143e-01
+	   3         6.657896550942    5.176e-02
+	   4         6.705061182867    2.583e-02
+	   5         6.710746776383    3.633e-03
+	   6         6.710441164282    1.007e-03
+	   7         6.710586039920    1.961e-04
+	   8         6.710602119954    4.222e-05
+	   9         6.710595544709    1.178e-05
+	  10         6.710596766236    3.554e-06
+	  11         6.710598624163    1.037e-06
+	  12         6.710599516385    2.329e-07
 	-----------------------------------------
 	Converged Mu_Y-Perturbed Wfn to 4.263e-08
-
-	DPD File2: Mu_Z_IA
-	DPD Parameters:
-	------------------
-	pnum = 0   qnum = 1   irrep = 1 
-	Irreps = 2
-
-	   Row and column dimensions for DPD Block:
-	   ----------------------------------------
-	   Irrep: 0 row =     7	col =     7
-	   Irrep: 1 row =     2	col =    17
-
-	File 101 DPD File2: Mu_Z_IA
-	Matrix for Irrep 0
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6     
-                      ( 17)              ( 18)              ( 19)              ( 20)              ( 21)              ( 22)              ( 23)    
-
-    0  (  0) -0.010786265183144  0.051029121132169  0.002996763849744 -0.011801503115544  0.001272030820720  0.000196386846190  0.002982916046102
-    1  (  1) -0.058609640963270 -0.012417801314909 -0.003971620689221 -0.009080237811660 -0.000121215070459 -0.000228818864652 -0.009373425738771
-    2  (  2) -0.085132594501745  0.091652823097351  0.007546774391900 -0.142423359791748  0.006996619603859  0.002101811348346 -0.029373124781205
-    3  (  3)  0.122069258148394  0.223131785279770 -0.087332676023726  0.050632801243969  0.042739607387162 -0.018430049330314  0.086614058743772
-    4  (  4) -0.105541230675858  0.048893582187338  0.328998944712806  0.105191585386818 -0.242811441764463  0.170260494209222  0.054325780187216
-    5  (  5) -0.265882747768071  0.058275011878433 -0.023416331604445  0.339635908182999  0.103800327020424 -0.114058283212063  0.058690855476723
-    6  (  6)  0.007633857500133  0.022854049227245 -0.377212343584739  0.102347661597780  0.009619050796437  0.297095107100104 -0.012497514920931
-
-	File 101 DPD File2: Mu_Z_IA
-	Matrix for Irrep 1
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6                  7                  8     
-                      (  0)              (  1)              (  2)              (  3)              (  4)              (  5)              (  6)              (  7)              (  8)    
-
-    0  (  7) -0.147346265517514  0.175457635393691 -0.221105865986271 -0.029899707009252  0.165686742393013  0.115361676403961 -0.008355394047077  0.328221796014153  0.292080655206166
-    1  (  8) -0.122245405560544  0.024589732049051 -0.167118519556607 -0.015807337638930 -0.058301108727540 -0.105293352874108 -0.203866490026706  0.286393949830093  0.189278200780898
-
-                         9                 10                 11                 12                 13                 14                 15                 16     
-                      (  9)              ( 10)              ( 11)              ( 12)              ( 13)              ( 14)              ( 15)              ( 16)    
-
-    0  (  7) -0.087279639847830 -0.126770988900221 -0.036329390570236 -0.242965090530477  0.132308970188281  0.116935047705609  0.002357403463405 -0.057494504536991
-    1  (  8) -0.205975410858276  0.286653615135670 -0.077914712510952 -0.007558681388604 -0.292258655312688 -0.145533516877231  0.007845998491586  0.090356336812679
-
-	DPD File2: Mu_ZBAR_MI
-	DPD Parameters:
-	------------------
-	pnum = 0   qnum = 0   irrep = 1 
-	Irreps = 2
-
-	   Row and column dimensions for DPD Block:
-	   ----------------------------------------
-	   Irrep: 0 row =     7	col =     2
-	   Irrep: 1 row =     2	col =     7
-
-	File 101 DPD File2: Mu_ZBAR_MI
-	Matrix for Irrep 0
-	----------------------------------------
-
-                         0                  1     
-                      (  7)              (  8)    
-
-    0  (  0) -0.043819140181369  0.036074491951167
-    1  (  1) -0.036237068531700 -0.050415577455145
-    2  (  2)  0.528492370226788  0.015299710619498
-    3  (  3)  0.017518923619515 -0.564610204547295
-    4  (  4)  0.085812129312794 -0.070371782668834
-    5  (  5)  0.252364389877494  0.175800283642741
-    6  (  6)  0.061085593898953  0.095127660035005
-
-	File 101 DPD File2: Mu_ZBAR_MI
-	Matrix for Irrep 1
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6     
-                      (  0)              (  1)              (  2)              (  3)              (  4)              (  5)              (  6)    
-
-    0  (  7) -0.044067543892294 -0.036488078491946  0.528279520963151  0.018864796666211  0.085565437065034  0.252014784445038  0.060037559006937
-    1  (  8)  0.036063712094606 -0.050614499023038  0.015518778585005 -0.562528692062842 -0.071591764890133  0.175011603181087  0.095580342225150
-
-	DPD File2: Mu_ZBAR_AE
-	DPD Parameters:
-	------------------
-	pnum = 1   qnum = 1   irrep = 1 
-	Irreps = 2
-
-	   Row and column dimensions for DPD Block:
-	   ----------------------------------------
-	   Irrep: 0 row =    17	col =     7
-	   Irrep: 1 row =     7	col =    17
-
-	File 101 DPD File2: Mu_ZBAR_AE
-	Matrix for Irrep 0
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6     
-                      ( 17)              ( 18)              ( 19)              ( 20)              ( 21)              ( 22)              ( 23)    
-
-    0  (  0)  0.599480222444649  0.016859533434660 -0.049897396924275  0.100931992321174 -0.178820057695389 -0.093593822067296 -0.045840833373618
-    1  (  1) -0.102825062644434  0.497551654375309  0.079024430059646 -0.089810403907834  0.095840244352087  0.042979610010711  0.100107750054006
-    2  (  2)  0.313847375874898 -0.236133415515757  0.290305789540100  0.013432093218330  0.277632595704875  0.128347816687604 -0.035321860848127
-    3  (  3) -0.120186064620999 -0.088525193286441 -0.285710676647023 -0.049963609023839 -0.018526308466142 -0.010366645593074  0.045528954113699
-    4  (  4) -0.090166928005221  0.032050142733061 -0.030452275714679 -0.063250796602700 -0.035750237348328 -0.017833119271341 -0.132006242302639
-    5  (  5) -0.142691415524594  0.223913086808689  0.027094381023177  0.024338605924018  0.028535894302561  0.007226239356373 -0.162190336038901
-    6  (  6) -0.066933385246706  0.243769517259171  0.020035311286269  0.114101180100412 -0.012489851345775  0.011332261380421 -0.233889391977439
-    7  (  7) -0.672885351755958 -0.001881267801158 -0.095136222092190 -0.058176395722136 -0.061089446815717 -0.043316162321472  0.019390286464114
-    8  (  8) -0.435312399605637  0.058517097371483 -0.132087164095958 -0.111210778747108 -0.084785664597116  0.018714661714206  0.051077770966583
-    9  (  9)  0.039880967641700  0.175296984662011  0.139275550562709 -0.022188880266013  0.000377216624830 -0.012858606937545 -0.034561120442371
-   10  ( 10) -0.303210587603092 -0.514083864535303 -0.056475775929789  0.034965638385885 -0.040317053885211 -0.017962506851191  0.053786011903214
-   11  ( 11) -0.027239637605694  0.034828784234908  0.033426829747021 -0.018094121367503  0.017093937691798  0.004223484052251 -0.011996780527562
-   12  ( 12) -0.308711690655920 -0.002817985822930 -0.037619399642856 -0.077619866356190 -0.025848322659192  0.002876135041611 -0.007325116102257
-   13  ( 13) -0.122322909534023  0.113539161130551  0.014757220452089 -0.054033827004459  0.003700011797213 -0.003003782149483 -0.047911411994658
-   14  ( 14) -0.097844480434541 -0.119320090615298  0.001467167999574  0.047025034239868 -0.015029470496595  0.001307380616700  0.021961924745379
-   15  ( 15) -0.003252338995525  0.016436791178652  0.055709805192914 -0.009293573860402 -0.005810476770249 -0.019308137788336 -0.008191212687173
-   16  ( 16) -0.036707953659196  0.103754840414894 -0.016684655371381 -0.061363104748847 -0.002167501914416  0.001092629910884  0.026459157258586
-
-	File 101 DPD File2: Mu_ZBAR_AE
-	Matrix for Irrep 1
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6                  7                  8     
-                      (  0)              (  1)              (  2)              (  3)              (  4)              (  5)              (  6)              (  7)              (  8)    
-
-    0  ( 17)  0.599729724796834 -0.100763044996998  0.312417498644204 -0.121527463741934 -0.089494866802957 -0.142965380633003 -0.068176811299952 -0.669349755030349 -0.432871097543376
-    1  ( 18)  0.016829691255094  0.498021176353270 -0.236000617824234 -0.088934550094726  0.031202345455196  0.223575626840261  0.243864850259280 -0.002331620184447  0.057733029620810
-    2  ( 19) -0.054552900240868  0.080128078195607  0.292430603697275 -0.284599987869482 -0.029522070318848  0.026959103270965  0.021940193228421 -0.096891945038060 -0.133499525770691
-    3  ( 20)  0.100253522171187 -0.090631183013602  0.011713957045899 -0.049730048298493 -0.062592805551909  0.025213226750356  0.114036593498518 -0.057494677157379 -0.110236213187387
-    4  ( 21) -0.179159024052452  0.095672908178936  0.278266560095748 -0.018388137436396 -0.036511169805780  0.029495232441706 -0.013242480280223 -0.061079729130680 -0.084477317549066
-    5  ( 22) -0.088933490318747  0.041952581209808  0.126034689140711 -0.011275748873412 -0.017323803323154  0.005886315562041  0.011658588522851 -0.043044407090458  0.018540705202652
-    6  ( 23) -0.046333914085310  0.100418803408802 -0.035362724685488  0.045416588335844 -0.131810180134040 -0.161950813236446 -0.233566785912389  0.019297085245157  0.050997307344279
-
-                         9                 10                 11                 12                 13                 14                 15                 16     
-                      (  9)              ( 10)              ( 11)              ( 12)              ( 13)              ( 14)              ( 15)              ( 16)    
-
-    0  ( 17)  0.039312615108369 -0.302032443665765 -0.027550294935812 -0.310784860130523 -0.123366344699996 -0.097420977774169 -0.003209928183801 -0.036830398019237
-    1  ( 18)  0.175567267565854 -0.512664071190369  0.034894695549260 -0.001894103503476  0.112588400025920 -0.120085800524766  0.016426825731774  0.104378228791526
-    2  ( 19)  0.136543328570785 -0.058279389710063  0.033933657083246 -0.037273212570092  0.015308466144554  0.001541196291246  0.056028919618147 -0.016762051778482
-    3  ( 20) -0.022563171568616  0.034710591396926 -0.018459749038849 -0.077422552415567 -0.052960741334945  0.046505103663051 -0.009331616241340 -0.060923921975890
-    4  ( 21)  0.001466076193948 -0.040032717264818  0.016917418953974 -0.025762346460135  0.003762250578566 -0.014972651118735 -0.005881505372503 -0.002207525976341
-    5  ( 22) -0.011996109684444 -0.017649877911746  0.004310226300309  0.002850355947903 -0.002885632287969  0.001316998750490 -0.019472836966745  0.001098266616167
-    6  ( 23) -0.034634146639703  0.053685024377145 -0.011937415333244 -0.007255949520677 -0.047576628375717  0.021896401358337 -0.008171802221401  0.026587486496657
-
-	DPD File2: Mu_ZBAR_IA
-	DPD Parameters:
-	------------------
-	pnum = 0   qnum = 1   irrep = 1 
-	Irreps = 2
-
-	   Row and column dimensions for DPD Block:
-	   ----------------------------------------
-	   Irrep: 0 row =     7	col =     7
-	   Irrep: 1 row =     2	col =    17
-
-	File 101 DPD File2: Mu_ZBAR_IA
-	Matrix for Irrep 0
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6     
-                      ( 17)              ( 18)              ( 19)              ( 20)              ( 21)              ( 22)              ( 23)    
-
-    0  (  0) -0.010574314095683  0.049882978545122  0.002870330966740 -0.011532171460868  0.001238602598829  0.000191316089031  0.002921482491107
-    1  (  1) -0.057532452524585 -0.012065759248930 -0.003751148528911 -0.008827776374122 -0.000113560391374 -0.000227841169844 -0.009209133435533
-    2  (  2) -0.091814855038093  0.094917804724039  0.006288310960900 -0.126283019227595  0.007222028964976  0.002073910472135 -0.025512078631773
-    3  (  3)  0.120653889319174  0.226084849611761 -0.075300125208326  0.046643270206308  0.037421332704028 -0.017859191162974  0.081266935673679
-    4  (  4) -0.097956489392102  0.051351897149672  0.305754549991068  0.095382973436953 -0.220329096451484  0.158512880282494  0.049614437366158
-    5  (  5) -0.261619207985086  0.056084449894857 -0.025368373388076  0.308737234570639  0.097128785420257 -0.105014860102429  0.053434785260045
-    6  (  6)  0.008799396272401  0.018728768046684 -0.354955141247504  0.095669064713820 -0.001191012606817  0.271606540647269 -0.012344010113690
-
-	File 101 DPD File2: Mu_ZBAR_IA
-	Matrix for Irrep 1
-	----------------------------------------
-
-                         0                  1                  2                  3                  4                  5                  6                  7                  8     
-                      (  0)              (  1)              (  2)              (  3)              (  4)              (  5)              (  6)              (  7)              (  8)    
-
-    0  (  7) -0.150705574361937  0.171630195989751 -0.209599417391611 -0.025489164143709  0.149255370410114  0.112216774108577 -0.000397827210042  0.316622730650520  0.277369362242546
-    1  (  8) -0.130570763068834  0.009488512240492 -0.144994119658179 -0.007578049469338 -0.047607403703449 -0.095540393045054 -0.185243293387101  0.276777433572891  0.180273089892208
-
-                         9                 10                 11                 12                 13                 14                 15                 16     
-                      (  9)              ( 10)              ( 11)              ( 12)              ( 13)              ( 14)              ( 15)              ( 16)    
-
-    0  (  7) -0.076246695561007 -0.118379428340576 -0.031849281493622 -0.218889052864398  0.125994951072928  0.108535764483591  0.002831367609020 -0.051643750178156
-    1  (  8) -0.193081458944120  0.284637903909749 -0.070582554931421 -0.002932045787849 -0.271746148176880 -0.130119446798475  0.007304069162710  0.084713895677744
 
 	Computing Mu_Z-Perturbed Wave Function (0.000 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         2.373344873539
-	   1         2.824593328814    1.684e-01
-	   2         3.156590661714    1.031e-01
-	   3         3.191926371519    4.791e-02
-	   4         3.218019280058    1.967e-02
-	   5         3.217647235257    5.012e-03
-	   6         3.218678103200    1.279e-03
-	   7         3.218717423873    2.750e-04
-	   8         3.218701629822    6.891e-05
-	   9         3.218708510228    1.640e-05
-	  10         3.218709866421    5.543e-06
-	  11         3.218709444680    1.454e-06
-	  12         3.218708951556    4.171e-07
+	   0         2.373344873168
+	   1         2.824593328255    1.684e-01
+	   2         3.156590660808    1.031e-01
+	   3         3.191926370475    4.791e-02
+	   4         3.218019278932    1.967e-02
+	   5         3.217647234132    5.012e-03
+	   6         3.218678102073    1.279e-03
+	   7         3.218717422745    2.750e-04
+	   8         3.218701628694    6.891e-05
+	   9         3.218708509101    1.640e-05
+	  10         3.218709865293    5.543e-06
+	  11         3.218709443552    1.454e-06
+	  12         3.218708950429    4.171e-07
 	-----------------------------------------
 	Converged Mu_Z-Perturbed Wfn to 9.472e-08
 
 	Computing <<Mu;Mu>_(0.000) tensor.
 
-                 CCSD Dipole Polarizability [(e^2 a0^2)/E_h]:
+                 CCSD Dipole Polarizability (Length Gauge) [(e^2 a0^2)/E_h]:
   -------------------------------------------------------------------------
    Evaluated at omega = 0.000000 E_h (Inf nm, 0.000 eV,     0.00 cm-1)
   -------------------------------------------------------------------------
 
                    0                     1                     2        
 
-    0      5.725437022190079    -1.786158517444678     0.000000000000000
-    1     -1.786158517444678     6.486317384450757     0.000000000000000
-    2      0.000000000000000     0.000000000000000     3.162419713425239
+    0      5.725437026963535    -1.786158523489296     0.000000000000000
+    1     -1.786158523489296     6.486317391299507     0.000000000000000
+    2      0.000000000000000     0.000000000000000     3.162419712346512
 
-	alpha_(0.000) =       5.124724706689 a.u.
+	alpha_(0.000) =       5.124724710203 a.u.
+    Nuclear repulsion energy..............................................................PASSED
+    SCF energy............................................................................PASSED
+    CCSD correlation energy...............................................................PASSED
+    CCSD total energy.....................................................................PASSED
+    Dipole Polarizability Tensor..........................................................PASSED
+    Dipole Polarizability.................................................................PASSED
+    Left-Right CCSD Overlap...............................................................PASSED
 
-*** tstop() called on psinet at Mon May 15 15:34:18 2017
-Module time:
-	user time   =       0.61 seconds =       0.01 minutes
-	system time =       0.56 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
-Total time:
-	user time   =       1.67 seconds =       0.03 minutes
-	system time =       1.00 seconds =       0.02 minutes
-	total time  =          3 seconds =       0.05 minutes
-	Nuclear repulsion energy..........................................PASSED
-	SCF energy........................................................PASSED
-	CCSD correlation energy...........................................PASSED
-	CCSD total energy.................................................PASSED
+    Psi4 stopped on: Wednesday, 16 February 2022 03:45PM
+    Psi4 wall time for execution: 0:00:07.96
 
 *** Psi4 exiting successfully. Buy a developer a beer!

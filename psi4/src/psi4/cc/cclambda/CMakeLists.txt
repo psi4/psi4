@@ -48,7 +48,6 @@ target_sources(cc
     ${CMAKE_CURRENT_SOURCE_DIR}/local.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/ortho_Rs.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/overlap.cc
-    ${CMAKE_CURRENT_SOURCE_DIR}/overlap_LAMPS.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/projections.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/pseudoenergy.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/sort_amps.cc
