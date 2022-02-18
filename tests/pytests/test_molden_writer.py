@@ -28,9 +28,9 @@ def datadir(tmpdir, request):
 
 
 @pytest.mark.parametrize('inp_h2o', [
-    pytest.param({'name': 'h2o_normal', 'energy': 'scf', 'do_virtual':True, 'use_natural': False, 'options': {'r_convergence':12}}, id='h2o_normal'),
-    pytest.param({'name': 'dovirt_false', 'energy': 'scf', 'do_virtual':False, 'use_natural': False, 'options': {'r_convergence':12}}, id='dovirt_false'),
-    pytest.param({'name': 'orbso_detci', 'energy': 'cisd', 'do_virtual':True, 'use_natural': True, 'options': {'r_convergence':11, 'qc_module':'detci', 'opdm':True}}, id='orbso_detci')
+    pytest.param({'name': 'h2o_normal', 'energy': 'scf', 'do_virtual':True, 'use_natural': False, 'options': {'e_convergence': 10}}, id='h2o_normal'),
+    pytest.param({'name': 'dovirt_false', 'energy': 'scf', 'do_virtual':False, 'use_natural': False, 'options': {'e_convergence': 10}}, id='dovirt_false'),
+    pytest.param({'name': 'orbso_detci', 'energy': 'cisd', 'do_virtual':True, 'use_natural': True, 'options': {'e_convergence': 10, 'qc_module':'detci', 'opdm':True}}, id='orbso_detci')
     ])
 def test_H2O_molden(inp_h2o, datadir):
     mol = psi4.geometry("""
@@ -63,7 +63,7 @@ def test_H2O_density_molden(inp_h2o_density, datadir):
     psi4.set_options({
         'basis': 'dz',
         'scf_type': 'pk',
-        'r_convergence': 12
+        'e_convergence': 10
         })
     molden_file = f"{inp_h2o_density['name']}.molden"
     ref = datadir.join(f"{inp_h2o_density['name']}.ref")
@@ -85,7 +85,7 @@ def test_OH_molden(inp_oh, datadir):
     psi4.set_options({
         'basis': 'dz',
         'scf_type': 'pk',
-        'd_convergence': 8,
+        'e_convergence': 11,
         'reference':inp_oh['ref']
         })
     molden_file = f"{inp_oh['name']}.molden"
@@ -107,7 +107,7 @@ def test_H2S_molden(inp_h2s, datadir):
             """)
     psi4.set_options({
         'scf_type': 'pk',
-        'r_convergence': 12
+        'e_convergence': 10
         })
     psi4.set_options(inp_h2s['options'])
     molden_file = f"{inp_h2s['name']}.molden"
@@ -132,7 +132,7 @@ def test_ClFHCOH_molden(inp_clfhcoh, datadir):
     psi4.set_options({
         'basis': 'dz',
         'scf_type': 'pk',
-        'r_convergence': 12
+        'e_convergence': 11
         })
     molden_file = f"{inp_clfhcoh['name']}.molden"
     ref = datadir.join(f"{inp_clfhcoh['name']}.ref")
