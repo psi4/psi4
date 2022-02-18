@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.6a1.dev51 
+                               Psi4 undefined 
 
-                         Git: Rev {ccdensity_fix} 4732348 dirty
+                         Git: Rev {cctest} b401a9d dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,10 +30,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Saturday, 12 February 2022 03:25PM
+    Psi4 started on: Friday, 18 February 2022 02:07PM
 
-    Process ID: 65766
-    Host:       Jonathons-MacBook-Pro.local
+    Process ID: 64285
+    Host:       dhcp189-242.emerson.emory.edu
     PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -56,11 +56,36 @@ set {
     omega = [0.05, 0.1, au]
 }
 
-properties('ccsd', properties=['polarizability'])
+wfn = properties('ccsd', properties=['polarizability'], return_wfn=True)[1]
+
+refnre = 46.7803620583598061                      # TEST
+refscf = -174.4184330016244076                    # TEST
+refccsd = -174.787276104267534                    # TEST
+refoverlap = 0.92327310262                        # TEST
+ref911polar = 5.168927312011                      # TEST
+ref911tensor = psi4.core.Matrix.from_list(        # TEST
+   [[5.757358066510180, -1.826957734843812, 0],   # TEST
+    [-1.826957734843812, 6.559981880984797, 0],   # TEST
+    [0, 0, 3.189441988537673]])                   # TEST
+ref456polar = 5.320667099301                      # TEST
+ref456tensor = psi4.core.Matrix.from_list(        # TEST
+   [[5.861609123244674, -1.963176982523587, 0],   # TEST
+    [-1.963176982523587, 6.804320835644361, 0],   # TEST
+    [0, 0, 3.296071339013346]])                   # TEST
+
+compare_values(refnre, hof.nuclear_repulsion_energy(), 6, "Nuclear Repulsion Energy") # TEST
+compare_values(refscf, wfn.variable("SCF TOTAL ENERGY"), 6, "SCF Energy") # TEST
+compare_values(refccsd, wfn.variable("CCSD TOTAL ENERGY"), 6, "CCSD Energy") # TEST
+compare_values(refoverlap, wfn.variable("Left-Right CCSD Eigenvector Overlap"), 5, "Left-Right CCSD Overlap") # TEST
+compare_values(ref911tensor, wfn.variable("CCSD DIPOLE POLARIZABILITY TENSOR @ 911NM"), 5, "Dipole Polarizability Tensor (911nm)") # TEST
+compare_values(ref911polar, variable("CCSD DIPOLE POLARIZABILITY @ 911NM"), 5, "Dipole Polarizability (911nm)") # TEST
+compare_values(ref456tensor, wfn.variable("CCSD DIPOLE POLARIZABILITY TENSOR @ 456NM"), 5, "Dipole Polarizability Tensor (456nm)") # TEST
+compare_values(ref456polar, variable("CCSD DIPOLE POLARIZABILITY @ 456NM"), 5, "Dipole Polarizability (456nm)") # TEST
+
 --------------------------------------------------------------------------
 
-*** tstart() called on Jonathons-MacBook-Pro.local
-*** at Sat Feb 12 15:25:37 2022
+*** tstart() called on dhcp189-242.emerson.emory.edu
+*** at Fri Feb 18 14:07:44 2022
 
    => Loading Basis Set <=
 
@@ -247,15 +272,15 @@ Properties computed using the SCF density matrix
      X:    -0.1857      Y:     1.5531      Z:     0.0000     Total:     1.5642
 
 
-*** tstop() called on Jonathons-MacBook-Pro.local at Sat Feb 12 15:25:39 2022
+*** tstop() called on dhcp189-242.emerson.emory.edu at Fri Feb 18 14:07:45 2022
 Module time:
-	user time   =       1.01 seconds =       0.02 minutes
+	user time   =       0.60 seconds =       0.01 minutes
 	system time =       0.13 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.01 seconds =       0.02 minutes
+	user time   =       0.60 seconds =       0.01 minutes
 	system time =       0.13 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          1 seconds =       0.02 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
 
@@ -280,8 +305,8 @@ Total time:
         Stored in file 33.
 
 
-*** tstart() called on Jonathons-MacBook-Pro.local
-*** at Sat Feb 12 15:25:39 2022
+*** tstart() called on dhcp189-242.emerson.emory.edu
+*** at Fri Feb 18 14:07:45 2022
 
 
 	Wfn Parameters:
@@ -360,15 +385,15 @@ Total time:
 	Two-electron energy          =    113.55889725731765
 	Reference energy             =   -174.41843300162446
 
-*** tstop() called on Jonathons-MacBook-Pro.local at Sat Feb 12 15:25:39 2022
+*** tstop() called on dhcp189-242.emerson.emory.edu at Fri Feb 18 14:07:45 2022
 Module time:
-	user time   =       0.07 seconds =       0.00 minutes
-	system time =       0.18 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.11 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.23 seconds =       0.02 minutes
-	system time =       0.32 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.74 seconds =       0.01 minutes
+	system time =       0.26 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
             **************************
             *                        *
             *        CCENERGY        *
@@ -853,8 +878,16 @@ MP2 correlation energy -0.3566362407166802
 	-----   ------ ----------------
 	0.050   911.27         5.16893
 	0.100   455.63         5.32067
+    Nuclear Repulsion Energy..............................................................PASSED
+    SCF Energy............................................................................PASSED
+    CCSD Energy...........................................................................PASSED
+    Left-Right CCSD Overlap...............................................................PASSED
+    Dipole Polarizability Tensor (911nm)..................................................PASSED
+    Dipole Polarizability (911nm).........................................................PASSED
+    Dipole Polarizability Tensor (456nm)..................................................PASSED
+    Dipole Polarizability (456nm).........................................................PASSED
 
-    Psi4 stopped on: Saturday, 12 February 2022 03:25PM
-    Psi4 wall time for execution: 0:00:11.45
+    Psi4 stopped on: Friday, 18 February 2022 02:07PM
+    Psi4 wall time for execution: 0:00:06.78
 
 *** Psi4 exiting successfully. Buy a developer a beer!
