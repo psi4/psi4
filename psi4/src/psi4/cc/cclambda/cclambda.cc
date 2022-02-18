@@ -312,6 +312,11 @@ double CCLambdaWavefunction::compute_energy() {
             } else {
                 throw PsiException("cclambda: unknown wfn", __FILE__, __LINE__);
             }
+            // Inform Perl psivar scraper about these new variables
+            /*- Process::environment.globals["LEFT-RIGHT CC3 EIGENVECTOR OVERLAP"] -*/
+            /*- Process::environment.globals["LEFT-RIGHT CC2 EIGENVECTOR OVERLAP"] -*/
+            /*- Process::environment.globals["LEFT-RIGHT CCSD EIGENVECTOR OVERLAP"] -*/
+            /*- Process::environment.globals["LEFT-RIGHT CCSD(T) EIGENVECTOR OVERLAP"] -*/
             reference_wavefunction_->set_scalar_variable("LEFT-RIGHT " + gs_name + " EIGENVECTOR OVERLAP", LR_overlap);
         }
     }
