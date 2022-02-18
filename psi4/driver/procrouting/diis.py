@@ -257,7 +257,7 @@ class DIIS:
         result = minimize(self.adiis_energy, np.ones(len(self.stored_vectors)), method="BFGS",
                 jac = self.adiis_gradient, tol=1e-6, options={"maxiter": 200})
 
-        if not result.success:
+        if np.linalg.norm(result.jac) > 1e-3: # Even if we didn't hit the tolerance, it may be good enough.
             raise Exception("ADIIS minimization failed. File a bug, and include your entire input and output files.")
 
         return normalize_input(result.x)
@@ -316,7 +316,7 @@ class DIIS:
         result = minimize(self.ediis_energy, np.ones(len(self.stored_vectors)), method="BFGS",
                 jac=self.ediis_gradient, tol=1e-6, options={"maxiter": 200})
 
-        if not result.success:
+        if np.linalg.norm(result.jac) > 1e-3: # Even if we didn't hit the tolerance, it may be good enough.
             raise Exception("EDIIS minimization failed. File a bug, and include your entire input and output files.")
 
         return normalize_input(result.x)
