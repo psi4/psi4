@@ -1010,21 +1010,19 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
     timer_on("build_linK()");
 
-    // => Prep Auxiliary Quantities <=
-    // ==> Zeroing <== //
+    // ==> Prep Auxiliary Quantities <== //
 
+    // => Zeroing <= //
     for (auto& Kmat : K) {
         Kmat->zero();
     }
 
-    // ==> Sizing <== //
-
+    // => Sizing <= //
     int nshell = primary_->nshell();
     int nbf = primary_->nbf();
     int nthread = df_ints_num_threads_;
 
-    // ==> Atom Blocking <== //
-
+    // => Atom Blocking <= //
     std::vector<int> shell_endpoints_for_atom;
     std::vector<int> basis_endpoints_for_shell;
 
@@ -1066,7 +1064,8 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         outfile->Printf("\n");
     }
 
-    // ==> Store significant atom pairs for parallelization <== //
+    // ==> Prep Atom Pairs <== //
+
     std::vector<std::pair<int, int>> atom_pairs;
     for (size_t Patom = 0; Patom < natom; Patom++) {
         for (size_t Qatom = 0; Qatom <= Patom; Qatom++) {
@@ -1084,7 +1083,8 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         }
     }
 
-    // ==> Store shell pairs that are significant by Schwarz estimate <== //
+    // ==> Prep Bra-Bra Shell Pairs <== //
+
     // A comparator used for sorting integral screening values
     auto screen_compare = [](const std::pair<int, double> &a, 
                                     const std::pair<int, double> &b) { return a.second > b.second; };
@@ -1108,9 +1108,9 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         }
     }
 
-    // ==> "Pre-ordering and Pre-selection to find significant elements in Puv" <== //
+    // ==> Prep Bra-Ket Shell Pairs <== //
 
-    // => Calculate Shell Ceilings <=
+    // => Calculate Shell Ceilings <= //
     std::vector<double> shell_ceilings(nshell, 0.0);
 
     // sqrt(Umax|Umax) in Ochsenfeld Eq. 3
@@ -1124,7 +1124,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
     std::vector<std::vector<int>> significant_kets(nshell);
 
-    // ==> Use shell ceilings to compute significant ket-shells for each bra-shell <==
+    // => Use shell ceilings to compute significant ket-shells for each bra-shell <= //
     for (size_t P = 0; P < nshell; P++) {
         std::vector<std::pair<int, double>> PR_shell_values;
         for (size_t R = 0; R < nshell; R++) {
@@ -1141,8 +1141,6 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
     }
 
     size_t natom_pair = atom_pairs.size();
-
-    // => Integral Formation Loop <=
 
     // ==> Intermediate Buffers <== //
 
@@ -1163,8 +1161,8 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
     // Number of computed shell quartets is tracked for benchmarking purposes
     size_t computed_shells = 0L;
 
-// "Loop over types significant bra-shell pairs mu-lambda"
-// But for sake of parallelization, we distribute this over atom pairs
+    // ==> Integral Formation Loop <== //
+
 #pragma omp parallel for num_threads(nthread) schedule(dynamic) reduction(+ : computed_shells)
     for (size_t ipair = 0L; ipair < natom_pair; ipair++) { // O(N) shell-pairs in asymptotic limit
 
@@ -1300,6 +1298,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                         if (R == S) prefactor *= 0.5;
                         if (P == R && Q == S) prefactor *= 0.5;
 
+                        // => Computing integral contractions to K buffers <= //
                         for (int p = 0; p < shell_P_nfunc; p++) {
                             for (int q = 0; q < shell_Q_nfunc; q++) {
                                 for (int r = 0; r < shell_R_nfunc; r++) {
@@ -1329,7 +1328,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
 
         if (!touched) continue;
 
-        // => Stripe out <= //
+        // => Stripe out (Writing to K matrix) <= //
 
         for (size_t ind = 0; ind < D.size(); ind++) {
             double** KTp = KT[thread][ind]->pointer();
