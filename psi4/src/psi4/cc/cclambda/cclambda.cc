@@ -317,7 +317,8 @@ double CCLambdaWavefunction::compute_energy() {
             /*- Process::environment.globals["LEFT-RIGHT CC2 EIGENVECTOR OVERLAP"] -*/
             /*- Process::environment.globals["LEFT-RIGHT CCSD EIGENVECTOR OVERLAP"] -*/
             /*- Process::environment.globals["LEFT-RIGHT CCSD(T) EIGENVECTOR OVERLAP"] -*/
-            reference_wavefunction_->set_scalar_variable("LEFT-RIGHT " + gs_name + " EIGENVECTOR OVERLAP", LR_overlap);
+            auto varname = "LEFT-RIGHT " + gs_name + " EIGENVECTOR OVERLAP";
+            reference_wavefunction_->set_scalar_variable(varname, LR_overlap);
         }
     }
 
