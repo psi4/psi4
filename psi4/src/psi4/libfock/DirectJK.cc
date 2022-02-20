@@ -1064,7 +1064,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         outfile->Printf("\n");
     }
 
-    // ==> Prep Atom Pairs <== //
+    // ==> Prep Atom Pairs (Better for parallel performance than shell pairs) <== //
 
     std::vector<std::pair<int, int>> atom_pairs;
     for (size_t Patom = 0; Patom < natom; Patom++) {
