@@ -38,6 +38,8 @@ def test_cc_uhf_raise1():
     with pytest.raises(psi4.ValidationError) as e:
         psi4.properties("ccsd/sto-3g", properties=['polarizability'], ref_wfn=wfn)
 
+    assert "Non-RHF CC response properties are not implemented." in str(e.value)
+
 def test_cc_uhf_raise2():
     psi4.geometry("""
     0 1
@@ -49,4 +51,6 @@ def test_cc_uhf_raise2():
     psi4.set_options({"reference": "uhf"})
     with pytest.raises(psi4.ValidationError) as e:
         psi4.properties("ccsd/sto-3g", properties=['polarizability'])
+
+    assert "Non-RHF CC response properties are not implemented." in str(e.value)
 
