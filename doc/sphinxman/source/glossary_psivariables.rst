@@ -230,6 +230,11 @@ PSI Variables by Alpha
    The specific rotation [deg/(dm (g/cm^3))] calculated at the CC2 level in the
    modified velocity gauge for a given (x) wavelength, (x) rounded to nearest integer.
 
+.. psivar:: CC2 ROTATION (LEN) ORIGIN-DEPENDENCE @ xNM
+
+   The origin-dependence of the CC2 specific rotation in deg/[dm (g/cm^3)]/bohr and the
+   length gauge, computed at (x) wavelength, (x) rounded to nearest integer.
+
 .. psivar:: CC QUADRUPOLE XX
    CC QUADRUPOLE XY
    CC QUADRUPOLE XZ
@@ -350,6 +355,11 @@ PSI Variables by Alpha
 
    The specific rotation [deg/(dm (g/cm^3))] calculated at the CCSD level in the
    modified velocity gauge for a given (x) wavelength, (x) rounded to nearest integer.
+
+.. psivar:: CCSD ROTATION (LEN) ORIGIN-DEPENDENCE @ xNM
+
+   The origin-dependence of the CCSD specific rotation in deg/[dm (g/cm^3)]/bohr and the
+   length gauge, computed at (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CEPA(0) DIPOLE
 
