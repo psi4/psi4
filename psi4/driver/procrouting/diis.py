@@ -23,11 +23,6 @@ def axpy(y, alpha, x):
     else:
         raise TypeError("Unrecognized object type for DIIS.")
 
-def normalize_input(x):
-    """ Transform input vector to be normalized and have positive components only. """
-    square = x ** 2
-    return square / square.sum()
-
 def template_helper(*args):
     template = []
     for arg in args:
@@ -237,30 +232,23 @@ class DIIS:
             return np.linalg.lstsq(B, rhs, rcond=None)[0][:-1]
 
     def adiis_energy(self, x):
-        x = normalize_input(x)
         return np.dot(self.adiis_linear, x) + np.einsum("i,ij,j->", x, self.adiis_quadratic, x) / 2
 
     def adiis_gradient(self, x):
-        """ Gradient of energy estimate w.r.t. input coefficient """
-        c = normalize_input(x)
-        dedc = self.adiis_linear + np.einsum("i,ij->j", c, self.adiis_quadratic)
-
-        norm_sq = (x**2).sum()
-        dcdx = np.diag(x) * norm_sq - np.einsum("i,j->ij", x ** 2, x)
-        dcdx *= 2 / norm_sq**2
-
-        return np.einsum("i,ij->j", dedc, dcdx)
+        return self.adiis_linear + np.einsum("i,ij->j", x, self.adiis_quadratic)
 
     def adiis_coefficients(self):
         from scipy.optimize import minimize
         self.adiis_populate()
-        result = minimize(self.adiis_energy, np.ones(len(self.stored_vectors)), method="BFGS",
-                jac = self.adiis_gradient, tol=1e-6, options={"maxiter": 200})
+        result = minimize(self.adiis_energy, np.ones(len(self.stored_vectors)), method="SLSQP",
+                          bounds = tuple((0, 1) for i in self.stored_vectors),
+                          constraints = [{"type": "eq", "fun": lambda x: sum(x) - 1, "jac": lambda x: np.ones_like(x)}],
+                          jac=self.adiis_gradient, tol=1e-6, options={"maxiter": 200})
 
-        if np.linalg.norm(result.jac) > 1e-3: # Even if we didn't hit the tolerance, it may be good enough.
+        if not result.success:
             raise Exception("ADIIS minimization failed. File a bug, and include your entire input and output files.")
 
-        return normalize_input(result.x)
+        return result.x
 
     def adiis_populate(self):
         """ Fills linear and quadratic coefficients in ADIIS energy estimate. """
@@ -294,32 +282,26 @@ class DIIS:
             self.adiis_quadratic *= 2
 
     def ediis_energy(self, x):
-        x = normalize_input(x)
         ediis_linear = np.array([entry["energy"][0] for entry in self.stored_vectors])
         return np.dot(ediis_linear, x) + np.einsum("i,ij,j->", x, self.ediis_quadratic, x) / 2
 
     def ediis_gradient(self, x):
         """ Gradient of energy estimate w.r.t. input coefficient """
-        c = normalize_input(x)
         ediis_linear = np.array([entry["energy"][0] for entry in self.stored_vectors])
-        dedc = ediis_linear + np.einsum("i,ij->j", c, self.ediis_quadratic)
-
-        norm_sq = (x**2).sum()
-        dcdx = np.diag(x) * norm_sq - np.einsum("i,j->ij", x ** 2, x)
-        dcdx *= 2 / norm_sq**2
-
-        return np.einsum("i,ij->j", dedc, dcdx)
+        return ediis_linear + np.einsum("i,ij->j", x, self.ediis_quadratic)
 
     def ediis_coefficients(self):
         from scipy.optimize import minimize
         self.ediis_populate()
-        result = minimize(self.ediis_energy, np.ones(len(self.stored_vectors)), method="BFGS",
-                jac=self.ediis_gradient, tol=1e-6, options={"maxiter": 200})
+        result = minimize(self.ediis_energy, np.ones(len(self.stored_vectors)), method="SLSQP",
+                          bounds = tuple((0, 1) for i in self.stored_vectors),
+                          constraints = [{"type": "eq", "fun": lambda x: sum(x) - 1, "jac": lambda x: np.ones_like(x)}],
+                          jac=self.ediis_gradient, tol=1e-6, options={"maxiter": 200})
 
-        if np.linalg.norm(result.jac) > 1e-3: # Even if we didn't hit the tolerance, it may be good enough.
+        if not result.success:
             raise Exception("EDIIS minimization failed. File a bug, and include your entire input and output files.")
 
-        return normalize_input(result.x)
+        return result.x
 
     def ediis_populate(self):
         """ Fills quadratic coefficients in ADIIS energy estimate. """
