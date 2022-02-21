@@ -241,9 +241,9 @@ class DIIS:
         from scipy.optimize import minimize
         self.adiis_populate()
         result = minimize(self.adiis_energy, np.ones(len(self.stored_vectors)), method="SLSQP",
-                bounds = tuple((0, 1) for i in self.stored_vectors),
-                constraints = [{"type": "eq", "fun": lambda x: sum(x) - 1, "jac": lambda x: np.ones(len(x))}],
-                jac=self.adiis_gradient, tol=1e-6, options={"maxiter": 200})
+                          bounds = tuple((0, 1) for i in self.stored_vectors),
+                          constraints = [{"type": "eq", "fun": lambda x: sum(x) - 1, "jac": lambda x: np.ones_like(x)}],
+                          jac=self.adiis_gradient, tol=1e-6, options={"maxiter": 200})
 
         if not result.success:
             raise Exception("ADIIS minimization failed. File a bug, and include your entire input and output files.")
@@ -294,9 +294,9 @@ class DIIS:
         from scipy.optimize import minimize
         self.ediis_populate()
         result = minimize(self.ediis_energy, np.ones(len(self.stored_vectors)), method="SLSQP",
-                bounds = tuple((0, 1) for i in self.stored_vectors),
-                constraints = [{"type": "eq", "fun": lambda x: sum(x) - 1, "jac": lambda x: np.ones(len(x))}],
-                jac=self.ediis_gradient, tol=1e-6, options={"maxiter": 200})
+                          bounds = tuple((0, 1) for i in self.stored_vectors),
+                          constraints = [{"type": "eq", "fun": lambda x: sum(x) - 1, "jac": lambda x: np.ones_like(x)}],
+                          jac=self.ediis_gradient, tol=1e-6, options={"maxiter": 200})
 
         if not result.success:
             raise Exception("EDIIS minimization failed. File a bug, and include your entire input and output files.")
