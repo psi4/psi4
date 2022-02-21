@@ -3097,13 +3097,17 @@ def run_cc_property(name, **kwargs):
     if (n_one > 0 or n_two > 0) and (n_response > 0):
         print("""Computing both density- and response-based properties.""")
 
+    if n_response > 0:
+        if ("ref_wfn" in kwargs and not kwargs["ref_wfn"].same_a_b_orbs()) or core.get_option('SCF', 'REFERENCE') != 'RHF':
+            raise ValidationError(f"Non-RHF CC response properties are not implemented.")
+
     if name in ['ccsd', 'cc2', 'eom-ccsd', 'eom-cc2']:
         this_name = name.upper().replace('-', '_')
         core.set_global_option('WFN', this_name)
         ccwfn = run_ccenergy(name, **kwargs)
         core.set_global_option('WFN', this_name)
     else:
-        raise ValidationError("""CC property name %s not recognized""" % name.upper())
+        raise ValidationError(f"CC property name {name.upper()} not recognized")
 
     # Need cchbar for everything
     core.cchbar(ccwfn)
