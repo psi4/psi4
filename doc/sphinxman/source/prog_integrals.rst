@@ -360,6 +360,14 @@ extra transformation steps have been removed as part of the switch to Libint2,
 and the affected codes (PCM and CPPE interfaces) now compute the potential and
 field integrals in the representation required by the basis set.
 
+Also, note that the way external point charges are specified has changed.
+Previously, a set of N external point charges would be specified by passing a
+matrix with dimensions N rows and 4 columns -- corresponding to charge, x, y, z
+-- to the ``set_charge_field()`` member of the potential integral class.  The
+same information is now passed using the more verbose
+``std::vector<std::pair<double, std::array<double, 3>>>`` type instead, to be
+consistent with Libint2's convention.
+
 New Operators Available
 .......................
 
@@ -371,3 +379,26 @@ alert the developers, who will be able to add the appropriate code.
 Available integrals classes and parameters currently documented at 
 `Libint2 C++11 Interface Wiki <https://github.com/evaleev/libint/wiki/using-modern-CPlusPlus-API#create-an-integral-engine>`_
 
+
+Shell Pairs
+...........
+
+To ensure consistency between one- and two-electron terms when screening, and
+for efficiency reasons, shell pair lists should be used to iterate over pairs
+of Gaussian shells.  These lists contain integer pair numbers, corresponding to
+the pairs of shells that have sufficient overlap to survive the screening
+process.  Iterating over these lists is simple:
+
+.. code-block:: cpp
+
+    const auto& shell_pairs = Vint->shellpairs();
+    size_t n_pairs = shell_pairs.size();
+    for (size_t p = 0; p < n_pairs; ++p) {
+         auto P = shell_pairs[p].first;
+         auto Q = shell_pairs[p].second;
+         // do something with shells P and Q
+    }
+
+Note that list considers all P,Q pairs if the two basis sets differ, but only
+P>=Q if the basis sets are the same; the caller should account for this
+restricted summation in the latter case.
