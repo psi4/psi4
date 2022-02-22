@@ -775,14 +775,13 @@ def tdscf_excitations(wfn,
         wfn.set_array_variable(
             f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} MAGNETIC TRANSITION DIPOLE MOMENT - {x.irrep_ES} SYMMETRY",
             core.Matrix.from_array(x.mdtm.reshape((1, 3))))
-        wfn.set_array_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
-            x.R_eigvec if restricted else x.R_eigvec[0])
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
+                               x.R_eigvec if restricted else x.R_eigvec[0])
         wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
                                x.L_eigvec if restricted else x.L_eigvec[0])
         wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR BETA - {x.irrep_ES} SYMMETRY",
                                x.R_eigvec if restricted else x.R_eigvec[1])
-        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR BETA - {x.irrep_ES} SYMMETRY",
                                x.L_eigvec if restricted else x.L_eigvec[1])
 
         core.print_out(
