@@ -782,7 +782,7 @@ def tdscf_excitations(wfn,
                                x.L_eigvec if restricted else x.L_eigvec[0])
         wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR BETA - {x.irrep_ES} SYMMETRY",
                                x.R_eigvec if restricted else x.R_eigvec[1])
-        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR BETA - {x.irrep_ES} SYMMETRY",
                                x.L_eigvec if restricted else x.L_eigvec[1])
 
         core.print_out(
