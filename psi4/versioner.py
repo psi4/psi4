@@ -140,7 +140,7 @@ def reconcile_and_compute_version_output(quiet=False):
     meta_latest_annotated_v_tag, _, meta_seven_char_hash = res['long'].partition('+')
 
     # this is the tag format (PEP440 compliant) that our machinery is expecting.
-    #   let's catch any deviations with Travis before it can corrupt versioning.
+    #   let's catch any deviations with CI before it can corrupt versioning.
     sane_tag = re.compile(r"""^(?P<tag>(?P<forwardseries>\d+\.\d+(?P<patch>\.[1-9]+)?)(?(patch)|(?P<prere>((a)|(b)|(rc))\d+)?))$""")
 
     mobj = sane_tag.match(meta_latest_annotated_v_tag)
