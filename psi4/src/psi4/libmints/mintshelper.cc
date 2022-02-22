@@ -2753,6 +2753,7 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1_helper(const std::
 
     std::shared_ptr<OneBodyAOInt> GInt(integral_->ao_overlap(1));
 
+
     std::shared_ptr<BasisSet> bs1 = GInt->basis1();
     std::shared_ptr<BasisSet> bs2 = GInt->basis2();
 
@@ -2789,30 +2790,71 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1_helper(const std::
         GInt->compute_shell_deriv1(P, Q);
         const auto &buffers = GInt->buffers();
         int offset = 0;
-        double scale = P == Q ? 0.5 : 1.0;
-
         if (aP == atom && half_der_side == "LEFT") {
             // Px
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
-                    grad[0]->add(p + oP, q + oQ, scale * buffers[0][p * nQ + q]);
-                    grad[0]->add(q + oQ, p + oP, scale * buffers[0][p * nQ + q]);
+                    grad[0]->add(p + oP, q + oQ, buffers[0][p * nQ + q]);
                 }
             }
 
             // Py
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
-                    grad[1]->add(p + oP, q + oQ, scale * buffers[1][p * nQ + q]);
-                    grad[1]->add(q + oQ, p + oP, scale * buffers[1][p * nQ + q]);
+                    grad[1]->add(p + oP, q + oQ, buffers[1][p * nQ + q]);
                 }
             }
 
             // Pz
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
-                    grad[2]->add(p + oP, q + oQ, scale * buffers[2][p * nQ + q]);
-                    grad[2]->add(q + oQ, p + oP, scale * buffers[2][p * nQ + q]);
+                    grad[2]->add(p + oP, q + oQ, buffers[2][p * nQ + q]);
+                }
+            }
+        }
+
+        if (aQ == atom && half_der_side == "LEFT") {
+            // Qx
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[0]->add(q + oQ, p + oP, buffers[3][p * nQ + q]);
+                }
+            }
+
+            // Qy
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[1]->add(q + oQ, p + oP, buffers[4][p * nQ + q]);
+                }
+            }
+
+            // Qz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[2]->add(q + oQ, p + oP, buffers[5][p * nQ + q]);
+                }
+            }
+        }
+
+        if (aP == atom && half_der_side == "RIGHT") {
+            // Qx
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[0]->add(q + oQ, p + oP, buffers[0][p * nQ + q]);
+                }
+            }
+
+            // Qy
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[1]->add(q + oQ, p + oP, buffers[1][p * nQ + q]);
+                }
+            }
+
+            // Qz
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    grad[2]->add(q + oQ, p + oP, buffers[2][p * nQ + q]);
                 }
             }
         }
@@ -2821,24 +2863,21 @@ std::vector<SharedMatrix> MintsHelper::ao_overlap_half_deriv1_helper(const std::
             // Qx
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
-                    grad[0]->add(p + oP, q + oQ, scale * buffers[3][p * nQ + q]);
-                    grad[0]->add(q + oQ, p + oP, scale * buffers[3][p * nQ + q]);
+                    grad[0]->add(p + oP, q + oQ, buffers[3][p * nQ + q]);
                 }
             }
 
             // Qy
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
-                    grad[1]->add(p + oP, q + oQ, scale * buffers[4][p * nQ + q]);
-                    grad[1]->add(q + oQ, p + oP, scale * buffers[4][p * nQ + q]);
+                    grad[1]->add(p + oP, q + oQ, buffers[4][p * nQ + q]);
                 }
             }
 
             // Qz
             for (int p = 0; p < nP; p++) {
                 for (int q = 0; q < nQ; q++) {
-                    grad[2]->add(p + oP, q + oQ, scale * buffers[5][p * nQ + q]);
-                    grad[2]->add(q + oQ, p + oP, scale * buffers[5][p * nQ + q]);
+                    grad[2]->add(p + oP, q + oQ, buffers[5][p * nQ + q]);
                 }
             }
         }
@@ -3271,6 +3310,7 @@ std::vector<SharedMatrix> MintsHelper::ao_elec_dip_deriv1_helper(int atom) {
 
     std::shared_ptr<BasisSet> bs1 = Dint->basis1();
     std::shared_ptr<BasisSet> bs2 = Dint->basis2();
+    const auto bs1_equiv_bs2 = (bs1 == bs2);
 
     int nbf1 = bs1->nbf();
     int nbf2 = bs2->nbf();
@@ -3311,10 +3351,18 @@ std::vector<SharedMatrix> MintsHelper::ao_elec_dip_deriv1_helper(int atom) {
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
                         if (atom == aP) {
-                            grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ, *bufferP++);
+                            grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ, *bufferP);
+                            if (bs1_equiv_bs2 && P != Q) {
+                                grad[3 * mu_cart + atom_cart]->add(q + oQ, p + oP, *bufferP);
+                            }
+                            bufferP++;
                         }
                         if (atom == aQ) {
-                            grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ, *bufferQ++);
+                            grad[3 * mu_cart + atom_cart]->add(p + oP, q + oQ, *bufferQ);
+                            if (bs1_equiv_bs2 && P != Q) {
+                                grad[3 * mu_cart + atom_cart]->add(q + oQ, p + oP, *bufferQ);
+                            }
+                            bufferQ++;
                         }
                     }
                 }
