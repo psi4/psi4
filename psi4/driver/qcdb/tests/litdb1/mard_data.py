@@ -296,7 +296,7 @@ asdf = qcdb.Database('hbc6')
 asdf.load_qcdata_byproject('dhdft')
 testem(odb=asdf, ss='default', bm='HBC6A', ans=answers['hbc'])
 
-asdf= qcdb.Database('nbc10')
+asdf = qcdb.Database('nbc10')
 asdf.load_qcdata_byproject('dhdft')
 asdf.add_Subset_union('a1', ['bzbz_pd34', 'bzbz_t', 'bzbz_s'])
 asdf.add_Subset_union('a2', ['meme', 'bzme'])

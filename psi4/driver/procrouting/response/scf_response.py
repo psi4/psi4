@@ -212,7 +212,7 @@ def _print_output(complete_dict, output):
     core.print_out('\n   ==> Response Properties <==\n')
 
     for i, prop in enumerate(complete_dict):
-        if not 'User' in prop['name']:
+        if 'User' not in prop['name']:
             core.print_out('\n    => {} <=\n\n'.format(prop['name']))
             directions = prop['printout_labels']
             var_name = prop['name'].upper().replace("IES", "Y")

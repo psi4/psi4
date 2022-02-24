@@ -39,8 +39,8 @@ def _RHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float
         return gradient.absmax()
 
 def _UHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> float:
-    gradient_a = self.form_FDSmSDF(self.Fa(), self.Da());
-    gradient_b = self.form_FDSmSDF(self.Fb(), self.Db());
+    gradient_a = self.form_FDSmSDF(self.Fa(), self.Da())
+    gradient_b = self.form_FDSmSDF(self.Fb(), self.Db())
 
     if save_fock:
         if not self.initialized_diis_manager_:
@@ -87,7 +87,7 @@ def _ROHF_orbital_gradient(self, save_fock: bool, max_diis_vectors: int) -> floa
     Cav = self.Ct().get_block(row_slice, col_slice)
 
     # Back transform MOgradient
-    gradient = core.triplet(Cia, MOgradient, Cav, False, False, True);
+    gradient = core.triplet(Cia, MOgradient, Cav, False, False, True)
 
     if save_fock:
         if not self.initialized_diis_manager_:

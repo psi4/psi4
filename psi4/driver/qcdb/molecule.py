@@ -332,7 +332,7 @@ class Molecule(LibmintsMolecule):
         for i in range(self.natom()):
             [x, y, z] = self.atoms[i].compute()
             if save_ghosts or self.Z(i):
-                text += '%2s %17.12f %17.12f %17.12f\n' % ((self.symbol(i) if self.Z(i) else "Gh"), \
+                text += '%2s %17.12f %17.12f %17.12f\n' % ((self.symbol(i) if self.Z(i) else "Gh"),
                     x * factor, y * factor, z * factor)
         return text
 
@@ -470,7 +470,7 @@ class Molecule(LibmintsMolecule):
 
         for i in range(self.natom()):
             [x, y, z] = self.atoms[i].compute()
-            text += '%-2s %17.12f %17.12f %17.12f\n' % (self.symbol(i), \
+            text += '%-2s %17.12f %17.12f %17.12f\n' % (self.symbol(i),
                 x * factor, y * factor, z * factor)
             if not self.Z(i):
                 dummy.append(str(i + 1))  # Molpro atom number is 1-indexed
@@ -495,7 +495,7 @@ class Molecule(LibmintsMolecule):
         # append atoms and coordentries
         for i in range(self.natom()):
             [x, y, z] = self.atoms[i].compute()
-            text += '%-2s %17.12f %17.12f %17.12f\n' % ((self.symbol(i) if self.Z(i) else "GH"), \
+            text += '%-2s %17.12f %17.12f %17.12f\n' % ((self.symbol(i) if self.Z(i) else "GH"),
                 x * factor, y * factor, z * factor)
 
         #for fr in range(self.nfragments()):
@@ -580,10 +580,10 @@ class Molecule(LibmintsMolecule):
                     x, y, z = self.atoms[at].compute()
                     atom = self.symbol(at)
                     if n_frags > 1:
-                        text += '    {:2s}({:d}) {:> 17.12f} {:> 17.12f} {:> 17.12f}\n'.format(\
+                        text += '    {:2s}({:d}) {:> 17.12f} {:> 17.12f} {:> 17.12f}\n'.format(
                                 atom, fr + 1, x * factor, y * factor, z * factor)
                     else:
-                        text += '    {:2s} {:> 17.12f} {:> 17.12f} {:> 17.12f}\n'.format(\
+                        text += '    {:2s} {:> 17.12f} {:> 17.12f} {:> 17.12f}\n'.format(
                                 atom, x * factor, y * factor, z * factor)
         text += '*'
 
@@ -736,7 +736,7 @@ class Molecule(LibmintsMolecule):
 
         for i in range(self.natom()):
             [x, y, z] = self.atoms[i].compute()
-            text += '%4s %17.12f %17.12f %17.12f\n' % (("" if self.Z(i) else 'Bq') + self.symbol(i), \
+            text += '%4s %17.12f %17.12f %17.12f\n' % (("" if self.Z(i) else 'Bq') + self.symbol(i),
                 x * factor, y * factor, z * factor)
         return text
         pass
@@ -837,8 +837,8 @@ class Molecule(LibmintsMolecule):
                 cent = add(cent, self.xyz(at))
             cent = scale(cent, 1.0 / len(entity))
             text += '  Centroid:      %14.8f %14.8f %14.8f                  [Angstrom]\n' % \
-                (cent[0] * qcel.constants.bohr2angstroms, \
-                 cent[1] * qcel.constants.bohr2angstroms, \
+                (cent[0] * qcel.constants.bohr2angstroms,
+                 cent[1] * qcel.constants.bohr2angstroms,
                  cent[2] * qcel.constants.bohr2angstroms)
             text += '  Centroid:      %14.8f %14.8f %14.8f                  [Bohr]\n' % \
                 (cent[0], cent[1], cent[2])
@@ -855,7 +855,7 @@ class Molecule(LibmintsMolecule):
                 (evecs[0][midx], evecs[1][midx], evecs[2][midx])
             text += '  Normal Vector: %14.8f %14.8f %14.8f                  [unit]\n' % \
                 (evecs[0][midx] + cent[0], evecs[1][midx] + cent[1], evecs[2][midx] + cent[2])
-            xplane = [evecs[0][midx], evecs[1][midx], evecs[2][midx], \
+            xplane = [evecs[0][midx], evecs[1][midx], evecs[2][midx],
                 -1.0 * (evecs[0][midx] * cent[0] + evecs[1][midx] * cent[1] + evecs[2][midx] * cent[2])]
             text += '  Eqn. of Plane: %14.8f %14.8f %14.8f %14.8f   [Ai + Bj + Ck + D = 0]\n' % \
                 (xplane[0], xplane[1], xplane[2], xplane[3])

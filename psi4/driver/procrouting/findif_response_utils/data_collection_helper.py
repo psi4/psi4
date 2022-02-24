@@ -97,7 +97,7 @@ def parse_geometry_matrix_data(outfile, matrix_name, row_tot):
                     matrix_data.append(float(y))
                     matrix_data.append(float(z))
                     n_rows += 1
-            except:
+            except Exception:
                 pass
         if (n_rows == row_tot) and (len(matrix_data) != 3 * row_tot):
             raise p4util.ParsingError('Collecting {} data failed!'

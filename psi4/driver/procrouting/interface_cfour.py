@@ -139,8 +139,8 @@ def run_cfour(name, **kwargs):
 
     # Find environment by merging PSIPATH and PATH environment variables
     lenv = {
-        'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + \
-                ':' + os.environ.get('PATH') + \
+        'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) +
+                ':' + os.environ.get('PATH') +
                 ':' + core.get_datadir() + '/basis',
         'GENBAS_PATH': core.get_datadir() + '/basis',
         'CFOUR_NUM_CORES': os.environ.get('CFOUR_NUM_CORES'),
@@ -205,7 +205,7 @@ def run_cfour(name, **kwargs):
     #   OMP_NUM_THREADS from env is in lenv from above
     #   threads from psi4 -n (core.get_num_threads()) is ignored
     #   CFOUR_OMP_NUM_THREADS psi4 option takes precedence, handled below
-    if core.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS') == True:
+    if core.has_option_changed('CFOUR', 'CFOUR_OMP_NUM_THREADS'):
         lenv['OMP_NUM_THREADS'] = str(core.get_option('CFOUR', 'CFOUR_OMP_NUM_THREADS'))
 
     #print("""\n\n<<<<<  RUNNING CFOUR ...  >>>>>\n\n""")

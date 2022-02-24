@@ -233,7 +233,7 @@ def dynamic_variable_bind(cls):
     cls.to_schema = qcdb.Molecule.to_schema
     cls.run_dftd3 = qcdb.Molecule.run_dftd3
     cls.run_dftd4 = qcdb.Molecule.run_dftd4
-    cls.run_gcp= qcdb.Molecule.run_gcp
+    cls.run_gcp = qcdb.Molecule.run_gcp
     cls.format_molecule_for_mol = qcdb.Molecule.format_molecule_for_mol
 
 
@@ -280,7 +280,7 @@ def geometry(geom, name="default"):
     # Attempt to go ahead and construct the molecule
     try:
         molecule.update_geometry()
-    except:
+    except Exception:
         core.print_out("Molecule: geometry: Molecule is not complete, please use 'update_geometry'\n"
                        "                    once all variables are set.\n")
 
