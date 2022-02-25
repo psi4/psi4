@@ -64,6 +64,11 @@ jobs:
           - psi4/label/dev::pcmsolver
           - psi4/label/dev::simint
         EOF
+        # <lang>-compiler is only a metapackage for c-f
+        if [[ "${{ runner.os }}" == "Linux" ]]; then
+          sed -i "s/- cxx-compiler/- gxx_linux-64/g" build.yaml
+          sed -i "s/- fortran-compiler/- gfortran_linux-64/g" build.yaml
+        fi
         cat > run.yaml <<EOF
         name: run
         channels:
