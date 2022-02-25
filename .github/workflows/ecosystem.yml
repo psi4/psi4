@@ -1,0 +1,195 @@
+name: Eco
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+
+  ecosystem:
+    strategy:
+      fail-fast: false
+      matrix:
+        cfg:
+          - runs-on: ubuntu-latest
+            python-version: "3.10"
+            libargs: >
+              -DBUILD_SHARED_LIBS=ON
+
+#          - runs-on: macos-latest
+#          - runs-on: windows-latest
+
+    name: "🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.runs-on }}"
+    runs-on: ${{ matrix.cfg.runs-on }}
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Write Conda Env Files
+      shell: bash -l {0}
+      run: |
+        cat > build.yaml <<EOF
+        name: build
+        channels:
+          - defaults
+        dependencies:
+          - blas=*=mkl
+          - python
+            # build
+          - boost
+          - cmake >=3.16
+          - cxx-compiler
+          - eigen
+          - fortran-compiler
+          - mkl-devel
+          - mpfr
+          - ninja
+          - pybind11
+            # qc req'd
+          - psi4/label/dev::gau2grid
+          - psi4/label/dev::libint2
+          - psi4/label/dev::qcelemental
+          - psi4/label/dev::qcengine
+          - psi4/label/dev::libxc =5
+            # qc
+          - psi4/label/dev::ambit
+          - psi4/label/dev::chemps2
+          - psi4/label/dev::dkh
+          - psi4/label/dev::gdma
+          - psi4/label/dev::pcmsolver
+          - psi4/label/dev::simint
+        EOF
+        cat > run.yaml <<EOF
+        name: run
+        channels:
+          - defaults
+        dependencies:
+          - blas=*=mkl
+          - msgpack-python
+          - networkx
+          - pip
+          - python
+          - scipy
+            # qc (buildtime)
+          - psi4/label/dev::gau2grid
+          - psi4/label/dev::libint2
+          - psi4/label/dev::qcelemental
+          - psi4/label/dev::qcengine
+          - psi4/label/dev::libxc =5
+          - psi4/label/dev::ambit
+          - psi4/label/dev::chemps2
+          - psi4/label/dev::dkh
+          - psi4/label/dev::gdma
+          - psi4/label/dev::pcmsolver
+          - psi4/label/dev::simint
+            # qc (runtime)
+          - psi4/label/dev::dftd3
+          - psi4/label/dev::pylibefp
+          - psi4/label/dev::fockci
+          - psi4/label/dev::gcp
+          - psi4/label/dev::mp2d
+          - psi4/label/dev::resp
+          - psi4/label/dev::snsmp2
+          - pip:
+             - git+https://github.com/i-pi/i-pi.git@master-py3
+            # test
+          - pytest
+          - pytest-xdist
+        EOF
+        cat > runcf.yaml <<EOF
+        name: runcf
+        channels:
+          - conda-forge
+        dependencies:
+          - blas=*=mkl
+          - python
+            # qc (runtime)
+          - adcc
+          - cppe
+          - dftd4-python
+          - pymdi
+        EOF
+        cat run.yaml
+
+
+        #pandas!=1.3.0 \
+  
+
+#        if [[ "${{ runner.os }}" == "Windows" ]]; then
+#          sed -i "s/- cxx/#- cxx/g" export.yaml
+#        fi
+
+    - name: Create Conda Environment
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        mamba-version: "*"
+        activate-environment: build
+        environment-file: build.yaml
+        show-channel-urls: true
+
+#      if: ${{ runner.os == 'macOS' }}
+#      if: ${{ runner.os == 'Windows' }}
+#      if: ${{ runner.os == 'Linux' }}
+#      shell: bash -l {0}
+#      run: |
+#        conda remove eigen
+#        conda create -n onlyeigen eigen -c conda-forge
+
+    - name: Environment Information
+      shell: bash -l {0}
+      run: |
+        conda info
+        conda list
+
+#    - name: Prepare compiler environment for Windows
+#      if: ${{ runner.os == 'Windows' }}
+#      uses: ilammy/msvc-dev-cmd@v1
+#      with:
+#        arch: x64
+
+    - name: Configure with CMake (conda defaults GNU)
+      working-directory: ./code
+      run: |
+        cmake \
+          -S. \
+          -B objdir \
+          -G Ninja \
+          -D CMAKE_BUILD_TYPE=Release \
+          -D CMAKE_C_COMPILER=${CC} \
+          -D CMAKE_CXX_COMPILER=${CXX} \
+          -D CMAKE_Fortran_COMPILER=${FC} \
+          -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
+          -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
+          -D ENABLE_ambit=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
+          -D ENABLE_CheMPS2=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_CheMPS2=ON \
+          -D ENABLE_dkh=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
+          -D ENABLE_gdma=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
+          -D ENABLE_PCMSolver=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=ON \
+          -D ENABLE_simint=ON \
+          -D SIMINT_VECTOR=sse \
+          -D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
+          -D ENABLE_OPENMP=ON \
+          -D ENABLE_XHOST=OFF \
+          -D BUILD_SHARED_LIBS=ON
+
+    - name: Compile Psi4
+      working-directory: ./code
+      run: cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
+
+#    - name: Extract, Build, Install Libint Library
+#      shell: bash -l {0}
