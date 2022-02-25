@@ -135,7 +135,8 @@ jobs:
                         conda-forge::mpmath ^
                         conda-forge::msgpack-python ^
                         conda-forge::qcelemental ^
-                        conda-forge::qcengine
+                        conda-forge::qcengine ^
+                        scipy
           pip install git+https://github.com/i-pi/i-pi.git@master-py3
           conda install --only-deps anaconda-client
           pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent
@@ -164,7 +165,7 @@ jobs:
 
       # Configure
       # call "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
-      # -DCMAKE_VERBOSE_MAKEFILE=ON ^
+      # -DCMAKE_VERBOSE_MAKEFILE=ON
       - script: |
           setlocal EnableDelayedExpansion
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
@@ -180,7 +181,8 @@ jobs:
                 -DCMAKE_INSTALL_PREFIX=../install ^
                 -DCMAKE_C_COMPILER=clang-cl ^
                 -DCMAKE_CXX_COMPILER=clang-cl ^
-                -DENABLE_XHOST=!ENABLE_XHOST! ^
+                -DENABLE_XHOST=OFF ^
+                -DCMAKE_CXX_FLAGS="/arch:AVX" ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
                 -DPython_EXECUTABLE="C:/tools/miniconda3/python.exe" ^
                 -DMPFR_ROOT="C:/tools/miniconda3/Library" ^

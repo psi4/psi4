@@ -62,7 +62,7 @@ class IPIBroker(Client):
         if molecule is None:
             molecule = psi4.core.get_active_molecule()
         self.initial_molecule = molecule
-        assert self.initial_molecule.orientation_fixed() == True, "Orientation must be fixed!"
+        assert self.initial_molecule.orientation_fixed(), "Orientation must be fixed!"
         assert self.initial_molecule.point_group().symbol() == "c1", "Symmetry must be 'c1'!"
 
         names = [self.initial_molecule.symbol(i) for i in range(self.initial_molecule.natom())]

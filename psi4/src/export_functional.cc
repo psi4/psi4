@@ -112,6 +112,7 @@ void export_functional(py::module &m) {
              })
         .def("refresh", &BlockOPoints::refresh, "docstring")
         .def("npoints", &BlockOPoints::npoints, "docstring")
+        .def("parent_atom", &BlockOPoints::parent_atom, "Returns the atom number this BlockOfPoints belongs to.")
         .def("print_out", &BlockOPoints::print, "out_fname"_a = "outfile", "print"_a = 2, "docstring")
         .def("shells_local_to_global", &BlockOPoints::shells_local_to_global, "docstring")
         .def("functions_local_to_global", &BlockOPoints::functions_local_to_global, "docstring");
@@ -232,7 +233,8 @@ void export_functional(py::module &m) {
         .def("max_points", &MolecularGrid::max_points, "Returns the maximum number of points in a block.")
         .def("max_functions", &MolecularGrid::max_functions, "Returns the maximum number of functions in a block.")
         .def("collocation_size", &MolecularGrid::collocation_size, "Returns the total collocation size of all blocks.")
-        .def("blocks", &MolecularGrid::blocks, "Returns a list of blocks.");
+        .def("blocks", &MolecularGrid::blocks, "Returns a list of blocks.")
+        .def("atomic_blocks", &MolecularGrid::atomic_blocks, "Returns a list of blocks.");
 
     py::class_<DFTGrid, std::shared_ptr<DFTGrid>, MolecularGrid>(m, "DFTGrid", "docstring")
         .def_static("build",

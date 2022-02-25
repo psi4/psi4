@@ -1,0 +1,369 @@
+
+    -----------------------------------------------------------------------
+          Psi4: An Open-Source Ab Initio Electronic Structure Package
+                               Psi4 1.6a1.dev43 
+
+                         Git: Rev {ediis_single_class} f12f63b dirty
+
+
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
+    M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio,
+    A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer,
+    R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni,
+    J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein,
+    B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov,
+    K. Patkowski, A. E. DePrince III, U. Bozkaya, R. A. King,
+    F. A. Evangelista, J. M. Turney, T. D. Crawford, C. D. Sherrill,
+    J. Chem. Phys. 152(18) 184108 (2020). https://doi.org/10.1063/5.0006002
+
+                            Additional Code Authors
+    E. T. Seidl, C. L. Janssen, E. F. Valeev, M. L. Leininger,
+    J. F. Gonthier, R. M. Richard, H. R. McAlexander, M. Saitow, X. Wang,
+    P. Verma, M. H. Lechner, and A. Jiang
+
+             Previous Authors, Complete List of Code Contributors,
+                       and Citations for Specific Modules
+    https://github.com/psi4/psi4/blob/master/codemeta.json
+    https://github.com/psi4/psi4/graphs/contributors
+    http://psicode.org/psi4manual/master/introduction.html#citing-psifour
+
+    -----------------------------------------------------------------------
+
+
+    Psi4 started on: Monday, 07 February 2022 03:26PM
+
+    Process ID: 37041
+    Host:       dhcp189-153.emerson.emory.edu
+    PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
+    Memory:     500.0 MiB
+    Threads:    1
+    
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! EDIIS test case from 10.1063/1.1470195
+
+molecule {
+U
+F   1 1.98
+F   1 1.98  2  109.4712
+F   1 1.98  2  109.4712  3  120.0000
+F   1 1.98  2  109.4712  3 -120.0000
+}
+
+set guess gwh    # With this guess, un-accelerated DIIS will fail
+set scf_type pk
+set basis lanl2dz
+set scf_initial_accelerator ediis
+set maxiter 28
+energy = energy('b3lyp')
+
+compare_values(-451.2300583940044021, energy, 6, "SCF Energy")
+--------------------------------------------------------------------------
+
+Scratch directory: /tmp/
+
+*** tstart() called on dhcp189-153.emerson.emory.edu
+*** at Mon Feb  7 15:26:25 2022
+
+   => Loading Basis Set <=
+
+    Name: LANL2DZ
+    Role: ORBITAL
+    Keyword: BASIS
+    atoms 1   entry U          line  1413 (ECP: line  3244) file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/lanl2dz.gbs 
+    atoms 2-5 entry F          line   158 file /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4/basis/lanl2dz.gbs 
+
+    !!!  WARNING: ECP capability is in beta. Please check occupations closely.  !!!
+
+
+         ---------------------------------------------------------
+                                   SCF
+               by Justin Turney, Rob Parrish, Andy Simmonett
+                          and Daniel G. A. Smith
+                              RKS Reference
+                        1 Threads,    500 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: cs
+    Full point group: C3v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z               Mass       
+    ------------   -----------------  -----------------  -----------------  -----------------
+         U            0.000000000000    -0.000000122013     0.000000000000   238.050788400000
+         F            0.000000000000     1.979999877987     0.000000000000    18.998403162730
+         F           -0.933381070012    -0.659999449718     1.616663436084    18.998403162730
+         F           -0.933381070012    -0.659999449718    -1.616663436084    18.998403162730
+         F            1.866762140025    -0.659999449718     0.000000000000    18.998403162730
+
+  Running in cs symmetry.
+
+  Rotational constants: A =      0.08488  B =      0.08488  C =      0.08488 [cm^-1]
+  Rotational constants: A =   2544.49172  B =   2544.49172  C =   2544.49075 [MHz]
+  Nuclear repulsion =  214.240067353665864
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 50
+  Nalpha       = 25
+  Nbeta        = 25
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is GWH.
+  Energy threshold   = 1.00e-06
+  Density threshold  = 1.00e-06
+  Integral threshold = 1.00e-12
+
+  ==> Primary Basis <==
+
+  Basis Set: LANL2DZ
+    Blend: LANL2DZ
+    Number of shells: 30
+    Number of basis functions: 80
+    Number of Cartesian functions: 80
+    Spherical Harmonics?: false
+    Max angular momentum: 3
+
+  Core potential: LANL2DZ
+    Number of shells: 5
+    Number of ECP primitives: 36
+    Number of ECP core electrons: 78
+    Max angular momentum: 4
+
+  ==> DFT Potential <==
+
+   => LibXC <=
+
+    Version 5.1.5
+    S. Lehtola, C. Steigemann, M. J. Oliveira, and M. A. Marques, SoftwareX 7, 1 (2018) (10.1016/j.softx.2017.11.002)
+
+   => Composite Functional: B3LYP <= 
+
+    B3LYP Hyb-GGA Exchange-Correlation Functional
+
+    P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch, J. Phys. Chem. 98, 11623 (1994) (10.1021/j100096a001)
+
+    Deriv               =              1
+    GGA                 =           TRUE
+    Meta                =          FALSE
+
+    Exchange Hybrid     =           TRUE
+    MP2 Hybrid          =          FALSE
+
+   => Exchange Functionals <=
+
+    0.0800   Slater exchange
+    0.7200         Becke 88
+
+   => Exact (HF) Exchange <=
+
+    0.2000               HF 
+
+   => Correlation Functionals <=
+
+    0.1900   Vosko, Wilk & Nusair (VWN5_RPA)
+    0.8100   Lee, Yang & Parr
+
+   => LibXC Density Thresholds  <==
+
+    XC_HYB_GGA_XC_B3LYP:  1.00E-15 
+
+   => Molecular Quadrature <=
+
+    Radial Scheme          =       TREUTLER
+    Pruning Scheme         =           NONE
+    Nuclear Scheme         =       TREUTLER
+
+    BS radius alpha        =              1
+    Pruning alpha          =              1
+    Radial Points          =             75
+    Spherical Points       =            302
+    Total Points           =         108987
+    Total Blocks           =            891
+    Max Points             =            256
+    Max Functions          =             78
+    Weights Tolerance      =       1.00E-15
+
+  ==> Integral Setup <==
+
+  Using in-core PK algorithm.
+   Calculation information:
+      Number of atoms:                   5
+      Number of AO shells:              30
+      Number of primitives:             84
+      Number of atomic orbitals:        80
+      Number of basis functions:        80
+
+      Integral cutoff                 1.00e-12
+      Number of threads:                 1
+
+  Performing in-core PK
+  Using 10500840 doubles for integral storage.
+  We computed 93160 shell quartets total.
+  Whereas there are 108345 unique shell quartets.
+
+  ==> DiskJK: Disk-Based J/K Matrices <==
+
+    J tasked:                  Yes
+    K tasked:                  Yes
+    wK tasked:                  No
+    Memory [MiB]:              312
+    Schwarz Cutoff:          1E-12
+
+    OpenMP threads:              1
+
+  Cached 25.0% of DFT collocation blocks in 0.050 [GiB].
+
+  Minimum eigenvalue in the overlap matrix is 1.5971234085E-03.
+  Reciprocal condition number of the overlap matrix is 3.1564908807E-04.
+    Using symmetric orthogonalization.
+
+  ==> Pre-Iterations <==
+
+  SCF Guess: Generalized Wolfsberg-Helmholtz applied to core Hamiltonian.
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A'        52      52      17      17      17       0
+     A"        28      28       8       8       8       0
+   -------------------------------------------------------
+    Total      80      80      25      25      25       0
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     RMS |[F,P]|
+
+   @RKS iter   1:  -379.42867587807376   -3.79429e+02   2.32679e-01 EDIIS
+   @RKS iter   2:  -407.87341463702762   -2.84447e+01   8.25329e-02 DIIS/EDIIS
+   @RKS iter   3:  -374.41012263148116    3.34633e+01   2.22772e-01 EDIIS
+   @RKS iter   4:  -448.83230637361027   -7.44222e+01   3.33173e-02 DIIS/EDIIS
+   @RKS iter   5:  -421.45161588367597    2.73807e+01   1.60039e-01 EDIIS
+   @RKS iter   6:  -449.79009619113333   -2.83385e+01   3.55568e-02 DIIS/EDIIS
+   @RKS iter   7:  -446.61032231952311    3.17977e+00   6.46680e-02 DIIS/EDIIS
+   @RKS iter   8:  -451.16246441884323   -4.55214e+00   7.08904e-03 DIIS/EDIIS
+   @RKS iter   9:  -451.20289705480695   -4.04326e-02   4.31343e-03 DIIS/EDIIS
+   @RKS iter  10:  -451.22355636853416   -2.06593e-02   2.03674e-03 DIIS/EDIIS
+   @RKS iter  11:  -451.22803023583589   -4.47387e-03   1.10935e-03 DIIS/EDIIS
+   @RKS iter  12:  -451.22999726496096   -1.96703e-03   1.04385e-04 DIIS/EDIIS
+   @RKS iter  13:  -451.23002248627620   -2.52213e-05   3.92994e-05 DIIS
+   @RKS iter  14:  -451.23003198883669   -9.50256e-06   1.99836e-05 DIIS
+   @RKS iter  15:  -451.23003809681347   -6.10798e-06   1.37230e-05 DIIS
+   @RKS iter  16:  -451.23004335980005   -5.26299e-06   6.13905e-06 DIIS
+   @RKS iter  17:  -451.23004425849899   -8.98699e-07   3.93967e-06 DIIS
+   @RKS iter  18:  -451.23004453081825   -2.72319e-07   3.64447e-06 DIIS
+   @RKS iter  19:  -451.23004551956376   -9.88746e-07   3.43502e-06 DIIS
+   @RKS iter  20:  -451.23004702771721   -1.50815e-06   3.19401e-06 DIIS
+   @RKS iter  21:  -451.23004947931008   -2.45159e-06   2.87605e-06 DIIS
+   @RKS iter  22:  -451.23005419681141   -4.71750e-06   3.30326e-06 DIIS
+   @RKS iter  23:  -451.23005637963558   -2.18282e-06   2.46810e-06 DIIS
+   @RKS iter  24:  -451.23005646462258   -8.49870e-08   2.31800e-06 DIIS
+   @RKS iter  25:  -451.23005806600526   -1.60138e-06   3.03127e-06 DIIS
+   @RKS iter  26:  -451.23005813319020   -6.71849e-08   1.00537e-06 DIIS
+   @RKS iter  27:  -451.23005839400480   -2.60815e-07   8.79410e-07 DIIS
+  Energy and wave function converged.
+
+
+  ==> Post-Iterations <==
+
+   Electrons on quadrature grid:
+      Ntotal   =   49.9998528960 ; deviation = -1.471e-04 
+
+    Orbital Energies [Eh]
+    ---------------------
+
+    Doubly Occupied:                                                      
+
+       1Ap   -24.687693     1App  -24.685978     2Ap   -24.685978  
+       3Ap   -24.685951     4Ap    -1.884747     5Ap    -1.218145  
+       2App   -1.213613     6Ap    -1.213508     7Ap    -1.158191  
+       8Ap    -0.899037     9Ap    -0.898194     3App   -0.898143  
+      10Ap    -0.467109     4App   -0.463162    11Ap    -0.463147  
+      12Ap    -0.457673    13Ap    -0.452194     5App   -0.452153  
+       6App   -0.438161    14Ap    -0.438042     7App   -0.435466  
+      15Ap    -0.389189    16Ap    -0.388452     8App   -0.388423  
+      17Ap    -0.281859  
+
+    Virtual:                                                              
+
+      18Ap    -0.123268    19Ap    -0.117759     9App   -0.117066  
+      10App   -0.092520    20Ap    -0.091321    11App   -0.078580  
+      21Ap     0.002612    22Ap     0.030613    12App    0.030653  
+      23Ap     0.031306    24Ap     0.070820    13App    0.070835  
+      25Ap     0.142724    14App    0.146935    26Ap     0.146943  
+      27Ap     0.238703    28Ap     0.335243    15App    0.341054  
+      29Ap     0.341125    30Ap     0.630118    31Ap     0.630304  
+      16App    0.630365    17App    0.653344    32Ap     0.653347  
+      18App    0.815503    33Ap     0.815642    19App    0.818545  
+      34Ap     0.932989    35Ap     0.934750    20App    0.934787  
+      36Ap     0.954694    37Ap     0.979294    21App    0.982219  
+      38Ap     0.982302    39Ap     1.011741    22App    1.050049  
+      40Ap     1.050082    41Ap     1.659310    42Ap     1.678852  
+      23App    1.707104    43Ap     1.707620    24App    1.821873  
+      44Ap     1.822684    25App    1.834797    45Ap     2.124499  
+      46Ap     2.138768    26App    2.138782    47Ap     2.451575  
+      48Ap     2.557965    27App    2.572455    49Ap     2.572890  
+      28App    9.341790    50Ap     9.342591    51Ap     9.344576  
+      52Ap     9.853956  
+
+    Final Occupation by Irrep:
+             Ap   App 
+    DOCC [    17,    8 ]
+
+  @RKS Final Energy:  -451.23005839400480
+
+   => Energetics <=
+
+    Nuclear Repulsion Energy =            214.2400673536658644
+    One-Electron Energy =               -1075.5540496065634670
+    Two-Electron Energy =                 449.3384716544720732
+    DFT Exchange-Correlation Energy =     -39.2545477955792563
+    Empirical Dispersion Energy =           0.0000000000000000
+    VV10 Nonlocal Energy =                  0.0000000000000000
+    Total Energy =                       -451.2300583940048000
+
+Computation Completed
+
+
+Properties will be evaluated at   0.000000,   0.000000,   0.000000 [a0]
+
+Properties computed using the SCF density matrix
+
+  Nuclear Dipole Moment: [e a0]
+     X:    -0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: [e a0]
+     X:     0.1220      Y:    -0.0479      Z:     0.0000
+
+  Dipole Moment: [e a0]
+     X:     0.1220      Y:    -0.0478      Z:     0.0000     Total:     0.1311
+
+  Dipole Moment: [D]
+     X:     0.3102      Y:    -0.1216      Z:     0.0000     Total:     0.3332
+
+
+*** tstop() called on dhcp189-153.emerson.emory.edu at Mon Feb  7 15:26:50 2022
+Module time:
+	user time   =      24.32 seconds =       0.41 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =         25 seconds =       0.42 minutes
+Total time:
+	user time   =      24.32 seconds =       0.41 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =         25 seconds =       0.42 minutes
+    SCF Energy............................................................................PASSED
+
+    Psi4 stopped on: Monday, 07 February 2022 03:26PM
+    Psi4 wall time for execution: 0:00:24.73
+
+*** Psi4 exiting successfully. Buy a developer a beer!

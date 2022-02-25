@@ -112,7 +112,7 @@ Update copyright year
   - ``README.md``
   - ``tests/psitest.pl``
 
-* Also, in content of https://github.com/psi4/psi4/blob/master/doc/sphinxman/source/conf.py.in#L118
+* Also, in content of :source:`doc/sphinxman/source/conf.py.in#L130`
 
 
 Update samples
@@ -136,7 +136,7 @@ Collect new authors
 Anticipate next release
 -----------------------
 
-* Bump version in ``codemeta.json``, https://github.com/psi4/psi4/blob/master/codemeta.json#L9
+* Bump version in ``codemeta.json``, :source:`codemeta.json#L9`
 * Add to branch list in ``azure-pipelines.yml``, :source:`azure-pipelines.yml`
 
 
@@ -431,7 +431,7 @@ Collect documentation snapshot
 ------------------------------
 
 * Documentation is built automatically by GHA from the latest psi4 master commit. It gets pushed to the psi4/psi4docs repository and thence served by netlify to a site independent of psicode.org. The netlify psicode.org site has a redirect so that psicode.org/psi4manual/master presents the psi4docs netlify content.
-* GHA controller is https://github.com/psi4/psi4/blob/master/.github/workflows/docs.yml
+* GHA controller is :source:`.github/workflows/docs.yml`
 * This setup works great for "latest" docs, but it won't build a nice copy on the tag because the tag commit is pushed before the tag itself, so the version shows up "undefined".
 * So, anytime after "Tag (pre)release" is over, navigate on psi4 GH to the tag commit (not the record commit) and retrigger the docs GHA. Download the artifact (zipped docs dir) at the end to a local computer.
 * In your hugo site clone, create a new directory under ``static/psi4manual``. Copy the zipped docs there, unpack, rearrange so that ``static/psi4manual/<new-tag>/index.html`` is present. Check in.

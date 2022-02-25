@@ -72,7 +72,6 @@ class UHF : public HF {
     virtual bool same_a_b_orbs() const { return false; }
     virtual bool same_a_b_dens() const { return false; }
 
-    bool diis() override;
     void save_density_and_energy() override;
 
     void form_C(double shift = 0.0) override;

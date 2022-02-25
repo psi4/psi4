@@ -47,9 +47,9 @@ from psi4.driver.p4util.exceptions import *
 def run_cfour_module(xmod):
     # Find environment by merging PSIPATH and PATH environment variables
     lenv = {
-        'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + \
-                ':' + os.environ.get('PATH') + \
-                ':' + core.get_datadir() + '/basis' + \
+        'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) +
+                ':' + os.environ.get('PATH') +
+                ':' + core.get_datadir() + '/basis' +
                 ':' + core.psi_top_srcdir() + '/share/basis',
         'CFOUR_NUM_CORES': os.environ.get('CFOUR_NUM_CORES'),
         'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH')

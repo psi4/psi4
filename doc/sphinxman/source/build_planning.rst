@@ -50,8 +50,7 @@ Planning: how to configure Psi4 and invoke CMake
 ------------------------------------------------
 
 |PSIfour| is built through CMake. An abbreviated build guide can be found
-`within the source itself
-<https://github.com/psi4/psi4/blob/master/CMakeLists.txt#L22>`_.
+:source:`within the source itself <CMakeLists.txt#L22>` .
 
 CMake does a good job scanning your computer to locate libraries, header
 files, and executables needed for compilation. So it's very possible that
@@ -210,17 +209,15 @@ that software for |PSIfour| and any notes and warnings pertaining to it.
 The following are also required for |PSIfour|, but if not detected, the
 build system will automatically download and build.
 
-* :ref:`gau2grid <cmake:gau2grid>` |w---w| :ref:`[what is gau2grid?] <sec:gau2grid>` `[gau2grid min version] <https://github.com/psi4/psi4/blob/master/external/upstream/gau2grid/CMakeLists.txt#L1>`_
+* :ref:`gau2grid <cmake:gau2grid>` |w---w| :ref:`[what is gau2grid?] <sec:gau2grid>` :source:`[gau2grid min version] <external/upstream/gau2grid/CMakeLists.txt#L1>`
 
-* :ref:`Libint <cmake:libint>` |w---w| :ref:`[what is Libint?] <sec:libint>` `[Libint min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libint/CMakeLists.txt#L1>`_ (Libint2 as of Nov 2020; added by v1.4)
+* :ref:`Libint <cmake:libint>` |w---w| :ref:`[what is Libint?] <sec:libint>` :source:`[Libint min version] <external/upstream/libint/CMakeLists.txt#L1>` (Libint2 as of Nov 2020; added by v1.4)
 
   * Eigen https://eigen.tuxfamily.org/index.php?title=Main_Page
   * MPFR https://www.mpfr.org/
 
-* :ref:`Libxc <cmake:libxc>` |w---w| :ref:`[what is Libxc?] <sec:libxc>` `[Libxc min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libxc/CMakeLists.txt#L1>`_
-
-* pybind11 |w---w| `[what is Pybind11?] <https://pybind11.readthedocs.io/en/stable/>`_ `[Pybind11 min version] <https://github.com/psi4/psi4/blob/master/external/upstream/pybind11/CMakeLists.txt#L1>`_
-
+* :ref:`Libxc <cmake:libxc>` |w---w| :ref:`[what is Libxc?] <sec:libxc>` :source:`[Libxc min version] <external/upstream/libxc/CMakeLists.txt#L1>`
+* pybind11 |w---w| `[what is Pybind11?] <https://pybind11.readthedocs.io/en/stable/>`_ :source:`[Pybind11 min version] <external/upstream/pybind11/CMakeLists.txt#L1>`
 * QCElemental |w---w| `[what is QCElemental?] <https://qcelemental.readthedocs.io/en/latest/>`_
 
 * QCEngine |w---w| `[what is QCEngine?] <https://qcengine.readthedocs.io/en/latest/>`_ (March 2019; added by v1.4)
@@ -269,11 +266,11 @@ are available pre-built from conda.
   * Perl (for some auto-documentation scripts) https://www.perl.org/
   * nbsphinx (for converting Jupyter notebooks) http://nbsphinx.readthedocs.io/en/jupyter-theme/
   * sphinx-psi-theme https://github.com/psi4/sphinx-psi-theme
-  * See `["message" lines] <https://github.com/psi4/psi4/blob/master/doc/sphinxman/CMakeLists.txt>`_ for advice on obtaining docs dependencies
+  * See `["message" lines] :source:`doc/sphinxman/CMakeLists.txt` for advice on obtaining docs dependencies
 
 * Ambit |w---w| https://github.com/jturney/ambit
 
-* :ref:`CheMPS2 <cmake:chemps2>` |w---w| :ref:`[what is CheMPS2?] <sec:chemps2>` `[CheMPS2 min version] <https://github.com/psi4/psi4/blob/master/external/upstream/chemps2/CMakeLists.txt#L2>`_
+* :ref:`CheMPS2 <cmake:chemps2>` |w---w| :ref:`[what is CheMPS2?] <sec:chemps2>` :source:`[CheMPS2 min version] <external/upstream/chemps2/CMakeLists.txt#L2>`
 
   * HDF5 https://support.hdfgroup.org/HDF5/
   * zlib http://www.zlib.net/
@@ -282,11 +279,11 @@ are available pre-built from conda.
 
   * :ref:`Fortran Compiler <cmake:fortran>`
 
-* :ref:`dkh <cmake:dkh>` |w---w| :ref:`[what is dkh?] <sec:dkh>` `[dkh min version] <https://github.com/psi4/psi4/blob/master/external/upstream/dkh/CMakeLists.txt#L2>`_
+* :ref:`dkh <cmake:dkh>` |w---w| :ref:`[what is dkh?] <sec:dkh>` :source:`[dkh min version] <external/upstream/dkh/CMakeLists.txt#L2>`
 
   * :ref:`Fortran Compiler <cmake:fortran>`
 
-* :ref:`gdma <cmake:gdma>` |w---w| :ref:`[what is gdma?] <sec:gdma>` `[gdma min version] <https://github.com/psi4/psi4/blob/master/external/upstream/gdma/CMakeLists.txt#L2>`_
+* :ref:`gdma <cmake:gdma>` |w---w| :ref:`[what is gdma?] <sec:gdma>` :source:`[gdma min version] <external/upstream/gdma/CMakeLists.txt#L2>`
 
   * :ref:`Fortran Compiler <cmake:fortran>`
 
@@ -295,11 +292,11 @@ are available pre-built from conda.
   * :ref:`Fortran Compiler <cmake:fortran>`
   * zlib http://www.zlib.net/
 
-* :ref:`simint <cmake:simint>` |w---w| :ref:`[what is simint?] <sec:simint>` `[simint min version] <https://github.com/psi4/psi4/blob/master/external/upstream/simint/CMakeLists.txt#L2>`_
+* :ref:`simint <cmake:simint>` |w---w| :ref:`[what is simint?] <sec:simint>` :source:`[simint min version] <external/upstream/simint/CMakeLists.txt#L2>`
 
 Additionally, there are runtime-loaded capabilities:
 
-* :ref:`PylibEFP & libefp <cmake:libefp>` |w---w| :ref:`[what is LibEFP?] <sec:libefp>` `[LibEFP min version] <https://github.com/psi4/psi4/blob/master/external/upstream/libefp/CMakeLists.txt#L1>`_
+* :ref:`PylibEFP & libefp <cmake:libefp>` |w---w| :ref:`[what is LibEFP?] <sec:libefp>` :source:`[LibEFP min version] <external/upstream/libefp/CMakeLists.txt#L1>`
 
 * cfour |w---w| :ref:`[what is CFOUR?] <sec:cfour>`
 
@@ -449,7 +446,7 @@ The Mac and Windows packages have base ``MAX_AM_ERI=5`` and can run
 density-fitted.
 
 Details about angular momentum settings are available here
-https://github.com/psi4/psi4/blob/master/external/upstream/libint2/CMakeLists.txt
+:source:`external/upstream/libint2/CMakeLists.txt`
 .
 
 .. Since February 2019, the |PSIfour| conda package on Linux has been the
@@ -1656,8 +1653,7 @@ How to run a subset of tests
 CTest allows flexibly partitioned running of the test suite. In
 the examples below, *testname* are regex of :source:`test names <tests>`,
 and *testlabel* are regex of labels (*e.g.*, ``cc``, ``mints``,
-``libefp`` defined `[here, for example]
-<https://github.com/psi4/psi4/blob/master/tests/ci-property/CMakeLists.txt#L3>`_.
+``libefp`` defined :source:`[here, for example] <tests/ci-property/CMakeLists.txt#L3>` .
 
 * Run tests in parallel with ``-j`` flag. For maximum parallelism: :samp:`ctest -j\`getconf _NPROCESSORS_ONLN\`\ `
 * Run full test suite: ``ctest``

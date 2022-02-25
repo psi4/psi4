@@ -111,12 +111,12 @@ def compare_fchkfiles(expected, computed, digits, label):
             else:
                 test = compare_arrays(ref, calc, high_accuracy, f" matrix section: {line}")
             index += offset
-        elif " R " in line and not "N=" in line:
+        elif " R " in line and "N=" not in line:
             calc = line.split()[-1]
             ref = fchk_ref[index].split()[-1]
             test = compare_values(ref, calc, high_accuracy, f" float value: {line}")
             index += 1
-        elif " I " in line and not "N=" in line:
+        elif " I " in line and "N=" not in line:
             calc = line.split()[-1]
             ref = fchk_ref[index].split()[-1]
             test = compare_integers(ref, calc, f" int value: {line}")

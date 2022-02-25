@@ -52,9 +52,9 @@ def query_yes_no(question, default=True):
 
     if default is None:
         prompt = " [y/n] "
-    elif default == True:
+    elif default is True:
         prompt = " [Y/n] "
-    elif default == False:
+    elif default is False:
         prompt = " [y/N] "
     else:
         raise ValueError("invalid default answer: '%s'" % default)

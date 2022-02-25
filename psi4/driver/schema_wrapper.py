@@ -547,7 +547,7 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
 
     # Handle special properties case
     if json_data["driver"] == "properties":
-        if not "properties" in kwargs:
+        if "properties" not in kwargs:
             kwargs["properties"] = list(default_properties_)
 
     # Actual driver run

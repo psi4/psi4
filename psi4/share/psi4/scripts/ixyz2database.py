@@ -261,7 +261,7 @@ spy += 'import qcdb\n'
 
 spy += "\n# <<< %s Database Module >>>\n" % (dbse)
 spy += "dbse = %s\n" % ("'" + dbse + "'")
-if isOS == True:
+if isOS:
     spy += "isOS = '%s'\n" % (isOS)
 
 spy += "\n# <<< Database Members >>>\n"
@@ -402,13 +402,13 @@ final = """
    **  To have a minimally functioning database, do the following:
 """ % (dbse)
 
-if line2 == 'comment' and isOS == True:
+if line2 == 'comment' and isOS:
     final += """
        *  If not all neutral singlets, fill in correct charge and
           multiplicity for all reagents.
     """
 
-if line2 == 'comment' and isOS == False:
+if line2 == 'comment' and not isOS:
     final += """
        *  If not all neutral, fill in correct charge for all reagents.
     """

@@ -1085,9 +1085,9 @@ def filter_nonvib(vibinfo: Dict[str, Datum], remove: List[int] = None) -> Dict[s
     vibinfo
         Results of Hessian analysis.
     remove
-	    0-indexed indices of normal modes to remove from `vibinfo`. If
-	    None, non-vibrations (R, T, or TR as labeled in `vibinfo['TRV']`)
-	    will be removed.
+        0-indexed indices of normal modes to remove from `vibinfo`. If
+        None, non-vibrations (R, T, or TR as labeled in `vibinfo['TRV']`)
+        will be removed.
 
     Returns
     -------
