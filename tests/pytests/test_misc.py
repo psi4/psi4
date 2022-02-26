@@ -1,5 +1,5 @@
 import pytest
-from .addons import using
+from .addons import uusing
 from .utils import *
 
 import math
@@ -57,7 +57,7 @@ def test_parse_cotton_irreps_error(inp):
 
 # <<<  TODO Deprecated! Delete in Psi4 v1.5  >>>
 
-@using("networkx")
+@uusing("networkx")
 def test_deprecated_qcdb_align_b787():
 
     soco10 = """

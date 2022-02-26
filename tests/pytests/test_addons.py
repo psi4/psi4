@@ -1,5 +1,5 @@
 import pytest
-from .addons import hardware_nvidia_gpu, using
+from .addons import hardware_nvidia_gpu, uusing
 
 import json
 
@@ -10,7 +10,7 @@ import psi4
 pytestmark = [pytest.mark.smoke, pytest.mark.quick]
 
 
-@using("gdma")
+@uusing("gdma")
 def test_gdma():
     """gdma1"""
     #! Water RHF/cc-pVTZ distributed multipole analysis
@@ -66,6 +66,7 @@ def test_gdma():
     assert psi4.compare_matrices(totvals, ref_tot_mat, 6, "DMA Total Multipoles")
 
 
+@uusing("ipi")
 def test_ipi_broker1():
     """ipi_broker1"""
 
@@ -125,6 +126,7 @@ def test_ipi_broker1():
     assert psi4.compare_arrays(frc,     -b._force,                                      4, "Total force (Broker)")
 
 
+@uusing("ipi")
 def test_ipi_broker2():
     """ipi_broker2"""
 
@@ -159,7 +161,7 @@ def test_ipi_broker2():
     assert psi4.compare_arrays(ref, -b._force, 6, "Outsourced dft gradients called by name: libdisp")
 
 
-@using("mrcc")
+@uusing("mrcc")
 def test_mrcc():
     """mrcc/ccsdt"""
     #! CCSDT cc-pVDZ energy for the H2O molecule using MRCC
@@ -183,7 +185,7 @@ def test_mrcc():
     assert psi4.compare_values(-76.239133655413, psi4.variable("CURRENT ENERGY"), 6, 'CCSDT')
 
 
-@using("chemps2")
+@uusing("chemps2")
 def test_chemps2():
     """chemps2/scf-n2"""
     #! dmrg-scf on N2
@@ -230,7 +232,7 @@ def test_chemps2():
     assert psi4.compare_values(ref_energy, psi4.variable("CURRENT ENERGY"), 6, "DMRG Energy")
 
 
-@using('mp2d')
+@uusing("mp2d")
 def test_mp2d():
     eneyne = psi4.geometry("""
     C   0.000000  -0.667578  -2.124659
@@ -266,7 +268,7 @@ def test_mp2d():
     assert psi4.compare_values(expected, jrec['extras']['qcvars']['MP2-DMP2 DISPERSION CORRECTION ENERGY'], 7, 'mp2d disp E')
 
 
-@using("dftd3")
+@uusing("dftd3")
 def test_dftd3():
     """dftd3/energy"""
     #! Exercises the various DFT-D corrections, both through python directly and through c++
@@ -425,7 +427,7 @@ def test_dftd3():
     assert psi4.compare_values(ref_pbe_d2[0], psi4.variable('DISPERSION CORRECTION ENERGY'), 7, 'Ethene-Ethyne -D2 (alias)')
 
 
-@using("libefp")
+@uusing("libefp")
 def test_libefp():
     """libefp/qchem-qmefp-sp"""
     #! EFP on mixed QM (water) and EFP (water + 2 * ammonia) system.
@@ -483,7 +485,7 @@ def test_libefp():
     psi4.core.print_variables()
 
 
-@using("pcmsolver")
+@uusing("pcmsolver")
 @pytest.mark.parametrize("how", ["pcm_helper"])
 #@pytest.mark.parametrize("how", ["pcm_helper", "pcm_helper1"])  # fail b/c pcm not restartable
 #@pytest.mark.parametrize("how", ["pcm_helper", "set_options"])  # fail b/c pcm not restartable
@@ -602,59 +604,59 @@ def _test_scf5():
         'print': 2})
 
     print('    -Singlet RHF:')
-    psi4.set_module_options('scf', {'reference': 'rhf'})
+    psi4.set_options({'scf__reference': 'rhf'})
 
-    psi4.set_module_options('scf', {'scf_type': 'pk'})
+    psi4.set_options({'scf__scf_type': 'pk'})
     E = psi4.energy('scf', molecule=singlet_o2)
     assert psi4.compare_values(Eref_sing_can, E, 6, 'Singlet PK RHF energy')
 
-    psi4.set_module_options('scf', {'scf_type': 'direct'})
+    psi4.set_options({'scf__scf_type': 'direct'})
     E = psi4.energy('scf', molecule=singlet_o2)
     assert psi4.compare_values(Eref_sing_can, E, 6, 'Singlet Direct RHF energy')
 
-    psi4.set_module_options('scf', {'scf_type': 'out_of_core'})
+    psi4.set_options({'scf__scf_type': 'out_of_core'})
     E = psi4.energy('scf', molecule=singlet_o2)
     assert psi4.compare_values(Eref_sing_can, E, 6, 'Singlet Disk RHF energy')
 
-    psi4.set_module_options('scf', {'scf_type': 'df'})
+    psi4.set_options({'scf__scf_type': 'df'})
     E = psi4.energy('scf', molecule=singlet_o2)
     assert psi4.compare_values(Eref_sing_df, E, 6, 'Singlet DF RHF energy')
 
     print('    -Singlet UHF:')
-    psi4.set_module_options('scf', {'reference': 'uhf'})
+    psi4.set_options({'scf__reference': 'uhf'})
 
-    psi4.set_module_options('scf', {'scf_type': 'pk'})
+    psi4.set_options({'scf__scf_type': 'pk'})
     E = psi4.energy('scf', molecule=singlet_o2)
     assert psi4.compare_values(Eref_sing_can, E, 6, 'Singlet PK UHF energy')
 
-    psi4.set_module_options('scf', {'scf_type': 'direct'})
+    psi4.set_options({'scf__scf_type': 'direct'})
     E = psi4.energy('scf', molecule=singlet_o2)
     assert psi4.compare_values(Eref_sing_can, E, 6, 'Singlet Direct UHF energy')
 
-    psi4.set_module_options('scf', {'scf_type': 'out_of_core'})
+    psi4.set_options({'scf__scf_type': 'out_of_core'})
     E = psi4.energy('scf', molecule=singlet_o2)
     assert psi4.compare_values(Eref_sing_can, E, 6, 'Singlet Disk UHF energy')
 
-    psi4.set_module_options('scf', {'scf_type': 'df'})
+    psi4.set_options({'scf__scf_type': 'df'})
     E = psi4.energy('scf', molecule=singlet_o2)
     assert psi4.compare_values(Eref_sing_df, E, 6, 'Singlet DF UHF energy')
 
     print('    -Singlet CUHF:')
-    psi4.set_module_options('scf', {'reference': 'cuhf'})
+    psi4.set_options({'scf__reference': 'cuhf'})
 
-    psi4.set_module_options('scf', {'scf_type': 'pk'})
+    psi4.set_options({'scf__scf_type': 'pk'})
     E = psi4.energy('scf', molecule=singlet_o2)
     assert psi4.compare_values(Eref_sing_can, E, 6, 'Singlet PK CUHF energy')
 
-    psi4.set_module_options('scf', {'scf_type': 'direct'})
+    psi4.set_options({'scf__scf_type': 'direct'})
     E = psi4.energy('scf', molecule=singlet_o2)
     assert psi4.compare_values(Eref_sing_can, E, 6, 'Singlet Direct CUHF energy')
 
-    psi4.set_module_options('scf', {'scf_type': 'out_of_core'})
+    psi4.set_options({'scf__scf_type': 'out_of_core'})
     E = psi4.energy('scf', molecule=singlet_o2)
     assert psi4.compare_values(Eref_sing_can, E, 6, 'Singlet Disk CUHF energy')
 
-    psi4.set_module_options('scf', {'scf_type': 'df'})
+    psi4.set_options({'scf__scf_type': 'df'})
     E = psi4.energy('scf', molecule=singlet_o2)
     assert psi4.compare_values(Eref_sing_df, E, 6, 'Singlet DF CUHF energy')
 
@@ -665,72 +667,72 @@ def _test_scf5():
         'print': 2})
 
     print('    -Triplet UHF:')
-    psi4.set_module_options('scf', {'reference': 'uhf'})
+    psi4.set_options({'scf__reference': 'uhf'})
 
-    psi4.set_module_options('scf', {'scf_type': 'pk'})
+    psi4.set_options({'scf__scf_type': 'pk'})
     E = psi4.energy('scf', molecule=triplet_o2)
     assert psi4.compare_values(Eref_uhf_can, E, 6, 'Triplet PK UHF energy')
 
-    psi4.set_module_options('scf', {'scf_type': 'direct'})
+    psi4.set_options({'scf__scf_type': 'direct'})
     E = psi4.energy('scf', molecule=triplet_o2)
     assert psi4.compare_values(Eref_uhf_can, E, 6, 'Triplet Direct UHF energy')
 
-    psi4.set_module_options('scf', {'scf_type': 'out_of_core'})
+    psi4.set_options({'scf__scf_type': 'out_of_core'})
     E = psi4.energy('scf', molecule=triplet_o2)
     assert psi4.compare_values(Eref_uhf_can, E, 6, 'Triplet Disk UHF energy')
 
-    psi4.set_module_options('scf', {'scf_type': 'df'})
+    psi4.set_options({'scf__scf_type': 'df'})
     E = psi4.energy('scf', molecule=triplet_o2)
     assert psi4.compare_values(Eref_uhf_df, E, 6, 'Triplet DF UHF energy')
     psi4.core.clean()
 
     print('    -Triplet ROHF:')
-    psi4.set_module_options('scf', {'reference': 'rohf'})
+    psi4.set_options({'scf__reference': 'rohf'})
 
-    psi4.set_module_options('scf', {'scf_type': 'pk'})
+    psi4.set_options({'scf__scf_type': 'pk'})
     E = psi4.energy('scf', molecule=triplet_o2)
     assert psi4.compare_values(Eref_rohf_can, E, 6, 'Triplet PK ROHF energy')
     psi4.core.clean()
 
-    psi4.set_module_options('scf', {'scf_type': 'direct'})
+    psi4.set_options({'scf__scf_type': 'direct'})
     E = psi4.energy('scf', molecule=triplet_o2)
     assert psi4.compare_values(Eref_rohf_can, E, 6, 'Triplet Direct ROHF energy')
     psi4.core.clean()
 
-    psi4.set_module_options('scf', {'scf_type': 'out_of_core'})
+    psi4.set_options({'scf__scf_type': 'out_of_core'})
     E = psi4.energy('scf', molecule=triplet_o2)
     assert psi4.compare_values(Eref_rohf_can, E, 6, 'Triplet Disk ROHF energy')
     psi4.core.clean()
 
-    psi4.set_module_options('scf', {'scf_type': 'df'})
+    psi4.set_options({'scf__scf_type': 'df'})
     E = psi4.energy('scf', molecule=triplet_o2)
     assert psi4.compare_values(Eref_rohf_df, E, 6, 'Triplet DF ROHF energy')
     psi4.core.clean()
 
     print('    -Triplet CUHF:')
-    psi4.set_module_options('scf', {'reference': 'cuhf'})
+    psi4.set_options({'scf__reference': 'cuhf'})
 
-    psi4.set_module_options('scf', {'scf_type': 'pk'})
+    psi4.set_options({'scf__scf_type': 'pk'})
     E = psi4.energy('scf', molecule=triplet_o2)
     assert psi4.compare_values(Eref_rohf_can, E, 6, 'Triplet PK CUHF energy')
     psi4.core.clean()
 
-    psi4.set_module_options('scf', {'scf_type': 'direct'})
+    psi4.set_options({'scf__scf_type': 'direct'})
     E = psi4.energy('scf', molecule=triplet_o2)
     assert psi4.compare_values(Eref_rohf_can, E, 6, 'Triplet Direct CUHF energy')
     psi4.core.clean()
 
-    psi4.set_module_options('scf', {'scf_type': 'out_of_core'})
+    psi4.set_options({'scf__scf_type': 'out_of_core'})
     E = psi4.energy('scf', molecule=triplet_o2)
     assert psi4.compare_values(Eref_rohf_can, E, 6, 'Triplet Disk CUHF energy')
     psi4.core.clean()
 
-    psi4.set_module_options('scf', {'scf_type': 'df'})
+    psi4.set_options({'scf__scf_type': 'df'})
     E = psi4.energy('scf', molecule=triplet_o2)
     assert psi4.compare_values(Eref_rohf_df, E, 6, 'Triplet DF CUHF energy')
 
 
-@using("erd")
+@uusing("erd")
 def test_erd():
     """erd/scf5"""
 
@@ -738,7 +740,7 @@ def test_erd():
     _test_scf5()
 
 
-@using("simint")
+@uusing("simint")
 def test_simint():
     """simint/scf5"""
 
@@ -780,7 +782,7 @@ def test_json():
         json.dump(json_ret["raw_output"], f)
 
 
-@using("cfour")
+@uusing("cfour")
 def test_cfour():
     """cfour/sp-rhf-ccsd_t_"""
     #! single-point CCSD(T)/qz2p on water
@@ -813,7 +815,7 @@ def test_cfour():
     assert psi4.compare_values(-0.282969089769, psi4.variable('ccsd(t) correlation energy'), 6, 'CCSD(T) corl')
 
 
-@using("v2rdm_casscf")
+@uusing("v2rdm_casscf")
 def test_v2rdm_casscf():
     """v2rdm_casscf/tests/v2rdm1"""
     #! cc-pvdz N2 (6,6) active space Test DQG
@@ -844,11 +846,11 @@ def test_v2rdm_casscf():
       'restricted_docc': [ 2, 0, 0, 0, 0, 2, 0, 0 ],
       'active': [ 1, 0, 1, 1, 0, 1, 1, 1 ],
     })
-    psi4.set_module_options('v2rdm_casscf', {
-      'positivity': 'dqg',
-      'r_convergence': 1e-5,
-      'e_convergence': 1e-6,
-      'maxiter': 20000,
+    psi4.set_options({
+      'v2rdm_casscf__positivity': 'dqg',
+      'v2rdm_casscf__r_convergence': 1e-5,
+      'v2rdm_casscf__e_convergence': 1e-6,
+      'v2rdm_casscf__maxiter': 20000,
       #'orbopt_frequency': 1000,
       #'mu_update_frequency': 1000,
     })
@@ -866,7 +868,7 @@ def test_v2rdm_casscf():
 
 
 @hardware_nvidia_gpu
-@using("gpu_dfcc")
+@uusing("gpu_dfcc")
 def test_gpu_dfcc():
     """gpu_dfcc/tests/gpu_dfcc1"""
     #! cc-pvdz (H2O)2 Test DF-CCSD vs GPU-DF-CCSD
@@ -901,8 +903,8 @@ def test_gpu_dfcc():
 
 
 
-@using("dftd3")
-@using("gcp")
+@uusing("dftd3")
+@uusing("gcp")
 def test_grimme_3c():
 
     s16di = psi4.geometry("""
@@ -928,7 +930,7 @@ def test_grimme_3c():
     ene = psi4.energy('hf3c/', bsse_type='nocp')
     assert psi4.compare_values(-0.00240232, ene, 6, 'S22-16 HF-3c/minix')
 
-@using("dkh")
+@uusing("dkh")
 def test_dkh():
     """dkh/molpro-2order"""
 
@@ -949,8 +951,8 @@ def test_dkh():
 
     assert psi4.compare_values(-128.66891610, e, 6, '2nd order vs Molpro')
 
-@using("ambit")
-@using("forte")
+@uusing("ambit")
+@uusing("forte")
 def disabled_test_forte():
     """aci-10: Perform aci on benzyne"""
 
@@ -1012,7 +1014,7 @@ def disabled_test_forte():
     assert psi4.compare_values(refacipt2, psi4.variable("ACI+PT2 ENERGY"),8,"ACI+PT2 energy")
 
 
-@using("snsmp2")
+@uusing("snsmp2")
 def test_snsmp2():
     """snsmp2/he-he"""
 
@@ -1028,7 +1030,7 @@ def test_snsmp2():
     assert psi4.compare_values(0.00176708227, psi4.variable('SNS-MP2 TOTAL ENERGY'), 5, "SNS-MP2 IE [Eh]")
 
 
-@using("resp")
+@uusing("resp")
 def test_resp():
     """resp/tests/test_resp_1"""
     import resp
@@ -1097,7 +1099,7 @@ def test_resp():
     assert np.allclose(charges2[1], reference_charges2, atol=5e-4)
 
 @pytest.mark.smoke
-@using("resp")
+@uusing("resp")
 def test_resp_2():
     import resp
     import numpy as np
@@ -1186,7 +1188,7 @@ def test_resp_2():
     assert np.allclose(charges2[1], reference_charges2, atol=1e-5)
 
 
-@using("fockci")
+@uusing("fockci")
 def test_psi4fockci():
     """psi4fockci/n2"""
 
@@ -1210,7 +1212,7 @@ def test_psi4fockci():
         add_opts=options )
     assert psi4.compare_values(-108.600832070267, psi4.core.variable("CI ROOT 0 TOTAL ENERGY"), 7, "2SF-EA Energy")
 
-@using("cppe")
+@uusing("cppe")
 def test_cppe():
     from .test_cppe import _dump_potential, __geoms
     #! PE-SCF of PNA in presence of 6 water molecules
@@ -1237,7 +1239,7 @@ def test_cppe():
     psi4.core.print_variables()
 
 
-@using("cct3")
+@uusing("cct3")
 def test_cct3():
     import cct3
 
@@ -1284,7 +1286,7 @@ def test_cct3():
 
 
 @pytest.mark.smoke
-@using("psixas")
+@uusing("psixas")
 def test_psixas():
     import psixas
 
@@ -1315,7 +1317,7 @@ def test_psixas():
 
 
 @pytest.mark.smoke
-@using("dftd4")
+@uusing("dftd4")
 def test_dftd4():
     #! Exercises the various DFT-D corrections, both through python directly and through c++
     import numpy as np

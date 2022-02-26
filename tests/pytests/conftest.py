@@ -28,6 +28,45 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "unittest")
     config.addinivalue_line("markers", "unrestricted")
 
+    config.addinivalue_line("markers", "addon")
+
+    # QCEngine
+    config.addinivalue_line("markers", "mp2d")
+    config.addinivalue_line("markers", "dftd3")
+    config.addinivalue_line("markers", "cfour")
+    config.addinivalue_line("markers", "gcp")
+    config.addinivalue_line("markers", "dftd4")
+    # Inherited from QCEngine
+    config.addinivalue_line("markers", "dftd3_321")
+    config.addinivalue_line("markers", "psi4")
+
+    # non-QC
+    config.addinivalue_line("markers", "memory_profiler")
+    config.addinivalue_line("markers", "networkx")
+
+    # QC
+    config.addinivalue_line("markers", "adcc")
+    config.addinivalue_line("markers", "ambit")
+    config.addinivalue_line("markers", "cct3")
+    config.addinivalue_line("markers", "chemps2")
+    config.addinivalue_line("markers", "cppe")
+    config.addinivalue_line("markers", "dkh")
+    config.addinivalue_line("markers", "libefp")
+    config.addinivalue_line("markers", "erd")
+    config.addinivalue_line("markers", "fockci")
+    config.addinivalue_line("markers", "forte")
+    config.addinivalue_line("markers", "gdma")
+    config.addinivalue_line("markers", "gpu_dfcc")
+    config.addinivalue_line("markers", "ipi")
+    config.addinivalue_line("markers", "mrcc")
+    config.addinivalue_line("markers", "pcmsolver")
+    config.addinivalue_line("markers", "psixas")
+    config.addinivalue_line("markers", "resp")
+    config.addinivalue_line("markers", "simint")
+    config.addinivalue_line("markers", "snsmp2")
+    config.addinivalue_line("markers", "v2rdm_casscf")
+    config.addinivalue_line("markers", "qcdb")
+
 
 @pytest.fixture(scope="session", autouse=True)
 def set_up_overall(request):

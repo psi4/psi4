@@ -4,7 +4,7 @@ and ensures that their memory is properly cleaned.
 """
 
 import pytest
-from .addons import using
+from .addons import uusing
 
 import numpy as np
 
@@ -71,37 +71,37 @@ def build_copy_mat():
     return mat, view
 
 
-@using("memory_profiler")
+@uusing("memory_profiler")
 def test_build_mat():
     assert(check_leak(build_mat))
 
 
-@using("memory_profiler")
+@uusing("memory_profiler")
 def test_build_view_mat():
     assert(check_leak(build_view_mat))
 
 
-@using("memory_profiler")
+@uusing("memory_profiler")
 def test_build_viewh_mat():
     assert(check_leak(build_viewh_mat))
 
 
-@using("memory_profiler")
+@uusing("memory_profiler")
 def test_build_view_set_mat():
     assert(check_leak(build_view_set_mat))
 
 
-@using("memory_profiler")
+@uusing("memory_profiler")
 def test_build_arr_mat():
     assert(check_leak(build_arr_mat))
 
 
-@using("memory_profiler")
+@uusing("memory_profiler")
 def test_build_copy_mat():
     assert(check_leak(build_copy_mat))
 
 
-@using("memory_profiler")
+@uusing("memory_profiler")
 def test_totals():
     start = snapshot_memory()
 

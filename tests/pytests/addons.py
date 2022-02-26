@@ -1,3 +1,5 @@
+from typing import List
+
 import pytest
 
 from qcelemental.util import parse_version, which, which_import
@@ -8,6 +10,7 @@ import psi4
 __all__ = [
     "hardware_nvidia_gpu",
     "using",
+    "uusing",
 ]
 
 
@@ -84,14 +87,44 @@ def has_program(name):
 _using_cache = {}
 
 
-def using(program):
+def _using(program: str) -> None:
 
     if program not in _using_cache:
         import_message = f"Not detecting module {program}. Install package if necessary to enable tests."
         skip = pytest.mark.skipif(has_program(program) is False, reason=import_message)
-        _using_cache[program] = skip
+        general = pytest.mark.addon
+        particular = getattr(pytest.mark, program)
 
-    return _using_cache[program]
+        all_marks = (skip, general, particular)
+        _using_cache[program] = [_compose_decos(all_marks), all_marks]
+
+
+def _compose_decos(decos):
+    # thanks, https://stackoverflow.com/a/45517876
+    def composition(func):
+        for deco in reversed(decos):
+            func = deco(func)
+        return func
+    return composition
+
+
+def uusing(program: str):
+    """Apply 3 marks: skipif program not detected, label "addon", and label program.
+    This is the decorator form for whole test functions: `@mark\n@mark`.
+
+    """
+    _using(program)
+    return _using_cache[program][0]
+
+
+def using(program: str) -> List:
+    """Apply 3 marks: skipif program not detected, label "addon", and label program.
+    This is the inline form for parameterizations: `marks=[]`.
+    In combo, do `marks=[*using(), pytest.mark.quick]`
+
+    """
+    _using(program)
+    return _using_cache[program][1]
 
 
 hardware_nvidia_gpu = pytest.mark.skipif(
