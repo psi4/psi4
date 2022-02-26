@@ -34,7 +34,7 @@ jobs:
       shell: bash -l {0}
       run: |
         cat > build.yaml <<EOF
-        name: build
+        name: buildenv
         channels:
           - defaults
         dependencies:
@@ -70,7 +70,7 @@ jobs:
           sed -i "s/- fortran-compiler/- gfortran_linux-64/g" build.yaml
         fi
         cat > run.yaml <<EOF
-        name: run
+        name: runenv
         channels:
           - defaults
         dependencies:
@@ -129,10 +129,10 @@ jobs:
 #          sed -i "s/- cxx/#- cxx/g" export.yaml
 #        fi
 
-    - name: Create Conda Environment
+    - name: Create Conda Environment (build)
       uses: conda-incubator/setup-miniconda@v2
       with:
-        activate-environment: build
+        activate-environment: buildenv
         environment-file: build.yaml
         show-channel-urls: true
         python-version: ${{ matrix.cfg.python-version }}
@@ -194,8 +194,24 @@ jobs:
           -D BUILD_SHARED_LIBS=ON
 
     - name: Compile Psi4
-      #working-directory: ./code
       run: cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
 
-#    - name: Extract, Build, Install Libint Library
-#      shell: bash -l {0}
+    - name: Create Conda Environment (build)
+      run: |
+        conda deactivate
+        conda create -n onlyeigen eigen -c conda-forge
+        conda env create --file run.yaml
+        conda activate runenv
+        conda list
+        pwd
+        ls
+
+    - name: Test Addons with CTest
+      working-directory: ./objdir
+      run: ctest -L addon -j2
+
+    - name: Test Addons with Pytest
+      working-directory: ./objdir
+      run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 -n 2 -m addon stage/lib/psi4/tests/
+
+
