@@ -44,6 +44,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 #    - msgpack-python (runtime only; e.g., `conda install msgpack-python`)
 #    - mpfr (for Libint2; e.g., `conda install mpfr`))
 #    - Eigen (for Libint2; e.g., `conda install eigen`)
+#    - SciPy (runtime only; e.g., `conda install scipy`)
 
 #  These three "###  Options  ###" sections contain useful CMake variables for build configuration.
 
@@ -184,11 +185,11 @@ message(STATUS "Psi4 install: ${CMAKE_INSTALL_PREFIX}")
 # * headers: Python.h for pybind11 to build against in psi4-core
 # * library: not at all
 
-set(Python_ADDITIONAL_VERSIONS 3.9 3.8 3.7)  # adjust with CMake minimum FindPythonInterp
+set(Python_ADDITIONAL_VERSIONS 3.10 3.9 3.8)  # adjust with CMake minimum FindPythonInterp
 if(DEFINED ENV{LGTM_SRC})
-    find_package(Python 3.7 EXACT COMPONENTS Interpreter Development REQUIRED)
+    find_package(Python 3.8 EXACT COMPONENTS Interpreter Development REQUIRED)
 else()
-    find_package(Python 3.7 COMPONENTS Interpreter Development NumPy REQUIRED)
+    find_package(Python 3.8 COMPONENTS Interpreter Development NumPy REQUIRED)
 endif()
 message(STATUS "${Cyan}Found Python ${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}${ColourReset}: ${Python_EXECUTABLE} (found version ${Python_VERSION})")
 
