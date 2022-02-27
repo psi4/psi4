@@ -197,8 +197,7 @@ jobs:
       run: |
         cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
         ldd objdir/stage/lib/psi4/core.*.so
-        objdir/stage/bin/psi4 --version
-        stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
+        objdir/stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
 
     - name: Create Conda Environment (build)
       run: |
@@ -210,6 +209,7 @@ jobs:
         ls
         ldd objdir/stage/lib/psi4/core.*.so
         objdir/stage/bin/psi4 --version
+        objdir/stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
 
     - name: Test Addons with CTest
       working-directory: ./objdir
