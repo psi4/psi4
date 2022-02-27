@@ -28,7 +28,12 @@ jobs:
         shell: bash -l {0}
 
     steps:
-    - uses: actions/checkout@v2
+
+    # fetch-depth: 0 gets git history so Psi4 version computable
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
     - name: Write Conda Env Files
       shell: bash -l {0}
