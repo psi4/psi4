@@ -34,12 +34,12 @@ jobs:
       shell: bash -l {0}
       run: |
         cat > build.yaml <<EOF
-        name: buildenv
+        name: defenv
         channels:
           - defaults
         dependencies:
           - blas=*=mkl
-          - python
+          - python =${{ matrix.cfg.python-version }}
             # build
           - boost
           - cmake >=3.16
@@ -70,7 +70,7 @@ jobs:
           sed -i "s/- fortran-compiler/- gfortran_linux-64/g" build.yaml
         fi
         cat > run.yaml <<EOF
-        name: runenv
+        name: defenv
         channels:
           - defaults
         dependencies:
@@ -79,7 +79,7 @@ jobs:
           - networkx
           - numpy
           - pip
-          - python
+          - python =${{ matrix.cfg.python-version }}
           - scipy
             # qc (buildtime)
           - psi4/label/dev::gau2grid
@@ -108,12 +108,12 @@ jobs:
           - pytest-xdist
         EOF
         cat > runcf.yaml <<EOF
-        name: runcf
+        name: cfenv
         channels:
           - conda-forge
         dependencies:
           - blas=*=mkl
-          - python
+          - python =${{ matrix.cfg.python-version }}
             # qc (runtime)
           - adcc
           - cppe
@@ -133,7 +133,7 @@ jobs:
     - name: Create Conda Environment (build)
       uses: conda-incubator/setup-miniconda@v2
       with:
-        activate-environment: buildenv
+        activate-environment: defenv
         environment-file: build.yaml
         show-channel-urls: true
         python-version: ${{ matrix.cfg.python-version }}
@@ -199,14 +199,16 @@ jobs:
         cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
         ldd objdir/stage/lib/psi4/core.*.so
 
-    - name: Create Conda Environment (build)
+    - name: Create Conda Environment (defaults run)
       run: |
         conda deactivate
+        conda remove -n defenv --all
         conda env create --file run.yaml
-        conda activate runenv
+        conda activate defenv
         conda list
         pwd
         ls
+        which conda python
         ldd objdir/stage/lib/psi4/core.*.so
         objdir/stage/bin/psi4 --version
         objdir/stage/bin/psi4 tests/tu1-h2o-energy/input.dat
