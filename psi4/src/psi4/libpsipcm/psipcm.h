@@ -44,6 +44,7 @@ namespace psi {
 class BasisSet;
 class Options;
 class PCMPotentialInt;
+class Num1Int;
 
 class PCM final {
    public:
@@ -99,8 +100,15 @@ class PCM final {
     /// Filename for the PCM input file as parsed by PCMSolver
     std::string pcmsolver_parsed_fname_;
 
+    /// numeric integrator
+    // std::shared_ptr<Num1Int> numeric_;
+    Num1Int *numeric_;
+
     /// print level
     int pcm_print_;
+
+    ///
+    bool do_numerical_;
 };
 
 namespace detail {

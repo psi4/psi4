@@ -194,5 +194,50 @@ class UV : public VBase {
 
     void print_header() const override;
 };
+
+// => Separate Classes <= //
+class Num1Int {
+   protected:
+    /// Debug flag
+    int debug_;
+    /// Print flag
+    int print_;
+    /// Number of threads
+    int num_threads_;
+    /// treshold for small densities
+    double density_tolerance_;
+    /// dimension of Fock-like operator
+    int dim_;
+
+    void initialize();
+
+   public:
+    Num1Int(std::shared_ptr<BasisSet> basisset_);
+    ~Num1Int() ;
+    std::vector<std::shared_ptr<PointFunctions>> numint_point_workers;
+    
+    void finalize();
+    /// potential for a set of point charges
+    SharedVector V_point_charges(const SharedMatrix &D);
+
+    /// operator for a set of point charges
+    SharedMatrix V_point_charges_operator(const SharedVector &ASC);
+    void print_details() const;
+
+    /// Local grid object
+    std::shared_ptr<DFTGrid> numint_grid;
+
+    /// Basis set used in the integration
+    std::shared_ptr<BasisSet> basisset_;
+
+    /// Matrix of coordinates/charges of partial charges
+    SharedMatrix Zxyz_;
+
+    /// Set the field of charges
+    void set_charge_field(SharedMatrix Zxyz) { Zxyz_ = Zxyz; }
+    
+    /// Get the field of charges
+    SharedMatrix charge_field() const { return Zxyz_; }
+};
 }
 #endif

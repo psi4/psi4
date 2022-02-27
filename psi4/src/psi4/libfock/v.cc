@@ -1239,6 +1239,254 @@ void SAP::compute_V(std::vector<SharedMatrix> ret) {
     timer_off("SAP: Form V");
 }
 
+Num1Int::Num1Int(std::shared_ptr<BasisSet> basisset)
+        : basisset_(basisset){
+    initialize();
+}
+Num1Int::~Num1Int() {}
+void Num1Int::initialize() {
+
+    num_threads_ = 1;
+#ifdef _OPENMP
+    num_threads_ = omp_get_max_threads();
+#endif
+    Options& options_ = Process::environment.options;
+    print_ = options_.get_int("PRINT");
+    debug_ = options_.get_int("DEBUG");
+
+    // ToDo: i) check if DFT grid is available to use
+    // Can be copy basisset_ and force puream=false?
+    std::map<std::string, int> numint_grid_options_int;
+    std::map<std::string, std::string> numint_grid_options_str;
+    // basisset_->print_detail();
+    std::shared_ptr<Molecule> mol = basisset_->molecule();
+
+    // Maybe a custom grid
+    // std::map<std::string, std::string> opt_map;
+    // std::map<std::string, int> opt_int_map;
+    // opt_map["DFT_PRUNING_SCHEME"] = "NUMINT_PRUNING_SCHEME";
+    // opt_int_map["DFT_RADIAL_POINTS"] = options_.get_int("NUMINT_RADIAL_POINTS");
+    // opt_int_map["DFT_SPHERICAL_POINTS"] = options_.get_int("NUMINT_SPHERICAL_POINTS");
+
+    timer_on("Num1Int: grid setup");
+    // numint_grid = std::make_shared<DFTGrid>(mol, basisset_, numint_grid_options_int, numint_grid_options_str, options_);
+    numint_grid = std::make_shared<DFTGrid>(mol, basisset_, options_);
+    timer_off("Num1Int: grid setup");
+    
+    // skip points with tiny densities.
+    density_tolerance_ = options_.get_double("VPOT_DENSITY_TOLERANCE");
+    // if (print_ > 1) print_details();
+    print_details();
+
+    dim_ = basisset_->nao(); // mind the cartesian issue
+}
+void Num1Int::finalize() { numint_grid.reset(); }
+void Num1Int::print_details() const {
+    outfile->Printf("\n Settings for numerical integration of PC potentials: \n");
+    numint_grid->print("outfile", print_);
+    outfile->Printf("   => Screening <= \n");
+    outfile->Printf("    Density tolerance = %8.2E \n", density_tolerance_);
+}
+
+SharedMatrix Num1Int::V_point_charges_operator(const SharedVector &ASC) {
+    timer_on("Num1Int: V_point_charges_operator");
+    // potential integrals contracted with charges
+    // Similar to PotentialInt, setup the field of partial charges
+    // This is very similar to the numerical SAP potential routine.
+
+    int ncharges = Zxyz_->rowspi()[0];
+    double** Zxyzp = Zxyz_->pointer();
+    double* ASCp = ASC->pointer();
+
+    // Thread info
+    int rank = 0;
+    
+    const int max_points = numint_grid->max_points();
+    const int max_functions = numint_grid->max_functions();
+
+    // Per thread temporaries
+    std::vector<SharedMatrix> V_local;
+    for (size_t i = 0; i < num_threads_; i++) {
+        V_local.push_back(std::make_shared<Matrix>("V Temp", max_functions, max_functions));
+    }
+
+    auto V_AO = std::make_shared<Matrix>("V(PC) operator", dim_, dim_);
+    double** Vp = V_AO->pointer();
+
+    std::vector<std::vector<double>> potential(num_threads_);
+
+    for (size_t i = 0; i < num_threads_; i++) {
+        auto point_tmp = std::make_shared<SAPFunctions>(basisset_, max_points, max_functions);
+        point_tmp->set_ansatz(0);
+        numint_point_workers.push_back(point_tmp);
+    }
+
+    size_t skipped=0;
+// Traverse the blocks of points
+#pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
+    for (size_t Q = 0; Q < numint_grid->blocks().size(); Q++) {
+
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+        // Get per-rank workers
+        std::shared_ptr<BlockOPoints> block = numint_grid->blocks()[Q];
+        std::shared_ptr<PointFunctions> pworker = numint_point_workers[rank];
+
+        // Compute Rho, Phi, etc
+        parallel_timer_on("Properties", rank);
+        pworker->compute_points(block, false);
+        parallel_timer_off("Properties", rank);
+
+        // Compute the potential at grid points
+        parallel_timer_on("grid points loop", rank);
+        potential[rank].resize(block->npoints());
+        for (int ip = 0; ip < block->npoints(); ip++) {
+            double xi = block->x()[ip];
+            double yi = block->y()[ip];
+            double zi = block->z()[ip];
+            double V = 0.0;
+            for (size_t ichrg = 0; ichrg < ncharges; ichrg++) {
+                double dx = Zxyzp[ichrg][1] - xi;
+                double dy = Zxyzp[ichrg][2] - yi;
+                double dz = Zxyzp[ichrg][3] - zi;
+                double r = std::sqrt(dx * dx + dy * dy + dz * dz);
+                V -= ASCp[ichrg] / r; 
+            } // point charges
+            potential[rank][ip] = V ;
+        } // points in block
+        parallel_timer_off("grid points loop", rank);
+
+    // 
+    parallel_timer_on("finish operator", rank);
+    // PHI * potential * PHI.
+    dft_integrators::sap_integrator(block, potential[rank], pworker, V_local[rank]);
+
+    // => Unpacking <= //
+        double** V2p = V_local[rank]->pointer();
+        const std::vector<int>& function_map = block->functions_local_to_global();
+        int nlocal = function_map.size();
+
+        for (int ml = 0; ml < nlocal; ml++) {
+            int mg = function_map[ml];
+            for (int nl = 0; nl < ml; nl++) {
+                int ng = function_map[nl];
+#pragma omp atomic update
+                Vp[mg][ng] += V2p[ml][nl];
+#pragma omp atomic update
+                Vp[ng][mg] += V2p[ml][nl];
+            }
+#pragma omp atomic update
+            Vp[mg][mg] += V2p[ml][ml];
+        }
+        parallel_timer_off("finish operator", rank);
+    } // grid blocks
+    timer_off("Num1Int: V_point_charges_operator");
+    return V_AO;
+}
+
+SharedVector Num1Int::V_point_charges(const SharedMatrix& D) {
+    timer_on("Num1Int: V_point_charges");
+    // computes electrostatic potential of external charges on cubature grid
+    // potential integrals contracted with density
+
+    // setup the field of partial charges
+    int ncharges = Zxyz_->rowspi()[0];
+    double** Zxyzp = Zxyz_->pointer();
+
+    // Thread info
+    int rank = 0;
+
+    // potential vector
+    auto Vpot = std::make_shared<Vector>("V(PC)", ncharges);
+    double* Vp = Vpot->pointer();
+
+    const int max_points = numint_grid->max_points();
+    const int max_functions = numint_grid->max_functions();
+
+    std::vector<SharedVector> V_local;
+    for (size_t i = 0; i < num_threads_; i++) {
+        V_local.push_back(std::make_shared<Vector>("V Temp", ncharges));
+        auto point_tmp = std::make_shared<RKSFunctions>(basisset_, max_points, max_functions);
+        point_tmp->set_ansatz(0);
+        point_tmp->set_pointers(D);  // not updating the density as expected?!
+        numint_point_workers.push_back(point_tmp);
+    }
+
+    size_t skipped = 0;
+    // Traverse the blocks of points
+#pragma omp parallel for private(rank) schedule(guided) num_threads(num_threads_)
+    for (size_t Q = 0; Q < numint_grid->blocks().size(); Q++) {
+#ifdef _OPENMP
+        rank = omp_get_thread_num();
+#endif
+        // per-rank pointer to potential
+        double* Vlp = V_local[rank]->pointer();
+
+        // Get per-rank workers
+        std::shared_ptr<BlockOPoints> block = numint_grid->blocks()[Q];
+        std::shared_ptr<PointFunctions> pworker = numint_point_workers[rank];
+
+        // Compute Rho on grid.
+        parallel_timer_on("Properties", rank);
+        pworker->set_pointers(D);  // dont want it here, but only this sets the density correctly!?
+        pworker->compute_points(block, false);
+        parallel_timer_off("Properties", rank);
+        auto rho_block = pworker->point_values()["RHO_A"];
+
+        // Compute the potential at grid points
+        parallel_timer_on("loop over grid points", rank);
+        for (int ip = 0; ip < block->npoints(); ip++) {
+            // Coordinates of the point
+            double xi = block->x()[ip];
+            double yi = block->y()[ip];
+            double zi = block->z()[ip];
+            double wi = block->w()[ip];
+
+            // get density at point
+            double rho_ = rho_block->get(ip) * wi;
+
+            // for small densities we can skip this grid point.
+            // tests show 5-7% savings.
+            if (std::fabs(rho_) < density_tolerance_) {
+                skipped += 1;
+                continue;
+            }
+
+            // Loop over surface point charges
+            parallel_timer_on("loop over charges", rank);
+            // this loop runs very(!) often.
+            // distances could be cached and save a lot of time.
+            for (size_t ichrg = 0; ichrg < ncharges; ichrg++) {
+                // charge to grid point distance
+                double dx = Zxyzp[ichrg][1] - xi;
+                double dy = Zxyzp[ichrg][2] - yi;
+                double dz = Zxyzp[ichrg][3] - zi;
+                double r = std::sqrt(dx * dx + dy * dy + dz * dz);
+                // J_screened is 1/r for point charges, where Z=1. Any reason to include Z explicitly here?
+                Vlp[ichrg] += -rho_ / r;
+            }  // point charges
+            parallel_timer_off("loop over charges", rank);
+        }  // points in block
+        parallel_timer_off("loop over grid points", rank);
+    }  // grid blocks
+
+    // manual reduction. Better way?
+    for (size_t i = 0; i < num_threads_; i++) {
+        for (size_t ichrg = 0; ichrg < ncharges; ichrg++) {
+            Vpot->add(ichrg, V_local[i]->get(ichrg));
+        }
+    }
+    Vpot->scale(0.5); 
+
+    double percent = 100.0 * skipped / numint_grid->npoints();
+    if (print_ > 2) {
+        outfile->Printf("Num1Int::V_point_charges: Skipped %5.2f %% of all grid points \n",percent);
+    }
+    timer_off("Num1Int: V_point_charges");
+    return Vpot;
+}
+
 RV::RV(std::shared_ptr<SuperFunctional> functional, std::shared_ptr<BasisSet> primary, Options& options)
     : VBase(functional, primary, options) {}
 RV::~RV() {}

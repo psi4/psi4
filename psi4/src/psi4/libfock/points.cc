@@ -171,6 +171,7 @@ void RKSFunctions::compute_points(std::shared_ptr<BlockOPoints> block, bool forc
 
     // => Build local D matrix <= //
     double** Dp = D_AO_->pointer();
+    // D_AO_->print();
     double** D2p = D_local_->pointer();
 
     for (int ml = 0; ml < nlocal; ml++) {
