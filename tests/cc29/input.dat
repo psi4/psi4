@@ -58,11 +58,11 @@ refmvgT_355 = psi4.core.Matrix.from_list(        # TEST
     [0, 0, -0.027043020427084]])                 # TEST
 
 compare_values(reflenT_589,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (LEN) @ 589NM"),  3, "CCSD rotation tensor @ 589nm in length gauge") # TEST
-compare_values(reflenT_589,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (LEN) @ 589NM"),  3, "CCSD rotation tensor @ 589nm in length gauge") # TEST
-compare_values(reflenT_589,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (LEN) @ 589NM"),  3, "CCSD rotation tensor @ 589nm in length gauge") # TEST
+compare_values(refvelT_589,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (VEL) @ 589NM"),  3, "CCSD rotation tensor @ 589nm in velocity gauge") # TEST
+compare_values(refmvgT_589,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (MVG) @ 589NM"),  3, "CCSD rotation tensor @ 589nm in modified velocity gauge") # TEST
 compare_values(reflenT_355,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (LEN) @ 355NM"),  3, "CCSD rotation tensor @ 355nm in length gauge") # TEST
-compare_values(reflenT_355,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (LEN) @ 355NM"),  3, "CCSD rotation tensor @ 355nm in length gauge") # TEST
-compare_values(reflenT_355,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (LEN) @ 355NM"),  3, "CCSD rotation tensor @ 355nm in length gauge") # TEST
+compare_values(refvelT_355,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (VEL) @ 355NM"),  3, "CCSD rotation tensor @ 355nm in velocity gauge") # TEST
+compare_values(refmvgT_355,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (MVG) @ 355NM"),  3, "CCSD rotation tensor @ 355nm in modified velocity gauge") # TEST
 
 refdep_589 = psi4.core.Matrix.from_list([[0, 0, -19.65]]) # TEST
 refdep_355 = psi4.core.Matrix.from_list([[0, 0, -72.34]]) # TEST
