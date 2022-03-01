@@ -64,6 +64,8 @@ class PSI_API OneBodyAOInt {
 
     Vector3 origin_;
 
+    // These are scratch arrays that are used for the integral engines that do not yet use Libint2
+    // under the hood.  When everything is converted to use Libint2, they can be deleted.
     double* buffer_;
     double* target_;
     double* tformbuf_;
@@ -81,7 +83,11 @@ class PSI_API OneBodyAOInt {
     std::unique_ptr<libint2::Engine> engine1_;  // derivatives
     std::unique_ptr<libint2::Engine> engine2_;  // hessians
 
-    /// Pointers to each chunk of (derivative/multipole) integrals
+    /// Pointers to each chunk of (derivative/multipole) integrals.  For simple integral types
+    /// (e.g. overlap, kinetic) there is only one chunk of integrals.  For dipole integrals
+    /// there are three such buffers in memory at a given time, pointed to by these pointers.
+    /// The ordering of the dipoles is x, y, z; generally CCA library ordering is used to determine
+    /// the layout of operators and derivatives.  The Libint2 wiki has a detailed description of this.
     std::vector<const double*> buffers_;
 
     std::vector<std::pair<int, int>> shellpairs_;
@@ -123,7 +129,7 @@ class PSI_API OneBodyAOInt {
     void compute(SharedMatrix& result);
     /*! @} */
 
-    ///// Computes all integrals and stores them in result by default this method throws
+    /// Computes all integrals and stores them in result by default this method throws
     virtual void compute(std::vector<SharedMatrix>& result);
 
     /// Does the method provide first derivatives?
@@ -160,6 +166,9 @@ class PSI_API OneBodyAOInt {
 
 typedef std::shared_ptr<OneBodyAOInt> SharedOneBodyAOInt;
 
+/// For a pair of basis sets, provides a list of integer pairs that index all significant (i.e. whose overlap is
+/// above the threshold) pairs that exist.  If the basis sets are different, the full Cartesian product is considered
+/// but if they are the same, only the lower triangular significant pairs are returned.
 std::vector<std::pair<int, int>> build_shell_pair_list_no_spdata(std::shared_ptr<BasisSet> bs1,
                                                                  std::shared_ptr<BasisSet> bs2, double threshold);
 

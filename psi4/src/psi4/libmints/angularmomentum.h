@@ -44,8 +44,6 @@ class GaussianShell;
 class SphericalTransform;
 
 /*! \ingroup MINTS
- *  \class DipoleInt
- *  \brief Computes dipole integrals.
  *
  * Use an IntegralFactory to create this object. */
 class AngularMomentumInt : public OneBodyAOInt {

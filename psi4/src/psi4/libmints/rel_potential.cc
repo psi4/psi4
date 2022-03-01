@@ -26,14 +26,10 @@
  * @END LICENSE
  */
 
-#include "psi4/libciomr/libciomr.h"
-#include "psi4/libmints/cdsalclist.h"
 #include "psi4/libmints/rel_potential.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/matrix.h"
-#include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libmints/molecule.h"
 
 #include <libint2/shell.h>

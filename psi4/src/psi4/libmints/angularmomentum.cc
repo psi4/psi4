@@ -54,6 +54,8 @@ AngularMomentumInt::AngularMomentumInt(std::vector<SphericalTransform>& spherica
     if (deriv_ == 0) {
         buffer_ = new double[3 * maxnao1 * maxnao2];
         set_chunks(3);
+    } else {
+        throw PSIEXCEPTION("AngularMomentumInt does not provide derivatives");
     }
     buffers_.resize(nchunk_);
 }

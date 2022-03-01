@@ -31,7 +31,6 @@
 
 #include <vector>
 #include "psi4/libmints/onebody.h"  // needed because we derive from OneBodyAOInt
-#include "psi4/libmints/osrecur.h"
 
 namespace psi {
 

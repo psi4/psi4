@@ -84,7 +84,6 @@ static void transform1e_2(int am, SphericalTransformIter &sti, double *s, double
 }
 }  // namespace
 
-//! Form shell pair information for one electron routines, which don't use the shell pair information
 std::vector<std::pair<int, int>> build_shell_pair_list_no_spdata(std::shared_ptr<BasisSet> bs1,
                                                                  std::shared_ptr<BasisSet> bs2, double threshold) {
     const auto nsh1 = bs1->nshell();
@@ -104,7 +103,10 @@ std::vector<std::pair<int, int>> build_shell_pair_list_no_spdata(std::shared_ptr
     std::vector<std::vector<std::pair<int, int>>> threads_sp_list(nthreads);
 
     threshold *= threshold;
-    ///ACS TODO make sure we set the threshold appropriately
+    //TODO: Eventually we need to make sure we set the threshold appropriately.  When set to zero, all pairs
+    // are considered, as they were previously.  Turning this to some function of the integral screening
+    // threshold will start to screen out some integrals, breaking some of the more sensitive test cases in
+    // the process.  Therefore this should be done separately from the integral rewrite.
     threshold = 0.0;
 
 #pragma omp parallel num_threads(nthreads)

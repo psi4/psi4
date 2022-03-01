@@ -1954,6 +1954,8 @@ SharedMatrix MintsHelper::potential_grad(SharedMatrix D) {
 
         double **Vp = Vtemps[rank]->pointer();
 
+        // The three buffers have Px, Py, Pz, then the next three are Qx, Qy, Qz, with the next
+        // 3*natom containing derivatives with respect to each atom's nuclear charge position.
         for (size_t X = 0; X < 2 + natom; X++) {
             auto A = (X == 0) ? aP : ((X == 1) ? aQ : X - 2);
 

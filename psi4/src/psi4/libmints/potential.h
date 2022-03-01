@@ -34,7 +34,6 @@
 #include "psi4/libmints/typedefs.h"
 #include "psi4/libmints/onebody.h"
 #include "psi4/libmints/sointegral_onebody.h"
-#include "psi4/libmints/osrecur.h"
 
 namespace psi {
 class BasisSet;

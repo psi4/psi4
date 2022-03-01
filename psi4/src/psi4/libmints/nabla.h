@@ -35,7 +35,6 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
 PRAGMA_WARNING_POP
 #include "psi4/libmints/onebody.h"
-#include "psi4/libmints/osrecur.h"
 
 namespace psi {
 

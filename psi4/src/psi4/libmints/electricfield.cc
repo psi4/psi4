@@ -164,6 +164,9 @@ void ElectricFieldInt::compute_with_functor(ContractionFunctor functor, SharedMa
         auto offset_1 = shell1.function_index();
         auto offset_2 = shell2.function_index();
         for (int site = 0; site < coords->rowdim(); ++site) {
+            // The +2 here is because we're using an L2 derivative engine, which gives us the
+            // bra atom derivatives, then the ket atom derivatives, then the derivatives w.r.t.
+            // atomic charge positions, which are what we want.
             const double *bufferx = engine0_->results()[3 * (2+site) + 0];
             const double *buffery = engine0_->results()[3 * (2+site) + 1];
             const double *bufferz = engine0_->results()[3 * (2+site) + 2];
