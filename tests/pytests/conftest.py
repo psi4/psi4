@@ -3,7 +3,10 @@ import pytest
 
 def pytest_configure(config):
     # Register marks to avoid warnings in psi4.test()
-    # sync with setup.cfg
+    # sync with pyproject.toml
+    config.addinivalue_line("markers", "psi: test defined in Psi4 codebase")
+    config.addinivalue_line("markers", "cli: test also defined in CTest, usually in Psithon")
+
     config.addinivalue_line("markers", "check_triplet")
     config.addinivalue_line("markers", "dft")
     config.addinivalue_line("markers", "gga")
@@ -27,6 +30,7 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "quick")
     config.addinivalue_line("markers", "unittest")
     config.addinivalue_line("markers", "unrestricted")
+    config.addinivalue_line("markers", "cart: test geometries are purely numerical Cartesians and no Z-matrices")
 
     config.addinivalue_line("markers", "addon")
 
@@ -40,11 +44,11 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "dftd3_321")
     config.addinivalue_line("markers", "psi4")
 
-    # non-QC
+    # run if non-QC software available
     config.addinivalue_line("markers", "memory_profiler")
     config.addinivalue_line("markers", "networkx")
 
-    # QC
+    # run if QC software available
     config.addinivalue_line("markers", "adcc")
     config.addinivalue_line("markers", "ambit")
     config.addinivalue_line("markers", "cct3")

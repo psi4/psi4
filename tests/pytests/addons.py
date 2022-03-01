@@ -127,6 +127,21 @@ def using(program: str) -> List:
     return _using_cache[program][1]
 
 
+def ctlabels(labels: str):
+    """Apply each element of labels as marks. Also adds "psi" and "ctest" marks.
+
+    Parameters
+    ----------
+    labels
+        A semicolon-separated list of labels to be applied as PyTest marks.
+        These are usually copied from CMakeLists.txt.
+
+    """
+    marks = [getattr(pytest.mark, m) for m in labels.split(";")]
+    all_marks = (*marks, pytest.mark.psi, pytest.mark.cli)
+    return _compose_decos(all_marks)
+
+
 hardware_nvidia_gpu = pytest.mark.skipif(
     True,  #is_nvidia_gpu_present() is False,
     reason='Psi4 not detecting Nvidia GPU via `nvidia-smi`. Install one')

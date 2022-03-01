@@ -308,7 +308,7 @@ install(
     ../tests/chemps2
     ../tests/dftd3
     ../tests/dkh
-    ../tests/libefp
+    #../tests/libefp
     ../tests/gdma
     ../tests/pcmsolver
     ../tests/simint
@@ -317,6 +317,7 @@ install(
     PATTERN "test_input.py"
     PATTERN "__init__.py"
     PATTERN "input.dat"
+    PATTERN "__pycache__" EXCLUDE
   )
 
     # <<<  install psi4 share/ & include/  >>>

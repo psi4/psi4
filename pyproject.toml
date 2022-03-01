@@ -14,7 +14,7 @@ markers = [
     "restricted_triplet",
     "RPA",
     "scf",
-    "slow", # = """marks tests as slow (deselect with '-m "not slow"')""",
+    """slow: marks tests as slow (deselect with '-m "not slow"')""",
     "smoke",
     "solver",
     "stress",

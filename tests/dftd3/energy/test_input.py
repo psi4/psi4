@@ -1,10 +1,10 @@
 from pathlib import Path
-from addons import uusing
+from addons import uusing, ctlabels
 
 
-# edit any marks
 @uusing("dftd3")
-def test_dftd3_energy():  # edit test name
+@ctlabels("quick;smoke;cart")
+def test_dftd3_energy():
     from qcengine.util import execute
 
     success, output = execute(["psi4", Path(__file__).parent / "input.dat"])
