@@ -304,18 +304,16 @@ install(DIRECTORY ../tests/pytests/test_fchk_writer
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 
 install(
-  DIRECTORY ../tests/dftd3/
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/dftd3/
+  DIRECTORY
+    ../tests/chemps2
+    ../tests/dftd3
+    ../tests/dkh
+    ../tests/gdma
+    ../tests/pcmsolver
+    ../tests/simint
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
   FILES_MATCHING
-    PATTERN "test_*.py"
-    PATTERN "__init__.py"
-    PATTERN "input.dat"
-  )
-install(
-  DIRECTORY ../tests/gdma/
-  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/gdma/
-  FILES_MATCHING
-    PATTERN "test_*.py"
+    PATTERN "test_input.py"
     PATTERN "__init__.py"
     PATTERN "input.dat"
   )

@@ -79,7 +79,7 @@ jobs:
         channels:
           - defaults
         dependencies:
-            # non-qc (req'd)
+            # non-qc req'd
           - blas=*=mkl
           - msgpack-python
           - networkx
@@ -87,7 +87,7 @@ jobs:
           - pip
           - python =${{ matrix.cfg.python-version }}
           - scipy
-            # non-qc (opt'l)
+            # non-qc opt'l
           - memory_profiler
             # qc req'd
           - psi4/label/dev::gau2grid
@@ -95,7 +95,7 @@ jobs:
           - psi4/label/dev::qcelemental
           - psi4/label/dev::qcengine
           - psi4/label/dev::libxc =5
-            # qc req'd (buildtime)
+            # qc req'd from buildtime
           - psi4/label/dev::ambit
           - psi4/label/dev::chemps2
           - psi4/label/dev::dkh
@@ -123,8 +123,8 @@ jobs:
         dependencies:
           - blas=*=mkl
           - python =${{ matrix.cfg.python-version }}
-            # qc (runtime)
-          - adcc
+            # qc opt'l
+          #- adcc
           - cppe
           - dftd4-python
           - geometric
@@ -202,7 +202,7 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
           -D ENABLE_OPENMP=ON \
           -D ENABLE_XHOST=OFF \
-          -D BUILD_SHARED_LIBS=ON
+          ${{ matrix.cfg.libargs }}
 
     - name: Compile Psi4
       run: |
