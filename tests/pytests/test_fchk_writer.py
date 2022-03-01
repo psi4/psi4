@@ -4,7 +4,7 @@ import numpy as np
 import re
 from ast import literal_eval
 import os
-from distutils import dir_util
+from shutil import copytree
 
 # checks for
 # - correct HF density
@@ -23,7 +23,7 @@ def datadir(tmpdir, request):
     test_dir, _ = os.path.splitext(filename)
 
     if os.path.isdir(test_dir):
-        dir_util.copy_tree(test_dir, str(tmpdir))
+        copytree(test_dir, str(tmpdir), dirs_exist_ok=True)
 
     return tmpdir
 

@@ -1,7 +1,7 @@
 import pytest
 import psi4
 import os
-from distutils import dir_util
+from shutil import copytree
 import re
 from psi4.driver.p4util.testing import compare_strings, compare_values, compare_integers
 from psi4.driver.p4util.exceptions import ValidationError
@@ -22,7 +22,7 @@ def datadir(tmpdir, request):
     test_dir, _ = os.path.splitext(filename)
 
     if os.path.isdir(test_dir):
-        dir_util.copy_tree(test_dir, str(tmpdir))
+        copytree(test_dir, str(tmpdir), dirs_exist_ok=True)
 
     return tmpdir
 

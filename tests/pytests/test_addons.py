@@ -768,7 +768,8 @@ def test_json():
         "keywords": {}
     }
 
-    json_ret = psi4.json_wrapper.run_json(json_input)
+    with pytest.warns(FutureWarning) as err:
+        json_ret = psi4.json_wrapper.run_json(json_input)
 
     assert psi4.compare_integers(True, json_ret["success"], "Success")
     assert psi4.compare_values(-5.474227786274896, json_ret["properties"]["return_energy"], 4, "SCF ENERGY")

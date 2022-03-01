@@ -129,6 +129,7 @@ jobs:
           - dftd4-python
           - geometric
           - pymdi
+          - qcengine
         EOF
         cat run.yaml
 

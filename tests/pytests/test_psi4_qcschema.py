@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 import pprint
 import os
-from distutils import dir_util
+from shutil import copytree
 
 import psi4
 
@@ -31,7 +31,7 @@ def datadir(tmpdir, request):
     test_dir, _ = os.path.splitext(filename)
 
     if os.path.isdir(test_dir):
-        dir_util.copy_tree(test_dir, str(tmpdir))
+        copytree(test_dir, str(tmpdir), dirs_exist_ok=True)
     else:
         raise FileNotFoundError("Test folder not found.")
 
