@@ -61,7 +61,7 @@ jobs:
           - psi4/label/dev::qcelemental
           - psi4/label/dev::qcengine
           - psi4/label/dev::libxc =5
-            # qc
+            # qc opt'l
           - psi4/label/dev::ambit
           - psi4/label/dev::chemps2
           - psi4/label/dev::dkh
@@ -79,6 +79,7 @@ jobs:
         channels:
           - defaults
         dependencies:
+            # non-qc (req'd)
           - blas=*=mkl
           - msgpack-python
           - networkx
@@ -86,19 +87,22 @@ jobs:
           - pip
           - python =${{ matrix.cfg.python-version }}
           - scipy
-            # qc (buildtime)
+            # non-qc (opt'l)
+          - memory_profiler
+            # qc req'd
           - psi4/label/dev::gau2grid
           - psi4/label/dev::libint2
           - psi4/label/dev::qcelemental
           - psi4/label/dev::qcengine
           - psi4/label/dev::libxc =5
+            # qc req'd (buildtime)
           - psi4/label/dev::ambit
           - psi4/label/dev::chemps2
           - psi4/label/dev::dkh
           - psi4/label/dev::gdma
           - psi4/label/dev::pcmsolver
           - psi4/label/dev::simint
-            # qc (runtime)
+            # qc opt'l
           - psi4/label/dev::dftd3
           - psi4/label/dev::pylibefp
           - psi4/label/dev::fockci
@@ -123,6 +127,7 @@ jobs:
           - adcc
           - cppe
           - dftd4-python
+          - geometric
           - pymdi
         EOF
         cat run.yaml
@@ -211,21 +216,27 @@ jobs:
         conda env create --file run.yaml
         conda activate defenv
         conda list
-        pwd
-        ls
-        which conda python
         ldd objdir/stage/lib/psi4/core.*.so
-        objdir/stage/bin/psi4 --version
         objdir/stage/bin/psi4 tests/tu1-h2o-energy/input.dat
 
     - name: Test Addons with CTest
+      if: false
       working-directory: ./objdir
+      run: ctest -L addon -j2 --output-on-failure
+
+    - name: Test Addons with Pytest (defaults only)
+      working-directory: ./objdir
+      run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 -m addon stage/lib/psi4/tests/
+
+    - name: Create Conda Environment (c-f run)
       run: |
-        stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat
-        ctest -L addon -j2 --output-on-failure
+        conda env create --file runcf.yaml
+        conda activate --stack cfenv
+        conda list
+        ldd objdir/stage/lib/psi4/core.*.so
+        objdir/stage/bin/psi4 tests/tu1-h2o-energy/input.dat
 
-    - name: Test Addons with Pytest
+    - name: Test Addons with Pytest (defaults + c-f)
       working-directory: ./objdir
-      run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 -n 2 -m addon stage/lib/psi4/tests/
-
+      run: PYTHONPATH=$CONDA_PREFIX/lib/python3.9/site-packages/:stage/lib pytest -v -rws --durations=15 -m addon stage/lib/psi4/tests/
 
