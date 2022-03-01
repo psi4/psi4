@@ -163,14 +163,13 @@ jobs:
         conda info
         conda list
 
-#    - name: Prepare compiler environment for Windows
-#      if: ${{ runner.os == 'Windows' }}
-#      uses: ilammy/msvc-dev-cmd@v1
-#      with:
-#        arch: x64
+    - name: Prepare compiler environment for Windows
+      if: ${{ runner.os == 'Windows' }}
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
 
     - name: Configure with CMake (conda defaults GNU)
-      #working-directory: ./code
       run: |
         cmake \
           -S. \
@@ -238,5 +237,5 @@ jobs:
 
     - name: Test Addons with Pytest (defaults + c-f)
       working-directory: ./objdir
-      run: PYTHONPATH=$CONDA_PREFIX/lib/python3.9/site-packages/:stage/lib pytest -v -rws --durations=15 -m addon stage/lib/psi4/tests/
+      run: PYTHONPATH=$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages/:stage/lib pytest -v -rws --durations=15 -m addon stage/lib/psi4/tests/
 

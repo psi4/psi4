@@ -308,6 +308,7 @@ install(
     ../tests/chemps2
     ../tests/dftd3
     ../tests/dkh
+    ../tests/libefp
     ../tests/gdma
     ../tests/pcmsolver
     ../tests/simint
