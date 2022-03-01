@@ -208,11 +208,18 @@ jobs:
         cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
         ldd objdir/stage/lib/psi4/core.*.so
 
-    - name: Create Conda Environment (defaults run)
+      # Notes: This is clearing away the whole build environment (to make explicit the build and
+      #   runtime dependencies and addons). Then its creating a new runtime environment based on
+      #   psi4 and defaults channel dependencies and addons. This is created at the same environment
+      #   name (so same location on disk as the build env) for non-relocatability reasons. Also
+      #   creating another runtime environment based on conda-forge channel addons. This is held in
+      #   reserve for later.
+    - name: Create Conda Environment (run)
       run: |
         conda deactivate
         conda remove -n defenv --all
         conda env create --file run.yaml
+        conda env create --file runcf.yaml
         conda activate defenv
         conda list
         ldd objdir/stage/lib/psi4/core.*.so
@@ -227,15 +234,14 @@ jobs:
       working-directory: ./objdir
       run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 -m addon stage/lib/psi4/tests/
 
-    - name: Create Conda Environment (c-f run)
-      run: |
-        conda env create --file runcf.yaml
-        conda activate --stack cfenv
-        conda list
-        ldd objdir/stage/lib/psi4/core.*.so
-        objdir/stage/bin/psi4 tests/tu1-h2o-energy/input.dat
 
     - name: Test Addons with Pytest (defaults + c-f)
       working-directory: ./objdir
-      run: PYTHONPATH=$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages/:stage/lib pytest -v -rws --durations=15 -m addon stage/lib/psi4/tests/
+      run: |
+        echo $CONDA_PREFIX
+        conda list
+        conda activate --stack cfenv
+        echo $CONDA_PREFIX
+        conda list
+        PYTHONPATH=$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages/:stage/lib pytest -v -rws --durations=15 -m addon stage/lib/psi4/tests/
 
