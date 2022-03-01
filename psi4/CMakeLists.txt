@@ -303,6 +303,23 @@ install(DIRECTORY ../tests/pytests/test_fchk_writer
                   ../tests/pytests/test_psi4_qcschema
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
 
+install(
+  DIRECTORY ../tests/dftd3/
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/dftd3/
+  FILES_MATCHING
+    PATTERN "test_*.py"
+    PATTERN "__init__.py"
+    PATTERN "input.dat"
+  )
+install(
+  DIRECTORY ../tests/gdma/
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/gdma/
+  FILES_MATCHING
+    PATTERN "test_*.py"
+    PATTERN "__init__.py"
+    PATTERN "input.dat"
+  )
+
     # <<<  install psi4 share/ & include/  >>>
 
 install(DIRECTORY share/psi4/

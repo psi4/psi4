@@ -57,6 +57,7 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "forte")
     config.addinivalue_line("markers", "gdma")
     config.addinivalue_line("markers", "gpu_dfcc")
+    config.addinivalue_line("markers", "geometric")
     config.addinivalue_line("markers", "ipi")
     config.addinivalue_line("markers", "mrcc")
     config.addinivalue_line("markers", "pcmsolver")
