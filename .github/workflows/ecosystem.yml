@@ -122,7 +122,7 @@ jobs:
         channels:
           - conda-forge
         dependencies:
-          - blas=*=mkl
+          #- blas=*=mkl
           - python =${{ matrix.cfg.python-version }}
             # qc opt'l
           #- adcc
