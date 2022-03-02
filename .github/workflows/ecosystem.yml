@@ -14,7 +14,7 @@ jobs:
       matrix:
         cfg:
           - runs-on: ubuntu-latest
-            python-version: "3.9"
+            python-version: "3.10"
             libargs: >
               -DBUILD_SHARED_LIBS=ON
 
@@ -46,7 +46,7 @@ jobs:
           - blas=*=mkl
           - python =${{ matrix.cfg.python-version }}
             # build
-          - boost-cpp
+          - boost-cpp =1.71
           - cmake >=3.16
           - cxx-compiler
           - eigen
@@ -84,7 +84,7 @@ jobs:
           - msgpack-python
           - networkx
           - numpy
-          - pip
+          #- pip
           - python =${{ matrix.cfg.python-version }}
           - scipy
             # non-qc opt'l
@@ -94,7 +94,7 @@ jobs:
           - psi4/label/dev::libint2
           - psi4/label/dev::qcelemental
           - psi4/label/dev::qcengine
-          - psi4/label/dev::libxc =5
+          - psi4/label/dev::libxc
             # qc req'd from buildtime
           - psi4/label/dev::ambit
           - psi4/label/dev::chemps2
@@ -110,11 +110,12 @@ jobs:
           - psi4/label/dev::mp2d
           - psi4/label/dev::resp
           - psi4/label/dev::snsmp2
-          - pip:
-             - git+https://github.com/i-pi/i-pi.git@master-py3
+          #- pip:
+          #   - git+https://github.com/i-pi/i-pi.git@master-py3
             # test
-          - conda-forge::pytest =7
+          - pytest
           - pytest-xdist
+          - tomli
         EOF
         cat > runcf.yaml <<EOF
         name: cfenv
@@ -127,8 +128,8 @@ jobs:
           #- adcc
           - cppe
           - dftd4-python
-          - geometric
-          - pymdi
+          #- geometric
+          #- pymdi
           - qcengine
         EOF
         cat run.yaml
@@ -222,6 +223,7 @@ jobs:
         conda env create --file run.yaml
         conda env create --file runcf.yaml
         conda activate defenv
+        conda install conda-forge::pytest=7.0.1
         conda list
         ldd objdir/stage/lib/psi4/core.*.so
         objdir/stage/bin/psi4 tests/tu1-h2o-energy/input.dat
