@@ -125,11 +125,11 @@ jobs:
           #- blas=*=mkl
           - python =${{ matrix.cfg.python-version }}
             # qc opt'l
-          #- adcc
+          - adcc
           - cppe
           - dftd4-python
-          #- geometric
-          #- pymdi
+          - geometric
+          - pymdi
           - qcengine
         EOF
         cat run.yaml
@@ -223,7 +223,7 @@ jobs:
         conda env create --file run.yaml
         conda env create --file runcf.yaml
         conda activate defenv
-        conda install conda-forge::pytest=7.0.1
+        conda install conda-forge::pytest>=7.0.1
         conda list
         ldd objdir/stage/lib/psi4/core.*.so
         objdir/stage/bin/psi4 tests/tu1-h2o-energy/input.dat

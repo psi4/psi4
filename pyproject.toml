@@ -24,7 +24,7 @@ markers = [
     "unittest",
     "unrestricted",
 ]
-pythonpath = [
+python_path = [
     "tests/pytests",
 ]
 
