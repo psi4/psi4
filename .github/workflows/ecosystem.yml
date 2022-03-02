@@ -14,7 +14,7 @@ jobs:
       matrix:
         cfg:
           - runs-on: ubuntu-latest
-            python-version: "3.10"
+            python-version: "3.9"
             libargs: >
               -DBUILD_SHARED_LIBS=ON
 
