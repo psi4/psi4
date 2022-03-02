@@ -1,5 +1,5 @@
 import pytest
-from .addons import hardware_nvidia_gpu, uusing
+from addons import hardware_nvidia_gpu, uusing
 
 import json
 

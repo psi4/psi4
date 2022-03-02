@@ -2,7 +2,7 @@ import pytest
 
 import psi4
 
-from .utils import compare_values
+from utils import compare_values
 
 @pytest.mark.parametrize("inp", [
     pytest.param({'options': {"guess": "core"}}, id="core"),

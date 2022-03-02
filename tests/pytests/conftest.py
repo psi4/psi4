@@ -31,6 +31,9 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "unittest")
     config.addinivalue_line("markers", "unrestricted")
     config.addinivalue_line("markers", "cart: test geometries are purely numerical Cartesians and no Z-matrices")
+    config.addinivalue_line("markers", "nbody: tests that use the nbody or manybody wrapper")
+    config.addinivalue_line("markers", "gradient: tests that run 1st-derivatives wrt energy")
+    #config.addinivalue_line("markers", "")
 
     config.addinivalue_line("markers", "addon")
 

@@ -2,7 +2,7 @@
 Test Python-side generation of cube files
 """
 import psi4
-from .utils import compare_cubes
+from utils import compare_cubes
 
 
 def test_pyside_cubegen():

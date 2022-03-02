@@ -1,9 +1,9 @@
 import pytest
 
-from .utils import *
+from utils import *
 
 import psi4
-from .addons import uusing, using
+from addons import uusing, using
 
 
 @pytest.mark.parametrize('engine', [

@@ -3,7 +3,7 @@ import pytest
 
 import psi4
 
-from .utils import compare_values
+from utils import compare_values
 
 # Reference data generated from Psi's dfmp2 module
 data = {

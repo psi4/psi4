@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List
 
 import pytest
@@ -11,6 +12,8 @@ __all__ = [
     "hardware_nvidia_gpu",
     "using",
     "uusing",
+    "ctest_labeler",
+    "ctest_runner",
 ]
 
 
@@ -127,8 +130,8 @@ def using(program: str) -> List:
     return _using_cache[program][1]
 
 
-def ctlabels(labels: str):
-    """Apply each element of labels as marks. Also adds "psi" and "ctest" marks.
+def ctest_labeler(labels: str):
+    """Apply each label in ``labels`` as PyTest marks. Also adds "psi" and "cli" marks.
 
     Parameters
     ----------
@@ -145,3 +148,14 @@ def ctlabels(labels: str):
 hardware_nvidia_gpu = pytest.mark.skipif(
     True,  #is_nvidia_gpu_present() is False,
     reason='Psi4 not detecting Nvidia GPU via `nvidia-smi`. Install one')
+
+
+def ctest_runner(inputdat):
+    from qcengine.util import execute
+
+    #success, output = execute(inputdat)
+    success, output = execute(["psi4", Path(inputdat).parent / "input.dat"])
+
+    if not success:
+        print(output["stdout"])
+    assert success

@@ -1,10 +1,10 @@
 import pytest
 
-from .utils import *
+from utils import *
 
 import psi4
 import numpy as np
-from .addons import uusing, using
+from addons import uusing, using
 
 pytestmark = [pytest.mark.quick]
 

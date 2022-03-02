@@ -8,7 +8,7 @@ import qcelemental as qcel
 
 import psi4
 
-from .utils import *
+from utils import *
 
 pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 

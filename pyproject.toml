@@ -24,7 +24,10 @@ markers = [
     "unittest",
     "unrestricted",
 ]
-python_path = [
+pythonpath = [
     "tests/pytests",
+]
+addopts = [
+    "--import-mode=importlib"
 ]
 

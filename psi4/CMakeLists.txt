@@ -308,16 +308,17 @@ install(
     ../tests/chemps2
     ../tests/dftd3
     ../tests/dkh
-    #../tests/libefp
+    ../tests/libefp
     ../tests/gdma
     ../tests/pcmsolver
     ../tests/simint
   DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
   FILES_MATCHING
     PATTERN "test_input.py"
-    PATTERN "__init__.py"
+    #PATTERN "__init__.py"
     PATTERN "input.dat"
     PATTERN "__pycache__" EXCLUDE
+    PATTERN "*pyc" EXCLUDE
   )
 
     # <<<  install psi4 share/ & include/  >>>

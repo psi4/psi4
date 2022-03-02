@@ -4,7 +4,7 @@ from qcengine.programs.tests.standard_suite_ref import std_molecules, std_refs
 
 import psi4
 
-from .standard_suite_runner import runner_asserter
+from standard_suite_runner import runner_asserter
 
 
 @pytest.fixture

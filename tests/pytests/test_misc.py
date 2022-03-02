@@ -1,6 +1,6 @@
 import pytest
-from .addons import uusing
-from .utils import *
+from addons import uusing
+from utils import *
 
 import math
 

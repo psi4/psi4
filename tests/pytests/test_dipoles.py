@@ -3,7 +3,7 @@ import pytest
 import qcelemental as qcel
 import psi4
 
-from .utils import compare_values
+from utils import compare_values
 
 perturbation_strength = 0.001
 

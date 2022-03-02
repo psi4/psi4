@@ -1,6 +1,6 @@
 import pytest
 
-from .utils import *
+from utils import *
 
 import psi4
 import numpy as np

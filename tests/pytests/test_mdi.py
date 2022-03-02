@@ -1,6 +1,6 @@
 import pytest
-from .utils import *
-from .addons import uusing
+from utils import *
+from addons import uusing
 
 from qcelemental.testing import compare_values
 

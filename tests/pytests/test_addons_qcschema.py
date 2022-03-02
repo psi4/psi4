@@ -2,7 +2,7 @@ import json
 import pprint
 
 import pytest
-from .addons import hardware_nvidia_gpu, uusing, using
+from addons import hardware_nvidia_gpu, uusing, using
 import qcengine as qcng
 
 import psi4

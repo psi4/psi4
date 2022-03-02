@@ -125,7 +125,7 @@ jobs:
           #- blas=*=mkl
           - python =${{ matrix.cfg.python-version }}
             # qc opt'l
-          - adcc
+          #- adcc
           - cppe
           - dftd4-python
           - geometric
@@ -236,7 +236,6 @@ jobs:
     - name: Test Addons with Pytest (defaults only)
       working-directory: ./objdir
       run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 -m addon stage/lib/psi4/tests/
-
 
     - name: Test Addons with Pytest (defaults + c-f)
       working-directory: ./objdir

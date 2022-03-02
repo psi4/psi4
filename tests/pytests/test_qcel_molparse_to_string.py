@@ -1,6 +1,6 @@
 import pytest
-from .utils import *
-from .addons import using
+from utils import *
+from addons import using
 
 import pint
 import qcelemental

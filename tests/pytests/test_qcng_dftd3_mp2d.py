@@ -8,7 +8,7 @@ from qcelemental.testing import compare, compare_recursive, compare_values, tnm
 import qcengine as qcng
 from qcengine.programs import empirical_dispersion_resources
 from qcengine.testing import is_program_new_enough
-from .addons import uusing, using
+from addons import uusing, using
 
 from qcengine.programs.tests import test_dftd3_mp2d
 ref, gref = test_dftd3_mp2d.ref, test_dftd3_mp2d.gref

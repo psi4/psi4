@@ -1,8 +1,8 @@
 import numpy as np
 
 import pytest
-from .utils import *
-from .addons import using
+from utils import *
+from addons import using
 
 import psi4
 

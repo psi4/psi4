@@ -1,13 +1,7 @@
-from pathlib import Path
-from addons import uusing
-
+from addons import *
 
 @uusing("libefp")
+@ctest_labeler("quick;smoke;scf;cart")
 def test_libefp_qchem_qmefp_sp():
-    from qcengine.util import execute
+    ctest_runner(__file__)
 
-    success, output = execute(["psi4", Path(__file__).parent / "input.dat"])
-
-    if not success:
-        print(output["stdout"])
-    assert success

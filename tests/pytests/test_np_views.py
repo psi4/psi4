@@ -4,7 +4,7 @@ and ensures that their memory is properly cleaned.
 """
 
 import pytest
-from .addons import uusing
+from addons import uusing
 
 import numpy as np
 

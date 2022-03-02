@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from .utils import *
+from utils import *
 
 import psi4
 

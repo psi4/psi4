@@ -1,13 +1,6 @@
-from pathlib import Path
-from addons import uusing
-
+from addons import *
 
 @uusing("dftd3")
+@ctest_labeler("cart;nbody;gradient")
 def test_dftd3_nbody_cp_gradient():
-    from qcengine.util import execute
-
-    success, output = execute(["psi4", Path(__file__).parent / "input.dat"])
-
-    if not success:
-        print(output["stdout"])
-    assert success
+    ctest_runner(__file__)

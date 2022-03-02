@@ -1,5 +1,5 @@
 import pytest
-from .utils import *
+from utils import *
 
 import qcelemental as qcel
 

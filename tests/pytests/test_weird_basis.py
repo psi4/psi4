@@ -4,7 +4,7 @@ import pytest
 
 import psi4
 
-from .utils import compare_values
+from utils import compare_values
 
 
 pytestmark = [pytest.mark.quick, pytest.mark.scf]
