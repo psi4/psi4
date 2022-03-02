@@ -1,7 +1,7 @@
 from addons import *
 
 @uusing("pcmsolver")
-@ctest_labeler("quick;smoke;alpha")
-def test_pcmsolver_alpha():
+@ctest_labeler("quick;smoke;ghosts")
+def test_pcmsolver_ghost():
     ctest_runner(__file__)
 

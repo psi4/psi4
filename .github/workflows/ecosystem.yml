@@ -235,7 +235,7 @@ jobs:
 
     - name: Test Addons with Pytest (defaults only)
       working-directory: ./objdir
-      run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 -m addon stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
 
     - name: Test Addons with Pytest (defaults + c-f)
       working-directory: ./objdir
@@ -245,5 +245,5 @@ jobs:
         conda activate --stack cfenv
         echo $CONDA_PREFIX
         conda list
-        PYTHONPATH=$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages/:stage/lib pytest -v -rws --durations=15 -m addon stage/lib/psi4/tests/
+        PYTHONPATH=$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages/:stage/lib pytest -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
 
