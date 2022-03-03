@@ -45,10 +45,10 @@ jobs:
           - ${{ matrix.cfg.base-channel }}
         dependencies:
           - blas=*=mkl
-          - python =${{ matrix.cfg.python-version }}
+          - python=${{ matrix.cfg.python-version }}
             # build
-          - boost-cpp =1.71
-          - cmake >=3.16
+          - boost-cpp=1.71
+          - cmake>=3.16
           - cxx-compiler
           - eigen
           - fortran-compiler
@@ -61,7 +61,7 @@ jobs:
           - psi4/label/dev::libint2
           - psi4/label/dev::qcelemental
           - psi4/label/dev::qcengine
-          - psi4/label/dev::libxc =5
+          - psi4/label/dev::libxc=5
             # qc opt'l
           - psi4/label/dev::ambit
           - psi4/label/dev::chemps2
@@ -90,7 +90,7 @@ jobs:
           - networkx
           - numpy
           - pip
-          - python =${{ matrix.cfg.python-version }}
+          - python=${{ matrix.cfg.python-version }}
           - scipy
             # non-qc opt'l
           - memory_profiler
@@ -127,14 +127,14 @@ jobs:
         channels:
           - conda-forge
         dependencies:
-          #- blas=*=mkl
-          - python =${{ matrix.cfg.python-version }}
+          - blas=*=mkl
+          - python=${{ matrix.cfg.python-version }}
             # qc opt'l
           - adcc
           - cppe
-          - dftd4-python
-          - geometric
-          - pymdi
+          #- dftd4-python
+          #- geometric
+          #- pymdi
           - qcengine
         EOF
         cat run.yaml
