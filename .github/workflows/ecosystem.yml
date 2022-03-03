@@ -131,7 +131,7 @@ jobs:
           - python =${{ matrix.cfg.python-version }}
             # qc opt'l
           - adcc
-          #- cppe
+          - cppe
           - dftd4-python
           - geometric
           - pymdi
@@ -203,6 +203,8 @@ jobs:
           -D ENABLE_simint=ON \
           -D SIMINT_VECTOR=sse \
           -D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
+          -D ENABLE_v2rdm_casscf=ON \
+          -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
           -D ENABLE_OPENMP=ON \
           -D ENABLE_XHOST=OFF \
           ${{ matrix.cfg.libargs }}

@@ -316,6 +316,7 @@ install(
     ../tests/pcmsolver
     ../tests/simint
     ../tests/snsmp2
+    ../tests/v2rdm_casscf
   DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
   FILES_MATCHING
     PATTERN "test_input.py"
