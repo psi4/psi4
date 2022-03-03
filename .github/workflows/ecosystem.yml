@@ -132,9 +132,9 @@ jobs:
             # qc opt'l
           - adcc
           - cppe
-          #- dftd4-python
-          #- geometric
-          #- pymdi
+          - dftd4-python
+          - geometric
+          - pymdi
           - qcengine
         EOF
         cat run.yaml
