@@ -305,6 +305,7 @@ install(DIRECTORY ../tests/pytests/test_fchk_writer
 
 install(
   DIRECTORY
+    ../tests/adcc
     ../tests/chemps2
     ../tests/dftd3
     ../tests/dftd4
