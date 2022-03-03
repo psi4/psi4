@@ -100,7 +100,7 @@ def run_gaussian_2(name, **kwargs):
     nalpha = ref.nalpha() - nfzc
     nbeta  = ref.nbeta() - nfzc
     # hlc of gaussian-2
-    hlc = -0.00481 * nalpha -0.00019 * nbeta
+    hlc = -0.00481 * nalpha - 0.00019 * nbeta
     # hlc of gaussian-1
     hlc1 = -0.00614 * nalpha
 
@@ -161,7 +161,7 @@ def run_gaussian_2(name, **kwargs):
 
     core.print_out('\n')
     T = core.get_global_option('T')
-    core.print_out('  ==>  %3.0lf Kelvin Results  <==\n'% T)
+    core.print_out('  ==>  %3.0lf Kelvin Results  <==\n' % T)
     core.print_out('\n')
 
     internal_energy = eg2_mp2_0k + du - zpe / 0.8929

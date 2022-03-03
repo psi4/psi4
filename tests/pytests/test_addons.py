@@ -1076,8 +1076,8 @@ def test_resp():
         constraint_charge.append([charges1[1][i], [i+1]])
     options['constraint_charge'] = constraint_charge
     options['constraint_group'] = [[2, 3, 4]]
-    options['grid'] = ['1_%s_grid.dat' %mol.name()]
-    options['esp'] = ['1_%s_grid_esp.dat' %mol.name()]
+    options['grid'] = ['1_%s_grid.dat' % mol.name()]
+    options['esp'] = ['1_%s_grid_esp.dat' % mol.name()]
     mol.set_name('stage2')
 
     # Call for second stage fit
@@ -1166,8 +1166,8 @@ def test_resp_2():
     options['grid'] = []
     options['esp'] = []
     for mol in range(len(molecules)):
-        options['grid'].append('%i_%s_grid.dat' %(mol+1, molecules[mol].name()))
-        options['esp'].append('%i_%s_grid_esp.dat' %(mol+1, molecules[mol].name()))
+        options['grid'].append('%i_%s_grid.dat' % (mol+1, molecules[mol].name()))
+        options['esp'].append('%i_%s_grid_esp.dat' % (mol+1, molecules[mol].name()))
 
     # Call for second stage fit
     print(molecules)

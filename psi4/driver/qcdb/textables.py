@@ -135,7 +135,7 @@ def table_generic(dbse, serrors,
         text.append(r"""\renewcommand{\baselinestretch}{1}""")
         text.append(r"""\caption{%s""" % (title.format(**fancy_kw).replace('_', '\\_')))
         text.append(r"""\label{%s}}""" % (ref))
-        indices.append(r"""\scriptsize \ref{%s} & \scriptsize %s \\ """ % \
+        indices.append(r"""\scriptsize \ref{%s} & \scriptsize %s \\ """ %
             (ref, indextitle.format(**fancy_kw)))
         text.append(r"""\begin{ruledtabular}""")
         text.append(r"""\begin{tabular}{%s}""" % (abbr))

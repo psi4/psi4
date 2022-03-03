@@ -102,6 +102,14 @@ class SAPT : public Wavefunction {
     double **vAAB_;
     double **vBAB_;
 
+    std::shared_ptr<Matrix> Smat_;
+    std::shared_ptr<Matrix> VAmat_;
+    std::shared_ptr<Matrix> VBmat_;
+    std::shared_ptr<Matrix> CoccA_;
+    std::shared_ptr<Matrix> CoccB_;
+    std::shared_ptr<Matrix> CvirA_;
+    std::shared_ptr<Matrix> CvirB_;
+
     std::shared_ptr<SAPTDenominator> denom_;
 
     size_t nvec_;

@@ -141,20 +141,7 @@ option_with_print(ENABLE_AUTO_BLAS "Enables CMake to auto-detect BLAS" ON)
 option_with_print(ENABLE_AUTO_LAPACK "Enables CMake to auto-detect LAPACK" ON)
 option_with_print(ENABLE_PLUGIN_TESTING "Test the plugin templates build and run" OFF)
 option_with_print(ENABLE_CYTHONIZE "Compile each python file rather than plaintext (requires cython) !experimental!" OFF)
-
-# Need to check things per compiler brand since they're different
-if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
-  option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON "-xHost")
-elseif(CMAKE_CXX_COMPILER_ID MATCHES GNU)
-  option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "-march=native")
-elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-  option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "-march=native")
-elseif(CMAKE_CXX_COMPILER_ID MATCHES PGI)
-  option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "-tp host")
-elseif(CMAKE_CXX_COMPILER_ID MATCHES MSVC)
-  option_with_flags(ENABLE_XHOST "Enable processor-specific optimization" ON  "/arch:AVX2")
-endif()
-
+include(xhost)  # defines: option(ENABLE_XHOST "Enable processor-specific optimization" ON)
 option_with_flags(ENABLE_CODE_COVERAGE "Enables details on code coverage" OFF
                   "-ftest-coverage")
 option_with_flags(ENABLE_BOUNDS_CHECK "Enables bounds check in Fortran" OFF
@@ -214,6 +201,7 @@ endif()
 
 set(STAGED_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/stage)
 message(STATUS "Psi4 staging: ${STAGED_INSTALL_PREFIX}")
+message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
 add_subdirectory(external/common)
 add_subdirectory(external/upstream)
 
@@ -257,6 +245,7 @@ ExternalProject_Add(psi4-core
               -DCMAKE_CXX_STANDARD_REQUIRED=ON
               -DCMAKE_CXX_EXTENSIONS=OFF
               -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
+              -DCMAKE_VERBOSE_MAKEFILE=${CMAKE_VERBOSE_MAKEFILE}
               -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
               -DCMAKE_Fortran_FLAGS=${CMAKE_Fortran_FLAGS}
               -DCMAKE_INSTALL_LIBDIR=${CMAKE_INSTALL_LIBDIR}

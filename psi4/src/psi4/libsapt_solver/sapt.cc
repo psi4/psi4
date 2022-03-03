@@ -217,10 +217,10 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
     auto intfact = std::make_shared<IntegralFactory>(basisset_, basisset_, basisset_, basisset_);
 
     std::shared_ptr<OneBodyAOInt> Sint(intfact->ao_overlap());
-    auto Smat = std::make_shared<Matrix>(fact->create_matrix("Overlap"));
-    Sint->compute(Smat);
+    Smat_ = std::make_shared<Matrix>(fact->create_matrix("Overlap"));
+    Sint->compute(Smat_);
 
-    double **sIJ = Smat->pointer();
+    double **sIJ = Smat_->pointer();
     double **sAJ = block_matrix(nmoA_, nso_);
     sAB_ = block_matrix(nmoA_, nmoB_);
 
@@ -237,9 +237,8 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
         }
     }
     potA->set_charge_field(ZxyzA);
-
-    auto VAmat = std::make_shared<Matrix>(fact->create_matrix("Nuclear Attraction (Monomer A)"));
-    potA->compute(VAmat);
+    VAmat_ = std::make_shared<Matrix>(fact->create_matrix("Nuclear Attraction (Monomer A)"));
+    potA->compute(VAmat_);
 
     auto potB = std::shared_ptr<PotentialInt>(dynamic_cast<PotentialInt *>(intfact->ao_potential()));
     std::vector<std::pair<double, std::array<double, 3>>> ZxyzB;
@@ -249,9 +248,8 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
         }
     }
     potB->set_charge_field(ZxyzB);
-
-    auto VBmat = std::make_shared<Matrix>(fact->create_matrix("Nuclear Attraction (Monomer B)"));
-    potB->compute(VBmat);
+    VBmat_ = std::make_shared<Matrix>(fact->create_matrix("Nuclear Attraction (Monomer B)"));
+    potB->compute(VBmat_);
 
     double **vIB = block_matrix(nso_, nmoB_);
     double **vAJ = block_matrix(nmoA_, nso_);
@@ -260,13 +258,13 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
     vBAA_ = block_matrix(nmoA_, nmoA_);
     vBAB_ = block_matrix(nmoA_, nmoB_);
 
-    double **vIJ = VAmat->pointer();
+    double **vIJ = VAmat_->pointer();
 
     C_DGEMM('N', 'N', nso_, nmoB_, nso_, 1.0, vIJ[0], nso_, CB_[0], nmoB_, 0.0, vIB[0], nmoB_);
     C_DGEMM('T', 'N', nmoA_, nmoB_, nso_, 1.0, CA_[0], nmoA_, vIB[0], nmoB_, 0.0, vAAB_[0], nmoB_);
     C_DGEMM('T', 'N', nmoB_, nmoB_, nso_, 1.0, CB_[0], nmoB_, vIB[0], nmoB_, 0.0, vABB_[0], nmoB_);
 
-    vIJ = VBmat->pointer();
+    vIJ = VBmat_->pointer();
 
     C_DGEMM('T', 'N', nmoA_, nso_, nso_, 1.0, CA_[0], nmoA_, vIJ[0], nso_, 0.0, vAJ[0], nso_);
     C_DGEMM('N', 'N', nmoA_, nmoA_, nso_, 1.0, vAJ[0], nso_, CA_[0], nmoA_, 0.0, vBAA_[0], nmoA_);
@@ -274,6 +272,12 @@ void SAPT::initialize(SharedWavefunction MonomerA, SharedWavefunction MonomerB) 
 
     free_block(vIB);
     free_block(vAJ);
+
+//Konrad: extra stuff for nonapproximate E(30)ex-ind in AOs
+    CoccA_ = MonomerA->Ca_subset("AO", "OCC");
+    CoccB_ = MonomerB->Ca_subset("AO", "OCC");
+    CvirA_ = MonomerA->Ca_subset("AO", "VIR");
+    CvirB_ = MonomerB->Ca_subset("AO", "VIR");
 }
 
 void SAPT::get_denom() {

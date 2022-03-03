@@ -116,7 +116,7 @@ def prepare_options_for_orca(options):
             if val['has_changed']:
                 if not text:
                     text += """! """
-                text +="""%s """ % (val['value'])
+                text += """%s """ % (val['value'])
                 #text += """%s=%s\n""" % (format_option_for_cfour(opt, val['value']))
     if text:
         #text = text[:-1] + ')\n\n'

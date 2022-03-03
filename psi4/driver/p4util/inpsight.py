@@ -333,17 +333,17 @@ class InPsight:
                 y2 = self.atoms[l][2]
                 z2 = self.atoms[l][3]
 
-                r1 = self.atoms[k][5];
-                g1 = self.atoms[k][6];
-                b1 = self.atoms[k][7];
-                t1 = self.atoms[k][8];
-                r2 = self.atoms[l][5];
-                g2 = self.atoms[l][6];
-                b2 = self.atoms[l][7];
-                t2 = self.atoms[l][8];
+                r1 = self.atoms[k][5]
+                g1 = self.atoms[k][6]
+                b1 = self.atoms[k][7]
+                t1 = self.atoms[k][8]
+                r2 = self.atoms[l][5]
+                g2 = self.atoms[l][6]
+                b2 = self.atoms[l][7]
+                t2 = self.atoms[l][8]
 
-                R = math.sqrt((x1-x2)*(x1-x2) + \
-                         (y1-y2)*(y1-y2) + \
+                R = math.sqrt((x1-x2)*(x1-x2) +
+                         (y1-y2)*(y1-y2) +
                          (z1-z2)*(z1-z2))
 
                 if (R < self.bonding_alpha*(R1 + R2)):
@@ -373,8 +373,8 @@ class InPsight:
         natom = self.molecule.natom()
         for k in range(0,natom):
             x = [self.molecule.x(k), self.molecule.y(k), self.molecule.z(k)]
-            R = math.sqrt((x[0] - xc[0])*(x[0] - xc[0]) + \
-                     (x[1] - xc[1])*(x[1] - xc[1]) + \
+            R = math.sqrt((x[0] - xc[0])*(x[0] - xc[0]) +
+                     (x[1] - xc[1])*(x[1] - xc[1]) +
                      (x[2] - xc[2])*(x[2] - xc[2]))
             if R > Rmax:
                 Rmax = R
@@ -461,16 +461,16 @@ class InPsight:
         fh.write('\n')
         fh.write('camera{\n')
         fh.write('  orthographic\n')
-        fh.write('  location < %s, %s, %s>\n' %(str(self.location[0]),str(self.location[1]),str(self.location[2]) ))
-        fh.write('  sky      < %s, %s, %s>\n' %(str(self.sky[0]),     str(self.sky[1]),     str(self.sky[2]) ))
-        fh.write('  up       < %s, %s, %s>\n' %(str(self.up[0]),      str(self.up[1]),      str(self.up[2]) ))
-        fh.write('  right    < %s, %s, %s>\n' %(str(self.right[0]),   str(self.right[1]),   str(self.right[2]) ))
-        fh.write('  look_at  < %s, %s, %s>\n' %(str(self.look_at[0]), str(self.look_at[1]), str(self.look_at[2]) ))
+        fh.write('  location < %s, %s, %s>\n' % (str(self.location[0]),str(self.location[1]),str(self.location[2]) ))
+        fh.write('  sky      < %s, %s, %s>\n' % (str(self.sky[0]),     str(self.sky[1]),     str(self.sky[2]) ))
+        fh.write('  up       < %s, %s, %s>\n' % (str(self.up[0]),      str(self.up[1]),      str(self.up[2]) ))
+        fh.write('  right    < %s, %s, %s>\n' % (str(self.right[0]),   str(self.right[1]),   str(self.right[2]) ))
+        fh.write('  look_at  < %s, %s, %s>\n' % (str(self.look_at[0]), str(self.look_at[1]), str(self.look_at[2]) ))
         fh.write('}\n')
         fh.write('\n')
         fh.write('background { color rgb %s }\n' % self.defines['Background_Color'])
-        fh.write('light_source { <%s,%s,%s>  rgb <%s,%s,%s> }\n' \
-            %(str(self.light[0]),str(self.light[1]),str(self.light[2]),\
+        fh.write('light_source { <%s,%s,%s>  rgb <%s,%s,%s> }\n'
+            % (str(self.light[0]),str(self.light[1]),str(self.light[2]),
               str(self.light_color[0]),str(self.light_color[1]),str(self.light_color[2])))
         fh.write('\n')
         fh.write('// ***********************************************\n')
@@ -515,13 +515,13 @@ class InPsight:
         fh.write('#end \n')
 
         for bond in self.bonds:
-            fh.write('b(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)\n' % \
-                (str(bond[0]),str(bond[1]),str(bond[2]),str(bond[3]),\
-                str(bond[4]),str(bond[5]),str(bond[6]),str(bond[7]),\
+            fh.write('b(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)\n' %
+                (str(bond[0]),str(bond[1]),str(bond[2]),str(bond[3]),
+                str(bond[4]),str(bond[5]),str(bond[6]),str(bond[7]),
                 str(bond[8]),str(bond[9]),str(bond[10]),str(bond[11])))
         for atom in self.atoms:
-            fh.write('a(%s,%s,%s,%s,%s,%s,%s,%s)\n' % \
-                (str(atom[1]),str(atom[2]),str(atom[3]),str(atom[4]),\
+            fh.write('a(%s,%s,%s,%s,%s,%s,%s,%s)\n' %
+                (str(atom[1]),str(atom[2]),str(atom[3]),str(atom[4]),
                 str(atom[5]),str(atom[6]),str(atom[7]),str(atom[8])))
 
         fh.close()
@@ -584,16 +584,16 @@ class InPsight:
         fh.write('\n')
         fh.write('camera{\n')
         fh.write('  orthographic\n')
-        fh.write('  location < %s, %s, %s>\n' %(str(self.location[0]),str(self.location[1]),str(self.location[2]) ))
-        fh.write('  sky      < %s, %s, %s>\n' %(str(self.sky[0]),     str(self.sky[1]),     str(self.sky[2]) ))
-        fh.write('  up       < %s, %s, %s>\n' %(str(self.up[0]),      str(self.up[1]),      str(self.up[2]) ))
-        fh.write('  right    < %s, %s, %s>\n' %(str(self.right[0]),   str(self.right[1]),   str(self.right[2]) ))
-        fh.write('  look_at  < %s, %s, %s>\n' %(str(self.look_at[0]), str(self.look_at[1]), str(self.look_at[2]) ))
+        fh.write('  location < %s, %s, %s>\n' % (str(self.location[0]),str(self.location[1]),str(self.location[2]) ))
+        fh.write('  sky      < %s, %s, %s>\n' % (str(self.sky[0]),     str(self.sky[1]),     str(self.sky[2]) ))
+        fh.write('  up       < %s, %s, %s>\n' % (str(self.up[0]),      str(self.up[1]),      str(self.up[2]) ))
+        fh.write('  right    < %s, %s, %s>\n' % (str(self.right[0]),   str(self.right[1]),   str(self.right[2]) ))
+        fh.write('  look_at  < %s, %s, %s>\n' % (str(self.look_at[0]), str(self.look_at[1]), str(self.look_at[2]) ))
         fh.write('}\n')
         fh.write('\n')
         fh.write('background { color rgb %s }\n' % self.defines['Background_Color'])
-        fh.write('light_source { <%s,%s,%s>  rgb <%s,%s,%s> }\n' \
-            %(str(self.light[0]),str(self.light[1]),str(self.light[2]),\
+        fh.write('light_source { <%s,%s,%s>  rgb <%s,%s,%s> }\n'
+            % (str(self.light[0]),str(self.light[1]),str(self.light[2]),
               str(self.light_color[0]),str(self.light_color[1]),str(self.light_color[2])))
         fh.write('\n')
         fh.write('// ***********************************************\n')
@@ -638,13 +638,13 @@ class InPsight:
         fh.write('#end \n')
 
         for bond in self.bonds:
-            fh.write('b(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)\n' % \
-                (str(bond[0]),str(bond[1]),str(bond[2]),str(bond[3]),\
-                str(bond[4]),str(bond[5]),str(bond[6]),str(bond[7]),\
+            fh.write('b(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)\n' %
+                (str(bond[0]),str(bond[1]),str(bond[2]),str(bond[3]),
+                str(bond[4]),str(bond[5]),str(bond[6]),str(bond[7]),
                 str(bond[8]),str(bond[9]),str(bond[10]),str(bond[11])))
         for atom in self.atoms:
-            fh.write('a(%s,%s,%s,%s,%s,%s,%s,%s)\n' % \
-                (str(atom[1]),str(atom[2]),str(atom[3]),str(atom[4]),\
+            fh.write('a(%s,%s,%s,%s,%s,%s,%s,%s)\n' %
+                (str(atom[1]),str(atom[2]),str(atom[3]),str(atom[4]),
                 str(atom[5]),str(atom[6]),str(atom[7]),str(atom[8])))
 
         fh.close()

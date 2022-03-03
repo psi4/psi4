@@ -348,7 +348,7 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
                     try:
                         wfn.set_scalar_variable(str(var), value)
                         core.set_scalar_variable(str(var), value)
-                    except:
+                    except Exception:
                         wfn.set_array_variable(d.split('_')[0].upper() + ' ' + str(var), core.Matrix.from_array(value))
 
     core.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])

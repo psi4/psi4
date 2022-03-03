@@ -115,7 +115,8 @@ jobs:
         conda-forge::qcengine \
         conda-forge::pymdi \
         pandas!=1.3.0 \
-        adcc::adcc
+        adcc::adcc \
+        scipy
       source activate p4env
       which python
       pip install git+https://github.com/i-pi/i-pi.git@master-py3

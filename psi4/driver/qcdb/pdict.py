@@ -49,7 +49,7 @@ class PreservingDict(dict):
         except AttributeError:
             raise AttributeError('Keys stored as upper-case strings: %s unsuitable' % (key))
         value = Decimal(value)
-        if key in self.keys() and not 'CURRENT' in key:
+        if key in self.keys() and 'CURRENT' not in key:
             # Validate choosing more detailed value for variable
             existing_exp = self[key].as_tuple().exponent  # 0.1111 --> -4
             candidate_exp = value.as_tuple().exponent

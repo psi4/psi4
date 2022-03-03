@@ -126,7 +126,7 @@ def anharmonicity(rvals: List, energies: List, plot_fit: str = '', mol = None) -
         core.print_out("       E = %20.14f, x = %14.7f, grad = %20.14f\n" % (e, re, g))
         if abs(g) < thres:
             break
-        re -= g/H;
+        re -= g/H
         if i == maxit-1:
             raise ConvergenceError("diatomic geometry optimization", maxit)
     core.print_out(" Final E = %20.14f, x = %14.7f, grad = %20.14f\n" % (e, re, g))

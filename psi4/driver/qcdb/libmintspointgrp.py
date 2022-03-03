@@ -109,7 +109,7 @@ PointGroups = {
     'C2hX': SymmOps['E'] | SymmOps['C2_x'] | SymmOps['Sigma_yz'] | SymmOps['i'],
     'C2hY': SymmOps['E'] | SymmOps['C2_y'] | SymmOps['Sigma_xz'] | SymmOps['i'],
     'C2hZ': SymmOps['E'] | SymmOps['C2_z'] | SymmOps['Sigma_xy'] | SymmOps['i'],
-    'D2h': SymmOps['E'] | SymmOps['C2_x'] | SymmOps['C2_y'] | SymmOps['C2_z'] | SymmOps['i'] | \
+    'D2h': SymmOps['E'] | SymmOps['C2_x'] | SymmOps['C2_y'] | SymmOps['C2_z'] | SymmOps['i'] |
             SymmOps['Sigma_xy'] | SymmOps['Sigma_xz'] | SymmOps['Sigma_yz']
     }
 

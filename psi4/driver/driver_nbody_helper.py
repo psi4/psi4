@@ -73,7 +73,7 @@ def multi_level(func, **kwargs):
                                       kwargs.get('charge_type', 'MULLIKEN_CHARGES').upper(), molecule)
 
     for n in sorted(levels)[::-1]:
-        molecule.set_name('%i' %n)
+        molecule.set_name('%i' % n)
         kwargs_copy = kwargs.copy()
         kwargs_copy['max_nbody'] = n
         energy_bsse_dict = {b: 0 for b in kwargs['bsse_type']}
@@ -173,7 +173,7 @@ def compute_charges(charge_method, charge_type, molecule):
     charges = {}
     molecule = molecule.clone()
     for i in range(1, molecule.nfragments() + 1):
-        molecule.set_name('charges%i' %i)
+        molecule.set_name('charges%i' % i)
         e, wfn = energy(charge_method, molecule=molecule.extract_subsets([i]), return_wfn=True)
         oeprop(wfn, charge_type)
         charges[i] = wfn.atomic_point_charges().np

@@ -33,7 +33,8 @@ find_package(Perl QUIET)
 #set(py3_fail_list pywrap-freq-e-sowreap
 #                  pywrap-freq-g-sowreap pywrap-opt-sowreap
 #                  pywrap-db2)
-foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp casscf-sp castup1
+foreach(test_name adc1 adc2 aediis-1 aediis-2
+                  casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp casscf-sp castup1
                   castup2 castup3 cbs-delta-energy cbs-parser cbs-xtpl-alpha cbs-xtpl-energy
                   cbs-xtpl-freq cbs-xtpl-gradient cbs-xtpl-opt cbs-xtpl-func cbs-xtpl-nbody
                   cbs-xtpl-wrapper cbs-xtpl-dict cc1 cc10 cc11 cc12 cc13 cc13a cc13b cc13c
@@ -88,9 +89,9 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   pywrap-db3
                   pywrap-molecule rasci-c2-active rasci-h2o
                   rasci-ne rasscf-sp sad-scf-type sad1 sapt1 sapt2 sapt3 sapt4 sapt5 sapt6 sapt-dft-api sapt-dft-lrc sapt-ecp
-                  sapt-exch-disp-inf
+                  sapt-exch-disp-inf sapt-exch-ind-inf sapt-exch-ind30-inf
                   sapt7 sapt8 scf-bz2 scf-dipder scf-ecp scf-guess scf-guess-read1 scf-upcast-custom-basis
-                  scf-guess-read2 scf-guess-read3 scf-bs scf1 scf-occ scf2 scf3 scf4 scf5 scf6
+                  scf-guess-read2 scf-guess-read3 scf1 scf-occ scf2 scf3 scf4 scf5 scf6
                   scf7 scf-level-shift-rks scf-level-shift-uhf scf-level-shift-cuhf scf-level-shift-rohf
                   scf-property soscf-large soscf-ref
                   soscf-dft stability1 dfep2-1 dfep2-2 sapt-dft1 sapt-dft2 sapt-compare sapt-sf1 dft-custom dft-reference
@@ -100,7 +101,7 @@ foreach(test_name adc1 adc2 casscf-fzc-sp casscf-semi casscf-sa-sp ao-casscf-sp 
                   options1 cubeprop-esp dft-smoke scf-hess1 scf-hess2 scf-hess3 scf-hess4 scf-hess5 scf-freq1 dft-jk scf-coverage
                   dft-custom-dhdf dft-custom-hybrid dft-custom-mgga dft-custom-gga
                   pywrap-bfs pywrap-align pywrap-align-chiral mints12 cc-module
-                  tdscf-1 tdscf-2 tdscf-3 tdscf-4 tdscf-5
+                  tdscf-1 tdscf-2 tdscf-3 tdscf-4 tdscf-5 tdscf-6
                   basis-ecp dft-pruning freq-masses sapt9 sapt10 sapt11 scf-uhf-grad-nobeta
 )
     add_subdirectory(${test_name})

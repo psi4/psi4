@@ -2,12 +2,12 @@ jobs:
 
   # Configure, build, install, and test job
   - job: 'windows_build'
-    displayName: 'Windows VS2017'
+    displayName: 'Windows VS2022'
     pool:
-      vmImage: 'vs2017-win2016'
+      vmImage: 'windows-2022'
     timeoutInMinutes: 360
     variables:
-      llvm.version: '11.0.0'
+      llvm.version: '13.0.0'
       mkl.version: '2019.1'
       cmake.build_type: 'Release'
       conda.build: false
@@ -135,7 +135,8 @@ jobs:
                         conda-forge::mpmath ^
                         conda-forge::msgpack-python ^
                         conda-forge::qcelemental ^
-                        conda-forge::qcengine
+                        conda-forge::qcengine ^
+                        scipy
           pip install git+https://github.com/i-pi/i-pi.git@master-py3
           conda install --only-deps anaconda-client
           pip install git+https://github.com/loriab/anaconda-client.git@upload-catch-silent
@@ -146,7 +147,7 @@ jobs:
       # Install LLVM
       # Note: LLVM distributed by conda is too old
       - script: |
-          choco install llvm --version %LLVM_VERSION% --yes
+          choco install llvm --version %LLVM_VERSION% --allow-downgrade --yes
           set PATH=C:\Program Files\LLVM\bin;%PATH%
           echo '##vso[task.setvariable variable=PATH]%PATH%'
           clang-cl --version
@@ -163,9 +164,11 @@ jobs:
         displayName: "Install Intel OpenMP import library"
 
       # Configure
+      # call "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
+      # -DCMAKE_VERBOSE_MAKEFILE=ON
       - script: |
           setlocal EnableDelayedExpansion
-          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
           mkdir build & cd build
           if "%CMAKE_BUILD_TYPE%"=="Debug" set MAX_AM_ERI=4
           if "%CMAKE_BUILD_TYPE%"=="Release" set MAX_AM_ERI=5
@@ -178,7 +181,8 @@ jobs:
                 -DCMAKE_INSTALL_PREFIX=../install ^
                 -DCMAKE_C_COMPILER=clang-cl ^
                 -DCMAKE_CXX_COMPILER=clang-cl ^
-                -DENABLE_XHOST=!ENABLE_XHOST! ^
+                -DENABLE_XHOST=OFF ^
+                -DCMAKE_CXX_FLAGS="/arch:AVX" ^
                 -DMAX_AM_ERI=!MAX_AM_ERI! ^
                 -DPython_EXECUTABLE="C:/tools/miniconda3/python.exe" ^
                 -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
@@ -194,7 +198,7 @@ jobs:
 
       # Build
       - script: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
           cmake --build . ^
                 --config %CMAKE_BUILD_TYPE% ^
                 -- -j %NUMBER_OF_PROCESSORS%
@@ -203,7 +207,7 @@ jobs:
 
       # Install
       - script: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
           cmake --build . ^
                 --config %CMAKE_BUILD_TYPE% ^
                 --target install ^

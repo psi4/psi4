@@ -1237,7 +1237,7 @@ SharedVector Wavefunction::epsilon_b() const { return epsilon_b_; }
 
 const SharedMatrix Wavefunction::Da() const { return Da_; }
 
-SharedMatrix Wavefunction::Db() const { return Db_; }
+const SharedMatrix Wavefunction::Db() const { return Db_; }
 
 SharedMatrix Wavefunction::lagrangian() const { return Lagrangian_; }
 

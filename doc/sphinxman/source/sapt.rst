@@ -917,12 +917,13 @@ following publications: [Patkowski:2018:164110]_
 
 .. _`sec:saptinf`:
 
-Second-Order Exchange Terms without Single-Exchange Approximation
+Higher-Order Exchange Terms without Single-Exchange Approximation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Recently, the SAPT second-order exchange terms have been derived without
-the :math:`S^{2}` approximation in the works [Schaffer:2012:1235]_ and
-[Schaffer:2013:2570]_. These new terms can be computed with the following
+Recently, several SAPT higher-order exchange terms have been derived without
+the :math:`S^{2}` approximation: :math:`E_{exch-ind}^{(20)}` [Schaffer:2012:1235]_, 
+:math:`E_{exch-disp}^{(20)}` [Schaffer:2013:2570]_, and :math:`E_{exch-ind}^{(30)}` 
+[Waldrop:2021:024103]_. The second-order terms can be computed with the following
 settings::
 
     set SAPT_DFT_FUNCTIONAL HF
@@ -930,15 +931,26 @@ settings::
     set SAPT_DFT_MP2_DISP_ALG fisapt 
     set DO_DISP_EXCH_SINF true       # calculate Exch-Disp20 (S^inf)
     energy('sapt(dft)')
-                                            
+                       
+and the third-order exchange-induction term is computed as follows::
+
+    set DO_IND30_EXCH_SINF true        # calculate Exch-Ind30 (S^inf) 
+    energy('sapt2+3')
+                       
 These calculations are performed with the atomic orbital and 
-density-fitting scheme of [J. M. Waldrop et al., to be published].
+density-fitting scheme described in the Supplementary Material to
+[Smith:2020:184108]_ for the second-order terms and in [Waldrop:2021:024103]_
+for the third-order exchange induction. The coupled (response) version of the
+exchange-induction corrections are also calculated, exactly for 
+:math:`E_{exch-ind,resp}^{(20)}` and by scaling the uncoupled term for
+:math:`E_{exch-ind,resp}^{(30)}`.
 
 S^inf Keywords
 ~~~~~~~~~~~~~~
 
 .. include:: autodir_options_c/sapt__do_ind_exch_sinf.rst
 .. include:: autodir_options_c/sapt__do_disp_exch_sinf.rst
+.. include:: autodir_options_c/sapt__do_ind30_exch_sinf.rst
 
 .. _`sec:saptd`:
 

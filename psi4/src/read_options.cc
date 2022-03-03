@@ -174,7 +174,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
     /*- When several modules can compute the same methods and the default
     routing is not suitable, this targets a module. ``CCENERGY`` covers
     CCHBAR, etc. ``OCC`` covers OCC and DFOCC. -*/
-    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC ADCC CCT3");
+    options.add_str("QC_MODULE", "", "CCENERGY DETCI DFMP2 FNOCC OCC ADCC CCT3 BUILTIN");
     /*- What algorithm to use for the SCF computation. See Table :ref:`SCF
     Convergence & Algorithm <table:conv_scf>` for default algorithm for
     different calculation types. -*/
@@ -930,11 +930,14 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
             !expert -*/
         options.add_bool("COUPLED_INDUCTION", true);
 
-        /*- For SAPT(DFT) computes the $S^{inf}$ Exchange-Induction terms. !expert -*/
+        /*- For SAPT0 or SAPT(DFT), compute the non-approximated second-order exchange-induction term. !expert -*/
         options.add_bool("DO_IND_EXCH_SINF", false);
 
-        /*- For SAPT(DFT) computes the $S^{inf}$ Exchange-Dispersion terms. !expert -*/
+        /*- For SAPT0 or SAPT(DFT), compute the non-approximated second-order exchange-dispersion term. !expert -*/
         options.add_bool("DO_DISP_EXCH_SINF", false);
+
+        /*- For SAPT2+3, compute the non-approximated third-order exchange-induction term. !expert -*/
+        options.add_bool("DO_IND30_EXCH_SINF", false);
 
         /*- Do use asynchronous disk I/O in the solution of the CPHF equations?
         Use may speed up the computation slightly at the cost of spawning an
@@ -1394,7 +1397,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("DF_BASIS_GUESS", "FALSE", "");
         /*- Use RMS error instead of the more robust absolute error? -*/
         options.add_bool("DIIS_RMS_ERROR", true);
-        /*- The minimum iteration to start storing DIIS vectors -*/
+        /*- The minimum iteration to start storing DIIS vectors and performing ADIIS/EDIIS. -*/
         options.add_int("DIIS_START", 1);
         /*- Minimum number of error vectors stored for DIIS extrapolation. Will be removed in v1.7. -*/
         options.add_int("DIIS_MIN_VECS", 2);
@@ -1439,6 +1442,15 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         /*- When using |scf__stability_analysis| ``FOLLOW``, maximum number of orbital optimization attempts
             to make the wavefunction stable. !expert -*/
         options.add_int("MAX_ATTEMPTS", 1);
+        /*- Use a method to accelerate initial SCF convergence? Use ``NONE`` for DIIS alone (if enabled) and ``EDIIS`` or ``ADIIS``
+            to have both the chosen accelerator and DIIS (if enabled). For restricted-open references, ``EDIIS`` and ``ADIIS`` have no effect. -*/
+        options.add_str("SCF_INITIAL_ACCELERATOR", "ADIIS", "NONE EDIIS ADIIS");
+        /*- SCF error at which to start the linear interpolation between DIIS steps and steps of the initial SCF accelerator.
+            Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249 -*/
+        options.add_double("SCF_INITIAL_START_DIIS_TRANSITION", 1.0E-1);
+        /*- SCF error at which to complete the linear interpolation between DIIS steps and steps of the initial SCF accelerator
+            Value taken from Garza and Scuseria, DOI: 10.1063/1.4740249 -*/
+        options.add_double("SCF_INITIAL_FINISH_DIIS_TRANSITION", 1.0E-4);
         /*- Do Perform Incremental Fock Build? -*/
         options.add_bool("INCFOCK", false);
         /*- Frequency with which to compute the full Fock matrix if using |scf__incfock| . 
@@ -1602,8 +1614,10 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_int("DFT_BLOCK_MIN_POINTS", 100);
         /*- The maximum radius to terminate subdivision of an octree block [au]. !expert -*/
         options.add_double("DFT_BLOCK_MAX_RADIUS", 3.0);
+        /*- Remove points from the quadrature grid that exceed the spatial extend of the basis functions. !expert -*/
+        options.add_bool("DFT_REMOVE_DISTANT_POINTS",true);
         /*- The blocking scheme for DFT. !expert -*/
-        options.add_str("DFT_BLOCK_SCHEME", "OCTREE", "NAIVE OCTREE");
+        options.add_str("DFT_BLOCK_SCHEME", "OCTREE", "NAIVE OCTREE ATOMIC");
         /*- Parameters defining the dispersion correction. See Table
         :ref:`-D Functionals <table:dft_disp>` for default values and Table
         :ref:`Dispersion Corrections <table:dashd>` for the order in which
@@ -1807,14 +1821,22 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_bool("XI", false);
         /*- Do use zeta?  -*/
         options.add_bool("ZETA", false);
-        /*- Do compute one-particle density matrix? -*/
+        /*- Deprecated and will be removed in 1.7. Use OPDM_ONLY. -*/
         options.add_bool("ONEPDM", false);
-        /*- Write one-particle density matrix on a grid to file opdm.dx -*/
+        /*- For internal use only! Compute the one-particle density matrix, but not the two-particle density matrix. !expert -*/
+        options.add_bool("OPDM_ONLY", false);
+        /*- Deprecated and will be removed in 1.7. Use OPDM_GRID_DUMP. -*/
         options.add_bool("ONEPDM_GRID_DUMP", false);
-        /*- Cutoff (e/A^3) for printing one-particle density matrix values on a grid -*/
+        /*- Write one-particle density matrix on a grid to file opdm.dx -*/
+        options.add_bool("OPDM_GRID_DUMP", false);
+        /*- Deprecated and will be removed in 1.7. Use OPDM_GRID_CUTOFF. -*/
         options.add_double("ONEPDM_GRID_CUTOFF", 1.0e-30);
-        /*- Step size (Angstrom) for one-particle density matrix values on a grid -*/
+        /*- Cutoff (e/A^3) for printing one-particle density matrix values on a grid -*/
+        options.add_double("OPDM_GRID_CUTOFF", 1.0e-30);
+        /*- Deprecated and will be removed in 1.7. Use OPDM_GRID_STEPSIZE. -*/
         options.add_double("ONEPDM_GRID_STEPSIZE", 0.1);
+        /*- Step size (Angstrom) for one-particle density matrix values on a grid -*/
+        options.add_double("OPDM_GRID_STEPSIZE", 0.1);
         /*- Do write natural orbitals (molden) -*/
         options.add_bool("WRITE_NOS", false);
         /*- Reproducing energies from densities ? -*/
