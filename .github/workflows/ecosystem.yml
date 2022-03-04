@@ -23,8 +23,7 @@ jobs:
           - runs-on: macos-latest
             python-version: "3.9"
             base-channel: "defaults"
-            cmenv: >
-              CONDA_BUILD_SYSROOT=/opt/MacOSX10.10.sdk
+            cmenv: "CONDA_BUILD_SYSROOT=/opt/MacOSX10.10.sdk \"
             cmargs: >
               -DBUILD_SHARED_LIBS=ON
 
@@ -221,6 +220,29 @@ jobs:
         arch: x64
 
     - name: Configure with CMake (conda defaults GNU)
+      if: ${{ runner.os == 'Windows' }}
+      run: |
+        ${{ matrix.cfg.cmenv }}
+        cmake \
+          -S. \
+          -B objdir \
+          -G Ninja \
+          -D CMAKE_BUILD_TYPE=Release \
+          -D CMAKE_C_COMPILER=${CC} \
+          -D CMAKE_CXX_COMPILER=${CXX} \
+          -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
+          -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
+          -D ENABLE_OPENMP=ON \
+          -D ENABLE_XHOST=OFF \
+          ${{ matrix.cfg.cmargs }}
+
+    - name: Configure with CMake (conda defaults GNU)
+      if: ${{ runner.os != 'Windows' }}
       run: |
         ${{ matrix.cfg.cmenv }} \
         cmake \
