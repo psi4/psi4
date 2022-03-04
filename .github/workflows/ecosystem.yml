@@ -266,7 +266,7 @@ jobs:
     - name: Configure with CMake (conda defaults GNU)
       if: ${{ runner.os == 'macOS' }}
       run: |
-        ${{ matrix.cfg.cmenv }} \
+        #${{ matrix.cfg.cmenv }} \
         cmake \
           -S. \
           -B objdir \
@@ -294,7 +294,8 @@ jobs:
           -D OpenMP_C_FLAG="-fopenmp=libiomp5" \
           -D OpenMP_CXX_FLAG="-fopenmp=libiomp5" \
           -D ENABLE_XHOST=OFF \
-          -D CMAKE_OSX_DEPLOYMENT_TARGET='' \
+          -D CMAKE_OSX_DEPLOYMENT_TARGET="10.10" \
+          -D CMAKE_OSX_SYSROOT="/opt/MacOSX10.10.sdk" \
           ${{ matrix.cfg.cmargs }}
 
     - name: Configure with CMake (conda defaults GNU)
@@ -322,7 +323,7 @@ jobs:
 
     - name: Compile Psi4
       run: |
-        ${{ matrix.cfg.cmenv }} \
+        #${{ matrix.cfg.cmenv }} \
         cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
         #ldd objdir/stage/lib/psi4/core.*.so
 
@@ -342,6 +343,11 @@ jobs:
         conda install conda-forge::pytest>=7.0.1
         conda list
         #ldd objdir/stage/lib/psi4/core.*.so
+        cd objdir/stage/lib
+        python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
+        cd ../..
+        PATH=stage/bin:$PATH psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+        cd ..
         objdir/stage/bin/psi4 tests/tu1-h2o-energy/input.dat
 
     - name: Test Addons with CTest
