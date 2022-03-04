@@ -33,7 +33,7 @@ ref456tensor = psi4.core.Matrix.from_list(        # TEST
 compare_values(refnre, hof.nuclear_repulsion_energy(), 6, "Nuclear Repulsion Energy") # TEST
 compare_values(refscf, wfn.variable("SCF TOTAL ENERGY"), 6, "SCF Energy") # TEST
 compare_values(refccsd, wfn.variable("CCSD TOTAL ENERGY"), 6, "CCSD Energy") # TEST
-compare_values(refoverlap, wfn.variable("Left-Right CCSD Eigenvector Overlap"), 5, "Left-Right CCSD Overlap") # TEST
+compare_values(refoverlap, wfn.variable("LEFT-RIGHT CCSD EIGENVECTOR OVERLAP"), 5, "Left-Right CCSD Overlap") # TEST
 compare_values(ref911tensor, wfn.variable("CCSD DIPOLE POLARIZABILITY TENSOR @ 911NM"), 5, "Dipole Polarizability Tensor (911nm)") # TEST
 compare_values(ref911polar, variable("CCSD DIPOLE POLARIZABILITY @ 911NM"), 5, "Dipole Polarizability (911nm)") # TEST
 compare_values(ref456tensor, wfn.variable("CCSD DIPOLE POLARIZABILITY TENSOR @ 456NM"), 5, "Dipole Polarizability Tensor (456nm)") # TEST

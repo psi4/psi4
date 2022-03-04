@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.6a1.dev51 
+                               Psi4 undefined 
 
-                         Git: Rev {ccdensity_fix} 4732348 dirty
+                         Git: Rev {cc} e57fd5d dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,10 +30,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Saturday, 12 February 2022 03:25PM
+    Psi4 started on: Friday, 04 March 2022 09:21AM
 
-    Process ID: 65782
-    Host:       Jonathons-MacBook-Pro.local
+    Process ID: 7785
+    Host:       dhcp189-235.emerson.emory.edu
     PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -66,11 +66,37 @@ set {
   omega [589, 355, nm]
 }
 
-properties('cc2',properties=['rotation'])
+wfn = properties('cc2',properties=['rotation'], return_wfn=True)[1]
+
+refnre = 124.7885346117614489                     # TEST
+refscf = -189.5134172371027432                    # TEST
+refcc2 = -189.713535666603491                     # TEST
+refoverlap = 0.91534388636                        # TEST
+ref589tensor = psi4.core.Matrix.from_list(        # TEST
+   [[ 0.116653158229350, -0.136050294376206, -0.040317663907168],   # TEST
+    [ 0.020178810546506,  0.045708806213428, -0.130530471978785],   # TEST
+    [-0.189602214456136,  0.207372491035560, -0.145086273406846]])  # TEST
+ref355tensor = psi4.core.Matrix.from_list(        # TEST
+   [[ 0.199315154624056, -0.236145103741689, -0.075627033594829],   # TEST
+    [ 0.033233678887394,  0.078305709057096, -0.216237850819074],   # TEST
+    [-0.318543397461720,  0.348340079668771, -0.247304234462590]])  # TEST
+ref589scalar = - 49.62374 # TEST
+ref355scalar = -144.48473 # TEST
+
+compare_values(refnre, smo.nuclear_repulsion_energy(), 6, "Nuclear Repulsion Energy") # TEST
+compare_values(refscf, wfn.variable("SCF TOTAL ENERGY"), 6, "SCF Energy") # TEST
+compare_values(refcc2, wfn.variable("CC2 TOTAL ENERGY"), 6, "CC2 Energy") # TEST
+compare_values(refoverlap, wfn.variable("LEFT-RIGHT CC2 EIGENVECTOR OVERLAP"), 5, "Left-Right CC2 Overlap") # TEST
+
+compare_values(ref589tensor,   wfn.variable("CC2 OPTICAL ROTATION TENSOR (LEN) @ 589NM"),  3, "CC2 rotation tensor @ 589nm in length gauge") # TEST
+compare_values(ref355tensor,   wfn.variable("CC2 OPTICAL ROTATION TENSOR (LEN) @ 355NM"),  3, "CC2 rotation tensor @ 355nm in length gauge") # TEST
+compare_values(ref589scalar,   variable("CC2 SPECIFIC ROTATION (LEN) @ 589NM"),  3, "CC2 rotation @ 589nm in length gauge") # TEST
+compare_values(ref355scalar,   variable("CC2 SPECIFIC ROTATION (LEN) @ 355NM"),  3, "CC2 rotation @ 355nm in length gauge") # TEST
+
 --------------------------------------------------------------------------
 
-*** tstart() called on Jonathons-MacBook-Pro.local
-*** at Sat Feb 12 15:25:51 2022
+*** tstart() called on dhcp189-235.emerson.emory.edu
+*** at Fri Mar  4 09:21:12 2022
 
    => Loading Basis Set <=
 
@@ -194,18 +220,18 @@ properties('cc2',properties=['rotation'])
    @RHF iter SAD:  -186.43072166022984   -1.86431e+02   0.00000e+00 
    @RHF iter   1:  -189.43266126778377   -3.00194e+00   1.28222e-02 ADIIS/DIIS
    @RHF iter   2:  -189.50256237003040   -6.99011e-02   5.10734e-03 ADIIS/DIIS
-   @RHF iter   3:  -189.51308752257808   -1.05252e-02   6.61403e-04 ADIIS/DIIS
-   @RHF iter   4:  -189.51341362083542   -3.26098e-04   6.54297e-05 DIIS
-   @RHF iter   5:  -189.51341710353631   -3.48270e-06   1.19638e-05 DIIS
+   @RHF iter   3:  -189.51308752257788   -1.05252e-02   6.61403e-04 ADIIS/DIIS
+   @RHF iter   4:  -189.51341362083559   -3.26098e-04   6.54297e-05 DIIS
+   @RHF iter   5:  -189.51341710353643   -3.48270e-06   1.19638e-05 DIIS
    @RHF iter   6:  -189.51341723375194   -1.30216e-07   1.91468e-06 DIIS
-   @RHF iter   7:  -189.51341723649381   -2.74187e-09   7.28366e-07 DIIS
-   @RHF iter   8:  -189.51341723702984   -5.36033e-10   2.37098e-07 DIIS
-   @RHF iter   9:  -189.51341723710047   -7.06279e-11   4.41139e-08 DIIS
-   @RHF iter  10:  -189.51341723710254   -2.07478e-12   7.00241e-09 DIIS
-   @RHF iter  11:  -189.51341723710254    0.00000e+00   1.79171e-09 DIIS
-   @RHF iter  12:  -189.51341723710249    5.68434e-14   4.46110e-10 DIIS
-   @RHF iter  13:  -189.51341723710263   -1.42109e-13   1.14589e-10 DIIS
-   @RHF iter  14:  -189.51341723710254    8.52651e-14   1.75049e-11 DIIS
+   @RHF iter   7:  -189.51341723649401   -2.74207e-09   7.28366e-07 DIIS
+   @RHF iter   8:  -189.51341723702978   -5.35778e-10   2.37098e-07 DIIS
+   @RHF iter   9:  -189.51341723710044   -7.06564e-11   4.41139e-08 DIIS
+   @RHF iter  10:  -189.51341723710243   -1.98952e-12   7.00241e-09 DIIS
+   @RHF iter  11:  -189.51341723710254   -1.13687e-13   1.79171e-09 DIIS
+   @RHF iter  12:  -189.51341723710260   -5.68434e-14   4.46110e-10 DIIS
+   @RHF iter  13:  -189.51341723710260    0.00000e+00   1.14588e-10 DIIS
+   @RHF iter  14:  -189.51341723710246    1.42109e-13   1.75048e-11 DIIS
   Energy and wave function converged.
 
 
@@ -234,14 +260,14 @@ properties('cc2',properties=['rotation'])
               A 
     DOCC [    16 ]
 
-  @RHF Final Energy:  -189.51341723710254
+  @RHF Final Energy:  -189.51341723710246
 
    => Energetics <=
 
     Nuclear Repulsion Energy =            124.7885346117624721
     One-Electron Energy =                -505.7302704013803805
-    Two-Electron Energy =                 191.4283185525153499
-    Total Energy =                       -189.5134172371025443
+    Two-Electron Energy =                 191.4283185525154352
+    Total Energy =                       -189.5134172371024590
 
 Computation Completed
 
@@ -263,14 +289,14 @@ Properties computed using the SCF density matrix
      X:     0.6781      Y:     1.2530      Z:     0.5057     Total:     1.5118
 
 
-*** tstop() called on Jonathons-MacBook-Pro.local at Sat Feb 12 15:25:52 2022
+*** tstop() called on dhcp189-235.emerson.emory.edu at Fri Mar  4 09:21:13 2022
 Module time:
-	user time   =       1.29 seconds =       0.02 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       0.69 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.29 seconds =       0.02 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       0.69 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -296,8 +322,8 @@ Total time:
         Stored in file 33.
 
 
-*** tstart() called on Jonathons-MacBook-Pro.local
-*** at Sat Feb 12 15:25:53 2022
+*** tstart() called on dhcp189-235.emerson.emory.edu
+*** at Fri Mar  4 09:21:13 2022
 
 
 	Wfn Parameters:
@@ -355,7 +381,7 @@ Total time:
 	(VV|VV)...
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
-	Frozen core energy     =   -209.07983635006943
+	Frozen core energy     =   -209.07983635006971
 
 	Size of irrep 0 of <ab|cd> integrals:      0.010 (MW) /      0.080 (MB)
 	Total:                                     0.010 (MW) /      0.080 (MB)
@@ -367,20 +393,20 @@ Total time:
 	Total:                                     0.014 (MW) /      0.115 (MB)
 
 	Nuclear Rep. energy          =    124.78853461176247
-	SCF energy                   =   -189.51341723710254
-	One-electron energy          =   -194.60728356878917
-	Two-electron energy          =     89.38516806999395
-	Reference energy             =   -189.51341723710217
+	SCF energy                   =   -189.51341723710246
+	One-electron energy          =   -194.60728356878889
+	Two-electron energy          =     89.38516806999380
+	Reference energy             =   -189.51341723710232
 
-*** tstop() called on Jonathons-MacBook-Pro.local at Sat Feb 12 15:25:53 2022
+*** tstop() called on dhcp189-235.emerson.emory.edu at Fri Mar  4 09:21:13 2022
 Module time:
-	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.14 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.08 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.53 seconds =       0.03 minutes
-	system time =       0.27 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.82 seconds =       0.01 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
             **************************
             *                        *
             *        CCENERGY        *
@@ -388,8 +414,8 @@ Total time:
             **************************
 
     Nuclear Rep. energy (wfn)     =  124.788534611762472
-    SCF energy          (wfn)     = -189.513417237102544
-    Reference energy    (file100) = -189.513417237102175
+    SCF energy          (wfn)     = -189.513417237102459
+    Reference energy    (file100) = -189.513417237102317
 
     Input parameters:
     -----------------
@@ -417,22 +443,22 @@ Total time:
     SCSN-MP2        =     False
     SCS-CCSD        =     False
 
-MP2 correlation energy -0.1984983521050260
+MP2 correlation energy -0.1984983521050274
                 Solving CC Amplitude Equations
                 ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
-     0        -0.198498352105026    0.000e+00    0.000000    0.000000    0.000000    0.124632
+     0        -0.198498352105027    0.000e+00    0.000000    0.000000    0.000000    0.124632
      1        -0.198386687596309    2.456e-02    0.005013    0.019208    0.019208    0.124632
      2        -0.199744018436219    7.393e-03    0.005756    0.022873    0.022873    0.125832
      3        -0.200084918887300    3.729e-03    0.006768    0.027963    0.027963    0.126111
      4        -0.200115317942039    6.852e-04    0.006878    0.028762    0.028762    0.126089
-     5        -0.200118667567232    1.694e-04    0.006896    0.028947    0.028947    0.126085
-     6        -0.200118438068357    3.259e-05    0.006898    0.028967    0.028967    0.126084
-     7        -0.200118406453567    1.039e-05    0.006898    0.028968    0.028968    0.126083
-     8        -0.200118428130805    3.934e-06    0.006898    0.028968    0.028968    0.126083
+     5        -0.200118667567233    1.694e-04    0.006896    0.028947    0.028947    0.126085
+     6        -0.200118438068358    3.259e-05    0.006898    0.028967    0.028967    0.126084
+     7        -0.200118406453568    1.039e-05    0.006898    0.028968    0.028968    0.126083
+     8        -0.200118428130806    3.934e-06    0.006898    0.028968    0.028968    0.126083
      9        -0.200118427469824    1.144e-06    0.006898    0.028968    0.028968    0.126083
-    10        -0.200118429810973    4.391e-07    0.006898    0.028968    0.028968    0.126083
+    10        -0.200118429810974    4.391e-07    0.006898    0.028968    0.028968    0.126083
     11        -0.200118429501313    9.823e-08    0.006898    0.028968    0.028968    0.126083
 
     Iterations converged.
@@ -462,16 +488,16 @@ MP2 correlation energy -0.1984983521050260
      10   9   0   1         0.0182861872
       8   8   8   8        -0.0174521683
 
-    SCF energy       (wfn)                    = -189.513417237102544
-    Reference energy (file100)                = -189.513417237102175
+    SCF energy       (wfn)                    = -189.513417237102459
+    Reference energy (file100)                = -189.513417237102317
 
-    Opposite-spin MP2 correlation energy      =   -0.172369085425346
-    Same-spin MP2 correlation energy          =   -0.026129266679680
+    Opposite-spin MP2 correlation energy      =   -0.172369085425347
+    Same-spin MP2 correlation energy          =   -0.026129266679681
     Singles MP2 correlation energy            =   -0.000000000000000
-    MP2 correlation energy                    =   -0.198498352105026
-      * MP2 total energy                      = -189.711915589207194
+    MP2 correlation energy                    =   -0.198498352105027
+      * MP2 total energy                      = -189.711915589207337
     CC2 correlation energy                    =   -0.200118429501313
-      * CC2 total energy                      = -189.713535666603491
+      * CC2 total energy                      = -189.713535666603633
 
 
 			**************************
@@ -488,10 +514,10 @@ MP2 correlation energy -0.1984983521050260
 
 	Nuclear Rep. energy (wfn)     =  124.788534611762472
 	Reference           (wfn)     =                    0
-	SCF energy          (wfn)     = -189.513417237102544
-	Reference energy    (CC_INFO) = -189.513417237102175
+	SCF energy          (wfn)     = -189.513417237102459
+	Reference energy    (CC_INFO) = -189.513417237102317
 	CC2 energy          (CC_INFO) =   -0.200118429501313
-	Total CC2 energy    (CC_INFO) = -189.713535666603491
+	Total CC2 energy    (CC_INFO) = -189.713535666603633
 
 	Input parameters:
 	-----------------
@@ -519,15 +545,15 @@ MP2 correlation energy -0.1984983521050260
 	----     ---------------------     --------
 	   0        -0.200255250360407    0.000e+00
 	   1        -0.200237819029770    1.045e-02
-	   2        -0.199973105822700    1.485e-03
-	   3        -0.199954621905730    4.864e-04
-	   4        -0.199946895565814    1.053e-04
+	   2        -0.199973105822699    1.485e-03
+	   3        -0.199954621905732    4.864e-04
+	   4        -0.199946895565815    1.053e-04
 	   5        -0.199946306810320    2.929e-05
 	   6        -0.199946156209135    6.703e-06
 	   7        -0.199946136857328    1.596e-06
-	   8        -0.199946135303239    5.076e-07
+	   8        -0.199946135303237    5.076e-07
 	   9        -0.199946133522006    1.768e-07
-	  10        -0.199946132937027    6.638e-08
+	  10        -0.199946132937028    6.638e-08
 
 	Largest LIA Amplitudes:
 	         11   2         0.0187278537
@@ -595,13 +621,13 @@ MP2 correlation energy -0.1984983521050260
 	   0        13.663852328482
 	   1        17.349316422742    5.172e-01
 	   2        19.385113079902    1.883e-01
-	   3        19.407847329965    2.113e-02
+	   3        19.407847329964    2.113e-02
 	   4        19.414241466868    7.755e-03
 	   5        19.415176187248    1.032e-03
-	   6        19.415012722798    3.160e-04
+	   6        19.415012722797    3.160e-04
 	   7        19.415033690551    5.837e-05
 	   8        19.415041726007    1.888e-05
-	   9        19.415040681799    5.204e-06
+	   9        19.415040681798    5.204e-06
 	  10        19.415040279096    1.666e-06
 	  11        19.415040467037    4.928e-07
 	  12        19.415040726437    1.203e-07
@@ -633,12 +659,12 @@ MP2 correlation energy -0.1984983521050260
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
 	   0        11.329948161504
-	   1        13.411421068744    3.567e-01
+	   1        13.411421068743    3.567e-01
 	   2        14.315309044441    1.102e-01
 	   3        14.357443498125    1.983e-02
 	   4        14.362381757162    6.059e-03
 	   5        14.363016761229    9.670e-04
-	   6        14.362953300836    2.647e-04
+	   6        14.362953300835    2.647e-04
 	   7        14.362975456904    5.528e-05
 	   8        14.362980464287    1.635e-05
 	   9        14.362980428706    4.161e-06
@@ -727,7 +753,7 @@ MP2 correlation energy -0.1984983521050260
 	  11        24.237451596727    4.708e-06
 	  12        24.237455562873    1.235e-06
 	  13        24.237456715724    4.415e-07
-	  14        24.237456830816    1.411e-07
+	  14        24.237456830815    1.411e-07
 	-----------------------------------------
 	Converged Mu_X-Perturbed Wfn to 5.856e-08
 
@@ -752,7 +778,7 @@ MP2 correlation energy -0.1984983521050260
 	Computing Mu_Y-Perturbed Wave Function (0.077 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0        13.083964149864
+	   0        13.083964149863
 	   1        15.809005868071    4.632e-01
 	   2        17.211730971700    1.659e-01
 	   3        17.299274016488    3.528e-02
@@ -836,9 +862,9 @@ MP2 correlation energy -0.1984983521050260
 
                    0                     1                     2        
 
-    0      0.116653158229350    -0.136050294376206    -0.040317663907168
-    1      0.020178810546506     0.045708806213428    -0.130530471978785
-    2     -0.189602214456136     0.207372491035560    -0.145086273406846
+    0      0.116653158229348    -0.136050294376206    -0.040317663907181
+    1      0.020178810546496     0.045708806213429    -0.130530471978784
+    2     -0.189602214456131     0.207372491035578    -0.145086273406843
 
    Specific rotation using length-gauge electric-dipole Rosenfeld tensor.
 	[alpha]_(0.077) =  -49.62374 deg/[dm (g/cm^3)]
@@ -846,7 +872,7 @@ MP2 correlation energy -0.1984983521050260
 	Computing Mu_X-Perturbed Wave Function (-0.128 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0        13.069164596988
+	   0        13.069164596987
 	   1        16.451914820424    4.754e-01
 	   2        18.210045061583    1.656e-01
 	   3        18.228206317089    1.761e-02
@@ -864,7 +890,7 @@ MP2 correlation energy -0.1984983521050260
 	Computing L_X-Perturbed Wave Function (0.128 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         2.417820592240
+	   0         2.417820592239
 	   1         3.324263585293    3.187e-01
 	   2         4.083972298669    1.549e-01
 	   3         4.107116358535    3.248e-02
@@ -878,7 +904,7 @@ MP2 correlation energy -0.1984983521050260
 	  11         4.124936438767    8.386e-06
 	  12         4.124938624026    3.061e-06
 	  13         4.124939325307    8.126e-07
-	  14         4.124939861165    4.035e-07
+	  14         4.124939861164    4.035e-07
 	  15         4.124940048038    1.792e-07
 	  16         4.124940169707    1.045e-07
 	-----------------------------------------
@@ -928,9 +954,9 @@ MP2 correlation energy -0.1984983521050260
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
 	   0        10.909505695641
-	   1        13.295810252928    3.489e-01
+	   1        13.295810252927    3.489e-01
 	   2        14.208707486698    9.956e-02
-	   3        14.220830309558    1.236e-02
+	   3        14.220830309557    1.236e-02
 	   4        14.223886071774    4.932e-03
 	   5        14.224193083603    5.134e-04
 	   6        14.224160594266    1.473e-04
@@ -954,7 +980,7 @@ MP2 correlation energy -0.1984983521050260
 	   6        10.948244404491    3.422e-03
 	   7        10.948591744033    8.406e-04
 	   8        10.948635021080    2.656e-04
-	   9        10.948619044600    9.644e-05
+	   9        10.948619044599    9.644e-05
 	  10        10.948621115931    4.363e-05
 	  11        10.948622973712    1.303e-05
 	  12        10.948626838848    4.656e-06
@@ -970,11 +996,11 @@ MP2 correlation energy -0.1984983521050260
 	Computing Mu_X-Perturbed Wave Function (0.128 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0        16.768400460754
-	   1        22.238899083040    7.657e-01
+	   0        16.768400460753
+	   1        22.238899083039    7.657e-01
 	   2        26.326602732924    3.442e-01
 	   3        26.402827834814    5.204e-02
-	   4        26.436611730619    2.459e-02
+	   4        26.436611730618    2.459e-02
 	   5        26.441960003840    4.103e-03
 	   6        26.440595899324    1.628e-03
 	   7        26.440721658400    5.123e-04
@@ -1018,7 +1044,7 @@ MP2 correlation energy -0.1984983521050260
 	   5        18.587536054803    3.424e-03
 	   6        18.587011174586    1.160e-03
 	   7        18.587126623604    3.058e-04
-	   8        18.587160947145    1.080e-04
+	   8        18.587160947144    1.080e-04
 	   9        18.587156715754    4.128e-05
 	  10        18.587157130400    2.114e-05
 	  11        18.587158661235    7.210e-06
@@ -1080,7 +1106,7 @@ MP2 correlation energy -0.1984983521050260
 	   5         7.811100064550    1.188e-03
 	   6         7.811024653692    3.499e-04
 	   7         7.811038426283    5.690e-05
-	   8         7.811038843179    1.440e-05
+	   8         7.811038843178    1.440e-05
 	   9         7.811038558691    3.086e-06
 	  10         7.811038538428    1.047e-06
 	  11         7.811038629060    2.223e-07
@@ -1096,9 +1122,9 @@ MP2 correlation energy -0.1984983521050260
 
                    0                     1                     2        
 
-    0      0.199315154624056    -0.236145103741689    -0.075627033594829
-    1      0.033233678887394     0.078305709057096    -0.216237850819074
-    2     -0.318543397461720     0.348340079668771    -0.247304234462590
+    0      0.199315154624053    -0.236145103741689    -0.075627033594850
+    1      0.033233678887378     0.078305709057096    -0.216237850819075
+    2     -0.318543397461715     0.348340079668800    -0.247304234462585
 
    Specific rotation using length-gauge electric-dipole Rosenfeld tensor.
 	[alpha]_(0.128) = -144.48473 deg/[dm (g/cm^3)]
@@ -1111,8 +1137,16 @@ MP2 correlation energy -0.1984983521050260
    -----   ------ ------------------
    0.077   589.00       -49.62374
    0.128   355.00      -144.48473
+    Nuclear Repulsion Energy..............................................................PASSED
+    SCF Energy............................................................................PASSED
+    CC2 Energy............................................................................PASSED
+    Left-Right CC2 Overlap................................................................PASSED
+    CC2 rotation tensor @ 589nm in length gauge...........................................PASSED
+    CC2 rotation tensor @ 355nm in length gauge...........................................PASSED
+    CC2 rotation @ 589nm in length gauge..................................................PASSED
+    CC2 rotation @ 355nm in length gauge..................................................PASSED
 
-    Psi4 stopped on: Saturday, 12 February 2022 03:26PM
-    Psi4 wall time for execution: 0:00:09.00
+    Psi4 stopped on: Friday, 04 March 2022 09:21AM
+    Psi4 wall time for execution: 0:00:05.17
 
 *** Psi4 exiting successfully. Buy a developer a beer!
