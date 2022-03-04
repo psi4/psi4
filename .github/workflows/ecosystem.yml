@@ -13,12 +13,13 @@ jobs:
       fail-fast: false
       matrix:
         cfg:
-          - runs-on: ubuntu-latest
-            python-version: "3.9"  # "3.10" after adcc
-            base-channel: "defaults"
-            cmenv: ""
-            cmargs: >
-              -DBUILD_SHARED_LIBS=ON
+          # WORKS
+          #- runs-on: ubuntu-latest
+          #  python-version: "3.9"  # "3.10" after adcc
+          #  base-channel: "defaults"
+          #  cmenv: ""
+          #  cmargs: >
+          #    -DBUILD_SHARED_LIBS=ON
 
           - runs-on: macos-latest
             python-version: "3.9"
@@ -63,6 +64,8 @@ jobs:
             # build
           - boost-cpp
           - cmake>=3.16
+            # trying c-comp for osx
+          - c-compiler
           - cxx-compiler
           - eigen
           - fortran-compiler
@@ -86,16 +89,19 @@ jobs:
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           # <lang>-compiler is only a metapackage for c-f
+          sed -i "s/- c-compiler/- gcc_linux-64/g" build.yaml
           sed -i "s/- cxx-compiler/- gxx_linux-64/g" build.yaml
           sed -i "s/- fortran-compiler/- gfortran_linux-64/g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           # <lang>-compiler is only a metapackage for c-f
+          sed -E -i.bak "s/- c-compiler/- clang_osx-64/g" build.yaml
           sed -E -i.bak "s/- cxx-compiler/- clangxx_osx-64/g" build.yaml
           sed -E -i.bak "s/- fortran-compiler/- gfortran_osx-64/g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # permanent, as we use clang-cl, not c-f compiler
+          sed -i "s/- c-compiler/#- c-compiler/g" build.yaml
           sed -i "s/- cxx-compiler/#- cxx-compiler/g" build.yaml
           sed -i "s/- fortran-compiler/#- fortran-compiler/g" build.yaml
           # semi-permanent
@@ -220,29 +226,7 @@ jobs:
         arch: x64
 
     - name: Configure with CMake (conda defaults GNU)
-      if: ${{ runner.os == 'Windows' }}
-      run: |
-        ${{ matrix.cfg.cmenv }} \
-        cmake \
-          -S. \
-          -B objdir \
-          -G Ninja \
-          -D CMAKE_BUILD_TYPE=Release \
-          -D CMAKE_C_COMPILER=${CC} \
-          -D CMAKE_CXX_COMPILER=${CXX} \
-          -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
-          -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-          -D ENABLE_OPENMP=ON \
-          -D ENABLE_XHOST=OFF \
-          ${{ matrix.cfg.cmargs }}
-
-    - name: Configure with CMake (conda defaults GNU)
-      if: ${{ runner.os != 'Windows' }}
+      if: ${{ runner.os == 'Linux' }}
       run: |
         ${{ matrix.cfg.cmenv }} \
         cmake \
@@ -279,10 +263,76 @@ jobs:
           -D ENABLE_XHOST=OFF \
           ${{ matrix.cfg.cmargs }}
 
+    - name: Configure with CMake (conda defaults GNU)
+      if: ${{ runner.os == 'macOS' }}
+      run: |
+        ${{ matrix.cfg.cmenv }} \
+        cmake \
+          -S. \
+          -B objdir \
+          -G Ninja \
+          -D CMAKE_BUILD_TYPE=Release \
+          -D CMAKE_C_COMPILER=${CLANG} \
+          -D CMAKE_CXX_COMPILER=${CLANGXX} \
+          -D CMAKE_Fortran_COMPILER=${GFORTRAN} \
+          -D CMAKE_C_FLAGS="${CFLAGS}" \
+          -D CMAKE_CXX_FLAGS="${CXXFLAGS}" \
+          -D CMAKE_Fortran_FLAGS="${FFLAGS}" \
+          -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
+          -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
+          -D ENABLE_ambit=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_ambit=ON \
+          -D ENABLE_CheMPS2=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_CheMPS2=ON \
+          -D ENABLE_dkh=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
+          -D ENABLE_gdma=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
+          -D ENABLE_PCMSolver=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=ON \
+          -D ENABLE_simint=ON \
+          -D SIMINT_VECTOR=sse \
+          -D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
+          -D ENABLE_v2rdm_casscf=ON \
+          -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
+          -D ENABLE_OPENMP=ON \
+          -D OpenMP_C_FLAG="-fopenmp=libiomp5" \
+          -D OpenMP_CXX_FLAG="-fopenmp=libiomp5" \
+          -D ENABLE_XHOST=OFF \
+          -D CMAKE_OSX_DEPLOYMENT_TARGET='' \
+          ${{ matrix.cfg.cmargs }}
+
+    - name: Configure with CMake (conda defaults GNU)
+      if: ${{ runner.os == 'Windows' }}
+      run: |
+        ${{ matrix.cfg.cmenv }} \
+        cmake \
+          -S. \
+          -B objdir \
+          -G Ninja \
+          -D CMAKE_BUILD_TYPE=Release \
+          -D CMAKE_C_COMPILER=${CC} \
+          -D CMAKE_CXX_COMPILER=${CXX} \
+          -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
+          -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
+          -D ENABLE_OPENMP=ON \
+          -D ENABLE_XHOST=OFF \
+          ${{ matrix.cfg.cmargs }}
+
     - name: Compile Psi4
       run: |
         cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
-        ldd objdir/stage/lib/psi4/core.*.so
+        #ldd objdir/stage/lib/psi4/core.*.so
 
       # Notes: This is clearing away the whole build environment (to make explicit the build and
       #   runtime dependencies and addons). Then its creating a new runtime environment based on
@@ -299,8 +349,8 @@ jobs:
         conda activate defenv
         conda install conda-forge::pytest>=7.0.1
         conda list
-        ldd objdir/stage/lib/psi4/core.*.so
-        objdir/stage/bin/psi4 tests/tu1-h2o-energy/input.dat
+        #ldd objdir/stage/lib/psi4/core.*.so
+        #objdir/stage/bin/psi4 tests/tu1-h2o-energy/input.dat
 
     - name: Test Addons with CTest
       if: false
