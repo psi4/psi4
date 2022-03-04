@@ -274,10 +274,8 @@ jobs:
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_C_COMPILER=${CLANG} \
           -D CMAKE_CXX_COMPILER=${CLANGXX} \
-          -D CMAKE_Fortran_COMPILER=${GFORTRAN} \
           -D CMAKE_C_FLAGS="${CFLAGS}" \
           -D CMAKE_CXX_FLAGS="${CXXFLAGS}" \
-          -D CMAKE_Fortran_FLAGS="${FFLAGS}" \
           -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
           -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
@@ -318,6 +316,7 @@ jobs:
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_C_COMPILER=${CC} \
           -D CMAKE_CXX_COMPILER=${CXX} \
+          -D CMAKE_CXX_FLAGS="/arch:AVX" \
           -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
           -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
@@ -350,12 +349,14 @@ jobs:
         conda install conda-forge::pytest>=7.0.1
         conda list
         #ldd objdir/stage/lib/psi4/core.*.so
-        #objdir/stage/bin/psi4 tests/tu1-h2o-energy/input.dat
+        objdir/stage/bin/psi4 tests/tu1-h2o-energy/input.dat
 
     - name: Test Addons with CTest
-      if: false
+      #if: false
+      if: ${{ runner.os == 'Windows' }}
       working-directory: ./objdir
-      run: ctest -L addon -j2 --output-on-failure
+      #run: ctest -L addon -j2 --output-on-failure
+      run: ctest -L smoke -j2 --output-on-failure
 
     - name: Test Addons with Pytest (defaults only)
       working-directory: ./objdir
