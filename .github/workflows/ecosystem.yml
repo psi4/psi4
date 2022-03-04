@@ -85,8 +85,8 @@ jobs:
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           # <lang>-compiler is only a metapackage for c-f
-          sed -i "s/- cxx-compiler/- clangxx_osx-64/g" build.yaml
-          sed -i "s/- fortran-compiler/- gfortran_osx-64/g" build.yaml
+          sed -E -i.bak "s/- cxx-compiler/- clangxx_osx-64/g" build.yaml
+          sed -E -i.bak "s/- fortran-compiler/- gfortran_osx-64/g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # permanent, as we use clang-cl, not c-f compiler
@@ -96,7 +96,7 @@ jobs:
           sed -i "s;- psi4/label/dev::gau2grid;- gau2grid;g" build.yaml
           sed -i "s;- psi4/label/dev::libxc;- libxc;g" build.yaml
           # nyi
-          sed -i "s;- psi4/label/dev::ambit/#- psi4/label/dev::ambit;g" build.yaml
+          sed -i "s;- psi4/label/dev::ambit;#- psi4/label/dev::ambit;g" build.yaml
           sed -i "s;- psi4/label/dev::chemps2;#- psi4/label/dev::chemps2;g" build.yaml
           sed -i "s;- psi4/label/dev::dkh;#- psi4/label/dev::dkh;g" build.yaml
           sed -i "s;- psi4/label/dev::gdma;#- psi4/label/dev::gdma;g" build.yaml
@@ -151,7 +151,7 @@ jobs:
           sed -i "s;- psi4/label/dev::gau2grid;- gau2grid;g" run.yaml
           sed -i "s;- psi4/label/dev::libxc;- libxc;g" run.yaml
           # nyi
-          sed -i "s;- psi4/label/dev::ambit/#- psi4/label/dev::ambit;g" run.yaml
+          sed -i "s;- psi4/label/dev::ambit;#- psi4/label/dev::ambit;g" run.yaml
           sed -i "s;- psi4/label/dev::chemps2;#- psi4/label/dev::chemps2;g" run.yaml
           sed -i "s;- psi4/label/dev::dkh;#- psi4/label/dev::dkh;g" run.yaml
           sed -i "s;- psi4/label/dev::gdma;#- psi4/label/dev::gdma;g" run.yaml
@@ -181,6 +181,12 @@ jobs:
           sed -i "s;- adcc;#- adcc;g" runcf.yaml
           sed -i "s;- cppe;#- cppe;g" runcf.yaml
         fi
+        echo "<<<  build.yaml  >>>"
+        cat build.yaml
+        echo "<<<  run.yaml  >>>"
+        cat run.yaml
+        echo "<<<  runcf.yaml  >>>"
+        cat runcf.yaml
 
     - name: Create Conda Environment (build)
       uses: conda-incubator/setup-miniconda@v2
