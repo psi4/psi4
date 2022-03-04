@@ -19,8 +19,16 @@ jobs:
             libargs: >
               -DBUILD_SHARED_LIBS=ON
 
-#          - runs-on: macos-latest
-#          - runs-on: windows-latest
+          - runs-on: macos-latest
+            python-version: "3.9"
+            base-channel: "defaults"
+            libargs: >
+              -DBUILD_SHARED_LIBS=ON
+
+          - runs-on: windows-latest
+            python-version: "3.9"
+            base-channel: "conda-forge"
+            libargs: ""
 
     name: "Eco • 🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.runs-on }}"
     runs-on: ${{ matrix.cfg.runs-on }}
@@ -75,9 +83,25 @@ jobs:
           sed -i "s/- cxx-compiler/- gxx_linux-64/g" build.yaml
           sed -i "s/- fortran-compiler/- gfortran_linux-64/g" build.yaml
         fi
+        if [[ "${{ runner.os }}" == "macOS" ]]; then
+          # <lang>-compiler is only a metapackage for c-f
+          sed -i "s/- cxx-compiler/- clangxx_osx-64/g" build.yaml
+          sed -i "s/- fortran-compiler/- gfortran_osx-64/g" build.yaml
+        fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # permanent, as we use clang-cl, not c-f compiler
           sed -i "s/- cxx-compiler/#- cxx-compiler/g" build.yaml
+          sed -i "s/- fortran-compiler/#- fortran-compiler/g" build.yaml
+          # semi-permanent
+          sed -i "s;- psi4/label/dev::gau2grid;- gau2grid;g" build.yaml
+          sed -i "s;- psi4/label/dev::libxc;- libxc;g" build.yaml
+          # nyi
+          sed -i "s;- psi4/label/dev::ambit/#- psi4/label/dev::ambit;g" build.yaml
+          sed -i "s;- psi4/label/dev::chemps2;#- psi4/label/dev::chemps2;g" build.yaml
+          sed -i "s;- psi4/label/dev::dkh;#- psi4/label/dev::dkh;g" build.yaml
+          sed -i "s;- psi4/label/dev::gdma;#- psi4/label/dev::gdma;g" build.yaml
+          sed -i "s;- psi4/label/dev::pcmsolver;#- psi4/label/dev::pcmsolver;g" build.yaml
+          sed -i "s;- psi4/label/dev::simint;#- psi4/label/dev::simint;g" build.yaml
         fi
         cat > run.yaml <<EOF
         name: defenv
@@ -122,6 +146,21 @@ jobs:
           - pytest-xdist
           - tomli
         EOF
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          # semi-permanent
+          sed -i "s;- psi4/label/dev::gau2grid;- gau2grid;g" run.yaml
+          sed -i "s;- psi4/label/dev::libxc;- libxc;g" run.yaml
+          # nyi
+          sed -i "s;- psi4/label/dev::ambit/#- psi4/label/dev::ambit;g" run.yaml
+          sed -i "s;- psi4/label/dev::chemps2;#- psi4/label/dev::chemps2;g" run.yaml
+          sed -i "s;- psi4/label/dev::dkh;#- psi4/label/dev::dkh;g" run.yaml
+          sed -i "s;- psi4/label/dev::gdma;#- psi4/label/dev::gdma;g" run.yaml
+          sed -i "s;- psi4/label/dev::pcmsolver;#- psi4/label/dev::pcmsolver;g" run.yaml
+          sed -i "s;- psi4/label/dev::simint;#- psi4/label/dev::simint;g" run.yaml
+          sed -i "s;- psi4/label/dev::pylibefp;#- psi4/label/dev::pylibefp;g" run.yaml
+          sed -i "s;- psi4/label/dev::fockci;#- psi4/label/dev::fockci;g" run.yaml
+          sed -i "s;- psi4/label/dev::mp2d;#- psi4/label/dev::mp2d;g" run.yaml
+        fi
         cat > runcf.yaml <<EOF
         name: cfenv
         channels:
@@ -136,9 +175,12 @@ jobs:
           - geometric
           - openfermionpsi4
           - pymdi
-          #- qcengine
+          - qcengine
         EOF
-        cat run.yaml
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          sed -i "s;- adcc;#- adcc;g" runcf.yaml
+          sed -i "s;- cppe;#- cppe;g" runcf.yaml
+        fi
 
     - name: Create Conda Environment (build)
       uses: conda-incubator/setup-miniconda@v2
@@ -148,14 +190,6 @@ jobs:
         show-channel-urls: true
         python-version: ${{ matrix.cfg.python-version }}
         auto-activate-base: false
-
-#      if: ${{ runner.os == 'macOS' }}
-#      if: ${{ runner.os == 'Windows' }}
-#      if: ${{ runner.os == 'Linux' }}
-#      shell: bash -l {0}
-#      run: |
-#        conda remove eigen
-#        conda create -n onlyeigen eigen -c conda-forge
 
     - name: Environment Information
       shell: bash -l {0}
