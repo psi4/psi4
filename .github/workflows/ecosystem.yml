@@ -47,7 +47,7 @@ jobs:
           - blas=*=mkl
           - python=${{ matrix.cfg.python-version }}
             # build
-          - boost-cpp=1.71
+          - boost-cpp
           - cmake>=3.16
           - cxx-compiler
           - eigen
@@ -134,15 +134,11 @@ jobs:
           - cppe
           - dftd4-python
           - geometric
+          - openfermionpsi4
           - pymdi
-          - qcengine
+          #- qcengine
         EOF
         cat run.yaml
-
-
-        #pandas!=1.3.0 \
-
-
 
     - name: Create Conda Environment (build)
       uses: conda-incubator/setup-miniconda@v2

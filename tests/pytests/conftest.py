@@ -76,6 +76,7 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "geometric: tests using geomeTRIC software; skip if unavailable")
     config.addinivalue_line("markers", "ipi: tests using i-PI software; skip if unavailable")
     config.addinivalue_line("markers", "mrcc")
+    config.addinivalue_line("markers", "openfermionpsi4")
     config.addinivalue_line("markers", "pcmsolver: tests using PCMSolver software; skip if unavailable")
     config.addinivalue_line("markers", "psixas")
     config.addinivalue_line("markers", "resp: tests using resp software; skip if unavailable")

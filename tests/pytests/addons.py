@@ -68,6 +68,7 @@ _programs = {
     "gpu_dfcc": which_import("gpu_dfcc", return_bool=True),
     "ipi": which_import("ipi", return_bool=True),
     "mrcc": which("dmrcc", return_bool=True),
+    "openfermionpsi4": which_import("openfermionpsi4", return_bool=True),
     "pcmsolver": psi4.addons("pcmsolver"),
     "psixas": which_import("psixas", return_bool=True),
     "resp": which_import("resp", return_bool=True),
