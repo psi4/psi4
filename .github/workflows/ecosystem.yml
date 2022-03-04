@@ -279,6 +279,7 @@ jobs:
           -D CMAKE_CXX_FLAGS="${CXXFLAGS}" \
           -D CMAKE_Fortran_COMPILER=${GFORTRAN} \
           -D CMAKE_Fortran_FLAGS="${FFLAGS}" \
+          -D CMAKE_Fortran_FLAGS="-isysroot /opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk $FFLAGS" \
           -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
           -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
