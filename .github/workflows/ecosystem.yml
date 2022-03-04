@@ -16,19 +16,26 @@ jobs:
           - runs-on: ubuntu-latest
             python-version: "3.9"  # "3.10" after adcc
             base-channel: "defaults"
-            libargs: >
+            cmenv: ""
+            cmargs: >
               -DBUILD_SHARED_LIBS=ON
 
           - runs-on: macos-latest
             python-version: "3.9"
             base-channel: "defaults"
-            libargs: >
+            cmenv: >
+              CONDA_BUILD_SYSROOT=/opt/MacOSX10.10.sdk
+            cmargs: >
               -DBUILD_SHARED_LIBS=ON
 
           - runs-on: windows-latest
             python-version: "3.9"
             base-channel: "conda-forge"
-            libargs: ""
+            cmenv: ""
+            cmargs: >
+              -DCMAKE_CXX_COMPILER=clang-cl
+              -DCMAKE_C_COMPILER=clang-cl
+
 
     name: "Eco • 🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.runs-on }}"
     runs-on: ${{ matrix.cfg.runs-on }}
@@ -203,6 +210,10 @@ jobs:
         conda info
         conda list
 
+    - name: Prepare compiler environment for Mac
+      if: ${{ runner.os == 'macOS' }}
+      run: curl -L https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX10.10.sdk.tar.xz | sudo tar xf - -C /opt/
+
     - name: Prepare compiler environment for Windows
       if: ${{ runner.os == 'Windows' }}
       uses: ilammy/msvc-dev-cmd@v1
@@ -211,6 +222,7 @@ jobs:
 
     - name: Configure with CMake (conda defaults GNU)
       run: |
+        ${{ matrix.cfg.cmenv }} \
         cmake \
           -S. \
           -B objdir \
@@ -243,7 +255,7 @@ jobs:
           -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
           -D ENABLE_OPENMP=ON \
           -D ENABLE_XHOST=OFF \
-          ${{ matrix.cfg.libargs }}
+          ${{ matrix.cfg.cmargs }}
 
     - name: Compile Psi4
       run: |
