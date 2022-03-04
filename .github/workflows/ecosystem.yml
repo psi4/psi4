@@ -23,7 +23,7 @@ jobs:
           - runs-on: macos-latest
             python-version: "3.9"
             base-channel: "defaults"
-            cmenv: "CONDA_BUILD_SYSROOT=/opt/MacOSX10.10.sdk \"
+            cmenv: "CONDA_BUILD_SYSROOT=/opt/MacOSX10.10.sdk"
             cmargs: >
               -DBUILD_SHARED_LIBS=ON
 
@@ -222,7 +222,7 @@ jobs:
     - name: Configure with CMake (conda defaults GNU)
       if: ${{ runner.os == 'Windows' }}
       run: |
-        ${{ matrix.cfg.cmenv }}
+        ${{ matrix.cfg.cmenv }} \
         cmake \
           -S. \
           -B objdir \
