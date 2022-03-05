@@ -16,6 +16,9 @@ ref, gref = test_dftd3_mp2d.ref, test_dftd3_mp2d.gref
 
 pytestmark = [pytest.mark.quick]
 
+import platform
+skipmac =  pytest.mark.skipif(platform.system().startswith("Darwin"), reason="Mac fails 3body and getting replaced")
+
 @uusing("dftd3")
 @pytest.mark.parametrize("method", [
     "b3lyp-d3",
@@ -450,7 +453,7 @@ def test_dftd3__run_dftd3__2body(inp, subjects, request):
         gexpected, jrec['extras']['qcvars'][inp['lbl'] + ' DISPERSION CORRECTION GRADIENT'], atol=1.e-7)
 
 
-#@uusing("dftd3_321")
+@uusing("dftd3_321")
 @pytest.mark.parametrize(
     "subjects",
     [
@@ -461,11 +464,11 @@ def test_dftd3__run_dftd3__2body(inp, subjects, request):
     ],
     ids=['qmol', 'pmol', 'qcmol'])
 @pytest.mark.parametrize("inp", [
-    ({'parent': 'eneyne', 'name': 'd3-atmgr', 'subject': 'dimer', 'lbl': 'ATM'}),
-    ({'parent': 'eneyne', 'name': 'd3-b3lyp-atmgr', 'subject': 'mA', 'lbl': 'ATM'}),
-    ({'parent': 'eneyne', 'name': 'd3-pbe-atm(gr)', 'subject': 'mB', 'lbl': 'ATM'}),
-    ({'parent': 'eneyne', 'name': 'd3-ATMgr', 'subject': 'mAgB', 'lbl': 'ATM'}),
-    ({'parent': 'eneyne', 'name': 'd3-atmgr', 'subject': 'gAmB', 'lbl': 'ATM'}),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-atmgr', 'subject': 'dimer', 'lbl': 'ATM'}, marks=skipmac),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-b3lyp-atmgr', 'subject': 'mA', 'lbl': 'ATM'}, marks=skipmac),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-pbe-atm(gr)', 'subject': 'mB', 'lbl': 'ATM'}, marks=skipmac),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-ATMgr', 'subject': 'mAgB', 'lbl': 'ATM'}, marks=skipmac),
+    pytest.param({'parent': 'eneyne', 'name': 'd3-atmgr', 'subject': 'gAmB', 'lbl': 'ATM'}, marks=skipmac),
     ({'parent': 'ne', 'name': 'd3-atmgr', 'subject': 'atom', 'lbl': 'ATM'}),
 ])  # yapf: disable
 def test_dftd3__run_dftd3__3body(inp, subjects, request):

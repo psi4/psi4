@@ -17,14 +17,12 @@ jobs:
           #- runs-on: ubuntu-latest
           #  python-version: "3.9"  # "3.10" after adcc
           #  base-channel: "defaults"
-          #  cmenv: ""
           #  cmargs: >
           #    -DBUILD_SHARED_LIBS=ON
 
           - runs-on: macos-latest
             python-version: "3.9"
             base-channel: "defaults"
-            #cmenv: "CONDA_BUILD_SYSROOT=/opt/MacOSX10.10.sdk"
             target-sdk: "10.10"
             cmargs: >
               -DBUILD_SHARED_LIBS=ON
@@ -32,7 +30,6 @@ jobs:
           - runs-on: windows-latest
             python-version: "3.9"
             base-channel: "conda-forge"
-            #cmenv: ""
             cmargs: >
               -DCMAKE_CXX_COMPILER=clang-cl
               -DCMAKE_C_COMPILER=clang-cl
@@ -216,7 +213,7 @@ jobs:
         conda info
         conda list
 
-    - name: Prepare compiler environment for Mac
+    - name: Prepare compiler environment for macOS
       if: ${{ runner.os == 'macOS' }}
       run: curl -L https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX${{ matrix.cfg.target-sdk }}.sdk.tar.xz | sudo tar xf - -C /opt/
 
@@ -229,7 +226,6 @@ jobs:
     - name: Configure with CMake (conda defaults GNU)
       if: ${{ runner.os == 'Linux' }}
       run: |
-        #${{ matrix.cfg.cmenv }} \
         cmake \
           -S. \
           -B objdir \
@@ -267,7 +263,6 @@ jobs:
     - name: Configure with CMake (conda defaults GNU)
       if: ${{ runner.os == 'macOS' }}
       run: |
-        #${{ matrix.cfg.cmenv }} \
         cmake \
           -S. \
           -B objdir \
@@ -293,9 +288,15 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_CheMPS2=ON \
           -D ENABLE_dkh=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_dkh=ON \
+          -D ENABLE_gdma=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_gdma=ON \
+          -D ENABLE_PCMSolver=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_PCMSolver=ON \
           -D ENABLE_simint=ON \
           -D SIMINT_VECTOR=sse \
           -D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
+          -D ENABLE_v2rdm_casscf=ON \
+          -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
           -D ENABLE_OPENMP=ON \
           -D OpenMP_C_FLAG="-fopenmp=libiomp5" \
           -D OpenMP_CXX_FLAG="-fopenmp=libiomp5" \
@@ -307,7 +308,6 @@ jobs:
     - name: Configure with CMake (conda defaults GNU)
       if: ${{ runner.os == 'Windows' }}
       run: |
-        #${{ matrix.cfg.cmenv }} \
         cmake \
           -S. \
           -B objdir \
@@ -329,7 +329,6 @@ jobs:
 
     - name: Compile Psi4
       run: |
-        #${{ matrix.cfg.cmenv }} \
         cmake --build objdir -j`getconf _NPROCESSORS_ONLN`
         #ldd objdir/stage/lib/psi4/core.*.so
 
@@ -338,9 +337,9 @@ jobs:
       working-directory: ./objdir
       run: |
         conda install msgpack-python numpy scipy networkx pytest -c conda-forge
-        export LIB=C:/Miniconda/envs/defenv/Library/lib:$LIB
-        export PATH=C:/Miniconda/envs/defenv/Library/bin:D:/a/psi4/psi4/objdir/stage/bin:$PATH
-        export PYTHONPATH=D:/a/psi4/psi4/objdir/stage/lib:$PYTHONPATH
+        export LIB=C:/Miniconda/envs/defenv/Library/lib;$LIB
+        export PATH=C:/Miniconda/envs/defenv/Library/bin;D:/a/psi4/psi4/objdir/stage/bin;$PATH
+        export PYTHONPATH=D:/a/psi4/psi4/objdir/stage/lib;$PYTHONPATH
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
 
