@@ -13,12 +13,12 @@ jobs:
       fail-fast: false
       matrix:
         cfg:
-          # WORKS
-          #- runs-on: ubuntu-latest
-          #  python-version: "3.9"  # "3.10" after adcc
-          #  base-channel: "defaults"
-          #  cmargs: >
-          #    -DBUILD_SHARED_LIBS=ON
+
+          - runs-on: ubuntu-latest
+            python-version: "3.9"  # "3.10" after adcc
+            base-channel: "defaults"
+            cmargs: >
+              -DBUILD_SHARED_LIBS=ON
 
           - runs-on: macos-latest
             python-version: "3.9"
@@ -268,11 +268,11 @@ jobs:
           -B objdir \
           -G Ninja \
           -D CMAKE_BUILD_TYPE=Release \
-          -D CMAKE_C_COMPILER=${CLANG} \
+          -D CMAKE_C_COMPILER=${CC} \
           -D CMAKE_C_FLAGS="${CFLAGS}" \
-          -D CMAKE_CXX_COMPILER=${CLANGXX} \
+          -D CMAKE_CXX_COMPILER=${CXX} \
           -D CMAKE_CXX_FLAGS="${CXXFLAGS}" \
-          -D CMAKE_Fortran_COMPILER=${GFORTRAN} \
+          -D CMAKE_Fortran_COMPILER=${FC} \
           -D CMAKE_Fortran_FLAGS="${FFLAGS}" \
           -D CMAKE_Fortran_FLAGS="-isysroot /opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk $FFLAGS" \
           -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
@@ -298,9 +298,9 @@ jobs:
           -D ENABLE_v2rdm_casscf=ON \
           -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
           -D ENABLE_OPENMP=ON \
+          -D ENABLE_XHOST=OFF \
           -D OpenMP_C_FLAG="-fopenmp=libiomp5" \
           -D OpenMP_CXX_FLAG="-fopenmp=libiomp5" \
-          -D ENABLE_XHOST=OFF \
           -D CMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cfg.target-sdk }} \
           -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
           ${{ matrix.cfg.cmargs }}
@@ -343,6 +343,7 @@ jobs:
         echo ${PATH}
         echo "PYTHONPATH"
         echo ${PYTHONPATH}
+        ctest --build-config Release -L smoke --output-on-failure
         PATH="/D/a/psi4/psi4/objdir/stage/bin":$PATH PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         #export LIB="/C/Miniconda/envs/defenv/Library/lib":$LIB
         #export PATH="/C/Miniconda/envs/defenv/Library/bin":"/D/a/psi4/psi4/objdir/stage/bin":$PATH
@@ -381,6 +382,7 @@ jobs:
       run: ctest -L smoke -j2 --output-on-failure
 
     - name: Test Addons with Pytest (defaults only)
+      if: false
       working-directory: ./objdir
       run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
 
