@@ -295,8 +295,6 @@ jobs:
           -D ENABLE_simint=ON \
           -D SIMINT_VECTOR=sse \
           -D CMAKE_INSIST_FIND_PACKAGE_simint=ON \
-          -D ENABLE_v2rdm_casscf=ON \
-          -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
           -D ENABLE_OPENMP=ON \
           -D OpenMP_C_FLAG="-fopenmp=libiomp5" \
           -D OpenMP_CXX_FLAG="-fopenmp=libiomp5" \
@@ -337,9 +335,12 @@ jobs:
       working-directory: ./objdir
       run: |
         conda install msgpack-python numpy scipy networkx pytest -c conda-forge
-        export LIB=C:/Miniconda/envs/defenv/Library/lib;$LIB
-        export PATH=C:/Miniconda/envs/defenv/Library/bin;D:/a/psi4/psi4/objdir/stage/bin;$PATH
-        export PYTHONPATH=D:/a/psi4/psi4/objdir/stage/lib;$PYTHONPATH
+        echo ${LIB}
+        echo ${PATH}
+        echo ${PYTHONPATH}
+        export LIB="/C/Miniconda/envs/defenv/Library/lib":$LIB
+        export PATH="/C/Miniconda/envs/defenv/Library/bin":"/D/a/psi4/psi4/objdir/stage/bin":$PATH
+        export PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
 
