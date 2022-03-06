@@ -14,11 +14,11 @@ jobs:
       matrix:
         cfg:
 
-          - runs-on: ubuntu-latest
-            python-version: "3.9"  # "3.10" after adcc
-            base-channel: "defaults"
-            cmargs: >
-              -DBUILD_SHARED_LIBS=ON
+          #- runs-on: ubuntu-latest
+          #  python-version: "3.9"  # "3.10" after adcc
+          #  base-channel: "defaults"
+          #  cmargs: >
+          #    -DBUILD_SHARED_LIBS=ON
 
           - runs-on: macos-latest
             python-version: "3.9"
@@ -299,16 +299,12 @@ jobs:
           -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
           -D ENABLE_OPENMP=ON \
           -D ENABLE_XHOST=OFF \
-          -D OpenMP_C_FLAG="-fopenmp=libiomp5" \
-          -D OpenMP_CXX_FLAG="-fopenmp=libiomp5" \
           -D CMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cfg.target-sdk }} \
           -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
           -D CMAKE_INSTALL_PREFIX=./install \
           ${{ matrix.cfg.cmargs }}
-          #-D CMAKE_C_FLAGS="${CFLAGS}" \
-          #-D CMAKE_CXX_FLAGS="${CXXFLAGS}" \
-          #-D CMAKE_Fortran_FLAGS="${FFLAGS}" \
-          #-D CMAKE_Fortran_FLAGS="-isysroot /opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk $FFLAGS" \
+          #-D OpenMP_C_FLAG="-fopenmp=libiomp5" \
+          #-D OpenMP_CXX_FLAG="-fopenmp=libiomp5" \
 
     - name: Configure with CMake (conda defaults GNU)
       if: ${{ runner.os == 'Windows' }}
@@ -355,7 +351,11 @@ jobs:
         echo ${PATH}
         echo "PYTHONPATH"
         echo ${PYTHONPATH}
+        chmod u+x "D:/a/psi4/psi4/objdir/stage/bin/psi4"
+        chmod u+x "D:/a/psi4/psi4/install/bin/psi4"
+        echo "where python"
         where python
+        echo "where psi4"
         where psi4
         ctest --build-config Release -L smoke --output-on-failure
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
