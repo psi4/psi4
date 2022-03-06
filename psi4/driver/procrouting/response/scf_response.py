@@ -26,6 +26,7 @@
 # @END LICENSE
 #
 
+from collections import Counter
 from typing import Union, List
 try:
     from dataclasses import dataclass
@@ -39,6 +40,9 @@ from psi4.driver import constants
 from psi4.driver.p4util import solvers
 from psi4.driver.p4util.exceptions import *
 from psi4.driver.procrouting.response.scf_products import (TDRSCFEngine, TDUSCFEngine)
+
+# TODO: Split this file into a CPSCF file (frequency-independent case) and TD-SCF file (frequency-dependent case).
+# Neither "half" of the file uses any function from the other "half". The danger is what could happen to import paths...
 
 dipole = {
     'name': 'Dipole polarizabilities',
@@ -723,6 +727,8 @@ def tdscf_excitations(wfn,
 
     # collect results
     solver_results = []
+    root_count = Counter()
+    root_count[_results[0].irrep_GS] += 1
     for i, x in enumerate(_results):
         sym_descr = f"{x.irrep_GS}->{x.irrep_ES} ({1 if x.spin_mult== 'singlet' else 3} {x.irrep_trans})"
 
@@ -748,45 +754,135 @@ def tdscf_excitations(wfn,
             "LEFT EIGENVECTOR BETA": x.L_eigvec if restricted else x.L_eigvec[1],
         })
 
-        # stash in psivars/wfnvars
+        # All TDSCF variables sare saved to the wavefunction here. The driver pushes them to globals.
         ssuper_name = wfn.functional().name()
-        # wfn.set_variable("TD-fctl ROOT n TOTAL ENERGY - h SYMMETRY")  # P::e SCF
+        target_h_count = root_count[x.irrep_ES]
+
+        # wfn.set_variable("TD-fctl ROOT m TOTAL ENERGY")               # P::e SCF
+        # wfn.set_variable("TD-fctl ROOT m (h) TOTAL ENERGY")           # P::e SCF
+        # wfn.set_variable("TD-fctl ROOT m TOTAL ENERGY - h SYMMETRY")  # P::e SCF
+        wfn.set_variable(f"TD-{ssuper_name} ROOT {i+1} TOTAL ENERGY", E_tot_au)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT {target_h_count} ({x.irrep_ES}) TOTAL ENERGY", E_tot_au)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT {i+1} TOTAL ENERGY - {x.irrep_trans} SYMMETRY", E_tot_au)
+        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m EXCITATION ENERGY")               # P::e SCF
+        # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) EXCITATION ENERGY")       # P::e SCF
         # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY")  # P::e SCF
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} EXCITATION ENERGY", x.E_ex_au)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 ({x.irrep_GS}) -> ROOT {target_h_count} ({x.irrep_ES}) EXCITATION ENERGY", x.E_ex_au)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - {x.irrep_trans} SYMMETRY", x.E_ex_au)
+        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN)")               # P::e SCF
+        # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)")       # P::e SCF
         # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN) - h SYMMETRY")  # P::e SCF
-        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL) - h SYMMETRY")  # P::e SCF
-        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (LEN) - h SYMMETRY")  # P::e SCF
-        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL) - h SYMMETRY")  # P::e SCF
-        wfn.set_variable(f"TD-{ssuper_name} ROOT {i+1} TOTAL ENERGY - {x.irrep_ES} SYMMETRY", E_tot_au)
-        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - {x.irrep_ES} SYMMETRY", x.E_ex_au)
-        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - {x.irrep_ES} SYMMETRY",
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) ",
                          x.f_length)
-        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (VEL) - {x.irrep_ES} SYMMETRY",
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 ({x.irrep_GS}) -> ROOT {target_h_count} ({x.irrep_ES}) OSCILLATOR STRENGTH (LEN)",
+                         x.f_length)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - {x.irrep_trans} SYMMETRY",
+                         x.f_length)
+        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL)")               # P::e SCF
+        # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (VEL)")       # P::e SCF
+        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL) - h SYMMETRY")  # P::e SCF
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (VEL)",
                          x.f_velocity)
-        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ROTATORY STRENGTH (LEN) - {x.irrep_ES} SYMMETRY",
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 ({x.irrep_GS}) -> ROOT {target_h_count} OSCILLATOR STRENGTH (VEL) - {x.irrep_ES} SYMMETRY",
+                         x.f_velocity)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (VEL) - {x.irrep_trans} SYMMETRY",
+                         x.f_velocity)
+        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (LEN)")               # P::e SCF
+        # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) ROTATORY STRENGTH (LEN)")       # P::e SCF
+        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (LEN) - h SYMMETRY")  # P::e SCF
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ROTATORY STRENGTH (LEN) ",
                          x.R_length)
-        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ROTATORY STRENGTH (VEL) - {x.irrep_ES} SYMMETRY",
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 ({x.irrep_GS}) -> ROOT {target_h_count} ({x.irrep_ES}) ROTATORY STRENGTH (LEN)",
+                         x.R_length)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ROTATORY STRENGTH (LEN) - {x.irrep_trans} SYMMETRY",
+                         x.R_length)
+        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL)")               # P::e SCF
+        # wfn.set_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) ROTATORY STRENGTH (VEL)")       # P::e SCF
+        # wfn.set_variable("TD-fctl ROOT 0 -> ROOT m ROTATORY STRENGTH (VEL) - h SYMMETRY")  # P::e SCF
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ROTATORY STRENGTH (VEL)",
                          x.R_velocity)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 ({x.irrep_GS}) -> ROOT {target_h_count} ({x.irrep_ES}) ROTATORY STRENGTH (VEL)",
+                         x.R_velocity)
+        wfn.set_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ROTATORY STRENGTH (VEL) - {x.irrep_trans} SYMMETRY",
+                         x.R_velocity)
+        # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN")                # P::e SCF
+        # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN")        # P::e SCF
+        # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h SYMMETRY")  # P::e SCF
         wfn.set_array_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - {x.irrep_ES} SYMMETRY",
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ELECTRIC TRANSITION DIPOLE MOMENT (LEN)",
             core.Matrix.from_array(x.edtm_length.reshape((1, 3))))
         wfn.set_array_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ELECTRIC TRANSITION DIPOLE MOMENT (VEL) - {x.irrep_ES} SYMMETRY",
+            f"TD-{ssuper_name} ROOT 0 ({x.irrep_GS}) -> ROOT {target_h_count} ({x.irrep_ES}) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)",
+            core.Matrix.from_array(x.edtm_length.reshape((1, 3))))
+        wfn.set_array_variable(
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - {x.irrep_trans} SYMMETRY",
+            core.Matrix.from_array(x.edtm_length.reshape((1, 3))))
+        # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (VEL)")               # P::e SCF
+        # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) ELECTRIC TRANSITION DIPOLE MOMENT (VEL)")       # P::e SCF
+        # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (VEL) - h SYMMETRY")  # P::e SCF
+        wfn.set_array_variable(
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ELECTRIC TRANSITION DIPOLE MOMENT (VEL)",
             core.Matrix.from_array(x.edtm_velocity.reshape((1, 3))))
         wfn.set_array_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} MAGNETIC TRANSITION DIPOLE MOMENT - {x.irrep_ES} SYMMETRY",
+            f"TD-{ssuper_name} ROOT 0 ({x.irrep_GS}) -> ROOT {target_h_count} ({x.irrep_ES}) ELECTRIC TRANSITION DIPOLE MOMENT (VEL)",
+            core.Matrix.from_array(x.edtm_velocity.reshape((1, 3))))
+        wfn.set_array_variable(
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} ELECTRIC TRANSITION DIPOLE MOMENT (VEL) - {x.irrep_trans} SYMMETRY",
+            core.Matrix.from_array(x.edtm_velocity.reshape((1, 3))))
+        # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m MAGNETIC TRANSITION DIPOLE MOMENT")               # P::e SCF
+        # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) MAGNETIC TRANSITION DIPOLE MOMENT")       # P::e SCF
+        # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m MAGNETIC TRANSITION DIPOLE MOMENT - h SYMMETRY")  # P::e SCF
+        wfn.set_array_variable(
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} MAGNETIC TRANSITION DIPOLE MOMENT",
             core.Matrix.from_array(x.mdtm.reshape((1, 3))))
-        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
+        wfn.set_array_variable(
+            f"TD-{ssuper_name} ROOT 0 ({x.irrep_GS}) -> ROOT {target_h_count} ({x.irrep_ES}) MAGNETIC TRANSITION DIPOLE MOMENT",
+            core.Matrix.from_array(x.mdtm.reshape((1, 3))))
+        wfn.set_array_variable(
+            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} MAGNETIC TRANSITION DIPOLE MOMENT - {x.irrep_trans} SYMMETRY",
+            core.Matrix.from_array(x.mdtm.reshape((1, 3))))
+        # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR ALPHA")               # P::e SCF
+        # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) RIGHT EIGENVECTOR ALPHA")       # P::e SCF
+        # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR ALPHA - h SYMMETRY")  # P::e SCF
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR ALPHA",
                                x.R_eigvec if restricted else x.R_eigvec[0])
-        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 ({x.irrep_GS}) -> ROOT {target_h_count} ({x.irrep_ES}) RIGHT EIGENVECTOR ALPHA",
+                               x.R_eigvec if restricted else x.R_eigvec[0])
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR ALPHA - {x.irrep_trans} SYMMETRY",
+                               x.R_eigvec if restricted else x.R_eigvec[0])
+        # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR ALPHA")               # P::e SCF
+        # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) LEFT EIGENVECTOR ALPHA")       # P::e SCF
+        # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR ALPHA - h SYMMETRY")  # P::e SCF
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR ALPHA",
                                x.L_eigvec if restricted else x.L_eigvec[0])
-        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR BETA - {x.irrep_ES} SYMMETRY",
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 ({x.irrep_GS}) -> ROOT {target_h_count} ({x.irrep_ES}) LEFT EIGENVECTOR ALPHA",
+                               x.L_eigvec if restricted else x.L_eigvec[0])
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR ALPHA - {x.irrep_trans} SYMMETRY",
+                               x.L_eigvec if restricted else x.L_eigvec[0])
+        # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR BETA")               # P::e SCF
+        # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) RIGHT EIGENVECTOR BETA")       # P::e SCF
+        # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR BETA - h SYMMETRY")  # P::e SCF
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR BETA",
                                x.R_eigvec if restricted else x.R_eigvec[1])
-        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR BETA - {x.irrep_ES} SYMMETRY",
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 ({x.irrep_GS}) -> ROOT {target_h_count} ({x.irrep_ES}) RIGHT EIGENVECTOR BETA",
+                               x.R_eigvec if restricted else x.R_eigvec[1])
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR BETA - {x.irrep_trans} SYMMETRY",
+                               x.R_eigvec if restricted else x.R_eigvec[1])
+        # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR BETA")               # P::e SCF
+        # wfn.set_array_variable("TD-fctl ROOT 0 (h) -> ROOT m (i) LEFT EIGENVECTOR BETA")       # P::e SCF
+        # wfn.set_array_variable("TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR BETA - h SYMMETRY")  # P::e SCF
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR BETA",
+                               x.L_eigvec if restricted else x.L_eigvec[1])
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 ({x.irrep_GS}) -> ROOT {target_h_count} ({x.irrep_ES}) LEFT EIGENVECTOR BETA",
+                               x.L_eigvec if restricted else x.L_eigvec[1])
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR BETA - {x.irrep_trans} SYMMETRY",
                                x.L_eigvec if restricted else x.L_eigvec[1])
 
         core.print_out(
             f"    {i+1:^4} {sym_descr:^20} {x.E_ex_au:< 15.5f} {E_ex_ev:< 15.5f} {E_tot_au:< 15.5f} {x.f_length:< 15.4f} {x.f_velocity:< 15.4f} {x.R_length:< 15.4f} {x.R_velocity:< 15.4f}\n"
         )
+        root_count[x.irrep_ES] += 1
 
     core.print_out("\n")
     
