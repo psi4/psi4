@@ -350,11 +350,19 @@ jobs:
       shell: cmd
       working-directory: ./objdir
       run: |
+        dir D:\a\psi4\psi4\install\bin
+        dir D:\a\psi4\psi4\install\lib
+        dir D:\a\psi4\psi4\install\lib\psi4
         set LIB=D:\a\psi4\psi4\install\lib;C:\Miniconda\envs\defenv\Library\lib;%LIB%
         set PATH=D:\a\psi4\psi4\install\bin;C:\Miniconda\envs\defenv\Library\bin;%PATH%
-        set PYTHONPATH=D:\a\psi4\psi4\install\lib;%PYTHONPATH%
-        ctest --build-config Release -L smoke --output-on-failure
+        set PYTHONPATH=D:\a\psi4\psi4\install\lib;D:\a\psi4\psi4\install\lib\psi4;%PYTHONPATH%
+        echo %LIB%
+        echo %PATH%
+        echo %PYTHONPATH%
+        where python
+        where psi4
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+        ctest --build-config Release -L smoke --output-on-failure
         #PATH="/D/a/psi4/psi4/objdir/stage/bin":$PATH PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         #psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
