@@ -287,6 +287,10 @@ install(FILES ${CMAKE_BINARY_DIR}/__init__.py
               ${CMAKE_BINARY_DIR}/extras.py
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4)
 
+install(
+  FILES ../pytest.ini
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
+  )
 install(DIRECTORY ../tests/pytests/
         DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
         FILES_MATCHING
@@ -298,10 +302,13 @@ install(DIRECTORY ../tests/pytests/
         PATTERN "tdscf_reference_data.json"
         PATTERN "oei_reference_data.json"
         PATTERN "utils.py")
-install(DIRECTORY ../tests/pytests/test_fchk_writer
-                  ../tests/pytests/test_molden_writer
-                  ../tests/pytests/test_psi4_qcschema
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/)
+install(
+  DIRECTORY
+    ../tests/pytests/test_fchk_writer
+    ../tests/pytests/test_molden_writer
+    ../tests/pytests/test_psi4_qcschema
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
+  )
 
 install(
   DIRECTORY

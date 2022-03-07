@@ -14,11 +14,11 @@ jobs:
       matrix:
         cfg:
 
-          #- runs-on: ubuntu-latest
-          #  python-version: "3.9"  # "3.10" after adcc
-          #  base-channel: "defaults"
-          #  cmargs: >
-          #    -DBUILD_SHARED_LIBS=ON
+          - runs-on: ubuntu-latest
+            python-version: "3.10"  # "3.10" after adcc
+            base-channel: "defaults"
+            cmargs: >
+              -DBUILD_SHARED_LIBS=ON
 
           #- runs-on: macos-latest
           #  python-version: "3.9"
@@ -72,7 +72,7 @@ jobs:
           - cxx-compiler
           - eigen
           - fortran-compiler
-          - mkl-devel
+          - mkl-devel=2019.1
           - mpfr
           - ninja
           - pybind11
@@ -235,6 +235,16 @@ jobs:
       with:
         arch: x64
 
+      # Install Intel OpenMP import library
+      # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
+      #set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
+    - name: "Install Intel OpenMP import library"
+      if: ${{ runner.os == 'Windows' }}
+      shell: cmd
+      run: |
+          git clone https://github.com/psi4/iomp5md.git
+          #echo '##vso[task.setvariable variable=LIB]%LIB%'
+
     - name: Configure with CMake (conda defaults GNU)
       if: ${{ runner.os == 'Linux' }}
       run: |
@@ -353,13 +363,19 @@ jobs:
         dir D:\a\psi4\psi4\install\bin
         dir D:\a\psi4\psi4\install\lib
         dir D:\a\psi4\psi4\install\lib\psi4
-        set LIB=D:\a\psi4\psi4\install\lib;C:\Miniconda\envs\defenv\Library\lib;%LIB%
+        dir D:\a\psi4\psi4\iomp5md\conda\win\2019.1
+        set LIB=D:\a\psi4\psi4\install\lib;D:\a\psi4\psi4\iomp5md\conda\win\2019.1;C:\Miniconda\envs\defenv\Library\lib;%LIB%
         set PATH=D:\a\psi4\psi4\install\bin;C:\Miniconda\envs\defenv\Library\bin;%PATH%
         set PYTHONPATH=D:\a\psi4\psi4\install\lib;D:\a\psi4\psi4\install\lib\psi4;%PYTHONPATH%
+        echo "LIB"
         echo %LIB%
+        echo "PATH"
         echo %PATH%
+        echo "PYTHONPATH"
         echo %PYTHONPATH%
+        echo "where python"
         where python
+        echo "where psi4"
         where psi4
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         ctest --build-config Release -L smoke --output-on-failure
@@ -429,7 +445,7 @@ jobs:
       run: ctest -L smoke -j2 --output-on-failure
 
     - name: Test Addons with Pytest (defaults only)
-      if: false
+      #if: false
       working-directory: ./objdir
       run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
 
