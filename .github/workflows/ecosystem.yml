@@ -31,14 +31,14 @@ jobs:
             # Notes:
             # * libiomp5 is picking up naturally but left explicit as guide
 
-          - runs-on: windows-latest
-            python-version: "3.9"
-            base-channel: "conda-forge"
-            cmargs: >
-              -DBUILD_SHARED_LIBS=OFF
+          #- runs-on: windows-latest
+          #  python-version: "3.9"
+          #  base-channel: "conda-forge"
+          #  cmargs: >
+          #    -DBUILD_SHARED_LIBS=OFF
 
-              #-DCMAKE_CXX_COMPILER=clang-cl
-              #-DCMAKE_C_COMPILER=clang-cl
+          #    #-DCMAKE_CXX_COMPILER=clang-cl
+          #    #-DCMAKE_C_COMPILER=clang-cl
 
     name: "Eco • 🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.runs-on }}"
     runs-on: ${{ matrix.cfg.runs-on }}
@@ -58,7 +58,7 @@ jobs:
     - name: Prepare compiler environment for macOS
       if: ${{ runner.os == 'macOS' }}
       run: |
-        macos_Mm=$(python -c "import platform; Mmp = platform.mac_ver()[0]; Mm = '.'.join(Mmp.split('.')[:2]); print(Mm)")
+        macos_Mm=$(SYSTEM_VERSION_COMPAT=0 python -c "import platform; Mmp = platform.mac_ver()[0]; Mm = '.'.join(Mmp.split('.')[:2]); print(Mm)")
         echo $macos_Mm
         curl -L https://github.com/phracker/MacOSX-SDKs/releases/download/$macos_Mm/MacOSX${{ matrix.cfg.target-sdk }}.sdk.tar.xz | sudo tar xf - -C /opt/
 
