@@ -48,11 +48,28 @@ jobs:
 
     steps:
 
-    # fetch-depth: 0 gets git history so Psi4 version computable
+      # fetch-depth: 0 gets git history so Psi4 version is computable
     - name: Checkout
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
+
+      # mac_ver line returns, for example, "10.15" for Catalina
+    - name: Prepare compiler environment for macOS
+      if: ${{ runner.os == 'macOS' }}
+      run: |
+        macos_Mm=$(python -c "import platform; Mmp = platform.mac_ver()[0]; Mm = '.'.join(Mmp.split('.')[:2]); print(Mm)")
+        echo $macos_Mm
+        curl -L https://github.com/phracker/MacOSX-SDKs/releases/download/$macos_Mm/MacOSX${{ matrix.cfg.target-sdk }}.sdk.tar.xz | sudo tar xf - -C /opt/
+
+      # equivalent to `call vcvarsall.bat x86_amd64`. see Azure script to follow cmdline.
+    - name: Prepare compiler environment for Windows
+      if: ${{ runner.os == 'Windows' }}
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x86_amd64
+        toolset: 14.0
+        #arch: x64
 
     - name: Write Conda Env Files
       shell: bash -l {0}
@@ -224,19 +241,6 @@ jobs:
       run: |
         conda info
         conda list
-
-    - name: Prepare compiler environment for macOS
-      if: ${{ runner.os == 'macOS' }}
-      run: curl -L https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX${{ matrix.cfg.target-sdk }}.sdk.tar.xz | sudo tar xf - -C /opt/
-
-      # equivalent to `call vcvarsall.bat x86_amd64`. see Azure script to follow cmdline.
-    - name: Prepare compiler environment for Windows
-      if: ${{ runner.os == 'Windows' }}
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x86_amd64
-        toolset: 14.0
-        #arch: x64
 
       # Install Intel OpenMP import library
       # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
@@ -447,7 +451,7 @@ jobs:
       run: ctest -L smoke -j2 --output-on-failure
 
     - name: Test Addons with Pytest (defaults only)
-      #if: false
+      if: false
       working-directory: ./objdir
       run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 --cache-clear -m "addon and not long" stage/lib/psi4/tests/
 
