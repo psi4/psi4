@@ -20,12 +20,16 @@ jobs:
           #  cmargs: >
           #    -DBUILD_SHARED_LIBS=ON
 
-          - runs-on: macos-latest
-            python-version: "3.9"
-            base-channel: "defaults"
-            target-sdk: "10.10"
-            cmargs: >
-              -DBUILD_SHARED_LIBS=ON
+          #- runs-on: macos-latest
+          #  python-version: "3.9"
+          #  base-channel: "defaults"
+          #  target-sdk: "10.10"
+          #  cmargs: >
+          #    -D BUILD_SHARED_LIBS=ON
+          #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
+          #    -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
+          #  # Notes:
+          #  # * libiomp5 is picking up naturally but left explicit as guide
 
           - runs-on: windows-latest
             python-version: "3.9"
@@ -233,6 +237,7 @@ jobs:
           -B objdir \
           -G Ninja \
           -D CMAKE_BUILD_TYPE=Release \
+          -D CMAKE_INSTALL_PREFIX=./install \
           -D CMAKE_C_COMPILER=${CC} \
           -D CMAKE_CXX_COMPILER=${CXX} \
           -D CMAKE_Fortran_COMPILER=${FC} \
@@ -260,7 +265,6 @@ jobs:
           -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
           -D ENABLE_OPENMP=ON \
           -D ENABLE_XHOST=OFF \
-          -D CMAKE_INSTALL_PREFIX=./install \
           ${{ matrix.cfg.cmargs }}
 
     - name: Configure with CMake (conda defaults GNU)
@@ -271,10 +275,10 @@ jobs:
           -B objdir \
           -G Ninja \
           -D CMAKE_BUILD_TYPE=Release \
+          -D CMAKE_INSTALL_PREFIX=./install \
           -D CMAKE_C_COMPILER=${CC} \
           -D CMAKE_CXX_COMPILER=${CXX} \
           -D CMAKE_Fortran_COMPILER=${FC} \
-          -D CMAKE_Fortran_FLAGS="-isysroot /opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
           -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
           -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
@@ -299,12 +303,10 @@ jobs:
           -D CMAKE_DISABLE_FIND_PACKAGE_v2rdm_casscf=ON \
           -D ENABLE_OPENMP=ON \
           -D ENABLE_XHOST=OFF \
+          -D CMAKE_Fortran_FLAGS="-isysroot /opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
           -D CMAKE_OSX_DEPLOYMENT_TARGET=${{ matrix.cfg.target-sdk }} \
           -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
-          -D CMAKE_INSTALL_PREFIX=./install \
           ${{ matrix.cfg.cmargs }}
-          #-D OpenMP_C_FLAG="-fopenmp=libiomp5" \
-          #-D OpenMP_CXX_FLAG="-fopenmp=libiomp5" \
 
     - name: Configure with CMake (conda defaults GNU)
       if: ${{ runner.os == 'Windows' }}
@@ -314,6 +316,7 @@ jobs:
           -B objdir \
           -G Ninja \
           -D CMAKE_BUILD_TYPE=Release \
+          -D CMAKE_INSTALL_PREFIX=./install \
           -D CMAKE_C_COMPILER=clang-cl \
           -D CMAKE_CXX_COMPILER=clang-cl \
           -D CMAKE_CXX_FLAGS="/arch:AVX" \
@@ -328,7 +331,6 @@ jobs:
           -D Python_EXECUTABLE="C:/Miniconda/envs/defenv/python.exe" \
           -D MPFR_ROOT="C:/Miniconda/envs/defenv/Library" \
           -D Eigen_ROOT="C:/Miniconda/envs/defenv/Library" \
-          -D CMAKE_INSTALL_PREFIX=./install \
           ${{ matrix.cfg.cmargs }}
           #-D ENABLE_OPENMP=ON \
 
@@ -337,7 +339,25 @@ jobs:
         cmake --build objdir --target install -j`getconf _NPROCESSORS_ONLN`
         #ldd objdir/stage/lib/psi4/core.*.so
 
-    - name: Run, Spot, Run
+    - name: Run, Spot, Run Cmd
+      if: ${{ runner.os == 'Windows' }}
+      shell: cmd
+      working-directory: ./objdir
+      run: |
+        conda install msgpack-python numpy scipy networkx pytest -c conda-forge
+        set LIB=D:\a\psi4\psi4\install\lib;C:\Miniconda\envs\defenv\Library\lib;%LIB%
+        set PATH=D:\a\psi4\psi4\install\bin;C:\Miniconda\envs\defenv\Library\bin;%PATH%
+        set PYTHONPATH=D:\a\psi4\psi4\install\lib;%PYTHONPATH%
+        ctest --build-config Release -L smoke --output-on-failure
+        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+        PATH="/D/a/psi4/psi4/objdir/stage/bin":$PATH PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+        #export LIB="/C/Miniconda/envs/defenv/Library/lib":$LIB
+        #export PATH="/C/Miniconda/envs/defenv/Library/bin":"/D/a/psi4/psi4/objdir/stage/bin":$PATH
+        #export PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH
+        #psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+        python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
+
+    - name: Run, Spot, Run bash
       if: ${{ runner.os == 'Windows' }}
       working-directory: ./objdir
       run: |
