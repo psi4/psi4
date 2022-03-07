@@ -15,21 +15,21 @@ jobs:
         cfg:
 
           - runs-on: ubuntu-latest
-            python-version: "3.10"  # "3.10" after adcc
+            python-version: "3.10"
             base-channel: "defaults"
             cmargs: >
               -DBUILD_SHARED_LIBS=ON
 
-          #- runs-on: macos-latest
-          #  python-version: "3.9"
-          #  base-channel: "defaults"
-          #  target-sdk: "10.10"
-          #  cmargs: >
-          #    -D BUILD_SHARED_LIBS=ON
-          #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
-          #    -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
-          #  # Notes:
-          #  # * libiomp5 is picking up naturally but left explicit as guide
+          - runs-on: macos-latest
+            python-version: "3.10"
+            base-channel: "defaults"
+            target-sdk: "10.10"
+            cmargs: >
+              -D BUILD_SHARED_LIBS=ON
+              -D OpenMP_C_FLAG="-fopenmp=libiomp5"
+              -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
+            # Notes:
+            # * libiomp5 is picking up naturally but left explicit as guide
 
           - runs-on: windows-latest
             python-version: "3.9"
@@ -234,7 +234,9 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: ilammy/msvc-dev-cmd@v1
       with:
-        arch: x64
+        arch: x86_amd64
+        toolset: 14.0
+        #arch: x64
 
       # Install Intel OpenMP import library
       # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
@@ -447,7 +449,7 @@ jobs:
     - name: Test Addons with Pytest (defaults only)
       #if: false
       working-directory: ./objdir
-      run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 --cache-clear -m "addon and not long" stage/lib/psi4/tests/
 
     - name: Test Addons with Pytest (defaults + c-f)
       working-directory: ./objdir
@@ -457,5 +459,5 @@ jobs:
         conda activate --stack cfenv
         echo $CONDA_PREFIX
         conda list
-        PYTHONPATH=$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages/:stage/lib pytest -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
+        PYTHONPATH=$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages/:stage/lib pytest --cache-clear -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
 
