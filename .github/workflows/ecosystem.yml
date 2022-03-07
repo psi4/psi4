@@ -89,6 +89,12 @@ jobs:
           - psi4/label/dev::gdma
           - psi4/label/dev::pcmsolver
           - psi4/label/dev::simint
+            # tmp win
+          - msgpack-python
+          - numpy
+          - scipy
+          - networkx
+          - pytest
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           # <lang>-compiler is only a metapackage for c-f
@@ -344,24 +350,20 @@ jobs:
       shell: cmd
       working-directory: ./objdir
       run: |
-        conda install msgpack-python numpy scipy networkx pytest -c conda-forge
         set LIB=D:\a\psi4\psi4\install\lib;C:\Miniconda\envs\defenv\Library\lib;%LIB%
         set PATH=D:\a\psi4\psi4\install\bin;C:\Miniconda\envs\defenv\Library\bin;%PATH%
         set PYTHONPATH=D:\a\psi4\psi4\install\lib;%PYTHONPATH%
         ctest --build-config Release -L smoke --output-on-failure
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-        PATH="/D/a/psi4/psi4/objdir/stage/bin":$PATH PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-        #export LIB="/C/Miniconda/envs/defenv/Library/lib":$LIB
-        #export PATH="/C/Miniconda/envs/defenv/Library/bin":"/D/a/psi4/psi4/objdir/stage/bin":$PATH
-        #export PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH
+        #PATH="/D/a/psi4/psi4/objdir/stage/bin":$PATH PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         #psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
+        #conda install msgpack-python numpy scipy networkx pytest -c conda-forge
 
     - name: Run, Spot, Run bash
       if: ${{ runner.os == 'Windows' }}
       working-directory: ./objdir
       run: |
-        conda install msgpack-python numpy scipy networkx pytest -c conda-forge
         export LIB="D:/a/psi4/psi4/install/lib":"C:/Miniconda/envs/defenv/Library/lib":$LIB
         export PATH="D:/a/psi4/psi4/install/bin":"C:/Miniconda/envs/defenv/Library/bin":$PATH
         export PYTHONPATH="D:/a/psi4/psi4/install/lib":$PYTHONPATH
@@ -374,8 +376,10 @@ jobs:
         chmod u+x "D:/a/psi4/psi4/objdir/stage/bin/psi4"
         chmod u+x "D:/a/psi4/psi4/install/bin/psi4"
         echo "where python"
+        which python
         where python
         echo "where psi4"
+        which psi4
         where psi4
         ctest --build-config Release -L smoke --output-on-failure
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
