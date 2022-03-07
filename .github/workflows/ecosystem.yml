@@ -72,7 +72,7 @@ jobs:
           - cxx-compiler
           - eigen
           - fortran-compiler
-          - mkl-devel=2019.1
+          - mkl-devel
           - mpfr
           - ninja
           - pybind11
@@ -123,6 +123,7 @@ jobs:
           sed -i "s;- psi4/label/dev::gdma;#- psi4/label/dev::gdma;g" build.yaml
           sed -i "s;- psi4/label/dev::pcmsolver;#- psi4/label/dev::pcmsolver;g" build.yaml
           sed -i "s;- psi4/label/dev::simint;#- psi4/label/dev::simint;g" build.yaml
+          sed -i "s;- mkl-devel;- mkl-devel=2019.1;g" build.yaml
         fi
         cat > run.yaml <<EOF
         name: defenv
@@ -243,7 +244,6 @@ jobs:
       shell: cmd
       run: |
           git clone https://github.com/psi4/iomp5md.git
-          #echo '##vso[task.setvariable variable=LIB]%LIB%'
 
     - name: Configure with CMake (conda defaults GNU)
       if: ${{ runner.os == 'Linux' }}
