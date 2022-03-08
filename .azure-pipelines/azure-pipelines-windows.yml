@@ -176,6 +176,7 @@ jobs:
           if "%CMAKE_BUILD_TYPE%"=="Release" set ENABLE_XHOST=ON
           if not defined ENABLE_XHOST exit 1
           cmake -G Ninja ^
+                -DCMAKE_VERBOSE_MAKEFILE=ON ^
                 -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% ^
                 -DCMAKE_INSTALL_PREFIX=../install ^
                 -DCMAKE_C_COMPILER=clang-cl ^

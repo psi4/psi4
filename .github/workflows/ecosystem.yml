@@ -31,11 +31,11 @@ jobs:
             # Notes:
             # * libiomp5 is picking up naturally but left explicit as guide
 
-          #- runs-on: windows-latest
-          #  python-version: "3.9"
-          #  base-channel: "conda-forge"
-          #  cmargs: >
-          #    -DBUILD_SHARED_LIBS=OFF
+          - runs-on: windows-latest
+            python-version: "3.8"
+            base-channel: "conda-forge"
+            cmargs: >
+              -D BUILD_SHARED_LIBS=OFF
 
           #    #-DCMAKE_CXX_COMPILER=clang-cl
           #    #-DCMAKE_C_COMPILER=clang-cl
@@ -58,13 +58,16 @@ jobs:
       with:
         fetch-depth: 0
 
-      # mac_ver line returns, for example, "10.15" for Catalina, "11.6" for Big Sur. but phracker doesn't support all minor, so hardcoded
+      # mac_ver line returns, for example, "10.15" for Catalina, "11.6" for Big Sur. but phracker doesn't support all minor, so some logic to hardcode.
     - name: Prepare compiler environment for macOS
       if: ${{ runner.os == 'macOS' }}
       run: |
         macos_Mm=$(SYSTEM_VERSION_COMPAT=0 python -c "import platform; Mmp = platform.mac_ver()[0]; Mm = '.'.join(Mmp.split('.')[:2]); print(Mm)")
-        echo $macos_Mm
-        macos_Mm=11.3
+        macos_M=$(SYSTEM_VERSION_COMPAT=0 python -c "import platform; Mmp = platform.mac_ver()[0]; M = '.'.join(Mmp.split('.')[:1]); print(M)")
+        echo $macos_Mm $macos_M
+        if [[ "${macos_M}" == "11" ]]; then
+            macos_Mm=11.3
+        fi
         echo $macos_Mm
         curl -L https://github.com/phracker/MacOSX-SDKs/releases/download/${macos_Mm}/MacOSX${{ matrix.cfg.target-sdk }}.sdk.tar.xz | sudo tar xf - -C /opt/
 
@@ -133,9 +136,9 @@ jobs:
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # permanent, as we use clang-cl, not c-f compiler
-          sed -i "s/- c-compiler/#- c-compiler/g" build.yaml
-          sed -i "s/- cxx-compiler/#- cxx-compiler/g" build.yaml
-          sed -i "s/- fortran-compiler/#- fortran-compiler/g" build.yaml
+          sed -i "s;- c-compiler;#- c-compiler;g" build.yaml
+          sed -i "s;- cxx-compiler;#- cxx-compiler;g" build.yaml
+          sed -i "s;- fortran-compiler;#- fortran-compiler;g" build.yaml
           # semi-permanent
           sed -i "s;- psi4/label/dev::gau2grid;- gau2grid;g" build.yaml
           sed -i "s;- psi4/label/dev::libxc;- libxc;g" build.yaml
@@ -147,6 +150,44 @@ jobs:
           sed -i "s;- psi4/label/dev::pcmsolver;#- psi4/label/dev::pcmsolver;g" build.yaml
           sed -i "s;- psi4/label/dev::simint;#- psi4/label/dev::simint;g" build.yaml
           sed -i "s;- mkl-devel;- mkl-devel=2019.1;g" build.yaml
+        fi
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+        cat > build.yaml <<EOF
+        name: defenv
+        channels:
+          #- conda-forge
+          - defaults
+        dependencies:
+          - anaconda-client
+          - anaconda-project
+          - conda-build
+          - conda-verify
+          - blas=*=mkl
+          - cmake
+          - conda-forge::eigen
+          - intel-openmp=2019.1
+          - mkl-devel=2019.1
+          - networkx
+          - ninja
+          - conda-forge::numpy
+          - pint
+          - pybind11=2.7.0
+          - pymdi
+          - conda-forge::pytest>=7.0.1
+          - pytest-xdist
+          - python=3.8
+          - psi4/label/dev::dftd3
+          - psi4/label/dev::gcp
+          - conda-forge::gau2grid
+          - psi4/label/dev::libint2
+          - conda-forge::libxc
+          - conda-forge::mpfr
+          - conda-forge::mpmath
+          - conda-forge::msgpack-python
+          - conda-forge::qcelemental
+          - conda-forge::qcengine
+          - conda-forge::scipy
+        EOF
         fi
         cat > run.yaml <<EOF
         name: defenv
@@ -216,10 +257,10 @@ jobs:
             # qc opt'l
           - adcc
           - cppe
-          - dftd4-python
-          - geometric
-          - openfermionpsi4
-          - pymdi
+          #- dftd4-python
+          #- geometric
+          #- openfermionpsi4
+          #- pymdi
           - qcengine
         EOF
         if [[ "${{ runner.os }}" == "macOS" ]]; then
@@ -350,20 +391,23 @@ jobs:
           -D CMAKE_INSTALL_PREFIX=./install \
           -D CMAKE_C_COMPILER=clang-cl \
           -D CMAKE_CXX_COMPILER=clang-cl \
+          -D CMAKE_VERBOSE_MAKEFILE=ON \
           -D CMAKE_CXX_FLAGS="/arch:AVX" \
-          -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
-          -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_XHOST=OFF \
           -D Python_EXECUTABLE="C:/Miniconda/envs/defenv/python.exe" \
           -D MPFR_ROOT="C:/Miniconda/envs/defenv/Library" \
           -D Eigen_ROOT="C:/Miniconda/envs/defenv/Library" \
+          -D MAX_AM_ERI=5 \
+          -D BUILD_Libint2_GENERATOR=OFF \
           ${{ matrix.cfg.cmargs }}
           #-D ENABLE_OPENMP=ON \
+          #-D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
+          #-D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          #-D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
+          #-D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
 
     - name: Compile Psi4
       run: |
@@ -371,7 +415,8 @@ jobs:
         #ldd objdir/stage/lib/psi4/core.*.so
 
     - name: Run, Spot, Run Cmd
-      if: ${{ runner.os == 'Windows' }}
+      #if: ${{ runner.os == 'Windows' }}
+      if: false
       shell: cmd
       working-directory: ./objdir
       run: |
@@ -412,16 +457,21 @@ jobs:
         echo ${PATH}
         echo "PYTHONPATH"
         echo ${PYTHONPATH}
-        chmod u+x "D:/a/psi4/psi4/objdir/stage/bin/psi4"
-        chmod u+x "D:/a/psi4/psi4/install/bin/psi4"
-        echo "where python"
-        which python
-        where python
-        echo "where psi4"
-        which psi4
-        where psi4
-        ctest --build-config Release -L smoke --output-on-failure
+        #chmod u+x "D:/a/psi4/psi4/objdir/stage/bin/psi4"
+        #chmod u+x "D:/a/psi4/psi4/install/bin/psi4"
+        #echo "where python"
+        #which python
+        #where python
+        #echo "where psi4"
+        #which psi4
+        #where psi4
+        #ctest --build-config Release -L smoke --output-on-failure
+        export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
+        unset KMP_DUPLICATE_LIB_OK
+        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
         PATH="/D/a/psi4/psi4/objdir/stage/bin":$PATH PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         #export LIB="/C/Miniconda/envs/defenv/Library/lib":$LIB
         #export PATH="/C/Miniconda/envs/defenv/Library/bin":"/D/a/psi4/psi4/objdir/stage/bin":$PATH
