@@ -54,14 +54,18 @@ jobs:
           #- conda-forge
           - defaults
         dependencies:
+          - anaconda-client
+          - anaconda-project
+          - conda-build
+          - conda-verify
           - blas=*=mkl
           - cmake
           - conda-forge::eigen
-          - intel-openmp=2021.4
-          - mkl-devel=2021.4
+          - intel-openmp=2019.1
+          - mkl-devel=2019.1
           - networkx
           - ninja
-          - numpy
+          - conda-forge::numpy
           - pint
           - pybind11=2.7.0
           - pymdi
@@ -78,7 +82,7 @@ jobs:
           - conda-forge::msgpack-python
           - conda-forge::qcelemental
           - conda-forge::qcengine
-          - scipy
+          - conda-forge::scipy
         EOF
 
 #      # Install Chocolatey (https://chocolatey.org/install#install-with-powershellexe)
