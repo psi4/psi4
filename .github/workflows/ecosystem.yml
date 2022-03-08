@@ -14,22 +14,22 @@ jobs:
       matrix:
         cfg:
 
-          - runs-on: ubuntu-latest
-            python-version: "3.10"
-            base-channel: "defaults"
-            cmargs: >
-              -DBUILD_SHARED_LIBS=ON
+          #- runs-on: ubuntu-latest
+          #  python-version: "3.10"
+          #  base-channel: "defaults"
+          #  cmargs: >
+          #    -DBUILD_SHARED_LIBS=ON
 
-          - runs-on: macos-latest
-            python-version: "3.10"
-            base-channel: "defaults"
-            target-sdk: "10.10"
-            cmargs: >
-              -D BUILD_SHARED_LIBS=ON
-              -D OpenMP_C_FLAG="-fopenmp=libiomp5"
-              -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
-            # Notes:
-            # * libiomp5 is picking up naturally but left explicit as guide
+          #- runs-on: macos-latest
+          #  python-version: "3.10"
+          #  base-channel: "defaults"
+          #  target-sdk: "10.10"
+          #  cmargs: >
+          #    -D BUILD_SHARED_LIBS=ON
+          #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
+          #    -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
+          #  # Notes:
+          #  # * libiomp5 is picking up naturally but left explicit as guide
 
           #- runs-on: windows-latest
           #  python-version: "3.9"
@@ -54,12 +54,13 @@ jobs:
       with:
         fetch-depth: 0
 
-      # mac_ver line returns, for example, "10.15" for Catalina
+      # mac_ver line returns, for example, "10.15" for Catalina, "11.6" for Big Sur. but phracker doesn't support all minor, so hardcoded
     - name: Prepare compiler environment for macOS
       if: ${{ runner.os == 'macOS' }}
       run: |
         macos_Mm=$(SYSTEM_VERSION_COMPAT=0 python -c "import platform; Mmp = platform.mac_ver()[0]; Mm = '.'.join(Mmp.split('.')[:2]); print(Mm)")
         echo $macos_Mm
+        macos_Mm = 11.3
         curl -L https://github.com/phracker/MacOSX-SDKs/releases/download/$macos_Mm/MacOSX${{ matrix.cfg.target-sdk }}.sdk.tar.xz | sudo tar xf - -C /opt/
 
       # equivalent to `call vcvarsall.bat x86_amd64`. see Azure script to follow cmdline.
