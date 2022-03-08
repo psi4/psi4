@@ -108,7 +108,8 @@ jobs:
                       conda-forge::msgpack-python ^
                       conda-forge::qcelemental ^
                       conda-forge::qcengine ^
-                      scipy
+                      scipy ^
+                      -c conda-forge
         which anaconda
         conda list
 
