@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {tdscf_var} 4c81d8b dirty
+                         Git: Rev {tdscf_var} c8200ee dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,10 +30,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Saturday, 05 March 2022 08:55PM
+    Psi4 started on: Tuesday, 08 March 2022 09:39AM
 
-    Process ID: 20847
-    Host:       Jonathons-MacBook-Pro.local
+    Process ID: 4311
+    Host:       dhcp189-161.emerson.emory.edu
     PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -61,24 +61,24 @@ exc_2 = 0.27347 # TEST
 exc_3 = 0.57815 # TEST
 exc_4 = 0.63789 # TEST
 
-compare_values(exc_1, wfn.variable("TD-HF ROOT 0 (B1) -> ROOT 0 (A1) EXCITATION ENERGY"), 5, "First Excitation Energy")      # TEST
-compare_values(exc_2, wfn.variable("TD-HF ROOT 0 (B1) -> ROOT 0 (B2) EXCITATION ENERGY"), 5, "Second Excitation Energy")     # TEST
-compare_values(exc_3, wfn.variable("TD-HF ROOT 0 (B1) -> ROOT 1 (B1) EXCITATION ENERGY"), 5, "Third Excitation Energy")      # TEST
-compare_values(exc_4, wfn.variable("TD-HF ROOT 0 (B1) -> ROOT 0 (A2) EXCITATION ENERGY"), 5, "Fourth Excitation Energy")     # TEST
-compare_values(exc_1, wfn.variable("TD-HF ROOT 0 -> ROOT 1 EXCITATION ENERGY"), 5, "First Excitation Energy")                # TEST
-compare_values(exc_2, wfn.variable("TD-HF ROOT 0 -> ROOT 2 EXCITATION ENERGY"), 5, "Second Excitation Energy")               # TEST
-compare_values(exc_3, wfn.variable("TD-HF ROOT 0 -> ROOT 3 EXCITATION ENERGY"), 5, "Third Excitation Energy")                # TEST
-compare_values(exc_4, wfn.variable("TD-HF ROOT 0 -> ROOT 4 EXCITATION ENERGY"), 5, "Fourth Excitation Energy")               # TEST
-compare_values(exc_1, wfn.variable("TD-HF ROOT 0 -> ROOT 1 EXCITATION ENERGY - B1 SYMMETRY"), 5, "First Excitation Energy")  # TEST
-compare_values(exc_2, wfn.variable("TD-HF ROOT 0 -> ROOT 2 EXCITATION ENERGY - A2 SYMMETRY"), 5, "Second Excitation Energy") # TEST
-compare_values(exc_3, wfn.variable("TD-HF ROOT 0 -> ROOT 3 EXCITATION ENERGY - A1 SYMMETRY"), 5, "Third Excitation Energy")  # TEST
-compare_values(exc_4, wfn.variable("TD-HF ROOT 0 -> ROOT 4 EXCITATION ENERGY - B2 SYMMETRY"), 5, "Fourth Excitation Energy") # TEST
+compare_values(exc_1, wfn.variable("TD-HF ROOT 0 (B1) -> ROOT 0 (A1) EXCITATION ENERGY"), 5, "First Excitation Energy")        # TEST
+compare_values(exc_2, wfn.variable("TD-HF ROOT 0 (B1) -> ROOT 0 (B2) EXCITATION ENERGY"), 5, "Second Excitation Energy")       # TEST
+compare_values(exc_3, wfn.variable("TD-HF ROOT 0 (B1) -> ROOT 1 (B1) EXCITATION ENERGY"), 5, "Third Excitation Energy")        # TEST
+compare_values(exc_4, wfn.variable("TD-HF ROOT 0 (B1) -> ROOT 0 (A2) EXCITATION ENERGY"), 5, "Fourth Excitation Energy")       # TEST
+compare_values(exc_1, wfn.variable("TD-HF ROOT 0 -> ROOT 1 EXCITATION ENERGY"), 5, "First Excitation Energy")                  # TEST
+compare_values(exc_2, wfn.variable("TD-HF ROOT 0 -> ROOT 2 EXCITATION ENERGY"), 5, "Second Excitation Energy")                 # TEST
+compare_values(exc_3, wfn.variable("TD-HF ROOT 0 -> ROOT 3 EXCITATION ENERGY"), 5, "Third Excitation Energy")                  # TEST
+compare_values(exc_4, wfn.variable("TD-HF ROOT 0 -> ROOT 4 EXCITATION ENERGY"), 5, "Fourth Excitation Energy")                 # TEST
+compare_values(exc_1, wfn.variable("TD-HF ROOT 0 -> ROOT 1 EXCITATION ENERGY - B1 TRANSITION"), 5, "First Excitation Energy")  # TEST
+compare_values(exc_2, wfn.variable("TD-HF ROOT 0 -> ROOT 2 EXCITATION ENERGY - A2 TRANSITION"), 5, "Second Excitation Energy") # TEST
+compare_values(exc_3, wfn.variable("TD-HF ROOT 0 -> ROOT 3 EXCITATION ENERGY - A1 TRANSITION"), 5, "Third Excitation Energy")  # TEST
+compare_values(exc_4, wfn.variable("TD-HF ROOT 0 -> ROOT 4 EXCITATION ENERGY - B2 TRANSITION"), 5, "Fourth Excitation Energy") # TEST
 --------------------------------------------------------------------------
 
 Scratch directory: /tmp/
 
-*** tstart() called on Jonathons-MacBook-Pro.local
-*** at Sat Mar  5 20:55:23 2022
+*** tstart() called on dhcp189-161.emerson.emory.edu
+*** at Tue Mar  8 09:39:04 2022
 
    => Loading Basis Set <=
 
@@ -298,15 +298,24 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     2.3511     Total:     2.3511
 
 
-*** tstop() called on Jonathons-MacBook-Pro.local at Sat Mar  5 20:55:24 2022
+*** tstop() called on dhcp189-161.emerson.emory.edu at Tue Mar  8 09:39:05 2022
 Module time:
-	user time   =       0.50 seconds =       0.01 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.50 seconds =       0.01 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********       The names of excited state variables changed between 1.5       **********
+**********     and 1.6. For a quick solution, remove the symmetry specifier     **********
+**********   from the variable name. For full details, see 'Notes on Psivars'   **********
+**********                        in the documentation.                         **********
+******************************************************************************************
+
 
 
          ---------------------------------------------------------
@@ -432,6 +441,15 @@ Total time:
 
 Contributing excitations and de-excitations...only curently available with C1 symmetry
 
+
+******************************************************************************************
+**********                               WARNING                                **********
+**********       The names of excited state variables changed between 1.5       **********
+**********     and 1.6. For a quick solution, remove the symmetry specifier     **********
+**********   from the variable name. For full details, see 'Notes on Psivars'   **********
+**********                        in the documentation.                         **********
+******************************************************************************************
+
     First Excitation Energy...............................................................PASSED
     Second Excitation Energy..............................................................PASSED
     Third Excitation Energy...............................................................PASSED
@@ -445,7 +463,7 @@ Contributing excitations and de-excitations...only curently available with C1 sy
     Third Excitation Energy...............................................................PASSED
     Fourth Excitation Energy..............................................................PASSED
 
-    Psi4 stopped on: Saturday, 05 March 2022 08:55PM
-    Psi4 wall time for execution: 0:00:00.99
+    Psi4 stopped on: Tuesday, 08 March 2022 09:39AM
+    Psi4 wall time for execution: 0:00:00.91
 
 *** Psi4 exiting successfully. Buy a developer a beer!

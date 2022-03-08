@@ -54,6 +54,20 @@ Notes on Options
    as energy converged to :math:`10^{-6} E_h`, the user may set the ``e_convergence``
    keyword to ``0.000001``, ``1.0e-6``, or ``6``.
 
+Notes on Psivars
+================
+
+.. note:: Starting in 1.6, there are three standard ways to access an excited state
+    property. We give examples below, but the method name and property name may change.
+    * ``method ROOT 0 -> ROOT m property`` to get root m.
+    * ``method ROOT 0 -> ROOT m property - h TRANSITION`` to get root m and
+      independently specify that the total transition symmetry is A2.
+    * ``method ROOT 0 (h) -> ROOT m (i) property`` to get the transition
+      between two roots, specifying the symmetry of both states and the index of the target
+      roots among states of their own symmetry.
+    For example, to target the second excited-state, which is also the lowest energy state
+    of its irrep, the first two calls will take m = 2, while the last takes m = 0.
+    Methods that use this interface are: TD-fctl.
 
 Alternate Implementations
 =========================

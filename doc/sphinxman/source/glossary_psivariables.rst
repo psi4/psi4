@@ -1697,7 +1697,7 @@ PSI Variables by Alpha
 
 .. psivar:: TD-fctl ROOT 0 -> ROOT m EXCITATION ENERGY
    TD-fctl ROOT 0 (h) -> ROOT m (i) EXCITATION ENERGY
-   TD-fctl ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
+   TD-fctl ROOT 0 -> ROOT m EXCITATION ENERGY - h TRANSITION
 
    The excitation energy of a given method from ground state to root m.
    DFT functional labeled if canonical.
@@ -1708,7 +1708,7 @@ PSI Variables by Alpha
 
 .. psivar:: TD-fctl ROOT m TOTAL ENERGY
    TD-fctl ROOT m (h) TOTAL ENERGY
-   TD-fctl ROOT m TOTAL ENERGY - h SYMMETRY
+   TD-fctl ROOT m TOTAL ENERGY - h TRANSITION
 
    The total energy of given method from ground state to root m in h symmetry.
    Conventions for root indexing and whether h refers to transition or root
@@ -1716,10 +1716,10 @@ PSI Variables by Alpha
 
 .. psivar:: TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
    TD-fctl ROOT 0 (h) -> ROOT m (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
-   TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h SYMMETRY
+   TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN) - h TRANSITION
    TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (VEL)
    TD-fctl ROOT 0 (h) -> ROOT m (i) ELECTRIC TRANSITION DIPOLE MOMENT (VEL)
-   TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (VEL) - h SYMMETRY
+   TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (VEL) - h TRANSITION
 
    The electric transition dipole moment in length or velocity gauge of named method
    from ground state to root m in h symmetry (if available). DFT
@@ -1729,16 +1729,16 @@ PSI Variables by Alpha
 
 .. psivar:: TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR ALPHA
    TD-fctl ROOT 0 (h) -> ROOT m (i) LEFT EIGENVECTOR ALPHA
-   TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR ALPHA - h SYMMETRY
+   TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR ALPHA - h TRANSITION
    TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR BETA
    TD-fctl ROOT 0 (h) -> ROOT m (i) LEFT EIGENVECTOR BETA
-   TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR BETA - h SYMMETRY
+   TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR BETA - h TRANSITION
    TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR ALPHA
    TD-fctl ROOT 0 (h) -> ROOT m (i) RIGHT EIGENVECTOR ALPHA
-   TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR ALPHA - h SYMMETRY
+   TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR ALPHA - h TRANSITION
    TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR BETA
    TD-fctl ROOT 0 (h) -> ROOT m (i) RIGHT EIGENVECTOR BETA
-   TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR BETA - h SYMMETRY
+   TD-fctl ROOT 0 -> ROOT m RIGHT EIGENVECTOR BETA - h TRANSITION
 
    The left and right alpha and beta spin eigenvectors of the named method
    from ground state to root m in h symmetry (if available). DFT
@@ -1748,7 +1748,7 @@ PSI Variables by Alpha
 
 .. psivar:: TD-fctl ROOT 0 -> ROOT m MAGNETIC TRANSITION DIPOLE MOMENT
    TD-fctl ROOT 0 (h) -> ROOT m (i) MAGNETIC TRANSITION DIPOLE MOMENT
-   TD-fctl ROOT 0 -> ROOT m MAGNETIC TRANSITION DIPOLE MOMENT - h SYMMETRY
+   TD-fctl ROOT 0 -> ROOT m MAGNETIC TRANSITION DIPOLE MOMENT - h TRANSITION
 
    The magnetic transition dipole moment in length or velocity gauge of named method
    from ground state to root m in h symmetry (if available). DFT
@@ -1758,10 +1758,10 @@ PSI Variables by Alpha
 
 .. psivar:: TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN)
    TD-fctl ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)
-   TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN) - h SYMMETRY
+   TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN) - h TRANSITION
    TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL)
    TD-fctl ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (VEL)
-   TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL) - h SYMMETRY
+   TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (VEL) - h TRANSITION
 
    The oscillator strength in length or velocity gauge of named method
    from ground state to root m in h symmetry (if available). DFT
@@ -1771,10 +1771,10 @@ PSI Variables by Alpha
 
 .. psivar:: TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (LEN)
    TD-fctl ROOT 0 (h) -> ROOT m (i) ROTARY STRENGTH (LEN)
-   TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (LEN) - h SYMMETRY
+   TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (LEN) - h TRANSITION
    TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (VEL)
    TD-fctl ROOT 0 (h) -> ROOT m (i) ROTARY STRENGTH (VEL)
-   TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (VEL) - h SYMMETRY
+   TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (VEL) - h TRANSITION
 
    The rotary strength in length or velocity gauge of named method
    from ground state to root m in h symmetry (if available). DFT
