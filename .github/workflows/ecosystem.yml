@@ -14,11 +14,11 @@ jobs:
       matrix:
         cfg:
 
-          #- runs-on: ubuntu-latest
-          #  python-version: "3.10"
-          #  base-channel: "defaults"
-          #  cmargs: >
-          #    -DBUILD_SHARED_LIBS=ON
+          - runs-on: ubuntu-latest
+            python-version: "3.10"
+            base-channel: "defaults"
+            cmargs: >
+              -DBUILD_SHARED_LIBS=ON
 
           #- runs-on: macos-latest
           #  python-version: "3.10"
@@ -47,6 +47,9 @@ jobs:
         shell: bash -l {0}
 
     steps:
+
+    - name: halt
+      run: return 5
 
       # fetch-depth: 0 gets git history so Psi4 version is computable
     - name: Checkout
