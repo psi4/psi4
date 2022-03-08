@@ -160,11 +160,11 @@ jobs:
 #                      -c conda-forge
 #        which anaconda
 #        conda list
-#
-#    - name: Environment Information
-#      shell: cmd /C CALL {0}
-#      run: >-
-#        conda info && conda list
+
+    - name: Environment Information
+      shell: cmd /C CALL {0}
+      run: >-
+        conda info && conda list
 
       # Install LLVM
       # Note: LLVM distributed by conda is too old
@@ -200,6 +200,7 @@ jobs:
               -DCMAKE_INSTALL_PREFIX=../install \
               -DCMAKE_C_COMPILER=clang-cl \
               -DCMAKE_CXX_COMPILER=clang-cl \
+              -DCMAKE_VERBOSE_MAKEFILE=ON \
               -DENABLE_XHOST=OFF \
               -DCMAKE_CXX_FLAGS="/arch:AVX" \
               -DPython_EXECUTABLE="C:\Miniconda\envs\test\python.exe" \
@@ -214,7 +215,6 @@ jobs:
               -S ..
 
 #      # Configure
-#      # -DCMAKE_VERBOSE_MAKEFILE=ON ^
 #    - name: "Configure Psi4"
 #      shell: cmd /C CALL {0}
 #      run: |
@@ -269,12 +269,29 @@ jobs:
         python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
 
       # Spot Test
-    - name: 'Run, Run, Spot, Run Test'
+    - name: 'Run, Run, Spot, Run Test w envvar'
+      shell: cmd /C CALL {0}
+      working-directory: ./build
+      run: |
+        set PATH=..\install\bin;%PATH%
+        set KMP_DUPLICATE_LIB_OK=TRUE
+        psi4 ..\tests\tu1-h2o-energy\input.dat -o stdout
+
+    - name: 'Run, Run, Spot, Run Test w envvar w bash'
+      shell: bash -l {0}
+      working-directory: ./build
+      run: |
+        export PATH=../install/bin:$PATH
+        export KMP_DUPLICATE_LIB_OK=TRUE
+        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+
+    - name: 'Run, Run, Spot, Run Test w/o envvar'
       shell: cmd /C CALL {0}
       working-directory: ./build
       run: |
         set PATH=..\install\bin;%PATH%
         psi4 ..\tests\tu1-h2o-energy\input.dat -o stdout
+
 
 #
 #
