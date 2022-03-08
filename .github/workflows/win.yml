@@ -153,9 +153,9 @@ jobs:
               -DENABLE_XHOST=OFF ^
               -DCMAKE_CXX_FLAGS="/arch:AVX" ^
               -DMAX_AM_ERI=5 ^
-              -DPython_EXECUTABLE="C:/tools/miniconda3/python.exe" ^
-              -DMPFR_ROOT="C:/tools/miniconda3/Library" ^
-              -DEigen_ROOT="C:/tools/miniconda3/Library" ^
+              -DPython_EXECUTABLE="C:\Miniconda\python.exe" ^
+              -DMPFR_ROOT="C:\Miniconda\Library" ^
+              -DEigen_ROOT="C:\Miniconda\Library" ^
               -DBUILD_Libint2_GENERATOR=OFF ^
               -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
               -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
@@ -167,7 +167,7 @@ jobs:
     - name: "Build Psi4"
       shell: cmd /C CALL {0}
       working-directory: ./build
-      run: >-
+      run: |
         rem call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
         cmake --build . ^
@@ -178,7 +178,7 @@ jobs:
     - name: "Install Psi4"
       shell: cmd /C CALL {0}
       working-directory: ./build
-      run: >-
+      run: |
         rem call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
         cmake --build . ^
@@ -191,14 +191,14 @@ jobs:
     - name: "Test Psi4 (OpenMP)"
       shell: cmd /C CALL {0}
       working-directory: ./install/lib
-      run: >-
+      run: |
         python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
 
       # Spot Test
     - name: 'Run, Run, Spot, Run Test'
       shell: cmd /C CALL {0}
       working-directory: ./build
-      run: >-
+      run: |
         set PATH=..\install\bin;%PATH%
         psi4 ..\tests\tu1-h2o-energy\input.dat -o stdout
 
