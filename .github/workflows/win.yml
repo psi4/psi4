@@ -119,7 +119,6 @@ jobs:
 
     - name: Create Conda Environment (build)
       uses: conda-incubator/setup-miniconda@v2
-      shell: bash -l {0}
       with:
         activate-environment: test
         environment-file: build.yaml
