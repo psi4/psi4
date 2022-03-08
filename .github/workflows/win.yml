@@ -43,6 +43,8 @@ jobs:
         toolset: 14.0
         #arch: x64
 
+    #      - intel-openmp=2019.1
+    #      - mkl-devel=2019.1
     - name: Write Conda Env Files
       shell: bash -l {0}
       run: |
@@ -53,8 +55,8 @@ jobs:
         dependencies:
           - cmake
           - conda-forge::eigen
-          - intel-openmp=2019.1
-          - mkl-devel=2019.1
+          - intel-openmp=2021.4
+          - mkl-devel=2021.4
           - networkx
           - ninja
           - numpy
@@ -276,6 +278,7 @@ jobs:
         set PATH=..\install\bin;%PATH%
         set KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ..\tests\tu1-h2o-energy\input.dat -o stdout
+        psi4 ..\tests\tu1-h2o-energy\input.dat -o stdout -n2
 
     - name: 'Run, Run, Spot, Run Test w envvar w bash'
       shell: bash -l {0}
@@ -284,6 +287,7 @@ jobs:
         export PATH=../install/bin:$PATH
         export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
 
     - name: 'Run, Run, Spot, Run Test w/o envvar'
       shell: cmd /C CALL {0}
@@ -291,6 +295,7 @@ jobs:
       run: |
         set PATH=..\install\bin;%PATH%
         psi4 ..\tests\tu1-h2o-energy\input.dat -o stdout
+        psi4 ..\tests\tu1-h2o-energy\input.dat -o stdout -n2
 
 
 #

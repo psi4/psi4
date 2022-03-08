@@ -14,22 +14,22 @@ jobs:
       matrix:
         cfg:
 
-          - runs-on: ubuntu-latest
-            python-version: "3.10"
-            base-channel: "defaults"
-            cmargs: >
-              -DBUILD_SHARED_LIBS=ON
-
-          #- runs-on: macos-latest
+          #- runs-on: ubuntu-latest
           #  python-version: "3.10"
           #  base-channel: "defaults"
-          #  target-sdk: "10.10"
           #  cmargs: >
-          #    -D BUILD_SHARED_LIBS=ON
-          #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
-          #    -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
-          #  # Notes:
-          #  # * libiomp5 is picking up naturally but left explicit as guide
+          #    -DBUILD_SHARED_LIBS=ON
+
+          - runs-on: macos-latest
+            python-version: "3.10"
+            base-channel: "defaults"
+            target-sdk: "10.10"
+            cmargs: >
+              -D BUILD_SHARED_LIBS=ON
+              -D OpenMP_C_FLAG="-fopenmp=libiomp5"
+              -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
+            # Notes:
+            # * libiomp5 is picking up naturally but left explicit as guide
 
           #- runs-on: windows-latest
           #  python-version: "3.9"
@@ -48,7 +48,8 @@ jobs:
 
     steps:
 
-    - name: halt
+    - name: Quick cancel
+      if: false
       run: return 5
 
       # fetch-depth: 0 gets git history so Psi4 version is computable
@@ -125,9 +126,9 @@ jobs:
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           # <lang>-compiler is only a metapackage for c-f
-          sed -E -i.bak "s/- c-compiler/- clang_osx-64/g" build.yaml
-          sed -E -i.bak "s/- cxx-compiler/- clangxx_osx-64/g" build.yaml
-          sed -E -i.bak "s/- fortran-compiler/- gfortran_osx-64/g" build.yaml
+          sed -E -i.bak "s;- c-compiler;- clang_osx-64;g" build.yaml
+          sed -E -i.bak "s;- cxx-compiler;- clangxx_osx-64;g" build.yaml
+          sed -E -i.bak "s;- fortran-compiler;- gfortran_osx-64;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # permanent, as we use clang-cl, not c-f compiler
@@ -220,6 +221,9 @@ jobs:
           - pymdi
           - qcengine
         EOF
+        if [[ "${{ runner.os }}" == "macOS" ]]; then
+          sed -E -i.bak "s;- openfermionpsi4;#- openfermionpsi4;g" runcf.yaml
+        fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           sed -i "s;- adcc;#- adcc;g" runcf.yaml
           sed -i "s;- cppe;#- cppe;g" runcf.yaml
