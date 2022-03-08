@@ -192,7 +192,8 @@ jobs:
     - name: "Configure Psi4"
       shell: bash -l {0}
       run: |
-        mkdir build & cd build
+        mkdir build
+        cd build
         which python
         cmake -G Ninja \
               -DCMAKE_BUILD_TYPE=Release \
