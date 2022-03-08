@@ -81,7 +81,6 @@ jobs:
     - name: "Install conda packages"
       shell: cmd
       run: | 
-        conda info
         conda install cmake ^
                       conda-forge::eigen ^
                       intel-openmp=2019.1 ^
@@ -113,7 +112,7 @@ jobs:
       # Install LLVM
       # Note: LLVM distributed by conda is too old
     - name: "Install LLVM"
-      shell: pwsh
+      shell: cmd
       run: |
         choco install llvm --version 13 --yes
         set PATH=C:\Program Files\LLVM\bin;%PATH%
