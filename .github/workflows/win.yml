@@ -79,7 +79,7 @@ jobs:
       # Note: conda activate doesn't work here, because it creates a new shell!
       # Note: c-f eigen has Config.cmake file
     - name: "Install conda packages"
-      shell: cmd
+      shell: cmd /C CALL {0}
       run: | 
         conda install cmake ^
                       conda-forge::eigen ^
@@ -117,7 +117,7 @@ jobs:
       # Install LLVM
       # Note: LLVM distributed by conda is too old
     - name: "Install LLVM"
-      shell: cmd
+      shell: cmd /C CALL {0}
       run: |
         choco install llvm --version 13.0.1 --yes
         set PATH=C:\Program Files\LLVM\bin;%PATH%
@@ -129,7 +129,7 @@ jobs:
       # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
       #set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
     - name: "Install Intel OpenMP import library"
-      shell: cmd
+      shell: cmd /C CALL {0}
       run: |
         cd
         git clone https://github.com/psi4/iomp5md.git
