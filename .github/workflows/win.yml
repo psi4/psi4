@@ -51,8 +51,10 @@ jobs:
         cat > build.yaml <<EOF
         name: test
         channels:
-          - conda-forge
+          #- conda-forge
+          - defaults
         dependencies:
+          - blas=*=mkl
           - cmake
           - conda-forge::eigen
           - intel-openmp=2021.4

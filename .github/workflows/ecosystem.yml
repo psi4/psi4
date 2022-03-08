@@ -64,7 +64,7 @@ jobs:
       run: |
         macos_Mm=$(SYSTEM_VERSION_COMPAT=0 python -c "import platform; Mmp = platform.mac_ver()[0]; Mm = '.'.join(Mmp.split('.')[:2]); print(Mm)")
         echo $macos_Mm
-        macos_Mm = 11.3
+        set macos_Mm=11.3
         curl -L https://github.com/phracker/MacOSX-SDKs/releases/download/$macos_Mm/MacOSX${{ matrix.cfg.target-sdk }}.sdk.tar.xz | sudo tar xf - -C /opt/
 
       # equivalent to `call vcvarsall.bat x86_amd64`. see Azure script to follow cmdline.
