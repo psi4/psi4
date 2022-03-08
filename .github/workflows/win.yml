@@ -52,7 +52,7 @@ jobs:
         set PATH="C:\tools\miniconda3\Scripts";"C:\tools\miniconda3";"C:\tools\miniconda3\Library\bin"
         echo "PATH=%PATH%" >> $env:GITHUB_ENV
         #echo '##vso[task.setvariable variable=PATH]%PATH%'
-        set LIB=C:\tools\miniconda3\Library\lib;%LIB%
+        set LIB=C:\tools\miniconda3\Library\lib
         echo "LIB=%LIB%" >> $env:GITHUB_ENV
         #echo '##vso[task.setvariable variable=LIB]%LIB%'
         conda --version
