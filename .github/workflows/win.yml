@@ -79,14 +79,11 @@ jobs:
       # Note: conda activate doesn't work here, because it creates a new shell!
       # Note: c-f eigen has Config.cmake file
     - name: "Install conda packages"
-      shell: pwsh
+      shell: cmd
       run: | 
         conda info
         conda install cmake ^
-                      anaconda-project ^
-                      conda-build ^
                       conda-forge::eigen ^
-                      conda-verify ^
                       intel-openmp=2019.1 ^
                       mkl-devel=2019.1 ^
                       networkx ^
