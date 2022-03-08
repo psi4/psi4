@@ -36,7 +36,7 @@ jobs:
 
 #      # Install Chocolatey (https://chocolatey.org/install#install-with-powershellexe)
 #    - name: "Install Chocolatey"
-#      shell: pwsh
+#      shell: cmd
 #      run: |
 #        Set-ExecutionPolicy Bypass -Scope Process -Force
 #        iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
@@ -46,7 +46,7 @@ jobs:
 #
 #      # Install Miniconda
 #    - name: "Install Miniconda"
-#      shell: pwsh
+#      shell: cmd
 #      run: |
 #        choco install miniconda3 --yes
 #        refreshenv
@@ -63,7 +63,7 @@ jobs:
 #      # Configure Miniconda
 #      #    conda config --append channels conda-forge
 #    - name: "Configure Miniconda"
-#      shell: pwsh
+#      shell: cmd
 #      run: |
 #        conda config --set always_yes yes
 #        conda info
@@ -124,7 +124,7 @@ jobs:
       # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
       #set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
     - name: "Install Intel OpenMP import library"
-      shell: pwsh
+      shell: cmd
       run: |
         cd
         git clone https://github.com/psi4/iomp5md.git
@@ -135,7 +135,7 @@ jobs:
       # Configure
       # -DCMAKE_VERBOSE_MAKEFILE=ON ^
     - name: "Configure Psi4"
-      shell: pwsh
+      shell: cmd
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
         mkdir build & cd build
@@ -165,7 +165,7 @@ jobs:
 
       # Build
     - name: "Build Psi4"
-      shell: pwsh
+      shell: cmd
       working-directory: ./build
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
@@ -175,7 +175,7 @@ jobs:
 
       # Install
     - name: "Install Psi4"
-      shell: pwsh
+      shell: cmd
       working-directory: ./build
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
@@ -187,14 +187,14 @@ jobs:
       # Test (OpenMP)
       # Check if OpenMP configuration had not failed silently
     - name: "Test Psi4 (OpenMP)"
-      shell: pwsh
+      shell: cmd
       working-directory: ./install/lib
       run: |
         python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
 
       # Spot Test
     - name: 'Run, Run, Spot, Run Test'
-      shell: pwsh
+      shell: cmd
       working-directory: ./build
       run: |
         set PATH=..\install\bin;%PATH%
