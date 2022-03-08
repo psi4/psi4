@@ -130,7 +130,7 @@ jobs:
       #set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
     - name: "Install Intel OpenMP import library"
       shell: cmd
-      run: >-
+      run: |
         cd
         git clone https://github.com/psi4/iomp5md.git
         set LIB=%cd%\iomp5md\conda\win\2019.1;%LIB%
@@ -141,7 +141,7 @@ jobs:
       # -DCMAKE_VERBOSE_MAKEFILE=ON ^
     - name: "Configure Psi4"
       shell: cmd /C CALL {0}
-      run: >-
+      run: |
         rem call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
         mkdir build & cd build
