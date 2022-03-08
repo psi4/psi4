@@ -58,7 +58,7 @@ jobs:
         #;%LIB%
         ##echo "LIB=%LIB%" >> $env:GITHUB_ENV
         #echo '##vso[task.setvariable variable=LIB]%LIB%'
-        conda --version
+        #conda --version
 
       # Configure Miniconda
       #    conda config --append channels conda-forge
