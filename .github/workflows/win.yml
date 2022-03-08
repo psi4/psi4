@@ -137,6 +137,9 @@ jobs:
         echo "LIB=%LIB%" >> $env:GITHUB_ENV
         rem #echo '##vso[task.setvariable variable=LIB]%LIB%'
 
+      #        -DPython_EXECUTABLE="C:\Miniconda\python.exe" ^
+      #        -DMPFR_ROOT="C:\Miniconda\Library" ^
+      #        -DEigen_ROOT="C:\Miniconda\Library" ^
       # Configure
       # -DCMAKE_VERBOSE_MAKEFILE=ON ^
     - name: "Configure Psi4"
@@ -145,6 +148,7 @@ jobs:
         rem call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
         mkdir build & cd build
+        where python
         cmake -G Ninja ^
               -DCMAKE_BUILD_TYPE=Release ^
               -DCMAKE_INSTALL_PREFIX=../install ^
@@ -153,9 +157,6 @@ jobs:
               -DENABLE_XHOST=OFF ^
               -DCMAKE_CXX_FLAGS="/arch:AVX" ^
               -DMAX_AM_ERI=5 ^
-              -DPython_EXECUTABLE="C:\Miniconda\python.exe" ^
-              -DMPFR_ROOT="C:\Miniconda\Library" ^
-              -DEigen_ROOT="C:\Miniconda\Library" ^
               -DBUILD_Libint2_GENERATOR=OFF ^
               -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
               -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
