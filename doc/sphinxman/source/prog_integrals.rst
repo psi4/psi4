@@ -291,9 +291,9 @@ limiting.  We also started to introduce integral screening, and it is important
 to balance the screening used for one- and two-electron terms carefully, so this
 is a good opportunity to re-evaluate the code.  Finally, given the complexity
 of the OS recursion code, the switch to an external library leaves a more
-compact codebase to maintain.  The tips below serve as an upgrade guide as to
-what has changed and how to implement methods requiring one electron integrals
-going forwards.
+compact codebase to maintain.  The tips below serve as a guide to what changed,
+why it changed, and how to interface with |PSIfour|'s one-electron integral
+machinery now.
 
 Calling ``compute_shell(int P, int Q)``
 .......................................

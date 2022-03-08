@@ -115,6 +115,8 @@ void DipoleInt::compute_pair(const libint2::Shell &s1, const libint2::Shell &s2)
     engine0_->compute(s1, s2);
 
     size_t nints = s1.size() * s2.size();
+    // Libint gives us the overlap, mu_x, mu_y, mu_z in the buffers.
+    // We don't care about the overlap here so we just skip over it.
     for (int chunk = 1; chunk < 4; chunk++) {
         double * ptr = const_cast<double*>(engine0_->results()[chunk]);
         std::transform(ptr, ptr + nints, ptr, [](double val) -> double { return -val; });
