@@ -114,10 +114,10 @@ jobs:
     - name: "Install LLVM"
       shell: cmd
       run: |
-        choco install llvm --version 13 --yes
+        choco install llvm --version 13.0.1 --yes
         set PATH=C:\Program Files\LLVM\bin;%PATH%
         echo "PATH=%PATH%" >> $env:GITHUB_ENV
-        #echo '##vso[task.setvariable variable=PATH]%PATH%'
+        rem #echo '##vso[task.setvariable variable=PATH]%PATH%'
         clang-cl --version
 
       # Install Intel OpenMP import library
@@ -130,7 +130,7 @@ jobs:
         git clone https://github.com/psi4/iomp5md.git
         set LIB=%cd%\iomp5md\conda\win\2019.1;%LIB%
         echo "LIB=%LIB%" >> $env:GITHUB_ENV
-        #echo '##vso[task.setvariable variable=LIB]%LIB%'
+        rem #echo '##vso[task.setvariable variable=LIB]%LIB%'
 
       # Configure
       # -DCMAKE_VERBOSE_MAKEFILE=ON ^
