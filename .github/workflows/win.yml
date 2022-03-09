@@ -15,7 +15,7 @@ jobs:
         cfg:
 
           - runs-on: windows-latest
-            python-version: "3.9"
+            python-version: "3.8"
             base-channel: "conda-forge"
             cmargs: >
               -DBUILD_SHARED_LIBS=OFF
@@ -52,10 +52,10 @@ jobs:
           - conda-forge
           - defaults
         dependencies:
-          #- anaconda-client
-          #- anaconda-project
-          #- conda-build
-          #- conda-verify
+          - anaconda-client
+          - anaconda-project
+          - conda-build
+          - conda-verify
           - blas=*=mkl
           - cmake
           - conda-forge::eigen
@@ -69,7 +69,7 @@ jobs:
           - pymdi
           - conda-forge::pytest>=7.0.1
           - pytest-xdist
-          - python=3.9
+          - python=3.8
           - psi4/label/dev::dftd3
           - psi4/label/dev::gcp
           - conda-forge::gau2grid
@@ -89,7 +89,7 @@ jobs:
         activate-environment: test
         environment-file: build.yaml
         show-channel-urls: true
-        python-version: 3.9
+        python-version: 3.8
         auto-activate-base: false
 
 
@@ -111,7 +111,7 @@ jobs:
 #                      pymdi ^
 #                      conda-forge::pytest>=7.0.1 ^
 #                      pytest-xdist ^
-#                      python=3.9 ^
+#                      python=3.8 ^
 #                      psi4/label/dev::dftd3 ^
 #                      psi4/label/dev::gcp ^
 #                      conda-forge::gau2grid ^
