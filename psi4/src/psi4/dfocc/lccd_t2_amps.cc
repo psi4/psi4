@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -108,12 +108,12 @@ void DFOCC::lccd_t2_amps() {
             t2->to_matrix(T2);
 
             // add entry
-            if (do_diis_ == 1) ccsdDiisManager->add_entry(2, RT2.get(), T2.get());
+            if (do_diis_ == 1) ccsdDiisManager->add_entry(RT2.get(), T2.get());
             RT2.reset();
 
             // extrapolate
             if (do_diis_ == 1) {
-                if (ccsdDiisManager->subspace_size() >= cc_mindiis_) ccsdDiisManager->extrapolate(1, T2.get());
+                if (ccsdDiisManager->subspace_size() >= cc_mindiis_) ccsdDiisManager->extrapolate(T2.get());
                 t2->set2(T2);
             }
             T2.reset();
@@ -400,7 +400,7 @@ void DFOCC::lccd_t2_amps() {
 
             // add entry
             if (do_diis_ == 1)
-                ccsdDiisManager->add_entry(6, RT2AA.get(), RT2BB.get(), RT2AB.get(), T2AA.get(), T2BB.get(),
+                ccsdDiisManager->add_entry(RT2AA.get(), RT2BB.get(), RT2AB.get(), T2AA.get(), T2BB.get(),
                                            T2AB.get());
             RT2AA.reset();
             RT2BB.reset();
@@ -409,7 +409,7 @@ void DFOCC::lccd_t2_amps() {
             // extrapolate
             if (do_diis_ == 1) {
                 if (ccsdDiisManager->subspace_size() >= cc_mindiis_)
-                    ccsdDiisManager->extrapolate(3, T2AA.get(), T2BB.get(), T2AB.get());
+                    ccsdDiisManager->extrapolate(T2AA.get(), T2BB.get(), T2AB.get());
                 TAA->set2(T2AA);
                 TBB->set2(T2BB);
                 TAB->set2(T2AB);

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -132,6 +132,7 @@ _addons_ = {
     "ambit": _CMake_to_Py_boolean("@ENABLE_ambit@"),
     "chemps2": _CMake_to_Py_boolean("@ENABLE_CheMPS2@"),
     "dkh": _CMake_to_Py_boolean("@ENABLE_dkh@"),
+    "ecpint": _CMake_to_Py_boolean("@ENABLE_ecpint@"),
     "libefp": which_import("pylibefp", return_bool=True),
     "erd": _CMake_to_Py_boolean("@ENABLE_erd@"),
     "gdma": _CMake_to_Py_boolean("@ENABLE_gdma@"),

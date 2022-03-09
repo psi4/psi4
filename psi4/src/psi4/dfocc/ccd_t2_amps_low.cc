@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -101,12 +101,12 @@ void DFOCC::ccd_t2_amps_low() {
     T.reset();
 
     // add entry
-    if (do_diis_ == 1) ccsdDiisManager->add_entry(2, RT2.get(), T2.get());
+    if (do_diis_ == 1) ccsdDiisManager->add_entry(RT2.get(), T2.get());
     RT2.reset();
 
     // extrapolate
     if (do_diis_ == 1) {
-        if (ccsdDiisManager->subspace_size() >= cc_mindiis_) ccsdDiisManager->extrapolate(1, T2.get());
+        if (ccsdDiisManager->subspace_size() >= cc_mindiis_) ccsdDiisManager->extrapolate(T2.get());
         T = SharedTensor2d(new Tensor2d("T2 (IA|JB)", naoccA, navirA, naoccA, navirA));
         T->set2(T2);
         T->write_symm(psio_, PSIF_DFOCC_AMPS);

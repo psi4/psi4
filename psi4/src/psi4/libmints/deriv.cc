@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -405,7 +405,7 @@ Deriv::Deriv(const std::shared_ptr<Wavefunction> &wave, char needed_irreps, bool
  *  for RHF wavefunctions, the blocks are not added together.
  * 3. Metric Density
  *  The (pq) element contracts against the metric integral derivative -J^x_(pq).
- *  Again, this quantity separates into alpha and beta blocks. Back-transform the blocks, and add them
+ *  Again, this quantity separates into alpha and beta blocks. Build the blocks, and add them
  *  together. Each auxiliary basis set has its own density. These must be stored in PSIF_AO_TPDM in
  *  LowerTriangular format under the names "Metric Reference Density" and "Metric Correlation Density".
  * 4. 3-Center Density

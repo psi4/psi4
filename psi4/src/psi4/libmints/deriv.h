@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -54,7 +54,16 @@ class CdSalcList;
 // SCF:         SCF methods
 // SCFandDF:    Correlated methods using DF (no reference contribution)
 // Correlated:  Correlated methods that write RDMs and Lagrangian to disk
-enum class DerivCalcType { Default, SCF, SCFandDF, Correlated };
+enum class DerivCalcType { Default,
+    SCF PSI_DEPRECATED(
+        "DerivCalcType::SCF is planned for removal in 1.7, due to lack of use and "
+        "being superseded by the scfgrad library. Contact developers if you need "
+        "this ability."),
+    SCFandDF PSI_DEPRECATED(
+        "DerivCalcType::SCFandDF is planned for removal in 1.7, due to lack of use "
+        "and being superseded by the compute_df method. Contact developers if you "
+        "need this ability."),
+    Correlated };
 
 class PSI_API Deriv {
     const std::shared_ptr<Wavefunction> wfn_;

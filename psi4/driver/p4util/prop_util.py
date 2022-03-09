@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -49,6 +49,14 @@ def free_atom_volumes(wfn, **kwargs):
         The wave function associated with the molecule, method, and basis for 
         atomic computations
     """
+
+    # If we're already a free atom, break to avoid recursion
+    # We don't ever need volume ratios for free atoms since they
+    # are by definition 1.0
+    natom = wfn.molecule().natom()
+    if natom == 1:
+        return 0 
+    
 
     # the level of theory
     current_en = wfn.scalar_variable('CURRENT ENERGY')

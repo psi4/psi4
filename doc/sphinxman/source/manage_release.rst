@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -112,7 +112,7 @@ Update copyright year
   - ``README.md``
   - ``tests/psitest.pl``
 
-* Also, in content of https://github.com/psi4/psi4/blob/master/doc/sphinxman/source/conf.py.in#L118
+* Also, in content of :source:`doc/sphinxman/source/conf.py.in#L130`
 
 
 Update samples
@@ -136,7 +136,7 @@ Collect new authors
 Anticipate next release
 -----------------------
 
-* Bump version in ``codemeta.json``, https://github.com/psi4/psi4/blob/master/codemeta.json#L9
+* Bump version in ``codemeta.json``, :source:`codemeta.json#L9`
 * Add to branch list in ``azure-pipelines.yml``, :source:`azure-pipelines.yml`
 
 
@@ -223,6 +223,9 @@ Tag (pre)release
 
     # pause here and push to upstream and let Azure complete if want an
     #       on-tag Windows conda package, not just tag+1.dev1
+    #       below pushes commit and tag together so only one CI
+    #       > git push --atomic upstream master v1.5
+    #       also, grab the docs build from GHA artifacts
 
     >>> vi psi4/metadata.py
     >>> git diff
@@ -428,7 +431,7 @@ Collect documentation snapshot
 ------------------------------
 
 * Documentation is built automatically by GHA from the latest psi4 master commit. It gets pushed to the psi4/psi4docs repository and thence served by netlify to a site independent of psicode.org. The netlify psicode.org site has a redirect so that psicode.org/psi4manual/master presents the psi4docs netlify content.
-* GHA controller is https://github.com/psi4/psi4/blob/master/.github/workflows/docs.yml
+* GHA controller is :source:`.github/workflows/docs.yml`
 * This setup works great for "latest" docs, but it won't build a nice copy on the tag because the tag commit is pushed before the tag itself, so the version shows up "undefined".
 * So, anytime after "Tag (pre)release" is over, navigate on psi4 GH to the tag commit (not the record commit) and retrigger the docs GHA. Download the artifact (zipped docs dir) at the end to a local computer.
 * In your hugo site clone, create a new directory under ``static/psi4manual``. Copy the zipped docs there, unpack, rearrange so that ``static/psi4manual/<new-tag>/index.html`` is present. Check in.

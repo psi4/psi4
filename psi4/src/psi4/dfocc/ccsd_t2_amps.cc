@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -141,13 +141,13 @@ void DFOCC::ccsd_t2_amps() {
     t1A->to_matrix(T1);
 
     // add entry
-    if (do_diis_ == 1) ccsdDiisManager->add_entry(4, RT2.get(), RT1.get(), T2.get(), T1.get());
+    if (do_diis_ == 1) ccsdDiisManager->add_entry(RT2.get(), RT1.get(), T2.get(), T1.get());
     RT2.reset();
     RT1.reset();
 
     // extrapolate
     if (do_diis_ == 1) {
-        if (ccsdDiisManager->subspace_size() >= cc_mindiis_) ccsdDiisManager->extrapolate(2, T2.get(), T1.get());
+        if (ccsdDiisManager->subspace_size() >= cc_mindiis_) ccsdDiisManager->extrapolate(T2.get(), T1.get());
         t2->set2(T2);
         t1A->set2(T1);
     }

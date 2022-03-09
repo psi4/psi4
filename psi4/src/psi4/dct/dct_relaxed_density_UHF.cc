@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -35,11 +35,7 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
 #include "psi4/libqt/qt.h"
-#include "psi4/libdiis/diismanager.h"
 #include "psi4/libmints/molecule.h"
-#include "psi4/libmints/oeprop.h"
-#include "psi4/libmints/writer.h"
-#include "psi4/libmints/writer_file_prefix.h"
 
 namespace psi {
 namespace dct {
@@ -746,8 +742,8 @@ void DCTSolver::compute_relaxed_density_VVVV() {
 void DCTSolver::dc06_compute_relaxed_density_1PDM() {
     auto a_opdm = std::make_shared<Matrix>("MO basis OPDM (Alpha)", nirrep_, nmopi_, nmopi_);
     auto b_opdm = std::make_shared<Matrix>("MO basis OPDM (Beta)", nirrep_, nmopi_, nmopi_);
-    auto a_zia = std::make_shared<Matrix>("MO basis Orbital Response (Alpha)", nirrep_, nmopi_, nmopi_);
-    auto b_zia = std::make_shared<Matrix>("MO basis Orbital Response (Beta)", nirrep_, nmopi_, nmopi_);
+    auto a_zia = Matrix("MO basis Orbital Response (Alpha)", nirrep_, nmopi_, nmopi_);
+    auto b_zia = Matrix("MO basis Orbital Response (Beta)", nirrep_, nmopi_, nmopi_);
 
     dpdfile2 z_OV;
 
@@ -761,7 +757,7 @@ void DCTSolver::dc06_compute_relaxed_density_1PDM() {
 #pragma omp parallel for
         for (int i = 0; i < naoccpi_[h]; ++i) {
             for (int a = 0; a < navirpi_[h]; ++a) {
-                a_zia->set(h, i, a + naoccpi_[h], z_OV.matrix[h][i][a]);
+                a_zia.set(h, i, a + naoccpi_[h], z_OV.matrix[h][i][a]);
             }
         }
 // O-O
@@ -793,7 +789,7 @@ void DCTSolver::dc06_compute_relaxed_density_1PDM() {
 #pragma omp parallel for
         for (int i = 0; i < nboccpi_[h]; ++i) {
             for (int a = 0; a < nbvirpi_[h]; ++a) {
-                b_zia->set(h, i, a + nboccpi_[h], z_OV.matrix[h][i][a]);
+                b_zia.set(h, i, a + nboccpi_[h], z_OV.matrix[h][i][a]);
             }
         }
 // O-O

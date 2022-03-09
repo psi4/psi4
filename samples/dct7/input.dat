@@ -19,7 +19,7 @@ set {
     d_convergence 12
     ao_basis    disk
     algorithm   simultaneous
-    basis       cc-pcvtz
+    basis       cc-pvdz
     reference   uhf
 }
 

@@ -21,4 +21,30 @@ set {
   basis STO-3G
 }
 
-properties('ccsd',properties=['rotation'])
+wfn = properties('ccsd',properties=['rotation'], return_wfn=True)[1]
+
+refnre = 124.7885346117614489                     # TEST
+refscf = -189.5134172371027432                    # TEST
+refccsd = -189.769498615773671                    # TEST
+refoverlap = 0.86083040761                        # TEST
+ref633tensor = psi4.core.Matrix.from_list(        # TEST
+   [[ 0.098201230346588, -0.123180765268778, -0.033202860408370],   # TEST
+    [-0.005923371966114,  0.050810741960975, -0.134824732104666],   # TEST
+    [-0.167593930849691,  0.178586259349292, -0.134493401988516]])  # TEST
+ref355tensor = psi4.core.Matrix.from_list(        # TEST
+   [[ 0.180382563931018, -0.231277802328236, -0.067393276664578],   # TEST
+    [-0.011460339705177,  0.093901050342530, -0.240574201690026],   # TEST
+    [-0.302759285560133,  0.322187347251788, -0.246887974136872]])  # TEST
+ref633scalar = - 38.80516 # TEST
+ref355scalar = -130.56371 # TEST
+
+compare_values(refnre, smo.nuclear_repulsion_energy(), 6, "Nuclear Repulsion Energy") # TEST
+compare_values(refscf, wfn.variable("SCF TOTAL ENERGY"), 6, "SCF Energy") # TEST
+compare_values(refccsd, wfn.variable("CCSD TOTAL ENERGY"), 6, "CCSD Energy") # TEST
+compare_values(refoverlap, wfn.variable("Left-Right CCSD Eigenvector Overlap"), 5, "Left-Right CCSD Overlap") # TEST
+
+compare_values(ref633tensor,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (LEN) @ 633NM"),  3, "CCSD rotation tensor @ 633nm in length gauge") # TEST
+compare_values(ref355tensor,   wfn.variable("CCSD OPTICAL ROTATION TENSOR (LEN) @ 355NM"),  3, "CCSD rotation tensor @ 355nm in length gauge") # TEST
+compare_values(ref633scalar,   variable("CCSD SPECIFIC ROTATION (LEN) @ 633NM"),  3, "CCSD rotation @ 633nm in length gauge") # TEST
+compare_values(ref355scalar,   variable("CCSD SPECIFIC ROTATION (LEN) @ 355NM"),  3, "CCSD rotation @ 355nm in length gauge") # TEST
+

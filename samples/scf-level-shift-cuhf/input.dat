@@ -1,0 +1,14 @@
+molecule {
+units bohr
+0 2
+B
+O 1 2.277
+}
+
+set basis pcseg-1
+set reference cuhf
+set diis false
+set level_shift 0.5
+set level_shift_cutoff 1e-3
+set guess core
+energy('scf')

@@ -20,6 +20,7 @@
 #   ambit - tensor library active
 #   chemps2 - dmrg library active
 #   dkh - relativistic library active
+#   ecpint - ecp integrals library active
 #   erd - integrals library active
 #   gdma - multipole library active
 #   pcmsolver - solvation library active
@@ -55,6 +56,7 @@ set (_valid_components
     ambit
     chemps2
     dkh
+    ecpint
     erd
     gdma
     pcmsolver
@@ -82,10 +84,10 @@ endmacro()
 psi4_component(ambit @ENABLE_ambit@)
 psi4_component(chemps2 @ENABLE_CheMPS2@)
 psi4_component(dkh @ENABLE_dkh@)
+psi4_component(ecpint @ENABLE_ecpint@)
 psi4_component(erd @ENABLE_erd@)
 psi4_component(gdma @ENABLE_gdma@)
 psi4_component(pcmsolver @ENABLE_PCMSolver@)
-psi4_component(cppe @ENABLE_cppe@)
 psi4_component(simint @ENABLE_simint@)
 
 foreach(_comp ${${PN}_FIND_COMPONENTS})

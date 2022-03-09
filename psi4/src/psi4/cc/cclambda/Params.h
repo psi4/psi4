@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -68,7 +68,7 @@ struct L_Params {
     double R0;           /* same as corresponding R */
     double cceom_energy; /* same as corresponding R */
     int root;            /* index of root within irrep */
-    int ground;          /* boolean, is this a ground state L ? */
+    bool ground;         /* boolean, is this a ground state L ? */
     char L1A_lbl[32];
     char L1B_lbl[32];
     char L2AA_lbl[32];

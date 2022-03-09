@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -112,7 +112,7 @@ def _mergedapis_compare_recursive(expected, computed, *args, **kwargs):
             ' Use the new `qcel.testing.compare_recursive` API, being sure to convert positional arg `digits` decimal places to keyword arg `atol` literal absolute tolerance.'
         )
 
-    return qcel.testing.compare_molrecs(expected, computed, *args, **kwargs)
+    return qcel.testing.compare_recursive(expected, computed, *args, **kwargs)
 
 
 def _mergedapis_compare_molrecs(expected, computed, *args, **kwargs):

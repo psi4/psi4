@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -4913,7 +4913,6 @@ FISAPTSCF::FISAPTSCF(std::shared_ptr<JK> jk, double enuc, std::shared_ptr<Matrix
 FISAPTSCF::~FISAPTSCF() {}
 void FISAPTSCF::compute_energy() {
     // => Sizing <= //
-
     int nbf = matrices_["X"]->rowspi()[0];
     int nmo = matrices_["X"]->colspi()[0];
     int nocc = matrices_["C0"]->colspi()[0];
@@ -4966,9 +4965,9 @@ void FISAPTSCF::compute_energy() {
 
     bool diised = false;
     auto Gsize = std::make_shared<Matrix>("Gsize", nmo, nmo);
-    auto diis = std::make_shared<DIISManager>(max_diis_vectors, "FISAPT DIIS");
-    diis->set_error_vector_size(1, DIISEntry::InputType::Matrix, Gsize.get());
-    diis->set_vector_size(1, DIISEntry::InputType::Matrix, F.get());
+    DIISManager diis(max_diis_vectors, "FISAPT DIIS");
+    diis.set_error_vector_size(Gsize.get());
+    diis.set_vector_size(F.get());
     Gsize.reset();
 
     // ==> Master Loop <== //
@@ -5031,8 +5030,8 @@ void FISAPTSCF::compute_energy() {
 
         // => DIIS <= //
 
-        diis->add_entry(2, G1.get(), F.get());
-        diised = diis->extrapolate(1, F.get());
+        diis.add_entry(G1.get(), F.get());
+        diised = diis.extrapolate(F.get());
 
         // => Diagonalize Fock Matrix <= //
 

@@ -24,13 +24,11 @@ list(APPEND sources
   electrostatic.cc
   wavefunction.cc
   irrep.cc
-  eribase.cc
   fjt.cc
   potentialint.cc
   chartab.cc
   corrtab.cc
   quadrupole.cc
-  eri.cc
   symop.cc
   benchmark.cc
   get_writer_file_prefix.cc
@@ -54,7 +52,6 @@ list(APPEND sources
   kinetic.cc
   tracelessquadrupole.cc
   pseudospectral.cc
-  integral.cc
   matrix.cc
   gshell.cc
   integraliter.cc
@@ -69,7 +66,20 @@ list(APPEND sources
   orthog.cc
   )
 
+add_library(l2intf OBJECT eri.cc eribase.cc integral.cc)
+set_property(TARGET l2intf PROPERTY CXX_STANDARD 14)
+set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
+# below are what l2intf files would ordinarily have gotten from psi4_add_module.
+# * first brings OpenMP headers
+# * second brings l2. Linux needs only headers, but Windows needs headers and linking, so slight overkill here
+target_link_libraries(l2intf
+  PRIVATE
+    tgt::lapack
+    Libint2::cxx
+  )
+
 psi4_add_module(lib mints sources)
+target_link_libraries(mints PRIVATE l2intf)
 
 # Always linked-to external projects
 target_link_libraries(mints
@@ -86,16 +96,16 @@ if(TARGET Libint::libint)
 endif()
 
 if(TARGET simint::simint)
-  target_sources(mints
+  target_sources(l2intf
     PRIVATE
       siminteri.cc
     )
   # Add USING_simint definition, which is not in simint::simint
-  target_compile_definitions(mints
+  target_compile_definitions(l2intf
     PUBLIC
       USING_simint
     )
-  target_link_libraries(mints
+  target_link_libraries(l2intf
     PUBLIC
       simint::simint
     )
@@ -105,6 +115,13 @@ if(TARGET dkh::dkh)
   target_link_libraries(mints
     PUBLIC
       dkh::dkh
+    )
+endif()
+
+if(TARGET ECPINT::ecpint)
+  target_link_libraries(mints
+    PUBLIC
+      ECPINT::ecpint
     )
 endif()
 

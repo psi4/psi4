@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -59,8 +59,6 @@
 #include "psi4/libmints/factory.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
-#include "psi4/libdiis/diismanager.h"
-#include "psi4/libdiis/diisentry.h"
 
 #include <cstdlib>
 #include <cstdio>
@@ -125,8 +123,8 @@ void HF::frac() {
 
         // Make sure diis restarts correctly/frac plays well with MOM
         if (initialized_diis_manager_) {
-            diis_manager_->delete_diis_file();
-            diis_manager_.reset();
+            diis_manager_.attr("delete_diis_file")();
+            diis_manager_ = py::none();
             initialized_diis_manager_ = false;
             diis_start_ += iteration_ + 1;
         }

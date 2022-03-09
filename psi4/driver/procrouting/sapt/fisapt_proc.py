@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -148,9 +148,9 @@ def fisapt_fdrop(self, external_potentials=None):
                 charges = potential.extern.getCharges()
                 xyz = str(len(charges)) + "\n\n"
                 for charge in charges:
-                    xyz += "Ch %f %f %f\n" %(charge[1], charge[2], charge[3])
+                    xyz += "Ch %f %f %f\n" % (charge[1], charge[2], charge[3])
 
-                with open(filepath + os.sep + "Extern_%s.xyz" %frag, "w") as fh:
+                with open(filepath + os.sep + "Extern_%s.xyz" % frag, "w") as fh:
                     fh.write(xyz)
 
     vectors = self.vectors()

@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -230,6 +230,11 @@ PSI Variables by Alpha
    The specific rotation [deg/(dm (g/cm^3))] calculated at the CC2 level in the
    modified velocity gauge for a given (x) wavelength, (x) rounded to nearest integer.
 
+.. psivar:: CC2 ROTATION (LEN) ORIGIN-DEPENDENCE @ xNM
+
+   The origin-dependence of the CC2 specific rotation in deg/[dm (g/cm^3)]/bohr and the
+   length gauge, computed at (x) wavelength, (x) rounded to nearest integer.
+
 .. psivar:: CC QUADRUPOLE XX
    CC QUADRUPOLE XY
    CC QUADRUPOLE XZ
@@ -350,6 +355,11 @@ PSI Variables by Alpha
 
    The specific rotation [deg/(dm (g/cm^3))] calculated at the CCSD level in the
    modified velocity gauge for a given (x) wavelength, (x) rounded to nearest integer.
+
+.. psivar:: CCSD ROTATION (LEN) ORIGIN-DEPENDENCE @ xNM
+
+   The origin-dependence of the CCSD specific rotation in deg/[dm (g/cm^3)]/bohr and the
+   length gauge, computed at (x) wavelength, (x) rounded to nearest integer.
 
 .. psivar:: CEPA(0) DIPOLE
 
@@ -844,6 +854,14 @@ PSI Variables by Alpha
 .. psivar:: LCCSD (+LMP2) TOTAL ENERGY
 
    The total electronic energy [Eh] for the local CCSD level of theory.
+
+.. psivar:: LEFT-RIGHT CC2 EIGENVECTOR OVERLAP
+   LEFT-RIGHT CC3 EIGENVECTOR OVERLAP
+   LEFT-RIGHT CCSD EIGENVECTOR OVERLAP
+   LEFT-RIGHT CCSD(T) EIGENVECTOR OVERLAP
+
+   The overlap between the right-hand coupled coupled cluster eigenvector and the
+   left-hand eigenvector from the coupled cluster lambda (response) equations.
 
 .. psivar:: LOWDIN CHARGES
 

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -34,6 +34,8 @@
 #include "psi4/libmints/wavefunction.h"
 #include "psi4/libmints/vector3.h"
 #include "psi4/psi4-dec.h"
+
+#include "psi4/pybind11.h"
 
 namespace psi {
 using PerturbedPotentialFunction = std::function<SharedMatrix(SharedMatrix)>;
@@ -146,7 +148,7 @@ class HF : public Wavefunction {
     /// DIIS manager intiialized?
     bool initialized_diis_manager_;
     /// DIIS manager for all SCF wavefunctions
-    std::shared_ptr<DIISManager> diis_manager_;
+    py::object diis_manager_;
 
     /// When do we start collecting vectors for DIIS
     int diis_start_;
@@ -278,8 +280,10 @@ class HF : public Wavefunction {
     virtual void compute_spin_contamination();
 
     /// The DIIS object
-    std::shared_ptr<DIISManager> diis_manager() const { return diis_manager_; }
-    void set_diis_manager(std::shared_ptr<DIISManager> manager) { diis_manager_ = manager; }
+    // std::shared_ptr<py::object> is probably saner, but that hits a compile error.
+    // Quite probably https://github.com/pybind/pybind11/issues/787
+    py::object& diis_manager() { return diis_manager_; }
+    void set_diis_manager(py::object& manager) { diis_manager_ = manager; }
     bool initialized_diis_manager() const { return initialized_diis_manager_; }
     void set_initialized_diis_manager(bool tf) { initialized_diis_manager_ = tf; }
 
@@ -316,7 +320,7 @@ class HF : public Wavefunction {
     void find_occupation();
 
     /** Performs DIIS extrapolation */
-    virtual bool diis() { return false; }
+    virtual bool diis(double dnorm) { return false; }
 
     /** Compute the orbital gradient */
     virtual double compute_orbital_gradient(bool save_diis, int max_diis_vectors) { return 0.0; }

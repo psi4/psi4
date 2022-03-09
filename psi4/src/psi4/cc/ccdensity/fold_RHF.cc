@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -72,10 +72,6 @@ void fold_RHF(const struct RHO_Params& rho_params) {
     int I, J, K, L, M, A, B;
     int IM, JM, MI, MJ, MK, ML, MA, MB;
     int Gi, Gj, Gk, Gl, Gm, Ga, Gb;
-    int *occpi, *virtpi;
-    int *occ_off, *vir_off;
-    int *occ_sym, *vir_sym;
-    int *openpi;
     dpdfile2 D, D1, D2, F;
     dpdbuf4 G, Aints, E, C, DInts, FInts, BInts, G1, G2;
     double one_energy = 0.0, two_energy = 0.0, total_two_energy = 0.0;
@@ -83,13 +79,13 @@ void fold_RHF(const struct RHO_Params& rho_params) {
     double this_energy;
 
     nirreps = moinfo.nirreps;
-    occpi = moinfo.occpi;
-    virtpi = moinfo.virtpi;
-    occ_off = moinfo.occ_off;
-    vir_off = moinfo.vir_off;
-    occ_sym = moinfo.occ_sym;
-    vir_sym = moinfo.vir_sym;
-    openpi = moinfo.openpi;
+    const auto& occpi = moinfo.occpi;
+    const auto& virtpi = moinfo.virtpi;
+    const auto& occ_off = moinfo.occ_off;
+    const auto& vir_off = moinfo.vir_off;
+    const auto& occ_sym = moinfo.occ_sym;
+    const auto& vir_sym = moinfo.vir_sym;
+    const auto& openpi = moinfo.openpi;
 
     if (!params.aobasis && params.debug_) {
         outfile->Printf("\n\tEnergies re-computed from Fock-adjusted CC density:\n");

@@ -50,3 +50,9 @@ for group_size in [1, 2, 4, 8]:
 def test_constructors_w_symmetry(name, dim):
     v = Vector(name, dim)
     check_block_vec(v, dim.n(), dim, name)
+
+def test_clone():
+    dim = Dimension([1, 2, 3])
+    vec = Vector(dim)
+    copy = vec.clone()
+    assert copy.dimpi() == dim

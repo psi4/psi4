@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -45,6 +45,8 @@ DFT: Density Functional Theory
 Both density functional theory and Hartree--Fock theory are controlled
 through the SCF module, and the :ref:`SCF Introduction <sec:scfintro>`
 section is also relevant here.
+
+.. note:: Starting version 1.5, the |scf__wcombine| option is temporarily disabled.
 
 .. note:: Starting version 1.4 (tag v1.4a1 in the development repository), |PSIfour| uses an updated and extended (to 104 elements) set
           of Bragg-Slater radii. This leads to minimal deviations in absolute energies (1E-06 au) and

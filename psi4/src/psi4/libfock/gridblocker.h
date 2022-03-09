@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -32,6 +32,7 @@
 #include "psi4/psi4-dec.h"
 
 #include "psi4/libmints/vector3.h"
+#include "psi4/libpsi4util/exception.h"
 
 namespace psi {
 
@@ -54,7 +55,6 @@ class GridBlocker {
     double const* y_ref_;
     double const* z_ref_;
     double const* w_ref_;
-    int const* index_ref_;
 
     const size_t tol_max_points_;
     const size_t tol_min_points_;
@@ -71,13 +71,12 @@ class GridBlocker {
     double* y_;
     double* z_;
     double* w_;
-    int* index_;
-    std::vector<std::shared_ptr<BlockOPoints> > blocks_;
+    std::vector<std::shared_ptr<BlockOPoints>> blocks_;
 
    public:
     GridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
-                double const* w_ref, int const* index_ref, const int max_points, const int min_points,
-                const double max_radius, std::shared_ptr<BasisExtents> extents);
+                double const* w_ref, const int max_points, const int min_points, const double max_radius,
+                std::shared_ptr<BasisExtents> extents);
     virtual ~GridBlocker();
 
     virtual void block() = 0;
@@ -90,12 +89,32 @@ class GridBlocker {
     double* y() const { return y_; }
     double* z() const { return z_; }
     double* w() const { return w_; }
-    int* index() const { return index_; }
-    const std::vector<std::shared_ptr<BlockOPoints> >& blocks() const { return blocks_; }
+    const std::vector<std::shared_ptr<BlockOPoints>>& blocks() const { return blocks_; }
+    virtual const std::vector<std::vector<std::shared_ptr<BlockOPoints>>>& atomic_blocks() {
+        throw PSIEXCEPTION("GridBlocker: Atomic blocks not implemented in parent class.");
+    }
 
     void set_print(int print) { print_ = print; }
     void set_debug(int debug) { debug_ = debug; }
     void set_bench(int bench) { bench_ = bench; }
+};
+
+/**
+ * Atomic blocking
+ */
+class AtomicGridBlocker : public GridBlocker {
+   public:
+    AtomicGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
+                      double const* w_ref, const int max_points, const int min_points, const double max_radius,
+                      std::shared_ptr<BasisExtents> extents, const std::shared_ptr<Molecule> molecule,
+                      const std::vector<std::vector<MassPoint>> atomic_grids);
+    ~AtomicGridBlocker() override;
+
+    void block() override;
+    std::shared_ptr<Molecule> molecule_;
+    std::vector<std::vector<MassPoint>> atomic_grids_;
+    std::vector<std::vector<std::shared_ptr<BlockOPoints>>> atomic_blocks_;
+    const std::vector<std::vector<std::shared_ptr<BlockOPoints>>>& atomic_blocks() override { return atomic_blocks_; };
 };
 
 /**
@@ -104,8 +123,8 @@ class GridBlocker {
 class NaiveGridBlocker : public GridBlocker {
    public:
     NaiveGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
-                     double const* w_ref, int const* index_ref, const int max_points, const int min_points,
-                     const double max_radius, std::shared_ptr<BasisExtents> extents);
+                     double const* w_ref, const int max_points, const int min_points, const double max_radius,
+                     std::shared_ptr<BasisExtents> extents);
     ~NaiveGridBlocker() override;
 
     void block() override;
@@ -117,11 +136,11 @@ class NaiveGridBlocker : public GridBlocker {
 class OctreeGridBlocker : public GridBlocker {
    public:
     OctreeGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
-                      double const* w_ref, int const* index_ref, const int max_points, const int min_points,
-                      const double max_radius, std::shared_ptr<BasisExtents> extents);
+                      double const* w_ref, const int max_points, const int min_points, const double max_radius,
+                      std::shared_ptr<BasisExtents> extents);
     ~OctreeGridBlocker() override;
 
     void block() override;
 };
-}
+}  // namespace psi
 #endif

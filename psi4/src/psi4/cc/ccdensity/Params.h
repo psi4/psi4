@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -46,8 +46,8 @@ struct Params {
     int cachelev;
     int aobasis;
     int ref;
-    int onepdm;            /* produce ONLY the onepdm for properties */
-    int onepdm_grid_dump;  // dump the onepdm on a grid to a dx file
+    bool onepdm;            /* produce ONLY the onepdm for properties */
+    bool onepdm_grid_dump;  // dump the onepdm on a grid to a dx file
     int relax_opdm;
     int use_zeta;
     int calc_xi;

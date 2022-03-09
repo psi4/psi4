@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -181,7 +181,7 @@ input.
 Should needed elements be missing from the best
 auxiliary basis or should the orbital basis be unknown to |PSIfour|,
 the auxiliary basis will fall back on `def2 quad-zeta fitting bases
-<https://github.com/psi4/psi4/blob/master/psi4/driver/qcdb/libmintsbasisset.py#L762>`_.
+:source:`psi4/driver/qcdb/libmintsbasisset.py#L762`.
 Note that if |mints__basis| is known to be larger than quad-zeta,
 |PSIfour| *will not* attempt to fall back on the def2 fitting bases.
 

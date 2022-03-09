@@ -79,11 +79,11 @@ for numx in range(3):
     for numf in range(3):
         polar[numx, numf] = -1 * ret[numx].vector_dot(dipoles_xyz[numf])
 
-psi4.core.print_out("\n         " + "CPHF Dipole Polarizability:".center(44) + "\n");
+psi4.core.print_out("\n         " + "CPHF Dipole Polarizability:".center(44) + "\n")
 tops = ("X", "Y", "Z")
-psi4.core.print_out("       %12s %12s %12s\n" % tops);
+psi4.core.print_out("       %12s %12s %12s\n" % tops)
 for n, p in enumerate(tops):
-    psi4.core.print_out("      %3s %12.4f %12.4f %12.4f\n" % (p, polar[n][0], polar[n][1], polar[n][2]));
+    psi4.core.print_out("      %3s %12.4f %12.4f %12.4f\n" % (p, polar[n][0], polar[n][1], polar[n][2]))
 psi4.core.print_out("\n")
     
 psi4.compare_values(8.01554,  polar[0][0], 3, 'Dipole XX Polarizability') # TEST

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -251,23 +251,34 @@ Matrix::Matrix(dpdfile2 *inFile)
     global_dpd_->file2_mat_close(inFile);
 }
 
-Matrix::Matrix(dpdbuf4 *inBuf) : name_(inBuf->file.label), rowspi_(1), colspi_(1) {
-    if (inBuf->params->nirreps != 1) {
-        throw PSIEXCEPTION("dpdbuf4 <-> matrix is only allowed for C1");
+Matrix::Matrix(dpdbuf4 *inBuf)
+    : rowspi_(inBuf->params->nirreps), colspi_(inBuf->params->nirreps), name_(inBuf->file.label) {
+    if (inBuf->file.my_irrep != 0) {
+        // In theory, this check isn't necessary, but not totally symmetric cases aren't currently tested.
+        throw PSIEXCEPTION("dpdbuf4 <-> matrix is only allowed for totally symmetric buffers");
     }
     matrix_ = NULL;
-    symmetry_ = 0;
-    nirrep_ = 1;
-    rowspi_[0] = inBuf->params->rowtot[0];
-    colspi_[0] = inBuf->params->coltot[0];
+    symmetry_ = inBuf->file.my_irrep;
+    nirrep_ = inBuf->params->nirreps;
+    for (int h = 0; h < nirrep_; ++h) {
+        rowspi_[h] = inBuf->params->rowtot[h];
+        colspi_[h] = inBuf->params->coltot[h];
+    }
     alloc();
-    global_dpd_->buf4_mat_irrep_init(inBuf, 0);
-    global_dpd_->buf4_mat_irrep_rd(inBuf, 0);
+    for (int h = 0; h < inBuf->params->nirreps; ++h) {
+        global_dpd_->buf4_mat_irrep_init(inBuf, h);
+        global_dpd_->buf4_mat_irrep_rd(inBuf, h);
+    }
     copy_from(inBuf->matrix);
-    global_dpd_->buf4_mat_irrep_close(inBuf, 0);
-    std::vector<int> npshape = {inBuf->params->ppi[0], inBuf->params->qpi[0], inBuf->params->rpi[0],
-                                inBuf->params->spi[0]};
-    set_numpy_shape(npshape);
+    for (int h = 0; h < inBuf->params->nirreps; ++h) {
+        global_dpd_->buf4_mat_irrep_close(inBuf, h);
+    }
+
+    if (nirrep_ == 1) {
+        std::vector<int> npshape = {inBuf->params->ppi[0], inBuf->params->qpi[0], inBuf->params->rpi[0],
+                                    inBuf->params->spi[0]};
+        set_numpy_shape(npshape);
+    }
 }
 
 Matrix::~Matrix() { release(); }

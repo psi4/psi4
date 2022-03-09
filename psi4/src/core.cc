@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -137,7 +137,7 @@ void handleBrianOption(bool value) {
 void export_benchmarks(py::module&);
 void export_blas_lapack(py::module&);
 void export_cubeprop(py::module&);
-void export_diis(py::module&);
+void export_dpd(py::module&);
 void export_fock(py::module&);
 void export_functional(py::module&);
 void export_mints(py::module&);
@@ -568,6 +568,9 @@ void throw_deprecation_errors(std::string const& key, std::string const& module 
             "Rename keyword " + key +
                 ". All instances of 'dcft' should be replaced with 'dct'. The method was renamed in v1.4.",
             __FILE__, __LINE__);
+    }
+    if (module == "SCF" && key == "DIIS_MIN_VECS") {
+        py_psi_print_out("WARNING!\n\tRemove keyword DIIS_MIN_VECS! This keyword does nothing. Using it will raise an error in v1.7.\n");
     }
 }
 
@@ -1165,7 +1168,6 @@ PYBIND11_MODULE(core, core) {
 
     // Define library classes
     export_psio(core);
-    export_diis(core);
     export_mints(core);
     export_misc(core);
     export_fock(core);
@@ -1173,6 +1175,7 @@ PYBIND11_MODULE(core, core) {
     export_trans(core);
     export_wavefunction(core);
     export_options(core);
+    export_dpd(core);
 
     // Plugins
     export_plugins(core);

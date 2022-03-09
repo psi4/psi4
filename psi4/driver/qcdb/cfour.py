@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -610,11 +610,11 @@ def harvest(p4Mol, c4out, **largs):
     if outMol:
         if grdMol:
             if abs(outMol.nuclear_repulsion_energy() - grdMol.nuclear_repulsion_energy()) > 1.0e-3:
-                raise ValidationError("""Cfour outfile (NRE: %f) inconsistent with Cfour GRD (NRE: %f).""" % \
+                raise ValidationError("""Cfour outfile (NRE: %f) inconsistent with Cfour GRD (NRE: %f).""" %
                         (outMol.nuclear_repulsion_energy(), grdMol.nuclear_repulsion_energy()))
         if p4Mol:
             if abs(outMol.nuclear_repulsion_energy() - p4Mol.nuclear_repulsion_energy()) > 1.0e-3:
-                raise ValidationError("""Cfour outfile (NRE: %f) inconsistent with Psi4 input (NRE: %f).""" % \
+                raise ValidationError("""Cfour outfile (NRE: %f) inconsistent with Psi4 input (NRE: %f).""" %
                     (outMol.nuclear_repulsion_energy(), p4Mol.nuclear_repulsion_energy()))
     else:
         raise ValidationError("""No coordinate information extracted from Cfour output.""")

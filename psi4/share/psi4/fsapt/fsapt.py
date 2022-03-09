@@ -5,7 +5,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -102,7 +102,7 @@ def write_xyz(filename, geom):
     fh.write('%d\n\n' % len(geom))
     for line in geom:
         fh.write('%6s %14.10f %14.10f %14.10f\n' % (line[0], line[1], line[2], line[3]))
-    fh.close();
+    fh.close()
 
 def read_list(filename, factor = 1.0):
 
@@ -264,7 +264,7 @@ def partition_fragments(fragkeys,frags,Z,Q,completeness = 0.85):
     links = {}
     link_nuclear_ws = {}
     link_orbital_ws = {}
-    linkindex = 0;
+    linkindex = 0
 
     for a in linkas:
         sums = []
@@ -297,8 +297,8 @@ def partition_fragments(fragkeys,frags,Z,Q,completeness = 0.85):
         nuclear_ws[key1][A1] -= 1.0 / Z[A1]
         nuclear_ws[key2][A2] -= 1.0 / Z[A2]
 
-        linkname = 'Link-%d' % (linkindex+1);
-        linkindex+=1;
+        linkname = 'Link-%d' % (linkindex+1)
+        linkindex += 1
 
         linkkeys.append(linkname)
         links[linkname] = [A1, A2]
@@ -854,7 +854,7 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
     for val in total_ws['B'].values():
         val.append(0.0)
 
-    if os.path.exists("%s/Extern_A.xyz" %dirname):
+    if os.path.exists("%s/Extern_A.xyz" % dirname):
         fragkeys['A'].append("Extern-A")
         fragkeysr['A'].append("Extern-A")
         orbital_ws['A']['Extern-A'] = [0.0 for i in range(len(Qs['A']))]
@@ -866,7 +866,7 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
         frags['A']['Extern-A'] = list(range(len(Zs['A']), len(Zs['A']) + len(geom_extern_A)))
 
     # Add external potential data for B
-    if os.path.exists("%s/Extern_B.xyz" %dirname):
+    if os.path.exists("%s/Extern_B.xyz" % dirname):
         fragkeys['B'].append("Extern-B")
         fragkeysr['B'].append("Extern-B")
         orbital_ws['B']['Extern-B'] = [0.0 for i in range(len(Qs['B']))]
@@ -875,7 +875,7 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
         geom_extern_B = read_xyz('%s/Extern_B.xyz' % dirname)
         for b in geom_extern_B:
             geom.append(b)
-        if os.path.exists("%s/Extern_A.xyz" %dirname):
+        if os.path.exists("%s/Extern_A.xyz" % dirname):
             frags['B']['Extern-B'] = list(range(len(Zs['A']) + len(geom_extern_A),
                                                 len(Zs['A']) + len(geom_extern_A) + len(geom_extern_B)))
         else:
@@ -883,7 +883,7 @@ def compute_fsapt(dirname, links5050, completeness = 0.85):
 
     # Add external potential data for C
     # The point charges in C do not explicitly enter the SAPT0 interaction energy
-    if os.path.exists("%s/Extern_C.xyz" %dirname):
+    if os.path.exists("%s/Extern_C.xyz" % dirname):
         geom_extern_C = read_xyz('%s/Extern_C.xyz' % dirname)
         for c in geom_extern_C:
             geom.append(c)

@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -491,8 +491,8 @@ SADNO
     calculation, see [Lehtola:2019:1593]_.
 GWH
     A generalized Wolfsberg-Helmholtz modification of the core
-    Hamiltonian matrix. May be useful in open-shell systems, but is
-    often less accurate than the core guess (see
+    Hamiltonian matrix. Usually less accurate than the core guess: the
+    latter is exact for one-electron systems, GWH is not; see
     [Lehtola:2019:1593]_).
 HUCKEL
     An extended H\ |u_dots|\ ckel guess based on on-the-fly atomic UHF
@@ -579,17 +579,23 @@ that |PSIfour| expects the numpy file on disk to have the ``.npy`` extension, no
 Convergence Stabilization
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-With regard to convergence stabilization, Pulay's Direct Inversion of the
-Iterative Subspace (DIIS) extrapolation,  Gill's Maximum Overlap Method (MOM),
-and damping are all implemented. A summary of each is presented below,
+A summary of Psi's supported convergence stabilization techniques is presented below:
 
 DIIS [On by Default]
-    DIIS uses previous iterates of the Fock Matrix together
+    DIIS uses previous iterates of the Fock matrix together
     with an error criterion based on the orbital gradient to produce an informed
     estimate of the next Fock Matrix. DIIS is almost always necessary to converge
     the SCF procedure and is therefore turned on by default. In rare cases, the
     DIIS algorithm may need to be modified or turned off altogether, which may be
     accomplished via :term:`options <DIIS (SCF)>`.
+ADIIS [On by Default]
+    ADIIS uses previous iterates of the Fock and density matrices to produce an
+    informed estimate of the next Fock matrix. ADIIS estimates are based on minimizing
+    an energy estimate rather than zeroing the residual, so this performs best in the early
+    iterations. By default, Psi will start using ADIIS before blending the ADIIS step with
+    the DIIS step, eventually using the pure DIIS step. The closely-related EDIIS procedure
+    may be used instead by setting |scf__scf_initial_accelerator|. This is formally identical
+    to ADIIS for HF, but the methods will differ for more general DFT.
 MOM [Off by Default]
     MOM was developed to combat a particular class of convergence failure:
     occupation flipping. In some cases, midway though the SCF procedure, a partially

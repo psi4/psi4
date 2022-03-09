@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -37,8 +37,6 @@
 #include "psi4/psifiles.h"
 
 #include "psi4/libciomr/libciomr.h"
-#include "psi4/libdiis/diisentry.h"
-#include "psi4/libdiis/diismanager.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libfock/jk.h"
 #include "psi4/libfunctional/superfunctional.h"
@@ -291,8 +289,6 @@ void ROHF::save_density_and_energy() {
     Db_old_->copy(Db_);
     Dt_old_->copy(Dt_);
 }
-
-bool ROHF::diis() { return diis_manager_->extrapolate(1, soFeff_.get()); }
 
 void ROHF::form_initial_F() {
     // Form the initial Fock matrix, closed and open variants

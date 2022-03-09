@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -127,11 +127,6 @@ void OCCWave::common_init() {
         outfile->Printf(
             "\tSpin-scaling in OCC changed in 1.4. Leave options to the energy call. Just pass in the method name, "
             "like scs-mp2.\n\n");
-    }
-    if (options_["MO_DIIS_NUM_VECS"].has_changed() || options_["CC_DIIS_MIN_VECS"].has_changed() ||
-        options_["CC_DIIS_MAX_VECS"].has_changed()) {
-        outfile->Printf(
-            "\tDIIS keywords in OCC simplified in 1.4. DIIS_MIN_VECS and DIIS_MAX_VECS are the ones to use.\n\n");
     }
 
     //   Given default orbital convergence, set the criteria by what should

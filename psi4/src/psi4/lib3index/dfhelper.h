@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -31,6 +31,7 @@
 
 #include "psi4/psi4-dec.h"
 #include <psi4/libmints/typedefs.h>
+#include "psi4/libpsi4util/exception.h"
 
 #include <map>
 #include <list>
@@ -45,6 +46,9 @@ class Options;
 class Matrix;
 class ERISieve;
 class TwoBodyAOInt;
+
+// COMMON VARIABLE NAMES
+// lr_symmetric: Are the two C matrices in our J/K-esque contraction equal?
 
 class PSI_API DFHelper {
    public:
@@ -143,8 +147,14 @@ class PSI_API DFHelper {
     ///
     /// Do we calculate omega exchange and regular hf exchange together?
     /// @param wcombine boolean: all exchange in one matrix
-    ///
-    void set_wcombine(bool wcombine) {wcombine_ = wcombine;}
+    /// TODO: re-enable after all bugs are fixed.
+    // void set_wcombine(bool wcombine) {wcombine_ = wcombine;}
+    void set_wcombine(bool wcombine) {
+        if (wcombine) {
+            throw PSIEXCEPTION("JK: wcombine option is currently not available.");
+        }
+        wcombine_ = wcombine;
+    }
     bool get_wcombine() { return wcombine_; }
 
     ///
@@ -403,6 +413,7 @@ class PSI_API DFHelper {
     // => generalized blocking <=
     std::pair<size_t, size_t> pshell_blocks_for_AO_build(const size_t mem, size_t symm,
                                                          std::vector<std::pair<size_t, size_t>>& b);
+    // returns pair(largest buffer size, largest block size)
     std::pair<size_t, size_t> Qshell_blocks_for_transform(const size_t mem, size_t wtmp, size_t wfinal,
                                                           std::vector<std::pair<size_t, size_t>>& b);
     void metric_contraction_blocking(std::vector<std::pair<size_t, size_t>>& steps, size_t blocking_index,
@@ -476,7 +487,10 @@ class PSI_API DFHelper {
                      std::pair<size_t, size_t> a3);
     void get_tensor_(std::string file, double* b, const size_t start1, const size_t stop1, const size_t start2,
                      const size_t stop2);
+    // Write to `file` from `Mp`, starting at position `start` in `file` and reading length `size`.
+    // The file is opened in mode `op`.
     void put_tensor_AO(std::string file, double* Mp, size_t size, size_t start, std::string op);
+    // Read from `file` into `Mp`, starting at position `start` in `file` and reading length `size`
     void get_tensor_AO(std::string file, double* Mp, size_t size, size_t start);
 
     // => internal handlers for FILE IO <=
@@ -504,7 +518,12 @@ class PSI_API DFHelper {
                     std::vector<SharedMatrix> J, std::vector<SharedMatrix> K, size_t max_nocc, bool do_J, bool do_K,
                     bool do_wK, bool lr_symmetric);
     void compute_D(std::vector<SharedMatrix> D, std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright);
-    void compute_J(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
+    // D   : Density matrices are read from here
+    // J   : Coulomb matrices are written to here
+    // M1p : Intermediate populated now for wK later.
+    // T1p : Temporary matrix
+    // T2p : Temporary matrix
+    void compute_J(const std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
                    std::vector<std::vector<double>>& D_buffers, size_t bcount, size_t block_size);
     void compute_J_symm(std::vector<SharedMatrix> D, std::vector<SharedMatrix> J, double* Mp, double* T1p, double* T2p,
                         std::vector<std::vector<double>>& D_buffers, size_t bcount, size_t block_size);
@@ -512,6 +531,7 @@ class PSI_API DFHelper {
     void compute_K(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> K,
                    double* Tp, double* Jtmp, double* Mp, size_t bcount, size_t block_size,
                    std::vector<std::vector<double>>& C_buffers, bool lr_symmetric);
+    // returns tuple(largest AO buffer size, largest Q block size)
     std::tuple<size_t, size_t> Qshell_blocks_for_JK_build(std::vector<std::pair<size_t, size_t>>& b, size_t max_nocc,
                                                           bool lr_symmetric);
     void compute_wK(std::vector<SharedMatrix> Cleft, std::vector<SharedMatrix> Cright, std::vector<SharedMatrix> wK,

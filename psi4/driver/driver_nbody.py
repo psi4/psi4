@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -58,10 +58,39 @@ def _sum_cluster_ptype_data(ptype,
                             vmfc=False,
                             n=0):
     """
-    Sums gradient and hessian data from compute_list.
+    Sum gradients/hessians from n-body computations to obtain the BSSE corrected or uncorrected gradient/hessian
 
-    compute_list comes in as a tuple(frag, basis)
+    Parameters
+    ----------
+    ptype : str
+        Either "gradient" or "hessian"
+
+    ptype_dict : dict
+        Dictionary containing computed gradient or Hessian obtained from each subsystem computation
+
+    compute_list : tuple
+        A tuple of (frag, basis) data containing all the required computations
+
+    fragment_slice_dict : dict
+        Dictionary containing slices that index the gradient or Hessian matrix for each of the fragments
+
+    fragment_size_dict : dict
+        Dictionary containing the number of atoms of each fragment
+
+    ret : np.ndarray
+        An array containing the returned gradient or Hessian data. Modified in place
+
+    vmfc : bool
+        Is it a VMFC calculation
+
+    n : int
+        MBE level; required for VMFC calculations
+
+    Returns
+    -------
+    None
     """
+
 
     if len(compute_list) == 0:
         return
@@ -102,7 +131,7 @@ def _sum_cluster_ptype_data(ptype,
 
             for abs_sl1, rel_sl1 in zip(abs_slices, rel_slices):
                 for abs_sl2, rel_sl2 in zip(abs_slices, rel_slices):
-                    ret[abs_sl1, abs_sl2] += hess[rel_sl1, rel_sl2]
+                    ret[abs_sl1, abs_sl2] += sign * hess[rel_sl1, rel_sl2]
 
     else:
         raise KeyError("ptype can only be gradient or hessian How did you end up here?")
@@ -319,7 +348,7 @@ def nbody_gufunc(func: Union[str, Callable], method_string: str, **kwargs):
                     try:
                         wfn.set_scalar_variable(str(var), value)
                         core.set_scalar_variable(str(var), value)
-                    except:
+                    except Exception:
                         wfn.set_array_variable(d.split('_')[0].upper() + ' ' + str(var), core.Matrix.from_array(value))
 
     core.set_variable("CURRENT ENERGY", nbody_results['ret_energy'])

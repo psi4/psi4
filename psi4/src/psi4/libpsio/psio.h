@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -55,7 +55,7 @@ psio_address psio_get_entry_end(size_t unit, const char *key);
 
 int psio_tocwrite(size_t unit);
 int psio_tocread(size_t unit);
-void psio_tocprint(size_t unit, FILE *output);
+void psio_tocprint(size_t unit);
 psio_tocentry *psio_tocscan(size_t unit, const char *key);
 bool psio_tocentry_exists(size_t unit, const char *key);
 psio_tocentry *psio_toclast(size_t unit);

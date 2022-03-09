@@ -2,17 +2,13 @@
 ### >> This allow to propagate dependencies upwards sanely
 add_library(core SHARED core.cc)
 
-if(DEFINED ENV{LGTM_SRC})
-    target_include_directories(core
-      PRIVATE
-        ${Python_INCLUDE_DIRS}
-    )
-else()
-    target_link_libraries(core
-      PRIVATE
-        Python::Module
-    )
-endif()
+include_directories(
+    ${Python_INCLUDE_DIRS}
+)
+target_link_libraries(core
+  PRIVATE
+    Python::Module
+)
 target_link_libraries(core
   PRIVATE
     pybind11::module
@@ -39,10 +35,9 @@ target_sources(core
     export_benchmarks.cc
     export_blas_lapack.cc
     export_cubeprop.cc
-    export_diis.cc
+    export_dpd.cc
     export_fock.cc
     export_functional.cc
-    export_mints.cc
     export_misc.cc
     export_oeprop.cc
     export_pcm.cc
@@ -55,6 +50,23 @@ target_sources(core
     read_options.cc
     python_data_type.cc
   )
+
+# need to down-standard the Libint2 connection from c++17 for Intel as of 2021.4
+add_library(l2export OBJECT export_mints.cc)
+set_property(TARGET l2export PROPERTY CXX_STANDARD 14)
+set_property(TARGET l2export PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_include_directories(l2export
+  PRIVATE
+    $<TARGET_PROPERTY:Libint2::cxx,INTERFACE_INCLUDE_DIRECTORIES>
+  )
+if(MSVC)
+  target_link_libraries(l2export
+    PRIVATE
+      pybind11::headers
+      pybind11::windows_extras
+    )
+endif()
+target_link_libraries(core PRIVATE l2export)
 
 # set_target_properties(core
    # PROPERTIES

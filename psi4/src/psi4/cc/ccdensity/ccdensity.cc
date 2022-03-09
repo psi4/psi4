@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -134,6 +134,7 @@ void ex_oscillator_strength(std::shared_ptr<Wavefunction> wfn, struct TD_Params 
                             struct XTD_Params *xtd_data);
 void ex_rotational_strength(MintsHelper &mints, struct TD_Params *S, struct TD_Params *U, struct XTD_Params *xtd_data);
 void ex_td_print(std::vector<struct XTD_Params>);
+SharedMatrix block_to_matrix(double **);
 
 PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options) {
     int i;
@@ -162,9 +163,9 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
 
         std::vector<int *> spaces;
         spaces.push_back(moinfo.occpi);
-        spaces.push_back(moinfo.occ_sym);
+        spaces.push_back(moinfo.occ_sym.data());
         spaces.push_back(moinfo.virtpi);
-        spaces.push_back(moinfo.vir_sym);
+        spaces.push_back(moinfo.vir_sym.data());
         delete dpd_list[0];
         dpd_list[0] = new DPD(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 2, spaces);
         dpd_set_default(0);
@@ -174,13 +175,13 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
 
         std::vector<int *> spaces;
         spaces.push_back(moinfo.aoccpi);
-        spaces.push_back(moinfo.aocc_sym);
+        spaces.push_back(moinfo.aocc_sym.data());
         spaces.push_back(moinfo.avirtpi);
-        spaces.push_back(moinfo.avir_sym);
+        spaces.push_back(moinfo.avir_sym.data());
         spaces.push_back(moinfo.boccpi);
-        spaces.push_back(moinfo.bocc_sym);
+        spaces.push_back(moinfo.bocc_sym.data());
         spaces.push_back(moinfo.bvirtpi);
-        spaces.push_back(moinfo.bvir_sym);
+        spaces.push_back(moinfo.bvir_sym.data());
         dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, nullptr, 4, spaces);
     }
 
@@ -340,6 +341,7 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
         auto Pb = std::make_shared<Matrix>("P beta", Cb->colspi(), Cb->colspi());
         int mo_offset = 0;
 
+        /*
         for (int h = 0; h < Ca->nirrep(); h++) {
             int nmo = nmopi[h];
             int nfv = frzvpi[h];
@@ -363,12 +365,21 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
             }
             mo_offset += nmo;
         }
+        */
+
+        SharedMatrix Pa_x, Pb_x;
+        if (ref_wfn->same_a_b_dens()) {
+            Pa_x = block_to_matrix(moinfo.opdm);
+        } else {
+            Pa_x = block_to_matrix(moinfo.opdm_a);
+            Pb_x = block_to_matrix(moinfo.opdm_b);
+        }
 
         /* Transform Da/b to so basis and set in wfn */
         // If this becomes a wavefunction subclass someday, just redefine the densities directly.
         if (ref_wfn->same_a_b_dens()) {
-            Pa->scale(0.5);
-            auto Pa_so = linalg::triplet(ref_wfn->Ca(), Pa, ref_wfn->Ca(), false, false, true);
+            Pa_x->scale(0.5);
+            auto Pa_so = linalg::triplet(ref_wfn->Ca(), Pa_x, ref_wfn->Ca(), false, false, true);
             if (i == 0) {
                 auto ref_Da_so = ref_wfn->Da();
                 ref_Da_so->copy(Pa_so);
@@ -377,8 +388,8 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
                 ref_wfn->set_array_variable(var_title, Pa_so);
             }
         } else {
-            auto Pa_so = linalg::triplet(ref_wfn->Ca(), Pa, ref_wfn->Ca(), false, false, true);
-            auto Pb_so = linalg::triplet(ref_wfn->Cb(), Pb, ref_wfn->Cb(), false, false, true);
+            auto Pa_so = linalg::triplet(ref_wfn->Ca(), Pa_x, ref_wfn->Ca(), false, false, true);
+            auto Pb_so = linalg::triplet(ref_wfn->Cb(), Pb_x, ref_wfn->Cb(), false, false, true);
             if (i == 0) {
                 auto ref_Da_so = ref_wfn->Da();
                 auto ref_Db_so = ref_wfn->Db();

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -126,7 +126,7 @@ def anharmonicity(rvals: List, energies: List, plot_fit: str = '', mol = None) -
         core.print_out("       E = %20.14f, x = %14.7f, grad = %20.14f\n" % (e, re, g))
         if abs(g) < thres:
             break
-        re -= g/H;
+        re -= g/H
         if i == maxit-1:
             raise ConvergenceError("diatomic geometry optimization", maxit)
     core.print_out(" Final E = %20.14f, x = %14.7f, grad = %20.14f\n" % (e, re, g))

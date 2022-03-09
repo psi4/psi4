@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -212,7 +212,7 @@ def _print_output(complete_dict, output):
     core.print_out('\n   ==> Response Properties <==\n')
 
     for i, prop in enumerate(complete_dict):
-        if not 'User' in prop['name']:
+        if 'User' not in prop['name']:
             core.print_out('\n    => {} <=\n\n'.format(prop['name']))
             directions = prop['printout_labels']
             var_name = prop['name'].upper().replace("IES", "Y")
@@ -535,7 +535,7 @@ def tdscf_excitations(wfn,
                       verbose: int = 1,
                       coeff_cutoff: float = 0.1,
                       tdm_print: List[str] = []):
-    """Compute excitations from a SCF(HF/KS) wavefunction
+    r"""Compute excitations from a SCF(HF/KS) wavefunction
 
     Parameters
     -----------
@@ -775,14 +775,13 @@ def tdscf_excitations(wfn,
         wfn.set_array_variable(
             f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} MAGNETIC TRANSITION DIPOLE MOMENT - {x.irrep_ES} SYMMETRY",
             core.Matrix.from_array(x.mdtm.reshape((1, 3))))
-        wfn.set_array_variable(
-            f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
-            x.R_eigvec if restricted else x.R_eigvec[0])
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
+                               x.R_eigvec if restricted else x.R_eigvec[0])
         wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
                                x.L_eigvec if restricted else x.L_eigvec[0])
         wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} RIGHT EIGENVECTOR BETA - {x.irrep_ES} SYMMETRY",
                                x.R_eigvec if restricted else x.R_eigvec[1])
-        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR ALPHA - {x.irrep_ES} SYMMETRY",
+        wfn.set_array_variable(f"TD-{ssuper_name} ROOT 0 -> ROOT {i+1} LEFT EIGENVECTOR BETA - {x.irrep_ES} SYMMETRY",
                                x.L_eigvec if restricted else x.L_eigvec[1])
 
         core.print_out(

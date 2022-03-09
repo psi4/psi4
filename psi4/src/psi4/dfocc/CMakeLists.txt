@@ -105,3 +105,5 @@ list(APPEND sources
   z_vector_pcg.cc
   )
 psi4_add_module(bin dfocc sources)
+
+target_link_libraries(dfocc PUBLIC diis)

@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -97,7 +97,7 @@ def parse_geometry_matrix_data(outfile, matrix_name, row_tot):
                     matrix_data.append(float(y))
                     matrix_data.append(float(z))
                     n_rows += 1
-            except:
+            except Exception:
                 pass
         if (n_rows == row_tot) and (len(matrix_data) != 3 * row_tot):
             raise p4util.ParsingError('Collecting {} data failed!'

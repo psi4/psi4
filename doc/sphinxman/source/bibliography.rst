@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -568,7 +568,19 @@ Bibliography
    T. H. Thompson and C. Ochsenfeld
    *J. Chem. Phys.* **147**, 144101 (2017).
    doi: 10.1063/1.4994190
+   
+.. [Smith:2020:184108]
+    "PSI4 1.4: Open-source software for high-throughput quantum chemistry",
+    D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish, M. C. Schieber, R. Galvelis, P. Kraus, H. Kruse, R. Di Remigio, A. Alenaizan, A. M. James, S. Lehtola, J. P. Misiewicz, M. Scheurer, R. A. Shaw, J. B. Schriber, Y. Xie, Z. L. Glick, D. A. Sirianni, J. S. O'Brien, J. M. Waldrop, A. Kumar, E. G. Hohenstein, B. P. Pritchard, B. R. Brooks, H. F. Schaefer III, A. Yu. Sokolov, K. Patkowski, A. E. DePrince III, U. Bozkaya, R. King, F. A. Evangelista, J. M. Turney, T. D. Crawford, and C. D. Sherrill
+    *J. Chem. Phys.* **152**, 184108 (2020).
+    doi: 10.1063/5.0006002
 
+.. [Waldrop:2021:024103]
+   "Nonapproximated third-order exchange induction energy in symmetry-adapted perturbation theory",
+   J. M. Waldrop and K. Patkowski
+   *J. Chem. Phys.* **154**, 024103 (2021).
+   doi: 10.1063/1.4994190
+   
 .. [Ochsenfeld:1998:1663]
    C. Ochsenfeld, C. A. White, M. Head-Gordon
    *J. Chem. Phys.* **109**, 1663 (1998)

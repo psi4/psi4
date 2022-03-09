@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -103,7 +103,7 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
     char **cartcomp, pert[32], pert_x[32], pert_y[32];
     int alpha, beta, i, j, k;
     double TrG_rl, TrG_pl, M, nu, bohr2a4, m2a, hbar, prefactor;
-    double *rotation_rl, *rotation_pl, *rotation_rp, *rotation_mod, **delta;
+    double *rotation_rl, *rotation_pl, *rotation_rp, *rotation_mod;
     char lbl1[32], lbl2[32], lbl3[32];
     int compute_rl = 0, compute_pl = 0;
     auto molecule = ref_wfn->molecule();
@@ -134,7 +134,7 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
     rotation_pl = init_array(params.nomega);
     rotation_rp = init_array(params.nomega);
     rotation_mod = init_array(params.nomega);
-    delta = block_matrix(params.nomega, 3);
+    std::vector<SharedMatrix> deltas;
 
     if (compute_pl) {
         /* compute the zero-frequency Rosenfeld tensor for Koch's modified
@@ -552,15 +552,19 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
         }
 
         if (params.gauge == "BOTH") {
-            delta[i][0] = prefactor * (tensor_rp[i][1][2] - tensor_rp[i][2][1]) * nu * nu / M;
-            delta[i][1] = prefactor * (tensor_rp[i][2][0] - tensor_rp[i][0][2]) * nu * nu / M;
-            delta[i][2] = prefactor * (tensor_rp[i][0][1] - tensor_rp[i][1][0]) * nu * nu / M;
-            delta[i][0] /= 6.0 * params.omega[i];
-            delta[i][1] /= 6.0 * params.omega[i];
-            delta[i][2] /= 6.0 * params.omega[i];
+            long om_nm = std::lround((pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]));
+            auto delta = std::make_shared<Matrix>(1, 3);
+            delta->set(0, 0, prefactor * (tensor_rp[i][1][2] - tensor_rp[i][2][1]) * nu * nu / M);
+            delta->set(0, 1, prefactor * (tensor_rp[i][2][0] - tensor_rp[i][0][2]) * nu * nu / M);
+            delta->set(0, 2, prefactor * (tensor_rp[i][0][1] - tensor_rp[i][1][0]) * nu * nu / M);
+            delta->scale(1 / (params.omega[i] * 6.0));
             outfile->Printf("\n   Origin-dependence vector for length-gauge rotation deg/[dm (g/cm^3)]/bohr.\n");
-            outfile->Printf("     Delta_x = %6.2f   Delta_y = %6.2f   Delta_z = %6.2f\n", delta[i][0], delta[i][1],
-                            delta[i][2]);
+            outfile->Printf("     Delta_x = %6.2f   Delta_y = %6.2f   Delta_z = %6.2f\n", delta->get(0, 0), delta->get(0, 1),
+                            delta->get(0, 2));
+            std::stringstream temp;
+            temp << params.wfn << " ROTATION (LEN) ORIGIN-DEPENDENCE @ " << om_nm << "NM";
+            ref_wfn->set_array_variable(temp.str(), delta);
+            deltas.push_back(delta);
         }
     } /* loop i over nomega */
 
@@ -579,10 +583,11 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
                 outfile->Printf("    E_h      nm   deg/[dm (g/cm^3)]        deg/[dm (g/cm^3)]/bohr\n");
                 outfile->Printf("   -----   ------ ------------------  ----------------------------------\n");
                 outfile->Printf("                                          x           y           z      \n");
-                for (i = 0; i < params.nomega; i++)
+                for (i = 0; i < params.nomega; i++) {
                     outfile->Printf("   %5.3f   %6.2f      %10.5f    %10.5f  %10.5f  %10.5f\n", params.omega[i],
-                                    (pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]), rotation_rl[i], delta[i][0],
-                                    delta[i][1], delta[i][2]);
+                                    (pc_c * pc_h * 1e9) / (pc_hartree2J * params.omega[i]), rotation_rl[i], deltas[i]->get(0, 0),
+                                    deltas[i]->get(0, 1), deltas[i]->get(0, 2));
+                }
             } else {
                 outfile->Printf("       Omega           alpha\n");
                 outfile->Printf("    E_h      nm   deg/[dm (g/cm^3)]\n");
@@ -614,7 +619,6 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
     free(rotation_pl);
     free(rotation_rp);
     free(rotation_mod);
-    free_block(delta);
 
     for (i = 0; i < params.nomega; i++) {
         free_block(tensor_rl[i]);
@@ -640,9 +644,11 @@ void optrot(std::shared_ptr<Wavefunction> ref_wfn) {
 /*- Process::environment.globals["CC2 SPECIFIC ROTATION (LEN) @ xNM"] -*/
 /*- Process::environment.globals["CC2 SPECIFIC ROTATION (VEL) @ xNM"] -*/
 /*- Process::environment.globals["CC2 SPECIFIC ROTATION (MVG) @ xNM"] -*/
+/*- Process::environment.globals["CC2 ROTATION (LEN) ORIGIN-DEPENDENCE @ xNM"] -*/
 /*- Process::environment.globals["CCSD SPECIFIC ROTATION (LEN) @ xNM"] -*/
 /*- Process::environment.globals["CCSD SPECIFIC ROTATION (VEL) @ xNM"] -*/
 /*- Process::environment.globals["CCSD SPECIFIC ROTATION (MVG) @ xNM"] -*/
+/*- Process::environment.globals["CCSD ROTATION (LEN) ORIGIN-DEPENDENCE @ xNM"] -*/
 
 }  // namespace ccresponse
 }  // namespace psi

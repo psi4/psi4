@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -34,7 +34,6 @@
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libtrans/mospace.h"
 #include "psi4/libdpd/dpd.h"
-#include "psi4/libdiis/diismanager.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/liboptions/liboptions.h"

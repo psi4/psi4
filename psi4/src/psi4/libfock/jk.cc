@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -107,7 +107,8 @@ std::shared_ptr<JK> JK::build_JK(std::shared_ptr<BasisSet> primary, std::shared_
 
     } else if (jk_type == "MEM_DF") {
         MemDFJK* jk = new MemDFJK(primary, auxiliary);
-        jk->set_wcombine(true);
+        // TODO: re-enable after fixing all bugs
+        jk->set_wcombine(false);
         _set_dfjk_options<MemDFJK>(jk, options);
         if (options["WCOMBINE"].has_changed()) { jk->set_wcombine(options.get_bool("WCOMBINE")); }
 

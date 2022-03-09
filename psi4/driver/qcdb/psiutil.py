@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -52,9 +52,9 @@ def query_yes_no(question, default=True):
 
     if default is None:
         prompt = " [y/n] "
-    elif default == True:
+    elif default is True:
         prompt = " [Y/n] "
-    elif default == False:
+    elif default is False:
         prompt = " [y/N] "
     else:
         raise ValueError("invalid default answer: '%s'" % default)

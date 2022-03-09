@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -154,7 +154,7 @@ def terminal_size():
             import fcntl  # Not available on Windows
             import termios  # Not available on Windows
             rc = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ, '1234'))
-        except:
+        except Exception:
             return
         return rc
 
@@ -164,7 +164,7 @@ def terminal_size():
             fd = os.open(os.ctermid(), os.O_RDONLY)
             rc = ioctl_GWINSZ(fd)
             os.close(fd)
-        except:
+        except Exception:
             pass
     if not rc:
         rc = (os.environ.get('LINES', 25), os.environ.get('COLUMNS', 80))

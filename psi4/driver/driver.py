@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -1392,8 +1392,8 @@ def optimize(name, **kwargs):
             # Mark the optimization data as disposable now that the optimization is done.
             core.IOManager.shared_object().set_specific_retention(1, False)
             # Check if user wants to see the intcos; if so, don't delete them.
-            if core.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False:
-                if core.get_option('OPTKING', 'KEEP_INTCOS') == False:
+            if not core.get_option('OPTKING', 'INTCOS_GENERATE_EXIT'):
+                if not core.get_option('OPTKING', 'KEEP_INTCOS'):
                     core.opt_clean()
             # Changing environment to optimized geometry as expected by user
             molecule.set_geometry(moleculeclone.geometry())
@@ -1427,7 +1427,7 @@ def optimize(name, **kwargs):
             print('Optimizer: Optimization failed!')
             # Mark the optimization data as disposable now that the optimization is done.
             core.IOManager.shared_object().set_specific_retention(1, False)
-            if (core.get_option('OPTKING', 'KEEP_INTCOS') == False):
+            if not core.get_option('OPTKING', 'KEEP_INTCOS'):
                 core.opt_clean()
             molecule.set_geometry(moleculeclone.geometry())
             core.clean()
@@ -1440,8 +1440,8 @@ def optimize(name, **kwargs):
 
         n += 1
 
-    if core.get_option('OPTKING', 'INTCOS_GENERATE_EXIT') == False:
-        if core.get_option('OPTKING', 'KEEP_INTCOS') == False:
+    if not core.get_option('OPTKING', 'INTCOS_GENERATE_EXIT'):
+        if not core.get_option('OPTKING', 'KEEP_INTCOS'):
             core.opt_clean()
 
     optstash.restore()
@@ -1961,7 +1961,7 @@ def gdma(wfn, datafile=""):
             if origin:
                 try:
                     f.write("Origin %f %f %f\n" % (float(origin[0]), float(origin[1]), float(origin[2])))
-                except:
+                except IndexError:
                     raise ValidationError("The GDMA origin array should contain three entries: x, y, and z.")
             f.write("Switch %f\n" % core.get_option('GDMA', 'GDMA_SWITCH'))
             if radii:
@@ -2051,7 +2051,8 @@ def fchk(wfn: core.Wavefunction, filename: str, *, debug: bool = False, strict_l
 
     # At this point we don't know the method name, so we try to search for it.
     # idea: get the method from the variable matching closely the 'current energy'
-    varlist = core.scalar_variables()
+    # for varlist, wfn is long-term and to allow from-file wfns. core is b/c some modules not storing in wfn yet
+    varlist = {**wfn.scalar_variables(), **core.scalar_variables()}
     current = varlist['CURRENT ENERGY']
 
     # delete problematic entries

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -131,28 +131,22 @@ SharedMatrix SCFDeriv::compute_gradient()
     gradient_terms.push_back("Total");
 
     // => Densities <= //
-    SharedMatrix Da;
+    auto Da = Da_subset("AO");
     SharedMatrix Db;
-    SharedMatrix Dt;
-
-    Da = Da_subset("AO");
     if (options_.get_str("REFERENCE") == "RHF" || options_.get_str("REFERENCE") == "RKS") {
         Db = Da;
     } else {
         Db = Db_subset("AO");
     }
-    Dt = SharedMatrix(Da->clone());
+    auto Dt = Da->clone();
     Dt->add(Db);
     Dt->set_name("Dt");
 
     // => Occupations (AO) <= //
-    SharedMatrix Ca_occ;
-    SharedMatrix Cb_occ;
-    SharedVector eps_a_occ;
+    auto Ca_occ = Ca_subset("AO", "OCC");
+    auto eps_a_occ = epsilon_a_subset("AO", "OCC");
     SharedVector eps_b_occ;
-
-    Ca_occ = Ca_subset("AO", "OCC");
-    eps_a_occ = epsilon_a_subset("AO", "OCC");
+    SharedMatrix Cb_occ;
     if (options_.get_str("REFERENCE") == "RHF" || options_.get_str("REFERENCE") == "RKS") {
         Cb_occ = Ca_occ;
         eps_b_occ = eps_a_occ;

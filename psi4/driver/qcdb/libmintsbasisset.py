@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -915,7 +915,7 @@ class BasisSet(object):
                 text2 += """  Basis Sets: %s\n""" % (seek['basis'])
                 text2 += """  File Path: %s\n""" % (', '.join(map(str, seek['path'].split(os.pathsep))))
                 text2 += """  Input Blocks: %s\n""" % (', '.join(seek['strings']))
-                raise BasisSetNotFound('BasisSet::construct: Unable to find a basis set for atom %d for key %s among:\n%s' % \
+                raise BasisSetNotFound('BasisSet::construct: Unable to find a basis set for atom %d for key %s among:\n%s' %
                     (at + 1, key, text2))
 
         # Construct the grand BasisSet for mol

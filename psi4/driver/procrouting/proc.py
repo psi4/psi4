@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -1111,9 +1111,9 @@ def select_adc2(name, **kwargs):
     func = None
     if reference == 'RHF':
         if mtd_type == 'CONV':
-            if module == 'ADCC' and extras.addons("adcc"):
+            if module in {'ADCC', ''} and extras.addons("adcc"):
                 func = run_adcc
-            elif module in ['', 'BUILTIN']:
+            elif module in {'BUILTIN', ''}:
                 func = run_adc
 
     if reference == 'UHF':
@@ -1257,7 +1257,7 @@ def scf_wavefunction_factory(name, ref_wfn, reference, **kwargs):
                 total_external_potential.appendCharges(kwargs['external_potentials'][frag].extern.getCharges())
 
             else:
-                core.print_out("\n  Warning! Unknown key for the external_potentials argument: %s" %frag)
+                core.print_out("\n  Warning! Unknown key for the external_potentials argument: %s" % frag)
 
         wfn.set_external_potential(total_external_potential)
 
@@ -1467,11 +1467,11 @@ def scf_helper(name, post_scf=True, **kwargs):
     if cast or do_broken:
         # Cast or broken are special cases
         base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
-        core.print_out("\n         ---------------------------------------------------------\n");
+        core.print_out("\n         ---------------------------------------------------------\n")
         if banner:
-            core.print_out("         " + banner.center(58));
+            core.print_out("         " + banner.center(58))
         if cast:
-            core.print_out("         " + "SCF Castup computation".center(58));
+            core.print_out("         " + "SCF Castup computation".center(58))
         ref_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
         core.set_legacy_wavefunction(ref_wfn)
 
@@ -1507,8 +1507,8 @@ def scf_helper(name, post_scf=True, **kwargs):
     # the SECOND scf call
     base_wfn = core.Wavefunction.build(scf_molecule, core.get_global_option('BASIS'))
     if banner:
-        core.print_out("\n         ---------------------------------------------------------\n");
-        core.print_out("         " + banner.center(58));
+        core.print_out("\n         ---------------------------------------------------------\n")
+        core.print_out("         " + banner.center(58))
 
     scf_wfn = scf_wavefunction_factory(name, base_wfn, core.get_option('SCF', 'REFERENCE'), **kwargs)
     core.set_legacy_wavefunction(scf_wfn)
@@ -1623,6 +1623,11 @@ def scf_helper(name, post_scf=True, **kwargs):
         proc_util.oeprop_validator(props)
         for x in props:
             oeprop.add(x)
+
+        # Populate free-atom volumes
+        # if we're doing MBIS
+        if 'MBIS_VOLUME_RATIOS' in props:
+            p4util.free_atom_volumes(scf_wfn)
 
         # Compute properties
         oeprop.compute()
@@ -1765,7 +1770,7 @@ def run_dct_property(name, **kwargs):
     optstash = p4util.OptionsState(
         ['DCT', 'OPDM'])
 
-    core.set_local_option('DCT', 'OPDM', 'true');
+    core.set_local_option('DCT', 'OPDM', 'true')
     dct_wfn = run_dct(name, **kwargs)
 
     # Run OEProp
@@ -2752,7 +2757,7 @@ def run_ccenergy(name, **kwargs):
         try:
             from psi4.driver.pasture import addins
             addins.ccsort_transqt2(ref_wfn)
-        except:
+        except Exception:
             raise PastureRequiredError("RUN_CCTRANSORT")
 
 
@@ -2863,7 +2868,7 @@ def run_bccd(name, **kwargs):
             from psi4.driver.pasture import addins
             core.set_local_option('TRANSQT2', 'DELETE_TEI', 'false')
             sort_func = addins.ccsort_transqt2
-        except:
+        except Exception:
             raise PastureRequiredError("RUN_CCTRANSORT")
 
     while True:
@@ -2871,7 +2876,7 @@ def run_bccd(name, **kwargs):
 
         ref_wfn = core.ccenergy(ref_wfn)
         core.print_out('Brueckner convergence check: %s\n' % bool(core.variable('BRUECKNER CONVERGED')))
-        if (core.variable('BRUECKNER CONVERGED') == True):
+        if core.variable('BRUECKNER CONVERGED'):
             break
 
         if bcc_iter_cnt >= core.get_option('CCENERGY', 'BCCD_MAXITER'):
@@ -3092,13 +3097,17 @@ def run_cc_property(name, **kwargs):
     if (n_one > 0 or n_two > 0) and (n_response > 0):
         print("""Computing both density- and response-based properties.""")
 
+    if n_response > 0:
+        if ("ref_wfn" in kwargs and not kwargs["ref_wfn"].same_a_b_orbs()) or core.get_option('SCF', 'REFERENCE') != 'RHF':
+            raise ValidationError(f"Non-RHF CC response properties are not implemented.")
+
     if name in ['ccsd', 'cc2', 'eom-ccsd', 'eom-cc2']:
         this_name = name.upper().replace('-', '_')
         core.set_global_option('WFN', this_name)
         ccwfn = run_ccenergy(name, **kwargs)
         core.set_global_option('WFN', this_name)
     else:
-        raise ValidationError("""CC property name %s not recognized""" % name.upper())
+        raise ValidationError(f"CC property name {name.upper()} not recognized")
 
     # Need cchbar for everything
     core.cchbar(ccwfn)
@@ -3108,15 +3117,19 @@ def run_cc_property(name, **kwargs):
         if name == 'eom-ccsd':
             core.set_global_option('WFN', 'EOM_CCSD')
             core.set_global_option('DERTYPE', 'NONE')
-            core.set_global_option('ONEPDM', 'TRUE')
             core.cceom(ccwfn)
         elif name == 'eom-cc2':
             core.set_global_option('WFN', 'EOM_CC2')
             core.set_global_option('DERTYPE', 'NONE')
-            core.set_global_option('ONEPDM', 'TRUE')
             core.cceom(ccwfn)
         core.set_global_option('DERTYPE', 'NONE')
-        core.set_global_option('ONEPDM', 'TRUE')
+        if core.get_option('CCDENSITY', 'OPDM_RELAX') or n_two > 0:
+            # WARNING!!! A one-particle property computed _with_ a two-particle property will differ
+            # from a one-particle property computed by itself. There are no two-particle properties at
+            # present, so we can kick the issue further down the road.
+            core.set_global_option('OPDM_ONLY', 'FALSE')
+        else:
+            core.set_global_option('OPDM_ONLY', 'TRUE')
         core.cclambda(ccwfn)
         core.ccdensity(ccwfn)
 
@@ -3137,7 +3150,10 @@ def run_cc_property(name, **kwargs):
         else:
             raise ValidationError("""Unknown excited-state CC wave function.""")
         core.set_global_option('DERTYPE', 'NONE')
-        core.set_global_option('ONEPDM', 'TRUE')
+        if core.get_option('CCDENSITY', 'OPDM_RELAX'):
+            core.set_global_option('OPDM_ONLY', 'FALSE')
+        else:
+            core.set_global_option('OPDM_ONLY', 'TRUE')
         # Tight convergence unnecessary for transition properties
         core.set_local_option('CCLAMBDA', 'R_CONVERGENCE', 1e-4)
         core.set_local_option('CCEOM', 'R_CONVERGENCE', 1e-4)
@@ -3216,7 +3232,7 @@ def run_dfmp2_property(name, **kwargs):
         core.set_global_option('SCF_TYPE', 'DF')  # local set insufficient b/c SCF option read in DFMP2
         core.print_out("""    SCF Algorithm Type (re)set to DF.\n""")
 
-    if not 'DF' in core.get_global_option('SCF_TYPE'):
+    if 'DF' not in core.get_global_option('SCF_TYPE'):
         raise ValidationError('DF-MP2 properties need DF-SCF reference.')
 
     properties = kwargs.pop('properties')
@@ -3474,7 +3490,22 @@ def run_adc(name, **kwargs):
     # Ensure IWL files have been written
     proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
 
-    return core.adc(ref_wfn)
+    warnings.warn("Using built-in `adc` module instead of add-on `adcc` interface is deprecated due "
+                  "to certain wrong results, and in 1.7, it will stop working.", category=FutureWarning)
+
+    error_msg = ("\n\t\t\t\t!!!!! WARNING !!!!!\n" +
+            "\t\tThe built-in ADC(2) method may give incorrect results if\n"
+        "\t\tmultiple roots are requested, due to an error in the Davidson solver,\n"
+        "\t\tand is no longer maintained. It is slated for removal in Psi4 1.7.\n"
+        "\t\tUse of the Psi interface to `adcc` instead is strongly recommended.\n")
+
+    core.print_out(error_msg)
+
+    wfn = core.adc(ref_wfn)
+
+    core.print_out(error_msg)
+
+    return wfn
 
 
 def run_adcc(name, **kwargs):
@@ -3488,7 +3519,7 @@ def run_adcc(name, **kwargs):
 
     try:
         import adcc
-        from adcc.backends import InvalidReference
+        from adcc.exceptions import InvalidReference
     except ModuleNotFoundError:
         raise ValidationError("adcc extras qc_module not available. Try installing "
             "via 'pip install adcc' or 'conda install -c adcc adcc'.")
@@ -3540,10 +3571,10 @@ def run_adcc(name, **kwargs):
     if isinstance(ref_wfn, core.UHF):
         if not core.has_option_changed("ADC", "KIND"):
             kind = "any"
-        elif not kind in ["any", "spin_flip"]:
+        elif kind not in ["any", "spin_flip"]:
             raise ValidationError("For UHF references the only valid values for 'KIND' are "
                                   "'SPIN_FLIP' or 'ANY' and not '{}.".format(kind.upper()))
-    elif not kind in ["singlet", "triplet", "any"]:
+    elif kind not in ["singlet", "triplet", "any"]:
         raise ValidationError("For RHF references the value '{}' for 'KIND' is "
                               "not supported.".format(kind.upper()))
     kwargs["kind"] = kind
@@ -3563,7 +3594,7 @@ def run_adcc(name, **kwargs):
     if "cvs" in name and "core_orbitals" not in kwargs:
         raise ValidationError("If a CVS-ADC method is requested, the NUM_CORE_ORBITALS option "
                               "needs to be set.")
-    if "core_orbitals" in kwargs and not "cvs" in name:
+    if "core_orbitals" in kwargs and "cvs" not in name:
         raise ValidationError("The NUM_CORE_ORBITALS option needs to be set to '0' or absent "
                               "unless a CVS ADC method is requested.")
     if "cvs" in name and kwargs["kind"] in ["spin_flip"]:
@@ -3598,7 +3629,10 @@ def run_adcc(name, **kwargs):
     except InvalidReference as ex:
         raise ValidationError("Cannot run adcc because the passed reference wavefunction is "
                               "not supported in adcc. Check Psi4 SCF parameters. adcc reports: "
-                              "{}".format(str(ex)))
+                              f"{ex}")
+    except Exception as ex:
+        raise ValidationError("Unknown exception occured while "
+                              f"running adcc: '{ex}' ({type(ex).__name__})")
     core.print_out("\n")
 
     # TODO Should a non-converged calculation throw?
@@ -3864,10 +3898,10 @@ def run_detci(name, **kwargs):
 
     proc_util.print_ci_results(ciwfn, name.upper(), ciwfn.variable("HF TOTAL ENERGY"), ciwfn.variable("CURRENT ENERGY"), print_nos)
 
-    core.print_out("\t\t \"A good bug is a dead bug\" \n\n");
-    core.print_out("\t\t\t - Starship Troopers\n\n");
-    core.print_out("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n");
-    core.print_out("\t\t\t - Edward Valeev\n");
+    core.print_out("\t\t \"A good bug is a dead bug\" \n\n")
+    core.print_out("\t\t\t - Starship Troopers\n\n")
+    core.print_out("\t\t \"I didn't write FORTRAN.  That's the problem.\"\n\n")
+    core.print_out("\t\t\t - Edward Valeev\n")
 
     if core.get_global_option("DIPMOM") and ("mp" not in name.lower()):
         # We always would like to print a little dipole information
@@ -4660,7 +4694,7 @@ def run_mrcc(name, **kwargs):
 
     # Find environment by merging PSIPATH and PATH environment variables
     lenv = {
-        'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) + \
+        'PATH': ':'.join([os.path.abspath(x) for x in os.environ.get('PSIPATH', '').split(':') if x != '']) +
                 ':' + os.environ.get('PATH'),
         'LD_LIBRARY_PATH': os.environ.get('LD_LIBRARY_PATH')
         }
@@ -4700,7 +4734,7 @@ def run_mrcc(name, **kwargs):
     lenv['OMP_NUM_THREADS'] = str(core.get_num_threads())
 
     # If the user provided MRCC_OMP_NUM_THREADS set the environ to it
-    if core.has_option_changed('MRCC', 'MRCC_OMP_NUM_THREADS') == True:
+    if core.has_option_changed('MRCC', 'MRCC_OMP_NUM_THREADS'):
         lenv['OMP_NUM_THREADS'] = str(core.get_option('MRCC', 'MRCC_OMP_NUM_THREADS'))
 
     # Call dmrcc, directing all screen output to the output file
@@ -4757,7 +4791,7 @@ def run_mrcc(name, **kwargs):
     os.chdir(current_directory)
 
     # If we're told to keep the files or the user provided a path, do nothing.
-    if (keep != False or ('path' in kwargs)):
+    if keep or ('path' in kwargs):
         core.print_out('\nMRCC scratch files have been kept.\n')
         core.print_out('They can be found in ' + mrcc_tmpdir)
 
@@ -4966,7 +5000,7 @@ def run_fnocc(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    if core.get_option('FNOCC', 'USE_DF_INTS') == False:
+    if not core.get_option('FNOCC', 'USE_DF_INTS'):
         # Ensure IWL files have been written
         proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
     else:
@@ -5063,7 +5097,7 @@ def run_cepa(name, **kwargs):
     if ref_wfn is None:
         ref_wfn = scf_helper(name, **kwargs)  # C1 certified
 
-    if core.get_option('FNOCC', 'USE_DF_INTS') == False:
+    if not core.get_option('FNOCC', 'USE_DF_INTS'):
         # Ensure IWL files have been written
         proc_util.check_iwl_file_from_scf_type(core.get_global_option('SCF_TYPE'), ref_wfn)
     else:

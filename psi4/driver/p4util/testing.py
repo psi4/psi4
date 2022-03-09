@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -80,6 +80,9 @@ def _mergedapis_compare_matrices(expected, computed, *args, **kwargs):
     """Shim allowing Psi4-style or QCA-style testing interfaces for :py:func:`psi4.core.Matrix`."""
 
     qcdb.testing._merge_psi4_qcel_apis(args, kwargs)
+
+    if kwargs.pop("check_name", False):
+        compare(expected.name, computed.name, f'{expected.name} vs. {computed.name} name', quiet=True)
 
     compare(expected.nirrep(), computed.nirrep(), f'{expected.name} vs. {computed.name} irreps', quiet=True)
     compare(expected.symmetry(), computed.symmetry(), f'{expected.name} vs. {computed.name} symmetry', quiet=True)

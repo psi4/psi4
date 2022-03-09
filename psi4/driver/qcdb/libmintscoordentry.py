@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -332,7 +332,7 @@ class CoordEntry(object):
         try:
             return self.PYbasissets[role]
         except ValueError:
-            raise ValidationError('CoordEntry::basisset: Basisset not set for %s and type of %s' % \
+            raise ValidationError('CoordEntry::basisset: Basisset not set for %s and type of %s' %
                 (self.PYlabel, role))
 
     def basissets(self):
@@ -356,7 +356,7 @@ class CoordEntry(object):
         try:
             return self.PYshells[key]
         except (ValueError, KeyError):
-            raise ValidationError('CoordEntry::shells: Shells not set for %s and type of %s' % \
+            raise ValidationError('CoordEntry::shells: Shells not set for %s and type of %s' %
                 (self.PYlabel, key))
 
     def shells(self):
@@ -534,12 +534,12 @@ class ZMatrixEntry(CoordEntry):
         self.coordinates[1] = 0.0 if math.fabs(y) < 1.0E-14 else y
         self.coordinates[2] = 0.0 if math.fabs(z) < 1.0E-14 else z
 
-        if self.rto != None:
+        if self.rto is not None:
             if not self.rto.is_computed():
                 raise ValidationError("Coordinates have been set in the wrong order")
             self.rval.rset(self.r(self.coordinates, self.rto.compute()))
 
-        if self.ato != None:
+        if self.ato is not None:
             if not self.ato.is_computed():
                 raise ValidationError("Coordinates have been set in the wrong order")
             aval = self.a(self.coordinates, self.rto.compute(), self.ato.compute())
@@ -547,7 +547,7 @@ class ZMatrixEntry(CoordEntry):
             val = aval * 180.0 / math.pi
             self.aval.rset(val)
 
-        if self.dto != None:
+        if self.dto is not None:
             if not self.dto.is_computed():
                 raise ValidationError("Coordinates have been set in the wrong order")
             val = self.d(self.coordinates, self.rto.compute(), self.ato.compute(), self.dto.compute())

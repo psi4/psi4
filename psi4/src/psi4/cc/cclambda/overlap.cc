@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -40,7 +40,7 @@
 namespace psi {
 namespace cclambda {
 
-void overlap(int L_irr) {
+double overlap(int L_irr) {
     int h, nirreps;
     int row, col;
     int i, j, a, b, I, J, A, B, Isym, Jsym, Asym, Bsym;
@@ -218,8 +218,8 @@ void overlap(int L_irr) {
     */
 
     value = 1.0 - ST1A - ST1B - ST2AA - ST2BB - ST2AB + ST12AA + ST12BB + ST12AB;
-
     outfile->Printf("\tOverlap <L|e^T> = %20.11f\n", value);
+    return value;
 }
 
 }  // namespace cclambda

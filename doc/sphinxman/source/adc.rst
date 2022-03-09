@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -309,6 +309,13 @@ Built-in ADC(2) code
 --------------------
 .. codeauthor:: Masaaki Saitow
 .. sectionauthor:: Masaaki Saitow
+
+.. warning:: The built-in ADC(2) method may give incorrect results if
+             multiple roots are requested, due to an error in the Davidson solver,
+             and is no longer maintained. It is slated for removal in Psi4 1.7.
+             Use of the Psi interface to `adcc` instead is strongly recommended.
+             To use this code regardless, either do not have `adcc` installed, or
+             set `qc_module builtin`.
 
 The ADC code built into |PSIfour| is capable of ADC(2) computations
 of singlet excited states only.

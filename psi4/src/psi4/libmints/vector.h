@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -35,6 +35,7 @@
 
 namespace psi {
 
+class PSIO;
 class Matrix;
 
 class Vector;
@@ -227,6 +228,11 @@ class PSI_API Vector final {
 
     /// Scale the elements of the vector
     void scale(double sc);
+
+    /// Save the Vector to disk
+    void save(psi::PSIO* const psio, size_t fileno);
+    /// Load a Vector from disk
+    void load(psi::PSIO* const psio, size_t fileno);
 
     /**
      * Adds accessability to the matrix shape for numpy

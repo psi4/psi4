@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -67,7 +67,7 @@ def oeprop(wfn: core.Wavefunction, *args, **kwargs):
         # in order to compute volume ratios,
         # but only if we're calling oeprop as the whole molecule
         free_atom = kwargs.get('free_atom',False)
-        if "MBIS" in prop.upper() and not free_atom:
+        if "MBIS_VOLUME_RATIOS" in prop.upper() and not free_atom:
             core.print_out("  Computing free-atom volumes\n")
             free_atom_volumes(wfn)    
 

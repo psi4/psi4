@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -79,7 +79,7 @@ void dx_write(std::shared_ptr<Wavefunction> wfn, Options &options, double **D) {
     // Set up AO->SO transformation matrix (u)
     MintsHelper helper(basis, options, 0);
     SharedMatrix aotoso = helper.petite_list(true)->aotoso();
-    int *col_offset = new int[wfn->nirrep()];
+    auto col_offset = std::vector<int>(wfn->nirrep());
     col_offset[0] = 0;
     for (int h = 1; h < wfn->nirrep(); h++) col_offset[h] = col_offset[h - 1] + aotoso->coldim(h - 1);
 
@@ -87,7 +87,6 @@ void dx_write(std::shared_ptr<Wavefunction> wfn, Options &options, double **D) {
     for (int h = 0; h < wfn->nirrep(); h++)
         for (int j = 0; j < aotoso->coldim(h); j++)
             for (int i = 0; i < nao; i++) u[i][j + col_offset[h]] = aotoso->get(h, i, j);
-    delete[] col_offset;
 
     // Scan along Cartesian axes to determine dimensions of box
     molecule->print();
@@ -113,13 +112,29 @@ void dx_write(std::shared_ptr<Wavefunction> wfn, Options &options, double **D) {
 
     double b2a3 = pc_bohr2angstroms * pc_bohr2angstroms * pc_bohr2angstroms;
 
+    double cutoff = options.get_double("OPDM_GRID_CUTOFF");
+    if (options["ONEPDM_GRID_CUTOFF"].has_changed()) {
+        outfile->Printf("\tWarning! ONEPDM_GRID_CUTOFF is deprecated and will be removed in 1.7. Use OPDM_GRID_CUTOFF instead.");
+        if (not options["OPDM_GRID_CUTOFF"].has_changed()) {
+            cutoff = options.get_bool("ONEPDM_GRID_CUTOFF");
+        }
+    }
+
+    double step_size = options.get_double("OPDM_GRID_STEPSIZE");
+    if (options["ONEPDM_GRID_STEPSIZE"].has_changed()) {
+        outfile->Printf("\tWarning! ONEPDM_GRID_STEPSIZE is deprecated and will be removed in 1.7. Use OPDM_GRID_STEPSIZE instead.");
+        if (not options["OPDM_GRID_STEPSIZE"].has_changed()) {
+            step_size = options.get_bool("ONEPDM_GRID_STEPSIZE");
+        }
+    }
+
     do {
         xmin -= 0.1;
         compute_delta(delta, xmin / pc_bohr2angstroms, 0, 0);
         dens = 0.0;
         for (int i = 0; i < nmo; i++)
             for (int j = 0; j < nmo; j++) dens += delta[i][j] * D[i][j];
-    } while ((dens / b2a3) > options.get_double("ONEPDM_GRID_CUTOFF"));
+    } while ((dens / b2a3) > cutoff);
     outfile->Printf("  xmin = %8.6f (Angstrom);  density(xmin,0,0) (e/Ang^3) = %8.6e\n", xmin, dens);
 
     do {
@@ -128,7 +143,7 @@ void dx_write(std::shared_ptr<Wavefunction> wfn, Options &options, double **D) {
         dens = 0.0;
         for (int i = 0; i < nmo; i++)
             for (int j = 0; j < nmo; j++) dens += delta[i][j] * D[i][j];
-    } while ((dens / b2a3) > options.get_double("ONEPDM_GRID_CUTOFF"));
+    } while ((dens / b2a3) > cutoff);
     outfile->Printf("  xmax = %8.6f (Angstrom);   density(xmax,0,0) (e/Ang^3) = %8.6e\n", xmax, dens);
 
     do {
@@ -137,7 +152,7 @@ void dx_write(std::shared_ptr<Wavefunction> wfn, Options &options, double **D) {
         dens = 0.0;
         for (int i = 0; i < nmo; i++)
             for (int j = 0; j < nmo; j++) dens += delta[i][j] * D[i][j];
-    } while ((dens / b2a3) > options.get_double("ONEPDM_GRID_CUTOFF"));
+    } while ((dens / b2a3) > cutoff);
     outfile->Printf("  ymin = %8.6f (Angstrom);  density(0,ymin,0) (e/Ang^3) = %8.6e\n", ymin, dens);
 
     do {
@@ -146,7 +161,7 @@ void dx_write(std::shared_ptr<Wavefunction> wfn, Options &options, double **D) {
         dens = 0.0;
         for (int i = 0; i < nmo; i++)
             for (int j = 0; j < nmo; j++) dens += delta[i][j] * D[i][j];
-    } while ((dens / b2a3) > options.get_double("ONEPDM_GRID_CUTOFF"));
+    } while ((dens / b2a3) > cutoff);
     outfile->Printf("  ymax = %8.6f (Angstrom);   density(0,ymax,0) (e/Ang^3) = %8.6e\n", ymax, dens);
 
     do {
@@ -155,7 +170,7 @@ void dx_write(std::shared_ptr<Wavefunction> wfn, Options &options, double **D) {
         dens = 0.0;
         for (int i = 0; i < nmo; i++)
             for (int j = 0; j < nmo; j++) dens += delta[i][j] * D[i][j];
-    } while ((dens / b2a3) > options.get_double("ONEPDM_GRID_CUTOFF"));
+    } while ((dens / b2a3) > cutoff);
     outfile->Printf("  zmin = %8.6f (Angstrom);  density(0,0,zmin) (e/Ang^3) = %8.6e\n", zmin, dens);
 
     do {
@@ -164,7 +179,7 @@ void dx_write(std::shared_ptr<Wavefunction> wfn, Options &options, double **D) {
         dens = 0.0;
         for (int i = 0; i < nmo; i++)
             for (int j = 0; j < nmo; j++) dens += delta[i][j] * D[i][j];
-    } while ((dens / b2a3) > options.get_double("ONEPDM_GRID_CUTOFF"));
+    } while ((dens / b2a3) > cutoff);
     outfile->Printf("  zmax = %8.6f (Angstrom);   density(0,0,zmax) (e/Ang^3) = %8.6e\n", zmax, dens);
 
     // Compute density at the nuclei
@@ -182,7 +197,6 @@ void dx_write(std::shared_ptr<Wavefunction> wfn, Options &options, double **D) {
                         y * pc_bohr2angstroms, z * pc_bohr2angstroms, dens / b2a3);
     }
 
-    double step_size = options.get_double("ONEPDM_GRID_STEPSIZE");
     int xsteps = (int)((xmax - xmin) / step_size + 1);
     int ysteps = (int)((ymax - ymin) / step_size + 1);
     int zsteps = (int)((zmax - zmin) / step_size + 1);

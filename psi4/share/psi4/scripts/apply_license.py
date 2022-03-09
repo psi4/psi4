@@ -9,12 +9,12 @@ import os
 # File type we know how to handle
 ftypes = ['cc', 'h', 'py']
 
-c_header ="""/*
+c_header = """/*
  * @BEGIN LICENSE
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -67,7 +67,7 @@ def check_header(infile):
                 f.close()
                 print('Did not find "wings" of license block in file %s' % infile)
                 return
-    except:
+    except Exception:
         print('Could not find license block in file %s' % infile)
         f.close()
         return

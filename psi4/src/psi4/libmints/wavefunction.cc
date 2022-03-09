@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -1237,7 +1237,7 @@ SharedVector Wavefunction::epsilon_b() const { return epsilon_b_; }
 
 const SharedMatrix Wavefunction::Da() const { return Da_; }
 
-SharedMatrix Wavefunction::Db() const { return Db_; }
+const SharedMatrix Wavefunction::Db() const { return Db_; }
 
 SharedMatrix Wavefunction::lagrangian() const { return Lagrangian_; }
 

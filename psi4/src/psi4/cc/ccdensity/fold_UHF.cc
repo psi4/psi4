@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -73,30 +73,24 @@ void fold_UHF(const struct RHO_Params& rho_params) {
     int I, J, K, L, M, A, B;
     int IM, JM, MI, MJ, MK, ML, MA, MB;
     int Gi, Gj, Gk, Gl, Gm, Ga, Gb;
-    int *aoccpi, *avirtpi;
-    int *boccpi, *bvirtpi;
-    int *aocc_off, *avir_off;
-    int *bocc_off, *bvir_off;
-    int *aocc_sym, *avir_sym;
-    int *bocc_sym, *bvir_sym;
     dpdfile2 D, D1, D2, F;
     dpdbuf4 G, Aints, E, C, DInts, FInts, BInts, G1, G2;
     double one_energy = 0.0, two_energy = 0.0, total_two_energy = 0.0;
     double this_energy;
 
     nirreps = moinfo.nirreps;
-    aoccpi = moinfo.aoccpi;
-    avirtpi = moinfo.avirtpi;
-    boccpi = moinfo.boccpi;
-    bvirtpi = moinfo.bvirtpi;
-    aocc_off = moinfo.aocc_off;
-    avir_off = moinfo.avir_off;
-    bocc_off = moinfo.bocc_off;
-    bvir_off = moinfo.bvir_off;
-    aocc_sym = moinfo.aocc_sym;
-    avir_sym = moinfo.avir_sym;
-    bocc_sym = moinfo.bocc_sym;
-    bvir_sym = moinfo.bvir_sym;
+    const auto& aoccpi = moinfo.aoccpi;
+    const auto& avirtpi = moinfo.avirtpi;
+    const auto& boccpi = moinfo.boccpi;
+    const auto& bvirtpi = moinfo.bvirtpi;
+    const auto& aocc_off = moinfo.aocc_off;
+    const auto& avir_off = moinfo.avir_off;
+    const auto& bocc_off = moinfo.bocc_off;
+    const auto& bvir_off = moinfo.bvir_off;
+    const auto& aocc_sym = moinfo.aocc_sym;
+    const auto& avir_sym = moinfo.avir_sym;
+    const auto& bocc_sym = moinfo.bocc_sym;
+    const auto& bvir_sym = moinfo.bvir_sym;
 
     if (params.debug_) {
         outfile->Printf("\n\tEnergies re-computed from Fock-adjusted CC density:\n");

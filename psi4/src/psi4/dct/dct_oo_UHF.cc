@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -66,16 +66,13 @@ void DCTSolver::run_simult_dct_oo() {
                            "Amplitude <Oo|Vv>");
     global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                            "Amplitude <oo|vv>");
-    diisManager.set_error_vector_size(5, DIISEntry::InputType::Matrix, orbital_gradient_a_.get(), DIISEntry::InputType::Matrix,
-                                      orbital_gradient_b_.get(), DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab,
-                                      DIISEntry::InputType::DPDBuf4, &Lbb);
-    diisManager.set_vector_size(5, DIISEntry::InputType::Matrix, Xtotal_a_.get(), DIISEntry::InputType::Matrix, Xtotal_b_.get(),
-                                DIISEntry::InputType::DPDBuf4, &Laa, DIISEntry::InputType::DPDBuf4, &Lab, DIISEntry::InputType::DPDBuf4, &Lbb);
+    diisManager.set_error_vector_size(orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Laa, &Lab, &Lbb);
+    diisManager.set_vector_size(Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb);
     global_dpd_->buf4_close(&Laa);
     global_dpd_->buf4_close(&Lab);
     global_dpd_->buf4_close(&Lbb);
 
-    while ((!orbitalsDone_ || !cumulantDone_ || !densityConverged_ || !energyConverged_) && cycle++ < maxiter_) {
+    while ((!orbitalsDone_ || !cumulantDone_ || !energyConverged_) && cycle++ < maxiter_) {
         std::string diisString;
         compute_SO_tau_U();
 
@@ -149,13 +146,14 @@ void DCTSolver::run_simult_dct_oo() {
                                    "Amplitude <Oo|Vv>");
             global_dpd_->buf4_init(&Lbb, PSIF_DCT_DPD, 0, ID("[o>o]-"), ID("[v>v]-"), ID("[o>o]-"), ID("[v>v]-"), 0,
                                    "Amplitude <oo|vv>");
-            if (diisManager.add_entry(10, orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Raa, &Rab, &Rbb,
+            if (diisManager.add_entry(orbital_gradient_a_.get(), orbital_gradient_b_.get(), &Raa, &Rab, &Rbb,
                                       Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb)) {
                 diisString += "S";
             }
+
             if (diisManager.subspace_size() > mindiisvecs_) {
                 diisString += "/E";
-                diisManager.extrapolate(5, Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb);
+                diisManager.extrapolate(Xtotal_a_.get(), Xtotal_b_.get(), &Laa, &Lab, &Lbb);
             }
             global_dpd_->buf4_close(&Raa);
             global_dpd_->buf4_close(&Rab);
@@ -174,8 +172,8 @@ void DCTSolver::run_simult_dct_oo() {
         }
         // Transform two-electron integrals to the MO basis using new orbitals, build denominators
         transform_integrals();
-        // Update SCF density (Kappa) and check its RMS
-        densityConverged_ = update_scf_density() < orbitals_threshold_;
+        // Update SCF density (Kappa)
+        update_scf_density();
         // If we've performed enough lambda updates since the last orbitals
         // update, reset the counter so another SCF update is performed
         outfile->Printf("\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n", cycle, orbitals_convergence_,

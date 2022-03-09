@@ -3,7 +3,7 @@
 #
 # Psi4: an open-source quantum chemistry software package
 #
-# Copyright (c) 2007-2021 The Psi4 Developers.
+# Copyright (c) 2007-2022 The Psi4 Developers.
 #
 # The copyrights for code used from other parties are included in
 # the corresponding files.
@@ -187,7 +187,7 @@ def mcscf_solver(ref_wfn):
         if (orb_grad_rms < mcscf_orb_grad_conv) and (abs(ediff) < abs(mcscf_e_conv)) and\
             (mcscf_iter > 3) and not qc_step:
 
-            core.print_out("\n       %s has converged!\n\n" % mtype);
+            core.print_out("\n       %s has converged!\n\n" % mtype)
             converged = True
             break
 
@@ -328,7 +328,7 @@ def mcscf_solver(ref_wfn):
 
         if (orb_grad_rms < mcscf_orb_grad_conv) and (abs(ediff) < abs(mcscf_e_conv)):
 
-            core.print_out("\n       %s has converged!\n\n" % mtype);
+            core.print_out("\n       %s has converged!\n\n" % mtype)
             converged = True
             break
 

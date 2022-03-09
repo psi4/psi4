@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -51,8 +51,6 @@
 #include "psi4/libfock/jk.h"
 #include "psi4/libfock/v.h"
 #include "psi4/libfunctional/superfunctional.h"
-#include "psi4/libdiis/diismanager.h"
-#include "psi4/libdiis/diisentry.h"
 
 #include "psi4/libpsi4util/libpsi4util.h"
 #include "psi4/libmints/basisset.h"
@@ -394,8 +392,8 @@ void HF::finalize() {
     }
 
     // Clean up after DIIS
-    if (initialized_diis_manager_) diis_manager_->delete_diis_file();
-    diis_manager_.reset();
+    if (initialized_diis_manager_) diis_manager_.attr("delete_diis_file")();
+    diis_manager_ = py::none();
     initialized_diis_manager_ = false;
 
     // Figure out how many frozen virtual and frozen core per irrep
@@ -1117,7 +1115,7 @@ void HF::guess() {
 
     } else if (guess_type == "GWH") {
         // Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
-        if (print_) outfile->Printf("  SCF Guess: Generalized Wolfsberg-Helmholtz.\n\n");
+        if (print_) outfile->Printf("  SCF Guess: Generalized Wolfsberg-Helmholtz applied to core Hamiltonian.\n\n");
 
         Fa_->zero();  // Try Fa_{mn} = S_{mn} (H_{mm} + H_{nn})/2
         int h, i, j;

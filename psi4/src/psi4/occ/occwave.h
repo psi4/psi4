@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -31,7 +31,6 @@
 
 #include "psi4/libmints/vector.h"
 #include "psi4/libmints/wavefunction.h"
-#include "psi4/libdiis/diismanager.h"
 #include "psi4/libdpd/dpd.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 
@@ -39,6 +38,7 @@
 
 namespace psi {
 
+class DIISManager;
 class IntegralTransform;
 
 namespace occwave {
@@ -108,7 +108,7 @@ class OCCWave : public Wavefunction {
     void second_order_opdm();
     void set_t2_amplitudes_mp2();
     void mp2_energy(bool include_singles = false);
-    void oo_diis();
+    void oo_diis(DIISManager&);
 
     // Processing functions - print output, save variables
     void mp2_printing(bool scf = false, bool include_singles = false);
@@ -151,7 +151,7 @@ class OCCWave : public Wavefunction {
     void ocepa_manager();
     void cepa_manager();
     void cepa_iterations();
-    void cepa_diis();
+    void cepa_diis(DIISManager&);
     void cepa_chemist();
     void ocepa_tpdm_vvvv();
     void ocepa_response_pdms();
@@ -169,10 +169,6 @@ class OCCWave : public Wavefunction {
     void t1_1st_gen();
 
     class IntegralTransform *ints;
-    // Having two separate DIIS managers is silly and will soon be remedied.
-    DIISManager *t2DiisManager;
-    DIISManager *orbitalDiis;
-    // class DIISManager t2DiisManager;
 
     int nmo;      // Number of MOs
     int nao;      // Number of AOs

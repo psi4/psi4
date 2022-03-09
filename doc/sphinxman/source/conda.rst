@@ -3,7 +3,7 @@
 .. #
 .. # Psi4: an open-source quantum chemistry software package
 .. #
-.. # Copyright (c) 2007-2021 The Psi4 Developers.
+.. # Copyright (c) 2007-2022 The Psi4 Developers.
 .. #
 .. # The copyrights for code used from other parties are included in
 .. # the corresponding files.
@@ -67,7 +67,7 @@ distribution with same package manager `conda
 The |PSIfour| binary repository is at `Anaconda (formerly Binstar) <https://anaconda.org/psi4>`_.
 
 For commands to get a default installation, go to :ref:`sec:psi4conda`
-or the `psicode downloads page <https://psicode.org/installs/latest/>`_.
+or the :psicode:`psicode downloads page <installs/latest/>` .
 Users proficient with conda may prefer to consult :ref:`sec:condadetails`.
 For more flexibility and a detailed explanation, go to
 :ref:`sec:slowconda` and :ref:`sec:slowpsi4`.

@@ -3,7 +3,7 @@
  *
  * Psi4: an open-source quantum chemistry software package
  *
- * Copyright (c) 2007-2021 The Psi4 Developers.
+ * Copyright (c) 2007-2022 The Psi4 Developers.
  *
  * The copyrights for code used from other parties are included in
  * the corresponding files.
@@ -26,6 +26,7 @@
  * @END LICENSE
  */
 
+#include "psi4/libdiis/diismanager.h"
 #include "psi4/libqt/qt.h"
 #include "psi4/libtrans/integraltransform.h"
 #include "psi4/libpsio/psio.hpp"
@@ -52,40 +53,34 @@ void OCCWave::cepa_iterations() {
     itr_occ = 0;
     conver = 1;  // Assuming that the iterations will converge
                  // DIIS
+    DIISManager t2_diis;
     if (nooA + nooB != 1) {
+        psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
+        t2_diis = DIISManager(maxdiis_, "CEPA DIIS T2 Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk);
         if (reference_ == "RESTRICTED") {
             dpdbuf4 T;
-            psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
             global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                    "T2 <OO|VV>");
-            t2DiisManager =
-                new DIISManager(maxdiis_, "CEPA DIIS T2 Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::OnDisk);
-            t2DiisManager->set_error_vector_size(1, DIISEntry::InputType::DPDBuf4, &T);
-            t2DiisManager->set_vector_size(1, DIISEntry::InputType::DPDBuf4, &T);
+            t2_diis.set_error_vector_size(&T);
+            t2_diis.set_vector_size(&T);
             global_dpd_->buf4_close(&T);
-            psio_->close(PSIF_OCC_DPD, 1);
         }
 
         else if (reference_ == "UNRESTRICTED") {
             dpdbuf4 Taa, Tbb, Tab;
-            psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
             global_dpd_->buf4_init(&Taa, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                    "T2 <OO|VV>");
             global_dpd_->buf4_init(&Tbb, PSIF_OCC_DPD, 0, ID("[o,o]"), ID("[v,v]"), ID("[o,o]"), ID("[v,v]"), 0,
                                    "T2 <oo|vv>");
             global_dpd_->buf4_init(&Tab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                    "T2 <Oo|Vv>");
-            t2DiisManager =
-                new DIISManager(maxdiis_, "CEPA DIIS T2 Amps", DIISManager::RemovalPolicy::LargestError, DIISManager::StoragePolicy::InCore);
-            t2DiisManager->set_error_vector_size(3, DIISEntry::InputType::DPDBuf4, &Taa, DIISEntry::InputType::DPDBuf4, &Tbb,
-                                                 DIISEntry::InputType::DPDBuf4, &Tab);
-            t2DiisManager->set_vector_size(3, DIISEntry::InputType::DPDBuf4, &Taa, DIISEntry::InputType::DPDBuf4, &Tbb, DIISEntry::InputType::DPDBuf4,
-                                           &Tab);
+            t2_diis.set_error_vector_size(&Taa, &Tbb, &Tab);
+            t2_diis.set_vector_size(&Taa, &Tbb, &Tab);
             global_dpd_->buf4_close(&Taa);
             global_dpd_->buf4_close(&Tbb);
             global_dpd_->buf4_close(&Tab);
-            psio_->close(PSIF_OCC_DPD, 1);
         }
+        psio_->close(PSIF_OCC_DPD, 1);
     }
 
     // head of loop
@@ -96,7 +91,7 @@ void OCCWave::cepa_iterations() {
         timer_off("T2");
         timer_on("CEPA Energy");
         cepa_energy();
-        cepa_diis();
+        cepa_diis(t2_diis);
         cepa_chemist();
         timer_off("CEPA Energy");
         Ecorr = Ecepa - Escf;
@@ -122,9 +117,6 @@ void OCCWave::cepa_iterations() {
     } while (std::fabs(DE) >= (0.5 * tol_Eod) || rms_t2 >= tol_t2);
     // 0.5 scale battens down a touch tighter for spin components since tol_Eod can be satisfied by small energy increase
 
-    // delete
-    delete t2DiisManager;
-
     if (conver == 1) {
         EcepaL = Ecepa;
         outfile->Printf("\n");
@@ -143,7 +135,7 @@ void OCCWave::cepa_iterations() {
 
 }  // end main
 
-void OCCWave::cepa_diis() {
+void OCCWave::cepa_diis(DIISManager& t2_diis) {
     psio_->open(PSIF_OCC_DPD, PSIO_OPEN_OLD);
     if (reference_ == "RESTRICTED") {
         dpdbuf4 R, T;
@@ -151,8 +143,8 @@ void OCCWave::cepa_diis() {
                                "RT2 <OO|VV>");
         global_dpd_->buf4_init(&T, PSIF_OCC_DPD, 0, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0,
                                "T2 <OO|VV>");
-        t2DiisManager->add_entry(2, &R, &T);
-        if (t2DiisManager->subspace_size() >= mindiis_) t2DiisManager->extrapolate(1, &T);
+        t2_diis.add_entry(&R, &T);
+        if (t2_diis.subspace_size() >= mindiis_) t2_diis.extrapolate(&T);
         global_dpd_->buf4_close(&R);
         global_dpd_->buf4_close(&T);
     } else if (reference_ == "UNRESTRICTED") {
@@ -169,8 +161,8 @@ void OCCWave::cepa_diis() {
                                "RT2 <Oo|Vv>");
         global_dpd_->buf4_init(&Tab, PSIF_OCC_DPD, 0, ID("[O,o]"), ID("[V,v]"), ID("[O,o]"), ID("[V,v]"), 0,
                                "T2 <Oo|Vv>");
-        t2DiisManager->add_entry(6, &Raa, &Rbb, &Rab, &Taa, &Tbb, &Tab);
-        if (t2DiisManager->subspace_size() >= mindiis_) t2DiisManager->extrapolate(3, &Taa, &Tbb, &Tab);
+        t2_diis.add_entry(&Raa, &Rbb, &Rab, &Taa, &Tbb, &Tab);
+        if (t2_diis.subspace_size() >= mindiis_) t2_diis.extrapolate(&Taa, &Tbb, &Tab);
         global_dpd_->buf4_close(&Raa);
         global_dpd_->buf4_close(&Rbb);
         global_dpd_->buf4_close(&Rab);
