@@ -52,10 +52,10 @@ jobs:
           - conda-forge
           - defaults
         dependencies:
-          - anaconda-client
-          - anaconda-project
-          - conda-build
-          - conda-verify
+          #- anaconda-client
+          #- anaconda-project
+          #- conda-build
+          #- conda-verify
           - blas=*=mkl
           - cmake
           - conda-forge::eigen
@@ -265,7 +265,6 @@ jobs:
       shell: cmd /C CALL {0}
       run: |
         objdump.exe -p D:\a\psi4\psi4\build\stage\lib\core.lib | grep .dll
-        objdump.exe -p D:\a\psi4\psi4\build\stage\lib\psi4\core.cp38-win_amd64.pyd | grep dll
 
     - name: 'Run, Run, Spot, Run Test w/o envvar w bash'
       shell: bash -l {0}
