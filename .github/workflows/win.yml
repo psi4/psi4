@@ -42,15 +42,12 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: ilammy/msvc-dev-cmd@v1
       with:
-        #arch: x86_amd64
-        #toolset: 14.0
         arch: x64
 
-      #    - pybind11=2.7.0
     - name: Write Conda Env Files
       run: |
         cat > build.yaml <<EOF
-        name: test
+        name: defenv
         channels:
           - conda-forge
           - defaults
@@ -85,7 +82,7 @@ jobs:
     - name: Create Conda Environment (build)
       uses: conda-incubator/setup-miniconda@v2
       with:
-        activate-environment: test
+        activate-environment: defenv
         environment-file: build.yaml
         show-channel-urls: true
         python-version: 3.9
@@ -101,15 +98,11 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       run: git clone https://github.com/psi4/iomp5md.git
 
-      #        -DPython_EXECUTABLE="C:\Miniconda\envs\test\python.exe" \
-      #        -DMPFR_ROOT="C:\Miniconda\envs\test\Library" \
-      #        -DEigen_ROOT="C:\Miniconda\envs\test\Library" \
     - name: "Configure Psi4"
       run: |
-        mkdir build
-        cd build
-        which python
-        cmake -G Ninja \
+        cmake -S . \
+              -B objdir \
+              -G Ninja \
               -D CMAKE_BUILD_TYPE=Release \
               -D CMAKE_INSTALL_PREFIX=../install \
               -D CMAKE_C_COMPILER=clang-cl \
@@ -128,11 +121,10 @@ jobs:
               -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
               -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
               -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
-              -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
-              -S ..
+              -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON
 
     - name: Compile Psi4
-      run: cmake --build build --config Release --target install --parallel 2
+      run: cmake --build objdir --config Release --target install --parallel 2
 
       # Check if OpenMP configuration had not failed silently
     - name: "Test Psi4 (OpenMP)"
@@ -141,7 +133,7 @@ jobs:
         python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
 
     - name: 'Run, Run, Spot, Run Test w envvar w bash'
-      working-directory: ./build
+      working-directory: ./objdir
       run: |
         export PATH=../install/bin:$PATH
         export KMP_DUPLICATE_LIB_OK=TRUE
@@ -149,7 +141,7 @@ jobs:
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
 
     - name: 'Run, Run, Spot, Run Test w/o envvar w bash'
-      working-directory: ./build
+      working-directory: ./objdir
       run: |
         export PATH=../install/bin:$PATH
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
@@ -158,16 +150,10 @@ jobs:
     - name: 'Library Dependencies, ldd (L/M)'
       if: ${{ runner.os != 'Windows' }}
       run: |
-        ldd build/stage/lib/psi4/core.*.so
+        ldd objdir/stage/lib/psi4/core.*.so
 
     - name: 'Library Dependencies, ldd (W)'
       if: ${{ runner.os == 'Windows' }}
       shell: cmd /C CALL {0}
-      run: |
-        objdump.exe -p D:\a\psi4\psi4\build\stage\lib\psi4\core.*.pyd | grep dll
-
-    - name: 'Library Dependencies, ldd (W) 2'
-      if: ${{ runner.os == 'Windows' }}
-      shell: cmd /C CALL {0}
-      run: objdump.exe -p build\stage\lib\psi4\core.*.pyd | grep dll
+      run: objdump.exe -p objdir\stage\lib\psi4\core.*.pyd | grep dll
 

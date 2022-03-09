@@ -14,25 +14,25 @@ jobs:
       matrix:
         cfg:
 
-          #- runs-on: ubuntu-latest
-          #  python-version: "3.10"
-          #  base-channel: "defaults"
-          #  cmargs: >
-          #    -DBUILD_SHARED_LIBS=ON
-
-          - runs-on: macos-latest
+          - runs-on: ubuntu-latest
             python-version: "3.10"
             base-channel: "defaults"
-            target-sdk: "10.10"
             cmargs: >
-              -D BUILD_SHARED_LIBS=ON
-              -D OpenMP_C_FLAG="-fopenmp=libiomp5"
-              -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
-            # Notes:
-            # * libiomp5 is picking up naturally but left explicit as guide
+              -DBUILD_SHARED_LIBS=ON
+
+          #- runs-on: macos-latest
+          #  python-version: "3.10"
+          #  base-channel: "defaults"
+          #  target-sdk: "10.10"
+          #  cmargs: >
+          #    -D BUILD_SHARED_LIBS=ON
+          #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
+          #    -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
+          #  # Notes:
+          #  # * libiomp5 is picking up naturally but left explicit as guide
 
           - runs-on: windows-latest
-            python-version: "3.8"
+            python-version: "3.9"
             base-channel: "conda-forge"
             cmargs: >
               -D BUILD_SHARED_LIBS=OFF
@@ -49,7 +49,7 @@ jobs:
     steps:
 
     - name: Quick cancel
-      if: true
+      if: false
       run: return 5
 
       # fetch-depth: 0 gets git history so Psi4 version is computable
@@ -76,9 +76,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: ilammy/msvc-dev-cmd@v1
       with:
-        arch: x86_amd64
-        toolset: 14.0
-        #arch: x64
+        arch: x64
 
     - name: Write Conda Env Files
       shell: bash -l {0}
@@ -155,13 +153,9 @@ jobs:
         cat > build.yaml <<EOF
         name: defenv
         channels:
-          #- conda-forge
+          - conda-forge
           - defaults
         dependencies:
-          - anaconda-client
-          - anaconda-project
-          - conda-build
-          - conda-verify
           - blas=*=mkl
           - cmake
           - conda-forge::eigen
@@ -171,11 +165,11 @@ jobs:
           - ninja
           - conda-forge::numpy
           - pint
-          - pybind11=2.7.0
+          - pybind11
           - pymdi
           - conda-forge::pytest>=7.0.1
           - pytest-xdist
-          - python=3.8
+          - python=3.9
           - psi4/label/dev::dftd3
           - psi4/label/dev::gcp
           - conda-forge::gau2grid
@@ -292,14 +286,10 @@ jobs:
         conda info
         conda list
 
-      # Install Intel OpenMP import library
       # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
-      #set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
-    - name: "Install Intel OpenMP import library"
+    - name: Install Intel OpenMP import library (W)
       if: ${{ runner.os == 'Windows' }}
-      shell: cmd
-      run: |
-          git clone https://github.com/psi4/iomp5md.git
+      run: git clone https://github.com/psi4/iomp5md.git
 
     - name: Configure with CMake (conda defaults GNU)
       if: ${{ runner.os == 'Linux' }}
@@ -381,7 +371,7 @@ jobs:
           ${{ matrix.cfg.cmargs }}
 
     - name: Configure with CMake (conda defaults GNU)
-      if: ${{ runner.os == 'Windows' }}
+      if: false #${{ runner.os == 'Windows' }}
       run: |
         cmake \
           -S. \
@@ -409,75 +399,132 @@ jobs:
           #-D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
           #-D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
 
-    - name: Compile Psi4
-      run: |
-        cmake --build objdir --target install -j`getconf _NPROCESSORS_ONLN`
-        #ldd objdir/stage/lib/psi4/core.*.so
-
-    - name: Run, Spot, Run Cmd
-      #if: ${{ runner.os == 'Windows' }}
-      if: false
-      shell: cmd
-      working-directory: ./objdir
-      run: |
-        dir D:\a\psi4\psi4\install\bin
-        dir D:\a\psi4\psi4\install\lib
-        dir D:\a\psi4\psi4\install\lib\psi4
-        dir D:\a\psi4\psi4\iomp5md\conda\win\2019.1
-        set LIB=D:\a\psi4\psi4\install\lib;D:\a\psi4\psi4\iomp5md\conda\win\2019.1;C:\Miniconda\envs\defenv\Library\lib;%LIB%
-        set PATH=D:\a\psi4\psi4\install\bin;C:\Miniconda\envs\defenv\Library\bin;%PATH%
-        set PYTHONPATH=D:\a\psi4\psi4\install\lib;D:\a\psi4\psi4\install\lib\psi4;%PYTHONPATH%
-        echo "LIB"
-        echo %LIB%
-        echo "PATH"
-        echo %PATH%
-        echo "PYTHONPATH"
-        echo %PYTHONPATH%
-        echo "where python"
-        where python
-        echo "where psi4"
-        where psi4
-        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-        ctest --build-config Release -L smoke --output-on-failure
-        #PATH="/D/a/psi4/psi4/objdir/stage/bin":$PATH PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-        #psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-        python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
-        #conda install msgpack-python numpy scipy networkx pytest -c conda-forge
-
-    - name: Run, Spot, Run bash
+    - name: Configure Psi4 (W)
       if: ${{ runner.os == 'Windows' }}
+      run: |
+        mkdir build
+        cd build
+        which python
+        cmake -G Ninja \
+              -D CMAKE_BUILD_TYPE=Release \
+              -D CMAKE_INSTALL_PREFIX=../install \
+              -D CMAKE_C_COMPILER=clang-cl \
+              -D CMAKE_CXX_COMPILER=clang-cl \
+              -D CMAKE_VERBOSE_MAKEFILE=ON \
+              -D ENABLE_XHOST=OFF \
+              -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996" \
+              -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1" \
+              -D MAX_AM_ERI=5 \
+              -D BUILD_Libint2_GENERATOR=OFF \
+              -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
+              -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
+              -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
+              -D BUILD_SHARED_LIBS=OFF \
+              -D ENABLE_OPENMP=ON \
+              -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
+              -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+              -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
+              -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
+              -S ..
+
+    - name: Compile Psi4
+      run: cmake --build objdir --config Release --target install -j
+
+    - name: 'Library Dependencies, ldd (L/M)'
+      if: ${{ runner.os != 'Windows' }}
+      run: ldd objdir/stage/lib/psi4/core.*.so
+
+    - name: 'Library Dependencies, ldd (W)'
+      if: ${{ runner.os == 'Windows' }}
+      shell: cmd /C CALL {0}
+      run: objdump.exe -p objdir\stage\lib\psi4\core.*.pyd | grep dll
+
+      # Check if OpenMP configuration had not failed silently
+    - name: "Test Psi4 (OpenMP)"
+      working-directory: ./install/lib
+      run: |
+        python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
+
+    - name: 'Run, Run, Spot, Run Test w envvar w bash'
       working-directory: ./objdir
       run: |
-        export LIB="D:/a/psi4/psi4/install/lib":"C:/Miniconda/envs/defenv/Library/lib":$LIB
-        export PATH="D:/a/psi4/psi4/install/bin":"C:/Miniconda/envs/defenv/Library/bin":$PATH
-        export PYTHONPATH="D:/a/psi4/psi4/install/lib":$PYTHONPATH
-        echo "LIB"
-        echo ${LIB}
-        echo "PATH"
-        echo ${PATH}
-        echo "PYTHONPATH"
-        echo ${PYTHONPATH}
-        #chmod u+x "D:/a/psi4/psi4/objdir/stage/bin/psi4"
-        #chmod u+x "D:/a/psi4/psi4/install/bin/psi4"
-        #echo "where python"
-        #which python
-        #where python
-        #echo "where psi4"
-        #which psi4
-        #where psi4
-        #ctest --build-config Release -L smoke --output-on-failure
+        export PATH=../install/bin:$PATH
         export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
-        unset KMP_DUPLICATE_LIB_OK
+
+    - name: 'Run, Run, Spot, Run Test w/o envvar w bash'
+      working-directory: ./objdir
+      run: |
+        export PATH=../install/bin:$PATH
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
-        PATH="/D/a/psi4/psi4/objdir/stage/bin":$PATH PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-        #export LIB="/C/Miniconda/envs/defenv/Library/lib":$LIB
-        #export PATH="/C/Miniconda/envs/defenv/Library/bin":"/D/a/psi4/psi4/objdir/stage/bin":$PATH
-        #export PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH
-        #psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-        python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
+
+
+#    - name: Run, Spot, Run Cmd
+#      #if: ${{ runner.os == 'Windows' }}
+#      if: false
+#      shell: cmd
+#      working-directory: ./objdir
+#      run: |
+#        dir D:\a\psi4\psi4\install\bin
+#        dir D:\a\psi4\psi4\install\lib
+#        dir D:\a\psi4\psi4\install\lib\psi4
+#        dir D:\a\psi4\psi4\iomp5md\conda\win\2019.1
+#        set LIB=D:\a\psi4\psi4\install\lib;D:\a\psi4\psi4\iomp5md\conda\win\2019.1;C:\Miniconda\envs\defenv\Library\lib;%LIB%
+#        set PATH=D:\a\psi4\psi4\install\bin;C:\Miniconda\envs\defenv\Library\bin;%PATH%
+#        set PYTHONPATH=D:\a\psi4\psi4\install\lib;D:\a\psi4\psi4\install\lib\psi4;%PYTHONPATH%
+#        echo "LIB"
+#        echo %LIB%
+#        echo "PATH"
+#        echo %PATH%
+#        echo "PYTHONPATH"
+#        echo %PYTHONPATH%
+#        echo "where python"
+#        where python
+#        echo "where psi4"
+#        where psi4
+#        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+#        ctest --build-config Release -L smoke --output-on-failure
+#        #PATH="/D/a/psi4/psi4/objdir/stage/bin":$PATH PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+#        #psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+#        python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
+#        #conda install msgpack-python numpy scipy networkx pytest -c conda-forge
+#
+#    - name: Run, Spot, Run bash
+#      if: ${{ runner.os == 'Windows' }}
+#      working-directory: ./objdir
+#      run: |
+#        export LIB="D:/a/psi4/psi4/install/lib":"C:/Miniconda/envs/defenv/Library/lib":$LIB
+#        export PATH="D:/a/psi4/psi4/install/bin":"C:/Miniconda/envs/defenv/Library/bin":$PATH
+#        export PYTHONPATH="D:/a/psi4/psi4/install/lib":$PYTHONPATH
+#        echo "LIB"
+#        echo ${LIB}
+#        echo "PATH"
+#        echo ${PATH}
+#        echo "PYTHONPATH"
+#        echo ${PYTHONPATH}
+#        #chmod u+x "D:/a/psi4/psi4/objdir/stage/bin/psi4"
+#        #chmod u+x "D:/a/psi4/psi4/install/bin/psi4"
+#        #echo "where python"
+#        #which python
+#        #where python
+#        #echo "where psi4"
+#        #which psi4
+#        #where psi4
+#        #ctest --build-config Release -L smoke --output-on-failure
+#        export KMP_DUPLICATE_LIB_OK=TRUE
+#        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+#        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
+#        unset KMP_DUPLICATE_LIB_OK
+#        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+#        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
+#        PATH="/D/a/psi4/psi4/objdir/stage/bin":$PATH PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+#        #export LIB="/C/Miniconda/envs/defenv/Library/lib":$LIB
+#        #export PATH="/C/Miniconda/envs/defenv/Library/bin":"/D/a/psi4/psi4/objdir/stage/bin":$PATH
+#        #export PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH
+#        #psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+#        python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
 
       # Notes: This is clearing away the whole build environment (to make explicit the build and
       #   runtime dependencies and addons). Then its creating a new runtime environment based on
