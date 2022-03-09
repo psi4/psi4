@@ -52,10 +52,6 @@ jobs:
           - conda-forge
           - defaults
         dependencies:
-          #- anaconda-client
-          #- anaconda-project
-          #- conda-build
-          #- conda-verify
           - blas=*=mkl
           - cmake
           - conda-forge::eigen
@@ -98,18 +94,6 @@ jobs:
         conda info
         conda list
 
-
-#      # Install LLVM
-#      # Note: LLVM distributed by conda is too old
-#    - name: "Install LLVM"
-#      shell: cmd /C CALL {0}
-#      run: |
-#        choco install llvm --version 13.0.1 --yes
-#        set PATH=C:\Program Files\LLVM\bin;%PATH%
-#        echo "PATH=%PATH%" >> $env:GITHUB_ENV
-#        rem #echo '##vso[task.setvariable variable=PATH]%PATH%'
-#        clang-cl --version
-
       # Install Intel OpenMP import library
       # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
       #set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
@@ -136,7 +120,7 @@ jobs:
               -DCMAKE_CXX_COMPILER=clang-cl \
               -DCMAKE_VERBOSE_MAKEFILE=ON \
               -DENABLE_XHOST=OFF \
-              -DCMAKE_CXX_FLAGS="/arch:AVX" \
+              -DCMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996" \
               -DPython_EXECUTABLE="C:\Miniconda\envs\test\python.exe" \
               -DMPFR_ROOT="C:\Miniconda\envs\test\Library" \
               -DEigen_ROOT="C:\Miniconda\envs\test\Library" \
@@ -149,51 +133,28 @@ jobs:
               -DBUILD_SHARED_LIBS=OFF \
               -S ..
 
-#      # Configure
-#    - name: "Configure Psi4"
+#    - name: "Build Psi4"
 #      shell: cmd /C CALL {0}
+#      working-directory: ./build
 #      run: |
-#        rem call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
 #        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
-#        mkdir build & cd build
-#        where python
-#        cmake -G Ninja ^
-#              -DCMAKE_BUILD_TYPE=Release ^
-#              -DCMAKE_INSTALL_PREFIX=../install ^
-#              -DCMAKE_C_COMPILER=clang-cl ^
-#              -DCMAKE_CXX_COMPILER=clang-cl ^
-#              -DENABLE_XHOST=OFF ^
-#              -DCMAKE_CXX_FLAGS="/arch:AVX" ^
-#              -DMAX_AM_ERI=5 ^
-#              -DBUILD_Libint2_GENERATOR=OFF ^
-#              -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON ^
-#              -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON ^
-#              -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON ^
-#              -DBUILD_SHARED_LIBS=OFF ^
-#              -S ..
+#        cmake --build . ^
+#              --config Release ^
+#              -- -j 2
+#
+#    - name: "Install Psi4"
+#      shell: cmd /C CALL {0}
+#      working-directory: ./build
+#      run: |
+#        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
+#        cmake --build . ^
+#              --config Release ^
+#              --target install ^
+#              -- -j 2
 
-      # Build
-    - name: "Build Psi4"
-      shell: cmd /C CALL {0}
-      working-directory: ./build
-      run: |
-        rem call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
-        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
-        cmake --build . ^
-              --config Release ^
-              -- -j 2
-
-      # Install
-    - name: "Install Psi4"
-      shell: cmd /C CALL {0}
-      working-directory: ./build
-      run: |
-        rem call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
-        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
-        cmake --build . ^
-              --config Release ^
-              --target install ^
-              -- -j 2
+    - name: Compile Psi4
+      shell: bash -l {0}
+      run: cmake --build build --config Release --target install --parallel
 
       # Test (OpenMP)
       # Check if OpenMP configuration had not failed silently
@@ -202,16 +163,6 @@ jobs:
       working-directory: ./install/lib
       run: |
         python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
-
-      # Spot Test
-#    - name: 'Run, Run, Spot, Run Test w envvar'
-#      shell: cmd /C CALL {0}
-#      working-directory: ./build
-#      run: |
-#        set PATH=..\install\bin;%PATH%
-#        set KMP_DUPLICATE_LIB_OK=TRUE
-#        psi4 ..\tests\tu1-h2o-energy\input.dat -o stdout
-#        psi4 ..\tests\tu1-h2o-energy\input.dat -o stdout -n2
 
     - name: 'Run, Run, Spot, Run Test w envvar w bash'
       shell: bash -l {0}
@@ -230,19 +181,21 @@ jobs:
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
 
-    - name: 'ldd'
+    - name: 'Library Dependencies, ldd'
+      if: ${{ runner.os != 'Windows' }}
+      shell: bash -l {0}
+      run: |
+        ldd build/stage/lib/psi4/core.*.so
+
+    - name: 'Library Dependencies, ldd'
+      if: ${{ runner.os == 'Windows' }}
       shell: cmd /C CALL {0}
       run: |
-        objdump.exe -p D:\a\psi4\psi4\build\stage\lib\core.lib | grep .dll
         objdump.exe -p D:\a\psi4\psi4\build\stage\lib\psi4\core.cp39-win_amd64.pyd | grep dll
 
-    - name: 'ldd pyd'
+    - name: 'Library Dependencies, ldd, general'
+      if: ${{ runner.os == 'Windows' }}
       shell: cmd /C CALL {0}
       run: |
-        objdump.exe -p D:\a\psi4\psi4\build\stage\lib\psi4\core.cp39-win_amd64.pyd | grep dll
-
-    - name: 'ldd lib'
-      shell: cmd /C CALL {0}
-      run: |
-        objdump.exe -p D:\a\psi4\psi4\build\stage\lib\core.lib | grep .dll
+        objdump.exe -p D:\a\psi4\psi4\build\stage\lib\psi4\core.*.pyd | grep dll
 
