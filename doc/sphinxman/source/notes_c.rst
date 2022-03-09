@@ -68,6 +68,10 @@ Notes on Psivars
     For example, to target the second excited-state, which is also the lowest energy state
     of its irrep, the first two calls will take m = 2, while the last takes m = 0.
     Methods that use this interface are: TD-fctl.
+    Note that numberings are associated with the calculation much more strongly than 
+    with the molecular system. Changing the number of roots sought, the symmetry 
+    subspace or the symmetry apportionment or roots under which the computation is run, 
+    or the excited state method are all likely to scramble root numberings.
 
 Alternate Implementations
 =========================
