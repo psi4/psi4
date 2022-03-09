@@ -39,9 +39,9 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       uses: ilammy/msvc-dev-cmd@v1
       with:
-        arch: x86_amd64
-        toolset: 14.0
-        #arch: x64
+        #arch: x86_amd64
+        #toolset: 14.0
+        arch: x64
 
       #    - pybind11=2.7.0
     - name: Write Conda Env Files
@@ -94,19 +94,6 @@ jobs:
       run: |
         conda info
         conda list
-
-#      # Install Intel OpenMP import library
-#      # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
-#      #set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
-#    - name: "Install Intel OpenMP import library"
-#      shell: cmd /C CALL {0}
-#      run: |
-#        cd
-#        git clone https://github.com/psi4/iomp5md.git
-#        dir
-#        set LIB=%cd%\iomp5md\conda\win\2019.1;%LIB%
-#        echo "LIB=%LIB%" >> $env:GITHUB_ENV
-#        rem #echo '##vso[task.setvariable variable=LIB]%LIB%'
 
       # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
     - name: "Install Intel OpenMP import library"
