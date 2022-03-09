@@ -359,16 +359,11 @@ std::string Molecule::fsymbol(int atom) const { return full_atoms_[atom]->symbol
 
 std::string Molecule::label(int atom) const { return atoms_[atom]->label(); }
 
-int Molecule::atom_at_position1(double *coord, double tol) const {
-    Vector3 b(coord);
-    for (int i = 0; i < natom(); ++i) {
-        Vector3 a = xyz(i);
-        if (b.distance(a) < tol) return i;
-    }
-    return -1;
+int Molecule::atom_at_position1(double *const coord, const double tol) const {
+    return atom_at_position2(Vector3(coord), tol);
 }
 
-int Molecule::atom_at_position2(Vector3 &b, double tol) const {
+int Molecule::atom_at_position2(const Vector3 &b, const double tol) const {
     for (int i = 0; i < natom(); ++i) {
         Vector3 a = xyz(i);
         if (b.distance(a) < tol) return i;
@@ -377,12 +372,7 @@ int Molecule::atom_at_position2(Vector3 &b, double tol) const {
 }
 
 int Molecule::atom_at_position3(const std::array<double, 3> &coord, const double tol) const {
-    Vector3 b(coord);
-    for (int i = 0; i < natom(); ++i) {
-        Vector3 a = xyz(i);
-        if (b.distance(a) < tol) return i;
-    }
-    return -1;
+    return atom_at_position2(Vector3(coord), tol);
 }
 
 Vector3 Molecule::nuclear_dipole() const {
