@@ -98,7 +98,7 @@ jobs:
 #      # Note: c-f eigen has Config.cmake file
 #    - name: "Install conda packages"
 #      shell: cmd /C CALL {0}
-#      run: | 
+#      run: |
 #        conda install cmake ^
 #                      conda-forge::eigen ^
 #                      intel-openmp=2019.1 ^
@@ -230,12 +230,6 @@ jobs:
 
       # Test (OpenMP)
       # Check if OpenMP configuration had not failed silently
-    - name: "Test Psi4 (OpenMP)"
-      shell: cmd /C CALL {0}
-      working-directory: ./install/lib
-      run: |
-        python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
-
     - name: "Test Psi4 (OpenMP) bash"
       shell: bash -l {0}
       working-directory: ./install/lib
@@ -263,8 +257,7 @@ jobs:
 
     - name: 'ldd'
       shell: cmd /C CALL {0}
-      run: |
-        objdump.exe -p D:\a\psi4\psi4\build\stage\lib\core.lib | grep .dll
+      run: objdump.exe -p D:\a\psi4\psi4\build\stage\lib\core.lib | grep .dll
 
     - name: 'Run, Run, Spot, Run Test w/o envvar w bash'
       shell: bash -l {0}

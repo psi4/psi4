@@ -528,3 +528,8 @@ jobs:
 #
 # Error: (W) "OMP: Error #15: Initializing libiomp5md.dll, but found libomp.dll already initialized." or analysis shows linked to libomp.dll
 # Soln: feed OpenMP_LIBRARY_DIRS so selects correct libiomp5md.lib so analysis shows linked to libiomp5md.dll
+#
+# Error (W) "  File "D:\a\psi4\psi4\objdir\stage\lib\psi4\__init__.py", line 55, in <module>
+#              from . import core
+#              ImportError: DLL load failed while importing core: The specified module could not be found."
+# Soln: 
