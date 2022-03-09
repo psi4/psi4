@@ -405,7 +405,6 @@ void DirectJK::compute_JK() {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(factory->erf_eri(omega_)));
             if (density_screening_) ints[thread]->update_density(D_ref);
         }
-        // TODO: Fast K algorithm
         if (do_J_) {
             build_JK_matrices(ints, D_ref, J_ref, wK_ref);
         } else {
@@ -1092,6 +1091,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
     std::vector<std::vector<int>> significant_bras(nshell);
     double max_integral = ints[0]->max_integral();
 
+#pragma omp parallel for
     for (size_t P = 0; P < nshell; P++) {
         std::vector<std::pair<int, double>> PQ_shell_values;
         for (size_t Q = 0; Q < nshell; Q++) {
@@ -1114,17 +1114,22 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
     std::vector<double> shell_ceilings(nshell, 0.0);
 
     // sqrt(Umax|Umax) in Ochsenfeld Eq. 3
+#pragma omp parallel for
     for (int P = 0; P < nshell; P++) {
         for (int Q = 0; Q <= P; Q++) {
             double val = std::sqrt(ints[0]->shell_ceiling2(P, Q, P, Q));
             shell_ceilings[P] = std::max(shell_ceilings[P], val);
-            shell_ceilings[Q] = std::max(shell_ceilings[Q], val);
+            if (val > shell_ceilings[Q]) {
+#pragma omp critical
+                shell_ceilings[Q] = val;
+            }
         }
     }
 
     std::vector<std::vector<int>> significant_kets(nshell);
 
     // => Use shell ceilings to compute significant ket-shells for each bra-shell <= //
+#pragma omp parallel for
     for (size_t P = 0; P < nshell; P++) {
         std::vector<std::pair<int, double>> PR_shell_values;
         for (size_t R = 0; R < nshell; R++) {
