@@ -15,7 +15,7 @@ jobs:
         cfg:
 
           - runs-on: windows-latest
-            python-version: "3.8"
+            python-version: "3.9"
             base-channel: "conda-forge"
             cmargs: >
               -DBUILD_SHARED_LIBS=OFF
@@ -69,7 +69,7 @@ jobs:
           - pymdi
           - conda-forge::pytest>=7.0.1
           - pytest-xdist
-          - python=3.8
+          - python=3.9
           - psi4/label/dev::dftd3
           - psi4/label/dev::gcp
           - conda-forge::gau2grid
@@ -89,59 +89,26 @@ jobs:
         activate-environment: test
         environment-file: build.yaml
         show-channel-urls: true
-        python-version: 3.8
+        python-version: 3.9
         auto-activate-base: false
 
+    - name: Environment Information
+      shell: bash -l {0}
+      run: |
+        conda info
+        conda list
 
-#      # Create conda enviroment
-#      # Note: conda activate doesn't work here, because it creates a new shell!
-#      # Note: c-f eigen has Config.cmake file
-#    - name: "Install conda packages"
+
+#      # Install LLVM
+#      # Note: LLVM distributed by conda is too old
+#    - name: "Install LLVM"
 #      shell: cmd /C CALL {0}
 #      run: |
-#        conda install cmake ^
-#                      conda-forge::eigen ^
-#                      intel-openmp=2019.1 ^
-#                      mkl-devel=2019.1 ^
-#                      networkx ^
-#                      ninja ^
-#                      numpy ^
-#                      pint ^
-#                      pybind11=2.7.0 ^
-#                      pymdi ^
-#                      conda-forge::pytest>=7.0.1 ^
-#                      pytest-xdist ^
-#                      python=3.8 ^
-#                      psi4/label/dev::dftd3 ^
-#                      psi4/label/dev::gcp ^
-#                      conda-forge::gau2grid ^
-#                      psi4/label/dev::libint2 ^
-#                      conda-forge::libxc ^
-#                      conda-forge::mpfr ^
-#                      conda-forge::mpmath ^
-#                      conda-forge::msgpack-python ^
-#                      conda-forge::qcelemental ^
-#                      conda-forge::qcengine ^
-#                      scipy ^
-#                      -c conda-forge
-#        which anaconda
-#        conda list
-
-    - name: Environment Information
-      shell: cmd /C CALL {0}
-      run: >-
-        conda info && conda list
-
-      # Install LLVM
-      # Note: LLVM distributed by conda is too old
-    - name: "Install LLVM"
-      shell: cmd /C CALL {0}
-      run: |
-        choco install llvm --version 13.0.1 --yes
-        set PATH=C:\Program Files\LLVM\bin;%PATH%
-        echo "PATH=%PATH%" >> $env:GITHUB_ENV
-        rem #echo '##vso[task.setvariable variable=PATH]%PATH%'
-        clang-cl --version
+#        choco install llvm --version 13.0.1 --yes
+#        set PATH=C:\Program Files\LLVM\bin;%PATH%
+#        echo "PATH=%PATH%" >> $env:GITHUB_ENV
+#        rem #echo '##vso[task.setvariable variable=PATH]%PATH%'
+#        clang-cl --version
 
       # Install Intel OpenMP import library
       # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
@@ -237,14 +204,14 @@ jobs:
         python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
 
       # Spot Test
-    - name: 'Run, Run, Spot, Run Test w envvar'
-      shell: cmd /C CALL {0}
-      working-directory: ./build
-      run: |
-        set PATH=..\install\bin;%PATH%
-        set KMP_DUPLICATE_LIB_OK=TRUE
-        psi4 ..\tests\tu1-h2o-energy\input.dat -o stdout
-        psi4 ..\tests\tu1-h2o-energy\input.dat -o stdout -n2
+#    - name: 'Run, Run, Spot, Run Test w envvar'
+#      shell: cmd /C CALL {0}
+#      working-directory: ./build
+#      run: |
+#        set PATH=..\install\bin;%PATH%
+#        set KMP_DUPLICATE_LIB_OK=TRUE
+#        psi4 ..\tests\tu1-h2o-energy\input.dat -o stdout
+#        psi4 ..\tests\tu1-h2o-energy\input.dat -o stdout -n2
 
     - name: 'Run, Run, Spot, Run Test w envvar w bash'
       shell: bash -l {0}
@@ -255,12 +222,6 @@ jobs:
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
 
-    - name: 'ldd'
-      shell: cmd /C CALL {0}
-      run: |
-        objdump.exe -p D:\a\psi4\psi4\build\stage\lib\core.lib | grep .dll
-        objdump.exe -p D:\a\psi4\psi4\build\stage\lib\psi4\core.cp38-win_amd64.pyd | grep dll
-
     - name: 'Run, Run, Spot, Run Test w/o envvar w bash'
       shell: bash -l {0}
       working-directory: ./build
@@ -268,4 +229,20 @@ jobs:
         export PATH=../install/bin:$PATH
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
+
+    - name: 'ldd'
+      shell: cmd /C CALL {0}
+      run: |
+        objdump.exe -p D:\a\psi4\psi4\build\stage\lib\core.lib | grep .dll
+        objdump.exe -p D:\a\psi4\psi4\build\stage\lib\psi4\core.cp39-win_amd64.pyd | grep dll
+
+    - name: 'ldd pyd'
+      shell: cmd /C CALL {0}
+      run: |
+        objdump.exe -p D:\a\psi4\psi4\build\stage\lib\psi4\core.cp39-win_amd64.pyd | grep dll
+
+    - name: 'ldd lib'
+      shell: cmd /C CALL {0}
+      run: |
+        objdump.exe -p D:\a\psi4\psi4\build\stage\lib\core.lib | grep .dll
 
