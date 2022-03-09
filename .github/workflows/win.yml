@@ -25,6 +25,9 @@ jobs:
 
     name: "Win • 🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.runs-on }}"
     runs-on: ${{ matrix.cfg.runs-on }}
+    defaults:
+      run:
+        shell: bash -l {0}
 
     steps:
 
@@ -45,7 +48,6 @@ jobs:
 
       #    - pybind11=2.7.0
     - name: Write Conda Env Files
-      shell: bash -l {0}
       run: |
         cat > build.yaml <<EOF
         name: test
@@ -90,7 +92,6 @@ jobs:
         auto-activate-base: false
 
     - name: Environment Information
-      shell: bash -l {0}
       run: |
         conda info
         conda list
@@ -98,48 +99,48 @@ jobs:
       # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
     - name: "Install Intel OpenMP import library"
       if: ${{ runner.os == 'Windows' }}
-      shell: bash -l {0}
       run: git clone https://github.com/psi4/iomp5md.git
 
+      #        -DPython_EXECUTABLE="C:\Miniconda\envs\test\python.exe" \
+      #        -DMPFR_ROOT="C:\Miniconda\envs\test\Library" \
+      #        -DEigen_ROOT="C:\Miniconda\envs\test\Library" \
     - name: "Configure Psi4"
-      shell: bash -l {0}
       run: |
         mkdir build
         cd build
         which python
         cmake -G Ninja \
-              -DCMAKE_BUILD_TYPE=Release \
-              -DCMAKE_INSTALL_PREFIX=../install \
-              -DCMAKE_C_COMPILER=clang-cl \
-              -DCMAKE_CXX_COMPILER=clang-cl \
-              -DCMAKE_VERBOSE_MAKEFILE=ON \
-              -DENABLE_XHOST=OFF \
-              -DCMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996" \
-              -DPython_EXECUTABLE="C:\Miniconda\envs\test\python.exe" \
-              -DMPFR_ROOT="C:\Miniconda\envs\test\Library" \
-              -DEigen_ROOT="C:\Miniconda\envs\test\Library" \
-              -DOpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1" \
-              -DMAX_AM_ERI=5 \
-              -DBUILD_Libint2_GENERATOR=OFF \
-              -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
-              -DCMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
-              -DCMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-              -DBUILD_SHARED_LIBS=OFF \
+              -D CMAKE_BUILD_TYPE=Release \
+              -D CMAKE_INSTALL_PREFIX=../install \
+              -D CMAKE_C_COMPILER=clang-cl \
+              -D CMAKE_CXX_COMPILER=clang-cl \
+              -D CMAKE_VERBOSE_MAKEFILE=ON \
+              -D ENABLE_XHOST=OFF \
+              -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996" \
+              -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1" \
+              -D MAX_AM_ERI=5 \
+              -D BUILD_Libint2_GENERATOR=OFF \
+              -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
+              -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
+              -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
+              -D BUILD_SHARED_LIBS=OFF \
+              -D ENABLE_OPENMP=ON \
+              -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
+              -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+              -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
+              -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
               -S ..
 
     - name: Compile Psi4
-      shell: bash -l {0}
       run: cmake --build build --config Release --target install --parallel 2
 
       # Check if OpenMP configuration had not failed silently
     - name: "Test Psi4 (OpenMP)"
-      shell: bash -l {0}
       working-directory: ./install/lib
       run: |
         python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
 
     - name: 'Run, Run, Spot, Run Test w envvar w bash'
-      shell: bash -l {0}
       working-directory: ./build
       run: |
         export PATH=../install/bin:$PATH
@@ -148,7 +149,6 @@ jobs:
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
 
     - name: 'Run, Run, Spot, Run Test w/o envvar w bash'
-      shell: bash -l {0}
       working-directory: ./build
       run: |
         export PATH=../install/bin:$PATH
@@ -157,7 +157,6 @@ jobs:
 
     - name: 'Library Dependencies, ldd (L/M)'
       if: ${{ runner.os != 'Windows' }}
-      shell: bash -l {0}
       run: |
         ldd build/stage/lib/psi4/core.*.so
 
@@ -166,4 +165,9 @@ jobs:
       shell: cmd /C CALL {0}
       run: |
         objdump.exe -p D:\a\psi4\psi4\build\stage\lib\psi4\core.*.pyd | grep dll
+
+    - name: 'Library Dependencies, ldd (W) 2'
+      if: ${{ runner.os == 'Windows' }}
+      shell: cmd /C CALL {0}
+      run: objdump.exe -p build\stage\lib\psi4\core.*.pyd | grep dll
 
