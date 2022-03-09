@@ -316,7 +316,8 @@ class PSI_API Molecule {
     void set_shell_by_label(const std::string& label, const std::string& name, const std::string& type = "BASIS");
 
     /// @{
-    /// Tests to see of an atom is at the passed position with a given tolerance
+    /// Returns the index of the atom inside the tolerance radius around a specific point.
+    /// Returns -1 if no atom is found, returns the closest atom if multiple atoms are found.
     int atom_at_position1(double*const, const double tol = 0.05) const;
     int atom_at_position2(const Vector3&, const double tol = 0.05) const;
     int atom_at_position3(const std::array<double, 3>&, const double tol = 0.05) const;
