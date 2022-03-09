@@ -524,3 +524,7 @@ jobs:
         conda list
         PYTHONPATH=$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages/:stage/lib pytest --cache-clear -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
 
+# Notes
+#
+# Error: (W) "OMP: Error #15: Initializing libiomp5md.dll, but found libomp.dll already initialized." or analysis shows linked to libomp.dll
+# Soln: feed OpenMP_LIBRARY_DIRS so selects correct libiomp5md.lib so analysis shows linked to libiomp5md.dll
