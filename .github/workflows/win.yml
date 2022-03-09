@@ -104,7 +104,7 @@ jobs:
               -B objdir \
               -G Ninja \
               -D CMAKE_BUILD_TYPE=Release \
-              -D CMAKE_INSTALL_PREFIX=../install \
+              -D CMAKE_INSTALL_PREFIX=./install \
               -D CMAKE_C_COMPILER=clang-cl \
               -D CMAKE_CXX_COMPILER=clang-cl \
               -D CMAKE_VERBOSE_MAKEFILE=ON \

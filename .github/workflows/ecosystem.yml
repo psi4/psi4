@@ -114,11 +114,11 @@ jobs:
           - psi4/label/dev::pcmsolver
           - psi4/label/dev::simint
             # tmp win
-          - msgpack-python
-          - numpy
-          - scipy
-          - networkx
-          - pytest
+          #- msgpack-python
+          #- numpy
+          #- scipy
+          #- networkx
+          #- pytest
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           # <lang>-compiler is only a metapackage for c-f
@@ -264,11 +264,11 @@ jobs:
           sed -i "s;- adcc;#- adcc;g" runcf.yaml
           sed -i "s;- cppe;#- cppe;g" runcf.yaml
         fi
-        echo "<<<  build.yaml  >>>"
+        echo "\n<<<  build.yaml  >>>"
         cat build.yaml
-        echo "<<<  run.yaml  >>>"
+        echo "\n<<<  run.yaml  >>>"
         cat run.yaml
-        echo "<<<  runcf.yaml  >>>"
+        echo "\n<<<  runcf.yaml  >>>"
         cat runcf.yaml
 
     - name: Create Conda Environment (build)
@@ -402,50 +402,48 @@ jobs:
     - name: Configure Psi4 (W)
       if: ${{ runner.os == 'Windows' }}
       run: |
-        mkdir build
-        cd build
-        which python
-        cmake -G Ninja \
-              -D CMAKE_BUILD_TYPE=Release \
-              -D CMAKE_INSTALL_PREFIX=../install \
-              -D CMAKE_C_COMPILER=clang-cl \
-              -D CMAKE_CXX_COMPILER=clang-cl \
-              -D CMAKE_VERBOSE_MAKEFILE=ON \
-              -D ENABLE_XHOST=OFF \
-              -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996" \
-              -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1" \
-              -D MAX_AM_ERI=5 \
-              -D BUILD_Libint2_GENERATOR=OFF \
-              -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
-              -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
-              -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
-              -D BUILD_SHARED_LIBS=OFF \
-              -D ENABLE_OPENMP=ON \
-              -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
-              -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
-              -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
-              -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
-              -S ..
+        cmake \
+          -S . \
+          -B objdir \
+          -G Ninja \
+          -D CMAKE_BUILD_TYPE=Release \
+          -D CMAKE_INSTALL_PREFIX=./install \
+          -D CMAKE_C_COMPILER=clang-cl \
+          -D CMAKE_CXX_COMPILER=clang-cl \
+          -D CMAKE_VERBOSE_MAKEFILE=ON \
+          -D ENABLE_XHOST=OFF \
+          -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996" \
+          -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1" \
+          -D MAX_AM_ERI=5 \
+          -D BUILD_Libint2_GENERATOR=OFF \
+          -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_Libint2=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
+          -D BUILD_SHARED_LIBS=OFF \
+          -D ENABLE_OPENMP=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcelemental=ON \
+          -D CMAKE_INSIST_FIND_PACKAGE_qcengine=ON \
+          -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
+          -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
+          ${{ matrix.cfg.cmargs }}
 
     - name: Compile Psi4
       run: cmake --build objdir --config Release --target install -j
 
-    - name: 'Library Dependencies, ldd (L/M)'
+    - name: Library dependencies, ldd (L/M)
       if: ${{ runner.os != 'Windows' }}
       run: ldd objdir/stage/lib/psi4/core.*.so
 
-    - name: 'Library Dependencies, ldd (W)'
+    - name: Library dependencies, ldd (W)
       if: ${{ runner.os == 'Windows' }}
       shell: cmd /C CALL {0}
       run: objdump.exe -p objdir\stage\lib\psi4\core.*.pyd | grep dll
 
-      # Check if OpenMP configuration had not failed silently
-    - name: "Test Psi4 (OpenMP)"
+    - name: Test Psi4 core OpenMP
       working-directory: ./install/lib
-      run: |
-        python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
+      run: python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
 
-    - name: 'Run, Run, Spot, Run Test w envvar w bash'
+    - name: Test Run, Spot, Run cheat
       working-directory: ./objdir
       run: |
         export PATH=../install/bin:$PATH
@@ -453,7 +451,7 @@ jobs:
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
 
-    - name: 'Run, Run, Spot, Run Test w/o envvar w bash'
+    - name: Test Run, Spot, Run
       working-directory: ./objdir
       run: |
         export PATH=../install/bin:$PATH
