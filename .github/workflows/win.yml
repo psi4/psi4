@@ -43,6 +43,7 @@ jobs:
         toolset: 14.0
         #arch: x64
 
+      #    - pybind11=2.7.0
     - name: Write Conda Env Files
       shell: bash -l {0}
       run: |
@@ -61,7 +62,7 @@ jobs:
           - ninja
           - conda-forge::numpy
           - pint
-          - pybind11=2.7.0
+          - pybind11
           - pymdi
           - conda-forge::pytest>=7.0.1
           - pytest-xdist
@@ -94,18 +95,24 @@ jobs:
         conda info
         conda list
 
-      # Install Intel OpenMP import library
+#      # Install Intel OpenMP import library
+#      # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
+#      #set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
+#    - name: "Install Intel OpenMP import library"
+#      shell: cmd /C CALL {0}
+#      run: |
+#        cd
+#        git clone https://github.com/psi4/iomp5md.git
+#        dir
+#        set LIB=%cd%\iomp5md\conda\win\2019.1;%LIB%
+#        echo "LIB=%LIB%" >> $env:GITHUB_ENV
+#        rem #echo '##vso[task.setvariable variable=LIB]%LIB%'
+
       # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
-      #set LIB=$(Build.SourcesDirectory)\conda\win\$(mkl.version);%LIB%
     - name: "Install Intel OpenMP import library"
-      shell: cmd /C CALL {0}
-      run: |
-        cd
-        git clone https://github.com/psi4/iomp5md.git
-        dir
-        set LIB=%cd%\iomp5md\conda\win\2019.1;%LIB%
-        echo "LIB=%LIB%" >> $env:GITHUB_ENV
-        rem #echo '##vso[task.setvariable variable=LIB]%LIB%'
+      if: ${{ runner.os == 'Windows' }}
+      shell: bash -l {0}
+      run: git clone https://github.com/psi4/iomp5md.git
 
     - name: "Configure Psi4"
       shell: bash -l {0}
@@ -133,32 +140,12 @@ jobs:
               -DBUILD_SHARED_LIBS=OFF \
               -S ..
 
-#    - name: "Build Psi4"
-#      shell: cmd /C CALL {0}
-#      working-directory: ./build
-#      run: |
-#        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
-#        cmake --build . ^
-#              --config Release ^
-#              -- -j 2
-#
-#    - name: "Install Psi4"
-#      shell: cmd /C CALL {0}
-#      working-directory: ./build
-#      run: |
-#        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
-#        cmake --build . ^
-#              --config Release ^
-#              --target install ^
-#              -- -j 2
-
     - name: Compile Psi4
       shell: bash -l {0}
-      run: cmake --build build --config Release --target install --parallel
+      run: cmake --build build --config Release --target install --parallel 2
 
-      # Test (OpenMP)
       # Check if OpenMP configuration had not failed silently
-    - name: "Test Psi4 (OpenMP) bash"
+    - name: "Test Psi4 (OpenMP)"
       shell: bash -l {0}
       working-directory: ./install/lib
       run: |
@@ -181,19 +168,13 @@ jobs:
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
 
-    - name: 'Library Dependencies, ldd'
+    - name: 'Library Dependencies, ldd (L/M)'
       if: ${{ runner.os != 'Windows' }}
       shell: bash -l {0}
       run: |
         ldd build/stage/lib/psi4/core.*.so
 
-    - name: 'Library Dependencies, ldd'
-      if: ${{ runner.os == 'Windows' }}
-      shell: cmd /C CALL {0}
-      run: |
-        objdump.exe -p D:\a\psi4\psi4\build\stage\lib\psi4\core.cp39-win_amd64.pyd | grep dll
-
-    - name: 'Library Dependencies, ldd, general'
+    - name: 'Library Dependencies, ldd (W)'
       if: ${{ runner.os == 'Windows' }}
       shell: cmd /C CALL {0}
       run: |
