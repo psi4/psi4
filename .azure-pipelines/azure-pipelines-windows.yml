@@ -231,6 +231,14 @@ jobs:
         displayName: 'Run, Run, Spot, Run Test'
         workingDirectory: $(Build.BinariesDirectory)/build
 
+      - script: |
+          objdump.exe -p D:/a/1/b/install/lib/core.lib | grep .dll
+        displayName: "ldd"
+
+      - script: |
+          objdump.exe -p D:/a/1/b/install/lib/psi4/core.cp38-win_amd64.pyd | grep dll
+        displayName: "ldd pyd"
+
       # Test (ctest)
       - script: |
           setlocal EnableDelayedExpansion

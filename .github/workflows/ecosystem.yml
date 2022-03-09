@@ -49,7 +49,7 @@ jobs:
     steps:
 
     - name: Quick cancel
-      if: false
+      if: true
       run: return 5
 
       # fetch-depth: 0 gets git history so Psi4 version is computable

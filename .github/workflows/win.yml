@@ -193,6 +193,7 @@ jobs:
       run: |
         cd
         git clone https://github.com/psi4/iomp5md.git
+        dir
         set LIB=%cd%\iomp5md\conda\win\2019.1;%LIB%
         echo "LIB=%LIB%" >> $env:GITHUB_ENV
         rem #echo '##vso[task.setvariable variable=LIB]%LIB%'
@@ -214,6 +215,7 @@ jobs:
               -DPython_EXECUTABLE="C:\Miniconda\envs\test\python.exe" \
               -DMPFR_ROOT="C:\Miniconda\envs\test\Library" \
               -DEigen_ROOT="C:\Miniconda\envs\test\Library" \
+              -DOpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1" \
               -DMAX_AM_ERI=5 \
               -DBUILD_Libint2_GENERATOR=OFF \
               -DCMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
