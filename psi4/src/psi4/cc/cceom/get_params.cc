@@ -118,7 +118,6 @@ void get_params(Options &options) {
         local.method = options.get_str("LOCAL_METHOD");
         local.weakp = options.get_str("LOCAL_WEAKP");
         local.precon = options.get_str("LOCAL_PRECONDITIONER");
-        local.ghost = options.get_int("LOCAL_GHOST");
         local.do_singles = options["LOCAL_DO_SINGLES"].to_integer();
         local.filter_singles = options["LOCAL_FILTER_SINGLES"].to_integer();
     }
@@ -148,7 +147,6 @@ void get_params(Options &options) {
         outfile->Printf("\tLocal Method    =    %s\n", local.method.c_str());
         outfile->Printf("\tWeak pairs      =    %s\n", local.weakp.c_str());
         outfile->Printf("\tLocal precon.   =    %s\n", local.precon.c_str());
-        outfile->Printf("\tGhost atom      =    %d\n", local.ghost);
         outfile->Printf("\tLocal guess     =    %s\n", local.do_singles ? "HBAR_SS" : "UNIT VECTORS");
         outfile->Printf("\tFilter singles  =    %s\n", local.filter_singles ? "Yes" : "No");
     }

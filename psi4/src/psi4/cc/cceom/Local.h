@@ -51,7 +51,6 @@ struct Local {
     int *pairdom_len;
     int *pairdom_nrlen;
     int *weak_pairs;
-    int ghost;
     int do_singles;
     double ***V;
     double ***W;
