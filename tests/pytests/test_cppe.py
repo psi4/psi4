@@ -299,8 +299,8 @@ def _base_tdscf_test(molecule, ref_scf_energy, ref_pe_energy, exc_energies, osc_
     e_calc = []
     r_calc = []
     for i in range(len(exc_energies)):
-        e_calc.append(wfn.variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A SYMMETRY'))
-        r_calc.append(wfn.variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A SYMMETRY'))
+        e_calc.append(wfn.variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A TRANSITION'))
+        r_calc.append(wfn.variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A TRANSITION'))
     assert compare_arrays(exc_energies, e_calc, 4, f'PE EXCITATION ENERGY')
     assert compare_arrays(osc_strengths, r_calc, 4, f'PE OSCILLATOR STRENGTH')
 
