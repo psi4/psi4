@@ -1,4 +1,5 @@
 #! PE-ADC(2)/cc-pvdz formaldehyde in presence of 6 water molecules
+#! including ptSS/ptLR corrections for excitation energies
 #! Reference data from Q-Chem calculation
 
 molecule formaldehyde {
@@ -25,7 +26,5 @@ set pe {
 }
 
 # Run computation of ADC(2) plus a few properties
-# environment="True" turns on ptSS/ptLR corrections
-_, wfn = properties('adc(2)', properties=["oscillator_strength", "dipole"],
-                    environment=True, return_wfn=True)
+_, wfn = properties('adc(2)', properties=["oscillator_strength", "dipole"], environment=True, return_wfn=True)
 

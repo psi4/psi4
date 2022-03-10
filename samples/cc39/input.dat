@@ -12,6 +12,8 @@ set {
   omega [0.05, 0.1, au]
 }
 
-properties('cc2',properties=['polarizability'])
+wfn = properties('cc2',properties=['polarizability'], return_wfn=True)[1]
+
+
 
 

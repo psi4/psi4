@@ -14,4 +14,7 @@ set {
   basis cc-pVDZ
 }
 
-properties('ccsd', properties=['rotation'])
+wfn = properties('ccsd', properties=['rotation'], return_wfn=True)[1]
+
+
+

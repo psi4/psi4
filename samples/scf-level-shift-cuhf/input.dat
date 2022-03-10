@@ -1,3 +1,5 @@
+#! SCF level shift on a CUHF computation
+
 molecule {
 units bohr
 0 2

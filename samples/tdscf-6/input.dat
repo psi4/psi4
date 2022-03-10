@@ -1,0 +1,39 @@
+#! td-camb3lyp with DiskDF and method/basis specification
+from psi4.driver.procrouting.response.scf_response import tdscf_excitations
+
+memory 280 mb
+
+molecule h2o {
+O
+H 1 r
+H 1 r 2 a
+
+r=0.958
+a=104.5
+
+symmetry c1
+}
+
+set {
+    scf_type disk_df
+    e_convergence 8
+    d_convergence 8
+    save_jk true
+    basis def2-SVP
+}
+
+ref = 0.283463
+string = "TD-CAM-B3LYP ROOT 0 -> ROOT 1 EXCITATION ENERGY - A TRANSITION"
+
+wfn = psi4.energy("cam-b3lyp", return_wfn=True, molecule=h2o)[1]
+res = tdscf_excitations(wfn, states=1, tda=True)
+print(wfn.variables())
+
+compare_values(ref, wfn.variable(string), 4, string)
+
+set scf_type mem_df
+
+wfn = psi4.energy("cam-b3lyp", return_wfn=True, molecule=h2o)[1]
+res = tdscf_excitations(wfn, states=1, tda=True)
+
+compare_values(ref, wfn.variable(string), 4, string)

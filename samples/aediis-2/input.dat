@@ -1,0 +1,18 @@
+#! EDIIS test case from 10.1063/1.1470195
+
+molecule {
+U
+F   1 1.98
+F   1 1.98  2  109.4712
+F   1 1.98  2  109.4712  3  120.0000
+F   1 1.98  2  109.4712  3 -120.0000
+}
+
+set guess gwh    # With this guess, un-accelerated DIIS will fail
+set scf_type pk
+set basis lanl2dz
+set scf_initial_accelerator ediis
+set maxiter 28
+energy = energy('b3lyp')
+
+compare_values(-451.2300583940044021, energy, 6, "SCF Energy")
