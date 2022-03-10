@@ -291,7 +291,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       run: git clone https://github.com/psi4/iomp5md.git
 
-    - name: Configure with CMake (conda defaults GNU)
+    - name: Configure with CMake (L) (conda defaults GNU)
       if: ${{ runner.os == 'Linux' }}
       run: |
         cmake \
@@ -329,7 +329,7 @@ jobs:
           -D ENABLE_XHOST=OFF \
           ${{ matrix.cfg.cmargs }}
 
-    - name: Configure with CMake (conda defaults GNU)
+    - name: Configure with CMake (M) (conda defaults GNU)
       if: ${{ runner.os == 'macOS' }}
       run: |
         cmake \
@@ -439,6 +439,32 @@ jobs:
       shell: cmd /C CALL {0}
       run: objdump.exe -p objdir\stage\lib\psi4\core.*.pyd | grep dll
 
+
+
+      # Notes: This is clearing away the whole build environment (to make explicit the build and
+      #   runtime dependencies and addons). Then its creating a new runtime environment based on
+      #   psi4 and defaults channel dependencies and addons. This is created at the same environment
+      #   name (so same location on disk as the build env) for non-relocatability reasons. Also
+      #   creating another runtime environment based on conda-forge channel addons. This is held in
+      #   reserve for later.
+    - name: Create Conda Environment (run)
+      if: ${{ runner.os != 'Windows' }}
+      run: |
+        conda deactivate
+        conda remove -n defenv --all
+        conda env create --file run.yaml
+        conda env create --file runcf.yaml
+        conda activate defenv
+        conda install conda-forge::pytest>=7.0.1
+        conda list
+        #ldd objdir/stage/lib/psi4/core.*.so
+        cd objdir/stage/lib
+        python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
+        cd ../..
+        PATH=stage/bin:$PATH psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
+        cd ..
+        objdir/stage/bin/psi4 tests/tu1-h2o-energy/input.dat
+
     - name: Test Psi4 core OpenMP
       working-directory: ./install/lib
       run: python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
@@ -457,95 +483,6 @@ jobs:
         export PATH=../install/bin:$PATH
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
-
-
-#    - name: Run, Spot, Run Cmd
-#      #if: ${{ runner.os == 'Windows' }}
-#      if: false
-#      shell: cmd
-#      working-directory: ./objdir
-#      run: |
-#        dir D:\a\psi4\psi4\install\bin
-#        dir D:\a\psi4\psi4\install\lib
-#        dir D:\a\psi4\psi4\install\lib\psi4
-#        dir D:\a\psi4\psi4\iomp5md\conda\win\2019.1
-#        set LIB=D:\a\psi4\psi4\install\lib;D:\a\psi4\psi4\iomp5md\conda\win\2019.1;C:\Miniconda\envs\defenv\Library\lib;%LIB%
-#        set PATH=D:\a\psi4\psi4\install\bin;C:\Miniconda\envs\defenv\Library\bin;%PATH%
-#        set PYTHONPATH=D:\a\psi4\psi4\install\lib;D:\a\psi4\psi4\install\lib\psi4;%PYTHONPATH%
-#        echo "LIB"
-#        echo %LIB%
-#        echo "PATH"
-#        echo %PATH%
-#        echo "PYTHONPATH"
-#        echo %PYTHONPATH%
-#        echo "where python"
-#        where python
-#        echo "where psi4"
-#        where psi4
-#        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-#        ctest --build-config Release -L smoke --output-on-failure
-#        #PATH="/D/a/psi4/psi4/objdir/stage/bin":$PATH PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-#        #psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-#        python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
-#        #conda install msgpack-python numpy scipy networkx pytest -c conda-forge
-#
-#    - name: Run, Spot, Run bash
-#      if: ${{ runner.os == 'Windows' }}
-#      working-directory: ./objdir
-#      run: |
-#        export LIB="D:/a/psi4/psi4/install/lib":"C:/Miniconda/envs/defenv/Library/lib":$LIB
-#        export PATH="D:/a/psi4/psi4/install/bin":"C:/Miniconda/envs/defenv/Library/bin":$PATH
-#        export PYTHONPATH="D:/a/psi4/psi4/install/lib":$PYTHONPATH
-#        echo "LIB"
-#        echo ${LIB}
-#        echo "PATH"
-#        echo ${PATH}
-#        echo "PYTHONPATH"
-#        echo ${PYTHONPATH}
-#        #chmod u+x "D:/a/psi4/psi4/objdir/stage/bin/psi4"
-#        #chmod u+x "D:/a/psi4/psi4/install/bin/psi4"
-#        #echo "where python"
-#        #which python
-#        #where python
-#        #echo "where psi4"
-#        #which psi4
-#        #where psi4
-#        #ctest --build-config Release -L smoke --output-on-failure
-#        export KMP_DUPLICATE_LIB_OK=TRUE
-#        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-#        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
-#        unset KMP_DUPLICATE_LIB_OK
-#        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-#        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
-#        PATH="/D/a/psi4/psi4/objdir/stage/bin":$PATH PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH stage/bin/psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-#        #export LIB="/C/Miniconda/envs/defenv/Library/lib":$LIB
-#        #export PATH="/C/Miniconda/envs/defenv/Library/bin":"/D/a/psi4/psi4/objdir/stage/bin":$PATH
-#        #export PYTHONPATH="/D/a/psi4/psi4/objdir/stage/lib":$PYTHONPATH
-#        #psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-#        python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
-
-      # Notes: This is clearing away the whole build environment (to make explicit the build and
-      #   runtime dependencies and addons). Then its creating a new runtime environment based on
-      #   psi4 and defaults channel dependencies and addons. This is created at the same environment
-      #   name (so same location on disk as the build env) for non-relocatability reasons. Also
-      #   creating another runtime environment based on conda-forge channel addons. This is held in
-      #   reserve for later.
-    - name: Create Conda Environment (run)
-      run: |
-        conda deactivate
-        conda remove -n defenv --all
-        conda env create --file run.yaml
-        conda env create --file runcf.yaml
-        conda activate defenv
-        conda install conda-forge::pytest>=7.0.1
-        conda list
-        #ldd objdir/stage/lib/psi4/core.*.so
-        cd objdir/stage/lib
-        python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
-        cd ../..
-        PATH=stage/bin:$PATH psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-        cd ..
-        objdir/stage/bin/psi4 tests/tu1-h2o-energy/input.dat
 
     - name: Test Addons with CTest
       #if: false

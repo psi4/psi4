@@ -55,8 +55,8 @@ jobs:
           - blas=*=mkl
           - cmake
           - conda-forge::eigen
-          - intel-openmp=2019.1
-          - mkl-devel=2019.1
+          - intel-openmp=2021.4
+          - mkl-devel=2021.4
           - networkx
           - ninja
           - conda-forge::numpy
