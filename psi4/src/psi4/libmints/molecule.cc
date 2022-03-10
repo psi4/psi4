@@ -374,9 +374,9 @@ int Molecule::atom_at_position2(const Vector3 &b, const double tol) const {
         return -1;
     }
     if (num_near > 1){
-        outfile->Printf("WARNING: More than one atom within tolerance distance. Symmetry assignment may be "
-        "incorrect!\n"
-        "Please check your results carefully!\n");
+        throw PSIEXCEPTION(
+          "More than one atom within tolerance distance! The geometry is either near nuclear fusion "
+          "or symmetry detection tolerance has been set too large.");
     }
     return std::min_element(dists.cbegin(), dists.cend()) - dists.cbegin();
 }
