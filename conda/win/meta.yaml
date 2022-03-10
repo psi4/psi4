@@ -23,6 +23,7 @@ requirements:
     - libxc
     - dftd3
     - gcp
+    - scipy
 
 build:
   string: py{{ environ['PY_VER'].replace('.', '') }}_{{ 'debug' if environ['CMAKE_BUILD_TYPE'] == 'Debug' else '0' }}

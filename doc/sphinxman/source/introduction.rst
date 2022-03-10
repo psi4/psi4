@@ -611,11 +611,12 @@ Python
     and 3.6. After 1.2, only Python 3 will be supported
     `in accordance with other scientific software projects
     <https://python3statement.org/>`_).
-    The future plan is to support the two or three latest Python versions.
     |PSIfour| 1.3 supports Python 3.6 and 3.7.
     |PSIfour| 1.4 supports Python 3.6, 3.7, 3.8, and 3.9.
     |PSIfour| 1.5 supports Python 3.7, 3.8, and 3.9.
-
+    The future plan is to support the two or three latest Python versions.
+    The current master supports 3.8, 3.9, and 3.10.
+    
 .. index:: license
 
 License
