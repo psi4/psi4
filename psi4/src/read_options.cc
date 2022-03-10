@@ -2249,7 +2249,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Wavefunction type !expert -*/
         options.add_str("WFN", "NONE",
-                        "CCSD CCSD_T CCSD_AT EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
+                        "CCSD CCSD_T CCSD_AT EOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
         /*- Reference wavefunction type -*/
         options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
         /*- Do use new triples? -*/
