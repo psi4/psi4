@@ -75,7 +75,7 @@ Notes on Psivars
    Methods that use this interface are: TD-fctl.
    Note that numberings are associated with the calculation much more strongly than 
    with the molecular system. Changing the number of roots sought, the symmetry 
-   subspace or the symmetry apportionment or roots under which the computation is run, 
+   subspace or the symmetry apportionment of roots under which the computation is run, 
    or the excited state method are all likely to scramble root numberings.
 
 Alternate Implementations
