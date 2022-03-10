@@ -962,8 +962,6 @@ void diag() {
                     else
                         totalE = lambda_old[i] + moinfo.eref;
 
-                    // save a list of all converged energies in order by irrep and then energy
-                    eom_params.state_energies[num_converged_index] = totalE;
                     // Put this list in environment for testing - I don't like it much because it mixes all
                     // the irreps together
                     /*- strings so that variable-name psi variables get parsed in docs -*/
