@@ -100,7 +100,7 @@ PSI Variables by Alpha
 .. psivar:: ADC ROOT 0 -> ROOT m EXCITATION ENERGY - h SYMMETRY
 
    The excitation energy of given method from ground state to root m
-   in h symmetry (if available). DFT functional labeled if canonical.
+   in h symmetry (if available).
    
 .. psivar:: ADC ROOT n TOTAL ENERGY - h SYMMETRY
 
@@ -1701,10 +1701,8 @@ PSI Variables by Alpha
 
    The excitation energy of a given method from ground state to root m.
    DFT functional labeled if canonical.
-   m in the first and third variables is the index of the root among all roots.
-   m in the second variable is the index of the root among all roots of irrep i.
-   h, i in the second variable are the irreps of the roots.
-   h in the third variable is the irrep of the transition between roots.
+   Conventions for root indexing and whether h refers to transition or root
+   irrep are as in :ref:`sec:psivarnotes`.
 
 .. psivar:: TD-fctl ROOT m TOTAL ENERGY
    TD-fctl ROOT m (h) TOTAL ENERGY
@@ -1712,7 +1710,7 @@ PSI Variables by Alpha
 
    The total energy of given method from ground state to root m in h symmetry.
    Conventions for root indexing and whether h refers to transition or root
-   irrep are as in :psivar:`TD-fctl ROOT m TOTAL ENERGY`.
+   irrep are as in :ref:`sec:psivarnotes`.
 
 .. psivar:: TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
    TD-fctl ROOT 0 (h) -> ROOT m (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
@@ -1725,7 +1723,7 @@ PSI Variables by Alpha
    from ground state to root m in h symmetry (if available). DFT
    functional labeled if canonical.
    Conventions for root indexing and whether h refers to transition or root
-   irrep are as in :psivar:`TD-fctl ROOT m TOTAL ENERGY`.
+   irrep are as in :ref:`sec:psivarnotes`.
 
 .. psivar:: TD-fctl ROOT 0 -> ROOT m LEFT EIGENVECTOR ALPHA
    TD-fctl ROOT 0 (h) -> ROOT m (i) LEFT EIGENVECTOR ALPHA
@@ -1744,7 +1742,7 @@ PSI Variables by Alpha
    from ground state to root m in h symmetry (if available). DFT
    functional labeled if canonical.
    Conventions for root indexing and whether h refers to transition or root
-   irrep are as in :psivar:`TD-fctl ROOT m TOTAL ENERGY`.
+   irrep are as in :ref:`sec:psivarnotes`.
 
 .. psivar:: TD-fctl ROOT 0 -> ROOT m MAGNETIC TRANSITION DIPOLE MOMENT
    TD-fctl ROOT 0 (h) -> ROOT m (i) MAGNETIC TRANSITION DIPOLE MOMENT
@@ -1754,7 +1752,7 @@ PSI Variables by Alpha
    from ground state to root m in h symmetry (if available). DFT
    functional labeled if canonical.
    Conventions for root indexing and whether h refers to transition or root
-   irrep are as in :psivar:`TD-fctl ROOT m TOTAL ENERGY`.
+   irrep are as in :ref:`sec:psivarnotes`.
 
 .. psivar:: TD-fctl ROOT 0 -> ROOT m OSCILLATOR STRENGTH (LEN)
    TD-fctl ROOT 0 (h) -> ROOT m (i) OSCILLATOR STRENGTH (LEN)
@@ -1767,7 +1765,7 @@ PSI Variables by Alpha
    from ground state to root m in h symmetry (if available). DFT
    functional labeled if canonical.
    Conventions for root indexing and whether h refers to transition or root
-   irrep are as in :psivar:`TD-fctl ROOT m TOTAL ENERGY`.
+   irrep are as in :ref:`sec:psivarnotes`.
 
 .. psivar:: TD-fctl ROOT 0 -> ROOT m ROTARY STRENGTH (LEN)
    TD-fctl ROOT 0 (h) -> ROOT m (i) ROTARY STRENGTH (LEN)
@@ -1780,7 +1778,7 @@ PSI Variables by Alpha
    from ground state to root m in h symmetry (if available). DFT
    functional labeled if canonical.
    Conventions for root indexing and whether h refers to transition or root
-   irrep are as in :psivar:`TD-fctl ROOT m TOTAL ENERGY`.
+   irrep are as in :ref:`sec:psivarnotes`.
 
 .. psivar:: THERMAL ENERGY
 

@@ -54,6 +54,8 @@ Notes on Options
    as energy converged to :math:`10^{-6} E_h`, the user may set the ``e_convergence``
    keyword to ``0.000001``, ``1.0e-6``, or ``6``.
 
+.. _`sec:psivarnotes`:
+
 Notes on Psivars
 ================
 
