@@ -16,12 +16,14 @@ jobs:
 
           - runs-on: ubuntu-latest
             python-version: "3.10"
+            mkl-version: "2021.4"
             base-channel: "defaults"
             cmargs: >
               -DBUILD_SHARED_LIBS=ON
 
           #- runs-on: macos-latest
           #  python-version: "3.10"
+          #  mkl-version: "2021.4"
           #  base-channel: "defaults"
           #  target-sdk: "10.10"
           #  cmargs: >
@@ -33,6 +35,8 @@ jobs:
 
           - runs-on: windows-latest
             python-version: "3.9"
+            mkl-version: "2021.4"
+            # mkl-version: "2019.1" is longstanding. needs defaults for intel-openmp
             base-channel: "conda-forge"
             cmargs: >
               -D BUILD_SHARED_LIBS=OFF
@@ -113,18 +117,12 @@ jobs:
           - psi4/label/dev::gdma
           - psi4/label/dev::pcmsolver
           - psi4/label/dev::simint
-            # tmp win
-          #- msgpack-python
-          #- numpy
-          #- scipy
-          #- networkx
-          #- pytest
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           # <lang>-compiler is only a metapackage for c-f
-          sed -i "s/- c-compiler/- gcc_linux-64/g" build.yaml
-          sed -i "s/- cxx-compiler/- gxx_linux-64/g" build.yaml
-          sed -i "s/- fortran-compiler/- gfortran_linux-64/g" build.yaml
+          sed -i "s;- c-compiler;- gcc_linux-64;g" build.yaml
+          sed -i "s;- cxx-compiler;- gxx_linux-64;g" build.yaml
+          sed -i "s;- fortran-compiler;- gfortran_linux-64;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           # <lang>-compiler is only a metapackage for c-f
@@ -141,26 +139,26 @@ jobs:
           sed -i "s;- psi4/label/dev::gau2grid;- gau2grid;g" build.yaml
           sed -i "s;- psi4/label/dev::libxc;- libxc;g" build.yaml
           # nyi
-          sed -i "s;- psi4/label/dev::ambit;#- psi4/label/dev::ambit;g" build.yaml
-          sed -i "s;- psi4/label/dev::chemps2;#- psi4/label/dev::chemps2;g" build.yaml
-          sed -i "s;- psi4/label/dev::dkh;#- psi4/label/dev::dkh;g" build.yaml
-          sed -i "s;- psi4/label/dev::gdma;#- psi4/label/dev::gdma;g" build.yaml
-          sed -i "s;- psi4/label/dev::pcmsolver;#- psi4/label/dev::pcmsolver;g" build.yaml
-          sed -i "s;- psi4/label/dev::simint;#- psi4/label/dev::simint;g" build.yaml
-          sed -i "s;- mkl-devel;- mkl-devel=2019.1;g" build.yaml
+          sed -i "s;- psi4/label/dev::ambit;#- ambit;g" build.yaml
+          sed -i "s;- psi4/label/dev::chemps2;#- chemps2;g" build.yaml
+          sed -i "s;- psi4/label/dev::dkh;#- dkh;g" build.yaml
+          sed -i "s;- psi4/label/dev::gdma;#- gdma;g" build.yaml
+          sed -i "s;- psi4/label/dev::pcmsolver;#- pcmsolver;g" build.yaml
+          sed -i "s;- psi4/label/dev::simint;#- simint;g" build.yaml
+          sed -i "s;- mkl-devel;- mkl-devel=${{ matrix.cfg.mkl-version }};g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
         cat > build.yaml <<EOF
         name: defenv
         channels:
-          - conda-forge
-          - defaults
+          - ${{ matrix.cfg.base-channel }}
+          #- defaults
         dependencies:
           - blas=*=mkl
           - cmake
           - conda-forge::eigen
-          - intel-openmp=2019.1
-          - mkl-devel=2019.1
+          - intel-openmp=${{ matrix.cfg.mkl-version }}
+          - mkl-devel=${{ matrix.cfg.mkl-version }}
           - networkx
           - ninja
           - conda-forge::numpy
@@ -169,7 +167,7 @@ jobs:
           - pymdi
           - conda-forge::pytest>=7.0.1
           - pytest-xdist
-          - python=3.9
+          - python=${{ matrix.cfg.python-version }}
           - psi4/label/dev::dftd3
           - psi4/label/dev::gcp
           - conda-forge::gau2grid
@@ -457,13 +455,6 @@ jobs:
         conda activate defenv
         conda install conda-forge::pytest>=7.0.1
         conda list
-        #ldd objdir/stage/lib/psi4/core.*.so
-        cd objdir/stage/lib
-        python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
-        cd ../..
-        PATH=stage/bin:$PATH psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-        cd ..
-        objdir/stage/bin/psi4 tests/tu1-h2o-energy/input.dat
 
     - name: Test Psi4 core OpenMP
       working-directory: ./install/lib
@@ -492,7 +483,8 @@ jobs:
       run: ctest -L smoke -j2 --output-on-failure
 
     - name: Test Addons with Pytest (defaults only)
-      if: false
+      #if: false
+      if: ${{ runner.os == 'Windows' }}
       working-directory: ./objdir
       run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 --cache-clear -m "addon and not long" stage/lib/psi4/tests/
 

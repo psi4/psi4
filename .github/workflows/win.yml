@@ -31,6 +31,10 @@ jobs:
 
     steps:
 
+    - name: Quick cancel
+      if: true
+      run: return 5
+
       # fetch-depth: 0 gets git history so Psi4 version is computable
     - name: Checkout
       uses: actions/checkout@v2
