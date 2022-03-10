@@ -309,7 +309,6 @@ include(ConfigTesting)
 
 # <<<  Install  >>>
 
-
 install(DIRECTORY ${STAGED_INSTALL_PREFIX}/
         DESTINATION ${CMAKE_INSTALL_PREFIX}
         USE_SOURCE_PERMISSIONS
