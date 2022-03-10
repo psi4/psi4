@@ -62,7 +62,6 @@ struct Eom_params {
     int vectors_per_root;
     int *states_per_irrep;
     int *cs_per_irrep;
-    double *state_energies;
     int number_of_states;
     double eval_tol;
     double eval_tol_SS;
