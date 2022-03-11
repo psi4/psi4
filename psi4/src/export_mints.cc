@@ -1511,6 +1511,8 @@ void export_mints(py::module& m) {
         .def("electrostatic_potential_value", &MintsHelper::electrostatic_potential_value,
              "Electrostatic potential values at given sites with associated charge, specified as an (n_sites, 4) matrix.",
              "charges"_a, "coords"_a, "D"_a)
+        .def("ao_pseudospectral", &MintsHelper::ao_pseudospectral, "AO Pseudospectral Integrals",
+        "origin"_a = std::vector<double>{0, 0, 0}, "omega"_a = 0.0, "deriv"_a = 0)
 
         // Two-electron AO
         .def("ao_eri", normal_eri_factory(&MintsHelper::ao_eri), "AO ERI integrals", "factory"_a = nullptr)

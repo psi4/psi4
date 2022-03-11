@@ -248,6 +248,8 @@ class PSI_API MintsHelper {
     SharedMatrix ao_3coverlap();
     SharedMatrix ao_3coverlap(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2,
                               std::shared_ptr<BasisSet> bs3);
+    
+    SharedMatrix ao_pseudospectral(const std::vector<double> &origin, double omega = 0.0, int deriv = 0);
 
     /// Symmetric MO ERI Integrals, (ov|ov) type  (Full matrix, N^5, not recommended for large systems)
     /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type

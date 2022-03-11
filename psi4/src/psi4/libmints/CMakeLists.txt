@@ -68,6 +68,7 @@ onebody.cc
 overlap.cc
 potential.cc
 potentialint.cc
+pseudospectral.cc
 quadrupole.cc
 rel_potential.cc
 tracelessquadrupole.cc

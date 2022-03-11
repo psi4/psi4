@@ -145,6 +145,15 @@ std::unique_ptr<OneBodyAOInt> IntegralFactory::electrostatic() { return std::mak
 
 std::unique_ptr<OneBodyAOInt> IntegralFactory::pcm_potentialint() { return  std::make_unique<PCMPotentialInt>(spherical_transforms_, bs1_, bs2_, 0); }
 
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_pseudospectral(double omega, int deriv) {
+    return new PseudospectralInt(spherical_transforms_, bs1_, bs2_, omega, deriv);
+}
+
+std::unique_ptr<OneBodySOInt> IntegralFactory::so_pseudospectral(double omega, int deriv) {
+    std::shared_ptr<OneBodyAOInt> ao_int(ao_pseudospectral(omega, deriv));
+    return new OneBodySOInt(ao_int, this);
+}
+
 std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_dipole(int deriv) { return  std::make_unique<DipoleInt>(spherical_transforms_, bs1_, bs2_, deriv); }
 
 std::unique_ptr<OneBodySOInt> IntegralFactory::so_dipole(int deriv) {

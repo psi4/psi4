@@ -1753,6 +1753,15 @@ SharedMatrix MintsHelper::electric_field_value(SharedMatrix coords, SharedMatrix
     return efields;
 }
 
+SharedMatrix MintsHelper::ao_pseudospectral(const std::vector<double> &origin, double omega, int deriv) {
+    SharedMatrix pseudo = std::make_shared<Matrix>("AO Pseudo", basisset_->nbf(), basisset_->nbf());
+    Vector3 v3origin(origin[0], origin[1], origin[2]);
+    std::shared_ptr<OneBodyAOInt> ints(integral_->ao_pseudospectral(omega, deriv)); 
+    ints->set_origin(v3origin);
+    ints->compute(pseudo);
+    return pseudo;
+}
+
 std::vector<SharedMatrix> MintsHelper::ao_nabla() {
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> nabla;

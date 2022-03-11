@@ -450,6 +450,10 @@ class PSI_API IntegralFactory {
     virtual std::unique_ptr<OneBodyAOInt> ao_rel_potential(int deriv = 0);
     virtual std::unique_ptr<OneBodySOInt> so_rel_potential(int deriv = 0);
 
+    /// Returns the OneBodyInt that computes the pseudospectral grid integrals
+    virtual std::unique_ptr<OneBodyAOInt> ao_pseudospectral(double omega = 0.0, int deriv = 0);
+    virtual std::unique_ptr<OneBodySOInt> so_pseudospectral(double omega = 0.0, int deriv = 0);
+
     /// Returns an OneBodyInt that computes the dipole integral.
     virtual std::unique_ptr<OneBodyAOInt> ao_dipole(int deriv = 0);
     virtual std::unique_ptr<OneBodySOInt> so_dipole(int deriv = 0);
