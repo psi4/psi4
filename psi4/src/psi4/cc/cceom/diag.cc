@@ -58,15 +58,15 @@ namespace cceom {
 #include "psi4/psifiles.h"
 
 extern void test_dpd();
-extern void rzero(int C_irr, int *converged);
-extern void rzero_rhf(int C_irr, int *converged);
+extern void rzero(int C_irr, const std::vector<bool>& converged);
+extern void rzero_rhf(int C_irr, const std::vector<bool>& converged);
 void init_S1(int index, int irrep);
 void init_S2(int index, int irrep);
 void init_C1(int i, int C_irr);
 void init_C0(int i);
 void init_S0(int i);
 void init_C2(int index, int irrep);
-extern void write_Rs(int C_irr, double *energies, int *converged);
+extern void write_Rs(int C_irr, double *energies, const std::vector<bool>& converged);
 extern double norm_C(dpdfile2 *CME, dpdfile2 *Cme, dpdbuf4 *CMNEF, dpdbuf4 *Cmnef, dpdbuf4 *CMnEf);
 extern double norm_C_full(double C0, dpdfile2 *CME, dpdfile2 *Cme, dpdbuf4 *CMNEF, dpdbuf4 *Cmnef, dpdbuf4 *CMnEf);
 extern double norm_C_rhf(dpdfile2 *CME, dpdbuf4 *CMnEf, dpdbuf4 *CMnfE);
@@ -136,7 +136,7 @@ void diag() {
     dpdbuf4 CMNEF, Cmnef, CMnEf, SIJAB, Sijab, SIjAb, RIJAB, Rijab, RIjAb, RIjbA;
     dpdbuf4 CMnEf1, CMnfE1, CMnfE, CMneF, C2;
     char lbl[32];
-    int num_converged, num_converged_index = 0, *converged, keep_going, already_sigma;
+    int num_converged, num_converged_index = 0, keep_going, already_sigma;
     int irrep, numCs, iter, lwork, info, vectors_per_root, nsigma_evaluations = 0;
     int get_right_ev = 1, get_left_ev = 0, first_irrep = 1;
     int L, h, i, j, k, a, nirreps, errcod, C_irr;
@@ -146,7 +146,6 @@ void diag() {
     double ra, rb, r2aa, r2bb, r2ab, cc3_eval, cc3_last_converged_eval = 0.0, C0, S0, R0;
     int cc3_stage; /* 0=eom_ccsd; 1=eom_cc3 (reuse sigmas), 2=recompute sigma */
     int L_start_iter, L_old;
-    char *keyw;
 
     timer_on("HBAR_EXTRA");
     if (params.wfn == "EOM_CC2")
@@ -298,7 +297,7 @@ void diag() {
         check_sum("reset", 0, 0); /* reset checksum */
 #endif
 
-        converged = init_int_array(eom_params.cs_per_irrep[C_irr]);
+        std::vector<bool> converged(eom_params.cs_per_irrep[C_irr], false);
         lambda_old = init_array(eom_params.cs_per_irrep[C_irr]);
         L = eom_params.cs_per_irrep[C_irr];
         /* allocate G_old just once */
@@ -599,7 +598,7 @@ void diag() {
                         k = eom_params.prop_root;
                 }
 
-                converged[k] = 0;
+                converged[k] = false;
                 for (i = 0; i < L; ++i) {
                     if (params.eom_ref == 0) { /* RHF residual */
                         sprintf(lbl, "%s %d", "SIA", i);
@@ -794,7 +793,7 @@ void diag() {
                 } else {
                     outfile->Printf("%7s\n", "Y");
                     ++num_converged;
-                    converged[k] = 1;
+                    converged[k] = true;
                 }
 
                 /* only one cc3 root can be sought */
@@ -913,7 +912,7 @@ void diag() {
                     outfile->Printf("Collapsing to only %d vector(s).\n", cc3_index + 1);
                     restart(alpha, L, cc3_index + 1, C_irr, 0, alpha_old, L_old, 0);
                     if (cc3_index > 0) restart_with_root(cc3_index, C_irr);
-                    converged[0] = 1;
+                    converged[0] = true;
                     cc3_eval = lambda_old[0] = lambda_old[cc3_index];
                     outfile->Printf("Change in CC3 energy from last iterated value %15.10lf\n",
                                     cc3_eval - cc3_last_converged_eval);
@@ -956,7 +955,7 @@ void diag() {
             outfile->Printf("                     Excitation Energy              Total Energy\n");
             outfile->Printf("                (eV)     (cm^-1)     (au)             (au)\n");
             for (i = 0; i < eom_params.cs_per_irrep[C_irr]; ++i) {
-                if (converged[i] == 1) {
+                if (converged[i]) {
                     if (!params.full_matrix)
                         totalE = lambda_old[i] + moinfo.eref + moinfo.ecc;
                     else
@@ -1054,7 +1053,6 @@ void diag() {
 
         free(lambda_old);
         free_block(alpha_old);
-        free(converged);
     }
 
     outfile->Printf("\tTotal # of sigma evaluations: %d\n", nsigma_evaluations);
