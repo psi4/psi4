@@ -12,6 +12,7 @@ set {
    basis cc-pVDZ
 }
 
-properties('ccsd', properties=['polarizability'])
+wfn = properties('ccsd', properties=['polarizability'], return_wfn=True)[1]
+
 
 

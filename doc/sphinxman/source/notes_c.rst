@@ -60,20 +60,23 @@ Notes on Psivars
 ================
 
 .. note:: Starting in 1.6, there are three standard ways to access an excited state
-    property. We give examples below, but the method name and property name may change.
-    * ``method ROOT 0 -> ROOT m property`` to get root m.
-    * ``method ROOT 0 -> ROOT m property - h TRANSITION`` to get root m and
-      independently specify that the total transition symmetry is A2.
-    * ``method ROOT 0 (h) -> ROOT m (i) property`` to get the transition
-      between two roots, specifying the symmetry of both states and the index of the target
-      roots among states of their own symmetry.
-    For example, to target the second excited-state, which is also the lowest energy state
-    of its irrep, the first two calls will take m = 2, while the last takes m = 0.
-    Methods that use this interface are: TD-fctl.
-    Note that numberings are associated with the calculation much more strongly than 
-    with the molecular system. Changing the number of roots sought, the symmetry 
-    subspace or the symmetry apportionment or roots under which the computation is run, 
-    or the excited state method are all likely to scramble root numberings.
+   property. We give examples below, but the method name and property name may change.
+   * ``method ROOT 0 -> ROOT m property`` to get root m.
+
+   * ``method ROOT 0 -> ROOT m property - h TRANSITION`` to get root m and
+      independently specify that the total transition symmetry is h, e.g., A2.
+
+   * ``method ROOT 0 (h) -> ROOT m (i) property`` to get the transition
+     between two roots, specifying the symmetry of both states and the index of the target
+     roots among states of their own symmetry.
+
+   For example, to target the second excited-state, which is also the lowest energy state
+   of its irrep, the first two calls will take m = 2, while the last takes m = 0.
+   Methods that use this interface are: TD-fctl.
+   Note that numberings are associated with the calculation much more strongly than 
+   with the molecular system. Changing the number of roots sought, the symmetry 
+   subspace or the symmetry apportionment of roots under which the computation is run, 
+   or the excited state method are all likely to scramble root numberings.
 
 Alternate Implementations
 =========================

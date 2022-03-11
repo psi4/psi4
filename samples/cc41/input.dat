@@ -16,4 +16,11 @@ set {
   omega [589, 355, nm]
 }
 
-properties('cc2',properties=['rotation'])
+wfn = properties('cc2',properties=['rotation'], return_wfn=True)[1]
+
+
+
+
+
+
+

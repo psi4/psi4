@@ -1,3 +1,5 @@
+#! SCF level shift on an RKS computation
+
 memory 8 gb
 
 molecule {

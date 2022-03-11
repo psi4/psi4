@@ -1,4 +1,4 @@
-#! RHF-CC2-LR/cc-pVDZ optical rotation of H2O2.  gauge = length, omega =
+#! RHF-CC2-LR/cc-pVDZ optical rotation of H2O2.  gauge = length, omega=
 #! (589 355 nm)
 
 molecule h2o2 {
@@ -16,4 +16,7 @@ set {
   omega [589, 355, nm]
 }
 
-properties('cc2',properties=['rotation'])
+wfn = properties('cc2',properties=['rotation'], return_wfn=True)[1]
+
+
+

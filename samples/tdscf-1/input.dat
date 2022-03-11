@@ -31,5 +31,5 @@ set scf tdscf_states [9]
 energy('td-hf/cc-pvdz')
 
 for n, ref in enumerate(UHF_RPA_cc_pvdz):
-    ex_en = psi4.variable(f"TD-HF ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
-    compare_values(ref,ex_en, 4, f"TD-UHF/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A SYMMETRY")
+    ex_en = psi4.variable(f"TD-HF ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A TRANSITION")
+    compare_values(ref,ex_en, 4, f"TD-UHF/cc-pvdz ROOT 0 -> ROOT {n+1} EXCITATION ENERGY - A TRANSITION")
