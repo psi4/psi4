@@ -2015,9 +2015,6 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
         options.add_str("LOCAL_WEAKP", "NONE", "NONE MP2 NEGLECT");
         /*- Preconditioner will be used in local CC computations -*/
         options.add_str("LOCAL_PRECONDITIONER", "HBAR", "HBAR FOCK");
-        /*- Permit ghost atoms to hold projected atomic orbitals to include in the virtual space in local-EOM-CCSD
-           calculations -*/
-        options.add_int("LOCAL_GHOST", -1);
         /*- -*/
         options.add_bool("LOCAL_DO_SINGLES", true);
         /*- Do apply local filtering to singles amplitudes? -*/
@@ -2249,7 +2246,7 @@ int read_options(const std::string &name, Options &options, bool suppress_printi
 
         /*- Wavefunction type !expert -*/
         options.add_str("WFN", "NONE",
-                        "CCSD CCSD_T CCSD_AT EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
+                        "CCSD CCSD_T CCSD_AT EOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
         /*- Reference wavefunction type -*/
         options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
         /*- Do use new triples? -*/
