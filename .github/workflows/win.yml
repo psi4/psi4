@@ -47,7 +47,11 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
+        #arch: x86_amd64
+        #toolset: 14.0
 
+      #    - intel-openmp=2019.1
+      #    - mkl-devel=2019.1
     - name: Write Conda Env Files
       run: |
         cat > build.yaml <<EOF
