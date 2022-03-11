@@ -428,9 +428,13 @@ jobs:
     - name: Compile Psi4
       run: cmake --build objdir --config Release --target install -j
 
-    - name: Library dependencies, ldd (L/M)
-      if: ${{ runner.os != 'Windows' }}
+    - name: Library dependencies, ldd (L)
+      if: ${{ runner.os == 'Linux' }}
       run: ldd objdir/stage/lib/psi4/core.*.so
+
+    - name: Library dependencies, ldd (M)
+      if: ${{ runner.os == 'macOS' }}
+      run: otool -L objdir/stage/lib/psi4/core.*.so
 
     - name: Library dependencies, ldd (W)
       if: ${{ runner.os == 'Windows' }}
@@ -496,10 +500,11 @@ jobs:
         conda activate --stack cfenv
         echo $CONDA_PREFIX
         conda list
+        printenv | grep CONDA_PREFIX
         if [[ "${{ runner.os }}" == "Linux" ]]; then
             # Linux needs to find the Psi4 module (first entry) and the new addon modules in the cfenv (third entry; CONDA_PREFIX; stack activation only merges bin/).
-            #   Since defaults-based mkl packages are intel/iomp5, and c-f-based mkl packages are llvm/omp, need the defenv (second entry; CONDA_PREFIX_2) to avoid dual OpenMP initialization
-            export PYTHONPATH=stage/lib/:$CONDA_PREFIX_2/lib/python${{ matrix.cfg.python-version }}/site-packages:$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages
+            #   Since defaults-based mkl packages are intel/iomp5, and c-f-based mkl packages are llvm/omp, need the defenv (second entry; CONDA_PREFIX_1) to avoid dual OpenMP initialization
+            export PYTHONPATH=stage/lib/:$CONDA_PREFIX_1/lib/python${{ matrix.cfg.python-version }}/site-packages:$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
             # macOS needs to find the Psi4 module (first entry) and the new addon modules in the cfenv (second entry; CONDA_PREFIX; stack activation only merges bin/).
