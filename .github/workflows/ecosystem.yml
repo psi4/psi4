@@ -444,11 +444,11 @@ jobs:
       if: ${{ runner.os == 'Linux' }}
       run: ldd objdir/stage/lib/psi4/core.*.so
 
-    - name: Library dependencies, ldd (M)
+    - name: Library dependencies, otool (M)
       if: ${{ runner.os == 'macOS' }}
       run: otool -L objdir/stage/lib/psi4/core.*.so
 
-    - name: Library dependencies, ldd (W)
+    - name: Library dependencies, objdump (W)
       if: ${{ runner.os == 'Windows' }}
       shell: cmd /C CALL {0}
       run: objdump.exe -p objdir\stage\lib\psi4\core.*.pyd | grep dll
