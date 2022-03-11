@@ -67,7 +67,7 @@ H  0.000000000000     0.803611003426     0.554794694632
 scf_energy = energy("TD-SCF")
 compare_values(scf_ref, scf_energy, 6, "PCM-UHF Energy") #TEST
 for i in range(5):
-    e_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A SYMMETRY'))
-    r_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A SYMMETRY'))
+    e_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A TRANSITION'))
+    r_calc.append(variable(f'TD-HF ROOT 0 -> ROOT {i+1} OSCILLATOR STRENGTH (LEN) - A TRANSITION'))
 compare_arrays(exc_energies_uhf, e_calc, 4, f'UHF PCM EXCITATION ENERGY {i}') #TEST
 compare_arrays(osc_strengths_uhf, r_calc, 4, f'UHF PCM OSCILLATOR STRENGTH {i}') #TEST
