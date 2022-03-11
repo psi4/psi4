@@ -19,7 +19,7 @@ requirements:
     - qcengine
     - msgpack-python
     - gau2grid
-    - libint2
+    - libint2 2.6.0 h2e52968_3
     - libxc
     - dftd3
     - gcp
