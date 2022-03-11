@@ -324,12 +324,24 @@ install(
     ../tests/simint
     ../tests/snsmp2
     ../tests/v2rdm_casscf
+    # below are "ordinary" (non-subdir) test directories
+    ../tests/tu1-h2o-energy
+    ../tests/tu2-ch2-energy
+    ../tests/tu3-h2o-opt
+    ../tests/tu4-h2o-freq
+    ../tests/tu5-sapt
+    ../tests/tu6-cp-ne2
+    ../tests/ci-property
   DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
   FILES_MATCHING
     PATTERN "test_input.py"
     PATTERN "input.dat"
     PATTERN "__pycache__" EXCLUDE
     PATTERN "*pyc" EXCLUDE
+    # below place extra files the tests need
+    PATTERN "adcc/formaldehyde-pe-adc1/fa_6w.pot"
+    PATTERN "adcc/formaldehyde-pe-adc2/fa_6w.pot"
+    PATTERN "ci-property/grid.dat"
   )
 
     # <<<  install psi4 share/ & include/  >>>

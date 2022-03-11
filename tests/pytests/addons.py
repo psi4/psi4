@@ -141,7 +141,10 @@ def ctest_labeler(labels: str):
         These are usually copied from CMakeLists.txt.
 
     """
-    marks = [getattr(pytest.mark, m) for m in labels.split(";")]
+    if labels:
+        marks = [getattr(pytest.mark, m) for m in labels.split(";")]
+    else:
+        marks = []
     all_marks = (*marks, pytest.mark.psi, pytest.mark.cli)
     return _compose_decos(all_marks)
 
@@ -151,11 +154,22 @@ hardware_nvidia_gpu = pytest.mark.skipif(
     reason='Psi4 not detecting Nvidia GPU via `nvidia-smi`. Install one')
 
 
-def ctest_runner(inputdat):
+def ctest_runner(inputdat, infiles: List =None, outfiles: List =None):
+    """Called from a mock PyTest function, this takes a full path ``inputdat`` to an ``"input.dat"`` file set up for
+    CTest and submits it to the ``psi4`` executable. Any auxiliary files with names listed in ``infiles`` that reside
+    alongside ``inputdat`` are placed in the Psi4 execution directory.
+
+    """
     from qcengine.util import execute
 
-    #success, output = execute(inputdat)
-    success, output = execute(["psi4", Path(inputdat).parent / "input.dat"])
+    ctestdir = Path(inputdat).parent
+
+    if infiles:
+        infiles_with_contents = {fl: (ctestdir / fl).read_text() for fl in infiles}
+    else:
+        infiles_with_contents = None
+
+    success, output = execute(["psi4", ctestdir / "input.dat"], infiles_with_contents, outfiles)
 
     if not success:
         print(output["stdout"])

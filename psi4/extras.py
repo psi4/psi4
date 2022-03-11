@@ -28,6 +28,7 @@
 
 import atexit
 import datetime
+import itertools
 import os
 from typing import List, Union
 
@@ -129,6 +130,7 @@ def psi4_which(command, *, return_bool: bool = False, raise_error: bool = False,
 
 
 _addons_ = {
+    "adcc": which_import("adcc", return_bool=True),
     "ambit": _CMake_to_Py_boolean("@ENABLE_ambit@"),
     "chemps2": _CMake_to_Py_boolean("@ENABLE_CheMPS2@"),
     "dkh": _CMake_to_Py_boolean("@ENABLE_dkh@"),
@@ -154,17 +156,26 @@ _addons_ = {
     "mdi": which_import("mdi", return_bool=True),
     "cct3": which_import("cct3", return_bool=True),
     "dftd4": which_import("dftd4", return_bool=True),
+    "mp2d": psi4_which("mp2d", return_bool=True),
+    "openfermionpsi4": which_import("openfermionpsi4", return_bool=True),
+    "geometric": which_import("geometric", return_bool=True),
+    #"optking": which_import("optking", return_bool=True),
+    "psixas": which_import("psixas", return_bool=True),
+    #"mctc-gcp": psi4_which("mctc-gcp", return_bool=True),
 }
 
 
 def addons(request: str = None) -> Union[bool, List[str]]:
     """Returns boolean of whether Add-On *request* is available to Psi4,
     either compiled in or searchable in $PSIPATH:$PATH, as relevant. If
-    *request* not passed, returns list of available Add-Ons.
+    *request* not passed, returns list of available Add-Ons: `['adcc', 'ambit', 'c̶c̶t̶3̶', ...` .
 
     """
+    def strike(text):
+        return ''.join(itertools.chain.from_iterable(zip(text, itertools.repeat('\u0336'))))
+
     if request is None:
-        return sorted([k for k, v in _addons_.items() if v])
+        return [(k if v else strike(k)) for k, v in sorted(_addons_.items())]
     return _addons_[request.lower()]
 
 
