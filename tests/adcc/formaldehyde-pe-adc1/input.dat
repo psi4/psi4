@@ -31,7 +31,7 @@ set pe {
 _, wfn = energy('td-hf', return_wfn=True)
 ref_energies = []
 for i in range(5):
-    ref_energies.append(wfn.variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A SYMMETRY'))
+    ref_energies.append(wfn.variable(f'TD-HF ROOT 0 -> ROOT {i+1} EXCITATION ENERGY - A TRANSITION'))
 
 _, wfn = properties('adc(1)', properties=["oscillator_strength", "dipole"], environment='linear_response', return_wfn=True)
 
