@@ -123,12 +123,14 @@ jobs:
           sed -i "s;- c-compiler;- gcc_linux-64;g" build.yaml
           sed -i "s;- cxx-compiler;- gxx_linux-64;g" build.yaml
           sed -i "s;- fortran-compiler;- gfortran_linux-64;g" build.yaml
+          sed -i "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h2fe1556_13;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           # <lang>-compiler is only a metapackage for c-f
           sed -E -i.bak "s;- c-compiler;- clang_osx-64;g" build.yaml
           sed -E -i.bak "s;- cxx-compiler;- clangxx_osx-64;g" build.yaml
           sed -E -i.bak "s;- fortran-compiler;- gfortran_osx-64;g" build.yaml
+          sed -i "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_4;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # permanent, as we use clang-cl, not c-f compiler
@@ -146,6 +148,7 @@ jobs:
           sed -i "s;- psi4/label/dev::pcmsolver;#- pcmsolver;g" build.yaml
           sed -i "s;- psi4/label/dev::simint;#- simint;g" build.yaml
           sed -i "s;- mkl-devel;- mkl-devel=${{ matrix.cfg.mkl-version }};g" build.yaml
+          sed -i "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h2e52968_3;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
         cat > build.yaml <<EOF
@@ -224,6 +227,15 @@ jobs:
           - pytest-xdist
           - tomli
         EOF
+        if [[ "${{ runner.os }}" == "Linux" ]]; then
+          sed -i "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h2fe1556_13;g" build.yaml
+        fi
+        if [[ "${{ runner.os }}" == "macOS" ]]; then
+          sed -i "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_4;g" build.yaml
+        fi
+        if [[ "${{ runner.os }}" == "Windows" ]]; then
+          sed -i "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h2e52968_3;g" build.yaml
+        fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # semi-permanent
           sed -i "s;- psi4/label/dev::gau2grid;- gau2grid;g" run.yaml
