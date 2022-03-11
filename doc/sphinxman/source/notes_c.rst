@@ -64,7 +64,7 @@ Notes on Psivars
    * ``method ROOT 0 -> ROOT m property`` to get root m.
 
    * ``method ROOT 0 -> ROOT m property - h TRANSITION`` to get root m and
-      independently specify that the total transition symmetry is A2.
+      independently specify that the total transition symmetry is h, e.g., A2.
 
    * ``method ROOT 0 (h) -> ROOT m (i) property`` to get the transition
      between two roots, specifying the symmetry of both states and the index of the target
