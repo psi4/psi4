@@ -169,8 +169,7 @@ def ctest_runner(inputdat, infiles: List =None, outfiles: List =None):
     else:
         infiles_with_contents = None
 
-    success, output = execute(["psi4", ctestdir / "input.dat"], infiles_with_contents, outfiles)
+    _, output = execute(["psi4", ctestdir / "input.dat"], infiles_with_contents, outfiles)
 
-    if not success:
-        print(output["stdout"])
-    assert success
+    success = output["proc"].poll() == 0
+    assert success, output["stdout"] + output["stderr"]
