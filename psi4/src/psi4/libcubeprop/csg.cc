@@ -435,14 +435,11 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
 
     std::shared_ptr<IntegralFactory> Vfact = std::make_shared<IntegralFactory>(
         auxiliary_, BasisSet::zero_ao_basis_set(), auxiliary_, BasisSet::zero_ao_basis_set());
-    std::vector<std::shared_ptr<Matrix>> ZxyzT;
     std::vector<std::shared_ptr<Matrix>> VtempT;
     std::vector<std::shared_ptr<PotentialInt>> VintT;
     for (int thread = 0; thread < nthreads; thread++) {
-        ZxyzT.push_back(std::make_shared<Matrix>("Zxyz", 1, 4));
         VtempT.push_back(std::make_shared<Matrix>("Vtemp", naux, 1));
         VintT.push_back(std::shared_ptr<PotentialInt>(static_cast<PotentialInt*>(Vfact->ao_potential())));
-        VintT[thread]->set_charge_field(ZxyzT[thread]);
     }
 
 #pragma omp parallel for schedule(dynamic)
@@ -452,17 +449,11 @@ void CubicScalarGrid::add_esp(double* v, std::shared_ptr<Matrix> D, const std::v
 #ifdef _OPENMP
         thread = omp_get_thread_num();
 #endif
-
-        // Pointers
-        double** ZxyzTp = ZxyzT[thread]->pointer();
         double** VtempTp = VtempT[thread]->pointer();
 
         // Integrals
         VtempT[thread]->zero();
-        ZxyzTp[0][0] = 1.0;
-        ZxyzTp[0][1] = x_[P];
-        ZxyzTp[0][2] = y_[P];
-        ZxyzTp[0][3] = z_[P];
+        VintT[thread]->set_charge_field({{1.0, {x_[P], y_[P], z_[P]}}});
         VintT[thread]->compute(VtempT[thread]);
 
         // Contraction

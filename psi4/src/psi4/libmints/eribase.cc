@@ -28,7 +28,6 @@
 
 #include "psi4/libciomr/libciomr.h"
 #include "psi4/libqt/qt.h"
-#include "psi4/physconst.h"
 #include "psi4/libpsi4util/exception.h"
 #include "psi4/libmints/eri.h"
 #include "psi4/libmints/integral.h"

@@ -50,6 +50,7 @@
 #include "psi4/libscf_solver/rhf.h"
 #include "psi4/libscf_solver/uhf.h"
 
+
 #include <algorithm>
 #include <mutex>
 #include <sstream>
@@ -116,7 +117,6 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
     {
         // Overlap derivatives
         std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
-        const double* buffer = Sint->buffer();
 
         auto Smix = std::make_shared<Matrix>("Smix", nso, nocc);
         auto Smiy = std::make_shared<Matrix>("Smiy", nso, nocc);
@@ -208,67 +208,75 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
             Smix->zero();
             Smiy->zero();
             Smiz->zero();
-            for (int P = 0; P < basisset_->nshell(); P++) {
-                for (int Q = 0; Q < basisset_->nshell(); Q++) {
-                    int aP = basisset_->shell(P).ncenter();
-                    int aQ = basisset_->shell(Q).ncenter();
-                    if ((aP != A && aQ != A) || aP == aQ) continue;
-                    Sint->compute_shell_deriv1(P, Q);
-                    int nP = basisset_->shell(P).nfunction();
-                    int nQ = basisset_->shell(Q).nfunction();
-                    int oP = basisset_->shell(P).function_index();
-                    int oQ = basisset_->shell(Q).function_index();
-                    const double* buffer2;
-                    if (aP == A) {
-                        // Px
-                        buffer2 = buffer + 0 * nP * nQ;
-                        for (int p = 0; p < nP; p++) {
-                            for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc, (*buffer2), Cop[q + oQ], 1, Smixp[p + oP], 1);
-                                C_DAXPY(nocc, (*buffer2++), Cop[p + oP], 1, Smixp[q + oQ], 1);
-                            }
-                        }
-                        // Py
-                        buffer2 = buffer + 1 * nP * nQ;
-                        for (int p = 0; p < nP; p++) {
-                            for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc, (*buffer2), Cop[q + oQ], 1, Smiyp[p + oP], 1);
-                                C_DAXPY(nocc, (*buffer2++), Cop[p + oP], 1, Smiyp[q + oQ], 1);
-                            }
-                        }
-                        // Pz
-                        buffer2 = buffer + 2 * nP * nQ;
-                        for (int p = 0; p < nP; p++) {
-                            for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc, (*buffer2), Cop[q + oQ], 1, Smizp[p + oP], 1);
-                                C_DAXPY(nocc, (*buffer2++), Cop[p + oP], 1, Smizp[q + oQ], 1);
-                            }
+            const auto& shell_pairs = Sint->shellpairs();
+            size_t n_pairs = shell_pairs.size();
+
+            for (size_t p = 0; p < n_pairs; ++p) {
+                auto P = shell_pairs[p].first;
+                auto Q = shell_pairs[p].second;
+                const auto &shellP = basisset_->shell(P);
+                const auto &shellQ = basisset_->shell(Q);
+                int aP = shellP.ncenter();
+                int aQ = shellQ.ncenter();
+                if ((aP != A && aQ != A) || aP == aQ) continue;
+                Sint->compute_shell_deriv1(P, Q);
+                const auto &buffers = Sint->buffers();
+                int nP = shellP.nfunction();
+                int nQ = shellQ.nfunction();
+                int oP = shellP.function_index();
+                int oQ = shellQ.function_index();
+                const double* buffer2;
+                double scale = P == Q ? 1.0 : 2.0;
+
+                if (aP == A) {
+                    // Px
+                    buffer2 = buffers[0];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Smixp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Smixp[q + oQ], 1);
                         }
                     }
-                    if (aQ == A) {
-                        // Qx
-                        buffer2 = buffer + 3 * nP * nQ;
-                        for (int p = 0; p < nP; p++) {
-                            for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc, (*buffer2), Cop[q + oQ], 1, Smixp[p + oP], 1);
-                                C_DAXPY(nocc, (*buffer2++), Cop[p + oP], 1, Smixp[q + oQ], 1);
-                            }
+                    // Py
+                    buffer2 = buffers[1];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Smiyp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Smiyp[q + oQ], 1);
                         }
-                        // Qy
-                        buffer2 = buffer + 4 * nP * nQ;
-                        for (int p = 0; p < nP; p++) {
-                            for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc, (*buffer2), Cop[q + oQ], 1, Smiyp[p + oP], 1);
-                                C_DAXPY(nocc, (*buffer2++), Cop[p + oP], 1, Smiyp[q + oQ], 1);
-                            }
+                    }
+                    // Pz
+                    buffer2 = buffers[2];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Smizp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Smizp[q + oQ], 1);
                         }
-                        // Qz
-                        buffer2 = buffer + 5 * nP * nQ;
-                        for (int p = 0; p < nP; p++) {
-                            for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc, (*buffer2), Cop[q + oQ], 1, Smizp[p + oP], 1);
-                                C_DAXPY(nocc, (*buffer2++), Cop[p + oP], 1, Smizp[q + oQ], 1);
-                            }
+                    }
+                }
+                if (aQ == A) {
+                    // Qx
+                    buffer2 = buffers[3];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Smixp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Smixp[q + oQ], 1);
+                        }
+                    }
+                    // Qy
+                    buffer2 = buffers[4];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Smiyp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Smiyp[q + oQ], 1);
+                        }
+                    }
+                    // Qz
+                    buffer2 = buffers[5];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Smizp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Smizp[q + oQ], 1);
                         }
                     }
                 }
@@ -331,7 +339,6 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
     {
         // Kinetic derivatives
         std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
-        const double* buffer = Tint->buffer();
 
         auto Tmix = std::make_shared<Matrix>("Tmix", nso, nocc);
         auto Tmiy = std::make_shared<Matrix>("Tmiy", nso, nocc);
@@ -395,67 +402,75 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
             Tmix->zero();
             Tmiy->zero();
             Tmiz->zero();
-            for (int P = 0; P < basisset_->nshell(); P++) {
-                for (int Q = 0; Q < basisset_->nshell(); Q++) {
-                    int aP = basisset_->shell(P).ncenter();
-                    int aQ = basisset_->shell(Q).ncenter();
-                    if ((aP != A && aQ != A) || aP == aQ) continue;
-                    Tint->compute_shell_deriv1(P, Q);
-                    int nP = basisset_->shell(P).nfunction();
-                    int nQ = basisset_->shell(Q).nfunction();
-                    int oP = basisset_->shell(P).function_index();
-                    int oQ = basisset_->shell(Q).function_index();
-                    const double* buffer2;
-                    if (aP == A) {
-                        // Px
-                        buffer2 = buffer + 0 * nP * nQ;
-                        for (int p = 0; p < nP; p++) {
-                            for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc, (*buffer2), Cop[q + oQ], 1, Tmixp[p + oP], 1);
-                                C_DAXPY(nocc, (*buffer2++), Cop[p + oP], 1, Tmixp[q + oQ], 1);
-                            }
-                        }
-                        // Py
-                        buffer2 = buffer + 1 * nP * nQ;
-                        for (int p = 0; p < nP; p++) {
-                            for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc, (*buffer2), Cop[q + oQ], 1, Tmiyp[p + oP], 1);
-                                C_DAXPY(nocc, (*buffer2++), Cop[p + oP], 1, Tmiyp[q + oQ], 1);
-                            }
-                        }
-                        // Pz
-                        buffer2 = buffer + 2 * nP * nQ;
-                        for (int p = 0; p < nP; p++) {
-                            for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc, (*buffer2), Cop[q + oQ], 1, Tmizp[p + oP], 1);
-                                C_DAXPY(nocc, (*buffer2++), Cop[p + oP], 1, Tmizp[q + oQ], 1);
-                            }
+            const auto& shell_pairs = Tint->shellpairs();
+            size_t n_pairs = shell_pairs.size();
+
+            for (size_t p = 0; p < n_pairs; ++p) {
+                auto P = shell_pairs[p].first;
+                auto Q = shell_pairs[p].second;
+                const auto & shellP = basisset_->shell(P);
+                const auto & shellQ = basisset_->shell(Q);
+                int aP = shellP.ncenter();
+                int aQ = shellQ.ncenter();
+                if ((aP != A && aQ != A) || aP == aQ) continue;
+                Tint->compute_shell_deriv1(P, Q);
+                const auto &buffers = Tint->buffers();
+                int nP = shellP.nfunction();
+                int nQ = shellQ.nfunction();
+                int oP = shellP.function_index();
+                int oQ = shellQ.function_index();
+                const double* buffer2;
+
+                double scale = P == Q ? 1.0 : 2.0;
+                if (aP == A) {
+                    // Px
+                    buffer2 = buffers[0];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Tmixp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Tmixp[q + oQ], 1);
                         }
                     }
-                    if (aQ == A) {
-                        // Qx
-                        buffer2 = buffer + 3 * nP * nQ;
-                        for (int p = 0; p < nP; p++) {
-                            for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc, (*buffer2), Cop[q + oQ], 1, Tmixp[p + oP], 1);
-                                C_DAXPY(nocc, (*buffer2++), Cop[p + oP], 1, Tmixp[q + oQ], 1);
-                            }
+                    // Py
+                    buffer2 = buffers[1];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Tmiyp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Tmiyp[q + oQ], 1);
                         }
-                        // Qy
-                        buffer2 = buffer + 4 * nP * nQ;
-                        for (int p = 0; p < nP; p++) {
-                            for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc, (*buffer2), Cop[q + oQ], 1, Tmiyp[p + oP], 1);
-                                C_DAXPY(nocc, (*buffer2++), Cop[p + oP], 1, Tmiyp[q + oQ], 1);
-                            }
+                    }
+                    // Pz
+                    buffer2 = buffers[2];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Tmizp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Tmizp[q + oQ], 1);
                         }
-                        // Qz
-                        buffer2 = buffer + 5 * nP * nQ;
-                        for (int p = 0; p < nP; p++) {
-                            for (int q = 0; q < nQ; q++) {
-                                C_DAXPY(nocc, (*buffer2), Cop[q + oQ], 1, Tmizp[p + oP], 1);
-                                C_DAXPY(nocc, (*buffer2++), Cop[p + oP], 1, Tmizp[q + oQ], 1);
-                            }
+                    }
+                }
+                if (aQ == A) {
+                    // Qx
+                    buffer2 = buffers[3];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Tmixp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Tmixp[q + oQ], 1);
+                        }
+                    }
+                    // Qy
+                    buffer2 = buffers[4];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Tmiyp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Tmiyp[q + oQ], 1);
+                        }
+                    }
+                    // Qz
+                    buffer2 = buffers[5];
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buffer2), Cop[q + oQ], 1, Tmizp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buffer2++), Cop[p + oP], 1, Tmizp[q + oQ], 1);
                         }
                     }
                 }
@@ -482,7 +497,6 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
     {
         // Potential derivatives
         std::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(1));
-        const double* buffer = Vint->buffer();
 
         auto Vmix = std::make_shared<Matrix>("Vmix", nso, nocc);
         auto Vmiy = std::make_shared<Matrix>("Vmiy", nso, nocc);
@@ -527,6 +541,8 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
         }
 #endif
 
+        const auto& shell_pairs = Vint->shellpairs();
+        size_t n_pairs = shell_pairs.size();
         for (int A = 0; A < natom; A++) {
 #ifdef USING_BrianQC
             if (brianEnable) {
@@ -547,37 +563,108 @@ std::shared_ptr<Matrix> RSCFDeriv::hessian_response() {
             Vmiy->zero();
             Vmiz->zero();
 
-            for (int P = 0; P < basisset_->nshell(); P++) {
-                for (int Q = 0; Q < basisset_->nshell(); Q++) {
-                    int aP = basisset_->shell(P).ncenter();
-                    int aQ = basisset_->shell(Q).ncenter();
-                    Vint->compute_shell_deriv1(P, Q);
-                    int nP = basisset_->shell(P).nfunction();
-                    int nQ = basisset_->shell(Q).nfunction();
-                    int oP = basisset_->shell(P).function_index();
-                    int oQ = basisset_->shell(Q).function_index();
-                    const double* buf_x = &buffer[3 * A * nP * nQ + 0 * nP * nQ];
-                    const double* buf_y = &buffer[3 * A * nP * nQ + 1 * nP * nQ];
-                    const double* buf_z = &buffer[3 * A * nP * nQ + 2 * nP * nQ];
+            for (size_t p = 0; p < n_pairs; ++p) {
+                auto P = shell_pairs[p].first;
+                auto Q = shell_pairs[p].second;
+                const auto & shellP = basisset_->shell(P);
+                const auto & shellQ = basisset_->shell(Q);
+                int aP = shellP.ncenter();
+                int aQ = shellQ.ncenter();
+                Vint->compute_shell_deriv1(P, Q);
+                const auto &buffers = Vint->buffers();
+                int nP = shellP.nfunction();
+                int nQ = shellQ.nfunction();
+                int oP = shellP.function_index();
+                int oQ = shellQ.function_index();
 
-                    // Ax
+                // buffer ordering is [Px, Py, Pz, Qx, Qy, Qz, A1x, A1y, A1z, A2x, ... ANy, ANz] where
+                // the Px is the x derivative of shell P and A1x is the derivative w.r.t. the position
+                // of the nuclear charge located on atom1.  There are therefore 6 + 3*natoms buffers.
+                const double* buf_x = buffers[3 * A + 6];
+                const double* buf_y = buffers[3 * A + 7];
+                const double* buf_z = buffers[3 * A + 8];
+                double scale = P == Q ? 0.5 : 1.0;
+
+                // Ax
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc, scale * (*buf_x), Cop[q + oQ], 1, Vmixp[p + oP], 1);
+                        C_DAXPY(nocc, scale * (*buf_x++), Cop[p + oP], 1, Vmixp[q + oQ], 1);
+                    }
+                }
+
+                // Ay
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc, scale * (*buf_y), Cop[q + oQ], 1, Vmiyp[p + oP], 1);
+                        C_DAXPY(nocc, scale * (*buf_y++), Cop[p + oP], 1, Vmiyp[q + oQ], 1);
+                    }
+                }
+
+                // Az
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc, scale * (*buf_z), Cop[q + oQ], 1, Vmizp[p + oP], 1);
+                        C_DAXPY(nocc, scale * (*buf_z++), Cop[p + oP], 1, Vmizp[q + oQ], 1);
+                    }
+                }
+
+                // (P| derivatives
+                if (aP == A) {
+                    const double* buf_x = buffers[0];
+                    const double* buf_y = buffers[1];
+                    const double* buf_z = buffers[2];
+                    // Px
                     for (int p = 0; p < nP; p++) {
                         for (int q = 0; q < nQ; q++) {
-                            C_DAXPY(nocc, (*buf_x++), Cop[q + oQ], 1, Vmixp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buf_x), Cop[q + oQ], 1, Vmixp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buf_x++), Cop[p + oP], 1, Vmixp[q + oQ], 1);
                         }
                     }
 
-                    // Ay
+                    // Py
                     for (int p = 0; p < nP; p++) {
                         for (int q = 0; q < nQ; q++) {
-                            C_DAXPY(nocc, (*buf_y++), Cop[q + oQ], 1, Vmiyp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buf_y), Cop[q + oQ], 1, Vmiyp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buf_y++), Cop[p + oP], 1, Vmiyp[q + oQ], 1);
                         }
                     }
 
-                    // Az
+                    // Pz
                     for (int p = 0; p < nP; p++) {
                         for (int q = 0; q < nQ; q++) {
-                            C_DAXPY(nocc, (*buf_z++), Cop[q + oQ], 1, Vmizp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buf_z), Cop[q + oQ], 1, Vmizp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buf_z++), Cop[p + oP], 1, Vmizp[q + oQ], 1);
+                        }
+                    }
+                }
+
+                // |Q) derivatives
+                if (aQ == A) {
+                    const double* buf_x = buffers[3];
+                    const double* buf_y = buffers[4];
+                    const double* buf_z = buffers[5];
+                    // Qx
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buf_x), Cop[q + oQ], 1, Vmixp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buf_x++), Cop[p + oP], 1, Vmixp[q + oQ], 1);
+                        }
+                    }
+
+                    // Qy
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buf_y), Cop[q + oQ], 1, Vmiyp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buf_y++), Cop[p + oP], 1, Vmiyp[q + oQ], 1);
+                        }
+                    }
+
+                    // Qz
+                    for (int p = 0; p < nP; p++) {
+                        for (int q = 0; q < nQ; q++) {
+                            C_DAXPY(nocc, scale * (*buf_z), Cop[q + oQ], 1, Vmizp[p + oP], 1);
+                            C_DAXPY(nocc, scale * (*buf_z++), Cop[p + oP], 1, Vmizp[q + oQ], 1);
                         }
                     }
                 }
@@ -2698,7 +2785,6 @@ void USCFDeriv::overlap_deriv(std::shared_ptr<Matrix> C,
     double** Cvp = Cvir->pointer(); 
 
     std::shared_ptr<OneBodyAOInt> Sint(integral_->ao_overlap(1));
-    const double* buffer = Sint->buffer();
     size_t nmo = nocc + nvir;
     int natom = molecule_->natom();
 
@@ -2796,67 +2882,75 @@ void USCFDeriv::overlap_deriv(std::shared_ptr<Matrix> C,
         Smix->zero();
         Smiy->zero();
         Smiz->zero();
-        for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q < basisset_->nshell(); Q++) {
-                int aP = basisset_->shell(P).ncenter();
-                int aQ = basisset_->shell(Q).ncenter();
-                if ((aP != A && aQ != A) || aP == aQ) continue;
-                Sint->compute_shell_deriv1(P,Q);
-                int nP = basisset_->shell(P).nfunction();
-                int nQ = basisset_->shell(Q).nfunction();
-                int oP = basisset_->shell(P).function_index();
-                int oQ = basisset_->shell(Q).function_index();
-                const double* buffer2;
-                if (aP == A) {
-                    // Px
-                    buffer2 = buffer + 0 * nP * nQ;
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smixp[p + oP],1);
-                            C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smixp[q + oQ],1);
-                        }
-                    }
-                    // Py
-                    buffer2 = buffer + 1 * nP * nQ;
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smiyp[p + oP],1);
-                            C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smiyp[q + oQ],1);
-                        }
-                    }
-                    // Pz
-                    buffer2 = buffer + 2 * nP * nQ;
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smizp[p + oP],1);
-                            C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smizp[q + oQ],1);
-                        }
+        const auto& shell_pairs = Sint->shellpairs();
+        size_t n_pairs = shell_pairs.size();
+
+        for (size_t p = 0; p < n_pairs; ++p) {
+            auto P = shell_pairs[p].first;
+            auto Q = shell_pairs[p].second;
+            const auto &shellP = basisset_->shell(P);
+            const auto &shellQ = basisset_->shell(Q);
+            int aP = shellP.ncenter();
+            int aQ = shellQ.ncenter();
+            if ((aP != A && aQ != A) || aP == aQ) continue;
+            Sint->compute_shell_deriv1(P, Q);
+            const auto &buffers = Sint->buffers();
+            int nP = shellP.nfunction();
+            int nQ = shellQ.nfunction();
+            int oP = shellP.function_index();
+            int oQ = shellQ.function_index();
+            const double* buffer2;
+
+            double scale = P == Q ? 1.0 : 2.0;
+            if (aP == A) {
+                // Px
+                buffer2 = buffers[0];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc,scale*(*buffer2),Cop[q + oQ],1,Smixp[p + oP],1);
+                        C_DAXPY(nocc,scale*(*buffer2++), Cop[p + oP],1,Smixp[q + oQ],1);
                     }
                 }
-                if (aQ == A) {
-                    // Qx
-                    buffer2 = buffer + 3 * nP * nQ;
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smixp[p + oP],1);
-                            C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smixp[q + oQ],1);
-                        }
+                // Py
+                buffer2 = buffers[1];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc,scale*(*buffer2),Cop[q + oQ],1,Smiyp[p + oP],1);
+                        C_DAXPY(nocc,scale*(*buffer2++), Cop[p + oP],1,Smiyp[q + oQ],1);
                     }
-                    // Qy
-                    buffer2 = buffer + 4 * nP * nQ;
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smiyp[p + oP],1);
-                            C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smiyp[q + oQ],1);
-                        }
+                }
+                // Pz
+                buffer2 = buffers[2];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc,scale*(*buffer2),Cop[q + oQ],1,Smizp[p + oP],1);
+                        C_DAXPY(nocc,scale*(*buffer2++), Cop[p + oP],1,Smizp[q + oQ],1);
                     }
-                    // Qz
-                    buffer2 = buffer + 5 * nP * nQ;
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Smizp[p + oP],1);
-                            C_DAXPY(nocc,(*buffer2++), Cop[p + oP],1,Smizp[q + oQ],1);
-                        }
+                }
+            }
+            if (aQ == A) {
+                // Qx
+                buffer2 = buffers[3];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc,scale*(*buffer2),Cop[q + oQ],1,Smixp[p + oP],1);
+                        C_DAXPY(nocc,scale*(*buffer2++), Cop[p + oP],1,Smixp[q + oQ],1);
+                    }
+                }
+                // Qy
+                buffer2 = buffers[4];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc,scale*(*buffer2),Cop[q + oQ],1,Smiyp[p + oP],1);
+                        C_DAXPY(nocc,scale*(*buffer2++), Cop[p + oP],1,Smiyp[q + oQ],1);
+                    }
+                }
+                // Qz
+                buffer2 = buffers[5];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc,scale*(*buffer2),Cop[q + oQ],1,Smizp[p + oP],1);
+                        C_DAXPY(nocc,scale*(*buffer2++), Cop[p + oP],1,Smizp[q + oQ],1);
                     }
                 }
             }
@@ -2909,7 +3003,6 @@ void USCFDeriv::kinetic_deriv(std::shared_ptr<Matrix> C,
 {
     // Kinetic derivatives
     std::shared_ptr<OneBodyAOInt> Tint(integral_->ao_kinetic(1));
-    const double* buffer = Tint->buffer();
     size_t nmo = nocc + nvir;
     int natom = molecule_->natom();
 
@@ -2978,67 +3071,74 @@ void USCFDeriv::kinetic_deriv(std::shared_ptr<Matrix> C,
         Tmix->zero();
         Tmiy->zero();
         Tmiz->zero();
-        for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q < basisset_->nshell(); Q++) {
-                int aP = basisset_->shell(P).ncenter();
-                int aQ = basisset_->shell(Q).ncenter();
-                if ((aP != A && aQ != A) || aP == aQ) continue;
-                Tint->compute_shell_deriv1(P,Q);
-                int nP = basisset_->shell(P).nfunction();
-                int nQ = basisset_->shell(Q).nfunction();
-                int oP = basisset_->shell(P).function_index();
-                int oQ = basisset_->shell(Q).function_index();
-                const double* buffer2;
-                if (aP == A) {
-                    // Px
-                    buffer2 = buffer + 0 * nP * nQ;
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmixp[p + oP],1);
-                            C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmixp[q + oQ],1);
-                        }
-                    }
-                    // Py
-                    buffer2 = buffer + 1 * nP * nQ;
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmiyp[p + oP],1);
-                            C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmiyp[q + oQ],1);
-                        }
-                    }
-                    // Pz
-                    buffer2 = buffer + 2 * nP * nQ;
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmizp[p + oP],1);
-                            C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmizp[q + oQ],1);
-                        }
+        const auto& shell_pairs = Tint->shellpairs();
+        size_t n_pairs = shell_pairs.size();
+
+        for (size_t p = 0; p < n_pairs; ++p) {
+            auto P = shell_pairs[p].first;
+            auto Q = shell_pairs[p].second;
+            const auto & shellP = basisset_->shell(P);
+            const auto & shellQ = basisset_->shell(Q);
+            int aP = shellP.ncenter();
+            int aQ = shellQ.ncenter();
+            if ((aP != A && aQ != A) || aP == aQ) continue;
+            Tint->compute_shell_deriv1(P, Q);
+            const auto &buffers = Tint->buffers();
+            int nP = shellP.nfunction();
+            int nQ = shellQ.nfunction();
+            int oP = shellP.function_index();
+            int oQ = shellQ.function_index();
+            const double* buffer2;
+            double scale = P == Q ? 1.0 : 2.0;
+            if (aP == A) {
+                // Px
+                buffer2 = buffers[0];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc,scale*(*buffer2),Cop[q + oQ],1,Tmixp[p + oP],1);
+                        C_DAXPY(nocc,scale*(*buffer2++),Cop[p + oP],1,Tmixp[q + oQ],1);
                     }
                 }
-                if (aQ == A) {
-                    // Qx
-                    buffer2 = buffer + 3 * nP * nQ;
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmixp[p + oP],1);
-                            C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmixp[q + oQ],1);
-                        }
+                // Py
+                buffer2 = buffers[1];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc,scale*(*buffer2),Cop[q + oQ],1,Tmiyp[p + oP],1);
+                        C_DAXPY(nocc,scale*(*buffer2++),Cop[p + oP],1,Tmiyp[q + oQ],1);
                     }
-                    // Qy
-                    buffer2 = buffer + 4 * nP * nQ;
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmiyp[p + oP],1);
-                            C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmiyp[q + oQ],1);
-                        }
+                }
+                // Pz
+                buffer2 = buffers[2];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc,scale*(*buffer2),Cop[q + oQ],1,Tmizp[p + oP],1);
+                        C_DAXPY(nocc,scale*(*buffer2++),Cop[p + oP],1,Tmizp[q + oQ],1);
                     }
-                    // Qz
-                    buffer2 = buffer + 5 * nP * nQ;
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            C_DAXPY(nocc,(*buffer2),Cop[q + oQ],1,Tmizp[p + oP],1);
-                            C_DAXPY(nocc,(*buffer2++),Cop[p + oP],1,Tmizp[q + oQ],1);
-                        }
+                }
+            }
+            if (aQ == A) {
+                // Qx
+                buffer2 = buffers[3];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc,scale*(*buffer2),Cop[q + oQ],1,Tmixp[p + oP],1);
+                        C_DAXPY(nocc,scale*(*buffer2++),Cop[p + oP],1,Tmixp[q + oQ],1);
+                    }
+                }
+                // Qy
+                buffer2 = buffers[4];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc,scale*(*buffer2),Cop[q + oQ],1,Tmiyp[p + oP],1);
+                        C_DAXPY(nocc,scale*(*buffer2++),Cop[p + oP],1,Tmiyp[q + oQ],1);
+                    }
+                }
+                // Qz
+                buffer2 = buffers[5];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc,scale*(*buffer2),Cop[q + oQ],1,Tmizp[p + oP],1);
+                        C_DAXPY(nocc,scale*(*buffer2++),Cop[p + oP],1,Tmizp[q + oQ],1);
                     }
                 }
             }
@@ -3065,7 +3165,6 @@ void USCFDeriv::potential_deriv(std::shared_ptr<Matrix> C,
                                 int nso, int nocc, int nvir, bool alpha)
 {
     std::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(1));
-    const double* buffer = Vint->buffer();
     size_t nmo = nocc + nvir;
     int natom = molecule_->natom();
 
@@ -3115,6 +3214,8 @@ void USCFDeriv::potential_deriv(std::shared_ptr<Matrix> C,
     }
 #endif
 
+    const auto& shell_pairs = Vint->shellpairs();
+    size_t n_pairs = shell_pairs.size();
     for (int A = 0; A < natom; A++) {
 #ifdef USING_BrianQC
         if (brianEnable) {
@@ -3135,37 +3236,107 @@ void USCFDeriv::potential_deriv(std::shared_ptr<Matrix> C,
         Vmiy->zero();
         Vmiz->zero();
 
-        for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q < basisset_->nshell(); Q++) {
-                int aP = basisset_->shell(P).ncenter();
-                int aQ = basisset_->shell(Q).ncenter();
-                Vint->compute_shell_deriv1(P,Q);
-                int nP = basisset_->shell(P).nfunction();
-                int nQ = basisset_->shell(Q).nfunction();
-                int oP = basisset_->shell(P).function_index();
-                int oQ = basisset_->shell(Q).function_index();
-                const double* buf_x = &buffer[3 * A * nP * nQ + 0 * nP * nQ];
-                const double* buf_y = &buffer[3 * A * nP * nQ + 1 * nP * nQ];
-                const double* buf_z = &buffer[3 * A * nP * nQ + 2 * nP * nQ];
+        for (size_t p = 0; p < n_pairs; ++p) {
+            auto P = shell_pairs[p].first;
+            auto Q = shell_pairs[p].second;
+            const auto & shellP = basisset_->shell(P);
+            const auto & shellQ = basisset_->shell(Q);
+            int aP = shellP.ncenter();
+            int aQ = shellQ.ncenter();
+            Vint->compute_shell_deriv1(P, Q);
+            const auto &buffers = Vint->buffers();
+            int nP = shellP.nfunction();
+            int nQ = shellQ.nfunction();
+            int oP = shellP.function_index();
+            int oQ = shellQ.function_index();
 
-                // Ax
+            // buffer ordering is [Px, Py, Pz, Qx, Qy, Qz, A1x, A1y, A1z, A1x, ... ANy, ANz]
+            // where the Px is the x derivative of shell P and A1x is the derivative w.r.t.
+            // the nuclear charge located on atom1.  There are therefore 6 + 3*natoms buffers.
+            const double* buf_x = buffers[3 * A + 6];
+            const double* buf_y = buffers[3 * A + 7];
+            const double* buf_z = buffers[3 * A + 8];
+            double scale = P == Q ? 0.5 : 1.0;
+            // Ax
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    C_DAXPY(nocc, scale * (*buf_x), Cop[q + oQ], 1, Vmixp[p + oP], 1);
+                    C_DAXPY(nocc, scale * (*buf_x++), Cop[p + oP], 1, Vmixp[q + oQ], 1);
+                }
+            }
+
+            // Ay
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    C_DAXPY(nocc, scale * (*buf_y), Cop[q + oQ], 1, Vmiyp[p + oP], 1);
+                    C_DAXPY(nocc, scale * (*buf_y++), Cop[p + oP], 1, Vmiyp[q + oQ], 1);
+                }
+            }
+
+            // Az
+            for (int p = 0; p < nP; p++) {
+                for (int q = 0; q < nQ; q++) {
+                    C_DAXPY(nocc, scale * (*buf_z), Cop[q + oQ], 1, Vmizp[p + oP], 1);
+                    C_DAXPY(nocc, scale * (*buf_z++), Cop[p + oP], 1, Vmizp[q + oQ], 1);
+                }
+            }
+
+            // (P| derivatives
+            if (aP == A) {
+                const double* buf_x = buffers[0];
+                const double* buf_y = buffers[1];
+                const double* buf_z = buffers[2];
+                // Px
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        C_DAXPY(nocc,(*buf_x++),Cop[q + oQ],1,Vmixp[p + oP],1);
+                        C_DAXPY(nocc, scale * (*buf_x), Cop[q + oQ], 1, Vmixp[p + oP], 1);
+                        C_DAXPY(nocc, scale * (*buf_x++), Cop[p + oP], 1, Vmixp[q + oQ], 1);
                     }
                 }
 
-                // Ay
+                // Py
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        C_DAXPY(nocc,(*buf_y++),Cop[q + oQ],1,Vmiyp[p + oP],1);
+                        C_DAXPY(nocc, scale * (*buf_y), Cop[q + oQ], 1, Vmiyp[p + oP], 1);
+                        C_DAXPY(nocc, scale * (*buf_y++), Cop[p + oP], 1, Vmiyp[q + oQ], 1);
                     }
                 }
 
-                // Az
+                // Pz
                 for (int p = 0; p < nP; p++) {
                     for (int q = 0; q < nQ; q++) {
-                        C_DAXPY(nocc,(*buf_z++),Cop[q + oQ],1,Vmizp[p + oP],1);
+                        C_DAXPY(nocc, scale * (*buf_z), Cop[q + oQ], 1, Vmizp[p + oP], 1);
+                        C_DAXPY(nocc, scale * (*buf_z++), Cop[p + oP], 1, Vmizp[q + oQ], 1);
+                    }
+                }
+            }
+
+            // |Q) derivatives
+            if (aQ == A) {
+                const double* buf_x = buffers[3];
+                const double* buf_y = buffers[4];
+                const double* buf_z = buffers[5];
+                // Qx
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc, scale * (*buf_x), Cop[q + oQ], 1, Vmixp[p + oP], 1);
+                        C_DAXPY(nocc, scale * (*buf_x++), Cop[p + oP], 1, Vmixp[q + oQ], 1);
+                    }
+                }
+
+                // Qy
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc, scale * (*buf_y), Cop[q + oQ], 1, Vmiyp[p + oP], 1);
+                        C_DAXPY(nocc, scale * (*buf_y++), Cop[p + oP], 1, Vmiyp[q + oQ], 1);
+                    }
+                }
+
+                // Qz
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        C_DAXPY(nocc, scale * (*buf_z), Cop[q + oQ], 1, Vmizp[p + oP], 1);
+                        C_DAXPY(nocc, scale * (*buf_z++), Cop[p + oP], 1, Vmizp[q + oQ], 1);
                     }
                 }
             }

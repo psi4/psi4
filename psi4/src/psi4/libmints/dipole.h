@@ -33,8 +33,8 @@
 #include "typedefs.h"
 
 #include "psi4/pragma.h"
-#include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/onebody.h"
+#include "psi4/libmints/osrecur.h"
 
 namespace psi {
 class SphericalTransform;
@@ -46,14 +46,8 @@ class Molecule;
  *
  * Use an IntegralFactory to create this object. */
 class DipoleInt : public OneBodyAOInt {
-    //! Obara and Saika recursion object to be used.
+    // This is to disappear when l2 dipole derivatives are worked out
     ObaraSaikaTwoCenterRecursion overlap_recur_;
-
-    //! Computes the dipole between two gaussian shells.
-    void compute_pair(const GaussianShell &, const GaussianShell &) override;
-    //! Computes the dipole derivative between two gaussian shells.
-    void compute_pair_deriv1(const GaussianShell &, const GaussianShell &) override;
-
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
     DipoleInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>, int deriv = 0);
@@ -62,6 +56,9 @@ class DipoleInt : public OneBodyAOInt {
 
     //! Does the method provide first derivatives?
     bool has_deriv1() override { return true; }
+
+    void compute_pair(const libint2::Shell &, const libint2::Shell &) override;
+    void compute_pair_deriv1(const libint2::Shell &, const libint2::Shell &) override;
 
     /// Returns the nuclear contribution to the dipole moment
     static SharedVector nuclear_contribution(std::shared_ptr<Molecule> mol, const Vector3 &origin);

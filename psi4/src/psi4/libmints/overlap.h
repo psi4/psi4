@@ -31,12 +31,10 @@
 
 #include <vector>
 #include "psi4/libmints/onebody.h"  // needed because we derive from OneBodyAOInt
-#include "psi4/libmints/osrecur.h"
 
 namespace psi {
 
 class BasisSet;
-class GaussianShell;
 class SphericalTransform;
 
 /*! \ingroup MINTS
@@ -45,13 +43,6 @@ class SphericalTransform;
  *  Use an IntegralFactory to create this object.
  */
 class OverlapInt : public OneBodyAOInt {
-    /// Generic Obara Saika recursion object.
-    ObaraSaikaTwoCenterRecursion overlap_recur_;
-
-    /// Computes the overlap between a given shell pair.
-    void compute_pair(const GaussianShell&, const GaussianShell&) override;
-    void compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2) override;
-    void compute_pair_deriv2(const GaussianShell&, const GaussianShell&) override;
 
    public:
     /// Constructor, it assumes you are not computing derivatives by default

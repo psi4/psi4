@@ -35,7 +35,6 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 #include <memory>
 PRAGMA_WARNING_POP
 #include "psi4/libmints/onebody.h"
-#include "psi4/libmints/osrecur.h"
 
 namespace psi {
 
@@ -49,13 +48,6 @@ class SphericalTransform;
  *
  * Use an IntegralFactory to create this object. */
 class NablaInt : public OneBodyAOInt {
-    //! Obara and Saika recursion object to be used.
-    ObaraSaikaTwoCenterRecursion overlap_recur_;
-
-    //! Computes the dipole between two gaussian shells.
-    void compute_pair(const GaussianShell&, const GaussianShell&) override;
-    //! Computes the dipole derivative between two gaussian shells.
-    //    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
 
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
@@ -63,8 +55,7 @@ class NablaInt : public OneBodyAOInt {
     //! Virtual destructor
     ~NablaInt() override;
 
-    //! Does the method provide first derivatives?
-    bool has_deriv1() override { return true; }
+    bool is_antisymmetric() const override { return true; }
 };
 
 }  // namespace psi
