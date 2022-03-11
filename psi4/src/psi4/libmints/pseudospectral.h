@@ -52,40 +52,22 @@ class SphericalTransform;
 class PseudospectralInt : public OneBodyAOInt {
 
    protected:
-    /// Use range-separation or not? Defaults to false. If so, produce <m|erf(\omega r) / r|n> integrals
+    /// Use range-separation or not? Defaults to false. If true, produce <m|erf(\omega r) / r|n> integrals
     bool use_omega_;
 
     /// The range-separation parameter. Defaults to 0.0
     double omega_;
 
-    /// The integration point
-    double C_[3];
     /// Recursion object that does the heavy lifting.
-    ObaraSaikaTwoCenterVIRecursion potential_recur_;
+    // ObaraSaikaTwoCenterVIRecursion potential_recur_;
 
    public:
     /// Constructor
     PseudospectralInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
-                      int deriv = 0);
+                      double omega = 0.0, int deriv = 0);
     ~PseudospectralInt() override;
 
-    /// Set integration point
-    void set_point(double x, double y, double z) {
-        C_[0] = x;
-        C_[1] = y;
-        C_[2] = z;
-    }
-
-    /// Set omega value, turns use_omega_ to true
-    void set_omega(double omega) {
-        use_omega_ = (omega != 0.0);
-        omega_ = omega;
-    }
-
-    /// Set the value of the use_omega_ flag
-    void use_omega(bool yes) { use_omega_ = yes; }
-
-    void compute_pair(const libint2::Shell &, const libint2::Shell &) override;
+    // void compute_pair(const libint2::Shell &, const libint2::Shell &) override;
 };
 
 }  // namespace psi

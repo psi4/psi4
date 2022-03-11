@@ -28,37 +28,74 @@
 #include "psi4/libmints/pseudospectral.h"
 #include "psi4/libmints/integral.h"
 #include "psi4/libmints/basisset.h"
-#include "psi4/libciomr/libciomr.h"
-#include "libint2/shell.h"
+#include "psi4/libmints/molecule.h"
+// #include "psi4/libciomr/libciomr.h"
+#include <libint2/engine.h>
 
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-
-;
 using namespace psi;
 
-// Initialize potential_recur_ to +1 basis set angular momentum
 PseudospectralInt::PseudospectralInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1,
-                                     std::shared_ptr<BasisSet> bs2, int deriv)
-    : OneBodyAOInt(st, bs1, bs2, deriv),
-      potential_recur_(bs1->max_am() + 1, bs2->max_am() + 1) {
+                                     std::shared_ptr<BasisSet> bs2, double omega, int deriv)
+    : OneBodyAOInt(st, bs1, bs2, deriv), omega_(omega)
+    #if 0
+      ,potential_recur_(bs1->max_am() + 1, bs2->max_am() + 1) {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
 
-    use_omega_ = false;
-    omega_ = 0.0;
-    C_[0] = 0.0;
-    C_[1] = 0.0;
-    C_[2] = 0.0;
+    use_omega_ = (omega_ != 0.0);
     int maxnao1 = INT_NCART(maxam1);
     int maxnao2 = INT_NCART(maxam2);
 
     buffer_ = new double[maxnao1 * maxnao2];
+    set_chunks(1);
+    buffers_.resize(1);
+
+    #else
+    {
+
+    int max_am = std::max(basis1()->max_am(), basis2()->max_am());
+    int max_nprim = std::max(basis1()->max_nprimitive(), basis2()->max_nprimitive());
+    use_omega_ = (omega_ != 0.0);
+
+    using vector_Zxyz = std::vector<std::pair<double, std::array<double, 3>>>;
+
+    if (use_omega_) {
+        std::cout << "using omega = " << omega_ << std::endl;
+        vector_Zxyz pcs;
+        // l2 includes the electron charge, legacy psi4 code does not, so
+        // we adopt this behavior here with -1.0
+        pcs.push_back({-1.0, {origin_[0], origin_[1], origin_[2]}});
+        std::tuple<double, vector_Zxyz> params{omega_, pcs};
+        engine0_ = std::make_unique<libint2::Engine>(libint2::Operator::erf_nuclear, max_nprim, max_am, 0);
+        engine0_->set_params(params);
+    } else {
+        vector_Zxyz params;
+        // l2 includes the electron charge, legacy psi4 code does not, so
+        // we adopt this behavior here with -1.0
+        params.push_back({-1.0, {origin_[0], origin_[1], origin_[2]}});
+        engine0_ = std::make_unique<libint2::Engine>(libint2::Operator::nuclear, max_nprim, max_am, 0);
+        engine0_->set_params(params);
+    }
+
+    // if (deriv == 1) {
+    //     const auto nresults = 3 * (2 + bs1_->molecule()->natom());
+    //     set_chunks(nresults);
+    //     engine1_ = std::make_unique<libint2::Engine>(libint2::Operator::nuclear, max_nprim, max_am, 1);
+    //     engine1_->set_params(params);
+    // } else if (deriv > 1) {
+    //     throw PSIEXCEPTION("PseudospectralInt only supports derivatives <= 1.");
+    // }
+
+    buffer_ = nullptr;
+    buffers_.resize(nchunk_);
+    #endif
 }
 
-PseudospectralInt::~PseudospectralInt() { delete[] buffer_; }
+PseudospectralInt::~PseudospectralInt() {}
 
 
 // The engine only supports segmented basis sets
+#if 0
 void PseudospectralInt::compute_pair(const libint2::Shell& s1, const libint2::Shell& s2) {
     int ao12;
     int am1 = s1.contr[0].l;
@@ -108,6 +145,7 @@ void PseudospectralInt::compute_pair(const libint2::Shell& s1, const libint2::Sh
             // particularly the (0|A|0)^(m) auxiliary integrals as built in potential_recur_.compute().
             double gamma = gamma0;
             if (use_omega_) {
+                std::cout << "Using omega " << omega_ << std::endl;
                 gamma = gamma0 * omega_ * omega_ / (gamma0 + omega_ * omega_);
             }
 
@@ -130,10 +168,10 @@ void PseudospectralInt::compute_pair(const libint2::Shell& s1, const libint2::Sh
             // molecule)
             double PC[3];
 
-            // C_ is the pseudospectral grid point
-            PC[0] = P[0] - C_[0];
-            PC[1] = P[1] - C_[1];
-            PC[2] = P[2] - C_[2];
+            // origin_ is the pseudospectral grid point
+            PC[0] = P[0] - origin_[0];
+            PC[1] = P[1] - origin_[1];
+            PC[2] = P[2] - origin_[2];
 
             // Do recursion
             potential_recur_.compute_erf(PA, PB, PC, gamma0, am1, am2, gamma);
@@ -169,3 +207,4 @@ void PseudospectralInt::compute_pair(const libint2::Shell& s1, const libint2::Sh
     pure_transform(s1, s2, 1);
     buffers_[0] = buffer_;
 }
+#endif

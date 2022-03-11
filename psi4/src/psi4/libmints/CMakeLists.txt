@@ -38,8 +38,7 @@ list(APPEND sources
   molecule.cc
   intvector.cc
   mintshelper.cc
-  coordentry.cc
-  pseudospectral.cc
+  coordentry.cc  
   matrix.cc
   gshell.cc
   integraliter.cc
@@ -71,6 +70,7 @@ onebody.cc
 overlap.cc
 potential.cc
 potentialint.cc
+pseudospectral.cc
 quadrupole.cc
 rel_potential.cc
 tracelessquadrupole.cc)

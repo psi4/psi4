@@ -1331,9 +1331,9 @@ void export_mints(py::module& m) {
         .def("so_potential", &IntegralFactory::so_potential,
              "Returns a OneBodyInt that computes the SO nuclear attraction integral", "deriv"_a = 0)
         .def("ao_pseudospectral", &IntegralFactory::ao_pseudospectral,
-             "Returns a OneBodyInt that computes the AO pseudospectral grid integrals", "deriv"_a = 0)
+             "Returns a OneBodyInt that computes the AO pseudospectral grid integrals", "omega"_a = 0.0, "deriv"_a = 0)
         .def("so_pseudospectral", &IntegralFactory::so_pseudospectral,
-             "Returns a OneBodyInt that computes the SO pseudospectral grid integrals", "deriv"_a = 0)
+             "Returns a OneBodyInt that computes the SO pseudospectral grid integrals", "omega"_a = 0.0, "deriv"_a = 0)
         .def("ao_nabla", &IntegralFactory::ao_nabla, "Returns a OneBodyInt that computes the AO nabla integral",
              "deriv"_a = 0)
         .def("so_nabla", &IntegralFactory::so_nabla, "Returns a OneBodyInt that computes the SO nabla integral",
@@ -1460,6 +1460,8 @@ void export_mints(py::module& m) {
              "coordinates (needed for EFP and PE)")
         .def("electric_field_value", &MintsHelper::electric_field_value,
              "Electric field expectation value at given sites")
+        .def("ao_pseudospectral", &MintsHelper::ao_pseudospectral, "AO Pseudospectral Integrals",
+        "origin"_a = std::vector<double>{0, 0, 0}, "omega"_a = 0.0, "deriv"_a = 0)
 
         // Two-electron AO
         .def("ao_eri", normal_eri_factory(&MintsHelper::ao_eri), "AO ERI integrals", "factory"_a = nullptr)
