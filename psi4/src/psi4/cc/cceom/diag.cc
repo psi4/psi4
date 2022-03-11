@@ -40,6 +40,7 @@
 #include <string>
 #include <sstream>
 #include <cmath>
+#include "psi4/libmints/matrix.h"
 #include "psi4/libpsi4util/process.h"
 #include "psi4/libpsi4util/PsiOutStream.h"
 #include "psi4/libpsio/psio.h"
@@ -139,10 +140,10 @@ void diag() {
     int num_converged, num_converged_index = 0, keep_going, already_sigma;
     int irrep, numCs, iter, lwork, info, vectors_per_root, nsigma_evaluations = 0;
     int get_right_ev = 1, get_left_ev = 0, first_irrep = 1;
-    int L, h, i, j, k, a, nirreps, errcod, C_irr;
-    double norm, tval, **G, *work, *evals_complex, **alpha, **evectors_left;
-    double *lambda, *lambda_old, totalE, **G_old, **alpha_old;
-    int num_vecs, cc3_index, num_cc3_restarts = 0, ignore_G_old = 0;
+    int L, h, j, k, a, nirreps, errcod, C_irr;
+    double norm, tval, *work, *evals_complex, **alpha, **evectors_left;
+    double *lambda, *lambda_old, totalE, **alpha_old;
+    int num_vecs, cc3_index, num_cc3_restarts = 0;
     double ra, rb, r2aa, r2bb, r2ab, cc3_eval, cc3_last_converged_eval = 0.0, C0, S0, R0;
     int cc3_stage; /* 0=eom_ccsd; 1=eom_cc3 (reuse sigmas), 2=recompute sigma */
     int L_start_iter, L_old;
@@ -162,9 +163,11 @@ void diag() {
     if (params.wfn == "EOM_CC3") cc3_stage = 0; /* do EOM_CCSD first */
 
     outfile->Printf("Symmetry of ground state: %s\n", moinfo.irr_labs[moinfo.sym].c_str());
-    /* loop over symmetry of C's */
+    // Master Loop over transition symmetries
     for (C_irr = 0; C_irr < moinfo.nirreps; ++C_irr) {
-        ignore_G_old = 1;
+        bool ignore_G_old = true;
+        SharedMatrix G;
+        auto G_old = std::make_shared<Matrix>(0, 0);
         already_sigma = 0;
         iter = 0;
         keep_going = 1;
@@ -182,7 +185,7 @@ void diag() {
             global_dpd_->file4_cache_close();
             global_dpd_->file4_cache_init();
         }
-        for (i = PSIF_EOM_D; i <= PSIF_EOM_R; ++i) {
+        for (int i = PSIF_EOM_D; i <= PSIF_EOM_R; ++i) {
             if (eom_params.restart_eom_cc3 && (i >= PSIF_EOM_CME) && (i <= PSIF_EOM_CMnEf)) continue;
             psio_close(i, 0);
             psio_open(i, 0);
@@ -221,7 +224,7 @@ void diag() {
                     global_dpd_->file2_scm(&CME, 1.0 / norm);
                     global_dpd_->file2_close(&CME);
                     /* reorthoganalize and normalize other guesses */
-                    for (i = 1; i < eom_params.cs_per_irrep[C_irr]; i++) {
+                    for (int i = 1; i < eom_params.cs_per_irrep[C_irr]; i++) {
                         sprintf(lbl, "%s %d", "CME", i);
                         global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
                         for (j = 0; j < i; j++) {
@@ -238,7 +241,7 @@ void diag() {
 #ifdef EOM_DEBUG
                     /* check initial guesses - overlap matrix */
                     outfile->Printf("Checking overlap of orthogonalized initial guesses\n");
-                    for (i = 0; i < eom_params.cs_per_irrep[C_irr]; i++) {
+                    for (int i = 0; i < eom_params.cs_per_irrep[C_irr]; i++) {
                         sprintf(lbl, "%s %d", "CME", i);
                         global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
                         for (j = 0; j < eom_params.cs_per_irrep[C_irr]; j++) {
@@ -261,7 +264,7 @@ void diag() {
 
 #ifdef EOM_DEBUG
         /* printout initial guesses */
-        for (i = 0; i < eom_params.cs_per_irrep[C_irr]; ++i) {
+        for (int i = 0; i < eom_params.cs_per_irrep[C_irr]; ++i) {
             sprintf(lbl, "%s %d", "CME", i);
             global_dpd_->file2_init(&CME, PSIF_EOM_CME, C_irr, 0, 1, lbl);
             global_dpd_->file2_print(&CME, "outfile");
@@ -282,7 +285,7 @@ void diag() {
 #endif
 
         /* Setup and zero initial C2 and S2 vector to go with Hbar_SS */
-        for (i = 0; i < eom_params.cs_per_irrep[C_irr]; ++i) {
+        for (int i = 0; i < eom_params.cs_per_irrep[C_irr]; ++i) {
             /* init_S1(i, C_irr); gets done at first iteration anyway */
             init_S1(i, C_irr);
             if (!eom_params.restart_eom_cc3) init_C2(i, C_irr);
@@ -299,10 +302,8 @@ void diag() {
 
         std::vector<bool> converged(eom_params.cs_per_irrep[C_irr], false);
         lambda_old = init_array(eom_params.cs_per_irrep[C_irr]);
+        // L := Current number of multiroot Davidson vectors. Changes during loop.
         L = eom_params.cs_per_irrep[C_irr];
-        /* allocate G_old just once */
-        i = (eom_params.vectors_per_root + 1) * eom_params.cs_per_irrep[C_irr];
-        G_old = block_matrix(i, i);
 
         vectors_per_root = eom_params.vectors_per_root; /* used for CCSD */
 
@@ -312,7 +313,7 @@ void diag() {
             numCs = L_start_iter = L;
             num_converged = 0;
 
-            for (i = already_sigma; i < L; ++i) {
+            for (int i = already_sigma; i < L; ++i) {
                 /* Form a zeroed S vector for each C vector
                    SIA and Sia do get overwritten by sigmaSS
                    so this may only be necessary for debugging */
@@ -404,15 +405,16 @@ void diag() {
 
             timer_on("BUILD G");
             /* Form G = C'*S matrix */
-            G = block_matrix(L, L);
+            G = std::make_shared<Matrix>(L, L);
 
-            /* reuse values from old G matrix */
-            /* if last step was restart, sigma is OK but recompute full G matrix */
-            if (ignore_G_old) already_sigma = 0;
-            for (i = 0; i < already_sigma; ++i)
-                for (j = 0; j < already_sigma; ++j) G[i][j] = G_old[i][j];
+            /* Populate G matrix elements to be reused. We may not be able to reuse any. */
+            if (ignore_G_old) {
+                already_sigma = 0;
+            }
+            auto temp_slice = Slice(Dimension(std::vector<int> {0}), Dimension(std::vector<int> {already_sigma}));
+            G->set_block(temp_slice, *G_old->get_block(temp_slice));
 
-            for (i = 0; i < L; ++i) {
+            for (int i = 0; i < L; ++i) {
                 if (params.eom_ref == 0) {
                     /* Spin-adapt C */
                     sprintf(lbl, "%s %d", "CME", i);
@@ -464,7 +466,6 @@ void diag() {
                 /* Dot C's and sigma vectors together to form G matrix */
                 for (j = 0; j < L; ++j) {
                     if (i < already_sigma && j < already_sigma) continue;
-                    /* outfile->Printf("Computing G[%d][%d].\n",i,j); */
 
                     if (params.eom_ref == 0) {
                         sprintf(lbl, "%s %d", "SIA", j);
@@ -524,7 +525,7 @@ void diag() {
                         tval += global_dpd_->buf4_dot(&CMnEf, &SIjAb);
                         global_dpd_->buf4_close(&SIjAb);
                     }
-                    G[i][j] = tval;
+                    G->set(i, j, tval);
                 }
 
                 global_dpd_->file2_close(&CME);
@@ -536,25 +537,22 @@ void diag() {
                 }
             } /* end build of G */
 
-            ignore_G_old = 0;
+            ignore_G_old = false;
             already_sigma = L;
 
             timer_off("BUILD G");
 #ifdef EOM_DEBUG
             outfile->Printf("The G Matrix\n");
-            print_mat(G, L, L, "outfile");
+            G->print_out();
 #endif
-            for (i = 0; i < L; ++i) {
-                for (j = 0; j < L; ++j) G_old[i][j] = G[i][j];
-            }
+            G_old = G->clone();
 
             /* Diagonalize G Matrix */
             lambda = init_array(L);     /* holds real part of eigenvalues of G */
             alpha = block_matrix(L, L); /* will hold eigenvectors of G */
-            dgeev_eom(L, G, lambda, alpha);
+            dgeev_eom(L, G->pointer(), lambda, alpha);
             eigsort(lambda, alpha, L);
             /* eivout(alpha, lambda, L, L, outfile);*/
-            free_block(G);
 
             /* Open up residual vector files */
             if (params.eom_ref == 0) {
@@ -599,7 +597,7 @@ void diag() {
                 }
 
                 converged[k] = false;
-                for (i = 0; i < L; ++i) {
+                for (int i = 0; i < L; ++i) {
                     if (params.eom_ref == 0) { /* RHF residual */
                         sprintf(lbl, "%s %d", "SIA", i);
                         global_dpd_->file2_init(&SIA, PSIF_EOM_SIA, C_irr, 0, 1, lbl);
@@ -812,7 +810,7 @@ void diag() {
                 global_dpd_->buf4_close(&Rijab);
             }
 
-            for (i = 0; i < eom_params.cs_per_irrep[C_irr]; ++i) lambda_old[i] = lambda[i];
+            for (int i = 0; i < eom_params.cs_per_irrep[C_irr]; ++i) lambda_old[i] = lambda[i];
             free(lambda);
             if ((params.wfn == "EOM_CC3") && (cc3_stage > 0)) {
                 lambda_old[cc3_index] = cc3_eval; /* a hack to make Delta E work next iteration */
@@ -827,7 +825,7 @@ void diag() {
                     if (eom_params.collapse_with_last_cc3) L *= 2;
                     outfile->Printf("Collapsing to %d vector(s).\n", L);
                     already_sigma = 0;
-                    ignore_G_old = 1;
+                    ignore_G_old = true;
                 } else {
                     restart(alpha, L, eom_params.cs_per_irrep[C_irr], C_irr, 1, alpha_old, L_old,
                             eom_params.collapse_with_last);
@@ -837,7 +835,7 @@ void diag() {
                     else
                         L = eom_params.cs_per_irrep[C_irr];
                     already_sigma = L;
-                    ignore_G_old = 1;
+                    ignore_G_old = true;
                 }
                 keep_going = 1;
                 /* keep track of number of triples restarts */
@@ -880,7 +878,7 @@ void diag() {
                     eom_params.cs_per_irrep[C_irr] = 1; /* only get 1 CC3 solution */
                     keep_going = 1;
                     already_sigma = 0;
-                    ignore_G_old = 1;
+                    ignore_G_old = true;
                     iter = 0;
                     cc3_stage = 1;
                     vectors_per_root = eom_params.vectors_cc3;
@@ -903,7 +901,7 @@ void diag() {
                     outfile->Printf("Setting old CC3 eigenvalue to %15.10lf\n", cc3_eval);
                     keep_going = 1;
                     already_sigma = 0;
-                    ignore_G_old = 1;
+                    ignore_G_old = true;
                     L_old = L;
                     L = cc3_index + 1;
                     cc3_stage = 2;
@@ -923,10 +921,9 @@ void diag() {
             }
             alpha_old = block_matrix(L_start_iter, L_start_iter);
             for (k = 0; k < L_start_iter; ++k)
-                for (i = 0; i < L_start_iter; ++i) alpha_old[i][k] = alpha[i][k];
+                for (int i = 0; i < L_start_iter; ++i) alpha_old[i][k] = alpha[i][k];
             free_block(alpha);
         }
-        free_block(G_old);
 
         outfile->Printf("\nProcedure converged for %d root(s).\n", num_converged);
         if (num_converged == eom_params.cs_per_irrep[C_irr]) {
@@ -954,7 +951,7 @@ void diag() {
                             moinfo.irr_labs[moinfo.sym ^ C_irr].c_str());
             outfile->Printf("                     Excitation Energy              Total Energy\n");
             outfile->Printf("                (eV)     (cm^-1)     (au)             (au)\n");
-            for (i = 0; i < eom_params.cs_per_irrep[C_irr]; ++i) {
+            for (int i = 0; i < eom_params.cs_per_irrep[C_irr]; ++i) {
                 if (converged[i]) {
                     if (!params.full_matrix)
                         totalE = lambda_old[i] + moinfo.eref + moinfo.ecc;
@@ -1053,7 +1050,7 @@ void diag() {
 
         free(lambda_old);
         free_block(alpha_old);
-    }
+    } // End Master Loop
 
     outfile->Printf("\tTotal # of sigma evaluations: %d\n", nsigma_evaluations);
     return;
