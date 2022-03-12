@@ -276,6 +276,7 @@ jobs:
       # Upload package
       # * use same ANACONDA_TOKEN generated on anaconda.org for GHA and save it in Azure DevOps
       #   at /psi4/psi4/Pipelines/psi4.psi4 -> Edit button -> Variables button -> new secret var `conda.anaconda_org_token`.
+      #   when it expires, revoke it at anaconda.org, regenerate there and paste new one at Azure
       # * error handling may need tweaking as I don't know if failure to upload for lack of space (`echo $?`=1) will fail the workflow.
       - bash: |
           set -e

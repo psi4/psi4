@@ -82,7 +82,7 @@ jobs:
       with:
         arch: x64
 
-    - name: Write Conda Env Files
+    - name: Write Conda environment files
       shell: bash -l {0}
       run: |
         cat > build.yaml <<EOF
@@ -269,7 +269,7 @@ jobs:
         echo "\n<<<  runcf.yaml  >>>"
         cat runcf.yaml
 
-    - name: Create Conda Environment (build)
+    - name: Create Conda environment (build)
       uses: conda-incubator/setup-miniconda@v2
       with:
         activate-environment: defenv
@@ -278,7 +278,7 @@ jobs:
         python-version: ${{ matrix.cfg.python-version }}
         auto-activate-base: false
 
-    - name: Environment Information
+    - name: Conda environment information
       shell: bash -l {0}
       run: |
         conda info
@@ -289,7 +289,7 @@ jobs:
       if: ${{ runner.os == 'Windows' }}
       run: git clone https://github.com/psi4/iomp5md.git
 
-    - name: Configure with CMake (L) (conda defaults GNU)
+    - name: Configure Psi4, Conda defaults GNU (L)
       if: ${{ runner.os == 'Linux' }}
       run: |
         cmake \
@@ -327,7 +327,7 @@ jobs:
           -D ENABLE_XHOST=OFF \
           ${{ matrix.cfg.cmargs }}
 
-    - name: Configure with CMake (M) (conda defaults GNU)
+    - name: Configure Psi4, Conda defaults Clang (M)
       if: ${{ runner.os == 'macOS' }}
       run: |
         cmake \
@@ -368,7 +368,7 @@ jobs:
           -D CMAKE_OSX_SYSROOT="/opt/MacOSX${{ matrix.cfg.target-sdk }}.sdk" \
           ${{ matrix.cfg.cmargs }}
 
-    - name: Configure with CMake (conda defaults GNU)
+    - name: Configure Psi4, LLVM clang-cl (W)
       if: false #${{ runner.os == 'Windows' }}
       run: |
         cmake \
@@ -428,20 +428,18 @@ jobs:
     - name: Compile Psi4
       run: cmake --build objdir --config Release --target install -j
 
-    - name: Library dependencies, ldd (L)
+    - name: Link dependencies, ldd (L)
       if: ${{ runner.os == 'Linux' }}
       run: ldd objdir/stage/lib/psi4/core.*.so
 
-    - name: Library dependencies, otool (M)
+    - name: Link dependencies, otool (M)
       if: ${{ runner.os == 'macOS' }}
       run: otool -L objdir/stage/lib/psi4/core.*.so
 
-    - name: Library dependencies, objdump (W)
+    - name: Link dependencies, objdump (W)
       if: ${{ runner.os == 'Windows' }}
       shell: cmd /C CALL {0}
       run: objdump.exe -p objdir\stage\lib\psi4\core.*.pyd | grep dll
-
-
 
       # Notes: This is clearing away the whole build environment (to make explicit the build and
       #   runtime dependencies and addons). Then its creating a new runtime environment based on
@@ -490,7 +488,8 @@ jobs:
       #if: false
       if: ${{ runner.os == 'Windows' }}
       working-directory: ./objdir
-      run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 --cache-clear -m "addon and not long" stage/lib/psi4/tests/
+      #run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 --cache-clear -m "addon and not long" stage/lib/psi4/tests/
+      run: PYTHONPATH=../install/lib pytest -v -rws --durations=15 --cache-clear -m "addon and not long" ../install/lib/psi4/tests/
 
     - name: Test Addons with Pytest (defaults + c-f)
       working-directory: ./objdir

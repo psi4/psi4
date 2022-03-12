@@ -3,8 +3,8 @@ name: Win
 on:
   push:
     branches:
-      - master
-  pull_request:
+      - nevermaster
+  #pull_request:
 
 jobs:
 
@@ -32,7 +32,7 @@ jobs:
     steps:
 
     - name: Quick cancel
-      if: true
+      if: false
       run: return 5
 
       # fetch-depth: 0 gets git history so Psi4 version is computable
