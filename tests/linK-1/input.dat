@@ -16,13 +16,12 @@ set {
     scf_type direct
     df_scf_guess false
     basis aug-cc-pVDZ
-    ints_tolerance 1.0e-12
     e_convergence 1.0e-10
-    d_convergence 1.0e-6
     screening density
     incfock true
     incfock_full_fock_every 4
     do_linK true
+    ints_tolerance 1.0e-12
     linK_ints_tolerance 1.0e-12
 }
 

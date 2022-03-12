@@ -27,18 +27,17 @@ set {
     scf_type direct
     df_scf_guess false
     basis 6-31G*
-    ints_tolerance 1.0e-12
     e_convergence 1.0e-10
     screening density
     incfock true
-    incfock_full_fock_every 4
     do_linK true
+    ints_tolerance 1.0e-12
     linK_ints_tolerance 1.0e-12
 }
 
 uhf_energy = energy('scf')
-psi4.compare_values(uhf_energy, uhf_ref, 6, "UHF Energy (using LinK algo)")
+psi4.compare_values(uhf_energy, uhf_ref, 8, "UHF Energy (using LinK algo)")
 
 set reference rohf
 rohf_energy = energy('scf')
-psi4.compare_values(rohf_energy, rohf_ref, 6, "ROHF Energy (using LinK algo)")
+psi4.compare_values(rohf_energy, rohf_ref, 8, "ROHF Energy (using LinK algo)")

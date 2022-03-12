@@ -420,19 +420,20 @@ void DirectJK::compute_JK() {
             ints.push_back(std::shared_ptr<TwoBodyAOInt>(ints[0]->clone()));
         }
         if (do_J_ && do_K_) {
-            if (!linK_) {
-                build_JK_matrices(ints, D_ref, J_ref, K_ref);
-            } else {
+            if (linK_) {
                 build_linK(ints, D_ref, K_ref);
                 build_JK_matrices(ints, D_ref, J_ref, temp);
+            } else {
+                build_JK_matrices(ints, D_ref, J_ref, K_ref);
             }
+            
         } else if (do_J_) {
             build_JK_matrices(ints, D_ref, J_ref, temp);
         } else {
-            if (!linK_) {
-                build_JK_matrices(ints, D_ref, temp, K_ref);
-            } else {
+            if (linK_) {
                 build_linK(ints, D_ref, K_ref);
+            } else {
+                build_JK_matrices(ints, D_ref, temp, K_ref);
             }
         }
     }
@@ -556,6 +557,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         for (int thread = 0; thread < nthread; thread++) {
             std::vector<SharedMatrix> J2;
             for (size_t ind = 0; ind < D.size(); ind++) {
+                // The factor of 2 comes from exploiting ERI permutational symmetry
                 J2.push_back(std::make_shared<Matrix>("JT", 2 * max_task, max_task));
             }
             JT.push_back(J2);
@@ -568,6 +570,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         for (int thread = 0; thread < nthread; thread++) {
             std::vector<SharedMatrix > K2;
             for (size_t ind = 0; ind < D.size(); ind++) {
+                // The factor of 4 or 8 comes from exploiting ERI permutational symmetry
                 K2.push_back(std::make_shared<Matrix>("KT", (lr_symmetric_ ? 4 : 8) * max_task, max_task));
             }
             KT.push_back(K2);
@@ -1063,7 +1066,8 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         outfile->Printf("\n");
     }
 
-    // ==> Prep Atom Pairs (Better for parallel performance than shell pairs) <== //
+    // ==> Prep Atom Pairs <== //
+    // Based on limited evidence, atom blocking is better for parallel performance than shell-pair blocking
 
     std::vector<std::pair<int, int>> atom_pairs;
     for (size_t Patom = 0; Patom < natom; Patom++) {
@@ -1119,10 +1123,8 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
         for (int Q = 0; Q <= P; Q++) {
             double val = std::sqrt(ints[0]->shell_ceiling2(P, Q, P, Q));
             shell_ceilings[P] = std::max(shell_ceilings[P], val);
-            if (val > shell_ceilings[Q]) {
 #pragma omp critical
-                shell_ceilings[Q] = val;
-            }
+            shell_ceilings[Q] = std::max(shell_ceilings[Q], val);
         }
     }
 
@@ -1205,21 +1207,21 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                 int dP = P - Pstart;
                 int dQ = Q - Qstart;
 
-                // => "Formation of Significant Shell Pair List ML" <= //
+                // => Formation of Significant Shell Pair List ML <= //
 
                 // Significant ket shell pairs RS for bra shell pair PQ
-                // represents the merge of ML_P and ML_Q as defined in Oschenfeld
+                // represents the merge of ML_P and ML_Q (mini-lists) as defined in Oschenfeld
                 // Unordered set structure allows for automatic merging as new elements are added
                 std::unordered_set<int> ML_PQ;
 
-                // Form ML_P inside ML_PQ
+                // Form ML_P as part of ML_PQ
                 for (const int R : significant_kets[P]) {
-                    int count = 0;
+                    bool is_significant = false;
                     for (const int S : significant_bras[R]) {
                         double screen_val = ints[0]->shell_pair_max_density(P, R) * std::sqrt(ints[0]->shell_ceiling2(P, Q, R, S));
 
                         if (screen_val >= linK_ints_cutoff_) {
-                            count += 1;
+                            if (!is_significant) is_significant = true;
                             int RS = (R >= S) ? (R * nshell + S) : (S * nshell + R);
                             if (RS > P * nshell + Q) continue;
                             ML_PQ.emplace(RS);
@@ -1227,17 +1229,17 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                         }
                         else break;
                     }
-                    if (count == 0) break;
+                    if (!is_significant) break;
                 }
 
-                // Form ML_Q inside ML_PQ
+                // Form ML_Q as part of ML_PQ
                 for (const int R : significant_kets[Q]) {
-                    int count = 0;
+                    bool is_significant = false;
                     for (const int S : significant_bras[R]) {
                         double screen_val = ints[0]->shell_pair_max_density(Q, R) * std::sqrt(ints[0]->shell_ceiling2(P, Q, R, S));
 
                         if (screen_val >= linK_ints_cutoff_) {
-                            count += 1;
+                            if (!is_significant) is_significant = true;
                             int RS = (R >= S) ? (R * nshell + S) : (S * nshell + R);
                             if (RS > P * nshell + Q) continue;
                             ML_PQ.emplace(RS);
@@ -1245,7 +1247,7 @@ void DirectJK::build_linK(std::vector<std::shared_ptr<TwoBodyAOInt>>& ints, cons
                         }
                         else break;
                     }
-                    if (count == 0) break;
+                    if (!is_significant) break;
                 }
 
                 // Loop over significant RS pairs
