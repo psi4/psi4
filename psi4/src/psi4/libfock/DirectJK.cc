@@ -550,7 +550,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
 
     // => Intermediate Buffers <= //
 
-    // Intermediate buffer for J
+    // Intermediate J buffer per thread
     std::vector<std::vector<SharedMatrix>> JT;
     if (build_J) {
         for (int thread = 0; thread < nthread; thread++) {
@@ -562,7 +562,7 @@ void DirectJK::build_JK_matrices(std::vector<std::shared_ptr<TwoBodyAOInt>>& int
         }
     }
 
-    // Intermediate buffer for K
+    // Intermediate K buffer per thread
     std::vector<std::vector<SharedMatrix>> KT;
     if (build_K) {
         for (int thread = 0; thread < nthread; thread++) {

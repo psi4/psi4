@@ -721,7 +721,7 @@ class PSI_API DirectJK : public JK {
     int incfock_count_;
     bool do_incfock_iter_;
     
-    // Perform Linear Exchange matrix build?
+    // Perform LinK algorithm for exchange?
     bool linK_;
     double linK_ints_cutoff_;
 
