@@ -278,9 +278,9 @@ thread.  Moreover, if integral objects are created only in the initialization
 of each code that uses them, and stored persistently, the cost of integral
 object creation is further reduced.
 
-===================================
+
 One Electron Integrals in |PSIfour|
-===================================
+-----------------------------------
 
 After version 1.5, we started transitioning the one electron integral code over to
 use Libint2 instead of the old handwritten Obara-Saika code.  There are a
