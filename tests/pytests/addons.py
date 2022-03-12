@@ -154,22 +154,20 @@ hardware_nvidia_gpu = pytest.mark.skipif(
     reason='Psi4 not detecting Nvidia GPU via `nvidia-smi`. Install one')
 
 
-def ctest_runner(inputdat, infiles: List =None, outfiles: List =None):
-    """Called from a mock PyTest function, this takes a full path ``inputdat`` to an ``"input.dat"`` file set up for
-    CTest and submits it to the ``psi4`` executable. Any auxiliary files with names listed in ``infiles`` that reside
-    alongside ``inputdat`` are placed in the Psi4 execution directory.
+def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
+    """Called from a mock PyTest function, this takes a full path ``inputdatloc`` to an ``"input.dat"`` file set up for
+    CTest and submits it to the ``psi4`` executable. Any auxiliary files with names listed in ``extra_infiles`` that reside
+    alongside ``inputdatloc`` are placed in the Psi4 execution directory.
 
     """
     from qcengine.util import execute
 
-    ctestdir = Path(inputdat).parent
+    infiles = ["input.dat"]
+    if extra_infiles:
+        infiles.extend(extra_infiles)
+    infiles_with_contents = {fl: (Path(inputdatloc).parent / fl).read_text() for fl in infiles}
 
-    if infiles:
-        infiles_with_contents = {fl: (ctestdir / fl).read_text() for fl in infiles}
-    else:
-        infiles_with_contents = None
-
-    _, output = execute(["psi4", ctestdir / "input.dat"], infiles_with_contents, outfiles)
+    _, output = execute(["psi4", "input.dat"], infiles_with_contents, outfiles)
 
     success = output["proc"].poll() == 0
     assert success, output["stdout"] + output["stderr"]
