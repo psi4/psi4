@@ -421,6 +421,8 @@ void DirectJK::compute_JK() {
         }
         if (do_J_ && do_K_) {
             if (linK_) {
+                // NOTE: For the time being, there is no expected performance gain from LinK
+                // due to a lack of a fast J algorithm to complement LinK
                 build_linK(ints, D_ref, K_ref);
                 build_JK_matrices(ints, D_ref, J_ref, temp);
             } else {

@@ -754,6 +754,9 @@ LinK exploits shell pair sparsity in the density matrix, which when combined wit
 LinK is most competitive when used with non-diffuse orbital basis sets, since orbital and density overlaps decay slower with diffuse functions.
 LinK is especially powerful when combined with density-matrix based ERI screening and incremental Fock builds, which decrease the number of significant two-electron integrals to calculate.
 
+NOTE: Turning on LinK is currently only recommended for research and development purposes, and not for performance,
+since a fast J matrix build compatible to use with LinK has not been developed yet.
+
 To turn on and control the LinK algorithm, here are the list of options provided.
 
   |scf__do_linK|: Defaults to false. If turned on, the K matrix will be built using the algorithm described in [Ochsenfeld:1998:1663]_.
