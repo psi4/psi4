@@ -22,7 +22,7 @@ jobs:
               -DBUILD_SHARED_LIBS=ON
 
           - runs-on: macos-latest
-            python-version: "3.10"
+            python-version: "3.9"
             mkl-version: "2021.4"
             base-channel: "defaults"
             target-sdk: "10.10"
@@ -57,13 +57,13 @@ jobs:
       run: return 5
 
       # fetch-depth: 0 gets git history so Psi4 version is computable
-    - name: Checkout
+    - name: Checkout Psi4
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
 
       # mac_ver line returns, for example, "10.15" for Catalina, "11.6" for Big Sur. but phracker doesn't support all minor, so some logic to hardcode.
-    - name: Prepare compiler environment for macOS
+    - name: Prepare compiler environment, SDK (M)
       if: ${{ runner.os == 'macOS' }}
       run: |
         macos_Mm=$(SYSTEM_VERSION_COMPAT=0 python -c "import platform; Mmp = platform.mac_ver()[0]; Mm = '.'.join(Mmp.split('.')[:2]); print(Mm)")
@@ -76,7 +76,7 @@ jobs:
         curl -L https://github.com/phracker/MacOSX-SDKs/releases/download/${macos_Mm}/MacOSX${{ matrix.cfg.target-sdk }}.sdk.tar.xz | sudo tar xf - -C /opt/
 
       # equivalent to `call vcvarsall.bat x86_amd64`. see Azure script to follow cmdline.
-    - name: Prepare compiler environment for Windows
+    - name: Prepare compiler environment, vcvarsall (W)
       if: ${{ runner.os == 'Windows' }}
       uses: ilammy/msvc-dev-cmd@v1
       with:
@@ -123,14 +123,12 @@ jobs:
           sed -i "s;- c-compiler;- gcc_linux-64;g" build.yaml
           sed -i "s;- cxx-compiler;- gxx_linux-64;g" build.yaml
           sed -i "s;- fortran-compiler;- gfortran_linux-64;g" build.yaml
-          sed -i "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h2fe1556_13;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           # <lang>-compiler is only a metapackage for c-f
           sed -E -i.bak "s;- c-compiler;- clang_osx-64;g" build.yaml
           sed -E -i.bak "s;- cxx-compiler;- clangxx_osx-64;g" build.yaml
           sed -E -i.bak "s;- fortran-compiler;- gfortran_osx-64;g" build.yaml
-          sed -i "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_4;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # permanent, as we use clang-cl, not c-f compiler
@@ -148,7 +146,6 @@ jobs:
           sed -i "s;- psi4/label/dev::pcmsolver;#- pcmsolver;g" build.yaml
           sed -i "s;- psi4/label/dev::simint;#- simint;g" build.yaml
           sed -i "s;- mkl-devel;- mkl-devel=${{ matrix.cfg.mkl-version }};g" build.yaml
-          sed -i "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h2e52968_3;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
         cat > build.yaml <<EOF
@@ -227,15 +224,6 @@ jobs:
           - pytest-xdist
           - tomli
         EOF
-        if [[ "${{ runner.os }}" == "Linux" ]]; then
-          sed -i "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h2fe1556_13;g" build.yaml
-        fi
-        if [[ "${{ runner.os }}" == "macOS" ]]; then
-          sed -i "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_4;g" build.yaml
-        fi
-        if [[ "${{ runner.os }}" == "Windows" ]]; then
-          sed -i "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h2e52968_3;g" build.yaml
-        fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # semi-permanent
           sed -i "s;- psi4/label/dev::gau2grid;- gau2grid;g" run.yaml
@@ -267,9 +255,9 @@ jobs:
           - pymdi
           - qcengine
         EOF
-        if [[ "${{ runner.os }}" == "macOS" ]]; then
-          sed -E -i.bak "s;- openfermionpsi4;#- openfermionpsi4;g" runcf.yaml
-        fi
+        #if [[ "${{ runner.os }}" == "macOS" ]]; then
+        #  sed -E -i.bak "s;- openfermionpsi4;#- openfermionpsi4;g" runcf.yaml
+        #fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           sed -i "s;- adcc;#- adcc;g" runcf.yaml
           sed -i "s;- cppe;#- cppe;g" runcf.yaml
@@ -514,12 +502,14 @@ jobs:
         conda list
         printenv | grep CONDA_PREFIX
         if [[ "${{ runner.os }}" == "Linux" ]]; then
-            # Linux needs to find the Psi4 module (first entry) and the new addon modules in the cfenv (third entry; CONDA_PREFIX; stack activation only merges bin/).
-            #   Since defaults-based mkl packages are intel/iomp5, and c-f-based mkl packages are llvm/omp, need the defenv (second entry; CONDA_PREFIX_1) to avoid dual OpenMP initialization
+            # (1st entry) need to find the Psi4 module
+            # (2nd entry) Linux needs the defenv (CONDA_PREFIX_1) to avoid dual OpenMP init since defaults mkl are intel/iomp5 and c-f mkl is llvm/omp
+            # (3rd entry) need to find the new addon modules in the cfenv (CONDA_PREFIX; stack activation only merges bin/)
             export PYTHONPATH=stage/lib/:$CONDA_PREFIX_1/lib/python${{ matrix.cfg.python-version }}/site-packages:$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
-            # macOS needs to find the Psi4 module (first entry) and the new addon modules in the cfenv (second entry; CONDA_PREFIX; stack activation only merges bin/).
+            # (1st entry) need to find the Psi4 module
+            # (2nd entry) need to find the new addon modules in the cfenv (CONDA_PREFIX; stack activation only merges bin/)
             export PYTHONPATH=stage/lib/:$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages
         fi
         echo $PYTHONPATH
