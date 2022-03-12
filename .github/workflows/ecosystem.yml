@@ -62,7 +62,7 @@ jobs:
         fetch-depth: 0
 
       # mac_ver line returns, for example, "10.15" for Catalina, "11.6" for Big Sur. but phracker doesn't support all minor, so some logic to hardcode.
-    - name: Prepare compiler environment: SDK (M)
+    - name: Prepare compiler environment, SDK (M)
       if: ${{ runner.os == 'macOS' }}
       run: |
         macos_Mm=$(SYSTEM_VERSION_COMPAT=0 python -c "import platform; Mmp = platform.mac_ver()[0]; Mm = '.'.join(Mmp.split('.')[:2]); print(Mm)")
@@ -75,7 +75,7 @@ jobs:
         curl -L https://github.com/phracker/MacOSX-SDKs/releases/download/${macos_Mm}/MacOSX${{ matrix.cfg.target-sdk }}.sdk.tar.xz | sudo tar xf - -C /opt/
 
       # equivalent to `call vcvarsall.bat x86_amd64`. see Azure script to follow cmdline.
-    - name: Prepare compiler environment: vcvarsall (W)
+    - name: Prepare compiler environment, vcvarsall (W)
       if: ${{ runner.os == 'Windows' }}
       uses: ilammy/msvc-dev-cmd@v1
       with:
@@ -394,15 +394,15 @@ jobs:
     - name: Compile & Install Psi4
       run: cmake --build objdir --config Release --target install -j
 
-    - name: Link dependencies: ldd (L)
+    - name: Link dependencies, ldd (L)
       if: ${{ runner.os == 'Linux' }}
       run: ldd objdir/stage/lib/psi4/core.*.so
 
-    - name: Link dependencies: otool (M)
+    - name: Link dependencies, otool (M)
       if: ${{ runner.os == 'macOS' }}
       run: otool -L objdir/stage/lib/psi4/core.*.so
 
-    - name: Link dependencies: objdump (W)
+    - name: Link dependencies, objdump (W)
       if: ${{ runner.os == 'Windows' }}
       shell: cmd /C CALL {0}
       run: objdump.exe -p objdir\stage\lib\psi4\core.*.pyd | grep dll
