@@ -54,7 +54,7 @@
 #include "psi4/libmints/eri.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/3coverlap.h"
-#include "psi4/libmints/pseudospectral.h"
+#include "psi4/libmints/potential_erf.h"
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/nabla.h"
 #include "psi4/libmints/electrostatic.h"
@@ -1238,8 +1238,6 @@ void export_mints(py::module& m) {
     py::class_<KineticInt, std::shared_ptr<KineticInt>>(m, "KineticInt", pyOneBodyAOInt, "Computes kinetic integrals");
     py::class_<PotentialInt, std::shared_ptr<PotentialInt>>(m, "PotentialInt", pyOneBodyAOInt,
                                                             "Computes potential integrals");
-    py::class_<PseudospectralInt, std::shared_ptr<PseudospectralInt>>(m, "PseudospectralInt", pyOneBodyAOInt,
-                                                                      "Computes pseudospectral integrals");
     py::class_<ElectrostaticInt, std::shared_ptr<ElectrostaticInt>>(m, "ElectrostaticInt", pyOneBodyAOInt,
                                                                     "Computes electrostatic integrals");
     py::class_<NablaInt, std::shared_ptr<NablaInt>>(m, "NablaInt", pyOneBodyAOInt, "Computes nabla integrals");
@@ -1330,10 +1328,10 @@ void export_mints(py::module& m) {
              "Returns a OneBodyInt that computes the AO nuclear attraction integral", "deriv"_a = 0)
         .def("so_potential", &IntegralFactory::so_potential,
              "Returns a OneBodyInt that computes the SO nuclear attraction integral", "deriv"_a = 0)
-        .def("ao_pseudospectral", &IntegralFactory::ao_pseudospectral,
-             "Returns a OneBodyInt that computes the AO pseudospectral grid integrals", "omega"_a = 0.0, "deriv"_a = 0)
-        .def("so_pseudospectral", &IntegralFactory::so_pseudospectral,
-             "Returns a OneBodyInt that computes the SO pseudospectral grid integrals", "omega"_a = 0.0, "deriv"_a = 0)
+     //    .def("ao_pseudospectral", &IntegralFactory::ao_pseudospectral,
+     //         "Returns a OneBodyInt that computes the AO pseudospectral grid integrals", "omega"_a = 0.0, "deriv"_a = 0)
+     //    .def("so_pseudospectral", &IntegralFactory::so_pseudospectral,
+     //         "Returns a OneBodyInt that computes the SO pseudospectral grid integrals", "omega"_a = 0.0, "deriv"_a = 0)
         .def("ao_nabla", &IntegralFactory::ao_nabla, "Returns a OneBodyInt that computes the AO nabla integral",
              "deriv"_a = 0)
         .def("so_nabla", &IntegralFactory::so_nabla, "Returns a OneBodyInt that computes the SO nabla integral",
@@ -1460,7 +1458,9 @@ void export_mints(py::module& m) {
              "coordinates (needed for EFP and PE)")
         .def("electric_field_value", &MintsHelper::electric_field_value,
              "Electric field expectation value at given sites")
-        .def("ao_pseudospectral", &MintsHelper::ao_pseudospectral, "AO Pseudospectral Integrals",
+        .def("ao_potential_erf", &MintsHelper::ao_potential_erf, "AO Erf-attenuated Coulomb potential on a given point",
+        "origin"_a = std::vector<double>{0, 0, 0}, "omega"_a = 0.0, "deriv"_a = 0)
+        .def("ao_potential_erf_complement", &MintsHelper::ao_potential_erf_complement, "AO Erfc-attenuated Coulomb potential on a given point",
         "origin"_a = std::vector<double>{0, 0, 0}, "omega"_a = 0.0, "deriv"_a = 0)
 
         // Two-electron AO
