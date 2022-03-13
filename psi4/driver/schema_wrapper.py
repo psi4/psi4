@@ -588,12 +588,12 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
 
     # Add in handling of matrix arguments which need to be obtained by a
     # a function call.
-    if "tIJAB" in json_data["extras"]["qcvars"]:
-        json_data["extras"]["qcvars"]["tIJAB"] = wfn.get_amplitudes("tIJAB").to_array()
-    if "tIA" in json_data["extras"]["qcvars"]:
-        json_data["extras"]["qcvars"]["tIA"] = wfn.get_amplitudes("tIA").to_array()
-    if "Da" in json_data["extras"]["qcvars"]:
-        json_data["extras"]["qcvars"]["Da"] = wfn.Da().to_array()
+    if "tIjAb" in json_data["extras"]["psi4:arrays"]:
+        json_data["extras"]["psi4:arrays"]["tIjAb"] = wfn.get_amplitudes()["tIjAb"].to_array().tolist()
+    if "tIA" in json_data["extras"]["psi4:arrays"]:
+        json_data["extras"]["psi4:arrays"]["tIA"] = wfn.get_amplitudes()["tIA"].to_array().tolist()
+    if "Da" in json_data["extras"]["psi4:arrays"]:
+        json_data["extras"]["psi4:arrays"]["Da"] = wfn.Da().to_array().tolist()
 
         
     # Handle the return result
@@ -640,6 +640,8 @@ def run_json_qcschema(json_data, clean, json_serialization, keep_wfn=False):
 
     json_data["properties"] = props
     json_data["success"] = True
+    if "provenance" not in json_data :
+        json_data["provenance"] = {}
     json_data["provenance"]["module"] = wfn.module()
 
     if keep_wfn:
