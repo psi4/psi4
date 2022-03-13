@@ -33,8 +33,6 @@
 
 #include <libint2/engine.h>
 
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-
 using namespace psi;
 
 // Initialize overlap_recur_ to +2 basis set angular momentum
