@@ -162,10 +162,20 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
     """
     from qcengine.util import execute
 
+    print(f"{inputdatloc=}")
+    print(f"{Path(inputdatloc)=}")
+    print(f"{Path(inputdatloc).resolve()=}")
+    ctestdir = Path(inputdatloc).resolve().parent
+    print(f"{ctestdir=}")
+
     infiles = ["input.dat"]
     if extra_infiles:
         infiles.extend(extra_infiles)
-    infiles_with_contents = {fl: (Path(inputdatloc).parent / fl).read_text() for fl in infiles}
+    infiles_with_contents = {fl: (ctestdir / fl).read_text() for fl in infiles}
+    print(f"{infiles=}")
+    for k, v in infiles_with_contents.items():
+        print(f"<<< {k} >>>")
+        print(v)
 
     _, output = execute(["psi4", "input.dat"], infiles_with_contents, outfiles)
 
