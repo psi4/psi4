@@ -47,7 +47,6 @@ class SphericalTransform;
  * Use an IntegralFactory to create this object.
  */
 class PotentialErfInt : public OneBodyAOInt {
-
    protected:
     /// The range-separation parameter. Defaults to 1.0
     double omega_;
@@ -55,8 +54,8 @@ class PotentialErfInt : public OneBodyAOInt {
    public:
     /// Constructor
     PotentialErfInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
-                      double omega = 1.0, int deriv = 0);
-    ~PotentialErfInt() override {};
+                    double omega = 1.0, int deriv = 0);
+    ~PotentialErfInt() override{};
 
     void set_origin(const Vector3& _origin) override;
 };
@@ -68,7 +67,6 @@ class PotentialErfInt : public OneBodyAOInt {
  */
 
 class PotentialErfComplementInt : public OneBodyAOInt {
-
    protected:
     /// The range-separation parameter. Defaults to 1.0
     double omega_;
@@ -76,8 +74,8 @@ class PotentialErfComplementInt : public OneBodyAOInt {
    public:
     /// Constructor
     PotentialErfComplementInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
-                      double omega = 1.0, int deriv = 0);
-    ~PotentialErfComplementInt() override {};
+                              double omega = 1.0, int deriv = 0);
+    ~PotentialErfComplementInt() override{};
 
     void set_origin(const Vector3& _origin) override;
 };

@@ -35,9 +35,8 @@ using namespace psi;
 using Zxyz_vector = std::vector<std::pair<double, std::array<double, 3>>>;
 
 PotentialErfInt::PotentialErfInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1,
-                                     std::shared_ptr<BasisSet> bs2, double omega, int deriv)
+                                 std::shared_ptr<BasisSet> bs2, double omega, int deriv)
     : OneBodyAOInt(st, bs1, bs2, deriv), omega_(omega) {
-
     if (deriv > 0) {
         throw PSIEXCEPTION("PotentialErfInt does not support derivatives.");
     }
@@ -66,9 +65,8 @@ void PotentialErfInt::set_origin(const Vector3& _origin) {
 }
 
 PotentialErfComplementInt::PotentialErfComplementInt(std::vector<SphericalTransform>& st, std::shared_ptr<BasisSet> bs1,
-                                     std::shared_ptr<BasisSet> bs2, double omega, int deriv)
+                                                     std::shared_ptr<BasisSet> bs2, double omega, int deriv)
     : OneBodyAOInt(st, bs1, bs2, deriv), omega_(omega) {
-
     if (deriv > 0) {
         throw PSIEXCEPTION("PotentialErfComplementInt does not support derivatives.");
     }
