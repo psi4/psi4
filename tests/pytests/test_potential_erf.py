@@ -1,6 +1,5 @@
 """
-This file tests the ao_multipole_potential integrals
-using finite differences
+This file tests the ao_potential_erf/ao_potential_erf_complement integrals
 """
 import numpy as np
 import pytest
@@ -23,20 +22,20 @@ def test_potential_erf_integrals():
     """)
     basis_obj = psi4.core.BasisSet.build(mol, 'ORBITAL', "cc-pvtz")
     mints = psi4.core.MintsHelper(basis_obj)
-    
+    C = [1, 2, 3]
     # corner cases
     # erf(inf) = 1
-    x = mints.ao_potential_erf([1, 2, 3], omega=1e20).np
-    y = mints.ao_multipole_potential([1, 2, 3], max_k=0)[0].np
+    x = mints.ao_potential_erf(C, omega=1e20).np
+    y = mints.ao_multipole_potential(C, max_k=0)[0].np
     np.testing.assert_allclose(x, y, atol=1e-14)
 
     # erfc(0) = 1
-    x = mints.ao_potential_erf_complement([1, 2, 3], omega=0.0).np
-    y = mints.ao_multipole_potential([1, 2, 3], max_k=0)[0].np
+    x = mints.ao_potential_erf_complement(C, omega=0.0).np
+    y = mints.ao_multipole_potential(C, max_k=0)[0].np
     np.testing.assert_allclose(x, y, atol=1e-14)
 
     # 1/R - erf(R)/R - erfc(R)/R = 0
-    erf = mints.ao_potential_erf([1, 2, 3], omega=1.5).np
-    erfc = mints.ao_potential_erf_complement([1, 2, 3], omega=1.5).np
+    erf = mints.ao_potential_erf(C, omega=1.5).np
+    erfc = mints.ao_potential_erf_complement(C, omega=1.5).np
     diff = y - erf - erfc
     np.testing.assert_allclose(diff, np.zeros_like(diff), atol=1e-14)
