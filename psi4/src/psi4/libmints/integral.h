@@ -446,10 +446,6 @@ class PSI_API IntegralFactory {
     virtual OneBodyAOInt* ao_rel_potential(int deriv = 0);
     virtual OneBodySOInt* so_rel_potential(int deriv = 0);
 
-    /// Returns the OneBodyInt that computes the pseudospectral grid integrals
-    // virtual OneBodyAOInt* ao_pseudospectral(double omega = 0.0, int deriv = 0);
-    // virtual OneBodySOInt* so_pseudospectral(double omega = 0.0, int deriv = 0);
-
     /// Returns the OneBodyInt that computes the erf/erfc-attenuated Coulomb potential on a given origin
     virtual OneBodyAOInt* ao_potential_erf(double omega = 0.0, int deriv = 0);
     virtual OneBodyAOInt* ao_potential_erf_complement(double omega = 0.0, int deriv = 0);

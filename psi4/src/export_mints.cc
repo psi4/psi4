@@ -1328,10 +1328,6 @@ void export_mints(py::module& m) {
              "Returns a OneBodyInt that computes the AO nuclear attraction integral", "deriv"_a = 0)
         .def("so_potential", &IntegralFactory::so_potential,
              "Returns a OneBodyInt that computes the SO nuclear attraction integral", "deriv"_a = 0)
-     //    .def("ao_pseudospectral", &IntegralFactory::ao_pseudospectral,
-     //         "Returns a OneBodyInt that computes the AO pseudospectral grid integrals", "omega"_a = 0.0, "deriv"_a = 0)
-     //    .def("so_pseudospectral", &IntegralFactory::so_pseudospectral,
-     //         "Returns a OneBodyInt that computes the SO pseudospectral grid integrals", "omega"_a = 0.0, "deriv"_a = 0)
         .def("ao_nabla", &IntegralFactory::ao_nabla, "Returns a OneBodyInt that computes the AO nabla integral",
              "deriv"_a = 0)
         .def("so_nabla", &IntegralFactory::so_nabla, "Returns a OneBodyInt that computes the SO nabla integral",
