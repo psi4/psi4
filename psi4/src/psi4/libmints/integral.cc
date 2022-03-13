@@ -39,6 +39,7 @@
 #include "psi4/libmints/nabla.h"
 #include "psi4/libmints/dipole.h"
 #include "psi4/libmints/electrostatic.h"
+#include "psi4/libmints/potential_erf.h"
 #include "psi4/libmints/kinetic.h"
 #include "psi4/libmints/3coverlap.h"
 #include "psi4/libmints/overlap.h"
@@ -145,13 +146,12 @@ std::unique_ptr<OneBodyAOInt> IntegralFactory::electrostatic() { return std::mak
 
 std::unique_ptr<OneBodyAOInt> IntegralFactory::pcm_potentialint() { return  std::make_unique<PCMPotentialInt>(spherical_transforms_, bs1_, bs2_, 0); }
 
-std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_pseudospectral(double omega, int deriv) {
-    return new PseudospectralInt(spherical_transforms_, bs1_, bs2_, omega, deriv);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_potential_erf(double omega, int deriv) {
+    return new PotentialErfInt(spherical_transforms_, bs1_, bs2_, omega, deriv);
 }
 
-std::unique_ptr<OneBodySOInt> IntegralFactory::so_pseudospectral(double omega, int deriv) {
-    std::shared_ptr<OneBodyAOInt> ao_int(ao_pseudospectral(omega, deriv));
-    return new OneBodySOInt(ao_int, this);
+std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_potential_erf_complement(double omega, int deriv) {
+    return new PotentialErfComplementInt(spherical_transforms_, bs1_, bs2_, omega, deriv);
 }
 
 std::unique_ptr<OneBodyAOInt> IntegralFactory::ao_dipole(int deriv) { return  std::make_unique<DipoleInt>(spherical_transforms_, bs1_, bs2_, deriv); }

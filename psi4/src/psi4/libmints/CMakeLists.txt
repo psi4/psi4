@@ -68,7 +68,7 @@ onebody.cc
 overlap.cc
 potential.cc
 potentialint.cc
-pseudospectral.cc
+potential_erf.cc
 quadrupole.cc
 rel_potential.cc
 tracelessquadrupole.cc

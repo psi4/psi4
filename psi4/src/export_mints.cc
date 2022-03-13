@@ -56,6 +56,7 @@
 #include "psi4/libmints/eri.h"
 #include "psi4/libmints/molecule.h"
 #include "psi4/libmints/3coverlap.h"
+#include "psi4/libmints/potential_erf.h"
 #include "psi4/libmints/oeprop.h"
 #include "psi4/libmints/nabla.h"
 #include "psi4/libmints/electrostatic.h"
@@ -1511,7 +1512,9 @@ void export_mints(py::module& m) {
         .def("electrostatic_potential_value", &MintsHelper::electrostatic_potential_value,
              "Electrostatic potential values at given sites with associated charge, specified as an (n_sites, 4) matrix.",
              "charges"_a, "coords"_a, "D"_a)
-        .def("ao_pseudospectral", &MintsHelper::ao_pseudospectral, "AO Pseudospectral Integrals",
+        .def("ao_potential_erf", &MintsHelper::ao_potential_erf, "AO Erf-attenuated Coulomb potential on a given point",
+        "origin"_a = std::vector<double>{0, 0, 0}, "omega"_a = 0.0, "deriv"_a = 0)
+        .def("ao_potential_erf_complement", &MintsHelper::ao_potential_erf_complement, "AO Erfc-attenuated Coulomb potential on a given point",
         "origin"_a = std::vector<double>{0, 0, 0}, "omega"_a = 0.0, "deriv"_a = 0)
 
         // Two-electron AO
