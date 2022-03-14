@@ -164,38 +164,18 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
     from qcengine.util import execute
     import psi4
 
-    print(f"{inputdatloc=}")
-    print(f"{Path(inputdatloc)=}")
-    print(f"{Path(inputdatloc).resolve()=}")
     ctestdir = Path(inputdatloc).resolve().parent
-    print(f"{ctestdir=}")
 
     infiles = ["input.dat"]
     if extra_infiles:
         infiles.extend(extra_infiles)
     infiles_with_contents = {fl: (ctestdir / fl).read_text() for fl in infiles}
-    print(f"{infiles=}")
-    for k, v in infiles_with_contents.items():
-        print(f"<<< {k} >>>")
-        print(v)
 
-    # Note:  The usual  `command = ["psi4", "input.dat"]` works fine for Linux and Mac but not for Windows.
-    #   Windows ok with `command = [which("psi4"), "input.dat"]` that finds the psi4.bat file that points to the psi4 python script. -or-
-    #   Windows ok with `command = [sys.executable, psi4.executable, "input.dat"]
-    if "tu2" in str(ctestdir): # and sys.platform.startswith('win'):
-        command = [which("psi4"), "input.dat"]
-    # works on win!    command = [which("psi4"), "input.dat"]
-    # bad on linux! command = [sys.executable, "psi4", "input.dat"]
-    # bad on win! command = [sys.executable, which("psi4"), "input.dat"]
-    # bad on win! command = [sys.executable, "psi4", "input.dat"]
-    # works on win! elif Path("D:/a/psi4/psi4/install/bin/psi4").exists():
-    # works on win!     command = [sys.executable, "D:/a/psi4/psi4/install/bin/psi4", "input.dat"]
-    # works on win! elif Path("D:/a/1/b/install/bin/psi4").exists():
-    # works on win!     command = [sys.executable, "D:/a/1/b/install/bin/psi4", "input.dat"]
-    else:
-    # bad on win! command = [psi4.executable, "input.dat"]
-        command = [sys.executable, psi4.executable, "input.dat"]
-    print(f"{command=}")
+    # Note:  The simple `command = ["psi4", "input.dat"]` works fine for Linux and Mac but not for Windows.
+    #   L/M/W   ok with `command = [which("psi4"), "input.dat"]` where `which` on Windows finds the psi4.bat file that points to the psi4 python script. -or-
+    #   L/M/W   ok with `command = [sys.executable, psi4.executable, "input.dat"]` aka `python /full/path/bin/psi4 input.dat`.
+    #   Latter chosen as `psi4.executable` is path computed by `import psi4`, so assured correspondence.
+    command = [sys.executable, psi4.executable, "input.dat"]
     _, output = execute(command, infiles_with_contents, outfiles)
 
     success = output["proc"].poll() == 0
