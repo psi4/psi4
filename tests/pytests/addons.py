@@ -1,5 +1,4 @@
 import sys
-import shutil
 from pathlib import Path
 from typing import List
 
@@ -163,6 +162,7 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
 
     """
     from qcengine.util import execute
+    import psi4
 
     print(f"{inputdatloc=}")
     print(f"{Path(inputdatloc)=}")
@@ -179,14 +179,17 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
         print(f"<<< {k} >>>")
         print(v)
 
-    if "tu2" in str(ctestdir) and sys.platform.startswith('win'):
-        command = [sys.executable, "psi4", "input.dat"]
-    elif Path("D:/a/psi4/psi4/install/bin/psi4").exists():
-        command = [sys.executable, "D:/a/psi4/psi4/install/bin/psi4", "input.dat"]
-    elif Path("D:/a/1/b/install/bin/psi4").exists():
-        command = [sys.executable, "D:/a/1/b/install/bin/psi4", "input.dat"]
+    if "tu2" in str(ctestdir): # and sys.platform.startswith('win'):
+        command = [which("psi4"), "input.dat"]
+    # bad on linux! command = [sys.executable, "psi4", "input.dat"]
+    # bad on win! command = [sys.executable, which("psi4"), "input.dat"]
+    # bad on win! command = [sys.executable, "psi4", "input.dat"]
+    # works on win! elif Path("D:/a/psi4/psi4/install/bin/psi4").exists():
+    # works on win!     command = [sys.executable, "D:/a/psi4/psi4/install/bin/psi4", "input.dat"]
+    # works on win! elif Path("D:/a/1/b/install/bin/psi4").exists():
+    # works on win!     command = [sys.executable, "D:/a/1/b/install/bin/psi4", "input.dat"]
     else:
-        command = ["psi4", "input.dat"]
+        command = [psi4.executable, "input.dat"]
     print(f"{command=}")
     _, output = execute(command, infiles_with_contents, outfiles)
 
