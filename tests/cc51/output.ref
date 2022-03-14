@@ -3,7 +3,7 @@
           Psi4: An Open-Source Ab Initio Electronic Structure Package
                                Psi4 undefined 
 
-                         Git: Rev {eom_var} 5b439ed dirty
+                         Git: Rev {eom_var} c391178 dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,9 +30,9 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 14 March 2022 01:15PM
+    Psi4 started on: Monday, 14 March 2022 04:10PM
 
-    Process ID: 23838
+    Process ID: 33678
     Host:       dhcp189-157.emerson.emory.edu
     PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
@@ -64,14 +64,14 @@ eom_ref = -76.0519836445 # TEST
 energy('eom-cc3')
 compare_values(scf_ref, variable("SCF TOTAL ENERGY"), 6, "SCF energy")              #TEST
 compare_values(cc3_ref, variable("CC3 TOTAL ENERGY"), 6, "CC3 energy")              #TEST
-compare_values(eom_ref, variable("CC3 ROOT 1 TOTAL ENERGY"), 6, "EOM-CC3 energy")    #TEST
+compare_values(eom_ref, variable("CC ROOT 1 TOTAL ENERGY"), 6, "EOM-CC3 energy")    #TEST
 
 --------------------------------------------------------------------------
 
 Scratch directory: /tmp/
 
 *** tstart() called on dhcp189-157.emerson.emory.edu
-*** at Mon Mar 14 13:15:16 2022
+*** at Mon Mar 14 16:10:54 2022
 
    => Loading Basis Set <=
 
@@ -188,10 +188,10 @@ Scratch directory: /tmp/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @RHF iter SAD:   -75.47284908986008   -7.54728e+01   0.00000e+00 
-   @RHF iter   1:   -75.97599997288074   -5.03151e-01   1.43171e-02 ADIIS/DIIS
-   @RHF iter   2:   -76.02797054702684   -5.19706e-02   9.35047e-03 ADIIS/DIIS
-   @RHF iter   3:   -76.05394025187591   -2.59697e-02   7.99319e-04 ADIIS/DIIS
-   @RHF iter   4:   -76.05440637128768   -4.66119e-04   1.77588e-04 ADIIS/DIIS
+   @RHF iter   1:   -75.97599997288074   -5.03151e-01   1.43171e-02 DIIS/ADIIS
+   @RHF iter   2:   -76.02797054702684   -5.19706e-02   9.35047e-03 DIIS/ADIIS
+   @RHF iter   3:   -76.05394025187591   -2.59697e-02   7.99319e-04 DIIS/ADIIS
+   @RHF iter   4:   -76.05440637128768   -4.66119e-04   1.77588e-04 DIIS/ADIIS
    @RHF iter   5:   -76.05443530591954   -2.89346e-05   3.76043e-05 DIIS
    @RHF iter   6:   -76.05443722683471   -1.92092e-06   7.73253e-06 DIIS
    @RHF iter   7:   -76.05443731105599   -8.42213e-08   1.36717e-06 DIIS
@@ -265,15 +265,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:    -1.9387     Total:     1.9387
 
 
-*** tstop() called on dhcp189-157.emerson.emory.edu at Mon Mar 14 13:15:18 2022
+*** tstop() called on dhcp189-157.emerson.emory.edu at Mon Mar 14 16:10:55 2022
 Module time:
-	user time   =       1.23 seconds =       0.02 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.74 seconds =       0.01 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.23 seconds =       0.02 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.74 seconds =       0.01 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
 
@@ -299,7 +299,7 @@ Total time:
 
 
 *** tstart() called on dhcp189-157.emerson.emory.edu
-*** at Mon Mar 14 13:15:18 2022
+*** at Mon Mar 14 16:10:55 2022
 
 
 	Wfn Parameters:
@@ -386,15 +386,15 @@ Total time:
 	Two-electron energy          =     37.74268653448988
 	Reference energy             =    -76.05443731346320
 
-*** tstop() called on dhcp189-157.emerson.emory.edu at Mon Mar 14 13:15:19 2022
+*** tstop() called on dhcp189-157.emerson.emory.edu at Mon Mar 14 16:10:56 2022
 Module time:
-	user time   =       0.31 seconds =       0.01 minutes
-	system time =       0.43 seconds =       0.01 minutes
+	user time   =       0.22 seconds =       0.00 minutes
+	system time =       0.38 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.71 seconds =       0.03 minutes
-	system time =       0.62 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.07 seconds =       0.02 minutes
+	system time =       0.53 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
             **************************
             *                        *
             *        CCENERGY        *
@@ -663,7 +663,7 @@ Largest components of excited wave function #1:
     CC3 energy............................................................................PASSED
     EOM-CC3 energy........................................................................PASSED
 
-    Psi4 stopped on: Monday, 14 March 2022 01:15PM
-    Psi4 wall time for execution: 0:00:42.66
+    Psi4 stopped on: Monday, 14 March 2022 04:11PM
+    Psi4 wall time for execution: 0:00:39.63
 
 *** Psi4 exiting successfully. Buy a developer a beer!

@@ -1078,12 +1078,15 @@ void diag() {
         auto target_irrep = moinfo.irr_labs[moinfo.sym ^ std::get<1>(tuple)];
         auto corr_energy = std::get<2>(tuple);
         auto irrep_idx = irrep_counts[target_irrep];
-        Process::environment.globals[short_name + " ROOT " + std::to_string(i + 1) + " TOTAL ENERGY"] = total_energy;
-        Process::environment.globals[short_name + " ROOT " + std::to_string(i + 1) + " CORRELATION ENERGY"] = corr_energy;
-        Process::environment.globals[short_name + " ROOT " + std::to_string(i + 1) + " TOTAL ENERGY - " + trans_irrep + " TRANSITION"] = total_energy;
-        Process::environment.globals[short_name + " ROOT " + std::to_string(i + 1) + " CORRELATION ENERGY - " + trans_irrep + " TRANSITION"] = corr_energy;
-        Process::environment.globals[short_name + " ROOT " + std::to_string(irrep_idx) + " (" + target_irrep + ") TOTAL ENERGY"] = total_energy;
-        Process::environment.globals[short_name + " ROOT " + std::to_string(irrep_idx) + " (" + target_irrep + ") CORRELATION ENERGY"] = corr_energy;
+        const std::vector<std::string> names {"CC", short_name};
+        for (const auto& name : names) {
+            Process::environment.globals[name + " ROOT " + std::to_string(i + 1) + " TOTAL ENERGY"] = total_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(i + 1) + " CORRELATION ENERGY"] = corr_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(i + 1) + " TOTAL ENERGY - " + trans_irrep + " TRANSITION"] = total_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(i + 1) + " CORRELATION ENERGY - " + trans_irrep + " TRANSITION"] = corr_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(irrep_idx) + " (" + target_irrep + ") TOTAL ENERGY"] = total_energy;
+            Process::environment.globals[name + " ROOT " + std::to_string(irrep_idx) + " (" + target_irrep + ") CORRELATION ENERGY"] = corr_energy;
+        }
         irrep_counts[target_irrep]++;
     }
 

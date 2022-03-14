@@ -23,6 +23,8 @@ compare_values(scf_0, variable("SCF TOTAL ENERGY"), 6, "SCF energy") #TEST
 compare_values(cc2_0, variable("CC2 TOTAL ENERGY"), 6, "CC2 energy") #TEST
 
 for (ref, h, i) in eomcc_0: # TEST
-    val = variable(f"CC2 ROOT {i} ({h}) TOTAL ENERGY")                                 #TEST
+    val = variable(f"CC2 ROOT {i} ({h}) TOTAL ENERGY")                                    #TEST
+    compare_values(ref, val, 6, f"EOM-CC2 root {i} ({h})")                                #TEST
+    val = variable(f"CC ROOT {i} ({h}) TOTAL ENERGY")                                     #TEST
     compare_values(ref, val, 6, f"EOM-CC2 root {i} ({h})")                                #TEST
 
