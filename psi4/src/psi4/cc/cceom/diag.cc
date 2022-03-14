@@ -35,6 +35,7 @@
  *    right-hand eigenvector and eigenvalue
  */
 
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <string>
