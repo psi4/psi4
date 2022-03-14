@@ -332,6 +332,8 @@ install(
     ../tests/tu5-sapt
     ../tests/tu6-cp-ne2
     ../tests/ci-property
+    ../tests/scf-property
+    ../tests/mp2-property
   DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
   FILES_MATCHING
     PATTERN "test_input.py"
@@ -342,6 +344,8 @@ install(
     PATTERN "adcc/formaldehyde-pe-adc1/fa_6w.pot"
     PATTERN "adcc/formaldehyde-pe-adc2/fa_6w.pot"
     PATTERN "ci-property/grid.dat"
+    PATTERN "scf-property/grid.dat"
+    PATTERN "mp2-property/grid.dat"
   )
 
     # <<<  install psi4 share/ & include/  >>>
