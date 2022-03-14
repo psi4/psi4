@@ -44,9 +44,6 @@ jobs:
               -D CMAKE_VERBOSE_MAKEFILE=ON
               -D BUILD_SHARED_LIBS=OFF
 
-          #    #-DCMAKE_CXX_COMPILER=clang-cl
-          #    #-DCMAKE_C_COMPILER=clang-cl
-
     name: "Eco • 🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.runs-on }}"
     runs-on: ${{ matrix.cfg.runs-on }}
     defaults:
@@ -145,40 +142,40 @@ jobs:
           sed -i "s;- psi4/label/dev::pcmsolver;;g" build.yaml
           sed -i "s;- psi4/label/dev::simint;;g" build.yaml
         fi
-#        if [[ "${{ runner.os }}" == "Windows" ]]; then
-#        cat > build.yaml <<EOF
-#        name: defenv
-#        channels:
-#          - ${{ matrix.cfg.base-channel }}
-#          #- defaults
-#        dependencies:
-#          - blas=*=mkl
-#          - cmake
-#          - conda-forge::eigen
-##          - intel-openmp=${{ matrix.cfg.mkl-version }}
-#          - mkl-devel=${{ matrix.cfg.mkl-version }}
-#          - networkx
-#          - ninja
-#          - conda-forge::numpy
-##skip          - pint
-#          - pybind11
-##          - pymdi
-#          - conda-forge::pytest>=7.0.1
-#          - pytest-xdist
-#          - python=${{ matrix.cfg.python-version }}
-#          - psi4/label/dev::dftd3
-#          - psi4/label/dev::gcp
-#          - conda-forge::gau2grid
-#          - psi4/label/dev::libint2
-#          - conda-forge::libxc
-#          - conda-forge::mpfr
-##skip          - conda-forge::mpmath
-#          - conda-forge::msgpack-python
-#          - conda-forge::qcelemental
-#          - conda-forge::qcengine
-#          - conda-forge::scipy
-#        EOF
-#        fi
+        #        if [[ "${{ runner.os }}" == "Windows" ]]; then
+        #        cat > build.yaml <<EOF
+        #        name: defenv
+        #        channels:
+        #          - ${{ matrix.cfg.base-channel }}
+        #          #- defaults
+        #        dependencies:
+        #          - blas=*=mkl
+        #          - cmake
+        #          - conda-forge::eigen
+        ##          - intel-openmp=${{ matrix.cfg.mkl-version }}
+        #          - mkl-devel=${{ matrix.cfg.mkl-version }}
+        #          - networkx
+        #          - ninja
+        #          - conda-forge::numpy
+        ##skip          - pint
+        #          - pybind11
+        ##          - pymdi
+        #          - conda-forge::pytest>=7.0.1
+        #          - pytest-xdist
+        #          - python=${{ matrix.cfg.python-version }}
+        #          - psi4/label/dev::dftd3
+        #          - psi4/label/dev::gcp
+        #          - conda-forge::gau2grid
+        #          - psi4/label/dev::libint2
+        #          - conda-forge::libxc
+        #          - conda-forge::mpfr
+        ##skip          - conda-forge::mpmath
+        #          - conda-forge::msgpack-python
+        #          - conda-forge::qcelemental
+        #          - conda-forge::qcengine
+        #          - conda-forge::scipy
+        #        EOF
+        #        fi
         cat > run.yaml <<EOF
         name: defenv
         channels:
@@ -489,4 +486,4 @@ jobs:
 # Error (W) "  File "D:\a\psi4\psi4\objdir\stage\lib\psi4\__init__.py", line 55, in <module>
 #              from . import core
 #              ImportError: DLL load failed while importing core: The specified module could not be found."
-# Soln: 
+# Soln:
