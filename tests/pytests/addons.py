@@ -179,8 +179,12 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
         print(f"<<< {k} >>>")
         print(v)
 
+    # Note:  The usual  `command = ["psi4", "input.dat"]` works fine for Linux and Mac but not for Windows.
+    #   Windows ok with `command = [which("psi4"), "input.dat"]` that finds the psi4.bat file that points to the psi4 python script. -or-
+    #   Windows ok with `command = [sys.executable, psi4.executable, "input.dat"]
     if "tu2" in str(ctestdir): # and sys.platform.startswith('win'):
         command = [which("psi4"), "input.dat"]
+    # works on win!    command = [which("psi4"), "input.dat"]
     # bad on linux! command = [sys.executable, "psi4", "input.dat"]
     # bad on win! command = [sys.executable, which("psi4"), "input.dat"]
     # bad on win! command = [sys.executable, "psi4", "input.dat"]
@@ -189,7 +193,8 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
     # works on win! elif Path("D:/a/1/b/install/bin/psi4").exists():
     # works on win!     command = [sys.executable, "D:/a/1/b/install/bin/psi4", "input.dat"]
     else:
-        command = [psi4.executable, "input.dat"]
+    # bad on win! command = [psi4.executable, "input.dat"]
+        command = [sys.executable, psi4.executable, "input.dat"]
     print(f"{command=}")
     _, output = execute(command, infiles_with_contents, outfiles)
 
