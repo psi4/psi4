@@ -67,7 +67,7 @@ void init_C1(int i, int C_irr);
 void init_C0(int i);
 void init_S0(int i);
 void init_C2(int index, int irrep);
-extern void write_Rs(int C_irr, double *energies, const std::vector<bool>& converged);
+extern void write_Rs(int C_irr, const std::vector<double>& energies, const std::vector<bool>& converged);
 extern double norm_C(dpdfile2 *CME, dpdfile2 *Cme, dpdbuf4 *CMNEF, dpdbuf4 *Cmnef, dpdbuf4 *CMnEf);
 extern double norm_C_full(double C0, dpdfile2 *CME, dpdfile2 *Cme, dpdbuf4 *CMNEF, dpdbuf4 *Cmnef, dpdbuf4 *CMnEf);
 extern double norm_C_rhf(dpdfile2 *CME, dpdbuf4 *CMnEf, dpdbuf4 *CMnfE);
@@ -107,8 +107,6 @@ extern void sort_C(int index, int irrep);
 
 void dgeev_eom(int L, double **G, double *evals, double **alpha);
 
-double local_G1_dot(dpdfile2 *, dpdfile2 *);
-double local_G2_dot(dpdbuf4 *, dpdbuf4 *);
 void local_filter_T1_nodenom(dpdfile2 *);
 void local_filter_T2_nodenom(dpdbuf4 *);
 void local_guess();
@@ -142,7 +140,7 @@ void diag() {
     int get_right_ev = 1, get_left_ev = 0, first_irrep = 1;
     int L, h, j, k, a, nirreps, errcod, C_irr;
     double norm, tval, *work, *evals_complex, **alpha, **evectors_left;
-    double *lambda, *lambda_old, totalE, **alpha_old;
+    double *lambda, totalE, **alpha_old;
     int num_vecs, cc3_index, num_cc3_restarts = 0;
     double ra, rb, r2aa, r2bb, r2ab, cc3_eval, cc3_last_converged_eval = 0.0, C0, S0, R0;
     int cc3_stage; /* 0=eom_ccsd; 1=eom_cc3 (reuse sigmas), 2=recompute sigma */
@@ -161,6 +159,10 @@ void diag() {
     //    read_guess_init();
 
     if (params.wfn == "EOM_CC3") cc3_stage = 0; /* do EOM_CCSD first */
+
+    // Total Energy, Transition Irrep, Correlation Energy
+    // We need the variables in this order for sorting purposes.
+    std::vector<std::tuple<double, int, double>> state_data;
 
     outfile->Printf("Symmetry of ground state: %s\n", moinfo.irr_labs[moinfo.sym].c_str());
     // Master Loop over transition symmetries
@@ -301,7 +303,7 @@ void diag() {
 #endif
 
         std::vector<bool> converged(eom_params.cs_per_irrep[C_irr], false);
-        lambda_old = init_array(eom_params.cs_per_irrep[C_irr]);
+        std::vector<double> lambda_old(eom_params.cs_per_irrep[C_irr]);
         // L := Current number of multiroot Davidson vectors. Changes during loop.
         L = eom_params.cs_per_irrep[C_irr];
 
@@ -403,11 +405,12 @@ void diag() {
                 }
             }
 
+            // => Construct the Subspace Hamiltonian, G <=
             timer_on("BUILD G");
             /* Form G = C'*S matrix */
             G = std::make_shared<Matrix>(L, L);
 
-            /* Populate G matrix elements to be reused. We may not be able to reuse any. */
+            // ==> Populate G matrix elements to be reused. <==
             if (ignore_G_old) {
                 already_sigma = 0;
             }
@@ -415,6 +418,7 @@ void diag() {
             G->set_block(temp_slice, *G_old->get_block(temp_slice));
 
             for (int i = 0; i < L; ++i) {
+                // ==> Sort trial vectors <==
                 if (params.eom_ref == 0) {
                     /* Spin-adapt C */
                     sprintf(lbl, "%s %d", "CME", i);
@@ -463,7 +467,7 @@ void diag() {
                     global_dpd_->buf4_init(&CMnEf, PSIF_EOM_CMnEf, C_irr, 22, 28, 22, 28, 0, lbl);
                 }
 
-                /* Dot C's and sigma vectors together to form G matrix */
+                // ==> Compute needed elts. of G = C' * σ <==
                 for (j = 0; j < L; ++j) {
                     if (i < already_sigma && j < already_sigma) continue;
 
@@ -535,7 +539,7 @@ void diag() {
                     global_dpd_->buf4_close(&CMNEF);
                     global_dpd_->buf4_close(&Cmnef);
                 }
-            } /* end build of G */
+            }
 
             ignore_G_old = false;
             already_sigma = L;
@@ -547,7 +551,7 @@ void diag() {
 #endif
             G_old = G->clone();
 
-            /* Diagonalize G Matrix */
+            // => Diagonalize Subspace Hamiltonian, G <=
             lambda = init_array(L);     /* holds real part of eigenvalues of G */
             alpha = block_matrix(L, L); /* will hold eigenvectors of G */
             dgeev_eom(L, G->pointer(), lambda, alpha);
@@ -938,15 +942,17 @@ void diag() {
             outfile->Printf("though not all roots converged!\n\n");
         }
 
-        /* write Cs and energies to RAMPS file */
+        // => Post-process this symmetry block of states <=
+        // ==> Write Cs and energies to RAMPS file <==
         write_Rs(C_irr, lambda_old, converged);
-        /* compute R0 and normalize - also do any orthogonality checks */
+        // ==> Compute R0 and normalize - also do any orthogonality checks <==
         if (params.eom_ref == 0)
             rzero_rhf(C_irr, converged);
         else
             rzero(C_irr, converged);
 
         if (num_converged > 0) {
+            // ==> Print summary <==
             outfile->Printf("\nFinal Energetic Summary for Converged Roots of Irrep %s\n",
                             moinfo.irr_labs[moinfo.sym ^ C_irr].c_str());
             outfile->Printf("                     Excitation Energy              Total Energy\n");
@@ -958,23 +964,15 @@ void diag() {
                     else
                         totalE = lambda_old[i] + moinfo.eref;
 
-                    // Put this list in environment for testing - I don't like it much because it mixes all
-                    // the irreps together
-                    /*- strings so that variable-name psi variables get parsed in docs -*/
-                    /*- Process::environment.globals["CC ROOT n TOTAL ENERGY"] -*/
-                    /*- Process::environment.globals["CC ROOT n CORRELATION ENERGY"] -*/
+                    // ===> Store data for psivars later <===
+                    state_data.emplace_back(totalE, C_irr, lambda_old[i]);
 
-                    std::stringstream s, ss;
-                    s << "CC ROOT " << (num_converged_index + 1) << " TOTAL ENERGY";
-                    Process::environment.globals[s.str()] = totalE;
-                    ss << "CC ROOT " << (num_converged_index + 1) << " CORRELATION ENERGY";
-                    Process::environment.globals[ss.str()] = lambda_old[i];
-
+                    // ===> Print energies <===
                     outfile->Printf("EOM State %d %10.3lf %10.1lf %14.10lf  %17.12lf\n", ++num_converged_index,
                                     lambda_old[i] * pc_hartree2ev, lambda_old[i] * pc_hartree2wavenumbers,
                                     lambda_old[i], totalE);
 
-                    /* print out largest components of wavefunction */
+                    // ===> Print large amplitudes <===
                     outfile->Printf("\nLargest components of excited wave function #%d:\n", num_converged_index);
                     if (params.eom_ref == 0) {
                         sprintf(lbl, "%s %d %d", "RIA", C_irr, i);
@@ -1028,6 +1026,7 @@ void diag() {
 
                     // The 'key' or 'property' root is stored in eom_params.prop_sym and prop_root
                     // by default it is the uppermost state but not necesarily
+                    // ===> Write energy <===
                     if (C_irr == eom_params.prop_sym && i == eom_params.prop_root) {
                         outfile->Printf("\n\tPutting into environment energy for root of R irrep %d and root %d.\n",
                                         C_irr + 1, i + 1);
@@ -1038,19 +1037,54 @@ void diag() {
                         //            CORRELATION ENERGY: %15.10lf\n", lambda_old[i]+moinfo.ecc);
                     }
 
-                    // Check overlap with old wfns, if requested
+                    // ===> Write wfn overlap, if requested <===
                     if (params.overlap) overlap(C_irr, i);
 
-                }  // converged[i] == 1
-            }      // i
-        }          // if num_converged > 0
+                }
+            }
+        }
         outfile->Printf("\n");
 
         if (params.overlap) overlap_stash(C_irr);
 
-        free(lambda_old);
         free_block(alpha_old);
     } // End Master Loop
+
+    // => Save Psivars <=
+    // Edify the auto-docs.
+    /*- Process::environment.globals["CCname ROOT m TOTAL ENERGY"] -*/
+    /*- Process::environment.globals["CCname ROOT m (h) TOTAL ENERGY"] -*/
+    /*- Process::environment.globals["CCname ROOT m TOTAL ENERGY - h TRANSITION"] -*/
+    /*- Process::environment.globals["CCname ROOT m CORRELATION ENERGY"] -*/
+    /*- Process::environment.globals["CCname ROOT m (h) CORRELATION ENERGY"] -*/
+    /*- Process::environment.globals["CCname ROOT m CORRELATION ENERGY - h TRANSITION"] -*/
+
+    std::string short_name;
+    if (params.wfn == "EOM_CC2") {
+        short_name = "CC2";
+    } else if (params.wfn == "EOM_CC3") {
+        short_name = "CC3";
+    } else if (params.wfn == "EOM_CCSD") {
+        short_name = "CCSD";
+    }
+
+    std::map<std::string, int> irrep_counts = { {moinfo.irr_labs[moinfo.sym], 1} };
+    std::sort(state_data.begin(), state_data.end());
+    for (int i = 0; i < state_data.size(); ++i) {
+        const auto& tuple = state_data[i];
+        auto total_energy = std::get<0>(tuple);
+        auto trans_irrep = moinfo.irr_labs[std::get<1>(tuple)];
+        auto target_irrep = moinfo.irr_labs[moinfo.sym ^ std::get<1>(tuple)];
+        auto corr_energy = std::get<2>(tuple);
+        auto irrep_idx = irrep_counts[target_irrep];
+        Process::environment.globals[short_name + " ROOT " + std::to_string(i + 1) + " TOTAL ENERGY"] = total_energy;
+        Process::environment.globals[short_name + " ROOT " + std::to_string(i + 1) + " CORRELATION ENERGY"] = corr_energy;
+        Process::environment.globals[short_name + " ROOT " + std::to_string(i + 1) + " TOTAL ENERGY - " + trans_irrep + " TRANSITION"] = total_energy;
+        Process::environment.globals[short_name + " ROOT " + std::to_string(i + 1) + " CORRELATION ENERGY - " + trans_irrep + " TRANSITION"] = corr_energy;
+        Process::environment.globals[short_name + " ROOT " + std::to_string(irrep_idx) + " (" + target_irrep + ") TOTAL ENERGY"] = total_energy;
+        Process::environment.globals[short_name + " ROOT " + std::to_string(irrep_idx) + " (" + target_irrep + ") CORRELATION ENERGY"] = corr_energy;
+        irrep_counts[target_irrep]++;
+    }
 
     outfile->Printf("\tTotal # of sigma evaluations: %d\n", nsigma_evaluations);
     return;
@@ -1193,5 +1227,6 @@ void init_S2(int i, int C_irr) {
         global_dpd_->buf4_close(&SIjAb);
     }
 }
+
 }
 }  // namespace psi

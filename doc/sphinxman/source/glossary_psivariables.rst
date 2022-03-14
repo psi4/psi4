@@ -374,6 +374,25 @@ PSI Variables by Alpha
    The origin-dependence of the CCSD specific rotation in deg/[dm (g/cm^3)]/bohr and the
    length gauge, computed at (x) wavelength, (x) rounded to nearest integer.
 
+.. psivar:: CCname ROOT m CORRELATION ENERGY
+   CCname ROOT m (h) CORRELATION ENERGY
+   CCname ROOT m CORRELATION ENERGY - h TRANSITION
+
+   The correlation energy of given method from ground state to root m in h symmetry.
+   Conventions for root indexing and whether h refers to transition or root
+   irrep are as in :ref:`sec:psivarnotes`.
+
+.. psivar:: CCname ROOT m TOTAL ENERGY
+   CCname ROOT m (h) TOTAL ENERGY
+   CCname ROOT m TOTAL ENERGY - h TRANSITION
+   TD-fctl ROOT m TOTAL ENERGY
+   TD-fctl ROOT m (h) TOTAL ENERGY
+   TD-fctl ROOT m TOTAL ENERGY - h TRANSITION
+
+   The total energy of given method from ground state to root m in h symmetry.
+   Conventions for root indexing and whether h refers to transition or root
+   irrep are as in :ref:`sec:psivarnotes`.
+
 .. psivar:: CEPA(0) DIPOLE
 
    Dipole array [e a0] for the coupled electron pair approximation variant 0 level of theory, (3,).
@@ -1704,13 +1723,6 @@ PSI Variables by Alpha
    Conventions for root indexing and whether h refers to transition or root
    irrep are as in :ref:`sec:psivarnotes`.
 
-.. psivar:: TD-fctl ROOT m TOTAL ENERGY
-   TD-fctl ROOT m (h) TOTAL ENERGY
-   TD-fctl ROOT m TOTAL ENERGY - h TRANSITION
-
-   The total energy of given method from ground state to root m in h symmetry.
-   Conventions for root indexing and whether h refers to transition or root
-   irrep are as in :ref:`sec:psivarnotes`.
 
 .. psivar:: TD-fctl ROOT 0 -> ROOT m ELECTRIC TRANSITION DIPOLE MOMENT (LEN)
    TD-fctl ROOT 0 (h) -> ROOT m (i) ELECTRIC TRANSITION DIPOLE MOMENT (LEN)

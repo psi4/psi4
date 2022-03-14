@@ -1,9 +1,9 @@
 
     -----------------------------------------------------------------------
           Psi4: An Open-Source Ab Initio Electronic Structure Package
-                               Psi4 1.6a1.dev56 
+                               Psi4 undefined 
 
-                         Git: Rev {ccdensity_fix} 027e6dd dirty
+                         Git: Rev {eom_var} 5b439ed dirty
 
 
     D. G. A. Smith, L. A. Burns, A. C. Simmonett, R. M. Parrish,
@@ -30,10 +30,10 @@
     -----------------------------------------------------------------------
 
 
-    Psi4 started on: Monday, 14 February 2022 02:00PM
+    Psi4 started on: Monday, 14 March 2022 01:16PM
 
-    Process ID: 11736
-    Host:       dhcp189-242.emerson.emory.edu
+    Process ID: 23874
+    Host:       dhcp189-157.emerson.emory.edu
     PSIDATADIR: /Users/jonathonmisiewicz/psi4/objdir/stage/share/psi4
     Memory:     500.0 MiB
     Threads:    1
@@ -150,22 +150,22 @@ eom_ref = -38.221966233155 # TEST
 energy('eom-cc3')
 compare_values(scf_ref, variable("SCF TOTAL ENERGY"), 6, "SCF energy")              #TEST
 compare_values(cc3_ref, variable("CC3 TOTAL ENERGY"), 6, "CC3 energy")              #TEST
-compare_values(eom_ref, variable("CC ROOT 1 TOTAL ENERGY"), 6, "EOM-CC3 energy")    #TEST
+compare_values(eom_ref, variable("CC3 ROOT 1 TOTAL ENERGY"), 6, "EOM-CC3 energy")   #TEST
 
 --------------------------------------------------------------------------
 
 Scratch directory: /tmp/
 
-*** tstart() called on dhcp189-242.emerson.emory.edu
-*** at Mon Feb 14 14:00:16 2022
+*** tstart() called on dhcp189-157.emerson.emory.edu
+*** at Mon Mar 14 13:16:38 2022
 
    => Loading Basis Set <=
 
-    Name: ANONYMOUSC1823E4E
+    Name: ANONYMOUS73F9E484
     Role: ORBITAL
     Keyword: BASIS
-    atoms 1 entry C          line    22 inputblock anonymousc1823e4e 
-    atoms 2 entry H          line     5 inputblock anonymousc1823e4e 
+    atoms 1 entry C          line    22 inputblock anonymous73f9e484 
+    atoms 2 entry H          line     5 inputblock anonymous73f9e484 
 
 
          ---------------------------------------------------------
@@ -213,8 +213,8 @@ Scratch directory: /tmp/
 
   ==> Primary Basis <==
 
-  Basis Set: ANONYMOUSC1823E4E
-    Blend: ANONYMOUSC1823E4E
+  Basis Set: ANONYMOUS73F9E484
+    Blend: ANONYMOUS73F9E484
     Number of shells: 15
     Number of basis functions: 33
     Number of Cartesian functions: 35
@@ -273,24 +273,24 @@ Scratch directory: /tmp/
                         Total Energy        Delta E     RMS |[F,P]|
 
    @UHF iter SAD:   -37.45954292475091   -3.74595e+01   0.00000e+00 
-   @UHF iter   1:   -38.26453327391502   -8.04990e-01   5.71337e-03 ADIIS/DIIS
-   @UHF iter   2:   -38.27598667903774   -1.14534e-02   1.57889e-03 ADIIS/DIIS
-   @UHF iter   3:   -38.27709976752695   -1.11309e-03   5.28488e-04 ADIIS/DIIS
-   @UHF iter   4:   -38.27727669693479   -1.76929e-04   1.87711e-04 ADIIS/DIIS
-   @UHF iter   5:   -38.27730302381907   -2.63269e-05   6.21511e-05 DIIS
-   @UHF iter   6:   -38.27730628568217   -3.26186e-06   2.36022e-05 DIIS
-   @UHF iter   7:   -38.27730687486027   -5.89178e-07   9.31232e-06 DIIS
-   @UHF iter   8:   -38.27730697547304   -1.00613e-07   2.17470e-06 DIIS
-   @UHF iter   9:   -38.27730697939126   -3.91822e-09   5.18737e-07 DIIS
-   @UHF iter  10:   -38.27730697960749   -2.16239e-10   1.08043e-07 DIIS
-   @UHF iter  11:   -38.27730697961708   -9.58522e-12   1.75408e-08 DIIS
-   @UHF iter  12:   -38.27730697961735   -2.70006e-13   3.56930e-09 DIIS
+   @UHF iter   1:   -38.26453327391502   -8.04990e-01   5.71337e-03 DIIS/ADIIS
+   @UHF iter   2:   -38.27598667903774   -1.14534e-02   1.57889e-03 DIIS/ADIIS
+   @UHF iter   3:   -38.27709976752695   -1.11309e-03   5.28488e-04 DIIS/ADIIS
+   @UHF iter   4:   -38.27727653121834   -1.76764e-04   1.88230e-04 DIIS/ADIIS
+   @UHF iter   5:   -38.27730301874607   -2.64875e-05   6.21899e-05 DIIS
+   @UHF iter   6:   -38.27730628562913   -3.26688e-06   2.36032e-05 DIIS
+   @UHF iter   7:   -38.27730687484414   -5.89215e-07   9.31302e-06 DIIS
+   @UHF iter   8:   -38.27730697547243   -1.00628e-07   2.17485e-06 DIIS
+   @UHF iter   9:   -38.27730697939117   -3.91874e-09   5.18791e-07 DIIS
+   @UHF iter  10:   -38.27730697960752   -2.16353e-10   1.08062e-07 DIIS
+   @UHF iter  11:   -38.27730697961712   -9.59943e-12   1.75442e-08 DIIS
+   @UHF iter  12:   -38.27730697961736   -2.41585e-13   3.56927e-09 DIIS
   Energy and wave function converged.
 
 
   ==> Post-Iterations <==
 
-   @Spin Contamination Metric:   9.241628135E-03
+   @Spin Contamination Metric:   9.241628134E-03
    @S^2 Expected:                7.500000000E-01
    @S^2 Observed:                7.592416281E-01
    @S   Expected:                5.000000000E-01
@@ -339,14 +339,14 @@ Scratch directory: /tmp/
     DOCC [     3,    0,    0,    0 ]
     SOCC [     0,    0,    1,    0 ]
 
-  @UHF Final Energy:   -38.27730697961735
+  @UHF Final Energy:   -38.27730697961736
 
    => Energetics <=
 
     Nuclear Repulsion Energy =              2.8353842329165926
-    One-Electron Energy =                 -56.5869343457647034
-    Two-Electron Energy =                  15.4742431332307575
-    Total Energy =                        -38.2773069796173502
+    One-Electron Energy =                 -56.5869343457251901
+    Two-Electron Energy =                  15.4742431331912318
+    Total Energy =                        -38.2773069796173644
 
   UHF NO Occupations:
   HONO-2 :    2 A1 1.9995061
@@ -355,7 +355,7 @@ Scratch directory: /tmp/
   LUNO+0 :    4 A1 0.0041349
   LUNO+1 :    5 A1 0.0004939
   LUNO+2 :    6 A1 0.0000006
-  LUNO+3 :    7 A1 0.0000000
+  LUNO+3 :    2 B1 0.0000000
 
 
 Computation Completed
@@ -378,15 +378,15 @@ Properties computed using the SCF density matrix
      X:     0.0000      Y:     0.0000      Z:     1.5738     Total:     1.5738
 
 
-*** tstop() called on dhcp189-242.emerson.emory.edu at Mon Feb 14 14:00:16 2022
+*** tstop() called on dhcp189-157.emerson.emory.edu at Mon Mar 14 13:16:39 2022
 Module time:
-	user time   =       0.47 seconds =       0.01 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.76 seconds =       0.01 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.47 seconds =       0.01 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.76 seconds =       0.01 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
  MINTS: Wrapper to libmints.
    by Justin Turney
 
@@ -411,8 +411,8 @@ Total time:
         Stored in file 33.
 
 
-*** tstart() called on dhcp189-242.emerson.emory.edu
-*** at Mon Feb 14 14:00:17 2022
+*** tstart() called on dhcp189-157.emerson.emory.edu
+*** at Mon Mar 14 13:16:40 2022
 
 
 	Wfn Parameters:
@@ -497,7 +497,7 @@ Total time:
 	Starting AB second half-transformation.
 	Starting BB second half-transformation.
 	Two-electron integral transformation complete.
-	Frozen core energy     =    -33.30400349325223
+	Frozen core energy     =    -33.30400349325236
 
 	Size of irrep 0 of <AB|CD> integrals:      0.016 (MW) /      0.131 (MB)
 	Size of irrep 1 of <AB|CD> integrals:      0.005 (MW) /      0.039 (MB)
@@ -548,23 +548,23 @@ Total time:
 	Total:                                     0.002 (MW) /      0.013 (MB)
 
 	Nuclear Rep. energy          =      2.83538423291659
-	SCF energy                   =    -38.27730697961735
-	One-electron energy          =    -12.61930518456482
-	Two-electron (AA) energy     =      1.28902381507314
-	Two-electron (BB) energy     =      0.38514919089554
-	Two-electron (AB) energy     =      3.13644445931440
-	Two-electron energy          =      4.81061746528307
-	Reference energy             =    -38.27730697961738
+	SCF energy                   =    -38.27730697961736
+	One-electron energy          =    -12.61930518457004
+	Two-electron (AA) energy     =      1.28902381507448
+	Two-electron (BB) energy     =      0.38514919089623
+	Two-electron (AB) energy     =      3.13644445931765
+	Two-electron energy          =      4.81061746528837
+	Reference energy             =    -38.27730697961744
 
-*** tstop() called on dhcp189-242.emerson.emory.edu at Mon Feb 14 14:00:17 2022
+*** tstop() called on dhcp189-157.emerson.emory.edu at Mon Mar 14 13:16:40 2022
 Module time:
-	user time   =       0.06 seconds =       0.00 minutes
-	system time =       0.14 seconds =       0.00 minutes
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.25 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.57 seconds =       0.01 minutes
-	system time =       0.26 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.93 seconds =       0.02 minutes
+	system time =       0.39 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
             **************************
             *                        *
             *        CCENERGY        *
@@ -572,8 +572,8 @@ Total time:
             **************************
 
     Nuclear Rep. energy (wfn)     =    2.835384232916593
-    SCF energy          (wfn)     =  -38.277306979617350
-    Reference energy    (file100) =  -38.277306979617379
+    SCF energy          (wfn)     =  -38.277306979617364
+    Reference energy    (file100) =  -38.277306979617443
 
     Input parameters:
     -----------------
@@ -602,27 +602,27 @@ Total time:
     SCSN-MP2        =     False
     SCS-CCSD        =     False
 
-MP2 correlation energy -0.0814764554506603
+MP2 correlation energy -0.0814764554507952
                 Solving CC Amplitude Equations
                 ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag    D2Diag
   ----     ---------------------    ---------   ----------  ----------  ----------   --------
-     0        -0.081476455450660    0.000e+00    0.000000    0.000000    0.000000    0.000000
-     1        -0.100346437539435    5.672e-02    0.008161    0.000000    0.000000    0.000000
-     2        -0.109555883752014    2.715e-02    0.015638    0.000000    0.000000    0.000000
-     3        -0.110501035613285    9.720e-03    0.018561    0.000000    0.000000    0.000000
-     4        -0.110667164490028    3.256e-03    0.018723    0.000000    0.000000    0.000000
-     5        -0.110662428949275    1.394e-03    0.018601    0.000000    0.000000    0.000000
-     6        -0.110660986530976    6.048e-04    0.018487    0.000000    0.000000    0.000000
-     7        -0.110673861931800    1.639e-04    0.018479    0.000000    0.000000    0.000000
-     8        -0.110669651665970    4.988e-05    0.018476    0.000000    0.000000    0.000000
-     9        -0.110669471136449    1.884e-05    0.018477    0.000000    0.000000    0.000000
-    10        -0.110669328812437    7.575e-06    0.018478    0.000000    0.000000    0.000000
-    11        -0.110669493383145    2.779e-06    0.018478    0.000000    0.000000    0.000000
-    12        -0.110669433460538    1.046e-06    0.018478    0.000000    0.000000    0.000000
-    13        -0.110669398903257    3.340e-07    0.018478    0.000000    0.000000    0.000000
-    14        -0.110669398645605    1.268e-07    0.018478    0.000000    0.000000    0.000000
-    15        -0.110669401120191    4.838e-08    0.018478    0.000000    0.000000    0.000000
+     0        -0.081476455450795    0.000e+00    0.000000    0.000000    0.000000    0.000000
+     1        -0.100346437539658    5.672e-02    0.008161    0.000000    0.000000    0.000000
+     2        -0.109555883752333    2.715e-02    0.015638    0.000000    0.000000    0.000000
+     3        -0.110501035613630    9.720e-03    0.018561    0.000000    0.000000    0.000000
+     4        -0.110667164490382    3.256e-03    0.018723    0.000000    0.000000    0.000000
+     5        -0.110662428949629    1.394e-03    0.018601    0.000000    0.000000    0.000000
+     6        -0.110660986531329    6.048e-04    0.018487    0.000000    0.000000    0.000000
+     7        -0.110673861932154    1.639e-04    0.018479    0.000000    0.000000    0.000000
+     8        -0.110669651666324    4.988e-05    0.018476    0.000000    0.000000    0.000000
+     9        -0.110669471136803    1.884e-05    0.018477    0.000000    0.000000    0.000000
+    10        -0.110669328812790    7.575e-06    0.018478    0.000000    0.000000    0.000000
+    11        -0.110669493383499    2.779e-06    0.018478    0.000000    0.000000    0.000000
+    12        -0.110669433460892    1.046e-06    0.018478    0.000000    0.000000    0.000000
+    13        -0.110669398903611    3.340e-07    0.018478    0.000000    0.000000    0.000000
+    14        -0.110669398645959    1.268e-07    0.018478    0.000000    0.000000    0.000000
+    15        -0.110669401120545    4.838e-08    0.018478    0.000000    0.000000    0.000000
 
     Iterations converged.
 
@@ -687,16 +687,16 @@ MP2 correlation energy -0.0814764554506603
       0   0  23  23        -0.0294540187
       0   1  22  24        -0.0290773407
 
-    SCF energy       (wfn)                    =  -38.277306979617350
-    Reference energy (file100)                =  -38.277306979617379
+    SCF energy       (wfn)                    =  -38.277306979617364
+    Reference energy (file100)                =  -38.277306979617443
 
-    Opposite-spin MP2 correlation energy      =   -0.069193482559705
-    Same-spin MP2 correlation energy          =   -0.012282972890956
+    Opposite-spin MP2 correlation energy      =   -0.069193482559841
+    Same-spin MP2 correlation energy          =   -0.012282972890954
     Singles MP2 correlation energy            =   -0.000000000000000
-    MP2 correlation energy                    =   -0.081476455450660
-      * MP2 total energy                      =  -38.358783435068041
-    CC3 correlation energy                    =   -0.110669401120191
-      * CC3 total energy                      =  -38.387976380737570
+    MP2 correlation energy                    =   -0.081476455450795
+      * MP2 total energy                      =  -38.358783435068240
+    CC3 correlation energy                    =   -0.110669401120545
+      * CC3 total energy                      =  -38.387976380737989
 
 
 			**************************
@@ -751,9 +751,9 @@ Doing Wabei terms.
 	**********************************************************
 
 	Nuclear Rep. energy (wfn)     =    2.835384232916593
-	SCF energy          (wfn)     =  -38.277306979617350
-	Reference energy    (file100) =  -38.277306979617379
-	CC3 energy          (file100) =   -0.110669401120191
+	SCF energy          (wfn)     =  -38.277306979617364
+	Reference energy    (file100) =  -38.277306979617443
+	CC3 energy          (file100) =   -0.110669401120545
 
 	Input parameters:
 	-----------------
@@ -789,7 +789,7 @@ Doing Wabei terms.
 
 
 
-Fae   dot Fae   total 1048.9031837995
+Fae   dot Fae   total 1048.9031837972
 Fmi   dot Fmi   total    2.2574113079
 WmBeJ and WMbEj dots    0.3605429536
 Symmetry of ground state: B1
@@ -815,8 +815,8 @@ Iter=4    L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
                      3   0.3038564652  -1.19e-03    3.65e-02      N
 Iter=5    L=15    Root    EOM Energy     Delta E   Res. Norm    Conv?
                      1   0.1248811775  -2.02e-03    2.44e-02      N
-                     2   0.2265956732  -1.04e-02    1.48e-01      N
-                     3   0.2383630420  -6.55e-02    6.42e-02      N
+                     2   0.2265956731  -1.04e-02    1.48e-01      N
+                     3   0.2383630421  -6.55e-02    6.42e-02      N
 Iter=6    L=18    Root    EOM Energy     Delta E   Res. Norm    Conv?
                      1   0.1241141277  -7.67e-04    1.29e-02      N
                      2   0.2038930269  -2.27e-02    7.20e-02      N
@@ -846,9 +846,9 @@ Iter=12   L=36    Root    EOM Energy     Delta E   Res. Norm    Conv?
                      2   0.1970651347   1.17e-06    2.74e-04      N
                      3   0.2372438439  -2.68e-08    5.94e-05      N
 Iter=13   L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.1239050380  -2.05e-15    2.57e-05      N
-                     2   0.1970651347   3.11e-15    2.74e-04      N
-                     3   0.2372438439  -6.88e-15    5.94e-05      N
+                     1   0.1239050380  -1.19e-15    2.57e-05      N
+                     2   0.1970651347   2.78e-15    2.74e-04      N
+                     3   0.2372438439   2.53e-15    5.94e-05      N
 Iter=14   L=9     Root    EOM Energy     Delta E   Res. Norm    Conv?
                      1   0.1239050372  -7.54e-10    8.00e-06      N
                      2   0.1970650751  -5.96e-08    9.97e-05      N
@@ -887,7 +887,7 @@ Overlaps of Rs with EOM CCSD eigenvector:
 	 1      0.976518
 	 2      0.048593
 follow_root returning: 1
-                     2   0.1661693746  -3.09e-02    1.97e-02      N
+                     2   0.1661693745  -3.09e-02    1.97e-02      N
 Iter=2    L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
 Overlaps of Rs with EOM CCSD eigenvector:
 	 0     -0.169538
@@ -1095,13 +1095,13 @@ Copying root 2 to start of PSIF_EOM_Cxxx files.
 Change in CC3 energy from last iterated value    0.0000000416
 
 Procedure converged for 1 root(s).
-<R|R> =   0.9999999999999999
+<R|R> =   1.0000000000000002
 EOM CC3 R0 for root 0 =   0.00000000000
 
 Final Energetic Summary for Converged Roots of Irrep A1
                      Excitation Energy              Total Energy
                 (eV)     (cm^-1)     (au)             (au)
-EOM State 1      4.517    36435.0   0.1660101476   -38.221966233155
+EOM State 1      4.517    36435.0   0.1660101476   -38.221966233160
 
 Largest components of excited wave function #1:
  RIA (libdpd indices) : (cscf notation)
@@ -1140,7 +1140,7 @@ Largest components of excited wave function #1:
     CC3 energy............................................................................PASSED
     EOM-CC3 energy........................................................................PASSED
 
-    Psi4 stopped on: Monday, 14 February 2022 02:00PM
-    Psi4 wall time for execution: 0:00:13.45
+    Psi4 stopped on: Monday, 14 March 2022 01:17PM
+    Psi4 wall time for execution: 0:00:23.45
 
 *** Psi4 exiting successfully. Buy a developer a beer!
