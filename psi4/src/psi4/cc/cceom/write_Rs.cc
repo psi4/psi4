@@ -47,7 +47,7 @@
 namespace psi {
 namespace cceom {
 
-void write_Rs(int C_irr, double *evals, int *converged) {
+void write_Rs(int C_irr, const std::vector<double>& evals, const std::vector<bool>& converged) {
     int i;
     dpdfile2 CME, Cme;
     dpdbuf4 CMNEF, Cmnef, CMnEf;
