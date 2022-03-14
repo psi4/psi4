@@ -1,3 +1,5 @@
+import sys
+import shutil
 from pathlib import Path
 from typing import List
 
@@ -177,7 +179,9 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
         print(f"<<< {k} >>>")
         print(v)
 
-    _, output = execute(["psi4", "input.dat"], infiles_with_contents, outfiles)
+    command = [sys.executable, shutil.which("psi4"), "input.dat"]
+    print(f"{command=}")
+    _, output = execute(command, infiles_with_contents, outfiles)
 
     success = output["proc"].poll() == 0
     assert success, output["stdout"] + output["stderr"]
