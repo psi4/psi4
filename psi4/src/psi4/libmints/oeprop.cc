@@ -837,7 +837,7 @@ void OEProp::compute() {
 }
 
 void OEProp::compute_multipoles(int order, bool transition) {
-    MultipolePropCalc::MultipoleOutputType mpoles = mpc_.compute_multipoles(order, transition, true, print_ > 4);
+    auto mpoles = mpc_.compute_multipoles(order, transition, true, print_ > 4);
 
     for (int l = 1; l <= order; ++l) {
         int component = 0;
@@ -858,6 +858,26 @@ void OEProp::compute_multipoles(int order, bool transition) {
         } else {
             int n = (1 << l);
             sstream << n << "-POLE";
+        }
+
+        for (auto it = mpoles->begin(); it != mpoles->end(); ++it) {
+            std::string name;
+            double total_mpole = 0.0;
+            int order_mpole;
+            // unpack the multipole, which is: name, nuc, elec, total, order, ignore nuc and elec:
+            std::tie(name, std::ignore, std::ignore, total_mpole, order_mpole) = *it;
+            /*- Process::environment.globals["mtd DIPOLE"] -*/
+            /*- Process::environment.globals["mtd QUADRUPOLE"] -*/
+            /*- Process::environment.globals["mtd OCTUPOLE"] -*/
+            /*- Process::environment.globals["mtd HEXADECAPOLE"] -*/
+            /*- Process::environment.globals["mtd 32-POLE"] -*/
+            /*- Process::environment.globals["mtd 64-POLE"] -*/
+            /*- Process::environment.globals["mtd 128-POLE"] -*/
+
+            if (order_mpole == l) {
+                multipole_array->set(0, component, total_mpole);
+                ++component;
+            }
         }
 
         Process::environment.arrays[sstream.str()] = multipole_array;

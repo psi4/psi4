@@ -1634,9 +1634,6 @@ def scf_helper(name, post_scf=True, **kwargs):
         for obj in [core, scf_wfn]:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                # component qcvars can be retired at v1.5
-                for xyz in 'XYZ':
-                    obj.set_variable('CURRENT DIPOLE ' + xyz, obj.variable('SCF DIPOLE ' + xyz))
             obj.set_variable("CURRENT DIPOLE", obj.variable("SCF DIPOLE"))  # P::e SCF
 
     # Write out MO's
@@ -3005,11 +3002,6 @@ def run_scf_property(name, **kwargs):
     oe.compute()
     scf_wfn.oeprop = oe
 
-    # Always must set SCF dipole (retire components at v1.5)
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        for cart in ["X", "Y", "Z"]:
-            core.set_variable("SCF DIPOLE " + cart, core.variable(name + " DIPOLE " + cart))
     core.set_variable("SCF DIPOLE", core.variable(name + " DIPOLE"))  # P::e SCF
 
     # Run Linear Respsonse

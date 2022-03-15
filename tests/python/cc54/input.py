@@ -1,6 +1,9 @@
 #! CCSD dipole with user-specified basis set
 import psi4
 
+ref_di_au = [0.0, 0.0, -0.724043461736]  #TEST
+ref_quad_au = [[-5.84669623357, 0.0, 0.0], [0.0, -3.37343584714, 0.0], [0.0, 0.0, -4.70310405195]]  #TEST
+
 psi4.set_output_file("output.dat", False)
 
 h2o = psi4.geometry("""
@@ -101,16 +104,7 @@ D 2 1.00
 
 ccsd_e, wfn = psi4.properties('ccsd',properties=['dipole'],return_wfn=True)
 psi4.oeprop(wfn,"DIPOLE", "QUADRUPOLE", title="(OEPROP)CC")
-import warnings  #TEST
-with warnings.catch_warnings():  #TEST
-    warnings.simplefilter("ignore")  #TEST
-    psi4.compare_values(psi4.variable("(OEPROP)CC DIPOLE X"), 0.000000000000,6,"CC DIPOLE X")             #TEST
-    psi4.compare_values(psi4.variable("(OEPROP)CC DIPOLE Y"), 0.000000000000,6,"CC DIPOLE Y")             #TEST
-    psi4.compare_values(psi4.variable("(OEPROP)CC DIPOLE Z"),-1.840334899884,6,"CC DIPOLE Z")             #TEST
-    psi4.compare_values(psi4.variable("(OEPROP)CC QUADRUPOLE XX"),-7.864006962064,6,"CC QUADRUPOLE XX")   #TEST
-    psi4.compare_values(psi4.variable("(OEPROP)CC QUADRUPOLE XY"), 0.000000000000,6,"CC QUADRUPOLE XY")   #TEST
-    psi4.compare_values(psi4.variable("(OEPROP)CC QUADRUPOLE XZ"), 0.000000000000,6,"CC QUADRUPOLE XZ")   #TEST
-    psi4.compare_values(psi4.variable("(OEPROP)CC QUADRUPOLE YY"),-4.537386915305,6,"CC QUADRUPOLE YY")   #TEST
-    psi4.compare_values(psi4.variable("(OEPROP)CC QUADRUPOLE YZ"), 0.000000000000,6,"CC QUADRUPOLE YZ")   #TEST
-    psi4.compare_values(psi4.variable("(OEPROP)CC QUADRUPOLE ZZ"),-6.325836255265,6,"CC QUADRUPOLE ZZ")   #TEST
-psi4.core.print_variables()
+
+psi4.compare_values(ref_di_au, psi4.variable('(OEPROP)CC DIPOLE'), 4, "CC DIPOLE")  #TEST
+psi4.compare_values(ref_quad_au, psi4.variable('(OEPROP)CC QUADRUPOLE'), 4, "CC QUADRUPOLE")  #TEST
+
