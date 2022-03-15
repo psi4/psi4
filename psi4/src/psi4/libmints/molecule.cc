@@ -375,8 +375,9 @@ int Molecule::atom_at_position2(const Vector3 &b, const double tol) const {
     }
     if (num_near > 1){
         throw PSIEXCEPTION(
-          "More than one atom within tolerance distance! The geometry is either near nuclear fusion "
-          "or symmetry detection tolerance has been set too large.");
+          "More than one atom within tolerance distance! The geometry is either near nuclear fusion or symmetry "
+          "detection tolerance has been set too large. If you want to bypass this error please open an issue at "
+		  "https://github.com/psi4/psi4/issues");
     }
     return std::min_element(dists.cbegin(), dists.cend()) - dists.cbegin();
 }
