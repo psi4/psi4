@@ -14,13 +14,13 @@ jobs:
       matrix:
         cfg:
 
-          - runs-on: ubuntu-latest
-            python-version: "3.10"
-            mkl-version: "2021.4"
-            base-channel: "defaults"
-            cmargs: >
-              -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D BUILD_SHARED_LIBS=ON
+          #- runs-on: ubuntu-latest
+          #  python-version: "3.10"
+          #  mkl-version: "2021.4"
+          #  base-channel: "defaults"
+          #  cmargs: >
+          #    -D CMAKE_VERBOSE_MAKEFILE=OFF
+          #    -D BUILD_SHARED_LIBS=ON
 
           - runs-on: macos-latest
             python-version: "3.9"
@@ -125,7 +125,8 @@ jobs:
           sed -E -i.bak "s;- c-compiler;- clang_osx-64;g" build.yaml
           sed -E -i.bak "s;- cxx-compiler;- clangxx_osx-64;g" build.yaml
           sed -E -i.bak "s;- fortran-compiler;- gfortran_osx-64;g" build.yaml
-          sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_5;g" build.yaml
+          #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_5;g" build.yaml
+          sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/dev::libint2=2.6.0=h879752b_3;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # permanent, as we use clang-cl, not c-f compiler
@@ -225,6 +226,7 @@ jobs:
         EOF
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_5;g" build.yaml
+          #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/dev::libint2=2.6.0=h879752b_3;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # semi-permanent
@@ -493,3 +495,4 @@ jobs:
 #              from . import core
 #              ImportError: DLL load failed while importing core: The specified module could not be found."
 # Soln:
+#   Something of adding numpy and scipy to build env and adding mkl-devel= to run env
