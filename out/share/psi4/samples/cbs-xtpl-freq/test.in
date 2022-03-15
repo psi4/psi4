@@ -1,0 +1,63 @@
+#! Various gradients for a strained helium dimer and water molecule
+import numpy as np
+
+nucenergy_ref = 9.3008469403
+
+molecule h2o_dz {
+    O       
+    H             1    0.946279
+    H             1    0.946279      2  104.619334
+}
+
+molecule h2o_tz {
+    O       
+    H             1    0.940607
+    H             1    0.940607      2  106.000618
+}
+
+molecule h2o_dtz {
+    O       
+    H             1    0.939201
+    H             1    0.939201      2  106.350145
+}
+
+# Conventional to keep angular momentum low
+set {
+    scf_type df
+    e_convergence 1.e-10
+}
+
+h2o_dz.update_geometry()
+compare_values(nucenergy_ref, h2o_dz.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+
+clean()
+
+# SCF TESTS
+
+# reference frequencies: CFOUR v1.0 with:
+# *ACES2(CALC=HF,BASIS=PVDZ,ABCDTYPE=AOBASIS,CC_PROG=ECC,VIB=ANALYTIC,SCF_CONV=10,LINEQ_CONV=10)
+# 1775.7236, 4113.8382, 4212.2220
+
+scf_dz, wfn_dz = freq('SCF/cc-pVDZ', return_wfn=True, dertype=1, molecule=h2o_dz)
+compare_values(wfn_dz.frequencies().get(0), 1776.1550, 1, "SCF/cc-pVDZ Frequency 1")            #TEST
+compare_values(wfn_dz.frequencies().get(1), 4113.6950, 1, "SCF/cc-pVDZ Frequency 2")            #TEST
+compare_values(wfn_dz.frequencies().get(2), 4212.1246, 1, "SCF/cc-pVDZ Frequency 3")            #TEST
+
+# reference frequencies: G09.D01 with:
+# freq=noraman hf/cc-pvtz
+# 1753.0400, 4126.9754, 4226.8715
+# reference frequencies: CFOUR v1.0 with: 
+# *ACES2(CALC=HF,BASIS=PVTZ,ABCDTYPE=AOBASIS,CC_PROG=ECC,VIB=ANALYTIC,SCF_CONV=10,LINEQ_CONV=10)
+# 1753.0405, 4126.9714, 4226.8671
+
+scf_tz, wfn_tz = freq('SCF/cc-pVTZ', return_wfn=True, dertype=1, molecule=h2o_tz)
+compare_values(wfn_tz.frequencies().get(0), 1753.0273, 1, "SCF/cc-pVTZ Frequency 1")            #TEST
+compare_values(wfn_tz.frequencies().get(1), 4127.0329, 1, "SCF/cc-pVTZ Frequency 2")            #TEST
+compare_values(wfn_tz.frequencies().get(2), 4227.0130, 1, "SCF/cc-pVTZ Frequency 3")            #TEST
+
+scf_dtz, wfn_dtz = freq('scf/cc-pv[dt]z', return_wfn=True, dertype=1, molecule=h2o_dtz)
+compare_values(wfn_dtz.frequencies().get(0), 1747.7069, 1, "SCF/cc-pV[DT]Z Frequency 1")        #TEST
+compare_values(wfn_dtz.frequencies().get(1), 4130.2408, 1, "SCF/cc-pV[DT]Z Frequency 1")        #TEST
+compare_values(wfn_dtz.frequencies().get(2), 4230.6358, 1, "SCF/cc-pV[DT]Z Frequency 1")        #TEST
+
+

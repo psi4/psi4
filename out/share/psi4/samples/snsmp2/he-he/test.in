@@ -1,0 +1,13 @@
+#! sns-mp2 on helium dimer
+
+molecule mol {
+0 1
+He 0 0 0
+--
+He 2 0 0
+}
+
+energy('sns-mp2')
+
+compare_values(  0.00176708227, variable('SNS-MP2 TOTAL ENERGY'),                         5, "SNS-MP2 IE [Eh]")  #TEST
+

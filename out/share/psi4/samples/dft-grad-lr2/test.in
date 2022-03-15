@@ -1,0 +1,68 @@
+#! Tests CAM gradients with and without XC pieces to narrow grid error
+
+func_reference = psi4.Matrix.from_list([                         #TEST
+ [ 0.,          0.,         -5.23600907e-02],                    #TEST
+ [ 0.,          0.,          5.23600907e-02]])                   #TEST
+cam_b3lyp_reference = psi4.Matrix.from_list([                    #TEST
+ [ 0.,          0.,         -1.09138077e-01],                    #TEST
+ [ 0.,          0.,          1.09137576e-01]])                   #TEST
+func_uks_reference = psi4.Matrix.from_list([                     #TEST
+ [ 0.,          0.,          1.77777928e-03],                    #TEST
+ [ 0.,          0.,         -1.77777928e-03]])                   #TEST
+cam_b3lyp_uks_reference = psi4.Matrix.from_list([                #TEST
+ [ 0.,          0.,         -3.46813335e-02],                    #TEST
+ [ 0.,          0.,          3.46809033e-02]])                   #TEST
+
+
+molecule {
+    H  0.000  0.000  0.000
+    F  0.000  0.000  1.100
+}
+
+
+set {
+    scf_type              df
+    basis                 cc-pvdz
+    dft_radial_points     120
+    dft_spherical_points  434
+    e_convergence         12
+    d_convergence         10
+    points 5
+}
+
+func = {
+    "name": "random",
+    "x_hf": {
+        "alpha": 0.6,
+        "beta": 0.9,
+        "omega": 0.2
+    },
+    "c_functionals": {}
+}
+
+anl_grad = gradient('scf', dft_functional=func, dertype=1)
+fd_grad = gradient('scf', dft_functional=func, dertype=0)
+compare_matrices(func_reference, anl_grad, 6, "Analytic vs Reference CAM-like Gradients")    #TEST
+compare_matrices(anl_grad, fd_grad, 6, "Analytic vs FD CAM Gradients")    #TEST
+
+anl_grad = gradient('scf', dft_functional="CAM-B3LYP", dertype=1)
+fd_grad = gradient('scf', dft_functional="CAM-B3LYP", dertype=0)
+compare_matrices(cam_b3lyp_reference, anl_grad, 6, "Analytic vs Reference CAM Gradients")    #TEST
+compare_matrices(anl_grad, fd_grad, 5, "Analytic vs FD CAM Gradients")    #TEST
+
+molecule {
+    1 2
+    H  0.000  0.000  0.000
+    F  0.000  0.000  1.100
+}
+
+set reference uks
+fd_grad = gradient('scf', dft_functional=func, dertype=0)
+anl_grad = gradient('scf', dft_functional=func, dertype=1)
+compare_matrices(func_uks_reference, anl_grad, 6, "Analytic vs Reference CAM-like UKS Gradients")    #TEST
+compare_matrices(anl_grad, fd_grad, 6, "Analytic vs FD CAM UKS Gradients")    #TEST
+
+anl_grad = gradient('scf', dft_functional="CAM-B3LYP", dertype=1)
+fd_grad = gradient('scf', dft_functional="CAM-B3LYP", dertype=0)
+compare_matrices(cam_b3lyp_uks_reference, anl_grad, 6, "Analytic vs Reference CAM Gradients")    #TEST
+compare_matrices(anl_grad, fd_grad, 4, "Analytic vs FD CAM Gradients")    #TEST

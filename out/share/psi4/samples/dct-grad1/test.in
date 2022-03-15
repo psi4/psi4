@@ -1,0 +1,108 @@
+#! Various DCT analytic gradients for the O2 molecule with 6-31G basis set
+
+ref_dc06 = psi4.Matrix.from_list([                                            #TEST
+                [ 0.000000000000,     0.000000000000,     0.009067071330],    #TEST
+                [ 0.000000000000,     0.000000000000,    -0.009067071330]     #TEST
+                ])                                                            #TEST
+ref_odc06 = psi4.Matrix.from_list([                                           #TEST
+                [ 0.000000000000,     0.000000000000,     0.015914392500],    #TEST
+                [ 0.000000000000,     0.000000000000,    -0.015914392500]     #TEST
+                ])                                                            #TEST
+ref_odc12 = psi4.Matrix.from_list([                                           #TEST
+                [ 0.000000000000,     0.000000000000,     0.004052834155],    #TEST
+                [ 0.000000000000,     0.000000000000,    -0.004052834155]     #TEST
+                ])                                                            #TEST
+ref_odc13 = psi4.Matrix.from_list([                                           #TEST
+                [ 0.000000000000,     0.000000000000,     0.002985330308],    #TEST
+                [ 0.000000000000,     0.000000000000,    -0.002985330308]     #TEST
+                ])                                                            #TEST
+
+molecule o2 {
+0 3
+O
+O 1 R
+
+units bohr
+R = 2.400
+}
+
+set {
+  basis           6-31G
+  r_convergence   8
+  diis_start_convergence 1e-2
+  qc_coupling     true
+  reference       uhf
+}
+
+#AO_BASIS = NONE
+set ao_basis        none
+set dct_functional dc-06
+set algorithm       simultaneous
+grad_sim = gradient('dct')
+compare_matrices(ref_dc06, grad_sim, 6, "DC-06 analytic gradient (simultaneous, ao_basis=none)")      #TEST
+
+set ao_basis        none
+set dct_functional dc-06
+set algorithm       qc
+grad_qc = gradient('dct')
+compare_matrices(ref_dc06, grad_qc, 6, "DC-06 analytic gradient (qc, ao_basis=none)")                 #TEST
+
+set ao_basis        none
+set dct_functional odc-06
+set algorithm simultaneous
+grad_odc06 = gradient('dct')
+compare_matrices(ref_odc06, grad_odc06, 6, "ODC-06 analytic gradient (simultaneous, ao_basis=none)")  #TEST
+
+set ao_basis        none
+set dct_functional odc-06
+set algorithm       qc
+grad_odc06 = gradient('dct')
+compare_matrices(ref_odc06, grad_odc06, 6, "ODC-06 analytic gradient (qc, ao_basis=none)")  #TEST
+
+set ao_basis        none
+set dct_functional odc-12
+set algorithm       simultaneous
+grad_odc12 = gradient('dct')
+compare_matrices(ref_odc12, grad_odc12, 6, "ODC-12 analytic gradient (simultaneous, ao_basis=none)")  #TEST
+
+set ao_basis        none
+set dct_functional odc-12
+set algorithm       qc
+grad_odc12 = gradient('dct')
+compare_matrices(ref_odc12, grad_odc12, 6, "ODC-12 analytic gradient (qc, ao_basis=none)")  #TEST
+
+set ao_basis        none
+set dct_functional odc-13
+set algorithm       simultaneous
+grad_odc13 = gradient('dct')
+compare_matrices(ref_odc13, grad_odc13, 6, "ODC-13 analytic gradient (simultaneous, ao_basis=none)")  #TEST
+
+set ao_basis        none
+set dct_functional odc-13
+set algorithm       qc
+grad_odc13 = gradient('dct')
+compare_matrices(ref_odc13, grad_odc13, 6, "ODC-13 analytic gradient (qc, ao_basis=none)")  #TEST
+
+#AO_BASIS = DISK 
+set ao_basis        disk
+set dct_functional dc-06
+set algorithm       simultaneous
+grad_sim = gradient('dct')
+compare_matrices(ref_dc06, grad_sim, 6, "DC-06 analytic gradient (simultaneous, ao_basis=disk)")      #TEST
+
+set ao_basis        disk
+set dct_functional odc-06
+set algorithm simultaneous
+grad_odc06 = gradient('dct')
+
+set ao_basis        disk
+set dct_functional odc-12
+set algorithm       simultaneous
+grad_odc12 = gradient('dct')
+compare_matrices(ref_odc12, grad_odc12, 6, "ODC-12 analytic gradient (simultaneous, ao_basis=disk)")  #TEST
+
+set ao_basis        disk
+set dct_functional odc-13
+set algorithm       simultaneous
+grad_odc13 = gradient('dct')
+compare_matrices(ref_odc13, grad_odc13, 6, "ODC-13 analytic gradient (simultaneous, ao_basis=disk)")  #TEST

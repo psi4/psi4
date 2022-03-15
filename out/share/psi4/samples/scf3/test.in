@@ -1,0 +1,27 @@
+#! File retention, docc, socc, and bond distances specified explicitly.
+
+nucenergy =   6.6484189450      #TEST
+refenergy = -38.91591819679808  #TEST
+
+molecule ch2 {
+    0 3
+    c
+    h 1 b1
+    h 1 b1 2 a1
+
+    b1 = 1.0
+    a1 = 125.0
+}
+
+set {
+    reference uhf
+    basis     6-31G**
+    docc      [2, 0, 0, 1]
+    socc      [1, 0, 1, 0]
+    scf_type  pk
+}
+
+thisenergy = energy('scf')
+
+compare_values(nucenergy, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refenergy, thisenergy, 6, "Reference energy")                             #TEST

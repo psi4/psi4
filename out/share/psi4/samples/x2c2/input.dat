@@ -1,0 +1,38 @@
+#! Test of SFX2C-1e on Water cc-pVDZ-DK.  In this test the Dirac
+#! equation is solved in the uncontracted cc-pVDZ-DK basis.
+#! The reference numbers are from Lan Cheng's implementation in Cfour
+
+ref_nr_gradient = np.array(
+[[0,  0,              -1.02297288e-01],
+ [0, -7.44208027e-02,  5.11486441e-02],
+ [0,  7.44208027e-02,  5.11486441e-02]])
+ref_rel_gradient = np.array(
+[[ 0.,          0.,         -0.10207924],
+ [ 0.,         -0.07441723,  0.05103962],
+ [ 0.,          0.07441723,  0.05103962]])
+
+
+molecule h2o {
+O
+H 1 R
+H 1 R 2 A
+
+R = 2.0
+A = 104.5
+units bohr
+}
+
+set {
+  basis cc-pVDZ-DK
+  scf_type pk
+}
+
+testnr = energy('scf')
+set relativistic x2c
+testrel = energy('scf')
+
+
+testrel, wfnrel =  gradient("scf", return_wfn=True)
+
+set relativistic no
+testnr, wfnnr =  gradient("scf", return_wfn=True)

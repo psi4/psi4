@@ -1,0 +1,37 @@
+#! 6-31G** H2O Test RASSCF Energy Point
+#! will default to only singles and doubles in the active space
+
+set {
+  reference = rhf
+  restricted_docc      [1, 0, 0, 0]
+  ras1                 [2, 0, 1, 1]
+  ras3                 [1, 0, 0, 1]
+  restricted_uocc      [8, 2, 3, 5]
+  mcscf_maxiter        80
+  mcscf_r_convergence  5.e-6
+  basis                6-31G**
+}
+
+
+
+molecule mol {
+   O
+   H  1 1.00
+   H  1 1.00 2 103.1
+}
+
+scf_e, scf_wfn = psi4.energy("SCF", return_wfn=True)
+compare_values(-76.017259983350, psi4.variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
+
+set icore 1
+rasscf_energy, rasscf_wfn = energy('RASSCF', ref_wfn=scf_wfn, return_wfn=True)
+compare_values(-76.073064815921, rasscf_energy, 6, 'ICORE 1 RASSCF Energy')  #TEST
+
+set icore 0
+rasscf_energy = energy('RASSCF', ref_wfn=rasscf_wfn)
+compare_values(-76.073064815921, rasscf_energy, 6, 'ICORE 0 RASSCF Energy')  #TEST
+
+set icore 2
+rasscf_energy = energy('RASSCF', ref_wfn=rasscf_wfn)
+compare_values(-76.073064815921, rasscf_energy, 6, 'ICORE 2 RASSCF Energy')  #TEST
+

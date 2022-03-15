@@ -1,0 +1,43 @@
+#! 6-31G H2O Test for coverage
+
+
+molecule h2o {
+He  0  0 -5
+He  0  0  5
+units bohr
+}
+
+set {
+  basis 6-31G
+  scf_type out_of_core
+}
+
+scf_energy, scf_wfn = energy("SCF", return_wfn=True)
+
+# Test major methods
+set DIAG_METHOD SEM
+thisenergy = energy('fci', ref_wfn=scf_wfn)
+
+set UPDATE OLSEN
+thisenergy = energy('fci', ref_wfn=scf_wfn)
+
+set DIAG_METHOD RSP
+thisenergy = energy('fci', ref_wfn=scf_wfn)
+
+set DIAG_METHOD DAVIDSON
+thisenergy = energy('fci', ref_wfn=scf_wfn)
+
+# Test preconditioners
+set DIAG_METHOD SEM
+set UPDATE DAVIDSON
+precons = ["LANCZOS", "DAVIDSON", "GEN_DAVIDSON", "H0BLOCK", "ITER_INV", "EVANGELISTI"]
+for precon in precons:
+    psi4.set_options({"PRECONDITIONER" : precon})
+    thisenergy = energy('fci', ref_wfn=scf_wfn)
+
+# Test diagonals
+hd_kaves = ["EVANGELISTI", "HD_KAVE", "ORB_ENER", "LEININGER", "Z_KAVE"]
+for hd_kave in hd_kaves:
+    psi4.set_options({"HD_AVG" : hd_kave})
+    thisenergy = energy('fci', ref_wfn=scf_wfn)
+

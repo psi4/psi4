@@ -1,0 +1,30 @@
+#! Example of state-averaged CASSCF for the C2 molecule
+
+molecule butadiene {
+    0   1
+    H   1.080977  -2.558832   0.000000
+    H  -1.080977   2.558832   0.000000
+    H   2.103773  -1.017723   0.000000
+    H  -2.103773   1.017723   0.000000
+    H  -0.973565  -1.219040   0.000000
+    H   0.973565   1.219040   0.000000
+    C   0.000000   0.728881   0.000000
+    C   0.000000  -0.728881   0.000000
+    C   1.117962  -1.474815   0.000000
+    C  -1.117962   1.474815   0.000000
+    units angstrom
+}
+
+set {
+    reference RHF
+    restricted_docc [7, 0, 0, 6]
+    active          [0, 2, 2, 0]
+    mcscf_type      df
+    basis           sto-3g
+    num_roots       2
+    avg_states      [0, 1]
+}
+
+casscf_energy = energy('casscf')
+
+

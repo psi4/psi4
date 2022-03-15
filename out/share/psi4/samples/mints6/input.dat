@@ -1,0 +1,47 @@
+#! Patch of a glycine with a methyl group, to make alanine, then DF-SCF 
+#! energy calculation with the cc-pVDZ basis set
+
+
+molecule alanine {
+    N           -1.527107413251     0.745960643462     0.766603000356
+    C           -0.075844098953     0.811790225041     0.711418672248
+    C            0.503195220163    -0.247849447550    -0.215671574613
+    O           -0.351261319421    -0.748978309671    -1.089590304723
+    O            1.639498336738    -0.571249748886    -0.174705953194
+    H           -1.207655674855    -0.365913941094    -0.918035522052
+    # First, remove the H from the alpha carbon.  This line could be deleted
+    # and is only included for completeness
+    #H            0.429560656538     0.717651915252     1.673774709694
+    # Now patch it, using a Z Matrix specification.  This patch can be applied
+    # anywhere in the coord specification, as long as it appears lower than
+    # the atoms referenced, as is usual for Z-Matrices
+    C  2  rCC   3  aCCC   1  dCCCN
+    H  7  rCH1  2  aHCC1  3  dHCCC1
+    H  7  rCH2  2  aHCC2  3  dHCCC2
+    H  7  rCH3  2  aHCC3  3  dHCCC3
+    H            0.221781602033     1.772570540211     0.286988509018
+    H           -1.833601608592     0.108401996052     1.481873213172
+    H           -1.925572581453     1.640882152784     0.986471814808
+    
+    aCCC = 108.0
+    rCC = 1.4
+    dCCCN = 120
+    rCH1 = 1.08
+    rCH2 = 1.08
+    rCH3 = 1.08
+    aHCC1 = 109.0
+    aHCC2 = 109.0
+    aHCC3 = 109.0
+    dHCCC1 = 0.0
+    dHCCC2 = 120.0
+    dHCCC3 = 240.0
+}
+
+
+set  {
+    basis cc-pVDZ
+    scf_type df
+}
+ 
+E = energy('scf')
+

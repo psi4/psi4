@@ -1,0 +1,19 @@
+#! MP2.5 cc-pVDZ gradient for the NO radical
+
+
+molecule no {
+0 2
+n
+o 1 1.158
+}
+
+set {
+  basis cc-pvdz
+  reference uhf
+  guess gwh
+  mp_type conv
+}
+
+grad = gradient('mp2.5')
+
+

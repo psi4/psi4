@@ -1,0 +1,58 @@
+#! MBIS calculation on OH- (Expanded Arrays)
+import numpy as np
+
+
+
+
+
+
+
+
+
+  
+
+
+# Reference Atomic Volumes From Horton
+# O 30.849393460032005
+# H 3.3386752960558264
+
+
+# Reference Valence Widths from Horton
+# O 0.41993958672777343
+# H 0.41407672804054413
+
+
+vratios_ref = np.array([
+[1.568969],
+[0.457094]])
+
+molecule mol {
+  -1 1
+  O 0.0 0.0 0.0
+  H 0.0 0.0 1.0
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  d_convergence 8
+  e_convergence 10
+  mbis_radial_points 99
+  mbis_spherical_points 350
+  max_radial_moment 4
+}
+
+e, wfn = energy('hf/cc-pvdz', return_wfn=True)
+oeprop(wfn, 'MBIS_CHARGES', "MBIS_VOLUME_RATIOS", title='OH- SCF')
+
+#NOTE: wfn.variable gives you the expanded, redundant atomic multipole arrays as numpy arrays; for flat, unique arrays, use wfn.array_variable
+charges = wfn.variable("MBIS CHARGES")
+dipoles = wfn.variable("MBIS DIPOLES")
+quadrupoles = wfn.variable("MBIS QUADRUPOLES")
+octupoles = wfn.variable("MBIS OCTUPOLES")
+avols = wfn.variable("MBIS RADIAL MOMENTS <R^3>")
+vwidths = wfn.variable("MBIS VALENCE WIDTHS")
+vratios = wfn.variable("MBIS VOLUME RATIOS")
+

@@ -1,0 +1,59 @@
+#! Example of state-averaged CASSCF for the C2 molecule
+#! see C. D. Sherrill and P. Piecuch, J. Chem. Phys. 122, 124104 (2005)
+
+molecule {
+C
+C 1 1.20
+}
+
+set {
+  basis               6-31G*
+  reference           rhf
+  docc                [2, 0, 0, 0, 0, 2, 1, 1]
+  restricted_docc     [1, 0, 0, 0, 0, 1, 0, 0]
+  active              [2, 0, 1, 1, 0, 2, 1, 1]
+  mcscf_r_convergence 5.e-6
+}
+
+#
+# This input also serves as an example of the filter guess capability
+# of DETCI, which is for advanced users only.  Normal SA-CASSCF computations
+# do not typically need the filter guess lines.
+# 
+# The filter guess stuff below is used to filter out the delta state
+# of C2, which in the D2H computational subgroup appears as a 1A1 state
+# just like the two sigma states we're interested in.  We only want the
+# two lowest sigma states, so we filter out all CI roots that don't look
+# like sigma states.  For a sigma state, the determinants (56 56) and
+# (66 66) [see below] must appear with the same sign.  As shown in the
+# output, these determinants are
+#
+#    1   -0.626186  (   66,   66)  2Ag X  3Ag X  2B1uX  1B3uX
+#    2   -0.626186  (   56,   56)  2Ag X  3Ag X  2B1uX  1B2uX
+#
+# Of course the numbering (56 56) and (66 66) is particular to this
+# calculation and phase relationships between determinants for particular
+# states needs to be figured out by hand and checked vs a test calculation
+# before the appropriate information can be input for a filter_guess
+# calculation.  For more information see the article mentioned at the
+# top of this file.
+#
+
+set detci {
+  num_roots 2
+  filter_guess True
+  filter_guess_sign 1
+  filter_guess_det1 [56, 56]
+  filter_guess_det2 [66, 66]
+  avg_states [0, 1]
+  calc_s_squared True
+}
+
+
+
+casscf_energy = energy('casscf')
+compare_values(-75.375529547673, psi4.variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
+compare_values(-75.604189023004, psi4.variable("CI ROOT 0 TOTAL ENERGY"), 6, 'CASSCF Root 0 Energy')  #TEST
+compare_values(-75.477044791109, psi4.variable("CI ROOT 1 TOTAL ENERGY"), 6, 'CASSCF Root 1 Energy')  #TEST
+compare_values(-75.540616907115, casscf_energy, 6, 'CASSCF Energy')  #TEST
+

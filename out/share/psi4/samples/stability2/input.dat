@@ -1,0 +1,33 @@
+#! ROHF stability analysis check for CN with cc-pVDZ.
+#! This test corresponds to the rohf-stab test from Psi3.
+
+
+
+nirrep = 4
+
+
+
+
+
+molecule cn {
+   C
+   N 1 R
+
+   R = 1.175
+}
+
+set = {
+  reference = rohf
+  scf_type pk
+  docc = [4, 0, 1, 1]
+  socc = [1, 0, 0, 0]
+  basis = cc-pVDZ
+  d_convergence 12
+  stability_analysis check
+  solver_n_root 2
+}
+
+thisenergy = energy('scf')
+
+stab = variable("SCF STABILITY EIGENVALUES")
+

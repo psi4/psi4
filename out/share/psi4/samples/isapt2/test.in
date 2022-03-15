@@ -1,0 +1,74 @@
+#! This is a shorter version if isapt1 - does not do cube plots. See isapt1 for full details
+
+memory 1 GB
+
+molecule mol {
+0 1
+--
+0 2
+O          0.39987        2.94222       -0.26535
+H          0.05893        2.05436       -0.50962
+--
+0 2
+O          0.48122        0.30277       -0.77763
+H          0.26106       -0.50005       -1.28451
+--
+0 1
+C          2.33048       -1.00269        0.03771
+C          1.89725        0.31533       -0.59009
+C          2.28232        1.50669        0.29709
+C          1.82204        2.84608       -0.29432
+C          2.37905        4.02099        0.49639
+H          3.41246       -1.03030        0.19825
+H          2.05362       -1.84372       -0.60709
+H          1.82714       -1.16382        0.99734
+H          2.36243        0.42333       -1.57636
+H          3.36962        1.51414        0.43813
+H          1.81251        1.38060        1.28140
+H          2.14344        2.92967       -1.33843
+H          3.47320        4.02400        0.48819
+H          2.03535        3.99216        1.53635
+H          2.02481        4.96785        0.07455
+symmetry c1
+no_reorient
+no_com
+}
+
+# See note at isapt1. We have fragments whose neutral multiplcity
+#   is doublet. Since we want overall multiplicity singlet, which is a
+#   low-spin sum, need to fully specify tot & frag multiplicity. This is
+#   exactly the same system as in isapt1.
+
+# => Standard Options <= #
+
+set {
+basis         jun-cc-pvdz
+scf_type df
+guess sad
+freeze_core true
+}
+
+energy('fisapt0')
+
+keys = ['Enuc', 'Eelst', 'Eexch', 'Eind', 'Edisp', 'Etot']  #TEST
+
+Eref = {  #TEST
+    'Enuc'  : 338.3111745,  #TEST
+    'Eelst' :  -0.01408984519,      #TEST
+    'Eexch' :  +0.01776897764,      #TEST
+    'Eind'  :  -0.00520103160,      #TEST
+    'Edisp' :  -0.00254901867,      #TEST
+    'Etot'  :  -0.00407091782,      #TEST
+    }  #TEST
+    
+Epsi = {  #TEST
+    'Enuc'  : mol.nuclear_repulsion_energy(),           #TEST
+    'Eelst' : psi4.variable("SAPT ELST ENERGY"),    #TEST
+    'Eexch' : psi4.variable("SAPT EXCH ENERGY"),    #TEST
+    'Eind'  : psi4.variable("SAPT IND ENERGY"),     #TEST
+    'Edisp' : psi4.variable("SAPT DISP ENERGY"),    #TEST
+    'Etot'  : psi4.variable("SAPT0 TOTAL ENERGY"),  #TEST
+    }  #TEST
+
+for key in keys:  #TEST
+    compare_values(Eref[key], Epsi[key], 6, key)  #TEST

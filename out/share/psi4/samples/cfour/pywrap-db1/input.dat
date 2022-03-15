@@ -1,0 +1,11 @@
+#! Database calculation, so no molecule section in input file. Portions of the full
+#! databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.
+
+set {
+    BASIS sto-3g
+    REFERENCE RHF
+    d_convergence 9
+}
+
+S22mad = database('c4-mp2','s22',subset=[2,8],BENCHMARK='s22A')
+NBCmad = database('c4-scF','nBc10',cp='on',SYMM='OfF',subset='sMall')

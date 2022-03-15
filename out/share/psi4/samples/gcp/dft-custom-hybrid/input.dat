@@ -1,0 +1,40 @@
+#! DFT (hybrids) + GCP test of implementations in: hybrid_superfuncs.py
+
+##ORCA v.4.0.1, cc-pVDZ, RI-MP2, no FC, GRID7
+# PW6B95
+# WB97X-D3
+# HF-3c
+# PBEh-3c
+# PBE0
+##Gaussian 09: 5D SP Int(Grid=99770)
+# wb97x
+# SOGGA11-X
+##Gaussian 16: cc-pvdz 5D SP int=(grid=99770)
+# MN15
+
+# MISSING: 
+#          "wpbe"     : build_wpbe_superfunctional,
+#          "wpbe0"    : build_wpbe0_superfunctional,
+#          "b5050lyp" : build_b5050lyp_superfunctional,
+
+
+molecule ne {
+  0 1
+  Ne
+}
+
+set df_scf_guess false
+set basis cc-pvdz
+set reference rks
+set dft_radial_points 99
+set dft_spherical_points 770 
+set dft_block_scheme naive
+set scf_type direct
+
+
+edft = energy('hf3c/minix')
+compare_values(-127.718790886397, edft, 4, 'Ne: HF3c')   
+clean()
+edft = energy('pbeh3c/def2-mSVP')
+compare_values(-128.695398806080, edft, 4, 'Ne: PBEh3c')   
+clean()

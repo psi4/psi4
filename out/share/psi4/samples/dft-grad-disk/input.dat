@@ -1,0 +1,33 @@
+#! A range-seperated gradient for SO2 to test disk algorithms by explicitly setting low memory 
+
+core.set_memory_bytes(int(2.e6))
+
+
+molecule SO2 {
+S
+O 1 R
+O 1 R 2 119
+symmetry c1
+}
+
+SO2.R = 1.4 * 0.52917721067 / 0.52917720859
+
+set {
+    basis cc-pVDZ
+    points 5
+}
+
+func = {
+    "name": "random",
+    "x_hf": {
+        "alpha": 0.6,
+        "beta": 1.0,
+        "omega": 0.2
+    },
+    "c_functionals": {}
+}
+
+
+anl_grad = gradient('scf', dft_functional=func, dertype=1)
+
+# fd_grad = gradient('scf', dft_functional=func, dertype=0)

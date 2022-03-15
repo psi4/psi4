@@ -1,0 +1,23 @@
+#! DF-OMP3 cc-pVDZ energy for the H2O molecule.
+
+
+molecule h2o {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_cc cc-pvdz-ri
+  scf_type df
+  guess sad
+  freeze_core true
+  mp_type df
+}
+energy('omp3')
+
+
+

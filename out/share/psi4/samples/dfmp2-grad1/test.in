@@ -1,0 +1,31 @@
+#! DF-MP2 cc-pVDZ gradients for the H2O molecule.
+
+ref = psi4.Matrix.from_list([                                        #TEST
+        [  0.000000000000,     0.000000000000,     0.012063494061],  #TEST
+        [  0.000000000000,     0.001808507181,    -0.006031705802],  #TEST
+        [  0.000000000000,    -0.001808507181,    -0.006031788259]   #TEST
+      ])                                                             #TEST
+
+molecule h2o {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_cc cc-pvdz-ri
+  guess sad
+  scf_type df
+  mp2_type df
+  qc_module occ
+}
+
+grad = gradient('mp2')
+
+compare_matrices(ref, grad, 5, "Analytic gradients")  #TEST
+
+

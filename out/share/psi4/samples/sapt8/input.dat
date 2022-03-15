@@ -1,0 +1,56 @@
+#! SAPT0(ROHF) open-shell computation of CN - Ne interaction energy
+#! First with jun-cc-pVDZ and density fitted integrals with ROHF
+#! Then with cc-pVDZ and direct integrals, except for dispersion 
+#! that is computed with cc-pVDZ-ri density fitting with ROHF.
+
+memory 1 GB
+
+molecule {
+     0 2
+     C 0.000000  0.000000  0.000000
+     N 0.000000 0.000000  2.21
+     --
+     0 1
+     Ne 0.000000 0.000000 -6.410228688
+     units bohr
+     symmetry c1
+     no_reorient
+     no_com
+}
+
+set {
+reference rohf
+scf_type     df
+guess        sad
+basis         jun-cc-pVDZ
+df_basis_scf  aug-cc-pVDZ-jkfit
+df_basis_sapt aug-cc-pVDZ-ri
+}
+
+energy('sapt0')
+
+Eelst = psi4.variable("SAPT ELST ENERGY")
+Eexch = psi4.variable("SAPT EXCH ENERGY")
+Eind  = psi4.variable("SAPT IND ENERGY")
+Edisp = psi4.variable("SAPT DISP ENERGY")
+ET    = psi4.variable("SAPT ENERGY")
+
+
+
+set {
+guess sad
+basis cc-pVDZ
+df_basis_sapt cc-pVDZ-ri
+scf_type direct
+}
+
+energy('sapt0')
+
+Eelst = psi4.variable("SAPT ELST ENERGY")
+Eexch = psi4.variable("SAPT EXCH ENERGY")
+Eind  = psi4.variable("SAPT IND ENERGY")
+Edisp = psi4.variable("SAPT DISP ENERGY")
+ET    = psi4.variable("SAPT ENERGY")
+
+
+

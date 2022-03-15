@@ -1,0 +1,45 @@
+#! ROHF MP2 energy components. Checks that computed identically
+#! between cfour and psi4
+
+
+print('    <<<  ROHF  >>>')
+
+cfour {
+ROHF-MP2 energy calculation 
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+
+*ACES2(CALC=MP2,BASIS=AUG-PVDZ
+MULT=2,REF=ROHF
+OCCUPATION=3-1-1-0/3-0-1-0
+SCF_CONV=12
+CC_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+
+molecule {
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set reference rohf
+set basis aug-cc-pvdz
+set e_convergence 10
+set mp2_type conv
+
+energy('mp2')
+print_variables()
+clean()
+
+

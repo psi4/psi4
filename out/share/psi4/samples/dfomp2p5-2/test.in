@@ -1,0 +1,30 @@
+#! DF-OMP2.5 cc-pVDZ energy for the H2O+ cation
+
+refnuc      =  9.18738642147759 #TEST
+refscf      = -75.63188585987029 #TEST
+refomp3     = -75.79072967659637 #TEST
+
+molecule h2o {
+1 2
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_cc cc-pvdz-ri
+  scf_type df
+  guess gwh
+  freeze_core true
+  reference uhf
+  mp_type df
+}
+energy('omp2.5')
+
+compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy");  #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "DF-HF Energy");                        #TEST
+compare_values(refomp3, variable("OMP2.5 TOTAL ENERGY"), 6, "DF-OMP2.5 Total Energy");               #TEST
+
+

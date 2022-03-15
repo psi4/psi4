@@ -1,0 +1,20 @@
+#! SCF/sto-3g optimization with a hessian every step
+
+molecule h2o {
+     O
+     H 1 1.0
+     H 1 1.0 2 104.5
+}
+
+set {
+  basis sto-3g
+  e_convergence 10
+  d_convergence 10
+  geom_maxiter 5
+  full_hess_every 1
+  g_convergence gau_verytight
+}
+
+opt_energy = optimize('scf')
+
+compare_values(opt_energy, -74.965990122534, 6, "SCF Optimized energy") #TEST

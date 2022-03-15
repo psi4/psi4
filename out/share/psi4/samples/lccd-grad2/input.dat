@@ -1,0 +1,18 @@
+#! LCCD cc-pVDZ gradient for the NO radical
+
+
+molecule no {
+0 2
+n
+o 1 1.158
+}
+
+set {
+  basis cc-pvdz
+  reference uhf
+  guess gwh
+}
+
+grad = gradient('lccd')
+
+

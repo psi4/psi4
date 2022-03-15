@@ -1,0 +1,22 @@
+#! RHF/cc-pvdz-decontract HCl single-point energy 
+#! Testing the in line -decontract option for basis sets
+
+
+
+molecule {
+0 1
+CL        0.000000000000  0.000000000000  -0.035925275852
+H         0.000000000000  0.000000000000   1.246511684916
+symmetry c1
+}
+
+set {
+  basis         cc-pvdz-decon
+  df_basis_scf  cc-pvdz-jkfit
+  reference     rhf
+  e_convergence 1.e-10
+
+}
+
+energy('scf')
+

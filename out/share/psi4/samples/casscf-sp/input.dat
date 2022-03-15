@@ -1,0 +1,32 @@
+#! CASSCF/6-31G** energy point
+
+molecule {
+O
+H 1 1.00
+H 1 1.00 2 103.1
+}
+
+set {
+    basis           6-31G**
+    reference       rhf
+    scf_type        pk
+    mcscf_algorithm ah
+    qc_module       detci
+    nat_orbs        True
+}
+
+cisd_energy, cisd_wfn = energy("CISD", return_wfn=True)
+
+
+set {
+    icore 0
+    restricted_docc [1, 0, 0, 0]
+    active          [3, 0, 1, 2] 
+}
+casscf_energy = energy('casscf', ref_wfn=cisd_wfn)
+
+set icore 1
+casscf_energy = energy('casscf', ref_wfn=cisd_wfn)
+
+set icore 2
+casscf_energy = energy('casscf', ref_wfn=cisd_wfn)

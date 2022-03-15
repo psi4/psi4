@@ -1,0 +1,49 @@
+#! optimization HF/svp on water
+
+print('        <<< Literal ZMAT to Cfour >>>')
+
+cfour {
+Geometry optimization of H2O at HF-SCF level
+O
+H 1 R*
+H 1 R* 2 A*
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=HF,BASIS=svp
+CONV=10
+SCF_CONV=14)
+}
+
+energy('cfour')
+
+
+
+clean()
+clean_variables()
+cfour {}  # clear literal block since running sequentially
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+memory 600 mb
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set {
+cfour_calc_level hf
+cfour_basis svp
+cfour_convergence 10
+cfour_scf_conv 12
+}
+
+optimize('cfour')
+
+

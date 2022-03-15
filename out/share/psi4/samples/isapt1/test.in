@@ -1,0 +1,118 @@
+#! This test case shows an example of running and analyzing an
+#! FI-SAPT0/jun-cc-pvdz computation for 2,4-pentanediol (targeting the
+#! intramolecular hydrogen bond between the two hydroxyl groups)
+
+memory 1 GB
+
+#molecule mol {
+#0 1
+#O          0.39987        2.94222       -0.26535
+#H          0.05893        2.05436       -0.50962
+#--
+#0 1
+#O          0.48122        0.30277       -0.77763
+#H          0.26106       -0.50005       -1.28451
+#--
+#0 1
+#C          2.33048       -1.00269        0.03771
+#C          1.89725        0.31533       -0.59009
+#C          2.28232        1.50669        0.29709
+#C          1.82204        2.84608       -0.29432
+#C          2.37905        4.02099        0.49639
+#H          3.41246       -1.03030        0.19825
+#H          2.05362       -1.84372       -0.60709
+#H          1.82714       -1.16382        0.99734
+#H          2.36243        0.42333       -1.57636
+#H          3.36962        1.51414        0.43813
+#H          1.81251        1.38060        1.28140
+#H          2.14344        2.92967       -1.33843
+#H          3.47320        4.02400        0.48819
+#H          2.03535        3.99216        1.53635
+#H          2.02481        4.96785        0.07455
+#symmetry c1
+#no_reorient
+#no_com
+#}
+
+# Notes on what's going on with the molecule. This isapt molecule
+#   has fragments A & B marked as neutral singlets, when physically
+#   they can't be. No problem, the new chgmult reconciler will make
+#   them doublets. But we want the overall system to be a singlet,
+#   and create_molecule_from_string won't let you set total chgmult
+#   separately from fragments. And we can't just rearrange the fragments
+#   so the singlet is first (forcing the overall molecule to singlet)
+#   b/c isapt cares about fragment order. That's why mol is being set
+#   via from_arrays (that allows separate total and frag fields) rather
+#   than by string. New chgmult reconciler will assign overall high-spin,
+#   so triplet. Can override that with `mol.set_multiplicity(1)`, but as
+#   soon as Molecule::reinterpret_coordentries() hit (in the course of
+#   constructing a basis set), it'll get bumped back to triplet. Hence new
+#   code in Molecule to allow low-spin to remain, if sensible.
+
+mol = psi4.core.Molecule.from_arrays(
+    elez=[8, 1, 8, 1, 6, 6, 6, 6, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    fragment_separators=[2, 4],
+    fix_com=True,
+    fix_orientation=True,
+    fix_symmetry='c1',
+    fragment_multiplicities=[2, 2, 1],
+    molecular_charge=0,
+    molecular_multiplicity=1,
+    geom= [
+       0.39987  ,      2.94222  ,     -0.26535,
+       0.05893  ,      2.05436  ,     -0.50962,
+
+       0.48122  ,      0.30277  ,     -0.77763,
+       0.26106  ,     -0.50005  ,     -1.28451,
+
+       2.33048  ,     -1.00269  ,      0.03771,
+       1.89725  ,      0.31533  ,     -0.59009,
+       2.28232  ,      1.50669  ,      0.29709,
+       1.82204  ,      2.84608  ,     -0.29432,
+       2.37905  ,      4.02099  ,      0.49639,
+       3.41246  ,     -1.03030  ,      0.19825,
+       2.05362  ,     -1.84372  ,     -0.60709,
+       1.82714  ,     -1.16382  ,      0.99734,
+       2.36243  ,      0.42333  ,     -1.57636,
+       3.36962  ,      1.51414  ,      0.43813,
+       1.81251  ,      1.38060  ,      1.28140,
+       2.14344  ,      2.92967  ,     -1.33843,
+       3.47320  ,      4.02400  ,      0.48819,
+       2.03535  ,      3.99216  ,      1.53635,
+       2.02481  ,      4.96785  ,      0.07455])
+activate(mol)
+
+# => Standard Options <= #
+
+set {
+basis         jun-cc-pvdz
+scf_type df
+guess sad
+freeze_core true
+fisapt_do_plot true # For extra analysis
+}
+
+energy('fisapt0')
+
+keys = ['Enuc', 'Eelst', 'Eexch', 'Eind', 'Edisp', 'Etot']  #TEST
+
+Eref = {  #TEST
+    'Enuc'  : 338.3111745,  #TEST
+    'Eelst' :  -0.01408984519,      #TEST
+    'Eexch' :  +0.01776897764,      #TEST
+    'Eind'  :  -0.00520103160,      #TEST
+    'Edisp' :  -0.00254901867,      #TEST
+    'Etot'  :  -0.00407091782,      #TEST
+    }  #TEST
+    
+Epsi = {  #TEST
+    'Enuc'  : mol.nuclear_repulsion_energy(),           #TEST
+    'Eelst' : psi4.variable("SAPT ELST ENERGY"),    #TEST
+    'Eexch' : psi4.variable("SAPT EXCH ENERGY"),    #TEST
+    'Eind'  : psi4.variable("SAPT IND ENERGY"),     #TEST
+    'Edisp' : psi4.variable("SAPT DISP ENERGY"),    #TEST
+    'Etot'  : psi4.variable("SAPT0 TOTAL ENERGY"),  #TEST
+    }  #TEST
+
+for key in keys:  #TEST
+    compare_values(Eref[key], Epsi[key], 6, key)  #TEST

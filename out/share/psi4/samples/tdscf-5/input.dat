@@ -1,0 +1,25 @@
+#! td-camb3lyp with DiskDF and method/basis specification
+from psi4.driver.procrouting.response.scf_response import tdscf_excitations
+
+memory 280 mb
+
+molecule h2o {
+O
+H 1 r
+H 1 r 2 a
+
+r=0.958
+a=104.5
+
+symmetry c1
+}
+
+set {
+    scf_type disk_df
+    save_jk true
+    df_ints_io save
+    e_convergence 8
+    d_convergence 8
+}
+e, wfn = psi4.energy("cam-b3lyp/aug-cc-pvtz", return_wfn=True, molecule=h2o)
+res = tdscf_excitations(wfn, states=1, tda=True)

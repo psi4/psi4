@@ -1,0 +1,103 @@
+#! MBIS calculation on OH- (Expanded Arrays)
+import numpy as np
+
+charges_ref = np.array([ #TEST
+ [-1.19177658],  #TEST
+ [ 0.19177652]]) #TEST
+
+dipoles_ref = np.array([ #TEST
+ [ 4.22691298e-15, -1.27300005e-15, -1.00289562e-01],   #TEST
+ [ 1.32892859e-15, -1.23159986e-15,  1.61048217e-02]])  #TEST
+
+quadrupoles_ref = np.array([ #TEST
+ [[-5.30927644e+00,  2.38890255e-15,  3.31706772e-15],    #TEST
+  [ 2.38890255e-15, -5.30927644e+00, -1.91477107e-15],    #TEST
+  [ 3.31706772e-15, -1.91477107e-15, -4.98306699e+00]],   #TEST
+
+ [[-5.48513278e-01,  4.44109134e-16, -1.39716576e-15],    #TEST
+  [ 4.44109134e-16, -5.48513278e-01, -1.07642236e-15],    #TEST
+  [-1.39716576e-15, -1.07642236e-15, -5.49323087e-01]]])  #TEST
+
+octupoles_ref = np.array([ #TEST
+ [[[ 9.79364322e-15, -7.73422497e-15, -1.94485114e-01],     #TEST
+   [-7.73422497e-15,  1.06787564e-15, -9.75550064e-16],     #TEST
+   [-1.94485114e-01, -9.75550064e-16, -5.00127775e-15]],    #TEST
+
+  [[-7.73422497e-15,  1.06787564e-15, -9.75550064e-16],     #TEST
+   [ 1.06787564e-15, -4.58652441e-14, -1.94485114e-01],     #TEST
+   [-9.75550064e-16, -1.94485114e-01, -1.04353930e-14]],    #TEST
+
+  [[-1.94485114e-01, -9.75550064e-16, -5.00127775e-15],     #TEST
+   [-9.75550064e-16, -1.94485114e-01, -1.04353930e-14],     #TEST
+   [-5.00127775e-15, -1.04353930e-14, -1.04370463e+00]]],   #TEST
+
+
+ [[[ 2.91735786e-15, -1.73350640e-15, -2.03066382e-03],     #TEST
+   [-1.73350640e-15, -4.13972030e-17,  1.36648390e-15],     #TEST
+   [-2.03066382e-03,  1.36648390e-15, -3.72923390e-15]],    #TEST
+  
+  [[-1.73350640e-15, -4.13972030e-17,  1.36648390e-15],     #TEST
+   [-4.13972030e-17, -9.01422706e-15, -2.03066382e-03],     #TEST
+   [ 1.36648390e-15, -2.03066382e-03, -2.26265081e-15]],    #TEST
+
+  [[-2.03066382e-03,  1.36648390e-15, -3.72923390e-15],     #TEST
+   [ 1.36648390e-15, -2.03066382e-03, -2.26265081e-15],     #TEST
+   [-3.72923390e-15, -2.26265081e-15, -2.30415328e-03]]]])  #TEST
+
+# Reference Atomic Volumes From Horton
+# O 30.849393460032005
+# H 3.3386752960558264
+
+avols_ref = np.array([  #TEST
+ [30.84869384],         #TEST
+ [ 3.33859744]])        #TEST
+
+# Reference Valence Widths from Horton
+# O 0.41993958672777343
+# H 0.41407672804054413
+
+vwidths_ref = np.array([  #TEST
+ [0.4199382],             #TEST
+ [0.4140744]])            #TEST
+
+vratios_ref = np.array([
+[1.568969],
+[0.457094]])
+
+molecule mol {
+  -1 1
+  O 0.0 0.0 0.0
+  H 0.0 0.0 1.0
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  d_convergence 8
+  e_convergence 10
+  mbis_radial_points 99
+  mbis_spherical_points 350
+  max_radial_moment 4
+}
+
+e, wfn = energy('hf/cc-pvdz', return_wfn=True)
+oeprop(wfn, 'MBIS_CHARGES', "MBIS_VOLUME_RATIOS", title='OH- SCF')
+
+#NOTE: wfn.variable gives you the expanded, redundant atomic multipole arrays as numpy arrays; for flat, unique arrays, use wfn.array_variable
+charges = wfn.variable("MBIS CHARGES")
+dipoles = wfn.variable("MBIS DIPOLES")
+quadrupoles = wfn.variable("MBIS QUADRUPOLES")
+octupoles = wfn.variable("MBIS OCTUPOLES")
+avols = wfn.variable("MBIS RADIAL MOMENTS <R^3>")
+vwidths = wfn.variable("MBIS VALENCE WIDTHS")
+vratios = wfn.variable("MBIS VOLUME RATIOS")
+
+compare_values(charges_ref, charges, "MBIS Charges", atol=1.e-5)             #TEST
+compare_values(dipoles_ref, dipoles, "MBIS Dipoles", atol=1.e-5)             #TEST
+compare_values(quadrupoles_ref, quadrupoles, "MBIS Quadrupoles", atol=1.e-5) #TEST
+compare_values(octupoles_ref, octupoles, "MBIS Octupoles", atol=1.e-5)       #TEST
+compare_values(avols_ref, avols, "MBIS Radial Moments <r^3>", atol=1.e-5)    #TEST
+compare_values(vwidths_ref, vwidths, "MBIS Valence Widths", atol=1.e-5)      #TEST
+compare_values(vratios_ref, vratios, "MBIS Volume Ratios", atol=1.e-5)      #TEST

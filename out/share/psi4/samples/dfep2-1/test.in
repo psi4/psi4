@@ -1,0 +1,39 @@
+#! Compute three IP and 2 EA's for the PH3 molecule
+
+molecule mol {
+  P    0.0000000000    0.0000000000    0.0000000000
+  H    1.1930135422    0.0000000000   -0.7734797316
+  H   -0.5965067711   -1.0331800346   -0.7734797316
+  H   -0.5965067711    1.0331800346   -0.7734797316
+}
+
+set BASIS      CC-PVDZ
+set EP2_NUM_EA 2
+
+energy('EP2')
+
+bench_data = [                                      # TEST
+        ["SCF TOTAL ENERGY",       -342.470315737], # TEST
+        ["EP2 2APP ENERGY",          -0.495681429], # TEST
+        ["EP2 3APP ENERGY",           0.141289078], # TEST
+        ["EP2 6AP ENERGY",           -0.495681429], # TEST
+        ["EP2 7AP ENERGY",           -0.373688630], # TEST
+        ["EP2 8AP ENERGY",            0.141289078], # TEST
+        ["EP2 IONIZATION POTENTIAL", -0.373688630], # TEST
+        ["EP2 ELECTRON AFFINITY",     0.141289078]] # TEST
+
+for k, v in bench_data:                         # TEST
+    compare_values(v, variable(k), 5, k)    # TEST
+    
+    # Set variable to zero for future tests
+    set_variable(k, 0)                          # TEST
+
+
+# Ensure EP2_ORBITALS pass in works 
+set EP2_NUM_EA 0
+set EP2_ORBITALS [[5, 6, 7], [1, 2]]
+
+energy('EP2')
+
+for k, v in bench_data:                         # TEST
+    compare_values(v, variable(k), 5, k)    # TEST

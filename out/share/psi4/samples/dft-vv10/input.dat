@@ -1,0 +1,73 @@
+#! He Dimer VV10 functional test.
+#! notes: DFT_VV10_B/C overwrites the NL_DISPERSION_PARAMETERS tuple
+#! updated 'bench' reference values for new BraggSlater radii.
+
+#
+
+# references (from psi4)
+Enl_blypnl_b50_c01=0.0246749861696854
+Enl_blypnl_b50=0.0238582087067217
+Enl_blypnl_b40=0.0328523506642702
+Enl_blypnl_post=0.0328533763822404
+Enl_wb97mv_b50=0.0238946401121507
+
+molecule ne {
+  0 1
+  He 0 0 -2.0
+  He 0 0  2.0
+}
+
+
+set BASIS aug-cc-pVDZ
+set DFT_VV10_SPHERICAL_POINTS 50
+set DFT_VV10_RADIAL_POINTS 20
+set E_CONVERGENCE 1.e-12
+set D_CONVERGENCE 1.e-10
+
+
+scf_e, scf_wfn = energy("VV10", return_wfn=True)
+
+
+set reference uks
+scf_e, scf_wfn = energy("VV10", return_wfn=True)
+
+scf_nl=psi4.variable('scf TOTAL ENERGY')
+
+# dft-nl tests:
+
+set reference rks
+scf_e, scf_wfn = energy("BLYP-NL", return_wfn=True)
+scf_nl=psi4.variable('scf TOTAL ENERGY')
+
+# tuple modified b
+set nl_dispersion_parameters [5.0]
+scf_e, scf_wfn = energy("blyp-nl", return_wfn=True)
+revoke_global_option_changed('nl_dispersion_parameters')
+
+#tuple modified b and C
+set nl_dispersion_parameters [5.0, 0.1]
+scf_e, scf_wfn = energy("blyp-nl", return_wfn=True)
+revoke_global_option_changed('nl_dispersion_parameters')
+
+#modified b and C
+set DFT_VV10_B  5.0
+set DFT_VV10_C  0.1
+scf_e, scf_wfn = energy("blyp-nl", return_wfn=True)
+revoke_global_option_changed('DFT_VV10_C') 
+revoke_global_option_changed('DFT_VV10_B') 
+
+# add VV10 without dashparam. Here scf_nl is saved
+set DFT_VV10_B  4.0
+scf_nl, scf_wfn = energy("BLYP", return_wfn=True)
+revoke_global_option_changed('DFT_VV10_B') 
+
+#modify libxc func containing vv10
+set nl_dispersion_parameters [5.0]
+scf_e, scf_wfn = energy("wb97m-v", return_wfn=True)
+revoke_global_option_changed('nl_dispersion_parameters')
+
+# POST-SCF VV10 correction
+set DFT_VV10_POSTSCF true
+post_nl, scf_wfn = energy("BLYP-NL", return_wfn=True)
+
+# check if result is sensible and total scf is ok

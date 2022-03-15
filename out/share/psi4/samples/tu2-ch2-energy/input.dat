@@ -1,0 +1,16 @@
+#! Sample UHF/6-31G** CH2 computation
+
+molecule ch2 {
+  0 3
+  C 
+  H 1 R
+  H 1 R 2 A
+
+  R = 1.075
+  A = 133.93
+}
+
+set basis 6-31G**
+set reference uhf
+energy ('scf')
+

@@ -1,0 +1,38 @@
+#! coupled-cluster with PCM
+
+
+molecule Mg
+{
+  Mg 0.00000 0.00000 0.00000
+  2 1
+  units bohr
+}
+
+set
+{
+  basis cc-pVDZ
+  scf_type pk
+  pcm true
+  pcm_scf_type total
+  pcm_cc_type pte
+}
+
+pcm =
+{
+  Units = Angstrom
+  Medium
+  {
+    SolverType = IEFPCM
+    Solvent = Water
+  }
+  Cavity
+  {
+    RadiiSet = UFF
+    Type = GePol
+    Scaling = False
+    Area = 1.0
+    Mode = Implicit
+  }
+}
+
+energy_pte, wfn = energy('ccsd', return_wfn=True)

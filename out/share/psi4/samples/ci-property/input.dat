@@ -1,0 +1,45 @@
+#! CI/MCSCF cc-pvDZ properties for Potassium nitrate (rocket fuel!)
+
+
+molecule no3 {
+  -1 3
+   O            0.000000000000     0.000000000000     1.352965563729
+   N            0.000000000000     0.000000000000     0.099633131563
+   O           -0.000000000000     1.006816424330    -0.720095709717
+   O            0.000000000000    -1.006816424330    -0.720095709717
+  
+}
+
+set {
+    reference           rohf
+    basis               6-31G*
+    e_convergence       10
+    frozen_docc         [3, 0, 0, 2]
+    restricted_docc     [4, 1, 1, 1]
+    active              [3, 0, 2, 3] 
+    mcscf_diis_start    7
+    mcscf_diis_max_vecs 4
+    avg_states          [0, 1]
+    num_roots           2
+    mcscf_type          df
+    mcscf_r_convergence 1.e-4
+    mcscf_e_convergence 1.e-5
+    ci_maxiter          24
+    h0_blocksize        1000
+}
+
+no3.update_geometry()
+no3.print_out()
+
+props = ['DIPOLE', 'QUADRUPOLE', 'MULLIKEN_CHARGES', 'LOWDIN_CHARGES',
+         'WIBERG_LOWDIN_INDICES', 'MAYER_INDICES', 'MAYER_INDICES',
+         'MO_EXTENTS', 'GRID_FIELD', 'GRID_ESP', 'ESP_AT_NUCLEI',
+         'MULTIPOLE(3)', 'NO_OCCUPATIONS',
+         'TRANSITION_DIPOLE', 'TRANSITION_QUADRUPOLE']
+
+fci_energy = prop('FCI', properties=props)
+
+
+
+set DETCI NAT_ORBS true
+

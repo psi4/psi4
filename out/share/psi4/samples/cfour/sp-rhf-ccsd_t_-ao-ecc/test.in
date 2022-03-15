@@ -1,0 +1,110 @@
+#! single-point CCSD(T)/qc2p on water with ecc, aobasis
+
+print('        <<< Literal ZMAT to Cfour >>>')
+
+cfour {
+CCSD(T) energy calculation using AO algorithms for ABCD terms with ECC
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=CCSD(T),BASIS=qz2p
+ABCDTYPE=AOBASIS
+CC_PROG=ECC
+SCF_CONV=12
+CC_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+compare_values(-76.062748460117, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-0.270191667216, variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-76.338453951890, variable('ccsd total energy'), 6, 'CCSD')  #TEST
+compare_values(-76.345717549886, variable('ccsd(t) total energy'), 6, 'CCSD(T)')  #TEST
+compare_values(-0.007263597996, variable('(t) correction energy'), 6, '(T)')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set {
+cfour_CALC_LEVEL=CCSD(T)
+cfour_BASIS=qz2p
+cfour_ABCDTYPE=AOBASIS
+cfour_CC_PROGRAM=ECC
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+}
+
+energy('cfour')
+
+compare_values(-76.062748460117, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-0.270191667216, variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+
+print('        <<< Thorough Psi4 format >>>')
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set {
+cfour_BASIS=qz2p
+cfour_ABCDTYPE=AOBASIS
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+}
+
+energy('c4-ccsd(t)')
+
+compare_values(-76.062748460117, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-0.270191667216, variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set {
+cfour_CALC_LEVEL=CCSD(T)
+cfour_BASIS=qz2p
+cfour_ABCDTYPE=AOBASIS
+cfour_CC_PROGRAM=ECC
+cfour_SCF_CONV=12
+cfour_CC_CONV=12
+}
+
+energy('cfour')
+
+compare_values(-76.062748460117, variable('scf total energy'), 6, 'SCF')  #TEST
+compare_values(-0.270191667216, variable('mp2 correlation energy'), 6, 'MP2 corl')  #TEST
+

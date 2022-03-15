@@ -1,0 +1,59 @@
+#! MBIS calculation on NaCl
+#Charges generated from e_convergence 9, d_convergence 8
+
+
+
+ [-2.34992472e+00,  7.61625032e-15,  1.11488363e-14, -2.34992472e+00,
+ [-1.18919799e+01, -8.95107296e-15,  4.38636176e-14, -1.18919799e+01,
+
+ [-7.08856182e-13,  9.00611501e-14, -2.55766638e-02, -8.21613343e-14,
+   4.11929052e-15, -8.64722183e-14, -2.92947446e-15, -2.55766638e-02,
+ [-1.02278453e-13, -3.95370047e-14,  2.25695766e+00, -2.19172973e-14,
+   5.53616140e-14, -1.58857644e-13, -3.37545507e-13,  2.25695766e+00,
+
+# Reference Atomic Volumes From Horton
+# Na 10.98578655626551
+# Cl 93.71387402878563
+
+
+# Reference Valence Widths From Horton
+# Na 1.1345834723888377
+# Cl 0.5682903211811192
+
+
+vratios_ref = psi4.Matrix.from_list([
+[0.088273],
+[1.490111]])
+
+
+molecule mol {
+  0 1
+  Na 0.00 0.00 0.00
+  Cl 0.00 0.00 2.36
+  symmetry c1
+  no_reorient
+  no_com
+}
+
+set {
+  scf_type df
+  d_convergence 8
+  e_convergence 9
+  mbis_radial_points 99
+  mbis_spherical_points 350
+  max_radial_moment 4
+}
+
+e, wfn = energy('hf/cc-pvdz', return_wfn=True)
+oeprop(wfn, "MBIS_VOLUME_RATIOS", 'MBIS_CHARGES', title='NaCl SCF')
+
+#NOTE: wfn.array_variable gives you flattened atomic multipole arrays; for expanded arrays, use wfn.variable
+charges = wfn.array_variable('MBIS CHARGES')
+dipoles = wfn.array_variable('MBIS DIPOLES')
+quadrupoles = wfn.array_variable('MBIS QUADRUPOLES')
+octupoles = wfn.array_variable('MBIS OCTUPOLES')
+avols = wfn.array_variable('MBIS RADIAL MOMENTS <R^3>')
+vwidths = wfn.array_variable('MBIS VALENCE WIDTHS')
+vratios = wfn.array_variable('MBIS VOLUME RATIOS')
+
+

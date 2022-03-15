@@ -1,0 +1,80 @@
+#! SAPT0 open-shell computation of H2O-HO2 interaction energy
+#! First with cc-pVDZ and density fitted integrals with UHF
+#! Then with 6-31g and direct integrals, except for dispersion 
+#! that is computed with cc-pVDZ-ri density fitting with UHF.
+
+memory 2 GB
+
+molecule {
+     0 1
+     O 0.000000  0.000000  6.000000
+     H 0.000000  1.431500  4.890600
+     H 0.000000 -1.431500  4.890600
+     --
+     0 2
+     O 0.000000  0.000000  0.000000
+     O 0.000000  2.503900  0.000000
+     H 0.000000 -0.424700 -1.839500
+     units bohr
+     symmetry c1
+     no_reorient
+     no_com
+}
+
+set {
+reference     uhf
+scf_type      df
+guess         gwh
+basis         cc-pVDZ
+df_basis_scf  cc-pVDZ-jkfit
+df_basis_sapt cc-pVDZ-ri
+stability_analysis follow
+}
+
+energy('sapt0')
+
+Eelst = psi4.variable("SAPT ELST ENERGY")
+Eexch = psi4.variable("SAPT EXCH ENERGY")
+Eind  = psi4.variable("SAPT IND ENERGY")
+Edisp = psi4.variable("SAPT DISP ENERGY")
+ET    = psi4.variable("SAPT ENERGY")
+
+Eref = [ -0.00415587718,  #TEST
+          0.00206359843,  #TEST
+         -0.00032855780,  #TEST
+         -0.00083437737,  #TEST
+         -0.00325521392 ] #TEST
+
+compare_values(Eref[0], Eelst, 7, "SAPT0 Eelst")   #TEST
+compare_values(Eref[1], Eexch, 7, "SAPT0 Eexch")   #TEST
+compare_values(Eref[2], Eind, 7, "SAPT0 Eind")     #TEST
+compare_values(Eref[3], Edisp, 7, "SAPT0 Edisp")   #TEST
+compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST
+
+set {
+guess gwh
+basis 6-31g
+df_basis_sapt cc-pVDZ-ri
+scf_type direct
+stability_analysis follow
+}
+
+energy('sapt0')
+
+Eelst = psi4.variable("SAPT ELST ENERGY")
+Eexch = psi4.variable("SAPT EXCH ENERGY")
+Eind  = psi4.variable("SAPT IND ENERGY")
+Edisp = psi4.variable("SAPT DISP ENERGY")
+ET    = psi4.variable("SAPT ENERGY")
+
+Eref = [ -0.00601846895,  #TEST
+          0.00212658317,  #TEST
+         -0.00038733010,  #TEST
+         -0.00042434592,  #TEST
+         -0.00470356179 ] #TEST
+
+compare_values(Eref[0], Eelst, 7, "SAPT0 Eelst")   #TEST
+compare_values(Eref[1], Eexch, 7, "SAPT0 Eexch")   #TEST
+compare_values(Eref[2], Eind, 7, "SAPT0 Eind")     #TEST
+compare_values(Eref[3], Edisp, 7, "SAPT0 Edisp")   #TEST
+compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST

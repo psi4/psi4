@@ -1,0 +1,84 @@
+#! check that CC is returning the same values btwn CC*, FNOCC, and DFOCC modules
+
+molecule hf {
+H
+F 1 0.917
+}
+
+# refs[cc_type][fc][psivar]
+refs = {
+    "conv": {
+        "true": {
+            "SCF TOTAL ENERGY": -100.01941126902254,           # TEST
+            "CCSD CORRELATION ENERGY": -0.20681520407762197,   # TEST
+            "CCSD TOTAL ENERGY": -100.22622647310024,          # TEST
+            "CCSD(T) TOTAL ENERGY": -100.22814697381621,       # TEST
+            "(T) CORRECTION ENERGY": -0.0019205007159748158,   # TEST
+            "CCSD(T) CORRELATION ENERGY": -0.2087357047935968  # TEST
+        },
+        "false": {
+            "SCF TOTAL ENERGY": -100.01941126902254,           # TEST
+            "CCSD CORRELATION ENERGY": -0.20874364301580392,   # TEST
+            "CCSD TOTAL ENERGY": -100.22815491203842,          # TEST
+            "CCSD(T) TOTAL ENERGY": -100.23009130169265,       # TEST
+            "(T) CORRECTION ENERGY": -0.0019363896542312043,   # TEST
+            "CCSD(T) CORRELATION ENERGY": -0.21068003267003513 # TEST
+        }
+    },
+    "cd": {
+        "true": {
+            "SCF TOTAL ENERGY": -100.01939270206148,           # TEST
+            "CCSD CORRELATION ENERGY": -0.2068117080298787,    # TEST
+            "CCSD TOTAL ENERGY": -100.22620441009136,          # TEST
+            "CCSD(T) TOTAL ENERGY": -100.22812483046566,       # TEST
+            "(T) CORRECTION ENERGY": -0.0019204203743072874,   # TEST
+            "CCSD(T) CORRELATION ENERGY": -0.20873212840418598 # TEST
+        },
+        "false": {
+            "SCF TOTAL ENERGY": -100.01939270206148,           # TEST
+            "CCSD CORRELATION ENERGY": -0.20873986012771106,   # TEST
+            "CCSD TOTAL ENERGY": -100.22813256218919,          # TEST
+            "CCSD(T) TOTAL ENERGY": -100.23006887311104,       # TEST
+            "(T) CORRECTION ENERGY": -0.0019363109218456449,   # TEST
+            "CCSD(T) CORRELATION ENERGY": -0.21067617104955672 # TEST
+        }
+    },
+    "df": {
+        "true": {
+            "SCF TOTAL ENERGY": -100.01940060562883,           # TEST
+            "CCSD CORRELATION ENERGY": -0.20694032546082639,   # TEST
+            "CCSD TOTAL ENERGY": -100.22634093108965,          # TEST
+            "CCSD(T) TOTAL ENERGY": -100.22826302465418,       # TEST
+            "(T) CORRECTION ENERGY": -0.001922093564526723,    # TEST
+            "CCSD(T) CORRELATION ENERGY": -0.2088624190253531  # TEST
+        },
+        "false": {
+            "SCF TOTAL ENERGY": -100.01940060562883,           # TEST
+            "CCSD CORRELATION ENERGY": -0.20886884012911314,   # TEST
+            "CCSD TOTAL ENERGY": -100.22826944575795,          # TEST
+            "CCSD(T) TOTAL ENERGY": -100.23020746440086,       # TEST
+            "(T) CORRECTION ENERGY": -0.0019380186429220421,   # TEST
+            "CCSD(T) CORRELATION ENERGY": -0.21080685877203517 # TEST
+        }
+    }
+}
+
+
+def do_check(module, cc_typ, fc):
+    set_options(
+        dict(qc_module=module, cc_type=cc_typ, freeze_core=fc, basis='cc-pvdz', e_convergence=10, d_convergence=8))
+    ret_e = energy('ccsd(t)', molecule=hf)
+    for var_name, ref_val in refs[cc_typ][fc].items():
+        compare_values(ref_val, variable(var_name), 7, "{}/{} (fc={}) [{}]".format(cc_typ, module, fc,  var_name))
+    compare_values(refs[cc_typ][fc]['CCSD(T) TOTAL ENERGY'],
+            ret_e, 7, "{}/{} (fc={}) [{}]".format(cc_typ, module, fc, 'return value'))
+    clean_variables()
+    clean()
+
+modules_for_cctype = {'conv': ['ccenergy', 'fnocc'], 'cd': ['fnocc', 'occ'], 'df': ['fnocc', 'occ']}
+
+for cc_t, modules in modules_for_cctype.items():
+    for fc in ['true', 'false']:
+        for module in modules:
+            do_check(module, cc_t, fc)
+

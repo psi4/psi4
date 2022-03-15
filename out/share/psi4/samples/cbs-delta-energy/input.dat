@@ -1,0 +1,37 @@
+#! Extrapolated energies with delta correction
+
+
+molecule hf {
+    F
+    H 1 0.92
+}
+
+# Get a reasonable guess, to save some iterations
+set {
+    scf_type      df
+    mp2_type      df
+    e_convergence 7
+    reference     rhf
+}
+
+hf.update_geometry()
+
+# Equivalence tests
+mp3_energy = energy('MP3/cc-pVDZ')
+mp3_energy_delta = energy('MP2/cc-pVDZ + D:MP3/cc-pVDZ')
+
+ccsd_energy_delta = energy('MP2/cc-pVDZ + D:CCSD/cc-pVDZ')
+ccsd_energy = energy('CCSD/cc-pVDZ')
+
+ccsd_t_energy_delta = energy('CCSD/cc-pVDZ + D:CCSD(T)/cc-pVDZ')
+ccsd_t_energy = energy('CCSD(T)/cc-pVDZ')
+
+ccsd_t_energy_delta = energy('CCSD/cc-pV[DT]Z + D:CCSD(T)/cc-pV[DT]Z')
+ccsd_t_energy = energy('CCSD(T)/cc-pV[DT]Z')
+
+# Extrapolation test
+cbs1_energy = energy('MP2/cc-pV[DT]Z + D:CCSD(T)/cc-pVDZ')
+
+
+# Need higher angular momentum to do more
+

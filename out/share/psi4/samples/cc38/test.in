@@ -1,0 +1,16 @@
+#! RHF-CC2-LR/cc-pVDZ static polarizabilities of HOF molecule.
+
+molecule hof {
+  0 1
+  O
+  H 1 0.97
+  F 1 0.97 2 103.0
+}
+
+set {
+  basis "cc-pVDZ"
+}
+
+properties('cc2',properties=['polarizability'])
+ref_static_polar = 5.240960398531
+compare_values(ref_static_polar,   variable("CC2 DIPOLE POLARIZABILITY @ INF NM"),  3, "CC2 polarizability @ Inf nm") #TEST

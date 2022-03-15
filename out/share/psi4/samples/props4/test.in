@@ -1,0 +1,51 @@
+#! Electrostatic potential and electric field evaluated on a grid around water.
+
+molecule h2o {
+ noreorient
+ nocom
+    O            0.250254404867     0.126248114412     0.000000000000
+    H            0.428893090449     1.055731838795     0.000000000000
+    H            1.104987458381    -0.280303532167     0.000000000000
+}
+
+set basis cc-pvdz
+
+# Make a regular grid to evaluate properties on
+with open('grid.dat', 'w') as fp:
+    for x in range(3):
+        xval = (x-1.0)*2.0
+        for y in range(3):
+            yval = (y-1.0)*2.0
+            fp.write("%16.10f%16.10f%16.10f\n" % (xval, yval, 1.0))
+
+set basis cc-pvdz
+
+E, wfn = prop('scf', properties=["GRID_ESP", "GRID_FIELD"], return_wfn=True)
+Vvals = wfn.oeprop.Vvals()
+Exvals = wfn.oeprop.Exvals()
+Eyvals = wfn.oeprop.Eyvals()
+Ezvals = wfn.oeprop.Ezvals()
+
+Vref = [  -0.01864332, -0.02983653, -0.00571316, -0.01714680,                #TEST
+          -0.07221349, 0.02825424, 0.01292946, 0.03954310, 0.02488373 ]      #TEST
+Exref = [  0.00320099, 0.01125093, -0.00150000, -0.00790054,                 #TEST
+          -0.04636844, -0.01542558, -0.00144356, 0.00721353, 0.00567028 ]    #TEST
+Eyref = [  0.00458295, -0.00299119, -0.00466856, 0.00834508,                 #TEST
+          -0.02348328, 0.00535201, -0.00717122, 0.00662765, 0.00395976 ]     #TEST
+Ezref = [ -0.00217704, -0.00553756, 0.00008846, -0.00179950,                 #TEST
+           0.06515550, 0.02411333, 0.00517909, 0.02914557, 0.00742069 ]      #TEST
+for i in range(9):                                                           #TEST
+    compare_values(Vvals[i], Vref[i], 6, "V at grid point %d" % i)           #TEST
+    compare_values(Exvals[i], Exref[i], 6, "Ex at grid point %d" % i)        #TEST
+    compare_values(Eyvals[i], Eyref[i], 6, "Ey at grid point %d" % i)        #TEST
+    compare_values(Ezvals[i], Ezref[i], 6, "Ez at grid point %d" % i)        #TEST
+
+set basis cc-pvtz
+
+E, wfn = prop('scf/cc-pvdz', properties=["GRID_ESP", "GRID_FIELD"], return_wfn=True)
+Vvals_2 = wfn.oeprop.Vvals()
+
+for i in range(9):                                                                               #TEST
+    compare_values(Vvals_2[i], Vvals[i], 8, "SCF vs SCF/cc-pvdz: V at grid point %d" % i)        #TEST
+
+

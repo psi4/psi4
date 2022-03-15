@@ -1,0 +1,30 @@
+#! Basis set spherical/Cartesian with basis and cfour_spherical
+
+sph_ccpvdz = -76.2307777348   #TEST
+cart_ccpvdz = -76.2346763972  #TEST
+cart_631gs = -76.1990355202   #TEST
+sph_631gs = -76.1953470892    #TEST
+
+molecule h2o {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set basis cc-pvdz
+set cfour_spherical true
+
+energy('c4-mp2')
+compare_values(sph_ccpvdz, variable('CURRENT ENERGY'), 6, 'cc-pVDZ Default Sph')  #TEST
+clean()
+clean_variables()
+
+set basis 6-31g*
+set cfour_spherical false
+
+energy('c4-mp2')
+compare_values(cart_631gs, variable('CURRENT ENERGY'), 6, '6-31G* Default Cart')  #TEST
+

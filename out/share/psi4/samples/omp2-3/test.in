@@ -1,0 +1,24 @@
+#! OMP2 cc-pVDZ energy for the NO radical
+
+# OMP2 energy from Jonathon's Psi4Numpy code, run 03/20, residual convergence 12. # TEST
+refnuc      =   25.59060766929188  #TEST
+refscf      = -129.25989438562090 #TEST
+refomp2     = -129.66800293494742 #TEST
+
+molecule no {
+0 2
+n
+o 1 1.158
+}
+
+set {
+  basis cc-pcvdz
+  reference uhf
+  guess gwh
+  mp2_type conv
+}
+energy('omp2')
+
+compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 6, "Nuclear Repulsion Energy (a.u.)"); #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)");             #TEST
+compare_values(refomp2, variable("OMP2 TOTAL ENERGY"), 6, "OMP2 Total Energy (a.u.)");                   #TEST

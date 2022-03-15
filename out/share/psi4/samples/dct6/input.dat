@@ -1,0 +1,33 @@
+#! DCT calculation for the triplet O2 using DC-06 and DC-12.
+#! Only two-step algorithm is tested.
+
+
+# DC-06
+
+# DC-12
+
+molecule OO {
+0 3
+O
+O 1 R
+
+units bohr
+R = 2.000
+}
+
+set {
+    r_convergence 12
+    d_convergence 12
+    ao_basis    none
+    algorithm   twostep
+    basis       cc-pvdz
+    reference   uhf 
+}
+
+set dct_functional dc-06
+energy('dct')
+
+
+set dct_functional dc-12
+energy('dct')
+

@@ -1,0 +1,33 @@
+#! CCSD/cc-pVDZ optical rotation calculation (both gauges) on Cartesian H2O2
+
+molecule h2o2 {
+ O     -0.028962160801    -0.694396279686    -0.049338350190
+ O      0.028962160801     0.694396279686    -0.049338350190
+ H      0.350498145881    -0.910645626300     0.783035421467
+ H     -0.350498145881     0.910645626300     0.783035421467
+noreorient
+}
+
+set {
+  gauge both
+  freeze_core true
+  omega [589, 355, nm]
+  basis cc-pVDZ
+  r_convergence 10
+}
+
+properties('ccsd',properties=['rotation'])
+
+reflen_589   =    -76.93388  #TEST
+refvel_589   =    850.24712  #TEST
+refmvg_589   =   -179.08820  #TEST
+reflen_355   =   -214.73273  #TEST
+refvel_355   =    384.88786  #TEST
+refmvg_355   =   -644.44746  #TEST
+
+compare_values(reflen_589,   variable("CCSD SPECIFIC ROTATION (LEN) @ 589NM"),  3, "CCSD rotation @ 589nm in length gauge") #TEST
+compare_values(refvel_589,   variable("CCSD SPECIFIC ROTATION (VEL) @ 589NM"),  3, "CCSD rotation @ 589nm in velocity gauge") #TEST
+compare_values(refmvg_589,   variable("CCSD SPECIFIC ROTATION (MVG) @ 589NM"),  3, "CCSD rotation @ 589nm in modified velocity gauge") #TEST
+compare_values(reflen_355,   variable("CCSD SPECIFIC ROTATION (LEN) @ 355NM"),  3, "CCSD rotation @ 355nm in length gauge") #TEST
+compare_values(reflen_355,   variable("CCSD SPECIFIC ROTATION (LEN) @ 355NM"),  3, "CCSD rotation @ 355nm in velocity gauge") #TEST
+compare_values(reflen_355,   variable("CCSD SPECIFIC ROTATION (LEN) @ 355NM"),  3, "CCSD rotation @ 355nm in modified velocity gauge") #TEST

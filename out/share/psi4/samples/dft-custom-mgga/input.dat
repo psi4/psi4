@@ -1,0 +1,110 @@
+# DFT (meta-GGA) test of implementations in: mgga_superfuncs.py
+
+## Programs/References
+# ORCA v.4.0.1: cc-pVTZ, RI-MP2, no FC, GRID7
+#-> TPSS
+# [revTPSS differs from Gaussian]
+#
+# Gaussian 09: cc-pVDZ 5D SP Int(Grid=99770)
+#-> revTPSS
+#-> M11L
+#-> M06L
+#-> MN12L
+# Gaussian 16: cc-pvdz 5D SP int=(grid=99770)
+#-> MN15L
+## Notes
+# M11L only up to 4 decimals even for Ne with fine grid
+#! updated dldf reference to new BraggSlater radii 
+
+molecule ne {
+  0 1
+  Ne
+}
+
+set df_scf_guess false
+set basis cc-pvdz
+set reference rks
+set dft_radial_points 99
+set dft_spherical_points 770 
+set scf_type direct
+
+ 
+edft = energy('tpss')
+clean()
+
+edft = energy('revtpss')
+# ORCA: (large difference?)
+# G09 values
+clean()
+
+# Gaussian09
+edft = energy('m11-l')
+clean()
+#  
+edft = energy('m06-l')
+clean()
+#
+edft = energy('mn12-l')
+clean()
+#
+# Gaussian16
+edft = energy('mn15-l')
+clean()
+#
+
+#====== former dft-dldf test ==========
+#! Dispersionless density functional (dlDF+D) internal match to Psi4
+#! Extensive testing has been done to match supplemental info of
+#! Szalewicz et. al., Phys. Rev. Lett., 103, 263201 (2009) and Szalewicz et. al., J. Phys. Chem. Lett., 1, 550-555 (2010)
+
+molecule water {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+O   1.350625   0.111469   0.000000
+H   1.680398  -0.373741  -0.758561
+H   1.680398  -0.373741   0.758561
+}
+
+activate(water)
+set basis aug-cc-pvdz
+set scf_type df
+set dft_radial_points 99
+set dft_spherical_points 302
+edft = energy('dldf+d')
+clean()
+
+edft = energy('dldf+d09')
+clean()
+
+# additional meta-GGAs. Test against Q-chem values (taken from libxc test). Missing details.
+#MGGA_MS1,  -76.3862902532000021
+#MGGA_MS2,  -76.3944104108999937
+#MGGA_MS0,  -76.3991175407000043
+#M11-L,  -76.3618441219000061
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+activate(h2o)
+set basis 6-31G
+
+edft = energy('mgga_ms0')
+clean()
+
+edft = energy('mgga_ms1')
+clean()
+
+edft = energy('mgga_ms2')
+clean()
+
+#edft = energy('m11-l')
+#clean()
+

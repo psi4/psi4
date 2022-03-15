@@ -1,0 +1,23 @@
+#! DFT JK on-disk test
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+
+psi4.core.set_memory_bytes(int(1e6))
+
+set basis cc-pVTZ
+set scf_type df
+set e_convergence 1.e-8
+
+cam_energy_disk = energy("CAM-B3LYP")
+
+set guess READ
+psi4.core.set_memory_bytes(int(1e9))
+cam_energy_core = energy("CAM-B3LYP")
+
+compare_values(cam_energy_disk, cam_energy_core, 7, "CAM-B3LYP Energy Core/Disk DFJK")

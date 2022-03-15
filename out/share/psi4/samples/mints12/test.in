@@ -1,0 +1,98 @@
+#! test roundtrip-ness of dict repr for psi4.core.Molecule and qcdb.Molecule
+
+from psi4.driver import qcdb
+
+
+molkwargs1 = {
+    'geom': [[0., 0., 0.], [1.4, 0., 0.], [-0.5, -0.7, 0.], [-0.5, 0.7, 0.]],
+    'elem': ['C', 'O', 'H', 'h'],
+    'units': 'Angstrom', 
+    'input_units_to_au': 1.88972,
+    'fix_com': True,
+    'fix_orientation': True,
+    'fix_symmetry': 'cS',
+    }
+
+molkwargs2 = {
+    'geom': [[0., 0., 0.], [1.4, 0., 0.], [-0.5, -0.7, 0.], [-0.5, 0.7, 0.]],
+    'elbl': ['C@12.5', 'O5', 'H_r', 'H_L'],
+    'units': 'Bohr', 
+    'fix_com': True,
+    'fix_orientation': False,
+    }
+
+molkwargs3 = {
+    'geom': [[0., 0., 0.], [1.4, 0., 0.], [-0.5, -0.7, 0.], [-0.5, 0.7, 0.]],
+    'elbl': ['C1', 'O', '@H_r', 'Gh(H_L)'],
+    'fix_com': False,
+    'fix_orientation': True,
+    }
+
+molkwargs4 = {
+    'geom': np.arange(9),
+    'elez': [1, 2, 2],
+    'real': [False, True, False],
+    'molecular_charge': 1,
+    'fragment_separators': [1, 2],
+    }
+
+molkwargs5AB = {
+    'geom': np.arange(21),
+    'elez': [6, 6, 1, 6, 8, 1, 1],
+    'fragment_separators': [3],
+    'fragment_charges': [-1, 0],
+    }
+
+
+def test_molrec(kwargs, label):
+    #pdict = qcdb.molparse.from_arrays(**kwargs)
+    #print('PDICT', pdict)
+    #pmol = psi4.core.Molecule.from_dict(pdict)
+
+    pmol, pdict = psi4.core.Molecule.from_arrays(return_dict=True, **kwargs)
+    qmol, qdict = qcdb.Molecule.from_arrays(return_dict=True, **kwargs)
+    tpdict = pmol.to_dict()
+    tqdict = qmol.to_dict()
+    #qmol.print_out()
+
+    qcdb.compare_molrecs(pdict, tpdict, label + ': from_dict P (ref) vs.   to_dict P', atol=1.e-4, relative_geoms='align')  #TEST
+    qcdb.compare_molrecs(qdict, tqdict, label + ': from_dict Q (ref) vs.   to_dict Q', atol=1.e-4, relative_geoms='align')  #TEST
+    qcdb.compare_molrecs(pdict, qdict, label + ': from_dict P (ref) vs. from_dict Q', atol=1.e-4)  #TEST
+    qcdb.compare_molrecs(tpdict, tqdict, label + ':   to_dict P (ref) vs.   to_dict Q', atol=1.e-4)  #TEST
+    qcdb.compare_molrecs(pdict, tqdict, label + ': from_dict P (ref) vs.   to_dict Q', atol=1.e-4, relative_geoms='align')  #TEST
+    qcdb.compare_molrecs(tpdict, qdict, label + ':   to_dict P (ref) vs. from_dict Q', atol=1.e-4, relative_geoms='align')  #TEST
+    qcdb.compare_values(pmol.nuclear_repulsion_energy(), qmol.nuclear_repulsion_energy(), 6, 'NRE P (ref) vs. Q')  #TEST
+
+    return pdict
+
+def test_chgmult(expected, cgmpdict, label):
+    rc, rfc, rm, rfm = expected
+    compare_integers(rc, cgmpdict['molecular_charge'], label + ': c')
+    compare_integers(rm, cgmpdict['molecular_multiplicity'], label + ': m')
+    compare_integers(True, np.allclose(cgmpdict['fragment_charges'], rfc), label + ': fc')
+    compare_integers(True, np.allclose(cgmpdict['fragment_multiplicities'], rfm), label + ': fm')
+
+mdict = test_molrec(molkwargs1, label='H2CO plain')
+
+mdict = test_molrec(molkwargs2, label='H2CO labeled')
+
+mdict = test_molrec(molkwargs3, label='H2CO ghosted')
+
+mdict = test_molrec(molkwargs4, label='@H/He/@He')
+test_chgmult((1, [0, 1, 0], 2, [1, 2, 1]), mdict, '@H/He/@He')
+
+label = 'AB'
+mdict = test_molrec(molkwargs5AB, label=label)
+test_chgmult((-1, [-1, 0], 1, [1, 1]), mdict, label)
+
+label = 'Ab'
+molkwargs5AB['real'] = [True, True, True, False, False, False, False]
+mdict = test_molrec(molkwargs5AB, label)
+test_chgmult((-1, [-1, 0], 1, [1, 1]), mdict, label)
+
+label = 'aB'
+molkwargs5AB['real'] = [False, False, False, True, True, True, True]
+molkwargs5AB['zero_ghost_fragments'] = True
+mdict = test_molrec(molkwargs5AB, label)
+test_chgmult((0, [0, 0], 1, [1, 1]), mdict, label)
+

@@ -1,0 +1,21 @@
+#! All-electron MP2 6-31G** geometry optimization of water
+
+nucenergy =   9.1622581908184 #TEST
+refenergy = -76.2224486598878  #TEST
+
+molecule h2o {
+  O
+  H 1 1.0
+  H 1 1.0 2 106.0
+}
+
+set globals {
+  basis 6-31G**
+  reference rhf
+  d_convergence 9
+}
+
+optimized_energy = optimize('c4-mp2')
+
+compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")    #TEST
+compare_values(refenergy, optimized_energy, 6, "Reference energy")                          #TEST

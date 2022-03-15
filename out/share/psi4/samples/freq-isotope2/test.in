@@ -1,0 +1,117 @@
+#! Vibrational and thermo analysis of several water isotopologs.
+#! Demonstrates Hessian reuse for different temperatures, pressures, and isotopologs
+
+# all reference values from NWChem (see other files in freq-isotope1 dir) unless otherwise notated
+
+molecule h2o {
+  units au
+  O      0.00000000    0.00000000    0.00000000
+  H      0.00000000    1.93042809   -1.10715266
+  H      0.00000000   -1.93042809   -1.10715266
+}
+
+set basis sto-3g
+set e_convergence 9
+set g_convergence gau_verytight
+set scf_type pk
+
+optimize('hf', molecule=h2o)
+
+d2o = h2o.clone()
+d2o.set_mass(1, 2.014101779)
+d2o.set_mass(2, 2.014101779)
+
+hdo = h2o.clone()
+hdo.set_mass(1, 2.014101779)
+
+dto = h2o.clone()
+dto.set_mass(1, 2.014101779)
+dto.set_mass(2, 3.01604927)
+
+e, wfn = freq('hf', molecule=h2o, return_wfn=True)
+compare_strings('c2v', h2o.schoenflies_symbol(), 'H2O C2v')  #TEST
+compare_values(-74.96590119, variable('current energy'), 6, 'H2O E0')  #TEST
+compare_values(0.024367, variable('ZPVE'), 4, 'H2O ZPVE')  #TEST
+compare_values(0.027199, variable('thermal energy correction'), 4, 'H2O dE')  #TEST
+compare_values(0.028143, variable('enthalpy correction'), 4, 'H2O dH')  #TEST
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(45.283, entropy, 2, 'H2O S')  # molpro  #TEST
+
+set t 400.0
+
+vibanal_wfn(wfn)
+compare_strings('c2v', h2o.schoenflies_symbol(), 'H2O C2v')  #TEST
+compare_values(-74.96590119, variable('current energy'), 6, 'H2O E0 @400K')  #TEST
+compare_values(0.024367, variable('ZPVE'), 4, 'H2O ZPVE @400K')  #TEST
+compare_values(0.028170, variable('thermal energy correction'), 4, 'H2O dE @400K')  #TEST
+compare_values(0.029436, variable('enthalpy correction'), 4, 'H2O dH @400K')  #TEST
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(47.603, entropy, 1, 'H2O S @400K')  #TEST
+
+set t 298.15
+
+vibanal_wfn(wfn, molecule=d2o)
+compare_strings('c2v', d2o.schoenflies_symbol(), 'D2O C2v')  #TEST
+compare_values(-74.96590119, variable('current energy'), 6, 'D2O E0')  #TEST
+compare_values(0.017731, variable('ZPVE'), 4, 'D2O ZPVE')  #TEST
+compare_values(0.020566, variable('thermal energy correction'), 4, 'D2O dE')  #TEST
+compare_values(0.021510, variable('enthalpy correction'), 4, 'D2O dH')  #TEST
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(47.525, entropy, 2, 'D2O S')  # molpro  #TEST
+
+vibanal_wfn(wfn, molecule=hdo)
+compare_strings('cs', hdo.schoenflies_symbol(), 'HDO Cs')  #TEST
+compare_values(-74.96590119, variable('current energy'), 6, 'HDO E0')  #TEST
+compare_values(0.021103, variable('ZPVE'), 4, 'HDO ZPVE')  #TEST
+compare_values(0.023935, variable('thermal energy correction'), 4, 'HDO dE')  #TEST
+compare_values(0.024878, variable('enthalpy correction'), 4, 'HDO dH')  #TEST
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(47.828, entropy, 2, 'HDO S')  # molpro sym=cs #TEST
+
+# For a symmetry-lowering isotopic substitution like HDO, psi4 recomputes
+#  the rotational symmetry number with the lower point group. This only
+#  affects rotational entropy. That's why the above (non-default) molpro
+#  value from the above was computed with sym=cs. To replicate molpro &
+#  qchem's default, have to set rotational_symmetry_number to H2O value.
+
+set rotational_symmetry_number 2
+
+vibanal_wfn(wfn, molecule=hdo)
+compare_values(-74.96590119, variable('current energy'), 6, 'HDO E0')  #TEST
+compare_values(0.021103, variable('ZPVE'), 4, 'HDO ZPVE')  #TEST
+compare_values(0.023935, variable('thermal energy correction'), 4, 'HDO dE')  #TEST
+compare_values(0.024878, variable('enthalpy correction'), 4, 'HDO dH')  #TEST
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(46.450, entropy, 2, 'HDO S')  # molpro default #TEST
+
+# Could just reset the symmetry number to 1 since that's the correct
+#  value for DTO. But the below will calculate the default.
+
+psi4.revoke_global_option_changed('rotational_symmetry_number')
+
+set hessian_write on
+vibanal_wfn(wfn, molecule=dto)
+compare_values(-74.96590119, variable('current energy'), 6, 'DTO E0')  #TEST
+compare_values(0.016317, variable('ZPVE'), 4, 'DTO ZPVE')  #TEST
+compare_values(0.019154, variable('thermal energy correction'), 4, 'DTO dE')  #TEST
+compare_values(0.020098, variable('enthalpy correction'), 4, 'DTO dH')  #TEST
+entropy = 1000 * psi_hartree2kcalmol * (variable('enthalpy correction') - variable('gibbs free energy correction')) / get_global_option('t')
+compare_values(49.603, entropy, 2, 'DTO S')  # molpro sym=cs #TEST
+
+# A. print all the vib-related info from original `e, wfn = freq()` call
+for k, v in wfn.frequency_analysis.items():
+    print(v)
+
+# B. `set hessian_write on` above wrote all the vib- & thermo-related info from last analysis.
+#    now, print all the vib- & thermo-related info from that file
+with open(core.get_writer_file_prefix(dto.name()) + ".vibrec") as handle:
+    import json
+    jsondata = json.load(handle)
+jsondata = {k: (v if k in ['molecule', 'hessian'] else json.loads(v)) for k, v in jsondata.items()}
+
+for k, v in jsondata.items():
+    print(k, v)
+compare_values(0.016317, jsondata['ZPE_corr']['data'], 4, 'DTO ZPVE from file')  #TEST
+compare_values(0.020098, jsondata['H_corr']['data'], 4, 'DTO dH from file')  #TEST
+compare_values(298.15, jsondata['T']['data'], 2, 'temp') #TEST
+

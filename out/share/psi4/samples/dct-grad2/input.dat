@@ -1,0 +1,56 @@
+#! RHF-ODC-12 analytic gradient computations for H2O use
+#! AO_BASIS=DISK and AO_BASIS=NONE, respectively. 
+#!
+#! RHF-ODC-06 analytic gradient computations for H2O use
+#! AO_BASIS=DISK and AO_BASIS=NONE, respectively. 
+
+# RHF-ODC-12 gradients
+ref_grad_odc12 = psi4.Matrix.from_list([
+           [-0.000463315203,     0.011184720362,     0.000000000000],
+           [-0.000214140480,    -0.007910878984,     0.000000000000],
+           [ 0.000677455683,    -0.003273841378,     0.000000000000]  
+           ])
+
+# RHF-ODC-06 gradients
+ref_grad_odc06 = psi4.Matrix.from_list([
+            [ 0.000515887175,     0.012925332081,     0.000000000000],
+            [ 0.000220010700,    -0.009272548044,     0.000000000000],
+            [-0.000735897876,    -0.003652784037,     0.000000000000]
+            ])
+
+
+molecule h2o {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+}
+
+set {
+    r_convergence 12
+    d_convergence 12
+    algorithm   simultaneous
+    basis       cc-pvdz
+    reference rhf
+}
+
+set dct_functional odc-12
+set ao_basis disk
+grad = gradient('dct')
+clean()
+
+set dct_functional odc-12
+set ao_basis none
+grad = gradient('dct')
+clean()
+
+set dct_functional odc-06
+set ao_basis disk
+grad = gradient('dct')
+clean()
+
+set dct_functional odc-06
+set ao_basis none
+grad = gradient('dct')
+clean()
+

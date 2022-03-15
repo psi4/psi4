@@ -1,0 +1,41 @@
+#! force occupations in scf
+
+molecule sodium {
+1 1
+Na
+}
+
+set d_convergence 9
+
+activate(sodium)
+set basis STO-3G
+set reference rhf
+set guess sad
+set sad_frac_occ true
+cation_e = energy('scf')
+
+molecule sodium {
+0 2
+Na
+}
+
+activate(sodium)
+set basis STO-3G
+set reference rohf
+set guess read
+set docc [ 2, 0, 0, 0, 0, 1, 1, 1 ]
+set socc [ 1, 0, 0, 0, 0, 0, 0, 0 ]
+neutral_e = energy('scf')
+
+
+molecule {
+0 2
+Li
+}
+
+set basis STO-3G
+set reference rohf
+set guess sad
+set docc [ 1, 0, 0, 0, 0, 0, 0, 0 ]
+set socc [ 1, 0, 0, 0, 0, 0, 0, 0 ]
+li_e = energy('scf')

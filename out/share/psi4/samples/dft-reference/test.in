@@ -1,0 +1,19 @@
+#! MP2 with a PBE0 reference computation
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set {
+basis 6-31G
+dft_spherical_points 302
+dft_radial_points 99
+reference rks
+}
+
+mp2_dft = energy("MP2", dft_functional="PBE0") #TEST
+compare_values(-76.3005012762123869, variable("SCF TOTAL ENERGY"), 6, "PBE0 Reference")  #TEST
+compare_values(-76.4870829006874402, mp2_dft, 6, "MP2 with PBE0 orbitals")  #TEST

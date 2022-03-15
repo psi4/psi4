@@ -1,0 +1,28 @@
+#! testing best practices options, part ii
+
+from psi4.driver.procrouting.interface_cfour import P4C4_INFO
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set basis 6-31g
+
+energy('c4-ccsd')
+compare_values(-76.119378156918, variable('current energy'), 5, 'Total Energy')
+compare_strings(True, 'CC_PROGRAM           ICCPRO         ECC' in P4C4_INFO['output'], 'P4C4 default ECC')  #TEST
+
+clean()
+clean_variables()
+
+set cfour_cc_program vcc
+
+energy('c4-ccsd')
+compare_values(-76.119378156918, variable('current energy'), 5, 'Total Energy')
+compare_strings(True, 'CC_PROGRAM           ICCPRO         VCC' in P4C4_INFO['output'], 'P4C4 overwritten by VCC')  #TEST
+

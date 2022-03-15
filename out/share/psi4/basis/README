@@ -1,0 +1,12 @@
+Many of the basis sets in this directory are automatically generated
+from files and scripts in the primitives/ directory, particularly the
+Dunning correlation-consistent basis sets and some of the Pople basis
+sets.  The primitives/ directory contains subsets of the basis sets that
+can be combined in various ways (e.g., the diffuse functions and the
+core-valence functions are often stored in separate files from the main
+basis set, so that they can be combined in various different ways to produce
+final basis set files that are then copied up to this directory).
+
+If you are thinking of editing these files to update the Psi4 basis
+set library, especially for Dunning or Pople basis sets, outline your
+plans in a GitHub issue for advice on how to proceed

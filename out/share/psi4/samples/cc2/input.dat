@@ -1,0 +1,19 @@
+#! 6-31G** H2O CCSD optimization by energies, with Z-Matrix input
+
+molecule h2o {
+    o
+    h 1 0.97
+    h 1 0.97 2 103.0
+}
+
+set {
+  basis 6-31G**
+
+  r_convergence 10
+  e_convergence 10
+  d_convergence 10
+}
+
+optimize('ccsd', dertype=0)
+
+

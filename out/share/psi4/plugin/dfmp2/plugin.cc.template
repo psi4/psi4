@@ -1,0 +1,214 @@
+/*
+ * @BEGIN LICENSE
+ *
+ * @plugin@ by Psi4 Developer, a plugin to:
+ *
+ * Psi4: an open-source quantum chemistry software package
+ *
+ * Copyright (c) 2007-2021 The Psi4 Developers.
+ *
+ * The copyrights for code used from other parties are included in
+ * the corresponding files.
+ *
+ * This file is part of Psi4.
+ *
+ * Psi4 is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * Psi4 is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License along
+ * with Psi4; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * @END LICENSE
+ */
+
+#include "psi4/psi4-dec.h"
+#include "psi4/libpsi4util/PsiOutStream.h"
+#include "psi4/libpsi4util/process.h"
+#include "psi4/liboptions/liboptions.h"
+#include "psi4/libmints/basisset.h"
+#include "psi4/libmints/matrix.h"
+#include "psi4/libmints/vector.h"
+#include "psi4/libmints/wavefunction.h"
+#include "psi4/libciomr/libciomr.h"
+#include "psi4/libqt/qt.h"
+#include "psi4/libpsio/psio.hpp"
+#include "psi4/libmints/molecule.h"
+#include "psi4/lib3index/dfhelper.h"
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
+namespace psi{ namespace @plugin@ {
+
+extern "C" PSI_API
+int read_options(std::string name, Options& options)
+{
+    if (name == "@PLUGIN@"|| options.read_globals()) {
+        /*- The amount of information printed to the output file -*/
+        options.add_int("PRINT", 1);
+        /*- Debug level -*/
+        options.add_int("DEBUG", 0);
+        /*- Bench level -*/
+        options.add_int("BENCH", 0);
+        /*- Basis set -*/
+        options.add_str("DF_BASIS_MP2", "");
+    }
+
+    return true;
+}
+
+extern "C" PSI_API
+SharedWavefunction @plugin@(SharedWavefunction ref_wfn, Options& options)
+{
+    int print = options.get_int("PRINT");
+
+    std::shared_ptr<BasisSet> primary = ref_wfn->basisset();
+    std::shared_ptr<BasisSet> auxiliary = ref_wfn->get_basisset("DF_BASIS_MP2");
+
+    std::shared_ptr<Matrix> Caocc = ref_wfn->Ca_subset("AO", "ACTIVE_OCC");
+    std::shared_ptr<Matrix> Cavir = ref_wfn->Ca_subset("AO", "ACTIVE_VIR");
+
+    std::shared_ptr<Vector> eps_aocc = ref_wfn->epsilon_a_subset("AO", "ACTIVE_OCC");
+    std::shared_ptr<Vector> eps_avir = ref_wfn->epsilon_a_subset("AO", "ACTIVE_VIR");
+
+    int no = eps_aocc->dimpi()[0];
+    int nv = eps_avir->dimpi()[0];
+    int nn = primary->nbf();
+    int nQ = auxiliary->nbf();
+
+    long int memory = Process::environment.get_memory();
+    int nthreads = 1;
+#ifdef _OPENMP
+    nthreads = Process::environment.get_n_threads();
+#endif
+
+    outfile->Printf("   => Sizing <=\n\n");
+    outfile->Printf("    Memory  = %11zu MB\n", memory / (1024L * 1024L));
+    outfile->Printf("    Threads = %11d\n", nthreads);
+    outfile->Printf("    no      = %11d\n", no);
+    outfile->Printf("    nv      = %11d\n", nv);
+    outfile->Printf("    nn      = %11d\n", nn);
+    outfile->Printf("    nQ      = %11d\n", nQ);
+    outfile->Printf("\n");
+    outfile->Printf("   => Molecule <=\n\n");
+    primary->molecule()->print();
+    outfile->Printf("   => Primary Basis <=\n\n");
+    primary->print();
+    outfile->Printf("   => Auxiliary Basis <=\n\n");
+    auxiliary->print();
+
+    // => Setup DF Integrals <= //
+
+    auto dfh (std::make_shared<DFHelper>(primary, auxiliary));
+    dfh->set_memory(memory / 8L);
+    dfh->set_method("DIRECT");
+    dfh->set_nthreads(nthreads);
+    dfh->initialize();
+
+    dfh->print_header();
+
+    dfh->add_space("ACTIVE_OCC", Caocc);
+    dfh->add_space("ACTIVE_VIR", Cavir);
+
+    dfh->add_transformation("B", "ACTIVE_OCC", "ACTIVE_VIR", "pqQ");
+
+    dfh->transform();
+
+    // => DFMP2 Energy Evaluation <= //
+
+    // => Setup disk blocks and integral buffers <= //
+
+    long int doubles = memory / 8L;
+    long int nvQ = nv * (long int) nQ;
+
+    long int max_o = doubles / (2L * nvQ);
+    max_o = (max_o > no ? no : max_o);
+
+    auto Bia = std::make_shared<Matrix>(max_o, nvQ);
+    auto Bjb = std::make_shared<Matrix>(max_o, nvQ);
+
+    double** Biap = Bia->pointer();
+    double** Bjbp = Bjb->pointer();
+
+    std::vector<std::shared_ptr<Matrix> > Iab;
+    for (int t = 0; t < nthreads; t++) {
+        Iab.push_back(std::make_shared<Matrix>("Iab", nv, nv));
+    }
+
+    double* eop = eps_aocc->pointer();
+    double* evp = eps_avir->pointer();
+
+    double E_MP2J = 0.0;
+    double E_MP2K = 0.0;
+
+    // => Form energy contributions <= //
+
+    for (size_t istart = 0; istart < no; istart += max_o) {
+        size_t ni = (istart + max_o >= no ? no - istart : max_o);
+        dfh->fill_tensor("B", Bia, {istart, istart + ni});
+
+        for (size_t jstart = 0; jstart < no; jstart += max_o) {
+            size_t nj = (jstart + max_o >= no ? no - jstart : max_o);
+
+            if (jstart > istart) break;
+
+            if (istart == jstart) {
+                Bjb->copy(Bia);
+            } else {
+                dfh->fill_tensor("B", Bjb, {jstart, jstart + nj});
+            }
+
+#pragma omp parallel for reduction(+: E_MP2J, E_MP2K) num_threads(nthreads)
+            for (int ijrel = 0; ijrel < ni *nj; ijrel++) {
+
+                int irel = ijrel / nj;
+                int jrel = ijrel % nj;
+
+                int i = irel + istart;
+                int j = jrel + jstart;
+
+                if (j > i) continue;
+
+                int thread = 0;
+#ifdef _OPENMP
+                thread = omp_get_thread_num();
+#endif
+
+                double** Iabp = Iab[thread]->pointer();
+
+                double perm = (i == j ? 1.0 : 2.0);
+
+                C_DGEMM('N','T',nv,nv,nQ,1.0,Biap[irel],nQ,Bjbp[jrel],nQ,0.0,Iabp[0],nv);
+
+                for (int a = 0; a < nv; a++) {
+                    for (int b = 0; b < nv; b++) {
+                        double iajb = Iabp[a][b];
+                        double ibja = Iabp[b][a];
+                        double D = perm / (eop[i] + eop[j] - evp[a] - evp[b]);
+                        E_MP2J += 2.0 * iajb * iajb * D;
+                        E_MP2K -= 1.0 * iajb * ibja * D;
+                    }
+                }
+            }
+        }
+    }
+
+    double E_MP2 = E_MP2J + E_MP2K;
+
+    outfile->Printf("    @DF-MP2 Correlation Energy: %24.16f\n", E_MP2);
+    ref_wfn->set_scalar_variable("MP2 CORRELATION ENERGY", E_MP2);
+
+    // Typically you would build a new wavefunction and populate it with data
+    return ref_wfn;
+}
+
+}} // End namespaces
+

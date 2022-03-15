@@ -1,0 +1,31 @@
+#! Unrestricted DF-DCT ODC-12 gradient for O2 with cc-pVTZ/cc-pVTZ-RI standard/auxiliary basis set
+
+ref = psi4.Matrix.from_list([
+          [ 0.000000000000,     0.000000000000,    -0.037184030838],
+          [ 0.000000000000,     0.000000000000,     0.037184030838]
+          ])
+
+molecule O2 {
+symmetry d2h
+0 3
+O
+O 1 R
+
+R = 1.230
+}
+
+set {
+    e_convergence            8
+    r_convergence            8
+    basis                    cc-pvtz
+    df_basis_scf             cc-pvtz-jkfit
+    df_basis_dct            cc-pvtz-ri
+    reference                uhf
+    scf_type                 df
+    dct_type                df
+    diis_start_convergence   1e-1
+    diis_min_vecs            1
+}
+
+grad = gradient('dct')
+clean()

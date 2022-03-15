@@ -1,0 +1,21 @@
+#! Omega optimization for LRC functional wB97 on water
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+# frac always runs in C1
+}
+
+set {
+# UKS set internally, as we need to do neutral/cation
+basis cc-pvdz
+scf_type df
+}
+
+# Optional arguments are minimum omega, maximum omega, molecule object
+omega = ip_fitting('wb97', 0.4, 2.0, molecule=h2o)
+
+compare_values(0.56420, omega, 3, 'Fit Omega')  #TEST
+compare_integers(0, h2o.molecular_charge(), 'Mol Chg')  #TEST

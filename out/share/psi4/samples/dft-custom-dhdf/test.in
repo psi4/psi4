@@ -1,0 +1,175 @@
+# PTPSS and PWPB95 tests from Goerigk/Grimme 
+# ptpss reference values from SI (turbomole reference grid) :
+#PTPSS
+#ESCF -128.809366 -76.312440
+#ESOS-PT2 -0.086404 -0.091847
+#Etot -128.895770 -76.404287
+#PWPB95
+#ESCF -128.858167 -76.345725
+#ESOS-PT2 -0.062530 -0.066777
+#Etot -128.920697 -76.412502
+
+# DSD-BLYP from ORCA v.4.0.1, cc-pVTZ, RI-MP2, FC, GRID7
+# PBE0-DH  from ORCA v.4.0.1, cc-pVTZ, RI-MP2, FC, GRID7
+# Others   from ORCA v.4.0.1, cc-pVTZ, RI-MP2, no FC, GRID7
+
+# from WATER27 test set
+molecule h2o {
+  0 1
+O     0.0000000    0.0000000   -0.3893611 
+H     0.7629844    0.0000000    0.1946806 
+H    -0.7629844    0.0000000    0.1946806 
+}
+
+molecule ne {
+  0 1
+  Ne
+}
+
+set df_scf_guess false
+set basis cc-pvtz
+set reference rks
+set freeze_core false
+set dft_radial_points 99
+set dft_spherical_points 770 
+set dft_block_scheme naive
+set scf_type direct
+
+
+
+# ======= Ne tests =======
+activate(ne)
+edhdf = energy('b2plyp')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
+compare_values(-128.82658637, e_dft, 6, 'Ne: B2PLYP_DFT')   #TEST
+compare_values(-0.084559253, e_mp2, 6,  'Ne: B2PLYP_PT2')   #TEST
+compare_values(-128.911145626722, edhdf, 6,  'Ne: B2PLYP')   #TEST
+clean()
+
+edhdf = energy('b2gpplyp')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
+compare_values(-128.78793537, e_dft, 6, 'Ne: B2GPPLYP_DFT')   #TEST
+compare_values(-0.109088934, e_mp2, 6,  'Ne: B2GPPLYP_PT2')   #TEST
+compare_values(-128.897024329309, edhdf, 6,  'Ne: B2GPPLYP')   #TEST
+clean()
+
+#edhdf = energy('core-dsd-blyp')
+#e_dft=variable('SCF TOTAL ENERGY')
+#e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
+#compare_values(, e_dft, 6, 'Ne: DSD-BLYP_DFT')   #TEST
+#compare_values(, e_mp2, 7,  'Ne: DSD-BLYP_PT2')   #TEST 
+#compare_values(, edhdf, 6,  'Ne: DSD-BLYP')   #TEST
+#clean()
+
+edhdf = energy('ptpss')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
+compare_values(-128.809366, e_dft, 6, 'Ne: PTPSS_DFT')   #TEST
+compare_values(-0.086404, e_mp2, 4,  'Ne: PTPSS_PT2')   #TEST error=1e-5 OK?
+compare_values(-128.895770, edhdf, 4,  'Ne: PTPSS')   #TEST only 4 decimals because of PT2
+
+edhdf = energy('pwpb95')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
+compare_values(-128.85817666, e_dft, 5, 'Ne: PWPB95_DFT')   #TEST 
+compare_values(-0.062529936, e_mp2, 5,  'Ne: PWPB95_PT2')   #TEST
+compare_values(-128.920706595202, edhdf, 5,  'Ne: PWPB95')   #TEST
+clean()
+
+set freeze_core true 
+edhdf = energy('dsd-blyp')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
+# new fctl definition, ref in ref_outputs/orca_rev_dsdblyp.out 
+compare_values(-128.74250101, e_dft, 6, 'Ne: DSD-BLYP_DFT')   #TEST
+compare_values(-0.140004832412, e_mp2, 7,  'Ne: DSD-BLYP_PT2')   #TEST 
+compare_values(-128.882505842412, edhdf, 6,  'Ne: DSD-BLYP')   #TEST
+# some old definition, ref in ref_outputs/orca_dsdblyp.ref
+#compare_values(-128.75560404, e_dft, 6, 'Ne: DSD-BLYP_DFT')   #TEST
+#compare_values(-0.126886573, e_mp2, 7,  'Ne: DSD-BLYP_PT2')   #TEST 
+#compare_values(-128.882490613961, edhdf, 6,  'Ne: DSD-BLYP')   #TEST
+clean()
+
+edhdf = energy('pbe0-dh')
+e_dft=variable('SCF TOTAL ENERGY')
+e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
+compare_values(-128.81862850, e_dft, 4, 'Ne: PBE0-DH DFT')   #TEST 
+compare_values(-0.037540749, e_mp2, 5,  'Ne: PBE0-DH PT2')   #TEST
+compare_values(-128.856169249025, edhdf, 4,  'Ne: PBE0-DH')   #TEST
+clean()
+set freeze_core false
+
+# =========== former dft-pbe0-2 ==========
+# internal match
+molecule water {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+O   1.350625   0.111469   0.000000
+H   1.680398  -0.373741  -0.758561
+H   1.680398  -0.373741   0.758561
+}
+
+activate(water)
+set basis aug-cc-pvdz
+
+set reference rks
+set scf_type out_of_core
+set freeze_core true
+set dft_radial_points 99
+set dft_spherical_points 302
+
+e_dhdft = energy('pbe0-2')
+print_variables()
+val = -152.648635492831                           #TEST
+compare_values(val, e_dhdft, 6, "PBE0-2: Water")  #TEST
+
+clean()
+
+
+# =========== former dft-dsd ==========
+#! DSD-PBEP86 S22 Ammonia test
+molecule ammonia {
+0 1
+N  -1.578718  -0.046611   0.000000
+H  -2.158621   0.136396  -0.809565
+H  -2.158621   0.136396   0.809565
+H  -0.849471   0.658193   0.000000
+--
+0 1
+N   1.578718   0.046611   0.000000
+H   2.158621  -0.136396  -0.809565
+H   0.849471  -0.658193   0.000000
+H   2.158621  -0.136396   0.809565
+}
+activate(ammonia)
+
+set basis aug-cc-pvdz
+set reference rks
+set dft_radial_points 50
+set dft_spherical_points 302
+set scf_type df
+set freeze_core false
+
+e_dhdft = energy('DSD-PBEP86', bsse_type="nocp")
+compare_values(-3.3187, e_dhdft * 627.509, 2, "DSD-PBEP86: Ammonia")  #TEST
+
+# -112.915920926815 - -56.455316131791 - -56.455316053013 = -0.005288742011  #TEST
+
+
+# Additional tests
+#activate(h2o)
+#edhdf = energy('ptpss')
+#compare_values(-76.404287, edhdf, 4, 'Water')   #TEST
+#clean()
+
+#edhdf = energy('pwpb95')
+#e_dft=variable('SCF TOTAL ENERGY')
+#e_mp2=variable('DOUBLE-HYBRID CORRECTION ENERGY')
+#compare_values(-76.34572003, e_dft, 5, 'wat: PWPB95_DFT')   #TEST 
+#clean()

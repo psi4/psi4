@@ -1,0 +1,27 @@
+#! ROHF 6-31G** energy of the $^{3}B@@1$  state of CH2, with Z-matrix input. The occupations
+#! are specified explicitly.
+
+nucenergy =   6.6484189450      #TEST
+refenergy = -38.911369348139    #TEST
+
+molecule ch2 {
+    0 3
+    c
+    h 1 b1
+    h 1 b1 2 a1
+
+    b1 = 1.0
+    a1 = 125.0
+}
+
+set {
+    reference rohf
+    basis     6-31G**
+    docc      [2, 0, 0, 1]
+    socc      [1, 0, 1, 0]
+}
+
+thisenergy = energy('mcscf')
+
+compare_values(nucenergy, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refenergy, thisenergy, 9, "Reference energy")                             #TEST

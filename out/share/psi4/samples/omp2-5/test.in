@@ -1,0 +1,24 @@
+#! SOS-OMP2 cc-pVDZ geometry optimization for the H2O molecule.
+
+# NRE and SCF aren't for tightly converged opt
+refnuc      =  9.12295422215394 #TEST
+refscf      = -76.02621188217395 #TEST
+refsosomp2  =  -76.21065070996092 #TEST
+
+molecule h2o { 
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+    basis cc-pvdz
+}
+
+thisenergy = optimize('sos-omp2')
+
+compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 4, "Nuclear Repulsion Energy (a.u.)"); #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)");             #TEST
+compare_values(refsosomp2, thisenergy, 6, "SOS-OMP2 Total Energy (a.u.)");                #TEST
+

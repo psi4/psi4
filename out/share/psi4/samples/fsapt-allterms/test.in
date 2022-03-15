@@ -1,0 +1,132 @@
+#! This test case shows an example of running and analyzing a standard
+#! F-SAPT0/jun-cc-pvdz procedure for HSG-18-dimer from the HSG database.
+
+memory 1 GB
+
+molecule mol {
+0 1
+C   11.54100       27.68600       13.69600
+H   12.45900       27.15000       13.44600
+C   10.79000       27.96500       12.40600
+H   10.55700       27.01400       11.92400
+H   9.879000       28.51400       12.64300
+H   11.44300       28.56800       11.76200
+H   10.90337       27.06487       14.34224
+H   11.78789       28.62476       14.21347
+--
+0 1
+C   10.60200       24.81800       6.466000
+O   10.95600       23.84000       7.103000
+N   10.17800       25.94300       7.070000
+C   10.09100       26.25600       8.476000
+C   9.372000       27.59000       8.640000
+C   11.44600       26.35600       9.091000
+C   9.333000       25.25000       9.282000
+H   9.874000       26.68900       6.497000
+H   9.908000       28.37100       8.093000
+H   8.364000       27.46400       8.233000
+H   9.317000       27.84600       9.706000
+H   9.807000       24.28200       9.160000
+H   9.371000       25.57400       10.32900
+H   8.328000       25.26700       8.900000
+H   11.28800       26.57600       10.14400
+H   11.97000       27.14900       8.585000
+H   11.93200       25.39300       8.957000
+H   10.61998       24.85900       5.366911
+units angstrom
+
+symmetry c1
+no_reorient
+no_com
+}
+
+set {
+basis         jun-cc-pvdz
+scf_type df
+guess sad
+freeze_core true
+}
+
+energy('fisapt0')
+
+keys = ['Enuc', 'Eelst', 'Eexch', 'Eind', 'Edisp', 'Etot']  #TEST
+
+Eref = {  #TEST
+    'Enuc'  : 474.7480822,     #TEST
+    'Eelst' : -0.002069850948615226,   #TEST
+    'Eexch' : 0.006873900478860527,    #TEST
+    'Eind'  : -0.0007820179915634428,  #TEST
+    'Edisp' : -0.0037376257449601522,  #TEST
+    'Etot'  : 0.00028440579372170614  #TEST
+    }  #TEST
+
+Epsi = {  #TEST
+    'Enuc'  : mol.nuclear_repulsion_energy(),           #TEST
+    'Eelst' : variable("SAPT ELST ENERGY"),    #TEST
+    'Eexch' : variable("SAPT EXCH ENERGY"),    #TEST
+    'Eind'  : variable("SAPT IND ENERGY"),     #TEST
+    'Edisp' : variable("SAPT DISP ENERGY"),    #TEST
+    'Etot'  : variable("SAPT0 TOTAL ENERGY"),  #TEST
+    }  #TEST
+
+for key in keys:  #TEST
+    compare_values(Eref[key], Epsi[key], 6, key)  #TEST
+
+import os                                                             #TEST
+import sys
+import subprocess
+
+os.chdir('fsapt')                                                     #TEST
+with open('fA.dat', 'w') as fA:                                       #TEST
+    fA.write("Methyl1_A 1 2 7 8\n")                                   #TEST
+    fA.write("Methyl2_A 3 4 5 6")                                     #TEST
+with open('fB.dat', 'w') as fB:                                       #TEST 
+    fB.write("Peptide_B  9 10 11 16 26\n")                            #TEST
+    fB.write("T-Butyl_B  12 13 14 15 17 18 19 20 21 22 23 24 25")     #TEST
+subprocess.run([sys.executable, os.path.join('..', 'fsapt.py')], check=True) #TEST
+                                                                   
+refInteractions = {
+"Methyl1_A Peptide_B": {"fEelst":  0.463, "fEexch":  0.000, "fEindAB": -0.010, 
+                        "fEindBA":  0.000, "fEdisp": -0.009,'fEedisp':0.0, "fEtot":  0.443}, 
+"Methyl1_A T-Butyl_B": {"fEelst": -0.328, "fEexch":  0.023, "fEindAB":  0.001,
+                        "fEindBA":  0.024, "fEdisp": -0.186, 'fEedisp':0.0,"fEtot": -0.467}, 
+"Methyl1_A Link-1":    {"fEelst":  0.434, "fEexch":  0.000, "fEindAB": -0.010,
+                        "fEindBA":  0.001, "fEdisp": -0.005,'fEedisp':0.0, "fEtot":  0.421}, 
+"Methyl2_A Peptide_B": {"fEelst": -0.827, "fEexch":  0.014, "fEindAB": -0.041,
+                        "fEindBA": -0.001, "fEdisp": -0.040,'fEedisp':0.0, "fEtot": -0.895}, 
+"Methyl2_A T-Butyl_B": {"fEelst": -0.611, "fEexch":  4.130, "fEindAB": -0.217,
+                        "fEindBA": -0.143, "fEdisp": -1.812,'fEedisp':0.0, "fEtot":  1.347}, 
+"Methyl2_A Link-1":    {"fEelst": -0.770, "fEexch":  0.051, "fEindAB": -0.066,
+                        "fEindBA": -0.004, "fEdisp": -0.035,'fEedisp':0.0, "fEtot": -0.823}, 
+"Link-1 Peptide_B":    {"fEelst":  0.257, "fEexch": -0.000, "fEindAB": -0.015,
+                        "fEindBA":  0.000, "fEdisp": -0.008,'fEedisp':0.0, "fEtot":  0.235}, 
+"Link-1 T-Butyl_B":    {"fEelst": -0.162, "fEexch":  0.097, "fEindAB": -0.013,
+                        "fEindBA":  0.017, "fEdisp": -0.244,'fEedisp':0.0, "fEtot": -0.305}, 
+"Link-1 Link-1":       {"fEelst":  0.245, "fEexch": -0.001, "fEindAB": -0.016,
+                        "fEindBA":  0.001, "fEdisp": -0.006,'fEedisp':0.0, "fEtot":  0.223}, 
+"Methyl1_A All":       {"fEelst":  0.569, "fEexch":  0.023, "fEindAB": -0.020,
+                        "fEindBA":  0.025, "fEdisp": -0.201,'fEedisp':0.0, "fEtot":  0.397}, 
+"Methyl2_A All":       {"fEelst": -2.208, "fEexch":  4.195, "fEindAB": -0.324,
+                        "fEindBA": -0.147, "fEdisp": -1.887,'fEedisp':0.0, "fEtot": -0.371}, 
+"Link-1 All":          {"fEelst":  0.340, "fEexch":  0.096, "fEindAB": -0.044,
+                        "fEindBA":  0.018, "fEdisp": -0.258,'fEedisp':0.0, "fEtot":  0.153}, 
+"All Peptide_B":       {"fEelst": -0.107, "fEexch":  0.014, "fEindAB": -0.066,
+                        "fEindBA": -0.000, "fEdisp": -0.057,'fEedisp':0.0, "fEtot": -0.217}, 
+"All T-Butyl_B":       {"fEelst": -1.100, "fEexch":  4.249, "fEindAB": -0.230,
+                        "fEindBA": -0.102, "fEdisp": -2.242,'fEedisp':0.0, "fEtot":  0.574}, 
+"All Link-1":          {"fEelst": -0.091, "fEexch":  0.050, "fEindAB": -0.091,
+                        "fEindBA": -0.001, "fEdisp": -0.046,'fEedisp':0.0, "fEtot": -0.179}, 
+"All All":             {"fEelst": -1.299, "fEexch":  4.313, "fEindAB": -0.387,
+                        "fEindBA": -0.103, "fEdisp": -2.345,'fEedisp':0.0, "fEtot":  0.178} 
+}
+
+fkeys = ['fEelst', 'fEexch', 'fEindAB', 'fEindBA', 'fEdisp', 'fEedisp', 'fEtot']     #TEST
+
+with open('fsapt.dat', 'r') as fsapt:                                     #TEST
+    for line in fsapt.readlines()[40:56]:                                 #TEST
+        interaction = ' '.join(line.split()[:2])                          #TEST
+        testInteractions = dict(zip(fkeys,map(float, line.split()[2:])))  #TEST
+        for key in fkeys:                                                 #TEST 
+            compare_values(refInteractions[interaction][key],             #TEST 
+            testInteractions[key], 2, interaction+" "+key)                #TEST
+

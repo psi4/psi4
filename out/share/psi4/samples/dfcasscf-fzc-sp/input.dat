@@ -1,0 +1,22 @@
+#! CASSCF/6-31G** energy point
+
+molecule {
+O
+H 1 1.00
+H 1 1.00 2 103.1
+}
+
+set {
+    reference       rhf
+    mcscf_type      df
+    frozen_docc     [1, 0, 0, 0]
+    active          [3, 0, 1, 2] 
+    basis           6-31G**
+    nat_orbs        True
+}
+
+casscf_energy, cas_wfn = energy('casscf', return_wfn=True)
+
+
+cas_orbs = cas_wfn.get_orbitals("ACT")
+

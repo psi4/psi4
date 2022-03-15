@@ -1,0 +1,23 @@
+#! Sample UHF/cc-pVDZ H2O computation on a doublet cation, using 
+#! RHF/cc-pVDZ orbitals for the closed-shell neutral as a guess
+
+molecule h2o {
+  O 
+  H 1 0.96
+  H 1 0.96 2 104.5
+}
+
+set scf d_convergence 6
+
+set basis cc-pVDZ
+energy('scf')
+
+
+clean()
+
+h2o.set_multiplicity(2)
+h2o.set_molecular_charge(1)
+set scf reference uhf
+set scf guess read
+energy('scf')
+

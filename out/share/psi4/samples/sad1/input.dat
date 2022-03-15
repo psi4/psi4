@@ -1,0 +1,49 @@
+#! Test of the superposition of atomic densities (SAD) guess, using a highly distorted water
+#! geometry with a cc-pVDZ basis set.  This is just a test of the code and the user need only
+#! specify guess=sad to the SCF module's (or global) options in order to use a SAD guess. The
+#! test is first performed in C2v symmetry, and then in C1.
+
+
+molecule h2o {
+    O
+    H 1 1.0
+    H 1 1.0 2 90
+}
+
+set {
+    basis     cc-pvdz
+    guess     sad
+    scf_type  direct
+    sad_print 2
+    df_scf_guess false
+}
+
+#set maxiter    1
+#set e_convergence 1.0e1
+#set d_convergence 1.0e1
+#E1 = energy('scf')
+
+set maxiter    50
+set e_convergence 11
+set d_convergence 11
+E = energy('scf')
+
+molecule h2o_c1 {
+    symmetry c1
+    O
+    H 1 1.0
+    H 1 1.0 2 90
+}
+
+set basis cc-pvdz
+
+#set maxiter 1
+#set e_convergence 1.0e1
+#set d_convergence 1.0e1
+#E1_c1 = energy('scf')
+
+set maxiter 50
+set e_convergence 11
+set d_convergence 11
+E_c1 = energy('scf')
+

@@ -1,0 +1,53 @@
+#! Various gradients for a strained helium dimer and water molecule
+import numpy as np
+
+nucenergy_ref = 9.3008469403
+
+molecule h2o_dz {
+    O       
+    H             1    0.946279
+    H             1    0.946279      2  104.619334
+}
+
+molecule h2o_tz {
+    O       
+    H             1    0.940607
+    H             1    0.940607      2  106.000618
+}
+
+molecule h2o_dtz {
+    O       
+    H             1    0.939201
+    H             1    0.939201      2  106.350145
+}
+
+# Conventional to keep angular momentum low
+set {
+    scf_type df
+    e_convergence 1.e-10
+}
+
+h2o_dz.update_geometry()
+
+clean()
+
+# SCF TESTS
+
+# reference frequencies: CFOUR v1.0 with:
+# *ACES2(CALC=HF,BASIS=PVDZ,ABCDTYPE=AOBASIS,CC_PROG=ECC,VIB=ANALYTIC,SCF_CONV=10,LINEQ_CONV=10)
+# 1775.7236, 4113.8382, 4212.2220
+
+scf_dz, wfn_dz = freq('SCF/cc-pVDZ', return_wfn=True, dertype=1, molecule=h2o_dz)
+
+# reference frequencies: G09.D01 with:
+# freq=noraman hf/cc-pvtz
+# 1753.0400, 4126.9754, 4226.8715
+# reference frequencies: CFOUR v1.0 with: 
+# *ACES2(CALC=HF,BASIS=PVTZ,ABCDTYPE=AOBASIS,CC_PROG=ECC,VIB=ANALYTIC,SCF_CONV=10,LINEQ_CONV=10)
+# 1753.0405, 4126.9714, 4226.8671
+
+scf_tz, wfn_tz = freq('SCF/cc-pVTZ', return_wfn=True, dertype=1, molecule=h2o_tz)
+
+scf_dtz, wfn_dtz = freq('scf/cc-pv[dt]z', return_wfn=True, dertype=1, molecule=h2o_dtz)
+
+

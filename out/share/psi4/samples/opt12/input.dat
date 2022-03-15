@@ -1,0 +1,18 @@
+#! SCF cc-pVDZ geometry optimzation of ketene, starting from bent structure
+NRE    =   59.1237
+scf_E  = -151.740757212
+
+molecule h2c2o {
+0 1
+ H
+ C 1 1.1
+ C 2 1.3 1 130.0
+ H 2 1.1 3 110.0 1 180.0
+ O 3 1.1 4 120.0 1 180.0
+}
+
+set basis cc-pVDZ
+set g_convergence gau_tight
+
+thisenergy = optimize('scf')
+

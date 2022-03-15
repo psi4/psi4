@@ -1,0 +1,81 @@
+#! v2rdm_casscf 1,4-phenylenedinitrene/(10,10)/cc-pVDZ
+
+sys.path.insert(0, '../../..')
+import v2rdm_casscf
+
+# job description
+print('        1,4-phenylenedinitrene/(10,10)/cc-pVDZ')
+
+molecule singlet {
+0 1
+C      0.00000000    -1.43825841     0.00000000
+C      1.26321637    -0.67149862     0.00000000
+C      1.26321637     0.67149862     0.00000000
+C      0.00000000     1.43825841     0.00000000
+C     -1.26321637     0.67149862     0.00000000
+C     -1.26321637    -0.67149862     0.00000000
+H      2.18678709    -1.24095300     0.00000000
+H      2.18678709     1.24095300     0.00000000
+H     -2.18678709     1.24095300     0.00000000
+H     -2.18678709    -1.24095300     0.00000000
+N      0.00000000     2.71003942     0.00000000
+N      0.00000000    -2.71003942     0.00000000
+}
+molecule triplet {
+0 3
+C      0.00000000    -1.43825841     0.00000000
+C      1.26321637    -0.67149862     0.00000000
+C      1.26321637     0.67149862     0.00000000
+C      0.00000000     1.43825841     0.00000000
+C     -1.26321637     0.67149862     0.00000000
+C     -1.26321637    -0.67149862     0.00000000
+H      2.18678709    -1.24095300     0.00000000
+H      2.18678709     1.24095300     0.00000000
+H     -2.18678709     1.24095300     0.00000000
+H     -2.18678709    -1.24095300     0.00000000
+N      0.00000000     2.71003942     0.00000000
+N      0.00000000    -2.71003942     0.00000000
+}
+set {
+  basis cc-pvdz
+  scf_type df
+  d_convergence 1e-8
+  maxiter 500
+  reference rohf
+
+  restricted_docc [   8,   3,   0,   0,   0,   0,   7,   4 ]
+  active          [   0,   1,   1,   3,   1,   3,   0,   1 ]
+}
+
+set v2rdm_casscf {
+
+  positivity dqg
+  constrain_spin true
+
+  r_convergence  1e-4
+  e_convergence  1e-4
+  cg_convergence 1e-8
+
+  mu_update_frequency 250
+  orbopt_frequency 500
+
+  maxiter 100000
+
+}
+
+# singlet
+# from JCTC, with r_convergence = e_convergence = 1e-5
+#    * v2RDM total energy:           -338.502362198038
+
+activate(singlet)
+e_singlet = energy('v2rdm-casscf')
+
+
+# triplet
+# from JCTC, with r_convergence = e_convergence = 1e-5
+#    * v2RDM total energy:           -338.495146818081
+
+activate(triplet)
+e_triplet = energy('v2rdm-casscf')
+
+

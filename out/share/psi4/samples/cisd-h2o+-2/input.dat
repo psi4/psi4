@@ -1,0 +1,19 @@
+#! 6-31G** H2O+ Test CISD Energy Point
+
+
+molecule h2o {
+    1 2
+    O
+    H 1 1.00
+    H 1 1.00 2 103.1
+}
+
+set {
+  reference rohf
+  basis 6-31G**
+  freeze_core true
+  icore 2
+}
+
+thisenergy = energy('cisd')
+

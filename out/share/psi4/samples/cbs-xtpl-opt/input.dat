@@ -1,0 +1,31 @@
+#! Various extrapolated optimization methods for the H2 molecule
+
+molecule h2 {
+    H
+    H 1 R
+    R = 1
+}
+
+# Conventional to keep angular momentum low
+set {
+    scf_type      pk
+    mp2_type      conv
+    g_convergence GAU_VERYTIGHT
+    e_convergence 1.e-10
+}
+
+h2.update_geometry()
+
+optimize('SCF/cc-pVDZ')
+
+optimize('SCF/cc-pV[DT]Z')
+
+optimize('SCF/cc-pV[DTQ]Z')
+
+optimize('MP2/cc-pVDZ')
+
+optimize('MP2/cc-pV[DT]Z')
+
+optimize('MP2/cc-pV[TQ]Z')
+
+#optimize('ci2/cc-pv[dt]z')

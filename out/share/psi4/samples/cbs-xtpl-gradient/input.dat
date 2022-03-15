@@ -1,0 +1,38 @@
+#! Various gradients for a strained helium dimer and water molecule
+import numpy as np
+
+
+nucenergy_ref = 1.1759493570
+
+molecule he_dimer {
+    He 0 0 0
+    He 0 0 1.8
+}
+
+# Get a reasonable guess, to save some iterations
+set globals = {
+    scf_type      pk
+    mp2_type      conv
+    reference     rhf
+}
+
+he_dimer.update_geometry()
+
+# SCF TESTS
+
+scf_dz = gradient('SCF/cc-pVDZ')
+
+scf_tz = gradient('SCF/cc-pVTZ', dertype=0)
+
+scf_dtz = gradient('SCF/cc-pV[23]Z', dertype=0)
+
+scf_dtz = gradient('SCF/cc-pV[23]Z')
+
+# We do not currently test at this high of angular momentum
+# scf_dtqz = gradient('SCF/cc-pV[DTQ]Z')
+
+
+# MP2 TESTS
+mp2_dtz = gradient('MP2/cc-pV[DT]Z')
+
+mp2_dtz = gradient('MP2/cc-pV[DT]Z', dertype='energy')

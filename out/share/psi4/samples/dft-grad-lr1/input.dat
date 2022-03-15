@@ -1,0 +1,26 @@
+#! wB97X-D cc-pVDZ gradient of S22 HCN
+#! update df/pk_ref values due to new BraggSlater radii
+
+
+
+molecule {
+  0 1
+  N    -0.0034118    3.5353926    0.0000000
+  C     0.0751963    2.3707040    0.0000000
+  H     0.1476295    1.3052847    0.0000000
+}
+
+
+set {
+    scf_type              df
+    basis                 cc-pvdz
+    dft_radial_points     99
+    dft_spherical_points  302
+    points 5
+}
+
+anl_grad = gradient('wB97X-D', dertype=1)
+# fd_grad = gradient('wB97X-D', dertype=0)
+
+set scf_type pk
+anl_grad = gradient('wB97X-D', dertype=1)

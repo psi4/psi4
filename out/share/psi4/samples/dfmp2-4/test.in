@@ -1,0 +1,147 @@
+#! conventional and density-fitting mp2 test of mp2 itself and setting scs-mp2
+
+df_ref        =    -76.0167614256151865              #TEST
+df_mp2ss      =     -0.0527406422061238              #TEST
+df_mp2os      =     -0.1562926850310142              #TEST
+df_mp2corl    =     -0.2090333272371381              #TEST
+df_mp2tot     =    -76.2257947528523232              #TEST
+df_scscorl    =     -0.2051314361059251              #TEST
+df_scstot     =    -76.2218928617211162              #TEST
+df_5050corl   =     0.5 * (df_mp2ss + df_mp2os)      #TEST
+df_5050tot    =     df_5050corl + df_ref             #TEST
+
+conv_ref      =    -76.01678947133706                #TEST
+conv_mp2ss    =     -0.05268120425816                #TEST
+conv_mp2os    =     -0.15637564436589                #TEST
+conv_mp2corl  =     -0.20905684862405                #TEST
+conv_mp2tot   =    -76.22584631996111                #TEST
+conv_scscorl  =     -0.20521117465845                #TEST
+conv_scstot   =    -76.22200064599551                #TEST
+conv_5050corl =     0.5 * (conv_mp2ss + conv_mp2os)  #TEST
+conv_5050tot  =     conv_5050corl + conv_ref         #TEST
+
+molecule h2o {
+O
+H 1 1.0
+H 1 1.0 2 90.0
+}
+
+set basis cc-pvdz
+
+print('   Testing mp2 (df) ...')
+val = energy('mp2')
+compare_values(df_ref, variable('SCF TOTAL ENERGY'), 5, 'mp2 ref')                       #TEST
+compare_values(df_mp2ss, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 5, 'mp2 ss')      #TEST
+compare_values(df_mp2os, variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 5, 'mp2 os')  #TEST
+compare_values(df_mp2corl, variable('MP2 CORRELATION ENERGY'), 5, 'mp2 corl')            #TEST
+compare_values(df_mp2tot, variable('MP2 TOTAL ENERGY'), 5, 'mp2 tot')                    #TEST
+compare_values(df_scscorl, variable('SCS-MP2 CORRELATION ENERGY'), 5, 'mp2 scscorl')     #TEST
+compare_values(df_scstot, variable('SCS-MP2 TOTAL ENERGY'), 5, 'mp2 scstot')             #TEST
+
+compare_values(df_ref, variable('CURRENT REFERENCE ENERGY'), 5, 'mp2 ref')               #TEST
+compare_values(df_mp2corl, variable('CURRENT CORRELATION ENERGY'), 5, 'mp2 corl')        #TEST
+compare_values(df_mp2tot, variable('CURRENT ENERGY'), 5, 'mp2 tot')                      #TEST
+compare_values(df_mp2tot, val, 5, 'mp2 return')                                              #TEST
+clean()
+
+set mp2_type conv
+
+print('   Testing mp2 (conv) ...')
+val = energy('mp2')
+compare_values(conv_ref, variable('SCF TOTAL ENERGY'), 5, 'mp2 ref')                     #TEST
+compare_values(conv_mp2ss, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 5, 'mp2 ss')    #TEST
+compare_values(conv_mp2os, variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 5, 'mp2 os') #TEST
+compare_values(conv_mp2corl, variable('MP2 CORRELATION ENERGY'), 5, 'mp2 corl')          #TEST
+compare_values(conv_mp2tot, variable('MP2 TOTAL ENERGY'), 5, 'mp2 tot')                  #TEST
+compare_values(conv_scscorl, variable('SCS-MP2 CORRELATION ENERGY'), 5, 'mp2 scscorl')   #TEST
+compare_values(conv_scstot, variable('SCS-MP2 TOTAL ENERGY'), 5, 'mp2 scstot')           #TEST
+
+compare_values(conv_ref, variable('CURRENT REFERENCE ENERGY'), 5, 'mp2 ref')             #TEST
+compare_values(conv_mp2corl, variable('CURRENT CORRELATION ENERGY'), 5, 'mp2 corl')      #TEST
+compare_values(conv_mp2tot, variable('CURRENT ENERGY'), 5, 'mp2 tot')                    #TEST
+compare_values(conv_mp2tot, val, 5, 'mp2 return')                                            #TEST
+clean()
+
+set mp2_os_scale 1.2
+set mp2_ss_scale 0.33333333333333333
+
+set mp2_type df
+
+print('   Testing explicit scs mp2 (df) ...')
+val = energy('mp2')
+compare_values(df_ref, variable('SCF TOTAL ENERGY'), 5, 'mp2 ref')                       #TEST
+compare_values(df_mp2ss, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 5, 'mp2 ss')      #TEST
+compare_values(df_mp2os, variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 5, 'mp2 os')  #TEST
+compare_values(df_mp2corl, variable('MP2 CORRELATION ENERGY'), 5, 'mp2 corl')            #TEST
+compare_values(df_mp2tot, variable('MP2 TOTAL ENERGY'), 5, 'mp2 tot')                    #TEST
+compare_values(df_scscorl, variable('SCS-MP2 CORRELATION ENERGY'), 5, 'mp2 scscorl')     #TEST
+compare_values(df_scstot, variable('SCS-MP2 TOTAL ENERGY'), 5, 'mp2 scstot')             #TEST
+
+compare_values(df_ref, variable('CURRENT REFERENCE ENERGY'), 5, 'mp2 ref')               #TEST
+compare_values(df_mp2corl, variable('CURRENT CORRELATION ENERGY'), 5, 'mp2 corl')        #TEST
+compare_values(df_mp2tot, variable('CURRENT ENERGY'), 5, 'mp2 tot')                      #TEST
+compare_values(df_mp2tot, val, 5, 'mp2 return')                                              #TEST
+clean()
+
+set mp2_type conv
+
+print('   Testing explicit mp2 (conv) ...')
+val = energy('mp2')
+compare_values(conv_ref, variable('SCF TOTAL ENERGY'), 5, 'mp2 ref')                     #TEST
+compare_values(conv_mp2ss, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 5, 'mp2 ss')    #TEST
+compare_values(conv_mp2os, variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 5, 'mp2 os') #TEST
+compare_values(conv_mp2corl, variable('MP2 CORRELATION ENERGY'), 5, 'mp2 corl')          #TEST
+compare_values(conv_mp2tot, variable('MP2 TOTAL ENERGY'), 5, 'mp2 tot')                  #TEST
+compare_values(conv_scscorl, variable('SCS-MP2 CORRELATION ENERGY'), 5, 'mp2 scscorl')   #TEST
+compare_values(conv_scstot, variable('SCS-MP2 TOTAL ENERGY'), 5, 'mp2 scstot')           #TEST
+
+compare_values(conv_ref, variable('CURRENT REFERENCE ENERGY'), 5, 'mp2 ref')             #TEST
+compare_values(conv_mp2corl, variable('CURRENT CORRELATION ENERGY'), 5, 'mp2 corl')      #TEST
+compare_values(conv_mp2tot, variable('CURRENT ENERGY'), 5, 'mp2 tot')                    #TEST
+compare_values(conv_mp2tot, val, 5, 'mp2 return')                                            #TEST
+clean()
+
+
+set mp2_os_scale 0.5
+set mp2_ss_scale 0.5
+
+set mp2_type df
+
+print('   Testing user-def scs mp2 (df) ...')
+val = energy('mp2')
+compare_values(df_ref, variable('SCF TOTAL ENERGY'), 5, 'mp2 ref')                       #TEST
+compare_values(df_mp2ss, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 5, 'mp2 ss')      #TEST
+compare_values(df_mp2os, variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 5, 'mp2 os')  #TEST
+compare_values(df_mp2corl, variable('MP2 CORRELATION ENERGY'), 5, 'mp2 corl')            #TEST
+compare_values(df_mp2tot, variable('MP2 TOTAL ENERGY'), 5, 'mp2 tot')                    #TEST
+compare_values(df_5050corl, variable('custom SCS-MP2 CORRELATION ENERGY'), 5, 'mp2 scscorl')    #TEST
+compare_values(df_5050tot, variable('custom SCS-MP2 TOTAL ENERGY'), 5, 'mp2 scstot')            #TEST
+
+compare_values(df_ref, variable('CURRENT REFERENCE ENERGY'), 5, 'mp2 ref')               #TEST
+compare_values(df_mp2corl, variable('CURRENT CORRELATION ENERGY'), 5, 'mp2 corl')        #TEST
+compare_values(df_mp2tot, variable('CURRENT ENERGY'), 5, 'mp2 tot')                      #TEST
+compare_values(df_mp2tot, val, 5, 'mp2 return')                                              #TEST
+clean()
+
+# OCC has different keyword names from DFOCC. OCC's behavior should be the standard.
+set os_scale 0.5
+set ss_scale 0.5
+
+set mp2_type conv
+
+print('   Testing user-def scs mp2 (conv) ...')
+val = energy('mp2')
+compare_values(conv_ref, variable('SCF TOTAL ENERGY'), 5, 'mp2 ref')                     #TEST
+compare_values(conv_mp2ss, variable('MP2 SAME-SPIN CORRELATION ENERGY'), 5, 'mp2 ss')    #TEST
+compare_values(conv_mp2os, variable('MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 5, 'mp2 os') #TEST
+compare_values(conv_mp2corl, variable('MP2 CORRELATION ENERGY'), 5, 'mp2 corl')          #TEST
+compare_values(conv_mp2tot, variable('MP2 TOTAL ENERGY'), 5, 'mp2 tot')                  #TEST
+compare_values(conv_5050corl, variable('custom SCS-MP2 CORRELATION ENERGY'), 5, 'mp2 scscorl')  #TEST
+compare_values(conv_5050tot, variable('custom SCS-MP2 TOTAL ENERGY'), 5, 'mp2 scstot')          #TEST
+
+compare_values(conv_ref, variable('CURRENT REFERENCE ENERGY'), 5, 'mp2 ref')             #TEST
+compare_values(conv_mp2corl, variable('CURRENT CORRELATION ENERGY'), 5, 'mp2 corl')      #TEST
+compare_values(conv_mp2tot, variable('CURRENT ENERGY'), 5, 'mp2 tot')                    #TEST
+compare_values(conv_mp2tot, val, 5, 'mp2 return')                                            #TEST
+clean()
+

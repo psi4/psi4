@@ -1,0 +1,33 @@
+#! SAPT2+3(CCD) aug-cc-pVDZ+midbond computation of the water dimer interaction energy, 
+#! using the aug-cc-pVDZ-JKFIT DF basis for SCF and aug-cc-pVDZ-RI for SAPT.
+
+memory 1 GB
+
+molecule dimer {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+O   1.350625   0.111469   0.000000
+H   1.680398  -0.373741  -0.758561
+H   1.680398  -0.373741   0.758561
+--
+@He 0.321738   0.016205   0.000000
+}
+
+
+set {
+basis aug-cc-pvdz
+scf_type df
+e_convergence 10
+guess sad
+freeze_core true
+nat_orbs_t3 true
+}
+
+energy('sapt2+3(ccd)')
+
+
+

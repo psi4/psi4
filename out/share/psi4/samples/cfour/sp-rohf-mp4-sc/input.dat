@@ -1,0 +1,93 @@
+#! single-point MP4/qz2p on NH2
+
+print('        <<< Literal ZMAT to Cfour >>>')
+
+cfour {
+ROHF-MP4 energy calculation
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+
+*ACES2(CALC=MP4,BASIS=qz2p
+MULT=2,REF=ROHF
+OCCUPATION=3-1-1-0/3-0-1-0
+SCF_CONV=12
+MEMORY=20000000)
+}
+
+energy('cfour')
+
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+banner('ROHF-MP4 energy calculation')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level=MP4
+cfour_BASIS=qz2p
+cfour_REFerence=ROHF
+cfour_occupation [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+}
+
+energy('cfour')
+
+
+clean()
+clean_variables()
+cfour {}
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+banner('ROHF-MP4 energy calculation')
+
+molecule {
+0 2
+N
+H 1 R
+H 1 R 2 A
+
+R=1.008
+A=105.0
+}
+
+set {
+cfour_CALC_level=MP4
+cfour_BASIS=qz2p
+cfour_REFerence=ROHF
+cfour_occupation [[3,1,1,0],[3,0,1,0]]
+cfour_SCF_CONV=12
+}
+
+energy('cfour')
+
+
+# New run in cfour
+#        S-MBPT(2)       -0.002983751785   -55.587721011671
+#        D-MBPT(2)       -0.197555775958   -55.785276787630
+#        S-MBPT(3)       -0.000364945823   -55.785641733453
+#        D-MBPT(3)       -0.014954415997   -55.800596149450
+#        L-MBPT(4)       -0.004843986344   -55.805440135794
+#       NL-MBPT(4)        0.003213484296   -55.802226651498
+#     WT12-MBPT(4)        0.000000003250   -55.802226648249
+#        T-MBPT(4)       -0.004761370520   -55.806988018769
+#  -----------------------------------------------------------
+#  Total MBPT(4)       energy:   -55.806988018769 a.u.
+

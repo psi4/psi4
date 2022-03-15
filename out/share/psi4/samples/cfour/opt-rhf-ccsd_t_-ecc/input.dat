@@ -1,0 +1,55 @@
+#! optimization CCSD(T)/dzp on water with ecc, aobasis
+
+print('        <<< Literal ZMAT to Cfour >>>')
+
+cfour {
+Geometry optimization of H2O at CCSD(T) level
+O
+H 1 R*
+H 1 R* 2 A*
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=CCSD(T),BASIS=dzp
+ABCDTYPE=AOBASIS,CC_PROG=ECC
+GEO_CONV=10
+CC_CONV=12
+LINEQ_CONV=12
+SCF_CONV=12)
+}
+
+energy('cfour')
+
+
+clean()
+clean_variables()
+cfour {}  # clear literal block since running sequentially
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+memory 600 mb
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set {
+cfour_CALC_level=CCSD(T)
+cfour_BASIS=dzp
+cfour_ABCDTYPE=AOBASIS
+cfour_CC_PROGram=ECC
+cfour_CC_CONV=12
+cfour_LINEQ_CONV=12
+cfour_SCF_CONV=12
+rms_force_g_convergence 6
+}
+
+optimize('cfour')
+
+

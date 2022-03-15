@@ -1,0 +1,21 @@
+#! HF/cc-pVDZ many body energies of an arbitrary noble gas trimer complex
+#! Size vs cost tradeoff is rough here
+
+
+molecule noble_trimer {
+He 0 0 0
+--
+Ar 0 0 4
+--
+Ne 0 4 0
+}
+
+set {
+    e_convergence 1.e-10
+    d_convergence 1.e-10
+}
+
+energy('SCF/cc-pvdz', molecule=noble_trimer, bsse_type=['cp', 'nocp', 'vmfc'])
+
+for compl in comparison_dict.keys():
+

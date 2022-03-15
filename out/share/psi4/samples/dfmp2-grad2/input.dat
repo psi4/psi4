@@ -1,0 +1,23 @@
+#! DF-MP2 cc-pVDZ gradient for the NO molecule.
+
+
+molecule {
+0 2
+N
+O 1 1.158
+symmetry c1
+}
+
+set {
+  basis cc-pvdz
+  df_basis_scf cc-pvdz-jkfit
+  df_basis_cc cc-pvdz-ri
+  scf_type df
+  guess sad
+  reference uhf
+  qc_module occ
+  mp2_type df
+}
+
+grad = gradient('mp2')
+

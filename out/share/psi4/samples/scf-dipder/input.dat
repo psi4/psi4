@@ -1,0 +1,22 @@
+#! Test SCF dipole derivatives against old Psi3 reference values
+
+
+molecule {
+    C       -1.2602962432        0.0000000000        0.0000000000
+    C        1.2602962432        0.0000000000        0.0000000000
+    H       -2.3303912628       -1.7258024530        0.0000000000
+    H        2.3303912628       -1.7258024530        0.0000000000
+    H       -2.3303912628        1.7258024530        0.0000000000
+    H        2.3303912628        1.7258024530        0.0000000000
+    units bohr
+}
+
+set scf_type pk
+set d_convergence 10
+
+e, wfn = frequency('SCF/DZ', return_wfn=True)
+
+# Convert dipole derivatives to Debye/Ang units
+dipder = wfn.variable('SCF DIPOLE GRADIENT').np * psi_dipmom_au2debye / psi_bohr2angstroms
+
+# The differences in values are due to updated CODATA physical constants

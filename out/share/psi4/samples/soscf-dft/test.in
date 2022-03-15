@@ -1,0 +1,60 @@
+#! Triple and Singlet Oxygen energy SOSCF, also tests non-symmetric density matrices
+
+#### UHF Triplet Oxygen energy, triplet
+molecule mol {
+    0 3
+    O
+    O 1 1.2
+}
+
+# DF case
+set {
+    basis cc-pVDZ
+    guess sad
+    soscf true
+    scf_type df
+    reference uhf
+}
+
+svwn_uhf_energy = energy('SVWN')
+svwn_triplet_energy = -149.58484859711837  #TEST
+compare_integers(True, psi4.variable("SCF ITERATIONS") < 8, 'SVWN N iter')  #TEST
+compare_values(svwn_triplet_energy, svwn_uhf_energy, 6, 'SVWN Triplet Energy')  #TEST
+
+pbe_uhf_energy = energy('pbe')
+pbe_triplet_energy = -150.1929673167713588  #TEST
+compare_integers(True, psi4.variable("SCF ITERATIONS") < 8, 'PBE N iter')  #TEST
+compare_values(pbe_triplet_energy, pbe_uhf_energy, 6, 'PBE Triplet Energy')  #TEST
+
+pbe_uhf_energy = energy('wB97X-D')
+pbe_triplet_energy = -150.2859202265797478  #TEST
+compare_integers(True, psi4.variable("SCF ITERATIONS") < 8, 'wB97X-D N iter')  #TEST
+compare_values(pbe_triplet_energy, pbe_uhf_energy, 6, 'wB97X-D Triplet Energy')  #TEST
+
+#### RHF Singlet Oxygen energy, singlet
+molecule mol {
+    0 1
+    O
+    O 1 1.2
+}
+
+# DF case
+set {
+    reference rhf
+}
+
+b3lyp_rhf_energy = energy('B3LYP')
+b3lyp_singlet_energy = -150.27140713402315  #TEST
+compare_integers(True, psi4.variable("SCF ITERATIONS") < 8, 'B3LYP N iter')  #TEST
+compare_values(b3lyp_singlet_energy, b3lyp_rhf_energy, 6, 'B3LYP Singlet Energy')  #TEST
+
+pbe_rhf_energy = energy('PBE')
+pbe_singlet_energy = -150.13120149480605  #TEST
+compare_integers(True, psi4.variable("SCF ITERATIONS") < 8, 'PBE N iter')  #TEST
+compare_values(pbe_singlet_energy, pbe_rhf_energy, 6, 'PBE Singlet Energy')  #TEST
+
+pbe_rhf_energy = energy('wB97X-D')
+pbe_singlet_energy = -150.22359531811128  #TEST
+compare_integers(True, psi4.variable("SCF ITERATIONS") < 8, 'wB97X-D N iter')  #TEST
+compare_values(pbe_singlet_energy, pbe_rhf_energy, 6, 'wB97X-D Singlet Energy')  #TEST
+

@@ -1,0 +1,13 @@
+#! Optimization followed by frequencies H2O HF/cc-pVDZ
+
+molecule h2o {
+  O 
+  H 1 0.96
+  H 1 0.96 2 104.5
+}
+
+set basis cc-pVDZ
+optimize('scf')
+scf_e, scf_wfn = frequencies('scf', return_wfn=True, dertype=1)
+
+

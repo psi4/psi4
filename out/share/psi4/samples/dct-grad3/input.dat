@@ -1,0 +1,46 @@
+#! Restricted DF-DCT ODC-12 gradient for ethylene with cc-pVDZ/cc-pVDZ-RI standard/auxiliary basis set
+
+ref_aonone = psi4.Matrix.from_list([
+                [ 0.000000000000,     0.000000000000,    -0.087820165987],
+                [ 0.000000000000,     0.000000000000,     0.087820165987],
+                [ 0.000000000000,    -0.074674111152,     0.046770898578],
+                [ 0.000000000000,     0.074674111152,     0.046770898578],
+                [ 0.000000000000,     0.074674111152,    -0.046770898578],
+                [ 0.000000000000,    -0.074674111152,    -0.046770898578]
+                ])
+
+molecule c2h4{
+symmetry d2h
+0 1
+C
+C 1 RCC
+H 1 RCH 2 AHCC
+H 1 RCH 2 AHCC 3 D1
+H 2 RCH 1 AHCC 4 D2
+H 2 RCH 1 AHCC 4 D1
+
+RCC = 1.35
+RCH = 1.00
+AHCC = 120.0
+D1 = 180.0
+D2 = 0.0
+}
+
+set {
+  basis cc-pvdz
+  dct_type df
+  df_basis_dct cc-pvdz-ri
+  dct_guess mp2
+  algorithm simultaneous
+  dct_functional odc-12
+  diis_min_vecs 1
+  diis_start_convergence 1.0E-1
+  r_convergence 1.0E-10
+  maxiter 50
+}
+
+set reference rhf
+set ao_basis none
+grad = gradient('dct')
+clean()
+

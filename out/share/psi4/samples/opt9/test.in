@@ -1,0 +1,44 @@
+#! Various constrained energy minimizations of HOOH with cc-pvdz RHF.
+#! Cartesian-coordinate constrained optimizations of HOOH in internals.
+HOOH_E_fixed_H_xyz = -150.7866490998188      #TEST
+HOOH_E_fixed_O_xyz = -150.7866389583059      #TEST
+
+set { basis cc-pvdz }
+
+# Freeze H xyz in HOOH.
+molecule {
+  H  0.90  0.80  0.5
+  O  0.00  0.70  0.0
+  O  0.00 -0.70  0.0
+  H -0.90 -0.80  0.5
+  no_com
+  no_reorient
+}
+
+freeze_list = """
+ 1 xyz 
+ 4 xyz 
+"""
+
+set optking frozen_cartesian $freeze_list
+thisenergy = optimize('scf')
+compare_values(HOOH_E_fixed_H_xyz, thisenergy, 6, "Int. Coord. RHF opt of HOOH with H's xyz frozen, energy")  #TEST
+
+# Freeze O xyz in HOOH.
+molecule {
+  H  0.90  0.80  0.5
+  O  0.00  0.70  0.0
+  O  0.00 -0.70  0.0
+  H -0.90 -0.80  0.5
+  no_com
+  no_reorient
+}
+
+freeze_list = """
+ 2 xyz 
+ 3 xyz 
+"""
+set optking frozen_cartesian $freeze_list
+thisenergy = optimize('scf')
+compare_values(HOOH_E_fixed_O_xyz, thisenergy, 6, "Int. Coord. RHF opt of HOOH with O's xyz frozen, energy")  #TEST
+

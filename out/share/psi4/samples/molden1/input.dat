@@ -1,0 +1,74 @@
+#! Test of the superposition of atomic densities (SAD) guess, using a highly distorted water
+#! geometry with a cc-pVDZ basis set.  This is just a test of the code and the user need only
+#! specify guess=sad to the SCF module's (or global) options in order to use a SAD guess. The
+#! test is first performed in C2v symmetry, and then in C1.
+
+mtol = 4
+molden_scf_ref = """
+  1       0.040766825969
+  2      -1.573350418124
+  3       0.000000000000
+  4       0.000000000000
+  5      -0.268919089219
+  6       2.611247441332
+  7       0.000000000000
+  8       0.000000000000
+  9       1.122729656528
+ 10      -0.649233577052
+ 11      -0.496728664242
+ 12      -0.649233577052
+ 13      -0.496728664242
+""".splitlines()[::-1]
+
+molden_cas_ref = """
+  1       0.032608818338
+  2      -1.530962509381
+  3       0.000000000000
+  4       0.000000000000
+  5      -0.158211057483
+  6       2.602215202358
+  7       0.000000000000
+  8       0.000000000000
+  9       1.084069384232
+ 10      -0.724742859390
+ 11      -0.469286612117
+ 12      -0.724742859390
+ 13      -0.469286612117
+""".splitlines()[::-1]
+
+molecule h2o {
+    O
+    H 1 1.0
+    H 1 1.0 2 90
+}
+
+set {
+    basis           6-31G
+    frozen_docc     [1, 0, 0, 0]
+    active          [3, 0, 1, 2]
+}
+scf_e, scf_wfn = energy('scf', return_wfn=True)
+molden(scf_wfn, 'scf_orbitals.molden')
+
+molden_file = open('scf_orbitals.molden', 'r').readlines()[::-1]
+
+for line in range(len(molden_scf_ref) - 1):
+    r1, r2 = molden_scf_ref[line].split()
+    m1, m2 = molden_file[line].split()
+
+    r2 = round(float(r2), mtol)
+    m2 = round(float(m2), mtol)
+   
+
+cas_e, cas_wfn = energy('casscf', ref_wfn=scf_wfn, return_wfn=True)
+molden(cas_wfn, 'cas_orbitals.molden')
+
+molden_file = open('cas_orbitals.molden', 'r').readlines()[::-1]
+
+for line in range(len(molden_cas_ref) - 1):
+    r1, r2 = molden_cas_ref[line].split()
+    m1, m2 = molden_file[line].split()
+
+    r2 = round(float(r2), mtol)
+    m2 = round(float(m2), mtol)
+

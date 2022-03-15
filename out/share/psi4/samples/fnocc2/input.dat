@@ -1,0 +1,17 @@
+#! Test G2 method for H2O
+molecule h2o {
+0 1
+O
+H 1 1.0 
+H 1 1.0 2 104.5
+}
+set {
+    e_convergence 1e-10
+    d_convergence 1e-10
+    r_convergence 1e-10
+    g_convergence gau_verytight
+}
+energy('g2')
+
+
+clean()

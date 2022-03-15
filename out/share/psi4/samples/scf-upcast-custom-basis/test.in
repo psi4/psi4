@@ -1,0 +1,32 @@
+#! test scf castup with custom basis sets
+
+molecule {
+  O 
+  H 1 0.96
+  H 1 0.96 2 104.5
+}
+
+basis low {
+    assign sto-3g
+}
+basis high {
+    assign cc-pvdz
+}
+set scf d_convergence 6
+
+
+core.IO.set_default_namespace("low")
+set basis low
+energy('hf')
+
+compare_values(-74.9634059, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST
+
+
+core.IO.set_default_namespace('high')
+core.IO.change_file_namespace(180, 'low', 'high')
+set guess read
+set basis high
+energy('hf')
+
+
+compare_values(-76.02663273485877, variable('SCF TOTAL ENERGY'), 6, 'SCF energy')  #TEST

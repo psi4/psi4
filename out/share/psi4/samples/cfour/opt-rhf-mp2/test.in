@@ -1,0 +1,60 @@
+#! optimization MP2/cc-pvtz on water
+
+print('        <<< Literal ZMAT to Cfour >>>')
+
+cfour {
+Geometry optimization of H2O at MP2 level
+O
+H 1 R*
+H 1 R* 2 A*
+
+R=0.958
+A=104.5
+
+*ACES2(CALC=MP2,BASIS=PVTZ
+GEO_CONV=10
+SCF_CONV=12)
+}
+
+energy('cfour')
+
+compare_values(9.193817619800, variable('NUCLEAR REPULSION ENERGY'), 6, 'NRE')  #TEST
+compare_values(-76.057086657615, variable('current reference energy'), 6, 'SCF')  #TEST
+compare_values(-0.275174751101, variable('current correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-76.332261408717, variable('current energy'), 6, 'MP2')  #TEST
+compare_values(-0.066581844960, variable('mp2 same-spin correlation energy'), 6, 'MP2 SS')  #TEST
+compare_values(-0.208592906141, variable('mp2 opposite-spin correlation energy'), 6, 'MP2 OS')  #TEST
+
+clean()
+clean_variables()
+cfour {}  # clear literal block since running sequentially
+
+print('        <<< Translation of ZMAT to Psi4 format to Cfour >>>')
+
+memory 600 mb
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set {
+cfour_CALC_level=MP2
+cfour_BASIS=PVTZ
+cfour_SCF_CONV=12
+rms_force_g_convergence 6
+}
+
+optimize('cfour')
+
+compare_values(9.193817619800, variable('NUCLEAR REPULSION ENERGY'), 3, 'NRE')  #TEST
+compare_values(-76.057086657615, variable('current reference energy'), 6, 'SCF')  #TEST
+compare_values(-0.275174751101, variable('current correlation energy'), 6, 'MP2 corl')  #TEST
+compare_values(-76.332261408717, variable('current energy'), 6, 'MP2')  #TEST
+compare_values(-0.066581844960, variable('mp2 same-spin correlation energy'), 6, 'MP2 SS')  #TEST
+compare_values(-0.208592906141, variable('mp2 opposite-spin correlation energy'), 6, 'MP2 OS')  #TEST
+

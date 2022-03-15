@@ -1,0 +1,24 @@
+#! 6-31G** UHF CH2 3B1 optimization.  Uses a Z-Matrix with dummy atoms, just for demo and testing purposes.
+
+
+molecule ch2 {
+0 3
+c
+x 1 1.0
+h 1 b1 2 a1
+h 1 b1 2 a1 3 180.0
+
+b1 = 1.0
+a1 = 60.0
+}
+
+set {
+  reference uhf
+  basis 6-31G(d,p)
+  docc [2, 0, 0, 1]
+  socc [1, 0, 1, 0]
+  scf_type pk
+}
+
+thisenergy = optimize('scf')
+  

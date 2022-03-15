@@ -1,0 +1,37 @@
+#! wB97X-D cc-pVDZ gradient of S22 HCN
+#! update df/pk_ref values due to new BraggSlater radii
+
+df_ref = psi4.Matrix.from_list([                 #TEST
+       [-0.0019985711,  0.0298387231,  0.0000000000],   #TEST
+       [ 0.0024602692, -0.0368774931,  0.0000000000],   #TEST
+       [-0.0004579045,  0.0069800355,  0.0000000000]]) #TEST
+
+pk_ref = psi4.Matrix.from_list([                  #TEST
+       [-0.0020009614,  0.0298740015,  0.0000000000],   #TEST
+       [ 0.0024638117, -0.0369295696,  0.0000000000],   #TEST
+       [-0.0004590588,  0.0069968649,  0.0000000000]]) #TEST
+
+molecule {
+  0 1
+  N    -0.0034118    3.5353926    0.0000000
+  C     0.0751963    2.3707040    0.0000000
+  H     0.1476295    1.3052847    0.0000000
+}
+
+
+set {
+    scf_type              df
+    basis                 cc-pvdz
+    dft_radial_points     99
+    dft_spherical_points  302
+    points 5
+}
+
+anl_grad = gradient('wB97X-D', dertype=1)
+compare_matrices(df_ref, anl_grad, 7, "DF Analytic Gradient vs Reference")    #TEST
+# fd_grad = gradient('wB97X-D', dertype=0)
+# compare_matrices(anl_grad, fd_grad, 3, "Analytic vs FD Gradients")    #TEST
+
+set scf_type pk
+anl_grad = gradient('wB97X-D', dertype=1)
+compare_matrices(pk_ref, anl_grad, 7, "PK Analytic Gradient vs Reference")    #TEST

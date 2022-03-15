@@ -1,0 +1,32 @@
+#! sapt0 of charged system in ECP basis set
+
+molecule {
+0 1
+H -0.803001 1.098737 0.000360
+H -0.919454 -1.089722 0.000521
+O -0.035537 -0.067631 0.000218
+--
+2 1
+Ca 2.281447 -0.004247 -0.000154
+units angstrom
+no_reorient
+symmetry c1
+}
+
+set globals {
+scf_type df
+freeze_core true
+e_convergence 10
+d_convergence 10
+diis_rms_error false
+df_fitting_condition 1.e-12
+df_basis_sapt def2-qzvpp-ri  # not a recommendation. present to compensate for change in default
+}
+
+ref_321g = -0.09561567760757009
+ref_lanl = -0.10472408365123138
+
+E = energy('sapt0/3-21g')
+E = energy('sapt0/lanl2dz')
+
+

@@ -1,0 +1,76 @@
+#! SAPT0(ROHF) open-shell computation of CN - Ne interaction energy
+#! First with jun-cc-pVDZ and density fitted integrals with ROHF
+#! Then with cc-pVDZ and direct integrals, except for dispersion 
+#! that is computed with cc-pVDZ-ri density fitting with ROHF.
+
+memory 1 GB
+
+molecule {
+     0 2
+     C 0.000000  0.000000  0.000000
+     N 0.000000 0.000000  2.21
+     --
+     0 1
+     Ne 0.000000 0.000000 -6.410228688
+     units bohr
+     symmetry c1
+     no_reorient
+     no_com
+}
+
+set {
+reference rohf
+scf_type     df
+guess        sad
+basis         jun-cc-pVDZ
+df_basis_scf  aug-cc-pVDZ-jkfit
+df_basis_sapt aug-cc-pVDZ-ri
+}
+
+energy('sapt0')
+
+Eelst = psi4.variable("SAPT ELST ENERGY")
+Eexch = psi4.variable("SAPT EXCH ENERGY")
+Eind  = psi4.variable("SAPT IND ENERGY")
+Edisp = psi4.variable("SAPT DISP ENERGY")
+ET    = psi4.variable("SAPT ENERGY")
+
+Eref = [ -0.00005818602,  #TEST
+          0.00019907113,  #TEST
+         -0.00002399403,  #TEST
+         -0.00010370304,  #TEST
+          0.00001318804 ] #TEST
+
+compare_values(Eref[0], Eelst, 7, "SAPT0 Eelst")   #TEST
+compare_values(Eref[1], Eexch, 7, "SAPT0 Eexch")   #TEST
+compare_values(Eref[2], Eind, 7, "SAPT0 Eind")     #TEST
+compare_values(Eref[3], Edisp, 7, "SAPT0 Edisp")   #TEST
+compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST
+
+set {
+guess sad
+basis cc-pVDZ
+df_basis_sapt cc-pVDZ-ri
+scf_type direct
+}
+
+energy('sapt0')
+
+Eelst = psi4.variable("SAPT ELST ENERGY")
+Eexch = psi4.variable("SAPT EXCH ENERGY")
+Eind  = psi4.variable("SAPT IND ENERGY")
+Edisp = psi4.variable("SAPT DISP ENERGY")
+ET    = psi4.variable("SAPT ENERGY")
+
+Eref = [ -0.00012024341,  #TEST
+          0.00018948726,  #TEST
+         -0.00001750737,  #TEST
+         -0.00007559844,  #TEST
+         -0.00002386197 ] #TEST
+
+compare_values(Eref[0], Eelst, 7, "SAPT0 Eelst")   #TEST
+compare_values(Eref[1], Eexch, 7, "SAPT0 Eexch")   #TEST
+compare_values(Eref[2], Eind, 7, "SAPT0 Eind")     #TEST
+compare_values(Eref[3], Edisp, 7, "SAPT0 Edisp")   #TEST
+compare_values(Eref[4], ET, 7, "SAPT0 Etotal")     #TEST
+

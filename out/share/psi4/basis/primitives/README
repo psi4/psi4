@@ -1,0 +1,77 @@
+General Introduction:
+
+This directory contains common subsets of basis functions (e.g.,
+sets of diffuse functions, sets of core-valence functions) that can be
+combined with the "main" part of the basis set (e.g., cc-pVDZ) to form
+the various final basis set files (e.g., aug-cc-pCVDZ) that reside
+in the directory above this one.  Various scripts in this directory
+form those final basis set files.  The helper script diff_gbs.py script can
+compare whether two basis set files contain identical information or not
+(listing any elements for which they differ).
+
+Full (and definitive) information about everything is in the extensive NOTES 
+file
+
+File naming scheme:
+
+   - basis-cc-pVXZ: contains the "main" cc-pVXZ basis, without diffuse or
+       core-valence functions
+
+   - corevalence-cc-pcvxz: contains the tight, core-correlating functions
+       that are added to the "main" basis in basis-cc-pvxz to form
+       the cc-pcvxz basis sets
+
+   - tight-cc-pwcvxz: contains the tight, core-correlating functions
+       that are added to the "main" basis set in basis-cc-pwcvxz to
+       form the cc-pwcvxz basis sets; same idea as corevalence-cc-pcvxz,
+       only named differently for cc-pwcvxz for historical reasons (this
+       is how the subsets are named on EMSL)
+
+   - partial-cc-p(w)cvxz: for cases where the core-valence basis sets
+       are *not* additive as basis-cc-pvxz + (tight/corevalence)-cc-p(w)cvxz,
+       this contains the basis set *including* the tight, core-correlating
+       functions.  This is not the usual case and thus contains only 
+       a "partial" set of elements from the periodic table where the basis
+       is not additive.  
+
+   - diffuse-XXXX: contains diffuse functions that are added to the 
+       main basis set or core-valence basis set to create augmented
+       basis sets like aug-cc-pvdz or aug-cc-pwcvtz
+
+   - hold-XXXX: contains hand-edited sets of functions that are used
+       as intermediate files, often with a subset of functions from
+       one of the other files (e.g., sets of truncated diffuse functions,
+       like the diffuse functions in jun-cc-pVDZ); these are edited by
+       hand because we do not yet have scripts to delete primitives
+       from the original files downloaded from EMSL, etc.
+
+   - molpro-XXXX: these are files originating from the MOLPRO package,
+       rather than EMSL 
+
+Brief Instructions for Updating Files:
+
+Automation is really only for the Dunning basis sets. For others, use emsl_manipulate.pl directly.
+
+[1]   Update any of the primitives (basis-, corevalence-, tight-, diffuse-, hold-, molpro-,
+      partial-, etc.) as needed. These come directly from EMSL. Make sure element symbol starts
+      in first column.
+
+[2]   Make the necessary hand edits to hold- files. Detailed instructions for first generation are 
+      found in NOTES. Changes should only be necessary if their dependent basis sets from EMSL changed.
+      Note that changes to diffuse-* files will generally need to be propagated
+      by hand into hold-diffuse-* files.
+
+[3]   Run make_dunning.pl to generate the basis sets proper. dual adzp will be carried along but
+      these need to be edited by hand to actually make changes.
+
+[4]   Run `dunning_prepend_and_checknew.py` to add spherical to the top of the file and show if the basis
+      is any different from its current form (presently set to one directories up- change as needed).
+      Blue is new, yellow is changed, red is deleted.
+
+      Can run diff_gbs.py directly on one (`./diff_gbs.py probe.gbs`) or two files (`./diff_gbs.py probe.gbs ref.gbs`)
+
+[5]   Look at basisdunningfiles.txt and transfer into the main basis directory any that have changed.
+
+[6]   Delete basis sets here (keep primitives) via `./clean.sh`.
+
+

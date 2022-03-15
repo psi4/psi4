@@ -1,0 +1,24 @@
+#! OMP2 cc-pVDZ gradient for the H2O molecule.
+
+# Test values are analytic from Jonathon's Psi4Numpy code, run 03/20, residual convergence 12. # TEST
+ref = psi4.Matrix.from_list([                                       #TEST
+        [ 0.000000000000,     0.000000000000,     0.013509819843],  #TEST
+        [ 0.000000000000,     0.002462872308,    -0.006754909922],  #TEST
+        [ 0.000000000000,    -0.002462872308,    -0.006754909922]   #TEST
+      ])                                                            #TEST
+
+molecule h2o {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+  basis cc-pvdz
+  mp2_type conv
+}
+grad = gradient('omp2')
+
+compare_matrices(ref, grad, 5, "Analytic gradients")              #TEST
+

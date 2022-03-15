@@ -1,0 +1,19 @@
+#! Gradient regularized asymptotic correction (GRAC) test.
+
+molecule ne {
+  0 1
+  Ne
+  symmetry c1
+}
+
+
+set basis aug-cc-pVDZ
+set dft_grac_shift 0.203293
+
+scf_e, scf_wfn = energy("PBE0", return_wfn=True)
+eps = scf_wfn.epsilon_a_subset("AO", "ALL")
+
+
+scf_homo = eps[4]
+scf_lumo = eps[5]
+

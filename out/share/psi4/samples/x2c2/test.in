@@ -1,0 +1,48 @@
+#! Test of SFX2C-1e on Water cc-pVDZ-DK.  In this test the Dirac
+#! equation is solved in the uncontracted cc-pVDZ-DK basis.
+#! The reference numbers are from Lan Cheng's implementation in Cfour
+
+ref_nuc_energy =  8.316179709840201 #TEST
+ref_nr_energy  = -76.00090503998709 #TEST 
+ref_rel_energy = -76.05694013116914 #TEST
+ref_nr_gradient = np.array(
+[[0,  0,              -1.02297288e-01],
+ [0, -7.44208027e-02,  5.11486441e-02],
+ [0,  7.44208027e-02,  5.11486441e-02]])
+ref_rel_gradient = np.array(
+[[ 0.,          0.,         -0.10207924],
+ [ 0.,         -0.07441723,  0.05103962],
+ [ 0.,          0.07441723,  0.05103962]])
+
+
+molecule h2o {
+O
+H 1 R
+H 1 R 2 A
+
+R = 2.0
+A = 104.5
+units bohr
+}
+
+set {
+  basis cc-pVDZ-DK
+  scf_type pk
+}
+
+testnr = energy('scf')
+set relativistic x2c
+testrel = energy('scf')
+
+compare_values(ref_nuc_energy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(ref_nr_energy,testnr, 9, "Non-relativistic SCF energy")                  #TEST
+compare_values(ref_rel_energy,testrel, 9, "X2C relativistic SCF energy")                #TEST
+
+testrel, wfnrel =  gradient("scf", return_wfn=True)
+compare_values(ref_rel_gradient, testrel, 6, "X2C relativistic SCF gradient (GbyE)")  #TEST
+compare_values(ref_rel_gradient, wfnrel.gradient(), 6, "X2C relativistic SCF gradient (GbyE)")  #TEST
+
+set relativistic no
+testnr, wfnnr =  gradient("scf", return_wfn=True)
+compare_values(ref_nr_gradient, testnr, 6, "X2C non-relativistic SCF gradient (analytic)")  #TEST
+compare_values(ref_nr_gradient, wfnnr.gradient(), 6, "X2C non-relativistic SCF gradient (analytic)")  #TEST

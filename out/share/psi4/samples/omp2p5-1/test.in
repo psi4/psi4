@@ -1,0 +1,25 @@
+#! OMP2.5 cc-pVDZ energy for the H2O molecule.
+# OMP2.5 energy from Jonathon's Psi4Numpy code, run 03/20, residual convergence 12. # TEST
+refnuc  =    9.18738642147759  #TEST
+refscf  =  -76.02676109559411  #TEST
+refmp3  =  -76.23417406332526  #TEST
+refomp3 =  -76.23488803975771  #TEST
+
+molecule {
+0 1
+o
+h 1 0.958
+h 1 0.958 2 104.4776
+}
+
+set {
+  basis cc-pvdz
+  guess sad
+}
+
+energy('omp2.5')
+
+compare_values(refnuc, variable("NUCLEAR REPULSION ENERGY"), 5, "Nuclear Repulsion Energy (a.u.)");  #TEST
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 6, "SCF Energy (a.u.)");                        #TEST
+compare_values(refmp3, variable("MP2.5 TOTAL ENERGY"), 6, "MP2.5 Total Energy (a.u.)");               #TEST
+compare_values(refomp3, variable("OMP2.5 TOTAL ENERGY"), 6, "OMP2.5 Total Energy (a.u.)");               #TEST

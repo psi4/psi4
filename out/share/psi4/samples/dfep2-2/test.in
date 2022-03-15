@@ -1,0 +1,27 @@
+#! Compute three IP and 2 EA's for the PH3 molecule
+
+molecule mol {
+  Si   0.0000000000   0.000000000    0.0000000000
+  H    0.0000000000   0.000000000    1.4819259446
+  H    1.3971731795   0.000000000   -0.4939753149
+  H   -0.6985865898  -1.209987467   -0.4939753149
+  H   -0.6985865898   1.209987467   -0.4939753149
+}
+
+set BASIS      CC-PVDZ
+set EP2_NUM_EA 3
+
+energy('EP2')
+
+bench_data = [                                  # TEST
+    ["SCF TOTAL ENERGY",       -291.24286441],  # TEST
+    ["EP2 2B1 ENERGY",           -0.46513829],  # TEST
+    ["EP2 2B2 ENERGY",           -0.46513830],  # TEST
+    ["EP2 IONIZATION POTENTIAL", -0.46513829],  # TEST
+    ["EP2 ELECTRON AFFINITY",     0.14333736],  # TEST
+    ["EP2 5A1 ENERGY",           -0.46513830],  # TEST
+    ["EP2 3B1 ENERGY",            0.14333736]]  # TEST
+
+for k, v in bench_data:                         # TEST
+    compare_values(v, variable(k), 4, k)    # TEST
+

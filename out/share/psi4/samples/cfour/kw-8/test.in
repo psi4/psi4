@@ -1,0 +1,46 @@
+#! Translating psi4 options to cfour, part ii
+
+from psi4.driver.procrouting.interface_cfour import P4C4_INFO
+
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R=0.958
+A=104.5
+}
+
+set basis cc-pvdz
+
+energy('c4-scf')
+compare_values(-76.026760723833, variable('current energy'), 5, 'Total Energy')  #TEST
+compare_strings(True, 'SCF_CONV             ISCFCV          10D-  7' in P4C4_INFO['output'], 'SCF_CONV 7 default')  #TEST
+clean()
+clean_variables()
+
+set d_convergence 5
+
+energy('c4-scf')
+compare_values(-76.026760723833, variable('current energy'), 5, 'Total Energy')  #TEST
+compare_strings(True, 'SCF_CONV             ISCFCV          10D-  5' in P4C4_INFO['output'], 'SCF_CONV 5 scf kw overwritten')  #TEST
+clean()
+clean_variables()
+
+set scf d_convergence 5e-7
+
+energy('c4-scf')
+compare_values(-76.026760723833, variable('current energy'), 5, 'Total Energy')  #TEST
+compare_strings(True, 'SCF_CONV             ISCFCV          10D-  7' in P4C4_INFO['output'], 'P4C4 default SCF_CONV 7')  #TEST
+clean()
+clean_variables()
+
+set cfour_scf_conv 6
+set d_convergence 8
+
+energy('c4-scf')
+compare_values(-76.026760723833, variable('current energy'), 5, 'Total Energy')  #TEST
+compare_strings(True, 'SCF_CONV             ISCFCV          10D-  6' in P4C4_INFO['output'], 'SCF_CONV 6 cfour kw trumps scf kw')  #TEST
+clean()
+clean_variables()
+

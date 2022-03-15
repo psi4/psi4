@@ -1,0 +1,15 @@
+#! geometry after three optimization cycles on A24 database, cfour matches psi4
+
+set geom_maxiter 3
+set basis 6-31g
+set scf_type pk
+set g_convergence gau_tight
+
+db('c4-scf','a24alt',subset=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 16, 17, 18, 19, 20, 21, 23],func=optimize,tabulate=['nuclear repulsion energy'], allowoptexceeded=True)
+
+
+
+# May 2017; gradients ok; optking changed
+
+
+

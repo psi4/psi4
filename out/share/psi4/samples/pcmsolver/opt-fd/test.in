@@ -1,0 +1,50 @@
+#! PCM-SCF STO-3G geometry optimization by finite differences, with Z-matrix input
+# Reference values from DALTON (inputs and output included)
+nucenergy = 8.924418385165        #TEST
+refenergy = -74.971455946174      #TEST
+
+
+molecule h2o {
+  O
+  H 1 1.0
+  H 1 1.0 2 104.5
+}
+
+set {
+  basis sto-3g
+  e_convergence 10
+  d_convergence 10
+  scf_type pk
+  pcm true
+  pcm_scf_type total
+}
+
+pcm = {
+  Units = Angstrom
+  Medium {
+    SolverType = IEFPCM
+    Solvent = Water
+  }
+
+  Cavity {
+    RadiiSet = UFF
+    Type = GePol
+    Scaling = False
+    Area = 0.3
+    Mode = Implicit
+  }
+}
+
+# Explicitly ask for numerical
+thisenergy = optimize('scf', molecule=h2o, dertype='energy')
+
+compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")    #TEST
+compare_values(refenergy, thisenergy, 7, "Reference energy")                                #TEST
+clean()
+
+# Check that numerical gradient is used anyway
+set g_convergence gau_tight
+thisenergy = optimize('scf', molecule=h2o)
+
+compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")    #TEST
+compare_values(refenergy, thisenergy, 7, "Reference energy")                                #TEST

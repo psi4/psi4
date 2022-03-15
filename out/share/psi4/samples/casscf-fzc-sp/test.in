@@ -1,0 +1,33 @@
+#! CASSCF/6-31G** energy point
+
+molecule {
+O
+H 1 1.00
+H 1 1.00 2 103.1
+}
+
+set {
+    scf_type        out_of_core
+    basis           6-31G**
+    reference       rhf
+    frozen_docc     [1, 0, 0, 0]
+    active          [3, 0, 1, 2] 
+    mcscf_type      conv
+}
+
+casscf_energy = energy('casscf')
+
+
+compare_values(-76.017296555283, psi4.variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
+compare_values(-76.073773094606, casscf_energy, 6, 'FZC CASSCF Energy')  #TEST
+
+
+set {
+    diag_method rsp
+}
+
+casscf_energy = energy('casscf')
+
+
+compare_values(-76.017296555283, psi4.variable("SCF TOTAL ENERGY"), 6, "SCF Energy")  #TEST
+compare_values(-76.073773094606, casscf_energy, 6, 'RSP-FZC CASSCF Energy')  #TEST

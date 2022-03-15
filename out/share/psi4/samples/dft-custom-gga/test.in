@@ -1,0 +1,108 @@
+#! DFT (LDA/GGA) test of custom implementations in: gga_superfuncs.py
+
+# copy&paste list:
+#          "b86bpbe" : build_b86bpbe_superfunctional,
+#          "blyp"    : build_blyp_superfunctional,
+#          "svwn"    : build_svwn_superfunctional,
+#          "pw86pbe" : build_pw86pbe_superfunctional,
+#          "pbe"     : build_pbe_superfunctional,
+#          "bp86"    : build_bp86_superfunctional,
+#          "pw91"    : build_pw91_superfunctional,
+#          "ft97"    : build_ft97_superfunctional,
+#          "bop"     : build_bop_superfunctional,
+#          "mpwpw"   : build_mpwpw_superfunctional,
+
+
+## Programs/References
+# ORCA v.4.0.1: cc-pVDZ, RI-MP2, no FC, GRID7, nori
+# Gaussian 09: cc-pVDZ 5D SP Int(Grid=99770)
+# Turbomole 7.2, nori, grid 7
+# NWCHEM  grid: xfine, TOLERANCES accCoul 1e-14
+## Notes
+# BP86 can come with PW91 or VWN5 LDA correlation. Deviations are quite large either way.
+# SOGGA11 only up to 4 decimals even for Ne with fine grid
+
+
+ggaval ={
+"blyp"    : -128.894855380969, # ORCA
+"svwn"    : -128.357941704   , # G09
+"pbe"     : -128.79305010293, # TM  LDA-PW91
+#"pbe"     : -128.793027408,   # G09
+#"pbe"     : -128.793068569269 # ORCA LDA-PW91
+#"bp86"    : -128.905683777641, # ORCA LDA-PW91
+#"bp86"    : -128.9092927447,  # TM = LDA-VWN, or iop(3/74=418) in Gaussian
+#"bp86"    : -128.903070321, #G09  LDA-PW86
+"pw91"    : -128.871229934635,  # ORCA
+"mpwpw"   : -128.893378250504,  # ORCA
+#"ft97"    : -128.850056371480 , # NWCHEM xfine xc ft97 screening 1-e14
+"bop"     : -128.892404778404, # NWCHEM
+#"b86bpbe" : , # ???
+"pw86pbe" : -128.946484366 , # G09 iop(3/74=809)
+"sogga11" : -128.889273547 , # G09.D01 "SOGGA11/cc-pVDZ 5D SP Int(Grid=99770)"
+}
+
+
+
+molecule ne {
+  0 1
+  Ne
+}
+
+set df_scf_guess false
+set basis cc-pvdz
+set reference rks
+set dft_radial_points 99
+set dft_spherical_points 770 
+set scf_type direct
+
+for func, val in ggaval.items():
+  edft = energy(func)
+  label=func.upper()
+  compare_values(val, edft, 4, 'Ne: '+label)   #TEST
+  clean()
+
+
+# special flower BP86; low accuracy
+# #G09  LDA-PW86
+edft = energy('bp86')
+compare_values(-128.903070321, edft, 3, 'Ne: BP86(PW)')   #TEST
+clean()
+
+
+#=== from dft1 ===
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set {
+print 2
+basis sto-3g
+
+guess core
+scf_type direct
+dft_spherical_points 302
+dft_radial_points 99
+reference rks
+}
+
+E15 = -75.2976775610
+activate(h2o)
+edft=energy('scf', dft_functional="b86bpbe")
+compare_values(E15,edft, 4, "H2O: B86BPBE ") #TEST
+
+# Another special flower. FT97 does not converge readily.
+molecule ne {
+  0 1
+  Ne
+}
+
+set dft_spherical_points 770
+set d_convergence 1e-5
+set basis cc-pvdz
+
+activate(ne)
+edft = energy("ft97")
+compare_values(-128.850056371480, edft, 4, "Ne: FT97")

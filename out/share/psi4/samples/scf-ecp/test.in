@@ -1,0 +1,27 @@
+#! Water-Argon complex with ECP present; check of energies and forces.
+
+nucenergy =   23.2531136144       #TEST
+refenergy =  -96.67355794046748   #TEST
+
+molecule arwater {
+    Ar  0.000000000000     0.000000000000     3.000000000000
+    O   0.000000000000     0.000000000000    -0.071143036192
+    H   0.000000000000    -0.758215806856     0.564545805801
+    H   0.000000000000     0.758215806856     0.564545805801
+}
+
+set = {
+    scf_type       pk
+    basis          lanl2dz
+    df_scf_guess   false
+    d_convergence  10
+}
+
+e = energy('scf')
+compare_values(nucenergy, arwater.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")   #TEST
+compare_values(refenergy, e, 9, "SCF energy with ECP")                                        #TEST
+
+agrad = gradient('scf')
+set points 5
+ngrad = gradient('scf', dertype=0)
+compare_matrices(agrad, ngrad, 8, "SCF ECP finite-diff (5-pt) vs. analytic gradient to 10^-8") #TEST

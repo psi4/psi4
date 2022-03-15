@@ -1,0 +1,46 @@
+#! DCT calculation for the triplet O2 using ODC-06 and ODC-12 functionals. 
+#! Only simultaneous algorithm is tested.
+
+refscf      = -149.604242662532215   #TEST
+refmp2      = -149.921660679563871   #TEST
+
+# ODC-06
+refdctscf  = -149.239040008931511  #TEST
+refdct     = -149.938462434958325  #TEST
+
+# ODC-12                             #TEST
+refdctxscf = -149.252176970263150  #TEST
+refdctx    = -149.934767334068425  #TEST
+
+molecule OO {
+0 3
+O
+O 1 R
+
+units bohr
+R = 2.000
+}
+
+set {
+    r_convergence 12
+    d_convergence 12
+    ao_basis    disk
+    algorithm   simultaneous
+    basis       cc-pvdz
+    reference   uhf
+}
+
+set dct_functional odc-06
+energy('dct')
+
+compare_values(refscf, variable("SCF TOTAL ENERGY"), 10, "SCF Energy");                                       #TEST
+compare_values(refmp2, variable("MP2 TOTAL ENERGY"), 10, "MP2 Energy");                                             #TEST
+compare_values(refdctscf, variable("DCT SCF ENERGY"), 10, "ODC-06 SCF Energy (simultaneous, ao_basis=disk)");     #TEST
+compare_values(refdct, variable("DCT TOTAL ENERGY"), 10, "ODC-06 Energy (simultaneous, ao_basis=disk)");                #TEST
+
+set dct_functional odc-12
+energy('dct')
+
+compare_values(refdctxscf, variable("DCT SCF ENERGY"), 10, "ODC-12 SCF Energy (simultaneous, ao_basis=disk)");     #TEST
+compare_values(refdctx, variable("DCT TOTAL ENERGY"), 10, "ODC-12 Energy (simultaneous, ao_basis=disk)");                #TEST
+

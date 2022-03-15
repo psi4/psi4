@@ -1,0 +1,25 @@
+#! Hydroxyl with sto-3g frequencies
+
+import numpy as np
+
+molecule hydroxyl {
+    symmetry c1
+    0 2
+    O  0.0574960500  0.000000000  0.000000000
+    H -0.9125040246  0.000000000  0.000000000
+}
+
+set = {
+    basis sto-3g
+    reference uhf
+    scf_type direct
+    df_scf_guess False
+    brianqc_enable True
+}
+
+ref_freqs = np.array([4585.845257285128])
+
+scf_e, scf_wfn = frequencies('scf', project_trans = True, project_rot = True, return_wfn=True)
+
+this_freqs = scf_wfn.frequencies().to_array()                                            #TEST
+compare_arrays(ref_freqs, this_freqs, 6, "Reference frequencies")  #TEST

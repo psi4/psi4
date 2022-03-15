@@ -1,0 +1,129 @@
+# DFT (meta-GGA) test of implementations in: mgga_superfuncs.py
+
+## Programs/References
+# ORCA v.4.0.1: cc-pVTZ, RI-MP2, no FC, GRID7
+#-> TPSS
+# [revTPSS differs from Gaussian]
+#
+# Gaussian 09: cc-pVDZ 5D SP Int(Grid=99770)
+#-> revTPSS
+#-> M11L
+#-> M06L
+#-> MN12L
+# Gaussian 16: cc-pvdz 5D SP int=(grid=99770)
+#-> MN15L
+## Notes
+# M11L only up to 4 decimals even for Ne with fine grid
+#! updated dldf reference to new BraggSlater radii 
+
+molecule ne {
+  0 1
+  Ne
+}
+
+set df_scf_guess false
+set basis cc-pvdz
+set reference rks
+set dft_radial_points 99
+set dft_spherical_points 770 
+set scf_type direct
+
+ 
+edft = energy('tpss')
+compare_values(-128.910940991792, edft, 6, 'Ne: TPSS')   #TEST
+clean()
+
+edft = energy('revtpss')
+# ORCA: (large difference?)
+#compare_values(-128.850163295495, edft, 6, 'Ne: revTPSS')   #TEST
+# G09 values
+compare_values(-128.854622168, edft, 5, 'Ne: revTPSS')   #TEST
+clean()
+
+# Gaussian09
+edft = energy('m11-l')
+compare_values(-128.873042062, edft, 4, 'Ne: M11-L')   #TEST
+clean()
+#  
+edft = energy('m06-l')
+compare_values(-128.903194900, edft, 5, 'Ne: M06-L')   #TEST
+clean()
+#
+edft = energy('mn12-l')
+compare_values(-128.869792717, edft, 5, 'Ne: MN12-L')   #TEST
+clean()
+#
+# Gaussian16
+edft = energy('mn15-l')
+compare_values(-128.826859054, edft, 4, 'Ne: MN15-L')   #TEST
+clean()
+#
+
+#====== former dft-dldf test ==========
+#! Dispersionless density functional (dlDF+D) internal match to Psi4
+#! Extensive testing has been done to match supplemental info of
+#! Szalewicz et. al., Phys. Rev. Lett., 103, 263201 (2009) and Szalewicz et. al., J. Phys. Chem. Lett., 1, 550-555 (2010)
+
+molecule water {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+O   1.350625   0.111469   0.000000
+H   1.680398  -0.373741  -0.758561
+H   1.680398  -0.373741   0.758561
+}
+
+activate(water)
+set basis aug-cc-pvdz
+set scf_type df
+set dft_radial_points 99
+set dft_spherical_points 302
+edft = energy('dldf+d')
+val = -153.8043949584337    #TEST
+compare_values(val, edft, 8, "dlDF+D (2010 +D correction)")  #TEST
+clean()
+
+edft = energy('dldf+d09')
+val = -153.80463789175926     #TEST
+compare_values(val, edft, 8, "dlDF+D09 (2009 +D correction)")  #TEST
+clean()
+
+# additional meta-GGAs. Test against Q-chem values (taken from libxc test). Missing details.
+#MGGA_MS1,  -76.3862902532000021
+#MGGA_MS2,  -76.3944104108999937
+#MGGA_MS0,  -76.3991175407000043
+#M11-L,  -76.3618441219000061
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+activate(h2o)
+set basis 6-31G
+
+edft = energy('mgga_ms0')
+val = -76.3991175407000043    #TEST
+compare_values(val, edft, 5, "water: MGGA_MS0")  #TEST
+clean()
+
+edft = energy('mgga_ms1')
+val = -76.3862902532000021    #TEST
+compare_values(val, edft, 5, "water: MGGA_MS1")  #TEST
+clean()
+
+edft = energy('mgga_ms2')
+val = -76.3944104108999937    #TEST
+compare_values(val, edft, 5, "water: MGGA_MS2")  #TEST
+clean()
+
+#edft = energy('m11-l')
+#val =  -76.3618441219000061   #TEST
+#compare_values(val, edft, 4, "water: MGGA_M11-L")  #TEST
+#clean()
+

@@ -1,0 +1,54 @@
+#! EFP on mixed QM (water) and EFP (water + 2 * ammonia) system.
+#! An EFP-only calc performed first to test vales against q-chem.
+
+molecule qmefp {
+# QM fragment
+0 1
+units bohr
+O1     0.000000000000     0.000000000000     0.224348285559
+H2    -1.423528800232     0.000000000000    -0.897393142237
+H3     1.423528800232     0.000000000000    -0.897393142237
+# EFP as EFP fragments
+--
+efp h2o -4.014110144291     2.316749370493    -1.801514729931 -2.902133 1.734999 -1.953647
+--
+efp NH3,1.972094713645,,3.599497221584 ,	5.447701074734 -1.105309 2.033306 -1.488582
+--
+efp NH3 -7.876296399270    -1.854372164887    -2.414804197762  2.526442 1.658262 -2.742084
+}
+
+#  <<<  EFP calc  >>>
+set basis 6-31g*
+set scf_type pk
+set guess core
+set df_scf_guess false
+
+energy('efp')
+compare_values( 9.1793879214, qmefp.nuclear_repulsion_energy(), 6, 'QM NRE')  #TEST
+compare_values(-0.0004901368, variable('efp elst energy'), 6, 'EFP-EFP Elst')  #TEST  # from q-chem
+compare_values(-0.0003168768, variable('efp ind energy'), 6, 'EFP-EFP Indc')  #TEST
+compare_values(-0.0021985285, variable('efp disp energy'), 6, 'EFP-EFP Disp')  #TEST  # from q-chem
+compare_values( 0.0056859871, variable('efp exch energy'), 6, 'EFP-EFP Exch')  #TEST  # from q-chem
+compare_values( 0.0026804450, variable('efp total energy'), 6, 'EFP-EFP Totl')  #TEST
+compare_values( 0.0026804450, variable('current energy'), 6, 'Current')  #TEST
+print_variables()
+
+clean()
+clean_variables()
+
+#  <<<  QM + EFP calc  >>>
+set e_convergence 12
+set d_convergence 12
+energy('scf')
+
+compare_values( 9.1793879214, qmefp.nuclear_repulsion_energy(), 6, 'QM NRE')  #TEST
+#compare_values(-0.0004901368, variable('efp elst energy'), 6, 'EFP-EFP Elst')  #TEST  # from q-chem
+#compare_values( 0.2592625628, variable(''), 6, 'QM-EFP Elst')  #TEST  # from q-chem
+compare_values( 0.2622598847, variable('efp total energy') - variable('efp ind energy'), 6, 'EFP corr to SCF')  #TEST  # from q-chem
+compare_values(-0.0117694790, variable('efp ind energy'), 6, 'QM-EFP Indc')  #TEST  # from q-chem
+compare_values(-0.0021985285, variable('efp disp energy'), 6, 'EFP-EFP Disp')  #TEST  # from q-chem
+compare_values( 0.0056859871, variable('efp exch energy'), 6, 'EFP-EFP Exch')  #TEST  # from q-chem
+compare_values( 0.2504904057, variable('efp total energy'), 6, 'EFP-EFP Totl')  #TEST  # from q-chem
+compare_values(-76.0139362744, variable('scf total energy'), 6, 'SCF')  #TEST  # from q-chem
+print_variables()
+
