@@ -36,14 +36,14 @@ jobs:
             # Notes:
             # * libiomp5 is picking up naturally but left explicit as guide
 
-          - runs-on: windows-latest
-            python-version: "3.9"
-            mkl-version: "2021.4"
-            # mkl-version: "2019.1" is longstanding. needs defaults for intel-openmp
-            base-channel: "conda-forge"
-            cmargs: >
-              -D CMAKE_VERBOSE_MAKEFILE=ON
-              -D BUILD_SHARED_LIBS=OFF
+          #- runs-on: windows-latest
+          #  python-version: "3.9"
+          #  mkl-version: "2021.4"
+          #  # mkl-version: "2019.1" is longstanding. needs defaults for intel-openmp
+          #  base-channel: "conda-forge"
+          #  cmargs: >
+          #    -D CMAKE_VERBOSE_MAKEFILE=ON
+          #    -D BUILD_SHARED_LIBS=OFF
 
     name: "Eco • 🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.runs-on }}"
     runs-on: ${{ matrix.cfg.runs-on }}
@@ -225,8 +225,8 @@ jobs:
              - git+https://github.com/i-pi/i-pi.git@master-py3
         EOF
         if [[ "${{ runner.os }}" == "macOS" ]]; then
-          sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_5;g" build.yaml
-          #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/dev::libint2=2.6.0=h879752b_3;g" build.yaml
+          #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_5;g" run.yaml
+          sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/dev::libint2=2.6.0=h879752b_3;g" run.yaml
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # semi-permanent
