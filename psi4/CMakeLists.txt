@@ -165,7 +165,6 @@ if(DEFINED ENV{LGTM_SRC})
     find_package(Libint2 CONFIG REQUIRED COMPONENTS gss "eri_c4_d0_l${MAX_AM_ERI}")
 else()
     find_package(Libint2 CONFIG REQUIRED COMPONENTS gss CXX_ho impure_sh "eri_c4_d0_l${MAX_AM_ERI}" eri_c4_d1_l2 eri_c4_d2_l2 eri_c3_d0_l4 eri_c3_d1_l3 eri_c3_d2_l3 eri_c2_d0_l4 eri_c2_d1_l3 eri_c2_d2_l3 onebody_d0_l4 onebody_d1_l3 onebody_d2_l3)
-
 endif()
 get_property(_loc TARGET Libint2::int2 PROPERTY LOCATION)
 

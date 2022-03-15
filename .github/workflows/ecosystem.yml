@@ -139,9 +139,11 @@ jobs:
           sed -i "s;- psi4/label/dev::ambit;;g" build.yaml
           sed -i "s;- psi4/label/dev::chemps2;;g" build.yaml
           sed -i "s;- psi4/label/dev::dkh;;g" build.yaml
-          sed -i "s;- psi4/label/dev::gdma;;g" build.yaml
-          sed -i "s;- psi4/label/dev::pcmsolver;;g" build.yaml
+          #sed -i "s;- psi4/label/dev::gdma;;g" build.yaml
+          #sed -i "s;- psi4/label/dev::pcmsolver;;g" build.yaml
           #sed -i "s;- psi4/label/dev::simint;;g" build.yaml
+          sed -i "s;- psi4/label/dev::gdma;- numpy;g" build.yaml
+          sed -i "s;- psi4/label/dev::pcmsolver;- scipy;g" build.yaml
           sed -i "s;- psi4/label/dev::simint;- intel-openmp=${{ matrix.cfg.mkl-version }};" build.yaml
         fi
         #        if [[ "${{ runner.os }}" == "Windows" ]]; then
@@ -233,12 +235,13 @@ jobs:
           sed -i "s;- psi4/label/dev::chemps2;;g" run.yaml
           sed -i "s;- psi4/label/dev::dkh;;g" run.yaml
           sed -i "s;- psi4/label/dev::gdma;;g" run.yaml
-          sed -i "s;- psi4/label/dev::pcmsolver;;g" run.yaml
+          #sed -i "s;- psi4/label/dev::pcmsolver;;g" run.yaml
           #sed -i "s;- psi4/label/dev::simint;;g" run.yaml
-          sed -i "s;- psi4/label/dev::simint;- intel-openmp=${{ matrix.cfg.mkl-version }};" run.yaml
           sed -i "s;- psi4/label/dev::pylibefp;;g" run.yaml
           sed -i "s;- psi4/label/dev::fockci;;g" run.yaml
           sed -i "s;- psi4/label/dev::mp2d;;g" run.yaml
+          sed -i "s;- psi4/label/dev::pcmsolver;- mkl-devel=${{ matrix.cfg.mkl-version }};" run.yaml
+          sed -i "s;- psi4/label/dev::simint;- intel-openmp=${{ matrix.cfg.mkl-version }};" run.yaml
         fi
         cat > runcf.yaml <<EOF
         name: cfenv
@@ -450,7 +453,7 @@ jobs:
       working-directory: ./objdir
       run: ctest -L addon -j2 --output-on-failure
 
-    - name: "Test Addons with Pytest (native ${{ matrix.cfg.base-channel }} only)"
+    - name: "Test Addons with Pytest: (base channel only `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev`)"
       #if: false
       #if: ${{ runner.os == 'Windows' }}
       working-directory: ./objdir
@@ -458,7 +461,7 @@ jobs:
       #run: PYTHONPATH=../install/lib pytest -v -rws --durations=15 --cache-clear -m "addon and not long" ../install/lib/psi4/tests/
       run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
 
-    - name: Test Addons with Pytest (defaults + c-f)
+    - name: "Test Addons with Pytest: (base + community channel `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev -c conda-forge`)"
       working-directory: ./objdir
       run: |
         echo $CONDA_PREFIX
