@@ -67,7 +67,8 @@ else()
             set(_url_am_src "1-0-0-0-0-0")  #    99  # LGTM_SRC bulids
         endif()
 
-        set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-${_url_am_src}_1.tgz")
+        #set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-${_url_am_src}_1.tgz")
+        set(_url_l2_tarball "https://github.com/loriab/libint/releases/download/v0.1/Libint2-export-5-4-3-6-5-4_mm4ob2.tgz")
 
         message(STATUS "Suitable Libint2 could not be located, ${Magenta}Building Libint2 ${_url_am_src}${ColourReset} instead.")
 
