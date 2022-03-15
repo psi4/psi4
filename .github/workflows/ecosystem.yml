@@ -32,6 +32,7 @@ jobs:
               -D BUILD_SHARED_LIBS=ON
               -D OpenMP_C_FLAG="-fopenmp=libiomp5"
               -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
+              -D MAX_AM_ERI=4
             # Notes:
             # * libiomp5 is picking up naturally but left explicit as guide
 
@@ -140,7 +141,8 @@ jobs:
           sed -i "s;- psi4/label/dev::dkh;;g" build.yaml
           sed -i "s;- psi4/label/dev::gdma;;g" build.yaml
           sed -i "s;- psi4/label/dev::pcmsolver;;g" build.yaml
-          sed -i "s;- psi4/label/dev::simint;;g" build.yaml
+          #sed -i "s;- psi4/label/dev::simint;;g" build.yaml
+          sed -i "s;- psi4/label/dev::simint;- intel-openmp=${{ matrix.cfg.mkl-version }};" build.yaml
         fi
         #        if [[ "${{ runner.os }}" == "Windows" ]]; then
         #        cat > build.yaml <<EOF
@@ -232,7 +234,8 @@ jobs:
           sed -i "s;- psi4/label/dev::dkh;;g" run.yaml
           sed -i "s;- psi4/label/dev::gdma;;g" run.yaml
           sed -i "s;- psi4/label/dev::pcmsolver;;g" run.yaml
-          sed -i "s;- psi4/label/dev::simint;;g" run.yaml
+          #sed -i "s;- psi4/label/dev::simint;;g" run.yaml
+          sed -i "s;- psi4/label/dev::simint;- intel-openmp=${{ matrix.cfg.mkl-version }};" run.yaml
           sed -i "s;- psi4/label/dev::pylibefp;;g" run.yaml
           sed -i "s;- psi4/label/dev::fockci;;g" run.yaml
           sed -i "s;- psi4/label/dev::mp2d;;g" run.yaml
@@ -453,7 +456,7 @@ jobs:
       working-directory: ./objdir
       #run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 --cache-clear -m "addon and not long" stage/lib/psi4/tests/
       #run: PYTHONPATH=../install/lib pytest -v -rws --durations=15 --cache-clear -m "addon and not long" ../install/lib/psi4/tests/
-      run: PYTHONPAT=stage/lib pytest --cache-clear -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
 
     - name: Test Addons with Pytest (defaults + c-f)
       working-directory: ./objdir
