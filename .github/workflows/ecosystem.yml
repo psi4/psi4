@@ -14,13 +14,13 @@ jobs:
       matrix:
         cfg:
 
-          - runs-on: ubuntu-latest
-            python-version: "3.10"
-            mkl-version: "2021.4"
-            base-channel: "defaults"
-            cmargs: >
-              -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D BUILD_SHARED_LIBS=ON
+          #- runs-on: ubuntu-latest
+          #  python-version: "3.10"
+          #  mkl-version: "2021.4"
+          #  base-channel: "defaults"
+          #  cmargs: >
+          #    -D CMAKE_VERBOSE_MAKEFILE=OFF
+          #    -D BUILD_SHARED_LIBS=ON
 
           #- runs-on: macos-latest
           #  python-version: "3.9"
@@ -140,11 +140,11 @@ jobs:
           sed -i "s;- psi4/label/dev::ambit;;g" build.yaml
           sed -i "s;- psi4/label/dev::chemps2;;g" build.yaml
           sed -i "s;- psi4/label/dev::dkh;;g" build.yaml
-          #sed -i "s;- psi4/label/dev::gdma;;g" build.yaml
-          #sed -i "s;- psi4/label/dev::pcmsolver;;g" build.yaml
+          sed -i "s;- psi4/label/dev::gdma;;g" build.yaml
+          sed -i "s;- psi4/label/dev::pcmsolver;;g" build.yaml
           #sed -i "s;- psi4/label/dev::simint;;g" build.yaml
-          sed -i "s;- psi4/label/dev::gdma;- numpy;g" build.yaml
-          sed -i "s;- psi4/label/dev::pcmsolver;- scipy;g" build.yaml
+          #sed -i "s;- psi4/label/dev::gdma;- numpy;g" build.yaml
+          #sed -i "s;- psi4/label/dev::pcmsolver;- scipy;g" build.yaml
           sed -i "s;- psi4/label/dev::simint;- intel-openmp=${{ matrix.cfg.mkl-version }};" build.yaml
         fi
         #
@@ -191,29 +191,13 @@ jobs:
           - pytest-xdist
           - tomli
             # pip
+          - pip
           - pip:
              - git+https://github.com/i-pi/i-pi.git@master-py3
         EOF
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_5;g" run.yaml
           sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/dev::libint2=2.6.0=h879752b_3;g" run.yaml
-        fi
-        if [[ "${{ runner.os }}" == "Windows" ]]; then
-          # semi-permanent
-          sed -i "s;- psi4/label/dev::gau2grid;- gau2grid;g" run.yaml
-          sed -i "s;- psi4/label/dev::libxc;- libxc;g" run.yaml
-          # nyi
-          sed -i "s;- psi4/label/dev::ambit;;g" run.yaml
-          sed -i "s;- psi4/label/dev::chemps2;;g" run.yaml
-          sed -i "s;- psi4/label/dev::dkh;;g" run.yaml
-          sed -i "s;- psi4/label/dev::gdma;;g" run.yaml
-          #sed -i "s;- psi4/label/dev::pcmsolver;;g" run.yaml
-          #sed -i "s;- psi4/label/dev::simint;;g" run.yaml
-          sed -i "s;- psi4/label/dev::pylibefp;;g" run.yaml
-          sed -i "s;- psi4/label/dev::fockci;;g" run.yaml
-          sed -i "s;- psi4/label/dev::mp2d;;g" run.yaml
-          sed -i "s;- psi4/label/dev::pcmsolver;- mkl-devel=${{ matrix.cfg.mkl-version }};" run.yaml
-          sed -i "s;- psi4/label/dev::simint;- intel-openmp=${{ matrix.cfg.mkl-version }};" run.yaml
         fi
         cat > runcf.yaml <<EOF
         name: cfenv
@@ -288,6 +272,7 @@ jobs:
           - conda-forge::pytest>=7.0.1
           - pytest-xdist
             # pip
+          - pip
           - pip:
              - git+https://github.com/i-pi/i-pi.git@master-py3
         EOF
@@ -310,7 +295,7 @@ jobs:
         python-version: ${{ matrix.cfg.python-version }}
         auto-activate-base: false
 
-    - name: Conda environment information
+    - name: Conda environment information, build
       shell: bash -l {0}
       run: |
         conda info
@@ -441,8 +426,8 @@ jobs:
       run: objdump.exe -p objdir\stage\lib\psi4\core.*.pyd | grep dll
 
       # Notes: This is clearing away the whole build environment (to make explicit the build and
-      #   runtime dependencies and addons). Then its creating a new runtime environment based on
-      #   psi4 and defaults channel dependencies and addons. This is created at the same environment
+      #   runtime dependencies and addons). Then it's creating a new runtime environment based on
+      #   psi4 and base channel dependencies and addons. This is created at the same environment
       #   name (so same location on disk as the build env) for non-relocatability reasons. Also
       #   creating another runtime environment based on conda-forge channel addons. This is held in
       #   reserve for later.
@@ -468,41 +453,31 @@ jobs:
       working-directory: ./install/lib
       run: python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
 
-    - name: Test Run, Spot, Run cheat
-      working-directory: ./objdir
-      run: |
-        export PATH=../install/bin:$PATH
-        export KMP_DUPLICATE_LIB_OK=TRUE
-        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
-
     - name: Test Run, Spot, Run
       working-directory: ./objdir
       run: |
         export PATH=../install/bin:$PATH
+        #export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
-        psi4 ../tests/tu1-h2o-energy/input.dat -o stdout -n2
 
     - name: Test Addons with CTest
+      # step works but is redundant with next two
       if: false
       working-directory: ./objdir
       run: ctest -L addon -j2 --output-on-failure
 
     - name: "Test Addons with Pytest: (base channel only `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev`)"
-      #if: ${{ runner.os == 'Windows' }}
+      # step works but is redundant with next for Linux and macOS
+      if: ${{ runner.os == 'Windows' }}
       working-directory: ./objdir
-      #run: PYTHONPATH=../install/lib pytest -v -rws --durations=15 --cache-clear -m "addon and not long" ../install/lib/psi4/tests/
+      # (1st entry PYTHONPATH) need to find the Psi4 module
       run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
 
     - name: "Test Addons with Pytest: (base + community channel `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev -c conda-forge`)"
       if: ${{ matrix.cfg.base-channel }} == 'defaults'
       working-directory: ./objdir
       run: |
-        echo $CONDA_PREFIX
-        conda list
         conda activate --stack cfenv
-        echo $CONDA_PREFIX
-        conda list
         printenv | grep CONDA_PREFIX
         if [[ "${{ runner.os }}" == "Linux" ]]; then
             # (1st entry) need to find the Psi4 module
