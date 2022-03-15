@@ -924,10 +924,10 @@ void export_mints(py::module& m) {
              "Gets the multiplicity of each fragment")
         .def("atom_at_position", &Molecule::atom_at_position1,
              "Returns the index of the atom inside *tol* radius around *coord*. Returns -1 for no atoms, "
-             "returns the index of the closest atom if more than one is found.", "coord"_a, "tol"_a)
+             "throws an exception if more than one is found.", "coord"_a, "tol"_a)
         .def("atom_at_position", &Molecule::atom_at_position3,
              "Returns the index of the atom inside *tol* radius around *coord*. Returns -1 for no atoms, "
-             "returns the index of the closest atom if more than one is found.", "coord"_a, "tol"_a)
+             "throws an exception if more than one is found.", "coord"_a, "tol"_a)
         .def("print_out", &Molecule::print, "Prints the molecule in Cartesians in input units to output file")
         .def("print_out_in_bohr", &Molecule::print_in_bohr, "Prints the molecule in Cartesians in Bohr to output file")
         .def("print_out_in_angstrom", &Molecule::print_in_angstrom,
