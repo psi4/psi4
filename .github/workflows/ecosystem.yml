@@ -495,7 +495,7 @@ jobs:
       run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
 
     - name: "Test Addons with Pytest: (base + community channel `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev -c conda-forge`)"
-      if: ${{ ${{ matrix.cfg.base-channel }} == 'defaults' }}
+      if: ${{ matrix.cfg.base-channel }} == 'defaults'
       working-directory: ./objdir
       run: |
         echo $CONDA_PREFIX
