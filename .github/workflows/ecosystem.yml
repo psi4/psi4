@@ -14,13 +14,13 @@ jobs:
       matrix:
         cfg:
 
-          #- runs-on: ubuntu-latest
-          #  python-version: "3.10"
-          #  mkl-version: "2021.4"
-          #  base-channel: "defaults"
-          #  cmargs: >
-          #    -D CMAKE_VERBOSE_MAKEFILE=OFF
-          #    -D BUILD_SHARED_LIBS=ON
+          - runs-on: ubuntu-latest
+            python-version: "3.10"
+            mkl-version: "2021.4"
+            base-channel: "defaults"
+            cmargs: >
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D BUILD_SHARED_LIBS=ON
 
           #- runs-on: macos-latest
           #  python-version: "3.9"
@@ -205,6 +205,7 @@ jobs:
         dependencies:
           - blas=*=mkl
           - python=${{ matrix.cfg.python-version }}
+          - toml
             # qc opt'l
           - adcc
           - cppe
@@ -213,6 +214,8 @@ jobs:
           - openfermionpsi4
           - pymdi
           - qcengine
+
+        # toml needed for psi4 to load parameters from dftd4-python
         EOF
         #if [[ "${{ runner.os }}" == "macOS" ]]; then
         #  sed -E -i.bak "s;- openfermionpsi4;#- openfermionpsi4;g" runcf.yaml
@@ -234,6 +237,7 @@ jobs:
           - numpy
           - python=${{ matrix.cfg.python-version }}
           - scipy
+          - toml
             # non-qc opt'l
           #- memory_profiler # tests fail
             # qc req'd
@@ -275,6 +279,8 @@ jobs:
           - pip
           - pip:
              - git+https://github.com/i-pi/i-pi.git@master-py3
+
+        # toml needed for psi4 to load parameters from dftd4-python
         EOF
         cat > runcf.yaml <<EOF
         EOF
