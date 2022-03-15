@@ -143,9 +143,8 @@ jobs:
           sed -i "s;- psi4/label/dev::gdma;;g" build.yaml
           sed -i "s;- psi4/label/dev::pcmsolver;;g" build.yaml
           #sed -i "s;- psi4/label/dev::simint;;g" build.yaml
-          #sed -i "s;- psi4/label/dev::gdma;- numpy;g" build.yaml
-          #sed -i "s;- psi4/label/dev::pcmsolver;- scipy;g" build.yaml
           sed -i "s;- psi4/label/dev::simint;- intel-openmp=${{ matrix.cfg.mkl-version }};" build.yaml
+          sed -i "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h2e52968_5;g" build.yaml
         fi
         #
         # Runtime for split-channel (L, M)
@@ -236,10 +235,11 @@ jobs:
           - python=${{ matrix.cfg.python-version }}
           - scipy
             # non-qc opt'l
-          - memory_profiler
+          #- memory_profiler # tests fail
             # qc req'd
           - gau2grid
-          - psi4/label/dev::libint2
+          #- psi4/label/dev::libint2
+          - psi4/label/testing::libint2=2.6.0=h2e52968_5
           - qcelemental
           - qcengine
           - libxc
@@ -502,4 +502,4 @@ jobs:
 #              from . import core
 #              ImportError: DLL load failed while importing core: The specified module could not be found."
 # Soln:
-#   Something of adding numpy and scipy to build env and adding mkl-devel= to run env
+#   Something of adding mkl-devel= to run env
