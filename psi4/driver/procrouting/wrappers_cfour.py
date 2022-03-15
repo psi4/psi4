@@ -43,6 +43,7 @@ import subprocess
 
 from psi4.driver.p4util.exceptions import *
 
+# Not maintained: see #2478
 
 def run_cfour_module(xmod):
     # Find environment by merging PSIPATH and PATH environment variables

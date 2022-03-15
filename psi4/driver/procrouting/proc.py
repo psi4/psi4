@@ -3172,20 +3172,6 @@ def run_cc_property(name, **kwargs):
         # call oe prop for each ES density
         if name.startswith('eom'):
             # copy GS CC DIP/QUAD ... to CC ROOT 0 DIP/QUAD ... if we are doing multiple roots
-            # retire components at v1.5
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                if 'dipole' in one:
-                    core.set_variable("CC ROOT 0 DIPOLE X", core.variable("CC DIPOLE X"))
-                    core.set_variable("CC ROOT 0 DIPOLE Y", core.variable("CC DIPOLE Y"))
-                    core.set_variable("CC ROOT 0 DIPOLE Z", core.variable("CC DIPOLE Z"))
-                if 'quadrupole' in one:
-                    core.set_variable("CC ROOT 0 QUADRUPOLE XX", core.variable("CC QUADRUPOLE XX"))
-                    core.set_variable("CC ROOT 0 QUADRUPOLE XY", core.variable("CC QUADRUPOLE XY"))
-                    core.set_variable("CC ROOT 0 QUADRUPOLE XZ", core.variable("CC QUADRUPOLE XZ"))
-                    core.set_variable("CC ROOT 0 QUADRUPOLE YY", core.variable("CC QUADRUPOLE YY"))
-                    core.set_variable("CC ROOT 0 QUADRUPOLE YZ", core.variable("CC QUADRUPOLE YZ"))
-                    core.set_variable("CC ROOT 0 QUADRUPOLE ZZ", core.variable("CC QUADRUPOLE ZZ"))
             if 'dipole' in one:
                 core.set_variable("CC ROOT 0 DIPOLE", core.variable("CC DIPOLE"))
                 # core.set_variable("CC ROOT n DIPOLE", core.variable("CC DIPOLE"))  # P::e CCENERGY
@@ -3910,12 +3896,6 @@ def run_detci(name, **kwargs):
         oeprop.add("DIPOLE")
         oeprop.compute()
         ciwfn.oeprop = oeprop
-        # retire components in v1.5
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            core.set_variable("CURRENT DIPOLE X", core.variable(name.upper() + " DIPOLE X"))
-            core.set_variable("CURRENT DIPOLE Y", core.variable(name.upper() + " DIPOLE Y"))
-            core.set_variable("CURRENT DIPOLE Z", core.variable(name.upper() + " DIPOLE Z"))
         core.set_variable("CURRENT DIPOLE", core.variable(name.upper() + " DIPOLE"))
 
     ciwfn.cleanup_ci()
@@ -5225,12 +5205,6 @@ def run_detcas(name, **kwargs):
     oeprop.add("DIPOLE")
     oeprop.compute()
     ciwfn.oeprop = oeprop
-    # retire components by v1.5
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        core.set_variable("CURRENT DIPOLE X", core.variable(name.upper() + " DIPOLE X"))
-        core.set_variable("CURRENT DIPOLE Y", core.variable(name.upper() + " DIPOLE Y"))
-        core.set_variable("CURRENT DIPOLE Z", core.variable(name.upper() + " DIPOLE Z"))
     core.set_variable("CURRENT DIPOLE", core.variable(name.upper() + " DIPOLE"))
 
     # Shove variables into global space

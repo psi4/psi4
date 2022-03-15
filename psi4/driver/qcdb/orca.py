@@ -33,6 +33,7 @@ import qcelemental as qcel
 from .pdict import PreservingDict
 from .molecule import Molecule
 
+# Not maintained: see #2478
 
 def harvest(p4Mol, orca_out, **largs):
     """Harvest variables, gradient, and the molecule from the output and other

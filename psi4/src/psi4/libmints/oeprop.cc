@@ -859,39 +859,7 @@ void OEProp::compute_multipoles(int order, bool transition) {
             int n = (1 << l);
             sstream << n << "-POLE";
         }
-        std::string mname = sstream.str();
 
-        for (auto it = mpoles->begin(); it != mpoles->end(); ++it) {
-            std::string name;
-            double total_mpole = 0.0;
-            int order_mpole;
-            // unpack the multipole, which is: name, nuc, elec, total, order, ignore nuc and elec:
-            std::tie(name, std::ignore, std::ignore, total_mpole, order_mpole) = *it;
-            /*- Process::environment.globals["mtd DIPOLE X"] -*/
-            /*- Process::environment.globals["mtd DIPOLE Y"] -*/
-            /*- Process::environment.globals["mtd DIPOLE Z"] -*/
-            /*- Process::environment.globals["mtd QUADRUPOLE XX"] -*/
-            /*- Process::environment.globals["mtd OCTUPOLE XXX"] -*/
-            /*- Process::environment.globals["mtd HEXADECAPOLE XXXX"] -*/
-            /*- Process::environment.globals["mtd 32-POLE XXXXX"] -*/
-            /*- Process::environment.globals["mtd 32-POLE XXXXY"] -*/
-            /*- Process::environment.globals["mtd 64-POLE XXXXXX"] -*/
-            /*- Process::environment.globals["mtd 128-POLE XXXXXXX"] -*/
-            /*- Process::environment.globals["mtd DIPOLE"] -*/
-            /*- Process::environment.globals["mtd QUADRUPOLE"] -*/
-            /*- Process::environment.globals["mtd OCTUPOLE"] -*/
-            /*- Process::environment.globals["mtd HEXADECAPOLE"] -*/
-            /*- Process::environment.globals["mtd 32-POLE"] -*/
-            /*- Process::environment.globals["mtd 64-POLE"] -*/
-            /*- Process::environment.globals["mtd 128-POLE"] -*/
-
-            if (order_mpole == l) {
-                Process::environment.globals[name] = total_mpole;
-                wfn_->set_scalar_variable(name, total_mpole);
-                multipole_array->set(0, component, total_mpole);
-                ++component;
-            }
-        }
         Process::environment.arrays[sstream.str()] = multipole_array;
         wfn_->set_array_variable(sstream.str(), multipole_array);
     }
@@ -1278,23 +1246,8 @@ std::shared_ptr<std::vector<double>> ESPPropCalc::compute_esp_at_nuclei(bool pri
 
 void OEProp::compute_dipole(bool transition) {
     SharedVector dipole = mpc_.compute_dipole(transition, true, print_ > 4);
-    // Dipole components in Debye
-    std::stringstream s;
-    s << title_ << " DIPOLE X";
-    Process::environment.globals[s.str()] = dipole->get(0);
-    wfn_->set_scalar_variable(s.str(), dipole->get(0));
-
-    s.str(std::string());
-    s << title_ << " DIPOLE Y";
-    Process::environment.globals[s.str()] = dipole->get(1);
-    wfn_->set_scalar_variable(s.str(), dipole->get(1));
-
-    s.str(std::string());
-    s << title_ << " DIPOLE Z";
-    Process::environment.globals[s.str()] = dipole->get(2);
-    wfn_->set_scalar_variable(s.str(), dipole->get(2));
-
     // Dipole array in au
+    std::stringstream s;
     auto dipole_array = std::make_shared<Matrix>(1, 3);
     dipole_array->set(0, 0, dipole->get(0) / pc_dipmom_au2debye);
     dipole_array->set(0, 1, dipole->get(1) / pc_dipmom_au2debye);
@@ -1401,36 +1354,8 @@ SharedVector MultipolePropCalc::compute_dipole(bool transition, bool print_outpu
 }
 
 void OEProp::compute_quadrupole(bool transition) {
-    SharedMatrix quadrupole = mpc_.compute_quadrupole(transition, true, print_ > 4);
+    auto quadrupole = mpc_.compute_quadrupole(transition, true, print_ > 4);
     std::stringstream s;
-    s << title_ << " QUADRUPOLE XX";
-    Process::environment.globals[s.str()] = quadrupole->get(0, 0);
-    wfn_->set_scalar_variable(s.str(), quadrupole->get(0, 0));
-
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE YY";
-    Process::environment.globals[s.str()] = quadrupole->get(1, 1);
-    wfn_->set_scalar_variable(s.str(), quadrupole->get(1, 1));
-
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE ZZ";
-    Process::environment.globals[s.str()] = quadrupole->get(2, 2);
-    wfn_->set_scalar_variable(s.str(), quadrupole->get(2, 2));
-
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE XY";
-    Process::environment.globals[s.str()] = quadrupole->get(0, 1);
-    wfn_->set_scalar_variable(s.str(), quadrupole->get(0, 1));
-
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE XZ";
-    Process::environment.globals[s.str()] = quadrupole->get(0, 2);
-    wfn_->set_scalar_variable(s.str(), quadrupole->get(0, 2));
-
-    s.str(std::string());
-    s << title_ << " QUADRUPOLE YZ";
-    Process::environment.globals[s.str()] = quadrupole->get(1, 2);
-    wfn_->set_scalar_variable(s.str(), quadrupole->get(1, 2));
 
     // Quadrupole array in au
     auto quadrupole_array = std::make_shared<Matrix>(1, 6);
