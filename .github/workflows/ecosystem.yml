@@ -61,7 +61,7 @@ jobs:
 
       # mac_ver line returns, for example, "10.15" for Catalina, "11.6" for Big Sur. but phracker doesn't support all minor, so some logic to hardcode.
     - name: Prepare compiler environment, SDK (M)
-      if: ${{ runner.os == 'macOS' }}
+      if: runner.os == 'macOS'
       run: |
         macos_Mm=$(SYSTEM_VERSION_COMPAT=0 python -c "import platform; Mmp = platform.mac_ver()[0]; Mm = '.'.join(Mmp.split('.')[:2]); print(Mm)")
         macos_M=$(SYSTEM_VERSION_COMPAT=0 python -c "import platform; Mmp = platform.mac_ver()[0]; M = '.'.join(Mmp.split('.')[:1]); print(M)")
@@ -74,7 +74,7 @@ jobs:
 
       # equivalent to `call vcvarsall.bat x86_amd64`. see Azure script to follow cmdline.
     - name: Prepare compiler environment, vcvarsall (W)
-      if: ${{ runner.os == 'Windows' }}
+      if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
@@ -292,7 +292,7 @@ jobs:
         echo "\n<<<  runcf.yaml  >>>"
         cat runcf.yaml
 
-    - name: Create Conda environment (build)
+    - name: Create buildtime Conda environment
       uses: conda-incubator/setup-miniconda@v2
       with:
         activate-environment: defenv
@@ -301,7 +301,7 @@ jobs:
         python-version: ${{ matrix.cfg.python-version }}
         auto-activate-base: false
 
-    - name: Conda environment information, build
+    - name: List buildtime Conda environment
       shell: bash -l {0}
       run: |
         conda info
@@ -309,11 +309,11 @@ jobs:
 
       # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
     - name: Install Intel OpenMP import library (W)
-      if: ${{ runner.os == 'Windows' }}
+      if: runner.os == 'Windows'
       run: git clone https://github.com/psi4/iomp5md.git
 
     - name: Configure Psi4, Conda defaults GNU (L)
-      if: ${{ runner.os == 'Linux' }}
+      if: runner.os == 'Linux'
       run: |
         cmake \
           -S. \
@@ -351,7 +351,7 @@ jobs:
           ${{ matrix.cfg.cmargs }}
 
     - name: Configure Psi4, Conda defaults Clang (M)
-      if: ${{ runner.os == 'macOS' }}
+      if: runner.os == 'macOS'
       run: |
         cmake \
           -S. \
@@ -392,7 +392,7 @@ jobs:
           ${{ matrix.cfg.cmargs }}
 
     - name: Configure Psi4, LLVM clang-cl (W)
-      if: ${{ runner.os == 'Windows' }}
+      if: runner.os == 'Windows'
       run: |
         cmake \
           -S . \
@@ -419,15 +419,15 @@ jobs:
       run: cmake --build objdir --config Release --target install -j
 
     - name: Linked dependencies, ldd (L)
-      if: ${{ runner.os == 'Linux' }}
+      if: runner.os == 'Linux'
       run: ldd objdir/stage/lib/psi4/core.*.so
 
     - name: Linked dependencies, otool (M)
-      if: ${{ runner.os == 'macOS' }}
+      if: runner.os == 'macOS'
       run: otool -L objdir/stage/lib/psi4/core.*.so
 
     - name: Linked dependencies, objdump (W)
-      if: ${{ runner.os == 'Windows' }}
+      if: runner.os == 'Windows'
       shell: cmd /C CALL {0}
       run: objdump.exe -p objdir\stage\lib\psi4\core.*.pyd | grep dll
 
@@ -437,7 +437,7 @@ jobs:
       #   name (so same location on disk as the build env) for non-relocatability reasons. Also
       #   creating another runtime environment based on conda-forge channel addons. This is held in
       #   reserve for later.
-    - name: Create runtime Conda Environment(s)
+    - name: Create runtime Conda environment(s)
       run: |
         conda deactivate
         conda remove -n defenv --all
@@ -447,7 +447,7 @@ jobs:
         fi
         conda activate defenv
 
-    - name: Runtime Conda environment(s) information
+    - name: List runtime Conda environment(s)
       run: |
         conda info
         conda list -n defenv
@@ -474,13 +474,13 @@ jobs:
 
     - name: "Test Addons with Pytest: (base channel only `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev`)"
       # step works but is redundant with next for Linux and macOS
-      if: ${{ runner.os == 'Windows' }}
+      if: runner.os == 'Windows'
       working-directory: ./objdir
       # (1st entry PYTHONPATH) need to find the Psi4 module
       run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
 
     - name: "Test Addons with Pytest: (base + community channel `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev -c conda-forge`)"
-      if: ${{ matrix.cfg.base-channel }} == 'defaults'
+      if: matrix.cfg.base-channel == 'defaults'
       working-directory: ./objdir
       run: |
         conda activate --stack cfenv
