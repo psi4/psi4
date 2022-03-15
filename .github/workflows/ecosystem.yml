@@ -14,36 +14,36 @@ jobs:
       matrix:
         cfg:
 
-          #- runs-on: ubuntu-latest
-          #  python-version: "3.10"
-          #  mkl-version: "2021.4"
-          #  base-channel: "defaults"
-          #  cmargs: >
-          #    -D CMAKE_VERBOSE_MAKEFILE=OFF
-          #    -D BUILD_SHARED_LIBS=ON
-
-          - runs-on: macos-latest
-            python-version: "3.9"
+          - runs-on: ubuntu-latest
+            python-version: "3.10"
             mkl-version: "2021.4"
             base-channel: "defaults"
-            target-sdk: "10.10"
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D BUILD_SHARED_LIBS=ON
-              -D OpenMP_C_FLAG="-fopenmp=libiomp5"
-              -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
-              -D MAX_AM_ERI=4
-            # Notes:
-            # * libiomp5 is picking up naturally but left explicit as guide
 
-          #- runs-on: windows-latest
+          #- runs-on: macos-latest
           #  python-version: "3.9"
           #  mkl-version: "2021.4"
-          #  # mkl-version: "2019.1" is longstanding. needs defaults for intel-openmp
-          #  base-channel: "conda-forge"
+          #  base-channel: "defaults"
+          #  target-sdk: "10.10"
           #  cmargs: >
-          #    -D CMAKE_VERBOSE_MAKEFILE=ON
-          #    -D BUILD_SHARED_LIBS=OFF
+          #    -D CMAKE_VERBOSE_MAKEFILE=OFF
+          #    -D BUILD_SHARED_LIBS=ON
+          #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
+          #    -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
+          #    -D MAX_AM_ERI=4
+          #  # Notes:
+          #  # * libiomp5 is picking up naturally but left explicit as guide
+
+          - runs-on: windows-latest
+            python-version: "3.9"
+            mkl-version: "2021.4"
+            # mkl-version: "2019.1" is longstanding. needs defaults for intel-openmp
+            base-channel: "conda-forge"
+            cmargs: >
+              -D CMAKE_VERBOSE_MAKEFILE=ON
+              -D BUILD_SHARED_LIBS=OFF
 
     name: "Eco • 🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.runs-on }}"
     runs-on: ${{ matrix.cfg.runs-on }}
@@ -147,40 +147,10 @@ jobs:
           sed -i "s;- psi4/label/dev::pcmsolver;- scipy;g" build.yaml
           sed -i "s;- psi4/label/dev::simint;- intel-openmp=${{ matrix.cfg.mkl-version }};" build.yaml
         fi
-        #        if [[ "${{ runner.os }}" == "Windows" ]]; then
-        #        cat > build.yaml <<EOF
-        #        name: defenv
-        #        channels:
-        #          - ${{ matrix.cfg.base-channel }}
-        #          #- defaults
-        #        dependencies:
-        #          - blas=*=mkl
-        #          - cmake
-        #          - conda-forge::eigen
-        ##          - intel-openmp=${{ matrix.cfg.mkl-version }}
-        #          - mkl-devel=${{ matrix.cfg.mkl-version }}
-        #          - networkx
-        #          - ninja
-        #          - conda-forge::numpy
-        ##skip          - pint
-        #          - pybind11
-        ##          - pymdi
-        #          - conda-forge::pytest>=7.0.1
-        #          - pytest-xdist
-        #          - python=${{ matrix.cfg.python-version }}
-        #          - psi4/label/dev::dftd3
-        #          - psi4/label/dev::gcp
-        #          - conda-forge::gau2grid
-        #          - psi4/label/dev::libint2
-        #          - conda-forge::libxc
-        #          - conda-forge::mpfr
-        ##skip          - conda-forge::mpmath
-        #          - conda-forge::msgpack-python
-        #          - conda-forge::qcelemental
-        #          - conda-forge::qcengine
-        #          - conda-forge::scipy
-        #        EOF
-        #        fi
+        #
+        # Runtime for split-channel (L, M)
+        #
+        if [[ "${{ runner.os }}" != "Windows" ]]; then
         cat > run.yaml <<EOF
         name: defenv
         channels:
@@ -264,9 +234,65 @@ jobs:
         #if [[ "${{ runner.os }}" == "macOS" ]]; then
         #  sed -E -i.bak "s;- openfermionpsi4;#- openfermionpsi4;g" runcf.yaml
         #fi
+        fi
+        #
+        # Runtime for single-channel (W)
+        #
         if [[ "${{ runner.os }}" == "Windows" ]]; then
-          sed -i "s;- adcc;#- adcc;g" runcf.yaml
-          sed -i "s;- cppe;#- cppe;g" runcf.yaml
+        cat > run.yaml <<EOF
+        name: defenv
+        channels:
+          - ${{ matrix.cfg.base-channel }}
+        dependencies:
+            # non-qc req'd
+          - blas=*=mkl
+          - msgpack-python
+          - networkx
+          - numpy
+          - python=${{ matrix.cfg.python-version }}
+          - scipy
+            # non-qc opt'l
+          - memory_profiler
+            # qc req'd
+          - gau2grid
+          - psi4/label/dev::libint2
+          - qcelemental
+          - qcengine
+          - libxc
+            # qc req'd from buildtime
+          #- psi4/label/dev::ambit
+          #- psi4/label/dev::chemps2
+          #- psi4/label/dev::dkh
+          #- psi4/label/dev::gdma
+          #- psi4/label/dev::pcmsolver
+          #- psi4/label/dev::simint
+            # qc opt'l
+          #- adcc
+          #- cppe
+          - psi4/label/dev::dftd3
+          - dftd4-python
+          #- psi4/label/dev::pylibefp
+          #- psi4/label/dev::fockci
+          - psi4/label/dev::gcp
+          - geometric
+          #- psi4/label/dev::mp2d
+          #- openfermionpsi4
+          - pymdi
+          - psi4/label/dev::resp
+          - psi4/label/dev::snsmp2
+            # qc opt'l
+            # needed?
+          - mkl-devel=${{ matrix.cfg.mkl-version }}
+          - intel-openmp=${{ matrix.cfg.mkl-version }}
+            # test
+          - conda-forge::pytest>=7.0.1
+          - pytest-xdist
+            # pip
+          - pip:
+             - git+https://github.com/i-pi/i-pi.git@master-py3
+        EOF
+        cat > runcf.yaml <<EOF
+        EOF
         fi
         echo "\n<<<  build.yaml  >>>"
         cat build.yaml
@@ -420,16 +446,23 @@ jobs:
       #   name (so same location on disk as the build env) for non-relocatability reasons. Also
       #   creating another runtime environment based on conda-forge channel addons. This is held in
       #   reserve for later.
-    - name: Create Conda Environment (run)
-      #if: ${{ runner.os != 'Windows' }}
+    - name: Create runtime Conda Environment(s)
       run: |
         conda deactivate
         conda remove -n defenv --all
         conda env create --file run.yaml
+        if [[ "${{ runner.os }}" != "Windows" ]]; then
         conda env create --file runcf.yaml
+        fi
         conda activate defenv
-        #conda install conda-forge::pytest>=7.0.1
-        conda list
+
+    - name: Runtime Conda environment(s) information
+      run: |
+        conda info
+        conda list -n defenv
+        if [[ "${{ runner.os }}" != "Windows" ]]; then
+        conda list -n cfenv
+        fi
 
     - name: Test Psi4 core OpenMP
       working-directory: ./install/lib
@@ -456,14 +489,13 @@ jobs:
       run: ctest -L addon -j2 --output-on-failure
 
     - name: "Test Addons with Pytest: (base channel only `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev`)"
-      #if: false
       #if: ${{ runner.os == 'Windows' }}
       working-directory: ./objdir
-      #run: PYTHONPATH=stage/lib pytest -v -rws --durations=15 --cache-clear -m "addon and not long" stage/lib/psi4/tests/
       #run: PYTHONPATH=../install/lib pytest -v -rws --durations=15 --cache-clear -m "addon and not long" ../install/lib/psi4/tests/
       run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
 
     - name: "Test Addons with Pytest: (base + community channel `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev -c conda-forge`)"
+      if: ${{ ${{ matrix.cfg.base-channel }} == 'defaults' }}
       working-directory: ./objdir
       run: |
         echo $CONDA_PREFIX
