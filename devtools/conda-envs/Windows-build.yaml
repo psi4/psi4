@@ -1,0 +1,30 @@
+name: defenv
+channels:
+  - conda-forge
+dependencies:
+  - blas=*=mkl
+  - python=3.9
+    # build
+  - boost-cpp
+  - cmake
+  
+  
+  - eigen
+  
+  - mkl-devel=2021.4
+  - mpfr
+  - ninja
+  - pybind11
+    # qc req'd
+  - gau2grid
+  - psi4/label/testing::libint2=2.6.0=h2e52968_5
+  - psi4/label/dev::qcelemental
+  - psi4/label/dev::qcengine
+  - libxc
+    # qc opt'l
+  
+  
+  
+  
+  
+  - intel-openmp=2021.4

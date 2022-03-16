@@ -23,7 +23,7 @@ jobs:
               -D BUILD_SHARED_LIBS=ON
 
           - runs-on: macos-latest
-            python-version: "3.9"
+            python-version: "3.10"
             mkl-version: "2021.4"
             base-channel: "defaults"
             target-sdk: "10.10"
@@ -500,6 +500,17 @@ jobs:
         fi
         echo $PYTHONPATH
         pytest --cache-clear -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
+
+    - name: Check repository Conda environment consistency
+      run: |
+        cp build.yaml devtools/conda-envs/${{ runner.os }}-build.yaml
+        cp run.yaml devtools/conda-envs/${{ runner.os }}-run.yaml
+        if [[ "${{ runner.os }}" != "Windows" ]]; then
+        cp runcf.yaml devtools/conda-envs/${{ runner.os }}-runcf.yaml
+        fi
+        echo "::group::Git Diff"
+        git diff --color-words
+        echo "::endgroup::"
 
 # Notes
 #
