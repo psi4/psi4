@@ -127,7 +127,7 @@ jobs:
           sed -E -i.bak "s;- fortran-compiler;- gfortran_osx-64;g" build.yaml
           #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_5;g" build.yaml  # small mm4ob2
           #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/dev::libint2=2.6.0=h879752b_3;g" build.yaml  # longstanding, no ob2
-          sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_6;g" build.yaml  # normal mm4ob2
+          #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_6;g" build.yaml  # normal mm4ob2  # good, now default on label/dev
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # permanent, as we use clang-cl, not c-f compiler
@@ -145,7 +145,7 @@ jobs:
           sed -i "s;- psi4/label/dev::pcmsolver;;g" build.yaml
           #sed -i "s;- psi4/label/dev::simint;;g" build.yaml
           sed -i "s;- psi4/label/dev::simint;- intel-openmp=${{ matrix.cfg.mkl-version }};" build.yaml
-          sed -i "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h2e52968_5;g" build.yaml
+          #sed -i "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h2e52968_5;g" build.yaml  # good, now default on label/dev
         fi
         #
         # Runtime for split-channel (L, M)
@@ -198,7 +198,7 @@ jobs:
         if [[ "${{ runner.os }}" == "macOS" ]]; then
           #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_5;g" run.yaml
           #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/dev::libint2=2.6.0=h879752b_3;g" run.yaml
-          sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_6;g" run.yaml  # normal mm4ob2
+          #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_6;g" run.yaml  # normal mm4ob2  # good, now default on label/dev
         fi
         cat > runcf.yaml <<EOF
         name: cfenv
@@ -244,8 +244,8 @@ jobs:
           #- memory_profiler # tests fail
             # qc req'd
           - gau2grid
-          #- psi4/label/dev::libint2
-          - psi4/label/testing::libint2=2.6.0=h2e52968_5
+          - psi4/label/dev::libint2
+          #- psi4/label/testing::libint2=2.6.0=h2e52968_5  # good, now default on label/dev
           - qcelemental
           - qcengine
           - libxc
