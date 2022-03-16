@@ -230,6 +230,7 @@ void DFHelper::AO_core() {
     required_core_size_ += 3 * nbf_ * nbf_ * Qshell_max_;
 
     // a fraction of memory to use, do we want it as an option?
+    // Set mem_frac to 0.5 when a direct metric contraction is needed (last part of DFHelper::transform()) to save memory for M and F
     AO_core_ = true;
     if (memory_ < required_core_size_) AO_core_ = false;
 }
@@ -2011,7 +2012,13 @@ void DFHelper::transform() {
 
     // transformations complete, time for metric contractions
 
-    timer_on("DFH: Direct Contractions");
+    timer_on("DFH: Metric Contractions");
+
+    // release in-core AO 
+    if (AO_core_) {
+        Ppq_.reset();
+    }
+
     if (direct_iaQ_ || direct_) {
         // prepare metric
         std::unique_ptr<double[]> metric;
@@ -2043,8 +2050,9 @@ void DFHelper::transform() {
 
             } else {
                 // total size allowed, in doubles
+                size_t rem_mem = memory_ - (AO_core_ ? naux_ * nbf_ * nbf_ : 0);
                 size_t total_mem =
-                    (memory_ > wfinal * naux_ * 2 + naux_ * naux_ ? wfinal * naux_ : (memory_ - naux_ * naux_) / 2);
+                    (rem_mem > wfinal * naux_ * 2 + naux_ * naux_ ? wfinal * naux_ : (rem_mem - naux_ * naux_) / 2);
 
                 std::unique_ptr<double[]> M(new double[total_mem]);
                 std::unique_ptr<double[]> F(new double[total_mem]);
@@ -2058,8 +2066,9 @@ void DFHelper::transform() {
             if (!MO_core_) {
                 // total size allowed, in doubles.
                 // note that memory - naux_2 cannot be negative (handled in init)
+                size_t rem_mem = memory_ - (AO_core_ ? big_skips_[nbf_] : 0);
                 size_t total_mem =
-                    (memory_ > wfinal * naux_ * 2 + naux_ * naux_ ? wfinal * naux_ : (memory_ - naux_ * naux_) / 2);
+                    (rem_mem > wfinal * naux_ * 2 + naux_ * naux_ ? wfinal * naux_ : (rem_mem - naux_ * naux_) / 2);
 
                 std::unique_ptr<double[]> M(new double[total_mem]);
                 std::unique_ptr<double[]> F(new double[total_mem]);
@@ -2099,7 +2108,7 @@ void DFHelper::transform() {
             }
         }
     }
-    timer_off("DFH: Direct Contractions");
+    timer_off("DFH: Metric Contractions");
     timer_off("DFH: transform()");
     transformed_ = true;
 

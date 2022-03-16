@@ -157,7 +157,6 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     for (auto& mat : Cstack_vec) max_MO = std::max(max_MO, (size_t)mat->ncol());
 
     // Build DFHelper
-    timer_on("MO Integral Transformation");
     dfh_ = std::make_shared<DFHelper>(primary_, auxiliary_);
     dfh_->set_memory(doubles);
     if (is_hybrid_) {
@@ -197,7 +196,7 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
         // Contracted 3-index integrals to reproduce 4-index ERI
         dfh_->clear_spaces();
         dfh_->clear_transformations();
-        dfh_->clear_AO();
+        // dfh_->clear_AO(); // Already released in transform()
         // dfh_->set_method("STORE");
         dfh_->set_method("DIRECT_iaQ");
         dfh_->set_metric_pow(-0.5);
@@ -218,27 +217,26 @@ FDDS_Dispersion::FDDS_Dispersion(std::shared_ptr<BasisSet> primary, std::shared_
     }
 
     dfh_->clear_spaces();
-    dfh_->clear_AO();
-    timer_off("MO Integral Transformation");
+    // dfh_->clear_AO();
 
     if (is_hybrid_) {
         // QR Factorization of (ar|Q)
-        timer_on("QR Factorization");
+        timer_on("FDDS: QR");
         R_A_ = QR("A");
         R_B_ = QR("B");
-        timer_off("QR Factorization");
+        timer_off("FDDS: QR");
 
         // form (ar|(Q)X|Q) = (ar'|a'r) (a'r'|(Q)|Q)
-        timer_on("Form X");
+        timer_on("FDDS: Form X");
         form_X("A");
         form_X("B");
-        timer_off("Form X");
+        timer_off("FDDS: Form X");
 
         // form (ar|(Q)Y|Q) = (aa'|rr') (a'r'|(Q)|Q)
-        timer_on("Form Y");
+        timer_on("FDDS: Form Y");
         form_Y("A");
         form_Y("B");
-        timer_off("Form Y");
+        timer_off("FDDS: Form Y");
     }
 
 }

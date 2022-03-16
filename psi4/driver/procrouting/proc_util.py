@@ -211,7 +211,7 @@ def print_ci_results(ciwfn, rname, scf_e, ci_e, print_opdm_no=False):
 
 def prepare_sapt_molecule(sapt_dimer: core.Molecule, sapt_basis: str) -> Tuple[core.Molecule, core.Molecule, core.Molecule]:
     """
-    Prepares a dimer molecule for a SAPT computations. Returns the dimer, monomerA, and monomerB.
+    Prepares a dimer molecule for a SAPT computation. Returns the dimer, monomerA, and monomerB.
     """
 
     # Shifting to C1 so we need to copy the active molecule
