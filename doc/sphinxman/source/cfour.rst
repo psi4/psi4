@@ -547,7 +547,7 @@ following could be used. ::
 
 .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
-   - No PSI Variables for properties: *e.g.*, :psivar:`SCF DIPOLE X`
+   - No PSI Variables for properties: *e.g.*, :psivar:`SCF DIPOLE`
 
    - No PSI Variables for excited state energies
 

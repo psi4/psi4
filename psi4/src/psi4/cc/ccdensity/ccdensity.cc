@@ -407,15 +407,6 @@ PsiReturnType ccdensity(std::shared_ptr<Wavefunction> ref_wfn, Options &options)
 
         // Process::environment.globals["CC ROOT n DIPOLE"]
         // Process::environment.globals["CC ROOT n QUADRUPOLE"]
-        // Process::environment.globals["CC ROOT n DIPOLE X"]
-        // Process::environment.globals["CC ROOT n DIPOLE Y"]
-        // Process::environment.globals["CC ROOT n DIPOLE Z"]
-        // Process::environment.globals["CC ROOT n QUADRUPOLE XX"]
-        // Process::environment.globals["CC ROOT n QUADRUPOLE XY"]
-        // Process::environment.globals["CC ROOT n QUADRUPOLE XZ"]
-        // Process::environment.globals["CC ROOT n QUADRUPOLE YY"]
-        // Process::environment.globals["CC ROOT n QUADRUPOLE YZ"]
-        // Process::environment.globals["CC ROOT n QUADRUPOLE ZZ"]
 
         free_block(moinfo.opdm);
         free_block(moinfo.opdm_a);

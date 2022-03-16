@@ -27,11 +27,6 @@ compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion ene
 compare_values(refscf, variable("SCF TOTAL ENERGY"),     8, "SCF energy")                          #TEST
 compare_values(refci, thisenergy,                      7, "CI energy")                                 #TEST
 compare_values(refcorr, variable("CI CORRELATION ENERGY"), 7, "CI correlation energy")             #TEST
-with warnings.catch_warnings():  #TEST
-    warnings.simplefilter("ignore")  #TEST
-    compare_values(refDipHF, variable("SCF DIPOLE Z"), 3, "SCF Z Component of dipole")                 #TEST
-    compare_values(refDipCI, variable("CI DIPOLE Z"), 3, "CI Z Component of dipole")                   #TEST
-    compare_values(refQdpCI, variable("CI QUADRUPOLE ZZ"), 3, "CI ZZ Component of quadrupole")  #TEST
 compare_values(refDipHF, variable("SCF DIPOLE")[2] * constants.dipmom_au2debye, 3, "SCF Z Component of dipole")                 #TEST
 compare_values(refDipCI, variable("CI DIPOLE")[2] * constants.dipmom_au2debye, 3, "CI Z Component of dipole")                   #TEST
 compare_values(refQdpCI, variable("CI QUADRUPOLE")[2][2] * constants.dipmom_au2debye * constants.bohr2angstroms, 3, "CI ZZ Component of quadrupole")  #TEST

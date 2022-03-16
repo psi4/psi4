@@ -103,19 +103,6 @@ D 2 1.00
 
 ccsd_e, wfn = properties('ccsd',properties=['dipole'],return_wfn=True)
 oeprop(wfn,"DIPOLE", "QUADRUPOLE", title="(OEPROP)CC")
-with warnings.catch_warnings():  #TEST
-    warnings.simplefilter("ignore")  #TEST
-    compare_values(psi4.variable("(OEPROP)CC DIPOLE X"), 0.000000000000,6,"CC DIPOLE X")             #TEST
-    compare_values(psi4.variable("(OEPROP)CC DIPOLE Y"), 0.000000000000,6,"CC DIPOLE Y")             #TEST
-    compare_values(psi4.variable("(OEPROP)CC DIPOLE Z"),-1.840334899884,6,"CC DIPOLE Z")             #TEST
-    compare_values(psi4.variable("(OEPROP)CC QUADRUPOLE XX"),-7.864006962064,6,"CC QUADRUPOLE XX")   #TEST
-    compare_values(psi4.variable("(OEPROP)CC QUADRUPOLE XY"), 0.000000000000,6,"CC QUADRUPOLE XY")   #TEST
-    compare_values(psi4.variable("(OEPROP)CC QUADRUPOLE XZ"), 0.000000000000,6,"CC QUADRUPOLE XZ")   #TEST
-    compare_values(psi4.variable("(OEPROP)CC QUADRUPOLE YY"),-4.537386915305,6,"CC QUADRUPOLE YY")   #TEST
-    compare_values(psi4.variable("(OEPROP)CC QUADRUPOLE YZ"), 0.000000000000,6,"CC QUADRUPOLE YZ")   #TEST
-    compare_values(psi4.variable("(OEPROP)CC QUADRUPOLE ZZ"),-6.325836255265,6,"CC QUADRUPOLE ZZ")   #TEST
-print_variables()
 
-# prefer array dipole/quadrupole over deprecated scalar variables in section above
 compare_values(ref_di_au, psi4.variable('(OEPROP)CC DIPOLE'), 4, "CC DIPOLE")  #TEST
 compare_values(ref_quad_au, psi4.variable('(OEPROP)CC QUADRUPOLE'), 4, "CC QUADRUPOLE")  #TEST

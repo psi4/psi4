@@ -646,18 +646,6 @@ def scf_finalize_energy(self):
         # Set callback function for CPSCF
         self.set_external_cpscf_perturbation("PE", lambda pert_dm : self.pe_state.get_pe_contribution(pert_dm, elec_only=True)[1])
 
-    # Properties
-    #  Comments so that autodoc utility will find these PSI variables
-    #  Process::environment.globals["SCF DIPOLE X"] =
-    #  Process::environment.globals["SCF DIPOLE Y"] =
-    #  Process::environment.globals["SCF DIPOLE Z"] =
-    #  Process::environment.globals["SCF QUADRUPOLE XX"] =
-    #  Process::environment.globals["SCF QUADRUPOLE XY"] =
-    #  Process::environment.globals["SCF QUADRUPOLE XZ"] =
-    #  Process::environment.globals["SCF QUADRUPOLE YY"] =
-    #  Process::environment.globals["SCF QUADRUPOLE YZ"] =
-    #  Process::environment.globals["SCF QUADRUPOLE ZZ"] =
-
     # Orbitals are always saved, in case an MO guess is requested later
     # save_orbitals()
 

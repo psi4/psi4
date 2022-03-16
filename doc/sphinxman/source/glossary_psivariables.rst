@@ -68,28 +68,9 @@ PSI Variables by Alpha
 
    Dipole array [e a0] for the averaged coupled-pair functional level of theory, (3,).
 
-.. psivar:: ACPF DIPOLE X
-   ACPF DIPOLE Y
-   ACPF DIPOLE Z
-
-   The three components of the dipole [Debye] for the
-   averaged coupled-pair functional level of theory.
-   Deprecated in favor of :psivar:`ACPF DIPOLE`.
-
 .. psivar:: ACPF QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the averaged coupled-pair functional level of theory, (3, 3).
-
-.. psivar:: ACPF QUADRUPOLE XX
-   ACPF QUADRUPOLE XY
-   ACPF QUADRUPOLE XZ
-   ACPF QUADRUPOLE YY
-   ACPF QUADRUPOLE YZ
-   ACPF QUADRUPOLE ZZ
-
-   The six components of the quadrupole [Debye Ang] for the
-   averaged coupled-pair functional level of theory.
-   Deprecated in favor of :psivar:`ACPF QUADRUPOLE`.
 
 .. psivar:: ACPF TOTAL ENERGY
    ACPF CORRELATION ENERGY
@@ -114,28 +95,9 @@ PSI Variables by Alpha
 
    Dipole array [e a0] for the averaged quadratic coupled-cluster level of theory, (3,).
 
-.. psivar:: AQCC DIPOLE X
-   AQCC DIPOLE Y
-   AQCC DIPOLE Z
-
-   The three components of the dipole [Debye] for the
-   averaged quadratic coupled-cluster level of theory.
-   Deprecated in favor of :psivar:`AQCC DIPOLE`.
-
 .. psivar:: AQCC QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the averaged quadratic coupled-cluster level of theory, (3, 3).
-
-.. psivar:: AQCC QUADRUPOLE XX
-   AQCC QUADRUPOLE XY
-   AQCC QUADRUPOLE XZ
-   AQCC QUADRUPOLE YY
-   AQCC QUADRUPOLE YZ
-   AQCC QUADRUPOLE ZZ
-
-   The six components of the quadrupole [Debye Ang] for the
-   averaged quadratic coupled-cluster level of theory.
-   Deprecated in favor of :psivar:`AQCC QUADRUPOLE`.
 
 .. psivar:: AQCC TOTAL ENERGY
    AQCC CORRELATION ENERGY
@@ -158,28 +120,9 @@ PSI Variables by Alpha
 
    Dipole array [e a0] for the requested coupled cluster level of theory and root *n* (number starts at GS = 0), (3,).
 
-.. psivar:: CC ROOT n DIPOLE X
-   CC ROOT n DIPOLE Y
-   CC ROOT n DIPOLE Z
-
-   The three components of the dipole [Debye] for the requested
-   coupled cluster level of theory and root *n* (number starts at GS = 0).
-   Deprecated in favor of :psivar:`CC ROOT n DIPOLE`.
-
 .. psivar:: CC ROOT n QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the requested coupled cluster level of theory and root *n* (number starts at GS = 0), (3, 3).
-
-.. psivar:: CC ROOT n QUADRUPOLE XX
-   CC ROOT n QUADRUPOLE XY
-   CC ROOT n QUADRUPOLE XZ
-   CC ROOT n QUADRUPOLE YY
-   CC ROOT n QUADRUPOLE YZ
-   CC ROOT n QUADRUPOLE ZZ
-
-   The six components of the quadrupole [Debye Ang] for the requested
-   coupled cluster level of theory and root *n* (numbering starts at GS = 0).
-   Deprecated in favor of :psivar:`CC ROOT n QUADRUPOLE`.
 
 .. psivar:: CC ROOT n TOTAL ENERGY
    CC ROOT n CORRELATION ENERGY
@@ -215,14 +158,6 @@ PSI Variables by Alpha
 
    Dipole array [e a0] for the requested coupled cluster level of theory and root, (3,).
 
-.. psivar:: CC DIPOLE X
-   CC DIPOLE Y
-   CC DIPOLE Z
-
-   The three components of the dipole [Debye] for the requested
-   coupled cluster level of theory and root.
-   Deprecated in favor of :psivar:`CC DIPOLE`.
-
 .. psivar:: CC2 DIPOLE POLARIZABILITY @ xNM
 
    The dipole polarizability [au] calculated at the CC2 level
@@ -247,16 +182,6 @@ PSI Variables by Alpha
 
    The origin-dependence of the CC2 specific rotation in deg/[dm (g/cm^3)]/bohr and the
    length gauge, computed at (x) wavelength, (x) rounded to nearest integer.
-
-.. psivar:: CC QUADRUPOLE XX
-   CC QUADRUPOLE XY
-   CC QUADRUPOLE XZ
-   CC QUADRUPOLE YY
-   CC QUADRUPOLE YZ
-   CC QUADRUPOLE ZZ
-
-   The six components of the quadrupole [Debye Ang] for the requested
-   coupled cluster level of theory and root.
 
 .. psivar:: CCD TOTAL ENERGY
    CCD CORRELATION ENERGY
@@ -397,28 +322,9 @@ PSI Variables by Alpha
 
    Dipole array [e a0] for the coupled electron pair approximation variant 0 level of theory, (3,).
 
-.. psivar:: CEPA(0) DIPOLE X
-   CEPA(0) DIPOLE Y
-   CEPA(0) DIPOLE Z
-
-   The three components of the dipole [Debye] for the
-   coupled electron pair approximation variant 0 level of theory.
-   Deprecated in favor of :psivar:`CEPA(0) DIPOLE`.
-
 .. psivar:: CEPA(0) QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the coupled electron pair approximation variant 0 level of theory, (3, 3).
-
-.. psivar:: CEPA(0) QUADRUPOLE XX
-   CEPA(0) QUADRUPOLE XY
-   CEPA(0) QUADRUPOLE XZ
-   CEPA(0) QUADRUPOLE YY
-   CEPA(0) QUADRUPOLE YZ
-   CEPA(0) QUADRUPOLE ZZ
-
-   The six components of the quadrupole [Debye Ang] for the
-   coupled electron pair approximation variant 0 level of theory.
-   Deprecated in favor of :psivar:`CEPA(0) QUADRUPOLE`.
 
 .. psivar:: CEPA(0) TOTAL ENERGY
    CEPA(0) CORRELATION ENERGY
@@ -440,83 +346,25 @@ PSI Variables by Alpha
 
    Dipole array [e a0] for the requested configuration interaction level of theory, (3,).
 
-.. psivar:: CI DIPOLE X
-   CI DIPOLE Y
-   CI DIPOLE Z
-
-   The three components of the dipole [Debye] for the requested
-   configuration interaction level of theory and root.
-   Deprecated in favor of :psivar:`CI DIPOLE`.
-
 .. psivar:: CI QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the requested configuration interaction level of theory, (3, 3).
-
-.. psivar:: CI QUADRUPOLE XX
-   CI QUADRUPOLE XY
-   CI QUADRUPOLE XZ
-   CI QUADRUPOLE YY
-   CI QUADRUPOLE YZ
-   CI QUADRUPOLE ZZ
-
-   The six components of the quadrupole [Debye Ang] for the requested
-   configuration interaction level of theory and root.
-   Deprecated in favor of :psivar:`CI QUADRUPOLE`.
 
 .. psivar:: CI ROOT n -> ROOT m DIPOLE
 
    Transition dipole array [e a0] between roots *n* and *m* for the requested configuration interaction level of theory, (3,).
 
-.. psivar:: CI ROOT n -> ROOT m DIPOLE X
-   CI ROOT n -> ROOT m DIPOLE Y
-   CI ROOT n -> ROOT m DIPOLE Z
-
-   The three components of the transition dipole [Debye] between roots *n*
-   and *m* for the requested configuration interaction level of theory.
-   Deprecated in favor of :psivar:`CI ROOT n -> ROOT m DIPOLE`.
-
 .. psivar:: CI ROOT n -> ROOT m QUADRUPOLE
 
    Redundant transition quadrupole array [e a0^2] between roots *n* and *m* for the requested configuration interaction level of theory, (3, 3).
-
-.. psivar:: CI ROOT n -> ROOT m QUADRUPOLE XX
-   CI ROOT n -> ROOT m QUADRUPOLE XY
-   CI ROOT n -> ROOT m QUADRUPOLE XZ
-   CI ROOT n -> ROOT m QUADRUPOLE YY
-   CI ROOT n -> ROOT m QUADRUPOLE YZ
-   CI ROOT n -> ROOT m QUADRUPOLE ZZ
-
-   The three components of the transition quadrupole [Debye Ang] between
-   roots *n* and *m* for the requested configuration interaction level of
-   theory.
-   Deprecated in favor of :psivar:`CI ROOT n -> ROOT m QUADRUPOLE`.
 
 .. psivar:: CI ROOT n DIPOLE
 
    Dipole array [e a0] for the requested configuration interaction level of theory and root *n*, (3,).
 
-.. psivar:: CI ROOT n DIPOLE X
-   CI ROOT n DIPOLE Y
-   CI ROOT n DIPOLE Z
-
-   The three components of the dipole [Debye] for the requested
-   configuration interaction level of theory and root *n*.
-   Deprecated in favor of :psivar:`CI ROOT n DIPOLE`.
-
 .. psivar:: CI ROOT n QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the requested configuration interaction level of theory and root *n*, (3, 3).
-
-.. psivar:: CI ROOT n QUADRUPOLE XX
-   CI ROOT n QUADRUPOLE XY
-   CI ROOT n QUADRUPOLE XZ
-   CI ROOT n QUADRUPOLE YY
-   CI ROOT n QUADRUPOLE YZ
-   CI ROOT n QUADRUPOLE ZZ
-
-   The six components of the quadrupole [Debye Ang] for the requested
-   configuration interaction level of theory and root *n*.
-   Deprecated in favor of :psivar:`CI ROOT n QUADRUPOLE`.
 
 .. psivar:: CI ROOT n TOTAL ENERGY
    CI ROOT n CORRELATION ENERGY
@@ -541,28 +389,9 @@ PSI Variables by Alpha
 
    Dipole array [e a0] for the configuration interaction singles and doubles level of theory, (3,).
 
-.. psivar:: CISD DIPOLE X
-   CISD DIPOLE Y
-   CISD DIPOLE Z
-
-   The three components of the dipole [Debye] for the
-   configuration interaction singles and doubles level of theory and root.
-   Deprecated in favor of :psivar:`CISD DIPOLE`.
-
 .. psivar:: CISD QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the configuration interaction singles and doubles level of theory, (3, 3).
-
-.. psivar:: CISD QUADRUPOLE XX
-   CISD QUADRUPOLE XY
-   CISD QUADRUPOLE XZ
-   CISD QUADRUPOLE YY
-   CISD QUADRUPOLE YZ
-   CISD QUADRUPOLE ZZ
-
-   The six components of the quadrupole [Debye Ang] for the
-   configuration interaction singles and doubles level of theory and root.
-   Deprecated in favor of :psivar:`CISD QUADRUPOLE`.
 
 .. psivar:: CISD TOTAL ENERGY
    CISD CORRELATION ENERGY
@@ -944,88 +773,29 @@ PSI Variables by Alpha
 
    Dipole array [e a0] for the named method, (3,).
 
-.. psivar:: mtd DIPOLE X
-   mtd DIPOLE Y
-   mtd DIPOLE Z
-
-   The three components of the named method dipole [Debye].
-   Deprecated in favor of :psivar:`mtd DIPOLE`.
-
 .. psivar:: mtd QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the named method, (3, 3).
-
-.. psivar:: mtd QUADRUPOLE XX
-   mtd QUADRUPOLE XY
-   mtd QUADRUPOLE XZ
-   mtd QUADRUPOLE YY
-   mtd QUADRUPOLE YZ
-   mtd QUADRUPOLE ZZ
-
-   The six components of the named method quadrupole [Debye Ang].
-   Deprecated in favor of :psivar:`mtd QUADRUPOLE`.
 
 .. psivar:: mtd OCTUPOLE
 
    Redundant octupole array [e a0^3] for the named method, (3, 3, 3).
 
-.. psivar:: mtd OCTUPOLE XXX
-   mtd OCTUPOLE XXY
-   mtd OCTUPOLE XXZ
-   mtd OCTUPOLE XYY
-   mtd OCTUPOLE XYZ
-   mtd OCTUPOLE XZZ
-   mtd OCTUPOLE YYY
-   mtd OCTUPOLE YYZ
-   mtd OCTUPOLE YZZ
-   mtd OCTUPOLE ZZZ
-
-   The ten components of the named method octupole [Debye Ang^2].
-   Deprecated in favor of :psivar:`mtd OCTUPOLE`.
-
 .. psivar:: mtd HEXADECAPOLE
 
    Redundant hexadecapole array [e a0^4] for the named method, (3, 3, 3, 3).
-
-.. psivar:: mtd HEXADECAPOLE XXXX
-   mtd HEXADECAPOLE XXXY
-   mtd HEXADECAPOLE ZZZZ
-
-   The 15 components of the named method hexadecapole [Debye Ang^3].
-   Deprecated in favor of :psivar:`mtd HEXADECAPOLE`.
 
 .. psivar:: mtd 32-POLE
 
    Redundant 32-pole array [e a0^5] for the named method, (3, 3, 3, 3, 3).
 
-.. psivar:: mtd 32-POLE XXXXX
-   mtd 32-POLE XXXXY
-   mtd 32-POLE ZZZZZ
-
-   The 21 components of the named method 32-pole [Debye Ang^4].
-   Deprecated in favor of :psivar:`mtd 32-POLE`.
-
 .. psivar:: mtd 64-POLE
 
    Redundant 64-pole array [e a0^6] for the named method, (3, 3, 3, 3, 3, 3).
 
-.. psivar:: mtd 64-POLE XXXXXX
-   mtd 64-POLE XXXXXY
-   mtd 64-POLE ZZZZZZ
-
-   The 28 components of the named method 64-pole [Debye Ang^5].
-   Deprecated in favor of :psivar:`mtd 64-POLE`.
-
 .. psivar:: mtd 128-POLE
 
    Redundant 128-pole array [e a0^7] for the named method, (3, 3, 3, 3, 3, 3, 3).
-
-.. psivar:: mtd 128-POLE XXXXXXX
-   mtd 128-POLE XXXXXXY
-   mtd 128-POLE ZZZZZZZ
-
-   The 36 components of the named method 128-pole [Debye Ang^6].
-   Deprecated in favor of :psivar:`mtd 128-POLE`.
 
 .. psivar:: MP2 TOTAL ENERGY
    MP2 CORRELATION ENERGY
@@ -1556,26 +1326,9 @@ PSI Variables by Alpha
 
    Dipole array [e a0] for the SCF stage, (3,).
 
-.. psivar:: SCF DIPOLE X
-   SCF DIPOLE Y
-   SCF DIPOLE Z
-
-   The three components of the SCF dipole [Debye].
-   Deprecated in favor of :psivar:`SCF DIPOLE`.
-
 .. psivar:: SCF QUADRUPOLE
 
    Redundant quadrupole array [e a0^2] for the SCF stage, (3, 3).
-
-.. psivar:: SCF QUADRUPOLE XX
-   SCF QUADRUPOLE XY
-   SCF QUADRUPOLE XZ
-   SCF QUADRUPOLE YY
-   SCF QUADRUPOLE YZ
-   SCF QUADRUPOLE ZZ
-
-   The six components of the SCF quadrupole [Debye Ang].
-   Deprecated in favor of :psivar:`SCF QUADRUPOLE`.
 
 .. psivar:: SCF TOTAL ENERGY
 

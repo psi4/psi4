@@ -58,7 +58,7 @@ summarized in the table below.
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Electric quadrupole moment         | QUADRUPOLE            | Raw (traced) moments and traceless multipoles                                     |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
-   | All moments up order N             | MULTIPOLE(N)          | Only raw (traced) moments. Sets global variables e.g. "DIPOLE X", "32-POLE XYYZZ" |
+   | All moments up order N             | MULTIPOLE(N)          | Only raw (traced) moments. Sets global variables e.g. "DIPOLE", "32-POLE"         |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+
    | Electrostatic potential, at nuclei | ESP_AT_NUCLEI         | Sets global variables "ESP AT CENTER n", n = 1 to natoms                          |
    +------------------------------------+-----------------------+-----------------------------------------------------------------------------------+

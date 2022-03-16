@@ -39,7 +39,7 @@ set perturb_h false
 # Compute the analytic dipoles, for comparison
 e,wfn = energy('scf', return_wfn=True)
 oeprop(wfn, "MULTIPOLES(1)")
-analytic = variable("DIPOLE Z")
+analytic = variable("SCF DIPOLE")[2]
 
 # Tabulate the results of the energy computation
 for val in range(len(lambdas)):

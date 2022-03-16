@@ -72,12 +72,6 @@ for R in Rvals:
     compare_values(refENuc[count], dimer.nuclear_repulsion_energy(),                                 #TEST
                       9, "Nuclear repulsion energy %d" % count)                                      #TEST
     compare_values(refESCF[count], eehf, 9, "Reference energy %d" % count)                           #TEST
-    with warnings.catch_warnings():  #TEST
-        warnings.simplefilter("ignore")  #TEST
-        compare_values(refDipY[count], variable("SCF DIPOLE Y"),                                     #TEST
-                          5, "Y Component of Dipole %d" % count)                                     #TEST
-        compare_values(refQuadYY[count], variable("BZH3O+ SCF QUADRUPOLE YY"),                       #TEST
-                          5, "YY Component of Quadrupole %d" % count)                                #TEST
     compare_values(refDipY[count], variable("SCF DIPOLE")[1] * constants.dipmom_au2debye,     #TEST
                       5, "Y Component of Dipole %d" % count)                                         #TEST
     compare_values(refQuadYY[count], variable("BZH3O+ SCF QUADRUPOLE")[1][1] * constants.dipmom_au2debye * constants.bohr2angstroms,  #TEST
@@ -97,12 +91,6 @@ for R in Rvals:
     compare_values(refENuc[count], monoB.nuclear_repulsion_energy(),                                 #TEST
                       9, "Nuclear repulsion energy %d" % count)                                      #TEST
     compare_values(refESCF[count], eehf, 9, "Reference energy %d" % count)                           #TEST
-    with warnings.catch_warnings():  #TEST
-        warnings.simplefilter("ignore")  #TEST
-        compare_values(refDipY[count], variable("SCF DIPOLE Y"),                                     #TEST
-                          5, "Y Component of Dipole %d" % count)                                     #TEST
-        compare_values(refQuadYY[count], variable("H3O+ SCF QUADRUPOLE YY"),                         #TEST
-                          5, "YY Component of Quadrupole %d" % count)                                #TEST
     compare_values(refDipY[count], variable("SCF DIPOLE")[1] * constants.dipmom_au2debye,     #TEST
                       5, "Y Component of Dipole %d" % count)                                         #TEST
     compare_values(refQuadYY[count], variable("H3O+ SCF QUADRUPOLE")[1][1] * constants.dipmom_au2debye * constants.bohr2angstroms,  #TEST
