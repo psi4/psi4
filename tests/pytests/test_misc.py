@@ -123,7 +123,7 @@ def test_deprecated_dcft_calls():
 
 def test_deprecated_component_dipole():
 
-    with pytest.raises(FutureWarning) as e:
+    with pytest.raises(psi4.UpgradeHelper) as e:
         psi4.variable("current dipole x")
 
 def test_deprecated_set_module_options():
