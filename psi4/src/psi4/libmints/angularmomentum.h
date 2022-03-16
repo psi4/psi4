@@ -29,30 +29,27 @@
 #ifndef _psi_src_lib_libmints_angularmomentum_h_
 #define _psi_src_lib_libmints_angularmomentum_h_
 
-#include "psi4/pragma.h"
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
-#include <memory>
-PRAGMA_WARNING_POP
+// #include "psi4/pragma.h"
+// PRAGMA_WARNING_PUSH
+// PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
+// #include <memory>
+// PRAGMA_WARNING_POP
 #include "psi4/libmints/onebody.h"
-#include "psi4/libmints/osrecur.h"
 
 namespace psi {
 
 class BasisSet;
-class GaussianShell;
 class SphericalTransform;
 
 /*! \ingroup MINTS
  *
  * Use an IntegralFactory to create this object. */
 class AngularMomentumInt : public OneBodyAOInt {
-    //! Obara and Saika recursion object to be used.
-    ObaraSaikaTwoCenterRecursion overlap_recur_;
+    std::vector<std::vector<std::array<int, 4>>> m_am_comps;
 
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
-    AngularMomentumInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+    AngularMomentumInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                        int deriv = 0);
     //! Virtual destructor
     ~AngularMomentumInt() override;

@@ -52,6 +52,7 @@ list(APPEND sources
   gaussquad.cc
   ecpint.cc
   orthog.cc
+  mcmurchiedavidson.cc
   )
 
 # l2intf is a listing of all the files that include libint2's engine.h include.  they must
