@@ -125,8 +125,6 @@ jobs:
           sed -E -i.bak "s;- c-compiler;- clang_osx-64;g" build.yaml
           sed -E -i.bak "s;- cxx-compiler;- clangxx_osx-64;g" build.yaml
           sed -E -i.bak "s;- fortran-compiler;- gfortran_osx-64;g" build.yaml
-          #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_5;g" build.yaml  # small mm4ob2
-          #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/dev::libint2=2.6.0=h879752b_3;g" build.yaml  # longstanding, no ob2
           #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_6;g" build.yaml  # normal mm4ob2  # good, now default on label/dev
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
@@ -195,11 +193,9 @@ jobs:
           - pip:
              - git+https://github.com/i-pi/i-pi.git@master-py3
         EOF
-        if [[ "${{ runner.os }}" == "macOS" ]]; then
-          #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_5;g" run.yaml
-          #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/dev::libint2=2.6.0=h879752b_3;g" run.yaml
-          #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_6;g" run.yaml  # normal mm4ob2  # good, now default on label/dev
-        fi
+        #if [[ "${{ runner.os }}" == "macOS" ]]; then
+        #  sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_6;g" run.yaml  # normal mm4ob2  # good, now default on label/dev
+        #fi
         cat > runcf.yaml <<EOF
         name: cfenv
         channels:
@@ -503,14 +499,14 @@ jobs:
 
     - name: Check repository Conda environment consistency
       run: |
+        echo "::group::Copy Yaml"
         cp build.yaml devtools/conda-envs/${{ runner.os }}-build.yaml
         cp run.yaml devtools/conda-envs/${{ runner.os }}-run.yaml
         if [[ "${{ runner.os }}" != "Windows" ]]; then
         cp runcf.yaml devtools/conda-envs/${{ runner.os }}-runcf.yaml
         fi
-        echo "::group::Git Diff"
-        git diff --color-words
         echo "::endgroup::"
+        git diff --color-words
 
 # Notes
 #
