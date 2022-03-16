@@ -121,6 +121,11 @@ def test_deprecated_dcft_calls():
     assert err_substr in str(e.value)
 
 
+def test_deprecated_component_dipole():
+
+    with pytest.raises(FutureWarning) as e:
+        psi4.variable("current dipole x")
+
 def test_deprecated_set_module_options():
     err_substr = "instead of `psi4.set_options({<module>__<keys>: <vals>})`"
 

@@ -651,16 +651,10 @@ _qcvar_cancellations = {
 
 def _qcvar_warnings(key: str) -> str:
     if any([key.upper().endswith(" DIPOLE " + cart) for cart in ["X", "Y", "Z"]]):
-        warnings.warn(
-            f"Using scalar QCVariable `{key.upper()}` [D] instead of array `{key.upper()[:-2]}` [e a0] is deprecated, and in 1.5 it will stop working\n",
-            category=FutureWarning,
-            stacklevel=3)
+        raise UpgradeHelper(key.upper(), key.upper()[:-2], 1.6, " Note the Debye -> a.u. units change.")
 
     if any([key.upper().endswith(" QUADRUPOLE " + cart) for cart in ["XX", "YY", "ZZ", "XY", "XZ", "YZ"]]):
-        warnings.warn(
-            f"Using scalar QCVariable `{key.upper()}` [D A] instead of array `{key.upper()[:-3]}` [e a0^2] is deprecated, and in 1.5 it will stop working\n",
-            category=FutureWarning,
-            stacklevel=3)
+        raise UpgradeHelper(key.upper(), key.upper()[:-2], 1.6, " Note the Debye -> a.u. units change.")
 
     if key.upper() in _qcvar_transitions:
         warnings.warn(
