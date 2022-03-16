@@ -42,7 +42,7 @@ from .options import conv_float2negexp
 from .hessparse import load_hessian
 from .align import B787
 
-# Not maintained: see #2478
+# Not maintained: see https://github.com/psi4/psi4/issues/2478
 
 def harvest_output(outtext):
     """Function to separate portions of a CFOUR output file *outtest*,
