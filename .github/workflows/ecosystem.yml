@@ -23,7 +23,7 @@ jobs:
               -D BUILD_SHARED_LIBS=ON
 
           - runs-on: macos-latest
-            python-version: "3.10"
+            python-version: "3.9"
             mkl-version: "2021.4"
             base-channel: "defaults"
             target-sdk: "10.10"
@@ -479,7 +479,7 @@ jobs:
       if: runner.os == 'Windows'
       working-directory: ./objdir
       # (1st entry PYTHONPATH) need to find the Psi4 module
-      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers -n auto -m "addon and not long" stage/lib/psi4/tests/
 
     - name: "Test Addons with Pytest: (base + community channel `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev -c conda-forge`)"
       if: matrix.cfg.base-channel == 'defaults'
@@ -499,7 +499,7 @@ jobs:
             export PYTHONPATH=stage/lib/:$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages
         fi
         echo $PYTHONPATH
-        pytest --cache-clear -v -rws --durations=15 -m "addon and not long" stage/lib/psi4/tests/
+        pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers -n auto -m "addon and not long" stage/lib/psi4/tests/
 
     - name: Check repository Conda environment consistency
       run: |

@@ -40,4 +40,3 @@ dependencies:
   - pip
   - pip:
      - git+https://github.com/i-pi/i-pi.git@master-py3
-

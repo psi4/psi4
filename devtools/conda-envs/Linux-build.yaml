@@ -28,4 +28,3 @@ dependencies:
   - psi4/label/dev::gdma
   - psi4/label/dev::pcmsolver
   - psi4/label/dev::simint
-
