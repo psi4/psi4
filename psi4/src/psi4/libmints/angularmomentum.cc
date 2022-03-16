@@ -80,7 +80,7 @@ void AngularMomentumInt::compute_pair(const libint2::Shell& s1, const libint2::S
     auto A = s1.O;
     auto B = s2.O;
     // TODO: settable origin? (not supported previously)
-    Point C = {origin_[0], origin_[1], origin_[2]};
+    Point C = {0.0, 0.0, 0.0};
     int nprim1 = s1.nprim();
     int nprim2 = s2.nprim();
 

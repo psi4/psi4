@@ -26,14 +26,8 @@
  * @END LICENSE
  */
 
-#ifndef _psi_src_lib_libmints_angularmomentum_h_
-#define _psi_src_lib_libmints_angularmomentum_h_
+#pragma once
 
-// #include "psi4/pragma.h"
-// PRAGMA_WARNING_PUSH
-// PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
-// #include <memory>
-// PRAGMA_WARNING_POP
 #include "psi4/libmints/onebody.h"
 
 namespace psi {
@@ -60,5 +54,3 @@ class AngularMomentumInt : public OneBodyAOInt {
 };
 
 }  // namespace psi
-
-#endif
