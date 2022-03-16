@@ -651,10 +651,10 @@ _qcvar_cancellations = {
 
 def _qcvar_warnings(key: str) -> str:
     if any([key.upper().endswith(" DIPOLE " + cart) for cart in ["X", "Y", "Z"]]):
-        raise UpgradeHelper(key.upper(), key.upper()[:-2], 1.6, " Note the Debye -> a.u. units change.")
+        raise UpgradeHelper(key.upper(), key.upper()[:-3], 1.6, " Note the Debye -> a.u. units change.")
 
     if any([key.upper().endswith(" QUADRUPOLE " + cart) for cart in ["XX", "YY", "ZZ", "XY", "XZ", "YZ"]]):
-        raise UpgradeHelper(key.upper(), key.upper()[:-2], 1.6, " Note the Debye -> a.u. units change.")
+        raise UpgradeHelper(key.upper(), key.upper()[:-3], 1.6, " Note the Debye -> a.u. units change.")
 
     if key.upper() in _qcvar_transitions:
         warnings.warn(
