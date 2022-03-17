@@ -39,11 +39,13 @@ jobs:
           - runs-on: windows-latest
             python-version: "3.9"
             mkl-version: "2021.4"
-            # mkl-version: "2019.1" is longstanding. needs defaults for intel-openmp
             base-channel: "conda-forge"
             cmargs: >
-              -D CMAKE_VERBOSE_MAKEFILE=ON
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D BUILD_SHARED_LIBS=OFF
+              -D CMAKE_CXX_FLAGS="/wd4018 /wd4101 /wd4996"
+            # Notes:
+            # * mkl-version: "2019.1" is longstanding. needs defaults for intel-openmp
 
     name: "Eco • 🐍 ${{ matrix.cfg.python-version }} • ${{ matrix.cfg.runs-on }}"
     runs-on: ${{ matrix.cfg.runs-on }}
@@ -72,7 +74,7 @@ jobs:
         echo $macos_Mm
         curl -L https://github.com/phracker/MacOSX-SDKs/releases/download/${macos_Mm}/MacOSX${{ matrix.cfg.target-sdk }}.sdk.tar.xz | sudo tar xf - -C /opt/
 
-      # equivalent to `call vcvarsall.bat x86_amd64`. see Azure script to follow cmdline.
+      # equivalent to `call vcvarsall.bat x64`. see Azure script to follow cmdline.
     - name: Prepare compiler environment, vcvarsall (W)
       if: runner.os == 'Windows'
       uses: ilammy/msvc-dev-cmd@v1
@@ -115,13 +117,13 @@ jobs:
           - psi4/label/dev::simint
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
-          # <lang>-compiler is only a metapackage for c-f
+          # <lang>-compiler is a metapackage on c-f but not on defaults
           sed -i "s;- c-compiler;- gcc_linux-64;g" build.yaml
           sed -i "s;- cxx-compiler;- gxx_linux-64;g" build.yaml
           sed -i "s;- fortran-compiler;- gfortran_linux-64;g" build.yaml
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
-          # <lang>-compiler is only a metapackage for c-f
+          # <lang>-compiler is a metapackage on c-f but not on defaults
           sed -E -i.bak "s;- c-compiler;- clang_osx-64;g" build.yaml
           sed -E -i.bak "s;- cxx-compiler;- clangxx_osx-64;g" build.yaml
           sed -E -i.bak "s;- fortran-compiler;- gfortran_osx-64;g" build.yaml
@@ -268,7 +270,7 @@ jobs:
           - psi4/label/dev::snsmp2
             # qc opt'l
             # needed?
-          - mkl-devel=${{ matrix.cfg.mkl-version }}
+          #?#- mkl-devel=${{ matrix.cfg.mkl-version }}
           - intel-openmp=${{ matrix.cfg.mkl-version }}
             # test
           - conda-forge::pytest>=7.0.1
@@ -409,7 +411,6 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_OPENMP=ON \
           -D ENABLE_XHOST=OFF \
-          -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996" \
           -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1" \
           ${{ matrix.cfg.cmargs }}
 
@@ -475,7 +476,7 @@ jobs:
       if: runner.os == 'Windows'
       working-directory: ./objdir
       # (1st entry PYTHONPATH) need to find the Psi4 module
-      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers -n auto -m "addon and not long" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color auto -n auto -m "addon and not long" stage/lib/psi4/tests/
 
     - name: "Test Addons with Pytest: (base + community channel `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev -c conda-forge`)"
       if: matrix.cfg.base-channel == 'defaults'
@@ -495,15 +496,43 @@ jobs:
             export PYTHONPATH=stage/lib/:$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages
         fi
         echo $PYTHONPATH
-        pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers -n auto -m "addon and not long" stage/lib/psi4/tests/
+        pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color auto -n auto -m "addon and not long" stage/lib/psi4/tests/
 
-    - name: Check repository Conda environment consistency
+    - name: Ttest Python shell
+      shell: python
       run: |
-        echo "::group::Copy Yaml"
-        cp build.yaml devtools/conda-envs/${{ runner.os }}-build.yaml
-        cp run.yaml devtools/conda-envs/${{ runner.os }}-run.yaml
+        import sys
+        print(sys.executable)
+
+    - name: Store Conda environment(s)
+      run: |
+        echo "::group::Compose Yaml"
+        conda install ruamel_yaml -c ${{ matrix.cfg.base-channel }}
+        cat > userenvs.py <<EOF
+        from pathlib import Path
+        from ruamel_yaml import YAML
+
+        file1 = Path("build.yaml")
+        yaml1 = YAML(typ="rt")
+        yaml1.indent(mapping=2, sequence=4, offset=2)
+        data1 = yaml1.load(file1)
+
+        file2 = Path("run.yaml")
+        yaml2 = YAML(typ="rt")
+        data2 = yaml2.load(file2)
+
+        for dep in data2["dependencies"]:
+            if dep not in data1["dependencies"]:
+                data1["dependencies"].append(dep)
+
+        outfile = Path("devtools") / "conda-envs" / "${{ runner.os }}-buildrun-maxeco.yaml"
+        yaml1.dump(data1, outfile)
+        EOF
+
+        python userenvs.py
+        cat devtools/conda-envs/${{ runner.os }}-buildrun-maxeco.yaml
         if [[ "${{ runner.os }}" != "Windows" ]]; then
-        cp runcf.yaml devtools/conda-envs/${{ runner.os }}-runcf.yaml
+        cp runcf.yaml devtools/conda-envs/${{ runner.os }}-runcf-maxeco.yaml
         fi
         echo "::endgroup::"
         git diff --color-words
