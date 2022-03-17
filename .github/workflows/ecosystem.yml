@@ -22,17 +22,17 @@ jobs:
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D BUILD_SHARED_LIBS=ON
 
-          - runs-on: macos-latest
-            python-version: "3.9"
-            mkl-version: "2021.4"
-            base-channel: "defaults"
-            target-sdk: "10.10"
-            cmargs: >
-              -D CMAKE_VERBOSE_MAKEFILE=OFF
-              -D BUILD_SHARED_LIBS=ON
-              -D OpenMP_C_FLAG="-fopenmp=libiomp5"
-              -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
-              -D MAX_AM_ERI=4
+          #- runs-on: macos-latest
+          #  python-version: "3.9"
+          #  mkl-version: "2021.4"
+          #  base-channel: "defaults"
+          #  target-sdk: "10.10"
+          #  cmargs: >
+          #    -D CMAKE_VERBOSE_MAKEFILE=OFF
+          #    -D BUILD_SHARED_LIBS=ON
+          #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
+          #    -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
+          #    -D MAX_AM_ERI=4
             # Notes:
             # * libiomp5 is picking up naturally but left explicit as guide
 
@@ -506,8 +506,9 @@ jobs:
 
     - name: Store Conda environment(s)
       run: |
-        echo "::group::Compose Yaml"
+        echo "::group::Prepare Environment"
         conda install ruamel_yaml -c ${{ matrix.cfg.base-channel }}
+        echo "::endgroup::"
         cat > userenvs.py <<EOF
         from pathlib import Path
         from ruamel_yaml import YAML
@@ -534,7 +535,6 @@ jobs:
         if [[ "${{ runner.os }}" != "Windows" ]]; then
         cp runcf.yaml devtools/conda-envs/${{ runner.os }}-runcf-maxeco.yaml
         fi
-        echo "::endgroup::"
         git diff --color-words
 
 # Notes

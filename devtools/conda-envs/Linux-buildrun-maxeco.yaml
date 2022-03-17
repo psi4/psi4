@@ -2,29 +2,37 @@ name: defenv
 channels:
   - defaults
 dependencies:
-    # non-qc req'd
   - blas=*=mkl
-  - msgpack-python
-  - networkx
-  - numpy
   - python=3.10
-  - scipy
-    # non-qc opt'l
-  - memory_profiler
+    # build
+  - boost-cpp
+  - cmake
+  - gcc_linux-64
+  - gxx_linux-64
+  - eigen
+  - gfortran_linux-64
+  - mkl-devel=2021.4
+  - mpfr
+  - ninja
+  - pybind11
     # qc req'd
   - psi4/label/dev::gau2grid
   - psi4/label/dev::libint2
   - psi4/label/dev::qcelemental
   - psi4/label/dev::qcengine
   - psi4/label/dev::libxc
-    # qc req'd from buildtime
+    # qc opt'l
   - psi4/label/dev::ambit
   - psi4/label/dev::chemps2
   - psi4/label/dev::dkh
   - psi4/label/dev::gdma
   - psi4/label/dev::pcmsolver
   - psi4/label/dev::simint
-    # qc opt'l
+  - msgpack-python
+  - networkx
+  - numpy
+  - scipy
+  - memory_profiler
   - psi4/label/dev::dftd3
   - psi4/label/dev::pylibefp
   - psi4/label/dev::fockci
@@ -32,11 +40,9 @@ dependencies:
   - psi4/label/dev::mp2d
   - psi4/label/dev::resp
   - psi4/label/dev::snsmp2
-    # test
   - conda-forge::pytest>=7.0.1
   - pytest-xdist
   - tomli
-    # pip
   - pip
   - pip:
-     - git+https://github.com/i-pi/i-pi.git@master-py3
+      - git+https://github.com/i-pi/i-pi.git@master-py3
