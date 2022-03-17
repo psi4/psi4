@@ -29,6 +29,7 @@
 #pragma once
 
 #include "psi4/libmints/onebody.h"
+#include "mcmurchiedavidson.h"
 
 namespace psi {
 
@@ -36,11 +37,11 @@ class BasisSet;
 class SphericalTransform;
 
 /*! \ingroup MINTS
+ *  \class AngularMomentumInt
+ *  \brief Computes angular momentum integrals.
  *
  * Use an IntegralFactory to create this object. */
-class AngularMomentumInt : public OneBodyAOInt {
-    std::vector<std::vector<std::array<int, 4>>> m_am_comps;
-
+class AngularMomentumInt : public OneBodyAOInt, public mdintegrals::MDHelper {
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
     AngularMomentumInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,

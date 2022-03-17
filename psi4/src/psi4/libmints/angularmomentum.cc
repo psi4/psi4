@@ -39,25 +39,14 @@
 using namespace psi;
 using namespace mdintegrals;
 
-// Initialize overlap_recur_ to +1 basis set angular momentum, +1 on each center is sufficient
-// to compute the dipole derivatives
 AngularMomentumInt::AngularMomentumInt(std::vector<SphericalTransform>& spherical_transforms,
                                        std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, int nderiv)
-    : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv) {
-    int maxam1 = bs1_->max_am();
-    int maxam2 = bs2_->max_am();
+    : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), MDHelper(bs1->max_am(), bs2->max_am()) {
+    int maxnao1 = INT_NCART(maxam1_);
+    int maxnao2 = INT_NCART(maxam2_);
 
-    int maxnao1 = INT_NCART(maxam1);
-    int maxnao2 = INT_NCART(maxam2);
-
-    int max_am = std::max(maxam1, maxam2);
-    m_am_comps = std::vector<std::vector<std::array<int, 4>>>(max_am + 1);
-    for (int am = 0; am < max_am + 1; ++am) {
-        m_am_comps[am] = generate_am_components_cca(am);
-    }
-
-    // Increase buffer size to handle x, y, and z components
     if (deriv_ == 0) {
+        // one chunk for each Cartesian component
         buffer_ = new double[3 * maxnao1 * maxnao2];
         set_chunks(3);
     } else {
@@ -70,12 +59,13 @@ AngularMomentumInt::~AngularMomentumInt() { delete[] buffer_; }
 
 void AngularMomentumInt::compute_pair(const libint2::Shell& s1, const libint2::Shell& s2) {
     // Computes the angular momentum integrals for a pair of shells using eq. 9.3.33
+    // eq. numbers from Molecular Electronic-Structure Theory (10.1002/9781119019572)
     int am1 = s1.contr[0].l;
     int am2 = s2.contr[0].l;
     int am = am1 + am2;
 
-    const auto& comps_am1 = m_am_comps[am1];
-    const auto& comps_am2 = m_am_comps[am2];
+    const auto& comps_am1 = am_comps_[am1];
+    const auto& comps_am2 = am_comps_[am2];
 
     auto A = s1.O;
     auto B = s2.O;
@@ -90,14 +80,8 @@ void AngularMomentumInt::compute_pair(const libint2::Shell& s1, const libint2::S
     memset(buffer_, 0, 3 * size * sizeof(double));
 
     // dimensions of the E matrix
-    int edim1 = am1 + 1;
     int edim2 = am2 + 2;
-    int edim3 = edim1 + edim2;
-    int esize = edim1 * edim2 * edim3;
-    // pre-allocate E-matrix
-    std::vector<double> Ex(esize);
-    std::vector<double> Ey(esize);
-    std::vector<double> Ez(esize);
+    int edim3 = (am1 + 1) + edim2;
 
     int ao12 = 0;
     for (int p1 = 0; p1 < nprim1; ++p1) {

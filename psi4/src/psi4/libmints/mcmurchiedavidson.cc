@@ -48,8 +48,6 @@ std::vector<std::array<int, 4>> generate_am_components_cca(int am) {
     return ret;
 }
 
-inline double norm(const Point& A) { return std::sqrt(A[0] * A[0] + A[1] * A[1] + A[2] * A[2]); }
-
 void fill_E_matrix(int maxam1, int maxam2, const Point& P, const Point& A, const Point& B, double a, double b,
                    std::vector<double>& Ex, std::vector<double>& Ey, std::vector<double>& Ez) {
     // make sure buffers are zeroed out

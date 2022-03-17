@@ -31,11 +31,45 @@
 #include <vector>
 
 namespace mdintegrals {
+
 using Point = std::array<double, 3>;
+inline Point point_diff(const Point& A, const Point& B) { return {A[0] - B[0], A[1] - B[1], A[2] - B[2]}; }
+inline double point_norm(const Point& A) { return std::sqrt(A[0] * A[0] + A[1] * A[1] + A[2] * A[2]); }
+
 void fill_E_matrix(int maxam1, int maxam2, const Point& P, const Point& A, const Point& B, double a, double b,
                    std::vector<double>& Ex, std::vector<double>& Ey, std::vector<double>& Ez);
+
 std::vector<std::array<int, 4>> generate_am_components_cca(int am);
 
-inline Point point_diff(const Point& A, const Point& B) { return {A[0] - B[0], A[1] - B[1], A[2] - B[2]}; }
 inline int address_3d(int i, int j, int k, int dim2, int dim3) { return k + dim3 * (j + dim2 * i); }
+
+class MDHelper {
+   protected:
+    int maxam1_;
+    int maxam2_;
+    std::vector<double> Ex;
+    std::vector<double> Ey;
+    std::vector<double> Ez;
+    std::vector<std::vector<std::array<int, 4>>> am_comps_;
+
+   public:
+    MDHelper(int maxam1, int maxam2) : maxam1_(maxam1), maxam2_(maxam2) {
+        int max_am = std::max(maxam1_, maxam2_);
+        // CCA-ordered Cartesian components (lx, ly, lz, idx) for all required angular momenta
+        am_comps_ = std::vector<std::vector<std::array<int, 4>>>(max_am + 1);
+        for (int am = 0; am < max_am + 1; ++am) {
+            am_comps_[am] = generate_am_components_cca(am);
+        }
+        // maximum dimensions of the E matrix
+        int edim1 = maxam1_ + 1;
+        int edim2 = maxam2_ + 2;
+        int edim3 = edim1 + edim2;
+        int esize = edim1 * edim2 * edim3;
+        // pre-allocate E-matrix
+        Ex = std::vector<double>(esize);
+        Ey = std::vector<double>(esize);
+        Ez = std::vector<double>(esize);
+    };
+};
+
 }  // namespace mdintegrals
