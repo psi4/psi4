@@ -1,6 +1,6 @@
 """
-This file tests the integrals using the McMurchie-Davidson scheme
-against hard-coded values from previous Psi4 versions for consistency check
+This file tests one-electron integrals from libmints computed with
+the McMurchie-Davidson scheme
 """
 import numpy as np
 import pytest
