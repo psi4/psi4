@@ -2,7 +2,7 @@ name: test
 channels:
   - conda-forge
 dependencies:
-  - blas=*=mkl  # not needed but an example of disuading solver from openblas and old psi
+  - blas=*=mkl
   - intel-openmp!=2019.5
     # build
   - cmake>=3.15

@@ -21,6 +21,9 @@ jobs:
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D BUILD_SHARED_LIBS=ON
+              -D CMAKE_C_COMPILER=${CC}
+              -D CMAKE_CXX_COMPILER=${CXX}
+              -D CMAKE_Fortran_COMPILER="${FC}"
 
           #- runs-on: macos-latest
           #  python-version: "3.9"
@@ -147,12 +150,12 @@ jobs:
           sed -i "s;- psi4/label/dev::gau2grid;- gau2grid;g" build.yaml
           sed -i "s;- psi4/label/dev::libxc;- libxc;g" build.yaml
           # nyi
-          sed -i "s;- psi4/label/dev::ambit;# ambit;g" build.yaml
+          sed -i "s;- psi4/label/dev::ambit;;g" build.yaml
           sed -i "s;- psi4/label/dev::chemps2;;g" build.yaml
           sed -i "s;- psi4/label/dev::dkh;;g" build.yaml
           sed -i "s;- psi4/label/dev::gdma;;g" build.yaml
           sed -i "s;- psi4/label/dev::pcmsolver;;g" build.yaml
-          sed -i "s;- psi4/label/dev::simint;# simint;g" build.yaml
+          sed -i "s;- psi4/label/dev::simint;;g" build.yaml
         fi
         #
         # Runtime for split-channel (L, M)
@@ -239,6 +242,7 @@ jobs:
         dependencies:
             # non-qc req'd
           - blas=*=mkl
+          - mkl=${{ matrix.cfg.mkl-version }}
           - msgpack-python
           - networkx
           - numpy
@@ -274,11 +278,6 @@ jobs:
           - pymdi
           - psi4/label/dev::resp
           - psi4/label/dev::snsmp2
-            # qc opt'l
-            # needed?
-          - mkl=${{ matrix.cfg.mkl-version }}
-          #?#- mkl-devel=${{ matrix.cfg.mkl-version }}
-          #?#- intel-openmp=${{ matrix.cfg.mkl-version }}
             # test
           - conda-forge::pytest>=7.0.1
           - pytest-xdist
@@ -317,15 +316,15 @@ jobs:
     - name: Configure Psi4, Conda defaults GNU (L)
       if: runner.os == 'Linux'
       run: |
+        #  -D CMAKE_C_COMPILER=${CC} \
+        #  -D CMAKE_CXX_COMPILER=${CXX} \
+        #  -D CMAKE_Fortran_COMPILER=${FC} \
         cmake \
           -S. \
           -B objdir \
           -G Ninja \
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_INSTALL_PREFIX=./install \
-          -D CMAKE_C_COMPILER=${CC} \
-          -D CMAKE_CXX_COMPILER=${CXX} \
-          -D CMAKE_Fortran_COMPILER=${FC} \
           -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
           -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
