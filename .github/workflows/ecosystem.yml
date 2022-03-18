@@ -44,6 +44,7 @@ jobs:
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D BUILD_SHARED_LIBS=OFF
               -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996"
+              -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1"
             # Notes:
             # * mkl-version: "2019.1" is longstanding. needs defaults for intel-openmp
 
@@ -80,6 +81,11 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
+
+      # see OpenMP_LIBRARY_DIRS for use
+    - name: Prepare OpenMP build environment, libiomp5md.lib (W)
+      if: runner.os == 'Windows'
+      run: git clone https://github.com/psi4/iomp5md.git
 
     - name: Write Conda environment files
       run: |
@@ -141,13 +147,12 @@ jobs:
           sed -i "s;- psi4/label/dev::gau2grid;- gau2grid;g" build.yaml
           sed -i "s;- psi4/label/dev::libxc;- libxc;g" build.yaml
           # nyi
-          sed -i "s;- psi4/label/dev::ambit;;g" build.yaml
+          sed -i "s;- psi4/label/dev::ambit;# ambit;g" build.yaml
           sed -i "s;- psi4/label/dev::chemps2;;g" build.yaml
           sed -i "s;- psi4/label/dev::dkh;;g" build.yaml
           sed -i "s;- psi4/label/dev::gdma;;g" build.yaml
           sed -i "s;- psi4/label/dev::pcmsolver;;g" build.yaml
-          sed -i "s;- psi4/label/dev::simint;;g" build.yaml
-          #sed -i "s;- psi4/label/dev::simint;- intel-openmp=${{ matrix.cfg.mkl-version }};" build.yaml
+          sed -i "s;- psi4/label/dev::simint;# simint;g" build.yaml
         fi
         #
         # Runtime for split-channel (L, M)
@@ -309,11 +314,6 @@ jobs:
         conda info
         conda list
 
-      # NOTE: libiomp5md.lib is located in conda/win/$(mkl.version)
-    - name: Install Intel OpenMP import library (W)
-      if: runner.os == 'Windows'
-      run: git clone https://github.com/psi4/iomp5md.git
-
     - name: Configure Psi4, Conda defaults GNU (L)
       if: runner.os == 'Linux'
       run: |
@@ -413,7 +413,6 @@ jobs:
           -D CMAKE_INSIST_FIND_PACKAGE_Libxc=ON \
           -D ENABLE_OPENMP=ON \
           -D ENABLE_XHOST=OFF \
-          -D OpenMP_LIBRARY_DIRS="D:\a\psi4\psi4\iomp5md\conda\win\2019.1" \
           ${{ matrix.cfg.cmargs }}
 
     - name: Compile & Install Psi4
@@ -466,14 +465,14 @@ jobs:
         #export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
 
-    - name: Test Addons with CTest
       # step works but is redundant with next two
+    - name: Test Addons with CTest
       if: false
       working-directory: ./objdir
       run: ctest -L addon -j2 --output-on-failure
 
-    - name: "Test Addons with Pytest, base channel only `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev` (W)"
       # step works but is redundant with next for Linux and macOS
+    - name: "Test Addons with Pytest, base channel only `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev` (W)"
       if: matrix.cfg.base-channel == 'conda-forge'
       working-directory: ./objdir
       # (1st entry PYTHONPATH) need to find the Psi4 module
@@ -541,4 +540,5 @@ jobs:
 #              from . import core
 #              ImportError: DLL load failed while importing core: The specified module could not be found."
 # Soln:
-#   Something of adding mkl-devel= to run env
+#   Have mkl-devel=<mkl-version> -or- mkl=<mkl-version> in runtime environment to match mkl-devel=<mkl-version> in build env.
+#   Having intel-openmp=<mkl-version> in build and run seems fine but not necessary.

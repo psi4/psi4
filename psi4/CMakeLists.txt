@@ -290,17 +290,20 @@ install(
   FILES ../pytest.ini
   DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4
   )
-install(DIRECTORY ../tests/pytests/
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
-        FILES_MATCHING
-        PATTERN "test_*.py"
-        PATTERN "__init__.py"
-        PATTERN "addons.py"
-        PATTERN "conftest.py"
-        PATTERN "standard_suite_runner.py"
-        PATTERN "tdscf_reference_data.json"
-        PATTERN "oei_reference_data.json"
-        PATTERN "utils.py")
+install(
+  DIRECTORY
+    ../tests/pytests/
+  DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
+  FILES_MATCHING
+    PATTERN "test_*.py"
+    PATTERN "__init__.py"
+    PATTERN "addons.py"
+    PATTERN "conftest.py"
+    PATTERN "standard_suite_runner.py"
+    PATTERN "tdscf_reference_data.json"
+    PATTERN "oei_reference_data.json"
+    PATTERN "utils.py"
+  )
 install(
   DIRECTORY
     ../tests/pytests/test_fchk_writer
@@ -311,35 +314,16 @@ install(
 
 install(
   DIRECTORY
-    ../tests/adcc
-    ../tests/chemps2
-    ../tests/dftd3
-    ../tests/dftd4
-    ../tests/dkh
-    ../tests/libefp
-    ../tests/gcp
-    ../tests/gdma
-    ../tests/pcmsolver
-    ../tests/simint
-    ../tests/snsmp2
-    ../tests/v2rdm_casscf
-    # below are "ordinary" (non-subdir) test directories
-    ../tests/tu1-h2o-energy
-    ../tests/tu2-ch2-energy
-    ../tests/tu3-h2o-opt
-    ../tests/tu4-h2o-freq
-    ../tests/tu5-sapt
-    ../tests/tu6-cp-ne2
-    ../tests/ci-property
-    ../tests/scf-property
-    ../tests/mp2-property
+    ../tests/
   DESTINATION ${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}${PYMOD_INSTALL_LIBDIR}/psi4/tests/
   FILES_MATCHING
+    PATTERN ../tests/pytests EXCLUDE
+    PATTERN ../tests/cfour EXCLUDE
     PATTERN "test_input.py"
     PATTERN "input.dat"
     PATTERN "__pycache__" EXCLUDE
     PATTERN "*pyc" EXCLUDE
-    # below place extra files the tests need
+    # below place extra files the ctests-run-as-pytests need
     PATTERN "adcc/formaldehyde-pe-adc1/fa_6w.pot"
     PATTERN "adcc/formaldehyde-pe-adc2/fa_6w.pot"
     PATTERN "ci-property/grid.dat"
