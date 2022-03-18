@@ -43,7 +43,7 @@ jobs:
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D BUILD_SHARED_LIBS=OFF
-              -D CMAKE_CXX_FLAGS="/wd4018 /wd4101 /wd4996"
+              -D CMAKE_CXX_FLAGS="/arch:AVX /wd4018 /wd4101 /wd4996"
             # Notes:
             # * mkl-version: "2019.1" is longstanding. needs defaults for intel-openmp
 
@@ -84,6 +84,9 @@ jobs:
     - name: Write Conda environment files
       shell: bash -l {0}
       run: |
+        #
+        # Buildtime (L, M, W)
+        #
         cat > build.yaml <<EOF
         name: defenv
         channels:
@@ -115,6 +118,7 @@ jobs:
           - psi4/label/dev::gdma
           - psi4/label/dev::pcmsolver
           - psi4/label/dev::simint
+            # runtime
         EOF
         if [[ "${{ runner.os }}" == "Linux" ]]; then
           # <lang>-compiler is a metapackage on c-f but not on defaults
@@ -497,12 +501,6 @@ jobs:
         fi
         echo $PYTHONPATH
         pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color auto -n auto -m "addon and not long" stage/lib/psi4/tests/
-
-    - name: Ttest Python shell
-      shell: python
-      run: |
-        import sys
-        print(sys.executable)
 
     - name: Store Conda environment(s)
       run: |

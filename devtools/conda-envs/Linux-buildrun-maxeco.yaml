@@ -16,7 +16,7 @@ dependencies:
   - ninja
   - pybind11
     # qc req'd
-  - psi4/label/dev::gau2grid
+  - psi4/label/dev::gau2gridextra
   - psi4/label/dev::libint2
   - psi4/label/dev::qcelemental
   - psi4/label/dev::qcengine
