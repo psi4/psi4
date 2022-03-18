@@ -6,7 +6,7 @@ from addons import using
 
 import psi4
 
-
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 
 @pytest.fixture

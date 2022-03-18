@@ -10,7 +10,7 @@ import qcelemental as qcel
 import psi4
 from psi4.driver import qcdb
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 
 def hide_test_xtpl_fn_fn_error():

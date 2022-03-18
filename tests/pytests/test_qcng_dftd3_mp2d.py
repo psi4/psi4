@@ -14,7 +14,7 @@ from qcengine.programs.tests import test_dftd3_mp2d
 ref, gref = test_dftd3_mp2d.ref, test_dftd3_mp2d.gref
 
 
-pytestmark = [pytest.mark.quick]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 import platform
 skipmac =  pytest.mark.skipif(platform.system().startswith("Darwin"), reason="Mac fails 3body and getting replaced")

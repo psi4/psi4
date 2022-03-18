@@ -19,7 +19,7 @@ import psi4
 #    atres = psi4.schema_wrapper.run_qcschema(json.loads(jatin))
 #    pprint.pprint(atres.dict())
 
-pytestmark = [pytest.mark.quick, pytest.mark.smoke]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.smoke]
 
 
 @uusing("gdma")

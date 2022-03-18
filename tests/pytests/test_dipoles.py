@@ -5,6 +5,8 @@ import psi4
 
 from utils import compare_values
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
 perturbation_strength = 0.001
 
 @pytest.mark.slow

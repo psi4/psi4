@@ -4,6 +4,8 @@ from addons import uusing
 
 import psi4
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
 @uusing("dftd3")
 def test_dftd3_dft_grad_lr3():
     """modified VV10-less B97 functional gradient wB97X-V -> wB97X-D3BJ"""

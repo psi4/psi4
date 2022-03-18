@@ -6,6 +6,8 @@ import psi4
 import pytest
 from utils import *
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
 def _build_system(basis): 
     mol = psi4.geometry("""
     Ar 0 0  0

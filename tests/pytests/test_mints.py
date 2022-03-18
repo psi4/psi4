@@ -5,6 +5,8 @@ import psi4
 
 from utils import compare_arrays
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
 def test_export_ao_elec_dip_deriv():
     h2o = psi4.geometry("""
         O

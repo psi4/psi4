@@ -5,6 +5,8 @@ import psi4
 
 from utils import compare_values
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
 # Reference data generated from Psi's dfmp2 module
 data = {
     "df-mp2 ae": np.array([[ 0, 0,  9.62190509e-03],

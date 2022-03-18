@@ -146,9 +146,8 @@ jobs:
           sed -i "s;- psi4/label/dev::dkh;;g" build.yaml
           sed -i "s;- psi4/label/dev::gdma;;g" build.yaml
           sed -i "s;- psi4/label/dev::pcmsolver;;g" build.yaml
-          #sed -i "s;- psi4/label/dev::simint;;g" build.yaml
-          sed -i "s;- psi4/label/dev::simint;- intel-openmp=${{ matrix.cfg.mkl-version }};" build.yaml
-          #sed -i "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h2e52968_5;g" build.yaml  # good, now default on label/dev
+          sed -i "s;- psi4/label/dev::simint;;g" build.yaml
+          #sed -i "s;- psi4/label/dev::simint;- intel-openmp=${{ matrix.cfg.mkl-version }};" build.yaml
         fi
         #
         # Runtime for split-channel (L, M)
@@ -199,7 +198,7 @@ jobs:
              - git+https://github.com/i-pi/i-pi.git@master-py3
         EOF
         #if [[ "${{ runner.os }}" == "macOS" ]]; then
-        #  sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_6;g" run.yaml  # normal mm4ob2  # good, now default on label/dev
+        #  sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_6;g" run.yaml
         #fi
         cat > runcf.yaml <<EOF
         name: cfenv
@@ -274,7 +273,7 @@ jobs:
             # needed?
           - mkl=${{ matrix.cfg.mkl-version }}
           #?#- mkl-devel=${{ matrix.cfg.mkl-version }}
-          - intel-openmp=${{ matrix.cfg.mkl-version }}
+          #?#- intel-openmp=${{ matrix.cfg.mkl-version }}
             # test
           - conda-forge::pytest>=7.0.1
           - pytest-xdist
@@ -284,15 +283,16 @@ jobs:
              - git+https://github.com/i-pi/i-pi.git@master-py3
 
         # toml needed for psi4 to load parameters from dftd4-python
+        # one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error
         EOF
         cat > runcf.yaml <<EOF
         EOF
         fi
-        printf "\n<<<  build.yaml  >>>"
+        printf "\n<<<  build.yaml  >>>\n"
         cat build.yaml
-        printf "\n<<<  run.yaml  >>>"
+        printf "\n<<<  run.yaml  >>>\n"
         cat run.yaml
-        printf "\n<<<  runcf.yaml  >>>"
+        printf "\n<<<  runcf.yaml  >>>\n"
         cat runcf.yaml
 
     - name: Setup Conda
@@ -477,7 +477,7 @@ jobs:
       if: matrix.cfg.base-channel == 'conda-forge'
       working-directory: ./objdir
       # (1st entry PYTHONPATH) need to find the Psi4 module
-      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color auto -n auto -m "addon and not long" stage/lib/psi4/tests/
+      run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "addon and not long" stage/lib/psi4/tests/
 
     - name: "Test Addons with Pytest, base + community channel `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev -c conda-forge` (L, M)"
       if: matrix.cfg.base-channel != 'conda-forge'
@@ -497,7 +497,7 @@ jobs:
             export PYTHONPATH=stage/lib/:$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages
         fi
         echo $PYTHONPATH
-        pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color auto -n auto -m "addon and not long" stage/lib/psi4/tests/
+        pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color yes -n auto -m "addon and not long" stage/lib/psi4/tests/
 
     - name: Write user Conda environment files
       run: |

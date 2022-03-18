@@ -1,4 +1,8 @@
+import pytest
 from addons import uusing
+
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
 
 @uusing("openfermionpsi4")
 def test_openfermionpsi4_demo():

@@ -6,7 +6,7 @@ import psi4
 import numpy as np
 from addons import uusing, using
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 __potentials = {
     'pna_6w':

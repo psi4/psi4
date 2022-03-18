@@ -10,7 +10,7 @@ import numpy as np
 
 import psi4
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 # If it's too small, something odd happens with the memory manager
 mat_size = 10000

@@ -6,7 +6,7 @@ from utils import *
 import numpy as np
 import psi4
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 
 _vars_entered = {

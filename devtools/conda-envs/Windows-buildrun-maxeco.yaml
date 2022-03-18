@@ -7,24 +7,42 @@ dependencies:
     # build
   - boost-cpp
   - cmake
-  
-  
+
+
   - eigen
-  
+
   - mkl-devel=2021.4
   - mpfr
   - ninja
   - pybind11
     # qc req'd
   - gau2grid
-  - psi4/label/testing::libint2=2.6.0=h2e52968_5
+  - psi4/label/dev::libint2
   - psi4/label/dev::qcelemental
   - psi4/label/dev::qcengine
   - libxc
     # qc opt'l
-  
-  
-  
-  
-  
   - intel-openmp=2021.4
+  - msgpack-python
+  - networkx
+  - numpy
+  - scipy
+  - toml
+  - qcelemental
+  - qcengine
+  - psi4/label/dev::dftd3
+  - dftd4-python
+  - psi4/label/dev::gcp
+  - geometric
+  - pymdi
+  - psi4/label/dev::resp
+  - psi4/label/dev::snsmp2
+  - mkl=2021.4
+  - conda-forge::pytest>=7.0.1
+  - pytest-xdist
+  - pip
+  - pip:
+      - git+https://github.com/i-pi/i-pi.git@master-py3
+
+# toml needed for psi4 to load parameters from dftd4-python
+    # runtime

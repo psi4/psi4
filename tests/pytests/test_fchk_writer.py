@@ -6,6 +6,8 @@ from ast import literal_eval
 import os
 from shutil import copytree
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
 # checks for
 # - correct HF density
 # - principal execution 

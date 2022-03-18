@@ -4,6 +4,7 @@ import numpy as np
 import multiprocessing
 import psi4
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 # Test below is fine on its own but erratic through pytest. Most likely
 #   to succeed as first test collected, so here it lies.

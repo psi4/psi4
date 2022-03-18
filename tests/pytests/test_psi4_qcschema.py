@@ -7,7 +7,7 @@ from shutil import copytree
 
 import psi4
 
-pytestmark = [pytest.mark.quick, pytest.mark.smoke]
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick, pytest.mark.smoke]
 
 # Generating
 # * equivalent to test_psi4. copy over the job, then run below to generate atomicinput

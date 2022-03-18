@@ -6,6 +6,7 @@ import re
 from psi4.driver.p4util.testing import compare_strings, compare_values, compare_integers
 from psi4.driver.p4util.exceptions import ValidationError
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 # Checks for
 # Molden files are the same as reference

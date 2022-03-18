@@ -7,6 +7,7 @@ import numpy as np
 import psi4
 from psi4.driver import qcdb
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
 
 def vibanal_str(mass, coord, fcm, dipder=None, hess=None, project_trans=True, project_rot=True):
     """Vibrational analysis driver similar to psi4.driver.driver.vibanal_wfn only

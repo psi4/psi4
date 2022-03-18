@@ -12,7 +12,7 @@ from utils import *
 
 pp = pprint.PrettyPrinter(width=120, compact=True, indent=1)
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 @pytest.fixture(scope="function")
 def result_data_fixture():

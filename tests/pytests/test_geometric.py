@@ -5,6 +5,8 @@ from utils import *
 import psi4
 from addons import uusing, using
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
 
 @pytest.mark.parametrize('engine', [
     pytest.param('optking'),

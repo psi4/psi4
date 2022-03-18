@@ -8,6 +8,8 @@ import psi4
 from psi4.driver.procrouting.response.scf_response import tdscf_excitations
 from utils import *
 
+pytestmark = [pytest.mark.psi, pytest.mark.api]
+
 ## marks
 # reference type
 UHF = pytest.mark.unrestricted
