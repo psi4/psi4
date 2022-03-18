@@ -25,17 +25,19 @@ jobs:
               -D CMAKE_CXX_COMPILER=${CXX}
               -D CMAKE_Fortran_COMPILER="${FC}"
 
-          #- runs-on: macos-latest
-          #  python-version: "3.9"
-          #  mkl-version: "2021.4"
-          #  base-channel: "defaults"
-          #  target-sdk: "10.10"
-          #  cmargs: >
-          #    -D CMAKE_VERBOSE_MAKEFILE=OFF
-          #    -D BUILD_SHARED_LIBS=ON
-          #    -D OpenMP_C_FLAG="-fopenmp=libiomp5"
-          #    -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
-          #    -D MAX_AM_ERI=4
+          - runs-on: macos-latest
+            python-version: "3.9"
+            mkl-version: "2021.4"
+            base-channel: "defaults"
+            target-sdk: "10.10"
+            cmargs: >
+              -D CMAKE_VERBOSE_MAKEFILE=OFF
+              -D BUILD_SHARED_LIBS=ON
+              -D CMAKE_C_COMPILER=${CC}
+              -D CMAKE_CXX_COMPILER=${CXX}
+              -D CMAKE_Fortran_COMPILER="${FC}"
+              -D OpenMP_C_FLAG="-fopenmp=libiomp5"
+              -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
             # Notes:
             # * libiomp5 is picking up naturally but left explicit as guide
 
@@ -65,7 +67,8 @@ jobs:
       with:
         fetch-depth: 0
 
-      # mac_ver line returns, for example, "10.15" for Catalina, "11.6" for Big Sur. but phracker doesn't support all minor, so some logic to hardcode.
+      # see CMAKE_OSX_SYSROOT and CMAKE_Fortran_FLAGS for use
+      # mac_ver line returns, e.g., "10.15" for Catalina & "11.6" for Big Sur. but phracker doesn't support all minor, so some logic to hardcode.
     - name: Prepare compiler environment, SDK (M)
       if: runner.os == 'macOS'
       run: |
@@ -354,15 +357,15 @@ jobs:
     - name: Configure Psi4, Conda defaults Clang (M)
       if: runner.os == 'macOS'
       run: |
+        #  -D CMAKE_C_COMPILER=${CC} \
+        #  -D CMAKE_CXX_COMPILER=${CXX} \
+        #  -D CMAKE_Fortran_COMPILER=${FC} \
         cmake \
           -S. \
           -B objdir \
           -G Ninja \
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_INSTALL_PREFIX=./install \
-          -D CMAKE_C_COMPILER=${CC} \
-          -D CMAKE_CXX_COMPILER=${CXX} \
-          -D CMAKE_Fortran_COMPILER=${FC} \
           -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
           -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
