@@ -16,7 +16,7 @@ dependencies:
   - ninja
   - pybind11
     # qc req'd
-  - psi4/label/dev::gau2gridextra
+  - psi4/label/dev::gau2grid
   - psi4/label/dev::libint2
   - psi4/label/dev::qcelemental
   - psi4/label/dev::qcengine
@@ -28,6 +28,7 @@ dependencies:
   - psi4/label/dev::gdma
   - psi4/label/dev::pcmsolver
   - psi4/label/dev::simint
+    # runtime
   - msgpack-python
   - networkx
   - numpy

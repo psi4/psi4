@@ -82,7 +82,6 @@ jobs:
         arch: x64
 
     - name: Write Conda environment files
-      shell: bash -l {0}
       run: |
         #
         # Buildtime (L, M, W)
@@ -247,7 +246,6 @@ jobs:
             # qc req'd
           - gau2grid
           - psi4/label/dev::libint2
-          #- psi4/label/testing::libint2=2.6.0=h2e52968_5  # good, now default on label/dev
           - qcelemental
           - qcengine
           - libxc
@@ -274,6 +272,7 @@ jobs:
           - psi4/label/dev::snsmp2
             # qc opt'l
             # needed?
+          - mkl=${{ matrix.cfg.mkl-version }}
           #?#- mkl-devel=${{ matrix.cfg.mkl-version }}
           - intel-openmp=${{ matrix.cfg.mkl-version }}
             # test
@@ -289,14 +288,14 @@ jobs:
         cat > runcf.yaml <<EOF
         EOF
         fi
-        echo "\n<<<  build.yaml  >>>"
+        printf "\n<<<  build.yaml  >>>"
         cat build.yaml
-        echo "\n<<<  run.yaml  >>>"
+        printf "\n<<<  run.yaml  >>>"
         cat run.yaml
-        echo "\n<<<  runcf.yaml  >>>"
+        printf "\n<<<  runcf.yaml  >>>"
         cat runcf.yaml
 
-    - name: Create buildtime Conda environment
+    - name: Setup Conda
       uses: conda-incubator/setup-miniconda@v2
       with:
         activate-environment: defenv
@@ -305,8 +304,7 @@ jobs:
         python-version: ${{ matrix.cfg.python-version }}
         auto-activate-base: false
 
-    - name: List buildtime Conda environment
-      shell: bash -l {0}
+    - name: Buildtime Conda environment
       run: |
         conda info
         conda list
@@ -440,25 +438,24 @@ jobs:
       #   name (so same location on disk as the build env) for non-relocatability reasons. Also
       #   creating another runtime environment based on conda-forge channel addons. This is held in
       #   reserve for later.
-    - name: Create runtime Conda environment(s)
+    - name: Runtime Conda environment(s)
       run: |
+        echo "::group::Prepare Environment"
         conda deactivate
         conda remove -n defenv --all
         conda env create --file run.yaml
-        if [[ "${{ runner.os }}" != "Windows" ]]; then
+        if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
         conda env create --file runcf.yaml
         fi
         conda activate defenv
-
-    - name: List runtime Conda environment(s)
-      run: |
+        echo "::endgroup::"
         conda info
         conda list -n defenv
-        if [[ "${{ runner.os }}" != "Windows" ]]; then
+        if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
         conda list -n cfenv
         fi
 
-    - name: Test Psi4 core OpenMP
+    - name: Test OpenMP
       working-directory: ./install/lib
       run: python -c "from psi4 import core; core.set_num_threads(42); assert core.get_num_threads() == 42"
 
@@ -475,15 +472,15 @@ jobs:
       working-directory: ./objdir
       run: ctest -L addon -j2 --output-on-failure
 
-    - name: "Test Addons with Pytest: (base channel only `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev`)"
+    - name: "Test Addons with Pytest, base channel only `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev` (W)"
       # step works but is redundant with next for Linux and macOS
-      if: runner.os == 'Windows'
+      if: matrix.cfg.base-channel == 'conda-forge'
       working-directory: ./objdir
       # (1st entry PYTHONPATH) need to find the Psi4 module
       run: PYTHONPATH=stage/lib pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color auto -n auto -m "addon and not long" stage/lib/psi4/tests/
 
-    - name: "Test Addons with Pytest: (base + community channel `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev -c conda-forge`)"
-      if: matrix.cfg.base-channel == 'defaults'
+    - name: "Test Addons with Pytest, base + community channel `-c ${{ matrix.cfg.base-channel }} -c psi4/label/dev -c conda-forge` (L, M)"
+      if: matrix.cfg.base-channel != 'conda-forge'
       working-directory: ./objdir
       run: |
         conda activate --stack cfenv
@@ -502,7 +499,7 @@ jobs:
         echo $PYTHONPATH
         pytest --cache-clear -v -rws --durations=50 --durations-min=40 --strict-markers --color auto -n auto -m "addon and not long" stage/lib/psi4/tests/
 
-    - name: Store Conda environment(s)
+    - name: Write user Conda environment files
       run: |
         echo "::group::Prepare Environment"
         conda install ruamel_yaml -c ${{ matrix.cfg.base-channel }}
@@ -530,7 +527,7 @@ jobs:
 
         python userenvs.py
         cat devtools/conda-envs/${{ runner.os }}-buildrun-maxeco.yaml
-        if [[ "${{ runner.os }}" != "Windows" ]]; then
+        if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
         cp runcf.yaml devtools/conda-envs/${{ runner.os }}-runcf-maxeco.yaml
         fi
         git diff --color-words
