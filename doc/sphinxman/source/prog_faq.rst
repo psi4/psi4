@@ -89,7 +89,7 @@ Workflow
 Miscellaneous
 -------------
 
-#. :ref:`faq:add_tests`
+#. :ref:`faq:add_psithon_tests`
 #. :ref:`faq:add_psiapi_tests`
 #. :ref:`faq:findmissingoutputref`
 #. :ref:`faq:githubcodereview`

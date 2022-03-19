@@ -1655,18 +1655,19 @@ the examples below, *testname* are regex of :source:`test names <tests>`,
 and *testlabel* are regex of labels (*e.g.*, ``cc``, ``mints``,
 ``libefp`` defined :source:`[here, for example] <tests/ci-property/CMakeLists.txt#L3>` .
 
-* Run tests in parallel with ``-j`` flag. For maximum parallelism: :samp:`ctest -j\`getconf _NPROCESSORS_ONLN\`\ `
+* Run tests in parallel with ``-j`` flag. For maximum parallelism (not Windows): :samp:`ctest -j\`getconf _NPROCESSORS_ONLN\`\ `
 * Run full test suite: ``ctest``
 * Run about a third of the tests in 5 minutes, the so-called *quicktests*: ``ctest -L quick``
-* Run the same subset of tests that TravisCI checks (not the full test suite): ``ctest -L quick``
+* Run the same subset of tests that continuous integration checks (not the full test suite): ``ctest -L quick``
 * Run the minimal number of tests to ensure Psi4 and any add-ons in working order: ``ctest -L smoke``
 * Run tests matching by name: ``ctest -R testname``
 * Run tests excluding those by name: ``ctest -E testname``
 * Run tests matching by label: ``ctest -L testlabel``
 * Run tests excluding those by label: ``ctest -LE testlabel``
 
-Pytest has similar commands
-* Run tests in parallel with ``-n`` flag (if extenstion pytest-xdist installed). For maximum parallelism: :samp:`pytest -n\`getconf _NPROCESSORS_ONLN\`\ `
+Pytest has similar commands:
+
+* Run tests in parallel with ``-n`` flag (if Python package ``pytest-xdist`` installed). For maximum parallelism: :samp:`pytest -n auto`
 * Run full test suite: ``pytest``
 * Run the quick tests: ``pytest -m quick``
 * Run the minimal number of tests to ensure Psi4 and any add-ons in working order: ``pytest -m smoke``
@@ -1674,6 +1675,7 @@ Pytest has similar commands
 * Run tests excluding those by name: ``pytest -k "not testname"``
 * Run tests matching by label: ``pytest -m testlabel``
 * Run tests excluding those by label: ``pytest -m "not testlabel"``
+* Run tests with complicated filtering by name: ``pytest -k "cc and not cc4 and not stdsuite"``
 
 .. _`faq:testsoutput`:
 
@@ -1737,9 +1739,9 @@ generally sufficient to verify an installation.
     .. code-block:: bash
 
      # smoke tests only
-     pytest {prefix}/lib/{PYMOD_INSTALL_LIBDIR}/psi4/tests/ -m smoke -n`getconf _NPROCESSORS_ONLN`
+     pytest {prefix}/lib/{PYMOD_INSTALL_LIBDIR}/psi4/tests/ -m smoke -n auto
      # all tests
-     pytest {prefix}/lib/{PYMOD_INSTALL_LIBDIR}/psi4/tests/ -n`getconf _NPROCESSORS_ONLN`
+     pytest {prefix}/lib/{PYMOD_INSTALL_LIBDIR}/psi4/tests/ -n auto
 
 Output looks something like the below. ``PASSED`` in green is good
 (means test ran correctly); ``SKIPPED`` in yellow is good (means that

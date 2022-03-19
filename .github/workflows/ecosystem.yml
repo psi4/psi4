@@ -21,9 +21,6 @@ jobs:
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D BUILD_SHARED_LIBS=ON
-              -D CMAKE_C_COMPILER=${CC}
-              -D CMAKE_CXX_COMPILER=${CXX}
-              -D CMAKE_Fortran_COMPILER="${FC}"
 
           - runs-on: macos-latest
             python-version: "3.9"
@@ -33,9 +30,6 @@ jobs:
             cmargs: >
               -D CMAKE_VERBOSE_MAKEFILE=OFF
               -D BUILD_SHARED_LIBS=ON
-              -D CMAKE_C_COMPILER=${CC}
-              -D CMAKE_CXX_COMPILER=${CXX}
-              -D CMAKE_Fortran_COMPILER="${FC}"
               -D OpenMP_C_FLAG="-fopenmp=libiomp5"
               -D OpenMP_CXX_FLAG="-fopenmp=libiomp5"
             # Notes:
@@ -99,7 +93,7 @@ jobs:
         # Buildtime (L, M, W)
         #
         cat > build.yaml <<EOF
-        name: defenv
+        name: baseenv
         channels:
           - ${{ matrix.cfg.base-channel }}
         dependencies:
@@ -165,7 +159,7 @@ jobs:
         #
         if [[ "${{ runner.os }}" != "Windows" ]]; then
         cat > run.yaml <<EOF
-        name: defenv
+        name: baseenv
         channels:
           - ${{ matrix.cfg.base-channel }}
         dependencies:
@@ -211,8 +205,8 @@ jobs:
         #if [[ "${{ runner.os }}" == "macOS" ]]; then
         #  sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_6;g" run.yaml
         #fi
-        cat > runcf.yaml <<EOF
-        name: cfenv
+        cat > aux.yaml <<EOF
+        name: auxenv
         channels:
           - conda-forge
         dependencies:
@@ -231,7 +225,7 @@ jobs:
         # toml needed for psi4 to load parameters from dftd4-python
         EOF
         #if [[ "${{ runner.os }}" == "macOS" ]]; then
-        #  sed -E -i.bak "s;- openfermionpsi4;#- openfermionpsi4;g" runcf.yaml
+        #  sed -E -i.bak "s;- openfermionpsi4;#- openfermionpsi4;g" aux.yaml
         #fi
         fi
         #
@@ -239,7 +233,7 @@ jobs:
         #
         if [[ "${{ runner.os }}" == "Windows" ]]; then
         cat > run.yaml <<EOF
-        name: defenv
+        name: baseenv
         channels:
           - ${{ matrix.cfg.base-channel }}
         dependencies:
@@ -292,20 +286,20 @@ jobs:
         # toml needed for psi4 to load parameters from dftd4-python
         # one of mkl=${{ matrix.cfg.mkl-version }} or mkl-devel=${{ matrix.cfg.mkl-version }} needed to avoid DLL runtime error
         EOF
-        cat > runcf.yaml <<EOF
+        cat > aux.yaml <<EOF
         EOF
         fi
         printf "\n<<<  build.yaml  >>>\n"
         cat build.yaml
         printf "\n<<<  run.yaml  >>>\n"
         cat run.yaml
-        printf "\n<<<  runcf.yaml  >>>\n"
-        cat runcf.yaml
+        printf "\n<<<  aux.yaml  >>>\n"
+        cat aux.yaml
 
     - name: Setup Conda
       uses: conda-incubator/setup-miniconda@v2
       with:
-        activate-environment: defenv
+        activate-environment: baseenv
         environment-file: build.yaml
         show-channel-urls: true
         python-version: ${{ matrix.cfg.python-version }}
@@ -319,15 +313,15 @@ jobs:
     - name: Configure Psi4, Conda defaults GNU (L)
       if: runner.os == 'Linux'
       run: |
-        #  -D CMAKE_C_COMPILER=${CC} \
-        #  -D CMAKE_CXX_COMPILER=${CXX} \
-        #  -D CMAKE_Fortran_COMPILER=${FC} \
         cmake \
           -S. \
           -B objdir \
           -G Ninja \
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_INSTALL_PREFIX=./install \
+          -D CMAKE_C_COMPILER=${CC} \
+          -D CMAKE_CXX_COMPILER=${CXX} \
+          -D CMAKE_Fortran_COMPILER=${FC} \
           -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
           -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
@@ -357,15 +351,15 @@ jobs:
     - name: Configure Psi4, Conda defaults Clang (M)
       if: runner.os == 'macOS'
       run: |
-        #  -D CMAKE_C_COMPILER=${CC} \
-        #  -D CMAKE_CXX_COMPILER=${CXX} \
-        #  -D CMAKE_Fortran_COMPILER=${FC} \
         cmake \
           -S. \
           -B objdir \
           -G Ninja \
           -D CMAKE_BUILD_TYPE=Release \
           -D CMAKE_INSTALL_PREFIX=./install \
+          -D CMAKE_C_COMPILER=${CC} \
+          -D CMAKE_CXX_COMPILER=${CXX} \
+          -D CMAKE_Fortran_COMPILER=${FC} \
           -D CMAKE_PREFIX_PATH="${CONDA_PREFIX}" \
           -D CMAKE_INSIST_FIND_PACKAGE_pybind11=ON \
           -D CMAKE_INSIST_FIND_PACKAGE_gau2grid=ON \
@@ -443,17 +437,17 @@ jobs:
       run: |
         echo "::group::Prepare Environment"
         conda deactivate
-        conda remove -n defenv --all
+        conda remove -n baseenv --all
         conda env create --file run.yaml
         if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
-        conda env create --file runcf.yaml
+        conda env create --file aux.yaml
         fi
-        conda activate defenv
+        conda activate baseenv
         echo "::endgroup::"
         conda info
-        conda list -n defenv
+        conda list -n baseenv
         if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
-        conda list -n cfenv
+        conda list -n auxenv
         fi
 
     - name: Test OpenMP
@@ -484,17 +478,17 @@ jobs:
       if: matrix.cfg.base-channel != 'conda-forge'
       working-directory: ./objdir
       run: |
-        conda activate --stack cfenv
+        conda activate --stack auxenv
         printenv | grep CONDA_PREFIX
         if [[ "${{ runner.os }}" == "Linux" ]]; then
             # (1st entry) need to find the Psi4 module
-            # (2nd entry) Linux needs the defenv (CONDA_PREFIX_1) to avoid dual OpenMP init since defaults mkl are intel/iomp5 and c-f mkl is llvm/omp
-            # (3rd entry) need to find the new addon modules in the cfenv (CONDA_PREFIX; stack activation only merges bin/)
+            # (2nd entry) Linux needs the baseenv (CONDA_PREFIX_1) to avoid dual OpenMP init since defaults mkl are intel/iomp5 and c-f mkl is llvm/omp
+            # (3rd entry) need to find the new addon modules in the auxenv (CONDA_PREFIX; stack activation only merges bin/)
             export PYTHONPATH=stage/lib/:$CONDA_PREFIX_1/lib/python${{ matrix.cfg.python-version }}/site-packages:$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages
         fi
         if [[ "${{ runner.os }}" == "macOS" ]]; then
             # (1st entry) need to find the Psi4 module
-            # (2nd entry) need to find the new addon modules in the cfenv (CONDA_PREFIX; stack activation only merges bin/)
+            # (2nd entry) need to find the new addon modules in the auxenv (CONDA_PREFIX; stack activation only merges bin/)
             export PYTHONPATH=stage/lib/:$CONDA_PREFIX/lib/python${{ matrix.cfg.python-version }}/site-packages
         fi
         echo $PYTHONPATH
@@ -529,7 +523,7 @@ jobs:
         python userenvs.py
         cat devtools/conda-envs/${{ runner.os }}-buildrun-maxeco.yaml
         if [[ "${{ matrix.cfg.base-channel }}" != "conda-forge" ]]; then
-        cp runcf.yaml devtools/conda-envs/${{ runner.os }}-runcf-maxeco.yaml
+        cp aux.yaml devtools/conda-envs/${{ runner.os }}-aux-maxeco.yaml
         fi
         git diff --color-words
 

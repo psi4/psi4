@@ -329,6 +329,7 @@ install(
     PATTERN "ci-property/grid.dat"
     PATTERN "scf-property/grid.dat"
     PATTERN "mp2-property/grid.dat"
+    PATTERN "cubeprop/*cube.ref"
   )
 
     # <<<  install psi4 share/ & include/  >>>

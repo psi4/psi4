@@ -166,7 +166,12 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
 
     ctestdir = Path(inputdatloc).resolve().parent
 
-    infiles = ["input.dat"]
+    if (ctestdir / "input.dat").exists():
+        inputdat = "input.dat"
+    elif (ctestdir / "input.py").exists():
+        inputdat = "input.py"
+
+    infiles = [inputdat]
     if extra_infiles:
         infiles.extend(extra_infiles)
     infiles_with_contents = {fl: (ctestdir / fl).read_text() for fl in infiles}
@@ -175,7 +180,10 @@ def ctest_runner(inputdatloc, extra_infiles: List =None, outfiles: List =None):
     #   L/M/W   ok with `command = [which("psi4"), "input.dat"]` where `which` on Windows finds the psi4.bat file that points to the psi4 python script. -or-
     #   L/M/W   ok with `command = [sys.executable, psi4.executable, "input.dat"]` aka `python /full/path/bin/psi4 input.dat`.
     #   Latter chosen as `psi4.executable` is path computed by `import psi4`, so assured correspondence.
-    command = [sys.executable, psi4.executable, "input.dat"]
+    # Note:  The input.py in json/, python/, and psi4numpy/ are not being treated best.
+    #   Properly, as in CTest, it's `command = [sys.executable, "input.py"]`. But that doesn't pass though PYTHONPATH.
+    #   Rather than have three ways of handling env conditions (direct-call Py, popen psi4, popen Py), using same `command`.
+    command = [sys.executable, psi4.executable, inputdat]
     _, output = execute(command, infiles_with_contents, outfiles)
 
     success = output["proc"].poll() == 0

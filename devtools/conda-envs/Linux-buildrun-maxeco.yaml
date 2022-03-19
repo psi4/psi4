@@ -1,4 +1,4 @@
-name: defenv
+name: baseenv
 channels:
   - defaults
 dependencies:

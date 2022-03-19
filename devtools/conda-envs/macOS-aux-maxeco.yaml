@@ -1,4 +1,4 @@
-name: cfenv
+name: auxenv
 channels:
   - conda-forge
 dependencies:
