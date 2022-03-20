@@ -424,46 +424,40 @@ void HF::find_occupation() {
     if (MOM_performed_) {
         MOM();
     } else {
-        // We first find the aufbau occupation.
-        // We then take our orbitals as the aufbau orbitals within the occupation.
-        std::vector<std::pair<double, int> > pairs_a;
-        std::vector<std::pair<double, int> > pairs_b;
-        for (int h = 0; h < epsilon_a_->nirrep(); ++h) {
-            for (int i = 0; i < epsilon_a_->dimpi()[h]; ++i) {
-                pairs_a.push_back(std::make_pair(epsilon_a_->get(h, i), h));
+        if (!input_docc_ && !input_socc_) {
+            // The occupations are determined by the Aufbau
+            // principle. We first collect all the orbital energies and
+            // sort them in increasing order
+            std::vector<std::pair<double, int> > pairs_a;
+            for (int h = 0; h < epsilon_a_->nirrep(); ++h) {
+                for (int i = 0; i < epsilon_a_->dimpi()[h]; ++i) {
+                    pairs_a.push_back(std::make_pair(epsilon_a_->get(h, i), h));
+                }
             }
-        }
-        sort(pairs_a.begin(), pairs_a.end());
-
-        // Do we need to sort beta?
-        if (multiplicity_ == 1) {
-            pairs_b = pairs_a;
-
-        } else {
+            sort(pairs_a.begin(), pairs_a.end());
+            // Same for beta electrons
+            std::vector<std::pair<double, int> > pairs_b;
             for (int h = 0; h < epsilon_b_->nirrep(); ++h) {
                 for (int i = 0; i < epsilon_b_->dimpi()[h]; ++i) {
                     pairs_b.push_back(std::make_pair(epsilon_b_->get(h, i), h));
                 }
             }
             sort(pairs_b.begin(), pairs_b.end());
-        }
 
-        if (!input_docc_ && !input_socc_) {
-            // Sanity check
+            // Sanity check: we must have at least one orbital per electron
             if ((size_t)std::max(nalpha_, nbeta_) > pairs_a.size())
                 throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
 
-            // Alpha
-            memset(nalphapi_, 0, sizeof(int) * epsilon_a_->nirrep());
+            // Occupy the lowest nalpha orbitals
+            memset(nalphapi_, 0, sizeof(int) * nirrep_);
             for (int i = 0; i < nalpha_; ++i) nalphapi_[pairs_a[i].second]++;
-
-            // Beta
-            memset(nbetapi_, 0, sizeof(int) * epsilon_b_->nirrep());
+            // Occupy the lowest nbeta electrons
+            memset(nbetapi_, 0, sizeof(int) * nirrep_);
             for (int i = 0; i < nbeta_; ++i) nbetapi_[pairs_b[i].second]++;
         }
 
-        int old_socc[8];
-        int old_docc[8];
+        int old_socc[nirrep_];
+        int old_docc[nirrep_];
         for (int h = 0; h < nirrep_; ++h) {
             old_socc[h] = soccpi_[h];
             old_docc[h] = doccpi_[h];
