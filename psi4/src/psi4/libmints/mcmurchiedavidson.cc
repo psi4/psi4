@@ -25,8 +25,6 @@
  *
  * @END LICENSE
  */
-#include <cmath>
-
 #include "mcmurchiedavidson.h"
 
 namespace mdintegrals {
@@ -75,36 +73,36 @@ void fill_E_matrix(int maxam1, int maxam2, const Point& P, const Point& A, const
     for (int i = 0; i < dim1; ++i) {
         for (int j = 0; j < dim2; ++j) {
             // t = 0 case
-            int idx0 = address_3d(i, j, 0, dim2, dim3);
+            int idx_t0 = address_3d(i, j, 0, dim2, dim3);
             if (i > 0) {
-                int idxi0 = address_3d(i - 1, j, 0, dim2, dim3);
-                int idxitp0 = address_3d(i - 1, j, 1, dim2, dim3);
-                Ex[idx0] += PA[0] * Ex[idxi0] + Ex[idxitp0];
-                Ey[idx0] += PA[1] * Ey[idxi0] + Ey[idxitp0];
-                Ez[idx0] += PA[2] * Ez[idxi0] + Ez[idxitp0];
+                int idxi_t0 = address_3d(i - 1, j, 0, dim2, dim3);
+                int idxi_t1 = address_3d(i - 1, j, 1, dim2, dim3);
+                Ex[idx_t0] += PA[0] * Ex[idxi_t0] + Ex[idxi_t1];
+                Ey[idx_t0] += PA[1] * Ey[idxi_t0] + Ey[idxi_t1];
+                Ez[idx_t0] += PA[2] * Ez[idxi_t0] + Ez[idxi_t1];
             } else if (j > 0) {
-                int idxj0 = address_3d(i, j - 1, 0, dim2, dim3);
-                int idxjtp0 = address_3d(i, j - 1, 1, dim2, dim3);
-                Ex[idx0] += PB[0] * Ex[idxj0] + Ex[idxjtp0];
-                Ey[idx0] += PB[1] * Ey[idxj0] + Ey[idxjtp0];
-                Ez[idx0] += PB[2] * Ez[idxj0] + Ez[idxjtp0];
+                int idxj_t0 = address_3d(i, j - 1, 0, dim2, dim3);
+                int idxj_t1 = address_3d(i, j - 1, 1, dim2, dim3);
+                Ex[idx_t0] += PB[0] * Ex[idxj_t0] + Ex[idxj_t1];
+                Ey[idx_t0] += PB[1] * Ey[idxj_t0] + Ey[idxj_t1];
+                Ez[idx_t0] += PB[2] * Ez[idxj_t0] + Ez[idxj_t1];
             }
             for (int t = 1; t < i + j + 1; ++t) {
                 int idx = address_3d(i, j, t, dim2, dim3);
                 if (i > 0) {
-                    int idxi = address_3d(i - 1, j, t, dim2, dim3);
-                    int idxit = address_3d(i - 1, j, t - 1, dim2, dim3);
-                    int idxitp = address_3d(i - 1, j, t + 1, dim2, dim3);
-                    Ex[idx] += PA[0] * Ex[idxi] + oo2p * Ex[idxit] + (t + 1) * Ex[idxitp];
-                    Ey[idx] += PA[1] * Ey[idxi] + oo2p * Ey[idxit] + (t + 1) * Ey[idxitp];
-                    Ez[idx] += PA[2] * Ez[idxi] + oo2p * Ez[idxit] + (t + 1) * Ez[idxitp];
+                    int idxi_t = address_3d(i - 1, j, t, dim2, dim3);
+                    int idxi_tm = address_3d(i - 1, j, t - 1, dim2, dim3);
+                    int idxi_tp = address_3d(i - 1, j, t + 1, dim2, dim3);
+                    Ex[idx] += PA[0] * Ex[idxi_t] + oo2p * Ex[idxi_tm] + (t + 1) * Ex[idxi_tp];
+                    Ey[idx] += PA[1] * Ey[idxi_t] + oo2p * Ey[idxi_tm] + (t + 1) * Ey[idxi_tp];
+                    Ez[idx] += PA[2] * Ez[idxi_t] + oo2p * Ez[idxi_tm] + (t + 1) * Ez[idxi_tp];
                 } else if (j > 0) {
-                    int idxj = address_3d(i, j - 1, t, dim2, dim3);
-                    int idxjt = address_3d(i, j - 1, t - 1, dim2, dim3);
-                    int idxjtp = address_3d(i, j - 1, t + 1, dim2, dim3);
-                    Ex[idx] += PB[0] * Ex[idxj] + oo2p * Ex[idxjt] + (t + 1) * Ex[idxjtp];
-                    Ey[idx] += PB[1] * Ey[idxj] + oo2p * Ey[idxjt] + (t + 1) * Ey[idxjtp];
-                    Ez[idx] += PB[2] * Ez[idxj] + oo2p * Ez[idxjt] + (t + 1) * Ez[idxjtp];
+                    int idxj_t = address_3d(i, j - 1, t, dim2, dim3);
+                    int idxj_tm = address_3d(i, j - 1, t - 1, dim2, dim3);
+                    int idxj_tp = address_3d(i, j - 1, t + 1, dim2, dim3);
+                    Ex[idx] += PB[0] * Ex[idxj_t] + oo2p * Ex[idxj_tm] + (t + 1) * Ex[idxj_tp];
+                    Ey[idx] += PB[1] * Ey[idxj_t] + oo2p * Ey[idxj_tm] + (t + 1) * Ey[idxj_tp];
+                    Ez[idx] += PB[2] * Ez[idxj_t] + oo2p * Ez[idxj_tm] + (t + 1) * Ez[idxj_tp];
                 }
             }
         }

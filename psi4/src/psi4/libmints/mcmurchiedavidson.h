@@ -29,6 +29,7 @@
 
 #include <array>
 #include <vector>
+#include <cmath>
 
 namespace mdintegrals {
 
