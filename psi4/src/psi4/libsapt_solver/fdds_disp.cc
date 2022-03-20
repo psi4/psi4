@@ -364,7 +364,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     for (size_t i = 0; i < nthread; i++) {
         aux_ints[i] = std::shared_ptr<ThreeCenterOverlapInt>(
             new ThreeCenterOverlapInt(trans, auxiliary_, auxiliary_, auxiliary_));
-        aux_buff[i] = aux_ints[i]->buffer();
+        aux_buff[i] = aux_ints[i]->buffers()[0];
     }
 
     // Pack the Aux pairs
@@ -410,7 +410,7 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
             size_t index_r = auxiliary_->shell(Rshell).function_index();
 
             aux_ints[thread]->compute_shell(Pshell, Qshell, Rshell);
-            aux_buff[thread] = aux_ints[thread]->buffer();
+            aux_buff[thread] = aux_ints[thread]->buffers()[0];
 
             size_t index = 0;
             for (size_t p = 0; p < num_p; p++) {

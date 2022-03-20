@@ -26,7 +26,6 @@ list(APPEND sources
   symop.cc
   benchmark.cc
   get_writer_file_prefix.cc
-  3coverlap.cc
   petitelist.cc
   solidharmonics.cc
   multipoles.cc
@@ -73,7 +72,8 @@ potential.cc
 potentialint.cc
 quadrupole.cc
 rel_potential.cc
-tracelessquadrupole.cc)
+tracelessquadrupole.cc
+3coverlap.cc)
 set_property(TARGET l2intf PROPERTY CXX_STANDARD 14)
 set_property(TARGET l2intf PROPERTY POSITION_INDEPENDENT_CODE ON)
 # below are what l2intf files would ordinarily have gotten from psi4_add_module.

@@ -944,7 +944,7 @@ SharedMatrix MintsHelper::ao_3coverlap_helper(const std::string &label, std::sha
         for (int N = 0; N < bs2->nshell(); N++) {
             for (int P = 0; P < bs3->nshell(); P++) {
                 ints->compute_shell(M, N, P);
-                const double *buffer = ints->buffer();
+                const double *buffer = ints->buffers()[0];
                 int Mfi = bs1->shell(M).function_index();
                 int Nfi = bs2->shell(N).function_index();
                 int Pfi = bs3->shell(P).function_index();

@@ -25,18 +25,18 @@
  *
  * @END LICENSE
  */
+#pragma once
 
-#ifndef _psi_src_lib_libmints_3coverlap_h
-#define _psi_src_lib_libmints_3coverlap_h
-
-#include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/integral.h"
-#include "psi4/libpsi4util/exception.h"
+
+namespace libint2 {
+class Engine;
+class Shell;
+}  // namespace libint2
 
 namespace psi {
 
 class BasisSet;
-class GaussianShell;
 
 /** \ingroup MINTS
     \class ThreeCenterOverlapInt
@@ -44,33 +44,26 @@ class GaussianShell;
  */
 class ThreeCenterOverlapInt {
    protected:
-    ObaraSaikaThreeCenterRecursion overlap_recur_;
-
     std::shared_ptr<BasisSet> bs1_;
     std::shared_ptr<BasisSet> bs2_;
     std::shared_ptr<BasisSet> bs3_;
 
-    /// Buffer to hold the source integrals.
-    double* buffer_;
+    std::unique_ptr<libint2::Engine> engine0_;
 
-    /// Buffer for spherical harmonics
-    double* temp_;
+    /// Buffer to hold the source integrals.
+    std::vector<const double*> buffers_;
 
     /// Vector of Sphericaltransforms
     std::vector<SphericalTransform> st_;
 
-    void compute_pair(const GaussianShell& s1, const GaussianShell& s2, const GaussianShell& s3);
+    void compute_pair(const libint2::Shell& s1, const libint2::Shell& s2, const libint2::Shell& s3);
 
    public:
     ThreeCenterOverlapInt(std::vector<SphericalTransform> st, std::shared_ptr<BasisSet> bs1,
                           std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3);
 
-    ThreeCenterOverlapInt(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3);
+    ~ThreeCenterOverlapInt();
 
-    virtual ~ThreeCenterOverlapInt();
-
-    /// Basis set on center one.
-    std::shared_ptr<BasisSet> basis();
     /// Basis set on center one.
     std::shared_ptr<BasisSet> basis1();
     /// Basis set on center two.
@@ -78,19 +71,11 @@ class ThreeCenterOverlapInt {
     /// Basis set on center three.
     std::shared_ptr<BasisSet> basis3();
 
-    /// Buffer where the integrals are placed.
-    const double* buffer() const { return buffer_; }
-
     /// Compute the integrals of the form (a|c|b).
     virtual void compute_shell(int, int, int);
 
-    /// Normalize Cartesian functions based on angular momentum
-    void normalize_am(const GaussianShell&, const GaussianShell&, const GaussianShell&);
-
-    /// Perform pure (spherical) transform.
-    void pure_transform(const GaussianShell&, const GaussianShell&, const GaussianShell&);
+    /// Buffer where each chunk of integrals is placed
+    const std::vector<const double*>& buffers() const { return buffers_; }
 };
 
 }  // namespace psi
-
-#endif
