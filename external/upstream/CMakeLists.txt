@@ -7,10 +7,8 @@ foreach(dir
   dkh
   ecpint
   libefp
-  erd
   gau2grid
   gdma
-  libint
   libint2
   mdi
   pcmsolver

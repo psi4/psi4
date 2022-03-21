@@ -25,7 +25,7 @@ for line in ctestout[1:]:
         badoutfile = bad
         for oddity in [
                 'pcmsolver', 'cfour', 'libefp', 'chemps2', 'dftd3', 'mrcc', 'psi4numpy', 'python', 'json', 'cookbook',
-                'dkh', 'erd', 'gcp', 'gdma', 'simint', 'snsmp2', 'v2rdm_casscf', 'gpu_dfcc'
+                'dkh', 'gcp', 'gdma', 'simint', 'snsmp2', 'v2rdm_casscf', 'gpu_dfcc'
         ]:
             if bad.startswith(oddity):
                 badoutfile = oddity + '/' + bad

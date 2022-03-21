@@ -1269,19 +1269,6 @@ void export_mints(py::module& m) {
 
     py::class_<Libint2ERI, std::shared_ptr<Libint2ERI>>(m, "ERI", pyTwoBodyAOInt,
                                                         "Computes normal two electron repulsion integrals");
-#ifdef ENABLE_Libint1t
-    py::class_<F12, std::shared_ptr<F12>>(m, "F12", pyTwoBodyAOInt, "Computes F12 electron repulsion integrals");
-    py::class_<F12G12, std::shared_ptr<F12G12>>(m, "F12G12", pyTwoBodyAOInt,
-                                                "Computes F12G12 electron repulsion integrals");
-    py::class_<F12Squared, std::shared_ptr<F12Squared>>(m, "F12Squared", pyTwoBodyAOInt,
-                                                        "Computes F12 Squared electron repulsion integrals");
-    py::class_<F12DoubleCommutator, std::shared_ptr<F12DoubleCommutator>>(
-        m, "F12DoubleCommutator", pyTwoBodyAOInt, "Computes F12 Double Commutator electron repulsion integrals");
-    py::class_<ErfERI, std::shared_ptr<ErfERI>>(m, "ErfERI", pyTwoBodyAOInt,
-                                                "Computes ERF electron repulsion integrals");
-    py::class_<ErfComplementERI, std::shared_ptr<ErfComplementERI>>(
-        m, "ErfComplementERI", pyTwoBodyAOInt, "Computes ERF complement electron repulsion integrals");
-#endif  // ENABLE_Libint1t
 
     py::class_<AOShellCombinationsIterator, std::shared_ptr<AOShellCombinationsIterator>>(m,
                                                                                           "AOShellCombinationsIterator")
