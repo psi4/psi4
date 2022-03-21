@@ -244,7 +244,8 @@ TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_e
 TwoBodyAOInt* IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    if (integral_package == "LIBINT2") return new Libint2ErfERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
+    if (integral_package == "LIBINT2")
+        return new Libint2ErfERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
 #ifdef ENABLE_Libint1t
     return new ErfERI(omega, this, deriv, use_shell_pairs);
 #endif
@@ -253,41 +254,30 @@ TwoBodyAOInt* IntegralFactory::erf_eri(double omega, int deriv, bool use_shell_p
 TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-    if (integral_package == "LIBINT2") return new Libint2ErfComplementERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
+    if (integral_package == "LIBINT2")
+        return new Libint2ErfComplementERI(omega, this, threshold, deriv, use_shell_pairs, needs_exchange);
 #ifdef ENABLE_Libint1t
     return new ErfComplementERI(omega, this, deriv, use_shell_pairs);
 #endif
 }
 
-TwoBodyAOInt* IntegralFactory::f12(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs) {
-#ifdef ENABLE_Libint1t
-    return new F12(cf, this, deriv, use_shell_pairs);
-#endif
+TwoBodyAOInt* IntegralFactory::f12(std::vector<std::pair<double, double>> coeff_exp, int deriv, bool use_shell_pairs) {
+    return new Libint2F12(coeff_exp, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12_scaled(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs) {
-#ifdef ENABLE_Libint1t
-    return new F12Scaled(cf, this, deriv, use_shell_pairs);
-#endif
+TwoBodyAOInt* IntegralFactory::f12_squared(std::vector<std::pair<double, double>> coeff_exp, int deriv,
+                                           bool use_shell_pairs) {
+    return new Libint2F12Squared(coeff_exp, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12_squared(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs) {
-#ifdef ENABLE_Libint1t
-    return new F12Squared(cf, this, deriv, use_shell_pairs);
-#endif
+TwoBodyAOInt* IntegralFactory::f12g12(std::vector<std::pair<double, double>> coeff_exp, int deriv,
+                                      bool use_shell_pairs) {
+    return new Libint2F12G12(coeff_exp, this, deriv, use_shell_pairs);
 }
 
-TwoBodyAOInt* IntegralFactory::f12g12(std::shared_ptr<CorrelationFactor> cf, int deriv, bool use_shell_pairs) {
-#ifdef ENABLE_Libint1t
-    return new F12G12(cf, this, deriv, use_shell_pairs);
-#endif
-}
-
-TwoBodyAOInt* IntegralFactory::f12_double_commutator(std::shared_ptr<CorrelationFactor> cf, int deriv,
+TwoBodyAOInt* IntegralFactory::f12_double_commutator(std::vector<std::pair<double, double>> coeff_exp, int deriv,
                                                      bool use_shell_pairs) {
-#ifdef ENABLE_Libint1t
-    return new F12DoubleCommutator(cf, this, deriv, use_shell_pairs);
-#endif
+    return new Libint2F12DoubleCommutator(coeff_exp, this, deriv, use_shell_pairs);
 }
 
 void IntegralFactory::init_spherical_harmonics(int max_am) {
