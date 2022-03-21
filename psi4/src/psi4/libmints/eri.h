@@ -383,6 +383,7 @@ inline std::vector<std::pair<double, double>> take_square(std::vector<std::pair<
 }
 
 class Libint2F12Squared : public Libint2F12 {
+   public:
     Libint2F12Squared(std::vector<std::pair<double, double>> coeff_exp, const IntegralFactory *integral,
                       double screening_threshold, int deriv = 0, bool use_shell_pairs = false,
                       bool needs_exchange = false)
