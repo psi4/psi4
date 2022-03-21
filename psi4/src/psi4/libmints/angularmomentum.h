@@ -26,33 +26,25 @@
  * @END LICENSE
  */
 
-#ifndef _psi_src_lib_libmints_angularmomentum_h_
-#define _psi_src_lib_libmints_angularmomentum_h_
+#pragma once
 
-#include "psi4/pragma.h"
-PRAGMA_WARNING_PUSH
-PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
-#include <memory>
-PRAGMA_WARNING_POP
 #include "psi4/libmints/onebody.h"
-#include "psi4/libmints/osrecur.h"
+#include "psi4/libmints/mcmurchiedavidson.h"
 
 namespace psi {
 
 class BasisSet;
-class GaussianShell;
 class SphericalTransform;
 
 /*! \ingroup MINTS
+ *  \class AngularMomentumInt
+ *  \brief Computes angular momentum integrals.
  *
  * Use an IntegralFactory to create this object. */
-class AngularMomentumInt : public OneBodyAOInt {
-    //! Obara and Saika recursion object to be used.
-    ObaraSaikaTwoCenterRecursion overlap_recur_;
-
+class AngularMomentumInt : public OneBodyAOInt, public mdintegrals::MDHelper {
    public:
     //! Constructor. Do not call directly use an IntegralFactory.
-    AngularMomentumInt(std::vector<SphericalTransform>&, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
+    AngularMomentumInt(std::vector<SphericalTransform> &, std::shared_ptr<BasisSet>, std::shared_ptr<BasisSet>,
                        int deriv = 0);
     //! Virtual destructor
     ~AngularMomentumInt() override;
@@ -63,5 +55,3 @@ class AngularMomentumInt : public OneBodyAOInt {
 };
 
 }  // namespace psi
-
-#endif

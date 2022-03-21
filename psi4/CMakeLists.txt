@@ -288,6 +288,7 @@ install(DIRECTORY ../tests/pytests/
         PATTERN "conftest.py"
         PATTERN "standard_suite_runner.py"
         PATTERN "tdscf_reference_data.json"
+        PATTERN "oei_reference_data.json"
         PATTERN "utils.py")
 install(DIRECTORY ../tests/pytests/test_fchk_writer
                   ../tests/pytests/test_molden_writer
