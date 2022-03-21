@@ -58,8 +58,8 @@ AngularMomentumInt::AngularMomentumInt(std::vector<SphericalTransform>& spherica
 AngularMomentumInt::~AngularMomentumInt() { delete[] buffer_; }
 
 void AngularMomentumInt::compute_pair(const libint2::Shell& s1, const libint2::Shell& s2) {
-    // Computes the angular momentum integrals for a pair of shells using eq. 9.3.33
-    // eq. numbers from Molecular Electronic-Structure Theory (10.1002/9781119019572)
+    // Computes the angular momentum integrals for a pair of shells using eq 9.3.33
+    // equation numbers from Molecular Electronic-Structure Theory (10.1002/9781119019572)
     int am1 = s1.contr[0].l;
     int am2 = s2.contr[0].l;
     int am = am1 + am2;
@@ -104,11 +104,11 @@ void AngularMomentumInt::compute_pair(const libint2::Shell& s1, const libint2::S
                     double Sx0 = Ex[xidx];
                     double Sy0 = Ey[yidx];
                     double Sz0 = Ez[zidx];
-                    // Multipole integral, eq. 9.5.43
+                    // Multipole integral, eq 9.5.43
                     double Sx1 = Ex[xidx + 1] + PC[0] * Ex[xidx];
                     double Sy1 = Ey[yidx + 1] + PC[1] * Ey[yidx];
                     double Sz1 = Ez[zidx + 1] + PC[2] * Ez[zidx];
-                    // Use eq. 9.3.30 to define derivative w.r.t. ket center
+                    // Use eq 9.3.30 to define derivative w.r.t. ket center
                     double Dx1 = -2.0 * b * Ex[address_3d(l1, l2 + 1, 0, edim2, edim3)];
                     double Dy1 = -2.0 * b * Ey[address_3d(m1, m2 + 1, 0, edim2, edim3)];
                     double Dz1 = -2.0 * b * Ez[address_3d(n1, n2 + 1, 0, edim2, edim3)];
