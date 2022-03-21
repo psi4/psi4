@@ -55,13 +55,12 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES AppleClang)
     endif()
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES Clang)
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.0)
-        message(FATAL_ERROR "CLANG version must be at least 4.0!")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)
+        message(FATAL_ERROR "CLANG version must be at least 5.0!")
     endif()
 
 elseif (CMAKE_CXX_COMPILER_ID MATCHES MSVC)
     # As for MSVC 14.0, it is not possible to set anything below C++14
-    set(psi4_CXX_STANDARD 17)
     if(MSVC_TOOLSET_VERSION LESS 140)
         message(FATAL_ERROR "MSVC toolset version must be at least 14.0!")
     endif()

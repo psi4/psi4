@@ -9,7 +9,7 @@ from pathlib import Path
 import json
 
 
-pytestmark = pytest.mark.quick
+pytestmark = [pytest.mark.psi, pytest.mark.api, pytest.mark.quick]
 
 
 @pytest.fixture

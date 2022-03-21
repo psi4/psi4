@@ -29,7 +29,6 @@
 #include "psi4/libmints/angularmomentum.h"
 #include "psi4/libmints/basisset.h"
 #include "psi4/libmints/integral.h"
-#include "mcmurchiedavidson.h"
 
 #include <memory>
 #include <stdexcept>
@@ -96,8 +95,8 @@ void AngularMomentumInt::compute_pair(const libint2::Shell& s1, const libint2::S
             double prefac = ca * cb * std::pow(M_PI / p, 1.5);
             fill_E_matrix(am1, am2 + 1, P, A, B, a, b, Ex, Ey, Ez);
             ao12 = 0;
-            for (auto& [l1, m1, n1, index1] : comps_am1) {
-                for (auto& [l2, m2, n2, index2] : comps_am2) {
+            for (const auto& [l1, m1, n1, index1] : comps_am1) {
+                for (const auto& [l2, m2, n2, index2] : comps_am2) {
                     int xidx = address_3d(l1, l2, 0, edim2, edim3);
                     int yidx = address_3d(m1, m2, 0, edim2, edim3);
                     int zidx = address_3d(n1, n2, 0, edim2, edim3);

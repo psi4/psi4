@@ -29,7 +29,7 @@
 #pragma once
 
 #include "psi4/libmints/onebody.h"
-#include "mcmurchiedavidson.h"
+#include "psi4/libmints/mcmurchiedavidson.h"
 
 namespace psi {
 

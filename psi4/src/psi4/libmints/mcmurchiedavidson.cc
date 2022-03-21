@@ -25,7 +25,7 @@
  *
  * @END LICENSE
  */
-#include "mcmurchiedavidson.h"
+#include "psi4/libmints/mcmurchiedavidson.h"
 
 namespace mdintegrals {
 
