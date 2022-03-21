@@ -425,11 +425,14 @@ void HF::find_occupation() {
         MOM();
     } else {
         if (!input_docc_ && !input_socc_) {
+            assert(nirrep_ == epsilon_a_->nirrep());
+            assert(nirrep_ == epsilon_b_->nirrep());
+
             // The occupations are determined by the Aufbau
             // principle. We first collect all the orbital energies and
             // sort them in increasing order
             std::vector<std::pair<double, int> > pairs_a;
-            for (int h = 0; h < epsilon_a_->nirrep(); ++h) {
+            for (int h = 0; h < nirrep_; ++h) {
                 for (int i = 0; i < epsilon_a_->dimpi()[h]; ++i) {
                     pairs_a.push_back(std::make_pair(epsilon_a_->get(h, i), h));
                 }
@@ -437,7 +440,7 @@ void HF::find_occupation() {
             sort(pairs_a.begin(), pairs_a.end());
             // Same for beta electrons
             std::vector<std::pair<double, int> > pairs_b;
-            for (int h = 0; h < epsilon_b_->nirrep(); ++h) {
+            for (int h = 0; h < nirrep_; ++h) {
                 for (int i = 0; i < epsilon_b_->dimpi()[h]; ++i) {
                     pairs_b.push_back(std::make_pair(epsilon_b_->get(h, i), h));
                 }
@@ -448,11 +451,14 @@ void HF::find_occupation() {
             if ((size_t)std::max(nalpha_, nbeta_) > pairs_a.size())
                 throw PSIEXCEPTION("Not enough basis functions to satisfy requested occupancies");
 
+            // Reset occupations
+            for (int h = 0; h < nirrep_; ++h) {
+                nalphapi_[h] = 0;
+                nbetapi_[h] = 0;
+            }
             // Occupy the lowest nalpha orbitals
-            memset(nalphapi_, 0, sizeof(int) * nirrep_);
             for (int i = 0; i < nalpha_; ++i) nalphapi_[pairs_a[i].second]++;
             // Occupy the lowest nbeta electrons
-            memset(nbetapi_, 0, sizeof(int) * nirrep_);
             for (int i = 0; i < nbeta_; ++i) nbetapi_[pairs_b[i].second]++;
         }
 
