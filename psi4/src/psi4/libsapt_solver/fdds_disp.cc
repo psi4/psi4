@@ -354,16 +354,12 @@ std::vector<SharedMatrix> FDDS_Dispersion::project_densities(std::vector<SharedM
     }
 
     // ==> Contract (PQS) S -> PQ <== //
-    std::vector<SphericalTransform> trans;
-    for (size_t i = 0; i <= auxiliary_->max_am(); i++) {
-        trans.push_back(SphericalTransform(i));
-    }
     std::vector<std::shared_ptr<ThreeCenterOverlapInt>> aux_ints(nthread);
     std::vector<const double*> aux_buff(nthread);
 
     for (size_t i = 0; i < nthread; i++) {
         aux_ints[i] = std::shared_ptr<ThreeCenterOverlapInt>(
-            new ThreeCenterOverlapInt(trans, auxiliary_, auxiliary_, auxiliary_));
+            new ThreeCenterOverlapInt(auxiliary_, auxiliary_, auxiliary_));
         aux_buff[i] = aux_ints[i]->buffers()[0];
     }
 

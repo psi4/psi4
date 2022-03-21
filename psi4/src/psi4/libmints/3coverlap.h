@@ -53,15 +53,13 @@ class ThreeCenterOverlapInt {
     /// Buffer to hold the source integrals.
     std::vector<const double*> buffers_;
 
-    /// Vector of Sphericaltransforms
-    std::vector<SphericalTransform> st_;
+    /// A vector of zeros that we can point to if libint2 gives us back a nullptr
+    std::vector<double> zero_vec_;
 
     void compute_pair(const libint2::Shell& s1, const libint2::Shell& s2, const libint2::Shell& s3);
 
    public:
-    ThreeCenterOverlapInt(std::vector<SphericalTransform> st, std::shared_ptr<BasisSet> bs1,
-                          std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3);
-
+    ThreeCenterOverlapInt(std::shared_ptr<BasisSet> bs1, std::shared_ptr<BasisSet> bs2, std::shared_ptr<BasisSet> bs3);
     ~ThreeCenterOverlapInt();
 
     /// Basis set on center one.
