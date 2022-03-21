@@ -464,9 +464,25 @@ void HF::find_occupation() {
         }
 
         if (!input_docc_ && !input_socc_) {
+            int alphacount = 0;
+            int betacount = 0;
             for (int h = 0; h < nirrep_; ++h) {
                 soccpi_[h] = std::abs(nalphapi_[h] - nbetapi_[h]);
                 doccpi_[h] = std::min(nalphapi_[h], nbetapi_[h]);
+                alphacount += doccpi_[h] + soccpi_[h];
+                betacount += doccpi_[h];
+            }
+            if (alphacount != nalpha_) {
+                std::ostringstream oss;
+                oss << "Count " << alphacount << " alpha electrons, expected " << nalpha_ << ".\n";
+                oss << "This is a bug. Please file a report.";
+                throw PSIEXCEPTION(oss.str());
+            }
+            if (betacount != nbeta_) {
+                std::ostringstream oss;
+                oss << "Count " << betacount << " beta electrons, expected " << nbeta_ << ".\n";
+                oss << "This is a bug. Please file a report.";
+                throw PSIEXCEPTION(oss.str());
             }
         }
 
