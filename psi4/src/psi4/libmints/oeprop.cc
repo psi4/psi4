@@ -820,10 +820,10 @@ void OEProp::compute() {
     }
     // print_header();  // Not by default, happens too often -CDS
     if (tasks_.count("ESP_AT_NUCLEI")) compute_esp_at_nuclei();
-    if (tasks_.count("DIPOLE")) compute_multipoles(1, false);
     if (tasks_.count("QUADRUPOLE")) compute_multipoles(2, false);
-    if (tasks_.count("TRANSITION_DIPOLE")) compute_multipoles(1, true);
+    else if (tasks_.count("DIPOLE")) compute_multipoles(1, false);
     if (tasks_.count("TRANSITION_QUADRUPOLE")) compute_multipoles(2, true);
+    else if (tasks_.count("TRANSITION_DIPOLE")) compute_multipoles(1, true);
     if (tasks_.count("MO_EXTENTS")) compute_mo_extents();
     if (tasks_.count("MULLIKEN_CHARGES")) compute_mulliken_charges();
     if (tasks_.count("LOWDIN_CHARGES")) compute_lowdin_charges();
@@ -943,23 +943,24 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
     int address = 0;
     for (int l = 1; l <= order; ++l) {
         int ncomponents = (l + 1) * (l + 2) / 2;
-        std::stringstream ss;
-        if (l > 1) ss << ".ang";
+        std::stringstream ss, tt;
+        if (l > 1) tt << "^" << l;
+        if (l > 1) ss << " ang";
         if (l > 2) ss << "^" << l - 1;
         std::string exp = ss.str();
         if (print_output) {
-            outfile->Printf(" L = %d.  Multiply by %.10f to convert to Debye%s\n", l, convfac, exp.c_str());
+            outfile->Printf(" L = %d.  Multiply by %.10f to convert [e a0%s] to [Debye%s]\n", l, convfac, tt, exp.c_str());
         }
         for (int component = 0; component < ncomponents; ++component) {
-            SharedMatrix mpmat = mp_ints[address];
-            std::string name = mpmat->name();
+            auto mpmat = mp_ints[address];
+            auto name = mpmat->name();
             double nuc = transition ? 0.0 : nuclear_contributions->get(address);
             double elec = Da->vector_dot(mpmat) + Db->vector_dot(mpmat);
             double tot = nuc + elec;
             if (print_output) {
                 outfile->Printf(" %-20s: %18.7f   %18.7f   %18.7f\n", name.c_str(), elec, nuc, tot);
             }
-            std::string upper_name = to_upper_copy(name);
+            auto upper_name = to_upper_copy(name);
             mot->push_back(std::make_tuple(upper_name, nuc, elec, tot, l));
             ++address;
         }
@@ -969,7 +970,7 @@ MultipolePropCalc::MultipoleOutputType MultipolePropCalc::compute_multipoles(int
         convfac *= pc_bohr2angstroms;
     }
     if (print_output) {
-        outfile->Printf(" --------------------------------------------------------------------------------\n");
+        outfile->Printf(" ------------------------------------------------------------------------------------\n");
     }
 
     return mot;
