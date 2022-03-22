@@ -43,10 +43,7 @@ json_data = {
         "mp2_type": "df"
     },
     "extras": {
-        "psi4:arrays": {
-            "tIjAb": [],
-            "tIA": [],
-            "Da": []
+        "psi4:save_tamps": True
         }
     }
 }
@@ -80,12 +77,9 @@ with open("output.json", "w") as ofile:
 if all(map(lambda x: x == 0, tIJAB.flatten())) or \
    all(map(lambda x: x == 0, tIA.flatten())) or \
    all(map(lambda x: x == 0, Da.flatten())) :
-    print("Error in computing values to compare against. Could not compare.")
+    raise Exception("Error in computing values to compare against. Could not compare.")
 else :
-    print("Comparing T2")
     psi4.compare_values(tIJAB, np.array(json_ret["extras"]["psi4:arrays"]["tIjAb"]))
-    print("Comparing T1")
     psi4.compare_values(tIA, np.array(json_ret["extras"]["psi4:arrays"]["tIA"]))
-    print("Comparing Densities")
     psi4.compare_values(Da, np.array(json_ret["extras"]["psi4:arrays"]["Da"]))
 
