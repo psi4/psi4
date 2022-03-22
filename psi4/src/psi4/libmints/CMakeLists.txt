@@ -2,7 +2,6 @@ list(APPEND sources
   local.cc
   x2cint.cc
   orbitalspace.cc
-  osrecur.cc
   maketab.cc
   oeprop.cc
   writer.cc
@@ -37,7 +36,6 @@ list(APPEND sources
   intvector.cc
   mintshelper.cc
   coordentry.cc
-  pseudospectral.cc
   matrix.cc
   gshell.cc
   integraliter.cc
