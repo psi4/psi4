@@ -44,6 +44,9 @@ if(${ENABLE_ambit})
                        #-DEXTRA_Fortran_FLAGS=${CMAKE_EXTRA_Fortran_FLAGS}
                        -DEXTRA_C_FLAGS=${CMAKE_C_FLAGS}
                        -DEXTRA_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+                       -DPython_EXECUTABLE=${Python_EXECUTABLE}
+                       -DPython_INCLUDE_DIR=${Python_INCLUDE_DIRS}
+                       -DPython_LIBRARY=${Python_LIBRARIES}
                        -DPYTHON_EXECUTABLE=${Python_EXECUTABLE}
                        -DPYTHON_INCLUDE_DIR=${Python_INCLUDE_DIRS}
                        -DPYTHON_LIBRARY=${Python_LIBRARIES}
@@ -62,6 +65,8 @@ if(${ENABLE_ambit})
                        -DOpenMP_LIBRARY_DIRS=${OpenMP_LIBRARY_DIRS}
                        -DTargetLAPACK_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetLAPACK
                        -DTargetHDF5_DIR=${STAGED_INSTALL_PREFIX}/share/cmake/TargetHDF5
+                       -Dpybind11_DIR=${pybind11_DIR}
+                       -DCMAKE_INSIST_FIND_PACKAGE_pybind11=ON
                        -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}
                        -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
             CMAKE_CACHE_ARGS -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
