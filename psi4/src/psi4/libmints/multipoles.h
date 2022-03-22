@@ -25,15 +25,14 @@
  *
  * @END LICENSE
  */
-
-#ifndef _psi_src_lib_libmints_multipoles_h_
-#define _psi_src_lib_libmints_multipoles_h_
+#pragma once
 
 #include <vector>
-#include "typedefs.h"
+// #include "typedefs.h"
 #include "psi4/libmints/onebody.h"
-#include "psi4/libmints/osrecur.h"
+// #include "psi4/libmints/osrecur.h"
 #include "psi4/libmints/integral.h"
+#include "psi4/libmints/mcmurchiedavidson.h"
 
 namespace psi {
 class Molecule;
@@ -43,12 +42,20 @@ class Molecule;
  *  \brief Computes arbitrary-order multipole integrals.
  *
  * Use an IntegralFactory to create this object. */
-class MultipoleInt : public OneBodyAOInt {
-    //! Obara and Saika recursion object to be used.
-    ObaraSaikaTwoCenterMIRecursion mi_recur_;
-
+class MultipoleInt : public OneBodyAOInt, public mdintegrals::MDHelper {
     //! The order of multipole moment to compute
     int order_;
+
+    //! Multipole intermediates
+    std::vector<double> Mx;
+    std::vector<double> My;
+    std::vector<double> Mz;
+    std::vector<double> Sx;
+    std::vector<double> Sy;
+    std::vector<double> Sz;
+
+    //! CCA-ordered Cartesian components for the multipoles
+    std::vector<std::vector<std::array<int, 4>>> comps_mul_;
 
    public:
     //! Constructor. Do not call directly. Use an IntegralFactory.
@@ -68,4 +75,3 @@ class MultipoleInt : public OneBodyAOInt {
 };
 
 }  // namespace psi
-#endif

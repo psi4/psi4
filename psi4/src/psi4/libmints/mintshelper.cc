@@ -1580,6 +1580,17 @@ std::vector<SharedMatrix> MintsHelper::ao_traceless_quadrupole() {
     return quadrupole;
 }
 
+std::vector<SharedMatrix> MintsHelper::ao_multipoles(const std::vector<double>& origin, int order) {
+    Vector3 v3origin(origin[0], origin[1], origin[2]);
+    MultipoleSymmetry mpsymm(order, molecule_, integral_, factory_);
+    // ignore_symmetry = true
+    auto ret = mpsymm.create_matrices("", true);
+    std::shared_ptr<OneBodyAOInt> multipole_int(integral_->ao_multipoles(order));
+    multipole_int->set_origin(v3origin);
+    multipole_int->compute(ret);
+    return ret;
+}
+
 std::vector<SharedMatrix> MintsHelper::ao_efp_multipole_potential(const std::vector<double> &origin, int deriv) {
     std::vector<SharedMatrix> ret = ao_multipole_potential(origin, 3, deriv);
     // EFP expects the following order of Cartesian components

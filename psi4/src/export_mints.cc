@@ -1447,6 +1447,8 @@ void export_mints(py::module& m) {
              "Vector AO traceless quadrupole integrals")
         .def("so_traceless_quadrupole", &MintsHelper::so_traceless_quadrupole,
              "Vector SO traceless quadrupole integrals")
+        .def("ao_multipoles", &MintsHelper::ao_multipoles, "Vector AO multipole integrals",
+             "origin"_a = std::vector<double>{0.0, 0.0, 0.0}, "order"_a = 1)
         .def("ao_nabla", &MintsHelper::ao_nabla, "Vector AO nabla integrals")
         .def("so_nabla", &MintsHelper::so_nabla, "Vector SO nabla integrals")
         .def("ao_angular_momentum", &MintsHelper::ao_angular_momentum, "Vector AO angular momentum integrals")

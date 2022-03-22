@@ -31,8 +31,6 @@ namespace mdintegrals {
 
 inline int cart_dim(int L) { return (L + 1) * (L + 2) / 2; }
 
-inline int cumulative_cart_dim(int L) { return ((L + 1) * (L + 2) * (L + 3)) / 6; }
-
 std::vector<std::array<int, 4>> generate_am_components_cca(int am) {
     std::vector<std::array<int, 4>> ret(cart_dim(am));
     int index = 0;
@@ -115,6 +113,47 @@ void fill_E_matrix(int maxam1, int maxam2, const Point& P, const Point& A, const
                     Ez[idx] += PB[2] * Ez[idxj_t] + oo2p * Ez[idxj_tm] + (t + 1) * Ez[idxj_tp];
                 }
             }
+        }
+    }
+}
+
+void fill_M_matrix(int maxam, int maxpow, const Point& PC, double a, double b, std::vector<double>& Mx,
+                   std::vector<double>& My, std::vector<double>& Mz) {
+    // Generate multipole intermediates using eqs 9.5.31 to 9.5.36
+    // from Molecular Electronic-Structure Theory (10.1002/9781119019572)
+
+    // zero out buffers
+    std::fill(Mx.begin(), Mx.end(), 0.0);
+    std::fill(My.begin(), My.end(), 0.0);
+    std::fill(Mz.begin(), Mz.end(), 0.0);
+
+    int dim0 = maxpow + 1;
+    int dim1 = maxam + 3;
+
+    double p = a + b;
+    // one over 2p
+    double oo2p = 1.0 / (2.0 * p);
+    double sqrtpip = std::sqrt(M_PI / p);
+    Mx[0] = sqrtpip;
+    My[0] = sqrtpip;
+    Mz[0] = sqrtpip;
+    for (int e = 1; e <= maxpow; ++e) {
+        // t > e is zero
+        int uppert = std::min(e + 1, maxam + 2);
+        for (int t = 0; t < uppert; ++t) {
+            int idx = e * dim1 + t;
+            // TODO: 'unroll' t=0 loop
+            Mx[idx] += PC[0] * Mx[(e - 1) * dim1 + t];
+            My[idx] += PC[1] * My[(e - 1) * dim1 + t];
+            Mz[idx] += PC[2] * Mz[(e - 1) * dim1 + t];
+            if (t > 0) {
+                Mx[idx] += t * Mx[(e - 1) * dim1 + (t - 1)];
+                My[idx] += t * My[(e - 1) * dim1 + (t - 1)];
+                Mz[idx] += t * Mz[(e - 1) * dim1 + (t - 1)];
+            }
+            Mx[idx] += oo2p * Mx[(e - 1) * dim1 + (t + 1)];
+            My[idx] += oo2p * My[(e - 1) * dim1 + (t + 1)];
+            Mz[idx] += oo2p * Mz[(e - 1) * dim1 + (t + 1)];
         }
     }
 }
