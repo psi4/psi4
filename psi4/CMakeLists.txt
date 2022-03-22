@@ -321,6 +321,7 @@ install(
     PATTERN ../tests/cfour EXCLUDE
     PATTERN "test_input.py"
     PATTERN "input.dat"
+    PATTERN "input.py"
     PATTERN "__pycache__" EXCLUDE
     PATTERN "*pyc" EXCLUDE
     # below place extra files the ctests-run-as-pytests need
@@ -329,7 +330,8 @@ install(
     PATTERN "ci-property/grid.dat"
     PATTERN "scf-property/grid.dat"
     PATTERN "mp2-property/grid.dat"
-    PATTERN "cubeprop/*cube.ref"
+    PATTERN "cubeprop*/*cube.ref"
+    PATTERN "fcidump/*INTDUMP.ref"
   )
 
     # <<<  install psi4 share/ & include/  >>>
