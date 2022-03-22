@@ -27,6 +27,8 @@
  */
 #include "psi4/libmints/mcmurchiedavidson.h"
 
+#include <libint2/boys.h>
+
 namespace mdintegrals {
 
 inline int cart_dim(int L) { return (L + 1) * (L + 2) / 2; }
@@ -156,6 +158,65 @@ void fill_M_matrix(int maxam, int maxpow, const Point& PC, double a, double b, s
             Mx[idx] += t * Mx[idx_em_tm] + PC[0] * Mx[idx_em] + oo2p * Mx[idx_em_tp];
             My[idx] += t * My[idx_em_tm] + PC[1] * My[idx_em] + oo2p * My[idx_em_tp];
             Mz[idx] += t * Mz[idx_em_tm] + PC[2] * Mz[idx_em] + oo2p * Mz[idx_em_tp];
+        }
+    }
+}
+
+void fill_R_matrix(int maxam, double p, const Point& P, const Point& C, std::vector<double>& R,
+                   std::shared_ptr<const libint2::FmEval_Chebyshev7<double>> fm_eval) {
+    // zero out buffer
+    std::fill(R.begin(), R.end(), 0.0);
+    // eq 9.9.13
+    auto PC = point_diff(P, C);
+    auto RPC = point_norm(PC);
+    double T = p * RPC * RPC;
+
+    std::vector<double> fmvals(maxam + 1);
+
+    // evaluate Boys function
+    fm_eval->eval(fmvals.data(), T, maxam);
+
+    int dim1 = maxam + 1;
+    int dim2 = dim1 * dim1 * dim1;
+
+    // NOTE: avoiding std::pow(-2.0 * p, n)
+    double fac = 1.0;
+    double mult = -2.0 * p;
+    for (int n = 0; n < dim1; ++n) {
+        // eq 9.9.14
+        R[n * dim2] = fac * fmvals[n];
+        fac *= mult;
+    }
+    for (int v = 0; v < dim1; ++v) {
+        for (int u = 0; u < dim1 - v; ++u) {
+            for (int t = 0; t < dim1 - v - u; ++t) {
+                for (int n = 0; n < maxam; ++n) {
+                    double val = 0.0;
+                    int noffset = (n + 1) * dim2;
+                    if (t == 0 && u == 0 && v == 0) {
+                        continue;
+                    } else if (t == 0 && u == 0) {
+                        // eq 9.9.20
+                        if (v > 1) {
+                            val += (v - 1) * R[noffset + address_3d(t, u, v - 2, dim1, dim1)];
+                        }
+                        val += PC[2] * R[noffset + address_3d(t, u, v - 1, dim1, dim1)];
+                    } else if (t == 0) {
+                        // eq 9.9.19
+                        if (u > 1) {
+                            val += (u - 1) * R[noffset + address_3d(t, u - 2, v, dim1, dim1)];
+                        }
+                        val += PC[1] * R[noffset + address_3d(t, u - 1, v, dim1, dim1)];
+                    } else {
+                        // eq 9.9.18
+                        if (t > 1) {
+                            val += (t - 1) * R[noffset + address_3d(t - 2, u, v, dim1, dim1)];
+                        }
+                        val += PC[0] * R[noffset + address_3d(t - 1, u, v, dim1, dim1)];
+                    }
+                    R[n * dim2 + address_3d(t, u, v, dim1, dim1)] = val;
+                }
+            }
         }
     }
 }

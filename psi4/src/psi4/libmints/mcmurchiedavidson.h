@@ -30,6 +30,12 @@
 #include <array>
 #include <vector>
 #include <cmath>
+#include <memory>
+
+namespace libint2 {
+template <typename Real>
+class FmEval_Chebyshev7;
+}
 
 namespace mdintegrals {
 
@@ -41,6 +47,8 @@ void fill_E_matrix(int maxam1, int maxam2, const Point& P, const Point& A, const
                    std::vector<double>& Ex, std::vector<double>& Ey, std::vector<double>& Ez);
 void fill_M_matrix(int maxam, int maxpow, const Point& PC, double a, double b, std::vector<double>& Mx,
                    std::vector<double>& My, std::vector<double>& Mz);
+void fill_R_matrix(int maxam, double p, const Point& P, const Point& C, std::vector<double>& R,
+                   std::shared_ptr<const libint2::FmEval_Chebyshev7<double>> fm_eval);
 
 std::vector<std::array<int, 4>> generate_am_components_cca(int am);
 
