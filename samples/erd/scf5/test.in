@@ -1,6 +1,4 @@
-#! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set and using ERD integrals.
-
-set integral_package ERD
+#! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
 
 print(' Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-Triplet O2') #TEST
 

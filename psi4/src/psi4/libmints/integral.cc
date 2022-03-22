@@ -200,21 +200,6 @@ OneBodyAOInt* IntegralFactory::electric_field(int deriv) {
     return new ElectricFieldInt(spherical_transforms_, bs1_, bs2_, deriv);
 }
 
-TwoBodyAOInt* IntegralFactory::erd_eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
-    auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
-    auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
-
-#ifdef USING_simint
-    if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs, needs_exchange);
-#endif
-
-    if (integral_package == "SIMINT")
-        outfile->Printf("Chosen integral package " + integral_package +
-                        " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
-
-    return new Libint2ERI(this, threshold, deriv, use_shell_pairs, needs_exchange);
-}
-
 TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_exchange) {
     auto integral_package = Process::environment.options.get_str("INTEGRAL_PACKAGE");
     auto threshold = Process::environment.options.get_double("INTS_TOLERANCE");
@@ -223,7 +208,7 @@ TwoBodyAOInt* IntegralFactory::eri(int deriv, bool use_shell_pairs, bool needs_e
     if (deriv == 0 && integral_package == "SIMINT") return new SimintERI(this, deriv, use_shell_pairs, needs_exchange);
 #endif
 
-    if (integral_package == "SIMINT" || integral_package == "ERD")
+    if (integral_package == "SIMINT")
         outfile->Printf("Chosen integral package " + integral_package +
                         " unavailable.\nRecompile with the appropriate option set.\nFalling back to Libint");
 

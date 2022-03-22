@@ -120,8 +120,6 @@ class BasisSet(object):
         self.ucoefficients = None
         # The flattened lists of unique contraction coefficients (as provided by the user)
         self.uoriginal_coefficients = None
-        # The flattened lists of ERD normalized contraction coefficients
-        self.uerd_coefficients = None
         # The flattened list of Cartesian coordinates for each atom
         self.xyz = None
         # label/basis to number of core electrons mapping for ECPs
@@ -220,7 +218,6 @@ class BasisSet(object):
         self.PYnprimitive = 1
         self.PYnao = 1
         self.PYnbf = 1
-        self.uerd_coefficients = [1.0]
         self.n_prim_per_shell = [1]
         self.uexponents = [0.0]
         self.ucoefficients = [1.0]
@@ -267,7 +264,6 @@ class BasisSet(object):
         uexps = []
         ucoefs = []
         uoriginal_coefs = []
-        uerd_coefs = []
         rpowers = []
         self.n_uprimitive = 0
 
@@ -287,7 +283,6 @@ class BasisSet(object):
                         uexps.append(shell.exp(prim))
                         ucoefs.append(shell.coef(prim))
                         uoriginal_coefs.append(shell.original_coef(prim))
-                        uerd_coefs.append(shell.erd_coef(prim))
                         self.n_uprimitive += 1
                 primitive_end[label][basis] = self.n_uprimitive  # symbol --> label
 
@@ -315,12 +310,10 @@ class BasisSet(object):
         self.uexponents = [0.0] * self.n_uprimitive
         self.ucoefficients = [0.0] * self.n_uprimitive
         self.uoriginal_coefficients = [0.0] * self.n_uprimitive
-        self.uerd_coefficients = [0.0] * self.n_uprimitive
         for i in range(self.n_uprimitive):
             self.uexponents[i] = uexps[i]
             self.ucoefficients[i] = ucoefs[i]
             self.uoriginal_coefficients[i] = uoriginal_coefs[i]
-            self.uerd_coefficients[i] = uerd_coefs[i]
 
         self.shell_first_ao = [0] * self.n_shells
         self.shell_first_basis_function = [0] * self.n_shells
@@ -397,7 +390,6 @@ class BasisSet(object):
         uexps = []
         ucoefs = []
         uoriginal_coefs = []
-        uerd_coefs = []
         self.name = bs.name
         self.n_shells = 0
         self.n_uprimitive = 0
@@ -411,7 +403,6 @@ class BasisSet(object):
                     uexps.append(shell.exp(prim))
                     ucoefs.append(shell.coef(prim))
                     uoriginal_coefs.append(shell.original_coef(prim))
-                    uerd_coefs.append(shell.erd_coef(prim))
                     self.n_uprimitive += 1
                 self.n_shells += 1
                 self.PYnao += shell.ncartesian()
@@ -431,12 +422,10 @@ class BasisSet(object):
         self.uexponents = [0.0] * self.n_uprimitive
         self.ucoefficients = [0.0] * self.n_uprimitive
         self.uoriginal_coefficients = [0.0] * self.n_uprimitive
-        self.uerd_coefficients = [0.0] * self.n_uprimitive
         for i in range(self.n_uprimitive):
             self.uexponents[i] = uexps[i]
             self.ucoefficients[i] = ucoefs[i]
             self.uoriginal_coefficients[i] = uoriginal_coefs[i]
-            self.uerd_coefficients[i] = uerd_coefs[i]
 
         self.shell_first_ao = [0] * self.n_shells
         self.shell_first_basis_function = [0] * self.n_shells

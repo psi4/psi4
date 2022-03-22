@@ -154,7 +154,6 @@ jobs:
         -DENABLE_CheMPS2=OFF \
         -DENABLE_dkh=ON \
         -DENABLE_libefp=ON \
-        -DENABLE_erd=OFF \
         -DENABLE_gdma=ON \
         -DENABLE_PCMSolver=OFF \
         -DENABLE_simint=ON \

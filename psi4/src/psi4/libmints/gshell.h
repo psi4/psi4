@@ -65,8 +65,6 @@ class PSI_API ShellInfo {
     std::vector<double> coef_;
     /// R exponents, for ECP basis sets (of length nprimitives_)
     std::vector<int> n_;
-    /// ERD normalized contraction coefficients (of length nprimitives_)
-    std::vector<double> erd_coef_;
     /// Original (un-normalized) contraction coefficients (of length nprimitives)
     /// Only used in printing.
     std::vector<double> original_coef_;
@@ -110,7 +108,6 @@ class PSI_API ShellInfo {
 
     /** Handles calling primitive_normalization and contraction_normalization for you. */
     void normalize_shell();
-    void erd_normalize_shell();
 
     /// The type of shell this object encodes information for.
     ShellType shell_type() const { return shelltype_; }
@@ -136,8 +133,6 @@ class PSI_API ShellInfo {
     double coef(int pi) const { return coef_[pi]; }
     /// Return r exponent for pi'th ECP primitive
     int nval(int pi) const { return n_[pi]; }
-    /// Return ERD normalized coefficient of pi'th primitive
-    double erd_coef(int pi) const { return erd_coef_[pi]; }
     /// Return unnormalized coefficient of pi'th primitive
     double original_coef(int pi) const { return original_coef_[pi]; }
     /// Returns the exponent of the given primitive
@@ -176,8 +171,6 @@ class PSI_API GaussianShell {
     const double* original_coef_;
     /// Contraction coefficients (of length nprimitives_)
     const double* coef_;
-    /// Contraction coefficients normalized for the ERD integral package (of length nprimitives_)
-    const double* erd_coef_;
     /// R exponents for ECPs (of length nprimitives_)
     const int* n_;
 
@@ -216,7 +209,6 @@ class PSI_API GaussianShell {
      *  @param pure Pure spherical harmonics, or Cartesian.
      *  @param oc An array of contraction coefficients.
      *  @param c An array of normalized contraction coefficients.
-     *  @param ec An array of ERD normalized contraction coefficients.
      *  @param e An array of exponent values.
      *  @param nc The atomic center that this shell is located on. Must map back to the correct atom in the owning
      * BasisSet molecule_. Used in integral derivatives for indexing.
@@ -224,8 +216,8 @@ class PSI_API GaussianShell {
      *  @param start The starting index of the first function this shell provides. Used to provide starting positions in
      * matrices.
      */
-    GaussianShell(ShellType shelltype, int am, int nprimitive, const double* oc, const double* c, const double* ec,
-                  const double* e, GaussianType pure, int nc, const double* center, int start);
+    GaussianShell(ShellType shelltype, int am, int nprimitive, const double* oc, const double* c, const double* e,
+                  GaussianType pure, int nc, const double* center, int start);
 
     /** Constructor; use this version for ECPs.
      *  @param shelltype The type of shell this structure describes
@@ -277,16 +269,12 @@ class PSI_API GaussianShell {
     double original_coef(int pi) const { return original_coef_[pi]; }
     /// Return the pi'th r exponent for ECPs
     int nval(int pi) const { return n_[pi]; }
-    /// Return unnormalized coefficient of pi'th primitive
-    double erd_coef(int pi) const { return erd_coef_[pi]; }
     /// Returns the exponents
     const double* exps() const { return exp_; }
     /// Return coefficients
     const double* coefs() const { return coef_; }
     /// Return unnormalized coefficients
     const double* original_coefs() const { return original_coef_; }
-    /// Return ERD normalized coefficients
-    const double* erd_coefs() const { return erd_coef_; }
 
     /// Print out the shell
     void print(std::string out) const;

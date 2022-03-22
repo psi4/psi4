@@ -164,8 +164,6 @@ class ShellInfo(object):
         self.PYexp = e
         # Contraction coefficients (of length nprimitives_)
         self.PYcoef = c
-        # ERD normalized contraction coefficients (of length nprimitives_)
-        self.PYerd_coef = []
         # Original (un-normalized) contraction coefficients (of length nprimitives)
         self.PYoriginal_coef = [c[n] for n in range(len(c))]
         # Atom number this shell goes to. Needed when indexing integral derivatives.
@@ -183,9 +181,6 @@ class ShellInfo(object):
         # Compute the normalization constants
         if pt == 'Unnormalized':
             self.normalize_shell()
-            self.erd_normalize_shell()
-        else:
-            self.PYerd_coef = [0.0] * self.nprimitive() 
 
     def primitive_normalization(self, p):
         """Normalizes a single primitive.
@@ -228,28 +223,6 @@ class ShellInfo(object):
             normalization = self.primitive_normalization(i)
             self.PYcoef[i] *= normalization
         self.contraction_normalization()
-
-    def erd_normalize_shell(self):
-        """Compute the normalization coefficients for Electronic
-        Repulsion Direct integral evaluation.
-
-        """
-        tsum = 0.0
-        for j in range(self.nprimitive()):
-            for k in range(j + 1):
-                a1 = self.PYexp[j]
-                a2 = self.PYexp[k]
-                temp = self.PYoriginal_coef[j] * self.PYoriginal_coef[k]
-                temp2 = self.l + 1.5
-                temp3 = 2.0 * math.sqrt(a1 * a2) / (a1 + a2)
-                temp3 = pow(temp3, temp2)
-                temp *= temp3
-                tsum += temp
-                if j != k:
-                    tsum += temp
-        prefac = pow(2.0, 2 * self.l) / df(2 * self.l) if self.l > 1 else 1.0
-        norm = math.sqrt(prefac / tsum)
-        self.PYerd_coef = [j * norm for j in self.PYoriginal_coef]
 
     def copy(self, nc=None, c=None):
         """Return a copy of the ShellInfo"""
@@ -310,10 +283,6 @@ class ShellInfo(object):
     def coef(self, pi):
         """Return coefficient of pi'th primitive"""
         return self.PYcoef[pi]
-
-    def erd_coef(self, pi):
-        """Return ERD normalized coefficient of pi'th primitive"""
-        return self.PYerd_coef[pi]
 
     def original_coef(self, pi):
         """Return unnormalized coefficient of pi'th primitive"""

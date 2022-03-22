@@ -380,7 +380,7 @@ def test_pcmsolver():
 ])
 def test_integrals(integral_package):
     """scf5"""
-    #! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set and using ERD integrals.
+    #! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
 
     Eref_sing_can = -149.58723684929720
     Eref_sing_df = -149.58715054487624

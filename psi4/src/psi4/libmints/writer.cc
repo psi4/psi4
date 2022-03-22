@@ -46,7 +46,6 @@
 using namespace psi;
 ;
 
-
 MoldenWriter::MoldenWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_(wavefunction) {
     outfile->Printf("\tConstructing a MoldenWriter and then calling write instead of using `wfn.write_molden(name)`\n");
     outfile->Printf("\tis both buggy and deprecated, and in 1.5 it will stop working.\n\n");
@@ -181,7 +180,7 @@ void MoldenWriter::write(const std::string &filename, std::shared_ptr<Matrix> Ca
     // Dump MO's to the molden file
     printer->Printf("[MO]\n");
 
-    std::vector<std::pair<double, std::pair<int, int> > > mos;
+    std::vector<std::pair<double, std::pair<int, int>>> mos;
 
     // Number of MOs to write
     std::vector<int> nmoh(wavefunction_->nirrep());
@@ -391,7 +390,7 @@ void FCHKWriter::write(const std::string &filename) {
         atomic_weights.push_back(mol->mass(atom));
         int_atomic_weights.push_back(mol->mass_number(atom));
         nuc_charges.push_back(mol->Z(atom));
-        atomic_numbers.push_back(intZ > 0 ? mol->true_atomic_number(atom) : intZ); // care about ECP & ghosts!
+        atomic_numbers.push_back(intZ > 0 ? mol->true_atomic_number(atom) : intZ);  // care about ECP & ghosts!
         const Vector3 &xyz = mol->xyz(atom);
         coords.push_back(xyz[0]);
         coords.push_back(xyz[1]);
@@ -574,14 +573,9 @@ void FCHKWriter::write(const std::string &filename) {
         shell_coords.push_back(xyz[2]);
         int shell_type_fac = s.am() > 1 && s.is_pure() ? -1 : 1;
         shell_am.push_back(shell_type_fac * am);
-        double normfac = 1.0;
-        if (am > 1)
-            // Undo the angular momentum normalization, applied by the ERD code
-            normfac = sqrt(df[2 * am] / pow(2.0, 2.0 * am));
         for (int prim = 0; prim < nprim; ++prim) {
             exponents.push_back(s.exp(prim));
-            double normfac2 = normfac / pow(s.exp(prim), 0.5 * ((double)am + 1.5));
-            coefficients.push_back(normfac2 * s.erd_coef(prim));
+            coefficients.push_back(s.coef(prim));
         }
     }
 
@@ -643,13 +637,13 @@ NBOWriter::NBOWriter(std::shared_ptr<Wavefunction> wavefunction) : wavefunction_
 
 void NBOWriter::write(const std::string &filename) {
     const std::vector<std::vector<int>> pure_order = {
-        {1},        // s
+        {1},              // s
         {103, 101, 102},  // p
         // z2  xz   yz  x2-y2 xy
         {255, 252, 253, 254, 251},  // d
         // z(z2-r2), x(z2-r2), y(z2-r2) z(x2-y2), xyz, x(x2-y2), y(x2-y2)
-        {351, 352, 353, 354, 355, 356, 357},  // f
-        {451, 452, 453, 454, 455, 456, 457, 458, 459},  // g
+        {351, 352, 353, 354, 355, 356, 357},                     // f
+        {451, 452, 453, 454, 455, 456, 457, 458, 459},           // g
         {551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561}  // h
     };
 

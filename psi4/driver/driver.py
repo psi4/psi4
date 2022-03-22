@@ -88,9 +88,6 @@ def _find_derivative_type(ptype, method_name, user_dertype):
             raise ValidationError("_find_derivative_type: user_dertype should only be None or int!")
         dertype = user_dertype
 
-    if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (dertype != 0):
-        raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with derivatives, so stopping.')
-
     if (core.get_global_option('PCM')) and (dertype != 0):
         core.print_out('\nPCM analytic gradients are not implemented yet, re-routing to finite differences.\n')
         dertype = 0

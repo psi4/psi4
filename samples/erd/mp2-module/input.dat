@@ -1,7 +1,4 @@
-#! OMP2 cc-pVDZ energy for the H2O molecule and using ERD integrals.
-
-
-set integral_package ERD
+#! OMP2 cc-pVDZ energy for the H2O molecule.
 
 molecule hf {
 H

@@ -1105,7 +1105,6 @@ void export_mints(py::module& m) {
         def("exp", &GaussianShell::exp, "Returns the exponent of the given primitive", "prim"_a)
         .def("original_coef", &GaussianShell::original_coef, "Return unnormalized coefficient of the pi'th primitive",
              "pi"_a)
-        .def("erd_coef", &GaussianShell::erd_coef, "Return ERD normalized coefficient of pi'th primitive", "pi"_a)
         .def("coef", &GaussianShell::coef, "Return coefficient of the pi'th primitive", "pi"_a);
 
     py::enum_<PrimitiveType>(m, "PrimitiveType", "May be Normalized or Unnormalized")

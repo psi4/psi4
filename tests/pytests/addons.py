@@ -55,7 +55,6 @@ _programs = {
     "cppe": which_import("cppe", return_bool=True),  # package pycppe, import cppe
     "dkh": psi4.addons("dkh"),
     "libefp": which_import("pylibefp", return_bool=True),
-    "erd": psi4.addons("erd"),
     "fockci": which_import("psi4fockci", return_bool=True),  # package fockci, import psi4fockci
     "forte": which_import("forte", return_bool=True),
     "gdma": psi4.addons("gdma"),

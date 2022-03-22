@@ -367,9 +367,6 @@ def negotiate_derivative_type(ptype, method, user_dertype, verbose=1, return_str
             f'Dertivative negotiations: target/driver={egh.index(ptype)}, best_available={highest_der_program_can_provide}, user_dertype={user_dertype}, FINAL={dertype}'
         )
 
-    #if (core.get_global_option('INTEGRAL_PACKAGE') == 'ERD') and (dertype != 0):
-    #    raise ValidationError('INTEGRAL_PACKAGE ERD does not play nicely with derivatives, so stopping.')
-
     #if (core.get_global_option('PCM')) and (dertype != 0):
     #    core.print_out('\nPCM analytic gradients are not implemented yet, re-routing to finite differences.\n')
     #    dertype = 0

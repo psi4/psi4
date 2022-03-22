@@ -48,7 +48,7 @@ PRAGMA_WARNING_IGNORE_DEPRECATED_DECLARATIONS
 PRAGMA_WARNING_POP
 
 namespace libint2 {
-    struct Shell;
+struct Shell;
 }
 namespace psi {
 
@@ -161,8 +161,6 @@ class PSI_API BasisSet {
     std::vector<double> uecpcoefficients_;
     /// The flattened list of r exponents for ECP calculations
     std::vector<int> uecpns_;
-    /// The flattened lists of ERD normalized contraction coefficients
-    std::vector<double> uerd_coefficients_;
     /// The flattened list of Cartesian coordinates for each atom
     std::vector<double> xyz_;
 
@@ -400,8 +398,8 @@ class PSI_API BasisSet {
     void move_atom(int atom, const Vector3 &trans);
     // Returns the values of the basis functions at a point
     void compute_phi(double *phi_ao, double x, double y, double z);
-    
-   private: 
+
+   private:
     /// Helper functions for frozen core to reduce LOC
     int atom_to_period(int Z);
     int period_to_full_shell(int p);

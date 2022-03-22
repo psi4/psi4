@@ -21,7 +21,6 @@
 #   chemps2 - dmrg library active
 #   dkh - relativistic library active
 #   ecpint - ecp integrals library active
-#   erd - integrals library active
 #   gdma - multipole library active
 #   pcmsolver - solvation library active
 #   simint - integrals library active
@@ -57,7 +56,6 @@ set (_valid_components
     chemps2
     dkh
     ecpint
-    erd
     gdma
     pcmsolver
     simint

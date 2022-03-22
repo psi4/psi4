@@ -97,7 +97,6 @@ BasisSet::BasisSet() {
     n_prim_per_shell_ = std::vector<int>(1, 1);
     uexponents_ = std::vector<double>(1, 0.0);
     ucoefficients_ = std::vector<double>(1, 1.0);
-    uerd_coefficients_ = std::vector<double>(1, 1.0);
     uoriginal_coefficients_ = std::vector<double>(1, 1.0);
     shell_first_ao_ = std::vector<int>(1, 0);
     shell_first_basis_function_ = std::vector<int>(1, 0);
@@ -117,7 +116,7 @@ BasisSet::BasisSet() {
     key_ = "(Empty Basis Set)";
     target_ = "(Empty Basis Set)";
     shells_[0] = GaussianShell(Gaussian, 0, nprimitive_, uoriginal_coefficients_.data(), ucoefficients_.data(),
-                               uerd_coefficients_.data(), uexponents_.data(), GaussianType(0), 0, xyz_.data(), 0);
+                               uexponents_.data(), GaussianType(0), 0, xyz_.data(), 0);
 }
 
 BasisSet::~BasisSet() {}
@@ -634,7 +633,6 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
     std::vector<double> uexps;
     std::vector<double> ucoefs;
     std::vector<double> uoriginal_coefs;
-    std::vector<double> uerd_coefs;
     n_uprimitive_ = 0;
     std::map<std::string, std::map<std::string, std::vector<ShellInfo>>>::iterator basis_iter;
     for (basis_iter = shell_map.begin(); basis_iter != shell_map.end(); ++basis_iter) {
@@ -651,7 +649,6 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                     uexps.push_back(shell.exp(prim));
                     ucoefs.push_back(shell.coef(prim));
                     uoriginal_coefs.push_back(shell.original_coef(prim));
-                    uerd_coefs.push_back(shell.erd_coef(prim));
                     n_uprimitive_++;
                 }
             }
@@ -729,7 +726,6 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
     uexponents_ = std::vector<double>(n_uprimitive_);
     ucoefficients_ = std::vector<double>(n_uprimitive_);
     uoriginal_coefficients_ = std::vector<double>(n_uprimitive_);
-    uerd_coefficients_ = std::vector<double>(n_uprimitive_);
     uecpexponents_ = std::vector<double>(n_ecp_uprimitive_);
     uecpcoefficients_ = std::vector<double>(n_ecp_uprimitive_);
     uecpns_ = std::vector<int>(n_ecp_uprimitive_);
@@ -738,7 +734,6 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
         uexponents_[i] = uexps[i];
         ucoefficients_[i] = ucoefs[i];
         uoriginal_coefficients_[i] = uoriginal_coefs[i];
-        uerd_coefficients_[i] = uerd_coefs[i];
     }
     for (int i = 0; i < n_ecp_uprimitive_; ++i) {
         uecpexponents_[i] = uecpexps[i];
@@ -802,8 +797,8 @@ BasisSet::BasisSet(const std::string &basistype, SharedMolecule mol,
                 // This is a regular Gaussian basis set
                 shells_[shell_count] =
                     GaussianShell(shelltype, am, shell_nprim, &uoriginal_coefficients_[ustart + atom_nprim],
-                                  &ucoefficients_[ustart + atom_nprim], &uerd_coefficients_[ustart + atom_nprim],
-                                  &uexponents_[ustart + atom_nprim], puream, n, &xyz_.data()[3 * n], bf_count);
+                                  &ucoefficients_[ustart + atom_nprim], &uexponents_[ustart + atom_nprim], puream, n,
+                                  &xyz_.data()[3 * n], bf_count);
                 auto l2c = libint2::svector<double>(&uoriginal_coefficients_[ustart + atom_nprim],
                                                     &uoriginal_coefficients_[ustart + atom_nprim + shell_nprim]);
                 auto l2e = libint2::svector<double>(&uexponents_[ustart + atom_nprim],

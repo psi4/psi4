@@ -50,7 +50,6 @@ ShellInfo::ShellInfo(int am, const std::vector<double> &c, const std::vector<dou
     for (size_t prim = 0; prim < c.size(); ++prim) {
         original_coef_.push_back(c[prim]);
         coef_.push_back(c[prim]);
-        erd_coef_.push_back(c[prim]);
     }
 
     ncartesian_ = INT_NCART(l_);
@@ -71,7 +70,6 @@ ShellInfo::ShellInfo(int am, const std::vector<double> &c, const std::vector<dou
     // Compute the normalization constants
     if (pt == Unnormalized) {
         normalize_shell();
-        erd_normalize_shell();
     }
 }
 
@@ -81,30 +79,6 @@ double ShellInfo::primitive_normalization(int p) {
     double z = pow(g, tmp1);
     double normg = sqrt((pow(2.0, l_) * z) / (M_PI * sqrt(M_PI) * df[2 * l_]));
     return normg;
-}
-
-void ShellInfo::erd_normalize_shell() {
-    erd_coef_.clear();
-    double sum = 0.0;
-    double m = ((double)l_ + 1.5);
-    for (int j = 0; j < nprimitive(); j++) {
-        for (int k = 0; k <= j; k++) {
-            double a1 = exp_[j];
-            double a2 = exp_[k];
-            double temp = (original_coef(j) * original_coef(k));
-            double temp3 = (2.0 * sqrt(a1 * a2) / (a1 + a2));
-            temp3 = pow(temp3, m);
-            temp = temp * temp3;
-            sum = sum + temp;
-            if (j != k) sum = sum + temp;
-        }
-    }
-    double prefac = 1.0;
-    if (l_ > 1) prefac = pow(2.0, 2 * l_) / df[2 * l_];
-    double norm = sqrt(prefac / sum);
-    for (int j = 0; j < nprimitive(); j++) {
-        erd_coef_.push_back(original_coef_[j] * norm * pow(exp_[j], 0.5 * m));
-    }
 }
 
 void ShellInfo::contraction_normalization() {
@@ -157,20 +131,18 @@ double ShellInfo::normalize(int /*l*/, int /*m*/, int /*n*/) { return 1.0; }
 
 bool ShellInfo::operator==(const ShellInfo &RHS) const {
     return (l_ == RHS.l_ && puream_ == RHS.puream_ && exp_ == RHS.exp_ && coef_ == RHS.coef_ &&
-            erd_coef_ == RHS.erd_coef_ && original_coef_ == RHS.original_coef_ && n_ == RHS.n_ &&
-            ncartesian_ == RHS.ncartesian_ && nfunction_ == RHS.nfunction_);
+            original_coef_ == RHS.original_coef_ && n_ == RHS.n_ && ncartesian_ == RHS.ncartesian_ &&
+            nfunction_ == RHS.nfunction_);
 }
 
 GaussianShell::GaussianShell(ShellType shelltype, int am, int nprimitive, const double *oc, const double *c,
-                             const double *ec, const double *e, GaussianType pure, int nc, const double *center,
-                             int start)
+                             const double *e, GaussianType pure, int nc, const double *center, int start)
     : l_(am),
       puream_(pure),
       exp_(e),
       n_(nullptr),
       original_coef_(oc),
       coef_(c),
-      erd_coef_(ec),
       nc_(nc),
       center_(center),
       start_(start),
@@ -187,7 +159,6 @@ GaussianShell::GaussianShell(ShellType shelltype, int am, int nprimitive, const 
       exp_(e),
       original_coef_(oc),
       coef_(oc),
-      erd_coef_(oc),
       n_(n),
       nc_(nc),
       center_(center),
