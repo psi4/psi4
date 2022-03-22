@@ -51,7 +51,6 @@ platform capabilities, *etc*.
    dftd3
    dkh
    libefp
-   erd
    fchk
    plugin_psi4fockci
    gau2grid

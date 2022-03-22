@@ -275,10 +275,6 @@ are available pre-built from conda.
   * HDF5 https://support.hdfgroup.org/HDF5/
   * zlib http://www.zlib.net/
 
-.. * :ref:`erd <cmake:erd>` |w---w| :ref:`[what is this?] <sec:erd>` `[min version] <https://github.com/psi4/psi4/blob/master/external/upstream/erd/CMakeLists.txt#L2>`_
-
-  * :ref:`Fortran Compiler <cmake:fortran>`
-
 * :ref:`dkh <cmake:dkh>` |w---w| :ref:`[what is dkh?] <sec:dkh>` :source:`[dkh min version] <external/upstream/dkh/CMakeLists.txt#L2>`
 
   * :ref:`Fortran Compiler <cmake:fortran>`
@@ -1185,7 +1181,7 @@ How to configure Fortran compilers for building Psi4
 * Downstream Dependencies
 
   * |PSIfour| (\ |dr| optional) Fortran Compiler
-  * erd, dkh, gdma, PCMSolver |dr| Fortran Compiler
+  * dkh, gdma, PCMSolver |dr| Fortran Compiler
 
 **CMake Variables**
 
@@ -1754,7 +1750,6 @@ to run correctly); ``FAILED`` in red is bad. ::
     test_addons.py::test_dftd3 PASSED
     test_addons.py::test_libefp PASSED
     test_addons.py::test_pcmsolver PASSED
-    test_addons.py::test_erd PASSED
     test_addons.py::test_simint PASSED
     test_addons.py::test_json PASSED
     test_addons.py::test_cfour SKIPPED
