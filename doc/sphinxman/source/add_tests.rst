@@ -76,8 +76,8 @@ Both will continue to work in future, and neither have limitations.
 Test Contents
 =============
 
-* If you're writing a new class or closely examining an old one and you develop unit tests for probing its behavior, by all means add them to the test suite.
-  But on the whole, |PSIfour| tests should be integration tests focusing on non-regression of user input to answers.
+* Most tests will be |PSIfour| tests integration tests focusing on non-regression of user input to answers, and we insist on having these.
+  But if you find unit tests helpful, by all means add them to the test suite.
 
 * General format is to store reference results (from literature or another implementation or a carefully run |PSIfour| calculation),
   run quantum chemistry, then apply one or more of the :ref:`faq:comparison_functions` so that the test will fail if the answer is unexpected.
