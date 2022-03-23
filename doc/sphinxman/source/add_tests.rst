@@ -120,7 +120,7 @@ This file adds the test case to the suite. It should have at least the following
     # set_tests_properties(isapt1 PROPERTIES COST 300)
 
 The labels specify which groups of tests include the test case for ``ctest -L label`` purposes. The ``psi`` label should always be added, but the other labels are test-specific. The method tested should always be included, and this is often sufficient. If adding a test for an already existing module, the labels for other tests of the module will suggest other labels to add.
-Labels have been added as developers needed, so they are not systematic or thorough. Help wanted.
+Labels have been added as developers needed, so they are not systematic or thorough. If you see labels to add or rename, please do.
 
 A test requiring over 15 minutes should be labeled ``longtests``. A short test under 30 seconds used for general bug checking should be labeled ``quicktests``. A test that confirms |PSIfour| is operational should be labeled ``smoketests``.
 
