@@ -746,7 +746,7 @@ basis set defined for all atoms in the system, or set |scf__df_scf_guess|
 to false, which disables this acceleration entirely.
 
 LinK Exchange
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 .. warning:: The LinK code is currently under development and should not be used.
 
