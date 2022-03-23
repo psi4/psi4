@@ -193,12 +193,12 @@ Libint, and even C++ compilers on Linux and Mac) can be
 satisfied through conda. The links below give examples of how to configure
 that software for |PSIfour| and any notes and warnings pertaining to it.
 
-* :ref:`C++ and C Compilers <cmake:cxx>` (C++14 compliant)
+* :ref:`C++ and C Compilers <cmake:cxx>` (C++17 compliant)
 
 * :ref:`Optimized BLAS and LAPACK libraries <cmake:lapack>` (preferably NOT one supplied by a standard
   Linux distribution)
 
-* :ref:`Python interpreter and headers <cmake:python>` (3.6+) https://www.python.org/
+* :ref:`Python interpreter and headers <cmake:python>` (3.8+) https://www.python.org/
 
 * CMake (3.15+) https://cmake.org/download/
 
@@ -214,7 +214,6 @@ build system will automatically download and build.
 * :ref:`Libint <cmake:libint>` |w---w| :ref:`[what is Libint?] <sec:libint>` :source:`[Libint min version] <external/upstream/libint/CMakeLists.txt#L1>` (Libint2 as of Nov 2020; added by v1.4)
 
   * Eigen https://eigen.tuxfamily.org/index.php?title=Main_Page
-  * MPFR https://www.mpfr.org/
 
 * :ref:`Libxc <cmake:libxc>` |w---w| :ref:`[what is Libxc?] <sec:libxc>` :source:`[Libxc min version] <external/upstream/libxc/CMakeLists.txt#L1>`
 * pybind11 |w---w| `[what is Pybind11?] <https://pybind11.readthedocs.io/en/stable/>`_ :source:`[Pybind11 min version] <external/upstream/pybind11/CMakeLists.txt#L1>`
@@ -234,12 +233,15 @@ Additionally, there are runtime-only dependencies:
 
 * pydantic https://pydantic-docs.helpmanual.io/# (transitive dependency of QCElemental)
 
+* SciPy https://scipy.org/ (avoidable if necessary by following directions in runtime error message)
+
 Dropped Dependencies:
 
 * Boost (September 2016; dropped by v1.1)
 
 * deepdiff https://github.com/seperman/deepdiff (May 2019; dropped by v1.4)
 
+* MPFR https://www.mpfr.org/ (Mar 2022; dropped by v1.6) no longer needed to compile against Libint2
 
 
 .. _`faq:addondepend`:

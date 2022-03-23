@@ -136,7 +136,6 @@ jobs:
           sed -E -i.bak "s;- c-compiler;- clang_osx-64;g" build.yaml
           sed -E -i.bak "s;- cxx-compiler;- clangxx_osx-64;g" build.yaml
           sed -E -i.bak "s;- fortran-compiler;- gfortran_osx-64;g" build.yaml
-          #sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_6;g" build.yaml  # normal mm4ob2  # good, now default on label/dev
         fi
         if [[ "${{ runner.os }}" == "Windows" ]]; then
           # permanent, as we use clang-cl, not c-f compiler
@@ -202,9 +201,6 @@ jobs:
           - pip:
              - git+https://github.com/i-pi/i-pi.git@master-py3
         EOF
-        #if [[ "${{ runner.os }}" == "macOS" ]]; then
-        #  sed -E -i.bak "s;- psi4/label/dev::libint2;- psi4/label/testing::libint2=2.6.0=h879752b_6;g" run.yaml
-        #fi
         cat > aux.yaml <<EOF
         name: auxenv
         channels:
@@ -461,7 +457,7 @@ jobs:
         #export KMP_DUPLICATE_LIB_OK=TRUE
         psi4 ../tests/tu1-h2o-energy/input.dat -o stdout
 
-      # step works but is redundant with next two
+      # step works but is redundant with next two; enable for debugging
     - name: Test Addons with CTest
       if: false
       working-directory: ./objdir

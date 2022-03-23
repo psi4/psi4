@@ -6,7 +6,7 @@
 * Runs on: push to master
 * Goals:
   * get CI warning if doxygen docs compile broken
-  * get CI warning if sphinx docs compile broken 🍏, or compile with warnings 🍏, or compile with unreachable links ❌, or can't compile nit-picky ❌
+  * get CI warning if sphinx docs compile broken, or compile with warnings. (Future, after flag can be enabled: ", or compile with unreachable links, or can't compile nit-picky")
   * publish nightly-build docs promptly and automatically
   * get CI warning if psi4 compile broken with conda-forge environment (as opposed to the usual defaults-based environment)
 * Results:
